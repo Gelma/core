@@ -26,7 +26,6 @@
 #include <basebmp/basebmpdllapi.h>
 
 #include <boost/shared_array.hpp>
-#include <boost/noncopyable.hpp>
 #include <memory>
 #include <vector>
 
@@ -74,8 +73,7 @@ protected:
     works best when given as an eight bit grey bitmap. Everything else
     is accepted, but potentially slow.
  */
-class BASEBMP_DLLPUBLIC BitmapDevice : public std::enable_shared_from_this<BitmapDevice>,
-                                       private boost::noncopyable
+class BASEBMP_DLLPUBLIC BitmapDevice : public std::enable_shared_from_this<BitmapDevice>
 {
 public:
     /** Query size of device in pixel columns (X) and rows (Y, "scanlines")
@@ -561,6 +559,8 @@ protected:
                                      const RawMemorySharedArray&      rMem,
                                      const PaletteMemorySharedVector& rPalette );
     BASEBMP_DLLPRIVATE virtual ~BitmapDevice();
+    BitmapDevice(const BitmapDevice&) = delete;
+    BitmapDevice& operator=( const BitmapDevice& ) = delete;
 
 private:
     BASEBMP_DLLPRIVATE virtual bool isCompatibleBitmap( const BitmapDeviceSharedPtr& bmp ) const = 0;
@@ -665,8 +665,7 @@ sal_Int32 BASEBMP_DLLPUBLIC getBitmapDeviceStrideForWidth(Format nScanlineFormat
  */
 BitmapDeviceSharedPtr BASEBMP_DLLPUBLIC createBitmapDevice( const basegfx::B2IVector& rSize,
                                                             bool                      bTopDown,
-                                                            Format                    nScanlineFormat,
-                                                            sal_Int32                 nScanlineStride );
+                                                            Format                    nScanlineFormat );
 
 /** Function to create a BitmapDevice for given scanline format
     with the given palette
@@ -678,7 +677,6 @@ BitmapDeviceSharedPtr BASEBMP_DLLPUBLIC createBitmapDevice( const basegfx::B2IVe
 BitmapDeviceSharedPtr BASEBMP_DLLPUBLIC createBitmapDevice( const basegfx::B2IVector&        rSize,
                                                             bool                             bTopDown,
                                                             Format                           nScanlineFormat,
-                                                            sal_Int32                        nScanlineStride,
                                                             const PaletteMemorySharedVector& rPalette );
 
 /** Function to create a BitmapDevice for given scanline format
@@ -690,7 +688,6 @@ BitmapDeviceSharedPtr BASEBMP_DLLPUBLIC createBitmapDevice( const basegfx::B2IVe
 BitmapDeviceSharedPtr BASEBMP_DLLPUBLIC createBitmapDevice( const basegfx::B2IVector&        rSize,
                                                             bool                             bTopDown,
                                                             Format                           nScanlineFormat,
-                                                            sal_Int32                        nScanlineStride,
                                                             const RawMemorySharedArray&      rMem,
                                                             const PaletteMemorySharedVector& rPalette );
 
@@ -722,8 +719,8 @@ BitmapDeviceSharedPtr BASEBMP_DLLPUBLIC subsetBitmapDevice( const BitmapDeviceSh
     copied, only the size can be varied. Note that the prototype's
     bitmap content is <em>not</em> copied, only a palette (if any).
  */
-BitmapDeviceSharedPtr BASEBMP_DLLPUBLIC cloneBitmapDevice( const basegfx::B2IVector&    rSize,
-                                                           const BitmapDeviceSharedPtr& rProto );
+BitmapDeviceSharedPtr BASEBMP_DLLPUBLIC cloneBitmapDevice(const basegfx::B2IVector& rSize,
+                                                          const BitmapDeviceSharedPtr& rProto);
 
 }
 

@@ -27,12 +27,12 @@
 #include <comphelper/processfactory.hxx>
 
 using namespace ::cppu;
-using namespace ::com::sun::star::awt;
-using namespace ::com::sun::star::uno;
-using namespace ::com::sun::star::util;
-using namespace ::com::sun::star::beans;
-using namespace ::com::sun::star::lang;
-using namespace ::com::sun::star::frame;
+using namespace css::awt;
+using namespace css::uno;
+using namespace css::util;
+using namespace css::beans;
+using namespace css::lang;
+using namespace css::frame;
 
 namespace svt
 {
@@ -82,7 +82,7 @@ void SAL_CALL FrameStatusListener::release() throw ()
 
 // XComponent
 void SAL_CALL FrameStatusListener::dispose()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     Reference< XComponent > xThis( static_cast< OWeakObject* >(this), UNO_QUERY );
 
@@ -97,8 +97,8 @@ throw (::com::sun::star::uno::RuntimeException, std::exception)
         try
         {
             Reference< XDispatch > xDispatch( pIter->second );
-            Reference< XURLTransformer > xURLTransformer( com::sun::star::util::URLTransformer::create( m_xContext ) );
-            com::sun::star::util::URL aTargetURL;
+            Reference< XURLTransformer > xURLTransformer( css::util::URLTransformer::create( m_xContext ) );
+            css::util::URL aTargetURL;
             aTargetURL.Complete = pIter->first;
             xURLTransformer->parseStrict( aTargetURL );
 
@@ -160,7 +160,7 @@ void FrameStatusListener::addStatusListener( const OUString& aCommandURL )
 {
     Reference< XDispatch >       xDispatch;
     Reference< XStatusListener > xStatusListener;
-    com::sun::star::util::URL    aTargetURL;
+    css::util::URL    aTargetURL;
 
     {
         SolarMutexGuard aSolarMutexGuard;
@@ -184,12 +184,12 @@ void FrameStatusListener::addStatusListener( const OUString& aCommandURL )
             Reference< XDispatchProvider > xDispatchProvider( m_xFrame, UNO_QUERY );
             if ( m_xContext.is() && xDispatchProvider.is() )
             {
-                Reference< XURLTransformer > xURLTransformer( com::sun::star::util::URLTransformer::create( m_xContext ) );
+                Reference< XURLTransformer > xURLTransformer( css::util::URLTransformer::create( m_xContext ) );
                 aTargetURL.Complete = aCommandURL;
                 xURLTransformer->parseStrict( aTargetURL );
                 xDispatch = xDispatchProvider->queryDispatch( aTargetURL, OUString(), 0 );
 
-                xStatusListener = Reference< XStatusListener >( static_cast< OWeakObject* >( this ), UNO_QUERY );
+                xStatusListener.set( static_cast< OWeakObject* >( this ), UNO_QUERY );
                 URLToDispatchMap::iterator aIter = m_aListenerMap.find( aCommandURL );
                 if ( aIter != m_aListenerMap.end() )
                 {
@@ -238,12 +238,12 @@ void FrameStatusListener::bindListener()
         Reference< XDispatchProvider > xDispatchProvider( m_xFrame, UNO_QUERY );
         if ( m_xContext.is() && xDispatchProvider.is() )
         {
-            xStatusListener = Reference< XStatusListener >( static_cast< OWeakObject* >( this ), UNO_QUERY );
+            xStatusListener.set( static_cast< OWeakObject* >( this ), UNO_QUERY );
             URLToDispatchMap::iterator pIter = m_aListenerMap.begin();
             while ( pIter != m_aListenerMap.end() )
             {
-                Reference< XURLTransformer > xURLTransformer( com::sun::star::util::URLTransformer::create( m_xContext ) );
-                com::sun::star::util::URL aTargetURL;
+                Reference< XURLTransformer > xURLTransformer( css::util::URLTransformer::create( m_xContext ) );
+                css::util::URL aTargetURL;
                 aTargetURL.Complete = pIter->first;
                 xURLTransformer->parseStrict( aTargetURL );
 
@@ -311,8 +311,8 @@ void FrameStatusListener::unbindListener()
         URLToDispatchMap::iterator pIter = m_aListenerMap.begin();
         while ( pIter != m_aListenerMap.end() )
         {
-            Reference< XURLTransformer > xURLTransformer( com::sun::star::util::URLTransformer::create( m_xContext ) );
-            com::sun::star::util::URL aTargetURL;
+            Reference< XURLTransformer > xURLTransformer( css::util::URLTransformer::create( m_xContext ) );
+            css::util::URL aTargetURL;
             aTargetURL.Complete = pIter->first;
             xURLTransformer->parseStrict( aTargetURL );
 

@@ -22,7 +22,7 @@
 namespace framework
 {
 
-static pfunc_getImage   _pGetImageFunc = NULL;
+static pfunc_getImage   _pGetImageFunc = nullptr;
 
 pfunc_getImage SAL_CALL SetImageProducer( pfunc_getImage pNewGetImageFunc )
 {
@@ -33,7 +33,7 @@ pfunc_getImage SAL_CALL SetImageProducer( pfunc_getImage pNewGetImageFunc )
 }
 
 Image SAL_CALL GetImageFromURL(
-    const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& rFrame,
+    const css::uno::Reference< css::frame::XFrame >& rFrame,
     const OUString& aURL,
     bool bBig
 )

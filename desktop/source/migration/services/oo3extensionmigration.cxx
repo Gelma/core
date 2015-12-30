@@ -50,46 +50,19 @@ using namespace ::com::sun::star::uno;
 namespace migration
 {
 
-static const char sExtensionSubDir[] = "/user/uno_packages/";
-static const char sSubDirName[] = "cache";
-static const char sDescriptionXmlFile[] = "/description.xml";
-static const char sExtensionRootSubDirName[] = "/uno_packages";
-
-
 // component operations
 
 
 OUString OO3ExtensionMigration_getImplementationName()
 {
-    static OUString* pImplName = 0;
-    if ( !pImplName )
-    {
-        ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );
-        if ( !pImplName )
-        {
-            static OUString aImplName( "com.sun.star.comp.desktop.migration.OOo3Extensions" );
-            pImplName = &aImplName;
-        }
-    }
-    return *pImplName;
+    return OUString( "com.sun.star.comp.desktop.migration.OOo3Extensions" );
 }
 
 
 
 Sequence< OUString > OO3ExtensionMigration_getSupportedServiceNames()
 {
-    static Sequence< OUString >* pNames = 0;
-    if ( !pNames )
-    {
-        ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );
-        if ( !pNames )
-        {
-            static Sequence< OUString > aNames(1);
-            aNames.getArray()[0] = "com.sun.star.migration.Extensions";
-            pNames = &aNames;
-        }
-    }
-    return *pNames;
+    return Sequence< OUString > { "com.sun.star.migration.Extensions" };
 }
 
 
@@ -189,7 +162,7 @@ OO3ExtensionMigration::ScanResult OO3ExtensionMigration::scanExtensionFolder( co
                 else
                 {
                     aDirEntryURL = fs.getFileURL();
-                    if ( aDirEntryURL.indexOf( sDescriptionXmlFile ) > 0 )
+                    if ( aDirEntryURL.indexOf( "/description.xml" ) > 0 )
                         aResult = scanDescriptionXml( aDirEntryURL ) ? SCANRESULT_MIGRATE_EXTENSION : SCANRESULT_DONTMIGRATE_EXTENSION;
                 }
             }
@@ -209,7 +182,7 @@ bool OO3ExtensionMigration::scanDescriptionXml( const OUString& sDescriptionXmlU
 {
     if ( !m_xDocBuilder.is() )
     {
-        m_xDocBuilder = uno::Reference< xml::dom::XDocumentBuilder >( xml::dom::DocumentBuilder::create(m_ctx) );
+        m_xDocBuilder.set( xml::dom::DocumentBuilder::create(m_ctx) );
     }
 
     if ( !m_xSimpleFileAccess.is() )
@@ -390,9 +363,7 @@ Any OO3ExtensionMigration::execute( const Sequence< beans::NamedValue >& )
     {
         // copy all extensions
         OUString sSourceDir( m_sSourceDir );
-        sSourceDir += sExtensionSubDir;
-        sSourceDir += sSubDirName;
-        sSourceDir += sExtensionRootSubDirName;
+        sSourceDir += "/user/uno_packages/cache/uno_packages";
         TStringVector aExtensionToMigrate;
         scanUserExtensions( sSourceDir, aExtensionToMigrate );
         if ( aExtensionToMigrate.size() > 0 )

@@ -60,7 +60,6 @@ void SdrTextObj::NbcSetSnapRect(const Rectangle& rRect)
         maRect = rRect;
         ImpJustifyRect(maRect);
 
-        // #115391#
         AdaptTextMinSize();
 
         ImpCheckShear();
@@ -78,7 +77,6 @@ void SdrTextObj::NbcSetLogicRect(const Rectangle& rRect)
     maRect = rRect;
     ImpJustifyRect(maRect);
 
-    // #115391#
     AdaptTextMinSize();
 
     SetRectsDirty();
@@ -175,7 +173,6 @@ void SdrTextObj::NbcResize(const Point& rRef, const Fraction& xFact, const Fract
 
     ImpJustifyRect(maRect);
 
-    // #115391#
     AdaptTextMinSize();
 
     if(bTextFrame && (!pModel || !pModel->IsPasteResize()))
@@ -290,18 +287,18 @@ void SdrTextObj::NbcMirror(const Point& rRef1, const Point& rRef2)
 
 SdrObject* SdrTextObj::ImpConvertContainedTextToSdrPathObjs(bool bToPoly) const
 {
-    SdrObject* pRetval = 0;
+    SdrObject* pRetval = nullptr;
 
     if(!ImpCanConvTextToCurve())
     {
         // suppress HelpTexts from PresObj's
-        return 0;
+        return nullptr;
     }
 
     // get primitives
-    const drawinglayer::primitive2d::Primitive2DSequence xSequence(GetViewContact().getViewIndependentPrimitive2DSequence());
+    const drawinglayer::primitive2d::Primitive2DContainer xSequence(GetViewContact().getViewIndependentPrimitive2DSequence());
 
-    if(xSequence.hasElements())
+    if(!xSequence.empty())
     {
         // create an extractor with neutral ViewInformation
         const drawinglayer::geometry::ViewInformation2D aViewInformation2D;
@@ -346,7 +343,7 @@ SdrObject* SdrTextObj::ImpConvertContainedTextToSdrPathObjs(bool bToPoly) const
 
                     // create ItemSet with object attributes
                     SfxItemSet aAttributeSet(GetObjectItemSet());
-                    SdrPathObj* pPathObj = 0;
+                    SdrPathObj* pPathObj = nullptr;
 
                     // always clear objectshadow; this is included in the extraction
                     aAttributeSet.Put(makeSdrShadowItem(false));
@@ -418,7 +415,7 @@ SdrObject* SdrTextObj::DoConvertToPolyObj(bool bBezier, bool bAddText) const
         return ImpConvertContainedTextToSdrPathObjs(!bBezier);
     }
 
-    return 0;
+    return nullptr;
 }
 
 bool SdrTextObj::ImpCanConvTextToCurve() const

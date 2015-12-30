@@ -30,7 +30,7 @@
 #include <com/sun/star/container/XNameAccess.hpp>
 #include <com/sun/star/script/browse/XBrowseNode.hpp>
 
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <memory>
 
 class SaveInData;
 
@@ -80,7 +80,7 @@ struct SvxGroupInfo_Impl
     }
 };
 
-typedef boost::ptr_vector<SvxGroupInfo_Impl> SvxGroupInfoArr_Impl;
+typedef std::vector<std::unique_ptr<SvxGroupInfo_Impl> > SvxGroupInfoArr_Impl;
 
 class SvxConfigFunctionListBox : public SvTreeListBox
 {
@@ -91,12 +91,12 @@ friend class SvxConfigGroupListBox;
     SvTreeListEntry*                    m_pDraggingEntry;
 
     DECL_LINK_TYPED(TimerHdl, Timer *, void);
-    virtual void                    MouseMove( const MouseEvent& rMEvt ) SAL_OVERRIDE;
+    virtual void                    MouseMove( const MouseEvent& rMEvt ) override;
 
 public:
     SvxConfigFunctionListBox(vcl::Window* pParent, WinBits nStyle);
     virtual ~SvxConfigFunctionListBox();
-    virtual void                    dispose() SAL_OVERRIDE;
+    virtual void                    dispose() override;
     void                            ClearAll();
     OUString                        GetHelpText( SvTreeListEntry *pEntry );
     using Window::GetHelpText;
@@ -104,12 +104,12 @@ public:
     void                            FunctionSelected();
 
     // drag n drop methods
-    virtual sal_Int8    AcceptDrop( const AcceptDropEvent& rEvt ) SAL_OVERRIDE;
+    virtual sal_Int8    AcceptDrop( const AcceptDropEvent& rEvt ) override;
 
     virtual DragDropMode    NotifyStartDrag(
-        TransferDataContainer&, SvTreeListEntry* ) SAL_OVERRIDE;
+        TransferDataContainer&, SvTreeListEntry* ) override;
 
-    virtual void        DragFinished( sal_Int8 ) SAL_OVERRIDE;
+    virtual void        DragFinished( sal_Int8 ) override;
 };
 
 class SvxConfigGroupListBox : public SvTreeListBox
@@ -151,13 +151,13 @@ private:
     );
 
 protected:
-    virtual void    RequestingChildren( SvTreeListEntry *pEntry) SAL_OVERRIDE;
-    virtual bool    Expand( SvTreeListEntry* pParent ) SAL_OVERRIDE;
+    virtual void    RequestingChildren( SvTreeListEntry *pEntry) override;
+    virtual bool    Expand( SvTreeListEntry* pParent ) override;
 
 public:
     SvxConfigGroupListBox(vcl::Window* pParent, WinBits nStyle);
     virtual ~SvxConfigGroupListBox();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void    Init(bool bShowSlots, const css::uno::Reference
                     < css::frame::XFrame >& xFrame);
@@ -193,12 +193,12 @@ class SvxScriptSelectorDialog : public ModelessDialog
 public:
 
     SvxScriptSelectorDialog (
-        vcl::Window* pParent = NULL,
+        vcl::Window* pParent = nullptr,
         bool bShowSlots = false,
-        const css::uno::Reference< css::frame::XFrame >& xFrame = 0
+        const css::uno::Reference< css::frame::XFrame >& xFrame = nullptr
     );
     virtual ~SvxScriptSelectorDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void        SetAddHdl( const Link<SvxScriptSelectorDialog&,void>& rLink ) { m_aAddHdl = rLink; }
     const Link<SvxScriptSelectorDialog&,void>& GetAddHdl() const { return m_aAddHdl; }

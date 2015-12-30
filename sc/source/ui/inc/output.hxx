@@ -172,7 +172,6 @@ private:
 
     ScTabViewShell* pViewShell; // for connect from visible plug-ins
 
-    // #114135#
     FmFormView* pDrawView;      // SdrView to paint to
 
     bool bEditMode;             // InPlace edited cell - do not output
@@ -263,8 +262,8 @@ public:
                                     SCTAB nNewTab, long nNewScrX, long nNewScrY,
                                     SCCOL nNewX1, SCROW nNewY1, SCCOL nNewX2, SCROW nNewY2,
                                     double nPixelPerTwipsX, double nPixelPerTwipsY,
-                                    const Fraction* pZoomX = NULL,
-                                    const Fraction* pZoomY = NULL );
+                                    const Fraction* pZoomX = nullptr,
+                                    const Fraction* pZoomY = nullptr );
 
                     ~ScOutputData();
 
@@ -276,7 +275,6 @@ public:
     void    SetEditObject( SdrObject* pObj )    { pEditObj = pObj; }
     void    SetViewShell( ScTabViewShell* pSh ) { pViewShell = pSh; }
 
-    // #114135#
     void    SetDrawView( FmFormView* pNew )     { pDrawView = pNew; }
 
     void    SetSolidBackground( bool bSet )     { bSolidBackground = bSet; }

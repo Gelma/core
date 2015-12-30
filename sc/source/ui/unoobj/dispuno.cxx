@@ -84,7 +84,7 @@ void ScDispatchProviderInterceptor::Notify( SfxBroadcaster&, const SfxHint& rHin
 {
     const SfxSimpleHint* pSimpleHint = dynamic_cast<const SfxSimpleHint*>(&rHint);
     if ( pSimpleHint && pSimpleHint->GetId() == SFX_HINT_DYING )
-        pViewShell = NULL;
+        pViewShell = nullptr;
 }
 
 // XDispatchProvider
@@ -169,7 +169,7 @@ void SAL_CALL ScDispatchProviderInterceptor::setMasterDispatchProvider(
 // XEventListener
 
 void SAL_CALL ScDispatchProviderInterceptor::disposing( const lang::EventObject& /* Source */ )
-                                throw(::com::sun::star::uno::RuntimeException, std::exception)
+                                throw(css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
@@ -181,9 +181,9 @@ void SAL_CALL ScDispatchProviderInterceptor::disposing( const lang::EventObject&
         if (xInterceptedComponent.is())
             xInterceptedComponent->removeEventListener(static_cast<lang::XEventListener*>(this));
 
-        m_xMyDispatch = NULL;
+        m_xMyDispatch = nullptr;
     }
-    m_xIntercepted = NULL;
+    m_xIntercepted = nullptr;
 }
 
 ScDispatch::ScDispatch(ScTabViewShell* pViewSh) :
@@ -211,7 +211,7 @@ void ScDispatch::Notify( SfxBroadcaster&, const SfxHint& rHint )
 {
     const SfxSimpleHint* pSimpleHint = dynamic_cast<const SfxSimpleHint*>(&rHint);
     if ( pSimpleHint && pSimpleHint->GetId() == SFX_HINT_DYING )
-        pViewShell = NULL;
+        pViewShell = nullptr;
 }
 
 // XDispatch
@@ -333,8 +333,8 @@ void SAL_CALL ScDispatch::removeStatusListener(
 
 // XSelectionChangeListener
 
-void SAL_CALL ScDispatch::selectionChanged( const ::com::sun::star::lang::EventObject& /* aEvent */ )
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ScDispatch::selectionChanged( const css::lang::EventObject& /* aEvent */ )
+    throw (css::uno::RuntimeException, std::exception)
 {
     //  currently only called for URL cURLDocDataSource
 
@@ -368,8 +368,8 @@ void SAL_CALL ScDispatch::selectionChanged( const ::com::sun::star::lang::EventO
 
 // XEventListener
 
-void SAL_CALL ScDispatch::disposing( const ::com::sun::star::lang::EventObject& rSource )
-                                throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ScDispatch::disposing( const css::lang::EventObject& rSource )
+                                throw (css::uno::RuntimeException, std::exception)
 {
     uno::Reference<view::XSelectionSupplier> xSupplier(rSource.Source, uno::UNO_QUERY);
     xSupplier->removeSelectionChangeListener(this);
@@ -380,7 +380,7 @@ void SAL_CALL ScDispatch::disposing( const ::com::sun::star::lang::EventObject& 
     for ( size_t n=0; n<aDataSourceListeners.size(); n++ )
         aDataSourceListeners[n]->disposing( aEvent );
 
-    pViewShell = NULL;
+    pViewShell = nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -95,9 +95,7 @@
 #include "framerate.hxx"
 #include "pointersymbol.hxx"
 
-#include <boost/noncopyable.hpp>
-#include <boost/bind.hpp>
-
+#include <boost/mem_fn.hpp>
 #include <map>
 #include <vector>
 #include <iterator>
@@ -178,7 +176,7 @@ private:
    With an instance of this class, it is possible to statically
    and dynamically show a presentation, as defined by the
    constructor-provided draw model (represented by a sequence
-   of ::com::sun::star::drawing::XDrawPage objects).
+   of css::drawing::XDrawPage objects).
 
    It is possible to show the presentation on multiple views
    simultaneously (e.g. for a multi-monitor setup). Since this
@@ -207,8 +205,8 @@ typedef cppu::WeakComponentImplHelper<presentation::XSlideShow> SlideShowImplBas
 typedef ::std::vector< ::cppcanvas::PolyPolygonSharedPtr> PolyPolygonVector;
 
 /// Maps XDrawPage for annotations persistence
-typedef ::std::map< ::com::sun::star::uno::Reference<
-                                    ::com::sun::star::drawing::XDrawPage>,
+typedef ::std::map< css::uno::Reference<
+                                    css::drawing::XDrawPage>,
                                     PolyPolygonVector>  PolygonMap;
 
 class SlideShowImpl : private cppu::BaseMutex,
@@ -277,58 +275,58 @@ public:
 
 private:
     // XSlideShow:
-    virtual sal_Bool SAL_CALL nextEffect() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL previousEffect() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual sal_Bool SAL_CALL nextEffect() throw (uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL previousEffect() throw (uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL startShapeActivity(
         uno::Reference<drawing::XShape> const& xShape )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL stopShapeActivity(
         uno::Reference<drawing::XShape> const& xShape )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL pause( sal_Bool bPauseShow )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual uno::Reference<drawing::XDrawPage> SAL_CALL getCurrentSlide()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL displaySlide(
         uno::Reference<drawing::XDrawPage> const& xSlide,
         uno::Reference<drawing::XDrawPagesSupplier> const& xDrawPages,
         uno::Reference<animations::XAnimationNode> const& xRootNode,
         uno::Sequence<beans::PropertyValue> const& rProperties )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL registerUserPaintPolygons( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XMultiServiceFactory >& xDocFactory ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL registerUserPaintPolygons( const css::uno::Reference< css::lang::XMultiServiceFactory >& xDocFactory ) throw (css::uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL setProperty(
-        beans::PropertyValue const& rProperty ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        beans::PropertyValue const& rProperty ) throw (uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL addView(
         uno::Reference<presentation::XSlideShowView> const& xView )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL removeView(
         uno::Reference<presentation::XSlideShowView> const& xView )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL update( double & nNextTimeout )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL addSlideShowListener(
         uno::Reference<presentation::XSlideShowListener> const& xListener )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL removeSlideShowListener(
         uno::Reference<presentation::XSlideShowListener> const& xListener )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL addShapeEventListener(
         uno::Reference<presentation::XShapeEventListener> const& xListener,
         uno::Reference<drawing::XShape> const& xShape )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL removeShapeEventListener(
         uno::Reference<presentation::XShapeEventListener> const& xListener,
         uno::Reference<drawing::XShape> const& xShape )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL setShapeCursor(
         uno::Reference<drawing::XShape> const& xShape, sal_Int16 nPointerShape )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
 
     // CursorManager
 
 
-    virtual bool requestCursor( sal_Int16 nCursorShape ) SAL_OVERRIDE;
-    virtual void resetCursor() SAL_OVERRIDE;
+    virtual bool requestCursor( sal_Int16 nCursorShape ) override;
+    virtual void resetCursor() override;
 
     /** This is somewhat similar to displaySlide when called for the current
         slide.  It has been simplified to take advantage of that no slide
@@ -339,7 +337,7 @@ private:
 
 protected:
     // WeakComponentImplHelperBase
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
     bool isDisposed() const
     {
@@ -505,8 +503,7 @@ private:
 struct SlideShowImpl::SeparateListenerImpl : public EventHandler,
                                              public ViewRepaintHandler,
                                              public HyperlinkHandler,
-                                             public AnimationEventHandler,
-                                             private boost::noncopyable
+                                             public AnimationEventHandler
 {
     SlideShowImpl& mrShow;
     ScreenUpdater& mrScreenUpdater;
@@ -520,8 +517,11 @@ struct SlideShowImpl::SeparateListenerImpl : public EventHandler,
         mrEventQueue( rEventQueue )
     {}
 
+    SeparateListenerImpl( const SeparateListenerImpl& ) = delete;
+    SeparateListenerImpl& operator=( const SeparateListenerImpl& ) = delete;
+
     // EventHandler
-    virtual bool handleEvent() SAL_OVERRIDE
+    virtual bool handleEvent() override
     {
         // DON't call notifySlideAnimationsEnded()
         // directly, but queue an event. handleEvent()
@@ -538,20 +538,20 @@ struct SlideShowImpl::SeparateListenerImpl : public EventHandler,
     }
 
     // ViewRepaintHandler
-    virtual void viewClobbered( const UnoViewSharedPtr& rView ) SAL_OVERRIDE
+    virtual void viewClobbered( const UnoViewSharedPtr& rView ) override
     {
         // given view needs repaint, request update
         mrScreenUpdater.notifyUpdate(rView, true);
     }
 
     // HyperlinkHandler
-    virtual bool handleHyperlink( OUString const& rLink ) SAL_OVERRIDE
+    virtual bool handleHyperlink( OUString const& rLink ) override
     {
         return mrShow.notifyHyperLinkClicked(rLink);
     }
 
     // AnimationEventHandler
-    virtual bool handleAnimationEvent( const AnimationNodeSharedPtr& rNode ) SAL_OVERRIDE
+    virtual bool handleAnimationEvent( const AnimationNodeSharedPtr& rNode ) override
     {
         return mrShow.handleAnimationEvent(rNode);
     }
@@ -615,7 +615,7 @@ SlideShowImpl::SlideShowImpl(
             // #i82460# try to retrieve special transition factory
             mxOptionalTransitionFactory.set(
                 xFactory->createInstanceWithContext(
-                    OUString("com.sun.star.presentation.TransitionFactory" ),
+                    "com.sun.star.presentation.TransitionFactory",
                     mxComponentContext ),
                 uno::UNO_QUERY );
         }
@@ -886,15 +886,12 @@ PolygonMap::iterator SlideShowImpl::findPolygons( uno::Reference<drawing::XDrawP
 {
     // TODO(P2): optimize research in the map.
     PolygonMap::iterator aEnd = maPolygons.end();
-    for( auto aIter = maPolygons.begin();
-            aIter != aEnd;
-            ++aIter )
-    {
-        if(aIter->first == xDrawPage)
+    for( PolygonMap::iterator aIter = maPolygons.begin();
+         aIter != aEnd;
+         ++aIter )
+        if( aIter->first == xDrawPage )
             return aIter;
-    }
-    // if no element is found return the element
-    // one past the last valid element in the map
+
     return aEnd;
 }
 
@@ -1129,8 +1126,8 @@ void SlideShowImpl::displaySlide(
             // push new transformation to all views, if size changed
             if( !mpPreviousSlide || oldSlideSize != slideSize )
             {
-                for( const auto& rView : maViewContainer )
-                    rView->setViewSize( slideSize );
+                for( const auto& pView : maViewContainer )
+                    pView->setViewSize( slideSize );
 
                 // explicitly notify view change here,
                 // because transformation might have changed:
@@ -1244,8 +1241,8 @@ sal_Bool SlideShowImpl::previousEffect() throw (uno::RuntimeException, std::exce
     {
         return maEffectRewinder.rewind(
             maScreenUpdater.createLock(false),
-            ::boost::bind<void>(::boost::mem_fn(&SlideShowImpl::redisplayCurrentSlide), this),
-            ::boost::bind<void>(::boost::mem_fn(&SlideShowImpl::rewindEffectToPreviousSlide), this));
+            [this]() { return this->redisplayCurrentSlide(); },
+            [this]() { return this->rewindEffectToPreviousSlide(); } );
     }
 }
 
@@ -1443,23 +1440,16 @@ void SlideShowImpl::registerUserPaintPolygons( const uno::Reference< lang::XMult
     aPropLayer <<= false;
     xLayerPropSet->setPropertyValue("IsLocked", aPropLayer);
 
-    PolyPolygonVector aPolygons;
-    ::cppcanvas::PolyPolygonSharedPtr pPolyPoly;
-    ::basegfx::B2DPolyPolygon b2DPolyPoly;
-
     //Register polygons for each slide
     for( const auto& rPoly : maPolygons )
     {
-        aPolygons = rPoly.second;
+        PolyPolygonVector aPolygons = rPoly.second;
         //Get shapes for the slide
-        ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShapes > Shapes(rPoly.first, ::com::sun::star::uno::UNO_QUERY);
+        css::uno::Reference< css::drawing::XShapes > Shapes(rPoly.first, css::uno::UNO_QUERY);
         //Retrieve polygons for one slide
-        for( PolyPolygonVector::iterator aIterPoly=aPolygons.begin(),
-                 aEnd=aPolygons.end();
-             aIterPoly!=aEnd; ++aIterPoly )
+        for( const auto pPolyPoly : aPolygons )
         {
-            pPolyPoly = (*aIterPoly);
-            b2DPolyPoly = ::basegfx::unotools::b2DPolyPolygonFromXPolyPolygon2D(pPolyPoly->getUNOPolyPolygon());
+            ::basegfx::B2DPolyPolygon b2DPolyPoly = ::basegfx::unotools::b2DPolyPolygonFromXPolyPolygon2D(pPolyPoly->getUNOPolyPolygon());
 
             //Normally there is only one polygon
             for(sal_uInt32 i=0; i< b2DPolyPoly.count();i++)
@@ -1471,14 +1461,14 @@ void SlideShowImpl::registerUserPaintPolygons( const uno::Reference< lang::XMult
                 {
                     //create the PolyLineShape
                     uno::Reference< uno::XInterface > polyshape(xDocFactory->createInstance(
-                                                                    OUString("com.sun.star.drawing.PolyLineShape") ) );
+                                                                    "com.sun.star.drawing.PolyLineShape" ) );
                     uno::Reference< drawing::XShape > rPolyShape(polyshape, uno::UNO_QUERY);
 
                     //Add the shape to the slide
                     Shapes->add(rPolyShape);
 
                     //Retrieve shape properties
-                    uno::Reference< beans::XPropertySet > aXPropSet = uno::Reference< beans::XPropertySet >( rPolyShape, uno::UNO_QUERY );
+                    uno::Reference< beans::XPropertySet > aXPropSet( rPolyShape, uno::UNO_QUERY );
                     //Construct a sequence of points sequence
                     drawing::PointSequenceSequence aRetval;
                     //Create only one sequence for one polygon
@@ -1777,7 +1767,7 @@ sal_Bool SlideShowImpl::setProperty( beans::PropertyValue const& rProperty )
 
     if ( rProperty.Name == "PointerPosition")
     {
-        ::com::sun::star::geometry::RealPoint2D pos;
+        css::geometry::RealPoint2D pos;
         if (! (rProperty.Value >>= pos))
             return false;
 
@@ -1942,9 +1932,6 @@ void SlideShowImpl::setShapeCursor(
         // existing entry found, update with new cursor ID
         aIter->second = nPointerShape;
     }
-
-    maEventMultiplexer.notifyShapeCursorChange(xShape,
-                                               nPointerShape);
 }
 
 bool SlideShowImpl::requestCursor( sal_Int16 nCursorShape )
@@ -1954,8 +1941,8 @@ bool SlideShowImpl::requestCursor( sal_Int16 nCursorShape )
     const sal_Int16 nActualCursor = calcActiveCursor(mnCurrentCursor);
 
     // change all views to the requested cursor ID
-    for( const auto& rView : maViewContainer )
-        rView->setCursorShape( nActualCursor );
+    for( const auto& pView : maViewContainer )
+        pView->setCursorShape( nActualCursor );
 
     return nActualCursor==nCursorShape;
 }
@@ -1965,10 +1952,9 @@ void SlideShowImpl::resetCursor()
     mnCurrentCursor = awt::SystemPointer::ARROW;
 
     const sal_Int16 nActualCursor = calcActiveCursor( mnCurrentCursor );
-
     // change all views to the default cursor ID
-    for( const auto& rView : maViewContainer )
-        rView->setCursorShape( nActualCursor );
+    for( const auto& pView : maViewContainer )
+        pView->setCursorShape( nActualCursor );
 }
 
 sal_Bool SlideShowImpl::update( double & nNextTimeout )
@@ -2007,8 +1993,7 @@ sal_Bool SlideShowImpl::update( double & nNextTimeout )
             //::dispose clearing mpPresTimer
             std::shared_ptr<canvas::tools::ElapsedTime> xTimer(mpPresTimer);
             comphelper::ScopeGuard scopeGuard(
-                boost::bind( &canvas::tools::ElapsedTime::releaseTimer,
-                             boost::cref(xTimer) ) );
+                [&xTimer]() { return xTimer->releaseTimer(); } );
             xTimer->holdTimer();
 
             // process queues
@@ -2173,8 +2158,7 @@ void queryAutomaticSlideTransition( uno::Reference<drawing::XDrawPage> const& xD
     if( !xPropSet.is() ||
         !getPropertyValue( nChange,
                            xPropSet,
-                           OUString(
-                               "Change")) )
+                           "Change") )
     {
         OSL_TRACE(
             "queryAutomaticSlideTransition(): "
@@ -2186,8 +2170,7 @@ void queryAutomaticSlideTransition( uno::Reference<drawing::XDrawPage> const& xD
     if( !xPropSet.is() ||
         !getPropertyValue( nAutomaticNextSlideTimeout,
                            xPropSet,
-                           OUString(
-                               "HighResDuration")) )
+                           "HighResDuration") )
     {
         OSL_TRACE(
             "queryAutomaticSlideTransition(): "
@@ -2217,7 +2200,7 @@ void SlideShowImpl::notifySlideAnimationsEnded()
         // schedule a slide end event, with automatic mode's
         // delay
         aNotificationEvents = makeInterruptableDelay(
-            boost::bind<void>( boost::mem_fn(&SlideShowImpl::notifySlideEnded), this, false ),
+            [this]() { return this->notifySlideEnded( false ); },
             maEventMultiplexer.getAutomaticTimeout() );
     }
     else
@@ -2242,7 +2225,7 @@ void SlideShowImpl::notifySlideAnimationsEnded()
             bHasAutomaticNextSlide )
         {
             aNotificationEvents = makeInterruptableDelay(
-                boost::bind<void>( boost::mem_fn(&SlideShowImpl::notifySlideEnded), this, false ),
+                [this]() { return this->notifySlideEnded( false ); },
                 nAutomaticNextSlideTimeout);
 
             // TODO(F2): Provide a mechanism to let the user override
@@ -2342,10 +2325,8 @@ void SlideShowImpl::notifySlideEnded (const bool bReverse)
                  // GIF) will not be stopped.
 
     maListenerContainer.forEach<presentation::XSlideShowListener>(
-        boost::bind<void>(
-            ::boost::mem_fn(&presentation::XSlideShowListener::slideEnded),
-            _1,
-            bReverse));
+        [&bReverse]( const uno::Reference< presentation::XSlideShowListener >& xListener )
+        { return xListener->slideEnded( bReverse ); } );
 }
 
 bool SlideShowImpl::notifyHyperLinkClicked( OUString const& hyperLink )
@@ -2353,9 +2334,8 @@ bool SlideShowImpl::notifyHyperLinkClicked( OUString const& hyperLink )
     osl::MutexGuard const guard( m_aMutex );
 
     maListenerContainer.forEach<presentation::XSlideShowListener>(
-        boost::bind( &presentation::XSlideShowListener::hyperLinkClicked,
-                     _1,
-                     boost::cref(hyperLink) ));
+        [&hyperLink]( const uno::Reference< presentation::XSlideShowListener >& xListener )
+        { return xListener->hyperLinkClicked( hyperLink ); } );
     return true;
 }
 
@@ -2372,17 +2352,15 @@ bool SlideShowImpl::handleAnimationEvent( const AnimationNodeSharedPtr& rNode )
     {
     case AnimationNode::ACTIVE:
         maListenerContainer.forEach<presentation::XSlideShowListener>(
-            boost::bind( &animations::XAnimationListener::beginEvent,
-                         _1,
-                         boost::cref(xNode) ));
+            [&xNode]( const uno::Reference< animations::XAnimationListener >& xListener )
+            { return xListener->beginEvent( xNode ); } );
         break;
 
     case AnimationNode::FROZEN:
     case AnimationNode::ENDED:
         maListenerContainer.forEach<presentation::XSlideShowListener>(
-            boost::bind( &animations::XAnimationListener::endEvent,
-                         _1,
-                         boost::cref(xNode) ));
+            [&xNode]( const uno::Reference< animations::XAnimationListener >& xListener )
+            { return xListener->endEvent( xNode ); } );
         if(mpCurrentSlide->isPaintOverlayActive())
            mpCurrentSlide->drawPolygons();
         break;
@@ -2444,7 +2422,7 @@ extern "C"
 SAL_DLLPUBLIC_EXPORT void* SAL_CALL slideshow_component_getFactory( sal_Char const* pImplName,
                                          void*, void* )
 {
-    return component_getFactoryHelper( pImplName, slideShowDecl );
+    return sdecl::component_getFactoryHelper( pImplName, {&slideShowDecl} );
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

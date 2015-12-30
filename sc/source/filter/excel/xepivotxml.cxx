@@ -106,7 +106,7 @@ const char* toOOXMLSubtotalType( sheet::GeneralFunction eFunc )
         default:
             ;
     }
-    return NULL;
+    return nullptr;
 }
 
 }
@@ -127,7 +127,7 @@ void XclExpXmlPivotCaches::SaveXml( XclExpXmlStream& rStrm )
         OUString aRelId;
         sax_fastparser::FSHelperPtr pPCStrm = rStrm.CreateOutputStream(
             XclXmlUtils::GetStreamName("xl/pivotCache/", "pivotCacheDefinition", nCacheId),
-            XclXmlUtils::GetStreamName(NULL, "pivotCache/pivotCacheDefinition", nCacheId),
+            XclXmlUtils::GetStreamName(nullptr, "pivotCache/pivotCacheDefinition", nCacheId),
             rStrm.GetCurrentStream()->getOutputStream(),
             CREATE_XL_CONTENT_TYPE("pivotCacheDefinition"),
             CREATE_OFFICEDOC_RELATION_TYPE("pivotCacheDefinition"),
@@ -160,11 +160,11 @@ const XclExpXmlPivotCaches::Entry* XclExpXmlPivotCaches::GetCache( sal_Int32 nCa
 {
     if (nCacheId <= 0)
         // cache ID is 1-based.
-        return NULL;
+        return nullptr;
 
     size_t nPos = nCacheId - 1;
     if (nPos >= maCaches.size())
-        return NULL;
+        return nullptr;
 
     return &maCaches[nPos];
 }
@@ -179,7 +179,7 @@ void XclExpXmlPivotCaches::SavePivotCacheXml( XclExpXmlStream& rStrm, const Entr
     OUString aRelId;
     sax_fastparser::FSHelperPtr pRecStrm = rStrm.CreateOutputStream(
         XclXmlUtils::GetStreamName("xl/pivotCache/", "pivotCacheRecords", nCounter),
-        XclXmlUtils::GetStreamName(NULL, "pivotCacheRecords", nCounter),
+        XclXmlUtils::GetStreamName(nullptr, "pivotCacheRecords", nCounter),
         pDefStrm->getOutputStream(),
         CREATE_XL_CONTENT_TYPE("pivotCacheRecords"),
         CREATE_OFFICEDOC_RELATION_TYPE("pivotCacheRecords"),
@@ -226,13 +226,27 @@ void XclExpXmlPivotCaches::SavePivotCacheXml( XclExpXmlStream& rStrm, const Entr
             XML_numFmtId, OString::number(0).getStr(),
             FSEND);
 
-        const ScDPCache::ItemsType& rFieldItems = rCache.GetDimMemberValues(i);
+        const ScDPCache::ScDPItemDataVec& rFieldItems = rCache.GetDimMemberValues(i);
+
+        ScDPCache::ScDPItemDataVec::const_iterator it = rFieldItems.begin(), itEnd = rFieldItems.end();
+
+        std::set<ScDPItemData::Type> aDPTypes;
+        for (; it != itEnd; ++it)
+        {
+            aDPTypes.insert(it->GetType());
+        }
+
+        auto aDPTypeEnd = aDPTypes.cend();
 
         pDefStrm->startElement(XML_sharedItems,
             XML_count, OString::number(static_cast<long>(rFieldItems.size())).getStr(),
+            XML_containsMixedTypes, XclXmlUtils::ToPsz10(aDPTypes.size() > 1),
+            XML_containsSemiMixedTypes, XclXmlUtils::ToPsz10(aDPTypes.size() > 1),
+            XML_containsString, XclXmlUtils::ToPsz10(aDPTypes.find(ScDPItemData::String) != aDPTypeEnd),
+            XML_containsNumber, XclXmlUtils::ToPsz10(aDPTypes.find(ScDPItemData::Value) != aDPTypeEnd),
             FSEND);
 
-        ScDPCache::ItemsType::const_iterator it = rFieldItems.begin(), itEnd = rFieldItems.end();
+        it = rFieldItems.begin();
         for (; it != itEnd; ++it)
         {
             const ScDPItemData& rItem = *it;
@@ -302,8 +316,8 @@ void XclExpXmlPivotTableManager::Initialize()
 
         // Get all pivot objects that reference this cache, and set up an
         // object to cache ID mapping.
-        const ScDPCache::ObjectSetType& rRefs = pCache->GetAllReferences();
-        ScDPCache::ObjectSetType::const_iterator it = rRefs.begin(), itEnd = rRefs.end();
+        const ScDPCache::ScDPObjectSet& rRefs = pCache->GetAllReferences();
+        ScDPCache::ScDPObjectSet::const_iterator it = rRefs.begin(), itEnd = rRefs.end();
         for (; it != itEnd; ++it)
             maCacheIdMap.insert(CacheIdMapType::value_type(*it, aCaches.size()+1));
 
@@ -353,7 +367,7 @@ XclExpXmlPivotCaches& XclExpXmlPivotTableManager::GetCaches()
 XclExpXmlPivotTables* XclExpXmlPivotTableManager::GetTablesBySheet( SCTAB nTab )
 {
     TablesType::iterator it = maTables.find(nTab);
-    return it == maTables.end() ? NULL : it->second;
+    return it == maTables.end() ? nullptr : it->second;
 }
 
 XclExpXmlPivotTables::Entry::Entry( const ScDPObject* pTable, sal_Int32 nCacheId, sal_Int32 nPivotId ) :
@@ -376,11 +390,10 @@ void XclExpXmlPivotTables::SaveXml( XclExpXmlStream& rStrm )
 
         sax_fastparser::FSHelperPtr pPivotStrm = rStrm.CreateOutputStream(
             XclXmlUtils::GetStreamName("xl/pivotTables/", "pivotTable", nPivotId),
-            XclXmlUtils::GetStreamName(NULL, "../pivotTables/pivotTable", nPivotId),
+            XclXmlUtils::GetStreamName(nullptr, "../pivotTables/pivotTable", nPivotId),
             pWSStrm->getOutputStream(),
             CREATE_XL_CONTENT_TYPE("pivotTable"),
-            CREATE_OFFICEDOC_RELATION_TYPE("pivotTable"),
-            NULL);
+            CREATE_OFFICEDOC_RELATION_TYPE("pivotTable"));
 
         rStrm.PushStream(pPivotStrm);
         SavePivotTableXml(rStrm, rObj, nCacheId);
@@ -438,7 +451,7 @@ void XclExpXmlPivotTables::SavePivotTableXml( XclExpXmlStream& rStrm, const ScDP
 
     for (size_t i = 0, n = rDims.size(); i < n; ++i)
     {
-        const ScDPSaveDimension& rDim = rDims[i];
+        const ScDPSaveDimension& rDim = *rDims[i];
 
         long nPos = -1; // position in cache
         if (rDim.IsDataLayout())

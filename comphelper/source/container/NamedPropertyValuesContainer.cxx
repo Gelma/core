@@ -24,6 +24,7 @@
 #include <com/sun/star/container/XNameContainer.hpp>
 #include <com/sun/star/uno/Sequence.h>
 #include <com/sun/star/beans/PropertyValue.hpp>
+#include <comphelper/sequence.hxx>
 #include <cppuhelper/implbase.hxx>
 #include <com/sun/star/lang/XServiceInfo.hpp>
 #include <cppuhelper/supportsservice.hxx>
@@ -43,35 +44,35 @@ public:
     // XNameContainer
     virtual void SAL_CALL insertByName( const OUString& aName, const css::uno::Any& aElement )
         throw(css::lang::IllegalArgumentException, css::container::ElementExistException,
-        css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL removeByName( const OUString& Name )
         throw(css::container::NoSuchElementException, css::lang::WrappedTargetException,
-            css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            css::uno::RuntimeException, std::exception) override;
 
     // XNameReplace
     virtual void SAL_CALL replaceByName( const OUString& aName, const css::uno::Any& aElement )
         throw(css::lang::IllegalArgumentException, css::container::NoSuchElementException,
-            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
 
     // XNameAccess
     virtual css::uno::Any SAL_CALL getByName( const OUString& aName )
         throw(css::container::NoSuchElementException, css::lang::WrappedTargetException,
-            css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            css::uno::RuntimeException, std::exception) override;
     virtual css::uno::Sequence< OUString > SAL_CALL getElementNames(  )
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL hasByName( const OUString& aName )
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
 
     // XElementAccess
     virtual css::uno::Type SAL_CALL getElementType(  )
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL hasElements(  )
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
 
     //XServiceInfo
-    virtual OUString SAL_CALL getImplementationName(  ) throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName(  ) throw(css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw(css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw(css::uno::RuntimeException, std::exception) override;
 
     // XServiceInfo - static versions (used for component registration)
     static OUString SAL_CALL getImplementationName_static();
@@ -151,13 +152,7 @@ css::uno::Any SAL_CALL NamedPropertyValuesContainer::getByName( const OUString& 
 css::uno::Sequence< OUString > SAL_CALL NamedPropertyValuesContainer::getElementNames(  )
     throw(css::uno::RuntimeException, std::exception)
 {
-    uno::Sequence< OUString > aNames( maProperties.size() );
-    OUString* pNames = aNames.getArray();
-
-    for( const auto& rProperty : maProperties )
-        *pNames++ = rProperty.first;
-
-    return aNames;
+    return comphelper::mapKeysToSequence(maProperties);
 }
 
 sal_Bool SAL_CALL NamedPropertyValuesContainer::hasByName( const OUString& aName )

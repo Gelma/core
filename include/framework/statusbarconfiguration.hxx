@@ -20,7 +20,6 @@
 #define INCLUDED_FRAMEWORK_STATUSBARCONFIGURATION_HXX
 
 #include <framework/fwedllapi.h>
-#include <tools/stream.hxx>
 #include <vcl/status.hxx>
 #include <com/sun/star/lang/XMultiServiceFactory.hpp>
 #include <com/sun/star/io/XInputStream.hpp>
@@ -36,14 +35,14 @@ class FWE_DLLPUBLIC StatusBarConfiguration
 {
     public:
         static bool LoadStatusBar(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& xContext,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::io::XInputStream >& xInputStream,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::container::XIndexContainer >& rStatusbarConfiguration );
+            const css::uno::Reference< css::uno::XComponentContext >& xContext,
+            const css::uno::Reference< css::io::XInputStream >& xInputStream,
+            const css::uno::Reference< css::container::XIndexContainer >& rStatusbarConfiguration );
 
         static bool StoreStatusBar(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& xContext,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::io::XOutputStream >& xOutputStream,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::container::XIndexAccess >& rStatusbarConfiguration );
+            const css::uno::Reference< css::uno::XComponentContext >& xContext,
+            const css::uno::Reference< css::io::XOutputStream >& xOutputStream,
+            const css::uno::Reference< css::container::XIndexAccess >& rStatusbarConfiguration );
 };
 
 } // namespace framework

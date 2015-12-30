@@ -449,8 +449,7 @@ struct SaveStruct
     WinMtfClipPath      aClipPath;
     XForm               aXForm;
 
-    bool            bRecordPath;
-    bool            bFillStyleSelected;
+    bool                bFillStyleSelected;
 };
 
 typedef std::shared_ptr<SaveStruct> SaveStructPtr;
@@ -460,14 +459,12 @@ struct BSaveStruct
     Bitmap          aBmp;
     Rectangle       aOutRect;
     sal_uInt32      nWinRop;
-    WinMtfFillStyle aStyle;
 
     BSaveStruct(const Bitmap& rBmp, const Rectangle& rOutRect,
-                sal_uInt32 nRop, WinMtfFillStyle& rStyle)
+                sal_uInt32 nRop)
         : aBmp(rBmp)
         , aOutRect(rOutRect)
         , nWinRop(nRop)
-        , aStyle (rStyle)
     {}
 };
 
@@ -490,7 +487,7 @@ struct GDIObj
     GDIObjectType   eType;
 
     GDIObj()
-        : pStyle (NULL)
+        : pStyle (nullptr)
         , eType  (GDI_DUMMY)
     {}
 
@@ -508,7 +505,7 @@ struct GDIObj
 
     void Delete()
     {
-        if (pStyle == NULL)
+        if (pStyle == nullptr)
             return;
 
         switch (eType)
@@ -527,7 +524,7 @@ struct GDIObj
                 OSL_FAIL( "unsupported style deleted" );
                 break;
         }
-        pStyle = NULL;
+        pStyle = nullptr;
     }
 
     ~GDIObj()
@@ -543,8 +540,10 @@ class WinMtfOutput
 
     WinMtfLineStyle     maLatestLineStyle;
     WinMtfLineStyle     maLineStyle;
+    WinMtfLineStyle     m_NopLineStyle;
     WinMtfFillStyle     maLatestFillStyle;
     WinMtfFillStyle     maFillStyle;
+    WinMtfFillStyle     m_NopFillStyle;
     vcl::Font           maLatestFont;
     vcl::Font           maFont;
     sal_uInt32          mnLatestTextAlign;
@@ -625,10 +624,8 @@ public:
     void                SetRefPix( const Size& rSize );
     void                SetRefMill( const Size& rSize );
 
-    sal_uInt32          GetMapMode() const { return mnMapMode; };
     void                SetMapMode( sal_uInt32 mnMapMode );
     void                SetWorldTransform( const XForm& rXForm );
-    const XForm&        GetWorldTransform() const { return maXForm; }
     void                ModifyWorldTransform( const XForm& rXForm, sal_uInt32 nMode );
 
     void                Push();
@@ -643,8 +640,8 @@ public:
     void                SetBkColor( const Color& rColor );
     void                SetTextColor( const Color& rColor );
     void                SetTextAlign( sal_uInt32 nAlign );
-    void                CreateObject( GDIObjectType, void* pStyle = NULL );
-    void                CreateObject( sal_Int32 nIndex, GDIObjectType, void* pStyle = NULL );
+    void                CreateObject( GDIObjectType, void* pStyle = nullptr );
+    void                CreateObject( sal_Int32 nIndex, GDIObjectType, void* pStyle = nullptr );
     void                DeleteObject( sal_Int32 nIndex );
     void                SelectObject( sal_Int32 nIndex );
     rtl_TextEncoding    GetCharSet(){ return maFont.GetCharSet(); };
@@ -695,7 +692,7 @@ public:
                         );
     void                DrawText( Point& rPosition,
                                   OUString& rString,
-                                  long* pDXArry = NULL,
+                                  long* pDXArry = nullptr,
                                   bool bRecordPath = false,
                                   sal_Int32 nGraphicsMode = GM_COMPATIBLE);
 
@@ -732,7 +729,7 @@ protected:
 
     FilterConfigItem*   pFilterConfigItem;
 
-    com::sun::star::uno::Reference< com::sun::star::task::XStatusIndicator > xStatusIndicator;
+    css::uno::Reference< css::task::XStatusIndicator > xStatusIndicator;
 
     // assures aSampledBrush is the actual brush of the GDIMetaFile
 
@@ -742,7 +739,7 @@ protected:
                         WinMtf(
                             WinMtfOutput* pOut,
                             SvStream& rStreamWMF,
-                            FilterConfigItem* pConfigItem = NULL
+                            FilterConfigItem* pConfigItem = nullptr
                         );
                         ~WinMtf();
 };
@@ -758,7 +755,7 @@ class EnhWMFReader : public WinMtf
     static Rectangle ReadRectangle( sal_Int32, sal_Int32, sal_Int32, sal_Int32 );
 
 public:
-    EnhWMFReader(SvStream& rStreamWMF, GDIMetaFile& rGDIMetaFile, FilterConfigItem* pConfigItem = NULL);
+    EnhWMFReader(SvStream& rStreamWMF, GDIMetaFile& rGDIMetaFile, FilterConfigItem* pConfigItem = nullptr);
     ~EnhWMFReader();
 
     bool ReadEnhWMF();
@@ -812,8 +809,8 @@ private:
 public:
 
     WMFReader(SvStream& rStreamWMF, GDIMetaFile& rGDIMetaFile,
-              FilterConfigItem* pConfigItem = NULL,
-              WMF_EXTERNALHEADER* pExtHeader = NULL);
+              FilterConfigItem* pConfigItem = nullptr,
+              WMF_EXTERNALHEADER* pExtHeader = nullptr);
     ~WMFReader();
 
     // read WMF file from stream and fill the GDIMetaFile

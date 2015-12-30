@@ -54,7 +54,6 @@ class SwXMLExport : public SvXMLExport
     SvXMLItemMapEntriesRef      xTableItemMap;
     SvXMLItemMapEntriesRef      xTableRowItemMap;
     SvXMLItemMapEntriesRef      xTableCellItemMap;
-    rtl::Reference < XMLPropertySetMapper > xParaPropMapper;
 
     bool                    bBlock : 1;         // export text block?
     bool                    bShowProgress : 1;
@@ -87,41 +86,40 @@ class SwXMLExport : public SvXMLExport
                            SwXMLTableInfo_Impl& rTableInfo,
                            sal_uInt32 nHeaderRows = 0 );
 
-    virtual void _ExportMeta() SAL_OVERRIDE;
-    virtual void _ExportFontDecls() SAL_OVERRIDE;
-    virtual void _ExportStyles( bool bUsed ) SAL_OVERRIDE;
-    virtual void _ExportAutoStyles() SAL_OVERRIDE;
-    virtual void _ExportMasterStyles() SAL_OVERRIDE;
-    virtual void SetBodyAttributes() SAL_OVERRIDE;
-    virtual void _ExportContent() SAL_OVERRIDE;
-    virtual void GetViewSettings(com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>& aProps) SAL_OVERRIDE;
-    virtual void GetConfigurationSettings(com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>& aProps) SAL_OVERRIDE;
-    virtual sal_Int32 GetDocumentSpecificSettings( ::std::list< SettingsGroup >& _out_rSettings ) SAL_OVERRIDE;
+    virtual void _ExportMeta() override;
+    virtual void _ExportFontDecls() override;
+    virtual void _ExportStyles( bool bUsed ) override;
+    virtual void _ExportAutoStyles() override;
+    virtual void _ExportMasterStyles() override;
+    virtual void SetBodyAttributes() override;
+    virtual void _ExportContent() override;
+    virtual void GetViewSettings(css::uno::Sequence<css::beans::PropertyValue>& aProps) override;
+    virtual void GetConfigurationSettings(css::uno::Sequence<css::beans::PropertyValue>& aProps) override;
+    virtual sal_Int32 GetDocumentSpecificSettings( ::std::list< SettingsGroup >& _out_rSettings ) override;
 
     // string constants for table cell export
     const OUString sNumberFormat;
     const OUString sIsProtected;
-    const OUString sCell;
 
     void setBlockMode();
 private:
     void DeleteTableLines();
 protected:
 
-    virtual XMLTextParagraphExport* CreateTextParagraphExport() SAL_OVERRIDE;
-    virtual SvXMLAutoStylePoolP* CreateAutoStylePool() SAL_OVERRIDE;
-    virtual XMLPageExport* CreatePageExport() SAL_OVERRIDE;
-    virtual XMLShapeExport* CreateShapeExport() SAL_OVERRIDE;
-    virtual XMLFontAutoStylePool* CreateFontAutoStylePool() SAL_OVERRIDE;
+    virtual XMLTextParagraphExport* CreateTextParagraphExport() override;
+    virtual SvXMLAutoStylePoolP* CreateAutoStylePool() override;
+    virtual XMLPageExport* CreatePageExport() override;
+    virtual XMLShapeExport* CreateShapeExport() override;
+    virtual XMLFontAutoStylePool* CreateFontAutoStylePool() override;
 
 public:
     SwXMLExport(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rContext,
+        const css::uno::Reference< css::uno::XComponentContext >& rContext,
         OUString const & implementationName, SvXMLExportFlags nExportFlags);
 
     virtual ~SwXMLExport();
 
-    virtual sal_uInt32 exportDoc( enum ::xmloff::token::XMLTokenEnum eClass = ::xmloff::token::XML_TOKEN_INVALID ) SAL_OVERRIDE;
+    virtual sal_uInt32 exportDoc( enum ::xmloff::token::XMLTokenEnum eClass = ::xmloff::token::XML_TOKEN_INVALID ) override;
 
     inline const SvXMLUnitConverter& GetTwipUnitConverter() const;
 
@@ -135,8 +133,8 @@ public:
     bool IsBlockMode() const { return bBlock; }
 
     // XUnoTunnel
-    static const ::com::sun::star::uno::Sequence< sal_Int8 > & getUnoTunnelId() throw();
-    virtual sal_Int64 SAL_CALL getSomething( const ::com::sun::star::uno::Sequence< sal_Int8 >& aIdentifier ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    static const css::uno::Sequence< sal_Int8 > & getUnoTunnelId() throw();
+    virtual sal_Int64 SAL_CALL getSomething( const css::uno::Sequence< sal_Int8 >& aIdentifier ) throw(css::uno::RuntimeException, std::exception) override;
 
     const SwDoc* getDoc() const;
     SwDoc* getDoc();

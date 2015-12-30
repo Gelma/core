@@ -47,8 +47,8 @@ namespace com { namespace sun { namespace star {
 
 class SwXMLTableContext : public XMLTextTableContext
 {
-    OUString     aStyleName;
-    OUString     aDfltCellStyleName;
+    OUString     m_aStyleName;
+    OUString     m_aDfltCellStyleName;
 
     //! Holds basic information about a column's width.
     struct ColumnWidthInfo {
@@ -56,41 +56,39 @@ class SwXMLTableContext : public XMLTextTableContext
         bool   isRelative; //!< True for a relative width, false for absolute.
         inline ColumnWidthInfo(sal_uInt16 wdth, bool isRel) : width(wdth), isRelative(isRel) {};
     };
-    std::vector<ColumnWidthInfo> aColumnWidths;
-    std::vector<OUString> *pColumnDefaultCellStyleNames;
+    std::vector<ColumnWidthInfo> m_aColumnWidths;
+    std::vector<OUString> *m_pColumnDefaultCellStyleNames;
 
-    ::com::sun::star::uno::Reference <
-        ::com::sun::star::text::XTextCursor > xOldCursor;
-    ::com::sun::star::uno::Reference <
-        ::com::sun::star::text::XTextContent > xTextContent;
+    css::uno::Reference< css::text::XTextCursor > m_xOldCursor;
+    css::uno::Reference< css::text::XTextContent > m_xTextContent;
 
     SwXMLTableRows_Impl * m_pRows;
 
-    SwTableNode         *pTableNode;
-    SwTableBox          *pBox1;
-    const SwStartNode   *pSttNd1;
+    SwTableNode         *m_pTableNode;
+    SwTableBox          *m_pBox1;
+    const SwStartNode   *m_pSttNd1;
 
-    SwTableBoxFormat       *pBoxFormat;
-    SwTableLineFormat      *pLineFormat;
+    SwTableBoxFormat       *m_pBoxFormat;
+    SwTableLineFormat      *m_pLineFormat;
 
     // hash map of shared format, indexed by the (XML) style name,
     // the column width, and protection flag
     typedef std::unordered_map<TableBoxIndex,SwTableBoxFormat*,
                           TableBoxIndexHasher> map_BoxFormat;
-    map_BoxFormat* pSharedBoxFormats;
+    map_BoxFormat* m_pSharedBoxFormats;
 
-    SvXMLImportContextRef   xParentTable;   // if table is a sub table
+    SvXMLImportContextRef   m_xParentTable;   // if table is a sub table
 
-    SwXMLDDETableContext_Impl   *pDDESource;
+    SwXMLDDETableContext_Impl   *m_pDDESource;
 
-    bool            bFirstSection : 1;
-    bool            bRelWidth : 1;
-    bool            bHasSubTables : 1;
+    bool            m_bFirstSection : 1;
+    bool            m_bRelWidth : 1;
+    bool            m_bHasSubTables : 1;
 
-    sal_uInt16              nHeaderRows;
-    sal_uInt32          nCurRow;
-    sal_uInt32          nCurCol;
-    sal_Int32           nWidth;
+    sal_uInt16              m_nHeaderRows;
+    sal_uInt32          m_nCurRow;
+    sal_uInt32          m_nCurCol;
+    sal_Int32           m_nWidth;
 
     SwTableBox *NewTableBox( const SwStartNode *pStNd,
                              SwTableLine *pUpper );
@@ -105,7 +103,7 @@ class SwXMLTableContext : public XMLTextTableContext
                                 sal_uInt32 nTopRow, sal_uInt32 nLeftCol,
                                 sal_uInt32 nBottomRow, sal_uInt32 nRightCol );
 
-    void _MakeTable( SwTableBox *pBox=0 );
+    void _MakeTable( SwTableBox *pBox=nullptr );
     void MakeTable( SwTableBox *pBox, sal_Int32 nWidth );
     void MakeTable();
 
@@ -129,49 +127,45 @@ class SwXMLTableContext : public XMLTextTableContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     SwXMLTableContext( SwXMLImport& rImport, sal_uInt16 nPrfx,
-                   const OUString& rLName,
-                const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList );
+                       const OUString& rLName,
+                       const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList );
     SwXMLTableContext( SwXMLImport& rImport, sal_uInt16 nPrfx,
-                   const OUString& rLName,
-                  const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList,
-                SwXMLTableContext *pTable );
+                       const OUString& rLName,
+                       const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList,
+                       SwXMLTableContext *pTable );
 
     virtual ~SwXMLTableContext();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                 const OUString& rLocalName,
-                const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+                const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
 
     SwXMLImport& GetSwImport() { return static_cast<SwXMLImport&>(GetImport()); }
 
     void InsertColumn( sal_Int32 nWidth, bool bRelWidth,
-                       const OUString *pDfltCellStyleName = 0 );
+                       const OUString *pDfltCellStyleName = nullptr );
     sal_Int32 GetColumnWidth( sal_uInt32 nCol, sal_uInt32 nColSpan=1UL ) const;
     OUString GetColumnDefaultCellStyleName( sal_uInt32 nCol ) const;
     inline sal_uInt32 GetColumnCount() const;
     inline bool HasColumnDefaultCellStyleNames() const;
 
-    bool IsInsertCellPossible() const { return nCurCol < GetColumnCount(); }
-    bool IsInsertColPossible() const { return nCurCol < USHRT_MAX; }
-    bool IsInsertRowPossible() const { return nCurRow < USHRT_MAX; }
-    bool IsValid() const { return pTableNode != 0; }
+    bool IsInsertCellPossible() const { return m_nCurCol < GetColumnCount(); }
+    bool IsInsertColPossible() const { return m_nCurCol < USHRT_MAX; }
+    bool IsInsertRowPossible() const { return m_nCurRow < USHRT_MAX; }
+    bool IsValid() const { return m_pTableNode != nullptr; }
 
     void InsertCell( const OUString& rStyleName,
                      sal_uInt32 nRowSpan=1U, sal_uInt32 nColSpan=1U,
-                     const SwStartNode *pStNd=0,
+                     const SwStartNode *pStNd=nullptr,
                      const OUString & i_rXmlId = OUString(),
-                     SwXMLTableContext *pTable=0,
+                     SwXMLTableContext *pTable=nullptr,
                      bool bIsProtected = false,
-                     const OUString *pFormula=0,
+                     const OUString *pFormula=nullptr,
                      bool bHasValue = false,
                      double fValue = 0.0,
-                     OUString const*const pStringValue = 0);
+                     OUString const*const pStringValue = nullptr);
     void InsertRow( const OUString& rStyleName,
                     const OUString& rDfltCellStyleName,
                     bool bInHead,
@@ -180,22 +174,22 @@ public:
     void InsertRepRows( sal_uInt32 nCount );
     const SwXMLTableCell_Impl *GetCell( sal_uInt32 nRow, sal_uInt32 nCol ) const;
     SwXMLTableCell_Impl *GetCell( sal_uInt32 nRow, sal_uInt32 nCol );
-    const SwStartNode *InsertTableSection(const SwStartNode *pPrevSttNd = 0,
-                                  OUString const* pStringValueStyleName = 0);
+    const SwStartNode *InsertTableSection(const SwStartNode *pPrevSttNd = nullptr,
+                                  OUString const* pStringValueStyleName = nullptr);
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
-    void SetHasSubTables( bool bNew ) { bHasSubTables = bNew; }
+    void SetHasSubTables( bool bNew ) { m_bHasSubTables = bNew; }
 };
 
 inline SwXMLTableContext *SwXMLTableContext::GetParentTable() const
 {
-    return static_cast<SwXMLTableContext *>(&xParentTable);
+    return static_cast<SwXMLTableContext *>(&m_xParentTable);
 }
 
 inline sal_uInt32 SwXMLTableContext::GetColumnCount() const
 {
-    return aColumnWidths.size();
+    return m_aColumnWidths.size();
 }
 
 inline const SwStartNode *SwXMLTableContext::GetLastStartNode() const
@@ -205,7 +199,7 @@ inline const SwStartNode *SwXMLTableContext::GetLastStartNode() const
 
 inline bool SwXMLTableContext::HasColumnDefaultCellStyleNames() const
 {
-    return pColumnDefaultCellStyleNames != 0;
+    return m_pColumnDefaultCellStyleNames != nullptr;
 }
 
 #endif

@@ -61,7 +61,6 @@ private:
     VclPtr<SvxAcceptChgCtr> m_pAcceptChgCtr;
     ScViewData*             pViewData;
     ScDocument*             pDoc;
-    ScRangeName             aLocalRangeName;
     VclPtr<SvxTPFilter>     pTPFilter;
     VclPtr<SvxTPView>       pTPView;
     VclPtr<SvxRedlinTable>  pTheView; // #i48648 now SvHeaderTabListBox
@@ -124,12 +123,12 @@ protected:
 
     SvTreeListEntry* InsertChangeAction(
         const ScChangeAction* pScChangeAction,ScChangeActionState eState,
-        SvTreeListEntry* pParent=NULL,bool bDelMaster = false,
+        SvTreeListEntry* pParent=nullptr,bool bDelMaster = false,
         bool bDisabled = false,sal_uLong nPos = TREELIST_APPEND);
 
     SvTreeListEntry* InsertFilteredAction(
         const ScChangeAction* pScChangeAction,ScChangeActionState eState,
-        SvTreeListEntry* pParent = NULL,bool bDelMaster = false,
+        SvTreeListEntry* pParent = nullptr,bool bDelMaster = false,
         bool bDisabled = false, sal_uLong nPos = TREELIST_APPEND);
 
     SvTreeListEntry*    InsertChangeActionContent(const ScChangeActionContent* pScChangeAction,
@@ -165,14 +164,14 @@ public:
                                ScViewData*      ptrViewData);
 
                     virtual ~ScAcceptChgDlg();
-    virtual void    dispose() SAL_OVERRIDE;
+    virtual void    dispose() override;
 
     void            ReInit(ScViewData* ptrViewData);
 
-    virtual bool    PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual bool    PreNotify( NotifyEvent& rNEvt ) override;
 
     void            Initialize (SfxChildWinInfo* pInfo);
-    virtual void    FillInfo(SfxChildWinInfo&) const SAL_OVERRIDE;
+    virtual void    FillInfo(SfxChildWinInfo&) const override;
 
 };
 

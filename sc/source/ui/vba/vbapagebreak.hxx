@@ -29,10 +29,10 @@
 #include <com/sun/star/beans/XPropertySet.hpp>
 #include <vbahelper/vbahelperinterface.hxx>
 
-template< typename Ifc1 >
-class ScVbaPageBreak : public InheritedHelperInterfaceImpl1< Ifc1 >
+template< typename... Ifc >
+class ScVbaPageBreak : public InheritedHelperInterfaceWeakImpl< Ifc... >
 {
-typedef InheritedHelperInterfaceImpl1< Ifc1 > ScVbaPageBreak_BASE;
+typedef InheritedHelperInterfaceWeakImpl< Ifc... > ScVbaPageBreak_BASE;
 protected:
     css::uno::Reference< css::beans::XPropertySet > mxRowColPropertySet;
     css::sheet::TablePageBreakData maTablePageBreakData;
@@ -43,15 +43,11 @@ public:
                     css::sheet::TablePageBreakData aTablePageBreakData) throw (css::uno::RuntimeException);
     virtual ~ScVbaPageBreak(){}
 
-    virtual sal_Int32 SAL_CALL getType( ) throw (css::uno::RuntimeException);
-    virtual void SAL_CALL setType(sal_Int32 type) throw (css::uno::RuntimeException);
+    virtual sal_Int32 SAL_CALL getType( ) throw (css::uno::RuntimeException) SAL_OVERRIDE;
+    virtual void SAL_CALL setType(sal_Int32 type) throw (css::uno::RuntimeException) SAL_OVERRIDE;
 
-    virtual void SAL_CALL Delete() throw ( css::script::BasicErrorException, css::uno::RuntimeException);
-    virtual css::uno::Reference< ov::excel::XRange> SAL_CALL Location() throw ( css::script::BasicErrorException, css::uno::RuntimeException);
-
-    // XHelperInterface
-    virtual OUString getServiceImplName();
-    virtual css::uno::Sequence<OUString> getServiceNames();
+    virtual void SAL_CALL Delete() throw ( css::script::BasicErrorException, css::uno::RuntimeException) SAL_OVERRIDE;
+    virtual css::uno::Reference< ov::excel::XRange> SAL_CALL Location() throw ( css::script::BasicErrorException, css::uno::RuntimeException) SAL_OVERRIDE;
 };
 
 typedef ScVbaPageBreak < ov::excel::XHPageBreak > ScVbaHPageBreak_BASE;
@@ -68,8 +64,8 @@ public:
     virtual ~ScVbaHPageBreak(){}
 
     // XHelperInterface
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 
 //VPageBreak
@@ -86,8 +82,8 @@ public:
     virtual ~ScVbaVPageBreak();
 
     // XHelperInterface
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 
 #endif

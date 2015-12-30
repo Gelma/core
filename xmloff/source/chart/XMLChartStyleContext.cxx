@@ -37,7 +37,6 @@ using ::xmloff::token::XML_GRAPHIC_PROPERTIES;
 using ::xmloff::token::XML_CHART_PROPERTIES;
 
 
-TYPEINIT1( XMLChartStyleContext, XMLPropStyleContext );
 
 void XMLChartStyleContext::SetAttribute(
     sal_uInt16 nPrefixKey,
@@ -106,8 +105,8 @@ void XMLChartStyleContext::FillPropertySet(
         DBG_ASSERT( false, "unknown property exception -> shape style not completely imported for chart style" );
     }
 
-    lcl_NumberFormatStyleToProperty( msDataStyleName, OUString( "NumberFormat" ), mrStyles, rPropSet );
-    lcl_NumberFormatStyleToProperty( msPercentageDataStyleName, OUString( "PercentageNumberFormat" ), mrStyles, rPropSet );
+    lcl_NumberFormatStyleToProperty( msDataStyleName, "NumberFormat", mrStyles, rPropSet );
+    lcl_NumberFormatStyleToProperty( msPercentageDataStyleName, "PercentageNumberFormat", mrStyles, rPropSet );
 }
 
 SvXMLImportContext *XMLChartStyleContext::CreateChildContext(
@@ -115,7 +114,7 @@ SvXMLImportContext *XMLChartStyleContext::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList > & xAttrList )
 {
-    SvXMLImportContext* pContext = NULL;
+    SvXMLImportContext* pContext = nullptr;
 
     if( XML_NAMESPACE_STYLE == nPrefix || XML_NAMESPACE_LO_EXT == nPrefix )
     {

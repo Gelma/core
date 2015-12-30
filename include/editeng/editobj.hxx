@@ -20,7 +20,6 @@
 #ifndef INCLUDED_EDITENG_EDITOBJ_HXX
 #define INCLUDED_EDITENG_EDITOBJ_HXX
 
-#include <tools/stream.hxx>
 #include <rsc/rscsfx.hxx>
 #include <svl/itemset.hxx>
 #include <svl/itempool.hxx>
@@ -33,11 +32,13 @@
 #include <com/sun/star/text/textfield/Type.hpp>
 
 #include <vector>
+#include <memory>
 
 class SfxItemPool;
 class SfxStyleSheetPool;
 class SvxFieldItem;
 class SvxFieldData;
+class SvStream;
 
 namespace editeng {
 
@@ -62,9 +63,9 @@ class EDITENG_DLLPUBLIC EditTextObject : public SfxItemPoolUser
     friend class editeng::FieldUpdaterImpl;
     friend class ImpEditEngine;
 
-    EditTextObjectImpl* mpImpl;
+    std::unique_ptr<EditTextObjectImpl> mpImpl;
 
-    EditTextObject&      operator=( const EditTextObject& ) SAL_DELETED_FUNCTION;
+    EditTextObject&      operator=( const EditTextObject& ) = delete;
 
     EditTextObject(); // disabled
 
@@ -100,7 +101,7 @@ public:
     bool Store( SvStream& rOStream ) const;
 
     static EditTextObject* Create(
-        SvStream& rIStream, SfxItemPool* pGlobalTextObjectPool = NULL );
+        SvStream& rIStream, SfxItemPool* pGlobalTextObjectPool = nullptr );
 
     sal_Int32 GetParagraphCount() const;
 
@@ -125,7 +126,7 @@ public:
     bool IsFieldObject() const;
     const SvxFieldItem* GetField() const;
     const SvxFieldData* GetFieldData(sal_Int32 nPara, size_t nPos, sal_Int32 nType) const;
-    bool HasField( sal_Int32 nType = com::sun::star::text::textfield::Type::UNSPECIFIED ) const;
+    bool HasField( sal_Int32 nType = css::text::textfield::Type::UNSPECIFIED ) const;
 
     const SfxItemSet& GetParaAttribs(sal_Int32 nPara) const;
 
@@ -142,7 +143,7 @@ public:
     // #i102062#
     bool isWrongListEqual(const EditTextObject& rCompare) const;
 
-    virtual void ObjectInDestruction(const SfxItemPool& rSfxItemPool) SAL_OVERRIDE;
+    virtual void ObjectInDestruction(const SfxItemPool& rSfxItemPool) override;
 
 #if DEBUG_EDIT_ENGINE
     void Dump() const;

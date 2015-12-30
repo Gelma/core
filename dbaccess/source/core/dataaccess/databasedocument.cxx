@@ -22,8 +22,6 @@
 #include "datasource.hxx"
 #include "databasedocument.hxx"
 #include "dbastrings.hrc"
-#include "module_dba.hxx"
-#include "services.hxx"
 #include "documenteventexecutor.hxx"
 #include "databasecontext.hxx"
 #include "documentcontainer.hxx"
@@ -52,7 +50,6 @@
 #include <com/sun/star/task/XStatusIndicator.hpp>
 #include <com/sun/star/task/XStatusIndicatorFactory.hpp>
 #include <com/sun/star/ucb/SimpleFileAccess.hpp>
-#include <com/sun/star/ucb/XContent.hpp>
 #include <com/sun/star/ui/UIConfigurationManager.hpp>
 #include <com/sun/star/ui/XUIConfigurationStorage.hpp>
 #include <com/sun/star/view/XSelectionSupplier.hpp>
@@ -111,11 +108,6 @@ using namespace ::com::sun::star::script;
 using namespace ::com::sun::star::script::provider;
 using namespace ::com::sun::star::ui;
 using namespace ::cppu;
-using namespace ::osl;
-
-using ::com::sun::star::awt::XWindow;
-using ::com::sun::star::ucb::XContent;
-using ::com::sun::star::sdb::application::XDatabaseDocumentUI;
 
 namespace dbaccess
 {
@@ -147,17 +139,6 @@ bool ViewMonitor::onSetCurrentController( const Reference< XController >& _rxCon
     return bLoadFinished;
 }
 
-} // namespace dbaccess
-
-// ODatabaseDocument
-
-extern "C" void SAL_CALL createRegistryInfo_ODatabaseDocument()
-{
-    static ::dba::OAutoRegistration< ::dbaccess::ODatabaseDocument > aAutoRegistration;
-}
-
-namespace dbaccess
-{
 
 ODatabaseDocument::ODatabaseDocument(const ::rtl::Reference<ODatabaseModelImpl>& _pImpl )
             :ModelDependentComponent( _pImpl )
@@ -166,7 +147,7 @@ ODatabaseDocument::ODatabaseDocument(const ::rtl::Reference<ODatabaseModelImpl>&
             ,m_aCloseListener( getMutex() )
             ,m_aStorageListeners( getMutex() )
             ,m_pEventContainer( new DocumentEvents( *this, getMutex(), _pImpl->getDocumentEvents() ) )
-            ,m_pEventExecutor( NULL )   // initialized below, ref-count-protected
+            ,m_pEventExecutor( nullptr )   // initialized below, ref-count-protected
             ,m_aEventNotifier( *this, getMutex() )
             ,m_aViewMonitor( m_aEventNotifier )
             ,m_eInitState( NotInitialized )
@@ -217,7 +198,7 @@ ODatabaseDocument::~ODatabaseDocument()
         dispose();
     }
 
-    delete m_pEventContainer, m_pEventContainer = NULL;
+    delete m_pEventContainer, m_pEventContainer = nullptr;
 }
 
 Any SAL_CALL ODatabaseDocument::queryInterface( const Type& _rType ) throw (RuntimeException, std::exception)
@@ -504,6 +485,7 @@ void ODatabaseDocument::impl_import_nolck_throw( const Reference< XComponentCont
     OUString sBaseURI = _rResource.getOrDefault("BaseURI", OUString());
     if (sBaseURI.isEmpty())
         sBaseURI = _rResource.getOrDefault("URL",OUString());
+    assert(!sBaseURI.isEmpty()); // needed for relative URLs
     xInfoSet->setPropertyValue("BaseURI", uno::makeAny(sBaseURI));
     xInfoSet->setPropertyValue("StreamName", uno::makeAny(OUString("content.xml")));
 
@@ -611,7 +593,7 @@ namespace
 {
     bool lcl_hasAnyModifiedSubComponent_throw( const Reference< XController >& i_rController )
     {
-        Reference< XDatabaseDocumentUI > xDatabaseUI( i_rController, UNO_QUERY_THROW );
+        Reference< css::sdb::application::XDatabaseDocumentUI > xDatabaseUI( i_rController, UNO_QUERY_THROW );
 
         Sequence< Reference< XComponent > > aComponents( xDatabaseUI->getSubComponents() );
         const Reference< XComponent >* component = aComponents.getConstArray();
@@ -887,7 +869,7 @@ void SAL_CALL ODatabaseDocument::disconnectController( const Reference< XControl
         }
 
         if ( m_xCurrentController == _xController )
-            m_xCurrentController = NULL;
+            m_xCurrentController = nullptr;
 
         bLastControllerGone = m_aControllers.empty();
         bIsClosing = m_bClosing;
@@ -1063,7 +1045,7 @@ void ODatabaseDocument::impl_storeAs_throw( const OUString& _rURL, const ::comph
     if ( !bIsInitializationProcess )
     {
         _rGuard.clear();
-        m_aEventNotifier.notifyDocumentEvent( _eType == SAVE ? "OnSave" : "OnSaveAs", NULL, makeAny( _rURL ) );
+        m_aEventNotifier.notifyDocumentEvent( _eType == SAVE ? "OnSave" : "OnSaveAs", nullptr, makeAny( _rURL ) );
         _rGuard.reset();
     }
 
@@ -1130,13 +1112,13 @@ void ODatabaseDocument::impl_storeAs_throw( const OUString& _rURL, const ::comph
     catch( const IOException& )
     {
         if ( !bIsInitializationProcess )
-            m_aEventNotifier.notifyDocumentEventAsync( _eType == SAVE ? "OnSaveFailed" : "OnSaveAsFailed", NULL, makeAny( _rURL ) );
+            m_aEventNotifier.notifyDocumentEventAsync( _eType == SAVE ? "OnSaveFailed" : "OnSaveAsFailed", nullptr, makeAny( _rURL ) );
         throw;
     }
     catch( const RuntimeException& )
     {
         if ( !bIsInitializationProcess )
-            m_aEventNotifier.notifyDocumentEventAsync( _eType == SAVE ? "OnSaveFailed" : "OnSaveAsFailed", NULL, makeAny( _rURL ) );
+            m_aEventNotifier.notifyDocumentEventAsync( _eType == SAVE ? "OnSaveFailed" : "OnSaveAsFailed", nullptr, makeAny( _rURL ) );
         throw;
     }
     catch( const Exception& )
@@ -1145,14 +1127,14 @@ void ODatabaseDocument::impl_storeAs_throw( const OUString& _rURL, const ::comph
 
         // notify the failure
         if ( !bIsInitializationProcess )
-            m_aEventNotifier.notifyDocumentEventAsync( _eType == SAVE ? "OnSaveFailed" : "OnSaveAsFailed", NULL, makeAny( _rURL ) );
+            m_aEventNotifier.notifyDocumentEventAsync( _eType == SAVE ? "OnSaveFailed" : "OnSaveAsFailed", nullptr, makeAny( _rURL ) );
 
         impl_throwIOExceptionCausedBySave_throw( aError, _rURL );
     }
 
     // notify the document event
     if ( !bIsInitializationProcess )
-        m_aEventNotifier.notifyDocumentEventAsync( _eType == SAVE ? "OnSaveDone" : "OnSaveAsDone", NULL, makeAny( _rURL ) );
+        m_aEventNotifier.notifyDocumentEventAsync( _eType == SAVE ? "OnSaveDone" : "OnSaveAsDone", nullptr, makeAny( _rURL ) );
 
     // reset our "modified" flag, and clear the guard
     impl_setModified_nothrow( false, _rGuard );
@@ -1276,7 +1258,7 @@ void SAL_CALL ODatabaseDocument::storeToURL( const OUString& _rURL, const Sequen
 
     {
         aGuard.clear();
-        m_aEventNotifier.notifyDocumentEvent( "OnSaveTo", NULL, makeAny( _rURL ) );
+        m_aEventNotifier.notifyDocumentEvent( "OnSaveTo", nullptr, makeAny( _rURL ) );
         aGuard.reset();
     }
 
@@ -1294,7 +1276,7 @@ void SAL_CALL ODatabaseDocument::storeToURL( const OUString& _rURL, const Sequen
     catch( const Exception& )
     {
         Any aError = ::cppu::getCaughtException();
-        m_aEventNotifier.notifyDocumentEventAsync( "OnSaveToFailed", NULL, aError );
+        m_aEventNotifier.notifyDocumentEventAsync( "OnSaveToFailed", nullptr, aError );
 
         if  (   aError.isExtractableTo( ::cppu::UnoType< IOException >::get() )
             ||  aError.isExtractableTo( ::cppu::UnoType< RuntimeException >::get() )
@@ -1307,7 +1289,7 @@ void SAL_CALL ODatabaseDocument::storeToURL( const OUString& _rURL, const Sequen
         impl_throwIOExceptionCausedBySave_throw( aError, _rURL );
     }
 
-    m_aEventNotifier.notifyDocumentEventAsync( "OnSaveToDone", NULL, makeAny( _rURL ) );
+    m_aEventNotifier.notifyDocumentEventAsync( "OnSaveToDone", nullptr, makeAny( _rURL ) );
 }
 
 // XModifyBroadcaster
@@ -1431,7 +1413,7 @@ void ODatabaseDocument::clearObjectContainer( WeakReference< XNameAccess >& _rxC
 
     Reference< XChild > xChild( _rxContainer.get(),UNO_QUERY );
     if ( xChild.is() )
-        xChild->setParent( NULL );
+        xChild->setParent( nullptr );
     _rxContainer.clear();
 }
 
@@ -1618,7 +1600,7 @@ void ODatabaseDocument::WriteThroughComponent( const Reference< XOutputStream >&
 {
     OSL_ENSURE( xOutputStream.is(), "I really need an output stream!" );
     OSL_ENSURE( xComponent.is(), "Need component!" );
-    OSL_ENSURE( NULL != pServiceName, "Need component name!" );
+    OSL_ENSURE( nullptr != pServiceName, "Need component name!" );
 
     // get component
     Reference< XWriter > xSaxWriter = xml::sax::Writer::create( m_pImpl->m_aContext );
@@ -1842,7 +1824,7 @@ void ODatabaseDocument::disposing()
         uno::Reference<uno::XInterface> xUIInterface( m_xUIConfigurationManager );
         aKeepAlive.push_back( xUIInterface );
     }
-    m_xUIConfigurationManager = NULL;
+    m_xUIConfigurationManager = nullptr;
 
     clearObjectContainer( m_xForms );
     clearObjectContainer( m_xReports );
@@ -1900,37 +1882,14 @@ void SAL_CALL ODatabaseDocument::removeEventListener( const Reference< lang::XEv
 }
 
 // XServiceInfo
-OUString ODatabaseDocument::getImplementationName(  ) throw(RuntimeException, std::exception)
-{
-    return getImplementationName_static();
-}
-
-OUString ODatabaseDocument::getImplementationName_static(  ) throw(RuntimeException)
+OUString ODatabaseDocument::getImplementationName() throw(RuntimeException, std::exception)
 {
     return OUString("com.sun.star.comp.dba.ODatabaseDocument");
 }
 
-Sequence< OUString > ODatabaseDocument::getSupportedServiceNames(  ) throw (RuntimeException, std::exception)
+Sequence< OUString > ODatabaseDocument::getSupportedServiceNames() throw (RuntimeException, std::exception)
 {
-    return getSupportedServiceNames_static();
-}
-
-Reference< XInterface > ODatabaseDocument::Create( const Reference< XComponentContext >& _rxContext )
-{
-    Reference< XUnoTunnel > xDBContextTunnel( DatabaseContext::create(_rxContext), UNO_QUERY_THROW );
-    ODatabaseContext* pContext = reinterpret_cast< ODatabaseContext* >( xDBContextTunnel->getSomething( ODatabaseContext::getUnoTunnelImplementationId() ) );
-
-    ::rtl::Reference<ODatabaseModelImpl> pImpl( new ODatabaseModelImpl( _rxContext, *pContext ) );
-    Reference< XModel > xModel( pImpl->createNewModel_deliverOwnership( false ) );
-    return xModel.get();
-}
-
-Sequence< OUString > ODatabaseDocument::getSupportedServiceNames_static(  ) throw (RuntimeException)
-{
-    Sequence< OUString > aSNS( 2 );
-    aSNS[0] = "com.sun.star.sdb.OfficeDatabaseDocument";
-    aSNS[1] = "com.sun.star.document.OfficeDocument";
-    return aSNS;
+    return { "com.sun.star.sdb.OfficeDatabaseDocument", "com.sun.star.document.OfficeDocument" };
 }
 
 sal_Bool ODatabaseDocument::supportsService( const OUString& _rServiceName ) throw (RuntimeException, std::exception)
@@ -2094,8 +2053,7 @@ Reference< XEnumeration > SAL_CALL ODatabaseDocument::getControllers(  ) throw (
 
 Sequence< OUString > SAL_CALL ODatabaseDocument::getAvailableViewControllerNames(  ) throw (RuntimeException, std::exception)
 {
-    Sequence< OUString > aNames(1);
-    aNames[0] = SERVICE_SDB_APPLICATIONCONTROLLER;
+    Sequence< OUString > aNames { SERVICE_SDB_APPLICATIONCONTROLLER };
     return aNames;
 }
 
@@ -2252,5 +2210,21 @@ OUString SAL_CALL ODatabaseDocument::getUntitledPrefix()    throw (uno::RuntimeE
 }
 
 }   // namespace dbaccess
+
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_dba_ODatabaseDocument(css::uno::XComponentContext* context,
+        css::uno::Sequence<css::uno::Any> const &)
+{
+    Reference<XUnoTunnel> xDBContextTunnel(DatabaseContext::create(context), UNO_QUERY_THROW);
+    dbaccess::ODatabaseContext* pContext = reinterpret_cast<dbaccess::ODatabaseContext*>(
+        xDBContextTunnel->getSomething(
+            dbaccess::ODatabaseContext::getUnoTunnelImplementationId()));
+
+    rtl::Reference<dbaccess::ODatabaseModelImpl> pImpl(
+            new dbaccess::ODatabaseModelImpl(context, *pContext));
+    css::uno::Reference<XInterface> inst(pImpl->createNewModel_deliverOwnership(false));
+    inst->acquire();
+    return inst.get();
+}
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -39,7 +39,7 @@ using namespace cppu;
 //  The mutex to synchronize access to containers.
 static osl::Mutex& getContainerMutex()
 {
-    static osl::Mutex* pMutex = NULL;
+    static osl::Mutex* pMutex = nullptr;
     if( !pMutex )
     {
         osl::Guard< osl::Mutex > aGuard( osl::Mutex::getGlobalMutex() );
@@ -62,18 +62,18 @@ SortedDynamicResultSet::SortedDynamicResultSet(
                         const Reference < XAnyCompareFactory > &xCompFac,
                         const Reference < XComponentContext > &rxContext )
 {
-    mpDisposeEventListeners = NULL;
+    mpDisposeEventListeners = nullptr;
     mpOwnListener           = new SortedDynamicResultSetListener( this );
 
-    mxOwnListener = Reference< XDynamicResultSetListener >( mpOwnListener );
+    mxOwnListener.set( mpOwnListener );
 
     mxOriginal  = xOriginal;
     maOptions   = aOptions;
     mxCompFac   = xCompFac;
     m_xContext  = rxContext;
 
-    mpOne = NULL;
-    mpTwo = NULL;
+    mpOne = nullptr;
+    mpTwo = nullptr;
 
     mbGotWelcome    = false;
     mbUseOne        = true;
@@ -92,8 +92,8 @@ SortedDynamicResultSet::~SortedDynamicResultSet()
     mxTwo.clear();
     mxOriginal.clear();
 
-    mpOne = NULL;
-    mpTwo = NULL;
+    mpOne = nullptr;
+    mpTwo = nullptr;
 }
 
 // XServiceInfo methods.
@@ -123,8 +123,7 @@ css::uno::Sequence< OUString > SAL_CALL SortedDynamicResultSet::getSupportedServ
 
 css::uno::Sequence< OUString > SortedDynamicResultSet::getSupportedServiceNames_Static()
 {
-    css::uno::Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[ 0 ] = DYNAMIC_RESULTSET_SERVICE_NAME;
+    css::uno::Sequence<OUString> aSNS { DYNAMIC_RESULTSET_SERVICE_NAME };
     return aSNS;
 }
 
@@ -146,8 +145,8 @@ void SAL_CALL SortedDynamicResultSet::dispose()
     mxTwo.clear();
     mxOriginal.clear();
 
-    mpOne = NULL;
-    mpTwo = NULL;
+    mpOne = nullptr;
+    mpTwo = nullptr;
     mbUseOne = true;
 }
 
@@ -245,7 +244,7 @@ SortedDynamicResultSet::connectToCache( const Reference< XDynamicResultSet > & x
         if( xStubFactory.is() )
         {
             xStubFactory->connectToCache(
-                  this, xCache, Sequence< NumberedSortingInfo > (), NULL );
+                  this, xCache, Sequence< NumberedSortingInfo > (), nullptr );
             return;
         }
     }
@@ -295,7 +294,7 @@ void SortedDynamicResultSet::impl_notify( const ListEvent& Changes )
     bool bHasNew = false;
     bool bHasModified = false;
 
-    SortedResultSet *pCurSet = NULL;
+    SortedResultSet *pCurSet = nullptr;
 
     // exchange mxNew and mxOld and immediately afterwards copy the tables
     // from Old to New
@@ -501,8 +500,7 @@ SortedDynamicResultSetFactory_CreateInstance( const css::uno::Reference<
 
 css::uno::Sequence< OUString > SortedDynamicResultSetFactory::getSupportedServiceNames_Static()
 {
-    com::sun::star::uno::Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[ 0 ] = DYNAMIC_RESULTSET_FACTORY_NAME;
+    css::uno::Sequence<OUString> aSNS { DYNAMIC_RESULTSET_FACTORY_NAME };
     return aSNS;
 }
 
@@ -600,7 +598,7 @@ void SAL_CALL
 SortedDynamicResultSetListener::impl_OwnerDies()
 {
     osl::Guard< osl::Mutex > aGuard( maMutex );
-    mpOwner = NULL;
+    mpOwner = nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

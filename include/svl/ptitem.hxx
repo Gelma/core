@@ -30,7 +30,7 @@ class SVL_DLLPUBLIC SfxPointItem: public SfxPoolItem
     Point                    aVal;
 
 public:
-                             TYPEINFO_OVERRIDE();
+                             static SfxPoolItem* CreateDefault();
                              SfxPointItem();
                              SfxPointItem( sal_uInt16 nWhich, const Point& rVal );
                              SfxPointItem( const SfxPointItem& );
@@ -40,13 +40,13 @@ public:
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
                                     OUString &rText,
-                                    const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    const IntlWrapper * = nullptr ) const override;
 
-    virtual bool             operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual bool             operator==( const SfxPoolItem& ) const override;
 
-    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*     Create(SvStream &, sal_uInt16 nItemVersion) const SAL_OVERRIDE;
-    virtual SvStream&        Store(SvStream &, sal_uInt16 nItemVersion) const SAL_OVERRIDE;
+    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual SfxPoolItem*     Create(SvStream &, sal_uInt16 nItemVersion) const override;
+    virtual SvStream&        Store(SvStream &, sal_uInt16 nItemVersion) const override;
 
     const Point&             GetValue() const { return aVal; }
             void             SetValue( const Point& rNewVal ) {
@@ -54,10 +54,10 @@ public:
                                  aVal = rNewVal;
                              }
 
-    virtual bool             QueryValue( com::sun::star::uno::Any& rVal,
-                                          sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool             PutValue( const com::sun::star::uno::Any& rVal,
-                                          sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual bool             QueryValue( css::uno::Any& rVal,
+                                          sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool             PutValue( const css::uno::Any& rVal,
+                                          sal_uInt8 nMemberId ) override;
 };
 
 #endif

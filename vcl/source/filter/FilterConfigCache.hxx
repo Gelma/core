@@ -34,17 +34,14 @@ class FilterConfigCache
     {
         OUString sInternalFilterName;
         OUString sType;
-        ::com::sun::star::uno::Sequence< OUString > lExtensionList;
+        css::uno::Sequence< OUString > lExtensionList;
         OUString sUIName;
-        OUString sDocumentService;
-        OUString sFilterService;
-        OUString sTemplateName;
+        OUString sExternalFilterName;
 
         OUString sMediaType;
         OUString sFilterType;
 
         sal_Int32       nFlags;
-        sal_Int32       nFileFormatVersion;
 
         // user data
         OUString        sFilterName;
@@ -85,7 +82,6 @@ public:
     sal_uInt16  GetImportFormatCount() const
         { return sal::static_int_cast< sal_uInt16 >(aImport.size()); };
     sal_uInt16  GetImportFormatNumber( const OUString& rFormatName );
-    sal_uInt16  GetImportFormatNumberForMediaType( const OUString& rMediaType );
     sal_uInt16  GetImportFormatNumberForShortName( const OUString& rShortName );
     sal_uInt16  GetImportFormatNumberForTypeName( const OUString& rType );
     sal_uInt16  GetImportFormatNumberForExtension( const OUString& rExt );
@@ -97,6 +93,8 @@ public:
     OUString    GetImportWildcard( sal_uInt16 nFormat, sal_Int32 nEntry );
     OUString    GetImportFilterType( sal_uInt16 nFormat );
     OUString    GetImportFilterTypeName( sal_uInt16 nFormat );
+    OUString    GetExternalFilterName(sal_uInt16 nFormat, bool bExport);
+
 
     bool    IsImportInternalFilter( sal_uInt16 nFormat );
 
@@ -112,7 +110,6 @@ public:
     OUString    GetExportFormatMediaType( sal_uInt16 nFormat );
     OUString    GetExportFormatShortName( sal_uInt16 nFormat );
     OUString    GetExportWildcard( sal_uInt16 nFormat, sal_Int32 nEntry );
-    OUString    GetExportFilterTypeName( sal_uInt16 nFormat );
     OUString    GetExportInternalFilterName( sal_uInt16 nFormat );
 
     bool    IsExportInternalFilter( sal_uInt16 nFormat );

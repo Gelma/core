@@ -101,7 +101,6 @@ using namespace com::sun::star::uno;
 using namespace sdr::table;
 namespace sd {
 
-TYPEINIT1(View, FmFormView);
 
 View::View(SdDrawDocument& rDrawDoc, OutputDevice* pOutDev,
                ViewShell* pViewShell)
@@ -109,9 +108,9 @@ View::View(SdDrawDocument& rDrawDoc, OutputDevice* pOutDev,
     mrDoc(rDrawDoc),
     mpDocSh(rDrawDoc.GetDocSh()),
     mpViewSh(pViewShell),
-    mpDragSrcMarkList(NULL),
-    mpDropMarkerObj(NULL),
-    mpDropMarker(NULL),
+    mpDragSrcMarkList(nullptr),
+    mpDropMarkerObj(nullptr),
+    mpDropMarker(nullptr),
     mnDragSrcPgNum(SDRPAGE_NOTFOUND),
     mnAction(DND_ACTION_NONE),
     mnLockRedrawSmph(0),
@@ -149,7 +148,7 @@ void View::ImplClearDrawDropMarker()
     if(mpDropMarker)
     {
         delete mpDropMarker;
-        mpDropMarker = 0L;
+        mpDropMarker = nullptr;
     }
 }
 
@@ -180,9 +179,9 @@ public:
 
     // all default implementations just call the same methods at the original. To do something
     // different, override the method and at least do what the method does.
-    virtual drawinglayer::primitive2d::Primitive2DSequence createRedirectedPrimitive2DSequence(
+    virtual drawinglayer::primitive2d::Primitive2DContainer createRedirectedPrimitive2DSequence(
         const sdr::contact::ViewObjectContact& rOriginal,
-        const sdr::contact::DisplayInfo& rDisplayInfo) SAL_OVERRIDE;
+        const sdr::contact::DisplayInfo& rDisplayInfo) override;
 };
 
 ViewRedirector::ViewRedirector()
@@ -193,12 +192,12 @@ ViewRedirector::~ViewRedirector()
 {
 }
 
-drawinglayer::primitive2d::Primitive2DSequence ViewRedirector::createRedirectedPrimitive2DSequence(
+drawinglayer::primitive2d::Primitive2DContainer ViewRedirector::createRedirectedPrimitive2DSequence(
     const sdr::contact::ViewObjectContact& rOriginal,
     const sdr::contact::DisplayInfo& rDisplayInfo)
 {
     SdrObject* pObject = rOriginal.GetViewContact().TryToGetSdrObject();
-    drawinglayer::primitive2d::Primitive2DSequence xRetval;
+    drawinglayer::primitive2d::Primitive2DContainer xRetval;
 
     if(pObject && pObject->GetPage())
     {
@@ -222,7 +221,7 @@ drawinglayer::primitive2d::Primitive2DSequence ViewRedirector::createRedirectedP
         {
             bool bCreateOutline(false);
 
-            if( pObject->IsEmptyPresObj() && pObject->ISA(SdrTextObj) )
+            if( pObject->IsEmptyPresObj() && dynamic_cast< SdrTextObj *>( pObject ) !=  nullptr )
             {
                 if( !bSubContentProcessing || !pObject->IsNotVisibleAsMaster() )
                 {
@@ -291,7 +290,7 @@ drawinglayer::primitive2d::Primitive2DSequence ViewRedirector::createRedirectedP
                             aPolygon,
                             aLine,
                             aStroke));
-                        drawinglayer::primitive2d::appendPrimitive2DReferenceToPrimitive2DSequence(xRetval, xRef);
+                        xRetval.push_back(xRef);
                     }
 
                     // now paint the placeholder description, but only when masterpage
@@ -425,7 +424,7 @@ drawinglayer::primitive2d::Primitive2DSequence ViewRedirector::createRedirectedP
                             const ::std::vector< double > aDXArray{};
 
                             // create locale; this may need some more information in the future
-                            const ::com::sun::star::lang::Locale aLocale;
+                            const css::lang::Locale aLocale;
 
                             // create primitive and add
                             const drawinglayer::primitive2d::Primitive2DReference xRef(
@@ -438,7 +437,7 @@ drawinglayer::primitive2d::Primitive2DSequence ViewRedirector::createRedirectedP
                                     aFontAttribute,
                                     aLocale,
                                     aFontColor));
-                            drawinglayer::primitive2d::appendPrimitive2DReferenceToPrimitive2DSequence(xRetval, xRef);
+                            xRetval.push_back(xRef);
                         }
                     }
                 }
@@ -447,8 +446,7 @@ drawinglayer::primitive2d::Primitive2DSequence ViewRedirector::createRedirectedP
 
         if(bDoCreateGeometry)
         {
-            drawinglayer::primitive2d::appendPrimitive2DSequenceToPrimitive2DSequence(
-                xRetval,
+            xRetval.append(
                 sdr::contact::ViewObjectContactRedirector::createRedirectedPrimitive2DSequence(
                     rOriginal,
                     rDisplayInfo));
@@ -478,7 +476,7 @@ void View::CompleteRedraw(OutputDevice* pOutDev, const vcl::Region& rReg, sdr::c
             SdPage* pPage = static_cast<SdPage*>( pPgView->GetPage() );
             if( pPage )
             {
-                SdrOutliner& rOutl = mrDoc.GetDrawOutliner(NULL);
+                SdrOutliner& rOutl = mrDoc.GetDrawOutliner();
                 bool bScreenDisplay(true);
 
                 if(bScreenDisplay && pOutDev && OUTDEV_PRINTER == pOutDev->GetOutDevType())
@@ -503,14 +501,6 @@ void View::CompleteRedraw(OutputDevice* pOutDev, const vcl::Region& rReg, sdr::c
 
         ViewRedirector aViewRedirector;
         FmFormView::CompleteRedraw(pOutDev, rReg, pRedirector ? pRedirector : &aViewRedirector);
-    }
-    // or save?
-    else
-    {
-        SdViewRedrawRec* pRec = new SdViewRedrawRec;
-        pRec->mpOut = pOutDev;
-        pRec->aRect = rReg.GetBoundRect();
-        maLockedRedraws.push_back(pRec);
     }
 }
 
@@ -653,7 +643,7 @@ void OutlinerMasterViewFilter::End()
     {
         OutlinerView* pOutlView = m_pOutl->GetView(0);
         pOutlView->SetReadOnly(m_bReadOnly);
-        m_pOutl = NULL;
+        m_pOutl = nullptr;
     }
 }
 
@@ -663,13 +653,13 @@ bool View::SdrBeginTextEdit(
     SdrOutliner* pOutl, OutlinerView* pGivenOutlinerView,
     bool bDontDeleteOutliner, bool bOnlyOneView, bool bGrabFocus )
 {
-    SdrPage* pPage = pObj ? pObj->GetPage() : NULL;
+    SdrPage* pPage = pObj ? pObj->GetPage() : nullptr;
     bool bMasterPage = pPage && pPage->IsMasterPage();
 
     GetViewShell()->GetViewShellBase().GetEventMultiplexer()->MultiplexEvent(
         sd::tools::EventMultiplexerEvent::EID_BEGIN_TEXT_EDIT, static_cast<void*>(pObj) );
 
-    if( pOutl==NULL && pObj )
+    if( pOutl==nullptr && pObj )
         pOutl = SdrMakeOutliner(OUTLINERMODE_TEXTOBJECT, *pObj->GetModel());
 
     // make draw&impress specific initialisations
@@ -726,11 +716,11 @@ bool View::SdrBeginTextEdit(
             {
                 aBackground = pObj->GetPage()->GetPageBackgroundColor(pPV);
             }
-            if (pOL != NULL)
+            if (pOL != nullptr)
                 pOL->SetBackgroundColor( aBackground  );
         }
 
-        if (pOL != NULL)
+        if (pOL != nullptr)
         {
             pOL->SetParaInsertedHdl(LINK(this, View, OnParagraphInsertedHdl));
             pOL->SetParaRemovingHdl(LINK(this, View, OnParagraphRemovingHdl));
@@ -740,7 +730,7 @@ bool View::SdrBeginTextEdit(
     if (bMasterPage && bReturn && pOutl)
     {
         const SdrTextObj* pTextObj = pOutl->GetTextObj();
-        const SdPage* pSdPage = pTextObj ? static_cast<const SdPage*>(pTextObj->GetPage()) : NULL;
+        const SdPage* pSdPage = pTextObj ? static_cast<const SdPage*>(pTextObj->GetPage()) : nullptr;
         const PresObjKind eKind = pSdPage ? pSdPage->GetPresObjKind(const_cast<SdrTextObj*>(pTextObj)) : PRESOBJ_NONE;
         switch (eKind)
         {
@@ -945,7 +935,6 @@ void View::DoConnect(SdrOle2Obj* pObj)
                 {
                     // TODO/LEAN: working with visual area can switch object to running state
                     Size aDrawSize = aRect.GetSize();
-                    awt::Size aSz;
 
                     MapMode aMapMode( mrDoc.GetScaleUnit() );
                     Size aObjAreaSize = pObj->GetOrigObjSize( &aMapMode );
@@ -992,7 +981,7 @@ bool View::IsMorphingAllowed() const
              ( nKind1 != OBJ_GRAF && nKind2 != OBJ_GRAF ) &&
              ( nKind1 != OBJ_OLE2 && nKind2 != OBJ_OLE2 ) &&
              ( nKind1 != OBJ_CAPTION && nKind2 !=  OBJ_CAPTION ) &&
-             !pObj1->ISA( E3dObject) && !pObj2->ISA( E3dObject) )
+             dynamic_cast< const E3dObject *>( pObj1 ) == nullptr && dynamic_cast< const E3dObject *>( pObj2 ) ==  nullptr )
         {
             SfxItemSet      aSet1( mrDoc.GetPool(), XATTR_FILLSTYLE, XATTR_FILLSTYLE );
             SfxItemSet      aSet2( mrDoc.GetPool(), XATTR_FILLSTYLE, XATTR_FILLSTYLE );
@@ -1211,7 +1200,7 @@ void View::OnEndPasteOrDrop( PasteOrDropInfos* pInfos )
     {
         SdPage* pPage = static_cast< SdPage* >( pTextObj->GetPage() );
 
-        SfxStyleSheet* pStyleSheet = 0;
+        SfxStyleSheet* pStyleSheet = nullptr;
 
         const PresObjKind eKind = pPage->GetPresObjKind(pTextObj);
         if( eKind != PRESOBJ_NONE )
@@ -1229,7 +1218,7 @@ void View::OnEndPasteOrDrop( PasteOrDropInfos* pInfos )
             {
                 sal_Int16 nDepth = pOutliner->GetDepth( nPara );
 
-                SfxStyleSheet* pStyle = 0;
+                SfxStyleSheet* pStyle = nullptr;
                 if( nDepth > 0 )
                 {
                     OUString aStyleSheetName( pStyleSheet->GetName() );
@@ -1276,7 +1265,7 @@ bool View::ShouldToggleOn(
         SdrTextObj* pTextObj = dynamic_cast< SdrTextObj* >(GetMarkedObjectByIndex(nIndex));
         if (!pTextObj || pTextObj->IsTextEditActive())
             continue;
-        if (pTextObj->ISA(SdrTableObj))
+        if( dynamic_cast< const SdrTableObj *>( pTextObj ) !=  nullptr)
         {
             SdrTableObj* pTableObj = dynamic_cast< SdrTableObj* >(pTextObj);
             if (!pTableObj)
@@ -1333,7 +1322,7 @@ void View::ChangeMarkedObjectsBulletsNumbering(
         return;
 
     const bool bUndoEnabled = pSdrModel->IsUndoEnabled();
-    SdrUndoGroup* pUndoGroup = bUndoEnabled ? new SdrUndoGroup(*pSdrModel) : 0;
+    SdrUndoGroup* pUndoGroup = bUndoEnabled ? new SdrUndoGroup(*pSdrModel) : nullptr;
 
     const bool bToggleOn = ShouldToggleOn( bToggle, bHandleBullets );
 
@@ -1346,7 +1335,7 @@ void View::ChangeMarkedObjectsBulletsNumbering(
         SdrTextObj* pTextObj = dynamic_cast< SdrTextObj* >(GetMarkedObjectByIndex(nIndex));
         if (!pTextObj || pTextObj->IsTextEditActive())
             continue;
-        if (pTextObj->ISA(SdrTableObj))
+        if( dynamic_cast< SdrTableObj *>( pTextObj ) !=  nullptr)
         {
             SdrTableObj* pTableObj = dynamic_cast< SdrTableObj* >(pTextObj);
             if (!pTableObj)

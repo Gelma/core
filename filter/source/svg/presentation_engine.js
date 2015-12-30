@@ -75,25 +75,25 @@
  *  @param node   element of the document
  *  @param name   attribute name
  *
- *  @returns   an array containing all the elements of the tree with root
+ *  @returns   Array array containing all the elements of the tree with root
  *             'node' that own the property 'name'
  */
 function getElementsByProperty( node, name )
 {
-    var elems = new Array();
+    var elements = [];
 
     if( node.getAttribute( name ) )
-        elems.push( node );
+        elements.push( node );
 
     for( var counter = 0; counter < node.childNodes.length; ++counter )
     {
         if( node.childNodes[counter].nodeType == 1 )
         {
-            var subElems = getElementsByProperty( node.childNodes[counter], name );
-            elems = elems.concat( subElems );
+            var subElements = getElementsByProperty( node.childNodes[counter], name );
+            elements = elements.concat( subElements );
         }
     }
-    return elems;
+    return elements;
 }
 
 /** Event handler for key press.
@@ -141,14 +141,14 @@ function onKeyPress( aEvt )
 
 /** Function to supply the default key code dictionary.
  *
- *  @returns default key code dictionary
+ *  @returns Object default key code dictionary
  */
 function getDefaultKeyCodeDictionary()
 {
-    var keyCodeDict = new Object();
+    var keyCodeDict = {};
 
-    keyCodeDict[SLIDE_MODE] = new Object();
-    keyCodeDict[INDEX_MODE] = new Object();
+    keyCodeDict[SLIDE_MODE] = {};
+    keyCodeDict[INDEX_MODE] = {};
 
     // slide mode
     keyCodeDict[SLIDE_MODE][LEFT_KEY]
@@ -199,14 +199,14 @@ function getDefaultKeyCodeDictionary()
 
 /** Function to supply the default char code dictionary.
  *
- *  @returns default char code dictionary
+ *  @returns Object char code dictionary
  */
 function getDefaultCharCodeDictionary()
 {
-    var charCodeDict = new Object();
+    var charCodeDict = {};
 
-    charCodeDict[SLIDE_MODE] = new Object();
-    charCodeDict[INDEX_MODE] = new Object();
+    charCodeDict[SLIDE_MODE] = {};
+    charCodeDict[INDEX_MODE] = {};
 
     // slide mode
     charCodeDict[SLIDE_MODE]['i']
@@ -390,14 +390,14 @@ function mouseClickHelper( aEvt )
 
 /** Function to supply the default mouse handler dictionary.
  *
- *  @returns default mouse handler dictionary
+ *  @returns Object default mouse handler dictionary
  */
 function getDefaultMouseHandlerDictionary()
 {
-    var mouseHandlerDict = new Object();
+    var mouseHandlerDict = {};
 
-    mouseHandlerDict[SLIDE_MODE] = new Object();
-    mouseHandlerDict[INDEX_MODE] = new Object();
+    mouseHandlerDict[SLIDE_MODE] = {};
+    mouseHandlerDict[INDEX_MODE] = {};
 
     // slide mode
     mouseHandlerDict[SLIDE_MODE][MOUSE_UP]
@@ -548,7 +548,7 @@ function configureDetectionTools()
     dav = n.appVersion,
     tv = parseFloat(dav);
 
-    has.add('air', dua.indexOf('AdobeAIR') >= 0),
+    has.add('air', dua.indexOf('AdobeAIR') >= 0);
     has.add('khtml', dav.indexOf('Konqueror') >= 0 ? tv : undefined);
     has.add('webkit', parseFloat(dua.split('WebKit/')[1]) || undefined);
     has.add('chrome', parseFloat(dua.split('Chrome/')[1]) || undefined);
@@ -584,7 +584,7 @@ function configureDetectionTools()
             //Make sure isIE reflects the desired version.
             //document.documentMode of 5 means quirks mode.
             //Only switch the value if documentMode's major version
-            //is different from isIE's major version.
+            //is different from isIE major version.
             var mode = document.documentMode;
             if(mode && mode != 5 && Math.floor(isIE) != mode){
                 isIE = mode;
@@ -720,7 +720,7 @@ function configureDetectionTools()
  * Several parts of the following code are the result of the porting,
  * started on August 2011, of the C++ code included in the source
  * files placed under the folder '/slideshow/source' and
- * subfolders. This got later rebased onto the AL2-licensed versions
+ * sub-folders. This got later rebased onto the AL2-licensed versions
  * of those files in early 2013.
  * @source http://cgit.freedesktop.org/libreoffice/core/tree/slideshow/source
  *
@@ -735,12 +735,14 @@ var aOOOElemMetaSlides = 'ooo:meta_slides';
 var aOOOElemMetaSlide = 'ooo:meta_slide';
 var aOOOElemTextField = 'ooo:text_field';
 var aPresentationClipPathId = 'presentation_clip_path';
+var aPresentationClipPathShrinkId = 'presentation_clip_path_shrink';
 
 // ooo attributes
 var aOOOAttrNumberOfSlides = 'number-of-slides';
 var aOOOAttrStartSlideNumber= 'start-slide-number';
 var aOOOAttrNumberingType = 'page-numbering-type';
 var aOOOAttrListItemNumberingType= 'numbering-type';
+var aOOOAttrUsePositionedChars = 'use-positioned-chars';
 
 var aOOOAttrSlide = 'slide';
 var aOOOAttrMaster = 'master';
@@ -768,12 +770,15 @@ var aFooterClassName = 'Footer';
 var aHeaderClassName = 'Header';
 
 // Creating a namespace dictionary.
-var NSS = new Object();
+var NSS = {};
 NSS['svg']='http://www.w3.org/2000/svg';
 NSS['rdf']='http://www.w3.org/1999/02/22-rdf-syntax-ns#';
 NSS['xlink']='http://www.w3.org/1999/xlink';
 NSS['xml']='http://www.w3.org/XML/1998/namespace';
 NSS['ooo'] = 'http://xml.openoffice.org/svg/export';
+NSS['presentation'] = 'http://sun.com/xmlns/staroffice/presentation';
+NSS['smil'] = 'http://www.w3.org/2001/SMIL20/';
+NSS['anim'] = 'urn:oasis:names:tc:opendocument:xmlns:animation:1.0';
 
 // Presentation modes.
 var SLIDE_MODE = 1;
@@ -785,7 +790,7 @@ var MOUSE_DOWN = 2;
 var MOUSE_MOVE = 3;
 var MOUSE_WHEEL = 4;
 
-// Keycodes.
+// Key-codes.
 var LEFT_KEY = 37;          // cursor left keycode
 var UP_KEY = 38;            // cursor up keycode
 var RIGHT_KEY = 39;         // cursor right keycode
@@ -869,7 +874,7 @@ function extend( aSubType, aSuperType )
 function instantiate( TemplateClass, BaseType )
 {
     if( !TemplateClass.instanceSet )
-        TemplateClass.instanceSet = new Array();
+        TemplateClass.instanceSet = [];
 
     var nSize = TemplateClass.instanceSet.length;
 
@@ -879,7 +884,7 @@ function instantiate( TemplateClass, BaseType )
             return TemplateClass.instanceSet[i].instance;
     }
 
-    TemplateClass.instanceSet[ nSize ] = new Object();
+    TemplateClass.instanceSet[ nSize ] = {};
     TemplateClass.instanceSet[ nSize ].base = BaseType;
     TemplateClass.instanceSet[ nSize ].instance = TemplateClass( BaseType );
 
@@ -980,7 +985,7 @@ function checkElemAndSetAttribute( aElem, sAttrName, aValue )
 function getElementsByClassName( aElem, sClassName )
 {
 
-    var aElementSet = new Array();
+    var aElementSet = [];
     // not all browsers support the 'getElementsByClassName' method
     if( 'getElementsByClassName' in aElem )
     {
@@ -1071,6 +1076,17 @@ function getSafeIndex( nIndex, nMin, nMax )
         return nMax;
     else
         return nIndex;
+}
+
+/** getRandomInt
+ *
+ * @param nMax
+ * @returns {number}
+ *   an integer in [0,nMax[
+ */
+function getRandomInt( nMax )
+{
+    return Math.floor( Math.random() * nMax );
 }
 
 function isTextFieldElement( aElement )
@@ -1185,6 +1201,8 @@ function MetaDocument()
     this.nStartSlideNumber = parseInt( aMetaDocElem.getAttributeNS( NSS['ooo'], aOOOAttrStartSlideNumber ) ) || 0;
     // - the numbering type used in the presentation, default type is arabic.
     this.sPageNumberingType = aMetaDocElem.getAttributeNS( NSS['ooo'], aOOOAttrNumberingType ) || 'arabic';
+    // - the way text is exported
+    this.bIsUsePositionedChars = ( aMetaDocElem.getAttributeNS( NSS['ooo'], aOOOAttrUsePositionedChars ) === 'true' );
 
     // The <defs> element used for wrapping <clipPath>.
     this.aClipPathGroup = getElementByClassName( ROOT_NODE, aClipPathGroupClassName );
@@ -1197,17 +1215,20 @@ function MetaDocument()
 
     // The collections for handling properties of each slide, svg elements
     // related to master pages and content and properties of text fields.
-    this.aMetaSlideSet = new Array();
-    this.aMasterPageSet = new Object();
-    this.aTextFieldHandlerSet = new Object();
-    this.aTextFieldContentProviderSet = new Array();
-    this.aSlideNumberProvider =  new SlideNumberProvider( this.nStartSlideNumber + 1, this.sPageNumberingType );
+    this.aMetaSlideSet = [];
+    this.aMasterPageSet = {};
+    this.aTextFieldHandlerSet = {};
+    this.aTextFieldContentProviderSet = [];
+    this.aSlideNumberProvider = new SlideNumberProvider( this.nStartSlideNumber + 1, this.sPageNumberingType );
 
     // We create a map with key an id and value the svg element containing
     // the animations performed on the slide with such an id.
     this.bIsAnimated = false;
-    this.aSlideAnimationsMap = new Object();
+    this.aSlideAnimationsMap = {};
     this.initSlideAnimationsMap();
+
+    // We initialize dummy slide - used as leaving slide for transition on the first slide
+    this.theMetaDummySlide = new MetaSlide( 'ooo:meta_dummy_slide', this );
 
     // We initialize the set of MetaSlide objects that handle the meta
     // information for each slide.
@@ -1310,9 +1331,14 @@ function MetaSlide( sMetaSlideId, aMetaDoc )
     this.slideElement = this.theDocument.getElementById( this.slideId );
     assert( this.slideElement,
             'MetaSlide: slide element <' + this.slideId + '> not found.' );
-    this.nSlideNumber = parseInt( this.slideId.substr(2) );
 
-    // Each slide element is wrapped by a <g> element that is responsible for
+    if( this.slideId !== 'dummy_slide' )
+        this.nSlideNumber = parseInt( this.slideId.substr(2) );
+    else
+        this.nSlideNumber= -1;
+
+    // Each slide element is double wrapped by <g> elements.
+    // The outer <g> element is responsible for
     // the slide element visibility. In fact the visibility attribute has
     // to be set on the parent of the slide element and not directly on
     // the slide element. The reason is that in index mode each slide
@@ -1327,7 +1353,14 @@ function MetaSlide( sMetaSlideId, aMetaDoc )
     // The workaround of setting up the visibility attribute on the slide
     // parent element let us to make visible a slide in a <use> element
     // even if the slide parent element visibility is set to 'hidden'.
-    this.aVisibilityStatusElement = this.slideElement.parentNode;
+    // The inner <g> element is used in order to append some element
+    // before or after the slide, operation that can be needed for some
+    // slide transition (e.g. fade through black). In this way we can
+    // create a view of both the slide and the appended elements that turns out
+    // to be useful for handling transition from the last to the first slide.
+    this.aContainerElement = this.slideElement.parentNode;
+    this.slideContainerId = this.aContainerElement.getAttribute( 'id' );
+    this.aVisibilityStatusElement = this.aContainerElement.parentNode;
 
     // We get a reference to the draw page element, where all shapes specific
     // of this slide live.
@@ -1353,7 +1386,7 @@ function MetaSlide( sMetaSlideId, aMetaDoc )
     this.bIsDateTimeVariable = undefined;
 
     // We initialize the objects responsible to provide the content to text field.
-    this.aTextFieldContentProviderSet = new Object();
+    this.aTextFieldContentProviderSet = {};
     this.aTextFieldContentProviderSet[aSlideNumberClassName]   = this.initSlideNumberFieldContentProvider();
     this.aTextFieldContentProviderSet[aDateTimeClassName]      = this.initDateTimeFieldContentProvider( aOOOAttrDateTimeField );
     this.aTextFieldContentProviderSet[aFooterClassName]        = this.initFixedTextFieldContentProvider( aOOOAttrFooterField );
@@ -1434,11 +1467,11 @@ initMasterPage : function()
     // created by an other slide that target the same master page.
     if( !this.theMetaDoc.aMasterPageSet.hasOwnProperty( sMasterPageId ) )
     {
-        this.theMetaDoc.aMasterPageSet[ sMasterPageId ] = new MasterPage( sMasterPageId );
+        this.theMetaDoc.aMasterPageSet[ sMasterPageId ] = new MasterPage( sMasterPageId, this );
 
         // We initialize aTextFieldHandlerSet[ sMasterPageId ] to an empty
         // collection.
-        this.theMetaDoc.aTextFieldHandlerSet[ sMasterPageId ] = new Object();
+        this.theMetaDoc.aTextFieldHandlerSet[ sMasterPageId ] = {};
     }
     return this.theMetaDoc.aMasterPageSet[ sMasterPageId ];
 },
@@ -1516,7 +1549,7 @@ initFixedTextFieldContentProvider : function( aOOOAttribute )
 
 collectTextShapes : function()
 {
-    var aTextShapeSet = new Array();
+    var aTextShapeSet = [];
     var aTextShapeIndexElem = getElementByClassName( document, 'TextShapeIndex' );
     if( aTextShapeIndexElem )
     {
@@ -1555,7 +1588,7 @@ collectTextShapes : function()
 
 initHyperlinks : function()
 {
-    var aHyperlinkSet = new Object();
+    var aHyperlinkSet = {};
     var i;
     for( i = 0; i < this.aTextShapeSet.length; ++i )
     {
@@ -1622,10 +1655,13 @@ getSlideAnimationsRoot : function()
  *  @param sMasterPageId
  *      A string representing the value of the id attribute of the master page
  *      element to be handled.
+ * @param aMetaSlide
+ *     A meta slide having as master page the one with the passed id.
  */
-function MasterPage( sMasterPageId )
+function MasterPage( sMasterPageId, aMetaSlide )
 {
     this.id = sMasterPageId;
+    this.metaSlide = aMetaSlide;
 
     // The master page element to be handled.
     this.element = document.getElementById( this.id );
@@ -1661,7 +1697,7 @@ function MasterPage( sMasterPageId )
             var nSubGroupId = 1;
             var sClass;
             var sId = '';
-            this.aBackgroundObjectSubGroupIdList = new Array();
+            this.aBackgroundObjectSubGroupIdList = [];
             var i = 0;
             for( ; i < aBackgroundObjectList.length; ++i )
             {
@@ -1701,7 +1737,7 @@ function MasterPage( sMasterPageId )
     }
 
     // We populate the collection of placeholders.
-    this.aPlaceholderShapeSet = new Object();
+    this.aPlaceholderShapeSet = {};
     this.initPlaceholderShapes();
 }
 
@@ -1771,12 +1807,10 @@ PlaceholderShape.prototype.init = function()
             // We exploit such a feature and the exported text adjust attribute
             // value in order to set up correctly the position and text
             // adjustment for the placeholder element.
-            var aSVGRectElemSet = aTextFieldElement.getElementsByTagName( 'rect' );
-            // As far as text field element exporting is implemented it should
-            // be only one <rect> element!
-            if( aSVGRectElemSet.length === 1)
+            var aSVGRectElem = getElementByClassName( aTextFieldElement, 'BoundingBox' );
+            if( aSVGRectElem )
             {
-                var aRect = new Rectangle( aSVGRectElemSet[0] );
+                var aRect = new Rectangle( aSVGRectElem );
                 var sTextAdjust = getOOOAttribute( aTextFieldElement, aOOOAttrTextAdjust ) || 'left';
                 var sTextAnchor, sX;
                 if( sTextAdjust == 'left' )
@@ -1801,26 +1835,29 @@ PlaceholderShape.prototype.init = function()
                     aPlaceholderElement.setAttribute( 'x', sX );
             }
 
-            this.element = aTextFieldElement;
-            this.textElement = aPlaceholderElement;
-
-            // We remove all text lines but the first one used as placeholder.
-            var aTextLineGroupElem = this.textElement.parentNode.parentNode;
-            if( aTextLineGroupElem )
+            // date/time fields were not exported correctly when positioned chars are used
+            if( this.masterPage.metaSlide.theMetaDoc.bIsUsePositionedChars )
             {
-                // Just to be sure it is the element we are looking for.
-                var sFontFamilyAttr = aTextLineGroupElem.getAttribute( 'font-family' );
-                if( sFontFamilyAttr )
+                // We remove all text lines but the first one used as placeholder.
+                var aTextLineGroupElem = aPlaceholderElement.parentNode.parentNode;
+                if( aTextLineGroupElem )
                 {
-                    var aChildSet = getElementChildren( aTextLineGroupElem );
-                    if( aChildSet.length > 1  )
-                        var i = 1;
-                    for( ; i < aChildSet.length; ++i )
+                    // Just to be sure it is the element we are looking for.
+                    var sFontFamilyAttr = aTextLineGroupElem.getAttribute( 'font-family' );
+                    if( sFontFamilyAttr )
                     {
-                        aTextLineGroupElem.removeChild( aChildSet[i] );
+                        var aChildSet = getElementChildren( aTextLineGroupElem );
+                        if( aChildSet.length > 1  )
+                            var i = 1;
+                        for( ; i < aChildSet.length; ++i )
+                        {
+                            aTextLineGroupElem.removeChild( aChildSet[i] );
+                        }
                     }
                 }
             }
+            this.element = aTextFieldElement;
+            this.textElement = aPlaceholderElement;
         }
     }
 };
@@ -1914,8 +1951,12 @@ MasterPageView.prototype.createElement = function()
     // that is also a workaround for some kind of slide transition
     // when the master page is empty
     var aWhiteRect = theDocument.createElementNS( NSS['svg'], 'rect' );
-    aWhiteRect.setAttribute( 'width', String( WIDTH ) );
-    aWhiteRect.setAttribute( 'height', String( HEIGHT) );
+    var nWidthExt = WIDTH / 1000;
+    var nHeightExt = HEIGHT / 1000;
+    aWhiteRect.setAttribute( 'x', String( -nWidthExt / 2 ) );
+    aWhiteRect.setAttribute( 'y', String( -nHeightExt / 2 ) );
+    aWhiteRect.setAttribute( 'width', String( WIDTH + nWidthExt ) );
+    aWhiteRect.setAttribute( 'height', String( HEIGHT + nHeightExt ) );
     aWhiteRect.setAttribute( 'fill', '#FFFFFF' );
     aMasterPageViewElement.appendChild( aWhiteRect );
 
@@ -1939,7 +1980,7 @@ MasterPageView.prototype.createElement = function()
 
         // clone and initialize text field elements
         var aBackgroundObjectSubGroupIdList = this.aMasterPage.aBackgroundObjectSubGroupIdList;
-        this.aBackgroundSubGroupElementSet = new Array();
+        this.aBackgroundSubGroupElementSet = [];
         var aPlaceholderShapeSet = this.aMasterPage.aPlaceholderShapeSet;
         var aTextFieldContentProviderSet = this.aMetaSlide.aTextFieldContentProviderSet;
         // where cloned elements are appended
@@ -3030,17 +3071,6 @@ function bind2( aFunction )
     return aResultFunction;
 }
 
-//function concat3( s1, s2, s3 )
-//{
-//    log( s1 + s2 + s3 );
-//}
-//
-//var bound1 = bind2( concat3, 'Qui' );
-//bound1( 'Quo', 'Qua' );
-//
-//var bound2 = bind2( concat3, 'Qui', 'Quo' );
-//bound2( 'Qua' );
-
 function getCurrentSystemTime()
 {
     return ( new Date() ).getTime();
@@ -3057,11 +3087,12 @@ function getSlideAnimationsRoot( sSlideId )
  *
  *  @param aElement   any XML element
  *
- *  @returns   an array that contains all children elements
+ *  @returns   Array
+ *      an array that contains all children elements
  */
 function getElementChildren( aElement )
 {
-    var aChildrenArray = new Array();
+    var aChildrenArray = [];
 
     var nSize = aElement.childNodes.length;
 
@@ -3080,8 +3111,8 @@ function removeWhiteSpaces( str )
         return '';
 
     var re = / */;
-    var aSplittedString = str.split( re );
-    return aSplittedString.join('');
+    var aSplitString = str.split( re );
+    return aSplitString.join('');
 }
 
 function clamp( nValue, nMinimum, nMaximum )
@@ -3612,7 +3643,7 @@ SVGPathElement.prototype.changeOrientation = function()
     var aMovePathSeg = this.createSVGPathSegMovetoAbs( nCurrentX, nCurrentY );
     aPathSegList.insertItemBefore( aMovePathSeg, 0 );
 
-}
+};
 
 /** matrixTransform and changeOrientation
  *  We implement these methods for each path segment type still present
@@ -3766,18 +3797,29 @@ function SVGPathMatrixTransform( aPath, aSVGMatrix )
 
 function PriorityQueue( aCompareFunc )
 {
-    this.aSequence = new Array();
+    this.aSequence = [];
     this.aCompareFunc = aCompareFunc;
-    this.bSorted = true;
 }
+
+PriorityQueue.prototype.clone = function()
+{
+    var aCopy = new PriorityQueue( this.aCompareFunc );
+    var src = this.aSequence;
+    var dest = [];
+    var i, l;
+    for( i = 0, l = src.length; i < l; ++i )
+    {
+        if( i in src )
+        {
+            dest.push( src[i] );
+        }
+    }
+    aCopy.aSequence = dest;
+    return aCopy;
+};
 
 PriorityQueue.prototype.top = function()
 {
-    if( !this.bSorted )
-    {
-        this.aSequence.sort(this.aCompareFunc)
-        this.bSorted = true;
-    }
     return this.aSequence[this.aSequence.length - 1];
 };
 
@@ -3788,26 +3830,21 @@ PriorityQueue.prototype.isEmpty = function()
 
 PriorityQueue.prototype.push = function( aValue )
 {
-    this.bSorted = false;
-    this.aSequence.push( aValue );
+    this.aSequence.unshift( aValue );
+    this.aSequence.sort(this.aCompareFunc);
 };
 
 PriorityQueue.prototype.clear = function()
 {
-    this.bSorted = true;
-    this.aSequence = new Array();
+    this.aSequence = [];
 };
 
 PriorityQueue.prototype.pop = function()
 {
-    if( !this.bSorted )
-    {
-        this.aSequence.sort(this.aCompareFunc)
-        this.bSorted = true;
-    }
-
     return this.aSequence.pop();
 };
+
+
 
 
 /**********************************************************************************************
@@ -4099,11 +4136,13 @@ BOXWIPE_TRANSITION          = 2;
 FOURBOXWIPE_TRANSITION      = 3;
 ELLIPSEWIPE_TRANSITION      = 4; // 17
 CLOCKWIPE_TRANSITION        = 5; // 22
-PINWHEELWIPE_TRANSITION     = 6;  // 23
+PINWHEELWIPE_TRANSITION     = 6; // 23
 PUSHWIPE_TRANSITION         = 7; // 35
 SLIDEWIPE_TRANSITION        = 8; // 36
 FADE_TRANSITION             = 9; // 37
-CHECKERBOARDWIPE_TRANSITION = 10; // 39
+RANDOMBARWIPE_TRANSITION    = 10; // 38
+CHECKERBOARDWIPE_TRANSITION = 11; // 39
+DISSOLVE_TRANSITION         = 12; // 40
 
 aTransitionTypeInMap = {
     'barWipe'           : BARWIPE_TRANSITION,
@@ -4115,12 +4154,14 @@ aTransitionTypeInMap = {
     'pushWipe'          : PUSHWIPE_TRANSITION,
     'slideWipe'         : SLIDEWIPE_TRANSITION,
     'fade'              : FADE_TRANSITION,
-    'checkerBoardWipe'  : CHECKERBOARDWIPE_TRANSITION
+    'randomBarWipe'     : RANDOMBARWIPE_TRANSITION,
+    'checkerBoardWipe'  : CHECKERBOARDWIPE_TRANSITION,
+    'dissolve'          : DISSOLVE_TRANSITION
 };
 
 aTransitionTypeOutMap = [ '', 'barWipe', 'boxWipe', 'fourBoxWipe', 'ellipseWipe',
                           'clockWipe', 'pinWheelWipe', 'pushWipe', 'slideWipe',
-                          'fade', 'checkerBoardWipe' ];
+                          'fade', 'randomBarWipe', 'checkerBoardWipe', 'dissolve' ];
 
 
 // Transition Subtypes
@@ -4131,7 +4172,7 @@ CORNERSIN_TRANS_SUBTYPE             = 3; // 11
 CORNERSOUT_TRANS_SUBTYPE            = 4;
 VERTICAL_TRANS_SUBTYPE              = 5;
 HORIZONTAL_TRANS_SUBTYPE            = 6; // 14
-DOWN_TRANS_SUBTYPE                  = 7  // 19
+DOWN_TRANS_SUBTYPE                  = 7; // 19
 CIRCLE_TRANS_SUBTYPE                = 8; // 27
 CLOCKWISETWELVE_TRANS_SUBTYPE       = 9; // 33
 CLOCKWISETHREE_TRANS_SUBTYPE        = 10;
@@ -4154,6 +4195,7 @@ ONEBLADE_TRANS_SUBTYPE              = 26; // 107
 ACROSS_TRANS_SUBTYPE                = 27;
 
 aTransitionSubtypeInMap = {
+    'default'           : DEFAULT_TRANS_SUBTYPE,
     'leftToRight'       : LEFTTORIGHT_TRANS_SUBTYPE,
     'topToBottom'       : TOPTOBOTTOM_TRANS_SUBTYPE,
     'cornersIn'         : CORNERSIN_TRANS_SUBTYPE,
@@ -4423,6 +4465,29 @@ aTransitionInfoTable[FADE_TRANSITION][FADEOVERCOLOR_TRANS_SUBTYPE] =
     'scaleIsotropically' : false
 };
 
+
+aTransitionInfoTable[RANDOMBARWIPE_TRANSITION] = {};
+aTransitionInfoTable[RANDOMBARWIPE_TRANSITION][VERTICAL_TRANS_SUBTYPE] =
+{
+    'class' : TRANSITION_CLIP_POLYPOLYGON,
+    'rotationAngle' : 90.0,
+    'scaleX' : 1.0,
+    'scaleY' : 1.0,
+    'reverseMethod' : REVERSEMETHOD_IGNORE,
+    'outInvertsSweep' : true,
+    'scaleIsotropically' : false
+};
+aTransitionInfoTable[RANDOMBARWIPE_TRANSITION][HORIZONTAL_TRANS_SUBTYPE] =
+{
+    'class' : TRANSITION_CLIP_POLYPOLYGON,
+    'rotationAngle' : 0.0,
+    'scaleX' : 1.0,
+    'scaleY' : 1.0,
+    'reverseMethod' : REVERSEMETHOD_IGNORE,
+    'outInvertsSweep' : true,
+    'scaleIsotropically' : false
+};
+
 aTransitionInfoTable[CHECKERBOARDWIPE_TRANSITION] = {};
 aTransitionInfoTable[CHECKERBOARDWIPE_TRANSITION][DOWN_TRANS_SUBTYPE] =
 {
@@ -4445,20 +4510,31 @@ aTransitionInfoTable[CHECKERBOARDWIPE_TRANSITION][ACROSS_TRANS_SUBTYPE] =
     'scaleIsotropically' : false
 };
 
+aTransitionInfoTable[DISSOLVE_TRANSITION] = {};
+aTransitionInfoTable[DISSOLVE_TRANSITION][DEFAULT_TRANS_SUBTYPE] =
+{
+    'class' : TRANSITION_CLIP_POLYPOLYGON,
+    'rotationAngle' : 0.0,
+    'scaleX' : 1.0,
+    'scaleY' : 1.0,
+    'reverseMethod' : REVERSEMETHOD_IGNORE,
+    'outInvertsSweep' : true,
+    'scaleIsotropically' : true
+};
+
 
 // Transition tables
 
 function createStateTransitionTable()
 {
-    var aSTT = {}
-    var aTable = null;
+    var aSTT = {};
 
     aSTT[RESTART_MODE_NEVER] = {};
     aSTT[RESTART_MODE_WHEN_NOT_ACTIVE] = {};
     aSTT[RESTART_MODE_ALWAYS] = {};
 
     // transition table for restart=NEVER, fill=REMOVE
-    aTable =
+    var aTable =
     aSTT[RESTART_MODE_NEVER][FILL_MODE_REMOVE] = {};
     aTable[INVALID_NODE]        = INVALID_NODE;
     aTable[UNRESOLVED_NODE]     = RESOLVED_NODE | ENDED_NODE;
@@ -4522,7 +4598,6 @@ function createStateTransitionTable()
     aTable[ACTIVE_NODE]         = RESOLVED_NODE | ACTIVE_NODE | FROZEN_NODE | ENDED_NODE;
     aTable[FROZEN_NODE]         = RESOLVED_NODE | ACTIVE_NODE | ENDED_NODE;  // restart is possible
     aTable[ENDED_NODE]          = RESOLVED_NODE | ACTIVE_NODE | ENDED_NODE;  // restart is possible
-
 
     return aSTT;
 }
@@ -4682,7 +4757,7 @@ Timing.prototype.parse = function()
         }
         else
         {
-            var aTimingSplit = new Array();
+            var aTimingSplit = [];
             bPositiveOffset = true;
             if( this.sTimingDescription.indexOf( '+' ) != -1 )
             {
@@ -5051,7 +5126,7 @@ function BaseNode( aAnimElem, aParentNode, aNodeContext )
     this.nStartDelay = aNodeContext.nStartDelay;
     this.eCurrentState = UNRESOLVED_NODE;
     this.nCurrentStateTransition = 0;
-    this.aDeactivatingListenerArray = new Array();
+    this.aDeactivatingListenerArray = [];
     this.aActivationEvent = null;
     this.aDeactivationEvent = null;
 
@@ -5089,13 +5164,13 @@ BaseNode.prototype.parseElement = function()
 
     // begin attribute
     this.aBegin = null;
-    var sBeginAttr = aAnimElem.getAttribute( 'begin' );
+    var sBeginAttr = aAnimElem.getAttributeNS( NSS['smil'], 'begin' );
     this.aBegin = new Timing( this, sBeginAttr );
     this.aBegin.parse();
 
     // end attribute
     this.aEnd = null;
-    var sEndAttr = aAnimElem.getAttribute( 'end' );
+    var sEndAttr = aAnimElem.getAttributeNS( NSS['smil'], 'end' );
     if( sEndAttr )
     {
         this.aEnd = new Timing( this, sEndAttr );
@@ -5104,7 +5179,7 @@ BaseNode.prototype.parseElement = function()
 
     // dur attribute
     this.aDuration = null;
-    var sDurAttr = aAnimElem.getAttribute( 'dur' );
+    var sDurAttr = aAnimElem.getAttributeNS( NSS['smil'], 'dur' );
     this.aDuration = new Duration( sDurAttr );
     if( !this.aDuration.isSet() )
     {
@@ -5115,47 +5190,47 @@ BaseNode.prototype.parseElement = function()
     }
 
     // fill attribute
-    var sFillAttr = aAnimElem.getAttribute( 'fill' );
+    var sFillAttr = aAnimElem.getAttributeNS( NSS['smil'], 'fill' );
     if( sFillAttr && aFillModeInMap[ sFillAttr ])
         this.eFillMode = aFillModeInMap[ sFillAttr ];
     else
         this.eFillMode = FILL_MODE_DEFAULT;
 
     // restart attribute
-    var sRestartAttr = aAnimElem.getAttribute( 'restart' );
+    var sRestartAttr = aAnimElem.getAttributeNS( NSS['smil'], 'restart' );
     if( sRestartAttr && aRestartModeInMap[ sRestartAttr ] )
         this.eRestartMode = aRestartModeInMap[ sRestartAttr ];
     else
         this.eRestartMode = RESTART_MODE_DEFAULT;
 
     // repeatCount attribute
-    var sRepeatCount = aAnimElem.getAttribute( 'repeatCount' );
+    var sRepeatCount = aAnimElem.getAttributeNS( NSS['smil'], 'repeatCount' );
     if( !sRepeatCount )
         this.nReapeatCount = 1;
     else
         this.nReapeatCount = parseFloat( sRepeatCount );
-    if( ( this.nReapeatCount == NaN ) && ( sRepeatCount != 'indefinite' ) )
+    if( ( isNaN(this.nReapeatCount) ) && ( sRepeatCount != 'indefinite' ) )
         this.nReapeatCount = 1;
 
     // accelerate attribute
     this.nAccelerate = 0.0;
-    var sAccelerateAttr = aAnimElem.getAttribute( 'accelerate' );
+    var sAccelerateAttr = aAnimElem.getAttributeNS( NSS['smil'], 'accelerate' );
     if( sAccelerateAttr )
         this.nAccelerate = parseFloat( sAccelerateAttr );
-    if( this.nAccelerate == NaN )
+    if( isNaN(this.nAccelerate) )
         this.nAccelerate = 0.0;
 
     // decelerate attribute
     this.nDecelerate = 0.0;
-    var sDecelerateAttr = aAnimElem.getAttribute( 'decelerate' );
+    var sDecelerateAttr = aAnimElem.getAttributeNS( NSS['smil'], 'decelerate' );
     if( sDecelerateAttr )
         this.nDecelerate = parseFloat( sDecelerateAttr );
-    if( this.nDecelerate == NaN )
+    if( isNaN(this.nDecelerate) )
         this.nDecelerate = 0.0;
 
     // autoReverse attribute
     this.bAutoreverse = false;
-    var sAutoReverseAttr = aAnimElem.getAttribute( 'autoReverse' );
+    var sAutoReverseAttr = aAnimElem.getAttributeNS( NSS['smil'], 'autoReverse' );
     if( sAutoReverseAttr == 'true' )
         this.bAutoreverse = true;
 
@@ -5343,7 +5418,7 @@ BaseNode.prototype.dispose = function()
         this.aActivationEvent.dispose();
     if( this.aDeactivationEvent )
         this.aDeactivationEvent.dispose();
-    this.aDeactivatingListenerArray = new Array();
+    this.aDeactivatingListenerArray = [];
 };
 
 BaseNode.prototype.getState = function()
@@ -5594,7 +5669,7 @@ function AnimationBaseNode( aAnimElem, aParentNode, aNodeContext )
     this.sClassName = 'AnimationBaseNode';
     this.bIsContainer = false;
     this.aTargetElement = null;
-    this.bIsTargetTextElement = false
+    this.bIsTargetTextElement = false;
     this.aAnimatedElement = null;
     this.aActivity = null;
 
@@ -5613,7 +5688,7 @@ AnimationBaseNode.prototype.parseElement = function()
 
     // targetElement attribute
     this.aTargetElement = null;
-    var sTargetElementAttr = aAnimElem.getAttribute( 'targetElement' );
+    var sTargetElementAttr = aAnimElem.getAttributeNS( NSS['smil'], 'targetElement' );
     if( sTargetElementAttr )
         this.aTargetElement = document.getElementById( sTargetElementAttr );
 
@@ -5624,11 +5699,11 @@ AnimationBaseNode.prototype.parseElement = function()
     }
 
     // sub-item attribute for text animated element
-    var sSubItemAttr = aAnimElem.getAttribute( 'sub-item' );
+    var sSubItemAttr = aAnimElem.getAttributeNS( NSS['anim'], 'sub-item' );
     this.bIsTargetTextElement = ( sSubItemAttr && ( sSubItemAttr === 'text' ) );
 
     // additive attribute
-    var sAdditiveAttr = aAnimElem.getAttribute( 'additive' );
+    var sAdditiveAttr = aAnimElem.getAttributeNS( NSS['smil'], 'additive' );
     if( sAdditiveAttr && aAddittiveModeInMap[sAdditiveAttr] )
         this.eAdditiveMode = aAddittiveModeInMap[sAdditiveAttr];
     else
@@ -5647,9 +5722,9 @@ AnimationBaseNode.prototype.parseElement = function()
     if( this.aTargetElement )
     {
         // set up target element initial visibility
-        if( aAnimElem.getAttribute( 'attributeName' ) === 'visibility' )
+        if( aAnimElem.getAttributeNS( NSS['smil'], 'attributeName' ) === 'visibility' )
         {
-            if( aAnimElem.getAttribute( 'to' ) === 'visible' )
+            if( aAnimElem.getAttributeNS( NSS['smil'], 'to' ) === 'visible' )
                 this.aTargetElement.setAttribute( 'visibility', 'hidden' );
         }
 
@@ -5855,7 +5930,7 @@ AnimationBaseNode2.prototype.parseElement = function()
     var aAnimElem = this.aElement;
 
     // attributeName attribute
-    this.sAttributeName = aAnimElem.getAttribute( 'attributeName' );
+    this.sAttributeName = aAnimElem.getAttributeNS( NSS['smil'], 'attributeName' );
     if( !this.sAttributeName )
     {
         this.eCurrentState = INVALID_NODE;
@@ -5863,7 +5938,7 @@ AnimationBaseNode2.prototype.parseElement = function()
     }
 
     // to attribute
-    this.aToValue = aAnimElem.getAttribute( 'to' );
+    this.aToValue = aAnimElem.getAttributeNS( NSS['smil'], 'to' );
 
     return bRet;
 };
@@ -5921,25 +5996,25 @@ AnimationBaseNode3.prototype.parseElement = function()
 
     // accumulate attribute
     this.eAccumulate = ACCUMULATE_MODE_NONE;
-    var sAccumulateAttr = aAnimElem.getAttribute( 'accumulate' );
+    var sAccumulateAttr = aAnimElem.getAttributeNS( NSS['smil'], 'accumulate' );
     if( sAccumulateAttr == 'sum' )
         this.eAccumulate = ACCUMULATE_MODE_SUM;
 
     // calcMode attribute
     this.eCalcMode = CALC_MODE_LINEAR;
-    var sCalcModeAttr = aAnimElem.getAttribute( 'calcMode' );
+    var sCalcModeAttr = aAnimElem.getAttributeNS( NSS['smil'], 'calcMode' );
     if( sCalcModeAttr && aCalcModeInMap[ sCalcModeAttr ] )
         this.eCalcMode = aCalcModeInMap[ sCalcModeAttr ];
 
     // from attribute
-    this.aFromValue = aAnimElem.getAttribute( 'from' );
+    this.aFromValue = aAnimElem.getAttributeNS( NSS['smil'], 'from' );
 
     // by attribute
-    this.aByValue = aAnimElem.getAttribute( 'by' );
+    this.aByValue = aAnimElem.getAttributeNS( NSS['smil'], 'by' );
 
     // keyTimes attribute
-    this.aKeyTimes = new Array();
-    var sKeyTimesAttr = aAnimElem.getAttribute( 'keyTimes' );
+    this.aKeyTimes = [];
+    var sKeyTimesAttr = aAnimElem.getAttributeNS( NSS['smil'], 'keyTimes' );
     sKeyTimesAttr = removeWhiteSpaces( sKeyTimesAttr );
     if( sKeyTimesAttr )
     {
@@ -5949,14 +6024,14 @@ AnimationBaseNode3.prototype.parseElement = function()
     }
 
     // values attribute
-    var sValuesAttr = aAnimElem.getAttribute( 'values' );
+    var sValuesAttr = aAnimElem.getAttributeNS( NSS['smil'], 'values' );
     if( sValuesAttr )
     {
         this.aValues = sValuesAttr.split( ';' );
     }
     else
     {
-        this.aValues = new Array();
+        this.aValues = [];
     }
 
     return bRet;
@@ -6034,7 +6109,7 @@ function BaseContainerNode( aAnimElem, aParentNode, aNodeContext )
 
     this.sClassName = 'BaseContainerNode';
     this.bIsContainer = true;
-    this.aChildrenArray = new Array();
+    this.aChildrenArray = [];
     this.nFinishedChildren = 0;
     this.bDurationIndefinite = false;
     this.nLeftIterations = 1;
@@ -6054,7 +6129,7 @@ BaseContainerNode.prototype.parseElement= function()
 
     // node-type attribute
     this.eImpressNodeType = IMPRESS_DEFAULT_NODE;
-    var sNodeTypeAttr = aAnimElem.getAttribute( 'node-type' );
+    var sNodeTypeAttr = aAnimElem.getAttributeNS( NSS['presentation'], 'node-type' );
     if( sNodeTypeAttr && aImpressNodeTypeInMap[ sNodeTypeAttr ] )
         this.eImpressNodeType = aImpressNodeTypeInMap[ sNodeTypeAttr ];
     this.bMainSequenceRootNode = ( this.eImpressNodeType == IMPRESS_MAIN_SEQUENCE_NODE );
@@ -6062,13 +6137,13 @@ BaseContainerNode.prototype.parseElement= function()
 
     // preset-class attribute
     this.ePresetClass =  undefined;
-    var sPresetClassAttr = aAnimElem.getAttribute( 'preset-class' );
+    var sPresetClassAttr = aAnimElem.getAttributeNS( NSS['presentation'], 'preset-class' );
     if( sPresetClassAttr && aPresetClassInMap[ sPresetClassAttr ] )
         this.ePresetClass = aPresetClassInMap[ sPresetClassAttr ];
 
     // preset-id attribute
     this.ePresetId =  undefined;
-    var sPresetIdAttr = aAnimElem.getAttribute( 'preset-id' );
+    var sPresetIdAttr = aAnimElem.getAttributeNS( NSS['presentation'], 'preset-id' );
     if( sPresetIdAttr && aPresetIdInMap[ sPresetIdAttr ] )
         this.ePresetId = aPresetIdInMap[ sPresetIdAttr ];
 
@@ -6256,7 +6331,7 @@ BaseContainerNode.prototype.saveStateOfAnimatedElement = function()
     {
         this.aChildrenArray[i].saveStateOfAnimatedElement();
     }
-}
+};
 
 BaseContainerNode.prototype.forEachChildNode = function( aFunction, eNodeStateMask )
 {
@@ -6770,13 +6845,13 @@ AnimationColorNode.prototype.parseElement = function()
 
     // color-interpolation attribute
     this.eColorInterpolation = COLOR_SPACE_RGB;
-    var sColorInterpolationAttr = aAnimElem.getAttribute( 'color-interpolation' );
+    var sColorInterpolationAttr = aAnimElem.getAttributeNS( NSS['anim'], 'color-interpolation' );
     if( sColorInterpolationAttr && aColorSpaceInMap[ sColorInterpolationAttr ] )
         this.eColorInterpolation = aColorSpaceInMap[ sColorInterpolationAttr ];
 
     // color-interpolation-direction attribute
     this.eColorInterpolationDirection = CLOCKWISE;
-    var sColorInterpolationDirectionAttr = aAnimElem.getAttribute( 'color-interpolation-direction' );
+    var sColorInterpolationDirectionAttr = aAnimElem.getAttributeNS( NSS['anim'], 'color-interpolation-direction' );
     if( sColorInterpolationDirectionAttr && aClockDirectionInMap[ sColorInterpolationDirectionAttr ] )
         this.eColorInterpolationDirection = aClockDirectionInMap[ sColorInterpolationDirectionAttr ];
 
@@ -6939,7 +7014,7 @@ AnimationTransitionFilterNode.prototype.parseElement = function()
 
     // type attribute
     this.eTransitionType = undefined;
-    var sTypeAttr = aAnimElem.getAttribute( 'type' );
+    var sTypeAttr = aAnimElem.getAttributeNS( NSS['smil'], 'type' );
     if( sTypeAttr && aTransitionTypeInMap[ sTypeAttr ] )
     {
         this.eTransitionType = aTransitionTypeInMap[ sTypeAttr ];
@@ -6952,8 +7027,10 @@ AnimationTransitionFilterNode.prototype.parseElement = function()
 
     // subtype attribute
     this.eTransitionSubType = undefined;
-    var sSubTypeAttr = aAnimElem.getAttribute( 'subtype' );
-    if( sSubTypeAttr && aTransitionSubtypeInMap[ sSubTypeAttr ] )
+    var sSubTypeAttr = aAnimElem.getAttributeNS( NSS['smil'], 'subtype' );
+    if( sSubTypeAttr === null )
+        sSubTypeAttr = 'default';
+    if( sSubTypeAttr && ( aTransitionSubtypeInMap[ sSubTypeAttr ] !== undefined  ) )
     {
         this.eTransitionSubType = aTransitionSubtypeInMap[ sSubTypeAttr ];
     }
@@ -6965,13 +7042,13 @@ AnimationTransitionFilterNode.prototype.parseElement = function()
 
     // direction attribute
     this.bReverseDirection = false;
-    var sDirectionAttr = aAnimElem.getAttribute( 'direction' );
+    var sDirectionAttr = aAnimElem.getAttributeNS( NSS['smil'], 'direction' );
     if( sDirectionAttr == 'reverse' )
         this.bReverseDirection = true;
 
     // mode attribute:
     this.eTransitionMode = TRANSITION_MODE_IN;
-    var sModeAttr = aAnimElem.getAttribute( 'mode' );
+    var sModeAttr = aAnimElem.getAttributeNS( NSS['smil'], 'mode' );
     if( sModeAttr === 'out' )
         this.eTransitionMode = TRANSITION_MODE_OUT;
 
@@ -7444,8 +7521,6 @@ function SlideChangeBase(aLeavingSlide, aEnteringSlide)
  */
 SlideChangeBase.prototype.start = function()
 {
-    if( this.bIsFinished )
-        return;
 };
 
 /** end
@@ -7756,7 +7831,7 @@ extend( ClippedSlideChange, SlideChangeBase );
 ClippedSlideChange.prototype.start = function()
 {
     ClippedSlideChange.superclass.start.call( this );
-    this.aEnteringSlide.notifyUsedAttribute( 'clip-path' );;
+    this.aEnteringSlide.notifyUsedAttribute( 'clip-path' );
     this.performIn( 0 );
     this.aEnteringSlide.show();
 };
@@ -7837,7 +7912,7 @@ function ClippingFunctor( aParametricPolyPolygon, aTransitionInfo,
         switch( aTransitionInfo.reverseMethod )
         {
             default:
-                log( 'ClippingFunctor: unexpected reverse method.' )
+                log( 'ClippingFunctor: unexpected reverse method.' );
                 break;
             case REVERSEMETHOD_IGNORE:
                 break;
@@ -7901,7 +7976,7 @@ ClippingFunctor.aBoundingPath.setAttribute( 'd', 'M -1 -1 L 2 -1 L 2 2 L -1 2 L 
  *      The width of the bounding box of the slide/shape to be clipped.
  *  @param nHeight
  *      The height of the bounding box of the slide/shape to be clipped.
- *  @return {SVGPathElement}
+ *  @return SVGPathElement
  *      A svg <path> element representing the path to be used for the clipping
  *      operation.
  */
@@ -7995,8 +8070,12 @@ function createClipPolyPolygon( nType, nSubtype )
                     return null;
             }
             return new PinWheelWipePath( nBlades );
+        case RANDOMBARWIPE_TRANSITION:
+            return new RandomWipePath( 128, true /* bars */ );
         case CHECKERBOARDWIPE_TRANSITION:
             return new CheckerBoardWipePath( 10 );
+        case DISSOLVE_TRANSITION:
+            return new RandomWipePath( 16 * 16, false /* dissolve */ );
     }
 }
 
@@ -8007,6 +8086,14 @@ function createUnitSquarePath()
 {
     var aPath = document.createElementNS( NSS['svg'], 'path' );
     var sD = 'M 0 0 L 1 0 L 1 1 L 0 1 L 0 0';
+    aPath.setAttribute( 'd', sD );
+    return aPath;
+}
+
+function createEmptyPath()
+{
+    var aPath = document.createElementNS( NSS['svg'], 'path' );
+    var sD = 'M 0 0 L 0 0';
     aPath.setAttribute( 'd', sD );
     return aPath;
 }
@@ -8040,7 +8127,7 @@ function BarWipePath( nBars /* nBars > 1: blinds effect */ )
  *
  *  @param nT
  *      A parameter in [0,1] representing the width of the generated bars.
- *  @return {SVGPathElement}
+ *  @return SVGPathElement
  *      A svg <path> element representing a multi-bars.
  */
 BarWipePath.prototype.perform = function( nT )
@@ -8269,7 +8356,7 @@ function CheckerBoardWipePath( unitsPerEdge )
  *
  *  @param nT
  *      A parameter in [0,1] representing the width of the generated bars.
- *  @return {SVGPathElement}
+ *  @return SVGPathElement
  *      A svg <path> element representing a multi-bars.
  */
 CheckerBoardWipePath.prototype.perform = function( nT )
@@ -8308,6 +8395,100 @@ CheckerBoardWipePath.prototype.perform = function( nT )
 
 
 
+/** Class RandomWipePath
+ *
+ *  @param nElements
+ *     The number of bars or cells to be used.
+ *  @param bRandomBars
+ *     true: generates a horizontal random bar wipe
+ *     false: generates a dissolve wipe
+ */
+function RandomWipePath( nElements, bRandomBars )
+{
+    this.nElements = nElements;
+    this.aBasePath = createUnitSquarePath();
+    this.aPositionArray = new Array( nElements );
+    this.aClipPath = createEmptyPath();
+    this.nAlreadyAppendedElements = 0;
+
+    var fEdgeLength, nPos, aTransform;
+
+    if( bRandomBars ) // random bar wipe
+    {
+        fEdgeLength = 1.0 / nElements;
+        for( nPos = 0; nPos < nElements; ++nPos )
+        {
+            this.aPositionArray[nPos] = { x: 0.0, y: pruneScaleValue( nPos * fEdgeLength ) }
+        }
+        aTransform = SVGIdentityMatrix.scaleNonUniform( 1.0, pruneScaleValue( fEdgeLength ) );
+    }
+    else // dissolve wipe
+    {
+        var nSqrtElements = Math.round( Math.sqrt( nElements ) );
+        fEdgeLength = 1.0 / nSqrtElements;
+        for( nPos = 0; nPos < nElements; ++nPos )
+        {
+            this.aPositionArray[nPos] = {
+                x: pruneScaleValue( ( nPos % nSqrtElements ) * fEdgeLength ),
+                y: pruneScaleValue( ( nPos / nSqrtElements ) * fEdgeLength ) }
+        }
+        aTransform = SVGIdentityMatrix.scale( pruneScaleValue( fEdgeLength ) );
+    }
+    this.aBasePath.matrixTransform( aTransform );
+
+    var nPos1, nPos2;
+    var tmp;
+    for( nPos1 = nElements - 1; nPos1 > 0; --nPos1 )
+    {
+        nPos2 = getRandomInt( nPos1 + 1 );
+        tmp = this.aPositionArray[nPos1];
+        this.aPositionArray[nPos1] = this.aPositionArray[nPos2];
+        this.aPositionArray[nPos2] = tmp;
+    }
+}
+
+/** perform
+ *
+ *  @param nT
+ *      A parameter in [0,1] representing the width of the generated bars or squares.
+ *  @return SVGPathElement
+ *      A svg <path> element representing a multi bars or a multi squared cells.
+ */
+RandomWipePath.prototype.perform = function( nT )
+{
+    var aPolyPath = createEmptyPath();
+    var aPoint;
+    var aPath;
+    var aTransform;
+    var nElements = Math.round( nT * this.nElements );
+    if( nElements === 0 )
+    {
+        return aPolyPath;
+    }
+    // check if we need to reset the clip path
+    if( this.nAlreadyAppendedElements >= nElements )
+    {
+        this.nAlreadyAppendedElements = 0;
+        this.aClipPath = createEmptyPath();
+    }
+    var nPos;
+    for( nPos = this.nAlreadyAppendedElements; nPos < nElements; ++nPos )
+    {
+        aPoint = this.aPositionArray[nPos];
+        aPath = this.aBasePath.cloneNode( true );
+        aTransform = SVGIdentityMatrix.translate( aPoint.x, aPoint.y );
+        aPath.matrixTransform( aTransform );
+        aPolyPath.appendPath( aPath );
+    }
+
+    this.nAlreadyAppendedElements = nElements;
+    this.aClipPath.appendPath( aPolyPath );
+
+    return this.aClipPath.cloneNode( true );
+};
+
+
+
 /** Class AnimatedSlide
  *  This class handle a slide element during a slide transition.
  *
@@ -8323,9 +8504,9 @@ function AnimatedSlide( aMetaSlide )
 
     this.aMetaSlide = aMetaSlide;
     this.aSlideElement = this.aMetaSlide.slideElement;
-    this.sSlideId =  this.aMetaSlide.slideId;
+    this.sSlideId = this.aMetaSlide.slideId;
 
-    this.aUsedAttributeSet = new Array();
+    this.aUsedAttributeSet = [];
 
     this.aClipPathElement = null;
     this.aClipPathContent = null;
@@ -8386,7 +8567,7 @@ AnimatedSlide.prototype.reset = function()
         var sAttrName = this.aUsedAttributeSet[i];
         this.aSlideElement.removeAttribute( sAttrName );
     }
-    this.aUsedAttributeSet = new Array();
+    this.aUsedAttributeSet = [];
 };
 
 /** initClipPath
@@ -8448,7 +8629,7 @@ AnimatedSlide.prototype.insertBefore = function( aElement )
 {
     if( aElement )
     {
-         this.aSlideElement.parentNode.insertBefore( aElement, this.aSlideElement );
+        this.aSlideElement.parentNode.insertBefore( aElement, this.aSlideElement );
     }
 };
 
@@ -8476,7 +8657,7 @@ AnimatedSlide.prototype.removeElement = function( aElement )
 {
     if( aElement )
     {
-         this.aSlideElement.parentNode.removeChild( aElement );
+        this.aSlideElement.parentNode.removeChild( aElement );
     }
 };
 
@@ -8568,7 +8749,7 @@ function AnimatedElement( aElement )
     this.aClipPathContent = null;
 
     this.aPreviousElement = null;
-    this.aStateSet = new Object();
+    this.aStateSet = {};
 
     this.eAdditiveMode = ADDITIVE_MODE_REPLACE;
     this.bIsUpdated = true;
@@ -8722,7 +8903,7 @@ AnimatedElement.prototype.saveState = function( nAnimationNodeId )
     ANIMDBG.print( 'AnimatedElement(' + this.getId() + ').saveState(' + nAnimationNodeId +')' );
     if( !this.aStateSet[ nAnimationNodeId ] )
     {
-        this.aStateSet[ nAnimationNodeId ] = new Object();
+        this.aStateSet[ nAnimationNodeId ] = {};
     }
     var aState = this.aStateSet[ nAnimationNodeId ];
     aState.aElement = this.aActiveElement.cloneNode( true );
@@ -9171,7 +9352,7 @@ function AnimatedTextElement( aElement, aEventMultiplexer )
         var aBulletCharGroupElem = getElementByClassName( aTextShapeGroup, 'BulletChars' );
         if( aBulletCharGroupElem )
         {
-            var aBulletPlaceholderElem = getElementByClassName( aElement.firstElementChild, 'BulletPlaceholder' );
+            var aBulletPlaceholderElem = getElementByClassName( aElement, 'BulletPlaceholder' );
             if( aBulletPlaceholderElem )
             {
                 var sId = aBulletPlaceholderElem.getAttribute( 'id' );
@@ -9198,12 +9379,12 @@ function AnimatedTextElement( aElement, aEventMultiplexer )
     }
 
     // In case there are embedded bitmaps we need to clone them
-    var aBitmapElemSet = new Array();
-    var aBitmapCloneSet = new Array();
+    var aBitmapElemSet = [];
+    var aBitmapCloneSet = [];
     var aBitmapPlaceholderSet = getElementsByClassName( aElement, 'BitmapPlaceholder' );
+    var i;
     if( aBitmapPlaceholderSet )
     {
-        var i;
         for( i = 0; i < aBitmapPlaceholderSet.length; ++i )
         {
             sId = aBitmapPlaceholderSet[i].getAttribute( 'id' );
@@ -9284,11 +9465,10 @@ function AnimatedTextElement( aElement, aEventMultiplexer )
     this.nRunningAnimations = 0;
 
     // we collect all hyperlink ids
-    this.aHyperlinkIdSet = new Array();
+    this.aHyperlinkIdSet = [];
     var aHyperlinkElementSet = getElementsByClassName( this.aParagraphElement, 'UrlField' );
-    var i = 0;
     var sHyperlinkId;
-    for( ; i < aHyperlinkElementSet.length; ++i )
+    for( i = 0; i < aHyperlinkElementSet.length; ++i )
     {
         sHyperlinkId = aHyperlinkElementSet[i].getAttribute( 'id' );
         if( sHyperlinkId )
@@ -9296,7 +9476,6 @@ function AnimatedTextElement( aElement, aEventMultiplexer )
         else
             log( 'error: AnimatedTextElement constructor: hyperlink element has no id' );
     }
-
 
     AnimatedTextElement.superclass.constructor.call( this, aAnimatableElement, aEventMultiplexer );
 
@@ -9431,7 +9610,7 @@ function SlideTransition( aAnimationsRootElement, aSlideId )
     if( aAnimationsRootElement )
     {
         if( aAnimationsRootElement.firstElementChild &&
-            ( aAnimationsRootElement.firstElementChild.getAttribute( 'begin' ) === (this.sSlideId + '.begin') ) )
+            ( aAnimationsRootElement.firstElementChild.getAttributeNS( NSS['smil'], 'begin' ) === (this.sSlideId + '.begin') ) )
         {
             var aTransitionFilterElement = aAnimationsRootElement.firstElementChild.firstElementChild;
             if( aTransitionFilterElement && ( aTransitionFilterElement.localName === 'transitionFilter' ) )
@@ -9569,7 +9748,7 @@ SlideTransition.prototype.parseElement = function()
 
     // type attribute
     this.eTransitionType = undefined;
-    var sTypeAttr = aAnimElem.getAttribute( 'type' );
+    var sTypeAttr = aAnimElem.getAttributeNS( NSS['smil'], 'type' );
     if( sTypeAttr && aTransitionTypeInMap[ sTypeAttr ] )
     {
         this.eTransitionType = aTransitionTypeInMap[ sTypeAttr ];
@@ -9581,8 +9760,10 @@ SlideTransition.prototype.parseElement = function()
 
     // subtype attribute
     this.eTransitionSubType = undefined;
-    var sSubTypeAttr = aAnimElem.getAttribute( 'subtype' );
-    if( sSubTypeAttr && aTransitionSubtypeInMap[ sSubTypeAttr ] )
+    var sSubTypeAttr = aAnimElem.getAttributeNS( NSS['smil'], 'subtype' );
+    if( sSubTypeAttr === null )
+        sSubTypeAttr = 'default';
+    if( sSubTypeAttr && ( aTransitionSubtypeInMap[ sSubTypeAttr ] !== undefined ) )
     {
         this.eTransitionSubType = aTransitionSubtypeInMap[ sSubTypeAttr ];
         this.bIsValid = true;
@@ -9594,7 +9775,7 @@ SlideTransition.prototype.parseElement = function()
 
     // direction attribute
     this.bReverseDirection = false;
-    var sDirectionAttr = aAnimElem.getAttribute( 'direction' );
+    var sDirectionAttr = aAnimElem.getAttributeNS( NSS['smil'], 'direction' );
     if( sDirectionAttr == 'reverse' )
         this.bReverseDirection = true;
 
@@ -9605,7 +9786,7 @@ SlideTransition.prototype.parseElement = function()
           this.eTransitionSubType == FADEOVERCOLOR_TRANS_SUBTYPE ||
           this.eTransitionSubType == FADETOCOLOR_TRANS_SUBTYPE ) )
     {
-        var sColorAttr = aAnimElem.getAttribute( 'fadeColor' );
+        var sColorAttr = aAnimElem.getAttributeNS( NSS['smil'], 'fadeColor' );
         if( sColorAttr )
             this.sFadeColor = sColorAttr;
         else
@@ -9615,7 +9796,7 @@ SlideTransition.prototype.parseElement = function()
 
     // dur attribute
     this.aDuration = null;
-    var sDurAttr = aAnimElem.getAttribute( 'dur' );
+    var sDurAttr = aAnimElem.getAttributeNS( NSS['smil'], 'dur' );
     this.aDuration = new Duration( sDurAttr );
     if( !this.aDuration.isSet() )
     {
@@ -9705,11 +9886,11 @@ SlideTransition.prototype.info = function()
 function SlideAnimations( aSlideShowContext )
 {
     this.aContext = new NodeContext( aSlideShowContext );
-    this.aAnimationNodeMap = new Object();
-    this.aAnimatedElementMap = new Object();
-    this.aSourceEventElementMap = new Object();
+    this.aAnimationNodeMap = {};
+    this.aAnimatedElementMap = {};
+    this.aSourceEventElementMap = {};
     this.aNextEffectEventArray = new NextEffectEventArray();
-    this.aInteractiveAnimationSequenceMap = new Object();
+    this.aInteractiveAnimationSequenceMap = {};
     this.aEventMultiplexer = new EventMultiplexer( aSlideShowContext.aTimerEventQueue );
     this.aRootNode = null;
     this.bElementsParsed = false;
@@ -9787,10 +9968,7 @@ SlideAnimations.prototype.start = function()
         return false;
 
     // resolve root node
-    if( !this.aRootNode.resolve() )
-        return false;
-
-    return true;
+    return this.aRootNode.resolve();
 };
 
 SlideAnimations.prototype.end = function( bLeftEffectsSkipped )
@@ -9984,8 +10162,7 @@ function registerEvent( nNodeId, aTiming, aEvent, aNodeContext )
 
                     if( !aInteractiveAnimationSequenceMap[ nNodeId ] )
                     {
-                        var aInteractiveAnimationSequence = new InteractiveAnimationSequence( nNodeId );
-                        aInteractiveAnimationSequenceMap[ nNodeId ] = aInteractiveAnimationSequence;
+                        aInteractiveAnimationSequenceMap[ nNodeId ] = new InteractiveAnimationSequence(nNodeId);
                     }
 
                     var bEventRegistered = false;
@@ -10227,7 +10404,6 @@ HyperlinkElement.prototype.handleClick = function( aMouseEvent )
         }
     }
 
-
     return true;
 };
 
@@ -10326,14 +10502,27 @@ function PriorityEntry( aValue, nPriority )
  *      An instance of type PriorityEntry.
  *  @param aRhsEntry
  *      An instance of type PriorityEntry.
- *  @return {Boolean}
- *      True if the first entry has higher priority of the second entry,
- *      false otherwise.
+ *  @return Integer
+ *      -1 if the left entry has lower priority of the right entry,
+ *       1 if the left entry has higher priority of the right entry,
+ *       0 if the two entry have the same priority
  */
 PriorityEntry.compare = function( aLhsEntry, aRhsEntry )
 {
-    return ( aLhsEntry.nPriority < aRhsEntry.nPriority );
+    if ( aLhsEntry.nPriority < aRhsEntry.nPriority )
+    {
+        return -1;
+    }
+    else if (aLhsEntry.nPriority > aRhsEntry.nPriority)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 };
+
 
 
 
@@ -10341,17 +10530,17 @@ function EventMultiplexer( aTimerEventQueue )
 {
     this.nId = EventMultiplexer.getUniqueId();
     this.aTimerEventQueue = aTimerEventQueue;
-    this.aEventMap = new Object();
-    this.aSkipEffectEndHandlerSet = new Array();
+    this.aEventMap = {};
+    this.aSkipEffectEndHandlerSet = [];
     this.aMouseClickHandlerSet = new PriorityQueue( PriorityEntry.compare );
     this.aSkipEffectEvent = null;
     this.aRewindCurrentEffectEvent = null;
     this.aRewindLastEffectEvent = null;
-    this.aSkipInteractiveEffectEventSet = new Object();
-    this.aRewindRunningInteractiveEffectEventSet = new Object();
-    this.aRewindEndedInteractiveEffectEventSet = new Object();
-    this.aRewindedEffectHandlerSet = new Object();
-    this.aElementChangedHandlerSet = new Object();
+    this.aSkipInteractiveEffectEventSet = {};
+    this.aRewindRunningInteractiveEffectEventSet = {};
+    this.aRewindEndedInteractiveEffectEventSet = {};
+    this.aRewindedEffectHandlerSet = {};
+    this.aElementChangedHandlerSet = {};
 }
 
 EventMultiplexer.CURR_UNIQUE_ID = 0;
@@ -10365,12 +10554,12 @@ EventMultiplexer.getUniqueId = function()
 EventMultiplexer.prototype.getId = function()
 {
     return this.nId;
-}
+};
 
 EventMultiplexer.prototype.hasRegisteredMouseClickHandlers = function()
 {
     return !this.aMouseClickHandlerSet.isEmpty();
-}
+};
 
 EventMultiplexer.prototype.registerMouseClickHandler = function( aHandler, nPriority )
 {
@@ -10395,11 +10584,11 @@ EventMultiplexer.prototype.registerEvent = function( eEventType, aNotifierId, aE
     this.DBG( 'registerEvent', eEventType, aNotifierId );
     if( !this.aEventMap[ eEventType ] )
     {
-        this.aEventMap[ eEventType ] = new Object();
+        this.aEventMap[ eEventType ] = {};
     }
     if( !this.aEventMap[ eEventType ][ aNotifierId ] )
     {
-        this.aEventMap[ eEventType ][ aNotifierId ] = new Array();
+        this.aEventMap[ eEventType ][ aNotifierId ] = [];
     }
     this.aEventMap[ eEventType ][ aNotifierId ].push( aEvent );
 };
@@ -10434,7 +10623,7 @@ EventMultiplexer.prototype.notifyNextEffectEndEvent = function()
     {
         (this.aSkipEffectEndHandlerSet[i])();
     }
-    this.aSkipEffectEndHandlerSet = new Array();
+    this.aSkipEffectEndHandlerSet = [];
 };
 
 EventMultiplexer.prototype.registerSkipEffectEvent = function( aEvent )
@@ -10534,7 +10723,7 @@ EventMultiplexer.prototype.notifyRewindedEffectEvent = function( aNotifierId )
 EventMultiplexer.prototype.registerElementChangedHandler = function( aNotifierId, aHandler )
 {
     this.aElementChangedHandlerSet[ aNotifierId ] = aHandler;
-}
+};
 
 EventMultiplexer.prototype.notifyElementChangedEvent = function( aNotifierId, aElement )
 {
@@ -10563,7 +10752,7 @@ EventMultiplexer.prototype.DBG = function( sMethodName, eEventType, aNotifierId,
  *      Interpolator Handler and KeyStopLerp
  **********************************************************************************************/
 
-var aInterpolatorHandler = new Object();
+var aInterpolatorHandler = {};
 
 aInterpolatorHandler.getInterpolator = function( eCalcMode, eValueType, eValueSubtype )
 {
@@ -10585,9 +10774,9 @@ aInterpolatorHandler.getInterpolator = function( eCalcMode, eValueType, eValueSu
     }
 };
 
-aInterpolatorHandler.aLerpFunctorMap = new Array();
-aInterpolatorHandler.aLerpFunctorMap[ CALC_MODE_DISCRETE ] = new Array();
-aInterpolatorHandler.aLerpFunctorMap[ CALC_MODE_LINEAR ] = new Array();
+aInterpolatorHandler.aLerpFunctorMap = [];
+aInterpolatorHandler.aLerpFunctorMap[ CALC_MODE_DISCRETE ] = [];
+aInterpolatorHandler.aLerpFunctorMap[ CALC_MODE_LINEAR ] = [];
 
 
 // interpolators for linear calculation
@@ -10598,7 +10787,7 @@ aInterpolatorHandler.aLerpFunctorMap[ CALC_MODE_LINEAR ][ NUMBER_PROPERTY ] =
         return ( ( 1.0 - nT )* nFrom + nT * nTo );
     };
 
-aInterpolatorHandler.aLerpFunctorMap[ CALC_MODE_LINEAR ][ COLOR_PROPERTY ] = new Array();
+aInterpolatorHandler.aLerpFunctorMap[ CALC_MODE_LINEAR ][ COLOR_PROPERTY ] = [];
 
 aInterpolatorHandler.aLerpFunctorMap[ CALC_MODE_LINEAR ][ COLOR_PROPERTY ][ COLOR_SPACE_RGB ] =
     function ( nFrom, nTo, nT )
@@ -10624,7 +10813,7 @@ function KeyStopLerp( aValueList )
 {
     KeyStopLerp.validateInput( aValueList );
 
-    this.aKeyStopList = new Array();
+    this.aKeyStopList = [];
     this.nLastIndex = 0;
     this.nKeyStopDistance = aValueList[1] - aValueList[0];
     if( this.nKeyStopDistance <= 0 )
@@ -10676,7 +10865,7 @@ KeyStopLerp.prototype.lerp = function( nAlpha )
 
     nRawLerp = clamp( nRawLerp, 0.0, 1.0 );
 
-    var aResult = new Object();
+    var aResult = {};
     aResult.nIndex = this.nLastIndex;
     aResult.nLerp = nRawLerp;
 
@@ -10705,7 +10894,7 @@ KeyStopLerp.prototype.lerp_ported = function( nAlpha )
 
     nRawLerp = clamp( nRawLerp, 0.0, 1.0 );
 
-    var aResult = new Object();
+    var aResult = {};
     aResult.nIndex = this.nLastIndex;
     aResult.nLerp = nRawLerp;
 
@@ -10718,10 +10907,10 @@ KeyStopLerp.prototype.lerp_ported = function( nAlpha )
  *      Operators
  **********************************************************************************************/
 
-var aOperatorSetMap = new Array();
+var aOperatorSetMap = [];
 
 // number operators
-aOperatorSetMap[ NUMBER_PROPERTY ] = new Object();
+aOperatorSetMap[ NUMBER_PROPERTY ] = {};
 
 aOperatorSetMap[ NUMBER_PROPERTY ].equal = function( a, b )
 {
@@ -10739,7 +10928,7 @@ aOperatorSetMap[ NUMBER_PROPERTY ].scale = function( k, v )
 };
 
 // color operators
-aOperatorSetMap[ COLOR_PROPERTY ] = new Object();
+aOperatorSetMap[ COLOR_PROPERTY ] = {};
 
 aOperatorSetMap[ COLOR_PROPERTY ].equal = function( a, b )
 {
@@ -10780,7 +10969,7 @@ function ActivityParamSet()
     this.nDecelerationFraction = 0.0;
     this.nSlideWidth = undefined;
     this.nSlideHeight = undefined;
-    this.aDiscreteTimes = new Array();
+    this.aDiscreteTimes = [];
 }
 
 
@@ -11051,10 +11240,7 @@ ActivityBase.prototype.getTargetElement = function()
 
 ActivityBase.prototype.isRepeatCountValid = function()
 {
-    if( this.nRepeats )
-        return true;
-    else
-        return false;
+    return !!this.nRepeats; // first ! convert to bool
 };
 
 ActivityBase.prototype.getRepeatCount = function()
@@ -11854,7 +12040,7 @@ function createValueListActivity( aActivityParamSet, aAnimationNode, aAnimation,
 
     var aValueSet = aAnimationNode.getValues();
 
-    var aValueList = new Array();
+    var aValueList = [];
 
     extractAttributeValues( eValueType,
                             aValueList,
@@ -11883,7 +12069,7 @@ function createFromToByActivity( aActivityParamSet, aAnimationNode, aAnimation,
     var aOperatorSet = aOperatorSetMap[ eValueType ];
     assert( aOperatorSet, 'createFromToByActivity: no operator set found' );
 
-    var aValueSet = new Array();
+    var aValueSet = [];
     aValueSet[0] = aAnimationNode.getFromValue();
     aValueSet[1] = aAnimationNode.getToValue();
     aValueSet[2] = aAnimationNode.getByValue();
@@ -11893,7 +12079,7 @@ function createFromToByActivity( aActivityParamSet, aAnimationNode, aAnimation,
                     ', aTo = ' + aValueSet[1] +
                     ', aBy = ' + aValueSet[2] );
 
-    var aValueList = new Array();
+    var aValueList = [];
 
     extractAttributeValues( eValueType,
                             aValueList,
@@ -11993,8 +12179,7 @@ function Effect( nId )
 {
     this.nId = ( typeof( nId ) === typeof( 1 ) ) ? nId : -1;
     this.eState = Effect.NOT_STARTED;
-};
-
+}
 Effect.NOT_STARTED = 0;
 Effect.PLAYING = 1;
 Effect.ENDED = 2;
@@ -12058,8 +12243,8 @@ function SlideShow()
     this.bIsSkipping = false;
     this.bIsSkippingAll = false;
     this.nTotalInteractivePlayingEffects = 0;
-    this.aStartedEffectList = new Array();
-    this.aStartedEffectIndexMap = new Object();
+    this.aStartedEffectList = [];
+    this.aStartedEffectIndexMap = {};
     this.aStartedEffectIndexMap[ -1 ] = undefined;
 }
 
@@ -12190,8 +12375,8 @@ SlideShow.prototype.notifySlideStart = function( nNewSlideIndex, nOldSlideIndex 
     this.bIsSkipping = false;
     this.bIsSkippingAll = false;
     this.nTotalInteractivePlayingEffects = 0;
-    this.aStartedEffectList = new Array();
-    this.aStartedEffectIndexMap = new Object();
+    this.aStartedEffectList = [];
+    this.aStartedEffectIndexMap = {};
     this.aStartedEffectIndexMap[ -1 ] = undefined;
 
     var aAnimatedElementMap;
@@ -12210,7 +12395,21 @@ SlideShow.prototype.notifySlideStart = function( nNewSlideIndex, nOldSlideIndex 
 
 SlideShow.prototype.notifyTransitionEnd = function( nSlideIndex )
 {
-    theMetaDoc.setCurrentSlide( nSlideIndex );
+    // reset the presentation clip path on the leaving slide
+    // to the standard one when transition ends
+    if( theMetaDoc.getCurrentSlide() )
+    {
+        var sRef = 'url(#' + aPresentationClipPathId + ')';
+        theMetaDoc.getCurrentSlide().slideElement.setAttribute('clip-path', sRef);
+    }
+
+    theMetaDoc.setCurrentSlide(nSlideIndex);
+
+    if( this.aSlideViewElement )
+    {
+        theMetaDoc.getCurrentSlide().aVisibilityStatusElement.parentNode.removeChild( this.aSlideViewElement );
+        this.aSlideViewElement = null;
+    }
     if( this.isEnabled() )
     {
         // clear all queues
@@ -12233,7 +12432,7 @@ SlideShow.prototype.notifyInteractiveAnimationSequenceStart = function( nNodeId 
 SlideShow.prototype.notifyInteractiveAnimationSequenceEnd = function( nNodeId )
 {
     assert( this.isInteractiveEffectPlaying(),
-            'SlideShow.notifyInteractiveAnimationSequenceEnd: no interactive effect playing.' )
+            'SlideShow.notifyInteractiveAnimationSequenceEnd: no interactive effect playing.' );
 
     this.aStartedEffectList[ this.aStartedEffectIndexMap[ nNodeId ] ].end();
     --this.nTotalInteractivePlayingEffects;
@@ -12561,16 +12760,43 @@ SlideShow.prototype.displaySlide = function( nNewSlide, bSkipSlideTransition )
     if( this.isEnabled() && !bSkipSlideTransition  )
     {
         // create slide transition and add to activity queue
-        if ( ( nOldSlide !== undefined ) &&
-            ( ( nNewSlide > nOldSlide ) ||
-              ( ( nNewSlide == 0) && ( nOldSlide == (aMetaDoc.nNumberOfSlides - 1) ) ) ) )
+        if ( ( ( nOldSlide !== undefined ) &&
+               ( ( nNewSlide > nOldSlide ) ||
+               ( ( nNewSlide == 0) && ( nOldSlide == (aMetaDoc.nNumberOfSlides - 1) ) ) ) ) ||
+             (  ( nOldSlide === undefined ) &&  ( nNewSlide == 0) )  // for transition on first slide
+           )
         {
-            var aOldMetaSlide = aMetaDoc.aMetaSlideSet[nOldSlide];
+
+            var aOldMetaSlide = null;
+            if( nOldSlide === undefined ) // for transition on first slide
+            {
+                aOldMetaSlide = aMetaDoc.theMetaDummySlide;
+            }
+            else
+            {
+                aOldMetaSlide = aMetaDoc.aMetaSlideSet[nOldSlide];
+            }
             var aNewMetaSlide = aMetaDoc.aMetaSlideSet[nNewSlide];
 
             var aSlideTransitionHandler = aNewMetaSlide.aTransitionHandler;
             if( aSlideTransitionHandler && aSlideTransitionHandler.isValid() )
             {
+                // clipPath element used for the leaving slide in order
+                // to avoid that slide borders are visible during transition
+                var sRef = 'url(#' + aPresentationClipPathShrinkId + ')';
+                aOldMetaSlide.slideElement.setAttribute( 'clip-path', sRef );
+
+                // when we switch from the last to the first slide we need to hide the last slide
+                // or nobody will see the transition, hence we create a view of the last slide and
+                // we place it before the first slide
+                if( nOldSlide > nNewSlide )
+                {
+                    this.aSlideViewElement = document.createElementNS( NSS['svg'], 'use' );
+                    setNSAttribute( 'xlink', this.aSlideViewElement, 'href', '#' + aOldMetaSlide.slideContainerId );
+                    aNewMetaSlide.aVisibilityStatusElement.parentNode.insertBefore( this.aSlideViewElement, aNewMetaSlide.aVisibilityStatusElement );
+                    aOldMetaSlide.hide();
+                }
+
                 var aLeavingSlide = aOldMetaSlide;
                 var aEnteringSlide = aNewMetaSlide;
                 var aTransitionEndEvent = makeEvent( bind2( this.notifyTransitionEnd, this, nNewSlide ) );
@@ -12736,7 +12962,7 @@ FrameSynchronization.prototype.deactivate = function()
 
 function NextEffectEventArray()
 {
-    this.aEventArray = new Array();
+    this.aEventArray = [];
 }
 
 
@@ -12768,7 +12994,7 @@ NextEffectEventArray.prototype.appendEvent = function( aEvent )
 
 NextEffectEventArray.prototype.clear = function( )
 {
-    this.aEventArray = new Array();
+    this.aEventArray = [];
 };
 
 
@@ -12880,7 +13106,18 @@ function EventEntry( aEvent, nTime )
 
 EventEntry.compare = function( aLhsEventEntry, aRhsEventEntry )
 {
-    return ( aLhsEventEntry.nActivationTime > aRhsEventEntry.nActivationTime );
+    if ( aLhsEventEntry.nActivationTime > aRhsEventEntry.nActivationTime )
+    {
+        return -1;
+    }
+    else if ( aLhsEventEntry.nActivationTime < aRhsEventEntry.nActivationTime )
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 };
 
 
@@ -12889,9 +13126,9 @@ EventEntry.compare = function( aLhsEventEntry, aRhsEventEntry )
 function ActivityQueue( aTimer )
 {
     this.aTimer = aTimer;
-    this.aCurrentActivityWaitingSet = new Array();
-    this.aCurrentActivityReinsertSet = new Array();
-    this.aDequeuedActivitySet = new Array();
+    this.aCurrentActivityWaitingSet = [];
+    this.aCurrentActivityReinsertSet = [];
+    this.aDequeuedActivitySet = [];
 }
 
 
@@ -12954,7 +13191,7 @@ ActivityQueue.prototype.process = function()
     {
         // TODO: optimization, try to swap reference here
         this.aCurrentActivityWaitingSet = this.aCurrentActivityReinsertSet;
-        this.aCurrentActivityReinsertSet = new Array();
+        this.aCurrentActivityReinsertSet = [];
     }
 };
 
@@ -12965,7 +13202,7 @@ ActivityQueue.prototype.processDequeued = function()
     for( var i = 0; i < nSize; ++i )
         this.aDequeuedActivitySet[i].dequeued();
 
-    this.aDequeuedActivitySet = new Array();
+    this.aDequeuedActivitySet = [];
 };
 
 ActivityQueue.prototype.isEmpty = function()
@@ -12981,12 +13218,12 @@ ActivityQueue.prototype.clear = function()
     var i;
     for( i = 0; i < nSize; ++i )
         this.aCurrentActivityWaitingSet[i].dequeued();
-    this.aCurrentActivityWaitingSet = new Array();
+    this.aCurrentActivityWaitingSet = [];
 
     nSize = this.aCurrentActivityReinsertSet.length;
     for( i = 0; i < nSize; ++i )
         this.aCurrentActivityReinsertSet[i].dequeued();
-    this.aCurrentActivityReinsertSet = new Array();
+    this.aCurrentActivityReinsertSet = [];
 };
 
 ActivityQueue.prototype.endAll = function()
@@ -12996,12 +13233,12 @@ ActivityQueue.prototype.endAll = function()
     var i;
     for( i = 0; i < nSize; ++i )
         this.aCurrentActivityWaitingSet[i].end();
-    this.aCurrentActivityWaitingSet = new Array();
+    this.aCurrentActivityWaitingSet = [];
 
     nSize = this.aCurrentActivityReinsertSet.length;
     for( i = 0; i < nSize; ++i )
         this.aCurrentActivityReinsertSet[i].end();
-    this.aCurrentActivityReinsertSet = new Array();
+    this.aCurrentActivityReinsertSet = [];
 };
 
 ActivityQueue.prototype.getTimer = function()

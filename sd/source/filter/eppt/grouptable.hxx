@@ -26,16 +26,16 @@ struct GroupEntry
 {
     sal_uInt32                  mnCurrentPos;
     sal_uInt32                  mnCount;
-    ::com::sun::star::uno::Reference< ::com::sun::star::container::XIndexAccess >           mXIndexAccess;
+    css::uno::Reference< css::container::XIndexAccess >           mXIndexAccess;
 
-    GroupEntry( ::com::sun::star::uno::Reference< ::com::sun::star::container::XIndexAccess > & rIndex )
+    explicit GroupEntry( css::uno::Reference< css::container::XIndexAccess > & rIndex )
     {
         mXIndexAccess = rIndex;
         mnCount =mXIndexAccess->getCount();
         mnCurrentPos = 0;
     };
 
-    GroupEntry( sal_uInt32 nCount )
+    explicit GroupEntry( sal_uInt32 nCount )
     {
         mnCount = nCount;
         mnCurrentPos = 0;
@@ -60,13 +60,13 @@ class GroupTable
 
         sal_uInt32              GetCurrentGroupIndex() const { return mnIndex; };
         sal_Int32               GetCurrentGroupLevel() const { return mnCurrentGroupEntry - 1; };
-        ::com::sun::star::uno::Reference< ::com::sun::star::container::XIndexAccess > &
+        css::uno::Reference< css::container::XIndexAccess > &
                                 GetCurrentGroupAccess() const { return mpGroupEntry[  mnCurrentGroupEntry - 1 ]->mXIndexAccess; };
         sal_uInt32              GetGroupsClosed();
         void                    ResetGroupTable( sal_uInt32 nCount );
         void                    ClearGroupTable();
-        bool                EnterGroup( ::com::sun::star::uno::Reference< ::com::sun::star::container::XIndexAccess > & rIndex );
-        bool                GetNextGroupEntry();
+        bool                    EnterGroup( css::uno::Reference< css::container::XIndexAccess > & rIndex );
+        bool                    GetNextGroupEntry();
                                 GroupTable();
                                 ~GroupTable();
 };

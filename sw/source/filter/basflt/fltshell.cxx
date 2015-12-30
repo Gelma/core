@@ -64,13 +64,14 @@
 #include <fltshell.hxx>
 #include <viewsh.hxx>
 #include <shellres.hxx>
+#include <rdfhelper.hxx>
 
 using namespace com::sun::star;
 
 static SwContentNode* GetContentNode(SwDoc* pDoc, SwNodeIndex& rIdx, bool bNext)
 {
     SwContentNode * pCNd = rIdx.GetNode().GetContentNode();
-    if(!pCNd && 0 == (pCNd = bNext ? pDoc->GetNodes().GoNext(&rIdx)
+    if(!pCNd && nullptr == (pCNd = bNext ? pDoc->GetNodes().GoNext(&rIdx)
                                      : SwNodes::GoPrevious(&rIdx)))
     {
         pCNd = bNext ? SwNodes::GoPrevious(&rIdx)
@@ -78,6 +79,14 @@ static SwContentNode* GetContentNode(SwDoc* pDoc, SwNodeIndex& rIdx, bool bNext)
         OSL_ENSURE(pCNd, "no ContentNode found");
     }
     return pCNd;
+}
+
+static OUString lcl_getTypePath(const OUString& rType)
+{
+    OUString aRet;
+    if (rType == "urn:tscp:names:baf:1.1")
+        aRet = "tscp/baf.rdf";
+    return aRet;
 }
 
 // Stack entry for all text attributes
@@ -329,7 +338,7 @@ SwFltStackEntry* SwFltControlStack::SetAttr(const SwPosition& rPos,
     sal_uInt16 nAttrId, bool bTstEnde, long nHand,
     bool consumedByField)
 {
-    SwFltStackEntry *pRet = NULL;
+    SwFltStackEntry *pRet = nullptr;
 
     SwFltPosition aFltPos(rPos);
 
@@ -354,7 +363,7 @@ SwFltStackEntry* SwFltControlStack::SetAttr(const SwPosition& rPos,
             }
             else if (nAttrId == rEntry.pAttr->Which())
             {
-                if( nAttrId != RES_FLTR_BOOKMARK && nAttrId != RES_FLTR_ANNOTATIONMARK )
+                if( nAttrId != RES_FLTR_BOOKMARK && nAttrId != RES_FLTR_ANNOTATIONMARK && nAttrId != RES_FLTR_RDFMARK )
                 {
                     // query handle
                     bF = true;
@@ -364,6 +373,10 @@ SwFltStackEntry* SwFltControlStack::SetAttr(const SwPosition& rPos,
                     bF = true;
                 }
                 else if (nAttrId == RES_FLTR_ANNOTATIONMARK && nHand == static_cast<CntUInt16Item*>(rEntry.pAttr)->GetValue())
+                {
+                    bF = true;
+                }
+                else if (nAttrId == RES_FLTR_RDFMARK && nHand == static_cast<SwFltRDFMark*>(rEntry.pAttr)->GetHandle())
                 {
                     bF = true;
                 }
@@ -516,7 +529,7 @@ void SwFltControlStack::SetAttrInDoc(const SwPosition& rTmpPos,
     case RES_FLTR_ANCHOR:
         {
             SwFrameFormat* pFormat = static_cast<SwFltAnchor*>(rEntry.pAttr)->GetFrameFormat();
-            if (pFormat != NULL)
+            if (pFormat != nullptr)
             {
                 MakePoint(rEntry, pDoc, aRegion);
                 SwFormatAnchor aAnchor(pFormat->GetAnchor());
@@ -527,7 +540,7 @@ void SwFltControlStack::SetAttrInDoc(const SwPosition& rTmpPos,
                 if(pDoc->getIDocumentLayoutAccess().GetCurrentViewShell()
                    && (FLY_AT_PARA == pFormat->GetAnchor().GetAnchorId()))
                 {
-                    pFormat->MakeFrms();
+                    pFormat->MakeFrames();
                 }
             }
         }
@@ -610,6 +623,34 @@ void SwFltControlStack::SetAttrInDoc(const SwPosition& rTmpPos,
                 SAL_WARN("sw", "failed to make book region or point");
         }
         break;
+    case RES_FLTR_RDFMARK:
+        {
+            if (MakeBookRegionOrPoint(rEntry, pDoc, aRegion, true))
+            {
+                SwFltRDFMark* pMark = static_cast<SwFltRDFMark*>(rEntry.pAttr);
+                if (aRegion.GetNode().IsTextNode())
+                {
+                    SwTextNode& rTextNode = *aRegion.GetNode().GetTextNode();
+
+                    for (const std::pair<OUString, OUString>& rAttribute : pMark->GetAttributes())
+                    {
+                        sal_Int32 nIndex = rAttribute.first.indexOf('#');
+                        if (nIndex == -1)
+                            continue;
+
+                        OUString aTypeNS = rAttribute.first.copy(0, nIndex);
+                        OUString aMetadataFilePath = lcl_getTypePath(aTypeNS);
+                        if (aMetadataFilePath.isEmpty())
+                            continue;
+
+                        SwRDFHelper::addTextNodeStatement(aTypeNS, aMetadataFilePath, rTextNode, rAttribute.first, rAttribute.second);
+                    }
+                }
+            }
+            else
+                SAL_WARN("sw", "failed to make book region or point");
+        }
+        break;
     case RES_FLTR_TOX:
         {
             MakePoint(rEntry, pDoc, aRegion);
@@ -621,7 +662,7 @@ void SwFltControlStack::SetAttrInDoc(const SwPosition& rTmpPos,
             // test if on this node there had been a pagebreak BEFORE the
             //     tox attribute was put on the stack
             SfxItemSet aBkSet( pDoc->GetAttrPool(), RES_PAGEDESC, RES_BREAK );
-            SwContentNode* pNd = 0;
+            SwContentNode* pNd = nullptr;
             if( !pTOXAttr->HadBreakItem() || !pTOXAttr->HadPageDescItem() )
             {
                 pNd = pPoint->nNode.GetNode().GetContentNode();
@@ -669,7 +710,7 @@ void SwFltControlStack::SetAttrInDoc(const SwPosition& rTmpPos,
                                         rFltRedline.nAutorNoPrev,
                                         rFltRedline.aStampPrev,
                                         OUString(),
-                                        0
+                                        nullptr
                                         );
                     pDoc->getIDocumentRedlineAccess().AppendRedline(new SwRangeRedline(aData, aRegion), true);
                 }
@@ -677,7 +718,7 @@ void SwFltControlStack::SetAttrInDoc(const SwPosition& rTmpPos,
                                     rFltRedline.nAutorNo,
                                     rFltRedline.aStamp,
                                     OUString(),
-                                    0
+                                    nullptr
                                     );
                 pDoc->getIDocumentRedlineAccess().AppendRedline( new SwRangeRedline(aData, aRegion), true );
                 pDoc->getIDocumentRedlineAccess().SetRedlineMode((RedlineMode_t)( nsRedlineMode_t::REDLINE_NONE
@@ -742,7 +783,7 @@ SfxPoolItem* SwFltControlStack::GetFormatStackAttr(sal_uInt16 nWhich, sal_uInt16
             return rEntry.pAttr;      // Ok, so stop
         }
     }
-    return 0;
+    return nullptr;
 }
 
 const SfxPoolItem* SwFltControlStack::GetOpenStackAttr(const SwPosition& rPos, sal_uInt16 nWhich)
@@ -759,7 +800,7 @@ const SfxPoolItem* SwFltControlStack::GetOpenStackAttr(const SwPosition& rPos, s
             return rEntry.pAttr;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 void SwFltControlStack::Delete(const SwPaM &rPam)
@@ -896,11 +937,11 @@ void  SwFltAnchorClient::Modify(const SfxPoolItem *, const SfxPoolItem * pNew)
     {
         const SwFormatChg * pFormatChg = dynamic_cast<const SwFormatChg *> (pNew);
 
-        if (pFormatChg != NULL)
+        if (pFormatChg != nullptr)
         {
             SwFrameFormat * pFrameFormat = dynamic_cast<SwFrameFormat *> (pFormatChg->pChangedFormat);
 
-            if (pFrameFormat != NULL)
+            if (pFrameFormat != nullptr)
                 m_pFltAnchor->SetFrameFormat(pFrameFormat);
         }
     }
@@ -957,6 +998,54 @@ bool SwFltBookmark::operator==(const SfxPoolItem& rItem) const
 SfxPoolItem* SwFltBookmark::Clone(SfxItemPool*) const
 {
     return new SwFltBookmark(*this);
+}
+
+SwFltRDFMark::SwFltRDFMark()
+    : SfxPoolItem(RES_FLTR_RDFMARK),
+      m_nHandle(0)
+{
+}
+
+SwFltRDFMark::SwFltRDFMark(const SwFltRDFMark& rMark)
+    : SfxPoolItem(RES_FLTR_RDFMARK),
+      m_nHandle(rMark.m_nHandle),
+      m_aAttributes(rMark.m_aAttributes)
+{
+}
+
+bool SwFltRDFMark::operator==(const SfxPoolItem& rItem) const
+{
+    if (!SfxPoolItem::operator==(rItem))
+        return false;
+
+    const SwFltRDFMark& rMark = static_cast<const SwFltRDFMark&>(rItem);
+
+    return m_nHandle == rMark.m_nHandle && m_aAttributes == rMark.m_aAttributes;
+}
+
+SfxPoolItem* SwFltRDFMark::Clone(SfxItemPool*) const
+{
+    return new SwFltRDFMark(*this);
+}
+
+void SwFltRDFMark::SetHandle(long nHandle)
+{
+    m_nHandle = nHandle;
+}
+
+long SwFltRDFMark::GetHandle() const
+{
+    return m_nHandle;
+}
+
+void SwFltRDFMark::SetAttributes(const std::vector< std::pair<OUString, OUString> >& rAttributes)
+{
+    m_aAttributes = rAttributes;
+}
+
+const std::vector< std::pair<OUString, OUString> >& SwFltRDFMark::GetAttributes() const
+{
+    return m_aAttributes;
 }
 
 // methods of SwFltTOX follow

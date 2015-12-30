@@ -24,8 +24,9 @@
 
 #include <boost/unordered_map.hpp>
 
-#include "path.hxx"
+#include <config_dconf.h>
 
+#include "path.hxx"
 
 namespace configmgr {
 
@@ -45,15 +46,17 @@ public:
 
     void remove(Path const & path);
 
+#if ENABLE_DCONF
     void clear() { root_.children.clear(); }
+#endif
 
     bool empty() const { return root_.children.empty(); }
 
     Node const & getRoot() const { return root_;}
 
 private:
-    Modifications(const Modifications&) SAL_DELETED_FUNCTION;
-    Modifications& operator=(const Modifications&) SAL_DELETED_FUNCTION;
+    Modifications(const Modifications&) = delete;
+    Modifications& operator=(const Modifications&) = delete;
 
     Node root_;
 };

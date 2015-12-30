@@ -140,27 +140,27 @@ const SfxFilter* SfxFilter::GetFilterByName( const OUString& rName )
 
 OUString SfxFilter::GetTypeFromStorage( const SotStorage& rStg )
 {
-    const char* pType=0;
-    if ( rStg.IsStream( OUString("WordDocument") ) )
+    const char* pType=nullptr;
+    if ( rStg.IsStream( "WordDocument" ) )
     {
-        if ( rStg.IsStream( OUString("0Table") ) || rStg.IsStream( OUString("1Table") ) )
+        if ( rStg.IsStream( "0Table" ) || rStg.IsStream( "1Table" ) )
             pType = "writer_MS_Word_97";
         else
             pType = "writer_MS_Word_95";
     }
-    else if ( rStg.IsStream( OUString("Book") ) )
+    else if ( rStg.IsStream( "Book" ) )
     {
         pType = "calc_MS_Excel_95";
     }
-    else if ( rStg.IsStream( OUString("Workbook" ) ) )
+    else if ( rStg.IsStream( "Workbook" ) )
     {
         pType = "calc_MS_Excel_97";
     }
-    else if ( rStg.IsStream( OUString("PowerPoint Document") ) )
+    else if ( rStg.IsStream( "PowerPoint Document" ) )
     {
         pType = "impress_MS_PowerPoint_97";
     }
-    else if ( rStg.IsStream( OUString("Equation Native") ) )
+    else if ( rStg.IsStream( "Equation Native" ) )
     {
         pType = "math_MathType_3x";
     }
@@ -191,14 +191,14 @@ OUString SfxFilter::GetTypeFromStorage(
         pFilterName->clear();
     }
 
-    com::sun::star::uno::Reference< com::sun::star::beans::XPropertySet > xProps( xStorage, com::sun::star::uno::UNO_QUERY );
+    css::uno::Reference< css::beans::XPropertySet > xProps( xStorage, css::uno::UNO_QUERY );
     if ( xProps.is() )
     {
         OUString aMediaType;
         xProps->getPropertyValue("MediaType") >>= aMediaType;
         if ( !aMediaType.isEmpty() )
         {
-            ::com::sun::star::datatransfer::DataFlavor aDataFlavor;
+            css::datatransfer::DataFlavor aDataFlavor;
             aDataFlavor.MimeType = aMediaType;
             SotClipboardFormatId nClipId = SotExchange::GetFormat( aDataFlavor );
             if ( nClipId != SotClipboardFormatId::NONE )
@@ -211,7 +211,7 @@ OUString SfxFilter::GetTypeFromStorage(
                     // template filters shouldn't be detected if not explicitly asked for
                     nDont |= SfxFilterFlags::TEMPLATEPATH;
 
-                const SfxFilter* pFilter = 0;
+                const SfxFilter* pFilter = nullptr;
                 if (!aName.isEmpty())
                     // get preselected Filter if it matches the desired filter flags
                     pFilter = aMatcher.GetFilter4FilterName( aName, nMust, nDont );

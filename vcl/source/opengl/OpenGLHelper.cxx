@@ -66,6 +66,7 @@ OString loadShader(const OUString& rFilename)
 {
     OUString aFileURL = getShaderFolder() + rFilename +".glsl";
     osl::File aFile(aFileURL);
+    SAL_INFO("vcl.opengl", "Reading " << aFileURL);
     if(aFile.open(osl_File_OpenFlag_Read) == osl::FileBase::E_None)
     {
         sal_uInt64 nSize = 0;
@@ -83,6 +84,18 @@ OString loadShader(const OUString& rFilename)
     }
 
     return OString();
+}
+
+OString& getShaderSource(const OUString& rFilename)
+{
+    static std::unordered_map<OUString, OString, OUStringHash> aMap;
+
+    if (aMap.find(rFilename) == aMap.end())
+    {
+        aMap[rFilename] = loadShader(rFilename);
+    }
+
+    return aMap[rFilename];
 }
 
 }
@@ -108,9 +121,9 @@ namespace {
         {
             std::vector<char> ErrorMessage(InfoLogLength+1);
             if (bShaderNotProgram)
-                glGetShaderInfoLog (nId, InfoLogLength, NULL, &ErrorMessage[0]);
+                glGetShaderInfoLog (nId, InfoLogLength, nullptr, &ErrorMessage[0]);
             else
-                glGetProgramInfoLog(nId, InfoLogLength, NULL, &ErrorMessage[0]);
+                glGetProgramInfoLog(nId, InfoLogLength, nullptr, &ErrorMessage[0]);
             CHECK_GL_ERROR();
 
             ErrorMessage.push_back('\0');
@@ -189,8 +202,8 @@ namespace
                              const OString& rPreamble )
     {
         // read shaders source
-        OString aVertexShaderSource = loadShader( rVertexShaderName );
-        OString aFragmentShaderSource = loadShader( rFragmentShaderName );
+        OString aVertexShaderSource = getShaderSource( rVertexShaderName );
+        OString aFragmentShaderSource = getShaderSource( rFragmentShaderName );
 
         // get info about the graphic device
 #if defined( SAL_UNX ) && !defined( MACOSX ) && !defined( IOS )&& !defined( ANDROID )
@@ -249,7 +262,7 @@ namespace
             // to the already saved binary, since they have the same hash value
             if( eStatus == osl::FileBase::E_EXIST )
             {
-                SAL_WARN( "vcl.opengl",
+                SAL_INFO( "vcl.opengl",
                         "No binary program saved. A file with the same hash already exists: '" << rBinaryFileName << "'" );
                 return true;
             }
@@ -276,7 +289,7 @@ namespace
             sal_uInt64 nBytesRead = 0;
             aFile.read( rBinary.data(), nSize, nBytesRead );
             assert( nSize == nBytesRead );
-            SAL_WARN("vcl.opengl", "Loading file: '" << rBinaryFileName << "': success" );
+            SAL_INFO("vcl.opengl", "Loading file: '" << rBinaryFileName << "': success" );
             return true;
         }
         else
@@ -289,12 +302,15 @@ namespace
 
     OString createFileName( const OUString& rVertexShaderName,
                             const OUString& rFragmentShaderName,
+                            const OUString& rGeometryShaderName,
                             const OString& rDigest )
     {
         OString aFileName;
         aFileName += getCacheFolder();
         aFileName += rtl::OUStringToOString( rVertexShaderName, RTL_TEXTENCODING_UTF8 ) + "-";
         aFileName += rtl::OUStringToOString( rFragmentShaderName, RTL_TEXTENCODING_UTF8 ) + "-";
+        if (!rGeometryShaderName.isEmpty())
+            aFileName += rtl::OUStringToOString( rGeometryShaderName, RTL_TEXTENCODING_UTF8 ) + "-";
         aFileName += rDigest + ".bin";
         return aFileName;
     }
@@ -338,7 +354,7 @@ namespace
 
         std::vector<sal_uInt8> aBinary( nBinaryLength + GLenumSize );
 
-        glGetProgramBinary( nProgramID, nBinaryLength, NULL, &nBinaryFormat, aBinary.data() );
+        glGetProgramBinary( nProgramID, nBinaryLength, nullptr, &nBinaryFormat, aBinary.data() );
 
         const sal_uInt8* pBF = reinterpret_cast<const sal_uInt8*>(&nBinaryFormat);
         aBinary.insert( aBinary.end(), pBF, pBF + GLenumSize );
@@ -350,7 +366,7 @@ namespace
         if( !writeProgramBinary( rBinaryFileName, aBinary ) )
             SAL_WARN("vcl.opengl", "Writing binary file '" << rBinaryFileName << "': FAIL");
         else
-            SAL_WARN("vcl.opengl", "Writing binary file '" << rBinaryFileName << "': success");
+            SAL_INFO("vcl.opengl", "Writing binary file '" << rBinaryFileName << "': success");
     }
 }
 
@@ -363,6 +379,7 @@ rtl::OString OpenGLHelper::GetDigest( const OUString& rVertexShaderName,
 
 GLint OpenGLHelper::LoadShaders(const OUString& rVertexShaderName,
                                 const OUString& rFragmentShaderName,
+                                const OUString& rGeometryShaderName,
                                 const OString& preamble,
                                 const OString& rDigest)
 {
@@ -370,30 +387,41 @@ GLint OpenGLHelper::LoadShaders(const OUString& rVertexShaderName,
 
     gbInShaderCompile = true;
 
+    bool bHasGeometryShader = !rGeometryShaderName.isEmpty();
+
     // create the program object
     GLint ProgramID = glCreateProgram();
 
     // read shaders from file
-    OString aVertexShaderSource = loadShader(rVertexShaderName);
-    OString aFragmentShaderSource = loadShader(rFragmentShaderName);
+    OString aVertexShaderSource = getShaderSource(rVertexShaderName);
+    OString aFragmentShaderSource = getShaderSource(rFragmentShaderName);
+    OString aGeometryShaderSource;
+    if (bHasGeometryShader)
+        aGeometryShaderSource = getShaderSource(rGeometryShaderName);
 
     GLint bBinaryResult = GL_FALSE;
     if( GLEW_ARB_get_program_binary && !rDigest.isEmpty() )
     {
         OString aFileName =
-                createFileName(rVertexShaderName, rFragmentShaderName, rDigest);
+                createFileName(rVertexShaderName, rFragmentShaderName, rGeometryShaderName, rDigest);
         bBinaryResult = loadProgramBinary(ProgramID, aFileName);
-        VCL_GL_INFO("vcl.opengl", "Load binary shader from '" << aFileName << "'" << bBinaryResult);
+        VCL_GL_INFO("Load binary shader from '" << aFileName << "'" << bBinaryResult);
         CHECK_GL_ERROR();
     }
 
     if( bBinaryResult != GL_FALSE )
         return ProgramID;
 
-    VCL_GL_INFO("vcl.opengl", "Load shader: vertex " << rVertexShaderName << " fragment " << rFragmentShaderName);
+    if (bHasGeometryShader)
+        VCL_GL_INFO("Load shader: vertex " << rVertexShaderName << " fragment " << rFragmentShaderName << " geometry " << rGeometryShaderName);
+    else
+        VCL_GL_INFO("Load shader: vertex " << rVertexShaderName << " fragment " << rFragmentShaderName);
     // Create the shaders
     GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
     GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+    GLuint GeometryShaderID = 0;
+    if (bHasGeometryShader)
+        GeometryShaderID = glCreateShader(GL_GEOMETRY_SHADER);
 
     GLint Result = GL_FALSE;
 
@@ -401,7 +429,7 @@ GLint OpenGLHelper::LoadShaders(const OUString& rVertexShaderName,
     if( !preamble.isEmpty())
         addPreamble( aVertexShaderSource, preamble );
     char const * VertexSourcePointer = aVertexShaderSource.getStr();
-    glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
+    glShaderSource(VertexShaderID, 1, &VertexSourcePointer , nullptr);
     glCompileShader(VertexShaderID);
 
     // Check Vertex Shader
@@ -414,7 +442,7 @@ GLint OpenGLHelper::LoadShaders(const OUString& rVertexShaderName,
     if( !preamble.isEmpty())
         addPreamble( aFragmentShaderSource, preamble );
     char const * FragmentSourcePointer = aFragmentShaderSource.getStr();
-    glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , NULL);
+    glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , nullptr);
     glCompileShader(FragmentShaderID);
 
     // Check Fragment Shader
@@ -423,9 +451,27 @@ GLint OpenGLHelper::LoadShaders(const OUString& rVertexShaderName,
         return LogCompilerError(FragmentShaderID, "fragment",
                                 rFragmentShaderName, true);
 
+    if (bHasGeometryShader)
+    {
+        // Compile Geometry Shader
+        if( !preamble.isEmpty())
+            addPreamble( aGeometryShaderSource, preamble );
+        char const * GeometrySourcePointer = aGeometryShaderSource.getStr();
+        glShaderSource(GeometryShaderID, 1, &GeometrySourcePointer , nullptr);
+        glCompileShader(GeometryShaderID);
+
+        // Check Geometry Shader
+        glGetShaderiv(GeometryShaderID, GL_COMPILE_STATUS, &Result);
+        if (!Result)
+            return LogCompilerError(GeometryShaderID, "geometry",
+                                    rGeometryShaderName, true);
+    }
+
     // Link the program
     glAttachShader(ProgramID, VertexShaderID);
     glAttachShader(ProgramID, FragmentShaderID);
+    if (bHasGeometryShader)
+        glAttachShader(ProgramID, GeometryShaderID);
 
     if( GLEW_ARB_get_program_binary && !rDigest.isEmpty() )
     {
@@ -438,7 +484,7 @@ GLint OpenGLHelper::LoadShaders(const OUString& rVertexShaderName,
             return LogCompilerError(ProgramID, "program", "<both>", false);
         }
         OString aFileName =
-                createFileName(rVertexShaderName, rFragmentShaderName, rDigest);
+                createFileName(rVertexShaderName, rFragmentShaderName, rGeometryShaderName, rDigest);
         saveProgramBinary(ProgramID, aFileName);
     }
     else
@@ -448,6 +494,8 @@ GLint OpenGLHelper::LoadShaders(const OUString& rVertexShaderName,
 
     glDeleteShader(VertexShaderID);
     glDeleteShader(FragmentShaderID);
+    if (bHasGeometryShader)
+        glDeleteShader(GeometryShaderID);
 
     // Check the program
     glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
@@ -463,6 +511,27 @@ GLint OpenGLHelper::LoadShaders(const OUString& rVertexShaderName,
     return ProgramID;
 }
 
+GLint OpenGLHelper::LoadShaders(const OUString& rVertexShaderName,
+                                const OUString& rFragmentShaderName,
+                                const OString& preamble,
+                                const OString& rDigest)
+{
+    return LoadShaders(rVertexShaderName, rFragmentShaderName, OUString(), preamble, rDigest);
+}
+
+GLint OpenGLHelper::LoadShaders(const OUString& rVertexShaderName,
+                                const OUString& rFragmentShaderName,
+                                const OUString& rGeometryShaderName)
+{
+    return LoadShaders(rVertexShaderName, rFragmentShaderName, rGeometryShaderName, OString(), OString());
+}
+
+GLint OpenGLHelper::LoadShaders(const OUString& rVertexShaderName,
+                                const OUString& rFragmentShaderName)
+{
+    return LoadShaders(rVertexShaderName, rFragmentShaderName, OUString(), "", "");
+}
+
 void OpenGLHelper::ConvertBitmapExToRGBATextureBuffer(const BitmapEx& rBitmapEx, sal_uInt8* o_pRGBABuffer, const bool bFlip)
 {
     long nBmpWidth = rBitmapEx.GetSizePixel().Width();
@@ -475,7 +544,7 @@ void OpenGLHelper::ConvertBitmapExToRGBATextureBuffer(const BitmapEx& rBitmapEx,
     size_t i = 0;
     for (long ny = (bFlip ? nBmpHeight - 1 : 0); (bFlip ? ny >= 0 : ny < nBmpHeight); (bFlip ? ny-- : ny++))
     {
-        Scanline pAScan = pAlphaReadAccess ? pAlphaReadAccess->GetScanline(ny) : 0;
+        Scanline pAScan = pAlphaReadAccess ? pAlphaReadAccess->GetScanline(ny) : nullptr;
         for(long nx = 0; nx < nBmpWidth; nx++)
         {
             BitmapColor aCol = pReadAccces->GetColor( ny, nx );
@@ -552,7 +621,7 @@ const char* OpenGLHelper::GLErrorString(GLenum errorCode)
         {GL_OUT_OF_MEMORY, "out of memory"},
         {GL_INVALID_FRAMEBUFFER_OPERATION, "invalid framebuffer operation"},
 
-        {0, NULL }
+        {0, nullptr }
     };
 
     int i;
@@ -565,7 +634,7 @@ const char* OpenGLHelper::GLErrorString(GLenum errorCode)
         }
      }
 
-    return NULL;
+    return nullptr;
 }
 
 std::ostream& operator<<(std::ostream& rStrm, const glm::vec4& rPos)
@@ -623,7 +692,7 @@ void OpenGLHelper::createFramebuffer(long nWidth, long nHeight, GLuint& nFramebu
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, nWidth, nHeight, 0,
-                             GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                             GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
         glBindTexture(GL_TEXTURE_2D, 0);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -682,11 +751,10 @@ void OpenGLHelper::checkGLError(const char* pFile, size_t nLine)
             break;
         }
         const char* sError = OpenGLHelper::GLErrorString(glErr);
+        if (!sError)
+            sError = "no message available";
 
-        if (sError)
-            SAL_WARN("vcl.opengl", "GL Error #" << glErr << "(" << sError << ") in File " << pFile << " at line: " << nLine);
-        else
-            SAL_WARN("vcl.opengl", "GL Error #" << glErr << " (no message available) in File " << pFile << " at line: " << nLine);
+        SAL_WARN("vcl.opengl", "GL Error " << std::hex << std::setw(4) << std::setfill('0') << glErr << std::dec << std::setw(0) << std::setfill(' ') << " (" << sError << ") in file " << pFile << " at line " << nLine);
 
         // tdf#93798 - apitrace appears to sometimes cause issues with an infinite loop here.
         if (++nErrors >= 8)
@@ -737,7 +805,7 @@ void OpenGLZone::leave() { gnLeaveCount++; }
 
 namespace {
     static volatile bool gbWatchdogFiring = false;
-    static oslCondition gpWatchdogExit = NULL;
+    static oslCondition gpWatchdogExit = nullptr;
     static rtl::Reference<OpenGLWatchdogThread> gxWatchdog;
 }
 
@@ -807,7 +875,6 @@ void OpenGLWatchdogThread::execute()
                 {
                     SAL_WARN("vcl.opengl", "Watchdog gave up: aborting");
                     gbWatchdogFiring = true;
-                    nUnchanged = 0;
                     std::abort();
                 }
                 // coverity[dead_error_line] - we might have caught SIGABRT and failed to exit yet
@@ -823,9 +890,9 @@ void OpenGLWatchdogThread::execute()
 
 void OpenGLWatchdogThread::start()
 {
-    assert (gxWatchdog == NULL);
+    assert (gxWatchdog == nullptr);
     gpWatchdogExit = osl_createCondition();
-    gxWatchdog = rtl::Reference<OpenGLWatchdogThread>(new OpenGLWatchdogThread());
+    gxWatchdog.set(new OpenGLWatchdogThread());
     gxWatchdog->launch();
 }
 
@@ -845,7 +912,7 @@ void OpenGLWatchdogThread::stop()
 
     if (gpWatchdogExit)
         osl_destroyCondition(gpWatchdogExit);
-    gpWatchdogExit = NULL;
+    gpWatchdogExit = nullptr;
 }
 
 /**
@@ -907,10 +974,13 @@ bool OpenGLHelper::isVCLOpenGLEnabled()
 
     bool bRet = false;
     if (bForceOpenGL)
+    {
         bRet = true;
-
+    }
     else if (!supportsVCLOpenGL())
+    {
         bRet = false;
+    }
     else
     {
         static bool bEnableGLEnv = !!getenv("SAL_ENABLEGL");
@@ -940,12 +1010,12 @@ bool OpenGLWrapper::isVCLOpenGLEnabled()
     return OpenGLHelper::isVCLOpenGLEnabled();
 }
 
-void OpenGLHelper::debugMsgStream(const char *pArea, std::ostringstream const &pStream)
+void OpenGLHelper::debugMsgStream(std::ostringstream const &pStream)
 {
-    debugMsgPrint(pArea, "%s", pStream.str().c_str());
+    debugMsgPrint("%s", pStream.str().c_str());
 }
 
-void OpenGLHelper::debugMsgPrint(const char *pArea, const char *pFormat, ...)
+void OpenGLHelper::debugMsgPrint(const char *pFormat, ...)
 {
     va_list aArgs;
     va_start (aArgs, pFormat);
@@ -961,7 +1031,7 @@ void OpenGLHelper::debugMsgPrint(const char *pArea, const char *pFormat, ...)
     if (!bHasContext)
         strcat(pStr, "- no GL context");
 
-    SAL_INFO(pArea, pStr);
+    SAL_INFO("vcl.opengl", pStr);
 
     if (bHasContext)
     {
@@ -1060,7 +1130,7 @@ GLXFBConfig OpenGLHelper::GetPixmapFBConfig( Display* pDisplay, bool& bInverted 
     if( i == nFbConfigs )
     {
         SAL_WARN( "vcl.opengl", "Unable to find FBconfig for pixmap texturing" );
-        return 0;
+        return nullptr;
     }
 
     CHECK_GL_ERROR();
@@ -1070,18 +1140,10 @@ GLXFBConfig OpenGLHelper::GetPixmapFBConfig( Display* pDisplay, bool& bInverted 
 #endif
 
 OutputDevice::PaintScope::PaintScope(OutputDevice *pDev)
-    : pHandle( NULL )
+    : pHandle( nullptr )
 {
     if( pDev->mpGraphics || pDev->AcquireGraphics() )
     {
-        OpenGLContext *pContext = pDev->mpGraphics->BeginPaint();
-        if( pContext )
-        {
-            assert( pContext->mnPainting >= 0 );
-            pContext->mnPainting++;
-            pContext->acquire();
-            pHandle = static_cast<void *>( pContext );
-        }
     }
 }
 
@@ -1093,7 +1155,7 @@ void OutputDevice::PaintScope::flush()
     if( pHandle )
     {
         OpenGLContext *pContext = static_cast<OpenGLContext *>( pHandle );
-        pHandle = NULL;
+        pHandle = nullptr;
         pContext->mnPainting--;
         assert( pContext->mnPainting >= 0 );
         if( pContext->mnPainting == 0 )

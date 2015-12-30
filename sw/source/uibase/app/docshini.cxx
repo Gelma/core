@@ -49,6 +49,8 @@
 #include <editeng/tstpitem.hxx>
 #include <editeng/langitem.hxx>
 #include <editeng/colritem.hxx>
+#include <editeng/orphitem.hxx>
+#include <editeng/widwitem.hxx>
 #include <editeng/hyphenzoneitem.hxx>
 #include <editeng/svxacorr.hxx>
 #include <vcl/svapp.hxx>
@@ -108,10 +110,10 @@ bool SwDocShell::InitNew( const uno::Reference < embed::XStorage >& xStor )
     {
         AddLink();      // create m_pDoc / pIo if applicable
 
-        bool bWeb = ISA( SwWebDocShell );
+        bool bWeb = dynamic_cast< const SwWebDocShell *>( this ) !=  nullptr;
         if ( bWeb )
             bHTMLTemplSet = SetHTMLTemplate( *GetDoc() );// Styles from HTML.vor
-        else if( ISA( SwGlobalDocShell ) )
+        else if( dynamic_cast< const SwGlobalDocShell *>( this ) !=  nullptr )
             GetDoc()->getIDocumentSettingAccess().set(DocumentSettingId::GLOBAL_DOCUMENT, true);       // Globaldokument
 
         if ( GetCreateMode() ==  SfxObjectCreateMode::EMBEDDED )
@@ -265,7 +267,7 @@ bool SwDocShell::InitNew( const uno::Reference < embed::XStorage >& xStor )
                 nFontHeightWhich = RES_CHRATR_CTL_FONTSIZE;
                 eLanguage = static_cast<const SvxLanguageItem&>(m_pDoc->GetDefault( RES_CHRATR_CTL_LANGUAGE )).GetLanguage();
             }
-            SwTextFormatColl *pColl = 0;
+            SwTextFormatColl *pColl = nullptr;
             if(!pStdFont->IsFontDefault(aFontIdPoolId[nIdx]))
             {
                 sEntry = pStdFont->GetFontFor(aFontIdPoolId[nIdx]);
@@ -420,7 +422,7 @@ void SwDocShell::AddLink()
         SwDocFac aFactory;
         m_pDoc = aFactory.GetDoc();
         m_pDoc->acquire();
-        m_pDoc->getIDocumentSettingAccess().set(DocumentSettingId::HTML_MODE, ISA(SwWebDocShell) );
+        m_pDoc->getIDocumentSettingAccess().set(DocumentSettingId::HTML_MODE, dynamic_cast< const SwWebDocShell *>( this ) !=  nullptr );
     }
     else
         m_pDoc->acquire();
@@ -465,10 +467,10 @@ void SwDocShell::RemoveLink()
         }
         sal_Int8 nRefCt = static_cast< sal_Int8 >(m_pDoc->release());
         m_pDoc->SetOle2Link(Link<bool,void>());
-        m_pDoc->SetDocShell( 0 );
+        m_pDoc->SetDocShell( nullptr );
         if( !nRefCt )
             delete m_pDoc;
-        m_pDoc = 0;       // we don't have the Doc anymore!!
+        m_pDoc = nullptr;       // we don't have the Doc anymore!!
     }
 }
 void SwDocShell::InvalidateModel()
@@ -502,7 +504,7 @@ bool  SwDocShell::Load( SfxMedium& rMedium )
         m_xBasePool = new SwDocStyleSheetPool( *m_pDoc, SfxObjectCreateMode::ORGANIZER == GetCreateMode() );
         if(GetCreateMode() != SfxObjectCreateMode::ORGANIZER)
         {
-            SFX_ITEMSET_ARG( rMedium.GetItemSet(), pUpdateDocItem, SfxUInt16Item, SID_UPDATEDOCMODE, false);
+            const SfxUInt16Item* pUpdateDocItem = SfxItemSet::GetItem<SfxUInt16Item>(rMedium.GetItemSet(), SID_UPDATEDOCMODE, false);
             m_nUpdateDocMode = pUpdateDocItem ? pUpdateDocItem->GetValue() : document::UpdateDocMode::NO_UPDATE;
         }
 
@@ -546,12 +548,12 @@ bool  SwDocShell::Load( SfxMedium& rMedium )
                         // If a XML document is loaded, the global doc/web doc
                         // flags have to be set, because they aren't loaded
                         // by this formats.
-                        if( ISA( SwWebDocShell ) )
+                        if( dynamic_cast< const SwWebDocShell *>( this ) !=  nullptr )
                         {
                             if (!m_pDoc->getIDocumentSettingAccess().get(DocumentSettingId::HTML_MODE))
                                 m_pDoc->getIDocumentSettingAccess().set(DocumentSettingId::HTML_MODE, true);
                         }
-                        if( ISA( SwGlobalDocShell ) )
+                        if( dynamic_cast< const SwGlobalDocShell *>( this ) !=  nullptr )
                         {
                             if (!m_pDoc->getIDocumentSettingAccess().get(DocumentSettingId::GLOBAL_DOCUMENT))
                                 m_pDoc->getIDocumentSettingAccess().set(DocumentSettingId::GLOBAL_DOCUMENT, true);
@@ -565,9 +567,9 @@ bool  SwDocShell::Load( SfxMedium& rMedium )
         }
 
         UpdateFontList();
-        InitDrawModelAndDocShell(this, m_pDoc ? m_pDoc->getIDocumentDrawModelAccess().GetDrawModel() : 0);
+        InitDrawModelAndDocShell(this, m_pDoc ? m_pDoc->getIDocumentDrawModelAccess().GetDrawModel() : nullptr);
 
-        SetError( nErr, OUString( OSL_LOG_PREFIX ) );
+        SetError( nErr, OSL_LOG_PREFIX );
         bRet = !IsError( nErr );
 
         if (bRet && !m_pDoc->IsInLoadAsynchron() &&
@@ -616,7 +618,7 @@ bool  SwDocShell::LoadFrom( SfxMedium& rMedium )
             OSL_FAIL("Code removed!");
         }
 
-        SetError( nErr, OUString( OSL_LOG_PREFIX ) );
+        SetError( nErr, OSL_LOG_PREFIX );
         bRet = !IsError( nErr );
 
     } while( false );
@@ -631,12 +633,12 @@ void SwDocShell::SubInitNew()
     OSL_ENSURE( !m_xBasePool.is(), "who hasn't destroyed their Pool?" );
     m_xBasePool = new SwDocStyleSheetPool( *m_pDoc, SfxObjectCreateMode::ORGANIZER == GetCreateMode() );
     UpdateFontList();
-    InitDrawModelAndDocShell(this, m_pDoc ? m_pDoc->getIDocumentDrawModelAccess().GetDrawModel() : 0);
+    InitDrawModelAndDocShell(this, m_pDoc ? m_pDoc->getIDocumentDrawModelAccess().GetDrawModel() : nullptr);
 
     m_pDoc->getIDocumentSettingAccess().setLinkUpdateMode( GLOBALSETTING );
     m_pDoc->getIDocumentSettingAccess().setFieldUpdateFlags( AUTOUPD_GLOBALSETTING );
 
-    bool bWeb = ISA(SwWebDocShell);
+    bool bWeb = dynamic_cast< const SwWebDocShell *>( this ) !=  nullptr;
 
     sal_uInt16 nRange[] =   {
         RES_PARATR_ADJUST, RES_PARATR_ADJUST,
@@ -658,9 +660,9 @@ void SwDocShell::SubInitNew()
     if (!utl::ConfigManager::IsAvoidConfig())
         SvtLinguConfig().GetOptions(aLinguOpt);
 
-    sal_Int16   nVal = MsLangId::resolveSystemLanguageByScriptType(aLinguOpt.nDefaultLanguage, ::com::sun::star::i18n::ScriptType::LATIN),
-                eCJK = MsLangId::resolveSystemLanguageByScriptType(aLinguOpt.nDefaultLanguage_CJK, ::com::sun::star::i18n::ScriptType::ASIAN),
-                eCTL = MsLangId::resolveSystemLanguageByScriptType(aLinguOpt.nDefaultLanguage_CTL, ::com::sun::star::i18n::ScriptType::COMPLEX);
+    sal_Int16   nVal = MsLangId::resolveSystemLanguageByScriptType(aLinguOpt.nDefaultLanguage, css::i18n::ScriptType::LATIN),
+                eCJK = MsLangId::resolveSystemLanguageByScriptType(aLinguOpt.nDefaultLanguage_CJK, css::i18n::ScriptType::ASIAN),
+                eCTL = MsLangId::resolveSystemLanguageByScriptType(aLinguOpt.nDefaultLanguage_CTL, css::i18n::ScriptType::COMPLEX);
     aDfltSet.Put( SvxLanguageItem( nVal, RES_CHRATR_LANGUAGE ) );
     aDfltSet.Put( SvxLanguageItem( eCJK, RES_CHRATR_CJK_LANGUAGE ) );
     aDfltSet.Put( SvxLanguageItem( eCTL, RES_CHRATR_CTL_LANGUAGE ) );
@@ -688,6 +690,13 @@ void SwDocShell::SubInitNew()
     {
         bool bSquaredPageMode = SW_MOD()->GetUsrPref(false)->IsSquaredPageMode();
         m_pDoc->SetDefaultPageMode( bSquaredPageMode );
+
+        // only set Widow/Orphan defaults on a new, non-web document - not an opened one
+        if( GetMedium() && GetMedium()->GetOrigURL().isEmpty() )
+        {
+            m_pDoc->SetDefault( SvxWidowsItem(  (sal_uInt8) 2, RES_PARATR_WIDOWS)  );
+            m_pDoc->SetDefault( SvxOrphansItem( (sal_uInt8) 2, RES_PARATR_ORPHANS) );
+        }
     }
 
     m_pDoc->getIDocumentState().ResetModified();

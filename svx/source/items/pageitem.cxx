@@ -31,7 +31,8 @@
 
 using namespace ::com::sun::star;
 
-TYPEINIT1_FACTORY( SvxPageItem, SfxPoolItem , new  SvxPageItem(0));
+
+SfxPoolItem* SvxPageItem::CreateDefault() { return new   SvxPageItem(0);}
 
 SvxPageItem::SvxPageItem( const sal_uInt16 nId ) : SfxPoolItem( nId ),
 
@@ -49,6 +50,8 @@ SvxPageItem::SvxPageItem( const SvxPageItem& rItem )
     bLandscape  = rItem.bLandscape;
     eUse        = rItem.eUse;
 }
+
+SvxPageItem::~SvxPageItem() {}
 
 // Clone
 SfxPoolItem* SvxPageItem::Clone( SfxItemPool * ) const

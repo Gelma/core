@@ -34,12 +34,12 @@
 #include <vcl/toolbox.hxx>
 
 using namespace ::com::sun::star;
-using namespace ::com::sun::star::uno;
-using namespace ::com::sun::star::beans;
-using namespace ::com::sun::star::lang;
-using namespace ::com::sun::star::frame;
-using namespace ::com::sun::star::frame::status;
-using namespace ::com::sun::star::util;
+using namespace css::uno;
+using namespace css::beans;
+using namespace css::lang;
+using namespace css::frame;
+using namespace css::frame::status;
+using namespace css::util;
 
 namespace framework
 {
@@ -51,23 +51,22 @@ namespace framework
 class EditControl : public Edit
 {
     public:
-        EditControl( vcl::Window* pParent, WinBits nStyle, IEditListener* pEditListener );
+        EditControl( vcl::Window* pParent, WinBits nStyle, EditToolbarController* pEditToolbarController );
         virtual ~EditControl();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
-        virtual void Modify() SAL_OVERRIDE;
-        virtual void KeyInput( const ::KeyEvent& rKEvt ) SAL_OVERRIDE;
-        virtual void GetFocus() SAL_OVERRIDE;
-        virtual void LoseFocus() SAL_OVERRIDE;
-        virtual bool PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+        virtual void Modify() override;
+        virtual void GetFocus() override;
+        virtual void LoseFocus() override;
+        virtual bool PreNotify( NotifyEvent& rNEvt ) override;
 
     private:
-        IEditListener* m_pEditListener;
+        EditToolbarController* m_pEditToolbarController;
 };
 
-EditControl::EditControl( vcl::Window* pParent, WinBits nStyle, IEditListener* pEditListener ) :
+EditControl::EditControl( vcl::Window* pParent, WinBits nStyle, EditToolbarController* pEditToolbarController ) :
     Edit( pParent, nStyle )
-    , m_pEditListener( pEditListener )
+    , m_pEditToolbarController( pEditToolbarController )
 {
 }
 
@@ -78,43 +77,36 @@ EditControl::~EditControl()
 
 void EditControl::dispose()
 {
-    m_pEditListener = 0;
+    m_pEditToolbarController = nullptr;
     Edit::dispose();
 }
 
 void EditControl::Modify()
 {
     Edit::Modify();
-    if ( m_pEditListener )
-        m_pEditListener->Modify();
-}
-
-void EditControl::KeyInput( const ::KeyEvent& rKEvt )
-{
-    Edit::KeyInput( rKEvt );
-    if ( m_pEditListener )
-        m_pEditListener->KeyInput( rKEvt );
+    if ( m_pEditToolbarController )
+        m_pEditToolbarController->Modify();
 }
 
 void EditControl::GetFocus()
 {
     Edit::GetFocus();
-    if ( m_pEditListener )
-        m_pEditListener->GetFocus();
+    if ( m_pEditToolbarController )
+        m_pEditToolbarController->GetFocus();
 }
 
 void EditControl::LoseFocus()
 {
     Edit::LoseFocus();
-    if ( m_pEditListener )
-        m_pEditListener->LoseFocus();
+    if ( m_pEditToolbarController )
+        m_pEditToolbarController->LoseFocus();
 }
 
 bool EditControl::PreNotify( NotifyEvent& rNEvt )
 {
     bool bRet = false;
-    if ( m_pEditListener )
-        bRet = m_pEditListener->PreNotify( rNEvt );
+    if ( m_pEditToolbarController )
+        bRet = m_pEditToolbarController->PreNotify( rNEvt );
     if ( !bRet )
         bRet = Edit::PreNotify( rNEvt );
 
@@ -129,7 +121,7 @@ EditToolbarController::EditToolbarController(
     sal_Int32                                nWidth,
     const OUString&                          aCommand ) :
     ComplexToolbarController( rxContext, rFrame, pToolbar, nID, aCommand )
-    ,   m_pEditControl( 0 )
+    ,   m_pEditControl( nullptr )
 {
     m_pEditControl = VclPtr<EditControl>::Create( m_pToolbar, WB_BORDER, this );
     if ( nWidth == 0 )
@@ -151,7 +143,7 @@ throw ( RuntimeException, std::exception )
 {
     SolarMutexGuard aSolarMutexGuard;
 
-    m_pToolbar->SetItemWindow( m_nID, 0 );
+    m_pToolbar->SetItemWindow( m_nID, nullptr );
     m_pEditControl.disposeAndClear();
 
     ComplexToolbarController::dispose();
@@ -173,10 +165,6 @@ Sequence<PropertyValue> EditToolbarController::getExecuteArgs(sal_Int16 KeyModif
 void EditToolbarController::Modify()
 {
     notifyTextChanged( m_pEditControl->GetText() );
-}
-
-void EditToolbarController::KeyInput( const ::KeyEvent& /*rKEvt*/ )
-{
 }
 
 void EditToolbarController::GetFocus()
@@ -207,7 +195,7 @@ bool EditToolbarController::PreNotify( NotifyEvent& rNEvt )
     return false;
 }
 
-void EditToolbarController::executeControlCommand( const ::com::sun::star::frame::ControlCommand& rControlCommand )
+void EditToolbarController::executeControlCommand( const css::frame::ControlCommand& rControlCommand )
 {
     if ( rControlCommand.Command.startsWith( "SetText" ))
     {

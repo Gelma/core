@@ -60,7 +60,7 @@ void SdOptionsItem::ImplCommit()
         mrParent.Commit( *this );
 };
 
-void SdOptionsItem::Notify( const com::sun::star::uno::Sequence<OUString>& )
+void SdOptionsItem::Notify( const css::uno::Sequence<OUString>& )
 {}
 
 Sequence< Any > SdOptionsItem::GetProperties( const Sequence< OUString >& rNames )
@@ -81,7 +81,7 @@ void SdOptionsItem::SetModified()
 // - SdOptionsGeneric -
 SdOptionsGeneric::SdOptionsGeneric(sal_uInt16 nConfigId, const OUString& rSubTree)
     : maSubTree(rSubTree)
-    , mpCfgItem( NULL)
+    , mpCfgItem( nullptr)
     , mnConfigId(nConfigId)
     , mbInit(rSubTree.isEmpty())
     , mbEnableModify(false)
@@ -116,7 +116,7 @@ void SdOptionsGeneric::Init() const
 SdOptionsGeneric::~SdOptionsGeneric()
 {
     delete mpCfgItem;
-    mpCfgItem = NULL;
+    mpCfgItem = nullptr;
 }
 
 void SdOptionsGeneric::Commit( SdOptionsItem& rCfgItem ) const

@@ -165,7 +165,7 @@ Content* Content::create(
         {
             // Client explicitly requested a folder!
             if ( !aProps.bIsFolder )
-                return 0;
+                return nullptr;
         }
 
         uno::Reference< ucb::XContentIdentifier > xId
@@ -205,7 +205,7 @@ Content* Content::create(
             const ucb::ContentInfo& Info )
 {
     if ( Info.Type.isEmpty() )
-        return 0;
+        return nullptr;
 
     PackageUri aURI( Identifier->getContentIdentifier() );
 
@@ -213,7 +213,7 @@ Content* Content::create(
                 getContentType( aURI.getScheme(), true ) ) &&
          !Info.Type.equalsIgnoreAsciiCase(
                 getContentType( aURI.getScheme(), false ) ) )
-        return 0;
+        return nullptr;
 
     uno::Reference< container::XHierarchicalNameAccess > xPackage;
 
@@ -326,11 +326,11 @@ XTYPEPROVIDER_COMMON_IMPL( Content );
 uno::Sequence< uno::Type > SAL_CALL Content::getTypes()
     throw( uno::RuntimeException, std::exception )
 {
-    cppu::OTypeCollection * pCollection = 0;
+    cppu::OTypeCollection * pCollection = nullptr;
 
     if ( isFolder() )
     {
-        static cppu::OTypeCollection* pFolderTypes = 0;
+        static cppu::OTypeCollection* pFolderTypes = nullptr;
 
         pCollection = pFolderTypes;
         if ( !pCollection )
@@ -363,7 +363,7 @@ uno::Sequence< uno::Type > SAL_CALL Content::getTypes()
     }
     else
     {
-        static cppu::OTypeCollection* pDocumentTypes = 0;
+        static cppu::OTypeCollection* pDocumentTypes = nullptr;
 
         pCollection = pDocumentTypes;
         if ( !pCollection )
@@ -591,7 +591,7 @@ uno::Any SAL_CALL Content::execute(
                 ucb::IOErrorCode_CANT_WRITE,
                 uno::Sequence< uno::Any >(&aProps, 1),
                 Environment,
-                OUString( "Cannot remove persistent data!" ),
+                "Cannot remove persistent data!",
                 this );
             // Unreachable
         }
@@ -663,7 +663,7 @@ uno::Any SAL_CALL Content::execute(
                 ucb::IOErrorCode_CANT_WRITE,
                 uno::Sequence< uno::Any >(&aProps, 1),
                 Environment,
-                OUString( "Cannot write file to disk!" ),
+                "Cannot write file to disk!",
                 this );
             // Unreachable
         }
@@ -891,8 +891,7 @@ uno::Reference< sdbc::XRow > Content::getPropertyValues(
 
                 if ( !bTriedToGetAdditionalPropSet && !xAdditionalPropSet.is() )
                 {
-                    xAdditionalPropSet
-                        = uno::Reference< beans::XPropertySet >(
+                    xAdditionalPropSet.set(
                             rProvider->getAdditionalPropertySet( rContentId,
                                                                  false ),
                             uno::UNO_QUERY );
@@ -1431,8 +1430,7 @@ uno::Sequence< uno::Any > Content::setPropertyValues(
                     ucb::IOErrorCode_CANT_WRITE,
                     uno::Sequence< uno::Any >(&aProps, 1),
                     xEnv,
-                    OUString(
-                        "Cannot store persistent data!" ),
+                    "Cannot store persistent data!",
                     this );
                 // Unreachable
             }
@@ -1507,7 +1505,7 @@ uno::Any Content::open(
                     m_eState == PERSISTENT
                         ? xEnv
                         : uno::Reference< ucb::XCommandEnvironment >(),
-                    OUString("Got no data stream!"),
+                    "Got no data stream!",
                     this );
                 // Unreachable
             }
@@ -1567,7 +1565,7 @@ uno::Any Content::open(
                             ? xEnv
                             : uno::Reference<
                                   ucb::XCommandEnvironment >(),
-                        OUString( "Got no data stream!" ),
+                        "Got no data stream!",
                         this );
                     // Unreachable
                 }
@@ -1733,7 +1731,7 @@ void Content::insert(
             ucb::IOErrorCode_CANT_WRITE,
             uno::Sequence< uno::Any >(&aProps, 1),
             xEnv,
-            OUString("Cannot store persistent data!"),
+            "Cannot store persistent data!",
             this );
         // Unreachable
     }
@@ -1850,7 +1848,7 @@ void Content::transfer(
                 ucb::IOErrorCode_RECURSIVE,
                 uno::Sequence< uno::Any >(&aProps, 1),
                 xEnv,
-                OUString( "Target is equal to or is a child of source!" ),
+                "Target is equal to or is a child of source!",
                 this );
             // Unreachable
         }
@@ -1889,7 +1887,7 @@ void Content::transfer(
             ucb::IOErrorCode_CANT_READ,
             uno::Sequence< uno::Any >(&aProps, 1),
             xEnv,
-            OUString( "Cannot instanciate source object!" ),
+            "Cannot instanciate source object!",
             this );
         // Unreachable
     }
@@ -1921,7 +1919,7 @@ void Content::transfer(
             ucb::IOErrorCode_CANT_CREATE,
             uno::Sequence< uno::Any >(&aProps, 1),
             xEnv,
-            OUString( "XContentCreator::createNewContent failed!" ),
+            "XContentCreator::createNewContent failed!",
             this );
         // Unreachable
     }
@@ -2080,7 +2078,7 @@ void Content::transfer(
                 ucb::IOErrorCode_CANT_WRITE,
                 uno::Sequence< uno::Any >(&aProps, 1),
                 xEnv,
-                OUString( "Cannot remove persistent data of source object!" ),
+                "Cannot remove persistent data of source object!",
                 this );
             // Unreachable
         }
@@ -2281,8 +2279,7 @@ bool Content::loadData(
             try
             {
                 uno::Any aHasEncryptedEntries
-                    = xPackagePropSet->getPropertyValue(
-                        OUString( "HasEncryptedEntries" ) );
+                    = xPackagePropSet->getPropertyValue( "HasEncryptedEntries" );
                 if ( !( aHasEncryptedEntries >>= rProps.bHasEncryptedEntries ) )
                 {
                     OSL_FAIL( "Content::loadData - "
@@ -2328,9 +2325,7 @@ bool Content::loadData(
             // MediaType
             try
             {
-                uno::Any aMediaType
-                    = xPropSet->getPropertyValue(
-                        OUString("MediaType") );
+                uno::Any aMediaType = xPropSet->getPropertyValue("MediaType");
                 if ( !( aMediaType >>= rProps.aMediaType ) )
                 {
                     OSL_FAIL( "Content::loadData - Got no MediaType value!" );
@@ -2372,9 +2367,7 @@ bool Content::loadData(
                 // Size ( only available for streams )
                 try
                 {
-                    uno::Any aSize
-                        = xPropSet->getPropertyValue(
-                            OUString("Size") );
+                    uno::Any aSize = xPropSet->getPropertyValue("Size");
                     if ( !( aSize >>= rProps.nSize ) )
                     {
                         OSL_FAIL( "Content::loadData - Got no Size value!" );
@@ -2395,9 +2388,7 @@ bool Content::loadData(
                 // Compressed ( only available for streams )
                 try
                 {
-                    uno::Any aCompressed
-                        = xPropSet->getPropertyValue(
-                            OUString("Compressed") );
+                    uno::Any aCompressed = xPropSet->getPropertyValue("Compressed");
                     if ( !( aCompressed >>= rProps.bCompressed ) )
                     {
                         OSL_FAIL( "Content::loadData - Got no Compressed value!" );
@@ -2418,9 +2409,7 @@ bool Content::loadData(
                 // Encrypted ( only available for streams )
                 try
                 {
-                    uno::Any aEncrypted
-                        = xPropSet->getPropertyValue(
-                            OUString("Encrypted") );
+                    uno::Any aEncrypted = xPropSet->getPropertyValue("Encrypted");
                     if ( !( aEncrypted >>= rProps.bEncrypted ) )
                     {
                         OSL_FAIL( "Content::loadData - Got no Encrypted value!" );
@@ -2514,7 +2503,7 @@ bool Content::storeData( const uno::Reference< io::XInputStream >& xStream )
             try
             {
                 xPackagePropSet->setPropertyValue(
-                        OUString("EncryptionKey"),
+                        "EncryptionKey",
                         uno::makeAny( m_aProps.aEncryptionKey ) );
                 m_nModifiedProps &= ~ENCRYPTIONKEY_MODIFIED;
             }
@@ -2639,7 +2628,7 @@ bool Content::storeData( const uno::Reference< io::XInputStream >& xStream )
         if ( m_nModifiedProps & MEDIATYPE_MODIFIED )
         {
             xPropSet->setPropertyValue(
-                                OUString("MediaType"),
+                                "MediaType",
                                 uno::makeAny( m_aProps.aMediaType ) );
             m_nModifiedProps &= ~MEDIATYPE_MODIFIED;
         }
@@ -2648,7 +2637,7 @@ bool Content::storeData( const uno::Reference< io::XInputStream >& xStream )
         {
             if ( !isFolder() )
                 xPropSet->setPropertyValue(
-                                OUString("Compressed"),
+                                "Compressed",
                                 uno::makeAny( m_aProps.bCompressed ) );
 
             m_nModifiedProps &= ~COMPRESSED_MODIFIED;
@@ -2658,7 +2647,7 @@ bool Content::storeData( const uno::Reference< io::XInputStream >& xStream )
         {
             if ( !isFolder() )
                 xPropSet->setPropertyValue(
-                                OUString("Encrypted"),
+                                "Encrypted",
                                 uno::makeAny( m_aProps.bEncrypted ) );
 
             m_nModifiedProps &= ~ENCRYPTED_MODIFIED;
@@ -2668,7 +2657,7 @@ bool Content::storeData( const uno::Reference< io::XInputStream >& xStream )
         {
             if ( !isFolder() )
                 xPropSet->setPropertyValue(
-                            OUString("EncryptionKey"),
+                            "EncryptionKey",
                             uno::makeAny( m_aProps.aEncryptionKey ) );
 
             m_nModifiedProps &= ~ENCRYPTIONKEY_MODIFIED;

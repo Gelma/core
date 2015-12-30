@@ -30,12 +30,11 @@ class AnimationTransitionFilterNode : public AnimationBaseNode
 {
 public:
     AnimationTransitionFilterNode(
-        ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XAnimationNode> const& xNode,
+        css::uno::Reference<css::animations::XAnimationNode> const& xNode,
         ::boost::shared_ptr<BaseContainerNode> const& pParent,
         NodeContext const& rContext )
         : AnimationBaseNode( xNode, pParent, rContext ),
-          mxTransitionFilterNode( xNode, ::com::sun::star::uno::UNO_QUERY_THROW)
+          mxTransitionFilterNode( xNode, css::uno::UNO_QUERY_THROW)
         {}
 
 #if OSL_DEBUG_LEVEL >= 2
@@ -44,13 +43,12 @@ public:
 #endif
 
 protected:
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
 private:
-    virtual AnimationActivitySharedPtr createActivity() const SAL_OVERRIDE;
+    virtual AnimationActivitySharedPtr createActivity() const override;
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XTransitionFilter> mxTransitionFilterNode;
+    css::uno::Reference<css::animations::XTransitionFilter> mxTransitionFilterNode;
 };
 
 } // namespace internal

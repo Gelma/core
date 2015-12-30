@@ -31,22 +31,22 @@ class SVX_DLLPUBLIC SvxLongLRSpaceItem : public SfxPoolItem
 
   protected:
 
-    virtual bool             operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual bool             QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool             PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual bool             operator==( const SfxPoolItem& ) const override;
+    virtual bool             QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool             PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
-                                    OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    OUString &rText, const IntlWrapper * = nullptr ) const override;
 
-    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = nullptr ) const override;
 
 private:
-    const SvxLongLRSpaceItem& operator=(const SvxLongLRSpaceItem &) SAL_DELETED_FUNCTION;
+    const SvxLongLRSpaceItem& operator=(const SvxLongLRSpaceItem &) = delete;
 
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
     SvxLongLRSpaceItem(long lLeft, long lRight, sal_uInt16 nId);
     SvxLongLRSpaceItem(const SvxLongLRSpaceItem &);
     SvxLongLRSpaceItem();
@@ -64,22 +64,22 @@ class SVX_DLLPUBLIC SvxLongULSpaceItem : public SfxPoolItem
 
   protected:
 
-    virtual bool             operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual bool             QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool             PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual bool             operator==( const SfxPoolItem& ) const override;
+    virtual bool             QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool             PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
-                                    OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    OUString &rText, const IntlWrapper * = nullptr ) const override;
 
-    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = nullptr ) const override;
 
 private:
-    const SvxLongULSpaceItem& operator=(const SvxLongULSpaceItem &) SAL_DELETED_FUNCTION;
+    const SvxLongULSpaceItem& operator=(const SvxLongULSpaceItem &) = delete;
 
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
     SvxLongULSpaceItem(long lUpper, long lLower, sal_uInt16 nId);
     SvxLongULSpaceItem(const SvxLongULSpaceItem &);
     SvxLongULSpaceItem();
@@ -96,21 +96,21 @@ class SVX_DLLPUBLIC SvxPagePosSizeItem : public SfxPoolItem
     long lWidth;
     long lHeight;
 protected:
-    virtual bool             operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual bool             QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool             PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual bool             operator==( const SfxPoolItem& ) const override;
+    virtual bool             QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool             PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
-                                    OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    OUString &rText, const IntlWrapper * = nullptr ) const override;
 
-    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = nullptr ) const override;
 
 private:
-    const SvxPagePosSizeItem& operator=(const SvxPagePosSizeItem &) SAL_DELETED_FUNCTION;
+    const SvxPagePosSizeItem& operator=(const SvxPagePosSizeItem &) = delete;
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
     SvxPagePosSizeItem(const Point &rPos, long lWidth, long lHeight);
     SvxPagePosSizeItem(const SvxPagePosSizeItem &);
     SvxPagePosSizeItem();
@@ -166,20 +166,20 @@ class SVX_DLLPUBLIC SvxColumnItem : public SfxPoolItem
     bool       bOrtho;      // evenly spread columns
 
 protected:
-    virtual bool operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual bool operator==( const SfxPoolItem& ) const override;
 
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                                  SfxMapUnit eCoreMetric,
                                                  SfxMapUnit ePresMetric,
                                                  OUString &rText,
-                                                 const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                                 const IntlWrapper * = nullptr ) const override;
 
-    virtual SfxPoolItem* Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual bool         QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool         PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual SfxPoolItem* Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual bool         QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool         PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
     // right edge of the surrounding frame
     // nLeft, nRight each the distance to the surrounding frame
     SvxColumnItem(sal_uInt16 nAct = 0);
@@ -222,22 +222,22 @@ private:
     bool bLimits; /* boundary limit control by the application */
 
 protected:
-    virtual bool             operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual bool             operator==( const SfxPoolItem& ) const override;
 
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
-                                    OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    OUString &rText, const IntlWrapper * = nullptr ) const override;
 
-    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual bool             QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool             PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual bool             QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool             PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
 private:
-    const SvxObjectItem &operator=(const SvxObjectItem &) SAL_DELETED_FUNCTION;
+    const SvxObjectItem &operator=(const SvxObjectItem &) = delete;
 
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
     SvxObjectItem(long nStartX, long nEndX,
                   long nStartY, long nEndY,
                   bool bLimits = false);

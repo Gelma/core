@@ -64,29 +64,7 @@
 #include <sys/mman.h>
 #include "fontmanager.hxx"
 
-// the gamma table makes artificial bold look better for CJK glyphs
-static unsigned char aGammaTable[257];
-
-static void InitGammaTable()
-{
-    static const int M_MAX = 255;
-    static const int M_X   = 128;
-    static const int M_Y   = 208;
-
-    int x, a;
-    for( x = 0; x < 256; x++)
-    {
-        if ( x <= M_X )
-            a = ( x * M_Y + M_X / 2) / M_X;
-        else
-            a = M_Y + ( ( x - M_X ) * ( M_MAX - M_Y ) +
-                ( M_MAX - M_X ) / 2 ) / ( M_MAX - M_X );
-
-        aGammaTable[x] = (unsigned char)a;
-    }
-}
-
-static FT_Library aLibFT = 0;
+static FT_Library aLibFT = nullptr;
 
 // enable linking with old FT versions
 static int nFTVERSION = 0;
@@ -110,7 +88,7 @@ static int nDefaultPrioAntiAlias   = 1;
 
 FtFontFile::FtFontFile( const OString& rNativeFileName )
 :   maNativeFileName( rNativeFileName ),
-    mpFileMap( NULL ),
+    mpFileMap( nullptr ),
     mnFileSize( 0 ),
     mnRefCount( 0 ),
     mnLangBoost( 0 )
@@ -121,7 +99,7 @@ FtFontFile::FtFontFile( const OString& rNativeFileName )
         mnLangBoost += 0x1000;     // no langinfo => good
     else
     {
-        static const char* pLangBoost = NULL;
+        static const char* pLangBoost = nullptr;
         static bool bOnce = true;
         if( bOnce )
         {
@@ -168,22 +146,22 @@ bool FtFontFile::Map()
         }
         mnFileSize = aStat.st_size;
         mpFileMap = static_cast<unsigned char*>(
-            mmap( NULL, mnFileSize, PROT_READ, MAP_SHARED, nFile, 0 ));
+            mmap( nullptr, mnFileSize, PROT_READ, MAP_SHARED, nFile, 0 ));
         if( mpFileMap == MAP_FAILED )
-            mpFileMap = NULL;
+            mpFileMap = nullptr;
         close( nFile );
     }
 
-    return (mpFileMap != NULL);
+    return (mpFileMap != nullptr);
 }
 
 void FtFontFile::Unmap()
 {
-    if( (--mnRefCount > 0) || (mpFileMap == NULL) )
+    if( (--mnRefCount > 0) || (mpFileMap == nullptr) )
         return;
 
     munmap( mpFileMap, mnFileSize );
-    mpFileMap = NULL;
+    mpFileMap = nullptr;
 }
 
 #if ENABLE_GRAPHITE
@@ -214,22 +192,21 @@ const void * graphiteFontTable(const void* appFaceHandle, unsigned int name, siz
 #endif
 
 FtFontInfo::FtFontInfo( const ImplDevFontAttributes& rDevFontAttributes,
-    const OString& rNativeFileName, int nFaceNum, sal_IntPtr nFontId, int nSynthetic)
+    const OString& rNativeFileName, int nFaceNum, sal_IntPtr nFontId)
 :
-    maFaceFT( NULL ),
+    maFaceFT( nullptr ),
     mpFontFile( FtFontFile::FindFontFile( rNativeFileName ) ),
     mnFaceNum( nFaceNum ),
     mnRefCount( 0 ),
-    mnSynthetic( nSynthetic ),
 #if ENABLE_GRAPHITE
     mbCheckedGraphite(false),
-    mpGraphiteFace(NULL),
+    mpGraphiteFace(nullptr),
 #endif
     mnFontId( nFontId ),
     maDevFontAttributes( rDevFontAttributes ),
-    mpFontCharMap( NULL ),
-    mpChar2Glyph( NULL ),
-    mpGlyph2Char( NULL )
+    mpFontCharMap( nullptr ),
+    mpChar2Glyph( nullptr ),
+    mpGlyph2Char( nullptr )
 {
     // prefer font with low ID
     maDevFontAttributes.mnQuality += 10000 - nFontId;
@@ -240,7 +217,7 @@ FtFontInfo::FtFontInfo( const ImplDevFontAttributes& rDevFontAttributes,
 FtFontInfo::~FtFontInfo()
 {
     if( mpFontCharMap )
-        mpFontCharMap = 0;
+        mpFontCharMap = nullptr;
     delete mpChar2Glyph;
     delete mpGlyph2Char;
 #if ENABLE_GRAPHITE
@@ -263,7 +240,7 @@ FT_FaceRec_* FtFontInfo::GetFaceFT()
             mpFontFile->GetBuffer(),
             mpFontFile->GetFileSize(), mnFaceNum, &maFaceFT );
         if( (rc != FT_Err_Ok) || (maFaceFT->num_glyphs <= 0) )
-            maFaceFT = NULL;
+            maFaceFT = nullptr;
     }
 
    ++mnRefCount;
@@ -276,7 +253,7 @@ GraphiteFaceWrapper * FtFontInfo::GetGraphiteFace()
     if (mbCheckedGraphite)
         return mpGraphiteFace;
     // test for graphite here so that it is cached most efficiently
-    if (GetTable("Silf", 0))
+    if (GetTable("Silf"))
     {
         static const char* pGraphiteCacheStr = getenv( "SAL_GRAPHITE_CACHE_SIZE" );
         int graphiteSegCacheSize = pGraphiteCacheStr ? (atoi(pGraphiteCacheStr)) : 0;
@@ -298,7 +275,7 @@ void FtFontInfo::ReleaseFaceFT()
     if (--mnRefCount <= 0)
     {
         FT_Done_Face( maFaceFT );
-        maFaceFT = NULL;
+        maFaceFT = nullptr;
         mpFontFile->Unmap();
     }
 }
@@ -316,7 +293,7 @@ const unsigned char* FtFontInfo::GetTable( const char* pTag, sal_uLong* pLength 
     const unsigned char* pBuffer = mpFontFile->GetBuffer();
     int nFileSize = mpFontFile->GetFileSize();
     if( !pBuffer || nFileSize<1024 )
-        return NULL;
+        return nullptr;
 
     // we currently handle TTF, TTC and OTF headers
     unsigned nFormat = GetUInt( pBuffer );
@@ -325,18 +302,18 @@ const unsigned char* FtFontInfo::GetTable( const char* pTag, sal_uLong* pLength 
     if( nFormat == T_ttcf )         // TTC_MAGIC
         p += GetUInt( p + 4 * mnFaceNum );
     else if( nFormat != 0x00010000 && nFormat != T_true && nFormat != T_otto) // TTF_MAGIC and Apple TTF Magic and PS-OpenType font
-        return NULL;
+        return nullptr;
 
     // walk table directory until match
     int nTables = GetUShort( p - 8 );
     if( nTables >= 64 )  // something fishy?
-        return NULL;
+        return nullptr;
     for( int i = 0; i < nTables; ++i, p+=16 )
     {
         if( p[0]==pTag[0] && p[1]==pTag[1] && p[2]==pTag[2] && p[3]==pTag[3] )
         {
             sal_uLong nLength = GetUInt( p + 12 );
-            if( pLength != NULL )
+            if( pLength != nullptr )
                 *pLength = nLength;
             const unsigned char* pTable = pBuffer + GetUInt( p + 8 );
             if( (pTable + nLength) <= (mpFontFile->GetBuffer() + nFileSize) )
@@ -344,7 +321,7 @@ const unsigned char* FtFontInfo::GetTable( const char* pTag, sal_uLong* pLength 
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void FtFontInfo::AnnounceFont( PhysicalFontCollection* pFontCollection )
@@ -374,7 +351,6 @@ FreetypeManager::FreetypeManager()
     if( pEnv )
         nDefaultPrioAutoHint  = pEnv[0] - '0';
 
-    InitGammaTable();
     vclFontFileList::get();
 }
 
@@ -400,7 +376,7 @@ void FreetypeManager::AddFontFile( const OString& rNormalizedName,
         return;
 
     FtFontInfo* pFontInfo = new FtFontInfo( rDevFontAttr,
-        rNormalizedName, nFaceNum, nFontId, 0);
+        rNormalizedName, nFaceNum, nFontId);
     maFontList[ nFontId ] = pFontInfo;
     if( mnMaxFontId < nFontId )
         mnMaxFontId = nFontId;
@@ -427,7 +403,7 @@ void FreetypeManager::ClearFontList( )
 
 ServerFont* FreetypeManager::CreateFont( const FontSelectPattern& rFSD )
 {
-    FtFontInfo* pFontInfo = NULL;
+    FtFontInfo* pFontInfo = nullptr;
 
     // find a FontInfo matching to the font id
     sal_IntPtr nFontId = reinterpret_cast<sal_IntPtr>( rFSD.mpFontData );
@@ -436,7 +412,7 @@ ServerFont* FreetypeManager::CreateFont( const FontSelectPattern& rFSD )
         pFontInfo = it->second;
 
     if( !pFontInfo )
-        return NULL;
+        return nullptr;
 
     ServerFont* pNew = new ServerFont( rFSD, pFontInfo );
 
@@ -464,23 +440,22 @@ ServerFont::ServerFont( const FontSelectPattern& rFSD, FtFontInfo* pFI )
     maFontSelData(rFSD),
     mnRefCount(1),
     mnBytesUsed( sizeof(ServerFont) ),
-    mpPrevGCFont( NULL ),
-    mpNextGCFont( NULL ),
+    mpPrevGCFont( nullptr ),
+    mpNextGCFont( nullptr ),
     mnCos( 0x10000),
     mnSin( 0 ),
-    mbCollectedZW( false ),
     mnPrioEmbedded(nDefaultPrioEmbedded),
     mnPrioAntiAlias(nDefaultPrioAntiAlias),
     mnPrioAutoHint(nDefaultPrioAutoHint),
     mpFontInfo( pFI ),
     mnLoadFlags( 0 ),
-    maFaceFT( NULL ),
-    maSizeFT( NULL ),
+    maFaceFT( nullptr ),
+    maSizeFT( nullptr ),
     mbFaceOk( false ),
     mbArtItalic( false ),
     mbArtBold( false ),
     mbUseGamma( false ),
-    mpLayoutEngine( NULL )
+    mpLayoutEngine( nullptr )
 {
     // TODO: move update of mpFontEntry into FontEntry class when
     // it becomes responsible for the ServerFont instantiation
@@ -556,7 +531,7 @@ ServerFont::ServerFont( const FontSelectPattern& rFSD, FtFontInfo* pFI )
         mnLoadFlags |= FT_LOAD_NO_BITMAP;
 }
 
-void ServerFont::SetFontOptions(std::shared_ptr<ImplFontOptions> xFontOptions)
+void ServerFont::SetFontOptions(std::shared_ptr<FontConfigFontOptions> xFontOptions)
 {
     mxFontOptions = xFontOptions;
 
@@ -572,7 +547,7 @@ void ServerFont::SetFontOptions(std::shared_ptr<ImplFontOptions> xFontOptions)
 
     if( (mnSin != 0) && (mnCos != 0) ) // hinting for 0/90/180/270 degrees only
         mnLoadFlags |= FT_LOAD_NO_HINTING;
-    mnLoadFlags |= FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH; //#88334#
+    mnLoadFlags |= FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
 
     if (mxFontOptions->DontUseAntiAlias())
       mnPrioAntiAlias = 0;
@@ -609,7 +584,7 @@ void ServerFont::SetFontOptions(std::shared_ptr<ImplFontOptions> xFontOptions)
         mnLoadFlags |= FT_LOAD_NO_BITMAP;
 }
 
-std::shared_ptr<ImplFontOptions> ServerFont::GetFontOptions() const
+std::shared_ptr<FontConfigFontOptions> ServerFont::GetFontOptions() const
 {
     return mxFontOptions;
 }
@@ -637,7 +612,8 @@ void ServerFont::FetchFontMetric( ImplFontMetricData& rTo, long& rFactor ) const
 {
     static_cast<ImplFontAttributes&>(rTo) = mpFontInfo->GetFontAttributes();
 
-    rTo.mbScalableFont  = true;
+    rTo.mbScalableFont  = true; // FIXME: Shouldn't this check FT_IS_SCALABLE( maFaceFT )?
+    rTo.mbTrueTypeFont  = FT_IS_SFNT( maFaceFT ) != 0;
     rTo.mbDevice        = true;
     rTo.mbKernableFont  = FT_HAS_KERNING( maFaceFT ) != 0;
     rTo.mnOrientation = GetFontSelData().mnOrientation;
@@ -816,13 +792,13 @@ int ServerFont::ApplyGlyphTransform( int nGlyphFlags,
 
     if( pGlyphFT->format != FT_GLYPH_FORMAT_BITMAP )
     {
-        FT_Glyph_Transform( pGlyphFT, NULL, &aVector );
+        FT_Glyph_Transform( pGlyphFT, nullptr, &aVector );
 
         // orthogonal transforms are better handled by bitmap operations
         if( bStretched || (bForBitmapProcessing && (nAngle % 900) != 0) )
         {
             // apply non-orthogonal or stretch transformations
-            FT_Glyph_Transform( pGlyphFT, &aMatrix, NULL );
+            FT_Glyph_Transform( pGlyphFT, &aMatrix, nullptr );
             nAngle = 0;
         }
     }
@@ -985,278 +961,6 @@ bool ServerFont::GetAntialiasAdvice() const
     bool bAdviseAA = true;
     // TODO: also use GASP info
     return bAdviseAA;
-}
-
-bool ServerFont::GetGlyphBitmap1( sal_GlyphId aGlyphId, RawBitmap& rRawBitmap ) const
-{
-    FT_Activate_Size( maSizeFT );
-
-    int nGlyphFlags;
-    SplitGlyphFlags( *this, aGlyphId, nGlyphFlags );
-
-    FT_Int nLoadFlags = mnLoadFlags;
-    // #i70930# force mono-hinting for monochrome text
-    nLoadFlags &= ~0xF0000;
-    nLoadFlags |= FT_LOAD_TARGET_MONO;
-
-    if( mbArtItalic )
-        nLoadFlags |= FT_LOAD_NO_BITMAP;
-
-    // for 0/90/180/270 degree fonts enable hinting even if not advisable
-    // non-hinted and non-antialiased bitmaps just look too ugly
-    if( (mnCos==0 || mnSin==0) && (mnPrioAutoHint > 0) )
-        nLoadFlags &= ~FT_LOAD_NO_HINTING;
-
-    if( mnPrioEmbedded <= mnPrioAutoHint )
-        nLoadFlags |= FT_LOAD_NO_BITMAP;
-
-    FT_Error rc = FT_Load_Glyph( maFaceFT, aGlyphId, nLoadFlags );
-
-    if( rc != FT_Err_Ok )
-        return false;
-
-    if (mbArtBold)
-        FT_GlyphSlot_Embolden(maFaceFT->glyph);
-
-    FT_Glyph pGlyphFT;
-    rc = FT_Get_Glyph( maFaceFT->glyph, &pGlyphFT );
-    if( rc != FT_Err_Ok )
-        return false;
-
-    int nAngle = ApplyGlyphTransform( nGlyphFlags, pGlyphFT, true );
-
-    if( mbArtItalic )
-    {
-        FT_Matrix aMatrix;
-        aMatrix.xx = aMatrix.yy = 0x10000L;
-        aMatrix.xy = 0x6000L, aMatrix.yx = 0;
-        FT_Glyph_Transform( pGlyphFT, &aMatrix, NULL );
-    }
-
-    // Check for zero area bounding boxes as this crashes some versions of FT.
-    // This also provides a handy short cut as much of the code following
-    //  becomes an expensive nop when a glyph covers no pixels.
-    FT_BBox cbox;
-    FT_Glyph_Get_CBox(pGlyphFT, ft_glyph_bbox_unscaled, &cbox);
-
-    if( (cbox.xMax - cbox.xMin) == 0 || (cbox.yMax - cbox.yMin == 0) )
-    {
-        memset(&rRawBitmap, 0, sizeof rRawBitmap);
-        FT_Done_Glyph( pGlyphFT );
-        return true;
-    }
-
-    if( pGlyphFT->format != FT_GLYPH_FORMAT_BITMAP )
-    {
-        if( pGlyphFT->format == FT_GLYPH_FORMAT_OUTLINE )
-            reinterpret_cast<FT_OutlineGlyphRec*>(pGlyphFT)->outline.flags |= FT_OUTLINE_HIGH_PRECISION;
-        FT_Render_Mode nRenderMode = FT_RENDER_MODE_MONO;
-
-        rc = FT_Glyph_To_Bitmap( &pGlyphFT, nRenderMode, NULL, true );
-        if( rc != FT_Err_Ok )
-        {
-            FT_Done_Glyph( pGlyphFT );
-            return false;
-        }
-    }
-
-    const FT_BitmapGlyph pBmpGlyphFT = reinterpret_cast<const FT_BitmapGlyph>(pGlyphFT);
-    // NOTE: autohinting in FT<=2.0.2 miscalculates the offsets below by +-1
-    rRawBitmap.mnXOffset        = +pBmpGlyphFT->left;
-    rRawBitmap.mnYOffset        = -pBmpGlyphFT->top;
-
-    const FT_Bitmap& rBitmapFT  = pBmpGlyphFT->bitmap;
-    rRawBitmap.mnHeight         = rBitmapFT.rows;
-    rRawBitmap.mnBitCount       = 1;
-    rRawBitmap.mnWidth          = rBitmapFT.width;
-    rRawBitmap.mnScanlineSize   = rBitmapFT.pitch;
-
-    const sal_uLong nNeededSize = rRawBitmap.mnScanlineSize * rRawBitmap.mnHeight;
-
-    if( rRawBitmap.mnAllocated < nNeededSize )
-    {
-        rRawBitmap.mnAllocated = 2*nNeededSize;
-        rRawBitmap.mpBits.reset(new unsigned char[ rRawBitmap.mnAllocated ]);
-    }
-
-    if (!mbArtBold)
-    {
-        memcpy( rRawBitmap.mpBits.get(), rBitmapFT.buffer, nNeededSize );
-    }
-    else
-    {
-        memset( rRawBitmap.mpBits.get(), 0, nNeededSize );
-        const unsigned char* pSrcLine = rBitmapFT.buffer;
-        unsigned char* pDstLine = rRawBitmap.mpBits.get();
-        for( int h = rRawBitmap.mnHeight; --h >= 0; )
-        {
-            memcpy( pDstLine, pSrcLine, rBitmapFT.pitch );
-            pDstLine += rRawBitmap.mnScanlineSize;
-            pSrcLine += rBitmapFT.pitch;
-        }
-
-        unsigned char* p = rRawBitmap.mpBits.get();
-        for( sal_uLong y=0; y < rRawBitmap.mnHeight; y++ )
-        {
-            unsigned char nLastByte = 0;
-            for( sal_uLong x=0; x < rRawBitmap.mnScanlineSize; x++ )
-            {
-            unsigned char nTmp = p[x] << 7;
-            p[x] |= (p[x] >> 1) | nLastByte;
-            nLastByte = nTmp;
-            }
-            p += rRawBitmap.mnScanlineSize;
-        }
-    }
-
-    FT_Done_Glyph( pGlyphFT );
-
-    // special case for 0/90/180/270 degree orientation
-    switch( nAngle )
-    {
-        case  -900:
-        case  +900:
-        case +1800:
-        case +2700:
-            rRawBitmap.Rotate( nAngle );
-            break;
-    }
-
-    return true;
-}
-
-bool ServerFont::GetGlyphBitmap8( sal_GlyphId aGlyphId, RawBitmap& rRawBitmap ) const
-{
-    FT_Activate_Size( maSizeFT );
-
-    int nGlyphFlags;
-    SplitGlyphFlags( *this, aGlyphId, nGlyphFlags );
-
-    FT_Int nLoadFlags = mnLoadFlags;
-
-    if( mbArtItalic )
-        nLoadFlags |= FT_LOAD_NO_BITMAP;
-
-    if( (nGlyphFlags & GF_UNHINTED) || (mnPrioAutoHint < mnPrioAntiAlias) )
-        nLoadFlags |= FT_LOAD_NO_HINTING;
-
-    if( mnPrioEmbedded <= mnPrioAntiAlias )
-        nLoadFlags |= FT_LOAD_NO_BITMAP;
-
-    FT_Error rc = FT_Load_Glyph( maFaceFT, aGlyphId, nLoadFlags );
-
-    if( rc != FT_Err_Ok )
-        return false;
-
-    if (mbArtBold)
-        FT_GlyphSlot_Embolden(maFaceFT->glyph);
-
-    FT_Glyph pGlyphFT;
-    rc = FT_Get_Glyph( maFaceFT->glyph, &pGlyphFT );
-    if( rc != FT_Err_Ok )
-        return false;
-
-    int nAngle = ApplyGlyphTransform( nGlyphFlags, pGlyphFT, true );
-
-    if( mbArtItalic )
-    {
-        FT_Matrix aMatrix;
-        aMatrix.xx = aMatrix.yy = 0x10000L;
-        aMatrix.xy = 0x6000L, aMatrix.yx = 0;
-        FT_Glyph_Transform( pGlyphFT, &aMatrix, NULL );
-    }
-
-    if( pGlyphFT->format == FT_GLYPH_FORMAT_OUTLINE )
-        reinterpret_cast<FT_OutlineGlyph>(pGlyphFT)->outline.flags |= FT_OUTLINE_HIGH_PRECISION;
-
-    bool bEmbedded = (pGlyphFT->format == FT_GLYPH_FORMAT_BITMAP);
-    if( !bEmbedded )
-    {
-        rc = FT_Glyph_To_Bitmap( &pGlyphFT, FT_RENDER_MODE_NORMAL, NULL, true );
-        if( rc != FT_Err_Ok )
-        {
-            FT_Done_Glyph( pGlyphFT );
-            return false;
-        }
-    }
-
-    const FT_BitmapGlyph pBmpGlyphFT = reinterpret_cast<const FT_BitmapGlyph>(pGlyphFT);
-    rRawBitmap.mnXOffset        = +pBmpGlyphFT->left;
-    rRawBitmap.mnYOffset        = -pBmpGlyphFT->top;
-
-    const FT_Bitmap& rBitmapFT  = pBmpGlyphFT->bitmap;
-    rRawBitmap.mnHeight         = rBitmapFT.rows;
-    rRawBitmap.mnWidth          = rBitmapFT.width;
-    rRawBitmap.mnBitCount       = 8;
-    rRawBitmap.mnScanlineSize   = bEmbedded ? rBitmapFT.width : rBitmapFT.pitch;
-    rRawBitmap.mnScanlineSize = (rRawBitmap.mnScanlineSize + 3) & -4;
-
-    const sal_uLong nNeededSize = rRawBitmap.mnScanlineSize * rRawBitmap.mnHeight;
-    if( rRawBitmap.mnAllocated < nNeededSize )
-    {
-        rRawBitmap.mnAllocated = 2*nNeededSize;
-        rRawBitmap.mpBits.reset(new unsigned char[ rRawBitmap.mnAllocated ]);
-    }
-
-    const unsigned char* pSrc = rBitmapFT.buffer;
-    unsigned char* pDest = rRawBitmap.mpBits.get();
-    if( !bEmbedded )
-    {
-        unsigned int x;
-        for( int y = rRawBitmap.mnHeight; --y >= 0 ; )
-        {
-            // note width is "int" in freetype 2.4.8 and "unsigned int" in 2.5.5
-            for (x = 0; x < static_cast<unsigned int>(rBitmapFT.width); ++x)
-                *(pDest++) = *(pSrc++);
-            for(; x < rRawBitmap.mnScanlineSize; ++x )
-                *(pDest++) = 0;
-        }
-    }
-    else
-    {
-        unsigned int x;
-        for( int y = rRawBitmap.mnHeight; --y >= 0 ; )
-        {
-            unsigned char nSrc = 0;
-            // note width is "int" in freetype 2.4.8 and "unsigned int" in 2.5.5
-            for (x = 0; x < static_cast<unsigned int>(rBitmapFT.width); ++x, nSrc+=nSrc)
-            {
-                if( (x & 7) == 0 )
-                    nSrc = *(pSrc++);
-                *(pDest++) = (0x7F - nSrc) >> 8;
-            }
-            for(; x < rRawBitmap.mnScanlineSize; ++x )
-                *(pDest++) = 0;
-        }
-    }
-
-    if( !bEmbedded && mbUseGamma )
-    {
-        unsigned char* p = rRawBitmap.mpBits.get();
-        for( sal_uLong y=0; y < rRawBitmap.mnHeight; y++ )
-        {
-            for( sal_uLong x=0; x < rRawBitmap.mnWidth; x++ )
-            {
-                p[x] = aGammaTable[ p[x] ];
-            }
-            p += rRawBitmap.mnScanlineSize;
-        }
-    }
-
-    FT_Done_Glyph( pGlyphFT );
-
-    // special case for 0/90/180/270 degree orientation
-    switch( nAngle )
-    {
-        case  -900:
-        case  +900:
-        case +1800:
-        case +2700:
-            rRawBitmap.Rotate( nAngle );
-            break;
-    }
-
-    return true;
 }
 
 // determine unicode ranges in font
@@ -1434,7 +1138,7 @@ void PolyArgs::ClosePolygon()
     DBG_ASSERT( (mpFlagAry[0]==POLY_NORMAL), "FTGlyphOutline: PolyFinishFE failed!" );
     DBG_ASSERT( (mpFlagAry[mnPoints]==POLY_NORMAL), "FTGlyphOutline: PolyFinishFS failed!" );
 
-    tools::Polygon aPoly( mnPoints, mpPointAry, (bHasOffline ? mpFlagAry : NULL) );
+    tools::Polygon aPoly( mnPoints, mpPointAry, (bHasOffline ? mpFlagAry : nullptr) );
 
     // #i35928#
     // This may be a invalid polygons, e.g. the last point is a control point.
@@ -1517,7 +1221,7 @@ static int FT_cubic_to( const FT_Vector* p1, const FT_Vector* p2, const FT_Vecto
 } // extern "C"
 
 bool ServerFont::GetGlyphOutline( sal_GlyphId aGlyphId,
-    ::basegfx::B2DPolyPolygon& rB2DPolyPoly ) const
+    basegfx::B2DPolyPolygon& rB2DPolyPoly ) const
 {
     if( maSizeFT )
         FT_Activate_Size( maSizeFT );
@@ -1557,7 +1261,7 @@ bool ServerFont::GetGlyphOutline( sal_GlyphId aGlyphId,
         FT_Matrix aMatrix;
         aMatrix.xx = aMatrix.yy = 0x10000L;
         aMatrix.xy = 0x6000L, aMatrix.yx = 0;
-        FT_Glyph_Transform( pGlyphFT, &aMatrix, NULL );
+        FT_Glyph_Transform( pGlyphFT, &aMatrix, nullptr );
     }
 
     FT_Outline& rOutline = reinterpret_cast<FT_OutlineGlyphRec*>(pGlyphFT)->outline;
@@ -1699,6 +1403,7 @@ bool ServerFont::ApplyGSUB( const FontSelectPattern& rFSD )
         }
 
         const FT_Byte* pFeatureTable = pGsubBase + nOfsFeatureTable + nOffset;
+        pFeatureTable += 2; // ignore FeatureParams
         const sal_uInt16 nCntLookups = GetUShort( pFeatureTable+0 );
         pFeatureTable += 2;
         for( sal_uInt16 i = 0; i < nCntLookups; ++i )

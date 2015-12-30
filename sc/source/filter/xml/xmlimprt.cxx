@@ -19,7 +19,6 @@
 
 #include <sal/config.h>
 
-#include <o3tl/ptr_container.hxx>
 #include <svl/zforlist.hxx>
 #include <sal/macros.h>
 
@@ -124,7 +123,6 @@ uno::Sequence< OUString > SAL_CALL ScXMLImport_getSupportedServiceNames() throw(
 uno::Reference< uno::XInterface > SAL_CALL ScXMLImport_createInstance(
     const uno::Reference< lang::XMultiServiceFactory > & rSMgr ) throw( uno::Exception )
 {
-    // #110680#
     // return (cppu::OWeakObject*)new ScXMLImport(IMPORT_ALL);
     return static_cast<cppu::OWeakObject*>(new ScXMLImport( comphelper::getComponentContext(rSMgr), ScXMLImport_getImplementationName(), SvXMLImportFlags::ALL ));
 }
@@ -143,7 +141,6 @@ uno::Sequence< OUString > SAL_CALL ScXMLImport_Meta_getSupportedServiceNames() t
 uno::Reference< uno::XInterface > SAL_CALL ScXMLImport_Meta_createInstance(
     const uno::Reference< lang::XMultiServiceFactory > & rSMgr ) throw( uno::Exception )
 {
-    // #110680#
     // return (cppu::OWeakObject*)new ScXMLImport(IMPORT_META);
     return static_cast<cppu::OWeakObject*>(new ScXMLImport( comphelper::getComponentContext(rSMgr), ScXMLImport_Meta_getImplementationName(), SvXMLImportFlags::META ));
 }
@@ -162,7 +159,6 @@ uno::Sequence< OUString > SAL_CALL ScXMLImport_Styles_getSupportedServiceNames()
 uno::Reference< uno::XInterface > SAL_CALL ScXMLImport_Styles_createInstance(
     const uno::Reference< lang::XMultiServiceFactory > & rSMgr ) throw( uno::Exception )
 {
-    // #110680#
     // return (cppu::OWeakObject*)new ScXMLImport(SvXMLImportFlagsSTYLES|SvXMLImportFlags::AUTOSTYLES|SvXMLImportFlags::MASTERSTYLES|SvXMLImportFlags::FONTDECLS);
     return static_cast<cppu::OWeakObject*>(new ScXMLImport( comphelper::getComponentContext(rSMgr), ScXMLImport_Styles_getImplementationName(), SvXMLImportFlags::STYLES|SvXMLImportFlags::AUTOSTYLES|SvXMLImportFlags::MASTERSTYLES|SvXMLImportFlags::FONTDECLS));
 }
@@ -181,7 +177,6 @@ uno::Sequence< OUString > SAL_CALL ScXMLImport_Content_getSupportedServiceNames(
 uno::Reference< uno::XInterface > SAL_CALL ScXMLImport_Content_createInstance(
     const uno::Reference< lang::XMultiServiceFactory > & rSMgr ) throw( uno::Exception )
 {
-    // #110680#
     // return (cppu::OWeakObject*)new ScXMLImport(SvXMLImportFlags::META|SvXMLImportFlags::STYLES|SvXMLImportFlags::MASTERSTYLES|SvXMLImportFlags::AUTOSTYLES|SvXMLImportFlags::CONTENT|SvXMLImportFlags::SCRIPTS|SvXMLImportFlags::SETTINGS|SvXMLImportFlags::FONTDECLS);
     return static_cast<cppu::OWeakObject*>(new ScXMLImport( comphelper::getComponentContext(rSMgr), ScXMLImport_Content_getImplementationName(), SvXMLImportFlags::AUTOSTYLES|SvXMLImportFlags::CONTENT|SvXMLImportFlags::SCRIPTS|SvXMLImportFlags::FONTDECLS));
 }
@@ -200,7 +195,6 @@ uno::Sequence< OUString > SAL_CALL ScXMLImport_Settings_getSupportedServiceNames
 uno::Reference< uno::XInterface > SAL_CALL ScXMLImport_Settings_createInstance(
     const uno::Reference< lang::XMultiServiceFactory > & rSMgr ) throw( uno::Exception )
 {
-    // #110680#
     // return (cppu::OWeakObject*)new ScXMLImport(SvXMLImportFlags::SETTINGS);
     return static_cast<cppu::OWeakObject*>(new ScXMLImport( comphelper::getComponentContext(rSMgr), ScXMLImport_Settings_getImplementationName(), SvXMLImportFlags::SETTINGS ));
 }
@@ -250,7 +244,7 @@ public:
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const uno::Reference<xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
+        const uno::Reference<xml::sax::XAttributeList>& xAttrList ) override;
 };
 
 ScXMLDocContext_Impl::ScXMLDocContext_Impl( ScXMLImport& rImport, sal_uInt16 nPrfx,
@@ -279,7 +273,7 @@ public:
 
     virtual SvXMLImportContext *CreateChildContext(
         sal_uInt16 i_nPrefix, const OUString& i_rLocalName,
-        const uno::Reference<xml::sax::XAttributeList>& i_xAttrList) SAL_OVERRIDE;
+        const uno::Reference<xml::sax::XAttributeList>& i_xAttrList) override;
 };
 
 ScXMLFlatDocContext_Impl::ScXMLFlatDocContext_Impl( ScXMLImport& i_rImport,
@@ -323,7 +317,7 @@ public:
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const uno::Reference< xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+        const uno::Reference< xml::sax::XAttributeList > & xAttrList ) override;
 };
 
 ScXMLBodyContext_Impl::ScXMLBodyContext_Impl( ScXMLImport& rImport,
@@ -349,7 +343,7 @@ SvXMLImportContext *ScXMLDocContext_Impl::CreateChildContext( sal_uInt16 nPrefix
                                                              const OUString& rLocalName,
                                                              const uno::Reference<xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext(0);
+    SvXMLImportContext *pContext(nullptr);
 
     const SvXMLTokenMap& rTokenMap(GetScImport().GetDocElemTokenMap());
     switch( rTokenMap.Get( nPrefix, rLocalName ) )
@@ -372,7 +366,7 @@ SvXMLImportContext *ScXMLDocContext_Impl::CreateChildContext( sal_uInt16 nPrefix
             xAttrList );
         break;
     case XML_TOK_DOC_META:
-        DBG_WARNING("XML_TOK_DOC_META: should not have come here, maybe document is invalid?");
+        SAL_INFO("sc", "XML_TOK_DOC_META: should not have come here, maybe document is invalid?");
         break;
     case XML_TOK_DOC_SCRIPTS:
         if (GetScImport().getImportFlags() & SvXMLImportFlags::SCRIPTS)
@@ -1956,7 +1950,7 @@ SvXMLImportContext *ScXMLImport::CreateContext( sal_uInt16 nPrefix,
                                                const OUString& rLocalName,
                                                const uno::Reference<xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if( (XML_NAMESPACE_OFFICE == nPrefix) &&
         ( IsXMLToken(rLocalName, XML_DOCUMENT_STYLES) ||
@@ -1982,110 +1976,110 @@ SvXMLImportContext *ScXMLImport::CreateContext( sal_uInt16 nPrefix,
 }
 
 ScXMLImport::ScXMLImport(
-    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rContext,
+    const css::uno::Reference< css::uno::XComponentContext >& rContext,
     OUString const & implementationName, SvXMLImportFlags nImportFlag)
 :   SvXMLImport( rContext, implementationName, nImportFlag ),
-    pDoc( NULL ),
-    pChangeTrackingImportHelper(NULL),
-    pStylesImportHelper(NULL),
+    pDoc( nullptr ),
+    pChangeTrackingImportHelper(nullptr),
+    pStylesImportHelper(nullptr),
     sNumberFormat(SC_UNONAME_NUMFMT),
     sLocale(SC_LOCALE),
     sCellStyle(SC_UNONAME_CELLSTYL),
-    pDocElemTokenMap( 0 ),
-    pStylesElemTokenMap( 0 ),
-    pStylesAttrTokenMap( 0 ),
-    pStyleElemTokenMap( 0 ),
-    pBodyElemTokenMap( 0 ),
-    pContentValidationsElemTokenMap( 0 ),
-    pContentValidationElemTokenMap( 0 ),
-    pContentValidationAttrTokenMap( 0 ),
-    pContentValidationMessageElemTokenMap( 0 ),
-    pContentValidationHelpMessageAttrTokenMap( 0 ),
-    pContentValidationErrorMessageAttrTokenMap( 0 ),
-    pContentValidationErrorMacroAttrTokenMap( 0 ),
-    pCondFormatsTokenMap( 0 ),
-    pCondFormatTokenMap( 0 ),
-    pCondFormatAttrMap( 0 ),
-    pCondDateAttrMap( 0 ),
-    pConditionAttrMap( 0 ),
-    pColorScaleTokenMap( 0 ),
-    pColorScaleEntryAttrTokenMap( 0 ),
-    pDataBarTokenMap( 0 ),
-    pDataBarAttrMap( 0 ),
-    pFormattingEntryAttrMap( 0 ),
-    pIconSetAttrMap( 0 ),
-    pLabelRangesElemTokenMap( 0 ),
-    pLabelRangeAttrTokenMap( 0 ),
-    pTableElemTokenMap( 0 ),
-    pTableProtectionElemTokenMap(NULL),
-    pTableRowsElemTokenMap( 0 ),
-    pTableColsElemTokenMap( 0 ),
-    pTableScenarioAttrTokenMap( 0 ),
-    pTableAttrTokenMap( 0 ),
-    pTableColAttrTokenMap( 0 ),
-    pTableRowElemTokenMap( 0 ),
-    pTableRowAttrTokenMap( 0 ),
-    pTableRowCellElemTokenMap( 0 ),
-    pTableRowCellAttrTokenMap( 0 ),
-    pTableAnnotationAttrTokenMap( 0 ),
-    pDetectiveElemTokenMap( 0 ),
-    pDetectiveHighlightedAttrTokenMap( 0 ),
-    pDetectiveOperationAttrTokenMap( 0 ),
-    pTableCellRangeSourceAttrTokenMap( 0 ),
-    pNamedExpressionsElemTokenMap( 0 ),
-    pNamedRangeAttrTokenMap( 0 ),
-    pNamedExpressionAttrTokenMap( 0 ),
-    pDatabaseRangesElemTokenMap( 0 ),
-    pDatabaseRangeElemTokenMap( 0 ),
-    pDatabaseRangeAttrTokenMap( 0 ),
-    pDatabaseRangeSourceSQLAttrTokenMap( 0 ),
-    pDatabaseRangeSourceTableAttrTokenMap( 0 ),
-    pDatabaseRangeSourceQueryAttrTokenMap( 0 ),
-    pFilterElemTokenMap( 0 ),
-    pFilterAttrTokenMap( 0 ),
-    pFilterConditionElemTokenMap( 0 ),
-    pFilterConditionAttrTokenMap( 0 ),
-    pFilterSetItemAttrTokenMap( 0 ),
-    pSortElemTokenMap( 0 ),
-    pSortAttrTokenMap( 0 ),
-    pSortSortByAttrTokenMap( 0 ),
-    pDatabaseRangeSubTotalRulesElemTokenMap( 0 ),
-    pDatabaseRangeSubTotalRulesAttrTokenMap( 0 ),
-    pSubTotalRulesSortGroupsAttrTokenMap( 0 ),
-    pSubTotalRulesSubTotalRuleElemTokenMap( 0 ),
-    pSubTotalRulesSubTotalRuleAttrTokenMap( 0 ),
-    pSubTotalRuleSubTotalFieldAttrTokenMap( 0 ),
-    pDataPilotTablesElemTokenMap( 0 ),
-    pDataPilotTableAttrTokenMap( 0 ),
-    pDataPilotTableElemTokenMap( 0 ),
-    pDataPilotTableSourceServiceAttrTokenMap( 0 ),
-    pDataPilotGrandTotalAttrTokenMap(NULL),
-    pDataPilotTableSourceCellRangeElemTokenMap( 0 ),
-    pDataPilotTableSourceCellRangeAttrTokenMap( 0 ),
-    pDataPilotFieldAttrTokenMap( 0 ),
-    pDataPilotFieldElemTokenMap( 0 ),
-    pDataPilotLevelAttrTokenMap( 0 ),
-    pDataPilotLevelElemTokenMap( 0 ),
-    pDataPilotSubTotalsElemTokenMap( 0 ),
-    pDataPilotSubTotalAttrTokenMap( 0 ),
-    pDataPilotMembersElemTokenMap( 0 ),
-    pDataPilotMemberAttrTokenMap( 0 ),
-    pConsolidationAttrTokenMap( 0 ),
-    pCellTextParaElemTokenMap(NULL),
-    pCellTextSpanElemTokenMap(NULL),
-    pCellTextSpanAttrTokenMap(NULL),
-    pCellTextURLAttrTokenMap(NULL),
-    pCellTextSAttrTokenMap(NULL),
-    pDataStreamAttrTokenMap(NULL),
-    mpPostProcessData(NULL),
+    pDocElemTokenMap( nullptr ),
+    pStylesElemTokenMap( nullptr ),
+    pStylesAttrTokenMap( nullptr ),
+    pStyleElemTokenMap( nullptr ),
+    pBodyElemTokenMap( nullptr ),
+    pContentValidationsElemTokenMap( nullptr ),
+    pContentValidationElemTokenMap( nullptr ),
+    pContentValidationAttrTokenMap( nullptr ),
+    pContentValidationMessageElemTokenMap( nullptr ),
+    pContentValidationHelpMessageAttrTokenMap( nullptr ),
+    pContentValidationErrorMessageAttrTokenMap( nullptr ),
+    pContentValidationErrorMacroAttrTokenMap( nullptr ),
+    pCondFormatsTokenMap( nullptr ),
+    pCondFormatTokenMap( nullptr ),
+    pCondFormatAttrMap( nullptr ),
+    pCondDateAttrMap( nullptr ),
+    pConditionAttrMap( nullptr ),
+    pColorScaleTokenMap( nullptr ),
+    pColorScaleEntryAttrTokenMap( nullptr ),
+    pDataBarTokenMap( nullptr ),
+    pDataBarAttrMap( nullptr ),
+    pFormattingEntryAttrMap( nullptr ),
+    pIconSetAttrMap( nullptr ),
+    pLabelRangesElemTokenMap( nullptr ),
+    pLabelRangeAttrTokenMap( nullptr ),
+    pTableElemTokenMap( nullptr ),
+    pTableProtectionElemTokenMap(nullptr),
+    pTableRowsElemTokenMap( nullptr ),
+    pTableColsElemTokenMap( nullptr ),
+    pTableScenarioAttrTokenMap( nullptr ),
+    pTableAttrTokenMap( nullptr ),
+    pTableColAttrTokenMap( nullptr ),
+    pTableRowElemTokenMap( nullptr ),
+    pTableRowAttrTokenMap( nullptr ),
+    pTableRowCellElemTokenMap( nullptr ),
+    pTableRowCellAttrTokenMap( nullptr ),
+    pTableAnnotationAttrTokenMap( nullptr ),
+    pDetectiveElemTokenMap( nullptr ),
+    pDetectiveHighlightedAttrTokenMap( nullptr ),
+    pDetectiveOperationAttrTokenMap( nullptr ),
+    pTableCellRangeSourceAttrTokenMap( nullptr ),
+    pNamedExpressionsElemTokenMap( nullptr ),
+    pNamedRangeAttrTokenMap( nullptr ),
+    pNamedExpressionAttrTokenMap( nullptr ),
+    pDatabaseRangesElemTokenMap( nullptr ),
+    pDatabaseRangeElemTokenMap( nullptr ),
+    pDatabaseRangeAttrTokenMap( nullptr ),
+    pDatabaseRangeSourceSQLAttrTokenMap( nullptr ),
+    pDatabaseRangeSourceTableAttrTokenMap( nullptr ),
+    pDatabaseRangeSourceQueryAttrTokenMap( nullptr ),
+    pFilterElemTokenMap( nullptr ),
+    pFilterAttrTokenMap( nullptr ),
+    pFilterConditionElemTokenMap( nullptr ),
+    pFilterConditionAttrTokenMap( nullptr ),
+    pFilterSetItemAttrTokenMap( nullptr ),
+    pSortElemTokenMap( nullptr ),
+    pSortAttrTokenMap( nullptr ),
+    pSortSortByAttrTokenMap( nullptr ),
+    pDatabaseRangeSubTotalRulesElemTokenMap( nullptr ),
+    pDatabaseRangeSubTotalRulesAttrTokenMap( nullptr ),
+    pSubTotalRulesSortGroupsAttrTokenMap( nullptr ),
+    pSubTotalRulesSubTotalRuleElemTokenMap( nullptr ),
+    pSubTotalRulesSubTotalRuleAttrTokenMap( nullptr ),
+    pSubTotalRuleSubTotalFieldAttrTokenMap( nullptr ),
+    pDataPilotTablesElemTokenMap( nullptr ),
+    pDataPilotTableAttrTokenMap( nullptr ),
+    pDataPilotTableElemTokenMap( nullptr ),
+    pDataPilotTableSourceServiceAttrTokenMap( nullptr ),
+    pDataPilotGrandTotalAttrTokenMap(nullptr),
+    pDataPilotTableSourceCellRangeElemTokenMap( nullptr ),
+    pDataPilotTableSourceCellRangeAttrTokenMap( nullptr ),
+    pDataPilotFieldAttrTokenMap( nullptr ),
+    pDataPilotFieldElemTokenMap( nullptr ),
+    pDataPilotLevelAttrTokenMap( nullptr ),
+    pDataPilotLevelElemTokenMap( nullptr ),
+    pDataPilotSubTotalsElemTokenMap( nullptr ),
+    pDataPilotSubTotalAttrTokenMap( nullptr ),
+    pDataPilotMembersElemTokenMap( nullptr ),
+    pDataPilotMemberAttrTokenMap( nullptr ),
+    pConsolidationAttrTokenMap( nullptr ),
+    pCellTextParaElemTokenMap(nullptr),
+    pCellTextSpanElemTokenMap(nullptr),
+    pCellTextSpanAttrTokenMap(nullptr),
+    pCellTextURLAttrTokenMap(nullptr),
+    pCellTextSAttrTokenMap(nullptr),
+    pDataStreamAttrTokenMap(nullptr),
+    mpPostProcessData(nullptr),
     aTables(*this),
-    pMyNamedExpressions(NULL),
-    pMyLabelRanges(NULL),
-    pValidations(NULL),
-    pDetectiveOpArray(NULL),
-    pSolarMutexGuard(NULL),
-    pNumberFormatAttributesExportHelper(NULL),
-    pStyleNumberFormats(NULL),
+    m_pMyNamedExpressions(nullptr),
+    pMyLabelRanges(nullptr),
+    pValidations(nullptr),
+    pDetectiveOpArray(nullptr),
+    pSolarMutexGuard(nullptr),
+    pNumberFormatAttributesExportHelper(nullptr),
+    pStyleNumberFormats(nullptr),
     sPrevStyleName(),
     sPrevCurrency(),
     nSolarMutexLocked(0),
@@ -2228,7 +2222,7 @@ ScXMLImport::~ScXMLImport() throw()
 
     delete pSolarMutexGuard;
 
-    delete pMyNamedExpressions;
+    delete m_pMyNamedExpressions;
     delete pMyLabelRanges;
     delete pValidations;
     delete pDetectiveOpArray;
@@ -2287,14 +2281,14 @@ SvXMLImportContext *ScXMLImport::CreateBodyContext(const OUString& rLocalName,
 SvXMLImportContext *ScXMLImport::CreateMetaContext(
     const OUString& rLocalName )
 {
-    SvXMLImportContext* pContext = NULL;
+    SvXMLImportContext* pContext = nullptr;
 
     if (getImportFlags() & SvXMLImportFlags::META)
     {
         uno::Reference<document::XDocumentPropertiesSupplier> xDPS(
             GetModel(), uno::UNO_QUERY_THROW);
         uno::Reference<document::XDocumentProperties> const xDocProps(
-            (IsStylesOnlyMode()) ? 0 : xDPS->getDocumentProperties());
+            (IsStylesOnlyMode()) ? nullptr : xDPS->getDocumentProperties());
         pContext = new SvXMLMetaDocumentContext(*this,
             XML_NAMESPACE_OFFICE, rLocalName,
             xDocProps);
@@ -2310,7 +2304,7 @@ SvXMLImportContext *ScXMLImport::CreateMetaContext(
 SvXMLImportContext *ScXMLImport::CreateScriptContext(
     const OUString& rLocalName )
 {
-    SvXMLImportContext* pContext = NULL;
+    SvXMLImportContext* pContext = nullptr;
 
     if( !(IsStylesOnlyMode()) )
     {
@@ -2330,13 +2324,13 @@ void ScXMLImport::SetStatistics(
                                 const uno::Sequence<beans::NamedValue> & i_rStats)
 {
     static const char* s_stats[] =
-    { "TableCount", "CellCount", "ObjectCount", 0 };
+    { "TableCount", "CellCount", "ObjectCount", nullptr };
 
     SvXMLImport::SetStatistics(i_rStats);
 
     sal_uInt32 nCount(0);
     for (sal_Int32 i = 0; i < i_rStats.getLength(); ++i) {
-        for (const char** pStat = s_stats; *pStat != 0; ++pStat) {
+        for (const char** pStat = s_stats; *pStat != nullptr; ++pStat) {
             if (i_rStats[i].Name.equalsAscii(*pStat)) {
                 sal_Int32 val = 0;
                 if (i_rStats[i].Value >>= val) {
@@ -2403,12 +2397,13 @@ bool ScXMLImport::GetValidation(const OUString& sName, ScMyImportValidation& aVa
 void ScXMLImport::AddNamedExpression(SCTAB nTab, ScMyNamedExpression* pNamedExp)
 {
     ::std::unique_ptr<ScMyNamedExpression> p(pNamedExp);
-    SheetNamedExpMap::iterator itr = maSheetNamedExpressions.find(nTab);
-    if (itr == maSheetNamedExpressions.end())
+    SheetNamedExpMap::iterator itr = m_SheetNamedExpressions.find(nTab);
+    if (itr == m_SheetNamedExpressions.end())
     {
         // No chain exists for this sheet.  Create one.
         ::std::unique_ptr<ScMyNamedExpressions> pNew(new ScMyNamedExpressions);
-        ::std::pair<SheetNamedExpMap::iterator, bool> r = o3tl::ptr_container::insert(maSheetNamedExpressions, nTab, std::move(pNew));
+        ::std::pair<SheetNamedExpMap::iterator, bool> r =
+            m_SheetNamedExpressions.insert(std::make_pair(nTab, std::move(pNew)));
         if (!r.second)
             // insertion failed.
             return;
@@ -2416,7 +2411,7 @@ void ScXMLImport::AddNamedExpression(SCTAB nTab, ScMyNamedExpression* pNamedExp)
         itr = r.first;
     }
     ScMyNamedExpressions& r = *itr->second;
-    o3tl::ptr_container::push_back(r, std::move(p));
+    r.push_back(std::move(p));
 }
 
 ScXMLChangeTrackingImportHelper* ScXMLImport::GetChangeTrackingImportHelper()
@@ -2448,7 +2443,7 @@ void ScXMLImport::ExamineDefaultStyle()
     }
 }
 
-void ScXMLImport::SetChangeTrackingViewSettings(const com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>& rChangeProps)
+void ScXMLImport::SetChangeTrackingViewSettings(const css::uno::Sequence<css::beans::PropertyValue>& rChangeProps)
 {
     if (pDoc)
     {
@@ -2683,8 +2678,7 @@ sal_Int32 ScXMLImport::SetCurrencySymbol(const sal_Int32 nKey, const OUString& r
                 sErrorMessage += sFormatString;
                 sErrorMessage += " an Position ";
                 sErrorMessage += OUString::number(rException.CheckPos);
-                uno::Sequence<OUString> aSeq(1);
-                aSeq[0] = sErrorMessage;
+                uno::Sequence<OUString> aSeq { sErrorMessage };
                 uno::Reference<xml::sax::XLocator> xLocator;
                 SetError(XMLERROR_API | XMLERROR_FLAG_ERROR, aSeq, rException.Message, xLocator);
             }
@@ -2707,12 +2701,12 @@ bool ScXMLImport::IsCurrencySymbol(const sal_Int32 nNumberFormat, const OUString
                 if (xNumberPropertySet.is())
                 {
                     OUString sTemp;
-                    if ( xNumberPropertySet->getPropertyValue(OUString(SC_CURRENCYSYMBOL)) >>= sTemp)
+                    if ( xNumberPropertySet->getPropertyValue(SC_CURRENCYSYMBOL) >>= sTemp)
                     {
                         if (sCurrentCurrency.equals(sTemp))
                             return true;
                         // #i61657# This may be a legacy currency symbol that changed in the meantime.
-                        if (SvNumberFormatter::GetLegacyOnlyCurrencyEntry( sCurrentCurrency, sBankSymbol) != NULL)
+                        if (SvNumberFormatter::GetLegacyOnlyCurrencyEntry( sCurrentCurrency, sBankSymbol) != nullptr)
                             return true;
                         // In the rare case that sCurrentCurrency is not the
                         // currency symbol, but a matching ISO code
@@ -2723,7 +2717,7 @@ bool ScXMLImport::IsCurrencySymbol(const sal_Int32 nNumberFormat, const OUString
                         // B$,BOB matched B$->BOP, which leads to
                         // sCurrentCurrency being BOP, and the previous call
                         // with BOP,BOB didn't find an entry, but B$,BOB will.
-                        return SvNumberFormatter::GetLegacyOnlyCurrencyEntry( sTemp, sBankSymbol) != NULL;
+                        return SvNumberFormatter::GetLegacyOnlyCurrencyEntry( sTemp, sBankSymbol) != nullptr;
                     }
                 }
             }
@@ -2836,7 +2830,7 @@ void ScXMLImport::SetStyleToRanges()
         if (xProperties.is())
         {
             XMLTableStylesContext *pStyles(static_cast<XMLTableStylesContext *>(GetAutoStyles()));
-            XMLTableStyleContext* pStyle = NULL;
+            XMLTableStyleContext* pStyle = nullptr;
             if ( pStyles )
                 pStyle = const_cast<XMLTableStyleContext*>(static_cast<const XMLTableStyleContext *>(pStyles->FindStyleChildContext(
                         XML_STYLE_FAMILY_TABLE_CELL, sPrevStyleName, true)));
@@ -2878,8 +2872,7 @@ void ScXMLImport::SetStyleToRanges()
         uno::Reference <lang::XMultiServiceFactory> xMultiServiceFactory(GetModel(), uno::UNO_QUERY);
         if (xMultiServiceFactory.is())
             xSheetCellRanges.set(uno::Reference <sheet::XSheetCellRangeContainer>(
-            xMultiServiceFactory->createInstance(
-            OUString("com.sun.star.sheet.SheetCellRanges")),
+            xMultiServiceFactory->createInstance("com.sun.star.sheet.SheetCellRanges"),
             uno::UNO_QUERY));
     }
     OSL_ENSURE(xSheetCellRanges.is(), "didn't get SheetCellRanges");
@@ -2956,8 +2949,8 @@ void ScXMLImport::SetStylesToRangesFinished()
 }
 
 // XImporter
-void SAL_CALL ScXMLImport::setTargetDocument( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XComponent >& xDoc )
-throw(::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ScXMLImport::setTargetDocument( const css::uno::Reference< css::lang::XComponent >& xDoc )
+throw(css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception)
 {
     ScXMLImport::MutexGuard aGuard(*this);
     SvXMLImport::setTargetDocument( xDoc );
@@ -2977,9 +2970,9 @@ throw(::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::uno::R
         xActionLockable->addActionLock();
 }
 
-// ::com::sun::star::xml::sax::XDocumentHandler
+// css::xml::sax::XDocumentHandler
 void SAL_CALL ScXMLImport::startDocument()
-throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception )
+throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception )
 {
     ScXMLImport::MutexGuard aGuard(*this);
     SvXMLImport::startDocument();
@@ -3008,7 +3001,7 @@ throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeE
 
     uno::Reference< beans::XPropertySet > const xImportInfo( getImportInfo() );
     uno::Reference< beans::XPropertySetInfo > const xPropertySetInfo(
-            xImportInfo.is() ? xImportInfo->getPropertySetInfo() : 0);
+            xImportInfo.is() ? xImportInfo->getPropertySetInfo() : nullptr);
     if (xPropertySetInfo.is())
     {
         OUString const sOrganizerMode(
@@ -3060,8 +3053,8 @@ void ScXMLImport::SetLabelRanges()
         uno::Reference <beans::XPropertySet> xPropertySet (GetModel(), uno::UNO_QUERY);
         if (xPropertySet.is())
         {
-            uno::Any aColAny = xPropertySet->getPropertyValue(OUString(SC_UNO_COLLABELRNG));
-            uno::Any aRowAny = xPropertySet->getPropertyValue(OUString(SC_UNO_ROWLABELRNG));
+            uno::Any aColAny = xPropertySet->getPropertyValue(SC_UNO_COLLABELRNG);
+            uno::Any aRowAny = xPropertySet->getPropertyValue(SC_UNO_ROWLABELRNG);
 
             uno::Reference< sheet::XLabelRanges > xColRanges;
             uno::Reference< sheet::XLabelRanges > xRowRanges;
@@ -3101,17 +3094,16 @@ class RangeNameInserter : public ::std::unary_function<ScMyNamedExpression, void
 {
     ScDocument* mpDoc;
     ScRangeName& mrRangeName;
-    ScXMLImport& mrXmlImport;
 
 public:
-    RangeNameInserter(ScDocument* pDoc, ScRangeName& rRangeName, ScXMLImport& rXmlImport) :
-        mpDoc(pDoc), mrRangeName(rRangeName), mrXmlImport(rXmlImport) {}
+    RangeNameInserter(ScDocument* pDoc, ScRangeName& rRangeName) :
+        mpDoc(pDoc), mrRangeName(rRangeName) {}
 
-    void operator() (const ScMyNamedExpression& r) const
+    void operator() (const std::unique_ptr<ScMyNamedExpression>& p) const
     {
         using namespace formula;
 
-        const OUString& aType = r.sRangeType;
+        const OUString& aType = p->sRangeType;
         sal_uInt32 nUnoType = ScXMLImport::GetRangeType(aType);
 
         sal_uInt16 nNewType = RT_NAME;
@@ -3126,16 +3118,16 @@ public:
             ScAddress aPos;
             sal_Int32 nOffset = 0;
             bool bSuccess = ScRangeStringConverter::GetAddressFromString(
-                aPos, r.sBaseCellAddress, mpDoc, FormulaGrammar::CONV_OOO, nOffset);
+                aPos, p->sBaseCellAddress, mpDoc, FormulaGrammar::CONV_OOO, nOffset);
 
             if (bSuccess)
             {
-                OUString aContent = r.sContent;
-                if (!r.bIsExpression)
-                    ScXMLConverter::ParseFormula(aContent, false);
+                OUString aContent = p->sContent;
+                if (!p->bIsExpression)
+                    ScXMLConverter::ConvertCellRangeAddress(aContent);
 
                 ScRangeData* pData = new ScRangeData(
-                    mpDoc, r.sName, aContent, aPos, nNewType, r.eGrammar);
+                    mpDoc, p->sName, aContent, aPos, nNewType, p->eGrammar);
                 mrRangeName.insert(pData);
             }
         }
@@ -3155,7 +3147,7 @@ void ScXMLImport::SetNamedRanges()
 
     // Insert the namedRanges
     ScRangeName* pRangeNames = pDoc->GetRangeName();
-    ::std::for_each(pNamedExpressions->begin(), pNamedExpressions->end(), RangeNameInserter(pDoc, *pRangeNames, *this));
+    ::std::for_each(pNamedExpressions->begin(), pNamedExpressions->end(), RangeNameInserter(pDoc, *pRangeNames));
 }
 
 void ScXMLImport::SetSheetNamedRanges()
@@ -3163,22 +3155,37 @@ void ScXMLImport::SetSheetNamedRanges()
     if (!pDoc)
         return;
 
-    SheetNamedExpMap::const_iterator itr = maSheetNamedExpressions.begin(), itrEnd = maSheetNamedExpressions.end();
-    for (; itr != itrEnd; ++itr)
+    for (auto const& itr : m_SheetNamedExpressions)
     {
-        SCTAB nTab = itr->first;
+        const SCTAB nTab = itr.first;
         ScRangeName* pRangeNames = pDoc->GetRangeName(nTab);
         if (!pRangeNames)
             continue;
 
-        const ScMyNamedExpressions& rNames = *itr->second;
-        ::std::for_each(rNames.begin(), rNames.end(), RangeNameInserter(pDoc, *pRangeNames, *this));
+        const ScMyNamedExpressions& rNames = *itr.second;
+        ::std::for_each(rNames.begin(), rNames.end(), RangeNameInserter(pDoc, *pRangeNames));
+    }
+}
+
+void ScXMLImport::SetStringRefSyntaxIfMissing()
+{
+    if (!pDoc)
+        return;
+
+    ScCalcConfig aCalcConfig = pDoc->GetCalcConfig();
+
+    // Has any string ref syntax been imported?
+    // If not, we need to take action
+    if ( !aCalcConfig.mbHasStringRefSyntax )
+    {
+        aCalcConfig.meStringRefAddressSyntax = formula::FormulaGrammar::CONV_A1_XL_A1;
+        pDoc->SetCalcConfig(aCalcConfig);
     }
 }
 
 void SAL_CALL ScXMLImport::endDocument()
-    throw(::com::sun::star::xml::sax::SAXException,
-          ::com::sun::star::uno::RuntimeException,
+    throw(css::xml::sax::SAXException,
+          css::uno::RuntimeException,
           std::exception)
 {
     ScXMLImport::MutexGuard aGuard(*this);
@@ -3222,6 +3229,7 @@ void SAL_CALL ScXMLImport::endDocument()
             SetLabelRanges();
             SetNamedRanges();
             SetSheetNamedRanges();
+            SetStringRefSyntaxIfMissing();
             if (mpPivotSources)
                 // Process pivot table sources after the named ranges have been set.
                 mpPivotSources->process();
@@ -3272,7 +3280,7 @@ void SAL_CALL ScXMLImport::endDocument()
 void ScXMLImport::DisposingModel()
 {
     SvXMLImport::DisposingModel();
-    pDoc = NULL;
+    pDoc = nullptr;
 }
 
 ScXMLImport::MutexGuard::MutexGuard(ScXMLImport& rImport) :
@@ -3313,7 +3321,7 @@ void ScXMLImport::UnlockSolarMutex()
         {
             OSL_ENSURE(pSolarMutexGuard, "Solar Mutex is always unlocked");
             delete pSolarMutexGuard;
-            pSolarMutexGuard = NULL;
+            pSolarMutexGuard = nullptr;
         }
     }
 }
@@ -3354,7 +3362,7 @@ void ScXMLImport::ExtractFormulaNamespaceGrammar(
 {
     // parse the attribute value, extract namespace ID, literal namespace, and formula string
     rFormulaNmsp.clear();
-    sal_uInt16 nNsId = GetNamespaceMap()._GetKeyByAttrName( rAttrValue, 0, &rFormula, &rFormulaNmsp, false );
+    sal_uInt16 nNsId = GetNamespaceMap()._GetKeyByAttrName( rAttrValue, nullptr, &rFormula, &rFormulaNmsp, false );
 
     // check if we have an ODF formula namespace
     if( !bRestrictToExternalNmsp ) switch( nNsId )

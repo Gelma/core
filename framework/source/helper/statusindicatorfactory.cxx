@@ -331,7 +331,7 @@ void StatusIndicatorFactory::implts_makeParentVisibleIfAllowed()
     if (xPropSet.is())
     {
         css::uno::Reference< css::frame::XLayoutManager2 > xLayoutManager;
-        xPropSet->getPropertyValue(FRAME_PROPNAME_LAYOUTMANAGER) >>= xLayoutManager;
+        xPropSet->getPropertyValue(FRAME_PROPNAME_ASCII_LAYOUTMANAGER) >>= xLayoutManager;
         if (xLayoutManager.is())
         {
             if ( !xLayoutManager->isVisible() )
@@ -399,7 +399,7 @@ void StatusIndicatorFactory::impl_createProgress()
     {
         // use vcl based progress implementation in plugged mode
         VCLStatusIndicator* pVCLProgress = new VCLStatusIndicator(xWindow);
-        xProgress = css::uno::Reference< css::task::XStatusIndicator >(static_cast< css::task::XStatusIndicator* >(pVCLProgress), css::uno::UNO_QUERY);
+        xProgress.set(static_cast< css::task::XStatusIndicator* >(pVCLProgress), css::uno::UNO_QUERY);
     }
     else if (xFrame.is())
     {
@@ -408,7 +408,7 @@ void StatusIndicatorFactory::impl_createProgress()
         if (xPropSet.is())
         {
             css::uno::Reference< css::frame::XLayoutManager2 > xLayoutManager;
-            xPropSet->getPropertyValue(FRAME_PROPNAME_LAYOUTMANAGER) >>= xLayoutManager;
+            xPropSet->getPropertyValue(FRAME_PROPNAME_ASCII_LAYOUTMANAGER) >>= xLayoutManager;
             if (xLayoutManager.is())
             {
                 xLayoutManager->lock();
@@ -418,7 +418,7 @@ void StatusIndicatorFactory::impl_createProgress()
 
                 css::uno::Reference< css::ui::XUIElement > xProgressBar = xLayoutManager->getElement(sPROGRESS_RESOURCE);
                 if (xProgressBar.is())
-                    xProgress = css::uno::Reference< css::task::XStatusIndicator >(xProgressBar->getRealInterface(), css::uno::UNO_QUERY);
+                    xProgress.set(xProgressBar->getRealInterface(), css::uno::UNO_QUERY);
                 xLayoutManager->unlock();
             }
         }
@@ -448,7 +448,7 @@ void StatusIndicatorFactory::impl_showProgress()
         if (xPropSet.is())
         {
             css::uno::Reference< css::frame::XLayoutManager2 > xLayoutManager;
-            xPropSet->getPropertyValue(FRAME_PROPNAME_LAYOUTMANAGER) >>= xLayoutManager;
+            xPropSet->getPropertyValue(FRAME_PROPNAME_ASCII_LAYOUTMANAGER) >>= xLayoutManager;
             if (xLayoutManager.is())
             {
                 // Be sure that we have always a progress. It can be that our frame
@@ -460,7 +460,7 @@ void StatusIndicatorFactory::impl_showProgress()
 
                 css::uno::Reference< css::ui::XUIElement > xProgressBar = xLayoutManager->getElement(sPROGRESS_RESOURCE);
                 if (xProgressBar.is())
-                    xProgress = css::uno::Reference< css::task::XStatusIndicator >(xProgressBar->getRealInterface(), css::uno::UNO_QUERY);
+                    xProgress.set(xProgressBar->getRealInterface(), css::uno::UNO_QUERY);
             }
         }
 
@@ -487,9 +487,9 @@ void StatusIndicatorFactory::impl_hideProgress()
         if (xPropSet.is())
         {
             css::uno::Reference< css::frame::XLayoutManager2 > xLayoutManager;
-            xPropSet->getPropertyValue(FRAME_PROPNAME_LAYOUTMANAGER) >>= xLayoutManager;
+            xPropSet->getPropertyValue(FRAME_PROPNAME_ASCII_LAYOUTMANAGER) >>= xLayoutManager;
             if (xLayoutManager.is())
-                xLayoutManager->hideElement( OUString(PROGRESS_RESOURCE) );
+                xLayoutManager->hideElement( PROGRESS_RESOURCE );
         }
     }
 }

@@ -186,8 +186,7 @@ HierarchyContentProvider::getConfigProvider(
         try
         {
             ConfigProviderMapEntry aEntry;
-            aEntry.xConfigProvider
-                = uno::Reference< lang::XMultiServiceFactory >(
+            aEntry.xConfigProvider.set(
                                 m_xContext->getServiceManager()->createInstanceWithContext(rServiceSpecifier, m_xContext),
                                 uno::UNO_QUERY );
 
@@ -224,7 +223,7 @@ HierarchyContentProvider::getRootConfigReadNameAccess(
     {
         if ( !( (*it).second.xRootReadAccess.is() ) )
         {
-            if ( (*it).second.bTriedToGetRootReadAccess ) // #82494#
+            if ( (*it).second.bTriedToGetRootReadAccess )
             {
                 OSL_FAIL( "HierarchyContentProvider::getRootConfigReadNameAccess - "
                     "Unable to read any config data! -> #82494#" );
@@ -246,10 +245,9 @@ HierarchyContentProvider::getRootConfigReadNameAccess(
 
                     (*it).second.bTriedToGetRootReadAccess = true;
 
-                    (*it).second.xRootReadAccess
-                        = uno::Reference< container::XHierarchicalNameAccess >(
+                    (*it).second.xRootReadAccess.set(
                             xConfigProv->createInstanceWithArguments(
-                                OUString( "com.sun.star.ucb.HierarchyDataReadAccess"  ),
+                                "com.sun.star.ucb.HierarchyDataReadAccess",
                                 aArguments ),
                             uno::UNO_QUERY );
                 }

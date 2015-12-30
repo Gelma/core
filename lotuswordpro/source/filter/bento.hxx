@@ -156,7 +156,7 @@ class CBenNamedObjectListElmt : public CUtListElmt
 public: // Methods
     // added to remove warning
     explicit CBenNamedObjectListElmt(pCUtListElmt pPrev) : CUtListElmt(pPrev)
-      { cpNamedObject = NULL; }
+      { cpNamedObject = nullptr; }
     void SetNamedObject(pCBenNamedObject pObj)
     {
         cpNamedObject = pObj;
@@ -184,11 +184,11 @@ public: // Overridden methods
     sal_uLong GetSize() { return m_ulValueLength; };
 protected: // Overridden methods
 
-    virtual sal_uLong   GetData( void* pData, sal_uLong nSize ) SAL_OVERRIDE;
-    virtual sal_uLong   PutData( const void* pData, sal_uLong nSize ) SAL_OVERRIDE;
-    virtual sal_uInt64   SeekPos( sal_uInt64 nPos ) SAL_OVERRIDE;
-    virtual void    SetSize( sal_uInt64 nSize ) SAL_OVERRIDE;
-    virtual void    FlushData() SAL_OVERRIDE;
+    virtual sal_uLong   GetData( void* pData, sal_uLong nSize ) override;
+    virtual sal_uLong   PutData( const void* pData, sal_uLong nSize ) override;
+    virtual sal_uInt64   SeekPos( sal_uInt64 nPos ) override;
+    virtual void    SetSize( sal_uInt64 nSize ) override;
+    virtual void    FlushData() override;
 
 private: // Data
     pCBenValue cpValue;
@@ -267,8 +267,8 @@ public: // Internal methods
     // added to remove WARNING
     explicit CBenValue(BenObjectID TypeID):CBenIDListElmt(TypeID)
     {
-        cpProperty = NULL;
-        cpReferencedList = NULL;
+        cpProperty = nullptr;
+        cpReferencedList = nullptr;
     }
 
     void SetProperty(pCBenProperty pProperty)
@@ -280,7 +280,7 @@ public: // Internal methods
       CBenIDListElmt(TypeID)
     {
         cpProperty = pProperty;
-        cpReferencedList = NULL;
+        cpReferencedList = nullptr;
     }
     inline pCBenValueSegment GetNextValueSegment(pCBenValueSegment
       pCurrValueSegment);
@@ -330,10 +330,10 @@ public: // Internal methods
       { cpValue = pValue; cImmediate = true;
       UtHugeMemcpy(cImmData, pImmData, Size); cSize = Size; }
     CBenValueSegment(BenContainerPos Pos, unsigned long Size)
-      { cpValue = NULL; cImmediate = false; cPos = Pos;
+      { cpValue = nullptr; cImmediate = false; cPos = Pos;
       cSize = Size; }
     CBenValueSegment(const void  * pImmData, unsigned short Size)
-      { cpValue = NULL; cImmediate = true;
+      { cpValue = nullptr; cImmediate = true;
       UtHugeMemcpy(cImmData, pImmData, Size); cSize = Size; }
     bool IsImmediate() { return cImmediate; }
     BenContainerPos GetPosition() { return cPos; }
@@ -383,7 +383,7 @@ public: // Internal methods
     pCUtListElmt pPrevNamedObjectListElmt) :
     CBenNamedObject(pContainer, ObjectID, pPrevObject, sName,
     pPrevNamedObjectListElmt) { ; }
-    virtual bool IsPropertyName() SAL_OVERRIDE;
+    virtual bool IsPropertyName() override;
 };
 
 class CBenTypeName : public CBenNamedObject

@@ -29,19 +29,14 @@ namespace frm
 {
 
     template < class LISTENER >
-    class EventListeners : public ::comphelper::OListenerContainerBase< LISTENER, ::com::sun::star::lang::EventObject >
+    class EventListeners : public ::comphelper::OListenerContainerBase< LISTENER, css::lang::EventObject >
     {
     public:
-        typedef LISTENER                            ListenerClass;
-        typedef ::com::sun::star::lang::EventObject EventClass;
-        typedef ::comphelper::OListenerContainerBase< ListenerClass, EventClass >
+        typedef ::comphelper::OListenerContainerBase< LISTENER, css::lang::EventObject >
                                                     EventListeners_Base;
 
     private:
         ::cppu::OWeakObject&    m_rInstigator;
-
-    protected:
-        ::cppu::OWeakObject&    getInstigator() { return m_rInstigator; }
 
     protected:
         inline EventListeners( ::cppu::OWeakObject& _rInstigator, ::osl::Mutex& _rMutex )
@@ -53,13 +48,13 @@ namespace frm
     public:
         inline bool notify()
         {
-            ::com::sun::star::lang::EventObject aEvent( m_rInstigator );
+            css::lang::EventObject aEvent( m_rInstigator );
             return EventListeners_Base::notify( aEvent );
         }
 
         inline void disposing()
         {
-            ::com::sun::star::lang::EventObject aEvent( m_rInstigator );
+            css::lang::EventObject aEvent( m_rInstigator );
             EventListeners_Base::disposing( aEvent );
         }
     protected:
@@ -67,7 +62,7 @@ namespace frm
         using EventListeners_Base::disposing;
     };
 
-    typedef EventListeners  <   ::com::sun::star::form::XResetListener
+    typedef EventListeners  <   css::form::XResetListener
                             >   ResetListeners_Base;
     class ResetListeners : public ResetListeners_Base
     {
@@ -104,9 +99,9 @@ namespace frm
 
     protected:
         virtual bool    implTypedNotify(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::form::XResetListener >& _rxListener,
-                            const ::com::sun::star::lang::EventObject& _rEvent
-                        ) SAL_OVERRIDE;
+                            const css::uno::Reference< css::form::XResetListener >& _rxListener,
+                            const css::lang::EventObject& _rEvent
+                        ) override;
     };
 
 

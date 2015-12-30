@@ -87,7 +87,7 @@ namespace svxform
             { "text",       0 },
             { "null",       1 },
             { "non-null",   2 },
-            { NULL,         -1 }
+            { nullptr,         -1 }
         };
         return s_aSearchForTypeMap;
     }
@@ -100,7 +100,7 @@ namespace svxform
             { "beginning-of-field",     MATCHING_BEGINNING },
             { "end-of-field",           MATCHING_END },
             { "complete-field",         MATCHING_WHOLETEXT },
-            { NULL,                     -1 }
+            { nullptr,                     -1 }
         };
         return s_aSearchPositionMap;
     }
@@ -135,11 +135,9 @@ namespace svxform
         }
 
         OSL_FAIL(
-            (   OString( "lcl_implMapIntValue: could not convert the integer value " )
-            +=  OString::number( _nValue )
-            +=  OString( " !" )
-            ).getStr()
-        );
+            OString(
+                "lcl_implMapIntValue: could not convert the integer value "
+                + OString::number(_nValue) + " !").getStr());
         static const sal_Char* s_pDummy = "";
             // just as a fallback ....
         return s_pDummy;

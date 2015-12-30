@@ -37,6 +37,7 @@
 #include <svx/xtable.hxx>
 #include <svx/svdoutl.hxx>
 #include <svx/svditer.hxx>
+#include <svx/svdlayer.hxx>
 #include <svx/svdocapt.hxx>
 #include <svx/svdocirc.hxx>
 #include <svx/svdoedge.hxx>
@@ -84,13 +85,11 @@
 
 using namespace ::com::sun::star;
 
-// STATIC DATA -----------------------------------------------------------
-
-static ScDrawObjFactory* pFac = NULL;
-static E3dObjFactory* pF3d = NULL;
+static ScDrawObjFactory* pFac = nullptr;
+static E3dObjFactory* pF3d = nullptr;
 static sal_uInt16 nInst = 0;
 
-SfxObjectShell* ScDrawLayer::pGlobalDrawPersist = NULL;
+SfxObjectShell* ScDrawLayer::pGlobalDrawPersist = nullptr;
 
 bool bDrawIsInUndo = false;         //TODO: Member
 
@@ -240,21 +239,21 @@ static void lcl_ReverseTwipsToMM( Rectangle& rRect )
 
 ScDrawLayer::ScDrawLayer( ScDocument* pDocument, const OUString& rName ) :
     FmFormModel( SvtPathOptions().GetPalettePath(),
-                 NULL,                          // SfxItemPool* Pool
+                 nullptr,                          // SfxItemPool* Pool
                  pGlobalDrawPersist ?
                      pGlobalDrawPersist :
-                     ( pDocument ? pDocument->GetDocumentShell() : NULL ),
+                     ( pDocument ? pDocument->GetDocumentShell() : nullptr ),
                  true ),        // bUseExtColorTable (is set below)
     aName( rName ),
     pDoc( pDocument ),
-    pUndoGroup( NULL ),
+    pUndoGroup( nullptr ),
     bRecording( false ),
     bAdjustEnabled( true ),
     bHyphenatorSet( false )
 {
-    pGlobalDrawPersist = NULL;          // Only use once
+    pGlobalDrawPersist = nullptr;          // Only use once
 
-    SfxObjectShell* pObjSh = pDocument ? pDocument->GetDocumentShell() : NULL;
+    SfxObjectShell* pObjSh = pDocument ? pDocument->GetDocumentShell() : nullptr;
     XColorListRef pXCol = XColorList::GetStdColorList();
     if ( pObjSh )
     {
@@ -291,11 +290,11 @@ ScDrawLayer::ScDrawLayer( ScDocument* pDocument, const OUString& rName ) :
     rPool.FreezeIdRanges();                         // the pool is also used directly
 
     SdrLayerAdmin& rAdmin = GetLayerAdmin();
-    rAdmin.NewLayer(OUString("vorne"),    SC_LAYER_FRONT);
-    rAdmin.NewLayer(OUString("hinten"),   SC_LAYER_BACK);
-    rAdmin.NewLayer(OUString("intern"),   SC_LAYER_INTERN);
-    rAdmin.NewLayer(OUString("Controls"), SC_LAYER_CONTROLS);
-    rAdmin.NewLayer(OUString("hidden"),   SC_LAYER_HIDDEN);
+    rAdmin.NewLayer("vorne",    SC_LAYER_FRONT);
+    rAdmin.NewLayer("hinten",   SC_LAYER_BACK);
+    rAdmin.NewLayer("intern",   SC_LAYER_INTERN);
+    rAdmin.NewLayer("Controls", SC_LAYER_CONTROLS);
+    rAdmin.NewLayer("hidden",   SC_LAYER_HIDDEN);
     // "Controls" is new - must also be created when loading
 
     // Set link for URL-Fields
@@ -344,8 +343,8 @@ ScDrawLayer::~ScDrawLayer()
     delete pUndoGroup;
     if( !--nInst )
     {
-        delete pFac, pFac = NULL;
-        delete pF3d, pF3d = NULL;
+        delete pFac, pFac = nullptr;
+        delete pF3d, pF3d = nullptr;
     }
 }
 
@@ -353,7 +352,7 @@ void ScDrawLayer::UseHyphenator()
 {
     if (!bHyphenatorSet)
     {
-        com::sun::star::uno::Reference< com::sun::star::linguistic2::XHyphenator >
+        css::uno::Reference< css::linguistic2::XHyphenator >
                                     xHyphenator = LinguMgr::GetHyphenator();
 
         GetDrawOutliner().SetHyphenator( xHyphenator );
@@ -385,7 +384,7 @@ SdrModel* ScDrawLayer::AllocModel() const
     //  Allocated model (for clipboard etc) must not have a pointer
     //  to the original model's document, pass NULL as document:
 
-    return new ScDrawLayer( NULL, aName );
+    return new ScDrawLayer( nullptr, aName );
 }
 
 bool ScDrawLayer::ScAddPage( SCTAB nTab )
@@ -552,7 +551,7 @@ void ScDrawLayer::MoveCells( SCTAB nTab, SCCOL nCol1,SCROW nRow1, SCCOL nCol2,SC
             }
             if (bChange)
             {
-                if ( pObj->ISA( SdrRectObj ) && pData->maStart.IsValid() && pData->maEnd.IsValid() )
+                if ( dynamic_cast<const SdrRectObj*>( pObj) !=  nullptr && pData->maStart.IsValid() && pData->maEnd.IsValid() )
                     pData->maStart.PutInOrder( pData->maEnd );
 
                 // Update also an untransformed anchor thats what we stored ( and still do ) to xml
@@ -743,9 +742,9 @@ void ScDrawLayer::RecalcPos( SdrObject* pObj, ScDrawObjData& rData, bool bNegati
         if( bValid1 )
         {
             Point aPos( pDoc->GetColOffset( nCol1, nTab1 ), pDoc->GetRowOffset( nRow1, nTab1 ) );
-            if (!pDoc->ColHidden(nCol1, nTab1, NULL, &nLastCol))
+            if (!pDoc->ColHidden(nCol1, nTab1, nullptr, &nLastCol))
                 aPos.X() += pDoc->GetColWidth( nCol1, nTab1 ) / 4;
-            if (!pDoc->RowHidden(nRow1, nTab1, NULL, &nLastRow))
+            if (!pDoc->RowHidden(nRow1, nTab1, nullptr, &nLastRow))
                 aPos.Y() += pDoc->GetRowHeight( nRow1, nTab1 ) / 2;
             TwipsToMM( aPos.X() );
             TwipsToMM( aPos.Y() );
@@ -781,9 +780,9 @@ void ScDrawLayer::RecalcPos( SdrObject* pObj, ScDrawObjData& rData, bool bNegati
         if( bValid2 )
         {
             Point aPos( pDoc->GetColOffset( nCol2, nTab2 ), pDoc->GetRowOffset( nRow2, nTab2 ) );
-            if (!pDoc->ColHidden(nCol2, nTab2, NULL, &nLastCol))
+            if (!pDoc->ColHidden(nCol2, nTab2, nullptr, &nLastCol))
                 aPos.X() += pDoc->GetColWidth( nCol2, nTab2 ) / 4;
-            if (!pDoc->RowHidden(nRow2, nTab2, NULL, &nLastRow))
+            if (!pDoc->RowHidden(nRow2, nTab2, nullptr, &nLastRow))
                 aPos.Y() += pDoc->GetRowHeight( nRow2, nTab2 ) / 2;
             TwipsToMM( aPos.X() );
             TwipsToMM( aPos.Y() );
@@ -1124,7 +1123,7 @@ void ScDrawLayer::BeginCalcUndo(bool bDisableTextEditUsesCommonUndoManager)
 SdrUndoGroup* ScDrawLayer::GetCalcUndo()
 {
     SdrUndoGroup* pRet = pUndoGroup;
-    pUndoGroup = NULL;
+    pUndoGroup = nullptr;
     bRecording = false;
     SetDisableTextEditUsesCommonUndoManager(false);
     return pRet;
@@ -1353,8 +1352,8 @@ void ScDrawLayer::CopyToClip( ScDocument* pClipDoc, SCTAB nTab, const Rectangle&
     SdrPage* pSrcPage = GetPage(static_cast<sal_uInt16>(nTab));
     if (pSrcPage)
     {
-        ScDrawLayer* pDestModel = NULL;
-        SdrPage* pDestPage = NULL;
+        ScDrawLayer* pDestModel = nullptr;
+        SdrPage* pDestPage = nullptr;
 
         SdrObjListIter aIter( *pSrcPage, IM_FLAT );
         SdrObject* pOldObject = aIter.Next();
@@ -1425,6 +1424,7 @@ static bool lcl_MoveRanges( ::std::vector< ScRangeList >& rRangesVector, const S
 {
     bool bChanged = false;
 
+    ScRange aErrorRange( ScAddress::UNINITIALIZED );
     ::std::vector< ScRangeList >::iterator aIt = rRangesVector.begin();
     for( ;aIt!=rRangesVector.end(); ++aIt )
     {
@@ -1437,7 +1437,10 @@ static bool lcl_MoveRanges( ::std::vector< ScRangeList >& rRangesVector, const S
                 SCsCOL nDiffX = rDestPos.Col() - (SCsCOL)rSourceRange.aStart.Col();
                 SCsROW nDiffY = rDestPos.Row() - (SCsROW)rSourceRange.aStart.Row();
                 SCsTAB nDiffZ = rDestPos.Tab() - (SCsTAB)rSourceRange.aStart.Tab();
-                pRange->Move( nDiffX, nDiffY, nDiffZ );
+                if (!pRange->Move( nDiffX, nDiffY, nDiffZ, aErrorRange))
+                {
+                    assert(!"can't move range");
+                }
                 bChanged = true;
             }
         }
@@ -1782,7 +1785,7 @@ SdrObject* ScDrawLayer::GetNamedObject( const OUString& rName, sal_uInt16 nId, S
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 OUString ScDrawLayer::GetNewGraphicName( long* pnCounter ) const
@@ -1799,7 +1802,7 @@ OUString ScDrawLayer::GetNewGraphicName( long* pnCounter ) const
         ++nId;
         aGraphicName = aBase;
         aGraphicName += OUString::number( nId );
-        bThere = ( GetNamedObject( aGraphicName, 0, nDummy ) != NULL );
+        bThere = ( GetNamedObject( aGraphicName, 0, nDummy ) != nullptr );
     }
 
     if ( pnCounter )
@@ -1849,7 +1852,7 @@ namespace
             if( pData && pData->GetInventor() == SC_DRAWLAYER && pData->GetId() == nId )
                 return pData;
         }
-        return NULL;
+        return nullptr;
     }
 
     void DeleteFirstUserDataOfType(SdrObject *pObj, sal_uInt16 nId)
@@ -1951,7 +1954,7 @@ bool ScDrawLayer::IsCellAnchored( const SdrObject& rObj )
 {
     // Cell anchored object always has a user data, to store the anchor cell
     // info. If it doesn't then it's page-anchored.
-    return GetFirstUserDataOfType(&rObj, SC_UD_OBJDATA) != NULL;
+    return GetFirstUserDataOfType(&rObj, SC_UD_OBJDATA) != nullptr;
 }
 
 void ScDrawLayer::SetPageAnchored( SdrObject &rObj )
@@ -1983,7 +1986,7 @@ ScDrawObjData* ScDrawLayer::GetNonRotatedObjData( SdrObject* pObj, bool bCreate 
         pObj->AppendUserData(pData);
         return pData;
     }
-    return 0;
+    return nullptr;
 }
 
 ScDrawObjData* ScDrawLayer::GetObjData( SdrObject* pObj, bool bCreate )
@@ -1997,7 +2000,7 @@ ScDrawObjData* ScDrawLayer::GetObjData( SdrObject* pObj, bool bCreate )
         pObj->AppendUserData(pData);
         return pData;
     }
-    return 0;
+    return nullptr;
 }
 
 ScDrawObjData* ScDrawLayer::GetObjDataTab( SdrObject* pObj, SCTAB nTab )
@@ -2015,14 +2018,14 @@ ScDrawObjData* ScDrawLayer::GetObjDataTab( SdrObject* pObj, SCTAB nTab )
 
 bool ScDrawLayer::IsNoteCaption( SdrObject* pObj )
 {
-    ScDrawObjData* pData = pObj ? GetObjData( pObj ) : 0;
+    ScDrawObjData* pData = pObj ? GetObjData( pObj ) : nullptr;
     return pData && pData->meType == ScDrawObjData::CellNote;
 }
 
 ScDrawObjData* ScDrawLayer::GetNoteCaptionData( SdrObject* pObj, SCTAB nTab )
 {
-    ScDrawObjData* pData = pObj ? GetObjDataTab( pObj, nTab ) : 0;
-    return (pData && pData->meType == ScDrawObjData::CellNote) ? pData : 0;
+    ScDrawObjData* pData = pObj ? GetObjDataTab( pObj, nTab ) : nullptr;
+    return (pData && pData->meType == ScDrawObjData::CellNote) ? pData : nullptr;
 }
 
 ScIMapInfo* ScDrawLayer::GetIMapInfo( SdrObject* pObj )
@@ -2038,7 +2041,7 @@ IMapObject* ScDrawLayer::GetHitIMapObject( SdrObject* pObj,
     Point               aRelPoint( rCmpWnd.LogicToLogic( rWinPoint, &aWndMode, &aMap100 ) );
     Rectangle           aLogRect = rCmpWnd.LogicToLogic( pObj->GetLogicRect(), &aWndMode, &aMap100 );
     ScIMapInfo*         pIMapInfo = GetIMapInfo( pObj );
-    IMapObject*         pIMapObj = NULL;
+    IMapObject*         pIMapObj = nullptr;
 
     if ( pIMapInfo )
     {
@@ -2047,9 +2050,8 @@ IMapObject* ScDrawLayer::GetHitIMapObject( SdrObject* pObj,
         Graphic     aGraphic;
         bool        bObjSupported = false;
 
-        if ( pObj->ISA( SdrGrafObj )  ) // Simple Graphics object
+        if (const SdrGrafObj* pGrafObj = dynamic_cast<const SdrGrafObj*>(pObj)) // Simple Graphics object
         {
-            const SdrGrafObj*   pGrafObj = static_cast<const SdrGrafObj*>( pObj );
             const GeoStat&      rGeo = pGrafObj->GetGeoStat();
             const Graphic&      rGraphic = pGrafObj->GetGraphic();
 
@@ -2075,10 +2077,10 @@ IMapObject* ScDrawLayer::GetHitIMapObject( SdrObject* pObj,
 
             bObjSupported = true;
         }
-        else if ( pObj->ISA( SdrOle2Obj ) ) // OLE object
+        else if (const SdrOle2Obj* pOleObj = dynamic_cast<const SdrOle2Obj*>(pObj)) // OLE object
         {
             // TODO/LEAN: working with visual area needs running state
-            aGraphSize = static_cast<const SdrOle2Obj*>(pObj)->GetOrigObjSize();
+            aGraphSize = pOleObj->GetOrigObjSize();
             bObjSupported = true;
         }
 
@@ -2105,7 +2107,7 @@ ScMacroInfo* ScDrawLayer::GetMacroInfo( SdrObject* pObj, bool bCreate )
         pObj->AppendUserData(pData);
         return pData;
     }
-    return 0;
+    return nullptr;
 }
 
 ImageMap* ScDrawLayer::GetImageMapForObject(SdrObject* pObj)
@@ -2115,7 +2117,7 @@ ImageMap* ScDrawLayer::GetImageMapForObject(SdrObject* pObj)
     {
         return const_cast<ImageMap*>( &(pIMapInfo->GetImageMap()) );
     }
-    return NULL;
+    return nullptr;
 }
 
 void ScDrawLayer::SetGlobalDrawPersist(SfxObjectShell* pPersist)
@@ -2131,9 +2133,9 @@ void ScDrawLayer::SetChanged( bool bFlg /* = true */ )
     FmFormModel::SetChanged( bFlg );
 }
 
-::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > ScDrawLayer::createUnoModel()
+css::uno::Reference< css::uno::XInterface > ScDrawLayer::createUnoModel()
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > xRet;
+    css::uno::Reference< css::uno::XInterface > xRet;
     if( pDoc && pDoc->GetDocumentShell() )
         xRet = pDoc->GetDocumentShell()->GetModel();
 

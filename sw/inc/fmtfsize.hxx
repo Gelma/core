@@ -30,7 +30,7 @@ class IntlWrapper;
 
 //Frame size.
 
-enum SwFrmSize
+enum SwFrameSize
 {
     ATT_VAR_SIZE,       ///< Frame is variable in Var-direction.
     ATT_FIX_SIZE,       ///< Frame cannot be moved in Var-direction.
@@ -38,11 +38,11 @@ enum SwFrmSize
                          (can be exceeded but not be less). */
 };
 
-class SW_DLLPUBLIC SwFormatFrmSize: public SfxPoolItem
+class SW_DLLPUBLIC SwFormatFrameSize: public SfxPoolItem
 {
     Size      m_aSize;
-    SwFrmSize m_eFrmHeightType;
-    SwFrmSize m_eFrmWidthType;
+    SwFrameSize m_eFrameHeightType;
+    SwFrameSize m_eFrameWidthType;
     sal_uInt8 m_nWidthPercent;
     sal_Int16 m_eWidthPercentRelation;
     sal_uInt8 m_nHeightPercent;
@@ -60,26 +60,26 @@ class SW_DLLPUBLIC SwFormatFrmSize: public SfxPoolItem
     // minus borders in BrowseView if the environment is the page.
 
 public:
-    SwFormatFrmSize( SwFrmSize eSize = ATT_VAR_SIZE,
+    SwFormatFrameSize( SwFrameSize eSize = ATT_VAR_SIZE,
                   SwTwips nWidth = 0, SwTwips nHeight = 0 );
-    SwFormatFrmSize& operator=( const SwFormatFrmSize& rCpy );
+    SwFormatFrameSize& operator=( const SwFormatFrameSize& rCpy );
 
     /// "Pure virtual methods" of SfxPoolItem.
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
                                     OUString &rText,
-                                    const IntlWrapper*    pIntl = 0 ) const SAL_OVERRIDE;
-    virtual bool QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+                                    const IntlWrapper*    pIntl = nullptr ) const override;
+    virtual bool QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
-    SwFrmSize GetHeightSizeType() const { return m_eFrmHeightType; }
-    void SetHeightSizeType( SwFrmSize eSize ) { m_eFrmHeightType = eSize; }
+    SwFrameSize GetHeightSizeType() const { return m_eFrameHeightType; }
+    void SetHeightSizeType( SwFrameSize eSize ) { m_eFrameHeightType = eSize; }
 
-    SwFrmSize GetWidthSizeType() const { return m_eFrmWidthType; }
-    void SetWidthSizeType( SwFrmSize eSize ) { m_eFrmWidthType = eSize; }
+    SwFrameSize GetWidthSizeType() const { return m_eFrameWidthType; }
+    void SetWidthSizeType( SwFrameSize eSize ) { m_eFrameWidthType = eSize; }
 
     const Size& GetSize() const { return m_aSize; }
           void  SetSize( const Size &rNew ) { m_aSize = rNew; }
@@ -101,14 +101,14 @@ public:
     void    SetWidthPercent ( sal_uInt8 n ) { m_nWidthPercent  = n; }
     void    SetWidthPercentRelation ( sal_Int16 n ) { m_eWidthPercentRelation  = n; }
 
-    void dumpAsXml(struct _xmlTextWriter* pWriter) const SAL_OVERRIDE;
+    void dumpAsXml(struct _xmlTextWriter* pWriter) const override;
 };
 
-inline const SwFormatFrmSize &SwAttrSet::GetFrmSize(bool bInP) const
-    { return static_cast<const SwFormatFrmSize&>(Get( RES_FRM_SIZE,bInP)); }
+inline const SwFormatFrameSize &SwAttrSet::GetFrameSize(bool bInP) const
+    { return static_cast<const SwFormatFrameSize&>(Get( RES_FRM_SIZE,bInP)); }
 
-inline const SwFormatFrmSize &SwFormat::GetFrmSize(bool bInP) const
-    { return m_aSet.GetFrmSize(bInP); }
+inline const SwFormatFrameSize &SwFormat::GetFrameSize(bool bInP) const
+    { return m_aSet.GetFrameSize(bInP); }
 
 #endif
 

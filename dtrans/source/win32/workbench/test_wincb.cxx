@@ -206,7 +206,7 @@ int SAL_CALL main( int nArgc, char* Argv[] )
     // threaded apartment we need a message loop to deliver
     // messages to our XTDataObject
     //HRESULT hr = CoInitializeEx( NULL, COINIT_MULTITHREADED );
-    HRESULT hr = CoInitialize( NULL );
+    (void)CoInitialize( NULL );
 
     char buff[6];
 
@@ -231,8 +231,7 @@ int SAL_CALL main( int nArgc, char* Argv[] )
 
     Reference< XTransferable > rXTransf( static_cast< XTransferable* >( new CTransferable ) );
 
-    Reference< XClipboard >
-        xClipboard( g_xFactory->createInstance( OUString( WINCLIPBOARD_SERVICE_NAME ) ), UNO_QUERY );
+    Reference< XClipboard >xClipboard( g_xFactory->createInstance( WINCLIPBOARD_SERVICE_NAME ), UNO_QUERY );
     if ( !xClipboard.is( ) )
     {
         OSL_FAIL( "Error creating Clipboard Service" );

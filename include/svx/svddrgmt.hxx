@@ -41,7 +41,7 @@ public:
     SdrDragEntry();
     virtual ~SdrDragEntry();
 
-    virtual drawinglayer::primitive2d::Primitive2DSequence createPrimitive2DSequenceInCurrentState(SdrDragMethod& rDragMethod) = 0;
+    virtual drawinglayer::primitive2d::Primitive2DContainer createPrimitive2DSequenceInCurrentState(SdrDragMethod& rDragMethod) = 0;
 
     // data read access
     bool getAddToTransparent() const { return mbAddToTransparent; }
@@ -58,7 +58,7 @@ public:
     SdrDragEntryPolyPolygon(const basegfx::B2DPolyPolygon& rOriginalPolyPolygon);
     virtual ~SdrDragEntryPolyPolygon();
 
-    virtual drawinglayer::primitive2d::Primitive2DSequence createPrimitive2DSequenceInCurrentState(SdrDragMethod& rDragMethod) SAL_OVERRIDE;
+    virtual drawinglayer::primitive2d::Primitive2DContainer createPrimitive2DSequenceInCurrentState(SdrDragMethod& rDragMethod) override;
 };
 
 
@@ -81,7 +81,7 @@ public:
     const SdrObject& getOriginal() const { return maOriginal; }
     SdrObject* getClone() { return mpClone; }
 
-    virtual drawinglayer::primitive2d::Primitive2DSequence createPrimitive2DSequenceInCurrentState(SdrDragMethod& rDragMethod) SAL_OVERRIDE;
+    virtual drawinglayer::primitive2d::Primitive2DContainer createPrimitive2DSequenceInCurrentState(SdrDragMethod& rDragMethod) override;
 };
 
 
@@ -89,15 +89,15 @@ public:
 class SdrDragEntryPrimitive2DSequence : public SdrDragEntry
 {
 private:
-    drawinglayer::primitive2d::Primitive2DSequence  maPrimitive2DSequence;
+    drawinglayer::primitive2d::Primitive2DContainer  maPrimitive2DSequence;
 
 public:
     SdrDragEntryPrimitive2DSequence(
-        const drawinglayer::primitive2d::Primitive2DSequence& rSequence,
+        const drawinglayer::primitive2d::Primitive2DContainer& rSequence,
         bool bAddToTransparent);
     virtual ~SdrDragEntryPrimitive2DSequence();
 
-    virtual drawinglayer::primitive2d::Primitive2DSequence createPrimitive2DSequenceInCurrentState(SdrDragMethod& rDragMethod) SAL_OVERRIDE;
+    virtual drawinglayer::primitive2d::Primitive2DContainer createPrimitive2DSequenceInCurrentState(SdrDragMethod& rDragMethod) override;
 };
 
 
@@ -112,7 +112,7 @@ public:
     SdrDragEntryPointGlueDrag(const std::vector< basegfx::B2DPoint >& rPositions, bool bIsPointDrag);
     virtual ~SdrDragEntryPointGlueDrag();
 
-    virtual drawinglayer::primitive2d::Primitive2DSequence createPrimitive2DSequenceInCurrentState(SdrDragMethod& rDragMethod) SAL_OVERRIDE;
+    virtual drawinglayer::primitive2d::Primitive2DContainer createPrimitive2DSequenceInCurrentState(SdrDragMethod& rDragMethod) override;
 };
 
 
@@ -177,10 +177,9 @@ protected:
     bool               IsDraggingGluePoints() const    { return getSdrDragView().IsDraggingGluePoints(); }
 
     bool DoAddConnectorOverlays();
-    drawinglayer::primitive2d::Primitive2DSequence AddConnectorOverlays();
+    drawinglayer::primitive2d::Primitive2DContainer AddConnectorOverlays();
 
 public:
-    TYPEINFO();
 
     void resetSdrDragEntries();
     basegfx::B2DRange getCurrentRange() const;
@@ -235,20 +234,19 @@ private:
     void ImpCheckSnap(const Point& rPt);
 
 protected:
-    virtual void createSdrDragEntryForSdrObject(const SdrObject& rOriginal, sdr::contact::ObjectContact& rObjectContact, bool bModify) SAL_OVERRIDE;
+    virtual void createSdrDragEntryForSdrObject(const SdrObject& rOriginal, sdr::contact::ObjectContact& rObjectContact, bool bModify) override;
 
 public:
-    TYPEINFO_OVERRIDE();
     SdrDragMove(SdrDragView& rNewView);
 
-    virtual void TakeSdrDragComment(OUString& rStr) const SAL_OVERRIDE;
-    virtual bool BeginSdrDrag() SAL_OVERRIDE;
-    virtual void MoveSdrDrag(const Point& rPnt) SAL_OVERRIDE;
-    virtual bool EndSdrDrag(bool bCopy) SAL_OVERRIDE;
-    virtual Pointer GetSdrDragPointer() const SAL_OVERRIDE;
+    virtual void TakeSdrDragComment(OUString& rStr) const override;
+    virtual bool BeginSdrDrag() override;
+    virtual void MoveSdrDrag(const Point& rPnt) override;
+    virtual bool EndSdrDrag(bool bCopy) override;
+    virtual Pointer GetSdrDragPointer() const override;
 
-    virtual basegfx::B2DHomMatrix getCurrentTransformation() SAL_OVERRIDE;
-    virtual void applyCurrentTransformationToSdrObject(SdrObject& rTarget) SAL_OVERRIDE;
+    virtual basegfx::B2DHomMatrix getCurrentTransformation() override;
+    virtual void applyCurrentTransformationToSdrObject(SdrObject& rTarget) override;
 };
 
 
@@ -261,17 +259,16 @@ protected:
     Fraction                    aYFact;
 
 public:
-    TYPEINFO_OVERRIDE();
     SdrDragResize(SdrDragView& rNewView);
 
-    virtual void TakeSdrDragComment(OUString& rStr) const SAL_OVERRIDE;
-    virtual bool BeginSdrDrag() SAL_OVERRIDE;
-    virtual void MoveSdrDrag(const Point& rPnt) SAL_OVERRIDE;
-    virtual bool EndSdrDrag(bool bCopy) SAL_OVERRIDE;
-    virtual Pointer GetSdrDragPointer() const SAL_OVERRIDE;
+    virtual void TakeSdrDragComment(OUString& rStr) const override;
+    virtual bool BeginSdrDrag() override;
+    virtual void MoveSdrDrag(const Point& rPnt) override;
+    virtual bool EndSdrDrag(bool bCopy) override;
+    virtual Pointer GetSdrDragPointer() const override;
 
-    virtual basegfx::B2DHomMatrix getCurrentTransformation() SAL_OVERRIDE;
-    virtual void applyCurrentTransformationToSdrObject(SdrObject& rTarget) SAL_OVERRIDE;
+    virtual basegfx::B2DHomMatrix getCurrentTransformation() override;
+    virtual void applyCurrentTransformationToSdrObject(SdrObject& rTarget) override;
 };
 
 
@@ -287,18 +284,17 @@ private:
     SdrObject*                  mpClone;
 
 protected:
-    virtual void createSdrDragEntries() SAL_OVERRIDE;
+    virtual void createSdrDragEntries() override;
 
 public:
-    TYPEINFO_OVERRIDE();
     SdrDragObjOwn(SdrDragView& rNewView);
     virtual ~SdrDragObjOwn();
 
-    virtual void TakeSdrDragComment(OUString& rStr) const SAL_OVERRIDE;
-    virtual bool BeginSdrDrag() SAL_OVERRIDE;
-    virtual void MoveSdrDrag(const Point& rPnt) SAL_OVERRIDE;
-    virtual bool EndSdrDrag(bool bCopy) SAL_OVERRIDE;
-    virtual Pointer GetSdrDragPointer() const SAL_OVERRIDE;
+    virtual void TakeSdrDragComment(OUString& rStr) const override;
+    virtual bool BeginSdrDrag() override;
+    virtual void MoveSdrDrag(const Point& rPnt) override;
+    virtual bool EndSdrDrag(bool bCopy) override;
+    virtual Pointer GetSdrDragPointer() const override;
 };
 
 #endif // INCLUDED_SVX_SVDDRGMT_HXX

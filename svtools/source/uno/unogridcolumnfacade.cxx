@@ -40,20 +40,20 @@ namespace svt { namespace table
 {
 
 
-    using ::com::sun::star::uno::Reference;
-    using ::com::sun::star::uno::RuntimeException;
-    using ::com::sun::star::uno::Sequence;
-    using ::com::sun::star::uno::UNO_QUERY_THROW;
-    using ::com::sun::star::uno::UNO_QUERY;
-    using ::com::sun::star::awt::grid::XGridColumn;
-    using ::com::sun::star::uno::XInterface;
-    using ::com::sun::star::uno::Exception;
-    using ::com::sun::star::awt::grid::XGridColumnListener;
-    using ::com::sun::star::lang::EventObject;
-    using ::com::sun::star::awt::grid::GridColumnEvent;
-    using ::com::sun::star::uno::Any;
-    using ::com::sun::star::style::HorizontalAlignment_LEFT;
-    using ::com::sun::star::style::HorizontalAlignment;
+    using css::uno::Reference;
+    using css::uno::RuntimeException;
+    using css::uno::Sequence;
+    using css::uno::UNO_QUERY_THROW;
+    using css::uno::UNO_QUERY;
+    using css::awt::grid::XGridColumn;
+    using css::uno::XInterface;
+    using css::uno::Exception;
+    using css::awt::grid::XGridColumnListener;
+    using css::lang::EventObject;
+    using css::awt::grid::GridColumnEvent;
+    using css::uno::Any;
+    using css::style::HorizontalAlignment_LEFT;
+    using css::style::HorizontalAlignment;
 
 
     namespace
@@ -105,10 +105,10 @@ namespace svt { namespace table
         virtual ~ColumnChangeMultiplexer();
 
         // XGridColumnListener
-        virtual void SAL_CALL columnChanged( const GridColumnEvent& i_event ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL columnChanged( const GridColumnEvent& i_event ) throw (RuntimeException, std::exception) override;
 
         // XEventListener
-        virtual void SAL_CALL disposing( const EventObject& i_event ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing( const EventObject& i_event ) throw (RuntimeException, std::exception) override;
 
     private:
         UnoGridColumnFacade* m_pColumnImplementation;
@@ -129,7 +129,7 @@ namespace svt { namespace table
     void ColumnChangeMultiplexer::dispose()
     {
         DBG_TESTSOLARMUTEX();
-        m_pColumnImplementation = NULL;
+        m_pColumnImplementation = nullptr;
     }
 
 
@@ -138,7 +138,7 @@ namespace svt { namespace table
         if ( i_event.AttributeName == "DataColumnIndex" )
         {
             SolarMutexGuard aGuard;
-            if ( m_pColumnImplementation != NULL )
+            if ( m_pColumnImplementation != nullptr )
                 m_pColumnImplementation->dataColumnIndexChanged();
             return;
         }
@@ -161,7 +161,7 @@ namespace svt { namespace table
             "ColumnChangeMultiplexer::columnChanged: unknown column attributed changed!" );
 
         SolarMutexGuard aGuard;
-        if ( m_pColumnImplementation != NULL )
+        if ( m_pColumnImplementation != nullptr )
             m_pColumnImplementation->columnChanged( nChangedAttributes );
     }
 
@@ -193,13 +193,13 @@ namespace svt { namespace table
     void UnoGridColumnFacade::dispose()
     {
         DBG_TESTSOLARMUTEX();
-        ENSURE_OR_RETURN_VOID( m_pOwner != NULL, "UnoGridColumnFacade::dispose: already disposed!" );
+        ENSURE_OR_RETURN_VOID( m_pOwner != nullptr, "UnoGridColumnFacade::dispose: already disposed!" );
 
         m_xGridColumn->removeGridColumnListener( m_pChangeMultiplexer.get() );
         m_pChangeMultiplexer->dispose();
         m_pChangeMultiplexer.clear();
         m_xGridColumn.clear();
-        m_pOwner = NULL;
+        m_pOwner = nullptr;
     }
 
 
@@ -222,7 +222,7 @@ namespace svt { namespace table
     {
         DBG_TESTSOLARMUTEX();
         impl_updateDataColumnIndex_nothrow();
-        if ( m_pOwner != NULL )
+        if ( m_pOwner != nullptr )
             m_pOwner->notifyAllDataChanged();
     }
 
@@ -230,7 +230,7 @@ namespace svt { namespace table
     void UnoGridColumnFacade::columnChanged( ColumnAttributeGroup const i_attributeGroup )
     {
         DBG_TESTSOLARMUTEX();
-        if ( m_pOwner != NULL )
+        if ( m_pOwner != nullptr )
             m_pOwner->notifyColumnChange( m_pOwner->getColumnPos( *this ), i_attributeGroup );
     }
 
@@ -309,7 +309,7 @@ namespace svt { namespace table
     }
 
 
-    ::com::sun::star::style::HorizontalAlignment UnoGridColumnFacade::getHorizontalAlign()
+    css::style::HorizontalAlignment UnoGridColumnFacade::getHorizontalAlign()
     {
         ENSURE_OR_RETURN( m_xGridColumn.is(), "UnoGridColumnFacade: already disposed!", HorizontalAlignment_LEFT );
         return lcl_get( m_xGridColumn, &XGridColumn::getHorizontalAlign );

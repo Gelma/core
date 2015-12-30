@@ -36,6 +36,7 @@
 #include <xmloff/xmlerror.hxx>
 #include <xmloff/xmltypes.hxx>
 #include <xmloff/maptype.hxx>
+#include <comphelper/sequence.hxx>
 
 //UUUU
 #include <com/sun/star/drawing/FillStyle.hpp>
@@ -66,7 +67,6 @@ void XMLPropStyleContext::SetAttribute( sal_uInt16 nPrefixKey,
     }
 }
 
-TYPEINIT1( XMLPropStyleContext, SvXMLStyleContext );
 
 //UUUU
 OldFillStyleDefinitionSet XMLPropStyleContext::maStandardSet;
@@ -163,7 +163,7 @@ SvXMLImportContext *XMLPropStyleContext::CreateChildContext(
         const OUString& rLocalName,
         const Reference< XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     sal_uInt32 nFamily = 0;
     if( XML_NAMESPACE_STYLE == nPrefix || XML_NAMESPACE_LO_EXT == nPrefix )
@@ -241,7 +241,7 @@ Reference < XStyle > XMLPropStyleContext::Create()
             Reference < XInterface > xIfc =
                 xFactory->createInstance( sServiceName );
             if( xIfc.is() )
-                xNewStyle = Reference < XStyle >( xIfc, UNO_QUERY );
+                xNewStyle.set( xIfc, UNO_QUERY );
         }
     }
 
@@ -402,16 +402,10 @@ void XMLPropStyleContext::CreateAndInsert( bool bOverwrite )
                     }
 
                     nCount = aNameSet.size();
-                    Sequence < OUString > aNames( nCount );
-                    OUString *pNames = aNames.getArray();
-                    PropertyNameSet::iterator aIter = aNameSet.begin();
-                    while( aIter != aNameSet.end() )
-                        *pNames++ = *aIter++;
-
-                    Sequence < PropertyState > aStates(
-                        xPropState->getPropertyStates( aNames ) );
+                    Sequence<OUString> aNames( comphelper::containerToSequence<OUString>(aNameSet) );
+                    Sequence < PropertyState > aStates( xPropState->getPropertyStates(aNames) );
                     const PropertyState *pStates = aStates.getConstArray();
-                    pNames = aNames.getArray();
+                    OUString* pNames = aNames.getArray();
 
                     for( i = 0; i < nCount; i++ )
                     {
@@ -478,7 +472,7 @@ void XMLPropStyleContext::Finish( bool bOverwrite )
 
                 GetImport().SetError(
                     XMLERROR_FLAG_ERROR | XMLERROR_PARENT_STYLE_NOT_ALLOWED,
-                    aSequence, e.Message, NULL );
+                    aSequence, e.Message, nullptr );
             }
         }
 

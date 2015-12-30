@@ -92,9 +92,9 @@ XMLFilterSettingsDialog::XMLFilterSettingsDialog(vcl::Window* pParent,
 
     try
     {
-        mxFilterContainer = Reference< XNameContainer >::query( rxContext->getServiceManager()->createInstanceWithContext( "com.sun.star.document.FilterFactory", rxContext ) );
-        mxTypeDetection = Reference< XNameContainer >::query( rxContext->getServiceManager()->createInstanceWithContext( "com.sun.star.document.TypeDetection", rxContext ) );
-        mxExtendedTypeDetection = Reference< XNameContainer >::query( rxContext->getServiceManager()->createInstanceWithContext( "com.sun.star.document.ExtendedTypeDetectionFactory", rxContext ) );
+        mxFilterContainer.set( rxContext->getServiceManager()->createInstanceWithContext( "com.sun.star.document.FilterFactory", rxContext ), UNO_QUERY );
+        mxTypeDetection.set( rxContext->getServiceManager()->createInstanceWithContext( "com.sun.star.document.TypeDetection", rxContext ), UNO_QUERY );
+        mxExtendedTypeDetection.set( rxContext->getServiceManager()->createInstanceWithContext( "com.sun.star.document.ExtendedTypeDetectionFactory", rxContext ), UNO_QUERY );
 
         SvtPathOptions aOptions;
         m_sTemplatePath = aOptions.SubstituteVariable( m_sTemplatePath );
@@ -186,9 +186,9 @@ void XMLFilterSettingsDialog::updateStates()
 {
     SvTreeListEntry* pSelectedEntry = m_pFilterListBox->FirstSelected();
 
-    bool bHasSelection = pSelectedEntry != NULL;
+    bool bHasSelection = pSelectedEntry != nullptr;
 
-    bool bMultiSelection = bHasSelection && (m_pFilterListBox->NextSelected( pSelectedEntry ) != NULL );
+    bool bMultiSelection = bHasSelection && (m_pFilterListBox->NextSelected( pSelectedEntry ) != nullptr );
     bool bIsReadonly = false;
     bool bIsDefault = false;
     if(pSelectedEntry)
@@ -448,7 +448,7 @@ bool XMLFilterSettingsDialog::insertOrEdit( filter_info_impl* pNewInfo, const fi
         }
     }
 
-    filter_info_impl* pFilterEntry( NULL );
+    filter_info_impl* pFilterEntry( nullptr );
 
     if( bOk )
     {
@@ -632,7 +632,7 @@ bool XMLFilterSettingsDialog::insertOrEdit( filter_info_impl* pNewInfo, const fi
         {
             try
             {
-                Reference< XFlushable > xFlushable = Reference< XFlushable >::query( mxTypeDetection );
+                Reference< XFlushable > xFlushable( mxTypeDetection, UNO_QUERY );
                 if( xFlushable.is() )
                     xFlushable->flush();
             }
@@ -837,7 +837,7 @@ void XMLFilterSettingsDialog::onDelete()
                     if( xFlushable.is() )
                         xFlushable->flush();
 
-                    xFlushable = Reference< XFlushable >::query( mxTypeDetection );
+                    xFlushable.set( mxTypeDetection, UNO_QUERY );
                     if( xFlushable.is() )
                         xFlushable->flush();
 
@@ -877,7 +877,7 @@ void XMLFilterSettingsDialog::onSave()
 
     // Open Fileopen-Dialog
        ::sfx2::FileDialogHelper aDlg(
-        com::sun::star::ui::dialogs::TemplateDescription::FILESAVE_AUTOEXTENSION,
+        css::ui::dialogs::TemplateDescription::FILESAVE_AUTOEXTENSION,
         0 );
 
     OUString aExtensions( "*.jar" );
@@ -920,7 +920,7 @@ void XMLFilterSettingsDialog::onOpen()
 
     // Open Fileopen-Dialog
        ::sfx2::FileDialogHelper aDlg(
-        com::sun::star::ui::dialogs::TemplateDescription::FILEOPEN_SIMPLE, 0 );
+        css::ui::dialogs::TemplateDescription::FILEOPEN_SIMPLE, 0 );
 
     OUString aExtensions( "*.jar" );
     OUString aFilterName(RESIDSTR(STR_FILTER_PACKAGE));
@@ -1171,7 +1171,7 @@ void XMLFilterSettingsDialog::initFilterList()
                             }
                         }
                     }
-                    catch( const ::com::sun::star::container::NoSuchElementException& )
+                    catch( const css::container::NoSuchElementException& )
                     {
                         OSL_FAIL( "Type not found, user error?" ); // TODO: error?
                     }
@@ -1286,7 +1286,7 @@ const application_info_impl* getApplicationInfo( const OUString& rServiceName )
             return (*aIter);
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 OUString getApplicationUIName( const OUString& rServiceName )
@@ -1466,7 +1466,7 @@ IMPL_LINK_TYPED( XMLFilterListBox, HeaderEndDrag_Impl, HeaderBar*, pBar, void )
             long nW = m_pHeaderBar->GetItemSize(i);
             aSz.Width() =  nW + nTmpSz;
             nTmpSz += nW;
-            SetTab( i, PixelToLogic( aSz, MapMode(MAP_APPFONT) ).Width(), MAP_APPFONT );
+            SetTab( i, PixelToLogic( aSz, MapMode(MAP_APPFONT) ).Width() );
         }
     }
 }

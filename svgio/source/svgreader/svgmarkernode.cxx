@@ -29,7 +29,7 @@ namespace svgio
         :   SvgNode(SVGTokenMarker, rDocument, pParent),
             aPrimitives(),
             maSvgStyleAttributes(*this),
-            mpViewBox(0),
+            mpViewBox(nullptr),
             maSvgAspectRatio(),
             maRefX(0),
             maRefY(0),
@@ -48,7 +48,7 @@ namespace svgio
 
         const SvgStyleAttributes* SvgMarkerNode::getSvgStyleAttributes() const
         {
-            return checkForCssStyle(OUString("marker"), maSvgStyleAttributes);
+            return checkForCssStyle("marker", maSvgStyleAttributes);
         }
 
         void SvgMarkerNode::parseAttribute(const OUString& rTokenName, SVGToken aSVGToken, const OUString& aContent)
@@ -173,9 +173,9 @@ namespace svgio
             }
         }
 
-        const drawinglayer::primitive2d::Primitive2DSequence& SvgMarkerNode::getMarkerPrimitives() const
+        const drawinglayer::primitive2d::Primitive2DContainer& SvgMarkerNode::getMarkerPrimitives() const
         {
-            if(!aPrimitives.hasElements() && Display_none != getDisplay())
+            if(aPrimitives.empty() && Display_none != getDisplay())
             {
                 decomposeSvgNode(const_cast< SvgMarkerNode* >(this)->aPrimitives, true);
             }

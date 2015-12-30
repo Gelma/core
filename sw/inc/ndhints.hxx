@@ -45,7 +45,7 @@ SwTextAttr * MakeTextAttr(
     sal_Int32 const nStt,
     sal_Int32 const nEnd,
     CopyOrNew_t const bIsCopy = NEW,
-    SwTextNode *const pTextNode = 0 );
+    SwTextNode *const pTextNode = nullptr );
 
 SwTextAttr * MakeTextAttr(
     SwDoc & rDoc,
@@ -76,7 +76,7 @@ class SwpHtEnd : public o3tl::sorted_vector<SwTextAttr*, CompareSwpHtEnd,
     o3tl::find_partialorder_ptrequals> {};
 
 
-
+/// An SwTextAttr container, stores all directly formatted text portions for a text node.
 class SwpHints
 {
 private:
@@ -89,7 +89,6 @@ private:
 
     SwRegHistory* m_pHistory;                   ///< for Undo
 
-    bool          m_bFontChange          : 1;   ///< font change
     /// true: the Node is in Split and Frames are moved
     bool          m_bInSplitNode         : 1;
     /// m_bHasHiddenParaField is invalid, call CalcHiddenParaField()
@@ -172,7 +171,7 @@ public:
     /// register a History, which receives all attribute changes (for Undo)
     void Register( SwRegHistory* pHist ) { m_pHistory = pHist; }
     /// deregister the currently registered History
-    void DeRegister() { Register(0); }
+    void DeRegister() { Register(nullptr); }
     SwRegHistory* GetHistory() const    { return m_pHistory; }
 
     /// try to insert the hint

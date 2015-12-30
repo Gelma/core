@@ -70,7 +70,7 @@
 #include "ww8par.hxx"
 #include "ww8scan.hxx"
 #include <oox/token/properties.hxx>
-#include <comphelper/embeddedobjectcontainer.hxx>
+#include <comphelper/storagehelper.hxx>
 #include <comphelper/string.hxx>
 #include <rtl/ustrbuf.hxx>
 #include <vcl/font.hxx>
@@ -366,44 +366,52 @@ OString DocxExport::OutputChart( uno::Reference< frame::XModel >& xModel, sal_In
     return OUStringToOString( sId, RTL_TEXTENCODING_UTF8 );
 }
 
-OString DocxExport::WriteOLEObject( SwOLEObj& rObject, const OUString& sMediaType, const OUString& sRelationType, const OUString& sFileExtension )
+OString DocxExport::WriteOLEObject(SwOLEObj& rObject, OUString & io_rProgID)
 {
     uno::Reference <embed::XEmbeddedObject> xObj( rObject.GetOleRef() );
-    comphelper::EmbeddedObjectContainer* aContainer = rObject.GetObject().GetContainer();
-    uno::Reference< io::XInputStream > xInStream = aContainer->GetObjectStream( xObj, NULL );
+    uno::Reference<uno::XComponentContext> const xContext(
+        GetFilter().getComponentContext());
 
-    OUString sFileName = "embeddings/oleObject" + OUString::number( ++m_nOLEObjects ) + "." + sFileExtension;
-    uno::Reference< io::XOutputStream > xOutStream = GetFilter().openFragmentStream( OUStringBuffer()
-                                                                      .append( "word/" )
-                                                                      .append( sFileName )
-                                                                      .makeStringAndClear(),
-                                                                      sMediaType );
-    OUString sId;
-    if( lcl_CopyStream( xInStream, xOutStream ) )
+    OUString sMediaType;
+    OUString sRelationType;
+    OUString sSuffix;
+    const char * pProgID(nullptr);
 
-        sId = m_pFilter->addRelation( GetFS()->getOutputStream(),
+    uno::Reference<io::XInputStream> const xInStream =
+        oox::GetOLEObjectStream(xContext, xObj, io_rProgID,
+            sMediaType, sRelationType, sSuffix, pProgID);
+
+    if (!xInStream.is())
+    {
+        return OString();
+    }
+
+    assert(!sMediaType.isEmpty());
+    assert(!sRelationType.isEmpty());
+    assert(!sSuffix.isEmpty());
+    OUString sFileName = "embeddings/oleObject" + OUString::number( ++m_nOLEObjects ) + "." + sSuffix;
+    uno::Reference<io::XOutputStream> const xOutStream =
+        GetFilter().openFragmentStream("word/" + sFileName, sMediaType);
+    assert(xOutStream.is()); // no reason why that could fail
+
+    try
+    {
+        ::comphelper::OStorageHelper::CopyInputToOutput(xInStream, xOutStream);
+    }
+    catch (uno::Exception const& e)
+    {
+        SAL_WARN("sw.ww8", "DocxExport::WriteOLEObject: exception: " << e.Message);
+        return OString();
+    }
+
+    OUString const sId = m_pFilter->addRelation( GetFS()->getOutputStream(),
                 sRelationType, sFileName );
+    if (pProgID)
+    {
+        io_rProgID = OUString::createFromAscii(pProgID);
+    }
 
     return OUStringToOString( sId, RTL_TEXTENCODING_UTF8 );
-}
-
-// function copied from embeddedobj/source/msole/oleembed.cxx
-bool DocxExport::lcl_CopyStream( uno::Reference<io::XInputStream> xIn, uno::Reference<io::XOutputStream> xOut )
-{
-    if( !xIn.is() || !xOut.is() )
-        return false;
-
-    const sal_Int32 nChunkSize = 4096;
-    uno::Sequence< sal_Int8 > aData(nChunkSize);
-    sal_Int32 nTotalRead = 0;
-    sal_Int32 nRead = 0;
-    do
-    {
-        nRead = xIn->readBytes(aData, nChunkSize);
-        nTotalRead += nRead;
-        xOut->writeBytes(aData);
-    } while (nRead == nChunkSize);
-    return nTotalRead != 0;
 }
 
 void DocxExport::OutputDML(uno::Reference<drawing::XShape>& xShape)
@@ -414,7 +422,7 @@ void DocxExport::OutputDML(uno::Reference<drawing::XShape>& xShape)
         nNamespace = XML_wpg;
     else if (xServiceInfo->supportsService("com.sun.star.drawing.GraphicObjectShape"))
         nNamespace = XML_pic;
-    oox::drawingml::ShapeExport aExport(nNamespace, m_pAttrOutput->GetSerializer(), 0, m_pFilter, oox::drawingml::DrawingML::DOCUMENT_DOCX, m_pAttrOutput);
+    oox::drawingml::ShapeExport aExport(nNamespace, m_pAttrOutput->GetSerializer(), nullptr, m_pFilter, oox::drawingml::DrawingML::DOCUMENT_DOCX, m_pAttrOutput);
     aExport.WriteShape(xShape);
 }
 
@@ -454,8 +462,8 @@ void DocxExport::ExportDocument_Impl()
     WriteEmbeddings();
 
     m_aLinkedTextboxesHelper.clear();   //final cleanup
-    delete m_pStyles, m_pStyles = NULL;
-    delete m_pSections, m_pSections = NULL;
+    delete m_pStyles, m_pStyles = nullptr;
+    delete m_pSections, m_pSections = nullptr;
 }
 
 void DocxExport::AppendSection( const SwPageDesc *pPageDesc, const SwSectionFormat* pFormat, sal_uLong nLnNum )
@@ -1248,6 +1256,7 @@ void DocxExport::WriteEmbeddings()
         embeddingsList[j].Value >>= embeddingsStream;
 
         OUString contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        // FIXME: this .xlsm hack is silly - if anything the mime-type for an existing embedded object shoud be read from [Content_Types].xml
         if (embeddingPath.endsWith(".xlsm"))
             contentType = "application/vnd.ms-excel.sheet.macroEnabled.12";
         else if (embeddingPath.endsWith(".bin"))
@@ -1344,7 +1353,7 @@ void DocxExport::WriteMainText()
 
     // the last section info
     m_pAttrOutput->EndParaSdtBlock();
-    const WW8_SepInfo *pSectionInfo = m_pSections? m_pSections->CurrentSectionInfo(): NULL;
+    const WW8_SepInfo *pSectionInfo = m_pSections? m_pSections->CurrentSectionInfo(): nullptr;
     if ( pSectionInfo )
         SectionProperties( *pSectionInfo );
 
@@ -1397,7 +1406,7 @@ void DocxExport::WriteOutliner(const OutlinerParaObject& rParaObj, sal_uInt8 nTy
         sal_Int32 nAktPos = 0;
         const sal_Int32 nEnd = aStr.getLength();
         do {
-            AttrOutput().StartRun( NULL );
+            AttrOutput().StartRun( nullptr );
             const sal_Int32 nNextAttr = std::min(aAttrIter.WhereNext(), nEnd);
             rtl_TextEncoding eNextChrSet = aAttrIter.GetNextCharSet();
 
@@ -1414,7 +1423,7 @@ void DocxExport::WriteOutliner(const OutlinerParaObject& rParaObj, sal_uInt8 nTy
             }
             AttrOutput().StartRunProperties();
             aAttrIter.OutAttr( nAktPos );
-            AttrOutput().EndRunProperties( NULL );
+            AttrOutput().EndRunProperties( nullptr );
 
             nAktPos = nNextAttr;
             eChrSet = eNextChrSet;
@@ -1434,14 +1443,14 @@ void DocxExport::SetFS( ::sax_fastparser::FSHelperPtr pFS )
 DocxExport::DocxExport( DocxExportFilter *pFilter, SwDoc *pDocument, SwPaM *pCurrentPam, SwPaM *pOriginalPam )
     : MSWordExportBase( pDocument, pCurrentPam, pOriginalPam ),
       m_pFilter( pFilter ),
-      m_pAttrOutput( NULL ),
-      m_pSections( NULL ),
+      m_pAttrOutput( nullptr ),
+      m_pSections( nullptr ),
       m_nHeaders( 0 ),
       m_nFooters( 0 ),
       m_nOLEObjects( 0 ),
       m_nHeadersFootersInSection(0),
-      m_pVMLExport( NULL ),
-      m_pSdrExport( NULL )
+      m_pVMLExport( nullptr ),
+      m_pSdrExport( nullptr )
 {
     // Write the document properies
     WriteProperties( );
@@ -1471,10 +1480,10 @@ DocxExport::DocxExport( DocxExportFilter *pFilter, SwDoc *pDocument, SwPaM *pCur
 
 DocxExport::~DocxExport()
 {
-    delete m_pSdrExport, m_pSdrExport = NULL;
-    delete m_pVMLExport, m_pVMLExport = NULL;
-    delete m_pAttrOutput, m_pAttrOutput = NULL;
-    delete m_pDrawingML, m_pDrawingML = NULL;
+    delete m_pSdrExport, m_pSdrExport = nullptr;
+    delete m_pVMLExport, m_pVMLExport = nullptr;
+    delete m_pAttrOutput, m_pAttrOutput = nullptr;
+    delete m_pDrawingML, m_pDrawingML = nullptr;
 }
 
 DocxSettingsData::DocxSettingsData()

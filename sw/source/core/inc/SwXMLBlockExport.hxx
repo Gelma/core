@@ -31,16 +31,16 @@ private:
 
 public:
     SwXMLBlockListExport(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rContext,
+        const css::uno::Reference< css::uno::XComponentContext >& rContext,
         SwXMLTextBlocks & rBlocks,
         const OUString &rFileName,
-        com::sun::star::uno::Reference< com::sun::star::xml::sax::XDocumentHandler> &rHandler);
+        css::uno::Reference< css::xml::sax::XDocumentHandler> &rHandler);
 
     virtual ~SwXMLBlockListExport() {}
-    sal_uInt32 exportDoc( enum ::xmloff::token::XMLTokenEnum eClass) SAL_OVERRIDE;
-    void _ExportAutoStyles() SAL_OVERRIDE {}
-    void _ExportMasterStyles () SAL_OVERRIDE {}
-    void _ExportContent() SAL_OVERRIDE {}
+    sal_uInt32 exportDoc( enum ::xmloff::token::XMLTokenEnum eClass) override;
+    void _ExportAutoStyles() override {}
+    void _ExportMasterStyles () override {}
+    void _ExportContent() override {}
 };
 
 class SwXMLTextBlockExport : public SvXMLExport
@@ -50,17 +50,17 @@ private:
 
 public:
     SwXMLTextBlockExport(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rContext,
+        const css::uno::Reference< css::uno::XComponentContext >& rContext,
         SwXMLTextBlocks & rBlocks,
         const OUString &rFileName,
-        com::sun::star::uno::Reference< com::sun::star::xml::sax::XDocumentHandler> &rHandler);
+        css::uno::Reference< css::xml::sax::XDocumentHandler> &rHandler);
 
     virtual ~SwXMLTextBlockExport() {}
-    sal_uInt32 exportDoc(enum ::xmloff::token::XMLTokenEnum /*eClass*/) SAL_OVERRIDE {return 0;}
+    sal_uInt32 exportDoc(enum ::xmloff::token::XMLTokenEnum /*eClass*/) override {return 0;}
     sal_uInt32 exportDoc(const OUString & rText);
-    void _ExportAutoStyles() SAL_OVERRIDE {}
-    void _ExportMasterStyles () SAL_OVERRIDE {}
-    void _ExportContent() SAL_OVERRIDE {}
+    void _ExportAutoStyles() override {}
+    void _ExportMasterStyles () override {}
+    void _ExportContent() override {}
 };
 
 #endif

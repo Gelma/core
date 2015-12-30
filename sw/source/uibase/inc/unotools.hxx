@@ -36,15 +36,15 @@
 
 class SwOneExampleFrame;
 
-class SwFrmCtrlWindow : public VclEventBox
+class SwFrameCtrlWindow : public VclEventBox
 {
     SwOneExampleFrame* pExampleFrame;
 public:
-    SwFrmCtrlWindow(vcl::Window* pParent, SwOneExampleFrame* pFrame);
+    SwFrameCtrlWindow(vcl::Window* pParent, SwOneExampleFrame* pFrame);
 
-    virtual void Command( const CommandEvent& rCEvt ) SAL_OVERRIDE;
-    virtual Size GetOptimalSize() const SAL_OVERRIDE;
-    virtual void Resize() SAL_OVERRIDE;
+    virtual void Command( const CommandEvent& rCEvt ) override;
+    virtual Size GetOptimalSize() const override;
+    virtual void Resize() override;
 };
 
 class MenuResource : public Resource
@@ -68,12 +68,12 @@ class SwView;
 
 class SW_DLLPUBLIC SwOneExampleFrame
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::awt::XControl >         _xControl;
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XModel >         _xModel;
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XController >    _xController;
-    ::com::sun::star::uno::Reference< ::com::sun::star::text::XTextCursor >     _xCursor;
+    css::uno::Reference< css::awt::XControl >         _xControl;
+    css::uno::Reference< css::frame::XModel >         _xModel;
+    css::uno::Reference< css::frame::XController >    _xController;
+    css::uno::Reference< css::text::XTextCursor >     _xCursor;
 
-    VclPtr<SwFrmCtrlWindow> aTopWindow;
+    VclPtr<SwFrameCtrlWindow> aTopWindow;
     Idle            aLoadedIdle;
     Link<SwOneExampleFrame&,void> aInitializedLink;
 
@@ -98,13 +98,13 @@ class SW_DLLPUBLIC SwOneExampleFrame
 public:
     SwOneExampleFrame(vcl::Window& rWin,
                     sal_uInt32 nStyleFlags = EX_SHOW_ONLINE_LAYOUT,
-                    const Link<SwOneExampleFrame&,void>* pInitalizedLink = 0,
-                    const OUString* pURL = 0);
+                    const Link<SwOneExampleFrame&,void>* pInitalizedLink = nullptr,
+                    const OUString* pURL = nullptr);
     ~SwOneExampleFrame();
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XModel > &       GetModel()      {return _xModel;}
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XController > &  GetController() {return _xController;}
-    ::com::sun::star::uno::Reference< ::com::sun::star::text::XTextCursor > &   GetTextCursor() {return _xCursor;}
+    css::uno::Reference< css::frame::XModel > &       GetModel()      {return _xModel;}
+    css::uno::Reference< css::frame::XController > &  GetController() {return _xController;}
+    css::uno::Reference< css::text::XTextCursor > &   GetTextCursor() {return _xCursor;}
 
     void ClearDocument( bool bStartTimer = false );
 

@@ -51,7 +51,7 @@ class ScResourcePublisher : public Resource
 private:
     void FreeResource() { Resource::FreeResource(); }
 public:
-    ScResourcePublisher( const ScResId& rId ) : Resource( rId ) {}
+    explicit ScResourcePublisher( const ScResId& rId ) : Resource( rId ) {}
     ~ScResourcePublisher() { FreeResource(); }
     bool IsAvailableRes( const ResId& rId ) const
                         { return Resource::IsAvailableRes( rId ); }
@@ -61,12 +61,13 @@ public:
 // class ScFuncDesc:
 
 ScFuncDesc::ScFuncDesc() :
-        pFuncName       (NULL),
-        pFuncDesc       (NULL),
-        pDefArgFlags    (NULL),
+        pFuncName       (nullptr),
+        pFuncDesc       (nullptr),
+        pDefArgFlags    (nullptr),
         nFIndex         (0),
         nCategory       (0),
         nArgCount       (0),
+        nVarArgsStart   (0),
         bIncomplete     (false),
         bHasSuppressedArgs(false)
 {}
@@ -88,15 +89,16 @@ void ScFuncDesc::Clear()
         delete [] pDefArgFlags;
     }
     nArgCount = 0;
+    nVarArgsStart = 0;
     maDefArgNames.clear();
     maDefArgDescs.clear();
-    pDefArgFlags = NULL;
+    pDefArgFlags = nullptr;
 
     delete pFuncName;
-    pFuncName = NULL;
+    pFuncName = nullptr;
 
     delete pFuncDesc;
-    pFuncDesc = NULL;
+    pFuncDesc = nullptr;
 
     nFIndex = 0;
     nCategory = 0;
@@ -140,8 +142,7 @@ OUString ScFuncDesc::GetParamList() const
         }
         else if ( nArgCount < PAIRED_VAR_ARGS)
         {
-            sal_uInt16 nFix = nArgCount - VAR_ARGS;
-            for ( sal_uInt16 nArg = 0; nArg < nFix; nArg++ )
+            for ( sal_uInt16 nArg = 0; nArg < nVarArgsStart; nArg++ )
             {
                 if (!pDefArgFlags[nArg].bSuppress)
                 {
@@ -154,19 +155,18 @@ OUString ScFuncDesc::GetParamList() const
              * there were, we'd have to cope with it here and above for the fix
              * parameters. For now parameters are always added, so no special
              * treatment of a trailing "; " necessary. */
-            aSig.append(maDefArgNames[nFix]);
+            aSig.append(maDefArgNames[nVarArgsStart]);
             aSig.append('1');
             aSig.append(sep);
             aSig.append(' ');
-            aSig.append(maDefArgNames[nFix]);
+            aSig.append(maDefArgNames[nVarArgsStart]);
             aSig.append('2');
             aSig.append(sep);
             aSig.append(" ... ");
         }
         else
         {
-            sal_uInt16 nFix = nArgCount - PAIRED_VAR_ARGS;
-            for ( sal_uInt16 nArg = 0; nArg < nFix; nArg++ )
+            for ( sal_uInt16 nArg = 0; nArg < nVarArgsStart; nArg++ )
             {
                 if (!pDefArgFlags[nArg].bSuppress)
                 {
@@ -176,17 +176,17 @@ OUString ScFuncDesc::GetParamList() const
                 }
             }
 
-            aSig.append(maDefArgNames[nFix]);
+            aSig.append(maDefArgNames[nVarArgsStart]);
             aSig.append('1');
             aSig.append(sep);
-            aSig.append(maDefArgNames[nFix+1]);
+            aSig.append(maDefArgNames[nVarArgsStart+1]);
             aSig.append('1');
             aSig.append(sep);
             aSig.append( " " );
-            aSig.append(maDefArgNames[nFix]);
+            aSig.append(maDefArgNames[nVarArgsStart]);
             aSig.append('2');
             aSig.append(sep);
-            aSig.append(maDefArgNames[nFix+1]);
+            aSig.append(maDefArgNames[nVarArgsStart+1]);
             aSig.append('2');
             aSig.append(sep);
             aSig.append( " ... " );
@@ -359,6 +359,11 @@ sal_uInt32 ScFuncDesc::getParameterCount() const
     return nArgCount;
 }
 
+sal_uInt32 ScFuncDesc::getVarArgsStart() const
+{
+    return nVarArgsStart;
+}
+
 OUString ScFuncDesc::getParameterName(sal_uInt32 _nPos) const
 {
     return maDefArgNames[_nPos];
@@ -384,7 +389,7 @@ bool ScFuncDesc::compareByName(const ScFuncDesc* a, const ScFuncDesc* b)
 ScFunctionList::ScFunctionList() :
         nMaxFuncNameLen ( 0 )
 {
-    ScFuncDesc* pDesc = NULL;
+    ScFuncDesc* pDesc = nullptr;
     sal_Int32 nStrLen = 0;
     ::std::list<ScFuncDesc*> tmpFuncList;
     sal_uInt16 nDescBlock[] =
@@ -451,7 +456,7 @@ ScFunctionList::ScFunctionList() :
     LegacyFuncCollection::const_iterator it = rLegacyFuncColl.begin(), itEnd = rLegacyFuncColl.end();
     for (; it != itEnd; ++it)
     {
-        const LegacyFuncData* pLegacyFuncData = it->second;
+        const LegacyFuncData *const pLegacyFuncData = it->second.get();
         pDesc = new ScFuncDesc;
         sal_uInt16 nArgs = pLegacyFuncData->GetParamCount() - 1;
         pLegacyFuncData->getParamDesc( aArgName, aArgDesc, 0 );
@@ -581,7 +586,7 @@ ScFunctionList::~ScFunctionList()
 
 const ScFuncDesc* ScFunctionList::First()
 {
-    const ScFuncDesc* pDesc = NULL;
+    const ScFuncDesc* pDesc = nullptr;
     aFunctionListIter = aFunctionList.begin();
     if(aFunctionListIter != aFunctionList.end())
         pDesc = *aFunctionListIter;
@@ -591,7 +596,7 @@ const ScFuncDesc* ScFunctionList::First()
 
 const ScFuncDesc* ScFunctionList::Next()
 {
-    const ScFuncDesc* pDesc = NULL;
+    const ScFuncDesc* pDesc = nullptr;
     if(aFunctionListIter != aFunctionList.end())
     {
         if((++aFunctionListIter) != aFunctionList.end())
@@ -602,7 +607,7 @@ const ScFuncDesc* ScFunctionList::Next()
 
 const ScFuncDesc* ScFunctionList::GetFunction( sal_uInt32 nIndex ) const
 {
-    const ScFuncDesc* pDesc = NULL;
+    const ScFuncDesc* pDesc = nullptr;
     if(nIndex < aFunctionList.size())
         pDesc = aFunctionList.at(nIndex);
 
@@ -625,7 +630,7 @@ OUString ScFunctionCategory::getName() const
 
 const formula::IFunctionDescription* ScFunctionCategory::getFunction(sal_uInt32 _nPos) const
 {
-    const ScFuncDesc* pDesc = NULL;
+    const ScFuncDesc* pDesc = nullptr;
     if(_nPos < m_pCategory->size())
         pDesc = m_pCategory->at(_nPos);
     return pDesc;
@@ -699,7 +704,7 @@ const ScFuncDesc* ScFunctionMgr::Get( sal_uInt16 nFIndex ) const
 const ScFuncDesc* ScFunctionMgr::First( sal_uInt16 nCategory ) const
 {
     OSL_ENSURE( nCategory < MAX_FUNCCAT, "Unknown category" );
-    const ScFuncDesc* pDesc = NULL;
+    const ScFuncDesc* pDesc = nullptr;
     if ( nCategory < MAX_FUNCCAT )
     {
         pCurCatListIter = aCatLists[nCategory]->begin();
@@ -716,7 +721,7 @@ const ScFuncDesc* ScFunctionMgr::First( sal_uInt16 nCategory ) const
 
 const ScFuncDesc* ScFunctionMgr::Next() const
 {
-    const ScFuncDesc* pDesc = NULL;
+    const ScFuncDesc* pDesc = nullptr;
     if ( pCurCatListIter != pCurCatListEnd )
     {
         if ( (++pCurCatListIter) != pCurCatListEnd )
@@ -740,7 +745,7 @@ const formula::IFunctionCategory* ScFunctionMgr::getCategory(sal_uInt32 nCategor
             m_aCategories[nCategory].reset(new ScFunctionCategory(aCatLists[nCategory+1],nCategory)); // aCatLists[0] is "all"
         return m_aCategories[nCategory].get();
     }
-    return NULL;
+    return nullptr;
 }
 
 void ScFunctionMgr::fillLastRecentlyUsedFunctions(::std::vector< const formula::IFunctionDescription*>& _rLastRUFunctions) const
@@ -799,12 +804,20 @@ ScFuncRes::ScFuncRes( ResId &aRes, ScFuncDesc* pDesc, bool & rbSuppressed )
     pDesc->sHelpId = ReadByteStringRes();
     pDesc->nArgCount = GetNum();
     sal_uInt16 nArgs = pDesc->nArgCount;
+    sal_uInt16 nVarArgsSet = 0;
     if (nArgs >= PAIRED_VAR_ARGS)
-        nArgs -= PAIRED_VAR_ARGS - 2;
+    {
+        nVarArgsSet = 2;
+        nArgs -= PAIRED_VAR_ARGS - nVarArgsSet;
+    }
     else if (nArgs >= VAR_ARGS)
-        nArgs -= VAR_ARGS - 1;
+    {
+        nVarArgsSet = 1;
+        nArgs -= VAR_ARGS - nVarArgsSet;
+    }
     if (nArgs)
     {
+        pDesc->nVarArgsStart = nArgs - nVarArgsSet;
         pDesc->pDefArgFlags = new ScFuncDesc::ParameterFlags[nArgs];
         for (sal_uInt16 i = 0; i < nArgs; ++i)
         {
@@ -864,6 +877,25 @@ ScFuncRes::ScFuncRes( ResId &aRes, ScFuncDesc* pDesc, bool & rbSuppressed )
         {
             pDesc->maDefArgNames[i] = SC_RESSTR(2*(i+1)  );
             pDesc->maDefArgDescs[i] = SC_RESSTR(2*(i+1)+1);
+            // If empty and variable number of arguments and last parameter and
+            // parameter is optional and the previous is not optional, repeat
+            // previous parameter name and description.
+            if ((pDesc->maDefArgNames[i].isEmpty() || pDesc->maDefArgDescs[i].isEmpty()) &&
+                    nVarArgsSet > 0 && i > nVarArgsSet && (i == nArgs-1 || i == nArgs-2) &&
+                    pDesc->pDefArgFlags[i].bOptional)
+            {
+                sal_uInt16 nPrev = i - nVarArgsSet;
+                if (!pDesc->pDefArgFlags[nPrev].bOptional)
+                {
+                    if (pDesc->maDefArgNames[i].isEmpty())
+                        pDesc->maDefArgNames[i] = pDesc->maDefArgNames[nPrev];
+                    if (pDesc->maDefArgDescs[i].isEmpty())
+                        pDesc->maDefArgDescs[i] = pDesc->maDefArgDescs[nPrev];
+                    // This also means that variable arguments start one
+                    // parameter set earlier.
+                    pDesc->nVarArgsStart -= nVarArgsSet;
+                }
+            }
         }
     }
 

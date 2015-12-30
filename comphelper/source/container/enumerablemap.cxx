@@ -83,8 +83,7 @@ namespace comphelper
     using ::com::sun::star::lang::WrappedTargetException;
     using ::com::sun::star::lang::DisposedException;
 
-    class IMapModificationListener;
-    typedef ::std::vector< IMapModificationListener* > MapListeners;
+    class MapEnumerator;
 
     typedef ::std::map< Any, Any, LessPredicateAdapter > KeyedValues;
     struct MapData
@@ -94,7 +93,7 @@ namespace comphelper
         ::std::unique_ptr< KeyedValues >            m_pValues;
         ::std::shared_ptr< IKeyPredicateLess >      m_pKeyCompare;
         bool                                        m_bMutable;
-        MapListeners                                m_aModListeners;
+        ::std::vector< MapEnumerator* >             m_aModListeners;
 
         MapData()
             :m_bMutable( true )
@@ -111,40 +110,25 @@ namespace comphelper
         {
         }
     private:
-        MapData& operator=( const MapData& _source ) SAL_DELETED_FUNCTION;
+        MapData& operator=( const MapData& _source ) = delete;
     };
 
 
-    /** implemented by components who want to be notified of modifications in the MapData they work with
-    */
-    class SAL_NO_VTABLE IMapModificationListener
-    {
-    public:
-        /// called when the map was modified
-        virtual void mapModified() = 0;
-        virtual ~IMapModificationListener()
-        {
-        }
-    };
-
-    static void lcl_registerMapModificationListener( MapData& _mapData, IMapModificationListener& _listener )
+    static void lcl_registerMapModificationListener( MapData& _mapData, MapEnumerator& _listener )
     {
     #if OSL_DEBUG_LEVEL > 0
-        for (   MapListeners::const_iterator lookup = _mapData.m_aModListeners.begin();
-                lookup != _mapData.m_aModListeners.end();
-                ++lookup
-             )
+        for ( const MapEnumerator* lookup : _mapData.m_aModListeners )
         {
-            OSL_ENSURE( *lookup != &_listener, "lcl_registerMapModificationListener: this listener is already registered!" );
+            OSL_ENSURE( lookup != &_listener, "lcl_registerMapModificationListener: this listener is already registered!" );
         }
     #endif
         _mapData.m_aModListeners.push_back( &_listener );
     }
 
 
-    static void lcl_revokeMapModificationListener( MapData& _mapData, IMapModificationListener& _listener )
+    static void lcl_revokeMapModificationListener( MapData& _mapData, MapEnumerator& _listener )
     {
-        for (   MapListeners::iterator lookup = _mapData.m_aModListeners.begin();
+        for (   ::std::vector< MapEnumerator* >::iterator lookup = _mapData.m_aModListeners.begin();
                 lookup != _mapData.m_aModListeners.end();
                 ++lookup
              )
@@ -159,16 +143,7 @@ namespace comphelper
     }
 
 
-    static void lcl_notifyMapDataListeners_nothrow( const MapData& _mapData )
-    {
-        for (   MapListeners::const_iterator loop = _mapData.m_aModListeners.begin();
-                loop != _mapData.m_aModListeners.end();
-                ++loop
-            )
-        {
-            (*loop)->mapModified();
-        }
-    }
+    static void lcl_notifyMapDataListeners_nothrow( const MapData& _mapData );
 
 
     // EnumerableMap
@@ -186,31 +161,31 @@ namespace comphelper
         virtual ~EnumerableMap();
 
         // XInitialization
-        virtual void SAL_CALL initialize( const Sequence< Any >& aArguments ) throw (Exception, RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL initialize( const Sequence< Any >& aArguments ) throw (Exception, RuntimeException, std::exception) override;
 
         // XEnumerableMap
-        virtual css::uno::Reference< css::container::XEnumeration > SAL_CALL createKeyEnumeration( sal_Bool _Isolated ) throw (css::lang::NoSupportException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual css::uno::Reference< css::container::XEnumeration > SAL_CALL createValueEnumeration( sal_Bool _Isolated ) throw (css::lang::NoSupportException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual css::uno::Reference< css::container::XEnumeration > SAL_CALL createElementEnumeration( sal_Bool _Isolated ) throw (css::lang::NoSupportException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual css::uno::Reference< css::container::XEnumeration > SAL_CALL createKeyEnumeration( sal_Bool _Isolated ) throw (css::lang::NoSupportException, css::uno::RuntimeException, std::exception) override;
+        virtual css::uno::Reference< css::container::XEnumeration > SAL_CALL createValueEnumeration( sal_Bool _Isolated ) throw (css::lang::NoSupportException, css::uno::RuntimeException, std::exception) override;
+        virtual css::uno::Reference< css::container::XEnumeration > SAL_CALL createElementEnumeration( sal_Bool _Isolated ) throw (css::lang::NoSupportException, css::uno::RuntimeException, std::exception) override;
 
         // XMap
-        virtual Type SAL_CALL getKeyType() throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Type SAL_CALL getValueType() throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL clear(  ) throw (NoSupportException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual sal_Bool SAL_CALL containsKey( const Any& _key ) throw (IllegalTypeException, IllegalArgumentException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual sal_Bool SAL_CALL containsValue( const Any& _value ) throw (IllegalTypeException, IllegalArgumentException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Any SAL_CALL get( const Any& _key ) throw (IllegalTypeException, IllegalArgumentException, NoSuchElementException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Any SAL_CALL put( const Any& _key, const Any& _value ) throw (NoSupportException, IllegalTypeException, IllegalArgumentException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Any SAL_CALL remove( const Any& _key ) throw (NoSupportException, IllegalTypeException, IllegalArgumentException, NoSuchElementException, RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual Type SAL_CALL getKeyType() throw (RuntimeException, std::exception) override;
+        virtual Type SAL_CALL getValueType() throw (RuntimeException, std::exception) override;
+        virtual void SAL_CALL clear(  ) throw (NoSupportException, RuntimeException, std::exception) override;
+        virtual sal_Bool SAL_CALL containsKey( const Any& _key ) throw (IllegalTypeException, IllegalArgumentException, RuntimeException, std::exception) override;
+        virtual sal_Bool SAL_CALL containsValue( const Any& _value ) throw (IllegalTypeException, IllegalArgumentException, RuntimeException, std::exception) override;
+        virtual Any SAL_CALL get( const Any& _key ) throw (IllegalTypeException, IllegalArgumentException, NoSuchElementException, RuntimeException, std::exception) override;
+        virtual Any SAL_CALL put( const Any& _key, const Any& _value ) throw (NoSupportException, IllegalTypeException, IllegalArgumentException, RuntimeException, std::exception) override;
+        virtual Any SAL_CALL remove( const Any& _key ) throw (NoSupportException, IllegalTypeException, IllegalArgumentException, NoSuchElementException, RuntimeException, std::exception) override;
 
         // XElementAccess (base of XMap)
-        virtual Type SAL_CALL getElementType() throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual sal_Bool SAL_CALL hasElements() throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual Type SAL_CALL getElementType() throw (RuntimeException, std::exception) override;
+        virtual sal_Bool SAL_CALL hasElements() throw (RuntimeException, std::exception) override;
 
         // XServiceInfo
-        virtual OUString SAL_CALL getImplementationName(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual OUString SAL_CALL getImplementationName(  ) throw (RuntimeException, std::exception) override;
+        virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw (RuntimeException, std::exception) override;
+        virtual Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw (RuntimeException, std::exception) override;
 
     public:
         // XServiceInfo, static version (used for component registration)
@@ -230,9 +205,6 @@ namespace comphelper
     private:
         ::osl::Mutex        m_aMutex;
         MapData             m_aData;
-
-        ::std::vector< css::uno::WeakReference< XInterface > >
-                            m_aDependentComponents;
     };
 
 
@@ -242,8 +214,7 @@ namespace comphelper
     };
 
 
-    class MapEnumerator:
-        public IMapModificationListener, private boost::noncopyable
+    class MapEnumerator: private boost::noncopyable
     {
     public:
         MapEnumerator( ::cppu::OWeakObject& _rParent, MapData& _mapData, const EnumerationType _type )
@@ -274,8 +245,8 @@ namespace comphelper
         bool hasMoreElements();
         Any nextElement();
 
-        // IMapModificationListener
-        virtual void mapModified() SAL_OVERRIDE;
+        /// called when the map was modified
+        void mapModified();
 
     private:
         ::cppu::OWeakObject&        m_rParent;
@@ -285,6 +256,13 @@ namespace comphelper
         bool                        m_disposed;
     };
 
+    static void lcl_notifyMapDataListeners_nothrow( const MapData& _mapData )
+    {
+        for ( MapEnumerator* loop : _mapData.m_aModListeners )
+        {
+            loop->mapModified();
+        }
+    }
 
     typedef ::cppu::WeakImplHelper <   XEnumeration
                                    >   MapEnumeration_Base;
@@ -296,14 +274,14 @@ namespace comphelper
                         const EnumerationType _type, const bool _isolated )
             :ComponentBase( _rBHelper, ComponentBase::NoInitializationNeeded() )
             ,m_xKeepMapAlive( _parentMap )
-            ,m_pMapDataCopy( _isolated ? new MapData( _mapData ) : NULL )
+            ,m_pMapDataCopy( _isolated ? new MapData( _mapData ) : nullptr )
             ,m_aEnumerator( *this, _isolated ? *m_pMapDataCopy : _mapData, _type )
         {
         }
 
         // XEnumeration
-        virtual sal_Bool SAL_CALL hasMoreElements(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Any SAL_CALL nextElement(  ) throw (NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual sal_Bool SAL_CALL hasMoreElements(  ) throw (RuntimeException, std::exception) override;
+        virtual Any SAL_CALL nextElement(  ) throw (NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) override;
 
     protected:
         virtual ~MapEnumeration()
@@ -371,7 +349,7 @@ namespace comphelper
             throw IllegalTypeException("Unsupported value type.", *this );
 
         // create the comparator for the KeyType, and throw if the type is not supported
-        ::std::unique_ptr< IKeyPredicateLess > pComparator( getStandardLessPredicate( aKeyType, NULL ) );
+        ::std::unique_ptr< IKeyPredicateLess > pComparator( getStandardLessPredicate( aKeyType, nullptr ) );
         if ( !pComparator.get() )
             throw IllegalTypeException("Unsupported key type.", *this );
 
@@ -461,7 +439,7 @@ namespace comphelper
                         break;
                     pValueCompoundTypeDesc = pValueCompoundTypeDesc->pBaseTypeDescription;
                 }
-                bValid = ( pValueCompoundTypeDesc != NULL );
+                bValid = ( pValueCompoundTypeDesc != nullptr );
             }
         }
         break;
@@ -691,8 +669,7 @@ namespace comphelper
 
     Sequence< OUString > SAL_CALL EnumerableMap::getSupportedServiceNames_static(  )
     {
-        Sequence< OUString > aServiceNames(1);
-        aServiceNames[0] = "com.sun.star.container.EnumerableMap";
+        Sequence< OUString > aServiceNames { "com.sun.star.container.EnumerableMap" };
         return aServiceNames;
     }
 

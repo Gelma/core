@@ -73,13 +73,8 @@ class OLEHandler : public LoggedProperties
     DomainMapper& m_rDomainMapper;
 
     // Properties
-    virtual void lcl_attribute(Id Name, Value & val) SAL_OVERRIDE;
-    virtual void lcl_sprm(Sprm & sprm) SAL_OVERRIDE;
-
-    // Interoperability
-    void saveInteropProperties(css::uno::Reference<css::text::XTextDocument> const& xTextDocument,
-                                        const OUString& sObjectName,
-                                        const OUString& sOldObjectName = OUString());
+    virtual void lcl_attribute(Id Name, Value & val) override;
+    virtual void lcl_sprm(Sprm & sprm) override;
 
 public:
     OLEHandler(DomainMapper& rDomainMapper);

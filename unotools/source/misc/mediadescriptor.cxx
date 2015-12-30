@@ -47,6 +47,7 @@
 #include <ucbhelper/commandenvironment.hxx>
 #include <ucbhelper/activedatasink.hxx>
 #include <comphelper/processfactory.hxx>
+#include <tools/urlobj.hxx>
 #include <osl/diagnose.h>
 
 namespace utl {
@@ -445,7 +446,7 @@ void MediaDescriptor::clearComponentDataEntry( const OUString& rName )
     }
 }
 
-::com::sun::star::uno::Sequence< ::com::sun::star::beans::NamedValue > MediaDescriptor::requestAndVerifyDocPassword(
+css::uno::Sequence< css::beans::NamedValue > MediaDescriptor::requestAndVerifyDocPassword(
         comphelper::IDocPasswordVerifier& rVerifier,
         comphelper::DocPasswordRequestType eRequestType,
         const ::std::vector< OUString >* pDefaultPasswords )
@@ -525,7 +526,7 @@ bool MediaDescriptor::impl_addInputStream( bool bLockFile )
 }
 
 bool MediaDescriptor::impl_openStreamWithPostData( const css::uno::Reference< css::io::XInputStream >& _rxPostData )
-    throw(::com::sun::star::uno::RuntimeException)
+    throw(css::uno::RuntimeException)
 {
     if ( !_rxPostData.is() )
         throw css::lang::IllegalArgumentException("Found invalid PostData.",
@@ -595,7 +596,7 @@ bool MediaDescriptor::impl_openStreamWithPostData( const css::uno::Reference< cs
 
 /*-----------------------------------------------*/
 bool MediaDescriptor::impl_openStreamWithURL( const OUString& sURL, bool bLockFile )
-    throw(::com::sun::star::uno::RuntimeException)
+    throw(css::uno::RuntimeException)
 {
     OUString referer(getUnpackedValueOrDefault(PROP_REFERRER(), OUString()));
     if (SvtSecurityOptions().isUntrustedReferer(referer)) {
@@ -689,12 +690,7 @@ bool MediaDescriptor::impl_openStreamWithURL( const OUString& sURL, bool bLockFi
                     // If the protocol is webdav, then we need to treat the stream as readonly, even if the
                     // operation was requested as read/write explicitly (the WebDAV UCB implementation is monodirectional
                     // read or write not both at the same time).
-                    OUString aScheme;
-                    css::uno::Reference< css::ucb::XContentIdentifier > xContId(
-                        aContent.get().is() ? aContent.get()->getIdentifier() : 0 );
-                    if ( xContId.is() )
-                        aScheme = xContId->getContentProviderScheme();
-                    if(!aScheme.equalsIgnoreAsciiCase( "http" ) && !aScheme.equalsIgnoreAsciiCase( "https" ))
+                    if ( !INetURLObject( sURL ).isAnyKnownWebDAVScheme() )
                         return false;
                 }
                 xStream.clear();
@@ -711,7 +707,7 @@ bool MediaDescriptor::impl_openStreamWithURL( const OUString& sURL, bool bLockFi
         try
         {
             css::uno::Reference< css::ucb::XContentIdentifier > xContId(
-                aContent.get().is() ? aContent.get()->getIdentifier() : 0 );
+                aContent.get().is() ? aContent.get()->getIdentifier() : nullptr );
 
             if ( xContId.is() )
                 aScheme = xContId->getContentProviderScheme();

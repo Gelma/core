@@ -46,14 +46,14 @@ private:
     const SfxSlot* SeekSlot( sal_uInt16 nObject );
 
 public:
-    SfxSlotPool(SfxSlotPool* pParent=0);
+    SfxSlotPool(SfxSlotPool* pParent=nullptr);
     ~SfxSlotPool();
 
     void                RegisterInterface( SfxInterface& rFace );
     void                ReleaseInterface( SfxInterface& rFace );
     SfxInterface*       FirstInterface();
 
-    static SfxSlotPool& GetSlotPool( SfxViewFrame *pFrame=NULL );
+    static SfxSlotPool& GetSlotPool( SfxViewFrame *pFrame=nullptr );
 
     sal_uInt16              GetGroupCount();
     OUString            SeekGroup( sal_uInt16 nNo );
@@ -61,7 +61,7 @@ public:
     const SfxSlot*      NextSlot();
     const SfxSlot*      GetSlot( sal_uInt16 nId );
     const SfxSlot*      GetUnoSlot( const OUString& rUnoName );
-    TypeId              GetSlotType( sal_uInt16 nSlotId ) const;
+    const std::type_info*  GetSlotType( sal_uInt16 nSlotId ) const;
 };
 
 

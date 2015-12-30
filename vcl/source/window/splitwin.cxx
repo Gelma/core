@@ -111,7 +111,7 @@ ImplSplitItem::ImplSplitItem()
     , mnOldSplitSize(0)
     , mnOldWidth(0)
     , mnOldHeight(0)
-    , mpSet(0)
+    , mpSet(nullptr)
     , mnId(0)
     , mnBits(SplitWindowItemFlags::NONE)
     , mbFixed(false)
@@ -130,15 +130,15 @@ void ImplSplitItem::dispose()
 {
     if (mpSet) {
         delete mpSet ;
-        mpSet = NULL;
+        mpSet = nullptr;
     }
     mpWindow.clear();
     mpOrgParent.clear();
 }
 
 ImplSplitSet::ImplSplitSet() :
-    mpWallpaper( NULL ),
-    mpBitmap( NULL ),
+    mpWallpaper( nullptr ),
+    mpBitmap( nullptr ),
     mnLastSize( 0 ),
     mnSplitSize( SPLITWIN_SPLITSIZE ),
     mnId( 0 ),
@@ -161,12 +161,12 @@ void ImplSplitSet::dispose()
 
     if ( mpWallpaper ) {
         delete mpWallpaper;
-        mpWallpaper = NULL;
+        mpWallpaper = nullptr;
 }
 
     if ( mpBitmap ) {
         delete mpBitmap;
-        mpBitmap = NULL;
+        mpBitmap = nullptr;
     }
 }
 
@@ -359,7 +359,7 @@ static ImplSplitSet* ImplFindSet( ImplSplitSet* pSet, sal_uInt16 nId )
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 static ImplSplitSet* ImplFindItem( ImplSplitSet* pSet, sal_uInt16 nId, sal_uInt16& rPos )
@@ -387,7 +387,7 @@ static ImplSplitSet* ImplFindItem( ImplSplitSet* pSet, sal_uInt16 nId, sal_uInt1
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 static sal_uInt16 ImplFindItem( ImplSplitSet* pSet, vcl::Window* pWindow )
@@ -475,16 +475,8 @@ static void ImplCalcSet( ImplSplitSet* pSet,
     sal_uInt16          nVisItems;
     sal_uInt16          nAbsItems;
     long                nCalcSize;
-    long                nSizeDelta;
-    long                nSizeWinSize;
-    long                nNewSizeWinSize;
-    long                nTemp;
-    long                nTempErr;
-    long                nErrorSum;
-    long                nCurSizeDelta;
     long                nPos;
     long                nMaxPos;
-    long*               pSize;
     ImplSplitItems&     pItems = pSet->mpItems;
     bool                bEmpty;
 
@@ -502,7 +494,6 @@ static void ImplCalcSet( ImplSplitSet* pSet,
     else
         nCalcSize = nSetWidth;
     nCalcSize -= (nVisItems-1)*pSet->mnSplitSize;
-    long nCurSize   = 0;
     if ( pSet->mbCalcPix || (pSet->mnLastSize != nCalcSize) )
     {
         long nPercentFactor = 10;
@@ -510,6 +501,7 @@ static void ImplCalcSet( ImplSplitSet* pSet,
         long nPercent       = 0;
         long nRelPercent    = 0;
         long nAbsSize       = 0;
+        long nCurSize       = 0;
         for ( i = 0; i < nItems; i++ )
         {
             if ( !(pItems[i]->mnBits & SplitWindowItemFlags::Invisible) )
@@ -542,7 +534,7 @@ static void ImplCalcSet( ImplSplitSet* pSet,
         }
         if ( !nPercent )
             nPercent = 1;
-        nSizeDelta = nCalcSize-nAbsSize;
+        long nSizeDelta = nCalcSize-nAbsSize;
         for ( i = 0; i < nItems; i++ )
         {
             if ( pItems[i]->mnBits & SplitWindowItemFlags::Invisible )
@@ -574,8 +566,8 @@ static void ImplCalcSet( ImplSplitSet* pSet,
         if ( nSizeDelta )
         {
             nAbsItems       = 0;
-            nSizeWinSize    = 0;
-            nNewSizeWinSize = 0;
+            long nSizeWinSize    = 0;
+            long nNewSizeWinSize = 0;
 
             // first resize absolute items relative
             for ( i = 0; i < nItems; i++ )
@@ -646,8 +638,8 @@ static void ImplCalcSet( ImplSplitSet* pSet,
                 }
 
                 // subtract size of individual items
-                nErrorSum       = nSizeDelta % nCalcItems;
-                nCurSizeDelta   = nSizeDelta / nCalcItems;
+                long nErrorSum       = nSizeDelta % nCalcItems;
+                long nCurSizeDelta   = nSizeDelta / nCalcItems;
                 nMins           = 0;
                 for ( i = 0; i < nItems; i++ )
                 {
@@ -655,7 +647,8 @@ static void ImplCalcSet( ImplSplitSet* pSet,
                         nMins++;
                     else if ( pItems[i]->mbSubSize )
                     {
-                        pSize = &(pItems[i]->mnPixSize);
+                        long* pSize = &(pItems[i]->mnPixSize);
+                        long  nTempErr;
 
                         if ( nErrorSum )
                         {
@@ -669,7 +662,7 @@ static void ImplCalcSet( ImplSplitSet* pSet,
 
                         if ( (*pSize+nCurSizeDelta+nTempErr) <= 0 )
                         {
-                            nTemp = *pSize;
+                            long nTemp = *pSize;
                             if ( nTemp )
                             {
                                 *pSize -= nTemp;
@@ -1311,8 +1304,8 @@ void SplitWindow::ImplInit( vcl::Window* pParent, WinBits nStyle )
 
     mpMainSet               = pNewSet;
     mpBaseSet               = pNewSet;
-    mpSplitSet              = NULL;
-    mpLastSizes             = NULL;
+    mpSplitSet              = nullptr;
+    mpLastSizes             = nullptr;
     mnDX                    = 0;
     mnDY                    = 0;
     mnLeftBorder            = 0;
@@ -1411,7 +1404,7 @@ void SplitWindow::dispose()
     // delete Sets
     if (mpMainSet) {
         delete mpMainSet ;
-        mpMainSet = NULL; //NULL for base-class callbacks during destruction
+        mpMainSet = nullptr; //NULL for base-class callbacks during destruction
     }
     DockingWindow::dispose();
 }
@@ -1468,7 +1461,6 @@ Size SplitWindow::CalcLayoutSizePixel( const Size& aNewSize )
     // the size is determined according to MainSet
     if ( mnWinStyle & WB_SIZEABLE )
     {
-        long    nCurSize;
         long    nCalcSize = 0;
         sal_uInt16  i;
 
@@ -1484,6 +1476,7 @@ Size SplitWindow::CalcLayoutSizePixel( const Size& aNewSize )
         {
             long    nDelta = 0;
             Point   aPos = GetPosPixel();
+            long    nCurSize;
 
             if ( mbHorz )
                 nCurSize = aNewSize.Height()-mnTopBorder-mnBottomBorder;
@@ -1533,7 +1526,6 @@ void SplitWindow::ImplCalcLayout()
     // the size is determined according to MainSet
     if ( mnWinStyle & WB_SIZEABLE )
     {
-        long    nCurSize;
         long    nCalcSize = 0;
         sal_uInt16  i;
 
@@ -1547,6 +1539,7 @@ void SplitWindow::ImplCalcLayout()
 
         if ( i == mpMainSet->mpItems.size() )
         {
+            long    nCurSize;
             if ( mbHorz )
                 nCurSize = mnDY-mnTopBorder-mnBottomBorder;
             else
@@ -2494,8 +2487,8 @@ void SplitWindow::Tracking( const TrackingEvent& rTEvt )
         if ( rTEvt.IsTrackingEnded() )
         {
             delete [] mpLastSizes;
-            mpLastSizes     = NULL;
-            mpSplitSet      = NULL;
+            mpLastSizes     = nullptr;
+            mpSplitSet      = nullptr;
             mnMouseOff      = 0;
             mnMStartPos     = 0;
             mnMSplitPos     = 0;
@@ -2508,9 +2501,9 @@ void SplitWindow::Tracking( const TrackingEvent& rTEvt )
 
 bool SplitWindow::PreNotify( NotifyEvent& rNEvt )
 {
-    const MouseEvent* pMouseEvt = NULL;
+    const MouseEvent* pMouseEvt = nullptr;
 
-    if( (rNEvt.GetType() == MouseNotifyEvent::MOUSEMOVE) && (pMouseEvt = rNEvt.GetMouseEvent()) != NULL )
+    if( (rNEvt.GetType() == MouseNotifyEvent::MOUSEMOVE) && (pMouseEvt = rNEvt.GetMouseEvent()) != nullptr )
     {
         if( !pMouseEvt->GetButtons() && !pMouseEvt->IsSynthetic() && !pMouseEvt->IsModifierChanged() )
         {
@@ -2726,7 +2719,7 @@ void SplitWindow::InsertItem( sal_uInt16 nId, long nSize,
                               sal_uInt16 nPos, sal_uInt16 nIntoSetId,
                               SplitWindowItemFlags nBits )
 {
-    InsertItem( nId, NULL, nSize, nPos, nIntoSetId, nBits );
+    InsertItem( nId, nullptr, nSize, nPos, nIntoSetId, nBits );
 }
 
 void SplitWindow::RemoveItem( sal_uInt16 nId, bool bHide )
@@ -2750,7 +2743,7 @@ void SplitWindow::RemoveItem( sal_uInt16 nId, bool bHide )
     // delete set if required
     if ( !pWindow ) {
         delete pItem->mpSet ;
-        pItem->mpSet = NULL;
+        pItem->mpSet = nullptr;
     }
 
     // remove item
@@ -3107,7 +3100,7 @@ void SplitWindow::SetItemSizeRange (sal_uInt16 nId, const Range& rRange)
     sal_uInt16 nPos;
     ImplSplitSet* pSet = ImplFindItem(mpBaseSet, nId, nPos);
 
-    if (pSet != NULL)
+    if (pSet != nullptr)
     {
         pSet->mpItems[nPos]->mnMinSize = rRange.Min();
         pSet->mpItems[nPos]->mnMaxSize = rRange.Max();
@@ -3128,7 +3121,7 @@ sal_uInt16 SplitWindow::GetSet( sal_uInt16 nId ) const
 bool SplitWindow::IsItemValid( sal_uInt16 nId ) const
 {
     sal_uInt16          nPos;
-    ImplSplitSet* pSet = mpBaseSet ? ImplFindItem(mpBaseSet, nId, nPos) : NULL;
+    ImplSplitSet* pSet = mpBaseSet ? ImplFindItem(mpBaseSet, nId, nPos) : nullptr;
 
     if ( pSet )
         return true;

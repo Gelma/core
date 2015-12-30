@@ -20,6 +20,10 @@
 #ifndef INCLUDED_XMLOFF_XMLNUMI_HXX
 #define INCLUDED_XMLOFF_XMLNUMI_HXX
 
+#include <sal/config.h>
+
+#include <vector>
+
 #include <com/sun/star/container/XIndexReplace.hpp>
 
 #include <xmloff/xmlstyle.hxx>
@@ -37,8 +41,7 @@ class XMLOFF_DLLPUBLIC SvxXMLListStyleContext
     const OUString       sNumberingRules;
     const OUString       sIsContinuousNumbering;
 
-    ::com::sun::star::uno::Reference <
-        ::com::sun::star::container::XIndexReplace > xNumRules;
+    css::uno::Reference< css::container::XIndexReplace > xNumRules;
 
     SvxXMLListStyle_Impl        *pLevelStyles;
 
@@ -50,17 +53,16 @@ protected:
 
     SAL_DLLPRIVATE virtual void SetAttribute( sal_uInt16 nPrefixKey,
                                const OUString& rLocalName,
-                               const OUString& rValue ) SAL_OVERRIDE;
+                               const OUString& rValue ) override;
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     SvxXMLListStyleContext(
-            SvXMLImport& rImport, sal_uInt16 nPrfx,
+            SvXMLImport& rImport,
+            sal_uInt16 nPrfx,
             const OUString& rLName,
-            const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList >& xAttrList,
+            const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList,
             bool bOutl = false );
 
     virtual ~SvxXMLListStyleContext();
@@ -68,30 +70,24 @@ public:
     virtual SvXMLImportContext *CreateChildContext(
             sal_uInt16 nPrefix,
             const OUString& rLocalName,
-            const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+            const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
 
     void FillUnoNumRule(
-            const css::uno::Reference<
-                    css::container::XIndexReplace> & rNumRule) const;
+            const css::uno::Reference< css::container::XIndexReplace> & rNumRule) const;
 
-    const ::com::sun::star::uno::Reference <
-        ::com::sun::star::container::XIndexReplace >& GetNumRules() const
+    const css::uno::Reference< css::container::XIndexReplace >& GetNumRules() const
         { return xNumRules; }
 
-    static ::com::sun::star::uno::Reference <
-        ::com::sun::star::container::XIndexReplace >
+    static css::uno::Reference< css::container::XIndexReplace >
     CreateNumRule(
-        const ::com::sun::star::uno::Reference <
-            ::com::sun::star::frame::XModel > & rModel );
+        const css::uno::Reference< css::frame::XModel > & rModel );
 
     static void SetDefaultStyle(
-        const ::com::sun::star::uno::Reference <
-            ::com::sun::star::container::XIndexReplace > & rNumRule,
+        const css::uno::Reference< css::container::XIndexReplace > & rNumRule,
         sal_Int16 nLevel,
         bool bOrdered );
 
-    virtual void CreateAndInsertLate( bool bOverwrite ) SAL_OVERRIDE;
+    virtual void CreateAndInsertLate( bool bOverwrite ) override;
 
     void CreateAndInsertAuto() const;
 };

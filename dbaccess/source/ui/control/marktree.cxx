@@ -165,8 +165,7 @@ void OMarkableTreeListBox::CheckButtons()
 void OMarkableTreeListBox::CheckButtonHdl()
 {
     checkedButton_noBroadcast(GetHdlEntry());
-    if (m_aCheckButtonHandler.IsSet())
-        m_aCheckButtonHandler.Call(this);
+    m_aCheckButtonHandler.Call(this);
 }
 
 void OMarkableTreeListBox::checkedButton_noBroadcast(SvTreeListEntry* _pEntry)
@@ -183,7 +182,7 @@ void OMarkableTreeListBox::checkedButton_noBroadcast(SvTreeListEntry* _pEntry)
         }
     }
 
-    SvTreeListEntry* pEntry = IsSelected(_pEntry) ? FirstSelected() : NULL;
+    SvTreeListEntry* pEntry = IsSelected(_pEntry) ? FirstSelected() : nullptr;
     while(pEntry)
     {
         SetCheckButtonState(pEntry,eState);

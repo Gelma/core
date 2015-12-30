@@ -32,7 +32,8 @@
 #include "shellids.hxx"
 #include "tabprotection.hxx"
 
-#include <boost/ptr_container/ptr_map.hpp>
+#include <memory>
+#include <map>
 
 class SbxObject;
 class SdrOle2Obj;
@@ -89,14 +90,12 @@ enum ObjectSelectionType
     OST_Media
 };
 
-class ScTabViewShell: public SfxViewShell, public ScDBFunc
+class SC_DLLPUBLIC ScTabViewShell: public SfxViewShell, public ScDBFunc
 {
 private:
-    SvxHtmlOptions          aHTMLOpt;
     ObjectSelectionType     eCurOST;
-    sal_uInt16                  nDrawSfxId;
-    sal_uInt16                  nCtrlSfxId;
-    sal_uInt16                  nFormSfxId;
+    sal_uInt16              nDrawSfxId;
+    sal_uInt16              nFormSfxId;
     OUString                sDrawCustom;                // current custom shape type
     ScDrawShell*            pDrawShell;
     ScDrawTextObjectBar*    pDrawTextShell;
@@ -119,8 +118,7 @@ private:
 
     ::editeng::SvxBorderLine*           pCurFrameLine;
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::frame::XDispatchProviderInterceptor >
+    css::uno::Reference< css::frame::XDispatchProviderInterceptor >
                             xDisProvInterceptor;
 
     Point                   aWinPos;
@@ -149,18 +147,14 @@ private:
 
     bool                    bDontSwitch;                // Don't turn off EditShell
     bool                    bInFormatDialog;            // for GetSelectionText
-    bool                    bPrintSelected;             // for result of SvxPrtQryBox
 
     bool                    bReadOnly;                  // to detect status changes
 
     bool                    bIsActive;
 
-    SbxObject*              pScSbxObject;
-
     bool                    bChartAreaValid; // if chart is drawn
     bool                    bForceFocusOnCurCell; // #i123629#
 
-    OUString                aEditChartName;
     ScRangeListRef          aChartSource;
     Rectangle               aChartPos;
     SCTAB                   nChartDestTab;
@@ -169,7 +163,7 @@ private:
     SfxBroadcaster*         pAccessibilityBroadcaster;
 
     // ugly hack for Add button in ScNameDlg
-    boost::ptr_map<OUString, ScRangeName> maRangeMap;
+    std::map<OUString, std::unique_ptr<ScRangeName>> m_RangeMap;
     bool    mbInSwitch;
     OUString   maName;
     OUString   maScope;
@@ -180,8 +174,7 @@ private:
     SfxShell*       GetMySubShell() const;
 
     void            DoReadUserData( const OUString& rData );
-    void          DoReadUserDataSequence( const ::com::sun::star::uno::Sequence<
-                                     ::com::sun::star::beans::PropertyValue >& rSettings );
+    void            DoReadUserDataSequence( const css::uno::Sequence< css::beans::PropertyValue >& rSettings );
 
     DECL_LINK_TYPED( SimpleRefClose, const OUString*, void );
     DECL_LINK_TYPED( SimpleRefDone, const OUString&, void );
@@ -190,37 +183,36 @@ private:
     DECL_LINK_TYPED( FormControlActivated, LinkParamNone*, void );
 
 protected:
-    virtual void    Activate(bool bMDI) SAL_OVERRIDE;
-    virtual void    Deactivate(bool bMDI) SAL_OVERRIDE;
-    virtual bool    PrepareClose( bool bUI = true ) SAL_OVERRIDE;
+    virtual void    Activate(bool bMDI) override;
+    virtual void    Deactivate(bool bMDI) override;
+    virtual bool    PrepareClose( bool bUI = true ) override;
 
-    virtual void    ShowCursor(bool bOn) SAL_OVERRIDE;
+    virtual void    ShowCursor(bool bOn) override;
 
-    virtual void    Move() SAL_OVERRIDE;     // Benachrichtigung
+    virtual void    Move() override;     // Benachrichtigung
 
-    virtual void    AdjustPosSizePixel( const Point &rPos, const Size &rSize ) SAL_OVERRIDE;     // alt
+    virtual void    AdjustPosSizePixel( const Point &rPos, const Size &rSize ) override;     // alt
 
-    virtual void    InnerResizePixel( const Point &rOfs, const Size &rSize ) SAL_OVERRIDE;       // neu
-    virtual void    OuterResizePixel( const Point &rOfs, const Size &rSize ) SAL_OVERRIDE;
-    virtual void    SetZoomFactor( const Fraction &rZoomX, const Fraction &rZoomY ) SAL_OVERRIDE;
+    virtual void    InnerResizePixel( const Point &rOfs, const Size &rSize ) override;       // neu
+    virtual void    OuterResizePixel( const Point &rOfs, const Size &rSize ) override;
+    virtual void    SetZoomFactor( const Fraction &rZoomX, const Fraction &rZoomY ) override;
 
-    virtual void    QueryObjAreaPixel( Rectangle& rRect ) const SAL_OVERRIDE;
+    virtual void    QueryObjAreaPixel( Rectangle& rRect ) const override;
 
-    virtual OUString GetSelectionText( bool bWholeWord ) SAL_OVERRIDE;
-    virtual bool     HasSelection( bool bText ) const SAL_OVERRIDE;
+    virtual OUString GetSelectionText( bool bWholeWord ) override;
+    virtual bool     HasSelection( bool bText ) const override;
 
-    virtual void    WriteUserData(OUString &, bool bBrowse = false) SAL_OVERRIDE;
-    virtual void    ReadUserData(const OUString &, bool bBrowse = false) SAL_OVERRIDE;
-    virtual void    WriteUserDataSequence (::com::sun::star::uno::Sequence < ::com::sun::star::beans::PropertyValue >&, bool bBrowse = false ) SAL_OVERRIDE;
-    virtual void    ReadUserDataSequence (const ::com::sun::star::uno::Sequence < ::com::sun::star::beans::PropertyValue >&, bool bBrowse = false ) SAL_OVERRIDE;
+    virtual void    WriteUserData(OUString &, bool bBrowse = false) override;
+    virtual void    ReadUserData(const OUString &, bool bBrowse = false) override;
+    virtual void    WriteUserDataSequence (css::uno::Sequence < css::beans::PropertyValue >&, bool bBrowse = false ) override;
+    virtual void    ReadUserDataSequence (const css::uno::Sequence < css::beans::PropertyValue >&, bool bBrowse = false ) override;
 
-    virtual void    UIDeactivated( SfxInPlaceClient* pClient ) SAL_OVERRIDE;
+    virtual void    UIDeactivated( SfxInPlaceClient* pClient ) override;
 
-    virtual bool    KeyInput( const KeyEvent &rKeyEvent ) SAL_OVERRIDE;
-    virtual SdrView* GetDrawView() const SAL_OVERRIDE;
+    virtual bool    KeyInput( const KeyEvent &rKeyEvent ) override;
+    virtual SdrView* GetDrawView() const override;
 
 public:
-                    TYPEINFO_VISIBILITY_OVERRIDE(SC_DLLPUBLIC);
                     SFX_DECL_INTERFACE(SCID_TABVIEW_SHELL)
                     SFX_DECL_VIEWFACTORY(ScTabViewShell);
 
@@ -236,7 +228,7 @@ public:
 
     virtual         ~ScTabViewShell();
 
-    SC_DLLPUBLIC vcl::Window* GetDialogParent();
+    vcl::Window* GetDialogParent();
 
     bool            IsRefInputMode() const;
     void            ExecuteInputDirect();
@@ -252,8 +244,8 @@ public:
     ::editeng::SvxBorderLine*   GetDefaultFrameLine() const { return pCurFrameLine; }
     void            SetDefaultFrameLine(const ::editeng::SvxBorderLine* pLine );
 
-    SC_DLLPUBLIC void           Execute( SfxRequest& rReq );
-    SC_DLLPUBLIC void           GetState( SfxItemSet& rSet );
+    void           Execute( SfxRequest& rReq );
+    void           GetState( SfxItemSet& rSet );
 
     void            ExecuteTable( SfxRequest& rReq );
     void            GetStateTable( SfxItemSet& rSet );
@@ -311,7 +303,7 @@ public:
 
     ObjectSelectionType GetCurObjectSelectionType() { return eCurOST; }
 
-    virtual ErrCode DoVerb(long nVerb) SAL_OVERRIDE;
+    virtual ErrCode DoVerb(long nVerb) override;
 
     void            StopEditShell();
     bool            IsDrawTextShell() const;
@@ -323,37 +315,37 @@ public:
 
     bool            GetChartArea( ScRangeListRef& rSource, Rectangle& rDest, SCTAB& rTab ) const;
 
-    virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+    virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
     ScNavigatorSettings*    GetNavigatorSettings();
 
     // Drucken:
-    virtual SfxPrinter*     GetPrinter( bool bCreate = false ) SAL_OVERRIDE;
+    virtual SfxPrinter*     GetPrinter( bool bCreate = false ) override;
     virtual sal_uInt16      SetPrinter( SfxPrinter* pNewPrinter,
-                                          SfxPrinterChangeFlags nDiffFlags = SFX_PRINTER_ALL, bool bIsApi=false ) SAL_OVERRIDE;
+                                          SfxPrinterChangeFlags nDiffFlags = SFX_PRINTER_ALL, bool bIsApi=false ) override;
 
-    virtual bool            HasPrintOptionsPage() const SAL_OVERRIDE;
-    virtual VclPtr<SfxTabPage> CreatePrintOptionsPage( vcl::Window *pParent, const SfxItemSet &rOptions ) SAL_OVERRIDE;
+    virtual bool            HasPrintOptionsPage() const override;
+    virtual VclPtr<SfxTabPage> CreatePrintOptionsPage( vcl::Window *pParent, const SfxItemSet &rOptions ) override;
 
     void            ConnectObject( SdrOle2Obj* pObj );
     bool            ActivateObject( SdrOle2Obj* pObj, long nVerb );
 
     void            DeactivateOle();
 
-    SC_DLLPUBLIC static ScTabViewShell* GetActiveViewShell();
+    static ScTabViewShell* GetActiveViewShell();
     VclPtr<SfxModelessDialog> CreateRefDialog( SfxBindings* pB, SfxChildWindow* pCW,
                                                SfxChildWinInfo* pInfo,
                                                vcl::Window* pParent, sal_uInt16 nSlotId );
 
     void            UpdateOleZoom();
 
-    virtual const FmFormShell* GetFormShell() const SAL_OVERRIDE { return pFormShell; }
-    virtual       FmFormShell* GetFormShell()       SAL_OVERRIDE { return pFormShell; }
+    virtual const FmFormShell* GetFormShell() const override { return pFormShell; }
+    virtual       FmFormShell* GetFormShell()       override { return pFormShell; }
 
     void    InsertURL( const OUString& rName, const OUString& rURL, const OUString& rTarget,
                             sal_uInt16 nMode );
     void    InsertURLButton( const OUString& rName, const OUString& rURL, const OUString& rTarget,
-                            const Point* pInsPos = NULL );
+                            const Point* pInsPos = nullptr );
     void    InsertURLField( const OUString& rName, const OUString& rURL, const OUString& rTarget );
 
     bool    SelectObject( const OUString& rName );

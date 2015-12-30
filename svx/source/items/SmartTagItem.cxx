@@ -17,7 +17,7 @@
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
 
-
+#include <comphelper/propertysequence.hxx>
 #include <svx/SmartTagItem.hxx>
 
 #include <com/sun/star/container/XStringKeyMap.hpp>
@@ -25,15 +25,16 @@
 
 using namespace ::com::sun::star;
 
-TYPEINIT1(SvxSmartTagItem, SfxPoolItem);
+
+SfxPoolItem* SvxSmartTagItem::CreateDefault() { DBG_ASSERT(false, "No SvxSmartTagItem factory available"); return nullptr; }
 
 SvxSmartTagItem::SvxSmartTagItem( const sal_uInt16 nId,
-                                  const com::sun::star::uno::Sequence < com::sun::star::uno::Sequence< com::sun::star::uno::Reference< com::sun::star::smarttags::XSmartTagAction > > >& rActionComponentsSequence,
-                                  const com::sun::star::uno::Sequence < com::sun::star::uno::Sequence< sal_Int32 > >& rActionIndicesSequence,
-                                  const com::sun::star::uno::Sequence< com::sun::star::uno::Reference< com::sun::star::container::XStringKeyMap > >& rStringKeyMaps,
-                                  const com::sun::star::uno::Reference<com::sun::star::text::XTextRange> rRange,
-                                  const com::sun::star::uno::Reference<com::sun::star::frame::XController> rController,
-                                  const com::sun::star::lang::Locale rLocale,
+                                  const css::uno::Sequence < css::uno::Sequence< css::uno::Reference< css::smarttags::XSmartTagAction > > >& rActionComponentsSequence,
+                                  const css::uno::Sequence < css::uno::Sequence< sal_Int32 > >& rActionIndicesSequence,
+                                  const css::uno::Sequence< css::uno::Reference< css::container::XStringKeyMap > >& rStringKeyMaps,
+                                  const css::uno::Reference<css::text::XTextRange> rRange,
+                                  const css::uno::Reference<css::frame::XController> rController,
+                                  const css::lang::Locale rLocale,
                                   const OUString& rApplicationName,
                                   const OUString& rRangeText ) :
     SfxPoolItem( nId ),
@@ -52,9 +53,19 @@ SvxSmartTagItem::SvxSmartTagItem( const sal_uInt16 nId,
 
 
 
-bool SvxSmartTagItem::QueryValue( uno::Any& /* rVal */, sal_uInt8 /* nMemberId */ ) const
+bool SvxSmartTagItem::QueryValue( uno::Any& rVal, sal_uInt8 /*nMemberId*/ ) const
 {
-    return false;
+    rVal <<= comphelper::InitPropertySequence( {
+        { "ActionComponents", css::uno::makeAny( maActionComponentsSequence ) },
+        { "ActionIndices", css::uno::makeAny( maActionIndicesSequence ) },
+        { "StringKeyMaps", css::uno::makeAny( maStringKeyMaps ) },
+        { "TextRange", css::uno::makeAny( mxRange ) },
+        { "Controller", css::uno::makeAny( mxController ) },
+        { "Locale", css::uno::makeAny( maLocale ) },
+        { "ApplicationName", css::uno::makeAny( maApplicationName ) },
+        { "RangeText", css::uno::makeAny( maRangeText ) },
+    } );
+    return true;
 }
 
 bool SvxSmartTagItem::PutValue( const uno::Any& /*rVal*/, sal_uInt8 /* nMemberId */)
@@ -97,7 +108,7 @@ SvStream& SvxSmartTagItem::Store( SvStream& rStream, sal_uInt16 /*nItemVersion*/
 
 SfxPoolItem* SvxSmartTagItem::Create(SvStream& , sal_uInt16) const
 {
-    return 0;
+    return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

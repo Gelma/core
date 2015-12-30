@@ -71,7 +71,7 @@ inline bool Pair::operator != ( const Pair& rPair ) const
 
 // Point
 
-class SAL_DLLPUBLIC_EXPORT SAL_WARN_UNUSED Point : public Pair
+class SAL_WARN_UNUSED SAL_DLLPUBLIC_EXPORT Point : public Pair
 {
 public:
                         Point() {}
@@ -293,7 +293,7 @@ inline std::basic_ostream<charT, traits> & operator <<(
 #define RECT_MAX    LONG_MAX
 #define RECT_MIN    LONG_MIN
 
-class TOOLS_DLLPUBLIC SAL_WARN_UNUSED Rectangle
+class SAL_WARN_UNUSED TOOLS_DLLPUBLIC Rectangle
 {
 public:
                         Rectangle();
@@ -324,7 +324,6 @@ public:
 
     /// Move the top and left edges by a delta, preserving width and height
     inline void         Move( long nHorzMoveDelta, long nVertMoveDelta );
-    inline void         Transpose();
     inline void         SetPos( const Point& rPoint );
     void                SetSize( const Size& rSize );
     inline Size         GetSize() const;
@@ -495,20 +494,6 @@ inline void Rectangle::Move( long nHorzMove, long nVertMove )
         nRight += nHorzMove;
     if ( nBottom != RECT_EMPTY )
         nBottom += nVertMove;
-}
-
-void Rectangle::Transpose()
-{
-    if ( !IsEmpty() )
-    {
-        long swap( nLeft );
-        nLeft = nTop;
-        nTop = swap;
-
-        swap = nRight;
-        nRight = nBottom;
-        nBottom = swap;
-    }
 }
 
 inline void Rectangle::SetPos( const Point& rPoint )

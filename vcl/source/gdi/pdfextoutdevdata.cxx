@@ -490,7 +490,6 @@ bool PageSyncData::PlaySyncPageAct( PDFWriter& rWriter, sal_uInt32& rCurGDIMtfAc
     return bRet;
 }
 
-TYPEINIT1(PDFExtOutDevData,ExtOutDevData);
 PDFExtOutDevData::PDFExtOutDevData( const OutputDevice& rOutDev ) :
     mrOutDev                ( rOutDev ),
     mbTaggedPDF             ( false ),
@@ -505,7 +504,7 @@ PDFExtOutDevData::PDFExtOutDevData( const OutputDevice& rOutDev ) :
     mbExportNDests          ( false ),
     mnFormsFormat           ( 0 ),
     mnPage                  ( -1 ),
-    mpPageSyncData          ( NULL ),
+    mpPageSyncData          ( nullptr ),
     mpGlobalSyncData        ( new GlobalSyncData() )
 {
     mpPageSyncData = new PageSyncData( mpGlobalSyncData );
@@ -517,7 +516,7 @@ PDFExtOutDevData::~PDFExtOutDevData()
     delete mpGlobalSyncData;
 }
 
-void PDFExtOutDevData::SetDocumentLocale( const com::sun::star::lang::Locale& rLoc )
+void PDFExtOutDevData::SetDocumentLocale( const css::lang::Locale& rLoc )
 {
     maDocLocale = rLoc;
 }

@@ -46,7 +46,7 @@ SfxChildWinFactory::SfxChildWinFactory( SfxChildWinCtor pTheCtor, sal_uInt16 nID
     : pCtor(pTheCtor)
     , nId( nID )
     , nPos(n)
-    , pArr( NULL )
+    , pArr( nullptr )
 {}
 
 SfxChildWinFactory::~SfxChildWinFactory()
@@ -56,8 +56,8 @@ SfxChildWinFactory::~SfxChildWinFactory()
 
 struct SfxChildWindow_Impl
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >             xFrame;
-    ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >      xListener;
+    css::uno::Reference< css::frame::XFrame >             xFrame;
+    css::uno::Reference< css::lang::XEventListener >      xListener;
     SfxChildWinFactory* pFact;
     bool                bHideNotDelete;
     bool                bVisible;
@@ -69,7 +69,7 @@ struct SfxChildWindow_Impl
 
 
 
-class DisposeListener : public ::cppu::WeakImplHelper< ::com::sun::star::lang::XEventListener >
+class DisposeListener : public ::cppu::WeakImplHelper< css::lang::XEventListener >
 {
     public:
         DisposeListener( SfxChildWindow*      pOwner ,
@@ -78,22 +78,22 @@ class DisposeListener : public ::cppu::WeakImplHelper< ::com::sun::star::lang::X
             ,   m_pData ( pData  )
         {}
 
-        virtual void SAL_CALL disposing( const ::com::sun::star::lang::EventObject& aSource ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        virtual void SAL_CALL disposing( const css::lang::EventObject& aSource ) throw (css::uno::RuntimeException, std::exception) override
         {
-            ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener > xSelfHold( this );
+            css::uno::Reference< css::lang::XEventListener > xSelfHold( this );
 
-            ::com::sun::star::uno::Reference< ::com::sun::star::lang::XComponent > xComp( aSource.Source, ::com::sun::star::uno::UNO_QUERY );
+            css::uno::Reference< css::lang::XComponent > xComp( aSource.Source, css::uno::UNO_QUERY );
             if( xComp.is() )
                 xComp->removeEventListener( this );
 
             if( m_pOwner && m_pData )
             {
-                m_pData->xListener = ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >();
+                m_pData->xListener.clear();
 
                 if ( m_pData->pWorkWin )
                 {
                     // m_pOwner and m_pData will be killed
-                    m_pData->xFrame    = ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >();
+                    m_pData->xFrame.clear();
                     m_pData->pWorkWin->GetBindings().Execute( m_pOwner->GetType() );
                 }
                 else
@@ -101,8 +101,8 @@ class DisposeListener : public ::cppu::WeakImplHelper< ::com::sun::star::lang::X
                     delete m_pOwner;
                 }
 
-                m_pOwner = NULL;
-                m_pData  = NULL;
+                m_pOwner = nullptr;
+                m_pData  = nullptr;
             }
         }
 
@@ -162,15 +162,15 @@ SfxChildWindow::SfxChildWindow(vcl::Window *pParentWindow, sal_uInt16 nId)
     , eChildAlignment(SfxChildAlignment::NOALIGNMENT)
 {
     pImp = new SfxChildWindow_Impl;
-    pImp->pFact = 0L;
+    pImp->pFact = nullptr;
     pImp->bHideNotDelete = false;
     pImp->bHideAtToggle = false;
     pImp->bWantsFocus = true;
     pImp->bVisible = true;
-    pImp->pContextModule = NULL;
-    pImp->pWorkWin = NULL;
+    pImp->pContextModule = nullptr;
+    pImp->pWorkWin = nullptr;
 
-    pContext = 0L;
+    pContext = nullptr;
 }
 
 void SfxChildWindow::Destroy()
@@ -180,13 +180,13 @@ void SfxChildWindow::Destroy()
         ClearWorkwin();
         try
         {
-            ::com::sun::star::uno::Reference < ::com::sun::star::util::XCloseable > xClose( GetFrame(), ::com::sun::star::uno::UNO_QUERY );
+            css::uno::Reference < css::util::XCloseable > xClose( GetFrame(), css::uno::UNO_QUERY );
             if ( xClose.is() )
                 xClose->close( sal_True );
             else
                 GetFrame()->dispose();
         }
-        catch (const com::sun::star::uno::Exception&)
+        catch (const css::uno::Exception&)
         {
         }
     }
@@ -199,27 +199,27 @@ void SfxChildWindow::ClearWorkwin()
     if (pImp->pWorkWin)
     {
         if (pImp->pWorkWin->GetActiveChild_Impl() == pWindow)
-            pImp->pWorkWin->SetActiveChild_Impl(NULL);
-        pImp->pWorkWin = NULL;
+            pImp->pWorkWin->SetActiveChild_Impl(nullptr);
+        pImp->pWorkWin = nullptr;
     }
 }
 
 SfxChildWindow::~SfxChildWindow()
 {
     delete pContext;
-    pContext = NULL;
+    pContext = nullptr;
     ClearWorkwin();
     pWindow.disposeAndClear();
     delete pImp;
-    pImp = NULL;
+    pImp = nullptr;
 }
 
 
 SfxChildWindow* SfxChildWindow::CreateChildWindow( sal_uInt16 nId,
         vcl::Window *pParent, SfxBindings* pBindings, SfxChildWinInfo& rInfo)
 {
-    SfxChildWindow *pChild=0;
-    SfxChildWinFactory* pFact=0;
+    SfxChildWindow *pChild=nullptr;
+    SfxChildWinFactory* pFact=nullptr;
     SystemWindowFlags nOldMode = Application::GetSystemWindowMode();
 
     // First search for ChildWindow in SDT; Overlay windows are realized
@@ -250,8 +250,8 @@ SfxChildWindow* SfxChildWindow::CreateChildWindow( sal_uInt16 nId,
         }
     }
 
-    SfxDispatcher *pDisp = pBindings ? pBindings->GetDispatcher_Impl() : NULL;
-    SfxModule *pMod = pDisp ? SfxModule::GetActiveModule( pDisp->GetFrame() ) : NULL;
+    SfxDispatcher *pDisp = pBindings ? pBindings->GetDispatcher_Impl() : nullptr;
+    SfxModule *pMod = pDisp ? SfxModule::GetActiveModule( pDisp->GetFrame() ) : nullptr;
     if (!pChild && pMod)
     {
         SfxChildWinFactArr_Impl *pFactories = pMod->GetChildWinFactories_Impl();
@@ -290,7 +290,7 @@ SfxChildWindow* SfxChildWindow::CreateChildWindow( sal_uInt16 nId,
     if ( pChild && !pChild->pWindow )
     {
         DELETEZ(pChild);
-        DBG_WARNING("ChildWindow has no Window!");
+        SAL_INFO("sfx.appl", "ChildWindow has no Window!");
     }
 
     return pChild;
@@ -319,9 +319,8 @@ void SfxChildWindow::SaveStatus(const SfxChildWinInfo& rInfo)
     SvtViewOptions aWinOpt(E_WINDOW, sName);
     aWinOpt.SetWindowState(OStringToOUString(rInfo.aWinState, RTL_TEXTENCODING_UTF8));
 
-    ::com::sun::star::uno::Sequence < ::com::sun::star::beans::NamedValue > aSeq(1);
-    aSeq[0].Name = "Data";
-    aSeq[0].Value <<= aWinData.makeStringAndClear();
+    css::uno::Sequence < css::beans::NamedValue > aSeq
+        { { "Data", css::uno::makeAny(aWinData.makeStringAndClear()) } };
     aWinOpt.SetUserData( aSeq );
 
     // ... but save status at runtime!
@@ -389,7 +388,7 @@ void SfxChildWindow::InitializeChildWinFactory_Impl(sal_uInt16 nId, SfxChildWinI
     if (xWinOpt->Exists() && xWinOpt->HasVisible() )
         rInfo.bVisible  = xWinOpt->IsVisible(); // set state from configuration. Can be overwritten by UserData, see below
 
-    ::com::sun::star::uno::Sequence < ::com::sun::star::beans::NamedValue > aSeq = xWinOpt->GetUserData();
+    css::uno::Sequence < css::beans::NamedValue > aSeq = xWinOpt->GetUserData();
 
     OUString aTmp;
     if ( aSeq.getLength() )
@@ -439,11 +438,11 @@ void SfxChildWindow::InitializeChildWinFactory_Impl(sal_uInt16 nId, SfxChildWinI
 
 void SfxChildWindow::CreateContext( sal_uInt16 nContextId, SfxBindings& rBindings )
 {
-    SfxChildWindowContext *pCon = NULL;
-    SfxChildWinFactory* pFact=0;
+    SfxChildWindowContext *pCon = nullptr;
+    SfxChildWinFactory* pFact=nullptr;
     SfxApplication *pApp = SfxGetpApp();
     SfxDispatcher *pDisp = rBindings.GetDispatcher_Impl();
-    SfxModule *pMod = pDisp ? SfxModule::GetActiveModule( pDisp->GetFrame() ) :0;
+    SfxModule *pMod = pDisp ? SfxModule::GetActiveModule( pDisp->GetFrame() ) :nullptr;
     if ( pMod )
     {
         SfxChildWinFactArr_Impl *pFactories = pMod->GetChildWinFactories_Impl();
@@ -499,7 +498,7 @@ void SfxChildWindow::CreateContext( sal_uInt16 nContextId, SfxBindings& rBinding
                         SfxChildWinInfo aInfo = pFact->aInfo;
                         pCon = pConFact->pCtor( GetWindow(), &rBindings, &aInfo );
                         pCon->nContextId = pConFact->nContextId;
-                        pImp->pContextModule = NULL;
+                        pImp->pContextModule = nullptr;
                     }
                     rBindings.LEAVEREGISTRATIONS();
                 }
@@ -545,7 +544,7 @@ FloatingWindow* SfxChildWindowContext::GetFloatingWindow() const
     else
     {
         OSL_FAIL("No FloatingWindow-Context!");
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -693,7 +692,7 @@ void SfxChildWindow::Show( ShowFlags nFlags )
 
 vcl::Window* SfxChildWindow::GetContextWindow( SfxModule *pModule ) const
 {
-    return pModule == pImp->pContextModule && pContext ? pContext->GetWindow(): 0;
+    return pModule == pImp->pContextModule && pContext ? pContext->GetWindow(): nullptr;
 }
 
 void SfxChildWindow::SetWorkWindow_Impl( SfxWorkWindow* pWin )
@@ -705,7 +704,7 @@ void SfxChildWindow::SetWorkWindow_Impl( SfxWorkWindow* pWin )
 
 void SfxChildWindow::Activate_Impl()
 {
-    if(pImp->pWorkWin!=NULL)
+    if(pImp->pWorkWin!=nullptr)
         pImp->pWorkWin->SetActiveChild_Impl( pWindow );
 }
 
@@ -719,7 +718,7 @@ bool SfxChildWindow::QueryClose()
 
     if ( pImp->xFrame.is() )
     {
-        ::com::sun::star::uno::Reference< ::com::sun::star::frame::XController >  xCtrl = pImp->xFrame->getController();
+        css::uno::Reference< css::frame::XController >  xCtrl = pImp->xFrame->getController();
         if ( xCtrl.is() )
             bAllow = xCtrl->suspend( sal_True );
     }
@@ -730,12 +729,12 @@ bool SfxChildWindow::QueryClose()
     return bAllow;
 }
 
-::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >  SfxChildWindow::GetFrame()
+css::uno::Reference< css::frame::XFrame >  SfxChildWindow::GetFrame()
 {
     return pImp->xFrame;
 }
 
-void SfxChildWindow::SetFrame( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > & rFrame )
+void SfxChildWindow::SetFrame( const css::uno::Reference< css::frame::XFrame > & rFrame )
 {
     // Do nothing if nothing will be changed ...
     if( pImp->xFrame != rFrame )
@@ -748,7 +747,7 @@ void SfxChildWindow::SetFrame( const ::com::sun::star::uno::Reference< ::com::su
         // Use already existing or create new one.
         if( rFrame.is() )
             if( !pImp->xListener.is() )
-                pImp->xListener = ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >( new DisposeListener( this, pImp ) );
+                pImp->xListener.set( new DisposeListener( this, pImp ) );
 
         // Set new frame in data container
         // and build new listener connection, if necessary.

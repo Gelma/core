@@ -32,6 +32,7 @@
 #include <basegfx/polygon/b2dpolypolygoncutter.hxx>
 #include <basegfx/range/b2drange.hxx>
 #include <basegfx/matrix/b2dhommatrixtools.hxx>
+#include <tools/poly.hxx>
 
 namespace
 {
@@ -131,12 +132,12 @@ namespace
 
                 // Find top-most band that may contain nTop.
                 ImplRegionBand* pBand = pRegionBand->ImplGetFirstRegionBand();
-                while (pBand!=NULL && pBand->mnYBottom < nTop)
+                while (pBand!=nullptr && pBand->mnYBottom < nTop)
                     pBand = pBand->mpNextBand;
                 ImplRegionBand* pTopBand = pBand;
                 // If necessary split the band at nTop so that nTop is contained
                 // in the lower band.
-                if (pBand!=NULL
+                if (pBand!=nullptr
                        // Prevent the current band from becoming 0 pixel high
                     && pBand->mnYTop<nTop
                        // this allows the lowest pixel of the band to be split off
@@ -149,11 +150,11 @@ namespace
                 }
 
                 // Advance to band that may contain nBottom.
-                while (pBand!=NULL && pBand->mnYBottom < nBottom)
+                while (pBand!=nullptr && pBand->mnYBottom < nBottom)
                     pBand = pBand->mpNextBand;
                 // The lowest band may have to be split at nBottom so that
                 // nBottom itself remains in the upper band.
-                if (pBand!=NULL
+                if (pBand!=nullptr
                        // allow the current band becoming 1 pixel high
                     && pBand->mnYTop<=nBottom
                        // prevent splitting off a band that is 0 pixel high
@@ -170,7 +171,7 @@ namespace
                 // coordinates.
 
                 // Add the x-value as point to all bands in the nTop->nBottom range.
-                for (pBand=pTopBand; pBand!=NULL&&pBand->mnYTop<=nBottom; pBand=pBand->mpNextBand)
+                for (pBand=pTopBand; pBand!=nullptr&&pBand->mnYTop<=nBottom; pBand=pBand->mpNextBand)
                     pBand->InsertPoint(aStart.X(), nLineId++, true, eLineType);
             }
         }
@@ -232,7 +233,7 @@ bool vcl::Region::IsEmpty() const
 
 RegionBand* ImplCreateRegionBandFromPolyPolygon(const tools::PolyPolygon& rPolyPolygon)
 {
-    RegionBand* pRetval = 0;
+    RegionBand* pRetval = nullptr;
 
     if(rPolyPolygon.Count())
     {
@@ -268,7 +269,7 @@ RegionBand* ImplCreateRegionBandFromPolyPolygon(const tools::PolyPolygon& rPolyP
                     if(!pRetval->OptimizeBandList())
                     {
                         delete pRetval;
-                        pRetval = 0;
+                        pRetval = nullptr;
                     }
                 }
             }
@@ -321,7 +322,7 @@ Region::Region(const Rectangle& rRect)
     mpRegionBand(),
     mbIsNull(false)
 {
-    mpRegionBand.reset(rRect.IsEmpty() ? 0 : new RegionBand(rRect));
+    mpRegionBand.reset(rRect.IsEmpty() ? nullptr : new RegionBand(rRect));
 }
 
 Region::Region(const tools::Polygon& rPolygon)
@@ -429,7 +430,7 @@ void vcl::Region::Move( long nHorzMove, long nVertMove )
         basegfx::B2DPolyPolygon aPoly(*getB2DPolyPolygon());
 
         aPoly.transform(basegfx::tools::createTranslateB2DHomMatrix(nHorzMove, nVertMove));
-        mpB2DPolyPolygon.reset(aPoly.count() ? new basegfx::B2DPolyPolygon(aPoly) : 0);
+        mpB2DPolyPolygon.reset(aPoly.count() ? new basegfx::B2DPolyPolygon(aPoly) : nullptr);
         mpPolyPolygon.reset();
         mpRegionBand.reset();
     }
@@ -439,7 +440,7 @@ void vcl::Region::Move( long nHorzMove, long nVertMove )
 
         aPoly.Move(nHorzMove, nVertMove);
         mpB2DPolyPolygon.reset();
-        mpPolyPolygon.reset(aPoly.Count() ? new tools::PolyPolygon(aPoly) : 0);
+        mpPolyPolygon.reset(aPoly.Count() ? new tools::PolyPolygon(aPoly) : nullptr);
         mpRegionBand.reset();
     }
     else if(getRegionBand())
@@ -476,7 +477,7 @@ void vcl::Region::Scale( double fScaleX, double fScaleY )
         basegfx::B2DPolyPolygon aPoly(*getB2DPolyPolygon());
 
         aPoly.transform(basegfx::tools::createScaleB2DHomMatrix(fScaleX, fScaleY));
-        mpB2DPolyPolygon.reset(aPoly.count() ? new basegfx::B2DPolyPolygon(aPoly) : 0);
+        mpB2DPolyPolygon.reset(aPoly.count() ? new basegfx::B2DPolyPolygon(aPoly) : nullptr);
         mpPolyPolygon.reset();
         mpRegionBand.reset();
     }
@@ -486,7 +487,7 @@ void vcl::Region::Scale( double fScaleX, double fScaleY )
 
         aPoly.Scale(fScaleX, fScaleY);
         mpB2DPolyPolygon.reset();
-        mpPolyPolygon.reset(aPoly.Count() ? new tools::PolyPolygon(aPoly) : 0);
+        mpPolyPolygon.reset(aPoly.Count() ? new tools::PolyPolygon(aPoly) : nullptr);
         mpRegionBand.reset();
     }
     else if(getRegionBand())
@@ -579,7 +580,7 @@ bool vcl::Region::Union( const Rectangle& rRect )
     if(!pNew->OptimizeBandList())
     {
         delete pNew;
-        pNew = 0;
+        pNew = nullptr;
     }
 
     mpRegionBand.reset(pNew);
@@ -624,7 +625,7 @@ bool vcl::Region::Intersect( const Rectangle& rRect )
                     true,
                     false));
 
-            mpB2DPolyPolygon.reset(aPoly.count() ? new basegfx::B2DPolyPolygon(aPoly) : 0);
+            mpB2DPolyPolygon.reset(aPoly.count() ? new basegfx::B2DPolyPolygon(aPoly) : nullptr);
             mpPolyPolygon.reset();
             mpRegionBand.reset();
         }
@@ -638,7 +639,7 @@ bool vcl::Region::Intersect( const Rectangle& rRect )
             aPoly.Clip(rRect);
 
             mpB2DPolyPolygon.reset();
-            mpPolyPolygon.reset(aPoly.Count() ? new tools::PolyPolygon(aPoly) : 0);
+            mpPolyPolygon.reset(aPoly.Count() ? new tools::PolyPolygon(aPoly) : nullptr);
             mpRegionBand.reset();
         }
 
@@ -672,7 +673,7 @@ bool vcl::Region::Intersect( const Rectangle& rRect )
     if(!pNew->OptimizeBandList())
     {
         delete pNew;
-        pNew = 0;
+        pNew = nullptr;
     }
 
     mpRegionBand.reset(pNew);
@@ -753,7 +754,7 @@ bool vcl::Region::Exclude( const Rectangle& rRect )
     if(!pNew->OptimizeBandList())
     {
         delete pNew;
-        pNew = 0;
+        pNew = nullptr;
     }
 
     mpRegionBand.reset(pNew);
@@ -838,7 +839,7 @@ bool vcl::Region::XOr( const Rectangle& rRect )
     if(!pNew->OptimizeBandList())
     {
         delete pNew;
-        pNew = 0;
+        pNew = nullptr;
     }
 
     mpRegionBand.reset(pNew);
@@ -926,7 +927,7 @@ bool vcl::Region::Union( const vcl::Region& rRegion )
     if(!pNew->OptimizeBandList())
     {
         delete pNew;
-        pNew = 0;
+        pNew = nullptr;
     }
 
     mpRegionBand.reset(pNew);
@@ -1046,7 +1047,7 @@ bool vcl::Region::Intersect( const vcl::Region& rRegion )
         if(!pNew->OptimizeBandList())
         {
             delete pNew;
-            pNew = 0;
+            pNew = nullptr;
         }
 
         mpRegionBand.reset(pNew);
@@ -1133,7 +1134,7 @@ bool vcl::Region::Exclude( const vcl::Region& rRegion )
     if(!bSuccess)
     {
         delete pNew;
-        pNew = 0;
+        pNew = nullptr;
     }
 
     mpRegionBand.reset(pNew);
@@ -1222,7 +1223,7 @@ bool vcl::Region::XOr( const vcl::Region& rRegion )
     if(!pNew->OptimizeBandList())
     {
         delete pNew;
-        pNew = 0;
+        pNew = nullptr;
     }
 
     mpRegionBand.reset(pNew);
@@ -1457,7 +1458,7 @@ Region& vcl::Region::operator=( const Rectangle& rRect )
 {
     mpB2DPolyPolygon.reset();
     mpPolyPolygon.reset();
-    mpRegionBand.reset(rRect.IsEmpty() ? 0 : new RegionBand(rRect));
+    mpRegionBand.reset(rRect.IsEmpty() ? nullptr : new RegionBand(rRect));
     mbIsNull = false;
 
     return *this;
@@ -1682,7 +1683,7 @@ void vcl::Region::GetRegionRectangles(RectangleVector& rTarget) const
     }
 }
 
-static inline bool ImplPolygonRectTest( const tools::Polygon& rPoly, Rectangle* pRectOut = NULL )
+static inline bool ImplPolygonRectTest( const tools::Polygon& rPoly, Rectangle* pRectOut = nullptr )
 {
     bool bIsRect = false;
     const Point* pPoints = rPoly.GetConstPointAry();

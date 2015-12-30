@@ -77,14 +77,12 @@ class XMLLineNumberingImportContext : public SvXMLStyleContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLLineNumberingImportContext(
         SvXMLImport& rImport,
         sal_uInt16 nPrfx,
         const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList> & xAttrList);
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList);
 
     virtual ~XMLLineNumberingImportContext();
 
@@ -95,20 +93,18 @@ public:
 protected:
 
     virtual void StartElement(
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList> & xAttrList) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList) override;
 
     void ProcessAttribute(
         enum LineNumberingToken eToken,
         const OUString& sValue);
 
-    virtual void CreateAndInsert(bool bOverwrite) SAL_OVERRIDE;
+    virtual void CreateAndInsert(bool bOverwrite) override;
 
     virtual SvXMLImportContext *CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList> & xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList ) override;
 };
 
 #endif

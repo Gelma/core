@@ -44,11 +44,11 @@ namespace {
 
 // the service is implemented as a wrapper to be able to die by refcount
 // the disposing mechanics is required for java related scenarios
-class ODocumentCloser : public ::cppu::WeakImplHelper< ::com::sun::star::lang::XComponent,
-                                                        ::com::sun::star::lang::XServiceInfo >
+class ODocumentCloser : public ::cppu::WeakImplHelper< css::lang::XComponent,
+                                                        css::lang::XServiceInfo >
 {
     ::osl::Mutex m_aMutex;
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > m_xFrame;
+    css::uno::Reference< css::frame::XFrame > m_xFrame;
     ::cppu::OInterfaceContainerHelper* m_pListenersContainer; // list of listeners
 
     bool m_bDisposed;
@@ -58,14 +58,14 @@ public:
     virtual ~ODocumentCloser();
 
 // XComponent
-    virtual void SAL_CALL dispose() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL addEventListener( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >& xListener ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL removeEventListener( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >& aListener ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL dispose() throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL addEventListener( const css::uno::Reference< css::lang::XEventListener >& xListener ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL removeEventListener( const css::uno::Reference< css::lang::XEventListener >& aListener ) throw (css::uno::RuntimeException, std::exception) override;
 
 // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName(  ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw (css::uno::RuntimeException, std::exception) override;
 };
 
 class MainThreadFrameCloserRequest
@@ -90,10 +90,10 @@ void MainThreadFrameCloserRequest::Start( MainThreadFrameCloserRequest* pMTReque
         if ( Application::GetMainThreadIdentifier() == osl::Thread::getCurrentIdentifier() )
         {
             // this is the main thread
-            worker( NULL, pMTRequest );
+            worker( nullptr, pMTRequest );
         }
         else
-            Application::PostUserEvent( LINK( NULL, MainThreadFrameCloserRequest, worker ), pMTRequest );
+            Application::PostUserEvent( LINK( nullptr, MainThreadFrameCloserRequest, worker ), pMTRequest );
     }
 }
 
@@ -116,8 +116,7 @@ IMPL_STATIC_LINK_TYPED( MainThreadFrameCloserRequest, worker, void*, p, void )
                 xWindow->setVisible( sal_False );
 
                 // reparent the window
-                xWinPeer->setProperty( OUString( "PluginParent" ),
-                                        uno::makeAny( (sal_Int64) 0 ) );
+                xWinPeer->setProperty( "PluginParent", uno::makeAny( (sal_Int64) 0 ) );
 
                 vcl::Window* pWindow = VCLUnoHelper::GetWindow( xWindow );
                 if ( pWindow )
@@ -144,7 +143,7 @@ IMPL_STATIC_LINK_TYPED( MainThreadFrameCloserRequest, worker, void*, p, void )
 }
 
 ODocumentCloser::ODocumentCloser(const css::uno::Sequence< css::uno::Any >& aArguments)
-: m_pListenersContainer( NULL )
+: m_pListenersContainer( nullptr )
 , m_bDisposed( false )
 {
     ::osl::MutexGuard aGuard( m_aMutex );
@@ -171,7 +170,7 @@ ODocumentCloser::~ODocumentCloser()
     if ( m_pListenersContainer )
     {
         delete m_pListenersContainer;
-        m_pListenersContainer = NULL;
+        m_pListenersContainer = nullptr;
     }
 }
 

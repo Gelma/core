@@ -68,9 +68,9 @@ class SwAddressListDialog : public SfxModalDialog
 
     VclPtr<SwMailMergeAddressBlockPage> m_pAddressPage;
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::sdb::XDatabaseContext> m_xDBContext;
+    css::uno::Reference< css::sdb::XDatabaseContext> m_xDBContext;
 
-    SwDBData                                                                   m_aDBData;
+    SwDBData                                         m_aDBData;
 
     void DetectTablesAndQueries(SvTreeListEntry* pSelect, bool bWidthDialog);
 
@@ -87,14 +87,14 @@ class SwAddressListDialog : public SfxModalDialog
 public:
     SwAddressListDialog(SwMailMergeAddressBlockPage* pParent);
     virtual ~SwAddressListDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XDataSource>
+    css::uno::Reference< css::sdbc::XDataSource>
                         GetSource();
 
     SharedConnection    GetConnection();
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::sdbcx::XColumnsSupplier>
+    css::uno::Reference< css::sdbcx::XColumnsSupplier>
                         GetColumnsSupplier();
 
     const SwDBData&     GetDBData() const       {return m_aDBData;}

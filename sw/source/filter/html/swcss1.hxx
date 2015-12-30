@@ -67,7 +67,7 @@ class SwCSS1Parser : public SvxCSS1Parser
 protected:
     virtual bool StyleParsed( const CSS1Selector *pSelector,
                               SfxItemSet& rItemSet,
-                              SvxCSS1PropertyInfo& rPropInfo ) SAL_OVERRIDE;
+                              SvxCSS1PropertyInfo& rPropInfo ) override;
 
     using CSS1Parser::ParseStyleSheet;
 
@@ -75,13 +75,13 @@ public:
     SwCSS1Parser( SwDoc *pDoc, sal_uInt32 aFHeight[7], const OUString& rBaseURL, bool bNewDoc );
     virtual ~SwCSS1Parser();
 
-    virtual bool ParseStyleSheet( const OUString& rIn ) SAL_OVERRIDE;
+    virtual bool ParseStyleSheet( const OUString& rIn ) override;
 
     // Die Font-Hoehe fuer eine bestimmte Font-Groesse (0-6) ermitteln
-    virtual sal_uInt32 GetFontHeight( sal_uInt16 nSize ) const SAL_OVERRIDE;
+    virtual sal_uInt32 GetFontHeight( sal_uInt16 nSize ) const override;
 
     // Die aktuelle Font-Liste holen (auch 0 ist erlaubt)
-    virtual const FontList *GetFontList() const SAL_OVERRIDE;
+    virtual const FontList *GetFontList() const override;
 
     // das Zeichen-Format zu einem Token und einer ggf leeren Klasse
     // ermitteln
@@ -109,7 +109,7 @@ public:
     // werden aus dem Item-Set geloescht ). Wird fuer's BODY-Tag
     // aufgerufen.
     void SetPageDescAttrs( const SvxBrushItem *pBrush,
-                           SfxItemSet *pItemSet=0 );
+                           SfxItemSet *pItemSet=nullptr );
 
     void ChgPageDesc( const SwPageDesc *pPageDesc,
                       const SwPageDesc& rNewPageDesc );
@@ -120,7 +120,7 @@ public:
 
     // Fuellen eines DropCap-Attributs
     void FillDropCap( SwFormatDrop& rDrop, SfxItemSet& rItemSet,
-                      const OUString *pName=0 );
+                      const OUString *pName=nullptr );
 
     bool SetFormatBreak( SfxItemSet& rItemSet,
                       const SvxCSS1PropertyInfo& rPropInfo );
@@ -157,7 +157,7 @@ public:
     inline void SetATagStyles();
     inline void SetDelayedStyles();
 
-    virtual void SetDfltEncoding( rtl_TextEncoding eEnc ) SAL_OVERRIDE;
+    virtual void SetDfltEncoding( rtl_TextEncoding eEnc ) override;
 };
 
 inline void SwCSS1Parser::AddFirstLetterExt( OUString& rFormatName )

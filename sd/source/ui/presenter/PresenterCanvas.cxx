@@ -64,37 +64,37 @@ public:
         const css::geometry::RealSize2D& rSpriteSize);
     virtual ~PresenterCustomSprite();
     virtual void SAL_CALL disposing()
-        throw (RuntimeException) SAL_OVERRIDE;
+        throw (RuntimeException) override;
 
     // XSprite
 
     virtual void SAL_CALL setAlpha (double nAlpha)
-        throw (lang::IllegalArgumentException,RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (lang::IllegalArgumentException,RuntimeException, std::exception) override;
 
     virtual void SAL_CALL move (const geometry::RealPoint2D& rNewPos,
         const rendering::ViewState& rViewState,
         const rendering::RenderState& rRenderState)
-        throw (lang::IllegalArgumentException,RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (lang::IllegalArgumentException,RuntimeException, std::exception) override;
 
     virtual void SAL_CALL transform (const geometry::AffineMatrix2D& rTransformation)
-        throw (lang::IllegalArgumentException,RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (lang::IllegalArgumentException,RuntimeException, std::exception) override;
 
     virtual void SAL_CALL clip (const Reference<rendering::XPolyPolygon2D>& rClip)
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 
     virtual void SAL_CALL setPriority (double nPriority)
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 
     virtual void SAL_CALL show()
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 
     virtual void SAL_CALL hide()
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 
     // XCustomSprite
 
     virtual Reference<rendering::XCanvas> SAL_CALL getContentCanvas()
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 
 private:
     rtl::Reference<PresenterCanvas> mpCanvas;
@@ -203,8 +203,8 @@ void SAL_CALL PresenterCanvas::initialize (
         }
         catch (RuntimeException&)
         {
-            mxSharedWindow = NULL;
-            mxWindow = NULL;
+            mxSharedWindow = nullptr;
+            mxWindow = nullptr;
             throw;
         }
     }
@@ -491,7 +491,7 @@ Reference<rendering::XAnimatedSprite> SAL_CALL
     if (xSpriteCanvas.is())
         return xSpriteCanvas->createSpriteFromAnimation(rAnimation);
     else
-        return NULL;
+        return nullptr;
 }
 
 Reference<rendering::XAnimatedSprite> SAL_CALL
@@ -509,7 +509,7 @@ Reference<rendering::XAnimatedSprite> SAL_CALL
     if (xSpriteCanvas.is())
         return xSpriteCanvas->createSpriteFromBitmaps(rAnimationBitmaps, nInterpolationMode);
     else
-        return NULL;
+        return nullptr;
 }
 
 Reference<rendering::XCustomSprite> SAL_CALL
@@ -533,7 +533,7 @@ Reference<rendering::XCustomSprite> SAL_CALL
             mxUpdateWindow,
             rSpriteSize);
     else
-        return NULL;
+        return nullptr;
 }
 
 Reference<rendering::XSprite> SAL_CALL
@@ -548,7 +548,7 @@ Reference<rendering::XSprite> SAL_CALL
         return xSpriteCanvas->createClonedSprite(rxOriginal);
     if (mxUpdateCanvas.is())
         return mxUpdateCanvas->createClonedSprite(rxOriginal);
-    return NULL;
+    return nullptr;
 }
 
 sal_Bool SAL_CALL PresenterCanvas::updateScreen (sal_Bool bUpdateAll)
@@ -557,7 +557,7 @@ sal_Bool SAL_CALL PresenterCanvas::updateScreen (sal_Bool bUpdateAll)
     ThrowIfDisposed();
 
     mbOffsetUpdatePending = true;
-    if (mpUpdateRequester.get() != NULL)
+    if (mpUpdateRequester.get() != nullptr)
     {
         mpUpdateRequester->RequestUpdate(bUpdateAll);
         return sal_True;
@@ -575,7 +575,7 @@ void SAL_CALL PresenterCanvas::disposing (const css::lang::EventObject& rEvent)
 {
     ThrowIfDisposed();
     if (rEvent.Source == mxWindow)
-        mxWindow = NULL;
+        mxWindow = nullptr;
 }
 
 //----- XWindowListener -------------------------------------------------------
@@ -651,7 +651,7 @@ Reference<rendering::XBitmap> SAL_CALL PresenterCanvas::getScaledBitmap(
 
     // Not implemented.
 
-    return NULL;
+    return nullptr;
 }
 
 rendering::ViewState PresenterCanvas::MergeViewState (
@@ -725,7 +725,7 @@ awt::Point PresenterCanvas::GetOffset (const Reference<awt::XWindow>& rxBaseWind
     {
         vcl::Window* pWindow = VCLUnoHelper::GetWindow(mxWindow);
         vcl::Window* pSharedWindow = VCLUnoHelper::GetWindow(rxBaseWindow);
-        if (pWindow!=NULL && pSharedWindow!=NULL)
+        if (pWindow!=nullptr && pSharedWindow!=nullptr)
         {
             Rectangle aBox = pWindow->GetWindowExtentsRelative(pSharedWindow);
 
@@ -745,11 +745,11 @@ awt::Point PresenterCanvas::GetOffset (const Reference<awt::XWindow>& rxBaseWind
     ::basegfx::B2DRectangle aClipRectangle;
 
     vcl::Window* pWindow = VCLUnoHelper::GetWindow(mxWindow);
-    if (pWindow == NULL)
+    if (pWindow == nullptr)
         return ::basegfx::B2DRectangle();
 
     vcl::Window* pSharedWindow = VCLUnoHelper::GetWindow(mxSharedWindow);
-    if (pSharedWindow == NULL)
+    if (pSharedWindow == nullptr)
         return ::basegfx::B2DRectangle();
 
     // Get the bounding box of the window and create a range in the
@@ -851,7 +851,7 @@ Reference<rendering::XPolyPolygon2D> PresenterCanvas::UpdateSpriteClip (
             xDevice->createCompatibleLinePolyPolygon(aPoints));
         if (xLinePolygon.is())
             xLinePolygon->setClosed(0, sal_True);
-        xPolygon = Reference<rendering::XPolyPolygon2D>(xLinePolygon, UNO_QUERY);
+        xPolygon.set(xLinePolygon, UNO_QUERY);
     }
 
     return xPolygon;
@@ -891,10 +891,10 @@ void SAL_CALL PresenterCustomSprite::disposing()
     throw (RuntimeException)
 {
     Reference<XComponent> xComponent (mxSprite, UNO_QUERY);
-    mxSprite = NULL;
+    mxSprite = nullptr;
     if (xComponent.is())
         xComponent->dispose();
-    mpCanvas = rtl::Reference<PresenterCanvas>();
+    mpCanvas.clear();
 }
 
 //----- XSprite ---------------------------------------------------------------
@@ -922,7 +922,7 @@ void SAL_CALL PresenterCustomSprite::move (
     // sprite clipping is done in the corrdinate system of the sprite.
     // Therefore, after each change of the sprites location the window
     // bounds have to be transformed into the sprites coordinate system.
-    clip(NULL);
+    clip(nullptr);
 }
 
 void SAL_CALL PresenterCustomSprite::transform (const geometry::AffineMatrix2D& rTransformation)
@@ -985,9 +985,9 @@ void PresenterCustomSprite::ThrowIfDisposed()
 } } // end of namespace ::sd::presenter
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_Draw_PresenterCanvasFactory_get_implementation(::com::sun::star::uno::XComponentContext*,
-                                                                 ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_Draw_PresenterCanvasFactory_get_implementation(css::uno::XComponentContext*,
+                                                                 css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new sd::presenter::PresenterCanvas());
 }

@@ -37,20 +37,20 @@
 
 class ImgProdLockBytes : public SvLockBytes
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::io::XInputStream >      xStmRef;
-    ::com::sun::star::uno::Sequence<sal_Int8>       maSeq;
+    css::uno::Reference< css::io::XInputStream >      xStmRef;
+    css::uno::Sequence<sal_Int8>                      maSeq;
 
 public:
 
-                        ImgProdLockBytes( SvStream* pStm, bool bOwner );
-                        ImgProdLockBytes( ::com::sun::star::uno::Reference< ::com::sun::star::io::XInputStream > & rStreamRef );
+    ImgProdLockBytes( SvStream* pStm, bool bOwner );
+    explicit ImgProdLockBytes( css::uno::Reference< css::io::XInputStream > & rStreamRef );
     virtual             ~ImgProdLockBytes();
 
-    virtual ErrCode     ReadAt( sal_uInt64 nPos, void* pBuffer, sal_Size nCount, sal_Size * pRead ) const SAL_OVERRIDE;
-    virtual ErrCode     WriteAt( sal_uInt64 nPos, const void* pBuffer, sal_Size nCount, sal_Size * pWritten ) SAL_OVERRIDE;
-    virtual ErrCode     Flush() const SAL_OVERRIDE;
-    virtual ErrCode     SetSize( sal_uInt64 nSize ) SAL_OVERRIDE;
-    virtual ErrCode     Stat( SvLockBytesStat*, SvLockBytesStatFlag ) const SAL_OVERRIDE;
+    virtual ErrCode     ReadAt( sal_uInt64 nPos, void* pBuffer, sal_Size nCount, sal_Size * pRead ) const override;
+    virtual ErrCode     WriteAt( sal_uInt64 nPos, const void* pBuffer, sal_Size nCount, sal_Size * pWritten ) override;
+    virtual ErrCode     Flush() const override;
+    virtual ErrCode     SetSize( sal_uInt64 nSize ) override;
+    virtual ErrCode     Stat( SvLockBytesStat*, SvLockBytesStatFlag ) const override;
 };
 
 
@@ -62,7 +62,7 @@ ImgProdLockBytes::ImgProdLockBytes( SvStream* pStm, bool bOwner ) :
 
 
 
-ImgProdLockBytes::ImgProdLockBytes( ::com::sun::star::uno::Reference< ::com::sun::star::io::XInputStream > & rStmRef ) :
+ImgProdLockBytes::ImgProdLockBytes( css::uno::Reference< css::io::XInputStream > & rStmRef ) :
         xStmRef( rStmRef )
 {
     if( xStmRef.is() )
@@ -72,7 +72,7 @@ ImgProdLockBytes::ImgProdLockBytes( ::com::sun::star::uno::Reference< ::com::sun
 
         do
         {
-            ::com::sun::star::uno::Sequence< sal_Int8 > aReadSeq;
+            css::uno::Sequence< sal_Int8 > aReadSeq;
 
             nRead = xStmRef->readSomeBytes( aReadSeq, nBytesToRead );
 
@@ -171,7 +171,7 @@ ErrCode ImgProdLockBytes::Stat( SvLockBytesStat* pStat, SvLockBytesStatFlag eFla
 
 // - ImageProducer -
 ImageProducer::ImageProducer()
-    : mpStm(NULL)
+    : mpStm(nullptr)
     , mnTransIndex(0)
     , mbConsInit(false)
 {
@@ -181,35 +181,35 @@ ImageProducer::ImageProducer()
 ImageProducer::~ImageProducer()
 {
     delete mpGraphic;
-    mpGraphic = NULL;
+    mpGraphic = nullptr;
 
     delete mpStm;
-    mpStm = NULL;
+    mpStm = nullptr;
 }
 
-// ::com::sun::star::uno::XInterface
-::com::sun::star::uno::Any ImageProducer::queryInterface( const ::com::sun::star::uno::Type & rType ) throw(::com::sun::star::uno::RuntimeException, std::exception)
+// css::uno::XInterface
+css::uno::Any ImageProducer::queryInterface( const css::uno::Type & rType ) throw(css::uno::RuntimeException, std::exception)
 {
-    ::com::sun::star::uno::Any aRet = ::cppu::queryInterface( rType,
-                                        (static_cast< ::com::sun::star::lang::XInitialization* >(this)),
-                                        (static_cast< ::com::sun::star::awt::XImageProducer* >(this)) );
+    css::uno::Any aRet = ::cppu::queryInterface( rType,
+                                        (static_cast< css::lang::XInitialization* >(this)),
+                                        (static_cast< css::awt::XImageProducer* >(this)) );
     return (aRet.hasValue() ? aRet : OWeakObject::queryInterface( rType ));
 }
 
 
 
-void ImageProducer::addConsumer( const ::com::sun::star::uno::Reference< ::com::sun::star::awt::XImageConsumer >& rxConsumer )
-    throw(::com::sun::star::uno::RuntimeException,
+void ImageProducer::addConsumer( const css::uno::Reference< css::awt::XImageConsumer >& rxConsumer )
+    throw(css::uno::RuntimeException,
           std::exception)
 {
     DBG_ASSERT( rxConsumer.is(), "::AddConsumer(...): No consumer referenced!" );
     if( rxConsumer.is() )
-        maConsList.push_back( new ::com::sun::star::uno::Reference< ::com::sun::star::awt::XImageConsumer > ( rxConsumer ));
+        maConsList.push_back( rxConsumer );
 }
 
 
 
-void ImageProducer::removeConsumer( const ::com::sun::star::uno::Reference< ::com::sun::star::awt::XImageConsumer >& rxConsumer ) throw(::com::sun::star::uno::RuntimeException, std::exception)
+void ImageProducer::removeConsumer( const css::uno::Reference< css::awt::XImageConsumer >& rxConsumer ) throw(css::uno::RuntimeException, std::exception)
 {
     ConsumerList_t::reverse_iterator riter = std::find(maConsList.rbegin(),maConsList.rend(),rxConsumer);
 
@@ -233,10 +233,10 @@ void ImageProducer::SetImage( const OUString& rPath )
     else if( !maURL.isEmpty() )
     {
         SvStream* pIStm = ::utl::UcbStreamHelper::CreateStream( maURL, STREAM_STD_READ );
-        mpStm = pIStm ? new SvStream( new ImgProdLockBytes( pIStm, true ) ) : NULL;
+        mpStm = pIStm ? new SvStream( new ImgProdLockBytes( pIStm, true ) ) : nullptr;
     }
     else
-        mpStm = NULL;
+        mpStm = nullptr;
 }
 
 
@@ -253,7 +253,7 @@ void ImageProducer::SetImage( SvStream& rStm )
 
 
 
-void ImageProducer::setImage( ::com::sun::star::uno::Reference< ::com::sun::star::io::XInputStream > & rInputStmRef )
+void ImageProducer::setImage( css::uno::Reference< css::io::XInputStream > & rInputStmRef )
 {
     maURL.clear();
     mpGraphic->Clear();
@@ -263,7 +263,7 @@ void ImageProducer::setImage( ::com::sun::star::uno::Reference< ::com::sun::star
     if( rInputStmRef.is() )
         mpStm = new SvStream( new ImgProdLockBytes( rInputStmRef ) );
     else
-        mpStm = NULL;
+        mpStm = nullptr;
 }
 
 
@@ -276,7 +276,7 @@ void ImageProducer::NewDataAvailable()
 
 
 
-void ImageProducer::startProduction() throw(::com::sun::star::uno::RuntimeException, std::exception)
+void ImageProducer::startProduction() throw(css::uno::RuntimeException, std::exception)
 {
     if( !maConsList.empty() || maDoneHdl.IsSet() )
     {
@@ -289,7 +289,7 @@ void ImageProducer::startProduction() throw(::com::sun::star::uno::RuntimeExcept
             // graphic is cleared if a new Stream is set
             if( ( mpGraphic->GetType() == GRAPHIC_NONE ) || mpGraphic->GetContext() )
             {
-                if ( ImplImportGraphic( *mpGraphic ) && maDoneHdl.IsSet() )
+                if ( ImplImportGraphic( *mpGraphic ) )
                     maDoneHdl.Call( mpGraphic );
             }
 
@@ -311,11 +311,10 @@ void ImageProducer::startProduction() throw(::com::sun::star::uno::RuntimeExcept
             for( ConsumerList_t::iterator iter = aTmp.begin(); iter != aTmp.end(); ++iter )
             {
                 (*iter)->init( 0, 0 );
-                (*iter)->complete( ::com::sun::star::awt::ImageStatus::IMAGESTATUS_STATICIMAGEDONE, this );
+                (*iter)->complete( css::awt::ImageStatus::IMAGESTATUS_STATICIMAGEDONE, this );
             }
 
-            if ( maDoneHdl.IsSet() )
-                maDoneHdl.Call( NULL );
+            maDoneHdl.Call( nullptr );
         }
     }
 }
@@ -356,7 +355,7 @@ void ImageProducer::ImplUpdateData( const Graphic& rGraphic )
 
         // iterate through interfaces
         for( ConsumerList_t::iterator iter = aTmp.begin(); iter != aTmp.end(); ++iter )
-            (*iter)->complete( ::com::sun::star::awt::ImageStatus::IMAGESTATUS_STATICIMAGEDONE, this );
+            (*iter)->complete( css::awt::ImageStatus::IMAGESTATUS_STATICIMAGEDONE, this );
     }
 }
 
@@ -374,7 +373,7 @@ void ImageProducer::ImplInitConsumer( const Graphic& rGraphic )
         sal_uInt32       nGMask = 0;
         sal_uInt32       nBMask = 0;
         sal_uInt32       nAMask = 0;
-        ::com::sun::star::uno::Sequence< sal_Int32 >    aRGBPal;
+        css::uno::Sequence< sal_Int32 >    aRGBPal;
 
         if( pBmpAcc->HasPalette() )
         {
@@ -382,7 +381,7 @@ void ImageProducer::ImplInitConsumer( const Graphic& rGraphic )
 
             if( nPalCount )
             {
-                aRGBPal = ::com::sun::star::uno::Sequence< sal_Int32 >( nPalCount + 1 );
+                aRGBPal = css::uno::Sequence< sal_Int32 >( nPalCount + 1 );
 
                 sal_Int32* pTmp = aRGBPal.getArray();
 
@@ -442,7 +441,7 @@ void ImageProducer::ImplUpdateConsumer( const Graphic& rGraphic )
     if( pBmpAcc )
     {
         Bitmap              aMask( aBmpEx.GetMask() );
-        BitmapReadAccess*   pMskAcc = !!aMask ? aMask.AcquireReadAccess() : NULL;
+        BitmapReadAccess*   pMskAcc = !!aMask ? aMask.AcquireReadAccess() : nullptr;
         const long          nWidth = pBmpAcc->Width();
         const long          nHeight = pBmpAcc->Height();
         const long          nStartX = 0L;
@@ -468,7 +467,7 @@ void ImageProducer::ImplUpdateConsumer( const Graphic& rGraphic )
 
             if( mnTransIndex < 256 )
             {
-                ::com::sun::star::uno::Sequence<sal_Int8>   aData( nPartWidth * nPartHeight );
+                css::uno::Sequence<sal_Int8>   aData( nPartWidth * nPartHeight );
                 sal_Int8*                                   pTmp = aData.getArray();
 
                 for( long nY = nStartY; nY <= nEndY; nY++ )
@@ -489,7 +488,7 @@ void ImageProducer::ImplUpdateConsumer( const Graphic& rGraphic )
             }
             else
             {
-                ::com::sun::star::uno::Sequence<sal_Int32>  aData( nPartWidth * nPartHeight );
+                css::uno::Sequence<sal_Int32>  aData( nPartWidth * nPartHeight );
                 sal_Int32*                                  pTmp = aData.getArray();
 
                 for( long nY = nStartY; nY <= nEndY; nY++ )
@@ -510,7 +509,7 @@ void ImageProducer::ImplUpdateConsumer( const Graphic& rGraphic )
         }
         else
         {
-            ::com::sun::star::uno::Sequence<sal_Int32>  aData( nPartWidth * nPartHeight );
+            css::uno::Sequence<sal_Int32>  aData( nPartWidth * nPartHeight );
             const BitmapColor                           aWhite( pMskAcc->GetBestMatchingColor( Color( COL_WHITE ) ) );
             sal_Int32*                                  pTmp = aData.getArray();
 
@@ -539,11 +538,11 @@ void ImageProducer::ImplUpdateConsumer( const Graphic& rGraphic )
     }
 }
 
-void ImageProducer::initialize( const ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any >& aArguments ) throw (::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception)
+void ImageProducer::initialize( const css::uno::Sequence< css::uno::Any >& aArguments ) throw (css::uno::Exception, css::uno::RuntimeException, std::exception)
 {
     if ( aArguments.getLength() == 1 )
     {
-        ::com::sun::star::uno::Any aArg = aArguments.getConstArray()[0];
+        css::uno::Any aArg = aArguments.getConstArray()[0];
         OUString aURL;
         if ( aArg >>= aURL )
         {
@@ -552,9 +551,9 @@ void ImageProducer::initialize( const ::com::sun::star::uno::Sequence< ::com::su
     }
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_form_ImageProducer_get_implementation(::com::sun::star::uno::XComponentContext*,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_form_ImageProducer_get_implementation(css::uno::XComponentContext*,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new ImageProducer());
 }

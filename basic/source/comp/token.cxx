@@ -194,9 +194,8 @@ TokenLabelInfo::TokenLabelInfo()
     SbiToken eLabelToken[] = { ACCESS, ALIAS, APPEND, BASE, BINARY, CLASSMODULE,
                                COMPARE, COMPATIBLE, DEFERR, _ERROR_, BASIC_EXPLICIT, LIB, LINE, LPRINT, NAME,
                                TOBJECT, OUTPUT, PROPERTY, RANDOM, READ, STEP, STOP, TEXT, VBASUPPORT, NIL };
-    SbiToken* pTok = eLabelToken;
     SbiToken eTok;
-    for( pTok = eLabelToken ; (eTok = *pTok) != NIL ; ++pTok )
+    for( SbiToken* pTok = eLabelToken ; (eTok = *pTok) != NIL ; ++pTok )
     {
         m_pTokenCanBeLabelTab[eTok] = true;
     }
@@ -434,7 +433,8 @@ SbiToken SbiTokenizer::Next()
     }
 special:
     // #i92642
-    bool bStartOfLine = (eCurTok == NIL || eCurTok == REM || eCurTok == EOLN);
+    bool bStartOfLine = (eCurTok == NIL || eCurTok == REM || eCurTok == EOLN ||
+            eCurTok == THEN || eCurTok == ELSE); // single line If
     if( !bStartOfLine && (tp->t == NAME || tp->t == LINE) )
     {
         return eCurTok = SYMBOL;

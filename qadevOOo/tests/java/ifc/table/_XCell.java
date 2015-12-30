@@ -19,6 +19,7 @@
 package ifc.table;
 
 import lib.MultiMethodTest;
+import util.utils;
 
 import com.sun.star.table.CellContentType;
 import com.sun.star.table.XCell;
@@ -143,15 +144,14 @@ public class _XCell extends MultiMethodTest {
     * Has <b> OK </b> status if the value set is equal to value get. <p>
     */
     public void _setValue() {
-        boolean result = true;
-        double cellValue = 0;
         log.println("setValue() ...");
 
-        oObj.setValue(222.333) ;
-        cellValue = oObj.getValue() ;
+        double inValue = 222.333;
+        oObj.setValue(inValue) ;
+        double cellValue = oObj.getValue() ;
 
-        result &= (cellValue == 222.333);
+        boolean result = utils.approxEqual(cellValue, inValue);
         tRes.tested("setValue()", result);
-       } // end setValue()
+    } // end setValue()
 }
 

@@ -94,7 +94,6 @@ void ScDocument::TransferDrawPage(ScDocument* pSrcDoc, SCTAB nSrcPos, SCTAB nDes
             SdrObject* pOldObject = aIter.Next();
             while (pOldObject)
             {
-                // #116235#
                 SdrObject* pNewObject = pOldObject->Clone();
                 // SdrObject* pNewObject = pOldObject->Clone( pNewPage, pDrawLayer );
                 pNewObject->SetModel(pDrawLayer);
@@ -221,7 +220,6 @@ void ScDocument::SetDrawPageSize(SCTAB nTab)
 
 bool ScDocument::IsChart( const SdrObject* pObject )
 {
-    // #109985#
     // IsChart() implementation moved to svx drawinglayer
     if(pObject && OBJ_OLE2 == pObject->GetObjIdentifier())
     {
@@ -246,11 +244,11 @@ void ScDocument::DeleteDrawLayer()
 
         if(pLocalPool && pLocalPool->GetSecondaryPool())
         {
-            pLocalPool->SetSecondaryPool(0);
+            pLocalPool->SetSecondaryPool(nullptr);
         }
     }
     delete pDrawLayer;
-    pDrawLayer = 0;
+    pDrawLayer = nullptr;
 }
 
 bool ScDocument::DrawGetPrintArea( ScRange& rRange, bool bSetHor, bool bSetVer ) const
@@ -346,9 +344,8 @@ void ScDocument::StartAnimations( SCTAB nTab, vcl::Window* pWin )
     SdrObject* pObject = aIter.Next();
     while (pObject)
     {
-        if (pObject->ISA(SdrGrafObj))
+        if (SdrGrafObj* pGrafObj = dynamic_cast<SdrGrafObj*>(pObject))
         {
-            SdrGrafObj* pGrafObj = static_cast<SdrGrafObj*>(pObject);
             if ( pGrafObj->IsAnimated() )
             {
                 const Rectangle& rRect = pGrafObj->GetCurrentBoundRect();
@@ -418,7 +415,7 @@ void ScDocument::EnsureGraphicNames()
 SdrObject* ScDocument::GetObjectAtPoint( SCTAB nTab, const Point& rPos )
 {
     //  for Drag&Drop on draw object
-    SdrObject* pFound = NULL;
+    SdrObject* pFound = nullptr;
     if (pDrawLayer && nTab < static_cast<SCTAB>(maTabs.size()) && maTabs[nTab])
     {
         SdrPage* pPage = pDrawLayer->GetPage(static_cast<sal_uInt16>(nTab));
@@ -523,7 +520,7 @@ void ScDocument::Clear( bool bFromDestructor )
         delete *it;
     maTabs.clear();
     delete pSelectionAttr;
-    pSelectionAttr = NULL;
+    pSelectionAttr = nullptr;
 
     if (pDrawLayer)
     {

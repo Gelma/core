@@ -180,7 +180,7 @@ class AddonsOptions_Impl : public ConfigItem
             @param      "lPropertyNames" is the list of properties which should be updated.
         *//*-*****************************************************************************************************/
 
-        virtual void Notify( const Sequence< OUString >& lPropertyNames ) SAL_OVERRIDE;
+        virtual void Notify( const Sequence< OUString >& lPropertyNames ) override;
 
         //  public interface
 
@@ -276,7 +276,7 @@ class AddonsOptions_Impl : public ConfigItem
         Sequence< OUString > GetPropertyNamesImages( const OUString& aPropertyRootNode ) const;
         bool                 CreateImageFromSequence( Image& rImage, Sequence< sal_Int8 >& rBitmapDataSeq ) const;
 
-        virtual void ImplCommit() SAL_OVERRIDE;
+        virtual void ImplCommit() override;
 
     //  private member
 
@@ -369,8 +369,7 @@ AddonsOptions_Impl::AddonsOptions_Impl()
 
     // Enable notification mechanism of our baseclass.
     // We need it to get information about changes outside these class on our used configuration keys!
-    Sequence< OUString > aNotifySeq( 1 );
-    aNotifySeq[0] = "AddonUI";
+    Sequence<OUString> aNotifySeq { "AddonUI" };
     EnableNotification( aNotifySeq );
 }
 
@@ -411,14 +410,14 @@ void AddonsOptions_Impl::ReadConfigurationData()
 
 void AddonsOptions_Impl::Notify( const Sequence< OUString >& /*lPropertyNames*/ )
 {
-    Application::PostUserEvent( LINK( 0, AddonsOptions, Notify ) );
+    Application::PostUserEvent( LINK( nullptr, AddonsOptions, Notify ) );
 }
 
 //  public method
 
 void AddonsOptions_Impl::ImplCommit()
 {
-    SAL_WARN("framework", "AddonsOptions_Impl::ImplCommit(): Not implemented yet!");
+    SAL_WARN("fwk", "AddonsOptions_Impl::ImplCommit(): Not implemented yet!");
 }
 
 //  public method
@@ -1303,7 +1302,7 @@ Image AddonsOptions_Impl::ReadImageFromURL(const OUString& aImageURL)
         Graphic aGraphic;
 
         GraphicFilter& rGF = GraphicFilter::GetGraphicFilter();
-        rGF.ImportGraphic( aGraphic, OUString(), *pStream, GRFILTER_FORMAT_DONTKNOW );
+        rGF.ImportGraphic( aGraphic, OUString(), *pStream );
 
         BitmapEx aBitmapEx = aGraphic.GetBitmapEx();
 
@@ -1355,7 +1354,7 @@ AddonsOptions_Impl::ImageEntry* AddonsOptions_Impl::ReadImageData( const OUStrin
     Sequence< sal_Int8 > aImageDataSeq;
     OUString             aImageURL;
 
-    ImageEntry* pEntry = NULL;
+    ImageEntry* pEntry = nullptr;
 
     // It is possible to use both forms (embedded image data and URLs to external bitmap files) at the
     // same time. Embedded image data has a higher priority.
@@ -1498,7 +1497,7 @@ Sequence< OUString > AddonsOptions_Impl::GetPropertyNamesImages( const OUString&
 //  DON'T DO IT IN YOUR HEADER!
 //  see definition for further information
 
-AddonsOptions_Impl*     AddonsOptions::m_pDataContainer = NULL;
+AddonsOptions_Impl*     AddonsOptions::m_pDataContainer = nullptr;
 sal_Int32               AddonsOptions::m_nRefCount      = 0;
 
 //  constructor
@@ -1510,7 +1509,7 @@ AddonsOptions::AddonsOptions()
     // Increase our refcount ...
     ++m_nRefCount;
     // ... and initialize our data container only if it not already exist!
-    if( m_pDataContainer == NULL )
+    if( m_pDataContainer == nullptr )
     {
         m_pDataContainer = new AddonsOptions_Impl;
     }
@@ -1529,7 +1528,7 @@ AddonsOptions::~AddonsOptions()
     if( m_nRefCount <= 0 )
     {
         delete m_pDataContainer;
-        m_pDataContainer = NULL;
+        m_pDataContainer = nullptr;
     }
 }
 
@@ -1632,15 +1631,15 @@ Image AddonsOptions::GetImageFromURL( const OUString& aURL, bool bBig ) const
 Mutex& AddonsOptions::GetOwnStaticMutex()
 {
     // Initialize static mutex only for one time!
-    static Mutex* pMutex = NULL;
+    static Mutex* pMutex = nullptr;
     // If these method first called (Mutex not already exist!) ...
-    if( pMutex == NULL )
+    if( pMutex == nullptr )
     {
         // ... we must create a new one. Protect follow code with the global mutex -
         // It must be - we create a static variable!
         MutexGuard aGuard( Mutex::getGlobalMutex() );
         // We must check our pointer again - because it can be that another instance of our class will be faster than these!
-        if( pMutex == NULL )
+        if( pMutex == nullptr )
         {
             // Create the new mutex and set it for return on static variable.
             static Mutex aMutex;

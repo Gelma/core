@@ -30,7 +30,14 @@
 #include <com/sun/star/beans/PropertyValue.hpp>
 #include <com/sun/star/frame/XStorable.hpp>
 #include <com/sun/star/embed/XStorage.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <com/sun/star/sdbc/XRowSet.hpp>
+#include <com/sun/star/sdbcx/XColumnsSupplier.hpp>
+#include <unotools/tempfile.hxx>
+#include <sfx2/objsh.hxx>
+#include <dbui.hxx>
+
+#include <memory>
+#include <vector>
 
 namespace com{namespace sun{namespace star{
     namespace sdbc{
@@ -38,6 +45,7 @@ namespace com{namespace sun{namespace star{
         class XStatement;
         class XDataSource;
         class XResultSet;
+        class xRowSet;
     }
     namespace beans{
 
@@ -60,9 +68,9 @@ namespace svx {
 
 struct SwDBFormatData
 {
-    com::sun::star::util::Date aNullDate;
-    com::sun::star::uno::Reference< com::sun::star::util::XNumberFormatter> xFormatter;
-    com::sun::star::lang::Locale aLocale;
+    css::util::Date aNullDate;
+    css::uno::Reference< css::util::XNumberFormatter> xFormatter;
+    css::lang::Locale aLocale;
 };
 
 namespace vcl {
@@ -80,6 +88,8 @@ class SwMailMergeConfigItem;
 class SwCalc;
 class INetURLObject;
 class SwDocShell;
+class SwDoc;
+class SfxFilter;
 
 enum DBManagerOptions
 {
@@ -98,13 +108,13 @@ enum class SwDBSelect
 
 struct SwDSParam : public SwDBData
 {
-    com::sun::star::util::Date  aNullDate;
+    css::util::Date  aNullDate;
 
-    ::com::sun::star::uno::Reference<com::sun::star::util::XNumberFormatter>    xFormatter;
-    ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XConnection>      xConnection;
-    ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XStatement>       xStatement;
-    ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XResultSet>       xResultSet;
-    ::com::sun::star::uno::Sequence<  ::com::sun::star::uno::Any >              aSelection;
+    css::uno::Reference<css::util::XNumberFormatter>    xFormatter;
+    css::uno::Reference< css::sdbc::XConnection>       xConnection;
+    css::uno::Reference< css::sdbc::XStatement>        xStatement;
+    css::uno::Reference< css::sdbc::XResultSet>        xResultSet;
+    css::uno::Sequence<  css::uno::Any >               aSelection;
     bool bScrollable;
     bool bEndOfDB;
     bool bAfterSelection;
@@ -119,8 +129,8 @@ struct SwDSParam : public SwDBData
         {}
 
     SwDSParam(const SwDBData& rData,
-        const ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XResultSet>&    xResSet,
-        const ::com::sun::star::uno::Sequence<  ::com::sun::star::uno::Any >&   rSelection) :
+        const css::uno::Reference< css::sdbc::XResultSet>&    xResSet,
+        const css::uno::Sequence<  css::uno::Any >&   rSelection) :
         SwDBData(rData),
         xResultSet(xResSet),
         aSelection(rSelection),
@@ -136,7 +146,7 @@ struct SwDSParam : public SwDBData
                 bAfterSelection = true;
         }
 };
-typedef boost::ptr_vector<SwDSParam> SwDSParamArr;
+typedef std::vector<std::unique_ptr<SwDSParam>> SwDSParams_t;
 
 struct SwMergeDescriptor
 {
@@ -165,7 +175,7 @@ struct SwMergeDescriptor
 
     SwMailMergeConfigItem*                              pMailMergeConfigItem;
 
-    ::com::sun::star::uno::Sequence<  ::com::sun::star::beans::PropertyValue >  aPrintOptions;
+    css::uno::Sequence<  css::beans::PropertyValue >  aPrintOptions;
 
     SwMergeDescriptor( DBManagerOptions nType, SwWrtShell& rShell, svx::ODataAccessDescriptor& rDesc ) :
         nMergeType(nType),
@@ -176,7 +186,7 @@ struct SwMergeDescriptor
         bPrintAsync( false ),
         bCreateSingleFile( false ),
         bSubjectIsFilename( false ),
-        pMailMergeConfigItem(0)
+        pMailMergeConfigItem(nullptr)
         {}
 
 };
@@ -198,8 +208,8 @@ friend class SwConnectionDisposedListener_Impl;
     bool            bMergeSilent : 1;   ///< suppress display of dialogs/boxes (used when called over API)
     bool            bMergeLock : 1;     /**< prevent update of database fields while document is
                                              actually printed at the SwViewShell */
-    SwDSParamArr        aDataSourceParams;
-    SwDBManager_Impl*    pImpl;
+    SwDSParams_t    m_DataSourceParams;
+    std::unique_ptr<SwDBManager_Impl>  pImpl;
     const SwXMailMerge* pMergeEvtSrc;   ///< != 0 if mail merge events are to be send
     /// Name of the embedded database that's included in the current document.
     OUString     m_sEmbeddedName;
@@ -221,7 +231,83 @@ friend class SwConnectionDisposedListener_Impl;
     /// merge to file _and_ merge to e-Mail
     SAL_DLLPRIVATE bool          MergeMailFiles(SwWrtShell* pSh,
                                         const SwMergeDescriptor& rMergeDescriptor, vcl::Window* pParent );
-    SAL_DLLPRIVATE bool          ToNextRecord(SwDSParam* pParam);
+    SAL_DLLPRIVATE bool          ToNextRecord(SwDSParam* pParam, bool bReset);
+
+    static css::uno::Reference< css::sdbc::XRowSet>
+        GetRowSet(css::uno::Reference< css::sdbc::XConnection>,
+        const OUString& rTableOrQuery, SwDBSelect   eTableOrQuery);
+
+    SAL_DLLPRIVATE static css::uno::Reference< css::beans::XPropertySet>
+        GetRowSupplier(css::uno::Reference< css::sdbc::XConnection> xConnection,
+        const OUString& rTableOrQuery,  SwDBSelect   eTableOrQuery)
+    {
+        css::uno::Reference<css::sdbc::XRowSet> xRowSet = GetRowSet(xConnection, rTableOrQuery, eTableOrQuery);
+
+        return css::uno::Reference<css::beans::XPropertySet>( xRowSet, css::uno::UNO_QUERY );
+    }
+
+    SAL_DLLPRIVATE void CreateDumpDocs(sal_Int32 &nMaxDumpDocs);
+
+    SAL_DLLPRIVATE void SetSourceProp(SwDocShell* pSourceDocSh);
+
+    SAL_DLLPRIVATE void GetPathAddress(OUString &sPath, OUString &sAddress,
+                                      css::uno::Reference< css::beans::XPropertySet > xColumnProp);
+
+    SAL_DLLPRIVATE bool CreateNewTemp(OUString &sPath, const OUString &sAddress,
+                                      std::unique_ptr< utl::TempFile > &aTempFile,
+                                      const SwMergeDescriptor& rMergeDescriptor,  const SfxFilter* pStoreToFilter);
+
+    SAL_DLLPRIVATE void UpdateProgressDlg(bool bMergeShell,  VclPtr<CancelableDialog> pProgressDlg, bool createTempFile,
+                                          std::unique_ptr< INetURLObject > &aTempFileURL,
+                                          SwDocShell *pSourceDocSh, sal_Int32 nDocNo);
+
+    SAL_DLLPRIVATE bool CreateTargetDocShell(sal_Int32 nMaxDumpDocs, bool bMergeShell, vcl::Window *pSourceWindow,
+                                             SwWrtShell *pSourceShell, SwDocShell *pSourceDocSh,
+                                             SfxObjectShellRef &xTargetDocShell, SwDoc *&pTargetDoc,
+                                             SwWrtShell *&pTargetShell, SwView  *&pTargetView,
+                                             sal_uInt16 &nStartingPageNo, OUString &sStartingPageDesc);
+
+    SAL_DLLPRIVATE void LockUnlockDisp(bool bLock, SwDocShell *pSourceDocSh);
+
+    SAL_DLLPRIVATE void CreateProgessDlg(vcl::Window *&pSourceWindow, VclPtr<CancelableDialog> &pProgressDlg,
+                                         bool bMergeShell, SwWrtShell *pSourceShell, vcl::Window *pParent);
+
+    SAL_DLLPRIVATE void CreateWorkDoc(SfxObjectShellLock &xWorkDocSh, SwView *&pWorkView, SwDoc *&pWorkDoc, SwDBManager *&pOldDBManager,
+                                      SwDocShell *pSourceDocSh, sal_Int32 nMaxDumpDocs,  sal_Int32 nDocNo);
+
+    SAL_DLLPRIVATE void UpdateExpFields(SwWrtShell& rWorkShell, SfxObjectShellLock xWorkDocSh);
+
+    SAL_DLLPRIVATE void CreateStoreToFilter(const SfxFilter *&pStoreToFilter, const OUString *&pStoreToFilterOptions,
+                                            SwDocShell *pSourceDocSh, bool bEMail, const SwMergeDescriptor &rMergeDescriptor);
+
+    SAL_DLLPRIVATE void MergeSingleFiles(SwDoc *pWorkDoc, SwWrtShell &rWorkShell, SwWrtShell *pTargetShell, SwDoc *pTargetDoc,
+                                         SfxObjectShellLock &xWorkDocSh, SfxObjectShellRef xTargetDocShell,
+                                         bool bPageStylesWithHeaderFooter, bool bSynchronizedDoc,
+                                         OUString &sModifiedStartingPageDesc, OUString &sStartingPageDesc, sal_Int32 nDocNo,
+                                         long nStartRow, sal_uInt16 nStartingPageNo, int &targetDocPageCount, const bool bMergeShell,
+                                         const SwMergeDescriptor& rMergeDescriptor, sal_Int32 nMaxDumpDocs);
+
+    SAL_DLLPRIVATE void ResetWorkDoc(SwDoc *pWorkDoc, SfxObjectShellLock &xWorkDocSh, SwDBManager *pOldDBManager);
+
+    SAL_DLLPRIVATE void FreezeLayouts(SwWrtShell *pTargetShell, bool freeze);
+
+    SAL_DLLPRIVATE void FinishMailMergeFile(SfxObjectShellLock &xWorkDocSh, SwView *pWorkView, SwDoc *pTargetDoc,
+                                             SwWrtShell *pTargetShell, bool bCreateSingleFile, bool bPrinter,
+                                             SwDoc *pWorkDoc, SwDBManager *pOldDBManager);
+
+    SAL_DLLPRIVATE bool SavePrintDoc(SfxObjectShellRef xTargetDocShell, SwView *pTargetView,
+                                     const SwMergeDescriptor &rMergeDescriptor,
+                                     std::unique_ptr< utl::TempFile > &aTempFile,
+                                     const SfxFilter *&pStoreToFilter, const OUString *&pStoreToFilterOptions,
+                                     const bool bMergeShell, bool bCreateSingleFile, const bool bPrinter);
+
+    SAL_DLLPRIVATE void SetPrinterOptions(const SwMergeDescriptor &rMergeDescriptor,
+                                          css::uno::Sequence< css::beans::PropertyValue > &aOptions);
+
+    SAL_DLLPRIVATE void RemoveTmpFiles(::std::vector< OUString> &aFilesToRemove);
+
+    SwDBManager(SwDBManager const&) = delete;
+    SwDBManager& operator=(SwDBManager const&) = delete;
 
 public:
     SwDBManager(SwDoc* pDoc);
@@ -245,7 +331,7 @@ public:
     inline void     SetMergeSilent( bool bVal )     { bMergeSilent = bVal; }
 
     /// Merging of data records into fields.
-    bool            MergeNew( const SwMergeDescriptor& rMergeDesc, vcl::Window* pParent = NULL );
+    bool            MergeNew( const SwMergeDescriptor& rMergeDesc, vcl::Window* pParent = nullptr );
     static bool     Merge(SwWrtShell* pSh);
     void            MergeCancel();
 
@@ -267,11 +353,18 @@ public:
                             css::uno::Reference< css::sdbc::XConnection> xConnection,
                             const OUString& rTableName, bool bAppend = false);
 
-    static sal_uLong GetColumnFormat( ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XDataSource> xSource,
-                            ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XConnection> xConnection,
-                            ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet> xColumn,
+    static sal_uLong GetColumnFormat( css::uno::Reference< css::sdbc::XDataSource> xSource,
+                            css::uno::Reference< css::sdbc::XConnection> xConnection,
+                            css::uno::Reference< css::beans::XPropertySet> xColumn,
                             SvNumberFormatter* pNFormatr,
                             long nLanguage );
+
+    sal_Int32   GetRowCount(const OUString& rDBName, const OUString& rTableName);
+
+    static sal_Int32 GetRowCount(css::uno::Reference< css::sdbc::XConnection> xConnection,
+                                 const OUString& rTableName);
+
+    sal_Int32 GetRowCount() const;
 
     sal_uLong GetColumnFormat( const OUString& rDBName,
                             const OUString& rTableName,
@@ -285,11 +378,11 @@ public:
     inline bool     IsInMerge() const   { return bInMerge; }
 
     void            ExecuteFormLetter(SwWrtShell& rSh,
-                        const ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue>& rProperties,
+                        const css::uno::Sequence< css::beans::PropertyValue>& rProperties,
                         bool bWithDataSourceBrowser = false);
 
     static void     InsertText(SwWrtShell& rSh,
-                        const ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue>& rProperties);
+                        const css::uno::Sequence< css::beans::PropertyValue>& rProperties);
 
     /// check if a data source is open
     bool            IsDataSourceOpen(const OUString& rDataSource,
@@ -304,12 +397,12 @@ public:
                             OUString& rResult, double* pNumber);
     /** create and store or find an already stored connection to a data source for use
     in SwFieldMgr and SwDBTreeList */
-    ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XConnection>
-                    RegisterConnection(OUString& rSource);
+    css::uno::Reference< css::sdbc::XConnection>
+                    RegisterConnection(OUString const& rSource);
 
     const SwDSParam* CreateDSData(const SwDBData& rData)
                         {return FindDSData(rData, true);}
-    const SwDSParamArr& GetDSParamArray() const {return aDataSourceParams;}
+    const SwDSParams_t& GetDSParamArray() const { return m_DataSourceParams; }
 
     /// close all data sources - after fields were updated
     void            CloseAll(bool bIncludingMerge = true);
@@ -328,22 +421,27 @@ public:
     static const SwDBData& GetAddressDBName();
 
     static OUString GetDBField(
-                    ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > xColumnProp,
+                    css::uno::Reference< css::beans::XPropertySet > xColumnProp,
                     const SwDBFormatData& rDBFormatData,
-                    double *pNumber = NULL);
+                    double *pNumber = nullptr);
 
-    static ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XConnection>
+    static css::uno::Reference< css::sdbc::XConnection>
             GetConnection(const OUString& rDataSource,
-                ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XDataSource>& rxSource);
+                css::uno::Reference< css::sdbc::XDataSource>& rxSource);
 
-    static ::com::sun::star::uno::Reference< ::com::sun::star::sdbcx::XColumnsSupplier>
-            GetColumnSupplier(::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XConnection>,
+    static css::uno::Reference< css::sdbcx::XColumnsSupplier>
+            GetColumnSupplier(css::uno::Reference< css::sdbc::XConnection> xConnection,
                                     const OUString& rTableOrQuery,
-                                    SwDBSelect eTableOrQuery = SwDBSelect::UNKNOWN);
+                                    SwDBSelect eTableOrQuery = SwDBSelect::UNKNOWN)
+    {
+        css::uno::Reference<css::sdbc::XRowSet> xRowSet = GetRowSet(xConnection, rTableOrQuery, eTableOrQuery);
 
-    static ::com::sun::star::uno::Sequence<OUString> GetExistingDatabaseNames();
+        return css::uno::Reference<css::sdbcx::XColumnsSupplier>( xRowSet, css::uno::UNO_QUERY );
+    }
 
-    static DBConnURITypes GetDBunoURI(const OUString &rURI, ::com::sun::star::uno::Any &aURLAny);
+    static css::uno::Sequence<OUString> GetExistingDatabaseNames();
+
+    static DBConnURITypes GetDBunoURI(const OUString &rURI, css::uno::Any &aURLAny);
 
     /**
      Loads a data source from file and registers it.
@@ -352,7 +450,7 @@ public:
      the filename returned by a file picker and additional settings dialog.
      In case of success it returns the registered name, otherwise an empty string.
      */
-    static OUString            LoadAndRegisterDataSource(SwDocShell* pDocShell = 0);
+    static OUString            LoadAndRegisterDataSource(SwDocShell* pDocShell = nullptr);
 
     /**
      Loads a data source from file and registers it.
@@ -360,18 +458,18 @@ public:
      In case of success it returns the registered name, otherwise an empty string.
      Optionally add a prefix to the registered DB name.
      */
-    static OUString            LoadAndRegisterDataSource(const DBConnURITypes type, const ::com::sun::star::uno::Any &rUnoURI,
-                                                         const ::com::sun::star::uno::Reference < ::com::sun::star::beans::XPropertySet > *pSettings,
-                                                         const OUString &rURI, const OUString *pPrefix = 0, const OUString *pDestDir = 0,
-                                                         SwDocShell* pDocShell = 0);
+    static OUString            LoadAndRegisterDataSource(const DBConnURITypes type, const css::uno::Any &rUnoURI,
+                                                         const css::uno::Reference < css::beans::XPropertySet > *pSettings,
+                                                         const OUString &rURI, const OUString *pPrefix = nullptr, const OUString *pDestDir = nullptr,
+                                                         SwDocShell* pDocShell = nullptr);
     /**
      Loads a data source from file and registers it.
 
      Convenience function, which calls GetDBunoURI and has just one mandatory parameter.
      In case of success it returns the registered name, otherwise an empty string.
      */
-    static OUString            LoadAndRegisterDataSource(const OUString& rURI, const OUString *pPrefix = 0, const OUString *pDestDir = 0,
-                                                         const ::com::sun::star::uno::Reference < ::com::sun::star::beans::XPropertySet > *pSettings = 0);
+    static OUString            LoadAndRegisterDataSource(const OUString& rURI, const OUString *pPrefix = nullptr, const OUString *pDestDir = nullptr,
+                                                         const css::uno::Reference < css::beans::XPropertySet > *pSettings = nullptr);
 
     /// Load the embedded data source of the document and also register it.
     void LoadAndRegisterEmbeddedDataSource(const SwDBData& rData, const SwDocShell& rDocShell);
@@ -388,8 +486,8 @@ public:
         @return
             The data source.
     */
-    static ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XDataSource>
-            getDataSourceAsParent(const ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XConnection>& _xConnection,const OUString& _sDataSourceName);
+    static css::uno::Reference< css::sdbc::XDataSource>
+            getDataSourceAsParent(const css::uno::Reference< css::sdbc::XConnection>& _xConnection,const OUString& _sDataSourceName);
 
     /** creates a RowSet, which must be disposed after use.
         @param  _sDataSourceName
@@ -404,11 +502,11 @@ public:
             The new created RowSet.
 
     */
-    static ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XResultSet>
+    static css::uno::Reference< css::sdbc::XResultSet>
             createCursor(   const OUString& _sDataSourceName,
                             const OUString& _sCommand,
                             sal_Int32 _nCommandType,
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XConnection>& _xConnection
+                            const css::uno::Reference< css::sdbc::XConnection>& _xConnection
                             );
 
     void setEmbeddedName(const OUString& rEmbeddedName, SwDocShell& rDocShell);

@@ -74,7 +74,7 @@ bool GalleryPreview::SetGraphic( const INetURLObject& _aURL )
     {
         GraphicFilter& rFilter = GraphicFilter::GetGraphicFilter();
         GalleryProgress aProgress( &rFilter );
-        if( rFilter.ImportGraphic( aGraphic, _aURL, GRFILTER_FORMAT_DONTKNOW ) )
+        if( rFilter.ImportGraphic( aGraphic, _aURL ) )
             bRet = false;
     }
 
@@ -160,7 +160,7 @@ void GalleryPreview::Command(const CommandEvent& rCEvt)
     if (mpTheme && (rCEvt.GetCommand() == CommandEventId::ContextMenu))
     {
         GalleryBrowser2* pGalleryBrowser = static_cast<GalleryBrowser2*>(GetParent());
-        pGalleryBrowser->ShowContextMenu(this, (rCEvt.IsMouseEvent() ? &rCEvt.GetMousePosPixel() : NULL));
+        pGalleryBrowser->ShowContextMenu(this, (rCEvt.IsMouseEvent() ? &rCEvt.GetMousePosPixel() : nullptr));
     }
 }
 
@@ -257,23 +257,13 @@ void GalleryPreview::PreviewMedia( const INetURLObject& rURL )
 
 void drawTransparenceBackground(vcl::RenderContext& rOut, const Point& rPos, const Size& rSize)
 {
-    const StyleSettings& rStyleSettings = Application::GetSettings().GetStyleSettings();
 
-    if (rStyleSettings.GetPreviewUsesCheckeredBackground())
-    {
-        // draw checkered background
-        static const sal_uInt32 nLen(8);
-        static const Color aW(COL_WHITE);
-        static const Color aG(0xef, 0xef, 0xef);
+    // draw checkered background
+    static const sal_uInt32 nLen(8);
+    static const Color aW(COL_WHITE);
+    static const Color aG(0xef, 0xef, 0xef);
 
-        rOut.DrawCheckered(rPos, rSize, nLen, aW, aG);
-    }
-    else
-    {
-        rOut.SetLineColor();
-        rOut.SetFillColor(rStyleSettings.GetFieldColor());
-        rOut.DrawRect(Rectangle(rPos, rSize));
-    }
+    rOut.DrawCheckered(rPos, rSize, nLen, aW, aG);
 }
 
 GalleryIconView::GalleryIconView( GalleryBrowser2* pParent, GalleryTheme* pTheme ) :
@@ -563,7 +553,7 @@ void GalleryListView::Command( const CommandEvent& rCEvt )
 
     if( rCEvt.GetCommand() == CommandEventId::ContextMenu )
     {
-        const Point* pPos = NULL;
+        const Point* pPos = nullptr;
 
         if( rCEvt.IsMouseEvent() && ( GetRowAtYPosPixel( rCEvt.GetMousePosPixel().Y() ) != BROWSER_ENDOFSELECTION ) )
             pPos = &rCEvt.GetMousePosPixel();
@@ -588,8 +578,7 @@ void GalleryListView::DoubleClick( const BrowserMouseEvent& rEvt )
 
 void GalleryListView::Select()
 {
-    if( maSelectHdl.IsSet() )
-        maSelectHdl.Call( this );
+    maSelectHdl.Call( this );
 }
 
 sal_Int8 GalleryListView::AcceptDrop( const BrowserAcceptDropEvent& )

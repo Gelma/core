@@ -38,14 +38,15 @@ public:
     /// Put needed items for XPropertyList entries from the DrawModel.
     void PutAreaListItems(SfxItemSet& rSet) const;
 
-    virtual SdrPage* AllocPage(bool bMasterPage) SAL_OVERRIDE;
+    virtual SdrPage* AllocPage(bool bMasterPage) override;
 
-    virtual ::com::sun::star::uno::Reference<
-                ::com::sun::star::embed::XStorage> GetDocumentStorage() const SAL_OVERRIDE;
+    virtual css::uno::Reference<css::embed::XStorage> GetDocumentStorage() const override;
+    /// Get the callback and callback data, previously given to registerLibreOfficeKitCallback().
+    void getLibreOfficeKitCallback(LibreOfficeKitCallback& rCallback, void*& rLibreOfficeKitData);
 
 protected:
     /// override of <SdrModel::createUnoModel()> is needed to provide corresponding uno model.
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > createUnoModel() SAL_OVERRIDE;
+    virtual css::uno::Reference< css::uno::XInterface > createUnoModel() override;
 };
 
 #endif

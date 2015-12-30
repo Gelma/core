@@ -66,7 +66,6 @@ namespace
         const AnimationBitmap& rAnimBitmap = maAnimation.Get(sal_uInt16(nIndex));
         sal_uInt32 nWaitTime(rAnimBitmap.nWait * 10);
 
-        // #115934#
         // Take care of special value for MultiPage TIFFs. ATM these shall just
         // show their first page. Later we will offer some switching when object
         // is selected.
@@ -97,7 +96,8 @@ namespace
         if(maAnimation.Count())
         {
             ScopedVclPtrInstance< VirtualDevice > aVirtualDevice(*Application::GetDefaultDevice());
-            ScopedVclPtrInstance< VirtualDevice > aVirtualDeviceMask(*Application::GetDefaultDevice(), 1L);
+            ScopedVclPtrInstance< VirtualDevice > aVirtualDeviceMask(*Application::GetDefaultDevice(),
+                                                                     DeviceFormat::BITMASK);
 
             // Prepare VirtualDevices and their states
             aVirtualDevice->EnableMapMode(false);
@@ -193,11 +193,11 @@ namespace drawinglayer
 {
     namespace primitive2d
     {
-        Primitive2DSequence create2DDecompositionOfGraphic(
+        Primitive2DContainer create2DDecompositionOfGraphic(
             const Graphic& rGraphic,
             const basegfx::B2DHomMatrix& rTransform)
         {
-            Primitive2DSequence aRetval;
+            Primitive2DContainer aRetval;
 
             switch(rGraphic.GetType())
             {
@@ -212,7 +212,7 @@ namespace drawinglayer
                         {
                             // create sub-primitives for animated bitmap and the needed animation loop
                             animation::AnimationEntryLoop aAnimationLoop(aData.loopCount() ? aData.loopCount() : 0xffff);
-                            Primitive2DSequence aBitmapPrimitives(aData.count());
+                            Primitive2DContainer aBitmapPrimitives(aData.count());
 
                             for(sal_uInt32 a(0); a < aData.count(); a++)
                             {
@@ -228,7 +228,7 @@ namespace drawinglayer
                             aAnimationList.append(aAnimationLoop);
 
                             // create and add animated switch primitive
-                            aRetval.realloc(1);
+                            aRetval.resize(1);
                             aRetval[0] = new AnimatedSwitchPrimitive2D(
                                 aAnimationList,
                                 aBitmapPrimitives,
@@ -256,7 +256,7 @@ namespace drawinglayer
                             aEmbedSvg = rTransform * aEmbedSvg;
 
                             // add Svg primitives embedded
-                            aRetval.realloc(1);
+                            aRetval.resize(1);
                             aRetval[0] = new TransformPrimitive2D(
                                 aEmbedSvg,
                                 rGraphic.getSvgData()->getPrimitive2DSequence());
@@ -264,7 +264,7 @@ namespace drawinglayer
                     }
                     else
                     {
-                        aRetval.realloc(1);
+                        aRetval.resize(1);
                         aRetval[0] = new BitmapPrimitive2D(
                             rGraphic.GetBitmapEx(),
                             rTransform);
@@ -278,7 +278,7 @@ namespace drawinglayer
                     // create MetafilePrimitive2D
                     const GDIMetaFile& rMetafile = rGraphic.GetGDIMetaFile();
 
-                    aRetval.realloc(1);
+                    aRetval.resize(1);
                     aRetval[0] = new MetafilePrimitive2D(
                         rTransform,
                         rMetafile);
@@ -316,8 +316,8 @@ namespace drawinglayer
             return aRetval;
         }
 
-        Primitive2DSequence create2DColorModifierEmbeddingsAsNeeded(
-            const Primitive2DSequence& rChildren,
+        Primitive2DContainer create2DColorModifierEmbeddingsAsNeeded(
+            const Primitive2DContainer& rChildren,
             GraphicDrawMode aGraphicDrawMode,
             double fLuminance,
             double fContrast,
@@ -327,9 +327,9 @@ namespace drawinglayer
             double fGamma,
             bool bInvert)
         {
-            Primitive2DSequence aRetval;
+            Primitive2DContainer aRetval;
 
-            if(!rChildren.getLength())
+            if(!rChildren.size())
             {
                 // no child content, done
                 return aRetval;
@@ -363,7 +363,7 @@ namespace drawinglayer
                             basegfx::BColorModifierSharedPtr(
                                 new basegfx::BColorModifier_gray())));
 
-                    aRetval = Primitive2DSequence(&aPrimitiveGrey, 1);
+                    aRetval = Primitive2DContainer { aPrimitiveGrey };
                     break;
                 }
                 case GRAPHICDRAWMODE_MONO:
@@ -375,7 +375,7 @@ namespace drawinglayer
                             basegfx::BColorModifierSharedPtr(
                                 new basegfx::BColorModifier_black_and_white(0.5))));
 
-                    aRetval = Primitive2DSequence(&aPrimitiveBlackAndWhite, 1);
+                    aRetval = Primitive2DContainer { aPrimitiveBlackAndWhite };
                     break;
                 }
                 // coverity[dead_error_begin] - intentional dead case
@@ -410,7 +410,7 @@ namespace drawinglayer
                                 fLuminance,
                                 fContrast))));
 
-                aRetval = Primitive2DSequence(&aPrimitiveRGBLuminannceContrast, 1);
+                aRetval = Primitive2DContainer { aPrimitiveRGBLuminannceContrast };
             }
 
             // gamma (boolean)
@@ -423,7 +423,7 @@ namespace drawinglayer
                             new basegfx::BColorModifier_gamma(
                                 fGamma))));
 
-                aRetval = Primitive2DSequence(&aPrimitiveGamma, 1);
+                aRetval = Primitive2DContainer { aPrimitiveGamma };
             }
 
             // invert (boolean)
@@ -435,7 +435,7 @@ namespace drawinglayer
                         basegfx::BColorModifierSharedPtr(
                             new basegfx::BColorModifier_invert())));
 
-                aRetval = Primitive2DSequence(&aPrimitiveInvert, 1);
+                aRetval = Primitive2DContainer { aPrimitiveInvert };
             }
 
             return aRetval;

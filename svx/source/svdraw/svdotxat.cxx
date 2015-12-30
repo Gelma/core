@@ -264,10 +264,10 @@ bool SdrTextObj::NbcAdjustTextFrameWidthAndHeight(bool bHgt, bool bWdt)
     if (bRet)
     {
         SetRectsDirty();
-        if (HAS_BASE(SdrRectObj,this)) { // this is a hack
+        if (dynamic_cast<const SdrRectObj *>(this) != nullptr) { // this is a hack
             static_cast<SdrRectObj*>(this)->SetXPolyDirty();
         }
-        if (HAS_BASE(SdrCaptionObj,this)) { // this is a hack
+        if (dynamic_cast<const SdrCaptionObj *>(this) != nullptr) { // this is a hack
             static_cast<SdrCaptionObj*>(this)->ImpRecalcTail();
         }
     }
@@ -279,13 +279,13 @@ bool SdrTextObj::AdjustTextFrameWidthAndHeight(bool bHgt, bool bWdt)
     Rectangle aNeuRect(maRect);
     bool bRet=AdjustTextFrameWidthAndHeight(aNeuRect,bHgt,bWdt);
     if (bRet) {
-        Rectangle aBoundRect0; if (pUserCall!=NULL) aBoundRect0=GetLastBoundRect();
+        Rectangle aBoundRect0; if (pUserCall!=nullptr) aBoundRect0=GetLastBoundRect();
         maRect = aNeuRect;
         SetRectsDirty();
-        if (HAS_BASE(SdrRectObj,this)) { // this is a hack
+        if (dynamic_cast<const SdrRectObj *>(this) != nullptr) { // this is a hack
             static_cast<SdrRectObj*>(this)->SetXPolyDirty();
         }
-        if (HAS_BASE(SdrCaptionObj,this)) { // this is a hack
+        if (dynamic_cast<const SdrCaptionObj *>(this) != nullptr) { // this is a hack
             static_cast<SdrCaptionObj*>(this)->ImpRecalcTail();
         }
         SetChanged();
@@ -297,12 +297,12 @@ bool SdrTextObj::AdjustTextFrameWidthAndHeight(bool bHgt, bool bWdt)
 
 void SdrTextObj::ImpSetTextStyleSheetListeners()
 {
-    SfxStyleSheetBasePool* pStylePool=pModel!=NULL ? pModel->GetStyleSheetPool() : NULL;
-    if (pStylePool!=NULL)
+    SfxStyleSheetBasePool* pStylePool=pModel!=nullptr ? pModel->GetStyleSheetPool() : nullptr;
+    if (pStylePool!=nullptr)
     {
         std::vector<OUString> aStyleNames;
         OutlinerParaObject* pOutlinerParaObject = GetOutlinerParaObject();
-        if (pOutlinerParaObject!=NULL)
+        if (pOutlinerParaObject!=nullptr)
         {
             // First, we collect all stylesheets contained in the ParaObject in
             // the container aStyles. The Family is always appended to the name
@@ -347,8 +347,8 @@ void SdrTextObj::ImpSetTextStyleSheetListeners()
 
             SfxStyleFamily eFam = ReadFamilyFromStyleName(aName);
             SfxStyleSheetBase* pStyleBase = pStylePool->Find(aName,eFam);
-            SfxStyleSheet* pStyle = PTR_CAST(SfxStyleSheet,pStyleBase);
-            if (pStyle!=NULL && pStyle!=GetStyleSheet()) {
+            SfxStyleSheet* pStyle = dynamic_cast<SfxStyleSheet*>( pStyleBase );
+            if (pStyle!=nullptr && pStyle!=GetStyleSheet()) {
                 aStyleSheets.insert(pStyle);
             }
         }
@@ -357,8 +357,8 @@ void SdrTextObj::ImpSetTextStyleSheetListeners()
         while (nNum>0) {
             nNum--;
             SfxBroadcaster* pBroadcast=GetBroadcasterJOE((sal_uInt16)nNum);
-            SfxStyleSheet* pStyle=PTR_CAST(SfxStyleSheet,pBroadcast);
-            if (pStyle!=NULL && pStyle!=GetStyleSheet()) { // special case for stylesheet of the object
+            SfxStyleSheet* pStyle=dynamic_cast<SfxStyleSheet*>( pBroadcast );
+            if (pStyle!=nullptr && pStyle!=GetStyleSheet()) { // special case for stylesheet of the object
                 if (aStyleSheets.find(pStyle)==aStyleSheets.end()) {
                     EndListening(*pStyle);
                 }
@@ -384,11 +384,11 @@ void SdrTextObj::RemoveOutlinerCharacterAttribs( const std::vector<sal_uInt16>& 
     while( --nText >= 0 )
     {
         SdrText* pText = getText( nText );
-        OutlinerParaObject* pOutlinerParaObject = pText ? pText->GetOutlinerParaObject() : 0;
+        OutlinerParaObject* pOutlinerParaObject = pText ? pText->GetOutlinerParaObject() : nullptr;
 
         if(pOutlinerParaObject)
         {
-            Outliner* pOutliner = 0;
+            Outliner* pOutliner = nullptr;
 
             if( pEdtOutl || (pText == getActiveText()) )
                 pOutliner = pEdtOutl;

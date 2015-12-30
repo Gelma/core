@@ -95,38 +95,38 @@ class OFileAccess : public FileAccessHelper
 
 public:
     explicit OFileAccess( const Reference< XComponentContext > & xContext )
-        : m_xContext( xContext), mpEnvironment( NULL ) {}
+        : m_xContext( xContext), mpEnvironment( nullptr ) {}
     // Methods
-    virtual void SAL_CALL copy( const OUString& SourceURL, const OUString& DestURL ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL move( const OUString& SourceURL, const OUString& DestURL ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL kill( const OUString& FileURL ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL isFolder( const OUString& FileURL ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL isReadOnly( const OUString& FileURL ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setReadOnly( const OUString& FileURL, sal_Bool bReadOnly ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL createFolder( const OUString& NewFolderURL ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Int32 SAL_CALL getSize( const OUString& FileURL ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual OUString SAL_CALL getContentType( const OUString& FileURL ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::util::DateTime SAL_CALL getDateTimeModified( const OUString& FileURL ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getFolderContents( const OUString& FolderURL, sal_Bool bIncludeFolders ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL exists( const OUString& FileURL ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::io::XInputStream > SAL_CALL openFileRead( const OUString& FileURL ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::io::XOutputStream > SAL_CALL openFileWrite( const OUString& FileURL ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::io::XStream > SAL_CALL openFileReadWrite( const OUString& FileURL ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setInteractionHandler( const ::com::sun::star::uno::Reference< ::com::sun::star::task::XInteractionHandler >& Handler ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL writeFile( const OUString& FileURL, const ::com::sun::star::uno::Reference< ::com::sun::star::io::XInputStream >& data ) throw (::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL isHidden( const OUString& FileURL ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setHidden( const OUString& FileURL, sal_Bool bHidden ) throw(::com::sun::star::ucb::CommandAbortedException, ::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL copy( const OUString& SourceURL, const OUString& DestURL ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL move( const OUString& SourceURL, const OUString& DestURL ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL kill( const OUString& FileURL ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL isFolder( const OUString& FileURL ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL isReadOnly( const OUString& FileURL ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setReadOnly( const OUString& FileURL, sal_Bool bReadOnly ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL createFolder( const OUString& NewFolderURL ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual sal_Int32 SAL_CALL getSize( const OUString& FileURL ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual OUString SAL_CALL getContentType( const OUString& FileURL ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual css::util::DateTime SAL_CALL getDateTimeModified( const OUString& FileURL ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< OUString > SAL_CALL getFolderContents( const OUString& FolderURL, sal_Bool bIncludeFolders ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL exists( const OUString& FileURL ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Reference< css::io::XInputStream > SAL_CALL openFileRead( const OUString& FileURL ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Reference< css::io::XOutputStream > SAL_CALL openFileWrite( const OUString& FileURL ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Reference< css::io::XStream > SAL_CALL openFileReadWrite( const OUString& FileURL ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setInteractionHandler( const css::uno::Reference< css::task::XInteractionHandler >& Handler ) throw(css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL writeFile( const OUString& FileURL, const css::uno::Reference< css::io::XInputStream >& data ) throw (css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL isHidden( const OUString& FileURL ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setHidden( const OUString& FileURL, sal_Bool bHidden ) throw(css::ucb::CommandAbortedException, css::uno::Exception, css::uno::RuntimeException, std::exception) override;
 
     OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return OUString(IMPLEMENTATION_NAME); }
 
     sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return cppu::supportsService(this, ServiceName); }
 
     css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return FileAccess_getSupportedServiceNames(); }
 };
 
@@ -140,9 +140,9 @@ public:
 
     // Methods
     virtual void SAL_CALL setInputStream( const Reference< XInputStream >& aStream )
-        throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(RuntimeException, std::exception) override;
     virtual Reference< XInputStream > SAL_CALL getInputStream(  )
-        throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(RuntimeException, std::exception) override;
 };
 
 // Implementation XActiveDataStreamer
@@ -155,9 +155,9 @@ public:
 
     // Methods
     virtual void SAL_CALL setStream( const Reference< XStream >& aStream )
-        throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(RuntimeException, std::exception) override;
     virtual Reference< XStream > SAL_CALL getStream()
-        throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(RuntimeException, std::exception) override;
 };
 
 // Implementation XCommandEnvironment
@@ -174,9 +174,9 @@ public:
 
     // Methods
     virtual Reference< XInteractionHandler > SAL_CALL getInteractionHandler()
-        throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(RuntimeException, std::exception) override;
     virtual Reference< XProgressHandler > SAL_CALL getProgressHandler()
-        throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(RuntimeException, std::exception) override;
 };
 
 void OActiveDataSink::setInputStream( const Reference< XInputStream >& aStream )
@@ -281,9 +281,9 @@ void OFileAccess::transferImpl( const OUString& rSource,
                                     ? ucbhelper::InsertOperation_MOVE
                                     : ucbhelper::InsertOperation_COPY,
                                    aName,
-                                   ::com::sun::star::ucb::NameClash::OVERWRITE );
+                                   css::ucb::NameClash::OVERWRITE );
     }
-    catch ( ::com::sun::star::ucb::CommandFailedException const & )
+    catch ( css::ucb::CommandFailedException const & )
     {
         // Interaction Handler already handled the error that has occurred...
     }
@@ -309,9 +309,9 @@ void OFileAccess::kill( const OUString& FileURL )
     ucbhelper::Content aCnt( aDeleteObj.GetMainURL( INetURLObject::NO_DECODE ), mxEnvironment, comphelper::getProcessComponentContext() );
     try
     {
-        aCnt.executeCommand( OUString("delete" ), makeAny( true ) );
+        aCnt.executeCommand( "delete", makeAny( true ) );
     }
-    catch ( ::com::sun::star::ucb::CommandFailedException const & )
+    catch ( css::ucb::CommandFailedException const & )
     {
         // Interaction Handler already handled the error that has occurred...
     }
@@ -395,9 +395,7 @@ void OFileAccess::createFolder( const OUString& NewFolderURL )
             if ( rProps[ 0 ].Name != "Title" )
                 continue;
 
-            Sequence<OUString> aNames(1);
-            OUString* pNames = aNames.getArray();
-            pNames[0] = "Title";
+            Sequence<OUString> aNames { "Title" };
             Sequence< Any > aValues(1);
             Any* pValues = aValues.getArray();
             pValues[0] = makeAny( OUString( aTitle ) );
@@ -411,7 +409,7 @@ void OFileAccess::createFolder( const OUString& NewFolderURL )
                 // Success. We're done.
                 return;
             }
-            catch ( ::com::sun::star::ucb::CommandFailedException const & )
+            catch ( css::ucb::CommandFailedException const & )
             {
                 // Interaction Handler already handled the error that has occurred...
                 continue;
@@ -444,11 +442,11 @@ OUString OFileAccess::getContentType( const OUString& FileURL )
     return aTypeStr;
 }
 
-::com::sun::star::util::DateTime OFileAccess::getDateTimeModified( const OUString& FileURL )
+css::util::DateTime OFileAccess::getDateTimeModified( const OUString& FileURL )
     throw(CommandAbortedException, Exception, RuntimeException, std::exception)
 {
     INetURLObject aFileObj( FileURL, INetProtocol::File );
-    ::com::sun::star::util::DateTime aDateTime;
+    css::util::DateTime aDateTime;
 
     Reference< XCommandEnvironment > aCmdEnv;
     ucbhelper::Content aYoung( aFileObj.GetMainURL( INetURLObject::NO_DECODE ), aCmdEnv, comphelper::getProcessComponentContext() );
@@ -463,7 +461,7 @@ Sequence< OUString > OFileAccess::getFolderContents( const OUString& FolderURL, 
 {
     // SfxContentHelper::GetFolderContents
 
-    StringList_Impl* pFiles = NULL;
+    StringList_Impl* pFiles = nullptr;
     INetURLObject aFolderObj( FolderURL, INetProtocol::File );
 
     ucbhelper::Content aCnt( aFolderObj.GetMainURL( INetURLObject::NO_DECODE ), mxEnvironment, comphelper::getProcessComponentContext() );
@@ -476,7 +474,7 @@ Sequence< OUString > OFileAccess::getFolderContents( const OUString& FolderURL, 
     {
         xResultSet = aCnt.createCursor( aProps, eInclude );
     }
-    catch ( ::com::sun::star::ucb::CommandFailedException const & )
+    catch ( css::ucb::CommandFailedException const & )
     {
         // Interaction Handler already handled the error that has occurred...
     }
@@ -484,7 +482,7 @@ Sequence< OUString > OFileAccess::getFolderContents( const OUString& FolderURL, 
     if ( xResultSet.is() )
     {
         pFiles = new StringList_Impl();
-        Reference< com::sun::star::ucb::XContentAccess > xContentAccess( xResultSet, UNO_QUERY );
+        Reference< css::ucb::XContentAccess > xContentAccess( xResultSet, UNO_QUERY );
 
         while ( xResultSet->next() )
         {
@@ -548,7 +546,7 @@ Reference< XInputStream > OFileAccess::openFileRead( const OUString& FileURL )
         if( bRet )
             xRet = xSink->getInputStream();
     }
-    catch ( ::com::sun::star::ucb::CommandFailedException const & )
+    catch ( css::ucb::CommandFailedException const & )
     {
         // Interaction Handler already handled the error that has occurred...
     }
@@ -570,7 +568,7 @@ Reference< XStream > OFileAccess::openFileReadWrite( const OUString& FileURL )
     throw(CommandAbortedException, Exception, RuntimeException, std::exception)
 {
     Reference< XActiveDataStreamer > xSink = static_cast<XActiveDataStreamer*>(new OActiveDataStreamer());
-    Reference< XInterface > xSinkIface = Reference< XInterface >::query( xSink );
+    Reference< XInterface > xSinkIface( xSink, UNO_QUERY );
 
     OpenCommandArgument2 aArg;
     aArg.Mode       = OpenMode::DOCUMENT;
@@ -589,12 +587,12 @@ Reference< XStream > OFileAccess::openFileReadWrite( const OUString& FileURL )
     if ( mpEnvironment )
     {
         xIH = mpEnvironment->getInteractionHandler();
-        mpEnvironment->setHandler( 0 );
+        mpEnvironment->setHandler( nullptr );
     }
 
     try
     {
-        aCnt.executeCommand( OUString("open" ), aCmdArg );
+        aCnt.executeCommand( "open", aCmdArg );
     }
     catch ( InteractiveIOException const & e )
     {
@@ -612,7 +610,7 @@ Reference< XStream > OFileAccess::openFileReadWrite( const OUString& FileURL )
             aInsertArg.ReplaceExisting = sal_False;
 
             aCmdArg <<= aInsertArg;
-            aCnt.executeCommand( OUString("insert" ), aCmdArg );
+            aCnt.executeCommand( "insert", aCmdArg );
 
             // Retry...
             return openFileReadWrite( FileURL );
@@ -668,9 +666,7 @@ bool OFileAccess::createNewFile( const OUString & rParentURL,
             if ( rProps[ 0 ].Name != "Title" )
                 continue;
 
-            Sequence<OUString> aNames(1);
-            OUString* pNames = aNames.getArray();
-            pNames[0] = "Title";
+            Sequence<OUString> aNames { "Title" };
             Sequence< Any > aValues(1);
             Any* pValues = aValues.getArray();
             pValues[0] = makeAny( OUString( rTitle ) );
@@ -777,8 +773,7 @@ Reference< XInterface > SAL_CALL FileAccess_CreateInstance( const Reference< XMu
 
 Sequence< OUString > FileAccess_getSupportedServiceNames()
 {
-    Sequence< OUString > seqNames(1);
-    seqNames.getArray()[0] = SERVICE_NAME;
+    Sequence< OUString > seqNames { SERVICE_NAME };
     return seqNames;
 }
 

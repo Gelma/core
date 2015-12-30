@@ -74,7 +74,7 @@ uno::Reference< drawing::XShape >  OReportDrawPage::_CreateShape( SdrObject *pOb
         OUString sServiceName = pBaseObj->getServiceName();
         OSL_ENSURE(!sServiceName.isEmpty(),"No Service Name given!");
 
-        if ( pObj->ISA(OUnoObject) )
+        if (dynamic_cast< const OUnoObject* >(pObj) != nullptr)
         {
             OUnoObject& rUnoObj = dynamic_cast<OUnoObject&>(*pObj);
             if (rUnoObj.GetObjIdentifier() == OBJ_DLG_FIXEDTEXT)
@@ -89,14 +89,14 @@ uno::Reference< drawing::XShape >  OReportDrawPage::_CreateShape( SdrObject *pOb
             xShape.set(static_cast<cppu::OWeakObject*>(static_cast<SvxShape_UnoImplHelper *>(pShape)),uno::UNO_QUERY);
             pShape->setShapeKind(pObj->GetObjIdentifier());
         }
-        else if ( pObj->ISA(OCustomShape) )
+        else if (dynamic_cast< const OCustomShape* >(pObj) != nullptr)
         {
             SvxCustomShape* pShape = new SvxCustomShape( pObj );
             uno::Reference < drawing::XEnhancedCustomShapeDefaulter > xShape2 = pShape;
             xShape.set(xShape2,uno::UNO_QUERY);
             pShape->setShapeKind(pObj->GetObjIdentifier());
         }
-        else if ( pObj->ISA(SdrOle2Obj) )
+        else if (dynamic_cast< const SdrOle2Obj* >(pObj) != nullptr)
         {
             SdrOle2Obj& rOle2Obj = dynamic_cast<SdrOle2Obj&>(*pObj);
             if (!rOle2Obj.GetObjRef().is())
@@ -106,14 +106,14 @@ uno::Reference< drawing::XShape >  OReportDrawPage::_CreateShape( SdrObject *pOb
                 OUString sName;
                 xObj = pObj->GetModel()->GetPersist()->getEmbeddedObjectContainer().CreateEmbeddedObject(
                     ::comphelper::MimeConfigurationHelper::GetSequenceClassIDRepresentation(
-                    OUString("80243D39-6741-46C5-926E-069164FF87BB")), sName );
+                    "80243D39-6741-46C5-926E-069164FF87BB"), sName );
                 OSL_ENSURE(xObj.is(),"Embedded Object could not be created!");
 
                 /**************************************************
                 * Das leere OLE-Objekt bekommt ein neues IPObj
                 **************************************************/
                 pObj->SetEmptyPresObj(false);
-                rOle2Obj.SetOutlinerParaObject(NULL);
+                rOle2Obj.SetOutlinerParaObject(nullptr);
                 rOle2Obj.SetObjRef(xObj);
                 rOle2Obj.SetPersistName(sName);
                 rOle2Obj.SetName(sName);

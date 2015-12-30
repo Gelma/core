@@ -58,7 +58,7 @@ SvxLineEndDefTabPage::SvxLineEndDefTabPage
               , "cui/ui/lineendstabpage.ui"
               , &rInAttrs ),
     rOutAttrs           ( rInAttrs ),
-    pPolyObj            ( NULL ),
+    pPolyObj            ( nullptr ),
     bObjSelected        ( false ),
 
     aXLStyle            ( css::drawing::LineStyle_SOLID ),
@@ -66,11 +66,11 @@ SvxLineEndDefTabPage::SvxLineEndDefTabPage
     aXColor             ( OUString(), COL_BLACK ),
     aXLineAttr          ( rInAttrs.GetPool() ),
     rXLSet              ( aXLineAttr.GetItemSet() ),
-    pLineEndList        ( NULL ),
-    pnLineEndListState  ( NULL ),
-    pPageType           ( NULL ),
+    pLineEndList        ( nullptr ),
+    pnLineEndListState  ( nullptr ),
+    pPageType           ( nullptr ),
     nDlgType            ( 0 ),
-    pPosLineEndLb       ( NULL )
+    pPosLineEndLb       ( nullptr )
 {
     get(m_pEdtName,"EDT_NAME");
     get(m_pLbLineEnds,"LB_LINEENDS");
@@ -140,15 +140,15 @@ void SvxLineEndDefTabPage::Construct()
     {
         bCreateArrowPossible = false;
     }
-    else if( 0 == dynamic_cast<const SdrPathObj*>( pPolyObj) )
+    else if( nullptr == dynamic_cast<const SdrPathObj*>( pPolyObj) )
     {
         SdrObjTransformInfoRec aInfoRec;
         pPolyObj->TakeObjInfo( aInfoRec );
-        SdrObject* pNewObj = 0;
+        SdrObject* pNewObj = nullptr;
         if( aInfoRec.bCanConvToPath )
             pNewObj = pPolyObj->ConvertToPolyObj( true, false );
 
-        bCreateArrowPossible = pNewObj && 0 != dynamic_cast<const SdrPathObj*>( pNewObj);
+        bCreateArrowPossible = pNewObj && nullptr != dynamic_cast<const SdrPathObj*>( pNewObj);
         SdrObject::Free( pNewObj );
     }
 
@@ -168,7 +168,7 @@ void SvxLineEndDefTabPage::ActivatePage( const SfxItemSet& )
             if( *pPosLineEndLb != LISTBOX_ENTRY_NOTFOUND )
             {
                 m_pLbLineEnds->SelectEntryPos( *pPosLineEndLb );
-                SelectLineEndHdl_Impl( this );
+                SelectLineEndHdl_Impl( *m_pLbLineEnds );
             }
             INetURLObject   aURL( pLineEndList->GetPath() );
 
@@ -208,7 +208,7 @@ void SvxLineEndDefTabPage::CheckChanges_Impl()
                                                            ,"AskChangeLineEndDialog"
                                                            ,"cui/ui/querychangelineenddialog.ui" );
             if ( aQueryBox->Execute() == RET_YES )
-                ClickModifyHdl_Impl( NULL );
+                ClickModifyHdl_Impl( nullptr );
         }
     }
     nPos = m_pLbLineEnds->GetSelectEntryPos();
@@ -285,7 +285,7 @@ VclPtr<SfxTabPage> SvxLineEndDefTabPage::Create( vcl::Window* pWindow, const Sfx
 
 
 
-IMPL_LINK_NOARG(SvxLineEndDefTabPage, SelectLineEndHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvxLineEndDefTabPage, SelectLineEndHdl_Impl, ListBox&, void)
 {
     if( pLineEndList->Count() > 0 )
     {
@@ -307,7 +307,6 @@ IMPL_LINK_NOARG(SvxLineEndDefTabPage, SelectLineEndHdl_Impl)
         // if there is an entry selected in the ListBox
         *pPageType = 3;
     }
-    return 0L;
 }
 
 
@@ -405,9 +404,9 @@ IMPL_LINK_NOARG_TYPED(SvxLineEndDefTabPage, ClickAddHdl_Impl, Button*, void)
     if( pPolyObj )
     {
         const SdrObject* pNewObj;
-        SdrObject* pConvPolyObj = NULL;
+        SdrObject* pConvPolyObj = nullptr;
 
-        if( 0 != dynamic_cast<const SdrPathObj*>( pPolyObj) )
+        if( nullptr != dynamic_cast<const SdrPathObj*>( pPolyObj) )
         {
             pNewObj = pPolyObj;
         }
@@ -420,7 +419,7 @@ IMPL_LINK_NOARG_TYPED(SvxLineEndDefTabPage, ClickAddHdl_Impl, Button*, void)
             {
                 pNewObj = pConvPolyObj = pPolyObj->ConvertToPolyObj( true, false );
 
-                if( !pNewObj || 0 == dynamic_cast<const SdrPathObj*>( pNewObj) )
+                if( !pNewObj || nullptr == dynamic_cast<const SdrPathObj*>( pNewObj) )
                     return; // cancel, additional safety, which
                             // has no use for group objects though.
             }
@@ -489,7 +488,7 @@ IMPL_LINK_NOARG_TYPED(SvxLineEndDefTabPage, ClickAddHdl_Impl, Button*, void)
 
                 *pnLineEndListState |= ChangeType::MODIFIED;
 
-                SelectLineEndHdl_Impl( this );
+                SelectLineEndHdl_Impl( *m_pLbLineEnds );
             }
             else
             {
@@ -530,7 +529,7 @@ IMPL_LINK_NOARG_TYPED(SvxLineEndDefTabPage, ClickDeleteHdl_Impl, Button*, void)
             m_pLbLineEnds->RemoveEntry( nPos );
             m_pLbLineEnds->SelectEntryPos( 0 );
 
-            SelectLineEndHdl_Impl( this );
+            SelectLineEndHdl_Impl( *m_pLbLineEnds );
             *pPageType = 0; // LineEnd shall not be taken over
 
             *pnLineEndListState |= ChangeType::MODIFIED;

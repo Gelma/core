@@ -37,20 +37,22 @@ public:
     Test();
 
     // init
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
     // tests
     void editUndoRedo();
     void editMarker();
     void editFailure();
 
+    void replacePlaceholder();
     void viewZoom();
 
     CPPUNIT_TEST_SUITE(Test);
     CPPUNIT_TEST(editUndoRedo);
     CPPUNIT_TEST(editMarker);
     CPPUNIT_TEST(editFailure);
+    CPPUNIT_TEST(replacePlaceholder);
     CPPUNIT_TEST(viewZoom);
     CPPUNIT_TEST_SUITE_END();
 
@@ -78,7 +80,7 @@ void Test::setUp()
         SfxModelFlags::EMBEDDED_OBJECT |
         SfxModelFlags::DISABLE_EMBEDDED_SCRIPTS |
         SfxModelFlags::DISABLE_DOCUMENT_RECOVERY);
-    m_xDocShRef->DoInitNew(0);
+    m_xDocShRef->DoInitNew();
 
     SfxViewFrame *pViewFrame = SfxViewFrame::LoadHiddenDocument(*m_xDocShRef, 0);
 
@@ -219,6 +221,17 @@ void Test::editUndoRedo()
         CPPUNIT_ASSERT_MESSAGE("Must be empty", !sFinalText.getLength());
     }
 
+}
+
+void Test::replacePlaceholder()
+{
+    // Test the placeholder replacement. In this case, testing 'a + b', it
+    // should return '+a + b' when selecting '+<?>' in ElementsDock
+    m_pEditWindow->SetText("a + b");
+    m_pEditWindow->SelectAll();
+    m_pEditWindow->InsertText("+<?>");
+    OUString sFinalText = m_pEditWindow->GetText();
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Should be '+a + b'", OUString("+a + b"), sFinalText);
 }
 
 void Test::viewZoom()

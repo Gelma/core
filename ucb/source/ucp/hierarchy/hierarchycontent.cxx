@@ -90,7 +90,7 @@ HierarchyContent* HierarchyContent::create(
     // Fail, if content does not exist.
     HierarchyContentProperties aProps;
     if ( !loadData( rxContext, pProvider, Identifier, aProps ) )
-        return 0;
+        return nullptr;
 
     return new HierarchyContent( rxContext, pProvider, Identifier, aProps );
 }
@@ -104,10 +104,10 @@ HierarchyContent* HierarchyContent::create(
             const ucb::ContentInfo& Info )
 {
     if ( Info.Type.isEmpty() )
-        return 0;
+        return nullptr;
 
     if ( Info.Type != HIERARCHY_FOLDER_CONTENT_TYPE && Info.Type != HIERARCHY_LINK_CONTENT_TYPE )
-        return 0;
+        return nullptr;
 
     return new HierarchyContent( rxContext, pProvider, Identifier, Info );
 }
@@ -207,11 +207,11 @@ XTYPEPROVIDER_COMMON_IMPL( HierarchyContent );
 uno::Sequence< uno::Type > SAL_CALL HierarchyContent::getTypes()
     throw( uno::RuntimeException, std::exception )
 {
-    cppu::OTypeCollection * pCollection = 0;
+    cppu::OTypeCollection * pCollection = nullptr;
 
     if ( isFolder() && !isReadOnly() )
     {
-        static cppu::OTypeCollection* pFolderTypes = 0;
+        static cppu::OTypeCollection* pFolderTypes = nullptr;
 
         pCollection = pFolderTypes;
         if ( !pCollection )
@@ -244,7 +244,7 @@ uno::Sequence< uno::Type > SAL_CALL HierarchyContent::getTypes()
     }
     else
     {
-        static cppu::OTypeCollection* pDocumentTypes = 0;
+        static cppu::OTypeCollection* pDocumentTypes = nullptr;
 
         pCollection = pDocumentTypes;
         if ( !pCollection )
@@ -494,7 +494,7 @@ uno::Any SAL_CALL HierarchyContent::execute(
                 ucb::IOErrorCode_CANT_WRITE,
                 uno::Sequence< uno::Any >(&aProps, 1),
                 Environment,
-                OUString( "Cannot remove persistent data!" ),
+                "Cannot remove persistent data!",
                 this );
             // Unreachable
         }
@@ -973,8 +973,7 @@ uno::Reference< sdbc::XRow > HierarchyContent::getPropertyValues(
 
                 if ( !bTriedToGetAdditionalPropSet && !xAdditionalPropSet.is() )
                 {
-                    xAdditionalPropSet
-                        = uno::Reference< beans::XPropertySet >(
+                    xAdditionalPropSet.set(
                             pProvider->getAdditionalPropertySet( rContentId,
                                                                  false ),
                             uno::UNO_QUERY );
@@ -1362,7 +1361,7 @@ uno::Sequence< uno::Any > HierarchyContent::setPropertyValues(
                     ucb::IOErrorCode_CANT_WRITE,
                     uno::Sequence< uno::Any >(&aProps, 1),
                     xEnv,
-                    OUString( "Cannot store persistent data!" ),
+                    "Cannot store persistent data!",
                     this );
                 // Unreachable
             }
@@ -1399,8 +1398,7 @@ void HierarchyContent::insert( sal_Int32 nNameClashResolve,
     // Check, if all required properties were set.
     if ( m_aProps.getTitle().isEmpty() )
     {
-        uno::Sequence< OUString > aProps( 1 );
-        aProps[ 0 ] = "Title";
+        uno::Sequence<OUString> aProps { "Title" };
         ucbhelper::cancelCommandExecution(
             uno::makeAny( ucb::MissingPropertiesException(
                                 OUString(),
@@ -1510,7 +1508,7 @@ void HierarchyContent::insert( sal_Int32 nNameClashResolve,
             ucb::IOErrorCode_CANT_WRITE,
             uno::Sequence< uno::Any >(&aProps, 1),
             xEnv,
-            OUString("Cannot store persistent data!"),
+            "Cannot store persistent data!",
             this );
         // Unreachable
     }
@@ -1634,7 +1632,7 @@ void HierarchyContent::transfer(
                 ucb::IOErrorCode_RECURSIVE,
                 uno::Sequence< uno::Any >(&aProps, 1),
                 xEnv,
-                OUString( "Target is equal to or is a child of source!" ),
+                "Target is equal to or is a child of source!",
                 this );
             // Unreachable
         }
@@ -1673,7 +1671,7 @@ void HierarchyContent::transfer(
             ucb::IOErrorCode_CANT_READ,
             uno::Sequence< uno::Any >(&aProps, 1),
             xEnv,
-            OUString( "Cannot instanciate source object!" ),
+            "Cannot instanciate source object!",
             this );
         // Unreachable
     }
@@ -1706,7 +1704,7 @@ void HierarchyContent::transfer(
             ucb::IOErrorCode_CANT_CREATE,
             uno::Sequence< uno::Any >(&aProps, 1),
             xEnv,
-            OUString( "XContentCreator::createNewContent failed!" ),
+            "XContentCreator::createNewContent failed!",
             this );
         // Unreachable
     }
@@ -1838,7 +1836,7 @@ void HierarchyContent::transfer(
                 ucb::IOErrorCode_CANT_WRITE,
                 uno::Sequence< uno::Any >(&aProps, 1),
                 xEnv,
-                OUString( "Cannot remove persistent data of source object!" ),
+                "Cannot remove persistent data of source object!",
                 this );
             // Unreachable
         }

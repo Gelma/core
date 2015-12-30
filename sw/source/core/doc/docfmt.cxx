@@ -145,7 +145,7 @@ static bool lcl_RstAttr( const SwNodePtr& rpNd, void* pArgs )
                 switch( aSavIds[ n ] )
                 {
                     case RES_PAGEDESC:
-                        bSave = 0 != static_cast<const SwFormatPageDesc*>(pItem)->GetPageDesc();
+                        bSave = nullptr != static_cast<const SwFormatPageDesc*>(pItem)->GetPageDesc();
                     break;
                     case RES_BREAK:
                         bSave = SVX_BREAK_NONE != static_cast<const SvxFormatBreakItem*>(pItem)->GetBreak();
@@ -222,7 +222,7 @@ static bool lcl_RstAttr( const SwNodePtr& rpNd, void* pArgs )
 
 void SwDoc::RstTextAttrs(const SwPaM &rRg, bool bInclRefToxMark, bool bExactRange )
 {
-    SwHistory* pHst = 0;
+    SwHistory* pHst = nullptr;
     SwDataChanged aTmp( rRg );
     if (GetIDocumentUndoRedo().DoesUndo())
     {
@@ -259,7 +259,7 @@ void SwDoc::ResetAttrs( const SwPaM &rRg,
         SwIndex& rSt = pPam->GetPoint()->nContent;
         sal_Int32 nMkPos, nPtPos = rSt.GetIndex();
 
-        // Special case: if the Crsr is located within a URL attribute, we take over it's area
+        // Special case: if the Cursor is located within a URL attribute, we take over it's area
         SwTextAttr const*const pURLAttr(
             pTextNd->GetTextAttrAt(rSt.GetIndex(), RES_TXTATR_INETFMT));
         if (pURLAttr && !pURLAttr->GetINetFormat().GetValue().isEmpty())
@@ -286,7 +286,7 @@ void SwDoc::ResetAttrs( const SwPaM &rRg,
             {
                 nPtPos = nMkPos = rSt.GetIndex();
                 if( bTextAttr )
-                    pTextNd->DontExpandFormat( rSt, true );
+                    pTextNd->DontExpandFormat( rSt );
             }
         }
 
@@ -301,7 +301,7 @@ void SwDoc::ResetAttrs( const SwPaM &rRg,
     {
         xDataChanged.reset( new SwDataChanged( *pPam ) );
     }
-    SwHistory* pHst = 0;
+    SwHistory* pHst = nullptr;
     if (GetIDocumentUndoRedo().DoesUndo())
     {
         SwUndoResetAttr* pUndo = new SwUndoResetAttr( rRg,
@@ -426,7 +426,7 @@ bool SwDoc::UpdateRsid( const SwPaM &rRg, const sal_Int32 nLen )
     SfxItemSet aSet(GetAttrPool(), RES_CHRATR_RSID, RES_CHRATR_RSID);
     aSet.Put(aRsid);
     bool const bRet(pTextNode->SetAttr(aSet, nStart,
-        rRg.GetPoint()->nContent.GetIndex(), SetAttrMode::DEFAULT));
+        rRg.GetPoint()->nContent.GetIndex()));
 
     if (bRet && GetIDocumentUndoRedo().DoesUndo())
     {
@@ -494,7 +494,7 @@ void SwDoc::ResetAttrAtFormat( const sal_uInt16 nWhichId,
 {
     SwUndo *const pUndo = (GetIDocumentUndoRedo().DoesUndo())
         ?   new SwUndoFormatResetAttr( rChangedFormat, nWhichId )
-        :   0;
+        :   nullptr;
 
     const bool bAttrReset = rChangedFormat.ResetFormatAttr( nWhichId );
 
@@ -548,7 +548,7 @@ void SwDoc::SetDefault( const SfxItemSet& rSet )
     if( !rSet.Count() )
         return;
 
-    SwModify aCallMod( 0 );
+    SwModify aCallMod( nullptr );
     SwAttrSet aOld( GetAttrPool(), rSet.GetRanges() ),
             aNew( GetAttrPool(), rSet.GetRanges() );
     SfxItemIter aIter( rSet );
@@ -566,13 +566,13 @@ void SwDoc::SetDefault( const SfxItemSet& rSet )
         {
             aCallMod.Add( mpDfltTextFormatColl );
             aCallMod.Add( mpDfltCharFormat );
-            bCheckSdrDflt = 0 != pSdrPool;
+            bCheckSdrDflt = nullptr != pSdrPool;
         }
         else if ( isPARATR(nWhich) ||
                   isPARATR_LIST(nWhich) )
         {
             aCallMod.Add( mpDfltTextFormatColl );
-            bCheckSdrDflt = 0 != pSdrPool;
+            bCheckSdrDflt = nullptr != pSdrPool;
         }
         else if (isGRFATR(nWhich))
         {
@@ -632,7 +632,7 @@ void SwDoc::SetDefault( const SfxItemSet& rSet )
             bool bChg = false;
             sal_uInt32 nMaxItems = GetAttrPool().GetItemCount2( RES_PARATR_TABSTOP );
             for( sal_uInt32 n = 0; n < nMaxItems; ++n )
-                if( 0 != (pTmpItem = GetAttrPool().GetItem2( RES_PARATR_TABSTOP, n ) ))
+                if( nullptr != (pTmpItem = GetAttrPool().GetItem2( RES_PARATR_TABSTOP, n ) ))
                     bChg |= lcl_SetNewDefTabStops( nOldWidth, nNewWidth,
                                                    *const_cast<SvxTabStopItem*>(static_cast<const SvxTabStopItem*>(pTmpItem)) );
 
@@ -700,7 +700,7 @@ void SwDoc::DelCharFormat( SwCharFormat *pFormat, bool bBroadcast )
 
 void SwDoc::DelFrameFormat( SwFrameFormat *pFormat, bool bBroadcast )
 {
-    if( pFormat->ISA( SwTableBoxFormat ) || pFormat->ISA( SwTableLineFormat ))
+    if( dynamic_cast<const SwTableBoxFormat*>( pFormat) != nullptr || dynamic_cast<const SwTableLineFormat*>( pFormat) != nullptr )
     {
         OSL_ENSURE( false, "Format is not in the DocArray any more, "
                        "so it can be deleted with delete" );
@@ -1002,7 +1002,7 @@ static bool lcl_SetTextFormatColl( const SwNodePtr& rpNode, void* pArgs )
 {
     SwContentNode* pCNd = static_cast<SwContentNode*>(rpNode->GetTextNode());
 
-    if( pCNd == NULL)
+    if( pCNd == nullptr)
         return true;
 
     sw::DocumentContentOperationsManager::ParaRstFormat* pPara = static_cast<sw::DocumentContentOperationsManager::ParaRstFormat*>(pArgs);
@@ -1074,7 +1074,7 @@ bool SwDoc::SetTextFormatColl(const SwPaM &rRg,
 {
     SwDataChanged aTmp( rRg );
     const SwPosition *pStt = rRg.Start(), *pEnd = rRg.End();
-    SwHistory* pHst = 0;
+    SwHistory* pHst = nullptr;
     bool bRet = true;
 
     if (GetIDocumentUndoRedo().DoesUndo())
@@ -1209,7 +1209,7 @@ SwTextFormatColl* SwDoc::CopyTextColl( const SwTextFormatColl& rColl )
             const SwNumRule* pRule;
             const OUString& rName = static_cast<const SwNumRuleItem*>(pItem)->GetValue();
             if( !rName.isEmpty() &&
-                0 != ( pRule = rColl.GetDoc()->FindNumRulePtr( rName )) &&
+                nullptr != ( pRule = rColl.GetDoc()->FindNumRulePtr( rName )) &&
                 !pRule->IsAutoRule() )
             {
                 SwNumRule* pDestRule = FindNumRulePtr( rName );
@@ -1264,7 +1264,7 @@ void SwDoc::CopyFormatArr( const SwFormatsBase& rSourceArr,
         if( pSrc->IsDefault() || pSrc->IsAuto() )
             continue;
 
-        if( 0 == FindFormatByName( rDestArr, pSrc->GetName() ) )
+        if( nullptr == FindFormatByName( rDestArr, pSrc->GetName() ) )
         {
             if( RES_CONDTXTFMTCOLL == pSrc->Which() )
                 MakeCondTextFormatColl( pSrc->GetName(), static_cast<SwTextFormatColl*>(&rDfltFormat) );
@@ -1401,7 +1401,7 @@ void SwDoc::CopyPageDesc( const SwPageDesc& rSrcDesc, SwPageDesc& rDstDesc,
                             bool bCopyPoolIds )
 {
     bool bNotifyLayout = false;
-    SwRootFrm* pTmpRoot = getIDocumentLayoutAccess().GetCurrentLayout();
+    SwRootFrame* pTmpRoot = getIDocumentLayoutAccess().GetCurrentLayout();
 
     rDstDesc.SetLandscape( rSrcDesc.GetLandscape() );
     rDstDesc.SetNumType( rSrcDesc.GetNumType() );
@@ -1502,8 +1502,8 @@ void SwDoc::CopyPageDesc( const SwPageDesc& rSrcDesc, SwPageDesc& rDstDesc,
 
     if( bNotifyLayout && pTmpRoot )
     {
-        std::set<SwRootFrm*> aAllLayouts = GetAllLayouts();
-        std::for_each( aAllLayouts.begin(), aAllLayouts.end(),std::mem_fun(&SwRootFrm::AllCheckPageDescs));
+        for( auto aLayout : GetAllLayouts() )
+            aLayout->AllCheckPageDescs();
     }
 
     // If foot notes change the pages have to be triggered
@@ -1549,7 +1549,7 @@ void SwDoc::ReplaceStyles( const SwDoc& rSource, bool bIncludePageStyles )
             while( nCnt )
             {
                 const SwPageDesc &rSrc = *rSource.m_PageDescs[ --nCnt ];
-                if( 0 == FindPageDesc( rSrc.GetName() ) )
+                if( nullptr == FindPageDesc( rSrc.GetName() ) )
                     MakePageDesc( rSrc.GetName() );
             }
 
@@ -1584,7 +1584,7 @@ void SwDoc::ReplaceStyles( const SwDoc& rSource, bool bIncludePageStyles )
                     // automatic SwNumRules, because all should have been
                     // created by the style copying!
                     // So just warn and ignore.
-                    SAL_WARN( "sw.styles", "Found unknown auto SwNumRule during reset!" );
+                    SAL_WARN( "sw.core", "Found unknown auto SwNumRule during reset!" );
                 }
             }
         }
@@ -1602,7 +1602,7 @@ void SwDoc::ReplaceStyles( const SwDoc& rSource, bool bIncludePageStyles )
 SwFormat* SwDoc::FindFormatByName( const SwFormatsBase& rFormatArr,
                                    const OUString& rName )
 {
-    SwFormat* pFnd = 0;
+    SwFormat* pFnd = nullptr;
     for( size_t n = 0; n < rFormatArr.GetFormatCount(); ++n )
     {
         // Does the Doc already contain the template?
@@ -1617,7 +1617,7 @@ SwFormat* SwDoc::FindFormatByName( const SwFormatsBase& rFormatArr,
 
 void SwDoc::MoveLeftMargin( const SwPaM& rPam, bool bRight, bool bModulus )
 {
-    SwHistory* pHistory = 0;
+    SwHistory* pHistory = nullptr;
     if (GetIDocumentUndoRedo().DoesUndo())
     {
         SwUndoMoveLeftMargin* pUndo = new SwUndoMoveLeftMargin( rPam, bRight,
@@ -1720,11 +1720,11 @@ void SwDoc::_CreateNumberFormatter()
 }
 
 SwTableNumFormatMerge::SwTableNumFormatMerge( const SwDoc& rSrc, SwDoc& rDest )
-    : pNFormat( 0 )
+    : pNFormat( nullptr )
 {
     // a different Doc -> Number formatter needs to be merged
     SvNumberFormatter* pN;
-    if( &rSrc != &rDest && 0 != ( pN = const_cast<SwDoc&>(rSrc).GetNumberFormatter( false ) ))
+    if( &rSrc != &rDest && nullptr != ( pN = const_cast<SwDoc&>(rSrc).GetNumberFormatter( false ) ))
         ( pNFormat = rDest.GetNumberFormatter())->MergeFormatter( *pN );
 
     if( &rSrc != &rDest )
@@ -1820,7 +1820,7 @@ void SwDoc::SetFormatItemByAutoFormat( const SwPaM& rPam, const SfxItemSet& rSet
     }
     whichIds.push_back(0);
     SfxItemSet currentSet(GetAttrPool(), &whichIds[0]);
-    pTNd->GetAttr(currentSet, nEnd, nEnd, false, true);
+    pTNd->GetAttr(currentSet, nEnd, nEnd);
     for (size_t i = 0; whichIds[i]; i += 2)
     {   // yuk - want to explicitly set the pool defaults too :-/
         currentSet.Put(currentSet.Get(whichIds[i]));
@@ -1832,7 +1832,7 @@ void SwDoc::SetFormatItemByAutoFormat( const SwPaM& rPam, const SfxItemSet& rSet
     // here, so insert the old attributes as an empty hint to stop expand
     SwPaM endPam(*pTNd, nEnd);
     endPam.SetMark();
-    getIDocumentContentOperations().InsertItemSet(endPam, currentSet, SetAttrMode::DEFAULT);
+    getIDocumentContentOperations().InsertItemSet(endPam, currentSet);
 
     getIDocumentRedlineAccess().SetRedlineMode_intern( eOld );
 }
@@ -1857,7 +1857,7 @@ void SwDoc::ChgFormat(SwFormat & rFormat, const SfxItemSet & rSet)
             SfxItemIter aIter(aSet);
 
             const SfxPoolItem * pItem = aIter.FirstItem();
-            while (pItem != NULL)
+            while (pItem != nullptr)
             {
                 aOldSet.InvalidateItem(pItem->Which());
 
@@ -1880,7 +1880,7 @@ void SwDoc::RenameFormat(SwFormat & rFormat, const OUString & sNewName,
 
     if (GetIDocumentUndoRedo().DoesUndo())
     {
-        SwUndo * pUndo = NULL;
+        SwUndo * pUndo = nullptr;
 
         switch (rFormat.Which())
         {
@@ -1919,7 +1919,7 @@ void SwDoc::dumpAsXml(xmlTextWriterPtr pWriter) const
     if (!pWriter)
     {
         pWriter = xmlNewTextWriterFilename("nodes.xml", 0);
-        xmlTextWriterStartDocument(pWriter, NULL, NULL, NULL);
+        xmlTextWriterStartDocument(pWriter, nullptr, nullptr, nullptr);
         bOwns = true;
     }
     xmlTextWriterStartElement(pWriter, BAD_CAST("swDoc"));
@@ -1976,7 +1976,7 @@ std::set<Color> SwDoc::GetDocColors()
         for (sal_uInt32 j=0; j<nCount; j++)
         {
             const SvxColorItem *pItem = static_cast<const SvxColorItem*>(rPool.GetItem2(nAttrib, j));
-            if (pItem == 0)
+            if (pItem == nullptr)
                 continue;
             Color aColor( pItem->GetValue() );
             if (COL_AUTO != aColor.GetColor())

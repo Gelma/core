@@ -5,7 +5,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- *
  * This file incorporates work covered by the following license notice:
  *
  *   Licensed to the Apache Software Foundation (ASF) under one or more
@@ -88,21 +87,21 @@ static void lcl_AdjustPositioningAttr( SwDrawFrameFormat* _pFrameFormat,
     SwTwips nHoriRelPos = 0;
     SwTwips nVertRelPos = 0;
     {
-        const SwFrm* pAnchorFrm = pContact->GetAnchoredObj( &_rSdrObj )->GetAnchorFrm();
-        OSL_ENSURE( !pAnchorFrm ||
-                !pAnchorFrm->IsTextFrm() ||
-                !static_cast<const SwTextFrm*>(pAnchorFrm)->IsFollow(),
+        const SwFrame* pAnchorFrame = pContact->GetAnchoredObj( &_rSdrObj )->GetAnchorFrame();
+        OSL_ENSURE( !pAnchorFrame ||
+                !pAnchorFrame->IsTextFrame() ||
+                !static_cast<const SwTextFrame*>(pAnchorFrame)->IsFollow(),
                 "<lcl_AdjustPositioningAttr(..)> - anchor frame is a follow." );
         bool bVert = false;
         bool bR2L = false;
         // #i45952# - use anchor position of anchor frame, if it exist.
         Point aAnchorPos;
-        if ( pAnchorFrm )
+        if ( pAnchorFrame )
         {
             // #i45952#
-            aAnchorPos = pAnchorFrm->GetFrmAnchorPos( ::HasWrap( &_rSdrObj ) );
-            bVert = pAnchorFrm->IsVertical();
-            bR2L = pAnchorFrm->IsRightToLeft();
+            aAnchorPos = pAnchorFrame->GetFrameAnchorPos( ::HasWrap( &_rSdrObj ) );
+            bVert = pAnchorFrame->IsVertical();
+            bR2L = pAnchorFrame->IsRightToLeft();
         }
         else
         {
@@ -182,7 +181,7 @@ static void lcl_AdjustPositioningAttr( SwDrawFrameFormat* _pFrameFormat,
     // to adjust the positioning attributes - see <SwDrawContact::_Changed(..)>.
     {
         const SwAnchoredObject* pAnchoredObj = pContact->GetAnchoredObj( &_rSdrObj );
-        if ( pAnchoredObj->ISA(SwAnchoredDrawObject) )
+        if ( dynamic_cast<const SwAnchoredDrawObject*>( pAnchoredObj) !=  nullptr )
         {
             const SwAnchoredDrawObject* pAnchoredDrawObj =
                             static_cast<const SwAnchoredDrawObject*>(pAnchoredObj);
@@ -201,18 +200,18 @@ SwDrawContact* SwDoc::GroupSelection( SdrView& rDrawView )
 
     const SdrMarkList &rMrkList = rDrawView.GetMarkedObjectList();
     SdrObject *pObj = rMrkList.GetMark( 0 )->GetMarkedSdrObj();
-    bool bNoGroup = ( 0 == pObj->GetUpGroup() );
-    SwDrawContact* pNewContact = 0;
+    bool bNoGroup = ( nullptr == pObj->GetUpGroup() );
+    SwDrawContact* pNewContact = nullptr;
     if( bNoGroup )
     {
-        SwDrawFrameFormat *pFormat = 0L;
+        SwDrawFrameFormat *pFormat = nullptr;
 
         // Revoke anchor attribute.
         SwDrawContact *pMyContact = static_cast<SwDrawContact*>(GetUserCall(pObj));
         const SwFormatAnchor aAnch( pMyContact->GetFormat()->GetAnchor() );
 
         SwUndoDrawGroup *const pUndo = (!GetIDocumentUndoRedo().DoesUndo())
-                                 ? 0
+                                 ? nullptr
                                  : new SwUndoDrawGroup( (sal_uInt16)rMrkList.GetMarkCount() );
 
         // #i53320#
@@ -239,7 +238,7 @@ SwDrawContact* SwDoc::GroupSelection( SdrView& rDrawView )
             pFormat = static_cast<SwDrawFrameFormat*>(pContact->GetFormat());
             // Deletes itself!
             pContact->Changed(*pObj, SDRUSERCALL_DELETE, pObj->GetLastBoundRect() );
-            pObj->SetUserCall( 0 );
+            pObj->SetUserCall( nullptr );
 
             if( pUndo )
                 pUndo->AddObj( i, pFormat, pObj );
@@ -254,7 +253,7 @@ SwDrawContact* SwDoc::GroupSelection( SdrView& rDrawView )
             pObj->NbcMove( Size( aAnchorPos.getX(), aAnchorPos.getY() ) );
         }
 
-        pFormat = MakeDrawFrameFormat( OUString("DrawObject"),
+        pFormat = MakeDrawFrameFormat( "DrawObject",
                                 GetDfltFrameFormat() );
         pFormat->SetFormatAttr( aAnch );
         // #i36010# - set layout direction of the position
@@ -310,7 +309,7 @@ void SwDoc::UnGroupSelection( SdrView& rDrawView )
     SwDrawView::ReplaceMarkedDrawVirtObjs( rDrawView );
 
     const SdrMarkList &rMrkList = rDrawView.GetMarkedObjectList();
-    std::vector< std::pair< SwDrawFrameFormat*, SdrObject* > >* pFormatsAndObjs( 0L );
+    std::vector< std::pair< SwDrawFrameFormat*, SdrObject* > >* pFormatsAndObjs( nullptr );
     const size_t nMarkCount( rMrkList.GetMarkCount() );
     if ( nMarkCount )
     {
@@ -322,13 +321,13 @@ void SwDoc::UnGroupSelection( SdrView& rDrawView )
             for ( size_t i = 0; i < nMarkCount; ++i )
             {
                 SdrObject *pObj = rMrkList.GetMark( i )->GetMarkedSdrObj();
-                if ( pObj->IsA( TYPE(SdrObjGroup) ) )
+                if ( dynamic_cast<const SdrObjGroup*>(pObj) !=  nullptr )
                 {
                     SwDrawContact *pContact = static_cast<SwDrawContact*>(GetUserCall(pObj));
                     SwFormatAnchor aAnch( pContact->GetFormat()->GetAnchor() );
                     SdrObjList *pLst = static_cast<SdrObjGroup*>(pObj)->GetSubList();
 
-                    SwUndoDrawUnGroup* pUndo = 0;
+                    SwUndoDrawUnGroup* pUndo = nullptr;
                     if( bUndo )
                     {
                         pUndo = new SwUndoDrawUnGroup( static_cast<SdrObjGroup*>(pObj) );
@@ -358,7 +357,7 @@ void SwDoc::UnGroupSelection( SdrView& rDrawView )
     // its connection to the Writer layout.
     for ( size_t i = 0; i < nMarkCount; ++i )
     {
-        SwUndoDrawUnGroupConnectToLayout* pUndo = 0;
+        SwUndoDrawUnGroupConnectToLayout* pUndo = nullptr;
         if( bUndo )
         {
             pUndo = new SwUndoDrawUnGroupConnectToLayout();
@@ -391,16 +390,16 @@ bool SwDoc::DeleteSelection( SwDrawView& rDrawView )
     const SdrMarkList &rMrkList = rDrawView.GetMarkedObjectList();
     if( rMrkList.GetMarkCount() )
     {
-        GetIDocumentUndoRedo().StartUndo(UNDO_EMPTY, NULL);
+        GetIDocumentUndoRedo().StartUndo(UNDO_EMPTY, nullptr);
         bool bDelMarked = true;
 
         if( 1 == rMrkList.GetMarkCount() )
         {
             SdrObject *pObj = rMrkList.GetMark( 0 )->GetMarkedSdrObj();
-            if( pObj->ISA(SwVirtFlyDrawObj) )
+            if( dynamic_cast<const SwVirtFlyDrawObj*>( pObj) !=  nullptr )
             {
                 SwFlyFrameFormat* pFrameFormat =
-                    static_cast<SwVirtFlyDrawObj*>(pObj)->GetFlyFrm()->GetFormat();
+                    static_cast<SwVirtFlyDrawObj*>(pObj)->GetFlyFrame()->GetFormat();
                 if( pFrameFormat )
                 {
                     getIDocumentLayoutAccess().DelLayoutFormat( pFrameFormat );
@@ -412,7 +411,7 @@ bool SwDoc::DeleteSelection( SwDrawView& rDrawView )
         for( size_t i = 0; i < rMrkList.GetMarkCount(); ++i )
         {
             SdrObject *pObj = rMrkList.GetMark( i )->GetMarkedSdrObj();
-            if( !pObj->ISA(SwVirtFlyDrawObj) )
+            if( dynamic_cast<const SwVirtFlyDrawObj*>( pObj) ==  nullptr )
             {
                 SwDrawContact *pC = static_cast<SwDrawContact*>(GetUserCall(pObj));
                 SwDrawFrameFormat *pFrameFormat = static_cast<SwDrawFrameFormat*>(pC->GetFormat());
@@ -433,7 +432,7 @@ bool SwDoc::DeleteSelection( SwDrawView& rDrawView )
             {
                 SwUndoDrawDelete *const pUndo =
                     (!GetIDocumentUndoRedo().DoesUndo())
-                        ? 0
+                        ? nullptr
                             : new SwUndoDrawDelete( (sal_uInt16)rMrkList.GetMarkCount() );
 
                 // Destroy ContactObjects, save formats.
@@ -449,13 +448,13 @@ bool SwDoc::DeleteSelection( SwDrawView& rDrawView )
                         // <SwDrawVirtObj>-objects have to be replaced by its
                         // reference objects.  Thus, assert, if a
                         // <SwDrawVirt>-object is found in the mark list.
-                        if ( pObj->ISA(SwDrawVirtObj) )
+                        if ( dynamic_cast<const SwDrawVirtObj*>( pObj) !=  nullptr )
                         {
                             OSL_FAIL( "<SwDrawVirtObj> is still marked for delete. application will crash!" );
                         }
                         // Deletes itself!
                         pContact->Changed(*pObj, SDRUSERCALL_DELETE, pObj->GetLastBoundRect() );
-                        pObj->SetUserCall( 0 );
+                        pObj->SetUserCall( nullptr );
 
                         if( pUndo )
                             pUndo->AddObj( i, pFormat, rMark );
@@ -473,7 +472,7 @@ bool SwDoc::DeleteSelection( SwDrawView& rDrawView )
         }
         getIDocumentState().SetModified();
 
-        GetIDocumentUndoRedo().EndUndo(UNDO_EMPTY, NULL);
+        GetIDocumentUndoRedo().EndUndo(UNDO_EMPTY, nullptr);
     }
 
     return bCallBase;
@@ -491,7 +490,7 @@ _ZSortFly::_ZSortFly( const SwFrameFormat* pFrameFormat, const SwFormatAnchor* p
         if( pFormat->getIDocumentLayoutAccess().GetCurrentViewShell() )
         {
             // See if there is an SdrObject for it
-            SwFlyFrm* pFly = SwIterator<SwFlyFrm,SwFormat>( *pFrameFormat ).First();
+            SwFlyFrame* pFly = SwIterator<SwFlyFrame,SwFormat>( *pFrameFormat ).First();
             if( pFly )
                 nOrdNum = pFly->GetVirtDrawObj()->GetOrdNum();
         }
@@ -530,14 +529,14 @@ IMPL_LINK_TYPED(SwDoc, CalcFieldValueHdl, EditFieldInfo*, pInfo, void)
     const SvxFieldItem& rField = pInfo->GetField();
     const SvxFieldData* pField = rField.GetField();
 
-    if (pField && pField->ISA(SvxDateField))
+    if (pField && dynamic_cast<const SvxDateField*>( pField) !=  nullptr)
     {
         // Date field
         pInfo->SetRepresentation(
             static_cast<const SvxDateField*>( pField)->GetFormatted(
                     *GetNumberFormatter(), LANGUAGE_SYSTEM) );
     }
-    else if (pField && pField->ISA(SvxURLField))
+    else if (pField && dynamic_cast<const SvxURLField*>( pField) !=  nullptr)
     {
         // URL field
         switch ( static_cast<const SvxURLField*>( pField)->GetFormat() )
@@ -573,12 +572,12 @@ IMPL_LINK_TYPED(SwDoc, CalcFieldValueHdl, EditFieldInfo*, pInfo, void)
 
         pInfo->SetTextColor(aColor);
     }
-    else if (pField && pField->ISA(SdrMeasureField))
+    else if (pField && dynamic_cast<const SdrMeasureField*>( pField) !=  nullptr)
     {
         // Measure field
         pInfo->ClearFieldColor();
     }
-    else if ( pField && pField->ISA(SvxExtTimeField))
+    else if ( pField && dynamic_cast<const SvxExtTimeField*>( pField) !=  nullptr)
     {
         // Time field
         pInfo->SetRepresentation(

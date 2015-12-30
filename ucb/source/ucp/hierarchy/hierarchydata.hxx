@@ -24,6 +24,7 @@
 #include <osl/mutex.hxx>
 #include <com/sun/star/lang/XMultiServiceFactory.hpp>
 #include <com/sun/star/uno/XComponentContext.hpp>
+#include <memory>
 
 namespace com { namespace sun { namespace star {
     namespace container {
@@ -81,27 +82,21 @@ class HierarchyEntry
     OUString m_aName;
     OUString m_aPath;
     ::osl::Mutex    m_aMutex;
-    ::com::sun::star::uno::Reference<
-            ::com::sun::star::uno::XComponentContext >     m_xContext;
-    ::com::sun::star::uno::Reference<
-            ::com::sun::star::lang::XMultiServiceFactory > m_xConfigProvider;
-    ::com::sun::star::uno::Reference<
-            ::com::sun::star::container::XHierarchicalNameAccess >
+    css::uno::Reference< css::uno::XComponentContext >     m_xContext;
+    css::uno::Reference< css::lang::XMultiServiceFactory > m_xConfigProvider;
+    css::uno::Reference< css::container::XHierarchicalNameAccess >
                                                            m_xRootReadAccess;
-    ::com::sun::star::uno::Reference<
-            ::com::sun::star::util::XOfficeInstallationDirectories >
+    css::uno::Reference< css::util::XOfficeInstallationDirectories >
                                                            m_xOfficeInstDirs;
-    bool m_bTriedToGetRootReadAccess;  // #82494#
+    bool m_bTriedToGetRootReadAccess;
 
 private:
     static OUString createPathFromHierarchyURL( const HierarchyUri & rURI );
-    ::com::sun::star::uno::Reference<
-            ::com::sun::star::container::XHierarchicalNameAccess >
+    css::uno::Reference< css::container::XHierarchicalNameAccess >
     getRootReadAccess();
 
 public:
-    HierarchyEntry( const ::com::sun::star::uno::Reference<
-                        ::com::sun::star::uno::XComponentContext >& rxContext,
+    HierarchyEntry( const css::uno::Reference< css::uno::XComponentContext >& rxContext,
                     HierarchyContentProvider* pProvider,
                     const OUString& rURL );
 
@@ -124,7 +119,7 @@ public:
     {
     friend class HierarchyEntry;
 
-        iterator_Impl*  m_pImpl;
+        std::unique_ptr<iterator_Impl>  m_pImpl;
 
     public:
         iterator();

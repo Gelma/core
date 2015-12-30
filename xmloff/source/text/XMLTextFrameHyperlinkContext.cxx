@@ -36,7 +36,6 @@ using namespace ::xmloff::token;
 
 namespace drawing = com::sun::star::drawing;
 
-TYPEINIT1( XMLTextFrameHyperlinkContext, SvXMLImportContext );
 
 XMLTextFrameHyperlinkContext::XMLTextFrameHyperlinkContext(
         SvXMLImport& rImport,
@@ -109,8 +108,8 @@ SvXMLImportContext *XMLTextFrameHyperlinkContext::CreateChildContext(
         const OUString& rLocalName,
         const Reference< XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
-    XMLTextFrameContext *pTextFrameContext = 0;
+    SvXMLImportContext *pContext = nullptr;
+    XMLTextFrameContext *pTextFrameContext = nullptr;
 
     if( XML_NAMESPACE_DRAW == nPrefix )
     {
@@ -138,7 +137,7 @@ TextContentAnchorType XMLTextFrameHyperlinkContext::GetAnchorType() const
     if( xFrameContext.Is() )
     {
         SvXMLImportContext *pContext = &xFrameContext;
-        return dynamic_cast<XMLTextFrameContext*>( pContext ) ->GetAnchorType( );
+        return dynamic_cast<XMLTextFrameContext&>(*pContext).GetAnchorType();
     }
     else
         return eDefaultAnchorType;
@@ -151,7 +150,7 @@ Reference < XTextContent > XMLTextFrameHyperlinkContext::GetTextContent() const
     if( xFrameContext.Is() )
     {
         SvXMLImportContext *pContext = &xFrameContext;
-        xTxt = dynamic_cast<XMLTextFrameContext*>( pContext )->GetTextContent( );
+        xTxt = dynamic_cast<XMLTextFrameContext&>(*pContext).GetTextContent();
     }
 
     return xTxt;
@@ -164,7 +163,7 @@ Reference < drawing::XShape > XMLTextFrameHyperlinkContext::GetShape() const
     if( xFrameContext.Is() )
     {
         SvXMLImportContext *pContext = &xFrameContext;
-        xShape = dynamic_cast<XMLTextFrameContext*>( pContext )->GetShape( );
+        xShape = dynamic_cast<XMLTextFrameContext&>(*pContext).GetShape();
     }
 
     return xShape;

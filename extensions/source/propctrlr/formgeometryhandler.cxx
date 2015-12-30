@@ -91,10 +91,7 @@ namespace pcr
     using ::com::sun::star::container::XChild;
     using ::com::sun::star::form::XGridColumnFactory;
 
-    namespace MeasureUnit = ::com::sun::star::util::MeasureUnit;
-
-    typedef ::com::sun::star::awt::Point    AwtPoint;
-    typedef ::com::sun::star::awt::Size     AwtSize;
+    namespace MeasureUnit = css::util::MeasureUnit;
 
     #define ANCHOR_TO_SHEET 0
     #define ANCHOR_TO_CELL  1
@@ -105,7 +102,7 @@ namespace pcr
     class BroadcastHelperBase
     {
     protected:
-        BroadcastHelperBase( ::osl::Mutex& _rMutex )
+        explicit BroadcastHelperBase( ::osl::Mutex& _rMutex )
             :maBHelper( _rMutex )
         {
         }
@@ -124,7 +121,7 @@ namespace pcr
         in the XShape implementation, which broadcasts way too generous and unspecified
     */
     typedef ::comphelper::ComponentBase ShapeGeometryChangeNotifier_CBase;
-    typedef ::cppu::WeakImplHelper <   ::com::sun::star::beans::XPropertyChangeListener
+    typedef ::cppu::WeakImplHelper <   css::beans::XPropertyChangeListener
                                     >   ShapeGeometryChangeNotifier_IBase;
 
     class ShapeGeometryChangeNotifier   :public BroadcastHelperBase
@@ -162,21 +159,21 @@ namespace pcr
         }
 
         // XInterface
-        virtual void SAL_CALL acquire(  ) throw () SAL_OVERRIDE
+        virtual void SAL_CALL acquire(  ) throw () override
         {
             m_rParent.acquire();
         }
 
-        virtual void SAL_CALL release(  ) throw () SAL_OVERRIDE
+        virtual void SAL_CALL release(  ) throw () override
         {
             m_rParent.release();
         }
 
         // XPropertyChangeListener
-        virtual void SAL_CALL propertyChange( const PropertyChangeEvent& _event ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL propertyChange( const PropertyChangeEvent& _event ) throw (RuntimeException, std::exception) override;
 
         // XEventListener
-        virtual void SAL_CALL disposing( const EventObject& _event ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing( const EventObject& _event ) throw (RuntimeException, std::exception) override;
 
     protected:
         virtual ~ShapeGeometryChangeNotifier()
@@ -211,7 +208,7 @@ namespace pcr
     class FormGeometryHandler : public FormGeometryHandler_Base
     {
     public:
-        FormGeometryHandler(
+        explicit FormGeometryHandler(
             const Reference< XComponentContext >& _rxContext
         );
 
@@ -223,22 +220,22 @@ namespace pcr
 
     protected:
         // XPropertyHandler overriables
-        virtual Any                         SAL_CALL getPropertyValue( const OUString& _rPropertyName ) throw (UnknownPropertyException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void                        SAL_CALL setPropertyValue( const OUString& _rPropertyName, const Any& _rValue ) throw (UnknownPropertyException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual LineDescriptor              SAL_CALL describePropertyLine( const OUString& _rPropertyName, const ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControlFactory >& _rxControlFactory ) throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::NullPointerException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void                        SAL_CALL addPropertyChangeListener( const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertyChangeListener >& _rxListener ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void                        SAL_CALL removePropertyChangeListener( const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertyChangeListener >& _rxListener ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Sequence< OUString > SAL_CALL getActuatingProperties( ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void                        SAL_CALL actuatingPropertyChanged( const OUString& _rActuatingPropertyName, const Any& _rNewValue, const Any& _rOldValue, const Reference< XObjectInspectorUI >& _rxInspectorUI, sal_Bool _bFirstTimeInit ) throw (NullPointerException, RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual Any                         SAL_CALL getPropertyValue( const OUString& _rPropertyName ) throw (UnknownPropertyException, RuntimeException, std::exception) override;
+        virtual void                        SAL_CALL setPropertyValue( const OUString& _rPropertyName, const Any& _rValue ) throw (UnknownPropertyException, RuntimeException, std::exception) override;
+        virtual LineDescriptor              SAL_CALL describePropertyLine( const OUString& _rPropertyName, const css::uno::Reference< css::inspection::XPropertyControlFactory >& _rxControlFactory ) throw (css::beans::UnknownPropertyException, css::lang::NullPointerException, css::uno::RuntimeException, std::exception) override;
+        virtual void                        SAL_CALL addPropertyChangeListener( const css::uno::Reference< css::beans::XPropertyChangeListener >& _rxListener ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void                        SAL_CALL removePropertyChangeListener( const css::uno::Reference< css::beans::XPropertyChangeListener >& _rxListener ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual Sequence< OUString >        SAL_CALL getActuatingProperties( ) throw (RuntimeException, std::exception) override;
+        virtual void                        SAL_CALL actuatingPropertyChanged( const OUString& _rActuatingPropertyName, const Any& _rNewValue, const Any& _rOldValue, const Reference< XObjectInspectorUI >& _rxInspectorUI, sal_Bool _bFirstTimeInit ) throw (NullPointerException, RuntimeException, std::exception) override;
 
         // OComponentHandler overridables
-        virtual void SAL_CALL disposing() SAL_OVERRIDE;
+        virtual void SAL_CALL disposing() override;
 
         // PropertyHandler overridables
-        virtual Sequence< Property >        SAL_CALL doDescribeSupportedProperties() const SAL_OVERRIDE;
+        virtual Sequence< Property >        SAL_CALL doDescribeSupportedProperties() const override;
 
     protected:
-        virtual void onNewComponent() SAL_OVERRIDE;
+        virtual void onNewComponent() override;
 
     private:
         bool    impl_haveTextAnchorType_nothrow() const;
@@ -320,8 +317,7 @@ namespace pcr
 
     Sequence< OUString > SAL_CALL FormGeometryHandler::getSupportedServiceNames_static(  ) throw (RuntimeException)
     {
-        Sequence< OUString > aSupported( 1 );
-        aSupported[0] = "com.sun.star.form.inspection.FormGeometryHandler";
+        Sequence<OUString> aSupported { "com.sun.star.form.inspection.FormGeometryHandler" };
         return aSupported;
     }
 
@@ -393,7 +389,7 @@ namespace pcr
                 sal_Int32 nPosition(0);
                 OSL_VERIFY( _rValue >>= nPosition );
 
-                AwtPoint aPos( m_xAssociatedShape->getPosition() );
+                css::awt::Point aPos( m_xAssociatedShape->getPosition() );
                 if ( nPropId == PROPERTY_ID_POSITIONX )
                     aPos.X = nPosition;
                 else
@@ -408,7 +404,7 @@ namespace pcr
                 sal_Int32 nSize(0);
                 OSL_VERIFY( _rValue >>= nSize );
 
-                AwtSize aSize( m_xAssociatedShape->getSize() );
+                css::awt::Size aSize( m_xAssociatedShape->getSize() );
                 if ( nPropId == PROPERTY_ID_WIDTH )
                     aSize.Width = nSize;
                 else
@@ -510,8 +506,7 @@ namespace pcr
 
     Sequence< OUString > SAL_CALL FormGeometryHandler::getActuatingProperties( ) throw (RuntimeException, std::exception)
     {
-        Sequence< OUString > aInterestedIn(1);
-        aInterestedIn[0] = PROPERTY_TEXT_ANCHOR_TYPE;
+        Sequence< OUString > aInterestedIn { PROPERTY_TEXT_ANCHOR_TYPE };
         return aInterestedIn;
     }
 
@@ -617,7 +612,7 @@ namespace pcr
     namespace
     {
         static sal_Int32 lcl_getLowerBoundRowOrColumn( const Reference< XIndexAccess >& _rxRowsOrColumns, const bool _bRows,
-            const AwtPoint& _rRelativePosition )
+            const css::awt::Point& _rRelativePosition )
         {
             sal_Int32 nAccumulated = 0;
 
@@ -665,7 +660,7 @@ namespace pcr
                     "FormGeometryHandler::impl_setSheetAnchorType_nothrow: sheet not found!" );
                 if ( xSheet.is() )
                 {
-                    AwtPoint aPreservePosition( m_xAssociatedShape->getPosition() );
+                    css::awt::Point aPreservePosition( m_xAssociatedShape->getPosition() );
                     m_xShapeProperties->setPropertyValue( PROPERTY_ANCHOR, makeAny( xSheet ) );
                     m_xAssociatedShape->setPosition( aPreservePosition );
                 }
@@ -681,7 +676,7 @@ namespace pcr
                 OSL_ENSURE( xCurrentAnchor.is(), "FormGeometryHandler::impl_setSheetAnchorType_nothrow: only to be called when currently anchored to a sheet!" );
 
                 // get the current position
-                AwtPoint aRelativePosition( m_xAssociatedShape->getPosition() );
+                css::awt::Point aRelativePosition( m_xAssociatedShape->getPosition() );
 
                 Reference< XTableColumns > xCols( xColsRows->getColumns(), UNO_SET_THROW );
                 sal_Int32 nNewAnchorCol = lcl_getLowerBoundRowOrColumn( xCols.get(), false, aRelativePosition );
@@ -733,13 +728,13 @@ namespace pcr
 
         if ( _event.PropertyName == "Position" )
         {
-            AwtPoint aPos = m_xShape->getPosition();
+            css::awt::Point aPos = m_xShape->getPosition();
             aEventTranslations.push_back( EventTranslation( PROPERTY_POSITIONX, makeAny( aPos.X ) ) );
             aEventTranslations.push_back( EventTranslation( PROPERTY_POSITIONY, makeAny( aPos.Y ) ) );
         }
         else if ( _event.PropertyName == "Size" )
         {
-            AwtSize aSize = m_xShape->getSize();
+            css::awt::Size aSize = m_xShape->getSize();
             aEventTranslations.push_back( EventTranslation( PROPERTY_WIDTH, makeAny( aSize.Width ) ) );
             aEventTranslations.push_back( EventTranslation( PROPERTY_HEIGHT, makeAny( aSize.Height ) ) );
         }

@@ -22,6 +22,7 @@
 
 #include <com/sun/star/drawing/XShape.hpp>
 #include <salhelper/simplereferenceobject.hxx>
+#include <memory>
 
 class AnimExpImpl;
 class SvXMLExport;
@@ -29,14 +30,14 @@ class XMLShapeExport;
 
 class XMLAnimationsExporter : public salhelper::SimpleReferenceObject
 {
-    AnimExpImpl*    mpImpl;
+    std::unique_ptr<AnimExpImpl> mpImpl;
 
 public:
     XMLAnimationsExporter( XMLShapeExport* pShapeExp );
     virtual ~XMLAnimationsExporter();
 
-    void prepare( ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > xShape, SvXMLExport& rExport );
-    void collect( ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > xShape, SvXMLExport& rExport );
+    void prepare( css::uno::Reference< css::drawing::XShape > xShape, SvXMLExport& rExport );
+    void collect( css::uno::Reference< css::drawing::XShape > xShape, SvXMLExport& rExport );
     void exportAnimations( SvXMLExport& rExport );
 };
 

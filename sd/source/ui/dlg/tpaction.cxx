@@ -99,9 +99,8 @@ SdActionDlg::SdActionDlg (
 SdTPAction::SdTPAction(vcl::Window* pWindow, const SfxItemSet& rInAttrs)
     : SfxTabPage(pWindow, "InteractionPage",
         "modules/simpress/ui/interactionpage.ui", &rInAttrs)
-    , rOutAttrs(rInAttrs)
-    , mpView(NULL)
-    , mpDoc(NULL)
+    , mpView(nullptr)
+    , mpDoc(nullptr)
     , bTreeUpdated(false)
 {
     get(m_pLbAction, "listbox");
@@ -137,7 +136,7 @@ SdTPAction::SdTPAction(vcl::Window* pWindow, const SfxItemSet& rInAttrs)
     set_width_request(aSize.Width());
     set_height_request(aSize.Height());
 
-    ClickActionHdl( this );
+    ClickActionHdl( *m_pLbAction );
 }
 
 SdTPAction::~SdTPAction()
@@ -189,8 +188,8 @@ void SdTPAction::SetView( const ::sd::View* pSdView )
 void SdTPAction::Construct()
 {
     // fill OLE-Actionlistbox
-    SdrOle2Obj* pOleObj = NULL;
-    SdrGrafObj* pGrafObj = NULL;
+    SdrOle2Obj* pOleObj = nullptr;
+    SdrGrafObj* pGrafObj = nullptr;
     bool        bOLEAction = false;
 
     if ( mpView->AreObjectsMarked() )
@@ -360,7 +359,7 @@ void SdTPAction::Reset( const SfxItemSet* rAttrs )
         default:
         break;
     }
-    ClickActionHdl( this );
+    ClickActionHdl( *m_pLbAction );
 
     m_pLbAction->SaveValue();
     m_pEdtSound->SaveValue();
@@ -459,7 +458,7 @@ void SdTPAction::OpenFileDialog()
             // links on the desktop to directories.
             aFileDialog.AddFilter (
                 SFX2_RESSTR(STR_SFX_FILTERNAME_ALL),
-                OUString("*.*"));
+                "*.*");
 
             if( aFileDialog.Execute() == ERRCODE_NONE )
             {
@@ -477,7 +476,7 @@ IMPL_LINK_NOARG_TYPED(SdTPAction, ClickSearchHdl, Button*, void)
     OpenFileDialog();
 }
 
-IMPL_LINK_NOARG(SdTPAction, ClickActionHdl)
+IMPL_LINK_NOARG_TYPED(SdTPAction, ClickActionHdl, ListBox&, void)
 {
     presentation::ClickAction eCA = GetActualClickAction();
 
@@ -647,8 +646,6 @@ IMPL_LINK_NOARG(SdTPAction, ClickActionHdl)
         default:
             break;
     }
-
-    return 0L;
 }
 
 IMPL_LINK_NOARG_TYPED(SdTPAction, SelectTreeHdl, SvTreeListBox*, void)
@@ -714,7 +711,7 @@ presentation::ClickAction SdTPAction::GetActualClickAction()
 
 void SdTPAction::SetActualClickAction( presentation::ClickAction eCA )
 {
-    std::vector<com::sun::star::presentation::ClickAction>::const_iterator pIter =
+    std::vector<css::presentation::ClickAction>::const_iterator pIter =
             std::find(maCurrentActions.begin(),maCurrentActions.end(),eCA);
 
     if ( pIter != maCurrentActions.end() )
@@ -826,7 +823,7 @@ OUString SdTPAction::GetEditText( bool bFullDocDestination )
         aBaseURL = mpDoc->GetDocSh()->GetMedium()->GetBaseURL();
 
     if( !aStr.isEmpty() && aURL.GetProtocol() == INetProtocol::NotValid )
-        aURL = INetURLObject( ::URIHelper::SmartRel2Abs( INetURLObject(aBaseURL), aStr, URIHelper::GetMaybeFileHdl(), true, false ) );
+        aURL = INetURLObject( ::URIHelper::SmartRel2Abs( INetURLObject(aBaseURL), aStr, URIHelper::GetMaybeFileHdl() ) );
 
     // get adjusted file name
     aStr = aURL.GetMainURL( INetURLObject::NO_DECODE );

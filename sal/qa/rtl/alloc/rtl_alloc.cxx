@@ -52,26 +52,26 @@ class Memory : public CppUnit::TestFixture
 
 public:
     Memory()
-        : m_pMemory(NULL)
+        : m_pMemory(nullptr)
         , m_nSizeOfMemory(1024)
     {
     }
 
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         m_pMemory = static_cast<char*>(rtl_allocateMemory( m_nSizeOfMemory ));
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
         rtl_freeMemory(m_pMemory);
-        m_pMemory = NULL;
+        m_pMemory = nullptr;
     }
 
     void rtl_allocateMemory_001()
     {
-        CPPUNIT_ASSERT_MESSAGE( "Can get zero memory.", m_pMemory != NULL);
+        CPPUNIT_ASSERT_MESSAGE( "Can get zero memory.", m_pMemory != nullptr);
         memset(m_pMemory, 1, m_nSizeOfMemory);
         CPPUNIT_ASSERT_MESSAGE( "memory contains wrong value.", checkMemory(m_pMemory, m_nSizeOfMemory, 1));
     }
@@ -81,7 +81,7 @@ public:
         sal_uInt32 nSize = 2 * 1024;
         m_pMemory = static_cast<char*>(rtl_reallocateMemory(m_pMemory, nSize));
 
-        CPPUNIT_ASSERT_MESSAGE( "Can reallocate memory.", m_pMemory != NULL);
+        CPPUNIT_ASSERT_MESSAGE( "Can reallocate memory.", m_pMemory != nullptr);
         memset(m_pMemory, 2, nSize);
         CPPUNIT_ASSERT_MESSAGE( "memory contains wrong value.", checkMemory(m_pMemory, nSize, 2));
     }
@@ -100,18 +100,18 @@ class TestZeroMemory : public CppUnit::TestFixture
 
 public:
     TestZeroMemory()
-        : m_pZeroMemory(NULL)
+        : m_pZeroMemory(nullptr)
         , m_nSizeOfZeroMemory( 50 * 1024 * 1024 )
     {
     }
 
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         m_pZeroMemory = static_cast<char*>(rtl_allocateZeroMemory( m_nSizeOfZeroMemory ));
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
         rtl_freeZeroMemory(m_pZeroMemory, m_nSizeOfZeroMemory);
         // LLA: no check possible, may GPF if there is something wrong.
@@ -122,7 +122,7 @@ public:
 
     void rtl_allocateZeroMemory_001()
     {
-        CPPUNIT_ASSERT_MESSAGE( "Can get zero memory.", m_pZeroMemory != NULL);
+        CPPUNIT_ASSERT_MESSAGE( "Can get zero memory.", m_pZeroMemory != nullptr);
         CPPUNIT_ASSERT_MESSAGE( "memory contains wrong value.", checkMemory(m_pZeroMemory, m_nSizeOfZeroMemory, 0));
 
         memset(m_pZeroMemory, 3, m_nSizeOfZeroMemory);

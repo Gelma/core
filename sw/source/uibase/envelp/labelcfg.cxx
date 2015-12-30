@@ -171,11 +171,11 @@ SwLabelConfig::~SwLabelConfig()
 // the config item is not writable ?:
 void SwLabelConfig::ImplCommit() {}
 
-void SwLabelConfig::Notify( const ::com::sun::star::uno::Sequence< OUString >& ) {}
+void SwLabelConfig::Notify( const css::uno::Sequence< OUString >& ) {}
 
-static SwLabRec* lcl_CreateSwLabRec(const OUString& rType, const OUString& rMeasure, const OUString& rManufacturer)
+static std::unique_ptr<SwLabRec> lcl_CreateSwLabRec(const OUString& rType, const OUString& rMeasure, const OUString& rManufacturer)
 {
-    SwLabRec* pNewRec = new SwLabRec;
+    std::unique_ptr<SwLabRec> pNewRec(new SwLabRec);
     pNewRec->aMake = rManufacturer;
     pNewRec->lPWidth = 0;
     pNewRec->lPHeight = 0;
@@ -323,8 +323,7 @@ void SwLabelConfig::SaveLabel( const OUString& rManufacturer,
             sPrefix += "/";
             sPrefix += pLabels[nLabel];
             sPrefix += "/";
-            Sequence<OUString> aProperties(1);
-            aProperties.getArray()[0] = sPrefix;
+            Sequence<OUString> aProperties { sPrefix };
             aProperties.getArray()[0] += "Name";
             Sequence<Any> aValues = GetProperties( aProperties );
             const Any* pValues = aValues.getConstArray();

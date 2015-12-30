@@ -50,7 +50,6 @@
 
 #include <unomid.h>
 
-#include <boost/ptr_container/ptr_vector.hpp>
 
 using namespace ::com::sun::star;
 using namespace ::com::sun::star::uno;
@@ -62,18 +61,9 @@ using namespace ::com::sun::star::sdbcx;
 using namespace ::com::sun::star::task;
 using namespace ::com::sun::star::beans;
 
-struct SwConnectionData
-{
-    OUString                sSourceName;
-    Reference<XConnection>  xConnection;
-};
-
-typedef boost::ptr_vector<SwConnectionData> SwConnectionArr;
-
 class SwDBTreeList_Impl : public cppu::WeakImplHelper < XContainerListener >
 {
     Reference< XDatabaseContext > m_xDatabaseContext;
-    SwConnectionArr m_aConnections;
     SwWrtShell* m_pWrtShell;
 
     public:
@@ -83,10 +73,10 @@ class SwDBTreeList_Impl : public cppu::WeakImplHelper < XContainerListener >
         }
         virtual ~SwDBTreeList_Impl();
 
-    virtual void SAL_CALL elementInserted( const ContainerEvent& Event ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL elementRemoved( const ContainerEvent& Event ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL elementReplaced( const ContainerEvent& Event ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL disposing( const EventObject& Source ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL elementInserted( const ContainerEvent& Event ) throw (RuntimeException, std::exception) override;
+    virtual void SAL_CALL elementRemoved( const ContainerEvent& Event ) throw (RuntimeException, std::exception) override;
+    virtual void SAL_CALL elementReplaced( const ContainerEvent& Event ) throw (RuntimeException, std::exception) override;
+    virtual void SAL_CALL disposing( const EventObject& Source ) throw (RuntimeException, std::exception) override;
 
     bool                        HasContext();
     SwWrtShell*                 GetWrtShell() { return m_pWrtShell;}
@@ -119,19 +109,11 @@ void SwDBTreeList_Impl::elementRemoved( const ContainerEvent& rEvent ) throw (Ru
     SolarMutexGuard aGuard;
     OUString sSource;
     rEvent.Accessor >>= sSource;
-    for(SwConnectionArr::iterator i = m_aConnections.begin(); i != m_aConnections.end(); ++i)
-    {
-        if(i->sSourceName == sSource)
-        {
-            m_aConnections.erase(i);
-            break;
-        }
-    }
 }
 
 void SwDBTreeList_Impl::disposing( const EventObject&  ) throw (RuntimeException, std::exception)
 {
-    m_xDatabaseContext = 0;
+    m_xDatabaseContext = nullptr;
 }
 
 void SwDBTreeList_Impl::elementReplaced( const ContainerEvent& rEvent ) throw (RuntimeException, std::exception)
@@ -153,20 +135,9 @@ bool SwDBTreeList_Impl::HasContext()
 Reference<XConnection>  SwDBTreeList_Impl::GetConnection(const OUString& rSourceName)
 {
     Reference<XConnection> xRet;
-    for(SwConnectionArr::const_iterator i = m_aConnections.begin(); i != m_aConnections.end(); ++i)
+    if (m_xDatabaseContext.is() && m_pWrtShell)
     {
-        if(i->sSourceName == rSourceName)
-        {
-            xRet = i->xConnection;
-            break;
-        }
-    }
-    if(!xRet.is() && m_xDatabaseContext.is() && m_pWrtShell)
-    {
-        SwConnectionData* pPtr = new SwConnectionData();
-        pPtr->sSourceName = rSourceName;
-        xRet = m_pWrtShell->GetDBManager()->RegisterConnection(pPtr->sSourceName);
-        m_aConnections.push_back(pPtr);
+        xRet = m_pWrtShell->GetDBManager()->RegisterConnection(rSourceName);
     }
     return xRet;
 }
@@ -176,7 +147,7 @@ SwDBTreeList::SwDBTreeList(vcl::Window *pParent, WinBits nStyle)
     , aImageList(SW_RES(ILIST_DB_DLG))
     , bInitialized(false)
     , bShowColumns(false)
-    , pImpl(new SwDBTreeList_Impl(NULL))
+    , pImpl(new SwDBTreeList_Impl(nullptr))
 {
     if (IsVisible())
         InitTreeList();
@@ -204,7 +175,7 @@ SwDBTreeList::~SwDBTreeList()
 void SwDBTreeList::dispose()
 {
     delete pImpl;
-    pImpl = NULL;
+    pImpl = nullptr;
     SvTreeListBox::dispose();
 }
 
@@ -231,7 +202,7 @@ void SwDBTreeList::InitTreeList()
     for(long i = 0; i < nCount; i++)
     {
         OUString sDBName(pDBNames[i]);
-        InsertEntry(sDBName, aImg, aImg, NULL, true);
+        InsertEntry(sDBName, aImg, aImg, nullptr, true);
     }
     OUString sDBName(sDefDBName.getToken(0, DB_DELIM));
     OUString sTableName(sDefDBName.getToken(1, DB_DELIM));
@@ -244,7 +215,7 @@ void SwDBTreeList::InitTreeList()
 void    SwDBTreeList::AddDataSource(const OUString& rSource)
 {
     Image aImg = aImageList.GetImage(IMG_DB);
-    SvTreeListEntry* pEntry = InsertEntry(rSource, aImg, aImg, NULL, true);
+    SvTreeListEntry* pEntry = InsertEntry(rSource, aImg, aImg, nullptr, true);
     SvTreeListBox::Select(pEntry);
 }
 
@@ -267,7 +238,7 @@ void SwDBTreeList::ShowColumns(bool bShowCol)
             Collapse(pEntry);       // zuklappen
 
             SvTreeListEntry* pChild;
-            while ((pChild = FirstChild(pEntry)) != 0L)
+            while ((pChild = FirstChild(pEntry)) != nullptr)
                 GetModel()->Remove(pChild);
 
             pEntry = Next(pEntry);
@@ -296,11 +267,11 @@ void  SwDBTreeList::RequestingChildren(SvTreeListEntry* pParent)
                 if(!pImpl->GetContext()->hasByName(sSourceName))
                     return;
                 Reference<XConnection> xConnection = pImpl->GetConnection(sSourceName);
-                bool bTable = pParent->GetUserData() == 0;
+                bool bTable = pParent->GetUserData() == nullptr;
                 Reference<XColumnsSupplier> xColsSupplier;
                 if(bTable)
                 {
-                    Reference<XTablesSupplier> xTSupplier = Reference<XTablesSupplier>(xConnection, UNO_QUERY);
+                    Reference<XTablesSupplier> xTSupplier(xConnection, UNO_QUERY);
                     if(xTSupplier.is())
                     {
                         Reference<XNameAccess> xTables = xTSupplier->getTables();
@@ -310,7 +281,7 @@ void  SwDBTreeList::RequestingChildren(SvTreeListEntry* pParent)
                             Any aTable = xTables->getByName(sTableName);
                             Reference<XPropertySet> xPropSet;
                             aTable >>= xPropSet;
-                            xColsSupplier = Reference<XColumnsSupplier>(xPropSet, UNO_QUERY);
+                            xColsSupplier.set(xPropSet, UNO_QUERY);
                         }
                         catch (const Exception&)
                         {
@@ -319,7 +290,7 @@ void  SwDBTreeList::RequestingChildren(SvTreeListEntry* pParent)
                 }
                 else
                 {
-                    Reference<XQueriesSupplier> xQSupplier = Reference<XQueriesSupplier>(xConnection, UNO_QUERY);
+                    Reference<XQueriesSupplier> xQSupplier(xConnection, UNO_QUERY);
                     if(xQSupplier.is())
                     {
                         Reference<XNameAccess> xQueries = xQSupplier->getQueries();
@@ -329,7 +300,7 @@ void  SwDBTreeList::RequestingChildren(SvTreeListEntry* pParent)
                             Any aQuery = xQueries->getByName(sTableName);
                             Reference<XPropertySet> xPropSet;
                             aQuery >>= xPropSet;
-                            xColsSupplier = Reference<XColumnsSupplier>(xPropSet, UNO_QUERY);
+                            xColsSupplier.set(xPropSet, UNO_QUERY);
                         }
                         catch (const Exception&)
                         {
@@ -364,7 +335,7 @@ void  SwDBTreeList::RequestingChildren(SvTreeListEntry* pParent)
                 Reference<XConnection> xConnection = pImpl->GetConnection(sSourceName);
                 if (xConnection.is())
                 {
-                    Reference<XTablesSupplier> xTSupplier = Reference<XTablesSupplier>(xConnection, UNO_QUERY);
+                    Reference<XTablesSupplier> xTSupplier(xConnection, UNO_QUERY);
                     if(xTSupplier.is())
                     {
                         Reference<XNameAccess> xTables = xTSupplier->getTables();
@@ -382,7 +353,7 @@ void  SwDBTreeList::RequestingChildren(SvTreeListEntry* pParent)
                         }
                     }
 
-                    Reference<XQueriesSupplier> xQSupplier = Reference<XQueriesSupplier>(xConnection, UNO_QUERY);
+                    Reference<XQueriesSupplier> xQSupplier(xConnection, UNO_QUERY);
                     if(xQSupplier.is())
                     {
                         Reference<XNameAccess> xQueries = xQSupplier->getQueries();
@@ -432,7 +403,7 @@ OUString SwDBTreeList::GetDBName(OUString& rTableName, OUString& rColumnName, sa
         sDBName = GetEntryText(GetParent(pEntry));
         if(pbIsTable)
         {
-            *pbIsTable = pEntry->GetUserData() == 0;
+            *pbIsTable = pEntry->GetUserData() == nullptr;
         }
         rTableName = GetEntryText(pEntry);
     }
@@ -447,13 +418,13 @@ void SwDBTreeList::Select(const OUString& rDBName, const OUString& rTableName, c
     sal_uInt16 nParent = 0;
     sal_uInt16 nChild = 0;
 
-    while ((pParent = GetEntry(nParent++)) != NULL)
+    while ((pParent = GetEntry(nParent++)) != nullptr)
     {
         if (rDBName == GetEntryText(pParent))
         {
             if (!pParent->HasChildren())
                 RequestingChildren(pParent);
-            while ((pChild = GetEntry(pParent, nChild++)) != NULL)
+            while ((pChild = GetEntry(pParent, nChild++)) != nullptr)
             {
                 if (rTableName == GetEntryText(pChild))
                 {
@@ -466,7 +437,7 @@ void SwDBTreeList::Select(const OUString& rDBName, const OUString& rTableName, c
                         if (!pParent->HasChildren())
                             RequestingChildren(pParent);
 
-                        while ((pChild = GetEntry(pParent, nChild++)) != NULL)
+                        while ((pChild = GetEntry(pParent, nChild++)) != nullptr)
                             if (rColumnName == GetEntryText(pChild))
                                 break;
                     }
@@ -490,7 +461,7 @@ void SwDBTreeList::StartDrag( sal_Int8 /*nAction*/, const Point& /*rPosPixel*/ )
     if (!sDBName.isEmpty())
     {
         TransferDataContainer* pContainer = new TransferDataContainer;
-        ::com::sun::star::uno::Reference< ::com::sun::star::datatransfer::XTransferable > xRef( pContainer );
+        css::uno::Reference< css::datatransfer::XTransferable > xRef( pContainer );
         if( !sColumnName.isEmpty() )
         {
             // drag database field

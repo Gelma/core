@@ -153,7 +153,7 @@ static bool ImplIsPatternChar( sal_Unicode cChar, sal_Char cEditMask )
         nType = ImplGetCharClass()->getStringType( aCharStr, 0, aCharStr.getLength(),
                 Application::GetSettings().GetLanguageTag().getLocale() );
     }
-    catch (const ::com::sun::star::uno::Exception&)
+    catch (const css::uno::Exception&)
     {
         SAL_WARN( "vcl.control", "ImplIsPatternChar: Exception caught!" );
         DBG_UNHANDLED_EXCEPTION();
@@ -821,7 +821,7 @@ PatternField::PatternField( vcl::Window* pParent, WinBits nWinStyle ) :
 
 void PatternField::dispose()
 {
-    PatternFormatter::SetField( NULL );
+    PatternFormatter::SetField( nullptr );
     SpinField::dispose();
 }
 
@@ -873,7 +873,7 @@ PatternBox::PatternBox( vcl::Window* pParent, WinBits nWinStyle ) :
 
 void PatternBox::dispose()
 {
-    PatternFormatter::SetField( NULL );
+    PatternFormatter::SetField( nullptr );
     ComboBox::dispose();
 }
 
@@ -1407,7 +1407,7 @@ void DateFormatter::ImplInit()
 {
     mbLongFormat        = false;
     mbShowDateCentury   = true;
-    mpCalendarWrapper   = NULL;
+    mpCalendarWrapper   = nullptr;
     mnDateFormat        = 0xFFFF;
     mnExtDateFormat     = XTDATEF_SYSTEM_SHORT;
 }
@@ -1425,13 +1425,13 @@ DateFormatter::DateFormatter() :
 DateFormatter::~DateFormatter()
 {
     delete mpCalendarWrapper;
-    mpCalendarWrapper = NULL;
+    mpCalendarWrapper = nullptr;
 }
 
-void DateFormatter::SetLocale( const ::com::sun::star::lang::Locale& rLocale )
+void DateFormatter::SetLocale( const css::lang::Locale& rLocale )
 {
     delete mpCalendarWrapper;
-    mpCalendarWrapper = NULL;
+    mpCalendarWrapper = nullptr;
     FormatterBase::SetLocale( rLocale );
 }
 
@@ -1730,7 +1730,7 @@ DateField::DateField( vcl::Window* pParent, WinBits nWinStyle ) :
 
 void DateField::dispose()
 {
-    DateFormatter::SetField( NULL );
+    DateFormatter::SetField( nullptr );
     SpinField::dispose();
 }
 
@@ -1835,7 +1835,7 @@ DateBox::DateBox( vcl::Window* pParent, WinBits nWinStyle ) :
 
 void DateBox::dispose()
 {
-    DateFormatter::SetField( NULL );
+    DateFormatter::SetField( nullptr );
     ComboBox::dispose();
 }
 
@@ -2125,15 +2125,13 @@ static bool ImplTimeGetValue( const OUString& rStr, tools::Time& rTime,
             return false;
 
         OUString aUpperCaseStr = aStr.toString().toAsciiUpperCase();
-        OUString aAM(rLocaleDataWrapper.getTimeAM().toAsciiUpperCase());
-        OUString aPM(rLocaleDataWrapper.getTimePM().toAsciiUpperCase());
-        OUString aAM2("AM");  // aAM is localized
-        OUString aPM2("PM");  // aPM is localized
+        OUString aAMlocalised(rLocaleDataWrapper.getTimeAM().toAsciiUpperCase());
+        OUString aPMlocalised(rLocaleDataWrapper.getTimePM().toAsciiUpperCase());
 
-        if ( (nHour < 12) && ( ( aUpperCaseStr.indexOf( aPM ) >= 0 ) || ( aUpperCaseStr.indexOf( aPM2 ) >= 0 ) ) )
+        if ( (nHour < 12) && ( ( aUpperCaseStr.indexOf( "PM" ) >= 0 ) || ( aUpperCaseStr.indexOf( aPMlocalised ) >= 0 ) ) )
             nHour += 12;
 
-        if ( (nHour == 12) && ( ( aUpperCaseStr.indexOf( aAM ) >= 0 ) || ( aUpperCaseStr.indexOf( aAM2 ) >= 0 ) ) )
+        if ( (nHour == 12) && ( ( aUpperCaseStr.indexOf( "AM" ) >= 0 ) || ( aUpperCaseStr.indexOf( aAMlocalised ) >= 0 ) ) )
             nHour = 0;
 
         aTime = tools::Time( (sal_uInt16)nHour, (sal_uInt16)nMinute, (sal_uInt16)nSecond,
@@ -2515,7 +2513,7 @@ TimeField::TimeField( vcl::Window* pParent, WinBits nWinStyle ) :
 
 void TimeField::dispose()
 {
-    TimeFormatter::SetField( NULL );
+    TimeFormatter::SetField( nullptr );
     SpinField::dispose();
 }
 
@@ -2658,7 +2656,7 @@ TimeBox::TimeBox( vcl::Window* pParent, WinBits nWinStyle ) :
 
 void TimeBox::dispose()
 {
-    TimeFormatter::SetField( NULL );
+    TimeFormatter::SetField( nullptr );
     ComboBox::dispose();
 }
 

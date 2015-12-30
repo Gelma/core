@@ -160,7 +160,7 @@ private:
 
 public:
                             FontList( OutputDevice* pDevice,
-                                      OutputDevice* pDevice2 = NULL,
+                                      OutputDevice* pDevice2 = nullptr,
                                       bool bAll = true );
                             ~FontList();
 
@@ -195,8 +195,8 @@ public:
     static const sal_IntPtr* GetStdSizeAry() { return aStdSizeAry; }
 
 private:
-                            FontList( const FontList& ) SAL_DELETED_FUNCTION;
-    FontList&               operator =( const FontList& ) SAL_DELETED_FUNCTION;
+                            FontList( const FontList& ) = delete;
+    FontList&               operator =( const FontList& ) = delete;
 };
 
 class SVT_DLLPUBLIC FontSizeNames

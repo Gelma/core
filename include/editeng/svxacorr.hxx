@@ -24,7 +24,6 @@
 
 #include <o3tl/sorted_vector.hxx>
 #include <tools/ref.hxx>
-#include <tools/rtti.hxx>
 #include <i18nlangtag/languagetag.hxx>
 #include <tools/time.hxx>
 #include <tools/date.hxx>
@@ -134,10 +133,10 @@ public:
 class EDITENG_DLLPUBLIC SvxAutocorrWordList
 {
     struct Impl;
-    Impl* mpImpl;
+    std::unique_ptr<Impl> mpImpl;
 
-    SvxAutocorrWordList( const SvxAutocorrWordList& ) SAL_DELETED_FUNCTION;
-    const SvxAutocorrWordList& operator= ( const SvxAutocorrWordList& ) SAL_DELETED_FUNCTION;
+    SvxAutocorrWordList( const SvxAutocorrWordList& ) = delete;
+    const SvxAutocorrWordList& operator= ( const SvxAutocorrWordList& ) = delete;
 
     const SvxAutocorrWord* WordMatches(const SvxAutocorrWord *pFnd,
                                        const OUString &rTxt,
@@ -254,7 +253,7 @@ class EDITENG_DLLPUBLIC SvxAutoCorrect
 protected:
     //  - Text with attribution (only the SWG - SWG format!)
     //      rShort is the stream name - encrypted!
-    virtual bool PutText( const com::sun::star::uno::Reference < com::sun::star::embed::XStorage >& rStg,
+    virtual bool PutText( const css::uno::Reference < css::embed::XStorage >& rStg,
                               const OUString& rFileName, const OUString& rShort, SfxObjectShell&, OUString& );
 
     // required language in the table add if possible only when the file exists
@@ -268,7 +267,7 @@ public:
                             LanguageType eLang ) const;
     virtual bool GetLongText( const OUString& rShort, OUString& rLong );
 
-    virtual void refreshBlockList( const com::sun::star::uno::Reference < com::sun::star::embed::XStorage >& rStg);
+    virtual void refreshBlockList( const css::uno::Reference < css::embed::XStorage >& rStg);
 
     SvxAutoCorrect( const OUString& rShareAutocorrFile,
                     const OUString& rUserAutocorrFile );
@@ -281,7 +280,7 @@ public:
     // to the actual SwTxtNode/EditNode string because it inserts the character
     // in rDoc and expects that to side-effect rTxt
     sal_uLong DoAutoCorrect( SvxAutoCorrDoc& rDoc, const OUString& rTxt,
-                           sal_Int32 nPos, sal_Unicode cInsChar, bool bInsert, vcl::Window* pFrameWin = NULL );
+                           sal_Int32 nPos, sal_Unicode cInsChar, bool bInsert, vcl::Window* pFrameWin = nullptr );
 
     // Return for the autotext expansion the previous word,
     // AutoCorrect - corresponding algorithm

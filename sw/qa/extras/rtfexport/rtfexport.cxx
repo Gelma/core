@@ -28,6 +28,7 @@
 #include <com/sun/star/text/WritingMode2.hpp>
 #include <com/sun/star/view/XViewSettingsSupplier.hpp>
 #include <com/sun/star/text/RubyAdjust.hpp>
+#include <com/sun/star/text/XTextColumns.hpp>
 
 #include <vcl/svapp.hxx>
 
@@ -36,7 +37,7 @@ class Test : public SwModelTestBase
 public:
     Test() : SwModelTestBase("/sw/qa/extras/rtfexport/data/", "Rich Text Format") {}
 
-    bool mustTestImportOf(const char* filename) const SAL_OVERRIDE
+    bool mustTestImportOf(const char* filename) const override
     {
         // Don't test the first import of these, for some reason those tests fail
         const char* aBlacklist[] =
@@ -80,7 +81,7 @@ public:
 
     }
 
-    virtual void postLoad(const char* pFilename) SAL_OVERRIDE
+    virtual void postLoad(const char* pFilename) override
     {
         if (OString(pFilename) == "tdf90421.fodt")
         {
@@ -941,6 +942,28 @@ DECLARE_RTFEXPORT_TEST(testTdf92521, "tdf92521.odt")
     // There should be a page break that's in the middle of the document: right after the table.
     // But there wasn't, so this was 1.
     CPPUNIT_ASSERT_EQUAL(2, getPages());
+}
+
+DECLARE_RTFEXPORT_TEST(testTdf94043, "tdf94043.rtf")
+{
+    auto xTextSection = getProperty< uno::Reference<beans::XPropertySet> >(getParagraph(2), "TextSection");
+    auto xTextColumns = getProperty< uno::Reference<text::XTextColumns> >(xTextSection, "TextColumns");
+    // This was 0, the separator line was not visible due to 0 width.
+    CPPUNIT_ASSERT_EQUAL(static_cast<sal_Int32>(2), getProperty<sal_Int32>(xTextColumns, "SeparatorLineWidth"));
+}
+
+DECLARE_RTFEXPORT_TEST(testTdf94377, "tdf94377.rtf")
+{
+    uno::Reference<text::XTextFieldsSupplier> xTextFieldsSupplier(mxComponent, uno::UNO_QUERY);
+    uno::Reference<container::XEnumerationAccess> xFieldsAccess(xTextFieldsSupplier->getTextFields());
+    uno::Reference<container::XEnumeration> xFields(xFieldsAccess->createEnumeration());
+    uno::Reference<beans::XPropertySet> xPropertySet(xFields->nextElement(), uno::UNO_QUERY);
+    auto xText = getProperty< uno::Reference<text::XText> >(xPropertySet, "TextRange");
+    // This failed, as:
+    // 1) multiple paragraphs were not exported, so the text was "Asdf10asdf12".
+    // 2) direct formatting of runs were not exported, so this was 12 (the document default).
+    CPPUNIT_ASSERT_EQUAL(10.f, getProperty<float>(getRun(getParagraphOfText(1, xText, "Asdf10"), 1), "CharHeight"));
+    CPPUNIT_ASSERT_EQUAL(12.f, getProperty<float>(getRun(getParagraphOfText(2, xText, "asdf12"), 1), "CharHeight"));
 }
 
 CPPUNIT_PLUGIN_IMPLEMENT();

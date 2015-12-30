@@ -29,14 +29,9 @@
 #include "cfgitems.hxx"
 #include "crstate.hxx"
 
-TYPEINIT1_AUTOFACTORY(SwDocDisplayItem, SfxPoolItem)
-TYPEINIT1_AUTOFACTORY(SwElemItem, SfxPoolItem)
-TYPEINIT1_AUTOFACTORY(SwAddPrinterItem, SfxPoolItem)
-TYPEINIT1_AUTOFACTORY(SwShadowCursorItem, SfxPoolItem)
 
 SwDocDisplayItem::SwDocDisplayItem( sal_uInt16 _nWhich ) :
-        SfxPoolItem(_nWhich),
-        aIndexBackgrndCol(COL_GRAY)
+        SfxPoolItem(_nWhich)
 {
     bParagraphEnd       =
     bTab                =
@@ -255,7 +250,7 @@ SwShadowCursorItem::SwShadowCursorItem( const SwShadowCursorItem& rCpy )
 
 SwShadowCursorItem::SwShadowCursorItem( const SwViewOption& rVOpt, sal_uInt16 _nWhich )
     : SfxPoolItem( _nWhich ),
-    eMode( rVOpt.GetShdwCrsrFillMode() )
+    eMode( rVOpt.GetShdwCursorFillMode() )
     ,bOn( rVOpt.IsShadowCursor() )
 
 {
@@ -281,7 +276,7 @@ void SwShadowCursorItem::operator=( const SwShadowCursorItem& rCpy )
 void SwShadowCursorItem::FillViewOptions( SwViewOption& rVOpt ) const
 {
     rVOpt.SetShadowCursor( bOn );
-    rVOpt.SetShdwCrsrFillMode( eMode );
+    rVOpt.SetShdwCursorFillMode( eMode );
 }
 
 #ifdef DBG_UTIL

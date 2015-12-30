@@ -234,7 +234,7 @@ void VCLXAccessibleStatusBar::ProcessWindowEvent( const VclWindowEvent& rVclWind
         {
             if ( m_pStatusBar )
             {
-                m_pStatusBar = NULL;
+                m_pStatusBar = nullptr;
 
                 // dispose all children
                 for ( size_t i = 0; i < m_aAccessibleChildren.size(); ++i )
@@ -264,7 +264,7 @@ void VCLXAccessibleStatusBar::disposing()
 
     if ( m_pStatusBar )
     {
-        m_pStatusBar = NULL;
+        m_pStatusBar = nullptr;
 
         // dispose all children
         for ( size_t i = 0; i < m_aAccessibleChildren.size(); ++i )
@@ -290,8 +290,7 @@ OUString VCLXAccessibleStatusBar::getImplementationName() throw (RuntimeExceptio
 
 Sequence< OUString > VCLXAccessibleStatusBar::getSupportedServiceNames() throw (RuntimeException, std::exception)
 {
-    Sequence< OUString > aNames(1);
-    aNames[0] = "com.sun.star.awt.AccessibleStatusBar";
+    Sequence< OUString > aNames { "com.sun.star.awt.AccessibleStatusBar" };
     return aNames;
 }
 

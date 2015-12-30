@@ -62,9 +62,9 @@ CSubmission::SubmissionResult CSubmissionGet::submit(const css::uno::Reference< 
         pHelper->m_aInteractionHandler = aInteractionHandler;
     else
         pHelper->m_aInteractionHandler.set(
-            css::task::InteractionHandler::createWithParent(m_xContext, 0), UNO_QUERY_THROW);
+            css::task::InteractionHandler::createWithParent(m_xContext, nullptr), UNO_QUERY_THROW);
     CProgressHandlerHelper *pProgressHelper = new CProgressHandlerHelper;
-    pHelper->m_aProgressHandler = css::uno::Reference< XProgressHandler >(pProgressHelper);
+    pHelper->m_aProgressHandler.set(pProgressHelper);
 
     // UCB has ownership of environment...
     css::uno::Reference< XCommandEnvironment > aEnvironment(pHelper);
@@ -88,7 +88,8 @@ CSubmission::SubmissionResult CSubmissionGet::submit(const css::uno::Reference< 
         OUString aQueryURL = OStringToOUString(aUTF8QueryURL.makeStringAndClear(), RTL_TEXTENCODING_UTF8);
         ucbhelper::Content aContent(aQueryURL, aEnvironment, m_xContext);
         css::uno::Reference< XOutputStream > aPipe( css::io::Pipe::create(m_xContext), UNO_QUERY_THROW );
-        aContent.openStream(aPipe);
+        if (!aContent.openStream(aPipe))
+            return UNKNOWN_ERROR;
         // get reply
         try {
             m_aResultStream = aContent.openStream();

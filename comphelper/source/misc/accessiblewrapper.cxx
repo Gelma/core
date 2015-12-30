@@ -207,7 +207,6 @@ namespace comphelper
             case AccessibleEventId::TABLE_ROW_DESCRIPTION_CHANGED:
             case AccessibleEventId::TABLE_ROW_HEADER_CHANGED:
             case AccessibleEventId::TABLE_SUMMARY_CHANGED:
-            // #130798#
             // these Ids are also missed: SUB_WINDOW_OF_RELATION_CHANGED & TEXT_ATTRIBUTE_CHANGED
             case AccessibleEventId::TEXT_SELECTION_CHANGED:
                 // nothing to translate
@@ -348,7 +347,7 @@ namespace comphelper
         ,m_xInnerContext( _rxInnerAccessibleContext )
         ,m_xOwningAccessible( _rxOwningAccessible )
         ,m_xParentAccessible( _rxParentAccessible )
-        ,m_pChildMapper( NULL )
+        ,m_pChildMapper( nullptr )
     {
         // initialize the mapper for our children
         m_pChildMapper = new OWrappedAccessibleChildrenManager( getComponentContext() );
@@ -386,7 +385,7 @@ namespace comphelper
         OSL_ENSURE( m_rBHelper.bDisposed, "OAccessibleContextWrapperHelper::~OAccessibleContextWrapperHelper: you should ensure (in your dtor) that the object is disposed!" );
 
         m_pChildMapper->release();
-        m_pChildMapper = NULL;
+        m_pChildMapper = nullptr;
     }
 
 

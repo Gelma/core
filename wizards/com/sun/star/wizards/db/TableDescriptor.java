@@ -83,9 +83,8 @@ public class TableDescriptor extends CommandMetaData implements XContainerListen
         xWindow = _xWindow;
     }
 
-    private class ColumnDescriptor
+    private static class ColumnDescriptor
     {
-
         String Name;
         XPropertySet xColPropertySet;
 
@@ -96,6 +95,7 @@ public class TableDescriptor extends CommandMetaData implements XContainerListen
         }
     }
 
+    @Override
     public boolean getConnection(PropertyValue[] _curPropertyValue)
     {
         if (super.getConnection(_curPropertyValue))
@@ -352,18 +352,15 @@ public class TableDescriptor extends CommandMetaData implements XContainerListen
 
     private void assignTableProperty(String _spropname, String _svalue)
     {
-        if (_svalue != null)
+        if (_svalue != null && !_svalue.equals(PropertyNames.EMPTY_STRING))
         {
-            if (!_svalue.equals(PropertyNames.EMPTY_STRING))
+            try
             {
-                try
-                {
-                    xPropTableDataDescriptor.setPropertyValue(_spropname, _svalue);
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace(System.err);
-                }
+                xPropTableDataDescriptor.setPropertyValue(_spropname, _svalue);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace(System.err);
             }
         }
     }

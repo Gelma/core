@@ -44,7 +44,7 @@ using namespace ::com::sun::star;
 // no include "dbgoutsw.hxx" here!!!!!!
 
 extern bool g_bNoInterrupt;
-extern bool g_bFrmDrag;
+extern bool g_bFrameDrag;
 extern bool g_bDDTimerStarted;
 
 bool g_bExecuteDrag = false;
@@ -61,8 +61,8 @@ void SwEditWin::StopDDTimer(SwWrtShell *pSh, const Point &rPt)
 {
     m_aTimer.Stop();
     g_bDDTimerStarted = false;
-    if(!pSh->IsSelFrmMode())
-        pSh->SetCursor(&rPt, false);
+    if(!pSh->IsSelFrameMode())
+        pSh->CallSetCursor(&rPt, false);
     m_aTimer.SetTimeoutHdl(LINK(this,SwEditWin, TimerHandler));
 }
 
@@ -82,12 +82,12 @@ void SwEditWin::StartDrag( sal_Int8 /*nAction*/, const Point& rPosPixel )
     if ( !m_pApplyTempl && !rSh.IsDrawCreate() && !IsDrawAction())
     {
         bool bStart = false, bDelSelect = false;
-        SdrObject *pObj = NULL;
+        SdrObject *pObj = nullptr;
         Point aDocPos( PixelToLogic( rPosPixel ) );
         if ( !rSh.IsInSelect() && rSh.ChgCurrPam( aDocPos, true, true))
             //We are not selecting and aren't at a selection
             bStart = true;
-        else if ( !g_bFrmDrag && rSh.IsSelFrmMode() &&
+        else if ( !g_bFrameDrag && rSh.IsSelFrameMode() &&
                     rSh.IsInsideSelectedObj( aDocPos ) )
         {
             //We are not dragging internally and are not at an
@@ -95,7 +95,7 @@ void SwEditWin::StartDrag( sal_Int8 /*nAction*/, const Point& rPosPixel )
 
             bStart = true;
         }
-        else if( !g_bFrmDrag && m_rView.GetDocShell()->IsReadOnly() &&
+        else if( !g_bFrameDrag && m_rView.GetDocShell()->IsReadOnly() &&
                 OBJCNT_NONE != rSh.GetObjCntType( aDocPos, pObj ))
         {
             rSh.LockPaint();
@@ -108,15 +108,14 @@ void SwEditWin::StartDrag( sal_Int8 /*nAction*/, const Point& rPosPixel )
         {
             SwContentAtPos aSwContentAtPos( SwContentAtPos::SW_INETATTR );
             bStart = rSh.GetContentAtPos( aDocPos,
-                        aSwContentAtPos,
-                        false );
+                        aSwContentAtPos );
         }
 
         if ( bStart && !m_bIsInDrag )
         {
             m_bMBPressed = false;
             ReleaseMouse();
-            g_bFrmDrag = false;
+            g_bFrameDrag = false;
             g_bExecuteDrag = true;
             SwEditWin::m_nDDStartPosY = aDocPos.Y();
             SwEditWin::m_nDDStartPosX = aDocPos.X();
@@ -124,7 +123,7 @@ void SwEditWin::StartDrag( sal_Int8 /*nAction*/, const Point& rPosPixel )
             StartExecuteDrag();
             if( bDelSelect )
             {
-                rSh.UnSelectFrm();
+                rSh.UnSelectFrame();
                 rSh.UnlockPaint();
             }
         }
@@ -166,7 +165,7 @@ void SwEditWin::DropCleanup()
     if ( m_pUserMarker )
         CleanupDropUserMarker();
     else
-        rSh.UnSetVisCrsr();
+        rSh.UnSetVisibleCursor();
 
 }
 
@@ -175,8 +174,8 @@ void SwEditWin::CleanupDropUserMarker()
     if ( m_pUserMarker )
     {
         delete m_pUserMarker;
-        m_pUserMarker = 0;
-        m_pUserMarkerObj = 0;
+        m_pUserMarker = nullptr;
+        m_pUserMarkerObj = nullptr;
     }
 }
 
@@ -196,11 +195,11 @@ sal_Int8 SwEditWin::ExecuteDrop( const ExecuteDropEvent& rEvt )
     //A Drop to an open OutlinerView doesn't concern us (also see QueryDrop)
     SwWrtShell &rSh = m_rView.GetWrtShell();
     const Point aDocPt( PixelToLogic( rEvt.maPosPixel ));
-    SdrObject *pObj = 0;
+    SdrObject *pObj = nullptr;
     OutlinerView* pOLV;
     rSh.GetObjCntType( aDocPt, pObj );
 
-    if( pObj && 0 != ( pOLV = rSh.GetDrawView()->GetTextEditOutlinerView() ))
+    if( pObj && nullptr != ( pOLV = rSh.GetDrawView()->GetTextEditOutlinerView() ))
     {
         Rectangle aRect( pOLV->GetOutputArea() );
         aRect.Union( pObj->GetLogicRect() );
@@ -251,7 +250,7 @@ SotExchangeDest SwEditWin::GetDropDestination( const Point& rPixPnt, SdrObject *
         || rSh.DocPtInsideInputField( aDocPt ) )
         return SotExchangeDest::NONE;
 
-    SdrObject *pObj = NULL;
+    SdrObject *pObj = nullptr;
     const ObjCntType eType = rSh.GetObjCntType( aDocPt, pObj );
 
     //Drop to OutlinerView (TextEdit in Drawing) should decide it on its own!
@@ -279,7 +278,7 @@ SotExchangeDest SwEditWin::GetDropDestination( const Point& rPixPnt, SdrObject *
         case OBJCNT_GRF:
             {
                 bool bLink,
-                    bIMap = 0 != rSh.GetFormatFromObj( aDocPt )->GetURL().GetMap();
+                    bIMap = nullptr != rSh.GetFormatFromObj( aDocPt )->GetURL().GetMap();
                 OUString aDummy;
                 rSh.GetGrfAtPos( aDocPt, aDummy, bLink );
                 if ( bLink && bIMap )
@@ -293,7 +292,7 @@ SotExchangeDest SwEditWin::GetDropDestination( const Point& rPixPnt, SdrObject *
             }
             break;
         case OBJCNT_FLY:
-            if( rSh.GetView().GetDocShell()->ISA(SwWebDocShell) )
+            if( dynamic_cast< const SwWebDocShell *>( rSh.GetView().GetDocShell() ) != nullptr  )
                 nDropDestination = SotExchangeDest::DOC_TEXTFRAME_WEB;
             else
                 nDropDestination = SotExchangeDest::DOC_TEXTFRAME;
@@ -309,7 +308,7 @@ SotExchangeDest SwEditWin::GetDropDestination( const Point& rPixPnt, SdrObject *
     }
     if ( !bool(nDropDestination) )
     {
-        if( rSh.GetView().GetDocShell()->ISA(SwWebDocShell) )
+        if( dynamic_cast< const SwWebDocShell *>( rSh.GetView().GetDocShell() ) != nullptr  )
             nDropDestination = SotExchangeDest::SWDOC_FREE_AREA_WEB;
         else
             nDropDestination = SotExchangeDest::SWDOC_FREE_AREA;
@@ -369,7 +368,7 @@ sal_Int8 SwEditWin::AcceptDrop( const AcceptDropEvent& rEvt )
         m_bOldIdleSet = false;
     }
 
-    SdrObject *pObj = NULL;
+    SdrObject *pObj = nullptr;
     m_nDropDestination = GetDropDestination( aPixPt, &pObj );
     if( !bool(m_nDropDestination) )
         return DND_ACTION_NONE;
@@ -396,9 +395,9 @@ sal_Int8 SwEditWin::AcceptDrop( const AcceptDropEvent& rEvt )
             //Drawing objects in Headers/Footers are not allowed
 
             SwWrtShell *pSrcSh = pMod->m_pDragDrop->GetShell();
-            if( (pSrcSh->GetSelFrmType() == FrmTypeFlags::DRAWOBJ) &&
+            if( (pSrcSh->GetSelFrameType() == FrameTypeFlags::DRAWOBJ) &&
                 pSrcSh->IsSelContainsControl() &&
-                 (rSh.GetFrmType( &aDocPt, false ) & (FrmTypeFlags::HEADER|FrmTypeFlags::FOOTER)) )
+                 (rSh.GetFrameType( &aDocPt, false ) & (FrameTypeFlags::HEADER|FrameTypeFlags::FOOTER)) )
             {
                 bCleanup = true;
             }
@@ -419,7 +418,7 @@ sal_Int8 SwEditWin::AcceptDrop( const AcceptDropEvent& rEvt )
             if ( bCleanup )
             {
                 CleanupDropUserMarker();
-                rSh.UnSetVisCrsr();
+                rSh.UnSetVisibleCursor();
                 return DND_ACTION_NONE;
             }
         }
@@ -450,11 +449,11 @@ sal_Int8 SwEditWin::AcceptDrop( const AcceptDropEvent& rEvt )
             CleanupDropUserMarker();
             SwContentAtPos aCont( SwContentAtPos::SW_CONTENT_CHECK );
             if(rSh.GetContentAtPos(aDocPt, aCont))
-                rSh.SwCrsrShell::SetVisCrsr( aDocPt );
+                rSh.SwCursorShell::SetVisibleCursor( aDocPt );
         }
         else
         {
-            rSh.UnSetVisCrsr();
+            rSh.UnSetVisibleCursor();
 
             if ( m_pUserMarkerObj != pObj )
             {
@@ -471,7 +470,7 @@ sal_Int8 SwEditWin::AcceptDrop( const AcceptDropEvent& rEvt )
     }
 
     CleanupDropUserMarker();
-    rSh.UnSetVisCrsr();
+    rSh.UnSetVisibleCursor();
     return DND_ACTION_NONE;
 }
 
@@ -482,7 +481,7 @@ IMPL_LINK_NOARG_TYPED(SwEditWin, DDHandler, Timer *, void)
     m_aTimer.SetTimeout(240);
     m_bMBPressed = false;
     ReleaseMouse();
-    g_bFrmDrag = false;
+    g_bFrameDrag = false;
 
     if ( m_rView.GetViewFrame() )
     {

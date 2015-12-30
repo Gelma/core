@@ -66,8 +66,6 @@
 
 #include <memory>
 
-// STATIC DATA -----------------------------------------------------------
-
 #define SC_PREVIEW_SHADOWSIZE   2
 
 static long lcl_GetDisplayStart( SCTAB nTab, ScDocument* pDoc, std::vector<long>& nPages )
@@ -98,8 +96,8 @@ ScPreview::ScPreview( vcl::Window* pParent, ScDocShell* pDocSh, ScPreviewShell* 
     aDate( Date::SYSTEM ),
     aTime( tools::Time::SYSTEM ),
     nTotalPages( 0 ),
-    pLocationData( NULL ),
-    pDrawView( NULL ),
+    pLocationData( nullptr ),
+    pDrawView( nullptr ),
     pDocShell( pDocSh ),
     pViewShell( pViewSh ),
     bInGetState( false ),
@@ -129,7 +127,7 @@ ScPreview::ScPreview( vcl::Window* pParent, ScDocShell* pDocSh, ScPreviewShell* 
     nHeaderHeight ( 0 ),
     nFooterHeight ( 0 )
 {
-    SetOutDevViewType( OUTDEV_VIEWTYPE_PRINTPREVIEW ); //#106611#
+    SetOutDevViewType( OUTDEV_VIEWTYPE_PRINTPREVIEW );
     SetBackground();
 
     SetHelpId( HID_SC_WIN_PREVIEW );
@@ -158,7 +156,6 @@ void ScPreview::UpdateDrawView()        // nTab must be right
     ScDocument& rDoc = pDocShell->GetDocument();
     ScDrawLayer* pModel = rDoc.GetDrawLayer();     // is not 0
 
-    // #114135#
     if ( pModel )
     {
         SdrPage* pPage = pModel->GetPage(nTab);
@@ -166,7 +163,7 @@ void ScPreview::UpdateDrawView()        // nTab must be right
         {
             // convert the displayed Page of drawView (see below) does not work?!?
             delete pDrawView;
-            pDrawView = NULL;
+            pDrawView = nullptr;
         }
 
         if ( !pDrawView )                                   // New Drawing?
@@ -183,7 +180,7 @@ void ScPreview::UpdateDrawView()        // nTab must be right
     else if ( pDrawView )
     {
         delete pDrawView;           // for this Chart is not needed
-        pDrawView = NULL;
+        pDrawView = nullptr;
     }
 }
 
@@ -265,7 +262,7 @@ void ScPreview::CalcPages()
         long nAttrPage = i > 0 ? nFirstAttr[i-1] : 1;
 
         long nThisStart = nTotalPages;
-        ScPrintFunc aPrintFunc( this, pDocShell, i, nAttrPage, 0, NULL, &aOptions );
+        ScPrintFunc aPrintFunc( this, pDocShell, i, nAttrPage, 0, nullptr, &aOptions );
         long nThisTab = aPrintFunc.GetTotalPages();
         if (!aPrintFunc.HasPrintRange())
             mbHasEmptyRangeTable = true;
@@ -354,7 +351,7 @@ void ScPreview::DoPrint( ScPreviewLocationData* pFillLocation )
     Fraction aHorPrevZoom( (long)( 100 * nZoom / pDocShell->GetOutputFactor() ), 10000 );
     MapMode aMMMode( MAP_100TH_MM, Point(), aHorPrevZoom, aPreviewZoom );
 
-    bool bDoPrint = ( pFillLocation == NULL );
+    bool bDoPrint = ( pFillLocation == nullptr );
     bool bValidPage = ( nPageNo < nTotalPages );
 
     ScModule* pScMod = SC_MOD();
@@ -393,7 +390,7 @@ void ScPreview::DoPrint( ScPreviewLocationData* pFillLocation )
         if (bStateValid)
             pPrintFunc = new ScPrintFunc( this, pDocShell, aState, &aOptions );
         else
-            pPrintFunc = new ScPrintFunc( this, pDocShell, nTab, nFirstAttr[nTab], nTotalPages, NULL, &aOptions );
+            pPrintFunc = new ScPrintFunc( this, pDocShell, nTab, nFirstAttr[nTab], nTotalPages, nullptr, &aOptions );
 
         pPrintFunc->SetOffset(aOffset);
         pPrintFunc->SetManualZoom(nZoom);
@@ -631,7 +628,7 @@ void ScPreview::Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& 
 
     if (bPageMargin)
         GetLocationData();              // fill location data for column positions
-    DoPrint( NULL );
+    DoPrint( nullptr );
     pViewShell->UpdateScrollBars();
 
     bInPaint = bWasInPaint;
@@ -898,7 +895,7 @@ void ScPreview::DoInvalidate()
     //  The Invalidate must come behind asynchronously
 
    if (bInGetState)
-        Application::PostUserEvent( LINK( this, ScPreview, InvalidateHdl ), NULL, true );
+        Application::PostUserEvent( LINK( this, ScPreview, InvalidateHdl ), nullptr, true );
     else
         StaticInvalidate();     // Immediately
 }
@@ -1186,7 +1183,7 @@ void ScPreview::MouseButtonUp( const MouseEvent& rMEvt )
                     }
                     else if( bHeaderRulerMove && bHeaderRulerChange )
                     {
-                        const SfxPoolItem* pItem = NULL;
+                        const SfxPoolItem* pItem = nullptr;
                         if ( rStyleSet.GetItemState( ATTR_PAGE_HEADERSET, false, &pItem ) == SfxItemState::SET )
                         {
                             const SfxItemSet& pHeaderSet = static_cast<const SvxSetItem*>(pItem)->GetItemSet();
@@ -1201,7 +1198,7 @@ void ScPreview::MouseButtonUp( const MouseEvent& rMEvt )
                     }
                     else if( bFooterRulerMove && bFooterRulerChange )
                     {
-                        const SfxPoolItem* pItem = NULL;
+                        const SfxPoolItem* pItem = nullptr;
                         if( rStyleSet.GetItemState( ATTR_PAGE_FOOTERSET, false, &pItem ) == SfxItemState::SET )
                         {
                             const SfxItemSet& pFooterSet = static_cast<const SvxSetItem*>(pItem)->GetItemSet();
@@ -1319,7 +1316,7 @@ void ScPreview::MouseMove( const MouseEvent& rMEvt )
         if (bStateValid)
             pPrintFunc = new ScPrintFunc( this, pDocShell, aState, &aOptions );
         else
-            pPrintFunc = new ScPrintFunc( this, pDocShell, nTab, nFirstAttr[nTab], nTotalPages, NULL, &aOptions );
+            pPrintFunc = new ScPrintFunc( this, pDocShell, nTab, nFirstAttr[nTab], nTotalPages, nullptr, &aOptions );
 
         nLeftMargin = (long)( pPrintFunc->GetLeftMargin() * HMM_PER_TWIPS - aOffset.X() );
         nRightMargin = (long)( pPrintFunc->GetRightMargin() * HMM_PER_TWIPS );
@@ -1505,19 +1502,19 @@ void ScPreview::GetFocus()
 {
     Window::GetFocus();
     if (pViewShell && pViewShell->HasAccessibilityObjects())
-        pViewShell->BroadcastAccessibility( ScAccWinFocusGotHint(GetAccessible()) );
+        pViewShell->BroadcastAccessibility( ScAccWinFocusGotHint() );
 }
 
 void ScPreview::LoseFocus()
 {
     if (pViewShell && pViewShell->HasAccessibilityObjects())
-        pViewShell->BroadcastAccessibility( ScAccWinFocusLostHint(GetAccessible()) );
+        pViewShell->BroadcastAccessibility( ScAccWinFocusLostHint() );
     Window::LoseFocus();
 }
 
-com::sun::star::uno::Reference<com::sun::star::accessibility::XAccessible> ScPreview::CreateAccessible()
+css::uno::Reference<css::accessibility::XAccessible> ScPreview::CreateAccessible()
 {
-    com::sun::star::uno::Reference<com::sun::star::accessibility::XAccessible> xAcc= GetAccessible(false);
+    css::uno::Reference<css::accessibility::XAccessible> xAcc= GetAccessible(false);
     if (xAcc.is())
     {
         return xAcc;

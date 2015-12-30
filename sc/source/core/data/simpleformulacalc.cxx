@@ -16,15 +16,16 @@
 #define DISPLAY_LEN 15
 
 ScSimpleFormulaCalculator::ScSimpleFormulaCalculator( ScDocument* pDoc, const ScAddress& rAddr,
-        const OUString& rFormula, formula::FormulaGrammar::Grammar eGram )
+        const OUString& rFormula, bool bMatrixFormula, formula::FormulaGrammar::Grammar eGram )
     : mnFormatType(0)
     , mnFormatIndex(0)
     , mbCalculated(false)
     , maAddr(rAddr)
     , mpDoc(pDoc)
     , maGram(eGram)
-    , bIsMatrix(false)
+    , mbMatrixResult(false)
     , mbLimitString(false)
+    , mbMatrixFormula(bMatrixFormula)
 {
     // compile already here
     ScCompiler aComp(mpDoc, maAddr);
@@ -44,8 +45,9 @@ void ScSimpleFormulaCalculator::Calculate()
         return;
 
     mbCalculated = true;
-    ScInterpreter aInt(NULL, mpDoc, maAddr, *mpCode.get());
-    aInt.AssertFormulaMatrix();
+    ScInterpreter aInt(nullptr, mpDoc, maAddr, *mpCode.get());
+    if (mbMatrixFormula)
+        aInt.AssertFormulaMatrix();
 
     formula::StackVar aIntType = aInt.Interpret();
     if ( aIntType == formula::svMatrixCell )
@@ -55,7 +57,7 @@ void ScSimpleFormulaCalculator::Calculate()
         OUStringBuffer aStr;
         aComp.CreateStringFromToken(aStr, aInt.GetResultToken().get());
 
-        bIsMatrix = true;
+        mbMatrixResult = true;
 
         if (mbLimitString)
         {
@@ -82,7 +84,7 @@ bool ScSimpleFormulaCalculator::IsValue()
 {
     Calculate();
 
-    if (bIsMatrix)
+    if (mbMatrixResult)
         return false;
 
     return maResult.IsValue();
@@ -90,7 +92,7 @@ bool ScSimpleFormulaCalculator::IsValue()
 
 bool ScSimpleFormulaCalculator::IsMatrix()
 {
-    return bIsMatrix;
+    return mbMatrixResult;
 }
 
 sal_uInt16 ScSimpleFormulaCalculator::GetErrCode()
@@ -118,7 +120,7 @@ svl::SharedString ScSimpleFormulaCalculator::GetString()
 {
     Calculate();
 
-    if (bIsMatrix)
+    if (mbMatrixResult)
         return maMatrixFormulaResult;
 
     if ((!mpCode->GetCodeError() || mpCode->GetCodeError() == errDoubleRef) &&
@@ -131,7 +133,7 @@ svl::SharedString ScSimpleFormulaCalculator::GetString()
 bool ScSimpleFormulaCalculator::HasColRowName()
 {
     mpCode->Reset();
-    return mpCode->GetNextColRowName() != NULL;
+    return mpCode->GetNextColRowName() != nullptr;
 }
 
 ScTokenArray* ScSimpleFormulaCalculator::GetCode()

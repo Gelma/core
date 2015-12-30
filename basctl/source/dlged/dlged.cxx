@@ -68,7 +68,7 @@ static const char aTitlePropName[] = "Title";
 
 DlgEdHint::DlgEdHint(Kind eHint)
     : eKind(eHint)
-    , pDlgEdObj(0)
+    , pDlgEdObj(nullptr)
 {
 }
 
@@ -168,7 +168,7 @@ bool DlgEditor::RemarkDialog()
     bool bWasMarked = pDlgEdView->IsObjMarked( pDlgObj );
 
     if( !bWasMarked )
-        pDlgEdView->MarkObj( pDlgObj, pPgView, false );
+        pDlgEdView->MarkObj( pDlgObj, pPgView );
 
     return bWasMarked;
 }
@@ -179,8 +179,8 @@ DlgEditor::DlgEditor (
     css::uno::Reference<css::frame::XModel> const& xModel,
     css::uno::Reference<css::container::XNameContainer> xDialogModel
 )
-    :pHScroll(NULL)
-    ,pVScroll(NULL)
+    :pHScroll(nullptr)
+    ,pVScroll(nullptr)
     ,pDlgEdModel(new DlgEdModel())
     ,pDlgEdPage(new DlgEdPage(*pDlgEdModel))
     ,m_ClipboardDataFlavors(1)
@@ -206,7 +206,7 @@ DlgEditor::DlgEditor (
 
     SdrLayerAdmin& rAdmin = pDlgEdModel->GetLayerAdmin();
     rAdmin.NewLayer( rAdmin.GetControlLayerName() );
-    rAdmin.NewLayer( OUString( "HiddenLayer" ) );
+    rAdmin.NewLayer( "HiddenLayer" );
 
     pDlgEdModel->InsertPage(pDlgEdPage);
 
@@ -227,7 +227,7 @@ DlgEditor::DlgEditor (
     pDlgEdPage->SetSize( rWindow.PixelToLogic( Size(DLGED_PAGE_WIDTH_MIN, DLGED_PAGE_HEIGHT_MIN) ) );
 
     pDlgEdView->ShowSdrPage(pDlgEdView->GetModel()->GetPage(0));
-    pDlgEdView->SetLayerVisible( OUString( "HiddenLayer" ), false );
+    pDlgEdView->SetLayerVisible( "HiddenLayer", false );
     pDlgEdView->SetMoveSnapOnlyTopLeft(true);
     pDlgEdView->SetWorkArea( Rectangle( Point( 0, 0 ), pDlgEdPage->GetSize() ) );
 
@@ -420,10 +420,10 @@ void DlgEditor::ResetDialog ()
     bool bWasMarked = pDlgEdView->IsObjMarked( pOldDlgEdForm );
     pDlgEdView->UnmarkAll();
     pPage->Clear();
-    pPage->SetDlgEdForm( NULL );
+    pPage->SetDlgEdForm( nullptr );
     SetDialog( m_xUnoControlDialogModel );
     if( bWasMarked )
-        pDlgEdView->MarkObj( pDlgEdForm, pPgView, false );
+        pDlgEdView->MarkObj( pDlgEdForm, pPgView );
 }
 
 
@@ -549,7 +549,7 @@ void DlgEditor::Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect
     const vcl::Region aPaintRectRegion(aPaintRect);
 
     // #i74769#
-    SdrPaintWindow* pTargetPaintWindow = 0;
+    SdrPaintWindow* pTargetPaintWindow = nullptr;
 
     // mark repaint start
     if (pPgView)
@@ -649,11 +649,11 @@ void DlgEditor::Cut()
 void implCopyStreamToByteSequence( Reference< XInputStream > xStream,
     Sequence< sal_Int8 >& bytes )
 {
-    sal_Int32 nRead = xStream->readBytes( bytes, xStream->available() );
+    xStream->readBytes( bytes, xStream->available() );
     for (;;)
     {
         Sequence< sal_Int8 > readBytes;
-        nRead = xStream->readBytes( readBytes, 1024 );
+        sal_Int32 nRead = xStream->readBytes( readBytes, 1024 );
         if (! nRead)
             break;
 
@@ -750,7 +750,7 @@ void DlgEditor::Copy()
             {}
         }
 
-        DlgEdTransferableImpl* pTrans = NULL;
+        DlgEdTransferableImpl* pTrans = nullptr;
         if( xStringResourcePersistence.is() )
         {
             // With resource, support old and new format

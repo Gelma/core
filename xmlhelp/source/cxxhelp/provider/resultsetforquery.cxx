@@ -81,12 +81,10 @@ struct HitItem
 
 ResultSetForQuery::ResultSetForQuery( const uno::Reference< uno::XComponentContext >& rxContext,
                                       const uno::Reference< XContentProvider >&  xProvider,
-                                      sal_Int32 nOpenMode,
                                       const uno::Sequence< beans::Property >& seq,
-                                      const uno::Sequence< NumberedSortingInfo >& seqSort,
                                       URLParameter& aURLParameter,
                                       Databases* pDatabases )
-    : ResultSetBase( rxContext,xProvider,nOpenMode,seq,seqSort ),
+    : ResultSetBase( rxContext,xProvider,seq ),
       m_aURLParameter( aURLParameter )
 {
     Reference< XExtendedTransliteration > xTrans = Transliteration::create( rxContext );
@@ -342,7 +340,7 @@ ResultSetForQuery::ResultSetForQuery( const uno::Reference< uno::XComponentConte
         if( content.is() )
         {
             uno::Reference< XCommandProcessor > cmd( content,uno::UNO_QUERY );
-            cmd->execute( aCommand,0,uno::Reference< XCommandEnvironment >( 0 ) ) >>= m_aItems[m_nRow]; //TODO: check return value of operator >>=
+            cmd->execute( aCommand,0,uno::Reference< XCommandEnvironment >( nullptr ) ) >>= m_aItems[m_nRow]; //TODO: check return value of operator >>=
         }
     }
     m_nRow = 0xffffffff;

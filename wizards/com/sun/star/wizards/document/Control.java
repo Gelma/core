@@ -189,11 +189,11 @@ public class Control extends Shape
             // when we change the border from "3D" to "Flat"
             if (getControlType() == FormHandler.SOCHECKBOX)
             {
-                return ((aPeerSize.Width * oFormHandler.getXPixelFactor()));
+                return aPeerSize.Width * oFormHandler.getXPixelFactor();
             }
             else
             {
-                return ((aPeerSize.Width * oFormHandler.getXPixelFactor()) + 200);
+                return (aPeerSize.Width * oFormHandler.getXPixelFactor()) + 200;
             }
         }
     }
@@ -230,13 +230,12 @@ public class Control extends Shape
             {
                 throw new IllegalArgumentException();
             }
-            return getPeer().getPreferredSize();
         }
         catch (Exception e)
         {
             e.printStackTrace(System.err);
-            return null;
         }
+        return getPeer().getPreferredSize();
     }
 
     public void setPropertyValue(String _sPropertyName, Object _aPropertyValue) throws Exception

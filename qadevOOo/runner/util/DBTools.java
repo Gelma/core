@@ -114,10 +114,6 @@ public class DBTools {
         */
         public Boolean IsPasswordRequired = null ;
         /**
-        * Representation of <code>'SuppressVersionColumns'</code> property.
-        */
-        private Boolean SuppressVersionColumns;
-        /**
         * Representation of <code>'IsReadOnly'</code> property.
         */
         private Boolean IsReadOnly = null ;
@@ -125,17 +121,6 @@ public class DBTools {
         * Representation of <code>'TableFilter'</code> property.
         */
         private String[] TableFilter = null ;
-        /**
-        * Representation of <code>'TableTypeFilter'</code> property.
-        */
-        private String[] TableTypeFilter = null ;
-
-        /**
-        * Creates an empty instance.
-        */
-        public DataSourceInfo()
-        {
-        }
 
         /**
         * Creates new <code>com.sun.star.sdb.DataSource</code> service
@@ -156,10 +141,8 @@ public class DBTools {
             if (User != null) props.setPropertyValue("User", User) ;
             if (Password != null) props.setPropertyValue("Password", Password) ;
             if (IsPasswordRequired != null) props.setPropertyValue("IsPasswordRequired", IsPasswordRequired) ;
-            if (SuppressVersionColumns != null) props.setPropertyValue("SuppressVersionColumns", SuppressVersionColumns) ;
             if (IsReadOnly != null) props.setPropertyValue("IsReadOnly", IsReadOnly) ;
             if (TableFilter != null) props.setPropertyValue("TableFilter", TableFilter) ;
-            if (TableTypeFilter != null) props.setPropertyValue("TableTypeFilter", TableTypeFilter) ;
 
             return src ;
         }
@@ -178,7 +161,9 @@ public class DBTools {
             dbContext = UnoRuntime.queryInterface
                 (XNamingService.class, cont) ;
 
-        } catch (com.sun.star.uno.Exception e) {}
+        } catch (com.sun.star.uno.Exception e) {
+            System.out.println("caught exception: " + e);
+        }
     }
 
     /**
@@ -337,36 +322,36 @@ public class DBTools {
 
 
         for(int i = 0; i < DBTools.TST_TABLE_VALUES.length; i++) {
-            String query = "insert into " + tbl_name + " values (";
+            StringBuilder query = new StringBuilder("insert into " + tbl_name + " values (");
             int j = 0;
             while(j < DBTools.TST_TABLE_VALUES[i].length) {
                 if (j > 0) {
-                    query += ", ";
+                    query.append(", ");
                 }
                 Object value = DBTools.TST_TABLE_VALUES[i][j];
                 if (value instanceof String ||
                     value instanceof Date) {
-                    query += "'";
+                    query.append("'");
                 }
                 if (value instanceof Date) {
                     Date date = (Date)value;
-                    query += date.Year + "-" + date.Month +
-                        "-" + date.Day;
+                    query.append(date.Year).append("-").append(date.Month).append(
+                        "-").append(date.Day);
                 } else if (value instanceof Boolean) {
-                    query += (((Boolean)value).booleanValue())
-                        ? "1" : "0";
+                    query.append((((Boolean)value).booleanValue())
+                        ? "1" : "0");
                 } else {
-                    query += value;
+                    query.append(value);
                 }
 
                 if (value instanceof String ||
                     value instanceof Date) {
-                    query += "'";
+                    query.append("'");
                 }
                 j++;
             }
-            query += ")";
-            statement.executeUpdate(query);
+            query.append(")");
+            statement.executeUpdate(query.toString());
         }
     }
 

@@ -229,7 +229,6 @@ GeometryHandler::GeometryHandler(uno::Reference< uno::XComponentContext > const 
     : GeometryHandler_Base(m_aMutex)
     , m_aPropertyListeners(m_aMutex)
     , m_xContext(context)
-    , m_pInfoService(new OPropertyInfoService())
     , m_nDataFieldType(0)
     , m_bNewFunction(false)
     , m_bIn(false)
@@ -271,8 +270,7 @@ OUString GeometryHandler::getImplementationName_Static(  ) throw(uno::RuntimeExc
 
 uno::Sequence< OUString > GeometryHandler::getSupportedServiceNames_static(  ) throw(uno::RuntimeException)
 {
-    uno::Sequence< OUString > aSupported(1);
-    aSupported[0] = "com.sun.star.report.inspection.GeometryHandler";
+    uno::Sequence< OUString > aSupported { "com.sun.star.report.inspection.GeometryHandler" };
     return aSupported;
 }
 
@@ -933,8 +931,7 @@ uno::Any GeometryHandler::getConstantValue(bool _bToControlValue,sal_uInt16 _nRe
 {
     ::std::vector< OUString > aList;
     tools::StringListResource aRes(ModuleRes(_nResId),aList);
-    uno::Sequence< OUString > aSeq(aList.size());
-    ::std::copy( aList.begin(), aList.end(), aSeq.getArray() );
+    uno::Sequence< OUString > aSeq(comphelper::containerToSequence(aList));
 
     uno::Reference< inspection::XStringRepresentation > xConversionHelper = inspection::StringRepresentation::createConstant( m_xContext,m_xTypeConverter,_sConstantName,aSeq);
     if ( _bToControlValue )
@@ -959,14 +956,14 @@ uno::Any SAL_CALL GeometryHandler::convertToPropertyValue(const OUString & Prope
     {
         case PROPERTY_ID_FORCENEWPAGE:
         case PROPERTY_ID_NEWROWORCOL:
-            aPropertyValue = getConstantValue(false,RID_STR_FORCENEWPAGE_CONST,_rControlValue,OUString("com.sun.star.report.ForceNewPage"),PropertyName);
+            aPropertyValue = getConstantValue(false,RID_STR_FORCENEWPAGE_CONST,_rControlValue,"com.sun.star.report.ForceNewPage",PropertyName);
             break;
         case PROPERTY_ID_GROUPKEEPTOGETHER:
-            aPropertyValue = getConstantValue(false,RID_STR_GROUPKEEPTOGETHER_CONST,_rControlValue,OUString("com.sun.star.report.GroupKeepTogether"),PropertyName);
+            aPropertyValue = getConstantValue(false,RID_STR_GROUPKEEPTOGETHER_CONST,_rControlValue,"com.sun.star.report.GroupKeepTogether",PropertyName);
             break;
         case PROPERTY_ID_PAGEHEADEROPTION:
         case PROPERTY_ID_PAGEFOOTEROPTION:
-            aPropertyValue = getConstantValue(false,RID_STR_REPORTPRINTOPTION_CONST,_rControlValue,OUString("com.sun.star.report.ReportPrintOption"),PropertyName);
+            aPropertyValue = getConstantValue(false,RID_STR_REPORTPRINTOPTION_CONST,_rControlValue,"com.sun.star.report.ReportPrintOption",PropertyName);
             break;
         case PROPERTY_ID_BACKCOLOR:
         case PROPERTY_ID_CONTROLBACKGROUND:
@@ -980,7 +977,7 @@ uno::Any SAL_CALL GeometryHandler::convertToPropertyValue(const OUString & Prope
         case PROPERTY_ID_KEEPTOGETHER:
             if ( uno::Reference< report::XGroup>(m_xReportComponent,uno::UNO_QUERY).is())
             {
-                aPropertyValue = getConstantValue(false,RID_STR_KEEPTOGETHER_CONST,_rControlValue,OUString("com.sun.star.report.KeepTogether"),PropertyName);
+                aPropertyValue = getConstantValue(false,RID_STR_KEEPTOGETHER_CONST,_rControlValue,"com.sun.star.report.KeepTogether",PropertyName);
                 break;
             }
             // run through
@@ -1124,19 +1121,19 @@ uno::Any SAL_CALL GeometryHandler::convertToControlValue(const OUString & Proper
             break;
         case PROPERTY_ID_FORCENEWPAGE:
         case PROPERTY_ID_NEWROWORCOL:
-            aControlValue = getConstantValue(true,RID_STR_FORCENEWPAGE_CONST,aPropertyValue,OUString("com.sun.star.report.ForceNewPage"),PropertyName);
+            aControlValue = getConstantValue(true,RID_STR_FORCENEWPAGE_CONST,aPropertyValue,"com.sun.star.report.ForceNewPage",PropertyName);
             break;
         case PROPERTY_ID_GROUPKEEPTOGETHER:
-            aControlValue = getConstantValue(true,RID_STR_GROUPKEEPTOGETHER_CONST,aPropertyValue,OUString("com.sun.star.report.GroupKeepTogether"),PropertyName);
+            aControlValue = getConstantValue(true,RID_STR_GROUPKEEPTOGETHER_CONST,aPropertyValue,"com.sun.star.report.GroupKeepTogether",PropertyName);
             break;
         case PROPERTY_ID_PAGEHEADEROPTION:
         case PROPERTY_ID_PAGEFOOTEROPTION:
-            aControlValue = getConstantValue(true,RID_STR_REPORTPRINTOPTION_CONST,aPropertyValue,OUString("com.sun.star.report.ReportPrintOption"),PropertyName);
+            aControlValue = getConstantValue(true,RID_STR_REPORTPRINTOPTION_CONST,aPropertyValue,"com.sun.star.report.ReportPrintOption",PropertyName);
             break;
         case PROPERTY_ID_KEEPTOGETHER:
             if ( uno::Reference< report::XGroup>(m_xReportComponent,uno::UNO_QUERY).is())
             {
-                aControlValue = getConstantValue(true,RID_STR_KEEPTOGETHER_CONST,aPropertyValue,OUString("com.sun.star.report.KeepTogether"),PropertyName);
+                aControlValue = getConstantValue(true,RID_STR_KEEPTOGETHER_CONST,aPropertyValue,"com.sun.star.report.KeepTogether",PropertyName);
                 break;
             }
             // run through

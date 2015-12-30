@@ -22,8 +22,6 @@
 #include <algorithm>
 #include <cassert>
 
-#include "pyuno_impl.hxx"
-
 #include <rtl/strbuf.hxx>
 
 #include <osl/diagnose.h>
@@ -31,6 +29,8 @@
 #include <typelib/typedescription.hxx>
 
 #include <com/sun/star/beans/XMaterialHolder.hpp>
+
+#include "pyuno_impl.hxx"
 
 using com::sun::star::uno::Sequence;
 using com::sun::star::uno::Reference;
@@ -80,10 +80,10 @@ PyObject *PyUNOStruct_str( PyObject *self )
 PyObject *PyUNOStruct_repr( PyObject *self )
 {
     PyUNO *me = reinterpret_cast<PyUNO*>( self );
-    PyObject *ret = 0;
+    PyObject *ret = nullptr;
 
     if( me->members->wrappedObject.getValueType().getTypeClass()
-        == com::sun::star::uno::TypeClass_EXCEPTION )
+        == css::uno::TypeClass_EXCEPTION )
     {
         Reference< XMaterialHolder > rHolder(me->members->xInvocation,UNO_QUERY);
         if( rHolder.is() )
@@ -106,7 +106,7 @@ PyObject* PyUNOStruct_dir( PyObject *self )
 {
     PyUNO *me = reinterpret_cast<PyUNO*>( self );
 
-    PyObject* member_list = NULL;
+    PyObject* member_list = nullptr;
 
     try
     {
@@ -167,19 +167,19 @@ PyObject* PyUNOStruct_getattr( PyObject* self, char* name )
         //or else...
         PyErr_SetString (PyExc_AttributeError, name);
     }
-    catch( const com::sun::star::reflection::InvocationTargetException & e )
+    catch( const css::reflection::InvocationTargetException & e )
     {
         raisePyExceptionWithAny( e.TargetException );
     }
-    catch( const com::sun::star::beans::UnknownPropertyException & e )
+    catch( const css::beans::UnknownPropertyException & e )
     {
         raisePyExceptionWithAny( makeAny(e) );
     }
-    catch( const com::sun::star::lang::IllegalArgumentException &e )
+    catch( const css::lang::IllegalArgumentException &e )
     {
         raisePyExceptionWithAny( makeAny(e) );
     }
-    catch( const com::sun::star::script::CannotConvertException &e )
+    catch( const css::script::CannotConvertException &e )
     {
         raisePyExceptionWithAny( makeAny(e) );
     }
@@ -188,7 +188,7 @@ PyObject* PyUNOStruct_getattr( PyObject* self, char* name )
         raisePyExceptionWithAny( makeAny(e) );
     }
 
-    return NULL;
+    return nullptr;
 }
 
 int PyUNOStruct_setattr (PyObject* self, char* name, PyObject* value)
@@ -211,17 +211,17 @@ int PyUNOStruct_setattr (PyObject* self, char* name, PyObject* value)
             }
         }
     }
-    catch( const com::sun::star::reflection::InvocationTargetException & e )
+    catch( const css::reflection::InvocationTargetException & e )
     {
         raisePyExceptionWithAny( e.TargetException );
         return 1;
     }
-    catch( const com::sun::star::beans::UnknownPropertyException & e )
+    catch( const css::beans::UnknownPropertyException & e )
     {
         raisePyExceptionWithAny( makeAny(e) );
         return 1;
     }
-    catch( const com::sun::star::script::CannotConvertException &e )
+    catch( const css::script::CannotConvertException &e )
     {
         raisePyExceptionWithAny( makeAny(e) );
         return 1;
@@ -243,7 +243,7 @@ static PyObject* PyUNOStruct_cmp( PyObject *self, PyObject *that, int op )
     if(op != Py_EQ && op != Py_NE)
     {
         PyErr_SetString( PyExc_TypeError, "only '==' and '!=' comparisons are defined" );
-        return 0;
+        return nullptr;
     }
     if( self == that )
     {
@@ -259,13 +259,13 @@ static PyObject* PyUNOStruct_cmp( PyObject *self, PyObject *that, int op )
 
             PyUNO *me = reinterpret_cast< PyUNO * > ( self );
             PyUNO *other = reinterpret_cast< PyUNO * > ( that );
-            com::sun::star::uno::TypeClass tcMe = me->members->wrappedObject.getValueTypeClass();
-            com::sun::star::uno::TypeClass tcOther = other->members->wrappedObject.getValueTypeClass();
+            css::uno::TypeClass tcMe = me->members->wrappedObject.getValueTypeClass();
+            css::uno::TypeClass tcOther = other->members->wrappedObject.getValueTypeClass();
 
             if( tcMe == tcOther )
             {
-                if( tcMe == com::sun::star::uno::TypeClass_STRUCT ||
-                    tcMe == com::sun::star::uno::TypeClass_EXCEPTION )
+                if( tcMe == css::uno::TypeClass_STRUCT ||
+                    tcMe == css::uno::TypeClass_EXCEPTION )
                 {
                     Reference< XMaterialHolder > xMe( me->members->xInvocation,UNO_QUERY );
                     Reference< XMaterialHolder > xOther( other->members->xInvocation,UNO_QUERY );
@@ -279,7 +279,7 @@ static PyObject* PyUNOStruct_cmp( PyObject *self, PyObject *that, int op )
             }
         }
     }
-    catch( const com::sun::star::uno::RuntimeException & e)
+    catch( const css::uno::RuntimeException & e)
     {
         raisePyExceptionWithAny( makeAny( e ) );
     }
@@ -291,8 +291,8 @@ static PyObject* PyUNOStruct_cmp( PyObject *self, PyObject *that, int op )
 
 static PyMethodDef PyUNOStructMethods[] =
 {
-    {"__dir__",    reinterpret_cast<PyCFunction>(PyUNOStruct_dir),    METH_NOARGS,  NULL},
-    {NULL,         NULL,                                              0,            NULL}
+    {"__dir__",    reinterpret_cast<PyCFunction>(PyUNOStruct_dir),    METH_NOARGS,  nullptr},
+    {nullptr,         nullptr,                                              0,            nullptr}
 };
 
 static PyTypeObject PyUNOStructType =
@@ -305,7 +305,7 @@ static PyTypeObject PyUNOStructType =
     nullptr,
     PyUNOStruct_getattr,
     PyUNOStruct_setattr,
-    /* this type does not exist in Python 3: (cmpfunc) */ 0,
+    /* this type does not exist in Python 3: (cmpfunc) */ nullptr,
     PyUNOStruct_repr,
     nullptr,
     nullptr,
@@ -347,7 +347,7 @@ static PyTypeObject PyUNOStructType =
     , 0
 #endif
 #if PY_VERSION_HEX >= 0x03040000
-    , 0
+    , nullptr
 #endif
 };
 
@@ -379,7 +379,7 @@ PyRef PyUNOStruct_new (
         throw RuntimeException();
 
     PyUNO* self = PyObject_New (PyUNO, &PyUNOStructType);
-    if (self == NULL)
+    if (self == nullptr)
         return PyRef(); // == error
     self->members = new PyUNOInternals();
     self->members->xInvocation = xInvocation;

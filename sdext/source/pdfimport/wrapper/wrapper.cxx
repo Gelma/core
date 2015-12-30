@@ -63,10 +63,8 @@
 #include <memory>
 #include <unordered_map>
 #include <string.h>
-#ifdef WNT
 #include <stdlib.h>
 #include <ctype.h>
-#endif
 
 #include "rtl/bootstrap.h"
 
@@ -130,7 +128,15 @@ enum parseKey {
     NONE
 };
 
+#if defined _MSC_VER && defined __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-register"
+#pragma clang diagnostic ignored "-Wextra-tokens"
+#endif
 #include "hash.cxx"
+#if defined _MSC_VER && defined __clang__
+#pragma clang diagnostic pop
+#endif
 
 class Parser
 {
@@ -205,12 +211,12 @@ namespace
     {
         const size_t nOrigLen(sal::static_int_cast<size_t>(i_rStr.getLength()));
         const sal_Char* const pOrig(i_rStr.getStr());
-        sal_Char* const pBuffer(new sal_Char[nOrigLen + 1]);
+        std::unique_ptr<sal_Char[]> pBuffer(new sal_Char[nOrigLen + 1]);
 
         const sal_Char* pRead(pOrig);
-        sal_Char* pWrite(pBuffer);
+        sal_Char* pWrite(pBuffer.get());
         const sal_Char* pCur(pOrig);
-        while ((pCur = strchr(pCur, '\\')) != 0)
+        while ((pCur = strchr(pCur, '\\')) != nullptr)
         {
             const sal_Char cNext(pCur[1]);
             if (cNext == 'n' || cNext == 'r' || cNext == '\\')
@@ -239,8 +245,7 @@ namespace
         }
         *pWrite = '\0';
 
-        OString aResult(pBuffer);
-        delete[] pBuffer;
+        OString aResult(pBuffer.get());
         return aResult;
     }
 
@@ -625,9 +630,7 @@ void Parser::readFont()
         {
             uno::Reference< beans::XMaterialHolder > xMat(
                 m_xContext->getServiceManager()->createInstanceWithArgumentsAndContext(
-                    OUString( "com.sun.star.awt.FontIdentificator"  ),
-                    aArgs,
-                    m_xContext ),
+                    "com.sun.star.awt.FontIdentificator", aArgs, m_xContext ),
                 uno::UNO_QUERY );
             if( xMat.is() )
             {
@@ -710,9 +713,9 @@ uno::Sequence<beans::PropertyValue> Parser::readImageImpl()
 
     uno::Reference< uno::XComponentContext > xContext( m_xContext, uno::UNO_SET_THROW );
     uno::Reference< lang::XMultiComponentFactory > xFactory( xContext->getServiceManager(), uno::UNO_SET_THROW );
-    uno::Reference< io::XInputStream > xDataStream( xFactory->createInstanceWithArgumentsAndContext(
-        OUString( "com.sun.star.io.SequenceInputStream"  ),
-        aStreamCreationArgs, m_xContext ), uno::UNO_QUERY_THROW );
+    uno::Reference< io::XInputStream > xDataStream(
+        xFactory->createInstanceWithArgumentsAndContext( "com.sun.star.io.SequenceInputStream", aStreamCreationArgs, m_xContext ),
+        uno::UNO_QUERY_THROW );
 
     uno::Sequence<beans::PropertyValue> aSequence(3);
     aSequence[0] = beans::PropertyValue( OUString("URL"),
@@ -1074,9 +1077,9 @@ bool xpdf_ImportFromFile( const OUString&                             rURL,
     sal_Int32 nArgs = rFilterOptions.isEmpty() ? 2 : 4;
 
     oslProcess    aProcess;
-    oslFileHandle pIn  = NULL;
-    oslFileHandle pOut = NULL;
-    oslFileHandle pErr = NULL;
+    oslFileHandle pIn  = nullptr;
+    oslFileHandle pOut = nullptr;
+    oslFileHandle pErr = nullptr;
     oslSecurity pSecurity = osl_getCurrentSecurity ();
     oslProcessError eErr =
         osl_executeProcess_WithRedirectedIO(converterURL.pData,
@@ -1084,7 +1087,7 @@ bool xpdf_ImportFromFile( const OUString&                             rURL,
                                             nArgs,
                                             osl_Process_SEARCHPATH|osl_Process_HIDDEN,
                                             pSecurity,
-                                            0, 0, 0,
+                                            nullptr, nullptr, 0,
                                             &aProcess, &pIn, &pOut, &pErr);
     osl_freeSecurityHandle(pSecurity);
 
@@ -1210,9 +1213,9 @@ bool xpdf_ImportFromStream( const uno::Reference< io::XInputStream >&         xI
     OSL_ASSERT(rSink);
 
     // convert XInputStream to local temp file
-    oslFileHandle aFile = NULL;
+    oslFileHandle aFile = nullptr;
     OUString aURL;
-    if( osl_createTempFile( NULL, &aFile, &aURL.pData ) != osl_File_E_None )
+    if( osl_createTempFile( nullptr, &aFile, &aURL.pData ) != osl_File_E_None )
         return false;
 
     // copy content, buffered...
@@ -1227,7 +1230,7 @@ bool xpdf_ImportFromStream( const uno::Reference< io::XInputStream >&         xI
         {
             nBytes = xInput->readBytes( aBuf, nBufSize );
         }
-        catch( com::sun::star::uno::Exception& )
+        catch( css::uno::Exception& )
         {
             osl_closeFile( aFile );
             throw;

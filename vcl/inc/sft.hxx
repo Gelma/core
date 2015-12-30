@@ -62,11 +62,6 @@ namespace vcl
     typedef sal_Int32       F16Dot16;           /**< fixed: 16.16 */
 /*@}*/
 
-    typedef struct {
-        sal_uInt16 s;
-        sal_uInt16 d;
-    } sal_uInt16pair;
-
 /** Return value of OpenTTFont() and CreateT3FromTTGlyphs() */
     enum SFErrCodes {
         SF_OK,                              /**< no error                                     */
@@ -93,6 +88,7 @@ namespace vcl
         FW_EXTRABOLD = 800,                 /**< Extra-bold (Ultra-bold)            */
         FW_BLACK = 900                      /**< Black (Heavy)                      */
     };
+#endif /* FW_THIN */
 
 /** Value of the width member of the TTGlobalFontInfo struct */
     enum WidthClass {
@@ -106,7 +102,6 @@ namespace vcl
         FWIDTH_EXTRA_EXPANDED = 8,          /**< 150% of normal                     */
         FWIDTH_ULTRA_EXPANDED = 9           /**< 200% of normal                     */
     };
-#endif /* FW_THIN */
 
 /** Type of the 'kern' table, stored in _TrueTypeFont::kerntype */
     enum KernType {
@@ -180,9 +175,9 @@ namespace vcl
 
     typedef struct {
         char *family;             /**< family name                                             */
-        sal_uInt16 *ufamily;          /**< family name UCS2                                         */
+        sal_Unicode *ufamily;     /**< family name UCS2                                         */
         char *subfamily;          /**< subfamily name                                          */
-        sal_uInt16 *usubfamily;   /**< subfamily name UCS2 */
+        sal_Unicode *usubfamily;  /**< subfamily name UCS2 */
         char *psname;             /**< PostScript name                                         */
         sal_uInt16 macStyle;      /**< macstyle bits from 'HEAD' table */
         int   weight;             /**< value of WeightClass or 0 if can't be determined        */
@@ -474,6 +469,7 @@ namespace vcl
  */
     int VCL_DLLPUBLIC MapString(TrueTypeFont *ttf, sal_uInt16 *str, int nchars, sal_uInt16 *glyphArray, bool bvertical);
 
+#if defined(WNT) || defined(MACOSX) || defined(IOS)
 /**
  * Maps a Unicode (UCS-2) character to a glyph ID and returns it. Missing glyph has
  * a glyphID of 0 so this function can be used to test if a character is encoded in the font.
@@ -484,6 +480,7 @@ namespace vcl
  * @ingroup sft
  */
     sal_uInt16 MapChar(TrueTypeFont *ttf, sal_uInt16 ch, bool bvertical);
+#endif
 
 /**
  * Returns 0 when the font does not substitute vertical glyphs
@@ -502,11 +499,6 @@ namespace vcl
  *
  */
     void GetTTGlobalFontInfo(TrueTypeFont *ttf, TTGlobalFontInfo *info);
-
-/**
- * Returns nonzero if font is a symbol encoded font
- */
-    int CheckSymbolEncoding(TrueTypeFont* ttf);
 
 /**
  * returns the number of glyphs in a font
@@ -530,9 +522,9 @@ namespace vcl
 
         char        *psname;
         char        *family;
-        sal_uInt16  *ufamily;
+        sal_Unicode *ufamily;
         char        *subfamily;
-        sal_uInt16  *usubfamily;
+        sal_Unicode *usubfamily;
 
         sal_uInt32  ntables;
         sal_uInt32  *goffsets;

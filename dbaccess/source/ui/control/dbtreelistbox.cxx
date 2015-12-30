@@ -31,10 +31,10 @@
 #include <cppuhelper/implbase.hxx>
 #include <cppuhelper/interfacecontainer.hxx>
 #include <vcl/help.hxx>
+#include <vcl/commandinfoprovider.hxx>
 #include <dbaccess/IController.hxx>
 #include <framework/actiontriggerhelper.hxx>
 #include <toolkit/helper/vclunohelper.hxx>
-#include <framework/imageproducer.hxx>
 #include <vcl/svapp.hxx>
 #include "svtools/treelistentry.hxx"
 
@@ -56,9 +56,9 @@ using namespace ::com::sun::star::view;
 // class DBTreeListBox
 DBTreeListBox::DBTreeListBox( vcl::Window* pParent, WinBits nWinStyle ,bool _bHandleEnterKey)
     :SvTreeListBox(pParent,nWinStyle)
-    ,m_pDragedEntry(NULL)
-    ,m_pActionListener(NULL)
-    ,m_pContextMenuProvider( NULL )
+    ,m_pDragedEntry(nullptr)
+    ,m_pActionListener(nullptr)
+    ,m_pContextMenuProvider( nullptr )
     ,m_bHandleEnterKey(_bHandleEnterKey)
 {
     init();
@@ -99,7 +99,7 @@ SvTreeListEntry* DBTreeListBox::GetEntryPosByName( const OUString& aName, SvTree
     std::pair<SvTreeListEntries::iterator,SvTreeListEntries::iterator> aIters =
         myModel->GetChildIterators(pStart);
 
-    SvTreeListEntry* pEntry = NULL;
+    SvTreeListEntry* pEntry = nullptr;
     SvTreeListEntries::iterator it = aIters.first, itEnd = aIters.second;
     for (; it != itEnd; ++it)
     {
@@ -113,7 +113,7 @@ SvTreeListEntry* DBTreeListBox::GetEntryPosByName( const OUString& aName, SvTree
                 // found
                 break;
         }
-        pEntry = NULL;
+        pEntry = nullptr;
     }
 
     return pEntry;
@@ -126,15 +126,12 @@ void DBTreeListBox::EnableExpandHandler(SvTreeListEntry* _pEntry)
 
 void DBTreeListBox::RequestingChildren( SvTreeListEntry* pParent )
 {
-    if (m_aPreExpandHandler.IsSet())
+    if (m_aPreExpandHandler.IsSet() && !m_aPreExpandHandler.Call(pParent))
     {
-        if (!m_aPreExpandHandler.Call(pParent))
-        {
-            // an error occurred. The method calling us will reset the entry flags, so it can't be expanded again.
-            // But we want that the user may do a second try (i.e. because he misstypes a password in this try), so
-            // we have to reset these flags controlling the expand ability
-            PostUserEvent(LINK(this, DBTreeListBox, OnResetEntry), pParent, true);
-        }
+        // an error occurred. The method calling us will reset the entry flags, so it can't be expanded again.
+        // But we want that the user may do a second try (i.e. because he misstypes a password in this try), so
+        // we have to reset these flags controlling the expand ability
+        PostUserEvent(LINK(this, DBTreeListBox, OnResetEntry), pParent, true);
     }
 }
 
@@ -174,7 +171,7 @@ void DBTreeListBox::SelectHdl()
 
 void DBTreeListBox::MouseButtonDown( const MouseEvent& rMEvt )
 {
-    bool bHitEmptySpace = (NULL == GetEntry(rMEvt.GetPosPixel(), true));
+    bool bHitEmptySpace = (nullptr == GetEntry(rMEvt.GetPosPixel(), true));
     if (bHitEmptySpace && (rMEvt.GetClicks() == 2) && rMEvt.IsMod1())
         Control::MouseButtonDown(rMEvt);
     else
@@ -225,7 +222,7 @@ sal_Int8 DBTreeListBox::AcceptDrop( const AcceptDropEvent& _rEvt )
     {
         SvTreeListEntry* pDroppedEntry = GetEntry(_rEvt.maPosPixel);
         // check if drag is on child entry, which is not allowed
-        SvTreeListEntry* pParent = NULL;
+        SvTreeListEntry* pParent = nullptr;
         if ( _rEvt.mnAction & DND_ACTION_MOVE )
         {
             if ( !m_pDragedEntry ) // no entry to move
@@ -236,7 +233,7 @@ sal_Int8 DBTreeListBox::AcceptDrop( const AcceptDropEvent& _rEvt )
                 return nDropOption;
             }
 
-            pParent = pDroppedEntry ? GetParent(pDroppedEntry) : NULL;
+            pParent = pDroppedEntry ? GetParent(pDroppedEntry) : nullptr;
             while ( pParent && pParent != m_pDragedEntry )
                 pParent = GetParent(pParent);
         }
@@ -321,25 +318,20 @@ void DBTreeListBox::KeyInput( const KeyEvent& rKEvt )
     {
         switch(eFunc)
         {
-            case KeyFuncType::CUT:
-                bHandled = ( m_aCutHandler.IsSet() && !m_aSelectedEntries.empty() );
-                if ( bHandled )
-                    m_aCutHandler.Call( NULL );
-                break;
             case KeyFuncType::COPY:
                 bHandled = ( m_aCopyHandler.IsSet() && !m_aSelectedEntries.empty() );
                 if ( bHandled )
-                    m_aCopyHandler.Call( NULL );
+                    m_aCopyHandler.Call( nullptr );
                 break;
             case KeyFuncType::PASTE:
                 bHandled = ( m_aPasteHandler.IsSet() && !m_aSelectedEntries.empty() );
                 if ( bHandled )
-                    m_aPasteHandler.Call( NULL );
+                    m_aPasteHandler.Call( nullptr );
                 break;
             case KeyFuncType::DELETE:
                 bHandled = ( m_aDeleteHandler.IsSet() && !m_aSelectedEntries.empty() );
                 if ( bHandled )
-                    m_aDeleteHandler.Call( NULL );
+                    m_aDeleteHandler.Call( nullptr );
                 break;
             default:
                 break;
@@ -349,8 +341,7 @@ void DBTreeListBox::KeyInput( const KeyEvent& rKEvt )
     if ( KEY_RETURN == nCode )
     {
         bHandled = m_bHandleEnterKey;
-        if ( m_aEnterKeyHdl.IsSet() )
-            m_aEnterKeyHdl.Call(this);
+        m_aEnterKeyHdl.Call(this);
         // this is a HACK. If the data source browser is opened in the "beamer", while the main frame
         //
         // contains a writer document, then pressing enter in the DSB would be rerouted to the writer
@@ -509,7 +500,7 @@ namespace
             }
 
             if ( xFrame.is() )
-                _rMenu.SetItemImage(nId,framework::GetImageFromURL(xFrame,aCommand,false));
+                _rMenu.SetItemImage(nId, vcl::CommandInfoProvider::Instance().GetImageForCommand(aCommand, false, xFrame));
         }
     }
     // SelectionSupplier
@@ -523,10 +514,10 @@ namespace
         {
         }
 
-        virtual sal_Bool SAL_CALL select( const Any& xSelection ) throw (IllegalArgumentException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Any SAL_CALL getSelection(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL addSelectionChangeListener( const Reference< XSelectionChangeListener >& xListener ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL removeSelectionChangeListener( const Reference< XSelectionChangeListener >& xListener ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual sal_Bool SAL_CALL select( const Any& xSelection ) throw (IllegalArgumentException, RuntimeException, std::exception) override;
+        virtual Any SAL_CALL getSelection(  ) throw (RuntimeException, std::exception) override;
+        virtual void SAL_CALL addSelectionChangeListener( const Reference< XSelectionChangeListener >& xListener ) throw (RuntimeException, std::exception) override;
+        virtual void SAL_CALL removeSelectionChangeListener( const Reference< XSelectionChangeListener >& xListener ) throw (RuntimeException, std::exception) override;
 
     protected:
         virtual ~SelectionSupplier()
@@ -584,7 +575,7 @@ std::unique_ptr<PopupMenu> DBTreeListBox::CreateContextMenu()
     aEvent.ExecutePosition.X = -1;
     aEvent.ExecutePosition.Y = -1;
     aEvent.ActionTriggerContainer = ::framework::ActionTriggerHelper::CreateActionTriggerContainerFromMenu(
-        pContextMenu.get(), 0 );
+        pContextMenu.get(), nullptr );
     aEvent.Selection = new SelectionSupplier( m_pContextMenuProvider->getCurrentSelection( *this ) );
 
     ::cppu::OInterfaceIteratorHelper aIter( *pInterceptors );
@@ -602,7 +593,7 @@ std::unique_ptr<PopupMenu> DBTreeListBox::CreateContextMenu()
             switch ( eAction )
             {
                 case ContextMenuInterceptorAction_CANCELLED:
-                    return NULL;
+                    return nullptr;
 
                 case ContextMenuInterceptorAction_EXECUTE_MODIFIED:
                     bModifiedMenu = true;
@@ -655,7 +646,7 @@ IMPL_LINK_NOARG_TYPED(DBTreeListBox, OnTimeOut, Timer*, void)
 {
     implStopSelectionTimer();
 
-    m_aSelChangeHdl.Call( NULL );
+    m_aSelChangeHdl.Call( nullptr );
 }
 
 void DBTreeListBox::StateChanged( StateChangedType nStateChange )

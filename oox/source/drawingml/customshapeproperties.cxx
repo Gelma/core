@@ -31,6 +31,7 @@
 #include <com/sun/star/drawing/XEnhancedCustomShapeDefaulter.hpp>
 #include <com/sun/star/drawing/EnhancedCustomShapeTextFrame.hpp>
 #include <osl/diagnose.h>
+#include <comphelper/sequence.hxx>
 
 using namespace ::oox::core;
 using namespace ::com::sun::star;
@@ -188,7 +189,7 @@ void CustomShapeProperties::pushToPropSet( const ::oox::core::FilterBase& /* rFi
                     const OUString sAdjustmentValues("AdjustmentValues");
                     if ( aGeoPropSeq[ i ].Name.equals( sAdjustmentValues ) )
                     {
-                        uno::Sequence< com::sun::star::drawing::EnhancedCustomShapeAdjustmentValue > aAdjustmentSeq;
+                        uno::Sequence< css::drawing::EnhancedCustomShapeAdjustmentValue > aAdjustmentSeq;
                         if ( aGeoPropSeq[ i ].Value >>= aAdjustmentSeq )
                         {
                             int nIndex=0;
@@ -258,10 +259,7 @@ void CustomShapeProperties::pushToPropSet( const ::oox::core::FilterBase& /* rFi
 
         PropertyMap aPath;
 
-        Sequence< EnhancedCustomShapeSegment > aSegments( maSegments.size() );
-        for ( i = 0; i < maSegments.size(); i++ )
-            aSegments[ i ] = maSegments[ i ];
-        aPath.setProperty( PROP_Segments, aSegments);
+        aPath.setProperty( PROP_Segments, comphelper::containerToSequence(maSegments) );
 
         if ( maTextRect.has() ) {
             Sequence< EnhancedCustomShapeTextFrame > aTextFrames(1);

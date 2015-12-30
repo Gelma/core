@@ -20,7 +20,6 @@
 #ifndef INCLUDED_CUI_SOURCE_OPTIONS_CFGCHART_HXX
 #define INCLUDED_CUI_SOURCE_OPTIONS_CFGCHART_HXX
 
-#include <tools/rtti.hxx>
 #include <unotools/configitem.hxx>
 #include <svl/poolitem.hxx>
 #include <svx/xtable.hxx>
@@ -72,7 +71,7 @@ private:
         { return maPropertyNames; }
     bool RetrieveOptions();
 
-    virtual void                ImplCommit() SAL_OVERRIDE;
+    virtual void                ImplCommit() override;
 
 public:
     SvxChartOptions();
@@ -81,7 +80,7 @@ public:
     const SvxChartColorTable&   GetDefaultColors();
     void                        SetDefaultColors( const SvxChartColorTable& aCol );
 
-    virtual void Notify( const css::uno::Sequence< OUString >& _rPropertyNames) SAL_OVERRIDE;
+    virtual void Notify( const css::uno::Sequence< OUString >& _rPropertyNames) override;
 };
 
 
@@ -90,12 +89,11 @@ public:
 class SvxChartColorTableItem : public SfxPoolItem
 {
 public:
-    TYPEINFO_OVERRIDE();
     SvxChartColorTableItem( sal_uInt16 nWhich, const SvxChartColorTable& );
     SvxChartColorTableItem( const SvxChartColorTableItem& );
 
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
     void                    SetOptions( SvxChartOptions* pOpts ) const;
 
     const SvxChartColorTable & GetColorList() const  { return m_aColorTable;}

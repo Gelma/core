@@ -133,8 +133,7 @@ OUString SAL_CALL OShape::getImplementationName(  ) throw(uno::RuntimeException,
 
 uno::Sequence< OUString > OShape::getSupportedServiceNames_Static(  ) throw(uno::RuntimeException)
 {
-    uno::Sequence< OUString > aServices(1);
-    aServices.getArray()[0] = SERVICE_SHAPE;
+    uno::Sequence< OUString > aServices { SERVICE_SHAPE };
 
     return aServices;
 }
@@ -440,13 +439,13 @@ void SAL_CALL OShape::setZOrder( ::sal_Int32 _zorder ) throw (uno::RuntimeExcept
     set(PROPERTY_ZORDER,_zorder,m_nZOrder);
 }
 
-sal_Bool SAL_CALL OShape::getOpaque() throw (::com::sun::star::uno::RuntimeException, std::exception)
+sal_Bool SAL_CALL OShape::getOpaque() throw (css::uno::RuntimeException, std::exception)
 {
     ::osl::MutexGuard aGuard(m_aMutex);
     return m_bOpaque;
 }
 
-void SAL_CALL OShape::setOpaque( sal_Bool _opaque ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL OShape::setOpaque( sal_Bool _opaque ) throw (css::uno::RuntimeException, std::exception)
 {
     ::osl::MutexGuard aGuard(m_aMutex);
     set(PROPERTY_OPAQUE,_opaque,m_bOpaque);

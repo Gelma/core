@@ -54,6 +54,7 @@
 #include <osl/diagnose.h>
 #include <osl/process.h>
 #include <osl/conditn.hxx>
+#include <vcl/svapp.hxx>
 
 namespace beans = com::sun::star::beans ;
 namespace container = com::sun::star::container ;
@@ -124,9 +125,9 @@ public:
     ActiveDataSink() {};
 
     virtual uno::Reference< io::XInputStream > SAL_CALL getInputStream()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE { return m_xStream; };
+        throw (uno::RuntimeException, std::exception) override { return m_xStream; };
     virtual void SAL_CALL setInputStream( uno::Reference< io::XInputStream > const & rStream )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE { m_xStream = rStream; };
+        throw (uno::RuntimeException, std::exception) override { m_xStream = rStream; };
 };
 
 
@@ -136,6 +137,8 @@ class UpdateInformationProvider :
                                     ucb::XWebDAVCommandEnvironment,
                                     lang::XServiceInfo >
 {
+    OUString getUserAgent(bool bExtended);
+    bool isUserAgentExtended();
 public:
     static uno::Reference< uno::XInterface > createInstance(const uno::Reference<uno::XComponentContext>& xContext);
 
@@ -151,45 +154,46 @@ public:
     getUpdateInformation(
         uno::Sequence< OUString > const & repositories,
         OUString const & extensionId
-    ) throw (uno::Exception, uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    ) throw (uno::Exception, uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL cancel()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL setInteractionHandler(
         uno::Reference< task::XInteractionHandler > const & handler )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
 
     virtual uno::Reference< container::XEnumeration > SAL_CALL
     getUpdateInformationEnumeration(
         uno::Sequence< OUString > const & repositories,
         OUString const & extensionId
-    ) throw (uno::Exception, uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    ) throw (uno::Exception, uno::RuntimeException, std::exception) override;
 
     // XCommandEnvironment
     virtual uno::Reference< task::XInteractionHandler > SAL_CALL getInteractionHandler()
-        throw ( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( uno::RuntimeException, std::exception ) override;
 
     virtual uno::Reference< ucb::XProgressHandler > SAL_CALL getProgressHandler()
-        throw ( uno::RuntimeException, std::exception ) SAL_OVERRIDE { return  uno::Reference< ucb::XProgressHandler >(); };
+        throw ( uno::RuntimeException, std::exception ) override { return  uno::Reference< ucb::XProgressHandler >(); };
 
     // XWebDAVCommandEnvironment
     virtual uno::Sequence< beans::StringPair > SAL_CALL getUserRequestHeaders(
         const OUString&,  ucb::WebDAVHTTPMethod )
-        throw ( uno::RuntimeException, std::exception ) SAL_OVERRIDE { return m_aRequestHeaderList; };
+        throw ( uno::RuntimeException, std::exception ) override;
 
     // XServiceInfo
     virtual OUString SAL_CALL getImplementationName()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL supportsService(OUString const & serviceName)
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
 
 protected:
 
     virtual ~UpdateInformationProvider();
     static OUString getConfigurationItem(uno::Reference<lang::XMultiServiceFactory> const & configurationProvider, OUString const & node, OUString const & item);
+    static uno::Any getConfigurationItemAny(uno::Reference<lang::XMultiServiceFactory> const & configurationProvider, OUString const & node, OUString const & item);
 
 private:
     uno::Reference< io::XInputStream > load(const OUString& rURL);
@@ -237,8 +241,8 @@ public:
     virtual ~UpdateInformationEnumeration() {};
 
     // XEnumeration
-    sal_Bool SAL_CALL hasMoreElements() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE { return m_nCount < m_nNodes; };
-    uno::Any SAL_CALL nextElement() throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+    sal_Bool SAL_CALL hasMoreElements() throw (uno::RuntimeException, std::exception) override { return m_nCount < m_nNodes; };
+    uno::Any SAL_CALL nextElement() throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) override
     {
         OSL_ASSERT( m_xNodeList.is() );
         OSL_ASSERT( m_xUpdateInformationProvider.is() );
@@ -297,8 +301,8 @@ public:
     virtual ~SingleUpdateInformationEnumeration() {};
 
     // XEnumeration
-    sal_Bool SAL_CALL hasMoreElements() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE { return 0 == m_nCount; };
-    uno::Any SAL_CALL nextElement() throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+    sal_Bool SAL_CALL hasMoreElements() throw (uno::RuntimeException, std::exception) override { return 0 == m_nCount; };
+    uno::Any SAL_CALL nextElement() throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) override
     {
         if( m_nCount > 0 )
             throw container::NoSuchElementException(OUString::number(m_nCount), *this);
@@ -312,9 +316,6 @@ private:
     deployment::UpdateInformationEntry m_aEntry;
 };
 
-
-
-
 UpdateInformationProvider::UpdateInformationProvider(
     const uno::Reference<uno::XComponentContext>& xContext,
     const uno::Reference< ucb::XUniversalContentBroker >& xUniversalContentBroker,
@@ -324,11 +325,39 @@ UpdateInformationProvider::UpdateInformationProvider(
     , m_xUniversalContentBroker(xUniversalContentBroker)
     , m_xDocumentBuilder(xDocumentBuilder)
     , m_xXPathAPI(xXPathAPI)
-    , m_aRequestHeaderList(1)
+    , m_aRequestHeaderList(2)
     , m_nCommandId(0)
 {
     uno::Reference< lang::XMultiServiceFactory > xConfigurationProvider(
-        com::sun::star::configuration::theDefaultProvider::get(xContext));
+        css::configuration::theDefaultProvider::get(m_xContext));
+
+    m_aRequestHeaderList[0].First = "Accept-Language";
+    m_aRequestHeaderList[0].Second = getConfigurationItem( xConfigurationProvider, "org.openoffice.Setup/L10N", "ooLocale" );
+}
+
+bool
+UpdateInformationProvider::isUserAgentExtended()
+{
+    bool bExtendedUserAgent = false;
+    try {
+        uno::Reference< lang::XMultiServiceFactory > xConfigurationProvider(
+            css::configuration::theDefaultProvider::get(m_xContext));
+
+        uno::Any aExtended = getConfigurationItemAny(
+            xConfigurationProvider,
+            "org.openoffice.Office.Jobs/Jobs/UpdateCheck/Arguments",
+            "ExtendedUserAgent");
+        aExtended >>= bExtendedUserAgent;
+    } catch (const uno::RuntimeException &) {
+        SAL_WARN("extensions.update", "Online update disabled");
+    }
+    return bExtendedUserAgent;
+}
+
+OUString UpdateInformationProvider::getUserAgent(bool bExtended)
+{
+    uno::Reference< lang::XMultiServiceFactory > xConfigurationProvider(
+        css::configuration::theDefaultProvider::get(m_xContext));
 
     OUStringBuffer buf;
     buf.append(
@@ -342,31 +371,56 @@ UpdateInformationProvider::UpdateInformationProvider(
             xConfigurationProvider,
             "org.openoffice.Setup/Product",
             "ooSetupVersion"));
+
     OUString extension(
         getConfigurationItem(
             xConfigurationProvider,
             "org.openoffice.Setup/Product",
             "ooSetupExtension"));
-    if (!extension.isEmpty()) {
+    if (!extension.isEmpty())
         buf.append(extension);
-    }
+
     OUString product(buf.makeStringAndClear());
 
     OUString aUserAgent( "${$BRAND_BASE_DIR/" LIBO_ETC_FOLDER "/" SAL_CONFIGFILE("version") ":UpdateUserAgent}" );
+    OUString aExtended;
+    if( bExtended )
+    {
+        aExtended = Application::GetHWOSConfInfo();
+    }
     rtl::Bootstrap::expandMacros( aUserAgent );
     aUserAgent = aUserAgent.replaceAll("<PRODUCT>", product);
+    aUserAgent = aUserAgent.replaceAll("<OPTIONAL_OS_HW_DATA>", aExtended);
     SAL_INFO("extensions.update", "UpdateUserAgent: " << aUserAgent);
 
-    m_aRequestHeaderList[0].First = "Accept-Language";
-    m_aRequestHeaderList[0].Second = getConfigurationItem( xConfigurationProvider, "org.openoffice.Setup/L10N", "ooLocale" );
-    if( !aUserAgent.isEmpty() )
-    {
-        m_aRequestHeaderList.realloc(2);
-        m_aRequestHeaderList[1].First = "User-Agent";
-        m_aRequestHeaderList[1].Second = aUserAgent;
-    }
+    return aUserAgent;
 }
 
+uno::Sequence< beans::StringPair > SAL_CALL UpdateInformationProvider::getUserRequestHeaders(
+    const OUString &aURL, ucb::WebDAVHTTPMethod )
+    throw ( uno::RuntimeException, std::exception )
+{
+    bool bExtendedUserAgent;
+    uno::Sequence< beans::StringPair > aPair = m_aRequestHeaderList;
+
+    // Internal use from cui/ some magic URLs
+    if( aURL.startsWith( "useragent:" ) )
+        bExtendedUserAgent = (aURL == "useragent:extended");
+    else
+        bExtendedUserAgent = isUserAgentExtended();
+
+    OUString aUserAgent = getUserAgent(bExtendedUserAgent);
+
+    if( aUserAgent.isEmpty() )
+        aPair.realloc(1);
+    else
+    {
+        aPair[1].First = "User-Agent";
+        aPair[1].Second = aUserAgent;
+    }
+
+    return aPair;
+};
 
 uno::Reference< uno::XInterface >
 UpdateInformationProvider::createInstance(const uno::Reference<uno::XComponentContext>& xContext)
@@ -384,18 +438,13 @@ UpdateInformationProvider::createInstance(const uno::Reference<uno::XComponentCo
     return *new UpdateInformationProvider(xContext, xUniversalContentBroker, xDocumentBuilder, xXPath);
 }
 
-
-
 UpdateInformationProvider::~UpdateInformationProvider()
 {
 }
 
-
-
-OUString
-UpdateInformationProvider::getConfigurationItem(uno::Reference<lang::XMultiServiceFactory> const & configurationProvider, OUString const & node, OUString const & item)
+uno::Any
+UpdateInformationProvider::getConfigurationItemAny(uno::Reference<lang::XMultiServiceFactory> const & configurationProvider, OUString const & node, OUString const & item)
 {
-    rtl::OUString sRet;
     beans::PropertyValue aProperty;
     aProperty.Name  = "nodepath";
     aProperty.Value = uno::makeAny(node);
@@ -409,11 +458,16 @@ UpdateInformationProvider::getConfigurationItem(uno::Reference<lang::XMultiServi
             aArgumentList ),
         uno::UNO_QUERY_THROW);
 
-    xNameAccess->getByName(item) >>= sRet;
-    return sRet;
+    return xNameAccess->getByName(item);
 }
 
-
+OUString
+UpdateInformationProvider::getConfigurationItem(uno::Reference<lang::XMultiServiceFactory> const & configurationProvider, OUString const & node, OUString const & item)
+{
+    OUString sRet;
+    getConfigurationItemAny(configurationProvider, node, item) >>= sRet;
+    return sRet;
+}
 
 void
 UpdateInformationProvider::storeCommandInfo(
@@ -425,8 +479,6 @@ UpdateInformationProvider::storeCommandInfo(
     m_nCommandId = nCommandId;
     m_xCommandProcessor = rxCommandProcessor;
 }
-
-
 
 uno::Reference< io::XInputStream >
 UpdateInformationProvider::load(const OUString& rURL)
@@ -442,9 +494,7 @@ UpdateInformationProvider::load(const OUString& rURL)
 
     // Disable KeepAlive in webdav - don't want millions of office
     // instances phone home & clog up servers
-    uno::Sequence< beans::NamedValue > aProps( 1 );
-    aProps[ 0 ] = beans::NamedValue(
-        "KeepAlive", uno::makeAny(sal_False));
+    uno::Sequence< beans::NamedValue > aProps { { "KeepAlive", uno::makeAny(sal_False) } };
 
     ucb::OpenCommandArgument3 aOpenArgument;
     aOpenArgument.Mode = ucb::OpenMode::DOCUMENT;
@@ -541,7 +591,7 @@ UpdateInformationProvider::getChildNode(const uno::Reference< xml::dom::XNode >&
         return m_xXPathAPI->selectSingleNode(rxNode, "./atom:" + rName);
     } catch (const xml::xpath::XPathException &) {
         // ignore
-        return 0;
+        return nullptr;
     }
 }
 
@@ -648,7 +698,7 @@ UpdateInformationProvider::getUpdateInformation(
             catch( const lang::WrappedTargetException& e )
             {
                 // command aborted, return what we have got so far
-                if( e.TargetException.isExtractableTo( ::cppu::UnoType< ::com::sun::star::ucb::CommandAbortedException >::get() ) )
+                if( e.TargetException.isExtractableTo( ::cppu::UnoType< css::ucb::CommandAbortedException >::get() ) )
                 {
                     break;
                 }
@@ -721,8 +771,7 @@ UpdateInformationProvider::getInteractionHandler()
 uno::Sequence< OUString >
 UpdateInformationProvider::getServiceNames()
 {
-    uno::Sequence< OUString > aServiceList(1);
-    aServiceList[0] = "com.sun.star.deployment.UpdateInformationProvider";
+    uno::Sequence< OUString > aServiceList { "com.sun.star.deployment.UpdateInformationProvider" };
     return aServiceList;
 };
 
@@ -775,10 +824,10 @@ static const cppu::ImplementationEntry kImplementations_entries[] =
         UpdateInformationProvider::getImplName,
         UpdateInformationProvider::getServiceNames,
         cppu::createSingleComponentFactory,
-        NULL,
+        nullptr,
         0
     },
-    { NULL, NULL, NULL, NULL, NULL, 0 }
+    { nullptr, nullptr, nullptr, nullptr, nullptr, 0 }
 } ;
 
 

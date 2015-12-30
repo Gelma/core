@@ -138,7 +138,6 @@ awt::Size SAL_CALL OSpecialEmbeddedObject::getVisualAreaSize( sal_Int64 nAspect 
         throw embed::WrongStateException( "The own object has no model!",
                                     static_cast< ::cppu::OWeakObject* >(this) );
 
-    awt::Size aResult;
     return maSize;
 }
 
@@ -160,10 +159,10 @@ sal_Int32 SAL_CALL OSpecialEmbeddedObject::getMapUnit( sal_Int64 nAspect )
 }
 
 void SAL_CALL OSpecialEmbeddedObject::changeState( sal_Int32 nNewState )
-        throw ( ::com::sun::star::embed::UnreachableStateException,
-                ::com::sun::star::embed::WrongStateException,
-                ::com::sun::star::uno::Exception,
-                ::com::sun::star::uno::RuntimeException, std::exception )
+        throw ( css::embed::UnreachableStateException,
+                css::embed::WrongStateException,
+                css::uno::Exception,
+                css::uno::RuntimeException, std::exception )
 {
     if ( nNewState == embed::EmbedStates::UI_ACTIVE )
         nNewState = embed::EmbedStates::INPLACE_ACTIVE;

@@ -58,7 +58,7 @@ class SFX2_DLLPUBLIC SvxZoomItem: public SfxUInt16Item
     SvxZoomType             eType;
 
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     SvxZoomItem( SvxZoomType eZoomType = SvxZoomType::PERCENT,
                  sal_uInt16 nVal = 0, sal_uInt16 nWhich = SID_ATTR_ZOOM );
@@ -71,12 +71,12 @@ public:
     SvxZoomType             GetType() const { return eType; }
     void                    SetType( SvxZoomType eNewType ) { eType = eNewType; }
 
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Create( SvStream& rStrm, sal_uInt16 nVersion ) const SAL_OVERRIDE;
-    virtual SvStream&       Store( SvStream& rStrm , sal_uInt16 nItemVersion ) const SAL_OVERRIDE;
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual bool            QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool            PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual SfxPoolItem*    Create( SvStream& rStrm, sal_uInt16 nVersion ) const override;
+    virtual SvStream&       Store( SvStream& rStrm , sal_uInt16 nItemVersion ) const override;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual bool            QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool            PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 };
 
 

@@ -46,7 +46,7 @@ public:
     bool IsNumberFormat( const OUString& rString,            /// input string
                          short& F_Type,                      /// format type (in + out)
                          double& fOutNumber,                 /// value determined (out)
-                         const SvNumberformat* pFormat = NULL);  /// optional a number format to which compare against
+                         const SvNumberformat* pFormat = nullptr);  /// optional a number format to which compare against
 
     /// after IsNumberFormat: get decimal position
     short   GetDecPos() const { return nDecPos; }
@@ -169,7 +169,7 @@ private:
         @see IsAcceptedDatePattern()
      */
     sal_Int32   nAcceptedDatePattern;
-    com::sun::star::uno::Sequence< OUString >  sDateAcceptancePatterns;
+    css::uno::Sequence< OUString >  sDateAcceptancePatterns;
 
     /** If input matched a date acceptance pattern that starts at input
         particle sStrArray[nDatePatternStart].
@@ -185,8 +185,8 @@ private:
     sal_uInt16  nDatePatternNumbers;
 
     // Copy assignment is forbidden and not implemented.
-    ImpSvNumberInputScan (const ImpSvNumberInputScan &) SAL_DELETED_FUNCTION;
-    ImpSvNumberInputScan & operator= (const ImpSvNumberInputScan &) SAL_DELETED_FUNCTION;
+    ImpSvNumberInputScan (const ImpSvNumberInputScan &) = delete;
+    ImpSvNumberInputScan & operator= (const ImpSvNumberInputScan &) = delete;
 
     void Reset();                               // Reset all variables before start of analysis
 
@@ -295,7 +295,7 @@ private:
     // Get currency symbol and advance string position
     bool GetCurrency( const OUString& rString,
                       sal_Int32& nPos,
-                      const SvNumberformat* pFormat = NULL ); // optional number format to match against
+                      const SvNumberformat* pFormat = nullptr ); // optional number format to match against
 
     // Get symbol AM or PM and advance string position
     bool GetTimeAmPm( const OUString& rString,
@@ -336,21 +336,21 @@ private:
     // Conversion of date to number
     bool GetDateRef( double& fDays,                          // OUT: days diff to null date
                      sal_uInt16& nCounter,                   // Count of date substrings
-                     const SvNumberformat* pFormat = NULL ); // optional number format to match against
+                     const SvNumberformat* pFormat = nullptr ); // optional number format to match against
 
     // Analyze start of string
     bool ScanStartString( const OUString& rString,
-                          const SvNumberformat* pFormat = NULL );
+                          const SvNumberformat* pFormat = nullptr );
 
     // Analyze middle substring
     bool ScanMidString( const OUString& rString,
                         sal_uInt16 nStringPos,
-                        const SvNumberformat* pFormat = NULL );
+                        const SvNumberformat* pFormat = nullptr );
 
 
     // Analyze end of string
     bool ScanEndString( const OUString& rString,
-                        const SvNumberformat* pFormat = NULL );
+                        const SvNumberformat* pFormat = nullptr );
 
     // Compare rString to substring of array indexed by nString
     // nString == 0xFFFF => last substring
@@ -370,7 +370,7 @@ private:
 
     // Main analyzing function
     bool IsNumberFormatMain( const OUString& rString,
-                             const SvNumberformat* pFormat = NULL);    // optional number format to match against
+                             const SvNumberformat* pFormat = nullptr);    // optional number format to match against
 
     static inline bool MyIsdigit( sal_Unicode c );
 

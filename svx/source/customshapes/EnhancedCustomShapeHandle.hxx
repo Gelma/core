@@ -31,31 +31,31 @@
 
 class EnhancedCustomShapeHandle : public cppu::WeakImplHelper
 <
-    com::sun::star::drawing::XCustomShapeHandle,
-    com::sun::star::lang::XInitialization
+    css::drawing::XCustomShapeHandle,
+    css::lang::XInitialization
 >
 {
-    sal_uInt32                                                          mnIndex;
-    com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > mxCustomShape;
+    sal_uInt32                                  mnIndex;
+    css::uno::Reference< css::drawing::XShape > mxCustomShape;
 
 public:
 
-            EnhancedCustomShapeHandle( com::sun::star::uno::Reference< com::sun::star::drawing::XShape >& xCustomShape, sal_uInt32 nIndex );
+            EnhancedCustomShapeHandle( css::uno::Reference< css::drawing::XShape >& xCustomShape, sal_uInt32 nIndex );
     virtual ~EnhancedCustomShapeHandle();
 
     // XInterface
-    virtual void SAL_CALL acquire() throw() SAL_OVERRIDE;
-    virtual void SAL_CALL release() throw() SAL_OVERRIDE;
+    virtual void SAL_CALL acquire() throw() override;
+    virtual void SAL_CALL release() throw() override;
 
     // XCustomShapeHandle
-    virtual com::sun::star::awt::Point SAL_CALL getPosition()
-        throw ( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL setControllerPosition( const com::sun::star::awt::Point& )
-        throw ( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual css::awt::Point SAL_CALL getPosition()
+        throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL setControllerPosition( const css::awt::Point& )
+        throw ( css::uno::RuntimeException, std::exception ) override;
 
     // XInitialization
-    virtual void SAL_CALL initialize( const com::sun::star::uno::Sequence< com::sun::star::uno::Any >& aArguments )
-        throw ( com::sun::star::uno::Exception, com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL initialize( const css::uno::Sequence< css::uno::Any >& aArguments )
+        throw ( css::uno::Exception, css::uno::RuntimeException, std::exception ) override;
 };
 
 #endif

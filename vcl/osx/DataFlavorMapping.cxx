@@ -183,9 +183,9 @@ public:
 
   UniDataProvider(NSData* data);
 
-  virtual NSData* getSystemData() SAL_OVERRIDE;
+  virtual NSData* getSystemData() override;
 
-  virtual Any getOOoData() SAL_OVERRIDE;
+  virtual Any getOOoData() override;
 };
 
 UniDataProvider::UniDataProvider(const Any& data) :
@@ -234,9 +234,9 @@ public:
 
   ByteSequenceDataProvider(NSData* data);
 
-  virtual NSData* getSystemData() SAL_OVERRIDE;
+  virtual NSData* getSystemData() override;
 
-  virtual Any getOOoData() SAL_OVERRIDE;
+  virtual Any getOOoData() override;
 };
 
 ByteSequenceDataProvider::ByteSequenceDataProvider(const Any& data) :
@@ -282,9 +282,9 @@ class HTMLFormatDataProvider : public DataProviderBaseImpl
 public:
   HTMLFormatDataProvider(NSData* data);
 
-  virtual NSData* getSystemData() SAL_OVERRIDE;
+  virtual NSData* getSystemData() override;
 
-  virtual Any getOOoData() SAL_OVERRIDE;
+  virtual Any getOOoData() override;
 };
 
 HTMLFormatDataProvider::HTMLFormatDataProvider(NSData* data) :
@@ -341,9 +341,9 @@ public:
 
     PNGDataProvider( NSData*, NSBitmapImageFileType);
 
-    virtual NSData* getSystemData() SAL_OVERRIDE;
+    virtual NSData* getSystemData() override;
 
-    virtual Any getOOoData() SAL_OVERRIDE;
+    virtual Any getOOoData() override;
 };
 
 PNGDataProvider::PNGDataProvider( const Any& data, NSBitmapImageFileType eImageType) :
@@ -364,7 +364,7 @@ NSData* PNGDataProvider::getSystemData()
     mData >>= pngData;
 
     Sequence<sal_Int8> imgData;
-    NSData* sysData = NULL;
+    NSData* sysData = nullptr;
     if( PNGToImage( pngData, imgData, meImageType))
         sysData = [NSData dataWithBytes: imgData.getArray() length: imgData.getLength()];
 
@@ -403,8 +403,8 @@ public:
   FileListDataProvider(const Any& data);
   FileListDataProvider(NSArray* data);
 
-  virtual NSData* getSystemData() SAL_OVERRIDE;
-  virtual Any getOOoData() SAL_OVERRIDE;
+  virtual NSData* getSystemData() override;
+  virtual Any getOOoData() override;
 };
 
 FileListDataProvider::FileListDataProvider(const Any& data) :
@@ -505,7 +505,7 @@ DataFlavor DataFlavorMapper::systemToOpenOfficeFlavor( const NSString* systemDat
 
 const NSString* DataFlavorMapper::openOfficeToSystemFlavor( const DataFlavor& oOOFlavor, bool& rbInternal) const
 {
-    const NSString* sysFlavor = NULL;
+    const NSString* sysFlavor = nullptr;
     rbInternal = false;
 
     for( size_t i = 0; i < SIZE_FLAVOR_MAP; ++i )
@@ -640,7 +640,7 @@ bool DataFlavorMapper::isValidMimeContentType(const OUString& contentType) const
   return result;
 }
 
-NSArray* DataFlavorMapper::flavorSequenceToTypesArray(const com::sun::star::uno::Sequence<com::sun::star::datatransfer::DataFlavor>& flavors) const
+NSArray* DataFlavorMapper::flavorSequenceToTypesArray(const css::uno::Sequence<css::datatransfer::DataFlavor>& flavors) const
 {
   sal_uInt32 nFlavors = flavors.getLength();
   NSMutableArray* array = [[NSMutableArray alloc] initWithCapacity: 1];
@@ -657,7 +657,7 @@ NSArray* DataFlavorMapper::flavorSequenceToTypesArray(const com::sun::star::uno:
       {
           const NSString* str = openOfficeToSystemFlavor(flavors[i], bNeedDummyInternalFlavor);
 
-          if (str != NULL)
+          if (str != nullptr)
           {
               [str retain];
               [array addObject: str];
@@ -676,7 +676,7 @@ NSArray* DataFlavorMapper::flavorSequenceToTypesArray(const com::sun::star::uno:
   return [array autorelease];
 }
 
-com::sun::star::uno::Sequence<com::sun::star::datatransfer::DataFlavor> DataFlavorMapper::typesArrayToFlavorSequence(NSArray* types) const
+css::uno::Sequence<css::datatransfer::DataFlavor> DataFlavorMapper::typesArrayToFlavorSequence(NSArray* types) const
 {
   int nFormats = [types count];
   Sequence<DataFlavor> flavors;

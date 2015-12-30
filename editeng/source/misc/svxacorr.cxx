@@ -276,7 +276,7 @@ SvxAutoCorrect::SvxAutoCorrect( const OUString& rShareAutocorrFile,
     : sShareAutoCorrFile( rShareAutocorrFile )
     , sUserAutoCorrFile( rUserAutocorrFile )
     , m_pLangTable( new std::map<LanguageTag, std::unique_ptr<SvxAutoCorrectLanguageLists>> )
-    , pCharClass( 0 )
+    , pCharClass( nullptr )
     , bRunNext( false )
     , eCharClassLang( LANGUAGE_DONTKNOW )
     , nFlags(SvxAutoCorrect::GetDefaultFlags())
@@ -294,7 +294,7 @@ SvxAutoCorrect::SvxAutoCorrect( const SvxAutoCorrect& rCpy )
     , sUserAutoCorrFile( rCpy.sUserAutoCorrFile )
     , aSwFlags( rCpy.aSwFlags )
     , m_pLangTable( new std::map<LanguageTag, std::unique_ptr<SvxAutoCorrectLanguageLists>> )
-    , pCharClass( 0 )
+    , pCharClass( nullptr )
     , bRunNext( false )
     , eCharClassLang(rCpy.eCharClassLang)
     , nFlags( rCpy.nFlags & ~(ChgWordLstLoad|CplSttLstLoad|WrdSttLstLoad))
@@ -458,25 +458,25 @@ bool SvxAutoCorrect::FnChgOrdinalNumber(
 
         // Get the last number in the string to check
         sal_Int32 nNumEnd = nEndPos;
-        bool foundEnd = false;
-        bool validNumber = true;
+        bool bFoundEnd = false;
+        bool isValidNumber = true;
         sal_Int32 i = nEndPos;
 
         while (i > nSttPos)
         {
             i--;
             bool isDigit = rCC.isDigit(rTxt, i);
-            if (foundEnd)
-                validNumber |= isDigit;
+            if (bFoundEnd)
+                isValidNumber |= isDigit;
 
-            if (isDigit && !foundEnd)
+            if (isDigit && !bFoundEnd)
             {
-                foundEnd = true;
+                bFoundEnd = true;
                 nNumEnd = i;
             }
         }
 
-        if (foundEnd && validNumber) {
+        if (bFoundEnd && isValidNumber) {
             sal_Int32 nNum = rTxt.copy(nSttPos, nNumEnd - nSttPos + 1).toInt32();
 
             // Check if the characters after that number correspond to the ordinal suffix
@@ -723,7 +723,7 @@ bool SvxAutoCorrect::FnChgWeightUnderl( SvxAutoCorrDoc& rDoc, const OUString& rT
     //  at the beginning:   _ or * after Space with the folloeing !Space
     //  at the end:         _ or * before Space (word delimiter?)
 
-    sal_Unicode c, cInsChar = rTxt[ nEndPos ];  // underline or bold
+    sal_Unicode cInsChar = rTxt[ nEndPos ];  // underline or bold
     if( ++nEndPos != rTxt.getLength() &&
         !IsWordDelim( rTxt[ nEndPos ] ) )
         return false;
@@ -737,7 +737,7 @@ bool SvxAutoCorrect::FnChgWeightUnderl( SvxAutoCorrDoc& rDoc, const OUString& rT
 
     while( nPos )
     {
-        switch( c = rTxt[ --nPos ] )
+        switch( sal_Unicode c = rTxt[ --nPos ] )
         {
         case '_':
         case '*':
@@ -801,8 +801,8 @@ bool SvxAutoCorrect::FnCapitalStartSentence( SvxAutoCorrDoc& rDoc,
     OUString aText( rTxt );
     const sal_Unicode *pStart = aText.getStr(),
                       *pStr = pStart + nEndPos,
-                      *pWordStt = 0,
-                      *pDelim = 0;
+                      *pWordStt = nullptr,
+                      *pDelim = nullptr;
 
     bool bAtStart = false;
     do {
@@ -898,7 +898,7 @@ bool SvxAutoCorrect::FnCapitalStartSentence( SvxAutoCorrDoc& rDoc,
 
     // Found [ \t]+[A-Z0-9]+ until here. Test now on the paragraph separator.
     // all three can happen, but not more than once!
-    const sal_Unicode* pExceptStt = 0;
+    const sal_Unicode* pExceptStt = nullptr;
     if( !bAtStart )
     {
         bool bContinue = true;
@@ -956,7 +956,7 @@ bool SvxAutoCorrect::FnCapitalStartSentence( SvxAutoCorrDoc& rDoc,
             }
         } while( bContinue );
         if( C_FULL_STOP != nFlag )
-            pExceptStt = 0;
+            pExceptStt = nullptr;
     }
 
     if( 2 > ( pStr - pStart ) )
@@ -1323,7 +1323,7 @@ SvxAutoCorrect::DoAutoCorrect( SvxAutoCorrDoc& rDoc, const OUString& rTxt,
         if( IsAutoCorrFlag( Autocorrect ) )
         {
             OUString aPara;
-            OUString* pPara = IsAutoCorrFlag(CapitalStartSentence) ? &aPara : 0;
+            OUString* pPara = IsAutoCorrFlag(CapitalStartSentence) ? &aPara : nullptr;
 
             // since LibO 4.1, '-' is a word separator
             // fdo#67742 avoid "--" to be replaced by "–" if next is "-"
@@ -1461,7 +1461,7 @@ void SvxAutoCorrect::SaveWrdSttExceptList(LanguageType eLang)
 bool SvxAutoCorrect::AddCplSttException( const OUString& rNew,
                                         LanguageType eLang )
 {
-    SvxAutoCorrectLanguageLists* pLists = 0;
+    SvxAutoCorrectLanguageLists* pLists = nullptr;
     // either the right language is present or it will be this in the general list
     auto iter = m_pLangTable->find(LanguageTag(eLang));
     if (iter != m_pLangTable->end())
@@ -1483,7 +1483,7 @@ bool SvxAutoCorrect::AddCplSttException( const OUString& rNew,
 bool SvxAutoCorrect::AddWrtSttException( const OUString& rNew,
                                          LanguageType eLang )
 {
-    SvxAutoCorrectLanguageLists* pLists = 0;
+    SvxAutoCorrectLanguageLists* pLists = nullptr;
     //either the right language is present or it is set in the general list
     auto iter = m_pLangTable->find(LanguageTag(eLang));
     if (iter != m_pLangTable->end())
@@ -1550,10 +1550,10 @@ bool SvxAutoCorrect::CreateLanguageFile( const LanguageTag& rLanguageTag, bool b
 {
     OSL_ENSURE(m_pLangTable->find(rLanguageTag) == m_pLangTable->end(), "Language already exists ");
 
-    OUString sUserDirFile( GetAutoCorrFileName( rLanguageTag, true, false ));
+    OUString sUserDirFile( GetAutoCorrFileName( rLanguageTag, true ));
     OUString sShareDirFile( sUserDirFile );
 
-    SvxAutoCorrectLanguageLists* pLists = 0;
+    SvxAutoCorrectLanguageLists* pLists = nullptr;
 
     tools::Time nMinTime( 0, 2 ), nAktTime( tools::Time::SYSTEM ), nLastCheckTime( tools::Time::EMPTY );
 
@@ -1576,7 +1576,7 @@ bool SvxAutoCorrect::CreateLanguageFile( const LanguageTag& rLanguageTag, bool b
     else if(
              ( FStatHelper::IsDocument( sUserDirFile ) ||
                FStatHelper::IsDocument( sShareDirFile =
-                   GetAutoCorrFileName( rLanguageTag, false, false ) ) ||
+                   GetAutoCorrFileName( rLanguageTag ) ) ||
                FStatHelper::IsDocument( sShareDirFile =
                    GetAutoCorrFileName( rLanguageTag, false, false, true) )
              ) ||
@@ -1593,7 +1593,7 @@ bool SvxAutoCorrect::CreateLanguageFile( const LanguageTag& rLanguageTag, bool b
     {
         aLastFileTable[rLanguageTag] = nAktTime.GetTime();
     }
-    return pLists != 0;
+    return pLists != nullptr;
 }
 
 bool SvxAutoCorrect::PutText( const OUString& rShort, const OUString& rLong,
@@ -1694,7 +1694,7 @@ const SvxAutocorrWord* SvxAutoCorrect::SearchWordsInList(
                 const OUString& rTxt, sal_Int32& rStt, sal_Int32 nEndPos,
                 SvxAutoCorrDoc&, LanguageTag& rLang )
 {
-    const SvxAutocorrWord* pRet = 0;
+    const SvxAutocorrWord* pRet = nullptr;
     LanguageTag aLanguageTag( rLang);
     if( aLanguageTag.isSystemLocale() )
         aLanguageTag.reset( MsLangId::getSystemLanguage());
@@ -1717,25 +1717,13 @@ const SvxAutocorrWord* SvxAutoCorrect::SearchWordsInList(
     }
 
     // If it still could not be found here, then keep on searching
-
     LanguageType eLang = aLanguageTag.getLanguageType();
-    LanguageType nTmpKey1 = eLang & 0x7ff, // the main language in many cases DE
-                 nTmpKey2 = eLang & 0x3ff; // otherwise for example EN
-    if(nTmpKey1 != eLang && (m_pLangTable->find(aLanguageTag.reset(nTmpKey1)) != m_pLangTable->end() ||
-                CreateLanguageFile(aLanguageTag, false)))
-    {
-        //the language is available - so bring it on
-        std::unique_ptr<SvxAutoCorrectLanguageLists> const& pList = m_pLangTable->find(aLanguageTag)->second;
-        pRet = lcl_SearchWordsInList( pList.get(), rTxt, rStt, nEndPos );
-        if( pRet )
-        {
-            rLang = aLanguageTag;
-            return pRet;
-        }
-    }
-
-    if (nTmpKey2 != eLang && (m_pLangTable->find(aLanguageTag.reset(nTmpKey2)) != m_pLangTable->end() ||
-                CreateLanguageFile(aLanguageTag, false)))
+    // the primary language for example EN
+    aLanguageTag.reset(aLanguageTag.getLanguage());
+    LanguageType nTmpKey = aLanguageTag.getLanguageType(false);
+    if (nTmpKey != eLang && nTmpKey != LANGUAGE_UNDETERMINED &&
+                (m_pLangTable->find(aLanguageTag) != m_pLangTable->end() ||
+                 CreateLanguageFile(aLanguageTag, false)))
     {
         //the language is available - so bring it on
         std::unique_ptr<SvxAutoCorrectLanguageLists> const& pList = m_pLangTable->find(aLanguageTag)->second;
@@ -1759,7 +1747,7 @@ const SvxAutocorrWord* SvxAutoCorrect::SearchWordsInList(
             return pRet;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 bool SvxAutoCorrect::FindInWrdSttExceptList( LanguageType eLang,
@@ -1769,10 +1757,8 @@ bool SvxAutoCorrect::FindInWrdSttExceptList( LanguageType eLang,
 
     /* TODO-BCP47: again horrible uglyness */
 
-    // First search for eLang, then US-English -> English
+    // First search for eLang, then primary language of eLang
     // and last in LANGUAGE_UNDETERMINED
-    LanguageType nTmpKey1 = eLang & 0x7ff, // the main language in many cases DE
-                 nTmpKey2 = eLang & 0x3ff; // otherwise for example EN
     OUString sTemp(sWord);
 
     if (m_pLangTable->find(aLanguageTag) != m_pLangTable->end() || CreateLanguageFile(aLanguageTag, false))
@@ -1785,17 +1771,12 @@ bool SvxAutoCorrect::FindInWrdSttExceptList( LanguageType eLang,
     }
 
     // If it still could not be found here, then keep on searching
-    if (nTmpKey1 != eLang && (m_pLangTable->find(aLanguageTag.reset(nTmpKey1)) != m_pLangTable->end() ||
-                CreateLanguageFile(aLanguageTag, false)))
-    {
-        //the language is available - so bring it on
-        auto const& pList = m_pLangTable->find(aLanguageTag)->second;
-        if(pList->GetWrdSttExceptList()->find(sTemp) != pList->GetWrdSttExceptList()->end() )
-            return true;
-    }
-
-    if (nTmpKey2 != eLang && (m_pLangTable->find(aLanguageTag.reset(nTmpKey2)) != m_pLangTable->end() ||
-                CreateLanguageFile(aLanguageTag, false)))
+    // the primary language for example EN
+    aLanguageTag.reset(aLanguageTag.getLanguage());
+    LanguageType nTmpKey = aLanguageTag.getLanguageType(false);
+    if (nTmpKey != eLang && nTmpKey != LANGUAGE_UNDETERMINED &&
+                (m_pLangTable->find(aLanguageTag) != m_pLangTable->end() ||
+                 CreateLanguageFile(aLanguageTag, false)))
     {
         //the language is available - so bring it on
         auto const& pList = m_pLangTable->find(aLanguageTag)->second;
@@ -1855,10 +1836,8 @@ bool SvxAutoCorrect::FindInCplSttExceptList(LanguageType eLang,
 
     /* TODO-BCP47: did I mention terrible horrible uglyness? */
 
-    // First search for eLang, then US-English -> English
+    // First search for eLang, then primary language of eLang
     // and last in LANGUAGE_UNDETERMINED
-    LanguageType nTmpKey1 = eLang & 0x7ff, // the main language in many cases DE
-                 nTmpKey2 = eLang & 0x3ff; // otherwise for example EN
     OUString sTemp( sWord );
 
     if (m_pLangTable->find(aLanguageTag) != m_pLangTable->end() || CreateLanguageFile(aLanguageTag, false))
@@ -1870,16 +1849,12 @@ bool SvxAutoCorrect::FindInCplSttExceptList(LanguageType eLang,
     }
 
     // If it still could not be found here, then keep on searching
-    if(nTmpKey1 != eLang && (m_pLangTable->find(aLanguageTag.reset(nTmpKey1)) != m_pLangTable->end() ||
-                CreateLanguageFile(aLanguageTag, false)))
-    {
-        const SvStringsISortDtor* pList = m_pLangTable->find(aLanguageTag)->second->GetCplSttExceptList();
-        if(bAbbreviation ? lcl_FindAbbreviation(pList, sWord) : pList->find(sTemp) != pList->end() )
-            return true;
-    }
-
-    if(nTmpKey2 != eLang && (m_pLangTable->find(aLanguageTag.reset(nTmpKey2)) != m_pLangTable->end() ||
-                CreateLanguageFile(aLanguageTag, false)))
+    // the primary language for example EN
+    aLanguageTag.reset(aLanguageTag.getLanguage());
+    LanguageType nTmpKey = aLanguageTag.getLanguageType(false);
+    if (nTmpKey != eLang && nTmpKey != LANGUAGE_UNDETERMINED &&
+                (m_pLangTable->find(aLanguageTag) != m_pLangTable->end() ||
+                 CreateLanguageFile(aLanguageTag, false)))
     {
         //the language is available - so bring it on
         const SvStringsISortDtor* pList = m_pLangTable->find(aLanguageTag)->second->GetCplSttExceptList();
@@ -1934,9 +1909,9 @@ SvxAutoCorrectLanguageLists::SvxAutoCorrectLanguageLists(
     aModifiedDate( Date::EMPTY ),
     aModifiedTime( tools::Time::EMPTY ),
     aLastCheckTime( tools::Time::EMPTY ),
-    pCplStt_ExcptLst( 0 ),
-    pWrdStt_ExcptLst( 0 ),
-    pAutocorr_List( 0 ),
+    pCplStt_ExcptLst( nullptr ),
+    pWrdStt_ExcptLst( nullptr ),
+    pAutocorr_List( nullptr ),
     rAutoCorrect(rParent),
     nFlags(0)
 {
@@ -1967,11 +1942,11 @@ bool SvxAutoCorrectLanguageLists::IsFileChanged_Imp()
             bRet = true;
             // then remove all the lists fast!
             if( CplSttLstLoad & nFlags && pCplStt_ExcptLst )
-                delete pCplStt_ExcptLst, pCplStt_ExcptLst = 0;
+                delete pCplStt_ExcptLst, pCplStt_ExcptLst = nullptr;
             if( WrdSttLstLoad & nFlags && pWrdStt_ExcptLst )
-                delete pWrdStt_ExcptLst, pWrdStt_ExcptLst = 0;
+                delete pWrdStt_ExcptLst, pWrdStt_ExcptLst = nullptr;
             if( ChgWordLstLoad & nFlags && pAutocorr_List )
-                delete pAutocorr_List, pAutocorr_List = 0;
+                delete pAutocorr_List, pAutocorr_List = nullptr;
             nFlags &= ~(CplSttLstLoad | WrdSttLstLoad | ChgWordLstLoad );
         }
         aLastCheckTime = tools::Time( tools::Time::SYSTEM );
@@ -2078,7 +2053,7 @@ void SvxAutoCorrectLanguageLists::SaveExceptList_Imp(
                 OUString aMime( "text/xml" );
                 uno::Any aAny;
                 aAny <<= aMime;
-                xStrm->SetProperty( OUString("MediaType"), aAny );
+                xStrm->SetProperty( "MediaType", aAny );
 
 
                 uno::Reference< uno::XComponentContext > xContext =
@@ -2185,7 +2160,7 @@ SvStringsISortDtor* SvxAutoCorrectLanguageLists::GetCplSttExceptList()
 
 bool SvxAutoCorrectLanguageLists::AddToCplSttExceptList(const OUString& rNew)
 {
-    bool aRet = false;
+    bool bRet = false;
     if( !rNew.isEmpty() && GetCplSttExceptList()->insert( rNew ).second )
     {
         MakeUserStorage_Impl();
@@ -2193,19 +2168,19 @@ bool SvxAutoCorrectLanguageLists::AddToCplSttExceptList(const OUString& rNew)
 
         SaveExceptList_Imp( *pCplStt_ExcptLst, pXMLImplCplStt_ExcptLstStr, xStg );
 
-        xStg = 0;
+        xStg = nullptr;
         // Set time stamp
         FStatHelper::GetModifiedDateTimeOfFile( sUserAutoCorrFile,
                                             &aModifiedDate, &aModifiedTime );
         aLastCheckTime = tools::Time( tools::Time::SYSTEM );
-        aRet = true;
+        bRet = true;
     }
-    return aRet;
+    return bRet;
 }
 
 bool SvxAutoCorrectLanguageLists::AddToWrdSttExceptList(const OUString& rNew)
 {
-    bool aRet = false;
+    bool bRet = false;
     SvStringsISortDtor* pExceptList = LoadWrdSttExceptList();
     if( !rNew.isEmpty() && pExceptList && pExceptList->insert( rNew ).second )
     {
@@ -2214,14 +2189,14 @@ bool SvxAutoCorrectLanguageLists::AddToWrdSttExceptList(const OUString& rNew)
 
         SaveExceptList_Imp( *pWrdStt_ExcptLst, pXMLImplWrdStt_ExcptLstStr, xStg );
 
-        xStg = 0;
+        xStg = nullptr;
         // Set time stamp
         FStatHelper::GetModifiedDateTimeOfFile( sUserAutoCorrFile,
                                             &aModifiedDate, &aModifiedTime );
         aLastCheckTime = tools::Time( tools::Time::SYSTEM );
-        aRet = true;
+        bRet = true;
     }
-    return aRet;
+    return bRet;
 }
 
 SvStringsISortDtor* SvxAutoCorrectLanguageLists::LoadCplSttExceptList()
@@ -2246,7 +2221,7 @@ void SvxAutoCorrectLanguageLists::SaveCplSttExceptList()
 
     SaveExceptList_Imp( *pCplStt_ExcptLst, pXMLImplCplStt_ExcptLstStr, xStg );
 
-    xStg = 0;
+    xStg = nullptr;
 
     // Set time stamp
     FStatHelper::GetModifiedDateTimeOfFile( sUserAutoCorrFile,
@@ -2291,7 +2266,7 @@ void SvxAutoCorrectLanguageLists::SaveWrdSttExceptList()
 
     SaveExceptList_Imp( *pWrdStt_ExcptLst, pXMLImplWrdStt_ExcptLstStr, xStg );
 
-    xStg = 0;
+    xStg = nullptr;
     // Set time stamp
     FStatHelper::GetModifiedDateTimeOfFile( sUserAutoCorrFile,
                                             &aModifiedDate, &aModifiedTime );
@@ -2329,7 +2304,7 @@ void SvxAutoCorrectLanguageLists::RemoveStream_Imp( const OUString& rName )
             xStg->Remove( rName );
             xStg->Commit();
 
-            xStg = 0;
+            xStg = nullptr;
         }
     }
 }
@@ -2350,7 +2325,7 @@ void SvxAutoCorrectLanguageLists::MakeUserStorage_Impl()
         aDest = INetURLObject ( sUserAutoCorrFile );
         if ( SotStorage::IsOLEStorage ( sShareAutoCorrFile ) )
         {
-            aDest.SetExtension ( OUString("bak") );
+            aDest.SetExtension ( "bak" );
             bConvert = true;
         }
         bCopy = true;
@@ -2359,7 +2334,7 @@ void SvxAutoCorrectLanguageLists::MakeUserStorage_Impl()
     {
         aSource = INetURLObject ( sUserAutoCorrFile );
         aDest = INetURLObject ( sUserAutoCorrFile );
-        aDest.SetExtension ( OUString("bak") );
+        aDest.SetExtension ( "bak" );
         bCopy = bConvert = true;
     }
     if (bCopy)
@@ -2378,7 +2353,7 @@ void SvxAutoCorrectLanguageLists::MakeUserStorage_Impl()
             aInfo.SourceURL = aSource.GetMainURL( INetURLObject::DECODE_TO_IURI );
             aInfo.MoveData  = sal_False;
             aAny <<= aInfo;
-            aNewContent.executeCommand( OUString (  "transfer"  ), aAny);
+            aNewContent.executeCommand( "transfer", aAny);
         }
         catch (...)
         {
@@ -2394,7 +2369,7 @@ void SvxAutoCorrectLanguageLists::MakeUserStorage_Impl()
         {
             OUString sXMLWord     ( pXMLImplWrdStt_ExcptLstStr );
             OUString sXMLSentence ( pXMLImplCplStt_ExcptLstStr );
-            SvStringsISortDtor  *pTmpWordList = NULL;
+            SvStringsISortDtor  *pTmpWordList = nullptr;
 
             if (xSrcStg->IsContained( sXMLWord ) )
                 LoadXMLExceptList_Imp( pTmpWordList, pXMLImplWrdStt_ExcptLstStr, xSrcStg );
@@ -2403,7 +2378,7 @@ void SvxAutoCorrectLanguageLists::MakeUserStorage_Impl()
             {
                 SaveExceptList_Imp( *pTmpWordList, pXMLImplWrdStt_ExcptLstStr, xDstStg, true );
                 pTmpWordList->clear();
-                pTmpWordList = NULL;
+                pTmpWordList = nullptr;
             }
 
 
@@ -2419,11 +2394,11 @@ void SvxAutoCorrectLanguageLists::MakeUserStorage_Impl()
             GetAutocorrWordList();
             MakeBlocklist_Imp( *xDstStg );
             sShareAutoCorrFile = sUserAutoCorrFile;
-            xDstStg = 0;
+            xDstStg = nullptr;
             try
             {
                 ::ucbhelper::Content aContent ( aDest.GetMainURL( INetURLObject::DECODE_TO_IURI ), uno::Reference < XCommandEnvironment >(), comphelper::getProcessComponentContext() );
-                aContent.executeCommand ( OUString( "delete" ), makeAny ( true ) );
+                aContent.executeCommand ( "delete", makeAny ( true ) );
             }
             catch (...)
             {
@@ -2598,7 +2573,7 @@ bool SvxAutoCorrectLanguageLists::PutText( const OUString& rShort, const OUStrin
         if( pAutocorr_List->Insert( pNew ) )
         {
             bRet = MakeBlocklist_Imp( *xStg );
-            xStg = 0;
+            xStg = nullptr;
         }
         else
         {
@@ -2623,7 +2598,7 @@ bool SvxAutoCorrectLanguageLists::PutText( const OUString& rShort,
     {
         uno::Reference < embed::XStorage > xStg = comphelper::OStorageHelper::GetStorageFromURL( sUserAutoCorrFile, embed::ElementModes::READWRITE );
         bRet = rAutoCorrect.PutText( xStg, sUserAutoCorrFile, rShort, rShell, sLong );
-        xStg = 0;
+        xStg = nullptr;
 
         // Update the word list
         if( bRet )
@@ -2686,7 +2661,6 @@ SvxAutocorrWordList::SvxAutocorrWordList() : mpImpl(new Impl) {}
 SvxAutocorrWordList::~SvxAutocorrWordList()
 {
     mpImpl->DeleteAndDestroyAll();
-    delete mpImpl;
 }
 
 void SvxAutocorrWordList::DeleteAndDestroyAll()
@@ -2720,7 +2694,7 @@ bool SvxAutocorrWordList::empty() const
 
 SvxAutocorrWord *SvxAutocorrWordList::FindAndRemove(SvxAutocorrWord *pWord)
 {
-    SvxAutocorrWord *pMatch = NULL;
+    SvxAutocorrWord *pMatch = nullptr;
 
     if ( mpImpl->maSet.empty() ) // use the hash
     {
@@ -2796,7 +2770,7 @@ const SvxAutocorrWord* SvxAutocorrWordList::WordMatches(const SvxAutocorrWord *p
                 {
                     // fdo#33899 avoid "1/2", "1/3".. to be replaced by fractions in dates, eg. 1/2/14
                     if (rTxt.getLength() > nEndPos && rTxt[nEndPos] == '/' && rChk.indexOf('/') != -1)
-                        return NULL;
+                        return nullptr;
                     return pFnd;
                 }
                 // get the first word delimiter position before the matching ".*word" pattern
@@ -2842,7 +2816,7 @@ const SvxAutocorrWord* SvxAutocorrWordList::WordMatches(const SvxAutocorrWord *p
                 }
                 if (nEndPos + extra_repl <= nFndPos)
                 {
-                    return 0;
+                    return nullptr;
                 }
                 // store matching pattern and its replacement as a new list item, eg. "i18ns" -> "internationalizations"
                 OUString aShort = rTxt.copy(nFndPos, nEndPos - nFndPos + extra_repl);
@@ -2874,7 +2848,7 @@ const SvxAutocorrWord* SvxAutocorrWordList::WordMatches(const SvxAutocorrWord *p
             }
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 const SvxAutocorrWord* SvxAutocorrWordList::SearchWordsInList(const OUString& rTxt, sal_Int32& rStt,
@@ -2891,7 +2865,7 @@ const SvxAutocorrWord* SvxAutocorrWordList::SearchWordsInList(const OUString& rT
         if( const SvxAutocorrWord *aTmp = WordMatches( *it2, rTxt, rStt, nEndPos ) )
             return aTmp;
     }
-    return 0;
+    return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

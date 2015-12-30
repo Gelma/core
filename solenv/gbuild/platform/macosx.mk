@@ -89,10 +89,10 @@ gb_LinkTarget_OBJCXXFLAGS := $(gb_CXXFLAGS) $(gb_OBJCXXFLAGS)
 gb_LinkTarget_OBJCFLAGS := $(gb_CFLAGS) $(gb_OBJCFLAGS)
 
 ifeq ($(gb_SYMBOL),$(true))
-gb_LinkTarget_CFLAGS += $(gb_DEBUG_CFLAGS)
-gb_LinkTarget_CXXFLAGS += $(gb_DEBUG_CFLAGS)
-gb_LinkTarget_OBJCFLAGS += $(gb_DEBUG_CFLAGS)
-gb_LinkTarget_OBJCXXFLAGS += $(gb_DEBUG_CFLAGS)
+gb_LinkTarget_CFLAGS += $(gb_DEBUGINFO_FLAGS)
+gb_LinkTarget_CXXFLAGS += $(gb_DEBUGINFO_FLAGS)
+gb_LinkTarget_OBJCFLAGS += $(gb_DEBUGINFO_FLAGS)
+gb_LinkTarget_OBJCXXFLAGS += $(gb_DEBUGINFO_FLAGS)
 endif
 
 define gb_LinkTarget__get_layer
@@ -265,6 +265,8 @@ endef
 
 # CppunitTest class
 
+gb_CppunitTest_UNITTESTFAILED := $(GBUILDDIR)/platform/unittest-failed-MACOSX.sh
+gb_CppunitTest_PYTHONDEPS := $(call gb_Library_get_target,pyuno_wrapper) $(if $(SYSTEM_PYTHON),,$(call gb_GeneratedPackage_get_target,python3))
 gb_CppunitTest_CPPTESTPRECOMMAND := \
 	$(call gb_Helper_extend_ld_path,$(gb_Library_DLLDIR):$(WORKDIR)/UnpackedTarball/cppunit/src/cppunit/.libs)
 gb_CppunitTest_get_filename = libtest_$(1).dylib
@@ -299,6 +301,8 @@ endef
 
 # PythonTest class
 
+gb_PythonTest_UNITTESTFAILED := $(GBUILDDIR)/platform/unittest-failed-MACOSX.sh
+gb_PythonTest_DEPS := $(call gb_GeneratedPackage_get_target,python3) $(call gb_Package_get_target,python_shell)
 gb_PythonTest_PRECOMMAND := $(gb_Helper_LIBRARY_PATH_VAR)=$${$(gb_Helper_LIBRARY_PATH_VAR):+$$$(gb_Helper_LIBRARY_PATH_VAR):}$(INSTROOT)/$(LIBO_URE_LIB_FOLDER)
 ifneq ($(LIBO_LIB_FOLDER),$(LIBO_URE_LIB_FOLDER))
 gb_PythonTest_PRECOMMAND := $(gb_PythonTest_PRECOMMAND):$(INSTROOT)/$(LIBO_LIB_FOLDER)
@@ -308,10 +312,8 @@ gb_PythonTest_PRECOMMAND := $(gb_PythonTest_PRECOMMAND):$(WORKDIR)/UnpackedTarba
 # Module class
 
 define gb_Module_DEBUGRUNCOMMAND
-OFFICESCRIPT=$$($(gb_MKTEMP)) && \
-printf '%s\n' "set args --norestore --nologo '--accept=pipe,name=$(USER);urp;'" > $${OFFICESCRIPT} && \
-gdb -x $${OFFICESCRIPT} $(INSTROOT)/$(LIBO_BIN_FOLDER)/soffice && \
-rm $${OFFICESCRIPT}
+lldb -f $(INSTROOT)/$(LIBO_BIN_FOLDER)/soffice -- --norestore --nologo \
+    '"--accept=pipe,name=$(USER)\;urp"'
 endef
 
 # InstallModuleTarget class

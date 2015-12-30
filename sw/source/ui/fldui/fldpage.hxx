@@ -61,10 +61,10 @@ protected:
 
     void                Init();
     void                SavePos( const ListBox* pLst1,
-                                 const ListBox* pLst2 = 0,
-                                 const ListBox* pLst3 = 0);
-    void                RestorePos( ListBox* pLst1, ListBox* pLst2 = 0,
-                                    ListBox* pLst3 = 0 );
+                                 const ListBox* pLst2 = nullptr,
+                                 const ListBox* pLst3 = nullptr);
+    void                RestorePos( ListBox* pLst1, ListBox* pLst2 = nullptr,
+                                    ListBox* pLst3 = nullptr );
     void                EnableInsert(bool bEnable = true);
     inline bool         IsFieldEdit() const   { return m_bFieldEdit; }
 
@@ -85,7 +85,7 @@ public:
 
     virtual ~SwFieldPage();
 
-    virtual void        ActivatePage() SAL_OVERRIDE;
+    virtual void        ActivatePage() override;
 
     inline SwFieldMgr&    GetFieldMgr()         { return m_aMgr; }
     void                SetWrtShell( SwWrtShell* m_pWrtShell );

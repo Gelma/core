@@ -19,11 +19,11 @@
 #ifndef SC_VBA_PROPVALULE_HXX
 #define SC_VBA_PROPVALULE_HXX
 #include <ooo/vba/XPropValue.hpp>
-#include <cppuhelper/implbase1.hxx>
+#include <cppuhelper/implbase.hxx>
 
 #include <vbahelper/vbahelper.hxx>
 
-typedef ::cppu::WeakImplHelper1< ov::XPropValue > PropValueImpl_BASE;
+typedef ::cppu::WeakImplHelper< ov::XPropValue > PropValueImpl_BASE;
 
 class VBAHELPER_DLLPUBLIC PropListener
 {
@@ -43,10 +43,10 @@ public:
     ScVbaPropValue( PropListener* pListener );
 
     // Attributes
-    virtual css::uno::Any SAL_CALL getValue() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setValue( const css::uno::Any& _value ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Any SAL_CALL getValue() throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setValue( const css::uno::Any& _value ) throw (css::uno::RuntimeException, std::exception) override;
 
-    OUString SAL_CALL getDefaultPropertyName() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE { return OUString("Value"); }
+    OUString SAL_CALL getDefaultPropertyName() throw (css::uno::RuntimeException, std::exception) override { return OUString("Value"); }
 
 };
 #endif //SC_VBA_PROPVALULE_HXX

@@ -17,13 +17,12 @@
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
 
-
-#define _SOT_FORMATS_INCLUDE_SYSTEMFORMATS
 #include <tools/solar.h>
 
 #include <sot/exchange.hxx>
 #include <sot/formats.hxx>
-#include "sot/filelist.hxx"
+#include <sot/filelist.hxx>
+#include <sysformats.hxx>
 #include <comphelper/classids.hxx>
 
 #include <tools/globname.hxx>
@@ -1287,7 +1286,7 @@ static SotDestinationEntry_Impl const aDestinationArray[] =     \
         aEXCHG_DEST_SWDOC_FREE_AREA_WEB_Link                              \
     },                                                                    \
     {                                                                     \
-        static_cast<SotExchangeDest>(0xffff), 0, 0, 0, 0                        \
+        static_cast<SotExchangeDest>(0xffff), nullptr, nullptr, nullptr, nullptr                        \
     }                                                                     \
 };
 
@@ -1391,7 +1390,6 @@ static sal_uInt16 GetTransferableAction_Impl(
     {
         if( rDataFlavorExVector.size() )
         {
-            DataFlavor              aFlavor;
             const SotAction_Impl*   pArrayStart = pArray;
             SotClipboardFormatId    nId = pArray->nFormatId;
 

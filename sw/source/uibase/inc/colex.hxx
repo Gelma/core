@@ -52,15 +52,15 @@ protected:
     virtual void DrawPage(vcl::RenderContext& rRenderContext,
                           const Point& rPoint,
                           const bool bSecond,
-                          const bool bEnabled) SAL_OVERRIDE;
+                          const bool bEnabled) override;
 public:
     SwPageGridExample(vcl::Window* pPar)
         : SwPageExample(pPar)
-        , pGridItem(0)
+        , pGridItem(nullptr)
     {}
 
     virtual ~SwPageGridExample();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
     void UpdateExample( const SfxItemSet& rSet );
 };
 
@@ -74,12 +74,12 @@ protected:
     virtual void DrawPage(vcl::RenderContext& rRenderContext,
                           const Point& rPoint,
                           const bool bSecond,
-                          const bool bEnabled) SAL_OVERRIDE;
+                          const bool bEnabled) override;
 
 public:
     SwColExample(vcl::Window* pPar)
         : SwPageExample(pPar)
-        , pColMgr(0)
+        , pColMgr(nullptr)
     {
     }
 
@@ -95,18 +95,18 @@ class SW_DLLPUBLIC SwColumnOnlyExample : public vcl::Window
 private:
     Size        m_aWinSize;
 
-    Size        m_aFrmSize;
+    Size        m_aFrameSize;
     SwFormatCol    m_aCols;
 
 protected:
-    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) SAL_OVERRIDE;
+    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) override;
 
 public:
     SwColumnOnlyExample(vcl::Window*);
 
     void        SetColumns(const SwFormatCol& rCol);
 
-    virtual Size GetOptimalSize() const SAL_OVERRIDE;
+    virtual Size GetOptimalSize() const override;
 };
 
 #endif // INCLUDED_SW_SOURCE_UIBASE_INC_COLEX_HXX

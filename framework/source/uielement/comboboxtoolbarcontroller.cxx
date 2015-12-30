@@ -36,42 +36,40 @@
 #include <vcl/combobox.hxx>
 
 using namespace ::com::sun::star;
-using namespace ::com::sun::star::uno;
-using namespace ::com::sun::star::beans;
-using namespace ::com::sun::star::lang;
-using namespace ::com::sun::star::frame;
-using namespace ::com::sun::star::frame::status;
-using namespace ::com::sun::star::util;
+using namespace css::uno;
+using namespace css::beans;
+using namespace css::lang;
+using namespace css::frame;
+using namespace css::frame::status;
+using namespace css::util;
 
 namespace framework
 {
 
 // Wrapper class to notify controller about events from combobox.
-// Unfortunaltly the events are notifed through virtual methods instead
+// Unfortunately the events are notified through virtual methods instead
 // of Listeners.
 
 class ComboBoxControl : public ComboBox
 {
     public:
-        ComboBoxControl( vcl::Window* pParent, WinBits nStyle, IComboBoxListener* pComboBoxListener );
+        ComboBoxControl( vcl::Window* pParent, WinBits nStyle, ComboboxToolbarController* pComboboxToolbarController );
         virtual ~ComboBoxControl();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
-        virtual void Select() SAL_OVERRIDE;
-        virtual void DoubleClick() SAL_OVERRIDE;
-        virtual void Modify() SAL_OVERRIDE;
-        virtual void KeyInput( const ::KeyEvent& rKEvt ) SAL_OVERRIDE;
-        virtual void GetFocus() SAL_OVERRIDE;
-        virtual void LoseFocus() SAL_OVERRIDE;
-        virtual bool PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+        virtual void Select() override;
+        virtual void Modify() override;
+        virtual void GetFocus() override;
+        virtual void LoseFocus() override;
+        virtual bool PreNotify( NotifyEvent& rNEvt ) override;
 
     private:
-        IComboBoxListener* m_pComboBoxListener;
+        ComboboxToolbarController* m_pComboboxToolbarController;
 };
 
-ComboBoxControl::ComboBoxControl( vcl::Window* pParent, WinBits nStyle, IComboBoxListener* pComboBoxListener ) :
+ComboBoxControl::ComboBoxControl( vcl::Window* pParent, WinBits nStyle, ComboboxToolbarController* pComboboxToolbarController ) :
     ComboBox( pParent, nStyle )
-    , m_pComboBoxListener( pComboBoxListener )
+    , m_pComboboxToolbarController( pComboboxToolbarController )
 {
 }
 
@@ -82,57 +80,43 @@ ComboBoxControl::~ComboBoxControl()
 
 void ComboBoxControl::dispose()
 {
-    m_pComboBoxListener = 0;
+    m_pComboboxToolbarController = nullptr;
     ComboBox::dispose();
 }
 
 void ComboBoxControl::Select()
 {
     ComboBox::Select();
-    if ( m_pComboBoxListener )
-        m_pComboBoxListener->Select();
-}
-
-void ComboBoxControl::DoubleClick()
-{
-    ComboBox::DoubleClick();
-    if ( m_pComboBoxListener )
-        m_pComboBoxListener->DoubleClick();
+    if ( m_pComboboxToolbarController )
+        m_pComboboxToolbarController->Select();
 }
 
 void ComboBoxControl::Modify()
 {
     ComboBox::Modify();
-    if ( m_pComboBoxListener )
-        m_pComboBoxListener->Modify();
-}
-
-void ComboBoxControl::KeyInput( const ::KeyEvent& rKEvt )
-{
-    ComboBox::KeyInput( rKEvt );
-    if ( m_pComboBoxListener )
-        m_pComboBoxListener->KeyInput( rKEvt );
+    if ( m_pComboboxToolbarController )
+        m_pComboboxToolbarController->Modify();
 }
 
 void ComboBoxControl::GetFocus()
 {
     ComboBox::GetFocus();
-    if ( m_pComboBoxListener )
-        m_pComboBoxListener->GetFocus();
+    if ( m_pComboboxToolbarController )
+        m_pComboboxToolbarController->GetFocus();
 }
 
 void ComboBoxControl::LoseFocus()
 {
     ComboBox::LoseFocus();
-    if ( m_pComboBoxListener )
-        m_pComboBoxListener->LoseFocus();
+    if ( m_pComboboxToolbarController )
+        m_pComboboxToolbarController->LoseFocus();
 }
 
 bool ComboBoxControl::PreNotify( NotifyEvent& rNEvt )
 {
     bool bRet = false;
-    if ( m_pComboBoxListener )
-        bRet = m_pComboBoxListener->PreNotify( rNEvt );
+    if ( m_pComboboxToolbarController )
+        bRet = m_pComboboxToolbarController->PreNotify( rNEvt );
     if ( !bRet )
         bRet = ComboBox::PreNotify( rNEvt );
 
@@ -147,7 +131,7 @@ ComboboxToolbarController::ComboboxToolbarController(
     sal_Int32                             nWidth,
     const OUString&                       aCommand ) :
     ComplexToolbarController( rxContext, rFrame, pToolbar, nID, aCommand )
-    ,   m_pComboBox( 0 )
+    ,   m_pComboBox( nullptr )
 {
     m_pComboBox = VclPtr<ComboBoxControl>::Create( m_pToolbar, WB_DROPDOWN, this );
     if ( nWidth == 0 )
@@ -170,7 +154,7 @@ throw ( RuntimeException, std::exception )
 {
     SolarMutexGuard aSolarMutexGuard;
 
-    m_pToolbar->SetItemWindow( m_nID, 0 );
+    m_pToolbar->SetItemWindow( m_nID, nullptr );
     m_pComboBox.disposeAndClear();
 
     ComplexToolbarController::dispose();
@@ -200,17 +184,9 @@ void ComboboxToolbarController::Select()
     }
 }
 
-void ComboboxToolbarController::DoubleClick()
-{
-}
-
 void ComboboxToolbarController::Modify()
 {
     notifyTextChanged( m_pComboBox->GetText() );
-}
-
-void ComboboxToolbarController::KeyInput( const ::KeyEvent& )
-{
 }
 
 void ComboboxToolbarController::GetFocus()
@@ -252,7 +228,7 @@ bool ComboboxToolbarController::PreNotify( NotifyEvent& rNEvt )
     return false;
 }
 
-void ComboboxToolbarController::executeControlCommand( const ::com::sun::star::frame::ControlCommand& rControlCommand )
+void ComboboxToolbarController::executeControlCommand( const css::frame::ControlCommand& rControlCommand )
 {
     if ( rControlCommand.Command == "SetText" )
     {
@@ -284,10 +260,8 @@ void ComboboxToolbarController::executeControlCommand( const ::com::sun::star::f
                     m_pComboBox->InsertEntry( aList[j] );
 
                 // send notification
-                uno::Sequence< beans::NamedValue > aInfo( 1 );
-                aInfo[0].Name  = "List";
-                aInfo[0].Value <<= aList;
-                addNotifyInfo( OUString( "ListChanged" ),
+                uno::Sequence< beans::NamedValue > aInfo { { "List", css::uno::makeAny(aList) } };
+                addNotifyInfo( "ListChanged",
                                getDispatchFromCommand( m_aCommandURL ),
                                aInfo );
 
@@ -379,7 +353,7 @@ void ComboboxToolbarController::executeControlCommand( const ::com::sun::star::f
         {
             if ( rControlCommand.Arguments[i].Name == "Color" )
             {
-                com::sun::star::util::Color aColor(0);
+                css::util::Color aColor(0);
                 if ( rControlCommand.Arguments[i].Value >>= aColor )
                 {
                     ::Color aBackColor( static_cast< sal_uInt32 >( aColor ));
@@ -395,7 +369,7 @@ void ComboboxToolbarController::executeControlCommand( const ::com::sun::star::f
         {
             if ( rControlCommand.Arguments[i].Name == "Color" )
             {
-                com::sun::star::util::Color aColor(0);
+                css::util::Color aColor(0);
                 if ( rControlCommand.Arguments[i].Value >>= aColor )
                 {
                     ::Color aForeColor( static_cast< sal_uInt32 >( aColor ));

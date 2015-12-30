@@ -59,7 +59,7 @@ ScCsvDiff ScCsvLayoutData::GetDiff( const ScCsvLayoutData& rData ) const
 ScCsvControl::ScCsvControl( ScCsvControl& rParent ) :
     Control( &rParent, WB_TABSTOP | WB_NODIALOGCONTROL ),
     mrData( rParent.GetLayoutData() ),
-    mxAccessible( NULL ),
+    mxAccessible( nullptr ),
     mbValidGfx( false )
 {
 }
@@ -67,7 +67,7 @@ ScCsvControl::ScCsvControl( ScCsvControl& rParent ) :
 ScCsvControl::ScCsvControl( vcl::Window* pParent, const ScCsvLayoutData& rData, WinBits nBits ) :
     Control( pParent, nBits ),
     mrData( rData ),
-    mxAccessible( NULL ),
+    mxAccessible( nullptr ),
     mbValidGfx( false )
 {
 }
@@ -298,10 +298,10 @@ ScMoveMode ScCsvControl::GetVertDirection( sal_uInt16 nCode, bool bHomeEnd )
 
 // accessibility --------------------------------------------------------------
 
-ScCsvControl::XAccessibleRef ScCsvControl::CreateAccessible()
+css::uno::Reference< css::accessibility::XAccessible > ScCsvControl::CreateAccessible()
 {
     mxAccessible = ImplCreateAccessible().get();
-    return XAccessibleRef(mxAccessible.get());
+    return css::uno::Reference< css::accessibility::XAccessible >(mxAccessible.get());
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

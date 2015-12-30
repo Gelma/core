@@ -53,8 +53,8 @@ void SwEditShell::HandleUndoRedoContext(::sw::UndoRedoContext & rContext)
         return;
     }
 
-    SwFrameFormat * pSelFormat(0);
-    SdrMarkList * pMarkList(0);
+    SwFrameFormat * pSelFormat(nullptr);
+    SdrMarkList * pMarkList(nullptr);
     rContext.GetSelections(pSelFormat, pMarkList);
 
     if (pSelFormat) // select frame
@@ -68,17 +68,17 @@ void SwEditShell::HandleUndoRedoContext(::sw::UndoRedoContext & rContext)
         else
         {
             Point aPt;
-            SwFlyFrm *const pFly =
-                static_cast<SwFlyFrameFormat*>(pSelFormat)->GetFrm(& aPt);
+            SwFlyFrame *const pFly =
+                static_cast<SwFlyFrameFormat*>(pSelFormat)->GetFrame(& aPt);
             if (pFly)
             {
                 // fdo#36681: Invalidate the content and layout to refresh
                 // the picture anchoring properly
-                SwPageFrm* pPageFrm = pFly->FindPageFrmOfAnchor();
-                pPageFrm->InvalidateFlyLayout();
-                pPageFrm->InvalidateContent();
+                SwPageFrame* pPageFrame = pFly->FindPageFrameOfAnchor();
+                pPageFrame->InvalidateFlyLayout();
+                pPageFrame->InvalidateContent();
 
-                static_cast<SwFEShell*>(this)->SelectFlyFrm(*pFly, true);
+                static_cast<SwFEShell*>(this)->SelectFlyFrame(*pFly, true);
             }
         }
     }
@@ -86,11 +86,11 @@ void SwEditShell::HandleUndoRedoContext(::sw::UndoRedoContext & rContext)
     {
         lcl_SelectSdrMarkList( this, pMarkList );
     }
-    else if (GetCrsr()->GetNext() != GetCrsr())
+    else if (GetCursor()->GetNext() != GetCursor())
     {
         // current cursor is the last one:
         // go around the ring, to the first cursor
-        GoNextCrsr();
+        GoNextCursor();
     }
 }
 
@@ -113,8 +113,8 @@ bool SwEditShell::Undo(sal_uInt16 const nCount)
         // Keep Cursor - so that we're able to set it at
         // the same position for autoformat or autocorrection
         SwUndoId nLastUndoId(UNDO_EMPTY);
-        GetLastUndoInfo(0, & nLastUndoId);
-        const bool bRestoreCrsr = nCount == 1
+        GetLastUndoInfo(nullptr, & nLastUndoId);
+        const bool bRestoreCursor = nCount == 1
                                   && ( UNDO_AUTOFORMAT == nLastUndoId
                                        || UNDO_AUTOCORRECT == nLastUndoId
                                        || UNDO_SETDEFTATTR == nLastUndoId );
@@ -131,16 +131,16 @@ bool SwEditShell::Undo(sal_uInt16 const nCount)
                 bRet = GetDoc()->GetIDocumentUndoRedo().Undo()
                     || bRet;
             }
-        } catch (const ::com::sun::star::uno::Exception & e) {
+        } catch (const css::uno::Exception & e) {
             SAL_WARN("sw.core",
                     "SwEditShell::Undo(): exception caught: " << e.Message);
         }
 
-        if (bRestoreCrsr)
+        if (bRestoreCursor)
         {   // fdo#39003 Pop does not touch the rest of the cursor ring
             KillPams(); // so call this first to get rid of unwanted cursors
         }
-        Pop( !bRestoreCrsr );
+        Pop( !bRestoreCursor );
 
         GetDoc()->getIDocumentRedlineAccess().SetRedlineMode( eOld );
         GetDoc()->getIDocumentRedlineAccess().CompressRedlines();
@@ -172,8 +172,8 @@ bool SwEditShell::Redo(sal_uInt16 const nCount)
         ClearMark();
 
         SwUndoId nFirstRedoId(UNDO_EMPTY);
-        GetDoc()->GetIDocumentUndoRedo().GetFirstRedoInfo(0, & nFirstRedoId);
-        const bool bRestoreCrsr = nCount == 1 && UNDO_SETDEFTATTR == nFirstRedoId;
+        GetDoc()->GetIDocumentUndoRedo().GetFirstRedoInfo(nullptr, & nFirstRedoId);
+        const bool bRestoreCursor = nCount == 1 && UNDO_SETDEFTATTR == nFirstRedoId;
         Push();
 
         // Destroy stored TableBoxPtr. A dection is only permitted for the new "Box"!
@@ -187,12 +187,12 @@ bool SwEditShell::Redo(sal_uInt16 const nCount)
                 bRet = GetDoc()->GetIDocumentUndoRedo().Redo()
                     || bRet;
             }
-        } catch (const ::com::sun::star::uno::Exception & e) {
+        } catch (const css::uno::Exception & e) {
             SAL_WARN("sw.core",
                     "SwEditShell::Redo(): exception caught: " << e.Message);
         }
 
-        Pop( !bRestoreCrsr );
+        Pop( !bRestoreCursor );
 
         GetDoc()->getIDocumentRedlineAccess().SetRedlineMode( eOld );
         GetDoc()->getIDocumentRedlineAccess().CompressRedlines();
@@ -214,10 +214,10 @@ bool SwEditShell::Repeat(sal_uInt16 const nCount)
     StartAllAction();
 
     try {
-        ::sw::RepeatContext context(*GetDoc(), *GetCrsr());
+        ::sw::RepeatContext context(*GetDoc(), *GetCursor());
         bRet = GetDoc()->GetIDocumentUndoRedo().Repeat( context, nCount )
             || bRet;
-    } catch (const ::com::sun::star::uno::Exception & e) {
+    } catch (const css::uno::Exception & e) {
         SAL_WARN("sw.core",
                 "SwEditShell::Repeat(): exception caught: " << e.Message);
     }
@@ -229,10 +229,10 @@ bool SwEditShell::Repeat(sal_uInt16 const nCount)
 static void lcl_SelectSdrMarkList( SwEditShell* pShell,
                             const SdrMarkList* pSdrMarkList )
 {
-    OSL_ENSURE( pShell != NULL, "need shell!" );
-    OSL_ENSURE( pSdrMarkList != NULL, "need mark list" );
+    OSL_ENSURE( pShell != nullptr, "need shell!" );
+    OSL_ENSURE( pSdrMarkList != nullptr, "need mark list" );
 
-    if( pShell->ISA( SwFEShell ) )
+    if( dynamic_cast<const SwFEShell*>( pShell) !=  nullptr )
     {
         SwFEShell* pFEShell = static_cast<SwFEShell*>( pShell );
         bool bFirst = true;

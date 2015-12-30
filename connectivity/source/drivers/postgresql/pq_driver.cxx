@@ -76,15 +76,7 @@ OUString DriverGetImplementationName()
 
 Sequence< OUString > DriverGetSupportedServiceNames()
 {
-    static Sequence< OUString > *p;
-    if( ! p )
-    {
-        MutexGuard guard( osl::Mutex::getGlobalMutex() );
-        OUString tmp( "com.sun.star.sdbc.Driver" );
-        static Sequence< OUString > instance( &tmp,1 );
-        p = &instance;
-    }
-    return *p;
+    return Sequence< OUString > { "com.sun.star.sdbc.Driver" };
 }
 
 Reference< XConnection > Driver::connect(
@@ -99,7 +91,7 @@ Reference< XConnection > Driver::connect(
     seq[1] <<= info;
     return Reference< XConnection> (
         m_smgr->createInstanceWithArgumentsAndContext(
-            OUString("org.openoffice.comp.connectivity.pq.Connection.noext" ),
+            "org.openoffice.comp.connectivity.pq.Connection.noext",
             seq, m_ctx ),
         UNO_QUERY );
 }
@@ -200,20 +192,20 @@ public:
     // XSingleComponentFactory
     virtual Reference< XInterface > SAL_CALL createInstanceWithContext(
         Reference< XComponentContext > const & xContext )
-        throw (Exception, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (Exception, RuntimeException, std::exception) override;
     virtual Reference< XInterface > SAL_CALL createInstanceWithArgumentsAndContext(
         Sequence< Any > const & rArguments,
         Reference< XComponentContext > const & xContext )
-        throw (Exception, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (Exception, RuntimeException, std::exception) override;
 
     // XServiceInfo
     OUString SAL_CALL getImplementationName()
-        throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw(::com::sun::star::uno::RuntimeException, std::exception) override
     {
         return m_implName;
     }
     sal_Bool SAL_CALL supportsService(const OUString& ServiceName)
-        throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw(::com::sun::star::uno::RuntimeException, std::exception) override
     {
         for( int i = 0 ; i < m_serviceNames.getLength() ; i ++ )
             if( m_serviceNames[i] == ServiceName )
@@ -221,13 +213,13 @@ public:
         return sal_False;
     }
     Sequence< OUString > SAL_CALL getSupportedServiceNames()
-        throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw(::com::sun::star::uno::RuntimeException, std::exception) override
     {
         return m_serviceNames;
     }
 
     // XComponent
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
 private:
     cppu::ComponentFactoryFunc     m_create;
@@ -270,7 +262,7 @@ void OOneInstanceComponentFactory::disposing()
     Reference< XComponent > rComp;
     {
         MutexGuard guard( osl::Mutex::getGlobalMutex() );
-        rComp = Reference< XComponent >( m_theInstance, UNO_QUERY );
+        rComp.set( m_theInstance, UNO_QUERY );
         m_theInstance.clear();
     }
     if( rComp.is() )
@@ -293,10 +285,10 @@ static const struct cppu::ImplementationEntry g_entries[] =
 {
     {
         pq_sdbc_driver::DriverCreateInstance, pq_sdbc_driver::DriverGetImplementationName,
-        pq_sdbc_driver::DriverGetSupportedServiceNames, 0,
-        0 , 0
+        pq_sdbc_driver::DriverGetSupportedServiceNames, nullptr,
+        nullptr , 0
     },
-    { 0, 0, 0, 0, 0, 0 }
+    { nullptr, nullptr, nullptr, nullptr, nullptr, 0 }
 };
 
 extern "C"
@@ -308,7 +300,7 @@ SAL_DLLPUBLIC_EXPORT void * SAL_CALL postgresql_sdbc_component_getFactory(
     // need to extract the defaultcontext, because the way, sdbc
     // bypasses the servicemanager, does not allow to use the
     // XSingleComponentFactory interface ...
-    void * pRet = 0;
+    void * pRet = nullptr;
     Reference< XSingleComponentFactory > xFactory;
     Reference< com::sun::star::lang::XMultiServiceFactory > xSmgr(
         static_cast< XInterface * >(pServiceManager),

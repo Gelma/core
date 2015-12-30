@@ -37,27 +37,25 @@ class AnimationAudioNode : public BaseNode, public AnimationEventHandler
 {
 public:
     AnimationAudioNode(
-        ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XAnimationNode> const& xNode,
+        css::uno::Reference<css::animations::XAnimationNode> const& xNode,
         ::boost::shared_ptr<BaseContainerNode> const& pParent,
         NodeContext const& rContext );
 
 protected:
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
 private:
-    virtual void activate_st() SAL_OVERRIDE;
-    virtual void deactivate_st( NodeState eDestState ) SAL_OVERRIDE;
-    virtual bool hasPendingAnimation() const SAL_OVERRIDE;
+    virtual void activate_st() override;
+    virtual void deactivate_st( NodeState eDestState ) override;
+    virtual bool hasPendingAnimation() const override;
 
     /// overridden, because we need to deal with STOPAUDIO commands
-    virtual bool handleAnimationEvent( const AnimationNodeSharedPtr& rNode ) SAL_OVERRIDE;
+    virtual bool handleAnimationEvent( const AnimationNodeSharedPtr& rNode ) override;
 
 private:
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XAudio >  mxAudioNode;
-    OUString                             maSoundURL;
-    mutable SoundPlayerSharedPtr                mpPlayer;
+    css::uno::Reference<css::animations::XAudio >  mxAudioNode;
+    OUString                                       maSoundURL;
+    mutable SoundPlayerSharedPtr                   mpPlayer;
 
     void createPlayer() const;
     void resetPlayer() const;

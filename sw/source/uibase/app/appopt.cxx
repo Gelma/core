@@ -81,17 +81,17 @@ SfxItemSet*  SwModule::CreateItemSet( sal_uInt16 nId )
         // no MakeUsrPref, because only options from textdoks can be used here
         SwView* pAppView = GetView();
         if(pAppView && pAppView->GetViewFrame() != SfxViewFrame::Current())
-            pAppView = 0;
+            pAppView = nullptr;
         if(pAppView)
         {
         // if Text then no WebView and vice versa
-            bool bWebView = 0 != PTR_CAST(SwWebView, pAppView);
+            bool bWebView = dynamic_cast<SwWebView*>( pAppView ) !=  nullptr;
             if( (bWebView &&  !bTextDialog) ||(!bWebView &&  bTextDialog))
             {
                 aViewOpt = *pAppView->GetWrtShell().GetViewOptions();
             }
             else
-                pAppView = 0; // with View, there's nothing to win here
+                pAppView = nullptr; // with View, there's nothing to win here
         }
 
     // Options/Edit
@@ -148,7 +148,7 @@ SfxItemSet*  SwModule::CreateItemSet( sal_uInt16 nId )
     else
     {
         SvtLinguConfig aLinguCfg;
-        com::sun::star::lang::Locale aLocale;
+        css::lang::Locale aLocale;
         LanguageType nLang;
 
         using namespace ::com::sun::star::i18n::ScriptType;
@@ -170,7 +170,7 @@ SfxItemSet*  SwModule::CreateItemSet( sal_uInt16 nId )
     }
     if(bTextDialog)
         pRet->Put(SwPtrItem(FN_PARAM_STDFONTS, GetStdFontConfig()));
-    if( PTR_CAST( SwPagePreview, SfxViewShell::Current())!=0)
+    if( dynamic_cast<SwPagePreview*>( SfxViewShell::Current())!=nullptr )
     {
         SfxBoolItem aBool(SfxBoolItem(SID_PRINTPREVIEW, true));
         pRet->Put(aBool);
@@ -219,7 +219,7 @@ SfxItemSet*  SwModule::CreateItemSet( sal_uInt16 nId )
     // Options for PrintTabPage
     const SwPrintData* pOpt = pAppView ?
                         &pAppView->GetWrtShell().getIDocumentDeviceAccess().getPrintData() :
-                        0;
+                        nullptr;
 
     if(!pOpt)
         pOpt = GetPrtOptions(!bTextDialog);
@@ -243,13 +243,13 @@ void SwModule::ApplyItemSet( sal_uInt16 nId, const SfxItemSet& rSet )
     bool bTextDialog = nId == SID_SW_EDITOPTIONS;
     SwView* pAppView = GetView();
     if(pAppView && pAppView->GetViewFrame() != SfxViewFrame::Current())
-        pAppView = 0;
+        pAppView = nullptr;
     if(pAppView)
     {
         // the text dialog mustn't apply data to the web view and vice versa
-        bool bWebView = 0 != PTR_CAST(SwWebView, pAppView);
+        bool bWebView = dynamic_cast<SwWebView*>( pAppView ) !=  nullptr;
         if(bWebView == bTextDialog)
-            pAppView = 0;
+            pAppView = nullptr;
     }
 
     SwViewOption aViewOpt = *GetUsrPref(!bTextDialog);
@@ -257,7 +257,7 @@ void SwModule::ApplyItemSet( sal_uInt16 nId, const SfxItemSet& rSet )
 
     const SfxPoolItem* pItem;
     SfxBindings *pBindings = pAppView ? &pAppView->GetViewFrame()->GetBindings()
-                                 : NULL;
+                                 : nullptr;
 
     // Interpret the page Documentview
     if( SfxItemState::SET == rSet.GetItemState( FN_PARAM_DOCDISP, false, &pItem ))
@@ -355,8 +355,7 @@ void SwModule::ApplyItemSet( sal_uInt16 nId, const SfxItemSet& rSet )
         aViewOpt.SetSynchronize(pGridItem->GetSynchronize());
         if( aViewOpt.IsGridVisible() != pGridItem->GetGridVisible() )
             aViewOpt.SetGridVisible( pGridItem->GetGridVisible());
-        Size aSize = Size( pGridItem->GetFieldDrawX()  ,
-                            pGridItem->GetFieldDrawY()  );
+        Size aSize( pGridItem->GetFieldDrawX(), pGridItem->GetFieldDrawY()  );
         if( aViewOpt.GetSnapSize() != aSize )
             aViewOpt.SetSnapSize( aSize );
         short nDiv = (short)pGridItem->GetFieldDivisionX() ;
@@ -471,7 +470,7 @@ VclPtr<SfxTabPage> SwModule::CreateTabPage( sal_uInt16 nId, vcl::Window* pParent
             if(pCurrView)
             {
                 // if text then not WebView and vice versa
-                bool bWebView = 0 != PTR_CAST(SwWebView, pCurrView);
+                bool bWebView = dynamic_cast<SwWebView*>( pCurrView ) !=  nullptr;
                 if( (bWebView &&  RID_SW_TP_HTML_OPTTABLE_PAGE == nId) ||
                     (!bWebView &&  RID_SW_TP_HTML_OPTTABLE_PAGE != nId) )
                 {

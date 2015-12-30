@@ -58,7 +58,7 @@ public:
         : m_sNone(rNone)
     {
     }
-    virtual OUString filter(const OUString &rText) SAL_OVERRIDE;
+    virtual OUString filter(const OUString &rText) override;
 };
 
 class SwCaptionDialog : public SvxStandardDialog
@@ -91,15 +91,15 @@ class SwCaptionDialog : public SvxStandardDialog
     bool         bCopyAttributes;
     bool        bOrderNumberingFirst; //#i61007# order of captions
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameAccess >    xNameAccess;
-    ::com::sun::star::uno::Reference< ::com::sun::star::container::XNamed >         xNamed;
+    css::uno::Reference< css::container::XNameAccess >    xNameAccess;
 
-    DECL_LINK(SelectHdl, void *);
-    DECL_LINK(ModifyHdl, void *);
+    DECL_LINK_TYPED(SelectHdl, ComboBox&, void);
+    DECL_LINK_TYPED(SelectListBoxHdl, ListBox&, void);
+    DECL_LINK_TYPED(ModifyHdl, Edit&, void);
     DECL_LINK_TYPED(OptionHdl, Button *, void);
     DECL_LINK_TYPED(CaptionHdl, Button *, void);
 
-    virtual void Apply() SAL_OVERRIDE;
+    virtual void Apply() override;
 
     void    DrawSample();
     void    ApplyCaptionOrder(); //#i61007# order of captions
@@ -108,7 +108,7 @@ class SwCaptionDialog : public SvxStandardDialog
 public:
      SwCaptionDialog( vcl::Window *pParent, SwView &rV );
     virtual ~SwCaptionDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 };
 
 #endif

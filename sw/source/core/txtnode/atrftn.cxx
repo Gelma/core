@@ -119,8 +119,8 @@ namespace {
 
 SwFormatFootnote::SwFormatFootnote( bool bEndNote )
     : SfxPoolItem( RES_TXTATR_FTN )
-    , SwModify(0)
-    , m_pTextAttr(0)
+    , SwModify(nullptr)
+    , m_pTextAttr(nullptr)
     , m_nNumber(0)
     , m_bEndNote(bEndNote)
 {
@@ -148,7 +148,7 @@ void SwFormatFootnote::Modify(SfxPoolItem const* pOld, SfxPoolItem const* pNew)
     NotifyClients(pOld, pNew);
     if (pOld && (RES_REMOVE_UNO_OBJECT == pOld->Which()))
     {   // invalidate cached UNO object
-        SetXFootnote(css::uno::Reference<css::text::XFootnote>(0));
+        SetXFootnote(css::uno::Reference<css::text::XFootnote>(nullptr));
     }
 }
 
@@ -165,7 +165,7 @@ void SwFormatFootnote::SetEndNote( bool b )
     {
         if ( GetTextFootnote() )
         {
-            GetTextFootnote()->DelFrms(0);
+            GetTextFootnote()->DelFrames(nullptr);
         }
         m_bEndNote = b;
     }
@@ -208,7 +208,7 @@ OUString SwFormatFootnote::GetViewNumStr( const SwDoc& rDoc, bool bInclStrings )
         bool bMakeNum = true;
         const SwSectionNode* pSectNd = m_pTextAttr
                     ? SwUpdFootnoteEndNtAtEnd::FindSectNdWithEndAttr( *m_pTextAttr )
-                    : 0;
+                    : nullptr;
 
         if( pSectNd )
         {
@@ -248,8 +248,8 @@ OUString SwFormatFootnote::GetViewNumStr( const SwDoc& rDoc, bool bInclStrings )
 
 SwTextFootnote::SwTextFootnote( SwFormatFootnote& rAttr, sal_Int32 nStartPos )
     : SwTextAttr( rAttr, nStartPos )
-    , m_pStartNode( 0 )
-    , m_pTextNode( 0 )
+    , m_pStartNode( nullptr )
+    , m_pTextNode( nullptr )
     , m_nSeqNo( USHRT_MAX )
 {
     rAttr.m_pTextAttr = this;
@@ -258,7 +258,7 @@ SwTextFootnote::SwTextFootnote( SwFormatFootnote& rAttr, sal_Int32 nStartPos )
 
 SwTextFootnote::~SwTextFootnote()
 {
-    SetStartNode( 0 );
+    SetStartNode( nullptr );
 }
 
 void SwTextFootnote::SetStartNode( const SwNodeIndex *pNewNode, bool bDelNode )
@@ -307,9 +307,9 @@ void SwTextFootnote::SetStartNode( const SwNodeIndex *pNewNode, bool bDelNode )
             }
             else
                 // Werden die Nodes nicht geloescht mussen sie bei den Seiten
-                // abmeldet (Frms loeschen) werden, denn sonst bleiben sie
+                // abmeldet (Frames loeschen) werden, denn sonst bleiben sie
                 // stehen (Undo loescht sie nicht!)
-                DelFrms( 0 );
+                DelFrames( nullptr );
         }
         DELETEZ( m_pStartNode );
 
@@ -341,7 +341,7 @@ void SwTextFootnote::SetNumber( const sal_uInt16 nNewNum, const OUString &sNumSt
 
     OSL_ENSURE( m_pTextNode, "SwTextFootnote: where is my TextNode?" );
     SwNodes &rNodes = m_pTextNode->GetDoc()->GetNodes();
-    m_pTextNode->ModifyNotification( 0, &rFootnote );
+    m_pTextNode->ModifyNotification( nullptr, &rFootnote );
     if ( m_pStartNode )
     {
         // must iterate over all TextNodes because of footnotes on other pages
@@ -352,7 +352,7 @@ void SwTextFootnote::SetNumber( const sal_uInt16 nNewNum, const OUString &sNumSt
             // Es koennen ja auch Grafiken in der Fussnote stehen ...
             SwNode* pNd;
             if( ( pNd = rNodes[ nSttIdx ] )->IsTextNode() )
-                static_cast<SwTextNode*>(pNd)->ModifyNotification( 0, &rFootnote );
+                static_cast<SwTextNode*>(pNd)->ModifyNotification( nullptr, &rFootnote );
         }
     }
 }
@@ -384,7 +384,7 @@ void SwTextFootnote::CopyFootnote(
         SwNodeIndex aEnd( *aStart.GetNode().EndOfSectionNode() );
         sal_uLong  nDestLen = aEnd.GetIndex() - aStart.GetIndex() - 1;
 
-        m_pTextNode->GetDoc()->GetDocumentContentOperationsManager().CopyWithFlyInFly( aRg, 0, aEnd, NULL, true );
+        m_pTextNode->GetDoc()->GetDocumentContentOperationsManager().CopyWithFlyInFly( aRg, 0, aEnd );
 
         // in case the destination section was not empty, delete the old nodes
         // before:   Src: SxxxE,  Dst: SnE
@@ -423,7 +423,7 @@ void SwTextFootnote::MakeNewTextSection( SwNodes& rNodes )
         nPoolId = RES_POOLCOLL_FOOTNOTE;
     }
 
-    if( 0 == (pFormatColl = pInfo->GetFootnoteTextColl() ) )
+    if( nullptr == (pFormatColl = pInfo->GetFootnoteTextColl() ) )
         pFormatColl = rNodes.GetDoc()->getIDocumentStylePoolAccess().GetTextCollFromPool( nPoolId );
 
     SwStartNode* pSttNd = rNodes.MakeTextSection( SwNodeIndex( rNodes.GetEndOfInserts() ),
@@ -431,58 +431,58 @@ void SwTextFootnote::MakeNewTextSection( SwNodes& rNodes )
     m_pStartNode = new SwNodeIndex( *pSttNd );
 }
 
-void SwTextFootnote::DelFrms( const SwFrm* pSib )
+void SwTextFootnote::DelFrames( const SwFrame* pSib )
 {
     // delete the FootnoteFrames from the pages
     OSL_ENSURE( m_pTextNode, "SwTextFootnote: where is my TextNode?" );
     if ( !m_pTextNode )
         return;
 
-    const SwRootFrm* pRoot = pSib ? pSib->getRootFrm() : 0;
-    bool bFrmFnd = false;
+    const SwRootFrame* pRoot = pSib ? pSib->getRootFrame() : nullptr;
+    bool bFrameFnd = false;
     {
-        SwIterator<SwContentFrm,SwTextNode> aIter( *m_pTextNode );
-        for( SwContentFrm* pFnd = aIter.First(); pFnd; pFnd = aIter.Next() )
+        SwIterator<SwContentFrame,SwTextNode> aIter( *m_pTextNode );
+        for( SwContentFrame* pFnd = aIter.First(); pFnd; pFnd = aIter.Next() )
         {
-            if( pRoot != pFnd->getRootFrm() && pRoot )
+            if( pRoot != pFnd->getRootFrame() && pRoot )
                 continue;
-            SwPageFrm* pPage = pFnd->FindPageFrm();
+            SwPageFrame* pPage = pFnd->FindPageFrame();
             if( pPage )
             {
                 pPage->RemoveFootnote( pFnd, this );
-                bFrmFnd = true;
+                bFrameFnd = true;
             }
         }
     }
     //JP 13.05.97: falls das Layout vorm loeschen der Fussnoten entfernt
     //              wird, sollte man das ueber die Fussnote selbst tun
-    if ( !bFrmFnd && m_pStartNode )
+    if ( !bFrameFnd && m_pStartNode )
     {
         SwNodeIndex aIdx( *m_pStartNode );
         SwContentNode* pCNd = m_pTextNode->GetNodes().GoNext( &aIdx );
         if( pCNd )
         {
-            SwIterator<SwContentFrm,SwContentNode> aIter( *pCNd );
-            for( SwContentFrm* pFnd = aIter.First(); pFnd; pFnd = aIter.Next() )
+            SwIterator<SwContentFrame,SwContentNode> aIter( *pCNd );
+            for( SwContentFrame* pFnd = aIter.First(); pFnd; pFnd = aIter.Next() )
             {
-                if( pRoot != pFnd->getRootFrm() && pRoot )
+                if( pRoot != pFnd->getRootFrame() && pRoot )
                     continue;
-                SwPageFrm* pPage = pFnd->FindPageFrm();
+                SwPageFrame* pPage = pFnd->FindPageFrame();
 
-                SwFrm *pFrm = pFnd->GetUpper();
-                while ( pFrm && !pFrm->IsFootnoteFrm() )
-                    pFrm = pFrm->GetUpper();
+                SwFrame *pFrame = pFnd->GetUpper();
+                while ( pFrame && !pFrame->IsFootnoteFrame() )
+                    pFrame = pFrame->GetUpper();
 
-                SwFootnoteFrm *pFootnote = static_cast<SwFootnoteFrm*>(pFrm);
+                SwFootnoteFrame *pFootnote = static_cast<SwFootnoteFrame*>(pFrame);
                 while ( pFootnote && pFootnote->GetMaster() )
                     pFootnote = pFootnote->GetMaster();
                 OSL_ENSURE( pFootnote->GetAttr() == this, "Footnote mismatch error." );
 
                 while ( pFootnote )
                 {
-                    SwFootnoteFrm *pFoll = pFootnote->GetFollow();
+                    SwFootnoteFrame *pFoll = pFootnote->GetFollow();
                     pFootnote->Cut();
-                    SwFrm::DestroyFrm(pFootnote);
+                    SwFrame::DestroyFrame(pFootnote);
                     pFootnote = pFoll;
                 }
 
@@ -522,7 +522,7 @@ void SwTextFootnote::SetUniqueSeqRefNo( SwDoc& rDoc )
 {
     std::set<sal_uInt16> aUsedNums;
     std::vector<SwTextFootnote*> badRefNums;
-    ::lcl_FillUsedFootnoteRefNumbers(rDoc, NULL, aUsedNums, badRefNums);
+    ::lcl_FillUsedFootnoteRefNumbers(rDoc, nullptr, aUsedNums, badRefNums);
     std::vector<sal_uInt16> aUnused;
     ::lcl_FillUnusedSeqRefNums(aUnused, aUsedNums, badRefNums.size());
 

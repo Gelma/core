@@ -27,21 +27,21 @@ namespace rptxml
     class ORptFilter;
     class OXMLCondPrtExpr : public SvXMLImportContext
     {
-        ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >   m_xComponent;
-        OXMLCondPrtExpr(const OXMLCondPrtExpr&) SAL_DELETED_FUNCTION;
-        void operator =(const OXMLCondPrtExpr&) SAL_DELETED_FUNCTION;
+        css::uno::Reference< css::beans::XPropertySet >   m_xComponent;
+        OXMLCondPrtExpr(const OXMLCondPrtExpr&) = delete;
+        void operator =(const OXMLCondPrtExpr&) = delete;
     public:
 
         OXMLCondPrtExpr( ORptFilter& _rImport
                     ,sal_uInt16 nPrfx
                     ,const OUString& rLName
-                    ,const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & _xAttrList
-                    ,const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& _xComponent);
+                    ,const css::uno::Reference< css::xml::sax::XAttributeList > & _xAttrList
+                    ,const css::uno::Reference< css::beans::XPropertySet >& _xComponent);
         virtual ~OXMLCondPrtExpr();
 
         // This method is called for all characters that are contained in the
         // current element. The default is to ignore them.
-        virtual void Characters( const OUString& rChars ) SAL_OVERRIDE;
+        virtual void Characters( const OUString& rChars ) override;
     };
 
 } // namespace rptxml

@@ -30,7 +30,7 @@ class SfxBindings;
 
 // class SvxFontMenuControl ----------------------------------------------
 
-class SVX_DLLPUBLIC SAL_WARN_UNUSED SvxFontMenuControl : public SfxMenuControl, public SfxListener
+class SAL_WARN_UNUSED SVX_DLLPUBLIC SvxFontMenuControl : public SfxMenuControl, public SfxListener
 {
 private:
     FontNameMenu*   pMenu;
@@ -39,8 +39,8 @@ private:
     SVX_DLLPRIVATE void         FillMenu();
     DECL_LINK_TYPED( MenuSelect, FontNameMenu *, void);
     SVX_DLLPRIVATE virtual void StateChanged( sal_uInt16 nSID, SfxItemState eState,
-                                  const SfxPoolItem* pState ) SAL_OVERRIDE;
-    SVX_DLLPRIVATE virtual void     Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+                                  const SfxPoolItem* pState ) override;
+    SVX_DLLPRIVATE virtual void     Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
 public:
     SvxFontMenuControl( sal_uInt16 nId, Menu&, SfxBindings& );

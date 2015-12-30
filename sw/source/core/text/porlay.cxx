@@ -124,11 +124,11 @@ static  bool lcl_HasStrongLTR ( const OUString& rText, sal_Int32 nStart, sal_Int
 SwLineLayout::~SwLineLayout()
 {
     Truncate();
-    delete pNext;
+    delete m_pNext;
     if( pBlink )
         pBlink->Delete( this );
-    delete pLLSpaceAdd;
-    delete pKanaComp;
+    delete m_pLLSpaceAdd;
+    delete m_pKanaComp;
 }
 
 SwLinePortion *SwLineLayout::Insert( SwLinePortion *pIns )
@@ -182,7 +182,7 @@ bool SwLineLayout::Format( SwTextFormatInfo &rInf )
 SwMarginPortion *SwLineLayout::CalcLeftMargin()
 {
     SwMarginPortion *pLeft = (GetPortion() && GetPortion()->IsMarginPortion()) ?
-        static_cast<SwMarginPortion *>(GetPortion()) : 0;
+        static_cast<SwMarginPortion *>(GetPortion()) : nullptr;
     if( !GetPortion() )
          SetPortion(SwTextPortion::CopyLinePortion(*this));
     if( !pLeft )
@@ -197,7 +197,7 @@ SwMarginPortion *SwLineLayout::CalcLeftMargin()
         pLeft->Width( 0 );
         pLeft->SetLen( 0 );
         pLeft->SetAscent( 0 );
-        pLeft->SetPortion( NULL );
+        pLeft->SetPortion( nullptr );
         pLeft->SetFixWidth(0);
     }
 
@@ -213,14 +213,14 @@ SwMarginPortion *SwLineLayout::CalcLeftMargin()
                 GetKanaComp().pop_front();
         }
         else
-            pPos = 0;
+            pPos = nullptr;
     }
     return pLeft;
 }
 
 void SwLineLayout::InitSpaceAdd()
 {
-    if ( !pLLSpaceAdd )
+    if ( !m_pLLSpaceAdd )
         CreateSpaceAdd();
     else
         SetLLSpaceAdd( 0, 0 );
@@ -228,7 +228,7 @@ void SwLineLayout::InitSpaceAdd()
 
 void SwLineLayout::CreateSpaceAdd( const long nInit )
 {
-    pLLSpaceAdd = new std::vector<long>;
+    m_pLLSpaceAdd = new std::vector<long>;
     SetLLSpaceAdd( nInit, 0 );
 }
 
@@ -260,7 +260,7 @@ void SwLineLayout::CalcLine( SwTextFormatter &rLine, SwTextFormatInfo &rInf )
     SetHanging( false );
 
     bool bTmpDummy = !GetLen();
-    SwFlyCntPortion* pFlyCnt = 0;
+    SwFlyCntPortion* pFlyCnt = nullptr;
     if( bTmpDummy )
     {
         nFlyAscent = 0;
@@ -270,7 +270,7 @@ void SwLineLayout::CalcLine( SwTextFormatter &rLine, SwTextFormatInfo &rInf )
 
     // #i3952#
     const bool bIgnoreBlanksAndTabsForLineHeightCalculation =
-            rInf.GetTextFrm()->GetNode()->getIDocumentSettingAccess()->get(DocumentSettingId::IGNORE_TABS_AND_BLANKS_FOR_LINE_CALCULATION);
+            rInf.GetTextFrame()->GetNode()->getIDocumentSettingAccess()->get(DocumentSettingId::IGNORE_TABS_AND_BLANKS_FOR_LINE_CALCULATION);
 
     bool bHasBlankPortion = false;
     bool bHasOnlyBlankPortions = true;
@@ -299,7 +299,7 @@ void SwLineLayout::CalcLine( SwTextFormatter &rLine, SwTextFormatInfo &rInf )
                 SAL_WARN_IF( POR_LIN == pPos->GetWhichPor(),
                         "sw.core", "SwLineLayout::CalcLine: don't use SwLinePortions !" );
 
-                // Null portions are eliminated. They can form if two FlyFrms
+                // Null portions are eliminated. They can form if two FlyFrames
                 // overlap.
                 if( !pPos->Compress() )
                 {
@@ -819,7 +819,7 @@ void SwScriptInfo::InitScriptInfo( const SwTextNode& rNode, bool bRTL )
             const short nScriptType = ScriptTypeDetector::getCTLScriptType( rText, nSearchStt );
             sal_Int32 nNextCTLScriptStart = nSearchStt;
             short nCurrentScriptType = nScriptType;
-            while( com::sun::star::i18n::CTLScriptType::CTL_UNKNOWN == nCurrentScriptType || nScriptType == nCurrentScriptType )
+            while( css::i18n::CTLScriptType::CTL_UNKNOWN == nCurrentScriptType || nScriptType == nCurrentScriptType )
             {
                 nNextCTLScriptStart = ScriptTypeDetector::endOfCTLScriptType( rText, nNextCTLScriptStart );
                 if( nNextCTLScriptStart >= rText.getLength() || nNextCTLScriptStart >= nChg )
@@ -874,11 +874,14 @@ void SwScriptInfo::InitScriptInfo( const SwTextNode& rNode, bool bRTL )
                     eState = SPECIAL_LEFT;
                     break;
                 // Right punctuation found
-                case 0x3001: case 0x3002: case 0x3009: case 0x300B:
+                case 0x3009: case 0x300B:
                 case 0x300D: case 0x300F: case 0x3011: case 0x3015:
                 case 0x3017: case 0x3019: case 0x301B: case 0x301E:
                 case 0x301F:
                     eState = SPECIAL_RIGHT;
+                    break;
+                case 0x3001: case 0x3002:   // Fullstop or comma
+                    eState = SPECIAL_MIDDLE ;
                     break;
                 default:
                     eState = ( 0x3040 <= cChar && 0x3100 > cChar ) ? KANA : NONE;
@@ -919,7 +922,7 @@ void SwScriptInfo::InitScriptInfo( const SwTextNode& rNode, bool bRTL )
         // we search for connecting opportunities (kashida)
         else if ( bAdjustBlock && i18n::ScriptType::COMPLEX == nScript )
         {
-            SwScanner aScanner( rNode, rNode.GetText(), 0, ModelToViewHelper(),
+            SwScanner aScanner( rNode, rNode.GetText(), nullptr, ModelToViewHelper(),
                                 i18n::WordType::DICTIONARY_WORD,
                                 nLastKashida, nChg );
 
@@ -1207,7 +1210,7 @@ void SwScriptInfo::UpdateBidiInfo( const OUString& rText )
     nError = U_ZERO_ERROR;
 
     ubidi_setPara( pBidi, reinterpret_cast<const UChar *>(rText.getStr()), rText.getLength(),    // UChar != sal_Unicode in MinGW
-                   nDefaultDir, NULL, &nError );
+                   nDefaultDir, nullptr, &nError );
     nError = U_ZERO_ERROR;
     int nCount = ubidi_countRuns( pBidi, &nError );
     int32_t nStart = 0;
@@ -1509,6 +1512,7 @@ size_t SwScriptInfo::HasKana( sal_Int32 nStart, const sal_Int32 nLen ) const
 
 long SwScriptInfo::Compress( long* pKernArray, sal_Int32 nIdx, sal_Int32 nLen,
                              const sal_uInt16 nCompress, const sal_uInt16 nFontHeight,
+                             bool bCenter,
                              Point* pPoint ) const
 {
     SAL_WARN_IF( !nCompress, "sw.core", "Compression without compression?!" );
@@ -1571,7 +1575,7 @@ long SwScriptInfo::Compress( long* pKernArray, sal_Int32 nIdx, sal_Int32 nLen,
                 long nMove = 0;
                 if( SwScriptInfo::KANA != nType )
                 {
-                    nLast /= 20000;
+                    nLast /= 24000;
                     if( pPoint && SwScriptInfo::SPECIAL_LEFT == nType )
                     {
                         if( nI )
@@ -1582,12 +1586,14 @@ long SwScriptInfo::Compress( long* pKernArray, sal_Int32 nIdx, sal_Int32 nLen,
                             nLast = 0;
                         }
                     }
+                    else if( bCenter && SwScriptInfo::SPECIAL_MIDDLE == nType )
+                        nMove = nLast / 2;
                 }
                 else
                     nLast /= 100000;
                 nSub -= nLast;
                 nLast = pKernArray[ nI ];
-                if( nMove )
+                if( nI && nMove )
                     pKernArray[ nI - 1 ] += nMove;
                 pKernArray[ nI++ ] -= nSub;
                 ++nIdx;
@@ -1931,17 +1937,17 @@ sal_Int32 SwScriptInfo::ThaiJustify( const OUString& rText, long* pKernArray,
 SwScriptInfo* SwScriptInfo::GetScriptInfo( const SwTextNode& rTNd,
                                            bool bAllowInvalid )
 {
-    SwIterator<SwTextFrm,SwTextNode> aIter( rTNd );
-    SwScriptInfo* pScriptInfo = 0;
+    SwIterator<SwTextFrame,SwTextNode> aIter( rTNd );
+    SwScriptInfo* pScriptInfo = nullptr;
 
-    for( SwTextFrm* pLast = aIter.First(); pLast; pLast = aIter.Next() )
+    for( SwTextFrame* pLast = aIter.First(); pLast; pLast = aIter.Next() )
     {
         pScriptInfo = const_cast<SwScriptInfo*>(pLast->GetScriptInfo());
         if ( pScriptInfo )
         {
             if ( bAllowInvalid || COMPLETE_STRING == pScriptInfo->GetInvalidityA() )
                 break;
-            pScriptInfo = 0;
+            pScriptInfo = nullptr;
         }
     }
 
@@ -1949,16 +1955,9 @@ SwScriptInfo* SwScriptInfo::GetScriptInfo( const SwTextNode& rTNd,
 }
 
 SwParaPortion::SwParaPortion()
-    : bFlag00(false)
-    , bFlag11(false)
-    , bFlag12(false)
-    , bFlag13(false)
-    , bFlag14(false)
-    , bFlag15(false)
-    , bFlag16(false)
 {
     FormatReset();
-    bFlys = bFootnoteNum = bMargin = false;
+    m_bFlys = m_bFootnoteNum = m_bMargin = false;
     SetWhichPor( POR_PARA );
 }
 
@@ -1990,9 +1989,9 @@ const SwDropPortion *SwParaPortion::FindDropPortion() const
             pPos = pPos->GetPortion();
         if( pPos && pPos->IsDropPortion() )
             return static_cast<const SwDropPortion *>(pPos);
-        pLay = pLay->GetLen() ? NULL : pLay->GetNext();
+        pLay = pLay->GetLen() ? nullptr : pLay->GetNext();
     }
-    return NULL;
+    return nullptr;
 }
 
 void SwLineLayout::Init( SwLinePortion* pNextPortion )
@@ -2032,7 +2031,7 @@ SwTwips SwLineLayout::_GetHangingMargin() const
     return nDiff;
 }
 
-SwTwips SwTextFrm::HangingMargin() const
+SwTwips SwTextFrame::HangingMargin() const
 {
     SAL_WARN_IF( !HasPara(), "sw.core", "Don't call me without a paraportion" );
     if( !GetPara()->IsMargin() )
@@ -2056,7 +2055,7 @@ void SwScriptInfo::selectHiddenTextProperty(const SwTextNode& rNode, MultiSelect
     assert((rNode.GetText().isEmpty() && rHiddenMulti.GetTotalRange().Len() == 1)
         || (rNode.GetText().getLength() == rHiddenMulti.GetTotalRange().Len()));
 
-    const SfxPoolItem* pItem = 0;
+    const SfxPoolItem* pItem = nullptr;
     if( SfxItemState::SET == rNode.GetSwAttrSet().GetItemState( RES_CHRATR_HIDDEN, true, &pItem ) &&
         static_cast<const SvxCharHiddenItem*>(pItem)->GetValue() )
     {

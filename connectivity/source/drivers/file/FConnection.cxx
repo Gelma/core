@@ -96,7 +96,8 @@ bool OConnection::matchesExtension( const OUString& _rExt ) const
 void OConnection::construct(const OUString& url,const Sequence< PropertyValue >& info)
     throw( css::sdbc::SQLException,
            css::uno::RuntimeException,
-           css::uno::DeploymentException)
+           css::uno::DeploymentException,
+           std::exception)
 {
     osl_atomic_increment( &m_refCount );
 
@@ -170,9 +171,7 @@ void OConnection::construct(const OUString& url,const Sequence< PropertyValue >&
         }
 
         // set fields to fetch
-        Sequence< OUString > aProps(1);
-        OUString* pProps = aProps.getArray();
-        pProps[ 0 ] = "Title";
+        Sequence< OUString > aProps { "Title" };
 
         try
         {
@@ -246,7 +245,7 @@ Reference< XPreparedStatement > SAL_CALL OConnection::prepareStatement( const OU
 Reference< XPreparedStatement > SAL_CALL OConnection::prepareCall( const OUString& /*sql*/ ) throw(SQLException, RuntimeException, std::exception)
 {
     throwFeatureNotImplementedSQLException( "XConnection::prepareCall", *this );
-    return NULL;
+    return nullptr;
 }
 
 OUString SAL_CALL OConnection::nativeSQL( const OUString& sql ) throw(SQLException, RuntimeException, std::exception)
@@ -341,7 +340,7 @@ sal_Int32 SAL_CALL OConnection::getTransactionIsolation(  ) throw(SQLException, 
 
 Reference< XNameAccess > SAL_CALL OConnection::getTypeMap(  ) throw(SQLException, RuntimeException, std::exception)
 {
-    return NULL;
+    return nullptr;
 }
 
 void SAL_CALL OConnection::setTypeMap( const Reference< XNameAccess >& /*typeMap*/ ) throw(SQLException, RuntimeException, std::exception)
@@ -397,9 +396,7 @@ Reference< XTablesSupplier > OConnection::createCatalog()
 Reference< XDynamicResultSet > OConnection::getDir() const
 {
     Reference<XDynamicResultSet> xContent;
-    Sequence< OUString > aProps(1);
-    OUString* pProps = aProps.getArray();
-    pProps[ 0 ] = "Title";
+    Sequence< OUString > aProps { "Title" };
     try
     {
         Reference<XContentIdentifier> xIdent = getContent()->getIdentifier();
@@ -421,7 +418,7 @@ sal_Int64 SAL_CALL OConnection::getSomething( const Sequence< sal_Int8 >& rId ) 
 
 Sequence< sal_Int8 > OConnection::getUnoTunnelImplementationId()
 {
-    static ::cppu::OImplementationId * pId = 0;
+    static ::cppu::OImplementationId * pId = nullptr;
     if (! pId)
     {
         ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );

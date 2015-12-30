@@ -24,7 +24,6 @@
 #include <framework/addonsoptions.hxx>
 #include <uielement/statusbarmerger.hxx>
 #include <uielement/statusbaritem.hxx>
-#include <macros/generic.hxx>
 #include <macros/xinterface.hxx>
 #include <macros/xtypeprovider.hxx>
 #include <stdtypes.h>
@@ -49,6 +48,7 @@
 #include <vcl/status.hxx>
 #include <vcl/svapp.hxx>
 #include <vcl/settings.hxx>
+#include <vcl/commandinfoprovider.hxx>
 
 #include <functional>
 
@@ -104,23 +104,23 @@ static sal_uInt16 impl_convertItemStyleToItemBits( sal_Int16 nStyle )
 {
     sal_uInt16 nItemBits( 0 );
 
-    if (( nStyle & ::com::sun::star::ui::ItemStyle::ALIGN_RIGHT ) == ::com::sun::star::ui::ItemStyle::ALIGN_RIGHT )
+    if (( nStyle & css::ui::ItemStyle::ALIGN_RIGHT ) == css::ui::ItemStyle::ALIGN_RIGHT )
         nItemBits |= SIB_RIGHT;
-    else if ( nStyle & ::com::sun::star::ui::ItemStyle::ALIGN_LEFT )
+    else if ( nStyle & css::ui::ItemStyle::ALIGN_LEFT )
         nItemBits |= SIB_LEFT;
     else
         nItemBits |= SIB_CENTER;
 
-    if (( nStyle & ::com::sun::star::ui::ItemStyle::DRAW_FLAT ) == ::com::sun::star::ui::ItemStyle::DRAW_FLAT )
+    if (( nStyle & css::ui::ItemStyle::DRAW_FLAT ) == css::ui::ItemStyle::DRAW_FLAT )
         nItemBits |= SIB_FLAT;
-    else if ( nStyle & ::com::sun::star::ui::ItemStyle::DRAW_OUT3D )
+    else if ( nStyle & css::ui::ItemStyle::DRAW_OUT3D )
         nItemBits |= SIB_OUT;
     else
         nItemBits |= SIB_IN;
 
-    if (( nStyle & ::com::sun::star::ui::ItemStyle::AUTO_SIZE ) == ::com::sun::star::ui::ItemStyle::AUTO_SIZE )
+    if (( nStyle & css::ui::ItemStyle::AUTO_SIZE ) == css::ui::ItemStyle::AUTO_SIZE )
         nItemBits |= SIB_AUTOSIZE;
-    if ( nStyle & ::com::sun::star::ui::ItemStyle::OWNER_DRAW )
+    if ( nStyle & css::ui::ItemStyle::OWNER_DRAW )
         nItemBits |= SIB_USERDRAW;
 
     return nItemBits;
@@ -131,14 +131,11 @@ static sal_uInt16 impl_convertItemStyleToItemBits( sal_Int16 nStyle )
 StatusBarManager::StatusBarManager(
     const uno::Reference< uno::XComponentContext >& rxContext,
     const uno::Reference< frame::XFrame >& rFrame,
-    const OUString& rResourceName,
     StatusBar* pStatusBar ) :
     m_bDisposed( false ),
     m_bFrameActionRegistered( false ),
     m_bUpdateControllers( false ),
-    m_bModuleIdentified( false ),
     m_pStatusBar( pStatusBar ),
-    m_aResourceName( rResourceName ),
     m_xFrame( rFrame ),
     m_aListenerContainer( m_mutex ),
     m_xContext( rxContext )
@@ -301,11 +298,6 @@ void StatusBarManager::RemoveControllers()
     m_aControllerMap.clear();
 }
 
-OUString StatusBarManager::RetrieveLabelFromCommand( const OUString& aCmdURL )
-{
-    return framework::RetrieveLabelFromCommand(aCmdURL, m_xContext, m_xUICommandLabels,m_xFrame,m_aModuleIdentifier,m_bModuleIdentified,"Name");
-}
-
 void StatusBarManager::CreateControllers()
 {
     uno::Reference< awt::XWindow > xStatusbarWindow = VCLUnoHelper::GetInterface( m_pStatusBar );
@@ -363,8 +355,7 @@ void StatusBarManager::CreateControllers()
         if ( m_xStatusbarControllerFactory.is() &&
              m_xStatusbarControllerFactory->hasController( aCommandURL, m_aModuleIdentifier ))
         {
-            xController = uno::Reference< frame::XStatusbarController >(
-                            m_xStatusbarControllerFactory->createInstanceWithArgumentsAndContext(
+            xController.set(m_xStatusbarControllerFactory->createInstanceWithArgumentsAndContext(
                                 aCommandURL, aArgs, m_xContext ),
                             uno::UNO_QUERY );
             bInit = false; // Initialization is done through the factory service
@@ -372,7 +363,7 @@ void StatusBarManager::CreateControllers()
 
         if ( !xController.is() )
         {
-            svt::StatusbarController* pController( 0 );
+            svt::StatusbarController* pController( nullptr );
 
             // 2) Old SFX2 Statusbar controllers
             pController = CreateStatusBarController( m_xFrame, m_pStatusBar, nId, aCommandURL );
@@ -394,8 +385,7 @@ void StatusBarManager::CreateControllers()
             }
 
             if ( pController )
-                xController = uno::Reference< frame::XStatusbarController >(
-                                static_cast< ::cppu::OWeakObject *>( pController ),
+                xController.set(static_cast< ::cppu::OWeakObject *>( pController ),
                                 uno::UNO_QUERY );
         }
 
@@ -437,12 +427,12 @@ void StatusBarManager::FillStatusBar( const uno::Reference< container::XIndexAcc
     for ( sal_Int32 n = 0; n < rItemContainer->getCount(); n++ )
     {
         uno::Sequence< beans::PropertyValue >   aProp;
-        OUString                           aCommandURL;
-        OUString                           aHelpURL;
+        OUString                                aCommandURL;
+        OUString                                aHelpURL;
         sal_Int16                               nOffset( 0 );
         sal_Int16                               nStyle( 0 );
         sal_Int16                               nWidth( 0 );
-        sal_uInt16                              nType( ::com::sun::star::ui::ItemType::DEFAULT );
+        sal_uInt16                              nType( css::ui::ItemType::DEFAULT );
 
         try
         {
@@ -476,9 +466,9 @@ void StatusBarManager::FillStatusBar( const uno::Reference< container::XIndexAcc
                     }
                 }
 
-                if (( nType == ::com::sun::star::ui::ItemType::DEFAULT ) && !aCommandURL.isEmpty() )
+                if (( nType == css::ui::ItemType::DEFAULT ) && !aCommandURL.isEmpty() )
                 {
-                    OUString aString( RetrieveLabelFromCommand( aCommandURL ));
+                    OUString aString( vcl::CommandInfoProvider::Instance().GetLabelForCommand(aCommandURL, m_xFrame));
                     sal_uInt16        nItemBits( impl_convertItemStyleToItemBits( nStyle ));
 
                     m_pStatusBar->InsertItem( nId, nWidth, nItemBits, nOffset );
@@ -488,7 +478,7 @@ void StatusBarManager::FillStatusBar( const uno::Reference< container::XIndexAcc
                 }
             }
         }
-        catch ( const ::com::sun::star::lang::IndexOutOfBoundsException& )
+        catch ( const css::lang::IndexOutOfBoundsException& )
         {
             break;
         }
@@ -620,7 +610,7 @@ void StatusBarManager::MouseMove( const MouseEvent& rMEvt )
     MouseButton(rMEvt,&frame::XStatusbarController::mouseMove);
 }
 
-void StatusBarManager::MouseButton( const MouseEvent& rMEvt ,sal_Bool ( SAL_CALL frame::XStatusbarController::*_pMethod )(const ::com::sun::star::awt::MouseEvent&))
+void StatusBarManager::MouseButton( const MouseEvent& rMEvt ,sal_Bool ( SAL_CALL frame::XStatusbarController::*_pMethod )(const css::awt::MouseEvent&))
 {
     SolarMutexGuard g;
 
@@ -633,7 +623,7 @@ void StatusBarManager::MouseButton( const MouseEvent& rMEvt ,sal_Bool ( SAL_CALL
             uno::Reference< frame::XStatusbarController > xController( it->second );
             if ( xController.is() )
             {
-                ::com::sun::star::awt::MouseEvent aMouseEvent;
+                css::awt::MouseEvent aMouseEvent;
                 aMouseEvent.Buttons = rMEvt.GetButtons();
                 aMouseEvent.X = rMEvt.GetPosPixel().X();
                 aMouseEvent.Y = rMEvt.GetPosPixel().Y();

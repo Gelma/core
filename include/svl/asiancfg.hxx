@@ -22,7 +22,6 @@
 
 #include <sal/config.h>
 
-#include <boost/noncopyable.hpp>
 #include <memory>
 #include <com/sun/star/uno/Sequence.hxx>
 #include <sal/types.h>
@@ -32,11 +31,12 @@ namespace com { namespace sun { namespace star { namespace lang {
     struct Locale;
 } } } }
 
-class SVL_DLLPUBLIC SvxAsianConfig: private boost::noncopyable {
+class SVL_DLLPUBLIC SvxAsianConfig {
 public:
     SvxAsianConfig();
-
     ~SvxAsianConfig();
+    SvxAsianConfig(const SvxAsianConfig&) = delete;
+    SvxAsianConfig& operator=( const SvxAsianConfig& ) = delete;
 
     void Commit();
 
@@ -48,15 +48,14 @@ public:
 
     void SetCharDistanceCompression(sal_Int16 value);
 
-    com::sun::star::uno::Sequence< com::sun::star::lang::Locale >
-    GetStartEndCharLocales() const;
+    css::uno::Sequence< css::lang::Locale > GetStartEndCharLocales() const;
 
     bool GetStartEndChars(
-        com::sun::star::lang::Locale const & locale, OUString & startChars,
+        css::lang::Locale const & locale, OUString & startChars,
         OUString & endChars) const;
 
     void SetStartEndChars(
-        com::sun::star::lang::Locale const & locale,
+        css::lang::Locale const & locale,
         OUString const * startChars, OUString const * endChars);
 
 private:

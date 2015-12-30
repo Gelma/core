@@ -40,8 +40,8 @@ class ShapeBase;
 
 struct ShapeParentAnchor
 {
-    ::com::sun::star::awt::Rectangle maShapeRect;
-    ::com::sun::star::awt::Rectangle maCoordSys;
+    css::awt::Rectangle maShapeRect;
+    css::awt::Rectangle maCoordSys;
 };
 
 
@@ -75,10 +75,6 @@ public:
         @param bDeep  True = searches in all group shapes too. */
     const ShapeBase*    getShapeById( const OUString& rShapeId, bool bDeep ) const;
 
-    /** Searches for a shape type by using the passed functor that takes a
-        constant reference of a ShapeType object. */
-    template< typename Functor >
-    const ShapeType*    findShapeType( const Functor& rFunctor ) const;
     /** Searches for a shape by using the passed functor that takes a constant
         reference of a ShapeBase object. */
     template< typename Functor >
@@ -104,8 +100,8 @@ public:
 
     /** Creates and inserts all UNO shapes into the passed container. */
     void                convertAndInsert(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShapes >& rxShapes,
-                            const ShapeParentAnchor* pParentAnchor = 0 ) const;
+                            const css::uno::Reference< css::drawing::XShapes >& rxShapes,
+                            const ShapeParentAnchor* pParentAnchor = nullptr ) const;
 
 private:
     typedef RefVector< ShapeType >                  ShapeTypeVector;
@@ -129,12 +125,6 @@ ShapeT& ShapeContainer::createShape()
     std::shared_ptr< ShapeT > xShape( new ShapeT( mrDrawing ) );
     maShapes.push_back( xShape );
     return *xShape;
-}
-
-template< typename Functor >
-const ShapeType* ShapeContainer::findShapeType( const Functor& rFunctor ) const
-{
-    return maTypes.findIf( rFunctor ).get();
 }
 
 template< typename Functor >

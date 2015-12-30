@@ -17,6 +17,10 @@
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
 
+#include <sal/config.h>
+
+#include <algorithm>
+
 #include <cppuhelper/factory.hxx>
 #include <com/sun/star/registry/XRegistryKey.hpp>
 #include <com/sun/star/linguistic2/XSearchableDictionaryList.hpp>
@@ -287,12 +291,12 @@ Reference< XHyphenatedWord > SAL_CALL
 
     // search for entry with that language
     HyphSvcByLangMap_t::iterator    aIt( aSvcMap.find( nLanguage ) );
-    LangSvcEntries_Hyph     *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : NULL;
+    LangSvcEntries_Hyph     *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : nullptr;
 
     bool bWordModified = false;
     if (!pEntry || (nMaxLeading < 0 || nMaxLeading > nWordLen))
     {
-        return NULL;
+        return nullptr;
     }
     else
     {
@@ -423,12 +427,12 @@ Reference< XHyphenatedWord > SAL_CALL
 
     // search for entry with that language
     HyphSvcByLangMap_t::iterator    aIt( aSvcMap.find( nLanguage ) );
-    LangSvcEntries_Hyph     *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : NULL;
+    LangSvcEntries_Hyph     *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : nullptr;
 
     bool bWordModified = false;
     if (!pEntry || !(0 <= nIndex && nIndex <= nWordLen - 2))
     {
-        return NULL;
+        return nullptr;
     }
     else
     {
@@ -554,7 +558,7 @@ Reference< XPossibleHyphens > SAL_CALL
 
     // search for entry with that language
     HyphSvcByLangMap_t::iterator    aIt( aSvcMap.find( nLanguage ) );
-    LangSvcEntries_Hyph     *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : NULL;
+    LangSvcEntries_Hyph     *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : nullptr;
 
     if (pEntry)
     {
@@ -617,10 +621,9 @@ Reference< XPossibleHyphens > SAL_CALL
                 // create specific service via it's implementation name
                 try
                 {
-                    xHyph = Reference< XHyphenator >(
-                                xContext->getServiceManager()->createInstanceWithArgumentsAndContext(
-                                    pEntry->aSvcImplNames[0], aArgs, xContext ),
-                                UNO_QUERY );
+                    xHyph.set( xContext->getServiceManager()->createInstanceWithArgumentsAndContext(
+                                   pEntry->aSvcImplNames[0], aArgs, xContext ),
+                               UNO_QUERY );
                 }
                 catch (uno::Exception &)
                 {
@@ -700,7 +703,7 @@ Sequence< OUString >
     // search for entry with that language and use data from that
     sal_Int16 nLanguage = LinguLocaleToLanguage( rLocale );
     const HyphSvcByLangMap_t::const_iterator  aIt( aSvcMap.find( nLanguage ) );
-    const LangSvcEntries_Hyph       *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : NULL;
+    const LangSvcEntries_Hyph       *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : nullptr;
     if (pEntry)
     {
         aRes = pEntry->aSvcImplNames;

@@ -133,8 +133,8 @@ public:
 
     void ExecutePopup( vcl::Window *pParent, const ::Point &aPos );
 
-    virtual void SAL_CALL statusChanged( const css::frame::FeatureStateEvent &rEvent) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL disposing( const css::lang::EventObject &rSource) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL statusChanged( const css::frame::FeatureStateEvent &rEvent) throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL disposing( const css::lang::EventObject &rSource) throw ( css::uno::RuntimeException, std::exception ) override;
 };
 
 
@@ -227,7 +227,7 @@ void GalleryThemePopup::Execute(
         pInfo->Dispatch = rCmdInfo.Dispatch;
 
         if ( !Application::PostUserEvent(
-                LINK( 0, GalleryBrowser2, AsyncDispatch_Impl), pInfo ) )
+                LINK( nullptr, GalleryBrowser2, AsyncDispatch_Impl), pInfo ) )
             delete pInfo;
     }
 }
@@ -312,7 +312,7 @@ void GalleryThemePopup::ExecutePopup( vcl::Window *pWindow, const ::Point &aPos 
             {
                 rCmdInfo.Dispatch = xDispatchProvider->queryDispatch(
                     rCmdInfo.URL,
-                    OUString( "_self" ),
+                    "_self",
                     css::frame::FrameSearchFlag::SELF );
             }
 
@@ -414,7 +414,7 @@ void GalleryToolBox::KeyInput( const KeyEvent& rKEvt )
 GalleryBrowser2::GalleryBrowser2( vcl::Window* pParent, Gallery* pGallery ) :
     Control             ( pParent, WB_TABSTOP ),
     mpGallery           ( pGallery ),
-    mpCurTheme          ( NULL ),
+    mpCurTheme          ( nullptr ),
     mpIconView          ( VclPtr<GalleryIconView>::Create( this, nullptr ) ),
     mpListView          ( VclPtr<GalleryListView>::Create( this, nullptr ) ),
     mpPreview           ( VclPtr<GalleryPreview>::Create(this) ),
@@ -430,8 +430,8 @@ GalleryBrowser2::GalleryBrowser2( vcl::Window* pParent, Gallery* pGallery ) :
 
     m_xTransformer.set(
         m_xContext->getServiceManager()->createInstanceWithContext(
-            OUString( "com.sun.star.util.URLTransformer" ), m_xContext ),
-                    css::uno::UNO_QUERY );
+            "com.sun.star.util.URLTransformer", m_xContext ),
+        css::uno::UNO_QUERY );
 
     Image      aDummyImage;
     vcl::Font  aInfoFont( maInfoBar->GetControlFont() );
@@ -448,7 +448,7 @@ GalleryBrowser2::GalleryBrowser2( vcl::Window* pParent, Gallery* pGallery ) :
     maViewBox->SetHelpId( TBX_ID_LIST, HID_GALLERY_LISTVIEW );
     maViewBox->SetQuickHelpText( TBX_ID_LIST, GAL_RESSTR(RID_SVXSTR_GALLERY_LISTVIEW) );
 
-    MiscHdl( NULL );
+    MiscHdl( nullptr );
     maViewBox->SetSelectHdl( LINK( this, GalleryBrowser2, SelectTbxHdl ) );
     maViewBox->Show();
 
@@ -659,10 +659,10 @@ void GalleryBrowser2::ShowContextMenu( vcl::Window*, const Point* pContextPoint 
 bool GalleryBrowser2::KeyInput( const KeyEvent& rKEvt, vcl::Window* pWindow )
 {
     Point       aSelPos;
-    const sal_uIntPtr   nItemId = ImplGetSelectedItemId( NULL, aSelPos );
+    const sal_uIntPtr   nItemId = ImplGetSelectedItemId( nullptr, aSelPos );
     bool bRet = false;
     svx::sidebar::GalleryControl* pParentControl = dynamic_cast<svx::sidebar::GalleryControl*>(GetParent());
-    if (pParentControl != NULL)
+    if (pParentControl != nullptr)
         bRet = pParentControl->GalleryKeyInput(rKEvt, pWindow);
 
     if( !bRet && !maViewBox->HasFocus() && nItemId && mpCurTheme )
@@ -825,7 +825,7 @@ void GalleryBrowser2::SetMode( GalleryBrowserMode eMode )
             {
                 Graphic     aGraphic;
                 Point       aSelPos;
-                const sal_uIntPtr   nItemId = ImplGetSelectedItemId( NULL, aSelPos );
+                const sal_uIntPtr   nItemId = ImplGetSelectedItemId( nullptr, aSelPos );
 
                 if( nItemId )
                 {
@@ -879,7 +879,7 @@ void GalleryBrowser2::Travel( GalleryBrowserTravel eTravel )
     if( mpCurTheme )
     {
         Point       aSelPos;
-        const sal_uIntPtr nItemId = ImplGetSelectedItemId( NULL, aSelPos );
+        const sal_uIntPtr nItemId = ImplGetSelectedItemId( nullptr, aSelPos );
 
         if( nItemId )
         {
@@ -1044,7 +1044,7 @@ void GalleryBrowser2::Dispatch(
     const css::util::URL &rURL )
 {
     Point aSelPos;
-    const sal_uIntPtr nItemId = ImplGetSelectedItemId( NULL, aSelPos );
+    const sal_uIntPtr nItemId = ImplGetSelectedItemId( nullptr, aSelPos );
 
     if( !mpCurTheme || !nItemId )
         return;
@@ -1069,7 +1069,7 @@ void GalleryBrowser2::Dispatch(
                 m_xTransformer->parseStrict( aURL );
                 xDispatch = xDispatchProvider->queryDispatch(
                     aURL,
-                    OUString( "_self" ),
+                    "_self",
                     css::frame::FrameSearchFlag::SELF );
             }
 
@@ -1131,7 +1131,7 @@ void GalleryBrowser2::Dispatch(
             pInfo->Dispatch = xDispatch;
 
             if ( !Application::PostUserEvent(
-                    LINK( 0, GalleryBrowser2, AsyncDispatch_Impl), pInfo ) )
+                    LINK( nullptr, GalleryBrowser2, AsyncDispatch_Impl), pInfo ) )
                 delete pInfo;
         }
         break;
@@ -1144,7 +1144,7 @@ void GalleryBrowser2::Dispatch(
 void GalleryBrowser2::Execute( sal_uInt16 nId )
 {
     Point       aSelPos;
-    const sal_uIntPtr nItemId = ImplGetSelectedItemId( NULL, aSelPos );
+    const sal_uIntPtr nItemId = ImplGetSelectedItemId( nullptr, aSelPos );
 
     if( mpCurTheme && nItemId )
     {
@@ -1210,7 +1210,7 @@ void GalleryBrowser2::Execute( sal_uInt16 nId )
                     case( GALLERYBROWSERMODE_PREVIEW ): pWindow = static_cast<vcl::Window*>(mpPreview); break;
 
                     default:
-                        pWindow = NULL;
+                        pWindow = nullptr;
                     break;
                 }
 

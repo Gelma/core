@@ -98,6 +98,7 @@
 
 #include <tools/tenccvt.hxx>
 #include <vcl/settings.hxx>
+#include <comphelper/lok.hxx>
 
 using namespace ::sd;
 using namespace ::com::sun::star;
@@ -110,9 +111,8 @@ using ::com::sun::star::uno::Reference;
 using ::com::sun::star::lang::XMultiServiceFactory;
 using ::com::sun::star::beans::PropertyValue;
 
-TYPEINIT1( SdDrawDocument, FmFormModel );
 
-SdDrawDocument* SdDrawDocument::pDocLockedInsertingLinks = NULL;
+SdDrawDocument* SdDrawDocument::s_pDocLockedInsertingLinks = nullptr;
 
 PresentationSettings::PresentationSettings()
 :   mbAll( true ),
@@ -150,17 +150,17 @@ PresentationSettings::PresentationSettings( const PresentationSettings& r )
 }
 
 SdDrawDocument::SdDrawDocument(DocumentType eType, SfxObjectShell* pDrDocSh)
-: FmFormModel( !utl::ConfigManager::IsAvoidConfig() ? SvtPathOptions().GetPalettePath() : OUString(), NULL, pDrDocSh )
+: FmFormModel( !utl::ConfigManager::IsAvoidConfig() ? SvtPathOptions().GetPalettePath() : OUString(), nullptr, pDrDocSh )
 , bReadOnly(false)
-, mpOutliner(NULL)
-, mpInternalOutliner(NULL)
-, mpWorkStartupTimer(NULL)
-, mpOnlineSpellingIdle(NULL)
-, mpOnlineSpellingList(NULL)
-, mpOnlineSearchItem(NULL)
-, mpCustomShowList(NULL)
+, mpOutliner(nullptr)
+, mpInternalOutliner(nullptr)
+, mpWorkStartupTimer(nullptr)
+, mpOnlineSpellingIdle(nullptr)
+, mpOnlineSpellingList(nullptr)
+, mpOnlineSearchItem(nullptr)
+, mpCustomShowList(nullptr)
 , mpDocSh(static_cast< ::sd::DrawDocShell*>(pDrDocSh))
-, mpCreatingTransferable( NULL )
+, mpCreatingTransferable( nullptr )
 , mbHasOnlineSpellErrors(false)
 , mbInitialOnlineSpellingEnabled(true)
 , mbNewOrLoadCompleted(false)
@@ -173,8 +173,8 @@ SdDrawDocument::SdDrawDocument(DocumentType eType, SfxObjectShell* pDrDocSh)
 , mePageNumType(SVX_ARABIC)
 , mbAllocDocSh(false)
 , meDocType(eType)
-, mpCharClass(NULL)
-, mpLocale(NULL)
+, mpCharClass(nullptr)
+, mpLocale(nullptr)
 , mbUseEmbedFonts(false)
 {
     mpDrawPageListWatcher.reset(new ImpDrawPageListWatcher(*this));
@@ -226,18 +226,19 @@ SdDrawDocument::SdDrawDocument(DocumentType eType, SfxObjectShell* pDrDocSh)
         aLinguConfig.GetOptions( aOptions );
 
         SetLanguage( MsLangId::resolveSystemLanguageByScriptType(aOptions.nDefaultLanguage,
-            ::com::sun::star::i18n::ScriptType::LATIN), EE_CHAR_LANGUAGE );
+            css::i18n::ScriptType::LATIN), EE_CHAR_LANGUAGE );
         SetLanguage( MsLangId::resolveSystemLanguageByScriptType(aOptions.nDefaultLanguage_CJK,
-            ::com::sun::star::i18n::ScriptType::ASIAN), EE_CHAR_LANGUAGE_CJK );
+            css::i18n::ScriptType::ASIAN), EE_CHAR_LANGUAGE_CJK );
         SetLanguage( MsLangId::resolveSystemLanguageByScriptType(aOptions.nDefaultLanguage_CTL,
-            ::com::sun::star::i18n::ScriptType::COMPLEX), EE_CHAR_LANGUAGE_CTL );
+            css::i18n::ScriptType::COMPLEX), EE_CHAR_LANGUAGE_CTL );
 
-        mbOnlineSpell = aOptions.bIsSpellAuto;
+        if (!comphelper::LibreOfficeKit::isActive())
+            mbOnlineSpell = aOptions.bIsSpellAuto;
     }
 
     LanguageType eRealLanguage = MsLangId::getRealLanguage( meLanguage );
     LanguageTag aLanguageTag( eRealLanguage);
-    mpLocale = new ::com::sun::star::lang::Locale( aLanguageTag.getLocale());
+    mpLocale = new css::lang::Locale( aLanguageTag.getLocale());
     mpCharClass = new CharClass( aLanguageTag );
 
     // If the current application language is a language that uses right-to-left text...
@@ -245,7 +246,7 @@ SdDrawDocument::SdDrawDocument(DocumentType eType, SfxObjectShell* pDrDocSh)
     if( MsLangId::isRightToLeft( eRealCTLLanguage ) )
     {
         // ... then we have to set this as a default
-        SetDefaultWritingMode( ::com::sun::star::text::WritingMode_RL_TB );
+        SetDefaultWritingMode( css::text::WritingMode_RL_TB );
     }
 
     // for korean and japanese languages we have a different default for apply spacing between asian, latin and ctl text
@@ -380,12 +381,12 @@ SdDrawDocument::~SdDrawDocument()
             mpWorkStartupTimer->Stop();
 
         delete mpWorkStartupTimer;
-        mpWorkStartupTimer = NULL;
+        mpWorkStartupTimer = nullptr;
     }
 
     StopOnlineSpelling();
     delete mpOnlineSearchItem;
-    mpOnlineSearchItem = NULL;
+    mpOnlineSearchItem = nullptr;
 
     CloseBookmarkDoc();
     SetAllocDocSh(false);
@@ -401,7 +402,7 @@ SdDrawDocument::~SdDrawDocument()
         }
 
         delete pLinkManager;
-        pLinkManager = NULL;
+        pLinkManager = nullptr;
     }
 
     std::vector<sd::FrameView*>::iterator pIter;
@@ -418,20 +419,20 @@ SdDrawDocument::~SdDrawDocument()
         }
 
         delete mpCustomShowList;
-        mpCustomShowList = NULL;
+        mpCustomShowList = nullptr;
     }
 
     delete mpOutliner;
-    mpOutliner = NULL;
+    mpOutliner = nullptr;
 
     delete mpInternalOutliner;
-    mpInternalOutliner = NULL;
+    mpInternalOutliner = nullptr;
 
     delete mpLocale;
-    mpLocale = NULL;
+    mpLocale = nullptr;
 
     delete mpCharClass;
-    mpCharClass = NULL;
+    mpCharClass = nullptr;
 }
 
 SdrModel* SdDrawDocument::AllocModel() const
@@ -444,14 +445,14 @@ SdrModel* SdDrawDocument::AllocModel() const
 // parts of it) into the clipboard/DragServer.
 SdDrawDocument* SdDrawDocument::AllocSdDrawDocument() const
 {
-    SdDrawDocument* pNewModel = NULL;
+    SdDrawDocument* pNewModel = nullptr;
 
     if( mpCreatingTransferable )
     {
         // Document is created for drag & drop/clipboard. To be able to
         // do this, the document has to know a DocShell (SvPersist).
-        SfxObjectShell*   pObj = NULL;
-        ::sd::DrawDocShell*     pNewDocSh = NULL;
+        SfxObjectShell*   pObj = nullptr;
+        ::sd::DrawDocShell*     pNewDocSh = nullptr;
 
         if( meDocType == DOCUMENT_TYPE_IMPRESS )
             mpCreatingTransferable->SetDocShell( new ::sd::DrawDocShell(
@@ -461,7 +462,7 @@ SdDrawDocument* SdDrawDocument::AllocSdDrawDocument() const
                 SfxObjectCreateMode::EMBEDDED, true, meDocType ) );
 
         pNewDocSh = static_cast< ::sd::DrawDocShell*>( pObj = mpCreatingTransferable->GetDocShell() );
-        pNewDocSh->DoInitNew( NULL );
+        pNewDocSh->DoInitNew();
         pNewModel = pNewDocSh->GetDoc();
 
         // Only necessary for clipboard -
@@ -491,12 +492,12 @@ SdDrawDocument* SdDrawDocument::AllocSdDrawDocument() const
         pDoc->SetAllocDocSh(false);
         pDoc->mxAllocedDocShRef = new ::sd::DrawDocShell(
             SfxObjectCreateMode::EMBEDDED, true, meDocType);
-        pDoc->mxAllocedDocShRef->DoInitNew(NULL);
+        pDoc->mxAllocedDocShRef->DoInitNew();
         pNewModel = pDoc->mxAllocedDocShRef->GetDoc();
     }
     else
     {
-        pNewModel = new SdDrawDocument(meDocType, NULL);
+        pNewModel = new SdDrawDocument(meDocType, nullptr);
     }
 
     return pNewModel;
@@ -564,7 +565,7 @@ void SdDrawDocument::NewOrLoadCompleted(DocCreationMode eMode)
         CheckMasterPages();
 
         if ( GetMasterSdPageCount(PK_STANDARD) > 1 )
-            RemoveUnnecessaryMasterPages( NULL, true, false );
+            RemoveUnnecessaryMasterPages( nullptr, true, false );
 
         for ( sal_uInt16 i = 0; i < GetPageCount(); i++ )
         {
@@ -691,14 +692,14 @@ void SdDrawDocument::NewOrLoadCompleted(DocCreationMode eMode)
 /** updates all links, only links in this document should by resolved */
 void SdDrawDocument::UpdateAllLinks()
 {
-    if ( !pDocLockedInsertingLinks && pLinkManager && !pLinkManager->GetLinks().empty() )
+    if (!s_pDocLockedInsertingLinks && pLinkManager && !pLinkManager->GetLinks().empty())
     {
-        pDocLockedInsertingLinks = this; // lock inserting links. only links in this document should by resolved
+        s_pDocLockedInsertingLinks = this; // lock inserting links. only links in this document should by resolved
 
         pLinkManager->UpdateAllLinks();  // query box: update all links?
 
-        if( pDocLockedInsertingLinks == this )
-            pDocLockedInsertingLinks = NULL;  // unlock inserting links
+        if (s_pDocLockedInsertingLinks == this)
+            s_pDocLockedInsertingLinks = nullptr;  // unlock inserting links
     }
 }
 
@@ -719,7 +720,7 @@ void SdDrawDocument::NewOrLoadCompleted( SdPage* pPage, SdStyleSheetPool* pSPool
 
         SfxStyleSheet* pTitleSheet = static_cast<SfxStyleSheet*>(pSPool->GetTitleSheet(aName));
 
-        SdrObject* pObj = 0;
+        SdrObject* pObj = nullptr;
         rPresentationShapes.seekShape(0);
 
         // Now look for title and outline text objects, then make those objects
@@ -761,7 +762,7 @@ void SdDrawDocument::NewOrLoadCompleted( SdPage* pPage, SdStyleSheetPool* pSPool
                     }
                 }
 
-                if (pObj->ISA(SdrTextObj) && pObj->IsEmptyPresObj())
+                if( dynamic_cast< const SdrTextObj *>( pObj ) !=  nullptr && pObj->IsEmptyPresObj())
                 {
                     PresObjKind ePresObjKind = pPage->GetPresObjKind(pObj);
                     OUString aString( pPage->GetPresObjText(ePresObjKind) );
@@ -907,8 +908,8 @@ void SdDrawDocument::SetPrinterIndependentLayout (sal_Int32 nMode)
 {
     switch (nMode)
     {
-        case ::com::sun::star::document::PrinterIndependentLayout::DISABLED:
-        case ::com::sun::star::document::PrinterIndependentLayout::ENABLED:
+        case css::document::PrinterIndependentLayout::DISABLED:
+        case css::document::PrinterIndependentLayout::ENABLED:
             // Just store supported modes and inform the doc shell
             mnPrinterIndependentLayout = nMode;
 
@@ -1065,7 +1066,7 @@ void SdDrawDocument::dumpAsXml(xmlTextWriterPtr pWriter) const
     if (!pWriter)
     {
         pWriter = xmlNewTextWriterFilename("model.xml", 0);
-        xmlTextWriterStartDocument(pWriter, NULL, NULL, NULL);
+        xmlTextWriterStartDocument(pWriter, nullptr, nullptr, nullptr);
         bOwns = true;
     }
     FmFormModel::dumpAsXml(pWriter);

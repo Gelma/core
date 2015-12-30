@@ -273,7 +273,6 @@ OfaMiscTabPage::OfaMiscTabPage(vcl::Window* pParent, const SfxItemSet& rSet)
     get(m_pFileDlgROImage, "lockimage");
     get(m_pPrintDlgCB, "printdlg");
     get(m_pDocStatusCB, "docstatus");
-    get(m_pSaveAlwaysCB, "savealways");
     get(m_pYearFrame, "yearframe");
     get(m_pYearValueField, "year");
     get(m_pToYearFT, "toyear");
@@ -287,12 +286,12 @@ OfaMiscTabPage::OfaMiscTabPage(vcl::Window* pParent, const SfxItemSet& rSet)
 
     m_aStrDateInfo = m_pToYearFT->GetText();
     m_pYearValueField->SetModifyHdl( LINK( this, OfaMiscTabPage, TwoFigureHdl ) );
-    Link<> aLink = LINK( this, OfaMiscTabPage, TwoFigureConfigHdl );
+    Link<SpinField&,void> aLink = LINK( this, OfaMiscTabPage, TwoFigureConfigHdl );
     m_pYearValueField->SetDownHdl( aLink );
     m_pYearValueField->SetUpHdl( aLink );
     m_pYearValueField->SetLoseFocusHdl( LINK( this, OfaMiscTabPage, TwoFigureConfigFocusHdl ) );
     m_pYearValueField->SetFirstHdl( aLink );
-    TwoFigureConfigHdl(m_pYearValueField);
+    TwoFigureConfigHdl(*m_pYearValueField);
 
     SetExchangeSupport();
 }
@@ -309,7 +308,6 @@ void OfaMiscTabPage::dispose()
     m_pFileDlgCB.clear();
     m_pPrintDlgCB.clear();
     m_pDocStatusCB.clear();
-    m_pSaveAlwaysCB.clear();
     m_pYearFrame.clear();
     m_pYearValueField.clear();
     m_pToYearFT.clear();
@@ -352,13 +350,6 @@ bool OfaMiscTabPage::FillItemSet( SfxItemSet* rSet )
         bModified = true;
     }
 
-    if ( m_pSaveAlwaysCB->IsValueChangedFromSaved() )
-    {
-        SvtMiscOptions aMiscOpt;
-        aMiscOpt.SetSaveAlwaysAllowed( m_pSaveAlwaysCB->IsChecked() );
-        bModified = true;
-    }
-
     const SfxUInt16Item* pUInt16Item = dynamic_cast< const SfxUInt16Item* >( GetOldItem( *rSet, SID_ATTR_YEAR2000 ) );
     sal_uInt16 nNum = (sal_uInt16)m_pYearValueField->GetText().toInt32();
     if ( pUInt16Item && pUInt16Item->GetValue() != nNum )
@@ -389,18 +380,16 @@ void OfaMiscTabPage::Reset( const SfxItemSet* rSet )
     m_pFileDlgCB->SaveValue();
     m_pPrintDlgCB->Check( !aMiscOpt.UseSystemPrintDialog() );
     m_pPrintDlgCB->SaveValue();
-    m_pSaveAlwaysCB->Check( aMiscOpt.IsSaveAlwaysAllowed() );
-    m_pSaveAlwaysCB->SaveValue();
 
     SvtPrintWarningOptions aPrintOptions;
     m_pDocStatusCB->Check(aPrintOptions.IsModifyDocumentOnPrintingAllowed());
     m_pDocStatusCB->SaveValue();
 
-    const SfxPoolItem* pItem = NULL;
+    const SfxPoolItem* pItem = nullptr;
     if ( SfxItemState::SET == rSet->GetItemState( SID_ATTR_YEAR2000, false, &pItem ) )
     {
         m_pYearValueField->SetValue( static_cast<const SfxUInt16Item*>(pItem)->GetValue() );
-        TwoFigureConfigHdl(m_pYearValueField);
+        TwoFigureConfigHdl(*m_pYearValueField);
     }
     else
     {
@@ -411,10 +400,8 @@ void OfaMiscTabPage::Reset( const SfxItemSet* rSet )
     m_pCollectUsageInfo->SaveValue();
 }
 
-IMPL_LINK( OfaMiscTabPage, TwoFigureHdl, NumericField*, pEd )
+IMPL_LINK_NOARG_TYPED( OfaMiscTabPage, TwoFigureHdl, Edit&, void )
 {
-    (void)pEd;
-
     OUString aOutput( m_aStrDateInfo );
     OUString aStr( m_pYearValueField->GetText() );
     OUString sSep( SvtSysLocale().GetLocaleData().getNumThousandSep() );
@@ -430,21 +417,19 @@ IMPL_LINK( OfaMiscTabPage, TwoFigureHdl, NumericField*, pEd )
         aOutput += OUString::number( nNum );
     }
     m_pToYearFT->SetText( aOutput );
-    return 0;
 }
 
 IMPL_LINK_TYPED( OfaMiscTabPage, TwoFigureConfigFocusHdl, Control&, rControl, void )
 {
-    TwoFigureConfigHdl(static_cast<NumericField*>(&rControl));
+    TwoFigureConfigHdl(static_cast<SpinField&>(rControl));
 }
-IMPL_LINK( OfaMiscTabPage, TwoFigureConfigHdl, NumericField*, pEd )
+IMPL_LINK_TYPED( OfaMiscTabPage, TwoFigureConfigHdl, SpinField&, rEd, void )
 {
     sal_Int64 nNum = m_pYearValueField->GetValue();
     OUString aOutput(OUString::number(nNum));
     m_pYearValueField->SetText(aOutput);
     m_pYearValueField->SetSelection( Selection( 0, aOutput.getLength() ) );
-    TwoFigureHdl( pEd );
-    return 0;
+    TwoFigureHdl( static_cast<Edit&>(rEd) );
 }
 
 class CanvasSettings
@@ -484,7 +469,7 @@ CanvasSettings::CanvasSettings() :
 
         mxForceFlagNameAccess.set(
             xConfigProvider->createInstanceWithArguments(
-                OUString("com.sun.star.configuration.ConfigurationUpdateAccess"),
+                "com.sun.star.configuration.ConfigurationUpdateAccess",
                 Sequence<Any>( &propValue, 1 ) ),
             UNO_QUERY_THROW );
 
@@ -495,7 +480,7 @@ CanvasSettings::CanvasSettings() :
 
         Reference<XNameAccess> xNameAccess(
             xConfigProvider->createInstanceWithArguments(
-                OUString("com.sun.star.configuration.ConfigurationAccess"),
+                "com.sun.star.configuration.ConfigurationAccess",
                 Sequence<Any>( &propValue, 1 ) ), UNO_QUERY_THROW );
         Reference<XHierarchicalNameAccess> xHierarchicalNameAccess(
             xNameAccess, UNO_QUERY_THROW);
@@ -604,8 +589,7 @@ void CanvasSettings::EnabledHardwareAcceleration( bool _bEnabled ) const
     if( !xNameReplace.is() )
         return;
 
-    xNameReplace->replaceByName( OUString("ForceSafeServiceImpl"),
-                                 makeAny(!_bEnabled) );
+    xNameReplace->replaceByName( "ForceSafeServiceImpl", makeAny(!_bEnabled) );
 
     Reference< XChangesBatch > xChangesBatch(
         mxForceFlagNameAccess, UNO_QUERY );
@@ -640,6 +624,8 @@ OfaViewTabPage::OfaViewTabPage(vcl::Window* pParent, const SfxItemSet& rSet)
     get(m_pUseAntiAliase, "useaa");
     get(m_pUseOpenGL, "useopengl");
     get(m_pForceOpenGL, "forceopengl");
+    get(m_pOpenGLStatusEnabled, "openglenabled");
+    get(m_pOpenGLStatusDisabled, "opengldisabled");
     get(m_pMousePosLB, "mousepos");
     get(m_pMouseMiddleLB, "mousemiddle");
 
@@ -681,6 +667,8 @@ OfaViewTabPage::OfaViewTabPage(vcl::Window* pParent, const SfxItemSet& rSet)
         m_pUseOpenGL->Enable(false);
     if (officecfg::Office::Common::VCL::ForceOpenGL::isReadOnly())
         m_pForceOpenGL->Enable(false);
+
+    UpdateOGLStatus();
 }
 
 OfaViewTabPage::~OfaViewTabPage()
@@ -691,11 +679,11 @@ OfaViewTabPage::~OfaViewTabPage()
 void OfaViewTabPage::dispose()
 {
     delete mpDrawinglayerOpt;
-    mpDrawinglayerOpt = NULL;
+    mpDrawinglayerOpt = nullptr;
     delete pCanvasSettings;
-    pCanvasSettings = NULL;
+    pCanvasSettings = nullptr;
     delete pAppearanceCfg;
-    pAppearanceCfg = NULL;
+    pAppearanceCfg = nullptr;
     m_pWindowSizeMF.clear();
     m_pIconSizeLB.clear();
     m_pIconStyleLB.clear();
@@ -708,6 +696,8 @@ void OfaViewTabPage::dispose()
     m_pUseAntiAliase.clear();
     m_pUseOpenGL.clear();
     m_pForceOpenGL.clear();
+    m_pOpenGLStatusEnabled.clear();
+    m_pOpenGLStatusDisabled.clear();
     m_pMousePosLB.clear();
     m_pMouseMiddleLB.clear();
     SfxTabPage::dispose();
@@ -977,6 +967,14 @@ void OfaViewTabPage::Reset( const SfxItemSet* )
 #endif
 }
 
+void OfaViewTabPage::UpdateOGLStatus()
+{
+    // Easier than a custom translation string.
+    bool bEnabled = OpenGLWrapper::isVCLOpenGLEnabled();
+    m_pOpenGLStatusEnabled->Show(bEnabled);
+    m_pOpenGLStatusDisabled->Show(!bEnabled);
+}
+
 struct LanguageConfig_Impl
 {
     SvtLanguageOptions aLanguageOptions;
@@ -1047,7 +1045,7 @@ OfaLanguagesTabPage::OfaLanguagesTabPage(vcl::Window* pParent, const SfxItemSet&
                        SvtLanguageTable::GetLanguageString( Application::GetSettings().GetUILanguageTag().getLanguageType(), true );
 
     m_pUserInterfaceLB->InsertEntry(aUILang);
-    m_pUserInterfaceLB->SetEntryData(0, 0);
+    m_pUserInterfaceLB->SetEntryData(0, nullptr);
     m_pUserInterfaceLB->SelectEntryPos(0);
     try
     {
@@ -1059,7 +1057,7 @@ OfaLanguagesTabPage::OfaLanguagesTabPage(vcl::Window* pParent, const SfxItemSet&
 
         // find out which locales are currently installed and add them to the listbox
         theArgs[0] = makeAny(NamedValue(OUString("nodepath"), makeAny(OUString(sInstalledLocalesPath))));
-    theNameAccess = Reference< XNameAccess > (
+        theNameAccess.set(
             theConfigProvider->createInstanceWithArguments(sAccessSrvc, theArgs ), UNO_QUERY_THROW );
         seqInstalledLanguages = theNameAccess->getElementNames();
         LanguageType aLang = LANGUAGE_DONTKNOW;
@@ -1078,7 +1076,7 @@ OfaLanguagesTabPage::OfaLanguagesTabPage(vcl::Window* pParent, const SfxItemSet&
         // find out whether the user has a specific locale specified
         Sequence< Any > theArgs2(1);
         theArgs2[0] = makeAny(NamedValue(OUString("nodepath"), makeAny(OUString(sUserLocalePath))));
-        theNameAccess = Reference< XNameAccess > (
+        theNameAccess.set(
             theConfigProvider->createInstanceWithArguments(sAccessSrvc, theArgs2 ), UNO_QUERY_THROW );
         if (theNameAccess->hasByName(sUserLocaleKey))
             theNameAccess->getByName(sUserLocaleKey) >>= m_sUserLocaleValue;
@@ -1109,7 +1107,7 @@ OfaLanguagesTabPage::OfaLanguagesTabPage(vcl::Window* pParent, const SfxItemSet&
     m_pComplexLanguageLB->SetLanguageList( SvxLanguageListFlags::CTL     | SvxLanguageListFlags::ONLY_KNOWN, true, false, true );
     m_pComplexLanguageLB->InsertDefaultLanguage( css::i18n::ScriptType::COMPLEX );
 
-    m_pLocaleSettingLB->SetLanguageList( SvxLanguageListFlags::ALL     | SvxLanguageListFlags::ONLY_KNOWN, false, false);
+    m_pLocaleSettingLB->SetLanguageList( SvxLanguageListFlags::ALL     | SvxLanguageListFlags::ONLY_KNOWN, false );
     m_pLocaleSettingLB->InsertSystemLanguage( );
 
     const NfCurrencyTable& rCurrTab = SvNumberFormatter::GetTheCurrencyTable();
@@ -1166,7 +1164,7 @@ OfaLanguagesTabPage::~OfaLanguagesTabPage()
 void OfaLanguagesTabPage::dispose()
 {
     delete pLangConfig;
-    pLangConfig = NULL;
+    pLangConfig = nullptr;
     m_pUserInterfaceLB.clear();
     m_pLocaleSettingFT.clear();
     m_pLocaleSettingLB.clear();
@@ -1473,12 +1471,12 @@ void OfaLanguagesTabPage::Reset( const SfxItemSet* rSet )
     // let LocaleSettingHdl enable/disable checkboxes for CJK/CTL support
     // #i15812# must be done *before* the configured currency is set
     // and update the decimal separator used for the given locale
-    LocaleSettingHdl(m_pLocaleSettingLB);
+    LocaleSettingHdl(*m_pLocaleSettingLB);
 
     // configured currency, for example, USD-en-US or EUR-de-DE, or empty for locale default
     OUString aAbbrev;
     LanguageType eLang;
-    const NfCurrencyEntry* pCurr = NULL;
+    const NfCurrencyEntry* pCurr = nullptr;
     sLang = pLangConfig->aSysLocaleOptions.GetCurrencyConfigString();
     if ( !sLang.isEmpty() )
     {
@@ -1542,7 +1540,7 @@ void OfaLanguagesTabPage::Reset( const SfxItemSet* rSet )
     //overwrite them by the values provided by the DocShell
     if(pCurrentDocShell)
     {
-        m_pCurrentDocCB->Enable(true);
+        m_pCurrentDocCB->Enable();
         m_pCurrentDocCB->Check(bLanguageCurrentDoc_Impl);
         const SfxPoolItem* pLang;
         if( SfxItemState::SET == rSet->GetItemState(SID_ATTR_LANGUAGE, false, &pLang))
@@ -1603,11 +1601,11 @@ void OfaLanguagesTabPage::Reset( const SfxItemSet* rSet )
 #endif
     // check the box "For the current document only"
     // set the focus to the Western Language box
-    const SfxPoolItem* pLang = 0;
+    const SfxPoolItem* pLang = nullptr;
     if ( SfxItemState::SET == rSet->GetItemState(SID_SET_DOCUMENT_LANGUAGE, false, &pLang ) && static_cast<const SfxBoolItem*>(pLang)->GetValue() )
     {
         m_pWesternLanguageLB->GrabFocus();
-        m_pCurrentDocCB->Enable(true);
+        m_pCurrentDocCB->Enable();
         m_pCurrentDocCB->Check();
     }
 }
@@ -1651,8 +1649,9 @@ namespace
     }
 }
 
-IMPL_LINK( OfaLanguagesTabPage, LocaleSettingHdl, SvxLanguageBox*, pBox )
+IMPL_LINK_TYPED( OfaLanguagesTabPage, LocaleSettingHdl, ListBox&, rListBox, void )
 {
+    SvxLanguageBox* pBox = static_cast<SvxLanguageBox*>(&rListBox);
     LanguageType eLang = pBox->GetSelectLanguage();
     SvtScriptType nType = SvtLanguageOptions::GetScriptTypeOfLanguage(eLang);
     // first check if CTL must be enabled
@@ -1697,13 +1696,11 @@ IMPL_LINK( OfaLanguagesTabPage, LocaleSettingHdl, SvxLanguageBox*, pBox )
     OUString aDatePatternsString = lcl_getDatePatternsConfigString( aLocaleWrapper);
     m_bDatePatternsValid = true;
     m_pDatePatternsED->SetText( aDatePatternsString);
-
-    return 0;
 }
 
-IMPL_LINK( OfaLanguagesTabPage, DatePatternsHdl, Edit*, pEd )
+IMPL_LINK_TYPED( OfaLanguagesTabPage, DatePatternsHdl, Edit&, rEd, void )
 {
-    const OUString aPatterns( pEd->GetText());
+    const OUString aPatterns( rEd.GetText());
     OUStringBuffer aBuf( aPatterns);
     sal_Int32 nChar = 0;
     bool bValid = true;
@@ -1789,26 +1786,25 @@ IMPL_LINK( OfaLanguagesTabPage, DatePatternsHdl, Edit*, pEd )
         // Do not use SetText(...,GetSelection()) because internally the
         // reference's pointer of the selection is obtained resulting in the
         // entire text being selected at the end.
-        Selection aSelection( pEd->GetSelection());
-        pEd->SetText( aBuf.makeStringAndClear(), aSelection);
+        Selection aSelection( rEd.GetSelection());
+        rEd.SetText( aBuf.makeStringAndClear(), aSelection);
     }
     if (bValid)
     {
-        pEd->SetControlForeground();
-        pEd->SetControlBackground();
+        rEd.SetControlForeground();
+        rEd.SetControlBackground();
     }
     else
     {
 #if 0
         //! Gives white on white!?! instead of white on reddish.
-        pEd->SetControlBackground( ::Color( RGB_COLORDATA( 0xff, 0x65, 0x63)));
-        pEd->SetControlForeground( ::Color( COL_WHITE));
+        rEd.SetControlBackground( ::Color( RGB_COLORDATA( 0xff, 0x65, 0x63)));
+        rEd.SetControlForeground( ::Color( COL_WHITE));
 #else
-        pEd->SetControlForeground( ::Color( RGB_COLORDATA( 0xf0, 0, 0)));
+        rEd.SetControlForeground( ::Color( RGB_COLORDATA( 0xf0, 0, 0)));
 #endif
     }
     m_bDatePatternsValid = bValid;
-    return 0;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

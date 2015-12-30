@@ -20,7 +20,6 @@
 #ifndef INCLUDED_FRAMEWORK_INC_UIELEMENT_STATUSINDICATORINTERFACEWRAPPER_HXX
 #define INCLUDED_FRAMEWORK_INC_UIELEMENT_STATUSINDICATORINTERFACEWRAPPER_HXX
 
-#include <macros/generic.hxx>
 #include <macros/xinterface.hxx>
 #include <macros/xtypeprovider.hxx>
 
@@ -36,25 +35,25 @@
 namespace framework
 {
 
-class StatusIndicatorInterfaceWrapper :   public ::cppu::WeakImplHelper< ::com::sun::star::task::XStatusIndicator>
+class StatusIndicatorInterfaceWrapper :   public ::cppu::WeakImplHelper< css::task::XStatusIndicator>
 {
     public:
-        StatusIndicatorInterfaceWrapper( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XComponent >& rStatusIndicatorImpl );
+        StatusIndicatorInterfaceWrapper( const css::uno::Reference< css::lang::XComponent >& rStatusIndicatorImpl );
         virtual ~StatusIndicatorInterfaceWrapper();
 
         //  XStatusIndicator
 
         virtual void SAL_CALL start   ( const OUString& sText  ,
-                                              sal_Int32        nRange ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-        virtual void SAL_CALL end     (                               ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-        virtual void SAL_CALL reset   (                               ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-        virtual void SAL_CALL setText ( const OUString& sText  ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-        virtual void SAL_CALL setValue(       sal_Int32        nValue ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                                              sal_Int32        nRange ) throw( css::uno::RuntimeException, std::exception ) override;
+        virtual void SAL_CALL end     (                               ) throw( css::uno::RuntimeException, std::exception ) override;
+        virtual void SAL_CALL reset   (                               ) throw( css::uno::RuntimeException, std::exception ) override;
+        virtual void SAL_CALL setText ( const OUString& sText  ) throw( css::uno::RuntimeException, std::exception ) override;
+        virtual void SAL_CALL setValue(       sal_Int32        nValue ) throw( css::uno::RuntimeException, std::exception ) override;
 
     private:
         StatusIndicatorInterfaceWrapper();
 
-        ::com::sun::star::uno::WeakReference< ::com::sun::star::lang::XComponent > m_xStatusIndicatorImpl;
+        css::uno::WeakReference< css::lang::XComponent > m_xStatusIndicatorImpl;
 };
 
 }

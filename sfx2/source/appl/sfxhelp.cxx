@@ -80,7 +80,7 @@ class NoHelpErrorBox : public MessageDialog
 public:
     explicit NoHelpErrorBox( vcl::Window* _pParent );
 
-    virtual void    RequestHelp( const HelpEvent& rHEvt ) SAL_OVERRIDE;
+    virtual void    RequestHelp( const HelpEvent& rHEvt ) override;
 };
 
 NoHelpErrorBox::NoHelpErrorBox( vcl::Window* _pParent )
@@ -173,7 +173,7 @@ bool GetHelpAnchor_Impl( const OUString& _rURL, OUString& _rAnchor )
     try
     {
         ::ucbhelper::Content aCnt( INetURLObject( _rURL ).GetMainURL( INetURLObject::NO_DECODE ),
-                             Reference< ::com::sun::star::ucb::XCommandEnvironment >(),
+                             Reference< css::ucb::XCommandEnvironment >(),
                              comphelper::getProcessComponentContext() );
         if ( ( aCnt.getPropertyValue("AnchorName") >>= sAnchor ) )
         {
@@ -189,7 +189,7 @@ bool GetHelpAnchor_Impl( const OUString& _rURL, OUString& _rAnchor )
             SAL_WARN( "sfx.appl", "Property 'AnchorName' is missing" );
         }
     }
-    catch (const ::com::sun::star::uno::Exception&)
+    catch (const css::uno::Exception&)
     {
     }
 
@@ -217,7 +217,7 @@ OUString SfxHelp_Impl::GetHelpText( const OUString& aCommandURL, const OUString&
 
 SfxHelp::SfxHelp() :
     bIsDebug( false ),
-    pImp    ( NULL )
+    pImp    ( nullptr )
 {
     // read the environment variable "HELP_DEBUG"
     // if it's set, you will see debug output on active help
@@ -277,9 +277,9 @@ OUString getCurrentModuleIdentifier_Impl()
         {
             sIdentifier = xModuleManager->identify( xCurrentFrame );
         }
-        catch (const ::com::sun::star::frame::UnknownModuleException&)
+        catch (const css::frame::UnknownModuleException&)
         {
-            DBG_WARNING( "SfxHelp::getCurrentModuleIdentifier_Impl(): unknown module (help in help?)" );
+            SAL_INFO( "sfx.appl", "SfxHelp::getCurrentModuleIdentifier_Impl(): unknown module (help in help?)" );
         }
         catch (const Exception&)
         {
@@ -398,13 +398,13 @@ SfxHelpWindow_Impl* impl_createHelp(Reference< XFrame2 >& rHelpTask   ,
         xDesktop->findFrame(  "OFFICE_HELP_TASK", FrameSearchFlag::TASKS | FrameSearchFlag::CREATE),
         UNO_QUERY);
     if (!xHelpTask.is())
-        return 0;
+        return nullptr;
 
     // create all internal windows and sub frames ...
-    Reference< ::com::sun::star::awt::XWindow > xParentWindow = xHelpTask->getContainerWindow();
-    vcl::Window*                                pParentWindow = VCLUnoHelper::GetWindow( xParentWindow );
-    VclPtrInstance<SfxHelpWindow_Impl>          pHelpWindow( xHelpTask, pParentWindow, WB_DOCKBORDER );
-    Reference< ::com::sun::star::awt::XWindow > xHelpWindow   = VCLUnoHelper::GetInterface( pHelpWindow );
+    Reference< css::awt::XWindow >      xParentWindow = xHelpTask->getContainerWindow();
+    vcl::Window*                        pParentWindow = VCLUnoHelper::GetWindow( xParentWindow );
+    VclPtrInstance<SfxHelpWindow_Impl>  pHelpWindow( xHelpTask, pParentWindow, WB_DOCKBORDER );
+    Reference< css::awt::XWindow >      xHelpWindow   = VCLUnoHelper::GetInterface( pHelpWindow );
 
     Reference< XFrame > xHelpContent;
     if (xHelpTask->setComponent( xHelpWindow, Reference< XController >() ))
@@ -424,13 +424,13 @@ SfxHelpWindow_Impl* impl_createHelp(Reference< XFrame2 >& rHelpTask   ,
 
         // This sub frame is created internally (if we called new SfxHelpWindow_Impl() ...)
         // It should exist :-)
-        xHelpContent = xHelpTask->findFrame(OUString("OFFICE_HELP"), FrameSearchFlag::CHILDREN);
+        xHelpContent = xHelpTask->findFrame("OFFICE_HELP", FrameSearchFlag::CHILDREN);
     }
 
     if (!xHelpContent.is())
     {
         pHelpWindow.disposeAndClear();
-        return NULL;
+        return nullptr;
     }
 
     xHelpContent->setName("OFFICE_HELP");
@@ -456,7 +456,7 @@ OUString SfxHelp::GetHelpText( const OUString& aCommandURL, const vcl::Window* p
             aNewHelpId = pParent->GetHelpId();
             sHelpText = SfxHelp_Impl::GetHelpText( OStringToOUString(aNewHelpId, RTL_TEXTENCODING_UTF8), sModuleName );
             if (!sHelpText.isEmpty())
-                pParent = NULL;
+                pParent = nullptr;
             else
                 pParent = pParent->GetParent();
         }
@@ -494,7 +494,7 @@ static bool impl_hasHelpInstalled( const OUString &rLang = OUString() )
 
 bool SfxHelp::SearchKeyword( const OUString& rKeyword )
 {
-    return Start_Impl( OUString(), NULL, rKeyword );
+    return Start_Impl( OUString(), nullptr, rKeyword );
 }
 
 bool SfxHelp::Start( const OUString& rURL, const vcl::Window* pWindow )
@@ -587,9 +587,9 @@ bool SfxHelp::Start_Impl(const OUString& rURL, const vcl::Window* pWindow, const
                             //that for help
                             bTriedTabPage = true;
                             Dialog *pDialog = static_cast<Dialog*>(pParent);
-                            TabControl *pCtrl = pDialog->hasBuilder() ? pDialog->get<TabControl>("tabcontrol") : NULL;
-                            TabPage* pTabPage = pCtrl ? pCtrl->GetTabPage(pCtrl->GetCurPageId()) : NULL;
-                            vcl::Window *pTabChild = pTabPage ? pTabPage->GetWindow(GetWindowType::FirstChild) : NULL;
+                            TabControl *pCtrl = pDialog->hasBuilder() ? pDialog->get<TabControl>("tabcontrol") : nullptr;
+                            TabPage* pTabPage = pCtrl ? pCtrl->GetTabPage(pCtrl->GetCurPageId()) : nullptr;
+                            vcl::Window *pTabChild = pTabPage ? pTabPage->GetWindow(GetWindowType::FirstChild) : nullptr;
                             if (pTabChild)
                                 pParent = pTabChild;
                         }
@@ -619,10 +619,10 @@ bool SfxHelp::Start_Impl(const OUString& rURL, const vcl::Window* pWindow, const
         xDesktop->findFrame( "OFFICE_HELP_TASK", FrameSearchFlag::CHILDREN),
         UNO_QUERY);
     Reference< XFrame > xHelpContent = xDesktop->findFrame(
-        OUString("OFFICE_HELP"),
+        "OFFICE_HELP",
         FrameSearchFlag::CHILDREN);
 
-    SfxHelpWindow_Impl* pHelpWindow = 0;
+    SfxHelpWindow_Impl* pHelpWindow = nullptr;
     if (!xHelp.is())
         pHelpWindow = impl_createHelp(xHelp, xHelpContent);
     else
@@ -637,7 +637,7 @@ bool SfxHelp::Start_Impl(const OUString& rURL, const vcl::Window* pWindow, const
     if (!rKeyword.isEmpty())
         pHelpWindow->OpenKeyword( rKeyword );
 
-    Reference < ::com::sun::star::awt::XTopWindow > xTopWindow( xHelp->getContainerWindow(), UNO_QUERY );
+    Reference < css::awt::XTopWindow > xTopWindow( xHelp->getContainerWindow(), UNO_QUERY );
     if ( xTopWindow.is() )
         xTopWindow->toFront();
 

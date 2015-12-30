@@ -38,81 +38,80 @@ namespace dbp
             ,public ::comphelper::OPropertyArrayUsageHelper< OUnoAutoPilot< TYPE, SERVICEINFO > >
             ,public OModuleResourceClient
     {
-        explicit OUnoAutoPilot(const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& _rxORB)
+        explicit OUnoAutoPilot(const css::uno::Reference< css::uno::XComponentContext >& _rxORB)
             : OUnoAutoPilot_Base(_rxORB)
         {
         }
 
 
     protected:
-        ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >
-                    m_xObjectModel;
+        css::uno::Reference< css::beans::XPropertySet >   m_xObjectModel;
 
     public:
         // XTypeProvider
-        virtual ::com::sun::star::uno::Sequence<sal_Int8> SAL_CALL getImplementationId(  ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        virtual css::uno::Sequence<sal_Int8> SAL_CALL getImplementationId(  ) throw(css::uno::RuntimeException, std::exception) override
         {
             return css::uno::Sequence<sal_Int8>();
         }
 
         // XServiceInfo
-        virtual OUString SAL_CALL getImplementationName() throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        virtual OUString SAL_CALL getImplementationName() throw(css::uno::RuntimeException, std::exception) override
         {
             return getImplementationName_Static();
         }
 
-        virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames() throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames() throw(css::uno::RuntimeException, std::exception) override
         {
             return getSupportedServiceNames_Static();
         }
 
         // XServiceInfo - static methods
-        static ::com::sun::star::uno::Sequence< OUString > getSupportedServiceNames_Static() throw( ::com::sun::star::uno::RuntimeException )
+        static css::uno::Sequence< OUString > getSupportedServiceNames_Static() throw( css::uno::RuntimeException )
         {
             return SERVICEINFO::getServiceNames();
         }
 
-        static OUString getImplementationName_Static() throw( ::com::sun::star::uno::RuntimeException )
+        static OUString getImplementationName_Static() throw( css::uno::RuntimeException )
         {
             return SERVICEINFO::getImplementationName();
         }
 
-        static ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >
-                SAL_CALL Create(const ::com::sun::star::uno::Reference< com::sun::star::lang::XMultiServiceFactory >& _rxFactory)
+        static css::uno::Reference< css::uno::XInterface >
+                SAL_CALL Create(const css::uno::Reference< css::lang::XMultiServiceFactory >& _rxFactory)
         {
             return *(new OUnoAutoPilot<TYPE, SERVICEINFO>( comphelper::getComponentContext(_rxFactory) ));
         }
 
         // XPropertySet
-        virtual ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySetInfo>  SAL_CALL getPropertySetInfo() throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        virtual css::uno::Reference< css::beans::XPropertySetInfo>  SAL_CALL getPropertySetInfo() throw(css::uno::RuntimeException, std::exception) override
         {
-            ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySetInfo >  xInfo( createPropertySetInfo( getInfoHelper() ) );
+            css::uno::Reference< css::beans::XPropertySetInfo >  xInfo( createPropertySetInfo( getInfoHelper() ) );
             return xInfo;
         }
 
-        virtual ::cppu::IPropertyArrayHelper& SAL_CALL getInfoHelper() SAL_OVERRIDE
+        virtual ::cppu::IPropertyArrayHelper& SAL_CALL getInfoHelper() override
         {
             return *this->getArrayHelper();
         }
 
         // OPropertyArrayUsageHelper
-        virtual ::cppu::IPropertyArrayHelper* createArrayHelper( ) const SAL_OVERRIDE
+        virtual ::cppu::IPropertyArrayHelper* createArrayHelper( ) const override
         {
-            ::com::sun::star::uno::Sequence< ::com::sun::star::beans::Property > aProps;
+            css::uno::Sequence< css::beans::Property > aProps;
             describeProperties(aProps);
             return new ::cppu::OPropertyArrayHelper(aProps);
         }
 
     protected:
     // OGenericUnoDialog overridables
-        virtual VclPtr<Dialog> createDialog(vcl::Window* _pParent) SAL_OVERRIDE
+        virtual VclPtr<Dialog> createDialog(vcl::Window* _pParent) override
         {
             return VclPtr<TYPE>::Create(_pParent, m_xObjectModel, m_aContext);
         }
 
-        virtual void implInitialize(const com::sun::star::uno::Any& _rValue) SAL_OVERRIDE
+        virtual void implInitialize(const css::uno::Any& _rValue) override
         {
-            ::com::sun::star::beans::PropertyValue aArgument;
+            css::beans::PropertyValue aArgument;
             if (_rValue >>= aArgument)
                 if (aArgument.Name == "ObjectModel")
                 {

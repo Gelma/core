@@ -25,6 +25,7 @@
 #include <cppuhelper/implbase.hxx>
 #include <comphelper/sequence.hxx>
 #include <com/sun/star/lang/XSingleComponentFactory.hpp>
+#include <cassert>
 #include <vector>
 #include <boost/noncopyable.hpp>
 
@@ -44,20 +45,20 @@ public:
 
     // XServiceInfo:
     virtual OUString SAL_CALL getImplementationName()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL supportsService( OUString const& name )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     // XSingleComponentFactory:
     virtual uno::Reference<uno::XInterface> SAL_CALL createInstanceWithContext(
         uno::Reference<uno::XComponentContext> const& xContext )
-        throw (uno::Exception, std::exception) SAL_OVERRIDE;
+        throw (uno::Exception, std::exception) override;
     virtual uno::Reference<uno::XInterface> SAL_CALL
     createInstanceWithArgumentsAndContext(
     uno::Sequence<uno::Any> const& args,
     uno::Reference<uno::XComponentContext> const& xContext )
-        throw (uno::Exception, std::exception) SAL_OVERRIDE;
+        throw (uno::Exception, std::exception) override;
 
 private:
     virtual ~Factory();
@@ -114,7 +115,7 @@ void * ServiceDecl::getFactory( sal_Char const* pImplName ) const
         pFac->acquire();
         return pFac;
     }
-    return 0;
+    return nullptr;
 }
 
 uno::Sequence<OUString> ServiceDecl::getSupportedServiceNames() const
@@ -149,6 +150,19 @@ bool ServiceDecl::supportsService( OUString const& name ) const
 OUString ServiceDecl::getImplementationName() const
 {
     return OUString::createFromAscii(m_pImplName);
+}
+
+void* component_getFactoryHelper( const sal_Char* pImplName,
+                                  std::initializer_list<ServiceDecl const *> args )
+{
+    for (auto const i: args) {
+        assert(i != nullptr);
+        void * fac = i->getFactory(pImplName);
+        if (fac != nullptr) {
+            return fac;
+        }
+    }
+    return nullptr;
 }
 
 } // namespace service_decl

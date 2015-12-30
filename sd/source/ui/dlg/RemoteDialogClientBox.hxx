@@ -59,7 +59,7 @@ struct ClientBoxEntry
     bool m_bActive :1;
     std::shared_ptr<ClientInfo> m_pClientInfo;
 
-    ClientBoxEntry(std::shared_ptr<ClientInfo> pClientInfo);
+    explicit ClientBoxEntry(std::shared_ptr<ClientInfo> pClientInfo);
    ~ClientBoxEntry();
 
 };
@@ -73,7 +73,7 @@ class ClientRemovedListener : public ::cppu::WeakImplHelper<css::lang::XEventLis
 
 public:
 
-    ClientRemovedListener(ClientBox *pParent)
+    explicit ClientRemovedListener(ClientBox *pParent)
     {
         m_pParent = pParent;
     }
@@ -81,7 +81,7 @@ public:
 
     // XEventListener
     virtual void SAL_CALL disposing(css::lang::EventObject const & evt)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 };
 
 class ClientBox : public Control
@@ -98,8 +98,6 @@ class ClientBox : public Control
     long m_nTopIndex;
     long m_nStdHeight;
     long m_nActiveHeight;
-    long m_nExtraHeight;
-    Size            m_aOutputSize;
 
     VclPtr<NumericBox> m_aPinBox;
     VclPtr<PushButton> m_aDeauthoriseButton;
@@ -129,38 +127,28 @@ class ClientBox : public Control
 
     DECL_DLLPRIVATE_LINK_TYPED( ScrollHdl, ScrollBar*, void );
     DECL_DLLPRIVATE_LINK_TYPED( DeauthoriseHdl, Button*, void );
-    //Index starts with 1.
-    //Throws an com::sun::star::lang::IllegalArgumentException, when the index is invalid.
-    void checkIndex(sal_Int32 pos) const;
 
 public:
     ClientBox( vcl::Window* pParent, WinBits nStyle );
     virtual ~ClientBox();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    void MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    void Paint( vcl::RenderContext& rRenderContext, const Rectangle &rPaintRect ) SAL_OVERRIDE;
-    void Resize() SAL_OVERRIDE;
-    Size GetOptimalSize() const SAL_OVERRIDE;
-    bool Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    void MouseButtonDown( const MouseEvent& rMEvt ) override;
+    void Paint( vcl::RenderContext& rRenderContext, const Rectangle &rPaintRect ) override;
+    void Resize() override;
+    Size GetOptimalSize() const override;
+    bool Notify( NotifyEvent& rNEvt ) override;
 
-    const Size GetMinOutputSizePixel() const;
-    void SetExtraSize( long nSize ) { m_nExtraHeight = nSize; }
     TClientBoxEntry GetEntryData( long nPos ) { return m_vEntries[ nPos ]; }
     long GetActiveEntryIndex();
-    long GetEntryCount() { return (long) m_vEntries.size(); }
     Rectangle GetEntryRect( const long nPos ) const;
     long PointToPos( const Point& rPos );
     void DoScroll( long nDelta );
     void RecalcAll();
-    void RemoveUnlocked();
 
     void selectEntry( const long nPos );
     long addEntry(std::shared_ptr<ClientInfo> pClientInfo);
     void clearEntries();
-
-    void prepareChecking();
-    void checkEntries();
 
     OUString getPin();
     void populateEntries();

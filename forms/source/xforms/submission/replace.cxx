@@ -56,10 +56,10 @@ CSubmission::SubmissionResult CSubmission::replace(const OUString& aReplace, con
          || aReplace.equalsIgnoreAsciiCase("document")) {
             Reference< XComponentLoader > xLoader;
             if (aFrame.is())
-                xLoader = Reference< XComponentLoader >(aFrame, UNO_QUERY);
+                xLoader.set(aFrame, UNO_QUERY);
 
             if (!xLoader.is())
-                xLoader = Reference< XComponentLoader >( Desktop::create(xContext), UNO_QUERY_THROW);
+                xLoader.set( Desktop::create(xContext), UNO_QUERY_THROW);
 
             // open the stream from the result...
             // build media descriptor
@@ -121,10 +121,10 @@ CSubmission::SubmissionResult CSubmission::replace(const OUString& aReplace, con
         pHelper->m_aInteractionHandler = _xHandler;
     else
         pHelper->m_aInteractionHandler.set(
-            InteractionHandler::createWithParent(m_xContext, 0), UNO_QUERY_THROW);
+            InteractionHandler::createWithParent(m_xContext, nullptr), UNO_QUERY_THROW);
 
     CProgressHandlerHelper *pProgressHelper = new CProgressHandlerHelper;
-    pHelper->m_aProgressHandler = Reference< XProgressHandler >(pProgressHelper);
+    pHelper->m_aProgressHandler.set(pProgressHelper);
 
     // UCB has ownership of environment...
     _rOutEnv = pHelper;

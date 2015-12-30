@@ -23,7 +23,7 @@
 #include <rtl/textcvt.h>
 #include <rtl/tencinfo.h>
 
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
 
 // structure to store the actuel data
 struct SvParser_Impl
@@ -50,7 +50,7 @@ struct SvParser_Impl
         , nToken(0)
         , nNextCh(0)
         , nSaveToken(0)
-        , hConv( 0 )
+        , hConv( nullptr )
         , hContext( reinterpret_cast<rtl_TextToUnicodeContext>(1) )
     {
     }
@@ -64,7 +64,7 @@ SvParser::SvParser( SvStream& rIn, sal_uInt8 nStackSize )
     : rInput( rIn )
     , nlLineNr( 1 )
     , nlLinePos( 1 )
-    , pImplData( 0 )
+    , pImplData( nullptr )
     , nTokenValue( 0 )
     , bTokenHasValue( false )
     , eState( SVPAR_NOTSTARTED )
@@ -115,7 +115,7 @@ void SvParser::SetSrcEncoding( rtl_TextEncoding eEnc )
             rtl_destroyTextToUnicodeContext( pImplData->hConv,
                                              pImplData->hContext );
             rtl_destroyTextToUnicodeConverter( pImplData->hConv );
-            pImplData->hConv = 0;
+            pImplData->hConv = nullptr;
             pImplData->hContext = reinterpret_cast<rtl_TextToUnicodeContext>(1);
         }
 
@@ -159,7 +159,7 @@ sal_Unicode SvParser::GetNextChar()
     bool bErr;
     if( bSwitchToUCS2 && 0 == rInput.Tell() )
     {
-        unsigned char c1, c2;
+        unsigned char c1;
         bool bSeekBack = true;
 
         rInput.ReadUChar( c1 );
@@ -168,6 +168,7 @@ sal_Unicode SvParser::GetNextChar()
         {
             if( 0xff == c1 || 0xfe == c1 )
             {
+                unsigned char c2;
                 rInput.ReadUChar( c2 );
                 bErr = rInput.IsEof() || rInput.GetError();
                 if( !bErr )
@@ -188,6 +189,7 @@ sal_Unicode SvParser::GetNextChar()
             }
             else if( 0xef == c1 || 0xbb == c1 ) // check for UTF-8 BOM
             {
+                unsigned char c2;
                 rInput.ReadUChar( c2 );
                 bErr = rInput.IsEof() || rInput.GetError();
                 if( !bErr )
@@ -330,7 +332,7 @@ sal_Unicode SvParser::GetNextChar()
 
                                 sBuffer[nLen++] = c1;
                                 nChars = rtl_convertTextToUnicode(
-                                            pImplData->hConv, 0, sBuffer, nLen, &cUC, 1,
+                                            pImplData->hConv, nullptr, sBuffer, nLen, &cUC, 1,
                                             RTL_TEXTTOUNICODE_FLAGS_UNDEFINED_ERROR|
                                             RTL_TEXTTOUNICODE_FLAGS_MBUNDEFINED_ERROR|
                                             RTL_TEXTTOUNICODE_FLAGS_INVALID_ERROR,
@@ -648,7 +650,7 @@ IMPL_LINK_NOARG_TYPED( SvParser, NewDataRead, LinkParamNone*, void )
  *
  *======================================================================*/
 
-typedef boost::ptr_vector<SvKeyValue> SvKeyValueList_Impl;
+typedef std::vector<SvKeyValue> SvKeyValueList_Impl;
 
 struct SvKeyValueIterator::Impl
 {
@@ -687,7 +689,7 @@ bool SvKeyValueIterator::GetNext (SvKeyValue &rKeyVal)
 
 void SvKeyValueIterator::Append (const SvKeyValue &rKeyVal)
 {
-    mpImpl->maList.push_back(new SvKeyValue(rKeyVal));
+    mpImpl->maList.push_back(rKeyVal);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

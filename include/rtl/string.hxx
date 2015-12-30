@@ -33,6 +33,7 @@
 #include <rtl/stringutils.hxx>
 
 #ifdef LIBO_INTERNAL_ONLY // "RTL_FAST_STRING"
+#include <config_global.h>
 #include <rtl/stringconcat.hxx>
 #endif
 
@@ -98,7 +99,7 @@ public:
     */
     OString()
     {
-        pData = 0;
+        pData = NULL;
         rtl_string_new( &pData );
     }
 
@@ -112,6 +113,23 @@ public:
         pData = str.pData;
         rtl_string_acquire( pData );
     }
+
+#ifndef _MSC_VER // TODO?
+#if defined LIBO_INTERNAL_ONLY
+    /**
+      Move constructor.
+
+      @param    str         a OString.
+      @since LibreOffice 5.2
+    */
+    OString( OString && str )
+    {
+        pData = str.pData;
+        str.pData = nullptr;
+        rtl_string_new( &str.pData );
+    }
+#endif
+#endif
 
     /**
       New string from OString data.
@@ -142,7 +160,7 @@ public:
       @param    value       a character.
     */
     explicit OString( sal_Char value )
-        : pData (0)
+        : pData (NULL)
     {
         rtl_string_newFromStr_WithLength( &pData, &value, 1 );
     }
@@ -158,14 +176,14 @@ public:
     template< typename T >
     OString( const T& value, typename libreoffice_internal::CharPtrDetector< T, libreoffice_internal::Dummy >::Type = libreoffice_internal::Dummy() )
     {
-        pData = 0;
+        pData = NULL;
         rtl_string_newFromStr( &pData, value );
     }
 
     template< typename T >
     OString( T& value, typename libreoffice_internal::NonConstCharArrayDetector< T, libreoffice_internal::Dummy >::Type = libreoffice_internal::Dummy() )
     {
-        pData = 0;
+        pData = NULL;
         rtl_string_newFromStr( &pData, value );
     }
 
@@ -184,7 +202,7 @@ public:
     {
         assert(
             libreoffice_internal::ConstCharArrayDetector<T>::isValid(literal));
-        pData = 0;
+        pData = NULL;
         if (libreoffice_internal::ConstCharArrayDetector<T>::length == 0) {
             rtl_string_new(&pData);
         } else {
@@ -209,7 +227,7 @@ public:
     */
     OString( const sal_Char * value, sal_Int32 length )
     {
-        pData = 0;
+        pData = NULL;
         rtl_string_newFromStr_WithLength( &pData, value, length );
     }
 
@@ -231,9 +249,9 @@ public:
              rtl_TextEncoding encoding,
              sal_uInt32 convertFlags = OUSTRING_TO_OSTRING_CVTFLAGS )
     {
-        pData = 0;
+        pData = NULL;
         rtl_uString2String( &pData, value, length, encoding, convertFlags );
-        if (pData == 0) {
+        if (pData == NULL) {
             throw std::bad_alloc();
         }
     }
@@ -280,6 +298,25 @@ public:
         return *this;
     }
 
+#ifndef _MSC_VER // TODO?
+#if defined LIBO_INTERNAL_ONLY
+    /**
+      Move assign a new string.
+
+      @param    str         a OString.
+      @since LibreOffice 5.2
+    */
+    OString & operator=( OString && str )
+    {
+        rtl_string_release( pData );
+        pData = str.pData;
+        str.pData = nullptr;
+        rtl_string_new( &str.pData );
+        return *this;
+    }
+#endif
+#endif
+
     /**
      @overload
      This function accepts an ASCII string literal as its argument.
@@ -309,10 +346,16 @@ public:
       @param    str         a OString.
     */
     OString & operator+=( const OString & str )
+#if defined LIBO_INTERNAL_ONLY && HAVE_CXX11_REF_QUALIFIER
+        &
+#endif
     {
         rtl_string_newConcat( &pData, pData, str.pData );
         return *this;
     }
+#if defined LIBO_INTERNAL_ONLY && HAVE_CXX11_REF_QUALIFIER
+    void operator+=(OString const &) && = delete;
+#endif
 
 #ifdef LIBO_INTERNAL_ONLY // "RTL_FAST_STRING"
     /**
@@ -321,6 +364,9 @@ public:
     */
     template< typename T1, typename T2 >
     OString& operator+=( const OStringConcat< T1, T2 >& c )
+#if HAVE_CXX11_REF_QUALIFIER
+        &
+#endif
     {
         sal_Int32 l = c.length();
         if( l == 0 )
@@ -332,6 +378,10 @@ public:
         pData->length = l;
         return *this;
     }
+#if HAVE_CXX11_REF_QUALIFIER
+    template<typename T1, typename T2> void operator +=(
+        OStringConcat<T1, T2> const &) && = delete;
+#endif
 #endif
 
     /**
@@ -736,9 +786,9 @@ public:
 
       @since LibreOffice 4.0
     */
-    bool startsWith(OString const & str, OString * rest = 0) const {
+    bool startsWith(OString const & str, OString * rest = NULL) const {
         bool b = match(str);
-        if (b && rest != 0) {
+        if (b && rest != NULL) {
             *rest = copy(str.getLength());
         }
         return b;
@@ -751,11 +801,11 @@ public:
     */
     template< typename T >
     typename libreoffice_internal::ConstCharArrayDetector< T, bool >::Type startsWith(
-        T & literal, OString * rest = 0) const
+        T & literal, OString * rest = NULL) const
     {
         RTL_STRING_CONST_FUNCTION
         bool b = match(literal, 0);
-        if (b && rest != 0) {
+        if (b && rest != NULL) {
             *rest = copy(
                 libreoffice_internal::ConstCharArrayDetector<T>::length);
         }
@@ -781,11 +831,11 @@ public:
 
       @since LibreOffice 5.1
     */
-    bool startsWithIgnoreAsciiCase(OString const & str, OString * rest = 0)
+    bool startsWithIgnoreAsciiCase(OString const & str, OString * rest = NULL)
         const
     {
         bool b = matchIgnoreAsciiCase(str);
-        if (b && rest != 0) {
+        if (b && rest != NULL) {
             *rest = copy(str.getLength());
         }
         return b;
@@ -798,13 +848,13 @@ public:
     */
     template< typename T >
     typename libreoffice_internal::ConstCharArrayDetector< T, bool >::Type
-    startsWithIgnoreAsciiCase(T & literal, OString * rest = 0) const
+    startsWithIgnoreAsciiCase(T & literal, OString * rest = NULL) const
     {
         RTL_STRING_CONST_FUNCTION
         assert(
             libreoffice_internal::ConstCharArrayDetector<T>::isValid(literal));
         bool b = matchIgnoreAsciiCase(literal);
-        if (b && rest != 0) {
+        if (b && rest != NULL) {
             *rest = copy(
                 libreoffice_internal::ConstCharArrayDetector<T>::length);
         }
@@ -825,10 +875,10 @@ public:
 
       @since LibreOffice 3.6
     */
-    bool endsWith(OString const & str, OString * rest = 0) const {
+    bool endsWith(OString const & str, OString * rest = NULL) const {
         bool b = str.getLength() <= getLength()
             && match(str, getLength() - str.getLength());
-        if (b && rest != 0) {
+        if (b && rest != NULL) {
             *rest = copy(0, getLength() - str.getLength());
         }
         return b;
@@ -841,7 +891,7 @@ public:
     */
     template< typename T >
     typename libreoffice_internal::ConstCharArrayDetector< T, bool >::Type endsWith(
-        T & literal, OString * rest = 0) const
+        T & literal, OString * rest = NULL) const
     {
         RTL_STRING_CONST_FUNCTION
         assert(
@@ -854,7 +904,7 @@ public:
                     literal),
                 (getLength()
                  - libreoffice_internal::ConstCharArrayDetector<T>::length));
-        if (b && rest != 0) {
+        if (b && rest != NULL) {
             *rest = copy(
                 0,
                 (getLength()
@@ -1200,7 +1250,7 @@ public:
     */
     SAL_WARN_UNUSED_RESULT OString copy( sal_Int32 beginIndex ) const
     {
-        rtl_String *pNew = 0;
+        rtl_String *pNew = NULL;
         rtl_string_newFromSubString( &pNew, pData, beginIndex, getLength() - beginIndex );
         return OString( pNew, SAL_NO_ACQUIRE );
     }
@@ -1219,7 +1269,7 @@ public:
     */
     SAL_WARN_UNUSED_RESULT OString copy( sal_Int32 beginIndex, sal_Int32 count ) const
     {
-        rtl_String *pNew = 0;
+        rtl_String *pNew = NULL;
         rtl_string_newFromSubString( &pNew, pData, beginIndex, count );
         return OString( pNew, SAL_NO_ACQUIRE );
     }
@@ -1234,7 +1284,7 @@ public:
     */
     SAL_WARN_UNUSED_RESULT OString concat( const OString & str ) const
     {
-        rtl_String* pNew = 0;
+        rtl_String* pNew = NULL;
         rtl_string_newConcat( &pNew, pData, str.pData );
         return OString( pNew, SAL_NO_ACQUIRE );
     }
@@ -1261,7 +1311,7 @@ public:
     */
     SAL_WARN_UNUSED_RESULT OString replaceAt( sal_Int32 index, sal_Int32 count, const OString& newStr ) const
     {
-        rtl_String* pNew = 0;
+        rtl_String* pNew = NULL;
         rtl_string_newReplaceStrAt( &pNew, pData, index, count, newStr.pData );
         return OString( pNew, SAL_NO_ACQUIRE );
     }
@@ -1281,7 +1331,7 @@ public:
     */
     SAL_WARN_UNUSED_RESULT OString replace( sal_Char oldChar, sal_Char newChar ) const
     {
-        rtl_String* pNew = 0;
+        rtl_String* pNew = NULL;
         rtl_string_newReplace( &pNew, pData, oldChar, newChar );
         return OString( pNew, SAL_NO_ACQUIRE );
     }
@@ -1305,13 +1355,13 @@ public:
       @since LibreOffice 3.6
     */
     SAL_WARN_UNUSED_RESULT OString replaceFirst(
-        OString const & from, OString const & to, sal_Int32 * index = 0) const
+        OString const & from, OString const & to, sal_Int32 * index = NULL) const
     {
-        rtl_String * s = 0;
+        rtl_String * s = NULL;
         sal_Int32 i = 0;
         rtl_string_newReplaceFirst(
             &s, pData, from.pData->buffer, from.pData->length,
-            to.pData->buffer, to.pData->length, index == 0 ? &i : index);
+            to.pData->buffer, to.pData->length, index == NULL ? &i : index);
         return OString(s, SAL_NO_ACQUIRE);
     }
 
@@ -1329,7 +1379,7 @@ public:
       @since LibreOffice 3.6
     */
     SAL_WARN_UNUSED_RESULT OString replaceAll(OString const & from, OString const & to) const {
-        rtl_String * s = 0;
+        rtl_String * s = NULL;
         rtl_string_newReplaceAll(
             &s, pData, from.pData->buffer, from.pData->length,
             to.pData->buffer, to.pData->length);
@@ -1348,7 +1398,7 @@ public:
     */
     SAL_WARN_UNUSED_RESULT OString toAsciiLowerCase() const
     {
-        rtl_String* pNew = 0;
+        rtl_String* pNew = NULL;
         rtl_string_newToAsciiLowerCase( &pNew, pData );
         return OString( pNew, SAL_NO_ACQUIRE );
     }
@@ -1365,7 +1415,7 @@ public:
     */
     SAL_WARN_UNUSED_RESULT OString toAsciiUpperCase() const
     {
-        rtl_String* pNew = 0;
+        rtl_String* pNew = NULL;
         rtl_string_newToAsciiUpperCase( &pNew, pData );
         return OString( pNew, SAL_NO_ACQUIRE );
     }
@@ -1383,7 +1433,7 @@ public:
     */
     SAL_WARN_UNUSED_RESULT OString trim() const
     {
-        rtl_String* pNew = 0;
+        rtl_String* pNew = NULL;
         rtl_string_newTrim( &pNew, pData );
         return OString( pNew, SAL_NO_ACQUIRE );
     }
@@ -1414,7 +1464,7 @@ public:
     */
     OString getToken( sal_Int32 token, sal_Char cTok, sal_Int32& index ) const
     {
-        rtl_String * pNew = 0;
+        rtl_String * pNew = NULL;
         index = rtl_string_getToken( &pNew, pData, token, cTok, index );
         return OString( pNew, SAL_NO_ACQUIRE );
     }
@@ -1588,7 +1638,7 @@ public:
     static OString number( long long ll, sal_Int16 radix = 10 )
     {
         sal_Char aBuf[RTL_STR_MAX_VALUEOFINT64];
-        rtl_String* pNewData = 0;
+        rtl_String* pNewData = NULL;
         rtl_string_newFromStr_WithLength( &pNewData, aBuf, rtl_str_valueOfInt64( aBuf, ll, radix ) );
         return OString( pNewData, SAL_NO_ACQUIRE );
     }
@@ -1597,7 +1647,7 @@ public:
     static OString number( unsigned long long ll, sal_Int16 radix = 10 )
     {
         sal_Char aBuf[RTL_STR_MAX_VALUEOFUINT64];
-        rtl_String* pNewData = 0;
+        rtl_String* pNewData = NULL;
         rtl_string_newFromStr_WithLength( &pNewData, aBuf, rtl_str_valueOfUInt64( aBuf, ll, radix ) );
         return OString( pNewData, SAL_NO_ACQUIRE );
     }
@@ -1614,7 +1664,7 @@ public:
     static OString number( float f )
     {
         sal_Char aBuf[RTL_STR_MAX_VALUEOFFLOAT];
-        rtl_String* pNewData = 0;
+        rtl_String* pNewData = NULL;
         rtl_string_newFromStr_WithLength( &pNewData, aBuf, rtl_str_valueOfFloat( aBuf, f ) );
         return OString( pNewData, SAL_NO_ACQUIRE );
     }
@@ -1631,7 +1681,7 @@ public:
     static OString number( double d )
     {
         sal_Char aBuf[RTL_STR_MAX_VALUEOFDOUBLE];
-        rtl_String* pNewData = 0;
+        rtl_String* pNewData = NULL;
         rtl_string_newFromStr_WithLength( &pNewData, aBuf, rtl_str_valueOfDouble( aBuf, d ) );
         return OString( pNewData, SAL_NO_ACQUIRE );
     }
@@ -1666,7 +1716,7 @@ public:
     static OString boolean( bool b )
     {
         sal_Char aBuf[RTL_STR_MAX_VALUEOFBOOLEAN];
-        rtl_String* pNewData = 0;
+        rtl_String* pNewData = NULL;
         rtl_string_newFromStr_WithLength( &pNewData, aBuf, rtl_str_valueOfBoolean( aBuf, b ) );
         return OString( pNewData, SAL_NO_ACQUIRE );
     }

@@ -24,6 +24,7 @@
 #include <tools/stream.hxx>
 #include <tools/debug.hxx>
 #include <tools/rc.h>
+#include <vcl/implimagetree.hxx>
 #include <vcl/salbtype.hxx>
 #include <vcl/outdev.hxx>
 #include <vcl/alpha.hxx>
@@ -36,7 +37,6 @@
 #include <vcl/settings.hxx>
 
 #include <image.h>
-#include <impimagetree.hxx>
 #include <basegfx/matrix/b2dhommatrixtools.hxx>
 
 // BitmapEx::Create
@@ -95,7 +95,7 @@ BitmapEx::BitmapEx( const ResId& rResId ) :
         eTransparent( TRANSPARENT_NONE ),
         bAlpha      ( false )
 {
-    ResMgr*                             pResMgr = NULL;
+    ResMgr*                             pResMgr = nullptr;
 
     ResMgr::GetResourceSkipHeader( rResId.SetRT( RSC_BITMAP ), &pResMgr );
     pResMgr->ReadLong();
@@ -107,11 +107,9 @@ BitmapEx::BitmapEx( const ResId& rResId ) :
 
 void BitmapEx::loadFromIconTheme( const OUString& rIconName )
 {
-    static ImplImageTreeSingletonRef aImageTree;
-
     OUString aIconTheme = Application::GetSettings().GetStyleSettings().DetermineIconTheme();
 
-    if( !aImageTree->loadImage( rIconName, aIconTheme, *this, true ) )
+    if( !ImplImageTree::get().loadImage( rIconName, aIconTheme, *this, true ) )
     {
 #ifdef DBG_UTIL
         OStringBuffer aErrorStr(
@@ -699,7 +697,8 @@ BitmapEx BitmapEx:: AutoScaleBitmap(BitmapEx & aBitmap, const long aStandardSize
     Size aStdSize( aStandardSize, aStandardSize );
     Rectangle aRect(aEmptyPoint, aStdSize );
 
-    ScopedVclPtrInstance< VirtualDevice > aVirDevice( *Application::GetDefaultDevice(), 0, 1 );
+    ScopedVclPtrInstance< VirtualDevice > aVirDevice(*Application::GetDefaultDevice(),
+                                                     DeviceFormat::DEFAULT, DeviceFormat::BITMASK);
     aVirDevice->SetOutputSizePixel( aStdSize );
     aVirDevice->SetFillColor( COL_TRANSPARENT );
     aVirDevice->SetLineColor( COL_TRANSPARENT );
@@ -785,8 +784,7 @@ sal_uInt8 BitmapEx::GetTransparency(sal_Int32 nX, sal_Int32 nY) const
 
 // Shift alpha transparent pixels between cppcanvas/ implementations
 // and vcl in a generally grotesque and under-performing fashion
-bool BitmapEx::Create( const ::com::sun::star::uno::Reference<
-                       ::com::sun::star::rendering::XBitmapCanvas > &xBitmapCanvas,
+bool BitmapEx::Create( const css::uno::Reference< css::rendering::XBitmapCanvas > &xBitmapCanvas,
                        const Size &rSize )
 {
     uno::Reference< beans::XFastPropertySet > xFastPropertySet( xBitmapCanvas, uno::UNO_QUERY );

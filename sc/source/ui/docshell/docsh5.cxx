@@ -193,7 +193,7 @@ ScDBData* ScDocShell::GetDBData( const ScRange& rMarked, ScGetDBMode eMode, ScGe
     }
     else if ( eMode == SC_DB_OLD )
     {
-        pData = NULL;                           // nichts gefunden
+        pData = nullptr;                           // nichts gefunden
         nStartCol = nEndCol = nCol;
         nStartRow = nEndRow = nRow;
         nStartTab = nEndTab = nTab;
@@ -272,7 +272,7 @@ ScDBData* ScDocShell::GetDBData( const ScRange& rMarked, ScGetDBMode eMode, ScGe
         }
         else
         {
-            ScDBCollection* pUndoColl = NULL;
+            ScDBCollection* pUndoColl = nullptr;
 
             OUString aNewName;
             if (eMode==SC_DB_IMPORT)
@@ -282,7 +282,7 @@ ScDBData* ScDocShell::GetDBData( const ScRange& rMarked, ScGetDBMode eMode, ScGe
 
                 OUString aImport = ScGlobal::GetRscString( STR_DBNAME_IMPORT );
                 long nCount = 0;
-                const ScDBData* pDummy = NULL;
+                const ScDBData* pDummy = nullptr;
                 ScDBCollection::NamedDBs& rDBs = pColl->getNamedDBs();
                 do
                 {
@@ -331,11 +331,11 @@ ScDBData* ScDocShell::GetAnonymousDBData(const ScRange& rRange)
 {
     ScDBCollection* pColl = aDocument.GetDBCollection();
     if (!pColl)
-        return NULL;
+        return nullptr;
 
     ScDBData* pData = pColl->getAnonDBs().getByRange(rRange);
     if (!pData)
-        return NULL;
+        return nullptr;
 
     if (!pData->HasHeader())
     {
@@ -350,7 +350,7 @@ ScDBData* ScDocShell::GetAnonymousDBData(const ScRange& rRange)
 ScDBData* ScDocShell::GetOldAutoDBRange()
 {
     ScDBData* pRet = pOldAutoDBRange;
-    pOldAutoDBRange = NULL;
+    pOldAutoDBRange = nullptr;
     return pRet;                    // has to be deleted by caller!
 }
 
@@ -384,7 +384,7 @@ void ScDocShell::CancelAutoDBRange()
         }
 
         delete pOldAutoDBRange;
-        pOldAutoDBRange = NULL;
+        pOldAutoDBRange = nullptr;
     }
 }
 
@@ -548,7 +548,7 @@ void ScDocShell::DoConsolidate( const ScConsolidateParam& rParam, bool bRecord )
     aData.GetSize( nColSize, nRowSize );
     if (bRecord && nColSize > 0 && nRowSize > 0)
     {
-        ScDBData* pUndoData = pDestData ? new ScDBData(*pDestData) : NULL;
+        ScDBData* pUndoData = pDestData ? new ScDBData(*pDestData) : nullptr;
 
         SCTAB nDestTab = rParam.nTab;
         ScArea aDestArea( rParam.nTab, rParam.nCol, rParam.nRow,
@@ -563,27 +563,27 @@ void ScDocShell::DoConsolidate( const ScConsolidateParam& rParam, bool bRecord )
 
             // alte Outlines
             ScOutlineTable* pTable = aDocument.GetOutlineTable( nDestTab );
-            ScOutlineTable* pUndoTab = pTable ? new ScOutlineTable( *pTable ) : NULL;
+            ScOutlineTable* pUndoTab = pTable ? new ScOutlineTable( *pTable ) : nullptr;
 
             ScDocument* pUndoDoc = new ScDocument( SCDOCMODE_UNDO );
             pUndoDoc->InitUndo( &aDocument, 0, nTabCount-1, false, true );
 
             // Zeilenstatus
             aDocument.CopyToDocument( 0,0,nDestTab, MAXCOL,MAXROW,nDestTab,
-                                    IDF_NONE, false, pUndoDoc );
+                                    InsertDeleteFlags::NONE, false, pUndoDoc );
 
             // alle Formeln
             aDocument.CopyToDocument( 0,0,0, MAXCOL,MAXROW,nTabCount-1,
-                                        IDF_FORMULA, false, pUndoDoc );
+                                        InsertDeleteFlags::FORMULA, false, pUndoDoc );
 
             // komplette Ausgangszeilen
             aDocument.CopyToDocument( 0,aDestArea.nRowStart,nDestTab,
                                     MAXCOL,aDestArea.nRowEnd,nDestTab,
-                                    IDF_ALL, false, pUndoDoc );
+                                    InsertDeleteFlags::ALL, false, pUndoDoc );
 
             // alten Ausgabebereich
             if (pDestData)
-                aDocument.CopyToDocument( aOldDest, IDF_ALL, false, pUndoDoc );
+                aDocument.CopyToDocument( aOldDest, InsertDeleteFlags::ALL, false, pUndoDoc );
 
             GetUndoManager()->AddUndoAction(
                     new ScUndoConsolidate( this, aDestArea, rParam, pUndoDoc,
@@ -596,21 +596,21 @@ void ScDocShell::DoConsolidate( const ScConsolidateParam& rParam, bool bRecord )
 
             aDocument.CopyToDocument( aDestArea.nColStart, aDestArea.nRowStart, aDestArea.nTab,
                                     aDestArea.nColEnd, aDestArea.nRowEnd, aDestArea.nTab,
-                                    IDF_ALL, false, pUndoDoc );
+                                    InsertDeleteFlags::ALL, false, pUndoDoc );
 
             // alten Ausgabebereich
             if (pDestData)
-                aDocument.CopyToDocument( aOldDest, IDF_ALL, false, pUndoDoc );
+                aDocument.CopyToDocument( aOldDest, InsertDeleteFlags::ALL, false, pUndoDoc );
 
             GetUndoManager()->AddUndoAction(
                     new ScUndoConsolidate( this, aDestArea, rParam, pUndoDoc,
-                                            false, 0, NULL, pUndoData ) );
+                                            false, 0, nullptr, pUndoData ) );
         }
     }
 
     if (pDestData)                                      // Zielbereich loeschen / anpassen
     {
-        aDocument.DeleteAreaTab(aOldDest, IDF_CONTENTS);
+        aDocument.DeleteAreaTab(aOldDest, InsertDeleteFlags::CONTENTS);
         pDestData->SetArea( rParam.nTab, rParam.nCol, rParam.nRow,
                             rParam.nCol + nColSize - 1, rParam.nRow + nRowSize - 1 );
         pDestData->SetHeader( rParam.bByRow );
@@ -684,7 +684,7 @@ void ScDocShell::UseScenario( SCTAB nTab, const OUString& rName, bool bRecord )
                     pUndoDoc->InitUndo( &aDocument, nTab,nEndTab );             // auch alle Szenarien
                     //  angezeigte Tabelle:
                     aDocument.CopyToDocument( nStartCol,nStartRow,nTab,
-                                    nEndCol,nEndRow,nTab, IDF_ALL,true, pUndoDoc, &aScenMark );
+                                    nEndCol,nEndRow,nTab, InsertDeleteFlags::ALL,true, pUndoDoc, &aScenMark );
                     //  Szenarien
                     for (SCTAB i=nTab+1; i<=nEndTab; i++)
                     {
@@ -699,7 +699,7 @@ void ScDocShell::UseScenario( SCTAB nTab, const OUString& rName, bool bRecord )
                         //  Bei Zurueckkopier-Szenarios auch Inhalte
                         if ( nScenFlags & SC_SCENARIO_TWOWAY )
                             aDocument.CopyToDocument( 0,0,i, MAXCOL,MAXROW,i,
-                                                        IDF_ALL,false, pUndoDoc );
+                                                        InsertDeleteFlags::ALL,false, pUndoDoc );
                     }
 
                     GetUndoManager()->AddUndoAction(
@@ -781,7 +781,7 @@ SCTAB ScDocShell::MakeScenario( SCTAB nTab, const OUString& rName, const OUStrin
             ++nNewTab;
 
         bool bCopyAll = ( (nFlags & SC_SCENARIO_COPYALL) != 0 );
-        const ScMarkData* pCopyMark = NULL;
+        const ScMarkData* pCopyMark = nullptr;
         if (!bCopyAll)
             pCopyMark = &rMark;
 
@@ -943,7 +943,7 @@ bool ScDocShell::MoveTable( SCTAB nSrcTab, SCTAB nDestTab, bool bCopy, bool bRec
                     Reference< XNameContainer > xLib;
                     if( xLibContainer.is() )
                     {
-                        com::sun::star::uno::Any aLibAny = xLibContainer->getByName( aLibName );
+                        css::uno::Any aLibAny = xLibContainer->getByName( aLibName );
                         aLibAny >>= xLib;
                     }
                     if( xLib.is() )
@@ -951,7 +951,7 @@ bool ScDocShell::MoveTable( SCTAB nSrcTab, SCTAB nDestTab, bool bCopy, bool bRec
                         xLib->getByName( sSrcCodeName ) >>= sSource;
                     }
                 }
-                catch ( const com::sun::star::uno::Exception& )
+                catch ( const css::uno::Exception& )
                 {
                 }
                 VBA_InsertModule( aDocument, nTabToUse, sCodeName, sSource );
@@ -1011,7 +1011,7 @@ IMPL_LINK_TYPED( ScDocShell, RefreshDBDataHdl, Timer*, pRefreshTimer, void )
     {
         ScRange aRange;
         pDBData->GetArea( aRange );
-        bool bContinue = aFunc.DoImport( aRange.aStart.Tab(), aImportParam, NULL, true ); //! Api-Flag as parameter
+        bool bContinue = aFunc.DoImport( aRange.aStart.Tab(), aImportParam, nullptr, true ); //! Api-Flag as parameter
         // internal operations (sort, query, subtotal) only if no error
         if (bContinue)
         {

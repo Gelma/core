@@ -33,32 +33,30 @@
 class Size;
 namespace vcl { class Font; }
 class VirtualDevice;
-class ImplGetDevFontList;
-class GetDevSizeList;
 class PhysicalFontCollection;
 enum class AddFontSubstituteFlags;
 
-// an ImplGetDevFontList is created by an PhysicalFontCollection
+// an ImplDeviceFontList is created by an PhysicalFontCollection
 // it becomes invalid when original PhysicalFontCollection is modified
-class ImplGetDevFontList
+class ImplDeviceFontList
 {
 private:
     std::vector<PhysicalFontFace*> maDevFontVector;
 
 public:
-                        ImplGetDevFontList()        { maDevFontVector.reserve(1024); }
+                        ImplDeviceFontList()        { maDevFontVector.reserve(1024); }
     void                Add( PhysicalFontFace* pFace )  { maDevFontVector.push_back( pFace ); }
     PhysicalFontFace*   Get( int nIndex ) const     { return maDevFontVector[ nIndex ]; }
     int                 Count() const               { return maDevFontVector.size(); }
 };
 
-class ImplGetDevSizeList
+class ImplDeviceFontSizeList
 {
 private:
     std::vector<int>    maSizeList;
 
 public:
-                        ImplGetDevSizeList()
+                        ImplDeviceFontSizeList()
                         { maSizeList.reserve( 32 ); }
     void                Add( int nHeight )      { maSizeList.push_back( nHeight ); }
     int                 Count() const           { return maSizeList.size(); }
@@ -86,8 +84,6 @@ protected:
 
 struct ImplFontSubstEntry
 {
-    OUString                  maName;
-    OUString                  maReplaceName;
     OUString                  maSearchName;
     OUString                  maSearchReplaceName;
     AddFontSubstituteFlags    mnFlags;

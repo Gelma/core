@@ -62,27 +62,27 @@ void SwWrtShell::Do( DoType eDoType, sal_uInt16 nCnt )
     DoUndo(bSaveDoesUndo);
 
     bool bCreateXSelection = false;
-    const bool bFrmSelected = IsFrmSelected() || IsObjSelected();
+    const bool bFrameSelected = IsFrameSelected() || IsObjSelected();
     if ( IsSelection() )
     {
-        if ( bFrmSelected )
-            UnSelectFrm();
+        if ( bFrameSelected )
+            UnSelectFrame();
 
         // Set the function pointer for canceling the selection at the
         // cursor position.
         m_fnKillSel = &SwWrtShell::ResetSelect;
-        m_fnSetCrsr = &SwWrtShell::SetCrsrKillSel;
+        m_fnSetCursor = &SwWrtShell::SetCursorKillSel;
         bCreateXSelection = true;
     }
-    else if ( bFrmSelected )
+    else if ( bFrameSelected )
     {
-        EnterSelFrmMode();
+        EnterSelFrameMode();
         bCreateXSelection = true;
     }
     else if( (CNT_GRF | CNT_OLE ) & GetCntType() )
     {
         SelectObj( GetCharRect().Pos() );
-        EnterSelFrmMode();
+        EnterSelFrameMode();
         bCreateXSelection = true;
     }
 
@@ -102,7 +102,7 @@ OUString SwWrtShell::GetDoString( DoType eDoType ) const
     {
     case UNDO:
         nResStr = STR_UNDO;
-        (void)GetLastUndoInfo(&aUndoStr, 0);
+        (void)GetLastUndoInfo(&aUndoStr, nullptr);
         break;
     case REDO:
         nResStr = STR_REDO;

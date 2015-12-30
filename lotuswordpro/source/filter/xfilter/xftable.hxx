@@ -96,9 +96,9 @@ public:
 
     bool    IsSubTable();
 
-    enumXFContent   GetContentType() SAL_OVERRIDE;
+    enumXFContent   GetContentType() override;
 
-    virtual void    ToXml(IXFStream *pStrm) SAL_OVERRIDE;
+    virtual void    ToXml(IXFStream *pStrm) override;
 
     void RemoveRow(sal_uInt16 row)
     {
@@ -125,7 +125,7 @@ inline void XFTable::SetTableName(const OUString& name)
 inline void XFTable::SetOwnerCell(XFCell *pCell)
 {
     m_pOwnerCell = pCell;
-    m_bSubTable = (pCell!=NULL);
+    m_bSubTable = (pCell!=nullptr);
 }
 
 inline bool XFTable::IsSubTable()

@@ -93,7 +93,7 @@ void SAL_CALL ScriptProtocolHandler::initialize(
 
 Reference< XDispatch > SAL_CALL ScriptProtocolHandler::queryDispatch(
     const URL& aURL, const OUString& sTargetFrameName, sal_Int32 nSearchFlags )
-    throw( ::com::sun::star::uno::RuntimeException, std::exception )
+    throw( css::uno::RuntimeException, std::exception )
 {
     (void)sTargetFrameName;
     (void)nSearchFlags;
@@ -161,9 +161,9 @@ void SAL_CALL ScriptProtocolHandler::dispatchWithNotification(
                 {
                     if ( xListener.is() )
                     {
-                        ::com::sun::star::frame::DispatchResultEvent aEvent(
+                        css::frame::DispatchResultEvent aEvent(
                                 static_cast< ::cppu::OWeakObject* >( this ),
-                                ::com::sun::star::frame::DispatchResultState::FAILURE,
+                                css::frame::DispatchResultState::FAILURE,
                                 invokeResult );
                         try
                         {
@@ -271,10 +271,10 @@ void SAL_CALL ScriptProtocolHandler::dispatchWithNotification(
     {
         SfxAbstractDialogFactory* pFact = SfxAbstractDialogFactory::Create();
 
-        if ( pFact != NULL )
+        if ( pFact != nullptr )
         {
             std::unique_ptr<VclAbstractDialog> pDlg(
-                pFact->CreateScriptErrorDialog( NULL, aException ));
+                pFact->CreateScriptErrorDialog( nullptr, aException ));
 
             if ( pDlg )
                 pDlg->Execute();
@@ -285,17 +285,17 @@ void SAL_CALL ScriptProtocolHandler::dispatchWithNotification(
     {
         // always call dispatchFinished(), because we didn't load a document but
         // executed a macro instead!
-        ::com::sun::star::frame::DispatchResultEvent aEvent;
+        css::frame::DispatchResultEvent aEvent;
 
         aEvent.Source = static_cast< ::cppu::OWeakObject* >( this );
         aEvent.Result = invokeResult;
         if ( bSuccess )
         {
-            aEvent.State = ::com::sun::star::frame::DispatchResultState::SUCCESS;
+            aEvent.State = css::frame::DispatchResultState::SUCCESS;
         }
         else
         {
-            aEvent.State = ::com::sun::star::frame::DispatchResultState::FAILURE;
+            aEvent.State = css::frame::DispatchResultState::FAILURE;
         }
 
         try
@@ -356,7 +356,7 @@ ScriptProtocolHandler::getScriptInvocation()
             Reference< XFrame > xFrame( m_xFrame.get(), UNO_QUERY );
             if ( xFrame.is() )
             {
-                SfxFrame* pFrame = NULL;
+                SfxFrame* pFrame = nullptr;
                 for ( pFrame = SfxFrame::GetFirst(); pFrame; pFrame = SfxFrame::GetNext( *pFrame ) )
                 {
                     if ( pFrame->GetFrameInterface() == xFrame )
@@ -420,8 +420,7 @@ void ScriptProtocolHandler::createScriptProvider()
             Any aContext;
             if ( getScriptInvocation() )
                 aContext = makeAny( m_xScriptInvocation );
-            m_xScriptProvider = Reference< provider::XScriptProvider > (
-                xFac->createScriptProvider( aContext ), UNO_QUERY_THROW );
+            m_xScriptProvider.set( xFac->createScriptProvider( aContext ), UNO_QUERY_THROW );
         }
     }
     catch ( const RuntimeException & e )
@@ -469,11 +468,8 @@ throw( RuntimeException, std::exception )
 /* Helper for XServiceInfo */
 Sequence< OUString > ScriptProtocolHandler::impl_getStaticSupportedServiceNames()
 {
-    ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );
-    Sequence< OUString > seqServiceNames( 1 );
-    seqServiceNames.getArray() [ 0 ] =
-        OUString::createFromAscii( ::scripting_protocolhandler::MYSERVICENAME );
-    return seqServiceNames ;
+    Sequence< OUString > seqServiceNames { OUString::createFromAscii(::scripting_protocolhandler::MYSERVICENAME) };
+    return seqServiceNames;
 }
 
 /* Helper for XServiceInfo */
@@ -514,19 +510,17 @@ extern "C"
         (void)pRegistryKey;
 
         // Set default return value for this operation - if it failed.
-        void * pReturn = NULL ;
+        void * pReturn = nullptr ;
 
         if (
-            ( pImplementationName != NULL ) &&
-            ( pServiceManager != NULL )
+            ( pImplementationName != nullptr ) &&
+            ( pServiceManager != nullptr )
         )
         {
             // Define variables which are used in following macros.
-            ::com::sun::star::uno::Reference<
-            ::com::sun::star::lang::XSingleServiceFactory > xFactory ;
-            ::com::sun::star::uno::Reference< ::com::sun::star::lang::XMultiServiceFactory >
-            xServiceManager( static_cast<
-            ::com::sun::star::lang::XMultiServiceFactory* >( pServiceManager ) ) ;
+            css::uno::Reference< css::lang::XSingleServiceFactory > xFactory;
+            css::uno::Reference< css::lang::XMultiServiceFactory > xServiceManager(
+                static_cast< css::lang::XMultiServiceFactory* >( pServiceManager ) ) ;
 
             if ( ::scripting_protocolhandler::ScriptProtocolHandler::impl_getStaticImplementationName().equals(
                 OUString::createFromAscii( pImplementationName ) ) )

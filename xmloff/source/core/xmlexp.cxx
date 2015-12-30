@@ -139,7 +139,7 @@ const XMLServiceMapEntry_Impl aServiceMap[] =
     SERVICE_MAP_ENTRY( DRAW ),   // it must appear before Draw
     SERVICE_MAP_ENTRY( MATH ),
     SERVICE_MAP_ENTRY( CHART ),
-    { 0, 0, 0, 0 }
+    { nullptr, 0, nullptr, 0 }
 };
 
 class SettingsExportFacade : public ::xmloff::XMLSettingsExportContext
@@ -155,18 +155,18 @@ public:
     }
 
     virtual void    AddAttribute( enum ::xmloff::token::XMLTokenEnum i_eName,
-                                  const OUString& i_rValue ) SAL_OVERRIDE;
+                                  const OUString& i_rValue ) override;
     virtual void    AddAttribute( enum ::xmloff::token::XMLTokenEnum i_eName,
-                                  enum ::xmloff::token::XMLTokenEnum i_eValue ) SAL_OVERRIDE;
+                                  enum ::xmloff::token::XMLTokenEnum i_eValue ) override;
 
     virtual void    StartElement( enum ::xmloff::token::XMLTokenEnum i_eName,
-                                  const bool i_bIgnoreWhitespace ) SAL_OVERRIDE;
-    virtual void    EndElement(   const bool i_bIgnoreWhitespace ) SAL_OVERRIDE;
+                                  const bool i_bIgnoreWhitespace ) override;
+    virtual void    EndElement(   const bool i_bIgnoreWhitespace ) override;
 
-    virtual void    Characters( const OUString& i_rCharacters ) SAL_OVERRIDE;
+    virtual void    Characters( const OUString& i_rCharacters ) override;
 
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >
-                    GetComponentContext() const SAL_OVERRIDE;
+    virtual css::uno::Reference< css::uno::XComponentContext >
+                    GetComponentContext() const override;
 private:
     SvXMLExport&                    m_rExport;
     ::std::stack< OUString > m_aElements;
@@ -207,7 +207,7 @@ Reference< XComponentContext > SettingsExportFacade::GetComponentContext() const
 }
 
 class SvXMLExportEventListener : public cppu::WeakImplHelper<
-                            com::sun::star::lang::XEventListener >
+                            css::lang::XEventListener >
 {
 private:
     SvXMLExport*    pExport;
@@ -217,7 +217,7 @@ public:
     virtual                 ~SvXMLExportEventListener();
 
                             // XEventListener
-    virtual void SAL_CALL disposing(const lang::EventObject& rEventObject) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing(const lang::EventObject& rEventObject) throw(css::uno::RuntimeException, std::exception) override;
 };
 
 SvXMLExportEventListener::SvXMLExportEventListener(SvXMLExport* pTempExport)
@@ -236,7 +236,7 @@ void SAL_CALL SvXMLExportEventListener::disposing( const lang::EventObject& )
     if (pExport)
     {
         pExport->DisposingModel();
-        pExport = NULL;
+        pExport = nullptr;
     }
 }
 
@@ -256,9 +256,6 @@ public:
     uno::Reference< embed::XStorage >                   mxTargetStorage;
 
     SvtSaveOptions                                      maSaveOptions;
-
-    /// relative path of stream in package, e.g. "someobject/content.xml"
-    OUString mStreamPath;
 
     /// name of stream in package, e.g., "content.xml"
     OUString mStreamName;
@@ -302,7 +299,7 @@ SvXMLExport_Impl::SvXMLExport_Impl()
 void SvXMLExport::SetDocHandler( const uno::Reference< xml::sax::XDocumentHandler > &rHandler )
 {
     mxHandler = rHandler;
-    mxExtHandler = uno::Reference<xml::sax::XExtendedDocumentHandler>( mxHandler, UNO_QUERY );
+    mxExtHandler.set( mxHandler, UNO_QUERY );
 }
 
 void SvXMLExport::_InitCtor()
@@ -448,11 +445,11 @@ SvXMLExport::SvXMLExport(
     mpNamespaceMap( new SvXMLNamespaceMap ),
     mpUnitConv( new SvXMLUnitConverter( xContext,
                 util::MeasureUnit::MM_100TH, eDefaultMeasureUnit) ),
-    mpNumExport(0L),
-    mpProgressBarHelper( NULL ),
-    mpEventExport( NULL ),
-    mpImageMapExport( NULL ),
-    mpXMLErrors( NULL ),
+    mpNumExport(nullptr),
+    mpProgressBarHelper( nullptr ),
+    mpEventExport( nullptr ),
+    mpImageMapExport( nullptr ),
+    mpXMLErrors( nullptr ),
     mbExtended( false ),
     meClass( eClass ),
     mnExportFlags( nExportFlags ),
@@ -465,7 +462,7 @@ SvXMLExport::SvXMLExport(
 }
 
 SvXMLExport::SvXMLExport(
-    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& xContext,
+    const css::uno::Reference< css::uno::XComponentContext >& xContext,
     OUString const & implementationName,
     const OUString &rFileName,
     sal_Int16 const eDefaultMeasureUnit /*css::util::MeasureUnit*/,
@@ -479,11 +476,11 @@ SvXMLExport::SvXMLExport(
     mpNamespaceMap( new SvXMLNamespaceMap ),
     mpUnitConv( new SvXMLUnitConverter( xContext,
                 util::MeasureUnit::MM_100TH, eDefaultMeasureUnit) ),
-    mpNumExport(0L),
-    mpProgressBarHelper( NULL ),
-    mpEventExport( NULL ),
-    mpImageMapExport( NULL ),
-    mpXMLErrors( NULL ),
+    mpNumExport(nullptr),
+    mpProgressBarHelper( nullptr ),
+    mpEventExport( nullptr ),
+    mpImageMapExport( nullptr ),
+    mpXMLErrors( nullptr ),
     mbExtended( false ),
     meClass( XML_TOKEN_INVALID ),
     mnExportFlags( SvXMLExportFlags::NONE ),
@@ -500,7 +497,7 @@ SvXMLExport::SvXMLExport(
 }
 
 SvXMLExport::SvXMLExport(
-    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& xContext,
+    const css::uno::Reference< css::uno::XComponentContext >& xContext,
     OUString const & implementationName,
     const OUString &rFileName,
     const uno::Reference< xml::sax::XDocumentHandler > & rHandler,
@@ -518,11 +515,11 @@ SvXMLExport::SvXMLExport(
     mpUnitConv( new SvXMLUnitConverter( xContext,
                     util::MeasureUnit::MM_100TH,
                     SvXMLUnitConverter::GetMeasureUnit(eDefaultFieldUnit)) ),
-    mpNumExport(0L),
-    mpProgressBarHelper( NULL ),
-    mpEventExport( NULL ),
-    mpImageMapExport( NULL ),
-    mpXMLErrors( NULL ),
+    mpNumExport(nullptr),
+    mpProgressBarHelper( nullptr ),
+    mpEventExport( nullptr ),
+    mpImageMapExport( nullptr ),
+    mpXMLErrors( nullptr ),
     mbExtended( false ),
     meClass( XML_TOKEN_INVALID ),
     mnExportFlags( SvXMLExportFlags::NONE ),
@@ -591,15 +588,13 @@ SvXMLExport::~SvXMLExport()
 
     if (mxEventListener.is() && mxModel.is())
         mxModel->removeEventListener(mxEventListener);
-
-    delete mpImpl;
 }
 
 // XExporter
 void SAL_CALL SvXMLExport::setSourceDocument( const uno::Reference< lang::XComponent >& xDoc )
     throw(lang::IllegalArgumentException, uno::RuntimeException, std::exception)
 {
-    mxModel = uno::Reference< frame::XModel >::query( xDoc );
+    mxModel.set( xDoc, UNO_QUERY );
     if( !mxModel.is() )
         throw lang::IllegalArgumentException();
     if (mxModel.is() && ! mxEventListener.is())
@@ -676,7 +671,7 @@ void SAL_CALL SvXMLExport::setSourceDocument( const uno::Reference< lang::XCompo
                 }
             }
         }
-        catch(const com::sun::star::uno::Exception&)
+        catch(const css::uno::Exception&)
         {
         }
     }
@@ -687,7 +682,7 @@ void SAL_CALL SvXMLExport::setSourceDocument( const uno::Reference< lang::XCompo
 
 // XInitialize
 void SAL_CALL SvXMLExport::initialize( const uno::Sequence< uno::Any >& aArguments )
-    throw(::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception)
+    throw(css::uno::Exception, css::uno::RuntimeException, std::exception)
 {
     // #93186# we need to queryInterface every single Any with any expected outcome. This variable hold the queryInterface results.
 
@@ -724,7 +719,7 @@ void SAL_CALL SvXMLExport::initialize( const uno::Sequence< uno::Any >& aArgumen
             mxHandler = xTmpDocHandler;
             *pAny >>= mxExtHandler;
 
-            if (mxNumberFormatsSupplier.is() && mpNumExport == NULL)
+            if (mxNumberFormatsSupplier.is() && mpNumExport == nullptr)
                 mpNumExport = new SvXMLNumFmtExport(*this, mxNumberFormatsSupplier);
         }
 
@@ -861,7 +856,7 @@ sal_Bool SAL_CALL SvXMLExport::filter( const uno::Sequence< beans::PropertyValue
         css::uno::Any ex(cppu::getCaughtException());
         SetError( XMLERROR_FLAG_ERROR | XMLERROR_FLAG_SEVERE | XMLERROR_API,
                   Sequence<OUString>(),
-                  ex.getValueTypeName() + ": \"" + e.Message + "\"", NULL );
+                  ex.getValueTypeName() + ": \"" + e.Message + "\"", nullptr );
     }
 
     // return true only if no error occurred
@@ -876,13 +871,13 @@ void SAL_CALL SvXMLExport::cancel() throw(uno::RuntimeException, std::exception)
 }
 
 OUString SAL_CALL SvXMLExport::getName(  )
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     return msFilterName;
 }
 
 void SAL_CALL SvXMLExport::setName( const OUString& )
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     // do nothing, because it is not possible to set the FilterName
 }
@@ -1015,7 +1010,7 @@ void SvXMLExport::AddAttribute( const OUString& rQName,
 }
 
 void SvXMLExport::AddLanguageTagAttributes( sal_uInt16 nPrefix, sal_uInt16 nPrefixRfc,
-        const ::com::sun::star::lang::Locale& rLocale, bool bWriteEmpty,
+        const css::lang::Locale& rLocale, bool bWriteEmpty,
         enum ::xmloff::token::XMLTokenEnum eClass )
 {
     if (rLocale.Variant.isEmpty())
@@ -1336,21 +1331,19 @@ sal_uInt32 SvXMLExport::exportDoc( enum ::xmloff::token::XMLTokenEnum eClass )
             {
                 if( !mxGraphicResolver.is() )
                 {
-                    mxGraphicResolver = Reference< XGraphicObjectResolver >::query(
-                        xFactory->createInstance(
-                            OUString( "com.sun.star.document.ExportGraphicObjectResolver")));
+                    mxGraphicResolver.set(
+                        xFactory->createInstance( "com.sun.star.document.ExportGraphicObjectResolver" ), UNO_QUERY);
                     bOwnGraphicResolver = mxGraphicResolver.is();
                 }
 
                 if( !mxEmbeddedResolver.is() )
                 {
-                    mxEmbeddedResolver = Reference< XEmbeddedObjectResolver >::query(
-                        xFactory->createInstance(
-                            OUString( "com.sun.star.document.ExportEmbeddedObjectResolver")));
+                    mxEmbeddedResolver.set(
+                        xFactory->createInstance( "com.sun.star.document.ExportEmbeddedObjectResolver" ), UNO_QUERY);
                     bOwnEmbeddedResolver = mxEmbeddedResolver.is();
                 }
             }
-            catch(const com::sun::star::uno::Exception&)
+            catch(const css::uno::Exception&)
             {
             }
         }
@@ -1372,8 +1365,7 @@ sal_uInt32 SvXMLExport::exportDoc( enum ::xmloff::token::XMLTokenEnum eClass )
 
             Any aAny;
             aAny <<= GetXMLToken( eClass );
-            xConvPropSet->setPropertyValue(
-                    OUString("Class"), aAny );
+            xConvPropSet->setPropertyValue( "Class", aAny );
 
             Reference< XPropertySet > xPropSet =
                 mxExportInfo.is()
@@ -1394,10 +1386,10 @@ sal_uInt32 SvXMLExport::exportDoc( enum ::xmloff::token::XMLTokenEnum eClass )
             if( xTmpDocHandler.is() )
             {
                 mxHandler = xTmpDocHandler;
-                mxExtHandler = uno::Reference<xml::sax::XExtendedDocumentHandler>( mxHandler, UNO_QUERY );
+                mxExtHandler.set( mxHandler, UNO_QUERY );
             }
         }
-        catch(const com::sun::star::uno::Exception&)
+        catch(const css::uno::Exception&)
         {
         }
     }
@@ -1424,7 +1416,7 @@ sal_uInt32 SvXMLExport::exportDoc( enum ::xmloff::token::XMLTokenEnum eClass )
     // office:version = ...
     if( !mbExtended )
     {
-        const sal_Char* pVersion = 0;
+        const sal_Char* pVersion = nullptr;
         switch( getDefaultVersion() )
         {
         case SvtSaveOptions::ODFVER_LATEST: pVersion = sXML_1_2; break;
@@ -1946,7 +1938,7 @@ void SvXMLExport::exportAnnotationMeta(const uno::Reference<drawing::XShape>&)
 
 sal_Int32 SvXMLExport::dataStyleForceSystemLanguage(sal_Int32 nFormat) const
 {
-    return ( mpNumExport != NULL )
+    return ( mpNumExport != nullptr )
                  ? mpNumExport->ForceSystemLanguage( nFormat ) : nFormat;
 }
 
@@ -2089,10 +2081,10 @@ ProgressBarHelper*  SvXMLExport::GetProgressBarHelper()
 
 XMLEventExport& SvXMLExport::GetEventExport()
 {
-    if( NULL == mpEventExport)
+    if( nullptr == mpEventExport)
     {
         // create EventExport on demand
-        mpEventExport = new XMLEventExport(*this, NULL);
+        mpEventExport = new XMLEventExport(*this, nullptr);
 
         // and register standard handlers + names
         OUString sStarBasic("StarBasic");
@@ -2108,7 +2100,7 @@ XMLEventExport& SvXMLExport::GetEventExport()
 XMLImageMapExport& SvXMLExport::GetImageMapExport()
 {
     // image map export, create on-demand
-    if( NULL == mpImageMapExport )
+    if( nullptr == mpImageMapExport )
     {
         mpImageMapExport = new XMLImageMapExport(*this);
     }
@@ -2138,7 +2130,7 @@ SvXMLExport* SvXMLExport::getImplementation( uno::Reference< uno::XInterface > x
                     xUT->getSomething( SvXMLExport::getUnoTunnelId())));
     }
     else
-        return NULL;
+        return nullptr;
 }
 
 // XUnoTunnel
@@ -2231,8 +2223,7 @@ OUString SvXMLExport::GetRelativeReference(const OUString& rValue)
         //conversion for matching schemes only
         if( xUriRef->getScheme() == mpImpl->msPackageURIScheme )
         {
-            sValue = INetURLObject::GetRelURL( msOrigFileName, sValue,
-                INetURLObject::WAS_ENCODED, INetURLObject::DECODE_TO_IURI, RTL_TEXTENCODING_UTF8);
+            sValue = INetURLObject::GetRelURL( msOrigFileName, sValue );
         }
     }
     return sValue;
@@ -2259,16 +2250,14 @@ void SvXMLExport::StartElement(const OUString& rName,
         }
         catch (const SAXInvalidCharacterException& e)
         {
-            Sequence<OUString> aPars(1);
-            aPars[0] = rName;
-            SetError( XMLERROR_SAX|XMLERROR_FLAG_WARNING, aPars, e.Message, NULL );
+            Sequence<OUString> aPars { rName };
+            SetError( XMLERROR_SAX|XMLERROR_FLAG_WARNING, aPars, e.Message, nullptr );
         }
         catch (const SAXException& e)
         {
-            Sequence<OUString> aPars(1);
-            aPars[0] = rName;
+            Sequence<OUString> aPars { rName };
             SetError( XMLERROR_SAX|XMLERROR_FLAG_ERROR|XMLERROR_FLAG_SEVERE,
-                      aPars, e.Message, NULL );
+                      aPars, e.Message, nullptr );
         }
     }
     ClearAttrList();
@@ -2285,16 +2274,14 @@ void SvXMLExport::Characters(const OUString& rChars)
         }
         catch (const SAXInvalidCharacterException& e)
         {
-            Sequence<OUString> aPars(1);
-            aPars[0] = rChars;
-            SetError( XMLERROR_SAX|XMLERROR_FLAG_WARNING, aPars, e.Message, NULL );
+            Sequence<OUString> aPars { rChars };
+            SetError( XMLERROR_SAX|XMLERROR_FLAG_WARNING, aPars, e.Message, nullptr );
         }
         catch (const SAXException& e)
         {
-            Sequence<OUString> aPars(1);
-            aPars[0] = rChars;
+            Sequence<OUString> aPars { rChars };
             SetError( XMLERROR_SAX|XMLERROR_FLAG_ERROR|XMLERROR_FLAG_SEVERE,
-                      aPars, e.Message, NULL );
+                      aPars, e.Message, nullptr );
         }
     }
 }
@@ -2332,10 +2319,9 @@ void SvXMLExport::EndElement(const OUString& rName,
         }
         catch (const SAXException& e)
         {
-            Sequence<OUString> aPars(1);
-            aPars[0] = rName;
+            Sequence<OUString> aPars { rName };
             SetError( XMLERROR_SAX|XMLERROR_FLAG_ERROR|XMLERROR_FLAG_SEVERE,
-                      aPars, e.Message, NULL );
+                      aPars, e.Message, nullptr );
         }
     }
 }
@@ -2355,7 +2341,7 @@ void SvXMLExport::IgnorableWhitespace()
         {
             Sequence<OUString> aPars(0);
             SetError( XMLERROR_SAX|XMLERROR_FLAG_ERROR|XMLERROR_FLAG_SEVERE,
-                      aPars, e.Message, NULL );
+                      aPars, e.Message, nullptr );
         }
     }
 }
@@ -2379,7 +2365,7 @@ void SvXMLExport::SetError(
         mnErrorFlags |= SvXMLErrorFlags::DO_NOTHING;
 
     // create error list on demand
-    if ( mpXMLErrors == NULL )
+    if ( mpXMLErrors == nullptr )
         mpXMLErrors = new XMLErrors();
 
     // save error information
@@ -2390,7 +2376,7 @@ void SvXMLExport::SetError(
     sal_Int32 nId,
     const Sequence<OUString>& rMsgParams)
 {
-    SetError( nId, rMsgParams, "", NULL );
+    SetError( nId, rMsgParams, "", nullptr );
 }
 
 void SvXMLExport::DisposingModel()

@@ -25,7 +25,9 @@
 #include <sbunoobj.hxx>
 
 #include <comphelper/propertysetinfo.hxx>
+#include <comphelper/sequence.hxx>
 
+#include <algorithm>
 #include <limits.h>
 
 using com::sun::star::uno::Reference;
@@ -163,10 +165,7 @@ void SbPropertyValues::removeVetoableChangeListener(
 
 Sequence< PropertyValue > SbPropertyValues::getPropertyValues() throw (css::uno::RuntimeException, std::exception)
 {
-    Sequence<PropertyValue> aRet( m_aPropVals.size() );
-    for (size_t n = 0; n < m_aPropVals.size(); ++n)
-        aRet.getArray()[n] = m_aPropVals[n];
-    return aRet;
+    return comphelper::containerToSequence(m_aPropVals);
 }
 
 
@@ -178,14 +177,13 @@ void SbPropertyValues::setPropertyValues(const Sequence< PropertyValue >& rPrope
                      css::lang::WrappedTargetException,
                      css::uno::RuntimeException, std::exception)
 {
-    if ( !m_aPropVals.empty() )
+    if (!m_aPropVals.empty())
         throw IllegalArgumentException();
 
     const PropertyValue *pPropVals = rPropertyValues.getConstArray();
     for (sal_Int32 n = 0; n < rPropertyValues.getLength(); ++n)
     {
-        PropertyValue *pPropVal = new PropertyValue(pPropVals[n]);
-        m_aPropVals.push_back( pPropVal );
+        m_aPropVals.push_back(pPropVals[n]);
     }
 }
 
@@ -204,7 +202,6 @@ void RTL_Impl_CreatePropertySet( StarBASIC* pBasic, SbxArray& rPar, bool bWrite 
     }
 
     // Get class names of struct
-    OUString aServiceName( "stardiv.uno.beans.PropertySet");
 
     Reference< XInterface > xInterface = static_cast<OWeakObject*>(new SbPropertyValues());
 
@@ -216,13 +213,13 @@ void RTL_Impl_CreatePropertySet( StarBASIC* pBasic, SbxArray& rPar, bool bWrite 
                 cppu::UnoType<Sequence<PropertyValue>>::get() );
         Sequence<PropertyValue> const *pArg =
                 static_cast<Sequence<PropertyValue> const *>(aArgAsAny.getValue());
-        Reference< XPropertyAccess > xPropAcc = Reference< XPropertyAccess >::query( xInterface );
+        Reference< XPropertyAccess > xPropAcc( xInterface, UNO_QUERY );
         xPropAcc->setPropertyValues( *pArg );
 
         // Build a SbUnoObject and return it
         Any aAny;
         aAny <<= xInterface;
-        SbUnoObjectRef xUnoObj = new SbUnoObject( aServiceName, aAny );
+        SbUnoObjectRef xUnoObj = new SbUnoObject( "stardiv.uno.beans.PropertySet", aAny );
         if( xUnoObj->getUnoAny().getValueType().getTypeClass() != TypeClass_VOID )
         {
             // Return object
@@ -232,7 +229,7 @@ void RTL_Impl_CreatePropertySet( StarBASIC* pBasic, SbxArray& rPar, bool bWrite 
     }
 
     // Object could not be created
-    refVar->PutObject( NULL );
+    refVar->PutObject( nullptr );
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

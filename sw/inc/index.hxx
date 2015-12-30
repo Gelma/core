@@ -20,7 +20,6 @@
 #define INCLUDED_SW_INC_INDEX_HXX
 
 #include <sal/types.h>
-#include <tools/rtti.hxx>
 #include <swdllapi.h>
 
 #include <iostream>
@@ -123,7 +122,7 @@ protected:
     virtual void Update( SwIndex const & rPos, const sal_Int32 nChangeLen,
                  const bool bNegative = false, const bool bDelete = false );
 
-    bool HasAnyIndex() const { return 0 != m_pFirst; }
+    bool HasAnyIndex() const { return nullptr != m_pFirst; }
 
 public:
     SwIndexReg();

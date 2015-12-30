@@ -102,7 +102,7 @@ class LoadEnvListener : public ::cppu::WeakImplHelper< css::frame::XLoadEventLis
 
     public:
 
-        LoadEnvListener(LoadEnv* pLoadEnv)
+        explicit LoadEnvListener(LoadEnv* pLoadEnv)
             : m_bWaitingResult(true)
             , m_pLoadEnv(pLoadEnv)
         {
@@ -110,18 +110,18 @@ class LoadEnvListener : public ::cppu::WeakImplHelper< css::frame::XLoadEventLis
 
         // frame.XLoadEventListener
         virtual void SAL_CALL loadFinished(const css::uno::Reference< css::frame::XFrameLoader >& xLoader)
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 
         virtual void SAL_CALL loadCancelled(const css::uno::Reference< css::frame::XFrameLoader >& xLoader)
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 
         // frame.XDispatchResultListener
         virtual void SAL_CALL dispatchFinished(const css::frame::DispatchResultEvent& aEvent)
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 
         // lang.XEventListener
         virtual void SAL_CALL disposing(const css::lang::EventObject& aEvent)
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 };
 
 LoadEnv::LoadEnv(const css::uno::Reference< css::uno::XComponentContext >& xContext)
@@ -160,8 +160,7 @@ css::uno::Reference< css::lang::XComponent > LoadEnv::loadComponentFromURL(const
                                lArgs,
                                css::uno::Reference< css::frame::XFrame >(xLoader, css::uno::UNO_QUERY),
                                sTarget,
-                               nFlags,
-                               LoadEnv::E_NO_FEATURE);
+                               nFlags);
         aEnv.startLoading();
         aEnv.waitWhileLoading(); // wait for ever!
 
@@ -200,30 +199,29 @@ css::uno::Reference< css::lang::XComponent > LoadEnv::loadComponentFromURL(const
     return xComponent;
 }
 
-utl::MediaDescriptor impl_mergeMediaDescriptorWithMightExistingModelArgs(const css::uno::Sequence< css::beans::PropertyValue >& lOutsideDescriptor)
+namespace {
+
+utl::MediaDescriptor addModelArgs(const uno::Sequence<beans::PropertyValue>& rDescriptor)
 {
-    utl::MediaDescriptor lDescriptor(lOutsideDescriptor);
-    css::uno::Reference< css::frame::XModel > xModel     = lDescriptor.getUnpackedValueOrDefault(
-                                                            utl::MediaDescriptor::PROP_MODEL (),
-                                                            css::uno::Reference< css::frame::XModel > ());
-    if (xModel.is ())
+    utl::MediaDescriptor rResult(rDescriptor);
+    uno::Reference<frame::XModel> xModel(rResult.getUnpackedValueOrDefault(utl::MediaDescriptor::PROP_MODEL(), uno::Reference<frame::XModel>()));
+
+    if (xModel.is())
     {
-        utl::MediaDescriptor lModelDescriptor(xModel->getArgs());
-        utl::MediaDescriptor::iterator pIt = lModelDescriptor.find( utl::MediaDescriptor::PROP_MACROEXECUTIONMODE() );
-        if ( pIt != lModelDescriptor.end() )
-            lDescriptor[utl::MediaDescriptor::PROP_MACROEXECUTIONMODE()] = pIt->second;
+        utl::MediaDescriptor aModelArgs(xModel->getArgs());
+        utl::MediaDescriptor::iterator pIt = aModelArgs.find( utl::MediaDescriptor::PROP_MACROEXECUTIONMODE());
+        if (pIt != aModelArgs.end())
+            rResult[utl::MediaDescriptor::PROP_MACROEXECUTIONMODE()] = pIt->second;
     }
 
-    return lDescriptor;
+    return rResult;
 }
 
-void LoadEnv::initializeLoading(const OUString&                                           sURL            ,
-                                const css::uno::Sequence< css::beans::PropertyValue >&           lMediaDescriptor,
-                                const css::uno::Reference< css::frame::XFrame >&                 xBaseFrame      ,
-                                const OUString&                                           sTarget         ,
-                                      sal_Int32                                                  nSearchFlags    ,
-                                      EFeature                                                   eFeature        , // => use default ...
-                                      EContentType                                               eContentType    ) // => use default ...
+}
+
+void LoadEnv::initializeLoading(const OUString& sURL, const uno::Sequence<beans::PropertyValue>& lMediaDescriptor,
+        const uno::Reference<frame::XFrame>& xBaseFrame, const OUString& sTarget,
+        sal_Int32 nSearchFlags, EFeature eFeature, EContentType eContentType)
 {
     osl::MutexGuard g(m_mutex);
 
@@ -233,15 +231,15 @@ void LoadEnv::initializeLoading(const OUString&                                 
 
     // take over all new parameters.
     m_xTargetFrame.clear();
-    m_xBaseFrame                    = xBaseFrame;
-    m_lMediaDescriptor              = impl_mergeMediaDescriptorWithMightExistingModelArgs(lMediaDescriptor);
-    m_sTarget                       = sTarget;
-    m_nSearchFlags                  = nSearchFlags;
-    m_eFeature                      = eFeature;
-    m_eContentType                  = eContentType;
-    m_bCloseFrameOnError            = false;
-    m_bReactivateControllerOnError  = false;
-    m_bLoaded                       = false;
+    m_xBaseFrame = xBaseFrame;
+    m_lMediaDescriptor = addModelArgs(lMediaDescriptor);
+    m_sTarget = sTarget;
+    m_nSearchFlags = nSearchFlags;
+    m_eFeature = eFeature;
+    m_eContentType = eContentType;
+    m_bCloseFrameOnError = false;
+    m_bReactivateControllerOnError = false;
+    m_bLoaded = false;
 
     // try to find out, if its really a content, which can be loaded or must be "handled"
     // We use a default value for this in-parameter. Then we have to start a complex check method
@@ -261,7 +259,7 @@ void LoadEnv::initializeLoading(const OUString&                                 
 
     // parse it - because some following code require that
     m_aURL.Complete = sURL;
-    css::uno::Reference< css::util::XURLTransformer > xParser(css::util::URLTransformer::create(m_xContext));
+    uno::Reference<util::XURLTransformer> xParser(util::URLTransformer::create(m_xContext));
     xParser->parseStrict(m_aURL);
 
     // BTW: Split URL and JumpMark ...
@@ -282,16 +280,11 @@ void LoadEnv::initializeLoading(const OUString&                                 
 
     // UI mode
     const bool bUIMode =
-        ( ( m_eFeature & E_WORK_WITH_UI )                                                                          == E_WORK_WITH_UI ) &&
-        !m_lMediaDescriptor.getUnpackedValueOrDefault( utl::MediaDescriptor::PROP_HIDDEN(), false ) &&
-        !m_lMediaDescriptor.getUnpackedValueOrDefault( utl::MediaDescriptor::PROP_PREVIEW(), false );
+        ((m_eFeature & E_WORK_WITH_UI) == E_WORK_WITH_UI) &&
+        !m_lMediaDescriptor.getUnpackedValueOrDefault(utl::MediaDescriptor::PROP_HIDDEN(), false) &&
+        !m_lMediaDescriptor.getUnpackedValueOrDefault(utl::MediaDescriptor::PROP_PREVIEW(), false);
 
-    initializeUIDefaults(
-        m_xContext,
-        m_lMediaDescriptor,
-        bUIMode,
-        &m_pQuietInteraction
-    );
+    initializeUIDefaults(m_xContext, m_lMediaDescriptor, bUIMode, &m_pQuietInteraction);
 }
 
 void LoadEnv::initializeUIDefaults( const css::uno::Reference< css::uno::XComponentContext >& i_rxContext,
@@ -308,7 +301,7 @@ void LoadEnv::initializeUIDefaults( const css::uno::Reference< css::uno::XCompon
         nUpdateMode = css::document::UpdateDocMode::ACCORDING_TO_CONFIG;
         try
         {
-            xInteractionHandler.set( css::task::InteractionHandler::createWithParent( i_rxContext, 0 ), css::uno::UNO_QUERY_THROW );
+            xInteractionHandler.set( css::task::InteractionHandler::createWithParent( i_rxContext, nullptr ), css::uno::UNO_QUERY_THROW );
         }
         catch(const css::uno::RuntimeException&) {throw;}
         catch(const css::uno::Exception&       ) {      }
@@ -320,7 +313,7 @@ void LoadEnv::initializeUIDefaults( const css::uno::Reference< css::uno::XCompon
         nUpdateMode = css::document::UpdateDocMode::NO_UPDATE;
         rtl::Reference<QuietInteraction> pQuietInteraction = new QuietInteraction();
         xInteractionHandler = pQuietInteraction.get();
-        if ( o_ppQuietInteraction != NULL )
+        if ( o_ppQuietInteraction != nullptr )
         {
             *o_ppQuietInteraction = pQuietInteraction;
         }
@@ -874,25 +867,20 @@ bool LoadEnv::impl_handleContent()
     // <- SAFE -----------------------------------
 
     // query
-    css::uno::Sequence< OUString > lTypeReg(1);
-    lTypeReg[0] = sType;
+    css::uno::Sequence< OUString > lTypeReg { sType };
 
-    css::uno::Sequence< css::beans::NamedValue > lQuery(1);
-    lQuery[0].Name    = PROP_TYPES;
-    lQuery[0].Value <<= lTypeReg;
-
-    OUString sPROP_NAME(PROP_NAME);
+    css::uno::Sequence< css::beans::NamedValue > lQuery { { PROP_TYPES, css::uno::makeAny(lTypeReg) } };
 
     css::uno::Reference< css::container::XEnumeration > xSet = xLoaderFactory->createSubSetEnumerationByProperties(lQuery);
     while(xSet->hasMoreElements())
     {
         ::comphelper::SequenceAsHashMap lProps   (xSet->nextElement());
-        OUString                 sHandler = lProps.getUnpackedValueOrDefault(sPROP_NAME, OUString());
+        OUString                 sHandler = lProps.getUnpackedValueOrDefault(PROP_NAME, OUString());
 
         css::uno::Reference< css::frame::XNotifyingDispatch > xHandler;
         try
         {
-            xHandler = css::uno::Reference< css::frame::XNotifyingDispatch >(xLoaderFactory->createInstance(sHandler), css::uno::UNO_QUERY);
+            xHandler.set(xLoaderFactory->createInstance(sHandler), css::uno::UNO_QUERY);
             if (!xHandler.is())
                 continue;
         }
@@ -931,9 +919,9 @@ bool LoadEnv::impl_furtherDocsAllowed()
     {
         css::uno::Any aVal = ::comphelper::ConfigurationHelper::readDirectKey(
                                 xContext,
-                                OUString("org.openoffice.Office.Common/"),
-                                OUString("Misc"),
-                                OUString("MaxOpenDocuments"),
+                                "org.openoffice.Office.Common/",
+                                "Misc",
+                                "MaxOpenDocuments",
                                 ::comphelper::ConfigurationHelper::E_READONLY);
 
         // NIL means: count of allowed documents = infinite !
@@ -980,12 +968,10 @@ bool LoadEnv::impl_furtherDocsAllowed()
             comphelper::OInteractionAbort*   pAbort   = new comphelper::OInteractionAbort();
             comphelper::OInteractionApprove* pApprove = new comphelper::OInteractionApprove();
 
-            lContinuations[0] = css::uno::Reference< css::task::XInteractionContinuation >(
-                                    static_cast< css::task::XInteractionContinuation* >(pAbort),
-                                    css::uno::UNO_QUERY_THROW);
-            lContinuations[1] = css::uno::Reference< css::task::XInteractionContinuation >(
-                                    static_cast< css::task::XInteractionContinuation* >(pApprove),
-                                    css::uno::UNO_QUERY_THROW);
+            lContinuations[0].set( static_cast< css::task::XInteractionContinuation* >(pAbort),
+                                   css::uno::UNO_QUERY_THROW);
+            lContinuations[1].set( static_cast< css::task::XInteractionContinuation* >(pApprove),
+                                   css::uno::UNO_QUERY_THROW);
 
             css::task::ErrorCodeRequest aErrorCode;
             aErrorCode.ErrCode = ERRCODE_SFX_NOMOREDOCUMENTSALLOWED;
@@ -1167,14 +1153,9 @@ css::uno::Reference< css::uno::XInterface > LoadEnv::impl_searchLoader()
     aReadLock.clear();
     // <- SAFE -----------------------------------
 
-    css::uno::Sequence< OUString > lTypesReg(1);
-    lTypesReg[0] = sType;
+    css::uno::Sequence< OUString > lTypesReg { sType };
 
-    css::uno::Sequence< css::beans::NamedValue > lQuery(1);
-    lQuery[0].Name    = PROP_TYPES;
-    lQuery[0].Value <<= lTypesReg;
-
-    OUString sPROP_NAME(PROP_NAME);
+    css::uno::Sequence< css::beans::NamedValue > lQuery { { PROP_TYPES, css::uno::makeAny(lTypesReg) } };
 
     css::uno::Reference< css::container::XEnumeration > xSet = xLoaderFactory->createSubSetEnumerationByProperties(lQuery);
     while(xSet->hasMoreElements())
@@ -1184,7 +1165,7 @@ css::uno::Reference< css::uno::XInterface > LoadEnv::impl_searchLoader()
             // try everyone ...
             // Ignore any loader, which makes trouble :-)
             ::comphelper::SequenceAsHashMap             lLoaderProps(xSet->nextElement());
-            OUString                             sLoader     = lLoaderProps.getUnpackedValueOrDefault(sPROP_NAME, OUString());
+            OUString                             sLoader     = lLoaderProps.getUnpackedValueOrDefault(PROP_NAME, OUString());
             css::uno::Reference< css::uno::XInterface > xLoader;
 
             xLoader = xLoaderFactory->createInstance(sLoader);
@@ -1656,9 +1637,9 @@ void LoadEnv::impl_makeFrameWindowVisible(const css::uno::Reference< css::awt::X
             css::uno::Any const a =
                 ::comphelper::ConfigurationHelper::readDirectKey(
                   xContext,
-                  OUString("org.openoffice.Office.Common/View"),
-                  OUString("NewDocumentHandling"),
-                  OUString("ForceFocusAndToFront"),
+                  "org.openoffice.Office.Common/View",
+                  "NewDocumentHandling",
+                  "ForceFocusAndToFront",
                   ::comphelper::ConfigurationHelper::E_READONLY);
             a >>= bForceFrontAndFocus;
         }
@@ -1730,7 +1711,7 @@ void LoadEnv::impl_applyPersistentWindowState(const css::uno::Reference< css::aw
             xContext->getServiceManager()->createInstanceWithContext(SERVICENAME_FILTERFACTORY, xContext),
             css::uno::UNO_QUERY_THROW);
         ::comphelper::SequenceAsHashMap lProps (xFilterCfg->getByName(sFilter));
-        OUString                 sModule = lProps.getUnpackedValueOrDefault(FILTER_PROPNAME_DOCUMENTSERVICE, OUString());
+        OUString                 sModule = lProps.getUnpackedValueOrDefault(FILTER_PROPNAME_ASCII_DOCUMENTSERVICE, OUString());
 
         // get access to the configuration of this office module
         css::uno::Reference< css::container::XNameAccess > xModuleCfg(::comphelper::ConfigurationHelper::openConfig(
@@ -1743,7 +1724,7 @@ void LoadEnv::impl_applyPersistentWindowState(const css::uno::Reference< css::aw
         // and apply it on the window.
         // Do nothing, if no configuration entry exists!
         OUString sWindowState;
-        ::comphelper::ConfigurationHelper::readRelativeKey(xModuleCfg, sModule, OFFICEFACTORY_PROPNAME_WINDOWATTRIBUTES) >>= sWindowState;
+        ::comphelper::ConfigurationHelper::readRelativeKey(xModuleCfg, sModule, OFFICEFACTORY_PROPNAME_ASCII_WINDOWATTRIBUTES) >>= sWindowState;
         if (!sWindowState.isEmpty())
         {
             // SOLAR SAFE ->

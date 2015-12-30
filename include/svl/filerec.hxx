@@ -92,8 +92,8 @@ public:
     sal_uInt32      Close( bool bSeekToEndOfRec = true );
 
 private:
-    SfxMiniRecordWriter( const SfxMiniRecordWriter& ) SAL_DELETED_FUNCTION;
-    SfxMiniRecordWriter& operator=(const SfxMiniRecordWriter&) SAL_DELETED_FUNCTION;
+    SfxMiniRecordWriter( const SfxMiniRecordWriter& ) = delete;
+    SfxMiniRecordWriter& operator=(const SfxMiniRecordWriter&) = delete;
 };
 
 /** Reads simple record from a stream
@@ -232,7 +232,7 @@ protected:
 
                         // three phase constructor for sub-classes
     SfxMiniRecordReader()
-        : _pStream(NULL)
+        : _pStream(nullptr)
         , _nEofRec(0)
         , _bSkipped(false)
         , _nPreTag(0)
@@ -262,8 +262,8 @@ public:
     inline void         Skip();
 
 private:
-    SfxMiniRecordReader( const SfxMiniRecordReader& ) SAL_DELETED_FUNCTION;
-    SfxMiniRecordReader& operator=(const SfxMiniRecordReader&) SAL_DELETED_FUNCTION;
+    SfxMiniRecordReader( const SfxMiniRecordReader& ) = delete;
+    SfxMiniRecordReader& operator=(const SfxMiniRecordReader&) = delete;
 };
 
 /**
@@ -313,13 +313,11 @@ class SVL_DLLPUBLIC SfxSingleRecordReader: public SfxMiniRecordReader
 {
 protected:
     sal_uInt16              _nRecordTag;    // type of the complete contents
-    sal_uInt8               _nRecordVer;    // version of the complete contents
     sal_uInt8               _nRecordType;   // Record Type from the header
 
     // Three phase constructor for derived classes
     SfxSingleRecordReader()
         : _nRecordTag(0)
-        , _nRecordVer(0)
         , _nRecordType(0)
     {
     }

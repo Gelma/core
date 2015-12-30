@@ -20,7 +20,6 @@
 #include "winmtf.hxx"
 #include <osl/endian.h>
 #include <basegfx/matrix/b2dhommatrix.hxx>
-#include <boost/bind.hpp>
 #include <vcl/dibtools.hxx>
 #include <memory>
 
@@ -468,7 +467,7 @@ void EnhWMFReader::ReadEMFPlusComment(sal_uInt32 length, bool& bHaveDC)
 /**
  * Reads polygons from the stream.
  * The \<class T> parameter is for the type of the points (sal_uInt32 or sal_uInt16).
- * The \<class Drawer> parameter is a boost binding for the method that will draw the polygon.
+ * The \<class Drawer> parameter is a c++11 lambda for the method that will draw the polygon.
  * skipFirst: if the first point read is the 0th point or the 1st point in the array.
  * */
 template <class T, class Drawer>
@@ -623,7 +622,7 @@ bool EnhWMFReader::ReadEnhWMF()
     bool    bStatus = ReadHeader();
     bool    bHaveDC = false;
 
-    static bool bEnableEMFPlus = ( getenv( "EMF_PLUS_DISABLE" ) == NULL );
+    static bool bEnableEMFPlus = ( getenv( "EMF_PLUS_DISABLE" ) == nullptr );
 
     while( bStatus && nRecordCount-- && pWMF->good())
     {
@@ -696,21 +695,27 @@ bool EnhWMFReader::ReadEnhWMF()
             switch( nRecType )
             {
                 case EMR_POLYBEZIERTO :
-                    ReadAndDrawPolygon<sal_Int32>(boost::bind(&WinMtfOutput::DrawPolyBezier, _1, _2, _3, _4), true);
+                    ReadAndDrawPolygon<sal_Int32>( [] ( WinMtfOutput* pWinMtfOutput, tools::Polygon& rPolygon, bool aTo, bool aRecordPath )
+                                                   { pWinMtfOutput->DrawPolyBezier( rPolygon, aTo, aRecordPath ); }, true );
                 break;
                 case EMR_POLYBEZIER :
-                    ReadAndDrawPolygon<sal_Int32>(boost::bind(&WinMtfOutput::DrawPolyBezier, _1, _2, _3, _4), false);
+                    ReadAndDrawPolygon<sal_Int32>( [] ( WinMtfOutput* pWinMtfOutput, tools::Polygon& rPolygon, bool aTo, bool aRecordPath )
+                                                   { pWinMtfOutput->DrawPolyBezier( rPolygon, aTo, aRecordPath ); }, false );
                 break;
 
                 case EMR_POLYGON :
-                    ReadAndDrawPolygon<sal_Int32>(boost::bind(&WinMtfOutput::DrawPolygon, _1, _2, _3, _4), false);
+                    ReadAndDrawPolygon<sal_Int32>( [] ( WinMtfOutput* pWinMtfOutput, tools::Polygon& rPolygon, bool aTo, bool aRecordPath )
+                                                   { pWinMtfOutput->DrawPolygon( rPolygon, aTo, aRecordPath ); }, false );
                 break;
 
                 case EMR_POLYLINETO :
-                    ReadAndDrawPolygon<sal_Int32>(boost::bind(&WinMtfOutput::DrawPolyLine, _1, _2, _3, _4), true);
+                    ReadAndDrawPolygon<sal_Int32>( [] ( WinMtfOutput* pWinMtfOutput, tools::Polygon& rPolygon, bool aTo, bool aRecordPath )
+                                                   { pWinMtfOutput->DrawPolyLine( rPolygon, aTo, aRecordPath ); }, true );
                 break;
+
                 case EMR_POLYLINE :
-                    ReadAndDrawPolygon<sal_Int32>(boost::bind(&WinMtfOutput::DrawPolyLine, _1, _2, _3, _4), false);
+                    ReadAndDrawPolygon<sal_Int32>( [] ( WinMtfOutput* pWinMtfOutput, tools::Polygon& rPolygon, bool aTo, bool aRecordPath )
+                                                   { pWinMtfOutput->DrawPolyLine( rPolygon, aTo, aRecordPath ); }, false );
                 break;
 
                 case EMR_POLYPOLYLINE :
@@ -722,7 +727,7 @@ bool EnhWMFReader::ReadEnhWMF()
                 break;
 
                 case EMR_SETWINDOWEXTEX :
-                {                                                       // #75383#
+                {
                     pWMF->ReadUInt32( nW ).ReadUInt32( nH );
                     pOut->SetWinExt( Size( nW, nH ), true);
                 }
@@ -764,7 +769,7 @@ bool EnhWMFReader::ReadEnhWMF()
                 break;
 
                 case EMR_EOF :
-                    nRecordCount = 0;           // #76846#
+                    nRecordCount = 0;
                 break;
 
                 case EMR_SETPIXELV :
@@ -948,18 +953,18 @@ bool EnhWMFReader::ReadEnhWMF()
                             case PS_ENDCAP_ROUND :
                                 if ( aSize.Width() )
                                 {
-                                    aLineInfo.SetLineCap( com::sun::star::drawing::LineCap_ROUND );
+                                    aLineInfo.SetLineCap( css::drawing::LineCap_ROUND );
                                     break;
                                 }
                             case PS_ENDCAP_SQUARE :
                                 if ( aSize.Width() )
                                 {
-                                    aLineInfo.SetLineCap( com::sun::star::drawing::LineCap_SQUARE );
+                                    aLineInfo.SetLineCap( css::drawing::LineCap_SQUARE );
                                     break;
                                 }
                             case PS_ENDCAP_FLAT :
                             default :
-                                aLineInfo.SetLineCap( com::sun::star::drawing::LineCap_BUTT );
+                                aLineInfo.SetLineCap( css::drawing::LineCap_BUTT );
                         }
                         switch( nStyle & 0xF000 )
                         {
@@ -1239,7 +1244,7 @@ bool EnhWMFReader::ReadEnhWMF()
                                 Rectangle aCropRect( Point( xSrc, ySrc ), Size( cxSrc, cySrc ) );
                                 aBitmap.Crop( aCropRect );
                             }
-                            aBmpSaveList.push_back( new BSaveStruct( aBitmap, aRect, dwRop, pOut->GetFillStyle () ) );
+                            aBmpSaveList.push_back( new BSaveStruct( aBitmap, aRect, dwRop ) );
                         }
                     }
                 }
@@ -1300,7 +1305,7 @@ bool EnhWMFReader::ReadEnhWMF()
                                 Rectangle aCropRect( Point( xSrc, ySrc ), Size( cxSrc, cySrc ) );
                                 aBitmap.Crop( aCropRect );
                             }
-                            aBmpSaveList.push_back( new BSaveStruct( aBitmap, aRect, dwRop, pOut->GetFillStyle () ) );
+                            aBmpSaveList.push_back( new BSaveStruct( aBitmap, aRect, dwRop ) );
                         }
                     }
                 }
@@ -1367,7 +1372,7 @@ bool EnhWMFReader::ReadEnhWMF()
                                 Rectangle aCropRect( Point( xSrc, ySrc ), Size( cxSrc, cySrc ) );
                                 aBitmap.Crop( aCropRect );
                             }
-                        aBmpSaveList.push_back( new BSaveStruct( aBitmap, aRect, dwRop, pOut->GetFillStyle () ) );
+                        aBmpSaveList.push_back( new BSaveStruct( aBitmap, aRect, dwRop ) );
                         }
                     }
                 }
@@ -1514,26 +1519,33 @@ bool EnhWMFReader::ReadEnhWMF()
                 break;
 
                 case EMR_POLYBEZIERTO16 :
-                    ReadAndDrawPolygon<sal_Int16>(boost::bind(&WinMtfOutput::DrawPolyBezier, _1, _2, _3, _4), true);
-                    break;
+                    ReadAndDrawPolygon<sal_Int16>( [] ( WinMtfOutput* pWinMtfOutput, tools::Polygon& rPolygon, bool aTo, bool aRecordPath )
+                                                   { pWinMtfOutput->DrawPolyBezier( rPolygon, aTo, aRecordPath ); }, true );
+                break;
+
                 case EMR_POLYBEZIER16 :
-                    ReadAndDrawPolygon<sal_Int16>(boost::bind(&WinMtfOutput::DrawPolyBezier, _1, _2, _3, _4), false);
+                    ReadAndDrawPolygon<sal_Int16>( [] ( WinMtfOutput* pWinMtfOutput, tools::Polygon& rPolygon, bool aTo, bool aRecordPath )
+                                                   { pWinMtfOutput->DrawPolyBezier( rPolygon, aTo, aRecordPath ); }, false );
                 break;
 
                 case EMR_POLYGON16 :
-                    ReadAndDrawPolygon<sal_Int16>(boost::bind(&WinMtfOutput::DrawPolygon, _1, _2, _3, _4), false);
+                    ReadAndDrawPolygon<sal_Int16>( [] ( WinMtfOutput* pWinMtfOutput, tools::Polygon& rPolygon, bool aTo, bool aRecordPath )
+                                                   { pWinMtfOutput->DrawPolygon( rPolygon, aTo, aRecordPath ); }, false );
                 break;
 
                 case EMR_POLYLINETO16 :
-                    ReadAndDrawPolygon<sal_Int16>(boost::bind(&WinMtfOutput::DrawPolyLine, _1, _2, _3, _4), true);
-                    break;
+                    ReadAndDrawPolygon<sal_Int16>( [] ( WinMtfOutput* pWinMtfOutput, tools::Polygon& rPolygon, bool aTo, bool aRecordPath )
+                                                   { pWinMtfOutput->DrawPolyLine( rPolygon, aTo, aRecordPath ); }, true );
+                break;
+
                 case EMR_POLYLINE16 :
-                    ReadAndDrawPolygon<sal_Int16>(boost::bind(&WinMtfOutput::DrawPolyLine, _1, _2, _3, _4), false);
+                    ReadAndDrawPolygon<sal_Int16>( [] ( WinMtfOutput* pWinMtfOutput, tools::Polygon& rPolygon, bool aTo, bool aRecordPath )
+                                                   { pWinMtfOutput->DrawPolyLine( rPolygon, aTo, aRecordPath ); }, false );
                 break;
 
                 case EMR_POLYPOLYLINE16 :
                     ReadAndDrawPolyLine<sal_Int16>();
-                    break;
+                break;
 
                 case EMR_POLYPOLYGON16 :
                     ReadAndDrawPolyPolygon<sal_Int16>();

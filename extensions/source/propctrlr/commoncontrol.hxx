@@ -26,280 +26,169 @@
 #include <comphelper/broadcasthelper.hxx>
 #include <tools/link.hxx>
 #include <vcl/window.hxx>
+#include <toolkit/helper/vclunohelper.hxx>
+#include <type_traits>
 
 class NotifyEvent;
 class Control;
+class ListBox;
+class Edit;
 
 namespace pcr
 {
 
 
-    class ControlHelper;
+    //= CommonBehaviourControlHelper
 
-    template< class WINDOW >
-    class ControlWindow : public WINDOW
-    {
-    protected:
-        typedef WINDOW  WindowType;
-
-    protected:
-        ControlHelper*  m_pHelper;
-
-    public:
-        ControlWindow( vcl::Window* _pParent, WinBits _nStyle )
-            :WindowType( _pParent, _nStyle )
-            ,m_pHelper( NULL )
-        {
-        }
-
-        /// sets a ControlHelper instance which some functionality is delegated to
-        inline virtual void setControlHelper( ControlHelper& _rControlHelper );
-    };
-
-
-    //= IModifyListener
-
-    class SAL_NO_VTABLE IModifyListener
-    {
-    public:
-        virtual void modified() = 0;
-
-    protected:
-        ~IModifyListener() {}
-    };
-
-
-    //= ControlHelper
-
-    /** A helper class for implementing the <type scope="com::sun::star::inspection">XPropertyControl</type>
+    /** A helper class for implementing the <type scope="css::inspection">XPropertyControl</type>
         or one of its derived interfaces.
 
-        This class is intended to be held as member of another class which implements the
-        <type scope="com::sun::star::inspection">XPropertyControl</type> interface. The pointer
-        to this interface is to be passed to the ctor.
+        This class is used as a base class the CommonBehaviourControl template.
     */
-    class ControlHelper
+    class CommonBehaviourControlHelper
     {
     private:
-        VclPtr<vcl::Window>             m_pControlWindow;
         sal_Int16                       m_nControlType;
-        ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControlContext >
+        css::uno::Reference< css::inspection::XPropertyControlContext >
                                         m_xContext;
-        ::com::sun::star::inspection::XPropertyControl&
+        css::inspection::XPropertyControl&
                                         m_rAntiImpl;
-        IModifyListener*                m_pModifyListener;
-        bool                        m_bModified;
+        bool                            m_bModified;
 
     public:
         /** creates the instance
-            @param  _rControlWindow
-                the window which is associated with the <type scope="com::sun::star::inspection">XPropertyControl</type>.
-                Must not be <NULL/>.<br/>
-                Ownership for this window is taken by the ControlHelper - it will be deleted in <member>disposing</member>.
             @param  _nControlType
-                the type of the control - one of the <type scope="com::sun::star::inspection">PropertyControlType</type>
+                the type of the control - one of the <type scope="css::inspection">PropertyControlType</type>
                 constants
             @param _pAntiImpl
-                Reference to the instance as whose "impl-class" we act. This reference is held during lifetime
-                of the <type>ControlHelper</type> class, within acquiring it. Thus, the owner of the
-                <type>ControlHelper</type> is responsible for assuring the lifetime of the instance
-                pointed to by <arg>_pAntiImpl</arg>.
-            @param _pModifyListener
-                a listener to be modfied when the user modified the control's value. the
-                <member>IModifyListener::modified</member> of this listener is called from within our
-                ModifiedHdl. A default implementation of <member>IModifyListener::modified</member>
-                would just call our <member>setModified</member>.
+                Reference to the instance as whose "impl-class" we act i.e. the CommonBehaviourControl<> template,
+                which is why we hold it without acquiring it/
         */
-        ControlHelper(
-            vcl::Window* _pControlWindow,
+        CommonBehaviourControlHelper(
             sal_Int16 _nControlType,
-            ::com::sun::star::inspection::XPropertyControl& _rAntiImpl,
-            IModifyListener* _pModifyListener );
+            css::inspection::XPropertyControl& _rAntiImpl);
 
-        virtual ~ControlHelper();
+        virtual ~CommonBehaviourControlHelper();
 
-        /** sets our "modified" flag to <TRUE/>
-        */
-        inline void setModified() { m_bModified = true; }
-        inline       vcl::Window* getVclControlWindow()       { return m_pControlWindow; }
-        inline const vcl::Window* getVclControlWindow() const { return m_pControlWindow; }
+        virtual void setModified() { m_bModified = true; }
 
-    public:
         // XPropertyControl
-        ::sal_Int16 SAL_CALL getControlType() throw (::com::sun::star::uno::RuntimeException) { return m_nControlType; }
-        ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControlContext > SAL_CALL getControlContext() throw (::com::sun::star::uno::RuntimeException) { return m_xContext; }
-        void SAL_CALL setControlContext( const ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControlContext >& _controlcontext ) throw (::com::sun::star::uno::RuntimeException);
-        ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindow > SAL_CALL getControlWindow() throw (::com::sun::star::uno::RuntimeException);
-        bool SAL_CALL isModified(  ) throw (::com::sun::star::uno::RuntimeException) { return m_bModified; }
-        void SAL_CALL notifyModifiedValue(  ) throw (::com::sun::star::uno::RuntimeException);
-
-        // XComponent
-        void SAL_CALL dispose();
+        ::sal_Int16 SAL_CALL getControlType() throw (css::uno::RuntimeException) { return m_nControlType; }
+        css::uno::Reference< css::inspection::XPropertyControlContext > SAL_CALL getControlContext() throw (css::uno::RuntimeException) { return m_xContext; }
+        void SAL_CALL setControlContext( const css::uno::Reference< css::inspection::XPropertyControlContext >& _controlcontext ) throw (css::uno::RuntimeException);
+        bool SAL_CALL isModified(  ) throw (css::uno::RuntimeException) { return m_bModified; }
+        void SAL_CALL notifyModifiedValue(  ) throw (css::uno::RuntimeException);
 
         /** (fail-safe) wrapper around calling our context's activateNextControl
         */
-        inline void activateNextControl() const { impl_activateNextControl_nothrow(); }
-
-    public:
-        /// may be used to implement the default handling in PreNotify; returns sal_True if handled
-        bool handlePreNotify(NotifyEvent& _rNEvt);
+        void activateNextControl() const;
 
         /// automatically size the window given in the ctor
         void    autoSizeWindow();
 
+        virtual vcl::Window* getVclWindow() = 0;
+
         /// may be used by derived classes, they forward the event to the PropCtrListener
-        DECL_LINK( ModifiedHdl, vcl::Window* );
+        DECL_LINK_TYPED( ModifiedHdl, ListBox&, void );
+        DECL_LINK_TYPED( EditModifiedHdl, Edit&, void );
         DECL_LINK_TYPED( GetFocusHdl, Control&, void );
         DECL_LINK_TYPED( LoseFocusHdl, Control&, void );
-
-    private:
-        /** fail-safe wrapper around calling our context's activateNextControl
-        */
-        void    impl_activateNextControl_nothrow() const;
     };
 
 
     //= CommonBehaviourControl
 
-    /** implements a base class for <type scope="com::sun::star::inspection">XPropertyControl</type>
-        implementations, which delegates the generic functionality of this interface to a
-        <type>ControlHelper</type> member.
+    /** implements a base class for <type scope="css::inspection">XPropertyControl</type>
+        implementations
 
-        @param CONTROL_INTERFACE
-            an interface class which is derived from (or identical to) <type scope="com::sun::star::inspection">XPropertyControl</type>
-        @param CONTROL_WINDOW
-            a class which is derived from ControlWindow
+        @param TControlInterface
+            an interface class which is derived from (or identical to) <type scope="css::inspection">XPropertyControl</type>
+        @param TControlWindow
+            a class which is derived from vcl::Window
     */
-    template < class CONTROL_INTERFACE, class CONTROL_WINDOW >
+    template < class TControlInterface, class TControlWindow >
     class CommonBehaviourControl    :public ::comphelper::OBaseMutex
-                                    ,public ::cppu::WeakComponentImplHelper< CONTROL_INTERFACE >
-                                    ,public IModifyListener
+                                    ,public ::cppu::WeakComponentImplHelper< TControlInterface >
+                                    ,public CommonBehaviourControlHelper
     {
     protected:
-        typedef CONTROL_INTERFACE   InterfaceType;
-        typedef CONTROL_WINDOW      WindowType;
+        typedef ::cppu::WeakComponentImplHelper< TControlInterface >    ComponentBaseClass;
 
-        typedef ::comphelper::OBaseMutex                                MutexBaseClass;
-        typedef ::cppu::WeakComponentImplHelper< CONTROL_INTERFACE >   ComponentBaseClass;
-
-    protected:
-        ControlHelper   m_aImplControl;
-
-    protected:
         inline CommonBehaviourControl( sal_Int16 _nControlType, vcl::Window* _pParentWindow, WinBits _nWindowStyle, bool _bDoSetHandlers = true );
 
         // XPropertyControl - delegated to ->m_aImplControl
-        virtual ::sal_Int16 SAL_CALL getControlType() throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
-        virtual ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControlContext > SAL_CALL getControlContext() throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
-        virtual void SAL_CALL setControlContext( const ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControlContext >& _controlcontext ) throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
-        virtual ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindow > SAL_CALL getControlWindow() throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
-        virtual sal_Bool SAL_CALL isModified(  ) throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
-        virtual void SAL_CALL notifyModifiedValue(  ) throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
+        virtual ::sal_Int16 SAL_CALL getControlType() throw (css::uno::RuntimeException) override
+            { return CommonBehaviourControlHelper::getControlType(); }
+        virtual css::uno::Reference< css::inspection::XPropertyControlContext > SAL_CALL getControlContext() throw (css::uno::RuntimeException) override
+            { return CommonBehaviourControlHelper::getControlContext(); }
+        virtual void SAL_CALL setControlContext( const css::uno::Reference< css::inspection::XPropertyControlContext >& _controlcontext ) throw (css::uno::RuntimeException) override
+            { CommonBehaviourControlHelper::setControlContext( _controlcontext ); }
+        virtual css::uno::Reference< css::awt::XWindow > SAL_CALL getControlWindow() throw (css::uno::RuntimeException) override
+            { return VCLUnoHelper::GetInterface( m_pControlWindow ); }
+        virtual sal_Bool SAL_CALL isModified(  ) throw (css::uno::RuntimeException) override
+            { return CommonBehaviourControlHelper::isModified(); }
+        virtual void SAL_CALL notifyModifiedValue(  ) throw (css::uno::RuntimeException) override
+            { CommonBehaviourControlHelper::notifyModifiedValue(); }
 
         // XComponent
-        virtual void SAL_CALL disposing() SAL_OVERRIDE;
+        virtual void SAL_CALL disposing() override
+            { m_pControlWindow.disposeAndClear(); }
 
-        // IModifyListener
-        virtual void modified() SAL_OVERRIDE
-        { m_aImplControl.setModified(); }
+       //  CommonBehaviourControlHelper::getVclWindow
+        virtual vcl::Window*  getVclWindow() override
+            { return m_pControlWindow.get(); }
 
-        /// returns a typed pointer to our control window
-              WindowType* getTypedControlWindow()       { return static_cast< WindowType* >      ( m_aImplControl.getVclControlWindow() ); }
-        const WindowType* getTypedControlWindow() const { return static_cast< const WindowType* >( m_aImplControl.getVclControlWindow() ); }
+        TControlWindow*       getTypedControlWindow()
+            { return m_pControlWindow.get(); }
+        const TControlWindow* getTypedControlWindow() const
+            { return m_pControlWindow.get(); }
 
-    protected:
         /** checks whether the instance is already disposed
             @throws DisposedException
                 if the instance is already disposed
         */
         inline void impl_checkDisposed_throw();
+    private:
+        VclPtr<TControlWindow>         m_pControlWindow;
+        void implSetModifyHandler(std::true_type);
+        void implSetModifyHandler(std::false_type);
     };
-
-
-    //= ControlWindow - implementation
-
-
-    template< class WINDOW >
-    inline void ControlWindow< WINDOW >::setControlHelper( ControlHelper& _rControlHelper )
-    {
-        m_pHelper = &_rControlHelper;
-    }
 
 
     //= CommonBehaviourControl - implementation
 
-
-    template< class CONTROL_INTERFACE, class CONTROL_WINDOW >
-    inline CommonBehaviourControl< CONTROL_INTERFACE, CONTROL_WINDOW >::CommonBehaviourControl ( sal_Int16 _nControlType, vcl::Window* _pParentWindow, WinBits _nWindowStyle, bool _bDoSetHandlers )
+    template< class TControlInterface, class TControlWindow >
+    inline CommonBehaviourControl< TControlInterface, TControlWindow >::CommonBehaviourControl ( sal_Int16 _nControlType, vcl::Window* _pParentWindow, WinBits _nWindowStyle, bool _bDoSetHandlers)
         :ComponentBaseClass( m_aMutex )
-        ,m_aImplControl( new WindowType( _pParentWindow, _nWindowStyle ), _nControlType, *this, this )
+        ,CommonBehaviourControlHelper( _nControlType, *this )
+        ,m_pControlWindow( new TControlWindow( _pParentWindow, _nWindowStyle ) )
     {
-        WindowType* pControlWindow( getTypedControlWindow() );
-        pControlWindow->setControlHelper( m_aImplControl );
         if ( _bDoSetHandlers )
         {
-            pControlWindow->SetModifyHdl( LINK( &m_aImplControl, ControlHelper, ModifiedHdl ) );
-            pControlWindow->SetGetFocusHdl( LINK( &m_aImplControl, ControlHelper, GetFocusHdl ) );
-            pControlWindow->SetLoseFocusHdl( LINK( &m_aImplControl, ControlHelper, LoseFocusHdl ) );
+            implSetModifyHandler(std::is_base_of<::Edit,TControlWindow>());
+            m_pControlWindow->SetGetFocusHdl( LINK( this, CommonBehaviourControlHelper, GetFocusHdl ) );
+            m_pControlWindow->SetLoseFocusHdl( LINK( this, CommonBehaviourControlHelper, LoseFocusHdl ) );
         }
-        m_aImplControl.autoSizeWindow();
+        autoSizeWindow();
     }
 
-
-    template< class CONTROL_INTERFACE, class CONTROL_WINDOW >
-    inline ::sal_Int16 SAL_CALL CommonBehaviourControl< CONTROL_INTERFACE, CONTROL_WINDOW >::getControlType() throw (::com::sun::star::uno::RuntimeException)
+    template< class TControlInterface, class TControlWindow >
+    inline void CommonBehaviourControl< TControlInterface, TControlWindow >::implSetModifyHandler(std::true_type)
     {
-        return m_aImplControl.getControlType();
+        m_pControlWindow->SetModifyHdl( LINK( this, CommonBehaviourControlHelper, EditModifiedHdl ) );
     }
 
-
-    template< class CONTROL_INTERFACE, class CONTROL_WINDOW >
-    inline ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControlContext > SAL_CALL CommonBehaviourControl< CONTROL_INTERFACE, CONTROL_WINDOW >::getControlContext() throw (::com::sun::star::uno::RuntimeException)
+    template< class TControlInterface, class TControlWindow >
+    inline void CommonBehaviourControl< TControlInterface, TControlWindow >::implSetModifyHandler(std::false_type)
     {
-        return m_aImplControl.getControlContext();
+        m_pControlWindow->SetModifyHdl( LINK( this, CommonBehaviourControlHelper, ModifiedHdl ) );
     }
 
-
-    template< class CONTROL_INTERFACE, class CONTROL_WINDOW >
-    inline void SAL_CALL CommonBehaviourControl< CONTROL_INTERFACE, CONTROL_WINDOW >::setControlContext( const ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControlContext >& _controlcontext ) throw (::com::sun::star::uno::RuntimeException)
-    {
-        m_aImplControl.setControlContext( _controlcontext );
-    }
-
-
-    template< class CONTROL_INTERFACE, class CONTROL_WINDOW >
-    inline ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindow > SAL_CALL CommonBehaviourControl< CONTROL_INTERFACE, CONTROL_WINDOW >::getControlWindow() throw (::com::sun::star::uno::RuntimeException)
-    {
-        return m_aImplControl.getControlWindow();
-    }
-
-
-    template< class CONTROL_INTERFACE, class CONTROL_WINDOW >
-    inline sal_Bool SAL_CALL CommonBehaviourControl< CONTROL_INTERFACE, CONTROL_WINDOW >::isModified(  ) throw (::com::sun::star::uno::RuntimeException)
-    {
-        return m_aImplControl.isModified();
-    }
-
-
-    template< class CONTROL_INTERFACE, class CONTROL_WINDOW >
-    inline void SAL_CALL CommonBehaviourControl< CONTROL_INTERFACE, CONTROL_WINDOW >::notifyModifiedValue(  ) throw (::com::sun::star::uno::RuntimeException)
-    {
-        m_aImplControl.notifyModifiedValue();
-    }
-
-
-    template< class CONTROL_INTERFACE, class CONTROL_WINDOW >
-    inline void SAL_CALL CommonBehaviourControl< CONTROL_INTERFACE, CONTROL_WINDOW >::disposing()
-    {
-        m_aImplControl.dispose();
-    }
-
-
-    template< class CONTROL_INTERFACE, class CONTROL_WINDOW >
-    inline void CommonBehaviourControl< CONTROL_INTERFACE, CONTROL_WINDOW >::impl_checkDisposed_throw()
+    template< class TControlInterface, class TControlWindow >
+    inline void CommonBehaviourControl< TControlInterface, TControlWindow >::impl_checkDisposed_throw()
     {
         if ( ComponentBaseClass::rBHelper.bDisposed )
-            throw ::com::sun::star::lang::DisposedException( OUString(), *this );
+            throw css::lang::DisposedException( OUString(), *this );
     }
 
 

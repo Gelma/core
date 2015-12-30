@@ -59,7 +59,7 @@ PosSizePropertyPanel::PosSizePropertyPanel(
     const css::uno::Reference<css::ui::XSidebar>& rxSidebar)
 :   PanelLayout(pParent, "PosSizePropertyPanel", "svx/ui/sidebarpossize.ui", rxFrame),
     maRect(),
-    mpView(0),
+    mpView(nullptr),
     mlOldWidth(1),
     mlOldHeight(1),
     meRP(RP_LT),
@@ -81,7 +81,6 @@ PosSizePropertyPanel::PosSizePropertyPanel(
     maAutoWidthControl(SID_ATTR_TRANSFORM_AUTOWIDTH, *pBindings, *this),
     maAutoHeightControl(SID_ATTR_TRANSFORM_AUTOHEIGHT, *pBindings, *this),
     m_aMetricCtl(SID_ATTR_METRIC, *pBindings, *this),
-    mxFrame(rxFrame),
     maContext(),
     mpBindings(pBindings),
     mbMtrPosXMirror(false),
@@ -220,9 +219,9 @@ void PosSizePropertyPanel::Initialize()
     if ( pCurSh )
         mpView = pCurSh->GetDrawView();
     else
-        mpView = NULL;
+        mpView = nullptr;
 
-    if ( mpView != NULL )
+    if ( mpView != nullptr )
     {
         maUIScale = mpView->GetModel()->GetUIScale();
         mbAdjustEnabled = hasText(*mpView);
@@ -237,12 +236,12 @@ VclPtr<vcl::Window> PosSizePropertyPanel::Create (
     SfxBindings* pBindings,
     const css::uno::Reference<css::ui::XSidebar>& rxSidebar)
 {
-    if (pParent == NULL)
-        throw lang::IllegalArgumentException("no parent Window given to PosSizePropertyPanel::Create", NULL, 0);
+    if (pParent == nullptr)
+        throw lang::IllegalArgumentException("no parent Window given to PosSizePropertyPanel::Create", nullptr, 0);
     if ( ! rxFrame.is())
-        throw lang::IllegalArgumentException("no XFrame given to PosSizePropertyPanel::Create", NULL, 1);
-    if (pBindings == NULL)
-        throw lang::IllegalArgumentException("no SfxBindings given to PosSizePropertyPanel::Create", NULL, 2);
+        throw lang::IllegalArgumentException("no XFrame given to PosSizePropertyPanel::Create", nullptr, 1);
+    if (pBindings == nullptr)
+        throw lang::IllegalArgumentException("no SfxBindings given to PosSizePropertyPanel::Create", nullptr, 2);
 
     return VclPtr<PosSizePropertyPanel>::Create(
                         pParent,
@@ -269,19 +268,19 @@ void PosSizePropertyPanel::HandleContextChange(
 
     maContext = rContext;
 
-    sal_Int32 nLayoutMode (0);
+    bool bShowPosition = false;
+    bool bShowAngle = false;
+    bool bShowFlip = false;
+
     switch (maContext.GetCombinedContext_DI())
     {
         case CombinedEnumContext(Application_WriterVariants, Context_Draw):
-            nLayoutMode = 0;
+            bShowAngle = true;
+            bShowFlip = true;
             break;
 
         case CombinedEnumContext(Application_WriterVariants, Context_Graphic):
-        case CombinedEnumContext(Application_WriterVariants, Context_Media):
-        case CombinedEnumContext(Application_WriterVariants, Context_Frame):
-        case CombinedEnumContext(Application_WriterVariants, Context_OLE):
-        case CombinedEnumContext(Application_WriterVariants, Context_Form):
-            nLayoutMode = 1;
+            bShowFlip = true;
             break;
 
         case CombinedEnumContext(Application_Calc, Context_Draw):
@@ -289,7 +288,9 @@ void PosSizePropertyPanel::HandleContextChange(
         case CombinedEnumContext(Application_DrawImpress, Context_Draw):
         case CombinedEnumContext(Application_DrawImpress, Context_TextObject):
         case CombinedEnumContext(Application_DrawImpress, Context_Graphic):
-            nLayoutMode = 2;
+            bShowPosition = true;
+            bShowAngle = true;
+            bShowFlip = true;
             break;
 
         case CombinedEnumContext(Application_Calc, Context_Chart):
@@ -302,113 +303,33 @@ void PosSizePropertyPanel::HandleContextChange(
         case CombinedEnumContext(Application_DrawImpress, Context_OLE):
         case CombinedEnumContext(Application_DrawImpress, Context_3DObject):
         case CombinedEnumContext(Application_DrawImpress, Context_MultiObject):
-            nLayoutMode = 3;
+            bShowPosition = true;
             break;
     }
 
-    switch (nLayoutMode)
-    {
-        case 0:
-        {
-            mpMtrWidth->SetMin( 2 );
-            mpMtrHeight->SetMin( 2 );
-            mpFtPosX->Hide();
-            mpMtrPosX->Hide();
-            mpFtPosY->Hide();
-            mpMtrPosY->Hide();
+    // Position
+    mpFtPosX->Show(bShowPosition);
+    mpMtrPosX->Show(bShowPosition);
+    mpFtPosY->Show(bShowPosition);
+    mpMtrPosY->Show(bShowPosition);
 
-            //rotation
-            mpFtAngle->Show();
-            mpMtrAngle->Show();
-            mpDial->Show();
+    // Rotation
+    mpFtAngle->Show(bShowAngle);
+    mpMtrAngle->Show(bShowAngle);
+    mpDial->Show(bShowAngle);
 
-            //flip
-            mpFtFlip->Show();
-            mpFlipTbx->Show();
-            mbIsFlip = true;
+    // Flip
+    mpFtFlip->Show(bShowFlip);
+    mpFlipTbx->Show(bShowFlip);
+    mbIsFlip = bShowFlip;
 
-            if (mxSidebar.is())
-                mxSidebar->requestLayout();
-        }
-        break;
-
-        case 1:
-        {
-            mpMtrWidth->SetMin( 2 );
-            mpMtrHeight->SetMin( 2 );
-            mpFtPosX->Hide();
-            mpMtrPosX->Hide();
-            mpFtPosY->Hide();
-            mpMtrPosY->Hide();
-
-            //rotation
-            mpFtAngle->Hide();
-            mpMtrAngle->Hide();
-            mpDial->Hide();
-
-            //flip
-            mpFlipTbx->Hide();
-            mpFtFlip->Hide();
-            mbIsFlip = false;
-
-            if (mxSidebar.is())
-                mxSidebar->requestLayout();
-        }
-        break;
-
-        case 2:
-        {
-            mpMtrWidth->SetMin( 1 );
-            mpMtrHeight->SetMin( 1 );
-            mpFtPosX->Show();
-            mpMtrPosX->Show();
-            mpFtPosY->Show();
-            mpMtrPosY->Show();
-
-            //rotation
-            mpFtAngle->Show();
-            mpMtrAngle->Show();
-            mpDial->Show();
-
-            //flip
-            mpFlipTbx->Show();
-            mpFtFlip->Show();
-            mbIsFlip = true;
-
-            if (mxSidebar.is())
-                mxSidebar->requestLayout();
-        }
-        break;
-
-        case 3:
-        {
-            mpMtrWidth->SetMin( 1 );
-            mpMtrHeight->SetMin( 1 );
-            mpFtPosX->Show();
-            mpMtrPosX->Show();
-            mpFtPosY->Show();
-            mpMtrPosY->Show();
-
-            //rotation
-            mpFtAngle->Hide();
-            mpMtrAngle->Hide();
-            mpDial->Hide();
-
-            //flip
-            mpFlipTbx->Hide();
-            mpFtFlip->Hide();
-            mbIsFlip = false;
-
-            if (mxSidebar.is())
-                mxSidebar->requestLayout();
-        }
-        break;
-    }
+    if (mxSidebar.is())
+        mxSidebar->requestLayout();
 }
 
 
 
-IMPL_LINK_NOARG( PosSizePropertyPanel, ChangeWidthHdl )
+IMPL_LINK_NOARG_TYPED( PosSizePropertyPanel, ChangeWidthHdl, Edit&, void )
 {
     if( mpCbxScale->IsChecked() &&
         mpCbxScale->IsEnabled() )
@@ -427,12 +348,11 @@ IMPL_LINK_NOARG( PosSizePropertyPanel, ChangeWidthHdl )
         }
     }
     executeSize();
-    return 0;
 }
 
 
 
-IMPL_LINK_NOARG( PosSizePropertyPanel, ChangeHeightHdl )
+IMPL_LINK_NOARG_TYPED( PosSizePropertyPanel, ChangeHeightHdl, Edit&, void )
 {
     if( mpCbxScale->IsChecked() &&
         mpCbxScale->IsEnabled() )
@@ -451,23 +371,20 @@ IMPL_LINK_NOARG( PosSizePropertyPanel, ChangeHeightHdl )
         }
     }
     executeSize();
-    return 0;
 }
 
 
 
-IMPL_LINK_NOARG( PosSizePropertyPanel, ChangePosXHdl )
+IMPL_LINK_NOARG_TYPED( PosSizePropertyPanel, ChangePosXHdl, Edit&, void )
 {
     executePosX();
-    return 0;
 }
 
 
 
-IMPL_LINK_NOARG( PosSizePropertyPanel, ChangePosYHdl )
+IMPL_LINK_NOARG_TYPED( PosSizePropertyPanel, ChangePosYHdl, Edit&, void )
 {
     executePosY();
-    return 0;
 }
 
 
@@ -482,26 +399,26 @@ IMPL_LINK_NOARG_TYPED( PosSizePropertyPanel, ClickAutoHdl, Button*, void )
 
     // mpCbxScale must synchronized with that on Position and Size tabpage on Shape Properties dialog
     SvtViewOptions aPageOpt(E_TABPAGE, "cui/ui/possizetabpage/PositionAndSize");
-    aPageOpt.SetUserItem( USERITEM_NAME, ::com::sun::star::uno::makeAny( ::rtl::OUString::number( int(mpCbxScale->IsChecked()) ) ) );
+    aPageOpt.SetUserItem( USERITEM_NAME, css::uno::makeAny( ::rtl::OUString::number( int(mpCbxScale->IsChecked()) ) ) );
 }
 
 
 
-IMPL_LINK_NOARG( PosSizePropertyPanel, AngleModifiedHdl )
+IMPL_LINK_NOARG_TYPED( PosSizePropertyPanel, AngleModifiedHdl, Edit&, void )
 {
     OUString sTmp = mpMtrAngle->GetText();
     if (sTmp.isEmpty())
-        return 0;
+        return;
     sal_Unicode nChar = sTmp[0];
     if( nChar == '-' )
     {
         if (sTmp.getLength() < 2)
-            return 0;
+            return;
         nChar = sTmp[1];
     }
 
     if( (nChar < '0') || (nChar > '9') )
-        return 0;
+        return;
 
     const LocaleDataWrapper& rLocaleWrapper( Application::GetSettings().GetLocaleDataWrapper() );
     const sal_Unicode cSep = rLocaleWrapper.getNumDecimalSep()[0];
@@ -514,7 +431,7 @@ IMPL_LINK_NOARG( PosSizePropertyPanel, AngleModifiedHdl )
     rtl_math_ConversionStatus eStatus;
     double fTmp = rtl::math::stringToDouble( sTmp, cSep, 0, &eStatus);
     if (eStatus != rtl_math_ConversionStatus_Ok)
-        return 0;
+        return;
 
     while (fTmp < 0)
         fTmp += 360;
@@ -529,8 +446,6 @@ IMPL_LINK_NOARG( PosSizePropertyPanel, AngleModifiedHdl )
 
     GetBindings()->GetDispatcher()->Execute(
         SID_ATTR_TRANSFORM, SfxCallMode::RECORD, &aAngleItem, &aRotXItem, &aRotYItem, 0L );
-
-    return 0;
 }
 
 
@@ -592,9 +507,9 @@ void PosSizePropertyPanel::NotifyItemUpdate(
     if ( pCurSh )
         mpView = pCurSh->GetDrawView();
     else
-        mpView = NULL;
+        mpView = nullptr;
 
-    if ( mpView == NULL )
+    if ( mpView == nullptr )
         return;
 
     mbAdjustEnabled = hasText(*mpView);
@@ -891,7 +806,7 @@ void PosSizePropertyPanel::NotifyItemUpdate(
     // mpCbxScale must synchronized with that on Position and Size tabpage on Shape Properties dialog
     SvtViewOptions aPageOpt(E_TABPAGE, "cui/ui/possizetabpage/PositionAndSize");
     OUString  sUserData;
-    ::com::sun::star::uno::Any  aUserItem = aPageOpt.GetUserItem( USERITEM_NAME );
+    css::uno::Any  aUserItem = aPageOpt.GetUserItem( USERITEM_NAME );
     ::rtl::OUString aTemp;
     if ( aUserItem >>= aTemp )
         sUserData = aTemp;
@@ -1048,7 +963,7 @@ FieldUnit PosSizePropertyPanel::GetCurrentUnit( SfxItemState eState, const SfxPo
     else
     {
         SfxViewFrame* pFrame = SfxViewFrame::Current();
-        SfxObjectShell* pSh = NULL;
+        SfxObjectShell* pSh = nullptr;
         if ( pFrame )
             pSh = pFrame->GetObjectShell();
         if ( pSh )
@@ -1158,12 +1073,15 @@ void PosSizePropertyPanel::DisableControls()
 
 void PosSizePropertyPanel::SetPosXYMinMax()
 {
+    SdrPageView* pPV = mpView->GetSdrPageView();
+    if (!pPV)
+        return;
     Rectangle aTmpRect(mpView->GetAllMarkedRect());
-    mpView->GetSdrPageView()->LogicToPagePos(aTmpRect);
+    pPV->LogicToPagePos(aTmpRect);
     maRect = basegfx::B2DRange(aTmpRect.Left(), aTmpRect.Top(), aTmpRect.Right(), aTmpRect.Bottom());
 
     Rectangle aTmpRect2(mpView->GetWorkArea());
-    mpView->GetSdrPageView()->LogicToPagePos(aTmpRect2);
+    pPV->LogicToPagePos(aTmpRect2);
     maWorkArea = basegfx::B2DRange(aTmpRect2.Left(), aTmpRect2.Top(), aTmpRect2.Right(), aTmpRect2.Bottom());
 
     const Fraction aUIScale(mpView->GetModel()->GetUIScale());

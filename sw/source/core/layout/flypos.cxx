@@ -25,7 +25,7 @@
 #include "dflyobj.hxx"
 #include <calbck.hxx>
 
-bool SwPosFlyFrmCmp::operator()(const SwPosFlyFrmPtr& rA, const SwPosFlyFrmPtr& rB) const
+bool SwPosFlyFrameCmp::operator()(const SwPosFlyFramePtr& rA, const SwPosFlyFramePtr& rB) const
 {
     if(rA->GetNdIndex() == rB->GetNdIndex())
     {
@@ -36,25 +36,25 @@ bool SwPosFlyFrmCmp::operator()(const SwPosFlyFrmPtr& rA, const SwPosFlyFrmPtr& 
     return rA->GetNdIndex() < rB->GetNdIndex();
 }
 
-SwPosFlyFrm::SwPosFlyFrm( const SwNodeIndex& rIdx, const SwFrameFormat* pFormat,
+SwPosFlyFrame::SwPosFlyFrame( const SwNodeIndex& rIdx, const SwFrameFormat* pFormat,
                             sal_uInt16 nArrPos )
-    : pFrameFormat( pFormat ), pNdIdx( const_cast<SwNodeIndex*>(&rIdx) )
+    : m_pFrameFormat( pFormat ), m_pNodeIndex( const_cast<SwNodeIndex*>(&rIdx) )
 {
     bool bFnd = false;
     const SwFormatAnchor& rAnchor = pFormat->GetAnchor();
     if (FLY_AT_PAGE == rAnchor.GetAnchorId())
     {
-        pNdIdx = new SwNodeIndex( rIdx );
+        m_pNodeIndex = new SwNodeIndex( rIdx );
     }
     else if( pFormat->GetDoc()->getIDocumentLayoutAccess().GetCurrentViewShell() )
     {
         if( RES_FLYFRMFMT == pFormat->Which() )
         {
             // Let's see if we have an SdrObject for this
-            SwFlyFrm* pFly = SwIterator<SwFlyFrm,SwFormat>(*pFormat).First();
+            SwFlyFrame* pFly = SwIterator<SwFlyFrame,SwFormat>(*pFormat).First();
             if( pFly )
             {
-                nOrdNum = pFly->GetVirtDrawObj()->GetOrdNum();
+                m_nOrdNum = pFly->GetVirtDrawObj()->GetOrdNum();
                 bFnd = true;
             }
         }
@@ -64,7 +64,7 @@ SwPosFlyFrm::SwPosFlyFrm( const SwNodeIndex& rIdx, const SwFrameFormat* pFormat,
             SwDrawContact* pContact = SwIterator<SwDrawContact,SwFormat>(*pFormat).First();
             if( pContact )
             {
-                nOrdNum = pContact->GetMaster()->GetOrdNum();
+                m_nOrdNum = pContact->GetMaster()->GetOrdNum();
                 bFnd = true;
             }
         }
@@ -72,17 +72,17 @@ SwPosFlyFrm::SwPosFlyFrm( const SwNodeIndex& rIdx, const SwFrameFormat* pFormat,
 
     if( !bFnd )
     {
-        nOrdNum = pFormat->GetDoc()->GetSpzFrameFormats()->size();
-        nOrdNum += nArrPos;
+        m_nOrdNum = pFormat->GetDoc()->GetSpzFrameFormats()->size();
+        m_nOrdNum += nArrPos;
     }
 }
 
-SwPosFlyFrm::~SwPosFlyFrm()
+SwPosFlyFrame::~SwPosFlyFrame()
 {
-    const SwFormatAnchor& rAnchor = pFrameFormat->GetAnchor();
+    const SwFormatAnchor& rAnchor = m_pFrameFormat->GetAnchor();
     if (FLY_AT_PAGE == rAnchor.GetAnchorId())
     {
-        delete pNdIdx;
+        delete m_pNodeIndex;
     }
 }
 

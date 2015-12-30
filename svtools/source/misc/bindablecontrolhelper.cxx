@@ -38,7 +38,7 @@ namespace svt
 
 using namespace ::com::sun::star;
 
-bool lcl_isNamedRange( const OUString& sAddress, const uno::Reference< frame::XModel >& xModel, table::CellRangeAddress& aAddress )
+bool lcl_isNamedRange( const OUString& sAddress, const uno::Reference< frame::XModel >& xModel, css::table::CellRangeAddress& aAddress )
 {
     bool bRes = false;
     uno::Reference< sheet::XCellRangeReferrer > xReferrer;
@@ -66,7 +66,7 @@ bool lcl_isNamedRange( const OUString& sAddress, const uno::Reference< frame::XM
 
 
 void
-BindableControlHelper::ApplyListSourceAndBindableData( const com::sun::star::uno::Reference< com::sun::star::frame::XModel >& xModel, const com::sun::star::uno::Reference< com::sun::star::uno::XInterface >& rObj, const OUString& rsCtrlSource, const OUString& rsRowSource, sal_uInt16 nRefTab )
+BindableControlHelper::ApplyListSourceAndBindableData( const css::uno::Reference< css::frame::XModel >& xModel, const css::uno::Reference< css::uno::XInterface >& rObj, const OUString& rsCtrlSource, const OUString& rsRowSource, sal_uInt16 nRefTab )
 {
 // XBindable etc.
     uno::Reference< lang::XMultiServiceFactory > xFac;
@@ -81,7 +81,7 @@ BindableControlHelper::ApplyListSourceAndBindableData( const com::sun::star::uno
          // pretend we converted the imported string address into the
          // appropriate address structure
          uno::Reference< beans::XPropertySet > xConvertor( xFac->createInstance( "com.sun.star.table.CellAddressConversion"), uno::UNO_QUERY );
-         table::CellAddress aAddress;
+         css::table::CellAddress aAddress;
          if ( xConvertor.is() )
          {
              // we need this service to properly convert XL notation also
@@ -112,7 +112,7 @@ BindableControlHelper::ApplyListSourceAndBindableData( const com::sun::star::uno
          // pretend we converted the imported string address into the
          // appropriate address structure
          uno::Reference< beans::XPropertySet > xConvertor( xFac->createInstance( "com.sun.star.table.CellRangeAddressConversion"), uno::UNO_QUERY );
-         table::CellRangeAddress aAddress;
+         css::table::CellRangeAddress aAddress;
          if ( xConvertor.is() )
          {
              if ( !lcl_isNamedRange( rsRowSource, xModel, aAddress ) )

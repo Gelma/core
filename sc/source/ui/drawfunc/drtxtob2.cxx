@@ -94,7 +94,7 @@ void ScDrawTextObjectBar::ExecuteGlobal( SfxRequest &rReq )
                 SfxItemSet aAttr( pView->GetModel()->GetItemPool(), SDRATTR_TEXTDIRECTION, SDRATTR_TEXTDIRECTION, 0 );
                 aAttr.Put( SvxWritingModeItem(
                     nSlot == SID_TEXTDIRECTION_LEFT_TO_RIGHT ?
-                        com::sun::star::text::WritingMode_LR_TB : com::sun::star::text::WritingMode_TB_RL,
+                        css::text::WritingMode_LR_TB : css::text::WritingMode_TB_RL,
                         SDRATTR_TEXTDIRECTION ) );
                 pView->SetAttributes( aAttr );
                 pViewData->GetScDrawView()->InvalidateDrawTextAttrs();  // Bidi slots may be disabled
@@ -104,7 +104,7 @@ void ScDrawTextObjectBar::ExecuteGlobal( SfxRequest &rReq )
 
         case SID_ENABLE_HYPHENATION:
             {
-                SFX_REQUEST_ARG( rReq, pItem, SfxBoolItem, SID_ENABLE_HYPHENATION, false);
+                const SfxBoolItem* pItem = rReq.GetArg<SfxBoolItem>(SID_ENABLE_HYPHENATION);
                 if( pItem )
                 {
                     SfxItemSet aSet( GetPool(), EE_PARA_HYPHENATE, EE_PARA_HYPHENATE );
@@ -201,8 +201,8 @@ void ScDrawTextObjectBar::ExecFormText(SfxRequest& rReq)
 
 void ScDrawTextObjectBar::GetFormTextState(SfxItemSet& rSet)
 {
-    const SdrObject*    pObj        = NULL;
-    SvxFontWorkDialog*  pDlg        = NULL;
+    const SdrObject*    pObj        = nullptr;
+    SvxFontWorkDialog*  pDlg        = nullptr;
     ScDrawView*         pDrView     = pViewData->GetView()->GetScDrawView();
     const SdrMarkList&  rMarkList   = pDrView->GetMarkedObjectList();
     sal_uInt16              nId = SvxFontWorkChildWindow::GetChildWindowId();
@@ -211,7 +211,7 @@ void ScDrawTextObjectBar::GetFormTextState(SfxItemSet& rSet)
     if (pViewFrm->HasChildWindow(nId))
     {
         SfxChildWindow* pWnd = pViewFrm->GetChildWindow(nId);
-        pDlg = pWnd ? static_cast<SvxFontWorkDialog*>(pWnd->GetWindow()) : NULL;
+        pDlg = pWnd ? static_cast<SvxFontWorkDialog*>(pWnd->GetWindow()) : nullptr;
     }
 
     if ( rMarkList.GetMarkCount() == 1 )

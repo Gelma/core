@@ -78,9 +78,9 @@ struct SvxBackgroundTable_Impl
     sal_Int32       nActPos;
 
     SvxBackgroundTable_Impl()
-        : pCellBrush(NULL)
-        , pRowBrush(NULL)
-        , pTableBrush(NULL)
+        : pCellBrush(nullptr)
+        , pRowBrush(nullptr)
+        , pTableBrush(nullptr)
         , nCellWhich(0)
         , nRowWhich(0)
         , nTableWhich(0)
@@ -94,7 +94,7 @@ struct SvxBackgroundPage_Impl
     bool        bIsImportDlgInExecute;
 
     SvxBackgroundPage_Impl()
-        : pLoadIdle(NULL)
+        : pLoadIdle(nullptr)
         , bIsImportDlgInExecute(false)
     {}
 };
@@ -151,15 +151,15 @@ public:
     explicit BackgroundPreviewImpl(vcl::Window* pParent);
     void setBmp(bool bBmp);
     virtual ~BackgroundPreviewImpl();
-    virtual void    dispose() SAL_OVERRIDE;
+    virtual void    dispose() override;
 
     void            NotifyChange( const Color&  rColor );
     void            NotifyChange( const Bitmap* pBitmap );
 
 protected:
-    virtual void    Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) SAL_OVERRIDE;
-    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
-    virtual void    Resize() SAL_OVERRIDE;
+    virtual void    Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) override;
+    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) override;
+    virtual void    Resize() override;
 
 private:
 
@@ -176,7 +176,7 @@ private:
 BackgroundPreviewImpl::BackgroundPreviewImpl(vcl::Window* pParent)
     : Window(pParent, WB_BORDER)
     , bIsBmp(false)
-    , pBitmap(NULL)
+    , pBitmap(nullptr)
     , aDrawRect(Point(0,0), GetOutputSizePixel())
     , nTransparency(0)
 {
@@ -204,7 +204,7 @@ BackgroundPreviewImpl::~BackgroundPreviewImpl()
 void BackgroundPreviewImpl::dispose()
 {
     delete pBitmap;
-    pBitmap = NULL;
+    pBitmap = nullptr;
     vcl::Window::dispose();
 }
 
@@ -331,8 +331,8 @@ SvxBackgroundTabPage::SvxBackgroundTabPage(vcl::Window* pParent, const SfxItemSe
     , bLinkOnly(false)
     , bHighlighting(false)
     , pPageImpl(new SvxBackgroundPage_Impl)
-    , pImportDlg(NULL)
-    , pTableBck_Impl(NULL)
+    , pImportDlg(nullptr)
+    , pTableBck_Impl(nullptr)
     , pHighlighting(nullptr)
 {
     get(m_pAsGrid, "asgrid");
@@ -371,8 +371,8 @@ SvxBackgroundTabPage::SvxBackgroundTabPage(vcl::Window* pParent, const SfxItemSe
     SfxObjectShell* pShell;
 
     if ( SfxItemState::SET == rCoreSet.GetItemState( SID_HTML_MODE, false, &pItem )
-         || ( 0 != ( pShell = SfxObjectShell::Current()) &&
-              0 != ( pItem = pShell->GetItem( SID_HTML_MODE ) ) ) )
+         || ( nullptr != ( pShell = SfxObjectShell::Current()) &&
+              nullptr != ( pItem = pShell->GetItem( SID_HTML_MODE ) ) ) )
     {
         nHtmlMode = static_cast<const SfxUInt16Item*>(pItem)->GetValue();
     }
@@ -395,11 +395,11 @@ void SvxBackgroundTabPage::dispose()
     {
         delete pPageImpl->pLoadIdle;
         delete pPageImpl;
-        pPageImpl = NULL;
+        pPageImpl = nullptr;
     }
 
     delete pImportDlg;
-    pImportDlg = NULL;
+    pImportDlg = nullptr;
 
     if( pTableBck_Impl)
     {
@@ -407,7 +407,7 @@ void SvxBackgroundTabPage::dispose()
         delete pTableBck_Impl->pRowBrush;
         delete pTableBck_Impl->pTableBrush;
         delete pTableBck_Impl;
-        pTableBck_Impl = NULL;
+        pTableBck_Impl = nullptr;
     }
 
     m_pAsGrid.clear();
@@ -441,10 +441,6 @@ VclPtr<SfxTabPage> SvxBackgroundTabPage::Create( vcl::Window* pParent, const Sfx
 
 void SvxBackgroundTabPage::Reset( const SfxItemSet* rSet )
 {
-// os: Such a nonsense! One will always find such an item somewhere,
-//     but it must be existing in the rSet!
-//  const SfxPoolItem* pX = GetOldItem( rSet, SID_VIEW_FLD_PIC );
-//  if( pX && pX->ISA(SfxWallpaperItem))
     if(SfxItemState::DEFAULT <= rSet->GetItemState(GetWhich(SID_VIEW_FLD_PIC), false))
     {
         ResetFromWallpaperItem( *rSet );
@@ -460,7 +456,7 @@ void SvxBackgroundTabPage::Reset( const SfxItemSet* rSet )
 
 
     // get and evaluate Input-BrushItem
-    const SvxBrushItem* pBgdAttr = NULL;
+    const SvxBrushItem* pBgdAttr = nullptr;
     sal_uInt16 nSlot = SID_ATTR_BRUSH;
     const SfxPoolItem* pItem;
     sal_uInt16 nDestValue = USHRT_MAX;
@@ -555,7 +551,7 @@ void SvxBackgroundTabPage::Reset( const SfxItemSet* rSet )
             }
             pTableBck_Impl->nTableWhich = SID_ATTR_BRUSH_TABLE;
 
-            TblDestinationHdl_Impl(m_pTblLBox);
+            TblDestinationHdl_Impl(*m_pTblLBox);
             m_pTblLBox->SaveValue();
         }
         else if( bHighlighting )
@@ -579,7 +575,7 @@ void SvxBackgroundTabPage::ResetFromWallpaperItem( const SfxItemSet& rSet )
     m_pBtnPreview->Check( !aUserData.isEmpty() && '1' == aUserData[0] );
 
     // get and evaluate Input-BrushItem
-    const SvxBrushItem* pBgdAttr = NULL;
+    const SvxBrushItem* pBgdAttr = nullptr;
     sal_uInt16 nSlot = SID_VIEW_FLD_PIC;
     sal_uInt16 nWhich = GetWhich( nSlot );
     std::unique_ptr<SvxBrushItem> pTemp;
@@ -602,6 +598,7 @@ void SvxBackgroundTabPage::ResetFromWallpaperItem( const SfxItemSet& rSet )
             aBgdColor = pBgdAttr->GetColor();
             sal_uInt16 nCol = GetItemId_Impl(*m_pBackgroundColorSet, aBgdColor);
             m_pBackgroundColorSet->SelectItem( nCol );
+            m_pBackgroundColorSet->SaveValue();
             m_pPreviewWin1->NotifyChange( aBgdColor );
         }
     }
@@ -640,11 +637,6 @@ bool SvxBackgroundTabPage::FillItemSet( SfxItemSet* rCoreSet )
         pPageImpl->pLoadIdle->Stop();
         LoadIdleHdl_Impl( pPageImpl->pLoadIdle );
     }
-// os: Such a nonsense! One will always find such an item somewhere,
-//     but it must be existing in the rSet!
-
-//  const SfxPoolItem* pX = GetOldItem( rCoreSet, SID_VIEW_FLD_PIC );
-//  if( pX && pX->ISA(SfxWallpaperItem))
     if(SfxItemState::DEFAULT <= rCoreSet->GetItemState(GetWhich(SID_VIEW_FLD_PIC), false))
         return FillItemSetWithWallpaperItem( *rCoreSet, SID_VIEW_FLD_PIC );
 
@@ -691,7 +683,7 @@ bool SvxBackgroundTabPage::FillItemSet( SfxItemSet* rCoreSet )
             {
                 // Brush-treatment:
                 if ( rOldItem.GetColor() != aBgdColor ||
-                     (SfxItemState::DEFAULT >= eOldItemState && !m_pBackgroundColorSet->IsNoSelection()))
+                     (SfxItemState::DEFAULT >= eOldItemState && m_pBackgroundColorSet->GetSavedValue() != m_pBackgroundColorSet->GetSelectItemId()))
                 {
                     bModified = true;
                     rCoreSet->Put( SvxBrushItem( aBgdColor, nWhich ) );
@@ -705,7 +697,7 @@ bool SvxBackgroundTabPage::FillItemSet( SfxItemSet* rCoreSet )
 
                 SvxGraphicPosition  eNewPos  = GetGraphicPosition_Impl();
                 const bool          bIsLink  = m_pBtnLink->IsChecked();
-                const bool          bWasLink = (NULL != rOldItem.GetGraphicLink() );
+                const bool          bWasLink = (nullptr != rOldItem.GetGraphicLink() );
 
 
                 if ( !bIsLink && !bIsGraphicValid )
@@ -998,9 +990,9 @@ bool SvxBackgroundTabPage::LoadLinkedGraphic_Impl()
 void SvxBackgroundTabPage::FillColorValueSets_Impl()
 {
     SfxObjectShell* pDocSh = SfxObjectShell::Current();
-    const SfxPoolItem* pItem = NULL;
-    XColorListRef pColorTable = NULL;
-    if ( pDocSh && ( 0 != ( pItem = pDocSh->GetItem( SID_COLOR_TABLE ) ) ) )
+    const SfxPoolItem* pItem = nullptr;
+    XColorListRef pColorTable = nullptr;
+    if ( pDocSh && ( nullptr != ( pItem = pDocSh->GetItem( SID_COLOR_TABLE ) ) ) )
     {
         pColorTable = static_cast<const SvxColorListItem*>(pItem)->GetColorList();
     }
@@ -1148,7 +1140,7 @@ IMPL_LINK_NOARG_TYPED(SvxBackgroundTabPage, BackgroundColorHdl_Impl, ValueSet*, 
     m_pPreviewWin1->NotifyChange( aBgdColor );
 }
 
-IMPL_LINK_NOARG(SvxBackgroundTabPage, SelectHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvxBackgroundTabPage, SelectHdl_Impl, ListBox&, void)
 {
     if ( drawing::FillStyle_SOLID == lcl_getFillStyle(m_pLbSelect) )
     {
@@ -1158,7 +1150,6 @@ IMPL_LINK_NOARG(SvxBackgroundTabPage, SelectHdl_Impl)
     {
         ShowBitmapUI_Impl();
     }
-    return 0;
 }
 
 IMPL_LINK_TYPED( SvxBackgroundTabPage, FileClickHdl_Impl, Button*, pBox, void )
@@ -1199,11 +1190,11 @@ IMPL_LINK_TYPED( SvxBackgroundTabPage, FileClickHdl_Impl, Button*, pBox, void )
             {
                 if ( !aBgdGraphicPath.isEmpty() ) // only for linked bitmap
                     RaiseLoadError_Impl();
-                m_pPreviewWin2->NotifyChange( NULL );
+                m_pPreviewWin2->NotifyChange( nullptr );
             }
         }
         else
-            m_pPreviewWin2->NotifyChange( NULL );
+            m_pPreviewWin2->NotifyChange( nullptr );
     }
 }
 
@@ -1304,7 +1295,7 @@ IMPL_LINK_TYPED( SvxBackgroundTabPage, LoadIdleHdl_Impl, Idle* , pIdle, void )
                     m_pPreviewWin2->NotifyChange( &aBmp );
                 }
                 else
-                    m_pPreviewWin2->NotifyChange( NULL );
+                    m_pPreviewWin2->NotifyChange( nullptr );
             }
 
             FileClickHdl_Impl(m_pBtnLink);
@@ -1322,13 +1313,13 @@ void SvxBackgroundTabPage::ShowTblControl()
     m_pAsGrid->Show();
 }
 
-IMPL_LINK( SvxBackgroundTabPage, TblDestinationHdl_Impl, ListBox*, pBox )
+IMPL_LINK_TYPED( SvxBackgroundTabPage, TblDestinationHdl_Impl, ListBox&, rBox, void )
 {
-    sal_Int32 nSelPos = pBox->GetSelectEntryPos();
+    sal_Int32 nSelPos = rBox.GetSelectEntryPos();
     if( pTableBck_Impl && pTableBck_Impl->nActPos != nSelPos)
     {
         std::unique_ptr<SvxBrushItem> xItemHolder;
-        SvxBrushItem* pActItem = NULL;
+        SvxBrushItem* pActItem = nullptr;
         sal_uInt16 nWhich = 0;
         switch(pTableBck_Impl->nActPos)
         {
@@ -1345,7 +1336,7 @@ IMPL_LINK( SvxBackgroundTabPage, TblDestinationHdl_Impl, ListBox*, pBox )
             nWhich = pTableBck_Impl->nTableWhich;
             break;
         default:
-            pActItem = NULL;
+            pActItem = nullptr;
             break;
         }
         pTableBck_Impl->nActPos = nSelPos;
@@ -1396,7 +1387,7 @@ IMPL_LINK( SvxBackgroundTabPage, TblDestinationHdl_Impl, ListBox*, pBox )
             // The item will be new'ed again below, but that will be the
             // default item then, not an existing modified one.
             xItemHolder.reset();
-            pActItem = NULL;
+            pActItem = nullptr;
             break;
         }
         OUString aUserData = GetUserData();
@@ -1407,7 +1398,6 @@ IMPL_LINK( SvxBackgroundTabPage, TblDestinationHdl_Impl, ListBox*, pBox )
         }
         FillControls_Impl(*pActItem, aUserData);
     }
-    return 0;
 }
 
 void SvxBackgroundTabPage::FillControls_Impl( const SvxBrushItem& rBgdAttr,
@@ -1434,6 +1424,7 @@ void SvxBackgroundTabPage::FillControls_Impl( const SvxBrushItem& rBgdAttr,
         {
             m_pBackgroundColorSet->SelectItem( nCol );
         }
+        m_pBackgroundColorSet->SaveValue();
 
         m_pPreviewWin1->NotifyChange( aBgdColor );
 
@@ -1446,7 +1437,7 @@ void SvxBackgroundTabPage::FillControls_Impl( const SvxBrushItem& rBgdAttr,
                 m_pBtnPreview->Check( false );
             m_pBtnLink->Check( false );
             m_pBtnLink->Disable();
-            m_pPreviewWin2->NotifyChange( NULL );
+            m_pPreviewWin2->NotifyChange( nullptr );
             SetGraphicPosition_Impl( GPOS_TILED );  // tiles as default
         }
     }
@@ -1512,7 +1503,7 @@ void SvxBackgroundTabPage::FillControls_Impl( const SvxBrushItem& rBgdAttr,
             m_pPreviewWin2->NotifyChange( &aBmp );
         }
         else
-            m_pPreviewWin2->NotifyChange( NULL );
+            m_pPreviewWin2->NotifyChange( nullptr );
 
         SetGraphicPosition_Impl( ePos );
     }
@@ -1520,7 +1511,7 @@ void SvxBackgroundTabPage::FillControls_Impl( const SvxBrushItem& rBgdAttr,
 
 void SvxBackgroundTabPage::PageCreated(const SfxAllItemSet& aSet)
 {
-    SFX_ITEMSET_ARG (&aSet,pFlagItem,SfxUInt32Item,SID_FLAG_TYPE,false);
+    const SfxUInt32Item* pFlagItem = aSet.GetItem<SfxUInt32Item>(SID_FLAG_TYPE, false);
 
     if (pFlagItem)
     {

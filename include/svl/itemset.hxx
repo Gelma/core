@@ -23,19 +23,12 @@
 
 #include <cstdarg>
 #include <svl/poolitem.hxx>
-#include <tools/rtti.hxx>
 
 class SfxItemPool;
 class SfxPoolItem;
 class SvStream;
 
 typedef SfxPoolItem const** SfxItemArray;
-
-#define USHORT_ARG int
-
-#define SFX_ITEMSET_GET( rSet, pItem, ItemType, nSlotId, bDeep ) \
-    const ItemType *pItem = static_cast<const ItemType*>( \
-                            (rSet).GetItem( nSlotId, bDeep, TYPE(ItemType) ) )
 
 class SVL_DLLPUBLIC SfxItemSet
 {
@@ -60,7 +53,7 @@ public:
     SfxItemArray                GetItems_Impl() const { return m_pItems; }
 
 private:
-    const SfxItemSet&           operator=(const SfxItemSet &) SAL_DELETED_FUNCTION;
+    const SfxItemSet&           operator=(const SfxItemSet &) = delete;
 
 protected:
     // Notification-Callback
@@ -73,19 +66,44 @@ public:
 
                                 SfxItemSet( SfxItemPool&, bool bTotalPoolRanges = false );
                                 SfxItemSet( SfxItemPool&, sal_uInt16 nWhich1, sal_uInt16 nWhich2 );
-                                SfxItemSet( SfxItemPool&, USHORT_ARG nWh1, USHORT_ARG nWh2, USHORT_ARG nNull, ... );
+                                SfxItemSet( SfxItemPool&, int nWh1, int nWh2, int nNull, ... );
                                 SfxItemSet( SfxItemPool&, const sal_uInt16* nWhichPairTable );
     virtual                     ~SfxItemSet();
 
-    virtual SfxItemSet *        Clone(bool bItems = true, SfxItemPool *pToPool = 0) const;
+    virtual SfxItemSet *        Clone(bool bItems = true, SfxItemPool *pToPool = nullptr) const;
 
     // Get number of items
     sal_uInt16                  Count() const { return m_nCount; }
     sal_uInt16                  TotalCount() const;
 
     const SfxPoolItem&          Get( sal_uInt16 nWhich, bool bSrchInParent = true ) const;
-    const SfxPoolItem*          GetItem( sal_uInt16 nWhich, bool bSrchInParent = true,
-                                         TypeId aItemType = 0 ) const;
+
+    /** This method eases accessing single Items in the SfxItemSet.
+
+        @param nId SlotId or the Item's WhichId
+        @param bSearchInParent also search in parent ItemSets
+        @returns 0 if the ItemSet does not contain an Item with the Id 'nWhich'
+    */
+    const SfxPoolItem*          GetItem(sal_uInt16 nWhich, bool bSearchInParent = true) const;
+
+    /// Templatized version of GetItem() to directly return the correct type.
+    template<class T> const T* GetItem(sal_uInt16 nWhich, bool bSearchInParent = true) const
+    {
+        const SfxPoolItem* pItem = GetItem(nWhich, bSearchInParent);
+        const T* pCastedItem = dynamic_cast<const T*>(pItem);
+
+        assert(!pItem || pCastedItem); // if it exists, must have the correct type
+        return pCastedItem;
+    }
+
+    /// Templatized static version of GetItem() to directly return the correct type if the SfxItemSet is available.
+    template<class T> static const T* GetItem(const SfxItemSet* pItemSet, sal_uInt16 nWhich, bool bSearchInParent = true)
+    {
+        if (pItemSet)
+            return pItemSet->GetItem<T>(nWhich, bSearchInParent);
+
+        return nullptr;
+    }
 
     // Get Which-value of the item at position nPos
     sal_uInt16                  GetWhichByPos(sal_uInt16 nPos) const;
@@ -93,9 +111,9 @@ public:
     // Get item-status
     SfxItemState                GetItemState(   sal_uInt16 nWhich,
                                                 bool bSrchInParent = true,
-                                                const SfxPoolItem **ppItem = 0 ) const;
+                                                const SfxPoolItem **ppItem = nullptr ) const;
 
-    bool                        HasItem(sal_uInt16 nWhich, const SfxPoolItem** ppItem = NULL) const;
+    bool                        HasItem(sal_uInt16 nWhich, const SfxPoolItem** ppItem = nullptr) const;
 
     void                        DisableItem(sal_uInt16 nWhich);
     void                        InvalidateItem( sal_uInt16 nWhich );
@@ -130,7 +148,7 @@ public:
     const SfxItemSet*           GetParent() const { return m_pParent; }
 
     SvStream &                  Load( SvStream &, bool bDirect = false,
-                                      const SfxItemPool *pRefPool = 0 );
+                                      const SfxItemPool *pRefPool = nullptr );
     SvStream &                  Store( SvStream &, bool bDirect = false ) const;
 
     bool                        operator==(const SfxItemSet &) const;
@@ -149,7 +167,6 @@ class SVL_DLLPUBLIC SfxAllItemSet: public SfxItemSet
 //  Handles all Ranges. Ranges are automatically modified by putting items.
 
 {
-    SfxVoidItem                 aDefault;
     sal_uInt16                      nFree;
 
 public:
@@ -157,8 +174,8 @@ public:
                                 SfxAllItemSet( const SfxItemSet & );
                                 SfxAllItemSet( const SfxAllItemSet & );
 
-    virtual SfxItemSet *        Clone( bool bItems = true, SfxItemPool *pToPool = 0 ) const SAL_OVERRIDE;
-    virtual const SfxPoolItem*  Put( const SfxPoolItem&, sal_uInt16 nWhich ) SAL_OVERRIDE;
+    virtual SfxItemSet *        Clone( bool bItems = true, SfxItemPool *pToPool = nullptr ) const override;
+    virtual const SfxPoolItem*  Put( const SfxPoolItem&, sal_uInt16 nWhich ) override;
     using SfxItemSet::Put;
 };
 

@@ -72,7 +72,6 @@
 #include <svx/xflclit.hxx>
 #include <svx/xlnstwit.hxx>
 #include <svx/xlnstit.hxx>
-#include <svx/sxmspitm.hxx>
 
 #include <oox/token/tokens.hxx>
 #include <oox/export/drawingml.hxx>
@@ -160,15 +159,15 @@ static void lcl_WriteAnchorVertex( sax_fastparser::FSHelperPtr rComments, Rectan
 
 static void lcl_GetFromTo( const XclExpRoot& rRoot, const Rectangle &aRect, sal_Int32 nTab, Rectangle &aFrom, Rectangle &aTo )
 {
-    bool bTo = false;
     sal_Int32 nCol = 0, nRow = 0;
     sal_Int32 nColOff = 0, nRowOff= 0;
 
-    while(true)
+    const bool bRTL = rRoot.GetDocRef().IsNegativePage( nTab );
+    if (!bRTL)
     {
-        Rectangle r = rRoot.GetDocRef().GetMMRect( nCol,nRow,nCol,nRow,nTab );
-        if( !bTo )
+        while(true)
         {
+            Rectangle r = rRoot.GetDocRef().GetMMRect( nCol,nRow,nCol,nRow,nTab );
             if( r.Left() <= aRect.Left() )
             {
                 nCol++;
@@ -183,11 +182,38 @@ static void lcl_GetFromTo( const XclExpRoot& rRoot, const Rectangle &aRect, sal_
             {
                 aFrom = Rectangle( nCol-1, static_cast<long>(HMM2XL( nColOff )),
                                    nRow-1, static_cast<long>(HMM2XL( nRowOff )) );
-                bTo=true;
+                break;
             }
         }
-        if( bTo )
+    }
+    else
+    {
+        while(true)
         {
+            Rectangle r = rRoot.GetDocRef().GetMMRect( nCol,nRow,nCol,nRow,nTab );
+            if( r.Left() >= aRect.Left() )
+            {
+                nCol++;
+                nColOff = r.Left() - aRect.Left();
+            }
+            if( r.Top() <= aRect.Top() )
+            {
+                nRow++;
+                nRowOff = aRect.Top() - r.Top();
+            }
+            if( r.Left() < aRect.Left() && r.Top() > aRect.Top() )
+            {
+                aFrom = Rectangle( nCol-1, static_cast<long>(HMM2XL( nColOff )),
+                                   nRow-1, static_cast<long>(HMM2XL( nRowOff )) );
+                break;
+            }
+        }
+    }
+    if (!bRTL)
+    {
+        while(true)
+        {
+            Rectangle r = rRoot.GetDocRef().GetMMRect( nCol,nRow,nCol,nRow,nTab );
             if( r.Right() < aRect.Right() )
                 nCol++;
             if( r.Bottom() < aRect.Bottom() )
@@ -200,7 +226,23 @@ static void lcl_GetFromTo( const XclExpRoot& rRoot, const Rectangle &aRect, sal_
             }
         }
     }
-    return;
+    else
+    {
+        while(true)
+        {
+            Rectangle r = rRoot.GetDocRef().GetMMRect( nCol,nRow,nCol,nRow,nTab );
+            if( r.Right() >= aRect.Right() )
+                nCol++;
+            if( r.Bottom() < aRect.Bottom() )
+                nRow++;
+            if( r.Right() < aRect.Right() && r.Bottom() >= aRect.Bottom() )
+            {
+                aTo = Rectangle( nCol, static_cast<long>(HMM2XL( r.Left() - aRect.Right() )),
+                                 nRow, static_cast<long>(HMM2XL( aRect.Bottom() - r.Top() )));
+                break;
+            }
+        }
+    }
 }
 
 // Escher client anchor =======================================================
@@ -525,7 +567,7 @@ XclExpOcxControlObj::XclExpOcxControlObj( XclExpObjectManager& rObjMgr, Referenc
     // meta file
     //TODO - needs check
     Reference< XPropertySet > xShapePS( xShape, UNO_QUERY );
-    if( xShapePS.is() && aPropOpt.CreateGraphicProperties( xShapePS, OUString( "MetaFile" ), false ) )
+    if( xShapePS.is() && aPropOpt.CreateGraphicProperties( xShapePS, "MetaFile", false ) )
     {
         sal_uInt32 nBlipId;
         if( aPropOpt.GetOpt( ESCHER_Prop_pib, nBlipId ) )
@@ -615,9 +657,9 @@ XclExpTbxControlObj::XclExpTbxControlObj( XclExpObjectManager& rRoot, Reference<
     mbMultiSel( false ),
     mbScrollHor( false )
 {
-    namespace FormCompType = ::com::sun::star::form::FormComponentType;
-    namespace AwtVisualEffect = ::com::sun::star::awt::VisualEffect;
-    namespace AwtScrollOrient = ::com::sun::star::awt::ScrollBarOrientation;
+    namespace FormCompType = css::form::FormComponentType;
+    namespace AwtVisualEffect = css::awt::VisualEffect;
+    namespace AwtScrollOrient = css::awt::ScrollBarOrientation;
 
     ScfPropertySet aCtrlProp( XclControlHelper::GetControlModel( xShape ) );
     if( !xShape.is() || !aCtrlProp.Is() )
@@ -1063,7 +1105,7 @@ XclExpChartObj::XclExpChartObj( XclExpObjectManager& rObjMgr, Reference< XShape 
     Reference< XModel > xModel;
     aShapeProp.GetProperty( xModel, "Model" );
     mxChartDoc.set( xModel,UNO_QUERY );
-    ::com::sun::star::awt::Rectangle aBoundRect;
+    css::awt::Rectangle aBoundRect;
     aShapeProp.GetProperty( aBoundRect, "BoundRect" );
     Rectangle aChartRect( Point( aBoundRect.X, aBoundRect.Y ), Size( aBoundRect.Width, aBoundRect.Height ) );
     mxChart.reset( new XclExpChart( GetRoot(), xModel, aChartRect ) );
@@ -1332,7 +1374,7 @@ XclMacroHelper::SetMacroLink( const OUString& rMacroName )
     return false;
 }
 
-XclExpShapeObj::XclExpShapeObj( XclExpObjectManager& rRoot, ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > xShape, ScDocument* pDoc ) :
+XclExpShapeObj::XclExpShapeObj( XclExpObjectManager& rRoot, css::uno::Reference< css::drawing::XShape > xShape, ScDocument* pDoc ) :
     XclObjAny( rRoot, xShape, pDoc ),
     XclMacroHelper( rRoot )
 {

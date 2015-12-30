@@ -40,7 +40,7 @@ class FillStyleListContext : public ContextHandler2
 {
 public:
     FillStyleListContext( ContextHandler2Helper& rParent, FillStyleList& rFillStyleList );
-    virtual ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) SAL_OVERRIDE;
+    virtual ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) override;
 
 private:
     FillStyleList& mrFillStyleList;
@@ -65,14 +65,14 @@ ContextHandlerRef FillStyleListContext::onCreateContext( sal_Int32 nElement, con
             mrFillStyleList.push_back( FillPropertiesPtr( new FillProperties ) );
             return FillPropertiesContext::createFillContext( *this, nElement, rAttribs, *mrFillStyleList.back() );
     }
-    return 0;
+    return nullptr;
 }
 
 class LineStyleListContext : public ContextHandler2
 {
 public:
     LineStyleListContext( ContextHandler2Helper& rParent, LineStyleList& rLineStyleList );
-    virtual ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) SAL_OVERRIDE;
+    virtual ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) override;
 
 private:
     LineStyleList& mrLineStyleList;
@@ -92,14 +92,14 @@ ContextHandlerRef LineStyleListContext::onCreateContext( sal_Int32 nElement, con
             mrLineStyleList.push_back( LinePropertiesPtr( new LineProperties ) );
             return new LinePropertiesContext( *this, rAttribs, *mrLineStyleList.back() );
     }
-    return 0;
+    return nullptr;
 }
 
 class EffectStyleListContext : public ContextHandler2
 {
 public:
     EffectStyleListContext( ContextHandler2Helper& rParent, EffectStyleList& rEffectStyleList );
-    virtual ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) SAL_OVERRIDE;
+    virtual ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) override;
 
 private:
     EffectStyleList& mrEffectStyleList;
@@ -124,15 +124,15 @@ ContextHandlerRef EffectStyleListContext::onCreateContext( sal_Int32 nElement, c
                 return new EffectPropertiesContext( *this, *mrEffectStyleList.back() );
             break;
     }
-    return 0;
+    return nullptr;
 }
 
 class FontSchemeContext : public ContextHandler2
 {
 public:
     FontSchemeContext( ContextHandler2Helper& rParent, FontScheme& rFontScheme );
-    virtual ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) SAL_OVERRIDE;
-    virtual void onEndElement() SAL_OVERRIDE;
+    virtual ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) override;
+    virtual void onEndElement() override;
 
 private:
     FontScheme& mrFontScheme;
@@ -171,7 +171,7 @@ ContextHandlerRef FontSchemeContext::onCreateContext( sal_Int32 nElement, const 
                 mxCharProps->maComplexFont.setAttributes( rAttribs );
         break;
     }
-    return 0;
+    return nullptr;
 }
 
 void FontSchemeContext::onEndElement()
@@ -214,7 +214,7 @@ ContextHandlerRef ThemeElementsContext::onCreateContext( sal_Int32 nElement, con
         case A_TOKEN( bgFillStyleLst ): // CT_BackgroundFillStyleList
             return new FillStyleListContext( *this, mrTheme.getBgFillStyleList() );
     }
-    return 0;
+    return nullptr;
 }
 
 } // namespace drawingml

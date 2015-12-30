@@ -28,6 +28,7 @@
 #include <o3tl/typed_flags_set.hxx>
 
 #include <com/sun/star/beans/XPropertySet.hpp>
+#include <memory>
 
 enum class SvXmlExportFlags {
     NONE        = 0x0000,
@@ -52,7 +53,7 @@ class SvXMLExport;
 class XMLOFF_DLLPUBLIC SvXMLExportPropertyMapper : public salhelper::SimpleReferenceObject
 {
     struct Impl;
-    Impl* mpImpl;
+    std::unique_ptr<Impl> mpImpl;
 
 protected:
 
@@ -70,8 +71,7 @@ protected:
     virtual void ContextFilter(
             bool bEnableFoFontFamily,
             ::std::vector< XMLPropertyState >& rProperties,
-            ::com::sun::star::uno::Reference<
-                    ::com::sun::star::beans::XPropertySet > rPropSet ) const;
+            css::uno::Reference<css::beans::XPropertySet > rPropSet ) const;
 
     /** fills the given attribute list with the items in the given set */
     void _exportXML( sal_uInt16 nPropType, sal_uInt16& rPropTypeFlags,
@@ -88,7 +88,7 @@ protected:
                      const SvXMLUnitConverter& rUnitConverter,
                      const SvXMLNamespaceMap& rNamespaceMap,
                      SvXmlExportFlags nFlags,
-                     const ::std::vector< XMLPropertyState > *pProperties = 0,
+                     const ::std::vector< XMLPropertyState > *pProperties = nullptr,
                      sal_uInt32 nIdx = 0 ) const;
 
     void exportElementItems(
@@ -153,7 +153,7 @@ public:
             SvXMLExport& rExport,
             const XMLPropertyState& rProperty,
             SvXmlExportFlags nFlags,
-            const ::std::vector< XMLPropertyState > *pProperties = 0,
+            const ::std::vector< XMLPropertyState > *pProperties = nullptr,
             sal_uInt32 nIdx = 0 ) const;
 
     /** this method is called for every item that has the
@@ -163,7 +163,7 @@ public:
             const XMLPropertyState& rProperty,
             const SvXMLUnitConverter& rUnitConverter,
             const SvXMLNamespaceMap& rNamespaceMap,
-            const ::std::vector< XMLPropertyState > *pProperties = 0,
+            const ::std::vector< XMLPropertyState > *pProperties = nullptr,
             sal_uInt32 nIdx = 0 ) const;
 
     const rtl::Reference<XMLPropertySetMapper>& getPropertySetMapper() const;

@@ -26,7 +26,6 @@
 #endif
 
 #include <unotools/bootstrap.hxx>
-#include <officecfg/Office/Common.hxx>
 #include <svl/zforlist.hxx>
 
 #include "interpre.hxx"
@@ -320,9 +319,9 @@ ScMatrixRef ScInterpreter::GetNewMat(SCSIZE nC, SCSIZE nR, bool bEmpty)
 {
     ScMatrixRef pMat;
     if (bEmpty)
-        pMat = new ScMatrix(nC, nR);
+        pMat = new ScFullMatrix(nC, nR);
     else
-        pMat = new ScMatrix(nC, nR, 0.0);
+        pMat = new ScFullMatrix(nC, nR, 0.0);
 
     pMat->SetErrorInterpreter( this);
     // A temporary matrix is mutable and ScMatrix::CloneIfConst() returns the
@@ -346,7 +345,7 @@ ScMatrixRef ScInterpreter::CreateMatrixFromDoubleRef( const FormulaToken* pToken
     {
         // Not a 2D matrix.
         SetError(errIllegalParameter);
-        return NULL;
+        return nullptr;
     }
 
     SCSIZE nMatCols = static_cast<SCSIZE>(nCol2 - nCol1 + 1);
@@ -355,7 +354,7 @@ ScMatrixRef ScInterpreter::CreateMatrixFromDoubleRef( const FormulaToken* pToken
     if (nMatRows * nMatCols > ScMatrix::GetElementsMax())
     {
         SetError(errStackOverflow);
-        return NULL;
+        return nullptr;
     }
 
     ScTokenMatrixMap::const_iterator aIter;
@@ -367,7 +366,7 @@ ScMatrixRef ScInterpreter::CreateMatrixFromDoubleRef( const FormulaToken* pToken
 
     ScMatrixRef pMat = GetNewMat( nMatCols, nMatRows, true);
     if (!pMat || nGlobalError)
-        return NULL;
+        return nullptr;
 
     pDok->FillMatrix(*pMat, nTab1, nCol1, nRow1, nCol2, nRow2);
 
@@ -380,7 +379,7 @@ ScMatrixRef ScInterpreter::CreateMatrixFromDoubleRef( const FormulaToken* pToken
 
 ScMatrixRef ScInterpreter::GetMatrix()
 {
-    ScMatrixRef pMat = NULL;
+    ScMatrixRef pMat = nullptr;
     switch (GetRawStackType())
     {
         case svSingleRef :
@@ -390,8 +389,7 @@ ScMatrixRef ScInterpreter::GetMatrix()
             pMat = GetNewMat(1, 1);
             if (pMat)
             {
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (aCell.hasEmptyValue())
                     pMat->PutEmpty(0, 0);
                 else if (aCell.hasNumeric())
@@ -410,7 +408,7 @@ ScMatrixRef ScInterpreter::GetMatrix()
             SCCOL nCol1, nCol2;
             SCROW nRow1, nRow2;
             SCTAB nTab1, nTab2;
-            const formula::FormulaToken* p = sp ? pStack[sp-1] : NULL;
+            const formula::FormulaToken* p = sp ? pStack[sp-1] : nullptr;
             PopDoubleRef(nCol1, nRow1, nTab1, nCol2, nRow2, nTab2);
             pMat = CreateMatrixFromDoubleRef( p, nCol1, nRow1, nTab1,
                     nCol2, nRow2, nTab2);
@@ -465,17 +463,17 @@ ScMatrixRef ScInterpreter::GetMatrix()
             }
             if (pToken->GetType() == svDouble)
             {
-                pMat = new ScMatrix(1, 1, 0.0);
+                pMat = new ScFullMatrix(1, 1, 0.0);
                 pMat->PutDouble(pToken->GetDouble(), 0, 0);
             }
             else if (pToken->GetType() == svString)
             {
-                pMat = new ScMatrix(1, 1, 0.0);
+                pMat = new ScFullMatrix(1, 1, 0.0);
                 pMat->PutString(pToken->GetString(), 0, 0);
             }
             else
             {
-                pMat = new ScMatrix(1, 1);
+                pMat = new ScFullMatrix(1, 1);
             }
         }
         break;
@@ -517,8 +515,7 @@ void ScInterpreter::ScMatValue()
             {
                 ScAddress aAdr;
                 PopSingleRef( aAdr );
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (aCell.meType == CELLTYPE_FORMULA)
                 {
                     sal_uInt16 nErrCode = aCell.mpFormula->GetErrCode();
@@ -549,8 +546,7 @@ void ScInterpreter::ScMatValue()
                 {
                     ScAddress aAdr( sal::static_int_cast<SCCOL>( nCol1 + nR ),
                                     sal::static_int_cast<SCROW>( nRow1 + nC ), nTab1 );
-                    ScRefCellValue aCell;
-                    aCell.assign(*pDok, aAdr);
+                    ScRefCellValue aCell(*pDok, aAdr);
                     if (aCell.hasNumeric())
                         PushDouble(GetCellValue(aAdr, aCell));
                     else
@@ -712,11 +708,12 @@ static int lcl_LUP_decompose( ScMatrix* mA, const SCSIZE n,
         // Compute Schur complement.
         for (SCSIZE i = k+1; i < n; ++i)
         {
-            double fTmp = mA->GetDouble( k, i) / mA->GetDouble( k, k);
-            mA->PutDouble( fTmp, k, i);
+            double fNum = mA->GetDouble( k, i);
+            double fDen = mA->GetDouble( k, k);
+            mA->PutDouble( fNum/fDen, k, i);
             for (SCSIZE j = k+1; j < n; ++j)
-                mA->PutDouble( mA->GetDouble( j, i) - fTmp * mA->GetDouble( j,
-                            k), j, i);
+                mA->PutDouble( ( mA->GetDouble( j, i) * fDen  -
+                            fNum * mA->GetDouble( j, k) ) / fDen, j, i);
         }
     }
 #if OSL_DEBUG_LEVEL > 1
@@ -837,7 +834,7 @@ void ScInterpreter::ScModalValue_Multi()
     if ( !MustHaveParamCountMin( nParamCount, 1 ) )
         return;
     vector<double> aSortArray;
-    GetSortArray( nParamCount, aSortArray, NULL, false, false );
+    GetSortArray( nParamCount, aSortArray, nullptr, false, false );
     SCSIZE nSize = aSortArray.size();
     if ( aSortArray.empty() || nSize == 0 || nGlobalError )
         PushNoValue();
@@ -912,10 +909,10 @@ void ScInterpreter::ScMatInv()
         SCSIZE nC, nR;
         pMat->GetDimensions(nC, nR);
 
-        if (officecfg::Office::Common::Misc::UseOpenCL::get())
+        if (ScCalcConfig::isOpenCLEnabled())
         {
             sc::FormulaGroupInterpreter *pInterpreter = sc::FormulaGroupInterpreter::getStatic();
-            if (pInterpreter != NULL)
+            if (pInterpreter != nullptr)
             {
                 ScMatrixRef xResMat = pInterpreter->inverseMatrix(*pMat);
                 if (xResMat)
@@ -1113,8 +1110,10 @@ static ScMatrixRef lcl_MatrixCalculation(
         {
             for (j = 0; j < nMinR; j++)
             {
+                bool bVal1 = rMat1.IsValueOrEmpty(i,j);
+                bool bVal2 = rMat2.IsValueOrEmpty(i,j);
                 sal_uInt16 nErr;
-                if (rMat1.IsValueOrEmpty(i,j) && rMat2.IsValueOrEmpty(i,j))
+                if (bVal1 && bVal2)
                 {
                     double d = Op(rMat1.GetDouble(i,j), rMat2.GetDouble(i,j));
                     xResMat->PutDouble( d, i, j);
@@ -1123,6 +1122,28 @@ static ScMatrixRef lcl_MatrixCalculation(
                          ((nErr = rMat2.GetErrorIfNotString(i,j)) != 0))
                 {
                     xResMat->PutError( nErr, i, j);
+                }
+                else if ((!bVal1 && rMat1.IsString(i,j)) || (!bVal2 && rMat2.IsString(i,j)))
+                {
+                    sal_uInt16 nError1 = 0;
+                    short nFmt1 = 0;
+                    double fVal1 = (bVal1 ? rMat1.GetDouble(i,j) :
+                            pInterpreter->ConvertStringToValue( rMat1.GetString(i,j).getString(), nError1, nFmt1));
+
+                    sal_uInt16 nError2 = 0;
+                    short nFmt2 = 0;
+                    double fVal2 = (bVal2 ? rMat2.GetDouble(i,j) :
+                            pInterpreter->ConvertStringToValue( rMat2.GetString(i,j).getString(), nError2, nFmt2));
+
+                    if (nError1)
+                        xResMat->PutError( nError1, i, j);
+                    else if (nError2)
+                        xResMat->PutError( nError2, i, j);
+                    else
+                    {
+                        double d = Op( fVal1, fVal2);
+                        xResMat->PutDouble( d, i, j);
+                    }
                 }
                 else
                     xResMat->PutError( errNoValue, i, j);
@@ -1203,8 +1224,8 @@ namespace {
 
 void ScInterpreter::CalculateAddSub(bool _bSub)
 {
-    ScMatrixRef pMat1 = NULL;
-    ScMatrixRef pMat2 = NULL;
+    ScMatrixRef pMat1 = nullptr;
+    ScMatrixRef pMat2 = nullptr;
     double fVal1 = 0.0, fVal2 = 0.0;
     short nFmt1, nFmt2;
     nFmt1 = nFmt2 = css::util::NumberFormat::UNDEFINED;
@@ -1323,8 +1344,8 @@ void ScInterpreter::CalculateAddSub(bool _bSub)
 
 void ScInterpreter::ScAmpersand()
 {
-    ScMatrixRef pMat1 = NULL;
-    ScMatrixRef pMat2 = NULL;
+    ScMatrixRef pMat1 = nullptr;
+    ScMatrixRef pMat2 = nullptr;
     OUString sStr1, sStr2;
     if ( GetStackType() == svMatrix )
         pMat2 = GetMatrix();
@@ -1421,8 +1442,8 @@ void ScInterpreter::ScSub()
 
 void ScInterpreter::ScMul()
 {
-    ScMatrixRef pMat1 = NULL;
-    ScMatrixRef pMat2 = NULL;
+    ScMatrixRef pMat1 = nullptr;
+    ScMatrixRef pMat2 = nullptr;
     double fVal1 = 0.0, fVal2 = 0.0;
     short nFmtCurrencyType = nCurFmtType;
     sal_uLong nFmtCurrencyIndex = nCurFmtIndex;
@@ -1493,8 +1514,8 @@ void ScInterpreter::ScMul()
 
 void ScInterpreter::ScDiv()
 {
-    ScMatrixRef pMat1 = NULL;
-    ScMatrixRef pMat2 = NULL;
+    ScMatrixRef pMat1 = nullptr;
+    ScMatrixRef pMat2 = nullptr;
     double fVal1 = 0.0, fVal2 = 0.0;
     short nFmtCurrencyType = nCurFmtType;
     sal_uLong nFmtCurrencyIndex = nCurFmtIndex;
@@ -1574,8 +1595,8 @@ void ScInterpreter::ScPower()
 
 void ScInterpreter::ScPow()
 {
-    ScMatrixRef pMat1 = NULL;
-    ScMatrixRef pMat2 = NULL;
+    ScMatrixRef pMat1 = nullptr;
+    ScMatrixRef pMat2 = nullptr;
     double fVal1 = 0.0, fVal2 = 0.0;
     if ( GetStackType() == svMatrix )
         pMat2 = GetMatrix();
@@ -1720,8 +1741,8 @@ void ScInterpreter::CalculateSumX2MY2SumX2DY2(bool _bSumX2DY2)
     if ( !MustHaveParamCount( GetByte(), 2 ) )
         return;
 
-    ScMatrixRef pMat1 = NULL;
-    ScMatrixRef pMat2 = NULL;
+    ScMatrixRef pMat1 = nullptr;
+    ScMatrixRef pMat2 = nullptr;
     SCSIZE i, j;
     pMat2 = GetMatrix();
     pMat1 = GetMatrix();
@@ -1765,8 +1786,8 @@ void ScInterpreter::ScSumXMY2()
     if ( !MustHaveParamCount( GetByte(), 2 ) )
         return;
 
-    ScMatrixRef pMat1 = NULL;
-    ScMatrixRef pMat2 = NULL;
+    ScMatrixRef pMat1 = nullptr;
+    ScMatrixRef pMat2 = nullptr;
     pMat2 = GetMatrix();
     pMat1 = GetMatrix();
     if (!pMat2 || !pMat1)
@@ -1813,7 +1834,7 @@ void ScInterpreter::ScFrequency()
     }
 
     vector<double>  aDataArray;
-    GetSortArray( 1, aDataArray, NULL, false, false );
+    GetSortArray( 1, aDataArray, nullptr, false, false );
     SCSIZE nDataSize = aDataArray.size();
 
     if (aDataArray.empty() || nGlobalError)
@@ -2354,7 +2375,7 @@ void ScInterpreter::CalculateRGPRKP(bool _bRKP)
         if (IsMissing())
         { //In ODF1.2 empty second parameter (which is two ;; ) is allowed
             Pop();
-            pMatX = NULL;
+            pMatX = nullptr;
         }
         else
         {
@@ -2362,7 +2383,7 @@ void ScInterpreter::CalculateRGPRKP(bool _bRKP)
         }
     }
     else
-        pMatX = NULL;
+        pMatX = nullptr;
 
     ScMatrixRef pMatY;
     pMatY = GetMatrix();
@@ -2864,13 +2885,13 @@ void ScInterpreter::CalculateTrendGrowth(bool _bGrowth)
         if (IsMissing())
         {
             Pop();
-            pMatNewX = NULL;
+            pMatNewX = nullptr;
         }
         else
             pMatNewX = GetMatrix();
     }
     else
-        pMatNewX = NULL;
+        pMatNewX = nullptr;
 
     //In ODF1.2 empty second parameter (which is two ;; ) is allowed
     //Defaults will be set in CheckMatrix
@@ -2880,7 +2901,7 @@ void ScInterpreter::CalculateTrendGrowth(bool _bGrowth)
         if (IsMissing())
         {
             Pop();
-            pMatX = NULL;
+            pMatX = nullptr;
         }
         else
         {
@@ -2888,7 +2909,7 @@ void ScInterpreter::CalculateTrendGrowth(bool _bGrowth)
         }
     }
     else
-        pMatX = NULL;
+        pMatX = nullptr;
 
     ScMatrixRef pMatY;
     pMatY = GetMatrix();
@@ -3149,8 +3170,7 @@ void ScInterpreter::ScMatRef()
     ScAddress aAdr;
     PopSingleRef( aAdr );
 
-    ScRefCellValue aCell;
-    aCell.assign(*pDok, aAdr);
+    ScRefCellValue aCell(*pDok, aAdr);
 
     if (aCell.meType != CELLTYPE_FORMULA)
     {
@@ -3231,6 +3251,8 @@ void ScInterpreter::ScInfo()
             PushDouble( 1 );
         else if( aStr == "RECALC" )
             PushString( ScGlobal::GetRscString( pDok->GetAutoCalc() ? STR_RECALC_AUTO : STR_RECALC_MANUAL ) );
+        else if (aStr == "DIRECTORY" || aStr == "MEMAVAIL" || aStr == "MEMUSED" || aStr == "ORIGIN" || aStr == "TOTMEM")
+            PushNA();
         else
             PushIllegalArgument();
     }

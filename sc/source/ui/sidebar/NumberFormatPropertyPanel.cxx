@@ -51,7 +51,6 @@ NumberFormatPropertyPanel::NumberFormatPropertyPanel(
     maFormatControl(SID_NUMBER_FORMAT, *pBindings, *this),
 
     mnCategorySelected(0),
-    mxFrame(rxFrame),
     maContext(),
     mpBindings(pBindings)
 {
@@ -87,18 +86,17 @@ void NumberFormatPropertyPanel::dispose()
 
 void NumberFormatPropertyPanel::Initialize()
 {
-    Link<> aLink = LINK(this, NumberFormatPropertyPanel, NumFormatSelectHdl);
-    mpLbCategory->SetSelectHdl ( aLink );
+    mpLbCategory->SetSelectHdl ( LINK(this, NumberFormatPropertyPanel, NumFormatSelectHdl) );
     mpLbCategory->SelectEntryPos(0);
-    mpLbCategory->SetAccessibleName(OUString( "Category"));
+    mpLbCategory->SetAccessibleName("Category");
     mpLbCategory->SetDropDownLineCount(mpLbCategory->GetEntryCount());
 
-    aLink = LINK(this, NumberFormatPropertyPanel, NumFormatValueHdl);
+    Link<Edit&,void> aLink = LINK(this, NumberFormatPropertyPanel, NumFormatValueHdl);
 
     mpEdDecimals->SetModifyHdl( aLink );
     mpEdLeadZeroes->SetModifyHdl( aLink );
-    mpEdDecimals->SetAccessibleName(OUString( "Decimal Places"));
-    mpEdLeadZeroes->SetAccessibleName(OUString( "Leading Zeroes"));
+    mpEdDecimals->SetAccessibleName("Decimal Places");
+    mpEdLeadZeroes->SetAccessibleName("Leading Zeroes");
 
     mpBtnNegRed->SetClickHdl( LINK(this, NumberFormatPropertyPanel, NumFormatValueClickHdl) );
     mpBtnThousand->SetClickHdl( LINK(this, NumberFormatPropertyPanel, NumFormatValueClickHdl) );
@@ -106,23 +104,22 @@ void NumberFormatPropertyPanel::Initialize()
     mpTBCategory->SetAccessibleRelationLabeledBy(mpTBCategory);
 }
 
-IMPL_LINK( NumberFormatPropertyPanel, NumFormatSelectHdl, ListBox*, pBox )
+IMPL_LINK_TYPED( NumberFormatPropertyPanel, NumFormatSelectHdl, ListBox&, rBox, void )
 {
-    const sal_Int32 nVal = pBox->GetSelectEntryPos();
+    const sal_Int32 nVal = rBox.GetSelectEntryPos();
     if( nVal != mnCategorySelected )
     {
         SfxUInt16Item aItem( SID_NUMBER_TYPE_FORMAT,  nVal );
         GetBindings()->GetDispatcher()->Execute(SID_NUMBER_TYPE_FORMAT, SfxCallMode::RECORD, &aItem, 0L);
         mnCategorySelected = nVal;
     }
-    return 0L;
 }
 
 IMPL_LINK_NOARG_TYPED( NumberFormatPropertyPanel, NumFormatValueClickHdl, Button*, void )
 {
-    NumFormatValueHdl(nullptr);
+    NumFormatValueHdl(*mpEdDecimals);
 }
-IMPL_LINK_NOARG( NumberFormatPropertyPanel, NumFormatValueHdl )
+IMPL_LINK_NOARG_TYPED( NumberFormatPropertyPanel, NumFormatValueHdl, Edit&, void )
 {
     OUString      aFormat;
     OUString      sBreak = ",";
@@ -153,7 +150,6 @@ IMPL_LINK_NOARG( NumberFormatPropertyPanel, NumFormatValueHdl )
 
     SfxStringItem aItem( SID_NUMBER_FORMAT,  aFormat );
     GetBindings()->GetDispatcher()->Execute(SID_NUMBER_FORMAT, SfxCallMode::RECORD, &aItem, 0L);
-    return 0L;
 }
 
 VclPtr<vcl::Window> NumberFormatPropertyPanel::Create (
@@ -161,12 +157,12 @@ VclPtr<vcl::Window> NumberFormatPropertyPanel::Create (
     const css::uno::Reference<css::frame::XFrame>& rxFrame,
     SfxBindings* pBindings)
 {
-    if (pParent == NULL)
-        throw lang::IllegalArgumentException("no parent Window given to NumberFormatPropertyPanel::Create", NULL, 0);
+    if (pParent == nullptr)
+        throw lang::IllegalArgumentException("no parent Window given to NumberFormatPropertyPanel::Create", nullptr, 0);
     if ( ! rxFrame.is())
-        throw lang::IllegalArgumentException("no XFrame given to NumberFormatPropertyPanel::Create", NULL, 1);
-    if (pBindings == NULL)
-        throw lang::IllegalArgumentException("no SfxBindings given to NumberFormatPropertyPanel::Create", NULL, 2);
+        throw lang::IllegalArgumentException("no XFrame given to NumberFormatPropertyPanel::Create", nullptr, 1);
+    if (pBindings == nullptr)
+        throw lang::IllegalArgumentException("no SfxBindings given to NumberFormatPropertyPanel::Create", nullptr, 2);
 
     return  VclPtr<NumberFormatPropertyPanel>::Create(
                         pParent, rxFrame, pBindings);

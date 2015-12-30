@@ -44,10 +44,10 @@ TextCharacterSpacingControl::TextCharacterSpacingControl (
 ,   maFTBy          (VclPtr<FixedText>::Create(this, SVX_RES(FT_BY)))
 ,   maEditKerning   (VclPtr<MetricField>::Create(this, SVX_RES(ED_KERNING)))
 
-,   mpImg           (NULL)
-,   mpImgSel        (NULL)
-,   mpStr           (NULL)
-,   mpStrTip        (NULL)
+,   mpImg           (nullptr)
+,   mpImgSel        (nullptr)
+,   mpStr           (nullptr)
+,   mpStrTip        (nullptr)
 
 ,   maImgCus        (SVX_RES(IMG_CUSTOM))
 ,   maImgCusGrey    (SVX_RES(IMG_CUSTOM_GRAY))
@@ -64,10 +64,8 @@ TextCharacterSpacingControl::TextCharacterSpacingControl (
 {
     initial();
     FreeResource();
-    Link<> aLink = LINK(this, TextCharacterSpacingControl, KerningSelectHdl);
-    maLBKerning->SetSelectHdl(aLink);
-    aLink =LINK(this, TextCharacterSpacingControl, KerningModifyHdl);
-    maEditKerning->SetModifyHdl(aLink);
+    maLBKerning->SetSelectHdl(LINK(this, TextCharacterSpacingControl, KerningSelectHdl));
+    maEditKerning->SetModifyHdl(LINK(this, TextCharacterSpacingControl, KerningModifyHdl));
 
 }
 
@@ -143,7 +141,7 @@ void TextCharacterSpacingControl::initial()
     for (int i=0;i<5;i++)
         maVSSpacing->AddItem(mpImg[i], &mpImgSel[i],mpStr[i],&mpStrTip[i]);
 
-    maVSSpacing->AddItem( maImgCus, 0, maStrCus, 0 );
+    maVSSpacing->AddItem( maImgCus, nullptr, maStrCus, nullptr );
 
     maVSSpacing->SetNoSelection();
     maVSSpacing->SetSelectHdl(LINK(this, TextCharacterSpacingControl,VSSelHdl ));
@@ -158,7 +156,7 @@ void TextCharacterSpacingControl::Rearrange(bool bLBAvailable,bool bAvailable, l
     SvtViewOptions aWinOpt( E_WINDOW, SIDEBAR_SPACING_GLOBAL_VALUE );
     if ( aWinOpt.Exists() )
     {
-        ::com::sun::star::uno::Sequence < ::com::sun::star::beans::NamedValue > aSeq = aWinOpt.GetUserData();
+        css::uno::Sequence < css::beans::NamedValue > aSeq = aWinOpt.GetUserData();
         ::rtl::OUString aTmp;
         if ( aSeq.getLength())
             aSeq[0].Value >>= aTmp;
@@ -176,12 +174,12 @@ void TextCharacterSpacingControl::Rearrange(bool bLBAvailable,bool bAvailable, l
 
     if( !mnLastCus )
     {
-        maVSSpacing->ReplaceItemImages(6, maImgCusGrey,0);
+        maVSSpacing->ReplaceItemImages(6, maImgCusGrey,nullptr);
     }
     else
     {
         //set custom tips
-        maVSSpacing->ReplaceItemImages(6, maImgCus,0);
+        maVSSpacing->ReplaceItemImages(6, maImgCus,nullptr);
         if(mnCustomKern > 0)
         {
             OUString aStrTip( maStrCusE);   //LAST CUSTOM no tip defect //add
@@ -379,7 +377,7 @@ IMPL_LINK_TYPED(TextCharacterSpacingControl, VSSelHdl, ValueSet*, pControl, void
     }
 }
 
-IMPL_LINK(TextCharacterSpacingControl, KerningSelectHdl, ListBox*,)
+IMPL_LINK_NOARG_TYPED(TextCharacterSpacingControl, KerningSelectHdl, ListBox&, void)
 {
     if ( maLBKerning->GetSelectEntryPos() > 0 )
     {
@@ -402,11 +400,10 @@ IMPL_LINK(TextCharacterSpacingControl, KerningSelectHdl, ListBox*,)
         Invalidate();
         maVSSpacing->StartSelection();
     }
-    KerningModifyHdl( NULL );
-    return 0;
+    KerningModifyHdl( *maEditKerning );
 }
 
-IMPL_LINK(TextCharacterSpacingControl, KerningModifyHdl, MetricField*,)
+IMPL_LINK_NOARG_TYPED(TextCharacterSpacingControl, KerningModifyHdl, Edit&, void)
 {
     if ( maVSSpacing->GetSelectItemId() > 0 )
     {
@@ -453,7 +450,6 @@ IMPL_LINK(TextCharacterSpacingControl, KerningModifyHdl, MetricField*,)
     }
     SvxKerningItem aKernItem(nKern, SID_ATTR_CHAR_KERNING);
     mpBindings->GetDispatcher()->Execute(SID_ATTR_CHAR_KERNING, SfxCallMode::RECORD, &aKernItem, 0L);
-    return 0;
 }
 
 }} // end of namespace sidebar

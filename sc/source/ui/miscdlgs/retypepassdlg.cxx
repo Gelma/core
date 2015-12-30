@@ -32,10 +32,8 @@ ScRetypePassDlg::ScRetypePassDlg(vcl::Window* pParent) :
     maTextNotPassProtected(ScResId(STR_NOT_PASS_PROTECTED)),
     maTextHashBad(ScResId(STR_HASH_BAD)),
     maTextHashGood(ScResId(STR_HASH_GOOD)),
-    maTextHashRegen(ScResId(STR_HASH_REGENERATED)),
 
-    mpDocItem(static_cast<ScDocProtection*>(NULL)),
-    mnCurScrollPos(0),
+    mpDocItem(static_cast<ScDocProtection*>(nullptr)),
     meDesiredHash(PASSHASH_SHA1)
 {
     get(mpBtnOk ,"ok");
@@ -109,20 +107,20 @@ void ScRetypePassDlg::SetDataFromDocument(const ScDocument& rDoc)
 
         maTableItems.push_back(aTabItem);
         VclPtr<VclHBox> pSheet = VclPtr<VclHBox>::Create(mpSheetsBox, false, 12);
-        pSheet->Show(true);
+        pSheet->Show();
 
         VclPtr<FixedText> pFtSheetName = VclPtr<FixedText>::Create(pSheet);
-        pFtSheetName->Show(true);
+        pFtSheetName->Show();
         pFtSheetName->SetStyle(WB_VCENTER);
         FixedText* pFtSheetStatus = VclPtr<FixedText>::Create(pSheet);
-        pFtSheetStatus->Show(true);
+        pFtSheetStatus->Show();
         pFtSheetStatus->SetStyle(WB_VCENTER);
 
         VclPtr<PushButton> pBtnSheet = VclPtr<PushButton>::Create(static_cast<vcl::Window*>(pSheet));
         pBtnSheet->SetText(ScResId(STR_RETYPE));
         pBtnSheet->SetClickHdl(LINK(this, ScRetypePassDlg, RetypeBtnHdl));
         pBtnSheet->Disable();
-        pBtnSheet->Show(true);
+        pBtnSheet->Show();
 
         maSheets.push_back(pSheet);
     }
@@ -270,7 +268,7 @@ IMPL_LINK_NOARG_TYPED(ScRetypePassDlg, OKHdl, Button*, void)
 
 IMPL_LINK_TYPED( ScRetypePassDlg, RetypeBtnHdl, Button*, pBtn, void )
 {
-    ScPassHashProtectable* pProtected = NULL;
+    ScPassHashProtectable* pProtected = nullptr;
     if (pBtn == mpBtnRetypeDoc)
     {
         // document protection.
@@ -283,7 +281,7 @@ IMPL_LINK_TYPED( ScRetypePassDlg, RetypeBtnHdl, Button*, pBtn, void )
         while(aPos < maSheets.size() && pBtn != maSheets[aPos]->GetChild(2))
             ++aPos;
 
-        pProtected = aPos < maSheets.size() ? maTableItems[aPos].mpProtect.get() : 0;
+        pProtected = aPos < maSheets.size() ? maTableItems[aPos].mpProtect.get() : nullptr;
     }
 
     if (!pProtected)
@@ -368,7 +366,7 @@ void ScRetypePassInputDlg::Init()
     m_pBtnRemovePassword->SetClickHdl(aLink);
     aLink = LINK( this, ScRetypePassInputDlg, CheckBoxHdl );
     m_pBtnMatchOldPass->SetClickHdl(aLink);
-    Link<> aLink2 = LINK( this, ScRetypePassInputDlg, PasswordModifyHdl );
+    Link<Edit&,void> aLink2 = LINK( this, ScRetypePassInputDlg, PasswordModifyHdl );
     m_pPassword1Edit->SetModifyHdl(aLink2);
     m_pPassword2Edit->SetModifyHdl(aLink2);
 
@@ -440,10 +438,9 @@ IMPL_LINK_NOARG_TYPED(ScRetypePassInputDlg, CheckBoxHdl, Button*, void)
     CheckPasswordInput();
 }
 
-IMPL_LINK_NOARG(ScRetypePassInputDlg, PasswordModifyHdl)
+IMPL_LINK_NOARG_TYPED(ScRetypePassInputDlg, PasswordModifyHdl, Edit&, void)
 {
     CheckPasswordInput();
-    return 0;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -159,7 +159,7 @@ namespace svx
             ::utl::OConfigurationTreeRoot aConfig(
                 ::utl::OConfigurationTreeRoot::createWithComponentContext(
                     m_xContext,
-                    OUString( "/org.openoffice.Setup/Office/Factories/com.sun.star.sdb.OfficeDatabaseDocument" )
+                    "/org.openoffice.Setup/Office/Factories/com.sun.star.sdb.OfficeDatabaseDocument"
             ) );
             OUString sDatabaseFilter;
             OSL_VERIFY( aConfig.getNodeValue( "ooSetupFactoryActualFilter" ) >>= sDatabaseFilter );
@@ -245,7 +245,7 @@ namespace svx
             {
                 ::svt::OFileNotation aFileNotation( aURL.GetMainURL( INetURLObject::NO_DECODE ) );
                 m_rLocationInput.SetText( aFileNotation.get( ::svt::OFileNotation::N_SYSTEM ) );
-                m_rLocationInput.GetModifyHdl().Call( &m_rLocationInput );
+                m_rLocationInput.GetModifyHdl().Call( m_rLocationInput );
                 // the dialog already checked for the file's existence, so we don't need to, again
                 m_bNeedExistenceCheck = false;
             }

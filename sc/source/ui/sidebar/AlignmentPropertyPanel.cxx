@@ -50,7 +50,6 @@ AlignmentPropertyPanel::AlignmentPropertyPanel(
       maVrtStackControl(SID_ATTR_ALIGN_STACKED, *pBindings, *this),
       maRefEdgeControl(SID_ATTR_ALIGN_LOCKPOS, *pBindings, *this),
       mbMultiDisable(false),
-      mxFrame(rxFrame),
       maContext(),
       mpBindings(pBindings)
 {
@@ -106,8 +105,8 @@ void AlignmentPropertyPanel::Initialize()
 {
     mpFTLeftIndent->Disable();
     mpMFLeftIndent->Disable();
-    mpMFLeftIndent->SetAccessibleName(OUString( "Left Indent"));    //wj acc
-    Link<> aLink = LINK(this, AlignmentPropertyPanel, MFLeftIndentMdyHdl);
+    mpMFLeftIndent->SetAccessibleName("Left Indent");    //wj acc
+    Link<Edit&,void> aLink = LINK(this, AlignmentPropertyPanel, MFLeftIndentMdyHdl);
     mpMFLeftIndent->SetModifyHdl ( aLink );
 
     mpCBXMergeCell->SetClickHdl ( LINK(this, AlignmentPropertyPanel, CBOXMergnCellClkHdl) );
@@ -115,7 +114,7 @@ void AlignmentPropertyPanel::Initialize()
     mpCBXWrapText->SetClickHdl ( LINK(this, AlignmentPropertyPanel, CBOXWrapTextClkHdl) );
 
     //rotation
-    mpMtrAngle->SetAccessibleName(OUString( "Text Orientation"));   //wj acc
+    mpMtrAngle->SetAccessibleName("Text Orientation");   //wj acc
     mpMtrAngle->SetModifyHdl(LINK( this, AlignmentPropertyPanel, AngleModifiedHdl));
     mpMtrAngle->EnableAutocomplete( false );
     mpCBStacked->SetClickHdl(LINK(this, AlignmentPropertyPanel, ClickStackHdl));
@@ -152,21 +151,21 @@ IMPL_LINK_TYPED( AlignmentPropertyPanel, ReferenceEdgeHdl, Button*, pControl, vo
     GetBindings()->GetDispatcher()->Execute(SID_ATTR_ALIGN_LOCKPOS, SfxCallMode::RECORD, &aItem, 0l);
 }
 
-IMPL_LINK_NOARG( AlignmentPropertyPanel, AngleModifiedHdl )
+IMPL_LINK_NOARG_TYPED( AlignmentPropertyPanel, AngleModifiedHdl, Edit&, void )
 {
     OUString sTmp = mpMtrAngle->GetText();
     if (sTmp.isEmpty())
-        return 0;
+        return;
     sal_Unicode nChar = sTmp[0];
     if( nChar == '-' )
     {
         if (sTmp.getLength() < 2)
-            return 0;
+            return;
         nChar = sTmp[1];
     }
 
     if( (nChar < '0') || (nChar > '9') )
-        return 0;
+        return;
 
     const LocaleDataWrapper& rLocaleWrapper( Application::GetSettings().GetLocaleDataWrapper() );
     const sal_Unicode cSep = rLocaleWrapper.getNumDecimalSep()[0];
@@ -179,7 +178,7 @@ IMPL_LINK_NOARG( AlignmentPropertyPanel, AngleModifiedHdl )
     rtl_math_ConversionStatus eStatus;
     double fTmp = rtl::math::stringToDouble( sTmp, cSep, 0, &eStatus);
     if (eStatus != rtl_math_ConversionStatus_Ok)
-        return 0;
+        return;
 
     FormatDegrees(fTmp);
 
@@ -188,7 +187,6 @@ IMPL_LINK_NOARG( AlignmentPropertyPanel, AngleModifiedHdl )
 
     GetBindings()->GetDispatcher()->Execute(
         SID_ATTR_ALIGN_DEGREES, SfxCallMode::RECORD, &aAngleItem, 0L );
-    return 0;
 }
 IMPL_LINK_NOARG_TYPED( AlignmentPropertyPanel, ClickStackHdl, Button*, void )
 {
@@ -197,14 +195,13 @@ IMPL_LINK_NOARG_TYPED( AlignmentPropertyPanel, ClickStackHdl, Button*, void )
     GetBindings()->GetDispatcher()->Execute(
         SID_ATTR_ALIGN_STACKED, SfxCallMode::RECORD, &aStackItem, 0L );
 }
-IMPL_LINK_NOARG(AlignmentPropertyPanel, MFLeftIndentMdyHdl)
+IMPL_LINK_NOARG_TYPED(AlignmentPropertyPanel, MFLeftIndentMdyHdl, Edit&, void)
 {
     mpCBXWrapText->EnableTriState(false);
     sal_uInt16 nVal = (sal_uInt16)mpMFLeftIndent->GetValue();
     SfxUInt16Item aItem( SID_ATTR_ALIGN_INDENT,  (sal_uInt16)CalcToUnit( nVal,  SFX_MAPUNIT_TWIP ) );
 
     GetBindings()->GetDispatcher()->Execute(SID_ATTR_ALIGN_INDENT, SfxCallMode::RECORD, &aItem, 0L);
-    return 0L;
 }
 
 IMPL_LINK_NOARG_TYPED(AlignmentPropertyPanel, CBOXMergnCellClkHdl, Button*, void)
@@ -234,12 +231,12 @@ VclPtr<vcl::Window> AlignmentPropertyPanel::Create (
     const css::uno::Reference<css::frame::XFrame>& rxFrame,
     SfxBindings* pBindings)
 {
-    if (pParent == NULL)
-        throw lang::IllegalArgumentException("no parent Window given to AlignmentPropertyPanel::Create", NULL, 0);
+    if (pParent == nullptr)
+        throw lang::IllegalArgumentException("no parent Window given to AlignmentPropertyPanel::Create", nullptr, 0);
     if ( ! rxFrame.is())
-        throw lang::IllegalArgumentException("no XFrame given to AlignmentPropertyPanel::Create", NULL, 1);
-    if (pBindings == NULL)
-        throw lang::IllegalArgumentException("no SfxBindings given to AlignmentPropertyPanel::Create", NULL, 2);
+        throw lang::IllegalArgumentException("no XFrame given to AlignmentPropertyPanel::Create", nullptr, 1);
+    if (pBindings == nullptr)
+        throw lang::IllegalArgumentException("no SfxBindings given to AlignmentPropertyPanel::Create", nullptr, 2);
 
     return  VclPtr<AlignmentPropertyPanel>::Create(
                         pParent, rxFrame, pBindings);
@@ -276,7 +273,7 @@ void AlignmentPropertyPanel::NotifyItemUpdate(
     case SID_H_ALIGNCELL:
         {
             SvxCellHorJustify meHorAlignState = SVX_HOR_JUSTIFY_STANDARD;
-            if(eState >= SfxItemState::DEFAULT && pState && pState->ISA(SvxHorJustifyItem) )
+            if(eState >= SfxItemState::DEFAULT && pState && dynamic_cast<const SvxHorJustifyItem*>( pState) !=  nullptr )
             {
                 const SvxHorJustifyItem* pItem = static_cast<const SvxHorJustifyItem*>(pState);
                 meHorAlignState = (SvxCellHorJustify)pItem->GetValue();
@@ -298,7 +295,7 @@ void AlignmentPropertyPanel::NotifyItemUpdate(
         }
         break;
     case SID_ATTR_ALIGN_INDENT:
-        if(eState >= SfxItemState::DEFAULT && pState && pState->ISA(SfxUInt16Item) )
+        if(eState >= SfxItemState::DEFAULT && pState && dynamic_cast<const SfxUInt16Item*>( pState) !=  nullptr )
         {
                 const SfxUInt16Item* pItem = static_cast<const SfxUInt16Item*>(pState);
                 sal_uInt16 nVal = pItem->GetValue();
@@ -311,7 +308,7 @@ void AlignmentPropertyPanel::NotifyItemUpdate(
         }
         break;
     case FID_MERGE_TOGGLE:
-        if(eState >= SfxItemState::DEFAULT && pState && pState->ISA(SfxBoolItem) )
+        if(eState >= SfxItemState::DEFAULT && pState && dynamic_cast<const SfxBoolItem*>( pState) !=  nullptr )
         {
             mpCBXMergeCell->Enable();
             const SfxBoolItem* pItem = static_cast<const SfxBoolItem*>(pState);
@@ -334,7 +331,7 @@ void AlignmentPropertyPanel::NotifyItemUpdate(
         else
         {
             mpCBXWrapText->Enable();
-            if(eState >= SfxItemState::DEFAULT && pState && pState->ISA(SfxBoolItem) )
+            if(eState >= SfxItemState::DEFAULT && pState && dynamic_cast<const SfxBoolItem*>( pState) !=  nullptr )
             {
                 mpCBXWrapText->EnableTriState(false);
                 const SfxBoolItem* pItem = static_cast<const SfxBoolItem*>(pState);

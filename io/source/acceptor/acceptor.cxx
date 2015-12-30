@@ -49,7 +49,7 @@ namespace io_acceptor
     class OAcceptor : public WeakImplHelper< XAcceptor, XServiceInfo >
     {
     public:
-        OAcceptor(const Reference< XComponentContext > & xCtx);
+        explicit OAcceptor(const Reference< XComponentContext > & xCtx);
         virtual ~OAcceptor();
     public:
         // Methods
@@ -57,13 +57,13 @@ namespace io_acceptor
             throw( AlreadyAcceptingException,
                    ConnectionSetupException,
                    IllegalArgumentException,
-                   RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL stopAccepting(  ) throw( RuntimeException, std::exception) SAL_OVERRIDE;
+                   RuntimeException, std::exception) override;
+        virtual void SAL_CALL stopAccepting(  ) throw( RuntimeException, std::exception) override;
 
     public: // XServiceInfo
-                virtual OUString              SAL_CALL getImplementationName() throw(std::exception) SAL_OVERRIDE;
-                virtual Sequence< OUString >  SAL_CALL getSupportedServiceNames() throw(std::exception) SAL_OVERRIDE;
-                virtual sal_Bool              SAL_CALL supportsService(const OUString& ServiceName) throw(std::exception) SAL_OVERRIDE;
+                virtual OUString              SAL_CALL getImplementationName() throw(std::exception) override;
+                virtual Sequence< OUString >  SAL_CALL getSupportedServiceNames() throw(std::exception) override;
+                virtual sal_Bool              SAL_CALL supportsService(const OUString& ServiceName) throw(std::exception) override;
 
     private:
         PipeAcceptor *m_pPipe;
@@ -79,8 +79,8 @@ namespace io_acceptor
 
 
     OAcceptor::OAcceptor( const Reference< XComponentContext > & xCtx )
-        : m_pPipe( 0 )
-        , m_pSocket( 0 )
+        : m_pPipe( nullptr )
+        , m_pSocket( nullptr )
         , m_bInAccept( false )
         , _xSMgr( xCtx->getServiceManager() )
         , _xCtx( xCtx )
@@ -150,7 +150,7 @@ namespace io_acceptor
                 {
                     OUString aName(
                         aDesc.getParameter(
-                            OUString("name")));
+                            "name"));
 
                     m_pPipe = new PipeAcceptor(aName, sConnectionDescription);
 
@@ -163,7 +163,7 @@ namespace io_acceptor
                         {
                             MutexGuard g( m_mutex );
                             delete m_pPipe;
-                            m_pPipe = 0;
+                            m_pPipe = nullptr;
                         }
                         throw;
                     }
@@ -172,18 +172,18 @@ namespace io_acceptor
                 {
                     OUString aHost;
                     if (aDesc.hasParameter(
-                            OUString("host")))
+                            "host"))
                         aHost = aDesc.getParameter(
-                            OUString("host"));
+                            "host");
                     else
                         aHost = "localhost";
                     sal_uInt16 nPort = static_cast< sal_uInt16 >(
                         aDesc.getParameter(
-                            OUString("port")).
+                            "port").
                         toInt32());
                     bool bTcpNoDelay
                         = aDesc.getParameter(
-                            OUString("tcpnodelay")).toInt32() != 0;
+                            "tcpnodelay").toInt32() != 0;
 
                     m_pSocket = new SocketAcceptor(
                         aHost, nPort, bTcpNoDelay, sConnectionDescription);
@@ -197,7 +197,7 @@ namespace io_acceptor
                         {
                             MutexGuard g( m_mutex );
                             delete m_pSocket;
-                            m_pSocket = 0;
+                            m_pSocket = nullptr;
                         }
                         throw;
                     }
@@ -210,8 +210,7 @@ namespace io_acceptor
                         "trying to get service %s\n",
                         OUStringToOString(
                             delegatee, RTL_TEXTENCODING_ASCII_US).getStr());
-                    _xAcceptor = Reference<XAcceptor>(
-                        _xSMgr->createInstanceWithContext(delegatee, _xCtx), UNO_QUERY);
+                    _xAcceptor.set(_xSMgr->createInstanceWithContext(delegatee, _xCtx), UNO_QUERY);
 
                     if(!_xAcceptor.is())
                     {
@@ -279,8 +278,7 @@ namespace io_acceptor
 
     Sequence< OUString > acceptor_getSupportedServiceNames()
     {
-        Sequence< OUString > seqNames(1);
-        seqNames.getArray()[0] = SERVICE_NAME;
+        Sequence< OUString > seqNames { SERVICE_NAME };
         return seqNames;
     }
 

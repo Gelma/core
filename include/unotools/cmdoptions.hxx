@@ -47,7 +47,7 @@ class SvtCommandOptions_Impl;
     @devstatus      ready to use
 *//*-*************************************************************************************************************/
 
-class UNOTOOLS_DLLPUBLIC SAL_WARN_UNUSED SvtCommandOptions : public utl::detail::Options
+class SAL_WARN_UNUSED UNOTOOLS_DLLPUBLIC SvtCommandOptions : public utl::detail::Options
 {
     friend class SvtCommandOptions_Impl;
 
@@ -107,7 +107,7 @@ class UNOTOOLS_DLLPUBLIC SAL_WARN_UNUSED SvtCommandOptions : public utl::detail:
                                             notified, if configuration was changed.
         *//*-*****************************************************************************************************/
 
-        void EstablisFrameCallback(const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& xFrame);
+        void EstablisFrameCallback(const css::uno::Reference< css::frame::XFrame >& xFrame);
 
     private:
 

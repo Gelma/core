@@ -82,14 +82,14 @@ BaseContent::BaseContent( shell* pMyShell,
                           const OUString& parentName,
                           bool bFolder )
     : m_pMyShell( pMyShell ),
-      m_xContentIdentifier( 0 ),
+      m_xContentIdentifier( nullptr ),
       m_aUncPath( parentName ),
       m_bFolder( bFolder ),
       m_nState( JustInserted ),
-      m_pDisposeEventListeners( 0 ),
-      m_pContentEventListeners( 0 ),
-      m_pPropertySetInfoChangeListeners( 0 ),
-      m_pPropertyListener( 0 )
+      m_pDisposeEventListeners( nullptr ),
+      m_pContentEventListeners( nullptr ),
+      m_pPropertySetInfoChangeListeners( nullptr ),
+      m_pPropertyListener( nullptr )
 {
     m_pMyShell->m_pProvider->acquire();
     // No registering, since we have no name
@@ -107,10 +107,10 @@ BaseContent::BaseContent( shell* pMyShell,
       m_aUncPath( aUncPath ),
       m_bFolder( false ),
       m_nState( FullFeatured ),
-      m_pDisposeEventListeners( 0 ),
-      m_pContentEventListeners( 0 ),
-      m_pPropertySetInfoChangeListeners( 0 ),
-      m_pPropertyListener( 0 )
+      m_pDisposeEventListeners( nullptr ),
+      m_pContentEventListeners( nullptr ),
+      m_pPropertySetInfoChangeListeners( nullptr ),
+      m_pPropertyListener( nullptr )
 {
     m_pMyShell->m_pProvider->acquire();
     m_pMyShell->registerNotifier( m_aUncPath,this );
@@ -219,17 +219,17 @@ BaseContent::dispose()
 
 
         pDisposeEventListeners =
-            m_pDisposeEventListeners, m_pDisposeEventListeners = 0;
+            m_pDisposeEventListeners, m_pDisposeEventListeners = nullptr;
 
         pContentEventListeners =
-            m_pContentEventListeners, m_pContentEventListeners = 0;
+            m_pContentEventListeners, m_pContentEventListeners = nullptr;
 
         pPropertySetInfoChangeListeners =
             m_pPropertySetInfoChangeListeners,
-            m_pPropertySetInfoChangeListeners = 0;
+            m_pPropertySetInfoChangeListeners = nullptr;
 
         pPropertyListener =
-            m_pPropertyListener, m_pPropertyListener = 0;
+            m_pPropertyListener, m_pPropertyListener = nullptr;
     }
 
     if ( pDisposeEventListeners && pDisposeEventListeners->getLength() )
@@ -269,8 +269,7 @@ Sequence< OUString > SAL_CALL
 BaseContent::getSupportedServiceNames()
     throw( RuntimeException, std::exception )
 {
-    Sequence< OUString > ret( 1 );
-    ret[0] = "com.sun.star.ucb.FileContent";
+    Sequence<OUString> ret { "com.sun.star.ucb.FileContent" };
     return ret;
 }
 
@@ -722,7 +721,7 @@ BaseContent::getParent(
 
     bool err = fileaccess::shell::getUrlFromUnq( ParentUnq, ParentUrl );
     if( err )
-        return Reference< XInterface >( 0 );
+        return Reference< XInterface >( nullptr );
 
     FileContentIdentifier* p = new FileContentIdentifier( ParentUnq );
     Reference< XContentIdentifier > Identifier( p );
@@ -775,14 +774,11 @@ BaseContent::getPropertySetInfo(
     return m_pMyShell->info_p( m_aUncPath );
 }
 
-
-
-
 Reference< sdbc::XRow > SAL_CALL
 BaseContent::getPropertyValues(
     sal_Int32 nMyCommandIdentifier,
     const Sequence< beans::Property >& PropertySet )
-    throw( RuntimeException )
+    throw( RuntimeException, std::exception )
 {
     sal_Int32 nProps = PropertySet.getLength();
     if ( !nProps )
@@ -972,7 +968,7 @@ BaseContent::open(
     sal_Int32 nMyCommandIdentifier,
     const OpenCommandArgument2& aCommandArgument )
 {
-    Reference< XDynamicResultSet > retValue( 0 );
+    Reference< XDynamicResultSet > retValue( nullptr );
 
     if( ( m_nState & Deleted ) )
     {
@@ -1238,8 +1234,7 @@ void SAL_CALL BaseContent::insert( sal_Int32 nMyCommandIdentifier,
     if ( ! success )
         return;
 
-    FileContentIdentifier* p = new FileContentIdentifier( m_aUncPath );
-    m_xContentIdentifier = Reference< XContentIdentifier >( p );
+    m_xContentIdentifier.set( new FileContentIdentifier( m_aUncPath ) );
 
     m_pMyShell->registerNotifier( m_aUncPath,this );
     m_pMyShell->insertDefaultProperties( m_aUncPath );
@@ -1272,7 +1267,7 @@ BaseContent::cDEL()
                                       m_xContentIdentifier,
                                       m_pContentEventListeners->getElements() );
     else
-        p = 0;
+        p = nullptr;
 
     return p;
 }
@@ -1286,9 +1281,9 @@ BaseContent::cEXC( const OUString& aNewName )
     Reference< XContentIdentifier > xOldRef = m_xContentIdentifier;
     m_aUncPath = aNewName;
     FileContentIdentifier* pp = new FileContentIdentifier( aNewName );
-    m_xContentIdentifier = Reference< XContentIdentifier >( pp );
+    m_xContentIdentifier.set( pp );
 
-    ContentEventNotifier* p = 0;
+    ContentEventNotifier* p = nullptr;
     if( m_pContentEventListeners )
         p = new ContentEventNotifier( m_pMyShell,
                                       this,
@@ -1304,7 +1299,7 @@ ContentEventNotifier*
 BaseContent::cCEL()
 {
     osl::MutexGuard aGuard( m_aMutex );
-    ContentEventNotifier* p = 0;
+    ContentEventNotifier* p = nullptr;
     if( m_pContentEventListeners )
         p = new ContentEventNotifier( m_pMyShell,
                                       this,
@@ -1318,10 +1313,9 @@ PropertySetInfoChangeNotifier*
 BaseContent::cPSL()
 {
     osl::MutexGuard aGuard( m_aMutex );
-    PropertySetInfoChangeNotifier* p = 0;
+    PropertySetInfoChangeNotifier* p = nullptr;
     if( m_pPropertySetInfoChangeListeners  )
         p = new PropertySetInfoChangeNotifier( this,
-                                               m_xContentIdentifier,
                                                m_pPropertySetInfoChangeListeners->getElements() );
 
     return p;
@@ -1335,11 +1329,11 @@ BaseContent::cPCL()
     osl::MutexGuard aGuard( m_aMutex );
 
     if (!m_pPropertyListener)
-        return NULL;
+        return nullptr;
 
     Sequence< OUString > seqNames = m_pPropertyListener->getContainedTypes();
 
-    PropertyChangeNotifier* p = 0;
+    PropertyChangeNotifier* p = nullptr;
 
     sal_Int32 length = seqNames.getLength();
 
@@ -1355,7 +1349,6 @@ BaseContent::cPCL()
         }
 
         p = new PropertyChangeNotifier( this,
-                                        m_xContentIdentifier,
                                         listener );
     }
 

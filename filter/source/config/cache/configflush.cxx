@@ -26,9 +26,8 @@
 namespace filter{
     namespace config{
 
-ConfigFlush::ConfigFlush(const css::uno::Reference< css::lang::XMultiServiceFactory >& xSMGR)
+ConfigFlush::ConfigFlush()
     : BaseLock   (       )
-    , m_xSMGR    (xSMGR  )
     , m_lListener(m_aLock)
 {
 }
@@ -117,15 +116,14 @@ OUString ConfigFlush::impl_getImplementationName()
 
 css::uno::Sequence< OUString > ConfigFlush::impl_getSupportedServiceNames()
 {
-    css::uno::Sequence< OUString > lServiceNames(1);
-    lServiceNames[0] = "com.sun.star.document.FilterConfigRefresh";
+    css::uno::Sequence< OUString > lServiceNames { "com.sun.star.document.FilterConfigRefresh" };
     return lServiceNames;
 }
 
 
-css::uno::Reference< css::uno::XInterface > ConfigFlush::impl_createInstance(const css::uno::Reference< css::lang::XMultiServiceFactory >& xSMGR)
+css::uno::Reference< css::uno::XInterface > ConfigFlush::impl_createInstance(const css::uno::Reference< css::lang::XMultiServiceFactory >& )
 {
-    ConfigFlush* pNew = new ConfigFlush(xSMGR);
+    ConfigFlush* pNew = new ConfigFlush;
     return css::uno::Reference< css::uno::XInterface >(static_cast< css::util::XRefreshable* >(pNew), css::uno::UNO_QUERY);
 }
 

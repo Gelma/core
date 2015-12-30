@@ -23,43 +23,36 @@
 
 class SwNode;
 class SwContentNode;
-class ReReadThread;
-long GrfNodeChanged( void* pLink, void* pCaller );
 
 class SwBaseLink : public ::sfx2::SvBaseLink
 {
-    friend long GrfNodeChanged( void* pLink, void* pCaller );
-
     SwContentNode* pContentNode;
     bool bSwapIn : 1;
     bool bNoDataFlag : 1;
     bool bIgnoreDataChanged : 1;
-    ReReadThread* m_pReReadThread;
 
 protected:
-    SwBaseLink(): m_pReReadThread(0) {}
+    SwBaseLink() {}
 
 public:
-    TYPEINFO_OVERRIDE();
 
-    SwBaseLink( SfxLinkUpdateMode nMode, SotClipboardFormatId nFormat, SwContentNode* pNode = 0 )
+    SwBaseLink( SfxLinkUpdateMode nMode, SotClipboardFormatId nFormat, SwContentNode* pNode = nullptr )
         : ::sfx2::SvBaseLink( nMode, nFormat ), pContentNode( pNode ),
-        bSwapIn( false ), bNoDataFlag( false ), bIgnoreDataChanged( false ),
-        m_pReReadThread(0)
+        bSwapIn( false ), bNoDataFlag( false ), bIgnoreDataChanged( false )
     {}
     virtual ~SwBaseLink();
 
     virtual ::sfx2::SvBaseLink::UpdateResult DataChanged(
-        const OUString& rMimeType, const ::com::sun::star::uno::Any & rValue ) SAL_OVERRIDE;
+        const OUString& rMimeType, const css::uno::Any & rValue ) override;
 
-    virtual void Closed() SAL_OVERRIDE;
+    virtual void Closed() override;
 
     virtual const SwNode* GetAnchor() const;
 
     // For graphics only.
     bool SwapIn( bool bWaitForData = false, bool bNativFormat = false );
 
-    bool Connect() { return 0 != SvBaseLink::GetRealObject(); }
+    bool Connect() { return nullptr != SvBaseLink::GetRealObject(); }
 
     // Only for graphics-links (for switching between DDE / Grf-link).
     void SetObjType( sal_uInt16 nType ) { SvBaseLink::SetObjType( nType ); }

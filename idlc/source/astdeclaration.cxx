@@ -45,7 +45,6 @@ AstDeclaration::AstDeclaration(NodeType type, const OString& name, AstScope* pSc
     , m_pScope(pScope)
     , m_nodeType(type)
     , m_bImported(false)
-    , m_bIsAdded(false)
     , m_bInMainFile(false)
     , m_bPredefined(false)
     , m_lineNumber(0)
@@ -132,7 +131,7 @@ bool AstDeclaration::dump(RegistryKey& rKey)
     {
         DeclList::const_iterator iter = pScope->getIteratorBegin();
         DeclList::const_iterator end = pScope->getIteratorEnd();
-        AstDeclaration* pDecl = NULL;
+        AstDeclaration* pDecl = nullptr;
         while ( iter != end && bRet)
         {
             pDecl = *iter;

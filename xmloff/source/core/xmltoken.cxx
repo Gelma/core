@@ -43,7 +43,7 @@ namespace xmloff { namespace token {
 
 
 #if OSL_DEBUG_LEVEL > 0
-    #define TOKEN( s, e ) { sizeof(s)-1, s, NULL, e }
+    #define TOKEN( s, e ) { sizeof(s)-1, s, nullptr, e }
 #else
     #define TOKEN( s, e ) { sizeof(s)-1, s, NULL }
 #endif
@@ -51,7 +51,7 @@ namespace xmloff { namespace token {
     struct XMLTokenEntry aTokenList[] =
     {
 #if OSL_DEBUG_LEVEL > 0
-        { 0, NULL, NULL, XML_TOKEN_START },
+        { 0, nullptr, nullptr, XML_TOKEN_START },
 #else
         { 0, NULL, NULL },                            // XML_TOKEN_START
 #endif
@@ -529,6 +529,9 @@ namespace xmloff { namespace token {
         TOKEN( "custom3",                         XML_CUSTOM3 ),
         TOKEN( "custom4",                         XML_CUSTOM4 ),
         TOKEN( "custom5",                         XML_CUSTOM5 ),
+        TOKEN( "custom-iconset",                  XML_CUSTOM_ICONSET ),
+        TOKEN( "custom-iconset-index",            XML_CUSTOM_ICONSET_INDEX ),
+        TOKEN( "custom-iconset-name",             XML_CUSTOM_ICONSET_NAME ),
         TOKEN( "cut",                             XML_CUT ),
         TOKEN( "cut-offs",                        XML_CUT_OFFS ),
         TOKEN( "cx",                              XML_CX ),
@@ -546,7 +549,6 @@ namespace xmloff { namespace token {
         TOKEN( "data-label-number",               XML_DATA_LABEL_NUMBER ),
         TOKEN( "data-label-symbol",               XML_DATA_LABEL_SYMBOL ),
         TOKEN( "data-label-text",                 XML_DATA_LABEL_TEXT ),
-        TOKEN( "data-label-wrap",                 XML_DATA_LABEL_WRAP ),
         TOKEN( "data-pilot-field",                XML_DATA_PILOT_FIELD ),
         TOKEN( "data-pilot-grand-total",          XML_DATA_PILOT_GRAND_TOTAL ),
         TOKEN( "data-pilot-level",                XML_DATA_PILOT_LEVEL ),
@@ -1123,6 +1125,7 @@ namespace xmloff { namespace token {
         TOKEN( "line-spacing",                    XML_LINE_SPACING ),
         TOKEN( "line-style",                      XML_LINE_STYLE ),
         TOKEN( "linear",                          XML_LINEAR ),
+        TOKEN( "linearGradient",                  XML_LINEARGRADIENT ),
         TOKEN( "linenumbering-configuration",     XML_LINENUMBERING_CONFIGURATION ),
         TOKEN( "linenumbering-separator",         XML_LINENUMBERING_SEPARATOR ),
         TOKEN( "lines",                           XML_LINES ),
@@ -1746,8 +1749,8 @@ namespace xmloff { namespace token {
         TOKEN( "stock-updown-bars",               XML_STOCK_UPDOWN_BARS ),
         TOKEN( "stock-with-volume",               XML_STOCK_WITH_VOLUME ),
         TOKEN( "stop",                            XML_STOP ),
-        TOKEN( "stop-color",                      XML_STOPCOLOR ),
-        TOKEN( "stop-opacity",                    XML_STOPOPACITY ),
+        TOKEN( "stop-color",                      XML_STOP_COLOR ),
+        TOKEN( "stop-opacity",                    XML_STOP_OPACITY ),
         TOKEN( "stretch",                         XML_STRETCH ),
         TOKEN( "stretch-from-bottom",             XML_STRETCH_FROM_BOTTOM ),
         TOKEN( "stretch-from-left",               XML_STRETCH_FROM_LEFT ),
@@ -1782,7 +1785,6 @@ namespace xmloff { namespace token {
         TOKEN( "sub-view-size",                   XML_SUB_VIEW_SIZE ),
         TOKEN( "suffix",                          XML_SUFFIX ),
         TOKEN( "sum",                             XML_SUM ),
-        TOKEN( "linearGradient",                  XML_SVGLINEARGRADIENT ),
         TOKEN( "swiss",                           XML_SWISS ),
         TOKEN( "symbol",                          XML_SYMBOL ),
         TOKEN( "symbol-height",                   XML_SYMBOL_HEIGHT ),
@@ -1915,6 +1917,8 @@ namespace xmloff { namespace token {
         TOKEN( "transpose",                       XML_TRANSPOSE ),
         TOKEN( "true",                            XML_TRUE ),
         TOKEN( "truncate-on-overflow",            XML_TRUNCATE_ON_OVERFLOW ),
+        TOKEN( "try-staggering-first",            XML_TRY_STAGGERING_FIRST ),
+        TOKEN( "tspan",                           XML_TSPAN ),
         TOKEN( "ttb",                             XML_TTB ),
         TOKEN( "type",                            XML_TYPE ),
         TOKEN( "dot-dash",                        XML_DOT_DASH ),
@@ -1932,6 +1936,7 @@ namespace xmloff { namespace token {
         TOKEN( "uplimit",                         XML_UPLIMIT ),
         TOKEN( "upright",                         XML_UPRIGHT ),
         TOKEN( "url",                             XML_URL ),
+        TOKEN( "use",                             XML_USE ),
         TOKEN( "use-caption",                     XML_USE_CAPTION ),
         TOKEN( "use-cell-protection",             XML_USE_CELL_PROTECTION ),
         TOKEN( "use-chart-objects",               XML_USE_CHART_OBJECTS ),
@@ -3253,7 +3258,7 @@ namespace xmloff { namespace token {
         TOKEN( "min-decimal-places",              XML_MIN_DECIMAL_PLACES ),
 
 #if OSL_DEBUG_LEVEL > 0
-        { 0, NULL, NULL,                       XML_TOKEN_END }
+        { 0, nullptr, nullptr,                       XML_TOKEN_END }
 #else
         { 0, NULL, NULL                       /* XML_TOKEN_END */ }
 #endif

@@ -24,6 +24,7 @@
 #include "glob.hxx"
 #include <sfx2/shell.hxx>
 #include <sfx2/viewfac.hxx>
+#include "sddllapi.h"
 #include <memory>
 #include <vector>
 
@@ -41,7 +42,6 @@ class SlideSorterViewShell
     friend class controller::SlotManager;
 
 public:
-    TYPEINFO_OVERRIDE();
     SFX_DECL_INTERFACE(SD_IF_SDSLIDESORTERVIEWSHELL)
 
 private:
@@ -61,7 +61,7 @@ public:
     /** Late initialization that has to be called after a new instance has
         completed its construction.
     */
-    virtual void Init (bool bIsMainViewShell) SAL_OVERRIDE;
+    virtual void Init (bool bIsMainViewShell) override;
 
     /** Return a slide sorter that is currently displayed in one of the
         panes that belong to the given ViewShellBase object.
@@ -70,12 +70,13 @@ public:
         pane is returned.  When no slidesorter is visible then NULL is
         returned.
     */
-    static SlideSorterViewShell* GetSlideSorter (ViewShellBase& rBase);
+    // Exported for unit test
+    SD_DLLPUBLIC static SlideSorterViewShell* GetSlideSorter(ViewShellBase& rBase);
 
-    virtual SdPage* GetActualPage() SAL_OVERRIDE;
+    virtual SdPage* GetActualPage() override;
 
     /// inherited from sd::ViewShell
-    virtual SdPage* getCurrentPage() const SAL_OVERRIDE;
+    virtual SdPage* getCurrentPage() const override;
 
     void ExecCtrl (SfxRequest& rRequest);
     void GetCtrlState (SfxItemSet &rSet);
@@ -85,12 +86,12 @@ public:
     void FuPermanent (SfxRequest& rRequest);
     void GetAttrState (SfxItemSet& rSet);
     static void ExecStatusBar (SfxRequest& rRequest);
-    virtual void Command (const CommandEvent& rEvent, ::sd::Window* pWindow) SAL_OVERRIDE;
+    virtual void Command (const CommandEvent& rEvent, ::sd::Window* pWindow) override;
     void GetMenuState (SfxItemSet &rSet);
     void GetClipboardState (SfxItemSet &rSet);
 
-    virtual void ReadFrameViewData (FrameView* pView) SAL_OVERRIDE;
-    virtual void WriteFrameViewData() SAL_OVERRIDE;
+    virtual void ReadFrameViewData (FrameView* pView) override;
+    virtual void WriteFrameViewData() override;
 
     /** Set the zoom factor.  The given value is clipped against an upper
         bound.
@@ -98,22 +99,22 @@ public:
             An integer percent value, i.e. nZoom/100 is the actual zoom
             factor.
         */
-    virtual void SetZoom (long int nZoom) SAL_OVERRIDE;
-    virtual void SetZoomRect (const Rectangle& rZoomRect) SAL_OVERRIDE;
+    virtual void SetZoom (long int nZoom) override;
+    virtual void SetZoomRect (const Rectangle& rZoomRect) override;
 
     /** This is a callback method used by the active window to delegate its
         Paint() call to.  This view shell itself delegates it to the view.
     */
-    virtual void Paint(const Rectangle& rRect, ::sd::Window* pWin) SAL_OVERRIDE;
+    virtual void Paint(const Rectangle& rRect, ::sd::Window* pWin) override;
 
     /** Place and size the controls and windows.  You may want to call this
         method when something has changed that for instance affects the
         visibility state of the scroll bars.
     */
-    virtual void ArrangeGUIElements() SAL_OVERRIDE;
+    virtual void ArrangeGUIElements() override;
 
-    virtual void Activate (bool IsMDIActivate) SAL_OVERRIDE;
-    virtual void Deactivate (bool IsMDIActivate) SAL_OVERRIDE;
+    virtual void Activate (bool IsMDIActivate) override;
+    virtual void Deactivate (bool IsMDIActivate) override;
 
     /** Move slides up and down. Mainly uno commands. */
     void ExecMovePageUp (SfxRequest& rReq);
@@ -137,15 +138,15 @@ public:
     virtual sal_Int8 AcceptDrop (
         const AcceptDropEvent& rEvt,
         DropTargetHelper& rTargetHelper,
-        ::sd::Window* pTargetWindow = NULL,
+        ::sd::Window* pTargetWindow = nullptr,
         sal_uInt16 nPage = SDRPAGE_NOTFOUND,
-        sal_uInt16 nLayer = SDRPAGE_NOTFOUND ) SAL_OVERRIDE;
+        sal_uInt16 nLayer = SDRPAGE_NOTFOUND ) override;
     virtual sal_Int8 ExecuteDrop (
         const ExecuteDropEvent& rEvt,
         DropTargetHelper& rTargetHelper,
-        ::sd::Window* pTargetWindow = NULL,
+        ::sd::Window* pTargetWindow = nullptr,
         sal_uInt16 nPage = SDRPAGE_NOTFOUND,
-        sal_uInt16 nLayer = SDRPAGE_NOTFOUND) SAL_OVERRIDE;
+        sal_uInt16 nLayer = SDRPAGE_NOTFOUND) override;
 
     typedef ::std::vector<SdPage*> PageSelection;
 
@@ -172,7 +173,7 @@ public:
     */
     void RemoveSelectionChangeListener (const Link<LinkParamNone*,void>& rListener);
 
-    virtual css::uno::Reference<css::drawing::XDrawSubController> CreateSubController() SAL_OVERRIDE;
+    virtual css::uno::Reference<css::drawing::XDrawSubController> CreateSubController() override;
 
     /** Create an accessible object representing the specified window.
         @param pWindow
@@ -181,25 +182,25 @@ public:
         @return
             Returns an <type>AccessibleSlideSorterView</type> object.
    */
-    virtual ::com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessible>
-        CreateAccessibleDocumentView (::sd::Window* pWindow) SAL_OVERRIDE;
+    virtual css::uno::Reference<css::accessibility::XAccessible>
+        CreateAccessibleDocumentView (::sd::Window* pWindow) override;
     // handle SlideSorterView specially because AccessibleSlideSorterView doesn't inherit from AccessibleDocumentViewBase
-    virtual void SwitchViewFireFocus( ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > xAcc ) SAL_OVERRIDE;
+    virtual void SwitchViewFireFocus( css::uno::Reference< css::accessibility::XAccessible > xAcc ) override;
 
-    SlideSorter& GetSlideSorter() const;
+    // Exported for unit test
+    SD_DLLPUBLIC SlideSorter& GetSlideSorter() const;
 
     /** Try to relocate all toplevel window elements to the given parent
         window.
     */
-    virtual bool RelocateToParentWindow (vcl::Window* pParentWindow) SAL_OVERRIDE;
+    virtual bool RelocateToParentWindow (vcl::Window* pParentWindow) override;
 
 protected:
 
     /** Override this method to handle a missing tool bar correctly.
         This is the case when the slide sorter is not the main view shell.
     */
-    virtual ::svl::IUndoManager* ImpGetUndoManager() const SAL_OVERRIDE;
+    virtual ::svl::IUndoManager* ImpGetUndoManager() const override;
 
 private:
     std::shared_ptr<SlideSorter> mpSlideSorter;
@@ -216,7 +217,7 @@ private:
         scroll bar and the base class call is thus unnecessary.  It simply
         calls UpdateScrollBars(false).
     */
-    virtual void UpdateScrollBars() SAL_OVERRIDE;
+    virtual void UpdateScrollBars() override;
 
     void PostMoveSlidesActions(const std::shared_ptr<SlideSorterViewShell::PageSelection> &rpSelection);
 };

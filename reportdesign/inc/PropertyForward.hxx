@@ -32,7 +32,7 @@
 namespace rptui
 {
 
-    typedef ::cppu::WeakComponentImplHelper<   ::com::sun::star::beans::XPropertyChangeListener
+    typedef ::cppu::WeakComponentImplHelper<   css::beans::XPropertyChangeListener
                                     >   OPropertyForward_Base;
 
     /** \class OPropertyMediator
@@ -43,31 +43,31 @@ namespace rptui
     class REPORTDESIGN_DLLPUBLIC OPropertyMediator : public ::cppu::BaseMutex
                             ,public OPropertyForward_Base
     {
-        TPropertyNamePair                                                               m_aNameMap;
-        ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet>        m_xSource;
-        ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySetInfo>    m_xSourceInfo;
-        ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet>        m_xDest;
-        ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySetInfo>    m_xDestInfo;
-        bool                                                                        m_bInChange;
-        OPropertyMediator(OPropertyMediator&) SAL_DELETED_FUNCTION;
-        void operator =(OPropertyMediator&) SAL_DELETED_FUNCTION;
+        TPropertyNamePair                                     m_aNameMap;
+        css::uno::Reference< css::beans::XPropertySet>        m_xSource;
+        css::uno::Reference< css::beans::XPropertySetInfo>    m_xSourceInfo;
+        css::uno::Reference< css::beans::XPropertySet>        m_xDest;
+        css::uno::Reference< css::beans::XPropertySetInfo>    m_xDestInfo;
+        bool                                                  m_bInChange;
+        OPropertyMediator(OPropertyMediator&) = delete;
+        void operator =(OPropertyMediator&) = delete;
     protected:
         virtual ~OPropertyMediator();
 
         /** this function is called upon disposing the component
         */
-        virtual void SAL_CALL disposing() SAL_OVERRIDE;
+        virtual void SAL_CALL disposing() override;
     public:
-        OPropertyMediator(const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet>& _xSource
-                        ,const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet>& _xDest
+        OPropertyMediator(const css::uno::Reference< css::beans::XPropertySet>& _xSource
+                        ,const css::uno::Reference< css::beans::XPropertySet>& _xDest
                         ,const TPropertyNamePair& _aNameMap
                         ,bool _bReverse = false);
 
-        // ::com::sun::star::beans::XPropertyChangeListener
-        virtual void SAL_CALL propertyChange( const ::com::sun::star::beans::PropertyChangeEvent& evt ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        // css::beans::XPropertyChangeListener
+        virtual void SAL_CALL propertyChange( const css::beans::PropertyChangeEvent& evt ) throw(css::uno::RuntimeException, std::exception) override;
 
-        // ::com::sun::star::lang::XEventListener
-        virtual void SAL_CALL disposing( const ::com::sun::star::lang::EventObject& _rSource ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        // css::lang::XEventListener
+        virtual void SAL_CALL disposing( const css::lang::EventObject& _rSource ) throw (css::uno::RuntimeException, std::exception) override;
 
         /** stop the listening mode.
          */

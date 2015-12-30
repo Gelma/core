@@ -10,8 +10,6 @@
 #ifndef INCLUDED_SC_SOURCE_CORE_OPENCL_OPENCLWRAPPER_HXX
 #define INCLUDED_SC_SOURCE_CORE_OPENCL_OPENCLWRAPPER_HXX
 
-#include <config_features.h>
-
 #include <cassert>
 #include <vector>
 
@@ -41,7 +39,6 @@ struct GPUEnv
 {
     //share vb in all modules in hb library
     cl_platform_id mpPlatformID;
-    cl_device_type mDevType;
     cl_context mpContext;
     cl_device_id mpDevID;
     cl_command_queue mpCmdQueue[OPENCL_CMDQUEUE_SIZE];

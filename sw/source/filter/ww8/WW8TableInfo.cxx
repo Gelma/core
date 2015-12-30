@@ -44,8 +44,8 @@ WW8TableNodeInfoInner::WW8TableNodeInfoInner(WW8TableNodeInfo * pParent)
 , mbEndOfCell(false)
 , mbFirstInTable(false)
 , mbVertMerge(false)
-, mpTableBox(NULL)
-, mpTable(NULL)
+, mpTableBox(nullptr)
+, mpTable(nullptr)
 {
 }
 
@@ -129,9 +129,9 @@ void WW8TableNodeInfoInner::setRect(const SwRect & rRect)
 
 const SwNode * WW8TableNodeInfoInner::getNode() const
 {
-    const SwNode * pResult = NULL;
+    const SwNode * pResult = nullptr;
 
-    if (mpParent != NULL)
+    if (mpParent != nullptr)
         pResult = mpParent->getNode();
 
     return pResult;
@@ -144,7 +144,7 @@ TableBoxVectorPtr WW8TableNodeInfoInner::getTableBoxesOfRow()
     WW8TableCellGrid::Pointer_t pCellGrid =
         mpParent->getParent()->getCellGridForTable(getTable(), false);
 
-    if (pCellGrid.get() == NULL)
+    if (pCellGrid.get() == nullptr)
     {
         const SwTableLine * pTabLine = getTableBox()->GetUpper();
         const SwTableBoxes & rTableBoxes = pTabLine->GetTabBoxes();
@@ -206,7 +206,7 @@ GridColsPtr WW8TableNodeInfoInner::getGridColsOfRow(AttributeOutputBase & rBase,
     if (!pFormat)
         return pResult;
 
-    const SwFormatFrmSize &rSize = pFormat->GetFrmSize();
+    const SwFormatFrameSize &rSize = pFormat->GetFrameSize();
     unsigned long nTableSz = static_cast<unsigned long>(rSize.GetWidth());
 
     long nPageSize = 0;
@@ -238,7 +238,7 @@ WidthsPtr WW8TableNodeInfoInner::getColumnWidthsBasedOnAllRows()
     WW8TableCellGrid::Pointer_t pCellGrid =
         mpParent->getParent()->getCellGridForTable(getTable(), false);
 
-    if (pCellGrid.get() == NULL)
+    if (pCellGrid.get() == nullptr)
     {
         const SwTable * pTable = getTable();
         const SwTableLines& rTableLines = pTable->GetTabLines();
@@ -259,7 +259,7 @@ WidthsPtr WW8TableNodeInfoInner::getColumnWidthsBasedOnAllRows()
             for (size_t nBoxIndex = 0; nBoxIndex < nBoxes; ++nBoxIndex)
             {
                 const SwFrameFormat* pBoxFormat = rTabBoxes[ nBoxIndex ]->GetFrameFormat();
-                const SwFormatFrmSize& rLSz = pBoxFormat->GetFrmSize();
+                const SwFormatFrameSize& rLSz = pBoxFormat->GetFrameSize();
                 nSeparatorPosition += rLSz.GetWidth();
                 pSeparators->push_back(nSeparatorPosition);
             }
@@ -297,7 +297,7 @@ WidthsPtr WW8TableNodeInfoInner::getWidthsOfRow()
     WW8TableCellGrid::Pointer_t pCellGrid =
         mpParent->getParent()->getCellGridForTable(getTable(), false);
 
-    if (pCellGrid.get() == NULL)
+    if (pCellGrid.get() == nullptr)
     {
         const SwTableBox * pTabBox = getTableBox();
         const SwTableLine * pTabLine = pTabBox->GetUpper();
@@ -312,7 +312,7 @@ WidthsPtr WW8TableNodeInfoInner::getWidthsOfRow()
         for (sal_uInt32 n = 0; n < nBoxes; n++)
         {
             const SwFrameFormat* pBoxFormat = rTabBoxes[ n ]->GetFrameFormat();
-            const SwFormatFrmSize& rLSz = pBoxFormat->GetFrmSize();
+            const SwFormatFrameSize& rLSz = pBoxFormat->GetFrameSize();
 
             pWidths->push_back(rLSz.GetWidth());
         }
@@ -330,7 +330,7 @@ RowSpansPtr WW8TableNodeInfoInner::getRowSpansOfRow()
     WW8TableCellGrid::Pointer_t pCellGrid =
         mpParent->getParent()->getCellGridForTable(getTable(), false);
 
-    if (pCellGrid.get() == NULL)
+    if (pCellGrid.get() == nullptr)
     {
         const SwTableBox * pTabBox = getTableBox();
         const SwTableLine * pTabLine = pTabBox->GetUpper();
@@ -383,8 +383,8 @@ WW8TableNodeInfo::WW8TableNodeInfo(WW8TableInfo * pParent,
 : mpParent(pParent),
   mnDepth(0),
   mpNode(pNode),
-  mpNext(NULL),
-  mpNextNode(NULL)
+  mpNext(nullptr),
+  mpNextNode(nullptr)
 {
 }
 
@@ -587,13 +587,13 @@ WW8TableInfo::processSwTableByLayout(const SwTable * pTable, RowEndInners_t &rLa
     {
         SwRect aRect = aTableCellInfo.getRect();
 
-        SAL_INFO( "sw.ww8", "<CellFrm>" );
+        SAL_INFO( "sw.ww8", "<CellFrame>" );
         SAL_INFO( "sw.ww8", "<rect top=\"" << aRect.Top() << "\" bottom=\"" << aRect.Bottom()
             << "\" left=\"" << aRect.Left() << "\" right=\"" << aRect.Right() << "\"/>" );
         const SwTableBox * pTableBox = aTableCellInfo.getTableBox();
         const SwStartNode * pSttNd = pTableBox->GetSttNd();
 
-        if (pSttNd != NULL)
+        if (pSttNd != nullptr)
         {
             SwPaM aPam(*pSttNd, 0);
 
@@ -618,7 +618,7 @@ WW8TableInfo::processSwTableByLayout(const SwTable * pTable, RowEndInners_t &rLa
             while (!bDone);
         }
 
-        SAL_INFO( "sw.ww8", "</CellFrm>" );
+        SAL_INFO( "sw.ww8", "</CellFrame>" );
     }
 
     return reorderByLayout(pTable, rLastRowEnds);
@@ -628,7 +628,7 @@ void WW8TableInfo::processSwTable(const SwTable * pTable)
 {
     SAL_INFO( "sw.ww8", "<processSwTable>" );
 
-    WW8TableNodeInfo * pPrev = NULL;
+    WW8TableNodeInfo * pPrev = nullptr;
     RowEndInners_t aLastRowEnds;
 
     if (pTable->IsTableComplex() && pTable->HasLayout())
@@ -834,7 +834,7 @@ WW8TableInfo::processTableBox(const SwTable * pTable,
         }
         while (!bDone);
 
-        if (pEndOfCellInfo.get() != NULL)
+        if (pEndOfCellInfo.get() != nullptr)
         {
             pEndOfCellInfo->setEndOfCell(true);
 
@@ -862,7 +862,7 @@ WW8TableNodeInfo::Pointer_t WW8TableInfo::insertTableNodeInfo
 {
     WW8TableNodeInfo::Pointer_t pNodeInfo = getTableNodeInfo(pNode);
 
-    if (pNodeInfo.get() == NULL)
+    if (pNodeInfo.get() == nullptr)
     {
         pNodeInfo =
             WW8TableNodeInfo::Pointer_t(new WW8TableNodeInfo(this, pNode));
@@ -935,21 +935,21 @@ WW8TableNodeInfo::Pointer_t WW8TableInfo::getTableNodeInfo
 
 const SwNode * WW8TableInfo::getNextNode(const SwNode * pNode)
 {
-    const SwNode * pResult = NULL;
+    const SwNode * pResult = nullptr;
 
     WW8TableNodeInfo::Pointer_t pNodeInfo = getTableNodeInfo(pNode);
 
-    if (pNodeInfo.get() != NULL)
+    if (pNodeInfo.get() != nullptr)
     {
         WW8TableNodeInfo * pNextInfo = pNodeInfo->getNext();
 
-        if (pNextInfo != NULL)
+        if (pNextInfo != nullptr)
             pResult = pNextInfo->getNode();
         else
         {
             const SwNode * pNextNode = pNodeInfo->getNextNode();
 
-            if (pNextNode != NULL)
+            if (pNextNode != nullptr)
                 pResult = pNextNode;
         }
     }
@@ -961,9 +961,9 @@ bool WW8TableNodeInfo::operator < (const WW8TableNodeInfo & rInfo) const
 {
     bool bRet = false;
 
-    if (rInfo.mpNode != NULL)
+    if (rInfo.mpNode != nullptr)
     {
-        if (mpNode == NULL)
+        if (mpNode == nullptr)
         {
             bRet = true;
         }
@@ -999,7 +999,7 @@ bool CellInfo::operator < (const CellInfo & aCellInfo) const
                 {
                     if (aCellInfo.getTableNodeInfo())
                     {
-                        if (m_pNodeInfo == NULL)
+                        if (m_pNodeInfo == nullptr)
                             aRet = true;
                         else
                         {
@@ -1098,12 +1098,12 @@ CellInfoMultiSet::const_iterator WW8TableCellGrid::getCellsEnd(long nTop)
 
 void WW8TableCellGrid::insert(const SwRect & rRect,
                               WW8TableNodeInfo * pNodeInfo,
-                              unsigned long * pFormatFrmWidth)
+                              unsigned long * pFormatFrameWidth)
 {
     CellInfo aCellInfo(rRect, pNodeInfo);
 
-    if (pFormatFrmWidth != NULL)
-        aCellInfo.setFormatFrmWidth(*pFormatFrmWidth);
+    if (pFormatFrameWidth != nullptr)
+        aCellInfo.setFormatFrameWidth(*pFormatFrameWidth);
 
     WW8TableCellGridRow::Pointer_t pRow = getRow(rRect.Top());
     pRow->insert(aCellInfo);
@@ -1143,8 +1143,8 @@ void WW8TableCellGrid::addShadowCells()
                     *aRowSpanIt < aCellIt->bottom())
                 {
                     aRect.Top(*aRowSpanIt);
-                    unsigned long nFormatFrmWidth = aCellIt->getFormatFrmWidth();
-                    insert(aRect, NULL, &nFormatFrmWidth);
+                    unsigned long nFormatFrameWidth = aCellIt->getFormatFrameWidth();
+                    insert(aRect, nullptr, &nFormatFrameWidth);
 
                     bVertMerge = true;
                 }
@@ -1179,7 +1179,7 @@ void WW8TableCellGrid::addShadowCells()
         }
 
         WW8TableCellGridRow::Pointer_t pRow = getRow(*aTopsIt);
-        if (pRow.get() != NULL)
+        if (pRow.get() != nullptr)
             pRow->setRowSpans(pRowSpans);
 
         ++aTopsIt;
@@ -1191,7 +1191,7 @@ WW8TableNodeInfo * WW8TableCellGrid::connectCells(RowEndInners_t &rLastRowEnds)
 {
     RowTops_t::const_iterator aTopsIt = getRowTopsBegin();
     sal_uInt32 nRow = 0;
-    WW8TableNodeInfo * pLastNodeInfo = NULL;
+    WW8TableNodeInfo * pLastNodeInfo = nullptr;
 
     while (aTopsIt != getRowTopsEnd())
     {
@@ -1203,7 +1203,7 @@ WW8TableNodeInfo * WW8TableCellGrid::connectCells(RowEndInners_t &rLastRowEnds)
         sal_uInt32 nShadows = 0;
         sal_uInt32 nCell = 0;
         bool bBeginningOfCell = true;
-        WW8TableNodeInfo * pEndOfCellInfo = NULL;
+        WW8TableNodeInfo * pEndOfCellInfo = nullptr;
         sal_uInt32 nDepthInCell = 0;
         while (aCellIt != aCellEndIt)
         {
@@ -1216,7 +1216,7 @@ WW8TableNodeInfo * WW8TableCellGrid::connectCells(RowEndInners_t &rLastRowEnds)
                 if (pNode->IsStartNode())
                 {
                     nDepthInCell++;
-                    pEndOfCellInfo = NULL;
+                    pEndOfCellInfo = nullptr;
                 }
 
                 if (nDepthInCell == 1 && pNode->IsTextNode())
@@ -1248,12 +1248,12 @@ WW8TableNodeInfo * WW8TableCellGrid::connectCells(RowEndInners_t &rLastRowEnds)
 
             if (bBeginningOfCell)
             {
-                pWidths->push_back(aCellIt->getFormatFrmWidth());
+                pWidths->push_back(aCellIt->getFormatFrameWidth());
 
                 if (pNodeInfo)
                     pTableBoxes->push_back(pNodeInfo->getTableBox());
                 else
-                    pTableBoxes->push_back(NULL);
+                    pTableBoxes->push_back(nullptr);
             }
 
             ++aCellIt;
@@ -1269,7 +1269,7 @@ WW8TableNodeInfo * WW8TableCellGrid::connectCells(RowEndInners_t &rLastRowEnds)
                     pEndOfCellInfo->setEndOfCell(true);
                 }
 
-                pEndOfCellInfo = NULL;
+                pEndOfCellInfo = nullptr;
             }
         }
 
@@ -1330,7 +1330,7 @@ WW8TableNodeInfo * WW8TableCellGrid::connectCells(RowEndInners_t &rLastRowEnds)
 
         WW8TableCellGridRow::Pointer_t pRow = getRow(*aTopsIt);
         WidthsPtr pWidths = pRow->getWidths();
-        if (pWidths != 0)
+        if (pWidths != nullptr)
         {
             sResult += "<widths>";
 
@@ -1350,7 +1350,7 @@ WW8TableNodeInfo * WW8TableCellGrid::connectCells(RowEndInners_t &rLastRowEnds)
         }
 
         RowSpansPtr pRowSpans = pRow->getRowSpans();
-        if (pRowSpans.get() != NULL)
+        if (pRowSpans.get() != nullptr)
         {
             sResult += "<rowspans>";
 
@@ -1386,7 +1386,7 @@ TableBoxVectorPtr WW8TableCellGrid::getTableBoxesOfRow
     WW8TableCellGridRow::Pointer_t pRow =
         getRow(pNodeInfoInner->getRect().Top(), false);
 
-    if (pRow.get() != NULL)
+    if (pRow.get() != nullptr)
     {
         pResult = pRow->getTableBoxVector();
     }
@@ -1402,7 +1402,7 @@ WidthsPtr WW8TableCellGrid::getWidthsOfRow
     WW8TableCellGridRow::Pointer_t pRow =
         getRow(pNodeInfoInner->getRect().Top(), false);
 
-    if (pRow.get() != NULL)
+    if (pRow.get() != nullptr)
     {
         pResult = pRow->getWidths();
     }
@@ -1418,7 +1418,7 @@ RowSpansPtr WW8TableCellGrid::getRowSpansOfRow
     WW8TableCellGridRow::Pointer_t pRow =
         getRow(pNodeInfoInner->getRect().Top(), false);
 
-    if (pRow.get() != NULL)
+    if (pRow.get() != nullptr)
     {
         pResult = pRow->getRowSpans();
     }
@@ -1475,15 +1475,15 @@ void WW8TableCellGridRow::setRowSpans(RowSpansPtr pRowSpans)
 
 
 CellInfo::CellInfo(const SwRect & aRect, WW8TableNodeInfo * pNodeInfo)
-: m_aRect(aRect), m_pNodeInfo(pNodeInfo), m_nFormatFrmWidth(0)
+: m_aRect(aRect), m_pNodeInfo(pNodeInfo), m_nFormatFrameWidth(0)
 {
-    if (pNodeInfo != NULL)
+    if (pNodeInfo != nullptr)
     {
         const SwTableBox * pBox = pNodeInfo->getTableBox();
         const SwFrameFormat * pFrameFormat = pBox->GetFrameFormat();
-        const SwFormatFrmSize & rSize = pFrameFormat->GetFrmSize();
+        const SwFormatFrameSize & rSize = pFrameFormat->GetFrameSize();
 
-        m_nFormatFrmWidth = rSize.GetWidth();
+        m_nFormatFrameWidth = rSize.GetWidth();
     }
 }
 

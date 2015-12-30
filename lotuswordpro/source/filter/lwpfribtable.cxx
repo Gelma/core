@@ -72,12 +72,14 @@ void LwpFribTable::Read(LwpObjectStream* pObjStrm, sal_uInt16 /*len*/)
 
 LwpSuperTableLayout* LwpFribTable::GetSuperTable()
 {
-    return static_cast<LwpSuperTableLayout*>(m_objTable.obj().get());
+    return dynamic_cast<LwpSuperTableLayout*>(m_objTable.obj().get());
 }
 
 void LwpFribTable::RegisterNewStyle()
 {
-    GetSuperTable()->RegisterNewStyle();
+    LwpSuperTableLayout* pSuper = GetSuperTable();
+    if (pSuper)
+        pSuper->RegisterNewStyle();
     XFParaStyle* pOldStyle = m_pPara->GetXFParaStyle();
     if(HasNextFrib())
     {
@@ -97,17 +99,19 @@ void LwpFribTable::XFConvert(XFContentContainer* pCont)
 {
     XFContentContainer* pXFContentContainer = pCont;
     LwpSuperTableLayout* pSuper = GetSuperTable();
+    if (!pSuper)
+        return;
     sal_uInt8 nType = pSuper->GetRelativeType();
-    LwpVirtualLayout* pContainer = pSuper->GetContainerLayout();
-    if (!pContainer)
+    rtl::Reference<LwpVirtualLayout> xContainer(pSuper->GetContainerLayout());
+    if (!xContainer.is())
         return;
     if ( LwpLayoutRelativityGuts::LAY_INLINE_NEWLINE == nType
-        && !pContainer->IsCell())
+        && !xContainer->IsCell())
     {
         pXFContentContainer = m_pPara->GetXFContainer();
         //delete the additional blank para
         XFParagraph* pCurrPara = m_pPara->GetFribs().GetXFPara();
-        if(!pCurrPara->HasContents())
+        if (pXFContentContainer && !pCurrPara->HasContents())
         {
             if(pXFContentContainer->GetLastContent() == pCurrPara)
             {
@@ -118,11 +122,11 @@ void LwpFribTable::XFConvert(XFContentContainer* pCont)
     else if( LwpLayoutRelativityGuts::LAY_PARA_RELATIVE == nType)
     {
         //same page as text and in frame
-        if(pContainer->IsFrame())
+        if (xContainer->IsFrame())
         {
             pXFContentContainer = m_pPara->GetXFContainer();
         }
-        else if(pContainer->IsCell())
+        else if (xContainer->IsCell())
         {
             //same page as text and in cell, get the first xfpara
             rtl::Reference<XFContent> first(
@@ -138,18 +142,20 @@ void LwpFribTable::XFConvert(XFContentContainer* pCont)
         LwpGlobalMgr* pGlobal = LwpGlobalMgr::GetInstance();
         LwpChangeMgr* pChangeMgr = pGlobal->GetLwpChangeMgr();
         sChangeID = pChangeMgr->GetChangeID(this);
-        if (!sChangeID.isEmpty())
+        if (!sChangeID.isEmpty() && pXFContentContainer)
         {
             XFChangeStart* pChangeStart = new XFChangeStart;
             pChangeStart->SetChangeID(sChangeID);
             pXFContentContainer->Add(pChangeStart);
         }
     }
-    pSuper->XFConvert(pXFContentContainer);
+
+    if (pXFContentContainer)
+        pSuper->XFConvert(pXFContentContainer);
 
     if(m_bRevisionFlag)
     {
-        if (!sChangeID.isEmpty())
+        if (!sChangeID.isEmpty() && pXFContentContainer)
         {
             XFChangeEnd* pChangeEnd = new XFChangeEnd;
             pChangeEnd->SetChangeID(sChangeID);

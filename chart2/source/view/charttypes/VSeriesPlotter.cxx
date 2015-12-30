@@ -60,6 +60,7 @@
 #include <com/sun/star/chart2/RelativePosition.hpp>
 #include <editeng/unoprnms.hxx>
 #include <tools/color.hxx>
+#include <o3tl/make_unique.hxx>
 #include <rtl/ustrbuf.hxx>
 #include <rtl/math.hxx>
 #include <basegfx/vector/b2dvector.hxx>
@@ -78,12 +79,12 @@
 #include <com/sun/star/drawing/TextFitToSizeType.hpp>
 
 #include <svx/unoshape.hxx>
+#include <comphelper/sequence.hxx>
 
 #include <functional>
 #include <map>
 #include <unordered_map>
 
-#include <boost/ptr_container/ptr_map.hpp>
 
 namespace chart {
 
@@ -145,7 +146,7 @@ sal_Int32 VDataSeriesGroup::getSeriesCount() const
 VSeriesPlotter::VSeriesPlotter( const uno::Reference<XChartType>& xChartTypeModel
                                , sal_Int32 nDimensionCount, bool bCategoryXAxis )
         : PlotterBase( nDimensionCount )
-        , m_pMainPosHelper( 0 )
+        , m_pMainPosHelper( nullptr )
         , m_xChartTypeModel(xChartTypeModel)
         , m_xChartTypeModelProps( uno::Reference< beans::XPropertySet >::query( xChartTypeModel ))
         , m_aZSlots()
@@ -153,7 +154,7 @@ VSeriesPlotter::VSeriesPlotter( const uno::Reference<XChartType>& xChartTypeMode
         , m_nTimeResolution(::com::sun::star::chart::TimeUnit::DAY)
         , m_aNullDate(30,12,1899)
         , m_xColorScheme()
-        , m_pExplicitCategoriesProvider(0)
+        , m_pExplicitCategoriesProvider(nullptr)
         , m_bPointsWereSkipped(false)
 {
     SAL_WARN_IF(!m_xChartTypeModel.is(),"chart2","no XChartType available in view, fallback to default values may be wrong");
@@ -864,7 +865,7 @@ drawing::Position3D lcl_transformMixedToScene( PlottingPositionHelper* pPosHelpe
 {
     if(!pPosHelper)
         return drawing::Position3D(0,0,0);
-    pPosHelper->doLogicScaling( 0,&fY,&fZ );
+    pPosHelper->doLogicScaling( nullptr,&fY,&fZ );
     if(bClip)
         pPosHelper->clipScaledLogicValues( &fX,&fY,&fZ );
     return pPosHelper->transformScaledLogicToScene( fX, fY, fZ, false );
@@ -926,7 +927,7 @@ void VSeriesPlotter::createErrorBar(
         if( pfScaledLogicX )
             fScaledX = *pfScaledLogicX;
         else
-            m_pPosHelper->doLogicScaling( &fScaledX, 0, 0 );
+            m_pPosHelper->doLogicScaling( &fScaledX, nullptr, nullptr );
 
         aMiddle = lcl_transformMixedToScene( m_pPosHelper, fScaledX, fY, fZ, true );
 
@@ -1090,7 +1091,7 @@ void VSeriesPlotter::createRegressionCurvesShapes( VDataSeries& rVDataSeries,
         sal_Int32 aPeriod = 2;
         double aExtrapolateForward = 0.0;
         double aExtrapolateBackward = 0.0;
-        bool aForceIntercept = false;
+        bool bForceIntercept = false;
         double aInterceptValue = 0.0;
 
         if ( xProperties.is() && !bAverageLine )
@@ -1099,8 +1100,8 @@ void VSeriesPlotter::createRegressionCurvesShapes( VDataSeries& rVDataSeries,
             xProperties->getPropertyValue( "MovingAveragePeriod") >>= aPeriod;
             xProperties->getPropertyValue( "ExtrapolateForward") >>= aExtrapolateForward;
             xProperties->getPropertyValue( "ExtrapolateBackward") >>= aExtrapolateBackward;
-            xProperties->getPropertyValue( "ForceIntercept") >>= aForceIntercept;
-            if (aForceIntercept)
+            xProperties->getPropertyValue( "ForceIntercept") >>= bForceIntercept;
+            if (bForceIntercept)
                 xProperties->getPropertyValue( "InterceptValue") >>= aInterceptValue;
         }
 
@@ -1121,7 +1122,7 @@ void VSeriesPlotter::createRegressionCurvesShapes( VDataSeries& rVDataSeries,
             fPointScale = (fMaxX - fMinX) / (fChartMaxX - fChartMinX);
         }
 
-        xCalculator->setRegressionProperties(aDegree, aForceIntercept, aInterceptValue, aPeriod);
+        xCalculator->setRegressionProperties(aDegree, bForceIntercept, aInterceptValue, aPeriod);
         xCalculator->recalculateRegression( rVDataSeries.getAllX(), rVDataSeries.getAllY() );
         sal_Int32 nPointCount = 100 * fPointScale;
 
@@ -1683,9 +1684,9 @@ class PerXMinMaxCalculator
 {
     typedef std::pair<double, double> MinMaxType;
     typedef std::map<size_t, MinMaxType> SeriesMinMaxType;
-    typedef boost::ptr_map<double, SeriesMinMaxType> GroupMinMaxType;
+    typedef std::map<double, std::unique_ptr<SeriesMinMaxType>> GroupMinMaxType;
     typedef std::unordered_map<double, MinMaxType> TotalStoreType;
-    GroupMinMaxType maSeriesGroup;
+    GroupMinMaxType m_SeriesGroup;
     size_t mnCurSeries;
 
 public:
@@ -1750,12 +1751,11 @@ private:
     void getTotalStore(TotalStoreType& rStore) const
     {
         TotalStoreType aStore;
-        GroupMinMaxType::const_iterator it = maSeriesGroup.begin(), itEnd = maSeriesGroup.end();
-        for (; it != itEnd; ++it)
+        for (auto const& it : m_SeriesGroup)
         {
-            double fX = it->first;
+            double fX = it.first;
 
-            const SeriesMinMaxType& rSeries = *it->second;
+            const SeriesMinMaxType& rSeries = *it.second;
             SeriesMinMaxType::const_iterator itSeries = rSeries.begin(), itSeriesEnd = rSeries.end();
             for (; itSeries != itSeriesEnd; ++itSeries)
             {
@@ -1780,20 +1780,20 @@ private:
 
     SeriesMinMaxType* getByXValue(double fX)
     {
-        GroupMinMaxType::iterator it = maSeriesGroup.find(fX);
-        if (it == maSeriesGroup.end())
+        GroupMinMaxType::iterator it = m_SeriesGroup.find(fX);
+        if (it == m_SeriesGroup.end())
         {
             std::pair<GroupMinMaxType::iterator,bool> r =
-                maSeriesGroup.insert(fX, new SeriesMinMaxType);
+                m_SeriesGroup.insert(std::make_pair(fX, o3tl::make_unique<SeriesMinMaxType>()));
 
             if (!r.second)
                 // insertion failed.
-                return NULL;
+                return nullptr;
 
             it = r.first;
         }
 
-        return it->second;
+        return it->second.get();
     }
 };
 
@@ -1965,8 +1965,8 @@ double VSeriesPlotter::getTransformedDepth() const
 {
     double MinZ = m_pMainPosHelper->getLogicMinZ();
     double MaxZ = m_pMainPosHelper->getLogicMaxZ();
-    m_pMainPosHelper->doLogicScaling( 0, 0, &MinZ );
-    m_pMainPosHelper->doLogicScaling( 0, 0, &MaxZ );
+    m_pMainPosHelper->doLogicScaling( nullptr, nullptr, &MinZ );
+    m_pMainPosHelper->doLogicScaling( nullptr, nullptr, &MaxZ );
     return FIXED_SIZE_FOR_3D_CHART_VOLUME/(MaxZ-MinZ);
 }
 
@@ -1981,7 +1981,7 @@ void VSeriesPlotter::addSecondaryValueScale( const ExplicitScaleData& rScale, sa
 
 PlottingPositionHelper& VSeriesPlotter::getPlottingPositionHelper( sal_Int32 nAxisIndex ) const
 {
-    PlottingPositionHelper* pRet = 0;
+    PlottingPositionHelper* pRet = nullptr;
     if(nAxisIndex>0)
     {
         tSecondaryPosHelperMap::const_iterator aPosIt = m_aSecondaryPosHelperMap.find( nAxisIndex );
@@ -2030,7 +2030,7 @@ VDataSeries* VSeriesPlotter::getFirstSeries() const
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 uno::Sequence< OUString > VSeriesPlotter::getSeriesNames() const
@@ -2054,7 +2054,7 @@ uno::Sequence< OUString > VSeriesPlotter::getSeriesNames() const
             if( aSeriesGroup.m_aSeriesVector.size() )
             {
                 VDataSeries* pSeries = aSeriesGroup.m_aSeriesVector[0];
-                uno::Reference< XDataSeries > xSeries( pSeries ? pSeries->getModel() : 0 );
+                uno::Reference< XDataSeries > xSeries( pSeries ? pSeries->getModel() : nullptr );
                 if( xSeries.is() )
                 {
                     OUString aSeriesName( DataSeriesHelper::getDataSeriesLabel( xSeries, aRole ) );
@@ -2063,7 +2063,7 @@ uno::Sequence< OUString > VSeriesPlotter::getSeriesNames() const
             }
         }
     }
-    return ContainerHelper::ContainerToSequence( aRetVector );
+    return comphelper::containerToSequence( aRetVector );
 }
 
 namespace
@@ -2417,7 +2417,7 @@ std::vector< ViewLegendEntry > VSeriesPlotter::createLegendEntriesForSeries(
                 // set CID to symbol for selection
                 if( xShape.is() )
                 {
-                    aEntry.aSymbol = uno::Reference< drawing::XShape >( xSymbolGroup, uno::UNO_QUERY );
+                    aEntry.aSymbol.set( xSymbolGroup, uno::UNO_QUERY );
 
                     OUString aChildParticle( ObjectIdentifier::createChildParticleWithIndex( OBJECTTYPE_DATA_POINT, nIdx ) );
                     aChildParticle = ObjectIdentifier::addChildParticle( aChildParticle, ObjectIdentifier::createChildParticleWithIndex( OBJECTTYPE_LEGEND_ENTRY, 0 ) );
@@ -2446,7 +2446,7 @@ std::vector< ViewLegendEntry > VSeriesPlotter::createLegendEntriesForSeries(
             // set CID to symbol for selection
             if( xShape.is())
             {
-                aEntry.aSymbol = uno::Reference< drawing::XShape >( xSymbolGroup, uno::UNO_QUERY );
+                aEntry.aSymbol.set( xSymbolGroup, uno::UNO_QUERY );
 
                 OUString aChildParticle( ObjectIdentifier::createChildParticleWithIndex( OBJECTTYPE_LEGEND_ENTRY, 0 ) );
                 OUString aCID = ObjectIdentifier::createClassifiedIdentifierForParticles( rSeries.getSeriesParticle(), aChildParticle );
@@ -2491,7 +2491,7 @@ std::vector< ViewLegendEntry > VSeriesPlotter::createLegendEntriesForSeries(
                     // set CID to symbol for selection
                     if( xShape.is())
                     {
-                        aEntry.aSymbol = uno::Reference< drawing::XShape >( xSymbolGroup, uno::UNO_QUERY );
+                        aEntry.aSymbol.set( xSymbolGroup, uno::UNO_QUERY );
 
                         bool bAverageLine = RegressionCurveHelper::isMeanValueLine( aCurves[i] );
                         ObjectType eObjectType = bAverageLine ? OBJECTTYPE_DATA_AVERAGE_LINE : OBJECTTYPE_DATA_CURVE;
@@ -2519,11 +2519,11 @@ VSeriesPlotter* VSeriesPlotter::createSeriesPlotter(
     , bool bExcludingPositioning )
 {
     if (!xChartTypeModel.is())
-        return NULL;
+        return nullptr;
 
     OUString aChartType = xChartTypeModel->getChartType();
 
-    VSeriesPlotter* pRet=NULL;
+    VSeriesPlotter* pRet=nullptr;
     if( aChartType.equalsIgnoreAsciiCase( CHART2_SERVICE_NAME_CHARTTYPE_COLUMN ) )
         pRet = new BarChart(xChartTypeModel,nDimensionCount);
     else if( aChartType.equalsIgnoreAsciiCase( CHART2_SERVICE_NAME_CHARTTYPE_BAR ) )

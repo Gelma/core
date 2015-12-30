@@ -121,7 +121,7 @@ sal_Bool SAL_CALL ViewShellWrapper::isAnchorOnly()
 
 //----- XSelectionSupplier --------------------------------------------------
 
-sal_Bool SAL_CALL ViewShellWrapper::select( const ::com::sun::star::uno::Any& aSelection ) throw(lang::IllegalArgumentException, uno::RuntimeException, std::exception)
+sal_Bool SAL_CALL ViewShellWrapper::select( const css::uno::Any& aSelection ) throw(lang::IllegalArgumentException, uno::RuntimeException, std::exception)
 {
     if (!mpSlideSorterViewShell)
         return false;
@@ -206,17 +206,17 @@ sal_Bool SAL_CALL ViewShellWrapper::relocateToAnchor (
         Reference<awt::XWindow> xWindow (mxWindow);
         if (xWindow.is())
             xWindow->removeWindowListener(this);
-        mxWindow = NULL;
+        mxWindow = nullptr;
 
-        if (mpViewShell.get() != NULL)
+        if (mpViewShell.get() != nullptr)
         {
             vcl::Window* pWindow = VCLUnoHelper::GetWindow(xPane->getWindow());
-            if (pWindow != NULL && mpViewShell->RelocateToParentWindow(pWindow))
+            if (pWindow != nullptr && mpViewShell->RelocateToParentWindow(pWindow))
             {
                 bResult = true;
 
                 // Attach to the window of the new pane.
-                xWindow = Reference<awt::XWindow>(xPane->getWindow(), UNO_QUERY);
+                xWindow.set(xPane->getWindow(), UNO_QUERY);
                 if (xWindow.is())
                 {
                     xWindow->addWindowListener(this);
@@ -262,7 +262,7 @@ void SAL_CALL ViewShellWrapper::windowResized (const awt::WindowEvent& rEvent)
 {
     (void)rEvent;
     ViewShell* pViewShell (mpViewShell.get());
-    if (pViewShell != NULL)
+    if (pViewShell != nullptr)
         pViewShell->Resize();
 }
 
@@ -277,7 +277,7 @@ void SAL_CALL ViewShellWrapper::windowShown (const lang::EventObject& rEvent)
 {
     (void)rEvent;
     ViewShell* pViewShell (mpViewShell.get());
-    if (pViewShell != NULL)
+    if (pViewShell != nullptr)
         pViewShell->Resize();
 }
 
@@ -293,7 +293,7 @@ void SAL_CALL ViewShellWrapper::disposing (const lang::EventObject& rEvent)
     throw (RuntimeException, std::exception)
 {
     if (rEvent.Source == mxWindow)
-        mxWindow = NULL;
+        mxWindow = nullptr;
 }
 
 } } // end of namespace sd::framework

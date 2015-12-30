@@ -124,8 +124,7 @@ sal_Bool SAL_CALL DatabaseDataProvider::supportsService( const OUString& _rServi
 
 uno::Sequence< OUString > DatabaseDataProvider::getSupportedServiceNames_Static(  ) throw (uno::RuntimeException)
 {
-    uno::Sequence< OUString > aSNS( 1 );
-    aSNS[0] = "com.sun.star.chart2.data.DatabaseDataProvider";
+    uno::Sequence<OUString> aSNS { "com.sun.star.chart2.data.DatabaseDataProvider" };
     return aSNS;
 }
 
@@ -449,7 +448,7 @@ uno::Sequence< OUString > SAL_CALL DatabaseDataProvider::getMasterFields() throw
 void SAL_CALL DatabaseDataProvider::setMasterFields(const uno::Sequence< OUString > & the_value) throw (uno::RuntimeException, std::exception)
 {
     impl_invalidateParameter_nothrow();
-    set(OUString("MasterFields"),the_value,m_MasterFields);
+    set("MasterFields",the_value,m_MasterFields);
 }
 
 uno::Sequence< OUString > SAL_CALL DatabaseDataProvider::getDetailFields() throw (uno::RuntimeException, std::exception)

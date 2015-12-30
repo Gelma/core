@@ -69,14 +69,14 @@ static const sal_Unicode cNarrowNoBreakSpace = 0x202F;
 
 ImpSvNumberInputScan::ImpSvNumberInputScan( SvNumberFormatter* pFormatterP )
         :
-        pUpperMonthText( NULL ),
-        pUpperAbbrevMonthText( NULL ),
-        pUpperGenitiveMonthText( NULL ),
-        pUpperGenitiveAbbrevMonthText( NULL ),
-        pUpperPartitiveMonthText( NULL ),
-        pUpperPartitiveAbbrevMonthText( NULL ),
-        pUpperDayText( NULL ),
-        pUpperAbbrevDayText( NULL ),
+        pUpperMonthText( nullptr ),
+        pUpperAbbrevMonthText( nullptr ),
+        pUpperGenitiveMonthText( nullptr ),
+        pUpperGenitiveAbbrevMonthText( nullptr ),
+        pUpperPartitiveMonthText( nullptr ),
+        pUpperPartitiveAbbrevMonthText( nullptr ),
+        pUpperDayText( nullptr ),
+        pUpperAbbrevDayText( nullptr ),
         bTextInitialized( false ),
         bScanGenitiveMonths( false ),
         bScanPartitiveMonths( false ),
@@ -3335,8 +3335,7 @@ void ImpSvNumberInputScan::InitText()
 
     delete [] pUpperMonthText;
     delete [] pUpperAbbrevMonthText;
-    ::com::sun::star::uno::Sequence< ::com::sun::star::i18n::CalendarItem2 > xElems
-        = pCal->getMonths();
+    css::uno::Sequence< css::i18n::CalendarItem2 > xElems = pCal->getMonths();
     nElems = xElems.getLength();
     pUpperMonthText = new OUString[nElems];
     pUpperAbbrevMonthText = new OUString[nElems];
@@ -3418,7 +3417,7 @@ void ImpSvNumberInputScan::InvalidateDateAcceptancePatterns()
 {
     if (sDateAcceptancePatterns.getLength())
     {
-        sDateAcceptancePatterns = ::com::sun::star::uno::Sequence< OUString >();
+        sDateAcceptancePatterns = css::uno::Sequence< OUString >();
     }
 }
 
@@ -3714,7 +3713,7 @@ bool ImpSvNumberInputScan::IsNumberFormat( const OUString& rString,         // s
                 }
                 sResString.append(sStrArray[nNums[nAnzNums-1]]);
                 rtl_math_ConversionStatus eStatus;
-                fOutNumber = ::rtl::math::stringToDouble( sResString.makeStringAndClear(), '.', ',', &eStatus, NULL );
+                fOutNumber = ::rtl::math::stringToDouble( sResString.makeStringAndClear(), '.', ',', &eStatus );
                 if ( eStatus == rtl_math_ConversionStatus_OutOfRange )
                 {
                     F_Type = css::util::NumberFormat::TEXT;         // overflow/underflow -> Text

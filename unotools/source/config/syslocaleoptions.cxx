@@ -38,7 +38,7 @@ using namespace utl;
 using namespace com::sun::star::uno;
 using namespace com::sun::star::lang;
 
-SvtSysLocaleOptions_Impl*   SvtSysLocaleOptions::pOptions = NULL;
+SvtSysLocaleOptions_Impl*   SvtSysLocaleOptions::pOptions = nullptr;
 sal_Int32                   SvtSysLocaleOptions::nRefCount = 0;
 namespace
 {
@@ -68,13 +68,13 @@ class SvtSysLocaleOptions_Impl : public utl::ConfigItem
         void                    MakeRealLocale();
         void                    MakeRealUILocale();
 
-    virtual void                ImplCommit() SAL_OVERRIDE;
+    virtual void                ImplCommit() override;
 
 public:
                                 SvtSysLocaleOptions_Impl();
     virtual                     ~SvtSysLocaleOptions_Impl();
 
-    virtual void                Notify( const com::sun::star::uno::Sequence< OUString >& aPropertyNames ) SAL_OVERRIDE;
+    virtual void                Notify( const css::uno::Sequence< OUString >& aPropertyNames ) override;
 
             const OUString&     GetLocaleString() const
                                     { return m_aLocaleString; }
@@ -530,14 +530,14 @@ SvtSysLocaleOptions::~SvtSysLocaleOptions()
     if ( !--nRefCount )
     {
         delete pOptions;
-        pOptions = NULL;
+        pOptions = nullptr;
     }
 }
 
 // static
 Mutex& SvtSysLocaleOptions::GetMutex()
 {
-    static Mutex* pMutex = NULL;
+    static Mutex* pMutex = nullptr;
     if( !pMutex )
     {
         MutexGuard aGuard( Mutex::getGlobalMutex() );
@@ -698,8 +698,7 @@ void SvtSysLocaleOptions::ConfigurationChanged( utl::ConfigurationBroadcaster* p
     if ( nHint & SYSLOCALEOPTIONS_HINT_CURRENCY )
     {
         const Link<LinkParamNone*,void>& rLink = GetCurrencyChangeLink();
-        if ( rLink.IsSet() )
-            rLink.Call( NULL );
+        rLink.Call( nullptr );
     }
 
     ::utl::detail::Options::ConfigurationChanged( p, nHint );

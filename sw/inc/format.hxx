@@ -63,14 +63,13 @@ class SW_DLLPUBLIC SwFormat : public SwModify
 
 protected:
     SwFormat( SwAttrPool& rPool, const sal_Char* pFormatNm,
-            const sal_uInt16* pWhichRanges, SwFormat *pDrvdFrm, sal_uInt16 nFormatWhich );
+            const sal_uInt16* pWhichRanges, SwFormat *pDrvdFrame, sal_uInt16 nFormatWhich );
     SwFormat( SwAttrPool& rPool, const OUString &rFormatNm, const sal_uInt16* pWhichRanges,
-            SwFormat *pDrvdFrm, sal_uInt16 nFormatWhich );
+            SwFormat *pDrvdFrame, sal_uInt16 nFormatWhich );
     SwFormat( const SwFormat& rFormat );
-   virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNewValue ) SAL_OVERRIDE;
+   virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNewValue ) override;
 
 public:
-    TYPEINFO_OVERRIDE();     ///< Already in base class Client.
 
     virtual ~SwFormat();
     SwFormat &operator=(const SwFormat&);
@@ -79,7 +78,7 @@ public:
     sal_uInt16 Which() const { return m_nWhichId; }
 
     /// Query format information.
-    virtual bool GetInfo( SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual bool GetInfo( SfxPoolItem& ) const override;
 
     /// Copy attributes even among documents.
     void CopyAttrs( const SwFormat&, bool bReplace=true );
@@ -89,7 +88,7 @@ public:
     void DelDiffs( const SwFormat& rFormat ) { DelDiffs( rFormat.GetAttrSet() ); }
 
     /// 0 is Default.
-    bool SetDerivedFrom(SwFormat *pDerivedFrom = 0);
+    bool SetDerivedFrom(SwFormat *pDerivedFrom = nullptr);
 
     /// If bInParents is FALSE, search only in this format for attribute.
     //UUUUinline
@@ -97,7 +96,7 @@ public:
                                    bool bInParents = true ) const;
     //UUUUinline
     SfxItemState GetItemState( sal_uInt16 nWhich, bool bSrchInParent = true,
-                                    const SfxPoolItem **ppItem = 0 ) const;
+                                    const SfxPoolItem **ppItem = nullptr ) const;
     SfxItemState GetBackgroundState(SvxBrushItem &rItem,
                                     bool bSrchInParent = true) const;
     virtual bool SetFormatAttr( const SfxPoolItem& rAttr );
@@ -109,7 +108,7 @@ public:
     virtual sal_uInt16 ResetAllFormatAttr();
 
     inline SwFormat* DerivedFrom() const { return const_cast<SwFormat*>(static_cast<const SwFormat*>(GetRegisteredIn())); }
-    inline bool IsDefault() const { return DerivedFrom() == 0; }
+    inline bool IsDefault() const { return DerivedFrom() == nullptr; }
 
     inline OUString GetName() const                  { return m_aFormatName; }
     inline bool HasName(const OUString &rName) const { return m_aFormatName == rName; }
@@ -168,8 +167,8 @@ public:
     bool IsHidden() const               { return m_bHidden; }
     void SetHidden( bool bValue )       { m_bHidden = bValue; }
 
-    void GetGrabBagItem(com::sun::star::uno::Any& rVal) const;
-    void SetGrabBagItem(const com::sun::star::uno::Any& rVal);
+    void GetGrabBagItem(css::uno::Any& rVal) const;
+    void SetGrabBagItem(const css::uno::Any& rVal);
 
     /// Query / set bAutoUpdateFormat-flag.
     bool IsAutoUpdateFormat() const                { return m_bAutoUpdateFormat; }
@@ -191,7 +190,7 @@ public:
 
     /// Frame-attributes - implemented in frmatr.hxx.
     inline const SwFormatFillOrder           &GetFillOrder( bool = true ) const;
-    inline const SwFormatFrmSize             &GetFrmSize( bool = true ) const;
+    inline const SwFormatFrameSize             &GetFrameSize( bool = true ) const;
     inline const SwFormatHeader          &GetHeader( bool = true ) const;
     inline const SwFormatFooter          &GetFooter( bool = true ) const;
     inline const SwFormatSurround            &GetSurround( bool = true ) const;
@@ -224,7 +223,7 @@ public:
     inline const SwFormatFootnoteAtTextEnd     &GetFootnoteAtTextEnd( bool = true ) const;
     inline const SwFormatEndAtTextEnd     &GetEndAtTextEnd( bool = true ) const;
     inline const SwFormatNoBalancedColumns &GetBalancedColumns( bool = true ) const;
-    inline const SvxFrameDirectionItem    &GetFrmDir( bool = true ) const;
+    inline const SvxFrameDirectionItem    &GetFrameDir( bool = true ) const;
     inline const SwTextGridItem         &GetTextGrid( bool = true ) const;
     inline const SwHeaderAndFooterEatSpacingItem &GetHeaderAndFooterEatSpacing( bool = true ) const;
     // #i18732#

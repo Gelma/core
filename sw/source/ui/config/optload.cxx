@@ -64,7 +64,7 @@ using namespace ::com::sun::star;
 
 SwLoadOptPage::SwLoadOptPage(vcl::Window* pParent, const SfxItemSet& rSet)
     : SfxTabPage(pParent, "OptGeneralPage", "modules/swriter/ui/optgeneralpage.ui", &rSet)
-    , m_pWrtShell(NULL)
+    , m_pWrtShell(nullptr)
     , m_nLastTab(0)
     , m_nOldLinkMode(MANUAL)
 {
@@ -352,7 +352,7 @@ void SwLoadOptPage::Reset( const SfxItemSet* rSet)
     m_pStandardizedPageSizeNF->Enable(m_pShowStandardizedPageCount->IsChecked());
 }
 
-IMPL_LINK_NOARG(SwLoadOptPage, MetricHdl)
+IMPL_LINK_NOARG_TYPED(SwLoadOptPage, MetricHdl, ListBox&, void)
 {
     const sal_Int32 nMPos = m_pMetricLB->GetSelectEntryPos();
     if(nMPos != LISTBOX_ENTRY_NOTFOUND)
@@ -368,8 +368,6 @@ IMPL_LINK_NOARG(SwLoadOptPage, MetricHdl)
         if(!bModified)
             m_pTabMF->ClearModifyFlag();
     }
-
-    return 0;
 }
 
 SwCaptionOptDlg::SwCaptionOptDlg(vcl::Window* pParent, const SfxItemSet& rSet)
@@ -528,14 +526,13 @@ SwCaptionOptPage::SwCaptionOptPage(vcl::Window* pParent, const SfxItemSet& rSet)
     m_pLbLevel->SelectEntryPos( nLvl < MAXLEVEL ? nLvl + 1 : 0 );
     m_pEdDelim->SetText( sDelim );
 
-    Link<> aLk = LINK( this, SwCaptionOptPage, ModifyHdl );
+    Link<Edit&,void> aLk = LINK( this, SwCaptionOptPage, ModifyHdl );
     m_pCategoryBox->SetModifyHdl( aLk );
     m_pNumberingSeparatorED->SetModifyHdl( aLk );
     m_pTextEdit->SetModifyHdl( aLk );
 
-    aLk = LINK(this, SwCaptionOptPage, SelectHdl);
-    m_pCategoryBox->SetSelectHdl( aLk );
-    m_pFormatBox->SetSelectHdl( aLk );
+    m_pCategoryBox->SetSelectHdl( LINK(this, SwCaptionOptPage, SelectHdl) );
+    m_pFormatBox->SetSelectHdl( LINK(this, SwCaptionOptPage, SelectListBoxHdl) );
 
     m_pLbCaptionOrder->SetSelectHdl( LINK(this, SwCaptionOptPage, OrderHdl));
 
@@ -650,7 +647,7 @@ void SwCaptionOptPage::Reset( const SfxItemSet* rSet)
     }
     m_pLbCaptionOrder->SelectEntryPos(
         SW_MOD()->GetModuleConfig()->IsCaptionOrderNumberingFirst() ? 1 : 0);
-    ModifyHdl();
+    ModifyHdl(*m_pCategoryBox);
 }
 
 void SwCaptionOptPage::SetOptions(const sal_uLong nPos,
@@ -675,7 +672,7 @@ void SwCaptionOptPage::DelUserData()
     while (pEntry)
     {
         delete static_cast<InsCaptionOpt*>(pEntry->GetUserData());
-        pEntry->SetUserData(0);
+        pEntry->SetUserData(nullptr);
         pEntry = m_pCheckLB->Next(pEntry);
     }
 }
@@ -768,9 +765,7 @@ IMPL_LINK_NOARG_TYPED(SwCaptionOptPage, ShowEntryHdl, SvTreeListBox*, void)
                 break;
         }
         m_pPosBox->SelectEntryPos(pOpt->GetPos());
-        m_pPosBox->Enable( pOpt->GetObjType() != GRAPHIC_CAP &&
-                pOpt->GetObjType() != OLE_CAP &&
-                m_pPosBox->IsEnabled() );
+        m_pPosBox->Enable( m_pPosBox->IsEnabled() );
         m_pPosBox->SelectEntryPos(pOpt->GetPos());
 
         sal_Int32 nLevelPos = ( pOpt->GetLevel() < MAXLEVEL ) ? pOpt->GetLevel() + 1 : 0;
@@ -786,7 +781,7 @@ IMPL_LINK_NOARG_TYPED(SwCaptionOptPage, ShowEntryHdl, SvTreeListBox*, void)
         m_pApplyBorderCB->Check( pOpt->CopyAttributes() );
     }
 
-    ModifyHdl();
+    ModifyHdl(*m_pCategoryBox);
 }
 
 IMPL_LINK_NOARG_TYPED(SwCaptionOptPage, SaveEntryHdl, SvTreeListBox*, void)
@@ -825,12 +820,12 @@ void SwCaptionOptPage::SaveEntry(SvTreeListEntry* pEntry)
     }
 }
 
-IMPL_LINK_NOARG(SwCaptionOptPage, ModifyHdl)
+IMPL_LINK_NOARG_TYPED(SwCaptionOptPage, ModifyHdl, Edit&, void)
 {
     const OUString sFieldTypeName = m_pCategoryBox->GetText();
 
     SfxSingleTabDialog *pDlg = dynamic_cast<SfxSingleTabDialog*>(GetParentDialog());
-    PushButton *pBtn = pDlg ? pDlg->GetOKButton() : NULL;
+    PushButton *pBtn = pDlg ? pDlg->GetOKButton() : nullptr;
     if (pBtn)
         pBtn->Enable(!sFieldTypeName.isEmpty());
     bool bEnable = m_pCategoryBox->IsEnabled() && sFieldTypeName != m_sNone;
@@ -841,16 +836,19 @@ IMPL_LINK_NOARG(SwCaptionOptPage, ModifyHdl)
     m_pTextEdit->Enable(bEnable);
 
     InvalidatePreview();
-    return 0;
 }
 
-IMPL_LINK_NOARG(SwCaptionOptPage, SelectHdl)
+IMPL_LINK_NOARG_TYPED(SwCaptionOptPage, SelectHdl, ComboBox&, void)
 {
     InvalidatePreview();
-    return 0;
 }
 
-IMPL_LINK( SwCaptionOptPage, OrderHdl, ListBox*, pBox )
+IMPL_LINK_NOARG_TYPED(SwCaptionOptPage, SelectListBoxHdl, ListBox&, void)
+{
+    InvalidatePreview();
+}
+
+IMPL_LINK_TYPED( SwCaptionOptPage, OrderHdl, ListBox&, rBox, void )
 {
     InvalidatePreview();
 
@@ -861,10 +859,9 @@ IMPL_LINK( SwCaptionOptPage, OrderHdl, ListBox*, pBox )
         bChecked = m_pCheckLB->IsChecked(m_pCheckLB->GetModel()->GetAbsPos(pSelEntry));
     }
 
-    sal_Int32 nPos = pBox->GetSelectEntryPos();
+    sal_Int32 nPos = rBox.GetSelectEntryPos();
     m_pNumberingSeparatorFT->Enable( bChecked && nPos == 1 );
     m_pNumberingSeparatorED->Enable( bChecked && nPos == 1 );
-    return 0;
 }
 
 void SwCaptionOptPage::InvalidatePreview()

@@ -134,7 +134,6 @@ sal_Int32 SAL_CALL OPoolCollection::getLoginTimeout(  ) throw(RuntimeException, 
 
 OUString SAL_CALL OPoolCollection::getImplementationName(  ) throw(RuntimeException, std::exception)
 {
-    MutexGuard aGuard(m_aMutex);
     return getImplementationName_Static();
 }
 
@@ -164,8 +163,7 @@ OUString SAL_CALL OPoolCollection::getImplementationName_Static(  ) throw(Runtim
 
 Sequence< OUString > SAL_CALL OPoolCollection::getSupportedServiceNames_Static(  ) throw(RuntimeException)
 {
-    Sequence< OUString > aSupported(1);
-    aSupported[0] = "com.sun.star.sdbc.ConnectionPool";
+    Sequence< OUString > aSupported { "com.sun.star.sdbc.ConnectionPool" };
     return aSupported;
 }
 
@@ -297,7 +295,7 @@ OConnectionPool* OPoolCollection::getConnectionPool(const OUString& _sImplName,
                                                     const Reference< XDriver >& _xDriver,
                                                     const Reference< XInterface >& _xDriverNode)
 {
-    OConnectionPool *pRet = 0;
+    OConnectionPool *pRet = nullptr;
     OConnectionPools::const_iterator aFind = m_aPools.find(_sImplName);
     if (aFind != m_aPools.end())
         pRet = aFind->second;
@@ -335,7 +333,7 @@ Reference< XInterface > OPoolCollection::createWithProvider(const Reference< XMu
             makeAny(_rPath)));
     Reference< XInterface > xInterface(
         _rxConfProvider->createInstanceWithArguments(
-            OUString( "com.sun.star.configuration.ConfigurationAccess"),
+            "com.sun.star.configuration.ConfigurationAccess",
             args));
     OSL_ENSURE(
         xInterface.is(),

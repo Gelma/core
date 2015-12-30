@@ -125,37 +125,34 @@ namespace svt
     class AssigmentTransientData : public IAssigmentData
     {
     protected:
-        Reference< XDataSource >    m_xDataSource;
         OUString             m_sDSName;
         OUString             m_sTableName;
-        MapString2String            m_aAliases;
+        MapString2String     m_aAliases;
 
-public:
+    public:
         AssigmentTransientData(
-            const Reference< XDataSource >& _rxDataSource,
             const OUString& _rDataSourceName,
             const OUString& _rTableName,
             const Sequence< AliasProgrammaticPair >& _rFields
         );
 
         // IAssigmentData overridables
-        virtual OUString getDatasourceName() const SAL_OVERRIDE;
-        virtual OUString getCommand() const SAL_OVERRIDE;
+        virtual OUString getDatasourceName() const override;
+        virtual OUString getCommand() const override;
 
-        virtual bool     hasFieldAssignment(const OUString& _rLogicalName) SAL_OVERRIDE;
-        virtual OUString getFieldAssignment(const OUString& _rLogicalName) SAL_OVERRIDE;
-        virtual void     setFieldAssignment(const OUString& _rLogicalName, const OUString& _rAssignment) SAL_OVERRIDE;
+        virtual bool     hasFieldAssignment(const OUString& _rLogicalName) override;
+        virtual OUString getFieldAssignment(const OUString& _rLogicalName) override;
+        virtual void     setFieldAssignment(const OUString& _rLogicalName, const OUString& _rAssignment) override;
 
-        virtual void    setDatasourceName(const OUString& _rName) SAL_OVERRIDE;
-        virtual void    setCommand(const OUString& _rCommand) SAL_OVERRIDE;
+        virtual void    setDatasourceName(const OUString& _rName) override;
+        virtual void    setCommand(const OUString& _rCommand) override;
     };
 
 
-    AssigmentTransientData::AssigmentTransientData( const Reference< XDataSource >& _rxDataSource,
+    AssigmentTransientData::AssigmentTransientData(
             const OUString& _rDataSourceName, const OUString& _rTableName,
             const Sequence< AliasProgrammaticPair >& _rFields )
-        :m_xDataSource( _rxDataSource )
-        ,m_sDSName( _rDataSourceName )
+        :m_sDSName( _rDataSourceName )
         ,m_sTableName( _rTableName )
     {
         // fill our aliases structure
@@ -183,11 +180,11 @@ public:
             }
             else
             {
-                OSL_FAIL(   (   OString("AssigmentTransientData::AssigmentTransientData: unknown programmatic name (")
-                                +=  OString(pFields->ProgrammaticName.getStr(), pFields->ProgrammaticName.getLength(), RTL_TEXTENCODING_ASCII_US)
-                                +=  OString(")!")
-                                ).getStr()
-                            );
+                OSL_FAIL(
+                    OString(
+                        "AssigmentTransientData::AssigmentTransientData: unknown programmatic name ("
+                        + OString(pFields->ProgrammaticName.getStr(), pFields->ProgrammaticName.getLength(), RTL_TEXTENCODING_ASCII_US)
+                        + ")!").getStr());
             }
         }
     }
@@ -252,14 +249,11 @@ public:
         StringBag       m_aStoredFields;
 
     protected:
-        ::com::sun::star::uno::Any
-                        getProperty(const OUString& _rLocalName) const;
-        ::com::sun::star::uno::Any
-                        getProperty(const sal_Char* _pLocalName) const;
+        css::uno::Any   getProperty(const OUString& _rLocalName) const;
+        css::uno::Any   getProperty(const sal_Char* _pLocalName) const;
 
-        OUString getStringProperty(const sal_Char* _pLocalName) const;
-
-        OUString getStringProperty(const OUString& _rLocalName) const;
+        OUString        getStringProperty(const sal_Char* _pLocalName) const;
+        OUString        getStringProperty(const OUString& _rLocalName) const;
 
         void            setStringProperty(const sal_Char* _pLocalName, const OUString& _rValue);
 
@@ -268,25 +262,25 @@ public:
         virtual ~AssignmentPersistentData();
 
         // IAssigmentData overridables
-        virtual OUString getDatasourceName() const SAL_OVERRIDE;
-        virtual OUString getCommand() const SAL_OVERRIDE;
+        virtual OUString getDatasourceName() const override;
+        virtual OUString getCommand() const override;
 
-        virtual bool     hasFieldAssignment(const OUString& _rLogicalName) SAL_OVERRIDE;
-        virtual OUString getFieldAssignment(const OUString& _rLogicalName) SAL_OVERRIDE;
-        virtual void     setFieldAssignment(const OUString& _rLogicalName, const OUString& _rAssignment) SAL_OVERRIDE;
+        virtual bool     hasFieldAssignment(const OUString& _rLogicalName) override;
+        virtual OUString getFieldAssignment(const OUString& _rLogicalName) override;
+        virtual void     setFieldAssignment(const OUString& _rLogicalName, const OUString& _rAssignment) override;
 
-        virtual void    setDatasourceName(const OUString& _rName) SAL_OVERRIDE;
-        virtual void    setCommand(const OUString& _rCommand) SAL_OVERRIDE;
+        virtual void    setDatasourceName(const OUString& _rName) override;
+        virtual void    setCommand(const OUString& _rCommand) override;
 
-        virtual void    Notify( const com::sun::star::uno::Sequence<OUString>& aPropertyNames) SAL_OVERRIDE;
+        virtual void    Notify( const css::uno::Sequence<OUString>& aPropertyNames) override;
 
     private:
-        virtual void    ImplCommit() SAL_OVERRIDE;
+        virtual void    ImplCommit() override;
         void            clearFieldAssignment(const OUString& _rLogicalName);
     };
 
 
-void AssignmentPersistentData::Notify( const com::sun::star::uno::Sequence<OUString>& )
+void AssignmentPersistentData::Notify( const css::uno::Sequence<OUString>& )
 {
 }
 
@@ -298,7 +292,7 @@ void AssignmentPersistentData::ImplCommit()
     AssignmentPersistentData::AssignmentPersistentData()
         :ConfigItem( OUString( "Office.DataAccess/AddressBook" ))
     {
-        Sequence< OUString > aStoredNames = GetNodeNames(OUString("Fields"));
+        Sequence< OUString > aStoredNames = GetNodeNames("Fields");
         const OUString* pStoredNames = aStoredNames.getConstArray();
         for (sal_Int32 i=0; i<aStoredNames.getLength(); ++i, ++pStoredNames)
             m_aStoredFields.insert(*pStoredNames);
@@ -363,9 +357,8 @@ void AssignmentPersistentData::ImplCommit()
 
     void AssignmentPersistentData::setStringProperty(const sal_Char* _pLocalName, const OUString& _rValue)
     {
-        Sequence< OUString > aNames(1);
+        Sequence< OUString > aNames { OUString::createFromAscii(_pLocalName) };
         Sequence< Any > aValues(1);
-        aNames[0] = OUString::createFromAscii(_pLocalName);
         aValues[0] <<= _rValue;
         PutProperties(aNames, aValues);
     }
@@ -489,7 +482,7 @@ void AssignmentPersistentData::ImplCommit()
             ,nLastVisibleListIndex(0)
             ,bOddFieldNumber(false)
             ,bWorkingPersistent( false )
-            ,pConfigData( new AssigmentTransientData( m_xTransientDataSource, _rDataSourceName, _rTableName, _rFields ) )
+            ,pConfigData( new AssigmentTransientData( _rDataSourceName, _rTableName, _rFields ) )
         {
             memset(pFieldLabels, 0, sizeof(pFieldLabels));
             memset(pFields, 0, sizeof(pFields));
@@ -501,8 +494,8 @@ void AssignmentPersistentData::ImplCommit()
         }
 
         // Copy assignment is forbidden and not implemented.
-        AddressBookSourceDialogData (const AddressBookSourceDialogData &) SAL_DELETED_FUNCTION;
-        AddressBookSourceDialogData & operator= (const AddressBookSourceDialogData &) SAL_DELETED_FUNCTION;
+        AddressBookSourceDialogData (const AddressBookSourceDialogData &) = delete;
+        AddressBookSourceDialogData & operator= (const AddressBookSourceDialogData &) = delete;
     };
 
 
@@ -656,7 +649,7 @@ void AssignmentPersistentData::ImplCommit()
         for (sal_Int32 i = 0; i<nAdjustedTokenCount; ++i)
             m_pImpl->aLogicalFieldNames.push_back(sLogicalFieldNames.getToken(i, ';'));
 
-        PostUserEvent(LINK(this, AddressBookSourceDialog, OnDelayedInitialize), NULL, true);
+        PostUserEvent(LINK(this, AddressBookSourceDialog, OnDelayedInitialize), nullptr, true);
             // so the dialog will at least show up before we do the loading of the
             // configuration data and the (maybe time consuming) analysis of the data source/table to select
 
@@ -807,7 +800,7 @@ void AssignmentPersistentData::ImplCommit()
         try
         {
             xHandler.set(
-                InteractionHandler::createWithParent(m_xORB, 0),
+                InteractionHandler::createWithParent(m_xORB, nullptr),
                 UNO_QUERY_THROW );
         }
         catch(const Exception&) { }
@@ -823,7 +816,7 @@ void AssignmentPersistentData::ImplCommit()
 
         m_pTable->Clear();
 
-        m_xCurrentDatasourceTables= NULL;
+        m_xCurrentDatasourceTables= nullptr;
 
         // get the tables of the connection
         Sequence< OUString > aTableNames;
@@ -854,7 +847,7 @@ void AssignmentPersistentData::ImplCommit()
             Reference< XTablesSupplier > xSupplTables(xConn, UNO_QUERY);
             if (xSupplTables.is())
             {
-                m_xCurrentDatasourceTables = Reference< XNameAccess >(xSupplTables->getTables(), UNO_QUERY);
+                m_xCurrentDatasourceTables.set(xSupplTables->getTables(), UNO_QUERY);
                 if (m_xCurrentDatasourceTables.is())
                     aTableNames = m_xCurrentDatasourceTables->getElementNames();
             }
@@ -981,22 +974,20 @@ void AssignmentPersistentData::ImplCommit()
     }
 
 
-    IMPL_LINK(AddressBookSourceDialog, OnFieldSelect, ListBox*, _pListbox)
+    IMPL_LINK_TYPED(AddressBookSourceDialog, OnFieldSelect, ListBox&, _rListbox, void)
     {
         // the index of the affected list box in our array
-        sal_IntPtr nListBoxIndex = reinterpret_cast<sal_IntPtr>(_pListbox->GetEntryData(0));
+        sal_IntPtr nListBoxIndex = reinterpret_cast<sal_IntPtr>(_rListbox.GetEntryData(0));
         DBG_ASSERT(nListBoxIndex >= 0 && nListBoxIndex < FIELD_CONTROLS_VISIBLE,
             "AddressBookSourceDialog::OnFieldScroll: invalid list box entry!");
 
         // update the array where we remember the field selections
-        if (0 == _pListbox->GetSelectEntryPos())
+        if (0 == _rListbox.GetSelectEntryPos())
             // it's the "no field selection" entry
             m_pImpl->aFieldAssignments[m_pImpl->nFieldScrollPos * 2 + nListBoxIndex].clear();
         else
             // it's a regular field entry
-            m_pImpl->aFieldAssignments[m_pImpl->nFieldScrollPos * 2 + nListBoxIndex] = _pListbox->GetSelectEntry();
-
-        return 0L;
+            m_pImpl->aFieldAssignments[m_pImpl->nFieldScrollPos * 2 + nListBoxIndex] = _rListbox.GetSelectEntry();
     }
 
 
@@ -1121,13 +1112,12 @@ void AssignmentPersistentData::ImplCommit()
     }
 
 
-    IMPL_LINK(AddressBookSourceDialog, OnComboSelect, ComboBox*, _pBox)
+    IMPL_LINK_TYPED(AddressBookSourceDialog, OnComboSelect, ComboBox&, _rBox, void)
     {
-        if (_pBox == m_pDatasource)
+        if (&_rBox == m_pDatasource)
             resetTables();
         else
             resetFields();
-        return 0;
     }
 
 
@@ -1188,7 +1178,7 @@ void AssignmentPersistentData::ImplCommit()
         catch(const Exception&) { }
         if (!xAdminDialog.is())
         {
-            ShowServiceNotAvailableError(this, OUString("com.sun.star.ui.dialogs.AddressBookSourcePilot"), true);
+            ShowServiceNotAvailableError(this, "com.sun.star.ui.dialogs.AddressBookSourcePilot", true);
             return;
         }
 

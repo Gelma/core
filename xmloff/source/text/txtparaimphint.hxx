@@ -119,13 +119,13 @@ public:
 
     XMLHyperlinkHint_Impl( const css::uno::Reference < css::text::XTextRange > & rPos ) :
         XMLHint_Impl( XML_HINT_HYPERLINK, rPos, rPos ),
-        pEvents( NULL )
+        pEvents( nullptr )
     {
     }
 
     virtual ~XMLHyperlinkHint_Impl()
     {
-        if (NULL != pEvents)
+        if (nullptr != pEvents)
             pEvents->ReleaseRef();
     }
 
@@ -146,7 +146,7 @@ public:
     void SetEventsContext( XMLEventsImportContext* pCtxt )
     {
         pEvents = pCtxt;
-        if (pEvents != NULL)
+        if (pEvents != nullptr)
             pEvents->AddFirstRef();
     }
 };
@@ -205,11 +205,10 @@ public:
     {
         css::uno::Reference < css::text::XTextContent > xTxt;
         SvXMLImportContext *pContext = &xContext;
-        if( 0 != dynamic_cast<const XMLTextFrameContext*>(pContext) )
-            xTxt = dynamic_cast< XMLTextFrameContext*>( pContext )->GetTextContent();
-        else if( 0 != dynamic_cast<const XMLTextFrameHyperlinkContext*>(pContext) )
-            xTxt = dynamic_cast< XMLTextFrameHyperlinkContext* >( pContext )
-                        ->GetTextContent();
+        if (XMLTextFrameContext *pFrameContext =  dynamic_cast<XMLTextFrameContext*>(pContext))
+            xTxt = pFrameContext->GetTextContent();
+        else if (XMLTextFrameHyperlinkContext *pLinkContext = dynamic_cast<XMLTextFrameHyperlinkContext*>(pContext))
+            xTxt = pLinkContext->GetTextContent();
 
         return xTxt;
     }
@@ -219,10 +218,10 @@ public:
     {
         css::uno::Reference < css::drawing::XShape > xShape;
         SvXMLImportContext *pContext = &xContext;
-        if( 0 != dynamic_cast<const XMLTextFrameContext*>(pContext) )
-            xShape = dynamic_cast< XMLTextFrameContext*>( pContext )->GetShape();
-        else if( 0 != dynamic_cast<const XMLTextFrameHyperlinkContext*>(pContext) )
-            xShape = dynamic_cast<XMLTextFrameHyperlinkContext*>( pContext )->GetShape();
+        if (XMLTextFrameContext *pFrameContext = dynamic_cast<XMLTextFrameContext*>(pContext))
+            xShape = pFrameContext->GetShape();
+        else if(XMLTextFrameHyperlinkContext *pLinkContext =  dynamic_cast<XMLTextFrameHyperlinkContext*>(pContext))
+            xShape = pLinkContext->GetShape();
 
         return xShape;
     }
@@ -231,14 +230,12 @@ public:
     {
         bool bRet = false;
         SvXMLImportContext *pContext = &xContext;
-        if( 0 != dynamic_cast<const XMLTextFrameContext*>(pContext) )
+        if (XMLTextFrameContext *pFrameContext = dynamic_cast<XMLTextFrameContext*>(pContext))
             bRet = css::text::TextContentAnchorType_AT_CHARACTER ==
-                dynamic_cast<const XMLTextFrameContext*>( pContext )
-                    ->GetAnchorType();
-        else if( 0 != dynamic_cast<const XMLTextFrameHyperlinkContext*>( pContext) )
+                pFrameContext->GetAnchorType();
+        else if (XMLTextFrameHyperlinkContext *pLinkContext = dynamic_cast<XMLTextFrameHyperlinkContext*>(pContext))
             bRet = css::text::TextContentAnchorType_AT_CHARACTER ==
-                dynamic_cast<const XMLTextFrameHyperlinkContext*>( pContext )
-                    ->GetAnchorType();
+                pLinkContext->GetAnchorType();
         return bRet;
     }
 };

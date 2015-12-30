@@ -45,6 +45,7 @@ using namespace ::dp_misc;
 using namespace ::com::sun::star;
 using namespace ::com::sun::star::uno;
 
+namespace sdecl = comphelper::service_decl;
 
 namespace dp_gui {
 
@@ -56,8 +57,8 @@ public:
     virtual ~MyApp();
 
     // Application
-    virtual int Main() SAL_OVERRIDE;
-    virtual void DeInit() SAL_OVERRIDE;
+    virtual int Main() override;
+    virtual void DeInit() override;
 };
 
 
@@ -83,7 +84,7 @@ void MyApp::DeInit()
     dp_misc::disposeBridges(context);
     css::uno::Reference< css::lang::XComponent >(
         context, css::uno::UNO_QUERY_THROW)->dispose();
-    comphelper::setProcessServiceFactory(0);
+    comphelper::setProcessServiceFactory(nullptr);
 }
 
 namespace
@@ -156,14 +157,14 @@ public:
 
     // XAsynchronousExecutableDialog
     virtual void SAL_CALL setDialogTitle( OUString const & aTitle )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
     virtual void SAL_CALL startExecuteModal(
         Reference< ui::dialogs::XDialogClosedListener > const & xListener )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 
     // XJobExecutor
     virtual void SAL_CALL trigger( OUString const & event )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 };
 
 
@@ -215,7 +216,7 @@ void ServiceImpl::startExecuteModal(
     //ToDo: synchronize access to s_dialog !!!
     if (! dp_gui::TheExtensionManager::s_ExtMgr.is())
     {
-        const bool bAppUp = (GetpApp() != 0);
+        const bool bAppUp = (GetpApp() != nullptr);
         bool bOfficePipePresent;
         try {
             bOfficePipePresent = dp_misc::office_is_running();
@@ -279,7 +280,7 @@ void ServiceImpl::startExecuteModal(
         }
     }
 
-    if (app.get() != 0) {
+    if (app.get() != nullptr) {
         Application::Execute();
         DeInitVCL();
     }
@@ -303,7 +304,6 @@ void ServiceImpl::trigger( OUString const &rEvent ) throw (RuntimeException, std
     startExecuteModal( Reference< ui::dialogs::XDialogClosedListener >() );
 }
 
-namespace sdecl = comphelper::service_decl;
 sdecl::class_<ServiceImpl, sdecl::with_args<true> > serviceSI;
 sdecl::ServiceDecl const serviceDecl(
     serviceSI,
@@ -328,8 +328,9 @@ extern "C" {
 SAL_DLLPUBLIC_EXPORT void * SAL_CALL deploymentgui_component_getFactory(
     sal_Char const * pImplName, void *, void *)
 {
-    return component_getFactoryHelper(
-        pImplName, dp_gui::serviceDecl, dp_gui::licenseDecl, dp_gui::updateDecl );
+    return sdecl::component_getFactoryHelper(
+        pImplName,
+        {&dp_gui::serviceDecl, &dp_gui::licenseDecl, &dp_gui::updateDecl});
 }
 
 } // extern "C"

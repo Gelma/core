@@ -35,10 +35,10 @@
 class AccTextComponentEventListener: public AccComponentEventListener
 {
 public:
-    AccTextComponentEventListener(com::sun::star::accessibility::XAccessible* pAcc, AccObjectManagerAgent* Agent);
+    AccTextComponentEventListener(css::accessibility::XAccessible* pAcc, AccObjectManagerAgent* Agent);
     virtual ~AccTextComponentEventListener();
 
-    virtual void SetComponentState(short state, bool enable) SAL_OVERRIDE;
+    virtual void SetComponentState(short state, bool enable) override;
 
 };
 

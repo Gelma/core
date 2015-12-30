@@ -24,6 +24,7 @@ class FixedText;
 class ListBox;
 class NumericField;
 class MetricField;
+class Edit;
 
 namespace chart {
 
@@ -44,16 +45,16 @@ public:
         ChartController* pController);
 
     virtual void DataChanged(
-        const DataChangedEvent& rEvent) SAL_OVERRIDE;
+        const DataChangedEvent& rEvent) override;
 
     virtual void HandleContextChange(
-        const ::sfx2::sidebar::EnumContext& rContext) SAL_OVERRIDE;
+        const ::sfx2::sidebar::EnumContext& rContext) override;
 
     virtual void NotifyItemUpdate(
         const sal_uInt16 nSId,
         const SfxItemState eState,
         const SfxPoolItem* pState,
-        const bool bIsEnabled) SAL_OVERRIDE;
+        const bool bIsEnabled) override;
 
     // constructor/destuctor
     ChartErrorBarPanel(
@@ -61,12 +62,12 @@ public:
         const css::uno::Reference<css::frame::XFrame>& rxFrame,
         ChartController* pController);
     virtual ~ChartErrorBarPanel();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void updateData() SAL_OVERRIDE;
-    virtual void modelInvalid() SAL_OVERRIDE;
+    virtual void updateData() override;
+    virtual void modelInvalid() override;
 
-    virtual void updateModel(css::uno::Reference<css::frame::XModel> xModel) SAL_OVERRIDE;
+    virtual void updateModel(css::uno::Reference<css::frame::XModel> xModel) override;
 
 private:
     //ui controls
@@ -79,8 +80,6 @@ private:
     VclPtr<NumericField> mpMFPos;
     VclPtr<NumericField> mpMFNeg;
 
-    css::uno::Reference<css::frame::XFrame> mxFrame;
-
     css::uno::Reference<css::frame::XModel> mxModel;
     css::uno::Reference<css::util::XModifyListener> mxListener;
 
@@ -89,8 +88,8 @@ private:
     void Initialize();
 
     DECL_LINK_TYPED(RadioBtnHdl, RadioButton&, void);
-    DECL_LINK(ListBoxHdl, void*);
-    DECL_LINK(NumericFieldHdl, NumericField*);
+    DECL_LINK_TYPED(ListBoxHdl, ListBox&, void);
+    DECL_LINK_TYPED(NumericFieldHdl, Edit&, void);
 };
 
 } } // end of namespace ::chart::sidebar

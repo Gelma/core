@@ -40,7 +40,7 @@ namespace svxform
     public:
         DelayedEvent( const Link<void*,void>& _rHandler )
             :m_aHandler( _rHandler )
-            ,m_nEventId( 0 )
+            ,m_nEventId( nullptr )
         {
         }
 
@@ -69,8 +69,8 @@ namespace svxform
         DECL_LINK_TYPED( OnCall, void*, void );
 
     private:
-        DelayedEvent( const DelayedEvent& ) SAL_DELETED_FUNCTION;
-        DelayedEvent& operator=( const DelayedEvent& ) SAL_DELETED_FUNCTION;
+        DelayedEvent( const DelayedEvent& ) = delete;
+        DelayedEvent& operator=( const DelayedEvent& ) = delete;
     };
 
 

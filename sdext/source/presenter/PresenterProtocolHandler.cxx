@@ -61,8 +61,8 @@ namespace {
         explicit GotoPreviousSlideCommand (
             const rtl::Reference<PresenterController>& rpPresenterController);
         virtual ~GotoPreviousSlideCommand() {}
-        virtual void Execute() SAL_OVERRIDE;
-        virtual bool IsEnabled() const SAL_OVERRIDE;
+        virtual void Execute() override;
+        virtual bool IsEnabled() const override;
     private:
         rtl::Reference<PresenterController> mpPresenterController;
     };
@@ -73,11 +73,11 @@ namespace {
         explicit GotoNextSlideCommand (
             const rtl::Reference<PresenterController>& rpPresenterController);
         virtual ~GotoNextSlideCommand() {}
-        virtual void Execute() SAL_OVERRIDE;
+        virtual void Execute() override;
         // The next slide command is always enabled, even when the current slide
         // is the last slide:  from the last slide it goes to the pause slide,
         // and from there it ends the slide show.
-        virtual bool IsEnabled() const SAL_OVERRIDE { return true; }
+        virtual bool IsEnabled() const override { return true; }
     private:
         rtl::Reference<PresenterController> mpPresenterController;
     };
@@ -88,7 +88,7 @@ namespace {
         explicit GotoNextEffectCommand (
             const rtl::Reference<PresenterController>& rpPresenterController);
         virtual ~GotoNextEffectCommand() {}
-        virtual void Execute() SAL_OVERRIDE;
+        virtual void Execute() override;
     private:
         rtl::Reference<PresenterController> mpPresenterController;
     };
@@ -99,7 +99,18 @@ namespace {
         explicit SwitchMonitorCommand (
             const rtl::Reference<PresenterController>& rpPresenterController);
         virtual ~SwitchMonitorCommand() {}
-        virtual void Execute() SAL_OVERRIDE;
+        virtual void Execute() override;
+    private:
+        rtl::Reference<PresenterController> mpPresenterController;
+    };
+
+    /// This command restarts the presentation timer.
+    class RestartTimerCommand : public Command
+    {
+    public:
+        explicit RestartTimerCommand(const rtl::Reference<PresenterController>& rpPresenterController);
+        virtual ~RestartTimerCommand();
+        virtual void Execute() override;
     private:
         rtl::Reference<PresenterController> mpPresenterController;
     };
@@ -111,8 +122,8 @@ namespace {
             const bool bOn,
             const rtl::Reference<PresenterController>& rpPresenterController);
         virtual ~SetNotesViewCommand() {}
-        virtual void Execute() SAL_OVERRIDE;
-        virtual Any GetState() const SAL_OVERRIDE;
+        virtual void Execute() override;
+        virtual Any GetState() const override;
     private:
         bool mbOn;
         rtl::Reference<PresenterController> mpPresenterController;
@@ -126,8 +137,8 @@ namespace {
             const bool bOn,
             const rtl::Reference<PresenterController>& rpPresenterController);
         virtual ~SetSlideSorterCommand() {}
-        virtual void Execute() SAL_OVERRIDE;
-        virtual Any GetState() const SAL_OVERRIDE;
+        virtual void Execute() override;
+        virtual Any GetState() const override;
     private:
         bool mbOn;
         rtl::Reference<PresenterController> mpPresenterController;
@@ -140,8 +151,8 @@ namespace {
             const bool bOn,
             const rtl::Reference<PresenterController>& rpPresenterController);
         virtual ~SetHelpViewCommand() {}
-        virtual void Execute() SAL_OVERRIDE;
-        virtual Any GetState() const SAL_OVERRIDE;
+        virtual void Execute() override;
+        virtual Any GetState() const override;
     private:
         bool mbOn;
         rtl::Reference<PresenterController> mpPresenterController;
@@ -154,8 +165,8 @@ namespace {
             const rtl::Reference<PresenterController>& rpPresenterController,
             const sal_Int32 nSizeChange);
         virtual ~NotesFontSizeCommand() {}
-        virtual void Execute() SAL_OVERRIDE;
-        virtual Any GetState() const SAL_OVERRIDE;
+        virtual void Execute() override;
+        virtual Any GetState() const override;
     protected:
         ::rtl::Reference<PresenterNotesView> GetNotesView() const;
     private:
@@ -186,7 +197,7 @@ public:
         const OUString& rsURLPath,
         const ::rtl::Reference<PresenterController>& rpPresenterController);
 
-    void SAL_CALL disposing() SAL_OVERRIDE;
+    void SAL_CALL disposing() override;
     static Command* CreateCommand (
         const OUString& rsURLPath,
         const ::rtl::Reference<PresenterController>& rpPresenterController);
@@ -195,27 +206,27 @@ public:
     virtual void SAL_CALL dispatch(
         const css::util::URL& aURL,
         const css::uno::Sequence<css::beans::PropertyValue>& rArguments)
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL addStatusListener(
         const css::uno::Reference<css::frame::XStatusListener>& rxListener,
         const css::util::URL& rURL)
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL removeStatusListener (
         const css::uno::Reference<css::frame::XStatusListener>& rxListener,
         const css::util::URL& rURL)
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
 
     // document::XEventListener
 
     virtual void SAL_CALL notifyEvent (const css::document::EventObject& rEvent)
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
 
     // lang::XEventListener
 
     virtual void SAL_CALL disposing (const css::lang::EventObject& rEvent)
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
 
 private:
     OUString msURLPath;
@@ -344,7 +355,7 @@ Sequence<Reference<frame::XDispatch> > SAL_CALL PresenterProtocolHandler::queryD
 
 
 void PresenterProtocolHandler::ThrowIfDisposed() const
-    throw (::com::sun::star::lang::DisposedException)
+    throw (css::lang::DisposedException)
 {
     if (rBHelper.bDisposed || rBHelper.bInDispose)
     {
@@ -362,10 +373,10 @@ Reference<frame::XDispatch> PresenterProtocolHandler::Dispatch::Create (
     const ::rtl::Reference<PresenterController>& rpPresenterController)
 {
     ::rtl::Reference<Dispatch> pDispatch (new Dispatch (rsURLPath, rpPresenterController));
-    if (pDispatch->mpCommand.get() != NULL)
+    if (pDispatch->mpCommand.get() != nullptr)
         return Reference<frame::XDispatch>(pDispatch.get());
     else
-        return NULL;
+        return nullptr;
 }
 
 PresenterProtocolHandler::Dispatch::Dispatch (
@@ -378,7 +389,7 @@ PresenterProtocolHandler::Dispatch::Dispatch (
       maStatusListenerContainer(),
       mbIsListeningToWindowManager(false)
 {
-    if (mpCommand.get() != NULL)
+    if (mpCommand.get() != nullptr)
     {
         mpPresenterController->GetWindowManager()->AddLayoutListener(this);
         mbIsListeningToWindowManager = true;
@@ -390,7 +401,7 @@ Command* PresenterProtocolHandler::Dispatch::CreateCommand (
     const ::rtl::Reference<PresenterController>& rpPresenterController)
 {
     if (rsURLPath.getLength() <= 5)
-        return NULL;
+        return nullptr;
 
     if (rsURLPath == "CloseNotes")
         return new SetNotesViewCommand(false, rpPresenterController);
@@ -408,6 +419,8 @@ Command* PresenterProtocolHandler::Dispatch::CreateCommand (
         return new GotoPreviousSlideCommand(rpPresenterController);
     if (rsURLPath == "SwitchMonitor")
         return new SwitchMonitorCommand(rpPresenterController);
+    if (rsURLPath == "RestartTimer")
+        return new RestartTimerCommand(rpPresenterController);
     if (rsURLPath == "ShowNotes")
         return new SetNotesViewCommand(true, rpPresenterController);
     if (rsURLPath == "ShowSlideSorter")
@@ -417,7 +430,7 @@ Command* PresenterProtocolHandler::Dispatch::CreateCommand (
     if (rsURLPath == "ShrinkNotesFont")
         return new NotesFontSizeCommand(rpPresenterController, -1);
 
-    return NULL;
+    return nullptr;
 }
 
 PresenterProtocolHandler::Dispatch::~Dispatch()
@@ -428,7 +441,7 @@ void PresenterProtocolHandler::Dispatch::disposing()
 {
     if (mbIsListeningToWindowManager)
     {
-        if (mpPresenterController.get() != NULL)
+        if (mpPresenterController.get() != nullptr)
             mpPresenterController->GetWindowManager()->RemoveLayoutListener(this);
         mbIsListeningToWindowManager = false;
     }
@@ -450,7 +463,7 @@ void SAL_CALL PresenterProtocolHandler::Dispatch::dispatch(
     if (rURL.Protocol == "vnd.org.libreoffice.presenterscreen:"
         && rURL.Path == msURLPath)
     {
-        if (mpCommand.get() != NULL)
+        if (mpCommand.get() != nullptr)
             mpCommand->Execute();
     }
     else
@@ -500,7 +513,7 @@ void SAL_CALL PresenterProtocolHandler::Dispatch::removeStatusListener (
 }
 
 void PresenterProtocolHandler::Dispatch::ThrowIfDisposed() const
-    throw (::com::sun::star::lang::DisposedException)
+    throw (css::lang::DisposedException)
 {
     if (rBHelper.bDisposed || rBHelper.bInDispose)
     {
@@ -610,6 +623,21 @@ SwitchMonitorCommand::SwitchMonitorCommand (
 void SwitchMonitorCommand::Execute()
 {
     mpPresenterController->SwitchMonitors();
+}
+
+RestartTimerCommand::RestartTimerCommand (const rtl::Reference<PresenterController>& rpPresenterController)
+: mpPresenterController(rpPresenterController)
+{
+}
+
+RestartTimerCommand::~RestartTimerCommand()
+{
+}
+
+void RestartTimerCommand::Execute()
+{
+    if (IPresentationTime* pPresentationTime = mpPresenterController->GetPresentationTime())
+        pPresentationTime->restart();
 }
 
 //===== SetNotesViewCommand ===================================================
@@ -741,14 +769,14 @@ NotesFontSizeCommand::NotesFontSizeCommand(
 
 ::rtl::Reference<PresenterNotesView> NotesFontSizeCommand::GetNotesView() const
 {
-    if (mpPresenterController.get() == NULL)
-        return NULL;
+    if (mpPresenterController.get() == nullptr)
+        return nullptr;
 
     PresenterPaneContainer::SharedPaneDescriptor pDescriptor (
         mpPresenterController->GetPaneContainer()->FindViewURL(
             PresenterViewFactory::msNotesViewURL));
-    if (pDescriptor.get() == NULL)
-        return NULL;
+    if (pDescriptor.get() == nullptr)
+        return nullptr;
 
     return dynamic_cast<PresenterNotesView*>(pDescriptor->mxView.get());
 }

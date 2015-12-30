@@ -34,27 +34,27 @@
 class EDITENG_DLLPUBLIC SvxCharReliefItem : public SfxEnumItem
 {
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     SvxCharReliefItem( FontRelief eValue /*= RELIEF_NONE*/,
                        const sal_uInt16 nId );
 
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Create(SvStream &, sal_uInt16) const SAL_OVERRIDE;
-    virtual SvStream&       Store(SvStream & rStrm, sal_uInt16 nIVer) const SAL_OVERRIDE;
-    virtual sal_uInt16      GetVersion( sal_uInt16 nFileVersion ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual SfxPoolItem*    Create(SvStream &, sal_uInt16) const override;
+    virtual SvStream&       Store(SvStream & rStrm, sal_uInt16 nIVer) const override;
+    virtual sal_uInt16      GetVersion( sal_uInt16 nFileVersion ) const override;
 
-    virtual OUString   GetValueTextByPos( sal_uInt16 nPos ) const SAL_OVERRIDE;
-    virtual sal_uInt16      GetValueCount() const SAL_OVERRIDE;
+    virtual OUString   GetValueTextByPos( sal_uInt16 nPos ) const override;
+    virtual sal_uInt16      GetValueCount() const override;
 
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
                                     OUString &rText,
-                                    const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    const IntlWrapper * = nullptr ) const override;
 
-    virtual bool            QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool            PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual bool            QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool            PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
     inline SvxCharReliefItem& operator=( const SvxCharReliefItem& rItem )
     {

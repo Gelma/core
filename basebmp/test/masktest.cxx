@@ -99,27 +99,24 @@ private:
     }
 
 public:
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         const basegfx::B2ISize aSize(10,10);
         mpDevice1bpp = createBitmapDevice( aSize,
                                            true,
-                                           Format::OneBitMsbPal,
-                                           basebmp::getBitmapDeviceStrideForWidth(Format::OneBitMsbPal, aSize.getX()) );
+                                           Format::OneBitMsbPal );
         mpDevice32bpp = createBitmapDevice( aSize,
                                             true,
-                                            Format::ThirtyTwoBitTcMaskBGRA,
-                                            basebmp::getBitmapDeviceStrideForWidth(Format::ThirtyTwoBitTcMaskBGRA, aSize.getX()) );
+                                            Format::ThirtyTwoBitTcMaskBGRA );
 
         mpMask = createBitmapDevice( aSize,
                                      true,
-                                     Format::EightBitGrey,
-                                     basebmp::getBitmapDeviceStrideForWidth(Format::EightBitGrey, aSize.getX()) );
+                                     Format::EightBitGrey );
 
         OUString aSvg( "m 0 0h5v10h5v-5h-10z" );
 
         basegfx::B2DPolyPolygon aPoly;
-        basegfx::tools::importFromSvgD( aPoly, aSvg, false, NULL );
+        basegfx::tools::importFromSvgD( aPoly, aSvg, false, nullptr );
         const Color aCol(0xFF);
         mpMask->fillPolyPolygon(
             aPoly,

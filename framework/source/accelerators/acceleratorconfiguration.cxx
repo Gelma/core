@@ -77,7 +77,7 @@ namespace framework
 XMLBasedAcceleratorConfiguration::XMLBasedAcceleratorConfiguration(const css::uno::Reference< css::uno::XComponentContext >& xContext)
     : m_xContext      (xContext                     )
     , m_aPresetHandler(xContext                     )
-    , m_pWriteCache   (0                            )
+    , m_pWriteCache   (nullptr                            )
 {
 }
 
@@ -320,7 +320,7 @@ sal_Bool SAL_CALL XMLBasedAcceleratorConfiguration::isModified()
     throw(css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard g;
-    return (m_pWriteCache != 0);
+    return (m_pWriteCache != nullptr);
 }
 
 sal_Bool SAL_CALL XMLBasedAcceleratorConfiguration::isReadOnly()
@@ -387,7 +387,7 @@ void SAL_CALL XMLBasedAcceleratorConfiguration::removeResetListener(const css::u
 }
 
 // IStorageListener
-void XMLBasedAcceleratorConfiguration::changesOccurred(const OUString& /*sPath*/)
+void XMLBasedAcceleratorConfiguration::changesOccurred()
 {
     reload();
 }
@@ -402,7 +402,7 @@ void XMLBasedAcceleratorConfiguration::impl_ts_load(const css::uno::Reference< c
         {
             // be aware of reentrance problems - use temp variable for calling delete ... :-)
             AcceleratorCache* pTemp = m_pWriteCache;
-            m_pWriteCache = 0;
+            m_pWriteCache = nullptr;
             delete pTemp;
         }
     }
@@ -440,7 +440,7 @@ void XMLBasedAcceleratorConfiguration::impl_ts_save(const css::uno::Reference< c
     css::uno::Reference< css::uno::XComponentContext > xContext;
     {
         SolarMutexGuard g;
-        bChanged = (m_pWriteCache != 0);
+        bChanged = (m_pWriteCache != nullptr);
         if (bChanged)
             aCache.takeOver(*m_pWriteCache);
         else
@@ -473,7 +473,7 @@ void XMLBasedAcceleratorConfiguration::impl_ts_save(const css::uno::Reference< c
         m_aReadCache.takeOver(*m_pWriteCache);
         // live with reentrance .-)
         AcceleratorCache* pTemp = m_pWriteCache;
-        m_pWriteCache = 0;
+        m_pWriteCache = nullptr;
         delete pTemp;
     }
 }
@@ -517,11 +517,11 @@ OUString XMLBasedAcceleratorConfiguration::impl_ts_getLocale() const
 
 XCUBasedAcceleratorConfiguration::XCUBasedAcceleratorConfiguration(const css::uno::Reference< css::uno::XComponentContext >& xContext)
                                 : m_xContext      (xContext                     )
-                                , m_pPrimaryWriteCache(0                        )
-                                , m_pSecondaryWriteCache(0                      )
+                                , m_pPrimaryWriteCache(nullptr                        )
+                                , m_pSecondaryWriteCache(nullptr                      )
 {
     const OUString CFG_ENTRY_ACCELERATORS("org.openoffice.Office.Accelerators");
-    m_xCfg = css::uno::Reference< css::container::XNameAccess > (
+    m_xCfg.set(
              ::comphelper::ConfigurationHelper::openConfig( m_xContext, CFG_ENTRY_ACCELERATORS, ::comphelper::ConfigurationHelper::E_ALL_LOCALES ),
              css::uno::UNO_QUERY );
 }
@@ -820,7 +820,7 @@ void SAL_CALL XCUBasedAcceleratorConfiguration::reload()
     {
         // be aware of reentrance problems - use temp variable for calling delete ... :-)
         AcceleratorCache* pTemp = m_pPrimaryWriteCache;
-        m_pPrimaryWriteCache = 0;
+        m_pPrimaryWriteCache = nullptr;
         delete pTemp;
     }
     m_xCfg->getByName(CFG_ENTRY_PRIMARY) >>= xAccess;
@@ -832,7 +832,7 @@ void SAL_CALL XCUBasedAcceleratorConfiguration::reload()
     {
         // be aware of reentrance problems - use temp variable for calling delete ... :-)
         AcceleratorCache* pTemp = m_pSecondaryWriteCache;
-        m_pSecondaryWriteCache = 0;
+        m_pSecondaryWriteCache = nullptr;
         delete pTemp;
     }
     m_xCfg->getByName(CFG_ENTRY_SECONDARY) >>= xAccess;
@@ -872,11 +872,11 @@ void SAL_CALL XCUBasedAcceleratorConfiguration::storeToStorage(const css::uno::R
         return;
 
     long nOpenModes = css::embed::ElementModes::READWRITE;
-    css::uno::Reference< css::embed::XStorage > xAcceleratorTypeStorage = xStorage->openStorageElement(OUString("accelerator"), nOpenModes);
+    css::uno::Reference< css::embed::XStorage > xAcceleratorTypeStorage = xStorage->openStorageElement("accelerator", nOpenModes);
     if (!xAcceleratorTypeStorage.is())
         return;
 
-    css::uno::Reference< css::io::XStream > xStream = xAcceleratorTypeStorage->openStreamElement(OUString("current"), nOpenModes);
+    css::uno::Reference< css::io::XStream > xStream = xAcceleratorTypeStorage->openStreamElement("current", nOpenModes);
     css::uno::Reference< css::io::XOutputStream > xOut;
     if (xStream.is())
         xOut = xStream->getOutputStream();
@@ -891,14 +891,14 @@ void SAL_CALL XCUBasedAcceleratorConfiguration::storeToStorage(const css::uno::R
     {
         SolarMutexGuard g;
 
-        if (m_pPrimaryWriteCache != 0)
+        if (m_pPrimaryWriteCache != nullptr)
             aCache.takeOver(*m_pPrimaryWriteCache);
         else
             aCache.takeOver(m_aPrimaryReadCache);
 
         AcceleratorCache::TKeyList lKeys;
         AcceleratorCache::TKeyList::const_iterator pIt;
-        if (m_pSecondaryWriteCache!=0)
+        if (m_pSecondaryWriteCache!=nullptr)
         {
             lKeys = m_pSecondaryWriteCache->getAllKeys();
             for ( pIt=lKeys.begin(); pIt!=lKeys.end(); ++pIt )
@@ -971,14 +971,14 @@ void SAL_CALL XCUBasedAcceleratorConfiguration::reset()
     OUString sConfig = xNamed->getName();
     if ( sConfig == "Global" )
     {
-        m_xCfg = css::uno::Reference< css::container::XNameAccess > (
+        m_xCfg.set(
             ::comphelper::ConfigurationHelper::openConfig( m_xContext, CFG_ENTRY_GLOBAL, ::comphelper::ConfigurationHelper::E_ALL_LOCALES ),
             css::uno::UNO_QUERY );
         XCUBasedAcceleratorConfiguration::reload();
     }
     else if ( sConfig == "Modules" )
     {
-        m_xCfg = css::uno::Reference< css::container::XNameAccess > (
+        m_xCfg.set(
             ::comphelper::ConfigurationHelper::openConfig( m_xContext, CFG_ENTRY_MODULES, ::comphelper::ConfigurationHelper::E_ALL_LOCALES ),
             css::uno::UNO_QUERY );
         XCUBasedAcceleratorConfiguration::reload();
@@ -1059,13 +1059,13 @@ void SAL_CALL XCUBasedAcceleratorConfiguration::dispose()
     // nop
 }
 
-void SAL_CALL XCUBasedAcceleratorConfiguration::addEventListener( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >& /*xListener*/ )
+void SAL_CALL XCUBasedAcceleratorConfiguration::addEventListener( const css::uno::Reference< css::lang::XEventListener >& /*xListener*/ )
     throw(css::uno::RuntimeException, std::exception)
 {
     // nop
 }
 
-void SAL_CALL XCUBasedAcceleratorConfiguration::removeEventListener( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >& /*xListener*/ )
+void SAL_CALL XCUBasedAcceleratorConfiguration::removeEventListener( const css::uno::Reference< css::lang::XEventListener >& /*xListener*/ )
     throw(css::uno::RuntimeException, std::exception)
 {
     // nop
@@ -1215,7 +1215,7 @@ void XCUBasedAcceleratorConfiguration::impl_ts_save(bool bPreferred, const css::
         {
             m_aPrimaryReadCache.takeOver(*m_pPrimaryWriteCache);
             AcceleratorCache* pTemp = m_pPrimaryWriteCache;
-            m_pPrimaryWriteCache = 0;
+            m_pPrimaryWriteCache = nullptr;
             delete pTemp;
         }
     }
@@ -1254,7 +1254,7 @@ void XCUBasedAcceleratorConfiguration::impl_ts_save(bool bPreferred, const css::
         {
             m_aSecondaryReadCache.takeOver(*m_pSecondaryWriteCache);
             AcceleratorCache* pTemp = m_pSecondaryWriteCache;
-            m_pSecondaryWriteCache = 0;
+            m_pSecondaryWriteCache = nullptr;
             delete pTemp;
         }
     }
@@ -1282,7 +1282,7 @@ void XCUBasedAcceleratorConfiguration::insertKeyToConfiguration( const css::awt:
         xAccess->getByName(CFG_ENTRY_MODULES) >>= xModules;
         if ( !xModules->hasByName(m_sModuleCFG) )
         {
-            xFac = css::uno::Reference< css::lang::XSingleServiceFactory >(xModules, css::uno::UNO_QUERY);
+            xFac.set(xModules, css::uno::UNO_QUERY);
             xInst = xFac->createInstance();
             xModules->insertByName(m_sModuleCFG, css::uno::makeAny(xInst));
         }
@@ -1294,7 +1294,7 @@ void XCUBasedAcceleratorConfiguration::insertKeyToConfiguration( const css::awt:
     css::uno::Reference< css::container::XNameContainer > xCommand;
     if ( !xContainer->hasByName(sKey) )
     {
-        xFac = css::uno::Reference< css::lang::XSingleServiceFactory >(xContainer, css::uno::UNO_QUERY);
+        xFac.set(xContainer, css::uno::UNO_QUERY);
         xInst = xFac->createInstance();
         xContainer->insertByName(sKey, css::uno::makeAny(xInst));
     }

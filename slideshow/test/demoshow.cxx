@@ -390,7 +390,7 @@ public:
 
 private:
     void init();
-    DECL_LINK( updateHdl, Timer* );
+    DECL_LINK_TYPED( updateHdl, Timer*, void );
 
     ChildWindow                                maLeftChild;
     ChildWindow                                maRightTopChild;
@@ -463,13 +463,12 @@ void DemoWindow::init()
     }
 }
 
-IMPL_LINK_NOARG(DemoWindow, updateHdl)
+IMPL_LINK_NOARG_TYPED(DemoWindow, updateHdl, Timer*, void)
 {
     init();
 
     if( mxShow.is() )
         mxShow->update(0);
-    return 0;
 }
 
 void DemoWindow::Paint( const Rectangle& /*rRect*/ )
@@ -516,8 +515,7 @@ void DemoApp::Main()
     try
     {
         uno::Reference< uno::XComponentContext > xCtx = ::cppu::defaultBootstrap_InitialComponentContext();
-        xFactory = uno::Reference< lang::XMultiServiceFactory >(  xCtx->getServiceManager(),
-                                                                  uno::UNO_QUERY );
+        xFactory.set(  xCtx->getServiceManager(), uno::UNO_QUERY );
         if( xFactory.is() )
             ::comphelper::setProcessServiceFactory( xFactory );
     }

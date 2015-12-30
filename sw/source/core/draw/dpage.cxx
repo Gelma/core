@@ -51,15 +51,15 @@ using namespace ::com::sun::star::frame;
 
 SwDPage::SwDPage(SwDrawModel& rNewModel, bool bMasterPage) :
     FmFormPage(rNewModel, bMasterPage),
-    pGridLst( 0 ),
+    pGridLst( nullptr ),
     pDoc(&rNewModel.GetDoc())
 {
 }
 
 SwDPage::SwDPage(const SwDPage& rSrcPage) :
     FmFormPage( rSrcPage ),
-    pGridLst( 0 ),
-    pDoc( 0 )
+    pGridLst( nullptr ),
+    pDoc( nullptr )
 {
     if ( rSrcPage.pGridLst )
     {
@@ -89,13 +89,13 @@ void SwDPage::lateInit(const SwDPage& rPage, SwDrawModel* const pNewModel)
 
 SwDPage* SwDPage::Clone() const
 {
-    return Clone( 0 );
+    return Clone( nullptr );
 }
 
 SwDPage* SwDPage::Clone(SdrModel* const pNewModel) const
 {
     SwDPage* const pNewPage = new SwDPage( *this );
-    SwDrawModel* pSwDrawModel = 0;
+    SwDrawModel* pSwDrawModel = nullptr;
     if ( pNewModel )
     {
         pSwDrawModel = &dynamic_cast<SwDrawModel&>(*pNewModel);
@@ -110,18 +110,18 @@ SdrObject*  SwDPage::ReplaceObject( SdrObject* pNewObj, size_t nObjNum )
     SdrObject *pOld = GetObj( nObjNum );
     OSL_ENSURE( pOld, "Oups, Object not replaced" );
     SdrObjUserCall* pContact;
-    if ( 0 != ( pContact = GetUserCall(pOld) ) &&
+    if ( nullptr != ( pContact = GetUserCall(pOld) ) &&
          RES_DRAWFRMFMT == static_cast<SwContact*>(pContact)->GetFormat()->Which())
         static_cast<SwDrawContact*>(pContact)->ChangeMasterObject( pNewObj );
     return FmFormPage::ReplaceObject( pNewObj, nObjNum );
 }
 
-void InsertGridFrame( SdrPageGridFrameList *pLst, const SwFrm *pPg )
+void InsertGridFrame( SdrPageGridFrameList *pLst, const SwFrame *pPg )
 {
     SwRect aPrt( pPg->Prt() );
-    aPrt += pPg->Frm().Pos();
+    aPrt += pPg->Frame().Pos();
     const Rectangle aUser( aPrt.SVRect() );
-    const Rectangle aPaper( pPg->Frm().SVRect() );
+    const Rectangle aPaper( pPg->Frame().SVRect() );
     pLst->Insert( SdrPageGridFrame( aPaper, aUser ) );
 }
 
@@ -148,9 +148,9 @@ const SdrPageGridFrameList*  SwDPage::GetGridFrameList(
         {
             //The drawing demands all pages which overlap with the rest.
             const SwRect aRect( *pRect );
-            const SwFrm *pPg = pSh->GetLayout()->Lower();
+            const SwFrame *pPg = pSh->GetLayout()->Lower();
             do
-            {   if ( pPg->Frm().IsOver( aRect ) )
+            {   if ( pPg->Frame().IsOver( aRect ) )
                     ::InsertGridFrame( const_cast<SwDPage*>(this)->pGridLst, pPg );
                 pPg = pPg->GetNext();
             } while ( pPg );
@@ -158,12 +158,12 @@ const SdrPageGridFrameList*  SwDPage::GetGridFrameList(
         else
         {
             //The drawing demands all visible pages
-            const SwFrm *pPg = pSh->Imp()->GetFirstVisPage(pSh->GetOut());
+            const SwFrame *pPg = pSh->Imp()->GetFirstVisPage(pSh->GetOut());
             if ( pPg )
                 do
                 {   ::InsertGridFrame( const_cast<SwDPage*>(this)->pGridLst, pPg );
                     pPg = pPg->GetNext();
-                } while ( pPg && pPg->Frm().IsOver( pSh->VisArea() ) );
+                } while ( pPg && pPg->Frame().IsOver( pSh->VisArea() ) );
         }
     }
     return pGridLst;
@@ -185,9 +185,9 @@ bool SwDPage::RequestHelp( vcl::Window* pWindow, SdrView* pView,
         SdrPageView* pPV;
         SdrObject* pObj;
         if( pView->PickObj( aPos, 0, pObj, pPV, SdrSearchOptions::PICKMACRO ) &&
-             pObj->ISA(SwVirtFlyDrawObj) )
+             dynamic_cast<const SwVirtFlyDrawObj*>( pObj) !=  nullptr )
         {
-            SwFlyFrm *pFly = static_cast<SwVirtFlyDrawObj*>(pObj)->GetFlyFrm();
+            SwFlyFrame *pFly = static_cast<SwVirtFlyDrawObj*>(pObj)->GetFlyFrame();
             const SwFormatURL &rURL = pFly->GetFormat()->GetURL();
             OUString sText;
             if( rURL.GetMap() )
@@ -212,7 +212,7 @@ bool SwDPage::RequestHelp( vcl::Window* pWindow, SdrView* pView,
                 {
                     // then append the relative pixel position!!
                     Point aPt( aPos );
-                    aPt -= pFly->Frm().Pos();
+                    aPt -= pFly->Frame().Pos();
                     // without MapMode-Offset !!!!!
                     // without MapMode-Offset, without Offset, w ... !!!!!
                     aPt = pWindow->LogicToPixel(
@@ -237,14 +237,14 @@ bool SwDPage::RequestHelp( vcl::Window* pWindow, SdrView* pView,
                         sText = SwViewShell::GetShellRes()->aLinkClick + ": " + sText;
                 }
 
+                // then display the help:
+                Rectangle aRect( rEvt.GetMousePosPixel(), Size(1,1) );
                 if( rEvt.GetMode() & HelpEventMode::BALLOON )
                 {
-                    Help::ShowBalloon( pWindow, rEvt.GetMousePosPixel(), sText );
+                    Help::ShowBalloon( pWindow, rEvt.GetMousePosPixel(), aRect, sText );
                 }
                 else
                 {
-                    // then display the help:
-                    Rectangle aRect( rEvt.GetMousePosPixel(), Size(1,1) );
                     Help::ShowQuickHelp( pWindow, aRect, sText );
                 }
                 bContinue = false;

@@ -111,18 +111,18 @@ namespace vclcanvas
 
         const rendering::ViewState aViewState(
             geometry::AffineMatrix2D(1,0,0, 0,1,0),
-            NULL);
+            nullptr);
 
         rendering::RenderState aRenderState (
             geometry::AffineMatrix2D(1,0,0,0,1,0),
-            NULL,
+            nullptr,
             uno::Sequence<double>(4),
             rendering::CompositeOperation::SOURCE);
 
         ::std::unique_ptr< long []> aOffsets(new long[maLogicalAdvancements.getLength()]);
         setupTextOffsets(aOffsets.get(), maLogicalAdvancements, aViewState, aRenderState);
 
-        uno::Sequence< uno::Reference< rendering::XPolyPolygon2D> > aOutlineSequence;
+        std::vector< uno::Reference< rendering::XPolyPolygon2D> > aOutlineSequence;
         ::basegfx::B2DPolyPolygonVector aOutlines;
         if (pVDev->GetTextOutlines(
             aOutlines,
@@ -134,7 +134,7 @@ namespace vclcanvas
             0,
             aOffsets.get()))
         {
-            aOutlineSequence.realloc(aOutlines.size());
+            aOutlineSequence.reserve(aOutlines.size());
             sal_Int32 nIndex (0);
             for (::basegfx::B2DPolyPolygonVector::const_iterator
                      iOutline(aOutlines.begin()),
@@ -148,7 +148,7 @@ namespace vclcanvas
             }
         }
 
-        return aOutlineSequence;
+        return comphelper::containerToSequence(aOutlineSequence);
     }
 
     uno::Sequence< geometry::RealRectangle2D > SAL_CALL TextLayout::queryInkMeasures(  ) throw (uno::RuntimeException, std::exception)
@@ -164,11 +164,11 @@ namespace vclcanvas
 
         const rendering::ViewState aViewState(
             geometry::AffineMatrix2D(1,0,0, 0,1,0),
-            NULL);
+            nullptr);
 
         rendering::RenderState aRenderState (
             geometry::AffineMatrix2D(1,0,0,0,1,0),
-            NULL,
+            nullptr,
             uno::Sequence<double>(4),
             rendering::CompositeOperation::SOURCE);
 
@@ -444,7 +444,7 @@ namespace vclcanvas
                                        const rendering::ViewState&      viewState,
                                        const rendering::RenderState&    renderState     ) const
     {
-        ENSURE_OR_THROW( outputOffsets!=NULL,
+        ENSURE_OR_THROW( outputOffsets!=nullptr,
                           "TextLayout::setupTextOffsets offsets NULL" );
 
         ::basegfx::B2DHomMatrix aMatrix;
@@ -472,8 +472,7 @@ namespace vclcanvas
 
     uno::Sequence< OUString > SAL_CALL TextLayout::getSupportedServiceNames()  throw( uno::RuntimeException, std::exception )
     {
-        uno::Sequence< OUString > aRet(1);
-        aRet[0] = "com.sun.star.rendering.TextLayout";
+        uno::Sequence< OUString > aRet { "com.sun.star.rendering.TextLayout" };
 
         return aRet;
     }

@@ -101,7 +101,7 @@ XTYPEPROVIDER_COMMON_IMPL( Content );
 uno::Sequence< uno::Type > SAL_CALL Content::getTypes()
     throw( uno::RuntimeException, std::exception )
 {
-    static cppu::OTypeCollection* pCollection = NULL;
+    static cppu::OTypeCollection* pCollection = nullptr;
 
     if ( !pCollection )
     {
@@ -139,8 +139,7 @@ OUString SAL_CALL Content::getImplementationName()
 uno::Sequence< OUString > SAL_CALL Content::getSupportedServiceNames()
     throw( uno::RuntimeException, std::exception )
 {
-    uno::Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[ 0 ] = "com.sun.star.ucb.CHelpContent";
+    uno::Sequence<OUString> aSNS { "com.sun.star.ucb.CHelpContent" };
 
     return aSNS;
 }
@@ -169,9 +168,7 @@ private:
 
     uno::Reference< uno::XComponentContext >     m_xContext;
     uno::Reference< ucb::XContentProvider >      m_xProvider;
-    sal_Int32                                    m_nOpenMode;
     uno::Sequence< beans::Property >             m_seq;
-    uno::Sequence< ucb::NumberedSortingInfo >    m_seqSort;
     URLParameter                                 m_aURLParameter;
     Databases*                                   m_pDatabases;
 
@@ -180,28 +177,22 @@ public:
     ResultSetForRootFactory(
         const uno::Reference< uno::XComponentContext >& xContext,
         const uno::Reference< ucb::XContentProvider >&  xProvider,
-        sal_Int32 nOpenMode,
         const uno::Sequence< beans::Property >& seq,
-        const uno::Sequence< ucb::NumberedSortingInfo >& seqSort,
         const URLParameter& rURLParameter,
         Databases* pDatabases )
         : m_xContext( xContext ),
           m_xProvider( xProvider ),
-          m_nOpenMode( nOpenMode ),
           m_seq( seq ),
-          m_seqSort( seqSort ),
           m_aURLParameter( rURLParameter ),
           m_pDatabases( pDatabases )
     {
     }
 
-    ResultSetBase* createResultSet() SAL_OVERRIDE
+    ResultSetBase* createResultSet() override
     {
         return new ResultSetForRoot( m_xContext,
                                      m_xProvider,
-                                     m_nOpenMode,
                                      m_seq,
-                                     m_seqSort,
                                      m_aURLParameter,
                                      m_pDatabases );
     }
@@ -214,9 +205,7 @@ private:
 
     uno::Reference< uno::XComponentContext >     m_xContext;
     uno::Reference< ucb::XContentProvider >      m_xProvider;
-    sal_Int32                                    m_nOpenMode;
     uno::Sequence< beans::Property >             m_seq;
-    uno::Sequence< ucb::NumberedSortingInfo >    m_seqSort;
     URLParameter                                 m_aURLParameter;
     Databases*                                   m_pDatabases;
 
@@ -225,28 +214,22 @@ public:
     ResultSetForQueryFactory(
         const uno::Reference< uno::XComponentContext >& rxContext,
         const uno::Reference< ucb::XContentProvider >&  xProvider,
-        sal_Int32 nOpenMode,
         const uno::Sequence< beans::Property >& seq,
-        const uno::Sequence< ucb::NumberedSortingInfo >& seqSort,
         const URLParameter& rURLParameter,
         Databases* pDatabases )
         : m_xContext( rxContext ),
           m_xProvider( xProvider ),
-          m_nOpenMode( nOpenMode ),
           m_seq( seq ),
-          m_seqSort( seqSort ),
           m_aURLParameter( rURLParameter ),
           m_pDatabases( pDatabases )
     {
     }
 
-    ResultSetBase* createResultSet() SAL_OVERRIDE
+    ResultSetBase* createResultSet() override
     {
         return new ResultSetForQuery( m_xContext,
                                       m_xProvider,
-                                      m_nOpenMode,
                                       m_seq,
-                                      m_seqSort,
                                       m_aURLParameter,
                                       m_pDatabases );
     }
@@ -347,15 +330,11 @@ uno::Any SAL_CALL Content::execute(
             uno::Reference< ucb::XDynamicResultSet > xSet
                 = new DynamicResultSet(
                     m_xContext,
-                    this,
                     aOpenCommand,
-                    Environment,
                     new ResultSetForRootFactory(
                         m_xContext,
                         m_xProvider.get(),
-                        aOpenCommand.Mode,
                         aOpenCommand.Properties,
-                        aOpenCommand.SortingInfo,
                         m_aURLParameter,
                         m_pDatabases));
             aRet <<= xSet;
@@ -365,15 +344,11 @@ uno::Any SAL_CALL Content::execute(
             uno::Reference< ucb::XDynamicResultSet > xSet
                 = new DynamicResultSet(
                     m_xContext,
-                    this,
                     aOpenCommand,
-                    Environment,
                     new ResultSetForQueryFactory(
                         m_xContext,
                         m_xProvider.get(),
-                        aOpenCommand.Mode,
                         aOpenCommand.Properties,
-                        aOpenCommand.SortingInfo,
                         m_aURLParameter,
                         m_pDatabases ) );
             aRet <<= xSet;
@@ -421,11 +396,7 @@ uno::Reference< sdbc::XRow > Content::getPropertyValues(
         else if ( rProp.Name == "IsErrorDocument" )
             xRow->appendBoolean( rProp, m_aURLParameter.isErrorDocument() );
         else if ( rProp.Name == "MediaType" )
-            if( m_aURLParameter.isPicture() )
-                xRow->appendString(
-                    rProp,
-                    OUString( "image/gif" ) );
-            else if( m_aURLParameter.isActive() )
+            if( m_aURLParameter.isActive() )
                 xRow->appendString(
                     rProp,
                     OUString( "text/plain" ) );

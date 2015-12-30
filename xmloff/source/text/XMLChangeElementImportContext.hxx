@@ -59,7 +59,6 @@ class XMLChangeElementImportContext : public SvXMLImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLChangeElementImportContext(
         SvXMLImport& rImport,
@@ -73,16 +72,13 @@ public:
     virtual SvXMLImportContext* CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList> & xAttrList) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList) override;
 
-    // #107848#
     // Start- and EndElement are needed here to set the inside_deleted_section
     // flag at the corresponding TextImportHelper
-    virtual void StartElement( const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+    virtual void StartElement( const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
 
-    // #107848#
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 };
 
 #endif

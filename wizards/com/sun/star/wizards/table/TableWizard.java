@@ -82,6 +82,7 @@ public class TableWizard extends DatabaseObjectWizard implements XTextListener
         }
     }
 
+    @Override
     protected void leaveStep(int nOldStep, int nNewStep)
     {
         switch (nOldStep)
@@ -104,6 +105,7 @@ public class TableWizard extends DatabaseObjectWizard implements XTextListener
         }
     }
 
+    @Override
     protected void enterStep(int nOldStep, int nNewStep)
     {
         switch (nNewStep)
@@ -149,7 +151,6 @@ public class TableWizard extends DatabaseObjectWizard implements XTextListener
     public void setcompleted(int _ndialogpage, boolean _biscompleted)
     {
         boolean bScenarioiscompleted = _biscompleted;
-        boolean bFieldFormatsiscompleted = _biscompleted;
         boolean bPrimaryKeysiscompleted = _biscompleted;
         boolean bFinalPageiscompleted = _biscompleted;
         if (_ndialogpage == SOMAINPAGE)
@@ -159,14 +160,6 @@ public class TableWizard extends DatabaseObjectWizard implements XTextListener
         else
         {
             bScenarioiscompleted = iscompleted(SOMAINPAGE);
-        }
-        if (_ndialogpage != TableWizard.SOFIELDSFORMATPAGE)
-        {
-            bFieldFormatsiscompleted = iscompleted(SOFIELDSFORMATPAGE);
-            if (!bFieldFormatsiscompleted)                              // it might be that the Fieldformatter has not yet been initialized
-            {
-                bFieldFormatsiscompleted = bScenarioiscompleted;        // in this case query the scenarioselector
-            }
         }
         if (_ndialogpage != TableWizard.SOPRIMARYKEYPAGE && (this.curPrimaryKeyHandler != null))
         {
@@ -246,14 +239,11 @@ public class TableWizard extends DatabaseObjectWizard implements XTextListener
         if (curTableDescriptor.supportsPrimaryKeys())
         {
             String[] keyfieldnames = curPrimaryKeyHandler.getPrimaryKeyFields();
-            if (keyfieldnames != null)
+            if (keyfieldnames != null && keyfieldnames.length > 0)
             {
-                if (keyfieldnames.length > 0)
-                {
-                    boolean bIsAutoIncrement = curPrimaryKeyHandler.isAutoIncremented();
-                    bIsSuccessfull = curTableDescriptor.createTable(catalogname, schemaname, tablename, keyfieldnames, bIsAutoIncrement);
-                    bTableCreated = true;
-                }
+                boolean bIsAutoIncrement = curPrimaryKeyHandler.isAutoIncremented();
+                bIsSuccessfull = curTableDescriptor.createTable(catalogname, schemaname, tablename, keyfieldnames, bIsAutoIncrement);
+                bTableCreated = true;
             }
         }
         if (!bTableCreated)
@@ -267,6 +257,7 @@ public class TableWizard extends DatabaseObjectWizard implements XTextListener
         return bIsSuccessfull;
     }
 
+    @Override
     public boolean finishWizard()
     {
         super.switchToStep(super.getCurrentStep(), SOFINALPAGE);
@@ -323,6 +314,7 @@ public class TableWizard extends DatabaseObjectWizard implements XTextListener
         }
     }
 
+    @Override
     public void cancelWizard()
     {
         xDialog.endExecute();

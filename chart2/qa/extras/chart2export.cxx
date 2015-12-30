@@ -35,7 +35,7 @@ class Chart2ExportTest : public ChartTest, public XmlTestTools
 {
 protected:
 
-    virtual void registerNamespaces(xmlXPathContextPtr& pXmlXPathCtx) SAL_OVERRIDE;
+    virtual void registerNamespaces(xmlXPathContextPtr& pXmlXPathCtx) override;
 public:
     Chart2ExportTest() : ChartTest() {}
     void testErrorBarXLSX();
@@ -227,24 +227,27 @@ xmlDocPtr Chart2ExportTest::parseExport(const OUString& rDir, const OUString& rF
 
 void Chart2ExportTest::registerNamespaces(xmlXPathContextPtr& pXmlXPathCtx)
 {
-    struct { xmlChar* pPrefix; xmlChar* pURI; } aNamespaces[] =
+    struct { char const * pPrefix; char const * pURI; } aNamespaces[] =
     {
-        { BAD_CAST("w"), BAD_CAST("http://schemas.openxmlformats.org/wordprocessingml/2006/main") },
-        { BAD_CAST("v"), BAD_CAST("urn:schemas-microsoft-com:vml") },
-        { BAD_CAST("c"), BAD_CAST("http://schemas.openxmlformats.org/drawingml/2006/chart") },
-        { BAD_CAST("a"), BAD_CAST("http://schemas.openxmlformats.org/drawingml/2006/main") },
-        { BAD_CAST("mc"), BAD_CAST("http://schemas.openxmlformats.org/markup-compatibility/2006") },
-        { BAD_CAST("wps"), BAD_CAST("http://schemas.microsoft.com/office/word/2010/wordprocessingShape") },
-        { BAD_CAST("wpg"), BAD_CAST("http://schemas.microsoft.com/office/word/2010/wordprocessingGroup") },
-        { BAD_CAST("wp"), BAD_CAST("http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing") },
-        { BAD_CAST("office"), BAD_CAST("urn:oasis:names:tc:opendocument:xmlns:office:1.0") },
-        { BAD_CAST("table"), BAD_CAST("urn:oasis:names:tc:opendocument:xmlns:table:1.0") },
-        { BAD_CAST("text"), BAD_CAST("urn:oasis:names:tc:opendocument:xmlns:text:1.0") },
-        { BAD_CAST("xlink"), BAD_CAST("http://www.w3c.org/1999/xlink") }
+        { "w", "http://schemas.openxmlformats.org/wordprocessingml/2006/main" },
+        { "v", "urn:schemas-microsoft-com:vml" },
+        { "c", "http://schemas.openxmlformats.org/drawingml/2006/chart" },
+        { "a", "http://schemas.openxmlformats.org/drawingml/2006/main" },
+        { "mc", "http://schemas.openxmlformats.org/markup-compatibility/2006" },
+        { "wps", "http://schemas.microsoft.com/office/word/2010/wordprocessingShape" },
+        { "wpg", "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" },
+        { "wp", "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" },
+        { "office", "urn:oasis:names:tc:opendocument:xmlns:office:1.0" },
+        { "table", "urn:oasis:names:tc:opendocument:xmlns:table:1.0" },
+        { "text", "urn:oasis:names:tc:opendocument:xmlns:text:1.0" },
+        { "xlink", "http://www.w3c.org/1999/xlink" }
     };
     for(size_t i = 0; i < SAL_N_ELEMENTS(aNamespaces); ++i)
     {
-        xmlXPathRegisterNs(pXmlXPathCtx, aNamespaces[i].pPrefix, aNamespaces[i].pURI );
+        xmlXPathRegisterNs(
+            pXmlXPathCtx,
+            reinterpret_cast<xmlChar const *>(aNamespaces[i].pPrefix),
+            reinterpret_cast<xmlChar const *>(aNamespaces[i].pURI));
     }
 }
 
@@ -285,11 +288,11 @@ void checkCommonTrendline(
     CPPUNIT_ASSERT(xProperties->getPropertyValue("ExtrapolateBackward") >>= aExtrapolateBackward);
     CPPUNIT_ASSERT_EQUAL(aExpectedExtrapolateBackward, aExtrapolateBackward);
 
-    bool aForceIntercept = false;
-    CPPUNIT_ASSERT(xProperties->getPropertyValue("ForceIntercept") >>= aForceIntercept);
-    CPPUNIT_ASSERT_EQUAL(aExpectedForceIntercept, aForceIntercept);
+    bool bForceIntercept = false;
+    CPPUNIT_ASSERT(xProperties->getPropertyValue("ForceIntercept") >>= bForceIntercept);
+    CPPUNIT_ASSERT_EQUAL(aExpectedForceIntercept, bForceIntercept);
 
-    if (aForceIntercept)
+    if (bForceIntercept)
     {
         double aInterceptValue = 0.0;
         CPPUNIT_ASSERT(xProperties->getPropertyValue("InterceptValue") >>= aInterceptValue);
@@ -299,13 +302,13 @@ void checkCommonTrendline(
     Reference< XPropertySet > xEquationProperties( xCurve->getEquationProperties() );
     CPPUNIT_ASSERT(xEquationProperties.is());
 
-    bool aShowEquation = false;
-    CPPUNIT_ASSERT(xEquationProperties->getPropertyValue("ShowEquation") >>= aShowEquation);
-    CPPUNIT_ASSERT_EQUAL(aExpectedShowEquation, aShowEquation);
+    bool bShowEquation = false;
+    CPPUNIT_ASSERT(xEquationProperties->getPropertyValue("ShowEquation") >>= bShowEquation);
+    CPPUNIT_ASSERT_EQUAL(aExpectedShowEquation, bShowEquation);
 
-    bool aShowCorrelationCoefficient = false;
-    CPPUNIT_ASSERT(xEquationProperties->getPropertyValue("ShowCorrelationCoefficient") >>= aShowCorrelationCoefficient);
-    CPPUNIT_ASSERT_EQUAL(aExpectedR2, aShowCorrelationCoefficient);
+    bool bShowCorrelationCoefficient = false;
+    CPPUNIT_ASSERT(xEquationProperties->getPropertyValue("ShowCorrelationCoefficient") >>= bShowCorrelationCoefficient);
+    CPPUNIT_ASSERT_EQUAL(aExpectedR2, bShowCorrelationCoefficient);
 }
 
 void checkNameAndType(Reference<XPropertySet> xProperties, const OUString& aExpectedName, const OUString& aExpectedServiceName)
@@ -590,7 +593,7 @@ void Chart2ExportTest::testEmbeddingsGrabBag()
    uno::Reference<text::XTextDocument> xTextDocument(mxComponent, uno::UNO_QUERY);
    uno::Reference<beans::XPropertySet> xTextDocumentPropertySet(xTextDocument, uno::UNO_QUERY);
    uno::Sequence<beans::PropertyValue> aGrabBag(0);
-   xTextDocumentPropertySet->getPropertyValue(OUString("InteropGrabBag")) >>= aGrabBag;
+   xTextDocumentPropertySet->getPropertyValue("InteropGrabBag") >>= aGrabBag;
    CPPUNIT_ASSERT(aGrabBag.hasElements()); // Grab Bag not empty
    bool bEmbeddings = false;
    const char* testEmbeddedFileNames[3] = {"word/embeddings/Microsoft_Excel_Worksheet3.xlsx",
@@ -1115,7 +1118,7 @@ void Chart2ExportTest::testEmbeddingsOleObjectGrabBag()
    uno::Reference<text::XTextDocument> xTextDocument(mxComponent, uno::UNO_QUERY);
    uno::Reference<beans::XPropertySet> xTextDocumentPropertySet(xTextDocument, uno::UNO_QUERY);
    uno::Sequence<beans::PropertyValue> aGrabBag(0);
-   xTextDocumentPropertySet->getPropertyValue(OUString("InteropGrabBag")) >>= aGrabBag;
+   xTextDocumentPropertySet->getPropertyValue("InteropGrabBag") >>= aGrabBag;
    CPPUNIT_ASSERT(aGrabBag.hasElements()); // Grab Bag not empty
    bool bEmbeddings = false;
    const char* testEmbeddedFileNames[1] = {"word/embeddings/oleObject1.bin"};
@@ -1281,7 +1284,7 @@ void Chart2ExportTest::testAxisNumberFormatXLSX()
     assertXPath(pXmlDoc, "/c:chartSpace/c:chart/c:plotArea/c:valAx[1]/c:numFmt", "formatCode", "0.00E+000");
     assertXPath(pXmlDoc, "/c:chartSpace/c:chart/c:plotArea/c:valAx[1]/c:numFmt", "sourceLinked", "0");
 
-    assertXPath(pXmlDoc, "/c:chartSpace/c:chart/c:plotArea/c:valAx[2]/c:numFmt", "formatCode", "[$$-409]#,##0;-[$$-409]#,##0");
+    assertXPath(pXmlDoc, "/c:chartSpace/c:chart/c:plotArea/c:valAx[2]/c:numFmt", "formatCode", "[$$-409]#,##0;\\-[$$-409]#,##0");
     assertXPath(pXmlDoc, "/c:chartSpace/c:chart/c:plotArea/c:valAx[2]/c:numFmt", "sourceLinked", "1");
 }
 

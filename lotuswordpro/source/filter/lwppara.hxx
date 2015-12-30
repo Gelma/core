@@ -130,9 +130,9 @@ struct ParaNumbering
 
     void clear()
     {
-        pPrefix = NULL;
-        pParaNumber = NULL;
-        pSuffix = NULL;
+        pPrefix = nullptr;
+        pParaNumber = nullptr;
+        pSuffix = nullptr;
         nPrefixLevel = 0;
         nNumLevel = 0;
         nSuffixLevel = 0;
@@ -145,10 +145,10 @@ class LwpPara : public LwpDLVList
 public:
     LwpPara(LwpObjectHeader& objHdr, LwpSvStream* pStrm);
 
-    void Read() SAL_OVERRIDE;
-    void RegisterStyle() SAL_OVERRIDE;
-    void Parse(IXFStream* pOutputStream) SAL_OVERRIDE;
-    void XFConvert(XFContentContainer* pCont) SAL_OVERRIDE;
+    void Read() override;
+    void RegisterStyle() override;
+    void Parse(IXFStream* pOutputStream) override;
+    void XFConvert(XFContentContainer* pCont) override;
 
     LwpPara* GetParent();
     LwpObjectID& GetStoryID();
@@ -241,7 +241,6 @@ protected:
 
     XFContentContainer* m_pXFContainer; //Current container for VO_PARA
 
-    OUString m_TabStyleName;
     enum
     {
         /* bit definitions for the paragraph object flags */
@@ -324,6 +323,8 @@ inline OUString LwpPara::GetBulletStyleName() const
 }
 inline void LwpPara::AddXFContent(XFContent* pCont)
 {
+    if (!m_pXFContainer)
+        throw std::runtime_error("paragraph lacks container");
     m_pXFContainer->Add(pCont);
 }
 inline void LwpPara::SetXFContainer(XFContentContainer* pCont)
@@ -348,7 +349,7 @@ inline LwpStory* LwpPara::GetStory()
 {
     if (m_Story.obj().is())
         return dynamic_cast<LwpStory*>(m_Story.obj().get());
-    return NULL;
+    return nullptr;
 }
 inline void LwpPara::SetParaDropcap(bool bFlag)
 {

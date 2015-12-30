@@ -37,19 +37,16 @@ namespace com { namespace sun { namespace star {
 class XMLAutoTextContainerEventImport : public SvXMLImportContext
 {
     /// the parent auto text container
-    const ::com::sun::star::uno::Reference<
-        ::com::sun::star::container::XNameReplace> & rEvents;
+    const css::uno::Reference<css::container::XNameReplace> & rEvents;
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLAutoTextContainerEventImport(
         SvXMLImport& rImport,
         sal_uInt16 nPrfx,
         const OUString& rLName,
-        const ::com::sun::star::uno::Reference<
-                ::com::sun::star::container::XNameReplace > & rEvents );
+        const css::uno::Reference<css::container::XNameReplace > & rEvents );
 
     virtual ~XMLAutoTextContainerEventImport();
 
@@ -59,8 +56,7 @@ protected:
     virtual SvXMLImportContext *CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList> & xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList ) override;
 };
 
 #endif

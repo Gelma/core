@@ -79,9 +79,9 @@ public:
 class ScInputCfg : public ScInputOptions,
                   public utl::ConfigItem
 {
-    static com::sun::star::uno::Sequence<OUString> GetPropertyNames();
+    static css::uno::Sequence<OUString> GetPropertyNames();
 
-    virtual void    ImplCommit() SAL_OVERRIDE;
+    virtual void    ImplCommit() override;
 
 public:
             ScInputCfg();
@@ -89,7 +89,7 @@ public:
     void            SetOptions( const ScInputOptions& rNew );
     void            OptionsChanged();   // after direct access to SetOptions base class
 
-    virtual void    Notify( const com::sun::star::uno::Sequence<OUString>& aPropertyNames ) SAL_OVERRIDE;
+    virtual void    Notify( const css::uno::Sequence<OUString>& aPropertyNames ) override;
 };
 
 #endif

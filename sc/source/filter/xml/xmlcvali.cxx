@@ -54,7 +54,7 @@ class ScXMLContentValidationContext : public SvXMLImportContext
     const ScXMLImport& GetScImport() const { return static_cast<const ScXMLImport&>(GetImport()); }
     ScXMLImport& GetScImport() { return static_cast<ScXMLImport&>(GetImport()); }
 
-    com::sun::star::sheet::ValidationAlertStyle GetAlertStyle() const;
+    css::sheet::ValidationAlertStyle GetAlertStyle() const;
     void SetFormula( OUString& rFormula, OUString& rFormulaNmsp, FormulaGrammar::Grammar& reGrammar,
         const OUString& rCondition, const OUString& rGlobNmsp, FormulaGrammar::Grammar eGlobGrammar, bool bHasNmsp ) const;
     void GetCondition( ScMyImportValidation& rValidation ) const;
@@ -63,17 +63,15 @@ public:
 
     ScXMLContentValidationContext( ScXMLImport& rImport, sal_uInt16 nPrfx,
                         const OUString& rLName,
-                        const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& xAttrList);
+                        const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList);
 
     virtual ~ScXMLContentValidationContext();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                      const OUString& rLocalName,
-                                     const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
+                                     const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList ) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
     void SetHelpMessage(const OUString& sTitle, const OUString& sMessage, const bool bDisplay);
     void SetErrorMessage(const OUString& sTitle, const OUString& sMessage, const OUString& sMessageType, const bool bDisplay);
@@ -95,18 +93,16 @@ public:
 
     ScXMLHelpMessageContext( ScXMLImport& rImport, sal_uInt16 nPrfx,
                         const OUString& rLName,
-                        const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
+                        const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
                         ScXMLContentValidationContext* pValidationContext);
 
     virtual ~ScXMLHelpMessageContext();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                      const OUString& rLocalName,
-                                     const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
+                                     const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList ) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 };
 
 class ScXMLErrorMessageContext : public SvXMLImportContext
@@ -125,18 +121,16 @@ public:
 
     ScXMLErrorMessageContext( ScXMLImport& rImport, sal_uInt16 nPrfx,
                         const OUString& rLName,
-                        const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
+                        const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
                         ScXMLContentValidationContext* pValidationContext);
 
     virtual ~ScXMLErrorMessageContext();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                      const OUString& rLocalName,
-                                     const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
+                                     const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList ) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 };
 
 class ScXMLErrorMacroContext : public SvXMLImportContext
@@ -152,24 +146,21 @@ public:
 
     ScXMLErrorMacroContext( ScXMLImport& rImport, sal_uInt16 nPrfx,
                         const OUString& rLName,
-                        const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
+                        const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
                         ScXMLContentValidationContext* pValidationContext);
 
     virtual ~ScXMLErrorMacroContext();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                      const OUString& rLocalName,
-                                     const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
-    virtual void EndElement() SAL_OVERRIDE;
+                                     const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList ) override;
+    virtual void EndElement() override;
 };
 
 ScXMLContentValidationsContext::ScXMLContentValidationsContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ ) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ ) :
     SvXMLImportContext( rImport, nPrfx, rLName )
 {
     // here are no attributes
@@ -181,10 +172,9 @@ ScXMLContentValidationsContext::~ScXMLContentValidationsContext()
 
 SvXMLImportContext *ScXMLContentValidationsContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetScImport().GetContentValidationsElemTokenMap();
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -207,8 +197,7 @@ void ScXMLContentValidationsContext::EndElement()
 ScXMLContentValidationContext::ScXMLContentValidationContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     nShowList(sheet::TableValidationVisibility::UNSORTED),
     bAllowEmptyCell(true),
@@ -271,10 +260,9 @@ ScXMLContentValidationContext::~ScXMLContentValidationContext()
 
 SvXMLImportContext *ScXMLContentValidationContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetScImport().GetContentValidationElemTokenMap();
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -478,8 +466,7 @@ void ScXMLContentValidationContext::SetErrorMacro(const bool bExecute)
 ScXMLHelpMessageContext::ScXMLHelpMessageContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
                                       ScXMLContentValidationContext* pTempValidationContext) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     sTitle(),
@@ -516,10 +503,9 @@ ScXMLHelpMessageContext::~ScXMLHelpMessageContext()
 
 SvXMLImportContext *ScXMLHelpMessageContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetScImport().GetContentValidationMessageElemTokenMap();
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -548,8 +534,7 @@ void ScXMLHelpMessageContext::EndElement()
 ScXMLErrorMessageContext::ScXMLErrorMessageContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
                                       ScXMLContentValidationContext* pTempValidationContext) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     sTitle(),
@@ -590,10 +575,9 @@ ScXMLErrorMessageContext::~ScXMLErrorMessageContext()
 
 SvXMLImportContext *ScXMLErrorMessageContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetScImport().GetContentValidationMessageElemTokenMap();
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -622,8 +606,7 @@ void ScXMLErrorMessageContext::EndElement()
 ScXMLErrorMacroContext::ScXMLErrorMacroContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
                                       ScXMLContentValidationContext* pTempValidationContext) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     sName(),
@@ -658,10 +641,9 @@ ScXMLErrorMacroContext::~ScXMLErrorMacroContext()
 
 SvXMLImportContext *ScXMLErrorMacroContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ )
 {
-    SvXMLImportContext *pContext = NULL;
+    SvXMLImportContext *pContext = nullptr;
 
     if ((nPrefix == XML_NAMESPACE_SCRIPT) && IsXMLToken(rLName, XML_EVENTS))
     {

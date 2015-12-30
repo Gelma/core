@@ -81,6 +81,7 @@
 #include <filter/msfilter/util.hxx>
 #include <comphelper/sequence.hxx>
 #include <comphelper/propertyvalue.hxx>
+#include <unotools/mediadescriptor.hxx>
 
 using namespace ::com::sun::star;
 using namespace oox;
@@ -151,9 +152,8 @@ void lcl_handleTextField( const uno::Reference< beans::XPropertySet >& rxFieldPr
 
 struct FieldConversion
 {
-    OUString     sWordCommand;
+    OUString            sWordCommand;
     const sal_Char*     cFieldServiceName;
-    const sal_Char*     cFieldMasterServiceName;
     FieldId             eFieldId;
 };
 
@@ -175,8 +175,7 @@ DomainMapper_Impl::DomainMapper_Impl(
             uno::Reference<uno::XComponentContext> const& xContext,
             uno::Reference<lang::XComponent> const& xModel,
             SourceDocumentType eDocumentType,
-            uno::Reference<text::XTextRange> const& xInsertTextRange,
-            bool bIsNewDoc) :
+            utl::MediaDescriptor& rMediaDesc) :
         m_eDocumentType( eDocumentType ),
         m_rDMapper( rDMapper ),
         m_xTextDocument( xModel, uno::UNO_QUERY ),
@@ -227,8 +226,9 @@ DomainMapper_Impl::DomainMapper_Impl(
         m_xAnnotationField(),
         m_nAnnotationId( -1 ),
         m_aAnnotationPositions(),
-        m_xInsertTextRange(xInsertTextRange),
-        m_bIsNewDoc(bIsNewDoc),
+        m_aSmartTagHandler(m_xComponentContext, m_xTextDocument),
+        m_xInsertTextRange(rMediaDesc.getUnpackedValueOrDefault("TextInsertModeRange", uno::Reference<text::XTextRange>())),
+        m_bIsNewDoc(!rMediaDesc.getUnpackedValueOrDefault("InsertMode", false)),
         m_bInTableStyleRunProps(false),
         m_nTableDepth(0),
         m_bHasFtnSep(false),
@@ -242,7 +242,7 @@ DomainMapper_Impl::DomainMapper_Impl(
 {
     appendTableManager( );
     GetBodyText();
-    uno::Reference< text::XTextAppend > xBodyTextAppend = uno::Reference< text::XTextAppend >( m_xBodyText, uno::UNO_QUERY );
+    uno::Reference< text::XTextAppend > xBodyTextAppend( m_xBodyText, uno::UNO_QUERY );
     m_aTextAppendStack.push(TextAppendContext(xBodyTextAppend,
                 m_bIsNewDoc ? uno::Reference<text::XTextCursor>() : m_xBodyText->createTextCursorByRange(m_xInsertTextRange)));
 
@@ -301,8 +301,7 @@ uno::Reference< beans::XPropertySet > DomainMapper_Impl::GetDocumentSettings()
 {
     if( !m_xDocumentSettings.is() && m_xTextFactory.is())
     {
-        m_xDocumentSettings = uno::Reference< beans::XPropertySet >(
-            m_xTextFactory->createInstance("com.sun.star.document.Settings"), uno::UNO_QUERY );
+        m_xDocumentSettings.set( m_xTextFactory->createInstance("com.sun.star.document.Settings"), uno::UNO_QUERY );
     }
     return m_xDocumentSettings;
 }
@@ -1156,6 +1155,7 @@ void DomainMapper_Impl::finishParagraph( PropertyMapPtr pPropertyMap )
                     }
                 }
                 getTableManager( ).handle(xTextRange);
+                m_aSmartTagHandler.handle(xTextRange);
 
                 // Get the end of paragraph character inserted
                 uno::Reference< text::XTextCursor > xCur = xTextRange->getText( )->createTextCursor( );
@@ -1447,7 +1447,7 @@ uno::Reference< beans::XPropertySet > DomainMapper_Impl::appendTextSectionAfter(
             static const char sSectionService[] = "com.sun.star.text.TextSection";
             uno::Reference< text::XTextContent > xSection( m_xTextFactory->createInstance(sSectionService), uno::UNO_QUERY_THROW );
             xSection->attach( uno::Reference< text::XTextRange >( xCursor, uno::UNO_QUERY_THROW) );
-            xRet = uno::Reference< beans::XPropertySet > (xSection, uno::UNO_QUERY );
+            xRet.set(xSection, uno::UNO_QUERY );
         }
         catch(const uno::Exception&)
         {
@@ -1719,9 +1719,8 @@ void DomainMapper_Impl::PushAnnotation()
         m_bIsInComments = true;
         if (!GetTextFactory().is())
             return;
-        m_xAnnotationField = uno::Reference< beans::XPropertySet >( GetTextFactory()->createInstance(
-                "com.sun.star.text.TextField.Annotation" ),
-            uno::UNO_QUERY_THROW );
+        m_xAnnotationField.set( GetTextFactory()->createInstance( "com.sun.star.text.TextField.Annotation" ),
+                                uno::UNO_QUERY_THROW );
         uno::Reference< text::XText > xAnnotationText;
         m_xAnnotationField->getPropertyValue("TextRange") >>= xAnnotationText;
         m_aTextAppendStack.push(TextAppendContext(uno::Reference< text::XTextAppend >( xAnnotationText, uno::UNO_QUERY_THROW ),
@@ -2275,15 +2274,12 @@ static OUString lcl_ExtractToken(OUString const& rCommand,
     assert(rIndex == rCommand.getLength());
     if (bQuoted)
     {
+        // MS Word allows this, so just emit a debug message
         SAL_INFO("writerfilter.dmapper",
                     "field argument with unterminated quote");
-        return OUString();
     }
-    else
-    {
-        rHaveToken = !token.isEmpty();
-        return token.makeStringAndClear();
-    }
+    rHaveToken = !token.isEmpty();
+    return token.makeStringAndClear();
 }
 
 boost::tuple<OUString, std::vector<OUString>, std::vector<OUString> >
@@ -2293,6 +2289,16 @@ lcl_SplitFieldCommand(const OUString& rCommand)
     std::vector<OUString> arguments;
     std::vector<OUString> switches;
     sal_Int32 nStartIndex(0);
+    // tdf#54584: Field may be prepended by a backslash
+    // This is not an escapement, but already escaped literal "\"
+    // MS Word allows this, so just skip it
+    if ((rCommand.getLength() >= nStartIndex + 2) &&
+        (rCommand[nStartIndex] == L'\\') &&
+        (rCommand[nStartIndex + 1] != L'\\') &&
+        (rCommand[nStartIndex + 1] != L' '))
+    {
+        ++nStartIndex;
+    }
 
     do
     {
@@ -2455,7 +2461,7 @@ void DomainMapper_Impl::ChainTextFrames()
         sal_Int32 nSeq;
         OUString s_mso_next_textbox;
         bool bShapeNameSet;
-        TextFramesForChaining(): xShape(0), nId(0), nSeq(0), bShapeNameSet(false) {}
+        TextFramesForChaining(): xShape(nullptr), nId(0), nSeq(0), bShapeNameSet(false) {}
     } ;
     typedef std::map <OUString, TextFramesForChaining> ChainMap;
 
@@ -2607,16 +2613,14 @@ uno::Reference<beans::XPropertySet> DomainMapper_Impl::FindOrCreateFieldMaster(c
     if(xFieldMasterAccess->hasByName(sFieldMasterName))
     {
         //get the master
-        xMaster = uno::Reference< beans::XPropertySet >(xFieldMasterAccess->getByName(sFieldMasterName),
-                                                                            uno::UNO_QUERY_THROW);
+        xMaster.set(xFieldMasterAccess->getByName(sFieldMasterName), uno::UNO_QUERY_THROW);
     }
     else
     {
         //create the master
-        xMaster = uno::Reference< beans::XPropertySet >(
-                m_xTextFactory->createInstance(sFieldMasterService), uno::UNO_QUERY_THROW);
+        xMaster.set( m_xTextFactory->createInstance(sFieldMasterService), uno::UNO_QUERY_THROW);
         //set the master's name
-            xMaster->setPropertyValue(
+        xMaster->setPropertyValue(
                     getPropertyName(PROP_NAME),
                     uno::makeAny(rFieldMasterName));
     }
@@ -2780,68 +2784,68 @@ if(!bFilled)
     {
 //            {OUString("ADDRESSBLOCK"),  "",                         "", FIELD_ADDRESSBLOCK  },
 //            {OUString("ADVANCE"),       "",                         "", FIELD_ADVANCE       },
-        {OUString("ASK"),           "SetExpression",             "SetExpression", FIELD_ASK      },
-            {OUString("AUTONUM"),       "SetExpression",            "SetExpression", FIELD_AUTONUM   },
-            {OUString("AUTONUMLGL"),     "SetExpression",            "SetExpression", FIELD_AUTONUMLGL },
-            {OUString("AUTONUMOUT"),     "SetExpression",            "SetExpression", FIELD_AUTONUMOUT },
-            {OUString("AUTHOR"),        "DocInfo.CreateAuthor",                   "", FIELD_AUTHOR       },
-            {OUString("DATE"),          "DateTime",                 "", FIELD_DATE         },
-            {OUString("COMMENTS"),      "DocInfo.Description",      "", FIELD_COMMENTS     },
-            {OUString("CREATEDATE"),    "DocInfo.CreateDateTime",   "", FIELD_CREATEDATE   },
-            {OUString("DOCPROPERTY"),   "",                         "", FIELD_DOCPROPERTY },
-            {OUString("DOCVARIABLE"),   "User",                     "", FIELD_DOCVARIABLE  },
-            {OUString("EDITTIME"),      "DocInfo.EditTime",         "", FIELD_EDITTIME     },
-            {OUString("EQ"),            "",                         "", FIELD_EQ     },
-            {OUString("FILLIN"),        "Input",                    "", FIELD_FILLIN       },
-            {OUString("FILENAME"),      "FileName",                 "", FIELD_FILENAME     },
-//            {OUString("FILESIZE"),      "",                         "", FIELD_FILESIZE     },
-//            {OUString("FORMULA"),     "",                           "", FIELD_FORMULA },
-            {OUString("FORMCHECKBOX"),     "",                           "", FIELD_FORMCHECKBOX},
-            {OUString("FORMDROPDOWN"),     "DropDown",                           "", FIELD_FORMDROPDOWN},
-            {OUString("FORMTEXT"),     "Input", "", FIELD_FORMTEXT},
-//            {OUString("GOTOBUTTON"),    "",                         "", FIELD_GOTOBUTTON   },
-            {OUString("HYPERLINK"),     "",                         "", FIELD_HYPERLINK    },
-            {OUString("IF"),            "ConditionalText",          "", FIELD_IF           },
-//            {OUString("INFO"),      "","", FIELD_INFO         },
-//            {OUString("INCLUDEPICTURE"), "",                        "", FIELD_INCLUDEPICTURE},
-            {OUString("KEYWORDS"),      "DocInfo.KeyWords",         "", FIELD_KEYWORDS     },
-            {OUString("LASTSAVEDBY"),   "DocInfo.ChangeAuthor",                         "", FIELD_LASTSAVEDBY  },
-            {OUString("MACROBUTTON"),   "Macro",                         "", FIELD_MACROBUTTON  },
-            {OUString("MERGEFIELD"),    "Database",                 "Database", FIELD_MERGEFIELD},
-            {OUString("MERGEREC"),      "DatabaseNumberOfSet",      "", FIELD_MERGEREC     },
-//            {OUString("MERGESEQ"),      "",                         "", FIELD_MERGESEQ     },
-            {OUString("NEXT"),          "DatabaseNextSet",          "", FIELD_NEXT         },
-            {OUString("NEXTIF"),        "DatabaseNextSet",          "", FIELD_NEXTIF       },
-            {OUString("PAGE"),          "PageNumber",               "", FIELD_PAGE         },
-            {OUString("PAGEREF"),       "GetReference",             "", FIELD_PAGEREF      },
-            {OUString("REF"),           "GetReference",             "", FIELD_REF          },
-            {OUString("REVNUM"),        "DocInfo.Revision",         "", FIELD_REVNUM       },
-            {OUString("SAVEDATE"),      "DocInfo.Change",           "", FIELD_SAVEDATE     },
-//            {OUString("SECTION"),       "",                         "", FIELD_SECTION      },
-//            {OUString("SECTIONPAGES"),  "",                         "", FIELD_SECTIONPAGES },
-            {OUString("SEQ"),           "SetExpression",            "SetExpression", FIELD_SEQ          },
-//            {OUString("SET"),           "","", FIELD_SET          },
-//            {OUString("SKIPIF"),"",                                 "", FIELD_SKIPIF       },
-//            {OUString("STYLEREF"),"",                               "", FIELD_STYLEREF     },
-            {OUString("SUBJECT"),       "DocInfo.Subject",          "", FIELD_SUBJECT      },
-//            {OUString("SYMBOL"),"",                                 "", FIELD_SYMBOL       },
-            {OUString("TEMPLATE"),      "TemplateName",             "", FIELD_TEMPLATE},
-            {OUString("TIME"),          "DateTime",                 "", FIELD_TIME         },
-            {OUString("TITLE"),         "DocInfo.Title",            "", FIELD_TITLE        },
-            {OUString("USERINITIALS"),  "Author",                   "", FIELD_USERINITIALS       },
-//            {OUString("USERADDRESS"),   "",                         "", FIELD_USERADDRESS  },
-            {OUString("USERNAME"), "Author",                   "", FIELD_USERNAME       },
+        {OUString("ASK"),           "SetExpression",              FIELD_ASK      },
+            {OUString("AUTONUM"),       "SetExpression",            FIELD_AUTONUM   },
+            {OUString("AUTONUMLGL"),     "SetExpression",           FIELD_AUTONUMLGL },
+            {OUString("AUTONUMOUT"),     "SetExpression",           FIELD_AUTONUMOUT },
+            {OUString("AUTHOR"),        "DocInfo.CreateAuthor",     FIELD_AUTHOR       },
+            {OUString("DATE"),          "DateTime",                 FIELD_DATE         },
+            {OUString("COMMENTS"),      "DocInfo.Description",      FIELD_COMMENTS     },
+            {OUString("CREATEDATE"),    "DocInfo.CreateDateTime",   FIELD_CREATEDATE   },
+            {OUString("DOCPROPERTY"),   "",                         FIELD_DOCPROPERTY },
+            {OUString("DOCVARIABLE"),   "User",                     FIELD_DOCVARIABLE  },
+            {OUString("EDITTIME"),      "DocInfo.EditTime",         FIELD_EDITTIME     },
+            {OUString("EQ"),            "",                         FIELD_EQ     },
+            {OUString("FILLIN"),        "Input",                    FIELD_FILLIN       },
+            {OUString("FILENAME"),      "FileName",                 FIELD_FILENAME     },
+//            {OUString("FILESIZE"),      "",                         FIELD_FILESIZE     },
+//            {OUString("FORMULA"),     "",                           FIELD_FORMULA },
+            {OUString("FORMCHECKBOX"),     "",                        FIELD_FORMCHECKBOX},
+            {OUString("FORMDROPDOWN"),     "DropDown",                FIELD_FORMDROPDOWN},
+            {OUString("FORMTEXT"),     "Input", FIELD_FORMTEXT},
+//            {OUString("GOTOBUTTON"),    "",                         FIELD_GOTOBUTTON   },
+            {OUString("HYPERLINK"),     "",                         FIELD_HYPERLINK    },
+            {OUString("IF"),            "ConditionalText",          FIELD_IF           },
+//            {OUString("INFO"),      "",FIELD_INFO         },
+//            {OUString("INCLUDEPICTURE"), "",                        FIELD_INCLUDEPICTURE},
+            {OUString("KEYWORDS"),      "DocInfo.KeyWords",         FIELD_KEYWORDS     },
+            {OUString("LASTSAVEDBY"),   "DocInfo.ChangeAuthor",                         FIELD_LASTSAVEDBY  },
+            {OUString("MACROBUTTON"),   "Macro",                         FIELD_MACROBUTTON  },
+            {OUString("MERGEFIELD"),    "Database",                 FIELD_MERGEFIELD},
+            {OUString("MERGEREC"),      "DatabaseNumberOfSet",      FIELD_MERGEREC     },
+//            {OUString("MERGESEQ"),      "",                         FIELD_MERGESEQ     },
+            {OUString("NEXT"),          "DatabaseNextSet",          FIELD_NEXT         },
+            {OUString("NEXTIF"),        "DatabaseNextSet",          FIELD_NEXTIF       },
+            {OUString("PAGE"),          "PageNumber",               FIELD_PAGE         },
+            {OUString("PAGEREF"),       "GetReference",             FIELD_PAGEREF      },
+            {OUString("REF"),           "GetReference",             FIELD_REF          },
+            {OUString("REVNUM"),        "DocInfo.Revision",         FIELD_REVNUM       },
+            {OUString("SAVEDATE"),      "DocInfo.Change",           FIELD_SAVEDATE     },
+//            {OUString("SECTION"),       "",                         FIELD_SECTION      },
+//            {OUString("SECTIONPAGES"),  "",                         FIELD_SECTIONPAGES },
+            {OUString("SEQ"),           "SetExpression",            FIELD_SEQ          },
+//            {OUString("SET"),           FIELD_SET          },
+//            {OUString("SKIPIF"),"",                                 FIELD_SKIPIF       },
+//            {OUString("STYLEREF"),"",                               FIELD_STYLEREF     },
+            {OUString("SUBJECT"),       "DocInfo.Subject",          FIELD_SUBJECT      },
+//            {OUString("SYMBOL"),"",                                FIELD_SYMBOL       },
+            {OUString("TEMPLATE"),      "TemplateName",             FIELD_TEMPLATE},
+            {OUString("TIME"),          "DateTime",                 FIELD_TIME         },
+            {OUString("TITLE"),         "DocInfo.Title",            FIELD_TITLE        },
+            {OUString("USERINITIALS"),  "Author",                   FIELD_USERINITIALS       },
+//            {OUString("USERADDRESS"),   "",                         FIELD_USERADDRESS  },
+            {OUString("USERNAME"), "Author",                   FIELD_USERNAME       },
 
 
-            {OUString("TOC"), "com.sun.star.text.ContentIndex", "", FIELD_TOC},
-            {OUString("TC"), "com.sun.star.text.ContentIndexMark", "", FIELD_TC},
-            {OUString("NUMCHARS"), "CharacterCount", "", FIELD_NUMCHARS},
-            {OUString("NUMWORDS"), "WordCount", "", FIELD_NUMWORDS},
-            {OUString("NUMPAGES"), "PageCount", "", FIELD_NUMPAGES},
-            {OUString("INDEX"), "com.sun.star.text.DocumentIndex", "", FIELD_INDEX},
-            {OUString("XE"), "com.sun.star.text.DocumentIndexMark", "", FIELD_XE},
-            {OUString("BIBLIOGRAPHY"), "com.sun.star.text.Bibliography", "", FIELD_BIBLIOGRAPHY},
-            {OUString("CITATION"), "com.sun.star.text.TextField.Bibliography", "", FIELD_CITATION},
+            {OUString("TOC"), "com.sun.star.text.ContentIndex", FIELD_TOC},
+            {OUString("TC"), "com.sun.star.text.ContentIndexMark", FIELD_TC},
+            {OUString("NUMCHARS"), "CharacterCount", FIELD_NUMCHARS},
+            {OUString("NUMWORDS"), "WordCount", FIELD_NUMWORDS},
+            {OUString("NUMPAGES"), "PageCount", FIELD_NUMPAGES},
+            {OUString("INDEX"), "com.sun.star.text.DocumentIndex", FIELD_INDEX},
+            {OUString("XE"), "com.sun.star.text.DocumentIndexMark", FIELD_XE},
+            {OUString("BIBLIOGRAPHY"), "com.sun.star.text.Bibliography", FIELD_BIBLIOGRAPHY},
+            {OUString("CITATION"), "com.sun.star.text.TextField.Bibliography", FIELD_CITATION},
 
 //            {OUString(""), "", "", FIELD_},
 
@@ -2870,9 +2874,9 @@ const FieldConversionMap_t & lcl_GetEnhancedFieldConversion()
     {
         static const FieldConversion aEnhancedFields[] =
         {
-            {OUString("FORMCHECKBOX"),     "FormFieldmark",                           "", FIELD_FORMCHECKBOX},
-            {OUString("FORMDROPDOWN"),     "FormFieldmark",                           "", FIELD_FORMDROPDOWN},
-            {OUString("FORMTEXT"),     "Fieldmark", "", FIELD_FORMTEXT},
+            {OUString("FORMCHECKBOX"),     "FormFieldmark",                           FIELD_FORMCHECKBOX},
+            {OUString("FORMDROPDOWN"),     "FormFieldmark",                           FIELD_FORMDROPDOWN},
+            {OUString("FORMTEXT"),     "Fieldmark", FIELD_FORMTEXT},
         };
 
         size_t nConversions = SAL_N_ELEMENTS(aEnhancedFields);
@@ -3623,7 +3627,7 @@ void DomainMapper_Impl::CloseFieldCommand()
                     if (m_xTextFactory.is())
                     {
                         xFieldInterface = m_xTextFactory->createInstance(sServiceName);
-                        xFieldProperties = uno::Reference< beans::XPropertySet >( xFieldInterface, uno::UNO_QUERY_THROW);
+                        xFieldProperties.set( xFieldInterface, uno::UNO_QUERY_THROW);
                     }
                 }
                 switch( aIt->second.eFieldId )
@@ -3838,7 +3842,7 @@ void DomainMapper_Impl::CloseFieldCommand()
 
                                 sURL += "#" + *aPartIt;
                             }
-                            else if ( *aPartIt == "\\m" || *aPartIt == "\\n" )
+                            else if (*aPartIt == "\\m" || *aPartIt == "\\n" || *aPartIt == "\\h")
                             {
                             }
                             else if ( *aPartIt == "\\o" || *aPartIt == "\\t" )
@@ -4480,9 +4484,9 @@ void DomainMapper_Impl::PopFieldContext()
                 }
                 else
                 {
-                    xToInsert = uno::Reference< text::XTextContent >(pContext->GetTC(), uno::UNO_QUERY);
+                    xToInsert.set(pContext->GetTC(), uno::UNO_QUERY);
                     if( !xToInsert.is() && !m_bStartTOC && !m_bStartIndex && !m_bStartBibliography )
-                        xToInsert = uno::Reference< text::XTextContent >(pContext->GetTextField(), uno::UNO_QUERY);
+                        xToInsert.set( pContext->GetTextField(), uno::UNO_QUERY);
                     if( xToInsert.is() && !m_bStartTOC && !m_bStartIndex && !m_bStartBibliography)
                     {
                         PropertyMap aMap;
@@ -5231,14 +5235,8 @@ void DomainMapper_Impl::appendGrabBag(std::vector<beans::PropertyValue>& rIntero
         return;
     beans::PropertyValue aProperty;
     aProperty.Name = aKey;
-
-    uno::Sequence<beans::PropertyValue> aSeq(rValue.size());
-    beans::PropertyValue* pSeq = aSeq.getArray();
-    for (std::vector<beans::PropertyValue>::iterator i = rValue.begin(); i != rValue.end(); ++i)
-        *pSeq++ = *i;
-
+    aProperty.Value = uno::makeAny(comphelper::containerToSequence(rValue));
     rValue.clear();
-    aProperty.Value = uno::makeAny(aSeq);
     rInteropGrabBag.push_back(aProperty);
 }
 

@@ -53,7 +53,6 @@ PresenterSlidePreview::PresenterSlidePreview (
     const ::rtl::Reference<PresenterController>& rpPresenterController)
     : PresenterSlidePreviewInterfaceBase(m_aMutex),
       mpPresenterController(rpPresenterController),
-      mxPane(rxAnchorPane),
       mxViewId(rxViewId),
       mxPreviewRenderer(),
       mxPreview(),
@@ -87,14 +86,14 @@ PresenterSlidePreview::PresenterSlidePreview (
         mxWindow->setVisible(sal_True);
     }
 
-    if (mpPresenterController.get() != NULL)
+    if (mpPresenterController.get() != nullptr)
         mnSlideAspectRatio = mpPresenterController->GetSlideAspectRatio();
 
     Reference<lang::XMultiComponentFactory> xFactory (rxContext->getServiceManager(), UNO_QUERY);
     if (xFactory.is())
-        mxPreviewRenderer = Reference<drawing::XSlideRenderer>(
+        mxPreviewRenderer.set(
             xFactory->createInstanceWithContext(
-                OUString("com.sun.star.drawing.SlideRenderer"),
+                "com.sun.star.drawing.SlideRenderer",
                 rxContext),
             UNO_QUERY);
     mpBitmaps.reset(new PresenterBitmapContainer(
@@ -115,8 +114,8 @@ void SAL_CALL PresenterSlidePreview::disposing()
     {
         mxWindow->removeWindowListener(this);
         mxWindow->removePaintListener(this);
-        mxWindow = NULL;
-        mxCanvas = NULL;
+        mxWindow = nullptr;
+        mxCanvas = nullptr;
     }
 
     Reference<lang::XComponent> xComponent (mxPreviewRenderer, UNO_QUERY);
@@ -193,9 +192,9 @@ void SAL_CALL PresenterSlidePreview::disposing (const lang::EventObject& rEvent)
 {
     if (rEvent.Source == mxWindow)
     {
-        mxWindow = NULL;
-        mxCanvas = NULL;
-        mxPreview = NULL;
+        mxWindow = nullptr;
+        mxCanvas = nullptr;
+        mxPreview = nullptr;
     }
 }
 
@@ -213,7 +212,7 @@ Reference<drawing::XDrawPage> SAL_CALL PresenterSlidePreview::getCurrentPage()
     throw (RuntimeException, std::exception)
 {
     ThrowIfDisposed();
-    return NULL;
+    return nullptr;
 }
 
 
@@ -221,7 +220,7 @@ Reference<drawing::XDrawPage> SAL_CALL PresenterSlidePreview::getCurrentPage()
 void PresenterSlidePreview::SetSlide (const Reference<drawing::XDrawPage>& rxPage)
 {
     mxCurrentSlide = rxPage;
-    mxPreview = NULL;
+    mxPreview = nullptr;
 
     Reference<beans::XPropertySet> xPropertySet (mxCurrentSlide, UNO_QUERY);
     if (xPropertySet.is())
@@ -229,10 +228,8 @@ void PresenterSlidePreview::SetSlide (const Reference<drawing::XDrawPage>& rxPag
         awt::Size aSlideSize;
         try
         {
-            xPropertySet->getPropertyValue(
-                OUString("Width")) >>= aSlideSize.Width;
-            xPropertySet->getPropertyValue(
-                OUString("Height")) >>= aSlideSize.Height;
+            xPropertySet->getPropertyValue("Width") >>= aSlideSize.Width;
+            xPropertySet->getPropertyValue("Height") >>= aSlideSize.Height;
         }
         catch (beans::UnknownPropertyException&)
         {
@@ -312,12 +309,12 @@ void PresenterSlidePreview::Paint (const awt::Rectangle& rBoundingBox)
     // Paint the preview.
     const rendering::ViewState aViewState(
         geometry::AffineMatrix2D(1,0,0, 0,1,0),
-        NULL);
+        nullptr);
 
     Sequence<double> aBackgroundColor(4);
     rendering::RenderState aRenderState (
         geometry::AffineMatrix2D(1, 0, aPreviewBox.X, 0, 1, aPreviewBox.Y),
-        NULL,
+        nullptr,
         aBackgroundColor,
         rendering::CompositeOperation::SOURCE);
     PresenterCanvasHelper::SetDeviceColor(aRenderState, 0x00000000);
@@ -331,7 +328,7 @@ void PresenterSlidePreview::Paint (const awt::Rectangle& rBoundingBox)
             Reference<rendering::XBitmap> xTransitionIcon (aTransitionDescriptor->GetNormalBitmap());
             rendering::RenderState aTransitionRenderState (
                 geometry::AffineMatrix2D(1, 0, aTransitionPreviewBox.X, 0, 1, aTransitionPreviewBox.Y),
-                NULL,
+                nullptr,
                 aBackgroundColor,
                 rendering::CompositeOperation::SOURCE);
             mxCanvas->drawBitmap(xTransitionIcon, aViewState, aTransitionRenderState);
@@ -343,7 +340,7 @@ void PresenterSlidePreview::Paint (const awt::Rectangle& rBoundingBox)
             Reference<rendering::XBitmap> xAnimationIcon (aAnimationDescriptor->GetNormalBitmap());
             rendering::RenderState aAnimationRenderState (
                 geometry::AffineMatrix2D(1, 0, aAnimationPreviewBox.X, 0, 1, aAnimationPreviewBox.Y),
-                NULL,
+                nullptr,
                 aBackgroundColor,
                 rendering::CompositeOperation::SOURCE);
             mxCanvas->drawBitmap(xAnimationIcon, aViewState, aAnimationRenderState);
@@ -387,7 +384,7 @@ void PresenterSlidePreview::Resize()
 }
 
 void PresenterSlidePreview::ThrowIfDisposed()
-    throw (::com::sun::star::lang::DisposedException)
+    throw (css::lang::DisposedException)
 {
     if (PresenterSlidePreviewInterfaceBase::rBHelper.bDisposed || PresenterSlidePreviewInterfaceBase::rBHelper.bInDispose)
     {

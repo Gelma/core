@@ -32,7 +32,7 @@ public:
 
     virtual bool load(const OUString &,
         const OUString &rURL, const OUString &,
-        SfxFilterFlags, SotClipboardFormatId, unsigned int) SAL_OVERRIDE;
+        SfxFilterFlags, SotClipboardFormatId, unsigned int) override;
 
     void checkExportImport(const OUString& aFilterShortName);
 
@@ -112,11 +112,11 @@ void VclFiltersTest::checkExportImport(const OUString& aFilterShortName)
 void VclFiltersTest::testExportImport()
 {
     fprintf(stderr, "Check ExportImport JPG\n");
-    checkExportImport(OUString("jpg"));
+    checkExportImport("jpg");
     fprintf(stderr, "Check ExportImport PNG\n");
-    checkExportImport(OUString("png"));
+    checkExportImport("png");
     fprintf(stderr, "Check ExportImport BMP\n");
-    checkExportImport(OUString("bmp"));
+    checkExportImport("bmp");
 }
 
 void VclFiltersTest::testCVEs()

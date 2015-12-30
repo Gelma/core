@@ -132,46 +132,46 @@ OUString ReplacePoint( const OUString& rTmpName, bool bWithCommandType )
 }
 
 SwTextNode* GetFirstTextNode( const SwDoc& rDoc, SwPosition& rPos,
-                            const SwContentFrm *pCFrm, Point &rPt )
+                            const SwContentFrame *pCFrame, Point &rPt )
 {
-    SwTextNode* pTextNode = 0;
-    if ( !pCFrm )
+    SwTextNode* pTextNode = nullptr;
+    if ( !pCFrame )
     {
         const SwNodes& rNodes = rDoc.GetNodes();
         rPos.nNode = *rNodes.GetEndOfContent().StartOfSectionNode();
         SwContentNode* pCNd;
-        while( 0 != (pCNd = rNodes.GoNext( &rPos.nNode ) ) &&
-                0 == ( pTextNode = pCNd->GetTextNode() ) )
+        while( nullptr != (pCNd = rNodes.GoNext( &rPos.nNode ) ) &&
+                nullptr == ( pTextNode = pCNd->GetTextNode() ) )
                         ;
         OSL_ENSURE( pTextNode, "Where is the 1. TextNode?" );
         rPos.nContent.Assign( pTextNode, 0 );
     }
-    else if ( !pCFrm->IsValid() )
+    else if ( !pCFrame->IsValid() )
     {
-        pTextNode = const_cast<SwTextNode*>(static_cast<const SwTextNode*>(pCFrm->GetNode()));
+        pTextNode = const_cast<SwTextNode*>(static_cast<const SwTextNode*>(pCFrame->GetNode()));
         rPos.nNode = *pTextNode;
         rPos.nContent.Assign( pTextNode, 0 );
     }
     else
     {
-        pCFrm->GetCrsrOfst( &rPos, rPt );
+        pCFrame->GetCursorOfst( &rPos, rPt );
         pTextNode = rPos.nNode.GetNode().GetTextNode();
     }
     return pTextNode;
 }
 
 const SwTextNode* GetBodyTextNode( const SwDoc& rDoc, SwPosition& rPos,
-                                const SwFrm& rFrm )
+                                const SwFrame& rFrame )
 {
-    const SwLayoutFrm* pLayout = rFrm.GetUpper();
-    const SwTextNode* pTextNode = 0;
+    const SwLayoutFrame* pLayout = rFrame.GetUpper();
+    const SwTextNode* pTextNode = nullptr;
 
     while( pLayout )
     {
-        if( pLayout->IsFlyFrm() )
+        if( pLayout->IsFlyFrame() )
         {
             // get the FlyFormat
-            const SwFrameFormat* pFlyFormat = static_cast<const SwFlyFrm*>(pLayout)->GetFormat();
+            const SwFrameFormat* pFlyFormat = static_cast<const SwFlyFrame*>(pLayout)->GetFormat();
             OSL_ENSURE( pFlyFormat, "Could not find FlyFormat, where is the field?" );
 
             const SwFormatAnchor &rAnchor = pFlyFormat->GetAnchor();
@@ -179,7 +179,7 @@ const SwTextNode* GetBodyTextNode( const SwDoc& rDoc, SwPosition& rPos,
             if( FLY_AT_FLY == rAnchor.GetAnchorId() )
             {
                 // the fly needs to be attached somewhere, so ask it
-                pLayout = static_cast<const SwLayoutFrm*>(static_cast<const SwFlyFrm*>(pLayout)->GetAnchorFrm());
+                pLayout = static_cast<const SwLayoutFrame*>(static_cast<const SwFlyFrame*>(pLayout)->GetAnchorFrame());
                 continue;
             }
             else if ((FLY_AT_PARA == rAnchor.GetAnchorId()) ||
@@ -196,57 +196,57 @@ const SwTextNode* GetBodyTextNode( const SwDoc& rDoc, SwPosition& rPos,
                 }
 
                 // do not break yet, might be as well in Header/Footer/Footnote/Fly
-                pLayout = static_cast<const SwFlyFrm*>(pLayout)->GetAnchorFrm()
-                            ? static_cast<const SwFlyFrm*>(pLayout)->GetAnchorFrm()->GetUpper() : 0;
+                pLayout = static_cast<const SwFlyFrame*>(pLayout)->GetAnchorFrame()
+                            ? static_cast<const SwFlyFrame*>(pLayout)->GetAnchorFrame()->GetUpper() : nullptr;
                 continue;
             }
             else
             {
-                pLayout->FindPageFrm()->GetContentPosition(
-                                                pLayout->Frm().Pos(), rPos );
+                pLayout->FindPageFrame()->GetContentPosition(
+                                                pLayout->Frame().Pos(), rPos );
                 pTextNode = rPos.nNode.GetNode().GetTextNode();
             }
         }
-        else if( pLayout->IsFootnoteFrm() )
+        else if( pLayout->IsFootnoteFrame() )
         {
             // get the anchor's node
-            const SwTextFootnote* pFootnote = static_cast<const SwFootnoteFrm*>(pLayout)->GetAttr();
+            const SwTextFootnote* pFootnote = static_cast<const SwFootnoteFrame*>(pLayout)->GetAttr();
             pTextNode = &pFootnote->GetTextNode();
             rPos.nNode = *pTextNode;
             rPos.nContent = pFootnote->GetStart();
         }
-        else if( pLayout->IsHeaderFrm() || pLayout->IsFooterFrm() )
+        else if( pLayout->IsHeaderFrame() || pLayout->IsFooterFrame() )
         {
-            const SwContentFrm* pCntFrm;
-            const SwPageFrm* pPgFrm = pLayout->FindPageFrm();
-            if( pLayout->IsHeaderFrm() )
+            const SwContentFrame* pContentFrame;
+            const SwPageFrame* pPgFrame = pLayout->FindPageFrame();
+            if( pLayout->IsHeaderFrame() )
             {
-                const SwTabFrm *pTab;
-                if( 0 != ( pCntFrm = pPgFrm->FindFirstBodyContent()) &&
-                    0 != (pTab = pCntFrm->FindTabFrm()) && pTab->IsFollow() &&
+                const SwTabFrame *pTab;
+                if( nullptr != ( pContentFrame = pPgFrame->FindFirstBodyContent()) &&
+                    nullptr != (pTab = pContentFrame->FindTabFrame()) && pTab->IsFollow() &&
                     pTab->GetTable()->GetRowsToRepeat() > 0 &&
-                    pTab->IsInHeadline( *pCntFrm ) )
+                    pTab->IsInHeadline( *pContentFrame ) )
                 {
                     // take the next line
-                    const SwLayoutFrm* pRow = pTab->GetFirstNonHeadlineRow();
-                    pCntFrm = pRow->ContainsContent();
+                    const SwLayoutFrame* pRow = pTab->GetFirstNonHeadlineRow();
+                    pContentFrame = pRow->ContainsContent();
                 }
             }
             else
-                pCntFrm = pPgFrm->FindLastBodyContent();
+                pContentFrame = pPgFrame->FindLastBodyContent();
 
-            if( pCntFrm )
+            if( pContentFrame )
             {
-                pTextNode = pCntFrm->GetNode()->GetTextNode();
+                pTextNode = pContentFrame->GetNode()->GetTextNode();
                 rPos.nNode = *pTextNode;
                 const_cast<SwTextNode*>(pTextNode)->MakeEndIndex( &rPos.nContent );
             }
             else
             {
-                Point aPt( pLayout->Frm().Pos() );
+                Point aPt( pLayout->Frame().Pos() );
                 aPt.Y()++;      // get out of the header
-                pCntFrm = pPgFrm->GetContentPos( aPt, false, true, false );
-                pTextNode = GetFirstTextNode( rDoc, rPos, pCntFrm, aPt );
+                pContentFrame = pPgFrame->GetContentPos( aPt, false, true );
+                pTextNode = GetFirstTextNode( rDoc, rPos, pContentFrame, aPt );
             }
         }
         else
@@ -272,7 +272,7 @@ SwFieldType* SwGetExpFieldType::Copy() const
 void SwGetExpFieldType::Modify( const SfxPoolItem*, const SfxPoolItem* pNew )
 {
     if( pNew && RES_DOCPOS_UPDATE == pNew->Which() )
-        NotifyClients( 0, pNew );
+        NotifyClients( nullptr, pNew );
     // do not expand anything else
 }
 
@@ -319,12 +319,12 @@ SwField* SwGetExpField::Copy() const
     return pTmp;
 }
 
-void SwGetExpField::ChangeExpansion( const SwFrm& rFrm, const SwTextField& rField )
+void SwGetExpField::ChangeExpansion( const SwFrame& rFrame, const SwTextField& rField )
 {
     if( bIsInBodyText ) // only fields in Footer, Header, FootNote, Flys
         return;
 
-    OSL_ENSURE( !rFrm.IsInDocBody(), "Flag incorrect, frame is in DocBody" );
+    OSL_ENSURE( !rFrame.IsInDocBody(), "Flag incorrect, frame is in DocBody" );
 
     // determine document (or is there an easier way?)
     const SwTextNode* pTextNode = &rField.GetTextNode();
@@ -332,7 +332,7 @@ void SwGetExpField::ChangeExpansion( const SwFrm& rFrm, const SwTextField& rFiel
 
     // create index for determination of the TextNode
     SwPosition aPos( SwNodeIndex( rDoc.GetNodes() ) );
-    pTextNode = GetBodyTextNode( rDoc, aPos, rFrm );
+    pTextNode = GetBodyTextNode( rDoc, aPos, rFrame );
 
     // If no layout exists, ChangeExpansion is called for header and
     // footer lines via layout formatting without existing TextNode.
@@ -487,7 +487,7 @@ bool SwGetExpField::PutValue( const uno::Any& rAny, sal_uInt16 nWhichId )
 SwSetExpFieldType::SwSetExpFieldType( SwDoc* pDc, const OUString& rName, sal_uInt16 nTyp )
     : SwValueFieldType( pDc, RES_SETEXPFLD ),
     sName( rName ),
-    pOutlChgNd( 0 ),
+    pOutlChgNd( nullptr ),
     sDelim( "." ),
     nType(nTyp), nLevel( UCHAR_MAX ),
     bDeleted( false )
@@ -545,7 +545,7 @@ sal_uInt16 SwSetExpFieldType::SetSeqRefNo( SwSetExpField& rField )
     {
         const SwTextNode* pNd;
         if( pF->GetField() != &rField && pF->GetTextField() &&
-            0 != ( pNd = pF->GetTextField()->GetpTextNode() ) &&
+            nullptr != ( pNd = pF->GetTextField()->GetpTextNode() ) &&
             pNd->GetNodes().IsDocNodes() )
         {
             InsertSort( aArr, static_cast<SwSetExpField*>(pF->GetField())->GetSeqNumber() );
@@ -590,11 +590,11 @@ size_t SwSetExpFieldType::GetSeqFieldList( SwSeqFieldList& rList )
     {
         const SwTextNode* pNd;
         if( pF->GetTextField() &&
-            0 != ( pNd = pF->GetTextField()->GetpTextNode() ) &&
+            nullptr != ( pNd = pF->GetTextField()->GetpTextNode() ) &&
             pNd->GetNodes().IsDocNodes() )
         {
             _SeqFieldLstElem* pNew = new _SeqFieldLstElem(
-                    pNd->GetExpandText( 0, -1 ),
+                    pNd->GetExpandText(),
                     static_cast<SwSetExpField*>(pF->GetField())->GetSeqNumber() );
             rList.InsertSort( pNew );
         }
@@ -776,7 +776,7 @@ SwSetExpField::SwSetExpField(SwSetExpFieldType* pTyp, const OUString& rFormel,
                                         sal_uLong nFormat)
     : SwFormulaField( pTyp, nFormat, 0.0 ), nSeqNo( USHRT_MAX ),
     nSubType(0)
-    , mpFormatField(0)
+    , mpFormatField(nullptr)
 {
     SetFormula(rFormel);
     // ignore SubType
@@ -1132,7 +1132,7 @@ SwInputField::SwInputField( SwInputFieldType* pFieldType,
     , aPText(rPrompt)
     , nSubType(nSub)
     , mbIsFormField( bIsFormField )
-    , mpFormatField( NULL )
+    , mpFormatField( nullptr )
 {
 }
 
@@ -1149,10 +1149,10 @@ void SwInputField::SetFormatField( SwFormatField& rFormatField )
 
 void SwInputField::LockNotifyContentChange()
 {
-    if ( GetFormatField() != NULL )
+    if ( GetFormatField() != nullptr )
     {
         SwTextInputField* pTextInputField = dynamic_cast< SwTextInputField* >(GetFormatField()->GetTextField());
-        if ( pTextInputField != NULL )
+        if ( pTextInputField != nullptr )
         {
             pTextInputField->LockNotifyContentChange();
         }
@@ -1161,10 +1161,10 @@ void SwInputField::LockNotifyContentChange()
 
 void SwInputField::UnlockNotifyContentChange()
 {
-    if ( GetFormatField() != NULL )
+    if ( GetFormatField() != nullptr )
     {
         SwTextInputField* pTextInputField = dynamic_cast< SwTextInputField* >(GetFormatField()->GetTextField());
-        if ( pTextInputField != NULL )
+        if ( pTextInputField != nullptr )
         {
             pTextInputField->UnlockNotifyContentChange();
         }

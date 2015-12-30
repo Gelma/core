@@ -45,7 +45,7 @@ ORptTypeDetection::ORptTypeDetection(Reference< XComponentContext > const & xCon
 {
 }
 
-OUString SAL_CALL ORptTypeDetection::detect( Sequence< ::com::sun::star::beans::PropertyValue >& Descriptor ) throw (RuntimeException, std::exception)
+OUString SAL_CALL ORptTypeDetection::detect( Sequence< css::beans::PropertyValue >& Descriptor ) throw (RuntimeException, std::exception)
 {
 
     ::comphelper::SequenceAsHashMap aTemp(Descriptor);
@@ -106,8 +106,7 @@ Sequence< OUString > SAL_CALL ORptTypeDetection::getSupportedServiceNames() thro
 // ORegistryServiceManager_Static
 Sequence< OUString > ORptTypeDetection::getSupportedServiceNames_Static() throw( RuntimeException )
 {
-    Sequence< OUString > aSNS( 1 );
-    aSNS[0] = "com.sun.star.document.ExtendedTypeDetection";
+    Sequence<OUString> aSNS { "com.sun.star.document.ExtendedTypeDetection" };
     return aSNS;
 }
 

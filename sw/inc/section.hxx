@@ -22,7 +22,6 @@
 
 #include <com/sun/star/uno/Sequence.h>
 
-#include <tools/rtti.hxx>
 #include <tools/ref.hxx>
 #include <svl/smplhint.hxx>
 #include <sfx2/lnkbase.hxx>
@@ -67,7 +66,7 @@ private:
     OUString m_sCondition;
     OUString m_sLinkFileName;
     OUString m_sLinkFilePassword; // Must be changed to Sequence.
-    ::com::sun::star::uno::Sequence <sal_Int8> m_Password;
+    css::uno::Sequence <sal_Int8> m_Password;
 
     /// It seems this flag caches the current final "hidden" state.
     bool m_bHiddenFlag          : 1;
@@ -116,7 +115,7 @@ public:
     void SetCondition(OUString const& rNew) { m_sCondition = rNew; }
 
     OUString GetLinkFileName() const        { return m_sLinkFileName; }
-    void SetLinkFileName(OUString const& rNew, OUString const* pPassWd = 0)
+    void SetLinkFileName(OUString const& rNew, OUString const* pPassWd = nullptr)
     {
         m_sLinkFileName = rNew;
         if (pPassWd) { SetLinkFilePassword(*pPassWd); }
@@ -125,9 +124,9 @@ public:
     OUString GetLinkFilePassword() const        { return m_sLinkFilePassword; }
     void SetLinkFilePassword(OUString const& rS){ m_sLinkFilePassword = rS; }
 
-    ::com::sun::star::uno::Sequence<sal_Int8> const& GetPassword() const
+    css::uno::Sequence<sal_Int8> const& GetPassword() const
                                             { return m_Password; }
-    void SetPassword(::com::sun::star::uno::Sequence<sal_Int8> const& rNew)
+    void SetPassword(css::uno::Sequence<sal_Int8> const& rNew)
                                             { m_Password = rNew; }
     bool IsLinkType() const
     { return (DDE_LINK_SECTION == m_eType) || (FILE_LINK_SECTION == m_eType); }
@@ -143,23 +142,22 @@ class SW_DLLPUBLIC SwSection
 {
     // In order to correctly maintain the flag when creating/deleting frames.
     friend class SwSectionNode;
-    // The "read CTOR" of SwSectionFrm have to change the Hiddenflag.
-    friend class SwSectionFrm;
+    // The "read CTOR" of SwSectionFrame have to change the Hiddenflag.
+    friend class SwSectionFrame;
 
 private:
     mutable SwSectionData m_Data;
 
     tools::SvRef<SwServerObject> m_RefObj; // Set if DataServer.
-    ::sfx2::SvBaseLinkRef m_RefLink;
+    tools::SvRef<sfx2::SvBaseLink> m_RefLink;
 
     SAL_DLLPRIVATE void ImplSetHiddenFlag(
             bool const bHidden, bool const bCondition);
 
 protected:
-    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNew ) SAL_OVERRIDE;
+    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNew ) override;
 
 public:
-    TYPEINFO_OVERRIDE();     // rtti
 
     SwSection(SectionType const eType, OUString const& rName,
                 SwSectionFormat & rFormat);
@@ -203,7 +201,7 @@ public:
     void SetCondition(OUString const& rNew) { m_Data.SetCondition(rNew); }
 
     OUString GetLinkFileName() const;
-    void SetLinkFileName(OUString const& rNew, OUString const*const pPassWd = 0);
+    void SetLinkFileName(OUString const& rNew, OUString const*const pPassWd = nullptr);
     // Password of linked file (only valid during runtime!)
     OUString GetLinkFilePassword() const
         { return m_Data.GetLinkFilePassword(); }
@@ -211,7 +209,7 @@ public:
         { m_Data.SetLinkFilePassword(rS); }
 
     // Get / set password of this section
-    ::com::sun::star::uno::Sequence<sal_Int8> const& GetPassword() const
+    css::uno::Sequence<sal_Int8> const& GetPassword() const
                                             { return m_Data.GetPassword(); }
 
     // Data server methods.
@@ -251,15 +249,15 @@ public:
 };
 
 // #i117863#
-class SwSectionFrmMoveAndDeleteHint : public SfxSimpleHint
+class SwSectionFrameMoveAndDeleteHint : public SfxSimpleHint
 {
     public:
-        SwSectionFrmMoveAndDeleteHint( const bool bSaveContent )
+        SwSectionFrameMoveAndDeleteHint( const bool bSaveContent )
             : SfxSimpleHint( SFX_HINT_DYING )
             , mbSaveContent( bSaveContent )
         {}
 
-        virtual ~SwSectionFrmMoveAndDeleteHint()
+        virtual ~SwSectionFrameMoveAndDeleteHint()
         {}
 
         bool IsSaveContent() const
@@ -283,27 +281,25 @@ class SW_DLLPUBLIC SwSectionFormat
         in case of an index, both a SwXDocumentIndex and a SwXTextSection
         register at this SwSectionFormat, so we need to have two refs.
      */
-    ::com::sun::star::uno::WeakReference<
-        ::com::sun::star::text::XTextSection> m_wXTextSection;
+    css::uno::WeakReference<css::text::XTextSection> m_wXTextSection;
 
     SAL_DLLPRIVATE void UpdateParent();      // Parent has been changed.
 
 protected:
-    SwSectionFormat( SwFrameFormat* pDrvdFrm, SwDoc *pDoc );
-   virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNew ) SAL_OVERRIDE;
+    SwSectionFormat( SwFrameFormat* pDrvdFrame, SwDoc *pDoc );
+   virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNew ) override;
 
 public:
-    TYPEINFO_OVERRIDE();     // Already contained in base class client.
     virtual ~SwSectionFormat();
 
-    // Deletes all Frms in aDepend (Frms are recognized via PTR_CAST).
-    virtual void DelFrms() SAL_OVERRIDE;
+    // Deletes all Frames in aDepend (Frames are recognized via dynamic_cast).
+    virtual void DelFrames() override;
 
     // Creates views.
-    virtual void MakeFrms() SAL_OVERRIDE;
+    virtual void MakeFrames() override;
 
     // Get information from Format.
-    virtual bool GetInfo( SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual bool GetInfo( SfxPoolItem& ) const override;
 
     SwSection* GetSection() const;
     inline SwSectionFormat* GetParent() const;
@@ -327,20 +323,17 @@ public:
     // Is section a valid one for global document?
     const SwSection* GetGlobalDocSection() const;
 
-    SAL_DLLPRIVATE ::com::sun::star::uno::WeakReference<
-        ::com::sun::star::text::XTextSection> const& GetXTextSection() const
+    SAL_DLLPRIVATE css::uno::WeakReference<css::text::XTextSection> const& GetXTextSection() const
             { return m_wXTextSection; }
-    SAL_DLLPRIVATE void SetXTextSection(::com::sun::star::uno::Reference<
-                    ::com::sun::star::text::XTextSection> const& xTextSection)
+    SAL_DLLPRIVATE void SetXTextSection(css::uno::Reference<css::text::XTextSection> const& xTextSection)
             { m_wXTextSection = xTextSection; }
 
     // sfx2::Metadatable
-    virtual ::sfx2::IXmlIdRegistry& GetRegistry() SAL_OVERRIDE;
-    virtual bool IsInClipboard() const SAL_OVERRIDE;
-    virtual bool IsInUndo() const SAL_OVERRIDE;
-    virtual bool IsInContent() const SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Reference<
-        ::com::sun::star::rdf::XMetadatable > MakeUnoObject() SAL_OVERRIDE;
+    virtual ::sfx2::IXmlIdRegistry& GetRegistry() override;
+    virtual bool IsInClipboard() const override;
+    virtual bool IsInUndo() const override;
+    virtual bool IsInContent() const override;
+    virtual css::uno::Reference< css::rdf::XMetadatable > MakeUnoObject() override;
     void dumpAsXml(struct _xmlTextWriter* pWriter) const;
 
 };
@@ -358,7 +351,7 @@ SwSectionFormat const * SwSection::GetFormat() const
 inline SwSection* SwSection::GetParent() const
 {
     SwSectionFormat const * pFormat = GetFormat();
-    SwSection* pRet = 0;
+    SwSection* pRet = nullptr;
     if( pFormat )
         pRet = pFormat->GetParentSection();
     return pRet;
@@ -366,16 +359,16 @@ inline SwSection* SwSection::GetParent() const
 
 inline SwSectionFormat* SwSectionFormat::GetParent() const
 {
-    SwSectionFormat* pRet = 0;
+    SwSectionFormat* pRet = nullptr;
     if( GetRegisteredIn() )
-        pRet = const_cast<SwSectionFormat*>(PTR_CAST( SwSectionFormat, GetRegisteredIn() ));
+        pRet = const_cast<SwSectionFormat*>(dynamic_cast< const SwSectionFormat* >( GetRegisteredIn() ));
     return pRet;
 }
 
 inline SwSection* SwSectionFormat::GetParentSection() const
 {
     SwSectionFormat* pParent = GetParent();
-    SwSection* pRet = 0;
+    SwSection* pRet = nullptr;
     if( pParent )
     {
         pRet = pParent->GetSection();

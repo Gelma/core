@@ -71,7 +71,7 @@ SwWrapTabPage::SwWrapTabPage(vcl::Window *pParent, const SfxItemSet &rSet)
     , m_nOldLowerMargin(0)
     , m_nAnchorId(FLY_AT_PARA)
     , m_nHtmlMode(0)
-    , m_pWrtSh(0)
+    , m_pWrtSh(nullptr)
     , m_bFormat(false)
     , m_bNew(true)
     , m_bHtmlMode(false)
@@ -95,7 +95,7 @@ SwWrapTabPage::SwWrapTabPage(vcl::Window *pParent, const SfxItemSet &rSet)
 
     SetExchangeSupport();
 
-    Link<> aLk = LINK(this, SwWrapTabPage, RangeModifyHdl);
+    Link<SpinField&,void> aLk = LINK(this, SwWrapTabPage, RangeModifyHdl);
     Link<Control&,void> aLk3 = LINK(this, SwWrapTabPage, RangeLoseFocusHdl);
     m_pLeftMarginED->SetUpHdl(aLk);
     m_pLeftMarginED->SetDownHdl(aLk);
@@ -222,7 +222,7 @@ void SwWrapTabPage::Reset(const SfxItemSet *rSet)
     m_pWrapThroughRB->Enable(!m_pWrapOutlineCB->IsChecked());
     m_bContourImage = !bContour;
 
-    RadioButton* pBtn = NULL;
+    RadioButton* pBtn = nullptr;
 
     switch (nSur)
     {
@@ -286,7 +286,7 @@ void SwWrapTabPage::Reset(const SfxItemSet *rSet)
     m_pTopMarginED->SetValue(m_pTopMarginED->Normalize(rUL.GetUpper()), FUNIT_TWIP);
     m_pBottomMarginED->SetValue(m_pBottomMarginED->Normalize(rUL.GetLower()), FUNIT_TWIP);
 
-    ContourHdl(0);
+    ContourHdl(nullptr);
     ActivatePage( *rSet );
 }
 
@@ -331,7 +331,7 @@ bool SwWrapTabPage::FillItemSet(SfxItemSet *rSet)
     if ( bContour )
         aSur.SetOutside(m_pWrapOutsideCB->IsChecked());
 
-    if(0 == (pOldItem = GetOldItem( *rSet, RES_SURROUND )) ||
+    if(nullptr == (pOldItem = GetOldItem( *rSet, RES_SURROUND )) ||
                 aSur != *pOldItem )
     {
         rSet->Put(aSur);
@@ -340,7 +340,7 @@ bool SwWrapTabPage::FillItemSet(SfxItemSet *rSet)
 
     if (!m_bDrawMode)
     {
-        if(0 == (pOldItem = GetOldItem( *rSet, FN_OPAQUE )) ||
+        if(nullptr == (pOldItem = GetOldItem( *rSet, FN_OPAQUE )) ||
                     aOp != *pOldItem )
         {
             rSet->Put(aOp);
@@ -357,7 +357,7 @@ bool SwWrapTabPage::FillItemSet(SfxItemSet *rSet)
 
     if ( bTopMod || bBottomMod )
     {
-        if(0 == (pOldItem = GetOldItem(*rSet, RES_UL_SPACE)) ||
+        if(nullptr == (pOldItem = GetOldItem(*rSet, RES_UL_SPACE)) ||
                 aUL != *pOldItem )
         {
             rSet->Put( aUL, RES_UL_SPACE );
@@ -374,7 +374,7 @@ bool SwWrapTabPage::FillItemSet(SfxItemSet *rSet)
 
     if ( bLeftMod || bRightMod )
     {
-        if( 0 == (pOldItem = GetOldItem(*rSet, RES_LR_SPACE)) ||
+        if( nullptr == (pOldItem = GetOldItem(*rSet, RES_LR_SPACE)) ||
                 aLR != *pOldItem )
         {
             rSet->Put(aLR, RES_LR_SPACE);
@@ -386,7 +386,7 @@ bool SwWrapTabPage::FillItemSet(SfxItemSet *rSet)
     {
         bool bChecked = m_pWrapTransparentCB->IsChecked() && m_pWrapTransparentCB->IsEnabled();
         if ((m_pWrapTransparentCB->GetSavedValue() == 1) != bChecked)
-            bModified |= 0 != rSet->Put(SfxInt16Item(FN_DRAW_WRAP_DLG, bChecked ? 0 : 1));
+            bModified |= nullptr != rSet->Put(SfxInt16Item(FN_DRAW_WRAP_DLG, bChecked ? 0 : 1));
     }
 
     return bModified;
@@ -403,12 +403,12 @@ void SwWrapTabPage::ActivatePage(const SfxItemSet& rSet)
     if (!m_bDrawMode)
     {
         SwWrtShell* pSh = m_bFormat ? ::GetActiveWrtShell() : m_pWrtSh;
-        SwFlyFrmAttrMgr aMgr( m_bNew, pSh, static_cast<const SwAttrSet&>(GetItemSet()) );
+        SwFlyFrameAttrMgr aMgr( m_bNew, pSh, static_cast<const SwAttrSet&>(GetItemSet()) );
         SvxSwFrameValidation aVal;
 
         // size
-        const SwFormatFrmSize& rFrmSize = static_cast<const SwFormatFrmSize&>(rSet.Get(RES_FRM_SIZE));
-        Size aSize = rFrmSize.GetSize();
+        const SwFormatFrameSize& rFrameSize = static_cast<const SwFormatFrameSize&>(rSet.Get(RES_FRM_SIZE));
+        Size aSize = rFrameSize.GetSize();
 
         // margin
         const SvxULSpaceItem& rUL = static_cast<const SvxULSpaceItem&>(rSet.Get(RES_UL_SPACE));
@@ -423,8 +423,8 @@ void SwWrapTabPage::ActivatePage(const SfxItemSet& rSet)
         const SwFormatVertOrient& rVert = static_cast<const SwFormatVertOrient&>(rSet.Get(RES_VERT_ORIENT));
 
         aVal.nAnchorType = static_cast< sal_Int16 >(m_nAnchorId);
-        aVal.bAutoHeight = rFrmSize.GetHeightSizeType() == ATT_MIN_SIZE;
-        aVal.bAutoWidth = rFrmSize.GetWidthSizeType() == ATT_MIN_SIZE;
+        aVal.bAutoHeight = rFrameSize.GetHeightSizeType() == ATT_MIN_SIZE;
+        aVal.bAutoWidth = rFrameSize.GetWidthSizeType() == ATT_MIN_SIZE;
         aVal.bMirror = rHori.IsPosToggle();
         // #i18732#
         aVal.bFollowTextFlow =
@@ -438,17 +438,17 @@ void SwWrapTabPage::ActivatePage(const SfxItemSet& rSet)
         aVal.nVPos = rVert.GetPos();
         aVal.nVRelOrient = rVert.GetRelationOrient();
 
-        if (rFrmSize.GetWidthPercent() && rFrmSize.GetWidthPercent() != SwFormatFrmSize::SYNCED)
-            aSize.Width() = aSize.Width() * rFrmSize.GetWidthPercent() / 100;
+        if (rFrameSize.GetWidthPercent() && rFrameSize.GetWidthPercent() != SwFormatFrameSize::SYNCED)
+            aSize.Width() = aSize.Width() * rFrameSize.GetWidthPercent() / 100;
 
-        if (rFrmSize.GetHeightPercent() && rFrmSize.GetHeightPercent() != SwFormatFrmSize::SYNCED)
-            aSize.Height() = aSize.Height() * rFrmSize.GetHeightPercent() / 100;
+        if (rFrameSize.GetHeightPercent() && rFrameSize.GetHeightPercent() != SwFormatFrameSize::SYNCED)
+            aSize.Height() = aSize.Height() * rFrameSize.GetHeightPercent() / 100;
 
         aVal.nWidth  = aSize.Width();
         aVal.nHeight = aSize.Height();
-        m_aFrmSize = aSize;
+        m_aFrameSize = aSize;
 
-        aMgr.ValidateMetrics(aVal, 0);
+        aMgr.ValidateMetrics(aVal, nullptr);
 
         SwTwips nLeft;
         SwTwips nRight;
@@ -491,8 +491,8 @@ void SwWrapTabPage::ActivatePage(const SfxItemSet& rSet)
         m_pTopMarginED->SetMax(m_pTopMarginED->Normalize(nTop), FUNIT_TWIP);
         m_pBottomMarginED->SetMax(m_pBottomMarginED->Normalize(nBottom), FUNIT_TWIP);
 
-        RangeModifyHdl(m_pLeftMarginED);
-        RangeModifyHdl(m_pTopMarginED);
+        RangeModifyHdl(*m_pLeftMarginED);
+        RangeModifyHdl(*m_pTopMarginED);
     }
 
     const SwFormatSurround& rSurround = static_cast<const SwFormatSurround&>(rSet.Get(RES_SURROUND));
@@ -575,7 +575,7 @@ void SwWrapTabPage::ActivatePage(const SfxItemSet& rSet)
                 ((m_nAnchorId == FLY_AT_PARA) || (m_nAnchorId == FLY_AT_CHAR))
                 && nSur != SURROUND_NONE );
     }
-    ContourHdl(0);
+    ContourHdl(nullptr);
 }
 
 SfxTabPage::sfxpg SwWrapTabPage::DeactivatePage(SfxItemSet* _pSet)
@@ -589,19 +589,20 @@ SfxTabPage::sfxpg SwWrapTabPage::DeactivatePage(SfxItemSet* _pSet)
 // range check
 IMPL_LINK_TYPED( SwWrapTabPage, RangeLoseFocusHdl, Control&, rControl, void )
 {
-    RangeModifyHdl( static_cast<MetricField*>(&rControl) );
+    RangeModifyHdl( static_cast<SpinField&>(rControl) );
 }
-IMPL_LINK( SwWrapTabPage, RangeModifyHdl, MetricField*, pEdit )
+IMPL_LINK_TYPED( SwWrapTabPage, RangeModifyHdl, SpinField&, rSpin, void )
 {
-    sal_Int64 nValue = pEdit->GetValue();
-    MetricField *pOpposite = 0;
-    if (pEdit == m_pLeftMarginED)
+    MetricField& rEdit = static_cast<MetricField&>(rSpin);
+    sal_Int64 nValue = rEdit.GetValue();
+    MetricField *pOpposite = nullptr;
+    if (&rEdit == m_pLeftMarginED)
         pOpposite = m_pRightMarginED;
-    else if (pEdit == m_pRightMarginED)
+    else if (&rEdit == m_pRightMarginED)
         pOpposite = m_pLeftMarginED;
-    else if (pEdit == m_pTopMarginED)
+    else if (&rEdit == m_pTopMarginED)
         pOpposite = m_pBottomMarginED;
-    else if (pEdit == m_pBottomMarginED)
+    else if (&rEdit == m_pBottomMarginED)
         pOpposite = m_pTopMarginED;
 
     OSL_ASSERT(pOpposite);
@@ -610,10 +611,9 @@ IMPL_LINK( SwWrapTabPage, RangeModifyHdl, MetricField*, pEdit )
     {
         sal_Int64 nOpposite = pOpposite->GetValue();
 
-        if (nValue + nOpposite > std::max(pEdit->GetMax(), pOpposite->GetMax()))
+        if (nValue + nOpposite > std::max(rEdit.GetMax(), pOpposite->GetMax()))
             pOpposite->SetValue(pOpposite->GetMax() - nValue);
     }
-    return 0;
 }
 
 IMPL_LINK_TYPED( SwWrapTabPage, WrapTypeHdl, Button *, pBtn, void )
@@ -627,7 +627,7 @@ IMPL_LINK_TYPED( SwWrapTabPage, WrapTypeHdl, Button *, pBtn, void )
         ((m_nAnchorId == FLY_AT_PARA) || (m_nAnchorId == FLY_AT_CHAR)) &&
         (pBtn != m_pNoWrapRB) );
 
-    ContourHdl(0);
+    ContourHdl(nullptr);
 }
 
 IMPL_LINK_NOARG_TYPED(SwWrapTabPage, ContourHdl, Button*, void)

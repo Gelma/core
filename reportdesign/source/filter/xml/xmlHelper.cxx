@@ -70,7 +70,7 @@ OPropertyHandlerFactory::~OPropertyHandlerFactory()
 
 const XMLPropertyHandler* OPropertyHandlerFactory::GetPropertyHandler(sal_Int32 _nType) const
 {
-    const XMLPropertyHandler* pHandler = NULL;
+    const XMLPropertyHandler* pHandler = nullptr;
     sal_Int32 nType = _nType;
     nType &= MID_FLAG_MASK;
 
@@ -86,7 +86,7 @@ const XMLPropertyHandler* OPropertyHandlerFactory::GetPropertyHandler(sal_Int32 
                     { XML_TOKEN_INVALID, 0 }
                 };
 
-                pHandler = new XMLEnumPropertyHdl( pXML_VerticalAlign_Enum, cppu::UnoType<com::sun::star::style::VerticalAlignment>::get());
+                pHandler = new XMLEnumPropertyHdl( pXML_VerticalAlign_Enum, cppu::UnoType<css::style::VerticalAlignment>::get());
             }
             break;
         case (XML_SD_TYPES_START+34):
@@ -106,7 +106,7 @@ const XMLPropertyHandler* OPropertyHandlerFactory::GetPropertyHandler(sal_Int32 
 #define MAP_CONST_P_ASCII( name, prefix, token, type, context ) { name, sizeof(name)-1, XML_NAMESPACE_##prefix, XML_##token, type|XML_TYPE_PROP_PARAGRAPH,  context, SvtSaveOptions::ODFVER_010, false }
 #define MAP_CONST_S( name, prefix, token, type, context )  { name, sizeof(name)-1,      XML_NAMESPACE_##prefix, XML_##token, type|XML_TYPE_PROP_SECTION,    context, SvtSaveOptions::ODFVER_010, false }
 #define MAP_CONST_C_ASCII( name, prefix, token, type, context ) { name, sizeof(name)-1, XML_NAMESPACE_##prefix, XML_##token, type|XML_TYPE_PROP_TABLE_CELL, context, SvtSaveOptions::ODFVER_010, false }
-#define MAP_END() { NULL, 0, 0, XML_TOKEN_INVALID, 0 ,0, SvtSaveOptions::ODFVER_010, false}
+#define MAP_END() { nullptr, 0, 0, XML_TOKEN_INVALID, 0 ,0, SvtSaveOptions::ODFVER_010, false}
 
 rtl::Reference < XMLPropertySetMapper > OXMLHelper::GetCellStylePropertyMap(bool _bOldFormat, bool bForExport)
 {
@@ -252,10 +252,10 @@ void OXMLHelper::copyStyleElements(const bool _bOld,const OUString& _sStyleName,
 {
     if ( !_xProp.is() || _sStyleName.isEmpty() || !_pAutoStyles )
         return;
-    XMLPropStyleContext* pAutoStyle = const_cast<XMLPropStyleContext*>(PTR_CAST(XMLPropStyleContext,_pAutoStyles->FindStyleChildContext(XML_STYLE_FAMILY_TABLE_CELL,_sStyleName)));
+    XMLPropStyleContext* pAutoStyle = const_cast<XMLPropStyleContext*>(dynamic_cast< const XMLPropStyleContext *>(_pAutoStyles->FindStyleChildContext(XML_STYLE_FAMILY_TABLE_CELL,_sStyleName)));
     if ( pAutoStyle )
     {
-        ::com::sun::star::awt::FontDescriptor aFont;
+        css::awt::FontDescriptor aFont;
         static comphelper::PropertyMapEntry const pMap[] =
         {
             {OUString(PROPERTY_FONTNAME),         PROPERTY_ID_FONTNAME,           cppu::UnoType<decltype(aFont.Name)>::get()         ,PropertyAttribute::BOUND,0},

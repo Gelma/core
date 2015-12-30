@@ -102,7 +102,6 @@ struct SVX_DLLPUBLIC SdrViewEvent
     Point                       aLogicPos;
     SdrHitKind                  eHit;
     SdrEventKind                eEvent;
-    SdrHdlKind                  eHdlKind;
     SdrCreateCmd                eEndCreateCmd;   // for EndInsPoint too
 
     sal_uInt16                  nMouseClicks;
@@ -113,7 +112,6 @@ struct SVX_DLLPUBLIC SdrViewEvent
 
     bool                        bMouseDown : 1;
     bool                        bMouseUp : 1;
-    bool                        bDoubleHdlSize : 1;  // Double Handlesize because of TextEdit
     bool                        bIsAction : 1;       // Action is active
     bool                        bIsTextEdit : 1;     // TextEdit runs currently
     bool                        bTextEditHit : 1;    // hit open OutlinerView?
@@ -166,8 +164,7 @@ protected:
     SvtAccessibilityOptions maAccessibilityOptions;
 
 public:
-    TYPEINFO_OVERRIDE();
-    explicit SdrView(SdrModel* pModel1, OutputDevice* pOut = 0L);
+    explicit SdrView(SdrModel* pModel1, OutputDevice* pOut = nullptr);
     virtual ~SdrView();
 
     // The default value for all dispatchers is activated. If the app for example
@@ -193,13 +190,13 @@ public:
     void SetMasterPagePaintCaching(bool bOn);
     bool IsMasterPagePaintCaching() const { return mbMasterPagePaintCaching; }
 
-    bool KeyInput(const KeyEvent& rKEvt, vcl::Window* pWin) SAL_OVERRIDE;
-    virtual bool MouseButtonDown(const MouseEvent& rMEvt, vcl::Window* pWin) SAL_OVERRIDE;
-    virtual bool MouseButtonUp(const MouseEvent& rMEvt, vcl::Window* pWin) SAL_OVERRIDE;
-    virtual bool MouseMove(const MouseEvent& rMEvt, vcl::Window* pWin) SAL_OVERRIDE;
-    virtual bool Command(const CommandEvent& rCEvt, vcl::Window* pWin) SAL_OVERRIDE;
+    bool KeyInput(const KeyEvent& rKEvt, vcl::Window* pWin) override;
+    virtual bool MouseButtonDown(const MouseEvent& rMEvt, vcl::Window* pWin) override;
+    virtual bool MouseButtonUp(const MouseEvent& rMEvt, vcl::Window* pWin) override;
+    virtual bool MouseMove(const MouseEvent& rMEvt, vcl::Window* pWin) override;
+    virtual bool Command(const CommandEvent& rCEvt, vcl::Window* pWin) override;
 
-    virtual void ConfigurationChanged( utl::ConfigurationBroadcaster*, sal_uInt32 ) SAL_OVERRIDE;
+    virtual void ConfigurationChanged( utl::ConfigurationBroadcaster*, sal_uInt32 ) override;
 
     bool SetAttributes(const SfxItemSet& rSet, bool bReplaceAll=false) { return SdrCreateView::SetAttributes(rSet,bReplaceAll); }
     bool SetStyleSheet(SfxStyleSheet* pStyleSheet, bool bDontRemoveHardAttr=false) { return SdrCreateView::SetStyleSheet(pStyleSheet,bDontRemoveHardAttr); }

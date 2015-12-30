@@ -43,7 +43,7 @@ using namespace ::sf_misc;
 #define BASPROV_PROPERTY_ID_URI         1
 #define BASPROV_PROPERTY_ID_EDITABLE    2
 
-#define BASPROV_PROPERTY_URI            OUString( "URI"  )
+#define BASPROV_PROPERTY_URI            "URI"
 #define BASPROV_PROPERTY_EDITABLE       "Editable"
 
 #define BASPROV_DEFAULT_ATTRIBS()       PropertyAttribute::BOUND | PropertyAttribute::TRANSIENT | PropertyAttribute::READONLY
@@ -269,7 +269,7 @@ namespace basprov
                     aArgs[3].Value <<= OUString("Module");
                     aArgs[4].Name = "Line";
                     aArgs[4].Value <<= static_cast< sal_uInt32 >( nLine1 );
-                    xHelper->executeDispatch( xProv, OUString(".uno:BasicIDEAppear"), OUString(), 0, aArgs );
+                    xHelper->executeDispatch( xProv, ".uno:BasicIDEAppear", OUString(), 0, aArgs );
                 }
             }
         }

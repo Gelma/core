@@ -63,7 +63,7 @@ protected:
     Fraction                    aSnapWdtX;
     Fraction                    aSnapWdtY;
 
-    sal_uInt16                      nMagnSizPix;
+    sal_uInt16                  nMagnSizPix;
     long                        nSnapAngle;
     long                        nEliminatePolyPointLimitAngle;
 
@@ -71,16 +71,11 @@ protected:
 
     bool                        bSnapEnab : 1;
     bool                        bGridSnap : 1;
-    bool                        bSnapTo1Pix : 1;             // If GridSnap off, snap to one Pixel to avoid values like 10.01
     bool                        bBordSnap : 1;
     bool                        bHlplSnap : 1;
     bool                        bOFrmSnap : 1;
     bool                        bOPntSnap : 1;
     bool                        bOConSnap : 1;
-    bool                        bMoveMFrmSnap : 1;
-    bool                        bMoveOFrmSnap : 1;
-    bool                        bMoveOPntSnap : 1;
-    bool                        bMoveOConSnap : 1;
     bool                        bMoveSnapOnlyTopLeft : 1;    //  Special for dialogeditor
     bool                        bOrtho : 1;
     bool                        bBigOrtho : 1;
@@ -93,16 +88,16 @@ protected:
 
 protected:
     // #i71538# make constructors of SdrView sub-components protected to avoid incomplete incarnations which may get casted to SdrView
-    SdrSnapView(SdrModel* pModel1, OutputDevice* pOut = 0L);
+    SdrSnapView(SdrModel* pModel1, OutputDevice* pOut = nullptr);
     virtual ~SdrSnapView();
 
 public:
-    virtual bool IsAction() const SAL_OVERRIDE;
-    virtual void MovAction(const Point& rPnt) SAL_OVERRIDE;
-    virtual void EndAction() SAL_OVERRIDE;
-    virtual void BckAction() SAL_OVERRIDE;
-    virtual void BrkAction() SAL_OVERRIDE; // break actions for derived classes e.g. interrupt dragging.
-    virtual void TakeActionRect(Rectangle& rRect) const SAL_OVERRIDE;
+    virtual bool IsAction() const override;
+    virtual void MovAction(const Point& rPnt) override;
+    virtual void EndAction() override;
+    virtual void BckAction() override;
+    virtual void BrkAction() override; // break actions for derived classes e.g. interrupt dragging.
+    virtual void TakeActionRect(Rectangle& rRect) const override;
 
     void SetSnapGridWidth(const Fraction& rX, const Fraction& rY) { aSnapWdtX=rX; aSnapWdtY=rY; }
     const Fraction& GetSnapGridWidthX() const { return aSnapWdtX; }
@@ -114,7 +109,7 @@ public:
 
     // RecalcLogicSnapMagnetic has to be called for every change of OutputDevices and every change of the MapMode!
     void RecalcLogicSnapMagnetic(const OutputDevice& rOut) { SetSnapMagnetic(rOut.PixelToLogic(Size(nMagnSizPix,nMagnSizPix))); }
-    void SetActualWin(const OutputDevice* pWin) { SdrPaintView::SetActualWin(pWin); if (pWin!=NULL) RecalcLogicSnapMagnetic(*pWin); }
+    void SetActualWin(const OutputDevice* pWin) { SdrPaintView::SetActualWin(pWin); if (pWin!=nullptr) RecalcLogicSnapMagnetic(*pWin); }
 
     // Coordinates referred to the view!
     // Returnvalues are SdrSnap::NOTSNAPPED,SdrSnap::XSNAPPED,
@@ -150,7 +145,7 @@ public:
     void MovSetPageOrg(const Point& rPnt);
     bool EndSetPageOrg();
     void BrkSetPageOrg();
-    bool IsSetPageOrg() const { return (0L != mpPageOriginOverlay); }
+    bool IsSetPageOrg() const { return (nullptr != mpPageOriginOverlay); }
 
     // HitTest. If sal_True, in rnHelpLineNum is the number of the auxiliary line and in rpPv
     // the appendend PageView.
@@ -167,7 +162,7 @@ public:
     void MovDragHelpLine(const Point& rPnt);
     bool EndDragHelpLine();
     void BrkDragHelpLine();
-    bool IsDragHelpLine() const { return (0L != mpHelpLineOverlay); }
+    bool IsDragHelpLine() const { return (nullptr != mpHelpLineOverlay); }
 
     // SnapAngle is for angles in circle, RotateDragging, ...
     // The snapping of an angle is beared down, if it is switched off

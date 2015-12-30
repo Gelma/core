@@ -19,7 +19,7 @@
 extern "C"
 {
     SAL_DLLPUBLIC_EXPORT bool SAL_CALL
-        GraphicImport(SvStream & rStream, Graphic & rGraphic,
+        ipxGraphicImport(SvStream & rStream, Graphic & rGraphic,
         FilterConfigItem*);
 }
 
@@ -36,7 +36,7 @@ public:
 
     virtual bool load(const OUString &,
         const OUString &rURL, const OUString &,
-        SfxFilterFlags, SotClipboardFormatId, unsigned int) SAL_OVERRIDE;
+        SfxFilterFlags, SotClipboardFormatId, unsigned int) override;
 
     /**
      * Ensure CVEs remain unbroken
@@ -54,7 +54,7 @@ bool PcxFilterTest::load(const OUString &,
 {
     SvFileStream aFileStream(rURL, StreamMode::READ);
     Graphic aGraphic;
-    return GraphicImport(aFileStream, aGraphic, NULL);
+    return ipxGraphicImport(aFileStream, aGraphic, nullptr);
 }
 
 void PcxFilterTest::testCVEs()

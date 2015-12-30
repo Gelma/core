@@ -27,6 +27,7 @@
 #include "formulacell.hxx"
 #include "document.hxx"
 #include "dociter.hxx"
+#include "matrixoperators.hxx"
 #include "scmatrix.hxx"
 #include "globstr.hrc"
 
@@ -39,7 +40,6 @@
 using ::std::vector;
 using namespace formula;
 
-// STATIC DATA
 #define MAX_ANZ_DOUBLE_FOR_SORT 100000
 
 const double ScInterpreter::fMaxGammaArgument = 171.624376956302;  // found experimental
@@ -2198,7 +2198,7 @@ public:
 
     virtual ~ScGammaDistFunction() {}
 
-    double  GetValue( double x ) const SAL_OVERRIDE  { return fp - rInt.GetGammaDist(x, fAlpha, fBeta); }
+    double  GetValue( double x ) const override  { return fp - rInt.GetGammaDist(x, fAlpha, fBeta); }
 };
 
 void ScInterpreter::ScGammaInv()
@@ -2238,7 +2238,7 @@ public:
 
     virtual ~ScBetaDistFunction() {}
 
-    double  GetValue( double x ) const SAL_OVERRIDE  { return fp - rInt.GetBetaDist(x, fAlpha, fBeta); }
+    double  GetValue( double x ) const override  { return fp - rInt.GetBetaDist(x, fAlpha, fBeta); }
 };
 
 void ScInterpreter::ScBetaInv()
@@ -2294,7 +2294,7 @@ public:
 
     virtual ~ScTDistFunction() {}
 
-    double  GetValue( double x ) const SAL_OVERRIDE  { return fp - rInt.GetTDist( x, fDF, nT ); }
+    double  GetValue( double x ) const override  { return fp - rInt.GetTDist( x, fDF, nT ); }
 };
 
 void ScInterpreter::ScTInv( int nType )
@@ -2340,7 +2340,7 @@ public:
 
     virtual ~ScFDistFunction() {}
 
-    double  GetValue( double x ) const SAL_OVERRIDE  { return fp - rInt.GetFDist(x, fF1, fF2); }
+    double  GetValue( double x ) const override  { return fp - rInt.GetFDist(x, fF1, fF2); }
 };
 
 void ScInterpreter::ScFInv()
@@ -2396,7 +2396,7 @@ public:
 
     virtual ~ScChiDistFunction() {}
 
-    double  GetValue( double x ) const SAL_OVERRIDE  { return fp - rInt.GetChiDist(x, fDF); }
+    double  GetValue( double x ) const override  { return fp - rInt.GetChiDist(x, fDF); }
 };
 
 void ScInterpreter::ScChiInv()
@@ -2431,7 +2431,7 @@ public:
 
     virtual ~ScChiSqDistFunction() {}
 
-    double  GetValue( double x ) const SAL_OVERRIDE  { return fp - rInt.GetChiSqDistCDF(x, fDF); }
+    double  GetValue( double x ) const override  { return fp - rInt.GetChiSqDistCDF(x, fDF); }
 };
 
 void ScInterpreter::ScChiSqInv()
@@ -2517,8 +2517,7 @@ void ScInterpreter::ScZTest()
         {
             ScAddress aAdr;
             PopSingleRef( aAdr );
-            ScRefCellValue aCell;
-            aCell.assign(*pDok, aAdr);
+            ScRefCellValue aCell(*pDok, aAdr);
             if (aCell.hasNumeric())
             {
                 fVal = GetCellValue(aAdr, aCell);
@@ -2761,7 +2760,6 @@ void ScInterpreter::ScFTest()
     }
     SCSIZE nC1, nC2;
     SCSIZE nR1, nR2;
-    SCSIZE i, j;
     pMat1->GetDimensions(nC1, nR1);
     pMat2->GetDimensions(nC2, nR2);
     double fCount1  = 0.0;
@@ -2770,29 +2768,21 @@ void ScInterpreter::ScFTest()
     double fSumSqr1 = 0.0;
     double fSum2    = 0.0;
     double fSumSqr2 = 0.0;
-    double fVal;
-    for (i = 0; i < nC1; i++)
-        for (j = 0; j < nR1; j++)
-        {
-            if (!pMat1->IsString(i,j))
-            {
-                fVal = pMat1->GetDouble(i,j);
-                fSum1    += fVal;
-                fSumSqr1 += fVal * fVal;
-                fCount1++;
-            }
-        }
-    for (i = 0; i < nC2; i++)
-        for (j = 0; j < nR2; j++)
-        {
-            if (!pMat2->IsString(i,j))
-            {
-                fVal = pMat2->GetDouble(i,j);
-                fSum2    += fVal;
-                fSumSqr2 += fVal * fVal;
-                fCount2++;
-            }
-        }
+
+    std::vector<std::unique_ptr<sc::op::Op>> aOp;
+    aOp.emplace_back(new sc::op::Op(0.0, [](double& rAccum, double fVal){rAccum += fVal;}));
+    aOp.emplace_back(new sc::op::Op(0.0, [](double& rAccum, double fVal){rAccum += fVal * fVal;}));
+
+    auto aVal1 = pMat1->Collect(false, aOp);
+    fSum1 = aVal1[0].mfFirst + aVal1[0].mfRest;
+    fSumSqr1 = aVal1[1].mfFirst + aVal1[1].mfRest;
+    fCount1 = aVal1[2].mnCount;
+
+    auto aVal2 = pMat2->Collect(false, aOp);
+    fSum2 = aVal2[0].mfFirst + aVal2[0].mfRest;
+    fSumSqr2 = aVal2[1].mfFirst + aVal2[1].mfRest;
+    fCount2 = aVal2[2].mnCount;
+
     if (fCount1 < 2.0 || fCount2 < 2.0)
     {
         PushNoValue();
@@ -2941,8 +2931,7 @@ void ScInterpreter::ScHarMean()
             case svSingleRef :
             {
                 PopSingleRef( aAdr );
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (aCell.hasNumeric())
                 {
                     double x = GetCellValue(aAdr, aCell);
@@ -3064,8 +3053,7 @@ void ScInterpreter::ScGeoMean()
             case svSingleRef :
             {
                 PopSingleRef( aAdr );
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (aCell.hasNumeric())
                 {
                     double x = GetCellValue(aAdr, aCell);
@@ -3202,8 +3190,7 @@ bool ScInterpreter::CalculateSkew(double& fSum,double& fCount,double& vSum,std::
             case svSingleRef :
             {
                 PopSingleRef( aAdr );
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (aCell.hasNumeric())
                 {
                     fVal = GetCellValue(aAdr, aCell);
@@ -3463,7 +3450,7 @@ void ScInterpreter::ScModalValue()
     if ( !MustHaveParamCountMin( nParamCount, 1 ) )
         return;
     vector<double> aSortArray;
-    GetSortArray( nParamCount, aSortArray, NULL, false, false );
+    GetSortArray( nParamCount, aSortArray, nullptr, false, false );
     SCSIZE nSize = aSortArray.size();
     if (aSortArray.empty() || nSize == 0 || nGlobalError)
         PushNoValue();
@@ -3549,7 +3536,7 @@ void ScInterpreter::ScPercentrank( bool bInclusive )
     double fSignificance = ( nParamCount == 3 ? ::rtl::math::approxFloor( GetDouble() ) : 3.0 );
     double fNum = GetDouble();
     vector<double> aSortArray;
-    GetSortArray( 1, aSortArray, NULL, false, false );
+    GetSortArray( 1, aSortArray, nullptr, false, false );
     SCSIZE nSize = aSortArray.size();
     if ( aSortArray.empty() || nSize == 0 || nGlobalError )
         PushNoValue();
@@ -3642,7 +3629,7 @@ void ScInterpreter::ScTrimMean()
         return;
     }
     vector<double> aSortArray;
-    GetSortArray( 1, aSortArray, NULL, false, false );
+    GetSortArray( 1, aSortArray, nullptr, false, false );
     SCSIZE nSize = aSortArray.size();
     if (aSortArray.empty() || nSize == 0 || nGlobalError)
         PushNoValue();
@@ -3677,8 +3664,7 @@ void ScInterpreter::GetNumberSequenceArray( sal_uInt8 nParamCount, vector<double
             case svSingleRef :
             {
                 PopSingleRef( aAdr );
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (aCell.hasNumeric())
                     rArray.push_back(GetCellValue(aAdr, aCell));
             }
@@ -3887,7 +3873,7 @@ void ScInterpreter::ScRank( bool bAverage )
         bAscending = false;
 
     vector<double> aSortArray;
-    GetSortArray( 1, aSortArray, NULL, false, false );
+    GetSortArray( 1, aSortArray, nullptr, false, false );
     double fVal = GetDouble();
     SCSIZE nSize = aSortArray.size();
     if ( aSortArray.empty() || nSize == 0 || nGlobalError )
@@ -3962,8 +3948,7 @@ void ScInterpreter::ScAveDev()
             case svSingleRef :
             {
                 PopSingleRef( aAdr );
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (aCell.hasNumeric())
                 {
                     rVal += GetCellValue(aAdr, aCell);
@@ -4045,8 +4030,7 @@ void ScInterpreter::ScAveDev()
             case svSingleRef :
             {
                 PopSingleRef( aAdr );
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (aCell.hasNumeric())
                     rVal += fabs(GetCellValue(aAdr, aCell) - nMiddle);
             }

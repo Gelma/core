@@ -47,7 +47,7 @@ namespace sax_test {
 class OSaxParserTest : public WeakImplHelper< XSimpleTest >
 {
 public:
-    OSaxParserTest( const Reference < XMultiServiceFactory > & rFactory ) : m_rFactory( rFactory )
+    explicit OSaxParserTest( const Reference < XMultiServiceFactory > & rFactory ) : m_rFactory( rFactory )
     {
     }
 
@@ -99,10 +99,7 @@ OUString    OSaxParserTest_getImplementationName( ) throw ()
 
 Sequence<OUString> OSaxParserTest_getSupportedServiceNames( ) throw ()
 {
-    Sequence<OUString> aRet(1);
-
-    aRet.getArray()[0] = OSaxParserTest_getImplementationName( );
-
+    Sequence<OUString> aRet { OSaxParserTest_getImplementationName() };
     return aRet;
 }
 

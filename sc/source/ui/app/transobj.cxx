@@ -100,7 +100,7 @@ void ScTransferObj::PaintToDev( OutputDevice* pDev, ScDocument* pDoc, double nPr
     Point aPoint;
     Rectangle aBound( aPoint, pDev->GetOutputSize() );      //! use size from clip area?
 
-    ScViewData aViewData(NULL,NULL);
+    ScViewData aViewData(nullptr,nullptr);
     aViewData.InitData( pDoc );
 
     aViewData.SetTabNo( rBlock.aEnd.Tab() );
@@ -181,7 +181,7 @@ ScTransferObj::~ScTransferObj()
     if ( pScMod->GetClipData().pCellClipboard == this )
     {
         OSL_FAIL("ScTransferObj wasn't released");
-        pScMod->SetClipObject( NULL, NULL );
+        pScMod->SetClipObject( nullptr, nullptr );
     }
     if ( pScMod->GetDragData().pCellTransfer == this )
     {
@@ -212,7 +212,7 @@ ScTransferObj* ScTransferObj::GetOwnClipboard( vcl::Window* pUIWin )
         if ( !aDataHelper.HasFormat( SotClipboardFormatId::DIF ) )
         {
 //          OSL_FAIL("ScTransferObj wasn't released");
-            pObj = NULL;
+            pObj = nullptr;
         }
     }
     return pObj;
@@ -467,7 +467,7 @@ bool ScTransferObj::WriteObject( tools::SvRef<SotStorageStream>& rxOStm, void* p
                 bRet = true;
 
                 xWorkStore->dispose();
-                xWorkStore = uno::Reference < embed::XStorage >();
+                xWorkStore.clear();
                 rxOStm->Commit();
             }
             break;
@@ -482,7 +482,7 @@ void ScTransferObj::ObjectReleased()
 {
     ScModule* pScMod = SC_MOD();
     if ( pScMod->GetClipData().pCellClipboard == this )
-        pScMod->SetClipObject( NULL, NULL );
+        pScMod->SetClipObject( nullptr, nullptr );
 
     TransferableHelper::ObjectReleased();
 }
@@ -498,7 +498,7 @@ void ScTransferObj::DragFinished( sal_Int8 nDropAction )
             ScMarkData aMarkData = GetSourceMarkData();
             //  external drag&drop doesn't copy objects, so they also aren't deleted:
             //  bApi=TRUE, don't show error messages from drag&drop
-            pSourceSh->GetDocFunc().DeleteContents( aMarkData, IDF_ALL & ~IDF_OBJECTS, true, true );
+            pSourceSh->GetDocFunc().DeleteContents( aMarkData, InsertDeleteFlags::ALL & ~InsertDeleteFlags::OBJECTS, true, true );
         }
     }
 
@@ -506,7 +506,7 @@ void ScTransferObj::DragFinished( sal_Int8 nDropAction )
     if ( pScMod->GetDragData().pCellTransfer == this )
         pScMod->ResetDragObject();
 
-    xDragSourceRanges = NULL;       // don't keep source after dropping
+    xDragSourceRanges = nullptr;       // don't keep source after dropping
 
     TransferableHelper::DragFinished( nDropAction );
 }
@@ -554,7 +554,7 @@ ScDocument* ScTransferObj::GetSourceDocument()
     ScDocShell* pSourceDocSh = GetSourceDocShell();
     if (pSourceDocSh)
         return &pSourceDocSh->GetDocument();
-    return NULL;
+    return nullptr;
 }
 
 ScDocShell* ScTransferObj::GetSourceDocShell()
@@ -563,7 +563,7 @@ ScDocShell* ScTransferObj::GetSourceDocShell()
     if (pRangesObj)
         return pRangesObj->GetDocShell();
 
-    return NULL;    // none set
+    return nullptr;    // none set
 }
 
 ScMarkData ScTransferObj::GetSourceMarkData()
@@ -590,7 +590,7 @@ void ScTransferObj::InitDocShell(bool bLimitToPageSize)
         ScDocShell* pDocSh = new ScDocShell;
         aDocShellRef = pDocSh;      // ref must be there before InitNew
 
-        pDocSh->DoInitNew(NULL);
+        pDocSh->DoInitNew();
 
         ScDocument& rDestDoc = pDocSh->GetDocument();
         ScMarkData aDestMark;
@@ -646,10 +646,10 @@ void ScTransferObj::InitDocShell(bool bLimitToPageSize)
         bool bWasCut = pDoc->IsCutMode();
         if (!bWasCut)
             pDoc->SetClipArea( aDestRange, true );          // Cut
-        rDestDoc.CopyFromClip( aDestRange, aDestMark, IDF_ALL, NULL, pDoc, false );
+        rDestDoc.CopyFromClip( aDestRange, aDestMark, InsertDeleteFlags::ALL, nullptr, pDoc, false );
         pDoc->SetClipArea( aDestRange, bWasCut );
 
-        StripRefs( pDoc, nStartX,nStartY, nEndX,nEndY, &rDestDoc, 0 );
+        StripRefs( pDoc, nStartX,nStartY, nEndX,nEndY, &rDestDoc );
 
         ScRange aMergeRange = aDestRange;
         rDestDoc.ExtendMerge( aMergeRange, true );
@@ -672,7 +672,7 @@ void ScTransferObj::InitDocShell(bool bLimitToPageSize)
             pDestPool->CopyStyleFrom( pStylePool, aStyleName, SFX_STYLE_FAMILY_PAGE );
         }
 
-        ScViewData aViewData( pDocSh, NULL );
+        ScViewData aViewData( pDocSh, nullptr );
         aViewData.SetScreen( nStartX,nStartY, nEndX,nEndY );
         aViewData.SetCurX( nStartX );
         aViewData.SetCurY( nStartY );
@@ -730,20 +730,19 @@ void ScTransferObj::InitDocShell(bool bLimitToPageSize)
 
 SfxObjectShell* ScTransferObj::SetDrawClipDoc( bool bAnyOle )
 {
-    // update ScGlobal::pDrawClipDocShellRef
+    // update ScGlobal::xDrawClipDocShellRef
 
-    delete ScGlobal::pDrawClipDocShellRef;
+    ScGlobal::xDrawClipDocShellRef.Clear();
     if (bAnyOle)
     {
-        ScGlobal::pDrawClipDocShellRef =
-                        new ScDocShellRef(new ScDocShell(SfxModelFlags::EMBEDDED_OBJECT | SfxModelFlags::DISABLE_EMBEDDED_SCRIPTS));      // there must be a ref
-        (*ScGlobal::pDrawClipDocShellRef)->DoInitNew(NULL);
-        return *ScGlobal::pDrawClipDocShellRef;
+        ScGlobal::xDrawClipDocShellRef = new ScDocShell(SfxModelFlags::EMBEDDED_OBJECT | SfxModelFlags::DISABLE_EMBEDDED_SCRIPTS); // there must be a ref
+        ScGlobal::xDrawClipDocShellRef->DoInitNew();
+        return ScGlobal::xDrawClipDocShellRef.get();
     }
     else
     {
-        ScGlobal::pDrawClipDocShellRef = NULL;
-        return NULL;
+        ScGlobal::xDrawClipDocShellRef.Clear();
+        return nullptr;
     }
 }
 
@@ -838,12 +837,12 @@ namespace
     class theScTransferUnoTunnelId : public rtl::Static< UnoTunnelIdInit, theScTransferUnoTunnelId> {};
 }
 
-const com::sun::star::uno::Sequence< sal_Int8 >& ScTransferObj::getUnoTunnelId()
+const css::uno::Sequence< sal_Int8 >& ScTransferObj::getUnoTunnelId()
 {
     return theScTransferUnoTunnelId::get().getSeq();
 }
 
-sal_Int64 SAL_CALL ScTransferObj::getSomething( const com::sun::star::uno::Sequence< sal_Int8 >& rId ) throw( com::sun::star::uno::RuntimeException, std::exception )
+sal_Int64 SAL_CALL ScTransferObj::getSomething( const css::uno::Sequence< sal_Int8 >& rId ) throw( css::uno::RuntimeException, std::exception )
 {
     sal_Int64 nRet;
     if( ( rId.getLength() == 16 ) &&

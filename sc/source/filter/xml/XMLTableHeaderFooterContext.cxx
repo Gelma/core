@@ -25,6 +25,7 @@
 #include <comphelper/extract.hxx>
 
 #include "unonames.hxx"
+#include "textuno.hxx"
 
 using namespace ::com::sun::star;
 using namespace ::com::sun::star::uno;
@@ -33,7 +34,6 @@ using namespace ::com::sun::star::text;
 using namespace ::com::sun::star::beans;
 using namespace xmloff::token;
 
-TYPEINIT1( XMLTableHeaderFooterContext, SvXMLImportContext );
 
 XMLTableHeaderFooterContext::XMLTableHeaderFooterContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
                        const OUString& rLName,
@@ -100,6 +100,8 @@ XMLTableHeaderFooterContext::XMLTableHeaderFooterContext( SvXMLImport& rImport, 
 
 XMLTableHeaderFooterContext::~XMLTableHeaderFooterContext()
 {
+    rtl::Reference<ScHeaderFooterContentObj> pImp = ScHeaderFooterContentObj::getImplementation( xHeaderFooterContent );
+    pImp->dispose();
 }
 
 SvXMLImportContext *XMLTableHeaderFooterContext::CreateChildContext(
@@ -107,7 +109,7 @@ SvXMLImportContext *XMLTableHeaderFooterContext::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext(0);
+    SvXMLImportContext *pContext(nullptr);
 
     if ((nPrefix == XML_NAMESPACE_TEXT) &&
         IsXMLToken(rLocalName, XML_P))
@@ -196,7 +198,6 @@ void XMLTableHeaderFooterContext::EndElement()
     }
 }
 
-TYPEINIT1( XMLHeaderFooterRegionContext, SvXMLImportContext );
 
 XMLHeaderFooterRegionContext::XMLHeaderFooterRegionContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
                        const OUString& rLName,
@@ -219,7 +220,7 @@ SvXMLImportContext *XMLHeaderFooterRegionContext::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext(0);
+    SvXMLImportContext *pContext(nullptr);
 
     if ((nPrefix == XML_NAMESPACE_TEXT) &&
         IsXMLToken(rLocalName, XML_P))

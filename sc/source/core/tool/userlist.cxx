@@ -24,6 +24,7 @@
 #include <unotools/localedatawrapper.hxx>
 #include <unotools/calendarwrapper.hxx>
 #include <unotools/transliterationwrapper.hxx>
+#include <o3tl/make_unique.hxx>
 
 #include <boost/bind.hpp>
 #include <algorithm>
@@ -70,7 +71,7 @@ void ScUserListData::InitTokens()
             {
                 OUString aSub(p0, nLen);
                 OUString aUpStr = ScGlobal::pCharClass->uppercase(aSub);
-                maSubStrings.push_back(new SubStr(aSub, aUpStr));
+                maSubStrings.push_back(SubStr(aSub, aUpStr));
             }
             bFirst = true;
         }
@@ -80,7 +81,7 @@ void ScUserListData::InitTokens()
     {
         OUString aSub(p0, nLen);
         OUString aUpStr = ScGlobal::pCharClass->uppercase(aSub);
-        maSubStrings.push_back(new SubStr(aSub, aUpStr));
+        maSubStrings.push_back(SubStr(aSub, aUpStr));
     }
 }
 
@@ -111,7 +112,7 @@ size_t ScUserListData::GetSubCount() const
     return maSubStrings.size();
 }
 
-bool ScUserListData::GetSubIndex(const OUString& rSubStr, sal_uInt16& rIndex) const
+bool ScUserListData::GetSubIndex(const OUString& rSubStr, sal_uInt16& rIndex, bool& bMatchCase) const
 {
     // First, case sensitive search.
     SubStringsType::const_iterator itr = ::std::find_if(
@@ -119,6 +120,7 @@ bool ScUserListData::GetSubIndex(const OUString& rSubStr, sal_uInt16& rIndex) co
     if (itr != maSubStrings.end())
     {
         rIndex = ::std::distance(maSubStrings.begin(), itr);
+        bMatchCase = true;
         return true;
     }
 
@@ -130,8 +132,10 @@ bool ScUserListData::GetSubIndex(const OUString& rSubStr, sal_uInt16& rIndex) co
     if (itr != maSubStrings.end())
     {
         rIndex = ::std::distance(maSubStrings.begin(), itr);
+        bMatchCase = false;
         return true;
     }
+    bMatchCase = false;
     return false;
 }
 
@@ -146,8 +150,9 @@ OUString ScUserListData::GetSubStr(sal_uInt16 nIndex) const
 sal_Int32 ScUserListData::Compare(const OUString& rSubStr1, const OUString& rSubStr2) const
 {
     sal_uInt16 nIndex1, nIndex2;
-    bool bFound1 = GetSubIndex(rSubStr1, nIndex1);
-    bool bFound2 = GetSubIndex(rSubStr2, nIndex2);
+    bool bMatchCase;
+    bool bFound1 = GetSubIndex(rSubStr1, nIndex1, bMatchCase);
+    bool bFound2 = GetSubIndex(rSubStr2, nIndex2, bMatchCase);
     if (bFound1)
     {
         if (bFound2)
@@ -171,8 +176,9 @@ sal_Int32 ScUserListData::Compare(const OUString& rSubStr1, const OUString& rSub
 sal_Int32 ScUserListData::ICompare(const OUString& rSubStr1, const OUString& rSubStr2) const
 {
     sal_uInt16 nIndex1, nIndex2;
-    bool bFound1 = GetSubIndex(rSubStr1, nIndex1);
-    bool bFound2 = GetSubIndex(rSubStr2, nIndex2);
+    bool bMatchCase;
+    bool bFound1 = GetSubIndex(rSubStr1, nIndex1, bMatchCase);
+    bool bFound2 = GetSubIndex(rSubStr2, nIndex2, bMatchCase);
     if (bFound1)
     {
         if (bFound2)
@@ -232,9 +238,9 @@ ScUserList::ScUserList()
             OUString aDayLong = aDayLongBuf.makeStringAndClear();
 
             if ( !HasEntry( aDayShort ) )
-                maData.push_back( new ScUserListData( aDayShort ));
+                maData.push_back( o3tl::make_unique<ScUserListData>( aDayShort ));
             if ( !HasEntry( aDayLong ) )
-                maData.push_back( new ScUserListData( aDayLong ));
+                maData.push_back( o3tl::make_unique<ScUserListData>( aDayLong ));
         }
 
         xCal = xCalendars[j].Months;
@@ -257,41 +263,55 @@ ScUserList::ScUserList()
             OUString aMonthLong = aMonthLongBuf.makeStringAndClear();
 
             if ( !HasEntry( aMonthShort ) )
-                maData.push_back( new ScUserListData( aMonthShort ));
+                maData.push_back( o3tl::make_unique<ScUserListData>( aMonthShort ));
             if ( !HasEntry( aMonthLong ) )
-                maData.push_back( new ScUserListData( aMonthLong ));
+                maData.push_back( o3tl::make_unique<ScUserListData>( aMonthLong ));
         }
     }
 }
 
-ScUserList::ScUserList(const ScUserList& r) :
-    maData(r.maData) {}
+ScUserList::ScUserList(const ScUserList& rOther)
+{
+    for (const std::unique_ptr<ScUserListData>& rData : rOther.maData)
+        maData.push_back( o3tl::make_unique<ScUserListData>(*rData.get()) );
+}
 
 const ScUserListData* ScUserList::GetData(const OUString& rSubStr) const
 {
+    const ScUserListData* pFirstCaseInsensitive = nullptr;
     DataType::const_iterator itr = maData.begin(), itrEnd = maData.end();
+    sal_uInt16 nIndex;
+    bool bMatchCase = false;
+
     for (; itr != itrEnd; ++itr)
     {
-        sal_uInt16 nIndex;
-        if (itr->GetSubIndex(rSubStr, nIndex))
-            return &(*itr);
+        if ((*itr)->GetSubIndex(rSubStr, nIndex, bMatchCase))
+        {
+            if (bMatchCase)
+                return itr->get();
+            if (!pFirstCaseInsensitive)
+                pFirstCaseInsensitive = itr->get();
+        }
     }
-    return NULL;
+
+    return pFirstCaseInsensitive;
 }
 
 const ScUserListData& ScUserList::operator[](size_t nIndex) const
 {
-    return maData[nIndex];
+    return *maData[nIndex].get();
 }
 
 ScUserListData& ScUserList::operator[](size_t nIndex)
 {
-    return maData[nIndex];
+    return *maData[nIndex].get();
 }
 
-ScUserList& ScUserList::operator=( const ScUserList& r )
+ScUserList& ScUserList::operator=( const ScUserList& rOther )
 {
-    maData = r.maData;
+    maData.clear();
+    for (const std::unique_ptr<ScUserListData>& rData : rOther.maData)
+        maData.push_back( o3tl::make_unique<ScUserListData>(*rData.get()) );
     return *this;
 }
 
@@ -303,8 +323,8 @@ bool ScUserList::operator==( const ScUserList& r ) const
     DataType::const_iterator itr1 = maData.begin(), itr2 = r.maData.begin(), itrEnd = maData.end();
     for (; itr1 != itrEnd; ++itr1, ++itr2)
     {
-        const ScUserListData& v1 = *itr1;
-        const ScUserListData& v2 = *itr2;
+        const ScUserListData& v1 = *itr1->get();
+        const ScUserListData& v2 = *itr2->get();
         if (v1.GetString() != v2.GetString() || v1.GetSubCount() != v2.GetSubCount())
             return false;
     }
@@ -338,7 +358,7 @@ size_t ScUserList::size() const
 
 void ScUserList::push_back(ScUserListData* p)
 {
-    maData.push_back(p);
+    maData.push_back(std::unique_ptr<ScUserListData>(p));
 }
 
 void ScUserList::erase(iterator itr)

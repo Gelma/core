@@ -17,6 +17,7 @@
 #include "refupdatecontext.hxx"
 
 #include <formula/token.hxx>
+#include <o3tl/make_unique.hxx>
 
 #include <algorithm>
 
@@ -30,10 +31,10 @@ private:
     void startListening(ScTokenArray* pTokens, const ScAddress& rPos);
 
 public:
-    ScFormulaListener(ScFormulaCell* pCell);
+    explicit ScFormulaListener(ScFormulaCell* pCell);
     virtual ~ScFormulaListener();
 
-    void Notify( const SfxHint& rHint ) SAL_OVERRIDE;
+    void Notify( const SfxHint& rHint ) override;
 
     bool NeedsRepaint() const;
 };
@@ -49,7 +50,7 @@ void ScFormulaListener::startListening(ScTokenArray* pArr, const ScAddress& rPos
 {
     pArr->Reset();
     formula::FormulaToken* t;
-    while ( ( t = pArr->GetNextReferenceRPN() ) != NULL )
+    while ( ( t = pArr->GetNextReferenceRPN() ) != nullptr )
     {
         switch (t->GetType())
         {
@@ -201,7 +202,7 @@ const ScTokenArray* ScColorScaleEntry::GetFormula() const
         return mpCell->GetCode();
     }
 
-    return NULL;
+    return nullptr;
 }
 
 OUString ScColorScaleEntry::GetFormula( formula::FormulaGrammar::Grammar eGrammar ) const
@@ -287,7 +288,7 @@ void ScColorScaleEntry::SetColor(const Color& rColor)
 
 ScColorFormat::ScColorFormat(ScDocument* pDoc)
     : ScFormatEntry(pDoc)
-    , mpParent(NULL)
+    , mpParent(nullptr)
 {
 }
 
@@ -532,20 +533,20 @@ Color* ScColorScaleFormat::GetColor( const ScAddress& rAddr ) const
 {
     CellType eCellType = mpDoc->GetCellType(rAddr);
     if(eCellType != CELLTYPE_VALUE && eCellType != CELLTYPE_FORMULA)
-        return NULL;
+        return nullptr;
 
     if (eCellType == CELLTYPE_FORMULA)
     {
         ScFormulaCell *pCell = mpDoc->GetFormulaCell(rAddr);
         if (!pCell || !pCell->IsValue())
-            return NULL;
+            return nullptr;
     }
 
     // now we have for sure a value
     double nVal = mpDoc->GetValue(rAddr);
 
     if (maColorScales.size() < 2)
-        return NULL;
+        return nullptr;
 
     double nMin = std::numeric_limits<double>::max();
     double nMax = std::numeric_limits<double>::min();
@@ -553,7 +554,7 @@ Color* ScColorScaleFormat::GetColor( const ScAddress& rAddr ) const
 
     // this check is for safety
     if(nMin >= nMax)
-        return NULL;
+        return nullptr;
 
     ScColorScaleEntries::const_iterator itr = begin();
     double nValMin = CalcValue(nMin, nMax, itr);
@@ -642,7 +643,7 @@ ScColorScaleEntries::const_iterator ScColorScaleFormat::end() const
 ScColorScaleEntry* ScColorScaleFormat::GetEntry(size_t nPos)
 {
     if (maColorScales.size() <= nPos)
-        return NULL;
+        return nullptr;
 
     return maColorScales[nPos].get();
 }
@@ -650,7 +651,7 @@ ScColorScaleEntry* ScColorScaleFormat::GetEntry(size_t nPos)
 const ScColorScaleEntry* ScColorScaleFormat::GetEntry(size_t nPos) const
 {
     if (maColorScales.size() <= nPos)
-        return NULL;
+        return nullptr;
 
     return maColorScales[nPos].get();
 }
@@ -789,13 +790,13 @@ ScDataBarInfo* ScDataBarFormat::GetDataBarInfo(const ScAddress& rAddr) const
 {
     CellType eCellType = mpDoc->GetCellType(rAddr);
     if(eCellType != CELLTYPE_VALUE && eCellType != CELLTYPE_FORMULA)
-        return NULL;
+        return nullptr;
 
     if (eCellType == CELLTYPE_FORMULA)
     {
         ScFormulaCell *pCell = mpDoc->GetFormulaCell(rAddr);
         if (!pCell || !pCell->IsValue())
-            return NULL;
+            return nullptr;
     }
 
     // now we have for sure a value
@@ -925,6 +926,20 @@ void ScDataBarFormat::EnsureSize()
     }
 }
 
+ScIconSetFormatData::ScIconSetFormatData(ScIconSetFormatData const& rOther)
+    : eIconSetType(rOther.eIconSetType)
+    , mbShowValue(rOther.mbShowValue)
+    , mbReverse(rOther.mbReverse)
+    , mbCustom(rOther.mbCustom)
+    , maCustomVector(rOther.maCustomVector)
+{
+    m_Entries.reserve(rOther.m_Entries.size());
+    for (auto const& it : rOther.m_Entries)
+    {
+        m_Entries.push_back(o3tl::make_unique<ScColorScaleEntry>(*it));
+    }
+}
+
 ScIconSetFormat::ScIconSetFormat(ScDocument* pDoc):
     ScColorFormat(pDoc),
     mpFormatData(new ScIconSetFormatData)
@@ -961,27 +976,27 @@ ScIconSetInfo* ScIconSetFormat::GetIconSetInfo(const ScAddress& rAddr) const
 {
     CellType eCellType = mpDoc->GetCellType(rAddr);
     if(eCellType != CELLTYPE_VALUE && eCellType != CELLTYPE_FORMULA)
-        return NULL;
+        return nullptr;
 
     if (eCellType == CELLTYPE_FORMULA)
     {
         ScFormulaCell *pCell = mpDoc->GetFormulaCell(rAddr);
         if (!pCell || !pCell->IsValue())
-            return NULL;
+            return nullptr;
     }
 
     // now we have for sure a value
     double nVal = mpDoc->GetValue(rAddr);
 
-    if (mpFormatData->maEntries.size() < 2)
-        return NULL;
+    if (mpFormatData->m_Entries.size() < 2)
+        return nullptr;
 
     double nMin = GetMinValue();
     double nMax = GetMaxValue();
 
     // this check is for safety
     if(nMin > nMax)
-        return NULL;
+        return nullptr;
 
     sal_Int32 nIndex = 0;
     const_iterator itr = begin();
@@ -1002,7 +1017,7 @@ ScIconSetInfo* ScIconSetFormat::GetIconSetInfo(const ScAddress& rAddr) const
 
     if(mpFormatData->mbReverse)
     {
-        sal_Int32 nMaxIndex = mpFormatData->maEntries.size() - 1;
+        sal_Int32 nMaxIndex = mpFormatData->m_Entries.size() - 1;
         nIndex = nMaxIndex - nIndex;
     }
 
@@ -1013,7 +1028,7 @@ ScIconSetInfo* ScIconSetFormat::GetIconSetInfo(const ScAddress& rAddr) const
         if (nCustomIndex == -1)
         {
             delete pInfo;
-            return NULL;
+            return nullptr;
         }
 
         pInfo->eIconSetType = eCustomType;
@@ -1038,7 +1053,7 @@ void ScIconSetFormat::UpdateReference( sc::RefUpdateContext& rCxt )
 {
     for(iterator itr = begin(); itr != end(); ++itr)
     {
-        itr->UpdateReference(rCxt);
+        (*itr)->UpdateReference(rCxt);
     }
 }
 
@@ -1046,7 +1061,7 @@ void ScIconSetFormat::UpdateInsertTab( sc::RefUpdateInsertTabContext& rCxt )
 {
     for(iterator itr = begin(); itr != end(); ++itr)
     {
-        itr->UpdateInsertTab(rCxt);
+        (*itr)->UpdateInsertTab(rCxt);
     }
 }
 
@@ -1054,7 +1069,7 @@ void ScIconSetFormat::UpdateDeleteTab( sc::RefUpdateDeleteTabContext& rCxt )
 {
     for(iterator itr = begin(); itr != end(); ++itr)
     {
-        itr->UpdateDeleteTab(rCxt);
+        (*itr)->UpdateDeleteTab(rCxt);
     }
 }
 
@@ -1062,7 +1077,7 @@ void ScIconSetFormat::UpdateMoveTab( sc::RefUpdateMoveTabContext& rCxt )
 {
     for(iterator itr = begin(); itr != end(); ++itr)
     {
-        itr->UpdateMoveTab(rCxt);
+        (*itr)->UpdateMoveTab(rCxt);
     }
 }
 
@@ -1070,7 +1085,7 @@ bool ScIconSetFormat::NeedsRepaint() const
 {
     for(const_iterator itr = begin(); itr != end(); ++itr)
     {
-        if(itr->NeedsRepaint())
+        if ((*itr)->NeedsRepaint())
             return true;
     }
 
@@ -1079,30 +1094,30 @@ bool ScIconSetFormat::NeedsRepaint() const
 
 ScIconSetFormat::iterator ScIconSetFormat::begin()
 {
-    return mpFormatData->maEntries.begin();
+    return mpFormatData->m_Entries.begin();
 }
 
 ScIconSetFormat::const_iterator ScIconSetFormat::begin() const
 {
-    return mpFormatData->maEntries.begin();
+    return mpFormatData->m_Entries.begin();
 }
 
 ScIconSetFormat::iterator ScIconSetFormat::end()
 {
-    return mpFormatData->maEntries.end();
+    return mpFormatData->m_Entries.end();
 }
 
 ScIconSetFormat::const_iterator ScIconSetFormat::end() const
 {
-    return mpFormatData->maEntries.end();
+    return mpFormatData->m_Entries.end();
 }
 
 double ScIconSetFormat::GetMinValue() const
 {
     const_iterator itr = begin();
 
-    if(itr->GetType() == COLORSCALE_VALUE || itr->GetType() == COLORSCALE_FORMULA)
-        return itr->GetValue();
+    if ((*itr)->GetType() == COLORSCALE_VALUE || (*itr)->GetType() == COLORSCALE_FORMULA)
+        return (*itr)->GetValue();
     else
     {
         return getMinValue();
@@ -1111,10 +1126,10 @@ double ScIconSetFormat::GetMinValue() const
 
 double ScIconSetFormat::GetMaxValue() const
 {
-    boost::ptr_vector<ScColorScaleEntry>::const_reverse_iterator itr = mpFormatData->maEntries.rbegin();
+    auto const itr = mpFormatData->m_Entries.rbegin();
 
-    if(itr->GetType() == COLORSCALE_VALUE || itr->GetType() == COLORSCALE_FORMULA)
-        return itr->GetValue();
+    if ((*itr)->GetType() == COLORSCALE_VALUE || (*itr)->GetType() == COLORSCALE_FORMULA)
+        return (*itr)->GetValue();
     else
     {
         return getMaxValue();
@@ -1123,10 +1138,10 @@ double ScIconSetFormat::GetMaxValue() const
 
 double ScIconSetFormat::CalcValue(double nMin, double nMax, ScIconSetFormat::const_iterator& itr) const
 {
-    switch(itr->GetType())
+    switch ((*itr)->GetType())
     {
         case COLORSCALE_PERCENT:
-            return nMin + (nMax-nMin)*(itr->GetValue()/100);
+            return nMin + (nMax-nMin)*((*itr)->GetValue()/100);
         case COLORSCALE_MIN:
             return nMin;
         case COLORSCALE_MAX:
@@ -1138,7 +1153,7 @@ double ScIconSetFormat::CalcValue(double nMin, double nMax, ScIconSetFormat::con
                 return rValues[0];
             else
             {
-                double fPercentile = itr->GetValue()/100.0;
+                double fPercentile = (*itr)->GetValue()/100.0;
                 return GetPercentile(rValues, fPercentile);
             }
         }
@@ -1147,7 +1162,7 @@ double ScIconSetFormat::CalcValue(double nMin, double nMax, ScIconSetFormat::con
         break;
     }
 
-    return itr->GetValue();
+    return (*itr)->GetValue();
 }
 
 namespace {
@@ -1175,7 +1190,7 @@ ScIconSetMap aIconSetMap[] = {
     { "5Rating", IconSet_5Ratings, 5 },
     { "5Quarters", IconSet_5Quarters, 5 },
     { "5Boxes", IconSet_5Boxes, 5 },
-    { NULL, IconSet_3Arrows, 0 }
+    { nullptr, IconSet_3Arrows, 0 }
 };
 
 }
@@ -1187,7 +1202,7 @@ ScIconSetMap* ScIconSetFormat::getIconSetMap()
 
 size_t ScIconSetFormat::size() const
 {
-    return mpFormatData->maEntries.size();
+    return mpFormatData->m_Entries.size();
 }
 
 
@@ -1318,10 +1333,9 @@ static const ScIconSetBitmapMap aBitmapMap[] = {
 
 }
 
-BitmapEx& ScIconSetFormat::getBitmap( ScIconSetType eType, sal_Int32 nIndex )
+BitmapEx& ScIconSetFormat::getBitmap(sc::IconSetBitmapMap & rIconSetBitmapMap,
+        ScIconSetType const eType, sal_Int32 const nIndex)
 {
-    static std::map< sal_Int32, BitmapEx > aIconSetBitmaps;
-
     sal_Int32 nBitmap = -1;
 
     for(size_t i = 0; i < SAL_N_ELEMENTS(aBitmapMap); ++i)
@@ -1334,13 +1348,13 @@ BitmapEx& ScIconSetFormat::getBitmap( ScIconSetType eType, sal_Int32 nIndex )
     }
     assert( nBitmap != -1 );
 
-    std::map<sal_Int32, BitmapEx>::iterator itr = aIconSetBitmaps.find( nBitmap );
-    if(itr != aIconSetBitmaps.end())
+    std::map<sal_Int32, BitmapEx>::iterator itr = rIconSetBitmapMap.find(nBitmap);
+    if (itr != rIconSetBitmapMap.end())
         return itr->second;
 
     BitmapEx aBitmap = BitmapEx(ScResId(nBitmap));
     std::pair<sal_Int32, BitmapEx> aPair( nBitmap, aBitmap );
-    std::pair<std::map<sal_Int32, BitmapEx>::iterator, bool> itrNew = aIconSetBitmaps.insert(aPair);
+    std::pair<std::map<sal_Int32, BitmapEx>::iterator, bool> itrNew = rIconSetBitmapMap.insert(aPair);
     assert(itrNew.second);
 
     return itrNew.first->second;

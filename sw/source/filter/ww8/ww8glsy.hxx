@@ -57,7 +57,7 @@ private:
 class WW8Glossary
 {
 public:
-    WW8Glossary( tools::SvRef<SotStorageStream> &refStrm, sal_uInt8 nVersion, SotStorage *pStg=0);
+    WW8Glossary( tools::SvRef<SotStorageStream> &refStrm, sal_uInt8 nVersion, SotStorage *pStg=nullptr);
     bool Load( SwTextBlocks &rBlocks, bool bSaveRelFile );
     ~WW8Glossary()                  { delete pGlossary; }
     WW8GlossaryFib *GetFib()        { return pGlossary; }
@@ -75,8 +75,8 @@ private:
         const ::std::vector<ww::bytes>& rExtra);
     static bool HasBareGraphicEnd(SwDoc *pD,SwNodeIndex &rIdx);
 
-    WW8Glossary(const WW8Glossary&) SAL_DELETED_FUNCTION;
-    WW8Glossary& operator=(const WW8Glossary&) SAL_DELETED_FUNCTION;
+    WW8Glossary(const WW8Glossary&) = delete;
+    WW8Glossary& operator=(const WW8Glossary&) = delete;
 };
 #endif
 

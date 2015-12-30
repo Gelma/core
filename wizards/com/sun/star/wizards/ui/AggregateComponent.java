@@ -40,7 +40,7 @@ public class AggregateComponent extends ControlScroller
     private String[] sFunctions;
     private String[] sFunctionOperators = new String[]
     {
-        "SUM", "AVG", "MIN", "MAX"
+        "SUM", "AVG", "MIN", "MAX", "COUNT"
     };
     private QueryMetaData CurDBMetaData;
     private String soptDetailQuery;
@@ -175,18 +175,18 @@ public class AggregateComponent extends ControlScroller
         }
     }
 
+    @Override
     protected void insertControlGroup(int i, int ypos)
     {
         if (i == 0)
         {
-            int BaseID = 2300;
-            soptDetailQuery = CurUnoDialog.m_oResource.getResText(BaseID + 11);
-            soptSummaryQuery = CurUnoDialog.m_oResource.getResText(BaseID + 12);
-            slblAggregate = CurUnoDialog.m_oResource.getResText(BaseID + 16);
-            slblFieldNames = CurUnoDialog.m_oResource.getResText(BaseID + 17);
-            sFunctions = CurUnoDialog.m_oResource.getResArray(BaseID + 40, 4);
+            soptDetailQuery = CurUnoDialog.m_oResource.getResText(UIConsts.RID_QUERY + 11);
+            soptSummaryQuery = CurUnoDialog.m_oResource.getResText(UIConsts.RID_QUERY + 12);
+            slblAggregate = CurUnoDialog.m_oResource.getResText(UIConsts.RID_QUERY + 16);
+            slblFieldNames = CurUnoDialog.m_oResource.getResText(UIConsts.RID_QUERY + 17);
+            sFunctions = CurUnoDialog.m_oResource.getResArray(UIConsts.RID_QUERY + 40, 5);
 
-            sDuplicateAggregateFunction = CurUnoDialog.m_oResource.getResText(BaseID + 90);
+            sDuplicateAggregateFunction = CurUnoDialog.m_oResource.getResText(UIConsts.RID_QUERY + 90);
         }
         if (ControlRowVector == null)
         {
@@ -197,6 +197,7 @@ public class AggregateComponent extends ControlScroller
         ControlRowVector.add(oControlRow);
     }
 
+    @Override
     protected void setControlGroupVisible(int _index, boolean _bIsVisible)
     {
         ControlRow oControlRow = ControlRowVector.get(_index);
@@ -241,7 +242,7 @@ public class AggregateComponent extends ControlScroller
                 oControlRow = ControlRowVector.get(fieldcount);
                 oControlRow.setVisible(false);
             }
-            super.setScrollValue(getScrollValue() - 1, (fieldcount));
+            super.setScrollValue(getScrollValue() - 1, fieldcount);
             super.unregisterControlGroup(fieldcount);
 
         }
@@ -411,6 +412,7 @@ public class AggregateComponent extends ControlScroller
         CurUnoDialog.repaintDialogStep();
     }
 
+    @Override
     protected void initializeScrollFields()
     {
         ControlRow curControlRow;

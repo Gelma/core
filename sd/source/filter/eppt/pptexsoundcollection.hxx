@@ -20,20 +20,21 @@
 #ifndef INCLUDED_SD_SOURCE_FILTER_EPPT_PPTEXSOUNDCOLLECTION_HXX
 #define INCLUDED_SD_SOURCE_FILTER_EPPT_PPTEXSOUNDCOLLECTION_HXX
 
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
 
 #ifdef DBG_ANIM_LOG
 #include <stdio.h>
 #endif
 #include <rtl/ustring.hxx>
-#include <tools/stream.hxx>
+
+class SvStream;
 
 namespace ppt
 {
 
 class ExSoundEntry
 {
-        sal_uInt32              nFileSize;
+        sal_uInt32         nFileSize;
         OUString           aSoundURL;
 
         OUString           ImplGetName() const;
@@ -42,13 +43,13 @@ class ExSoundEntry
     public:
 
         bool                IsSameURL(const OUString& rURL) const;
-        sal_uInt32              GetFileSize( ) const { return nFileSize; };
+        sal_uInt32          GetFileSize( ) const { return nFileSize; };
 
-                                ExSoundEntry(const OUString& rSoundURL);
+                            ExSoundEntry(const OUString& rSoundURL);
 
         /// @return size of a complete SoundContainer.
-        sal_uInt32              GetSize( sal_uInt32 nId ) const;
-        void                    Write( SvStream& rSt, sal_uInt32 nId ) const;
+        sal_uInt32          GetSize( sal_uInt32 nId ) const;
+        void                Write( SvStream& rSt, sal_uInt32 nId ) const;
 };
 
 class ExSoundCollection
@@ -63,7 +64,7 @@ class ExSoundCollection
 
 private:
 
-    boost::ptr_vector<ExSoundEntry> maEntries;
+    std::vector<ExSoundEntry> maEntries;
 };
 
 } // namespace ppt

@@ -66,7 +66,7 @@ using namespace ::osl;
 RecoveryCore::RecoveryCore(const css::uno::Reference< css::uno::XComponentContext >& rxContext,
                                  bool                                            bUsedForSaving)
     : m_xContext        ( rxContext    )
-    , m_pListener       ( 0            )
+    , m_pListener       ( nullptr            )
     , m_bListenForSaving(bUsedForSaving)
 {
     impl_startListening();
@@ -703,7 +703,7 @@ SaveProgressDialog::SaveProgressDialog(vcl::Window* pParent, RecoveryCore* pCore
     m_pProgrParent->set_height_request(aSize.Height());
 
     PluginProgress* pProgress   = new PluginProgress(m_pProgrParent, pCore->getComponentContext());
-    m_xProgress = css::uno::Reference< css::task::XStatusIndicator >(static_cast< css::task::XStatusIndicator* >(pProgress), css::uno::UNO_QUERY_THROW);
+    m_xProgress.set(static_cast< css::task::XStatusIndicator* >(pProgress), css::uno::UNO_QUERY_THROW);
 }
 
 SaveProgressDialog::~SaveProgressDialog()
@@ -725,7 +725,7 @@ short SaveProgressDialog::Execute()
     m_pCore->setUpdateListener(this);
     m_pCore->doEmergencySave();
     short nRet = ModalDialog::Execute();
-    m_pCore->setUpdateListener(0);
+    m_pCore->setUpdateListener(nullptr);
     return nRet;
 }
 
@@ -767,8 +767,8 @@ RecovDocListEntry::RecovDocListEntry(      SvTreeListEntry* pEntry,
 void RecovDocListEntry::Paint(const Point& aPos, SvTreeListBox& aDevice, vcl::RenderContext& rRenderContext,
                               const SvViewDataEntry* /*pView*/, const SvTreeListEntry& rEntry)
 {
-    const Image* pImg = 0;
-    const OUString* pTxt = 0;
+    const Image* pImg = nullptr;
+    const OUString* pTxt = nullptr;
     RecovDocList* pList = static_cast<RecovDocList*>(&aDevice);
 
     TURLInfo* pInfo = static_cast<TURLInfo*>(rEntry.GetUserData());
@@ -797,14 +797,14 @@ void RecovDocListEntry::Paint(const Point& aPos, SvTreeListBox& aDevice, vcl::Re
 
         case E_RECOVERY_IS_IN_PROGRESS:
         {
-            pImg = 0;
+            pImg = nullptr;
             pTxt = &pList->m_aRecovInProgrStr;
         }
         break;
 
         case E_NOT_RECOVERED_YET:
         {
-            pImg = 0;
+            pImg = nullptr;
             pTxt = &pList->m_aNotRecovYetStr;
         }
         break;
@@ -889,7 +889,7 @@ RecoveryDialog::RecoveryDialog(vcl::Window* pParent, RecoveryCore* pCore)
     m_pFileListLB->InsertHeaderEntry(get<FixedText>("nameft")->GetText() + "\t" + get<FixedText>("statusft")->GetText());
 
     PluginProgress* pProgress   = new PluginProgress(m_pProgrParent, pCore->getComponentContext());
-    m_xProgress = css::uno::Reference< css::task::XStatusIndicator >(static_cast< css::task::XStatusIndicator* >(pProgress), css::uno::UNO_QUERY_THROW);
+    m_xProgress.set(static_cast< css::task::XStatusIndicator* >(pProgress), css::uno::UNO_QUERY_THROW);
 
     const StyleSettings& rStyleSettings = GetSettings().GetStyleSettings();
     m_pTitleFT->SetBackground(rStyleSettings.GetWindowColor());
@@ -897,7 +897,7 @@ RecoveryDialog::RecoveryDialog(vcl::Window* pParent, RecoveryCore* pCore)
 
     m_pFileListLB->SetBackground( rStyleSettings.GetDialogColor() );
 
-    m_pNextBtn->Enable(true);
+    m_pNextBtn->Enable();
     m_pNextBtn->SetClickHdl( LINK( this, RecoveryDialog, NextButtonHdl ) );
     m_pCancelBtn->SetClickHdl( LINK( this, RecoveryDialog, CancelButtonHdl ) );
 
@@ -962,7 +962,7 @@ short RecoveryDialog::execute()
                 while(m_bWaitForCore)
                     Application::Yield();
 
-                m_pCore->setUpdateListener(0);
+                m_pCore->setUpdateListener(nullptr);
                 m_eRecoveryState = RecoveryDialog::E_RECOVERY_CORE_DONE;
                 return execute();
              }
@@ -973,7 +973,7 @@ short RecoveryDialog::execute()
                  // let the user decide the next step.
                  m_pDescrFT->SetText(m_aRecoveryOnlyFinishDescr);
                  m_pNextBtn->SetText(m_aRecoveryOnlyFinish);
-                 m_pNextBtn->Enable(true);
+                 m_pNextBtn->Enable();
                  m_pCancelBtn->Enable(false);
                  return 0;
              }

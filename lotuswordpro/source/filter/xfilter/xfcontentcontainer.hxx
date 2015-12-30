@@ -119,11 +119,11 @@ public:
     /**
      * @descr   return the content type.
      */
-    virtual enumXFContent   GetContentType() SAL_OVERRIDE;
+    virtual enumXFContent   GetContentType() override;
     /**
      * @descr   Output to OOo model or local file.
      */
-    virtual void ToXml(IXFStream *pStrm) SAL_OVERRIDE;
+    virtual void ToXml(IXFStream *pStrm) override;
 
 private:
     std::vector< rtl::Reference<XFContent> >    m_aContents;
@@ -132,7 +132,7 @@ private:
 inline rtl::Reference<XFContent> XFContentContainer::GetContent(sal_uInt32 index) const
 {
     if (index > m_aContents.size()-1)
-        return NULL;
+        return nullptr;
     return m_aContents[index];
 }
 #endif

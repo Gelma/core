@@ -72,6 +72,8 @@ public:
     long                GetExtLeading() const;
     long                GetLineHeight() const;
     long                GetSlant() const;
+    bool                IsFullstopCentered() const;
+    long                GetBulletOffset() const;
 
     FontMetric&         operator=( const FontMetric& rMetric );
     bool                operator==( const FontMetric& rMetric ) const;
@@ -212,8 +214,8 @@ private:
     sal_uInt32          mnRefCount;
 
     // prevent assignment and copy construction
-                        FontCharMap( const FontCharMap& ) SAL_DELETED_FUNCTION;
-    void                operator=( const FontCharMap& ) SAL_DELETED_FUNCTION;
+                        FontCharMap( const FontCharMap& ) = delete;
+    void                operator=( const FontCharMap& ) = delete;
 };
 
 inline void intrusive_ptr_add_ref(FontCharMap* pFontCharMap)

@@ -107,7 +107,7 @@ static bool IsCorrectContext( const OUString& rModuleIdentifier, const OUString&
     return false;
 }
 
-static Image RetrieveImage( Reference< com::sun::star::frame::XFrame >& rFrame,
+static Image RetrieveImage( Reference< css::frame::XFrame >& rFrame,
                             const OUString& aImageId,
                             const OUString& aURL,
                             bool bBigImage
@@ -149,7 +149,7 @@ void SAL_CALL AddonsToolBarManager::dispose() throw( RuntimeException, std::exce
             {
                 AddonsParams* pRuntimeItemData = static_cast<AddonsParams*>(m_pToolBar->GetItemData( nId ));
                 delete pRuntimeItemData;
-                m_pToolBar->SetItemData( nId, NULL );
+                m_pToolBar->SetItemData( nId, nullptr );
             }
         }
     }
@@ -228,11 +228,10 @@ void AddonsToolBarManager::FillToolbar( const Sequence< Sequence< PropertyValue 
         OUString   aContext;
         OUString   aTarget;
         OUString   aControlType;
-        sal_uInt16      nWidth( 0 );
 
         const Sequence< PropertyValue >& rSeq = rAddonToolbar[n];
 
-        ToolBarMerger::ConvertSequenceToValues( rSeq, aURL, aTitle, aImageId, aTarget, aContext, aControlType, nWidth );
+        ToolBarMerger::ConvertSequenceToValues( rSeq, aURL, aTitle, aImageId, aTarget, aContext, aControlType );
 
         if ( IsCorrectContext( aModuleIdentifier, aContext ))
         {
@@ -295,9 +294,9 @@ void AddonsToolBarManager::FillToolbar( const Sequence< Sequence< PropertyValue 
 
                     try
                     {
-                        xController = Reference< XStatusListener >( m_xToolbarControllerFactory->createInstanceWithArgumentsAndContext(
-                                                                        aURL, aArgs, m_xContext ),
-                                                                    UNO_QUERY );
+                        xController.set( m_xToolbarControllerFactory->createInstanceWithArgumentsAndContext(
+                                            aURL, aArgs, m_xContext ),
+                                         UNO_QUERY );
                     }
                     catch ( uno::Exception& )
                     {
@@ -306,10 +305,10 @@ void AddonsToolBarManager::FillToolbar( const Sequence< Sequence< PropertyValue 
                 }
                 else
                 {
-                    ::cppu::OWeakObject* pController = 0;
+                    ::cppu::OWeakObject* pController = nullptr;
 
-                    pController = ToolBarMerger::CreateController( m_xContext, m_xFrame, m_pToolBar, aURL, nId, nWidth, aControlType );
-                    xController = Reference< XStatusListener >( pController, UNO_QUERY );
+                    pController = ToolBarMerger::CreateController( m_xContext, m_xFrame, m_pToolBar, aURL, nId, aControlType );
+                    xController.set( pController, UNO_QUERY );
                 }
 
                 // insert controller to the map

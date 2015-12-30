@@ -43,7 +43,7 @@ class XMLTextListsHelper : private boost::noncopyable
         /// list stack for importing:
 
         /// push a list context on the list context stack
-        void PushListContext(XMLTextListBlockContext *i_pListBlock = 0);
+        void PushListContext(XMLTextListBlockContext *i_pListBlock = nullptr);
         void PushListContext(XMLNumberedParaContext *i_pNumberedParagraph);
         /// pop the list context stack
         void PopListContext();
@@ -91,8 +91,7 @@ class XMLTextListsHelper : private boost::noncopyable
             note that the ID namespace for numbered-paragraph and regular list
             is distinct; we never combine a list and a n-p
          */
-        ::com::sun::star::uno::Reference<
-                ::com::sun::star::container::XIndexReplace>
+        css::uno::Reference< css::container::XIndexReplace>
         EnsureNumberedParagraph(
             SvXMLImport & i_rImport,
             const OUString& i_ListId,
@@ -112,16 +111,14 @@ class XMLTextListsHelper : private boost::noncopyable
             @param o_rRestartNumbering   set to true if no style (defaulting)
             @param io_rSetDefaults  set to true if no style (defaulting)
          */
-        static ::com::sun::star::uno::Reference<
-                ::com::sun::star::container::XIndexReplace> MakeNumRule(
+        static css::uno::Reference< css::container::XIndexReplace> MakeNumRule(
             SvXMLImport & i_rImport,
-            const ::com::sun::star::uno::Reference<
-                ::com::sun::star::container::XIndexReplace>& i_xNumRule,
+            const css::uno::Reference< css::container::XIndexReplace>& i_xNumRule,
             const OUString& i_ParentStyleName,
             const OUString& i_StyleName,
             sal_Int16 & io_rLevel,
-            bool* o_pRestartNumbering = 0,
-            bool* io_pSetDefaults = 0);
+            bool* o_pRestartNumbering = nullptr,
+            bool* io_pSetDefaults = nullptr);
 
     private:
 
@@ -168,9 +165,10 @@ class XMLTextListsHelper : private boost::noncopyable
         LastNumberedParagraphs_t mLastNumberedParagraphs;
 
         /// numbered-paragraphs
-        typedef ::std::vector< ::std::pair< OUString,
-            ::com::sun::star::uno::Reference<
-                ::com::sun::star::container::XIndexReplace > > > NumParaList_t;
+        typedef ::std::vector<
+                    ::std::pair<
+                        OUString,
+                        css::uno::Reference< css::container::XIndexReplace > > > NumParaList_t;
         ::std::map< OUString, NumParaList_t > mNPLists;
 
 };

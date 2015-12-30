@@ -26,19 +26,20 @@
 #include <com/sun/star/rendering/XIntegerReadOnlyBitmap.hpp>
 #include <vcl/canvastools.hxx>
 #include <comphelper/seqstream.hxx>
+#include <comphelper/sequence.hxx>
 #include <vcl/svapp.hxx>
 #include <vcl/outdev.hxx>
 
 using namespace ::com::sun::star;
 
 BitmapEx convertPrimitive2DSequenceToBitmapEx(
-    const css::uno::Sequence< css::uno::Reference< css::graphic::XPrimitive2D > >& rSequence,
+    const std::vector< css::uno::Reference< css::graphic::XPrimitive2D > >& rSequence,
     const basegfx::B2DRange& rTargetRange,
     const sal_uInt32 nMaximumQuadraticPixels)
 {
     BitmapEx aRetval;
 
-    if(rSequence.hasElements())
+    if(!rSequence.empty())
     {
         // create replacement graphic from maSequence
         // create XPrimitive2DRenderer
@@ -61,7 +62,7 @@ BitmapEx convertPrimitive2DSequenceToBitmapEx(
 
             const uno::Reference< rendering::XBitmap > xBitmap(
                 xPrimitive2DRenderer->rasterize(
-                    rSequence,
+                    comphelper::containerToSequence(rSequence),
                     aViewParameters,
                     aDPI.getWidth(),
                     aDPI.getHeight(),
@@ -91,7 +92,7 @@ void SvgData::ensureReplacement()
 {
     ensureSequenceAndRange();
 
-    if(maReplacement.IsEmpty() && maSequence.hasElements())
+    if(maReplacement.IsEmpty() && !maSequence.empty())
     {
         maReplacement = convertPrimitive2DSequenceToBitmapEx(maSequence, getRange());
     }
@@ -99,14 +100,13 @@ void SvgData::ensureReplacement()
 
 void SvgData::ensureSequenceAndRange()
 {
-    if(!maSequence.hasElements() && mnSvgDataArrayLength)
+    if(maSequence.empty() && maSvgDataArray.hasElements())
     {
         // import SVG to maSequence, also set maRange
         maRange.reset();
 
         // create stream
-        const uno::Sequence< sal_Int8 > aPostData(reinterpret_cast<sal_Int8*>(maSvgDataArray.get()), mnSvgDataArrayLength);
-        const uno::Reference< io::XInputStream > myInputStream(new comphelper::SequenceInputStream(aPostData));
+        const uno::Reference< io::XInputStream > myInputStream(new comphelper::SequenceInputStream(maSvgDataArray));
 
         if(myInputStream.is())
         {
@@ -117,7 +117,7 @@ void SvgData::ensureSequenceAndRange()
             {
                 const uno::Reference< graphic::XSvgParser > xSvgParser = graphic::SvgTools::create(xContext);
 
-                maSequence = xSvgParser->getDecomposition(myInputStream, maPath);
+                maSequence = comphelper::sequenceToContainer< std::vector< css::uno::Reference< css::graphic::XPrimitive2D > > >(xSvgParser->getDecomposition(myInputStream, maPath));
             }
             catch(const uno::Exception&)
             {
@@ -125,9 +125,9 @@ void SvgData::ensureSequenceAndRange()
             }
         }
 
-        if(maSequence.hasElements())
+        if(!maSequence.empty())
         {
-            const sal_Int32 nCount(maSequence.getLength());
+            const sal_Int32 nCount(maSequence.size());
             geometry::RealRectangle2D aRealRect;
             uno::Sequence< beans::PropertyValue > aViewParameters;
 
@@ -152,9 +152,8 @@ void SvgData::ensureSequenceAndRange()
     }
 }
 
-SvgData::SvgData(const SvgDataArray& rSvgDataArray, sal_uInt32 nSvgDataArrayLength, const OUString& rPath)
+SvgData::SvgData(const SvgDataArray& rSvgDataArray, const OUString& rPath)
 :   maSvgDataArray(rSvgDataArray),
-    mnSvgDataArrayLength(nSvgDataArrayLength),
     maPath(rPath),
     maRange(),
     maSequence(),
@@ -164,7 +163,6 @@ SvgData::SvgData(const SvgDataArray& rSvgDataArray, sal_uInt32 nSvgDataArrayLeng
 
 SvgData::SvgData(const OUString& rPath):
     maSvgDataArray(),
-    mnSvgDataArrayLength(0),
     maPath(rPath),
     maRange(),
     maSequence(),
@@ -174,15 +172,14 @@ SvgData::SvgData(const OUString& rPath):
     if(rIStm.GetError())
         return;
     const sal_uInt32 nStmLen(rIStm.remainingSize());
-    if(nStmLen)
+    if (nStmLen)
     {
-        SvgDataArray aNewData(new sal_uInt8[nStmLen]);
-        rIStm.Read(aNewData.get(), nStmLen);
+        maSvgDataArray.realloc(nStmLen);
+        rIStm.Read(maSvgDataArray.begin(), nStmLen);
 
-        if(!rIStm.GetError())
+        if (rIStm.GetError())
         {
-            maSvgDataArray = aNewData;
-            mnSvgDataArrayLength = nStmLen;
+            maSvgDataArray = SvgDataArray();
         }
     }
 }
@@ -194,7 +191,7 @@ const basegfx::B2DRange& SvgData::getRange() const
     return maRange;
 }
 
-const css::uno::Sequence< css::uno::Reference< css::graphic::XPrimitive2D > >& SvgData::getPrimitive2DSequence() const
+const std::vector< css::uno::Reference< css::graphic::XPrimitive2D > >& SvgData::getPrimitive2DSequence() const
 {
     const_cast< SvgData* >(this)->ensureSequenceAndRange();
 

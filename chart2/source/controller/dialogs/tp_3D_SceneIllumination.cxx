@@ -84,7 +84,7 @@ struct LightSourceInfo
 };
 
 LightSourceInfo::LightSourceInfo()
-    : pButton(0)
+    : pButton(nullptr)
     , aLightSource()
 {
     aLightSource.nDiffuseColor = 0xffffff; // white
@@ -133,16 +133,13 @@ namespace
         ::chart::LightSource aResult;
         if( 0 <= nIndex && nIndex < 8 )
         {
-            OUString aColorPropertyPrefix("D3DSceneLightColor");
-            OUString aDirectionPropertyPrefix("D3DSceneLightDirection");
-            OUString aEnabledPropertyPrefix("D3DSceneLightOn");
             OUString aIndex( OUString::number( nIndex + 1 ));
 
             try
             {
-                xSceneProperties->getPropertyValue( aColorPropertyPrefix + aIndex ) >>= aResult.nDiffuseColor;
-                xSceneProperties->getPropertyValue( aDirectionPropertyPrefix + aIndex ) >>= aResult.aDirection;
-                xSceneProperties->getPropertyValue( aEnabledPropertyPrefix + aIndex ) >>= aResult.bIsEnabled;
+                xSceneProperties->getPropertyValue( "D3DSceneLightColor" + aIndex ) >>= aResult.nDiffuseColor;
+                xSceneProperties->getPropertyValue( "D3DSceneLightDirection" + aIndex ) >>= aResult.aDirection;
+                xSceneProperties->getPropertyValue( "D3DSceneLightOn" + aIndex ) >>= aResult.bIsEnabled;
             }
             catch( const uno::Exception & ex )
             {
@@ -161,18 +158,15 @@ namespace
     {
         if( 0 <= nIndex && nIndex < 8 )
         {
-            OUString aColorPropertyPrefix("D3DSceneLightColor");
-            OUString aDirectionPropertyPrefix("D3DSceneLightDirection");
-            OUString aEnabledPropertyPrefix("D3DSceneLightOn");
             OUString aIndex( OUString::number( nIndex + 1 ));
 
             try
             {
-                xSceneProperties->setPropertyValue( aColorPropertyPrefix + aIndex,
+                xSceneProperties->setPropertyValue( "D3DSceneLightColor" + aIndex,
                                                     uno::makeAny( rLightSource.nDiffuseColor ));
-                xSceneProperties->setPropertyValue( aDirectionPropertyPrefix + aIndex,
+                xSceneProperties->setPropertyValue( "D3DSceneLightDirection" + aIndex,
                                                     uno::makeAny( rLightSource.aDirection ));
-                xSceneProperties->setPropertyValue( aEnabledPropertyPrefix + aIndex,
+                xSceneProperties->setPropertyValue( "D3DSceneLightOn" + aIndex,
                                                     uno::makeAny( rLightSource.bIsEnabled ));
             }
             catch( const uno::Exception & ex )
@@ -226,11 +220,10 @@ ThreeD_SceneIllumination_TabPage::ThreeD_SceneIllumination_TabPage( vcl::Window*
                 : TabPage ( pWindow
                           ,"tp_3D_SceneIllumination"
                           ,"modules/schart/ui/tp_3D_SceneIllumination.ui")
-                , m_pLightSourceInfoList(0)
+                , m_pLightSourceInfoList(nullptr)
                 , m_xSceneProperties( xSceneProperties )
                 , m_aTimerTriggeredControllerLock( xChartModel )
                 , m_bInCommitToModel( false )
-                , m_aModelChangeListener( LINK( this, ThreeD_SceneIllumination_TabPage, fillControlsFromModel ) )
                 , m_xChartModel( xChartModel )
 {
     get(m_pBtn_Light1, "BTN_LIGHT_1");
@@ -267,7 +260,7 @@ ThreeD_SceneIllumination_TabPage::ThreeD_SceneIllumination_TabPage( vcl::Window*
     m_pLightSourceInfoList[6].pButton = m_pBtn_Light7;
     m_pLightSourceInfoList[7].pButton = m_pBtn_Light8;
 
-    fillControlsFromModel(0);
+    fillControlsFromModel(nullptr);
 
     m_pBtn_Light1->SetClickHdl( LINK( this, ThreeD_SceneIllumination_TabPage, ClickLightSourceButtonHdl ) );
     m_pBtn_Light2->SetClickHdl( LINK( this, ThreeD_SceneIllumination_TabPage, ClickLightSourceButtonHdl ) );
@@ -298,7 +291,7 @@ ThreeD_SceneIllumination_TabPage::~ThreeD_SceneIllumination_TabPage()
 void ThreeD_SceneIllumination_TabPage::dispose()
 {
     delete[] m_pLightSourceInfoList;
-    m_pLightSourceInfoList = NULL;
+    m_pLightSourceInfoList = nullptr;
     m_pBtn_Light1.clear();
     m_pBtn_Light2.clear();
     m_pBtn_Light3.clear();
@@ -432,24 +425,25 @@ IMPL_LINK_TYPED( ThreeD_SceneIllumination_TabPage, ColorDialogHdl, Button*, pBut
         else
         {
         //get active lightsource:
-            LightSourceInfo* pInfo = 0;
+            LightSourceInfo* pInfo = nullptr;
             sal_Int32 nL=0;
             for( nL=0; nL<8; nL++)
             {
                 pInfo = &m_pLightSourceInfoList[nL];
                 if(pInfo->pButton->IsChecked())
                     break;
-                pInfo = 0;
+                pInfo = nullptr;
             }
             if(pInfo)
                 applyLightSourceToModel( nL );
         }
-        SelectColorHdl( pListBox );
+        SelectColorHdl( *pListBox );
     }
 }
 
-IMPL_LINK( ThreeD_SceneIllumination_TabPage, SelectColorHdl, ColorLB*, pListBox )
+IMPL_LINK_TYPED( ThreeD_SceneIllumination_TabPage, SelectColorHdl, ListBox&, rBox, void )
 {
+    ColorLB* pListBox = static_cast<ColorLB*>(&rBox);
     if(pListBox==m_pLB_AmbientLight)
     {
         m_bInCommitToModel = true;
@@ -459,14 +453,14 @@ IMPL_LINK( ThreeD_SceneIllumination_TabPage, SelectColorHdl, ColorLB*, pListBox 
     else if(pListBox==m_pLB_LightSource)
     {
         //get active lightsource:
-        LightSourceInfo* pInfo = 0;
+        LightSourceInfo* pInfo = nullptr;
         sal_Int32 nL=0;
         for( nL=0; nL<8; nL++)
         {
             pInfo = &m_pLightSourceInfoList[nL];
             if(pInfo->pButton->IsChecked())
                 break;
-            pInfo = 0;
+            pInfo = nullptr;
         }
         if(pInfo)
         {
@@ -475,7 +469,6 @@ IMPL_LINK( ThreeD_SceneIllumination_TabPage, SelectColorHdl, ColorLB*, pListBox 
         }
     }
     this->updatePreview();
-    return 0;
 }
 
 IMPL_LINK_TYPED( ThreeD_SceneIllumination_TabPage, ClickLightSourceButtonHdl, Button*, pBtn, void )
@@ -484,7 +477,7 @@ IMPL_LINK_TYPED( ThreeD_SceneIllumination_TabPage, ClickLightSourceButtonHdl, Bu
     if( !pButton )
         return;
 
-    LightSourceInfo* pInfo = 0;
+    LightSourceInfo* pInfo = nullptr;
     sal_Int32 nL=0;
     for( nL=0; nL<8; nL++)
     {

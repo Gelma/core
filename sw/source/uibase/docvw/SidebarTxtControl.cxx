@@ -20,9 +20,12 @@
 #include <SidebarTxtControl.hxx>
 
 #include <SidebarTxtControlAcc.hxx>
+#include <docsh.hxx>
+#include <doc.hxx>
 
 #include <SidebarWin.hxx>
 #include <PostItMgr.hxx>
+#include <edtwin.hxx>
 
 #include <cmdid.h>
 #include <docvw.hrc>
@@ -46,6 +49,7 @@
 #include <editeng/editeng.hxx>
 #include <editeng/editview.hxx>
 #include <editeng/flditem.hxx>
+#include <LibreOfficeKit/LibreOfficeKitEnums.h>
 
 #include <uitool.hxx>
 #include <view.hxx>
@@ -185,8 +189,45 @@ void SidebarTextControl::Paint(vcl::RenderContext& rRenderContext, const Rectang
     }
 }
 
+void SidebarTextControl::LogicInvalidate(const Rectangle* pRectangle)
+{
+    Rectangle aRectangle;
+
+    if (!pRectangle)
+    {
+        Push(PushFlags::MAPMODE);
+        EnableMapMode();
+        aRectangle = Rectangle(Point(0, 0), PixelToLogic(GetSizePixel()));
+        Pop();
+    }
+    else
+        aRectangle = *pRectangle;
+
+    // Convert from relative twips to absolute ones.
+    vcl::Window& rParent = mrSidebarWin.EditWin();
+    Point aOffset(GetOutOffXPixel() - rParent.GetOutOffXPixel(), GetOutOffYPixel() - rParent.GetOutOffYPixel());
+    rParent.Push(PushFlags::MAPMODE);
+    rParent.EnableMapMode();
+    aOffset = rParent.PixelToLogic(aOffset);
+    rParent.Pop();
+    aRectangle.Move(aOffset.getX(), aOffset.getY());
+
+    OString sRectangle = aRectangle.toString();
+    SwWrtShell& rWrtShell = mrDocView.GetWrtShell();
+    rWrtShell.libreOfficeKitCallback(LOK_CALLBACK_INVALIDATE_TILES, sRectangle.getStr());
+}
+
 void SidebarTextControl::KeyInput( const KeyEvent& rKeyEvt )
 {
+    if (getenv("SW_DEBUG") && rKeyEvt.GetKeyCode().GetCode() == KEY_F12)
+    {
+        if (rKeyEvt.GetKeyCode().IsShift())
+        {
+            mrDocView.GetDocShell()->GetDoc()->dumpAsXml();
+            return;
+        }
+    }
+
     const vcl::KeyCode& rKeyCode = rKeyEvt.GetKeyCode();
     sal_uInt16 nKey = rKeyCode.GetCode();
     if ( ( rKeyCode.IsMod1() && rKeyCode.IsMod2() ) &&
@@ -260,7 +301,7 @@ void SidebarTextControl::MouseMove( const MouseEvent& rMEvt )
         if ( pItem )
         {
             const SvxFieldData* pField = pItem->GetField();
-            const SvxURLField* pURL = PTR_CAST( SvxURLField, pField );
+            const SvxURLField* pURL = dynamic_cast<const SvxURLField*>( pField  );
             if ( pURL )
             {
                 OUString sURL( pURL->GetURL() );
@@ -289,7 +330,7 @@ void SidebarTextControl::MouseButtonDown( const MouseEvent& rMEvt )
             if ( pItem )
             {
                 const SvxFieldData* pField = pItem->GetField();
-                const SvxURLField* pURL = PTR_CAST( SvxURLField, pField );
+                const SvxURLField* pURL = dynamic_cast<const SvxURLField*>( pField  );
                 if ( pURL )
                 {
                     GetTextView()->MouseButtonDown( rMEvt );
@@ -382,7 +423,7 @@ void SidebarTextControl::Command( const CommandEvent& rCEvt )
             }
             else
             {
-                HandleScrollCommand( rCEvt, 0 , mrSidebarWin.Scrollbar());
+                HandleScrollCommand( rCEvt, nullptr , mrSidebarWin.Scrollbar());
             }
         }
         else

@@ -75,12 +75,12 @@ public:
     explicit BibPosListener(BibGeneralPage* pParent);
 
     //XPositioningListener
-    virtual void SAL_CALL cursorMoved(const lang::EventObject& event) throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL rowChanged(const lang::EventObject& /*event*/) throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE { /* not interested in */ }
-    virtual void SAL_CALL rowSetChanged(const lang::EventObject& /*event*/) throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE { /* not interested in */ }
+    virtual void SAL_CALL cursorMoved(const lang::EventObject& event) throw( uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL rowChanged(const lang::EventObject& /*event*/) throw( uno::RuntimeException, std::exception ) override { /* not interested in */ }
+    virtual void SAL_CALL rowSetChanged(const lang::EventObject& /*event*/) throw( uno::RuntimeException, std::exception ) override { /* not interested in */ }
 
     //XEventListener
-    virtual void SAL_CALL disposing(const lang::EventObject& Source) throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing(const lang::EventObject& Source) throw( uno::RuntimeException, std::exception ) override;
 
 };
 
@@ -210,7 +210,7 @@ BibGeneralPage::BibGeneralPage(vcl::Window* pParent, BibDataManager* pMan):
     sal_Int16* pMap = nFT2CtrlMap;
     for( sal_uInt16 i = 0 ; i < FIELD_COUNT ; ++i, ++pMap )
     {
-        aControls[ i ] = 0;
+        aControls[ i ] = nullptr;
         *pMap = -1;
     }
 
@@ -399,7 +399,7 @@ void BibGeneralPage::RemoveListeners()
         {
             uno::Reference< awt::XWindow > xCtrWin(aControls[i], uno::UNO_QUERY );
             xCtrWin->removeFocusListener( mxBibGeneralPageFocusListener.get() );
-            aControls[i] = 0;
+            aControls[i] = nullptr;
         }
     }
 }
@@ -463,7 +463,7 @@ uno::Reference< awt::XControlModel >  BibGeneralPage::AddXControl(
                 if (bTypeListBox)
                 {
                     aControlName = "com.sun.star.form.control.ListBox";
-                    xLBModel = Reference< form::XBoundComponent >(xCtrModel, UNO_QUERY);
+                    xLBModel.set(xCtrModel, UNO_QUERY);
                 }
                 else
                 {
@@ -695,17 +695,17 @@ bool BibGeneralPage::HandleShortCutKey( const KeyEvent& rKeyEvent )
 BibGeneralPageFocusListener::BibGeneralPageFocusListener(BibGeneralPage *pBibGeneralPage): mpBibGeneralPage(pBibGeneralPage)
 {}
 
-void BibGeneralPageFocusListener::focusGained( const ::com::sun::star::awt::FocusEvent& e ) throw( com::sun::star::uno::RuntimeException, std::exception )
+void BibGeneralPageFocusListener::focusGained( const css::awt::FocusEvent& e ) throw( css::uno::RuntimeException, std::exception )
 {
     mpBibGeneralPage->focusGained(e);
 }
 
-void BibGeneralPageFocusListener::focusLost( const ::com::sun::star::awt::FocusEvent& e ) throw( com::sun::star::uno::RuntimeException, std::exception )
+void BibGeneralPageFocusListener::focusLost( const css::awt::FocusEvent& e ) throw( css::uno::RuntimeException, std::exception )
 {
     mpBibGeneralPage->focusLost(e);
 }
 
-void BibGeneralPageFocusListener::disposing( const ::com::sun::star::lang::EventObject& ) throw( com::sun::star::uno::RuntimeException, std::exception )
+void BibGeneralPageFocusListener::disposing( const css::lang::EventObject& ) throw( css::uno::RuntimeException, std::exception )
 {}
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

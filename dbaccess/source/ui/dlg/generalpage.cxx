@@ -54,12 +54,12 @@ namespace dbaui
     OGeneralPage::OGeneralPage( vcl::Window* pParent, const OUString& _rUIXMLDescription, const SfxItemSet& _rItems )
         :OGenericAdministrationPage( pParent, "PageGeneral", _rUIXMLDescription, _rItems )
         ,m_eNotSupportedKnownType       ( ::dbaccess::DST_UNKNOWN )
-        ,m_pSpecialMessage              ( NULL )
+        ,m_pSpecialMessage              ( nullptr )
         ,m_eLastMessage                 ( smNone )
         ,m_bDisplayingInvalid           ( false )
         ,m_bInitTypeList                ( true )
-        ,m_pDatasourceType              ( NULL )
-        ,m_pCollection                  ( NULL )
+        ,m_pDatasourceType              ( nullptr )
+        ,m_pCollection                  ( nullptr )
     {
         get( m_pDatasourceType, "datasourceType" );
         get( m_pSpecialMessage, "specialMessage" );
@@ -217,8 +217,7 @@ namespace dbaui
 
         switchMessage(_sURLPrefix);
 
-        if ( m_aTypeSelectHandler.IsSet() )
-            m_aTypeSelectHandler.Call(*this);
+        m_aTypeSelectHandler.Call(*this);
     }
 
     void OGeneralPage::implInitControls( const SfxItemSet& _rSet, bool _bSaveValue )
@@ -249,8 +248,8 @@ namespace dbaui
         if ( bValid )
         {
             // collect some items and some values
-            SFX_ITEMSET_GET( _rSet, pNameItem, SfxStringItem, DSID_NAME, true );
-            SFX_ITEMSET_GET( _rSet, pUrlItem, SfxStringItem, DSID_CONNECTURL, true );
+            const SfxStringItem* pNameItem = _rSet.GetItem<SfxStringItem>(DSID_NAME);
+            const SfxStringItem* pUrlItem = _rSet.GetItem<SfxStringItem>(DSID_CONNECTURL);
             assert( pUrlItem );
             assert( pNameItem );
             sName = pNameItem->GetValue();
@@ -297,8 +296,8 @@ namespace dbaui
         if ( bValid )
         {
             // collect some items and some values
-            SFX_ITEMSET_GET( _rSet, pNameItem, SfxStringItem, DSID_NAME, true );
-            SFX_ITEMSET_GET( _rSet, pUrlItem, SfxStringItem, DSID_CONNECTURL, true );
+            const SfxStringItem* pNameItem = _rSet.GetItem<SfxStringItem>(DSID_NAME);
+            const SfxStringItem* pUrlItem = _rSet.GetItem<SfxStringItem>(DSID_CONNECTURL);
             assert( pUrlItem );
             assert( pNameItem );
             sName = pNameItem->GetValue();
@@ -406,14 +405,14 @@ namespace dbaui
         OGenericAdministrationPage::Reset(_rCoreAttrs);
     }
 
-    IMPL_LINK( OGeneralPageWizard, OnEmbeddedDBTypeSelected, ListBox*, _pBox )
+    IMPL_LINK_TYPED( OGeneralPageWizard, OnEmbeddedDBTypeSelected, ListBox&, _rBox, void )
     {
         // get the type from the entry data
-        const sal_Int32 nSelected = _pBox->GetSelectEntryPos();
+        const sal_Int32 nSelected = _rBox.GetSelectEntryPos();
         if (static_cast<size_t>(nSelected) >= m_aEmbeddedURLPrefixes.size() )
         {
-            SAL_WARN("dbaccess.ui.OGeneralPage", "Got out-of-range value '" << nSelected <<  "' from the DatasourceType selection ListBox's GetSelectEntryPos(): no corresponding URL prefix");
-            return 0L;
+            SAL_WARN("dbaccess.ui.generalpage", "Got out-of-range value '" << nSelected <<  "' from the DatasourceType selection ListBox's GetSelectEntryPos(): no corresponding URL prefix");
+            return;
         }
         const OUString sURLPrefix = m_aEmbeddedURLPrefixes[ nSelected ];
 
@@ -423,17 +422,17 @@ namespace dbaui
         // tell the listener we were modified
         callModifiedHdl();
         // outta here
-        return 0L;
+        return;
     }
 
-    IMPL_LINK( OGeneralPage, OnDatasourceTypeSelected, ListBox*, _pBox )
+    IMPL_LINK_TYPED( OGeneralPage, OnDatasourceTypeSelected, ListBox&, _rBox, void )
     {
         // get the type from the entry data
-        const sal_Int32 nSelected = _pBox->GetSelectEntryPos();
+        const sal_Int32 nSelected = _rBox.GetSelectEntryPos();
         if (static_cast<size_t>(nSelected) >= m_aURLPrefixes.size() )
         {
-            SAL_WARN("dbaccess.ui.OGeneralPage", "Got out-of-range value '" << nSelected <<  "' from the DatasourceType selection ListBox's GetSelectEntryPos(): no corresponding URL prefix");
-            return 0L;
+            SAL_WARN("dbaccess.ui.generalpage", "Got out-of-range value '" << nSelected <<  "' from the DatasourceType selection ListBox's GetSelectEntryPos(): no corresponding URL prefix");
+            return;
         }
         const OUString sURLPrefix = m_aURLPrefixes[ nSelected ];
 
@@ -442,8 +441,6 @@ namespace dbaui
         onTypeSelected( sURLPrefix );
         // tell the listener we were modified
         callModifiedHdl();
-        // outta here
-        return 0L;
     }
 
     // OGeneralPageDialog
@@ -492,14 +489,14 @@ namespace dbaui
     // OGeneralPageWizard
     OGeneralPageWizard::OGeneralPageWizard( vcl::Window* pParent, const SfxItemSet& _rItems )
         :OGeneralPage( pParent, "dbaccess/ui/generalpagewizard.ui", _rItems )
-        ,m_pRB_CreateDatabase           ( NULL )
-        ,m_pRB_OpenExistingDatabase     ( NULL )
-        ,m_pRB_ConnectDatabase          ( NULL )
-        ,m_pFT_EmbeddedDBLabel          ( NULL )
-        ,m_pEmbeddedDBType              ( NULL )
-        ,m_pFT_DocListLabel             ( NULL )
-        ,m_pLB_DocumentList             ( NULL )
-        ,m_pPB_OpenDatabase             ( NULL )
+        ,m_pRB_CreateDatabase           ( nullptr )
+        ,m_pRB_OpenExistingDatabase     ( nullptr )
+        ,m_pRB_ConnectDatabase          ( nullptr )
+        ,m_pFT_EmbeddedDBLabel          ( nullptr )
+        ,m_pEmbeddedDBType              ( nullptr )
+        ,m_pFT_DocListLabel             ( nullptr )
+        ,m_pLB_DocumentList             ( nullptr )
+        ,m_pPB_OpenDatabase             ( nullptr )
         ,m_eOriginalCreationMode        ( eCreateNew )
         ,m_bInitEmbeddedDBList          ( true )
     {
@@ -515,13 +512,13 @@ namespace dbaui
         // If no driver for embedded DBs is installed, and no dBase driver, then hide the "Create new database" option
         sal_Int32 nCreateNewDBIndex = m_pCollection->getIndexOf( m_pCollection->getEmbeddedDatabase() );
         if ( nCreateNewDBIndex == -1 )
-            nCreateNewDBIndex = m_pCollection->getIndexOf( OUString( "sdbc:dbase:" ) );
+            nCreateNewDBIndex = m_pCollection->getIndexOf( "sdbc:dbase:" );
         bool bHideCreateNew = ( nCreateNewDBIndex == -1 );
 
         // also, if our application policies tell us to hide the option, do it
         ::utl::OConfigurationTreeRoot aConfig( ::utl::OConfigurationTreeRoot::createWithComponentContext(
             ::comphelper::getProcessComponentContext(),
-            OUString( "/org.openoffice.Office.DataAccess/Policies/Features/Base" )
+            "/org.openoffice.Office.DataAccess/Policies/Features/Base"
         ) );
         bool bAllowCreateLocalDatabase( true );
         OSL_VERIFY( aConfig.getNodeValue( "CreateLocalDatabase" ) >>= bAllowCreateLocalDatabase );
@@ -622,7 +619,7 @@ namespace dbaui
     {
         // Sets jdbc as the default selected databse on startup.
         if (m_pRB_CreateDatabase->IsChecked() )
-            return m_pCollection->getTypeDisplayName( OUString( "jdbc:" ) );
+            return m_pCollection->getTypeDisplayName( "jdbc:" );
 
         return OGeneralPage::getDatasourceName( _rSet );
     }
@@ -701,23 +698,20 @@ namespace dbaui
 
     IMPL_LINK_NOARG_TYPED( OGeneralPageWizard, OnCreateDatabaseModeSelected, Button*, void )
     {
-        if ( m_aCreationModeHandler.IsSet() )
-            m_aCreationModeHandler.Call( *this );
+        m_aCreationModeHandler.Call( *this );
 
-        OnEmbeddedDBTypeSelected( m_pEmbeddedDBType );
+        OnEmbeddedDBTypeSelected( *m_pEmbeddedDBType );
     }
 
     IMPL_LINK_NOARG_TYPED( OGeneralPageWizard, OnSetupModeSelected, Button*, void )
     {
-        if ( m_aCreationModeHandler.IsSet() )
-            m_aCreationModeHandler.Call( *this );
-        OnDatasourceTypeSelected(m_pDatasourceType);
+        m_aCreationModeHandler.Call( *this );
+        OnDatasourceTypeSelected(*m_pDatasourceType);
     }
 
-    IMPL_LINK( OGeneralPageWizard, OnDocumentSelected, ListBox*, /*_pBox*/ )
+    IMPL_LINK_NOARG_TYPED( OGeneralPageWizard, OnDocumentSelected, ListBox&, void )
     {
         m_aDocumentSelectionHandler.Call( *this );
-        return 0L;
     }
 
     IMPL_LINK_NOARG_TYPED( OGeneralPageWizard, OnOpenDocument, Button*, void )

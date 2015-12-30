@@ -46,18 +46,18 @@ namespace
             maFile.open( osl_File_OpenFlag_Create|osl_File_OpenFlag_Write );
         }
 
-        virtual void SAL_CALL writeBytes( const com::sun::star::uno::Sequence< ::sal_Int8 >& aData ) throw (com::sun::star::io::NotConnectedException,com::sun::star::io::BufferSizeExceededException, com::sun::star::io::IOException, com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        virtual void SAL_CALL writeBytes( const css::uno::Sequence< ::sal_Int8 >& aData ) throw (css::io::NotConnectedException,css::io::BufferSizeExceededException, css::io::IOException, css::uno::RuntimeException, std::exception) override
 
         {
             sal_uInt64 nBytesWritten(0);
             maFile.write(aData.getConstArray(),aData.getLength(),nBytesWritten);
         }
 
-        virtual void SAL_CALL flush() throw (com::sun::star::io::NotConnectedException, com::sun::star::io::BufferSizeExceededException, com::sun::star::io::IOException, com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        virtual void SAL_CALL flush() throw (css::io::NotConnectedException, css::io::BufferSizeExceededException, css::io::IOException, css::uno::RuntimeException, std::exception) override
         {
         }
 
-        virtual void SAL_CALL closeOutput() throw (com::sun::star::io::NotConnectedException, com::sun::star::io::BufferSizeExceededException, com::sun::star::io::IOException, com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        virtual void SAL_CALL closeOutput() throw (css::io::NotConnectedException, css::io::BufferSizeExceededException, css::io::IOException, css::uno::RuntimeException, std::exception) override
         {
             maFile.close();
         }
@@ -72,30 +72,30 @@ SAL_IMPLEMENT_MAIN_WITH_ARGS(argc, argv)
         return 1;
     }
 
-    OUString aBaseURL, aTmpURL, aSrcURL, aDstURL, aIniUrl;
-
-    osl_getProcessWorkingDir(&aBaseURL.pData);
-    osl_getFileURLFromSystemPath( OUString::createFromAscii(argv[1]).pData,
-                                  &aTmpURL.pData );
-    osl_getAbsoluteFileURL(aBaseURL.pData,aTmpURL.pData,&aSrcURL.pData);
-
-    osl_getFileURLFromSystemPath( OUString::createFromAscii(argv[2]).pData,
-                                  &aTmpURL.pData );
-    osl_getAbsoluteFileURL(aBaseURL.pData,aTmpURL.pData,&aDstURL.pData);
-
-    osl_getFileURLFromSystemPath( OUString::createFromAscii(argv[3]).pData,
-                                &aTmpURL.pData );
-    osl_getAbsoluteFileURL(aBaseURL.pData,aTmpURL.pData,&aIniUrl.pData);
-
-    // bootstrap UNO
-    uno::Reference< lang::XMultiServiceFactory > xFactory;
-    uno::Reference< uno::XComponentContext > xCtx;
     int nRet = 1;
+
     try
     {
+        OUString aBaseURL, aTmpURL, aSrcURL, aDstURL, aIniUrl;
+
+        osl_getProcessWorkingDir(&aBaseURL.pData);
+        osl_getFileURLFromSystemPath( OUString::createFromAscii(argv[1]).pData,
+                                      &aTmpURL.pData );
+        osl_getAbsoluteFileURL(aBaseURL.pData,aTmpURL.pData,&aSrcURL.pData);
+
+        osl_getFileURLFromSystemPath( OUString::createFromAscii(argv[2]).pData,
+                                      &aTmpURL.pData );
+        osl_getAbsoluteFileURL(aBaseURL.pData,aTmpURL.pData,&aDstURL.pData);
+
+        osl_getFileURLFromSystemPath( OUString::createFromAscii(argv[3]).pData,
+                                    &aTmpURL.pData );
+        osl_getAbsoluteFileURL(aBaseURL.pData,aTmpURL.pData,&aIniUrl.pData);
+
+        // bootstrap UNO
+        uno::Reference< lang::XMultiServiceFactory > xFactory;
+        uno::Reference< uno::XComponentContext > xCtx;
         xCtx = ::cppu::defaultBootstrap_InitialComponentContext(aIniUrl);
-        xFactory = uno::Reference< lang::XMultiServiceFactory >(xCtx->getServiceManager(),
-                                                                uno::UNO_QUERY);
+        xFactory.set(xCtx->getServiceManager(), uno::UNO_QUERY);
         if (!xFactory.is())
         {
             OSL_TRACE( "Could not bootstrap UNO, installation must be in disorder. Exiting." );

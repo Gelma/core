@@ -56,21 +56,12 @@ using namespace ::sd::slidesorter::controller;
 
 namespace sd { namespace slidesorter { namespace controller {
 
-class SelectionManager::PageInsertionListener
-    : public SfxListener
-{
-public:
-
-};
-
 SelectionManager::SelectionManager (SlideSorter& rSlideSorter)
     : mrSlideSorter(rSlideSorter),
       mrController(rSlideSorter.GetController()),
-      maSelectionBeforeSwitch(),
       mbIsMakeSelectionVisiblePending(true),
       mnInsertionPosition(-1),
       mnAnimationId(Animator::NotAnAnimationId),
-      mpPageInsertionListener(),
       mpSelectionObserver(new SelectionObserver(rSlideSorter))
 {
 }
@@ -216,7 +207,7 @@ void SelectionManager::SelectionHasChanged (const bool bMakeSelectionVisible)
         mbIsMakeSelectionVisiblePending = true;
 
     ViewShell* pViewShell = mrSlideSorter.GetViewShell();
-    if (pViewShell != NULL)
+    if (pViewShell != nullptr)
     {
         pViewShell->Invalidate (SID_EXPAND_PAGE);
         pViewShell->Invalidate (SID_SUMMARY_PAGE);
@@ -232,13 +223,13 @@ void SelectionManager::SelectionHasChanged (const bool bMakeSelectionVisible)
 
         OSL_ASSERT(mrController.GetCurrentSlideManager());
         SharedPageDescriptor pDescriptor(mrController.GetCurrentSlideManager()->GetCurrentSlide());
-        if (pDescriptor.get() != NULL)
+        if (pDescriptor.get() != nullptr)
             pViewShell->UpdatePreview(pDescriptor->GetPage());
 
         // Tell the selection change listeners that the selection has changed.
         for (auto& rLink : maSelectionChangeListeners)
         {
-            rLink.Call(NULL);
+            rLink.Call(nullptr);
         }
 
         // Reset the insertion position: until set again it is calculated from

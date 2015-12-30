@@ -59,8 +59,8 @@ class DrawAnnotationContext : public SvXMLImportContext
 public:
     DrawAnnotationContext( SvXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLocalName,const Reference< xml::sax::XAttributeList>& xAttrList, const Reference< XAnnotationAccess >& xAnnotationAccess );
 
-    virtual SvXMLImportContext * CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName, const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual SvXMLImportContext * CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName, const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList ) override;
+    virtual void EndElement() override;
 
 private:
     Reference< XAnnotation > mxAnnotation;
@@ -130,7 +130,7 @@ DrawAnnotationContext::DrawAnnotationContext( SvXMLImport& rImport, sal_uInt16 n
 
 SvXMLImportContext * DrawAnnotationContext::CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName, const Reference< XAttributeList >& xAttrList )
 {
-    SvXMLImportContext * pContext = NULL;
+    SvXMLImportContext * pContext = nullptr;
 
     if( mxAnnotation.is() )
     {
@@ -190,7 +190,7 @@ void DrawAnnotationContext::EndElement()
         mxAnnotation->setAuthor( maAuthorBuffer.makeStringAndClear() );
 
         util::DateTime aDateTime;
-        if (::sax::Converter::parseDateTime(aDateTime, 0,
+        if (::sax::Converter::parseDateTime(aDateTime, nullptr,
                 maDateBuffer.makeStringAndClear()))
         {
             mxAnnotation->setDateTime(aDateTime);
@@ -198,7 +198,6 @@ void DrawAnnotationContext::EndElement()
     }
 }
 
-TYPEINIT1( SdXMLGenericPageContext, SvXMLImportContext );
 
 SdXMLGenericPageContext::SdXMLGenericPageContext(
     SvXMLImport& rImport,
@@ -228,7 +227,7 @@ SdXMLGenericPageContext::~SdXMLGenericPageContext()
 {
 }
 
-void SdXMLGenericPageContext::StartElement( const Reference< ::com::sun::star::xml::sax::XAttributeList >& )
+void SdXMLGenericPageContext::StartElement( const Reference< css::xml::sax::XAttributeList >& )
 {
     GetImport().GetShapeImport()->pushGroupForSorting( mxShapes );
 
@@ -240,7 +239,7 @@ SvXMLImportContext* SdXMLGenericPageContext::CreateChildContext( sal_uInt16 nPre
     const OUString& rLocalName,
     const Reference< xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext* pContext = 0L;
+    SvXMLImportContext* pContext = nullptr;
 
     if( nPrefix == XML_NAMESPACE_PRESENTATION && IsXMLToken( rLocalName, XML_ANIMATIONS ) )
     {
@@ -382,9 +381,7 @@ void SdXMLGenericPageContext::SetStyle( OUString& rStyleName )
                                     Reference< lang::XMultiServiceFactory > xServiceFact(GetSdImport().GetModel(), uno::UNO_QUERY);
                                     if(xServiceFact.is())
                                     {
-                                        xBackgroundSet = Reference< beans::XPropertySet >::query(
-                                            xServiceFact->createInstance(
-                                            OUString("com.sun.star.drawing.Background")));
+                                        xBackgroundSet.set(xServiceFact->createInstance("com.sun.star.drawing.Background"), UNO_QUERY);
                                     }
                                 }
 
@@ -487,7 +484,7 @@ void SdXMLGenericPageContext::SetPageMaster( OUString& rsPageMasterName )
         // #80012# GetStylesContext() replaced with GetAutoStylesContext()
         const SvXMLStylesContext* pAutoStyles = GetSdImport().GetShapeImport()->GetAutoStylesContext();
 
-        const SvXMLStyleContext* pStyle = pAutoStyles ? pAutoStyles->FindStyleChildContext(XML_STYLE_FAMILY_SD_PAGEMASTERCONEXT_ID, rsPageMasterName) : NULL;
+        const SvXMLStyleContext* pStyle = pAutoStyles ? pAutoStyles->FindStyleChildContext(XML_STYLE_FAMILY_SD_PAGEMASTERCONEXT_ID, rsPageMasterName) : nullptr;
 
         if(pStyle && dynamic_cast<const SdXMLPageMasterContext*>(pStyle) != nullptr)
         {
@@ -539,12 +536,12 @@ public:
     explicit XoNavigationOrderAccess( std::vector< Reference< XShape > >& rShapes );
 
     // XIndexAccess
-    virtual sal_Int32 SAL_CALL getCount(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual Any SAL_CALL getByIndex( sal_Int32 Index ) throw (IndexOutOfBoundsException, WrappedTargetException, RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual sal_Int32 SAL_CALL getCount(  ) throw (RuntimeException, std::exception) override;
+    virtual Any SAL_CALL getByIndex( sal_Int32 Index ) throw (IndexOutOfBoundsException, WrappedTargetException, RuntimeException, std::exception) override;
 
     // XElementAccess
-    virtual Type SAL_CALL getElementType(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL hasElements(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual Type SAL_CALL getElementType(  ) throw (RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL hasElements(  ) throw (RuntimeException, std::exception) override;
 
 private:
     std::vector< Reference< XShape > > maShapes;
@@ -596,7 +593,7 @@ void SdXMLGenericPageContext::SetNavigationOrder()
             if( !aEnumerator.getNextToken(sId) )
                 break;
 
-            aShapes[nIndex] = Reference< XShape >( rIdMapper.getReference( sId ), UNO_QUERY );
+            aShapes[nIndex].set( rIdMapper.getReference( sId ), UNO_QUERY );
         }
 
         for( nIndex = 0; nIndex < nCount; ++nIndex )

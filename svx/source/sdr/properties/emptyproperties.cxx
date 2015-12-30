@@ -40,15 +40,14 @@ namespace sdr
 
         EmptyProperties::EmptyProperties(SdrObject& rObj)
         :   BaseProperties(rObj),
-            mpEmptyItemSet(0L)
+            mpEmptyItemSet(nullptr)
         {
         }
 
         EmptyProperties::EmptyProperties(const EmptyProperties& rProps, SdrObject& rObj)
         :   BaseProperties(rProps, rObj),
-            mpEmptyItemSet(0L)
+            mpEmptyItemSet(nullptr)
         {
-            // #115593#
             // do not gererate an assert, else derivations like PageProperties will generate an assert
             // using the Clone() operator path.
         }
@@ -58,7 +57,7 @@ namespace sdr
             if(mpEmptyItemSet)
             {
                 delete mpEmptyItemSet;
-                mpEmptyItemSet = 0L;
+                mpEmptyItemSet = nullptr;
             }
         }
 
@@ -134,7 +133,7 @@ namespace sdr
         SfxStyleSheet* EmptyProperties::GetStyleSheet() const
         {
             DBG_ASSERT(false, "EmptyProperties::GetStyleSheet() should never be called (!)");
-            return 0L;
+            return nullptr;
         }
     } // end of namespace properties
 } // end of namespace sdr

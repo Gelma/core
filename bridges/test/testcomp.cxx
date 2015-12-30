@@ -91,8 +91,7 @@ Any OInstanceProvider::queryInterface( const  Type & aType ) throw ( RuntimeExce
     // Tries to get the PerformanceTestObject
     if( sObjectName == "TestRemoteObject" )
     {
-        return m_rSMgr->createInstance(
-            OUString("com.sun.star.test.performance.PerformanceTestObject") );
+        return m_rSMgr->createInstance("com.sun.star.test.performance.PerformanceTestObject");
     }
     return Reference < XInterface > ( (::cppu::OWeakObject * ) new OTestFactory() );
 }
@@ -591,7 +590,7 @@ void testAllTypes( const Reference < XCallMe > & rRCallMe )
         types.Float = (float)123.239;
         types.Double = 1279.12490012;
         types.String = OUString("abcdefghijklmnopqrstuvwxyz");
-        types.Interface = Reference< XInterface >( rRCallMe , UNO_QUERY);
+        types.Interface.set( rRCallMe , UNO_QUERY);
         types.Any <<= types.Double;
 
         TestTypes retTypes = rRCallMe->transport( types );
@@ -713,8 +712,7 @@ Reference <XInterface > createComponent( const OUString &sService ,
     {
         // erst registrieren
         Reference < XImplementationRegistration > rReg (
-            rSMgr->createInstance(
-                OUString( "com.sun.star.registry.ImplementationRegistration" )),
+            rSMgr->createInstance("com.sun.star.registry.ImplementationRegistration"),
             UNO_QUERY );
 
         OSL_ASSERT( rReg.is() );

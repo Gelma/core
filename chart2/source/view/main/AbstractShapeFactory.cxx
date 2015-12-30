@@ -69,7 +69,7 @@ osl::Module* getOpenGLModule()
     if (!bLoaded)
         bLoaded = aModule.load(aLibName);
 
-    return bLoaded ? &aModule : NULL;
+    return bLoaded ? &aModule : nullptr;
 }
 
 #endif
@@ -82,7 +82,7 @@ extern "C" opengl::OpenglShapeFactory* getOpenglShapeFactory();
 
 AbstractShapeFactory* AbstractShapeFactory::getOrCreateShapeFactory(uno::Reference< lang::XMultiServiceFactory> xFactory)
 {
-    static AbstractShapeFactory* pShapeFactory = NULL;
+    static AbstractShapeFactory* pShapeFactory = nullptr;
 
     if(pShapeFactory)
         return pShapeFactory;
@@ -130,7 +130,7 @@ uno::Reference< drawing::XShapes > AbstractShapeFactory::getChartRootShape(
             {
                 if( AbstractShapeFactory::getShapeName( xShape ) == "com.sun.star.chart2.shapes" )
                 {
-                    xRet = uno::Reference< drawing::XShapes >( xShape, uno::UNO_QUERY );
+                    xRet.set( xShape, uno::UNO_QUERY );
                     break;
                 }
             }

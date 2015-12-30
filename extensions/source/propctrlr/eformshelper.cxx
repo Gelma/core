@@ -130,7 +130,7 @@ namespace pcr
             sal_Int16 nRadiobuttonCompatibleTypes[] = { DataTypeClass::STRING, DataTypeClass::anyURI, 0 };
             sal_Int16 nFormattedCompatibleTypes[] = { DataTypeClass::DECIMAL, DataTypeClass::FLOAT, DataTypeClass::DOUBLE, DataTypeClass::DATETIME, DataTypeClass::DATE, DataTypeClass::TIME, 0 };
 
-            sal_Int16* pCompatibleTypes = NULL;
+            sal_Int16* pCompatibleTypes = nullptr;
             switch ( nControlType )
             {
             case FormComponentType::SPINBUTTON:
@@ -466,7 +466,7 @@ namespace pcr
     }
 
 
-    void EFormsHelper::setBinding( const Reference< ::com::sun::star::beans::XPropertySet >& _rxBinding )
+    void EFormsHelper::setBinding( const Reference< css::beans::XPropertySet >& _rxBinding )
     {
         if ( !m_xBindableControl.is() )
             return;
@@ -478,9 +478,9 @@ namespace pcr
             Reference< XValueBinding > xBinding( _rxBinding, UNO_QUERY );
             OSL_ENSURE( xBinding.is() || !_rxBinding.is(), "EFormsHelper::setBinding: invalid binding!" );
 
-            impl_toggleBindingPropertyListening_throw( false, NULL );
+            impl_toggleBindingPropertyListening_throw( false, nullptr );
             m_xBindableControl->setValueBinding( xBinding );
-            impl_toggleBindingPropertyListening_throw( true, NULL );
+            impl_toggleBindingPropertyListening_throw( true, nullptr );
 
             ::std::set< OUString > aSet;
             firePropertyChanges( xOldBinding, _rxBinding, aSet );
@@ -576,7 +576,7 @@ namespace pcr
             PropertyBag& m_rProperties;
 
         public:
-            PropertyBagInserter( PropertyBag& rProperties ) : m_rProperties( rProperties ) { }
+            explicit PropertyBagInserter( PropertyBag& rProperties ) : m_rProperties( rProperties ) { }
 
             void operator()( const Property& _rProp )
             {
@@ -750,11 +750,11 @@ namespace pcr
                 if ( _rFilter.find( aProp->Name ) != _rFilter.end() )
                     continue;
 
-                Any aOldValue( NULL, aProp->Type );
+                Any aOldValue( nullptr, aProp->Type );
                 if ( xOldInfo.is() && xOldInfo->hasPropertyByName( aProp->Name ) )
                     aOldValue = _rxOldProps->getPropertyValue( aProp->Name );
 
-                Any aNewValue( NULL, aProp->Type );
+                Any aNewValue( nullptr, aProp->Type );
                 if ( xNewInfo.is() && xNewInfo->hasPropertyByName( aProp->Name ) )
                     aNewValue = _rxNewProps->getPropertyValue( aProp->Name );
 

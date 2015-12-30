@@ -36,7 +36,7 @@ namespace svx {
     The control works on the SvxFrameDirection enumeration (i.e. left-to-right,
     right-to-left), used i.e. in conjunction with the SvxFrameDirectionItem.
  */
-class SVX_DLLPUBLIC SAL_WARN_UNUSED FrameDirectionListBox : public ListBox
+class SAL_WARN_UNUSED SVX_DLLPUBLIC FrameDirectionListBox : public ListBox
 {
 public:
     explicit            FrameDirectionListBox( vcl::Window* pParent, WinBits nBits );
@@ -66,16 +66,16 @@ typedef FrameDirectionListBox FrameDirListBox;
 
 
 /** Wrapper for usage of a FrameDirectionListBox in item connections. */
-class SVX_DLLPUBLIC SAL_WARN_UNUSED FrameDirListBoxWrapper : public sfx::SingleControlWrapper< FrameDirListBox, SvxFrameDirection >
+class SAL_WARN_UNUSED SVX_DLLPUBLIC FrameDirListBoxWrapper : public sfx::SingleControlWrapper< FrameDirListBox, SvxFrameDirection >
 {
 public:
     explicit            FrameDirListBoxWrapper( FrameDirListBox& rListBox );
 
-    virtual bool        IsControlDontKnow() const SAL_OVERRIDE;
-    virtual void        SetControlDontKnow( bool bSet ) SAL_OVERRIDE;
+    virtual bool        IsControlDontKnow() const override;
+    virtual void        SetControlDontKnow( bool bSet ) override;
 
-    virtual SvxFrameDirection GetControlValue() const SAL_OVERRIDE;
-    virtual void        SetControlValue( SvxFrameDirection eValue ) SAL_OVERRIDE;
+    virtual SvxFrameDirection GetControlValue() const override;
+    virtual void        SetControlValue( SvxFrameDirection eValue ) override;
 };
 
 /** Wrapper for usage of a SvxFrameDirectionItem in item connections. */

@@ -19,6 +19,7 @@
 
 #include <config_features.h>
 
+#include <comphelper/lok.hxx>
 #include <com/sun/star/document/XDocumentProperties.hpp>
 #include <unotools/historyoptions.hxx>
 #include <unotools/useroptions.hxx>
@@ -30,6 +31,7 @@
 #include <svl/eitem.hxx>
 #include <vcl/gdimtf.hxx>
 #include <vcl/pngwrite.hxx>
+#include <officecfg/Office/Common.hxx>
 #include <osl/file.hxx>
 #include <unotools/localfilehelper.hxx>
 #include <cppuhelper/implbase.hxx>
@@ -71,7 +73,7 @@ class StringLength : public ::cppu::WeakImplHelper< XStringWidth >
 
         // XStringWidth
         sal_Int32 SAL_CALL queryStringWidth( const OUString& aString )
-            throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+            throw (css::uno::RuntimeException, std::exception) override
         {
             return aString.getLength();
         }
@@ -107,7 +109,7 @@ void SfxPickList::CreatePicklistMenuTitle( Menu* pMenu, sal_uInt16 nItemId, cons
 
         aTipHelpText = aSystemPath;
         aAccessibleName += aSystemPath;
-        oslFileError nError = osl_abbreviateSystemPath( aSystemPath.pData, &aCompactedSystemPath.pData, 46, NULL );
+        oslFileError nError = osl_abbreviateSystemPath( aSystemPath.pData, &aCompactedSystemPath.pData, 46, nullptr );
         if ( !nError )
             aPickEntry.append( aCompactedSystemPath );
         else
@@ -156,11 +158,14 @@ SfxPickList::PickListEntry* SfxPickList::GetPickListEntry( sal_uInt32 nIndex )
     if ( nIndex < m_aPicklistVector.size() )
         return m_aPicklistVector[ nIndex ];
     else
-        return 0;
+        return nullptr;
 }
 
 void SfxPickList::AddDocumentToPickList( SfxObjectShell* pDocSh )
 {
+    if (pDocSh->IsAvoidRecentDocs() || comphelper::LibreOfficeKit::isActive())
+        return;
+
     SfxMedium *pMed = pDocSh->GetMedium();
     if( !pMed )
         return;
@@ -179,7 +184,7 @@ void SfxPickList::AddDocumentToPickList( SfxObjectShell* pDocSh )
         return;
 
     // add no document that forbids this (for example Message-Body)
-    SFX_ITEMSET_ARG( pMed->GetItemSet(), pPicklistItem, SfxBoolItem, SID_PICKLIST, false );
+    const SfxBoolItem* pPicklistItem = SfxItemSet::GetItem<SfxBoolItem>(pMed->GetItemSet(), SID_PICKLIST, false);
     if ( pPicklistItem && !pPicklistItem->GetValue() )
         return;
 
@@ -193,14 +198,15 @@ void SfxPickList::AddDocumentToPickList( SfxObjectShell* pDocSh )
     if ( pFilter )
         aFilter = pFilter->GetFilterName();
 
-    // generate a thumbnail
     boost::optional<OUString> aThumbnail;
-    // don't generate thumbnail when in headless mode, or on non-desktop (?)
-#if HAVE_FEATURE_DESKTOP
-    if (!pDocSh->IsModified() && !Application::IsHeadlessModeEnabled())
+
+    // generate the thumbnail
+    //fdo#74834: only generate thumbnail for history if the corresponding option is not disabled in the configuration
+    if (!pDocSh->IsModified() && !Application::IsHeadlessModeEnabled() &&
+            officecfg::Office::Common::History::RecentDocsThumbnail::get())
     {
         // not modified => the document matches what is in the shell
-        SFX_ITEMSET_ARG( pMed->GetItemSet(), pEncryptionDataItem, SfxUnoAnyItem, SID_ENCRYPTIONDATA, false );
+        const SfxUnoAnyItem* pEncryptionDataItem = SfxItemSet::GetItem<SfxUnoAnyItem>(pMed->GetItemSet(), SID_ENCRYPTIONDATA, false);
         if ( pEncryptionDataItem )
         {
             // encrypted document, will show a generic document icon instead
@@ -224,7 +230,7 @@ void SfxPickList::AddDocumentToPickList( SfxObjectShell* pDocSh )
             }
         }
     }
-#endif
+
     // add to svtool history options
     SvtHistoryOptions().AppendItem( ePICKLIST,
             aURL.GetURLNoPass( INetURLObject::NO_DECODE ),
@@ -297,7 +303,7 @@ void SfxPickList::CreatePickListEntries()
         aURL.SetSmartURL( sURL );
         aURL.SetPass( OUString() );
 
-        PickListEntry *pPick = new PickListEntry( aURL.GetMainURL( INetURLObject::NO_DECODE ), sFilter, sTitle );
+        PickListEntry *pPick = new PickListEntry( aURL.GetMainURL( INetURLObject::NO_DECODE ), sFilter );
         m_aPicklistVector.push_back( pPick );
     }
 }
@@ -411,11 +417,6 @@ void SfxPickList::Notify( SfxBroadcaster&, const SfxHint& rHint )
             break;
 
             case SFX_EVENT_OPENDOC:
-            {
-                AddDocumentToPickList(pDocSh);
-            }
-            break;
-
             case SFX_EVENT_SAVEDOCDONE:
             case SFX_EVENT_SAVEASDOCDONE:
             case SFX_EVENT_SAVETODOCDONE:

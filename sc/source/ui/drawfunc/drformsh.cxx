@@ -47,16 +47,15 @@ void ScDrawFormShell::InitInterface_Impl()
     GetStaticInterface()->RegisterObjectBar(SFX_OBJECTBAR_OBJECT|SFX_VISIBILITY_STANDARD|SFX_VISIBILITY_SERVER,
                                             RID_OBJECTBAR_FORMAT);
 
-    GetStaticInterface()->RegisterPopupMenu(ScResId(RID_POPUP_DRAWFORM));
+    GetStaticInterface()->RegisterPopupMenu("form");
 }
 
-TYPEINIT1( ScDrawFormShell, ScDrawShell );
 
 ScDrawFormShell::ScDrawFormShell(ScViewData* pData) :
     ScDrawShell(pData)
 {
     SetHelpId(HID_SCSHELL_DRAWFORMSH);
-    SetName(OUString("DrawForm"));
+    SetName("DrawForm");
     SfxShell::SetContextName(sfx2::sidebar::EnumContext::GetContextName(sfx2::sidebar::EnumContext::Context_Form));
 }
 

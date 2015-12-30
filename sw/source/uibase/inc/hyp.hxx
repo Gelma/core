@@ -29,25 +29,22 @@ class SwView;
 class SwHyphWrapper : public SvxSpellWrapper {
 private:
     SwView* pView;
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::linguistic2::XHyphenator >  xHyph;
-    sal_uInt16          nPageCount;     // page count for progress view
-    sal_uInt16          nPageStart;     // 1st checked page
+    sal_uInt16      nPageCount;     // page count for progress view
+    sal_uInt16      nPageStart;     // 1st checked page
     bool            bInSelection : 1; // separating selected text
     bool            bAutomatic : 1; // insert separators without further inquiry
     bool            bInfoBox : 1;   // display info-box when ending
 
 protected:
-    virtual void SpellStart( SvxSpellArea eSpell ) SAL_OVERRIDE;
-    virtual bool SpellContinue() SAL_OVERRIDE;
-    virtual void SpellEnd( ) SAL_OVERRIDE;
-    virtual bool SpellMore() SAL_OVERRIDE;
-    virtual void InsertHyphen( const sal_Int32 nPos ) SAL_OVERRIDE; // insert hyphen
+    virtual void SpellStart( SvxSpellArea eSpell ) override;
+    virtual bool SpellContinue() override;
+    virtual void SpellEnd( ) override;
+    virtual bool SpellMore() override;
+    virtual void InsertHyphen( const sal_Int32 nPos ) override; // insert hyphen
 
 public:
     SwHyphWrapper( SwView* pVw,
-                   ::com::sun::star::uno::Reference<
-                        ::com::sun::star::linguistic2::XHyphenator >  &rxHyph,
+                   css::uno::Reference< css::linguistic2::XHyphenator >  &rxHyph,
                    bool bStart, bool bOther, bool bSelect );
     virtual ~SwHyphWrapper();
 };

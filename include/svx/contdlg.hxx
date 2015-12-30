@@ -33,7 +33,7 @@
 
 class Graphic;
 
-class SVX_DLLPUBLIC SAL_WARN_UNUSED SvxContourDlgChildWindow : public SfxChildWindow
+class SAL_WARN_UNUSED SVX_DLLPUBLIC SvxContourDlgChildWindow : public SfxChildWindow
 {
 public:
     SvxContourDlgChildWindow( vcl::Window*, sal_uInt16, SfxBindings*, SfxChildWinInfo* );
@@ -43,7 +43,7 @@ public:
 
 class SvxSuperContourDlg;
 
-class SVX_DLLPUBLIC SAL_WARN_UNUSED SvxContourDlg : public SfxFloatingWindow
+class SAL_WARN_UNUSED SVX_DLLPUBLIC SvxContourDlg : public SfxFloatingWindow
 {
     using Window::Update;
 
@@ -59,7 +59,7 @@ public:
                         SvxContourDlg(SfxBindings *pBindings, SfxChildWindow *pCW,
                                       vcl::Window* pParent);
     virtual             ~SvxContourDlg();
-    virtual void        dispose() SAL_OVERRIDE;
+    virtual void        dispose() override;
 
     const Graphic&      GetGraphic() const;
     bool                IsGraphicChanged() const;
@@ -69,10 +69,10 @@ public:
     const void*         GetEditingObject() const;
 
     void                Update( const Graphic& rGraphic, bool bGraphicLinked,
-                                const tools::PolyPolygon* pPolyPoly = NULL, void* pEditingObj = NULL );
+                                const tools::PolyPolygon* pPolyPoly = nullptr, void* pEditingObj = nullptr );
 
     static tools::PolyPolygon  CreateAutoContour(  const Graphic& rGraphic,
-                                            const Rectangle* pRect = NULL,
+                                            const Rectangle* pRect = nullptr,
                                             const sal_uIntPtr nFlags = 0L );
 };
 

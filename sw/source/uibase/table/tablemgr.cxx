@@ -205,13 +205,13 @@ uno::Reference< frame::XModel > SwTableFUNC::InsertChart(
     pSh->StartAllAction();
 
     OUString aName;
-    if (pSh->IsCrsrInTable())
+    if (pSh->IsCursorInTable())
     {
         aName = pSh->GetTableFormat()->GetName();
         // insert node before table
         pSh->MoveTable( fnTableCurr, fnTableStart );
-        pSh->Up( false, 1 );
-        if ( pSh->IsCrsrInTable() )
+        pSh->Up( false );
+        if ( pSh->IsCursorInTable() )
         {
             if ( aName != pSh->GetTableFormat()->GetName() )
                 pSh->Down( false ); // two adjacent tables
@@ -225,11 +225,11 @@ uno::Reference< frame::XModel > SwTableFUNC::InsertChart(
     uno::Reference < embed::XEmbeddedObject > xObj =
         aCnt.CreateEmbeddedObject( SvGlobalName( SO3_SCH_CLASSID ).GetByteSequence(), aObjName );
 
-    ::svt::EmbeddedObjectRef aEmbObjRef( xObj, ::com::sun::star::embed::Aspects::MSOLE_CONTENT );
+    ::svt::EmbeddedObjectRef aEmbObjRef( xObj, css::embed::Aspects::MSOLE_CONTENT );
     if ( xObj.is() )
     {
 
-        SwFlyFrameFormat* pTmp = 0;
+        SwFlyFrameFormat* pTmp = nullptr;
         pSh->InsertOleObject( aEmbObjRef, &pTmp );
         if (ppFlyFrameFormat)
             *ppFlyFrameFormat = pTmp;

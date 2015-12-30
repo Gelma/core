@@ -26,12 +26,12 @@
 #include <sfx2/frmdescr.hxx>
 #include <com/sun/star/uno/Reference.h>
 #include <com/sun/star/beans/XPropertySet.hpp>
-#include <tools/stream.hxx>
 #include <svtools/parhtml.hxx>
 #include <svtools/htmlout.hxx>
 #include <svtools/htmlkywd.hxx>
 
 class SfxFrame;
+class SvStream;
 
 namespace com { namespace sun { namespace star {
     namespace document {
@@ -45,25 +45,24 @@ class SFX2_DLLPUBLIC SfxFrameHTMLWriter
                                 const sal_Char *pIndent, const OUString& rName,
                                 const OUString& rContent, bool bHTTPEquiv,
                                 rtl_TextEncoding eDestEnc,
-                                OUString *pNonConvertableChars = 0 );
+                                OUString *pNonConvertableChars = nullptr );
     SAL_DLLPRIVATE inline static void OutMeta( SvStream& rStrm,
                                 const sal_Char *pIndent, const sal_Char *pName,
                                 const OUString& rContent, bool bHTTPEquiv,
                                 rtl_TextEncoding eDestEnc,
-                                OUString *pNonConvertableChars = 0 );
+                                OUString *pNonConvertableChars = nullptr );
 
 public:
     static void Out_DocInfo( SvStream& rStrm, const OUString& rBaseURL,
-            const ::com::sun::star::uno::Reference<
-                ::com::sun::star::document::XDocumentProperties>&,
+            const css::uno::Reference< css::document::XDocumentProperties>&,
             const sal_Char *pIndent,
             rtl_TextEncoding eDestEnc = RTL_TEXTENCODING_MS_1252,
-            OUString *pNonConvertableChars = 0 );
+            OUString *pNonConvertableChars = nullptr );
 
     static void Out_FrameDescriptor(
-        SvStream&, const OUString& rBaseURL, const com::sun::star::uno::Reference < com::sun::star::beans::XPropertySet >& xSet,
+        SvStream&, const OUString& rBaseURL, const css::uno::Reference < css::beans::XPropertySet >& xSet,
         rtl_TextEncoding eDestEnc = RTL_TEXTENCODING_MS_1252,
-        OUString *pNonConvertableChars = 0 );
+        OUString *pNonConvertableChars = nullptr );
 };
 
 inline void SfxFrameHTMLWriter::OutMeta( SvStream& rStrm,

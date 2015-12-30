@@ -76,18 +76,18 @@ ChildAccess::ChildAccess(
     rtl::Reference< Access > const & parent, OUString const & name,
     rtl::Reference< Node > const & node):
     Access(components), root_(root), parent_(parent), name_(name), node_(node),
-    inTransaction_(false)
+    inTransaction_(false),
+    lock_( lock() )
 {
-    lock_ = lock();
     assert(root.is() && parent.is() && node.is());
 }
 
 ChildAccess::ChildAccess(
     Components & components, rtl::Reference< RootAccess > const & root,
     rtl::Reference< Node > const & node):
-    Access(components), root_(root), node_(node), inTransaction_(false)
+    Access(components), root_(root), node_(node), inTransaction_(false),
+    lock_( lock() )
 {
-    lock_ = lock();
     assert(root.is() && node.is());
 }
 
@@ -210,15 +210,15 @@ void ChildAccess::setNode(rtl::Reference< Node > const & node) {
 void ChildAccess::setProperty(
     css::uno::Any const & value, Modifications * localModifications)
 {
-    assert(localModifications != 0);
+    assert(localModifications != nullptr);
     Type type = TYPE_ERROR;
-    bool nillable = false;
+    bool isNillable = false;
     switch (node_->kind()) {
     case Node::KIND_PROPERTY:
         {
             PropertyNode * prop = static_cast< PropertyNode * >(node_.get());
             type = prop->getStaticType();
-            nillable = prop->isNillable();
+            isNillable = prop->isNillable();
         }
         break;
     case Node::KIND_LOCALIZED_PROPERTY:
@@ -241,13 +241,13 @@ void ChildAccess::setProperty(
             LocalizedPropertyNode * locprop =
                 static_cast< LocalizedPropertyNode * >(getParentNode().get());
             type = locprop->getStaticType();
-            nillable = locprop->isNillable();
+            isNillable = locprop->isNillable();
         }
         break;
     default:
         break;
     }
-    checkValue(value, type, nillable);
+    checkValue(value, type, isNillable);
     getParentAccess()->markChildAsModified(this);
     changedValue_.reset(new css::uno::Any(value));
     localModifications->add(getRelativePath());
@@ -256,7 +256,7 @@ void ChildAccess::setProperty(
 
 css::uno::Any ChildAccess::asValue()
 {
-    if (changedValue_.get() != 0) {
+    if (changedValue_.get() != nullptr) {
         return *changedValue_;
     }
     css::uno::Any value;
@@ -298,9 +298,9 @@ bool ChildAccess::asSimpleValue(const rtl::Reference< Node > &rNode,
 
 void ChildAccess::commitChanges(bool valid, Modifications * globalModifications)
 {
-    assert(globalModifications != 0);
+    assert(globalModifications != nullptr);
     commitChildChanges(valid, globalModifications);
-    if (valid && changedValue_.get() != 0) {
+    if (valid && changedValue_.get() != nullptr) {
         Path path(getAbsolutePath());
         getComponents().addModification(path);
         globalModifications->add(path);
@@ -329,7 +329,7 @@ ChildAccess::~ChildAccess() {
 }
 
 void ChildAccess::addTypes(std::vector< css::uno::Type > * types) const {
-    assert(types != 0);
+    assert(types != nullptr);
     types->push_back(cppu::UnoType< css::container::XChild >::get());
     types->push_back(cppu::UnoType< css::lang::XUnoTunnel >::get());
 }
@@ -337,7 +337,7 @@ void ChildAccess::addTypes(std::vector< css::uno::Type > * types) const {
 void ChildAccess::addSupportedServiceNames(
     std::vector< OUString > * services)
 {
-    assert(services != 0);
+    assert(services != nullptr);
     services->push_back(
         getParentNode()->kind() == Node::KIND_GROUP
         ? OUString("com.sun.star.configuration.GroupElement")

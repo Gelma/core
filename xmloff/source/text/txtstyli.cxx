@@ -125,7 +125,6 @@ void XMLTextStyleContext::SetAttribute( sal_uInt16 nPrefixKey,
     }
 }
 
-TYPEINIT1( XMLTextStyleContext, XMLPropStyleContext );
 
 XMLTextStyleContext::XMLTextStyleContext( SvXMLImport& rImport,
         sal_uInt16 nPrfx, const OUString& rLName,
@@ -145,7 +144,7 @@ XMLTextStyleContext::XMLTextStyleContext( SvXMLImport& rImport,
 ,   bHasCombinedCharactersLetter( false )
 // Inherited paragraph style lost information about unset numbering (#i69523#)
 ,   mbListStyleSet( false )
-,   pEventContext( NULL )
+,   pEventContext( nullptr )
 {
 }
 
@@ -158,7 +157,7 @@ SvXMLImportContext *XMLTextStyleContext::CreateChildContext(
         const OUString& rLocalName,
         const Reference< XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if( XML_NAMESPACE_STYLE == nPrefix )
     {
@@ -234,7 +233,7 @@ void XMLTextStyleContext::CreateAndInsert( bool bOverwrite )
     }
 
     // tell the style about it's events (if applicable)
-    if (NULL != pEventContext)
+    if (nullptr != pEventContext)
     {
         // set event suppplier and release reference to context
         Reference<document::XEventsSupplier> xEventsSupplier(xStyle,UNO_QUERY);
@@ -259,8 +258,7 @@ void XMLTextStyleContext::SetDefaults( )
         Reference < XMultiServiceFactory > xFactory ( GetImport().GetModel(), UNO_QUERY);
         if (xFactory.is())
         {
-            Reference < XInterface > xInt = xFactory->createInstance (
-                OUString ( "com.sun.star.text.Defaults" ) );
+            Reference < XInterface > xInt = xFactory->createInstance( "com.sun.star.text.Defaults" );
             Reference < XPropertySet > xProperties ( xInt, UNO_QUERY );
             if ( xProperties.is() )
                 FillPropertySet ( xProperties );
@@ -590,11 +588,10 @@ void XMLTextStyleContext::FillPropertySet(
                                 rPropSet->setPropertyValue(rPropertyName,Any(sStyleName));
                             }
                         }
-                        catch(::com::sun::star::lang::IllegalArgumentException& e)
+                        catch(css::lang::IllegalArgumentException& e)
                         {
-                            Sequence< rtl::OUString > aSeq(1);
-                            aSeq[0] = sStyleName;
-                            GetImport().SetError(XMLERROR_STYLE_PROP_VALUE | XMLERROR_FLAG_WARNING, aSeq, e.Message, NULL);
+                            Sequence<OUString> aSeq { sStyleName };
+                            GetImport().SetError(XMLERROR_STYLE_PROP_VALUE | XMLERROR_FLAG_WARNING, aSeq, e.Message, nullptr);
                         }
                         break;
                     }

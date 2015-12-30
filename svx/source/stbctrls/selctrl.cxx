@@ -95,7 +95,7 @@ void SvxSelectionModeControl::StateChanged( sal_uInt16, SfxItemState eState,
 {
     if ( SfxItemState::DEFAULT == eState )
     {
-        DBG_ASSERT( pState->ISA( SfxUInt16Item ), "invalid item type" );
+        DBG_ASSERT( dynamic_cast< const SfxUInt16Item* >(pState) !=  nullptr, "invalid item type" );
         const SfxUInt16Item* pItem = static_cast<const SfxUInt16Item*>(pState);
         mnState = pItem->GetValue();
 
@@ -118,11 +118,11 @@ bool SvxSelectionModeControl::MouseButtonDown( const MouseEvent& rEvt )
         {
             mnState = nNewState;
 
-            ::com::sun::star::uno::Any a;
+            css::uno::Any a;
             SfxUInt16Item aState( GetSlotId(), mnState );
             INetURLObject aObj( m_aCommandURL );
 
-            ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue > aArgs( 1 );
+            css::uno::Sequence< css::beans::PropertyValue > aArgs( 1 );
             aArgs[0].Name  = aObj.GetURLPath();
             aState.QueryValue( a );
             aArgs[0].Value = a;

@@ -26,7 +26,7 @@
 #include <svx/svxids.hrc>
 #include <svx/dialogs.hrc>
 #include <svl/itempool.hxx>
-#include <vcl/msgbox.hxx>
+#include <vcl/layout.hxx>
 #include <sfx2/request.hxx>
 #include <svl/stritem.hxx>
 #include <vcl/prntypes.hxx>
@@ -36,6 +36,7 @@
 #include <svx/svdundo.hxx>
 #include <editeng/eeitem.hxx>
 #include <editeng/frmdiritem.hxx>
+#include <svx/graphichelper.hxx>
 #include <svx/xbtmpit.hxx>
 #include <svx/xsetit.hxx>
 #include <editeng/ulspitem.hxx>
@@ -80,7 +81,6 @@ namespace sd {
 #define MAXHEIGHT 28350
 #define MAXWIDTH  28350
 
-TYPEINIT1( FuPage, FuPoor );
 
 void mergeItemSetsImpl( SfxItemSet& rTarget, const SfxItemSet& rSource )
 {
@@ -109,12 +109,12 @@ FuPage::FuPage( ViewShell* pViewSh, ::sd::Window* pWin, ::sd::View* pView,
 :   FuPoor(pViewSh, pWin, pView, pDoc, rReq),
     mrReq(rReq),
     mpArgs( rReq.GetArgs() ),
-    mpBackgroundObjUndoAction( 0 ),
+    mpBackgroundObjUndoAction( nullptr ),
     mbPageBckgrdDeleted( false ),
     mbMasterPage( false ),
     mbDisplayBackgroundTabPage( true ),
-    mpPage(0),
-    mpDrawViewShell(0)
+    mpPage(nullptr),
+    mpDrawViewShell(nullptr)
 {
 }
 
@@ -164,10 +164,45 @@ void FuPage::Deactivate()
 {
 }
 
+void MergePageBackgroundFilling(SdPage *pPage, SdStyleSheet *pStyleSheet, bool bMasterPage, SfxItemSet& rMergedAttr)
+{
+    if (bMasterPage)
+    {
+        if (pStyleSheet)
+            mergeItemSetsImpl(rMergedAttr, pStyleSheet->GetItemSet());
+    }
+    else
+    {
+        // Only this page, get attributes for background fill
+        const SfxItemSet& rBackgroundAttributes = pPage->getSdrPageProperties().GetItemSet();
+
+        if(drawing::FillStyle_NONE != static_cast<const XFillStyleItem&>(rBackgroundAttributes.Get(XATTR_FILLSTYLE)).GetValue())
+        {
+            // page attributes are used, take them
+            rMergedAttr.Put(rBackgroundAttributes);
+        }
+        else
+        {
+            if(pStyleSheet
+                && drawing::FillStyle_NONE != static_cast<const XFillStyleItem&>(pStyleSheet->GetItemSet().Get(XATTR_FILLSTYLE)).GetValue())
+            {
+                // if the page has no fill style, use the settings from the
+                // background stylesheet (if used)
+                mergeItemSetsImpl(rMergedAttr, pStyleSheet->GetItemSet());
+            }
+            else
+            {
+                // no fill style from page, start with no fill style
+                rMergedAttr.Put(XFillStyleItem(drawing::FillStyle_NONE));
+            }
+        }
+    }
+}
+
 const SfxItemSet* FuPage::ExecuteDialog( vcl::Window* pParent )
 {
     if (!mpDrawViewShell)
-        return NULL;
+        return nullptr;
 
     PageKind ePageKind = mpDrawViewShell->GetPageKind();
 
@@ -189,7 +224,7 @@ const SfxItemSet* FuPage::ExecuteDialog( vcl::Window* pParent )
     aNewAttr.Put( aBoxItem );
 
     aNewAttr.Put( SvxFrameDirectionItem(
-        mpDoc->GetDefaultWritingMode() == ::com::sun::star::text::WritingMode_RL_TB ? FRMDIR_HORI_RIGHT_TOP : FRMDIR_HORI_LEFT_TOP,
+        mpDoc->GetDefaultWritingMode() == css::text::WritingMode_RL_TB ? FRMDIR_HORI_RIGHT_TOP : FRMDIR_HORI_LEFT_TOP,
         EE_PARA_WRITINGDIR ) );
 
     // Retrieve page-data for dialog
@@ -247,44 +282,27 @@ const SfxItemSet* FuPage::ExecuteDialog( vcl::Window* pParent )
     // merge page background filling to the dialogs input set
     if( mbDisplayBackgroundTabPage )
     {
-        if( mbMasterPage )
-        {
-            if(pStyleSheet)
-                mergeItemSetsImpl( aMergedAttr, pStyleSheet->GetItemSet() );
-        }
-        else
-        {
-            // Only this page, get attributes for background fill
-            const SfxItemSet& rBackgroundAttributes = mpPage->getSdrPageProperties().GetItemSet();
-
-            if(drawing::FillStyle_NONE != static_cast<const XFillStyleItem&>(rBackgroundAttributes.Get(XATTR_FILLSTYLE)).GetValue())
-            {
-                // page attributes are used, take them
-                aMergedAttr.Put(rBackgroundAttributes);
-            }
-            else
-            {
-                if(pStyleSheet
-                    && drawing::FillStyle_NONE != static_cast<const XFillStyleItem&>(pStyleSheet->GetItemSet().Get(XATTR_FILLSTYLE)).GetValue())
-                {
-                    // if the page has no fill style, use the settings from the
-                    // background stylesheet (if used)
-                    mergeItemSetsImpl(aMergedAttr, pStyleSheet->GetItemSet());
-                }
-                else
-                {
-                    // no fill style from page, start with no fill style
-                    aMergedAttr.Put(XFillStyleItem(drawing::FillStyle_NONE));
-                }
-            }
-        }
+        MergePageBackgroundFilling(mpPage, pStyleSheet, mbMasterPage, aMergedAttr);
     }
 
     std::unique_ptr< SfxItemSet > pTempSet;
 
-    if( GetSlotID() == SID_SELECT_BACKGROUND )
+    const sal_uInt16 nId = GetSlotID();
+    if (nId == SID_SAVE_BACKGROUND)
     {
-        SvxOpenGraphicDialog    aDlg(SdResId(STR_SET_BACKGROUND_PICTURE));
+        const XFillStyleItem& rStyleItem =
+            static_cast<const XFillStyleItem&>(aMergedAttr.Get(XATTR_FILLSTYLE));
+        if (drawing::FillStyle_BITMAP == (drawing::FillStyle)rStyleItem.GetValue())
+        {
+            const XFillBitmapItem& rBitmap =
+                static_cast<const XFillBitmapItem&>(aMergedAttr.Get(XATTR_FILLBITMAP));
+            const GraphicObject& rGraphicObj = rBitmap.GetGraphicObject();
+            GraphicHelper::ExportGraphic(rGraphicObj.GetGraphic(), "");
+        }
+    }
+    else if (nId == SID_SELECT_BACKGROUND)
+    {
+        SvxOpenGraphicDialog aDlg(SdResId(STR_SET_BACKGROUND_PICTURE));
 
         if( aDlg.Execute() == GRFILTER_OK )
         {
@@ -310,7 +328,7 @@ const SfxItemSet* FuPage::ExecuteDialog( vcl::Window* pParent )
     {
         // create the dialog
         SdAbstractDialogFactory* pFact = SdAbstractDialogFactory::Create();
-        std::unique_ptr<SfxAbstractTabDialog> pDlg( pFact ? pFact->CreateSdTabPageDialog(NULL, &aMergedAttr, mpDocSh, mbDisplayBackgroundTabPage ) : 0 );
+        std::unique_ptr<SfxAbstractTabDialog> pDlg( pFact ? pFact->CreateSdTabPageDialog(nullptr, &aMergedAttr, mpDocSh, mbDisplayBackgroundTabPage ) : nullptr );
         if( pDlg.get() && pDlg->Execute() == RET_OK )
             pTempSet.reset( new SfxItemSet(*pDlg->GetOutputItemSet()) );
     }
@@ -351,12 +369,10 @@ const SfxItemSet* FuPage::ExecuteDialog( vcl::Window* pParent )
                 // notice-masterpage (at the moment)
                 if( ePageKind != PK_NOTES )
                 {
-                    ScopedVclPtrInstance<MessBox> aQuestionBox (
-                        pParent,
-                        WB_YES_NO | WB_DEF_YES,
-                        SD_RESSTR(STR_PAGE_BACKGROUND_TITLE),
-                        SD_RESSTR(STR_PAGE_BACKGROUND_TXT) );
-                    aQuestionBox->SetImage( QueryBox::GetStandardImage() );
+                    ScopedVclPtrInstance<MessageDialog> aQuestionBox(
+                        pParent, SD_RESSTR(STR_PAGE_BACKGROUND_TXT),
+                        VCL_MESSAGE_QUESTION, VCL_BUTTONS_YES_NO);
+                    aQuestionBox->SetText(SD_RESSTR(STR_PAGE_BACKGROUND_TITLE));
                     bSetToAllPages = ( RET_YES == aQuestionBox->Execute() );
                 }
 
@@ -454,7 +470,7 @@ const SfxItemSet* FuPage::ExecuteDialog( vcl::Window* pParent )
             if( SfxItemState::SET == pTempSet->GetItemState( EE_PARA_WRITINGDIR, false, &pItem ) )
             {
                 sal_uInt32 nVal = static_cast<const SvxFrameDirectionItem*>(pItem)->GetValue();
-                mpDoc->SetDefaultWritingMode( nVal == FRMDIR_HORI_RIGHT_TOP ? ::com::sun::star::text::WritingMode_RL_TB : ::com::sun::star::text::WritingMode_LR_TB );
+                mpDoc->SetDefaultWritingMode( nVal == FRMDIR_HORI_RIGHT_TOP ? css::text::WritingMode_RL_TB : css::text::WritingMode_LR_TB );
             }
 
             mpDoc->SetChanged();
@@ -463,7 +479,7 @@ const SfxItemSet* FuPage::ExecuteDialog( vcl::Window* pParent )
             SdrPage& rUsedMasterPage = mpPage->IsMasterPage() ? *mpPage : mpPage->TRG_GetMasterPage();
             OSL_ENSURE(rUsedMasterPage.IsMasterPage(), "No MasterPage (!)");
             rUsedMasterPage.getSdrPageProperties().ClearItem();
-            OSL_ENSURE(0 != rUsedMasterPage.getSdrPageProperties().GetStyleSheet(),
+            OSL_ENSURE(nullptr != rUsedMasterPage.getSdrPageProperties().GetStyleSheet(),
                 "MasterPage without StyleSheet detected (!)");
         }
 
@@ -474,7 +490,7 @@ const SfxItemSet* FuPage::ExecuteDialog( vcl::Window* pParent )
     }
     else
     {
-        return 0;
+        return nullptr;
     }
 }
 
@@ -600,12 +616,12 @@ void FuPage::ApplyItemSet( const SfxItemSet* pArgs )
     {
         // set merge flag, because a SdUndoGroupAction could have been inserted before
         mpDocSh->GetUndoManager()->AddUndoAction( mpBackgroundObjUndoAction, true );
-        mpBackgroundObjUndoAction = 0;
+        mpBackgroundObjUndoAction = nullptr;
     }
 
     // Objects can not be bigger than ViewSize
     Size aPageSize = mpDoc->GetSdPage(0, ePageKind)->GetSize();
-    Size aViewSize = Size(aPageSize.Width() * 3, aPageSize.Height() * 2);
+    Size aViewSize(aPageSize.Width() * 3, aPageSize.Height() * 2);
     mpDoc->SetMaxObjSize(aViewSize);
 
     // if necessary, we tell Preview the new context

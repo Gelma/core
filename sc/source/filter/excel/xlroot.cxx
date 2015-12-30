@@ -82,7 +82,6 @@ XclRootData::XclRootData( XclBiff eBiff, SfxMedium& rMedium,
     mrMedium( rMedium ),
     mxRootStrg( xRootStrg ),
     mrDoc( rDoc ),
-    maDocImport(mrDoc),
     maDefPassword( "VelvetSweatshop" ),
     meTextEnc( eTextEnc ),
     meSysLang( Application::GetSettings().GetLanguageTag().getLanguageType() ),
@@ -284,7 +283,7 @@ SfxObjectShell* XclRoot::GetDocShell() const
 ScModelObj* XclRoot::GetDocModelObj() const
 {
     SfxObjectShell* pDocShell = GetDocShell();
-    return pDocShell ? ScModelObj::getImplementation( pDocShell->GetModel() ) : 0;
+    return pDocShell ? ScModelObj::getImplementation( pDocShell->GetModel() ) : nullptr;
 }
 
 OutputDevice* XclRoot::GetPrinter() const
@@ -305,7 +304,7 @@ ScRangeName& XclRoot::GetNamedRanges() const
 SdrPage* XclRoot::GetSdrPage( SCTAB nScTab ) const
 {
     return ((nScTab >= 0) && GetDoc().GetDrawLayer()) ?
-        GetDoc().GetDrawLayer()->GetPage( static_cast< sal_uInt16 >( nScTab ) ) : 0;
+        GetDoc().GetDrawLayer()->GetPage( static_cast< sal_uInt16 >( nScTab ) ) : nullptr;
 }
 
 SvNumberFormatter& XclRoot::GetFormatter() const

@@ -32,6 +32,7 @@ class Outliner;
 */
 class SpellDialogChildWindow
     : public svx::SpellDialogChildWindow
+    , public SfxListener
 {
 public:
     SpellDialogChildWindow (
@@ -46,6 +47,9 @@ public:
     */
     void InvalidateSpellDialog();
 
+    // SfxListener
+    virtual void Notify(SfxBroadcaster& rBC, const SfxHint& rHint) override;
+
     SFX_DECL_CHILDWINDOW_WITHID(SpellDialogChildWindow);
 
 protected:
@@ -53,14 +57,14 @@ protected:
         next sentence with spelling errors. While doing so the view
         mode may be changed and text shapes are set into edit mode.
     */
-    virtual svx::SpellPortions GetNextWrongSentence( bool bRecheck ) SAL_OVERRIDE;
+    virtual svx::SpellPortions GetNextWrongSentence( bool bRecheck ) override;
 
     /** This method is responsible for merging corrections made in the
         spelling dialog back into the document.
     */
-    virtual void ApplyChangedSentence(const svx::SpellPortions& rChanged, bool bRecheck) SAL_OVERRIDE;
-    virtual void GetFocus() SAL_OVERRIDE;
-    virtual void LoseFocus() SAL_OVERRIDE;
+    virtual void ApplyChangedSentence(const svx::SpellPortions& rChanged, bool bRecheck) override;
+    virtual void GetFocus() override;
+    virtual void LoseFocus() override;
 
 private:
     /** This outliner is used to do the main work of iterating over a
@@ -79,6 +83,8 @@ private:
         construction/obtaining of a new one.
     */
     void ProvideOutliner();
+
+    void EndSpellingAndClearOutliner();
 };
 
 } // end of namespace ::sd

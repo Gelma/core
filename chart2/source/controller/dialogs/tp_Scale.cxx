@@ -66,7 +66,7 @@ ScaleTabPage::ScaleTabPage(vcl::Window* pWindow,const SfxItemSet& rInAttrs) :
     m_nHelpTimeUnit(1),
     m_nAxisType(chart2::AxisType::REALNUMBER),
     m_bAllowDateAxis(false),
-    pNumFormatter(NULL),
+    pNumFormatter(nullptr),
     m_bShowAxisOrigin(false)
 {
     get(m_pCbxReverse, "CBX_REVERSE");
@@ -157,12 +157,11 @@ void ScaleTabPage::dispose()
     SfxTabPage::dispose();
 }
 
-IMPL_STATIC_LINK(
-    ScaleTabPage, FmtFieldModifiedHdl, FormattedField*, pFmtFied )
+IMPL_STATIC_LINK_TYPED(
+    ScaleTabPage, FmtFieldModifiedHdl, Edit&, rEdit, void )
 {
-    if( pFmtFied )
-        pFmtFied->SetDefaultValue( pFmtFied->GetValue() );
-    return 0;
+    FormattedField& rFmtField = static_cast<FormattedField&>(rEdit);
+    rFmtField.SetDefaultValue( rFmtField.GetValue() );
 }
 
 void ScaleTabPage::StateChanged( StateChangedType nType )
@@ -258,7 +257,7 @@ enum AxisTypeListBoxEntry
     TYPE_DATE=2
 };
 
-IMPL_LINK_NOARG(ScaleTabPage, SelectAxisTypeHdl)
+IMPL_LINK_NOARG_TYPED(ScaleTabPage, SelectAxisTypeHdl, ListBox&, void)
 {
     const sal_Int32 nPos = m_pLB_AxisType->GetSelectEntryPos();
     if( nPos==TYPE_DATE )
@@ -269,7 +268,6 @@ IMPL_LINK_NOARG(ScaleTabPage, SelectAxisTypeHdl)
         m_pCbxLogarithm->Check(false);
     EnableControls();
     SetNumFormat();
-    return 0;
 }
 
 VclPtr<SfxTabPage> ScaleTabPage::Create(vcl::Window* pWindow,const SfxItemSet* rOutAttrs)
@@ -318,7 +316,7 @@ void ScaleTabPage::Reset(const SfxItemSet* rInAttrs)
     if(!pNumFormatter)
         return;
 
-    const SfxPoolItem *pPoolItem = NULL;
+    const SfxPoolItem *pPoolItem = nullptr;
     if (rInAttrs->GetItemState(SCHATTR_AXIS_ALLOW_DATEAXIS, true, &pPoolItem) == SfxItemState::SET)
         m_bAllowDateAxis = (bool) static_cast<const SfxBoolItem*>(pPoolItem)->GetValue();
     m_nAxisType=chart2::AxisType::REALNUMBER;
@@ -436,7 +434,7 @@ SfxTabPage::sfxpg ScaleTabPage::DeactivatePage(SfxItemSet* pItemSet)
     if ((pNumFormatter->GetType(nStepFmt) & ~css::util::NumberFormat::DEFINED) == css::util::NumberFormat::TEXT)
         nStepFmt = 0;
 
-    Control* pControl = NULL;
+    Control* pControl = nullptr;
     sal_uInt16 nErrStrId = 0;
     double fDummy;
 
@@ -559,7 +557,7 @@ void ScaleTabPage::SetNumFormatter( SvNumberFormatter* pFormatter )
 
 void ScaleTabPage::SetNumFormat()
 {
-    const SfxPoolItem *pPoolItem = NULL;
+    const SfxPoolItem *pPoolItem = nullptr;
 
     if( GetItemSet().GetItemState( SID_ATTR_NUMBERFORMAT_VALUE, true, &pPoolItem ) == SfxItemState::SET )
     {

@@ -39,9 +39,8 @@ class FuOutline
     : public FuPoor
 {
 public:
-    TYPEINFO_OVERRIDE();
 
-    virtual bool Command(const CommandEvent& rCEvt) SAL_OVERRIDE;
+    virtual bool Command(const CommandEvent& rCEvt) override;
 
 protected:
     FuOutline (

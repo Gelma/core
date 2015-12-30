@@ -74,7 +74,6 @@ void RegisterInterfaces(SfxModule* pMod)
 
 // - TableObjectBar -
 
-TYPEINIT1( TableObjectBar, SfxShell );
 
 SFX_IMPL_INTERFACE(TableObjectBar, SfxShell)
 
@@ -101,7 +100,7 @@ TableObjectBar::TableObjectBar( ViewShell* pSdViewShell, ::sd::View* pSdView )
 
 TableObjectBar::~TableObjectBar()
 {
-    SetRepeatTarget( NULL );
+    SetRepeatTarget( nullptr );
 }
 
 void TableObjectBar::GetState( SfxItemSet& rSet )
@@ -140,7 +139,7 @@ void TableObjectBar::Execute( SfxRequest& rReq )
             case SID_TABLE_INSERT_COL_DLG:
             {
                 SvxAbstractDialogFactory* pFact = SvxAbstractDialogFactory::Create();
-                std::unique_ptr<SvxAbstractInsRowColDlg> pDlg( pFact ? pFact->CreateSvxInsRowColDlg( mpView->GetViewShell()->GetParentWindow(), nSlotId == SID_TABLE_INSERT_COL_DLG, SD_MOD()->GetSlotPool()->GetSlot(nSlotId)->GetCommand()) : 0);
+                std::unique_ptr<SvxAbstractInsRowColDlg> pDlg( pFact ? pFact->CreateSvxInsRowColDlg( mpView->GetViewShell()->GetParentWindow(), nSlotId == SID_TABLE_INSERT_COL_DLG, SD_MOD()->GetSlotPool()->GetSlot(nSlotId)->GetCommand()) : nullptr);
 
                 if( pDlg.get() && (pDlg->Execute() == 1) )
                 {

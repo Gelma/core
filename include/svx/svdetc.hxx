@@ -65,8 +65,6 @@ SVX_DLLPUBLIC SdrOutliner* SdrMakeOutliner(sal_uInt16 nOutlinerMode, SdrModel& r
 class SVX_DLLPUBLIC SdrEngineDefaults
 {
 friend class SdrAttrObj;
-    OUString   aFontName;
-    FontFamily eFontFamily;
     Color      aFontColor;
     sal_uIntPtr      nFontHeight;
     MapUnit    eMapUnit;
@@ -117,7 +115,7 @@ SVX_DLLPUBLIC bool GetDraftFillColor(const SfxItemSet& rSet, Color& rCol);
  *
  * @returns true, if the set contains such items
  */
-bool SearchOutlinerItems(const SfxItemSet& rSet, bool bInklDefaults, bool* pbOnlyEE=NULL);
+bool SearchOutlinerItems(const SfxItemSet& rSet, bool bInklDefaults, bool* pbOnlyEE=nullptr);
 
 /**
  * @returns a new WhichTable, which we need to squash at some point with a delete
@@ -228,10 +226,8 @@ class SVX_DLLPUBLIC SdrGlobalData
 public:
     SdrLinkList         aUserMakeObjHdl;
     SdrLinkList         aUserMakeObjUserDataHdl;
-    SdrOutliner*        pOutliner;
     SdrEngineDefaults*  pDefaults;
     ResMgr*             pResMgr;
-    sal_uIntPtr                 nExchangeFormat;
     OLEObjCache         aOLEObjCache;
 
 

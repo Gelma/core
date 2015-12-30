@@ -36,7 +36,7 @@ extern std::list<Node*> nodelist;
 #define rstartEl(x,y) do { if (m_rxDocumentHandler.is()) m_rxDocumentHandler->startElement(x,y); } while(false)
 #define rendEl(x) do { if (m_rxDocumentHandler.is()) m_rxDocumentHandler->endElement(x); } while(false)
 #define rchars(x) do { if (m_rxDocumentHandler.is()) m_rxDocumentHandler->characters(x); } while(false)
-#define runistr(x) do { if (m_rxDocumentHandler.is()) m_rxDocumentHandler->characters(OUString(x)); } while(false)
+#define runistr(x) do { if (m_rxDocumentHandler.is()) m_rxDocumentHandler->characters(x); } while(false)
 #define reucstr(x,y) do { if (m_rxDocumentHandler.is()) m_rxDocumentHandler->characters(OUString(x,y, RTL_TEXTENCODING_EUC_KR)); } while(false)
 #define padd(x,y,z)  pList->addAttribute(x,y,z)
 #else
@@ -221,7 +221,7 @@ void Formula::makeIdentifier(Node *res)
           indo;
 #else
           rstartEl("math:mi", rList);
-          runistr(getMathMLEntity(tmp->value).c_str());
+          runistr(reinterpret_cast<sal_Unicode const *>(getMathMLEntity(tmp->value).c_str()));
           rendEl("math:mi");
 #endif
           break;
@@ -243,7 +243,7 @@ void Formula::makeIdentifier(Node *res)
           inds; fprintf(stderr,"<math:mo>%s</math:mo>\n",tmp->value); indo;
 #else
           rstartEl("math:mo", rList);
-          runistr(getMathMLEntity(tmp->value).c_str());
+          runistr(reinterpret_cast<sal_Unicode const *>(getMathMLEntity(tmp->value).c_str()));
           rendEl("math:mo");
 #endif
           break;
@@ -404,7 +404,7 @@ void Formula::makeDecoration(Node *res)
      indo;
 #else
      rstartEl("math:mo", rList);
-     runistr(getMathMLEntity(tmp->value).c_str());
+     runistr(reinterpret_cast<sal_Unicode const *>(getMathMLEntity(tmp->value).c_str()));
      rendEl("math:mo");
 #endif
 
@@ -526,9 +526,9 @@ void Formula::makeFence(Node *res)
                 getMathMLEntity(tmp->next->next->value).c_str());
 #else
      padd("open", "CDATA",
-             OUString(getMathMLEntity(tmp->value).c_str()) );
+             OUString(reinterpret_cast<sal_Unicode const *>(getMathMLEntity(tmp->value).c_str())));
      padd("close", "CDATA",
-             OUString(getMathMLEntity(tmp->next->next->value).c_str()) );
+             OUString(reinterpret_cast<sal_Unicode const *>(getMathMLEntity(tmp->next->next->value).c_str())));
      rstartEl("math:mfenced", rList);
      pList->clear();
 #endif
@@ -570,7 +570,7 @@ void Formula::makeBlock(Node *res)
 
 int Formula::parse()
 {
-     Node *res = 0L;
+     Node *res = nullptr;
      if( !eq ) return 0;
      if( isHwpEQ ){
           MzString a;
@@ -611,7 +611,7 @@ int Formula::parse()
           if( buf[0] != '\0' )
                 res = mainParse( a.c_str() );
           else
-                res = 0L;
+                res = nullptr;
           free(buf);
      }
      else{
@@ -659,7 +659,7 @@ void Formula::trim()
      if( buf[0] != '\0' )
           strcpy(eq, buf);
      else
-          eq = 0L;
+          eq = nullptr;
      free(buf);
 }
 

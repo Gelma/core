@@ -86,7 +86,7 @@ void OComponentEventThread::impl_clearEventQueue()
     m_aFlags.erase( m_aFlags.begin(), m_aFlags.end() );
 }
 
-void OComponentEventThread::disposing( const EventObject& evt ) throw ( ::com::sun::star::uno::RuntimeException, std::exception)
+void OComponentEventThread::disposing( const EventObject& evt ) throw ( css::uno::RuntimeException, std::exception)
 {
     if( evt.Source == m_xComp )
     {
@@ -101,8 +101,8 @@ void OComponentEventThread::disposing( const EventObject& evt ) throw ( ::com::s
 
         // Free the Control and set pCompImpl to 0,
         // so that the thread knows, that it should terminate.
-        m_xComp = 0;
-        m_pCompImpl = 0;
+        m_xComp = nullptr;
+        m_pCompImpl = nullptr;
 
         // Wake up the thread and terminate
         m_aCond.set();

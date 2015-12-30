@@ -41,7 +41,7 @@ bool ChkChain( SwLinePortion *pStart )
         {
             // der Lebensretter
             pPor = pStart->GetPortion();
-            pStart->SetPortion(0);
+            pStart->SetPortion(nullptr);
             pPor->Truncate();
             pStart->SetPortion( pPor );
             return false;
@@ -60,7 +60,7 @@ SwLinePortion::~SwLinePortion()
 
 SwLinePortion *SwLinePortion::Compress()
 {
-    return GetLen() || Width() ? this : 0;
+    return GetLen() || Width() ? this : nullptr;
 }
 
 sal_uInt16 SwLinePortion::GetViewWidth( const SwTextSizeInfo & ) const
@@ -69,7 +69,7 @@ sal_uInt16 SwLinePortion::GetViewWidth( const SwTextSizeInfo & ) const
 }
 
 SwLinePortion::SwLinePortion( ) :
-    pPortion( NULL ),
+    pPortion( nullptr ),
     nLineLength( 0 ),
     nAscent( 0 ),
     nWhichPor( POR_LIN ),
@@ -98,12 +98,12 @@ void SwLinePortion::PrePaint( const SwTextPaintInfo& rInf,
     sal_uInt16 nPos;
     SwTextPaintInfo aInf( rInf );
 
-    const bool bBidiPor = rInf.GetTextFrm()->IsRightToLeft() !=
+    const bool bBidiPor = rInf.GetTextFrame()->IsRightToLeft() !=
                           bool( TEXT_LAYOUT_BIDI_RTL & rInf.GetOut()->GetLayoutMode() );
 
     sal_uInt16 nDir = bBidiPor ?
                   1800 :
-                  rInf.GetFont()->GetOrientation( rInf.GetTextFrm()->IsVertical() );
+                  rInf.GetFont()->GetOrientation( rInf.GetTextFrame()->IsVertical() );
 
     switch ( nDir )
     {
@@ -159,12 +159,12 @@ void SwLinePortion::_Truncate()
     { OSL_ENSURE( pPos != this, "SwLinePortion::Truncate: loop" );
         SwLinePortion *pLast = pPos;
         pPos = pPos->GetPortion();
-        pLast->SetPortion( 0 );
+        pLast->SetPortion( nullptr );
         delete pLast;
 
     } while( pPos );
 
-    pPortion = 0;
+    pPortion = nullptr;
 }
 
 // Es wird immer hinter uns eingefuegt.
@@ -193,7 +193,7 @@ SwLinePortion *SwLinePortion::Append( SwLinePortion *pIns )
 {
     SwLinePortion *pPos = FindLastPortion();
     pPos->SetPortion( pIns );
-    pIns->SetPortion( 0 );
+    pIns->SetPortion( nullptr );
 #if OSL_DEBUG_LEVEL > 0
     ChkChain( this );
 #endif
@@ -205,7 +205,7 @@ SwLinePortion *SwLinePortion::Cut( SwLinePortion *pVictim )
     SwLinePortion *pPrev = pVictim->FindPrevPortion( this );
     OSL_ENSURE( pPrev, "SwLinePortion::Cut(): can't cut" );
     pPrev->SetPortion( pVictim->GetPortion() );
-    pVictim->SetPortion(0);
+    pVictim->SetPortion(nullptr);
     return pVictim;
 }
 
@@ -222,7 +222,7 @@ SwLinePortion *SwLinePortion::FindPrevPortion( const SwLinePortion *pRoot )
     return pPos;
 }
 
-sal_Int32 SwLinePortion::GetCrsrOfst( const sal_uInt16 nOfst ) const
+sal_Int32 SwLinePortion::GetCursorOfst( const sal_uInt16 nOfst ) const
 {
     if( nOfst > ( PrtWidth() / 2 ) )
         return GetLen();
@@ -271,9 +271,9 @@ void SwLinePortion::FormatEOL( SwTextFormatInfo & )
 void SwLinePortion::Move( SwTextPaintInfo &rInf )
 {
     bool bB2T = rInf.GetDirection() == DIR_BOTTOM2TOP;
-    const bool bFrmDir = rInf.GetTextFrm()->IsRightToLeft();
-    bool bCounterDir = ( ! bFrmDir && DIR_RIGHT2LEFT == rInf.GetDirection() ) ||
-                       (   bFrmDir && DIR_LEFT2RIGHT == rInf.GetDirection() );
+    const bool bFrameDir = rInf.GetTextFrame()->IsRightToLeft();
+    bool bCounterDir = ( ! bFrameDir && DIR_RIGHT2LEFT == rInf.GetDirection() ) ||
+                       (   bFrameDir && DIR_LEFT2RIGHT == rInf.GetDirection() );
 
     if ( InSpaceGrp() && rInf.GetSpaceAdd() )
     {

@@ -41,11 +41,11 @@ public:
     virtual ~WrappedAutomaticPositionProperty();
 
     virtual void setPropertyValue( const Any& rOuterValue, const Reference< beans::XPropertySet >& xInnerPropertySet ) const
-                                    throw (beans::UnknownPropertyException, beans::PropertyVetoException, lang::IllegalArgumentException, lang::WrappedTargetException, uno::RuntimeException) SAL_OVERRIDE;
+                                    throw (beans::UnknownPropertyException, beans::PropertyVetoException, lang::IllegalArgumentException, lang::WrappedTargetException, uno::RuntimeException) override;
     virtual Any getPropertyValue( const Reference< beans::XPropertySet >& xInnerPropertySet ) const
-                                    throw (beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException) SAL_OVERRIDE;
+                                    throw (beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException) override;
     virtual Any getPropertyDefault( const Reference< beans::XPropertyState >& xInnerPropertyState ) const
-                                    throw (beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException) SAL_OVERRIDE;
+                                    throw (beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException) override;
 };
 
 WrappedAutomaticPositionProperty::WrappedAutomaticPositionProperty()
@@ -63,7 +63,7 @@ void WrappedAutomaticPositionProperty::setPropertyValue( const Any& rOuterValue,
     {
         bool bNewValue = true;
         if( ! (rOuterValue >>= bNewValue) )
-            throw lang::IllegalArgumentException( "Property AutomaticPosition requires value of type boolean", 0, 0 );
+            throw lang::IllegalArgumentException( "Property AutomaticPosition requires value of type boolean", nullptr, 0 );
 
         try
         {

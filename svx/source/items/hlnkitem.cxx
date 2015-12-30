@@ -26,7 +26,8 @@
 
 
 
-TYPEINIT1_FACTORY(SvxHyperlinkItem, SfxPoolItem, new SvxHyperlinkItem(0));
+
+SfxPoolItem* SvxHyperlinkItem::CreateDefault() { return new  SvxHyperlinkItem(0);}
 
 #define HYPERLINKFF_MARKER  0x599401FE
 
@@ -91,7 +92,7 @@ SvStream& SvxHyperlinkItem::Store( SvStream& rStrm, sal_uInt16 /*nItemVersion*/ 
     rStrm.WriteUInt16( nCnt );
     if( nCnt )
     {
-        // 2. ::com::sun::star::script::JavaScript-Macros
+        // 2. css::script::JavaScript-Macros
         for ( SvxMacroTable::const_iterator it = pMacroTable->begin();
               it != pMacroTable->end(); ++it)
         {
@@ -201,7 +202,7 @@ SvxHyperlinkItem::SvxHyperlinkItem( const SvxHyperlinkItem& rHyperlinkItem ):
     if( rHyperlinkItem.GetMacroTable() )
         pMacroTable = new SvxMacroTableDtor( *rHyperlinkItem.GetMacroTable() );
     else
-        pMacroTable=NULL;
+        pMacroTable=nullptr;
 
 };
 
@@ -219,7 +220,7 @@ SvxHyperlinkItem::SvxHyperlinkItem( sal_uInt16 _nWhich, const OUString& rName, c
     if (pMacroTbl)
         pMacroTable = new SvxMacroTableDtor ( *pMacroTbl );
     else
-        pMacroTable=NULL;
+        pMacroTable=nullptr;
 }
 
 SfxPoolItem* SvxHyperlinkItem::Clone( SfxItemPool* ) const
@@ -285,7 +286,7 @@ void SvxHyperlinkItem::SetMacroTable( const SvxMacroTableDtor& rTbl )
     pMacroTable = new SvxMacroTableDtor ( rTbl );
 }
 
-bool SvxHyperlinkItem::QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) const
+bool SvxHyperlinkItem::QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId ) const
 {
 //    sal_Bool bConvert = 0!=(nMemberId&CONVERT_TWIPS);
     nMemberId &= ~CONVERT_TWIPS;
@@ -313,7 +314,7 @@ bool SvxHyperlinkItem::QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMe
     return true;
 }
 
-bool SvxHyperlinkItem::PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId )
+bool SvxHyperlinkItem::PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId )
 {
     nMemberId &= ~CONVERT_TWIPS;
     OUString aStr;

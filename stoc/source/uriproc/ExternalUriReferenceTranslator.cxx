@@ -46,31 +46,27 @@ class Translator:
     private boost::noncopyable
 {
 public:
-    explicit Translator(
-        css::uno::Reference< css::uno::XComponentContext > const & context):
-        m_context(context) {}
+    Translator() {}
 
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual sal_Bool SAL_CALL supportsService(OUString const & serviceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Sequence< OUString > SAL_CALL
-    getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) override;
 
     virtual OUString SAL_CALL
     translateToInternal(OUString const & externalUriReference)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual OUString SAL_CALL
     translateToExternal(OUString const & internalUriReference)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
 private:
     virtual ~Translator() {}
-
-    css::uno::Reference< css::uno::XComponentContext > m_context;
 };
 
 OUString Translator::getImplementationName()
@@ -88,8 +84,7 @@ sal_Bool Translator::supportsService(OUString const & serviceName)
 css::uno::Sequence< OUString > Translator::getSupportedServiceNames()
     throw (css::uno::RuntimeException, std::exception)
 {
-    css::uno::Sequence< OUString > s(1);
-    s[0] = "com.sun.star.uri.ExternalUriReferenceTranslator";
+    css::uno::Sequence< OUString > s { "com.sun.star.uri.ExternalUriReferenceTranslator" };
     return s;
 }
 
@@ -190,11 +185,11 @@ OUString Translator::translateToExternal(
 
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_uri_ExternalUriReferenceTranslator_get_implementation(::com::sun::star::uno::XComponentContext* rxContext,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_uri_ExternalUriReferenceTranslator_get_implementation(css::uno::XComponentContext* ,
+        css::uno::Sequence<css::uno::Any> const &)
 {
-    return ::cppu::acquire(new Translator(rxContext));
+    return ::cppu::acquire(new Translator);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

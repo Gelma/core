@@ -296,15 +296,15 @@ void InformationDialog::InitDialog()
     if ( k >= 0 )
         aInfoString = aInfoString.replaceAt( k, aTitlePlaceholder.getLength(), aTitle );
 
-    com::sun::star::uno::Reference< com::sun::star::awt::XItemListener > xItemListener;
+    css::uno::Reference< css::awt::XItemListener > xItemListener;
     InsertImage( *this,
-                 OUString( "aboutimage" ),
-                 OUString( "private:standardimage/query" ),
+                 "aboutimage",
+                 "private:standardimage/query",
                  5, 5, 25, 25, false );
-    InsertFixedText( *this, OUString("fixedtext"), aInfoString, PAGE_POS_X, 6, PAGE_WIDTH, 24, true, 0 );
+    InsertFixedText( *this, "fixedtext", aInfoString, PAGE_POS_X, 6, PAGE_WIDTH, 24, true, 0 );
     if ( !maSaveAsURL.isEmpty() )
         InsertCheckBox(  *this, "OpenNewDocument", xItemListener, getString( STR_AUTOMATICALLY_OPEN ), PAGE_POS_X, 42, PAGE_WIDTH, 8, 1 );
-    InsertButton( *this, OUString("button"), mxActionListener, DIALOG_WIDTH / 2 - 25, nDialogHeight - 20, 50, 14, 2, STR_OK );
+    InsertButton( *this, "button", mxActionListener, DIALOG_WIDTH / 2 - 25, nDialogHeight - 20, 50, 14, 2, STR_OK );
 
     bool bOpenNewDocument = mrbOpenNewDocument;
     setControlProperty( "OpenNewDocument", "State", Any( (sal_Int16)bOpenNewDocument ) );
@@ -314,8 +314,7 @@ void InformationDialog::InitDialog()
 
 InformationDialog::InformationDialog( const Reference< XComponentContext > &rxContext, Reference< XFrame >& rxFrame, const OUString& rSaveAsURL, bool& rbOpenNewDocument, const sal_Int64& rSourceSize, const sal_Int64& rDestSize, const sal_Int64& rApproxSize ) :
     UnoDialog( rxContext, rxFrame ),
-    ConfigurationAccess( rxContext, NULL ),
-    mxFrame( rxFrame ),
+    ConfigurationAccess( rxContext, nullptr ),
     mxActionListener( new OKActionListener( *this ) ),
     mnSourceSize( rSourceSize ),
     mnDestSize( rDestSize ),
@@ -359,15 +358,15 @@ bool InformationDialog::execute()
 
 
 void OKActionListener::actionPerformed( const ActionEvent& rEvent )
-    throw ( com::sun::star::uno::RuntimeException, std::exception )
+    throw ( css::uno::RuntimeException, std::exception )
 {
     if ( rEvent.ActionCommand == "button" )
     {
         mrInformationDialog.endExecute( true );
     }
 }
-void OKActionListener::disposing( const ::com::sun::star::lang::EventObject& /* Source */ )
-    throw ( com::sun::star::uno::RuntimeException, std::exception )
+void OKActionListener::disposing( const css::lang::EventObject& /* Source */ )
+    throw ( css::uno::RuntimeException, std::exception )
 {
 }
 

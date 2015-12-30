@@ -25,11 +25,10 @@
 #include <cstdio>
 
 #include "salglyphid.hxx"
-#include "vcl/dllapi.h"
 
 namespace vcl { struct _TrueTypeFont; } ///< SFT's idea of a TTF font
 
-class VCL_DLLPUBLIC FontSubsetInfo
+class FontSubsetInfo
 {
 public:
     explicit    FontSubsetInfo();
@@ -56,7 +55,7 @@ public:
     bool        CreateFontSubset( int nOutFontTypeMask,
                     FILE* pOutFile, const char* pOutFontName,
                     const sal_GlyphId* pGlyphIds, const sal_uInt8* pEncodedIds,
-                    int nReqGlyphCount, sal_Int32* pOutGlyphWidths = NULL );
+                    int nReqGlyphCount, sal_Int32* pOutGlyphWidths = nullptr );
 
 public: // TODO: make subsetter results private and provide accessor methods instead
         // subsetter-provided subset details needed by e.g. Postscript or PDF
@@ -83,9 +82,9 @@ private:
     int                     mnReqGlyphCount;
 
 protected:
-    bool    CreateFontSubsetFromCff( sal_Int32* pOutGlyphWidths = NULL );
-    bool    CreateFontSubsetFromSfnt( sal_Int32* pOutGlyphWidths = NULL );
-    static bool CreateFontSubsetFromType1( sal_Int32* pOutGlyphWidths = NULL );
+    bool    CreateFontSubsetFromCff( sal_Int32* pOutGlyphWidths = nullptr );
+    bool    CreateFontSubsetFromSfnt( sal_Int32* pOutGlyphWidths = nullptr );
+    static bool CreateFontSubsetFromType1( sal_Int32* pOutGlyphWidths = nullptr );
 };
 
 #endif // INCLUDED_VCL_INC_FONTSUBSET_HXX

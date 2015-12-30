@@ -101,7 +101,7 @@ SvXMLImportContext* OXMLCell::CreateChildContext(
         const OUString& _rLocalName,
         const Reference< XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
     ORptFilter& rImport = GetOwnImport();
     const SvXMLTokenMap&    rTokenMap   = rImport.GetCellElemTokenMap();
     Reference<XMultiServiceFactory> xFactor(rImport.GetModel(),uno::UNO_QUERY);
@@ -218,7 +218,7 @@ void OXMLCell::EndElement()
         m_xComponent = xFixedLine.get();
         m_pContainer->getSection()->add(m_xComponent.get());
         m_pContainer->addCell(m_xComponent);
-        XMLPropStyleContext* pAutoStyle = const_cast<XMLPropStyleContext*>(PTR_CAST(XMLPropStyleContext,GetImport().GetAutoStyles()->FindStyleChildContext(XML_STYLE_FAMILY_TABLE_CELL,m_sStyleName)));
+        XMLPropStyleContext* pAutoStyle = const_cast<XMLPropStyleContext*>(dynamic_cast< const XMLPropStyleContext* >(GetImport().GetAutoStyles()->FindStyleChildContext(XML_STYLE_FAMILY_TABLE_CELL,m_sStyleName)));
         if ( pAutoStyle )
         {
             uno::Reference<beans::XPropertySet> xBorderProp = OXMLHelper::createBorderPropertySet();

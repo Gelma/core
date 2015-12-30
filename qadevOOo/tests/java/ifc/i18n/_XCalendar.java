@@ -111,8 +111,7 @@ public class _XCalendar extends MultiMethodTest {
                           ", Country: "+ installed_locales[i].Country +
                           ", Variant: "+ installed_locales[i].Country;
             oObj.loadDefaultCalendar(installed_locales[i]);
-            if (oObj.getLoadedCalendar().Default) {
-            } else {
+            if (!oObj.getLoadedCalendar().Default) {
                 log.println(lang + " ... FAILED");
             }
             res &= oObj.getLoadedCalendar().Default;
@@ -135,8 +134,7 @@ public class _XCalendar extends MultiMethodTest {
                           ", Variant: "+ installed_locales[i].Country;
             calendars[i] = oObj.getAllCalendars(installed_locales[i]);
             count[i] = calendars[i].length-1;
-            if (calendars[i].length > 0) {
-            } else {
+            if (calendars[i].length <= 0) {
                 log.println(lang + " ... FAILED");
             }
             res &= (calendars[i].length > 0);
@@ -163,8 +161,7 @@ public class _XCalendar extends MultiMethodTest {
                           ", Country: "+ installed_locales[i].Country +
                           ", Variant: "+ installed_locales[i].Country;
             oObj.loadCalendar(calendars[i][0], installed_locales[i]);
-            if (calendars[i][0].equals(oObj.getLoadedCalendar().Name)) {
-            } else {
+            if (!calendars[i][0].equals(oObj.getLoadedCalendar().Name)) {
                 log.println(lang + " ... FAILED");
             }
             res &= calendars[i][0].equals(oObj.getLoadedCalendar().Name);
@@ -192,8 +189,7 @@ public class _XCalendar extends MultiMethodTest {
                           ", Country: "+ installed_locales[i].Country +
                           ", Variant: "+ installed_locales[i].Country;
             oObj.loadCalendar(calendars[i][0], installed_locales[i]);
-            if (calendars[i][0].equals(oObj.getLoadedCalendar().Name)) {
-            } else {
+            if (!calendars[i][0].equals(oObj.getLoadedCalendar().Name)) {
                 log.println(lang + " ... FAILED");
             }
             res &= calendars[i][0].equals(oObj.getLoadedCalendar().Name);
@@ -219,8 +215,7 @@ public class _XCalendar extends MultiMethodTest {
                           ", Variant: "+ installed_locales[i].Country;
             oObj.loadCalendar(calendars[i][0], installed_locales[i]);
             String uID = oObj.getUniqueID();
-            if (uID.equals(calendars[i][0])) {
-            } else {
+            if (!uID.equals(calendars[i][0])) {
                 log.println(lang + " ... FAILED");
             }
             res &= uID.equals(calendars[i][0]);
@@ -244,8 +239,7 @@ public class _XCalendar extends MultiMethodTest {
                           ", Variant: "+ installed_locales[i].Country;
             oObj.setDateTime(newDTime);
             double aDTime = oObj.getDateTime();
-            if (aDTime == newDTime) {
-            } else {
+            if (aDTime != newDTime) {
                 log.println(lang + " ... FAILED");
             }
             res &= (aDTime == newDTime);
@@ -269,8 +263,7 @@ public class _XCalendar extends MultiMethodTest {
                           ", Variant: "+ installed_locales[i].Country;
             oObj.setDateTime(newDTime);
             double aDTime = oObj.getDateTime();
-            if (aDTime == newDTime) {
-            } else {
+            if (aDTime != newDTime) {
                 log.println(lang + " ... FAILED");
             }
             res &= (aDTime == newDTime);
@@ -283,64 +276,55 @@ public class _XCalendar extends MultiMethodTest {
     * Has <b> OK </b> status if the method returns value, that's equal to
     * value set before. <p>
     */
-
     public void _setValue() {
         boolean res = true;
-        for (int i=0; i<installed_locales.length; i++) {
+        for (int i = 0; i < installed_locales.length; i++) {
             String error = "";
-            String lang = "Language: "+installed_locales[i].Language +
-                          ", Country: "+ installed_locales[i].Country +
-                          ", Variant: "+ installed_locales[i].Variant +
-                          ", Name: "+calendars[i][count[i]];
-            String[] names = new String[]{"DAY_OF_MONTH",
-                "HOUR","MINUTE","SECOND","MILLISECOND",
-                "YEAR","MONTH"};
-            oObj.loadCalendar(calendars[i][count[i]],installed_locales[i]);
-            short[] fields = new short[]{CalendarFieldIndex.DAY_OF_MONTH,
-                                         CalendarFieldIndex.HOUR,
-                                         CalendarFieldIndex.MINUTE,
-                                         CalendarFieldIndex.SECOND,
-                                         CalendarFieldIndex.MILLISECOND,
-                                         CalendarFieldIndex.YEAR,
-                                         CalendarFieldIndex.MONTH
-            };
-            for (int k=0; k<fields.length;k++) {
+            String lang = "Language: " + installed_locales[i].Language + ", Country: " + installed_locales[i].Country
+                    + ", Variant: " + installed_locales[i].Variant + ", Name: " + calendars[i][count[i]];
+            String[] names = new String[] { "DAY_OF_MONTH", "HOUR", "MINUTE", "SECOND", "MILLISECOND", "YEAR",
+                    "MONTH" };
+            oObj.loadCalendar(calendars[i][count[i]], installed_locales[i]);
+            short[] fields = new short[] { CalendarFieldIndex.DAY_OF_MONTH, CalendarFieldIndex.HOUR,
+                    CalendarFieldIndex.MINUTE, CalendarFieldIndex.SECOND, CalendarFieldIndex.MILLISECOND,
+                    CalendarFieldIndex.YEAR, CalendarFieldIndex.MONTH };
+            for (int k = 0; k < fields.length; k++) {
 
                 oObj.setDateTime(0.0);
 
                 // save the current values for debug purposes
                 short[] oldValues = new short[fields.length];
-                for (int n=0; n < oldValues.length; n++){
+                for (int n = 0; n < oldValues.length; n++) {
                     oldValues[n] = oObj.getValue(fields[n]);
                 }
 
                 short set = oObj.getValue(fields[k]);
-                if (fields[k] == CalendarFieldIndex.MONTH) set = newValue;
-                oObj.setValue(fields[k],set);
+                if (fields[k] == CalendarFieldIndex.MONTH)
+                    set = newValue;
+                oObj.setValue(fields[k], set);
                 short get = oObj.getValue(fields[k]);
                 if (get != set) {
                     if (debug)
                         log.println("ERROR occurred: tried to set " + names[k] + " to value " + set);
-                        log.println("list of values BEFORE set " + names[k] + " to value " + set + ":");
-                        for (int n=0; n < oldValues.length; n++){
-                            log.println(names[n] + ":" + oldValues[n]);
-                        }
-                        log.println("list of values AFTER set " + names[k] + " to value " + set + ":");
-                        for (int n=0; n < fields.length;n++){
-                            log.println(names[n] + ":" + oObj.getValue(fields[n]));
-                        }
+                    log.println("list of values BEFORE set " + names[k] + " to value " + set + ":");
+                    for (int n = 0; n < oldValues.length; n++) {
+                        log.println(names[n] + ":" + oldValues[n]);
+                    }
+                    log.println("list of values AFTER set " + names[k] + " to value " + set + ":");
+                    for (int n = 0; n < fields.length; n++) {
+                        log.println(names[n] + ":" + oObj.getValue(fields[n]));
+                    }
 
-                    error += "failed for "+names[k]+" expected "+
-                                set+" gained "+get+" ; \n";
+                    error += "failed for " + names[k] + " expected " + set + " gained " + get + " ; \n";
                 }
             }
             if (error.equals("")) {
                 log.println(lang + " ... OK");
             } else {
-                log.println("*** "+lang + " ... FAILED ***");
+                log.println("*** " + lang + " ... FAILED ***");
                 log.println(error);
             }
-            res &= (error.equals(""));
+            res &= error.equals("");
         }
 
         tRes.tested("setValue()", res);

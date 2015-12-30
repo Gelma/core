@@ -80,7 +80,7 @@ RTLFUNC(Nothing)
     (void)bWrite;
 
     // return an empty object
-    rPar.Get( 0 )->PutObject( NULL );
+    rPar.Get( 0 )->PutObject( nullptr );
 }
 
 RTLFUNC(Null)
@@ -725,35 +725,6 @@ RTLFUNC(SET_TAB)
     (void)bWrite;
 
     rPar.Get(0)->PutInteger(0);
-}
-
-RTLFUNC(LINEPROP)
-{
-    (void)pBasic;
-    (void)bWrite;
-
-    rPar.Get(0)->PutInteger(0);
-}
-RTLFUNC(LINE_1)
-{
-    (void)pBasic;
-    (void)bWrite;
-
-    rPar.Get(0)->PutInteger(1);
-}
-RTLFUNC(LINE_15)
-{
-    (void)pBasic;
-    (void)bWrite;
-
-    rPar.Get(0)->PutInteger(2);
-}
-RTLFUNC(LINE_2)
-{
-    (void)pBasic;
-    (void)bWrite;
-
-    rPar.Get(0)->PutInteger(3);
 }
 
 RTLFUNC(TYP_JUMPEDITFLD)

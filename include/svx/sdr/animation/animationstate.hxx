@@ -44,7 +44,7 @@ namespace sdr
             sdr::contact::ViewObjectContact&                    mrVOContact;
 
             // the vetor of animated primitives
-            drawinglayer::primitive2d::Primitive2DSequence      maAnimatedPrimitives;
+            drawinglayer::primitive2d::Primitive2DContainer      maAnimatedPrimitives;
 
             // local helpers
             double getSmallestNextTime(double fCurrentTime);
@@ -52,13 +52,13 @@ namespace sdr
 
         public:
             // basic constructor.
-            PrimitiveAnimation(sdr::contact::ViewObjectContact& rVOContact, const drawinglayer::primitive2d::Primitive2DSequence& rAnimatedPrimitives);
+            PrimitiveAnimation(sdr::contact::ViewObjectContact& rVOContact, const drawinglayer::primitive2d::Primitive2DContainer& rAnimatedPrimitives);
 
             // destructor
             virtual ~PrimitiveAnimation();
 
             // execute event, from base class Event
-            virtual void Trigger(sal_uInt32 nTime) SAL_OVERRIDE;
+            virtual void Trigger(sal_uInt32 nTime) override;
         };
     } // end of namespace animation
 } // end of namespace sdr

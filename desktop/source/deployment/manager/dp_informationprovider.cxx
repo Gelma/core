@@ -68,11 +68,11 @@ class PackageInformationProvider :
 
     // XPackageInformationProvider
     virtual OUString SAL_CALL getPackageLocation( const OUString& extensionId )
-        throw ( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( uno::RuntimeException, std::exception ) override;
     virtual uno::Sequence< uno::Sequence< OUString > > SAL_CALL isUpdateAvailable( const OUString& extensionId )
-        throw ( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( uno::RuntimeException, std::exception ) override;
     virtual uno::Sequence< uno::Sequence< OUString > > SAL_CALL getExtensionList()
-        throw ( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( uno::RuntimeException, std::exception ) override;
 
 private:
 
@@ -139,21 +139,21 @@ OUString SAL_CALL
 PackageInformationProvider::getPackageLocation( const OUString& _sExtensionId )
     throw ( uno::RuntimeException, std::exception )
 {
-    OUString aLocationURL = getPackageLocation( OUString("user"), _sExtensionId );
+    OUString aLocationURL = getPackageLocation( "user", _sExtensionId );
 
     if ( aLocationURL.isEmpty() )
     {
-        aLocationURL = getPackageLocation( OUString("shared"), _sExtensionId );
+        aLocationURL = getPackageLocation( "shared", _sExtensionId );
     }
     if ( aLocationURL.isEmpty() )
     {
-        aLocationURL = getPackageLocation( OUString("bundled"), _sExtensionId );
+        aLocationURL = getPackageLocation( "bundled", _sExtensionId );
     }
     if ( !aLocationURL.isEmpty() )
     {
         try
         {
-            ::ucbhelper::Content aContent( aLocationURL, NULL, mxContext );
+            ::ucbhelper::Content aContent( aLocationURL, nullptr, mxContext );
             aLocationURL = aContent.getURL();
         }
         catch (const css::ucb::ContentCreationException& e)
@@ -203,7 +203,7 @@ PackageInformationProvider::isUpdateAvailable( const OUString& _sExtensionId )
     else
     {
         updateInfoMap = dp_misc::getOnlineUpdateInfos(
-            mxContext, extMgr, mxUpdateInformation, NULL, errors);
+            mxContext, extMgr, mxUpdateInformation, nullptr, errors);
     }
 
     int nCount = 0;

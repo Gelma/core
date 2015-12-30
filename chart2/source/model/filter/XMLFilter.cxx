@@ -28,6 +28,7 @@
 #include <comphelper/propertysetinfo.hxx>
 #include <comphelper/documentconstants.hxx>
 #include <cppuhelper/supportsservice.hxx>
+#include <comphelper/sequence.hxx>
 
 #include <sot/storage.hxx>
 #include <osl/diagnose.h>
@@ -117,7 +118,7 @@ uno::Reference< embed::XStorage > lcl_getWriteStorage(
                 else
                     aStorageArgs[0] <<= aMDHelper.URL;
                 aStorageArgs[1] <<= (embed::ElementModes::READWRITE | embed::ElementModes::TRUNCATE);
-                aStorageArgs[2] <<= ::chart::ContainerHelper::ContainerToSequence( aPropertiesForStorage );
+                aStorageArgs[2] <<= comphelper::containerToSequence( aPropertiesForStorage );
 
                 xStorage.set(
                     xStorageFact->createInstanceWithArguments( aStorageArgs ),
@@ -181,7 +182,7 @@ uno::Reference< embed::XStorage > lcl_getReadStorage(
             Sequence< uno::Any > aStorageArgs( 3 );
             aStorageArgs[0] <<= xStream;
             aStorageArgs[1] <<= (embed::ElementModes::READ | embed::ElementModes::NOCREATE);
-            aStorageArgs[2] <<= ::chart::ContainerHelper::ContainerToSequence( aPropertiesForStorage );
+            aStorageArgs[2] <<= comphelper::containerToSequence( aPropertiesForStorage );
             xStorage.set(
                 xStorageFact->createInstanceWithArguments( aStorageArgs ), uno::UNO_QUERY_THROW );
         }
@@ -229,7 +230,7 @@ sal_Bool SAL_CALL XMLFilter::filter(
         if( impl_Export( m_xSourceDoc,
                          aDescriptor ) == 0 )
         {
-            m_xSourceDoc = NULL;
+            m_xSourceDoc = nullptr;
             bResult = true;
         }
     }
@@ -238,7 +239,7 @@ sal_Bool SAL_CALL XMLFilter::filter(
         if( impl_Import( m_xTargetDoc,
                          aDescriptor ) == 0 )
         {
-            m_xTargetDoc = NULL;
+            m_xTargetDoc = nullptr;
             bResult = true;
         }
     }
@@ -363,7 +364,8 @@ sal_Int32 XMLFilter::impl_Import(
 
         // Set base URI and Hierarchical Name
         OUString aHierarchName, aBaseUri;
-        uno::Reference< frame::XModel > xModel( m_xSourceDoc, uno::UNO_QUERY );
+        // why retrieve this from the model when it's availabe as rMediaDescriptor?
+        uno::Reference<frame::XModel> const xModel(m_xTargetDoc, uno::UNO_QUERY);
         if( xModel.is() )
         {
             uno::Sequence< beans::PropertyValue > aModProps = xModel->getArgs();
@@ -381,6 +383,7 @@ sal_Int32 XMLFilter::impl_Import(
             }
         }
 
+        assert(!aBaseUri.isEmpty()); // needed for relative URLs
         if( !aBaseUri.isEmpty() )
             xImportInfo->setPropertyValue( "BaseURI", uno::makeAny( aBaseUri ) );
 

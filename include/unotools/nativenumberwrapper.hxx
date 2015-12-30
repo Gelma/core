@@ -16,10 +16,11 @@
  *   except in compliance with the License. You may obtain a copy of
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
-#include <unotools/unotoolsdllapi.h>
 
 #ifndef INCLUDED_UNOTOOLS_NATIVENUMBERWRAPPER_HXX
 #define INCLUDED_UNOTOOLS_NATIVENUMBERWRAPPER_HXX
+
+#include <unotools/unotoolsdllapi.h>
 #include <com/sun/star/i18n/XNativeNumberSupplier.hpp>
 
 namespace com { namespace sun { namespace star {
@@ -30,13 +31,13 @@ namespace com { namespace sun { namespace star {
 
 class UNOTOOLS_DLLPUBLIC NativeNumberWrapper
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::i18n::XNativeNumberSupplier >   xNNS;
-                                NativeNumberWrapper( const NativeNumberWrapper& ) SAL_DELETED_FUNCTION;
-            NativeNumberWrapper&    operator=( const NativeNumberWrapper& ) SAL_DELETED_FUNCTION;
+    css::uno::Reference< css::i18n::XNativeNumberSupplier >   xNNS;
+                                NativeNumberWrapper( const NativeNumberWrapper& ) = delete;
+            NativeNumberWrapper&    operator=( const NativeNumberWrapper& ) = delete;
 
 public:
                                 NativeNumberWrapper(
-                                    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > & rxContext
+                                    const css::uno::Reference< css::uno::XComponentContext > & rxContext
                                     );
 
                                 ~NativeNumberWrapper();
@@ -45,15 +46,15 @@ public:
 
     OUString getNativeNumberString(
                         const OUString& rNumberString,
-                        const ::com::sun::star::lang::Locale& rLocale,
+                        const css::lang::Locale& rLocale,
                         sal_Int16 nNativeNumberMode ) const;
 
-    ::com::sun::star::i18n::NativeNumberXmlAttributes convertToXmlAttributes(
-                        const ::com::sun::star::lang::Locale& rLocale,
+    css::i18n::NativeNumberXmlAttributes convertToXmlAttributes(
+                        const css::lang::Locale& rLocale,
                         sal_Int16 nNativeNumberMode ) const;
 
     sal_Int16       convertFromXmlAttributes(
-                        const ::com::sun::star::i18n::NativeNumberXmlAttributes& rAttr ) const;
+                        const css::i18n::NativeNumberXmlAttributes& rAttr ) const;
 
 };
 

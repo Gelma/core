@@ -37,35 +37,12 @@ class SwForm;
 // insert marker for index entry
 class SwIdxFormDlg : public SvxStandardDialog
 {
-    void            Apply() SAL_OVERRIDE;
-
-    VclPtr<ListBox>         aEntryLB;
-    VclPtr<OKButton>        aOKBtn;
-    VclPtr<CancelButton>    aCancelBT;
-    VclPtr<FixedText>       aLevelFT;
-    VclPtr<Edit>            aEntryED;
-    VclPtr<PushButton>      aEntryBT;
-    VclPtr<PushButton>      aTabBT;
-    VclPtr<PushButton>      aPageBT;
-    VclPtr<PushButton>      aJumpBT;
-    VclPtr<FixedLine>       aEntryFL;
-    VclPtr<FixedText>       aLevelFT2;
-    VclPtr<ListBox>         aLevelLB;
-    VclPtr<FixedText>       aTemplateFT;
-    VclPtr<ListBox>         aParaLayLB;
-    VclPtr<PushButton>      aStdBT;
-    VclPtr<PushButton>      aAssignBT;
-    VclPtr<FixedLine>       aFormatFL;
-
-    SwWrtShell     &rSh;
-    SwForm         *pForm;
-    sal_uInt16          nAktLevel;
-    bool            bLastLinkIsEnd;
+    void            Apply() override;
 
 public:
     SwIdxFormDlg( vcl::Window* pParent, SwWrtShell &rShell, const SwForm& rForm );
     virtual ~SwIdxFormDlg();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 };
 
 #endif

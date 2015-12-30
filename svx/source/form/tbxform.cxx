@@ -76,7 +76,7 @@ void SvxFmAbsRecWin::FirePosition( bool _bForce )
         aArgs[0].Name = "Position";
         aPositionParam.QueryValue( a );
         aArgs[0].Value = a;
-        m_pController->Dispatch( OUString( ".uno:AbsoluteRecord" ),
+        m_pController->Dispatch( ".uno:AbsoluteRecord",
                                  aArgs );
         m_pController->updateStatus();
 
@@ -123,7 +123,7 @@ void SvxFmTbxCtlAbsRec::StateChanged( sal_uInt16 nSID, SfxItemState eState, cons
 
     if (pState)
     {
-        const SfxInt32Item* pItem = PTR_CAST( SfxInt32Item, pState );
+        const SfxInt32Item* pItem = dynamic_cast< const SfxInt32Item* >( pState );
         DBG_ASSERT( pItem, "SvxFmTbxCtlAbsRec::StateChanged: invalid item!" );
         pWin->SetValue( pItem ? pItem->GetValue() : -1 );
     }
@@ -202,7 +202,7 @@ SFX_IMPL_TOOLBOX_CONTROL( SvxFmTbxCtlRecTotal, SfxStringItem );
 
 SvxFmTbxCtlRecTotal::SvxFmTbxCtlRecTotal( sal_uInt16 nSlotId, sal_uInt16 nId, ToolBox& rTbx )
     :SfxToolBoxControl( nSlotId, nId, rTbx )
-    ,pFixedText( NULL )
+    ,pFixedText( nullptr )
 {
 }
 

@@ -42,8 +42,8 @@ using namespace com::sun::star::beans;
 
 FTPContentProvider::FTPContentProvider( const Reference< XComponentContext >& rxContext)
     : ::ucbhelper::ContentProviderImplHelper(rxContext)
-    , m_ftpLoaderThread(0)
-    , m_pProxyDecider(0)
+    , m_ftpLoaderThread(nullptr)
+    , m_pProxyDecider(nullptr)
 {
 }
 
@@ -91,7 +91,7 @@ css::uno::Sequence< css::uno::Type > SAL_CALL FTPContentProvider::getTypes()
     throw( css::uno::RuntimeException,
            std::exception )
 {
-    static cppu::OTypeCollection* pCollection = NULL;
+    static cppu::OTypeCollection* pCollection = nullptr;
     if ( !pCollection )
     {
         osl::Guard< osl::Mutex > aGuard( osl::Mutex::getGlobalMutex() );
@@ -147,8 +147,7 @@ FTPContentProvider_CreateInstance( const css::uno::Reference<
 
 css::uno::Sequence< OUString > FTPContentProvider::getSupportedServiceNames_Static()
 {
-    css::uno::Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[ 0 ] = FTP_CONTENT_PROVIDER_SERVICE_NAME;
+    css::uno::Sequence<OUString> aSNS { FTP_CONTENT_PROVIDER_SERVICE_NAME };
     return aSNS;
 }
 
@@ -203,7 +202,7 @@ Reference<XContent> SAL_CALL FTPContentProvider::queryContent(
                     this);
 
         if(!m_pProxyDecider->shouldUseProxy(
-            OUString("ftp"),
+            "ftp",
             aURL.host(),
             aURL.port().toInt32()))
         {

@@ -31,8 +31,7 @@
 #include <sfx2/docfilt.hxx>
 
 #include <tools/ref.hxx>
-
-#include <boost/noncopyable.hpp>
+#include <memory>
 
 namespace vcl { class Window; }
 class SfxFilter;
@@ -48,9 +47,9 @@ class SfxRefItem : public SfxPoolItem
 public:
     SfxRefItem( sal_uInt16 nWhichId, const tools::SvRef<SvRefBase>& rValue ) : SfxPoolItem( nWhichId )
     {   maRef = rValue; }
-    virtual SfxPoolItem*     Clone( SfxItemPool* = 0 ) const SAL_OVERRIDE
+    virtual SfxPoolItem*     Clone( SfxItemPool* = nullptr ) const override
     {   return new SfxRefItem( *this ); }
-    virtual bool             operator==( const SfxPoolItem& rL) const SAL_OVERRIDE
+    virtual bool             operator==( const SfxPoolItem& rL) const override
     {   return static_cast<const SfxRefItem&>(rL).maRef == maRef; }
 };
 
@@ -69,7 +68,7 @@ typedef sal_uIntPtr (*SfxDetectFilter)( SfxMedium& rMedium, const SfxFilter **, 
 
 class SFX2_DLLPUBLIC SfxFilterContainer
 {
-    SfxFilterContainer_Impl *pImpl;
+    std::unique_ptr<SfxFilterContainer_Impl> pImpl;
 
 public:
                         SfxFilterContainer( const OUString& rName );
@@ -85,15 +84,15 @@ public:
 
     SAL_DLLPRIVATE static void ReadFilters_Impl( bool bUpdate=false );
     SAL_DLLPRIVATE static void ReadSingleFilter_Impl( const OUString& rName,
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameAccess >& xTypeCFG,
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameAccess >& xFilterCFG,
+                            const css::uno::Reference< css::container::XNameAccess >& xTypeCFG,
+                            const css::uno::Reference< css::container::XNameAccess >& xFilterCFG,
                             bool bUpdate );
     SAL_DLLPRIVATE static const SfxFilter* GetDefaultFilter_Impl( const OUString& );
 };
 
 class SfxFilterMatcher_Impl;
 
-class SFX2_DLLPUBLIC SfxFilterMatcher : private boost::noncopyable
+class SFX2_DLLPUBLIC SfxFilterMatcher
 {
     friend class SfxFilterMatcherIter;
     SfxFilterMatcher_Impl &m_rImpl;
@@ -101,6 +100,8 @@ public:
                         SfxFilterMatcher( const OUString& rFact );
                         SfxFilterMatcher();
                         ~SfxFilterMatcher();
+                        SfxFilterMatcher(const SfxFilterMatcher&) = delete;
+    SfxFilterMatcher&   operator=( const SfxFilterMatcher& ) = delete;
 
     SAL_DLLPRIVATE static bool IsFilterInstalled_Impl( const SfxFilter* pFilter );
     DECL_DLLPRIVATE_LINK_TYPED( MaybeFileHdl_Impl, OUString*, bool );
@@ -116,12 +117,12 @@ public:
     const SfxFilter*    GetFilter4Extension( const OUString& rExt, SfxFilterFlags nMust = SfxFilterFlags::IMPORT, SfxFilterFlags nDont = SFX_FILTER_NOTINSTALLED ) const;
     const SfxFilter*    GetFilter4FilterName( const OUString& rName, SfxFilterFlags nMust = SfxFilterFlags::NONE, SfxFilterFlags nDont = SFX_FILTER_NOTINSTALLED ) const;
     const SfxFilter*    GetFilter4UIName( const OUString& rName, SfxFilterFlags nMust = SfxFilterFlags::NONE, SfxFilterFlags nDont = SFX_FILTER_NOTINSTALLED ) const;
-    const SfxFilter*    GetFilterForProps( const com::sun::star::uno::Sequence < ::com::sun::star::beans::NamedValue >& aSeq, SfxFilterFlags nMust = SfxFilterFlags::NONE, SfxFilterFlags nDont = SFX_FILTER_NOTINSTALLED ) const;
+    const SfxFilter*    GetFilterForProps( const css::uno::Sequence < css::beans::NamedValue >& aSeq, SfxFilterFlags nMust = SfxFilterFlags::NONE, SfxFilterFlags nDont = SFX_FILTER_NOTINSTALLED ) const;
     const SfxFilter*    GetAnyFilter( SfxFilterFlags nMust=SfxFilterFlags::NONE, SfxFilterFlags nDont=SFX_FILTER_NOTINSTALLED ) const;
 };
 
 class SfxFilterContainer_Impl;
-class SFX2_DLLPUBLIC SfxFilterMatcherIter : private boost::noncopyable
+class SFX2_DLLPUBLIC SfxFilterMatcherIter
 
 {
     SfxFilterFlags nOrMask;
@@ -133,6 +134,8 @@ class SFX2_DLLPUBLIC SfxFilterMatcherIter : private boost::noncopyable
 
 public:
     SfxFilterMatcherIter( const SfxFilterMatcher& rMatcher, SfxFilterFlags nMask = SfxFilterFlags::NONE, SfxFilterFlags nNotMask = SFX_FILTER_NOTINSTALLED );
+    SfxFilterMatcherIter(const SfxFilterMatcherIter&) = delete;
+    SfxFilterMatcherIter& operator=( const SfxFilterMatcherIter& ) = delete;
     const SfxFilter* First();
     const SfxFilter* Next();
 };

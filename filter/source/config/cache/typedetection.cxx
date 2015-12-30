@@ -343,7 +343,7 @@ class FindByType : std::unary_function<FlatDetectionInfo, bool>
 {
     OUString maType;
 public:
-    FindByType(const OUString& rType) : maType(rType) {}
+    explicit FindByType(const OUString& rType) : maType(rType) {}
     bool operator() (const FlatDetectionInfo& rInfo) const
     {
         return rInfo.sType == maType;
@@ -1013,7 +1013,7 @@ OUString TypeDetection::impl_askDetectService(const OUString&               sDet
         // third party components here, which can make trouble anyway.  So we
         // should handle errors during creation of such services more
         // gracefully .-)
-        xDetector = css::uno::Reference< css::document::XExtendedFilterDetection >(
+        xDetector.set(
                 xContext->getServiceManager()->createInstanceWithContext(sDetectService, xContext),
                 css::uno::UNO_QUERY_THROW);
     }
@@ -1040,14 +1040,14 @@ OUString TypeDetection::impl_askDetectService(const OUString&               sDet
         sDeepType = xDetector->detect(lDescriptor);
         rDescriptor << lDescriptor;
     }
-    catch(const css::uno::Exception&)
-        {
-            // We should ignore errors here.
-            // Thrown exceptions mostly will end in crash recovery ...
-            // But might be we find another deep detection service which can detect the same
-            // document without a problem .-)
-            sDeepType.clear();
-        }
+    catch (...)
+    {
+        // We should ignore errors here.
+        // Thrown exceptions mostly will end in crash recovery ...
+        // But might be we find another deep detection service which can detect the same
+        // document without a problem .-)
+        sDeepType.clear();
+    }
 
     // seek to 0 is an optional feature to be more robust against
     // "simple implemented detect services" .-)
@@ -1232,8 +1232,7 @@ OUString TypeDetection::impl_getImplementationName()
 
 css::uno::Sequence< OUString > TypeDetection::impl_getSupportedServiceNames()
 {
-    css::uno::Sequence< OUString > lServiceNames(1);
-    lServiceNames[0] = "com.sun.star.document.TypeDetection";
+    css::uno::Sequence< OUString > lServiceNames { "com.sun.star.document.TypeDetection" };
     return lServiceNames;
 }
 

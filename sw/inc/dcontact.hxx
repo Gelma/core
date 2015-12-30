@@ -32,9 +32,9 @@
 class SfxPoolItem;
 class SwFrameFormat;
 class SwFlyFrameFormat;
-class SwFlyFrm;
-class SwFrm;
-class SwPageFrm;
+class SwFlyFrame;
+class SwFrame;
+class SwPageFrame;
 class SwVirtFlyDrawObj;
 class SwFormatAnchor;
 class SwFlyDrawObj;
@@ -54,7 +54,7 @@ inline const SwFrameFormat *FindFrameFormat( const SdrObject *pObj )
 {   return ::FindFrameFormat( const_cast<SdrObject*>(pObj) ); }
 bool HasWrap( const SdrObject* pObj );
 
-void setContextWritingMode( SdrObject* pObj, SwFrm* pAnchor );
+void setContextWritingMode( SdrObject* pObj, SwFrame* pAnchor );
 
 /// @return BoundRect plus distance.
 SwRect GetBoundRectOfAnchoredObj( const SdrObject* pObj );
@@ -102,7 +102,6 @@ protected:
     void SetInDTOR();
 
 public:
-    TYPEINFO_OVERRIDE();
 
     /// For reader. Only the connection is created.
     SwContact( SwFrameFormat *pToRegisterIn );
@@ -192,31 +191,30 @@ private:
     SwFlyDrawObj* mpMasterObj;
 
 protected:
-    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew ) SAL_OVERRIDE;
+    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew ) override;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     /// Creates DrawObject and registers it with the Model.
     SwFlyDrawContact( SwFlyFrameFormat* pToRegisterIn, SdrModel* pMod );
     virtual ~SwFlyDrawContact();
 
-    virtual const SwAnchoredObject* GetAnchoredObj( const SdrObject* _pSdrObj ) const SAL_OVERRIDE;
-    virtual SwAnchoredObject* GetAnchoredObj( SdrObject* _pSdrObj ) SAL_OVERRIDE;
+    virtual const SwAnchoredObject* GetAnchoredObj( const SdrObject* _pSdrObj ) const override;
+    virtual SwAnchoredObject* GetAnchoredObj( SdrObject* _pSdrObj ) override;
 
-    virtual const SdrObject* GetMaster() const SAL_OVERRIDE;
-    virtual SdrObject* GetMaster() SAL_OVERRIDE;
-    virtual void SetMaster( SdrObject* _pNewMaster ) SAL_OVERRIDE;
+    virtual const SdrObject* GetMaster() const override;
+    virtual SdrObject* GetMaster() override;
+    virtual void SetMaster( SdrObject* _pNewMaster ) override;
 
     /** override methods to control Writer fly frames,
      which are linked, and to assure that all objects anchored at/inside the
      Writer fly frame are also made visible/invisible. */
-    virtual void MoveObjToVisibleLayer( SdrObject* _pDrawObj ) SAL_OVERRIDE;
-    virtual void MoveObjToInvisibleLayer( SdrObject* _pDrawObj ) SAL_OVERRIDE;
+    virtual void MoveObjToVisibleLayer( SdrObject* _pDrawObj ) override;
+    virtual void MoveObjToInvisibleLayer( SdrObject* _pDrawObj ) override;
 
     /** get data collection of anchored objects handled by with contact
     */
-    virtual void GetAnchoredObjs( std::list<SwAnchoredObject*>& _roAnchoredObjs ) const SAL_OVERRIDE;
+    virtual void GetAnchoredObjs( std::list<SwAnchoredObject*>& _roAnchoredObjs ) const override;
 };
 
 /** new class for re-direct methods calls at a 'virtual'
@@ -234,30 +232,29 @@ class SwDrawVirtObj : public SdrVirtObj
          inserted into the drawing layer. */
         SwDrawContact&  mrDrawContact;
 
-   protected:
+    protected:
         /** AW: Need own sdr::contact::ViewContact since AnchorPos from parent is
          not used but something own (top left of new SnapRect minus top left
          of original SnapRect) */
-        virtual sdr::contact::ViewContact* CreateObjectSpecificViewContact() SAL_OVERRIDE;
+        virtual sdr::contact::ViewContact* CreateObjectSpecificViewContact() override;
 
-   public:
-        TYPEINFO_OVERRIDE();
+    public:
 
         SwDrawVirtObj( SdrObject&       _rNewObj,
                        SwDrawContact&   _rDrawContact );
         virtual ~SwDrawVirtObj();
 
         /// access to offset
-        virtual const Point GetOffset() const SAL_OVERRIDE;
+        virtual const Point GetOffset() const override;
 
-        virtual SwDrawVirtObj* Clone() const SAL_OVERRIDE;
+        virtual SwDrawVirtObj* Clone() const override;
         SwDrawVirtObj& operator= (const SwDrawVirtObj& rObj);
 
         /// connection to writer layout
         const SwAnchoredObject& GetAnchoredObj() const { return maAnchoredDrawObj; }
         SwAnchoredObject& AnchoredObj() { return maAnchoredDrawObj; }
-        const SwFrm* GetAnchorFrm() const;
-        SwFrm* AnchorFrm();
+        const SwFrame* GetAnchorFrame() const;
+        SwFrame* AnchorFrame();
         void RemoveFromWriterLayout();
 
         /// connection to drawing layer
@@ -268,47 +265,47 @@ class SwDrawVirtObj : public SdrVirtObj
         / to drawing layer. */
         bool IsConnected() const;
 
-        virtual void NbcSetAnchorPos(const Point& rPnt) SAL_OVERRIDE;
+        virtual void NbcSetAnchorPos(const Point& rPnt) override;
 
         /// All overridden methods which need to use the offset
-        virtual void RecalcBoundRect() SAL_OVERRIDE;
-        virtual ::basegfx::B2DPolyPolygon TakeXorPoly() const SAL_OVERRIDE;
-        virtual ::basegfx::B2DPolyPolygon TakeContour() const SAL_OVERRIDE;
-        virtual SdrHdl* GetHdl(sal_uInt32 nHdlNum) const SAL_OVERRIDE;
-        virtual void NbcMove(const Size& rSiz) SAL_OVERRIDE;
-        virtual void NbcResize(const Point& rRef, const Fraction& xFact, const Fraction& yFact) SAL_OVERRIDE;
-        virtual void NbcRotate(const Point& rRef, long nAngle, double sn, double cs) SAL_OVERRIDE;
-        virtual void NbcMirror(const Point& rRef1, const Point& rRef2) SAL_OVERRIDE;
-        virtual void NbcShear(const Point& rRef, long nAngle, double tn, bool bVShear) SAL_OVERRIDE;
-        virtual void Move(const Size& rSiz) SAL_OVERRIDE;
-        virtual void Resize(const Point& rRef, const Fraction& xFact, const Fraction& yFact, bool bUnsetRelative = true) SAL_OVERRIDE;
-        virtual void Rotate(const Point& rRef, long nAngle, double sn, double cs) SAL_OVERRIDE;
-        virtual void Mirror(const Point& rRef1, const Point& rRef2) SAL_OVERRIDE;
-        virtual void Shear(const Point& rRef, long nAngle, double tn, bool bVShear) SAL_OVERRIDE;
-        virtual void RecalcSnapRect() SAL_OVERRIDE;
-        virtual const Rectangle& GetSnapRect() const SAL_OVERRIDE;
-        virtual void SetSnapRect(const Rectangle& rRect) SAL_OVERRIDE;
-        virtual void NbcSetSnapRect(const Rectangle& rRect) SAL_OVERRIDE;
-        virtual const Rectangle& GetLogicRect() const SAL_OVERRIDE;
-        virtual void SetLogicRect(const Rectangle& rRect) SAL_OVERRIDE;
-        virtual void NbcSetLogicRect(const Rectangle& rRect) SAL_OVERRIDE;
-        virtual Point GetSnapPoint(sal_uInt32 i) const SAL_OVERRIDE;
-        virtual Point GetPoint(sal_uInt32 i) const SAL_OVERRIDE;
-        virtual void NbcSetPoint(const Point& rPnt, sal_uInt32 i) SAL_OVERRIDE;
+        virtual void RecalcBoundRect() override;
+        virtual ::basegfx::B2DPolyPolygon TakeXorPoly() const override;
+        virtual ::basegfx::B2DPolyPolygon TakeContour() const override;
+        virtual SdrHdl* GetHdl(sal_uInt32 nHdlNum) const override;
+        virtual void NbcMove(const Size& rSiz) override;
+        virtual void NbcResize(const Point& rRef, const Fraction& xFact, const Fraction& yFact) override;
+        virtual void NbcRotate(const Point& rRef, long nAngle, double sn, double cs) override;
+        virtual void NbcMirror(const Point& rRef1, const Point& rRef2) override;
+        virtual void NbcShear(const Point& rRef, long nAngle, double tn, bool bVShear) override;
+        virtual void Move(const Size& rSiz) override;
+        virtual void Resize(const Point& rRef, const Fraction& xFact, const Fraction& yFact, bool bUnsetRelative = true) override;
+        virtual void Rotate(const Point& rRef, long nAngle, double sn, double cs) override;
+        virtual void Mirror(const Point& rRef1, const Point& rRef2) override;
+        virtual void Shear(const Point& rRef, long nAngle, double tn, bool bVShear) override;
+        virtual void RecalcSnapRect() override;
+        virtual const Rectangle& GetSnapRect() const override;
+        virtual void SetSnapRect(const Rectangle& rRect) override;
+        virtual void NbcSetSnapRect(const Rectangle& rRect) override;
+        virtual const Rectangle& GetLogicRect() const override;
+        virtual void SetLogicRect(const Rectangle& rRect) override;
+        virtual void NbcSetLogicRect(const Rectangle& rRect) override;
+        virtual Point GetSnapPoint(sal_uInt32 i) const override;
+        virtual Point GetPoint(sal_uInt32 i) const override;
+        virtual void NbcSetPoint(const Point& rPnt, sal_uInt32 i) override;
 
-        virtual bool HasTextEdit() const SAL_OVERRIDE;
+        virtual bool HasTextEdit() const override;
 
-        virtual SdrLayerID GetLayer() const SAL_OVERRIDE;
-        virtual void NbcSetLayer(SdrLayerID nLayer) SAL_OVERRIDE;
-        virtual void SetLayer(SdrLayerID nLayer) SAL_OVERRIDE;
+        virtual SdrLayerID GetLayer() const override;
+        virtual void NbcSetLayer(SdrLayerID nLayer) override;
+        virtual void SetLayer(SdrLayerID nLayer) override;
 
         /// FullDrag support
-        virtual bool supportsFullDrag() const SAL_OVERRIDE;
-        virtual SdrObject* getFullDragClone() const SAL_OVERRIDE;
+        virtual bool supportsFullDrag() const override;
+        virtual SdrObject* getFullDragClone() const override;
 
-        virtual void SetBoundRectDirty() SAL_OVERRIDE;
-        virtual const Rectangle& GetCurrentBoundRect() const SAL_OVERRIDE;
-        virtual const Rectangle& GetLastBoundRect() const SAL_OVERRIDE;
+        virtual void SetBoundRectDirty() override;
+        virtual const Rectangle& GetCurrentBoundRect() const override;
+        virtual const Rectangle& GetLastBoundRect() const override;
 };
 
 bool CheckControlLayer( const SdrObject *pObj );
@@ -366,10 +363,10 @@ class SwDrawContact : public SwContact
 
         /** unary function used by <list> iterator to find a 'virtual' drawing
          object anchored at a given frame */
-        struct VirtObjAnchoredAtFrmPred
+        struct VirtObjAnchoredAtFramePred
         {
-            const SwFrm* mpAnchorFrm;
-            VirtObjAnchoredAtFrmPred( const SwFrm& _rAnchorFrm );
+            const SwFrame* mpAnchorFrame;
+            VirtObjAnchoredAtFramePred( const SwFrame& _rAnchorFrame );
             bool operator() ( const SwDrawVirtObj* _pDrawVirtObj );
         };
 
@@ -380,48 +377,47 @@ class SwDrawContact : public SwContact
 
         void _InvalidateObjs( const bool _bUpdateSortedObjsList = false );
 
-        SwDrawContact( const SwDrawContact& ) SAL_DELETED_FUNCTION;
-        SwDrawContact& operator=( const SwDrawContact& ) SAL_DELETED_FUNCTION;
+        SwDrawContact( const SwDrawContact& ) = delete;
+        SwDrawContact& operator=( const SwDrawContact& ) = delete;
 
     protected:
         /// virtuelle Methoden von SwClient
-        virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew ) SAL_OVERRIDE;
+        virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew ) override;
 
     public:
-        TYPEINFO_OVERRIDE();
 
         SwDrawContact( SwFrameFormat *pToRegisterIn, SdrObject *pObj );
         virtual ~SwDrawContact();
 
-        virtual const SwAnchoredObject* GetAnchoredObj( const SdrObject* _pSdrObj ) const SAL_OVERRIDE;
-        virtual SwAnchoredObject* GetAnchoredObj( SdrObject* _pSdrObj ) SAL_OVERRIDE;
+        virtual const SwAnchoredObject* GetAnchoredObj( const SdrObject* _pSdrObj ) const override;
+        virtual SwAnchoredObject* GetAnchoredObj( SdrObject* _pSdrObj ) override;
 
-        virtual const SdrObject* GetMaster() const SAL_OVERRIDE;
-        virtual SdrObject* GetMaster() SAL_OVERRIDE;
-        virtual void SetMaster( SdrObject* _pNewMaster ) SAL_OVERRIDE;
+        virtual const SdrObject* GetMaster() const override;
+        virtual SdrObject* GetMaster() override;
+        virtual void SetMaster( SdrObject* _pNewMaster ) override;
 
-        const SwFrm* GetAnchorFrm( const SdrObject* _pDrawObj = 0L ) const;
-        SwFrm* GetAnchorFrm( SdrObject* _pDrawObj = 0L );
+        const SwFrame* GetAnchorFrame( const SdrObject* _pDrawObj = nullptr ) const;
+        SwFrame* GetAnchorFrame( SdrObject* _pDrawObj = nullptr );
 
-        inline const SwPageFrm* GetPageFrm() const
+        inline const SwPageFrame* GetPageFrame() const
         {
-            return maAnchoredDrawObj.GetPageFrm();
+            return maAnchoredDrawObj.GetPageFrame();
         }
-        inline SwPageFrm* GetPageFrm()
+        inline SwPageFrame* GetPageFrame()
         {
-            return maAnchoredDrawObj.GetPageFrm();
+            return maAnchoredDrawObj.GetPageFrame();
         }
-        void SetPageFrm( SwPageFrm* _pNewPageFrm )
+        void SetPageFrame( SwPageFrame* _pNewPageFrame )
         {
-            return maAnchoredDrawObj.SetPageFrm( _pNewPageFrm );
+            return maAnchoredDrawObj.SetPageFrame( _pNewPageFrame );
         }
         void ChkPage();
-        SwPageFrm* FindPage( const SwRect &rRect );
+        SwPageFrame* FindPage( const SwRect &rRect );
 
-        /** Inserts SdrObject in the arrays of the layout ((SwPageFrm and SwFrm).
+        /** Inserts SdrObject in the arrays of the layout ((SwPageFrame and SwFrame).
          The anchor is determined according to the attribute SwFormatAnchor.
          If required the object gets unregistered with the old anchor. */
-        void ConnectToLayout( const SwFormatAnchor *pAnch = 0 );
+        void ConnectToLayout( const SwFormatAnchor *pAnch = nullptr );
         /** method to insert 'master' drawing object
          into drawing page */
         void InsertMasterIntoDrawPage();
@@ -440,10 +436,10 @@ class SwDrawContact : public SwContact
 
         /** get drawing object ('master' or 'virtual')
          by frame. */
-        SdrObject* GetDrawObjectByAnchorFrm( const SwFrm& _rAnchorFrm );
+        SdrObject* GetDrawObjectByAnchorFrame( const SwFrame& _rAnchorFrame );
 
         /// Virtual methods of SdrObjUserCall.
-        virtual void Changed(const SdrObject& rObj, SdrUserCallType eType, const Rectangle& rOldBoundRect) SAL_OVERRIDE;
+        virtual void Changed(const SdrObject& rObj, SdrUserCallType eType, const Rectangle& rOldBoundRect) override;
 
         /** Used by Changed() and by UndoDraw.
          Notifies paragraphs that have to get out of the way. */
@@ -460,7 +456,7 @@ class SwDrawContact : public SwContact
         */
 
         static void GetTextObjectsFromFormat( std::list<SdrTextObj*>&, SwDoc* );
-        virtual void GetAnchoredObjs( std::list<SwAnchoredObject*>& _roAnchoredObjs ) const SAL_OVERRIDE;
+        virtual void GetAnchoredObjs( std::list<SwAnchoredObject*>& _roAnchoredObjs ) const override;
 };
 
 #endif

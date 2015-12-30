@@ -401,8 +401,7 @@ namespace frm
             {
                 // forward to our aggregate, so the EditEngine knows about it
                 if ( m_xAggregateSet.is() )
-                    m_xAggregateSet->setPropertyValue(
-                        OUString( "WritingMode" ), _rValue );
+                    m_xAggregateSet->setPropertyValue( "WritingMode", _rValue );
             }
             break;
 
@@ -517,7 +516,7 @@ namespace frm
 
     RichTextEngine* ORichTextModel::getEditEngine( const Reference< XControlModel >& _rxModel )
     {
-        RichTextEngine* pEngine = NULL;
+        RichTextEngine* pEngine = nullptr;
 
         Reference< XUnoTunnel > xTunnel( _rxModel, UNO_QUERY );
         OSL_ENSURE( xTunnel.is(), "ORichTextModel::getEditEngine: invalid model!" );
@@ -538,7 +537,7 @@ namespace frm
 
     Sequence< sal_Int8 > ORichTextModel::getEditEngineTunnelId()
     {
-        static ::cppu::OImplementationId * pId = 0;
+        static ::cppu::OImplementationId * pId = nullptr;
         if (! pId)
         {
             ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );

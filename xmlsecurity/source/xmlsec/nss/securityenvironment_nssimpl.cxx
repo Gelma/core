@@ -67,7 +67,7 @@ struct UsageDescription
 
     UsageDescription()
     : usage( certificateUsageCheckAllUsages )
-    , description( NULL )
+    , description( nullptr )
     {}
 
     UsageDescription( SECCertificateUsage i_usage, char const* i_description )
@@ -82,7 +82,7 @@ char* GetPasswordFunction( PK11SlotInfo* pSlot, PRBool bRetry, void* /*arg*/ )
 {
     uno::Reference< uno::XComponentContext > xContext( ::comphelper::getProcessComponentContext() );
     uno::Reference < task::XInteractionHandler2 > xInteractionHandler(
-        task::InteractionHandler::createWithParent(xContext, 0) );
+        task::InteractionHandler::createWithParent(xContext, nullptr) );
 
     task::PasswordRequestMode eMode = bRetry ? task::PasswordRequestMode_PASSWORD_REENTER : task::PasswordRequestMode_PASSWORD_ENTER;
     ::comphelper::DocPasswordRequest* pPasswordRequest = new ::comphelper::DocPasswordRequest(
@@ -102,18 +102,18 @@ char* GetPasswordFunction( PK11SlotInfo* pSlot, PRBool bRetry, void* /*arg*/ )
         memcpy( pPassword, aPassword.getStr(), nLen );
         return pPassword;
     }
-    return NULL;
+    return nullptr;
 }
 
-SecurityEnvironment_NssImpl :: SecurityEnvironment_NssImpl() :
-m_pHandler( NULL ) , m_tSymKeyList() , m_tPubKeyList() , m_tPriKeyList() {
+SecurityEnvironment_NssImpl::SecurityEnvironment_NssImpl() :
+m_pHandler( nullptr ) , m_tSymKeyList() , m_tPubKeyList() , m_tPriKeyList() {
 
     PK11_SetPasswordFunc( GetPasswordFunction ) ;
 }
 
-SecurityEnvironment_NssImpl :: ~SecurityEnvironment_NssImpl() {
+SecurityEnvironment_NssImpl::~SecurityEnvironment_NssImpl() {
 
-    PK11_SetPasswordFunc( NULL ) ;
+    PK11_SetPasswordFunc( nullptr ) ;
 
     for (CIT_SLOTS i = m_Slots.begin(); i != m_Slots.end(); i++)
     {
@@ -143,12 +143,12 @@ SecurityEnvironment_NssImpl :: ~SecurityEnvironment_NssImpl() {
 }
 
 /* XServiceInfo */
-OUString SAL_CALL SecurityEnvironment_NssImpl :: getImplementationName() throw( RuntimeException, std::exception ) {
+OUString SAL_CALL SecurityEnvironment_NssImpl::getImplementationName() throw( RuntimeException, std::exception ) {
     return impl_getImplementationName() ;
 }
 
 /* XServiceInfo */
-sal_Bool SAL_CALL SecurityEnvironment_NssImpl :: supportsService( const OUString& serviceName) throw( RuntimeException, std::exception ) {
+sal_Bool SAL_CALL SecurityEnvironment_NssImpl::supportsService( const OUString& serviceName) throw( RuntimeException, std::exception ) {
     Sequence< OUString > seqServiceNames = getSupportedServiceNames() ;
     const OUString* pArray = seqServiceNames.getConstArray() ;
     for( sal_Int32 i = 0 ; i < seqServiceNames.getLength() ; i ++ ) {
@@ -159,33 +159,32 @@ sal_Bool SAL_CALL SecurityEnvironment_NssImpl :: supportsService( const OUString
 }
 
 /* XServiceInfo */
-Sequence< OUString > SAL_CALL SecurityEnvironment_NssImpl :: getSupportedServiceNames() throw( RuntimeException, std::exception ) {
+Sequence< OUString > SAL_CALL SecurityEnvironment_NssImpl::getSupportedServiceNames() throw( RuntimeException, std::exception ) {
     return impl_getSupportedServiceNames() ;
 }
 
 //Helper for XServiceInfo
-Sequence< OUString > SecurityEnvironment_NssImpl :: impl_getSupportedServiceNames() {
+Sequence< OUString > SecurityEnvironment_NssImpl::impl_getSupportedServiceNames() {
     ::osl::Guard< ::osl::Mutex > aGuard( ::osl::Mutex::getGlobalMutex() ) ;
-    Sequence< OUString > seqServiceNames( 1 ) ;
-    seqServiceNames[0] = "com.sun.star.xml.crypto.SecurityEnvironment";
+    Sequence<OUString> seqServiceNames { "com.sun.star.xml.crypto.SecurityEnvironment" };
     return seqServiceNames ;
 }
 
-OUString SecurityEnvironment_NssImpl :: impl_getImplementationName() throw( RuntimeException ) {
+OUString SecurityEnvironment_NssImpl::impl_getImplementationName() throw( RuntimeException ) {
     return OUString("com.sun.star.xml.security.bridge.xmlsec.SecurityEnvironment_NssImpl") ;
 }
 
 //Helper for registry
-Reference< XInterface > SAL_CALL SecurityEnvironment_NssImpl :: impl_createInstance( const Reference< XMultiServiceFactory >& ) throw( RuntimeException ) {
+Reference< XInterface > SAL_CALL SecurityEnvironment_NssImpl::impl_createInstance( const Reference< XMultiServiceFactory >& ) throw( RuntimeException ) {
     return Reference< XInterface >( *new SecurityEnvironment_NssImpl ) ;
 }
 
-Reference< XSingleServiceFactory > SecurityEnvironment_NssImpl :: impl_createFactory( const Reference< XMultiServiceFactory >& aServiceManager ) {
+Reference< XSingleServiceFactory > SecurityEnvironment_NssImpl::impl_createFactory( const Reference< XMultiServiceFactory >& aServiceManager ) {
     return ::cppu::createSingleFactory( aServiceManager , impl_getImplementationName() , impl_createInstance , impl_getSupportedServiceNames() ) ;
 }
 
 /* XUnoTunnel */
-sal_Int64 SAL_CALL SecurityEnvironment_NssImpl :: getSomething( const Sequence< sal_Int8 >& aIdentifier )
+sal_Int64 SAL_CALL SecurityEnvironment_NssImpl::getSomething( const Sequence< sal_Int8 >& aIdentifier )
     throw( RuntimeException, std::exception )
 {
     if( aIdentifier.getLength() == 16 && 0 == memcmp( getUnoTunnelId().getConstArray(), aIdentifier.getConstArray(), 16 ) ) {
@@ -201,7 +200,7 @@ namespace
     class theSecurityEnvironment_NssImplUnoTunnelId  : public rtl::Static< UnoTunnelIdInit, theSecurityEnvironment_NssImplUnoTunnelId > {};
 }
 
-const Sequence< sal_Int8>& SecurityEnvironment_NssImpl :: getUnoTunnelId() {
+const Sequence< sal_Int8>& SecurityEnvironment_NssImpl::getUnoTunnelId() {
     return theSecurityEnvironment_NssImplUnoTunnelId::get().getSeq();
 }
 
@@ -222,19 +221,19 @@ void SecurityEnvironment_NssImpl::addCryptoSlot( PK11SlotInfo* aSlot) throw( Exc
     m_Slots.push_back(aSlot);
 }
 
-CERTCertDBHandle* SecurityEnvironment_NssImpl :: getCertDb() throw( Exception , RuntimeException ) {
+CERTCertDBHandle* SecurityEnvironment_NssImpl::getCertDb() throw( Exception , RuntimeException ) {
     return m_pHandler ;
 }
 
 //Could we have multiple cert dbs?
-void SecurityEnvironment_NssImpl :: setCertDb( CERTCertDBHandle* aCertDb ) throw( Exception , RuntimeException ) {
+void SecurityEnvironment_NssImpl::setCertDb( CERTCertDBHandle* aCertDb ) throw( Exception , RuntimeException ) {
     m_pHandler = aCertDb ;
 }
 
-void SecurityEnvironment_NssImpl :: adoptSymKey( PK11SymKey* aSymKey ) throw( Exception , RuntimeException ) {
+void SecurityEnvironment_NssImpl::adoptSymKey( PK11SymKey* aSymKey ) throw( Exception , RuntimeException ) {
     std::list< PK11SymKey* >::iterator keyIt ;
 
-    if( aSymKey != NULL ) {
+    if( aSymKey != nullptr ) {
         //First try to find the key in the list
         for( keyIt = m_tSymKeyList.begin() ; keyIt != m_tSymKeyList.end() ; ++keyIt ) {
             if( *keyIt == aSymKey )
@@ -243,7 +242,7 @@ void SecurityEnvironment_NssImpl :: adoptSymKey( PK11SymKey* aSymKey ) throw( Ex
 
         //If we do not find the key in the list, add a new node
         PK11SymKey* symkey = PK11_ReferenceSymKey( aSymKey ) ;
-        if( symkey == NULL )
+        if( symkey == nullptr )
             throw RuntimeException() ;
 
         try {
@@ -254,12 +253,12 @@ void SecurityEnvironment_NssImpl :: adoptSymKey( PK11SymKey* aSymKey ) throw( Ex
     }
 }
 
-PK11SymKey* SecurityEnvironment_NssImpl :: getSymKey( unsigned int position ) throw( Exception , RuntimeException ) {
+PK11SymKey* SecurityEnvironment_NssImpl::getSymKey( unsigned int position ) throw( Exception , RuntimeException ) {
     PK11SymKey* symkey ;
     std::list< PK11SymKey* >::iterator keyIt ;
     unsigned int pos ;
 
-    symkey = NULL ;
+    symkey = nullptr ;
     for( pos = 0, keyIt = m_tSymKeyList.begin() ; pos < position && keyIt != m_tSymKeyList.end() ; pos ++ , ++keyIt ) ;
 
     if( pos == position && keyIt != m_tSymKeyList.end() )
@@ -268,12 +267,12 @@ PK11SymKey* SecurityEnvironment_NssImpl :: getSymKey( unsigned int position ) th
     return symkey ;
 }
 
-SECKEYPublicKey* SecurityEnvironment_NssImpl :: getPubKey( unsigned int position ) throw( Exception , RuntimeException ) {
+SECKEYPublicKey* SecurityEnvironment_NssImpl::getPubKey( unsigned int position ) throw( Exception , RuntimeException ) {
     SECKEYPublicKey* pubkey ;
     std::list< SECKEYPublicKey* >::iterator keyIt ;
     unsigned int pos ;
 
-    pubkey = NULL ;
+    pubkey = nullptr ;
     for( pos = 0, keyIt = m_tPubKeyList.begin() ; pos < position && keyIt != m_tPubKeyList.end() ; pos ++ , ++keyIt ) ;
 
     if( pos == position && keyIt != m_tPubKeyList.end() )
@@ -282,12 +281,12 @@ SECKEYPublicKey* SecurityEnvironment_NssImpl :: getPubKey( unsigned int position
     return pubkey ;
 }
 
-SECKEYPrivateKey* SecurityEnvironment_NssImpl :: getPriKey( unsigned int position ) throw( ::com::sun::star::uno::Exception , ::com::sun::star::uno::RuntimeException )  {
+SECKEYPrivateKey* SecurityEnvironment_NssImpl::getPriKey( unsigned int position ) throw( ::com::sun::star::uno::Exception , ::com::sun::star::uno::RuntimeException )  {
     SECKEYPrivateKey* prikey ;
     std::list< SECKEYPrivateKey* >::iterator keyIt ;
     unsigned int pos ;
 
-    prikey = NULL ;
+    prikey = nullptr ;
     for( pos = 0, keyIt = m_tPriKeyList.begin() ; pos < position && keyIt != m_tPriKeyList.end() ; pos ++ , ++keyIt ) ;
 
     if( pos == position && keyIt != m_tPriKeyList.end() )
@@ -304,14 +303,14 @@ void SecurityEnvironment_NssImpl::updateSlots()
     m_Slots.clear();
     m_tSymKeyList.clear();
 
-    PK11SlotList * soltList = PK11_GetAllTokens( CKM_INVALID_MECHANISM, PR_FALSE, PR_FALSE, NULL ) ;
-    if( soltList != NULL )
+    PK11SlotList * soltList = PK11_GetAllTokens( CKM_INVALID_MECHANISM, PR_FALSE, PR_FALSE, nullptr ) ;
+    if( soltList != nullptr )
     {
-        for (PK11SlotListElement* soltEle = soltList->head ; soltEle != NULL; soltEle = soltEle->next)
+        for (PK11SlotListElement* soltEle = soltList->head ; soltEle != nullptr; soltEle = soltEle->next)
         {
             PK11SlotInfo * pSlot = soltEle->slot ;
 
-            if(pSlot != NULL)
+            if(pSlot != nullptr)
             {
                 SAL_INFO(
                     "xmlsecurity.xmlsec",
@@ -328,7 +327,7 @@ void SecurityEnvironment_NssImpl::updateSlots()
 //              By doing this, the encryption may fail if a smart card is being used which does not
 //              support this key generation.
 //
-                PK11SymKey * pSymKey = PK11_KeyGen( pSlot , CKM_DES3_CBC, NULL, 128, NULL ) ;
+                PK11SymKey * pSymKey = PK11_KeyGen( pSlot , CKM_DES3_CBC, nullptr, 128, nullptr ) ;
 //              if( pSymKey == NULL )
 //              {
 //                  PK11_FreeSlot( pSlot ) ;
@@ -337,13 +336,13 @@ void SecurityEnvironment_NssImpl::updateSlots()
 //              }
                 addCryptoSlot(pSlot);
                 PK11_FreeSlot( pSlot ) ;
-                pSlot = NULL;
+                pSlot = nullptr;
 
-                if (pSymKey != NULL)
+                if (pSymKey != nullptr)
                 {
                     adoptSymKey( pSymKey ) ;
                     PK11_FreeSymKey( pSymKey ) ;
-                    pSymKey = NULL;
+                    pSymKey = nullptr;
                 }
 
             }// end of if(pSlot != NULL)
@@ -366,7 +365,7 @@ SecurityEnvironment_NssImpl::getPersonalCertificates() throw( SecurityException 
         SECKEYPrivateKeyList* priKeyList ;
 
         if( PK11_NeedLogin(slot ) ) {
-            SECStatus nRet = PK11_Authenticate(slot, PR_TRUE, NULL);
+            SECStatus nRet = PK11_Authenticate(slot, PR_TRUE, nullptr);
             //PK11_Authenticate may fail in case the a slot has not been initialized.
             //this is the case if the user has a new profile, so that they have never
             //added a personal certificate.
@@ -376,14 +375,14 @@ SecurityEnvironment_NssImpl::getPersonalCertificates() throw( SecurityException 
         }
 
         priKeyList = PK11_ListPrivateKeysInSlot(slot) ;
-        if( priKeyList != NULL )
+        if( priKeyList != nullptr )
         {
             for (SECKEYPrivateKeyListNode* curPri = PRIVKEY_LIST_HEAD(priKeyList);
-                !PRIVKEY_LIST_END( curPri, priKeyList ) && curPri != NULL;
+                !PRIVKEY_LIST_END( curPri, priKeyList ) && curPri != nullptr;
                 curPri = PRIVKEY_LIST_NEXT(curPri))
             {
                 xcert = NssPrivKeyToXCert( curPri->key ) ;
-                if( xcert != NULL )
+                if( xcert != nullptr )
                     certsList.push_back( xcert ) ;
             }
             SECKEY_DestroyPrivateKeyList( priKeyList ) ;
@@ -398,7 +397,7 @@ SecurityEnvironment_NssImpl::getPersonalCertificates() throw( SecurityException 
 
         for( priKeyIt = m_tPriKeyList.begin() ; priKeyIt != m_tPriKeyList.end() ; ++priKeyIt ) {
             xcert = NssPrivKeyToXCert( *priKeyIt ) ;
-            if( xcert != NULL )
+            if( xcert != nullptr )
                 certsList.push_back( xcert ) ;
         }
     }
@@ -419,11 +418,11 @@ SecurityEnvironment_NssImpl::getPersonalCertificates() throw( SecurityException 
     return Sequence< Reference < XCertificate > > ();
 }
 
-Reference< XCertificate > SecurityEnvironment_NssImpl :: getCertificate( const OUString& issuerName, const Sequence< sal_Int8 >& serialNumber ) throw( SecurityException , RuntimeException, std::exception )
+Reference< XCertificate > SecurityEnvironment_NssImpl::getCertificate( const OUString& issuerName, const Sequence< sal_Int8 >& serialNumber ) throw( SecurityException , RuntimeException, std::exception )
 {
-    X509Certificate_NssImpl* xcert = NULL;
+    X509Certificate_NssImpl* xcert = nullptr;
 
-    if( m_pHandler != NULL ) {
+    if( m_pHandler != nullptr ) {
         CERTIssuerAndSN issuerAndSN ;
         CERTCertificate* cert ;
         CERTName* nmIssuer ;
@@ -432,21 +431,21 @@ Reference< XCertificate > SecurityEnvironment_NssImpl :: getCertificate( const O
         PRArenaPool* arena ;
 
         arena = PORT_NewArena( DER_DEFAULT_CHUNKSIZE ) ;
-        if( arena == NULL )
+        if( arena == nullptr )
             throw RuntimeException() ;
 
         // Create cert info from issue and serial
         OString ostr = OUStringToOString( issuerName , RTL_TEXTENCODING_UTF8 ) ;
         chIssuer = PL_strndup( ostr.getStr(), ( int )ostr.getLength() ) ;
         nmIssuer = CERT_AsciiToName( chIssuer ) ;
-        if( nmIssuer == NULL ) {
+        if( nmIssuer == nullptr ) {
             PL_strfree( chIssuer ) ;
             PORT_FreeArena( arena, PR_FALSE ) ;
-            return NULL; // no need for exception cf. i40394
+            return nullptr; // no need for exception cf. i40394
         }
 
-        derIssuer = SEC_ASN1EncodeItem( arena, NULL, static_cast<void*>(nmIssuer), SEC_ASN1_GET( CERT_NameTemplate ) ) ;
-        if( derIssuer == NULL ) {
+        derIssuer = SEC_ASN1EncodeItem( arena, nullptr, static_cast<void*>(nmIssuer), SEC_ASN1_GET( CERT_NameTemplate ) ) ;
+        if( derIssuer == nullptr ) {
             PL_strfree( chIssuer ) ;
             CERT_DestroyName( nmIssuer ) ;
             PORT_FreeArena( arena, PR_FALSE ) ;
@@ -462,10 +461,10 @@ Reference< XCertificate > SecurityEnvironment_NssImpl :: getCertificate( const O
         issuerAndSN.serialNumber.len = serialNumber.getLength() ;
 
         cert = CERT_FindCertByIssuerAndSN( m_pHandler, &issuerAndSN ) ;
-        if( cert != NULL ) {
+        if( cert != nullptr ) {
             xcert = NssCertToXCert( cert ) ;
         } else {
-            xcert = NULL ;
+            xcert = nullptr ;
         }
 
         PL_strfree( chIssuer ) ;
@@ -474,13 +473,13 @@ Reference< XCertificate > SecurityEnvironment_NssImpl :: getCertificate( const O
         CERT_DestroyCertificate( cert ) ;
         PORT_FreeArena( arena, PR_FALSE ) ;
     } else {
-        xcert = NULL ;
+        xcert = nullptr ;
     }
 
     return xcert ;
 }
 
-Sequence< Reference < XCertificate > > SecurityEnvironment_NssImpl :: buildCertificatePath( const Reference< XCertificate >& begin ) throw( SecurityException , RuntimeException, std::exception ) {
+Sequence< Reference < XCertificate > > SecurityEnvironment_NssImpl::buildCertificatePath( const Reference< XCertificate >& begin ) throw( SecurityException , RuntimeException, std::exception ) {
     const X509Certificate_NssImpl* xcert ;
     const CERTCertificate* cert ;
     CERTCertList* certChain ;
@@ -492,12 +491,12 @@ Sequence< Reference < XCertificate > > SecurityEnvironment_NssImpl :: buildCerti
 
     xcert = reinterpret_cast<X509Certificate_NssImpl*>(
         sal::static_int_cast<sal_uIntPtr>(xCertTunnel->getSomething( X509Certificate_NssImpl::getUnoTunnelId() ))) ;
-    if( xcert == NULL ) {
+    if( xcert == nullptr ) {
         throw RuntimeException() ;
     }
 
     cert = xcert->getNssCert() ;
-    if( cert != NULL ) {
+    if( cert != nullptr ) {
         int64 timeboundary ;
 
         //Get the system clock time
@@ -505,10 +504,10 @@ Sequence< Reference < XCertificate > > SecurityEnvironment_NssImpl :: buildCerti
 
         certChain = CERT_GetCertChainFromCert( const_cast<CERTCertificate*>(cert), timeboundary, certUsageAnyCA ) ;
     } else {
-        certChain = NULL ;
+        certChain = nullptr ;
     }
 
-    if( certChain != NULL ) {
+    if( certChain != nullptr ) {
         X509Certificate_NssImpl* pCert ;
         CERTCertListNode* node ;
         int len ;
@@ -518,7 +517,7 @@ Sequence< Reference < XCertificate > > SecurityEnvironment_NssImpl :: buildCerti
 
         for( len = 0, node = CERT_LIST_HEAD( certChain ); !CERT_LIST_END( node, certChain ); node = CERT_LIST_NEXT( node ), len ++ ) {
             pCert = new X509Certificate_NssImpl() ;
-            if( pCert == NULL ) {
+            if( pCert == nullptr ) {
                 CERT_DestroyCertList( certChain ) ;
                 throw RuntimeException() ;
             }
@@ -536,23 +535,23 @@ Sequence< Reference < XCertificate > > SecurityEnvironment_NssImpl :: buildCerti
     return Sequence< Reference < XCertificate > >();
 }
 
-Reference< XCertificate > SecurityEnvironment_NssImpl :: createCertificateFromRaw( const Sequence< sal_Int8 >& rawCertificate ) throw( SecurityException , RuntimeException, std::exception ) {
+Reference< XCertificate > SecurityEnvironment_NssImpl::createCertificateFromRaw( const Sequence< sal_Int8 >& rawCertificate ) throw( SecurityException , RuntimeException, std::exception ) {
     X509Certificate_NssImpl* xcert ;
 
     if( rawCertificate.getLength() > 0 ) {
         xcert = new X509Certificate_NssImpl() ;
-        if( xcert == NULL )
+        if( xcert == nullptr )
             throw RuntimeException() ;
 
         xcert->setRawCert( rawCertificate ) ;
     } else {
-        xcert = NULL ;
+        xcert = nullptr ;
     }
 
     return xcert ;
 }
 
-Reference< XCertificate > SecurityEnvironment_NssImpl :: createCertificateFromAscii( const OUString& asciiCertificate ) throw( SecurityException , RuntimeException, std::exception )
+Reference< XCertificate > SecurityEnvironment_NssImpl::createCertificateFromAscii( const OUString& asciiCertificate ) throw( SecurityException , RuntimeException, std::exception )
 {
     OString oscert = OUStringToOString( asciiCertificate , RTL_TEXTENCODING_ASCII_US ) ;
     xmlChar* chCert = xmlStrndup( reinterpret_cast<const xmlChar*>(oscert.getStr()), ( int )oscert.getLength() ) ;
@@ -569,7 +568,7 @@ Reference< XCertificate > SecurityEnvironment_NssImpl :: createCertificateFromAs
     }
     else
     {
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -591,7 +590,7 @@ verifyCertificate( const Reference< csss::XCertificate >& aCert,
 
     xcert = reinterpret_cast<X509Certificate_NssImpl*>(
        sal::static_int_cast<sal_uIntPtr>(xCertTunnel->getSomething( X509Certificate_NssImpl::getUnoTunnelId() ))) ;
-    if( xcert == NULL ) {
+    if( xcert == nullptr ) {
         throw RuntimeException() ;
     }
 
@@ -599,9 +598,9 @@ verifyCertificate( const Reference< csss::XCertificate >& aCert,
     //internally use CERT_GetDefaultCertDB
     //Make sure m_pHandler is the default DB
     OSL_ASSERT(m_pHandler == CERT_GetDefaultCertDB());
-    CERTCertDBHandle * certDb = m_pHandler != NULL ? m_pHandler : CERT_GetDefaultCertDB();
+    CERTCertDBHandle * certDb = m_pHandler != nullptr ? m_pHandler : CERT_GetDefaultCertDB();
     cert = xcert->getNssCert() ;
-    if( cert != NULL )
+    if( cert != nullptr )
     {
 
         //prepare the intermediate certificates
@@ -614,7 +613,7 @@ verifyCertificate( const Reference< csss::XCertificate >& aCert,
             item.len = der.getLength();
 
             CERTCertificate* certTmp = CERT_NewTempCertificate(certDb, &item,
-                                           NULL     /* nickname */,
+                                           nullptr     /* nickname */,
                                            PR_FALSE /* isPerm */,
                                            PR_TRUE  /* copyDER */);
              if (!certTmp)
@@ -635,7 +634,7 @@ verifyCertificate( const Reference< csss::XCertificate >& aCert,
 
         CERTVerifyLog log;
         log.arena = PORT_NewArena(512);
-        log.head = log.tail = NULL;
+        log.head = log.tail = nullptr;
         log.count = 0;
 
         CERT_EnableOCSPChecking(certDb);
@@ -675,7 +674,7 @@ verifyCertificate( const Reference< csss::XCertificate >& aCert,
             CERT_REV_M_TEST_USING_THIS_METHOD
             | CERT_REV_M_IGNORE_IMPLICIT_DEFAULT_SOURCE;
         rev.leafTests.number_of_preferred_methods = 0;
-        rev.leafTests.preferred_methods = NULL;
+        rev.leafTests.preferred_methods = nullptr;
         rev.leafTests.cert_rev_method_independent_flags =
             CERT_REV_MI_TEST_ALL_LOCAL_INFORMATION_FIRST;
 
@@ -688,7 +687,7 @@ verifyCertificate( const Reference< csss::XCertificate >& aCert,
             CERT_REV_M_TEST_USING_THIS_METHOD
             | CERT_REV_M_IGNORE_IMPLICIT_DEFAULT_SOURCE;
         rev.chainTests.number_of_preferred_methods = 0;
-        rev.chainTests.preferred_methods = NULL;
+        rev.chainTests.preferred_methods = nullptr;
         rev.chainTests.cert_rev_method_independent_flags =
             CERT_REV_MI_TEST_ALL_LOCAL_INFORMATION_FIRST;
 
@@ -703,7 +702,7 @@ verifyCertificate( const Reference< csss::XCertificate >& aCert,
         cvin[ncvinCount].type = cert_pi_end;
 
         cvout[0].type = cert_po_trustAnchor;
-        cvout[0].value.pointer.cert = NULL;
+        cvout[0].value.pointer.cert = nullptr;
         cvout[1].type = cert_po_errorLog;
         cvout[1].value.pointer.log = &log;
         cvout[2].type = cert_po_end;
@@ -738,7 +737,7 @@ verifyCertificate( const Reference< csss::XCertificate >& aCert,
                      " (0x" << std::hex << (int) arUsages[i].usage << ")" << std::dec);
 
             status = CERT_PKIXVerifyCert(const_cast<CERTCertificate *>(cert), arUsages[i].usage,
-                                         cvin, cvout, NULL);
+                                         cvin, cvout, nullptr);
             if( status == SECSuccess )
             {
                 SAL_INFO("xmlsecurity.xmlsec", "CERT_PKIXVerifyCert returned SECSuccess.");
@@ -770,14 +769,14 @@ verifyCertificate( const Reference< csss::XCertificate >& aCert,
                 /* Display validation results */
                 if ( log.count > 0)
                 {
-                    CERTVerifyLogNode *node = NULL;
+                    CERTVerifyLogNode *node = nullptr;
                     printChainFailure(&log);
 
                     for (node = log.head; node; node = node->next) {
                         if (node->cert)
                             CERT_DestroyCertificate(node->cert);
                     }
-                    log.head = log.tail = NULL;
+                    log.head = log.tail = nullptr;
                     log.count = 0;
                 }
                 SAL_INFO("xmlsecurity.xmlsec", "Certificate is invalid.");
@@ -813,7 +812,7 @@ sal_Int32 SecurityEnvironment_NssImpl::getCertificateCharacters(
 
     xcert = reinterpret_cast<X509Certificate_NssImpl*>(
         sal::static_int_cast<sal_uIntPtr>(xCertTunnel->getSomething( X509Certificate_NssImpl::getUnoTunnelId() ))) ;
-    if( xcert == NULL ) {
+    if( xcert == nullptr ) {
         throw RuntimeException() ;
     }
 
@@ -835,22 +834,22 @@ sal_Int32 SecurityEnvironment_NssImpl::getCertificateCharacters(
      *
      * mmi : need to check whether the cert's slot is valid first
      */
-    SECKEYPrivateKey* priKey = NULL;
+    SECKEYPrivateKey* priKey = nullptr;
 
-    if (cert->slot != NULL)
+    if (cert->slot != nullptr)
     {
-        priKey = PK11_FindPrivateKeyFromCert( cert->slot, const_cast<CERTCertificate*>(cert), NULL ) ;
+        priKey = PK11_FindPrivateKeyFromCert( cert->slot, const_cast<CERTCertificate*>(cert), nullptr ) ;
     }
-    if(priKey == NULL)
+    if(priKey == nullptr)
     {
         for (CIT_SLOTS is = m_Slots.begin(); is != m_Slots.end(); is++)
         {
-            priKey = PK11_FindPrivateKeyFromCert(*is, const_cast<CERTCertificate*>(cert), NULL);
+            priKey = PK11_FindPrivateKeyFromCert(*is, const_cast<CERTCertificate*>(cert), nullptr);
             if (priKey)
                 break;
         }
     }
-    if( priKey != NULL ) {
+    if( priKey != nullptr ) {
         characters |=  ::com::sun::star::security::CertificateCharacters::HAS_PRIVATE_KEY ;
 
         SECKEY_DestroyPrivateKey( priKey ) ;
@@ -865,15 +864,15 @@ X509Certificate_NssImpl* NssCertToXCert( CERTCertificate* cert )
 {
     X509Certificate_NssImpl* xcert ;
 
-    if( cert != NULL ) {
+    if( cert != nullptr ) {
         xcert = new X509Certificate_NssImpl() ;
-        if( xcert == NULL ) {
-            xcert = NULL ;
+        if( xcert == nullptr ) {
+            xcert = nullptr ;
         } else {
             xcert->setCert( cert ) ;
         }
     } else {
-        xcert = NULL ;
+        xcert = nullptr ;
     }
 
     return xcert ;
@@ -883,18 +882,18 @@ X509Certificate_NssImpl* NssPrivKeyToXCert( SECKEYPrivateKey* priKey )
 {
     X509Certificate_NssImpl* xcert ;
 
-    if( priKey != NULL ) {
+    if( priKey != nullptr ) {
         CERTCertificate* cert = PK11_GetCertFromPrivateKey( priKey ) ;
 
-        if( cert != NULL ) {
+        if( cert != nullptr ) {
             xcert = NssCertToXCert( cert ) ;
         } else {
-            xcert = NULL ;
+            xcert = nullptr ;
         }
 
         CERT_DestroyCertificate( cert ) ;
     } else {
-        xcert = NULL ;
+        xcert = nullptr ;
     }
 
     return xcert ;
@@ -905,11 +904,11 @@ X509Certificate_NssImpl* NssPrivKeyToXCert( SECKEYPrivateKey* priKey )
 xmlSecKeysMngrPtr SecurityEnvironment_NssImpl::createKeysManager() throw( Exception, RuntimeException ) {
 
     unsigned int i ;
-    CERTCertDBHandle* handler = NULL ;
-    PK11SymKey* symKey = NULL ;
-    SECKEYPublicKey* pubKey = NULL ;
-    SECKEYPrivateKey* priKey = NULL ;
-    xmlSecKeysMngrPtr pKeysMngr = NULL ;
+    CERTCertDBHandle* handler = nullptr ;
+    PK11SymKey* symKey = nullptr ;
+    SECKEYPublicKey* pubKey = nullptr ;
+    SECKEYPrivateKey* priKey = nullptr ;
+    xmlSecKeysMngrPtr pKeysMngr = nullptr ;
 
     handler = this->getCertDb() ;
 
@@ -925,13 +924,13 @@ xmlSecKeysMngrPtr SecurityEnvironment_NssImpl::createKeysManager() throw( Except
         slots[count] = *islots;
 
     pKeysMngr = xmlSecNssAppliedKeysMngrCreate(slots, cSlots, handler ) ;
-    if( pKeysMngr == NULL )
+    if( pKeysMngr == nullptr )
         throw RuntimeException() ;
 
     /*-
      * Adopt symmetric key into keys manager
      */
-    for( i = 0 ; ( symKey = this->getSymKey( i ) ) != NULL ; i ++ ) {
+    for( i = 0 ; ( symKey = this->getSymKey( i ) ) != nullptr ; i ++ ) {
         if( xmlSecNssAppliedKeysMngrSymKeyLoad( pKeysMngr, symKey ) < 0 ) {
             throw RuntimeException() ;
         }
@@ -940,7 +939,7 @@ xmlSecKeysMngrPtr SecurityEnvironment_NssImpl::createKeysManager() throw( Except
     /*-
      * Adopt asymmetric public key into keys manager
      */
-    for( i = 0 ; ( pubKey = this->getPubKey( i ) ) != NULL ; i ++ ) {
+    for( i = 0 ; ( pubKey = this->getPubKey( i ) ) != nullptr ; i ++ ) {
         if( xmlSecNssAppliedKeysMngrPubKeyLoad( pKeysMngr, pubKey ) < 0 ) {
             throw RuntimeException() ;
         }
@@ -949,7 +948,7 @@ xmlSecKeysMngrPtr SecurityEnvironment_NssImpl::createKeysManager() throw( Except
     /*-
      * Adopt asymmetric private key into keys manager
      */
-    for( i = 0 ; ( priKey = this->getPriKey( i ) ) != NULL ; i ++ ) {
+    for( i = 0 ; ( priKey = this->getPriKey( i ) ) != nullptr ; i ++ ) {
         if( xmlSecNssAppliedKeysMngrPriKeyLoad( pKeysMngr, priKey ) < 0 ) {
             throw RuntimeException() ;
         }
@@ -957,7 +956,7 @@ xmlSecKeysMngrPtr SecurityEnvironment_NssImpl::createKeysManager() throw( Except
     return pKeysMngr ;
 }
 void SecurityEnvironment_NssImpl::destroyKeysManager(xmlSecKeysMngrPtr pKeysMngr) throw( Exception, RuntimeException ) {
-    if( pKeysMngr != NULL ) {
+    if( pKeysMngr != nullptr ) {
         xmlSecKeysMngrDestroy( pKeysMngr ) ;
     }
 }

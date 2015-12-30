@@ -18,6 +18,7 @@
  */
 
 #include <algorithm>
+#include <cassert>
 
 #include <osl/diagnose.h>
 #include "xlstyle.hxx"
@@ -335,7 +336,7 @@ void XclExpString::Write( XclExpStream& rStrm ) const
 
 void XclExpString::WriteHeaderToMem( sal_uInt8* pnMem ) const
 {
-    OSL_ENSURE( pnMem, "XclExpString::WriteHeaderToMem - no memory to write to" );
+    assert(pnMem);
     OSL_ENSURE( !mb8BitLen || (mnLen < 256), "XclExpString::WriteHeaderToMem - string too long" );
     OSL_ENSURE( !IsWriteFormats(), "XclExpString::WriteHeaderToMem - formatted strings not supported" );
     // length
@@ -356,7 +357,7 @@ void XclExpString::WriteHeaderToMem( sal_uInt8* pnMem ) const
 
 void XclExpString::WriteBufferToMem( sal_uInt8* pnMem ) const
 {
-    OSL_ENSURE( pnMem, "XclExpString::WriteBufferToMem - no memory to write to" );
+    assert(pnMem);
     if( !IsEmpty() )
     {
         if( mbIsBiff8 )
@@ -424,13 +425,12 @@ void XclExpString::WriteXml( XclExpXmlStream& rStrm ) const
         XclFormatRunVec::const_iterator aIt = maFormats.begin(), aEnd = maFormats.end();
 
         sal_uInt16  nStart = 0;
-        const XclExpFont* pFont = NULL;
+        const XclExpFont* pFont = nullptr;
         for ( ; aIt != aEnd; ++aIt )
         {
-            // pFont getting first then pass it to run otherwise pFont is NULL.
-            pFont = rFonts.GetFont( aIt->mnFontIdx );
             nStart = lcl_WriteRun( rStrm, GetUnicodeBuffer(),
                     nStart, aIt->mnChar-nStart, pFont );
+            pFont = rFonts.GetFont( aIt->mnFontIdx );
         }
         lcl_WriteRun( rStrm, GetUnicodeBuffer(),
                 nStart, GetUnicodeBuffer().size() - nStart, pFont );

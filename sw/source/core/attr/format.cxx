@@ -38,12 +38,11 @@
 
 using namespace com::sun::star;
 
-TYPEINIT1( SwFormat, SwClient );
 
 SwFormat::SwFormat( SwAttrPool& rPool, const sal_Char* pFormatNm,
-              const sal_uInt16* pWhichRanges, SwFormat *pDrvdFrm,
+              const sal_uInt16* pWhichRanges, SwFormat *pDrvdFrame,
               sal_uInt16 nFormatWhich )
-    : SwModify( pDrvdFrm ),
+    : SwModify( pDrvdFrame ),
     m_aFormatName( OUString::createFromAscii(pFormatNm) ),
     m_aSet( rPool, pWhichRanges ),
     m_nWhichId( nFormatWhich ),
@@ -55,14 +54,14 @@ SwFormat::SwFormat( SwAttrPool& rPool, const sal_Char* pFormatNm,
     m_bAutoFormat = true;
     m_bWritten = m_bFormatInDTOR = m_bHidden = false;
 
-    if( pDrvdFrm )
-        m_aSet.SetParent( &pDrvdFrm->m_aSet );
+    if( pDrvdFrame )
+        m_aSet.SetParent( &pDrvdFrame->m_aSet );
 }
 
 SwFormat::SwFormat( SwAttrPool& rPool, const OUString& rFormatNm,
-              const sal_uInt16* pWhichRanges, SwFormat* pDrvdFrm,
+              const sal_uInt16* pWhichRanges, SwFormat* pDrvdFrame,
               sal_uInt16 nFormatWhich )
-    : SwModify( pDrvdFrm ),
+    : SwModify( pDrvdFrame ),
     m_aFormatName( rFormatNm ),
     m_aSet( rPool, pWhichRanges ),
     m_nWhichId( nFormatWhich ),
@@ -74,8 +73,8 @@ SwFormat::SwFormat( SwAttrPool& rPool, const OUString& rFormatNm,
     m_bAutoFormat = true;
     m_bWritten = m_bFormatInDTOR = m_bHidden = false;
 
-    if( pDrvdFrm )
-        m_aSet.SetParent( &pDrvdFrm->m_aSet );
+    if( pDrvdFrame )
+        m_aSet.SetParent( &pDrvdFrame->m_aSet );
 }
 
 SwFormat::SwFormat( const SwFormat& rFormat )
@@ -107,7 +106,7 @@ SwFormat &SwFormat::operator=(const SwFormat& rFormat)
 
     if ( IsInCache() )
     {
-        SwFrm::GetCache().Delete( this );
+        SwFrame::GetCache().Delete( this );
         SetInCache( false );
     }
     SetInSwFntCache( false );
@@ -140,7 +139,7 @@ SwFormat &SwFormat::operator=(const SwFormat& rFormat)
         }
         else
         {
-            m_aSet.SetParent( 0 );
+            m_aSet.SetParent( nullptr );
         }
     }
     m_bAutoFormat = rFormat.m_bAutoFormat;
@@ -181,7 +180,7 @@ void SwFormat::CopyAttrs( const SwFormat& rFormat, bool bReplace )
     // copy only array with attributes delta
     if ( IsInCache() )
     {
-        SwFrm::GetCache().Delete( this );
+        SwFrame::GetCache().Delete( this );
         SetInCache( false );
     }
     SetInSwFntCache( false );
@@ -280,8 +279,8 @@ void SwFormat::Modify( const SfxPoolItem* pOldValue, const SfxPoolItem* pNewValu
                 else
                 {
                     // otherwise de-register at least from dying one
-                    DerivedFrom()->Remove( this );
-                    m_aSet.SetParent( 0 );
+                    GetRegisteredIn()->Remove( this );
+                    m_aSet.SetParent( nullptr );
                 }
             }
         }
@@ -311,7 +310,7 @@ void SwFormat::Modify( const SfxPoolItem* pOldValue, const SfxPoolItem* pNewValu
             static_cast<const SwFormatChg*>(pNewValue)->pChangedFormat == GetRegisteredIn() )
         {
             // attach Set to new parent
-            m_aSet.SetParent( DerivedFrom() ? &DerivedFrom()->m_aSet : 0 );
+            m_aSet.SetParent( DerivedFrom() ? &DerivedFrom()->m_aSet : nullptr );
         }
         break;
     case RES_RESET_FMTWRITTEN:
@@ -351,7 +350,7 @@ bool SwFormat::SetDerivedFrom(SwFormat *pDerFrom)
     if ( pDerFrom )
     {
         const SwFormat* pFormat = pDerFrom;
-        while ( pFormat != 0 )
+        while ( pFormat != nullptr )
         {
             if ( pFormat == this )
                 return false;
@@ -377,7 +376,7 @@ bool SwFormat::SetDerivedFrom(SwFormat *pDerFrom)
 
     if ( IsInCache() )
     {
-        SwFrm::GetCache().Delete( this );
+        SwFrame::GetCache().Delete( this );
         SetInCache( false );
     }
     SetInSwFntCache( false );
@@ -443,7 +442,7 @@ SfxItemState SwFormat::GetItemState( sal_uInt16 nWhich, bool bSrchInParent, cons
         // if not, reset pointer and return SfxItemState::DEFAULT to signal that
         // the item is not set
         if( ppItem )
-            *ppItem = NULL;
+            *ppItem = nullptr;
 
         return SfxItemState::DEFAULT;
     }
@@ -472,7 +471,7 @@ SfxItemState SwFormat::GetBackgroundState(SvxBrushItem &rItem, bool bSrchInParen
         return SfxItemState::DEFAULT;
     }
 
-    const SfxPoolItem* pItem = 0;
+    const SfxPoolItem* pItem = nullptr;
     SfxItemState eRet = m_aSet.GetItemState(RES_BACKGROUND, bSrchInParent, &pItem);
     if (pItem)
         rItem = *static_cast<const SvxBrushItem*>(pItem);
@@ -537,7 +536,7 @@ bool SwFormat::SetFormatAttr( const SfxPoolItem& rAttr )
           (RES_GRFFMTCOLL == nFormatWhich  ||
            RES_TXTFMTCOLL == nFormatWhich ) ) )
     {
-        if( ( bRet = (0 != m_aSet.Put( rAttr ))) )
+        if( ( bRet = (nullptr != m_aSet.Put( rAttr ))) )
             m_aSet.SetModifyAtAttr( this );
         // #i71574#
         if ( nFormatWhich == RES_TXTFMTCOLL && rAttr.Which() == RES_PARATR_NUMRULE )
@@ -572,7 +571,7 @@ bool SwFormat::SetFormatAttr( const SfxItemSet& rSet )
 
     if ( IsInCache() )
     {
-        SwFrm::GetCache().Delete( this );
+        SwFrame::GetCache().Delete( this );
         SetInCache( false );
     }
     SetInSwFntCache( false );
@@ -593,7 +592,7 @@ bool SwFormat::SetFormatAttr( const SfxItemSet& rSet )
 
     if (supportsFullDrawingLayerFillAttributeSet())
     {
-        const SfxPoolItem* pSource = 0;
+        const SfxPoolItem* pSource = nullptr;
 
         if(SfxItemState::SET == aTempSet.GetItemState(RES_BACKGROUND, false, &pSource))
         {
@@ -708,7 +707,7 @@ sal_uInt16 SwFormat::ResetAllFormatAttr()
 
     if ( IsInCache() )
     {
-        SwFrm::GetCache().Delete( this );
+        SwFrame::GetCache().Delete( this );
         SetInCache( false );
     }
     SetInSwFntCache( false );
@@ -741,7 +740,7 @@ void SwFormat::DelDiffs( const SfxItemSet& rSet )
 
     if ( IsInCache() )
     {
-        SwFrm::GetCache().Delete( this );
+        SwFrame::GetCache().Delete( this );
         SetInCache( false );
     }
     SetInSwFntCache( false );

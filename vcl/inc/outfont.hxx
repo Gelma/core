@@ -32,21 +32,12 @@
 #include <unordered_map>
 
 class PhysicalFontFace;
-class PhysicalFontFamily;
-class ImplGetDevFontList;
-class ImplGetDevSizeList;
 class ImplFontEntry;
 class ImplFontCache;
-class ImplPreMatchFontSubstitution;
-class ImplGlyphFallbackFontSubstitution;
-class FontSelectPattern;
 namespace vcl { class Font; }
 class ConvertChar;
-struct FontMatchStatus;
 class OutputDevice;
 class Size;
-
-namespace com { namespace sun { namespace star { namespace lang { struct Locale; }}}}
 
 // - ImplFontAttributes -
 
@@ -182,7 +173,10 @@ public: // TODO: hide members behind accessor methods
     int                 meFamilyType;               // Font Family Type
     bool                mbDevice;                   // Flag for Device Fonts
     bool                mbScalableFont;
+    bool                mbTrueTypeFont;
     bool                mbKernableFont;
+    bool                mbFullstopCentered;
+    long                mnBulletOffset;             // Offset to position non-print character
 
     // font metrics that are usually derived from the measurements
     long                mnUnderlineSize;            // Lineheight of Underline
@@ -295,8 +289,8 @@ public:
     sal_Int32           Count() const { return mnLines; }
 
 private:
-                            ImplMultiTextLineInfo( const ImplMultiTextLineInfo& ) SAL_DELETED_FUNCTION;
-    ImplMultiTextLineInfo&  operator=( const ImplMultiTextLineInfo& ) SAL_DELETED_FUNCTION;
+                            ImplMultiTextLineInfo( const ImplMultiTextLineInfo& ) = delete;
+    ImplMultiTextLineInfo&  operator=( const ImplMultiTextLineInfo& ) = delete;
 };
 
 #endif // INCLUDED_VCL_INC_OUTFONT_HXX

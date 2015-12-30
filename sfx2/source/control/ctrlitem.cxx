@@ -36,7 +36,7 @@ void SfxControllerItem::CheckConfigure_Impl( SfxSlotMode nType )
 
     // is the ID configurable at all in 'nType'?
     const SfxSlot *pSlot = SFX_SLOTPOOL().GetSlot(nId);
-    DBG_ASSERTWARNING( pSlot, "SfxControllerItem: binding not existing slot" );
+    SAL_WARN_IF( !pSlot, "sfx.control", "SfxControllerItem: binding not existing slot" );
     SAL_WARN_IF(
         pSlot && !pSlot->IsMode(nType), "sfx.control",
         "SfxControllerItem: slot without ...Config-flag at SID "
@@ -50,7 +50,7 @@ void SfxControllerItem::CheckConfigure_Impl( SfxSlotMode nType )
 
 SfxControllerItem* SfxControllerItem::GetItemLink()
 {
-    return pNext == this ? 0 : pNext;
+    return pNext == this ? nullptr : pNext;
 }
 
 
@@ -74,7 +74,7 @@ void SfxControllerItem::Bind( sal_uInt16 nNewId, SfxBindings *pBindinx )
     }
 
     nId = nNewId;
-    pNext = 0;
+    pNext = nullptr;
 
     if (pBindinx)
         pBindings = pBindinx;
@@ -91,7 +91,7 @@ void SfxControllerItem::BindInternal_Impl( sal_uInt16 nNewId, SfxBindings *pBind
     }
 
     nId = nNewId;
-    pNext = 0;
+    pNext = nullptr;
 
     if (pBindinx)
         pBindings = pBindinx;
@@ -183,7 +183,7 @@ SfxControllerItem* SfxControllerItem::ChangeItemLink( SfxControllerItem* pNewLin
 {
     SfxControllerItem* pOldLink = pNext;
     pNext = pNewLink;
-    return pOldLink == this ? 0 : pOldLink;
+    return pOldLink == this ? nullptr : pOldLink;
 }
 
 
@@ -202,7 +202,7 @@ void SfxControllerItem::SetId( sal_uInt16 nItemId )
 SfxControllerItem::SfxControllerItem():
     nId(0),
     pNext(this),
-    pBindings(0)
+    pBindings(nullptr)
 {
 }
 
@@ -324,7 +324,7 @@ SfxItemState SfxControllerItem::GetItemState
                 ? SfxItemState::DISABLED
                 : IsInvalidItem(pState)
                     ? SfxItemState::DONTCARE
-                    : pState->ISA(SfxVoidItem) && !pState->Which()
+                    : dynamic_cast< const SfxVoidItem *>( pState ) !=  nullptr && !pState->Which()
                         ? SfxItemState::UNKNOWN
                         : SfxItemState::DEFAULT;
 }
@@ -369,7 +369,7 @@ SfxMapUnit SfxControllerItem::GetCoreMetric() const
         }
     }
 
-    DBG_WARNING( "W1: Can not find ItemPool!" );
+    SAL_INFO( "sfx.control", "W1: Can not find ItemPool!" );
     return SFX_MAPUNIT_100TH_MM;
 }
 

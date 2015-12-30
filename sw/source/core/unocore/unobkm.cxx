@@ -36,6 +36,7 @@
 #include <docsh.hxx>
 #include <xmloff/odffields.hxx>
 #include <comphelper/servicehelper.hxx>
+#include <comphelper/sequence.hxx>
 
 using namespace ::sw::mark;
 using namespace ::com::sun::star;
@@ -57,7 +58,7 @@ public:
         : SwClient()
         , m_EventListeners(m_Mutex)
         , m_pDoc(pDoc)
-        , m_pRegisteredBookmark(0)
+        , m_pRegisteredBookmark(nullptr)
     {
         // DO NOT registerInMark here! (because SetXBookmark would delete rThis)
     }
@@ -65,7 +66,7 @@ public:
     void registerInMark(SwXBookmark & rThis, ::sw::mark::IMark *const pBkmk);
 protected:
     // SwClient
-    virtual void Modify( const SfxPoolItem *pOld, const SfxPoolItem *pNew) SAL_OVERRIDE;
+    virtual void Modify( const SfxPoolItem *pOld, const SfxPoolItem *pNew) override;
 
 };
 
@@ -77,8 +78,8 @@ void SwXBookmark::Impl::Modify(const SfxPoolItem *pOld, const SfxPoolItem *pNew)
         return; // core object still alive
     }
 
-    m_pRegisteredBookmark = 0;
-    m_pDoc = 0;
+    m_pRegisteredBookmark = nullptr;
+    m_pDoc = nullptr;
     uno::Reference<uno::XInterface> const xThis(m_wThis);
     if (!xThis.is())
     {   // fdo#72695: if UNO object is already dead, don't revive it with event
@@ -131,7 +132,7 @@ SwXBookmark::SwXBookmark(
 }
 
 SwXBookmark::SwXBookmark()
-    : m_pImpl( new SwXBookmark::Impl(0, 0) )
+    : m_pImpl( new SwXBookmark::Impl(nullptr, nullptr) )
 {
 }
 
@@ -175,7 +176,7 @@ uno::Reference<text::XTextContent> SwXBookmark::CreateXBookmark(
     {
         return pXBkm->m_pImpl->m_pRegisteredBookmark;
     }
-    return 0;
+    return nullptr;
 }
 
 namespace
@@ -206,8 +207,8 @@ throw (lang::IllegalArgumentException, uno::RuntimeException)
 
     const uno::Reference<lang::XUnoTunnel> xRangeTunnel(
             xTextRange, uno::UNO_QUERY);
-    SwXTextRange* pRange = 0;
-    OTextCursorHelper* pCursor = 0;
+    SwXTextRange* pRange = nullptr;
+    OTextCursorHelper* pCursor = nullptr;
     if(xRangeTunnel.is())
     {
         pRange = ::sw::UnoTunnelGetImplementation<SwXTextRange>(xRangeTunnel);
@@ -216,7 +217,7 @@ throw (lang::IllegalArgumentException, uno::RuntimeException)
     }
 
     SwDoc *const pDoc =
-        (pRange) ? &pRange->GetDoc() : ((pCursor) ? pCursor->GetDoc() : 0);
+        (pRange) ? &pRange->GetDoc() : ((pCursor) ? pCursor->GetDoc() : nullptr);
     if (!pDoc)
     {
         throw lang::IllegalArgumentException();
@@ -226,6 +227,7 @@ throw (lang::IllegalArgumentException, uno::RuntimeException)
     SwUnoInternalPaM aPam(*m_pImpl->m_pDoc);
     ::sw::XTextRangeToSwPaM(aPam, xTextRange);
     UnoActionContext aCont(m_pImpl->m_pDoc);
+    bool isHorribleHackIgnoreDuplicates(false);
     if (m_pImpl->m_sMarkName.isEmpty())
     {
          m_pImpl->m_sMarkName = "Bookmark";
@@ -240,10 +242,16 @@ throw (lang::IllegalArgumentException, uno::RuntimeException)
         IDocumentMarkAccess::IsLegalPaMForCrossRefHeadingBookmark( aPam ) )
     {
         eType = IDocumentMarkAccess::MarkType::CROSSREF_HEADING_BOOKMARK;
+        // tdf#94804 LO 4.2-5.0 create invalid duplicates that must be preserved
+        // note: do not check meta:generator, may be preserved by other versions
+        if (m_pImpl->m_pDoc->IsInXMLImport())
+        {
+            isHorribleHackIgnoreDuplicates = true;
+        }
     }
     m_pImpl->registerInMark(*this,
         m_pImpl->m_pDoc->getIDocumentMarkAccess()->makeMark(
-            aPam, m_pImpl->m_sMarkName, eType));
+            aPam, m_pImpl->m_sMarkName, eType, isHorribleHackIgnoreDuplicates));
     // #i81002#
     // Check, if bookmark has been created.
     // E.g., the creation of a cross-reference bookmark is suppress,
@@ -282,7 +290,7 @@ throw (uno::RuntimeException, std::exception)
             *m_pImpl->m_pDoc,
             m_pImpl->m_pRegisteredBookmark->GetMarkPos(),
             (m_pImpl->m_pRegisteredBookmark->IsExpanded())
-                ? &m_pImpl->m_pRegisteredBookmark->GetOtherMarkPos() : NULL);
+                ? &m_pImpl->m_pRegisteredBookmark->GetOtherMarkPos() : nullptr);
 }
 
 void SAL_CALL SwXBookmark::dispose()
@@ -390,9 +398,9 @@ uno::Reference<frame::XModel> SwXBookmark::GetModel()
     if (m_pImpl->m_pDoc)
     {
         SwDocShell const * const pShell( m_pImpl->m_pDoc->GetDocShell() );
-        return (pShell) ? pShell->GetModel() : 0;
+        return (pShell) ? pShell->GetModel() : nullptr;
     }
-    return 0;
+    return nullptr;
 }
 
 uno::Reference< beans::XPropertySetInfo > SAL_CALL
@@ -525,11 +533,7 @@ uno::Sequence<OUString> SwXFieldmarkParameters::getElementNames()
 {
     SolarMutexGuard aGuard;
     IFieldmark::parameter_map_t* pParameters = getCoreParameters();
-    uno::Sequence<OUString> vResult(pParameters->size());
-    OUString* pOutEntry = vResult.getArray();
-    for(IFieldmark::parameter_map_t::iterator pEntry = pParameters->begin(); pEntry!=pParameters->end(); ++pEntry, ++pOutEntry)
-        *pOutEntry = pEntry->first;
-    return vResult;
+    return comphelper::mapKeysToSequence(*pParameters);
 }
 
 sal_Bool SwXFieldmarkParameters::hasByName(const OUString& aName)
@@ -623,13 +627,13 @@ SwXFieldmark::CreateXFieldmark(SwDoc & rDoc, ::sw::mark::IMark *const pMark,
     if (!xMark.is())
     {
         // FIXME: These belong in XTextFieldsSupplier
-        SwXFieldmark* pXBkmk = NULL;
+        SwXFieldmark* pXBkmk = nullptr;
         if (dynamic_cast< ::sw::mark::TextFieldmark* >(pMark))
             pXBkmk = new SwXFieldmark(false, pMark, &rDoc);
         else if (dynamic_cast< ::sw::mark::CheckboxFieldmark* >(pMark))
             pXBkmk = new SwXFieldmark(true, pMark, &rDoc);
         else
-            pXBkmk = new SwXFieldmark(isReplacementObject, 0, &rDoc);
+            pXBkmk = new SwXFieldmark(isReplacementObject, nullptr, &rDoc);
 
         xMark.set(pXBkmk);
         pXBkmk->registerInMark(*pXBkmk, pMarkBase);
@@ -640,12 +644,12 @@ SwXFieldmark::CreateXFieldmark(SwDoc & rDoc, ::sw::mark::IMark *const pMark,
 ::sw::mark::ICheckboxFieldmark*
 SwXFieldmark::getCheckboxFieldmark()
 {
-    ::sw::mark::ICheckboxFieldmark* pCheckboxFm = NULL;
+    ::sw::mark::ICheckboxFieldmark* pCheckboxFm = nullptr;
     if ( getFieldType() == ODF_FORMCHECKBOX )
     {
         // evil #TODO #FIXME casting away the const-ness
         pCheckboxFm = const_cast<sw::mark::ICheckboxFieldmark*>(dynamic_cast< const ::sw::mark::ICheckboxFieldmark* >( GetBookmark()));
-        OSL_ASSERT( GetBookmark() == 0 || pCheckboxFm != 0 );
+        OSL_ASSERT( GetBookmark() == nullptr || pCheckboxFm != nullptr );
             // unclear to me whether GetBookmark() can be null here
     }
     return  pCheckboxFm;

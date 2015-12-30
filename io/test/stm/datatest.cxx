@@ -63,7 +63,7 @@ class ODataStreamTest :
         public WeakImplHelper< XSimpleTest >
 {
 public:
-    ODataStreamTest( const Reference < XMultiServiceFactory > & rFactory ) :
+    explicit ODataStreamTest( const Reference < XMultiServiceFactory > & rFactory ) :
         m_rFactory( rFactory )
         {}
 
@@ -164,23 +164,23 @@ sal_Int32 ODataStreamTest::test(
 
 
                 Reference < XInterface > x = m_rFactory->createInstance(
-                    OUString( "com.sun.star.io.Pipe" ));
+                    "com.sun.star.io.Pipe" );
 
                 Reference < XInputStream >   rPipeInput( x , UNO_QUERY );
                 Reference < XOutputStream >  rPipeOutput( x , UNO_QUERY );
 
                 if( ! rSink.is() ) {
                     x = m_rFactory->createInstance(
-                        OUString( "com.sun.star.io.DataInputStream") );
-                    rInput = Reference < XDataInputStream > ( x , UNO_QUERY);
-                    rSink = Reference<  XActiveDataSink > ( x , UNO_QUERY );
+                        "com.sun.star.io.DataInputStream" );
+                    rInput.set( x , UNO_QUERY);
+                    rSink.set( x , UNO_QUERY );
                 }
                 else if ( !rSource.is() )
                 {
                     x = m_rFactory->createInstance(
-                        OUString( "com.sun.star.io.DataOutputStream" ) );
-                    rOutput = Reference< XDataOutputStream > ( x , UNO_QUERY );
-                    rSource = Reference< XActiveDataSource > ( x, UNO_QUERY );
+                        "com.sun.star.io.DataOutputStream" );
+                    rOutput.set( x , UNO_QUERY );
+                    rSource.set( x, UNO_QUERY );
                 }
 
                 OSL_ASSERT( rPipeInput.is() );
@@ -337,11 +337,7 @@ Reference < XInterface > SAL_CALL ODataStreamTest_CreateInstance( const Referenc
 
 Sequence<OUString> ODataStreamTest_getSupportedServiceNames( int i) throw ()
 {
-    Sequence<OUString> aRet(1);
-
-    aRet.getArray()[0] = ODataStreamTest_getImplementationName( i);
-
-
+    Sequence<OUString> aRet { ODataStreamTest_getImplementationName( i) };
     return aRet;
 }
 
@@ -378,7 +374,7 @@ public:
         m_c( 429 ),
         m_s( OUString( "foo"  ) )
         {}
-    MyPersistObject( const OUString & sServiceName ) : m_sServiceName( sServiceName )
+    explicit MyPersistObject( const OUString & sServiceName ) : m_sServiceName( sServiceName )
         {}
 
 
@@ -614,8 +610,7 @@ Reference < XInterface > SAL_CALL OMyPersistObject_CreateInstance(
 
 Sequence<OUString> OMyPersistObject_getSupportedServiceNames( ) throw ()
 {
-    Sequence<OUString> aRet(1);
-    aRet.getArray()[0] = OMyPersistObject_getImplementationName();
+    Sequence<OUString> aRet { OMyPersistObject_getImplementationName() };
     return aRet;
 }
 
@@ -633,7 +628,7 @@ class OObjectStreamTest :
         public ODataStreamTest
 {
 public:
-    OObjectStreamTest( const Reference < XMultiServiceFactory > &r) : ODataStreamTest(r) {}
+    explicit OObjectStreamTest( const Reference < XMultiServiceFactory > &r) : ODataStreamTest(r) {}
 
 public:
     virtual void SAL_CALL testInvariant(const OUString& TestName,
@@ -724,19 +719,18 @@ sal_Int32 OObjectStreamTest::test(  const OUString& TestName,
 
 
                 Reference < XInterface > x = m_rFactory->createInstance(
-                    OUString( "com.sun.star.io.Pipe" ) );
+                    "com.sun.star.io.Pipe" );
 
                 Reference <XInputStream > rPipeInput( x , UNO_QUERY );
                 Reference <XOutputStream >  rPipeOutput( x , UNO_QUERY );
 
                 x = m_rFactory->createInstance(
-                    OUString( "com.sun.star.io.MarkableInputStream" ) );
+                    "com.sun.star.io.MarkableInputStream" );
 
                 Reference <XInputStream > markableInput( x , UNO_QUERY );
                 Reference <XActiveDataSink> markableSink( x , UNO_QUERY );
 
-                x = m_rFactory->createInstance( OUString(
-                    "com.sun.star.io.MarkableOutputStream"  ) );
+                x = m_rFactory->createInstance( "com.sun.star.io.MarkableOutputStream" );
                 Reference <XOutputStream >  markableOutput( x , UNO_QUERY );
                 Reference <XActiveDataSource >  markableSource( x , UNO_QUERY );
 
@@ -750,15 +744,15 @@ sal_Int32 OObjectStreamTest::test(  const OUString& TestName,
 
                 if( ! rSink.is() ) {
                     x = m_rFactory->createInstance(
-                        OUString( "com.sun.star.io.ObjectInputStream" ));
-                    rInput = Reference < XObjectInputStream > ( x , UNO_QUERY );
-                    rSink = Reference < XActiveDataSink > ( x , UNO_QUERY );
+                        "com.sun.star.io.ObjectInputStream" );
+                    rInput.set( x , UNO_QUERY );
+                    rSink.set( x , UNO_QUERY );
                 }
                 else if ( !rSource.is() ) {
                     x = m_rFactory->createInstance(
-                        OUString( "com.sun.star.io.ObjectOutputStream" ));
-                    rOutput = Reference <XObjectOutputStream > ( x , UNO_QUERY );
-                    rSource = Reference <XActiveDataSource>( x, UNO_QUERY );
+                        "com.sun.star.io.ObjectOutputStream" );
+                    rOutput.set( x , UNO_QUERY );
+                    rSource.set( x, UNO_QUERY );
                 }
 
                 OSL_ASSERT( rPipeInput.is() );
@@ -924,7 +918,7 @@ void OObjectStreamTest::testObject(     const Reference<  XObjectOutputStream > 
 
     {
         Reference < XInterface > x = m_rFactory->createInstance(
-            OUString( "test.com.sun.star.io.PersistTest"));
+            "test.com.sun.star.io.PersistTest");
         Reference< XPersistObject > persistRef( x , UNO_QUERY );
 
         ERROR_ASSERT( persistRef.is() , "couldn't instantiate PersistTest object" );
@@ -1064,8 +1058,7 @@ Reference < XInterface > SAL_CALL OObjectStreamTest_CreateInstance( const Refere
 
 Sequence<OUString> OObjectStreamTest_getSupportedServiceNames( int i) throw ()
 {
-    Sequence<OUString> aRet(1);
-    aRet.getArray()[0] = OObjectStreamTest_getImplementationName( i);
+    Sequence<OUString> aRet { OObjectStreamTest_getImplementationName( i) };
     return aRet;
 }
 

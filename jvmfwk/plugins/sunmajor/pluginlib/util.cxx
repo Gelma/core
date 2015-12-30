@@ -54,6 +54,9 @@
 #include "sunjre.hxx"
 #include "vendorlist.hxx"
 #include "diagnostics.h"
+#ifdef MACOSX
+#include "util_cocoa.hxx"
+#endif
 
 using namespace osl;
 using namespace std;
@@ -219,7 +222,7 @@ rtl::Bootstrap * getBootstrap()
 class FileHandleGuard: private boost::noncopyable
 {
 public:
-    inline FileHandleGuard(oslFileHandle & rHandle):
+    explicit FileHandleGuard(oslFileHandle & rHandle):
         m_rHandle(rHandle) {}
 
     inline ~FileHandleGuard();
@@ -232,7 +235,7 @@ private:
 
 inline FileHandleGuard::~FileHandleGuard()
 {
-    if (m_rHandle != 0)
+    if (m_rHandle != nullptr)
     {
         if (osl_closeFile(m_rHandle) != osl_File_E_None)
         {
@@ -252,7 +255,7 @@ public:
         RESULT_ERROR
     };
 
-    inline FileHandleReader(oslFileHandle & rHandle):
+    explicit FileHandleReader(oslFileHandle & rHandle):
         m_aGuard(rHandle), m_nSize(0), m_nIndex(0), m_bLf(false) {}
 
     Result readLine(OString * pLine);
@@ -333,10 +336,10 @@ class AsynchReader: public salhelper::Thread
 
     virtual ~AsynchReader() {}
 
-    void execute() SAL_OVERRIDE;
+    void execute() override;
 public:
 
-    AsynchReader(oslFileHandle & rHandle);
+    explicit AsynchReader(oslFileHandle & rHandle);
 
     /** only call this function after this thread has finished.
 
@@ -435,6 +438,8 @@ bool getJavaProps(const OUString & exePath,
     }
 
 #ifdef MACOSX
+    if (!JvmfwkUtil_isLoadableJVM(exePath))
+        return false;
     if (sClassPath.endsWith("/"))
         sClassPath += "../Resources/java/";
     else
@@ -466,9 +471,9 @@ bool getJavaProps(const OUString & exePath,
         cArgs = 4;
     }
 
-    oslProcess javaProcess= 0;
-    oslFileHandle fileOut= 0;
-    oslFileHandle fileErr= 0;
+    oslProcess javaProcess= nullptr;
+    oslFileHandle fileOut= nullptr;
+    oslFileHandle fileErr= nullptr;
 
     FileHandleReader stdoutReader(fileOut);
     rtl::Reference< AsynchReader > stderrReader(new AsynchReader(fileErr));
@@ -479,12 +484,12 @@ bool getJavaProps(const OUString & exePath,
                                              args,
                                              cArgs,                 //sal_uInt32   nArguments,
                                              osl_Process_HIDDEN, //oslProcessOption Options,
-                                             NULL, //oslSecurity Security,
+                                             nullptr, //oslSecurity Security,
                                              usStartDir.pData,//usStartDir.pData,//usWorkDir.pData, //rtl_uString *strWorkDir,
-                                             NULL, //rtl_uString *strEnvironment[],
+                                             nullptr, //rtl_uString *strEnvironment[],
                                              0, //  sal_uInt32   nEnvironmentVars,
                                              &javaProcess, //oslProcess *pProcess,
-                                             NULL,//oslFileHandle *pChildInputWrite,
+                                             nullptr,//oslFileHandle *pChildInputWrite,
                                              &fileOut,//oslFileHandle *pChildOutputRead,
                                              &fileErr);//oslFileHandle *pChildErrorRead);
 
@@ -559,7 +564,7 @@ bool getJavaProps(const OUString & exePath,
  */
 bool decodeOutput(const OString& s, OUString* out)
 {
-    OSL_ASSERT(out != 0);
+    OSL_ASSERT(out != nullptr);
     OUStringBuffer buff(512);
     sal_Int32 nIndex = 0;
     do
@@ -756,7 +761,7 @@ void addJREInfoFromBinPath(
     //map:       jre/bin/java.exe
 
     for ( sal_Int32 pos = 0;
-          gVendorMap[pos].sVendorName != NULL; ++pos )
+          gVendorMap[pos].sVendorName != nullptr; ++pos )
     {
         vector<OUString> vecPaths;
         getJavaExePaths_func pFunc = gVendorMap[pos].getJavaFunc;
@@ -905,7 +910,7 @@ rtl::Reference<VendorBase> getJREInfoByPath(
     // If this path is invalid then there is no chance to find a JRE here
     if (sResolvedDir.isEmpty())
     {
-        return 0;
+        return nullptr;
     }
 
     //check if the directory path is good, that is a JRE was already recognized.
@@ -922,7 +927,7 @@ rtl::Reference<VendorBase> getJREInfoByPath(
     }
 
     for ( sal_Int32 pos = 0;
-          gVendorMap[pos].sVendorName != NULL; ++pos )
+          gVendorMap[pos].sVendorName != nullptr; ++pos )
     {
         vector<OUString> vecPaths;
         getJavaExePaths_func pFunc = gVendorMap[pos].getJavaFunc;
@@ -1033,12 +1038,11 @@ rtl::Reference<VendorBase> getJREInfoByPath(
 
     //find java.vendor property
     typedef vector<pair<OUString, OUString> >::const_iterator c_ip;
-    OUString sVendor("java.vendor");
     OUString sVendorName;
 
     for (c_ip i = props.begin(); i != props.end(); ++i)
     {
-        if (sVendor.equals(i->first))
+        if (i->first == "java.vendor")
         {
             sVendorName = i->second;
             break;
@@ -1049,7 +1053,7 @@ rtl::Reference<VendorBase> getJREInfoByPath(
     {
         //find the creator func for the respective vendor name
         for ( sal_Int32 c = 0;
-              gVendorMap[c].sVendorName != NULL; ++c )
+              gVendorMap[c].sVendorName != nullptr; ++c )
         {
             OUString sNameMap(gVendorMap[c].sVendorName, strlen(gVendorMap[c].sVendorName),
                               RTL_TEXTENCODING_ASCII_US);
@@ -1083,7 +1087,7 @@ Reference<VendorBase> createInstance(createInstance_func pFunc,
     if (aBase.is())
     {
         if (!aBase->initialize(properties))
-            aBase = 0;
+            aBase = nullptr;
     }
     return aBase;
 }
@@ -1194,21 +1198,36 @@ void addJavaInfosDirScan(
     getAndAddJREInfoByPath("file:////usr/jdk/latest", allInfos, addedInfos);
 }
 
-#elif defined MACOSX && defined X86_64
-
-void addJavaInfosDirScan(
-    std::vector<rtl::Reference<VendorBase>> & allInfos,
-    std::vector<rtl::Reference<VendorBase>> & addedInfos)
-{
-    // Oracle Java 7
-    getAndAddJREInfoByPath("file:///Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home", allInfos, addedInfos);
-}
-
 #else
 void addJavaInfosDirScan(
     std::vector<rtl::Reference<VendorBase>> & allInfos,
     std::vector<rtl::Reference<VendorBase>> & addedInfos)
 {
+#ifdef MACOSX
+    // Ignore all but Oracle's JDK as loading Apple's Java and Oracle's JRE
+    // will cause OS X's JavaVM framework to display a dialog and invoke
+    // exit() when loaded via JNI on OS X 10.10
+    Directory aDir("file:///Library/Java/JavaVirtualMachines");
+    if (aDir.open() == File::E_None)
+    {
+        DirectoryItem aItem;
+        while (aDir.getNextItem(aItem) == File::E_None)
+        {
+            FileStatus aStatus(osl_FileStatus_Mask_FileURL);
+            if (aItem.getFileStatus(aStatus) == File::E_None)
+            {
+                OUString aItemURL( aStatus.getFileURL() );
+                if (aItemURL.getLength())
+                {
+                    aItemURL += "/Contents/Home";
+                    if (DirectoryItem::get(aItemURL, aItem) == File::E_None)
+                        getAndAddJREInfoByPath(aItemURL, allInfos, addedInfos);
+                }
+            }
+        }
+        aDir.close();
+    }
+#else // MACOSX
     OUString excMessage = "[Java framework] sunjavaplugin: "
                           "Error in function addJavaInfosDirScan in util.cxx.";
     int cJavaNames= sizeof(g_arJavaNames) / sizeof(char*);
@@ -1234,10 +1253,9 @@ void addJavaInfosDirScan(
 
 
 
-    OUString usFile("file:///");
     for( int ii = 0; ii < cSearchPaths; ii ++)
     {
-        OUString usDir1(usFile + arPaths[ii]);
+        OUString usDir1("file:///" + arPaths[ii]);
         DirectoryItem item;
         if(DirectoryItem::get(usDir1, item) == File::E_None)
         {
@@ -1322,6 +1340,7 @@ void addJavaInfosDirScan(
             }
         }
     }
+#endif // MACOSX
 }
 #endif // ifdef SOLARIS
 #endif // ifdef UNX

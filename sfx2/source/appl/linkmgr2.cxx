@@ -60,7 +60,7 @@ class SvxInternalLink : public sfx2::SvLinkSource
 public:
     SvxInternalLink() {}
 
-    virtual bool Connect( sfx2::SvBaseLink* ) SAL_OVERRIDE;
+    virtual bool Connect( sfx2::SvBaseLink* ) override;
 };
 
 
@@ -74,13 +74,12 @@ LinkManager::~LinkManager()
 {
     for( size_t n = 0; n < aLinkTbl.size(); ++n)
     {
-        SvBaseLinkRef* pTmp = aLinkTbl[ n ];
-        if( pTmp->Is() )
+        tools::SvRef<SvBaseLink>& rTmp = aLinkTbl[ n ];
+        if( rTmp.Is() )
         {
-            (*pTmp)->Disconnect();
-            (*pTmp)->SetLinkManager( NULL );
+            rTmp->Disconnect();
+            rTmp->SetLinkManager( nullptr );
         }
-        delete pTmp;
     }
 }
 
@@ -111,19 +110,18 @@ void LinkManager::Remove( SvBaseLink *pLink )
     bool bFound = false;
     for( size_t n = 0; n < aLinkTbl.size(); )
     {
-        SvBaseLinkRef* pTmp = aLinkTbl[ n ];
-        if( pLink == *pTmp )
+        tools::SvRef<SvBaseLink>& rTmp = aLinkTbl[ n ];
+        if( pLink == rTmp.get() )
         {
-            (*pTmp)->Disconnect();
-            (*pTmp)->SetLinkManager( NULL );
-            (*pTmp).Clear();
+            rTmp->Disconnect();
+            rTmp->SetLinkManager( nullptr );
+            rTmp.Clear();
             bFound = true;
         }
 
         // Remove empty ones if they exist
-        if( !pTmp->Is() )
+        if( !rTmp.Is() )
         {
-            delete pTmp;
             aLinkTbl.erase( aLinkTbl.begin() + n );
             if( bFound )
                 return ;
@@ -143,13 +141,12 @@ void LinkManager::Remove( size_t nPos, size_t nCnt )
 
         for( size_t n = nPos; n < nPos + nCnt; ++n)
         {
-            SvBaseLinkRef* pTmp = aLinkTbl[ n ];
-            if( pTmp->Is() )
+            tools::SvRef<SvBaseLink>& rTmp = aLinkTbl[ n ];
+            if( rTmp.Is() )
             {
-                (*pTmp)->Disconnect();
-                (*pTmp)->SetLinkManager( NULL );
+                rTmp->Disconnect();
+                rTmp->SetLinkManager( nullptr );
             }
-            delete pTmp;
         }
         aLinkTbl.erase( aLinkTbl.begin() + nPos, aLinkTbl.begin() + nPos + nCnt );
     }
@@ -160,19 +157,17 @@ bool LinkManager::Insert( SvBaseLink* pLink )
 {
     for( size_t n = 0; n < aLinkTbl.size(); ++n )
     {
-        SvBaseLinkRef* pTmp = aLinkTbl[ n ];
-        if( !pTmp->Is() )
+        tools::SvRef<SvBaseLink>& rTmp = aLinkTbl[ n ];
+        if( !rTmp.Is() )
         {
-            delete pTmp;
             aLinkTbl.erase( aLinkTbl.begin() + n-- );
         }
-        else if( pLink == *pTmp )
+        else if( pLink == rTmp.get() )
             return false; // No duplicate links inserted
     }
 
-    SvBaseLinkRef* pTmp = new SvBaseLinkRef( pLink );
     pLink->SetLinkManager( this );
-    aLinkTbl.push_back( pTmp );
+    aLinkTbl.push_back( tools::SvRef<SvBaseLink>(pLink) );
     return true;
 }
 
@@ -295,13 +290,13 @@ void LinkManager::UpdateAllLinks(
     std::vector<SvBaseLink*> aTmpArr;
     for( size_t n = 0; n < aLinkTbl.size(); ++n )
     {
-        SvBaseLink* pLink = *aLinkTbl[ n ];
-        if( !pLink )
+        tools::SvRef<SvBaseLink>& rLink = aLinkTbl[ n ];
+        if( !rLink.Is() )
         {
             Remove( n-- );
             continue;
         }
-        aTmpArr.push_back( pLink );
+        aTmpArr.push_back( rLink.get() );
     }
 
     for( size_t n = 0; n < aTmpArr.size(); ++n )
@@ -311,7 +306,7 @@ void LinkManager::UpdateAllLinks(
         // search first in the array after the entry
         bool bFound = false;
         for( size_t i = 0; i < aLinkTbl.size(); ++i )
-            if( pLink == *aLinkTbl[ i ] )
+            if( pLink == aLinkTbl[ i ].get() )
             {
                 bFound = true;
                 break;
@@ -419,7 +414,7 @@ void LinkManager::ReconnectDdeLink(SfxObjectShell& rServer)
 
     for (size_t i = 0; i < n; ++i)
     {
-        ::sfx2::SvBaseLink* p = *rLinks[i];
+        ::sfx2::SvBaseLink* p = rLinks[i].get();
         OUString aType, aFile, aLink, aFilter;
         if (!GetDisplayNames(p, &aType, &aFile, &aLink, &aFilter))
             continue;
@@ -450,7 +445,7 @@ void LinkManager::LinkServerShell(const OUString& rPath, SfxObjectShell& rServer
     ::sfx2::SvLinkSource* pSrvSrc = rServer.DdeCreateLinkSource(rPath);
     if (pSrvSrc)
     {
-        ::com::sun::star::datatransfer::DataFlavor aFl;
+        css::datatransfer::DataFlavor aFl;
         SotExchange::GetFormatDataFlavor(rLink.GetContentType(), aFl);
         rLink.SetObj(pSrvSrc);
         pSrvSrc->AddDataAdvise(
@@ -492,9 +487,9 @@ void LinkManager::CancelTransfers()
 
     const sfx2::SvBaseLinks& rLnks = GetLinks();
     for( size_t n = rLnks.size(); n; )
-        if( 0 != ( pLnk = &(*rLnks[ --n ])) &&
+        if( nullptr != ( pLnk = &(*rLnks[ --n ])) &&
             OBJECT_CLIENT_FILE == (OBJECT_CLIENT_FILE & pLnk->GetObjType()) &&
-            0 != ( pFileObj = static_cast<SvFileObject*>(pLnk->GetObj()) ) )
+            nullptr != ( pFileObj = static_cast<SvFileObject*>(pLnk->GetObj()) ) )
             pFileObj->CancelTransfers();
 }
     // For the purpose of sending Status information from the file object to
@@ -509,7 +504,7 @@ SotClipboardFormatId LinkManager::RegisterStatusInfoId()
     if( nFormat == SotClipboardFormatId::NONE )
     {
         nFormat = SotExchange::RegisterFormatName(
-                    OUString("StatusInfo from SvxInternalLink"));
+                    "StatusInfo from SvxInternalLink");
     }
     return nFormat;
 }
@@ -517,11 +512,11 @@ SotClipboardFormatId LinkManager::RegisterStatusInfoId()
 
 
 bool LinkManager::GetGraphicFromAny( const OUString& rMimeType,
-                                const ::com::sun::star::uno::Any & rValue,
+                                const css::uno::Any & rValue,
                                 Graphic& rGrf )
 {
     bool bRet = false;
-    ::com::sun::star::uno::Sequence< sal_Int8 > aSeq;
+    css::uno::Sequence< sal_Int8 > aSeq;
     if( rValue.hasValue() && ( rValue >>= aSeq ) )
     {
         SvMemoryStream aMemStm( const_cast<sal_Int8 *>(aSeq.getConstArray()), aSeq.getLength(),
@@ -567,30 +562,28 @@ OUString lcl_DDE_RelToAbs( const OUString& rTopic, const OUString& rBaseURL )
     if( INetProtocol::NotValid == aURL.GetProtocol() )
         osl::FileBase::getFileURLFromSystemPath(rTopic, sRet);
     if( sRet.isEmpty() )
-        sRet = URIHelper::SmartRel2Abs( INetURLObject(rBaseURL), rTopic, URIHelper::GetMaybeFileHdl(), true );
+        sRet = URIHelper::SmartRel2Abs( INetURLObject(rBaseURL), rTopic, URIHelper::GetMaybeFileHdl() );
     return sRet;
 }
 
 bool SvxInternalLink::Connect( sfx2::SvBaseLink* pLink )
 {
-    SfxObjectShell* pFndShell = 0;
-    sal_uInt16 nUpdateMode = com::sun::star::document::UpdateDocMode::NO_UPDATE;
+    SfxObjectShell* pFndShell = nullptr;
+    sal_uInt16 nUpdateMode = css::document::UpdateDocMode::NO_UPDATE;
     OUString sTopic, sItem, sReferer;
     LinkManager* pLinkMgr = pLink->GetLinkManager();
-    if (pLinkMgr && sfx2::LinkManager::GetDisplayNames(pLink, 0, &sTopic, &sItem) && !sTopic.isEmpty())
+    if (pLinkMgr && sfx2::LinkManager::GetDisplayNames(pLink, nullptr, &sTopic, &sItem) && !sTopic.isEmpty())
     {
         // first only loop over the DocumentShells the shells and find those
         // with the name:
         CharClass aCC( LanguageTag( LANGUAGE_SYSTEM) );
-
-        TypeId aType( TYPE(SfxObjectShell) );
 
         bool bFirst = true;
         SfxObjectShell* pShell = pLinkMgr->GetPersist();
         if( pShell && pShell->GetMedium() )
         {
             sReferer = pShell->GetMedium()->GetBaseURL();
-            SFX_ITEMSET_ARG( pShell->GetMedium()->GetItemSet(), pItem, SfxUInt16Item, SID_UPDATEDOCMODE, false );
+            const SfxUInt16Item* pItem = SfxItemSet::GetItem<SfxUInt16Item>(pShell->GetMedium()->GetItemSet(), SID_UPDATEDOCMODE, false);
             if ( pItem )
                 nUpdateMode = pItem->GetValue();
         }
@@ -600,7 +593,7 @@ bool SvxInternalLink::Connect( sfx2::SvBaseLink* pLink )
         if ( !pShell )
         {
             bFirst = false;
-            pShell = SfxObjectShell::GetFirst( &aType, false );
+            pShell = SfxObjectShell::GetFirst( nullptr, false );
         }
 
         OUString sTmp;
@@ -623,10 +616,10 @@ bool SvxInternalLink::Connect( sfx2::SvBaseLink* pLink )
             if( bFirst )
             {
                 bFirst = false;
-                pShell = SfxObjectShell::GetFirst( &aType, false );
+                pShell = SfxObjectShell::GetFirst( nullptr, false );
             }
             else
-                pShell = SfxObjectShell::GetNext( *pShell, &aType, false );
+                pShell = SfxObjectShell::GetNext( *pShell, nullptr, false );
 
             sTmp.clear();
         }
@@ -641,7 +634,7 @@ bool SvxInternalLink::Connect( sfx2::SvBaseLink* pLink )
         sfx2::SvLinkSource* pNewSrc = pFndShell->DdeCreateLinkSource( sItem );
         if( pNewSrc )
         {
-            ::com::sun::star::datatransfer::DataFlavor aFl;
+            css::datatransfer::DataFlavor aFl;
             SotExchange::GetFormatDataFlavor( pLink->GetContentType(), aFl );
 
             pLink->SetObj( pNewSrc );

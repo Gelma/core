@@ -37,10 +37,6 @@ namespace dbaui
         {
         }
 
-        void setUpperCase(bool _bUpper=true)
-        {
-            m_bOnlyUpperCase = _bUpper;
-        }
         void setAllowedChars(const OUString& _rAllowedChars)
         {
             m_sAllowedChars = _rAllowedChars;
@@ -69,7 +65,7 @@ namespace dbaui
         // Window overrides
         //  virtual bool PreNotify( NotifyEvent& rNEvt );
         // Edit
-        virtual void Modify() SAL_OVERRIDE;
+        virtual void Modify() override;
     };
 
     class OSQLNameComboBox : public ComboBox
@@ -89,7 +85,7 @@ namespace dbaui
 
         // Window overrides
         // Edit
-        virtual void Modify() SAL_OVERRIDE;
+        virtual void Modify() override;
     };
 
 }

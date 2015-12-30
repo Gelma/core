@@ -62,18 +62,18 @@ class SvxPopupWindowListBox: public SfxPopupWindow
 public:
     SvxPopupWindowListBox( sal_uInt16 nSlotId, const OUString& rCommandURL, sal_uInt16 nTbxId, ToolBox& rTbx );
     virtual ~SvxPopupWindowListBox();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     // SfxPopupWindow
-    virtual void                PopupModeEnd() SAL_OVERRIDE;
+    virtual void                PopupModeEnd() override;
     virtual void                StateChanged( sal_uInt16 nSID, SfxItemState eState,
-                                              const SfxPoolItem* pState ) SAL_OVERRIDE;
+                                              const SfxPoolItem* pState ) override;
 
     inline ListBox &            GetListBox()    { return *m_pListBox; }
 
     bool                        IsUserSelected() const          { return bUserSel; }
     void                        SetUserSelected( bool bVal )    { bUserSel = bVal; }
-    virtual vcl::Window*             GetPreferredKeyInputWindow() SAL_OVERRIDE;
+    virtual vcl::Window*             GetPreferredKeyInputWindow() override;
 };
 
 SvxPopupWindowListBox::SvxPopupWindowListBox(sal_uInt16 nSlotId, const OUString& rCommandURL, sal_uInt16 nId, ToolBox& rTbx)
@@ -137,7 +137,7 @@ vcl::Window* SvxPopupWindowListBox::GetPreferredKeyInputWindow()
 
 SvxListBoxControl::SvxListBoxControl( sal_uInt16 nSlotId, sal_uInt16 nId, ToolBox& rTbx )
     :SfxToolBoxControl( nSlotId, nId, rTbx ),
-    pPopupWin   ( 0 )
+    pPopupWin   ( nullptr )
 {
     rTbx.SetItemBits( nId, ToolBoxItemBits::DROPDOWN | rTbx.GetItemBits( nId ) );
     rTbx.Invalidate();
@@ -150,7 +150,7 @@ SvxListBoxControl::~SvxListBoxControl()
 VclPtr<SfxPopupWindow> SvxListBoxControl::CreatePopupWindow()
 {
     OSL_FAIL( "not implemented" );
-    return 0;
+    return nullptr;
 }
 
 
@@ -198,7 +198,7 @@ void SvxListBoxControl::Impl_SetInfo( sal_Int32 nCount )
 }
 
 
-IMPL_LINK_NOARG(SvxListBoxControl, SelectHdl)
+IMPL_LINK_NOARG_TYPED(SvxListBoxControl, SelectHdl, ListBox&, void)
 {
     if (pPopupWin)
     {
@@ -213,7 +213,6 @@ IMPL_LINK_NOARG(SvxListBoxControl, SelectHdl)
             pPopupWin->EndPopupMode();
         }
     }
-    return 0;
 }
 
 
@@ -225,7 +224,7 @@ SvxUndoRedoControl::SvxUndoRedoControl( sal_uInt16 nSlotId, sal_uInt16 nId, Tool
 {
     rTbx.SetItemBits( nId, ToolBoxItemBits::DROPDOWN | rTbx.GetItemBits( nId ) );
     rTbx.Invalidate();
-    aDefaultText = MnemonicGenerator::EraseAllMnemonicChars( rTbx.GetItemText( nId ) );
+    aDefaultTooltip = rTbx.GetQuickHelpText( nId );
 }
 
 SvxUndoRedoControl::~SvxUndoRedoControl()
@@ -240,13 +239,13 @@ void SvxUndoRedoControl::StateChanged(
         if ( eState == SfxItemState::DISABLED )
         {
             ToolBox& rBox = GetToolBox();
-            rBox.SetQuickHelpText( GetId(), aDefaultText );
+            rBox.SetQuickHelpText( GetId(), aDefaultTooltip );
         }
-        else if ( pState && pState->ISA( SfxStringItem ) )
+        else if ( pState && dynamic_cast<const SfxStringItem*>( pState) !=  nullptr )
         {
             const SfxStringItem& rItem = *static_cast<const SfxStringItem *>(pState);
             ToolBox& rBox = GetToolBox();
-            OUString aQuickHelpText = MnemonicGenerator::EraseAllMnemonicChars( rItem.GetValue() );
+            OUString aQuickHelpText = rItem.GetValue();
             rBox.SetQuickHelpText( GetId(), aQuickHelpText );
         }
         SvxListBoxControl::StateChanged( nSID, eState, pState );
@@ -255,7 +254,7 @@ void SvxUndoRedoControl::StateChanged(
     {
         aUndoRedoList.clear();
 
-        if ( pState && pState->ISA( SfxStringListItem ) )
+        if ( pState && dynamic_cast<const SfxStringListItem*>( pState) !=  nullptr )
         {
             const SfxStringListItem &rItem = *static_cast<const SfxStringListItem *>(pState);
 
@@ -271,9 +270,9 @@ VclPtr<SfxPopupWindow> SvxUndoRedoControl::CreatePopupWindow()
     DBG_ASSERT(( SID_UNDO == GetSlotId() || SID_REDO == GetSlotId() ), "mismatching ids" );
 
     if ( m_aCommandURL == ".uno:Undo" )
-        updateStatus( OUString( ".uno:GetUndoStrings" ));
+        updateStatus( ".uno:GetUndoStrings");
     else
-        updateStatus( OUString( ".uno:GetRedoStrings" ));
+        updateStatus( ".uno:GetRedoStrings");
 
     ToolBox& rBox = GetToolBox();
 

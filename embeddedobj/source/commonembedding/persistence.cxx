@@ -582,7 +582,7 @@ uno::Reference< io::XInputStream > OCommonEmbeddedObject::StoreDocumentToTempStr
     {
         osl::MutexGuard aGuard( m_aMutex );
         if ( m_pDocHolder )
-            xStorable = uno::Reference< frame::XStorable > ( m_pDocHolder->GetComponent(), uno::UNO_QUERY );
+            xStorable.set( m_pDocHolder->GetComponent(), uno::UNO_QUERY );
     }
 
     if( !xStorable.is() )
@@ -604,7 +604,7 @@ uno::Reference< io::XInputStream > OCommonEmbeddedObject::StoreDocumentToTempStr
     aArgs[3].Name = "HierarchicalDocumentName";
     aArgs[3].Value <<= aHierarchName;
 
-    xStorable->storeToURL( OUString( "private:stream" ), aArgs );
+    xStorable->storeToURL( "private:stream", aArgs );
     try
     {
         xTempOut->closeOutput();
@@ -763,7 +763,7 @@ void OCommonEmbeddedObject::StoreDocToStorage_Impl(
     {
         osl::MutexGuard aGuard( m_aMutex );
         if ( m_pDocHolder )
-            xDoc = uno::Reference< document::XStorageBasedDocument >( m_pDocHolder->GetComponent(), uno::UNO_QUERY );
+            xDoc.set( m_pDocHolder->GetComponent(), uno::UNO_QUERY );
     }
 
     OUString aBaseURL = GetBaseURLFrom_Impl(rMediaArgs, rObjArgs);
@@ -1355,7 +1355,7 @@ void SAL_CALL OCommonEmbeddedObject::storeAsEntry( const uno::Reference< embed::
         SAL_WARN( "embeddedobj.common", "Can not retrieve own storage media type!" );
     }
 
-    PostEvent_Impl( OUString( "OnSaveAs" ) );
+    PostEvent_Impl( "OnSaveAs" );
 
     bool bTryOptimization = false;
     for ( sal_Int32 nInd = 0; nInd < lObjArgs.getLength(); nInd++ )
@@ -1478,7 +1478,7 @@ void SAL_CALL OCommonEmbeddedObject::saveCompleted( sal_Bool bUseNew )
         if ( xModif.is() )
             xModif->setModified( sal_False );
 
-        PostEvent_Impl( OUString( "OnSaveAsDone" ));
+        PostEvent_Impl( "OnSaveAsDone");
     }
     else
     {
@@ -1493,8 +1493,8 @@ void SAL_CALL OCommonEmbeddedObject::saveCompleted( sal_Bool bUseNew )
         }
     }
 
-    m_xNewObjectStorage = uno::Reference< embed::XStorage >();
-    m_xNewParentStorage = uno::Reference< embed::XStorage >();
+    m_xNewObjectStorage.clear();
+    m_xNewParentStorage.clear();
     m_aNewEntryName.clear();
     m_aNewDocMediaDescriptor.realloc( 0 );
     m_bWaitSaveCompleted = false;
@@ -1588,7 +1588,7 @@ void SAL_CALL OCommonEmbeddedObject::storeOwn()
     if ( m_nObjectState == embed::EmbedStates::LOADED )
         return;
 
-    PostEvent_Impl( OUString( "OnSave" ) );
+    PostEvent_Impl( "OnSave" );
 
     SAL_WARN_IF( !m_pDocHolder->GetComponent().is(), "embeddedobj.common", "If an object is activated or in running state it must have a document!" );
     if ( !m_pDocHolder->GetComponent().is() )
@@ -1647,7 +1647,7 @@ void SAL_CALL OCommonEmbeddedObject::storeOwn()
     if ( xModif.is() )
         xModif->setModified( sal_False );
 
-    PostEvent_Impl( OUString( "OnSaveDone" ) );
+    PostEvent_Impl( "OnSaveDone" );
 }
 
 
@@ -1752,7 +1752,7 @@ void SAL_CALL OCommonEmbeddedObject::reload(
 
             // TODO/LATER: probably the document holder could be cleaned explicitly as in the destructor
             m_pDocHolder->release();
-            m_pDocHolder = NULL;
+            m_pDocHolder = nullptr;
 
             LinkInit_Impl( aObject, lArguments, lObjArgs );
         }

@@ -54,7 +54,6 @@
 #include <com/sun/star/frame/FrameActionEvent.hpp>
 #include <com/sun/star/frame/FrameAction.hpp>
 #include <com/sun/star/loader/XImplementationLoader.hpp>
-#include <com/sun/star/mozilla/XPluginInstance.hpp>
 #include <com/sun/star/frame/XFramesSupplier.hpp>
 #include <com/sun/star/container/XIndexAccess.hpp>
 #include <com/sun/star/beans/XPropertySet.hpp>
@@ -121,14 +120,14 @@
 
 using namespace ::com::sun::star;
 
-// Static member
-SfxApplication* SfxApplication::pApp = NULL;
+static SfxApplication* g_pSfxApplication = nullptr;
+
 #if HAVE_FEATURE_SCRIPTING
-static BasicDLL*       pBasic   = NULL;
+static BasicDLL*       pBasic   = nullptr;
 #endif
 
 #if HAVE_FEATURE_DESKTOP
-static SfxHelp*        pSfxHelp = NULL;
+static SfxHelp*        pSfxHelp = nullptr;
 #endif
 
 namespace
@@ -142,20 +141,25 @@ namespace
 #include <sfx2/imagemgr.hxx>
 #include "fwkhelper.hxx"
 
+SfxApplication* SfxApplication::Get()
+{
+    return g_pSfxApplication;
+}
+
 SfxApplication* SfxApplication::GetOrCreate()
 {
     // SFX on demand
     ::osl::MutexGuard aGuard(theApplicationMutex::get());
-    if (!pApp)
+    if (!g_pSfxApplication)
     {
         SAL_INFO( "sfx.appl", "SfxApplication::SetApp" );
 
-        pApp = new SfxApplication;
+        g_pSfxApplication = new SfxApplication;
 
         // at the moment a bug may occur when Initialize_Impl returns FALSE,
         // but this is only temporary because all code that may cause such
         // a fault will be moved outside the SFX
-        pApp->Initialize_Impl();
+        g_pSfxApplication->Initialize_Impl();
 
         ::framework::SetImageProducer( GetImage );
         ::framework::SetRefreshToolbars( RefreshToolbars );
@@ -163,7 +167,6 @@ SfxApplication* SfxApplication::GetOrCreate()
         ::framework::SetStatusBarControllerCreator( SfxStatusBarControllerFactory );
         ::framework::SetDockingWindowCreator( SfxDockingWindowFactory );
         ::framework::SetIsDockingWindowVisible( IsDockingWindowVisible );
-        ::framework::SetActivateToolPanel( &SfxViewFrame::ActivateToolPanel );
 #if HAVE_FEATURE_DESKTOP
         Application::SetHelp( pSfxHelp );
         if (!utl::ConfigManager::IsAvoidConfig() && SvtHelpOptions().IsHelpTips())
@@ -176,13 +179,13 @@ SfxApplication* SfxApplication::GetOrCreate()
             Help::DisableBalloonHelp();
 #endif
     }
-    return pApp;
+    return g_pSfxApplication;
 }
 
 SfxApplication::SfxApplication()
-    : pAppData_Impl( 0 )
+    : pAppData_Impl( nullptr )
 {
-    SetName( OUString("StarOffice") );
+    SetName( "StarOffice" );
     if (!utl::ConfigManager::IsAvoidConfig())
         SvtViewOptions::AcquireOptions();
 
@@ -228,7 +231,7 @@ SfxApplication::~SfxApplication()
 
 #if HAVE_FEATURE_DESKTOP
     delete pSfxHelp;
-    Application::SetHelp( NULL );
+    Application::SetHelp();
 #endif
 
     // delete global options
@@ -243,7 +246,7 @@ SfxApplication::~SfxApplication()
 #endif
 
     delete pAppData_Impl;
-    pApp = 0;
+    g_pSfxApplication = nullptr;
 }
 
 
@@ -426,7 +429,7 @@ void SfxApplication::ReleaseIndex(sal_uInt16 i)
 vcl::Window* SfxApplication::GetTopWindow() const
 {
     SfxWorkWindow* pWork = GetWorkWindow_Impl( SfxViewFrame::Current() );
-    return pWork ? pWork->GetWindow() : NULL;
+    return pWork ? pWork->GetWindow() : nullptr;
 }
 
 SfxTbxCtrlFactArr_Impl&     SfxApplication::GetTbxCtrlFactories_Impl() const
@@ -521,27 +524,23 @@ bool SfxApplication::IsXScriptURL( const OUString& rScriptURL )
 #if !HAVE_FEATURE_SCRIPTING
     (void) rScriptURL;
 #else
-    ::com::sun::star::uno::Reference
-        < ::com::sun::star::uno::XComponentContext > xContext =
+    css::uno::Reference< css::uno::XComponentContext > xContext =
             ::comphelper::getProcessComponentContext();
 
-    ::com::sun::star::uno::Reference
-        < ::com::sun::star::uri::XUriReferenceFactory >
-            xFactory = ::com::sun::star::uri::UriReferenceFactory::create( xContext );
+    css::uno::Reference< css::uri::XUriReferenceFactory >
+            xFactory = css::uri::UriReferenceFactory::create( xContext );
 
     try
     {
-        ::com::sun::star::uno::Reference
-            < ::com::sun::star::uri::XVndSunStarScriptUrl >
-                xUrl( xFactory->parse( rScriptURL ),
-                    ::com::sun::star::uno::UNO_QUERY );
+        css::uno::Reference< css::uri::XVndSunStarScriptUrl >
+                xUrl( xFactory->parse( rScriptURL ),  css::uno::UNO_QUERY );
 
         if ( xUrl.is() )
         {
             result = true;
         }
     }
-    catch (const ::com::sun::star::uno::RuntimeException&)
+    catch (const css::uno::RuntimeException&)
     {
         // ignore, will just return FALSE
     }
@@ -561,11 +560,11 @@ SfxApplication::ChooseScript()
         SAL_INFO( "sfx.appl", "create selector dialog");
 
         const SfxViewFrame* pViewFrame = SfxViewFrame::Current();
-        const SfxFrame* pFrame = pViewFrame ? &pViewFrame->GetFrame() : NULL;
+        const SfxFrame* pFrame = pViewFrame ? &pViewFrame->GetFrame() : nullptr;
         uno::Reference< frame::XFrame > xFrame( pFrame ? pFrame->GetFrameInterface() : uno::Reference< frame::XFrame >() );
 
         std::unique_ptr<AbstractScriptSelectorDialog> pDlg(
-            pFact->CreateScriptSelectorDialog( NULL, false, xFrame ));
+            pFact->CreateScriptSelectorDialog( nullptr, false, xFrame ));
 
         SAL_INFO( "sfx.appl", "done, now exec it");
 

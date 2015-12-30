@@ -12,6 +12,11 @@
 
 #include <stddef.h>
 
+#if defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
+// the unstable API needs C99's bool
+#include <stdbool.h>
+#endif
+
 #include <LibreOfficeKit/LibreOfficeKitTypes.h>
 
 #ifdef __cplusplus
@@ -50,7 +55,7 @@ struct _LibreOfficeKitClass
     LibreOfficeKitDocument* (*documentLoadWithOptions) (LibreOfficeKit* pThis,
                                                         const char* pURL,
                                                         const char* pOptions);
-#ifdef LOK_USE_UNSTABLE_API
+#if defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
     void (*registerCallback) (LibreOfficeKit* pThis,
                               LibreOfficeKitCallback pCallback,
                               void* pData);
@@ -78,7 +83,7 @@ struct _LibreOfficeKitDocumentClass
                    const char* pFormat,
                    const char* pFilterOptions);
 
-#ifdef LOK_USE_UNSTABLE_API
+#if defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
     /// @see lok::Document::getDocumentType().
     int (*getDocumentType) (LibreOfficeKitDocument* pThis);
 
@@ -113,13 +118,17 @@ struct _LibreOfficeKitDocumentClass
                        const int nTileWidth,
                        const int nTileHeight);
 
+    /// @see lok::Document::getTileMode().
+    int (*getTileMode) (LibreOfficeKitDocument* pThis);
+
     /// @see lok::Document::getDocumentSize().
     void (*getDocumentSize) (LibreOfficeKitDocument* pThis,
                              long* pWidth,
                              long* pHeight);
 
     /// @see lok::Document::initializeForRendering().
-    void (*initializeForRendering) (LibreOfficeKitDocument* pThis);
+    void (*initializeForRendering) (LibreOfficeKitDocument* pThis,
+                                    const char* pArguments);
 
     /// @see lok::Document::registerCallback().
     void (*registerCallback) (LibreOfficeKitDocument* pThis,
@@ -137,12 +146,15 @@ struct _LibreOfficeKitDocumentClass
                             int nType,
                             int nX,
                             int nY,
-                            int nCount);
+                            int nCount,
+                            int nButtons,
+                            int nModifier);
 
     /// @see lok::Document::postUnoCommand
     void (*postUnoCommand) (LibreOfficeKitDocument* pThis,
                             const char* pCommand,
-                            const char* pArguments);
+                            const char* pArguments,
+                            bool bNotifyWhenFinished);
 
     /// @see lok::Document::setTextSelection
     void (*setTextSelection) (LibreOfficeKitDocument* pThis,
@@ -154,6 +166,12 @@ struct _LibreOfficeKitDocumentClass
     char* (*getTextSelection) (LibreOfficeKitDocument* pThis,
                                const char* pMimeType,
                                char** pUsedMimeType);
+
+    /// @see lok::Document::paste().
+    bool (*paste) (LibreOfficeKitDocument* pThis,
+                   const char* pMimeType,
+                   const char* pData,
+                   size_t nSize);
 
     /// @see lok::Document::setGraphicSelection
     void (*setGraphicSelection) (LibreOfficeKitDocument* pThis,
@@ -167,6 +185,13 @@ struct _LibreOfficeKitDocumentClass
     /// @see lok::Document::getCommandValues().
     char* (*getCommandValues) (LibreOfficeKitDocument* pThis, const char* pCommand);
 
+    /// @see lok::Document::setClientZoom().
+    void (*setClientZoom) (LibreOfficeKitDocument* pThis,
+            int nTilePixelWidth,
+            int nTilePixelHeight,
+            int nTileTwipWidth,
+            int nTileTwipHeight);
+
     /// @see lok::Document::createView().
     int (*createView) (LibreOfficeKitDocument* pThis);
     /// @see lok::Document::destroyView().
@@ -177,7 +202,13 @@ struct _LibreOfficeKitDocumentClass
     int (*getView) (LibreOfficeKitDocument* pThis);
     /// @see lok::Document::getViews().
     int (*getViews) (LibreOfficeKitDocument* pThis);
-#endif // LOK_USE_UNSTABLE_API
+
+    /// @see lok::Document::renderFont().
+    unsigned char* (*renderFont) (LibreOfficeKitDocument* pThis,
+                       const char* pFontName,
+                       int* pFontWidth,
+                       int* pFontHeight);
+#endif // defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
 };
 
 #ifdef __cplusplus

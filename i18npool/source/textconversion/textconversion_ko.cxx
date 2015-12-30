@@ -46,7 +46,7 @@ TextConversion_ko::TextConversion_ko( const Reference < XComponentContext >& xCo
     Reference < XInterface > xI;
 
     xI = xContext->getServiceManager()->createInstanceWithContext(
-        OUString("com.sun.star.i18n.ConversionDictionary_ko"), xContext);
+        "com.sun.star.i18n.ConversionDictionary_ko", xContext);
 
     if ( xI.is() )
         xCD.set( xI, UNO_QUERY );
@@ -274,7 +274,7 @@ TextConversion_ko::getConversions( const OUString& aText, sal_Int32 nStartPos, s
                             // clear reference (when there is no user dictionary) in order
                             // to not always have to catch this exception again
                             // in further calls. (save time)
-                            xCDL = 0;
+                            xCDL = nullptr;
                         }
                         catch (...) {
                             // catch all other exceptions to allow

@@ -19,7 +19,7 @@ import uno
 
 from .WWHID import *
 from .FTPDialogResources import FTPDialogResources
-from ..ui.UnoDialog2 import UnoDialog2
+from ..ui.WizardDialog import WizardDialog
 from ..ui.UIConsts import UIConsts
 from ..ui.event.DataAware import DataAware
 from ..ui.event.UnoDataAware import UnoDataAware
@@ -36,11 +36,6 @@ from com.sun.star.ucb import InteractiveNetworkResolveNameException
 from com.sun.star.ucb import OpenCommandArgument2
 from com.sun.star.ucb.OpenMode import FOLDERS
 
-#PushButtonType_OK_value = uno.getConstantByName( "com.sun.star.awt.PushButtonType.OK" )
-#PushButtonType_CANCEL_value = uno.getConstantByName( "com.sun.star.awt.PushButtonType.CANCEL" )
-#PushButtonType_HELP_value = uno.getConstantByName( "com.sun.star.awt.PushButtonType.HELP" )
-
-
 # This is the FTP Dialog. <br/>
 # The Dialog enables the user:
 # (*) entering FTP server and user information.
@@ -55,7 +50,10 @@ from com.sun.star.ucb.OpenMode import FOLDERS
 # I use here the DataAware concept to automatically update
 # the members ip, username, and password (via the methods setXXX(...))
 # for details see the ui.events.DataAware classes. <br/>
-class FTPDialog(UnoDialog2, UIConsts):
+class FTPDialog(WizardDialog):
+    RES_OK = 1
+    RES_CANCEL = 2
+    RES_HELP = 3
 
     # A Constant used for the setLabel(int) method to change the
     # status-display. "unknown" is the status when the user first
@@ -97,7 +95,7 @@ class FTPDialog(UnoDialog2, UIConsts):
     # @throws Exception
     def __init__(self, xmsf, p, oWizardResource):
 
-        super(FTPDialog, self).__init__(xmsf)
+        super(FTPDialog, self).__init__(xmsf, HID_FTP)
         self.publish = p
 
         templateDir = p.root.soTemplateDir
@@ -113,8 +111,8 @@ class FTPDialog(UnoDialog2, UIConsts):
         self.ucb = UCB(xmsf)
 
         # set dialog properties...
-        self.setDialogProperties( True, 160, HelpIds.getHelpIdString(HID_FTP),
-            True, "FTPDialog", 167, 82, self.resources.resFTPDialog_title, 222)
+        self.setDialogProperties(True, 210, True, 104, 52, 1, 1,
+            self.resources.resFTPDialog_title, 310)
 
         # add controls to dialog
         self.build()
@@ -162,7 +160,7 @@ class FTPDialog(UnoDialog2, UIConsts):
                 (0, 14, 68, 80, False, False, 14))
         self.lblStatus = self.insertLabel("lblStatus",
                 PROPNAMES_LABEL,
-                (8, self.resources.resFTPDisconnected, "lblStatus", 86, 82, 9, 99))
+                (8, self.resources.resFTPDisconnected, "lblStatus", 86, 82, 9, 130))
         self.ln3 = self.insertFixedLine("ln3",
                 PROPNAMES_LABEL,
                 (8, self.resources.resln3_value, "ln3", 6, 100, 10, 210))
@@ -174,13 +172,13 @@ class FTPDialog(UnoDialog2, UIConsts):
                 (14, HelpIds.getHelpIdString(HID_FTP_BTN_PATH), self.resources.resbtnDir_value, "btnDir", 199, 112, 12, 16), self)
         self.btnOK = self.insertButton("btnOK", None,
                 PROPNAMES_BUTTON2,
-                (14, HelpIds.getHelpIdString(HID_FTP_OK), self.resources.resbtnOK_value, "btnOK", 165, 142, PushButtonType_OK_value, 13, 50), self)
+                (14, HelpIds.getHelpIdString(HID_FTP_OK), self.resources.resbtnOK_value, "btnOK", 165, 142, self.RES_OK, 13, 50), self)
         self.btnCancel = self.insertButton("btnCancel",
                 None, PROPNAMES_BUTTON2,
-                (14, HelpIds.getHelpIdString(HID_FTP_CANCEL), self.resources.resbtnCancel_value, "btnCancel", 113, 142, PushButtonType_CANCEL_value, 14, 50), self)
+                (14, HelpIds.getHelpIdString(HID_FTP_CANCEL), self.resources.resbtnCancel_value, "btnCancel", 113, 142, self.RES_CANCEL, 14, 50), self)
         self.btnHelp = self.insertButton("btnHelp", None,
                 PROPNAMES_BUTTON2,
-                (14, "", self.resources.resbtnHelp_value, "btnHelp", 57, 142, PushButtonType_HELP_value, 15, 50), self)
+                (14, "", self.resources.resbtnHelp_value, "btnHelp", 57, 142, self.RES_HELP, 15, 50), self)
 
 
     # Make hostname, username and password text fields data aware.
@@ -251,7 +249,7 @@ class FTPDialog(UnoDialog2, UIConsts):
     # according to the status of the hostname, username, password text fields.
     # If one of these fields is empty, the button is disabled.
     def enableTestButton(self):
-        self.setEnabled(self.btnTestConnection, not self.isEmpty(self.host) or self.isEmpty(self.username) or self.isEmpty(self.password))
+        self.setEnabled(self.btnTestConnection, not (self.isEmpty(self.host) or self.isEmpty(self.username) or self.isEmpty(self.password)))
 
     # @param s
     # @return True if the string is None or "".
@@ -312,7 +310,7 @@ class FTPDialog(UnoDialog2, UIConsts):
         self.setEnabled(self.btnTestConnection, True)
 
 
-    # To try the conenction I do some actions that
+    # To try the connection I do some actions that
     # seem logical to me: <br/>
     # I get a ucb content.
     # I list the files in this content.

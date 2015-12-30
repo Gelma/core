@@ -124,7 +124,6 @@ void OutlineViewShell::InitInterface_Impl()
     GetStaticInterface()->RegisterChildWindow(::sfx2::sidebar::SidebarChildWindow::GetChildWindowId());
 }
 
-TYPEINIT1( OutlineViewShell, ViewShell );
 
 /**
  * common initialization part of both constructors
@@ -161,7 +160,7 @@ void OutlineViewShell::Construct(DrawDocShell* )
 
     pLastPage = GetActualPage();
 
-    SetName( OUString( "OutlineViewShell" ) );
+    SetName( "OutlineViewShell" );
 
     SetHelpId( SD_IF_SDOUTLINEVIEWSHELL );
     GetActiveWindow()->SetHelpId( HID_SDOUTLINEVIEWSHELL );
@@ -175,9 +174,7 @@ Reference<drawing::XDrawSubController> OutlineViewShell::CreateSubController()
     if (IsMainViewShell())
     {
         // Create uno sub controller for the main view shell.
-        xSubController = Reference<drawing::XDrawSubController>(
-            new SdUnoOutlineView (
-                *this));
+        xSubController.set( new SdUnoOutlineView(*this) );
     }
 
     return xSubController;
@@ -192,14 +189,14 @@ OutlineViewShell::OutlineViewShell (
     vcl::Window* pParentWindow,
     FrameView* pFrameViewArgument)
     : ViewShell(pFrame, pParentWindow, rViewShellBase),
-      pOlView(NULL),
-      pLastPage( NULL ),
-      pClipEvtLstnr(NULL),
+      pOlView(nullptr),
+      pLastPage( nullptr ),
+      pClipEvtLstnr(nullptr),
       bPastePossible(false),
       mbInitialized(false)
 
 {
-    if (pFrameViewArgument != NULL)
+    if (pFrameViewArgument != nullptr)
         mpFrameView = pFrameViewArgument;
     else
         mpFrameView = new FrameView(GetDoc());
@@ -262,7 +259,7 @@ void OutlineViewShell::ArrangeGUIElements ()
     ViewShell::ArrangeGUIElements ();
 
     ::sd::Window* pWindow = mpContentWindow.get();
-    if (pWindow != NULL)
+    if (pWindow != nullptr)
     {
         pWindow->SetMinZoomAutoCalc(false);
 
@@ -371,7 +368,7 @@ void OutlineViewShell::GetCtrlState(SfxItemSet &rSet)
                 if ( abs( aSel.nEndPos - aSel.nStartPos ) == 1 )
                 {
                     const SvxFieldData* pField = pFieldItem->GetField();
-                    if ( pField->ISA(SvxURLField) )
+                    if ( dynamic_cast< const SvxURLField *>( pField ) !=  nullptr )
                     {
                         aHLinkItem.SetName(static_cast<const SvxURLField*>(pField)->GetRepresentation());
                         aHLinkItem.SetURL(static_cast<const SvxURLField*>(pField)->GetURL());
@@ -541,10 +538,12 @@ void OutlineViewShell::FuSupport(SfxRequest &rReq)
         break;
 
         case SID_DRAWINGMODE:
-        case SID_NOTESMODE:
-        case SID_HANDOUTMODE:
-        case SID_DIAMODE:
-        case SID_OUTLINEMODE:
+        case SID_SLIDE_MASTER_MODE:
+        case SID_NOTES_MODE:
+        case SID_NOTES_MASTER_MODE:
+        case SID_HANDOUT_MASTER_MODE:
+        case SID_SLIDE_SORTER_MODE:
+        case SID_OUTLINE_MODE:
             framework::FrameworkHelper::Instance(GetViewShellBase())->HandleModeChangeSlot(
                 nSlot,
                 rReq);
@@ -594,7 +593,7 @@ void OutlineViewShell::FuSupport(SfxRequest &rReq)
         case SID_TRANSLITERATE_HIRAGANA:
         case SID_TRANSLITERATE_KATAGANA:
         {
-            OutlinerView* pOLV = pOlView ? pOlView->GetViewByWindow( GetActiveWindow() ) : 0;
+            OutlinerView* pOLV = pOlView ? pOlView->GetViewByWindow( GetActiveWindow() ) : nullptr;
             if( pOLV )
             {
                 using namespace ::com::sun::star::i18n;
@@ -696,7 +695,7 @@ void OutlineViewShell::FuPermanent(SfxRequest &rReq)
     if(HasOldFunction())
     {
         GetOldFunction()->Deactivate();
-        SetOldFunction(0);
+        SetOldFunction(nullptr);
     }
 
     if(HasCurrentFunction())
@@ -727,11 +726,13 @@ void OutlineViewShell::GetMenuState( SfxItemSet &rSet )
 {
     ViewShell::GetMenuState(rSet);
 
-    rSet.Put(SfxBoolItem(SID_DIAMODE, false));
+    rSet.Put(SfxBoolItem(SID_SLIDE_SORTER_MODE, false));
     rSet.Put(SfxBoolItem(SID_DRAWINGMODE, false));
-    rSet.Put(SfxBoolItem(SID_OUTLINEMODE, true));
-    rSet.Put(SfxBoolItem(SID_NOTESMODE, false));
-    rSet.Put(SfxBoolItem(SID_HANDOUTMODE, false));
+    rSet.Put(SfxBoolItem(SID_SLIDE_MASTER_MODE, false));
+    rSet.Put(SfxBoolItem(SID_OUTLINE_MODE, true));
+    rSet.Put(SfxBoolItem(SID_NOTES_MODE, false));
+    rSet.Put(SfxBoolItem(SID_NOTES_MASTER_MODE, false));
+    rSet.Put(SfxBoolItem(SID_HANDOUT_MASTER_MODE, false));
 
     if (!mpZoomList->IsNextPossible())
     {
@@ -941,10 +942,10 @@ void OutlineViewShell::GetMenuState( SfxItemSet &rSet )
     {
         const SvxFieldItem* pFldItem = pOutlinerView->GetFieldAtSelection();
 
-        if( !( pFldItem && (pFldItem->GetField()->ISA( SvxDateField ) ||
-                            pFldItem->GetField()->ISA( SvxAuthorField ) ||
-                            pFldItem->GetField()->ISA( SvxExtFileField ) ||
-                            pFldItem->GetField()->ISA( SvxExtTimeField ) ) ) )
+        if( !( pFldItem && (nullptr != dynamic_cast< const SvxDateField *>( pFldItem->GetField() ) ||
+                            nullptr != dynamic_cast< const SvxAuthorField *>( pFldItem->GetField() ) ||
+                            nullptr != dynamic_cast< const SvxExtFileField *>( pFldItem->GetField() ) ||
+                            nullptr != dynamic_cast< const SvxExtTimeField *>( pFldItem->GetField() ) ) ) )
         {
             rSet.DisableItem( SID_MODIFY_FIELD );
         }
@@ -965,7 +966,7 @@ void OutlineViewShell::GetMenuState( SfxItemSet &rSet )
             {
                 SdrObject* pObj = pPage->GetPresObj(PRESOBJ_OUTLINE);
 
-                if (pObj!=NULL )
+                if (pObj!=nullptr )
                 {
                     if( !pObj->IsEmptyPresObj() )
                     {
@@ -1124,7 +1125,7 @@ bool OutlineViewShell::PrepareClose( bool bUI )
     if( !ViewShell::PrepareClose(bUI) )
         return false;
 
-    return pOlView == NULL || pOlView->PrepareClose(bUI);
+    return pOlView == nullptr || pOlView->PrepareClose(bUI);
 }
 
 /**
@@ -1194,7 +1195,7 @@ void OutlineViewShell::Execute(SfxRequest& rReq)
         case SID_SPELL_DIALOG:
         {
             SfxViewFrame* pViewFrame = GetViewFrame();
-            if (rReq.GetArgs() != NULL)
+            if (rReq.GetArgs() != nullptr)
                 pViewFrame->SetChildWindow (SID_SPELL_DIALOG,
                     static_cast<const SfxBoolItem&>(rReq.GetArgs()->
                         Get(SID_SPELL_DIALOG)).GetValue());
@@ -1310,8 +1311,8 @@ void OutlineViewShell::GetStatusBarState(SfxItemSet& rSet)
     std::vector<Paragraph*> aSelList;
     pActiveView->CreateSelectionList(aSelList);
 
-    Paragraph *pFirstPara = NULL;
-    Paragraph *pLastPara = NULL;
+    Paragraph *pFirstPara = nullptr;
+    Paragraph *pLastPara = nullptr;
 
     if (!aSelList.empty())
     {
@@ -1398,7 +1399,7 @@ bool OutlineViewShell::KeyInput(const KeyEvent& rKEvt, ::sd::Window* pWin)
     bool bReturn = false;
     OutlineViewPageChangesGuard aGuard(pOlView);
 
-    if (pWin == NULL && HasCurrentFunction())
+    if (pWin == nullptr && HasCurrentFunction())
     {
         bReturn = GetCurrentFunction()->KeyInput(rKEvt);
     }
@@ -1480,9 +1481,9 @@ void OutlineViewShell::GetAttrState( SfxItemSet& rSet )
 
             case SID_STYLE_EDIT:
             {
-                SfxPoolItem* pItem = NULL;
+                std::unique_ptr<SfxPoolItem> pItem;
                 GetViewFrame()->GetBindings().QueryState(SID_STYLE_FAMILY, pItem);
-                SfxUInt16Item* pFamilyItem = dynamic_cast<SfxUInt16Item*>(pItem);
+                SfxUInt16Item* pFamilyItem = dynamic_cast<SfxUInt16Item*>(pItem.get());
                 if (pFamilyItem && SfxTemplate::NIdToSfxFamilyId(pFamilyItem->GetValue()) == SD_STYLE_FAMILY_PSEUDO)
                 {
                     SfxItemSet aSet(*rSet.GetPool(), SID_STATUS_LAYOUT, SID_STATUS_LAYOUT);
@@ -1494,7 +1495,6 @@ void OutlineViewShell::GetAttrState( SfxItemSet& rSet )
                         rSet.DisableItem(nWhich);
                     }
                 }
-                delete pItem;
             }
             break;
 
@@ -1603,7 +1603,7 @@ bool OutlineViewShell::UpdateTitleObject( SdPage* pPage, Paragraph* pPara )
         }
 
         // if we have a title object and a text, set the text
-        OutlinerParaObject* pOPO = pTO ? rOutliner.CreateParaObject(rOutliner.GetAbsPos(pPara), 1) : NULL;
+        OutlinerParaObject* pOPO = pTO ? rOutliner.CreateParaObject(rOutliner.GetAbsPos(pPara), 1) : nullptr;
         if (pOPO)
         {
             pOPO->SetOutlinerMode( OUTLINERMODE_TITLEOBJECT );
@@ -1666,8 +1666,8 @@ bool OutlineViewShell::UpdateOutlineObject( SdPage* pPage, Paragraph* pPara )
         return false;
 
     ::Outliner&         rOutliner = pOlView->GetOutliner();
-    OutlinerParaObject* pOPO = NULL;
-    SdrTextObj*         pTO  = NULL;
+    OutlinerParaObject* pOPO = nullptr;
+    SdrTextObj*         pTO  = nullptr;
 
     bool bNewObject = false;
 
@@ -1821,14 +1821,14 @@ sal_uLong OutlineViewShell::Read(SvStream& rInput, const OUString& rBaseURL, sal
     return bRet;
 }
 
-void OutlineViewShell::WriteUserDataSequence ( ::com::sun::star::uno::Sequence < ::com::sun::star::beans::PropertyValue >& rSequence, bool bBrowse )
+void OutlineViewShell::WriteUserDataSequence ( css::uno::Sequence < css::beans::PropertyValue >& rSequence, bool bBrowse )
 {
     WriteFrameViewData();
 
     ViewShell::WriteUserDataSequence( rSequence, bBrowse );
 }
 
-void OutlineViewShell::ReadUserDataSequence ( const ::com::sun::star::uno::Sequence < ::com::sun::star::beans::PropertyValue >& rSequence, bool bBrowse )
+void OutlineViewShell::ReadUserDataSequence ( const css::uno::Sequence < css::beans::PropertyValue >& rSequence, bool bBrowse )
 {
     WriteFrameViewData();
 
@@ -1848,12 +1848,11 @@ void OutlineViewShell::VisAreaChanged(const Rectangle& rRect)
     <type>AccessibleDrawDocumentView</type>.  Otherwise return an empty
     reference.
 */
-::com::sun::star::uno::Reference<
-    ::com::sun::star::accessibility::XAccessible>
+css::uno::Reference<css::accessibility::XAccessible>
     OutlineViewShell::CreateAccessibleDocumentView (::sd::Window* pWindow)
 {
-    OSL_ASSERT (GetViewShell()!=NULL);
-    if (GetViewShell()->GetController() != NULL)
+    OSL_ASSERT (GetViewShell()!=nullptr);
+    if (GetViewShell()->GetController() != nullptr)
     {
         ::accessibility::AccessibleOutlineView* pDocumentView =
             new ::accessibility::AccessibleOutlineView (
@@ -1862,14 +1861,13 @@ void OutlineViewShell::VisAreaChanged(const Rectangle& rRect)
                 GetViewShell()->GetController(),
                 pWindow->GetAccessibleParentWindow()->GetAccessible());
         pDocumentView->Init();
-        return ::com::sun::star::uno::Reference<
-            ::com::sun::star::accessibility::XAccessible>
-            (static_cast< ::com::sun::star::uno::XWeak*>(pDocumentView),
-                ::com::sun::star::uno::UNO_QUERY);
+        return css::uno::Reference<css::accessibility::XAccessible>
+            (static_cast< css::uno::XWeak*>(pDocumentView),
+                css::uno::UNO_QUERY);
     }
 
     OSL_TRACE ("OutlineViewShell::CreateAccessibleDocumentView: no controller");
-    return ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible >();
+    return css::uno::Reference< css::accessibility::XAccessible >();
 }
 
 void OutlineViewShell::GetState (SfxItemSet& rSet)

@@ -21,9 +21,8 @@
 
 #include <ooo/vba/word/XRevision.hpp>
 #include <vbahelper/vbahelperinterface.hxx>
-#include <cppuhelper/implbase1.hxx>
 
-typedef InheritedHelperInterfaceImpl1< ooo::vba::word::XRevision > SwVbaRevision_BASE;
+typedef InheritedHelperInterfaceWeakImpl< ooo::vba::word::XRevision > SwVbaRevision_BASE;
 
 class SwVbaRevision : public SwVbaRevision_BASE
 {
@@ -39,12 +38,12 @@ public:
     virtual ~SwVbaRevision();
 
     // Methods
-    virtual void SAL_CALL Accept(  ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL Reject(  ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL Accept(  ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL Reject(  ) throw (css::uno::RuntimeException, std::exception) override;
 
     // XHelperInterface
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 #endif // INCLUDED_SW_SOURCE_UI_VBA_VBAREVISION_HXX
 

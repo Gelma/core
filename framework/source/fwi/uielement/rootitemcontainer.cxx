@@ -35,7 +35,7 @@ using namespace com::sun::star::lang;
 using namespace com::sun::star::beans;
 using namespace com::sun::star::container;
 
-const char WRONG_TYPE_EXCEPTION[] = "Type must be com::sun::star::uno::Sequence< com::sun::star::beans::PropertyValue >";
+const char WRONG_TYPE_EXCEPTION[] = "Type must be css::uno::Sequence< css::beans::PropertyValue >";
 
 const int PROPHANDLE_UINAME     = 1;
 const int PROPCOUNT             = 1;
@@ -128,19 +128,19 @@ Reference< XIndexAccess > RootItemContainer::deepCopyContainer( const Reference<
     if ( rSubContainer.is() )
     {
         ConstItemContainer* pSource = ConstItemContainer::GetImplementation( rSubContainer );
-        ItemContainer* pSubContainer( 0 );
+        ItemContainer* pSubContainer( nullptr );
         if ( pSource )
             pSubContainer = new ItemContainer( *pSource, m_aShareMutex );
         else
             pSubContainer = new ItemContainer( rSubContainer, m_aShareMutex );
-        xReturn = Reference< XIndexAccess >( static_cast< OWeakObject* >( pSubContainer ), UNO_QUERY );
+        xReturn.set( static_cast< OWeakObject* >( pSubContainer ), UNO_QUERY );
     }
 
     return xReturn;
 }
 
 // XUnoTunnel
-sal_Int64 RootItemContainer::getSomething( const ::com::sun::star::uno::Sequence< sal_Int8 >& rIdentifier ) throw(::com::sun::star::uno::RuntimeException, std::exception)
+sal_Int64 RootItemContainer::getSomething( const css::uno::Sequence< sal_Int8 >& rIdentifier ) throw(css::uno::RuntimeException, std::exception)
 {
     if( ( rIdentifier.getLength() == 16 ) && ( 0 == memcmp( RootItemContainer::GetUnoTunnelId().getConstArray(), rIdentifier.getConstArray(), 16 ) ) )
         return sal::static_int_cast< sal_Int64 >( reinterpret_cast< sal_IntPtr >( this ));
@@ -157,11 +157,11 @@ const Sequence< sal_Int8 >& RootItemContainer::GetUnoTunnelId() throw()
     return theRootItemContainerUnoTunnelId::get().getSeq();
 }
 
-RootItemContainer* RootItemContainer::GetImplementation( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >& rxIFace ) throw()
+RootItemContainer* RootItemContainer::GetImplementation( const css::uno::Reference< css::uno::XInterface >& rxIFace ) throw()
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::lang::XUnoTunnel > xUT( rxIFace, ::com::sun::star::uno::UNO_QUERY );
+    css::uno::Reference< css::lang::XUnoTunnel > xUT( rxIFace, css::uno::UNO_QUERY );
     return xUT.is() ? reinterpret_cast< RootItemContainer* >(sal::static_int_cast< sal_IntPtr >(
-                          xUT->getSomething( RootItemContainer::GetUnoTunnelId() ))) : NULL;
+                          xUT->getSomething( RootItemContainer::GetUnoTunnelId() ))) : nullptr;
 }
 
 // XElementAccess
@@ -258,7 +258,7 @@ sal_Bool SAL_CALL RootItemContainer::convertFastPropertyValue( Any&       aConve
                                                                Any&       aOldValue       ,
                                                                sal_Int32  nHandle         ,
                                                                const Any& aValue             )
-throw( com::sun::star::lang::IllegalArgumentException )
+throw( css::lang::IllegalArgumentException )
 {
     //  Initialize state with sal_False !!!
     //  (Handle can be invalid)
@@ -268,7 +268,7 @@ throw( com::sun::star::lang::IllegalArgumentException )
     {
         case PROPHANDLE_UINAME:
             bReturn = PropHelper::willPropertyBeChanged(
-                        com::sun::star::uno::makeAny(m_aUIName),
+                        css::uno::makeAny(m_aUIName),
                         aValue,
                         aOldValue,
                         aConvertedValue);
@@ -280,8 +280,8 @@ throw( com::sun::star::lang::IllegalArgumentException )
 }
 
 void SAL_CALL RootItemContainer::setFastPropertyValue_NoBroadcast( sal_Int32               nHandle ,
-                                                                   const com::sun::star::uno::Any&    aValue  )
-throw( com::sun::star::uno::Exception, std::exception )
+                                                                   const css::uno::Any&    aValue  )
+throw( css::uno::Exception, std::exception )
 {
     switch( nHandle )
     {
@@ -291,7 +291,7 @@ throw( com::sun::star::uno::Exception, std::exception )
     }
 }
 
-void SAL_CALL RootItemContainer::getFastPropertyValue( com::sun::star::uno::Any& aValue  ,
+void SAL_CALL RootItemContainer::getFastPropertyValue( css::uno::Any& aValue  ,
                                                        sal_Int32                 nHandle                ) const
 {
     switch( nHandle )
@@ -307,15 +307,15 @@ void SAL_CALL RootItemContainer::getFastPropertyValue( com::sun::star::uno::Any&
     // Optimize this method !
     // We initialize a static variable only one time. And we don't must use a mutex at every call!
     // For the first call; pInfoHelper is NULL - for the second call pInfoHelper is different from NULL!
-    static ::cppu::OPropertyArrayHelper* pInfoHelper = NULL;
+    static ::cppu::OPropertyArrayHelper* pInfoHelper = nullptr;
 
-    if( pInfoHelper == NULL )
+    if( pInfoHelper == nullptr )
     {
         // Ready for multithreading
         osl::MutexGuard aGuard( osl::Mutex::getGlobalMutex() );
 
         // Control this pointer again, another instance can be faster then these!
-        if( pInfoHelper == NULL )
+        if( pInfoHelper == nullptr )
         {
             // Define static member to give structure of properties to baseclass "OPropertySetHelper".
             // "impl_getStaticPropertyDescriptor" is a non exported and static function, who will define a static propertytable.
@@ -328,24 +328,24 @@ void SAL_CALL RootItemContainer::getFastPropertyValue( com::sun::star::uno::Any&
     return(*pInfoHelper);
 }
 
-com::sun::star::uno::Reference< com::sun::star::beans::XPropertySetInfo > SAL_CALL RootItemContainer::getPropertySetInfo()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+css::uno::Reference< css::beans::XPropertySetInfo > SAL_CALL RootItemContainer::getPropertySetInfo()
+throw (css::uno::RuntimeException, std::exception)
 {
     // Optimize this method !
     // We initialize a static variable only one time. And we don't must use a mutex at every call!
     // For the first call; pInfo is NULL - for the second call pInfo is different from NULL!
-    static com::sun::star::uno::Reference< com::sun::star::beans::XPropertySetInfo >* pInfo = NULL;
+    static css::uno::Reference< css::beans::XPropertySetInfo >* pInfo = nullptr;
 
-    if( pInfo == NULL )
+    if( pInfo == nullptr )
     {
         // Ready for multithreading
         osl::MutexGuard aGuard( osl::Mutex::getGlobalMutex() );
         // Control this pointer again, another instance can be faster then these!
-        if( pInfo == NULL )
+        if( pInfo == nullptr )
         {
             // Create structure of propertysetinfo for baseclass "OPropertySetHelper".
             // (Use method "getInfoHelper()".)
-            static com::sun::star::uno::Reference< com::sun::star::beans::XPropertySetInfo > xInfo( createPropertySetInfo( getInfoHelper() ) );
+            static css::uno::Reference< css::beans::XPropertySetInfo > xInfo( createPropertySetInfo( getInfoHelper() ) );
             pInfo = &xInfo;
         }
     }
@@ -353,7 +353,7 @@ throw (::com::sun::star::uno::RuntimeException, std::exception)
     return (*pInfo);
 }
 
-const com::sun::star::uno::Sequence< com::sun::star::beans::Property > RootItemContainer::impl_getStaticPropertyDescriptor()
+const css::uno::Sequence< css::beans::Property > RootItemContainer::impl_getStaticPropertyDescriptor()
 {
     // Create a property array to initialize sequence!
     // Table of all predefined properties of this class. Its used from OPropertySetHelper-class!
@@ -362,14 +362,14 @@ const com::sun::star::uno::Sequence< com::sun::star::beans::Property > RootItemC
     // ATTENTION:
     //      YOU MUST SORT FOLLOW TABLE BY NAME ALPHABETICAL !!!
 
-    const com::sun::star::beans::Property pProperties[] =
+    const css::beans::Property pProperties[] =
     {
-        com::sun::star::beans::Property( OUString(PROPNAME_UINAME), PROPHANDLE_UINAME ,
+        css::beans::Property( OUString(PROPNAME_UINAME), PROPHANDLE_UINAME ,
                                          cppu::UnoType<OUString>::get(),
-                                         com::sun::star::beans::PropertyAttribute::TRANSIENT )
+                                         css::beans::PropertyAttribute::TRANSIENT )
     };
     // Use it to initialize sequence!
-    const com::sun::star::uno::Sequence< com::sun::star::beans::Property > lPropertyDescriptor( pProperties, PROPCOUNT );
+    const css::uno::Sequence< css::beans::Property > lPropertyDescriptor( pProperties, PROPCOUNT );
     // Return "PropertyDescriptor"
     return lPropertyDescriptor;
 }

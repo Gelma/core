@@ -62,21 +62,18 @@ public:
     FolderDescriptor (
         int nPriority,
         const OUString& rsTitle,
-        const OUString& rsTargetDir,
         const OUString& rsContentIdentifier,
-        const Reference<com::sun::star::ucb::XCommandEnvironment>& rxFolderEnvironment)
+        const Reference<css::ucb::XCommandEnvironment>& rxFolderEnvironment)
         : mnPriority(nPriority),
           msTitle(rsTitle),
-          msTargetDir(rsTargetDir),
           msContentIdentifier(rsContentIdentifier),
           mxFolderEnvironment(rxFolderEnvironment)
     { }
     int mnPriority;
     OUString msTitle;
-    OUString msTargetDir;
     OUString msContentIdentifier;
     //    Reference<sdbc::XResultSet> mxFolderResultSet;
-    Reference<com::sun::star::ucb::XCommandEnvironment> mxFolderEnvironment;
+    Reference<css::ucb::XCommandEnvironment> mxFolderEnvironment;
 
     class Comparator
     {
@@ -141,7 +138,7 @@ void TemplateDir::EnableSorting(bool bSortingEnabled)
     mbSortingEnabled = bSortingEnabled;
     if (mbSortingEnabled)
     {
-        if (mpEntryCompare.get() == NULL)
+        if (mpEntryCompare.get() == nullptr)
             mpEntryCompare.reset(new TemplateEntryCompare);
 
         ::std::sort(maEntries.begin(), maEntries.end(), *mpEntryCompare);
@@ -168,10 +165,10 @@ class TemplateScanner::FolderDescriptorList
 TemplateScanner::TemplateScanner()
     : meState(INITIALIZE_SCANNING),
       maFolderContent(),
-      mpTemplateDirectory(NULL),
+      mpTemplateDirectory(nullptr),
       maFolderList(),
       mbEntrySortingEnabled(false),
-      mpLastAddedEntry(NULL),
+      mpLastAddedEntry(nullptr),
       mpFolderDescriptors(new FolderDescriptorList()),
       mxTemplateRoot(),
       mxFolderEnvironment(),
@@ -190,7 +187,7 @@ TemplateScanner::~TemplateScanner()
     // transferred to another object.
     std::vector<TemplateDir*>::iterator I;
     for (I=maFolderList.begin(); I!=maFolderList.end(); ++I)
-        if (*I != NULL)
+        if (*I != nullptr)
             delete *I;
 }
 
@@ -211,7 +208,7 @@ TemplateScanner::State TemplateScanner::InitializeEntryScanning()
 
     if (maFolderContent.isFolder())
     {
-        mxEntryEnvironment = Reference<com::sun::star::ucb::XCommandEnvironment>();
+        mxEntryEnvironment.clear();
 
         //  We are interested only in three properties: the entry's name,
         //  its URL, and its content type.
@@ -222,8 +219,7 @@ TemplateScanner::State TemplateScanner::InitializeEntryScanning()
 
         //  Create a cursor to iterate over the templates in this folders.
         ::ucbhelper::ResultSetInclude eInclude = ::ucbhelper::INCLUDE_DOCUMENTS_ONLY;
-        mxEntryResultSet = Reference<com::sun::star::sdbc::XResultSet>(
-            maFolderContent.createCursor(aProps, eInclude));
+        mxEntryResultSet.set( maFolderContent.createCursor(aProps, eInclude));
     }
     else
         eNextState = ERROR;
@@ -235,8 +231,8 @@ TemplateScanner::State TemplateScanner::ScanEntry()
 {
     State eNextState (ERROR);
 
-    Reference<com::sun::star::ucb::XContentAccess> xContentAccess (mxEntryResultSet, UNO_QUERY);
-    Reference<com::sun::star::sdbc::XRow> xRow (mxEntryResultSet, UNO_QUERY);
+    Reference<css::ucb::XContentAccess> xContentAccess (mxEntryResultSet, UNO_QUERY);
+    Reference<css::sdbc::XRow> xRow (mxEntryResultSet, UNO_QUERY);
 
     if (xContentAccess.is() && xRow.is() && mxEntryResultSet.is())
     {
@@ -274,7 +270,7 @@ TemplateScanner::State TemplateScanner::ScanEntry()
             if (mpTemplateDirectory->maEntries.empty())
             {
                 delete mpTemplateDirectory;
-                mpTemplateDirectory = NULL;
+                mpTemplateDirectory = nullptr;
             }
             else
             {
@@ -294,12 +290,12 @@ TemplateScanner::State TemplateScanner::InitializeFolderScanning()
 {
     State eNextState (ERROR);
 
-    mxFolderResultSet = Reference<sdbc::XResultSet>();
+    mxFolderResultSet.clear();
 
     try
     {
         //  Create content for template folders.
-        mxFolderEnvironment = Reference<com::sun::star::ucb::XCommandEnvironment>();
+        mxFolderEnvironment.clear();
         ::ucbhelper::Content aTemplateDir (mxTemplateRoot, mxFolderEnvironment, comphelper::getProcessComponentContext());
 
         //  Define the list of properties we are interested in.
@@ -309,12 +305,11 @@ TemplateScanner::State TemplateScanner::InitializeFolderScanning()
 
         //  Create an cursor to iterate over the template folders.
         ::ucbhelper::ResultSetInclude eInclude = ::ucbhelper::INCLUDE_FOLDERS_ONLY;
-        mxFolderResultSet = Reference<sdbc::XResultSet>(
-            aTemplateDir.createCursor(aProps, eInclude));
+        mxFolderResultSet.set( aTemplateDir.createCursor(aProps, eInclude));
         if (mxFolderResultSet.is())
             eNextState = GATHER_FOLDER_LIST;
     }
-    catch (::com::sun::star::uno::Exception&)
+    catch (css::uno::Exception&)
     {
        eNextState = ERROR;
     }
@@ -326,7 +321,7 @@ TemplateScanner::State TemplateScanner::GatherFolderList()
 {
     State eNextState (ERROR);
 
-    Reference<com::sun::star::ucb::XContentAccess> xContentAccess (mxFolderResultSet, UNO_QUERY);
+    Reference<css::ucb::XContentAccess> xContentAccess (mxFolderResultSet, UNO_QUERY);
     if (xContentAccess.is() && mxFolderResultSet.is())
     {
         while (mxFolderResultSet->next())
@@ -342,7 +337,6 @@ TemplateScanner::State TemplateScanner::GatherFolderList()
                     FolderDescriptor(
                         Classify(sTitle,sTargetDir),
                         sTitle,
-                        sTargetDir,
                         aId,
                         mxFolderEnvironment));
             }
@@ -364,7 +358,6 @@ TemplateScanner::State TemplateScanner::ScanFolder()
         mpFolderDescriptors->erase(mpFolderDescriptors->begin());
 
         OUString sTitle (aDescriptor.msTitle);
-        OUString sTargetDir (aDescriptor.msTargetDir);
         OUString aId (aDescriptor.msContentIdentifier);
 
         maFolderContent = ::ucbhelper::Content (aId, aDescriptor.mxFolderEnvironment, comphelper::getProcessComponentContext());
@@ -372,7 +365,7 @@ TemplateScanner::State TemplateScanner::ScanFolder()
         {
             // Scan the folder and insert it into the list of template
             // folders.
-            mpTemplateDirectory = new TemplateDir (sTitle, sTargetDir);
+            mpTemplateDirectory = new TemplateDir (sTitle);
             mpTemplateDirectory->EnableSorting(mbEntrySortingEnabled);
             // Continue with scanning all entries in the folder.
             eNextState = INITIALIZE_ENTRY_SCAN;
@@ -433,7 +426,7 @@ void TemplateScanner::RunNextStep()
             mxEntryEnvironment.clear();
             mxFolderResultSet.clear();
             mxEntryResultSet.clear();
-            mpLastAddedEntry = NULL;
+            mpLastAddedEntry = nullptr;
             break;
         default:
             break;

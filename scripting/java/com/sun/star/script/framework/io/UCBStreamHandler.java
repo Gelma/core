@@ -207,13 +207,12 @@ public class UCBStreamHandler extends URLStreamHandler {
             InputStream is) throws
         IOException {
 
-        ZipEntry entry;
         ZipInputStream zis = new ZipInputStream(is);
 
         while (zis.available() != 0) {
-            entry = zis.getNextEntry();
+            ZipEntry entry = zis.getNextEntry();
 
-            if (entry.getName().equals(file)) {
+            if (entry != null && entry.getName().equals(file)) {
                 return zis;
             }
         }
@@ -236,10 +235,8 @@ public class UCBStreamHandler extends URLStreamHandler {
 
             // TODO don't depend on result of available() or size()
             // just read stream 'till complete
-            if (sz == 0) {
-                if (xInputStream.available() > 0) {
-                    sz = xInputStream.available();
-                }
+            if (sz == 0 && xInputStream.available() > 0) {
+                sz = xInputStream.available();
             }
 
             LogUtils.DEBUG("size of file " + path  + " is " + sz);

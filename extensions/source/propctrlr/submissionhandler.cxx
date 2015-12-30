@@ -93,7 +93,7 @@ namespace pcr
     SubmissionPropertyHandler::SubmissionPropertyHandler( const Reference< XComponentContext >& _rxContext )
         :EditPropertyHandler_Base( _rxContext )
         ,OPropertyChangeListener( m_aMutex )
-        ,m_pPropChangeMultiplexer( NULL )
+        ,m_pPropChangeMultiplexer( nullptr )
     {
     }
 
@@ -112,8 +112,7 @@ namespace pcr
 
     Sequence< OUString > SAL_CALL SubmissionPropertyHandler::getSupportedServiceNames_static(  ) throw (RuntimeException)
     {
-        Sequence< OUString > aSupported( 1 );
-        aSupported[0] = "com.sun.star.form.inspection.SubmissionPropertyHandler";
+        Sequence<OUString> aSupported { "com.sun.star.form.inspection.SubmissionPropertyHandler" };
         return aSupported;
     }
 
@@ -216,8 +215,7 @@ namespace pcr
         if ( !m_pHelper.get() )
             return Sequence< OUString >();
 
-        Sequence< OUString > aReturn( 1 );
-        aReturn[ 0 ] = PROPERTY_XFORMS_BUTTONTYPE;
+        Sequence<OUString> aReturn { PROPERTY_XFORMS_BUTTONTYPE };
         return aReturn;
     }
 
@@ -242,7 +240,7 @@ namespace pcr
         {
             m_pPropChangeMultiplexer->dispose();
             m_pPropChangeMultiplexer->release();
-            m_pPropChangeMultiplexer = NULL;
+            m_pPropChangeMultiplexer = nullptr;
         }
 
         EditPropertyHandler_Base::onNewComponent();

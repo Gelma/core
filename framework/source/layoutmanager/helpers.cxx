@@ -39,17 +39,17 @@ using namespace com::sun::star;
 namespace framework
 {
 
-bool hasEmptySize( const ::com::sun::star::awt::Size& rSize )
+bool hasEmptySize( const css::awt::Size& rSize )
 {
     return ( rSize.Width == 0 ) && ( rSize.Height == 0 );
 }
 
-bool hasDefaultPosValue( const ::com::sun::star::awt::Point& rPos )
+bool hasDefaultPosValue( const css::awt::Point& rPos )
 {
     return (( rPos.X == SAL_MAX_INT32 ) || ( rPos.Y == SAL_MAX_INT32 ));
 }
 
-bool isDefaultPos( const ::com::sun::star::awt::Point& rPos )
+bool isDefaultPos( const css::awt::Point& rPos )
 {
     return (( rPos.X == SAL_MAX_INT32 ) && ( rPos.Y == SAL_MAX_INT32 ));
 }
@@ -101,7 +101,7 @@ OUString retrieveToolbarNameFromHelpURL( vcl::Window* pWindow )
 
 ToolBox* getToolboxPtr( vcl::Window* pWindow )
 {
-    ToolBox* pToolbox(NULL);
+    ToolBox* pToolbox(nullptr);
     if ( pWindow->GetType() == WINDOW_TOOLBOX )
         pToolbox = dynamic_cast<ToolBox*>( pWindow );
     return pToolbox;
@@ -112,7 +112,7 @@ vcl::Window* getWindowFromXUIElement( const uno::Reference< ui::XUIElement >& xU
     SolarMutexGuard aGuard;
     uno::Reference< awt::XWindow > xWindow;
     if ( xUIElement.is() )
-        xWindow = uno::Reference< awt::XWindow >( xUIElement->getRealInterface(), uno::UNO_QUERY );
+        xWindow.set( xUIElement->getRealInterface(), uno::UNO_QUERY );
     return VCLUnoHelper::GetWindow( xWindow );
 }
 
@@ -125,7 +125,7 @@ SystemWindow* getTopSystemWindow( const uno::Reference< awt::XWindow >& xWindow 
     if ( pWindow )
         return static_cast<SystemWindow *>(pWindow);
     else
-        return 0;
+        return nullptr;
 }
 
 void setZeroRectangle( ::Rectangle& rRect )
@@ -170,7 +170,7 @@ uno::Reference< awt::XWindowPeer > createToolkitWindow( const uno::Reference< un
     aDescriptor.Type                =   awt::WindowClass_SIMPLE;
     aDescriptor.WindowServiceName   =   OUString::createFromAscii( pService );
     aDescriptor.ParentIndex         =   -1;
-    aDescriptor.Parent              =   uno::Reference< awt::XWindowPeer >( rParent, uno::UNO_QUERY );
+    aDescriptor.Parent.set( rParent, uno::UNO_QUERY );
     aDescriptor.Bounds              =   awt::Rectangle(0,0,0,0);
     aDescriptor.WindowAttributes    =   0;
 
@@ -224,7 +224,7 @@ void parseResourceURL( const OUString& aResourceURL, OUString& aElementType, OUS
     }
 }
 
-::com::sun::star::awt::Rectangle putRectangleValueToAWT( const ::Rectangle& rRect )
+css::awt::Rectangle putRectangleValueToAWT( const ::Rectangle& rRect )
 {
     css::awt::Rectangle aRect;
     aRect.X = rRect.Left();
@@ -235,7 +235,7 @@ void parseResourceURL( const OUString& aResourceURL, OUString& aElementType, OUS
     return aRect;
 }
 
-::Rectangle putAWTToRectangle( const ::com::sun::star::awt::Rectangle& rRect )
+::Rectangle putAWTToRectangle( const css::awt::Rectangle& rRect )
 {
     ::Rectangle aRect;
     aRect.Left() = rRect.X;
@@ -300,18 +300,13 @@ bool implts_isFrameOrWindowTop( const uno::Reference< frame::XFrame >& xFrame )
 
 void impl_setDockingWindowVisibility( const css::uno::Reference< css::uno::XComponentContext>& rxContext, const css::uno::Reference< css::frame::XFrame >& rFrame, const OUString& rDockingWindowName, bool bVisible )
 {
-    const OUString aDockWinPrefixCommand( "DockingWindow" );
-
     sal_Int32 nID    = rDockingWindowName.toInt32();
     sal_Int32 nIndex = nID - DOCKWIN_ID_BASE;
 
     css::uno::Reference< css::frame::XDispatchProvider > xProvider(rFrame, css::uno::UNO_QUERY);
     if ( nIndex >= 0 && xProvider.is() )
     {
-        OUString aDockWinCommand( ".uno:" );
-        OUString aDockWinArgName( aDockWinPrefixCommand );
-
-        aDockWinArgName += OUString::number( nIndex );
+        OUString aDockWinArgName = "DockingWindow" + OUString::number( nIndex );
 
         css::uno::Sequence< css::beans::PropertyValue > aArgs(1);
         aArgs[0].Name  = aDockWinArgName;
@@ -319,11 +314,11 @@ void impl_setDockingWindowVisibility( const css::uno::Reference< css::uno::XComp
 
         css::uno::Reference< css::frame::XDispatchHelper > xDispatcher = css::frame::DispatchHelper::create( rxContext );
 
-        aDockWinCommand = aDockWinCommand + aDockWinArgName;
+        OUString aDockWinCommand = ".uno:" + aDockWinArgName;
         xDispatcher->executeDispatch(
             xProvider,
             aDockWinCommand,
-            OUString("_self"),
+            "_self",
             0,
             aArgs);
     }

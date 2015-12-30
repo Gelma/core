@@ -51,7 +51,7 @@ OScrollWindowHelper::OScrollWindowHelper( ODesignView* _pDesignView)
     ,m_aCornerWin( VclPtr<ScrollBarBox>::Create(this) )
     ,m_pParent(_pDesignView)
     ,m_aReportWindow(VclPtr<rptui::OReportWindow>::Create(this,m_pParent))
-    ,m_pReportDefinitionMultiPlexer(NULL)
+    ,m_pReportDefinitionMultiPlexer(nullptr)
 {
     SetMapMode( MapMode( MAP_100TH_MM ) );
 
@@ -305,7 +305,7 @@ OSectionWindow* OScrollWindowHelper::getMarkedSection(NearSectionAccess nsa) con
     return m_aReportWindow->getMarkedSection(nsa);
 }
 
-OSectionWindow* OScrollWindowHelper::getSectionWindow(const ::com::sun::star::uno::Reference< ::com::sun::star::report::XSection>& _xSection) const
+OSectionWindow* OScrollWindowHelper::getSectionWindow(const css::uno::Reference< css::report::XSection>& _xSection) const
 {
     return  m_aReportWindow->getSectionWindow(_xSection);
 }
@@ -320,7 +320,7 @@ void OScrollWindowHelper::fillCollapsedSections(::std::vector<sal_uInt16>& _rCol
     m_aReportWindow->fillCollapsedSections(_rCollapsedPositions);
 }
 
-void OScrollWindowHelper::collapseSections(const uno::Sequence< ::com::sun::star::beans::PropertyValue>& _aCollpasedSections)
+void OScrollWindowHelper::collapseSections(const uno::Sequence< css::beans::PropertyValue>& _aCollpasedSections)
 {
     m_aReportWindow->collapseSections(_aCollpasedSections);
 }
@@ -333,8 +333,8 @@ bool OScrollWindowHelper::Notify( NotifyEvent& rNEvt )
          (pCommandEvent->GetCommand() == CommandEventId::StartAutoScroll) ||
          (pCommandEvent->GetCommand() == CommandEventId::AutoScroll))) )
     {
-        ScrollBar* pHScrBar = NULL;
-        ScrollBar* pVScrBar = NULL;
+        ScrollBar* pHScrBar = nullptr;
+        ScrollBar* pVScrBar = nullptr;
         if ( m_aHScroll->IsVisible() )
             pHScrBar = m_aHScroll.get();
 

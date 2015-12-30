@@ -63,7 +63,7 @@ bool MenuWindow::ImplHandleHelpEvent(vcl::Window* pMenuWindow, Menu* pMenu, sal_
 
         Rectangle aRect( aPos, Size() );
         if (!pMenu->GetHelpText(nId).isEmpty())
-            Help::ShowBalloon( pMenuWindow, aPos, pMenu->GetHelpText( nId ) );
+            Help::ShowBalloon( pMenuWindow, aPos, aRect, pMenu->GetHelpText( nId ) );
         else
         {
             // give user a chance to read the full filename
@@ -99,9 +99,9 @@ bool MenuWindow::ImplHandleHelpEvent(vcl::Window* pMenuWindow, Menu* pMenu, sal_
                 aHelpId = OOO_HELP_INDEX;
 
             if ( !aCommand.isEmpty() )
-                pHelp->Start( aCommand, NULL );
+                pHelp->Start( aCommand, nullptr );
             else
-                pHelp->Start( OStringToOUString( aHelpId, RTL_TEXTENCODING_UTF8 ), NULL );
+                pHelp->Start( OStringToOUString( aHelpId, RTL_TEXTENCODING_UTF8 ), nullptr );
         }
         bDone = true;
     }

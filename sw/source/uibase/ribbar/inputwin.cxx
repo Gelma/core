@@ -61,9 +61,9 @@ SwInputWindow::SwInputWindow( vcl::Window* pParent )
     aPos(       VclPtr<Edit>::Create(this,       SW_RES(ED_POS))),
     aEdit(      VclPtr<InputEdit>::Create(this, WB_3DLOOK|WB_TABSTOP|WB_BORDER|WB_NOHIDESELECTION)),
     aPopMenu(   SW_RES(MN_CALC_POPUP)),
-    pMgr(0),
-    pWrtShell(0),
-    pView(0),
+    pMgr(nullptr),
+    pWrtShell(nullptr),
+    pView(nullptr),
     aAktTableName(aEmptyOUStr)
     , m_bDoesUndo(true)
     , m_bResetUndo(false)
@@ -80,7 +80,7 @@ SwInputWindow::SwInputWindow( vcl::Window* pParent )
     pManager->RegisterToolBox(this);
 
     pView = ::GetActiveView();
-    pWrtShell = pView ? pView->GetWrtShellPtr() : 0;
+    pWrtShell = pView ? pView->GetWrtShellPtr() : nullptr;
 
     InsertWindow( ED_POS, aPos.get(), ToolBoxItemBits::NONE, 0);
     SetItemText(ED_POS, SW_RESSTR(STR_ACCESS_FORMULA_TYPE));
@@ -206,7 +206,7 @@ void SwInputWindow::ShowWin()
 
         OSL_ENSURE(pWrtShell, "no WrtShell!");
         // Cursor in table
-        bIsTable = pWrtShell->IsCrsrInTable();
+        bIsTable = pWrtShell->IsCursorInTable();
 
         if( bFirst )
             pWrtShell->SelTableCells( LINK( this, SwInputWindow,
@@ -225,7 +225,7 @@ void SwInputWindow::ShowWin()
             aPos->SetText(SW_RESSTR(STR_TBL_FORMULA));
 
         // Edit current field
-        OSL_ENSURE(pMgr == 0, "FieldManager not deleted");
+        OSL_ENSURE(pMgr == nullptr, "FieldManager not deleted");
         pMgr = new SwFieldMgr;
 
         // Formular should always begin with "=" , so set here
@@ -249,13 +249,13 @@ void SwInputWindow::ShowWin()
                     pWrtShell->DoUndo();
                 }
 
-                if( !pWrtShell->SwCrsrShell::HasSelection() )
+                if( !pWrtShell->SwCursorShell::HasSelection() )
                 {
                     pWrtShell->MoveSection( fnSectionCurr, fnSectionStart );
                     pWrtShell->SetMark();
                     pWrtShell->MoveSection( fnSectionCurr, fnSectionEnd );
                 }
-                if( pWrtShell->SwCrsrShell::HasSelection() )
+                if( pWrtShell->SwCursorShell::HasSelection() )
                 {
                     pWrtShell->StartUndo( UNDO_DELETE );
                     pWrtShell->Delete();
@@ -391,7 +391,7 @@ void  SwInputWindow::ApplyFormula()
     pView->GetEditWin().GrabFocus();
     const SfxPoolItem* aArgs[2];
     aArgs[0] = &aParam;
-    aArgs[1] = 0;
+    aArgs[1] = nullptr;
     pView->GetViewFrame()->GetBindings().Execute( FN_EDIT_FORMULA, aArgs, 0, SfxCallMode::ASYNCHRON );
 }
 
@@ -442,7 +442,7 @@ IMPL_LINK_TYPED( SwInputWindow, SelTableCellsNotify, SwWrtShell&, rCaller, void 
             // positioned "in the forest" and the live update does not work!
             pWrtShell->StartAllAction();
 
-            SwPaM aPam( *pWrtShell->GetStkCrsr()->GetPoint() );
+            SwPaM aPam( *pWrtShell->GetStackCursor()->GetPoint() );
             aPam.Move( fnMoveBackward, fnGoSection );
             aPam.SetMark();
             aPam.Move( fnMoveForward, fnGoSection );
@@ -474,7 +474,7 @@ void SwInputWindow::SetFormula( const OUString& rFormula, bool bDelFlag )
     bDelSel = bDelFlag;
 }
 
-IMPL_LINK_NOARG(SwInputWindow, ModifyHdl)
+IMPL_LINK_NOARG_TYPED(SwInputWindow, ModifyHdl, Edit&, void)
 {
     if (bIsTable && m_bResetUndo)
     {
@@ -488,7 +488,6 @@ IMPL_LINK_NOARG(SwInputWindow, ModifyHdl)
         pWrtShell->EndAllAction();
         sOldFormula = sNew;
     }
-    return 0;
 }
 
 void SwInputWindow::DelBoxContent()

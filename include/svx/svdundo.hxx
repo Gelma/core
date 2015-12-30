@@ -20,6 +20,10 @@
 #ifndef INCLUDED_SVX_SVDUNDO_HXX
 #define INCLUDED_SVX_SVDUNDO_HXX
 
+#include <sal/config.h>
+
+#include <vector>
+
 #include <svl/solar.hrc>
 #include <svl/undo.hxx>
 #include <svl/style.hxx>
@@ -56,13 +60,12 @@ protected:
     {}
 
 public:
-    TYPEINFO_OVERRIDE();
     virtual ~SdrUndoAction();
 
-    virtual bool CanRepeat(SfxRepeatTarget& rView) const SAL_OVERRIDE;
-    virtual void Repeat(SfxRepeatTarget& rView) SAL_OVERRIDE;
+    virtual bool CanRepeat(SfxRepeatTarget& rView) const override;
+    virtual void Repeat(SfxRepeatTarget& rView) override;
 
-    virtual OUString GetRepeatComment(SfxRepeatTarget& rView) const SAL_OVERRIDE;
+    virtual OUString GetRepeatComment(SfxRepeatTarget& rView) const override;
     virtual OUString GetSdrRepeatComment(SdrView& rView) const;
 
     virtual bool CanSdrRepeat(SdrView& rView) const;
@@ -98,14 +101,14 @@ public:
 
     void SetComment(const OUString& rStr) { aComment=rStr; }
     void SetObjDescription(const OUString& rStr) { aObjDescription=rStr; }
-    virtual OUString GetComment() const SAL_OVERRIDE;
-    virtual OUString GetSdrRepeatComment(SdrView& rView) const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
+    virtual OUString GetSdrRepeatComment(SdrView& rView) const override;
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual bool CanSdrRepeat(SdrView& rView) const SAL_OVERRIDE;
-    virtual void SdrRepeat(SdrView& rView) SAL_OVERRIDE;
+    virtual bool CanSdrRepeat(SdrView& rView) const override;
+    virtual void SdrRepeat(SdrView& rView) override;
     void SetRepeatFunction(SdrRepeatFunc eFunc) { eFunction=eFunc; }
 };
 
@@ -163,14 +166,14 @@ protected:
 public:
     SdrUndoAttrObj(SdrObject& rNewObj, bool bStyleSheet1 = false, bool bSaveText = false);
     virtual ~SdrUndoAttrObj();
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
-    virtual OUString GetSdrRepeatComment(SdrView& rView) const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
+    virtual OUString GetSdrRepeatComment(SdrView& rView) const override;
 
-    virtual void SdrRepeat(SdrView& rView) SAL_OVERRIDE;
-    virtual bool CanSdrRepeat(SdrView& rView) const SAL_OVERRIDE;
+    virtual void SdrRepeat(SdrView& rView) override;
+    virtual bool CanSdrRepeat(SdrView& rView) const override;
 };
 
 /**
@@ -188,14 +191,14 @@ public:
     SdrUndoMoveObj(SdrObject& rNewObj, const Size& rDist): SdrUndoObj(rNewObj),aDistance(rDist) {}
     virtual ~SdrUndoMoveObj();
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
-    virtual OUString GetSdrRepeatComment(SdrView& rView) const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
+    virtual OUString GetSdrRepeatComment(SdrView& rView) const override;
 
-    virtual void SdrRepeat(SdrView& rView) SAL_OVERRIDE;
-    virtual bool CanSdrRepeat(SdrView& rView) const SAL_OVERRIDE;
+    virtual void SdrRepeat(SdrView& rView) override;
+    virtual bool CanSdrRepeat(SdrView& rView) const override;
 };
 
 /**
@@ -215,10 +218,10 @@ public:
     SdrUndoGeoObj(SdrObject& rNewObj);
     virtual ~SdrUndoGeoObj();
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 };
 
 /**
@@ -235,8 +238,6 @@ private:
 
 protected:
     SdrObjList*                 pObjList;
-    SdrView*                    pView;      // To be able to re-create the selection for a
-    SdrPageView*                pPageView;  // for a ObjDel, Undo
     sal_uInt32                      nOrdNum;
 
 protected:
@@ -260,8 +261,8 @@ public:
     SdrUndoRemoveObj(SdrObject& rNewObj, bool bOrdNumDirect = false)
     : SdrUndoObjList(rNewObj,bOrdNumDirect) {}
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
     virtual ~SdrUndoRemoveObj();
 };
@@ -278,8 +279,8 @@ public:
     SdrUndoInsertObj(SdrObject& rNewObj, bool bOrdNumDirect = false)
     :   SdrUndoObjList(rNewObj,bOrdNumDirect) {}
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 };
 
 /**
@@ -292,14 +293,14 @@ class SVX_DLLPUBLIC SdrUndoDelObj : public SdrUndoRemoveObj
 public:
     SdrUndoDelObj(SdrObject& rNewObj, bool bOrdNumDirect = false);
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
-    virtual OUString GetSdrRepeatComment(SdrView& rView) const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
+    virtual OUString GetSdrRepeatComment(SdrView& rView) const override;
 
-    virtual void SdrRepeat(SdrView& rView) SAL_OVERRIDE;
-    virtual bool CanSdrRepeat(SdrView& rView) const SAL_OVERRIDE;
+    virtual void SdrRepeat(SdrView& rView) override;
+    virtual bool CanSdrRepeat(SdrView& rView) const override;
 };
 
 /**
@@ -313,10 +314,10 @@ public:
     SdrUndoNewObj(SdrObject& rNewObj, bool bOrdNumDirect = false)
     :   SdrUndoInsertObj(rNewObj,bOrdNumDirect) {}
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
     static  OUString GetComment(const SdrObject& _rForObject);
 };
@@ -340,8 +341,8 @@ public:
     SdrUndoReplaceObj(SdrObject& rOldObj1, SdrObject& rNewObj1, bool bOrdNumDirect = false);
     virtual ~SdrUndoReplaceObj();
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
     bool IsNewOwner() { return bNewOwner; }
     void SetNewOwner(bool bNew);
@@ -361,7 +362,7 @@ public:
     SdrUndoCopyObj(SdrObject& rNewObj, bool bOrdNumDirect = false)
     :   SdrUndoNewObj(rNewObj,bOrdNumDirect) {}
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 };
 
 class SdrUndoObjOrdNum : public SdrUndoObj
@@ -373,10 +374,10 @@ protected:
 public:
     SdrUndoObjOrdNum(SdrObject& rNewObj, sal_uInt32 nOldOrdNum1, sal_uInt32 nNewOrdNum1);
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 };
 
 
@@ -391,8 +392,8 @@ protected:
 public:
     SdrUndoObjectLayerChange(SdrObject& rObj, SdrLayerID aOldLayer, SdrLayerID aNewLayer);
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 };
 
 class SVX_DLLPUBLIC SdrUndoObjSetText : public SdrUndoObj
@@ -411,14 +412,14 @@ public:
     bool IsDifferent() const { return pOldText!=pNewText; }
     void AfterSetText();
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
-    virtual OUString GetSdrRepeatComment(SdrView& rView) const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
+    virtual OUString GetSdrRepeatComment(SdrView& rView) const override;
 
-    virtual void SdrRepeat(SdrView& rView) SAL_OVERRIDE;
-    virtual bool CanSdrRepeat(SdrView& rView) const SAL_OVERRIDE;
+    virtual void SdrRepeat(SdrView& rView) override;
+    virtual bool CanSdrRepeat(SdrView& rView) const override;
 };
 
 /**
@@ -446,10 +447,10 @@ public:
                        const OUString& sOldStr,
                        const OUString& sNewStr);
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 };
 
 
@@ -485,10 +486,10 @@ public:
     SdrUndoNewLayer(sal_uInt16 nLayerNum, SdrLayerAdmin& rNewLayerAdmin, SdrModel& rNewModel)
     : SdrUndoLayer(nLayerNum,rNewLayerAdmin,rNewModel) {}
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 };
 
 /**
@@ -502,10 +503,10 @@ public:
     SdrUndoDelLayer(sal_uInt16 nLayerNum, SdrLayerAdmin& rNewLayerAdmin, SdrModel& rNewModel)
     : SdrUndoLayer(nLayerNum,rNewLayerAdmin,rNewModel) { bItsMine=true; }
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 };
 
 /**
@@ -521,10 +522,10 @@ public:
     SdrUndoMoveLayer(sal_uInt16 nLayerNum, SdrLayerAdmin& rNewLayerAdmin, SdrModel& rNewModel, sal_uInt16 nNeuPos1)
     :   SdrUndoLayer(nLayerNum,rNewLayerAdmin,rNewModel), nNeuPos(nNeuPos1) {}
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 };
 
 
@@ -585,14 +586,14 @@ public:
     SdrUndoDelPage(SdrPage& rNewPg);
     virtual ~SdrUndoDelPage();
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
-    virtual OUString GetSdrRepeatComment(SdrView& rView) const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
+    virtual OUString GetSdrRepeatComment(SdrView& rView) const override;
 
-    virtual void SdrRepeat(SdrView& rView) SAL_OVERRIDE;
-    virtual bool CanSdrRepeat(SdrView& rView) const SAL_OVERRIDE;
+    virtual void SdrRepeat(SdrView& rView) override;
+    virtual bool CanSdrRepeat(SdrView& rView) const override;
 };
 
 /**
@@ -605,10 +606,10 @@ class SVX_DLLPUBLIC SdrUndoNewPage : public SdrUndoPageList
 public:
     SdrUndoNewPage(SdrPage& rNewPg): SdrUndoPageList(rNewPg) {}
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 };
 
 /**
@@ -621,11 +622,11 @@ class SdrUndoCopyPage : public SdrUndoNewPage
 public:
     SdrUndoCopyPage(SdrPage& rNewPg): SdrUndoNewPage(rNewPg) {}
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
-    virtual OUString GetSdrRepeatComment(SdrView& rView) const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
+    virtual OUString GetSdrRepeatComment(SdrView& rView) const override;
 
-    virtual void SdrRepeat(SdrView& rView) SAL_OVERRIDE;
-    virtual bool CanSdrRepeat(SdrView& rView) const SAL_OVERRIDE;
+    virtual void SdrRepeat(SdrView& rView) override;
+    virtual bool CanSdrRepeat(SdrView& rView) const override;
 };
 
 /**
@@ -643,10 +644,10 @@ public:
     SdrUndoSetPageNum(SdrPage& rNewPg, sal_uInt16 nOldPageNum1, sal_uInt16 nNewPageNum1)
     :   SdrUndoPage(rNewPg),nOldPageNum(nOldPageNum1),nNewPageNum(nNewPageNum1) {}
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 };
 
 
@@ -683,10 +684,10 @@ class SdrUndoPageRemoveMasterPage : public SdrUndoPageMasterPage
 public:
     SdrUndoPageRemoveMasterPage(SdrPage& rChangedPage);
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 };
 
 /**
@@ -704,10 +705,10 @@ protected:
 public:
     SdrUndoPageChangeMasterPage(SdrPage& rChangedPage);
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 };
 
 

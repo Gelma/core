@@ -118,6 +118,8 @@ CBenTOCReader::ReadLabel(unsigned long * pTOCOffset, unsigned long * pTOCSize)
     assert(Flags == 0x0101 || Flags == 0x0);
 
     cBlockSize = UtGetIntelWord(pCurrLabel) * 1024; pCurrLabel += 2;
+    if (cBlockSize == 0)
+        return BenErr_NotBentoContainer;
 
     // Check major version
     if (UtGetIntelWord(pCurrLabel) != BEN_CURR_MAJOR_VERSION)
@@ -209,7 +211,7 @@ CBenTOCReader::ReadTOC()
         BenObjectID ObjectID;
         if ((Err = GetDWord(&ObjectID)) != BenErr_OK)
             return Err;
-        pCBenObject pObject = NULL;
+        pCBenObject pObject = nullptr;
 
         // Read in all properties for object
         do
@@ -218,7 +220,7 @@ CBenTOCReader::ReadTOC()
 
             if ((Err = GetDWord(&PropertyID)) != BenErr_OK)
                 return Err;
-            pCBenProperty pProperty = NULL;
+            pCBenProperty pProperty = nullptr;
 
             // Read in all values for property
             do
@@ -249,7 +251,7 @@ CBenTOCReader::ReadTOC()
                 {
                     // Read property or type name
 
-                    if (pObject != NULL || TypeID != BEN_TYPEID_7_BIT_ASCII ||
+                    if (pObject != nullptr || TypeID != BEN_TYPEID_7_BIT_ASCII ||
                       LookAhead != BEN_OFFSET4_LEN4)
                         return BenErr_NamedObjectError;
 
@@ -277,7 +279,7 @@ CBenTOCReader::ReadTOC()
                     else
                     {
                         sBuffer = sStackBuffer;
-                        sAllocBuffer = NULL;
+                        sAllocBuffer = nullptr;
                     }
 
                     if ((Err = cpContainer->ReadKnownSize(sBuffer, Length)) !=
@@ -289,7 +291,7 @@ CBenTOCReader::ReadTOC()
 
                     pCUtListElmt pPrevNamedObjectListElmt;
                     if (FindNamedObject(&cpContainer->GetNamedObjects(),
-                      sBuffer, &pPrevNamedObjectListElmt) != NULL)
+                      sBuffer, &pPrevNamedObjectListElmt) != nullptr)
                     {
                         delete[] sAllocBuffer;
                         return BenErr_DuplicateName;
@@ -310,7 +312,7 @@ CBenTOCReader::ReadTOC()
                 {
                     // Don't need to read in references object--we assume
                     // that all references use object ID as key
-                    if ((Err = ReadSegments(NULL, &LookAhead)) != BenErr_OK)
+                    if ((Err = ReadSegments(nullptr, &LookAhead)) != BenErr_OK)
                         return Err;
                 }
                 else if (ObjectID == BEN_OBJID_TOC)
@@ -331,16 +333,16 @@ CBenTOCReader::ReadTOC()
                     else
                     {
                         // Ignore the other BEN_OBJID_TOC properties
-                        if ((Err = ReadSegments(NULL, &LookAhead)) != BenErr_OK)
+                        if ((Err = ReadSegments(nullptr, &LookAhead)) != BenErr_OK)
                             return Err;
                     }
                 }
                 else
                 {
-                    if (pProperty != NULL)
+                    if (pProperty != nullptr)
                         return BenErr_PropertyWithMoreThanOneValue;
 
-                    if (pObject == NULL)
+                    if (pObject == nullptr)
                         pObject = new CBenObject(cpContainer, ObjectID,
                           cpContainer->GetObjects().GetLast());
 
@@ -435,7 +437,7 @@ CBenTOCReader::ReadSegment(pCBenValue pValue, BenByte * pLookAhead)
     if (EightByteOffset)
         return BenErr_64BitOffsetNotSupported;
 
-    if (pValue != NULL)
+    if (pValue != nullptr)
     {
         if (! Immediate)
             new CBenValueSegment(pValue, Offset, Length);

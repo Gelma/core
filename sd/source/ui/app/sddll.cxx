@@ -244,8 +244,6 @@ void SdDLL::RegisterControllers()
     SvxFrameLineStyleToolBoxControl::RegisterControl(SID_FRAME_LINESTYLE, pMod );
     SvxColorToolBoxControl::RegisterControl(SID_FRAME_LINECOLOR, pMod );
     SvxFrameToolBoxControl::RegisterControl(SID_ATTR_BORDER, pMod );
-
-    SfxSaveAsToolBoxControl::RegisterControl(SID_SAVEDOC, pMod );
 }
 
 void SdDLL::Init()
@@ -253,8 +251,8 @@ void SdDLL::Init()
     if ( SD_MOD() )
         return;
 
-    SfxObjectFactory* pDrawFact = NULL;
-    SfxObjectFactory* pImpressFact = NULL;
+    SfxObjectFactory* pDrawFact = nullptr;
+    SfxObjectFactory* pImpressFact = nullptr;
 
     if (utl::ConfigManager::IsAvoidConfig() || SvtModuleOptions().IsImpress())
         pImpressFact = &::sd::DrawDocShell::Factory();
@@ -304,7 +302,7 @@ void SdDLL::Init()
     // register 3D-Objekt-Factory
     E3dObjFactory();
 
-    // register ::com::sun::star::form::component::Form-Object-Factory
+    // register css::form::component::Form-Object-Factory
     FmFormObjFactory();
 
     // register Object-Factory

@@ -76,7 +76,7 @@ Entry_Impl::Entry_Impl( const uno::Reference< deployment::XPackage > &xPackage,
     m_bHasButtons( false ),
     m_bMissingLic( false ),
     m_eState( eState ),
-    m_pPublisher( NULL ),
+    m_pPublisher( nullptr ),
     m_xPackage( xPackage )
 {
     try
@@ -193,8 +193,8 @@ ExtensionBox_Impl::ExtensionBox_Impl(vcl::Window* pParent) :
     m_aLockedImage( DialogHelper::getResId( RID_IMG_LOCKED ) ),
     m_aWarningImage( DialogHelper::getResId( RID_IMG_WARNING ) ),
     m_aDefaultImage( DialogHelper::getResId( RID_IMG_EXTENSION ) ),
-    m_pScrollBar( NULL ),
-    m_pManager( NULL )
+    m_pScrollBar( nullptr ),
+    m_pManager( nullptr )
 {
     Init();
 }
@@ -286,80 +286,6 @@ sal_Int32 ExtensionBox_Impl::getSelIndex() const
     }
     else
         return ENTRY_NOTFOUND;
-}
-
-
-void ExtensionBox_Impl::checkIndex( sal_Int32 nIndex ) const
-{
-    if ( nIndex < 0 )
-        throw lang::IllegalArgumentException( "The list index starts with 0",0, 0 );
-    if ( static_cast< sal_uInt32 >( nIndex ) >= m_vEntries.size())
-        throw lang::IllegalArgumentException( "There is no element at the provided position. The position exceeds the number of available list entries",0, 0 );
-}
-
-
-OUString ExtensionBox_Impl::getItemName( sal_Int32 nIndex ) const
-{
-    const ::osl::MutexGuard aGuard( m_entriesMutex );
-    checkIndex( nIndex );
-    return m_vEntries[ nIndex ]->m_sTitle;
-}
-
-
-OUString ExtensionBox_Impl::getItemVersion( sal_Int32 nIndex ) const
-{
-    const ::osl::MutexGuard aGuard( m_entriesMutex );
-    checkIndex( nIndex );
-    return m_vEntries[ nIndex ]->m_sVersion;
-}
-
-
-OUString ExtensionBox_Impl::getItemDescription( sal_Int32 nIndex ) const
-{
-    const ::osl::MutexGuard aGuard( m_entriesMutex );
-    checkIndex( nIndex );
-    return m_vEntries[ nIndex ]->m_sDescription;
-}
-
-
-OUString ExtensionBox_Impl::getItemPublisher( sal_Int32 nIndex ) const
-{
-    const ::osl::MutexGuard aGuard( m_entriesMutex );
-    checkIndex( nIndex );
-    return m_vEntries[ nIndex ]->m_sPublisher;
-}
-
-
-OUString ExtensionBox_Impl::getItemPublisherLink( sal_Int32 nIndex ) const
-{
-    const ::osl::MutexGuard aGuard( m_entriesMutex );
-    checkIndex( nIndex );
-    return m_vEntries[ nIndex ]->m_sPublisherURL;
-}
-
-
-void ExtensionBox_Impl::select( sal_Int32 nIndex )
-{
-    const ::osl::MutexGuard aGuard( m_entriesMutex );
-    checkIndex( nIndex );
-    selectEntry( nIndex );
-}
-
-
-void ExtensionBox_Impl::select( const OUString & sName )
-{
-    const ::osl::MutexGuard aGuard( m_entriesMutex );
-    typedef ::std::vector< TEntry_Impl >::const_iterator It;
-
-    for ( It iIter = m_vEntries.begin(); iIter != m_vEntries.end(); ++iIter )
-    {
-        if ( sName.equals( (*iIter)->m_sTitle ))
-        {
-            long nPos = iIter - m_vEntries.begin();
-            selectEntry( nPos );
-            break;
-        }
-    }
 }
 
 

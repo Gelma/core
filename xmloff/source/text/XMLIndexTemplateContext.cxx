@@ -60,7 +60,6 @@ const sal_Char sAPI_TokenBibliographyDataField[] =
                                             "TokenBibliographyDataField";
 
 
-TYPEINIT1( XMLIndexTemplateContext, SvXMLImportContext);
 
 XMLIndexTemplateContext::XMLIndexTemplateContext(
     SvXMLImport& rImport,
@@ -103,16 +102,15 @@ XMLIndexTemplateContext::XMLIndexTemplateContext(
 ,   sChapterLevel("ChapterLevel") //#i53420
 
 ,   sLevelFormat("LevelFormat")
-,   sParaStyleLevel("ParaStyleLevel")
 {
-    DBG_ASSERT( ((XML_TOKEN_INVALID != eLevelAttrName) &&  (NULL != pLevelNameMap))
-                || ((XML_TOKEN_INVALID == eLevelAttrName) &&  (NULL == pLevelNameMap)),
+    DBG_ASSERT( ((XML_TOKEN_INVALID != eLevelAttrName) &&  (nullptr != pLevelNameMap))
+                || ((XML_TOKEN_INVALID == eLevelAttrName) &&  (nullptr == pLevelNameMap)),
                 "need both, attribute name and value map, or neither" );
-    DBG_ASSERT( NULL != pOutlineLevelStylePropMap, "need property name map" );
-    DBG_ASSERT( NULL != pAllowedTokenTypes, "need allowed tokens map" );
+    DBG_ASSERT( nullptr != pOutlineLevelStylePropMap, "need property name map" );
+    DBG_ASSERT( nullptr != pAllowedTokenTypes, "need allowed tokens map" );
 
     // no map for outline-level? then use 1
-    if (NULL == pLevelNameMap)
+    if (nullptr == pLevelNameMap)
     {
         nOutlineLevel = 1;
         bOutlineLevelOK = true;
@@ -199,15 +197,15 @@ void XMLIndexTemplateContext::EndElement()
             const sal_Char* pStyleProperty =
                 pOutlineLevelStylePropMap[nOutlineLevel];
 
-            DBG_ASSERT(NULL != pStyleProperty, "need property name");
-            if (NULL != pStyleProperty)
+            DBG_ASSERT(nullptr != pStyleProperty, "need property name");
+            if (nullptr != pStyleProperty)
             {
                 OUString sDisplayStyleName =
                         GetImport().GetStyleDisplayName(
                         XML_STYLE_FAMILY_TEXT_PARAGRAPH,
                         sStyleName );
                 // #i50288#: Check if style exists
-                const Reference < ::com::sun::star::container::XNameContainer > & rStyles =
+                const Reference < css::container::XNameContainer > & rStyles =
                     GetImport().GetTextImport()->GetParaStyles();
                 if( rStyles.is() &&
                     rStyles->hasByName( sDisplayStyleName ) )
@@ -255,7 +253,7 @@ SvXMLImportContext *XMLIndexTemplateContext::CreateChildContext(
     const OUString& rLocalName,
     const Reference<XAttributeList> & xAttrList )
 {
-    SvXMLImportContext* pContext = NULL;
+    SvXMLImportContext* pContext = nullptr;
 
     if (XML_NAMESPACE_TEXT == nPrefix)
     {
@@ -321,7 +319,7 @@ SvXMLImportContext *XMLIndexTemplateContext::CreateChildContext(
     }
 
     // ignore unknown
-    if (NULL == pContext)
+    if (nullptr == pContext)
     {
         return SvXMLImportContext::CreateChildContext(nPrefix, rLocalName,
                                                       xAttrList);
@@ -355,10 +353,10 @@ const SvXMLEnumMapEntry aSvLevelNameTOCMap[] =
 };
 
 const sal_Char* aLevelStylePropNameTOCMap[] =
-    { NULL, "ParaStyleLevel1", "ParaStyleLevel2", "ParaStyleLevel3",
+    { nullptr, "ParaStyleLevel1", "ParaStyleLevel2", "ParaStyleLevel3",
           "ParaStyleLevel4", "ParaStyleLevel5", "ParaStyleLevel6",
           "ParaStyleLevel7", "ParaStyleLevel8", "ParaStyleLevel9",
-          "ParaStyleLevel10", NULL };
+          "ParaStyleLevel10", nullptr };
 
 const sal_Bool aAllowedTokenTypesTOC[] =
 {
@@ -397,8 +395,8 @@ const SvXMLEnumMapEntry aLevelNameAlphaMap[] =
 };
 
 const sal_Char* aLevelStylePropNameAlphaMap[] =
-    { NULL, "ParaStyleSeparator", "ParaStyleLevel1", "ParaStyleLevel2",
-          "ParaStyleLevel3", NULL };
+    { nullptr, "ParaStyleSeparator", "ParaStyleLevel1", "ParaStyleLevel2",
+          "ParaStyleLevel3", nullptr };
 
 const sal_Bool aAllowedTokenTypesAlpha[] =
 {
@@ -445,14 +443,14 @@ const SvXMLEnumMapEntry aLevelNameBibliographyMap[] =
 // TODO: replace with real property names, when available
 const sal_Char* aLevelStylePropNameBibliographyMap[] =
 {
-    NULL, "ParaStyleLevel1", "ParaStyleLevel1", "ParaStyleLevel1",
+    nullptr, "ParaStyleLevel1", "ParaStyleLevel1", "ParaStyleLevel1",
     "ParaStyleLevel1", "ParaStyleLevel1", "ParaStyleLevel1",
     "ParaStyleLevel1", "ParaStyleLevel1", "ParaStyleLevel1",
     "ParaStyleLevel1", "ParaStyleLevel1", "ParaStyleLevel1",
     "ParaStyleLevel1", "ParaStyleLevel1", "ParaStyleLevel1",
     "ParaStyleLevel1", "ParaStyleLevel1", "ParaStyleLevel1",
     "ParaStyleLevel1", "ParaStyleLevel1", "ParaStyleLevel1",
-    "ParaStyleLevel1", NULL };
+    "ParaStyleLevel1", nullptr };
 
 const sal_Bool aAllowedTokenTypesBibliography[] =
 {
@@ -470,10 +468,10 @@ const sal_Bool aAllowedTokenTypesBibliography[] =
 // table, illustration and object index
 
 // no name map
-const SvXMLEnumMapEntry* aLevelNameTableMap = NULL;
+const SvXMLEnumMapEntry* aLevelNameTableMap = nullptr;
 
 const sal_Char* aLevelStylePropNameTableMap[] =
-    { NULL, "ParaStyleLevel1", NULL };
+    { nullptr, "ParaStyleLevel1", nullptr };
 
 const sal_Bool aAllowedTokenTypesTable[] =
 {

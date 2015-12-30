@@ -62,10 +62,6 @@ public class java_fat_service implements TestBase {
             return false;
         }
 
-        param.get("ConnectionString");
-
-        param.getMSF();
-
         for (int l=0;l<entries.length;l++) {
 
             if (entries[l] == null ) {
@@ -215,7 +211,6 @@ public class java_fat_service implements TestBase {
     protected TestEnvironment getEnv(DescEntry entry, TestParameters param) {
             DynamicClassLoader dcl = new DynamicClassLoader();
             log = (LogWriter)dcl.getInstance((String)param.get("LogWriter"));
-            param.getMSF();
 
             TestEnvironment tEnv = null;
 

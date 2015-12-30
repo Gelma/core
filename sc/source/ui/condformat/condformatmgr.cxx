@@ -51,7 +51,7 @@ void ScCondFormatManagerWindow::Init()
     {
         for(ScConditionalFormatList::iterator itr = mpFormatList->begin(); itr != mpFormatList->end(); ++itr)
         {
-            SvTreeListEntry* pEntry = InsertEntryToColumn( createEntryString(**itr), TREELIST_APPEND, 0xffff );
+            SvTreeListEntry* pEntry = InsertEntryToColumn( createEntryString(**itr) );
             maMapLBoxEntryToCondIndex.insert(std::pair<SvTreeListEntry*,sal_Int32>(pEntry, (*itr)->GetKey()));
         }
     }
@@ -73,7 +73,7 @@ void ScCondFormatManagerWindow::DeleteSelection()
 {
     if(GetSelectionCount())
     {
-        for(SvTreeListEntry* pEntry = FirstSelected(); pEntry != NULL; pEntry = NextSelected(pEntry))
+        for(SvTreeListEntry* pEntry = FirstSelected(); pEntry != nullptr; pEntry = NextSelected(pEntry))
         {
             sal_Int32 nIndex = maMapLBoxEntryToCondIndex.find(pEntry)->second;
             mpFormatList->erase(nIndex);
@@ -86,7 +86,7 @@ ScConditionalFormat* ScCondFormatManagerWindow::GetSelection()
 {
     SvTreeListEntry* pEntry = FirstSelected();
     if(!pEntry)
-        return NULL;
+        return nullptr;
 
     sal_Int32 nIndex = maMapLBoxEntryToCondIndex.find(pEntry)->second;
     return mpFormatList->GetFormat(nIndex);
@@ -102,11 +102,10 @@ void ScCondFormatManagerWindow::setColSizes()
     SvSimpleTable::SetTabs(aStaticTabs, MAP_PIXEL);
 }
 
-ScCondFormatManagerDlg::ScCondFormatManagerDlg(vcl::Window* pParent, ScDocument* pDoc, const ScConditionalFormatList* pFormatList, const ScAddress& rPos):
+ScCondFormatManagerDlg::ScCondFormatManagerDlg(vcl::Window* pParent, ScDocument* pDoc, const ScConditionalFormatList* pFormatList):
     ModalDialog(pParent, "CondFormatManager", "modules/scalc/ui/condformatmanager.ui"),
-    mpFormatList( pFormatList ? new ScConditionalFormatList(*pFormatList) : NULL),
+    mpFormatList( pFormatList ? new ScConditionalFormatList(*pFormatList) : nullptr),
     mpDoc(pDoc),
-    maPos(rPos),
     mbModified(false)
 {
     SvSimpleTableContainer *pContainer = get<SvSimpleTableContainer>("CONTAINER");
@@ -143,7 +142,7 @@ void ScCondFormatManagerDlg::dispose()
 ScConditionalFormatList* ScCondFormatManagerDlg::GetConditionalFormatList()
 {
     ScConditionalFormatList* pList = mpFormatList;
-    mpFormatList = NULL;
+    mpFormatList = nullptr;
     return pList;
 }
 

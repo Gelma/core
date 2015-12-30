@@ -21,11 +21,10 @@
 
 #include <ooo/vba/word/XListTemplate.hpp>
 #include <vbahelper/vbahelperinterface.hxx>
-#include <cppuhelper/implbase1.hxx>
 #include <com/sun/star/text/XTextDocument.hpp>
 #include "vbalisthelper.hxx"
 
-typedef InheritedHelperInterfaceImpl1< ooo::vba::word::XListTemplate > SwVbaListTemplate_BASE;
+typedef InheritedHelperInterfaceWeakImpl< ooo::vba::word::XListTemplate > SwVbaListTemplate_BASE;
 
 class SwVbaListTemplate : public SwVbaListTemplate_BASE
 {
@@ -39,11 +38,11 @@ public:
     void applyListTemplate( css::uno::Reference< css::beans::XPropertySet >& xProps ) throw ( css::uno::RuntimeException );
 
     // Methods
-    virtual css::uno::Any SAL_CALL ListLevels( const css::uno::Any& index ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual css::uno::Any SAL_CALL ListLevels( const css::uno::Any& index ) throw ( css::uno::RuntimeException, std::exception ) override;
 
     // XHelperInterface
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 #endif // INCLUDED_SW_SOURCE_UI_VBA_VBALISTTEMPLATE_HXX
 

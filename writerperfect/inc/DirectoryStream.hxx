@@ -11,10 +11,9 @@
 #define INCLUDED_WRITERPERFECT_DIRECTORYSTREAM_HXX
 
 #include <librevenge-stream/librevenge-stream.h>
-
 #include <com/sun/star/uno/Reference.h>
-
 #include <writerperfectdllapi.h>
+#include <memory>
 
 namespace com
 {
@@ -38,26 +37,26 @@ class WRITERPERFECT_DLLPUBLIC DirectoryStream : public librevenge::RVNGInputStre
     struct Impl;
 
 public:
-    explicit DirectoryStream(const com::sun::star::uno::Reference<com::sun::star::ucb::XContent> &xContent);
+    explicit DirectoryStream(const css::uno::Reference<css::ucb::XContent> &xContent);
     virtual ~DirectoryStream();
 
-    static DirectoryStream *createForParent(const com::sun::star::uno::Reference<com::sun::star::ucb::XContent> &xContent);
-    static bool isDirectory(const com::sun::star::uno::Reference<com::sun::star::ucb::XContent> &xContent);
+    static DirectoryStream *createForParent(const css::uno::Reference<css::ucb::XContent> &xContent);
+    static bool isDirectory(const css::uno::Reference<css::ucb::XContent> &xContent);
 
-    virtual bool isStructured() SAL_OVERRIDE;
-    virtual unsigned subStreamCount() SAL_OVERRIDE;
-    virtual const char *subStreamName(unsigned id) SAL_OVERRIDE;
-    virtual bool existsSubStream(const char *name) SAL_OVERRIDE;
-    virtual librevenge::RVNGInputStream *getSubStreamByName(const char *name) SAL_OVERRIDE;
-    virtual librevenge::RVNGInputStream *getSubStreamById(unsigned id) SAL_OVERRIDE;
+    virtual bool isStructured() override;
+    virtual unsigned subStreamCount() override;
+    virtual const char *subStreamName(unsigned id) override;
+    virtual bool existsSubStream(const char *name) override;
+    virtual librevenge::RVNGInputStream *getSubStreamByName(const char *name) override;
+    virtual librevenge::RVNGInputStream *getSubStreamById(unsigned id) override;
 
-    virtual const unsigned char *read(unsigned long numBytes, unsigned long &numBytesRead) SAL_OVERRIDE;
-    virtual int seek(long offset, librevenge::RVNG_SEEK_TYPE seekType) SAL_OVERRIDE;
-    virtual long tell() SAL_OVERRIDE;
-    virtual bool isEnd() SAL_OVERRIDE;
+    virtual const unsigned char *read(unsigned long numBytes, unsigned long &numBytesRead) override;
+    virtual int seek(long offset, librevenge::RVNG_SEEK_TYPE seekType) override;
+    virtual long tell() override;
+    virtual bool isEnd() override;
 
 private:
-    Impl *m_pImpl;
+    std::unique_ptr<Impl> m_pImpl;
 };
 
 }

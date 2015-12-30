@@ -68,7 +68,7 @@ ScDrawShell::ScDrawShell( ScViewData* pData ) :
         pMgr->SetMaxUndoActionCount( 0 );
     }
     SetHelpId( HID_SCSHELL_DRAWSH );
-    SetName(OUString("Drawing"));
+    SetName("Drawing");
 
     mpSelectionChangeHandler->Connect();
 }
@@ -365,7 +365,7 @@ bool ScDrawShell::AreAllObjectsOnLayer(sal_uInt16 nLayerNo,const SdrMarkList& rM
     for (size_t i=0; i<nCount; ++i)
     {
         SdrObject* pObj = rMark.GetMark(i)->GetMarkedSdrObj();
-        if ( !pObj->ISA(SdrUnoObj) )
+        if ( dynamic_cast<const SdrUnoObj*>( pObj) ==  nullptr )
         {
             if(nLayerNo!=pObj->GetLayer())
             {
@@ -382,7 +382,7 @@ void ScDrawShell::GetDrawAttrStateForIFBX( SfxItemSet& rSet )
     ScDrawView* pView = pViewData->GetScDrawView();
     const SdrMarkList& rMarkList = pView->GetMarkedObjectList();
 
-    if( rMarkList.GetMark(0) != 0 )
+    if( rMarkList.GetMark(0) != nullptr )
     {
         SfxItemSet aNewAttr(pView->GetGeoAttrFromMarked());
         rSet.Put(aNewAttr, false);

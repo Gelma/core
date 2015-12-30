@@ -26,6 +26,8 @@
 #include "mtvcellfunc.hxx"
 #include "scmatrix.hxx"
 
+#include "arraysumfunctor.hxx"
+
 #include <formula/token.hxx>
 
 using namespace formula;
@@ -201,8 +203,6 @@ double ScInterpreter::GetGammaDist( double fX, double fAlpha, double fLambda )
         return GetLowRegIGamma( fAlpha, fX / fLambda);
 }
 
-namespace {
-
 class NumericCellAccumulator
 {
     double mfFirst;
@@ -212,38 +212,69 @@ class NumericCellAccumulator
 public:
     NumericCellAccumulator() : mfFirst(0.0), mfRest(0.0), mnError(0) {}
 
-    void operator() (size_t, double fVal)
+    void operator() (const sc::CellStoreType::value_type& rNode, size_t nOffset, size_t nDataSize)
     {
-        if ( !mfFirst )
-            mfFirst = fVal;
-        else
-            mfRest += fVal;
-    }
-
-    void operator() (size_t, const ScFormulaCell* pCell)
-    {
-        if (mnError)
-            // Skip all the rest if we have an error.
-            return;
-
-        double fVal = 0.0;
-        sal_uInt16 nErr = 0;
-        ScFormulaCell& rCell = const_cast<ScFormulaCell&>(*pCell);
-        if (!rCell.GetErrorOrValue(nErr, fVal))
-            // The cell has neither error nor value.  Perhaps string result.
-            return;
-
-        if (nErr)
+        switch (rNode.type)
         {
-            // Cell has error.
-            mnError = nErr;
-            return;
-        }
+            case sc::element_type_numeric:
+            {
+                const double *p = &sc::numeric_block::at(*rNode.data, nOffset);
+                size_t i = 0;
 
-        if ( !mfFirst )
-            mfFirst = fVal;
-        else
-            mfRest += fVal;
+                // Store the first non-zero value in mfFirst (for some reason).
+                if (!mfFirst)
+                {
+                    for (i = 0; i < nDataSize; ++i)
+                    {
+                        if (!mfFirst)
+                            mfFirst = p[i];
+                        else
+                            break;
+                    }
+                }
+                p += i;
+                nDataSize -= i;
+                if (nDataSize == 0)
+                    return;
+
+                sc::ArraySumFunctor functor(p, nDataSize);
+
+                mfRest += functor();
+                break;
+            }
+
+            case sc::element_type_formula:
+            {
+                sc::formula_block::const_iterator it = sc::formula_block::begin(*rNode.data);
+                std::advance(it, nOffset);
+                sc::formula_block::const_iterator itEnd = it;
+                std::advance(itEnd, nDataSize);
+                for (; it != itEnd; ++it)
+                {
+                    double fVal = 0.0;
+                    sal_uInt16 nErr = 0;
+                    ScFormulaCell& rCell = const_cast<ScFormulaCell&>(*(*it));
+                    if (!rCell.GetErrorOrValue(nErr, fVal))
+                        // The cell has neither error nor value.  Perhaps string result.
+                        continue;
+
+                    if (nErr)
+                    {
+                        // Cell has error - skip all the rest
+                        mnError = nErr;
+                        return;
+                    }
+
+                    if ( !mfFirst )
+                        mfFirst = fVal;
+                    else
+                        mfRest += fVal;
+                }
+            }
+            break;
+            default:
+                ;
+        }
     }
 
     sal_uInt16 getError() const { return mnError; }
@@ -294,15 +325,15 @@ class FuncCount : public sc::ColumnSpanSet::ColumnAction
     sal_uInt32 mnNumFmt;
 
 public:
-    FuncCount() : mpCol(0), mnCount(0), mnNumFmt(0) {}
+    FuncCount() : mpCol(nullptr), mnCount(0), mnNumFmt(0) {}
 
-    virtual void startColumn(ScColumn* pCol) SAL_OVERRIDE
+    virtual void startColumn(ScColumn* pCol) override
     {
         mpCol = pCol;
         mpCol->InitBlockPosition(maPos);
     }
 
-    virtual void execute(SCROW nRow1, SCROW nRow2, bool bVal) SAL_OVERRIDE
+    virtual void execute(SCROW nRow1, SCROW nRow2, bool bVal) override
     {
         if (!bVal)
             return;
@@ -326,17 +357,17 @@ class FuncSum : public sc::ColumnSpanSet::ColumnAction
     sal_uInt32 mnNumFmt;
 
 public:
-    FuncSum() : mpCol(0), mfSum(0.0), mnError(0), mnNumFmt(0) {}
+    FuncSum() : mpCol(nullptr), mfSum(0.0), mnError(0), mnNumFmt(0) {}
 
-    virtual void startColumn(ScColumn* pCol) SAL_OVERRIDE
+    virtual void startColumn(ScColumn* pCol) override
     {
         mpCol = pCol;
         mpCol->InitBlockPosition(maPos);
     }
 
-    virtual void execute(SCROW, SCROW, bool) SAL_OVERRIDE { return; };
+    virtual void execute(SCROW, SCROW, bool) override { return; };
 
-    virtual void executeSum(SCROW nRow1, SCROW nRow2, bool bVal, double& fMem ) SAL_OVERRIDE
+    virtual void executeSum(SCROW nRow1, SCROW nRow2, bool bVal, double& fMem ) override
     {
         if (!bVal)
             return;
@@ -345,7 +376,7 @@ public:
             return;
 
         NumericCellAccumulator aFunc;
-        maPos.miCellPos = sc::ParseFormulaNumeric(maPos.miCellPos, mpCol->GetCellStore(), nRow1, nRow2, aFunc);
+        maPos.miCellPos = sc::ParseBlock(maPos.miCellPos, mpCol->GetCellStore(), aFunc, nRow1, nRow2);
         mnError = aFunc.getError();
         if (mnError)
             return;
@@ -416,8 +447,6 @@ void IterateMatrix(
         default:
             ;
     }
-}
-
 }
 
 double ScInterpreter::IterateParameters( ScIterFunc eFunc, bool bTextAsZero )
@@ -587,8 +616,7 @@ double ScInterpreter::IterateParameters( ScIterFunc eFunc, bool bTextAsZero )
                 {
                     break;
                 }
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (!aCell.isEmpty())
                 {
                     if( eFunc == ifCOUNT2 )
@@ -868,6 +896,29 @@ void ScInterpreter::ScCount()
 void ScInterpreter::ScCount2()
 {
     PushDouble( IterateParameters( ifCOUNT2 ) );
+}
+
+void ScInterpreter::ScRawSubtract()
+{
+    short nParamCount = GetByte();
+    if (!MustHaveParamCountMin( nParamCount, 2))
+        return;
+
+    // Fish the 1st parameter from the stack and push it on top.
+    FormulaToken* p = pStack[ sp - nParamCount ];
+    PushWithoutError( *p );
+    // Obtain the minuend.
+    double fRes = GetDouble();
+
+    while (!nGlobalError && nParamCount-- > 1)
+    {
+        // Simple single values without matrix support.
+        fRes -= GetDouble();
+    }
+    while (nParamCount-- > 0)
+        PopError();
+
+    PushDouble( fRes);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

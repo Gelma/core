@@ -45,12 +45,7 @@ namespace vcl
         virtual ~SolarThreadExecutor();
 
         virtual long doIt() = 0;
-        long execute() { return impl_execute( NULL ); }
-        // caution: timeout for getting the solar mutex, not for ending
-        // the operation of doIt(). If doIt actually gets called within
-        // the specified timeout, execute will only return after
-        // doIt() completed
-        long execute( const TimeValue& _rTimeout ) { return impl_execute( &_rTimeout ); }
+        long execute() { return impl_execute( nullptr ); }
 
     private:
         long impl_execute( const TimeValue* _pTimeout );
@@ -79,19 +74,19 @@ private:
     explicit GenericSolarThreadExecutor( FuncT const& func )
         : m_exc(), m_func(func), m_result() {}
 
-    virtual long doIt() SAL_OVERRIDE
+    virtual long doIt() override
     {
         try {
             m_result.reset( m_func() );
         }
-        catch (::com::sun::star::uno::Exception &) {
+        catch (css::uno::Exception &) {
             // only UNO exceptions can be dispatched:
             m_exc = ::cppu::getCaughtException();
         }
         return 0;
     }
 
-    ::com::sun::star::uno::Any m_exc;
+    css::uno::Any m_exc;
     FuncT const m_func;
     // using boost::optional here omits the need that ResultT is default
     // constructable:
@@ -101,33 +96,23 @@ private:
 template <typename FuncT>
 class GenericSolarThreadExecutor<FuncT, void> : public SolarThreadExecutor
 {
-public:
-    static void exec( FuncT const& func )
-    {
-        typedef GenericSolarThreadExecutor<FuncT, void> ExecutorT;
-        ::std::unique_ptr<ExecutorT> const pExecutor( new ExecutorT(func) );
-        pExecutor->execute();
-        if (pExecutor->m_exc.hasValue())
-            ::cppu::throwException( pExecutor->m_exc );
-    }
-
 private:
     explicit GenericSolarThreadExecutor( FuncT const& func )
         : m_exc(), m_func(func) {}
 
-    virtual long doIt() SAL_OVERRIDE
+    virtual long doIt() override
     {
         try {
             m_func();
         }
-        catch (::com::sun::star::uno::Exception &) {
+        catch (css::uno::Exception &) {
             // only UNO exceptions can be dispatched:
             m_exc = ::cppu::getCaughtException();
         }
         return 0;
     }
 
-    ::com::sun::star::uno::Any m_exc;
+    css::uno::Any m_exc;
     FuncT const m_func;
 };
 
@@ -154,8 +139,7 @@ private:
     struct data_holder {
         T m_value;
         T * const m_ptr;
-        sal_Int32 m_refCount;
-        data_holder( T * p ) : m_value(*p), m_ptr(p), m_refCount(1) {}
+        data_holder( T * p ) : m_value(*p), m_ptr(p) {}
         ~data_holder() { *m_ptr = m_value; }
     };
     data_holder * const m_holder;
@@ -163,35 +147,6 @@ private:
 
 } // namespace detail
 
-/** Makes a copy back reference wrapper to be used for inout parameters.
-    Only use for syncExecute(), the returned wrapper relies on its
-    implementation, i.e. the function object is stored in free store.
-    Type T needs to be copy constructable assignable.
-
-    @see syncExecute()
-    @param r reference to a stack variable
-    @return reference wrapper
-*/
-template <typename T>
-inline detail::copy_back_wrapper<T> inout_by_ref( T & r )
-{
-    return detail::copy_back_wrapper<T>(&r);
-}
-
-/** Makes a copy back ptr wrapper to be used for inout parameters.
-    Only use for syncExecute(), the returned wrapper relies on its
-    implementation, i.e. the function object is stored in free store.
-    Type T needs to be copy constructable assignable.
-
-    @see syncExecute()
-    @param p pointer to a stack variable
-    @return ptr wrapper
-*/
-template <typename T>
-inline detail::copy_back_wrapper<T> inout_by_ptr( T * p )
-{
-    return detail::copy_back_wrapper<T>(p);
-}
 
 /** This function will execute the passed functor synchronously in the
     solar thread, thus the calling thread will (eventually) be blocked until
@@ -230,12 +185,6 @@ inline detail::copy_back_wrapper<T> inout_by_ptr( T * p )
     @param func functor object to be executed in solar thread
     @return return value of functor
 */
-template <typename ResultT, typename FuncT>
-inline ResultT syncExecute( FuncT const& func )
-{
-    return detail::GenericSolarThreadExecutor<FuncT, ResultT>::exec(func);
-}
-
 template <typename FuncT>
 inline typename FuncT::result_type syncExecute( FuncT const& func )
 {

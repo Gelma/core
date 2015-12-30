@@ -49,11 +49,10 @@ namespace dbaxml
 
         virtual void SetAttribute( sal_uInt16 nPrefixKey,
                                 const OUString& rLocalName,
-                                const OUString& rValue ) SAL_OVERRIDE;
+                                const OUString& rValue ) override;
 
     public:
 
-        TYPEINFO_OVERRIDE();
 
         OTableStyleContext( ODBFilter& rImport, sal_uInt16 nPrfx,
                 const OUString& rLName,
@@ -63,9 +62,9 @@ namespace dbaxml
         virtual ~OTableStyleContext();
 
         virtual void FillPropertySet(const css::uno::Reference<
-                    css::beans::XPropertySet > & rPropSet ) SAL_OVERRIDE;
+                    css::beans::XPropertySet > & rPropSet ) override;
 
-        virtual void SetDefaults() SAL_OVERRIDE;
+        virtual void SetDefaults() override;
 
         void AddProperty(sal_Int16 nContextID, const css::uno::Any& aValue);
     };
@@ -92,11 +91,10 @@ namespace dbaxml
                 sal_uInt16 nFamily,
                 sal_uInt16 nPrefix,
                 const OUString& rLocalName,
-                const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+                const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
 
     public:
 
-        TYPEINFO_OVERRIDE();
 
         OTableStylesContext( SvXMLImport& rImport, sal_uInt16 nPrfx ,
                 const OUString& rLName ,
@@ -104,14 +102,14 @@ namespace dbaxml
                 const bool bAutoStyles );
         virtual ~OTableStylesContext();
 
-        virtual void EndElement() SAL_OVERRIDE;
+        virtual void EndElement() override;
 
         virtual rtl::Reference < SvXMLImportPropertyMapper > GetImportPropertyMapper(
-                            sal_uInt16 nFamily ) const SAL_OVERRIDE;
+                            sal_uInt16 nFamily ) const override;
         virtual css::uno::Reference <
                         css::container::XNameContainer >
-            GetStylesContainer( sal_uInt16 nFamily ) const SAL_OVERRIDE;
-        virtual OUString GetServiceName( sal_uInt16 nFamily ) const SAL_OVERRIDE;
+            GetStylesContainer( sal_uInt16 nFamily ) const override;
+        virtual OUString GetServiceName( sal_uInt16 nFamily ) const override;
 
         sal_Int32 GetIndex(const sal_Int16 nContextID);
     };

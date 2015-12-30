@@ -34,32 +34,29 @@ namespace com { namespace sun { namespace star {
 class SvxXMLXTableExportComponent : public SvXMLExport
 {
 public:
-    // #110680#
     SvxXMLXTableExportComponent(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& xContext,
+        const css::uno::Reference< css::uno::XComponentContext >& xContext,
         const OUString& rFileName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XDocumentHandler > & xHandler,
-        const com::sun::star::uno::Reference< com::sun::star::container::XNameContainer > & xTable,
-        com::sun::star::uno::Reference< com::sun::star::document::XGraphicObjectResolver >& xGrfResolver);
+        const css::uno::Reference< css::xml::sax::XDocumentHandler > & xHandler,
+        const css::uno::Reference< css::container::XNameContainer > & xTable,
+        css::uno::Reference< css::document::XGraphicObjectResolver >& xGrfResolver);
 
     virtual ~SvxXMLXTableExportComponent();
 
     static bool save( const OUString& rURL,
-                      const com::sun::star::uno::Reference<
-                          ::com::sun::star::container::XNameContainer >& xTable,
-                      const ::com::sun::star::uno::Reference <
-                          ::com::sun::star::embed::XStorage > &xStorage,
+                      const css::uno::Reference< css::container::XNameContainer >& xTable,
+                      const css::uno::Reference< css::embed::XStorage > &xStorage,
                       OUString *pOptName )
         throw (css::uno::RuntimeException, std::exception);
 
     // methods without content:
-    virtual void _ExportAutoStyles() SAL_OVERRIDE;
-    virtual void _ExportMasterStyles() SAL_OVERRIDE;
-    virtual void _ExportContent() SAL_OVERRIDE;
+    virtual void _ExportAutoStyles() override;
+    virtual void _ExportMasterStyles() override;
+    virtual void _ExportContent() override;
 
 private:
     bool exportTable() throw();
-    const com::sun::star::uno::Reference< com::sun::star::container::XNameContainer > & mxTable;
+    const css::uno::Reference< css::container::XNameContainer > & mxTable;
 };
 
 #endif

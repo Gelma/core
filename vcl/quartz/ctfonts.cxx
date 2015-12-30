@@ -47,7 +47,7 @@ CoreTextStyle::CoreTextStyle( const FontSelectPattern& rFSD )
     : mpFontData( static_cast<CoreTextFontData const *>(rFSD.mpFontData) )
     , mfFontStretch( 1.0 )
     , mfFontRotation( 0.0 )
-    , mpStyleDict( NULL )
+    , mpStyleDict( nullptr )
 {
     const FontSelectPattern* const pReqFont = &rFSD;
 
@@ -68,7 +68,7 @@ CoreTextStyle::CoreTextStyle( const FontSelectPattern& rFSD )
 
     // create the style object for CoreText font attributes
     static const CFIndex nMaxDictSize = 16; // TODO: does this really suffice?
-    mpStyleDict = CFDictionaryCreateMutable( NULL, nMaxDictSize,
+    mpStyleDict = CFDictionaryCreateMutable( nullptr, nMaxDictSize,
                                              &kCFTypeDictionaryKeyCallBacks,
                                              &kCFTypeDictionaryValueCallBacks );
 
@@ -81,7 +81,7 @@ CoreTextStyle::CoreTextStyle( const FontSelectPattern& rFSD )
           (mpFontData->GetWeight() != WEIGHT_DONTKNOW)) )
     {
         int nStroke = -lrint((3.5F * pReqFont->GetWeight()) / mpFontData->GetWeight());
-        CFNumberRef rStroke = CFNumberCreate(NULL, kCFNumberSInt32Type, &nStroke);
+        CFNumberRef rStroke = CFNumberCreate(nullptr, kCFNumberSInt32Type, &nStroke);
         CFDictionarySetValue(mpStyleDict, kCTStrokeWidthAttributeName, rStroke);
     }
 
@@ -136,6 +136,7 @@ void CoreTextStyle::GetFontMetric( ImplFontMetricData& rMetric ) const
 
     // all CoreText fonts are scalable
     rMetric.mbScalableFont = true;
+    rMetric.mbTrueTypeFont = true; // Not sure, but this field is used only for Windows so far
     rMetric.mbKernableFont = true;
 }
 
@@ -145,8 +146,10 @@ bool CoreTextStyle::GetGlyphBoundRect( sal_GlyphId aGlyphId, Rectangle& rRect ) 
     // XXX: this is broken if the glyph came from fallback font
     CTFontRef aCTFontRef = static_cast<CTFontRef>(CFDictionaryGetValue( mpStyleDict, kCTFontAttributeName ));
 
+    SAL_WNODEPRECATED_DECLARATIONS_PUSH //TODO: 10.11 kCTFontDefaultOrientation
     const CTFontOrientation aFontOrientation = kCTFontDefaultOrientation; // TODO: horz/vert
-    const CGRect aCGRect = CTFontGetBoundingRectsForGlyphs( aCTFontRef, aFontOrientation, &nCGGlyph, NULL, 1 );
+    SAL_WNODEPRECATED_DECLARATIONS_POP
+    const CGRect aCGRect = CTFontGetBoundingRectsForGlyphs( aCTFontRef, aFontOrientation, &nCGGlyph, nullptr, 1 );
 
     rRect.Left()   = lrint( aCGRect.origin.x );
     rRect.Top()    = lrint( aCGRect.origin.y );
@@ -213,7 +216,7 @@ bool CoreTextStyle::GetGlyphOutline( sal_GlyphId aGlyphId, basegfx::B2DPolyPolyg
     CGGlyph nCGGlyph = aGlyphId & GF_IDXMASK;
     // XXX: this is broken if the glyph came from fallback font
     CTFontRef pCTFont = static_cast<CTFontRef>(CFDictionaryGetValue( mpStyleDict, kCTFontAttributeName ));
-    CGPathRef xPath = CTFontCreatePathForGlyph( pCTFont, nCGGlyph, NULL );
+    CGPathRef xPath = CTFontCreatePathForGlyph( pCTFont, nCGGlyph, nullptr );
     if (!xPath)
     {
         return false;
@@ -249,7 +252,7 @@ int CoreTextFontData::GetFontTable( const char pTagName[5], unsigned char* pResu
 
     // get the raw table length
     CTFontDescriptorRef pFontDesc = reinterpret_cast<CTFontDescriptorRef>( GetFontId());
-    CTFontRef rCTFont = CTFontCreateWithFontDescriptor( pFontDesc, 0.0, NULL);
+    CTFontRef rCTFont = CTFontCreateWithFontDescriptor( pFontDesc, 0.0, nullptr);
     const uint32_t opts( kCTFontTableOptionNoOptions );
     CFDataRef pDataRef = CTFontCopyTable( rCTFont, nTagCode, opts);
     CFRelease( rCTFont);
@@ -294,8 +297,8 @@ ImplDevFontAttributes DevFontFromCTFontDescriptor( CTFontDescriptorRef pFD, bool
 #ifdef MACOSX
     const OUString aUILang = Application::GetSettings().GetUILanguageTag().getLanguage();
     CFStringRef pUILang = CFStringCreateWithCharacters( kCFAllocatorDefault,
-                                                        aUILang.getStr(), aUILang.getLength() );
-    CFStringRef pLang = NULL;
+                                                        reinterpret_cast<UniChar const *>(aUILang.getStr()), aUILang.getLength() );
+    CFStringRef pLang = nullptr;
     CFStringRef pFamilyName = static_cast<CFStringRef>(
             CTFontDescriptorCopyLocalizedAttribute( pFD, kCTFontFamilyNameAttribute, &pLang ));
 
@@ -335,7 +338,7 @@ ImplDevFontAttributes DevFontFromCTFontDescriptor( CTFontDescriptorRef pFD, bool
     // get symbolic trait
     // TODO: use other traits such as MonoSpace/Condensed/Expanded or Vertical too
     SInt64 nSymbolTrait = 0;
-    CFNumberRef pSymbolNum = NULL;
+    CFNumberRef pSymbolNum = nullptr;
     if( CFDictionaryGetValueIfPresent( pAttrDict, kCTFontSymbolicTrait, reinterpret_cast<const void**>(&pSymbolNum) ) )
     {
         CFNumberGetValue( pSymbolNum, kCFNumberSInt64Type, &nSymbolTrait );
@@ -423,8 +426,8 @@ static void CTFontEnumCallBack( const void* pValue, void* pContext )
 }
 
 SystemFontList::SystemFontList()
-  : mpCTFontCollection( NULL )
-  , mpCTFontArray( NULL )
+  : mpCTFontCollection( nullptr )
+  , mpCTFontArray( nullptr )
 {}
 
 SystemFontList::~SystemFontList()
@@ -466,7 +469,7 @@ CoreTextFontData* SystemFontList::GetFontDataFromId( sal_IntPtr nFontId ) const
     CTFontContainer::const_iterator it = maFontContainer.find( nFontId );
     if( it == maFontContainer.end() )
     {
-        return NULL;
+        return nullptr;
     }
     return (*it).second;
 }
@@ -475,7 +478,7 @@ bool SystemFontList::Init()
 {
     // enumerate available system fonts
     static const int nMaxDictEntries = 8;
-    CFMutableDictionaryRef pCFDict = CFDictionaryCreateMutable( NULL,
+    CFMutableDictionaryRef pCFDict = CFDictionaryCreateMutable( nullptr,
                                                                 nMaxDictEntries,
                                                                 &kCFTypeDictionaryKeyCallBacks,
                                                                 &kCFTypeDictionaryValueCallBacks );
@@ -498,7 +501,7 @@ SystemFontList* GetCoretextFontList()
     if( !pList->Init() )
     {
         delete pList;
-        return NULL;
+        return nullptr;
     }
 
     return pList;

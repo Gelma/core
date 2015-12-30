@@ -305,7 +305,14 @@ static const struct {
     { "lgr_SB", lcl_DATA_OTHERS },
     { "mos_BF", lcl_DATA_OTHERS },
     { "ny_MW",  lcl_DATA_OTHERS },
-    { "ti_ET",  lcl_DATA_OTHERS }
+    { "ar_BH",  lcl_DATA_OTHERS },
+    { "ar_IQ",  lcl_DATA_OTHERS },
+    { "ar_JO",  lcl_DATA_OTHERS },
+    { "ar_LY",  lcl_DATA_OTHERS },
+    { "ar_MA",  lcl_DATA_OTHERS },
+    { "ar_QA",  lcl_DATA_OTHERS },
+    { "ar_SY",  lcl_DATA_OTHERS },
+    { "ar_YE",  lcl_DATA_OTHERS }
 };
 
 #else
@@ -321,15 +328,15 @@ static const sal_Int16 nbOfLocales = SAL_N_ELEMENTS(aLibTable);
 
 struct LocaleDataLookupTableItem
 {
-    LocaleDataLookupTableItem(const sal_Char *name, osl::Module* m, const sal_Char* lname) : dllName(name), module(m), localeName(lname)
-    {
-    }
     const sal_Char* dllName;
     osl::Module *module;
     const sal_Char* localeName;
+    css::lang::Locale aLocale;
 
-    com::sun::star::lang::Locale aLocale;
-    bool equals(const com::sun::star::lang::Locale& rLocale)
+    LocaleDataLookupTableItem(const sal_Char *name, osl::Module* m, const sal_Char* lname) : dllName(name), module(m), localeName(lname)
+    {
+    }
+    bool equals(const css::lang::Locale& rLocale)
     {
         return (rLocale == aLocale);
     }
@@ -502,7 +509,7 @@ oslGenericFunction SAL_CALL lcl_LookupTableHelper::getFunctionSymbolByName(
                                     appendAscii( (*pOutCachedItem)->localeName).makeStringAndClear());
                         }
                         else
-                            return NULL;
+                            return nullptr;
                     }
                 }
             }
@@ -529,7 +536,7 @@ oslGenericFunction SAL_CALL lcl_LookupTableHelper::getFunctionSymbolByName(
                             appendAscii((*pOutCachedItem)->localeName).makeStringAndClear());
                 }
                 else
-                    return NULL;
+                    return nullptr;
             }
             else
                 delete module;
@@ -577,7 +584,7 @@ oslGenericFunction SAL_CALL lcl_LookupTableHelper::getFunctionSymbolByName(
 #endif
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 } // anonymous namespace
@@ -703,7 +710,7 @@ Sequence< Calendar2 > SAL_CALL
 LocaleDataImpl::getAllCalendars2( const Locale& rLocale ) throw(RuntimeException, std::exception)
 {
 
-    sal_Unicode const * const * allCalendars = NULL;
+    sal_Unicode const * const * allCalendars = nullptr;
 
     MyFunc_Type func = reinterpret_cast<MyFunc_Type>(getFunctionSymbol( rLocale, "getAllCalendars" ));
 
@@ -855,7 +862,7 @@ LocaleDataImpl::getAllFormats( const Locale& rLocale ) throw(RuntimeException, s
         sal_Unicode const *const *formatArray;
         sal_Int16                 formatCount;
 
-        FormatSection() : func(0), from(0), to(0), formatArray(0), formatCount(0) {}
+        FormatSection() : func(nullptr), from(nullptr), to(nullptr), formatArray(nullptr), formatCount(0) {}
         sal_Int16 getFunc( LocaleDataImpl& rLocaleData, const Locale& rL, const char* pName )
         {
             func = reinterpret_cast<MyFunc_FormatCode>( rLocaleData.getFunctionSymbol( rL, pName));
@@ -924,7 +931,7 @@ LocaleDataImpl::getDateAcceptancePatterns( const Locale& rLocale ) throw(Runtime
 #define COLLATOR_ELEMENTS       3
 
 OUString SAL_CALL
-LocaleDataImpl::getCollatorRuleByAlgorithm( const Locale& rLocale, const OUString& algorithm ) throw(RuntimeException)
+LocaleDataImpl::getCollatorRuleByAlgorithm( const Locale& rLocale, const OUString& algorithm ) throw(RuntimeException, std::exception)
 {
     MyFunc_Type func = reinterpret_cast<MyFunc_Type>(getFunctionSymbol( rLocale, "getCollatorImplementation" ));
     if ( func ) {
@@ -1007,7 +1014,7 @@ LocaleDataImpl::getIndexArray(const Locale& rLocale, sal_Int16& indexCount)
 
     if (func)
         return func(indexCount);
-    return NULL;
+    return nullptr;
 }
 
 Sequence< OUString > SAL_CALL
@@ -1070,7 +1077,7 @@ LocaleDataImpl::getIndexArrayForAlgorithm(const Locale& rLocale, const OUString&
                 return indexArray+i*5;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 bool SAL_CALL
@@ -1095,7 +1102,7 @@ LocaleDataImpl::getIndexModuleByAlgorithm( const Locale& rLocale, const OUString
 }
 
 Sequence< UnicodeScript > SAL_CALL
-LocaleDataImpl::getUnicodeScripts( const Locale& rLocale ) throw(RuntimeException)
+LocaleDataImpl::getUnicodeScripts( const Locale& rLocale ) throw(RuntimeException, std::exception)
 {
     MyFunc_Type func = reinterpret_cast<MyFunc_Type>(getFunctionSymbol( rLocale, "getUnicodeScripts" ));
 
@@ -1115,7 +1122,7 @@ LocaleDataImpl::getUnicodeScripts( const Locale& rLocale ) throw(RuntimeExceptio
 }
 
 Sequence< OUString > SAL_CALL
-LocaleDataImpl::getFollowPageWords( const Locale& rLocale ) throw(RuntimeException)
+LocaleDataImpl::getFollowPageWords( const Locale& rLocale ) throw(RuntimeException, std::exception)
 {
     MyFunc_Type func = reinterpret_cast<MyFunc_Type>(getFunctionSymbol( rLocale, "getFollowPageWords" ));
 
@@ -1200,7 +1207,7 @@ LocaleDataImpl::getForbiddenCharacters( const Locale& rLocale ) throw(RuntimeExc
 }
 
 OUString SAL_CALL
-LocaleDataImpl::getHangingCharacters( const Locale& rLocale ) throw(RuntimeException)
+LocaleDataImpl::getHangingCharacters( const Locale& rLocale ) throw(RuntimeException, std::exception)
 {
     MyFunc_Type func = reinterpret_cast<MyFunc_Type>(getFunctionSymbol( rLocale, "getForbiddenCharacters" ));
 
@@ -1214,7 +1221,7 @@ LocaleDataImpl::getHangingCharacters( const Locale& rLocale ) throw(RuntimeExcep
 }
 
 Sequence< OUString > SAL_CALL
-LocaleDataImpl::getBreakIteratorRules( const Locale& rLocale  ) throw(RuntimeException)
+LocaleDataImpl::getBreakIteratorRules( const Locale& rLocale  ) throw(RuntimeException, std::exception)
 {
     MyFunc_Type func = reinterpret_cast<MyFunc_Type>(getFunctionSymbol( rLocale, "getBreakIteratorRules" ));
 
@@ -1258,7 +1265,7 @@ LocaleDataImpl::getReservedWord( const Locale& rLocale  ) throw(RuntimeException
 
 
 Sequence< Sequence<beans::PropertyValue> > SAL_CALL
-LocaleDataImpl::getContinuousNumberingLevels( const lang::Locale& rLocale ) throw(RuntimeException)
+LocaleDataImpl::getContinuousNumberingLevels( const lang::Locale& rLocale ) throw(RuntimeException, std::exception)
 {
     // load symbol
     MyFunc_Type2 func = reinterpret_cast<MyFunc_Type2>(getFunctionSymbol( rLocale, "getContinuousNumberingLevels" ));
@@ -1337,7 +1344,7 @@ namespace com{ namespace sun{ namespace star{ namespace lang {
 struct OutlineNumberingLevel_Impl
 {
     OUString        sPrefix;
-    sal_Int16       nNumType; //com::sun::star::style::NumberingType
+    sal_Int16       nNumType; //css::style::NumberingType
     OUString        sSuffix;
     sal_Unicode     cBulletChar;
     OUString        sBulletFontName;
@@ -1360,17 +1367,17 @@ public:
     virtual ~OutlineNumbering();
 
     //XIndexAccess
-    virtual sal_Int32 SAL_CALL getCount(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual sal_Int32 SAL_CALL getCount(  ) throw(RuntimeException, std::exception) override;
     virtual Any SAL_CALL getByIndex( sal_Int32 Index )
-        throw(IndexOutOfBoundsException, WrappedTargetException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(IndexOutOfBoundsException, WrappedTargetException, RuntimeException, std::exception) override;
 
     //XElementAccess
-    virtual Type SAL_CALL getElementType(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL hasElements(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual Type SAL_CALL getElementType(  ) throw(RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL hasElements(  ) throw(RuntimeException, std::exception) override;
 };
 
 Sequence< Reference<container::XIndexAccess> > SAL_CALL
-LocaleDataImpl::getOutlineNumberingLevels( const lang::Locale& rLocale ) throw(RuntimeException)
+LocaleDataImpl::getOutlineNumberingLevels( const lang::Locale& rLocale ) throw(RuntimeException, std::exception)
 {
     // load symbol
     MyFunc_Type3 func = reinterpret_cast<MyFunc_Type3>(getFunctionSymbol( rLocale, "getOutlineNumberingLevels" ));
@@ -1442,7 +1449,7 @@ LocaleDataImpl::getOutlineNumberingLevels( const lang::Locale& rLocale ) throw(R
 // helper functions
 
 oslGenericFunction SAL_CALL LocaleDataImpl::getFunctionSymbol( const Locale& rLocale, const sal_Char* pFunction )
-        throw(RuntimeException)
+        throw(RuntimeException, std::exception)
 {
     lcl_LookupTableHelper & rLookupTable = lcl_LookupTableStatic::get();
 
@@ -1454,8 +1461,8 @@ oslGenericFunction SAL_CALL LocaleDataImpl::getFunctionSymbol( const Locale& rLo
                 appendAscii(cachedItem->localeName).makeStringAndClear());
     }
 
-    oslGenericFunction pSymbol = 0;
-    LocaleDataLookupTableItem *pCachedItem = 0;
+    oslGenericFunction pSymbol = nullptr;
+    LocaleDataLookupTableItem *pCachedItem = nullptr;
 
     // Load function with name <func>_<lang>_<country> or <func>_<bcp47> and
     // fallbacks.
@@ -1474,7 +1481,7 @@ oslGenericFunction SAL_CALL LocaleDataImpl::getFunctionSymbol( const Locale& rLo
     if (!pSymbol)
     {
         // load default function with name <func>_en_US
-        pSymbol = rLookupTable.getFunctionSymbolByName(OUString("en_US"), pFunction, &pCachedItem);
+        pSymbol = rLookupTable.getFunctionSymbolByName("en_US", pFunction, &pCachedItem);
     }
 
     if (!pSymbol)
@@ -1500,7 +1507,7 @@ LocaleDataImpl::getAllInstalledLocaleNames() throw(RuntimeException, std::except
 
         // Check if the locale is really available and not just in the table,
         // don't allow fall backs.
-        LocaleDataLookupTableItem *pCachedItem = 0;
+        LocaleDataLookupTableItem *pCachedItem = nullptr;
         if (lcl_LookupTableStatic::get().getFunctionSymbolByName( name, "getLocaleItem", &pCachedItem )) {
             if( pCachedItem )
                 cachedItem.reset( pCachedItem );
@@ -1602,13 +1609,12 @@ sal_Bool SAL_CALL LocaleDataImpl::supportsService(const OUString& rServiceName)
 Sequence< OUString > SAL_CALL
 LocaleDataImpl::getSupportedServiceNames() throw( RuntimeException, std::exception )
 {
-    Sequence< OUString > aRet(1);
-    aRet[0] = "com.sun.star.i18n.LocaleData";
+    Sequence< OUString > aRet { "com.sun.star.i18n.LocaleData" };
     return aRet;
 }
 
 // static
-OUString LocaleDataImpl::getFirstLocaleServiceName( const com::sun::star::lang::Locale & rLocale )
+OUString LocaleDataImpl::getFirstLocaleServiceName( const css::lang::Locale & rLocale )
 {
     if (rLocale.Language == I18NLANGTAG_QLT)
         return rLocale.Variant.replace( cHyphen, cUnder);
@@ -1619,7 +1625,7 @@ OUString LocaleDataImpl::getFirstLocaleServiceName( const com::sun::star::lang::
 }
 
 // static
-::std::vector< OUString > LocaleDataImpl::getFallbackLocaleServiceNames( const com::sun::star::lang::Locale & rLocale )
+::std::vector< OUString > LocaleDataImpl::getFallbackLocaleServiceNames( const css::lang::Locale & rLocale )
 {
     ::std::vector< OUString > aVec;
     if (rLocale.Language == I18NLANGTAG_QLT)

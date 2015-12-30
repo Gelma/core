@@ -52,7 +52,7 @@ public:
     virtual storeError initialize (
         ILockBytes *    pLockBytes,
         storeAccessMode eAccessMode,
-        sal_uInt16 &    rnPageSize) SAL_OVERRIDE;
+        sal_uInt16 &    rnPageSize) override;
 
     /** isValid.
      *  @return sal_True  upon successful initialization,
@@ -79,58 +79,15 @@ public:
         OStorePageLink & rLink,
         sal_uInt32 &     rAttrib);
 
-    /** attrib [nAttrib = ((nAttrib & ~nMask1) | nMask2)].
-     *  @see store_attrib()
-     */
-    storeError attrib (
-        const OStorePageKey &rKey,
-        sal_uInt32           nMask1,
-        sal_uInt32           nMask2,
-        sal_uInt32          &rAttrib);
-
-    /** link (insert Source Key as hardlink to Destination).
-     *  @see store_link()
-     */
-    storeError link (
-        const OStorePageKey &rSrcKey,
-        const OStorePageKey &rDstKey);
-
-    /** symlink (insert Source DirectoryPage as symlink to Destination).
-     *  @see store_symlink()
-     */
-    storeError symlink (
-        const rtl_String    *pSrcPath,
-        const rtl_String    *pSrcName,
-        const OStorePageKey &rDstKey);
-
-    /** rename.
-     *  @see store_rename()
-     */
-    storeError rename (
-        const OStorePageKey &rSrcKey,
-        const rtl_String    *pDstPath,
-        const rtl_String    *pDstName);
-
     /** remove.
      *  @see store_remove()
      */
     storeError remove (
         const OStorePageKey &rKey);
 
-    /** rebuild (combines recover and compact from 'Src' to 'Dst').
-     *  @param  pSrcLB [in] accessed readonly.
-     *  @param  pDstLB [in] truncated and accessed readwrite (as initialize()).
-     *  @return store_E_None upon success.
-     *
-     *  @see store_rebuildFile()
-     */
-    storeError rebuild (
-        ILockBytes *pSrcLB,
-        ILockBytes *pDstLB);
-
     /** IStoreHandle.
      */
-    virtual bool isKindOf (sal_uInt32 nTypeId) SAL_OVERRIDE;
+    virtual bool isKindOf (sal_uInt32 nTypeId) override;
 
 protected:
     /** Destruction.
@@ -157,7 +114,7 @@ private:
     /** IStoreHandle query() template function specialization.
      */
     friend OStorePageManager*
-    SAL_CALL query<> (IStoreHandle *pHandle, OStorePageManager*);
+    SAL_CALL query<> (OStoreObject *pHandle, OStorePageManager*);
 
     /** Representation.
     */
@@ -184,8 +141,8 @@ private:
     */
     storeError remove_Impl (entry & rEntry);
 
-    OStorePageManager (const OStorePageManager&) SAL_DELETED_FUNCTION;
-    OStorePageManager& operator= (const OStorePageManager&) SAL_DELETED_FUNCTION;
+    OStorePageManager (const OStorePageManager&) = delete;
+    OStorePageManager& operator= (const OStorePageManager&) = delete;
 };
 
 inline bool OStorePageManager::isValid() const
@@ -194,14 +151,14 @@ inline bool OStorePageManager::isValid() const
 }
 
 template<> inline OStorePageManager*
-SAL_CALL query (IStoreHandle *pHandle, SAL_UNUSED_PARAMETER OStorePageManager*)
+SAL_CALL query (OStoreObject *pHandle, SAL_UNUSED_PARAMETER OStorePageManager*)
 {
     if (pHandle && pHandle->isKindOf (OStorePageManager::m_nTypeId))
     {
         // Handle is kind of OStorePageManager.
         return static_cast<OStorePageManager*>(pHandle);
     }
-    return 0;
+    return nullptr;
 }
 
 /*========================================================================

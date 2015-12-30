@@ -108,9 +108,9 @@ public:
     serf_connection_t* getSerfConnection();
 
     // DAVSession methods
-    virtual bool CanUse( const OUString & inUri ) SAL_OVERRIDE;
+    virtual bool CanUse( const OUString & inUri ) override;
 
-    virtual bool UsesProxy() SAL_OVERRIDE;
+    virtual bool UsesProxy() override;
 
     const DAVRequestEnvironment & getRequestEnvironment() const
     { return m_aEnv; }
@@ -122,7 +122,7 @@ public:
               const std::vector< OUString > & inPropNames,
               std::vector< DAVResource > & ioResources,
               const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     // propnames
     virtual void
@@ -130,120 +130,114 @@ public:
               const Depth inDepth,
               std::vector< DAVResourceInfo >& ioResInfo,
               const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     virtual void
     PROPPATCH( const OUString & inPath,
                const std::vector< ProppatchValue > & inValues,
                const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     virtual void
     HEAD( const OUString &  inPath,
           const std::vector< OUString > & inHeaderNames,
           DAVResource & ioResource,
           const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     bool isHeadRequestInProgress();
 
-    virtual com::sun::star::uno::Reference< com::sun::star::io::XInputStream >
+    virtual css::uno::Reference< css::io::XInputStream >
     GET( const OUString & inPath,
          const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     virtual void
     GET( const OUString & inPath,
-         com::sun::star::uno::Reference<
-             com::sun::star::io::XOutputStream > &  ioOutputStream,
+         css::uno::Reference< css::io::XOutputStream > &  ioOutputStream,
          const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
-    virtual com::sun::star::uno::Reference< com::sun::star::io::XInputStream >
+    virtual css::uno::Reference< css::io::XInputStream >
     GET( const OUString & inPath,
          const std::vector< OUString > & inHeaderNames,
          DAVResource & ioResource,
          const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     virtual void
     GET( const OUString & inPath,
-         com::sun::star::uno::Reference<
-             com::sun::star::io::XOutputStream > & ioOutputStream,
+         css::uno::Reference< css::io::XOutputStream > & ioOutputStream,
          const std::vector< OUString > & inHeaderNames,
          DAVResource & ioResource,
          const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     virtual void
     PUT( const OUString & inPath,
-         const com::sun::star::uno::Reference<
-             com::sun::star::io::XInputStream > & inInputStream,
+         const css::uno::Reference< css::io::XInputStream > & inInputStream,
          const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
-    virtual com::sun::star::uno::Reference< com::sun::star::io::XInputStream >
+    virtual css::uno::Reference< css::io::XInputStream >
     POST( const OUString & inPath,
           const OUString & rContentType,
           const OUString & rReferer,
-          const com::sun::star::uno::Reference<
-              com::sun::star::io::XInputStream > & inInputStream,
+          const css::uno::Reference< css::io::XInputStream > & inInputStream,
           const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     virtual void
     POST( const OUString & inPath,
           const OUString & rContentType,
           const OUString & rReferer,
-          const com::sun::star::uno::Reference<
-              com::sun::star::io::XInputStream > & inInputStream,
-          com::sun::star::uno::Reference<
-              com::sun::star::io::XOutputStream > & oOutputStream,
+          const css::uno::Reference< css::io::XInputStream > & inInputStream,
+          css::uno::Reference< css::io::XOutputStream > & oOutputStream,
           const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     virtual void
     MKCOL( const OUString & inPath,
            const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     virtual void
     COPY( const OUString & inSourceURL,
           const OUString & inDestinationURL,
           const DAVRequestEnvironment & rEnv,
           bool inOverWrite )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     virtual void
     MOVE( const OUString & inSourceURL,
           const OUString & inDestinationURL,
           const DAVRequestEnvironment & rEnv,
           bool inOverWrite )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     virtual void DESTROY( const OUString & inPath,
                           const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     // set new lock.
     virtual void LOCK( const OUString & inURL,
-                       com::sun::star::ucb::Lock & inLock,
+                       css::ucb::Lock & inLock,
                        const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     // refresh existing lock.
     virtual sal_Int64 LOCK( const OUString & inURL,
                             sal_Int64 nTimeout,
                             const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     virtual void UNLOCK( const OUString & inURL,
                          const DAVRequestEnvironment & rEnv )
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     // helpers
     virtual void abort()
-        throw ( DAVException ) SAL_OVERRIDE;
+        throw ( DAVException ) override;
 
     const OUString & getHostName() const { return m_aUri.GetHost(); }
     int getPort() const { return m_aUri.GetPort(); }
@@ -273,42 +267,12 @@ private:
     // unlock, called by SerfLockStore::~SerfLockStore
     void UNLOCK( const OUString& rLock );
 
-    /*
-    // low level GET implementation, used by public GET implementations
-    static int GET( serf_connection_t * sess,
-                    const char * uri,
-                    //ne_block_reader reader,
-                    bool getheaders,
-                    void * userdata );
-
-    // Buffer-based PUT implementation. Serf only has file descriptor-
-    // based API.
-    static int PUT( serf_connection_t * sess,
-                    const char * uri,
-                    const char * buffer,
-                    size_t size );
-
-    // Buffer-based POST implementation. Serf only has file descriptor-
-    // based API.
-    int POST( serf_connection_t * sess,
-              const char * uri,
-              const char * buffer,
-              //ne_block_reader reader,
-              void * userdata,
-              const OUString & rContentType,
-              const OUString & rReferer );
-    */
-
     // Helper: XInputStream -> Sequence< sal_Int8 >
     static bool getDataFromInputStream(
-        const com::sun::star::uno::Reference<
-            com::sun::star::io::XInputStream > & xStream,
-        com::sun::star::uno::Sequence< sal_Int8 > & rData,
+        const css::uno::Reference<
+            css::io::XInputStream > & xStream,
+        css::uno::Sequence< sal_Int8 > & rData,
         bool bAppendTrailingZeroByte );
-
-    /*
-    OUString makeAbsoluteURL( OUString const & rURL ) const;
-    */
 };
 
 } // namespace http_dav_ucp

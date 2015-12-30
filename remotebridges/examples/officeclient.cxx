@@ -58,7 +58,7 @@ namespace remotebridges_officeclient {
 class OfficeClientMain : public WeakImplHelper1< XMain >
 {
 public:
-    OfficeClientMain( const Reference< XMultiServiceFactory > &r ) :
+    explicit OfficeClientMain( const Reference< XMultiServiceFactory > &r ) :
         m_xSMgr( r )
         {}
 public:     // Methods
@@ -183,7 +183,7 @@ sal_Int32 OfficeClientMain::run( const Sequence< OUString > & aArguments ) throw
                             OUString::createFromAscii( urls[i] ) ,
                             OUString( "_blank"),
                             0 ,
-                            Sequence < ::com::sun::star::beans::PropertyValue >() );
+                            Sequence < css::beans::PropertyValue >() );
 
                     if( 0 == i )
                     {

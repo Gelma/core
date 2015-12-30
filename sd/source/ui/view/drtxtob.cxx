@@ -82,7 +82,6 @@ void TextObjectBar::InitInterface_Impl()
 {
 }
 
-TYPEINIT1( TextObjectBar, SfxShell );
 
 TextObjectBar::TextObjectBar (
     ViewShell* pSdViewSh,
@@ -114,14 +113,14 @@ TextObjectBar::TextObjectBar (
         }
     }
 
-    SetName( OUString( "TextObjectBar" ));
+    SetName( "TextObjectBar");
 
     // SetHelpId( SD_IF_SDDRAWTEXTOBJECTBAR );
 }
 
 TextObjectBar::~TextObjectBar()
 {
-    SetRepeatTarget(NULL);
+    SetRepeatTarget(nullptr);
 }
 
 void TextObjectBar::GetCharState( SfxItemSet& rSet )
@@ -138,7 +137,7 @@ void TextObjectBar::GetCharState( SfxItemSet& rSet )
     //aKern.SetWhich(SID_ATTR_CHAR_KERNING);
     rSet.Put(aKern);
 
-    SfxItemState eState = aCharAttrSet.GetItemState( EE_CHAR_KERNING, true );
+    SfxItemState eState = aCharAttrSet.GetItemState( EE_CHAR_KERNING );
     if ( eState == SfxItemState::DONTCARE )
     {
         rSet.InvalidateItem(EE_CHAR_KERNING);
@@ -189,7 +188,7 @@ void TextObjectBar::GetAttrState( SfxItemSet& rSet )
                     OutlinerView* pOLV = mpView->GetTextEditOutlinerView();
                     SdrOutliner *pOutliner = mpView->GetTextEditOutliner();
 
-                    if (mpView->ISA(OutlineView))
+                    if( dynamic_cast< const OutlineView *>( mpView ) !=  nullptr)
                     {
                         pOLV = static_cast<OutlineView*>(mpView)->GetViewByWindow(
                             mpViewShell->GetActiveWindow());
@@ -261,13 +260,13 @@ void TextObjectBar::GetAttrState( SfxItemSet& rSet )
                 {
                     OutlinerView* pOLV = mpView->GetTextEditOutlinerView();
 
-                    if (mpView->ISA(OutlineView))
+                    if( dynamic_cast< const OutlineView *>( mpView ) !=  nullptr)
                     {
                         pOLV = static_cast<OutlineView*>(mpView)->GetViewByWindow(
                             mpViewShell->GetActiveWindow());
                     }
 
-                    bool bOutlineViewSh = mpViewShell->ISA(OutlineViewShell);
+                    bool bOutlineViewSh = dynamic_cast< const OutlineViewShell *>( mpViewShell ) !=  nullptr;
 
                     if (pOLV &&
                         ( pOLV->GetOutliner()->GetMode() == OUTLINERMODE_OUTLINEOBJECT || bOutlineViewSh ) )
@@ -277,7 +276,7 @@ void TextObjectBar::GetAttrState( SfxItemSet& rSet )
 
                         std::vector<Paragraph*> aSelList;
                         pOLV->CreateSelectionList(aSelList);
-                        Paragraph* pPara = aSelList.empty() ? NULL : *(aSelList.begin());
+                        Paragraph* pPara = aSelList.empty() ? nullptr : *(aSelList.begin());
 
                         // find out if we are a OutlineView
                         bool bIsOutlineView(OUTLINERMODE_OUTLINEVIEW == pOLV->GetOutliner()->GetMode());
@@ -331,7 +330,7 @@ void TextObjectBar::GetAttrState( SfxItemSet& rSet )
                         }
 
                         // disable when first para and 2nd is not a title
-                        pPara = aSelList.empty() ? NULL : *(aSelList.begin());
+                        pPara = aSelList.empty() ? nullptr : *(aSelList.begin());
 
                         if(!bDisableDown && bIsOutlineView
                             && pPara
@@ -375,7 +374,7 @@ void TextObjectBar::GetAttrState( SfxItemSet& rSet )
                             bLeftToRight = false;
                     }
                     else
-                        bLeftToRight = static_cast<const SvxWritingModeItem&>( aAttrSet.Get( SDRATTR_TEXTDIRECTION ) ).GetValue() == com::sun::star::text::WritingMode_LR_TB;
+                        bLeftToRight = static_cast<const SvxWritingModeItem&>( aAttrSet.Get( SDRATTR_TEXTDIRECTION ) ).GetValue() == css::text::WritingMode_LR_TB;
 
                     rSet.Put( SfxBoolItem( SID_TEXTDIRECTION_LEFT_TO_RIGHT, bLeftToRight ) );
                     rSet.Put( SfxBoolItem( SID_TEXTDIRECTION_TOP_TO_BOTTOM, !bLeftToRight ) );
@@ -428,7 +427,7 @@ void TextObjectBar::GetAttrState( SfxItemSet& rSet )
     rSet.Put( aAttrSet, false ); // <- sal_False, so DontCare-Status gets acquired
 
     // these are disabled in outline-mode
-    if (!mpViewShell || !mpViewShell->ISA(DrawViewShell))
+    if (!mpViewShell || dynamic_cast< const DrawViewShell *>( mpViewShell ) ==  nullptr)
     {
         rSet.DisableItem( SID_ATTR_PARA_ADJUST_LEFT );
         rSet.DisableItem( SID_ATTR_PARA_ADJUST_RIGHT );
@@ -537,11 +536,11 @@ void TextObjectBar::GetAttrState( SfxItemSet& rSet )
                 case FRMDIR_ENVIRONMENT:
                 {
                     SdDrawDocument& rDoc = mpView->GetDoc();
-                    ::com::sun::star::text::WritingMode eMode = rDoc.GetDefaultWritingMode();
+                    css::text::WritingMode eMode = rDoc.GetDefaultWritingMode();
                     bool bIsLeftToRight(false);
 
-                    if(::com::sun::star::text::WritingMode_LR_TB == eMode
-                        || ::com::sun::star::text::WritingMode_TB_RL == eMode)
+                    if(css::text::WritingMode_LR_TB == eMode
+                        || css::text::WritingMode_TB_RL == eMode)
                     {
                         bIsLeftToRight = true;
                     }

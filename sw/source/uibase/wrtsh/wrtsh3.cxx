@@ -43,45 +43,45 @@ extern bool g_bNoInterrupt;       // in swmodule.cxx
 bool SwWrtShell::MoveBookMark( BookMarkMove eFuncId, const ::sw::mark::IMark* const pMark)
 {
     addCurrentPosition();
-    (this->*m_fnKillSel)( 0, false );
+    (this->*m_fnKillSel)( nullptr, false );
 
     bool bRet = true;
     switch(eFuncId)
     {
-        case BOOKMARK_INDEX:bRet = SwCrsrShell::GotoMark( pMark );break;
-        case BOOKMARK_NEXT: bRet = SwCrsrShell::GoNextBookmark();break;
-        case BOOKMARK_PREV: bRet = SwCrsrShell::GoPrevBookmark();break;
+        case BOOKMARK_INDEX:bRet = SwCursorShell::GotoMark( pMark );break;
+        case BOOKMARK_NEXT: bRet = SwCursorShell::GoNextBookmark();break;
+        case BOOKMARK_PREV: bRet = SwCursorShell::GoPrevBookmark();break;
         default:;//prevent warning
     }
 
-    if( bRet && IsSelFrmMode() )
+    if( bRet && IsSelFrameMode() )
     {
-        UnSelectFrm();
-        LeaveSelFrmMode();
+        UnSelectFrame();
+        LeaveSelFrameMode();
     }
     if( IsSelection() )
     {
         m_fnKillSel = &SwWrtShell::ResetSelect;
-        m_fnSetCrsr = &SwWrtShell::SetCrsrKillSel;
+        m_fnSetCursor = &SwWrtShell::SetCursorKillSel;
     }
     return bRet;
 }
 
 bool SwWrtShell::GotoField( const SwFormatField& rField )
 {
-    (this->*m_fnKillSel)( 0, false );
+    (this->*m_fnKillSel)( nullptr, false );
 
-    bool bRet = SwCrsrShell::GotoFormatField( rField );
-    if( bRet && IsSelFrmMode() )
+    bool bRet = SwCursorShell::GotoFormatField( rField );
+    if( bRet && IsSelFrameMode() )
     {
-        UnSelectFrm();
-        LeaveSelFrmMode();
+        UnSelectFrame();
+        LeaveSelFrameMode();
     }
 
     if( IsSelection() )
     {
         m_fnKillSel = &SwWrtShell::ResetSelect;
-        m_fnSetCrsr = &SwWrtShell::SetCrsrKillSel;
+        m_fnSetCursor = &SwWrtShell::SetCursorKillSel;
     }
 
     return bRet;
@@ -89,17 +89,17 @@ bool SwWrtShell::GotoField( const SwFormatField& rField )
 
 bool SwWrtShell::GotoFieldmark(::sw::mark::IFieldmark const * const pMark)
 {
-    (this->*m_fnKillSel)( 0, false );
-    bool bRet = SwCrsrShell::GotoFieldmark(pMark);
-    if( bRet && IsSelFrmMode() )
+    (this->*m_fnKillSel)( nullptr, false );
+    bool bRet = SwCursorShell::GotoFieldmark(pMark);
+    if( bRet && IsSelFrameMode() )
     {
-        UnSelectFrm();
-        LeaveSelFrmMode();
+        UnSelectFrame();
+        LeaveSelFrameMode();
     }
     if( IsSelection() )
     {
         m_fnKillSel = &SwWrtShell::ResetSelect;
-        m_fnSetCrsr = &SwWrtShell::SetCrsrKillSel;
+        m_fnSetCursor = &SwWrtShell::SetCursorKillSel;
     }
     return bRet;
 }
@@ -151,7 +151,7 @@ bool SwWrtShell::GoPrevBookmark()
 
 void SwWrtShell::ExecMacro( const SvxMacro& rMacro, OUString* pRet, SbxArray* pArgs )
 {
-    // OD 11.02.2003 #100556# - execute macro, if it is allowed.
+    // execute macro, if it is allowed.
     if ( IsMacroExecAllowed() )
     {
         GetDoc()->ExecMacro( rMacro, pRet, pArgs );
@@ -177,7 +177,7 @@ bool SwWrtShell::GetURLFromButton( OUString& rURL, OUString& rDescr ) const
 
         if (rMarkList.GetMark(0))
         {
-            SdrUnoObj* pUnoCtrl = PTR_CAST(SdrUnoObj, rMarkList.GetMark(0)->GetMarkedSdrObj());
+            SdrUnoObj* pUnoCtrl = dynamic_cast<SdrUnoObj*>( rMarkList.GetMark(0)->GetMarkedSdrObj() );
             if (pUnoCtrl && FmFormInventor == pUnoCtrl->GetObjInventor())
             {
                 uno::Reference< awt::XControlModel >  xControlModel = pUnoCtrl->GetUnoControlModel();

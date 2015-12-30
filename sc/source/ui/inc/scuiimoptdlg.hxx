@@ -30,20 +30,21 @@ class ScImportOptionsDlg : public ModalDialog
 public:
     ScImportOptionsDlg( vcl::Window*                 pParent,
                         bool                    bAscii = true,
-                        const ScImportOptions*  pOptions = NULL,
-                        const OUString*         pStrTitle = NULL,
+                        const ScImportOptions*  pOptions = nullptr,
+                        const OUString*         pStrTitle = nullptr,
                         bool                    bMultiByte = false,
                         bool                    bOnlyDbtoolsEncodings = false,
                         bool                    bImport = true );
 
     virtual ~ScImportOptionsDlg();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void GetImportOptions( ScImportOptions& rOptions ) const;
 
 private:
     VclPtr<VclFrame>           m_pFieldFrame;
     VclPtr<FixedText>          m_pFtCharset;
+    VclPtr<VclContainer>       m_pEncGrid;
     VclPtr<SvxTextEncodingBox> m_pLbCharset;
     VclPtr<FixedText>          m_pFtFieldSep;
     VclPtr<ComboBox>           m_pEdFieldSep;
@@ -54,6 +55,7 @@ private:
     VclPtr<CheckBox>           m_pCbQuoteAll;
     VclPtr<CheckBox>           m_pCbFixed;
     VclPtr<OKButton>           m_pBtnOk;
+
 
     ScDelimiterTable*   pFieldSepTab;
     ScDelimiterTable*   pTextSepTab;

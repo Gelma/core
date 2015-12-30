@@ -25,6 +25,7 @@
 #include <com/sun/star/uno/RuntimeException.hpp>
 #include <com/sun/star/util/XCloneable.hpp>
 #include <com/sun/star/xml/sax/XAttributeList.hpp>
+#include <memory>
 
 namespace sax_expatwrap
 {
@@ -34,8 +35,8 @@ struct AttributeList_impl;
 //FIXME
 class AttributeList :
     public ::cppu::WeakImplHelper<
-                ::com::sun::star::xml::sax::XAttributeList,
-                ::com::sun::star::util::XCloneable >
+                css::xml::sax::XAttributeList,
+                css::util::XCloneable >
 {
 public:
     AttributeList();
@@ -48,24 +49,24 @@ public:
 public:
     // XAttributeList
     virtual sal_Int16 SAL_CALL getLength()
-        throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
     virtual OUString SAL_CALL getNameByIndex(sal_Int16 i)
-        throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
     virtual OUString SAL_CALL getTypeByIndex(sal_Int16 i)
-        throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
     virtual OUString SAL_CALL getTypeByName(const OUString& aName)
-        throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
     virtual OUString SAL_CALL getValueByIndex(sal_Int16 i)
-        throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
     virtual OUString SAL_CALL getValueByName(const OUString& aName)
-        throw( ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception) override;
 
     // XCloneable
-    virtual ::com::sun::star::uno::Reference< XCloneable > SAL_CALL
-        createClone()   throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Reference< XCloneable > SAL_CALL
+        createClone()   throw(css::uno::RuntimeException, std::exception) override;
 
 private:
-    struct AttributeList_impl *m_pImpl;
+    std::unique_ptr<AttributeList_impl> m_pImpl;
 };
 
 }

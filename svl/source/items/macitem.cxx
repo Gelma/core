@@ -25,8 +25,7 @@
 #include <svl/macitem.hxx>
 #include <stringio.hxx>
 
-TYPEINIT1_FACTORY(SvxMacroItem, SfxPoolItem, new SvxMacroItem(0));
-
+SfxPoolItem* SvxMacroItem::CreateDefault() { return new SvxMacroItem(0); }
 
 
 SvxMacro::SvxMacro( const OUString &rMacName, const OUString &rLanguage)
@@ -172,14 +171,14 @@ SvStream& SvxMacroTableDtor::Write( SvStream& rStream ) const
 const SvxMacro* SvxMacroTableDtor::Get(sal_uInt16 nEvent) const
 {
     SvxMacroTable::const_iterator it = aSvxMacroTable.find(nEvent);
-    return it == aSvxMacroTable.end() ? NULL : &(it->second);
+    return it == aSvxMacroTable.end() ? nullptr : &(it->second);
 }
 
 // returns NULL if no entry exists, or a pointer to the internal value
 SvxMacro* SvxMacroTableDtor::Get(sal_uInt16 nEvent)
 {
     SvxMacroTable::iterator it = aSvxMacroTable.find(nEvent);
-    return it == aSvxMacroTable.end() ? NULL : &(it->second);
+    return it == aSvxMacroTable.end() ? nullptr : &(it->second);
 }
 
 // return true if the key exists

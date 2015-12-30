@@ -103,10 +103,10 @@ protected:
         CF_COPYMASK             = (CF_MODIFIED | CF_PRIVATE)
     };
 protected:
-    void Read() SAL_OVERRIDE;
+    void Read() override;
 public:
     inline LwpAssociatedLayouts& GetLayoutsWithMe();
-    LwpVirtualLayout* GetLayout(LwpVirtualLayout* pStartLayout);
+    rtl::Reference<LwpVirtualLayout> GetLayout(LwpVirtualLayout* pStartLayout);
     inline bool IsActive();
     virtual bool IsTable();
     inline OUString GetClassName();
@@ -149,7 +149,7 @@ public:
     LwpHeadContent(LwpObjectHeader &objHdr, LwpSvStream* pStrm);
     virtual ~LwpHeadContent(){}
 protected:
-    void Read() SAL_OVERRIDE;
+    void Read() override;
 };
 
 #endif

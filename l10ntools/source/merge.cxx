@@ -45,15 +45,12 @@ namespace
         {
             rPoFile.readEntry( o_rPoEntry );
         }
-        catch( PoIfstream::Exception& aException )
+        catch (const PoIfstream::Exception&)
         {
-            if( aException == PoIfstream::INVALIDENTRY )
-            {
-                printf(
-                    "Warning : %s contains invalid entry\n",
-                    rFileName.getStr() );
-                return false;
-            }
+            printf(
+                "Warning : %s contains invalid entry\n",
+                rFileName.getStr() );
+            return false;
         }
         return true;
     }
@@ -195,11 +192,10 @@ MergeDataHashMap::iterator MergeDataHashMap::find(const OString& rKey)
 
 MergeData::MergeData(
     const OString &rTyp, const OString &rGID,
-    const OString &rLID , const OString &rFilename )
+    const OString &rLID )
     : sTyp( rTyp ),
     sGID( rGID ),
     sLID( rLID ) ,
-    sFilename( rFilename ),
     pMergeEntrys( new MergeEntrys() )
 {
 }
@@ -371,7 +367,7 @@ MergeData *MergeDataFile::GetMergeData( ResData *pResData , bool bCaseSensitive 
     }
     pResData->sGId = sOldG;
     pResData->sId = sOldL;
-    return NULL;
+    return nullptr;
 }
 
 MergeEntrys *MergeDataFile::GetMergeEntrys( ResData *pResData )
@@ -380,7 +376,7 @@ MergeEntrys *MergeDataFile::GetMergeEntrys( ResData *pResData )
     MergeData *pData = GetMergeData( pResData );
     if ( pData )
         return pData->GetMergeEntries();
-    return NULL;
+    return nullptr;
 }
 
 MergeEntrys *MergeDataFile::GetMergeEntrysCaseSensitive( ResData *pResData )
@@ -389,7 +385,7 @@ MergeEntrys *MergeDataFile::GetMergeEntrysCaseSensitive( ResData *pResData )
     MergeData *pData = GetMergeData( pResData , true );
     if ( pData )
         return pData->GetMergeEntries();
-    return NULL;
+    return nullptr;
 }
 
 void MergeDataFile::InsertEntry(
@@ -399,7 +395,7 @@ void MergeDataFile::InsertEntry(
     const OString &rTITLE, const OString &rInFilename,
     bool bFirstLang, bool bCaseSensitive )
 {
-    MergeData *pData = 0;
+    MergeData *pData = nullptr;
 
     // search for MergeData
     OString sKey = CreateKey(rTYP , rGID , rLID , rInFilename , bCaseSensitive);
@@ -414,7 +410,7 @@ void MergeDataFile::InsertEntry(
 
     if( !pData )
     {
-        pData = new MergeData( rTYP, rGID, rLID, rInFilename );
+        pData = new MergeData( rTYP, rGID, rLID );
         aMap.insert( sKey, pData );
     }
 

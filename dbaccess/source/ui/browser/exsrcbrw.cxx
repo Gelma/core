@@ -62,7 +62,7 @@ Any SAL_CALL SbaExternalSourceBrowser::queryInterface(const Type& _rType) throw 
 SbaExternalSourceBrowser::SbaExternalSourceBrowser(const Reference< css::uno::XComponentContext >& _rM)
     :SbaXDataBrowserController(_rM)
     ,m_aModifyListeners(getMutex())
-    ,m_pDataSourceImpl(NULL)
+    ,m_pDataSourceImpl(nullptr)
     ,m_bInQueryDispatch( false )
 {
 
@@ -85,8 +85,7 @@ OUString SbaExternalSourceBrowser::getImplementationName_Static() throw(RuntimeE
 
 css::uno::Sequence<OUString> SbaExternalSourceBrowser::getSupportedServiceNames_Static() throw(RuntimeException)
 {
-    css::uno::Sequence<OUString> aSupported(1);
-    aSupported[0] = "com.sun.star.sdb.FormGridView";
+    css::uno::Sequence<OUString> aSupported { "com.sun.star.sdb.FormGridView" };
     return aSupported;
 }
 
@@ -222,7 +221,7 @@ void SAL_CALL SbaExternalSourceBrowser::dispatch(const css::util::URL& aURL, con
         {
             if ( (pArguments->Name == "MasterForm") && (pArguments->Value.getValueTypeClass() == TypeClass_INTERFACE) )
             {
-                xMasterForm = Reference< XRowSet > (*static_cast<Reference< XInterface > const *>(pArguments->Value.getValue()), UNO_QUERY);
+                xMasterForm.set(*static_cast<Reference< XInterface > const *>(pArguments->Value.getValue()), UNO_QUERY);
                 break;
             }
         }

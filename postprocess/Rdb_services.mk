@@ -98,6 +98,7 @@ $(eval $(call gb_Rdb_add_components,services,\
 	ucb/source/ucp/file/ucpfile1 \
 	$(if $(ENABLE_CURL),ucb/source/ucp/ftp/ucpftp1) \
 	ucb/source/ucp/hierarchy/ucphier1 \
+	ucb/source/ucp/image/ucpimage \
 	ucb/source/ucp/package/ucppkg1 \
 	ucb/source/ucp/tdoc/ucptdoc1 \
 	UnoControls/util/ctl \
@@ -110,7 +111,7 @@ $(eval $(call gb_Rdb_add_components,services,\
 	xmlscript/util/xmlscript \
 	xmlsecurity/util/xmlsecurity \
 	xmlsecurity/util/xsec_fw \
-	$(if $(filter-out ANDROID,$(OS)), \
+	$(if $(filter-out ANDROID IOS,$(OS)), \
 		xmlsecurity/util/xsec_xmlsec$(if $(filter WNT,$(OS)),.windows)) \
 	$(if $(ENABLE_COINMP), \
 		sccomp/source/solver/coinmpsolver \
@@ -191,9 +192,6 @@ $(eval $(call gb_Rdb_add_components,services,\
 	) \
 	$(if $(ENABLE_OPENGL_CANVAS), \
         canvas/source/opengl/oglcanvas \
-	) \
-	$(if $(ENABLE_GCONF), \
-		shell/source/backends/gconfbe/gconfbe1 \
 	) \
 	$(if $(ENABLE_GIO), \
 		shell/source/sessioninstall/losessioninstall \
@@ -283,21 +281,12 @@ $(eval $(call gb_Rdb_add_components,services,\
 	) \
 ))
 
-ifneq ($(WITH_MOZAB4WIN),)
-$(eval $(call gb_Rdb_add_components,services,\
-	connectivity/source/drivers/mozab/mozab \
-))
-
-else
-
 ifneq (,$(filter DESKTOP,$(BUILD_TYPE)))
 $(eval $(call gb_Rdb_add_components,services,\
 	connectivity/source/drivers/mork/mork \
 	connectivity/source/drivers/mozab/bootstrap/mozbootstrap \
 ))
 endif # DESKTOP
-
-endif # WITH_MOZAB4WIN
 
 endif # DBCONNECTIVITY
 

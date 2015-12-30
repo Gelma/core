@@ -47,15 +47,15 @@ namespace sw { namespace sidebar {
 
 VclPtr<vcl::Window> WrapPropertyPanel::Create (
     vcl::Window* pParent,
-    const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& rxFrame,
+    const css::uno::Reference< css::frame::XFrame >& rxFrame,
     SfxBindings* pBindings)
 {
-    if (pParent == NULL)
-        throw ::com::sun::star::lang::IllegalArgumentException("no parent Window given to WrapPropertyPanel::Create", NULL, 0);
+    if (pParent == nullptr)
+        throw css::lang::IllegalArgumentException("no parent Window given to WrapPropertyPanel::Create", nullptr, 0);
     if ( ! rxFrame.is())
-        throw ::com::sun::star::lang::IllegalArgumentException("no XFrame given to WrapPropertyPanel::Create", NULL, 1);
-    if (pBindings == NULL)
-        throw ::com::sun::star::lang::IllegalArgumentException("no SfxBindings given to WrapPropertyPanel::Create", NULL, 2);
+        throw css::lang::IllegalArgumentException("no XFrame given to WrapPropertyPanel::Create", nullptr, 1);
+    if (pBindings == nullptr)
+        throw css::lang::IllegalArgumentException("no SfxBindings given to WrapPropertyPanel::Create", nullptr, 2);
 
     return VclPtr<WrapPropertyPanel>::Create(
                         pParent,
@@ -65,7 +65,7 @@ VclPtr<vcl::Window> WrapPropertyPanel::Create (
 
 WrapPropertyPanel::WrapPropertyPanel(
     vcl::Window* pParent,
-    const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& rxFrame,
+    const css::uno::Reference< css::frame::XFrame >& rxFrame,
     SfxBindings* pBindings )
     : PanelLayout(pParent, "WrapPropertyPanel", "modules/swriter/ui/sidebarwrap.ui", rxFrame)
     , mxFrame( rxFrame )
@@ -231,9 +231,9 @@ IMPL_LINK_NOARG_TYPED(WrapPropertyPanel, EnableContourHdl, Button*, void)
     mpBindings->GetDispatcher()->Execute(FN_FRAME_WRAP_CONTOUR, SfxCallMode::RECORD, &aItem, 0l);
 }
 
-IMPL_LINK(WrapPropertyPanel, SpacingLBHdl, ListBox*, pBox)
+IMPL_LINK_TYPED(WrapPropertyPanel, SpacingLBHdl, ListBox&, rBox, void)
 {
-    sal_uInt16 nVal = (sal_uInt16)reinterpret_cast<sal_uLong>(pBox->GetSelectEntryData());
+    sal_uInt16 nVal = (sal_uInt16)reinterpret_cast<sal_uLong>(rBox.GetSelectEntryData());
 
     SvxLRSpaceItem aLRItem(nVal, nVal, 0, 0, RES_LR_SPACE);
     SvxULSpaceItem aULItem(nVal, nVal, RES_UL_SPACE);
@@ -241,8 +241,6 @@ IMPL_LINK(WrapPropertyPanel, SpacingLBHdl, ListBox*, pBox)
     nTop = nBottom = nLeft = nRight = nVal;
     mpBindings->GetDispatcher()->Execute(SID_ATTR_LRSPACE, SfxCallMode::RECORD, &aLRItem, 0l);
     mpBindings->GetDispatcher()->Execute(SID_ATTR_ULSPACE, SfxCallMode::RECORD, &aULItem, 0l);
-
-    return 0L;
 }
 
 IMPL_LINK_NOARG_TYPED(WrapPropertyPanel, WrapTypeHdl, Button*, void)
@@ -300,7 +298,7 @@ void WrapPropertyPanel::NotifyItemUpdate(
     (void)bIsEnabled;
 
     if ( eState == SfxItemState::DEFAULT &&
-        pState->ISA(SfxBoolItem) )
+        dynamic_cast< const SfxBoolItem *>( pState ) !=  nullptr )
     {
         //Set Radio Button enable
         mpRBNoWrap->Enable();

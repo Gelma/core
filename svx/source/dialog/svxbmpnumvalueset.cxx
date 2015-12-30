@@ -246,6 +246,7 @@ void  SvxNumValueSet::UserDraw( const UserDrawEvent& rUDEvt )
         // Outline numbering has to be painted into the virtual device
         // to get correct lines
         // has to be made again
+        pVDev->SetLineColor(aBackColor);
         pVDev->DrawRect(aOrgRect);
         long nStartX = aOrgRect.TopLeft().X();
         long nStartY = aOrgRect.TopLeft().Y();
@@ -352,6 +353,7 @@ void  SvxNumValueSet::UserDraw( const UserDrawEvent& rUDEvt )
                     long nLineTop = nStartY + nRectHeight * aLinesArr[2 * i + 1]/100 ;
                     Point aLineLeft(aLeft.X(), nLineTop );
                     Point aLineRight(nStartX + nRectWidth * 90 /100, nLineTop );
+                    pVDev->SetLineColor(COL_LIGHTGRAY);
                     pVDev->DrawLine(aLineLeft,  aLineRight);
                 }
 
@@ -385,7 +387,7 @@ SvxNumValueSet::SvxNumValueSet(vcl::Window* pParent, WinBits nWinBits)
     : ValueSet(pParent, nWinBits)
     , ePageType(NumberingPageType::BULLET)
     , bHTMLMode(false)
-    , pVDev(NULL)
+    , pVDev(nullptr)
 {
 }
 
@@ -395,7 +397,7 @@ void SvxNumValueSet::init(NumberingPageType eType)
 {
     ePageType = eType;
     bHTMLMode = false;
-    pVDev = NULL;
+    pVDev = nullptr;
 
     SetColCount( 4 );
     SetLineCount( 2 );
@@ -503,7 +505,7 @@ void SvxBmpNumValueSet::UserDraw(const UserDrawEvent& rUDEvt)
 
     Graphic aGraphic;
     if(!GalleryExplorer::GetGraphicObj( GALLERY_THEME_BULLETS, nItemId - 1,
-                        &aGraphic, NULL))
+                        &aGraphic))
     {
         bGrfNotFound = true;
     }

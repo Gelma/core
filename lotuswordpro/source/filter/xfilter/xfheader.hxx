@@ -71,7 +71,7 @@ public:
     {
     }
 public:
-    virtual void ToXml(IXFStream *pStrm) SAL_OVERRIDE
+    virtual void ToXml(IXFStream *pStrm) override
     {
         IXFAttrList *pAttrList = pStrm->GetAttrList();
         pAttrList->Clear();
@@ -80,8 +80,6 @@ public:
         XFContentContainer::ToXml(pStrm);
         pStrm->EndElement( "style:header" );
     }
-private:
-    rtl::Reference<XFContentContainer>  m_aContents;
 };
 
 #endif

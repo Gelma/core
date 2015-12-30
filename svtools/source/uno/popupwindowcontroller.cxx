@@ -28,8 +28,8 @@
 #include <svtools/toolbarmenu.hxx>
 
 using namespace ::com::sun::star;
-using namespace ::com::sun::star::uno;
-using namespace ::com::sun::star::lang;
+using namespace css::uno;
+using namespace css::lang;
 
 
 namespace svt
@@ -50,15 +50,15 @@ private:
 };
 
 PopupWindowControllerImpl::PopupWindowControllerImpl()
-: mpPopupWindow( 0 )
-, mpToolBox( 0 )
+: mpPopupWindow( nullptr )
+, mpToolBox( nullptr )
 {
 }
 
 PopupWindowControllerImpl::~PopupWindowControllerImpl()
 {
     if( mpPopupWindow )
-        SetPopupWindow(0,0);
+        SetPopupWindow(nullptr,nullptr);
 }
 
 void PopupWindowControllerImpl::SetPopupWindow( vcl::Window* pPopupWindow, ToolBox* pToolBox )
@@ -83,7 +83,7 @@ IMPL_LINK_TYPED( PopupWindowControllerImpl, WindowEventListener, VclWindowEvent&
     {
     case VCLEVENT_WINDOW_CLOSE:
     case VCLEVENT_WINDOW_ENDPOPUPMODE:
-        SetPopupWindow(0,0);
+        SetPopupWindow(nullptr,nullptr);
         break;
 
     case VCLEVENT_WINDOW_SHOW:
@@ -92,7 +92,7 @@ IMPL_LINK_TYPED( PopupWindowControllerImpl, WindowEventListener, VclWindowEvent&
         {
             if( mpToolBox )
                 mpToolBox->CallEventListeners( VCLEVENT_DROPDOWN_OPEN, static_cast<void*>(mpPopupWindow) );
-            mpPopupWindow->CallEventListeners( VCLEVENT_WINDOW_GETFOCUS, 0 );
+            mpPopupWindow->CallEventListeners( VCLEVENT_WINDOW_GETFOCUS );
 
             svtools::ToolbarMenu* pToolbarMenu = dynamic_cast< svtools::ToolbarMenu* >( mpPopupWindow.get() );
             if( pToolbarMenu )
@@ -105,7 +105,7 @@ IMPL_LINK_TYPED( PopupWindowControllerImpl, WindowEventListener, VclWindowEvent&
     {
         if( mpPopupWindow )
         {
-            mpPopupWindow->CallEventListeners( VCLEVENT_WINDOW_LOSEFOCUS, 0 );
+            mpPopupWindow->CallEventListeners( VCLEVENT_WINDOW_LOSEFOCUS );
             if( mpToolBox )
                 mpToolBox->CallEventListeners( VCLEVENT_DROPDOWN_CLOSE, static_cast<void*>(mpPopupWindow) );
         }
@@ -158,7 +158,7 @@ sal_Bool SAL_CALL PopupWindowController::supportsService( const OUString& Servic
 }
 
 // XInitialization
-void SAL_CALL PopupWindowController::initialize( const ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any >& aArguments ) throw (::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL PopupWindowController::initialize( const css::uno::Sequence< css::uno::Any >& aArguments ) throw (css::uno::Exception, css::uno::RuntimeException, std::exception)
 {
     svt::ToolboxController::initialize( aArguments );
     if( !m_aCommandURL.isEmpty() )

@@ -28,8 +28,13 @@ import java.util.Vector;
 import com.sun.star.io.XActiveDataSink;
 import com.sun.star.io.XInputStream;
 import com.sun.star.io.XTextInputStream;
+import com.sun.star.lang.Locale;
 import com.sun.star.lang.XMultiServiceFactory;
-import com.sun.star.ucb.*;
+import com.sun.star.ucb.CommandAbortedException;
+import com.sun.star.ucb.XFileIdentifierConverter;
+import com.sun.star.ucb.XSimpleFileAccess;
+import com.sun.star.ucb.XSimpleFileAccess2;
+import com.sun.star.uno.Exception;
 import com.sun.star.uno.UnoRuntime;
 import com.sun.star.uno.XInterface;
 import com.sun.star.beans.PropertyValue;
@@ -213,7 +218,6 @@ public class FileAccess
             Locale aLocale = (Locale) Helper.getUnoStructValue(defaults, "CharLocale");
             if (aLocale == null)
             {
-                java.util.Locale.getDefault();
                 aLocale = new com.sun.star.lang.Locale();
                 aLocale.Country = java.util.Locale.getDefault().getCountry();
                 aLocale.Language = java.util.Locale.getDefault().getLanguage();

@@ -20,15 +20,34 @@
 #ifndef INCLUDED_SC_SOURCE_UI_INC_AUTOSTYL_HXX
 #define INCLUDED_SC_SOURCE_UI_INC_AUTOSTYL_HXX
 
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
 #include <rtl/ustring.hxx>
 #include <vcl/timer.hxx>
 #include <vcl/idle.hxx>
 
 class ScDocShell;
 class ScRange;
-struct ScAutoStyleData;
-struct ScAutoStyleInitData;
+
+struct ScAutoStyleData
+{
+    sal_uLong nTimeout;
+    ScRange   aRange;
+    OUString  aStyle;
+
+    ScAutoStyleData( sal_uLong nT, const ScRange& rR, const OUString& rT ) :
+        nTimeout(nT), aRange(rR), aStyle(rT) {}
+};
+struct ScAutoStyleInitData
+{
+    ScRange     aRange;
+    OUString    aStyle1;
+    sal_uLong   nTimeout;
+    OUString    aStyle2;
+
+    ScAutoStyleInitData( const ScRange& rR, const OUString& rSt1, sal_uLong nT, const OUString& rSt2 ) :
+        aRange(rR), aStyle1(rSt1), nTimeout(nT), aStyle2(rSt2) {}
+};
+
 
 class ScAutoStyleList
 {
@@ -37,9 +56,9 @@ private:
     ScDocShell*     pDocSh;
     Timer           aTimer;
     Idle            aInitIdle;
-    sal_uLong           nTimerStart;
-    boost::ptr_vector<ScAutoStyleData> aEntries;
-    boost::ptr_vector<ScAutoStyleInitData> aInitials;
+    sal_uLong       nTimerStart;
+    std::vector<ScAutoStyleData>     aEntries;
+    std::vector<ScAutoStyleInitData> aInitials;
 
     void    ExecuteEntries();
     void    AdjustEntries(sal_uLong nDiff);

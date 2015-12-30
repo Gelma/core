@@ -78,7 +78,7 @@ void ViewContact::deleteAllVOCs()
 // ObjectContact (->View). Always needs to return something.
 ViewObjectContact& ViewContact::GetViewObjectContact(ObjectContact& rObjectContact)
 {
-    ViewObjectContact* pRetval = 0L;
+    ViewObjectContact* pRetval = nullptr;
     const sal_uInt32 nCount(maViewObjectContactVector.size());
 
     // first search if there exists a VOC for the given OC
@@ -180,7 +180,7 @@ ViewContact& ViewContact::GetViewContact(sal_uInt32 /*nIndex*/) const
 ViewContact* ViewContact::GetParentContact() const
 {
     // default has no parent
-    return 0;
+    return nullptr;
 }
 
 void ViewContact::ActionChildInserted(ViewContact& rChild)
@@ -220,12 +220,12 @@ void ViewContact::ActionChanged()
 // implementations do. Override as needed.
 SdrObject* ViewContact::TryToGetSdrObject() const
 {
-    return 0L;
+    return nullptr;
 }
 
 // primitive stuff
 
-drawinglayer::primitive2d::Primitive2DSequence ViewContact::createViewIndependentPrimitive2DSequence() const
+drawinglayer::primitive2d::Primitive2DContainer ViewContact::createViewIndependentPrimitive2DSequence() const
 {
     // This is the default implementation and should never be called (see header). If this is called,
     // someone implemented a ViewContact (VC) visualisation object without defining the visualisation by
@@ -238,38 +238,38 @@ drawinglayer::primitive2d::Primitive2DSequence ViewContact::createViewIndependen
     const drawinglayer::primitive2d::Primitive2DReference xReference(
         new drawinglayer::primitive2d::PolygonHairlinePrimitive2D(aOutline, aYellow));
 
-    return drawinglayer::primitive2d::Primitive2DSequence(&xReference, 1);
+    return drawinglayer::primitive2d::Primitive2DContainer { xReference };
 }
 
-drawinglayer::primitive2d::Primitive2DSequence ViewContact::getViewIndependentPrimitive2DSequence() const
+drawinglayer::primitive2d::Primitive2DContainer ViewContact::getViewIndependentPrimitive2DSequence() const
 {
     // local up-to-date checks. Create new list and compare.
-    drawinglayer::primitive2d::Primitive2DSequence xNew(createViewIndependentPrimitive2DSequence());
+    drawinglayer::primitive2d::Primitive2DContainer xNew(createViewIndependentPrimitive2DSequence());
 
-    if(xNew.hasElements())
+    if(!xNew.empty())
     {
         // allow evtl. embedding in object-specific infos, e.g. Name, Title, Description
         xNew = embedToObjectSpecificInformation(xNew);
     }
 
-    if(!drawinglayer::primitive2d::arePrimitive2DSequencesEqual(mxViewIndependentPrimitive2DSequence, xNew))
+    if(mxViewIndependentPrimitive2DSequence != xNew)
     {
         // has changed, copy content
         const_cast< ViewContact* >(this)->mxViewIndependentPrimitive2DSequence = xNew;
     }
 
-    // return current Primitive2DSequence
+    // return current Primitive2DContainer
     return mxViewIndependentPrimitive2DSequence;
 }
 
 // add Gluepoints (if available)
-drawinglayer::primitive2d::Primitive2DSequence ViewContact::createGluePointPrimitive2DSequence() const
+drawinglayer::primitive2d::Primitive2DContainer ViewContact::createGluePointPrimitive2DSequence() const
 {
     // default returns empty reference
-    return drawinglayer::primitive2d::Primitive2DSequence();
+    return drawinglayer::primitive2d::Primitive2DContainer();
 }
 
-drawinglayer::primitive2d::Primitive2DSequence ViewContact::embedToObjectSpecificInformation(const drawinglayer::primitive2d::Primitive2DSequence& rSource) const
+drawinglayer::primitive2d::Primitive2DContainer ViewContact::embedToObjectSpecificInformation(const drawinglayer::primitive2d::Primitive2DContainer& rSource) const
 {
     // nothing to do for default
     return rSource;

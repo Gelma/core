@@ -49,7 +49,7 @@ SlideSorterModule::SlideSorterModule (
 {
     if (mxConfigurationController.is())
     {
-        UpdateViewTabBar(NULL);
+        UpdateViewTabBar(nullptr);
 
         if (SvtSlideSorterBarOptions().GetVisibleImpressView())
             AddActiveMainView(FrameworkHelper::msImpressViewURL);
@@ -105,7 +105,7 @@ void SAL_CALL SlideSorterModule::notifyConfigurationChange (
         {
             // Update the view tab bar because the view in the center pane
             // has changed.
-            UpdateViewTabBar(NULL);
+            UpdateViewTabBar(nullptr);
         }
     }
     else
@@ -125,7 +125,7 @@ void SlideSorterModule::UpdateViewTabBar (const Reference<XTabBar>& rxTabBar)
         Reference<XConfigurationController> xCC (
             mxControllerManager->getConfigurationController());
         if (xCC.is())
-            xBar = Reference<XTabBar>(xCC->getResource(mxViewTabBarId), UNO_QUERY);
+            xBar.set(xCC->getResource(mxViewTabBarId), UNO_QUERY);
     }
 
     if (xBar.is())
@@ -134,7 +134,7 @@ void SlideSorterModule::UpdateViewTabBar (const Reference<XTabBar>& rxTabBar)
         aButtonA.ResourceId = FrameworkHelper::CreateResourceId(
             FrameworkHelper::msSlideSorterURL,
             FrameworkHelper::msCenterPaneURL);
-        aButtonA.ButtonLabel = SD_RESSTR(STR_SLIDE_MODE);
+        aButtonA.ButtonLabel = SD_RESSTR(STR_SLIDE_SORTER_MODE);
 
         TabBarButton aButtonB;
         aButtonB.ResourceId = FrameworkHelper::CreateResourceId(

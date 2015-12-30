@@ -26,8 +26,8 @@
 #include "fpicker.hxx"
 
 using namespace ::com::sun::star;
-using namespace ::com::sun::star::uno;
-using namespace ::com::sun::star::lang;
+using namespace css::uno;
+using namespace css::lang;
 
 namespace
 {
@@ -39,7 +39,7 @@ namespace
             FilePicker_CreateInstance,
             FilePicker_getImplementationName,
             FilePicker_getSupportedServiceNames,
-            ::cppu::createSingleComponentFactory, 0, 0
+            ::cppu::createSingleComponentFactory, nullptr, 0
         },
         {
             // FolderPicker should not use a constructor, it is only a
@@ -47,9 +47,9 @@ namespace
             FolderPicker_CreateInstance,
             FolderPicker_getImplementationName,
             FolderPicker_getSupportedServiceNames,
-            ::cppu::createSingleComponentFactory, 0, 0
+            ::cppu::createSingleComponentFactory, nullptr, 0
         },
-        { 0, 0, 0, 0, 0, 0 }
+        { nullptr, nullptr, nullptr, nullptr, nullptr, 0 }
     };
 }
 
@@ -59,7 +59,7 @@ extern "C"
 SAL_DLLPUBLIC_EXPORT void * SAL_CALL svt_component_getFactory(
     const sal_Char * pImplementationName, void * _pServiceManager, void * pRegistryKey)
 {
-    void * pResult = 0;
+    void * pResult = nullptr;
     if (_pServiceManager)
     {
         Reference< XMultiServiceFactory > xSMgr(static_cast< XMultiServiceFactory * >(_pServiceManager));

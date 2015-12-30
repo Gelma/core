@@ -475,8 +475,7 @@ OUString Service::getImplementationName_static() {
 }
 
 css::uno::Sequence< OUString > Service::getSupportedServiceNames_static() {
-    css::uno::Sequence< OUString > names(1);
-    names[0] = "com.sun.star.test.bridges.testacquire";
+    css::uno::Sequence< OUString > names { "com.sun.star.test.bridges.testacquire" };
     return names;
 }
 
@@ -521,16 +520,16 @@ bool writeInfo(void * registryKey, OUString const & implementationName,
     if (!key.is()) {
         return false;
     }
-    bool success = true;
+    bool bSuccess = true;
     for (sal_Int32 i = 0; i < serviceNames.getLength(); ++i) {
         try {
             key->createKey(serviceNames[i]);
         } catch (css::registry::InvalidRegistryException &) {
-            success = false;
+            bSuccess = false;
             break;
         }
     }
-    return success;
+    return bSuccess;
 }
 
 }

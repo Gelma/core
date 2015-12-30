@@ -34,7 +34,7 @@ typedef int LdapErrCode;
 
 struct LdapMessageHolder: private boost::noncopyable
 {
-    LdapMessageHolder() : msg(0) {}
+    LdapMessageHolder() : msg(nullptr) {}
     ~LdapMessageHolder()
     {
         if (msg)
@@ -52,10 +52,10 @@ LdapConnection::~LdapConnection()
 
 void LdapConnection::disconnect()
 {
-    if (mConnection != NULL)
+    if (mConnection != nullptr)
     {
         ldap_unbind_s(mConnection) ;
-        mConnection = NULL;
+        mConnection = nullptr;
     }
 }
 
@@ -66,20 +66,19 @@ static void checkLdapReturnCode(const sal_Char *aOperation,
 {
     if (aRetCode == LDAP_SUCCESS) { return ; }
 
-    static const sal_Char *kNoSpecificMessage = "No additional information" ;
-    OUStringBuffer message ;
+    OUStringBuffer message;
 
-    if (aOperation != NULL)
+    if (aOperation != nullptr)
     {
         message.appendAscii(aOperation).append(": ") ;
     }
     message.appendAscii(ldap_err2string(aRetCode)).append(" (") ;
-    sal_Char *stub = NULL ;
+    sal_Char *stub = nullptr ;
 
 #ifndef LDAP_OPT_SIZELIMIT // for use with OpenLDAP
     ldap_get_lderrno(aConnection, NULL, &stub) ;
 #endif
-    if (stub != NULL)
+    if (stub != nullptr)
     {
         message.appendAscii(stub) ;
         // It would seem the message returned is actually
@@ -89,10 +88,10 @@ static void checkLdapReturnCode(const sal_Char *aOperation,
         // This call is thus disabled for the moment.
         //ldap_memfree(stub) ;
     }
-    else { message.appendAscii(kNoSpecificMessage) ; }
+    else { message.append("No additional information") ; }
     message.append(")") ;
     throw ldap::LdapGenericException(message.makeStringAndClear(),
-                                     NULL, aRetCode) ;
+                                     nullptr, aRetCode) ;
 }
 
 void  LdapConnection::connectSimple(const LdapDefinition& aDefinition)
@@ -167,7 +166,7 @@ void LdapConnection::initConnection()
     mConnection = ldap_init(OUStringToOString( mLdapDefinition.mServer, RTL_TEXTENCODING_UTF8 ).getStr(),
                             mLdapDefinition.mPort) ;
 #endif
-    if (mConnection == NULL)
+    if (mConnection == nullptr)
     {
         OUStringBuffer message ;
 
@@ -184,7 +183,7 @@ void LdapConnection::initConnection()
     throw (lang::IllegalArgumentException,
             ldap::LdapConnectionException, ldap::LdapGenericException)
 {
-    OSL_ASSERT(data != 0);
+    OSL_ASSERT(data != nullptr);
     if (!isValid()) { connectSimple(); }
 
     OUString aUserDn =findUserDn( aUser );
@@ -203,7 +202,7 @@ void LdapConnection::initConnection()
                                       OUStringToOString( aUserDn, RTL_TEXTENCODING_UTF8 ).getStr(),
                                       LDAP_SCOPE_BASE,
                                       "(objectclass=*)",
-                                      0,
+                                      nullptr,
                                       0, // Attributes + values
                                       &result.msg) ;
 #endif
@@ -248,7 +247,7 @@ void LdapConnection::initConnection()
     {
         throw lang::IllegalArgumentException(
             "LdapConnection::findUserDn -User id is empty",
-                NULL, 0) ;
+                nullptr, 0) ;
     }
 
 
@@ -266,7 +265,7 @@ void LdapConnection::initConnection()
                                       LDAP_SCOPE_SUBTREE,
                                       (PWCHAR) filter.makeStringAndClear().getStr(), attributes, 0, &result.msg) ;
 #else
-    sal_Char * attributes [2] = { const_cast<sal_Char *>(LDAP_NO_ATTRS), NULL };
+    sal_Char * attributes [2] = { const_cast<sal_Char *>(LDAP_NO_ATTRS), nullptr };
     LdapErrCode retCode = ldap_search_s(mConnection,
                                       OUStringToOString( mLdapDefinition.mBaseDN, RTL_TEXTENCODING_UTF8 ).getStr(),
                                       LDAP_SCOPE_SUBTREE,
@@ -276,7 +275,7 @@ void LdapConnection::initConnection()
     OUString userDn ;
     LDAPMessage *entry = ldap_first_entry(mConnection, result.msg) ;
 
-    if (entry != NULL)
+    if (entry != nullptr)
     {
 #ifdef WNT
         PWCHAR charsDn = ldap_get_dnW(mConnection, entry) ;

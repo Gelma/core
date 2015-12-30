@@ -37,20 +37,20 @@ namespace
         return std::shared_ptr<ResMgr>(ResMgr::CreateResMgr(sEncName.getStr()));
     }
 
-    class ResourceIndexAccessBase : public cppu::WeakImplHelper< ::com::sun::star::container::XIndexAccess>
+    class ResourceIndexAccessBase : public cppu::WeakImplHelper< css::container::XIndexAccess>
     {
         public:
-            ResourceIndexAccessBase( std::shared_ptr<ResMgr> pResMgr)
+            explicit ResourceIndexAccessBase( std::shared_ptr<ResMgr> pResMgr)
                 : m_pResMgr(pResMgr)
             {
                 OSL_ENSURE(m_pResMgr, "no resource manager given");
             }
 
             // XIndexAccess
-            virtual ::sal_Int32 SAL_CALL getCount(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual ::sal_Int32 SAL_CALL getCount(  ) throw (css::uno::RuntimeException, std::exception) override
                 { return m_pResMgr.get() ? SAL_MAX_UINT16 : 0; };
             // XElementAccess
-            virtual sal_Bool SAL_CALL hasElements(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual sal_Bool SAL_CALL hasElements(  ) throw (css::uno::RuntimeException, std::exception) override
                 { return static_cast<bool>(m_pResMgr.get()); };
 
         protected:
@@ -61,24 +61,24 @@ namespace
     class ResourceStringIndexAccess : public ResourceIndexAccessBase
     {
         public:
-            ResourceStringIndexAccess( std::shared_ptr<ResMgr> pResMgr)
+            explicit ResourceStringIndexAccess( std::shared_ptr<ResMgr> pResMgr)
                 : ResourceIndexAccessBase(pResMgr) {}
             // XIndexAccess
-            virtual ::com::sun::star::uno::Any SAL_CALL getByIndex( ::sal_Int32 Index ) throw (::com::sun::star::lang::IndexOutOfBoundsException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            virtual css::uno::Any SAL_CALL getByIndex( ::sal_Int32 Index ) throw (css::lang::IndexOutOfBoundsException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
             // XElementAccessBase
-            virtual ::com::sun::star::uno::Type SAL_CALL getElementType(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual css::uno::Type SAL_CALL getElementType(  ) throw (css::uno::RuntimeException, std::exception) override
                 { return ::cppu::UnoType<OUString>::get(); };
     };
 
     class ResourceStringListIndexAccess : public ResourceIndexAccessBase
     {
         public:
-            ResourceStringListIndexAccess( std::shared_ptr<ResMgr> pResMgr)
+            explicit ResourceStringListIndexAccess( std::shared_ptr<ResMgr> pResMgr)
                 : ResourceIndexAccessBase(pResMgr) {}
             // XIndexAccess
-            virtual ::com::sun::star::uno::Any SAL_CALL getByIndex( ::sal_Int32 Index ) throw (::com::sun::star::lang::IndexOutOfBoundsException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            virtual css::uno::Any SAL_CALL getByIndex( ::sal_Int32 Index ) throw (css::lang::IndexOutOfBoundsException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
             // XElementAccessBase
-            virtual ::com::sun::star::uno::Type SAL_CALL getElementType(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual css::uno::Type SAL_CALL getElementType(  ) throw (css::uno::RuntimeException, std::exception) override
                 { return cppu::UnoType<Sequence<PropertyValue>>::get(); };
     };
 }
@@ -95,10 +95,10 @@ Any SAL_CALL ResourceIndexAccess::getByName(const OUString& aName)
     switch(::std::find(aNames.begin(), aNames.end(), aName) - aNames.begin())
     {
         case 0:
-            xResult = Reference<XIndexAccess>(new ResourceStringIndexAccess(m_pResMgr));
+            xResult.set(new ResourceStringIndexAccess(m_pResMgr));
             break;
         case 1:
-            xResult = Reference<XIndexAccess>(new ResourceStringListIndexAccess(m_pResMgr));
+            xResult.set(new ResourceStringListIndexAccess(m_pResMgr));
             break;
         default:
             throw NoSuchElementException();

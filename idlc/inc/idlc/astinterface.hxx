@@ -77,7 +77,7 @@ public:
 
     void forwardDefined(AstInterface const & def);
 
-    virtual bool dump(RegistryKey& rKey) SAL_OVERRIDE;
+    virtual bool dump(RegistryKey& rKey) override;
 
 private:
     enum InterfaceKind {
@@ -85,7 +85,7 @@ private:
         INTERFACE_INDIRECT_MANDATORY, INTERFACE_DIRECT_MANDATORY };
 
     struct VisibleMember {
-        explicit VisibleMember(AstDeclaration const * theMandatory = 0):
+        explicit VisibleMember(AstDeclaration const * theMandatory = nullptr):
             mandatory(theMandatory) {}
 
         typedef std::map< OString, AstDeclaration const * > Optionals;

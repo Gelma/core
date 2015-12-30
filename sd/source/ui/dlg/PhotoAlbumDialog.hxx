@@ -46,9 +46,9 @@ class SdPhotoAlbumDialog : public ModalDialog
 public:
     SdPhotoAlbumDialog(vcl::Window* pWindow, SdDrawDocument* pActDoc);
     virtual ~SdPhotoAlbumDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual short Execute() SAL_OVERRIDE;
+    virtual short Execute() override;
 
 private:
     static OUString sDirUrl;
@@ -74,12 +74,11 @@ private:
     DECL_LINK_TYPED(CreateHdl, Button*, void);
 
     DECL_LINK_TYPED(FileHdl, Button*, void);
-    DECL_LINK(TextHdl, void*);
     DECL_LINK_TYPED(UpHdl, Button*, void);
     DECL_LINK_TYPED(DownHdl, Button*, void);
     DECL_LINK_TYPED(RemoveHdl, Button*, void);
 
-    DECL_LINK(SelectHdl, void*);
+    DECL_LINK_TYPED(SelectHdl, ListBox&, void);
 
     Reference< drawing::XDrawPage > appendNewSlide(AutoLayout aLayout,
         Reference< drawing::XDrawPages > xDrawPages);

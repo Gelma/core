@@ -126,73 +126,6 @@ short UNO_STATES[] =
     VERTICAL        // = (sal_Int16)29;
 };
 
-//  <=== map ===>
-
-BSTR IA2_STATES_NAME[] =
-{
-    _T("Active"),
-    _T("Armed"),
-    _T("Defunct"),
-    _T("Editable"),
-    _T("Horizontal"),
-    _T("Iconified"),
-    _T("Invalid Entry"),
-    _T("Manages Descendants"),
-    _T("Modal"),
-    _T("Multi Line"),
-    _T("Opaque"),
-    _T("Required"),
-    _T("Selectable Text"),
-    _T("Single Line"),
-    _T("Stale"),
-    _T("Supports Autocompletion"),
-    _T("Transient"),
-    _T("Vertical")
-};
-
-// IA2 states mapping, and name
-// maintenance the consistency. change one, change them all
-
-BSTR UNO_ALL_STATES[] =
-{
-    _T("INVALID"),          //  INVALID ( 0 )
-    _T("ACTIVE"),           //  ACTIVE  ( 1 )
-    _T("ARMED"),            //  ARMED   ( 2 )
-    _T("BUSY"),             //  BUSY    ( 3 )
-    _T("CHECKED"),          //  CHECKED ( 4 )
-    _T("DEFUNC"),           //  DEFUNC  ( 5 )
-    _T("EDITABLE"),         //  EDITABLE    ( 6 )
-    _T("ENABLED"),          //  ENABLED ( 7 )
-    _T("EXPANDABLE"),       //  EXPANDABLE  ( 8 )
-    _T("EXPANDED"),         //  EXPANDED    ( 9 )
-    _T("FOCUSABLE"),        //  FOCUSABLE   ( 10 )
-    _T("FOCUSED"),          //  FOCUSED ( 11 )
-    _T("HORIZONTAL"),       //  HORIZONTAL  ( 12 )
-    _T("ICONIFIED"),        //  ICONIFIED   ( 13 )
-    _T("INDETERMINATE"),    //  INDETERMINATE   ( 14 )
-    _T("MANAGES_DESCENDANTS"),//    MANAGES_DESCENDANTS ( 15 )
-    _T("MODAL"),            //  MODAL   ( 16 )
-    _T("MULTI_LINE"),       //  MULTI_LINE  ( 17 )
-    _T("MULTI_SELECTABLE"), //  MULTI_SELECTABLE    ( 18 )
-    _T("OPAQUE"),           //  OPAQUE  ( 19 )
-    _T("PRESSED"),          //  PRESSED ( 20 )
-    _T("RESIZABLE"),        //  RESIZABLE   ( 21 )
-    _T("SELECTABLE"),       //  SELECTABLE  ( 22 )
-    _T("SELECTED"),         //  SELECTED    ( 23 )
-    _T("SENSITIVE"),        //  SENSITIVE   ( 24 )
-    _T("SHOWING"),          //  SHOWING ( 25 )
-    _T("SINGLE_LINE"),      //  SINGLE_LINE ( 26 )
-    _T("STALE"),            //  STALE   ( 27 )
-    _T("TRANSIENT"),        //  TRANSIENT   ( 28 )
-    _T("VERTICAL"),         //  VERTICAL    ( 29 )
-    _T("VISIBLE"),          //  VISIBLE ( 30 )
-    _T("MOVEABLE"),         //  MOVEABLE ( 31 )
-    _T("OFFSCREEN"),        //  OFFSCREEN ( 32 )
-    _T("COLLAPSE"),         //  COLLAPSE ( 33 )
-    _T("DEFAULT")           //  DEFAULT ( 34 )
-};
-
-
 using namespace com::sun::star::accessibility::AccessibleRole;
 
 
@@ -223,17 +156,17 @@ using namespace com::sun::star::accessibility::AccessibleRole;
 AccObjectManagerAgent* CMAccessible::g_pAgent = NULL;
 
 CMAccessible::CMAccessible():
+m_pszName(NULL),
+m_pszValue(NULL),
+m_pszActionDescription(NULL),
 m_iRole(0x00),
 m_dState(0x00),
+m_pszDescription(NULL),
+m_pIParent(NULL),
 m_dChildID(0x00),
 m_dFocusChildID(UACC_NO_FOCUS),
 m_hwnd(NULL),
-m_pIParent(NULL),
-m_pszName(NULL),
-m_pszValue(NULL),
-m_pszDescription(NULL),
 m_isDestroy(FALSE),
-m_pszActionDescription(NULL),
 m_bRequiresSave(FALSE)
 {
     m_sLocation.m_dLeft=0;
@@ -944,8 +877,8 @@ STDMETHODIMP CMAccessible::accLocation(long *pxLeft, long *pyTop, long *pcxWidth
                     if( !pRComponent.is() )
                         return S_FALSE;
 
-                    ::com::sun::star::awt::Point pCPoint = pRComponent->getLocationOnScreen();
-                    ::com::sun::star::awt::Size pCSize = pRComponent->getSize();
+                    css::awt::Point pCPoint = pRComponent->getLocationOnScreen();
+                    css::awt::Size pCSize = pRComponent->getSize();
                     *pxLeft = pCPoint.X;
                     *pyTop =  pCPoint.Y;
                     *pcxWidth = pCSize.Width;
@@ -2820,9 +2753,9 @@ void CMAccessible::get_OLECHARFromAny(Any& pAny, OLECHAR* pChar)
                 }
                 wcscpy(pChar, pString.getStr());
             }
-            else if (pAny.getValueType() == cppu::UnoType<Sequence< ::com::sun::star::style::TabStop >>::get())
+            else if (pAny.getValueType() == cppu::UnoType<Sequence< css::style::TabStop >>::get())
             {
-                Sequence < ::com::sun::star::style::TabStop > val;
+                Sequence < css::style::TabStop > val;
                 pAny >>= val;
                 int count = val.getLength();
 
@@ -2834,7 +2767,7 @@ void CMAccessible::get_OLECHARFromAny(Any& pAny, OLECHAR* pChar)
                     OLECHAR pAttrsDescimalChar[512] = {NULL};
                     OLECHAR pAttrsFillChar[512] = {NULL};
 
-                    ::com::sun::star::style::TabStop sigleVal = val[iIndex];
+                    css::style::TabStop sigleVal = val[iIndex];
 
                     swprintf( pAttrsPosition, L"Position=%ld,TabAlign=%ld",
                         sigleVal.Position, sigleVal.Alignment);
@@ -2860,24 +2793,24 @@ void CMAccessible::get_OLECHARFromAny(Any& pAny, OLECHAR* pChar)
         }
     case TypeClass_ENUM:
         {
-            if (pAny.getValueType() == cppu::UnoType<com::sun::star::awt::FontSlant>::get())
+            if (pAny.getValueType() == cppu::UnoType<css::awt::FontSlant>::get())
             {
-                com::sun::star::awt::FontSlant val;
+                css::awt::FontSlant val;
                 pAny >>= val;
                 swprintf( pChar, L"%d", val);
             }
         }
     case TypeClass_STRUCT:
         {
-            if (pAny.getValueType() == cppu::UnoType<com::sun::star::style::LineSpacing>::get())
+            if (pAny.getValueType() == cppu::UnoType<css::style::LineSpacing>::get())
             {
-                com::sun::star::style::LineSpacing val;
+                css::style::LineSpacing val;
                 pAny >>= val;
                 swprintf( pChar, L"Mode=%ld,Height=%ld,", val.Mode, val.Height);
             }
-            else if (pAny.getValueType() == cppu::UnoType<com::sun::star::accessibility::TextSegment>::get())
+            else if (pAny.getValueType() == cppu::UnoType<css::accessibility::TextSegment>::get())
             {
-                com::sun::star::accessibility::TextSegment val;
+                css::accessibility::TextSegment val;
                 pAny >>= val;
                 ::rtl::OUString realVal(val.SegmentText);
                 wcscpy(pChar, realVal.getStr());
@@ -2912,18 +2845,18 @@ void CMAccessible::get_OLECHAR4Numbering(const Any& pAny, short numberingLevel,c
 {
     if(pChar == NULL)
         return;
-    Reference< ::com::sun::star::container::XIndexReplace > pXIndex;
+    Reference< css::container::XIndexReplace > pXIndex;
     if((pAny>>=pXIndex) && (numberingLevel !=-1))//numbering level is -1,means invalid value
     {
         Any aAny = pXIndex->getByIndex(numberingLevel);
-        Sequence< ::com::sun::star::beans::PropertyValue > aProps;
+        Sequence< css::beans::PropertyValue > aProps;
         aAny >>= aProps;
-        const ::com::sun::star::beans::PropertyValue* pPropArray = aProps.getConstArray();
+        const css::beans::PropertyValue* pPropArray = aProps.getConstArray();
         sal_Int32 nCount = aProps.getLength();
         swprintf(pChar,L"Numbering:NumberingLevel=%d,",numberingLevel);
         for( sal_Int32 i=0; i<nCount; i++ )
         {
-            ::com::sun::star::beans::PropertyValue rProp = pPropArray[i];
+            css::beans::PropertyValue rProp = pPropArray[i];
             if( (rProp.Name == "BulletChar" ) ||
                 (rProp.Name == "GraphicURL" ) ||
                 (rProp.Name == "NumberingType" ))
@@ -2970,7 +2903,7 @@ void CMAccessible::get_OLECHAR4Numbering(const Any& pAny, short numberingLevel,c
     }
 }
 
-void CMAccessible::ConvertAnyToVariant(const ::com::sun::star::uno::Any &rAnyVal, VARIANT *pvData)
+void CMAccessible::ConvertAnyToVariant(const css::uno::Any &rAnyVal, VARIANT *pvData)
 {
     if(rAnyVal.hasValue())
     {
@@ -3195,7 +3128,7 @@ STDMETHODIMP CMAccessible:: get_locale( IA2Locale __RPC_FAR *locale  )
     if (!m_xContext.is())
         return E_FAIL;
 
-    ::com::sun::star::lang::Locale unoLoc = m_xContext.get()->getLocale();
+    css::lang::Locale unoLoc = m_xContext.get()->getLocale();
     locale->language = SysAllocString((OLECHAR*)unoLoc.Language.getStr());
     locale->country = SysAllocString((OLECHAR*)unoLoc.Country.getStr());
     locale->variant = SysAllocString((OLECHAR*)unoLoc.Variant.getStr());
@@ -3329,9 +3262,9 @@ STDMETHODIMP CMAccessible::get_attributes(/*[out]*/ BSTR *pAttr)
         return E_FAIL;
     else
     {
-        com::sun::star::uno::Reference<com::sun::star::accessibility::XAccessibleExtendedAttributes> pRXAttr;
+        css::uno::Reference<css::accessibility::XAccessibleExtendedAttributes> pRXAttr;
         pRXAttr = pRXI.get();
-        ::com::sun::star::uno::Any  anyVal = pRXAttr->getExtendedAttributes();
+        css::uno::Any  anyVal = pRXAttr->getExtendedAttributes();
 
         ::rtl::OUString val;
         anyVal >>= val;

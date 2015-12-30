@@ -46,6 +46,7 @@
 #include <comphelper/scopeguard.hxx>
 #include <canvas/canvastools.hxx>
 
+#include <boost/mem_fn.hpp>
 #include <cmath>
 #include <algorithm>
 #include <functional>
@@ -861,7 +862,7 @@ namespace slideshow
 
             sal_Int32 nIndex = 0;
             for ( MetaAction * pCurrAct = mpCurrMtf->FirstAction();
-                  pCurrAct != 0; pCurrAct = mpCurrMtf->NextAction() )
+                  pCurrAct != nullptr; pCurrAct = mpCurrMtf->NextAction() )
             {
                 if (pCurrAct->GetType() == MetaActionType::COMMENT) {
                     MetaCommentAction * pAct =
@@ -871,7 +872,7 @@ namespace slideshow
                         // e.g. date field doesn't have data!
                         // currently assuming that only url field, this is
                         // somehow fragile! xxx todo if possible
-                        pAct->GetData() != 0 &&
+                        pAct->GetData() != nullptr &&
                         pAct->GetDataSize() > 0)
                     {
                         if (!maHyperlinkIndices.empty() &&

@@ -53,7 +53,6 @@ public:
     };
 
 protected:
-    CryptoType mType;
 #if USE_TLS_OPENSSL
     EVP_CIPHER_CTX mContext;
 #endif
@@ -75,7 +74,7 @@ protected:
 #endif
 
 protected:
-    Crypto(CryptoType type);
+    Crypto();
 
 public:
     virtual ~Crypto();
@@ -95,7 +94,7 @@ public:
     virtual sal_uInt32 update(
                     std::vector<sal_uInt8>& output,
                     std::vector<sal_uInt8>& input,
-                    sal_uInt32 inputLength = 0) SAL_OVERRIDE;
+                    sal_uInt32 inputLength = 0) override;
 
 
     static sal_uInt32 aes128ecb(
@@ -114,7 +113,7 @@ public:
     virtual sal_uInt32 update(
                     std::vector<sal_uInt8>& output,
                     std::vector<sal_uInt8>& input,
-                    sal_uInt32 inputLength = 0) SAL_OVERRIDE;
+                    sal_uInt32 inputLength = 0) override;
 };
 
 class Digest
@@ -153,9 +152,6 @@ public:
     static bool sha1(  std::vector<sal_uInt8>& digest, std::vector<sal_uInt8>& input);
     static bool sha512(std::vector<sal_uInt8>& digest, std::vector<sal_uInt8>& input);
 };
-
-bool sha1(  std::vector<sal_uInt8>& digest, std::vector<sal_uInt8>& input);
-bool sha512(std::vector<sal_uInt8>& digest, std::vector<sal_uInt8>& input);
 
 } // namespace core
 } // namespace oox

@@ -160,7 +160,7 @@ void OApplicationController::pasteFormat(SotClipboardFormatId _nFormatId)
 
 void OApplicationController::openDataSourceAdminDialog()
 {
-    openDialog( OUString( "com.sun.star.sdb.DatasourceAdministrationDialog" ) );
+    openDialog( "com.sun.star.sdb.DatasourceAdministrationDialog" );
 }
 
 void OApplicationController::openDialog( const OUString& _sServiceName )
@@ -209,7 +209,7 @@ void OApplicationController::openDialog( const OUString& _sServiceName )
 
         // create the dialog
         Reference< XExecutableDialog > xAdminDialog;
-        xAdminDialog = Reference< XExecutableDialog >(
+        xAdminDialog.set(
             getORB()->getServiceManager()->createInstanceWithArgumentsAndContext(_sServiceName, aArgs, getORB()),
             UNO_QUERY);
 
@@ -225,7 +225,7 @@ void OApplicationController::openDialog( const OUString& _sServiceName )
 
 void OApplicationController::openTableFilterDialog()
 {
-    openDialog( OUString( "com.sun.star.sdb.TableFilterDialog" ) );
+    openDialog( "com.sun.star.sdb.TableFilterDialog" );
 }
 
 void OApplicationController::refreshTables()
@@ -672,7 +672,7 @@ void OApplicationController::onLoadedMenu(const Reference< css::frame::XLayoutMa
             MnemonicGenerator aMnemonicGenerator;
             // - the menu already has mnemonics
             SystemWindow* pSystemWindow = getContainer()->GetSystemWindow();
-            MenuBar* pMenu = pSystemWindow ? pSystemWindow->GetMenuBar() : NULL;
+            MenuBar* pMenu = pSystemWindow ? pSystemWindow->GetMenuBar() : nullptr;
             if ( pMenu )
             {
                 sal_uInt16 nMenuItems = pMenu->GetItemCount();

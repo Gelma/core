@@ -19,8 +19,6 @@
 #ifndef INCLUDED_SFX2_SOURCE_SIDEBAR_ACCESSIBLE_HXX
 #define INCLUDED_SFX2_SOURCE_SIDEBAR_ACCESSIBLE_HXX
 
-#include <boost/noncopyable.hpp>
-
 #include <com/sun/star/accessibility/XAccessible.hpp>
 #include <com/sun/star/accessibility/XAccessibleContext.hpp>
 
@@ -42,19 +40,20 @@ namespace sfx2 { namespace sidebar {
     to its constructor.
 */
 class Accessible
-    : private ::boost::noncopyable,
-      private ::cppu::BaseMutex,
+    : private ::cppu::BaseMutex,
       public AccessibleInterfaceBase
 {
 public:
     explicit Accessible (
         const css::uno::Reference<css::accessibility::XAccessibleContext>& rxContext);
     virtual ~Accessible();
+    Accessible(const Accessible&) = delete;
+    Accessible& operator=( const Accessible& ) = delete;
 
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
     // XAccessible
     virtual css::uno::Reference<css::accessibility::XAccessibleContext> SAL_CALL getAccessibleContext()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
 private:
     css::uno::Reference<css::accessibility::XAccessibleContext> mxContext;

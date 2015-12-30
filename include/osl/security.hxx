@@ -20,6 +20,10 @@
 #ifndef INCLUDED_OSL_SECURITY_HXX
 #define INCLUDED_OSL_SECURITY_HXX
 
+#include <sal/config.h>
+
+#include <cstddef>
+
 #include <rtl/ustring.hxx>
 #include <osl/security_decl.hxx>
 
@@ -41,7 +45,7 @@ inline bool Security::logonUser(const rtl::OUString& strName,
 {
     osl_freeSecurityHandle(m_handle);
 
-    m_handle = 0;
+    m_handle = NULL;
 
     return (osl_loginUser( strName.pData, strPasswd.pData, &m_handle)
             == osl_Security_E_None);

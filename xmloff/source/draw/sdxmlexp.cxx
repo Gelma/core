@@ -388,9 +388,8 @@ ImpXMLAutoLayoutInfo::ImpXMLAutoLayoutInfo(sal_uInt16 nTyp, ImpXMLEXPPageMasterI
     maPresRect.SetSize(aLayoutSize);
 }
 
-// #110680#
 SdXMLExport::SdXMLExport(
-    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& xContext,
+    const css::uno::Reference< css::uno::XComponentContext >& xContext,
     OUString const & implementationName,
     bool bIsDraw, SvXMLExportFlags nExportFlags )
 :   SvXMLExport( util::MeasureUnit::CM, xContext, implementationName,
@@ -401,11 +400,11 @@ SdXMLExport::SdXMLExport(
     mpPageMasterInfoList(new ImpXMLEXPPageMasterList()),
     mpPageMasterUsageList(new ImpXMLEXPPageMasterList()),
     mpNotesPageMasterUsageList(new ImpXMLEXPPageMasterList()),
-    mpHandoutPageMaster(NULL),
+    mpHandoutPageMaster(nullptr),
     mpAutoLayoutInfoList(new ImpXMLAutoLayoutInfoList()),
-    mpSdPropHdlFactory(0L),
-    mpPropertySetMapper(0L),
-    mpPresPagePropsMapper(0L),
+    mpSdPropHdlFactory(nullptr),
+    mpPropertySetMapper(nullptr),
+    mpPresPagePropsMapper(nullptr),
     mbIsDraw(bIsDraw),
     msPageLayoutNames( "PageLayoutNames" )
 {
@@ -658,21 +657,21 @@ SdXMLExport::~SdXMLExport()
     if(mpSdPropHdlFactory)
     {
         mpSdPropHdlFactory->release();
-        mpSdPropHdlFactory = 0L;
+        mpSdPropHdlFactory = nullptr;
     }
 
     // cleanup mapper, decrease refcount. Should lead to destruction.
     if(mpPropertySetMapper)
     {
         mpPropertySetMapper->release();
-        mpPropertySetMapper = 0L;
+        mpPropertySetMapper = nullptr;
     }
 
     // cleanup presPage mapper, decrease refcount. Should lead to destruction.
     if(mpPresPagePropsMapper)
     {
         mpPresPagePropsMapper->release();
-        mpPresPagePropsMapper = 0L;
+        mpPresPagePropsMapper = nullptr;
     }
 
     // clear evtl. temporary page master infos
@@ -680,14 +679,14 @@ SdXMLExport::~SdXMLExport()
     {
         // note: all items in this list are also in mpPageMasterInfoList
         delete mpPageMasterUsageList;
-        mpPageMasterUsageList = 0L;
+        mpPageMasterUsageList = nullptr;
     }
 
     if(mpNotesPageMasterUsageList)
     {
         // note: all items in this list are also in mpPageMasterInfoList
         delete mpNotesPageMasterUsageList;
-        mpNotesPageMasterUsageList = 0L;
+        mpNotesPageMasterUsageList = nullptr;
     }
 
     if(mpPageMasterInfoList)
@@ -696,7 +695,7 @@ SdXMLExport::~SdXMLExport()
             delete mpPageMasterInfoList->at( i );
         mpPageMasterInfoList->clear();
         delete mpPageMasterInfoList;
-        mpPageMasterInfoList = 0L;
+        mpPageMasterInfoList = nullptr;
     }
 
     // clear auto-layout infos
@@ -706,7 +705,7 @@ SdXMLExport::~SdXMLExport()
             delete mpAutoLayoutInfoList->at( i );
         mpAutoLayoutInfoList->clear();
         delete mpAutoLayoutInfoList;
-        mpAutoLayoutInfoList = 0L;
+        mpAutoLayoutInfoList = nullptr;
     }
 }
 
@@ -758,7 +757,7 @@ bool SdXMLExport::ImpPrepAutoLayoutInfo(const Reference<XDrawPage>& xPage, OUStr
         {
             if(ImpXMLAutoLayoutInfo::IsCreateNecessary(nType))
             {
-                ImpXMLEXPPageMasterInfo* pInfo = 0L;
+                ImpXMLEXPPageMasterInfo* pInfo = nullptr;
 
                 // get master-page info
                 Reference < drawing::XMasterPageTarget > xMasterPageInt(xPage, UNO_QUERY);
@@ -1294,7 +1293,7 @@ void SdXMLExport::ImpPrepPageMasterInfos()
         for (sal_Int32 nMPageId = 0; nMPageId < mnDocMasterPageCount; nMPageId++)
         {
             Reference< XDrawPage > xMasterPage( mxDocMasterPages->getByIndex(nMPageId), UNO_QUERY );
-            ImpXMLEXPPageMasterInfo* pNewInfo = 0L;
+            ImpXMLEXPPageMasterInfo* pNewInfo = nullptr;
 
             if(xMasterPage.is())
                 pNewInfo = ImpGetOrCreatePageMasterInfo(xMasterPage);
@@ -1304,7 +1303,7 @@ void SdXMLExport::ImpPrepPageMasterInfos()
             // look for page master of handout page
             if(IsImpress())
             {
-                pNewInfo = NULL;
+                pNewInfo = nullptr;
                 Reference< presentation::XPresentationPage > xPresPage(xMasterPage, UNO_QUERY);
                 if(xPresPage.is())
                 {
@@ -1402,7 +1401,7 @@ ImpXMLEXPPageMasterInfo* SdXMLExport::ImpGetPageMasterInfoByName(const OUString&
             }
         }
     }
-    return 0L;
+    return nullptr;
 }
 
 void SdXMLExport::ImpPrepDrawPageInfos()
@@ -1739,13 +1738,10 @@ void SdXMLExport::SetProgress(sal_Int32 nProg)
         GetStatusIndicator()->setValue(nProg);
 }
 
-// #82003#
 
 void SdXMLExport::_ExportMeta()
 {
-    uno::Sequence<beans::NamedValue> stats(1);
-    stats[0] = beans::NamedValue(OUString( "ObjectCount" ),
-                uno::makeAny(mnObjectCount));
+    uno::Sequence<beans::NamedValue> stats { { "ObjectCount", uno::makeAny(mnObjectCount) } };
 
     // update document statistics at the model
     uno::Reference<document::XDocumentPropertiesSupplier> xPropSup(GetModel(),
@@ -1851,7 +1847,7 @@ void SdXMLExport::_ExportContent()
                 AddAttribute ( XML_NAMESPACE_DRAW, XML_NAV_ORDER, sNavigationOrder );
 
             rtl::Reference< xmloff::AnimationsExporter >  xAnimationsExporter;
-            uno::Reference< ::com::sun::star::animations::XAnimationNodeSupplier > xAnimNodeSupplier;
+            uno::Reference< css::animations::XAnimationNodeSupplier > xAnimNodeSupplier;
 
             // prepare animation export
             if(IsImpress())
@@ -1908,7 +1904,7 @@ void SdXMLExport::_ExportContent()
                     if( xAnimExport.is() )
                         xAnimExport->exportAnimations( *this );
 
-                    xAnimExport = NULL;
+                    xAnimExport = nullptr;
                     GetShapeExport()->setAnimationsExporter( xAnimExport );
                 }
 
@@ -2069,7 +2065,7 @@ void SdXMLExport::exportPresentationSettings()
 
         Reference< container::XNameContainer > xShows;
         Sequence< OUString > aShowNames;
-        const OUString* pShowNames = NULL;
+        const OUString* pShowNames = nullptr;
         sal_Int32 nShowCount = 0;
 
         Reference< XCustomPresentationSupplier > xSup( GetModel(), UNO_QUERY );
@@ -2711,13 +2707,13 @@ void SdXMLExport::exportAnnotations( const Reference<XDrawPage>& xDrawPage )
 
                 {
                     // date time
-                    com::sun::star::util::DateTime aDate( xAnnotation->getDateTime() );
-                    ::sax::Converter::convertDateTime(sStringBuffer, aDate, 0, true);
+                    css::util::DateTime aDate( xAnnotation->getDateTime() );
+                    ::sax::Converter::convertDateTime(sStringBuffer, aDate, nullptr, true);
                     SvXMLElementExport aDateElem( *this, XML_NAMESPACE_DC, XML_DATE, true, false );
                     Characters(sStringBuffer.makeStringAndClear());
                 }
 
-                com::sun::star::uno::Reference < com::sun::star::text::XText > xText( xAnnotation->getTextRange() );
+                css::uno::Reference < css::text::XText > xText( xAnnotation->getTextRange() );
                 if( xText.is() )
                     this->GetTextParagraphExport()->exportText( xText );
             }
@@ -2733,9 +2729,7 @@ void SdXMLExport::exportAnnotations( const Reference<XDrawPage>& xDrawPage )
 #define SERVICE( classname, servicename, implementationname, draw, flags )\
 uno::Sequence< OUString > SAL_CALL classname##_getSupportedServiceNames() throw()\
 {\
-    const OUString aServiceName( servicename );\
-    const uno::Sequence< OUString > aSeq( &aServiceName, 1 );\
-    return aSeq;\
+    return uno::Sequence< OUString > { servicename };\
 }\
 OUString SAL_CALL classname##_getImplementationName() throw()\
 {\

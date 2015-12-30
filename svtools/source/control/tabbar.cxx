@@ -35,6 +35,7 @@
 #include <svtools/svtools.hrc>
 #include <limits>
 #include <utility>
+#include <vcl/idle.hxx>
 
 namespace
 {
@@ -267,10 +268,10 @@ public:
         return mbModKey;
     }
 
-    virtual bool PreNotify(NotifyEvent& rNotifyEvent) SAL_OVERRIDE;
-    virtual void MouseButtonDown(const MouseEvent& rMouseEvent) SAL_OVERRIDE;
-    virtual void MouseButtonUp(const MouseEvent& rMouseEvent) SAL_OVERRIDE;
-    virtual void Command(const CommandEvent& rCommandEvent) SAL_OVERRIDE;
+    virtual bool PreNotify(NotifyEvent& rNotifyEvent) override;
+    virtual void MouseButtonDown(const MouseEvent& rMouseEvent) override;
+    virtual void MouseButtonUp(const MouseEvent& rMouseEvent) override;
+    virtual void Command(const CommandEvent& rCommandEvent) override;
 };
 
 void ImplTabButton::MouseButtonDown(const MouseEvent& rMouseEvent)
@@ -319,10 +320,10 @@ public:
 private:
     void            ImplTrack( const Point& rScreenPos );
 
-    virtual void    dispose() SAL_OVERRIDE;
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    Tracking( const TrackingEvent& rTEvt ) SAL_OVERRIDE;
-    virtual void    Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) SAL_OVERRIDE;
+    virtual void    dispose() override;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void    Tracking( const TrackingEvent& rTEvt ) override;
+    virtual void    Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) override;
 
     Point           maStartPos;
     long            mnStartWidth;
@@ -406,8 +407,8 @@ public:
     void            SetPostEvent() { mbPostEvt = true; }
     void            ResetPostEvent() { mbPostEvt = false; }
 
-    virtual bool    PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
-    virtual void    LoseFocus() SAL_OVERRIDE;
+    virtual bool    PreNotify( NotifyEvent& rNEvt ) override;
+    virtual void    LoseFocus() override;
 };
 
 TabBarEdit::TabBarEdit( TabBar* pParent, WinBits nWinStyle ) :
@@ -472,7 +473,7 @@ IMPL_LINK_TYPED( TabBarEdit, ImplEndEditHdl, void*, pCancel, void )
         maLoseFocusIdle.Start();
     }
     else
-        GetParent()->EndEditMode( pCancel != 0 );
+        GetParent()->EndEditMode( pCancel != nullptr );
 }
 
 IMPL_LINK_NOARG_TYPED(TabBarEdit, ImplEndTimerHdl, Idle *, void)
@@ -599,7 +600,7 @@ ImplTabBarItem* TabBar::seek( size_t i )
         maCurrentItemList = i;
         return mpImpl->mpItemList[maCurrentItemList];
     }
-    return NULL;
+    return nullptr;
 }
 
 ImplTabBarItem* TabBar::prev()
@@ -608,7 +609,7 @@ ImplTabBarItem* TabBar::prev()
     {
         return mpImpl->mpItemList[--maCurrentItemList];
     }
-    return NULL;
+    return nullptr;
 }
 
 ImplTabBarItem* TabBar::next()
@@ -617,7 +618,7 @@ ImplTabBarItem* TabBar::next()
     {
         return mpImpl->mpItemList[++maCurrentItemList];
     }
-    return NULL;
+    return nullptr;
 }
 
 void TabBar::ImplInitSettings( bool bFont, bool bBackground )
@@ -1222,7 +1223,7 @@ void TabBar::Paint(vcl::RenderContext& rRenderContext, const Rectangle& rect)
     // Now, start drawing the tabs.
 
     ImplTabBarItem* pItem = ImplGetLastTabBarItem(nItemCount);
-    ImplTabBarItem* pCurItem = NULL;
+    ImplTabBarItem* pCurItem = nullptr;
     while (pItem)
     {
         // emit CurrentItem last, as it covers all others
@@ -1291,7 +1292,7 @@ void TabBar::Paint(vcl::RenderContext& rRenderContext, const Rectangle& rect)
             if (bCurrent)
                 break;
 
-            pItem = NULL;
+            pItem = nullptr;
         }
 
         if (!pItem)
@@ -1318,52 +1319,37 @@ void TabBar::Resize()
     }
 
     // order the scroll buttons
-    long nHeight = aNewSize.Height();
+    long const nHeight = aNewSize.Height();
     // adapt font height?
     ImplInitSettings( true, false );
 
     long nButtonMargin = BUTTON_MARGIN * GetDPIScaleFactor();
 
     long nX = mbMirrored ? (aNewSize.Width() - nHeight - nButtonMargin) : nButtonMargin;
-    long nXDiff = mbMirrored ? -nHeight : nHeight;
+    long const nXDiff = mbMirrored ? -nHeight : nHeight;
 
     nButtonWidth += nButtonMargin;
 
-    Size aBtnSize( nHeight, nHeight );
-    if (mpImpl->mpFirstButton)
+    Size const aBtnSize( nHeight, nHeight );
+    auto setButton = [aBtnSize, nXDiff, nHeight, &nX, &nButtonWidth](
+        ScopedVclPtr<ImplTabButton> const & button)
     {
-        mpImpl->mpFirstButton->SetPosSizePixel( Point( nX, 0 ), aBtnSize );
-        nX += nXDiff;
-        nButtonWidth += nHeight;
-    }
-    if (mpImpl->mpPrevButton)
-    {
-        mpImpl->mpPrevButton->SetPosSizePixel( Point( nX, 0 ), aBtnSize );
-        nX += nXDiff;
-        nButtonWidth += nHeight;
-    }
-    if (mpImpl->mpNextButton)
-    {
-        mpImpl->mpNextButton->SetPosSizePixel( Point( nX, 0 ), aBtnSize );
-        nX += nXDiff;
-        nButtonWidth += nHeight;
-    }
-    if (mpImpl->mpLastButton)
-    {
-        mpImpl->mpLastButton->SetPosSizePixel( Point( nX, 0 ), aBtnSize );
-        nX += nXDiff;
-        nButtonWidth += nHeight;
-    }
+        if (button) {
+            button->SetPosSizePixel(Point(nX, 0), aBtnSize);
+            nX += nXDiff;
+            nButtonWidth += nHeight;
+        }
+    };
+
+    setButton(mpImpl->mpFirstButton);
+    setButton(mpImpl->mpPrevButton);
+    setButton(mpImpl->mpNextButton);
+    setButton(mpImpl->mpLastButton);
 
     nButtonWidth += nButtonMargin;
     nX += mbMirrored ? -nButtonMargin : nButtonMargin;
 
-    if (mpImpl->mpAddButton)
-    {
-        mpImpl->mpAddButton->SetPosSizePixel( Point( nX, 0 ), aBtnSize );
-        nX += nXDiff;
-        nButtonWidth += nHeight;
-    }
+    setButton(mpImpl->mpAddButton);
 
     nButtonWidth += nButtonMargin;
 
@@ -1938,7 +1924,7 @@ void TabBar::SetCurPageId(sal_uInt16 nPageId)
         if (mnCurPageId)
             pOldItem = mpImpl->mpItemList[GetPagePos(mnCurPageId)];
         else
-            pOldItem = NULL;
+            pOldItem = nullptr;
 
         // deselect previous page if page was not selected, if this is the
         // only selected page
@@ -2191,7 +2177,7 @@ bool TabBar::StartEditMode(sal_uInt16 nPageId)
 
 bool TabBar::IsInEditMode() const
 {
-    return mpImpl->mpEdit.get() != NULL;
+    return mpImpl->mpEdit.get() != nullptr;
 }
 
 void TabBar::EndEditMode(bool bCancel)

@@ -40,15 +40,15 @@
 #define GCM_PROPERTY_ID_TAG                 8
 #define GCM_PROPERTY_ID_RESOURCERESOLVER    9
 
-#define GCM_PROPERTY_POS_X              OUString("PositionX")
-#define GCM_PROPERTY_POS_Y              OUString("PositionY")
-#define GCM_PROPERTY_WIDTH              OUString("Width")
-#define GCM_PROPERTY_HEIGHT             OUString("Height")
-#define GCM_PROPERTY_NAME               OUString("Name")
-#define GCM_PROPERTY_TABINDEX           OUString("TabIndex")
-#define GCM_PROPERTY_STEP               OUString("Step")
-#define GCM_PROPERTY_TAG                OUString("Tag")
-#define GCM_PROPERTY_RESOURCERESOLVER   OUString("ResourceResolver")
+#define GCM_PROPERTY_POS_X              "PositionX"
+#define GCM_PROPERTY_POS_Y              "PositionY"
+#define GCM_PROPERTY_WIDTH              "Width"
+#define GCM_PROPERTY_HEIGHT             "Height"
+#define GCM_PROPERTY_NAME               "Name"
+#define GCM_PROPERTY_TABINDEX           "TabIndex"
+#define GCM_PROPERTY_STEP               "Step"
+#define GCM_PROPERTY_TAG                "Tag"
+#define GCM_PROPERTY_RESOURCERESOLVER   "ResourceResolver"
 
 #define DEFAULT_ATTRIBS()       PropertyAttribute::BOUND | PropertyAttribute::TRANSIENT
 
@@ -69,7 +69,7 @@
     //= OGeometryControlModel_Base
 
 
-    OGeometryControlModel_Base::OGeometryControlModel_Base(::com::sun::star::uno::XAggregation* _pAggregateInstance)
+    OGeometryControlModel_Base::OGeometryControlModel_Base(css::uno::XAggregation* _pAggregateInstance)
         :OPropertySetAggregationHelper( m_aBHelper )
         ,OPropertyContainer( m_aBHelper )
         ,OGCM_Base( m_aMutex )
@@ -81,7 +81,7 @@
         ,m_nStep(0)
         ,m_bCloneable(false)
     {
-        OSL_ENSURE(NULL != _pAggregateInstance, "OGeometryControlModel_Base::OGeometryControlModel_Base: invalid aggregate!");
+        OSL_ENSURE(nullptr != _pAggregateInstance, "OGeometryControlModel_Base::OGeometryControlModel_Base: invalid aggregate!");
 
         osl_atomic_increment(&m_refCount);
         {
@@ -117,7 +117,7 @@
         {
             {
                 // ensure that the temporary gets destructed NOW
-                m_xAggregate = Reference< XAggregation >(_rxAggregateInstance, UNO_QUERY);
+                m_xAggregate.set(_rxAggregateInstance, UNO_QUERY);
             }
             OSL_ENSURE(m_xAggregate.is(), "OGeometryControlModel_Base::OGeometryControlModel_Base: invalid object given!");
 
@@ -182,9 +182,9 @@
     }
 
 
-    ::com::sun::star::uno::Any OGeometryControlModel_Base::ImplGetDefaultValueByHandle(sal_Int32 nHandle)
+    css::uno::Any OGeometryControlModel_Base::ImplGetDefaultValueByHandle(sal_Int32 nHandle)
     {
-        ::com::sun::star::uno::Any aDefault;
+        css::uno::Any aDefault;
 
         switch ( nHandle )
         {
@@ -204,9 +204,9 @@
     }
 
 
-    ::com::sun::star::uno::Any OGeometryControlModel_Base::ImplGetPropertyValueByHandle(sal_Int32 nHandle) const
+    css::uno::Any OGeometryControlModel_Base::ImplGetPropertyValueByHandle(sal_Int32 nHandle) const
     {
-        ::com::sun::star::uno::Any aValue;
+        css::uno::Any aValue;
 
         switch ( nHandle )
         {
@@ -226,7 +226,7 @@
     }
 
 
-    void OGeometryControlModel_Base::ImplSetPropertyValueByHandle(sal_Int32 nHandle, const :: com::sun::star::uno::Any& aValue)
+    void OGeometryControlModel_Base::ImplSetPropertyValueByHandle(sal_Int32 nHandle, const css::uno::Any& aValue)
     {
         switch ( nHandle )
         {
@@ -291,8 +291,8 @@
     {
         // release the aggregate (_before_ clearing m_xAggregate)
         if (m_xAggregate.is())
-            m_xAggregate->setDelegator(NULL);
-        setAggregation(NULL);
+            m_xAggregate->setDelegator(nullptr);
+        setAggregation(nullptr);
     }
 
 
@@ -328,12 +328,12 @@
     }
 
 
-    ::com::sun::star::beans::PropertyState OGeometryControlModel_Base::getPropertyStateByHandle(sal_Int32 nHandle)
+    css::beans::PropertyState OGeometryControlModel_Base::getPropertyStateByHandle(sal_Int32 nHandle)
     {
-        ::com::sun::star::uno::Any aValue = ImplGetPropertyValueByHandle( nHandle );
-        ::com::sun::star::uno::Any aDefault = ImplGetDefaultValueByHandle( nHandle );
+        css::uno::Any aValue = ImplGetPropertyValueByHandle( nHandle );
+        css::uno::Any aDefault = ImplGetDefaultValueByHandle( nHandle );
 
-        return CompareProperties( aValue, aDefault ) ? ::com::sun::star::beans::PropertyState_DEFAULT_VALUE : ::com::sun::star::beans::PropertyState_DIRECT_VALUE;
+        return CompareProperties( aValue, aDefault ) ? css::beans::PropertyState_DEFAULT_VALUE : css::beans::PropertyState_DIRECT_VALUE;
     }
 
 
@@ -343,7 +343,7 @@
     }
 
 
-    ::com::sun::star::uno::Any OGeometryControlModel_Base::getPropertyDefaultByHandle( sal_Int32 nHandle ) const
+    css::uno::Any OGeometryControlModel_Base::getPropertyDefaultByHandle( sal_Int32 nHandle ) const
     {
         return ImplGetDefaultValueByHandle( nHandle );
     }
@@ -390,17 +390,17 @@
 
 
         // Clone event container
-        Reference< ::com::sun::star::script::XScriptEventsSupplier > xEventsSupplier =
-            static_cast< ::com::sun::star::script::XScriptEventsSupplier* >( this );
-        Reference< ::com::sun::star::script::XScriptEventsSupplier > xCloneEventsSupplier =
-            static_cast< ::com::sun::star::script::XScriptEventsSupplier* >( pOwnClone );
+        Reference< css::script::XScriptEventsSupplier > xEventsSupplier =
+            static_cast< css::script::XScriptEventsSupplier* >( this );
+        Reference< css::script::XScriptEventsSupplier > xCloneEventsSupplier =
+            static_cast< css::script::XScriptEventsSupplier* >( pOwnClone );
 
         if( xEventsSupplier.is() && xCloneEventsSupplier.is() )
         {
             Reference< XNameContainer > xEventCont = xEventsSupplier->getEvents();
             Reference< XNameContainer > xCloneEventCont = xCloneEventsSupplier->getEvents();
 
-            ::com::sun::star::uno::Sequence< OUString > aNames =
+            css::uno::Sequence< OUString > aNames =
                 xEventCont->getElementNames();
             const OUString* pNames = aNames.getConstArray();
             sal_Int32 i, nNameCount = aNames.getLength();
@@ -408,7 +408,7 @@
             for( i = 0 ; i < nNameCount ; i++ )
             {
                 OUString aName = pNames[ i ];
-                ::com::sun::star::uno::Any aElement = xEventCont->getByName( aName );
+                css::uno::Any aElement = xEventCont->getByName( aName );
                 xCloneEventCont->insertByName( aName, aElement );
             }
         }
@@ -441,7 +441,7 @@
 
 
     typedef std::unordered_map< OUString, sal_Int32, OUStringHash > HashMapString2Int;
-    typedef std::vector< ::com::sun::star::uno::Sequence< ::com::sun::star::beans::Property > >   PropSeqArray;
+    typedef std::vector< css::uno::Sequence< css::beans::Property > >   PropSeqArray;
     typedef std::vector< ::std::vector< sal_Int32 > > IntArrayArray;
 
     // for creating class-unique PropertySetInfo's, we need some info:

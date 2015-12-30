@@ -35,19 +35,19 @@ class NumberingPreview : public vcl::Window
     sal_uInt16          nActLevel;
 
     protected:
-        virtual void        Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) SAL_OVERRIDE;
+        virtual void        Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) override;
 
     public:
         NumberingPreview(vcl::Window* pParent, const ResId& rResId)
         : Window(pParent, rResId),
-            pActNum(0),nPageWidth(0), pOutlineNames(0),
+            pActNum(nullptr),nPageWidth(0), pOutlineNames(nullptr),
             bPosition(false), nActLevel(USHRT_MAX)
         {
         }
 
         NumberingPreview(vcl::Window* pParent)
             : Window(pParent)
-            , pActNum(0),nPageWidth(0), pOutlineNames(0),
+            , pActNum(nullptr),nPageWidth(0), pOutlineNames(nullptr),
             bPosition(false), nActLevel(USHRT_MAX)
         {
         }

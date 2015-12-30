@@ -22,6 +22,8 @@
 
 #include <sal/config.h>
 
+#include <cstddef>
+
 #if defined LIBO_INTERNAL_ONLY
 #include <type_traits>
 #endif
@@ -96,13 +98,13 @@ template< typename > struct UnoSequenceType;
 
 namespace detail {
 
-inline ::com::sun::star::uno::Type const & getTypeFromTypeDescriptionReference(
+inline css::uno::Type const & getTypeFromTypeDescriptionReference(
     ::typelib_TypeDescriptionReference * const * tdr)
 {
-    return *reinterpret_cast< ::com::sun::star::uno::Type const * >(tdr);
+    return *reinterpret_cast< css::uno::Type const * >(tdr);
 }
 
-inline ::com::sun::star::uno::Type const &
+inline css::uno::Type const &
 getTypeFromTypeClass(::typelib_TypeClass tc) {
     return getTypeFromTypeDescriptionReference(
         ::typelib_static_type_getByTypeClass(tc));
@@ -114,32 +116,32 @@ getTypeFromTypeClass(::typelib_TypeClass tc) {
 
 namespace cppu { namespace detail {
 
-inline ::com::sun::star::uno::Type const &
+inline css::uno::Type const &
 cppu_detail_getUnoType(SAL_UNUSED_PARAMETER ::cppu::UnoVoidType const *) {
     return ::cppu::detail::getTypeFromTypeClass(::typelib_TypeClass_VOID);
 }
 
-inline ::com::sun::star::uno::Type const &
+inline css::uno::Type const &
 cppu_detail_getUnoType(SAL_UNUSED_PARAMETER bool const *) {
     return ::cppu::detail::getTypeFromTypeClass(::typelib_TypeClass_BOOLEAN);
 }
 
-inline ::com::sun::star::uno::Type const &
+inline css::uno::Type const &
 cppu_detail_getUnoType(SAL_UNUSED_PARAMETER sal_Bool const *) {
     return ::cppu::detail::getTypeFromTypeClass(::typelib_TypeClass_BOOLEAN);
 }
 
-inline ::com::sun::star::uno::Type const &
+inline css::uno::Type const &
 cppu_detail_getUnoType(SAL_UNUSED_PARAMETER ::sal_Int8 const *) {
     return ::cppu::detail::getTypeFromTypeClass(::typelib_TypeClass_BYTE);
 }
 
-inline ::com::sun::star::uno::Type const &
+inline css::uno::Type const &
 cppu_detail_getUnoType(SAL_UNUSED_PARAMETER ::sal_Int16 const *) {
     return ::cppu::detail::getTypeFromTypeClass(::typelib_TypeClass_SHORT);
 }
 
-inline ::com::sun::star::uno::Type const &
+inline css::uno::Type const &
 cppu_detail_getUnoType(
     SAL_UNUSED_PARAMETER ::cppu::UnoUnsignedShortType const *)
 {
@@ -147,96 +149,114 @@ cppu_detail_getUnoType(
         ::typelib_TypeClass_UNSIGNED_SHORT);
 }
 
-inline ::com::sun::star::uno::Type const &
+#if LIBO_INTERNAL_ONLY \
+    && (!defined SAL_W32 || defined __MINGW32__ || defined __clang__)
+    // cf. sal/types.h sal_Unicode
+inline css::uno::Type const &
+cppu_detail_getUnoType(SAL_UNUSED_PARAMETER sal_uInt16 const *) {
+    return cppu::detail::getTypeFromTypeClass(typelib_TypeClass_UNSIGNED_SHORT);
+}
+#endif
+
+inline css::uno::Type const &
 cppu_detail_getUnoType(SAL_UNUSED_PARAMETER ::sal_Int32 const *) {
     return ::cppu::detail::getTypeFromTypeClass(::typelib_TypeClass_LONG);
 }
 
-inline ::com::sun::star::uno::Type const &
+inline css::uno::Type const &
 cppu_detail_getUnoType(SAL_UNUSED_PARAMETER ::sal_uInt32 const *) {
     return ::cppu::detail::getTypeFromTypeClass(
         ::typelib_TypeClass_UNSIGNED_LONG);
 }
 
-inline ::com::sun::star::uno::Type const &
+inline css::uno::Type const &
 cppu_detail_getUnoType(SAL_UNUSED_PARAMETER ::sal_Int64 const *) {
     return ::cppu::detail::getTypeFromTypeClass(::typelib_TypeClass_HYPER);
 }
 
-inline ::com::sun::star::uno::Type const &
+inline css::uno::Type const &
 cppu_detail_getUnoType(SAL_UNUSED_PARAMETER ::sal_uInt64 const *) {
     return ::cppu::detail::getTypeFromTypeClass(
         ::typelib_TypeClass_UNSIGNED_HYPER);
 }
 
-inline ::com::sun::star::uno::Type const &
+inline css::uno::Type const &
 cppu_detail_getUnoType(SAL_UNUSED_PARAMETER float const *) {
     return ::cppu::detail::getTypeFromTypeClass(::typelib_TypeClass_FLOAT);
 }
 
-inline ::com::sun::star::uno::Type const &
+inline css::uno::Type const &
 cppu_detail_getUnoType(SAL_UNUSED_PARAMETER double const *) {
     return ::cppu::detail::getTypeFromTypeClass(::typelib_TypeClass_DOUBLE);
 }
 
-inline ::com::sun::star::uno::Type const &
+inline css::uno::Type const &
 cppu_detail_getUnoType(SAL_UNUSED_PARAMETER ::cppu::UnoCharType const *) {
     return ::cppu::detail::getTypeFromTypeClass(::typelib_TypeClass_CHAR);
 }
 
-inline ::com::sun::star::uno::Type const &
+#if LIBO_INTERNAL_ONLY \
+    && (!defined SAL_W32 || defined __MINGW32__ || defined __clang__)
+    // cf. sal/types.h sal_Unicode
+inline css::uno::Type const &
+cppu_detail_getUnoType(SAL_UNUSED_PARAMETER sal_Unicode const *) {
+    return cppu::detail::getTypeFromTypeClass(typelib_TypeClass_CHAR);
+}
+#endif
+
+inline css::uno::Type const &
 cppu_detail_getUnoType(SAL_UNUSED_PARAMETER ::rtl::OUString const *) {
     return ::cppu::detail::getTypeFromTypeClass(::typelib_TypeClass_STRING);
 }
 
-inline ::com::sun::star::uno::Type const &
-cppu_detail_getUnoType(SAL_UNUSED_PARAMETER ::com::sun::star::uno::Type const *)
+inline css::uno::Type const &
+cppu_detail_getUnoType(SAL_UNUSED_PARAMETER css::uno::Type const *)
 {
     return ::cppu::detail::getTypeFromTypeClass(::typelib_TypeClass_TYPE);
 }
 
-inline ::com::sun::star::uno::Type const &
-cppu_detail_getUnoType(SAL_UNUSED_PARAMETER ::com::sun::star::uno::Any const *)
+inline css::uno::Type const &
+cppu_detail_getUnoType(SAL_UNUSED_PARAMETER css::uno::Any const *)
 {
     return ::cppu::detail::getTypeFromTypeClass(::typelib_TypeClass_ANY);
 }
 
-template< typename T > inline ::com::sun::star::uno::Type const &
+template< typename T > inline css::uno::Type const &
 cppu_detail_getUnoType(
     SAL_UNUSED_PARAMETER ::cppu::UnoSequenceType< T > const *)
 {
     //TODO: depending on memory model, the following might not work reliably
-    static typelib_TypeDescriptionReference * p = 0;
-    if (p == 0) {
+    static typelib_TypeDescriptionReference * p = NULL;
+    if (p == NULL) {
         ::typelib_static_sequence_type_init(
             &p, ::cppu::UnoType< T >::get().getTypeLibType());
     }
     return ::cppu::detail::getTypeFromTypeDescriptionReference(&p);
 }
 
-template< typename T > inline ::com::sun::star::uno::Type const &
+template< typename T > inline css::uno::Type const &
 cppu_detail_getUnoType(
-    SAL_UNUSED_PARAMETER ::com::sun::star::uno::Sequence< T > const *)
+    SAL_UNUSED_PARAMETER css::uno::Sequence< T > const *)
 {
     return cppu_detail_getUnoType(
         static_cast< ::cppu::UnoSequenceType< T > * >(0));
 }
 
-inline ::com::sun::star::uno::Type const & cppu_detail_getUnoType(
-    SAL_UNUSED_PARAMETER ::com::sun::star::uno::Exception const *)
+inline css::uno::Type const & cppu_detail_getUnoType(
+    SAL_UNUSED_PARAMETER css::uno::Exception const *)
 {
     return ::cppu::detail::getTypeFromTypeClass(::typelib_TypeClass_EXCEPTION);
 }
 
-inline ::com::sun::star::uno::Type const & cppu_detail_getUnoType(
-    SAL_UNUSED_PARAMETER ::com::sun::star::uno::XInterface const *)
+inline css::uno::Type const & cppu_detail_getUnoType(
+    SAL_UNUSED_PARAMETER css::uno::XInterface const *)
 {
     return ::cppu::detail::getTypeFromTypeClass(::typelib_TypeClass_INTERFACE);
 }
 
-template< typename T > inline ::com::sun::star::uno::Type const &
+template< typename T > inline css::uno::Type const &
 cppu_detail_getUnoType(
-    SAL_UNUSED_PARAMETER ::com::sun::star::uno::Reference< T > const *)
+    SAL_UNUSED_PARAMETER css::uno::Reference< T > const *)
 {
     return ::cppu::UnoType< T >::get();
 }
@@ -246,7 +266,7 @@ cppu_detail_getUnoType(
 namespace cppu {
 
 /**
-   Get the com::sun::star::uno::Type instance representing a certain UNO type.
+   Get the css::uno::Type instance representing a certain UNO type.
 
    For each C++ type representing a UNO type, the corresponding instantiation of
    this template has a public static member function get().  (The template is
@@ -261,13 +281,13 @@ namespace cppu {
    cppu::UnoUnsignedShortType, cppu::UnoCharType, cppu::UnoSequenceType with any
    appropriate template argument (the latter three to unambiguously specify UNO
    types, as the UNO types UNSIGNED SHORT and CHAR map to the same C++ type),
-   and com::sun::star::uno::Reference with any appropriate template argument.
+   and css::uno::Reference with any appropriate template argument.
 
    @since UDK 3.2.2
 */
 template< typename T > class UnoType {
 public:
-    static inline ::com::sun::star::uno::Type const & get() {
+    static inline css::uno::Type const & get() {
         using namespace ::cppu::detail;
 #if defined LIBO_INTERNAL_ONLY
         typedef typename std::remove_reference<T>::type T1;
@@ -298,7 +318,7 @@ template<> css::uno::Type inline const & UnoType<void>::get() {
 
    @since UDK 3.2.2
 */
-template< typename T > inline ::com::sun::star::uno::Type const &
+template< typename T > inline css::uno::Type const &
 getTypeFavourUnsigned(SAL_UNUSED_PARAMETER T const *) {
     return ::cppu::UnoType< T >::get();
 }
@@ -313,7 +333,7 @@ getTypeFavourUnsigned(SAL_UNUSED_PARAMETER T const *) {
 
    @since UDK 3.2.2
 */
-inline ::com::sun::star::uno::Type const &
+inline css::uno::Type const &
 getTypeFavourUnsigned(SAL_UNUSED_PARAMETER ::sal_uInt16 const *) {
     return ::cppu::UnoType< ::cppu::UnoUnsignedShortType >::get();
 }
@@ -328,8 +348,8 @@ getTypeFavourUnsigned(SAL_UNUSED_PARAMETER ::sal_uInt16 const *) {
 
    @since UDK 3.2.2
 */
-template< typename T > inline ::com::sun::star::uno::Type const &
-getTypeFavourUnsigned(::com::sun::star::uno::Sequence< T > const *);
+template< typename T > inline css::uno::Type const &
+getTypeFavourUnsigned(css::uno::Sequence< T > const *);
     // defined in com/sun/star/uno/Sequence.hxx
 
 /// @cond INTERNAL
@@ -345,7 +365,7 @@ getTypeFavourUnsigned(::com::sun::star::uno::Sequence< T > const *);
 
    @since UDK 3.2.3
 */
-template< typename T > inline ::com::sun::star::uno::Type const &
+template< typename T > inline css::uno::Type const &
 getTypeFavourChar(SAL_UNUSED_PARAMETER T const *) {
     return ::cppu::UnoType< T >::get();
 }
@@ -361,7 +381,7 @@ getTypeFavourChar(SAL_UNUSED_PARAMETER T const *) {
 
    @since UDK 3.2.3
 */
-inline ::com::sun::star::uno::Type const &
+inline css::uno::Type const &
 getTypeFavourChar(SAL_UNUSED_PARAMETER ::sal_Unicode const *) {
     return ::cppu::UnoType< ::cppu::UnoCharType >::get();
 }
@@ -377,8 +397,8 @@ getTypeFavourChar(SAL_UNUSED_PARAMETER ::sal_Unicode const *) {
 
    @since UDK 3.2.3
 */
-template< typename T > inline ::com::sun::star::uno::Type const &
-getTypeFavourChar(::com::sun::star::uno::Sequence< T > const *);
+template< typename T > inline css::uno::Type const &
+getTypeFavourChar(css::uno::Sequence< T > const *);
     // defined in com/sun/star/uno/Sequence.hxx
 
 /// @endcond

@@ -35,19 +35,20 @@ namespace formula
             OEmptyFunctionDescription(){}
             virtual ~OEmptyFunctionDescription(){}
 
-            virtual OUString getFunctionName() const SAL_OVERRIDE { return OUString(); }
-            virtual const IFunctionCategory* getCategory() const SAL_OVERRIDE { return NULL; }
-            virtual OUString getDescription() const SAL_OVERRIDE { return OUString(); }
-            virtual sal_Int32 getSuppressedArgumentCount() const SAL_OVERRIDE { return 0; }
-            virtual OUString getFormula(const ::std::vector< OUString >& ) const SAL_OVERRIDE { return OUString(); }
-            virtual void fillVisibleArgumentMapping(::std::vector<sal_uInt16>& ) const SAL_OVERRIDE {}
-            virtual void initArgumentInfo()  const SAL_OVERRIDE {}
-            virtual OUString getSignature() const SAL_OVERRIDE { return OUString(); }
-            virtual OString getHelpId() const SAL_OVERRIDE { return ""; }
-            virtual sal_uInt32 getParameterCount() const SAL_OVERRIDE { return 0; }
-            virtual OUString getParameterName(sal_uInt32 ) const SAL_OVERRIDE { return OUString(); }
-            virtual OUString getParameterDescription(sal_uInt32 ) const SAL_OVERRIDE { return OUString(); }
-            virtual bool isParameterOptional(sal_uInt32 ) const SAL_OVERRIDE { return false; }
+            virtual OUString getFunctionName() const override { return OUString(); }
+            virtual const IFunctionCategory* getCategory() const override { return nullptr; }
+            virtual OUString getDescription() const override { return OUString(); }
+            virtual sal_Int32 getSuppressedArgumentCount() const override { return 0; }
+            virtual OUString getFormula(const ::std::vector< OUString >& ) const override { return OUString(); }
+            virtual void fillVisibleArgumentMapping(::std::vector<sal_uInt16>& ) const override {}
+            virtual void initArgumentInfo()  const override {}
+            virtual OUString getSignature() const override { return OUString(); }
+            virtual OString getHelpId() const override { return ""; }
+            virtual sal_uInt32 getParameterCount() const override { return 0; }
+            virtual sal_uInt32 getVarArgsStart() const override { return 0; }
+            virtual OUString getParameterName(sal_uInt32 ) const override { return OUString(); }
+            virtual OUString getParameterDescription(sal_uInt32 ) const override { return OUString(); }
+            virtual bool isParameterOptional(sal_uInt32 ) const override { return false; }
         };
     }
 
@@ -78,7 +79,7 @@ bool FormulaHelper::GetNextFunc( const OUString&  rFormula,
     sal_Int32  nOldStart = rFStart;
     OUString   aFname;
 
-    rFStart = GetFunctionStart( rFormula, rFStart, bBack, ppFDesc ? &aFname : NULL );
+    rFStart = GetFunctionStart( rFormula, rFStart, bBack, ppFDesc ? &aFname : nullptr );
     bool bFound  = ( rFStart != FUNC_NOTFOUND );
 
     if ( bFound )
@@ -88,7 +89,7 @@ bool FormulaHelper::GetNextFunc( const OUString&  rFormula,
 
         if ( ppFDesc )
         {
-            *ppFDesc = NULL;
+            *ppFDesc = nullptr;
             const OUString sTemp( aFname );
             const sal_uInt32 nCategoryCount = m_pFunctionManager->getCount();
             for(sal_uInt32 j= 0; j < nCategoryCount && !*ppFDesc; ++j)

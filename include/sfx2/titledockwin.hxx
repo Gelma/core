@@ -38,36 +38,11 @@ namespace sfx2
         );
 
         virtual ~TitledDockingWindow();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
         /** sets a title to be displayed in the docking window
         */
         void        SetTitle( const OUString& i_rTitle );
-
-        /** adds a drop down item to the toolbox. Usually, this is used to add some kind of menu to the toolbox.
-
-            @param i_rItemText
-                the text to display for the item
-            @param i_nHelpId
-                the help ID for the new toolbox item
-            @param i_rCallback
-                the callback to invoke when the drop item has been clicked
-            @return
-                the ID of the newly created toolbox item
-        */
-        sal_uInt16  AddDropDownToolBoxItem( const OUString& i_rItemText, const OString& i_nHelpId, const Link<ToolBox *, void>& i_rCallback )
-        {
-            return impl_addDropDownToolBoxItem( i_rItemText, i_nHelpId, i_rCallback );
-        }
-
-        void        SetEndDockingHdl( const Link<TitledDockingWindow*,void>& i_rEndDockingHdl ) { m_aEndDockingHdl = i_rEndDockingHdl; }
-
-        /** resets the toolbox. Upon return, the only item in the toolbox is the closer.
-        */
-        void    ResetToolBox()
-        {
-            impl_resetToolBox();
-        }
 
         /** returns the content window, which is to be used as parent window for any content to be displayed
             in the docking window.
@@ -82,27 +57,20 @@ namespace sfx2
 
     protected:
         // Window overridables
-        virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& i_rArea) SAL_OVERRIDE;
-        virtual void Resize() SAL_OVERRIDE;
-        virtual void StateChanged( StateChangedType i_nType ) SAL_OVERRIDE;
-        virtual void DataChanged( const DataChangedEvent& i_rDataChangedEvent ) SAL_OVERRIDE;
-        virtual void SetText( const OUString& i_rText ) SAL_OVERRIDE;
+        virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& i_rArea) override;
+        virtual void Resize() override;
+        virtual void StateChanged( StateChangedType i_nType ) override;
+        virtual void DataChanged( const DataChangedEvent& i_rDataChangedEvent ) override;
+        virtual void SetText( const OUString& i_rText ) override;
 
         // DockingWindow overridables
-        void EndDocking(const Rectangle& rRect, bool bFloatMode) SAL_OVERRIDE;
+        void EndDocking(const Rectangle& rRect, bool bFloatMode) override;
 
-        // own overridables
-        virtual void onLayoutDone();
-
-        virtual void ApplySettings(vcl::RenderContext& rRenderContext) SAL_OVERRIDE;
+        virtual void ApplySettings(vcl::RenderContext& rRenderContext) override;
     protected:
         /** internal version of ResetToolBox
         */
         void    impl_resetToolBox();
-
-        /** internal version of AddDropDownToolBoxItem
-        */
-        sal_uInt16  impl_addDropDownToolBoxItem( const OUString& i_rItemText, const OString& i_nHelpId, const Link<ToolBox *, void>& i_rCallback );
 
         /** returns the current title.
 

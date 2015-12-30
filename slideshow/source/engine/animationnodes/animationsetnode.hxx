@@ -28,18 +28,17 @@ class AnimationSetNode : public AnimationBaseNode
 {
 public:
     AnimationSetNode(
-        ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XAnimationNode> const& xNode,
+        css::uno::Reference<css::animations::XAnimationNode> const& xNode,
         ::boost::shared_ptr<BaseContainerNode> const& pParent,
         NodeContext const& rContext )
         : AnimationBaseNode( xNode, pParent, rContext ) {}
 
 #if defined(DBG_UTIL)
-    virtual const char* getDescription() const SAL_OVERRIDE { return "AnimationSetNode"; }
+    virtual const char* getDescription() const override { return "AnimationSetNode"; }
 #endif
 
 private:
-    virtual AnimationActivitySharedPtr createActivity() const SAL_OVERRIDE;
+    virtual AnimationActivitySharedPtr createActivity() const override;
     void implScheduleDeactivationEvent();
 };
 

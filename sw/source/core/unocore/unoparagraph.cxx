@@ -119,14 +119,14 @@ public:
     uno::Reference<text::XText> m_xParentText;
 
     Impl(   SwXParagraph & rThis,
-            SwTextNode *const pTextNode = 0,
-            uno::Reference< text::XText > const & xParent = 0,
+            SwTextNode *const pTextNode = nullptr,
+            uno::Reference< text::XText > const & xParent = nullptr,
             const sal_Int32 nSelStart = -1, const sal_Int32 nSelEnd = -1)
         : SwClient(pTextNode)
         , m_rThis(rThis)
         , m_EventListeners(m_Mutex)
         , m_rPropSet(*aSwMapProvider.GetPropertySet(PROPERTY_MAP_PARAGRAPH))
-        , m_bIsDescriptor(0 == pTextNode)
+        , m_bIsDescriptor(nullptr == pTextNode)
         , m_nSelectionStartPos(nSelStart)
         , m_nSelectionEndPos(nSelEnd)
         , m_xParentText(xParent)
@@ -140,7 +140,7 @@ public:
     SwTextNode & GetTextNodeOrThrow() {
         SwTextNode *const pTextNode( GetTextNode() );
         if (!pTextNode) {
-            throw uno::RuntimeException("SwXParagraph: disposed or invalid", 0);
+            throw uno::RuntimeException("SwXParagraph: disposed or invalid", nullptr);
         }
         return *pTextNode;
     }
@@ -174,7 +174,7 @@ public:
         throw (uno::RuntimeException, std::exception);
 protected:
     // SwClient
-    virtual void Modify(const SfxPoolItem *pOld, const SfxPoolItem *pNew) SAL_OVERRIDE;
+    virtual void Modify(const SfxPoolItem *pOld, const SfxPoolItem *pNew) override;
 
 };
 
@@ -368,8 +368,7 @@ throw (beans::UnknownPropertyException, beans::PropertyVetoException,
     uno::RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
-    uno::Sequence<OUString> aPropertyNames(1);
-    aPropertyNames.getArray()[0] = rPropertyName;
+    uno::Sequence<OUString> aPropertyNames { rPropertyName };
     uno::Sequence<uno::Any> aValues(1);
     aValues.getArray()[0] = rValue;
     m_pImpl->SetPropertyValues_Impl( aPropertyNames, aValues );
@@ -381,8 +380,7 @@ throw (beans::UnknownPropertyException, lang::WrappedTargetException,
     uno::RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
-    uno::Sequence<OUString> aPropertyNames(1);
-    aPropertyNames.getArray()[0] = rPropertyName;
+    uno::Sequence<OUString> aPropertyNames { rPropertyName };
     const uno::Sequence< uno::Any > aRet =
         m_pImpl->GetPropertyValues_Impl(aPropertyNames);
     return aRet.getConstArray()[0];
@@ -398,7 +396,7 @@ throw (beans::UnknownPropertyException, beans::PropertyVetoException,
     SwTextNode & rTextNode(GetTextNodeOrThrow());
 
     SwPosition aPos( rTextNode );
-    SwCursor aCursor( aPos, 0, false );
+    SwCursor aCursor( aPos, nullptr, false );
     const OUString* pPropertyNames = rPropertyNames.getConstArray();
     const uno::Any* pValues = rValues.getConstArray();
     const SfxItemPropertyMap &rMap = m_rPropSet.getPropertyMap();
@@ -570,7 +568,7 @@ throw (beans::UnknownPropertyException, lang::WrappedTargetException,
                 pValues[nProp], pPropertyNames[nProp], pEntry->nWID))
         {
             beans::PropertyState eTemp;
-            const bool bDone = SwUnoCursorHelper::getCrsrPropertyValue(
+            const bool bDone = SwUnoCursorHelper::getCursorPropertyValue(
                 *pEntry, aPam, &(pValues[nProp]), eTemp, &rTextNode );
             if (!bDone)
             {
@@ -648,7 +646,7 @@ throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception)
 
     SwTextNode & rTextNode(m_pImpl->GetTextNodeOrThrow());
 
-    //SwNode& rTextNode = pUnoCrsr->GetPoint()->nNode.GetNode();
+    //SwNode& rTextNode = pUnoCursor->GetPoint()->nNode.GetNode();
     //const SwAttrSet& rAttrSet = static_cast<SwTextNode&>(rTextNode).GetSwAttrSet();
     //sal_uInt16 nAttrCount = rAttrSet.Count();
 
@@ -667,7 +665,7 @@ throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception)
         m_pImpl->m_rPropSet.getPropertyMap();
 
     SwPosition aPos( rTextNode );
-    SwCursor aCursor( aPos, 0, false );
+    SwCursor aCursor( aPos, nullptr, false );
     SwParaSelection aParaSel( aCursor );
     for (sal_Int32 i = 0;  i < nProps;  ++i)
     {
@@ -826,7 +824,7 @@ throw (uno::RuntimeException, std::exception)
                         // and thus only pretendend to be paragraph attributes
                         beans::PropertyState eTemp;
                         const bool bDone =
-                            SwUnoCursorHelper::getCrsrPropertyValue(
+                            SwUnoCursorHelper::getCursorPropertyValue(
                                     *pEntry, aPam, &aValue, eTemp, &rTextNode );
 
                         // if not found try the real paragraph attributes...
@@ -970,7 +968,7 @@ static beans::PropertyState lcl_SwXParagraph_getPropertyState(
         case FN_UNO_NUM_RULES:
         {
             // if numbering is set, return it; else do nothing
-            SwUnoCursorHelper::getNumberingProperty(aPam,eRet,NULL);
+            SwUnoCursorHelper::getNumberingProperty(aPam,eRet,nullptr);
             bDone = true;
             break;
         }
@@ -1060,7 +1058,7 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
 
     SwTextNode & rTextNode(m_pImpl->GetTextNodeOrThrow());
 
-    const SwAttrSet* pSet = 0;
+    const SwAttrSet* pSet = nullptr;
     SfxItemPropertySimpleEntry const*const pEntry =
         m_pImpl->m_rPropSet.getPropertyMap().getByName(rPropertyName);
     if (!pEntry)
@@ -1088,7 +1086,7 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
     uno::Sequence< beans::PropertyState > aRet(PropertyNames.getLength());
     beans::PropertyState* pStates = aRet.getArray();
     const SfxItemPropertyMap &rMap = m_pImpl->m_rPropSet.getPropertyMap();
-    const SwAttrSet* pSet = 0;
+    const SwAttrSet* pSet = nullptr;
     bool bAttrSetFetched = false;
 
     for (sal_Int32 i = 0, nEnd = PropertyNames.getLength(); i < nEnd;
@@ -1126,7 +1124,7 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
     SwTextNode & rTextNode(m_pImpl->GetTextNodeOrThrow());
 
     SwPosition aPos( rTextNode );
-    SwCursor aCursor( aPos, 0, false );
+    SwCursor aCursor( aPos, nullptr, false );
     if (rPropertyName == UNO_NAME_ANCHOR_TYPE  ||
         rPropertyName == UNO_NAME_ANCHOR_TYPES ||
         rPropertyName == UNO_NAME_TEXT_WRAP)
@@ -1152,10 +1150,10 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
             static_cast<cppu::OWeakObject *>(this));
     }
 
-    const bool bBelowFrmAtrEnd(pEntry->nWID < RES_FRMATR_END);
+    const bool bBelowFrameAtrEnd(pEntry->nWID < RES_FRMATR_END);
     const bool bDrawingLayerRange(XATTR_FILL_FIRST <= pEntry->nWID && XATTR_FILL_LAST >= pEntry->nWID);
 
-    if(bBelowFrmAtrEnd || bDrawingLayerRange)
+    if(bBelowFrameAtrEnd || bDrawingLayerRange)
     {
         std::set<sal_uInt16> aWhichIds;
 
@@ -1180,7 +1178,7 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
             // to paragraph boundaries
             SwPosition aStart( *aCursor.Start() );
             SwPosition aEnd  ( *aCursor.End()   );
-            auto pTemp( aCursor.GetDoc()->CreateUnoCrsr(aStart) );
+            auto pTemp( aCursor.GetDoc()->CreateUnoCursor(aStart) );
             if(!SwUnoCursorHelper::IsStartOfPara(*pTemp))
             {
                 pTemp->MovePara(fnParaCurr, fnParaStart);
@@ -1202,7 +1200,7 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
     }
     else
     {
-        SwUnoCursorHelper::resetCrsrPropertyValue(*pEntry, aCursor);
+        SwUnoCursorHelper::resetCursorPropertyValue(*pEntry, aCursor);
     }
 }
 
@@ -1230,10 +1228,10 @@ throw (beans::UnknownPropertyException, lang::WrappedTargetException,
             static_cast<cppu::OWeakObject *>(this));
     }
 
-    const bool bBelowFrmAtrEnd(pEntry->nWID < RES_FRMATR_END);
+    const bool bBelowFrameAtrEnd(pEntry->nWID < RES_FRMATR_END);
     const bool bDrawingLayerRange(XATTR_FILL_FIRST <= pEntry->nWID && XATTR_FILL_LAST >= pEntry->nWID);
 
-    if(bBelowFrmAtrEnd || bDrawingLayerRange)
+    if(bBelowFrameAtrEnd || bDrawingLayerRange)
     {
         const SfxPoolItem& rDefItem = rTextNode.GetDoc()->GetAttrPool().GetDefaultItem(pEntry->nWID);
 
@@ -1262,7 +1260,7 @@ SwXParagraph::getAnchor() throw (uno::RuntimeException, std::exception)
     SwTextNode & rTextNode(m_pImpl->GetTextNodeOrThrow());
 
     SwPosition aPos( rTextNode );
-    SwCursor aCursor( aPos, 0, false );
+    SwCursor aCursor( aPos, nullptr, false );
     // select paragraph
     SwParaSelection aParaSel( aCursor );
     const uno::Reference< text::XTextRange >  xRet =
@@ -1277,7 +1275,7 @@ void SAL_CALL SwXParagraph::dispose() throw (uno::RuntimeException, std::excepti
     SwTextNode *const pTextNode( m_pImpl->GetTextNode() );
     if (pTextNode)
     {
-        SwCursor aCursor( SwPosition( *pTextNode ), 0, false );
+        SwCursor aCursor( SwPosition( *pTextNode ), nullptr, false );
         pTextNode->GetDoc()->getIDocumentContentOperations().DelFullPara(aCursor);
         lang::EventObject const ev(static_cast< ::cppu::OWeakObject&>(*this));
         m_pImpl->m_EventListeners.disposeAndClear(ev);
@@ -1342,7 +1340,7 @@ SwXParagraph::getStart() throw (uno::RuntimeException, std::exception)
     SwTextNode & rTextNode(m_pImpl->GetTextNodeOrThrow());
 
     SwPosition aPos( rTextNode );
-    SwCursor aCursor( aPos, 0, false );
+    SwCursor aCursor( aPos, nullptr, false );
     SwParaSelection aParaSel( aCursor );
     SwPaM aPam( *aCursor.Start() );
     uno::Reference< text::XText >  xParent = getText();
@@ -1359,7 +1357,7 @@ SwXParagraph::getEnd() throw (uno::RuntimeException, std::exception)
     SwTextNode & rTextNode(m_pImpl->GetTextNodeOrThrow());
 
     SwPosition aPos( rTextNode );
-    SwCursor aCursor( aPos, 0, false );
+    SwCursor aCursor( aPos, nullptr, false );
     SwParaSelection aParaSel( aCursor );
     SwPaM aPam( *aCursor.End() );
     uno::Reference< text::XText >  xParent = getText();
@@ -1376,7 +1374,7 @@ OUString SAL_CALL SwXParagraph::getString() throw (uno::RuntimeException, std::e
     if (pTextNode)
     {
         SwPosition aPos( *pTextNode );
-        SwCursor aCursor( aPos, 0, false );
+        SwCursor aCursor( aPos, nullptr, false );
         SwParaSelection aParaSel( aCursor );
         SwUnoCursorHelper::GetTextFromPam(aCursor, aRet);
     }
@@ -1400,7 +1398,7 @@ throw (uno::RuntimeException, std::exception)
     if (pTextNode)
     {
         SwPosition aPos( *pTextNode );
-        SwCursor aCursor( aPos, 0, false );
+        SwCursor aCursor( aPos, nullptr, false );
         if (!SwUnoCursorHelper::IsStartOfPara(aCursor)) {
             aCursor.MovePara(fnParaCurr, fnParaStart);
         }
@@ -1444,9 +1442,7 @@ throw (uno::RuntimeException, std::exception)
 uno::Sequence< OUString > SAL_CALL
 SwXParagraph::getAvailableServiceNames() throw (uno::RuntimeException, std::exception)
 {
-    uno::Sequence< OUString > aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.text.TextContent";
+    uno::Sequence<OUString> aRet { "com.sun.star.text.TextContent" };
     return aRet;
 }
 
@@ -1463,9 +1459,9 @@ uno::Reference<frame::XModel> SwXParagraph::GetModel()
     if (pTextNode)
     {
         SwDocShell const*const pShell( pTextNode->GetDoc()->GetDocShell() );
-        return (pShell) ? pShell->GetModel() : 0;
+        return (pShell) ? pShell->GetModel() : nullptr;
     }
-    return 0;
+    return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

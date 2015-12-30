@@ -88,7 +88,7 @@ throw ( RuntimeException, std::exception )
     ComplexToolbarController::dispose();
 }
 
-void ImageButtonToolbarController::executeControlCommand( const ::com::sun::star::frame::ControlCommand& rControlCommand )
+void ImageButtonToolbarController::executeControlCommand( const css::frame::ControlCommand& rControlCommand )
 {
     SolarMutexGuard aSolarMutexGuard;
     // i73486 to be downward compatible use old and "wrong" also!
@@ -112,10 +112,8 @@ void ImageButtonToolbarController::executeControlCommand( const ::com::sun::star
                     m_pToolbar->SetItemImage( m_nID, aImage );
 
                     // send notification
-                    uno::Sequence< beans::NamedValue > aInfo( 1 );
-                    aInfo[0].Name  = "URL";
-                    aInfo[0].Value <<= aURL;
-                    addNotifyInfo( OUString( "ImageChanged" ),
+                    uno::Sequence< beans::NamedValue > aInfo { { "URL", css::uno::makeAny(aURL) } };
+                    addNotifyInfo( "ImageChanged",
                                 getDispatchFromCommand( m_aCommandURL ),
                                 aInfo );
                     break;
@@ -134,7 +132,7 @@ bool ImageButtonToolbarController::ReadImageFromURL( bool bBigImage, const OUStr
         Graphic aGraphic;
 
         GraphicFilter& rGF = GraphicFilter::GetGraphicFilter();
-        rGF.ImportGraphic( aGraphic, OUString(), *pStream, GRFILTER_FORMAT_DONTKNOW );
+        rGF.ImportGraphic( aGraphic, OUString(), *pStream );
 
         BitmapEx aBitmapEx = aGraphic.GetBitmapEx();
 

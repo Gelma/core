@@ -51,10 +51,10 @@ public:
         ChartController* pController);
 
     virtual void DataChanged(
-        const DataChangedEvent& rEvent) SAL_OVERRIDE;
+        const DataChangedEvent& rEvent) override;
 
     virtual void HandleContextChange(
-        const ::sfx2::sidebar::EnumContext& rContext) SAL_OVERRIDE;
+        const ::sfx2::sidebar::EnumContext& rContext) override;
 
     // constructor/destuctor
     ChartElementsPanel(
@@ -64,12 +64,12 @@ public:
 
     virtual ~ChartElementsPanel();
 
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void updateData() SAL_OVERRIDE;
-    virtual void modelInvalid() SAL_OVERRIDE;
+    virtual void updateData() override;
+    virtual void modelInvalid() override;
 
-    virtual void updateModel(css::uno::Reference<css::frame::XModel> xModel) SAL_OVERRIDE;
+    virtual void updateModel(css::uno::Reference<css::frame::XModel> xModel) override;
 
 private:
     //ui controls
@@ -92,11 +92,12 @@ private:
     VclPtr<CheckBox> mpCBGridHorizontalMinor;
     VclPtr<FixedText> mpTextTitle;
     VclPtr<FixedText> mpTextSubTitle;
+    VclPtr<FixedText> mpLBAxis;
+    VclPtr<FixedText> mpLBGrid;
 
     VclPtr<ListBox> mpLBLegendPosition;
     VclPtr<VclHBox> mpBoxLegend;
 
-    css::uno::Reference<css::frame::XFrame> mxFrame;
     ::sfx2::sidebar::EnumContext            maContext;
 
     css::uno::Reference<css::frame::XModel> mxModel;
@@ -112,7 +113,7 @@ private:
     void setTitleVisible(TitleHelper::eTitleType eTitle, bool bVisible);
 
     DECL_LINK_TYPED(CheckBoxHdl, Button*, void);
-    DECL_LINK(LegendPosHdl, void*);
+    DECL_LINK_TYPED(LegendPosHdl, ListBox&, void);
 };
 
 } } // end of namespace ::chart::sidebar

@@ -73,9 +73,9 @@ static ImplFontAttrs lcl_IsCJKFont( const OUString& rFontName )
 PhysicalFontCollection::PhysicalFontCollection()
     : mbMatchData( false )
     , mbMapNames( false )
-    , mpPreMatchHook( NULL )
-    , mpFallbackHook( NULL )
-    , mpFallbackList( NULL )
+    , mpPreMatchHook( nullptr )
+    , mpFallbackHook( nullptr )
+    , mpFallbackList( nullptr )
     , mnFallbackCount( -1 )
 {}
 
@@ -98,7 +98,7 @@ void PhysicalFontCollection::Clear()
 {
     // remove fallback lists
     delete[] mpFallbackList;
-    mpFallbackList = NULL;
+    mpFallbackList = nullptr;
     mnFallbackCount = -1;
 
     // clear all entries in the device font list
@@ -115,7 +115,7 @@ void PhysicalFontCollection::Clear()
     mbMatchData = false;
 }
 
-void PhysicalFontCollection::InitGenericGlyphFallback() const
+void PhysicalFontCollection::ImplInitGenericGlyphFallback() const
 {
     // normalized family names of fonts suited for glyph fallback
     // if a font is available related fonts can be ignored
@@ -141,13 +141,13 @@ void PhysicalFontCollection::InitGenericGlyphFallback() const
         "phetsarathot", "",
         "padauk", "pinlonmyanmar", "",
         "iskoolapota", "lklug", "",
-        0
+        nullptr
     };
 
     bool bHasEudc = false;
     int nMaxLevel = 0;
     int nBestQuality = 0;
-    PhysicalFontFamily** pFallbackList = NULL;
+    PhysicalFontFamily** pFallbackList = nullptr;
 
     for( const char** ppNames = &aGlyphFallbackList[0];; ++ppNames )
     {
@@ -189,27 +189,6 @@ void PhysicalFontCollection::InitGenericGlyphFallback() const
         }
     }
 
-#ifdef SAL_FONTENUM_STABLE_ON_PLATFORM // #i113472#
-    // sort the list of fonts for glyph fallback by quality (highest first)
-    // #i33947# keep the EUDC font at the front of the list
-    // an insertion sort is good enough for this short list
-    const int nSortStart = bHasEudc ? 1 : 0;
-    for( int i = nSortStart+1, j; i < nMaxLevel; ++i )
-    {
-        PhysicalFontFamily* pTestFont = pFallbackList[ i ];
-        int nTestQuality = pTestFont->GetMinQuality();
-
-        for( j = i; --j >= nSortStart; )
-        {
-            if( nTestQuality > pFallbackList[j]->GetMinQuality() )
-                pFallbackList[ j+1 ] = pFallbackList[ j ];
-            else
-                break;
-        }
-        pFallbackList[ j+1 ] = pTestFont;
-    }
-#endif
-
     mnFallbackCount = nMaxLevel;
     mpFallbackList  = pFallbackList;
 }
@@ -218,7 +197,7 @@ PhysicalFontFamily* PhysicalFontCollection::GetGlyphFallbackFont( FontSelectPatt
                                                                   OUString& rMissingCodes,
                                                                   int nFallbackLevel ) const
 {
-    PhysicalFontFamily* pFallbackData = NULL;
+    PhysicalFontFamily* pFallbackData = nullptr;
 
     // find a matching font candidate for platform specific glyph fallback
     if( mpFallbackHook )
@@ -305,7 +284,7 @@ PhysicalFontFamily* PhysicalFontCollection::GetGlyphFallbackFont( FontSelectPatt
     {
         // initialize font candidates for generic glyph fallback if needed
         if( mnFallbackCount < 0 )
-            InitGenericGlyphFallback();
+            ImplInitGenericGlyphFallback();
 
         // TODO: adjust nFallbackLevel by number of levels resolved by the fallback hook
         if( nFallbackLevel < mnFallbackCount )
@@ -319,7 +298,7 @@ void PhysicalFontCollection::Add( PhysicalFontFace* pNewData )
 {
     OUString aSearchName = GetEnglishSearchFontName( pNewData->GetFamilyName() );
 
-    PhysicalFontFamily* pFoundData = FindOrCreateFamily( aSearchName );
+    PhysicalFontFamily* pFoundData = FindOrCreateFontFamily( aSearchName );
 
     bool bKeepNewData = pFoundData->AddFontFace( pNewData );
 
@@ -328,29 +307,29 @@ void PhysicalFontCollection::Add( PhysicalFontFace* pNewData )
 }
 
 // find the font from the normalized font family name
-PhysicalFontFamily* PhysicalFontCollection::ImplFindBySearchName( const OUString& rSearchName ) const
+PhysicalFontFamily* PhysicalFontCollection::ImplFindFontFamilyBySearchName( const OUString& rSearchName ) const
 {
     // must be called with a normalized name.
     assert( GetEnglishSearchFontName( rSearchName ) == rSearchName );
 
     PhysicalFontFamilies::const_iterator it = maPhysicalFontFamilies.find( rSearchName );
     if( it == maPhysicalFontFamilies.end() )
-        return NULL;
+        return nullptr;
 
     PhysicalFontFamily* pFoundData = (*it).second;
     return pFoundData;
 }
 
-PhysicalFontFamily* PhysicalFontCollection::ImplFindByAliasName(const OUString& rSearchName,
+PhysicalFontFamily* PhysicalFontCollection::ImplFindFontFamilyByAliasName(const OUString& rSearchName,
     const OUString& rShortName) const
 {
     // short circuit for impossible font name alias
     if (rSearchName.isEmpty())
-        return NULL;
+        return nullptr;
 
     // short circuit if no alias names are available
     if (!mbMapNames)
-        return NULL;
+        return nullptr;
 
     // use the font's alias names to find the font
     // TODO: get rid of linear search
@@ -375,18 +354,18 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByAliasName(const OUString& 
         while ( nIndex != -1 );
      }
 
-     return NULL;
+     return nullptr;
 }
 
 PhysicalFontFamily* PhysicalFontCollection::FindFontFamily( const OUString& rFontName ) const
 {
-    return ImplFindBySearchName( GetEnglishSearchFontName( rFontName ) );
+    return ImplFindFontFamilyBySearchName( GetEnglishSearchFontName( rFontName ) );
 }
 
-PhysicalFontFamily *PhysicalFontCollection::FindOrCreateFamily( const OUString &rFamilyName )
+PhysicalFontFamily *PhysicalFontCollection::FindOrCreateFontFamily( const OUString &rFamilyName )
 {
     PhysicalFontFamilies::const_iterator it = maPhysicalFontFamilies.find( rFamilyName );
-    PhysicalFontFamily* pFoundData = NULL;
+    PhysicalFontFamily* pFoundData = nullptr;
 
     if( it != maPhysicalFontFamilies.end() )
         pFoundData = (*it).second;
@@ -400,9 +379,9 @@ PhysicalFontFamily *PhysicalFontCollection::FindOrCreateFamily( const OUString &
     return pFoundData;
 }
 
-PhysicalFontFamily* PhysicalFontCollection::ImplFindByTokenNames(const OUString& rTokenStr) const
+PhysicalFontFamily* PhysicalFontCollection::FindFontFamilyByTokenNames(const OUString& rTokenStr) const
 {
-    PhysicalFontFamily* pFoundData = NULL;
+    PhysicalFontFamily* pFoundData = nullptr;
 
     // use normalized font name tokens to find the font
     for( sal_Int32 nTokenPos = 0; nTokenPos != -1; )
@@ -420,9 +399,9 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByTokenNames(const OUString&
     return pFoundData;
 }
 
-PhysicalFontFamily* PhysicalFontCollection::ImplFindBySubstFontAttr( const utl::FontNameAttr& rFontAttr ) const
+PhysicalFontFamily* PhysicalFontCollection::ImplFindFontFamilyBySubstFontAttr( const utl::FontNameAttr& rFontAttr ) const
 {
-    PhysicalFontFamily* pFoundData = NULL;
+    PhysicalFontFamily* pFoundData = nullptr;
 
     // use the font substitutions suggested by the FontNameAttr to find the font
     ::std::vector< OUString >::const_iterator it = rFontAttr.Substitutions.begin();
@@ -442,17 +421,17 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindBySubstFontAttr( const utl::
         const FontItalic eSearchSlant  = ITALIC_DONTKNOW;
         const OUString aSearchName;
 
-        pFoundData = ImplFindByAttributes( nSearchType,
+        pFoundData = FindFontFamilyByAttributes( nSearchType,
             eSearchWeight, eSearchWidth, eSearchSlant, aSearchName );
 
         if( pFoundData )
             return pFoundData;
     }
 
-    return NULL;
+    return nullptr;
 }
 
-void PhysicalFontCollection::InitMatchData() const
+void PhysicalFontCollection::ImplInitMatchData() const
 {
     // short circuit if already done
     if( mbMatchData )
@@ -475,11 +454,11 @@ void PhysicalFontCollection::InitMatchData() const
     }
 }
 
-PhysicalFontFamily* PhysicalFontCollection::ImplFindByAttributes( ImplFontAttrs nSearchType,
-                                                                  FontWeight eSearchWeight,
-                                                                  FontWidth eSearchWidth,
-                                                                  FontItalic eSearchItalic,
-                                                                  const OUString& rSearchFamilyName ) const
+PhysicalFontFamily* PhysicalFontCollection::FindFontFamilyByAttributes( ImplFontAttrs nSearchType,
+                                                                        FontWeight eSearchWeight,
+                                                                        FontWidth eSearchWidth,
+                                                                        FontItalic eSearchItalic,
+                                                                        const OUString& rSearchFamilyName ) const
 {
     if( (eSearchItalic != ITALIC_NONE) && (eSearchItalic != ITALIC_DONTKNOW) )
         nSearchType |= ImplFontAttrs::Italic;
@@ -488,10 +467,10 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByAttributes( ImplFontAttrs 
     if( nSearchType == ImplFontAttrs::None
     && ((eSearchWeight == WEIGHT_DONTKNOW) || (eSearchWeight == WEIGHT_NORMAL))
     && ((eSearchWidth == WIDTH_DONTKNOW) || (eSearchWidth == WIDTH_NORMAL)) )
-        return NULL;
+        return nullptr;
 
-    InitMatchData();
-    PhysicalFontFamily* pFoundData = NULL;
+    ImplInitMatchData();
+    PhysicalFontFamily* pFoundData = nullptr;
 
     long    nBestMatch = 40000;
     ImplFontAttrs  nBestType = ImplFontAttrs::None;
@@ -897,7 +876,7 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByAttributes( ImplFontAttrs 
     return pFoundData;
 }
 
-PhysicalFontFamily* PhysicalFontCollection::FindDefaultFont() const
+PhysicalFontFamily* PhysicalFontCollection::ImplFindFontFamilyOfDefaultFont() const
 {
     // try to find one of the default fonts of the
     // UNICODE, SANSSERIF, SERIF or FIXED default font lists
@@ -907,30 +886,30 @@ PhysicalFontFamily* PhysicalFontCollection::FindDefaultFont() const
         const utl::DefaultFontConfiguration& rDefaults = utl::DefaultFontConfiguration::get();
         LanguageTag aLanguageTag( OUString( "en"));
         OUString aFontname = rDefaults.getDefaultFont( aLanguageTag, DefaultFontType::SANS_UNICODE );
-        pFoundData = ImplFindByTokenNames( aFontname );
+        pFoundData = FindFontFamilyByTokenNames( aFontname );
 
         if( pFoundData )
             return pFoundData;
 
         aFontname = rDefaults.getDefaultFont( aLanguageTag, DefaultFontType::SANS );
-        pFoundData = ImplFindByTokenNames( aFontname );
+        pFoundData = FindFontFamilyByTokenNames( aFontname );
         if( pFoundData )
             return pFoundData;
 
         aFontname = rDefaults.getDefaultFont( aLanguageTag, DefaultFontType::SERIF );
-        pFoundData = ImplFindByTokenNames( aFontname );
+        pFoundData = FindFontFamilyByTokenNames( aFontname );
         if( pFoundData )
             return pFoundData;
 
         aFontname = rDefaults.getDefaultFont( aLanguageTag, DefaultFontType::FIXED );
-        pFoundData = ImplFindByTokenNames( aFontname );
+        pFoundData = FindFontFamilyByTokenNames( aFontname );
         if( pFoundData )
             return pFoundData;
     }
 
     // now try to find a reasonable non-symbol font
 
-    InitMatchData();
+    ImplInitMatchData();
 
     PhysicalFontFamilies::const_iterator it = maPhysicalFontFamilies.begin();
     for(; it !=  maPhysicalFontFamilies.end(); ++it )
@@ -974,43 +953,43 @@ PhysicalFontCollection* PhysicalFontCollection::Clone( bool bScalable, bool bEmb
     return pClonedCollection;
 }
 
-ImplGetDevFontList* PhysicalFontCollection::GetDevFontList() const
+ImplDeviceFontList* PhysicalFontCollection::GetDeviceFontList() const
 {
-    ImplGetDevFontList* pGetDevFontList = new ImplGetDevFontList;
+    ImplDeviceFontList* pDeviceFontList = new ImplDeviceFontList;
 
     PhysicalFontFamilies::const_iterator it = maPhysicalFontFamilies.begin();
     for(; it != maPhysicalFontFamilies.end(); ++it )
     {
         const PhysicalFontFamily* pFontFamily = (*it).second;
-        pFontFamily->UpdateDevFontList( *pGetDevFontList );
+        pFontFamily->UpdateDevFontList( *pDeviceFontList );
     }
 
-    return pGetDevFontList;
+    return pDeviceFontList;
 }
 
-ImplGetDevSizeList* PhysicalFontCollection::GetDevSizeList( const OUString& rFontName ) const
+ImplDeviceFontSizeList* PhysicalFontCollection::GetDeviceFontSizeList( const OUString& rFontName ) const
 {
-    ImplGetDevSizeList* pGetDevSizeList = new ImplGetDevSizeList;
+    ImplDeviceFontSizeList* pDeviceFontSizeList = new ImplDeviceFontSizeList;
 
     PhysicalFontFamily* pFontFamily = FindFontFamily( rFontName );
-    if( pFontFamily != NULL )
+    if( pFontFamily != nullptr )
     {
         std::set<int> rHeights;
         pFontFamily->GetFontHeights( rHeights );
 
         std::set<int>::const_iterator it = rHeights.begin();
         for(; it != rHeights.begin(); ++it )
-            pGetDevSizeList->Add( *it );
+            pDeviceFontSizeList->Add( *it );
     }
 
-    return pGetDevSizeList;
+    return pDeviceFontSizeList;
 }
 
-PhysicalFontFamily* PhysicalFontCollection::ImplFindByFont( FontSelectPattern& rFSD ) const
+PhysicalFontFamily* PhysicalFontCollection::FindFontFamilyByFont( FontSelectPattern& rFSD ) const
 {
     // give up if no fonts are available
     if( !Count() )
-        return NULL;
+        return nullptr;
 
     bool bMultiToken = false;
     sal_Int32 nTokenPos = 0;
@@ -1057,7 +1036,7 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByFont( FontSelectPattern& r
             else if( aSearchName.equalsIgnoreAsciiCase( "hgpminchob" ) )
                 aBoldName = "hgpminchoe";
 
-            if( !aBoldName.isEmpty() && ImplFindBySearchName( aBoldName ) )
+            if( !aBoldName.isEmpty() && ImplFindFontFamilyBySearchName( aBoldName ) )
             {
                 // the other font is available => use it
                 aSearchName = aBoldName;
@@ -1071,7 +1050,7 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByFont( FontSelectPattern& r
         rFSD.maTargetName = aOrigName;
 #endif
         // check if the current font name token or its substitute is valid
-        PhysicalFontFamily* pFoundData = ImplFindBySearchName( aSearchName );
+        PhysicalFontFamily* pFoundData = ImplFindFontFamilyBySearchName( aSearchName );
         if( pFoundData )
             return pFoundData;
 
@@ -1092,7 +1071,7 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByFont( FontSelectPattern& r
         {
             rFSD.maTargetName = sStrippedName;
             aSearchName = GetEnglishSearchFontName(rFSD.maTargetName);
-            pFoundData = ImplFindBySearchName(aSearchName);
+            pFoundData = ImplFindFontFamilyBySearchName(aSearchName);
             if( pFoundData )
                 return pFoundData;
         }
@@ -1107,7 +1086,7 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByFont( FontSelectPattern& r
         // to restore the features to make the font selection data unique
         rFSD.maTargetName = aOrigName;
 #endif
-        pFoundData = ImplFindBySearchName( aSearchName );
+        pFoundData = ImplFindFontFamilyBySearchName( aSearchName );
         if( pFoundData )
             return pFoundData;
 
@@ -1135,7 +1114,7 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByFont( FontSelectPattern& r
             if( mpPreMatchHook->FindFontSubstitute( rFSD ) )
                 aSearchName = GetEnglishSearchFontName( aSearchName );
         ImplFontSubstitute( aSearchName );
-        PhysicalFontFamily* pFoundData = ImplFindBySearchName( aSearchName );
+        PhysicalFontFamily* pFoundData = ImplFindFontFamilyBySearchName( aSearchName );
         if( pFoundData )
             return pFoundData;
     }
@@ -1161,7 +1140,7 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByFont( FontSelectPattern& r
     // use the font's shortened name if needed
     if ( aSearchShortName != aSearchName )
     {
-       PhysicalFontFamily* pFoundData = ImplFindBySearchName( aSearchShortName );
+       PhysicalFontFamily* pFoundData = ImplFindFontFamilyBySearchName( aSearchShortName );
        if( pFoundData )
        {
 #ifdef UNX
@@ -1181,7 +1160,7 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByFont( FontSelectPattern& r
     }
 
     // use font fallback
-    const utl::FontNameAttr* pFontAttr = NULL;
+    const utl::FontNameAttr* pFontAttr = nullptr;
     if (!aSearchName.isEmpty() && !utl::ConfigManager::IsAvoidConfig())
     {
         // get fallback info using FontSubstConfiguration and
@@ -1196,7 +1175,7 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByFont( FontSelectPattern& r
         // try the font substitutions suggested by the fallback info
         if( pFontAttr )
         {
-            PhysicalFontFamily* pFoundData = ImplFindBySubstFontAttr( *pFontAttr );
+            PhysicalFontFamily* pFoundData = ImplFindFontFamilyBySubstFontAttr( *pFontAttr );
             if( pFoundData )
                 return pFoundData;
         }
@@ -1210,7 +1189,7 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByFont( FontSelectPattern& r
             aSearchName = "OpenSymbol";
         else
             aSearchName = utl::DefaultFontConfiguration::get().getDefaultFont( aDefaultLanguageTag, DefaultFontType::SYMBOL );
-        PhysicalFontFamily* pFoundData = ImplFindByTokenNames( aSearchName );
+        PhysicalFontFamily* pFoundData = FindFontFamilyByTokenNames( aSearchName );
         if( pFoundData )
             return pFoundData;
     }
@@ -1235,12 +1214,12 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByFont( FontSelectPattern& r
         // use a shortend token name if available
         if( aTempShortName != aSearchName )
         {
-            PhysicalFontFamily* pFoundData = ImplFindBySearchName( aTempShortName );
+            PhysicalFontFamily* pFoundData = ImplFindFontFamilyBySearchName( aTempShortName );
             if( pFoundData )
                 return pFoundData;
         }
 
-        const utl::FontNameAttr* pTempFontAttr = NULL;
+        const utl::FontNameAttr* pTempFontAttr = nullptr;
         if (!utl::ConfigManager::IsAvoidConfig())
         {
             // use a font name from font fallback list to determine font attributes
@@ -1259,7 +1238,7 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByFont( FontSelectPattern& r
         // try the font substitutions suggested by the fallback info
         if( pTempFontAttr )
         {
-            PhysicalFontFamily* pFoundData = ImplFindBySubstFontAttr( *pTempFontAttr );
+            PhysicalFontFamily* pFoundData = ImplFindFontFamilyBySubstFontAttr( *pTempFontAttr );
             if( pFoundData )
                 return pFoundData;
             if( !pFontAttr )
@@ -1270,7 +1249,7 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByFont( FontSelectPattern& r
     // if still needed use the alias names of the installed fonts
     if( mbMapNames )
     {
-        PhysicalFontFamily* pFoundData = ImplFindByAliasName( rFSD.maTargetName, aSearchShortName );
+        PhysicalFontFamily* pFoundData = ImplFindFontFamilyByAliasName( rFSD.maTargetName, aSearchShortName );
         if( pFoundData )
             return pFoundData;
     }
@@ -1292,7 +1271,7 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByFont( FontSelectPattern& r
     }
 
     PhysicalFontFamily::CalcType( nSearchType, eSearchWeight, eSearchWidth, rFSD.GetFamilyType(), pFontAttr );
-    PhysicalFontFamily* pFoundData = ImplFindByAttributes( nSearchType,
+    PhysicalFontFamily* pFoundData = FindFontFamilyByAttributes( nSearchType,
         eSearchWeight, eSearchWidth, rFSD.GetSlant(), aSearchFamilyName );
 
     if( pFoundData )
@@ -1323,7 +1302,7 @@ PhysicalFontFamily* PhysicalFontCollection::ImplFindByFont( FontSelectPattern& r
     else
     {
         // if still needed fall back to default fonts
-        pFoundData = FindDefaultFont();
+        pFoundData = ImplFindFontFamilyOfDefaultFont();
     }
 
     return pFoundData;

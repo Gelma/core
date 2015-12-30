@@ -18,6 +18,7 @@
  */
 
 #include <accelerators/storageholder.hxx>
+#include <accelerators/acceleratorconfiguration.hxx>
 
 #include <services.h>
 
@@ -111,7 +112,7 @@ css::uno::Reference< css::embed::XStorage > StorageHolder::openPath(const OUStri
         // If we found an already open storage ... we must increase
         // its use count. Otherwhise it will may be closed to early :-)
         TPath2StorageInfo::iterator pCheck = m_lStorages.find(sCheckPath);
-        TStorageInfo*               pInfo  = 0;
+        TStorageInfo*               pInfo  = nullptr;
         if (pCheck != m_lStorages.end())
         {
             pInfo = &(pCheck->second);
@@ -209,7 +210,7 @@ void StorageHolder::commitPath(const OUString& sPath)
            pIt != lStorages.rend();
          ++pIt                      )
     {
-        xCommit = css::uno::Reference< css::embed::XTransactedObject >(*pIt, css::uno::UNO_QUERY);
+        xCommit.set(*pIt, css::uno::UNO_QUERY);
         if (!xCommit.is())
             continue;
         xCommit->commit();
@@ -217,7 +218,7 @@ void StorageHolder::commitPath(const OUString& sPath)
 
     // SAFE -> ------------------------------
     osl::ClearableMutexGuard aReadLock(m_mutex);
-    xCommit = css::uno::Reference< css::embed::XTransactedObject >(m_xRoot, css::uno::UNO_QUERY);
+    xCommit.set(m_xRoot, css::uno::UNO_QUERY);
     aReadLock.clear();
     // <- SAFE ------------------------------
 
@@ -284,13 +285,13 @@ void StorageHolder::notifyPath(const OUString& sPath)
            pIt2 != rInfo.Listener.end();
          ++pIt2                          )
     {
-        IStorageListener* pListener = *pIt2;
+        XMLBasedAcceleratorConfiguration* pListener = *pIt2;
         if (pListener)
-            pListener->changesOccurred(sNormedPath);
+            pListener->changesOccurred();
     }
 }
 
-void StorageHolder::addStorageListener(      IStorageListener* pListener,
+void StorageHolder::addStorageListener(      XMLBasedAcceleratorConfiguration* pListener,
                                        const OUString&  sPath    )
 {
     OUString sNormedPath = StorageHolder::impl_st_normPath(sPath);
@@ -307,7 +308,7 @@ void StorageHolder::addStorageListener(      IStorageListener* pListener,
         rInfo.Listener.push_back(pListener);
 }
 
-void StorageHolder::removeStorageListener(      IStorageListener* pListener,
+void StorageHolder::removeStorageListener(      XMLBasedAcceleratorConfiguration* pListener,
                                           const OUString&  sPath    )
 {
     OUString sNormedPath = StorageHolder::impl_st_normPath(sPath);

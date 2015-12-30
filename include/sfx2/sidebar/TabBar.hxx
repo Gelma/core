@@ -27,7 +27,6 @@
 #include <vcl/window.hxx>
 
 #include <com/sun/star/frame/XFrame.hpp>
-#include <boost/tuple/tuple.hpp>
 
 #include <functional>
 
@@ -73,11 +72,11 @@ public:
         SidebarController* rParentSidebarController);
 
     virtual ~TabBar();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void Paint (vcl::RenderContext& /*rRenderContext*/, const Rectangle& rUpdateArea) SAL_OVERRIDE;
-    virtual void DataChanged (const DataChangedEvent& rDataChangedEvent) SAL_OVERRIDE;
-    virtual bool Notify (NotifyEvent& rEvent) SAL_OVERRIDE;
+    virtual void Paint (vcl::RenderContext& /*rRenderContext*/, const Rectangle& rUpdateArea) override;
+    virtual void DataChanged (const DataChangedEvent& rDataChangedEvent) override;
+    virtual bool Notify (NotifyEvent& rEvent) override;
 
     static sal_Int32 GetDefaultWidth();
 

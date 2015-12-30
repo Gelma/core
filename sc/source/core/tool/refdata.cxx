@@ -17,6 +17,10 @@
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
 
+#include <sal/config.h>
+
+#include <algorithm>
+
 #include "refdata.hxx"
 
 void ScSingleRefData::InitAddress( const ScAddress& rAdr )
@@ -207,15 +211,24 @@ void ScSingleRefData::SetAddress( const ScAddress& rAddr, const ScAddress& rPos 
     else
         mnCol = rAddr.Col();
 
+    if (!ValidCol(rAddr.Col()))
+        SetColDeleted(true);
+
     if (Flags.bRowRel)
         mnRow = rAddr.Row() - rPos.Row();
     else
         mnRow = rAddr.Row();
 
+    if (!ValidRow(rAddr.Row()))
+        SetRowDeleted(true);
+
     if (Flags.bTabRel)
         mnTab = rAddr.Tab() - rPos.Tab();
     else
         mnTab = rAddr.Tab();
+
+    if (!ValidTab( rAddr.Tab(), MAXTAB))
+        SetTabDeleted(true);
 }
 
 SCROW ScSingleRefData::Row() const
@@ -476,6 +489,64 @@ void ScComplexRefData::SetRange( const ScRange& rRange, const ScAddress& rPos )
 void ScComplexRefData::PutInOrder( const ScAddress& rPos )
 {
     ScSingleRefData::PutInOrder( Ref1, Ref2, rPos);
+}
+
+bool ScComplexRefData::IncEndColSticky( SCCOL nDelta, const ScAddress& rPos )
+{
+    SCCOL nCol1 = Ref1.IsColRel() ? Ref1.Col() + rPos.Col() : Ref1.Col();
+    SCCOL nCol2 = Ref2.IsColRel() ? Ref2.Col() + rPos.Col() : Ref2.Col();
+    if (nCol1 >= nCol2)
+    {
+        // Less than two columns => not sticky.
+        Ref2.IncCol( nDelta);
+        return true;
+    }
+
+    if (nCol2 == MAXCOL)
+        // already sticky
+        return false;
+
+    if (nCol2 < MAXCOL)
+    {
+        SCCOL nCol = ::std::min( static_cast<SCCOL>(nCol2 + nDelta), MAXCOL);
+        if (Ref2.IsColRel())
+            Ref2.SetRelCol( nCol - rPos.Col());
+        else
+            Ref2.SetAbsCol( nCol);
+    }
+    else
+        Ref2.IncCol( nDelta);   // was greater than MAXCOL, caller should know..
+
+    return true;
+}
+
+bool ScComplexRefData::IncEndRowSticky( SCROW nDelta, const ScAddress& rPos )
+{
+    SCROW nRow1 = Ref1.IsRowRel() ? Ref1.Row() + rPos.Row() : Ref1.Row();
+    SCROW nRow2 = Ref2.IsRowRel() ? Ref2.Row() + rPos.Row() : Ref2.Row();
+    if (nRow1 >= nRow2)
+    {
+        // Less than two rows => not sticky.
+        Ref2.IncRow( nDelta);
+        return true;
+    }
+
+    if (nRow2 == MAXROW)
+        // already sticky
+        return false;
+
+    if (nRow2 < MAXROW)
+    {
+        SCROW nRow = ::std::min( static_cast<SCROW>(nRow2 + nDelta), MAXROW);
+        if (Ref2.IsRowRel())
+            Ref2.SetRelRow( nRow - rPos.Row());
+        else
+            Ref2.SetAbsRow( nRow);
+    }
+    else
+        Ref2.IncRow( nDelta);   // was greater than MAXROW, caller should know..
+
+    return true;
 }
 
 #if DEBUG_FORMULA_COMPILER

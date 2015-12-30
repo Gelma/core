@@ -260,7 +260,7 @@ Reference< chart2::data::XDataSource >
     getDataSource( const Sequence< Reference< chart2::XDataSeries > > & aSeries )
 {
     return Reference< chart2::data::XDataSource >(
-        new DataSource(ContainerHelper::ContainerToSequence(getAllDataSequences(aSeries))));
+        new DataSource(comphelper::containerToSequence(getAllDataSequences(aSeries))));
 }
 
 namespace
@@ -390,7 +390,6 @@ void setStackModeAtSeries(
     if( eStackMode == StackMode_AMBIGUOUS )
         return;
 
-    const OUString aPropName( "StackingDirection" );
     const uno::Any aPropValue = uno::makeAny(
         ( (eStackMode == StackMode_Y_STACKED) ||
           (eStackMode == StackMode_Y_STACKED_PERCENT) )
@@ -407,7 +406,7 @@ void setStackModeAtSeries(
             Reference< beans::XPropertySet > xProp( aSeries[i], uno::UNO_QUERY );
             if( xProp.is() )
             {
-                xProp->setPropertyValue( aPropName, aPropValue );
+                xProp->setPropertyValue( "StackingDirection", aPropValue );
 
                 sal_Int32 nAxisIndex;
                 xProp->getPropertyValue( "AttachedAxisIndex" ) >>= nAxisIndex;
@@ -423,11 +422,9 @@ void setStackModeAtSeries(
     if( xCorrespondingCoordinateSystem.is() &&
         1 < xCorrespondingCoordinateSystem->getDimension() )
     {
-        sal_Int32 nAxisIndexCount = aAxisIndexSet.size();
-        if( !nAxisIndexCount )
+        if( aAxisIndexSet.empty() )
         {
             aAxisIndexSet.insert(0);
-            nAxisIndexCount = aAxisIndexSet.size();
         }
 
         for( ::std::set< sal_Int32 >::const_iterator aIt = aAxisIndexSet.begin();
@@ -532,7 +529,7 @@ void deleteSeries(
         if( aIt != aSeries.end())
         {
             aSeries.erase( aIt );
-            xSeriesCnt->setDataSeries( ContainerHelper::ContainerToSequence( aSeries ));
+            xSeriesCnt->setDataSeries( comphelper::containerToSequence( aSeries ));
         }
     }
     catch( const uno::Exception & ex )

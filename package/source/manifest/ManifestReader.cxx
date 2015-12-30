@@ -20,6 +20,7 @@
 #include <ManifestReader.hxx>
 #include <ManifestImport.hxx>
 #include <comphelper/processfactory.hxx>
+#include <comphelper/sequence.hxx>
 #include <cppuhelper/factory.hxx>
 #include <cppuhelper/supportsservice.hxx>
 #include <com/sun/star/xml/sax/XDocumentHandler.hpp>
@@ -46,7 +47,7 @@ ManifestReader::~ManifestReader()
 {
 }
 Sequence< Sequence< PropertyValue > > SAL_CALL ManifestReader::readManifestSequence( const Reference< XInputStream >& rStream )
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     Sequence < Sequence < PropertyValue > > aManifestSequence;
     Reference < XParser > xParser  = Parser::create(m_xContext);
@@ -59,12 +60,7 @@ Sequence< Sequence< PropertyValue > > SAL_CALL ManifestReader::readManifestSeque
         aParserInput.sSystemId = "META-INF/manifest.xml";
         xParser->setDocumentHandler ( xFilter );
         xParser->parseStream( aParserInput );
-        aManifestSequence.realloc ( aManVector.size() );
-        Sequence < PropertyValue > * pSequence = aManifestSequence.getArray();
-        ::std::vector < Sequence < PropertyValue > >::const_iterator aIter = aManVector.begin();
-        ::std::vector < Sequence < PropertyValue > >::const_iterator aEnd = aManVector.end();
-        while( aIter != aEnd )
-            *pSequence++ = (*aIter++);
+        aManifestSequence = comphelper::containerToSequence(aManVector);
     }
     catch (SAXParseException& e)
     {
@@ -94,8 +90,7 @@ OUString ManifestReader::static_getImplementationName()
 
 Sequence < OUString > ManifestReader::static_getSupportedServiceNames()
 {
-    Sequence < OUString > aNames(1);
-    aNames[0] = "com.sun.star.packages.manifest.ManifestReader";
+    Sequence < OUString > aNames { "com.sun.star.packages.manifest.ManifestReader" };
     return aNames;
 }
 

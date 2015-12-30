@@ -36,8 +36,8 @@ class SwView;
 
 class SW_DLLPUBLIC SwRedlineExtraData
 {
-    SwRedlineExtraData( const SwRedlineExtraData& ) SAL_DELETED_FUNCTION;
-    SwRedlineExtraData& operator=( const SwRedlineExtraData& ) SAL_DELETED_FUNCTION;
+    SwRedlineExtraData( const SwRedlineExtraData& ) = delete;
+    SwRedlineExtraData& operator=( const SwRedlineExtraData& ) = delete;
 
 protected:
     SwRedlineExtraData() {}
@@ -57,11 +57,11 @@ class SwRedlineExtraData_FormatColl : public SwRedlineExtraData
     sal_uInt16 nPoolId;
 public:
     SwRedlineExtraData_FormatColl( const OUString& rColl, sal_uInt16 nPoolFormatId,
-                                const SfxItemSet* pSet = 0 );
+                                const SfxItemSet* pSet = nullptr );
     virtual ~SwRedlineExtraData_FormatColl();
-    virtual SwRedlineExtraData* CreateNew() const SAL_OVERRIDE;
-    virtual void Reject( SwPaM& rPam ) const SAL_OVERRIDE;
-    virtual bool operator == ( const SwRedlineExtraData& ) const SAL_OVERRIDE;
+    virtual SwRedlineExtraData* CreateNew() const override;
+    virtual void Reject( SwPaM& rPam ) const override;
+    virtual bool operator == ( const SwRedlineExtraData& ) const override;
 
     void SetItemSet( const SfxItemSet& rSet );
 };
@@ -75,9 +75,9 @@ class SwRedlineExtraData_Format : public SwRedlineExtraData
 public:
     SwRedlineExtraData_Format( const SfxItemSet& rSet );
     virtual ~SwRedlineExtraData_Format();
-    virtual SwRedlineExtraData* CreateNew() const SAL_OVERRIDE;
-    virtual void Reject( SwPaM& rPam ) const SAL_OVERRIDE;
-    virtual bool operator == ( const SwRedlineExtraData& ) const SAL_OVERRIDE;
+    virtual SwRedlineExtraData* CreateNew() const override;
+    virtual void Reject( SwPaM& rPam ) const override;
+    virtual bool operator == ( const SwRedlineExtraData& ) const override;
 };
 
 /*
@@ -97,9 +97,9 @@ class SW_DLLPUBLIC SwRedlineExtraData_FormattingChanges : public SwRedlineExtraD
 public:
     SwRedlineExtraData_FormattingChanges( const SfxItemSet* pItemSet );
     virtual ~SwRedlineExtraData_FormattingChanges();
-    virtual SwRedlineExtraData* CreateNew() const SAL_OVERRIDE;
-    virtual void Reject( SwPaM& rPam ) const SAL_OVERRIDE;
-    virtual bool operator == ( const SwRedlineExtraData& ) const SAL_OVERRIDE;
+    virtual SwRedlineExtraData* CreateNew() const override;
+    virtual void Reject( SwPaM& rPam ) const override;
+    virtual bool operator == ( const SwRedlineExtraData& ) const override;
     SfxItemSet* GetItemSet( ) const { return pSet; }
 };
 
@@ -121,7 +121,7 @@ public:
     // For sw3io: pNext/pExtraData are taken over.
     SwRedlineData( RedlineType_t eT, sal_uInt16 nAut, const DateTime& rDT,
                    const OUString& rCmnt, SwRedlineData* pNxt,
-                    SwRedlineExtraData* pExtraData = 0 );
+                    SwRedlineExtraData* pExtraData = nullptr );
 
     ~SwRedlineData();
 
@@ -200,7 +200,7 @@ public:
     // For sw3io: pData is taken over!
     SwRangeRedline(SwRedlineData* pData, const SwPosition& rPos, bool bVsbl,
                bool bDelLP, bool bIsPD) :
-        SwPaM( rPos ), pRedlineData( pData ), pContentSect( 0 ),
+        SwPaM( rPos ), pRedlineData( pData ), pContentSect( nullptr ),
         bDelLastPara( bDelLP ), bIsLastParaDelete( bIsPD ), bIsVisible( bVsbl )
     {}
     SwRangeRedline( const SwRangeRedline& );
@@ -213,12 +213,12 @@ public:
     bool IsVisible() const { return bIsVisible; }
     bool IsDelLastPara() const { return bDelLastPara; }
 
-    void SetStart( const SwPosition& rPos, SwPosition* pSttPtr = 0 )
+    void SetStart( const SwPosition& rPos, SwPosition* pSttPtr = nullptr )
     {
         if( !pSttPtr ) pSttPtr = Start();
         *pSttPtr = rPos;
     }
-    void SetEnd( const SwPosition& rPos, SwPosition* pEndPtr = 0 )
+    void SetEnd( const SwPosition& rPos, SwPosition* pEndPtr = nullptr )
     {
         if( !pEndPtr ) pEndPtr = End();
         *pEndPtr = rPos;

@@ -192,7 +192,7 @@ DataSourceTabPage::DataSourceTabPage(
     m_pTemplateProvider( pTemplateProvider ),
     m_rDialogModel( rDialogModel ),
 
-    m_pCurrentRangeChoosingField( 0 ),
+    m_pCurrentRangeChoosingField( nullptr ),
     m_bIsDirty( false ),
     m_pParentDialog( pParentDialog ),
     m_pTabPageNotifiable( dynamic_cast< TabPageNotifiable * >( pParentDialog ))
@@ -259,7 +259,7 @@ DataSourceTabPage::DataSourceTabPage(
     m_pBTN_DOWN->SetText( OUString( cBlackDownPointingTriangle ));
 
     // init controls
-    m_pLB_ROLE->SetTabs( lcl_pRoleListBoxTabs, MAP_APPFONT );
+    m_pLB_ROLE->SetTabs( lcl_pRoleListBoxTabs );
     m_pLB_ROLE->Show();
 
     updateControlsFromDialogModel();
@@ -327,7 +327,7 @@ bool DataSourceTabPage::commitPage( ::svt::WizardTypes::CommitPageReason /*eReas
     //ranges may have been edited in the meanwhile (dirty is true in that case here)
     if( isValid() )
     {
-        updateModelFromControl( 0 /*update all*/ );
+        updateModelFromControl();
         return true; //return false if this page should not be left
     }
     else
@@ -358,7 +358,7 @@ bool DataSourceTabPage::isValid()
 {
     bool bRoleRangeValid = true;
     bool bCategoriesRangeValid = true;
-    bool bHasSelectedEntry = (m_pLB_SERIES->FirstSelected() != 0);
+    bool bHasSelectedEntry = (m_pLB_SERIES->FirstSelected() != nullptr);
 
     if( bHasSelectedEntry )
         bRoleRangeValid = isRangeFieldContentValid( *m_pEDT_RANGE );
@@ -386,7 +386,7 @@ void DataSourceTabPage::updateControlsFromDialogModel()
 {
     // series
     fillSeriesListBox();
-    SeriesSelectionChangedHdl( 0 );
+    SeriesSelectionChangedHdl( nullptr );
 
     // categories
     m_pEDT_CATEGORIES->SetText( m_rDialogModel.getCategoriesRange() );
@@ -403,8 +403,8 @@ void DataSourceTabPage::fillSeriesListBox()
     if( pEntry )
         xSelected.set( pEntry->m_xDataSeries );
 
-    bool bHasSelectedEntry = (pEntry != 0);
-    SvTreeListEntry * pSelectedEntry = 0;
+    bool bHasSelectedEntry = (pEntry != nullptr);
+    SvTreeListEntry * pSelectedEntry = nullptr;
     m_pLB_SERIES->Clear();
 
     ::std::vector< DialogModel::tSeriesWithChartTypeByName > aSeries(
@@ -454,7 +454,7 @@ void DataSourceTabPage::fillSeriesListBox()
 void DataSourceTabPage::fillRoleListBox()
 {
     SeriesEntry * pSeriesEntry = dynamic_cast< SeriesEntry * >( m_pLB_SERIES->FirstSelected());
-    bool bHasSelectedEntry = (pSeriesEntry != 0);
+    bool bHasSelectedEntry = (pSeriesEntry != nullptr);
 
     SvTreeListEntry * pRoleEntry =  m_pLB_ROLE->FirstSelected();
     sal_uLong nRoleIndex = SAL_MAX_UINT32;
@@ -495,17 +495,17 @@ void DataSourceTabPage::fillRoleListBox()
 void DataSourceTabPage::updateControlState()
 {
     SvTreeListEntry * pSeriesEntry = m_pLB_SERIES->FirstSelected();
-    bool bHasSelectedSeries = (pSeriesEntry != 0);
+    bool bHasSelectedSeries = (pSeriesEntry != nullptr);
     bool bHasValidRole = false;
     bool bHasRangeChooser = m_rDialogModel.getRangeSelectionHelper()->hasRangeSelection();
 
     if( bHasSelectedSeries )
     {
         SvTreeListEntry * pRoleEntry =  m_pLB_ROLE->FirstSelected();
-        bHasValidRole = (pRoleEntry != 0);
+        bHasValidRole = (pRoleEntry != nullptr);
     }
 
-    m_pBTN_ADD->Enable( true );
+    m_pBTN_ADD->Enable();
     m_pBTN_REMOVE->Enable( bHasSelectedSeries );
 
     m_pBTN_UP->Enable( bHasSelectedSeries && (pSeriesEntry != m_pLB_SERIES->First()));
@@ -539,7 +539,7 @@ IMPL_LINK_NOARG_TYPED(DataSourceTabPage, SeriesSelectionChangedHdl, SvTreeListBo
     if( m_pLB_SERIES->FirstSelected())
     {
         fillRoleListBox();
-        RoleSelectionChangedHdl( 0 );
+        RoleSelectionChangedHdl( nullptr );
     }
     updateControlState();
 }
@@ -577,11 +577,11 @@ IMPL_LINK_NOARG_TYPED(DataSourceTabPage, MainRangeButtonClickedHdl, Button*, voi
         return;
 
     SeriesEntry * pEntry = dynamic_cast< SeriesEntry * >( m_pLB_SERIES->FirstSelected());
-    bool bHasSelectedEntry = (pEntry != 0);
+    bool bHasSelectedEntry = (pEntry != nullptr);
 
     OUString aSelectedRolesRange = lcl_GetSelectedRolesRange( *m_pLB_ROLE );
 
-    if( bHasSelectedEntry && (m_pLB_ROLE->FirstSelected() != 0))
+    if( bHasSelectedEntry && (m_pLB_ROLE->FirstSelected() != nullptr))
     {
         OUString aUIStr(SCH_RESSTR(STR_DATA_SELECT_RANGE_FOR_SERIES));
 
@@ -606,7 +606,7 @@ IMPL_LINK_NOARG_TYPED(DataSourceTabPage, MainRangeButtonClickedHdl, Button*, voi
         m_rDialogModel.getRangeSelectionHelper()->chooseRange( aSelectedRolesRange, aUIStr, *this );
     }
     else
-        m_pCurrentRangeChoosingField = 0;
+        m_pCurrentRangeChoosingField = nullptr;
 }
 
 IMPL_LINK_NOARG_TYPED(DataSourceTabPage, CategoriesRangeButtonClickedHdl, Button*, void)
@@ -658,7 +658,7 @@ IMPL_LINK_NOARG_TYPED(DataSourceTabPage, AddButtonClickedHdl, Button*, void)
         if( pNextEntry )
             m_pLB_SERIES->Select( pNextEntry );
     }
-    SeriesSelectionChangedHdl( 0 );
+    SeriesSelectionChangedHdl( nullptr );
 }
 
 IMPL_LINK_NOARG_TYPED(DataSourceTabPage, RemoveButtonClickedHdl, Button*, void)
@@ -699,7 +699,7 @@ IMPL_LINK_NOARG_TYPED(DataSourceTabPage, RemoveButtonClickedHdl, Button*, void)
                 pEntry = dynamic_cast< SeriesEntry * >( m_pLB_SERIES->Next( pEntry ));
             }
         }
-        SeriesSelectionChangedHdl( 0 );
+        SeriesSelectionChangedHdl( nullptr );
     }
 }
 
@@ -707,14 +707,14 @@ IMPL_LINK_NOARG_TYPED(DataSourceTabPage, UpButtonClickedHdl, Button*, void)
 {
     m_rDialogModel.startControllerLockTimer();
     SeriesEntry * pEntry = dynamic_cast< SeriesEntry * >( m_pLB_SERIES->FirstSelected());
-    bool bHasSelectedEntry = (pEntry != 0);
+    bool bHasSelectedEntry = (pEntry != nullptr);
 
     if( bHasSelectedEntry )
     {
         m_rDialogModel.moveSeries( pEntry->m_xDataSeries, DialogModel::MOVE_UP );
         setDirty();
         fillSeriesListBox();
-        SeriesSelectionChangedHdl(0);
+        SeriesSelectionChangedHdl(nullptr);
     }
 }
 
@@ -722,25 +722,25 @@ IMPL_LINK_NOARG_TYPED(DataSourceTabPage, DownButtonClickedHdl, Button*, void)
 {
     m_rDialogModel.startControllerLockTimer();
     SeriesEntry * pEntry = dynamic_cast< SeriesEntry * >( m_pLB_SERIES->FirstSelected());
-    bool bHasSelectedEntry = (pEntry != 0);
+    bool bHasSelectedEntry = (pEntry != nullptr);
 
     if( bHasSelectedEntry )
     {
         m_rDialogModel.moveSeries( pEntry->m_xDataSeries, DialogModel::MOVE_DOWN );
         setDirty();
         fillSeriesListBox();
-        SeriesSelectionChangedHdl(0);
+        SeriesSelectionChangedHdl(nullptr);
     }
 }
 
-IMPL_LINK( DataSourceTabPage, RangeModifiedHdl, Edit*, pEdit )
+IMPL_LINK_TYPED( DataSourceTabPage, RangeModifiedHdl, Edit&, rEdit, void )
 {
     // note: isValid sets the color of the edit field
-    if( isRangeFieldContentValid( *pEdit ))
+    if( isRangeFieldContentValid( rEdit ))
     {
         setDirty();
-        updateModelFromControl( pEdit );
-        if( pEdit == m_pEDT_RANGE )
+        updateModelFromControl( &rEdit );
+        if( &rEdit == m_pEDT_RANGE )
         {
             if( ! lcl_UpdateCurrentSeriesName( *m_pLB_SERIES ))
                 fillSeriesListBox();
@@ -749,18 +749,16 @@ IMPL_LINK( DataSourceTabPage, RangeModifiedHdl, Edit*, pEdit )
 
     // enable/disable OK button
     isValid();
-
-    return 0;
 }
 
-IMPL_LINK( DataSourceTabPage, RangeUpdateDataHdl, Edit*, pEdit )
+IMPL_LINK_TYPED( DataSourceTabPage, RangeUpdateDataHdl, Edit&, rEdit, void )
 {
     // note: isValid sets the color of the edit field
-    if( isRangeFieldContentValid( *pEdit ))
+    if( isRangeFieldContentValid( rEdit ))
     {
         setDirty();
-        updateModelFromControl( pEdit );
-        if( pEdit == m_pEDT_RANGE )
+        updateModelFromControl( &rEdit );
+        if( &rEdit == m_pEDT_RANGE )
         {
             if( ! lcl_UpdateCurrentSeriesName( *m_pLB_SERIES ))
                 fillSeriesListBox();
@@ -768,8 +766,6 @@ IMPL_LINK( DataSourceTabPage, RangeUpdateDataHdl, Edit*, pEdit )
     }
     // enable/disable OK button
     isValid();
-
-    return 0;
 }
 
 void DataSourceTabPage::listeningFinished(
@@ -807,7 +803,7 @@ void DataSourceTabPage::listeningFinished(
     if( ! lcl_UpdateCurrentSeriesName( *m_pLB_SERIES ))
         fillSeriesListBox();
 
-    m_pCurrentRangeChoosingField = 0;
+    m_pCurrentRangeChoosingField = nullptr;
 
     updateControlState();
     lcl_enableRangeChoosing( false, m_pParentDialog );
@@ -827,7 +823,7 @@ bool DataSourceTabPage::updateModelFromControl( Edit * pField )
 
     // @todo: validity check of field content
     bool bResult = true;
-    bool bAll = (pField == 0);
+    bool bAll = (pField == nullptr);
     Reference< data::XDataProvider > xDataProvider( m_rDialogModel.getDataProvider());
 
     if( bAll || (pField == m_pEDT_CATEGORIES) )
@@ -841,7 +837,7 @@ bool DataSourceTabPage::updateModelFromControl( Edit * pField )
                 // create or change categories
                 if( !xLabeledSeq.is())
                 {
-                    xLabeledSeq.set( DataSourceHelper::createLabeledDataSequence( Reference< uno::XComponentContext >(0)));
+                    xLabeledSeq.set( DataSourceHelper::createLabeledDataSequence() );
                     m_rDialogModel.setCategories( xLabeledSeq );
                 }
                 try
@@ -857,14 +853,14 @@ bool DataSourceTabPage::updateModelFromControl( Edit * pField )
             else if( xLabeledSeq.is())
             {
                 // clear existing categories
-                xLabeledSeq.set(0);
+                xLabeledSeq.set(nullptr);
                 m_rDialogModel.setCategories( xLabeledSeq );
             }
         }
     }
 
     SeriesEntry * pSeriesEntry = dynamic_cast< SeriesEntry * >( m_pLB_SERIES->FirstSelected());
-    bool bHasSelectedEntry = (pSeriesEntry != 0);
+    bool bHasSelectedEntry = (pSeriesEntry != nullptr);
 
     if( bHasSelectedEntry )
     {
@@ -896,7 +892,7 @@ bool DataSourceTabPage::updateModelFromControl( Edit * pField )
                             if( ! xLabeledSeq.is())
                             {
                                 // no corresponding labeled data sequence for label found
-                                xLabeledSeq.set( DataSourceHelper::createLabeledDataSequence( Reference< uno::XComponentContext >(0)));
+                                xLabeledSeq.set( DataSourceHelper::createLabeledDataSequence() );
                                 lcl_addLSequenceToDataSource( xLabeledSeq, xSource );
                             }
                         }
@@ -960,7 +956,7 @@ bool DataSourceTabPage::updateModelFromControl( Edit * pField )
                                         xLabeledSeq.set( lcl_findLSequenceWithOnlyLabel( xSource ));
                                     if( ! xLabeledSeq.is())
                                     {
-                                        xLabeledSeq.set( DataSourceHelper::createLabeledDataSequence( Reference< uno::XComponentContext >(0)));
+                                        xLabeledSeq.set( DataSourceHelper::createLabeledDataSequence() );
                                         lcl_addLSequenceToDataSource( xLabeledSeq, xSource );
                                     }
                                 }

@@ -54,7 +54,6 @@ class ToolPanelViewShell
     : public ViewShell
 {
 public:
-    TYPEINFO_OVERRIDE();
     SFX_DECL_INTERFACE(SD_IF_SDTOOLPANELSHELL)
 
 public:
@@ -67,30 +66,20 @@ public:
 
     using sd::ViewShell::KeyInput;
 
-    virtual SdPage* GetActualPage() SAL_OVERRIDE;
-    virtual SdPage* getCurrentPage() const SAL_OVERRIDE;
+    virtual SdPage* GetActualPage() override;
+    virtual SdPage* getCurrentPage() const override;
 
-    virtual void ArrangeGUIElements() SAL_OVERRIDE;
+    virtual void ArrangeGUIElements() override;
 
-    virtual ::com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessible>
-        CreateAccessibleDocumentView (::sd::Window* pWindow) SAL_OVERRIDE;
+    virtual css::uno::Reference<css::accessibility::XAccessible>
+        CreateAccessibleDocumentView (::sd::Window* pWindow) override;
 
-    virtual css::uno::Reference<css::drawing::XDrawSubController> CreateSubController() SAL_OVERRIDE;
+    virtual css::uno::Reference<css::drawing::XDrawSubController> CreateSubController() override;
 
     /** Relocate all toplevel controls to the given parent window.
     */
-    virtual bool RelocateToParentWindow (vcl::Window* pParentWindow) SAL_OVERRIDE;
+    virtual bool RelocateToParentWindow (vcl::Window* pParentWindow) override;
 
-private:
-    std::unique_ptr< ToolPanelViewShell_Impl >   mpImpl;
-
-    std::shared_ptr<TaskPaneShellManager> mpSubShellManager;
-
-    /** The id of the menu in the menu bar/tool box of the parent docking
-        window.
-    */
-    sal_uInt16 mnMenuId;
 };
 
 } } // end of namespace ::sd::toolpanel

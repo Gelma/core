@@ -20,7 +20,6 @@
 #ifndef INCLUDED_FRAMEWORK_INC_HELPER_VCLSTATUSINDICATOR_HXX
 #define INCLUDED_FRAMEWORK_INC_HELPER_VCLSTATUSINDICATOR_HXX
 
-#include <macros/generic.hxx>
 #include <macros/xinterface.hxx>
 #include <general.h>
 
@@ -76,19 +75,19 @@ class VCLStatusIndicator : public  ::cppu::WeakImplHelper< css::task::XStatusInd
         /// XStatusIndicator
         virtual void SAL_CALL start(const OUString& sText ,
                                           sal_Int32        nRange)
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 
         virtual void SAL_CALL reset()
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 
         virtual void SAL_CALL end()
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 
         virtual void SAL_CALL setText(const OUString& sText)
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 
         virtual void SAL_CALL setValue(sal_Int32 nValue)
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 
     // helper
 

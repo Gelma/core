@@ -100,7 +100,7 @@ const SwTextAttr* GetFrwrdTextHint( const SwpHints& rHtsArr, sal_uInt16& rPos,
         if( pTextHt->GetStart() >= nContentPos )
             return pTextHt; // valid text attribute
     }
-    return 0; // invalid text attribute
+    return nullptr; // invalid text attribute
 }
 
 const SwTextAttr* GetBkwrdTextHint( const SwpHints& rHtsArr, sal_uInt16& rPos,
@@ -113,7 +113,7 @@ const SwTextAttr* GetBkwrdTextHint( const SwpHints& rHtsArr, sal_uInt16& rPos,
         if( pTextHt->GetStart() < nContentPos )
             return pTextHt; // valid text attribute
     }
-    return 0; // invalid text attribute
+    return nullptr; // invalid text attribute
 }
 
 static void lcl_SetAttrPam( SwPaM& rPam, sal_Int32 nStart, const sal_Int32* pEnd,
@@ -161,12 +161,12 @@ static bool lcl_Search( const SwTextNode& rTextNd, SwPaM& rPam,
     if ( !rTextNd.HasHints() )
         return false;
 
-    const SwTextAttr *pTextHt = 0;
+    const SwTextAttr *pTextHt = nullptr;
     bool bForward = fnMove == fnMoveForward;
     sal_uInt16 nPos = bForward ? 0 : rTextNd.GetSwpHints().Count();
     sal_Int32 nContentPos = rPam.GetPoint()->nContent.GetIndex();
 
-    while( 0 != ( pTextHt=(*fnMove->fnGetHint)(rTextNd.GetSwpHints(),nPos,nContentPos)))
+    while( nullptr != ( pTextHt=(*fnMove->fnGetHint)(rTextNd.GetSwpHints(),nPos,nContentPos)))
         if( pTextHt->Which() == rCmpItem.Which() &&
             ( !bValue || CmpAttr( pTextHt->GetAttr(), rCmpItem )))
         {
@@ -346,14 +346,14 @@ bool SwAttrCheckArr::SetAttrFwd( const SwTextAttr& rAttr )
     const SfxPoolItem* pItem;
     // here we explicitly also search in character templates
     sal_uInt16 nWhch = rAttr.Which();
-    SfxWhichIter* pIter = NULL;
-    const SfxPoolItem* pTmpItem = NULL;
-    const SfxItemSet* pSet = NULL;
+    SfxWhichIter* pIter = nullptr;
+    const SfxPoolItem* pTmpItem = nullptr;
+    const SfxItemSet* pSet = nullptr;
     if( RES_TXTATR_CHARFMT == nWhch || RES_TXTATR_AUTOFMT == nWhch )
     {
         if( bNoColls && RES_TXTATR_CHARFMT == nWhch )
             return Found();
-        pTmpItem = NULL;
+        pTmpItem = nullptr;
         pSet = CharFormat::GetItemSet( rAttr.GetAttr() );
         if ( pSet )
         {
@@ -363,7 +363,7 @@ bool SwAttrCheckArr::SetAttrFwd( const SwTextAttr& rAttr )
                 SfxItemState::SET != pSet->GetItemState( nWhch, true, &pTmpItem ) )
                 nWhch = pIter->NextWhich();
             if( !nWhch )
-                pTmpItem = NULL;
+                pTmpItem = nullptr;
         }
     }
     else
@@ -499,9 +499,9 @@ bool SwAttrCheckArr::SetAttrBwd( const SwTextAttr& rAttr )
     const SfxPoolItem* pItem;
     // here we explicitly also search in character templates
     sal_uInt16 nWhch = rAttr.Which();
-    SfxWhichIter* pIter = NULL;
-    const SfxPoolItem* pTmpItem = NULL;
-    const SfxItemSet* pSet = NULL;
+    SfxWhichIter* pIter = nullptr;
+    const SfxPoolItem* pTmpItem = nullptr;
+    const SfxItemSet* pSet = nullptr;
     if( RES_TXTATR_CHARFMT == nWhch || RES_TXTATR_AUTOFMT == nWhch )
     {
         if( bNoColls && RES_TXTATR_CHARFMT == nWhch )
@@ -516,7 +516,7 @@ bool SwAttrCheckArr::SetAttrBwd( const SwTextAttr& rAttr )
                 SfxItemState::SET != pSet->GetItemState( nWhch, true, &pTmpItem ) )
                 nWhch = pIter->NextWhich();
             if( !nWhch )
-                pTmpItem = NULL;
+                pTmpItem = nullptr;
         }
     }
     else
@@ -910,7 +910,7 @@ bool SwPaM::Find( const SfxPoolItem& rAttr, bool bValue, SwMoveFn fnMove,
         pPam->GetPoint()->nContent.Assign( pNd, bSrchForward ? 0 : pNd->Len() );
     }
 
-    while( 0 != ( pNode = ::GetNode( *pPam, bFirst, fnMove, bInReadOnly ) ) )
+    while( nullptr != ( pNode = ::GetNode( *pPam, bFirst, fnMove, bInReadOnly ) ) )
     {
         if( bCharAttr )
         {
@@ -998,7 +998,7 @@ bool SwPaM::Find( const SfxItemSet& rSet, bool bNoColls, SwMoveFn fnMove,
         pPam->GetPoint()->nContent.Assign( pNd, bSrchForward ? 0 : pNd->Len() );
     }
 
-    while( 0 != ( pNode = ::GetNode( *pPam, bFirst, fnMove, bInReadOnly ) ) )
+    while( nullptr != ( pNode = ::GetNode( *pPam, bFirst, fnMove, bInReadOnly ) ) )
     {
         if( aCmpArr.Count() )
         {
@@ -1057,22 +1057,22 @@ struct SwFindParaAttr : public SwFindParas
     bool bValue;
     const SfxItemSet *pSet, *pReplSet;
     const SearchOptions *pSearchOpt;
-    SwCursor& rCursor;
+    SwCursor& m_rCursor;
     utl::TextSearch* pSText;
 
     SwFindParaAttr( const SfxItemSet& rSet, bool bNoCollection,
                     const SearchOptions* pOpt, const SfxItemSet* pRSet,
-                    SwCursor& rCrsr )
+                    SwCursor& rCursor )
         : bValue( bNoCollection ), pSet( &rSet ), pReplSet( pRSet ),
-          pSearchOpt( pOpt ), rCursor( rCrsr ),pSText( 0 ) {}
+          pSearchOpt( pOpt ), m_rCursor( rCursor ),pSText( nullptr ) {}
 
     virtual ~SwFindParaAttr()   { delete pSText; }
 
-    virtual int Find( SwPaM* , SwMoveFn , const SwPaM*, bool bInReadOnly ) SAL_OVERRIDE;
-    virtual bool IsReplaceMode() const SAL_OVERRIDE;
+    virtual int Find( SwPaM* , SwMoveFn , const SwPaM*, bool bInReadOnly ) override;
+    virtual bool IsReplaceMode() const override;
 };
 
-int SwFindParaAttr::Find( SwPaM* pCrsr, SwMoveFn fnMove, const SwPaM* pRegion,
+int SwFindParaAttr::Find( SwPaM* pCursor, SwMoveFn fnMove, const SwPaM* pRegion,
                           bool bInReadOnly )
 {
     // replace string (only if text given and search is not parameterized)?
@@ -1087,7 +1087,7 @@ int SwFindParaAttr::Find( SwPaM* pCrsr, SwMoveFn fnMove, const SwPaM* pRegion,
     {
         SwPaM aRegion( *pRegion->GetMark(), *pRegion->GetPoint() );
         SwPaM* pTextRegion = &aRegion;
-        SwPaM aSrchPam( *pCrsr->GetPoint() );
+        SwPaM aSrchPam( *pCursor->GetPoint() );
 
         while( true )
         {
@@ -1133,16 +1133,16 @@ int SwFindParaAttr::Find( SwPaM* pCrsr, SwMoveFn fnMove, const SwPaM* pRegion,
             *aRegion.GetMark() = *aSrchPam.GetPoint();
         }
 
-        *pCrsr->GetPoint() = *aSrchPam.GetPoint();
-        pCrsr->SetMark();
-        *pCrsr->GetMark() = *aSrchPam.GetMark();
+        *pCursor->GetPoint() = *aSrchPam.GetPoint();
+        pCursor->SetMark();
+        *pCursor->GetMark() = *aSrchPam.GetMark();
     }
 
     if( bReplaceText )
     {
         const bool bRegExp(
                 SearchAlgorithms_REGEXP == pSearchOpt->algorithmType);
-        SwIndex& rSttCntIdx = pCrsr->Start()->nContent;
+        SwIndex& rSttCntIdx = pCursor->Start()->nContent;
         const sal_Int32 nSttCnt = rSttCntIdx.GetIndex();
 
         // add to shell-cursor-ring so that the regions will be moved eventually
@@ -1150,15 +1150,15 @@ int SwFindParaAttr::Find( SwPaM* pCrsr, SwMoveFn fnMove, const SwPaM* pRegion,
         if( bRegExp )
         {
             pPrevRing = const_cast< SwPaM* >(pRegion)->GetPrev();
-            const_cast< SwPaM* >(pRegion)->GetRingContainer().merge( rCursor.GetRingContainer() );
+            const_cast< SwPaM* >(pRegion)->GetRingContainer().merge( m_rCursor.GetRingContainer() );
         }
 
         std::unique_ptr<OUString> pRepl( (bRegExp) ?
-                ReplaceBackReferences( *pSearchOpt, pCrsr ) : 0 );
-        rCursor.GetDoc()->getIDocumentContentOperations().ReplaceRange( *pCrsr,
+                ReplaceBackReferences( *pSearchOpt, pCursor ) : nullptr );
+        m_rCursor.GetDoc()->getIDocumentContentOperations().ReplaceRange( *pCursor,
             (pRepl.get()) ? *pRepl : pSearchOpt->replaceString,
             bRegExp );
-        rCursor.SaveTableBoxContent( pCrsr->GetPoint() );
+        m_rCursor.SaveTableBoxContent( pCursor->GetPoint() );
 
         if( bRegExp )
         {
@@ -1181,7 +1181,7 @@ int SwFindParaAttr::Find( SwPaM* pCrsr, SwMoveFn fnMove, const SwPaM* pRegion,
         // they are not in ReplaceSet
         if( !pSet->Count() )
         {
-            pCrsr->GetDoc()->getIDocumentContentOperations().InsertItemSet( *pCrsr, *pReplSet );
+            pCursor->GetDoc()->getIDocumentContentOperations().InsertItemSet( *pCursor, *pReplSet );
         }
         else
         {
@@ -1202,7 +1202,7 @@ int SwFindParaAttr::Find( SwPaM* pCrsr, SwMoveFn fnMove, const SwPaM* pRegion,
                 pItem = aIter.NextItem();
             }
             aSet.Put( *pReplSet );
-            pCrsr->GetDoc()->getIDocumentContentOperations().InsertItemSet( *pCrsr, aSet );
+            pCursor->GetDoc()->getIDocumentContentOperations().InsertItemSet( *pCursor, aSet );
         }
 
         return FIND_NO_RING;
@@ -1235,7 +1235,7 @@ sal_uLong SwCursor::Find( const SfxItemSet& rSet, bool bNoCollections,
     bool const bStartUndo = pDoc->GetIDocumentUndoRedo().DoesUndo() && bReplace;
     if (bStartUndo)
     {
-        pDoc->GetIDocumentUndoRedo().StartUndo( UNDO_REPLACE, NULL );
+        pDoc->GetIDocumentUndoRedo().StartUndo( UNDO_REPLACE, nullptr );
     }
 
     SwFindParaAttr aSwFindParaAttr( rSet, bNoCollections, pSearchOpt,
@@ -1248,7 +1248,7 @@ sal_uLong SwCursor::Find( const SfxItemSet& rSet, bool bNoCollections,
 
     if (bStartUndo)
     {
-        pDoc->GetIDocumentUndoRedo().EndUndo( UNDO_REPLACE, NULL );
+        pDoc->GetIDocumentUndoRedo().EndUndo( UNDO_REPLACE, nullptr );
     }
 
     return nRet;

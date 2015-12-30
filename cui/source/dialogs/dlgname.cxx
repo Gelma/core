@@ -41,7 +41,7 @@ SvxNameDialog::SvxNameDialog( vcl::Window* pWindow, const OUString& rName, const
     pFtDescription->SetText( rDesc );
     pEdtName->SetText( rName );
     pEdtName->SetSelection(Selection(SELECTION_MIN, SELECTION_MAX));
-    ModifyHdl(pEdtName.get());
+    ModifyHdl(*pEdtName.get());
     pEdtName->SetModifyHdl(LINK(this, SvxNameDialog, ModifyHdl));
 }
 
@@ -58,11 +58,10 @@ void SvxNameDialog::dispose()
     ModalDialog::dispose();
 }
 
-IMPL_LINK_NOARG(SvxNameDialog, ModifyHdl)
+IMPL_LINK_NOARG_TYPED(SvxNameDialog, ModifyHdl, Edit&, void)
 {
     if(aCheckNameHdl.IsSet())
         pBtnOK->Enable(aCheckNameHdl.Call(*this));
-    return 0;
 }
 
 
@@ -82,7 +81,7 @@ SvxObjectNameDialog::SvxObjectNameDialog(
 
     // activate name
     pEdtName->SetSelection(Selection(SELECTION_MIN, SELECTION_MAX));
-    ModifyHdl(pEdtName.get());
+    ModifyHdl(*pEdtName.get());
     pEdtName->SetModifyHdl(LINK(this, SvxObjectNameDialog, ModifyHdl));
 }
 
@@ -99,14 +98,12 @@ void SvxObjectNameDialog::dispose()
 }
 
 
-IMPL_LINK_NOARG(SvxObjectNameDialog, ModifyHdl)
+IMPL_LINK_NOARG_TYPED(SvxObjectNameDialog, ModifyHdl, Edit&, void)
 {
     if(aCheckNameHdl.IsSet())
     {
         pBtnOK->Enable(aCheckNameHdl.Call(*this));
     }
-
-    return 0;
 }
 
 
@@ -152,7 +149,7 @@ void SvxObjectTitleDescDialog::dispose()
 
 SvxMessDialog::SvxMessDialog( vcl::Window* pWindow, const OUString& rText, const OUString& rDesc, Image* pImg )
     : ModalDialog(pWindow, "MessBox", "cui/ui/messbox.ui")
-    , pImage(NULL)
+    , pImage(nullptr)
 {
     get(pBtn1, "mess_box_btn1");
     get(pBtn2, "mess_box_btn2");
@@ -181,7 +178,7 @@ SvxMessDialog::~SvxMessDialog()
 void SvxMessDialog::dispose()
 {
     delete pImage;
-    pImage = NULL;
+    pImage = nullptr;
     pFtDescription.clear();
     pBtn1.clear();
     pBtn2.clear();

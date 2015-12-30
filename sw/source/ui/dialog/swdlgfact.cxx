@@ -164,10 +164,10 @@ OUString AbstractTabDialog_Impl::GetText() const
 IMPL_LINK_NOARG_TYPED(AbstractApplyTabDialog_Impl, ApplyHdl, Button*, void)
 {
     if (pDlg->Apply())
-        m_aHandler.Call(NULL);
+        m_aHandler.Call(nullptr);
 }
 
-void AbstractApplyTabDialog_Impl::SetApplyHdl( const Link<>& rLink )
+void AbstractApplyTabDialog_Impl::SetApplyHdl( const Link<LinkParamNone*,void>& rLink )
 {
     m_aHandler = rLink;
     pDlg->SetApplyHandler(LINK(this, AbstractApplyTabDialog_Impl, ApplyHdl));
@@ -383,8 +383,8 @@ void AbstractSwRenameXNamedDlg_Impl::SetForbiddenChars( const OUString& rSet )
 }
 
 void    AbstractSwRenameXNamedDlg_Impl::SetAlternativeAccess(
-             ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameAccess > & xSecond,
-             ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameAccess > & xThird )
+             css::uno::Reference< css::container::XNameAccess > & xSecond,
+             css::uno::Reference< css::container::XNameAccess > & xThird )
 {
     pDlg->SetAlternativeAccess( xSecond, xThird);
 }
@@ -486,7 +486,7 @@ const OUString& AbstractMailMergeDlg_Impl::GetSaveFilter() const
     return pDlg->GetSaveFilter();
 }
 
-const ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any > AbstractMailMergeDlg_Impl::GetSelection() const
+const css::uno::Sequence< css::uno::Any > AbstractMailMergeDlg_Impl::GetSelection() const
 {
     return pDlg->GetSelection();
 }
@@ -592,7 +592,7 @@ AbstractMailMergeWizard_Impl::~AbstractMailMergeWizard_Impl()
     pDlg.disposeAndClear();
 }
 
-void AbstractMailMergeWizard_Impl::StartExecuteModal( const Link<>& rEndDialogHdl )
+void AbstractMailMergeWizard_Impl::StartExecuteModal( const Link<Dialog&,void>& rEndDialogHdl )
 {
     aEndDlgHdl = rEndDialogHdl;
     pDlg->StartExecuteModal(
@@ -604,15 +604,13 @@ long AbstractMailMergeWizard_Impl::GetResult()
     return pDlg->GetResult();
 }
 
-IMPL_LINK( AbstractMailMergeWizard_Impl, EndDialogHdl, SwMailMergeWizard*, pDialog )
+IMPL_LINK_TYPED( AbstractMailMergeWizard_Impl, EndDialogHdl, Dialog&, rDialog, void )
 {
-    OSL_ENSURE( pDialog == pDlg, "wrong dialog passed to EndDialogHdl!" );
-    (void) pDialog; // unused in non-debug
+    OSL_ENSURE( &rDialog == pDlg, "wrong dialog passed to EndDialogHdl!" );
+    (void) rDialog; // unused in non-debug
 
-    aEndDlgHdl.Call( this );
-    aEndDlgHdl = Link<>();
-
-    return 0L;
+    aEndDlgHdl.Call( *pDlg );
+    aEndDlgHdl = Link<Dialog&,void>();
 }
 
 OUString AbstractMailMergeWizard_Impl::GetReloadDocument() const
@@ -637,12 +635,12 @@ AbstractSwInsertAbstractDlg * SwAbstractDialogFactory_Impl::CreateSwInsertAbstra
 }
 
 SfxAbstractDialog* SwAbstractDialogFactory_Impl::CreateSfxDialog( vcl::Window* pParent,
-                                                                        const SfxItemSet& rSet,
-                                    const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >&,
-                                                                        sal_uInt32 nResId
+                                                                  const SfxItemSet& rSet,
+                                                                  const css::uno::Reference< css::frame::XFrame >&,
+                                                                  sal_uInt32 nResId
                                                                 )
 {
-    SfxModalDialog* pDlg=NULL;
+    SfxModalDialog* pDlg=nullptr;
     switch ( nResId )
     {
         case RC_DLG_ADDR :
@@ -663,7 +661,7 @@ SfxAbstractDialog* SwAbstractDialogFactory_Impl::CreateSfxDialog( vcl::Window* p
 
     if ( pDlg )
         return new SwAbstractSfxDialog_Impl( pDlg );
-    return 0;
+    return nullptr;
 }
 
 AbstractSwAsciiFilterDlg* SwAbstractDialogFactory_Impl::CreateSwAsciiFilterDlg( vcl::Window* pParent,
@@ -679,7 +677,7 @@ VclAbstractDialog* SwAbstractDialogFactory_Impl::CreateSwInsertBookmarkDlg( vcl:
                                                                            SfxRequest& rReq,
                                                                            int nResId )
 {
-    Dialog* pDlg=NULL;
+    Dialog* pDlg=nullptr;
     switch ( nResId )
     {
         case DLG_INSERT_BOOKMARK :
@@ -692,7 +690,7 @@ VclAbstractDialog* SwAbstractDialogFactory_Impl::CreateSwInsertBookmarkDlg( vcl:
 
     if ( pDlg )
         return new VclAbstractDialog_Impl( pDlg );
-    return 0;
+    return nullptr;
 }
 
 AbstractSwBreakDlg * SwAbstractDialogFactory_Impl::CreateSwBreakDlg(vcl::Window *pParent,
@@ -736,7 +734,7 @@ VclAbstractDialog * SwAbstractDialogFactory_Impl::CreateSwCaptionDialog ( vcl::W
 
     if ( pDlg.get() )
         return new VclAbstractDialog_Impl( pDlg );
-    return 0;
+    return nullptr;
 }
 
 AbstractSwInsertDBColAutoPilot* SwAbstractDialogFactory_Impl::CreateSwInsertDBColAutoPilot( SwView& rView,
@@ -815,7 +813,7 @@ VclAbstractDialog * SwAbstractDialogFactory_Impl::CreateVclAbstractDialog ( vcl:
 
     if ( pDlg.get() )
         return new VclAbstractDialog_Impl( pDlg );
-    return 0;
+    return nullptr;
 }
 
 AbstractSplitTableDialog * SwAbstractDialogFactory_Impl::CreateSplitTableDialog ( vcl::Window *pParent, SwWrtShell &rSh )
@@ -850,7 +848,7 @@ SfxAbstractDialog * SwAbstractDialogFactory_Impl::CreateSwBorderDlg(vcl::Window*
 
     if ( pDlg.get() )
         return new SwAbstractSfxDialog_Impl( pDlg );
-    return 0;
+    return nullptr;
 }
 
 SfxAbstractDialog* SwAbstractDialogFactory_Impl::CreateSwWrapDlg ( vcl::Window* pParent, SfxItemSet& rSet, SwWrtShell* pSh, bool bDrawMode, int nResId )
@@ -867,7 +865,7 @@ SfxAbstractDialog* SwAbstractDialogFactory_Impl::CreateSwWrapDlg ( vcl::Window* 
 
     if ( pDlg.get() )
         return new SwAbstractSfxDialog_Impl( pDlg );
-    return 0;
+    return nullptr;
 }
 
 VclAbstractDialog * SwAbstractDialogFactory_Impl::CreateSwTableWidthDlg(vcl::Window *pParent, SwTableFUNC &rFnc)
@@ -903,12 +901,12 @@ SfxAbstractDialog*   SwAbstractDialogFactory_Impl::CreateSwFieldEditDlg ( SwView
 
     if ( pDlg.get() )
         return new SwAbstractSfxDialog_Impl( pDlg );
-    return 0;
+    return nullptr;
 }
 
 AbstractSwRenameXNamedDlg * SwAbstractDialogFactory_Impl::CreateSwRenameXNamedDlg(vcl::Window* pParent,
-    ::com::sun::star::uno::Reference< ::com::sun::star::container::XNamed > & xNamed,
-    ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameAccess > & xNameAccess)
+    css::uno::Reference< css::container::XNamed > & xNamed,
+    css::uno::Reference< css::container::XNameAccess > & xNameAccess)
 {
     VclPtr<SwRenameXNamedDlg> pDlg = VclPtr<SwRenameXNamedDlg>::Create( pParent,xNamed, xNameAccess);
     return new AbstractSwRenameXNamedDlg_Impl( pDlg );
@@ -926,15 +924,15 @@ VclAbstractDialog * SwAbstractDialogFactory_Impl::CreateTableMergeDialog(vcl::Wi
     return new VclAbstractDialog_Impl( pDlg );
 }
 
-SfxAbstractTabDialog* SwAbstractDialogFactory_Impl::CreateFrmTabDialog(const OUString &rDialogType,
+SfxAbstractTabDialog* SwAbstractDialogFactory_Impl::CreateFrameTabDialog(const OUString &rDialogType,
                                                 SfxViewFrame *pFrame, vcl::Window *pParent,
                                                 const SfxItemSet& rCoreSet,
-                                                bool        bNewFrm,
+                                                bool        bNewFrame,
                                                 bool        bFormat,
                                                 const OString&  sDefPage,
                                                 const OUString* pFormatStr )
 {
-    VclPtr<SfxTabDialog> pDlg = VclPtr<SwFrmDlg>::Create(pFrame, pParent, rCoreSet, bNewFrm, rDialogType, bFormat, sDefPage, pFormatStr);
+    VclPtr<SfxTabDialog> pDlg = VclPtr<SwFrameDlg>::Create(pFrame, pParent, rCoreSet, bNewFrame, rDialogType, bFormat, sDefPage, pFormatStr);
     return new AbstractTabDialog_Impl(pDlg);
 }
 
@@ -1016,7 +1014,7 @@ AbstractMailMergeDlg * SwAbstractDialogFactory_Impl::CreateMailMergeDlg( int nRe
     }
     if ( pDlg.get() )
         return new AbstractMailMergeDlg_Impl( pDlg );
-    return 0;
+    return nullptr;
 }
 
 AbstractMailMergeCreateFromDlg * SwAbstractDialogFactory_Impl::CreateMailMergeCreateFromDlg(vcl::Window* pParent)
@@ -1057,7 +1055,7 @@ SfxAbstractTabDialog* SwAbstractDialogFactory_Impl::CreateSwTabDialog( int nResI
     }
     if ( pDlg.get() )
         return new AbstractTabDialog_Impl( pDlg );
-    return 0;
+    return nullptr;
 }
 
 AbstractMultiTOXTabDialog * SwAbstractDialogFactory_Impl::CreateMultiTOXTabDialog(
@@ -1141,7 +1139,7 @@ GlossarySetActGroup SwAbstractDialogFactory_Impl::SetGlossaryActGroupFunc()
 // Factories for TabPages
 CreateTabPage SwAbstractDialogFactory_Impl::GetTabPageCreatorFunc( sal_uInt16 nId )
 {
-    CreateTabPage pRet = 0;
+    CreateTabPage pRet = nullptr;
     switch ( nId )
     {
         case RID_SW_TP_OPTCOMPATIBILITY_PAGE :
@@ -1158,7 +1156,7 @@ CreateTabPage SwAbstractDialogFactory_Impl::GetTabPageCreatorFunc( sal_uInt16 nI
             break;
         case RID_SW_TP_OPTSHDWCRSR:
         case RID_SW_TP_HTML_OPTSHDWCRSR:
-            pRet = SwShdwCrsrOptionsTabPage::Create;
+            pRet = SwShdwCursorOptionsTabPage::Create;
             break;
         case RID_SW_TP_REDLINE_OPT :
             pRet = SwRedlineOptionsTabPage::Create;

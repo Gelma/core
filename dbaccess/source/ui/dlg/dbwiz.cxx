@@ -68,10 +68,7 @@ ODbTypeWizDialog::ODbTypeWizDialog(vcl::Window* _pParent
                                ,const css::uno::Any& _aDataSourceName
                                )
     :OWizardMachine(_pParent, WizardButtonFlags::NEXT | WizardButtonFlags::PREVIOUS | WizardButtonFlags::FINISH | WizardButtonFlags::CANCEL | WizardButtonFlags::HELP )
-    ,m_pOutSet(NULL)
-    ,m_bResetting(false)
-    ,m_bApplied(false)
-    ,m_bUIEnabled( true )
+    ,m_pOutSet(nullptr)
 {
     m_pImpl.reset(new ODbDataSourceAdministrationHelper(_rxORB,this,this));
     m_pImpl->setDataSourceOrName(_aDataSourceName);

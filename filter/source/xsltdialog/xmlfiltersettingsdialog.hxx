@@ -43,16 +43,16 @@ private:
     VclPtr<HeaderBar> m_pHeaderBar;
     VclPtr<XMLFilterListBox> m_pFocusCtrl;
 protected:
-    virtual void Resize() SAL_OVERRIDE;
-    virtual Size GetOptimalSize() const SAL_OVERRIDE;
+    virtual void Resize() override;
+    virtual Size GetOptimalSize() const override;
 public:
-    SvxPathControl(vcl::Window* pParent);
+    explicit SvxPathControl(vcl::Window* pParent);
     HeaderBar* getHeaderBar() { return m_pHeaderBar; }
     XMLFilterListBox* getListBox() { return m_pFocusCtrl; }
     virtual ~SvxPathControl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual bool Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual bool Notify( NotifyEvent& rNEvt ) override;
 };
 
 class HeaderBar;
@@ -70,14 +70,14 @@ private:
 public:
     XMLFilterListBox(Window* pParent, SvxPathControl* pPathControl);
     virtual ~XMLFilterListBox();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     /** adds a new filter info entry to the ui filter list */
     void addFilterEntry( const filter_info_impl* pInfo );
 
     void changeEntry( const filter_info_impl* pInfo );
 
-    virtual void    Paint( vcl::RenderContext& rRenderContext, const Rectangle& rRect ) SAL_OVERRIDE;
+    virtual void    Paint( vcl::RenderContext& rRenderContext, const Rectangle& rRect ) override;
 };
 
 
@@ -86,16 +86,16 @@ class XMLFilterSettingsDialog : public ModelessDialog
 {
 public:
     XMLFilterSettingsDialog(vcl::Window* pParent,
-        const com::sun::star::uno::Reference< com::sun::star::uno::XComponentContext >& rxContext,
+        const css::uno::Reference< css::uno::XComponentContext >& rxContext,
         Dialog::InitFlag eFlag = Dialog::InitFlag::Default);
     virtual ~XMLFilterSettingsDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     DECL_LINK_TYPED(ClickHdl_Impl, Button *, void );
     DECL_LINK_TYPED(SelectionChangedHdl_Impl, SvTreeListBox*, void );
     DECL_LINK_TYPED(DoubleClickHdl_Impl, SvTreeListBox*, bool );
 
-    virtual short Execute() SAL_OVERRIDE;
+    virtual short Execute() override;
 
     void    onNew();
     void    onEdit();
@@ -107,7 +107,7 @@ public:
 
     void    updateStates();
 
-    virtual bool Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual bool Notify( NotifyEvent& rNEvt ) override;
 
     bool    isClosable() { return m_bIsClosable;}
 
@@ -115,7 +115,7 @@ private:
     void    initFilterList();
     void    disposeFilterList();
 
-    bool    insertOrEdit( filter_info_impl* pNewInfo, const filter_info_impl* pOldInfo = NULL );
+    bool    insertOrEdit( filter_info_impl* pNewInfo, const filter_info_impl* pOldInfo = nullptr );
 
     OUString createUniqueFilterName( const OUString& rUIName );
     OUString createUniqueTypeName( const OUString& rTypeName );
@@ -123,10 +123,10 @@ private:
 
 private:
 
-    com::sun::star::uno::Reference< com::sun::star::uno::XComponentContext > mxContext;
-    com::sun::star::uno::Reference< com::sun::star::container::XNameContainer > mxFilterContainer;
-    com::sun::star::uno::Reference< com::sun::star::container::XNameContainer > mxTypeDetection;
-    com::sun::star::uno::Reference< com::sun::star::container::XNameContainer > mxExtendedTypeDetection;
+    css::uno::Reference< css::uno::XComponentContext >    mxContext;
+    css::uno::Reference< css::container::XNameContainer > mxFilterContainer;
+    css::uno::Reference< css::container::XNameContainer > mxTypeDetection;
+    css::uno::Reference< css::container::XNameContainer > mxExtendedTypeDetection;
 
     std::vector< filter_info_impl* > maFilterVector;
 

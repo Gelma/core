@@ -48,10 +48,10 @@ class SmParser
     std::set< OUString >   m_aUsedSymbols;
 
     //! locale where '.' is decimal separator!
-    ::com::sun::star::lang::Locale m_aDotLoc;
+    css::lang::Locale m_aDotLoc;
 
-    SmParser(const SmParser&) SAL_DELETED_FUNCTION;
-    SmParser& operator=(const SmParser&) SAL_DELETED_FUNCTION;
+    SmParser(const SmParser&) = delete;
+    SmParser& operator=(const SmParser&) = delete;
 
 #if OSL_DEBUG_LEVEL > 1
     bool            IsDelimiter( const OUString &rTxt, sal_Int32 nPos );

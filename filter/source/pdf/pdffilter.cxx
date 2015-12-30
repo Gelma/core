@@ -157,7 +157,7 @@ public:
 IMPL_LINK_TYPED( FocusWindowWaitCursor, DestroyedLink, VclWindowEvent&, rEvent, void )
 {
     if( rEvent.GetId() == VCLEVENT_OBJECT_DYING )
-        m_pFocusWindow = NULL;
+        m_pFocusWindow = nullptr;
 }
 
 sal_Bool SAL_CALL PDFFilter::filter( const Sequence< PropertyValue >& rDescriptor )
@@ -186,7 +186,7 @@ void SAL_CALL PDFFilter::setSourceDocument( const Reference< XComponent >& xDoc 
 
 
 
-void SAL_CALL PDFFilter::initialize( const ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any >& )
+void SAL_CALL PDFFilter::initialize( const css::uno::Sequence< css::uno::Any >& )
     throw (Exception, RuntimeException, std::exception)
 {
 }
@@ -199,9 +199,7 @@ OUString PDFFilter_getImplementationName ()
 
 Sequence< OUString > SAL_CALL PDFFilter_getSupportedServiceNames(  ) throw (RuntimeException)
 {
-    Sequence < OUString > aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.document.PDFFilter";
+    Sequence<OUString> aRet { "com.sun.star.document.PDFFilter" };
     return aRet;
 }
 
@@ -228,7 +226,7 @@ sal_Bool SAL_CALL PDFFilter::supportsService( const OUString& rServiceName )
 
 
 
-::com::sun::star::uno::Sequence< OUString > SAL_CALL PDFFilter::getSupportedServiceNames(  ) throw (RuntimeException, std::exception)
+css::uno::Sequence< OUString > SAL_CALL PDFFilter::getSupportedServiceNames(  ) throw (RuntimeException, std::exception)
 {
     return PDFFilter_getSupportedServiceNames();
 }

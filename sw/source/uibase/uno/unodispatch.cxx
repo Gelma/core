@@ -43,7 +43,7 @@ SwXDispatchProviderInterceptor::SwXDispatchProviderInterceptor(SwView& rVw) :
     m_pView(&rVw)
 {
     uno::Reference< frame::XFrame> xUnoFrame = m_pView->GetViewFrame()->GetFrame().GetFrameInterface();
-    m_xIntercepted = uno::Reference< frame::XDispatchProviderInterception>(xUnoFrame, uno::UNO_QUERY);
+    m_xIntercepted.set(xUnoFrame, uno::UNO_QUERY);
     if(m_xIntercepted.is())
     {
         m_refCount++;
@@ -141,9 +141,9 @@ void SwXDispatchProviderInterceptor::disposing( const lang::EventObject& )
         uno::Reference< lang::XComponent> xInterceptedComponent(m_xIntercepted, uno::UNO_QUERY);
         if (xInterceptedComponent.is())
             xInterceptedComponent->removeEventListener(static_cast<lang::XEventListener*>(this));
-        m_xDispatch       = 0;
+        m_xDispatch       = nullptr;
     }
-    m_xIntercepted = NULL;
+    m_xIntercepted = nullptr;
 }
 
 namespace
@@ -178,10 +178,10 @@ void    SwXDispatchProviderInterceptor::Invalidate()
         uno::Reference< lang::XComponent> xInterceptedComponent(m_xIntercepted, uno::UNO_QUERY);
         if (xInterceptedComponent.is())
             xInterceptedComponent->removeEventListener(static_cast<lang::XEventListener*>(this));
-        m_xDispatch       = 0;
+        m_xDispatch       = nullptr;
     }
-    m_xIntercepted = NULL;
-    m_pView = 0;
+    m_xIntercepted = nullptr;
+    m_pView = nullptr;
 }
 
 SwXDispatch::SwXDispatch(SwView& rVw) :
@@ -380,7 +380,7 @@ void SwXDispatch::disposing( const lang::EventObject& rSource ) throw(uno::Runti
         StatusStruct_Impl aStatus = *aListIter;
         aStatus.xListener->disposing(aObject);
     }
-    m_pView = 0;
+    m_pView = nullptr;
 }
 
 const sal_Char* SwXDispatch::GetDBChangeURL()

@@ -144,17 +144,14 @@ SvxSpellWrapper::~SvxSpellWrapper()
  --------------------------------------------------------------------*/
 
 SvxSpellWrapper::SvxSpellWrapper( vcl::Window* pWn,
-    Reference< XSpellChecker1 >  &xSpellChecker,
     const bool bStart, const bool bIsAllRight,
     const bool bOther, const bool bRevAllow ) :
 
     pWin        ( pWn ),
-    xSpell      ( xSpellChecker ),
-    mpTextObj( NULL),
+    mpTextObj   ( nullptr),
     bOtherCntnt ( bOther ),
     bDialog     ( false ),
     bHyphen     ( false ),
-    bAuto       ( false ),
     bStartChk   ( bOther ),
     bRevAllowed ( bRevAllow ),
     bAllRight   ( bIsAllRight )
@@ -173,11 +170,10 @@ SvxSpellWrapper::SvxSpellWrapper( vcl::Window* pWn,
         const bool bStart, const bool bOther ) :
     pWin        ( pWn ),
     xHyph       ( xHyphenator ),
-    mpTextObj( NULL),
+    mpTextObj( nullptr),
     bOtherCntnt ( bOther ),
     bDialog     ( false ),
     bHyphen     ( false ),
-    bAuto       ( false ),
     bReverse    ( false ),
     bStartDone  ( bOther || ( !bReverse && bStart ) ),
     bEndDone    ( bReverse && bStart && !bOther ),

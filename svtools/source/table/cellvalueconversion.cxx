@@ -55,9 +55,6 @@ namespace svt
 
     namespace NumberFormat = ::com::sun::star::util::NumberFormat;
 
-    typedef ::com::sun::star::util::Time UnoTime;
-    typedef ::com::sun::star::util::Date UnoDate;
-
 
     //= helper
 
@@ -80,30 +77,12 @@ namespace svt
     }
 
 
-    //= IValueNormalization
-
-    class SAL_NO_VTABLE IValueNormalization
-    {
-    public:
-        virtual ~IValueNormalization() { }
-
-        /** converts the given <code>Any</code> into a <code>double</code> value to be fed into a number formatter
-        */
-        virtual double convertToDouble( Any const & i_value ) const = 0;
-
-        /** returns the format key to be used for formatting values
-        */
-        virtual ::sal_Int32 getFormatKey() const = 0;
-    };
-
-    typedef std::shared_ptr< IValueNormalization > PValueNormalization;
-    typedef std::unordered_map< OUString, PValueNormalization, OUStringHash >    NormalizerCache;
-
-
     //= CellValueConversion_Data
-
+    class StandardFormatNormalizer;
     struct CellValueConversion_Data
     {
+        typedef std::unordered_map< OUString, std::shared_ptr< StandardFormatNormalizer >, OUStringHash >    NormalizerCache;
+
         Reference< XNumberFormatter >           xNumberFormatter;
         bool                                    bAttemptedFormatterCreation;
         NormalizerCache                         aNormalizers;
@@ -119,8 +98,20 @@ namespace svt
 
     //= StandardFormatNormalizer
 
-    class StandardFormatNormalizer : public IValueNormalization
+    class StandardFormatNormalizer
     {
+    public:
+        /** converts the given <code>Any</code> into a <code>double</code> value to be fed into a number formatter
+        */
+        virtual double convertToDouble( Any const & i_value ) const = 0;
+
+        /** returns the format key to be used for formatting values
+        */
+        sal_Int32 getFormatKey() const
+        {
+            return m_nFormatKey;
+        }
+
     protected:
         StandardFormatNormalizer( Reference< XNumberFormatter > const & i_formatter, ::sal_Int32 const i_numberFormatType )
             :m_nFormatKey( 0 )
@@ -138,10 +129,7 @@ namespace svt
             }
         }
 
-        virtual ::sal_Int32 getFormatKey() const SAL_OVERRIDE
-        {
-            return m_nFormatKey;
-        }
+        virtual ~StandardFormatNormalizer() {}
 
     private:
         ::sal_Int32 m_nFormatKey;
@@ -158,7 +146,7 @@ namespace svt
         {
         }
 
-        virtual double convertToDouble( Any const & i_value ) const SAL_OVERRIDE
+        virtual double convertToDouble( Any const & i_value ) const override
         {
             double returnValue(0);
             ::rtl::math::setNan( &returnValue );
@@ -182,7 +170,7 @@ namespace svt
 
         virtual ~IntegerNormalization() {}
 
-        virtual double convertToDouble( Any const & i_value ) const SAL_OVERRIDE
+        virtual double convertToDouble( Any const & i_value ) const override
         {
             sal_Int64 value( 0 );
             OSL_VERIFY( i_value >>= value );
@@ -203,7 +191,7 @@ namespace svt
 
         virtual ~BooleanNormalization() {}
 
-        virtual double convertToDouble( Any const & i_value ) const SAL_OVERRIDE
+        virtual double convertToDouble( Any const & i_value ) const override
         {
             bool value( false );
             OSL_VERIFY( i_value >>= value );
@@ -224,7 +212,7 @@ namespace svt
 
         virtual ~DateTimeNormalization() {}
 
-        virtual double convertToDouble( Any const & i_value ) const SAL_OVERRIDE
+        virtual double convertToDouble( Any const & i_value ) const override
         {
             double returnValue(0);
             ::rtl::math::setNan( &returnValue );
@@ -258,13 +246,13 @@ namespace svt
 
         virtual ~DateNormalization() {}
 
-        virtual double convertToDouble( Any const & i_value ) const SAL_OVERRIDE
+        virtual double convertToDouble( Any const & i_value ) const override
         {
             double returnValue(0);
             ::rtl::math::setNan( &returnValue );
 
             // extract
-            UnoDate aDateValue;
+            css::util::Date aDateValue;
             ENSURE_OR_RETURN( i_value >>= aDateValue, "allowed for Date values only", returnValue );
 
             // convert
@@ -288,13 +276,13 @@ namespace svt
 
         virtual ~TimeNormalization() {}
 
-        virtual double convertToDouble( Any const & i_value ) const SAL_OVERRIDE
+        virtual double convertToDouble( Any const & i_value ) const override
         {
             double returnValue(0);
             ::rtl::math::setNan( &returnValue );
 
             // extract
-            UnoTime aTimeValue;
+            css::util::Time aTimeValue;
             ENSURE_OR_RETURN( i_value >>= aTimeValue, "allowed for tools::Time values only", returnValue );
 
             // convert
@@ -331,7 +319,7 @@ namespace svt
                     NumberFormatsSupplier::createWithLocale( xContext, aLocale );
 
                 // ensure a NullDate we will assume later on
-                UnoDate const aNullDate( 1, 1, 1900 );
+                css::util::Date const aNullDate( 1, 1, 1900 );
                 Reference< XPropertySet > const xFormatSettings( xSupplier->getNumberFormatSettings(), UNO_SET_THROW );
                 xFormatSettings->setPropertyValue( "NullDate", makeAny( aNullDate ) );
 
@@ -351,9 +339,9 @@ namespace svt
 
 
         bool lcl_getValueNormalizer( CellValueConversion_Data & io_data, Type const & i_valueType,
-            PValueNormalization & o_formatter )
+            std::shared_ptr< StandardFormatNormalizer > & o_formatter )
         {
-            NormalizerCache::const_iterator pos = io_data.aNormalizers.find( i_valueType.getTypeName() );
+            CellValueConversion_Data::NormalizerCache::const_iterator pos = io_data.aNormalizers.find( i_valueType.getTypeName() );
             if ( pos == io_data.aNormalizers.end() )
             {
                 // never encountered this type before
@@ -366,11 +354,11 @@ namespace svt
                 {
                     o_formatter.reset( new DateTimeNormalization( io_data.xNumberFormatter ) );
                 }
-                else if ( sTypeName.equals( ::cppu::UnoType< UnoDate >::get().getTypeName() ) )
+                else if ( sTypeName.equals( ::cppu::UnoType< css::util::Date >::get().getTypeName() ) )
                 {
                     o_formatter.reset( new DateNormalization( io_data.xNumberFormatter ) );
                 }
-                else if ( sTypeName.equals( ::cppu::UnoType< UnoTime >::get().getTypeName() ) )
+                else if ( sTypeName.equals( ::cppu::UnoType< css::util::Time >::get().getTypeName() ) )
                 {
                     o_formatter.reset( new TimeNormalization( io_data.xNumberFormatter ) );
                 }
@@ -432,7 +420,7 @@ namespace svt
         {
             if ( lcl_ensureNumberFormatter( *m_pData ) )
             {
-                PValueNormalization pNormalizer;
+                std::shared_ptr< StandardFormatNormalizer > pNormalizer;
                 if ( lcl_getValueNormalizer( *m_pData, i_value.getValueType(), pNormalizer ) )
                 {
                     try

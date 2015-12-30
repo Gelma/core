@@ -50,37 +50,27 @@ public:
     // XOfficeInstallationDirectories
     virtual OUString SAL_CALL
     getOfficeInstallationDirectoryURL()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual OUString SAL_CALL
     getOfficeUserDataDirectoryURL()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual OUString SAL_CALL
     makeRelocatableURL( const OUString& URL )
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual OUString SAL_CALL
     makeAbsoluteURL( const OUString& URL )
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // XServiceInfo
     virtual OUString SAL_CALL
     getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL
     supportsService( const OUString& ServiceName )
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual css::uno::Sequence< OUString > SAL_CALL
     getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-
-    // XServiceInfo - static versions (used for component registration)
-    static OUString SAL_CALL
-        getImplementationName_static();
-    static css::uno::Sequence< OUString > SAL_CALL
-        getSupportedServiceNames_static();
-    static OUString SAL_CALL
-        getSingletonName_static();
-    static css::uno::Reference< css::uno::XInterface > SAL_CALL
-        Create( const css::uno::Reference< css::uno::XComponentContext >& );
+        throw (css::uno::RuntimeException, std::exception) override;
 
 private:
     void initDirs();

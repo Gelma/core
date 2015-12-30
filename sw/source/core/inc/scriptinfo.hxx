@@ -37,7 +37,7 @@ typedef std::list< sal_Int32 > PositionList;
 class SwScriptInfo
 {
 public:
-    enum CompType { KANA, SPECIAL_LEFT, SPECIAL_RIGHT, NONE };
+    enum CompType { KANA, SPECIAL_LEFT, SPECIAL_RIGHT, NONE, SPECIAL_MIDDLE};
 
 private:
     //! Records a single change in script type.
@@ -185,7 +185,7 @@ public:
     // than the level at position nPos is returned. This is required to
     // obtain the end of a SwBidiPortion
     sal_Int32 NextDirChg( const sal_Int32 nPos,
-                           const sal_uInt8* pLevel = 0 ) const;
+                           const sal_uInt8* pLevel = nullptr ) const;
     sal_uInt8 DirType( const sal_Int32 nPos ) const;
 
     // HIDDEN TEXT STUFF START
@@ -216,9 +216,9 @@ public:
 */
     static bool GetBoundsOfHiddenRange( const SwTextNode& rNode, sal_Int32 nPos,
                                         sal_Int32& rnStartPos, sal_Int32& rnEndPos,
-                                        PositionList* pList = 0 );
+                                        PositionList* pList = nullptr );
     bool GetBoundsOfHiddenRange(  sal_Int32 nPos, sal_Int32& rnStartPos,
-                                  sal_Int32& rnEndPos, PositionList* pList = 0 ) const;
+                                  sal_Int32& rnEndPos, PositionList* pList = nullptr ) const;
 
     static bool IsInHiddenRange( const SwTextNode& rNode, sal_Int32 nPos );
 
@@ -255,7 +255,8 @@ public:
     // modifies the kerning array according to a given compress value
     long Compress( long* pKernArray, sal_Int32 nIdx, sal_Int32 nLen,
                    const sal_uInt16 nCompress, const sal_uInt16 nFontHeight,
-                   Point* pPoint = NULL ) const;
+                   const bool bCentered,
+                   Point* pPoint = nullptr ) const;
 
 /** Performs a kashida justification on the kerning array
 

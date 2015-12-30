@@ -303,12 +303,6 @@ private:
     bool m_bIsSAXEventKeeperSticky;
 
     /*
-     * fast property vector
-     */
-    std::vector< sal_Int32 > m_vFastPropertyIndexs;
-    std::vector< com::sun::star::uno::Any > m_vFastPropertyValues;
-
-    /*
       * error message pointer
       */
     const char *m_pErrorMessage;
@@ -487,24 +481,24 @@ public:
      * XSAXEventKeeperStatusChangeListener
      */
     virtual void SAL_CALL blockingStatusChanged( sal_Bool isBlocking )
-        throw (com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (com::sun::star::uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL collectionStatusChanged(
         sal_Bool isInsideCollectedElement )
-        throw (com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (com::sun::star::uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL bufferStatusChanged( sal_Bool isBufferEmpty )
-        throw (com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (com::sun::star::uno::RuntimeException, std::exception) override;
 
     /*
      * XSignatureCreationResultListener
      */
     virtual void SAL_CALL signatureCreated( sal_Int32 securityId, com::sun::star::xml::crypto::SecurityOperationStatus nResult )
-        throw (com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (com::sun::star::uno::RuntimeException, std::exception) override;
 
     /*
      * XSignatureVerifyResultListener
      */
     virtual void SAL_CALL signatureVerified( sal_Int32 securityId, com::sun::star::xml::crypto::SecurityOperationStatus nResult )
-        throw (com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (com::sun::star::uno::RuntimeException, std::exception) override;
 };
 
 #endif

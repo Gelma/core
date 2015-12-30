@@ -43,13 +43,11 @@ extern void PageNumNotify( SwViewShell* pVwSh,
 enum FlyMode { FLY_DRAG_START, FLY_DRAG, FLY_DRAG_END };
 extern void FrameNotify( SwViewShell* pVwSh, FlyMode eMode = FLY_DRAG );
 
-SW_DLLPUBLIC void StartProgress    ( sal_uInt16 nMessId, long nStartVal, long nEndVal, SwDocShell *pDocSh = 0 );
-SW_DLLPUBLIC void EndProgress      ( SwDocShell *pDocSh = 0 );
+SW_DLLPUBLIC void StartProgress    ( sal_uInt16 nMessId, long nStartVal, long nEndVal, SwDocShell *pDocSh = nullptr );
+SW_DLLPUBLIC void EndProgress      ( SwDocShell *pDocSh = nullptr );
 SW_DLLPUBLIC void SetProgressState  ( long nPosition, SwDocShell *pDocShell );
 void SetProgressText   ( sal_uInt16 nMessId, SwDocShell *pDocShell );
 void RescheduleProgress( SwDocShell *pDocShell );
-
-void EnableCmdInterface(bool bEnable = true);
 
 void RepaintPagePreview( SwViewShell* pVwSh, const SwRect& rRect );
 
@@ -57,8 +55,6 @@ void RepaintPagePreview( SwViewShell* pVwSh, const SwRect& rRect );
 TableChgMode GetTableChgDefaultMode();
 
 bool JumpToSwMark( SwViewShell* pVwSh, const OUString& rMark );
-
-extern void AccessibilityScrollMDI(SwViewShell* pVwSh, const SwRect &, sal_uInt16 nRangeX, sal_uInt16 nRangeY, bool isLeftTop);
 
 #endif
 

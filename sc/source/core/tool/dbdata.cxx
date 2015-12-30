@@ -34,6 +34,8 @@
 #include "dociter.hxx"
 #include "brdcst.hxx"
 
+#include <comphelper/stl_types.hxx>
+
 #include <memory>
 #include <utility>
 
@@ -886,8 +888,7 @@ void ScDBData::Notify( const SfxHint& rHint )
     if (!pScHint)
         return;
 
-    sal_uLong nHint = pScHint->GetId();
-    if (nHint & SC_HINT_DATACHANGED)
+    if (pScHint->GetId() & SC_HINT_DATACHANGED)
     {
         mbTableColumnNamesDirty = true;
         if (!mpContainer)
@@ -920,7 +921,7 @@ class FindByTable : public unary_function<std::unique_ptr<ScDBData>, bool>
 {
     SCTAB mnTab;
 public:
-    FindByTable(SCTAB nTab) : mnTab(nTab) {}
+    explicit FindByTable(SCTAB nTab) : mnTab(nTab) {}
 
     bool operator() (std::unique_ptr<ScDBData> const& p) const
     {
@@ -992,7 +993,7 @@ class FindByRange : public unary_function<std::unique_ptr<ScDBData>, bool>
 {
     const ScRange& mrRange;
 public:
-    FindByRange(const ScRange& rRange) : mrRange(rRange) {}
+    explicit FindByRange(const ScRange& rRange) : mrRange(rRange) {}
 
     bool operator() (std::unique_ptr<ScDBData> const& p)
     {
@@ -1005,7 +1006,7 @@ class FindByIndex : public unary_function<std::unique_ptr<ScDBData>, bool>
 {
     sal_uInt16 mnIndex;
 public:
-    FindByIndex(sal_uInt16 nIndex) : mnIndex(nIndex) {}
+    explicit FindByIndex(sal_uInt16 nIndex) : mnIndex(nIndex) {}
     bool operator() (std::unique_ptr<ScDBData> const& p) const
     {
         return p->GetIndex() == mnIndex;
@@ -1016,7 +1017,7 @@ class FindByUpperName : public unary_function<std::unique_ptr<ScDBData>, bool>
 {
     const OUString& mrName;
 public:
-    FindByUpperName(const OUString& rName) : mrName(rName) {}
+    explicit FindByUpperName(const OUString& rName) : mrName(rName) {}
     bool operator() (std::unique_ptr<ScDBData> const& p) const
     {
         return p->GetUpperName() == mrName;
@@ -1027,7 +1028,7 @@ class FindByPointer : public unary_function<std::unique_ptr<ScDBData>, bool>
 {
     const ScDBData* mpDBData;
 public:
-    FindByPointer(const ScDBData* pDBData) : mpDBData(pDBData) {}
+    explicit FindByPointer(const ScDBData* pDBData) : mpDBData(pDBData) {}
     bool operator() (std::unique_ptr<ScDBData> const& p) const
     {
         return p.get() == mpDBData;
@@ -1169,7 +1170,7 @@ size_t ScDBCollection::NamedDBs::size() const
 
 bool ScDBCollection::NamedDBs::operator== (const NamedDBs& r) const
 {
-    return m_DBs == r.m_DBs;
+    return ::comphelper::ContainerUniquePtrEquals(m_DBs, r.m_DBs);
 }
 
 ScDBCollection::AnonDBs::iterator ScDBCollection::AnonDBs::begin()
@@ -1246,14 +1247,7 @@ bool ScDBCollection::AnonDBs::has( const ScDBData* p ) const
 
 bool ScDBCollection::AnonDBs::operator== (const AnonDBs& r) const
 {
-    if (m_DBs.size() != r.m_DBs.size())
-        return false;
-    for (auto iter1 = begin(), iter2 = r.begin(); iter1 != end(); ++iter1, ++iter2)
-    {
-        if (**iter1 != **iter2)
-            return false;
-    }
-    return true;
+    return ::comphelper::ContainerUniquePtrEquals(m_DBs, r.m_DBs);
 }
 
 ScDBCollection::AnonDBs::AnonDBs()
@@ -1296,7 +1290,7 @@ const ScDBData* ScDBCollection::GetDBAtCursor(SCCOL nCol, SCROW nRow, SCTAB nTab
 
     // Do NOT check for the document global temporary anonymous db range here.
 
-    return NULL;
+    return nullptr;
 }
 
 ScDBData* ScDBCollection::GetDBAtCursor(SCCOL nCol, SCROW nRow, SCTAB nTab, ScDBDataPortion ePortion)
@@ -1320,7 +1314,7 @@ ScDBData* ScDBCollection::GetDBAtCursor(SCCOL nCol, SCROW nRow, SCTAB nTab, ScDB
 
     // Do NOT check for the document global temporary anonymous db range here.
 
-    return NULL;
+    return nullptr;
 }
 
 const ScDBData* ScDBCollection::GetDBAtArea(SCTAB nTab, SCCOL nCol1, SCROW nRow1, SCCOL nCol2, SCROW nRow2) const
@@ -1349,7 +1343,7 @@ const ScDBData* ScDBCollection::GetDBAtArea(SCTAB nTab, SCCOL nCol1, SCROW nRow1
         if (pNoNameData->IsDBAtArea(nTab, nCol1, nRow1, nCol2, nRow2))
             return pNoNameData;
 
-    return NULL;
+    return nullptr;
 }
 
 ScDBData* ScDBCollection::GetDBAtArea(SCTAB nTab, SCCOL nCol1, SCROW nRow1, SCCOL nCol2, SCROW nRow2)
@@ -1378,7 +1372,7 @@ ScDBData* ScDBCollection::GetDBAtArea(SCTAB nTab, SCCOL nCol1, SCROW nRow1, SCCO
         if (pNoNameData->IsDBAtArea(nTab, nCol1, nRow1, nCol2, nRow2))
             return pNoNameData;
 
-    return NULL;
+    return nullptr;
 }
 
 void ScDBCollection::RefreshDirtyTableColumnNames()
@@ -1451,7 +1445,7 @@ void ScDBCollection::UpdateMoveTab( SCTAB nOldPos, SCTAB nNewPos )
 
 ScDBData* ScDBCollection::GetDBNearCursor(SCCOL nCol, SCROW nRow, SCTAB nTab )
 {
-    ScDBData* pNearData = NULL;
+    ScDBData* pNearData = nullptr;
     NamedDBs::DBsType::iterator itr = maNamedDBs.begin(), itrEnd = maNamedDBs.end();
     for (; itr != itrEnd; ++itr)
     {

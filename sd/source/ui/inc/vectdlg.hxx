@@ -64,7 +64,6 @@ class SdVectorizeDlg : public ModalDialog
     void                LoadSettings();
     void                SaveSettings() const;
     void                InitPreviewBmp();
-    void                UpdatePreviewMtf();
 
     static Rectangle    GetRect( const Size& rDispSize, const Size& rBmpSize );
     Bitmap              GetPreparedBitmap( Bitmap& rBmp, Fraction& rScale );
@@ -76,13 +75,13 @@ class SdVectorizeDlg : public ModalDialog
                         DECL_LINK_TYPED( ClickPreviewHdl, Button*, void );
                         DECL_LINK_TYPED( ClickOKHdl, Button*, void );
                         DECL_LINK_TYPED( ToggleHdl, CheckBox&, void );
-                        DECL_LINK( ModifyHdl, void* );
+                        DECL_LINK_TYPED( ModifyHdl, Edit&, void );
 
 public:
 
                         SdVectorizeDlg( vcl::Window* pParent, const Bitmap& rBmp, ::sd::DrawDocShell* pDocShell );
                         virtual ~SdVectorizeDlg();
-    virtual void        dispose() SAL_OVERRIDE;
+    virtual void        dispose() override;
 
     const GDIMetaFile&  GetGDIMetaFile() const { return aMtf; }
 };

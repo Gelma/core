@@ -185,6 +185,112 @@
           <value>com.sun.star.comp.framework.SaveAsMenuController</value>
         </prop>
       </node>
+      <node oor:name="c17" oor:op="replace">
+        <prop oor:name="Command">
+          <value>.uno:ThesaurusFromContext</value>
+        </prop>
+        <prop oor:name="Module">
+          <value/>
+        </prop>
+        <prop oor:name="Controller">
+          <value>com.sun.star.comp.framework.ThesaurusMenuController</value>
+        </prop>
+      </node>
+      <node oor:name="c18" oor:op="replace">
+        <prop oor:name="Command">
+          <value>.uno:OpenSmartTagMenuOnCursor</value>
+        </prop>
+        <prop oor:name="Module">
+          <value/>
+        </prop>
+        <prop oor:name="Controller">
+          <value>com.sun.star.comp.svx.SmartTagMenuController</value>
+        </prop>
+      </node>
+      <node oor:name="c19" oor:op="replace">
+        <prop oor:name="Command">
+          <value>.uno:BasicShapes</value>
+        </prop>
+        <prop oor:name="Module">
+          <value/>
+        </prop>
+        <prop oor:name="Controller">
+          <value>com.sun.star.comp.framework.ToolbarAsMenuController</value>
+        </prop>
+        <prop oor:name="Value">
+          <value>basicshapes</value>
+        </prop>
+      </node>
+      <node oor:name="c20" oor:op="replace">
+        <prop oor:name="Command">
+          <value>.uno:SymbolShapes</value>
+        </prop>
+        <prop oor:name="Module">
+          <value/>
+        </prop>
+        <prop oor:name="Controller">
+          <value>com.sun.star.comp.framework.ToolbarAsMenuController</value>
+        </prop>
+        <prop oor:name="Value">
+          <value>symbolshapes</value>
+        </prop>
+      </node>
+      <node oor:name="c21" oor:op="replace">
+        <prop oor:name="Command">
+          <value>.uno:ArrowShapes</value>
+        </prop>
+        <prop oor:name="Module">
+          <value/>
+        </prop>
+        <prop oor:name="Controller">
+          <value>com.sun.star.comp.framework.ToolbarAsMenuController</value>
+        </prop>
+        <prop oor:name="Value">
+          <value>arrowshapes</value>
+        </prop>
+      </node>
+      <node oor:name="c22" oor:op="replace">
+        <prop oor:name="Command">
+          <value>.uno:StarShapes</value>
+        </prop>
+        <prop oor:name="Module">
+          <value/>
+        </prop>
+        <prop oor:name="Controller">
+          <value>com.sun.star.comp.framework.ToolbarAsMenuController</value>
+        </prop>
+        <prop oor:name="Value">
+          <value>starshapes</value>
+        </prop>
+      </node>
+      <node oor:name="c23" oor:op="replace">
+        <prop oor:name="Command">
+          <value>.uno:CalloutShapes</value>
+        </prop>
+        <prop oor:name="Module">
+          <value/>
+        </prop>
+        <prop oor:name="Controller">
+          <value>com.sun.star.comp.framework.ToolbarAsMenuController</value>
+        </prop>
+        <prop oor:name="Value">
+          <value>calloutshapes</value>
+        </prop>
+      </node>
+      <node oor:name="c24" oor:op="replace">
+        <prop oor:name="Command">
+          <value>.uno:FlowChartShapes</value>
+        </prop>
+        <prop oor:name="Module">
+          <value/>
+        </prop>
+        <prop oor:name="Controller">
+          <value>com.sun.star.comp.framework.ToolbarAsMenuController</value>
+        </prop>
+        <prop oor:name="Value">
+          <value>flowchartshapes</value>
+        </prop>
+      </node>
     </node>
     <node oor:name="ToolBar">
       <node oor:name="ZoomToolBox" oor:op="replace">
@@ -519,6 +625,17 @@
           <value>com.sun.star.comp.sd.SlideLayoutController</value>
         </prop>
       </node>
+      <node oor:name="DisplayMode" oor:op="replace">
+        <prop oor:name="Command">
+          <value>.uno:DisplayMode</value>
+        </prop>
+        <prop oor:name="Module">
+          <value>com.sun.star.presentation.PresentationDocument</value>
+        </prop>
+        <prop oor:name="Controller">
+          <value>com.sun.star.comp.sd.DisplayModeController</value>
+        </prop>
+      </node>
       <node oor:name="InsertPage" oor:op="replace">
         <prop oor:name="Command">
           <value>.uno:InsertPage</value>
@@ -544,6 +661,17 @@
       <node oor:name="BulletsToolBox" oor:op="replace">
         <prop oor:name="Command">
           <value>.uno:DefaultBullet</value>
+        </prop>
+        <prop oor:name="Module">
+          <value/>
+        </prop>
+        <prop oor:name="Controller">
+          <value>com.sun.star.comp.svx.NumberingToolBoxControl</value>
+        </prop>
+      </node>
+      <node oor:name="OutlineToolBox" oor:op="replace">
+        <prop oor:name="Command">
+          <value>.uno:SetOutline</value>
         </prop>
         <prop oor:name="Module">
           <value/>
@@ -793,6 +921,17 @@
           <value>com.sun.star.svx.MatchCaseToolboxController</value>
         </prop>
       </node>
+      <node oor:name="com.sun.star.svx.SearchFormattedToolboxController" oor:op="replace">
+        <prop oor:name="Command">
+          <value>.uno:SearchFormattedDisplayString</value>
+        </prop>
+        <prop oor:name="Module">
+          <value/>
+        </prop>
+        <prop oor:name="Controller">
+          <value>com.sun.star.svx.SearchFormattedToolboxController</value>
+        </prop>
+      </node>
       <node oor:name="com.sun.star.svx.FindAllToolboxController" oor:op="replace">
         <prop oor:name="Command">
           <value>.uno:FindAll</value>
@@ -848,7 +987,7 @@
           <value>com.sun.star.report.ReportToolboxController</value>
         </prop>
       </node>
-      <node oor:name="org.apache.openoffice.comp.framework.OpenToolbarController" oor:op="replace">
+      <node oor:name="OpenToolbarController" oor:op="replace">
         <prop oor:name="Command">
           <value>.uno:Open</value>
         </prop>
@@ -856,7 +995,49 @@
           <value/>
         </prop>
         <prop oor:name="Controller">
-          <value>org.apache.openoffice.comp.framework.OpenToolbarController</value>
+          <value>com.sun.star.comp.framework.GenericPopupToolbarController</value>
+        </prop>
+        <prop oor:name="Value">
+          <value>.uno:RecentFileList</value>
+        </prop>
+      </node>
+      <node oor:name="WriterOpenToolbarController" oor:op="replace">
+        <prop oor:name="Command">
+          <value>.uno:OpenFromWriter</value>
+        </prop>
+        <prop oor:name="Module">
+          <value>com.sun.star.text.TextDocument</value>
+        </prop>
+        <prop oor:name="Controller">
+          <value>com.sun.star.comp.framework.GenericPopupToolbarController</value>
+        </prop>
+        <prop oor:name="Value">
+          <value>.uno:RecentFileList</value>
+        </prop>
+      </node>
+      <node oor:name="CalcOpenToolbarController" oor:op="replace">
+        <prop oor:name="Command">
+          <value>.uno:OpenFromCalc</value>
+        </prop>
+        <prop oor:name="Module">
+          <value>com.sun.star.sheet.SpreadsheetDocument</value>
+        </prop>
+        <prop oor:name="Controller">
+          <value>com.sun.star.comp.framework.GenericPopupToolbarController</value>
+        </prop>
+        <prop oor:name="Value">
+          <value>.uno:RecentFileList</value>
+        </prop>
+      </node>
+      <node oor:name="SaveToolbarController" oor:op="replace">
+        <prop oor:name="Command">
+          <value>.uno:Save</value>
+        </prop>
+        <prop oor:name="Module">
+          <value/>
+        </prop>
+        <prop oor:name="Controller">
+          <value>com.sun.star.comp.framework.SaveToolbarController</value>
         </prop>
       </node>
       <node oor:name="org.apache.openoffice.comp.framework.NewToolbarController" oor:op="replace">
@@ -870,7 +1051,7 @@
           <value>org.apache.openoffice.comp.framework.NewToolbarController</value>
         </prop>
       </node>
-      <node oor:name="org.apache.openoffice.comp.framework.WizardsToolbarController" oor:op="replace">
+      <node oor:name="WizardsToolbarController" oor:op="replace">
         <prop oor:name="Command">
           <value>.uno:AutoPilotMenu</value>
         </prop>
@@ -878,7 +1059,7 @@
           <value/>
         </prop>
         <prop oor:name="Controller">
-          <value>org.apache.openoffice.comp.framework.WizardsToolbarController</value>
+          <value>com.sun.star.comp.framework.GenericPopupToolbarController</value>
         </prop>
       </node>
     </node>

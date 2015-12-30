@@ -131,8 +131,8 @@ MacroSecurityLevelTP::MacroSecurityLevelTP(vcl::Window* _pParent, MacroSecurity*
     mnCurLevel = (sal_uInt16) mpDlg->maSecOptions.GetMacroSecurityLevel();
     bool bReadonly = mpDlg->maSecOptions.IsReadOnly( SvtSecurityOptions::E_MACRO_SECLEVEL );
 
-    RadioButton* pCheck = 0;
-    FixedImage* pImage = 0;
+    RadioButton* pCheck = nullptr;
+    FixedImage* pImage = nullptr;
     switch (mnCurLevel)
     {
         case 3:
@@ -160,7 +160,7 @@ MacroSecurityLevelTP::MacroSecurityLevelTP(vcl::Window* _pParent, MacroSecurity*
     }
     if (bReadonly && pImage)
     {
-        pImage->Show(true);
+        pImage->Show();
         m_pVeryHighRB->Enable(false);
         m_pHighRB->Enable(false);
         m_pMediumRB->Enable(false);
@@ -206,7 +206,7 @@ void MacroSecurityLevelTP::ClosePage()
 
 void MacroSecurityTrustedSourcesTP::ImplCheckButtons()
 {
-    bool bCertSelected = m_pTrustCertLB->FirstSelected() != NULL;
+    bool bCertSelected = m_pTrustCertLB->FirstSelected() != nullptr;
     m_pViewCertPB->Enable( bCertSelected );
     m_pRemoveCertPB->Enable( bCertSelected && !mbAuthorsReadonly);
 
@@ -314,10 +314,9 @@ IMPL_LINK_NOARG_TYPED(MacroSecurityTrustedSourcesTP, TrustCertLBSelectHdl, SvTre
     ImplCheckButtons();
 }
 
-IMPL_LINK_NOARG(MacroSecurityTrustedSourcesTP, TrustFileLocLBSelectHdl)
+IMPL_LINK_NOARG_TYPED(MacroSecurityTrustedSourcesTP, TrustFileLocLBSelectHdl, ListBox&, void)
 {
     ImplCheckButtons();
-    return 0;
 }
 
 void MacroSecurityTrustedSourcesTP::FillCertLB()
@@ -351,7 +350,7 @@ public:
         : SvSimpleTable(rContainer, 0)
     {
     }
-    virtual void Resize() SAL_OVERRIDE
+    virtual void Resize() override
     {
         SvSimpleTable::Resize();
         if (isInitialLayout(this))

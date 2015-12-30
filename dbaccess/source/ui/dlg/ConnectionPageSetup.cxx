@@ -90,7 +90,6 @@ namespace dbaui
 
     OConnectionTabPageSetup::OConnectionTabPageSetup(vcl::Window* pParent, const OString& _rId, const OUString& _rUIXMLDescription, const SfxItemSet& _rCoreAttrs, sal_uInt16 _nHelpTextResId, sal_uInt16 _nHeaderResId, sal_uInt16 _nUrlResId)
         :OConnectionHelper(pParent, _rId, _rUIXMLDescription, _rCoreAttrs)
-        ,m_bUserGrabFocus(true)
     {
         get(m_pHelpText, "helptext");
         get(m_pHeaderText, "header");
@@ -172,11 +171,10 @@ namespace dbaui
         return !m_pConnectionURL->IsVisible() || !m_pConnectionURL->GetTextNoPrefix().isEmpty();
     }
 
-    IMPL_LINK(OConnectionTabPageSetup, OnEditModified, Edit*, /*_pEdit*/)
+    IMPL_LINK_NOARG_TYPED(OConnectionTabPageSetup, OnEditModified, Edit&, void)
     {
         SetRoadmapStateValue(checkTestConnection());
         callModifiedHdl();
-        return 0L;
     }
 }   // namespace dbaui
 

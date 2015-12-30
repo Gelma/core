@@ -43,15 +43,15 @@ namespace drawinglayer
         class DRAWINGLAYER_DLLPUBLIC HiddenGeometryPrimitive3D : public GroupPrimitive3D
         {
         public:
-            explicit HiddenGeometryPrimitive3D(const Primitive3DSequence& rChildren);
+            explicit HiddenGeometryPrimitive3D(const Primitive3DContainer& rChildren);
 
             // despite returning an empty decomposition since it's no visualisation data,
             // range calculation is intended to use hidden geometry, so
             // the local implementation will return the children's range
-            virtual basegfx::B3DRange getB3DRange(const geometry::ViewInformation3D& rViewInformation) const SAL_OVERRIDE;
+            virtual basegfx::B3DRange getB3DRange(const geometry::ViewInformation3D& rViewInformation) const override;
 
             /// The default implementation returns an empty sequence
-            virtual Primitive3DSequence get3DDecomposition(const geometry::ViewInformation3D& rViewInformation) const SAL_OVERRIDE;
+            virtual Primitive3DContainer get3DDecomposition(const geometry::ViewInformation3D& rViewInformation) const override;
 
             // provide unique ID
             DeclPrimitive3DIDBlock()

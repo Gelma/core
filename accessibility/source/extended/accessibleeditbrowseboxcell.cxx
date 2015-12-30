@@ -165,7 +165,7 @@ namespace accessibility
             const Reference< XAccessible >& _rxParent, const Reference< XAccessible >& _rxControlAccessible,
             const Reference< XWindow >& _rxFocusWindow,
             IAccessibleTableProvider& _rBrowseBox, sal_Int32 _nRowPos, sal_uInt16 _nColPos )
-        :EditBrowseBoxTableCellAccess_Base( m_aMutex )
+        :WeakComponentImplHelper( m_aMutex )
         ,m_xParent( _rxParent )
         ,m_xControlAccessible( _rxControlAccessible )
         ,m_xFocusWindow( _rxFocusWindow )
@@ -212,7 +212,7 @@ namespace accessibility
             }
         }
 
-        m_pBrowseBox = NULL;
+        m_pBrowseBox = nullptr;
         m_xControlAccessible.clear();
         m_aContext.clear();
         // NO dispose of the inner object there: it is the XAccessible of an window, and disposing

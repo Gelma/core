@@ -48,7 +48,7 @@ void SwViewShellImp::StartAction()
     if ( HasDrawView() )
     {
         SET_CURR_SHELL( GetShell() );
-        if ( m_pShell->ISA(SwFEShell) )
+        if ( dynamic_cast<const SwFEShell*>( m_pShell) !=  nullptr )
             static_cast<SwFEShell*>(m_pShell)->HideChainMarker(); // might have changed
     }
 }
@@ -58,7 +58,7 @@ void SwViewShellImp::EndAction()
     if ( HasDrawView() )
     {
         SET_CURR_SHELL( GetShell() );
-        if ( m_pShell->ISA(SwFEShell) )
+        if ( dynamic_cast<const SwFEShell*>(m_pShell) !=  nullptr )
             static_cast<SwFEShell*>(m_pShell)->SetChainMarker(); // might have changed
     }
 }
@@ -130,7 +130,7 @@ void SwViewShellImp::PaintLayer( const SdrLayerID _nLayerID,
             GetDrawView()->GetModel()->GetDrawOutliner().SetDefaultHorizontalTextDirection( aEEHoriTextDirOfPage );
         }
 
-        pOutDev->Push( PushFlags::LINECOLOR ); // #114231#
+        pOutDev->Push( PushFlags::LINECOLOR );
         if (pPrintData)
         {
             // hide drawings but not form controls (form controls are handled elsewhere)
@@ -174,7 +174,7 @@ bool SwViewShellImp::IsDragPossible( const Point &rPoint )
         aRect.Union( aTmp );
     }
     else
-        aRect = GetShell()->GetLayout()->Frm();
+        aRect = GetShell()->GetLayout()->Frame();
 
     aRect.Top(    aRect.Top()    - FUZZY_EDGE );
     aRect.Bottom( aRect.Bottom() + FUZZY_EDGE );
@@ -210,19 +210,19 @@ void SwViewShellImp::NotifySizeChg( const Size &rNewSz )
     for( size_t nObj = 0; nObj < nObjs; ++nObj )
     {
         SdrObject *pObj = pPage->GetObj( nObj );
-        if( !pObj->ISA(SwVirtFlyDrawObj) )
+        if( dynamic_cast<const SwVirtFlyDrawObj*>( pObj) ==  nullptr )
         {
             // Objects not anchored to the frame, do not need to be adjusted
             const SwContact *pCont = GetUserCall(pObj);
             // this function might be called by the InsertDocument, when
             // a PageDesc-Attribute is set on a node. Then the SdrObject
             // must not have an UserCall.
-            if( !pCont || !pCont->ISA(SwDrawContact) )
+            if( !pCont || dynamic_cast<const SwDrawContact*>( pCont) ==  nullptr )
                 continue;
 
-            const SwFrm *pAnchor = static_cast<const SwDrawContact*>(pCont)->GetAnchorFrm();
+            const SwFrame *pAnchor = static_cast<const SwDrawContact*>(pCont)->GetAnchorFrame();
             if ( !pAnchor || pAnchor->IsInFly() || !pAnchor->IsValid() ||
-                 !pAnchor->GetUpper() || !pAnchor->FindPageFrm() ||
+                 !pAnchor->GetUpper() || !pAnchor->FindPageFrame() ||
                  (FLY_AS_CHAR == pCont->GetFormat()->GetAnchor().GetAnchorId()) )
             {
                 continue;
@@ -232,9 +232,9 @@ void SwViewShellImp::NotifySizeChg( const Size &rNewSz )
                 // Actually this should never happen but currently layouting
                 // is broken. So don't move anchors, if the page is invalid.
                 // This should be turned into an DBG_ASSERT, once layouting is fixed!
-                const SwPageFrm *pPageFrm = pAnchor->FindPageFrm();
-                if (!pPageFrm || pPageFrm->IsInvalid() ) {
-                    SAL_WARN( "sw.resizeview", "Trying to move anchor from invalid page - fix layouting!" );
+                const SwPageFrame *pPageFrame = pAnchor->FindPageFrame();
+                if (!pPageFrame || pPageFrame->IsInvalid() ) {
+                    SAL_WARN( "sw.core", "Trying to move anchor from invalid page - fix layouting!" );
                     continue;
                 }
             }

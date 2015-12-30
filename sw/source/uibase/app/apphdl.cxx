@@ -154,7 +154,7 @@ void SwModule::StateOther(SfxItemSet &rSet)
     sal_uInt16 nWhich = aIter.FirstWhich();
 
     SwView* pActView = ::GetActiveView();
-    bool bWebView = 0 != PTR_CAST(SwWebView, pActView);
+    bool bWebView = dynamic_cast<SwWebView*>( pActView ) !=  nullptr;
 
     while(nWhich)
     {
@@ -166,7 +166,7 @@ void SwModule::StateOther(SfxItemSet &rSet)
             {
                 bool bDisable = false;
                 SfxViewShell* pCurrView = SfxViewShell::Current();
-                if( !pCurrView || !pCurrView->ISA(SwView) )
+                if( !pCurrView || dynamic_cast< const SwView *>( pCurrView ) ==  nullptr )
                     bDisable = true;
                 SwDocShell *pDocSh = static_cast<SwDocShell*>( SfxObjectShell::Current());
                 if ( bDisable ||
@@ -181,7 +181,7 @@ void SwModule::StateOther(SfxItemSet &rSet)
                 break;
             case FN_EDIT_FORMULA:
                 {
-                    SwWrtShell* pSh = 0;
+                    SwWrtShell* pSh = nullptr;
                     int nSelection = 0;
                     if( pActView )
                         pSh = &pActView->GetWrtShell();
@@ -217,7 +217,7 @@ namespace
 
 SwView* lcl_LoadDoc(SwView* pView, const OUString& rURL)
 {
-    SwView* pNewView = 0;
+    SwView* pNewView = nullptr;
     if(!rURL.isEmpty())
     {
         SfxStringItem aURL(SID_FILE_NAME, rURL);
@@ -227,16 +227,16 @@ SwView* lcl_LoadDoc(SwView* pView, const OUString& rURL)
         const SfxObjectItem* pItem = static_cast<const SfxObjectItem*>(pView->GetViewFrame()->GetDispatcher()->
                 Execute(SID_OPENDOC, SfxCallMode::SYNCHRON,
                             &aURL, &aHidden, &aReferer, &aTargetFrameName, 0L));
-        SfxShell* pShell = pItem ? pItem->GetShell() : 0;
+        SfxShell* pShell = pItem ? pItem->GetShell() : nullptr;
 
         if(pShell)
         {
             SfxViewShell* pViewShell = pShell->GetViewShell();
             if(pViewShell)
             {
-                if( pViewShell->ISA(SwView) )
+                if( nullptr!= dynamic_cast<SwView*>(pViewShell) )
                 {
-                    pNewView = PTR_CAST(SwView,pViewShell);
+                    pNewView = dynamic_cast< SwView* >(pViewShell);
                     pNewView->GetViewFrame()->GetFrame().Appear();
                 }
                 else
@@ -252,9 +252,9 @@ SwView* lcl_LoadDoc(SwView* pView, const OUString& rURL)
         const SfxFrameItem* pItem = static_cast<const SfxFrameItem*>(
                             pView->GetViewFrame()->GetDispatcher()->Execute(SID_NEWDOCDIRECT,
                                 SfxCallMode::SYNCHRON, &aFactory, 0L));
-        SfxFrame* pFrm = pItem ? pItem->GetFrame() : 0;
-        SfxViewFrame* pFrame = pFrm ? pFrm->GetCurrentViewFrame() : 0;
-        pNewView = pFrame ? PTR_CAST(SwView, pFrame->GetViewShell()) : 0;
+        SfxFrame* pFrame = pItem ? pItem->GetFrame() : nullptr;
+        SfxViewFrame* pViewFrame = pFrame ? pFrame->GetCurrentViewFrame() : nullptr;
+        pNewView = pViewFrame ? dynamic_cast<SwView*>( pViewFrame->GetViewShell() ) : nullptr;
     }
 
     return pNewView;
@@ -267,7 +267,7 @@ class SwMailMergeWizardExecutor : public salhelper::SimpleReferenceObject
     SwMailMergeConfigItem*   m_pMMConfig;   // sometimes owner
     AbstractMailMergeWizard* m_pWizard;     // always owner
 
-    DECL_LINK( EndDialogHdl, AbstractMailMergeWizard* );
+    DECL_LINK_TYPED( EndDialogHdl, Dialog&, void );
     DECL_LINK_TYPED( DestroyDialogHdl, void*, void );
     DECL_STATIC_LINK_TYPED( SwMailMergeWizardExecutor, DestroyWizardHdl, void*, void );
     DECL_LINK_TYPED( CancelHdl, void*, void );
@@ -284,17 +284,17 @@ public:
 };
 
 SwMailMergeWizardExecutor::SwMailMergeWizardExecutor()
-    : m_pView( 0 ),
-      m_pView2Close( NULL ),
-      m_pMMConfig( 0 ),
-      m_pWizard( 0 )
+    : m_pView( nullptr ),
+      m_pView2Close( nullptr ),
+      m_pMMConfig( nullptr ),
+      m_pWizard( nullptr )
 {
 }
 
 SwMailMergeWizardExecutor::~SwMailMergeWizardExecutor()
 {
-    OSL_ENSURE( m_pWizard == 0, "SwMailMergeWizardExecutor: m_pWizard must be Null!" );
-    OSL_ENSURE( m_pMMConfig == 0, "SwMailMergeWizardExecutor: m_pMMConfig must be Null!" );
+    OSL_ENSURE( m_pWizard == nullptr, "SwMailMergeWizardExecutor: m_pWizard must be Null!" );
+    OSL_ENSURE( m_pMMConfig == nullptr, "SwMailMergeWizardExecutor: m_pMMConfig must be Null!" );
 }
 
 void SwMailMergeWizardExecutor::ExecuteMailMergeWizard( const SfxItemSet * pArgs )
@@ -310,7 +310,7 @@ void SwMailMergeWizardExecutor::ExecuteMailMergeWizard( const SfxItemSet * pArgs
             OUString sInteraction;
             xSyncDbusSessionHelper->InstallPackageNames(0, vPackages, sInteraction);
             SolarMutexGuard aGuard;
-            executeRestartDialog(comphelper::getProcessComponentContext(), NULL, RESTART_REASON_MAILMERGE_INSTALL);
+            executeRestartDialog(comphelper::getProcessComponentContext(), nullptr, RESTART_REASON_MAILMERGE_INSTALL);
         }
         catch (const css::uno::Exception & e)
         {
@@ -345,7 +345,7 @@ void SwMailMergeWizardExecutor::ExecuteMailMergeWizard( const SfxItemSet * pArgs
             nRestartPage = m_pView->GetMailMergeRestartPage();
             if(m_pView->IsMailMergeSourceView())
                 m_pMMConfig->SetSourceView( m_pView );
-            m_pView->SetMailMergeConfigItem(0, 0, true);
+            m_pView->SetMailMergeConfigItem(nullptr, 0, true);
             SfxViewFrame* pViewFrame = m_pView->GetViewFrame();
             pViewFrame->ShowChildWindow(FN_MAILMERGE_CHILDWINDOW, false);
             OSL_ENSURE(m_pMMConfig, "no MailMergeConfigItem available");
@@ -358,7 +358,7 @@ void SwMailMergeWizardExecutor::ExecuteMailMergeWizard( const SfxItemSet * pArgs
             m_pMMConfig->SetSourceView(m_pView);
 
             //set the first used database as default source on the config item
-            const SfxPoolItem* pItem = 0;
+            const SfxPoolItem* pItem = nullptr;
             if(pArgs && SfxItemState::SET == pArgs->GetItemState(
                    FN_PARAM_DATABASE_PROPERTIES, false, &pItem))
             {
@@ -382,8 +382,7 @@ void SwMailMergeWizardExecutor::ExecuteMailMergeWizard( const SfxItemSet * pArgs
                         aDescriptor[svx::daConnection] >>= xConnection;
                     uno::Reference<container::XChild> xChild(xConnection, uno::UNO_QUERY);
                     if(xChild.is())
-                        xSource = uno::Reference<sdbc::XDataSource>(
-                            xChild->getParent(), uno::UNO_QUERY);
+                        xSource.set(xChild->getParent(), uno::UNO_QUERY);
                     m_pMMConfig->SetCurrentConnection(
                         xSource, SharedConnection( xConnection, SharedConnection::NoTakeOwnership ),
                         xColumnsSupplier, aDBData);
@@ -425,7 +424,7 @@ void SwMailMergeWizardExecutor::ExecutionFinished( bool bDeleteConfigItem )
     if ( bDeleteConfigItem ) // owner?
         delete m_pMMConfig;
 
-    m_pMMConfig = 0;
+    m_pMMConfig = nullptr;
 
     // release/destroy asynchronously
     Application::PostUserEvent( LINK( this, SwMailMergeWizardExecutor, DestroyDialogHdl ) );
@@ -437,11 +436,8 @@ void SwMailMergeWizardExecutor::ExecuteWizard()
         LINK( this, SwMailMergeWizardExecutor, EndDialogHdl ) );
 }
 
-IMPL_LINK( SwMailMergeWizardExecutor, EndDialogHdl, AbstractMailMergeWizard*, pDialog )
+IMPL_LINK_NOARG_TYPED( SwMailMergeWizardExecutor, EndDialogHdl, Dialog&, void )
 {
-    OSL_ENSURE( pDialog == m_pWizard, "wrong dialog passed to EndDialogHdl!" );
-    (void) pDialog;
-
     long nRet = m_pWizard->GetResult();
     sal_uInt16 nRestartPage = m_pWizard->GetRestartPage();
 
@@ -527,7 +523,7 @@ IMPL_LINK( SwMailMergeWizardExecutor, EndDialogHdl, AbstractMailMergeWizard*, pD
                 pSourceView->GetViewFrame()->GetFrame().AppearWithUpdate();
                 // the current view has be set when the target is destroyed
                 m_pView = pSourceView;
-                m_pMMConfig->SetTargetView(0);
+                m_pMMConfig->SetTargetView(nullptr);
 
                 // destroy wizard asynchronously
                 Application::PostUserEvent(
@@ -570,14 +566,12 @@ IMPL_LINK( SwMailMergeWizardExecutor, EndDialogHdl, AbstractMailMergeWizard*, pD
         }
 
     } // switch
-
-    return 0L;
 }
 
 IMPL_LINK_NOARG_TYPED(SwMailMergeWizardExecutor, DestroyDialogHdl, void*, void)
 {
     delete m_pWizard;
-    m_pWizard = 0;
+    m_pWizard = nullptr;
 
     release();
 }
@@ -592,16 +586,16 @@ IMPL_LINK_NOARG_TYPED(SwMailMergeWizardExecutor, CancelHdl, void*, void)
     if(m_pMMConfig->GetTargetView())
     {
         m_pMMConfig->GetTargetView()->GetViewFrame()->DoClose();
-        m_pMMConfig->SetTargetView(0);
+        m_pMMConfig->SetTargetView(nullptr);
     }
     if(m_pMMConfig->GetSourceView())
         m_pMMConfig->GetSourceView()->GetViewFrame()->GetFrame().AppearWithUpdate();
 
     m_pMMConfig->Commit();
     delete m_pMMConfig;
-    m_pMMConfig = 0;
-    // m_pWizard already deleted by closing the target view
-    m_pWizard = 0;
+    m_pMMConfig = nullptr;
+    delete m_pWizard;
+    m_pWizard = nullptr;
     release();
 }
 
@@ -610,7 +604,7 @@ IMPL_LINK_NOARG_TYPED(SwMailMergeWizardExecutor, CloseFrameHdl, void*, void)
     if ( m_pView2Close )
     {
         m_pView2Close->GetViewFrame()->DoClose();
-        m_pView2Close = NULL;
+        m_pView2Close = nullptr;
     }
 }
 
@@ -621,7 +615,7 @@ IMPL_LINK_NOARG_TYPED(SwMailMergeWizardExecutor, CloseFrameHdl, void*, void)
 void SwModule::ExecOther(SfxRequest& rReq)
 {
     const SfxItemSet *pArgs = rReq.GetArgs();
-    const SfxPoolItem* pItem = 0;
+    const SfxPoolItem* pItem = nullptr;
 
     sal_uInt16 nWhich = rReq.GetSlot();
     switch (nWhich)
@@ -652,7 +646,7 @@ void SwModule::ExecOther(SfxRequest& rReq)
                 case FUNIT_POINT:
                 {
                     SwView* pActView = ::GetActiveView();
-                    bool bWebView = 0 != PTR_CAST(SwWebView, pActView);
+                    bool bWebView = dynamic_cast<SwWebView*>( pActView ) !=  nullptr;
                     ::SetDfltMetric(eUnit, bWebView);
                 }
                 break;
@@ -663,7 +657,7 @@ void SwModule::ExecOther(SfxRequest& rReq)
 
         case FN_SET_MODOPT_TBLNUMFMT:
             {
-                bool bWebView = 0 != PTR_CAST(SwWebView, ::GetActiveView() ),
+                bool bWebView = dynamic_cast<SwWebView*>( ::GetActiveView() )!=  nullptr ,
                      bSet;
 
                 if( pArgs && SfxItemState::SET == pArgs->GetItemState(
@@ -694,7 +688,7 @@ void SwModule::Notify( SfxBroadcaster& /*rBC*/, const SfxHint& rHint )
     if( dynamic_cast<const SfxEventHint*>(&rHint) )
     {
         const SfxEventHint& rEvHint = static_cast<const SfxEventHint&>( rHint);
-        SwDocShell* pDocSh = PTR_CAST( SwDocShell, rEvHint.GetObjShell() );
+        SwDocShell* pDocSh = dynamic_cast<SwDocShell*>( rEvHint.GetObjShell()  );
         if( pDocSh )
         {
             SwWrtShell* pWrtSh = pDocSh->GetWrtShell();
@@ -706,12 +700,10 @@ void SwModule::Notify( SfxBroadcaster& /*rBC*/, const SfxHint& rHint )
                 // update fixed fields
                 if (pDocSh->GetMedium())
                 {
-                    SFX_ITEMSET_ARG( pDocSh->GetMedium()->GetItemSet(),
-                        pTemplateItem, SfxBoolItem,
-                        SID_TEMPLATE, false);
+                    const SfxBoolItem* pTemplateItem = SfxItemSet::GetItem<SfxBoolItem>(pDocSh->GetMedium()->GetItemSet(), SID_TEMPLATE, false);
                     if (pTemplateItem && pTemplateItem->GetValue())
                     {
-                        pDocSh->GetDoc()->getIDocumentFieldsAccess().SetFixFields(false, 0);
+                        pDocSh->GetDoc()->getIDocumentFieldsAccess().SetFixFields(false, nullptr);
                     }
                 }
                 break;
@@ -719,7 +711,7 @@ void SwModule::Notify( SfxBroadcaster& /*rBC*/, const SfxHint& rHint )
                 // Update all FIX-Date/Time fields
                 if( pWrtSh )
                 {
-                    SFX_ITEMSET_ARG( pDocSh->GetMedium()->GetItemSet(), pUpdateDocItem, SfxUInt16Item, SID_UPDATEDOCMODE, false);
+                    const SfxUInt16Item* pUpdateDocItem = SfxItemSet::GetItem<SfxUInt16Item>(pDocSh->GetMedium()->GetItemSet(), SID_UPDATEDOCMODE, false);
                     bool bUpdateFields = true;
                     if( pUpdateDocItem &&  pUpdateDocItem->GetValue() == document::UpdateDocMode::NO_UPDATE)
                         bUpdateFields = false;
@@ -754,20 +746,19 @@ void SwModule::Notify( SfxBroadcaster& /*rBC*/, const SfxHint& rHint )
     }
     else if(dynamic_cast<const SfxSimpleHint*>(&rHint))
     {
-        sal_uInt16 nHintId = static_cast<const SfxSimpleHint&>(rHint).GetId();
-        if(SFX_HINT_DEINITIALIZING == nHintId)
+        if (static_cast<const SfxSimpleHint&>(rHint).GetId() == SFX_HINT_DEINITIALIZING)
         {
             DELETEZ(m_pWebUsrPref);
-            DELETEZ(m_pUsrPref)   ;
+            DELETEZ(m_pUsrPref);
             DELETEZ(m_pModuleConfig);
-            DELETEZ(m_pPrintOptions)      ;
-            DELETEZ(m_pWebPrintOptions)   ;
+            DELETEZ(m_pPrintOptions);
+            DELETEZ(m_pWebPrintOptions);
             DELETEZ(m_pChapterNumRules);
-            DELETEZ(m_pStdFontConfig)     ;
-            DELETEZ(m_pNavigationConfig)  ;
-            DELETEZ(m_pToolbarConfig)     ;
-            DELETEZ(m_pWebToolbarConfig)  ;
-            DELETEZ(m_pAuthorNames)       ;
+            DELETEZ(m_pStdFontConfig);
+            DELETEZ(m_pNavigationConfig);
+            DELETEZ(m_pToolbarConfig);
+            DELETEZ(m_pWebToolbarConfig);
+            DELETEZ(m_pAuthorNames);
             DELETEZ(m_pDBConfig);
             if( m_pColorConfig )
             {
@@ -808,23 +799,20 @@ void SwModule::ConfigurationChanged( utl::ConfigurationBroadcaster* pBrdCst, sal
             bAccessibility = true;
 
         //invalidate all edit windows
-        const TypeId aSwViewTypeId = TYPE(SwView);
-        const TypeId aSwPreviewTypeId = TYPE(SwPagePreview);
-        const TypeId aSwSrcViewTypeId = TYPE(SwSrcView);
         SfxViewShell* pViewShell = SfxViewShell::GetFirst();
         while(pViewShell)
         {
             if(pViewShell->GetWindow())
             {
-                if((pViewShell->IsA(aSwViewTypeId) ||
-                    pViewShell->IsA(aSwPreviewTypeId) ||
-                    pViewShell->IsA(aSwSrcViewTypeId)))
+                if((dynamic_cast< const SwView *>( pViewShell ) !=  nullptr ||
+                    dynamic_cast< const SwPagePreview *>( pViewShell ) !=  nullptr ||
+                    dynamic_cast< const SwSrcView *>( pViewShell ) !=  nullptr))
                 {
                     if(bAccessibility)
                     {
-                        if(pViewShell->IsA(aSwViewTypeId))
+                        if(dynamic_cast< const SwView *>( pViewShell ) !=  nullptr)
                             static_cast<SwView*>(pViewShell)->ApplyAccessiblityOptions(*m_pAccessibilityOptions);
-                        else if(pViewShell->IsA(aSwPreviewTypeId))
+                        else if(dynamic_cast< const SwPagePreview *>( pViewShell ) !=  nullptr)
                             static_cast<SwPagePreview*>(pViewShell)->ApplyAccessiblityOptions(*m_pAccessibilityOptions);
                     }
                     pViewShell->GetWindow()->Invalidate();
@@ -838,7 +826,7 @@ void SwModule::ConfigurationChanged( utl::ConfigurationBroadcaster* pBrdCst, sal
         const SfxObjectShell* pObjSh = SfxObjectShell::GetFirst();
         while( pObjSh )
         {
-            if( pObjSh->IsA(TYPE(SwDocShell)) )
+            if( dynamic_cast<const SwDocShell*>(pObjSh) !=  nullptr )
             {
                 SwDoc* pDoc = const_cast<SwDocShell*>(static_cast<const SwDocShell*>(pObjSh))->GetDoc();
                 SwViewShell* pVSh = pDoc->getIDocumentLayoutAccess().GetCurrentViewShell();
@@ -921,7 +909,7 @@ void NewXForms( SfxRequest& rReq )
 
     // create new document
     SfxObjectShellLock xDocSh( new SwDocShell( SfxObjectCreateMode::STANDARD) );
-    xDocSh->DoInitNew( 0 );
+    xDocSh->DoInitNew();
 
     // initialize XForms
     static_cast<SwDocShell*>( &xDocSh )->GetDoc()->initXForms( true );

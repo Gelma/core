@@ -48,11 +48,11 @@ namespace drawinglayer
             ::osl::MutexGuard aGuard( m_aMutex );
 
             // create on demand
-            if(!mbShadow3DChecked && getChildren3D().hasElements())
+            if(!mbShadow3DChecked && !getChildren3D().empty())
             {
                 basegfx::B3DVector aLightNormal;
                 const double fShadowSlant(getSdrSceneAttribute().getShadowSlant());
-                const basegfx::B3DRange aScene3DRange(primitive3d::getB3DRangeFromPrimitive3DSequence(getChildren3D(), getViewInformation3D()));
+                const basegfx::B3DRange aScene3DRange(getChildren3D().getB3DRange(getViewInformation3D()));
 
                 if(maSdrLightingAttribute.getLightVector().size())
                 {
@@ -78,7 +78,7 @@ namespace drawinglayer
             }
 
             // return if there are shadow primitives
-            return maShadowPrimitives.hasElements();
+            return !maShadowPrimitives.empty();
         }
 
         void ScenePrimitive2D::calculateDiscreteSizes(
@@ -128,17 +128,16 @@ namespace drawinglayer
             }
         }
 
-        Primitive2DSequence ScenePrimitive2D::create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const
+        Primitive2DContainer ScenePrimitive2D::create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const
         {
-            Primitive2DSequence aRetval;
+            Primitive2DContainer aRetval;
 
             // create 2D shadows from contained 3D primitives. This creates the shadow primitives on demand and tells if
             // there are some or not. Do this at start, the shadow might still be visible even when the scene is not
             if(impGetShadow3D(rViewInformation))
             {
                 // test visibility
-                const basegfx::B2DRange aShadow2DRange(
-                    getB2DRangeFromPrimitive2DSequence(maShadowPrimitives, rViewInformation));
+                const basegfx::B2DRange aShadow2DRange(maShadowPrimitives.getB2DRange(rViewInformation));
                 const basegfx::B2DRange aViewRange(
                     rViewInformation.getViewport());
 
@@ -298,7 +297,7 @@ namespace drawinglayer
 
                     // create bitmap primitive and add
                     const Primitive2DReference xRef(new BitmapPrimitive2D(maOldRenderedBitmap, aNew2DTransform));
-                    appendPrimitive2DReferenceToPrimitive2DSequence(aRetval, xRef);
+                    aRetval.push_back(xRef);
 
                     // test: Allow to add an outline in the debugger when tests are needed
                     static bool bAddOutlineToCreated3DSceneRepresentation(false);
@@ -308,7 +307,7 @@ namespace drawinglayer
                         basegfx::B2DPolygon aOutline(basegfx::tools::createUnitPolygon());
                         aOutline.transform(aNew2DTransform);
                         const Primitive2DReference xRef2(new PolygonHairlinePrimitive2D(aOutline, basegfx::BColor(1.0, 0.0, 0.0)));
-                        appendPrimitive2DReferenceToPrimitive2DSequence(aRetval, xRef2);
+                        aRetval.push_back(xRef2);
                     }
                 }
             }
@@ -316,12 +315,12 @@ namespace drawinglayer
             return aRetval;
         }
 
-        Primitive2DSequence ScenePrimitive2D::getGeometry2D() const
+        Primitive2DContainer ScenePrimitive2D::getGeometry2D() const
         {
-            Primitive2DSequence aRetval;
+            Primitive2DContainer aRetval;
 
             // create 2D projected geometry from 3D geometry
-            if(getChildren3D().hasElements())
+            if(!getChildren3D().empty())
             {
                 // create 2D geometry extraction processor
                 processor3d::Geometry2DExtractingProcessor aGeometryProcessor(
@@ -338,9 +337,9 @@ namespace drawinglayer
             return aRetval;
         }
 
-        Primitive2DSequence ScenePrimitive2D::getShadow2D(const geometry::ViewInformation2D& rViewInformation) const
+        Primitive2DContainer ScenePrimitive2D::getShadow2D(const geometry::ViewInformation2D& rViewInformation) const
         {
-            Primitive2DSequence aRetval;
+            Primitive2DContainer aRetval;
 
             // create 2D shadows from contained 3D primitives
             if(impGetShadow3D(rViewInformation))
@@ -394,7 +393,7 @@ namespace drawinglayer
         }
 
         ScenePrimitive2D::ScenePrimitive2D(
-            const primitive3d::Primitive3DSequence& rxChildren3D,
+            const primitive3d::Primitive3DContainer& rxChildren3D,
             const attribute::SdrSceneAttribute& rSdrSceneAttribute,
             const attribute::SdrLightingAttribute& rSdrLightingAttribute,
             const basegfx::B2DHomMatrix& rObjectTransformation,
@@ -420,7 +419,7 @@ namespace drawinglayer
             {
                 const ScenePrimitive2D& rCompare = static_cast<const ScenePrimitive2D&>(rPrimitive);
 
-                return (primitive3d::arePrimitive3DSequencesEqual(getChildren3D(), rCompare.getChildren3D())
+                return (getChildren3D() == rCompare.getChildren3D()
                     && getSdrSceneAttribute() == rCompare.getSdrSceneAttribute()
                     && getSdrLightingAttribute() == rCompare.getSdrLightingAttribute()
                     && getObjectTransformation() == rCompare.getObjectTransformation()
@@ -446,7 +445,7 @@ namespace drawinglayer
             // expand by evtl. existing shadow primitives
             if(impGetShadow3D(rViewInformation))
             {
-                const basegfx::B2DRange aShadow2DRange(getB2DRangeFromPrimitive2DSequence(maShadowPrimitives, rViewInformation));
+                const basegfx::B2DRange aShadow2DRange(maShadowPrimitives.getB2DRange(rViewInformation));
 
                 if(!aShadow2DRange.isEmpty())
                 {
@@ -457,7 +456,7 @@ namespace drawinglayer
             return aRetval;
         }
 
-        Primitive2DSequence ScenePrimitive2D::get2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const
+        Primitive2DContainer ScenePrimitive2D::get2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const
         {
             ::osl::MutexGuard aGuard( m_aMutex );
 
@@ -467,7 +466,7 @@ namespace drawinglayer
             bool bNeedNewDecomposition(false);
             bool bDiscreteSizesAreCalculated(false);
 
-            if(getBuffered2DDecomposition().hasElements())
+            if(!getBuffered2DDecomposition().empty())
             {
                 basegfx::B2DRange aVisibleDiscreteRange;
                 calculateDiscreteSizes(rViewInformation, aDiscreteRange, aVisibleDiscreteRange, aUnitVisibleRange);
@@ -495,10 +494,10 @@ namespace drawinglayer
             if(bNeedNewDecomposition)
             {
                 // conditions of last local decomposition have changed, delete
-                const_cast< ScenePrimitive2D* >(this)->setBuffered2DDecomposition(Primitive2DSequence());
+                const_cast< ScenePrimitive2D* >(this)->setBuffered2DDecomposition(Primitive2DContainer());
             }
 
-            if(!getBuffered2DDecomposition().hasElements())
+            if(getBuffered2DDecomposition().empty())
             {
                 if(!bDiscreteSizesAreCalculated)
                 {

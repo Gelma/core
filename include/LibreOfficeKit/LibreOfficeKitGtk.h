@@ -42,7 +42,8 @@ GType                          lok_doc_view_get_type               (void) G_GNUC
 
 /**
  * lok_doc_view_new:
- * @pPath: LibreOffice install path.
+ * @pPath: (nullable): LibreOffice install path. Pass null to set it to default
+ * path which in most cases would be $libdir/libreoffice/program
  * @cancellable: The cancellable object that you can use to cancel this
  * operation.
  * @error: The error that will be set if the object fails to initialize.
@@ -65,6 +66,7 @@ GtkWidget*                     lok_doc_view_new_from_widget        (LOKDocView* 
  * lok_doc_view_open_document:
  * @pDocView: The #LOKDocView instance
  * @pPath: (transfer full): The path of the document that #LOKDocView widget should try to open
+ * @pRenderingArguments: (nullable): lok::Document::initializeForRendering() arguments.
  * @cancellable:
  * @callback:
  * @userdata:
@@ -73,6 +75,7 @@ GtkWidget*                     lok_doc_view_new_from_widget        (LOKDocView* 
  */
 void                           lok_doc_view_open_document          (LOKDocView* pDocView,
                                                                     const gchar* pPath,
+                                                                    const gchar* pRenderingArguments,
                                                                     GCancellable* cancellable,
                                                                     GAsyncReadyCallback callback,
                                                                     gpointer userdata);
@@ -115,19 +118,24 @@ void                           lok_doc_view_set_zoom               (LOKDocView* 
  *
  * Returns: The current zoom factor value in float for pDocView
  */
-float                          lok_doc_view_get_zoom               (LOKDocView* pDocView);
+gfloat                         lok_doc_view_get_zoom               (LOKDocView* pDocView);
 
 /**
  * lok_doc_view_get_parts:
  * @pDocView: The #LOKDocView instance
+ *
+ * Returns: Part refers to either individual sheets in a Calc, or slides in Impress,
+ * and has no relevance for Writer. Returns -1 if no document is set currently.
  */
-int                            lok_doc_view_get_parts              (LOKDocView* pDocView);
+gint                           lok_doc_view_get_parts              (LOKDocView* pDocView);
 
 /**
  * lok_doc_view_get_part:
  * @pDocView: The #LOKDocView instance
+ *
+ * Returns: Current part number of the document. Returns -1 if no document is set currently.
  */
-int                            lok_doc_view_get_part               (LOKDocView* pDocView);
+gint                           lok_doc_view_get_part               (LOKDocView* pDocView);
 
 /**
  * lok_doc_view_set_part:
@@ -141,8 +149,11 @@ void                           lok_doc_view_set_part               (LOKDocView* 
  * lok_doc_view_get_part_name:
  * @pDocView: The #LOKDocView instance
  * @nPart:
+ *
+ * Returns: Get current part name of loaded document. Returns null if no
+ * document is set, or document has been destroyed using lok_doc_view_destroy_document.
  */
-char*                          lok_doc_view_get_part_name          (LOKDocView* pDocView,
+gchar*                         lok_doc_view_get_part_name          (LOKDocView* pDocView,
                                                                     int nPart);
 
 /**
@@ -184,12 +195,82 @@ gboolean                       lok_doc_view_get_edit               (LOKDocView* 
  * @pDocView: the #LOKDocView instance
  * @pCommand: the command to issue to LO core
  * @pArguments: the arguments to the given command
+ * @bNotifyWhenFinished: normally false, but it may be useful for eg. .uno:Save
  *
  * Posts the .uno: command to the LibreOfficeKit.
  */
 void                           lok_doc_view_post_command           (LOKDocView* pDocView,
                                                                     const gchar* pCommand,
-                                                                    const gchar* pArguments);
+                                                                    const gchar* pArguments,
+                                                                    gboolean bNotifyWhenFinished);
+
+
+/**
+ * lok_doc_view_find_next:
+ * @pDocView: The #LOKDocView instance
+ * @pText: text to search for
+ * @bHighlightAll: Whether all the matches should be highlighted or not
+ *
+ * Highlights the next matching text in the view. `search-not-found` signal will
+ * be emitted when no search is found
+ */
+void                           lok_doc_view_find_next              (LOKDocView* pDocView,
+                                                                    const gchar* pText,
+                                                                    gboolean bHighlightAll);
+
+/**
+ * lok_doc_view_find_prev:
+ * @pDocView: The #LOKDocView instance
+ * @pText: text to search for
+ * @bHighlightAll: Whether all the matches should be highlighted or not
+ *
+ * Highlights the previous matching text in the view. `search-not-found` signal
+ * will be emitted when no search is found
+ */
+void                           lok_doc_view_find_prev              (LOKDocView* pDocView,
+                                                                    const gchar* pText,
+                                                                    gboolean bHighlightAll);
+
+/**
+ * lok_doc_view_highlight_all:
+ * @pDocView: The #LOKDocView instance
+ * @pText: text to search for
+ *
+ * Highlights all matching texts in the view. `search-not-found` signal
+ * will be emitted when no search is found
+ */
+void                           lok_doc_view_highlight_all          (LOKDocView* pDocView,
+                                                                    const gchar* pText);
+
+/**
+ * lok_doc_view_copy_selection:
+ * @pDocView: The #LOKDocView instance
+ * @pMimeType: suggests the return format, for example text/plain;charset=utf-8
+ * @pUsedMimeType: (out): output parameter to inform about the determined format
+ * (suggested or plain text).
+ *
+ * Returns: Selected text. The caller must free the returned buffer after
+ * use. Returns null if no document is set.
+ */
+gchar*                          lok_doc_view_copy_selection        (LOKDocView* pDocView,
+                                                                    const gchar* pMimeType,
+                                                                    gchar** pUsedMimeType);
+
+/**
+ * lok_doc_view_paste:
+ * @pDocView: The #LOKDocView instance
+ * @pMimeType: format of pData, for example text/plain;charset=utf-8
+ * @pData: the data to be pasted
+ * @nSize: length of data to be pasted
+ *
+ * Pastes the content at the current cursor position
+ *
+ * Returns: if pData was pasted successfully.
+ */
+gboolean                        lok_doc_view_paste                 (LOKDocView* pDocView,
+                                                                    const gchar* pMimeType,
+                                                                    const gchar* pData,
+                                                                    gsize nSize);
 
 /**
  * lok_doc_view_pixel_to_twip:
@@ -200,7 +281,7 @@ void                           lok_doc_view_post_command           (LOKDocView* 
  *
  * Returns: The corresponding value in twips
  */
-float                          lok_doc_view_pixel_to_twip          (LOKDocView* pDocView,
+gfloat                         lok_doc_view_pixel_to_twip          (LOKDocView* pDocView,
                                                                     float fInput);
 
 /**
@@ -212,7 +293,7 @@ float                          lok_doc_view_pixel_to_twip          (LOKDocView* 
  *
  * Returns: The corresponding value in pixels
  */
-float                          lok_doc_view_twip_to_pixel          (LOKDocView* pDocView,
+gfloat                         lok_doc_view_twip_to_pixel          (LOKDocView* pDocView,
                                                                     float fInput);
 
 G_END_DECLS

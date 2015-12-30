@@ -125,7 +125,6 @@ CellAppearancePropertyPanel::CellAppearancePropertyPanel(
     mpCellLineStylePopup(),
     mpCellBorderStylePopup(),
 
-    mxFrame(rxFrame),
     maContext(),
     mpBindings(pBindings)
 {
@@ -195,7 +194,7 @@ IMPL_LINK_TYPED(CellAppearancePropertyPanel, TbxCellBorderSelectHdl, ToolBox*, p
             mpCellBorderStylePopup.reset(
                 new CellBorderStylePopup(
                     this,
-                    ::boost::bind(&CellAppearancePropertyPanel::CreateCellBorderStylePopupControl, this, _1)));
+                    [this] (svx::sidebar::PopupContainer* pParent) { return this->CreateCellBorderStylePopupControl(pParent); } ));
         }
 
         if(mpCellBorderStylePopup.get())
@@ -217,7 +216,7 @@ IMPL_LINK_TYPED(CellAppearancePropertyPanel, TbxLineStyleSelectHdl, ToolBox*, pT
             mpCellLineStylePopup.reset(
                 new CellLineStylePopup(
                     this,
-                    ::boost::bind(&CellAppearancePropertyPanel::CreateCellLineStylePopupControl, this, _1)));
+                    [this] (svx::sidebar::PopupContainer* pParent) { return this->CreateCellLineStylePopupControl(pParent); } ));
         }
 
         if(mpCellLineStylePopup.get())
@@ -233,12 +232,12 @@ VclPtr<vcl::Window> CellAppearancePropertyPanel::Create (
     const css::uno::Reference<css::frame::XFrame>& rxFrame,
     SfxBindings* pBindings)
 {
-    if (pParent == NULL)
-        throw lang::IllegalArgumentException("no parent Window given to CellAppearancePropertyPanel::Create", NULL, 0);
+    if (pParent == nullptr)
+        throw lang::IllegalArgumentException("no parent Window given to CellAppearancePropertyPanel::Create", nullptr, 0);
     if ( ! rxFrame.is())
-        throw lang::IllegalArgumentException("no XFrame given to CellAppearancePropertyPanel::Create", NULL, 1);
-    if (pBindings == NULL)
-        throw lang::IllegalArgumentException("no SfxBindings given to CellAppearancePropertyPanel::Create", NULL, 2);
+        throw lang::IllegalArgumentException("no XFrame given to CellAppearancePropertyPanel::Create", nullptr, 1);
+    if (pBindings == nullptr)
+        throw lang::IllegalArgumentException("no SfxBindings given to CellAppearancePropertyPanel::Create", nullptr, 2);
 
     return VclPtr<CellAppearancePropertyPanel>::Create(
                         pParent, rxFrame, pBindings);

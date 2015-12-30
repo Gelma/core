@@ -20,6 +20,7 @@
 #include <vcl/window.hxx>
 #include <vcl/seleng.hxx>
 #include <tools/debug.hxx>
+#include <comphelper/lok.hxx>
 
 FunctionSet::~FunctionSet()
 {
@@ -279,7 +280,7 @@ bool SelectionEngine::SelMouseButtonUp( const MouseEvent& rMEvt )
 
 void SelectionEngine::ReleaseMouse()
 {
-    if (!pWin)
+    if (!pWin || !pWin->IsMouseCaptured())
         return;
     pWin->ReleaseMouse();
 }
@@ -301,7 +302,9 @@ bool SelectionEngine::SelMouseMove( const MouseEvent& rMEvt )
         return true;
 
     aWTimer.SetTimeout( nUpdateInterval );
-    aWTimer.Start();
+    if (!comphelper::LibreOfficeKit::isActive())
+        // Generating fake mouse moves does not work with LOK.
+        aWTimer.Start();
     if ( eSelMode != SINGLE_SELECTION )
     {
         if ( !(nFlags & SelectionEngineFlags::HAS_ANCH) )

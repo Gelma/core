@@ -51,20 +51,18 @@ void TraceRequest (const Reference<XConfigurationChangeRequest>& rxRequest)
 namespace sd { namespace framework {
 
 ChangeRequestQueueProcessor::ChangeRequestQueueProcessor (
-    const ::rtl::Reference<ConfigurationController>& rpConfigurationController,
     const std::shared_ptr<ConfigurationUpdater>& rpConfigurationUpdater)
     : maMutex(),
       maQueue(),
-      mnUserEventId(0),
+      mnUserEventId(nullptr),
       mxConfiguration(),
-      mpConfigurationController(rpConfigurationController),
       mpConfigurationUpdater(rpConfigurationUpdater)
 {
 }
 
 ChangeRequestQueueProcessor::~ChangeRequestQueueProcessor()
 {
-    if (mnUserEventId != 0)
+    if (mnUserEventId != nullptr)
         Application::RemoveUserEvent(mnUserEventId);
 }
 
@@ -101,7 +99,7 @@ void ChangeRequestQueueProcessor::StartProcessing()
 {
     ::osl::MutexGuard aGuard (maMutex);
 
-    if (mnUserEventId == 0
+    if (mnUserEventId == nullptr
         && mxConfiguration.is()
         && ! maQueue.empty())
     {
@@ -115,7 +113,7 @@ IMPL_LINK_NOARG_TYPED(ChangeRequestQueueProcessor, ProcessEvent, void*, void)
 {
     ::osl::MutexGuard aGuard (maMutex);
 
-    mnUserEventId = 0;
+    mnUserEventId = nullptr;
 
     ProcessOneEvent();
 
@@ -153,7 +151,7 @@ void ChangeRequestQueueProcessor::ProcessOneEvent()
             SAL_INFO("sd.fwk", OSL_THIS_FUNC << ": All requests are processed");
             // The queue is empty so tell the ConfigurationManager to update
             // its state.
-            if (mpConfigurationUpdater.get() != NULL)
+            if (mpConfigurationUpdater.get() != nullptr)
             {
 #if OSL_DEBUG_LEVEL >= 2
                 ConfigurationTracer::TraceConfiguration (

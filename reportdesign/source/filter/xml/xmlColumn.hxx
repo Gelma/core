@@ -32,22 +32,22 @@ namespace rptxml
         ORptFilter& GetOwnImport();
 
         void fillStyle(const OUString& _sStyleName);
-        OXMLRowColumn(const OXMLRowColumn&) SAL_DELETED_FUNCTION;
-        void operator =(const OXMLRowColumn&) SAL_DELETED_FUNCTION;
+        OXMLRowColumn(const OXMLRowColumn&) = delete;
+        void operator =(const OXMLRowColumn&) = delete;
     public:
 
         OXMLRowColumn( ORptFilter& rImport
                     ,sal_uInt16 nPrfx
                     ,const OUString& rLName
-                    ,const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList
+                    ,const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList
                     ,OXMLTable* _pContainer
                     );
         virtual ~OXMLRowColumn();
 
         virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                     const OUString& rLocalName,
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
-        virtual void EndElement() SAL_OVERRIDE;
+                    const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
+        virtual void EndElement() override;
     };
 
 } // namespace rptxml

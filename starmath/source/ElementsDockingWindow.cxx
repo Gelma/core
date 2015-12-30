@@ -24,12 +24,11 @@
 #include <view.hxx>
 #include <visitors.hxx>
 
+#include <o3tl/make_unique.hxx>
 #include <svl/stritem.hxx>
 #include <sfx2/dispatch.hxx>
 #include <sfx2/sfxmodelfactory.hxx>
 #include <vcl/settings.hxx>
-
-typedef tools::SvRef<SmDocShell> SmDocShellRef;
 
 SmElement::SmElement(SmNodePointer pNode, const OUString& aText, const OUString& aHelpText) :
     mpNode(pNode),
@@ -221,7 +220,7 @@ SmElementsControl::SmElementsControl(vcl::Window *pParent)
     : Control(pParent, WB_TABSTOP)
     , mpDocShell(new SmDocShell(SfxModelFlags::EMBEDDED_OBJECT))
     , maCurrentSetId(0)
-    , mpCurrentElement(NULL)
+    , mpCurrentElement(nullptr)
     , mbVerticalMode(true)
     , mxScroll(VclPtr<ScrollBar>::Create(this, WB_VERT))
 {
@@ -390,7 +389,7 @@ void SmElementsControl::Paint(vcl::RenderContext& rRenderContext, const Rectangl
 
 void SmElementsControl::MouseMove( const MouseEvent& rMouseEvent )
 {
-    mpCurrentElement = NULL;
+    mpCurrentElement = nullptr;
     OUString tooltip;
     if (Rectangle(Point(0, 0), GetOutputSizePixel()).IsInside(rMouseEvent.GetPosPixel()))
     {
@@ -459,8 +458,7 @@ void SmElementsControl::DoScroll(long nDelta)
 
 void SmElementsControl::addSeparator()
 {
-    SmElementPointer pElement(new SmElementSeparator());
-    maElementList.push_back(pElement);
+    maElementList.push_back(o3tl::make_unique<SmElementSeparator>());
 }
 
 void SmElementsControl::addElement(const OUString& aElementVisual, const OUString& aElementSource, const OUString& aHelpText)
@@ -480,8 +478,7 @@ void SmElementsControl::addElement(const OUString& aElementVisual, const OUStrin
         maMaxElementDimensions.Height() = aSizePixel.Height();
     }
 
-    SmElementPointer pElement(new SmElement(pNode, aElementSource, aHelpText));
-    maElementList.push_back(pElement);
+    maElementList.push_back(o3tl::make_unique<SmElement>(pNode, aElementSource, aHelpText));
 }
 
 void SmElementsControl::setElementSetId(sal_uInt16 aSetId)
@@ -725,25 +722,24 @@ void SmElementsDockingWindow::SelectClickHandler( SmElement* pElement )
     }
 }
 
-IMPL_LINK( SmElementsDockingWindow, ElementSelectedHandle, ListBox*, pList)
+IMPL_LINK_TYPED( SmElementsDockingWindow, ElementSelectedHandle, ListBox&, rList, void)
 {
     for (sal_uInt16 i = 0; i < SAL_N_ELEMENTS(aCategories) ; i++)
     {
         sal_uInt16 aCurrentCategory = aCategories[i];
         OUString aCurrentCategoryString = SM_RESSTR(aCurrentCategory);
-        if (aCurrentCategoryString == pList->GetSelectEntry())
+        if (aCurrentCategoryString == rList.GetSelectEntry())
         {
             mpElementsControl->setElementSetId(aCurrentCategory);
-            return 0;
+            return;
         }
     }
-    return 0;
 }
 
 SmViewShell* SmElementsDockingWindow::GetView()
 {
     SfxViewShell* pView = GetBindings().GetDispatcher()->GetFrame()->GetViewShell();
-    return PTR_CAST(SmViewShell, pView);
+    return  dynamic_cast<SmViewShell*>( pView);
 }
 
 void SmElementsDockingWindow::Resize()

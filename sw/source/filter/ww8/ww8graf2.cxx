@@ -242,8 +242,7 @@ extern void WW8PicShadowToReal(  WW8_PIC_SHADOW*  pPicS,  WW8_PIC*  pPic );
 
 bool SwWW8ImplReader::GetPictGrafFromStream(Graphic& rGraphic, SvStream& rSrc)
 {
-    return 0 == GraphicFilter::GetGraphicFilter().ImportGraphic(rGraphic, OUString(), rSrc,
-        GRFILTER_FORMAT_DONTKNOW);
+    return 0 == GraphicFilter::GetGraphicFilter().ImportGraphic(rGraphic, OUString(), rSrc);
 }
 
 bool SwWW8ImplReader::ReadGrafFile(OUString& rFileName, Graphic*& rpGraphic,
@@ -270,7 +269,7 @@ bool SwWW8ImplReader::ReadGrafFile(OUString& rFileName, Graphic*& rpGraphic,
 
     GDIMetaFile aWMF;
     pSt->Seek( nPosFc );
-    bool bOk = ReadWindowMetafile( *pSt, aWMF, NULL );
+    bool bOk = ReadWindowMetafile( *pSt, aWMF );
 
     if (!bOk || pSt->GetError() || !aWMF.GetActionSize())
         return false;
@@ -367,16 +366,16 @@ SwFlyFrameFormat* SwWW8ImplReader::MakeGrafNotInContent(const WW8PicDesc& rPD,
     aAnchor.SetAnchor(m_pPaM->GetPoint());
     aFlySet.Put(aAnchor);
 
-    aFlySet.Put( SwFormatFrmSize( ATT_FIX_SIZE, nWidth, nHeight ) );
+    aFlySet.Put( SwFormatFrameSize( ATT_FIX_SIZE, nWidth, nHeight ) );
 
     SwFlyFrameFormat* pFlyFormat = m_rDoc.getIDocumentContentOperations().Insert(*m_pPaM, rFileName, OUString(), pGraph,
-        &aFlySet, &rGrfSet, NULL);
+        &aFlySet, &rGrfSet, nullptr);
 
     // So the frames are generated when inserted in an existing doc:
     if (m_rDoc.getIDocumentLayoutAccess().GetCurrentViewShell() &&
         (FLY_AT_PARA == pFlyFormat->GetAnchor().GetAnchorId()))
     {
-        pFlyFormat->MakeFrms();
+        pFlyFormat->MakeFrames();
     }
     return pFlyFormat;
 }
@@ -388,7 +387,7 @@ SwFrameFormat* SwWW8ImplReader::MakeGrafInContent(const WW8_PIC& rPic,
 {
     WW8FlySet aFlySet(*this, m_pPaM, rPic, rPD.nWidth, rPD.nHeight);
 
-    SwFrameFormat* pFlyFormat = 0;
+    SwFrameFormat* pFlyFormat = nullptr;
 
     if (rFileName.isEmpty() && m_nObjLocFc)      // dann sollte ists ein OLE-Object
         pFlyFormat = ImportOle(pGraph, &aFlySet, &rGrfSet);
@@ -397,7 +396,7 @@ SwFrameFormat* SwWW8ImplReader::MakeGrafInContent(const WW8_PIC& rPic,
     {
 
         pFlyFormat = m_rDoc.getIDocumentContentOperations().Insert( *m_pPaM, rFileName, OUString(), pGraph, &aFlySet,
-            &rGrfSet, NULL);
+            &rGrfSet, nullptr);
     }
 
     // Resize the frame to the size of the picture if graphic is inside a frame
@@ -410,19 +409,19 @@ SwFrameFormat* SwWW8ImplReader::MakeGrafInContent(const WW8_PIC& rPic,
 SwFrameFormat* SwWW8ImplReader::ImportGraf1(WW8_PIC& rPic, SvStream* pSt,
     sal_uLong nFilePos )
 {
-    SwFrameFormat* pRet = 0;
+    SwFrameFormat* pRet = nullptr;
     if( pSt->IsEof() || rPic.fError || rPic.MFP.mm == 99 )
-        return 0;
+        return nullptr;
 
     OUString aFileName;
     bool bInDoc;
-    Graphic* pGraph = 0;
+    Graphic* pGraph = nullptr;
     bool bOk = ReadGrafFile(aFileName, pGraph, rPic, pSt, nFilePos, &bInDoc);
 
     if (!bOk)
     {
         delete pGraph;
-        return 0;                       // Graphic could not be readed correctly
+        return nullptr;                       // Graphic could not be readed correctly
     }
 
     WW8PicDesc aPD( rPic );
@@ -460,13 +459,13 @@ void SwWW8ImplReader::PicRead(SvStream *pDataStream, WW8_PIC *pPic,
 SwFrameFormat* SwWW8ImplReader::ImportGraf(SdrTextObj* pTextObj,
     SwFrameFormat* pOldFlyFormat)
 {
-    SwFrameFormat* pRet = 0;
+    SwFrameFormat* pRet = nullptr;
     if (
         ((m_pStrm == m_pDataStream ) && !m_nPicLocFc) ||
         (m_nIniFlags & WW8FL_NO_GRAF)
        )
     {
-        return 0;
+        return nullptr;
     }
 
     ::SetProgressState(m_nProgress, m_pDocShell);         // Update
@@ -507,12 +506,12 @@ SwFrameFormat* SwWW8ImplReader::ImportGraf(SdrTextObj* pTextObj,
 
             m_pFlyFormatOfJustInsertedGraphic->SetFormatAttr( aFlySet );
 
-            m_pFlyFormatOfJustInsertedGraphic = 0;
+            m_pFlyFormatOfJustInsertedGraphic = nullptr;
         }
         else if((0x64 == aPic.MFP.mm) || (0x66 == aPic.MFP.mm))
         {
             // verlinkte Grafik im Escher-Objekt
-            SdrObject* pObject = 0;
+            SdrObject* pObject = nullptr;
 
             WW8PicDesc aPD( aPic );
             if (!m_pMSDffManager)
@@ -603,7 +602,7 @@ SwFrameFormat* SwWW8ImplReader::ImportGraf(SdrTextObj* pTextObj,
 
                     // Set the size from the WinWord PIC-structure as graphic
                     // size
-                    aAttrSet.Put( SwFormatFrmSize( ATT_FIX_SIZE, aPD.nWidth,
+                    aAttrSet.Put( SwFormatFrameSize( ATT_FIX_SIZE, aPD.nWidth,
                         aPD.nHeight ) );
                 }
 
@@ -648,7 +647,7 @@ SwFrameFormat* SwWW8ImplReader::ImportGraf(SdrTextObj* pTextObj,
                     }
                     else
                     {
-                        if (SdrGrafObj* pGraphObject = PTR_CAST(SdrGrafObj, pObject))
+                        if (SdrGrafObj* pGraphObject = dynamic_cast<SdrGrafObj*>( pObject) )
                         {
                             // Now add the link or rather the graphic to the doc
                             const Graphic& rGraph = pGraphObject->GetGraphic();
@@ -659,7 +658,7 @@ SwFrameFormat* SwWW8ImplReader::ImportGraf(SdrTextObj* pTextObj,
                             if (!pRet)
                             {
                                 pRet = m_rDoc.getIDocumentContentOperations().Insert(*m_pPaM, OUString(), OUString(),
-                                    &rGraph, &aAttrSet, &aGrSet, NULL );
+                                    &rGraph, &aAttrSet, &aGrSet, nullptr );
                             }
                         }
                         else
@@ -671,7 +670,7 @@ SwFrameFormat* SwWW8ImplReader::ImportGraf(SdrTextObj* pTextObj,
                 if (pRet)
                 {
                     if (pRecord)
-                        SetAttributesAtGrfNode(pRecord, pRet, 0);
+                        SetAttributesAtGrfNode(pRecord, pRet, nullptr);
 
                     // #i68101#
                     // removed pObject->HasSetName() usage since always returned
@@ -686,7 +685,7 @@ SwFrameFormat* SwWW8ImplReader::ImportGraf(SdrTextObj* pTextObj,
                     {
                         if (pOurNewObject != pObject)
                         {
-                            m_pMSDffManager->ExchangeInShapeOrder( pObject, 0, 0,
+                            m_pMSDffManager->ExchangeInShapeOrder( pObject, 0, nullptr,
                                 pOurNewObject );
 
                             // delete and destroy old SdrGrafObj from page

@@ -29,6 +29,8 @@
 // Size of the sliders
 #define HDR_SLIDERSIZE      2
 
+class ScTabView;
+
 class ScHeaderControl : public vcl::Window
 {
 private:
@@ -57,6 +59,8 @@ private:
 
     bool            bIgnoreMove;
 
+    bool            bDoneInitRef;
+
     long            GetScrPos( SCCOLROW nEntryNo ) const;
     SCCOLROW        GetMousePos( const MouseEvent& rMEvt, bool& rBorder ) const;
     bool            IsSelectionAllowed(SCCOLROW nPos) const;
@@ -67,16 +71,18 @@ private:
     void            DrawShadedRect( long nStart, long nEnd, const Color& rBaseColor );
 
 protected:
+    ScTabView*      pTabView;
+
                     // Window overrides
 
-    virtual void    Paint( vcl::RenderContext& rRenderContext, const Rectangle& rRect ) SAL_OVERRIDE;
+    virtual void    Paint( vcl::RenderContext& rRenderContext, const Rectangle& rRect ) override;
 
-    virtual void    MouseMove( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    MouseButtonUp( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    Tracking( const TrackingEvent& rTEvt ) SAL_OVERRIDE;
+    virtual void    MouseMove( const MouseEvent& rMEvt ) override;
+    virtual void    MouseButtonUp( const MouseEvent& rMEvt ) override;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void    Tracking( const TrackingEvent& rTEvt ) override;
 
-    virtual void    RequestHelp( const HelpEvent& rHEvt ) SAL_OVERRIDE;
+    virtual void    RequestHelp( const HelpEvent& rHEvt ) override;
 
                     // new methods
 
@@ -98,11 +104,11 @@ protected:
     virtual OUString  GetDragHelp( long nVal );
 
     virtual void    DrawInvert( long nDragPos );
-    virtual void    Command( const CommandEvent& rCEvt ) SAL_OVERRIDE;
+    virtual void    Command( const CommandEvent& rCEvt ) override;
 
 public:
             ScHeaderControl( vcl::Window* pParent, SelectionEngine* pSelectionEngine,
-                                SCCOLROW nNewSize, bool bNewVertical );
+                             SCCOLROW nNewSize, bool bNewVertical, ScTabView* pTab );
             virtual ~ScHeaderControl();
 
     void    SetIgnoreMove(bool bSet)            { bIgnoreMove = bSet; }

@@ -207,18 +207,17 @@ static const SwFieldPack aSwFields[] =
 static SwWrtShell* lcl_GetShell()
 {
     SwView* pView;
-    if ( 0 != (pView = ::GetActiveView()) )
+    if ( nullptr != (pView = ::GetActiveView()) )
         return pView->GetWrtShellPtr();
     OSL_FAIL("no current shell found!");
-    return 0;
+    return nullptr;
 }
 
 inline sal_uInt16 GetPackCount() {  return sizeof(aSwFields) / sizeof(SwFieldPack); }
 
 // FieldManager controls inserting and updating of fields
 SwFieldMgr::SwFieldMgr(SwWrtShell* pSh ) :
-    pModule(0),
-    pMacroItem(0),
+    pMacroItem(nullptr),
     pWrtShell(pSh),
     bEvalExp(true)
 {
@@ -238,13 +237,13 @@ bool  SwFieldMgr::CanInsertRefMark( const OUString& rStr )
     OSL_ENSURE(pSh, "no SwWrtShell found");
     if(pSh)
     {
-        sal_uInt16 nCnt = pSh->GetCrsrCnt();
+        sal_uInt16 nCnt = pSh->GetCursorCnt();
 
-        // the last Crsr doesn't have to be a spanned selection
-        if( 1 < nCnt && !pSh->SwCrsrShell::HasSelection() )
+        // the last Cursor doesn't have to be a spanned selection
+        if( 1 < nCnt && !pSh->SwCursorShell::HasSelection() )
             --nCnt;
 
-        bRet =  2 > nCnt && 0 == pSh->GetRefMark( rStr );
+        bRet =  2 > nCnt && nullptr == pSh->GetRefMark( rStr );
     }
     return bRet;
 }
@@ -269,14 +268,14 @@ SwFieldType* SwFieldMgr::GetFieldType(sal_uInt16 nResId, size_t nField) const
 {
     SwWrtShell * pSh = pWrtShell ? pWrtShell : lcl_GetShell();
     OSL_ENSURE(pSh, "no SwWrtShell found");
-    return pSh ? pSh->GetFieldType(nField, nResId) : 0;
+    return pSh ? pSh->GetFieldType(nField, nResId) : nullptr;
 }
 
 SwFieldType* SwFieldMgr::GetFieldType(sal_uInt16 nResId, const OUString& rName) const
 {
     SwWrtShell * pSh = pWrtShell ? pWrtShell : lcl_GetShell();
     OSL_ENSURE(pSh, "no SwWrtShell found");
-    return pSh ? pSh->GetFieldType(nResId, rName) : 0;
+    return pSh ? pSh->GetFieldType(nResId, rName) : nullptr;
 }
 
 // determine current field
@@ -286,7 +285,7 @@ SwField* SwFieldMgr::GetCurField()
     if ( pSh )
         pCurField = pSh->GetCurField( true );
     else
-        pCurField = NULL;
+        pCurField = nullptr;
 
     // initialise strings and format
     aCurPar1.clear();
@@ -295,7 +294,7 @@ SwField* SwFieldMgr::GetCurField()
     nCurFormat = 0;
 
     if(!pCurField)
-        return 0;
+        return nullptr;
 
     // preprocess current values; determine parameter 1 and parameter 2
     // as well as the format
@@ -731,7 +730,7 @@ bool SwFieldMgr::GoNextPrev( bool bNext, SwFieldType* pTyp )
     if (pTyp && pTyp->Which() == RES_DBFLD)
     {
         // for fieldcommand-edit (hop to all DB fields)
-        return pSh->MoveFieldType( 0, bNext, RES_DBFLD );
+        return pSh->MoveFieldType( nullptr, bNext, RES_DBFLD );
     }
 
     return pTyp && pSh && pSh->MoveFieldType( pTyp, bNext );
@@ -756,7 +755,7 @@ sal_uInt16 SwFieldMgr::GetCurTypeId() const
 bool SwFieldMgr::InsertField(
     const SwInsertField_Data& rData)
 {
-    SwField* pField   = 0;
+    SwField* pField   = nullptr;
     bool bExp = false;
     bool bTable = false;
     bool bPageVar = false;
@@ -1255,7 +1254,7 @@ bool SwFieldMgr::InsertField(
 
     case TYP_FORMELFLD:
         {
-            if(pCurShell->GetFrmType(0,false) & FrmTypeFlags::TABLE)
+            if(pCurShell->GetFrameType(nullptr,false) & FrameTypeFlags::TABLE)
             {
                 pCurShell->StartAllAction();
 
@@ -1349,7 +1348,7 @@ bool SwFieldMgr::InsertField(
     else if( bPageVar )
         static_cast<SwRefPageGetFieldType*>(pCurShell->GetFieldType( 0, RES_REFPAGEGETFLD ))->UpdateFields();
     else if( TYP_GETREFFLD == rData.m_nTypeId )
-        pField->GetTyp()->ModifyNotification( 0, 0 );
+        pField->GetTyp()->ModifyNotification( nullptr, nullptr );
 
     // delete temporary field
     delete pField;
@@ -1362,14 +1361,14 @@ bool SwFieldMgr::InsertField(
 void SwFieldMgr::UpdateCurField(sal_uLong nFormat,
                             const OUString& rPar1,
                             const OUString& rPar2,
-                            SwField * _pTmpField) // #111840#
+                            SwField * _pTmpField)
 {
     // change format
     OSL_ENSURE(pCurField, "no field at CursorPos");
 
     bool bDelete = false;
     SwField *pTmpField;       // mb: fixed memory leak
-    if (NULL != _pTmpField)
+    if (nullptr != _pTmpField)
     {
         pTmpField = _pTmpField;
     }
@@ -1538,7 +1537,7 @@ void SwFieldMgr::UpdateCurField(sal_uLong nFormat,
 // explicitly evaluate ExpressionFields
 void SwFieldMgr::EvalExpFields(SwWrtShell* pSh)
 {
-    if (pSh == NULL)
+    if (pSh == nullptr)
         pSh = pWrtShell ? pWrtShell : ::lcl_GetShell();
 
     if(pSh)
@@ -1707,7 +1706,7 @@ Reference<XNumberingTypeInfo> SwFieldMgr::GetNumberingInfo() const
     {
         Reference<XComponentContext>         xContext( ::comphelper::getProcessComponentContext() );
         Reference<XDefaultNumberingProvider> xDefNum = text::DefaultNumberingProvider::create(xContext);
-        const_cast<SwFieldMgr*>(this)->xNumberingInfo = Reference<XNumberingTypeInfo>(xDefNum, UNO_QUERY);
+        const_cast<SwFieldMgr*>(this)->xNumberingInfo.set(xDefNum, UNO_QUERY);
     }
     return xNumberingInfo;
 }

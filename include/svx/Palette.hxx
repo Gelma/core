@@ -23,8 +23,8 @@
 #include <svx/xtable.hxx>
 #include <rtl/ustring.hxx>
 #include <tools/color.hxx>
-#include <tools/stream.hxx>
 
+class SvFileStream;
 
 typedef std::pair<Color, OUString> NamedColor;
 typedef std::vector< NamedColor > ColorList;
@@ -40,11 +40,13 @@ public:
     virtual bool                IsValid() = 0;
 };
 
+// ASE = Adobe Swatch Exchange
+
 class PaletteASE : public Palette
 {
     bool        mbValidPalette;
     OUString    maFPath;
-    OUString    maName;
+    OUString    maASEPaletteName;
     ColorList   maColors;
 
     void        LoadPalette();
@@ -52,11 +54,13 @@ public:
     PaletteASE( const OUString &rFPath, const OUString &rFName );
     virtual ~PaletteASE();
 
-    virtual const OUString&     GetName() SAL_OVERRIDE;
-    virtual void                LoadColorSet( SvxColorValueSet& rColorSet ) SAL_OVERRIDE;
+    virtual const OUString&     GetName() override;
+    virtual void                LoadColorSet( SvxColorValueSet& rColorSet ) override;
 
-    virtual bool                IsValid() SAL_OVERRIDE;
+    virtual bool                IsValid() override;
 };
+
+// GPL - this is *not* GNU Public License, but is the Gimp PaLette
 
 class PaletteGPL : public Palette
 {
@@ -64,7 +68,7 @@ class PaletteGPL : public Palette
     bool        mbValidPalette;
     OUString    maFName;
     OUString    maFPath;
-    OUString    maName;
+    OUString    maGPLPaletteName;
     ColorList   maColors;
 
     bool        ReadPaletteHeader(SvFileStream& rFileStream);
@@ -74,26 +78,28 @@ public:
     PaletteGPL( const OUString &rFPath, const OUString &rFName );
     virtual ~PaletteGPL();
 
-    virtual const OUString&     GetName() SAL_OVERRIDE;
-    virtual void                LoadColorSet( SvxColorValueSet& rColorSet ) SAL_OVERRIDE;
+    virtual const OUString&     GetName() override;
+    virtual void                LoadColorSet( SvxColorValueSet& rColorSet ) override;
 
-    virtual bool                IsValid() SAL_OVERRIDE;
+    virtual bool                IsValid() override;
 };
+
+// SOC - Star Office Color-table
 
 class PaletteSOC : public Palette
 {
     bool            mbLoadedPalette;
     OUString        maFPath;
-    OUString        maName;
+    OUString        maSOCPaletteName;
     XColorListRef   mpColorList;
 public:
     PaletteSOC( const OUString &rFPath, const OUString &rFName );
     virtual ~PaletteSOC();
 
-    virtual const OUString&     GetName() SAL_OVERRIDE;
-    virtual void                LoadColorSet( SvxColorValueSet& rColorSet ) SAL_OVERRIDE;
+    virtual const OUString&     GetName() override;
+    virtual void                LoadColorSet( SvxColorValueSet& rColorSet ) override;
 
-    virtual bool                IsValid() SAL_OVERRIDE;
+    virtual bool                IsValid() override;
 };
 
 #endif // INCLUDED_SVX_PALETTE_HXX

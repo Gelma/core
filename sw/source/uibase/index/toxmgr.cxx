@@ -46,17 +46,17 @@ SwTOXMark* SwTOXMgr::GetTOXMark(sal_uInt16 nId)
 {
     if(!aCurMarks.empty())
         return aCurMarks[nId];
-    return 0;
+    return nullptr;
 }
 
 void SwTOXMgr::DeleteTOXMark()
 {
-    SwTOXMark* pNext = 0;
+    SwTOXMark* pNext = nullptr;
     if( pCurTOXMark )
     {
         pNext = const_cast<SwTOXMark*>(&pSh->GotoTOXMark( *pCurTOXMark, TOX_NXT ));
         if( pNext == pCurTOXMark )
-            pNext = 0;
+            pNext = nullptr;
 
         pSh->DeleteTOXMark( pCurTOXMark );
         pSh->SetModified();
@@ -67,7 +67,7 @@ void SwTOXMgr::DeleteTOXMark()
 
 void    SwTOXMgr::InsertTOXMark(const SwTOXMarkDescription& rDesc)
 {
-    SwTOXMark* pMark = 0;
+    SwTOXMark* pMark = nullptr;
     switch(rDesc.GetTOXType())
     {
         case  TOX_CONTENT:
@@ -212,7 +212,7 @@ void SwTOXMgr::UpdateTOXMark(const SwTOXMarkDescription& rDesc)
             pSh->DeleteTOXMark(pCurTOXMark);
             aCpy.SetAlternativeText( *rDesc.GetAltStr() );
             pSh->SwEditShell::Insert( aCpy );
-            pCurTOXMark = 0;
+            pCurTOXMark = nullptr;
         }
     }
     pSh->SetModified();
@@ -274,7 +274,7 @@ const SwTOXType* SwTOXMgr::GetTOXType(TOXTypes eTyp, sal_uInt16 nId) const
 
 void SwTOXMgr::SetCurTOXMark(sal_uInt16 nId)
 {
-    pCurTOXMark = (nId < aCurMarks.size()) ? aCurMarks[nId] : 0;
+    pCurTOXMark = (nId < aCurMarks.size()) ? aCurMarks[nId] : nullptr;
 }
 
 bool SwTOXMgr::UpdateOrInsertTOX(const SwTOXDescription& rDesc,
@@ -286,7 +286,7 @@ bool SwTOXMgr::UpdateOrInsertTOX(const SwTOXDescription& rDesc,
     const SwTOXBase* pCurTOX = ppBase && *ppBase ? *ppBase : GetCurTOX();
     SwTOXBase* pTOX = const_cast<SwTOXBase*>(pCurTOX);
 
-    SwTOXBase * pNewTOX = NULL;
+    SwTOXBase * pNewTOX = nullptr;
 
     if (pTOX)
         pNewTOX = new SwTOXBase(*pTOX);
@@ -440,7 +440,7 @@ bool SwTOXMgr::UpdateOrInsertTOX(const SwTOXDescription& rDesc,
         if (pDoc->GetIDocumentUndoRedo().DoesUndo())
         {
             pDoc->GetIDocumentUndoRedo().DelAllUndoObj();
-            pDoc->GetIDocumentUndoRedo().StartUndo(UNDO_TOXCHANGE, NULL);
+            pDoc->GetIDocumentUndoRedo().StartUndo(UNDO_TOXCHANGE, nullptr);
         }
 
         pDoc->ChgTOX(*pTOX, *pNewTOX);
@@ -451,7 +451,7 @@ bool SwTOXMgr::UpdateOrInsertTOX(const SwTOXDescription& rDesc,
 
         if (pDoc->GetIDocumentUndoRedo().DoesUndo())
         {
-            pDoc->GetIDocumentUndoRedo().EndUndo(UNDO_TOXCHANGE, NULL);
+            pDoc->GetIDocumentUndoRedo().EndUndo(UNDO_TOXCHANGE, nullptr);
         }
     }
 
@@ -471,9 +471,9 @@ void SwTOXDescription::SetSortKeys(SwTOXSortKey eKey1,
     if(AUTH_FIELD_END > eKey3.eField)
         aArr[nPos++] = eKey3;
 
-    eSortKey1 = aArr[0];
-    eSortKey2 = aArr[1];
-    eSortKey3 = aArr[2];
+    m_eSortKey1 = aArr[0];
+    m_eSortKey2 = aArr[1];
+    m_eSortKey3 = aArr[2];
 }
 
 void SwTOXDescription::ApplyTo(SwTOXBase& rTOXBase)
@@ -494,8 +494,8 @@ void SwTOXDescription::ApplyTo(SwTOXBase& rTOXBase)
     rTOXBase.SetProtected(IsReadonly());
     rTOXBase.SetOLEOptions(GetOLEOptions());
     rTOXBase.SetLevelFromChapter(IsLevelFromChapter());
-    rTOXBase.SetLanguage(eLanguage);
-    rTOXBase.SetSortAlgorithm(sSortAlgorithm);
+    rTOXBase.SetLanguage(m_eLanguage);
+    rTOXBase.SetSortAlgorithm(m_sSortAlgorithm);
 
 }
 

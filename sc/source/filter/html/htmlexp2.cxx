@@ -77,7 +77,7 @@ void ScHTMLExport::FillGraphList( const SdrPage* pPage, SCTAB nTab,
         while ( pObject )
         {
             Rectangle aObjRect = pObject->GetCurrentBoundRect();
-            if ( bAll || aRect.IsInside( aObjRect ) )
+            if ( (bAll || aRect.IsInside( aObjRect )) && !ScDrawLayer::IsNoteCaption(pObject) )
             {
                 Size aSpace;
                 ScRange aR = pDoc->GetRange( nTab, aObjRect );
@@ -106,9 +106,8 @@ void ScHTMLExport::FillGraphList( const SdrPage* pPage, SCTAB nTab,
                     aSpace.Width() /= 2;
                     aSpace.Height() /= 2;
                 }
-                ScHTMLGraphEntry* pE = new ScHTMLGraphEntry( pObject,
-                    aR, aSize, bInCell, aSpace );
-                aGraphList.push_back( pE );
+                aGraphList.push_back( ScHTMLGraphEntry( pObject,
+                    aR, aSize, bInCell, aSpace ) );
             }
             pObject = aIter.Next();
         }

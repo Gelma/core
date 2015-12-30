@@ -23,16 +23,14 @@ static uno::Reference< uno::XInterface > SAL_CALL create_MediaPlayer( const uno:
 extern "C" SAL_DLLPUBLIC_EXPORT void* SAL_CALL avmediaogl_component_getFactory( const sal_Char* pImplName, void* pServiceManager, void* )
 {
     uno::Reference< lang::XSingleServiceFactory > xFactory;
-    void* pRet = 0;
+    void* pRet = nullptr;
 
     if( rtl_str_compare( pImplName, "com.sun.star.comp.avmedia.Manager_OpenGL" ) == 0 )
     {
-        const OUString aServiceName( "com.sun.star.media.Manager_OpenGL" );
-
-        xFactory = uno::Reference< lang::XSingleServiceFactory >( ::cppu::createSingleFactory(
+        xFactory.set( ::cppu::createSingleFactory(
                         static_cast< lang::XMultiServiceFactory* >( pServiceManager ),
-                        OUString("com.sun.star.comp.avmedia.Manager_OpenGL" ),
-                        create_MediaPlayer, uno::Sequence< OUString >( &aServiceName, 1 ) ) );
+                        "com.sun.star.comp.avmedia.Manager_OpenGL",
+                        create_MediaPlayer, uno::Sequence< OUString >{ "com.sun.star.media.Manager_OpenGL" } ) );
     }
 
     if( xFactory.is() )

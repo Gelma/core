@@ -83,7 +83,7 @@ sal_Int32           GetDiffDate360( sal_Int32 nNullDate, sal_Int32 nDate1, sal_I
 sal_Int32           GetDaysInYears( sal_uInt16 nYear1, sal_uInt16 nYear2 );
 inline sal_Int16    GetDayOfWeek( sal_Int32 nDate );
 sal_Int32           GetDiffDate( sal_Int32 nNullDate, sal_Int32 nStartDate, sal_Int32 nEndDate, sal_Int32 nMode,
-                                sal_Int32* pOptDaysIn1stYear = NULL ) throw( css::uno::RuntimeException, css::lang::IllegalArgumentException );
+                                sal_Int32* pOptDaysIn1stYear = nullptr ) throw( css::uno::RuntimeException, css::lang::IllegalArgumentException );
 double              GetYearDiff( sal_Int32 nNullDate, sal_Int32 nStartDate, sal_Int32 nEndDate, sal_Int32 nMode )
                                 throw( css::uno::RuntimeException, css::lang::IllegalArgumentException );
 sal_Int32           GetDaysInYear( sal_Int32 nNullDate, sal_Int32 nDate, sal_Int32 nMode ) throw( css::uno::RuntimeException, css::lang::IllegalArgumentException );
@@ -91,7 +91,6 @@ double              GetYearFrac( sal_Int32 nNullDate, sal_Int32 nStartDate, sal_
                         throw( css::uno::RuntimeException, css::lang::IllegalArgumentException );
 inline double       GetYearFrac( const css::uno::Reference< css::beans::XPropertySet >& xOpt, sal_Int32 nStartDate, sal_Int32 nEndDate, sal_Int32 nMode )
                         throw( css::uno::RuntimeException, css::lang::IllegalArgumentException );
-inline void         AlignDate( sal_uInt16& rDay, sal_uInt16 nMonth, sal_uInt16 nYear );
 
 double              BinomialCoefficient( double n, double k );
 double              GetGcd( double f1, double f2 );
@@ -103,7 +102,6 @@ double              Erf( double fX );
 double              Erfc( double fX );
 bool                ParseDouble( const sal_Unicode*& rpDoubleAsString, double& rReturn );
 OUString            GetString( double fNumber, bool bLeadingSign = false, sal_uInt16 nMaxNumOfDigits = 15 );
-inline double       Exp10( sal_Int16 nPower );      // 10 ^ nPower
 
 double              GetAmordegrc( sal_Int32 nNullDate, double fCost, sal_Int32 nDate, sal_Int32 nFirstPer,
                                 double fRestVal, double fPer, double fRate, sal_Int32 nBase ) throw( css::uno::RuntimeException, css::lang::IllegalArgumentException );
@@ -168,6 +166,7 @@ struct FuncDataBase
     sal_uInt16              nCompListID;        // resource ID to list of valid names
     sal_uInt16              nNumOfParams;       // number of named / described parameters
     FDCategory              eCat;               // function category
+    const char*             pSuffix;            // if bDouble, append a suffix other than "_ADD" for UI
 };
 
 
@@ -184,6 +183,8 @@ private:
     sal_uInt16              nCompID;
     std::vector<OUString>  aCompList;          // list of all valid names
     FDCategory              eCat;               // function category
+    OUString                aSuffix;            // if bDouble and not empty, append a suffix other than "_ADD" for UI
+
 public:
                             FuncData( const FuncDataBase& rBaseData, ResMgr& );
     virtual                 ~FuncData();
@@ -191,6 +192,7 @@ public:
     inline sal_uInt16       GetUINameID() const;
     inline sal_uInt16       GetDescrID() const;
     inline bool             IsDouble() const;
+    inline const OUString&  GetSuffix() const;
 
     sal_uInt16              GetStrIndex( sal_uInt16 nParamNum ) const;
     inline bool             Is( const OUString& rCompareTo ) const;
@@ -344,7 +346,7 @@ class ScaDoubleListGT0 : public ScaDoubleList
 {
 public:
     virtual bool                CheckInsert( double fValue ) const
-                                    throw( css::uno::RuntimeException, css::lang::IllegalArgumentException ) SAL_OVERRIDE;
+                                    throw( css::uno::RuntimeException, css::lang::IllegalArgumentException ) override;
 };
 
 
@@ -353,7 +355,7 @@ class ScaDoubleListGE0 : public ScaDoubleList
 {
 public:
     virtual bool                CheckInsert( double fValue ) const
-                                    throw( css::uno::RuntimeException, css::lang::IllegalArgumentException ) SAL_OVERRIDE;
+                                    throw( css::uno::RuntimeException, css::lang::IllegalArgumentException ) override;
 };
 
 
@@ -365,7 +367,7 @@ class Complex
 
 public:
     inline                  Complex( double fReal, double fImag = 0.0, sal_Unicode cC = '\0' );
-                            Complex( const OUString& rComplexAsString ) throw( css::uno::RuntimeException, css::lang::IllegalArgumentException );
+    explicit                Complex( const OUString& rComplexAsString ) throw( css::uno::RuntimeException, css::lang::IllegalArgumentException );
 
     inline static bool      IsImagUnit( sal_Unicode c );
     static bool             ParseString( const OUString& rComplexAsString, Complex& rReturn );
@@ -494,11 +496,11 @@ public:
     virtual                 ~ConvertDataLinear();
 
     virtual double          Convert( double fVal, const ConvertData& rTo,
-                                sal_Int16 nMatchLevelFrom, sal_Int16 nMatchLevelTo ) const throw( css::uno::RuntimeException, css::lang::IllegalArgumentException ) SAL_OVERRIDE;
+                                sal_Int16 nMatchLevelFrom, sal_Int16 nMatchLevelTo ) const throw( css::uno::RuntimeException, css::lang::IllegalArgumentException ) override;
                                     // for cases where f(x) = a + bx applies (e.g. Temperatures)
 
-    virtual double          ConvertToBase( double fVal, sal_Int16 nMatchLevel ) const SAL_OVERRIDE;
-    virtual double          ConvertFromBase( double fVal, sal_Int16 nMatchLevel ) const SAL_OVERRIDE;
+    virtual double          ConvertToBase( double fVal, sal_Int16 nMatchLevel ) const override;
+    virtual double          ConvertFromBase( double fVal, sal_Int16 nMatchLevel ) const override;
 };
 
 
@@ -538,15 +540,6 @@ inline double GetYearFrac( const css::uno::Reference< css::beans::XPropertySet >
 }
 
 
-inline void AlignDate( sal_uInt16& rD, sal_uInt16 nM, sal_uInt16 nY )
-{
-    sal_uInt16  nMax = DaysInMonth( nM, nY );
-
-    if( rD > nMax )
-        rD = nMax;
-}
-
-
 inline sal_uInt16 FuncData::GetUINameID() const
 {
     return nUINameID;
@@ -562,6 +555,12 @@ inline sal_uInt16 FuncData::GetDescrID() const
 inline bool FuncData::IsDouble() const
 {
     return bDouble;
+}
+
+
+inline const OUString& FuncData::GetSuffix() const
+{
+    return aSuffix;
 }
 
 
@@ -780,7 +779,7 @@ private:
 
                                 /** Converts a string to double using the number formatter. If the formatter is not
                                     valid, ::rtl::math::stringToDouble() with english separators will be used.
-                                    @throws com::sun::star::lang::IllegalArgumentException
+                                    @throws css::lang::IllegalArgumentException
                                         on strings not representing any double value.
                                     @return  the converted double value. */
     double                      convertToDouble(
@@ -788,7 +787,7 @@ private:
                                 throw( css::lang::IllegalArgumentException );
 
 public:
-                                ScaAnyConverter(
+    explicit                    ScaAnyConverter(
                                     const css::uno::Reference< css::uno::XComponentContext >& xContext );
                                 ~ScaAnyConverter();
 
@@ -799,7 +798,7 @@ public:
 
                                 /** Converts an Any to double (without initialization).
                                     The Any can be empty or contain a double or string.
-                                    @throws com::sun::star::lang::IllegalArgumentException
+                                    @throws css::lang::IllegalArgumentException
                                         on other Any types or on invalid strings.
                                     @return  true if the Any contains a double or a non-empty valid string,
                                              false if the Any is empty or the string is empty */
@@ -810,7 +809,7 @@ public:
 
                                 /** Converts an Any to double (with initialization).
                                     The Any can be empty or contain a double or string.
-                                    @throws com::sun::star::lang::IllegalArgumentException
+                                    @throws css::lang::IllegalArgumentException
                                         on other Any types or on invalid strings.
                                     @return  true if the Any contains a double or a non-empty valid string,
                                              false if the Any is empty or the string is empty */
@@ -822,7 +821,7 @@ public:
 
                                 /** Converts an Any to double (with initialization).
                                     The Any can be empty or contain a double or string.
-                                    @throws com::sun::star::lang::IllegalArgumentException
+                                    @throws css::lang::IllegalArgumentException
                                         on other Any types or on invalid strings.
                                     @return  the value of the double or string or fDefault if the Any or string is empty */
     double                      getDouble(
@@ -833,7 +832,7 @@ public:
 
                                 /** Converts an Any to sal_Int32 (with initialization).
                                     The Any can be empty or contain a double or string.
-                                    @throws com::sun::star::lang::IllegalArgumentException
+                                    @throws css::lang::IllegalArgumentException
                                         on other Any types or on invalid values or strings.
                                     @return  true if the Any contains a double or a non-empty valid string,
                                              false if the Any is empty or the string is empty */
@@ -845,7 +844,7 @@ public:
 
                                 /** Converts an Any to sal_Int32 (with initialization).
                                     The Any can be empty or contain a double or string.
-                                    @throws com::sun::star::lang::IllegalArgumentException
+                                    @throws css::lang::IllegalArgumentException
                                         on other Any types or on invalid values or strings.
                                     @return  the truncated value of the double or string or nDefault if the Any or string is empty */
     sal_Int32                   getInt32(

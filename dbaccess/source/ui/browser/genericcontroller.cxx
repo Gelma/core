@@ -123,7 +123,7 @@ void UserDefinedFeatures::execute( const URL& _rFeatureURL, const Sequence< Prop
         Reference< XDispatchProvider > xDispatchProvider( xController->getFrame(), UNO_QUERY_THROW );
         Reference< XDispatch > xDispatch( xDispatchProvider->queryDispatch(
             _rFeatureURL,
-            OUString( "_self" ),
+            "_self",
             FrameSearchFlag::AUTO
         ) );
 
@@ -158,7 +158,7 @@ struct OGenericUnoController_Data
 // OGenericUnoController
 OGenericUnoController::OGenericUnoController(const Reference< XComponentContext >& _rM)
     :OGenericUnoController_Base( getMutex() )
-    ,m_pView(NULL)
+    ,m_pView(nullptr)
 #ifdef DBG_UTIL
     ,m_bDescribingSupportedFeatures( false )
 #endif
@@ -245,7 +245,7 @@ bool OGenericUnoController::Construct(vcl::Window* /*pParent*/)
     {
         SAL_WARN("dbaccess.ui","OGenericUnoController::Construct: could not create (or start listening at) the database context!");
         // at least notify the user. Though the whole component does not make any sense without the database context ...
-        ShowServiceNotAvailableError(getView(), OUString("com.sun.star.sdb.DatabaseContext"), true);
+        ShowServiceNotAvailableError(getView(), "com.sun.star.sdb.DatabaseContext", true);
     }
 
     return true;
@@ -313,7 +313,7 @@ void SAL_CALL OGenericUnoController::initialize( const Sequence< Any >& aArgumen
     catch(Exception&)
     {
         // no one clears my view if I won't
-        m_pView = NULL;
+        m_pView = nullptr;
         throw;
     }
 }
@@ -370,7 +370,7 @@ Reference< XWindow > SAL_CALL OGenericUnoController::getComponentWindow() throw 
 
 Reference<XSidebarProvider> SAL_CALL OGenericUnoController::getSidebar() throw (RuntimeException, std::exception)
 {
-        return NULL;
+        return nullptr;
 }
 
 OUString SAL_CALL OGenericUnoController::getViewControllerName() throw (css::uno::RuntimeException, std::exception)
@@ -606,7 +606,7 @@ void OGenericUnoController::InvalidateFeature(sal_uInt16 _nId, const Reference< 
 
 void OGenericUnoController::InvalidateAll()
 {
-    ImplInvalidateFeature( ALL_FEATURES, NULL, true );
+    ImplInvalidateFeature( ALL_FEATURES, nullptr, true );
 }
 
 void OGenericUnoController::InvalidateAll_Impl()
@@ -617,7 +617,7 @@ void OGenericUnoController::InvalidateAll_Impl()
             aIter != m_aSupportedFeatures.end();
             ++aIter
         )
-        ImplBroadcastFeatureState( aIter->first, NULL, true );
+        ImplBroadcastFeatureState( aIter->first, nullptr, true );
 
     {
         ::osl::MutexGuard aGuard( m_aFeatureMutex);
@@ -794,7 +794,7 @@ void OGenericUnoController::disposing()
         m_arrStatusListener.clear();
     }
 
-    m_xDatabaseContext = NULL;
+    m_xDatabaseContext = nullptr;
     {
         ::osl::MutexGuard aGuard( m_aFeatureMutex);
         m_aAsyncInvalidateAll.CancelCall();
@@ -806,10 +806,10 @@ void OGenericUnoController::disposing()
     // check out from all the objects we are listening
     // the frame
     stopFrameListening( m_aCurrentFrame.getFrame() );
-    m_aCurrentFrame.attachFrame( NULL );
+    m_aCurrentFrame.attachFrame( nullptr );
 
-    m_xMasterDispatcher = NULL;
-    m_xSlaveDispatcher = NULL;
+    m_xMasterDispatcher = nullptr;
+    m_xSlaveDispatcher = nullptr;
     m_xTitleHelper.clear();
     m_xUrlTransformer.clear();
     m_aInitParameters.clear();
@@ -979,7 +979,7 @@ void OGenericUnoController::setView( const VclPtr<ODataView> &i_rView )
 
 void OGenericUnoController::clearView()
 {
-    m_pView = NULL;
+    m_pView = nullptr;
 }
 
 void OGenericUnoController::showError(const SQLExceptionInfo& _rInfo)
@@ -1010,8 +1010,8 @@ void OGenericUnoController::loadMenu(const Reference< XFrame >& _xFrame)
     if ( xLayoutManager.is() )
     {
         xLayoutManager->lock();
-        xLayoutManager->createElement( OUString( "private:resource/menubar/menubar" ));
-        xLayoutManager->createElement( OUString( "private:resource/toolbar/toolbar" ));
+        xLayoutManager->createElement( "private:resource/menubar/menubar" );
+        xLayoutManager->createElement( "private:resource/toolbar/toolbar" );
         xLayoutManager->unlock();
         xLayoutManager->doLayout();
     }
@@ -1106,7 +1106,7 @@ namespace
 {
     OUString lcl_getModuleHelpModuleName( const Reference< XFrame >& _rxFrame )
     {
-        const sal_Char* pReturn = NULL;
+        const sal_Char* pReturn = nullptr;
 
         try
         {
@@ -1243,7 +1243,7 @@ void OGenericUnoController::openHelpAgent( const URL& _rURL )
         Reference< XDispatchProvider > xDispProv( m_aCurrentFrame.getFrame(), UNO_QUERY );
         Reference< XDispatch > xHelpDispatch;
         if ( xDispProv.is() )
-            xHelpDispatch = xDispProv->queryDispatch(aURL, OUString( "_helpagent" ), FrameSearchFlag::PARENT | FrameSearchFlag::SELF);
+            xHelpDispatch = xDispProv->queryDispatch(aURL, "_helpagent", FrameSearchFlag::PARENT | FrameSearchFlag::SELF);
         OSL_ENSURE(xHelpDispatch.is(), "SbaTableQueryBrowser::openHelpAgent: could not get a dispatcher!");
         if (xHelpDispatch.is())
         {
@@ -1443,14 +1443,7 @@ Sequence< ::sal_Int16 > SAL_CALL OGenericUnoController::getSupportedCommandGroup
         if ( aIter->second.GroupId != CommandGroup::INTERNAL )
             aCmdHashMap.insert( CommandHashMap::value_type( aIter->second.GroupId, 0 ));
 
-    Sequence< sal_Int16 > aCommandGroups( aCmdHashMap.size() );
-    ::std::transform( aCmdHashMap.begin(),
-        aCmdHashMap.end(),
-        aCommandGroups.getArray(),
-        ::o3tl::select1st< CommandHashMap::value_type >()
-    );
-
-    return aCommandGroups;
+    return comphelper::mapKeysToSequence( aCmdHashMap );
 }
 
 namespace

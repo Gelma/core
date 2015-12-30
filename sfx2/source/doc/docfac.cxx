@@ -65,17 +65,12 @@ struct SfxObjectFactory_Impl
     OUString             aServiceName;
     SfxFilterContainer*         pFilterContainer;
     SfxModule*                  pModule;
-    sal_uInt16                  nImageId;
-    OUString                    aStandardTemplate;
-    bool                    bTemplateInitialized;
     SvGlobalName                aClassName;
 
     SfxObjectFactory_Impl() :
-        pNameResId          ( NULL ),
-        pFilterContainer    ( NULL ),
-        pModule             ( NULL ),
-        nImageId            ( 0 ),
-        bTemplateInitialized( false )
+        pNameResId          ( nullptr ),
+        pFilterContainer    ( nullptr ),
+        pModule             ( nullptr )
         {}
 };
 
@@ -122,10 +117,8 @@ SfxObjectFactory::SfxObjectFactory
 
 SfxObjectFactory::~SfxObjectFactory()
 {
-
     delete pImpl->pNameResId;
     delete pImpl->pFilterContainer;
-    delete pImpl;
 }
 
 
@@ -269,7 +262,7 @@ void SfxObjectFactory::SetSystemTemplate( const OUString& rServiceName, const OU
                 aArgs[2].Name = "URL";
                 aArgs[2].Value <<= OUString( rTemplateName );
 
-                uno::Reference< frame::XLoadable > xLoadable( xFactory->createInstance( OUString( rServiceName ) ), uno::UNO_QUERY );
+                uno::Reference< frame::XLoadable > xLoadable( xFactory->createInstance( rServiceName ), uno::UNO_QUERY );
                 xLoadable->load( aArgs );
 
                 aArgs.realloc( 2 );
@@ -327,7 +320,7 @@ const SfxFilter* SfxObjectFactory::GetTemplateFilter() const
     sal_uInt16 nVersion=0;
     SfxFilterMatcher aMatcher ( OUString::createFromAscii( pShortName ) );
     SfxFilterMatcherIter aIter( aMatcher );
-    const SfxFilter *pFilter = 0;
+    const SfxFilter *pFilter = nullptr;
     const SfxFilter *pTemp = aIter.First();
     while ( pTemp )
     {
@@ -416,7 +409,7 @@ SfxViewFactory* SfxObjectFactory::GetViewFactoryByViewName( const OUString& i_rV
             )
             return &rViewFac;
     }
-    return NULL;
+    return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

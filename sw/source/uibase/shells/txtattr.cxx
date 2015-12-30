@@ -171,16 +171,16 @@ void SwTextShell::ExecCharAttrArgs(SfxRequest &rReq)
 {
     sal_uInt16 nSlot = rReq.GetSlot();
     const SfxItemSet* pArgs = rReq.GetArgs();
-    bool bArgs = pArgs != 0 && pArgs->Count() > 0;
+    bool bArgs = pArgs != nullptr && pArgs->Count() > 0;
     SwWrtShell& rWrtSh = GetShell();
-    SwTextFormatColl* pColl = 0;
+    SwTextFormatColl* pColl = nullptr;
 
     // Is only set if the whole paragraph is selected and AutoUpdateFormat is set.
     if (rWrtSh.HasSelection() && rWrtSh.IsSelFullPara())
     {
         pColl = rWrtSh.GetCurTextFormatColl();
         if ( pColl && !pColl->IsAutoUpdateFormat() )
-            pColl = 0;
+            pColl = nullptr;
     }
     SfxItemPool& rPool = GetPool();
     sal_uInt16 nWhich = rPool.GetWhich( nSlot );
@@ -230,13 +230,13 @@ void SwTextShell::ExecCharAttrArgs(SfxRequest &rReq)
             if ( pSize ) // selected text has one size
             {
                 // must create new one, otherwise document is without pam
-                SwPaM* pPaM = rWrtSh.GetCrsr();
+                SwPaM* pPaM = rWrtSh.GetCursor();
                 vItems.push_back( std::make_pair( pSize, std::unique_ptr<SwPaM>(new SwPaM( *(pPaM->GetMark()), *(pPaM->GetPoint()))) ) );
             }
             else
                 vItems = rWrtSh.GetItemWithPaM( RES_CHRATR_FONTSIZE );
 
-            rWrtSh.StartUndo( UNDO_INSATTR, NULL);
+            rWrtSh.StartUndo( UNDO_INSATTR );
             for( std::pair< const SfxPoolItem*, std::unique_ptr<SwPaM> >& iPair : vItems )
             {
                 std::unique_ptr<SwPaM> pPaM = std::move(iPair.second);
@@ -265,7 +265,7 @@ void SwTextShell::ExecCharAttrArgs(SfxRequest &rReq)
                         rWrtSh.SetAttrSet( aAttrSet, SetAttrMode::DEFAULT, pPaM.get() );
                 }
             }
-            rWrtSh.EndUndo( UNDO_INSATTR, NULL);
+            rWrtSh.EndUndo( UNDO_INSATTR );
             rReq.Done();
         }
         break;
@@ -361,10 +361,10 @@ SET_LINESPACE:
             else
                 bChgAdjust = true;
 
-            SvxFrameDirection eFrmDirection =
+            SvxFrameDirection eFrameDirection =
                     (SID_ATTR_PARA_LEFT_TO_RIGHT == nSlot) ?
                         FRMDIR_HORI_LEFT_TOP : FRMDIR_HORI_RIGHT_TOP;
-            aSet.Put( SvxFrameDirectionItem( eFrmDirection, RES_FRAMEDIR ) );
+            aSet.Put( SvxFrameDirectionItem( eFrameDirection, RES_FRAMEDIR ) );
 
             if (bChgAdjust)
             {
@@ -375,7 +375,7 @@ SET_LINESPACE:
                 aAdjust.SetWhich(SID_ATTR_PARA_ADJUST);
                 GetView().GetViewFrame()->GetBindings().SetState( aAdjust );
                 // Toggle numbering alignment
-                const SwNumRule* pCurRule = GetShell().GetNumRuleAtCurrCrsrPos();
+                const SwNumRule* pCurRule = GetShell().GetNumRuleAtCurrCursorPos();
                 if( pCurRule )
                 {
                     SvxNumRule aRule = pCurRule->MakeSvxNumRule();
@@ -389,7 +389,7 @@ SET_LINESPACE:
                         else if(SVX_ADJUST_RIGHT == aFormat.GetNumAdjust())
                             aFormat.SetNumAdjust( SVX_ADJUST_LEFT );
 
-                        aRule.SetLevel(i, aFormat, aRule.Get(i) != 0);
+                        aRule.SetLevel(i, aFormat, aRule.Get(i) != nullptr);
                     }
                     SwNumRule aSetRule( pCurRule->GetName(),
                                         pCurRule->Get( 0 ).GetPositionAndSpaceMode() );
@@ -421,7 +421,7 @@ void SwTextShell::ExecParaAttrArgs(SfxRequest &rReq)
 {
     SwWrtShell &rSh = GetShell();
     const SfxItemSet *pArgs = rReq.GetArgs();
-    const SfxPoolItem *pItem = 0;
+    const SfxPoolItem *pItem = nullptr;
 
     sal_uInt16 nSlot = rReq.GetSlot();
     if(pArgs)
@@ -435,7 +435,7 @@ void SwTextShell::ExecParaAttrArgs(SfxRequest &rReq)
                 SfxItemSet aSet(GetPool(), RES_PARATR_DROP, RES_PARATR_DROP, 0L);
                 rSh.GetCurAttr(aSet);
                 SwFormatDrop aDropItem(static_cast<const SwFormatDrop&>(aSet.Get(RES_PARATR_DROP)));
-                SwCharFormat* pFormat = 0;
+                SwCharFormat* pFormat = nullptr;
                 if(!sCharStyleName.isEmpty())
                     pFormat = rSh.FindCharFormatByName( sCharStyleName );
                 aDropItem.SetCharFormat( pFormat );
@@ -519,7 +519,7 @@ void SwTextShell::GetAttrState(SfxItemSet &rSet)
     sal_uInt16 nSlot = aIter.FirstWhich();
     bool bFlag = false;
     SfxBoolItem aFlagItem;
-    const SfxPoolItem* pItem = 0;
+    const SfxPoolItem* pItem = nullptr;
     int eAdjust = -1;   // Illegal value to recognize DONTCARE.
     SfxItemState eState = aCoreSet.GetItemState(RES_PARATR_ADJUST, false, &pItem);
 
@@ -637,6 +637,12 @@ void SwTextShell::GetAttrState(SfxItemSet &rSet)
                         vFontHeight = rSh.GetItemWithPaM( RES_CHRATR_FONTSIZE );
                     for ( std::pair< const SfxPoolItem*, std::unique_ptr<SwPaM>>& pIt : vFontHeight )
                     {
+                        if (!pIt.first)
+                        {
+                            rSet.DisableItem(FN_GROW_FONT_SIZE);
+                            rSet.DisableItem(FN_SHRINK_FONT_SIZE);
+                            break;
+                        }
                         pSize = static_cast<const SvxFontHeightItem*>( pIt.first );
                         sal_uInt32 nSize = pSize->GetHeight();
                         if( nSize == nFontMaxSz )
@@ -699,17 +705,17 @@ void SwTextShell::GetAttrState(SfxItemSet &rSet)
                     if((!(nHtmlMode & HTMLMODE_ON) || (0 != (nHtmlMode & HTMLMODE_SOME_STYLES))) &&
                     aCoreSet.GetItemState( RES_FRAMEDIR, false ) >= SfxItemState::DEFAULT)
                     {
-                        SvxFrameDirection eFrmDir = (SvxFrameDirection)
+                        SvxFrameDirection eFrameDir = (SvxFrameDirection)
                                 static_cast<const SvxFrameDirectionItem& >(aCoreSet.Get(RES_FRAMEDIR)).GetValue();
-                        if (FRMDIR_ENVIRONMENT == eFrmDir)
+                        if (FRMDIR_ENVIRONMENT == eFrameDir)
                         {
-                            eFrmDir = rSh.IsInRightToLeftText() ?
+                            eFrameDir = rSh.IsInRightToLeftText() ?
                                     FRMDIR_HORI_RIGHT_TOP : FRMDIR_HORI_LEFT_TOP;
                         }
                         bFlag = (SID_ATTR_PARA_LEFT_TO_RIGHT == nSlot &&
-                                            FRMDIR_HORI_LEFT_TOP == eFrmDir) ||
+                                            FRMDIR_HORI_LEFT_TOP == eFrameDir) ||
                                 (SID_ATTR_PARA_RIGHT_TO_LEFT == nSlot &&
-                                            FRMDIR_HORI_RIGHT_TOP == eFrmDir);
+                                            FRMDIR_HORI_RIGHT_TOP == eFrameDir);
                     }
                     else
                     {

@@ -47,10 +47,10 @@ namespace ucbhelper
 struct InteractionRequest_Impl
 {
     rtl::Reference< InteractionContinuation > m_xSelection;
-    com::sun::star::uno::Any m_aRequest;
-    com::sun::star::uno::Sequence<
-        com::sun::star::uno::Reference<
-            com::sun::star::task::XInteractionContinuation > > m_aContinuations;
+    css::uno::Any m_aRequest;
+    css::uno::Sequence<
+        css::uno::Reference<
+            css::task::XInteractionContinuation > > m_aContinuations;
 
     InteractionRequest_Impl() {}
     explicit InteractionRequest_Impl( const uno::Any & rRequest )
@@ -75,7 +75,6 @@ InteractionRequest::InteractionRequest( const uno::Any & rRequest )
 // virtual
 InteractionRequest::~InteractionRequest()
 {
-    delete m_pImpl;
 }
 
 
@@ -158,7 +157,7 @@ uno::Sequence< sal_Int8 > SAL_CALL InteractionRequest::getImplementationId()
 uno::Sequence< uno::Type > SAL_CALL InteractionRequest::getTypes()
     throw( uno::RuntimeException, std::exception )
 {
-    static cppu::OTypeCollection* pCollection = 0;
+    static cppu::OTypeCollection* pCollection = nullptr;
       if ( !pCollection )
       {
         osl::Guard< osl::Mutex > aGuard( osl::Mutex::getGlobalMutex() );
@@ -222,7 +221,6 @@ InteractionContinuation::InteractionContinuation(
 // virtual
 InteractionContinuation::~InteractionContinuation()
 {
-    delete m_pImpl;
 }
 
 
@@ -293,7 +291,7 @@ uno::Sequence< sal_Int8 > SAL_CALL InteractionAbort::getImplementationId()
 uno::Sequence< uno::Type > SAL_CALL InteractionAbort::getTypes()
     throw( uno::RuntimeException, std::exception )
 {
-    static cppu::OTypeCollection* pCollection = 0;
+    static cppu::OTypeCollection* pCollection = nullptr;
       if ( !pCollection )
       {
         osl::Guard< osl::Mutex > aGuard( osl::Mutex::getGlobalMutex() );
@@ -383,7 +381,7 @@ uno::Sequence< sal_Int8 > SAL_CALL InteractionRetry::getImplementationId()
 uno::Sequence< uno::Type > SAL_CALL InteractionRetry::getTypes()
     throw( uno::RuntimeException, std::exception )
 {
-    static cppu::OTypeCollection* pCollection = 0;
+    static cppu::OTypeCollection* pCollection = nullptr;
       if ( !pCollection )
       {
         osl::Guard< osl::Mutex > aGuard( osl::Mutex::getGlobalMutex() );
@@ -473,7 +471,7 @@ uno::Sequence< sal_Int8 > SAL_CALL InteractionApprove::getImplementationId()
 uno::Sequence< uno::Type > SAL_CALL InteractionApprove::getTypes()
     throw( uno::RuntimeException, std::exception )
 {
-    static cppu::OTypeCollection* pCollection = 0;
+    static cppu::OTypeCollection* pCollection = nullptr;
       if ( !pCollection )
       {
         osl::Guard< osl::Mutex > aGuard( osl::Mutex::getGlobalMutex() );
@@ -563,7 +561,7 @@ uno::Sequence< sal_Int8 > SAL_CALL InteractionDisapprove::getImplementationId()
 uno::Sequence< uno::Type > SAL_CALL InteractionDisapprove::getTypes()
     throw( uno::RuntimeException, std::exception )
 {
-    static cppu::OTypeCollection* pCollection = 0;
+    static cppu::OTypeCollection* pCollection = nullptr;
       if ( !pCollection )
       {
         osl::Guard< osl::Mutex > aGuard( osl::Mutex::getGlobalMutex() );
@@ -655,7 +653,7 @@ InteractionSupplyAuthentication::getImplementationId()
 uno::Sequence< uno::Type > SAL_CALL InteractionSupplyAuthentication::getTypes()
     throw( uno::RuntimeException, std::exception )
 {
-    static cppu::OTypeCollection* pCollection = 0;
+    static cppu::OTypeCollection* pCollection = nullptr;
       if ( !pCollection )
       {
         osl::Guard< osl::Mutex > aGuard( osl::Mutex::getGlobalMutex() );
@@ -907,7 +905,7 @@ InteractionReplaceExistingData::getImplementationId()
 uno::Sequence< uno::Type > SAL_CALL InteractionReplaceExistingData::getTypes()
     throw( uno::RuntimeException, std::exception )
 {
-    static cppu::OTypeCollection* pCollection = 0;
+    static cppu::OTypeCollection* pCollection = nullptr;
       if ( !pCollection )
       {
         osl::Guard< osl::Mutex > aGuard( osl::Mutex::getGlobalMutex() );

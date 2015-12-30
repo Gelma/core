@@ -144,7 +144,6 @@ void SwAnnotationShell::InitInterface_Impl()
     GetStaticInterface()->RegisterPopupMenu(SW_RES(MN_ANNOTATION_POPUPMENU));
 }
 
-TYPEINIT1(SwAnnotationShell,SfxShell)
 
 SfxItemPool* SwAnnotationShell::GetAnnotationPool(SwView& rV)
 {
@@ -170,7 +169,7 @@ SwAnnotationShell::~SwAnnotationShell()
          !pPostItMgr->HasActiveSidebarWin() )
     {
         OSL_ENSURE(pPostItMgr,"PostItMgr::Layout(): We are looping forever");
-        return 0;
+        return nullptr;
     }
     return &pPostItMgr->GetActiveSidebarWin()->GetOutlinerView()->GetOutliner()->GetUndoManager();
 }
@@ -271,11 +270,12 @@ void SwAnnotationShell::Exec( SfxRequest &rReq )
                 break;
             }
         case SID_ATTR_CHAR_COLOR: nEEWhich = EE_CHAR_COLOR; break;
+        case SID_ATTR_CHAR_BACK_COLOR: nEEWhich = EE_CHAR_BKGCOLOR; break;
         case SID_ATTR_CHAR_UNDERLINE:
         {
             if( rReq.GetArgs() )
             {
-                SFX_REQUEST_ARG( rReq, pItem, SvxUnderlineItem, SID_ATTR_CHAR_UNDERLINE , false );
+                const SvxUnderlineItem* pItem = rReq.GetArg<SvxUnderlineItem>(SID_ATTR_CHAR_UNDERLINE);
                 if (pItem)
                 {
                     aNewAttr.Put(*pItem);
@@ -383,7 +383,7 @@ void SwAnnotationShell::Exec( SfxRequest &rReq )
         break;
         case SID_HYPERLINK_SETLINK:
         {
-            const SfxPoolItem* pItem = 0;
+            const SfxPoolItem* pItem = nullptr;
             if(pNewAttrs)
                 pNewAttrs->GetItemState(nSlot, false, &pItem);
 
@@ -395,7 +395,7 @@ void SwAnnotationShell::Exec( SfxRequest &rReq )
 
                 const SvxFieldItem* pFieldItem = pOLV->GetFieldAtSelection();
 
-                if (pFieldItem && pFieldItem->GetField()->ISA(SvxURLField))
+                if (pFieldItem && dynamic_cast< const SvxURLField *>( pFieldItem->GetField() ) != nullptr )
                 {
                     // Select the field so that it will be deleted during insert
                     ESelection aSel = pOLV->GetSelection();
@@ -438,7 +438,7 @@ void SwAnnotationShell::Exec( SfxRequest &rReq )
         }
         case FN_INSERT_STRING:
         {
-            const SfxPoolItem* pItem = 0;
+            const SfxPoolItem* pItem = nullptr;
             if (pNewAttrs)
                 pNewAttrs->GetItemState(nSlot, false, &pItem );
             if (pPostItMgr->GetActiveSidebarWin()->GetLayoutStatus()!=SwPostItHelper::DELETED)
@@ -470,13 +470,13 @@ void SwAnnotationShell::Exec( SfxRequest &rReq )
         case SID_CHAR_DLG:
         {
             const SfxItemSet* pArgs = rReq.GetArgs();
-            SFX_REQUEST_ARG(rReq, pItem, SfxStringItem, FN_PARAM_1, false);
+            const SfxStringItem* pItem = rReq.GetArg<SfxStringItem>(FN_PARAM_1);
 
             if( !pArgs || pItem )
             {
                 /* mod
                 SwView* pView = &GetView();
-                FieldUnit eMetric = ::GetDfltMetric(0 != PTR_CAST(SwWebView, pView));
+                FieldUnit eMetric = ::GetDfltMetric(dynamic_cast<SwWebView*>( pView) !=  nullptr );
                 SW_MOD()->PutItem(SfxUInt16Item(SID_ATTR_METRIC, eMetric));
                 */
                 SfxItemSet aDlgAttr(GetPool(), EE_ITEMS_START, EE_ITEMS_END);
@@ -521,7 +521,7 @@ void SwAnnotationShell::Exec( SfxRequest &rReq )
             {
                 /* mod todo ???
                 SwView* pView = &GetView();
-                FieldUnit eMetric = ::GetDfltMetric(0 != PTR_CAST(SwWebView, pView));
+                FieldUnit eMetric = ::GetDfltMetric(dynamic_cast<SwWebView*>( pView) !=  nullptr );
                 SW_MOD()->PutItem(SfxUInt16Item(SID_ATTR_METRIC, eMetric));
                 */
                 SfxItemSet aDlgAttr(GetPool(),
@@ -543,7 +543,7 @@ void SwAnnotationShell::Exec( SfxRequest &rReq )
                 SwAbstractDialogFactory* pFact = SwAbstractDialogFactory::Create();
                 OSL_ENSURE(pFact, "SwAbstractDialogFactory fail!");
 
-                std::unique_ptr<SfxAbstractTabDialog> pDlg(pFact->CreateSwParaDlg( rView.GetWindow(), rView, aDlgAttr,DLG_STD, 0, true ));
+                std::unique_ptr<SfxAbstractTabDialog> pDlg(pFact->CreateSwParaDlg( rView.GetWindow(), rView, aDlgAttr,DLG_STD, nullptr, true ));
                 OSL_ENSURE(pDlg, "Dialog creation failed!");
                 sal_uInt16 nRet = pDlg->Execute();
                 if(RET_OK == nRet)
@@ -707,6 +707,7 @@ void SwAnnotationShell::GetState(SfxItemSet& rSet)
                 }
                 break;
             case SID_ATTR_CHAR_COLOR: nEEWhich = EE_CHAR_COLOR; break;
+            case SID_ATTR_CHAR_BACK_COLOR: nEEWhich = EE_CHAR_BKGCOLOR; break;
             case SID_ATTR_CHAR_UNDERLINE: nEEWhich = EE_CHAR_UNDERLINE;break;
             case SID_ATTR_CHAR_OVERLINE: nEEWhich = EE_CHAR_OVERLINE;break;
             case SID_ATTR_CHAR_CONTOUR: nEEWhich = EE_CHAR_OUTLINE; break;
@@ -719,7 +720,7 @@ void SwAnnotationShell::GetState(SfxItemSet& rSet)
             case FN_SET_SUB_SCRIPT:
             {
                 sal_uInt16 nEsc = 0;
-                const SfxPoolItem *pEscItem = 0;
+                const SfxPoolItem *pEscItem = nullptr;
                 if (nWhich==FN_SET_SUPER_SCRIPT)
                     nEsc = SVX_ESCAPEMENT_SUPERSCRIPT;
                 else
@@ -739,7 +740,7 @@ void SwAnnotationShell::GetState(SfxItemSet& rSet)
             case SID_ATTR_PARA_ADJUST_CENTER:
             case SID_ATTR_PARA_ADJUST_BLOCK:
                 {
-                    const SfxPoolItem *pAdjust = 0;
+                    const SfxPoolItem *pAdjust = nullptr;
                     int eAdjust = 0;
 
                     if (nWhich==SID_ATTR_PARA_ADJUST_LEFT)
@@ -769,7 +770,7 @@ void SwAnnotationShell::GetState(SfxItemSet& rSet)
             case SID_ATTR_PARA_LINESPACE_15:
             case SID_ATTR_PARA_LINESPACE_20:
                 {
-                    const SfxPoolItem *pLSpace = 0;
+                    const SfxPoolItem *pLSpace = nullptr;
                     int nLSpace = 0;
 
                     if (nWhich==SID_ATTR_PARA_LINESPACE_10)
@@ -855,7 +856,7 @@ void SwAnnotationShell::GetState(SfxItemSet& rSet)
             rSet.Put(aEditAttr.Get(nEEWhich), nWhich);
         if(nEEWhich == EE_CHAR_KERNING)
         {
-            SfxItemState eState = aEditAttr.GetItemState( EE_CHAR_KERNING, true );
+            SfxItemState eState = aEditAttr.GetItemState( EE_CHAR_KERNING );
             if ( eState == SfxItemState::DONTCARE )
             {
                 rSet.InvalidateItem(EE_CHAR_KERNING);
@@ -935,7 +936,7 @@ void SwAnnotationShell::ExecClpbrd(SfxRequest &rReq)
             SotClipboardFormatId nFormat = SotClipboardFormatId::NONE;
             const SfxPoolItem* pItem;
             if ( rReq.GetArgs() && rReq.GetArgs()->GetItemState(nSlot, true, &pItem) == SfxItemState::SET &&
-                                    pItem->ISA(SfxUInt32Item) )
+                                    dynamic_cast< const SfxUInt32Item *>( pItem ) !=  nullptr )
             {
                 nFormat = static_cast<SotClipboardFormatId>(static_cast<const SfxUInt32Item*>(pItem)->GetValue());
             }
@@ -1059,7 +1060,7 @@ void SwAnnotationShell::StateInsert(SfxItemSet &rSet)
                     {
                         const SvxFieldData* pField = pFieldItem->GetField();
 
-                        if (pField->ISA(SvxURLField))
+                        if (dynamic_cast< const SvxURLField *>( pField ) !=  nullptr)
                         {
                             aHLinkItem.SetName(static_cast<const SvxURLField*>( pField)->GetRepresentation());
                             aHLinkItem.SetURL(static_cast<const SvxURLField*>( pField)->GetURL());
@@ -1113,7 +1114,7 @@ void SwAnnotationShell::NoteExec(SfxRequest &rReq)
             break;
         case FN_DELETE_NOTE_AUTHOR:
         {
-            SFX_REQUEST_ARG( rReq, pItem, SfxStringItem, nSlot, false);
+            const SfxStringItem* pItem = rReq.GetArg<SfxStringItem>(nSlot);
             if ( pItem )
                 pPostItMgr->Delete( pItem->GetValue() );
             break;
@@ -1125,7 +1126,7 @@ void SwAnnotationShell::NoteExec(SfxRequest &rReq)
             break;
         case FN_HIDE_NOTE_AUTHOR:
         {
-            SFX_REQUEST_ARG( rReq, pItem, SfxStringItem, nSlot, false);
+            const SfxStringItem* pItem = rReq.GetArg<SfxStringItem>(nSlot);
             if ( pItem )
                 pPostItMgr->Hide( pItem->GetValue() );
         }
@@ -1222,7 +1223,7 @@ void SwAnnotationShell::ExecLingu(SfxRequest &rReq)
         case SID_THES:
         {
             OUString aReplaceText;
-            SFX_REQUEST_ARG( rReq, pItem2, SfxStringItem, SID_THES, false );
+            const SfxStringItem* pItem2 = rReq.GetArg<SfxStringItem>(SID_THES);
             if (pItem2)
                 aReplaceText = pItem2->GetValue();
             if (!aReplaceText.isEmpty())
@@ -1235,7 +1236,7 @@ void SwAnnotationShell::ExecLingu(SfxRequest &rReq)
             break;
         }
         case SID_HANGUL_HANJA_CONVERSION:
-            pOLV->StartTextConversion( LANGUAGE_KOREAN, LANGUAGE_KOREAN, NULL,
+            pOLV->StartTextConversion( LANGUAGE_KOREAN, LANGUAGE_KOREAN, nullptr,
                     i18n::TextConversionOption::CHARACTER_BY_CHARACTER, true, false );
             break;
 
@@ -1251,13 +1252,13 @@ void SwAnnotationShell::ExecLingu(SfxRequest &rReq)
                     {
                         Reference< ui::dialogs::XExecutableDialog > xDialog(
                                 xMCF->createInstanceWithContext(
-                                    OUString("com.sun.star.linguistic2.ChineseTranslationDialog")
-                                    , xContext), UNO_QUERY);
+                                    "com.sun.star.linguistic2.ChineseTranslationDialog", xContext),
+                                UNO_QUERY);
                         Reference< lang::XInitialization > xInit( xDialog, UNO_QUERY );
                         if( xInit.is() )
                         {
                             //  initialize dialog
-                            Reference< awt::XWindow > xDialogParentWindow(0);
+                            Reference< awt::XWindow > xDialogParentWindow(nullptr);
                             Sequence<Any> aSeq(1);
                             Any* pArray = aSeq.getArray();
                             PropertyValue aParam;
@@ -1470,7 +1471,7 @@ void SwAnnotationShell::ExecUndo(SfxRequest &rReq)
 
     sal_uInt16 nId = rReq.GetSlot();
     sal_uInt16 nCnt = 1;
-    const SfxPoolItem* pItem=0;
+    const SfxPoolItem* pItem=nullptr;
     if( pArgs && SfxItemState::SET == pArgs->GetItemState( nId, false, &pItem ) )
         nCnt = static_cast<const SfxUInt16Item*>(pItem)->GetValue();
     switch( nId )
@@ -1551,7 +1552,7 @@ void SwAnnotationShell::StateUndo(SfxItemSet &rSet)
                 sal_uInt16 nCount = pUndoManager ? pUndoManager->GetUndoActionCount() : 0;
                 if ( nCount )
                     pSfxViewFrame->GetSlotState( nWhich, pSfxViewFrame->GetInterface(), &rSet );
-                else if (rSh.GetLastUndoInfo(0, 0))
+                else if (rSh.GetLastUndoInfo(nullptr, nullptr))
                 {
                     rSet.Put( SfxStringItem( nWhich, rSh.GetDoString(SwWrtShell::UNDO)) );
                 }
@@ -1564,7 +1565,7 @@ void SwAnnotationShell::StateUndo(SfxItemSet &rSet)
                 sal_uInt16 nCount = pUndoManager ? pUndoManager->GetRedoActionCount() : 0;
                 if ( nCount )
                     pSfxViewFrame->GetSlotState( nWhich, pSfxViewFrame->GetInterface(), &rSet );
-                else if (rSh.GetFirstRedoInfo(0))
+                else if (rSh.GetFirstRedoInfo(nullptr))
                 {
                     rSet.Put(SfxStringItem( nWhich, rSh.GetDoString(SwWrtShell::REDO)) );
                 }
@@ -1600,12 +1601,12 @@ void SwAnnotationShell::StateUndo(SfxItemSet &rSet)
 
                     SfxStringListItem aItem( nWhich );
                     if ((nWhich == SID_GETUNDOSTRINGS) &&
-                        rSh.GetLastUndoInfo(0, 0))
+                        rSh.GetLastUndoInfo(nullptr, nullptr))
                     {
                         rSh.GetDoStrings( SwWrtShell::UNDO, aItem );
                     }
                     else if ((nWhich == SID_GETREDOSTRINGS) &&
-                             (rSh.GetFirstRedoInfo(0)))
+                             (rSh.GetFirstRedoInfo(nullptr)))
                     {
                         rSh.GetDoStrings( SwWrtShell::UNDO, aItem );
                     }
@@ -1654,7 +1655,7 @@ void SwAnnotationShell::InsertSymbol(SfxRequest& rReq)
     OutlinerView* pOLV = pPostItMgr->GetActiveSidebarWin()->GetOutlinerView();
 
     const SfxItemSet *pArgs = rReq.GetArgs();
-    const SfxPoolItem* pItem = 0;
+    const SfxPoolItem* pItem = nullptr;
     if( pArgs )
         pArgs->GetItemState(GetPool().GetWhich(SID_CHARMAP), false, &pItem);
 
@@ -1663,9 +1664,9 @@ void SwAnnotationShell::InsertSymbol(SfxRequest& rReq)
     if ( pItem )
     {
         sSym = static_cast<const SfxStringItem*>(pItem)->GetValue();
-        const SfxPoolItem* pFtItem = NULL;
+        const SfxPoolItem* pFtItem = nullptr;
         pArgs->GetItemState( GetPool().GetWhich(SID_ATTR_SPECIALCHAR), false, &pFtItem);
-        const SfxStringItem* pFontItem = PTR_CAST( SfxStringItem, pFtItem );
+        const SfxStringItem* pFontItem = dynamic_cast<const SfxStringItem*>( pFtItem  );
         if ( pFontItem )
             sFontName = pFontItem->GetValue();
     }
@@ -1709,8 +1710,8 @@ void SwAnnotationShell::InsertSymbol(SfxRequest& rReq)
         sal_uInt16 nResult = pDlg->Execute();
         if( nResult == RET_OK )
         {
-            SFX_ITEMSET_ARG( pDlg->GetOutputItemSet(), pCItem, SfxStringItem, SID_CHARMAP, false );
-            SFX_ITEMSET_ARG( pDlg->GetOutputItemSet(), pFontItem, SvxFontItem, SID_ATTR_CHAR_FONT, false );
+            const SfxStringItem* pCItem = SfxItemSet::GetItem<SfxStringItem>(pDlg->GetOutputItemSet(), SID_CHARMAP, false);
+            const SvxFontItem* pFontItem = SfxItemSet::GetItem<SvxFontItem>(pDlg->GetOutputItemSet(), SID_ATTR_CHAR_FONT, false);
             if ( pFontItem )
             {
                 aFont.SetName( pFontItem->GetFamilyName() );

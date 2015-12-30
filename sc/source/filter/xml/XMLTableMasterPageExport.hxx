@@ -33,23 +33,21 @@ namespace com { namespace sun { namespace star {
 
 class XMLTableMasterPageExport : public XMLTextMasterPageExport
 {
-    void exportHeaderFooter(const com::sun::star::uno::Reference < com::sun::star::sheet::XHeaderFooterContent >& xHeaderFooter,
+    void exportHeaderFooter(const css::uno::Reference < css::sheet::XHeaderFooterContent >& xHeaderFooter,
                             const xmloff::token::XMLTokenEnum aName,
                             const bool bDisplay);
 
 protected:
     virtual void exportHeaderFooterContent(
-            const ::com::sun::star::uno::Reference<
-                ::com::sun::star::text::XText >& rText,
-            bool bAutoStyles, bool bProgress ) SAL_OVERRIDE;
+            const css::uno::Reference< css::text::XText >& rText,
+            bool bAutoStyles, bool bProgress ) override;
 
     virtual void exportMasterPageContent(
-                const ::com::sun::star::uno::Reference <
-                    ::com::sun::star::beans::XPropertySet > & rPropSet,
-                 bool bAutoStyles ) SAL_OVERRIDE;
+                const css::uno::Reference< css::beans::XPropertySet > & rPropSet,
+                 bool bAutoStyles ) override;
 
 public:
-    XMLTableMasterPageExport( ScXMLExport& rExp );
+    explicit XMLTableMasterPageExport( ScXMLExport& rExp );
     virtual ~XMLTableMasterPageExport();
 };
 

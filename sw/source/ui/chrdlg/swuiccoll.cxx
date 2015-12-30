@@ -56,7 +56,7 @@ SwCondCollPage::SwCondCollPage(vcl::Window *pParent, const SfxItemSet &rSet)
     ,
     m_rSh(::GetActiveView()->GetWrtShell()),
     m_pCmds( SwCondCollItem::GetCmds() ),
-    m_pFormat(0),
+    m_pFormat(nullptr),
 
     m_bNewTemplate(false)
 {
@@ -87,17 +87,17 @@ SwCondCollPage::SwCondCollPage(vcl::Window *pParent, const SfxItemSet &rSet)
     m_pRemovePB->SetClickHdl(      LINK(this, SwCondCollPage, AssignRemoveClickHdl ));
     m_pAssignPB->SetClickHdl(      LINK(this, SwCondCollPage, AssignRemoveClickHdl ));
     m_pTbLinks->SetSelectHdl(      LINK(this, SwCondCollPage, SelectTreeListBoxHdl));
-    m_pStyleLB->SetSelectHdl(      LINK(this, SwCondCollPage, SelectHdl));
-    m_pFilterLB->SetSelectHdl(     LINK(this, SwCondCollPage, SelectHdl));
+    m_pStyleLB->SetSelectHdl(      LINK(this, SwCondCollPage, SelectListBoxHdl));
+    m_pFilterLB->SetSelectHdl(     LINK(this, SwCondCollPage, SelectListBoxHdl));
 
     m_pTbLinks->SetStyle(m_pTbLinks->GetStyle()|WB_HSCROLL|WB_CLIPCHILDREN);
     m_pTbLinks->SetSelectionMode( SINGLE_SELECTION );
-    m_pTbLinks->SetTabs( &nTabs[0], MAP_APPFONT );
+    m_pTbLinks->SetTabs( &nTabs[0] );
     m_pTbLinks->Resize();  // OS: Hack for the right selection
     m_pTbLinks->SetSpaceBetweenEntries( 0 );
 
     SfxStyleFamilies aFamilies(SW_RES(DLG_STYLE_DESIGNER));
-    const SfxStyleFamilyItem* pFamilyItem = 0;
+    const SfxStyleFamilyItem* pFamilyItem = nullptr;
 
     size_t nCount = aFamilies.size();
     for( size_t i = 0; i < nCount; ++i )
@@ -197,10 +197,10 @@ void SwCondCollPage::Reset(const SfxItemSet *)
     {
         OUString aEntry( m_aStrArr[n] + "\t" );
 
-        const SwCollCondition* pCond = 0;
+        const SwCollCondition* pCond = nullptr;
         if( m_pFormat && RES_CONDTXTFMTCOLL == m_pFormat->Which() &&
-            0 != ( pCond = static_cast<SwConditionTextFormatColl*>(m_pFormat)->
-            HasCondition( SwCollCondition( 0, m_pCmds[n].nCnd, m_pCmds[n].nSubCond ) ) )
+            nullptr != ( pCond = static_cast<SwConditionTextFormatColl*>(m_pFormat)->
+            HasCondition( SwCollCondition( nullptr, m_pCmds[n].nCnd, m_pCmds[n].nSubCond ) ) )
             && pCond->GetTextFormatColl() )
         {
             aEntry += pCond->GetTextFormatColl()->GetName();
@@ -225,7 +225,7 @@ IMPL_LINK_TYPED( SwCondCollPage, OnOffHdl, Button*, pBox, void )
     m_pRemovePB->Enable( bEnable );
     m_pAssignPB->Enable( bEnable );
     if( bEnable )
-        SelectHdl(0);
+        SelectHdl(nullptr);
 }
 
 IMPL_LINK_TYPED( SwCondCollPage, AssignRemoveClickHdl, Button*, pBtn, void)
@@ -272,7 +272,11 @@ IMPL_LINK_TYPED( SwCondCollPage, SelectTreeListBoxHdl, SvTreeListBox*, pBox, voi
 {
     SelectHdl(pBox);
 }
-IMPL_LINK( SwCondCollPage, SelectHdl, void*, pBox)
+IMPL_LINK_TYPED( SwCondCollPage, SelectListBoxHdl, ListBox&, rBox, void)
+{
+    SelectHdl(&rBox);
+}
+void SwCondCollPage::SelectHdl(void* pBox)
 {
     if (pBox == m_pFilterLB)
     {
@@ -306,7 +310,6 @@ IMPL_LINK( SwCondCollPage, SelectHdl, void*, pBox)
         if(pBox != m_pStyleLB)
             m_pRemovePB->Enable( m_pConditionCB->IsChecked() && !sTbEntry.isEmpty() );
     }
-    return 0;
 }
 
 void SwCondCollPage::SetCollection(SwFormat* pFormat, bool bNew)

@@ -22,7 +22,6 @@
 #include "TableConnectionData.hxx"
 #include "TableFieldDescription.hxx"
 #include "QEnumTypes.hxx"
-#include <tools/rtti.hxx>
 
 namespace dbaui
 {
@@ -38,8 +37,7 @@ namespace dbaui
 
     protected:
         // for creation and duplication of lines of own type
-        virtual OConnectionLineDataRef CreateLineDataObj() SAL_OVERRIDE;
-        virtual OConnectionLineDataRef CreateLineDataObj( const OConnectionLineData& rConnLineData ) SAL_OVERRIDE;
+        virtual OConnectionLineDataRef CreateLineDataObj() override;
 
         OQueryTableConnectionData& operator=( const OQueryTableConnectionData& rConnData );
     public:
@@ -49,22 +47,21 @@ namespace dbaui
             const OUString& rConnName=OUString());
         virtual ~OQueryTableConnectionData();
 
-        virtual void CopyFrom(const OTableConnectionData& rSource) SAL_OVERRIDE;
-        virtual OTableConnectionData* NewInstance() const SAL_OVERRIDE;
+        virtual void CopyFrom(const OTableConnectionData& rSource) override;
+        virtual OTableConnectionData* NewInstance() const override;
 
 
         /** Update create a new connection
 
             @return true if successful
         */
-        virtual bool Update() SAL_OVERRIDE;
+        virtual bool Update() override;
 
         OUString GetAliasName(EConnectionSide nWhich) const;
 
         sal_Int32       GetFieldIndex(EConnectionSide nWhich) const { return nWhich==JTCS_TO ? m_nDestEntryIndex : m_nFromEntryIndex; }
         void            SetFieldIndex(EConnectionSide nWhich, sal_Int32 nVal) { if (nWhich==JTCS_TO) m_nDestEntryIndex=nVal; else m_nFromEntryIndex=nVal; }
 
-        ETableFieldType GetFieldType(EConnectionSide nWhich) const { return nWhich==JTCS_TO ? m_eDestType : m_eFromType; }
         void            SetFieldType(EConnectionSide nWhich, ETableFieldType eType) { if (nWhich==JTCS_TO) m_eDestType=eType; else m_eFromType=eType; }
 
         void            InitFromDrag(const OTableFieldDescRef& rDragLeft, const OTableFieldDescRef& rDragRight);

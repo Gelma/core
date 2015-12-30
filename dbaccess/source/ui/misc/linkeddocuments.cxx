@@ -200,7 +200,7 @@ namespace dbaui
                     ), UNO_QUERY_THROW );
             }
 
-            xWizard->trigger( OUString( "start" ) );
+            xWizard->trigger( "start" );
             ::comphelper::disposeComponent( xWizard );
         }
         catch(const Exception&)
@@ -300,7 +300,7 @@ namespace dbaui
                 aCommand.Name = "openDesign";
                 aCommand.Argument <<= aCommandArgs.getPropertyValues();
                 WaitObject aWaitCursor( m_pDialogParent );
-                xNewDocument.set( xContent->execute( aCommand, xContent->createCommandIdentifier(), NULL ), UNO_QUERY );
+                xNewDocument.set( xContent->execute( aCommand, xContent->createCommandIdentifier(), nullptr ), UNO_QUERY );
             }
         }
         catch(const Exception&)
@@ -358,7 +358,7 @@ namespace dbaui
                 aInfo = dbtools::SQLExceptionInfo(aSQLException);
 
                 // more like a hack, insert an empty message
-                aInfo.prepend(OUString(" \n"));
+                aInfo.prepend(" \n");
 
                 OUString sMessage = ModuleRes(STR_COULDNOTOPEN_LINKEDDOC);
                 sMessage = sMessage.replaceFirst("$file$",_rLinkName);

@@ -107,7 +107,7 @@ bool DocumentLockFile::CreateOwnLockFile()
 
         xSeekable->seek( 0 );
 
-        uno::Reference < ::com::sun::star::ucb::XCommandEnvironment > xEnv;
+        uno::Reference < css::ucb::XCommandEnvironment > xEnv;
         ::ucbhelper::Content aTargetContent( m_aURL, xEnv, comphelper::getProcessComponentContext() );
 
         ucb::InsertCommandArgument aInsertArg;
@@ -115,7 +115,7 @@ bool DocumentLockFile::CreateOwnLockFile()
         aInsertArg.ReplaceExisting = sal_False;
         uno::Any aCmdArg;
         aCmdArg <<= aInsertArg;
-        aTargetContent.executeCommand( OUString( "insert"  ), aCmdArg );
+        aTargetContent.executeCommand( "insert", aCmdArg );
 
         // try to let the file be hidden if possible
         try {
@@ -159,7 +159,7 @@ uno::Reference< io::XInputStream > DocumentLockFile::OpenStream()
 {
     ::osl::MutexGuard aGuard( m_aMutex );
 
-    uno::Reference < ::com::sun::star::ucb::XCommandEnvironment > xEnv;
+    uno::Reference < css::ucb::XCommandEnvironment > xEnv;
     ::ucbhelper::Content aSourceContent( m_aURL, xEnv, comphelper::getProcessComponentContext() );
 
     // the file can be opened readonly, no locking will be done
@@ -172,7 +172,7 @@ bool DocumentLockFile::OverwriteOwnLockFile()
     // allows to overwrite the lock file with the current data
     try
     {
-        uno::Reference < ::com::sun::star::ucb::XCommandEnvironment > xEnv;
+        uno::Reference < css::ucb::XCommandEnvironment > xEnv;
         ::ucbhelper::Content aTargetContent( m_aURL, xEnv, comphelper::getProcessComponentContext() );
 
         LockFileEntry aNewEntry = GenerateOwnEntry();
@@ -207,9 +207,9 @@ void DocumentLockFile::RemoveFile()
       || !aFileData[LockFileComponent::USERURL].equals( aNewEntry[LockFileComponent::USERURL] ) )
         throw io::IOException(); // not the owner, access denied
 
-    uno::Reference < ::com::sun::star::ucb::XCommandEnvironment > xEnv;
+    uno::Reference < css::ucb::XCommandEnvironment > xEnv;
     ::ucbhelper::Content aCnt(m_aURL, xEnv, comphelper::getProcessComponentContext());
-    aCnt.executeCommand(OUString("delete"),
+    aCnt.executeCommand("delete",
         uno::makeAny(true));
 }
 

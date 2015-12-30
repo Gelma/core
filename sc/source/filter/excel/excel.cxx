@@ -24,6 +24,7 @@
 #include <sfx2/request.hxx>
 #include <sot/storage.hxx>
 #include <sot/exchange.hxx>
+#include <filter/msfilter/classids.hxx>
 #include <tools/globname.hxx>
 #include <comphelper/processfactory.hxx>
 #include <com/sun/star/beans/NamedValue.hpp>
@@ -40,6 +41,7 @@
 #include "imp_op.hxx"
 #include "excimp8.hxx"
 #include "exp_op.hxx"
+#include "scdll.hxx"
 
 #include <memory>
 
@@ -62,7 +64,7 @@ FltError ScFormatFilterPluginImpl::ScImportExcel( SfxMedium& rMedium, ScDocument
     OSL_ENSURE( pMedStrm, "::ScImportExcel - medium without input stream" );
     if( !pMedStrm ) return eERR_OPEN;           // should not happen
 
-    SvStream* pBookStrm = 0;            // The "Book"/"Workbook" stream containing main data.
+    SvStream* pBookStrm = nullptr;            // The "Book"/"Workbook" stream containing main data.
     XclBiff eBiff = EXC_BIFF_UNKNOWN;   // The BIFF version of the main stream.
 
     // try to open an OLE storage
@@ -72,7 +74,7 @@ FltError ScFormatFilterPluginImpl::ScImportExcel( SfxMedium& rMedium, ScDocument
     {
         xRootStrg = new SotStorage( pMedStrm, false );
         if( xRootStrg->GetError() )
-            xRootStrg = 0;
+            xRootStrg = nullptr;
     }
 
     // try to open "Book" or "Workbook" stream in OLE storage
@@ -185,7 +187,7 @@ static FltError lcl_ExportExcelBiff( SfxMedium& rMedium, ScDocument *pDocument,
     if( eRet == eERR_RNGOVRFLW )
         eRet = SCWARN_EXPORT_MAXROW;
 
-    SvGlobalName aGlobName( 0x00020810, 0x0000, 0x0000, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 );
+    SvGlobalName aGlobName(MSO_EXCEL5_CLASSID);
     SotClipboardFormatId nClip = SotExchange::RegisterFormatName( aClipName );
     xRootStrg->SetClass( aGlobName, nClip, aClassName );
 
@@ -202,7 +204,7 @@ FltError ScFormatFilterPluginImpl::ScExportExcel5( SfxMedium& rMedium, ScDocumen
         return eERR_NI;
 
     // check the passed Calc document
-    OSL_ENSURE( pDocument, "::ScImportExcel - no document" );
+    OSL_ENSURE( pDocument, "::ScExportExcel5 - no document" );
     if( !pDocument ) return eERR_INTERN;        // should not happen
 
     // check the output stream from medium
@@ -215,6 +217,20 @@ FltError ScFormatFilterPluginImpl::ScExportExcel5( SfxMedium& rMedium, ScDocumen
         eRet = lcl_ExportExcelBiff( rMedium, pDocument, pMedStrm, eFormat == ExpBiff8, eNach );
 
     return eRet;
+}
+
+extern "C" SAL_DLLPUBLIC_EXPORT bool SAL_CALL TestImportSpreadsheet(const OUString &rURL, const OUString &rFlt)
+{
+    ScDLL::Init();
+    SfxMedium aMedium(rURL, StreamMode::READ);
+    ScDocument aDocument;
+    aDocument.MakeTable(0);
+    FltError eError(eERR_OK);
+    if (rFlt == "xls")
+        eError = ScFormatFilter::Get().ScImportExcel(aMedium, &aDocument, EIF_AUTO);
+    else if (rFlt == "wb2")
+        eError = ScFormatFilter::Get().ScImportQuattroPro(aMedium, &aDocument);
+    return eError == eERR_OK;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

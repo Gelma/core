@@ -29,8 +29,8 @@ namespace svgio
             SvgNode* pParent)
         :   SvgNode(SVGTokenPath, rDocument, pParent),
             maSvgStyleAttributes(*this),
-            mpPolyPolygon(0),
-            mpaTransform(0),
+            mpPolyPolygon(nullptr),
+            mpaTransform(nullptr),
             maPathLength()
         {
         }
@@ -43,7 +43,7 @@ namespace svgio
 
         const SvgStyleAttributes* SvgPathNode::getSvgStyleAttributes() const
         {
-            return checkForCssStyle(OUString("path"), maSvgStyleAttributes);
+            return checkForCssStyle("path", maSvgStyleAttributes);
         }
 
         void SvgPathNode::parseAttribute(const OUString& rTokenName, SVGToken aSVGToken, const OUString& aContent)
@@ -102,18 +102,18 @@ namespace svgio
             }
         }
 
-        void SvgPathNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DSequence& rTarget, bool /*bReferenced*/) const
+        void SvgPathNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DContainer& rTarget, bool /*bReferenced*/) const
         {
             // fill and/or stroke needed, also a path
             const SvgStyleAttributes* pStyle = getSvgStyleAttributes();
 
             if(pStyle && getPath())
             {
-                drawinglayer::primitive2d::Primitive2DSequence aNewTarget;
+                drawinglayer::primitive2d::Primitive2DContainer aNewTarget;
 
                 pStyle->add_path(*getPath(), aNewTarget, &maHelpPointIndices);
 
-                if(aNewTarget.hasElements())
+                if(!aNewTarget.empty())
                 {
                     pStyle->add_postProcess(rTarget, aNewTarget, getTransform());
                 }

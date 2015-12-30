@@ -27,7 +27,7 @@
 #include <com/sun/star/ui/dialogs/XFilePickerControlAccess.hpp>
 #include <com/sun/star/ui/dialogs/XFilePickerListener.hpp>
 #include <com/sun/star/ui/dialogs/XFilePickerNotifier.hpp>
-#include <com/sun/star/ui/dialogs/XFilePicker.hpp>
+#include <com/sun/star/ui/dialogs/XFilePicker2.hpp>
 #include <vcl/msgbox.hxx>
 #include <vcl/idle.hxx>
 #include <sal/types.h>
@@ -70,7 +70,7 @@ public:
     ErrCode                     Execute();
 
     // overwritten from FileDialogHelper, to receive user feedback
-    virtual void SAL_CALL       ControlStateChanged( const css::ui::dialogs::FilePickerEvent& aEvent ) SAL_OVERRIDE;
+    virtual void SAL_CALL       ControlStateChanged( const css::ui::dialogs::FilePickerEvent& aEvent ) override;
 };
 
 void SAL_CALL SdFileDialog_Imp::ControlStateChanged( const css::ui::dialogs::FilePickerEvent& aEvent )
@@ -98,7 +98,7 @@ void SAL_CALL SdFileDialog_Imp::ControlStateChanged( const css::ui::dialogs::Fil
 IMPL_LINK_NOARG_TYPED(SdFileDialog_Imp, PlayMusicHdl, void*, void)
 {
     maUpdateIdle.Stop();
-    mnPlaySoundEvent = 0;
+    mnPlaySoundEvent = nullptr;
 
     if (mxPlayer.is())
     {
@@ -216,16 +216,16 @@ void SdFileDialog_Imp::CheckSelectionState()
 SdFileDialog_Imp::SdFileDialog_Imp( const short     nDialogType,
                                     bool        bUsableSelection    ) :
     FileDialogHelper( nDialogType, 0 ),
-    mnPlaySoundEvent( 0 ),
+    mnPlaySoundEvent( nullptr ),
     mbUsableSelection( bUsableSelection ),
     mbLabelPlaying(false)
 {
     maUpdateIdle.SetIdleHdl(LINK(this, SdFileDialog_Imp, IsMusicStoppedHdl));
 
-    css::uno::Reference < ::com::sun::star::ui::dialogs::XFilePicker > xFileDlg = GetFilePicker();
+    css::uno::Reference < css::ui::dialogs::XFilePicker2 > xFileDlg = GetFilePicker();
 
     // get the control access
-    mxControlAccess = css::uno::Reference< css::ui::dialogs::XFilePickerControlAccess > ( xFileDlg, css::uno::UNO_QUERY );
+    mxControlAccess.set( xFileDlg, css::uno::UNO_QUERY );
 
     if( mxControlAccess.is() )
     {
@@ -284,20 +284,20 @@ SdOpenSoundFileDialog::SdOpenSoundFileDialog() :
 {
     OUString aDescr;
     aDescr = SD_RESSTR(STR_ALL_FILES);
-    mpImpl->AddFilter( aDescr, OUString("*.*"));
+    mpImpl->AddFilter( aDescr, "*.*");
 
     // setup filter
 #if defined UNX
     aDescr = SD_RESSTR(STR_AU_FILE);
-    mpImpl->AddFilter( aDescr, OUString("*.au;*.snd" ));
+    mpImpl->AddFilter( aDescr, "*.au;*.snd");
     aDescr = SD_RESSTR(STR_VOC_FILE);
-    mpImpl->AddFilter( aDescr, OUString("*.voc" ));
+    mpImpl->AddFilter( aDescr, "*.voc");
     aDescr = SD_RESSTR(STR_WAV_FILE);
-    mpImpl->AddFilter( aDescr, OUString("*.wav" ));
+    mpImpl->AddFilter( aDescr, "*.wav");
     aDescr = SD_RESSTR(STR_AIFF_FILE);
-    mpImpl->AddFilter( aDescr, OUString("*.aiff" ));
+    mpImpl->AddFilter( aDescr, "*.aiff");
     aDescr = SD_RESSTR(STR_SVX_FILE);
-    mpImpl->AddFilter( aDescr, OUString("*.svx" ));
+    mpImpl->AddFilter( aDescr, "*.svx");
 #else
     aDescr = SD_RESSTR(STR_WAV_FILE);
     mpImpl->AddFilter( aDescr, OUString("*.wav;*.mp3;*.ogg" ));

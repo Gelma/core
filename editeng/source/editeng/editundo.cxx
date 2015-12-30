@@ -38,7 +38,7 @@ static void lcl_DoSetSelection( EditView* pView, sal_uInt16 nPara )
 
 EditUndoManager::EditUndoManager(sal_uInt16 nMaxUndoActionCount )
 :   SfxUndoManager(nMaxUndoActionCount),
-    mpEditEngine(0)
+    mpEditEngine(nullptr)
 {
 }
 
@@ -420,14 +420,14 @@ void EditUndoMoveParagraphs::Undo()
     else
         nTmpDest += aTmpRange.Len();
 
-    EditSelection aNewSel = GetEditEngine()->MoveParagraphs(aTmpRange, nTmpDest, 0);
+    EditSelection aNewSel = GetEditEngine()->MoveParagraphs(aTmpRange, nTmpDest, nullptr);
     GetEditEngine()->GetActiveView()->GetImpEditView()->SetEditSelection( aNewSel );
 }
 
 void EditUndoMoveParagraphs::Redo()
 {
     DBG_ASSERT( GetEditEngine()->GetActiveView(), "Undo/Redo: No Active View!" );
-    EditSelection aNewSel = GetEditEngine()->MoveParagraphs(nParagraphs, nDest, 0);
+    EditSelection aNewSel = GetEditEngine()->MoveParagraphs(nParagraphs, nDest, nullptr);
     GetEditEngine()->GetActiveView()->GetImpEditView()->SetEditSelection( aNewSel );
 }
 
@@ -491,7 +491,7 @@ EditUndoSetAttribs::EditUndoSetAttribs(EditEngine* pEE, const ESelection& rESel,
     aESel(rESel), aNewAttribs(rNewItems)
 {
     // When EditUndoSetAttribs actually is a RemoveAttribs this could be
-    // /recognize by the empty itemset, but then it would have to be caught in
+    // recognize by the empty itemset, but then it would have to be caught in
     // its own place, which possible a setAttribs does with an empty itemset.
     bSetIsRemove = false;
     bRemoveParaAttribs = false;
@@ -501,14 +501,14 @@ EditUndoSetAttribs::EditUndoSetAttribs(EditEngine* pEE, const ESelection& rESel,
 
 namespace {
 
-struct RemoveAttribsFromPool : std::unary_function<ContentAttribsInfo, void>
+struct RemoveAttribsFromPool : std::unary_function<std::unique_ptr<ContentAttribsInfo>, void>
 {
     SfxItemPool& mrPool;
 public:
     explicit RemoveAttribsFromPool(SfxItemPool& rPool) : mrPool(rPool) {}
-    void operator() (ContentAttribsInfo& rInfo)
+    void operator() (std::unique_ptr<ContentAttribsInfo>& rInfo)
     {
-        rInfo.RemoveAllCharAttribsFromPool(mrPool);
+        rInfo->RemoveAllCharAttribsFromPool(mrPool);
     }
 };
 
@@ -528,7 +528,7 @@ void EditUndoSetAttribs::Undo()
     bool bFields = false;
     for ( sal_Int32 nPara = aESel.nStartPara; nPara <= aESel.nEndPara; nPara++ )
     {
-        const ContentAttribsInfo& rInf = aPrevAttribs[nPara-aESel.nStartPara];
+        const ContentAttribsInfo& rInf = *aPrevAttribs[nPara-aESel.nStartPara].get();
 
         // first the paragraph attributes ...
         pEE->SetParaAttribsOnly(nPara, rInf.GetPrevParaAttribs());
@@ -540,7 +540,7 @@ void EditUndoSetAttribs::Undo()
         ContentNode* pNode = pEE->GetEditDoc().GetObject( nPara );
         for (size_t nAttr = 0; nAttr < rInf.GetPrevCharAttribs().size(); ++nAttr)
         {
-            const EditCharAttrib& rX = rInf.GetPrevCharAttribs()[nAttr];
+            const EditCharAttrib& rX = *rInf.GetPrevCharAttribs()[nAttr].get();
             // is automatically "poolsized"
             pEE->GetEditDoc().InsertAttrib(pNode, rX.GetStart(), rX.GetEnd(), *rX.GetItem());
             if (rX.Which() == EE_FEATURE_FIELD)
@@ -568,7 +568,7 @@ void EditUndoSetAttribs::Redo()
 
 void EditUndoSetAttribs::AppendContentInfo(ContentAttribsInfo* pNew)
 {
-    aPrevAttribs.push_back(pNew);
+    aPrevAttribs.push_back(std::unique_ptr<ContentAttribsInfo>(pNew));
 }
 
 void EditUndoSetAttribs::ImpSetSelection( EditView* /*pView*/ )
@@ -580,7 +580,7 @@ void EditUndoSetAttribs::ImpSetSelection( EditView* /*pView*/ )
 
 EditUndoTransliteration::EditUndoTransliteration(EditEngine* pEE, const ESelection& rESel, sal_Int32 nM) :
     EditUndo(EDITUNDO_TRANSLITERATE, pEE),
-    aOldESel(rESel), nMode(nM), pTxtObj(NULL) {}
+    aOldESel(rESel), nMode(nM), pTxtObj(nullptr) {}
 
 EditUndoTransliteration::~EditUndoTransliteration()
 {

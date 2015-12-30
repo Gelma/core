@@ -32,23 +32,22 @@ class SequentialTimeContainer : public BaseContainerNode
 {
 public:
     SequentialTimeContainer(
-        ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XAnimationNode> const& xNode,
+        css::uno::Reference<css::animations::XAnimationNode> const& xNode,
         BaseContainerNodeSharedPtr const& pParent,
         NodeContext const& rContext )
         : BaseContainerNode( xNode, pParent, rContext ) {}
 
 #if defined(DBG_UTIL)
-    virtual const char* getDescription() const SAL_OVERRIDE
+    virtual const char* getDescription() const override
         { return "SequentialTimeContainer"; }
 #endif
 
 protected:
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
 private:
-    virtual void activate_st() SAL_OVERRIDE;
-    virtual void notifyDeactivating( AnimationNodeSharedPtr const& rNotifier ) SAL_OVERRIDE;
+    virtual void activate_st() override;
+    virtual void notifyDeactivating( AnimationNodeSharedPtr const& rNotifier ) override;
 
     void skipEffect( AnimationNodeSharedPtr const& pChildNode );
 

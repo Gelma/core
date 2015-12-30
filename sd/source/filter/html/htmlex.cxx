@@ -159,7 +159,7 @@ private:
     OUString maTarget;
 
 public:
-    HtmlState( Color aDefColor );
+    explicit HtmlState( Color aDefColor );
 
     OUString SetWeight( bool bWeight );
     OUString SetItalic( bool bItalic );
@@ -349,7 +349,7 @@ HtmlExport::HtmlExport(
     :   maPath( aPath ),
         mpDoc(pExpDoc),
         mpDocSh( pDocShell ),
-        meEC(NULL),
+        meEC(nullptr),
         meMode( PUBLISH_SINGLE_DOCUMENT ),
         mbContentsPage(false),
         mnButtonThema(-1),
@@ -803,7 +803,7 @@ void HtmlExport::ExportHtml()
 
 void HtmlExport::SetDocColors( SdPage* pPage )
 {
-    if( pPage == NULL )
+    if( pPage == nullptr )
         pPage = mpDoc->GetSdPage(0, PK_STANDARD);
 
     svtools::ColorConfig aConfig;
@@ -812,26 +812,26 @@ void HtmlExport::SetDocColors( SdPage* pPage )
     maLinkColor  = Color(aConfig.GetColorValue(svtools::LINKS).nColor);
     maTextColor  = Color(COL_BLACK);
 
-    SfxStyleSheet* pSheet = NULL;
+    SfxStyleSheet* pSheet = nullptr;
 
     if( mpDoc->GetDocumentType() == DOCUMENT_TYPE_IMPRESS )
     {
         // default text color from the outline template of the first page
         pSheet = pPage->GetStyleSheetForPresObj(PRESOBJ_OUTLINE);
-        if(pSheet == NULL)
+        if(pSheet == nullptr)
             pSheet = pPage->GetStyleSheetForPresObj(PRESOBJ_TEXT);
-        if(pSheet == NULL)
+        if(pSheet == nullptr)
             pSheet = pPage->GetStyleSheetForPresObj(PRESOBJ_TITLE);
     }
 
-    if(pSheet == NULL)
+    if(pSheet == nullptr)
         pSheet = mpDoc->GetDefaultStyleSheet();
 
     if(pSheet)
     {
         SfxItemSet& rSet = pSheet->GetItemSet();
-        if(rSet.GetItemState(EE_CHAR_COLOR,true) == SfxItemState::SET)
-            maTextColor = static_cast<const SvxColorItem*>(rSet.GetItem(EE_CHAR_COLOR,true))->GetValue();
+        if(rSet.GetItemState(EE_CHAR_COLOR) == SfxItemState::SET)
+            maTextColor = static_cast<const SvxColorItem*>(rSet.GetItem(EE_CHAR_COLOR))->GetValue();
     }
 
     // default background from the background of the master page of the first page
@@ -852,7 +852,7 @@ void HtmlExport::InitProgress( sal_uInt16 nProgrCount )
 void HtmlExport::ResetProgress()
 {
     delete mpProgress;
-    mpProgress = NULL;
+    mpProgress = nullptr;
 }
 
 void HtmlExport::ExportKiosk()
@@ -1034,7 +1034,7 @@ bool HtmlExport::CreateImagesForPresPages( bool bThumbnail)
 SdrTextObj* HtmlExport::GetLayoutTextObject(SdrPage* pPage)
 {
     const size_t nObjectCount = pPage->GetObjCount();
-    SdrTextObj*     pResult      = NULL;
+    SdrTextObj*     pResult      = nullptr;
 
     for (size_t nObject = 0; nObject < nObjectCount; ++nObject)
     {
@@ -1080,7 +1080,9 @@ OUString HtmlExport::DocumentMetadata() const
             "  ", RTL_TEXTENCODING_UTF8,
             &aNonConvertableCharacters);
 
-    OString aData(static_cast<const char*>(aStream.GetData()), aStream.GetSize());
+    const sal_uInt64 nLen = aStream.GetSize();
+    OSL_ENSURE(nLen < static_cast<sal_uInt64>(SAL_MAX_INT32), "Stream can't fit in OString");
+    OString aData(static_cast<const char*>(aStream.GetData()), static_cast<sal_Int32>(nLen));
 
     return OStringToOUString(aData, RTL_TEXTENCODING_UTF8);
 }
@@ -1280,7 +1282,7 @@ void HtmlExport::WriteTable(OUStringBuffer& aStr, SdrTableObj* pTableObject, Sdr
             sal_Int32 nCellIndex = nRow * nColCount + nCol;
             SdrText* pText = pTableObject->getText(nCellIndex);
 
-            if (pText == NULL)
+            if (pText == nullptr)
                 continue;
             WriteOutlinerParagraph(aStr, pOutliner, pText->GetOutlinerParaObject(), rBackgroundColor, false);
             aStr.append("    </td>\r\n");
@@ -1305,7 +1307,7 @@ void HtmlExport::WriteObjectGroup(OUStringBuffer& aStr, SdrObjGroup* pObjectGrou
         else
         {
             OutlinerParaObject* pOutlinerParagraphObject = pCurrentObject->GetOutlinerParaObject();
-            if (pOutlinerParagraphObject != NULL)
+            if (pOutlinerParagraphObject != nullptr)
             {
                 WriteOutlinerParagraph(aStr, pOutliner, pOutlinerParagraphObject, rBackgroundColor, bHeadLine);
             }
@@ -1317,7 +1319,7 @@ void HtmlExport::WriteOutlinerParagraph(OUStringBuffer& aStr, SdrOutliner* pOutl
                                         OutlinerParaObject* pOutlinerParagraphObject,
                                         const Color& rBackgroundColor, bool bHeadLine)
 {
-    if (pOutlinerParagraphObject == NULL)
+    if (pOutlinerParagraphObject == nullptr)
         return;
 
     pOutliner->SetText(*pOutlinerParagraphObject);
@@ -1330,7 +1332,7 @@ void HtmlExport::WriteOutlinerParagraph(OUStringBuffer& aStr, SdrOutliner* pOutl
     for (sal_Int32 nIndex = 0; nIndex < nCount; nIndex++)
     {
         Paragraph* pParagraph = pOutliner->GetParagraph(nIndex);
-        if(pParagraph == NULL)
+        if(pParagraph == nullptr)
             continue;
 
         const sal_Int16 nDepth = (sal_uInt16) pOutliner->GetDepth(nIndex);
@@ -1408,7 +1410,7 @@ OUString HtmlExport::ParagraphToHTMLString( SdrOutliner* pOutliner, sal_Int32 nP
 {
     OUStringBuffer aStr;
 
-    if(NULL == pOutliner)
+    if(nullptr == pOutliner)
         return OUString();
 
     // TODO: MALTE!!!
@@ -1417,7 +1419,7 @@ OUString HtmlExport::ParagraphToHTMLString( SdrOutliner* pOutliner, sal_Int32 nP
     rEditEngine.SetUpdateMode(true);
 
     Paragraph* pPara = pOutliner->GetParagraph(nPara);
-    if(NULL == pPara)
+    if(nullptr == pPara)
         return OUString();
 
     HtmlState aState( (mbUserAttr || mbDocColors)  ? maTextColor : Color(COL_BLACK) );
@@ -1453,7 +1455,7 @@ OUString HtmlExport::TextAttribToHTMLString( SfxItemSet* pSet, HtmlState* pState
 {
     OUStringBuffer aStr;
 
-    if(NULL == pSet)
+    if(nullptr == pSet)
         return OUString();
 
     OUString aLink, aTarget;
@@ -1462,7 +1464,7 @@ OUString HtmlExport::TextAttribToHTMLString( SfxItemSet* pSet, HtmlState* pState
         const SvxFieldItem* pItem = static_cast<const SvxFieldItem*>(pSet->GetItem( EE_FEATURE_FIELD ));
         if(pItem)
         {
-            const SvxURLField* pURL = PTR_CAST(SvxURLField, pItem->GetField());
+            const SvxURLField* pURL = dynamic_cast<const SvxURLField*>( pItem->GetField() );
             if(pURL)
             {
                 aLink = pURL->GetURL();
@@ -1721,7 +1723,7 @@ bool HtmlExport::CreateHtmlForPresPages()
                         // corresponding names of the html file
                         bool        bIsMasterPage;
                         sal_uInt16  nPgNum = mpDoc->GetPageByName( aURL, bIsMasterPage );
-                        SdrObject*  pObj = NULL;
+                        SdrObject*  pObj = nullptr;
 
                         if (nPgNum == SDRPAGE_NOTFOUND)
                         {
@@ -1785,7 +1787,7 @@ bool HtmlExport::CreateHtmlForPresPages()
 
                             default:
                             {
-                                DBG_WARNING("unknown IMAP_OBJ_type");
+                                SAL_INFO("sd", "unknown IMAP_OBJ_type");
                             }
                             break;
                         }
@@ -1807,7 +1809,7 @@ bool HtmlExport::CreateHtmlForPresPages()
                         {
                             bool        bIsMasterPage;
                             sal_uInt16  nPgNum = mpDoc->GetPageByName( pInfo->GetBookmark(), bIsMasterPage );
-                            SdrObject*  pObj = NULL;
+                            SdrObject*  pObj = nullptr;
 
                             if( nPgNum == SDRPAGE_NOTFOUND )
                             {
@@ -2869,7 +2871,7 @@ bool HtmlExport::CopyScript( const OUString& rPath, const OUString& rSource, con
     INetURLObject   aURL( SvtPathOptions().GetConfigPath() );
     OUStringBuffer aScriptBuf;
 
-    aURL.Append( OUString("webcast") );
+    aURL.Append( "webcast" );
     aURL.Append( rSource );
 
     meEC.SetContext( STR_HTMLEXP_ERROR_OPEN_FILE, rSource );
@@ -3059,7 +3061,7 @@ bool HtmlExport::CopyFile( const OUString& rSourceFile, const OUString& rDestFil
     }
 }
 
-bool HtmlExport::checkFileExists( Reference< ::com::sun::star::ucb::XSimpleFileAccess3 >& xFileAccess, OUString const & aFileName )
+bool HtmlExport::checkFileExists( Reference< css::ucb::XSimpleFileAccess3 >& xFileAccess, OUString const & aFileName )
 {
     try
     {
@@ -3067,7 +3069,7 @@ bool HtmlExport::checkFileExists( Reference< ::com::sun::star::ucb::XSimpleFileA
         url += aFileName;
         return xFileAccess->exists( url );
     }
-    catch( com::sun::star::uno::Exception& )
+    catch( css::uno::Exception& )
     {
         OSL_FAIL(OString(OString("sd::HtmlExport::checkFileExists(), exception caught: ") +
              OUStringToOString( comphelper::anyToString( cppu::getCaughtException() ), RTL_TEXTENCODING_UTF8 )).getStr() );
@@ -3144,8 +3146,8 @@ OUString HtmlExport::GetButtonName( int nButton )
 
 EasyFile::EasyFile()
 {
-    pMedium = NULL;
-    pOStm = NULL;
+    pMedium = nullptr;
+    pOStm = nullptr;
     bOpen = false;
 }
 
@@ -3186,7 +3188,7 @@ sal_uLong EasyFile::createStream(  const OUString& rUrl, SvStream* &rpStr )
         bOpen = false;
         delete pMedium;
         delete pOStm;
-        pOStm = NULL;
+        pOStm = nullptr;
     }
 
     rpStr = pOStm;
@@ -3223,7 +3225,7 @@ sal_uLong EasyFile::close()
     sal_uLong nErr = 0;
 
     delete pOStm;
-    pOStm = NULL;
+    pOStm = nullptr;
 
     bOpen = false;
 
@@ -3236,7 +3238,7 @@ sal_uLong EasyFile::close()
         nErr = pMedium->GetError();
 
         delete pMedium;
-        pMedium = NULL;
+        pMedium = nullptr;
     }
 
     return nErr;

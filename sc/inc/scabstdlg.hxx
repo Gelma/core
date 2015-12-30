@@ -175,11 +175,11 @@ class AbstractScInsertTableDlg : public VclAbstractDialog
 public:
     virtual bool            GetTablesFromFile() = 0;
     virtual bool            GetTablesAsLink()   = 0;
-    virtual const OUString* GetFirstTable( sal_uInt16* pN = NULL ) = 0;
+    virtual const OUString* GetFirstTable( sal_uInt16* pN = nullptr ) = 0;
     virtual ScDocShell*     GetDocShellTables() = 0;
     virtual bool            IsTableBefore() = 0;
     virtual sal_uInt16      GetTableCount() = 0;
-    virtual const OUString* GetNextTable( sal_uInt16* pN = NULL ) = 0;
+    virtual const OUString* GetNextTable( sal_uInt16* pN = nullptr ) = 0;
 
 };
 
@@ -242,7 +242,7 @@ class AbstractScDPFunctionDlg : public VclAbstractDialog
 {
 public:
     virtual sal_uInt16  GetFuncMask() const = 0;
-    virtual ::com::sun::star::sheet::DataPilotFieldReference GetFieldRef() const = 0;
+    virtual css::sheet::DataPilotFieldReference GetFieldRef() const = 0;
 };
 
 class AbstractScDPSubtotalDlg : public VclAbstractDialog
@@ -343,7 +343,7 @@ public:
     virtual AbstractScSortWarningDlg * CreateScSortWarningDlg(vcl::Window* pParent, const OUString& rExtendText, const OUString& rCurrentText ) = 0;
 
     virtual AbstractScCondFormatManagerDlg* CreateScCondFormatMgrDlg(vcl::Window* pParent, ScDocument* pDoc, const ScConditionalFormatList* pFormatList,
-                                                                const ScAddress& rPos, int nId ) = 0;
+                                                                int nId ) = 0;
 
     virtual AbstractScDataPilotDatabaseDlg * CreateScDataPilotDatabaseDlg(vcl::Window* pParent) = 0;
 
@@ -351,7 +351,7 @@ public:
         bool bEnableExternal) = 0;
 
     virtual AbstractScDataPilotServiceDlg * CreateScDataPilotServiceDlg( vcl::Window* pParent,
-                                                                        const com::sun::star::uno::Sequence<OUString>& rServices,
+                                                                        const css::uno::Sequence<OUString>& rServices,
                                                                         int nId ) = 0;
 
     virtual AbstractScDeleteCellDlg * CreateScDeleteCellDlg(vcl::Window* pParent, bool bDisallowCellMove = false) = 0 ;
@@ -361,7 +361,7 @@ public:
         ScTabViewShell* pTabViewShell) = 0;
 
     virtual AbstractScDeleteContentsDlg * CreateScDeleteContentsDlg(vcl::Window* pParent,
-                                                                    InsertDeleteFlags nCheckDefaults = IDF_NONE) = 0;
+                                                                    InsertDeleteFlags nCheckDefaults = InsertDeleteFlags::NONE) = 0;
     virtual AbstractScFillSeriesDlg * CreateScFillSeriesDlg( vcl::Window*        pParent,
                                                             ScDocument& rDocument,
                                                             FillDir     eFillDir,
@@ -381,8 +381,8 @@ public:
                                                              bool bDisallowCellMove = false ) = 0;
 
     virtual AbstractScInsertContentsDlg * CreateScInsertContentsDlg( vcl::Window*        pParent,
-                                                                    InsertDeleteFlags nCheckDefaults = IDF_NONE,
-                                                                    const OUString* pStrTitle = NULL ) = 0;
+                                                                    InsertDeleteFlags nCheckDefaults = InsertDeleteFlags::NONE,
+                                                                    const OUString* pStrTitle = nullptr ) = 0;
 
     virtual AbstractScInsertTableDlg * CreateScInsertTableDlg(vcl::Window* pParent, ScViewData& rViewData,
         SCTAB nTabCount, bool bFromFile) = 0;
@@ -457,18 +457,16 @@ public:
 
     virtual AbstractScImportOptionsDlg * CreateScImportOptionsDlg ( vcl::Window*                 pParent,
                                                                     bool                    bAscii = true,
-                                                                    const ScImportOptions*  pOptions = NULL,
-                                                                    const OUString*         pStrTitle = NULL,
+                                                                    const ScImportOptions*  pOptions = nullptr,
+                                                                    const OUString*         pStrTitle = nullptr,
                                                                     bool                    bMultiByte = false,
                                                                     bool                    bOnlyDbtoolsEncodings = false,
                                                                     bool                    bImport = true ) = 0;
 
-    virtual SfxAbstractTabDialog * CreateScAttrDlg( SfxViewFrame*    pFrame,
-                                                    vcl::Window*          pParent,
+    virtual SfxAbstractTabDialog * CreateScAttrDlg( vcl::Window*          pParent,
                                                     const SfxItemSet* pCellAttrs ) = 0;
 
-    virtual SfxAbstractTabDialog * CreateScHFEditDlg( SfxViewFrame*     pFrame,
-                                                    vcl::Window*         pParent,
+    virtual SfxAbstractTabDialog * CreateScHFEditDlg(vcl::Window*         pParent,
                                                     const SfxItemSet&   rCoreSet,
                                                     const OUString&       rPageStyle,
                                                     sal_uInt16              nResId = RID_SCDLG_HFEDIT ) = 0;

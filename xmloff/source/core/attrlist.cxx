@@ -70,23 +70,23 @@ struct SvXMLAttributeList_Impl
 
 
 
-sal_Int16 SAL_CALL SvXMLAttributeList::getLength() throw( ::com::sun::star::uno::RuntimeException, std::exception )
+sal_Int16 SAL_CALL SvXMLAttributeList::getLength() throw( css::uno::RuntimeException, std::exception )
 {
     return sal::static_int_cast< sal_Int16 >(m_pImpl->vecAttribute.size());
 }
 
 
 SvXMLAttributeList::SvXMLAttributeList( const SvXMLAttributeList &r ) :
-    cppu::WeakImplHelper3<com::sun::star::xml::sax::XAttributeList, com::sun::star::util::XCloneable, com::sun::star::lang::XUnoTunnel>(r),
+    cppu::WeakImplHelper3<css::xml::sax::XAttributeList, css::util::XCloneable, css::lang::XUnoTunnel>(r),
     m_pImpl( new SvXMLAttributeList_Impl( *r.m_pImpl ) )
 {
 }
 
 SvXMLAttributeList::SvXMLAttributeList( const uno::Reference<
         xml::sax::XAttributeList> & rAttrList )
-    : sType( GetXMLToken(XML_CDATA) )
+    : m_pImpl( new SvXMLAttributeList_Impl),
+      sType( GetXMLToken(XML_CDATA) )
 {
-    m_pImpl = new SvXMLAttributeList_Impl;
 
     SvXMLAttributeList* pImpl =
         SvXMLAttributeList::getImplementation( rAttrList );
@@ -97,28 +97,28 @@ SvXMLAttributeList::SvXMLAttributeList( const uno::Reference<
         AppendAttributeList( rAttrList );
 }
 
-OUString SAL_CALL SvXMLAttributeList::getNameByIndex(sal_Int16 i) throw( ::com::sun::star::uno::RuntimeException, std::exception )
+OUString SAL_CALL SvXMLAttributeList::getNameByIndex(sal_Int16 i) throw( css::uno::RuntimeException, std::exception )
 {
     return ( static_cast< SvXMLAttributeList_Impl::size_type >( i ) < m_pImpl->vecAttribute.size() ) ? m_pImpl->vecAttribute[i].sName : OUString();
 }
 
 
-OUString SAL_CALL SvXMLAttributeList::getTypeByIndex(sal_Int16) throw( ::com::sun::star::uno::RuntimeException, std::exception )
+OUString SAL_CALL SvXMLAttributeList::getTypeByIndex(sal_Int16) throw( css::uno::RuntimeException, std::exception )
 {
     return sType;
 }
 
-OUString SAL_CALL  SvXMLAttributeList::getValueByIndex(sal_Int16 i) throw( ::com::sun::star::uno::RuntimeException, std::exception )
+OUString SAL_CALL  SvXMLAttributeList::getValueByIndex(sal_Int16 i) throw( css::uno::RuntimeException, std::exception )
 {
     return ( static_cast< SvXMLAttributeList_Impl::size_type >( i ) < m_pImpl->vecAttribute.size() ) ? m_pImpl->vecAttribute[i].sValue : OUString();
 }
 
-OUString SAL_CALL SvXMLAttributeList::getTypeByName( const OUString& ) throw( ::com::sun::star::uno::RuntimeException, std::exception )
+OUString SAL_CALL SvXMLAttributeList::getTypeByName( const OUString& ) throw( css::uno::RuntimeException, std::exception )
 {
     return sType;
 }
 
-OUString SAL_CALL SvXMLAttributeList::getValueByName(const OUString& sName) throw( ::com::sun::star::uno::RuntimeException, std::exception )
+OUString SAL_CALL SvXMLAttributeList::getValueByName(const OUString& sName) throw( css::uno::RuntimeException, std::exception )
 {
     ::std::vector<struct SvXMLTagAttribute_Impl>::iterator ii = m_pImpl->vecAttribute.begin();
 
@@ -131,24 +131,23 @@ OUString SAL_CALL SvXMLAttributeList::getValueByName(const OUString& sName) thro
 }
 
 
-uno::Reference< ::com::sun::star::util::XCloneable >  SvXMLAttributeList::createClone() throw( ::com::sun::star::uno::RuntimeException, std::exception )
+uno::Reference< css::util::XCloneable >  SvXMLAttributeList::createClone() throw( css::uno::RuntimeException, std::exception )
 {
-    uno::Reference< ::com::sun::star::util::XCloneable >  r = new SvXMLAttributeList( *this );
+    uno::Reference< css::util::XCloneable >  r = new SvXMLAttributeList( *this );
     return r;
 }
 
 
 SvXMLAttributeList::SvXMLAttributeList()
-    : sType( GetXMLToken(XML_CDATA) )
+    : m_pImpl( new SvXMLAttributeList_Impl ),
+      sType( GetXMLToken(XML_CDATA) )
 {
-    m_pImpl = new SvXMLAttributeList_Impl;
 }
 
 
 
 SvXMLAttributeList::~SvXMLAttributeList()
 {
-    delete m_pImpl;
 }
 
 
@@ -177,7 +176,7 @@ void SvXMLAttributeList::RemoveAttribute( const OUString& sName )
     }
 }
 
-void SvXMLAttributeList::AppendAttributeList( const uno::Reference< ::com::sun::star::xml::sax::XAttributeList >  &r )
+void SvXMLAttributeList::AppendAttributeList( const uno::Reference< css::xml::sax::XAttributeList >  &r )
 {
     OSL_ASSERT( r.is() );
 
@@ -259,7 +258,7 @@ SvXMLAttributeList* SvXMLAttributeList::getImplementation( uno::Reference< uno::
                     xUT->getSomething( SvXMLAttributeList::getUnoTunnelId())));
     }
     else
-        return NULL;
+        return nullptr;
 }
 
 // XUnoTunnel

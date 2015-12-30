@@ -16,10 +16,11 @@
  *   except in compliance with the License. You may obtain a copy of
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
-#include <unotools/unotoolsdllapi.h>
 
 #ifndef INCLUDED_UNOTOOLS_INTLWRAPPER_HXX
 #define INCLUDED_UNOTOOLS_INTLWRAPPER_HXX
+
+#include <unotools/unotoolsdllapi.h>
 #include <unotools/charclass.hxx>
 #include <unotools/localedatawrapper.hxx>
 #include <unotools/calendarwrapper.hxx>
@@ -48,7 +49,7 @@ class UNOTOOLS_DLLPUBLIC IntlWrapper
 private:
 
             LanguageTag         maLanguageTag;
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > m_xContext;
+    css::uno::Reference< css::uno::XComponentContext > m_xContext;
 
             LocaleDataWrapper*  pLocaleData;
             CollatorWrapper*    pCollator;
@@ -59,7 +60,7 @@ private:
 
 public:
                                 IntlWrapper(
-                                    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > & rxContext,
+                                    const css::uno::Reference< css::uno::XComponentContext > & rxContext,
                                     const LanguageTag& rLanguageTag
                                     );
                                 IntlWrapper(

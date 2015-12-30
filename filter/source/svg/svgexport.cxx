@@ -29,6 +29,7 @@
 #include <com/sun/star/util/MeasureUnit.hpp>
 #include <com/sun/star/xml/sax/Writer.hpp>
 
+#include <comphelper/lok.hxx>
 #include <rtl/bootstrap.hxx>
 #include <svtools/miscopt.hxx>
 #include <svx/unopage.hxx>
@@ -43,6 +44,9 @@
 #include <i18nlangtag/lang.h>
 #include <svl/zforlist.hxx>
 #include <xmloff/unointerfacetouniqueidentifiermapper.hxx>
+#include <xmloff/nmspmap.hxx>
+#include <xmloff/xmlnmspe.hxx>
+#include <xmloff/xmltoken.hxx>
 #include <xmloff/animationexport.hxx>
 
 #include <boost/preprocessor/repetition/repeat.hpp>
@@ -51,7 +55,7 @@
 using namespace ::com::sun::star::graphic;
 using namespace ::com::sun::star::geometry;
 using namespace ::com::sun::star;
-
+using namespace ::xmloff::token;
 
 // - ooo elements and attributes -
 
@@ -67,6 +71,7 @@ static const char    aOOOElemTextField[] = NSPREFIX "text_field";
 static const char    aOOOAttrNumberOfSlides[] = NSPREFIX "number-of-slides";
 static const char    aOOOAttrStartSlideNumber[] = NSPREFIX "start-slide-number";
 static const char    aOOOAttrNumberingType[] = NSPREFIX "page-numbering-type";
+static const char    aOOOAttrUsePositionedChars[] = NSPREFIX "use-positioned-chars";
 
 // ooo xml attributes for meta_slide
 static const char    aOOOAttrSlide[] = NSPREFIX "slide";
@@ -145,11 +150,11 @@ class FixedTextField : public TextField
 public:
     OUString text;
 
-    virtual OUString getClassName() const SAL_OVERRIDE
+    virtual OUString getClassName() const override
     {
         return OUString( "FixedTextField" );
     }
-    virtual bool equalTo( const TextField & aTextField ) const SAL_OVERRIDE
+    virtual bool equalTo( const TextField & aTextField ) const override
     {
         if( const FixedTextField* aFixedTextField = dynamic_cast< const FixedTextField* >( &aTextField ) )
         {
@@ -157,7 +162,7 @@ public:
         }
         return false;
     }
-    virtual void elementExport( SVGExport* pSVGExport ) const SAL_OVERRIDE
+    virtual void elementExport( SVGExport* pSVGExport ) const override
     {
         TextField::elementExport( pSVGExport );
         SvXMLElementExport aExp( *pSVGExport, XML_NAMESPACE_NONE, "g", true, true );
@@ -170,11 +175,11 @@ class FixedDateTimeField : public FixedTextField
 {
 public:
     FixedDateTimeField() {}
-    virtual OUString getClassName() const SAL_OVERRIDE
+    virtual OUString getClassName() const override
     {
         return OUString( "FixedDateTimeField" );
     }
-    virtual void growCharSet( SVGFilter::UCharSetMapMap & aTextFieldCharSets ) const SAL_OVERRIDE
+    virtual void growCharSet( SVGFilter::UCharSetMapMap & aTextFieldCharSets ) const override
     {
         implGrowCharSet( aTextFieldCharSets, text, aOOOAttrDateTimeField );
     }
@@ -185,11 +190,11 @@ class FooterField : public FixedTextField
 {
 public:
     FooterField() {}
-    virtual OUString getClassName() const SAL_OVERRIDE
+    virtual OUString getClassName() const override
     {
         return OUString( "FooterField" );
     }
-    virtual void growCharSet( SVGFilter::UCharSetMapMap & aTextFieldCharSets ) const SAL_OVERRIDE
+    virtual void growCharSet( SVGFilter::UCharSetMapMap & aTextFieldCharSets ) const override
     {
         static const OUString sFieldId = aOOOAttrFooterField;
         implGrowCharSet( aTextFieldCharSets, text, sFieldId );
@@ -200,7 +205,7 @@ public:
 class VariableTextField : public TextField
 {
 public:
-    virtual OUString getClassName() const SAL_OVERRIDE
+    virtual OUString getClassName() const override
     {
         return OUString( "VariableTextField" );
     }
@@ -216,11 +221,11 @@ public:
         : format(0)
     {
     }
-    virtual OUString getClassName() const SAL_OVERRIDE
+    virtual OUString getClassName() const override
     {
         return OUString( "VariableDateTimeField" );
     }
-    virtual bool equalTo( const TextField & aTextField ) const SAL_OVERRIDE
+    virtual bool equalTo( const TextField & aTextField ) const override
     {
         if( const VariableDateTimeField* aField = dynamic_cast< const VariableDateTimeField* >( &aTextField ) )
         {
@@ -228,7 +233,7 @@ public:
         }
         return false;
     }
-    virtual void elementExport( SVGExport* pSVGExport ) const SAL_OVERRIDE
+    virtual void elementExport( SVGExport* pSVGExport ) const override
     {
         VariableTextField::elementExport( pSVGExport );
         OUString sDateFormat, sTimeFormat;
@@ -291,7 +296,7 @@ public:
         pSVGExport->AddAttribute( XML_NAMESPACE_NONE, aOOOAttrDateTimeFormat, sDateTimeFormat );
         SvXMLElementExport aExp( *pSVGExport, XML_NAMESPACE_NONE, "g", true, true );
     }
-    virtual void growCharSet( SVGFilter::UCharSetMapMap & aTextFieldCharSets ) const SAL_OVERRIDE
+    virtual void growCharSet( SVGFilter::UCharSetMapMap & aTextFieldCharSets ) const override
     {
         // we use the unicode char set in an improper way: we put in the date/time format
         // in order to pass it to the CalcFieldValue method
@@ -317,7 +322,7 @@ bool operator==( const TextField & aLhsTextField, const TextField & aRhsTextFiel
 
 
 SVGExport::SVGExport(
-    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rContext,
+    const css::uno::Reference< css::uno::XComponentContext >& rContext,
     const Reference< XDocumentHandler >& rxHandler,
     const Sequence< PropertyValue >& rFilterData )
     : SvXMLExport( util::MeasureUnit::MM_100TH,
@@ -332,7 +337,7 @@ SVGExport::SVGExport(
     comphelper::SequenceAsHashMap aFilterDataHashMap = rFilterData;
 
     // TinyProfile
-    mbIsUseTinyProfile = aFilterDataHashMap.getUnpackedValueOrDefault(SVG_PROP_TINYPROFILE, true);
+    mbIsUseTinyProfile = aFilterDataHashMap.getUnpackedValueOrDefault(SVG_PROP_TINYPROFILE, false);
 
     // Font Embedding
     comphelper::SequenceAsHashMap::const_iterator iter = aFilterDataHashMap.find(SVG_PROP_EMBEDFONTS);
@@ -348,14 +353,29 @@ SVGExport::SVGExport(
     }
 
     // Native Decoration
-    mbIsUseNativeTextDecoration = !mbIsUseTinyProfile && aFilterDataHashMap.getUnpackedValueOrDefault(SVG_PROP_NATIVEDECORATION, false);
+    mbIsUseNativeTextDecoration = !mbIsUseTinyProfile && aFilterDataHashMap.getUnpackedValueOrDefault(SVG_PROP_NATIVEDECORATION, true);
 
     // Tiny Opacity (supported from SVG Tiny 1.2)
     mbIsUseOpacity = aFilterDataHashMap.getUnpackedValueOrDefault(SVG_PROP_OPACITY, true);
 
-    // Positioned Characters    (Seems to be experimental, as it was always initialized with false)
+    // Positioned Characters    (The old method)
     mbIsUsePositionedCharacters = aFilterDataHashMap.getUnpackedValueOrDefault(SVG_PROP_POSITIONED_CHARACTERS, false);
 
+    // add namespaces
+    _GetNamespaceMap().Add(
+        GetXMLToken(XML_NP_PRESENTATION),
+        GetXMLToken(XML_N_PRESENTATION),
+        XML_NAMESPACE_PRESENTATION);
+
+    _GetNamespaceMap().Add(
+        GetXMLToken(XML_NP_SMIL),
+        GetXMLToken(XML_N_SMIL_COMPAT),
+        XML_NAMESPACE_SMIL);
+
+    _GetNamespaceMap().Add(
+        GetXMLToken(XML_NP_ANIMATION),
+        GetXMLToken(XML_N_ANIMATION),
+        XML_NAMESPACE_ANIMATION);
 }
 
 
@@ -366,12 +386,11 @@ SVGExport::~SVGExport()
 }
 
 
-
 // - ObjectRepresentation -
 
 
 ObjectRepresentation::ObjectRepresentation() :
-    mpMtf( NULL )
+    mpMtf( nullptr )
 {
 }
 
@@ -388,7 +407,7 @@ ObjectRepresentation::ObjectRepresentation( const Reference< XInterface >& rxObj
 
 ObjectRepresentation::ObjectRepresentation( const ObjectRepresentation& rPresentation ) :
     mxObject( rPresentation.mxObject ),
-    mpMtf( rPresentation.mpMtf ? new GDIMetaFile( *rPresentation.mpMtf ) : NULL )
+    mpMtf( rPresentation.mpMtf ? new GDIMetaFile( *rPresentation.mpMtf ) : nullptr )
 {
 }
 
@@ -407,7 +426,7 @@ ObjectRepresentation& ObjectRepresentation::operator=( const ObjectRepresentatio
     if (this == &rPresentation)
         return *this;
     mxObject = rPresentation.mxObject;
-    delete mpMtf, ( mpMtf = rPresentation.mpMtf ? new GDIMetaFile( *rPresentation.mpMtf ) : NULL );
+    delete mpMtf, ( mpMtf = rPresentation.mpMtf ? new GDIMetaFile( *rPresentation.mpMtf ) : nullptr );
 
     return *this;
 }
@@ -549,7 +568,7 @@ bool SVGFilter::implExport( const Sequence< PropertyValue >& rDescriptor )
             pOStm.reset(::utl::UcbStreamHelper::CreateStream( aFileName, StreamMode::WRITE | StreamMode::TRUNC ));
 
             if( pOStm )
-                xOStm = Reference< XOutputStream >( new ::utl::OOutputStreamWrapper ( *pOStm ) );
+                xOStm.set( new ::utl::OOutputStreamWrapper ( *pOStm ) );
         }
         else if ( pValue[ i ].Name == "FilterData" )
         {
@@ -559,7 +578,7 @@ bool SVGFilter::implExport( const Sequence< PropertyValue >& rDescriptor )
 
     if( xOStm.is() )
     {
-        if( mSelectedPages.hasElements() && mMasterPageTargets.hasElements() )
+        if( mSelectedPages.hasElements() && !mMasterPageTargets.empty() )
         {
             Reference< XDocumentHandler > xDocHandler( implCreateExportDocumentHandler( xOStm ), UNO_QUERY );
 
@@ -568,20 +587,19 @@ bool SVGFilter::implExport( const Sequence< PropertyValue >& rDescriptor )
                 mbPresentation = Reference< XPresentationSupplier >( mxSrcDoc, UNO_QUERY ).is();
                 mpObjects = new ObjectMap;
 
-                // #110680#
                 // mpSVGExport = new SVGExport( xDocHandler );
                 mpSVGExport = new SVGExport( xContext, xDocHandler, maFilterData );
 
                 // xSVGExport is set up only to manage the life-time of the object pointed by mpSVGExport,
                 // and in order to prevent that it is destroyed when passed to AnimationExporter.
-                Reference< XInterface > xSVGExport = static_cast< ::com::sun::star::document::XFilter* >( mpSVGExport );
+                Reference< XInterface > xSVGExport = static_cast< css::document::XFilter* >( mpSVGExport );
 
                 // create an id for each draw page
                 for( sal_Int32 i = 0; i < mSelectedPages.getLength(); ++i )
                     implRegisterInterface( mSelectedPages[i] );
 
                 // create an id for each master page
-                for( sal_Int32 i = 0; i < mMasterPageTargets.getLength(); ++i )
+                for( size_t i = 0; i < mMasterPageTargets.size(); ++i )
                     implRegisterInterface( mMasterPageTargets[i] );
 
                 try
@@ -599,7 +617,7 @@ bool SVGFilter::implExport( const Sequence< PropertyValue >& rDescriptor )
 
                             if( mpSdrModel )
                             {
-                                SdrOutliner& rOutl = mpSdrModel->GetDrawOutliner(NULL);
+                                SdrOutliner& rOutl = mpSdrModel->GetDrawOutliner();
 
                                 maOldFieldHdl = rOutl.GetCalcFieldValueHdl();
                                 maNewFieldHdl = LINK(this, SVGFilter, CalcFieldHdl);
@@ -611,7 +629,7 @@ bool SVGFilter::implExport( const Sequence< PropertyValue >& rDescriptor )
                 }
                 catch( ... )
                 {
-                    delete mpSVGDoc, mpSVGDoc = NULL;
+                    delete mpSVGDoc, mpSVGDoc = nullptr;
                     OSL_FAIL( "Exception caught" );
                 }
 
@@ -631,10 +649,10 @@ bool SVGFilter::implExport( const Sequence< PropertyValue >& rDescriptor )
                     }
                 }
 
-                delete mpSVGWriter, mpSVGWriter = NULL;
-                mpSVGExport = NULL; // pointed object is released by xSVGExport dtor at the end of this scope
-                delete mpSVGFontExport, mpSVGFontExport = NULL;
-                delete mpObjects, mpObjects = NULL;
+                delete mpSVGWriter, mpSVGWriter = nullptr;
+                mpSVGExport = nullptr; // pointed object is released by xSVGExport dtor at the end of this scope
+                delete mpSVGFontExport, mpSVGFontExport = nullptr;
+                delete mpObjects, mpObjects = nullptr;
                 mbPresentation = false;
             }
         }
@@ -698,17 +716,14 @@ bool SVGFilter::implExportDocument()
     bool         bRet = false;
     sal_Int32        nLastPage = mSelectedPages.getLength() - 1;
 
-    SvtMiscOptions aMiscOptions;
-    const bool bExperimentalMode = aMiscOptions.IsExperimentalMode();
-
-    mbSinglePage = (nLastPage == 0) || !bExperimentalMode;
+    mbSinglePage = (nLastPage == 0);
     mnVisiblePage = -1;
 
     const Reference< XPropertySet >             xDefaultPagePropertySet( mxDefaultPage, UNO_QUERY );
     const Reference< XExtendedDocumentHandler > xExtDocHandler( mpSVGExport->GetDocHandler(), UNO_QUERY );
 
     // #i124608#
-    mbExportSelection = mbSinglePage && maShapeSelection.is() && maShapeSelection->getCount();
+    mbExportShapeSelection = mbSinglePage && maShapeSelection.is() && maShapeSelection->getCount();
 
     if(xDefaultPagePropertySet.is())
     {
@@ -716,7 +731,7 @@ bool SVGFilter::implExportDocument()
         xDefaultPagePropertySet->getPropertyValue( "Height" ) >>= nDocHeight;
     }
 
-    if(mbExportSelection)
+    if(mbExportShapeSelection)
     {
         // #i124608# create BoundRange and set nDocX, nDocY, nDocWidth and nDocHeight
         basegfx::B2DRange aShapeRange;
@@ -776,7 +791,7 @@ bool SVGFilter::implExportDocument()
     // instead of centered.
     #define _SVG_WRITE_EXTENTS
     #ifdef _SVG_WRITE_EXTENTS
-    if( mbSinglePage )
+    if( !mbPresentation )
     {
         aAttr = OUString::number( nDocWidth * 0.01 ) + "mm";
         mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "width", aAttr );
@@ -787,7 +802,7 @@ bool SVGFilter::implExportDocument()
     #endif
 
     // #i124608# set viewBox explicitely to the exported content
-    if (mbExportSelection)
+    if (mbExportShapeSelection)
     {
         aAttr = OUString::number(nDocX) + " " + OUString::number(nDocY) + " ";
     }
@@ -808,6 +823,9 @@ bool SVGFilter::implExportDocument()
     mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "xmlns", constSvgNamespace );
     mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "xmlns:ooo", "http://xml.openoffice.org/svg/export" );
     mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "xmlns:xlink", "http://www.w3.org/1999/xlink" );
+    mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "xmlns:presentation", "http://sun.com/xmlns/staroffice/presentation" );
+    mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "xmlns:smil", "http://www.w3.org/2001/SMIL20/" );
+    mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "xmlns:anim", "urn:oasis:names:tc:opendocument:xmlns:animation:1.0" );
     mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "xml:space", "preserve" );
 
     mpSVGDoc = new SvXMLElementExport( *mpSVGExport, XML_NAMESPACE_NONE, "svg", true, true );
@@ -829,15 +847,30 @@ bool SVGFilter::implExportDocument()
                 SvXMLElementExport aRectElem( *mpSVGExport, XML_NAMESPACE_NONE, "rect", true, true );
             }
         }
+        // Create a ClipPath element applied to the leaving slide in order
+        // to avoid that slide borders are visible during transition
+        {
+            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "id", "presentation_clip_path_shrink" );
+            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "clipPathUnits", "userSpaceOnUse" );
+            SvXMLElementExport aClipPathElem( *mpSVGExport, XML_NAMESPACE_NONE, "clipPath", true, true );
+            {
+                sal_Int32 nDocWidthExt = nDocWidth / 500;
+                sal_Int32 nDocHeightExt = nDocHeight / 500;
+                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "x", OUString::number( nDocX + nDocWidthExt / 2 ) );
+                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "y", OUString::number( nDocY + nDocHeightExt / 2) );
+                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "width", OUString::number( nDocWidth - nDocWidthExt ) );
+                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "height", OUString::number( nDocHeight - nDocHeightExt ) );
+                SvXMLElementExport aRectElem( *mpSVGExport, XML_NAMESPACE_NONE, "rect", true, true );
+            }
+        }
     }
 
     if( implLookForFirstVisiblePage() )  // OK! We found at least one visible page.
     {
-        if( !mbSinglePage )
+        if( mbPresentation )
         {
             implGenerateMetaData();
-            if( bExperimentalMode )
-                implExportAnimations();
+            implExportAnimations();
         }
         else
         {
@@ -872,16 +905,16 @@ bool SVGFilter::implExportDocument()
             }
 
             // #i124608# export a given object selection, so no MasterPage export at all
-            if (!mbExportSelection)
-                implExportMasterPages( mMasterPageTargets, 0, mMasterPageTargets.getLength() - 1 );
+            if (!mbExportShapeSelection)
+                implExportMasterPages( mMasterPageTargets, 0, mMasterPageTargets.size() - 1 );
             implExportDrawPages( mSelectedPages, 0, nLastPage );
 
-            if( !mbSinglePage )
+            if( mbPresentation )
             {
                 implGenerateScript();
             }
 
-            delete mpSVGDoc, mpSVGDoc = NULL;
+            delete mpSVGDoc, mpSVGDoc = nullptr;
             bRet = true;
         }
     }
@@ -937,6 +970,11 @@ bool SVGFilter::implGenerateMetaData()
         mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, aOOOAttrNumberOfSlides, OUString::number( nCount ) );
         mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, aOOOAttrStartSlideNumber, OUString::number( mnVisiblePage ) );
 
+        if( mpSVGExport->IsUsePositionedCharacters() )
+        {
+            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, aOOOAttrUsePositionedChars, "true" );
+        }
+
         /*
          *  Add a (global) Page Numbering Type attribute for the document
          */
@@ -988,6 +1026,18 @@ bool SVGFilter::implGenerateMetaData()
             const OUString                aElemTextFieldId( aOOOElemTextField );
             std::vector< TextField* >     aFieldSet;
 
+            // dummy slide - used as leaving slide for transition on the first slide
+            if( mbPresentation )
+            {
+                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "id", NSPREFIX "meta_dummy_slide" );
+                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, aOOOAttrSlide, "dummy-slide" );
+                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, aOOOAttrMaster, "dummy-master-page" );
+                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, aOOOAttrBackgroundVisibility, "hidden" );
+                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, aOOOAttrMasterObjectsVisibility, "hidden" );
+                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, aOOOAttrHasTransition, "false" );
+                SvXMLElementExport aMetaDummySlideElem( *mpSVGExport, XML_NAMESPACE_NONE, "g", true, true );
+            }
+
             for( sal_Int32 i = 0; i < nCount; ++i )
             {
                 const Reference< XDrawPage > &    xDrawPage = mSelectedPages[i];
@@ -1026,7 +1076,6 @@ bool SVGFilter::implGenerateMetaData()
                             bool bPageNumberVisibility    = false;    // default: hidden
                             bool bDateTimeVisibility      = true;     // default: visible
                             bool bFooterVisibility        = true;     // default: visible
-                            bool bDateTimeFixed           = true;     // default: fixed
 
                             /*
                              *  Page Number Field
@@ -1043,6 +1092,7 @@ bool SVGFilter::implGenerateMetaData()
                             xPropSet->getPropertyValue( "IsDateTimeVisible" ) >>= bDateTimeVisibility;
                             if( bDateTimeVisibility ) // visibility default value: 'visible'
                             {
+                                bool bDateTimeFixed           = true;     // default: fixed
                                 xPropSet->getPropertyValue( "IsDateTimeFixed" ) >>= bDateTimeFixed;
                                 if( bDateTimeFixed ) // we are interested only in the field text not in the date/time format
                                 {
@@ -1128,7 +1178,7 @@ bool SVGFilter::implGenerateMetaData()
             // text fields are used only for generating meta info so we don't need them anymore
             for( size_t i = 0; i < aFieldSet.size(); ++i )
             {
-                if( aFieldSet[i] != NULL )
+                if( aFieldSet[i] != nullptr )
                 {
                     delete aFieldSet[i];
                 }
@@ -1257,6 +1307,8 @@ void SVGFilter::implEmbedBulletGlyphs()
     implEmbedBulletGlyph( 8226, sPathData );
     sPathData = "M -4,459 L 1135,459 1135,606 -4,606 -4,459 Z";
     implEmbedBulletGlyph( 8211, sPathData );
+    sPathData = "M 173,740 C 173,903 231,1043 346,1159 462,1274 601,1332 765,1332 928,1332 1067,1274 1183,1159 1299,1043 1357,903 1357,740 1357,577 1299,437 1183,322 1067,206 928,148 765,148 601,148 462,206 346,322 231,437 173,577 173,740 Z";
+    implEmbedBulletGlyph( 61548, sPathData );
 }
 
 
@@ -1308,7 +1360,7 @@ bool SVGFilter::implExportTextEmbeddedBitmaps()
 
                 const Reference< XInterface >& rxShape = it->GetObject();
                 Reference< XPropertySet > xShapePropSet( rxShape, UNO_QUERY );
-                ::com::sun::star::awt::Rectangle    aBoundRect;
+                css::awt::Rectangle    aBoundRect;
                 if( xShapePropSet.is() && ( xShapePropSet->getPropertyValue( "BoundRect" ) >>= aBoundRect ) )
                 {
                     // Origin of the coordinate device must be (0,0).
@@ -1322,7 +1374,7 @@ bool SVGFilter::implExportTextEmbeddedBitmaps()
                     // specifying the wanted position, they will result
                     // misplaced.
                     pAction->Move( -aPt.X(), -aPt.Y() );
-                    mpSVGWriter->WriteMetaFile( aTopLeft, aSize, aMtf, 0xffffffff, NULL );
+                    mpSVGWriter->WriteMetaFile( aTopLeft, aSize, aMtf, 0xffffffff );
                     // We reset to the original values so that when the <use>
                     // element is created the x, y attributes are correct.
                     pAction->Move( aPt.X(), aPt.Y() );
@@ -1452,7 +1504,7 @@ bool SVGFilter::implGetPagePropSet( const Reference< XDrawPage > & rxPage )
 
 
 
-bool SVGFilter::implExportMasterPages( const SVGFilter::XDrawPageSequence & rxPages,
+bool SVGFilter::implExportMasterPages( const std::vector< Reference< XDrawPage > > & rxPages,
                                            sal_Int32 nFirstPage, sal_Int32 nLastPage )
 {
     DBG_ASSERT( nFirstPage <= nLastPage,
@@ -1460,8 +1512,29 @@ bool SVGFilter::implExportMasterPages( const SVGFilter::XDrawPageSequence & rxPa
 
     // When the exported slides are more than one we wrap master page elements
     // with a svg <defs> element.
-    OUString aContainerTag = (mbSinglePage) ? OUString( "g" ) : OUString( "defs" );
+    OUString aContainerTag = (!mbPresentation) ? OUString( "g" ) : OUString( "defs" );
     SvXMLElementExport aContainerElement( *mpSVGExport, XML_NAMESPACE_NONE, aContainerTag, true, true );
+
+    // dummy slide - used as leaving slide for transition on the first slide
+    if( mbPresentation )
+    {
+        mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "id", "dummy-master-page" );
+        mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, aOOOAttrName, "dummy-master-page" );
+        mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "class", "Master_Slide" );
+        SvXMLElementExport aMasterSlideElem( *mpSVGExport, XML_NAMESPACE_NONE, "g", true, true );
+        {
+            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "id", "bg-dummy-master-page" );
+            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "class", "Background" );
+            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "visibility", "hidden" );
+            SvXMLElementExport aBackgroundElem( *mpSVGExport, XML_NAMESPACE_NONE, "g", true, true );
+        }
+        {
+            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "id", "bo-dummy-master-page" );
+            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "class", "BackgroundObjects" );
+            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "visibility", "hidden" );
+            SvXMLElementExport aBackgroundObjectElem( *mpSVGExport, XML_NAMESPACE_NONE, "g", true, true );
+        }
+    }
 
     bool bRet = false;
     for( sal_Int32 i = nFirstPage; i <= nLastPage; ++i )
@@ -1491,6 +1564,28 @@ bool SVGFilter::implExportDrawPages( const SVGFilter::XDrawPageSequence & rxPage
     DBG_ASSERT( nFirstPage <= nLastPage,
                 "SVGFilter::implExportDrawPages: nFirstPage > nLastPage" );
 
+    // dummy slide - used as leaving slide for transition on the first slide
+    if( mbPresentation )
+    {
+        mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "class", "DummySlide" );
+        SvXMLElementExport aDummySlideElement( *mpSVGExport, XML_NAMESPACE_NONE, "g", true, true );
+        {
+           SvXMLElementExport aGElement( *mpSVGExport, XML_NAMESPACE_NONE, "g", true, true );
+            {
+                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "id", "dummy-slide" );
+                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "class", "Slide" );
+                OUString sClipPathAttrValue = "url(#" + msClipPathId + ")";
+                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "clip-path", sClipPathAttrValue );
+                SvXMLElementExport aSlideElement( *mpSVGExport, XML_NAMESPACE_NONE, "g", true, true );
+                {
+                    mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, aOOOAttrName, "dummy-page" );
+                    mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "class", "Page" );
+                    SvXMLElementExport aPageElement( *mpSVGExport, XML_NAMESPACE_NONE, "g", true, true );
+                }
+            }
+        }
+    }
+
     // We wrap all slide in a group element with class name "SlideGroup".
     mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "class", "SlideGroup" );
     SvXMLElementExport aExp( *mpSVGExport, XML_NAMESPACE_NONE, "g", true, true );
@@ -1500,14 +1595,14 @@ bool SVGFilter::implExportDrawPages( const SVGFilter::XDrawPageSequence & rxPage
     {
         Reference< XShapes > xShapes;
 
-        if (mbExportSelection)
+        if (mbExportShapeSelection)
         {
             // #i124608# export a given object selection
             xShapes = maShapeSelection;
         }
         else
         {
-            xShapes = Reference< XShapes >( rxPages[i], UNO_QUERY );
+            xShapes.set( rxPages[i], UNO_QUERY );
         }
 
         if( xShapes.is() )
@@ -1516,29 +1611,40 @@ bool SVGFilter::implExportDrawPages( const SVGFilter::XDrawPageSequence & rxPage
             // handling a slide visibility.
             // In case the exported slides are more than one the initial
             // visibility of each slide is set to 'hidden'.
-            if( !mbSinglePage )
+            if( mbPresentation )
             {
                 mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "visibility", "hidden" );
             }
             SvXMLElementExport aGElement( *mpSVGExport, XML_NAMESPACE_NONE, "g", true, true );
 
+
             {
-                // add id attribute
+                // Insert a further inner the <g> open tag for handling elements
+                // inserted before or after a slide: that is used for some
+                // when swithing from the last to the first slide.
                 const OUString & sPageId = implGetValidIDFromInterface( rxPages[i] );
-                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "id", sPageId );
+                OUString sContainerId = "container-";
+                sContainerId += sPageId;
+                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "id", sContainerId );
+                SvXMLElementExport aContainerExp( *mpSVGExport, XML_NAMESPACE_NONE, "g", true, true );
 
-                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "class", "Slide" );
+                {
+                    // add id attribute
+                    mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "id", sPageId );
 
-                // Adding a clip path to each exported slide , so in case
-                // bitmaps or other elements exceed the slide margins, they are
-                // trimmed, even when they are shown inside a thumbnail view.
-                OUString sClipPathAttrValue = "url(#" + msClipPathId + ")";
-                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "clip-path", sClipPathAttrValue );
+                    mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "class", "Slide" );
 
-                SvXMLElementExport aSlideElement( *mpSVGExport, XML_NAMESPACE_NONE, "g", true, true );
+                    // Adding a clip path to each exported slide , so in case
+                    // bitmaps or other elements exceed the slide margins, they are
+                    // trimmed, even when they are shown inside a thumbnail view.
+                    OUString sClipPathAttrValue = "url(#" + msClipPathId + ")";
+                    mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "clip-path", sClipPathAttrValue );
 
-                bRet = implExportPage( sPageId, rxPages[i], xShapes, false /* is not a master page */ ) || bRet;
-            }
+                    SvXMLElementExport aSlideElement( *mpSVGExport, XML_NAMESPACE_NONE, "g", true, true );
+
+                    bRet = implExportPage( sPageId, rxPages[i], xShapes, false /* is not a master page */ ) || bRet;
+                }
+            } // append the </g> closing tag related to inserted elements
         } // append the </g> closing tag related to the svg element handling the slide visibility
     }
 
@@ -1555,7 +1661,7 @@ bool SVGFilter::implExportPage( const OUString & sPageId,
 
     {
         OUString sPageName = implGetInterfaceName( rxPage );
-        if( !(sPageName.isEmpty() || mbSinglePage ))
+        if( mbPresentation && !sPageName.isEmpty() )
             mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, aOOOAttrName, sPageName );
 
         {
@@ -1595,7 +1701,7 @@ bool SVGFilter::implExportPage( const OUString & sPageId,
                 // of the parent slide regardless of the value of the 'IsBackgroundVisible' property.
                 // This means that we need to set up the visibility attribute only for the background
                 // element of a master page.
-                if( mbSinglePage && bMaster )
+                if( !mbPresentation && bMaster )
                 {
                     if( !mVisiblePagePropSet.bIsBackgroundVisible )
                     {
@@ -1622,7 +1728,7 @@ bool SVGFilter::implExportPage( const OUString & sPageId,
             OUString sBackgroundObjectsId = "bo-";
             sBackgroundObjectsId += sPageId;
             mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "id", sBackgroundObjectsId );
-            if( mbSinglePage )
+            if( !mbPresentation )
             {
                 if( !mVisiblePagePropSet.bAreBackgroundObjectsVisible )
                 {
@@ -1661,7 +1767,7 @@ bool SVGFilter::implExportShapes( const Reference< XShapes >& rxShapes,
         if( ( rxShapes->getByIndex( i ) >>= xShape ) && xShape.is() )
             bRet = implExportShape( xShape, bMaster ) || bRet;
 
-        xShape = NULL;
+        xShape = nullptr;
     }
 
     return bRet;
@@ -1709,8 +1815,8 @@ bool SVGFilter::implExportShape( const Reference< XShape >& rxShape,
 
             if( !bRet && mpObjects->find( rxShape ) !=  mpObjects->end() )
             {
-                ::com::sun::star::awt::Rectangle    aBoundRect;
-                const GDIMetaFile&                  rMtf = (*mpObjects)[ rxShape ].GetRepresentation();
+                css::awt::Rectangle    aBoundRect;
+                const GDIMetaFile&     rMtf = (*mpObjects)[ rxShape ].GetRepresentation();
 
                 xShapePropSet->getPropertyValue( "BoundRect" ) >>= aBoundRect;
 
@@ -1720,7 +1826,7 @@ bool SVGFilter::implExportShape( const Reference< XShape >& rxShape,
                 if( rMtf.GetActionSize() )
                 {   // for text field shapes we set up text-adjust attributes
                     // and set visibility to hidden
-                    const OUString* pElementId = NULL;
+                    const OUString* pElementId = nullptr;
                     if( mbPresentation )
                     {
                         bool bIsPageNumber  = ( aShapeClass == "Slide_Number" );
@@ -1728,44 +1834,31 @@ bool SVGFilter::implExportShape( const Reference< XShape >& rxShape,
                         bool bIsDateTime    = ( aShapeClass == "Date/Time" );
                         if( bIsPageNumber || bIsDateTime || bIsFooter )
                         {
-                            if( !mbSinglePage )
+                            // to notify to the SVGActionWriter::ImplWriteActions method
+                            // that we are dealing with a placeholder shape
+                            pElementId = &sPlaceholderTag;
+
+                            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "visibility", "hidden" );
+
+                            sal_uInt16 nTextAdjust = ParagraphAdjust_LEFT;
+                            OUString sTextAdjust;
+                            xShapePropSet->getPropertyValue( "ParaAdjust" ) >>= nTextAdjust;
+
+                            switch( nTextAdjust )
                             {
-                                // to notify to the SVGActionWriter::ImplWriteActions method
-                                // that we are dealing with a placeholder shape
-                                pElementId = &sPlaceholderTag;
-
-                                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "visibility", "hidden" );
-
-                                sal_uInt16 nTextAdjust = ParagraphAdjust_LEFT;
-                                OUString sTextAdjust;
-                                xShapePropSet->getPropertyValue( "ParaAdjust" ) >>= nTextAdjust;
-
-                                switch( nTextAdjust )
-                                {
-                                    case ParagraphAdjust_LEFT:
-                                            sTextAdjust = "left";
-                                            break;
-                                    case ParagraphAdjust_CENTER:
-                                            sTextAdjust = "center";
-                                            break;
-                                    case ParagraphAdjust_RIGHT:
-                                            sTextAdjust = "right";
-                                            break;
-                                    default:
+                                case ParagraphAdjust_LEFT:
+                                        sTextAdjust = "left";
                                         break;
-                                }
-                                mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, aOOOAttrTextAdjust, sTextAdjust );
+                                case ParagraphAdjust_CENTER:
+                                        sTextAdjust = "center";
+                                        break;
+                                case ParagraphAdjust_RIGHT:
+                                        sTextAdjust = "right";
+                                        break;
+                                default:
+                                    break;
                             }
-                            else // single page case
-                            {
-                                if( !mVisiblePagePropSet.bAreBackgroundObjectsVisible || (
-                                    ( bIsPageNumber && !mVisiblePagePropSet.bIsPageNumberFieldVisible ) ||
-                                    ( bIsDateTime && !mVisiblePagePropSet.bIsDateTimeFieldVisible ) ||
-                                    ( bIsFooter && !mVisiblePagePropSet.bIsFooterFieldVisible ) ) )
-                                {
-                                    mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "visibility", "hidden" );
-                                }
-                            }
+                            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, aOOOAttrTextAdjust, sTextAdjust );
                         }
                     }
                     mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "class", aShapeClass );
@@ -1796,7 +1889,7 @@ bool SVGFilter::implExportShape( const Reference< XShape >& rxShape,
                         mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "id", rShapeId );
                     }
 
-                    const GDIMetaFile* pEmbeddedBitmapsMtf = NULL;
+                    const GDIMetaFile* pEmbeddedBitmapsMtf = nullptr;
                     if( mEmbeddedBitmapActionMap.find( rxShape ) !=  mEmbeddedBitmapActionMap.end() )
                     {
                         pEmbeddedBitmapsMtf = &( mEmbeddedBitmapActionMap[ rxShape ].GetRepresentation() );
@@ -1811,6 +1904,19 @@ bool SVGFilter::implExportShape( const Reference< XShape >& rxShape,
                         }
 
                         SvXMLElementExport aExp2( *mpSVGExport, XML_NAMESPACE_NONE, "g", true, true );
+
+                        // export the shape bounding box
+                        {
+                            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "class", "BoundingBox" );
+                            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "stroke", "none" );
+                            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "fill", "none" );
+                            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "x", OUString::number( aBoundRect.X ) );
+                            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "y", OUString::number( aBoundRect.Y ) );
+                            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "width", OUString::number( aBoundRect.Width ) );
+                            mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "height", OUString::number( aBoundRect.Height ) );
+                            SvXMLElementExport aBB( *mpSVGExport, XML_NAMESPACE_NONE, "rect", true, true );
+                        }
+
                         if( !aBookmark.isEmpty() )
                         {
                             mpSVGExport->AddAttribute( XML_NAMESPACE_NONE, "xlink:href", aBookmark);
@@ -1844,7 +1950,7 @@ bool SVGFilter::implExportShape( const Reference< XShape >& rxShape,
 
 bool SVGFilter::implCreateObjects()
 {
-    if (mbExportSelection)
+    if (mbExportShapeSelection)
     {
         // #i124608# export a given object selection
         if (mSelectedPages.getLength() && mSelectedPages[0].is())
@@ -1857,7 +1963,7 @@ bool SVGFilter::implCreateObjects()
 
     sal_Int32 i, nCount;
 
-    for( i = 0, nCount = mMasterPageTargets.getLength(); i < nCount; ++i )
+    for( i = 0, nCount = mMasterPageTargets.size(); i < nCount; ++i )
     {
         const Reference< XDrawPage > & xMasterPage = mMasterPageTargets[i];
 
@@ -1919,7 +2025,7 @@ bool SVGFilter::implCreateObjectsFromShapes( const Reference< XDrawPage > & rxPa
         if( ( rxShapes->getByIndex( i ) >>= xShape ) && xShape.is() )
             bRet = implCreateObjectsFromShape( rxPage, xShape ) || bRet;
 
-        xShape = NULL;
+        xShape = nullptr;
     }
 
     return bRet;
@@ -2139,235 +2245,179 @@ IMPL_LINK_TYPED( SVGFilter, CalcFieldHdl, EditFieldInfo*, pInfo, void )
     {
         bFieldProcessed = true;
         OUString   aRepresentation;
-        if( !mbSinglePage )
+        if( mpSVGExport->IsEmbedFonts() && mpSVGExport->IsUsePositionedCharacters() )
         {
-            if( mpSVGExport->IsEmbedFonts() && mpSVGExport->IsUsePositionedCharacters() )
+            // to notify to the SVGActionWriter::ImplWriteText method
+            // that we are dealing with a placeholder shape
+            aRepresentation = sPlaceholderTag;
+
+            if( !mCreateOjectsCurrentMasterPage.is() )
             {
-                // to notify to the SVGActionWriter::ImplWriteText method
-                // that we are dealing with a placeholder shape
-                aRepresentation = sPlaceholderTag;
+                OSL_FAIL( "error: !mCreateOjectsCurrentMasterPage.is()" );
+                return;
+            }
+            bool bHasCharSetMap = !( mTextFieldCharSets.find( mCreateOjectsCurrentMasterPage ) == mTextFieldCharSets.end() );
 
-                if( !mCreateOjectsCurrentMasterPage.is() )
-                {
-                    OSL_FAIL( "error: !mCreateOjectsCurrentMasterPage.is()" );
-                    return;
-                }
-                bool bHasCharSetMap = !( mTextFieldCharSets.find( mCreateOjectsCurrentMasterPage ) == mTextFieldCharSets.end() );
+            static const OUString aHeaderId( aOOOAttrHeaderField );
+            static const OUString aFooterId( aOOOAttrFooterField );
+            static const OUString aDateTimeId( aOOOAttrDateTimeField );
+            static const OUString aVariableDateTimeId( aOOOAttrDateTimeField + "-variable" );
 
-                static const OUString aHeaderId( aOOOAttrHeaderField );
-                static const OUString aFooterId( aOOOAttrFooterField );
-                static const OUString aDateTimeId( aOOOAttrDateTimeField );
-                static const OUString aVariableDateTimeId( aOOOAttrDateTimeField + "-variable" );
-
-                const UCharSet * pCharSet = NULL;
-                UCharSetMap * pCharSetMap = NULL;
-                if( bHasCharSetMap )
+            const UCharSet * pCharSet = nullptr;
+            UCharSetMap * pCharSetMap = nullptr;
+            if( bHasCharSetMap )
+            {
+                pCharSetMap = &( mTextFieldCharSets[ mCreateOjectsCurrentMasterPage ] );
+            }
+            const SvxFieldData* pField = pInfo->GetField().GetField();
+            if( bHasCharSetMap && ( pField->GetClassId() == text::textfield::Type::PRESENTATION_HEADER ) && ( pCharSetMap->find( aHeaderId ) != pCharSetMap->end() ) )
+            {
+                pCharSet = &( (*pCharSetMap)[ aHeaderId ] );
+            }
+            else if( bHasCharSetMap && ( pField->GetClassId() == text::textfield::Type::PRESENTATION_FOOTER ) && ( pCharSetMap->find( aFooterId ) != pCharSetMap->end() ) )
+            {
+                pCharSet = &( (*pCharSetMap)[ aFooterId ] );
+            }
+            else if( pField->GetClassId() == text::textfield::Type::PRESENTATION_DATE_TIME )
+            {
+                if( bHasCharSetMap && ( pCharSetMap->find( aDateTimeId ) != pCharSetMap->end() ) )
                 {
-                    pCharSetMap = &( mTextFieldCharSets[ mCreateOjectsCurrentMasterPage ] );
+                    pCharSet = &( (*pCharSetMap)[ aDateTimeId ] );
                 }
-                const SvxFieldData* pField = pInfo->GetField().GetField();
-                if( bHasCharSetMap && ( pField->GetClassId() == text::textfield::Type::PRESENTATION_HEADER ) && ( pCharSetMap->find( aHeaderId ) != pCharSetMap->end() ) )
+                if( bHasCharSetMap && ( pCharSetMap->find( aVariableDateTimeId ) != pCharSetMap->end() ) && !(*pCharSetMap)[ aVariableDateTimeId ].empty() )
                 {
-                    pCharSet = &( (*pCharSetMap)[ aHeaderId ] );
-                }
-                else if( bHasCharSetMap && ( pField->GetClassId() == text::textfield::Type::PRESENTATION_FOOTER ) && ( pCharSetMap->find( aFooterId ) != pCharSetMap->end() ) )
-                {
-                    pCharSet = &( (*pCharSetMap)[ aFooterId ] );
-                }
-                else if( pField->GetClassId() == text::textfield::Type::PRESENTATION_DATE_TIME )
-                {
-                    if( bHasCharSetMap && ( pCharSetMap->find( aDateTimeId ) != pCharSetMap->end() ) )
+                    SvxDateFormat eDateFormat = SVXDATEFORMAT_B, eCurDateFormat;
+                    const UCharSet & aCharSet = (*pCharSetMap)[ aVariableDateTimeId ];
+                    UCharSet::const_iterator aChar = aCharSet.begin();
+                    // we look for the most verbose date format
+                    for( ; aChar != aCharSet.end(); ++aChar )
                     {
-                        pCharSet = &( (*pCharSetMap)[ aDateTimeId ] );
-                    }
-                    if( bHasCharSetMap && ( pCharSetMap->find( aVariableDateTimeId ) != pCharSetMap->end() ) && !(*pCharSetMap)[ aVariableDateTimeId ].empty() )
-                    {
-                        SvxDateFormat eDateFormat = SVXDATEFORMAT_B, eCurDateFormat;
-                        const UCharSet & aCharSet = (*pCharSetMap)[ aVariableDateTimeId ];
-                        UCharSet::const_iterator aChar = aCharSet.begin();
-                        // we look for the most verbose date format
-                        for( ; aChar != aCharSet.end(); ++aChar )
+                        eCurDateFormat = (SvxDateFormat)( (int)( *aChar ) & 0x0f );
+                        switch( eDateFormat )
                         {
-                            eCurDateFormat = (SvxDateFormat)( (int)( *aChar ) & 0x0f );
-                            switch( eDateFormat )
-                            {
-                                case SVXDATEFORMAT_STDSMALL:
-                                case SVXDATEFORMAT_A:       // 13.02.96
-                                case SVXDATEFORMAT_B:       // 13.02.1996
-                                    switch( eCurDateFormat )
-                                    {
-                                        case SVXDATEFORMAT_C:       // 13.Feb 1996
-                                        case SVXDATEFORMAT_D:       // 13.February 1996
-                                        case SVXDATEFORMAT_E:       // Tue, 13.February 1996
-                                        case SVXDATEFORMAT_STDBIG:
-                                        case SVXDATEFORMAT_F:       // Tuesday, 13.February 1996
-                                            eDateFormat = eCurDateFormat;
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                    break;
-                                case SVXDATEFORMAT_C:       // 13.Feb 1996
-                                case SVXDATEFORMAT_D:       // 13.February 1996
-                                    switch( eCurDateFormat )
-                                    {
-                                        case SVXDATEFORMAT_E:       // Tue, 13.February 1996
-                                        case SVXDATEFORMAT_STDBIG:
-                                        case SVXDATEFORMAT_F:       // Tuesday, 13.February 1996
-                                            eDateFormat = eCurDateFormat;
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                        // Independently of the date format, we always put all these characters by default.
-                        // They should be enough to cover every time format.
-                        aRepresentation += "0123456789.:/-APM";
-
-                        if( eDateFormat )
-                        {
-                            OUString sDate;
-                            LanguageType eLang = pInfo->GetOutliner()->GetLanguage( pInfo->GetPara(), pInfo->GetPos() );
-                            SvNumberFormatter * pNumberFormatter = new SvNumberFormatter( ::comphelper::getProcessComponentContext(), LANGUAGE_SYSTEM );
-                            // We always collect the characters obtained by using the SVXDATEFORMAT_B (as: 13.02.1996)
-                            // so we are sure to include any unusual day|month|year separator.
-                            Date aDate( 1, 1, 1996 );
-                            sDate += SvxDateField::GetFormatted( aDate, SVXDATEFORMAT_B, *pNumberFormatter, eLang );
-                            switch( eDateFormat )
-                            {
-                                case SVXDATEFORMAT_E:       // Tue, 13.February 1996
-                                case SVXDATEFORMAT_STDBIG:
-                                case SVXDATEFORMAT_F:       // Tuesday, 13.February 1996
-                                    for( sal_uInt16 i = 1; i <= 7; ++i )  // we get all days in a week
-                                    {
-                                        aDate.SetDay( i );
-                                        sDate += SvxDateField::GetFormatted( aDate, eDateFormat, *pNumberFormatter, eLang );
-                                    }
-                                    // No break here! We need months too!
-                                case SVXDATEFORMAT_C:       // 13.Feb 1996
-                                case SVXDATEFORMAT_D:       // 13.February 1996
-                                    for( sal_uInt16 i = 1; i <= 12; ++i ) // we get all months in a year
-                                    {
-                                        aDate.SetMonth( i );
-                                        sDate += SvxDateField::GetFormatted( aDate, eDateFormat, *pNumberFormatter, eLang );
-                                    }
-                                    break;
-                                // coverity[dead_error_begin] - following conditions exist to avoid compiler warning
-                                case SVXDATEFORMAT_STDSMALL:
-                                case SVXDATEFORMAT_A:       // 13.02.96
-                                case SVXDATEFORMAT_B:       // 13.02.1996
-                                default:
-                                    // nothing to do here, we always collect the characters needed for these cases.
-                                    break;
-                            }
-                            aRepresentation += sDate;
+                            case SVXDATEFORMAT_STDSMALL:
+                            case SVXDATEFORMAT_A:       // 13.02.96
+                            case SVXDATEFORMAT_B:       // 13.02.1996
+                                switch( eCurDateFormat )
+                                {
+                                    case SVXDATEFORMAT_C:       // 13.Feb 1996
+                                    case SVXDATEFORMAT_D:       // 13.February 1996
+                                    case SVXDATEFORMAT_E:       // Tue, 13.February 1996
+                                    case SVXDATEFORMAT_STDBIG:
+                                    case SVXDATEFORMAT_F:       // Tuesday, 13.February 1996
+                                        eDateFormat = eCurDateFormat;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                break;
+                            case SVXDATEFORMAT_C:       // 13.Feb 1996
+                            case SVXDATEFORMAT_D:       // 13.February 1996
+                                switch( eCurDateFormat )
+                                {
+                                    case SVXDATEFORMAT_E:       // Tue, 13.February 1996
+                                    case SVXDATEFORMAT_STDBIG:
+                                    case SVXDATEFORMAT_F:       // Tuesday, 13.February 1996
+                                        eDateFormat = eCurDateFormat;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                break;
+                            default:
+                                break;
                         }
                     }
-                }
-                else if( pField->GetClassId() == text::textfield::Type::PAGE )
-                {
-                    switch( mVisiblePagePropSet.nPageNumberingType )
+                    // Independently of the date format, we always put all these characters by default.
+                    // They should be enough to cover every time format.
+                    aRepresentation += "0123456789.:/-APM";
+
+                    if( eDateFormat )
                     {
-                        case SVX_CHARS_UPPER_LETTER:
-                            aRepresentation += "QWERTYUIOPASDFGHJKLZXCVBNM";
-                            break;
-                        case SVX_CHARS_LOWER_LETTER:
-                            aRepresentation += "qwertyuiopasdfghjklzxcvbnm";
-                            break;
-                        case SVX_ROMAN_UPPER:
-                            aRepresentation += "IVXLCDM";
-                            break;
-                        case SVX_ROMAN_LOWER:
-                            aRepresentation += "ivxlcdm";
-                            break;
-                        // arabic numbering type is the default
-                        case SVX_ARABIC:
-                        // in case the numbering type is not handled we fall back on arabic numbering
-                        default:
-                            aRepresentation += "0123456789";
-                            break;
-                    }
-                }
-                else
-                {
-                    bFieldProcessed = false;
-                }
-                if( bFieldProcessed )
-                {
-                    if( pCharSet != NULL )
-                    {
-                        UCharSet::const_iterator aChar = pCharSet->begin();
-                        for( ; aChar != pCharSet->end(); ++aChar )
+                        OUString sDate;
+                        LanguageType eLang = pInfo->GetOutliner()->GetLanguage( pInfo->GetPara(), pInfo->GetPos() );
+                        SvNumberFormatter * pNumberFormatter = new SvNumberFormatter( ::comphelper::getProcessComponentContext(), LANGUAGE_SYSTEM );
+                        // We always collect the characters obtained by using the SVXDATEFORMAT_B (as: 13.02.1996)
+                        // so we are sure to include any unusual day|month|year separator.
+                        Date aDate( 1, 1, 1996 );
+                        sDate += SvxDateField::GetFormatted( aDate, SVXDATEFORMAT_B, *pNumberFormatter, eLang );
+                        switch( eDateFormat )
                         {
-                            aRepresentation += OUString( *aChar );
+                            case SVXDATEFORMAT_E:       // Tue, 13.February 1996
+                            case SVXDATEFORMAT_STDBIG:
+                            case SVXDATEFORMAT_F:       // Tuesday, 13.February 1996
+                                for( sal_uInt16 i = 1; i <= 7; ++i )  // we get all days in a week
+                                {
+                                    aDate.SetDay( i );
+                                    sDate += SvxDateField::GetFormatted( aDate, eDateFormat, *pNumberFormatter, eLang );
+                                }
+                                // No break here! We need months too!
+                            case SVXDATEFORMAT_C:       // 13.Feb 1996
+                            case SVXDATEFORMAT_D:       // 13.February 1996
+                                for( sal_uInt16 i = 1; i <= 12; ++i ) // we get all months in a year
+                                {
+                                    aDate.SetMonth( i );
+                                    sDate += SvxDateField::GetFormatted( aDate, eDateFormat, *pNumberFormatter, eLang );
+                                }
+                                break;
+                            // coverity[dead_error_begin] - following conditions exist to avoid compiler warning
+                            case SVXDATEFORMAT_STDSMALL:
+                            case SVXDATEFORMAT_A:       // 13.02.96
+                            case SVXDATEFORMAT_B:       // 13.02.1996
+                            default:
+                                // nothing to do here, we always collect the characters needed for these cases.
+                                break;
                         }
+                        aRepresentation += sDate;
                     }
-                    pInfo->SetRepresentation( aRepresentation );
+                }
+            }
+            else if( pField->GetClassId() == text::textfield::Type::PAGE )
+            {
+                switch( mVisiblePagePropSet.nPageNumberingType )
+                {
+                    case SVX_CHARS_UPPER_LETTER:
+                        aRepresentation += "QWERTYUIOPASDFGHJKLZXCVBNM";
+                        break;
+                    case SVX_CHARS_LOWER_LETTER:
+                        aRepresentation += "qwertyuiopasdfghjklzxcvbnm";
+                        break;
+                    case SVX_ROMAN_UPPER:
+                        aRepresentation += "IVXLCDM";
+                        break;
+                    case SVX_ROMAN_LOWER:
+                        aRepresentation += "ivxlcdm";
+                        break;
+                    // arabic numbering type is the default
+                    case SVX_ARABIC:
+                    // in case the numbering type is not handled we fall back on arabic numbering
+                    default:
+                        aRepresentation += "0123456789";
+                        break;
                 }
             }
             else
             {
                 bFieldProcessed = false;
             }
-        }
-        else  // single page case
-        {
-            if( mVisiblePagePropSet.bAreBackgroundObjectsVisible )
+            if( bFieldProcessed )
             {
-                const SvxFieldData* pField = pInfo->GetField().GetField();
-                if( ( pField->GetClassId() == text::textfield::Type::PRESENTATION_HEADER ) && mVisiblePagePropSet.bIsHeaderFieldVisible )
+                if( pCharSet != nullptr )
                 {
-                    aRepresentation += mVisiblePagePropSet.sHeaderText;
-                }
-                else if( ( pField->GetClassId() == text::textfield::Type::PRESENTATION_FOOTER ) && mVisiblePagePropSet.bIsFooterFieldVisible )
-                {
-                    aRepresentation += mVisiblePagePropSet.sFooterText;
-                }
-                else if( ( pField->GetClassId() == text::textfield::Type::PRESENTATION_DATE_TIME ) && mVisiblePagePropSet.bIsDateTimeFieldVisible )
-                {
-                    // TODO: implement the variable case
-                    aRepresentation += mVisiblePagePropSet.sDateTimeText;
-                }
-                else if( ( pField->GetClassId() == text::textfield::Type::PAGE ) && mVisiblePagePropSet.bIsPageNumberFieldVisible )
-                {
-                    sal_Int16 nPageNumber = mVisiblePagePropSet.nPageNumber;
-                    switch( mVisiblePagePropSet.nPageNumberingType )
+                    UCharSet::const_iterator aChar = pCharSet->begin();
+                    for( ; aChar != pCharSet->end(); ++aChar )
                     {
-                        case SVX_CHARS_UPPER_LETTER:
-                            aRepresentation += OUString( (sal_Unicode)(char)( ( nPageNumber - 1 ) % 26 + 'A' ) );
-                            break;
-                        case SVX_CHARS_LOWER_LETTER:
-                            aRepresentation += OUString( (sal_Unicode)(char)( ( nPageNumber - 1 ) % 26 + 'a' ) );
-                            break;
-                        case SVX_ROMAN_UPPER:
-                            aRepresentation += SvxNumberFormat::CreateRomanString( nPageNumber, true /* upper */ );
-                            break;
-                        case SVX_ROMAN_LOWER:
-                            aRepresentation += SvxNumberFormat::CreateRomanString( nPageNumber, false /* lower */ );
-                            break;
-                        // arabic numbering type is the default
-                        case SVX_ARABIC:
-                        // in case the numbering type is not handled we fall back on arabic numbering
-                        default:
-                            aRepresentation += OUString::number( nPageNumber );
-                            break;
+                        aRepresentation += OUString( *aChar );
                     }
                 }
-                else
-                {
-                    bFieldProcessed = false;
-                }
-                if( bFieldProcessed )
-                {
-                    pInfo->SetRepresentation( aRepresentation );
-                }
+                pInfo->SetRepresentation( aRepresentation );
             }
-
         }
+        else
+        {
+            bFieldProcessed = false;
+        }
+
     }
     if (!bFieldProcessed)
         maOldFieldHdl.Call( pInfo );
@@ -2421,7 +2471,7 @@ void SVGExport::writeMtf( const GDIMetaFile& rMtf )
 
         SVGActionWriter aWriter( *this, aSVGFontExport );
         aWriter.WriteMetaFile( aPoint100thmm, aSize100thmm, rMtf,
-            SVGWRITER_WRITE_FILL | SVGWRITER_WRITE_TEXT, NULL );
+            SVGWRITER_WRITE_FILL | SVGWRITER_WRITE_TEXT );
     }
 }
 

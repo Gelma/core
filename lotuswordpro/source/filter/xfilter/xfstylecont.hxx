@@ -70,7 +70,7 @@ struct IXFStyleRet
     IXFStyle* m_pStyle;
     bool m_bOrigDeleted;
     IXFStyleRet()
-        : m_pStyle(NULL)
+        : m_pStyle(nullptr)
         , m_bOrigDeleted(false)
     {
     }
@@ -87,9 +87,9 @@ public:
 
     explicit XFStyleContainer(const OUString& strStyleNamePrefix);
 
-    XFStyleContainer(const XFStyleContainer& other);
+    XFStyleContainer(const XFStyleContainer& other) = delete;
 
-    XFStyleContainer& operator=(const XFStyleContainer& other);
+    XFStyleContainer& operator=(const XFStyleContainer& other) = delete;
 
     virtual ~XFStyleContainer();
 

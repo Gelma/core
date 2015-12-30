@@ -68,28 +68,28 @@ struct SfxRequest_Impl: public SfxListener
     SfxAllItemSet*  pInternalArgs;
     SfxViewFrame*   pViewFrame;
 
-    com::sun::star::uno::Reference< com::sun::star::frame::XDispatchRecorder > xRecorder;
+    css::uno::Reference< css::frame::XDispatchRecorder > xRecorder;
 
     explicit SfxRequest_Impl( SfxRequest *pOwner )
         : pAnti( pOwner)
-        , pPool(0)
-        , pRetVal(0)
-        , pShell(0)
-        , pSlot(0)
+        , pPool(nullptr)
+        , pRetVal(nullptr)
+        , pShell(nullptr)
+        , pSlot(nullptr)
         , nModifier(0)
         , bDone(false)
         , bIgnored(false)
         , bCancelled(false)
         , nCallMode( SfxCallMode::SYNCHRON )
         , bAllowRecording( false )
-        , pInternalArgs( 0 )
-        , pViewFrame(0)
+        , pInternalArgs( nullptr )
+        , pViewFrame(nullptr)
         {}
     virtual ~SfxRequest_Impl() { delete pInternalArgs; }
 
 
     void                SetPool( SfxItemPool *pNewPool );
-    virtual void        Notify( SfxBroadcaster &rBC, const SfxHint &rHint ) SAL_OVERRIDE;
+    virtual void        Notify( SfxBroadcaster &rBC, const SfxHint &rHint ) override;
     void                Record( const uno::Sequence < beans::PropertyValue >& rArgs );
 };
 
@@ -141,21 +141,21 @@ SfxRequest::SfxRequest
 )
 :   SfxHint( rOrig ),
     nSlot(rOrig.nSlot),
-    pArgs(rOrig.pArgs? new SfxAllItemSet(*rOrig.pArgs): 0),
+    pArgs(rOrig.pArgs? new SfxAllItemSet(*rOrig.pArgs): nullptr),
     pImp( new SfxRequest_Impl(this) )
 {
     pImp->bAllowRecording = rOrig.pImp->bAllowRecording;
     pImp->bDone = false;
     pImp->bIgnored = false;
-    pImp->pRetVal = 0;
-    pImp->pShell = 0;
-    pImp->pSlot = 0;
+    pImp->pRetVal = nullptr;
+    pImp->pShell = nullptr;
+    pImp->pSlot = nullptr;
     pImp->nCallMode = rOrig.pImp->nCallMode;
     pImp->aTarget = rOrig.pImp->aTarget;
     pImp->nModifier = rOrig.pImp->nModifier;
 
     // deep copy needed !
-    pImp->pInternalArgs = (rOrig.pImp->pInternalArgs ? new SfxAllItemSet(*rOrig.pImp->pInternalArgs) : 0);
+    pImp->pInternalArgs = (rOrig.pImp->pInternalArgs ? new SfxAllItemSet(*rOrig.pImp->pInternalArgs) : nullptr);
 
     if ( pArgs )
         pImp->SetPool( pArgs->GetPool() );
@@ -182,15 +182,15 @@ SfxRequest::SfxRequest
 */
 
 :   nSlot(nSlotId),
-    pArgs(0),
+    pArgs(nullptr),
     pImp( new SfxRequest_Impl(this) )
 {
     pImp->bDone = false;
     pImp->bIgnored = false;
     pImp->SetPool( &pViewFrame->GetPool() );
-    pImp->pRetVal = 0;
-    pImp->pShell = 0;
-    pImp->pSlot = 0;
+    pImp->pRetVal = nullptr;
+    pImp->pShell = nullptr;
+    pImp->pSlot = nullptr;
     pImp->nCallMode = SfxCallMode::SYNCHRON;
     pImp->pViewFrame = pViewFrame;
     if( pImp->pViewFrame->GetDispatcher()->GetShellAndSlot_Impl( nSlotId, &pImp->pShell, &pImp->pSlot, true, true ) )
@@ -222,22 +222,22 @@ SfxRequest::SfxRequest
 // creates a SfxRequest without arguments
 
 :   nSlot(nSlotId),
-    pArgs(0),
+    pArgs(nullptr),
     pImp( new SfxRequest_Impl(this) )
 {
     pImp->bDone = false;
     pImp->bIgnored = false;
     pImp->SetPool( &rPool );
-    pImp->pRetVal = 0;
-    pImp->pShell = 0;
-    pImp->pSlot = 0;
+    pImp->pRetVal = nullptr;
+    pImp->pShell = nullptr;
+    pImp->pSlot = nullptr;
     pImp->nCallMode = nMode;
 }
 
 SfxRequest::SfxRequest
 (
     const SfxSlot* pSlot,       // executed <Slot-Id>
-    const com::sun::star::uno::Sequence < com::sun::star::beans::PropertyValue >& rArgs,
+    const css::uno::Sequence < css::beans::PropertyValue >& rArgs,
     SfxCallMode     nMode,      // Synch/API/...
     SfxItemPool&   rPool        // necessary for the SfxItemSet for parameters
 )
@@ -248,9 +248,9 @@ SfxRequest::SfxRequest
     pImp->bDone = false;
     pImp->bIgnored = false;
     pImp->SetPool( &rPool );
-    pImp->pRetVal = 0;
-    pImp->pShell = 0;
-    pImp->pSlot = 0;
+    pImp->pRetVal = nullptr;
+    pImp->pShell = nullptr;
+    pImp->pSlot = nullptr;
     pImp->nCallMode = nMode;
     TransformParameters( nSlot, rArgs, *pArgs, pSlot );
 }
@@ -273,9 +273,9 @@ SfxRequest::SfxRequest
     pImp->bDone = false;
     pImp->bIgnored = false;
     pImp->SetPool( rSfxArgs.GetPool() );
-    pImp->pRetVal = 0;
-    pImp->pShell = 0;
-    pImp->pSlot = 0;
+    pImp->pRetVal = nullptr;
+    pImp->pShell = nullptr;
+    pImp->pSlot = nullptr;
     pImp->nCallMode = nMode;
 }
 
@@ -360,7 +360,7 @@ void SfxRequest_Impl::Record
 
         uno::Reference< util::XURLTransformer > xTransform = util::URLTransformer::create( xContext );
 
-        com::sun::star::util::URL aURL;
+        css::util::URL aURL;
         aURL.Complete = aCmd;
         xTransform->parseStrict(aURL);
 
@@ -377,7 +377,7 @@ void SfxRequest::Record_Impl
 (
     SfxShell&       rSh,    // the <SfxShell>, which has executed the Request
     const SfxSlot&  rSlot,  // the <SfxSlot>, which has executed the Request
-    com::sun::star::uno::Reference< com::sun::star::frame::XDispatchRecorder > xRecorder,
+    css::uno::Reference< css::frame::XDispatchRecorder > xRecorder,
     SfxViewFrame* pViewFrame
 )
 
@@ -425,87 +425,6 @@ void SfxRequest::RemoveItem( sal_uInt16 nID )
             DELETEZ(pArgs);
     }
 }
-
-
-
-const SfxPoolItem* SfxRequest::GetArg
-(
-    sal_uInt16  nSlotId,  // Slot-Id or Which-Id of the parameters
-    bool    bDeep,    // sal_False: do not search in the Parent-ItemSets
-    TypeId  aType     // != 0:  RTTI check with Assertion
-)   const
-{
-    return GetItem( pArgs, nSlotId, bDeep, aType );
-}
-
-
-
-const SfxPoolItem* SfxRequest::GetItem
-(
-    const SfxItemSet* pArgs,
-    sal_uInt16            nSlotId,  // Slot-Id or Which-Id of the parameters
-    bool              bDeep,    // sal_False: do not search in the Parent-ItemSets
-    TypeId            aType     // != 0:  RTTI check with Assertion
-)
-
-/*  [Description]
-
-    With this method the access to individual parameters in the SfxRequest is
-    simplified. In particular the type-examination (by Assertion) is performed,
-    whereby the application source code will be much clearer. In the product-
-    version is a 0 returned, if the found item is not of the specified class.
-
-    [Example]
-
-    void MyShell::Execute( SfxRequest &rReq )
-    {
-        switch ( rReq.GetSlot() )
-        {
-            case SID_MY:
-            {
-                ...
-                // An Example on not using the macros
-                const SfxInt32Item *pPosItem = (const SfxUInt32Item*)
-                    rReq.GetArg( SID_POS, sal_False, TYPE(SfxInt32Item) );
-                sal_uInt16 nPos = pPosItem ? pPosItem->GetValue() : 0;
-
-                // An Example on using the macros
-                SFX_REQUEST_ARG(rReq, pSizeItem, SfxInt32Item, SID_SIZE, sal_False);
-                sal_uInt16 nSize = pSizeItem ? pPosItem->GetValue() : 0;
-
-                ...
-            }
-
-            ...
-        }
-    }
-*/
-
-{
-    if ( pArgs )
-    {
-        // Which may be converted to ID
-        sal_uInt16 nWhich = pArgs->GetPool()->GetWhich(nSlotId);
-
-        // Is the item set or available at bDeep == sal_True?
-        const SfxPoolItem *pItem = 0;
-        if ( ( bDeep ? SfxItemState::DEFAULT : SfxItemState::SET )
-             <= pArgs->GetItemState( nWhich, bDeep, &pItem ) )
-        {
-            // Compare type
-            if ( !pItem || pItem->IsA(aType) )
-                return pItem;
-
-            // Item of wrong type => Programming error
-            OSL_FAIL(  "invalid argument type" );
-        }
-    }
-
-    // No Parameter, not found or wrong type
-    return 0;
-}
-
-
 
 void SfxRequest::SetReturnValue(const SfxPoolItem &rItem)
 {
@@ -621,7 +540,7 @@ void SfxRequest::Cancel()
 
 {
     pImp->bCancelled = true;
-    pImp->SetPool( 0 );
+    pImp->SetPool( nullptr );
     DELETEZ( pArgs );
 }
 
@@ -787,7 +706,7 @@ bool SfxRequest::IsDone() const
 
 
 
-com::sun::star::uno::Reference< com::sun::star::frame::XDispatchRecorder > SfxRequest::GetMacroRecorder( SfxViewFrame* pView )
+css::uno::Reference< css::frame::XDispatchRecorder > SfxRequest::GetMacroRecorder( SfxViewFrame* pView )
 
 /*  [Description]
 
@@ -799,16 +718,16 @@ com::sun::star::uno::Reference< com::sun::star::frame::XDispatchRecorder > SfxRe
 */
 
 {
-    com::sun::star::uno::Reference< com::sun::star::frame::XDispatchRecorder > xRecorder;
+    css::uno::Reference< css::frame::XDispatchRecorder > xRecorder;
 
-    com::sun::star::uno::Reference< com::sun::star::beans::XPropertySet > xSet(
+    css::uno::Reference< css::beans::XPropertySet > xSet(
         (pView ? pView : SfxViewFrame::Current())->GetFrame().GetFrameInterface(),
-        com::sun::star::uno::UNO_QUERY);
+        css::uno::UNO_QUERY);
 
     if(xSet.is())
     {
-        com::sun::star::uno::Any aProp = xSet->getPropertyValue("DispatchRecorderSupplier");
-        com::sun::star::uno::Reference< com::sun::star::frame::XDispatchRecorderSupplier > xSupplier;
+        css::uno::Any aProp = xSet->getPropertyValue("DispatchRecorderSupplier");
+        css::uno::Reference< css::frame::XDispatchRecorderSupplier > xSupplier;
         aProp >>= xSupplier;
         if(xSupplier.is())
             xRecorder = xSupplier->getDispatchRecorder();

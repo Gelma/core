@@ -68,6 +68,8 @@
 #include <tools/resary.hxx>
 #include <svx/svxdlg.hxx>
 #include <vcl/toolbox.hxx>
+
+#include <cstdlib>
 #include <memory>
 
 using namespace com::sun::star::i18n;
@@ -120,7 +122,7 @@ struct SearchDlg_Impl
     SearchDlg_Impl()
         : bSaveToModule(true)
         , bFocusOnSearch(true)
-        , pRanges(NULL)
+        , pRanges(nullptr)
     {
         aCommand1URL.Complete = aCommand1URL.Main = "vnd.sun.search:SearchViaComponent1";
         aCommand1URL.Protocol = "vnd.sun.search:";
@@ -248,7 +250,7 @@ void SearchAttrItemList::Remove(size_t nPos, size_t nLen)
 SvxSearchDialog::SvxSearchDialog( vcl::Window* pParent, SfxChildWindow* pChildWin, SfxBindings& rBind )
     : SfxModelessDialog(&rBind, pChildWin, pParent, "FindReplaceDialog",
         "svx/ui/findreplacedialog.ui")
-    , mpDocWin(NULL)
+    , mpDocWin(nullptr)
     , mbSuccess(false)
     , rBindings(rBind)
     , bWriter(false)
@@ -256,18 +258,17 @@ SvxSearchDialog::SvxSearchDialog( vcl::Window* pParent, SfxChildWindow* pChildWi
     , bFormat(false)
     , nOptions(SearchOptionFlags::ALL)
     , bSet(false)
-    , bReadOnly(false)
     , bConstruct(true)
     , nModifyFlag(0)
-    , pImpl(NULL)
-    , pSearchList(NULL)
+    , pImpl(nullptr)
+    , pSearchList(nullptr)
     , pReplaceList(new SearchAttrItemList)
-    , pSearchItem(NULL)
-    , pSearchController(NULL)
-    , pOptionsController(NULL)
-    , pFamilyController(NULL)
-    , pSearchSetController(NULL)
-    , pReplaceSetController(NULL)
+    , pSearchItem(nullptr)
+    , pSearchController(nullptr)
+    , pOptionsController(nullptr)
+    , pFamilyController(nullptr)
+    , pSearchSetController(nullptr)
+    , pReplaceSetController(nullptr)
     , nTransliterationFlags(0x00000000)
 {
     get(m_pSearchFrame, "searchframe");
@@ -298,6 +299,7 @@ SvxSearchDialog::SvxSearchDialog( vcl::Window* pParent, SfxChildWindow* pChildWi
     get(m_pSearchComponent2PB, "component2");
 
     get(m_pMatchCaseCB, "matchcase");
+    get(m_pSearchFormattedCB, "searchformatted");
     get(m_pWordBtn, "wholewords");
     aCalcStr = get<FixedText>("entirecells")->GetText();
 
@@ -381,6 +383,7 @@ void SvxSearchDialog::dispose()
     m_pSearchComponent1PB.clear();
     m_pSearchComponent2PB.clear();
     m_pMatchCaseCB.clear();
+    m_pSearchFormattedCB.clear();
     m_pWordBtn.clear();
     m_pCloseBtn.clear();
     m_pIgnoreDiacritics.clear();
@@ -435,18 +438,18 @@ void SvxSearchDialog::Construct_Impl()
     InitControls_Impl();
 
     // Get attribute sets only once in construtor()
-    const SfxPoolItem* ppArgs[] = { pSearchItem, 0 };
+    const SfxPoolItem* ppArgs[] = { pSearchItem, nullptr };
     const SvxSetItem* pSrchSetItem =
         static_cast<const SvxSetItem*>( rBindings.GetDispatcher()->Execute( FID_SEARCH_SEARCHSET, SfxCallMode::SLOT, ppArgs ) );
 
     if ( pSrchSetItem )
-        InitAttrList_Impl( &pSrchSetItem->GetItemSet(), 0 );
+        InitAttrList_Impl( &pSrchSetItem->GetItemSet(), nullptr );
 
     const SvxSetItem* pReplSetItem =
         static_cast<const SvxSetItem*>( rBindings.GetDispatcher()->Execute( FID_SEARCH_REPLACESET, SfxCallMode::SLOT, ppArgs ) );
 
     if ( pReplSetItem )
-        InitAttrList_Impl( 0, &pReplSetItem->GetItemSet() );
+        InitAttrList_Impl( nullptr, &pReplSetItem->GetItemSet() );
 
     // Create controller and update at once
     rBindings.EnterRegistrations();
@@ -508,7 +511,7 @@ void SvxSearchDialog::Construct_Impl()
             aArgs[0] <<= sPath;
 
             uno::Reference< uno::XInterface > xIFace = xConfigurationProvider->createInstanceWithArguments(
-                        OUString( "com.sun.star.configuration.ConfigurationUpdateAccess"),
+                        "com.sun.star.configuration.ConfigurationUpdateAccess",
                         aArgs);
             uno::Reference< container::XNameAccess> xDirectAccess(xIFace, uno::UNO_QUERY);
             if(xDirectAccess.is())
@@ -563,9 +566,10 @@ bool SvxSearchDialog::Close()
     aOpt.SetNotes                   ( m_pNotesBtn->IsChecked() );
     aOpt.SetIgnoreDiacritics_CTL    ( m_pIgnoreDiacritics->IsChecked() );
     aOpt.SetIgnoreKashida_CTL       ( m_pIgnoreKashida->IsChecked() );
+    aOpt.SetSearchFormatted         ( m_pSearchFormattedCB->IsChecked() );
     aOpt.Commit();
 
-    const SfxPoolItem* ppArgs[] = { pSearchItem, 0 };
+    const SfxPoolItem* ppArgs[] = { pSearchItem, nullptr };
     rBindings.GetDispatcher()->Execute( FID_SEARCH_OFF, SfxCallMode::SLOT, ppArgs );
     rBindings.Execute( SID_SEARCH_DLG );
 
@@ -738,6 +742,7 @@ void SvxSearchDialog::ShowOptionalControls_Impl()
         m_pRowsBtn->Show();
         m_pColumnsBtn->Show();
         m_pAllSheetsCB->Show();
+        m_pSearchFormattedCB->Show();
     }
 }
 
@@ -806,13 +811,15 @@ void SvxSearchDialog::Init_Impl( bool bSearchPattern )
     if ( pSearchItem->GetAppFlag() == SvxSearchApp::CALC )
     {
         m_pCalcGrid->Show();
+        m_pSearchFormattedCB->Check( aOpt.IsSearchFormatted() );
         Link<Button*,void> aLink = LINK( this, SvxSearchDialog, FlagHdl_Impl );
         m_pCalcSearchInLB->SetSelectHdl( LINK( this, SvxSearchDialog, LBSelectHdl_Impl ) );
         m_pRowsBtn->SetClickHdl( aLink );
         m_pColumnsBtn->SetClickHdl( aLink );
         m_pAllSheetsCB->SetClickHdl( aLink );
+        m_pSearchFormattedCB->SetClickHdl( aLink );
 
-        sal_uIntPtr nModifyFlagCheck(nModifyFlag);
+        sal_uIntPtr nModifyFlagCheck;
         switch ( pSearchItem->GetCellType() )
         {
             case SvxSearchCellType::FORMULA:
@@ -826,6 +833,9 @@ void SvxSearchDialog::Init_Impl( bool bSearchPattern )
             case SvxSearchCellType::NOTE:
                 nModifyFlagCheck = MODIFY_CALC_NOTES;
                 break;
+
+            default:
+                std::abort(); // cannot happen
         }
         if ( (nModifyFlag & nModifyFlagCheck) == 0 )
             m_pCalcSearchInLB->SelectEntryPos( static_cast<sal_Int32>(pSearchItem->GetCellType()) );
@@ -849,6 +859,7 @@ void SvxSearchDialog::Init_Impl( bool bSearchPattern )
     }
     else
     {
+        m_pSearchFormattedCB->Hide();
         m_pWordBtn->SetText( aCalcStr.getToken( 1, '#' ) );
 
         if ( pSearchItem->GetAppFlag() == SvxSearchApp::DRAW )
@@ -868,18 +879,18 @@ void SvxSearchDialog::Init_Impl( bool bSearchPattern )
             if ( !pSearchList )
             {
                 // Get attribute sets, if it not has been done already
-                const SfxPoolItem* ppArgs[] = { pSearchItem, 0 };
+                const SfxPoolItem* ppArgs[] = { pSearchItem, nullptr };
                 const SvxSetItem* pSrchSetItem =
                     static_cast<const SvxSetItem*>(rBindings.GetDispatcher()->Execute( FID_SEARCH_SEARCHSET, SfxCallMode::SLOT, ppArgs ));
 
                 if ( pSrchSetItem )
-                    InitAttrList_Impl( &pSrchSetItem->GetItemSet(), 0 );
+                    InitAttrList_Impl( &pSrchSetItem->GetItemSet(), nullptr );
 
                 const SvxSetItem* pReplSetItem =
                     static_cast<const SvxSetItem*>( rBindings.GetDispatcher()->Execute( FID_SEARCH_REPLACESET, SfxCallMode::SLOT, ppArgs ) );
 
                 if ( pReplSetItem )
-                    InitAttrList_Impl( 0, &pReplSetItem->GetItemSet() );
+                    InitAttrList_Impl( nullptr, &pReplSetItem->GetItemSet() );
             }
         }
     }
@@ -1099,10 +1110,9 @@ void SvxSearchDialog::InitAttrList_Impl( const SfxItemSet* pSSet,
 
 
 
-IMPL_LINK( SvxSearchDialog, LBSelectHdl_Impl, Control *, pCtrl )
+IMPL_LINK_TYPED( SvxSearchDialog, LBSelectHdl_Impl, ListBox&, rCtrl, void )
 {
-    ClickHdl_Impl(pCtrl);
-    return 0;
+    ClickHdl_Impl(&rCtrl);
 }
 
 IMPL_LINK_TYPED( SvxSearchDialog, FlagHdl_Impl, Button *, pCtrl, void )
@@ -1161,7 +1171,7 @@ void SvxSearchDialog::ClickHdl_Impl(void* pCtrl)
         else
         {
             EnableControl_Impl(m_pLayoutBtn);
-            ModifyHdl_Impl(m_pSearchLB);
+            ModifyHdl_Impl(*m_pSearchLB);
         }
     }
     else
@@ -1205,14 +1215,14 @@ void SvxSearchDialog::ClickHdl_Impl(void* pCtrl)
 
             // Search-string in place? then enable Buttons
             bSet = true;
-            ModifyHdl_Impl(m_pSearchLB);
+            ModifyHdl_Impl(*m_pSearchLB);
         }
     }
 
     if (pCtrl == m_pAllSheetsCB)
     {
         bSet = true;
-        ModifyHdl_Impl(m_pSearchLB);
+        ModifyHdl_Impl(*m_pSearchLB);
     }
 
     if (pCtrl == m_pJapOptionsCB)
@@ -1289,6 +1299,7 @@ IMPL_LINK_TYPED( SvxSearchDialog, CommandHdl_Impl, Button *, pBtn, void )
 
             pSearchItem->SetRowDirection( m_pRowsBtn->IsChecked() );
             pSearchItem->SetAllTables( m_pAllSheetsCB->IsChecked() );
+            pSearchItem->SetSearchFormatted( m_pSearchFormattedCB->IsChecked() );
         }
 
         if (pBtn == m_pSearchBtn)
@@ -1310,8 +1321,8 @@ IMPL_LINK_TYPED( SvxSearchDialog, CommandHdl_Impl, Button *, pBtn, void )
                 pReplaceList->Clear();
         }
         nModifyFlag = 0;
-        const SfxPoolItem* ppArgs[] = { pSearchItem, 0 };
-        rBindings.ExecuteSynchron( FID_SEARCH_NOW, ppArgs, 0L );
+        const SfxPoolItem* ppArgs[] = { pSearchItem, nullptr };
+        rBindings.ExecuteSynchron( FID_SEARCH_NOW, ppArgs );
     }
     else if ( pBtn == m_pCloseBtn )
     {
@@ -1392,17 +1403,17 @@ IMPL_LINK_TYPED( SvxSearchDialog, CommandHdl_Impl, Button *, pBtn, void )
 
 
 
-IMPL_LINK( SvxSearchDialog, ModifyHdl_Impl, ComboBox *, pEd )
+IMPL_LINK_TYPED( SvxSearchDialog, ModifyHdl_Impl, Edit&, rEd, void )
 {
     if ( !bSet )
-        SetModifyFlag_Impl( pEd );
+        SetModifyFlag_Impl( &rEd );
     else
         bSet = false;
 
     // Calc allows searching for empty cells.
     bool bAllowEmptySearch = (pSearchItem->GetAppFlag() == SvxSearchApp::CALC);
 
-    if ( pEd == m_pSearchLB || pEd == m_pReplaceLB )
+    if ( &rEd == m_pSearchLB || &rEd == m_pReplaceLB )
     {
         sal_Int32 nSrchTxtLen = m_pSearchLB->GetText().getLength();
         sal_Int32 nReplTxtLen = 0;
@@ -1429,7 +1440,6 @@ IMPL_LINK( SvxSearchDialog, ModifyHdl_Impl, ComboBox *, pEd )
             m_pReplaceAllBtn->Disable();
         }
     }
-    return 0;
 }
 
 
@@ -1717,7 +1727,7 @@ void SvxSearchDialog::EnableControl_Impl( Control* pCtrl )
     if ( m_pSearchAllBtn == pCtrl &&
          ( SearchOptionFlags::SEARCHALL & nOptions )  )
     {
-        m_pSearchAllBtn->Enable( true );
+        m_pSearchAllBtn->Enable();
         return;
     }
     if ( m_pReplaceBtn == pCtrl && ( SearchOptionFlags::REPLACE & nOptions )  )
@@ -1842,7 +1852,7 @@ IMPL_LINK_TYPED( SvxSearchDialog, FocusHdl_Impl, Control&, rControl, void )
 
     static_cast<ComboBox*>(pCtrl)->SetSelection( Selection( SELECTION_MIN, SELECTION_MAX ) );
 
-    ModifyHdl_Impl( static_cast<ComboBox*>(pCtrl) );
+    ModifyHdl_Impl( static_cast<Edit&>(*pCtrl) );
 
     if (bFormat && nTxtLen)
         m_pLayoutBtn->SetText(aLayoutStr);
@@ -2227,22 +2237,22 @@ void SvxSearchDialog::SaveToModule_Impl()
 
         pSearchItem->SetRowDirection( m_pRowsBtn->IsChecked() );
         pSearchItem->SetAllTables( m_pAllSheetsCB->IsChecked() );
+        pSearchItem->SetSearchFormatted( m_pSearchFormattedCB->IsChecked() );
     }
 
     pSearchItem->SetCommand( SvxSearchCmd::FIND );
     nModifyFlag = 0;
-    const SfxPoolItem* ppArgs[] = { pSearchItem, 0 };
+    const SfxPoolItem* ppArgs[] = { pSearchItem, nullptr };
     rBindings.GetDispatcher()->Execute( SID_SEARCH_ITEM, SfxCallMode::SLOT, ppArgs );
 }
 
-::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindowPeer >
+css::uno::Reference< css::awt::XWindowPeer >
         SvxSearchDialog::GetComponentInterface( bool bCreate )
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindowPeer > xPeer
-        (Window::GetComponentInterface(false));
+    css::uno::Reference< css::awt::XWindowPeer > xPeer( Window::GetComponentInterface(false) );
     if ( !xPeer.is() && bCreate )
     {
-        ::com::sun::star::awt::XWindowPeer* mxPeer = new VCLXSvxFindReplaceDialog(this);
+        css::awt::XWindowPeer* mxPeer = new VCLXSvxFindReplaceDialog(this);
         SetComponentInterface(mxPeer);
         return mxPeer;
     }
@@ -2294,14 +2304,14 @@ static vcl::Window* lcl_GetSearchLabelWindow()
     css::uno::Reference< css::ui::XUIElement > xUIElement =
         xLayoutManager->getElement("private:resource/toolbar/findbar");
     if (!xUIElement.is())
-        return 0;
+        return nullptr;
     css::uno::Reference< css::awt::XWindow > xWindow(
             xUIElement->getRealInterface(), css::uno::UNO_QUERY_THROW);
     VclPtr< ToolBox > pToolBox = static_cast<ToolBox*>( VCLUnoHelper::GetWindow(xWindow).get() );
     for (size_t i = 0; pToolBox && i < pToolBox->GetItemCount(); ++i)
         if (pToolBox->GetItemCommand(i) == ".uno:SearchLabel")
             return pToolBox->GetItemWindow(i);
-    return 0;
+    return nullptr;
 }
 
 void SvxSearchDialogWrapper::SetSearchLabel(const SearchLabel& rSL)

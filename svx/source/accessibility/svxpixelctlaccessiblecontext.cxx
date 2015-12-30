@@ -144,16 +144,14 @@ uno::Reference< XAccessibleRelationSet > SvxPixelCtlAccessible::getAccessibleRel
     vcl::Window *pLabeledBy = mrPixelCtl.GetAccessibleRelationLabeledBy();
     if ( pLabeledBy && pLabeledBy != &mrPixelCtl )
     {
-        uno::Sequence< uno::Reference< uno::XInterface > > aSequence(1);
-        aSequence[0] = pLabeledBy->GetAccessible();
+        uno::Sequence< uno::Reference< uno::XInterface > > aSequence { pLabeledBy->GetAccessible() };
         rRelationSet->AddRelation( css::accessibility::AccessibleRelation( css::accessibility::AccessibleRelationType::LABELED_BY, aSequence ) );
     }
 
     vcl::Window* pMemberOf = mrPixelCtl.GetAccessibleRelationMemberOf();
     if ( pMemberOf && pMemberOf != &mrPixelCtl )
     {
-        uno::Sequence< uno::Reference< uno::XInterface > > aSequence(1);
-        aSequence[0] = pMemberOf->GetAccessible();
+        uno::Sequence< uno::Reference< uno::XInterface > > aSequence { pMemberOf->GetAccessible() };
         rRelationSet->AddRelation( css::accessibility::AccessibleRelation( css::accessibility::AccessibleRelationType::MEMBER_OF, aSequence ) );
     }
     return rSet;
@@ -192,7 +190,7 @@ uno::Reference< XAccessibleStateSet > SvxPixelCtlAccessible::getAccessibleStateS
 }
 
 
-com::sun::star::lang::Locale SvxPixelCtlAccessible::getLocale(  )
+css::lang::Locale SvxPixelCtlAccessible::getLocale(  )
     throw (IllegalAccessibleComponentStateException, uno::RuntimeException, std::exception)
 {
     ::osl::MutexGuard   aGuard( m_aMutex );
@@ -261,7 +259,7 @@ awt::Point SvxPixelCtlAccessible::getLocation(  ) throw (uno::RuntimeException, 
 awt::Point SvxPixelCtlAccessible::getLocationOnScreen(  ) throw (uno::RuntimeException, std::exception)
 {
     ::osl::MutexGuard   aGuard( m_aMutex );
-    Rectangle rect = mrPixelCtl.GetWindowExtentsRelative(NULL);
+    Rectangle rect = mrPixelCtl.GetWindowExtentsRelative(nullptr);
     return awt::Point(rect.Left(),rect.Top() );
 }
 
@@ -278,14 +276,14 @@ void SvxPixelCtlAccessible::grabFocus(  ) throw (uno::RuntimeException, std::exc
 }
 
 sal_Int32 SvxPixelCtlAccessible::getForeground(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     ::osl::MutexGuard   aGuard( m_aMutex );
     return mrPixelCtl.GetControlForeground().GetColor();
 }
 
 sal_Int32 SvxPixelCtlAccessible::getBackground(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     ::osl::MutexGuard   aGuard( m_aMutex );
     return mrPixelCtl.GetControlBackground().GetColor();
@@ -408,7 +406,7 @@ void SvxPixelCtlAccessible::CommitChange( const AccessibleEventObject& rEvent )
 }
 
 //Solution:Add the event handling method
-void SvxPixelCtlAccessible::FireAccessibleEvent (short nEventId, const ::com::sun::star::uno::Any& rOld, const ::com::sun::star::uno::Any& rNew)
+void SvxPixelCtlAccessible::FireAccessibleEvent (short nEventId, const css::uno::Any& rOld, const css::uno::Any& rNew)
 {
     const uno::Reference< XInterface >  xSource( *this );
     CommitChange( AccessibleEventObject( xSource, nEventId, rNew,rOld ) );
@@ -426,7 +424,7 @@ void SAL_CALL SvxPixelCtlAccessible::disposing()
                 mnClientId =  0;
             }
         }
-        //mxParent = uno::Reference< XAccessible >();
+        //mxParent.clear();
 
     }
 }
@@ -435,7 +433,7 @@ void SvxPixelCtlAccessible::NotifyChild(long nIndex,bool bSelect ,bool bCheck)
 {
     DBG_ASSERT( !(!bSelect && !bCheck),"" );//non is false
 
-    SvxPixelCtlAccessibleChild *pChild= NULL;
+    SvxPixelCtlAccessibleChild *pChild= nullptr;
 
     if (m_xCurChild.is())
     {
@@ -499,7 +497,7 @@ uno::Reference<XAccessible> SvxPixelCtlAccessible::CreateChild (long nIndex,Poin
 
 void SvxPixelCtlAccessible::LoseFocus()
 {
-    m_xCurChild = uno::Reference< XAccessible >() ;
+    m_xCurChild.clear();
 }
 
 void SvxPixelCtlAccessibleChild::CheckChild()
@@ -541,8 +539,8 @@ void SvxPixelCtlAccessibleChild::SelectChild( bool bSelect)
 }
 void SvxPixelCtlAccessibleChild::FireAccessibleEvent (
     short nEventId,
-    const ::com::sun::star::uno::Any& rOld,
-    const ::com::sun::star::uno::Any& rNew)
+    const css::uno::Any& rOld,
+    const css::uno::Any& rNew)
 {
     const uno::Reference< XInterface >  xSource( *this );
     CommitChange( AccessibleEventObject( xSource, nEventId, rNew,rOld ) );
@@ -599,8 +597,8 @@ awt::Rectangle SAL_CALL SvxPixelCtlAccessibleChild::getBounds() throw( RuntimeEx
     //Modified by lq, 09/26
     //return AWTRectangle( GetBoundingBox() );
     awt::Rectangle rect = AWTRectangle( GetBoundingBox() );
-    rect.X = rect.X + mrParentWindow.GetClientWindowExtentsRelative(NULL).Left()-mrParentWindow.GetWindowExtentsRelative(NULL).Left();
-    rect.Y = rect.Y + mrParentWindow.GetClientWindowExtentsRelative(NULL).Top()-mrParentWindow.GetWindowExtentsRelative(NULL).Top();
+    rect.X = rect.X + mrParentWindow.GetClientWindowExtentsRelative(nullptr).Left()-mrParentWindow.GetWindowExtentsRelative(nullptr).Left();
+    rect.Y = rect.Y + mrParentWindow.GetClientWindowExtentsRelative(nullptr).Top()-mrParentWindow.GetWindowExtentsRelative(nullptr).Top();
     return rect;
     // End
 }
@@ -628,14 +626,14 @@ void SAL_CALL SvxPixelCtlAccessibleChild::grabFocus() throw( RuntimeException, s
 }
 
 sal_Int32 SvxPixelCtlAccessibleChild::getForeground(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     ::osl::MutexGuard   aGuard( m_aMutex );
     ThrowExceptionIfNotAlive();
     return mrParentWindow.GetControlForeground().GetColor();
 }
 sal_Int32 SvxPixelCtlAccessibleChild::getBackground(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     ::osl::MutexGuard   aGuard( m_aMutex );
 
@@ -810,7 +808,7 @@ void SAL_CALL SvxPixelCtlAccessibleChild::disposing()
             mnClientId =  0;
         }
 
-        mxParent = uno::Reference< XAccessible >();
+        mxParent.clear();
 
         delete mpBoundingBox;
     }

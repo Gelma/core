@@ -36,7 +36,6 @@ class XMLAutoMarkFileContext : public SvXMLImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLAutoMarkFileContext(
         SvXMLImport& rImport,
@@ -48,8 +47,7 @@ public:
 protected:
 
     virtual void StartElement(
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList> & xAttrList) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList) override;
 };
 
 #endif

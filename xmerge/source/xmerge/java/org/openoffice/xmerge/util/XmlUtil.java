@@ -45,8 +45,10 @@ public final class XmlUtil {
         // clone the starting node
         Node clonedNode = cloneNode(docNode, newNode);
 
-        // then clone the sub-tree recursively
-        cloneTree(docNode, clonedNode, newNode);
+        if (clonedNode != null) {
+            // then clone the sub-tree recursively
+            cloneTree(docNode, clonedNode, newNode);
+        }
 
         return clonedNode;
     }
@@ -93,7 +95,7 @@ public final class XmlUtil {
             case Node.ELEMENT_NODE:
                 Element oldElem = (Element)newNode;
                 String tagName  = newNode.getNodeName();
-                Element newElem = (docNode.createElement(tagName));
+                Element newElem = docNode.createElement(tagName);
 
                 // copy the attributes
                 NamedNodeMap attrs = oldElem.getAttributes();

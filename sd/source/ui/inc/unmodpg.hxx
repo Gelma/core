@@ -41,7 +41,6 @@ class ModifyPageUndoAction : public SdUndoAction
     OUString        maComment;
 
 public:
-    TYPEINFO_OVERRIDE();
     ModifyPageUndoAction(
         SdDrawDocument*         pTheDoc,
         SdPage*                 pThePage,
@@ -51,10 +50,10 @@ public:
         bool                    bTheNewBckgrndObjsVisible);
 
     virtual ~ModifyPageUndoAction();
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 };
 
 class RenameLayoutTemplateUndoAction : public SdUndoAction
@@ -65,10 +64,10 @@ public:
         const OUString& rOldLayoutName,
         const OUString& rNewLayoutName);
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     OUString maOldName;

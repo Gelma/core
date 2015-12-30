@@ -61,31 +61,19 @@ namespace dbaui
                         const TTableConnectionData::value_type& pConnectionData,
                         bool bAllowTableSelect = false );
         virtual ~ORelationDialog();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
-        virtual css::uno::Reference< css::sdbc::XConnection > getConnection() SAL_OVERRIDE { return m_xConnection; }
-
-        virtual short Execute() SAL_OVERRIDE;
-
-        /** getTableMap gives access to the table window map
-            @retrun the table window from the join view
-        */
-        OJoinTableView::OTableWindowMap* getTableMap() const { return m_pTableMap; }
-
-        /** getConnectionData returns the current connection data
-            @return the current connection data
-        */
-        virtual TTableConnectionData::value_type getConnectionData() const SAL_OVERRIDE;
+        virtual short Execute() override;
 
         /** setValid set the valid inside, can be used for OK buttons
             @param  _bValid true when the using control allows an update
         */
-        virtual void setValid(bool _bValid) SAL_OVERRIDE;
+        virtual void setValid(bool _bValid) override;
 
         /** notifyConnectionChange is callback which is called when the table selection has changed and a new connection exists
             @param  _pConnectionData    the connection which exists between the new tables
         */
-        virtual void notifyConnectionChange() SAL_OVERRIDE;
+        virtual void notifyConnectionChange() override;
     protected:
         void Init(const TTableConnectionData::value_type& _pConnectionData);
 

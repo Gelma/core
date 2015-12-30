@@ -82,9 +82,9 @@ public:
     explicit            ExcelGraphicHelper( const WorkbookHelper& rHelper );
 
     /** Derived classes may implement to resolve a scheme color from the passed XML token identifier. */
-    virtual sal_Int32   getSchemeColor( sal_Int32 nToken ) const SAL_OVERRIDE;
+    virtual sal_Int32   getSchemeColor( sal_Int32 nToken ) const override;
     /** Derived classes may implement to resolve a palette index to an RGB color. */
-    virtual sal_Int32   getPaletteColor( sal_Int32 nPaletteIdx ) const SAL_OVERRIDE;
+    virtual sal_Int32   getPaletteColor( sal_Int32 nPaletteIdx ) const override;
 };
 
 class Color : public ::oox::drawingml::Color
@@ -201,17 +201,15 @@ struct ApiScriptFontName
 /** Contains all API font attributes. */
 struct ApiFontData
 {
-    typedef ::com::sun::star::awt::FontDescriptor ApiFontDescriptor;
-
-    ApiScriptFontName   maLatinFont;        /// Font name for latin scripts.
-    ApiScriptFontName   maAsianFont;        /// Font name for east-asian scripts.
-    ApiScriptFontName   maCmplxFont;        /// Font name for complex scripts.
-    ApiFontDescriptor   maDesc;             /// Font descriptor (height in twips, weight in %).
-    sal_Int32           mnColor;            /// Font color.
-    sal_Int16           mnEscapement;       /// Escapement style.
-    sal_Int8            mnEscapeHeight;     /// Escapement font height.
-    bool                mbOutline;          /// True = outlined characters.
-    bool                mbShadow;           /// True = shadowed chgaracters.
+    ApiScriptFontName        maLatinFont;        /// Font name for latin scripts.
+    ApiScriptFontName        maAsianFont;        /// Font name for east-asian scripts.
+    ApiScriptFontName        maCmplxFont;        /// Font name for complex scripts.
+    css::awt::FontDescriptor maDesc;             /// Font descriptor (height in twips, weight in %).
+    sal_Int32                mnColor;            /// Font color.
+    sal_Int16                mnEscapement;       /// Escapement style.
+    sal_Int8                 mnEscapeHeight;     /// Escapement font height.
+    bool                     mbOutline;          /// True = outlined characters.
+    bool                     mbShadow;           /// True = shadowed chgaracters.
 
     explicit            ApiFontData();
 };
@@ -252,7 +250,7 @@ public:
     void                finalizeImport();
 
     /** Returns an API font descriptor with own font information. */
-    const ::com::sun::star::awt::FontDescriptor& getFontDescriptor() const { return maApiData.maDesc;}
+    const css::awt::FontDescriptor& getFontDescriptor() const { return maApiData.maDesc;}
     /** Returns true, if the font requires rich text formatting in Calc.
         @descr  Example: Font escapement is a cell attribute in Excel, but Calc
         needs an rich text cell for this attribute. */
@@ -300,19 +298,16 @@ struct AlignmentModel
 /** Contains all API cell alignment attributes. */
 struct ApiAlignmentData
 {
-    typedef ::com::sun::star::table::CellHoriJustify ApiCellHoriJustify;
-    typedef ::com::sun::star::table::CellOrientation ApiCellOrientation;
-
-    ApiCellHoriJustify  meHorJustify;       /// Horizontal alignment.
-    sal_Int32           mnHorJustifyMethod;
-    sal_Int32           mnVerJustify;       /// Vertical alignment.
-    sal_Int32           mnVerJustifyMethod;
-    ApiCellOrientation  meOrientation;      /// Normal or stacked text.
-    sal_Int32           mnRotation;         /// Text rotation angle.
-    sal_Int16           mnWritingMode;      /// CTL text direction.
-    sal_Int16           mnIndent;           /// Indentation.
-    bool                mbWrapText;         /// True = multi-line text.
-    bool                mbShrink;           /// True = shrink to fit cell size.
+    css::table::CellHoriJustify  meHorJustify;       /// Horizontal alignment.
+    sal_Int32                    mnHorJustifyMethod;
+    sal_Int32                    mnVerJustify;       /// Vertical alignment.
+    sal_Int32                    mnVerJustifyMethod;
+    css::table::CellOrientation  meOrientation;      /// Normal or stacked text.
+    sal_Int32                    mnRotation;         /// Text rotation angle.
+    sal_Int16                    mnWritingMode;      /// CTL text direction.
+    sal_Int16                    mnIndent;           /// Indentation.
+    bool                         mbWrapText;         /// True = multi-line text.
+    bool                         mbShrink;           /// True = shrink to fit cell size.
 
     explicit            ApiAlignmentData();
 };
@@ -362,7 +357,7 @@ struct ProtectionModel
 /** Contains all API cell protection attributes. */
 struct ApiProtectionData
 {
-    typedef ::com::sun::star::util::CellProtection ApiCellProtection;
+    typedef css::util::CellProtection ApiCellProtection;
 
     ApiCellProtection   maCellProt;
 
@@ -426,7 +421,7 @@ struct BorderModel
 /** Contains API attributes of a complete cell border. */
 struct ApiBorderData
 {
-    typedef ::com::sun::star::table::BorderLine2     ApiBorderLine;
+    typedef css::table::BorderLine2     ApiBorderLine;
 
     ApiBorderLine       maLeft;             /// Left line format
     ApiBorderLine       maRight;            /// Right line format
@@ -481,7 +476,7 @@ private:
 
     /** Converts border line data to an API struct, returns true, if the line is marked as used. */
     bool                convertBorderLine(
-                            ::com::sun::star::table::BorderLine2& rBorderLine,
+                            css::table::BorderLine2& rBorderLine,
                             const BorderLineModel& rModel );
 
 private:
@@ -829,25 +824,25 @@ public:
 
     /** Creates a new empty font object.
         @param opnFontId  (out-param) The identifier of the new font object. */
-    FontRef             createFont( sal_Int32* opnFontId = 0 );
+    FontRef             createFont( sal_Int32* opnFontId = nullptr );
     /** Creates a number format. */
     NumberFormatRef     createNumFmt( sal_Int32 nNumFmtId, const OUString& rFmtCode );
     sal_Int32           nextFreeNumFmtId();
     /** Creates a new empty border object.
         @param opnBorderId  (out-param) The identifier of the new border object. */
-    BorderRef           createBorder( sal_Int32* opnBorderId = 0 );
+    BorderRef           createBorder( sal_Int32* opnBorderId = nullptr );
     /** Creates a new empty fill object.
         @param opnFillId  (out-param) The identifier of the new fill object. */
-    FillRef             createFill( sal_Int32* opnFillId = 0 );
+    FillRef             createFill( sal_Int32* opnFillId = nullptr );
     /** Creates a new empty cell formatting object.
         @param opnXfId  (out-param) The identifier of the new XF object. */
-    XfRef               createCellXf( sal_Int32* opnXfId = 0 );
+    XfRef               createCellXf( sal_Int32* opnXfId = nullptr );
     /** Creates a new empty style formatting object.
         @param opnXfId  (out-param) The identifier of the new XF object. */
-    XfRef               createStyleXf( sal_Int32* opnXfId = 0 );
+    XfRef               createStyleXf( sal_Int32* opnXfId = nullptr );
     /** Creates a new empty differential formatting object.
         @param opnDxfId  (out-param) The identifier of the new DXF object. */
-    DxfRef              createDxf( sal_Int32* opnDxfId = 0 );
+    DxfRef              createDxf( sal_Int32* opnDxfId = nullptr );
 
     /** Appends a new color to the color palette. */
     void                importPaletteColor( const AttributeList& rAttribs );

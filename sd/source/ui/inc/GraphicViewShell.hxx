@@ -39,7 +39,6 @@ class GraphicViewShell
     : public DrawViewShell
 {
 public:
-    TYPEINFO_OVERRIDE();
 
     SFX_DECL_VIEWFACTORY(GraphicViewShell);
     SFX_DECL_INTERFACE(SD_IF_SDGRAPHICVIEWSHELL)
@@ -60,17 +59,17 @@ public:
         SfxViewFrame* pFrame,
         ViewShellBase& rViewShellBase,
         vcl::Window* pParentWindow,
-        FrameView* pFrameView = NULL);
+        FrameView* pFrameView = nullptr);
 
     virtual ~GraphicViewShell();
 
     /** Override this method in order to have the layer mode always active.
     */
-    virtual void ChangeEditMode (EditMode eMode, bool bIsLayerModeActive) SAL_OVERRIDE;
+    virtual void ChangeEditMode (EditMode eMode, bool bIsLayerModeActive) override;
 
 protected:
     void ConstructGraphicViewShell();
-    virtual void ArrangeGUIElements() SAL_OVERRIDE;
+    virtual void ArrangeGUIElements() override;
 };
 
 } // end of namespace sd

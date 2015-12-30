@@ -40,9 +40,9 @@ namespace webdav_ucp
 
 struct DAVPropertyValue
 {
-    OUString            Name;
-    com::sun::star::uno::Any Value;
-    bool                     IsCaseSensitive;
+    OUString         Name;
+    css::uno::Any    Value;
+    bool             IsCaseSensitive;
 
     DAVPropertyValue() : IsCaseSensitive( true ) {}
 };
@@ -58,10 +58,7 @@ struct DAVResource
 
 struct DAVResourceInfo
 {
-    OUString uri;
     std::vector < OUString > properties;
-
-    explicit DAVResourceInfo( const OUString & inUri ) : uri( inUri ) {}
 };
 
 } // namespace webdav_ucp

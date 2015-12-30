@@ -42,15 +42,15 @@ public:
     SvxShowText(vcl::Window* pParent, bool bCenter = false);
 
     void            SetFont( const vcl::Font& rFont );
-    void            SetText( const OUString& rText ) SAL_OVERRIDE;
+    void            SetText( const OUString& rText ) override;
     void            SetCentered(bool bCenter) { mbCenter = bCenter; }
 
-    virtual void    Resize() SAL_OVERRIDE;
+    virtual void    Resize() override;
 
-    virtual Size    GetOptimalSize() const SAL_OVERRIDE;
+    virtual Size    GetOptimalSize() const override;
 
 protected:
-    virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle&) SAL_OVERRIDE;
+    virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle&) override;
 
 private:
     long            mnY;
@@ -76,25 +76,30 @@ private:
     VclPtr<ListBox>        m_pSubsetLB;
     VclPtr<FixedText>      m_pSymbolText;
     VclPtr<SvxShowText>    m_pShowChar;
-    VclPtr<FixedText>      m_pCharCodeText;
+    VclPtr<Edit>           m_pHexCodeText;
+    VclPtr<Edit>           m_pDecimalCodeText;
     vcl::Font       aFont;
     bool            bOne;
     const SubsetMap* pSubsetMap;
+    enum class Radix : sal_Int16 {decimal = 10, hexadecimal=16};
 
     DECL_LINK_TYPED(OKHdl, Button*, void);
-    DECL_LINK(FontSelectHdl, void *);
-    DECL_LINK(SubsetSelectHdl, void *);
+    DECL_LINK_TYPED(FontSelectHdl, ListBox&, void);
+    DECL_LINK_TYPED(SubsetSelectHdl, ListBox&, void);
     DECL_LINK_TYPED(CharDoubleClickHdl, SvxShowCharSet*,void);
     DECL_LINK_TYPED(CharSelectHdl, SvxShowCharSet*, void);
     DECL_LINK_TYPED(CharHighlightHdl, SvxShowCharSet*, void);
     DECL_LINK_TYPED(CharPreSelectHdl, SvxShowCharSet*, void);
+    DECL_LINK_TYPED(DecimalCodeChangeHdl, Edit&, void);
+    DECL_LINK_TYPED(HexCodeChangeHdl, Edit&, void);
 
     static void fillAllSubsets(ListBox &rListBox);
+    void selectCharByCode(Radix radix);
 
 public:
-                    SvxCharacterMap( vcl::Window* pParent, bool bOne=true, const SfxItemSet* pSet=0 );
+                    SvxCharacterMap( vcl::Window* pParent, bool bOne=true, const SfxItemSet* pSet=nullptr );
     virtual         ~SvxCharacterMap();
-    virtual void    dispose() SAL_OVERRIDE;
+    virtual void    dispose() override;
 
     void            DisableFontSelection();
 
@@ -106,7 +111,7 @@ public:
 
     OUString        GetCharacters() const;
 
-    virtual short   Execute() SAL_OVERRIDE;
+    virtual short   Execute() override;
 };
 
 #endif

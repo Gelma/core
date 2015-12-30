@@ -21,6 +21,7 @@
 
 #include <map>
 #include <algorithm>
+#include <memory>
 
 #include <com/sun/star/beans/PropertyState.hpp>
 #include <com/sun/star/embed/ElementModes.hpp>
@@ -106,7 +107,7 @@ static SwPaM* lcl_createPamCopy(const SwPaM& rPam)
 void GetSelectableFromAny(uno::Reference<uno::XInterface> const& xIfc,
         SwDoc & rTargetDoc,
         SwPaM *& o_rpPaM, std::pair<OUString, FlyCntType> & o_rFrame,
-        OUString & o_rTableName, SwUnoTableCrsr const*& o_rpTableCursor,
+        OUString & o_rTableName, SwUnoTableCursor const*& o_rpTableCursor,
         ::sw::mark::IMark const*& o_rpMark,
         std::vector<SdrObject *> & o_rSdrObjects)
 {
@@ -177,10 +178,10 @@ void GetSelectableFromAny(uno::Reference<uno::XInterface> const& xIfc,
         ::sw::UnoTunnelGetImplementation<SwXTextRanges>(xTunnel));
     if (pRanges)
     {
-        SwUnoCrsr const* pUnoCrsr = pRanges->GetCursor();
-        if (pUnoCrsr && pUnoCrsr->GetDoc() == &rTargetDoc)
+        SwUnoCursor const* pUnoCursor = pRanges->GetCursor();
+        if (pUnoCursor && pUnoCursor->GetDoc() == &rTargetDoc)
         {
-            o_rpPaM = lcl_createPamCopy(*pUnoCrsr);
+            o_rpPaM = lcl_createPamCopy(*pUnoCursor);
         }
         return;
     }
@@ -248,12 +249,12 @@ void GetSelectableFromAny(uno::Reference<uno::XInterface> const& xIfc,
         ::sw::UnoTunnelGetImplementation<SwXCellRange>(xTunnel));
     if (pCellRange)
     {
-        SwUnoCrsr const*const pUnoCrsr(pCellRange->GetTableCrsr());
-        if (pUnoCrsr && pUnoCrsr->GetDoc() == &rTargetDoc)
+        SwUnoCursor const*const pUnoCursor(pCellRange->GetTableCursor());
+        if (pUnoCursor && pUnoCursor->GetDoc() == &rTargetDoc)
         {
             // probably can't copy it to o_rpPaM for this since it's
             // a SwTableCursor
-            o_rpTableCursor = dynamic_cast<SwUnoTableCrsr const*>(pUnoCrsr);
+            o_rpTableCursor = dynamic_cast<SwUnoTableCursor const*>(pUnoCursor);
         }
         return;
     }
@@ -298,7 +299,7 @@ GetNestedTextContent(SwTextNode & rTextNode, sal_Int32 const nIndex,
 }
 
 // Read the special properties of the cursor
-bool getCrsrPropertyValue(const SfxItemPropertySimpleEntry& rEntry
+bool getCursorPropertyValue(const SfxItemPropertySimpleEntry& rEntry
                                         , SwPaM& rPam
                                         , Any *pAny
                                         , PropertyState& eState
@@ -363,7 +364,7 @@ bool getCrsrPropertyValue(const SfxItemPropertySimpleEntry& rEntry
         case FN_UNO_PARA_CONDITIONAL_STYLE_NAME:
         case FN_UNO_PARA_STYLE :
         {
-            SwFormatColl* pFormat = 0;
+            SwFormatColl* pFormat = nullptr;
             if(pNode)
                 pFormat = FN_UNO_PARA_CONDITIONAL_STYLE_NAME == rEntry.nWID
                             ? pNode->GetFormatColl() : &pNode->GetAnyFormatColl();
@@ -513,8 +514,8 @@ bool getCrsrPropertyValue(const SfxItemPropertySimpleEntry& rEntry
                 rPam.GetDoc()->GetNodes()[pPos->nNode.GetIndex()]->GetTextNode();
             const SwTextAttr* pTextAttr = (pTextNd)
                 ? pTextNd->GetFieldTextAttrAt( pPos->nContent.GetIndex(), true )
-                : 0;
-            if ( pTextAttr != NULL )
+                : nullptr;
+            if ( pTextAttr != nullptr )
             {
                 if( pAny )
                 {
@@ -563,7 +564,7 @@ bool getCrsrPropertyValue(const SfxItemPropertySimpleEntry& rEntry
             SwStartNodeType eType = pSttNode->GetStartNodeType();
 
             SwFrameFormat* pFormat;
-            if(eType == SwFlyStartNode && 0 != (pFormat = pSttNode->GetFlyFormat()))
+            if(eType == SwFlyStartNode && nullptr != (pFormat = pSttNode->GetFlyFormat()))
             {
                 if( pAny )
                 {
@@ -596,7 +597,7 @@ bool getCrsrPropertyValue(const SfxItemPropertySimpleEntry& rEntry
         {
             SwTextAttr *const pTextAttr = rPam.GetNode().IsTextNode() ?
                 rPam.GetNode().GetTextNode()->GetTextAttrForCharAt(
-                    rPam.GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN) : 0;
+                    rPam.GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN) : nullptr;
             if(pTextAttr)
             {
                 const SwFormatFootnote& rFootnote = pTextAttr->GetFootnote();
@@ -646,7 +647,7 @@ bool getCrsrPropertyValue(const SfxItemPropertySimpleEntry& rEntry
             uno::Reference<XTextContent> const xRet(rPam.GetNode().IsTextNode()
                 ? GetNestedTextContent(*rPam.GetNode().GetTextNode(),
                     rPam.GetPoint()->nContent.GetIndex(), false)
-                : 0);
+                : nullptr);
             if (xRet.is())
             {
                 if (pAny)
@@ -750,7 +751,7 @@ void setNumberingProperty(const Any& rValue, SwPaM& rPam)
     uno::Reference<XIndexReplace> xIndexReplace;
     if(rValue >>= xIndexReplace)
     {
-        SwXNumberingRules* pSwNum = 0;
+        SwXNumberingRules* pSwNum = nullptr;
 
         uno::Reference<XUnoTunnel> xNumTunnel(xIndexReplace, UNO_QUERY);
         if(xNumTunnel.is())
@@ -779,14 +780,14 @@ void setNumberingProperty(const Any& rValue, SwPaM& rPam)
                             // FIXME
                             // Is something missing/wrong here?
                             // if condition is always false due to outer check!
-                            aFormat.SetCharFormat(0);
+                            aFormat.SetCharFormat(nullptr);
                         }
                         else
                         {
 
                             // get CharStyle and set the rule
                             const size_t nChCount = pDoc->GetCharFormats()->size();
-                            SwCharFormat* pCharFormat = 0;
+                            SwCharFormat* pCharFormat = nullptr;
                             for(size_t nCharFormat = 0; nCharFormat < nChCount; ++nCharFormat)
                             {
                                 SwCharFormat& rChFormat = *((*(pDoc->GetCharFormats()))[nCharFormat]);
@@ -834,15 +835,15 @@ void setNumberingProperty(const Any& rValue, SwPaM& rPam)
 
                 if( rPam.GetNext() != &rPam )           // Multiple selection?
                 {
-                    pDoc->GetIDocumentUndoRedo().StartUndo( UNDO_START, NULL );
+                    pDoc->GetIDocumentUndoRedo().StartUndo( UNDO_START, nullptr );
                     SwPamRanges aRangeArr( rPam );
                     SwPaM aPam( *rPam.GetPoint() );
-                    for ( SwPamRanges::size_type n = 0; n < aRangeArr.Count(); ++n )
+                    for ( size_t n = 0; n < aRangeArr.Count(); ++n )
                     {
                         // no start of a new list
                         pDoc->SetNumRule( aRangeArr.SetPam( n, aPam ), aRule, false );
                     }
-                    pDoc->GetIDocumentUndoRedo().EndUndo( UNDO_END, NULL );
+                    pDoc->GetIDocumentUndoRedo().EndUndo( UNDO_END, nullptr );
                 }
                 else
                 {
@@ -896,10 +897,10 @@ void GetCurPageStyle(SwPaM& rPaM, OUString &rString)
 {
     if (!rPaM.GetContentNode())
         return; // TODO: is there an easy way to get it for tables/sections?
-    SwContentFrm* pFrame = rPaM.GetContentNode()->getLayoutFrm(rPaM.GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout());
+    SwContentFrame* pFrame = rPaM.GetContentNode()->getLayoutFrame(rPaM.GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout());
     if(pFrame)
     {
-        const SwPageFrm* pPage = pFrame->FindPageFrm();
+        const SwPageFrame* pPage = pFrame->FindPageFrame();
         if(pPage)
         {
             SwStyleNameMapper::FillProgName(pPage->GetPageDesc()->GetName(),
@@ -909,7 +910,7 @@ void GetCurPageStyle(SwPaM& rPaM, OUString &rString)
 }
 
 // reset special properties of the cursor
-void resetCrsrPropertyValue(const SfxItemPropertySimpleEntry& rEntry, SwPaM& rPam)
+void resetCursorPropertyValue(const SfxItemPropertySimpleEntry& rEntry, SwPaM& rPam)
 {
     SwDoc* pDoc = rPam.GetDoc();
     switch(rEntry.nWID)
@@ -924,12 +925,12 @@ void resetCrsrPropertyValue(const SfxItemPropertySimpleEntry& rEntry, SwPaM& rPa
 
             if( rPam.GetNext() != &rPam )           // Multiple selection?
             {
-                pDoc->GetIDocumentUndoRedo().StartUndo( UNDO_START, NULL );
+                pDoc->GetIDocumentUndoRedo().StartUndo( UNDO_START, nullptr );
                 SwPamRanges aRangeArr( rPam );
                 SwPaM aPam( *rPam.GetPoint() );
-                for( SwPamRanges::size_type n = 0; n < aRangeArr.Count(); ++n )
+                for( size_t n = 0; n < aRangeArr.Count(); ++n )
                     pDoc->SetNodeNumStart( *aRangeArr.SetPam( n, aPam ).GetPoint(), 1 );
-                pDoc->GetIDocumentUndoRedo().EndUndo( UNDO_END, NULL );
+                pDoc->GetIDocumentUndoRedo().EndUndo( UNDO_END, nullptr );
             }
             else
                 pDoc->SetNodeNumStart( *rPam.GetPoint(), 0 );
@@ -950,13 +951,13 @@ void resetCrsrPropertyValue(const SfxItemPropertySimpleEntry& rEntry, SwPaM& rPa
     }
 }
 
-void InsertFile(SwUnoCrsr* pUnoCrsr, const OUString& rURL,
+void InsertFile(SwUnoCursor* pUnoCursor, const OUString& rURL,
     const uno::Sequence< beans::PropertyValue >& rOptions)
     throw (lang::IllegalArgumentException, io::IOException,
            uno::RuntimeException, std::exception)
 {
-    SfxMedium* pMed = 0;
-    SwDoc* pDoc = pUnoCrsr->GetDoc();
+    std::unique_ptr<SfxMedium> pMed;
+    SwDoc* pDoc = pUnoCursor->GetDoc();
     SwDocShell* pDocSh = pDoc->GetDocShell();
     utl::MediaDescriptor aMediaDescriptor( rOptions );
     OUString sFileName = rURL;
@@ -991,9 +992,8 @@ void InsertFile(SwUnoCrsr* pUnoCrsr, const OUString& rURL,
         aArgs[1] <<= embed::ElementModes::READ;
         try
         {
-            xReadStorage = uno::Reference< embed::XStorage >(
-                            ::comphelper::OStorageHelper::GetStorageFactory()->createInstanceWithArguments( aArgs ),
-                            uno::UNO_QUERY );
+            xReadStorage.set( ::comphelper::OStorageHelper::GetStorageFactory()->createInstanceWithArguments( aArgs ),
+                              uno::UNO_QUERY );
         }
         catch( const io::IOException& rEx)
         {
@@ -1004,52 +1004,45 @@ void InsertFile(SwUnoCrsr* pUnoCrsr, const OUString& rURL,
     {
         if( xInputStream.is() && !xReadStorage.is())
         {
-            pMed = new SfxMedium;
+            pMed.reset(new SfxMedium);
             pMed->setStreamToLoadFrom(xInputStream, true );
         }
         else
-            pMed = xReadStorage.is() ?
-                new SfxMedium(xReadStorage, sBaseURL, 0 ) :
-                new SfxMedium(sFileName, StreamMode::READ, 0, 0 );
+            pMed.reset(xReadStorage.is() ?
+                new SfxMedium(xReadStorage, sBaseURL, nullptr ) :
+                new SfxMedium(sFileName, StreamMode::READ, nullptr, nullptr ));
         if( !sBaseURL.isEmpty() )
             pMed->GetItemSet()->Put( SfxStringItem( SID_DOC_BASEURL, sBaseURL ) );
 
         SfxFilterMatcher aMatcher( rFact.GetFilterContainer()->GetName() );
         ErrCode nErr = aMatcher.GuessFilter(*pMed, &pFilter, SfxFilterFlags::NONE);
         if ( nErr || !pFilter)
-            DELETEZ(pMed);
-        else
-            pMed->SetFilter( pFilter );
+            return;
+        pMed->SetFilter( pFilter );
     }
     else
     {
-        if(!pMed)
+        if( xInputStream.is() && !xReadStorage.is())
         {
-            if( xInputStream.is() && !xReadStorage.is())
+            pMed.reset(new SfxMedium);
+            pMed->setStreamToLoadFrom(xInputStream, true );
+            pMed->SetFilter( pFilter );
+        }
+        else
+        {
+            if( xReadStorage.is() )
             {
-                pMed = new SfxMedium;
-                pMed->setStreamToLoadFrom(xInputStream, true );
+                pMed.reset(new SfxMedium(xReadStorage, sBaseURL, nullptr ));
                 pMed->SetFilter( pFilter );
             }
             else
-            {
-                if( xReadStorage.is() )
-                {
-                    pMed = new SfxMedium(xReadStorage, sBaseURL, 0 );
-                    pMed->SetFilter( pFilter );
-                }
-                else
-                    pMed = new SfxMedium(sFileName, StreamMode::READ, pFilter, 0);
-            }
+                pMed.reset(new SfxMedium(sFileName, StreamMode::READ, pFilter, nullptr));
         }
         if(!sFilterOptions.isEmpty())
             pMed->GetItemSet()->Put( SfxStringItem( SID_FILE_FILTEROPTIONS, sFilterOptions ) );
         if(!sBaseURL.isEmpty())
             pMed->GetItemSet()->Put( SfxStringItem( SID_DOC_BASEURL, sBaseURL ) );
     }
-
-    if( !pMed )
-        return;
 
     // this sourcecode is not responsible for the lifetime of the shell, SfxObjectShellLock should not be used
     SfxObjectShellRef aRef( pDocSh );
@@ -1062,37 +1055,36 @@ void InsertFile(SwUnoCrsr* pUnoCrsr, const OUString& rURL,
         pSet->Put(SfxBoolItem(FN_API_CALL, true));
         if(!sPassword.isEmpty())
             pSet->Put(SfxStringItem(SID_PASSWORD, sPassword));
-        Reader *pRead = pDocSh->StartConvertFrom( *pMed, &pRdr, 0, pUnoCrsr);
+        Reader *pRead = pDocSh->StartConvertFrom( *pMed, &pRdr, nullptr, pUnoCursor);
         if( pRead )
         {
 
             UnoActionContext aContext(pDoc);
 
-            if(pUnoCrsr->HasMark())
-                pDoc->getIDocumentContentOperations().DeleteAndJoin(*pUnoCrsr);
+            if(pUnoCursor->HasMark())
+                pDoc->getIDocumentContentOperations().DeleteAndJoin(*pUnoCursor);
 
-            SwNodeIndex aSave(  pUnoCrsr->GetPoint()->nNode, -1 );
-            sal_Int32 nContent = pUnoCrsr->GetPoint()->nContent.GetIndex();
+            SwNodeIndex aSave(  pUnoCursor->GetPoint()->nNode, -1 );
+            sal_Int32 nContent = pUnoCursor->GetPoint()->nContent.GetIndex();
 
             sal_uInt32 nErrno = pRdr->Read( *pRead );   // and paste the document
 
             if(!nErrno)
             {
                 ++aSave;
-                pUnoCrsr->SetMark();
-                pUnoCrsr->GetMark()->nNode = aSave;
+                pUnoCursor->SetMark();
+                pUnoCursor->GetMark()->nNode = aSave;
 
                 SwContentNode* pCntNode = aSave.GetNode().GetContentNode();
                 if( !pCntNode )
                     nContent = 0;
-                pUnoCrsr->GetMark()->nContent.Assign( pCntNode, nContent );
+                pUnoCursor->GetMark()->nContent.Assign( pCntNode, nContent );
             }
 
             delete pRdr;
 
         }
     }
-    delete pMed;
 }
 
 // insert text and scan for CR characters in order to insert
@@ -1205,7 +1197,7 @@ void makeRedline( SwPaM& rPaM,
         DateTime( Date( aStamp.Day, aStamp.Month, aStamp.Year ), tools::Time( aStamp.Hours, aStamp.Minutes, aStamp.Seconds ) ) );
     }
 
-    SwRedlineExtraData_FormattingChanges* pRedlineExtraData = NULL;
+    SwRedlineExtraData_FormattingChanges* pRedlineExtraData = nullptr;
 
     // Read the 'Redline Revert Properties' from the parameters
     uno::Sequence< beans::PropertyValue > aRevertProperties;
@@ -1333,7 +1325,7 @@ void makeTableRowRedline( SwTableLine& rTableLine,
 
     SwTableRowRedline* pRedline = new SwTableRowRedline( aRedlineData, rTableLine );
     RedlineMode_t nPrevMode = pRedlineAccess->GetRedlineMode( );
-    pRedline->SetExtraData( NULL );
+    pRedline->SetExtraData( nullptr );
 
     pRedlineAccess->SetRedlineMode_intern(nsRedlineMode_t::REDLINE_ON);
     bool bRet = pRedlineAccess->AppendTableRowRedline( pRedline, false );
@@ -1390,7 +1382,7 @@ void makeTableCellRedline( SwTableBox& rTableBox,
 
     SwTableCellRedline* pRedline = new SwTableCellRedline( aRedlineData, rTableBox );
     RedlineMode_t nPrevMode = pRedlineAccess->GetRedlineMode( );
-    pRedline->SetExtraData( NULL );
+    pRedline->SetExtraData( nullptr );
 
     pRedlineAccess->SetRedlineMode_intern(nsRedlineMode_t::REDLINE_ON);
     bool bRet = pRedlineAccess->AppendTableCellRedline( pRedline, false );

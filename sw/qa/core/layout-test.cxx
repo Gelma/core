@@ -84,10 +84,9 @@ void SwLayoutTest::setUp()
     // This is a bit of a fudge, we do this to ensure that SwGlobals::ensure,
     // which is a private symbol to us, gets called
     m_xWriterComponent =
-        getMultiServiceFactory()->createInstance(OUString(
-        "com.sun.star.comp.Writer.TextDocument"));
+        getMultiServiceFactory()->createInstance("com.sun.star.comp.Writer.TextDocument");
     CPPUNIT_ASSERT_MESSAGE("no calc component!", m_xWriterComponent.is());
-    mxDesktop = com::sun::star::frame::Desktop::create( comphelper::getComponentContext(getMultiServiceFactory()) );
+    mxDesktop = css::frame::Desktop::create( comphelper::getComponentContext(getMultiServiceFactory()) );
 }
 
 void SwLayoutTest::tearDown()

@@ -114,8 +114,7 @@ namespace dbaxml
 
     Sequence< OUString > SAL_CALL ODBExportHelper::getSupportedServiceNames_Static(  ) throw(RuntimeException)
     {
-        Sequence< OUString > aSupported(1);
-        aSupported[0] = "com.sun.star.document.ExportFilter";
+        Sequence< OUString > aSupported { "com.sun.star.document.ExportFilter" };
         return aSupported;
     }
 
@@ -129,8 +128,7 @@ namespace dbaxml
     }
     Sequence< OUString > SAL_CALL ODBFullExportHelper::getSupportedServiceNames_Static(  ) throw(RuntimeException)
     {
-        Sequence< OUString > aSupported(1);
-        aSupported[0] = "com.sun.star.document.ExportFilter";
+        Sequence< OUString > aSupported { "com.sun.star.document.ExportFilter" };
         return aSupported;
     }
 
@@ -178,7 +176,7 @@ namespace dbaxml
                 const SvXMLUnitConverter& /*rUnitConverter*/,
                 const SvXMLNamespaceMap& /*rNamespaceMap*/,
                 const ::std::vector< XMLPropertyState > * /*pProperties*/ ,
-                sal_uInt32 /*nIdx*/ ) const SAL_OVERRIDE
+                sal_uInt32 /*nIdx*/ ) const override
         {
             // nothing to do here
         }
@@ -258,8 +256,7 @@ OUString ODBExport::getImplementationName_Static()
 css::uno::Sequence<OUString> ODBExport::getSupportedServiceNames_Static()
     throw (css::uno::RuntimeException)
 {
-    css::uno::Sequence<OUString> s(1);
-    s[0] = "com.sun.star.document.ExportFilter";
+    css::uno::Sequence<OUString> s { "com.sun.star.document.ExportFilter" };
     return s;
 }
 
@@ -615,36 +612,13 @@ void ODBExport::exportConnectionData()
                         Reference< XPropertySet > xDataSourceSettings( xProp->getPropertyValue( PROPERTY_SETTINGS ), UNO_QUERY_THROW );
                         Reference< XPropertySetInfo > xSettingsInfo( xDataSourceSettings->getPropertySetInfo(), UNO_SET_THROW );
 
-                        struct PropertyMap
-                        {
-                            const sal_Char* pAsciiPropertyName;
-                            sal_uInt16      nAttributeId;
 
-                            PropertyMap( const sal_Char* _pAsciiPropertyName, const sal_uInt16 _nAttributeId )
-                                :pAsciiPropertyName( _pAsciiPropertyName )
-                                ,nAttributeId( _nAttributeId )
-                            {
-                            }
-                        };
-                        PropertyMap aProperties[] =
+                        const OUString sPropertyName = "LocalSocket";
+                        if ( xSettingsInfo->hasPropertyByName( sPropertyName ) )
                         {
-                            PropertyMap( "LocalSocket", XML_LOCAL_SOCKET )
-                            //PropertyMap( "NamedPipe", 0 /* TODO */ )
-                        };
-
-                        for (   size_t i=0;
-                                i < sizeof( aProperties ) / sizeof( aProperties[0] );
-                                ++i
-                            )
-                        {
-                            const OUString sPropertyName = OUString::createFromAscii( aProperties[i].pAsciiPropertyName );
-                            if ( xSettingsInfo->hasPropertyByName( sPropertyName ) )
-                            {
-                                OUString sPropertyValue;
-                                if ( ( xDataSourceSettings->getPropertyValue( sPropertyName ) >>= sPropertyValue ) && !sPropertyValue.isEmpty() )
-                                    AddAttribute( XML_NAMESPACE_DB, XML_LOCAL_SOCKET, sPropertyValue );
-
-                            }
+                            OUString sPropertyValue;
+                            if ( ( xDataSourceSettings->getPropertyValue( sPropertyName ) >>= sPropertyValue ) && !sPropertyValue.isEmpty() )
+                                AddAttribute( XML_NAMESPACE_DB, XML_LOCAL_SOCKET, sPropertyValue );
                         }
                     }
                     catch( const Exception& )

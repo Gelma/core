@@ -34,8 +34,7 @@ using namespace xmloff::token;
 ScXMLDDELinksContext::ScXMLDDELinksContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ ) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ ) :
     SvXMLImportContext( rImport, nPrfx, rLName )
 {
     // here are no attributes
@@ -49,10 +48,9 @@ ScXMLDDELinksContext::~ScXMLDDELinksContext()
 
 SvXMLImportContext *ScXMLDDELinksContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if ((nPrefix == XML_NAMESPACE_TABLE) && IsXMLToken(rLName, XML_DDE_LINK))
         pContext = new ScXMLDDELinkContext(GetScImport(), nPrefix, rLName, xAttrList);
@@ -70,8 +68,7 @@ void ScXMLDDELinksContext::EndElement()
 ScXMLDDELinkContext::ScXMLDDELinkContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ ) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ ) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     aDDELinkTable(),
     aDDELinkRow(),
@@ -92,10 +89,9 @@ ScXMLDDELinkContext::~ScXMLDDELinkContext()
 
 SvXMLImportContext *ScXMLDDELinkContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if ((nPrefix == XML_NAMESPACE_OFFICE) && IsXMLToken(rLName, XML_DDE_SOURCE))
         pContext = new ScXMLDDESourceContext(GetScImport(), nPrefix, rLName, xAttrList, this);
@@ -157,7 +153,7 @@ void ScXMLDDELinkContext::EndElement()
             OSL_ENSURE( static_cast<size_t>(nColumns * nRows) == aDDELinkTable.size(),
                     "ScXMLDDELinkContext::EndElement: adapted matrix dimension doesn't match either");
         }
-        ScMatrixRef pMatrix = new ScMatrix(static_cast<SCSIZE>(nColumns), static_cast<SCSIZE>(nRows), 0.0);
+        ScMatrixRef pMatrix = new ScFullMatrix(static_cast<SCSIZE>(nColumns), static_cast<SCSIZE>(nRows), 0.0);
         sal_Int32 nCol(0);
         sal_Int32 nRow(-1);
         sal_Int32 nIndex(0);
@@ -195,9 +191,8 @@ void ScXMLDDELinkContext::EndElement()
 ScXMLDDESourceContext::ScXMLDDESourceContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDDELinkContext* pTempDDELink) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDDELinkContext* pTempDDELink) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDDELink(pTempDDELink)
 {
@@ -239,8 +234,7 @@ ScXMLDDESourceContext::~ScXMLDDESourceContext()
 
 SvXMLImportContext *ScXMLDDESourceContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ )
 {
     SvXMLImportContext *pContext = new SvXMLImportContext( GetImport(), nPrefix, rLName );
 
@@ -255,9 +249,8 @@ void ScXMLDDESourceContext::EndElement()
 ScXMLDDETableContext::ScXMLDDETableContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */,
-                                        ScXMLDDELinkContext* pTempDDELink) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */,
+                                      ScXMLDDELinkContext* pTempDDELink) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDDELink(pTempDDELink)
 {
@@ -270,10 +263,9 @@ ScXMLDDETableContext::~ScXMLDDETableContext()
 
 SvXMLImportContext *ScXMLDDETableContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = NULL;
+    SvXMLImportContext *pContext = nullptr;
 
     if (nPrefix == XML_NAMESPACE_TABLE)
     {
@@ -296,9 +288,8 @@ void ScXMLDDETableContext::EndElement()
 ScXMLDDEColumnContext::ScXMLDDEColumnContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDDELinkContext* pTempDDELink) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDDELinkContext* pTempDDELink) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDDELink(pTempDDELink)
 {
@@ -329,8 +320,7 @@ ScXMLDDEColumnContext::~ScXMLDDEColumnContext()
 
 SvXMLImportContext *ScXMLDDEColumnContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ )
 {
     SvXMLImportContext *pContext = new SvXMLImportContext( GetImport(), nPrefix, rLName );
 
@@ -344,9 +334,8 @@ void ScXMLDDEColumnContext::EndElement()
 ScXMLDDERowContext::ScXMLDDERowContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDDELinkContext* pTempDDELink) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDDELinkContext* pTempDDELink) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDDELink(pTempDDELink),
     nRows(1)
@@ -377,10 +366,9 @@ ScXMLDDERowContext::~ScXMLDDERowContext()
 
 SvXMLImportContext *ScXMLDDERowContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = NULL;
+    SvXMLImportContext *pContext = nullptr;
 
     if (nPrefix == XML_NAMESPACE_TABLE)
         if (IsXMLToken(rLName, XML_TABLE_CELL))
@@ -400,9 +388,8 @@ void ScXMLDDERowContext::EndElement()
 ScXMLDDECellContext::ScXMLDDECellContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDDELinkContext* pTempDDELink) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDDELinkContext* pTempDDELink) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     sValue(),
     fValue(),
@@ -461,8 +448,7 @@ ScXMLDDECellContext::~ScXMLDDECellContext()
 
 SvXMLImportContext *ScXMLDDECellContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ )
 {
     SvXMLImportContext *pContext = new SvXMLImportContext( GetImport(), nPrefix, rLName );
 

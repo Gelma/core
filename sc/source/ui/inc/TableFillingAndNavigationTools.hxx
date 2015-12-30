@@ -26,6 +26,7 @@ class FormulaTemplate
 private:
     OUString            mTemplate;
     ScDocument*         mpDoc;
+    bool                mbUse3D;
 
     typedef std::map<OUString, ScRange>   RangeReplacementMap;
     typedef std::map<OUString, ScAddress> AddressReplacementMap;
@@ -42,6 +43,7 @@ public:
 
     void      autoReplaceRange(const OUString& aVariable, const ScRange& rRange);
     void      autoReplaceAddress(const OUString& aVariable, ScAddress aAddress);
+    void      autoReplaceUses3D(bool bUse3D = true) { mbUse3D = bUse3D; }
 
     void      applyRange(const OUString& aVariable, const ScRange& aRange, bool b3D = true);
     void      applyRangeList(const OUString& aVariable, const ScRangeList& aRangeList, bool b3D = true);
@@ -121,8 +123,10 @@ public:
 
     virtual bool hasNext() = 0;
     virtual ScRange get() = 0;
+    virtual size_t size() = 0;
     virtual void next() = 0;
     virtual void reset() = 0;
+
     sal_Int32 index();
 
     virtual DataCellIterator iterateCells() = 0;
@@ -136,11 +140,12 @@ protected:
 public:
     DataRangeByColumnIterator(ScRange aInputRange);
 
-    virtual bool hasNext() SAL_OVERRIDE;
-    virtual void next() SAL_OVERRIDE;
-    virtual ScRange get() SAL_OVERRIDE;
-    virtual void reset() SAL_OVERRIDE;
-    virtual DataCellIterator iterateCells() SAL_OVERRIDE;
+    virtual bool hasNext() override;
+    virtual void next() override;
+    virtual ScRange get() override;
+    virtual size_t size() override;
+    virtual void reset() override;
+    virtual DataCellIterator iterateCells() override;
 };
 
 class DataRangeByRowIterator : public DataRangeIterator
@@ -151,11 +156,12 @@ protected:
 public:
     DataRangeByRowIterator(ScRange aInputRange);
 
-    virtual bool hasNext() SAL_OVERRIDE;
-    virtual void next() SAL_OVERRIDE;
-    virtual ScRange get() SAL_OVERRIDE;
-    virtual void reset() SAL_OVERRIDE;
-    virtual DataCellIterator iterateCells() SAL_OVERRIDE;
+    virtual bool hasNext() override;
+    virtual void next() override;
+    virtual ScRange get() override;
+    virtual size_t size() override;
+    virtual void reset() override;
+    virtual DataCellIterator iterateCells() override;
 };
 
 #endif

@@ -151,16 +151,16 @@ class SvtLinguConfigItem : public utl::ConfigItem
     bool                LoadOptions( const uno::Sequence< OUString > &rProperyNames );
     bool                SaveOptions( const uno::Sequence< OUString > &rProperyNames );
 
-    SvtLinguConfigItem(const SvtLinguConfigItem&) SAL_DELETED_FUNCTION;
-    SvtLinguConfigItem& operator=(const SvtLinguConfigItem&) SAL_DELETED_FUNCTION;
-    virtual void    ImplCommit() SAL_OVERRIDE;
+    SvtLinguConfigItem(const SvtLinguConfigItem&) = delete;
+    SvtLinguConfigItem& operator=(const SvtLinguConfigItem&) = delete;
+    virtual void    ImplCommit() override;
 
 public:
     SvtLinguConfigItem();
     virtual ~SvtLinguConfigItem();
 
     // utl::ConfigItem
-    virtual void    Notify( const com::sun::star::uno::Sequence< OUString > &rPropertyNames ) SAL_OVERRIDE;
+    virtual void    Notify( const css::uno::Sequence< OUString > &rPropertyNames ) override;
 
     // make some protected functions of utl::ConfigItem public
     using utl::ConfigItem::GetNodeNames;
@@ -170,15 +170,15 @@ public:
     using utl::ConfigItem::ReplaceSetProperties;
     //using utl::ConfigItem::GetReadOnlyStates;
 
-    com::sun::star::uno::Any
+    css::uno::Any
             GetProperty( const OUString &rPropertyName ) const;
-    com::sun::star::uno::Any
+    css::uno::Any
             GetProperty( sal_Int32 nPropertyHandle ) const;
 
     bool    SetProperty( const OUString &rPropertyName,
-                         const com::sun::star::uno::Any &rValue );
+                         const css::uno::Any &rValue );
     bool    SetProperty( sal_Int32 nPropertyHandle,
-                         const com::sun::star::uno::Any &rValue );
+                         const css::uno::Any &rValue );
 
     const SvtLinguOptions& GetOptions() const;
 
@@ -256,9 +256,9 @@ static struct NamesToHdl
 {/* 31 */    "GrammarChecking/IsInteractiveCheck",            UPN_IS_GRAMMAR_INTERACTIVE,               UPH_IS_GRAMMAR_INTERACTIVE},
 
             /* similar to entry 0 (thus no own configuration entry) but with different property name and type */
-{            NULL,                                           UPN_DEFAULT_LANGUAGE,                      UPH_DEFAULT_LANGUAGE},
+{            nullptr,                                           UPN_DEFAULT_LANGUAGE,                      UPH_DEFAULT_LANGUAGE},
 
-{            NULL,                                            NULL,                                      -1}
+{            nullptr,                                            nullptr,                                      -1}
 };
 
 const uno::Sequence< OUString > SvtLinguConfigItem::GetPropertyNames()
@@ -290,7 +290,7 @@ bool SvtLinguConfigItem::GetHdlByName(
 
     if (bFullPropName)
     {
-        while (pEntry && pEntry->pFullPropName != NULL)
+        while (pEntry && pEntry->pFullPropName != nullptr)
         {
             if (rPropertyName.equalsAscii( pEntry->pFullPropName ))
             {
@@ -299,11 +299,11 @@ bool SvtLinguConfigItem::GetHdlByName(
             }
             ++pEntry;
         }
-        return pEntry && pEntry->pFullPropName != NULL;
+        return pEntry && pEntry->pFullPropName != nullptr;
     }
     else
     {
-        while (pEntry && pEntry->pPropName != NULL)
+        while (pEntry && pEntry->pPropName != nullptr)
         {
             if (rPropertyName.equalsAscii( pEntry->pPropName ))
             {
@@ -312,7 +312,7 @@ bool SvtLinguConfigItem::GetHdlByName(
             }
             ++pEntry;
         }
-        return pEntry && pEntry->pPropName != NULL;
+        return pEntry && pEntry->pPropName != nullptr;
     }
 }
 
@@ -330,9 +330,9 @@ uno::Any SvtLinguConfigItem::GetProperty( sal_Int32 nPropertyHandle ) const
 
     uno::Any aRes;
 
-    const sal_Int16 *pnVal = 0;
-    const bool  *pbVal = 0;
-    const sal_Int32 *pnInt32Val = 0;
+    const sal_Int16 *pnVal = nullptr;
+    const bool  *pbVal = nullptr;
+    const sal_Int32 *pnInt32Val = nullptr;
 
     const SvtLinguOptions &rOpt = const_cast< SvtLinguConfigItem * >(this)->aOpt;
     switch (nPropertyHandle)
@@ -427,9 +427,9 @@ bool SvtLinguConfigItem::SetProperty( sal_Int32 nPropertyHandle, const uno::Any 
 
     bool bMod = false;
 
-    sal_Int16 *pnVal = 0;
-    bool  *pbVal = 0;
-    sal_Int32 *pnInt32Val = 0;
+    sal_Int16 *pnVal = nullptr;
+    bool  *pbVal = nullptr;
+    sal_Int32 *pnInt32Val = nullptr;
 
     SvtLinguOptions &rOpt = aOpt;
     switch (nPropertyHandle)
@@ -789,7 +789,7 @@ bool SvtLinguConfigItem::IsReadOnly( sal_Int32 nPropertyHandle ) const
     return bReadOnly;
 }
 
-static SvtLinguConfigItem *pCfgItem = 0;
+static SvtLinguConfigItem *pCfgItem = nullptr;
 static sal_Int32           nCfgItemRefCount = 0;
 
 static const char aG_SupportedDictionaryFormats[] = "SupportedDictionaryFormats";
@@ -816,7 +816,7 @@ SvtLinguConfig::~SvtLinguConfig()
     if (--nCfgItemRefCount <= 0)
     {
         delete pCfgItem;
-        pCfgItem = 0;
+        pCfgItem = nullptr;
     }
 }
 
@@ -912,7 +912,7 @@ bool SvtLinguConfig::GetSupportedDictionaryFormatsFor(
         xNA.set( xNA->getByName("ServiceManager"), uno::UNO_QUERY_THROW );
         xNA.set( xNA->getByName( rSetName ), uno::UNO_QUERY_THROW );
         xNA.set( xNA->getByName( rSetEntry ), uno::UNO_QUERY_THROW );
-        if (xNA->getByName( OUString(aG_SupportedDictionaryFormats) ) >>= rFormatList)
+        if (xNA->getByName( aG_SupportedDictionaryFormats ) >>= rFormatList)
             bSuccess = true;
         DBG_ASSERT( rFormatList.getLength(), "supported dictionary format list is empty" );
     }
@@ -953,16 +953,16 @@ bool SvtLinguConfig::GetDictionaryEntry(
     {
         uno::Reference< container::XNameAccess > xNA( GetMainUpdateAccess(), uno::UNO_QUERY_THROW );
         xNA.set( xNA->getByName("ServiceManager"), uno::UNO_QUERY_THROW );
-        xNA.set( xNA->getByName(OUString(aG_Dictionaries)), uno::UNO_QUERY_THROW );
+        xNA.set( xNA->getByName( aG_Dictionaries ), uno::UNO_QUERY_THROW );
         xNA.set( xNA->getByName( rNodeName ), uno::UNO_QUERY_THROW );
 
         // read group data...
         uno::Sequence< OUString >  aLocations;
         OUString                   aFormatName;
         uno::Sequence< OUString >  aLocaleNames;
-        bSuccess =  (xNA->getByName( OUString(aG_Locations) ) >>= aLocations)  &&
-                    (xNA->getByName( OUString(aG_Format) )    >>= aFormatName) &&
-                    (xNA->getByName( OUString(aG_Locales) )   >>= aLocaleNames);
+        bSuccess =  (xNA->getByName( aG_Locations ) >>= aLocations)  &&
+                    (xNA->getByName( aG_Format )    >>= aFormatName) &&
+                    (xNA->getByName( aG_Locales )   >>= aLocaleNames);
         DBG_ASSERT( aLocations.getLength(), "Dictionary locations not set" );
         DBG_ASSERT( !aFormatName.isEmpty(), "Dictionary format name not set" );
         DBG_ASSERT( aLocaleNames.getLength(), "No locales set for the dictionary" );
@@ -1000,7 +1000,7 @@ uno::Sequence< OUString > SvtLinguConfig::GetDisabledDictionaries() const
     {
         uno::Reference< container::XNameAccess > xNA( GetMainUpdateAccess(), uno::UNO_QUERY_THROW );
         xNA.set( xNA->getByName("ServiceManager"), uno::UNO_QUERY_THROW );
-        xNA->getByName( OUString(aG_DisabledDictionaries) ) >>= aResult;
+        xNA->getByName( aG_DisabledDictionaries ) >>= aResult;
     }
     catch (uno::Exception &)
     {
@@ -1018,7 +1018,7 @@ std::vector< SvtLinguConfigDictionaryEntry > SvtLinguConfig::GetActiveDictionari
     try
     {
         uno::Sequence< OUString > aElementNames;
-        GetElementNamesFor( OUString(aG_Dictionaries), aElementNames );
+        GetElementNamesFor( aG_Dictionaries, aElementNames );
         sal_Int32 nLen = aElementNames.getLength();
         const OUString *pElementNames = aElementNames.getConstArray();
 
@@ -1076,9 +1076,9 @@ uno::Reference< util::XChangesBatch > SvtLinguConfig::GetMainUpdateAccess() cons
             aValue.Value = uno::makeAny(OUString("org.openoffice.Office.Linguistic"));
             uno::Sequence< uno::Any > aProps(1);
             aProps[0] <<= aValue;
-            m_xMainUpdateAccess = uno::Reference< util::XChangesBatch >(
+            m_xMainUpdateAccess.set(
                     xConfigurationProvider->createInstanceWithArguments(
-                        OUString("com.sun.star.configuration.ConfigurationUpdateAccess"), aProps),
+                        "com.sun.star.configuration.ConfigurationUpdateAccess", aProps),
                         uno::UNO_QUERY_THROW );
         }
         catch (uno::Exception &)

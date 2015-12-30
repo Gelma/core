@@ -39,12 +39,12 @@ const char TOOLBARCONTROLLER_PROPNAME_SUPPORTSVISIBLE[] = "SupportsVisible";
 
 
 using namespace ::cppu;
-using namespace ::com::sun::star::awt;
-using namespace ::com::sun::star::uno;
-using namespace ::com::sun::star::util;
-using namespace ::com::sun::star::beans;
-using namespace ::com::sun::star::lang;
-using namespace ::com::sun::star::frame;
+using namespace css::awt;
+using namespace css::uno;
+using namespace css::util;
+using namespace css::beans;
+using namespace css::lang;
+using namespace css::frame;
 
 namespace svt
 {
@@ -64,7 +64,7 @@ ToolboxController::ToolboxController(
     ,   m_aListenerContainer( m_aMutex )
 {
     OSL_ASSERT( m_xContext.is() );
-    registerProperty( OUString(TOOLBARCONTROLLER_PROPNAME_SUPPORTSVISIBLE),
+    registerProperty( TOOLBARCONTROLLER_PROPNAME_SUPPORTSVISIBLE,
         TOOLBARCONTROLLER_PROPHANDLE_SUPPORTSVISIBLE,
         css::beans::PropertyAttribute::TRANSIENT | css::beans::PropertyAttribute::READONLY,
         &m_bSupportVisible, cppu::UnoType<decltype(m_bSupportVisible)>::get());
@@ -86,7 +86,7 @@ ToolboxController::ToolboxController() :
     ,   m_nToolBoxId( SAL_MAX_UINT16 )
     ,   m_aListenerContainer( m_aMutex )
 {
-    registerProperty( OUString(TOOLBARCONTROLLER_PROPNAME_SUPPORTSVISIBLE),
+    registerProperty( TOOLBARCONTROLLER_PROPNAME_SUPPORTSVISIBLE,
         TOOLBARCONTROLLER_PROPHANDLE_SUPPORTSVISIBLE,
         css::beans::PropertyAttribute::TRANSIENT | css::beans::PropertyAttribute::READONLY,
         &m_bSupportVisible, cppu::UnoType<decltype(m_bSupportVisible)>::get());
@@ -114,7 +114,7 @@ Reference< XLayoutManager > ToolboxController::getLayoutManager() const
     Reference< XPropertySet > xPropSet;
     {
         SolarMutexGuard aSolarMutexGuard;
-        xPropSet = Reference< XPropertySet >( m_xFrame, UNO_QUERY );
+        xPropSet.set( m_xFrame, UNO_QUERY );
     }
 
     if ( xPropSet.is() )
@@ -234,7 +234,7 @@ throw ( RuntimeException, std::exception )
 
 // XComponent
 void SAL_CALL ToolboxController::dispose()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     Reference< XComponent > xThis( static_cast< OWeakObject* >(this), UNO_QUERY );
 
@@ -244,7 +244,7 @@ throw (::com::sun::star::uno::RuntimeException, std::exception)
             throw DisposedException();
     }
 
-    com::sun::star::lang::EventObject aEvent( xThis );
+    css::lang::EventObject aEvent( xThis );
     m_aListenerContainer.disposeAndClear( aEvent );
 
     SolarMutexGuard aSolarMutexGuard;
@@ -256,7 +256,7 @@ throw (::com::sun::star::uno::RuntimeException, std::exception)
         {
             Reference< XDispatch > xDispatch( pIter->second );
 
-            com::sun::star::util::URL aTargetURL;
+            css::util::URL aTargetURL;
             aTargetURL.Complete = pIter->first;
             if ( m_xUrlTransformer.is() )
                 m_xUrlTransformer->parseStrict( aTargetURL );
@@ -321,7 +321,7 @@ throw ( RuntimeException, std::exception )
 
 // XToolbarController
 void SAL_CALL ToolboxController::execute( sal_Int16 KeyModifier )
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     Reference< XDispatch >       xDispatch;
     OUString                     aCommandURL;
@@ -349,7 +349,7 @@ throw (::com::sun::star::uno::RuntimeException, std::exception)
     {
         try
         {
-            com::sun::star::util::URL aTargetURL;
+            css::util::URL aTargetURL;
             Sequence<PropertyValue>   aArgs( 1 );
 
             // Provide key modifier information to dispatch function
@@ -368,23 +368,23 @@ throw (::com::sun::star::uno::RuntimeException, std::exception)
 }
 
 void SAL_CALL ToolboxController::click()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
 }
 
 void SAL_CALL ToolboxController::doubleClick()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
 }
 
 Reference< XWindow > SAL_CALL ToolboxController::createPopupWindow()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     return Reference< XWindow >();
 }
 
 Reference< XWindow > SAL_CALL ToolboxController::createItemWindow( const Reference< XWindow >& )
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     return Reference< XWindow >();
 }
@@ -393,7 +393,7 @@ void ToolboxController::addStatusListener( const OUString& aCommandURL )
 {
     Reference< XDispatch >       xDispatch;
     Reference< XStatusListener > xStatusListener;
-    com::sun::star::util::URL    aTargetURL;
+    css::util::URL    aTargetURL;
 
     {
         SolarMutexGuard aSolarMutexGuard;
@@ -422,7 +422,7 @@ void ToolboxController::addStatusListener( const OUString& aCommandURL )
                     m_xUrlTransformer->parseStrict( aTargetURL );
                 xDispatch = xDispatchProvider->queryDispatch( aTargetURL, OUString(), 0 );
 
-                xStatusListener = Reference< XStatusListener >( static_cast< OWeakObject* >( this ), UNO_QUERY );
+                xStatusListener.set( static_cast< OWeakObject* >( this ), UNO_QUERY );
                 URLToDispatchMap::iterator aIter = m_aListenerMap.find( aCommandURL );
                 if ( aIter != m_aListenerMap.end() )
                 {
@@ -468,7 +468,7 @@ void ToolboxController::removeStatusListener( const OUString& aCommandURL )
 
         try
         {
-            com::sun::star::util::URL aTargetURL;
+            css::util::URL aTargetURL;
             aTargetURL.Complete = aCommandURL;
             if ( m_xUrlTransformer.is() )
                 m_xUrlTransformer->parseStrict( aTargetURL );
@@ -497,11 +497,11 @@ void ToolboxController::bindListener()
         Reference< XDispatchProvider > xDispatchProvider( m_xFrame, UNO_QUERY );
         if ( m_xContext.is() && xDispatchProvider.is() )
         {
-            xStatusListener = Reference< XStatusListener >( static_cast< OWeakObject* >( this ), UNO_QUERY );
+            xStatusListener.set( static_cast< OWeakObject* >( this ), UNO_QUERY );
             URLToDispatchMap::iterator pIter = m_aListenerMap.begin();
             while ( pIter != m_aListenerMap.end() )
             {
-                com::sun::star::util::URL aTargetURL;
+                css::util::URL aTargetURL;
                 aTargetURL.Complete = pIter->first;
                 if ( m_xUrlTransformer.is() )
                     m_xUrlTransformer->parseStrict( aTargetURL );
@@ -590,7 +590,7 @@ void ToolboxController::unbindListener()
         URLToDispatchMap::iterator pIter = m_aListenerMap.begin();
         while ( pIter != m_aListenerMap.end() )
         {
-            com::sun::star::util::URL aTargetURL;
+            css::util::URL aTargetURL;
             aTargetURL.Complete = pIter->first;
             if ( m_xUrlTransformer.is() )
                 m_xUrlTransformer->parseStrict( aTargetURL );
@@ -637,7 +637,7 @@ void ToolboxController::updateStatus( const OUString& aCommandURL )
 {
     Reference< XDispatch > xDispatch;
     Reference< XStatusListener > xStatusListener;
-    com::sun::star::util::URL aTargetURL;
+    css::util::URL aTargetURL;
 
     {
         SolarMutexGuard aSolarMutexGuard;
@@ -647,7 +647,7 @@ void ToolboxController::updateStatus( const OUString& aCommandURL )
 
         // Try to find a dispatch object for the requested command URL
         Reference< XDispatchProvider > xDispatchProvider( m_xFrame, UNO_QUERY );
-        xStatusListener = Reference< XStatusListener >( static_cast< OWeakObject* >( this ), UNO_QUERY );
+        xStatusListener.set( static_cast< OWeakObject* >( this ), UNO_QUERY );
         if ( m_xContext.is() && xDispatchProvider.is() )
         {
             aTargetURL.Complete = aCommandURL;
@@ -688,7 +688,7 @@ void ToolboxController::dispatchCommand( const OUString& sCommandURL, const Sequ
         Reference< XDispatch > xDispatch( xDispatchProvider->queryDispatch( aURL, sTarget, 0 ), UNO_QUERY_THROW );
 
         DispatchInfo *pDispatchInfo = new DispatchInfo( xDispatch, aURL, rArgs );
-        if ( !Application::PostUserEvent( LINK(0, ToolboxController, ExecuteHdl_Impl),
+        if ( !Application::PostUserEvent( LINK(nullptr, ToolboxController, ExecuteHdl_Impl),
                                           pDispatchInfo ) )
             delete pDispatchInfo;
 
@@ -700,7 +700,7 @@ void ToolboxController::dispatchCommand( const OUString& sCommandURL, const Sequ
 
 
 
-com::sun::star::uno::Reference< com::sun::star::beans::XPropertySetInfo >  SAL_CALL ToolboxController::getPropertySetInfo() throw(::com::sun::star::uno::RuntimeException, std::exception)
+css::uno::Reference< css::beans::XPropertySetInfo >  SAL_CALL ToolboxController::getPropertySetInfo() throw(css::uno::RuntimeException, std::exception)
 {
     Reference<XPropertySetInfo>  xInfo( createPropertySetInfo( getInfoHelper() ) );
     return xInfo;
@@ -714,7 +714,7 @@ com::sun::star::uno::Reference< com::sun::star::beans::XPropertySetInfo >  SAL_C
 
 ::cppu::IPropertyArrayHelper* ToolboxController::createArrayHelper( ) const
 {
-        com::sun::star::uno::Sequence< Property > aProps;
+        css::uno::Sequence< Property > aProps;
         describeProperties(aProps);
         return new ::cppu::OPropertyArrayHelper(aProps);
 }
@@ -724,10 +724,10 @@ void ToolboxController::setSupportVisibleProperty(bool bValue)
     m_bSupportVisible = bValue;
 }
 
-sal_Bool SAL_CALL ToolboxController::convertFastPropertyValue( com::sun::star::uno::Any&    aConvertedValue ,
-                                             com::sun::star::uno::Any&        aOldValue       ,
+sal_Bool SAL_CALL ToolboxController::convertFastPropertyValue( css::uno::Any&    aConvertedValue ,
+                                             css::uno::Any&        aOldValue       ,
                                              sal_Int32                        nHandle         ,
-                                             const com::sun::star::uno::Any&  aValue          ) throw( com::sun::star::lang::IllegalArgumentException )
+                                             const css::uno::Any&  aValue          ) throw( css::lang::IllegalArgumentException )
 {
     switch (nHandle)
     {
@@ -749,8 +749,8 @@ sal_Bool SAL_CALL ToolboxController::convertFastPropertyValue( com::sun::star::u
 
 void SAL_CALL ToolboxController::setFastPropertyValue_NoBroadcast(
     sal_Int32                       nHandle,
-    const com::sun::star::uno::Any& aValue )
-throw( com::sun::star::uno::Exception, std::exception)
+    const css::uno::Any& aValue )
+throw( css::uno::Exception, std::exception)
 {
     OPropertyContainer::setFastPropertyValue_NoBroadcast(nHandle, aValue);
     if (TOOLBARCONTROLLER_PROPHANDLE_SUPPORTSVISIBLE == nHandle)
@@ -772,7 +772,7 @@ IMPL_STATIC_LINK_TYPED( ToolboxController, ExecuteHdl_Impl, void*, p, void )
 
 void ToolboxController::enable( bool bEnable )
 {
-    ToolBox* pToolBox = 0;
+    ToolBox* pToolBox = nullptr;
     sal_uInt16 nItemId = 0;
     if( getToolboxId( nItemId, &pToolBox ) )
     {
@@ -782,7 +782,7 @@ void ToolboxController::enable( bool bEnable )
 
 bool ToolboxController::getToolboxId( sal_uInt16& rItemId, ToolBox** ppToolBox )
 {
-    if( (m_nToolBoxId != SAL_MAX_UINT16) && (ppToolBox == 0) )
+    if( (m_nToolBoxId != SAL_MAX_UINT16) && (ppToolBox == nullptr) )
         return m_nToolBoxId;
 
     ToolBox* pToolBox = static_cast< ToolBox* >( VCLUnoHelper::GetWindow( getParent() ).get() );
@@ -806,7 +806,7 @@ bool ToolboxController::getToolboxId( sal_uInt16& rItemId, ToolBox** ppToolBox )
 
     rItemId = m_nToolBoxId;
 
-    return (rItemId != SAL_MAX_UINT16) && (( ppToolBox == 0) || (*ppToolBox != 0) );
+    return (rItemId != SAL_MAX_UINT16) && (( ppToolBox == nullptr) || (*ppToolBox != nullptr) );
 }
 //end
 

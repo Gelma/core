@@ -334,7 +334,7 @@ namespace connectivity
                 }
                 catch(const Exception& e)
                 {
-                    StorageContainer::revokeStorage(sKey,NULL);
+                    StorageContainer::revokeStorage(sKey,nullptr);
                     (void)e;
                     throw;
                 }
@@ -461,7 +461,7 @@ namespace connectivity
         {
             if ( i->second.second.first.get() == connection.get() )
             {
-                xTab = Reference< XTablesSupplier >(i->second.second.second.get().get(),UNO_QUERY);
+                xTab.set(i->second.second.second.get().get(),UNO_QUERY);
                 if ( !xTab.is() )
                 {
                     xTab = new OHCatalog(connection);
@@ -536,12 +536,12 @@ namespace connectivity
                 Reference<XStatement> xStmt = _xConnection->createStatement();
                 if ( xStmt.is() )
                 {
-                    Reference<XResultSet> xRes(xStmt->executeQuery(OUString("SELECT COUNT(*) FROM INFORMATION_SCHEMA.SYSTEM_SESSIONS WHERE USER_NAME ='SA'")),UNO_QUERY);
+                    Reference<XResultSet> xRes(xStmt->executeQuery("SELECT COUNT(*) FROM INFORMATION_SCHEMA.SYSTEM_SESSIONS WHERE USER_NAME ='SA'"), UNO_QUERY);
                     Reference<XRow> xRow(xRes,UNO_QUERY);
                     if ( xRow.is() && xRes->next() )
                         bLastOne = xRow->getInt(1) == 1;
                     if ( bLastOne )
-                        xStmt->execute(OUString("SHUTDOWN"));
+                        xStmt->execute("SHUTDOWN");
                 }
             }
         }
@@ -552,7 +552,7 @@ namespace connectivity
         {
             // Reference<XTransactionListener> xListener(*this,UNO_QUERY);
             // a shutdown should commit all changes to the db files
-            StorageContainer::revokeStorage(_aIter->second.first,NULL);
+            StorageContainer::revokeStorage(_aIter->second.first,nullptr);
         }
         if ( !m_bInShutDownConnections )
             m_aConnections.erase(_aIter);
@@ -652,7 +652,7 @@ namespace connectivity
                         Reference< XStatement> xStmt = xConnection->createStatement();
                         OSL_ENSURE( xStmt.is(), "ODriverDelegator::preCommit: no statement!" );
                         if ( xStmt.is() )
-                            xStmt->execute( OUString(  "SET WRITE_DELAY 0"  ) );
+                            xStmt->execute( "SET WRITE_DELAY 0" );
 
                         bool bPreviousAutoCommit = xConnection->getAutoCommit();
                         xConnection->setAutoCommit( sal_False );
@@ -660,7 +660,7 @@ namespace connectivity
                         xConnection->setAutoCommit( bPreviousAutoCommit );
 
                         if ( xStmt.is() )
-                            xStmt->execute( OUString(  "SET WRITE_DELAY 60"  ) );
+                            xStmt->execute( "SET WRITE_DELAY 60" );
                     }
                 }
                 catch(Exception&)
@@ -783,7 +783,7 @@ namespace connectivity
                 "yo-NG", "Yoruba",
                 "zh-CN", "Chinese",
                 "zu-ZA", "Zulu",
-                NULL, NULL
+                nullptr, nullptr
             };
 
             OUString sLocaleString( _rLocaleString );
@@ -834,9 +834,10 @@ namespace connectivity
                 // arguments for creating the config access
                 Sequence< Any > aArguments(2);
                 // the path to the node to open
-                OUString sNodePath("/org.openoffice.Setup/L10N" );
-                aArguments[0] <<= PropertyValue( OUString("nodepath"), 0,
-                    makeAny( sNodePath ), PropertyState_DIRECT_VALUE
+                aArguments[0] <<= PropertyValue(
+                    OUString("nodepath"), 0,
+                    makeAny( OUString("/org.openoffice.Setup/L10N" ) ),
+                    PropertyState_DIRECT_VALUE
                 );
                 // the depth: -1 means unlimited
                 aArguments[1] <<= PropertyValue(
@@ -848,7 +849,7 @@ namespace connectivity
                 // create the access
                 Reference< XPropertySet > xNode(
                     xConfigProvider->createInstanceWithArguments(
-                        OUString("com.sun.star.configuration.ConfigurationAccess"),
+                        "com.sun.star.configuration.ConfigurationAccess",
                         aArguments ),
                     UNO_QUERY );
                 OSL_ENSURE( xNode.is(), "lcl_getSystemLocale: invalid access returned (should throw an exception instead)!" );
@@ -864,7 +865,7 @@ namespace connectivity
             }
             if ( sLocaleString.isEmpty() )
             {
-                rtl_Locale* pProcessLocale = NULL;
+                rtl_Locale* pProcessLocale = nullptr;
                 osl_getProcessLocale( &pProcessLocale );
                 sLocaleString = LanguageTag( *pProcessLocale).getBcp47();
             }

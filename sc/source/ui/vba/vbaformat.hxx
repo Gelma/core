@@ -32,10 +32,10 @@
 
 class ScCellRangesBase;
 
-template< typename Ifc1 >
-class ScVbaFormat : public InheritedHelperInterfaceImpl1< Ifc1 >
+template< typename... Ifc >
+class ScVbaFormat : public InheritedHelperInterfaceWeakImpl< Ifc... >
 {
-typedef InheritedHelperInterfaceImpl1< Ifc1 > ScVbaFormat_BASE;
+typedef InheritedHelperInterfaceWeakImpl< Ifc... > ScVbaFormat_BASE;
     css::lang::Locale m_aDefaultLocale;
 protected:
     css::lang::Locale getDefaultLocale() { return m_aDefaultLocale; }
@@ -47,8 +47,6 @@ protected:
     css::uno::Reference< css::beans::XPropertyState > xPropertyState;
     bool mbCheckAmbiguoity;
     bool mbAddIndent;
-    //NumberFormatter oNumberFormatter = null;
-    css::uno::Reference< css::lang::XMultiServiceFactory > xMultiServiceFactory;
     bool isAmbiguous(const OUString& _sPropertyName) throw ( css::script::BasicErrorException );
     css::uno::Reference< css::beans::XPropertyState > getXPropertyState() throw ( css::uno::RuntimeException );
     void initializeNumberFormats() throw ( css::script::BasicErrorException, css::uno::RuntimeException );
@@ -89,9 +87,6 @@ public:
     virtual css::uno::Any SAL_CALL getMergeCells(  ) throw (css::script::BasicErrorException, css::uno::RuntimeException) = 0;
     virtual void SAL_CALL setReadingOrder( const css::uno::Any& ReadingOrder ) throw (css::script::BasicErrorException, css::uno::RuntimeException);
     virtual css::uno::Any SAL_CALL getReadingOrder(  ) throw (css::script::BasicErrorException, css::uno::RuntimeException);
-    // XHelperInterface
-    virtual OUString getServiceImplName();
-    virtual css::uno::Sequence<OUString> getServiceNames();
 };
 
 #endif

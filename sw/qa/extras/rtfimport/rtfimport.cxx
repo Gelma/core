@@ -66,7 +66,7 @@ public:
     {
     }
 
-    virtual void preTest(const char* filename) SAL_OVERRIDE
+    virtual void preTest(const char* filename) override
     {
         m_aSavedSettings = Application::GetSettings();
         if (OString(filename) == "fdo48023.rtf" || OString(filename) == "fdo72031.rtf")
@@ -83,7 +83,7 @@ public:
         }
     }
 
-    virtual void postTest(const char* filename) SAL_OVERRIDE
+    virtual void postTest(const char* filename) override
     {
         if (OString(filename) == "fdo48023.rtf" || OString(filename) == "fdo72031.rtf" || OString(filename) == "fdo44211.rtf")
             Application::SetSettings(m_aSavedSettings);
@@ -548,7 +548,7 @@ DECLARE_RTFIMPORT_TEST(testFdo38786, "fdo38786.rtf")
 DECLARE_RTFIMPORT_TEST(testN757651, "n757651.rtf")
 {
     // The bug was that due to buggy layout the text expanded to two pages.
-    if (Application::GetDefaultDevice()->IsFontAvailable(OUString("Times New Roman")))
+    if (Application::GetDefaultDevice()->IsFontAvailable("Times New Roman"))
         CPPUNIT_ASSERT_EQUAL(1, getPages());
 }
 
@@ -1577,7 +1577,13 @@ DECLARE_RTFIMPORT_TEST(testCp1000018, "cp1000018.rtf")
 }
 
 #endif
-
+DECLARE_RTFIMPORT_TEST(testFdo94835, "fdo94835.rtf")
+{
+    uno::Reference<drawing::XDrawPageSupplier> xDrawPageSupplier(mxComponent, uno::UNO_QUERY);
+    uno::Reference<container::XIndexAccess> xDraws(xDrawPageSupplier->getDrawPage(), uno::UNO_QUERY);
+    // The picture was imported twice.
+    CPPUNIT_ASSERT_EQUAL(sal_Int32(19), xDraws->getCount());
+}
 DECLARE_RTFIMPORT_TEST(testNestedTable, "rhbz1065629.rtf")
 {
     // nested table in second cell was missing
@@ -2353,6 +2359,28 @@ DECLARE_RTFIMPORT_TEST(testTdf94456, "tdf94456.rtf")
     CPPUNIT_ASSERT_EQUAL(static_cast<sal_Int32>(762), getProperty<sal_Int32>(getParagraph(1), "ParaLeftMargin"));
     // This was -635.
     CPPUNIT_ASSERT_EQUAL(static_cast<sal_Int32>(-762), getProperty<sal_Int32>(getParagraph(1), "ParaFirstLineIndent"));
+}
+
+DECLARE_RTFIMPORT_TEST(testTdf94435, "tdf94435.rtf")
+{
+    // This was style::ParagraphAdjust_LEFT, \ltrpar undone the effect of \qc.
+    CPPUNIT_ASSERT_EQUAL(style::ParagraphAdjust_CENTER, static_cast<style::ParagraphAdjust>(getProperty<sal_Int16>(getParagraph(1), "ParaAdjust")));
+}
+
+DECLARE_RTFIMPORT_TEST(testTdf59454, "tdf59454.rtf")
+{
+    // This was 1, section break was ignored right before a table.
+    CPPUNIT_ASSERT_EQUAL(2, getPages());
+}
+
+DECLARE_RTFIMPORT_TEST(testTdf54584, "tdf54584.rtf")
+{
+    uno::Reference<text::XTextFieldsSupplier> xTextFieldsSupplier(mxComponent, uno::UNO_QUERY);
+    uno::Reference<container::XEnumerationAccess> xFieldsAccess(xTextFieldsSupplier->getTextFields());
+    uno::Reference<container::XEnumeration> xFields(xFieldsAccess->createEnumeration());
+    // \PAGE was ignored, so no fields were in document -> exception was thrown
+    CPPUNIT_ASSERT_NO_THROW_MESSAGE("No fields in document found: field \"\\PAGE\" was not properly read",
+                                    xFields->nextElement());
 }
 
 CPPUNIT_PLUGIN_IMPLEMENT();

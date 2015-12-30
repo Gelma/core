@@ -80,7 +80,6 @@ void SwDrawShell::InitInterface_Impl()
     GetStaticInterface()->RegisterChildWindow(SvxFontWorkChildWindow::GetChildWindowId());
 }
 
-TYPEINIT1(SwDrawShell,SwDrawBaseShell)
 
 // #i123922# check as the name implies
 SdrObject* SwDrawShell::IsSingleFillableNonOLESelected()
@@ -90,29 +89,29 @@ SdrObject* SwDrawShell::IsSingleFillableNonOLESelected()
 
     if(!pSdrView)
     {
-        return 0;
+        return nullptr;
     }
 
     if(1 != pSdrView->GetMarkedObjectCount())
     {
-        return 0;
+        return nullptr;
     }
 
     SdrObject* pPickObj = pSdrView->GetMarkedObjectByIndex(0);
 
     if(!pPickObj)
     {
-        return 0;
+        return nullptr;
     }
 
     if(!pPickObj->IsClosedObj())
     {
-        return 0;
+        return nullptr;
     }
 
     if(dynamic_cast< SdrOle2Obj* >(pPickObj))
     {
-        return 0;
+        return nullptr;
     }
 
     return pPickObj;
@@ -281,7 +280,7 @@ void SwDrawShell::Execute(SfxRequest &rReq)
 
         case SID_FONTWORK:
         {
-            FieldUnit eMetric = ::GetDfltMetric(0 != PTR_CAST(SwWebView, &rSh.GetView()));
+            FieldUnit eMetric = ::GetDfltMetric( dynamic_cast<SwWebView*>( &rSh.GetView()) != nullptr );
             SW_MOD()->PutItem(SfxUInt16Item(SID_ATTR_METRIC, static_cast< sal_uInt16 >(eMetric)) );
             SfxViewFrame* pVFrame = GetView().GetViewFrame();
             if (pArgs)
@@ -497,7 +496,7 @@ void SwDrawShell::GetState(SfxItemSet& rSet)
                     // Allow creating a TextBox only in case this is a draw format without a TextBox so far.
                     if (pFrameFormat && pFrameFormat->Which() == RES_DRAWFRMFMT && !SwTextBoxHelper::findTextBox(pFrameFormat))
                     {
-                        if (SdrObjCustomShape* pCustomShape = PTR_CAST(SdrObjCustomShape, pObj))
+                        if (SdrObjCustomShape* pCustomShape = dynamic_cast<SdrObjCustomShape*>( pObj) )
                         {
                             const SdrCustomShapeGeometryItem& rGeometryItem = static_cast<const SdrCustomShapeGeometryItem&>(pCustomShape->GetMergedItem(SDRATTR_CUSTOMSHAPE_GEOMETRY));
                             if (const uno::Any* pAny = rGeometryItem.GetPropertyValueByName("Type"))
@@ -537,7 +536,7 @@ SwDrawShell::SwDrawShell(SwView &_rView) :
     SwDrawBaseShell(_rView)
 {
     SetHelpId(SW_DRAWSHELL);
-    SetName(OUString("Draw"));
+    SetName("Draw");
 
     SfxShell::SetContextName(sfx2::sidebar::EnumContext::GetContextName(sfx2::sidebar::EnumContext::Context_Draw));
 }
@@ -579,8 +578,8 @@ void SwDrawShell::GetFormTextState(SfxItemSet& rSet)
     SwWrtShell &rSh = GetShell();
     SdrView* pDrView = rSh.GetDrawView();
     const SdrMarkList& rMarkList = pDrView->GetMarkedObjectList();
-    const SdrObject* pObj = NULL;
-    SvxFontWorkDialog* pDlg = NULL;
+    const SdrObject* pObj = nullptr;
+    SvxFontWorkDialog* pDlg = nullptr;
 
     const sal_uInt16 nId = SvxFontWorkChildWindow::GetChildWindowId();
 
@@ -588,7 +587,7 @@ void SwDrawShell::GetFormTextState(SfxItemSet& rSet)
     if ( pVFrame->HasChildWindow(nId) )
     {
         SfxChildWindow *pChildWindow = pVFrame->GetChildWindow(nId);
-        pDlg = pChildWindow ? static_cast<SvxFontWorkDialog*>(pChildWindow->GetWindow()) : NULL;
+        pDlg = pChildWindow ? static_cast<SvxFontWorkDialog*>(pChildWindow->GetWindow()) : nullptr;
     }
 
     if ( rMarkList.GetMarkCount() == 1 )

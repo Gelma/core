@@ -103,8 +103,8 @@ class GbuildParser:
     warningpattern = re.compile('-W\S+')
 
     def __init__(self):
-        (self.makecmd, self.srcdir, self.builddir, self.instdir, self.libs,
-         self.exes, self.libnames, self.exenames, self.target_by_path, self.target_by_location) = ('', '', '', '', [], [], {}, {}, {}, {})
+        (self.makecmd, self.srcdir, self.builddir, self.instdir, self.libs, self.exes,
+         self.libnames, self.exenames, self.target_by_path, self.target_by_location, self.modulenamelist) = ('', '', '', '', [], [], {}, {}, {}, {}, [])
 
     def __mapping_to_dict(self, mapping):
         mapping_dict = {}
@@ -113,7 +113,7 @@ class GbuildParser:
             mapping_dict[target] = library
         return mapping_dict
 
-    def _parse_hash(self, line, state):
+    def _parse_hash_old(self, line, state):
         libmatch = GbuildParser.libpattern.match(line)
         if libmatch:
             libname = self.libnames.get(state.ilib, None)
@@ -169,55 +169,100 @@ class GbuildParser:
         # we could match a lot of other stuff here if needed for integration rpaths etc.
         return state
 
+    def _parse_hash(self, line):
+        libmatch = GbuildParser.libpattern.match(line)
+        if libmatch:
+            return True
+        exematch = GbuildParser.exepattern.match(line)
+        if exematch:
+            return True
+        if line.find('# INCLUDE :=') == 0:
+            return True
+        defsmatch = GbuildParser.defspattern.match(line)
+        if defsmatch:
+            return True
+        cxxmatch = GbuildParser.cxxpattern.match(line)
+        if cxxmatch:
+            return True
+        linkedlibsmatch = GbuildParser.linkedlibspattern.match(line)
+        if linkedlibsmatch:
+            return True
+        ilibmatch = GbuildParser.ilibpattern.match(line)
+        if ilibmatch:
+            return True
+        if line.find('# T_CXXFLAGS :=') == 0:
+            return True
+        # we could match a lot of other stuff here if needed for integration rpaths etc.
+        return False
+
+    def _parse_without_hash(self, line):
+        makecmdmatch = GbuildParser.makecmdpattern.match(line)
+        if makecmdmatch:
+            self.makecmd = makecmdmatch.group(1)
+            # FIXME: Hack
+            if self.makecmd == 'make':
+                self.makecmd = '/usr/bin/make'
+            return False
+        srcdirmatch = GbuildParser.srcdirpattern.match(line)
+        if srcdirmatch:
+            self.srcdir = srcdirmatch.group(1)
+            return False
+        builddirmatch = GbuildParser.builddirpattern.match(line)
+        if builddirmatch:
+            self.builddir = builddirmatch.group(1)
+            return False
+        instdirmatch = GbuildParser.instdirpattern.match(line)
+        if instdirmatch:
+            self.instdir = instdirmatch.group(1)
+            return False
+        binpathmatch = GbuildParser.binpathpattern.match(line)
+        if binpathmatch:
+            self.binpath = binpathmatch.group(1)
+            return False
+        libnamesmatch = GbuildParser.libnamespattern.match(line)
+        if libnamesmatch:
+            self.libnames = self.__mapping_to_dict(libnamesmatch.group(1))
+            return False
+        exenamesmatch = GbuildParser.exenamepattern.match(line)
+        if exenamesmatch:
+            self.exenames = self.__mapping_to_dict(exenamesmatch.group(1))
+            return False
+        rulematch = self.rulepattern.match(line)
+        if rulematch:
+            return True
+
     def parse(self, gbuildstate):
-        state = GbuildParserState()
+        workLines = []
+        stateActive = False
         for line in gbuildstate:
             line = line.rstrip('\r\n')
             if line.startswith('#'):
-                state = self._parse_hash(line, state)
+                if self._parse_hash(line):
+                    stateActive = True
+                    workLines.append(line)
             else:
-                makecmdmatch = GbuildParser.makecmdpattern.match(line)
-                if makecmdmatch:
-                    self.makecmd = makecmdmatch.group(1)
-                    # FIXME: Hack
-                    if self.makecmd == 'make':
-                        self.makecmd = '/usr/bin/make'
-                    continue
-                srcdirmatch = GbuildParser.srcdirpattern.match(line)
-                if srcdirmatch:
-                    self.srcdir = srcdirmatch.group(1)
-                    continue
-                builddirmatch = GbuildParser.builddirpattern.match(line)
-                if builddirmatch:
-                    self.builddir = builddirmatch.group(1)
-                    continue
-                instdirmatch = GbuildParser.instdirpattern.match(line)
-                if instdirmatch:
-                    self.instdir = instdirmatch.group(1)
-                    continue
-                binpathmatch = GbuildParser.binpathpattern.match(line)
-                if binpathmatch:
-                    self.binpath = binpathmatch.group(1)
-                    continue
+                if self._parse_without_hash(line):
+                    workLines.append(line)
+                elif stateActive:
+                    workLines.append('!END OF STATE')
+
+        state = GbuildParserState()
+        for line in workLines:
+            if line.startswith('!END OF STATE'):
+                state = GbuildParserState()
+                continue
+            if line.startswith('#'):
+                state = self._parse_hash_old(line, state)
+            else:
                 rulematch = self.rulepattern.match(line)
                 if rulematch:
                     if len(rulematch.groups()) == 2 \
                        and rulematch.group(2) is not None \
                        and ':=' in rulematch.group(2):
                         # Hack to make GNU make >= 4.x happy
-                        state = self._parse_hash('#' + rulematch.group(2), state)
+                        state = self._parse_hash_old('#' + rulematch.group(2), state)
                     else:
-                        state.target = os.path.basename(rulematch.group(1))
-                    continue
-                libnamesmatch = GbuildParser.libnamespattern.match(line)
-                if libnamesmatch:
-                    self.libnames = self.__mapping_to_dict(libnamesmatch.group(1))
-                    continue
-                exenamesmatch = GbuildParser.exenamepattern.match(line)
-                if exenamesmatch:
-                    self.exenames = self.__mapping_to_dict(exenamesmatch.group(1))
-                    continue
-                state = GbuildParserState()
+                       state.target = os.path.basename(rulematch.group(1))
 
         for target in set(self.libs) | set(self.exes):
             if target.location not in self.target_by_location:
@@ -232,7 +277,8 @@ class GbuildParser:
             if len(set(self.target_by_path[path])) > 1:
                 print('fdo#70422: multiple target use dir %s: %s' % (
                     path, ', '.join([target.short_name() for target in set(self.target_by_path[path])])))
-
+        for location in self.target_by_location:
+            self.modulenamelist.append(os.path.split(location)[1])
         return self
 
 
@@ -245,49 +291,91 @@ class IdeIntegrationGenerator:
     def emit(self):
         pass
 
-
 class EclipseCDTIntegrationGenerator(IdeIntegrationGenerator):
 
     def __init__(self, gbuildparser, ide):
         IdeIntegrationGenerator.__init__(self, gbuildparser, ide)
-        self.oe_cdt = 'org.eclipse.cdt'
-        self.cdt_mb = self.oe_cdt + '.managebuilder.core'
-        self.cdt_core = self.oe_cdt + '.core'
 
-    def generate_project_file(self, name, comment, xmlversion, encoding):
+    def create_include_paths(self):
+        for module in self.gbuildparser.modulenamelist:
+            modulepath = os.path.join(self.gbuildparser.builddir, module)
+            includedirfile = open(os.path.join(modulepath, '.eclipsesettingfile'), 'w')
+            modulelibs = []
+            for lib in self.gbuildparser.target_by_path.keys():
+                if lib.startswith(module+'/'):
+                    modulelibs.append(lib)
+            include = set()
+            for lib in modulelibs:
+                for target in self.gbuildparser.target_by_path[lib]:
+                    include |= set(target.include)
+            includedirfile.write('\n'.join(include))
+            includedirfile.close()
 
-        projectfiletemplate = """
-<?xml version="%(xmlversion)s" encoding="%(encoding)s"?>
-<projectDescription>
-        <name>%(name)s</name>
-        <comment>%(comment)s</comment>
-        <projects>
-        </projects>
-        <buildSpec>
-                <buildCommand>
-                        <name>""" + self.cdt_mb + """.genmakebuilder</name>
-                        <triggers>clean,full,incremental,</triggers>
-                        <arguments>
-                        </arguments>
-                </buildCommand>
-                <buildCommand>
-                        <name>""" + self.cdt_mb + """.ScannerConfigBuilder</name>
-                        <triggers>full,incremental,</triggers>
-                        <arguments>
-                        </arguments>
-                </buildCommand>
-        </buildSpec>
-        <natures>
-                <nature>""" + self.cdt_core + """.cnature</nature>
-                <nature>""" + self.cdt_core + """.ccnature</nature>
-                <nature>""" + self.cdt_mb + """.managedBuildNature</nature>
-                <nature>""" + self.cdt_mb + """.ScannerConfigNature</nature>
-        </natures>
-</projectDescription>
-"""
+    def create_settings_file(self):
 
-        return projectfiletemplate % {'name': name, 'comment': comment, 'xmlversion': xmlversion, 'encoding': encoding}
+        settingsfiletemplate = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<cdtprojectproperties>
+<section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.IncludePaths">
+<language name="C++ Source File">
 
+
+</language>
+<language name="C Source File">
+
+</language>
+<language name="Object File">
+
+</language>
+<language name="Assembly Source File">
+
+</language>
+</section>
+<section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.Macros">
+<language name="C++ Source File">
+
+</language>
+<language name="C Source File">
+
+</language>
+<language name="Object File">
+
+</language>
+<language name="Assembly Source File">
+
+</language>
+</section>
+</cdtprojectproperties>
+""" 
+
+        for module in self.gbuildparser.modulenamelist:
+            tempxml = []
+            modulepath = os.path.join(self.gbuildparser.builddir, module)
+
+            settingsfile = open(os.path.join(modulepath, 'eclipsesettingfile.xml'), 'w')
+            settingsfile.write(settingsfiletemplate)
+            settingsfile.close()
+
+            settingsfile = open(os.path.join(modulepath, 'eclipsesettingfile.xml'), 'r')
+            tempxml = settingsfile.readlines()
+            tempinclude = open(os.path.join(modulepath, '.eclipsesettingfile'), 'r')
+            for includepath in tempinclude:
+                if includepath[-1:] == "\n":
+                    includepath = includepath[:-1]
+                templine = "<includepath>%s</includepath>\n" % includepath
+                tempxml.insert(5, templine)
+            tempxml="".join(tempxml)
+            settingsfile.close
+
+            settingsfile = open(os.path.join(modulepath, 'eclipsesettingfile.xml'), 'w')
+            settingsfile.write(tempxml)
+            settingsfile.close()
+            os.remove(os.path.join(modulepath, '.eclipsesettingfile'))
+
+
+    def emit(self):
+        self.create_include_paths()
+        self.create_settings_file() 
 
 class DebugIntegrationGenerator(IdeIntegrationGenerator):
 
@@ -1400,6 +1488,7 @@ class QtCreatorIntegrationGenerator(IdeIntegrationGenerator):
             def lopath(path):
                 return os.path.relpath(path, lib.location)
 
+            defines_list = []
             sources_list = []
             includepath_list = []
             # The explicit headers list is not mandatory :
@@ -1433,16 +1522,25 @@ class QtCreatorIntegrationGenerator(IdeIntegrationGenerator):
                             hf_lopath = lopath(os.path.join(hdir, hf))
                             headers_list.append(hf_lopath)
 
+            # List defines
+            for key, value in lib.defs.items():
+                define = key
+                if value is not None:
+                    define += '=' + value
+                defines_list.append(define)
+
             # All datas are prepared, store them for the lib.
             if lib_folder in self.data_libs:
                 self.data_libs[lib_folder]['sources'] |= set(sources_list)
                 self.data_libs[lib_folder]['headers'] |= set(headers_list)
                 self.data_libs[lib_folder]['includepath'] |= set(includepath_list)
+                self.data_libs[lib_folder]['defines'] |= set(defines_list)
             else:
                 self.data_libs[lib_folder] = {
                     'sources': set(sources_list),
                     'headers': set(headers_list),
                     'includepath': set(includepath_list),
+                    'defines': set(defines_list),
                     'loc': lib.location,
                     'name': lib_name
                 }
@@ -1464,17 +1562,19 @@ class QtCreatorIntegrationGenerator(IdeIntegrationGenerator):
             sources_list = sorted(self.data_libs[lib_folder]['sources'])
             headers_list = sorted(self.data_libs[lib_folder]['headers'])
             includepath_list = sorted(self.data_libs[lib_folder]['includepath'])
+            defines_list = sorted(self.data_libs[lib_folder]['defines'])
             lib_loc = self.data_libs[lib_folder]['loc']
             lib_name = self.data_libs[lib_folder]['name']
 
             sources = " \\\n".join(sources_list)
             headers = " \\\n".join(headers_list)
             includepath = " \\\n".join(includepath_list)
+            defines = " \\\n".join(defines_list)
 
             # create .pro file
             qt_pro_file = '%s/%s.pro' % (lib_loc, lib_name)
             try:
-                content = QtCreatorIntegrationGenerator.pro_template % {'sources': sources, 'headers': headers, 'includepath': includepath}
+                content = QtCreatorIntegrationGenerator.pro_template % {'sources': sources, 'headers': headers, 'includepath': includepath, 'defines': defines}
                 mode = 'w+'
                 with open(qt_pro_file, mode) as fpro:
                     fpro.write(content)
@@ -1542,6 +1642,8 @@ INCLUDEPATH += %(includepath)s
 SOURCES += %(sources)s
 
 HEADERS += %(headers)s
+
+DEFINES += %(defines)s
 
 """
     pro_meta_template = """TEMPLATE = subdirs

@@ -42,7 +42,7 @@ public:
          vcl::Window* pParentWindow,
          const std::function<void()>& rCloserAction);
     virtual ~Deck();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     const OUString& GetId() const { return msId; }
 
@@ -62,10 +62,10 @@ public:
     */
     void ShowPanel (const Panel& rPanel);
 
-    virtual void ApplySettings(vcl::RenderContext& rRenderContext) SAL_OVERRIDE;
-    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rUpdateArea) SAL_OVERRIDE;
-    virtual void DataChanged (const DataChangedEvent& rEvent) SAL_OVERRIDE;
-    virtual bool Notify(NotifyEvent& rEvent) SAL_OVERRIDE;
+    virtual void ApplySettings(vcl::RenderContext& rRenderContext) override;
+    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rUpdateArea) override;
+    virtual void DataChanged (const DataChangedEvent& rEvent) override;
+    virtual bool Notify(NotifyEvent& rEvent) override;
 
     static void PrintWindowSubTree (vcl::Window* pRoot, int nIndentation);
 
@@ -75,7 +75,7 @@ public:
     {
     public:
         ScrollContainerWindow(vcl::Window* pParentWindow);
-        virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rUpdateArea) SAL_OVERRIDE;
+        virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rUpdateArea) override;
         void SetSeparators(const ::std::vector<sal_Int32>& rSeparators);
     private:
         std::vector<sal_Int32> maSeparators;
@@ -83,7 +83,6 @@ public:
 
 private:
     const OUString msId;
-    Image maIcon;
     sal_Int32 mnMinimalWidth;
     SharedPanelContainer maPanels;
     VclPtr<DeckTitleBar> mpTitleBar;
@@ -94,6 +93,7 @@ private:
 
     DECL_LINK_TYPED(HandleVerticalScrollBarChange, ScrollBar*, void);
     bool ProcessWheelEvent(CommandEvent* pCommandEvent);
+
 };
 
 } } // end of namespace sfx2::sidebar

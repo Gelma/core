@@ -71,9 +71,6 @@ class AcceleratorConfigurationReader : public ::cppu::WeakImplHelper< css::xml::
 
     private:
 
-        /** @short  needed to read the xml configuration. */
-        css::uno::Reference< css::xml::sax::XDocumentHandler > m_xReader;
-
         /** @short  reference to the outside container, where this
                     reader/writer must work on. */
         AcceleratorCache& m_rContainer;
@@ -121,37 +118,37 @@ class AcceleratorConfigurationReader : public ::cppu::WeakImplHelper< css::xml::
         // XDocumentHandler
         virtual void SAL_CALL startDocument()
             throw(css::xml::sax::SAXException,
-                  css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                  css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL endDocument()
             throw(css::xml::sax::SAXException,
-                  css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                  css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL startElement(const OUString&                                      sElement      ,
                                            const css::uno::Reference< css::xml::sax::XAttributeList >& xAttributeList)
             throw(css::xml::sax::SAXException,
-                  css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                  css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL endElement(const OUString& sElement)
             throw(css::xml::sax::SAXException,
-                  css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                  css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL characters(const OUString& sChars)
             throw(css::xml::sax::SAXException,
-                  css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                  css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL ignorableWhitespace(const OUString& sWhitespaces)
             throw(css::xml::sax::SAXException,
-                  css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                  css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL processingInstruction(const OUString& sTarget,
                                                     const OUString& sData  )
             throw(css::xml::sax::SAXException,
-                  css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                  css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL setDocumentLocator(const css::uno::Reference< css::xml::sax::XLocator >& xLocator)
             throw(css::xml::sax::SAXException,
-                  css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                  css::uno::RuntimeException, std::exception ) override;
 
     // helper
 

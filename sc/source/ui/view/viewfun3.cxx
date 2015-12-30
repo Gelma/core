@@ -71,8 +71,6 @@
 
 using namespace com::sun::star;
 
-// STATIC DATA ---------------------------------------------------------------
-
 //  GlobalName of writer-DocShell from comphelper/classids.hxx
 
 //      C U T
@@ -111,7 +109,7 @@ void ScViewFunc::CutToClip( ScDocument* pClipDoc, bool bIncludeObjects )
         ScAddress aOldEnd( aRange.aEnd );       //  combined cells in this range?
         pDoc->ExtendMerge( aRange, true );
 
-        ScDocument* pUndoDoc = NULL;
+        ScDocument* pUndoDoc = nullptr;
         if ( bRecord )
         {
             pUndoDoc = new ScDocument( SCDOCMODE_UNDO );
@@ -120,7 +118,7 @@ void ScViewFunc::CutToClip( ScDocument* pClipDoc, bool bIncludeObjects )
             ScRange aCopyRange = aRange;
             aCopyRange.aStart.SetTab(0);
             aCopyRange.aEnd.SetTab(pDoc->GetTableCount()-1);
-            pDoc->CopyToDocument( aCopyRange, (IDF_ALL & ~IDF_OBJECTS) | IDF_NOCAPTIONS, false, pUndoDoc );
+            pDoc->CopyToDocument( aCopyRange, (InsertDeleteFlags::ALL & ~InsertDeleteFlags::OBJECTS) | InsertDeleteFlags::NOCAPTIONS, false, pUndoDoc );
             pDoc->BeginDrawUndo();
         }
 
@@ -128,7 +126,7 @@ void ScViewFunc::CutToClip( ScDocument* pClipDoc, bool bIncludeObjects )
         pDocSh->UpdatePaintExt( nExtFlags, aRange );
 
         rMark.MarkToMulti();
-        pDoc->DeleteSelection( IDF_ALL, rMark );
+        pDoc->DeleteSelection( InsertDeleteFlags::ALL, rMark );
         if ( bIncludeObjects )
             pDoc->DeleteObjectsInSelection( rMark );
         rMark.MarkToSimple();
@@ -217,7 +215,7 @@ bool ScViewFunc::CopyToClip( ScDocument* pClipDoc, const ScRangeList& rRanges, b
             if ( bSysClip && bIncludeObjects )
             {
                 bool bAnyOle = pDoc->HasOLEObjectsInArea( aRange );
-                // Update ScGlobal::pDrawClipDocShellRef.
+                // Update ScGlobal::xDrawClipDocShellRef.
                 ScDrawLayer::SetGlobalDrawPersist( ScTransferObj::SetDrawClipDoc( bAnyOle ) );
             }
 
@@ -249,7 +247,7 @@ bool ScViewFunc::CopyToClip( ScDocument* pClipDoc, const ScRangeList& rRanges, b
 
             if ( bSysClip )
             {
-                ScDrawLayer::SetGlobalDrawPersist(NULL);
+                ScDrawLayer::SetGlobalDrawPersist(nullptr);
                 ScGlobal::SetClipDocName( pDoc->GetDocumentShell()->GetTitle( SFX_TITLE_FULLNAME ) );
             }
             pClipDoc->ExtendMerge( aRange, true );
@@ -264,14 +262,14 @@ bool ScViewFunc::CopyToClip( ScDocument* pClipDoc, const ScRangeList& rRanges, b
 
                 ScTransferObj* pTransferObj = new ScTransferObj( pClipDoc, aObjDesc );
                 uno::Reference<datatransfer::XTransferable> xTransferable( pTransferObj );
-                if ( ScGlobal::pDrawClipDocShellRef )
+                if ( ScGlobal::xDrawClipDocShellRef.Is() )
                 {
-                    SfxObjectShellRef aPersistRef( &(*ScGlobal::pDrawClipDocShellRef) );
+                    SfxObjectShellRef aPersistRef( ScGlobal::xDrawClipDocShellRef );
                     pTransferObj->SetDrawPersist( aPersistRef );// keep persist for ole objects alive
 
                 }
                 pTransferObj->CopyToClipboard( GetActiveWin() );
-                SC_MOD()->SetClipObject( pTransferObj, NULL );
+                SC_MOD()->SetClipObject( pTransferObj, nullptr );
             }
 
             bDone = true;
@@ -373,14 +371,14 @@ bool ScViewFunc::CopyToClip( ScDocument* pClipDoc, const ScRangeList& rRanges, b
                 ScTransferObj* pTransferObj = new ScTransferObj( pDocClip.release(), aObjDesc );
                 uno::Reference<datatransfer::XTransferable> xTransferable( pTransferObj );
 
-                if ( ScGlobal::pDrawClipDocShellRef )
+                if ( ScGlobal::xDrawClipDocShellRef.Is() )
                 {
-                    SfxObjectShellRef aPersistRef( &(*ScGlobal::pDrawClipDocShellRef) );
+                    SfxObjectShellRef aPersistRef( ScGlobal::xDrawClipDocShellRef );
                     pTransferObj->SetDrawPersist( aPersistRef );    // keep persist for ole objects alive
                 }
 
                 pTransferObj->CopyToClipboard( GetActiveWin() );    // system clipboard
-                SC_MOD()->SetClipObject( pTransferObj, NULL );      // internal clipboard
+                SC_MOD()->SetClipObject( pTransferObj, nullptr );      // internal clipboard
             }
 
             bSuccess = true;
@@ -416,7 +414,7 @@ ScTransferObj* ScViewFunc::CopyToTransferable()
             ScClipParam aClipParam(aRange, false);
             pDoc->CopyToClip(aClipParam, pClipDoc, &rMark, false, false, true);
 
-            ScDrawLayer::SetGlobalDrawPersist(NULL);
+            ScDrawLayer::SetGlobalDrawPersist(nullptr);
             pClipDoc->ExtendMerge( aRange, true );
 
             ScDocShell* pDocSh = GetViewData().GetDocShell();
@@ -428,7 +426,7 @@ ScTransferObj* ScViewFunc::CopyToTransferable()
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 //      P A S T E
@@ -462,8 +460,8 @@ void ScViewFunc::PasteFromSystem()
     {
         // keep a reference in case the clipboard is changed during PasteFromClip
         uno::Reference<datatransfer::XTransferable> aOwnClipRef( pOwnClip );
-        PasteFromClip( IDF_ALL, pOwnClip->GetDocument(),
-                        ScPasteFunc::NONE, false, false, false, INS_NONE, IDF_NONE,
+        PasteFromClip( InsertDeleteFlags::ALL, pOwnClip->GetDocument(),
+                        ScPasteFunc::NONE, false, false, false, INS_NONE, InsertDeleteFlags::NONE,
                         true );     // allow warning dialog
     }
     else if (pDrawClip)
@@ -473,15 +471,15 @@ void ScViewFunc::PasteFromSystem()
         TransferableDataHelper aDataHelper( TransferableDataHelper::CreateFromSystemClipboard( pWin ) );
 
         {
-            SotClipboardFormatId nBiff8 = SotExchange::RegisterFormatName(OUString("Biff8"));
-            SotClipboardFormatId nBiff5 = SotExchange::RegisterFormatName(OUString("Biff5"));
+            SotClipboardFormatId nBiff8 = SotExchange::RegisterFormatName("Biff8");
+            SotClipboardFormatId nBiff5 = SotExchange::RegisterFormatName("Biff5");
 
             SotExchangeDest nDestination = SotExchangeDest::SCDOC_FREE_AREA;
             sal_uInt16 nSourceOptions = EXCHG_IN_ACTION_COPY;
             SotClipboardFormatId nFormat; // output param for GetExchangeAction
             sal_uInt16 nEventAction;      // output param for GetExchangeAction
 
-            uno::Reference<com::sun::star::datatransfer::XTransferable> xTransferable( aDataHelper.GetXTransferable() );
+            uno::Reference<css::datatransfer::XTransferable> xTransferable( aDataHelper.GetXTransferable() );
             sal_uInt16 nAction = SotExchange::GetExchangeAction(
                                     aDataHelper.GetDataFlavorExVector(),
                                     nDestination,
@@ -586,8 +584,8 @@ void ScViewFunc::PasteFromSystem()
 
 void ScViewFunc::PasteFromTransferable( const uno::Reference<datatransfer::XTransferable>& rxTransferable )
 {
-    ScTransferObj *pOwnClip=0;
-    ScDrawTransferObj *pDrawClip=0;
+    ScTransferObj *pOwnClip=nullptr;
+    ScDrawTransferObj *pDrawClip=nullptr;
     uno::Reference<lang::XUnoTunnel> xTunnel( rxTransferable, uno::UNO_QUERY );
     if ( xTunnel.is() )
     {
@@ -604,8 +602,8 @@ void ScViewFunc::PasteFromTransferable( const uno::Reference<datatransfer::XTran
 
     if (pOwnClip)
     {
-        PasteFromClip( IDF_ALL, pOwnClip->GetDocument(),
-                        ScPasteFunc::NONE, false, false, false, INS_NONE, IDF_NONE,
+        PasteFromClip( InsertDeleteFlags::ALL, pOwnClip->GetDocument(),
+                        ScPasteFunc::NONE, false, false, false, INS_NONE, InsertDeleteFlags::NONE,
                         true );     // allow warning dialog
     }
     else if (pDrawClip)
@@ -623,8 +621,8 @@ void ScViewFunc::PasteFromTransferable( const uno::Reference<datatransfer::XTran
     {
             TransferableDataHelper aDataHelper( rxTransferable );
         {
-            SotClipboardFormatId nBiff8 = SotExchange::RegisterFormatName(OUString("Biff8"));
-            SotClipboardFormatId nBiff5 = SotExchange::RegisterFormatName(OUString("Biff5"));
+            SotClipboardFormatId nBiff8 = SotExchange::RegisterFormatName("Biff8");
+            SotClipboardFormatId nBiff5 = SotExchange::RegisterFormatName("Biff5");
             SotClipboardFormatId nFormatId = SotClipboardFormatId::NONE;
                 //  first SvDraw-model, then drawing
                 //  (only one drawing is allowed)
@@ -682,8 +680,7 @@ void ScViewFunc::PasteFromTransferable( const uno::Reference<datatransfer::XTran
                 return;
 
             PasteDataFormat( nFormatId, aDataHelper.GetTransferable(),
-                GetViewData().GetCurX(), GetViewData().GetCurY(),
-                NULL, false );
+                GetViewData().GetCurX(), GetViewData().GetCurY() );
         }
     }
 }
@@ -699,8 +696,8 @@ bool ScViewFunc::PasteFromSystem( SotClipboardFormatId nFormatId, bool bApi )
     {
         // keep a reference in case the clipboard is changed during PasteFromClip
         uno::Reference<datatransfer::XTransferable> aOwnClipRef( pOwnClip );
-        PasteFromClip( IDF_ALL, pOwnClip->GetDocument(),
-                        ScPasteFunc::NONE, false, false, false, INS_NONE, IDF_NONE,
+        PasteFromClip( InsertDeleteFlags::ALL, pOwnClip->GetDocument(),
+                        ScPasteFunc::NONE, false, false, false, INS_NONE, InsertDeleteFlags::NONE,
                         !bApi );        // allow warning dialog
     }
     else
@@ -727,7 +724,7 @@ bool ScViewFunc::PasteFromSystem( SotClipboardFormatId nFormatId, bool bApi )
 
         bRet = PasteDataFormat( nFormatId, aDataHelper.GetTransferable(),
                                 nPosX, nPosY,
-                                NULL, false, !bApi );       // allow warning dialog
+                                nullptr, false, !bApi );       // allow warning dialog
 
         if ( !bRet && !bApi )
             ErrorMessage(STR_PASTE_ERROR);
@@ -855,17 +852,17 @@ bool ScViewFunc::PasteFromClip( InsertDeleteFlags nFlags, ScDocument* pClipDoc,
     }
 
     //  undo: save all or no content
-    InsertDeleteFlags nContFlags = IDF_NONE;
-    if (nFlags & IDF_CONTENTS)
-        nContFlags |= IDF_CONTENTS;
-    if (nFlags & IDF_ATTRIB)
-        nContFlags |= IDF_ATTRIB;
+    InsertDeleteFlags nContFlags = InsertDeleteFlags::NONE;
+    if (nFlags & InsertDeleteFlags::CONTENTS)
+        nContFlags |= InsertDeleteFlags::CONTENTS;
+    if (nFlags & InsertDeleteFlags::ATTRIB)
+        nContFlags |= InsertDeleteFlags::ATTRIB;
     // move attributes to undo without copying them from clip to doc
     InsertDeleteFlags nUndoFlags = nContFlags;
-    if (nUndoExtraFlags & IDF_ATTRIB)
-        nUndoFlags |= IDF_ATTRIB;
+    if (nUndoExtraFlags & InsertDeleteFlags::ATTRIB)
+        nUndoFlags |= InsertDeleteFlags::ATTRIB;
     // do not copy note captions into undo document
-    nUndoFlags |= IDF_NOCAPTIONS;
+    nUndoFlags |= InsertDeleteFlags::NOCAPTIONS;
 
     ScClipParam& rClipParam = pClipDoc->GetClipParam();
     if (rClipParam.isMultiRange())
@@ -888,11 +885,11 @@ bool ScViewFunc::PasteFromClip( InsertDeleteFlags nFlags, ScDocument* pClipDoc,
     bool bCutMode = pClipDoc->IsCutMode();      // if transposing, take from original clipdoc
     bool bIncludeFiltered = bCutMode;
 
-    // paste drawing: also if IDF_NOTE is set (to create drawing layer for note captions)
-    bool bPasteDraw = ( pClipDoc->GetDrawLayer() && ( nFlags & (IDF_OBJECTS|IDF_NOTE) ) );
+    // paste drawing: also if InsertDeleteFlags::NOTE is set (to create drawing layer for note captions)
+    bool bPasteDraw = ( pClipDoc->GetDrawLayer() && ( nFlags & (InsertDeleteFlags::OBJECTS|InsertDeleteFlags::NOTE) ) );
 
     ScDocShellRef aTransShellRef;   // for objects in xTransClip - must remain valid as long as xTransClip
-    ScDocument* pOrigClipDoc = NULL;
+    ScDocument* pOrigClipDoc = nullptr;
     ::std::unique_ptr< ScDocument > xTransClip;
     if ( bTranspose )
     {
@@ -911,7 +908,7 @@ bool ScViewFunc::PasteFromClip( InsertDeleteFlags nFlags, ScDocument* pClipDoc,
         if ( bPasteDraw )
         {
             aTransShellRef = new ScDocShell;        // DocShell needs a Ref immediately
-            aTransShellRef->DoInitNew(NULL);
+            aTransShellRef->DoInitNew();
         }
         ScDrawLayer::SetGlobalDrawPersist(aTransShellRef);
 
@@ -919,7 +916,7 @@ bool ScViewFunc::PasteFromClip( InsertDeleteFlags nFlags, ScDocument* pClipDoc,
         pClipDoc->TransposeClip( xTransClip.get(), nFlags, bAsLink );
         pClipDoc = xTransClip.get();
 
-        ScDrawLayer::SetGlobalDrawPersist(NULL);
+        ScDrawLayer::SetGlobalDrawPersist(nullptr);
     }
 
     SCCOL nStartCol;
@@ -1119,7 +1116,7 @@ bool ScViewFunc::PasteFromClip( InsertDeleteFlags nFlags, ScDocument* pClipDoc,
     else if (!bOffLimits)
     {
         bool bAskIfNotEmpty = bAllowDialogs &&
-                                ( nFlags & IDF_CONTENTS ) &&
+                                ( nFlags & InsertDeleteFlags::CONTENTS ) &&
                                 nFunction == ScPasteFunc::NONE &&
                                 SC_MOD()->GetInputOptions().GetReplaceCellsWarn();
         if ( bAskIfNotEmpty )
@@ -1180,11 +1177,11 @@ bool ScViewFunc::PasteFromClip( InsertDeleteFlags nFlags, ScDocument* pClipDoc,
         if (lcl_SelHasAttrib( pDoc, nStartCol,nStartRow, nUndoEndCol,nUndoEndRow, aFilteredMark, HASATTR_OVERLAPPED ))
         {       // "Cell merge not possible if cells already merged"
             ScDocAttrIterator aIter( pDoc, nStartTab, nStartCol, nStartRow, nUndoEndCol, nUndoEndRow );
-            const ScPatternAttr* pPattern = NULL;
+            const ScPatternAttr* pPattern = nullptr;
             SCCOL nCol = -1;
             SCROW nRow1 = -1;
             SCROW nRow2 = -1;
-            while ( ( pPattern = aIter.GetNext( nCol, nRow1, nRow2 ) ) != NULL )
+            while ( ( pPattern = aIter.GetNext( nCol, nRow1, nRow2 ) ) != nullptr )
             {
                 const ScMergeAttr* pMergeFlag = static_cast<const ScMergeAttr*>( &pPattern->GetItem(ATTR_MERGE) );
                 const ScMergeFlagAttr* pMergeFlagAttr = static_cast<const ScMergeFlagAttr*>( &pPattern->GetItem(ATTR_MERGE_FLAG) );
@@ -1208,9 +1205,9 @@ bool ScViewFunc::PasteFromClip( InsertDeleteFlags nFlags, ScDocument* pClipDoc,
     bool bColInfo = ( nStartRow==0 && nEndRow==MAXROW );
     bool bRowInfo = ( nStartCol==0 && nEndCol==MAXCOL );
 
-    ScDocument* pUndoDoc    = NULL;
-    ScDocument* pRefUndoDoc = NULL;
-    ScRefUndoData* pUndoData = NULL;
+    ScDocument* pUndoDoc    = nullptr;
+    ScDocument* pRefUndoDoc = nullptr;
+    ScRefUndoData* pUndoData = nullptr;
 
     if ( bRecord )
     {
@@ -1225,7 +1222,7 @@ bool ScViewFunc::PasteFromClip( InsertDeleteFlags nFlags, ScDocument* pClipDoc,
         if ( bCutMode )
         {
             pRefUndoDoc = new ScDocument( SCDOCMODE_UNDO );
-            pRefUndoDoc->InitUndo( pDoc, 0, nTabCount-1, false );
+            pRefUndoDoc->InitUndo( pDoc, 0, nTabCount-1 );
 
             pUndoData = new ScRefUndoData( pDoc );
         }
@@ -1250,12 +1247,12 @@ bool ScViewFunc::PasteFromClip( InsertDeleteFlags nFlags, ScDocument* pClipDoc,
     if (nFunction != ScPasteFunc::NONE)
     {
         bSkipEmpty = false;
-        if ( nFlags & IDF_CONTENTS )
+        if ( nFlags & InsertDeleteFlags::CONTENTS )
         {
             pMixDoc.reset(new ScDocument( SCDOCMODE_UNDO ));
             pMixDoc->InitUndo( pDoc, nStartTab, nEndTab );
             pDoc->CopyToDocument( nStartCol, nStartRow, nStartTab, nEndCol, nEndRow, nEndTab,
-                                  IDF_CONTENTS, false, pMixDoc.get() );
+                                  InsertDeleteFlags::CONTENTS, false, pMixDoc.get() );
         }
     }
 
@@ -1268,16 +1265,16 @@ bool ScViewFunc::PasteFromClip( InsertDeleteFlags nFlags, ScDocument* pClipDoc,
     if ( bRecord )
         pDoc->BeginDrawUndo();
 
-    InsertDeleteFlags nNoObjFlags = nFlags & ~IDF_OBJECTS;
+    InsertDeleteFlags nNoObjFlags = nFlags & ~InsertDeleteFlags::OBJECTS;
     if (!bAsLink)
     {
         //  copy normally (original range)
         pDoc->CopyFromClip( aUserRange, aFilteredMark, nNoObjFlags,
                 pRefUndoDoc, pClipDoc, true, false, bIncludeFiltered,
-                bSkipEmpty, (bMarkIsFiltered ? &aRangeList : NULL) );
+                bSkipEmpty, (bMarkIsFiltered ? &aRangeList : nullptr) );
 
         // adapt refs manually in case of transpose
-        if ( bTranspose && bCutMode && (nFlags & IDF_CONTENTS) )
+        if ( bTranspose && bCutMode && (nFlags & InsertDeleteFlags::CONTENTS) )
             pDoc->UpdateTranspose( aUserRange.aStart, pOrigClipDoc, aFilteredMark, pRefUndoDoc );
     }
     else if (!bTranspose)
@@ -1308,13 +1305,13 @@ bool ScViewFunc::PasteFromClip( InsertDeleteFlags nFlags, ScDocument* pClipDoc,
     AdjustBlockHeight();            // update row heights before pasting objects
 
     ::std::vector< OUString > aExcludedChartNames;
-    SdrPage* pPage = NULL;
+    SdrPage* pPage = nullptr;
 
-    if ( nFlags & IDF_OBJECTS )
+    if ( nFlags & InsertDeleteFlags::OBJECTS )
     {
         ScDrawView* pScDrawView = GetScDrawView();
-        SdrModel* pModel = ( pScDrawView ? pScDrawView->GetModel() : NULL );
-        pPage = ( pModel ? pModel->GetPage( static_cast< sal_uInt16 >( nStartTab ) ) : NULL );
+        SdrModel* pModel = ( pScDrawView ? pScDrawView->GetModel() : nullptr );
+        pPage = ( pModel ? pModel->GetPage( static_cast< sal_uInt16 >( nStartTab ) ) : nullptr );
         if ( pPage )
         {
             ScChartHelper::GetChartNames( aExcludedChartNames, pPage );
@@ -1322,7 +1319,7 @@ bool ScViewFunc::PasteFromClip( InsertDeleteFlags nFlags, ScDocument* pClipDoc,
 
         //  Paste the drawing objects after the row heights have been updated.
 
-        pDoc->CopyFromClip( aUserRange, aFilteredMark, IDF_OBJECTS, pRefUndoDoc, pClipDoc,
+        pDoc->CopyFromClip( aUserRange, aFilteredMark, InsertDeleteFlags::OBJECTS, pRefUndoDoc, pClipDoc,
                                 true, false, bIncludeFiltered );
     }
 
@@ -1343,7 +1340,7 @@ bool ScViewFunc::PasteFromClip( InsertDeleteFlags nFlags, ScDocument* pClipDoc,
 
     if ( bRecord )
     {
-        ScDocument* pRedoDoc    = NULL;
+        ScDocument* pRedoDoc    = nullptr;
         // copy redo data after appearance of the first undo
         // don't create Redo-Doc without RefUndoDoc
 
@@ -1362,9 +1359,9 @@ bool ScViewFunc::PasteFromClip( InsertDeleteFlags nFlags, ScDocument* pClipDoc,
 
             //      not charts?
             pUndoDoc->AddUndoTab( 0, nTabCount-1 );
-            pRefUndoDoc->DeleteArea( nStartCol, nStartRow, nEndCol, nEndRow, aFilteredMark, IDF_ALL );
+            pRefUndoDoc->DeleteArea( nStartCol, nStartRow, nEndCol, nEndRow, aFilteredMark, InsertDeleteFlags::ALL );
             pRefUndoDoc->CopyToDocument( 0,0,0, MAXCOL,MAXROW,nTabCount-1,
-                                            IDF_FORMULA, false, pUndoDoc );
+                                            InsertDeleteFlags::FORMULA, false, pUndoDoc );
             delete pRefUndoDoc;
         }
 
@@ -1415,7 +1412,7 @@ bool ScViewFunc::PasteFromClip( InsertDeleteFlags nFlags, ScDocument* pClipDoc,
     aModificator.SetDocumentModified();
     PostPasteFromClip(aUserRange, rMark);
 
-    if ( nFlags & IDF_OBJECTS )
+    if ( nFlags & InsertDeleteFlags::OBJECTS )
     {
         ScModelObj* pModelObj = ScModelObj::getImplementation( pDocSh->GetModel() );
         if ( pPage && pModelObj )
@@ -1487,7 +1484,7 @@ bool ScViewFunc::PasteMultiRangesFromClip(
     }
 
     bool bAskIfNotEmpty =
-        bAllowDialogs && (nFlags & IDF_CONTENTS) &&
+        bAllowDialogs && (nFlags & InsertDeleteFlags::CONTENTS) &&
         nFunction == ScPasteFunc::NONE && SC_MOD()->GetInputOptions().GetReplaceCellsWarn();
 
     if (bAskIfNotEmpty)
@@ -1512,18 +1509,18 @@ bool ScViewFunc::PasteMultiRangesFromClip(
     if (pDoc->IsUndoEnabled())
     {
         pUndoDoc.reset(new ScDocument(SCDOCMODE_UNDO));
-        pUndoDoc->InitUndoSelected(pDoc, aMark, false);
+        pUndoDoc->InitUndoSelected(pDoc, aMark);
         pDoc->CopyToDocument(aMarkedRange, nUndoFlags, false, pUndoDoc.get(), &aMark);
     }
 
     ::std::unique_ptr<ScDocument> pMixDoc;
     if ( bSkipEmpty || nFunction != ScPasteFunc::NONE)
     {
-        if ( nFlags & IDF_CONTENTS )
+        if ( nFlags & InsertDeleteFlags::CONTENTS )
         {
             pMixDoc.reset(new ScDocument(SCDOCMODE_UNDO));
-            pMixDoc->InitUndoSelected(pDoc, aMark, false);
-            pDoc->CopyToDocument(aMarkedRange, IDF_CONTENTS, false, pMixDoc.get(), &aMark);
+            pMixDoc->InitUndoSelected(pDoc, aMark);
+            pDoc->CopyToDocument(aMarkedRange, InsertDeleteFlags::CONTENTS, false, pMixDoc.get(), &aMark);
         }
     }
 
@@ -1531,12 +1528,12 @@ bool ScViewFunc::PasteMultiRangesFromClip(
         - Needed before AdjustBlockHeight to track moved drawing objects.
         - Needed before pDoc->CopyFromClip to track inserted note caption objects.
      */
-    if (nFlags & IDF_OBJECTS)
+    if (nFlags & InsertDeleteFlags::OBJECTS)
         pDocSh->MakeDrawLayer();
     if (pDoc->IsUndoEnabled())
         pDoc->BeginDrawUndo();
 
-    InsertDeleteFlags nNoObjFlags = nFlags & ~IDF_OBJECTS;
+    InsertDeleteFlags nNoObjFlags = nFlags & ~InsertDeleteFlags::OBJECTS;
     pDoc->CopyMultiRangeFromClip(rCurPos, aMark, nNoObjFlags, pClipDoc,
                                  true, bAsLink, false, bSkipEmpty);
 
@@ -1545,10 +1542,10 @@ bool ScViewFunc::PasteMultiRangesFromClip(
 
     AdjustBlockHeight();            // update row heights before pasting objects
 
-    if (nFlags & IDF_OBJECTS)
+    if (nFlags & InsertDeleteFlags::OBJECTS)
     {
         //  Paste the drawing objects after the row heights have been updated.
-        pDoc->CopyMultiRangeFromClip(rCurPos, aMark, IDF_OBJECTS, pClipDoc,
+        pDoc->CopyMultiRangeFromClip(rCurPos, aMark, InsertDeleteFlags::OBJECTS, pClipDoc,
                                      true, false, false, true);
     }
 
@@ -1572,7 +1569,7 @@ bool ScViewFunc::PasteMultiRangesFromClip(
         aOptions.eMoveMode  = eMoveMode;
 
         ScUndoPaste* pUndo = new ScUndoPaste(pDocSh,
-            aMarkedRange, aMark, pUndoDoc.release(), NULL, nFlags|nUndoFlags, NULL, false, &aOptions);
+            aMarkedRange, aMark, pUndoDoc.release(), nullptr, nFlags|nUndoFlags, nullptr, false, &aOptions);
 
         if (bInsertCells)
             pUndoMgr->AddUndoAction(new ScUndoWrapper(pUndo), true);
@@ -1645,7 +1642,7 @@ bool ScViewFunc::PasteFromClipToMultiRanges(
     ScDocShellModificator aModificator(*pDocSh);
 
     bool bAskIfNotEmpty =
-        bAllowDialogs && (nFlags & IDF_CONTENTS) &&
+        bAllowDialogs && (nFlags & InsertDeleteFlags::CONTENTS) &&
         nFunction == ScPasteFunc::NONE && SC_MOD()->GetInputOptions().GetReplaceCellsWarn();
 
     if (bAskIfNotEmpty)
@@ -1658,7 +1655,7 @@ bool ScViewFunc::PasteFromClipToMultiRanges(
     if (pDoc->IsUndoEnabled())
     {
         pUndoDoc.reset(new ScDocument(SCDOCMODE_UNDO));
-        pUndoDoc->InitUndoSelected(pDoc, aMark, false);
+        pUndoDoc->InitUndoSelected(pDoc, aMark);
         for (size_t i = 0, n = aRanges.size(); i < n; ++i)
         {
             pDoc->CopyToDocument(
@@ -1669,19 +1666,19 @@ bool ScViewFunc::PasteFromClipToMultiRanges(
     std::unique_ptr<ScDocument> pMixDoc;
     if (bSkipEmpty || nFunction != ScPasteFunc::NONE)
     {
-        if (nFlags & IDF_CONTENTS)
+        if (nFlags & InsertDeleteFlags::CONTENTS)
         {
             pMixDoc.reset(new ScDocument(SCDOCMODE_UNDO));
-            pMixDoc->InitUndoSelected(pDoc, aMark, false);
+            pMixDoc->InitUndoSelected(pDoc, aMark);
             for (size_t i = 0, n = aRanges.size(); i < n; ++i)
             {
                 pDoc->CopyToDocument(
-                    *aRanges[i], IDF_CONTENTS, false, pMixDoc.get(), &aMark);
+                    *aRanges[i], InsertDeleteFlags::CONTENTS, false, pMixDoc.get(), &aMark);
             }
         }
     }
 
-    if (nFlags & IDF_OBJECTS)
+    if (nFlags & InsertDeleteFlags::OBJECTS)
         pDocSh->MakeDrawLayer();
     if (pDoc->IsUndoEnabled())
         pDoc->BeginDrawUndo();
@@ -1690,8 +1687,8 @@ bool ScViewFunc::PasteFromClipToMultiRanges(
     for (size_t i = 0, n = aRanges.size(); i < n; ++i)
     {
         pDoc->CopyFromClip(
-            *aRanges[i], aMark, (nFlags & ~IDF_OBJECTS), NULL, pClipDoc,
-            false, false, true, bSkipEmpty, NULL);
+            *aRanges[i], aMark, (nFlags & ~InsertDeleteFlags::OBJECTS), nullptr, pClipDoc,
+            false, false, true, bSkipEmpty);
     }
 
     if (pMixDoc.get())
@@ -1703,13 +1700,13 @@ bool ScViewFunc::PasteFromClipToMultiRanges(
     AdjustBlockHeight();            // update row heights before pasting objects
 
     // Then paste the objects.
-    if (nFlags & IDF_OBJECTS)
+    if (nFlags & InsertDeleteFlags::OBJECTS)
     {
         for (size_t i = 0, n = aRanges.size(); i < n; ++i)
         {
             pDoc->CopyFromClip(
-                *aRanges[i], aMark, IDF_OBJECTS, NULL, pClipDoc,
-                false, false, true, bSkipEmpty, NULL);
+                *aRanges[i], aMark, InsertDeleteFlags::OBJECTS, nullptr, pClipDoc,
+                false, false, true, bSkipEmpty);
         }
     }
 
@@ -1732,7 +1729,7 @@ bool ScViewFunc::PasteFromClipToMultiRanges(
         aOptions.eMoveMode  = eMoveMode;
 
         ScUndoPaste* pUndo = new ScUndoPaste(
-            pDocSh, aRanges, aMark, pUndoDoc.release(), NULL, nFlags|nUndoFlags, NULL, false, &aOptions);
+            pDocSh, aRanges, aMark, pUndoDoc.release(), nullptr, nFlags|nUndoFlags, nullptr, false, &aOptions);
 
         pUndoMgr->AddUndoAction(pUndo);
         pUndoMgr->LeaveListAction();
@@ -1900,7 +1897,7 @@ bool ScViewFunc::LinkBlock( const ScRange& rSource, const ScAddress& rDestPos, b
 
     //  Paste
 
-    PasteFromClip( IDF_ALL, pClipDoc.get(), ScPasteFunc::NONE, false, false, true );       // as a link
+    PasteFromClip( InsertDeleteFlags::ALL, pClipDoc.get(), ScPasteFunc::NONE, false, false, true );       // as a link
 
     return true;
 }
@@ -1919,9 +1916,9 @@ void ScViewFunc::DataFormPutData( SCROW nCurrentRow ,
     if ( pDoc )
     {
         const bool bRecord( pDoc->IsUndoEnabled());
-        ScDocument* pUndoDoc = NULL;
-        ScDocument* pRedoDoc = NULL;
-        ScRefUndoData* pUndoData = NULL;
+        ScDocument* pUndoDoc = nullptr;
+        ScDocument* pRedoDoc = nullptr;
+        ScRefUndoData* pUndoData = nullptr;
         SCTAB nTab = GetViewData().GetTabNo();
         SCTAB nStartTab = nTab;
         SCTAB nEndTab = nTab;
@@ -1936,13 +1933,13 @@ void ScViewFunc::DataFormPutData( SCROW nCurrentRow ,
         bool bRowInfo = ( nStartCol==0 && nEndCol==MAXCOL );
         SCCOL nUndoEndCol = nStartCol+aColLength-1;
         SCROW nUndoEndRow = nCurrentRow;
-        InsertDeleteFlags nUndoFlags = IDF_NONE;
+        InsertDeleteFlags nUndoFlags = InsertDeleteFlags::NONE;
 
         if ( bRecord )
         {
             pUndoDoc = new ScDocument( SCDOCMODE_UNDO );
             pUndoDoc->InitUndoSelected( pDoc , rMark , bColInfo , bRowInfo );
-            pDoc->CopyToDocument( aUserRange , IDF_VALUE , false , pUndoDoc );
+            pDoc->CopyToDocument( aUserRange , InsertDeleteFlags::VALUE , false , pUndoDoc );
         }
         sal_uInt16 nExtFlags = 0;
         pDocSh->UpdatePaintExt( nExtFlags, nStartCol, nStartRow, nStartTab , nEndCol, nEndRow, nEndTab ); // content before the change
@@ -1961,7 +1958,7 @@ void ScViewFunc::DataFormPutData( SCROW nCurrentRow ,
                                                                 nStartCol, nCurrentRow, nStartTab,
                                                                 nUndoEndCol, nUndoEndRow, nEndTab, rMark,
                                                                 pUndoDoc, pRedoDoc, nUndoFlags,
-                                                                pUndoData, NULL, NULL, NULL,
+                                                                pUndoData, nullptr, nullptr, nullptr,
                                                                 false );           // FALSE = Redo data not yet copied
         pUndoMgr->AddUndoAction( new ScUndoWrapper( pUndo ), true );
 

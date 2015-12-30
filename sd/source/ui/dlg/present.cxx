@@ -96,7 +96,7 @@ SdStartPresentationDlg::SdStartPresentationDlg( vcl::Window* pWindow,
         SdCustomShow* pCustomShow;
         // fill Listbox with CustomShows
         for( pCustomShow = pCustomShowList->First();
-             pCustomShow != NULL;
+             pCustomShow != nullptr;
              pCustomShow = pCustomShowList->Next() )
         {
             aLbCustomshow->InsertEntry( pCustomShow->GetName() );
@@ -144,10 +144,10 @@ SdStartPresentationDlg::SdStartPresentationDlg( vcl::Window* pWindow,
 
     InitMonitorSettings();
 
-    ChangeRangeHdl( NULL );
+    ChangeRangeHdl( nullptr );
 
-    ClickWindowPresentationHdl( NULL );
-    ChangePauseHdl( NULL );
+    ClickWindowPresentationHdl( nullptr );
+    ChangePauseHdl( *aTmfPause );
 }
 
 SdStartPresentationDlg::~SdStartPresentationDlg()
@@ -221,8 +221,8 @@ void SdStartPresentationDlg::InitMonitorSettings()
 {
     try
     {
-        maFtMonitor->Show( true );
-        maLBMonitor->Show( true );
+        maFtMonitor->Show();
+        maLBMonitor->Show();
 
         mnMonitors = Application::GetScreenCount();
 
@@ -356,10 +356,9 @@ IMPL_LINK_NOARG_TYPED(SdStartPresentationDlg, ClickWindowPresentationHdl, Button
 /**
  *      Handler: Enabled/Disabled Checkbox "AlwaysOnTop"
  */
-IMPL_LINK_NOARG(SdStartPresentationDlg, ChangePauseHdl)
+IMPL_LINK_NOARG_TYPED(SdStartPresentationDlg, ChangePauseHdl, Edit&, void)
 {
     aCbxAutoLogo->Enable( aRbtAuto->IsChecked() && ( aTmfPause->GetTime().GetMSFromTime() > 0 ) );
-    return 0L;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

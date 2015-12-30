@@ -446,7 +446,7 @@ namespace basegfx
                             : aVecA.getY() / aEdge.getY());
 
                         // relative end point of vector in edge range?
-                        if(fTools::moreOrEqual(fScale, 0.0) && fTools::lessOrEqual(fScale, 1.0))
+                        if (fTools::betweenOrEqualEither(fScale, 0.0, 1.0))
                         {
                             bAIsTrivial = true;
                         }
@@ -468,7 +468,7 @@ namespace basegfx
                             : aVecB.getY() / aEdge.getY());
 
                         // end point of vector in edge range? Caution: controlB is directed AGAINST edge
-                        if(fTools::lessOrEqual(fScale, 0.0) && fTools::moreOrEqual(fScale, -1.0))
+                        if (fTools::betweenOrEqualEither(fScale, -1.0, 0.0))
                         {
                             bBIsTrivial = true;
                         }
@@ -613,7 +613,7 @@ namespace basegfx
         {
             // t is in ]0.0 .. 1.0[. Split and extract
             B2DCubicBezier aRight;
-            split(t, 0, &aRight);
+            split(t, nullptr, &aRight);
 
             return aRight.getControlPointA() - aRight.getStartPoint();
         }
@@ -871,7 +871,7 @@ namespace basegfx
 
                 if(!bEndIsOne)
                 {
-                    aRetval.split(fEnd, &aRetval, 0);
+                    aRetval.split(fEnd, &aRetval, nullptr);
 
                     if(!bStartIsZero)
                     {
@@ -881,7 +881,7 @@ namespace basegfx
 
                 if(!bStartIsZero)
                 {
-                    aRetval.split(fStart, 0, &aRetval);
+                    aRetval.split(fStart, nullptr, &aRetval);
                 }
             }
             else

@@ -60,11 +60,11 @@ namespace frm
     protected:
         /** constructs a new RichTextEngine. The instances takes the ownership of the given SfxItemPool
         */
-        RichTextEngine( SfxItemPool* _pPool );
+        explicit RichTextEngine( SfxItemPool* _pPool );
 
     private:
-        RichTextEngine( const RichTextEngine& ) SAL_DELETED_FUNCTION;
-        RichTextEngine& operator=( const RichTextEngine& ) SAL_DELETED_FUNCTION;
+        RichTextEngine( const RichTextEngine& ) = delete;
+        RichTextEngine& operator=( const RichTextEngine& ) = delete;
 
     private:
         DECL_LINK_TYPED( EditEngineStatusChanged, EditStatus&, void );

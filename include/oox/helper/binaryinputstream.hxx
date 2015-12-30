@@ -116,21 +116,6 @@ public:
     template< typename Type >
     sal_Int32           readArray( Type* opnArray, sal_Int32 nElemCount );
 
-    /** Reads a sequence of values from the stream.
-
-        The sequence will be reallocated internally. Converts all values in the
-        array to platform byte order. All data types supported by the
-        ByteOrderConverter class can be used.
-
-        @param nElemCount
-            Number of elements to put into the sequence (NOT byte count).
-
-        @return
-            Number of sequence elements really read (NOT byte count).
-     */
-    template< typename Type >
-    sal_Int32           readArray( ::com::sun::star::uno::Sequence< Type >& orSequence, sal_Int32 nElemCount );
-
     /** Reads a vector of values from the stream.
 
         The vector will be resized internally. Converts all values in the
@@ -145,16 +130,6 @@ public:
      */
     template< typename Type >
     sal_Int32           readArray( ::std::vector< Type >& orVector, sal_Int32 nElemCount );
-
-    /** Skips an array of values of a certain type in the stream.
-
-        All data types supported by the ByteOrderConverter class can be used.
-
-        @param nElemCount
-            Number of array elements to skip (NOT byte count).
-     */
-    template< typename Type >
-    void                skipArray( sal_Int32 nElemCount );
 
     /** Reads a NUL-terminated Unicode character array and returns the string.
      */
@@ -253,24 +228,10 @@ sal_Int32 BinaryInputStream::readArray( Type* opnArray, sal_Int32 nElemCount )
 }
 
 template< typename Type >
-sal_Int32 BinaryInputStream::readArray( ::com::sun::star::uno::Sequence< Type >& orSequence, sal_Int32 nElemCount )
-{
-    orSequence.reallocate( nElemCount );
-    return orSequence.hasElements() ? readArray( orSequence.getArray(), nElemCount ) : 0;
-}
-
-template< typename Type >
 sal_Int32 BinaryInputStream::readArray( ::std::vector< Type >& orVector, sal_Int32 nElemCount )
 {
     orVector.resize( static_cast< size_t >( nElemCount ) );
     return orVector.empty() ? 0 : readArray( &orVector.front(), nElemCount );
-}
-
-template< typename Type >
-void BinaryInputStream::skipArray( sal_Int32 nElemCount )
-{
-    sal_Int32 nSkipSize = getLimitedValue< sal_Int32, sal_Int32 >( nElemCount, 0, SAL_MAX_INT32 / sizeof( Type ) ) * sizeof( Type );
-    skip( nSkipSize, sizeof( Type ) );
 }
 
 
@@ -293,30 +254,30 @@ public:
             of this wrapper or when close() is called.
      */
     explicit            BinaryXInputStream(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::io::XInputStream >& rxInStrm,
+                            const css::uno::Reference< css::io::XInputStream >& rxInStrm,
                             bool bAutoClose );
 
     virtual             ~BinaryXInputStream();
 
     /** Closes the input stream. Does also close the wrapped UNO input stream
         if bAutoClose has been set to true in the constructor. */
-    virtual void        close() SAL_OVERRIDE;
+    virtual void        close() override;
 
     /** Reads nBytes bytes to the passed sequence.
         @return  Number of bytes really read. */
-    virtual sal_Int32   readData( StreamDataSequence& orData, sal_Int32 nBytes, size_t nAtomSize = 1 ) SAL_OVERRIDE;
+    virtual sal_Int32   readData( StreamDataSequence& orData, sal_Int32 nBytes, size_t nAtomSize = 1 ) override;
 
     /** Reads nBytes bytes to the (existing) buffer opMem.
         @return  Number of bytes really read. */
-    virtual sal_Int32   readMemory( void* opMem, sal_Int32 nBytes, size_t nAtomSize = 1 ) SAL_OVERRIDE;
+    virtual sal_Int32   readMemory( void* opMem, sal_Int32 nBytes, size_t nAtomSize = 1 ) override;
 
     /** Seeks the stream forward by the passed number of bytes. This works for
         non-seekable streams too. */
-    virtual void        skip( sal_Int32 nBytes, size_t nAtomSize = 1 ) SAL_OVERRIDE;
+    virtual void        skip( sal_Int32 nBytes, size_t nAtomSize = 1 ) override;
 
 private:
     StreamDataSequence  maBuffer;       ///< Data buffer used in readMemory() function.
-    ::com::sun::star::uno::Reference< ::com::sun::star::io::XInputStream >
+    css::uno::Reference< css::io::XInputStream >
                         mxInStrm;       ///< Reference to the input stream.
     bool                mbAutoClose;    ///< True = automatically close stream on destruction.
 };
@@ -341,15 +302,15 @@ public:
 
     /** Reads nBytes bytes to the passed sequence.
         @return  Number of bytes really read. */
-    virtual sal_Int32   readData( StreamDataSequence& orData, sal_Int32 nBytes, size_t nAtomSize = 1 ) SAL_OVERRIDE;
+    virtual sal_Int32   readData( StreamDataSequence& orData, sal_Int32 nBytes, size_t nAtomSize = 1 ) override;
 
     /** Reads nBytes bytes to the (existing) buffer opMem.
         @return  Number of bytes really read. */
-    virtual sal_Int32   readMemory( void* opMem, sal_Int32 nBytes, size_t nAtomSize = 1 ) SAL_OVERRIDE;
+    virtual sal_Int32   readMemory( void* opMem, sal_Int32 nBytes, size_t nAtomSize = 1 ) override;
 
     /** Seeks the stream forward by the passed number of bytes. This works for
         non-seekable streams too. */
-    virtual void        skip( sal_Int32 nBytes, size_t nAtomSize = 1 ) SAL_OVERRIDE;
+    virtual void        skip( sal_Int32 nBytes, size_t nAtomSize = 1 ) override;
 
 private:
     /** Returns the number of bytes available in the sequence for the passed byte count. */
@@ -386,31 +347,31 @@ public:
 
     /** Returns the size of the data block in the wrapped stream offered by
         this wrapper. */
-    virtual sal_Int64   size() const SAL_OVERRIDE;
+    virtual sal_Int64   size() const override;
 
     /** Returns the current relative stream position. */
-    virtual sal_Int64   tell() const SAL_OVERRIDE;
+    virtual sal_Int64   tell() const override;
 
     /** Seeks the stream to the passed relative position, if the wrapped stream
         is seekable. */
-    virtual void        seek( sal_Int64 nPos ) SAL_OVERRIDE;
+    virtual void        seek( sal_Int64 nPos ) override;
 
     /** Closes the input stream but not the wrapped stream. */
-    virtual void        close() SAL_OVERRIDE;
+    virtual void        close() override;
 
     /** Reads nBytes bytes to the passed sequence. Does not read out of the
         data block whose size has been specified on construction.
         @return  Number of bytes really read. */
-    virtual sal_Int32   readData( StreamDataSequence& orData, sal_Int32 nBytes, size_t nAtomSize = 1 ) SAL_OVERRIDE;
+    virtual sal_Int32   readData( StreamDataSequence& orData, sal_Int32 nBytes, size_t nAtomSize = 1 ) override;
 
     /** Reads nBytes bytes to the (existing) buffer opMem. Does not read out of
         the data block whose size has been specified on construction.
         @return  Number of bytes really read. */
-    virtual sal_Int32   readMemory( void* opMem, sal_Int32 nBytes, size_t nAtomSize = 1 ) SAL_OVERRIDE;
+    virtual sal_Int32   readMemory( void* opMem, sal_Int32 nBytes, size_t nAtomSize = 1 ) override;
 
     /** Seeks the stream forward by the passed number of bytes. This works for
         non-seekable streams too. Does not seek out of the data block. */
-    virtual void        skip( sal_Int32 nBytes, size_t nAtomSize = 1 ) SAL_OVERRIDE;
+    virtual void        skip( sal_Int32 nBytes, size_t nAtomSize = 1 ) override;
 
 private:
     /** Returns the number of bytes available in the sequence for the passed byte count. */

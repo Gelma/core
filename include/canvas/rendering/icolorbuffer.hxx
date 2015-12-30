@@ -35,17 +35,11 @@ namespace canvas
         /// The underlying pixel format for this buffer
         enum Format
         {
-            // 24-bit RGB pixel format, 8 bits per channel.
-            FMT_R8G8B8,
-
             // 32-bit ARGB pixel format with alpha, 8 bits per channel.
             FMT_A8R8G8B8,
 
             // 32-bit RGB pixel format, 8 bits per channel.
-            FMT_X8R8G8B8,
-
-            // for enum to 32bit
-            FMT_UNKNOWN = static_cast<sal_uInt32>(-1)
+            FMT_X8R8G8B8
         };
 
         virtual ~IColorBuffer() {}

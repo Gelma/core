@@ -21,16 +21,15 @@
 
 #include <ooo/vba/word/XVariable.hpp>
 #include <vbahelper/vbahelperinterface.hxx>
-#include <cppuhelper/implbase1.hxx>
 #include <com/sun/star/beans/XPropertyAccess.hpp>
 
-typedef InheritedHelperInterfaceImpl1< ooo::vba::word::XVariable > SwVbaVariable_BASE;
+typedef InheritedHelperInterfaceWeakImpl< ooo::vba::word::XVariable > SwVbaVariable_BASE;
 
 class SwVbaVariable : public SwVbaVariable_BASE
 {
 private:
     css::uno::Reference< css::beans::XPropertyAccess > mxUserDefined;
-    OUString maName;
+    OUString maVariableName;
 
 public:
     SwVbaVariable( const css::uno::Reference< ooo::vba::XHelperInterface >& rParent, const css::uno::Reference< css::uno::XComponentContext >& rContext,
@@ -38,15 +37,15 @@ public:
     virtual ~SwVbaVariable();
 
    // XVariable
-    virtual OUString SAL_CALL getName() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL setName( const OUString& ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual css::uno::Any SAL_CALL getValue() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL setValue( const css::uno::Any& rValue ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual sal_Int32 SAL_CALL getIndex() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getName() throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL setName( const OUString& ) throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual css::uno::Any SAL_CALL getValue() throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL setValue( const css::uno::Any& rValue ) throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual sal_Int32 SAL_CALL getIndex() throw ( css::uno::RuntimeException, std::exception ) override;
 
     // XHelperInterface
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 #endif // INCLUDED_SW_SOURCE_UI_VBA_VBAVARIABLE_HXX
 

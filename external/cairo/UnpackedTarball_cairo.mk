@@ -34,6 +34,7 @@ endif
 ifeq ($(OS),ANDROID)
 $(eval $(call gb_UnpackedTarball_add_patches,cairo,\
 	external/cairo/cairo/cairo-1.10.2.android.patch \
+	external/cairo/cairo/cairo.GL_RGBA.patch \
 ))
 endif
 
@@ -41,10 +42,8 @@ ifneq (,$(filter ANDROID IOS,$(OS)))
 $(eval $(call gb_UnpackedTarball_add_file,cairo,.,external/cairo/cairo/dummy_pkg_config))
 endif
 
-ifeq ($(COM_GCC_IS_CLANG),TRUE)
 $(eval $(call gb_UnpackedTarball_add_patches,cairo,\
 	external/cairo/cairo/no-flto-clang.patch \
 ))
-endif
 
 # vim: set noet sw=4 ts=4:

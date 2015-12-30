@@ -32,9 +32,17 @@
 
 #include "AccObject.hxx"
 #include "AccEventListener.hxx"
-#include "UAccCOM_i.c"
 #include "AccResource.hxx"
 
+#if defined __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wextra-tokens"
+    // "#endif !_MIDL_USE_GUIDDEF_" in midl-generated code
+#endif
+#include "UAccCOM_i.c"
+#if defined __clang__
+#pragma clang diagnostic pop
+#endif
 
 using namespace std;
 using namespace com::sun::star::uno;
@@ -149,18 +157,18 @@ const short ROLE_TABLE[][2] =
    */
 AccObject::AccObject(XAccessible* pAcc, AccObjectManagerAgent* pAgent,
                      AccEventListener* pListener) :
-        m_pIMAcc    (NULL),
         m_resID     (NULL),
         m_pParantID (NULL),
+        m_bShouldDestroy(sal_False),
+        m_pIMAcc    (NULL),
         m_pParentObj(NULL),
         m_pListener (pListener),
-        m_bShouldDestroy(sal_False),
         m_xAccRef( pAcc )
 {
     ImplInitializeCreateObj();
 
     m_xAccContextRef = m_xAccRef->getAccessibleContext();
-    m_xAccActionRef = Reference< XAccessibleAction > (m_xAccContextRef,UNO_QUERY);
+    m_xAccActionRef.set(m_xAccContextRef,UNO_QUERY);
     m_accRole = m_xAccContextRef -> getAccessibleRole();
     if( m_pIMAcc )
     {
@@ -302,7 +310,7 @@ void AccObject::UpdateDescription()
    */
 void  AccObject::UpdateAction()
 {
-    m_xAccActionRef = Reference< XAccessibleAction > (m_xAccContextRef,UNO_QUERY);
+    m_xAccActionRef.set(m_xAccContextRef,UNO_QUERY);
 
     if( m_xAccActionRef.is() && m_pIMAcc )
     {
@@ -471,9 +479,9 @@ void  AccObject::SetValue( Any pAny )
             strValue=::rtl::OUString::number(val);
         }
     }
-    else if (pAny.getValueType() == cppu::UnoType<com::sun::star::accessibility::TextSegment>::get())
+    else if (pAny.getValueType() == cppu::UnoType<css::accessibility::TextSegment>::get())
     {
-        com::sun::star::accessibility::TextSegment val;
+        css::accessibility::TextSegment val;
         if (pAny >>= val)
         {
             ::rtl::OUString realVal(val.SegmentText);
@@ -998,8 +1006,8 @@ void AccObject::UpdateLocation()
     Reference< XAccessibleComponent > pRComponent(pContext,UNO_QUERY);
     if( pRComponent.is() )
     {
-        ::com::sun::star::awt::Point pCPoint = pRComponent->getLocationOnScreen();
-        ::com::sun::star::awt::Size pCSize = pRComponent->getSize();
+        css::awt::Point pCPoint = pRComponent->getLocationOnScreen();
+        css::awt::Size pCSize = pRComponent->getSize();
         Location tempLocation;
         tempLocation.m_dLeft = pCPoint.X;
         tempLocation.m_dTop =  pCPoint.Y;

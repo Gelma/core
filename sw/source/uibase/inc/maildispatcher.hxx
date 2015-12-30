@@ -58,10 +58,10 @@ public:
         connected to the mail server otherwise errors occur
         during the delivery of mail messages.
 
-        @throws ::com::sun::star::uno::RuntimeException
+        @throws css::uno::RuntimeException
         on errors during construction of an instance of this class.
     */
-    MailDispatcher(::com::sun::star::uno::Reference< ::com::sun::star::mail::XSmtpService> xMailService);
+    MailDispatcher(css::uno::Reference< css::mail::XSmtpService> xMailService);
 
     /**
         Shutdown the mail dispatcher. Every mail messages
@@ -77,12 +77,12 @@ public:
         @param xMailMessage
         [in] a mail message that should be send.
     */
-    void enqueueMailMessage(::com::sun::star::uno::Reference< ::com::sun::star::mail::XMailMessage> xMailMessage);
+    void enqueueMailMessage(css::uno::Reference< css::mail::XMailMessage> xMailMessage);
     /**
         Dequeues a mail message.
         This enables the caller to remove attachments when sending mails is to be cancelled.
     */
-    ::com::sun::star::uno::Reference< ::com::sun::star::mail::XMailMessage> dequeueMailMessage();
+    css::uno::Reference< css::mail::XMailMessage> dequeueMailMessage();
 
     /**
         Start sending mail messages asynchronously. A client may register
@@ -133,16 +133,16 @@ public:
     void addListener(::rtl::Reference<IMailDispatcherListener> listener);
 
 protected:
-    virtual void SAL_CALL run() SAL_OVERRIDE;
-    virtual void SAL_CALL onTerminated() SAL_OVERRIDE;
+    virtual void SAL_CALL run() override;
+    virtual void SAL_CALL onTerminated() override;
 
 private:
     std::list< ::rtl::Reference<IMailDispatcherListener> > cloneListener();
-    void sendMailMessageNotifyListener(::com::sun::star::uno::Reference< ::com::sun::star::mail::XMailMessage> message);
+    void sendMailMessageNotifyListener(css::uno::Reference< css::mail::XMailMessage> message);
 
 private:
-    ::com::sun::star::uno::Reference< ::com::sun::star::mail::XSmtpService> mailserver_;
-    ::std::list< ::com::sun::star::uno::Reference< ::com::sun::star::mail::XMailMessage > > messages_;
+    css::uno::Reference< css::mail::XSmtpService> mailserver_;
+    ::std::list< css::uno::Reference< css::mail::XMailMessage > > messages_;
     ::std::list< ::rtl::Reference<IMailDispatcherListener> > listeners_;
     ::osl::Mutex message_container_mutex_;
     ::osl::Mutex listener_container_mutex_;

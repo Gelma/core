@@ -23,9 +23,8 @@
 #include <svl/outstrm.hxx>
 #include <svtools/DocumentToGraphicRenderer.hxx>
 
-GraphicExportFilter::GraphicExportFilter( const Reference<XComponentContext>& rxContext )
-    : mxContext( rxContext )
-    , mExportSelection(false)
+GraphicExportFilter::GraphicExportFilter( const Reference<XComponentContext>&  )
+    : mExportSelection(false)
     , mTargetWidth(0)
     , mTargetHeight(0)
 {}
@@ -112,7 +111,10 @@ sal_Bool SAL_CALL GraphicExportFilter::filter( const Sequence<PropertyValue>& rD
 
     Size aTargetSizePixel(mTargetWidth, mTargetHeight);
 
-    Graphic aGraphic = aRenderer.renderToGraphic( aCurrentPage, aDocumentSizePixel, aTargetSizePixel );
+    if (mTargetWidth == 0 || mTargetHeight == 0)
+        aTargetSizePixel = aDocumentSizePixel;
+
+    Graphic aGraphic = aRenderer.renderToGraphic(aCurrentPage, aDocumentSizePixel, aTargetSizePixel, COL_WHITE);
 
     GraphicFilter& rFilter = GraphicFilter::GetGraphicFilter();
 

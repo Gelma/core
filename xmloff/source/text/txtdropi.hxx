@@ -31,24 +31,21 @@ class XMLTextDropCapImportContext :public XMLElementPropertyContext
 
 private:
     void ProcessAttrs(
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList > & xAttrList );
+        const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList );
 
 public:
-    TYPEINFO_OVERRIDE();
 
     XMLTextDropCapImportContext(
         SvXMLImport& rImport, sal_uInt16 nPrfx,
         const OUString& rLName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList > & xAttrList,
+        const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList,
         const XMLPropertyState& rProp,
         sal_Int32 nWholeWOrdIdx,
         ::std::vector< XMLPropertyState > &rProps );
 
     virtual ~XMLTextDropCapImportContext();
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
     const OUString& GetStyleName() const { return sStyleName; }
 };

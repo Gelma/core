@@ -83,7 +83,7 @@ class ImpTwain : public ::cppu::WeakImplHelper< util::XCloseListener >
     ScannerManager&                             mrMgr;
     TW_IDENTITY                                 aAppIdent;
     TW_IDENTITY                                 aSrcIdent;
-    Link<>                                      aNotifyLink;
+    Link<unsigned long,void>                    aNotifyLink;
     DSMENTRYPROC                                pDSM;
     osl::Module*                                pMod;
     ULONG_PTR                                   nCurState;
@@ -116,7 +116,7 @@ class ImpTwain : public ::cppu::WeakImplHelper< util::XCloseListener >
 
 public:
 
-                                                ImpTwain( ScannerManager& rMgr, const Link<>& rNotifyLink );
+                                                ImpTwain( ScannerManager& rMgr, const Link<unsigned long,void>& rNotifyLink );
                                                 ~ImpTwain();
 
     void                                        Destroy();
@@ -150,7 +150,7 @@ LRESULT CALLBACK TwainMsgProc( int nCode, WPARAM wParam, LPARAM lParam )
 }
 
 // #107835# hold reference to ScannerManager, to prevent premature death
-ImpTwain::ImpTwain( ScannerManager& rMgr, const Link<>& rNotifyLink ) :
+ImpTwain::ImpTwain( ScannerManager& rMgr, const Link<unsigned long,void>& rNotifyLink ) :
             mxMgr( uno::Reference< scanner::XScannerManager >( static_cast< OWeakObject* >( &rMgr ), uno::UNO_QUERY) ),
             mrMgr( rMgr ),
             aNotifyLink( rNotifyLink ),
@@ -215,7 +215,7 @@ bool ImpTwain::SelectSource()
         TW_IDENTITY aIdent;
 
         aIdent.Id = 0, aIdent.ProductName[ 0 ] = '\0';
-        aNotifyLink.Call( (void*) TWAIN_EVENT_SCANNING );
+        aNotifyLink.Call( TWAIN_EVENT_SCANNING );
         nRet = PFUNC( &aAppIdent, NULL, DG_CONTROL, DAT_IDENTITY, MSG_USERSELECT, &aIdent );
     }
 
@@ -296,7 +296,7 @@ bool ImpTwain::ImplEnableSource()
     {
         TW_USERINTERFACE aUI = { true, true, hTwainWnd };
 
-        aNotifyLink.Call( (void*) TWAIN_EVENT_SCANNING );
+        aNotifyLink.Call( TWAIN_EVENT_SCANNING );
         nCurState = 5;
 
         // register as vetoable close listener, to prevent application to die under us
@@ -480,7 +480,7 @@ IMPL_LINK_TYPED( ImpTwain, ImplFallbackHdl, void*, pData, void )
         default:
         {
             if( nEvent != TWAIN_EVENT_NONE )
-                aNotifyLink.Call( (void*) nEvent );
+                aNotifyLink.Call( nEvent );
 
             bFallback = false;
         }
@@ -637,7 +637,7 @@ class Twain
     ImpTwain*                                   mpImpTwain;
     TwainState                                  meState;
 
-                                                DECL_LINK( ImpNotifyHdl, ImpTwain* );
+    DECL_LINK_TYPED( ImpNotifyHdl, unsigned long, void );
 
 public:
 
@@ -670,8 +670,8 @@ bool Twain::SelectSource( ScannerManager& rMgr )
     if( !mpImpTwain )
     {
         // hold reference to ScannerManager, to prevent premature death
-        mxMgr = uno::Reference< scanner::XScannerManager >( static_cast< OWeakObject* >( const_cast< ScannerManager* >( mpCurMgr = &rMgr ) ),
-                                                            uno::UNO_QUERY ),
+        mxMgr.set( static_cast< OWeakObject* >( const_cast< ScannerManager* >( mpCurMgr = &rMgr ) ),
+                   uno::UNO_QUERY ),
 
         meState = TWAIN_STATE_NONE;
         mpImpTwain = new ImpTwain( rMgr, LINK( this, Twain, ImpNotifyHdl ) );
@@ -690,8 +690,8 @@ bool Twain::PerformTransfer( ScannerManager& rMgr, const uno::Reference< lang::X
     if( !mpImpTwain )
     {
         // hold reference to ScannerManager, to prevent premature death
-        mxMgr = uno::Reference< scanner::XScannerManager >( static_cast< OWeakObject* >( const_cast< ScannerManager* >( mpCurMgr = &rMgr ) ),
-                                                            uno::UNO_QUERY ),
+        mxMgr.set( static_cast< OWeakObject* >( const_cast< ScannerManager* >( mpCurMgr = &rMgr ) ),
+                   uno::UNO_QUERY ),
 
         mxListener = rxListener;
         meState = TWAIN_STATE_NONE;
@@ -704,9 +704,9 @@ bool Twain::PerformTransfer( ScannerManager& rMgr, const uno::Reference< lang::X
     return bRet;
 }
 
-IMPL_LINK( Twain, ImpNotifyHdl, ImpTwain*, nEvent )
+IMPL_LINK_TYPED( Twain, ImpNotifyHdl, unsigned long, nEvent, void )
 {
-    switch( (sal_uIntPtr)(void*) nEvent )
+    switch( nEvent )
     {
         case( TWAIN_EVENT_SCANNING ):
             meState = TWAIN_STATE_SCANNING;
@@ -752,8 +752,6 @@ IMPL_LINK( Twain, ImpNotifyHdl, ImpTwain*, nEvent )
         default:
         break;
     }
-
-    return 0L;
 }
 
 static Twain aTwain;
@@ -771,7 +769,7 @@ void ScannerManager::ReleaseData()
     }
 }
 
-awt::Size ScannerManager::getSize() throw()
+awt::Size ScannerManager::getSize() throw(std::exception)
 {
     awt::Size   aRet;
     HGLOBAL     hDIB = (HGLOBAL)(sal_IntPtr) mpData;
@@ -796,7 +794,7 @@ awt::Size ScannerManager::getSize() throw()
     return aRet;
 }
 
-uno::Sequence< sal_Int8 > ScannerManager::getDIB() throw()
+uno::Sequence< sal_Int8 > ScannerManager::getDIB() throw(std::exception)
 {
     uno::Sequence< sal_Int8 > aRet;
 
@@ -856,7 +854,7 @@ uno::Sequence< sal_Int8 > ScannerManager::getDIB() throw()
     return aRet;
 }
 
-uno::Sequence< ScannerContext > SAL_CALL ScannerManager::getAvailableScanners() throw()
+uno::Sequence< ScannerContext > SAL_CALL ScannerManager::getAvailableScanners() throw(std::exception)
 {
     osl::MutexGuard aGuard( maProtector );
     uno::Sequence< ScannerContext >   aRet( 1 );
@@ -882,7 +880,7 @@ sal_Bool SAL_CALL ScannerManager::configureScannerAndScan( ScannerContext& rCont
 }
 
 void SAL_CALL ScannerManager::startScan( const ScannerContext& rContext, const uno::Reference< lang::XEventListener >& rxListener )
-    throw( ScannerException )
+    throw( ScannerException, std::exception )
 {
     osl::MutexGuard aGuard( maProtector );
     uno::Reference< XScannerManager >   xThis( this );
@@ -895,7 +893,7 @@ void SAL_CALL ScannerManager::startScan( const ScannerContext& rContext, const u
 }
 
 ScanError SAL_CALL ScannerManager::getError( const ScannerContext& rContext )
-    throw( ScannerException )
+    throw( ScannerException, std::exception )
 {
     osl::MutexGuard aGuard( maProtector );
     uno::Reference< XScannerManager >   xThis( this );
@@ -907,7 +905,7 @@ ScanError SAL_CALL ScannerManager::getError( const ScannerContext& rContext )
 }
 
 uno::Reference< awt::XBitmap > SAL_CALL ScannerManager::getBitmap( const ScannerContext& /*rContext*/ )
-    throw( ScannerException )
+    throw( ScannerException, std::exception )
 {
     osl::MutexGuard aGuard( maProtector );
     return uno::Reference< awt::XBitmap >( this );

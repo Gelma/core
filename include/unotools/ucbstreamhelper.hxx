@@ -53,17 +53,17 @@ namespace utl
     {
     public:
         static SvStream*    CreateStream( const OUString& rFileName, StreamMode eOpenMode,
-                                          UcbLockBytesHandler* pHandler=0 );
+                                          UcbLockBytesHandler* pHandler=nullptr );
         static SvStream*    CreateStream( const OUString& rFileName, StreamMode eOpenMode,
-                                          ::com::sun::star::uno::Reference < ::com::sun::star::task::XInteractionHandler >,
-                                          UcbLockBytesHandler* pHandler=0 );
+                                          css::uno::Reference < css::task::XInteractionHandler >,
+                                          UcbLockBytesHandler* pHandler=nullptr );
         static SvStream*    CreateStream( const OUString& rFileName, StreamMode eOpenMode,
                                           bool bFileExists,
-                                UcbLockBytesHandler* pHandler=0 );
-        static SvStream*    CreateStream( ::com::sun::star::uno::Reference < ::com::sun::star::io::XInputStream > xStream );
-        static SvStream*    CreateStream( ::com::sun::star::uno::Reference < ::com::sun::star::io::XStream > xStream );
-        static SvStream*    CreateStream( ::com::sun::star::uno::Reference < ::com::sun::star::io::XInputStream > xStream, bool bCloseStream );
-        static SvStream*    CreateStream( ::com::sun::star::uno::Reference < ::com::sun::star::io::XStream > xStream, bool bCloseStream );
+                                UcbLockBytesHandler* pHandler=nullptr );
+        static SvStream*    CreateStream( css::uno::Reference < css::io::XInputStream > xStream );
+        static SvStream*    CreateStream( css::uno::Reference < css::io::XStream > xStream );
+        static SvStream*    CreateStream( css::uno::Reference < css::io::XInputStream > xStream, bool bCloseStream );
+        static SvStream*    CreateStream( css::uno::Reference < css::io::XStream > xStream, bool bCloseStream );
     };
 }
 

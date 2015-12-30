@@ -42,12 +42,13 @@
 #include <com/sun/star/util/XNumberFormatTypes.hpp>
 #include <com/sun/star/sheet/XSheetCellRangeContainer.hpp>
 
+#include <boost/noncopyable.hpp>
+
 #include <memory>
 #include <unordered_map>
+#include <map>
 #include <vector>
-#include <boost/ptr_container/ptr_list.hpp>
-#include <boost/ptr_container/ptr_map.hpp>
-#include <boost/noncopyable.hpp>
+#include <list>
 
 class ScMyStyleNumberFormats;
 class XMLNumberFormatAttributesExportHelper;
@@ -766,7 +767,6 @@ class SolarMutexGuard;
 
 struct tScMyCellRange
 {
-    SCTAB Sheet;
     sal_Int32 StartColumn, EndColumn;
     sal_Int32 StartRow, EndRow;
 };
@@ -782,7 +782,7 @@ struct ScMyNamedExpression
     bool               bIsExpression;
 };
 
-typedef ::boost::ptr_list<ScMyNamedExpression> ScMyNamedExpressions;
+typedef ::std::list<std::unique_ptr<ScMyNamedExpression>> ScMyNamedExpressions;
 
 struct ScMyLabelRange
 {
@@ -805,15 +805,15 @@ struct ScMyImportValidation
     OUString                                   sFormulaNmsp1;
     OUString                                   sFormulaNmsp2;
     OUString                                   sBaseCellAddress;   // string is used directly
-    com::sun::star::sheet::ValidationAlertStyle     aAlertStyle;
-    com::sun::star::sheet::ValidationType           aValidationType;
-    com::sun::star::sheet::ConditionOperator        aOperator;
-    formula::FormulaGrammar::Grammar                eGrammar1;
-    formula::FormulaGrammar::Grammar                eGrammar2;
-    sal_Int16                                       nShowList;
-    bool                                            bShowErrorMessage;
-    bool                                            bShowImputMessage;
-    bool                                            bIgnoreBlanks;
+    css::sheet::ValidationAlertStyle           aAlertStyle;
+    css::sheet::ValidationType                 aValidationType;
+    css::sheet::ConditionOperator              aOperator;
+    formula::FormulaGrammar::Grammar           eGrammar1;
+    formula::FormulaGrammar::Grammar           eGrammar2;
+    sal_Int16                                  nShowList;
+    bool                                       bShowErrorMessage;
+    bool                                       bShowImputMessage;
+    bool                                       bIgnoreBlanks;
 };
 
 typedef std::vector<ScMyImportValidation>           ScMyImportValidations;
@@ -823,7 +823,7 @@ class ScXMLEditAttributeMap;
 class ScXMLImport: public SvXMLImport, boost::noncopyable
 {
     typedef std::unordered_map< OUString, sal_Int16, OUStringHash >   CellTypeMap;
-    typedef ::boost::ptr_map<SCTAB, ScMyNamedExpressions> SheetNamedExpMap;
+    typedef ::std::map<SCTAB, std::unique_ptr<ScMyNamedExpressions>> SheetNamedExpMap;
 
     CellTypeMap             aCellTypeMap;
 
@@ -835,7 +835,6 @@ class ScXMLImport: public SvXMLImport, boost::noncopyable
 
     mutable std::unique_ptr<ScXMLEditAttributeMap> mpEditAttrMap;
     ScXMLChangeTrackingImportHelper*    pChangeTrackingImportHelper;
-    std::list<SvXMLImportContext*>      aViewContextList;
     ScMyStylesImportHelper*        pStylesImportHelper;
     OUString                       sNumberFormat;
     OUString                       sLocale;
@@ -938,8 +937,8 @@ class ScXMLImport: public SvXMLImport, boost::noncopyable
 
     ScMyTables              aTables;
 
-    ScMyNamedExpressions*   pMyNamedExpressions;
-    SheetNamedExpMap maSheetNamedExpressions;
+    ScMyNamedExpressions*   m_pMyNamedExpressions;
+    SheetNamedExpMap m_SheetNamedExpressions;
 
     ScMyLabelRanges*        pMyLabelRanges;
     ScMyImportValidations*  pValidations;
@@ -949,10 +948,10 @@ class ScXMLImport: public SvXMLImport, boost::noncopyable
     std::vector<OUString>          aTableStyles;
     XMLNumberFormatAttributesExportHelper* pNumberFormatAttributesExportHelper;
     ScMyStyleNumberFormats* pStyleNumberFormats;
-    com::sun::star::uno::Reference <com::sun::star::util::XNumberFormats> xNumberFormats;
-    com::sun::star::uno::Reference <com::sun::star::util::XNumberFormatTypes> xNumberFormatTypes;
+    css::uno::Reference <css::util::XNumberFormats> xNumberFormats;
+    css::uno::Reference <css::util::XNumberFormatTypes> xNumberFormatTypes;
 
-    com::sun::star::uno::Reference <com::sun::star::sheet::XSheetCellRangeContainer> xSheetCellRanges;
+    css::uno::Reference <css::sheet::XSheetCellRangeContainer> xSheetCellRanges;
 
     OUString           sPrevStyleName;
     OUString           sPrevCurrency;
@@ -973,21 +972,19 @@ protected:
     // before a context for the current element has been pushed.
     virtual SvXMLImportContext *CreateContext(sal_uInt16 nPrefix,
                                       const OUString& rLocalName,
-                                      const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
-    virtual XMLShapeImportHelper* CreateShapeImport() SAL_OVERRIDE;
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList ) override;
+    virtual XMLShapeImportHelper* CreateShapeImport() override;
 
 public:
-    // #110680#
     ScXMLImport(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rContext,
+        const css::uno::Reference< css::uno::XComponentContext >& rContext,
         OUString const & implementationName, SvXMLImportFlags nImportFlag);
 
     virtual ~ScXMLImport() throw();
 
     // XInitialization
     virtual void SAL_CALL initialize( const css::uno::Sequence<css::uno::Any>& aArguments )
-        throw (css::uno::Exception, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::Exception, css::uno::RuntimeException, std::exception) override;
 
     // namespace office
     // NB: in contrast to other CreateFooContexts, this particular one handles
@@ -995,17 +992,17 @@ public:
     SvXMLImportContext *CreateMetaContext(
                                     const OUString& rLocalName );
     SvXMLImportContext *CreateFontDeclsContext(const sal_uInt16 nPrefix, const OUString& rLocalName,
-                                     const com::sun::star::uno::Reference<com::sun::star::xml::sax::XAttributeList>& xAttrList);
+                                     const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList);
     SvXMLImportContext *CreateScriptContext(
                                     const OUString& rLocalName );
     SvXMLImportContext *CreateStylesContext(const OUString& rLocalName,
-                                     const com::sun::star::uno::Reference<com::sun::star::xml::sax::XAttributeList>& xAttrList, bool bAutoStyles );
+                                     const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                     bool bAutoStyles );
     SvXMLImportContext *CreateBodyContext(
                                     const OUString& rLocalName,
-                                    const ::com::sun::star::uno::Reference<com::sun::star::xml::sax::XAttributeList>& xAttrList );
+                                    const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList );
 
-    virtual void SetStatistics(
-        const ::com::sun::star::uno::Sequence< ::com::sun::star::beans::NamedValue> & i_rStats) SAL_OVERRIDE;
+    virtual void SetStatistics( const css::uno::Sequence< css::beans::NamedValue> & i_rStats) override;
 
     ScDocumentImport& GetDoc();
 
@@ -1114,12 +1111,12 @@ public:
 
     void AddNamedExpression(ScMyNamedExpression* pMyNamedExpression)
     {
-        if (!pMyNamedExpressions)
-            pMyNamedExpressions = new ScMyNamedExpressions();
-        pMyNamedExpressions->push_back(pMyNamedExpression);
+        if (!m_pMyNamedExpressions)
+            m_pMyNamedExpressions = new ScMyNamedExpressions();
+        m_pMyNamedExpressions->push_back(std::unique_ptr<ScMyNamedExpression>(pMyNamedExpression));
     }
 
-    ScMyNamedExpressions* GetNamedExpressions() { return pMyNamedExpressions; }
+    ScMyNamedExpressions* GetNamedExpressions() { return m_pMyNamedExpressions; }
 
     void AddNamedExpression(SCTAB nTab, ScMyNamedExpression* pNamedExp);
 
@@ -1142,15 +1139,15 @@ public:
     ScXMLChangeTrackingImportHelper* GetChangeTrackingImportHelper();
     void InsertStyles();
 
-    void SetChangeTrackingViewSettings(const com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>& rChangeProps);
-    virtual void SetViewSettings(const com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>& aViewProps) SAL_OVERRIDE;
-    virtual void SetConfigurationSettings(const com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>& aConfigProps) SAL_OVERRIDE;
+    void SetChangeTrackingViewSettings(const css::uno::Sequence<css::beans::PropertyValue>& rChangeProps);
+    virtual void SetViewSettings(const css::uno::Sequence<css::beans::PropertyValue>& aViewProps) override;
+    virtual void SetConfigurationSettings(const css::uno::Sequence<css::beans::PropertyValue>& aConfigProps) override;
 
     void SetTableStyle(const OUString& rValue) { aTableStyles.push_back(rValue); }
     ScMyStylesImportHelper* GetStylesImportHelper() { return pStylesImportHelper; }
     sal_Int32 SetCurrencySymbol(const sal_Int32 nKey, const OUString& rCurrency);
     bool IsCurrencySymbol(const sal_Int32 nNumberFormat, const OUString& sCurrencySymbol, const OUString& sBankSymbol);
-    void SetType(com::sun::star::uno::Reference <com::sun::star::beans::XPropertySet>& rProperties,
+    void SetType(css::uno::Reference <css::beans::XPropertySet>& rProperties,
         sal_Int32& rNumberFormat,
         const sal_Int16 nCellType,
         const OUString& rCurrency);
@@ -1161,7 +1158,7 @@ public:
     bool HasNewCondFormatData() { return mbHasNewCondFormatData; }
 
 private:
-    void AddStyleRange(const com::sun::star::table::CellRangeAddress& rCellRange);
+    void AddStyleRange(const css::table::CellRangeAddress& rCellRange);
     void SetStyleToRanges();
 
     void ExamineDefaultStyle();
@@ -1175,16 +1172,16 @@ public:
     void SetStylesToRangesFinished();
 
     // XImporter
-    virtual void SAL_CALL setTargetDocument( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XComponent >& xDoc ) throw(::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL setTargetDocument( const css::uno::Reference< css::lang::XComponent >& xDoc ) throw(css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL startDocument()
-        throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL endDocument()
-        throw(::com::sun::star::xml::sax::SAXException,
-              ::com::sun::star::uno::RuntimeException,
-              std::exception) SAL_OVERRIDE;
+        throw(css::xml::sax::SAXException,
+              css::uno::RuntimeException,
+              std::exception) override;
 
-    virtual void DisposingModel() SAL_OVERRIDE;
+    virtual void DisposingModel() override;
 
     /**
      * Use this class to manage solar mutex locking instead of calling
@@ -1209,6 +1206,7 @@ public:
     void SetNamedRanges();
     void SetSheetNamedRanges();
     void SetLabelRanges();
+    void SetStringRefSyntaxIfMissing();
 
     /** Extracts the formula string, the formula grammar namespace URL, and a
         grammar enum value from the passed formula attribute value.
@@ -1251,7 +1249,7 @@ public:
 
     ScEditEngineDefaulter* GetEditEngine();
     const ScXMLEditAttributeMap& GetEditAttributeMap() const;
-    virtual void NotifyEmbeddedFontRead() SAL_OVERRIDE;
+    virtual void NotifyEmbeddedFontRead() override;
 };
 
 #endif

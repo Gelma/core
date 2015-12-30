@@ -20,6 +20,10 @@
 #ifndef INCLUDED_SW_SOURCE_FILTER_XML_XMLIMP_HXX
 #define INCLUDED_SW_SOURCE_FILTER_XML_XMLIMP_HXX
 
+#include <sal/config.h>
+
+#include <memory>
+
 #include <com/sun/star/document/XDocumentProperties.hpp>
 
 #include <sot/storage.hxx>
@@ -49,45 +53,43 @@ namespace SwImport {
 
 class SwXMLImport: public SvXMLImport
 {
-    SwNodeIndex             *pSttNdIdx;
+    std::unique_ptr<SwNodeIndex> m_pSttNdIdx;
 
-    SvXMLUnitConverter      *pTwipUnitConv;
-    SvXMLImportItemMapper   *pTableItemMapper;// paragraph item import
-    SvXMLTokenMap           *pDocElemTokenMap;
-    SvXMLTokenMap           *pTableElemTokenMap;
-    SvXMLTokenMap           *pTableCellAttrTokenMap;
-    SvXMLGraphicHelper      *pGraphicResolver;
-    SvXMLEmbeddedObjectHelper   *pEmbeddedResolver;
+    SvXMLUnitConverter      *m_pTwipUnitConv;
+    SvXMLImportItemMapper   *m_pTableItemMapper;// paragraph item import
+    SvXMLTokenMap           *m_pDocElemTokenMap;
+    SvXMLTokenMap           *m_pTableElemTokenMap;
+    SvXMLTokenMap           *m_pTableCellAttrTokenMap;
+    SvXMLGraphicHelper      *m_pGraphicResolver;
+    SvXMLEmbeddedObjectHelper   *m_pEmbeddedResolver;
 
-    SvXMLItemMapEntriesRef  xTableItemMap;
-    SvXMLItemMapEntriesRef  xTableColItemMap;
-    SvXMLItemMapEntriesRef  xTableRowItemMap;
-    SvXMLItemMapEntriesRef  xTableCellItemMap;
-    tools::SvRef<SotStorage>            xPackage;
-    ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameContainer >
-                            xLateInitSettings;
+    SvXMLItemMapEntriesRef  m_xTableItemMap;
+    SvXMLItemMapEntriesRef  m_xTableColItemMap;
+    SvXMLItemMapEntriesRef  m_xTableRowItemMap;
+    SvXMLItemMapEntriesRef  m_xTableCellItemMap;
+    css::uno::Reference< css::container::XNameContainer >
+                            m_xLateInitSettings;
 
-    sal_uInt16              nStyleFamilyMask;// Mask of styles to load
-    bool                bLoadDoc : 1;   // Load doc or styles only
-    bool                bInsert : 1;    // Insert mode. If styles are
+    sal_uInt16              m_nStyleFamilyMask;// Mask of styles to load
+    bool                m_bLoadDoc : 1;   // Load doc or styles only
+    bool                m_bInsert : 1;    // Insert mode. If styles are
                                             // loaded only false means that
                                             // existing styles will be
                                             // overwritten.
-    bool                bBlock : 1;     // Load text block
-    bool                bShowProgress : 1;
-    bool                bOrganizerMode : 1;
-    bool                bInititedXForms : 1;
-    bool                bPreserveRedlineMode;
+    bool                m_bBlock : 1;     // Load text block
+    bool                m_bShowProgress : 1;
+    bool                m_bOrganizerMode : 1;
+    bool                m_bInititedXForms : 1;
+    bool                m_bPreserveRedlineMode;
 
-    SwDoc*      doc; // cached for getDoc()
+    SwDoc*      m_pDoc; // cached for getDoc()
 
     void                    _InitItemImport();
     void                    _FinitItemImport();
     void                    UpdateTextCollConditions( SwDoc *pDoc );
 
     void         setTextInsertMode(
-                     const ::com::sun::star::uno::Reference<
-                        ::com::sun::star::text::XTextRange > & rInsertPos );
+                     const css::uno::Reference< css::text::XTextRange > & rInsertPos );
     void         setStyleInsertMode( sal_uInt16 nFamilies,
                                      bool bOverwrite );
     void         setBlockMode();
@@ -99,34 +101,33 @@ protected:
     // before a context for the current element has been pushed.
     virtual SvXMLImportContext *CreateContext( sal_uInt16 nPrefix,
                   const OUString& rLocalName,
-                  const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+                  const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
 
-    virtual XMLTextImportHelper* CreateTextImport() SAL_OVERRIDE;
+    virtual XMLTextImportHelper* CreateTextImport() override;
 
-    virtual XMLShapeImportHelper* CreateShapeImport() SAL_OVERRIDE;
+    virtual XMLShapeImportHelper* CreateShapeImport() override;
 
 public:
     SwXMLImport(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rContext,
+        const css::uno::Reference< css::uno::XComponentContext >& rContext,
         OUString const & implementationName, SvXMLImportFlags nImportFlags);
 
     virtual ~SwXMLImport() throw();
 
-    // ::com::sun::star::xml::sax::XDocumentHandler
+    // css::xml::sax::XDocumentHandler
     virtual void SAL_CALL startDocument()
-        throw (::com::sun::star::xml::sax::SAXException,
-               ::com::sun::star::uno::RuntimeException,
-               std::exception) SAL_OVERRIDE;
+        throw (css::xml::sax::SAXException,
+               css::uno::RuntimeException,
+               std::exception) override;
     virtual void SAL_CALL endDocument()
-        throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception ) override;
 
     // XUnoTunnel
-    static const ::com::sun::star::uno::Sequence< sal_Int8 > & getUnoTunnelId() throw();
-    virtual sal_Int64 SAL_CALL getSomething( const ::com::sun::star::uno::Sequence< sal_Int8 >& aIdentifier ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    static const css::uno::Sequence< sal_Int8 > & getUnoTunnelId() throw();
+    virtual sal_Int64 SAL_CALL getSomething( const css::uno::Sequence< sal_Int8 >& aIdentifier ) throw(css::uno::RuntimeException, std::exception) override;
 
     // XInitialization
-    virtual void SAL_CALL initialize( const ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any >& aArguments ) throw(::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL initialize( const css::uno::Sequence< css::uno::Any >& aArguments ) throw(css::uno::Exception, css::uno::RuntimeException, std::exception) override;
 
     void                    InsertStyles( bool bAuto );
     void                    FinishStyles();
@@ -139,31 +140,27 @@ public:
     SvXMLImportContext *CreateScriptContext( const OUString& rLocalName );
     SvXMLImportContext *CreateStylesContext(
                 const OUString& rLocalName,
-                const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList,
+                const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList,
                 bool bAuto );
     SvXMLImportContext *CreateMasterStylesContext(
                 const OUString& rLocalName,
-                const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList );
+                const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList );
     SvXMLImportContext *CreateFontDeclsContext(
             const OUString& rLocalName,
-            const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList );
+            const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList );
     SvXMLImportContext *CreateBodyContentContext( const OUString& rLocalName );
-    sal_uInt16 GetStyleFamilyMask() const { return nStyleFamilyMask; }
-    bool IsInsertMode() const { return bInsert; }
-    bool IsStylesOnlyMode() const { return !bLoadDoc; }
-    bool IsBlockMode() const { return bBlock; }
-    bool IsOrganizerMode() const { return bOrganizerMode; }
+    sal_uInt16 GetStyleFamilyMask() const { return m_nStyleFamilyMask; }
+    bool IsInsertMode() const { return m_bInsert; }
+    bool IsStylesOnlyMode() const { return !m_bLoadDoc; }
+    bool IsBlockMode() const { return m_bBlock; }
+    bool IsOrganizerMode() const { return m_bOrganizerMode; }
 
     inline const SvXMLUnitConverter& GetTwipUnitConverter() const;
     inline const SvXMLImportItemMapper& GetTableItemMapper() const;
     inline       SvXMLImportItemMapper& GetTableItemMapper();
     SvXMLImportContext *CreateTableItemImportContext( sal_uInt16 nPrefix,
                 const OUString& rLocalName,
-                const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList,
+                const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList,
                 sal_uInt16 nSubFamily, SfxItemSet& rItemSet );
 
     const SvXMLTokenMap& GetDocElemTokenMap();
@@ -172,25 +169,24 @@ public:
 
     bool FindAutomaticStyle( sal_uInt16 nFamily,
                              const OUString& rName,
-                             const SfxItemSet **ppItemSet=0,
-                             OUString *pParent=0 ) const;
+                             const SfxItemSet **ppItemSet=nullptr,
+                             OUString *pParent=nullptr ) const;
 
     virtual void SetStatistics(
-        const ::com::sun::star::uno::Sequence< ::com::sun::star::beans::NamedValue> & i_rStats) SAL_OVERRIDE;
-    virtual void SetViewSettings(const com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>& aViewProps) SAL_OVERRIDE;
-    virtual void SetConfigurationSettings(const com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>& aConfigProps) SAL_OVERRIDE;
+        const css::uno::Sequence< css::beans::NamedValue> & i_rStats) override;
+    virtual void SetViewSettings(const css::uno::Sequence<css::beans::PropertyValue>& aViewProps) override;
+    virtual void SetConfigurationSettings(const css::uno::Sequence<css::beans::PropertyValue>& aConfigProps) override;
     virtual void SetDocumentSpecificSettings(const OUString& _rSettingsGroupName,
-                    const com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>& _rSettings) SAL_OVERRIDE;
+                    const css::uno::Sequence<css::beans::PropertyValue>& _rSettings) override;
 
     // initialize XForms
-    virtual void initXForms() SAL_OVERRIDE;
+    virtual void initXForms() override;
 
     // get the document properties, but only if they actually need importing
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::document::XDocumentProperties>
+    css::uno::Reference<css::document::XDocumentProperties>
             GetDocumentProperties() const;
 
-    virtual void NotifyEmbeddedFontRead() SAL_OVERRIDE;
+    virtual void NotifyEmbeddedFontRead() override;
 
     const SwDoc* getDoc() const;
     SwDoc* getDoc();
@@ -198,17 +194,17 @@ public:
 
 inline const SvXMLUnitConverter& SwXMLImport::GetTwipUnitConverter() const
 {
-    return *pTwipUnitConv;
+    return *m_pTwipUnitConv;
 }
 
 inline const SvXMLImportItemMapper& SwXMLImport::GetTableItemMapper() const
 {
-    return *pTableItemMapper;
+    return *m_pTableItemMapper;
 }
 
 inline       SvXMLImportItemMapper& SwXMLImport::GetTableItemMapper()
 {
-    return *pTableItemMapper;
+    return *m_pTableItemMapper;
 }
 
 #endif  //  _XMLIMP_HXX

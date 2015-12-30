@@ -38,11 +38,11 @@ namespace comphelper
 
     /** factory factory declaration
     */
-    typedef ::com::sun::star::uno::Reference< ::com::sun::star::lang::XSingleComponentFactory > (SAL_CALL *FactoryInstantiation)
+    typedef css::uno::Reference< css::lang::XSingleComponentFactory > (SAL_CALL *FactoryInstantiation)
     (
-        ::cppu::ComponentFactoryFunc _pFactoryFunc,
-        OUString const& _rComponentName,
-        ::com::sun::star::uno::Sequence< OUString > const & _rServiceNames,
+        ::cppu::ComponentFactoryFunc          _pFactoryFunc,
+        OUString const&                       _rComponentName,
+        css::uno::Sequence< OUString > const & _rServiceNames,
         rtl_ModuleCount*
     );
 
@@ -54,35 +54,28 @@ namespace comphelper
         /// the implementation name of the component
         OUString                                     sImplementationName;
         /// the services supported by the component implementation
-        ::com::sun::star::uno::Sequence< OUString >  aSupportedServices;
-        /** the name under which the component implementation should be registered as singleton,
-            or empty if the component does not implement a singleton.
-        */
-        OUString                                     sSingletonName;
+        css::uno::Sequence< OUString >               aSupportedServices;
         /// the function to create an instance of the component
-        ::cppu::ComponentFactoryFunc                        pComponentCreationFunc;
+        ::cppu::ComponentFactoryFunc                 pComponentCreationFunc;
         /// the function to create a factory for the component (usually <code>::cppu::createSingleComponentFactory</code>)
-        FactoryInstantiation                                pFactoryCreationFunc;
+        FactoryInstantiation                         pFactoryCreationFunc;
 
         ComponentDescription()
             :sImplementationName()
             ,aSupportedServices()
-            ,sSingletonName()
-            ,pComponentCreationFunc( NULL )
-            ,pFactoryCreationFunc( NULL )
+            ,pComponentCreationFunc( nullptr )
+            ,pFactoryCreationFunc( nullptr )
         {
         }
 
         ComponentDescription(
                 const OUString& _rImplementationName,
-                const ::com::sun::star::uno::Sequence< OUString >& _rSupportedServices,
-                const OUString& _rSingletonName,
+                const css::uno::Sequence< OUString >& _rSupportedServices,
                 ::cppu::ComponentFactoryFunc _pComponentCreationFunc,
                 FactoryInstantiation _pFactoryCreationFunc
             )
             :sImplementationName( _rImplementationName )
             ,aSupportedServices( _rSupportedServices )
-            ,sSingletonName( _rSingletonName )
             ,pComponentCreationFunc( _pComponentCreationFunc )
             ,pFactoryCreationFunc( _pFactoryCreationFunc )
         {
@@ -119,7 +112,7 @@ namespace comphelper
         */
         void registerImplementation(
             const OUString& _rImplementationName,
-            const ::com::sun::star::uno::Sequence< OUString >& _rServiceNames,
+            const css::uno::Sequence< OUString >& _rServiceNames,
             ::cppu::ComponentFactoryFunc _pCreateFunction,
             FactoryInstantiation _pFactoryFunction = ::cppu::createSingleComponentFactory );
 
@@ -134,7 +127,7 @@ namespace comphelper
             @return
                 the XInterface access to a factory for the component
         */
-        ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > getComponentFactory(
+        css::uno::Reference< css::uno::XInterface > getComponentFactory(
             const OUString& _rImplementationName );
 
         /** version of getComponentFactory which directly takes the char argument you got in your component_getFactory call
@@ -149,11 +142,6 @@ namespace comphelper
         void revokeClient( ClientAccess );
 
     protected:
-        /** called when the first client has been registered
-            @precond
-                <member>m_aMutex</member> is locked
-        */
-        virtual void onFirstClient();
 
         /** called when the last client has been revoked
             @precond
@@ -162,8 +150,8 @@ namespace comphelper
         virtual void onLastClient();
 
     private:
-        OModule( const OModule& ) SAL_DELETED_FUNCTION;
-        OModule& operator=( const OModule& ) SAL_DELETED_FUNCTION;
+        OModule( const OModule& ) = delete;
+        OModule& operator=( const OModule& ) = delete;
     };
 
 
@@ -192,9 +180,9 @@ namespace comphelper
             <p>Assumed that the template argument has the three methods
                 <ul>
                     <li><code>static OUString getImplementationName_static()</code><li/>
-                    <li><code>static ::com::sun::star::uno::Sequence< OUString > getSupportedServiceNames_static()</code><li/>
-                    <li><code>static ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >
-                        Create(const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XMultiServiceFactory >&)</code>
+                    <li><code>static css::uno::Sequence< OUString > getSupportedServiceNames_static()</code><li/>
+                    <li><code>static css::uno::Reference< css::uno::XInterface >
+                        Create(const css::uno::Reference< css::lang::XMultiServiceFactory >&)</code>
                         </li>
                 <ul/>
             the instantiation of this object will automatically register the class via <member>OModule::registerImplementation</member>.
@@ -227,10 +215,10 @@ namespace comphelper
             <p>Assumed that the template argument has the three methods
                 <ul>
                     <li><code>static OUString getImplementationName_static()</code><li/>
-                    <li><code>static ::com::sun::star::uno::Sequence< OUString > getSupportedServiceNames_static()</code><li/>
+                    <li><code>static css::uno::Sequence< OUString > getSupportedServiceNames_static()</code><li/>
                     <li><code>static OUString getSingletonName_static()</code></li>
-                    <li><code>static ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >
-                        Create(const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XMultiServiceFactory >&)</code>
+                    <li><code>static css::uno::Reference< css::uno::XInterface >
+                        Create(const css::uno::Reference< css::lang::XMultiServiceFactory >&)</code>
                         </li>
                 <ul/>
             the instantiation of this object will automatically register the class via <member>OModule::registerImplementation</member>.
@@ -246,7 +234,6 @@ namespace comphelper
         _rModule.registerImplementation( ComponentDescription(
             TYPE::getImplementationName_static(),
             TYPE::getSupportedServiceNames_static(),
-            TYPE::getSingletonName_static(),
             &TYPE::Create,
             &::cppu::createSingleComponentFactory
         ) );

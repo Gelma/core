@@ -72,9 +72,9 @@ static void lcl_DefaultPageFormat( sal_uInt16 nPoolFormatId,
     // The default page size is obtained from the application
     //locale
 
-    SwFormatFrmSize aFrmSize( ATT_FIX_SIZE );
+    SwFormatFrameSize aFrameSize( ATT_FIX_SIZE );
     const Size aPhysSize = SvxPaperInfo::GetDefaultPaperSize();
-    aFrmSize.SetSize( aPhysSize );
+    aFrameSize.SetSize( aPhysSize );
 
     // Prepare for default margins.
     // Margins have a default minimum size.
@@ -110,19 +110,19 @@ static void lcl_DefaultPageFormat( sal_uInt16 nPoolFormatId,
     aLR.SetRight( nMinRight );
     aLR.SetLeft( nMinLeft );
 
-    rFormat1.SetFormatAttr( aFrmSize );
+    rFormat1.SetFormatAttr( aFrameSize );
     rFormat1.SetFormatAttr( aLR );
     rFormat1.SetFormatAttr( aUL );
 
-    rFormat2.SetFormatAttr( aFrmSize );
+    rFormat2.SetFormatAttr( aFrameSize );
     rFormat2.SetFormatAttr( aLR );
     rFormat2.SetFormatAttr( aUL );
 
-    rFormat3.SetFormatAttr( aFrmSize );
+    rFormat3.SetFormatAttr( aFrameSize );
     rFormat3.SetFormatAttr( aLR );
     rFormat3.SetFormatAttr( aUL );
 
-    rFormat4.SetFormatAttr( aFrmSize );
+    rFormat4.SetFormatAttr( aFrameSize );
     rFormat4.SetFormatAttr( aLR );
     rFormat4.SetFormatAttr( aUL );
 }
@@ -255,7 +255,7 @@ void SwDoc::CopyMasterHeader(const SwPageDesc &rChged, const SwFormatHeader &rHe
         const SwFormatHeader &rFormatHead = rDescFrameFormat.GetHeader();
         if ( !rFormatHead.IsActive() )
         {
-            SwFormatHeader aHead( getIDocumentLayoutAccess().MakeLayoutFormat( RND_STD_HEADERL, 0 ) );
+            SwFormatHeader aHead( getIDocumentLayoutAccess().MakeLayoutFormat( RND_STD_HEADERL, nullptr ) );
             rDescFrameFormat.SetFormatAttr( aHead );
             // take over additional attributes (margins, borders ...)
             ::lcl_DescSetAttr( *rHead.GetHeaderFormat(), *aHead.GetHeaderFormat(), false);
@@ -328,7 +328,7 @@ void SwDoc::CopyMasterFooter(const SwPageDesc &rChged, const SwFormatFooter &rFo
         const SwFormatFooter &rFormatFoot = rDescFrameFormat.GetFooter();
         if ( !rFormatFoot.IsActive() )
         {
-            SwFormatFooter aFoot( getIDocumentLayoutAccess().MakeLayoutFormat( RND_STD_FOOTER, 0 ) );
+            SwFormatFooter aFoot( getIDocumentLayoutAccess().MakeLayoutFormat( RND_STD_FOOTER, nullptr ) );
             rDescFrameFormat.SetFormatAttr( aFoot );
             // Take over additional attributes (margins, borders ...).
             ::lcl_DescSetAttr( *rFoot.GetFooterFormat(), *aFoot.GetFooterFormat(), false);
@@ -380,7 +380,7 @@ void SwDoc::ChgPageDesc( size_t i, const SwPageDesc &rChged )
     OSL_ENSURE(i < m_PageDescs.size(), "PageDescs is out of range.");
 
     SwPageDesc& rDesc = *m_PageDescs[i];
-    SwRootFrm* pTmpRoot = getIDocumentLayoutAccess().GetCurrentLayout();
+    SwRootFrame* pTmpRoot = getIDocumentLayoutAccess().GetCurrentLayout();
 
     if (GetIDocumentUndoRedo().DoesUndo())
     {
@@ -499,8 +499,8 @@ void SwDoc::ChgPageDesc( size_t i, const SwPageDesc &rChged )
     if ( (bUseOn || bFollow) && pTmpRoot)
         // Inform layout!
     {
-        std::set<SwRootFrm*> aAllLayouts = GetAllLayouts();
-        std::for_each( aAllLayouts.begin(), aAllLayouts.end(),std::mem_fun(&SwRootFrm::AllCheckPageDescs));
+        for( auto aLayout : GetAllLayouts() )
+            aLayout->AllCheckPageDescs();
     }
 
     // Take over the page attributes.
@@ -528,7 +528,7 @@ void SwDoc::ChgPageDesc( size_t i, const SwPageDesc &rChged )
     }
 
     SfxBindings* pBindings =
-        ( GetDocShell() && GetDocShell()->GetDispatcher() ) ? GetDocShell()->GetDispatcher()->GetBindings() : 0;
+        ( GetDocShell() && GetDocShell()->GetDispatcher() ) ? GetDocShell()->GetDispatcher()->GetBindings() : nullptr;
     if ( pBindings )
     {
         pBindings->Invalidate( SID_ATTR_PAGE_COLUMN );
@@ -551,7 +551,7 @@ void SwDoc::ChgPageDesc( size_t i, const SwPageDesc &rChged )
 // #i7983#
 void SwDoc::PreDelPageDesc(SwPageDesc * pDel)
 {
-    if (0 == pDel)
+    if (nullptr == pDel)
         return;
 
     // mba: test iteration as clients are removed while iteration
@@ -564,8 +564,8 @@ void SwDoc::PreDelPageDesc(SwPageDesc * pDel)
         mpFootnoteInfo->ChgPageDesc(m_PageDescs[0].get());
         if ( bHasLayout )
         {
-            std::set<SwRootFrm*> aAllLayouts = GetAllLayouts();
-            std::for_each( aAllLayouts.begin(), aAllLayouts.end(),std::bind2nd(std::mem_fun(&SwRootFrm::CheckFootnotePageDescs), false));
+            for( auto aLayout : GetAllLayouts() )
+                aLayout->CheckFootnotePageDescs(false);
         }
     }
     else if ( mpEndNoteInfo->DependsOn( pDel ) )
@@ -573,8 +573,8 @@ void SwDoc::PreDelPageDesc(SwPageDesc * pDel)
         mpEndNoteInfo->ChgPageDesc(m_PageDescs[0].get());
         if ( bHasLayout )
         {
-            std::set<SwRootFrm*> aAllLayouts = GetAllLayouts();
-            std::for_each( aAllLayouts.begin(), aAllLayouts.end(),std::bind2nd(std::mem_fun(&SwRootFrm::CheckFootnotePageDescs), true));
+            for( auto aLayout : GetAllLayouts() )
+                aLayout->CheckFootnotePageDescs(true);
         }
     }
 
@@ -585,8 +585,8 @@ void SwDoc::PreDelPageDesc(SwPageDesc * pDel)
             m_PageDescs[j]->SetFollow(nullptr);
             if( bHasLayout )
             {
-                std::set<SwRootFrm*> aAllLayouts = GetAllLayouts();
-                std::for_each( aAllLayouts.begin(), aAllLayouts.end(),std::mem_fun(&SwRootFrm::AllCheckPageDescs));
+                for( auto aLayout : GetAllLayouts() )
+                    aLayout->AllCheckPageDescs();
             }
         }
     }
@@ -604,7 +604,7 @@ void SwDoc::BroadcastStyleOperation(const OUString& rName, SfxStyleFamily eFamil
             pPool->SetSearchMask(eFamily);
             SfxStyleSheetBase * pBase = pPool->Find(rName);
 
-            if (pBase != NULL)
+            if (pBase != nullptr)
                 pPool->Broadcast(SfxStyleSheetHint( nOp, *pBase ));
         }
     }
@@ -695,7 +695,7 @@ void SwDoc::PrtOLENotify( bool bAll )
         {
             for(SwViewShell& rShell : pSh->GetRingContainer())
             {
-                if(rShell.ISA(SwFEShell))
+                if(dynamic_cast<const SwFEShell*>( &rShell) !=  nullptr)
                 {
                     pShell = static_cast<SwFEShell*>(&rShell);
                     break;
@@ -819,7 +819,7 @@ static SwPageDesc* lcl_FindPageDesc( SwPageDescs *pPageDescs,
 {
     SwPageDescs::iterator it = std::find_if(
         pPageDescs->begin(), pPageDescs->end(), pred);
-    SwPageDesc* res = NULL;
+    SwPageDesc* res = nullptr;
     if( it != pPageDescs->end() )
     {
         res = it->get();
@@ -829,12 +829,6 @@ static SwPageDesc* lcl_FindPageDesc( SwPageDescs *pPageDescs,
     else if( pPos )
         *pPos = SIZE_MAX;
     return res;
-}
-
-SwPageDesc* SwDoc::FindPageDesc( const OUString & rName, size_t* pPos )
-{
-    return lcl_FindPageDesc<CompareSwPageDescName>(
-        &m_PageDescs, pPos, CompareSwPageDescName(rName) );
 }
 
 SwPageDesc* SwDoc::FindPageDesc( const OUString & rName, size_t* pPos ) const
@@ -852,12 +846,12 @@ struct CompareSwPageDescToPtr {
 
 bool SwDoc::ContainsPageDesc( const SwPageDesc *pDesc, size_t* pPos )
 {
-    if (pDesc == NULL)
+    if (pDesc == nullptr)
         return false;
     SwPageDesc *res = lcl_FindPageDesc<CompareSwPageDescToPtr>(
         &m_PageDescs, pPos,
         CompareSwPageDescToPtr(pDesc) );
-    return res != NULL;
+    return res != nullptr;
 }
 
 void SwDoc::DelPageDesc( const OUString & rName, bool bBroadcast )
@@ -890,8 +884,8 @@ void SwDoc::CheckDefaultPageFormat()
         SwFrameFormat& rMaster = rDesc.GetMaster();
         SwFrameFormat& rLeft   = rDesc.GetLeft();
 
-        const SwFormatFrmSize& rMasterSize  = rMaster.GetFrmSize();
-        const SwFormatFrmSize& rLeftSize    = rLeft.GetFrmSize();
+        const SwFormatFrameSize& rMasterSize  = rMaster.GetFrameSize();
+        const SwFormatFrameSize& rLeftSize    = rLeft.GetFrameSize();
 
         const bool bSetSize = LONG_MAX == rMasterSize.GetWidth() ||
                               LONG_MAX == rMasterSize.GetHeight() ||

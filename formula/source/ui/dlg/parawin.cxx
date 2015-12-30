@@ -37,7 +37,7 @@ namespace formula
 
 ParaWin::ParaWin(vcl::Window* pParent,IControlReferenceHandler* _pDlg):
     TabPage         (pParent, "ParameterPage", "formula/ui/parameter.ui"),
-    pFuncDesc       ( NULL ),
+    pFuncDesc       ( nullptr ),
     pMyParent       (_pDlg),
     m_sOptional     ( ModuleRes( STR_OPTIONAL ) ),
     m_sRequired     ( ModuleRes( STR_REQUIRED ) ),
@@ -47,11 +47,15 @@ ParaWin::ParaWin(vcl::Window* pParent,IControlReferenceHandler* _pDlg):
     get(m_pFtArgName, "parname");
     get(m_pFtArgDesc, "pardesc");
 
-    //Space for two lines of text
+    // Space for three lines of text in function description.
+    m_pFtEditDesc->SetText("X\nX\nX\n");
+    long nEditHeight = m_pFtEditDesc->GetOptimalSize().Height();
+    m_pFtEditDesc->set_height_request(nEditHeight);
+    m_pFtEditDesc->SetText("");
+    // Space for two lines of text in parameter description.
     m_pFtArgDesc->SetText("X\nX\n");
-    long nHeight = m_pFtArgDesc->GetOptimalSize().Height();
-    m_pFtEditDesc->set_height_request(nHeight);
-    m_pFtArgDesc->set_height_request(nHeight);
+    long nArgHeight = m_pFtArgDesc->GetOptimalSize().Height();
+    m_pFtArgDesc->set_height_request(nArgHeight);
     m_pFtArgDesc->SetText("");
 
     get(m_pBtnFx1, "FX1");
@@ -118,7 +122,7 @@ void ParaWin::UpdateArgDesc( sal_uInt16 nArg )
 
         if ( nArgs < VAR_ARGS )
         {
-            sal_uInt16 nRealArg = (aVisibleArgMapping.size() < nArg) ? aVisibleArgMapping[nArg] : nArg;
+            sal_uInt16 nRealArg = (nArg < aVisibleArgMapping.size()) ? aVisibleArgMapping[nArg] : nArg;
             aArgDesc  = pFuncDesc->getParameterDescription(nRealArg);
             aArgName  = pFuncDesc->getParameterName(nRealArg);
             aArgName += " ";
@@ -132,8 +136,9 @@ void ParaWin::UpdateArgDesc( sal_uInt16 nArg )
                     aVisibleArgMapping[nPos] : aVisibleArgMapping.back());
             aArgDesc  = pFuncDesc->getParameterDescription(nRealArg);
             aArgName  = pFuncDesc->getParameterName(nRealArg);
-            if ( nArg >= nFix )
-                aArgName += OUString::number( nArg-nFix+1 );
+            sal_uInt16 nVarArgsStart = pFuncDesc->getVarArgsStart();
+            if ( nArg >= nVarArgsStart )
+                aArgName += OUString::number( nArg-nVarArgsStart+1 );
             aArgName += " ";
 
             aArgName += (nArg > nFix || pFuncDesc->isParameterOptional(nRealArg)) ? m_sOptional : m_sRequired ;
@@ -150,8 +155,9 @@ void ParaWin::UpdateArgDesc( sal_uInt16 nArg )
                     aVisibleArgMapping[nPos] : aVisibleArgMapping.back());
             aArgDesc  = pFuncDesc->getParameterDescription(nRealArg);
             aArgName  = pFuncDesc->getParameterName(nRealArg);
-            if ( nArg >= nFix )
-                aArgName += OUString::number( (nArg-nFix)/2 + 1 );
+            sal_uInt16 nVarArgsStart = pFuncDesc->getVarArgsStart();
+            if ( nArg >= nVarArgsStart )
+                aArgName += OUString::number( (nArg-nVarArgsStart)/2 + 1 );
             aArgName += " ";
 
             aArgName += (nArg > (nFix+1) || pFuncDesc->isParameterOptional(nRealArg)) ? m_sOptional : m_sRequired ;
@@ -184,10 +190,11 @@ void ParaWin::UpdateArgInput( sal_uInt16 nOffset, sal_uInt16 i )
         SetArgNameFont( i,
                 (nArg > nFix || pFuncDesc->isParameterOptional(nRealArg)) ?
                 aFntLight : aFntBold );
-        if ( nArg >= nFix )
+        sal_uInt16 nVarArgsStart = pFuncDesc->getVarArgsStart();
+        if ( nArg >= nVarArgsStart )
         {
             OUString aArgName( pFuncDesc->getParameterName(nRealArg) );
-            aArgName += OUString::number(nArg-nFix+1);
+            aArgName += OUString::number(nArg-nVarArgsStart+1);
             SetArgName( i, aArgName );
         }
         else
@@ -206,10 +213,11 @@ void ParaWin::UpdateArgInput( sal_uInt16 nOffset, sal_uInt16 i )
         SetArgNameFont( i,
                 (nArg > (nFix+1) || pFuncDesc->isParameterOptional(nRealArg)) ?
                 aFntLight : aFntBold );
-        if ( nArg >= nFix )
+        sal_uInt16 nVarArgsStart = pFuncDesc->getVarArgsStart();
+        if ( nArg >= nVarArgsStart )
         {
             OUString aArgName( pFuncDesc->getParameterName(nRealArg) );
-            aArgName += OUString::number( (nArg-nFix)/2 + 1 );
+            aArgName += OUString::number( (nArg-nVarArgsStart)/2 + 1 );
             SetArgName( i, aArgName );
         }
         else
@@ -283,7 +291,7 @@ RefEdit* ParaWin::GetActiveEdit()
     }
     else
     {
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -336,7 +344,7 @@ void ParaWin::SetFunctionDesc(const IFunctionDescription* pFDesc)
     SetArgumentText( OUString() );
     SetEditDesc( OUString() );
     nArgs = 0;
-    if ( pFuncDesc!=NULL)
+    if ( pFuncDesc!=nullptr)
     {
         if ( !pFuncDesc->getDescription().isEmpty() )
         {
@@ -440,7 +448,7 @@ void ParaWin::InitArgInput( sal_uInt16 nPos, FixedText& rFtArg, PushButton& rBtn
 
 void ParaWin::ClearAll()
 {
-    SetFunctionDesc(NULL);
+    SetFunctionDesc(nullptr);
     SetArgumentOffset(0);
 }
 
@@ -634,9 +642,18 @@ IMPL_LINK_TYPED( ParaWin, ModifyHdl, ArgInput&, rPtr, void )
     }
     if(nEdFocus!=NOT_FOUND)
     {
-        aParaArray[nEdFocus+nOffset] = aArgInput[nEdFocus].GetArgVal();
+        size_t nPara = nEdFocus + nOffset;
+        if (nPara < aParaArray.size())
+            aParaArray[nPara] = aArgInput[nEdFocus].GetArgVal();
+        else
+        {
+            SAL_WARN("formula.ui","ParaWin::ModifyHdl - shot in foot: nPara " <<
+                    nPara << " >= aParaArray.size() " << aParaArray.size() <<
+                    " with nEdFocus " << nEdFocus <<
+                    " and aArgInput[nEdFocus].GetArgVal() '" << aArgInput[nEdFocus].GetArgVal() << "'");
+        }
         UpdateArgDesc( nEdFocus);
-        nActiveLine=nEdFocus+nOffset;
+        nActiveLine = static_cast<sal_uInt16>(nPara);
     }
 
     ArgumentModified();

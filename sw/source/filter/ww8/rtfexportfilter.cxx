@@ -62,7 +62,7 @@ sal_Bool RtfExportFilter::filter(const uno::Sequence< beans::PropertyValue >& aD
 
     // fdo#37161 - update layout (if present), for SwWriteTable
     SwViewShell* pViewShell = pDoc->getIDocumentLayoutAccess().GetCurrentViewShell();
-    if (pViewShell != NULL)
+    if (pViewShell != nullptr)
         pViewShell->CalcLayout();
 
     // get SwPaM*
@@ -76,7 +76,7 @@ sal_Bool RtfExportFilter::filter(const uno::Sequence< beans::PropertyValue >& aD
     // export the document
     // (in a separate block so that it's destructed before the commit)
     {
-        RtfExport aExport(this, pDoc, pCurPam, &aPam, NULL);
+        RtfExport aExport(this, pDoc, pCurPam, &aPam, nullptr);
         aExport.ExportDocument(true);
     }
 
@@ -107,9 +107,7 @@ OUString RtfExport_getImplementationName()
 
 uno::Sequence< OUString > SAL_CALL RtfExport_getSupportedServiceNames() throw()
 {
-    const OUString aServiceName("com.sun.star.document.ExportFilter");
-    const uno::Sequence< OUString > aSeq(&aServiceName, 1);
-    return aSeq;
+    return uno::Sequence< OUString > { "com.sun.star.document.ExportFilter" };
 }
 
 uno::Reference< uno::XInterface > SAL_CALL RtfExport_createInstance(const uno::Reference< uno::XComponentContext >& xCtx) throw(uno::Exception)

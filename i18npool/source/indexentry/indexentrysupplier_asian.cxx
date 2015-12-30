@@ -82,7 +82,7 @@ IndexEntrySupplier_asian::getIndexCharacter( const OUString& rIndexEntry,
     sal_Int32 i=0;
     sal_uInt32 ch = rIndexEntry.iterateCodePoints(&i, 0);
 
-    sal_uInt16** (*func)(sal_Int16*)=NULL;
+    sal_uInt16** (*func)(sal_Int16*)=nullptr;
 #ifndef DISABLE_DYNLOADING
     if (hModule) {
         OUString get("get_indexdata_");
@@ -121,12 +121,15 @@ IndexEntrySupplier_asian::getIndexCharacter( const OUString& rIndexEntry,
             sal_uInt16 address=idx[0][ch >> 8];
             if (address != 0xFFFF) {
                 address=idx[1][address+(ch & 0xFF)];
-                return idx[2] ? OUString(&idx[2][address]) : OUString(address);
+                return idx[2]
+                    ? OUString(
+                        reinterpret_cast<sal_Unicode *>(&idx[2][address]))
+                    : OUString(sal_Unicode(address));
             }
         }
     }
 
-    // using alphanumeric index for non-define stirng
+    // using alphanumeric index for non-define string
     return OUString(&idxStr[(ch & 0xFFFFFF00) ? 0 : ch], 1);
 }
 
@@ -159,10 +162,10 @@ OUString SAL_CALL
 IndexEntrySupplier_asian::getPhoneticCandidate( const OUString& rIndexEntry,
         const Locale& rLocale ) throw (RuntimeException, std::exception)
 {
-    sal_uInt16 **(*func)(sal_Int16*)=NULL;
+    sal_uInt16 **(*func)(sal_Int16*)=nullptr;
 #ifndef DISABLE_DYNLOADING
     if (hModule) {
-        const sal_Char *func_name=NULL;
+        const sal_Char *func_name=nullptr;
         if ( rLocale.Language == "zh" )
             func_name=(OUString("TW HK MO").indexOf(rLocale.Country) >= 0) ?  "get_zh_zhuyin" : "get_zh_pinyin";
         else if ( rLocale.Language == "ko" )
@@ -190,9 +193,10 @@ IndexEntrySupplier_asian::getPhoneticCandidate( const OUString& rIndexEntry,
                     if ( i > 0 && rLocale.Language == "zh" )
                         candidate.append(" ");
                     if (idx[2])
-                        candidate.append(&idx[2][address]);
+                        candidate.append(
+                            reinterpret_cast<sal_Unicode *>(&idx[2][address]));
                     else
-                        candidate.append(address);
+                        candidate.append(sal_Unicode(address));
                 } else
                     candidate.append(" ");
             }

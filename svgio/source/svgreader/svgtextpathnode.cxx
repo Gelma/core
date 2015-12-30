@@ -51,7 +51,7 @@ namespace svgio
         protected:
             /// allow user callback to allow changes to the new TextTransformation. Default
             /// does nothing.
-            virtual bool allowChange(sal_uInt32 nCount, basegfx::B2DHomMatrix& rNewTransform, sal_uInt32 nIndex, sal_uInt32 nLength) SAL_OVERRIDE;
+            virtual bool allowChange(sal_uInt32 nCount, basegfx::B2DHomMatrix& rNewTransform, sal_uInt32 nIndex, sal_uInt32 nLength) override;
 
             void freeB2DCubicBezierHelper();
             basegfx::B2DCubicBezierHelper* getB2DCubicBezierHelper();
@@ -75,7 +75,7 @@ namespace svgio
             if(mpB2DCubicBezierHelper)
             {
                 delete mpB2DCubicBezierHelper;
-                mpB2DCubicBezierHelper = 0;
+                mpB2DCubicBezierHelper = nullptr;
             }
         }
 
@@ -124,7 +124,7 @@ namespace svgio
             mnMaxIndex(rPolygon.isClosed() ? rPolygon.count() : rPolygon.count() - 1),
             mnIndex(0),
             maCurrentSegment(),
-            mpB2DCubicBezierHelper(0),
+            mpB2DCubicBezierHelper(nullptr),
             mfCurrentSegmentLength(0.0),
             mfSegmentStartPosition(0.0)
         {
@@ -377,11 +377,11 @@ namespace svgio
         }
 
         void SvgTextPathNode::decomposePathNode(
-            const drawinglayer::primitive2d::Primitive2DSequence& rPathContent,
-            drawinglayer::primitive2d::Primitive2DSequence& rTarget,
+            const drawinglayer::primitive2d::Primitive2DContainer& rPathContent,
+            drawinglayer::primitive2d::Primitive2DContainer& rTarget,
             const basegfx::B2DPoint& rTextStart) const
         {
-            if(rPathContent.hasElements())
+            if(!rPathContent.empty())
             {
                 const SvgPathNode* pSvgPathNode = dynamic_cast< const SvgPathNode* >(getDocument().findSvgNodeById(maXLink));
 
@@ -406,7 +406,7 @@ namespace svgio
 
                             if(pSvgPathNode->getPathLength().isSet())
                             {
-                                const double fUserLength(pSvgPathNode->getPathLength().solve(*this, length));
+                                const double fUserLength(pSvgPathNode->getPathLength().solve(*this));
 
                                 if(fUserLength > 0.0 && !basegfx::fTools::equal(fUserLength, fBasegfxPathLength))
                                 {
@@ -425,18 +425,18 @@ namespace svgio
                                 }
                                 else
                                 {
-                                    fPosition = getStartOffset().solve(*this, length) * fUserToBasegfx;
+                                    fPosition = getStartOffset().solve(*this) * fUserToBasegfx;
                                 }
                             }
 
                             if(fPosition >= 0.0)
                             {
-                                const sal_Int32 nLength(rPathContent.getLength());
+                                const sal_Int32 nLength(rPathContent.size());
                                 sal_Int32 nCurrent(0);
 
                                 while(fPosition < fBasegfxPathLength && nCurrent < nLength)
                                 {
-                                    const drawinglayer::primitive2d::TextSimplePortionPrimitive2D* pCandidate = 0;
+                                    const drawinglayer::primitive2d::TextSimplePortionPrimitive2D* pCandidate = nullptr;
                                     const drawinglayer::primitive2d::Primitive2DReference xReference(rPathContent[nCurrent]);
 
                                     if(xReference.is())
@@ -453,12 +453,12 @@ namespace svgio
                                             fPosition,
                                             rTextStart);
 
-                                        const drawinglayer::primitive2d::Primitive2DSequence aResult(
-                                            aPathTextBreakupHelper.getResult(drawinglayer::primitive2d::BreakupUnit_character));
+                                        const drawinglayer::primitive2d::Primitive2DContainer aResult(
+                                            aPathTextBreakupHelper.getResult());
 
-                                        if(aResult.hasElements())
+                                        if(!aResult.empty())
                                         {
-                                            drawinglayer::primitive2d::appendPrimitive2DSequenceToPrimitive2DSequence(rTarget, aResult);
+                                            rTarget.append(aResult);
                                         }
 
                                         // advance position to consumed

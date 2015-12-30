@@ -23,6 +23,9 @@
 #include <sal/config.h>
 
 #include <iostream>
+#if defined UNX
+#include <signal.h>
+#endif
 
 #include "app.hxx"
 #include "desktop.hrc"
@@ -47,6 +50,7 @@
 #include <com/sun/star/configuration/CorruptedConfigurationException.hpp>
 #include <com/sun/star/configuration/theDefaultProvider.hpp>
 #include <com/sun/star/util/XFlushable.hpp>
+#include <com/sun/star/util/XModifiable.hpp>
 #include <com/sun/star/system/SystemShellExecuteFlags.hpp>
 #include <com/sun/star/frame/Desktop.hpp>
 #include <com/sun/star/frame/StartModule.hpp>
@@ -154,12 +158,12 @@ using namespace ::com::sun::star::ui;
 using namespace ::com::sun::star::ui::dialogs;
 using namespace ::com::sun::star::container;
 
-ResMgr* desktop::Desktop::pResMgr = 0;
+ResMgr* desktop::Desktop::pResMgr = nullptr;
 
 namespace desktop
 {
 
-static oslSignalHandler pSignalHandler = 0;
+static oslSignalHandler pSignalHandler = nullptr;
 
 namespace {
 
@@ -280,7 +284,7 @@ bool shouldLaunchQuickstart()
     bool bQuickstart = Desktop::GetCommandLineArgs().IsQuickstart();
     if (!bQuickstart)
     {
-        const SfxPoolItem* pItem=0;
+        const SfxPoolItem* pItem=nullptr;
         SfxItemSet aQLSet(SfxGetpApp()->GetPool(), SID_ATTR_QUICKLAUNCHER, SID_ATTR_QUICKLAUNCHER);
         SfxGetpApp()->GetOptions(aQLSet);
         SfxItemState eState = aQLSet.GetItemState(SID_ATTR_QUICKLAUNCHER, false, &pItem);
@@ -606,7 +610,7 @@ void Desktop::Init()
             // disable IPC thread in an instance that is just showing a help message
             OfficeIPCThread::DisableOfficeIPCThread();
         }
-        pSignalHandler = osl_addSignalHandler(SalMainPipeExchangeSignal_impl, NULL);
+        pSignalHandler = osl_addSignalHandler(SalMainPipeExchangeSignal_impl, nullptr);
     }
 }
 
@@ -628,7 +632,7 @@ void Desktop::DeInit()
             comphelper::getProcessComponentContext(), UNO_QUERY_THROW )->
             dispose();
         // nobody should get a destroyed service factory...
-        ::comphelper::setProcessServiceFactory( NULL );
+        ::comphelper::setProcessServiceFactory( nullptr );
 
         // clear lockfile
         m_xLockfile.reset();
@@ -656,15 +660,15 @@ bool Desktop::QueryExit()
 
     Reference< XDesktop2 > xDesktop = css::frame::Desktop::create( ::comphelper::getProcessComponentContext() );
     Reference< XPropertySet > xPropertySet(xDesktop, UNO_QUERY_THROW);
-    xPropertySet->setPropertyValue( OUString(SUSPEND_QUICKSTARTVETO ), Any(true) );
+    xPropertySet->setPropertyValue( SUSPEND_QUICKSTARTVETO, Any(true) );
 
     bool bExit = xDesktop->terminate();
 
     if ( !bExit )
     {
-        xPropertySet->setPropertyValue( OUString(SUSPEND_QUICKSTARTVETO ), Any(false) );
+        xPropertySet->setPropertyValue( SUSPEND_QUICKSTARTVETO, Any(false) );
     }
-    else
+    else if (!Application::IsEventTestingModeEnabled())
     {
         FlushConfiguration();
         try
@@ -723,7 +727,7 @@ OUString    Desktop::CreateErrorMsgString(
         case ::utl::Bootstrap::MISSING_INSTALL_DIRECTORY:
         {
             aMsg = GetMsgString( STR_BOOTSTRAP_ERR_PATH_INVALID,
-                        OUString( "The installation path is not available." ) );
+                        "The installation path is not available." );
             bFileInfo = false;
         }
         break;
@@ -732,7 +736,7 @@ OUString    Desktop::CreateErrorMsgString(
         case ::utl::Bootstrap::MISSING_BOOTSTRAP_FILE:
         {
             aMsg = GetMsgString( STR_BOOTSTRAP_ERR_FILE_MISSING,
-                        OUString( "The configuration file \"$1\" is missing." ) );
+                        "The configuration file \"$1\" is missing." );
         }
         break;
 
@@ -742,7 +746,7 @@ OUString    Desktop::CreateErrorMsgString(
          case ::utl::Bootstrap::INVALID_BOOTSTRAP_FILE_ENTRY:
         {
             aMsg = GetMsgString( STR_BOOTSTRAP_ERR_FILE_CORRUPT,
-                        OUString( "The configuration file \"$1\" is corrupt." ) );
+                        "The configuration file \"$1\" is corrupt." );
         }
         break;
 
@@ -750,7 +754,7 @@ OUString    Desktop::CreateErrorMsgString(
         case ::utl::Bootstrap::MISSING_VERSION_FILE:
         {
             aMsg = GetMsgString( STR_BOOTSTRAP_ERR_FILE_MISSING,
-                        OUString( "The configuration file \"$1\" is missing." ) );
+                        "The configuration file \"$1\" is missing." );
         }
         break;
 
@@ -758,7 +762,7 @@ OUString    Desktop::CreateErrorMsgString(
          case ::utl::Bootstrap::MISSING_VERSION_FILE_ENTRY:
         {
             aMsg = GetMsgString( STR_BOOTSTRAP_ERR_NO_SUPPORT,
-                        OUString( "The main configuration file \"$1\" does not support the current version." ) );
+                        "The main configuration file \"$1\" does not support the current version." );
         }
         break;
 
@@ -766,7 +770,7 @@ OUString    Desktop::CreateErrorMsgString(
            case ::utl::Bootstrap::MISSING_USER_DIRECTORY:
         {
             aMsg = GetMsgString( STR_BOOTSTRAP_ERR_DIR_MISSING,
-                        OUString( "The configuration directory \"$1\" is missing." ) );
+                        "The configuration directory \"$1\" is missing." );
         }
         break;
 
@@ -774,7 +778,7 @@ OUString    Desktop::CreateErrorMsgString(
         case ::utl::Bootstrap::INVALID_BOOTSTRAP_DATA:
         {
             aMsg = GetMsgString( STR_BOOTSTRAP_ERR_INTERNAL,
-                        OUString( "An internal failure occurred." ) );
+                        "An internal failure occurred." );
             bFileInfo = false;
         }
         break;
@@ -912,7 +916,7 @@ void Desktop::HandleBootstrapErrors(
             aErrorMsg = "The service manager is not available.";
         else
             aErrorMsg = GetMsgString( STR_BOOTSTRAP_ERR_NO_CFG_SERVICE,
-                            OUString( "The configuration service is not available." ) );
+                            "The configuration service is not available." );
 
         aDiagnosticMessage.append( aErrorMsg );
         aDiagnosticMessage.append( "\n" );
@@ -928,7 +932,7 @@ void Desktop::HandleBootstrapErrors(
         // we have to ask the user to start the setup on CD/installation directory manually!!
         OUString aStartSetupManually( GetMsgString(
             STR_ASK_START_SETUP_MANUALLY,
-            OUString( "Start setup application to repair the installation from CD, or the folder containing the installation packages." ),
+            "Start setup application to repair the installation from CD, or the folder containing the installation packages.",
             aBootstrapError == BE_UNO_SERVICEMANAGER ) );
 
         aDiagnosticMessage.append( aStartSetupManually );
@@ -956,7 +960,7 @@ void Desktop::HandleBootstrapErrors(
         OUStringBuffer aDiagnosticMessage( 100 );
         OUString aErrorMsg;
         aErrorMsg = GetMsgString( STR_BOOTSTRAP_ERR_USERINSTALL_FAILED,
-            OUString( "User installation could not be completed" ) );
+            "User installation could not be completed" );
         aDiagnosticMessage.append( aErrorMsg );
         aMessage = MakeStartupErrorMessage( aDiagnosticMessage.makeStringAndClear() );
         FatalError(aMessage);
@@ -969,7 +973,7 @@ void Desktop::HandleBootstrapErrors(
         aErrorMsg = GetMsgString(
             //@@@ FIXME: should use an own resource string => #i36213#
             STR_BOOTSTRAP_ERR_LANGUAGE_MISSING,
-            OUString( "Language could not be determined." ) );
+            "Language could not be determined." );
         aDiagnosticMessage.append( aErrorMsg );
         aMessage = MakeStartupErrorMessage(
             aDiagnosticMessage.makeStringAndClear() );
@@ -989,11 +993,11 @@ void Desktop::HandleBootstrapErrors(
         if ( aBootstrapError == BE_USERINSTALL_NOTENOUGHDISKSPACE )
             aErrorMsg = GetMsgString(
                 STR_BOOSTRAP_ERR_NOTENOUGHDISKSPACE,
-                OUString( "User installation could not be completed due to insufficient free disk space." ) );
+                "User installation could not be completed due to insufficient free disk space." );
         else
             aErrorMsg = GetMsgString(
                 STR_BOOSTRAP_ERR_NOACCESSRIGHTS,
-                OUString( "User installation could not be processed due to missing access rights." ) );
+                "User installation could not be processed due to missing access rights." );
 
         osl::File::getSystemPathFromFileURL( aUserInstallationURL, aUserInstallationPath );
 
@@ -1151,7 +1155,7 @@ void restartOnMac(bool passArguments) {
     {
         argPtrs.push_back(i->getStr());
     }
-    argPtrs.push_back(0);
+    argPtrs.push_back(nullptr);
     execv(execPath8.getStr(), const_cast< char ** >(&argPtrs[0]));
     if (errno == ENOTSUP) { // happens when multithreaded on OS X < 10.6
         pid_t pid = fork();
@@ -1187,7 +1191,7 @@ sal_uInt16 Desktop::Exception(sal_uInt16 nError)
 
     SystemWindowFlags nOldMode = Application::GetSystemWindowMode();
     Application::SetSystemWindowMode( nOldMode & ~SystemWindowFlags::NOAUTOMODE );
-    Application::SetDefDialogParent( NULL );
+    Application::SetDefDialogParent( nullptr );
 
     if ( bInException )
     {
@@ -1268,7 +1272,24 @@ struct ExecuteGlobals
     {}
 };
 
-static ExecuteGlobals* pExecGlobals = NULL;
+static ExecuteGlobals* pExecGlobals = nullptr;
+
+
+//This just calls Execute() for all normal uses of LibreOffice, but for
+//ui-testing if built with afl-clang-fast++ then on exit it will pseudo-restart
+//(up to 100 times)
+void Desktop::DoExecute()
+{
+#if !defined(__AFL_HAVE_MANUAL_CONTROL)
+    Execute();
+#else
+    while (__AFL_LOOP(1000))
+    {
+        Execute();
+        OpenDefault();
+    }
+#endif
+}
 
 int Desktop::Main()
 {
@@ -1474,7 +1495,7 @@ int Desktop::Main()
             }
         }
 
-        if ( rCmdLineArgs.IsHeadless() )
+        if ( rCmdLineArgs.IsHeadless() || rCmdLineArgs.IsEventTesting() )
         {
             // Ensure that we use not the system file dialogs as
             // headless mode relies on Application::EnableHeadlessMode()
@@ -1585,7 +1606,7 @@ int Desktop::Main()
                 // if this run of the office is triggered by restart, some additional actions should be done
                 DoRestartActionsIfNecessary( !rCmdLineArgs.IsInvisible() && !rCmdLineArgs.IsNoQuickstart() );
 
-                Execute();
+                DoExecute();
             }
         }
         catch(const css::document::CorruptedFilterConfigurationException& exFilterCfg)
@@ -1611,7 +1632,7 @@ int Desktop::Main()
         catch( ...)
         {
             OfficeIPCThread::SetDowning();
-            FatalError( OUString( "Caught Unknown Exception: Aborting!"));
+            FatalError( "Caught Unknown Exception: Aborting!");
         }
     }
     else
@@ -1642,10 +1663,10 @@ int Desktop::doShutdown()
         pExecGlobals->xGlobalBroadcaster->documentEventOccured(aEvent);
     }
 
-    delete pResMgr, pResMgr = NULL;
+    delete pResMgr, pResMgr = nullptr;
     // Restore old value
     const CommandLineArgs& rCmdLineArgs = GetCommandLineArgs();
-    if ( rCmdLineArgs.IsHeadless() )
+    if ( rCmdLineArgs.IsHeadless() || rCmdLineArgs.IsEventTesting() )
         SvtMiscOptions().SetUseSystemFileDialog( pExecGlobals->bUseSystemFileDialog );
 
     OUString pidfileName = rCmdLineArgs.GetPidfileName();
@@ -1680,11 +1701,11 @@ int Desktop::doShutdown()
     }
     // be sure that path/language options gets destroyed before
     // UCB is deinitialized
-    pExecGlobals->pLanguageOptions.reset( 0 );
-    pExecGlobals->pPathOptions.reset( 0 );
+    pExecGlobals->pLanguageOptions.reset( nullptr );
+    pExecGlobals->pPathOptions.reset( nullptr );
 
     bool bRR = pExecGlobals->bRestartRequested;
-    delete pExecGlobals, pExecGlobals = NULL;
+    delete pExecGlobals, pExecGlobals = nullptr;
 
     if ( bRR )
     {
@@ -1862,7 +1883,7 @@ class ExitTimer : public Timer
         SetTimeout(500);
         Start();
     }
-    virtual void Invoke() SAL_OVERRIDE
+    virtual void Invoke() override
     {
         exit(42);
     }
@@ -1910,8 +1931,8 @@ void Desktop::PreloadModuleData( const CommandLineArgs& rArgs )
     {
         try
         {
-            Reference < css::util::XCloseable > xDoc( xDesktop->loadComponentFromURL( OUString("private:factory/swriter"),
-                OUString("_blank"), 0, args ), UNO_QUERY_THROW );
+            Reference < css::util::XCloseable > xDoc( xDesktop->loadComponentFromURL( "private:factory/swriter",
+                "_blank", 0, args ), UNO_QUERY_THROW );
             xDoc->close( sal_False );
         }
         catch ( const css::uno::Exception& )
@@ -1922,8 +1943,8 @@ void Desktop::PreloadModuleData( const CommandLineArgs& rArgs )
     {
         try
         {
-            Reference < css::util::XCloseable > xDoc( xDesktop->loadComponentFromURL( OUString("private:factory/scalc"),
-                OUString("_blank"), 0, args ), UNO_QUERY_THROW );
+            Reference < css::util::XCloseable > xDoc( xDesktop->loadComponentFromURL( "private:factory/scalc",
+                "_blank", 0, args ), UNO_QUERY_THROW );
             xDoc->close( sal_False );
         }
         catch ( const css::uno::Exception& )
@@ -1934,8 +1955,8 @@ void Desktop::PreloadModuleData( const CommandLineArgs& rArgs )
     {
         try
         {
-            Reference < css::util::XCloseable > xDoc( xDesktop->loadComponentFromURL( OUString("private:factory/sdraw"),
-                OUString("_blank"), 0, args ), UNO_QUERY_THROW );
+            Reference < css::util::XCloseable > xDoc( xDesktop->loadComponentFromURL( "private:factory/sdraw",
+                "_blank", 0, args ), UNO_QUERY_THROW );
             xDoc->close( sal_False );
         }
         catch ( const css::uno::Exception& )
@@ -1946,8 +1967,8 @@ void Desktop::PreloadModuleData( const CommandLineArgs& rArgs )
     {
         try
         {
-            Reference < css::util::XCloseable > xDoc( xDesktop->loadComponentFromURL( OUString("private:factory/simpress"),
-                OUString("_blank"), 0, args ), UNO_QUERY_THROW );
+            Reference < css::util::XCloseable > xDoc( xDesktop->loadComponentFromURL( "private:factory/simpress",
+                "_blank", 0, args ), UNO_QUERY_THROW );
             xDoc->close( sal_False );
         }
         catch ( const css::uno::Exception& )
@@ -2068,17 +2089,14 @@ void Desktop::PreloadConfigurationData()
     css::frame::thePopupMenuControllerFactory::get( xContext );
     try
     {
-        (void)xPopupMenuControllerFactory->hasController(
-                    OUString( ".uno:CharFontName" ),
-                    OUString() );
+        (void)xPopupMenuControllerFactory->hasController( ".uno:CharFontName", OUString() );
     }
     catch ( const css::uno::Exception& )
     {
     }
 
     // preload filter configuration
-    xNameAccess = Reference< XNameAccess >(
-                    xContext->getServiceManager()->createInstanceWithContext("com.sun.star.document.FilterFactory", xContext),
+    xNameAccess.set(xContext->getServiceManager()->createInstanceWithContext("com.sun.star.document.FilterFactory", xContext),
                     UNO_QUERY );
     if ( xNameAccess.is() )
     {
@@ -2092,8 +2110,7 @@ void Desktop::PreloadConfigurationData()
     }
 
     // preload type detection configuration
-    xNameAccess = Reference< XNameAccess >(
-                    xContext->getServiceManager()->createInstanceWithContext("com.sun.star.document.TypeDetection", xContext),
+    xNameAccess.set(xContext->getServiceManager()->createInstanceWithContext("com.sun.star.document.TypeDetection", xContext),
                     UNO_QUERY );
     if ( xNameAccess.is() )
     {
@@ -2152,7 +2169,7 @@ void Desktop::OpenClients()
             aHelpURLBuffer.appendAscii("&System=WIN");
 #endif
             Application::GetHelp()->Start(
-                aHelpURLBuffer.makeStringAndClear(), NULL);
+                aHelpURLBuffer.makeStringAndClear(), nullptr);
             return;
         }
     }
@@ -2178,7 +2195,7 @@ void Desktop::OpenClients()
         OUString aDefault( "0" );
         OUString aPreloadData;
 
-        aPerfTuneIniFile.getFrom( OUString( "QuickstartPreloadConfiguration" ), aPreloadData, aDefault );
+        aPerfTuneIniFile.getFrom( "QuickstartPreloadConfiguration", aPreloadData, aDefault );
         if ( aPreloadData == "1" )
         {
             if ( rArgs.IsWriter()  ||
@@ -2247,7 +2264,7 @@ void Desktop::OpenClients()
                 SAL_WARN( "desktop.app", "Error during recovery" << e.Message);
             }
         }
-        else if (bExistsRecoveryData && bDisableRecovery)
+        else if (bExistsRecoveryData && bDisableRecovery && !rArgs.HasModuleParam())
             // prevent new Writer doc
             bRecovery = true;
 
@@ -2280,7 +2297,7 @@ void Desktop::OpenClients()
     OfficeIPCThread::EnableRequests();
 
     ProcessDocumentsRequest aRequest(rArgs.getCwdUrl());
-    aRequest.pcProcessed = NULL;
+    aRequest.pcProcessed = nullptr;
 
     aRequest.aOpenList = rArgs.GetOpenList();
     aRequest.aViewList = rArgs.GetViewList();
@@ -2354,7 +2371,7 @@ void Desktop::OpenClients()
 
     if ( bRecovery )
     {
-        ShowBackingComponent(0);
+        ShowBackingComponent(nullptr);
     }
     else
     {
@@ -2408,7 +2425,7 @@ void Desktop::OpenDefault()
     }
 
     ProcessDocumentsRequest aRequest(rArgs.getCwdUrl());
-    aRequest.pcProcessed = NULL;
+    aRequest.pcProcessed = nullptr;
     aRequest.aOpenList.push_back(aName);
     OfficeIPCThread::ExecuteCmdLineRequests( aRequest );
 }
@@ -2497,7 +2514,7 @@ void Desktop::HandleAppEvent( const ApplicationEvent& rAppEvent )
             {
                 // no visible task that could be activated found
                 Reference< css::awt::XWindow > xContainerWindow;
-                Reference< XFrame > xBackingFrame = xDesktop->findFrame(OUString( "_blank" ), 0);
+                Reference< XFrame > xBackingFrame = xDesktop->findFrame( "_blank", 0);
                 if (xBackingFrame.is())
                     xContainerWindow = xBackingFrame->getContainerWindow();
                 if (xContainerWindow.is())
@@ -2534,7 +2551,7 @@ void Desktop::HandleAppEvent( const ApplicationEvent& rAppEvent )
                 std::vector<OUString> const & data(rAppEvent.GetStringsData());
                 pDocsRequest->aOpenList.insert(
                     pDocsRequest->aOpenList.end(), data.begin(), data.end());
-                pDocsRequest->pcProcessed = NULL;
+                pDocsRequest->pcProcessed = nullptr;
 
                 OfficeIPCThread::ExecuteCmdLineRequests( *pDocsRequest );
                 delete pDocsRequest;
@@ -2543,7 +2560,7 @@ void Desktop::HandleAppEvent( const ApplicationEvent& rAppEvent )
         break;
     case ApplicationEvent::TYPE_OPENHELPURL:
         // start help for a specific URL
-        Application::GetHelp()->Start(rAppEvent.GetStringData(), NULL);
+        Application::GetHelp()->Start(rAppEvent.GetStringData(), nullptr);
         break;
     case ApplicationEvent::TYPE_PRINT:
         {
@@ -2555,7 +2572,7 @@ void Desktop::HandleAppEvent( const ApplicationEvent& rAppEvent )
                 std::vector<OUString> const & data(rAppEvent.GetStringsData());
                 pDocsRequest->aPrintList.insert(
                     pDocsRequest->aPrintList.end(), data.begin(), data.end());
-                pDocsRequest->pcProcessed = NULL;
+                pDocsRequest->pcProcessed = nullptr;
 
                 OfficeIPCThread::ExecuteCmdLineRequests( *pDocsRequest );
                 delete pDocsRequest;
@@ -2662,12 +2679,12 @@ void Desktop::OpenSplashScreen()
         aSeq[0] <<= bVisible;
         aSeq[1] <<= aAppName;
         css::uno::Reference< css::uno::XComponentContext > xContext = ::comphelper::getProcessComponentContext();
-        m_rSplashScreen = Reference<XStatusIndicator>(
+        m_rSplashScreen.set(
             xContext->getServiceManager()->createInstanceWithArgumentsAndContext(aSplashService, aSeq, xContext),
             UNO_QUERY);
 
         if(m_rSplashScreen.is())
-                m_rSplashScreen->start(OUString("SplashScreen"), 100);
+                m_rSplashScreen->start("SplashScreen", 100);
     }
 
 }
@@ -2693,7 +2710,7 @@ void Desktop::CloseSplashScreen()
     if(m_rSplashScreen.is())
     {
         m_rSplashScreen->end();
-        m_rSplashScreen = NULL;
+        m_rSplashScreen = nullptr;
     }
 }
 
@@ -2703,7 +2720,7 @@ void Desktop::DoFirstRunInitializations()
     try
     {
         Reference< XJobExecutor > xExecutor = theJobExecutor::get( ::comphelper::getProcessComponentContext() );
-        xExecutor->trigger( OUString("onFirstRunInitialization") );
+        xExecutor->trigger( "onFirstRunInitialization" );
     }
     catch(const css::uno::Exception&)
     {
@@ -2719,11 +2736,11 @@ void Desktop::ShowBackingComponent(Desktop * progress)
     }
     Reference< XComponentContext > xContext = comphelper::getProcessComponentContext();
     Reference< XDesktop2 > xDesktop = css::frame::Desktop::create(xContext);
-    if (progress != 0)
+    if (progress != nullptr)
     {
         progress->SetSplashScreenProgress(60);
     }
-    Reference< XFrame > xBackingFrame = xDesktop->findFrame(OUString( "_blank" ), 0);
+    Reference< XFrame > xBackingFrame = xDesktop->findFrame( "_blank", 0);
     Reference< css::awt::XWindow > xContainerWindow;
 
     if (xBackingFrame.is())
@@ -2736,7 +2753,7 @@ void Desktop::ShowBackingComponent(Desktop * progress)
         vcl::Window* pContainerWindow = VCLUnoHelper::GetWindow( xContainerWindow );
         SAL_WARN_IF( !pContainerWindow, "desktop.app", "Desktop::Main: no implementation access to the frame's container window!" );
         pContainerWindow->SetExtendedStyle( pContainerWindow->GetExtendedStyle() | WB_EXT_DOCUMENT );
-        if (progress != 0)
+        if (progress != nullptr)
         {
             progress->SetSplashScreenProgress(75);
         }
@@ -2746,12 +2763,12 @@ void Desktop::ShowBackingComponent(Desktop * progress)
         // Because the backing component set the property "IsBackingMode" of the frame
         // to true inside attachFrame(). But setComponent() reset this state everytimes ...
         xBackingFrame->setComponent(Reference< XWindow >(xStartModule, UNO_QUERY), xStartModule);
-        if (progress != 0)
+        if (progress != nullptr)
         {
             progress->SetSplashScreenProgress(100);
         }
         xStartModule->attachFrame(xBackingFrame);
-        if (progress != 0)
+        if (progress != nullptr)
         {
             progress->CloseSplashScreen();
         }

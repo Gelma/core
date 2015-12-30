@@ -55,7 +55,7 @@ VCLXAccessibleList::VCLXAccessibleList (VCLXWindow* pVCLWindow, BoxType aBoxType
                                         const Reference< XAccessible >& _xParent)
     : VCLXAccessibleComponent   (pVCLWindow),
       m_aBoxType                (aBoxType),
-      m_pListBoxHelper          (0),
+      m_pListBoxHelper          (nullptr),
       m_nVisibleLineCount       (0),
       m_nIndexInParent          (DEFAULT_INDEX_IN_PARENT),
       m_nLastTopEntry           ( 0 ),
@@ -116,7 +116,7 @@ void SAL_CALL VCLXAccessibleList::disposing()
     clearItems();
 
     delete m_pListBoxHelper;
-    m_pListBoxHelper = NULL;
+    m_pListBoxHelper = nullptr;
 }
 
 
@@ -183,22 +183,22 @@ void VCLXAccessibleList::notifyVisibleStates(bool _bSetNew )
     }
 }
 
-void VCLXAccessibleList::UpdateSelection_Acc (const ::rtl::OUString& sTextOfSelectedItem, bool b_IsDropDownList)
+void VCLXAccessibleList::UpdateSelection_Acc (const ::rtl::OUString& /*sTextOfSelectedItem*/, bool b_IsDropDownList)
 {
     if ( m_aBoxType == COMBOBOX )
     {
-        VclPtr< ComboBox > pBox = GetAs< ComboBox >();
-        if ( pBox )
-        {
-            // Find the index of the selected item inside the VCL control...
-            sal_Int32 nIndex = pBox->GetEntryPos(sTextOfSelectedItem);
-            // ...and then find the associated accessibility object.
-            if ( nIndex == LISTBOX_ENTRY_NOTFOUND )
-                nIndex = 0;
-            /* FIXME: is there something missing here? nIndex is unused. Looks 
-             * like copy-paste from VCLXAccessibleList::UpdateSelection() */
-            UpdateSelection_Impl_Acc(b_IsDropDownList);
-        }
+        /* FIXME: is there something missing here? nIndex is unused. Looks like
+         * copy-paste from VCLXAccessibleList::UpdateSelection() */
+        // VclPtr< ComboBox > pBox = GetAs< ComboBox >();
+        // if ( pBox )
+        // {
+        //     // Find the index of the selected item inside the VCL control...
+        //     sal_Int32 nIndex = pBox->GetEntryPos(sTextOfSelectedItem);
+        //     // ...and then find the associated accessibility object.
+        //     if ( nIndex == LISTBOX_ENTRY_NOTFOUND )
+        //         nIndex = 0;
+               UpdateSelection_Impl_Acc(b_IsDropDownList);
+        // }
     }
 }
 
@@ -461,8 +461,7 @@ void VCLXAccessibleList::ProcessWindowEvent (const VclWindowEvent& rVclWindowEve
     {
         if (m_pListBoxHelper && (m_pListBoxHelper->GetStyle() & WB_DROPDOWN ) != WB_DROPDOWN)
         {
-            uno::Sequence< uno::Reference< uno::XInterface > > aSequence(1);
-            aSequence[0] = pBox->GetAccessible();
+            uno::Sequence< uno::Reference< uno::XInterface > > aSequence { pBox->GetAccessible() };
             rRelationSet.AddRelation( com::sun::star::accessibility::AccessibleRelation( com::sun::star::accessibility::AccessibleRelationType::MEMBER_OF, aSequence ) );
         }
     }
@@ -880,7 +879,7 @@ Reference< XAccessible > SAL_CALL VCLXAccessibleList::getSelectedAccessibleChild
         return getAccessibleChild( (sal_Int32)m_pListBoxHelper->GetSelectEntryPos( (sal_uInt16)nSelectedChildIndex ) );
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void SAL_CALL VCLXAccessibleList::deselectAccessibleChild( sal_Int32 nSelectedChildIndex ) throw (IndexOutOfBoundsException, RuntimeException, std::exception)

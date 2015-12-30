@@ -77,18 +77,18 @@ using namespace ::com::sun::star::datatransfer::clipboard;
 #define SDTRANSFER_OBJECTTYPE_DRAWOLE           static_cast<SotClipboardFormatId>(0x00000002)
 
 SdTransferable::SdTransferable( SdDrawDocument* pSrcDoc, ::sd::View* pWorkView, bool bInitOnGetData )
-:   mpPageDocShell( NULL )
-,   mpOLEDataHelper( NULL )
-,   mpObjDesc( NULL )
+:   mpPageDocShell( nullptr )
+,   mpOLEDataHelper( nullptr )
+,   mpObjDesc( nullptr )
 ,   mpSdView( pWorkView )
 ,   mpSdViewIntern( pWorkView )
-,   mpSdDrawDocument( NULL )
-,   mpSdDrawDocumentIntern( NULL )
+,   mpSdDrawDocument( nullptr )
+,   mpSdDrawDocumentIntern( nullptr )
 ,   mpSourceDoc( pSrcDoc )
-,   mpVDev( NULL )
-,   mpBookmark( NULL )
-,   mpGraphic( NULL )
-,   mpImageMap( NULL )
+,   mpVDev( nullptr )
+,   mpBookmark( nullptr )
+,   mpGraphic( nullptr )
+,   mpImageMap( nullptr )
 ,   mbInternalMove( false )
 ,   mbOwnDocument( false )
 ,   mbOwnView( false )
@@ -152,12 +152,12 @@ void SdTransferable::CreateObjectReplacement( SdrObject* pObj )
 {
     if( pObj )
     {
-        delete mpOLEDataHelper, mpOLEDataHelper = NULL;
-        delete mpGraphic, mpGraphic = NULL;
-        delete mpBookmark, mpBookmark = NULL;
-        delete mpImageMap, mpImageMap = NULL;
+        delete mpOLEDataHelper, mpOLEDataHelper = nullptr;
+        delete mpGraphic, mpGraphic = nullptr;
+        delete mpBookmark, mpBookmark = nullptr;
+        delete mpImageMap, mpImageMap = nullptr;
 
-        if( pObj->ISA( SdrOle2Obj ) )
+        if( nullptr!= dynamic_cast< const SdrOle2Obj* >( pObj ) )
         {
             try
             {
@@ -177,7 +177,7 @@ void SdTransferable::CreateObjectReplacement( SdrObject* pObj )
             catch( uno::Exception& )
             {}
         }
-        else if( pObj->ISA( SdrGrafObj ) && (mpSourceDoc && !mpSourceDoc->GetAnimationInfo( pObj )) )
+        else if( dynamic_cast< const SdrGrafObj *>( pObj ) !=  nullptr && (mpSourceDoc && !mpSourceDoc->GetAnimationInfo( pObj )) )
         {
             mpGraphic = new Graphic( static_cast< SdrGrafObj* >( pObj )->GetTransformedGraphic() );
         }
@@ -187,17 +187,17 @@ void SdTransferable::CreateObjectReplacement( SdrObject* pObj )
 
             if (pUnoCtrl && FmFormInventor == pUnoCtrl->GetObjInventor())
             {
-                Reference< ::com::sun::star::awt::XControlModel > xControlModel( pUnoCtrl->GetUnoControlModel() );
+                Reference< css::awt::XControlModel > xControlModel( pUnoCtrl->GetUnoControlModel() );
 
                 if( !xControlModel.is() )
                     return;
 
-                Reference< ::com::sun::star::beans::XPropertySet > xPropSet( xControlModel, UNO_QUERY );
+                Reference< css::beans::XPropertySet > xPropSet( xControlModel, UNO_QUERY );
 
                 if( !xPropSet.is() )
                     return;
 
-                ::com::sun::star::form::FormButtonType  eButtonType;
+                css::form::FormButtonType  eButtonType;
                 Any                                     aTmp( xPropSet->getPropertyValue( "ButtonType" ) );
 
                 if( aTmp >>= eButtonType )
@@ -211,19 +211,19 @@ void SdTransferable::CreateObjectReplacement( SdrObject* pObj )
                 }
             }
         }
-        else if( pObj->ISA( SdrTextObj ) )
+        else if( dynamic_cast< const SdrTextObj *>( pObj ) !=  nullptr )
         {
             const OutlinerParaObject* pPara;
 
-            if( (pPara = static_cast< SdrTextObj* >( pObj )->GetOutlinerParaObject()) != 0 )
+            if( (pPara = static_cast< SdrTextObj* >( pObj )->GetOutlinerParaObject()) != nullptr )
             {
                 const SvxFieldItem* pField;
 
-                if( (pField = pPara->GetTextObject().GetField()) != 0 )
+                if( (pField = pPara->GetTextObject().GetField()) != nullptr )
                 {
                     const SvxFieldData* pData = pField->GetField();
 
-                    if( pData && pData->ISA( SvxURLField ) )
+                    if( pData && dynamic_cast< const SvxURLField *>( pData ) !=  nullptr )
                     {
                         const SvxURLField* pURL = static_cast<const SvxURLField*>(pData);
 
@@ -281,7 +281,7 @@ void SdTransferable::CreateData()
             mpSourceDoc->CreatingDataObj(this);
         mpSdDrawDocumentIntern = static_cast<SdDrawDocument*>( mpSdView->GetMarkedObjModel() );
         if( mpSourceDoc )
-            mpSourceDoc->CreatingDataObj(0);
+            mpSourceDoc->CreatingDataObj(nullptr);
 
         if( !maDocShellRef.Is() && mpSdDrawDocumentIntern->GetDocSh() )
             maDocShellRef = mpSdDrawDocumentIntern->GetDocSh();
@@ -357,7 +357,7 @@ static bool lcl_HasOnlyControls( SdrModel* pModel )
                 bOnlyControls = true;   // only set if there are any objects at all
                 while ( pObj )
                 {
-                    if (!pObj->ISA(SdrUnoObj))
+                    if (dynamic_cast< const SdrUnoObj *>( pObj ) ==  nullptr)
                     {
                         bOnlyControls = false;
                         break;
@@ -378,7 +378,7 @@ static bool lcl_HasOnlyOneTable( SdrModel* pModel )
         SdrPage* pPage = pModel->GetPage(0);
         if (pPage && pPage->GetObjCount() == 1 )
         {
-            if( dynamic_cast< sdr::table::SdrTableObj* >( pPage->GetObj(0) ) != 0 )
+            if( dynamic_cast< sdr::table::SdrTableObj* >( pPage->GetObj(0) ) != nullptr )
                 return true;
         }
     }
@@ -452,7 +452,7 @@ void SdTransferable::AddSupportedFormats()
 
 bool SdTransferable::GetData( const DataFlavor& rFlavor, const OUString& rDestDoc )
 {
-    if (SD_MOD()==NULL)
+    if (SD_MOD()==nullptr)
         return false;
 
     SotClipboardFormatId nFormat = SotExchange::GetFormat( rFlavor );
@@ -500,7 +500,7 @@ bool SdTransferable::GetData( const DataFlavor& rFlavor, const OUString& rDestDo
                 SdDrawDocument& rInternDoc = mpSdViewIntern->GetDoc();
                 rInternDoc.CreatingDataObj(this);
                 SdDrawDocument* pDoc = dynamic_cast< SdDrawDocument* >( mpSdViewIntern->GetMarkedObjModel() );
-                rInternDoc.CreatingDataObj(0);
+                rInternDoc.CreatingDataObj(nullptr);
 
                 bOK = SetObject( pDoc, SDTRANSFER_OBJECTTYPE_DRAWMODEL, rFlavor );
 
@@ -571,7 +571,7 @@ bool SdTransferable::GetData( const DataFlavor& rFlavor, const OUString& rDestDo
                         true,
                         mpSdDrawDocumentIntern->GetDocumentType());
                     mbOwnDocument = false;
-                    maDocShellRef->DoInitNew( NULL );
+                    maDocShellRef->DoInitNew();
                 }
 
                 maDocShellRef->SetVisArea( maVisArea );
@@ -595,7 +595,7 @@ bool SdTransferable::WriteObject( tools::SvRef<SotStorageStream>& rxOStm, void* 
         {
             try
             {
-                static const bool bDontBurnInStyleSheet = ( getenv( "AVOID_BURN_IN_FOR_GALLERY_THEME" ) != NULL );
+                static const bool bDontBurnInStyleSheet = ( getenv( "AVOID_BURN_IN_FOR_GALLERY_THEME" ) != nullptr );
                 SdDrawDocument* pDoc = static_cast<SdDrawDocument*>(pObject);
                 if ( !bDontBurnInStyleSheet )
                     pDoc->BurnInStyleSheetAttributes();
@@ -605,7 +605,7 @@ bool SdTransferable::WriteObject( tools::SvRef<SotStorageStream>& rxOStm, void* 
                 pDoc->setUnoModel( Reference< XInterface >::query( xComponent ) );
 
                 {
-                    com::sun::star::uno::Reference<com::sun::star::io::XOutputStream> xDocOut( new utl::OOutputStreamWrapper( *rxOStm ) );
+                    css::uno::Reference<css::io::XOutputStream> xDocOut( new utl::OOutputStreamWrapper( *rxOStm ) );
                     if( SvxDrawingLayerExport( pDoc, xDocOut, xComponent, (pDoc->GetDocumentType() == DOCUMENT_TYPE_IMPRESS) ? "com.sun.star.comp.Impress.XMLClipboardExporter" : "com.sun.star.comp.DrawingLayer.XMLExporter" ) )
                         rxOStm->Commit();
                 }
@@ -676,13 +676,13 @@ void SdTransferable::DragFinished( sal_Int8 nDropAction )
 void SdTransferable::ObjectReleased()
 {
     if( this == SD_MOD()->pTransferClip )
-        SD_MOD()->pTransferClip = NULL;
+        SD_MOD()->pTransferClip = nullptr;
 
     if( this == SD_MOD()->pTransferDrag )
-        SD_MOD()->pTransferDrag = NULL;
+        SD_MOD()->pTransferDrag = nullptr;
 
     if( this == SD_MOD()->pTransferSelection )
-        SD_MOD()->pTransferSelection = NULL;
+        SD_MOD()->pTransferSelection = nullptr;
 }
 
 void SdTransferable::SetObjectDescriptor( const TransferableObjectDescriptor& rObjDesc )
@@ -701,14 +701,14 @@ void SdTransferable::SetPageBookmarks( const std::vector<OUString> &rPageBookmar
 
         mpSdDrawDocument->ClearModel(false);
 
-        mpPageDocShell = NULL;
+        mpPageDocShell = nullptr;
 
         maPageBookmarks.clear();
 
         if( bPersistent )
         {
             mpSdDrawDocument->CreateFirstPages(mpSourceDoc);
-            mpSdDrawDocument->InsertBookmarkAsPage( rPageBookmarks, NULL, false, true, 1, true,
+            mpSdDrawDocument->InsertBookmarkAsPage( rPageBookmarks, nullptr, false, true, 1, true,
                                                     mpSourceDoc->GetDocSh(), true, true, false );
         }
         else
@@ -734,7 +734,7 @@ void SdTransferable::SetPageBookmarks( const std::vector<OUString> &rPageBookmar
     }
 }
 
-sal_Int64 SAL_CALL SdTransferable::getSomething( const ::com::sun::star::uno::Sequence< sal_Int8 >& rId ) throw( ::com::sun::star::uno::RuntimeException, std::exception )
+sal_Int64 SAL_CALL SdTransferable::getSomething( const css::uno::Sequence< sal_Int8 >& rId ) throw( css::uno::RuntimeException, std::exception )
 {
     sal_Int64 nRet;
 
@@ -774,7 +774,7 @@ namespace
     class theSdTransferableUnoTunnelId : public rtl::Static< UnoTunnelIdInit, theSdTransferableUnoTunnelId > {};
 }
 
-const ::com::sun::star::uno::Sequence< sal_Int8 >& SdTransferable::getUnoTunnelId()
+const css::uno::Sequence< sal_Int8 >& SdTransferable::getUnoTunnelId()
 {
     return theSdTransferableUnoTunnelId::get().getSeq();
 }
@@ -783,13 +783,13 @@ SdTransferable* SdTransferable::getImplementation( const Reference< XInterface >
 {
     try
     {
-        Reference< ::com::sun::star::lang::XUnoTunnel > xUnoTunnel( rxData, UNO_QUERY_THROW );
+        Reference< css::lang::XUnoTunnel > xUnoTunnel( rxData, UNO_QUERY_THROW );
         return reinterpret_cast<SdTransferable*>(sal::static_int_cast<sal_uIntPtr>(xUnoTunnel->getSomething( SdTransferable::getUnoTunnelId()) ) );
     }
-    catch( const ::com::sun::star::uno::Exception& )
+    catch( const css::uno::Exception& )
     {
     }
-    return NULL;
+    return nullptr;
 }
 
 void SdTransferable::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
@@ -800,7 +800,7 @@ void SdTransferable::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
         if( HINT_MODELCLEARED == pSdrHint->GetKind() )
         {
             EndListening(*mpSourceDoc);
-            mpSourceDoc = 0;
+            mpSourceDoc = nullptr;
         }
     }
     else
@@ -809,11 +809,11 @@ void SdTransferable::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
         if(pSimpleHint && (pSimpleHint->GetId() == SFX_HINT_DYING) )
         {
             if( &rBC == mpSourceDoc )
-                mpSourceDoc = 0;
+                mpSourceDoc = nullptr;
             if( &rBC == mpSdViewIntern )
-                mpSdViewIntern = 0;
+                mpSdViewIntern = nullptr;
             if( &rBC == mpSdView )
-                mpSdView = 0;
+                mpSdView = nullptr;
         }
     }
 }

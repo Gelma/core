@@ -19,6 +19,7 @@
 #include <connectivity/DriversConfig.hxx>
 #include <tools/wldcrd.hxx>
 #include <svtools/miscopt.hxx>
+#include <comphelper/sequence.hxx>
 
 using namespace connectivity;
 using namespace utl;
@@ -206,7 +207,7 @@ const ::comphelper::NamedValueCollection& DriversConfig::getMetaData(const OUStr
 const ::comphelper::NamedValueCollection& DriversConfig::impl_get(const OUString& _sURL,sal_Int32 _nProps) const
 {
     const TInstalledDrivers& rDrivers = m_aNode->getInstalledDrivers(m_xORB);
-    const ::comphelper::NamedValueCollection* pRet = NULL;
+    const ::comphelper::NamedValueCollection* pRet = nullptr;
     OUString sOldPattern;
     TInstalledDrivers::const_iterator aIter = rDrivers.begin();
     TInstalledDrivers::const_iterator aEnd = rDrivers.end();
@@ -230,7 +231,7 @@ const ::comphelper::NamedValueCollection& DriversConfig::impl_get(const OUString
             sOldPattern = aIter->first;
         }
     } // for(;aIter != aEnd;++aIter)
-    if ( pRet == NULL )
+    if ( pRet == nullptr )
     {
         static const ::comphelper::NamedValueCollection s_sEmpty;
         pRet = &s_sEmpty;
@@ -241,15 +242,7 @@ const ::comphelper::NamedValueCollection& DriversConfig::impl_get(const OUString
 uno::Sequence< OUString > DriversConfig::getURLs() const
 {
     const TInstalledDrivers& rDrivers = m_aNode->getInstalledDrivers(m_xORB);
-    uno::Sequence< OUString > aRet(rDrivers.size());
-    OUString* pIter = aRet.getArray();
-    TInstalledDrivers::const_iterator aIter = rDrivers.begin();
-    TInstalledDrivers::const_iterator aEnd = rDrivers.end();
-    for(;aIter != aEnd;++aIter,++pIter)
-    {
-        *pIter = aIter->first;
-    }
-    return aRet;
+    return comphelper::mapKeysToSequence(rDrivers);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

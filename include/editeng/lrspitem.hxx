@@ -50,13 +50,13 @@
 
 class EDITENG_DLLPUBLIC SvxLRSpaceItem : public SfxPoolItem
 {
-    short   nFirstLineOfst;     // First-line indent _always_ relative to nTxtLeft
     long    nTxtLeft;           // We spend a sal_uInt16
     long    nLeftMargin;        // nLeft or the negative first-line indent
     long    nRightMargin;       // The unproblematic right edge
 
     sal_uInt16  nPropFirstLineOfst, nPropLeftMargin, nPropRightMargin;
-    bool        bAutoFirst  : 1;    // Automatic calculation of the first line indent
+    short   nFirstLineOfst;     // First-line indent _always_ relative to nTxtLeft
+    bool        bAutoFirst;    // Automatic calculation of the first line indent
     bool        bExplicitZeroMarginValRight;
     bool        bExplicitZeroMarginValLeft;
 
@@ -64,7 +64,7 @@ class EDITENG_DLLPUBLIC SvxLRSpaceItem : public SfxPoolItem
 
 public:
 
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     explicit SvxLRSpaceItem( const sal_uInt16 nId  );
     SvxLRSpaceItem( const long nLeft, const long nRight,
@@ -73,22 +73,22 @@ public:
     inline SvxLRSpaceItem& operator=( const SvxLRSpaceItem &rCpy );
 
     // "pure virtual Methods" from SfxPoolItem
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
 
-    virtual bool            QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool            PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual bool            QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool            PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
-                                    OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    OUString &rText, const IntlWrapper * = nullptr ) const override;
 
-    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*     Create(SvStream &, sal_uInt16) const SAL_OVERRIDE;
-    virtual SvStream&        Store(SvStream &, sal_uInt16 nItemVersion ) const SAL_OVERRIDE;
-    virtual sal_uInt16           GetVersion( sal_uInt16 nFileVersion ) const SAL_OVERRIDE;
-    virtual bool                 ScaleMetrics( long nMult, long nDiv ) SAL_OVERRIDE;
-    virtual bool                 HasMetrics() const SAL_OVERRIDE;
+    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual SfxPoolItem*     Create(SvStream &, sal_uInt16) const override;
+    virtual SvStream&        Store(SvStream &, sal_uInt16 nItemVersion ) const override;
+    virtual sal_uInt16           GetVersion( sal_uInt16 nFileVersion ) const override;
+    virtual bool                 ScaleMetrics( long nMult, long nDiv ) override;
+    virtual bool                 HasMetrics() const override;
 
     // Die "Layout-Schnittstelle":
     inline void   SetLeft ( const long nL, const sal_uInt16 nProp = 100 );
@@ -121,7 +121,7 @@ public:
                     { return nPropFirstLineOfst; }
     inline void SetTextFirstLineOfstValue( const short nValue )
                     { nFirstLineOfst = nValue; }
-    void dumpAsXml(struct _xmlTextWriter* pWriter) const SAL_OVERRIDE;
+    void dumpAsXml(struct _xmlTextWriter* pWriter) const override;
 };
 
 inline SvxLRSpaceItem &SvxLRSpaceItem::operator=( const SvxLRSpaceItem &rCpy )

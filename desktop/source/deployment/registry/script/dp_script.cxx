@@ -62,13 +62,13 @@ class BackendImpl : public t_helper
         virtual beans::Optional< beans::Ambiguous<sal_Bool> > isRegistered_(
             ::osl::ResettableMutexGuard & guard,
             ::rtl::Reference<AbortChannel> const & abortChannel,
-            Reference<XCommandEnvironment> const & xCmdEnv ) SAL_OVERRIDE;
+            Reference<XCommandEnvironment> const & xCmdEnv ) override;
         virtual void processPackage_(
             ::osl::ResettableMutexGuard & guard,
             bool registerPackage,
             bool startup,
             ::rtl::Reference<AbortChannel> const & abortChannel,
-            Reference<XCommandEnvironment> const & xCmdEnv ) SAL_OVERRIDE;
+            Reference<XCommandEnvironment> const & xCmdEnv ) override;
 
     public:
         PackageImpl(
@@ -84,7 +84,7 @@ class BackendImpl : public t_helper
     virtual Reference<deployment::XPackage> bindPackage_(
         OUString const & url, OUString const & mediaType,
         bool bRemoved, OUString const & identifier,
-        Reference<XCommandEnvironment> const & xCmdEnv ) SAL_OVERRIDE;
+        Reference<XCommandEnvironment> const & xCmdEnv ) override;
 
     void addDataToDb(OUString const & url);
     bool hasActiveEntry(OUString const & url);
@@ -99,14 +99,14 @@ public:
                  Reference<XComponentContext> const & xComponentContext );
 
     // XUpdatable
-    virtual void SAL_CALL update() throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL update() throw (RuntimeException, std::exception) override;
 
     // XPackageRegistry
     virtual Sequence< Reference<deployment::XPackageTypeInfo> > SAL_CALL
-    getSupportedPackageTypes() throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    getSupportedPackageTypes() throw (RuntimeException, std::exception) override;
     virtual void SAL_CALL packageRemoved(OUString const & url, OUString const & mediaType)
         throw (deployment::DeploymentException,
-               uno::RuntimeException, std::exception) SAL_OVERRIDE;
+               uno::RuntimeException, std::exception) override;
 
 };
 
@@ -226,12 +226,12 @@ Reference<deployment::XPackage> BackendImpl::bindPackage_(
         {
             // probe for script.xlb:
             if (create_ucb_content(
-                    0, makeURL( url, "script.xlb" ),
+                    nullptr, makeURL( url, "script.xlb" ),
                     xCmdEnv, false /* no throw */ ))
                 mediaType = "application/vnd.sun.star.basic-library";
             // probe for dialog.xlb:
             else if (create_ucb_content(
-                         0, makeURL( url, "dialog.xlb" ),
+                         nullptr, makeURL( url, "dialog.xlb" ),
                          xCmdEnv, false /* no throw */ ))
                 mediaType = "application/vnd.sun.star.dialog-library";
         }
@@ -249,7 +249,7 @@ Reference<deployment::XPackage> BackendImpl::bindPackage_(
         {
             OUString dialogURL( makeURL( url, "dialog.xlb" ) );
             if (! create_ucb_content(
-                    0, dialogURL, xCmdEnv, false /* no throw */ )) {
+                    nullptr, dialogURL, xCmdEnv, false /* no throw */ )) {
                 dialogURL.clear();
             }
 
@@ -257,7 +257,7 @@ Reference<deployment::XPackage> BackendImpl::bindPackage_(
             {
                 OUString scriptURL( makeURL( url, "script.xlb"));
                 if (! create_ucb_content(
-                        0, scriptURL, xCmdEnv, false /* no throw */ )) {
+                        nullptr, scriptURL, xCmdEnv, false /* no throw */ )) {
                     scriptURL.clear();
                 }
 
@@ -286,7 +286,7 @@ Reference<deployment::XPackage> BackendImpl::bindPackage_(
 BackendImpl * BackendImpl::PackageImpl::getMyBackend() const
 {
     BackendImpl * pBackend = static_cast<BackendImpl *>(m_myBackend.get());
-    if (NULL == pBackend)
+    if (nullptr == pBackend)
     {
         //May throw a DisposedException
         check();

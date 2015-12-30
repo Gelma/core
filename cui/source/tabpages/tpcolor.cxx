@@ -278,7 +278,7 @@ void SvxColorTabPage::Update(bool bLoaded)
             XColorEntry* pEntry = pColorList->GetColor( nPos );
             ChangeColor(pEntry->GetColor());
         }
-        SelectColorLBHdl_Impl( this );
+        SelectColorLBHdl_Impl( *m_pLbColor );
     }
 
     UpdateModified();
@@ -313,11 +313,11 @@ SvxColorTabPage::SvxColorTabPage(vcl::Window* pParent, const SfxItemSet& rInAttr
     , pShadow             ( new SvxColorTabPageShadow() )
     , rOutAttrs           ( rInAttrs )
     // All the horrific pointers we store and should not
-    , pnColorListState( 0 )
-    , pPageType( NULL )
+    , pnColorListState( nullptr )
+    , pPageType( nullptr )
     , nDlgType( 0 )
-    , pPos( NULL )
-    , pbAreaTP( NULL )
+    , pPos( nullptr )
+    , pbAreaTP( nullptr )
     , aXFStyleItem( drawing::FillStyle_SOLID )
     , aXFillColorItem( OUString(), Color( COL_BLACK ) )
     , aXFillAttr( static_cast<XOutdevItemPool*>( rInAttrs.GetPool() ))
@@ -382,7 +382,7 @@ SvxColorTabPage::SvxColorTabPage(vcl::Window* pParent, const SfxItemSet& rInAttr
     m_pLbColorModel->SetSelectHdl(
         LINK( this, SvxColorTabPage, SelectColorModelHdl_Impl ) );
 
-    Link<> aLink = LINK( this, SvxColorTabPage, ModifiedHdl_Impl );
+    Link<Edit&,void> aLink = LINK( this, SvxColorTabPage, ModifiedHdl_Impl );
     m_pR->SetModifyHdl( aLink );
     m_pG->SetModifyHdl( aLink );
     m_pB->SetModifyHdl( aLink );
@@ -409,7 +409,7 @@ SvxColorTabPage::~SvxColorTabPage()
 void SvxColorTabPage::dispose()
 {
     delete pShadow;
-    pShadow = NULL;
+    pShadow = nullptr;
     mpTopDlg.clear();
     m_pBoxEmbed.clear();
     m_pBtnLoad.clear();
@@ -475,7 +475,7 @@ void SvxColorTabPage::ActivatePage( const SfxItemSet& )
             }
             else if( *pPageType == PT_COLOR && *pPos == LISTBOX_ENTRY_NOTFOUND )
             {
-                const SfxPoolItem* pPoolItem = NULL;
+                const SfxPoolItem* pPoolItem = nullptr;
                 if( SfxItemState::SET == rOutAttrs.GetItemState( GetWhich( XATTR_FILLCOLOR ), true, &pPoolItem ) )
                 {
                     m_pLbColorModel->SelectEntryPos( CM_RGB );
@@ -499,7 +499,7 @@ void SvxColorTabPage::ActivatePage( const SfxItemSet& )
             }
 
             // so that the possibly changed color is discarded
-            SelectColorLBHdl_Impl( this );
+            SelectColorLBHdl_Impl( *m_pLbColor );
 
             *pPageType = PT_COLOR;
             *pPos = LISTBOX_ENTRY_NOTFOUND;
@@ -556,14 +556,14 @@ long SvxColorTabPage::CheckChanges_Impl()
             {
                 case RET_BTN_1:
                 {
-                    ClickModifyHdl_Impl( NULL );
+                    ClickModifyHdl_Impl( nullptr );
                     aColor = pColorList->GetColor( nPos )->GetColor();
                 }
                 break;
 
                 case RET_BTN_2:
                 {
-                    ClickAddHdl_Impl( NULL );
+                    ClickAddHdl_Impl( nullptr );
                     nPos = m_pLbColor->GetSelectEntryPos();
                     aColor = pColorList->GetColor( nPos )->GetColor();
                 }
@@ -641,7 +641,7 @@ void SvxColorTabPage::Reset( const SfxItemSet* rSet )
     m_pLbColorModel->SelectEntryPos( aStr.toInt32() );
 
     ChangeColor(aNewColor);
-    SelectColorModelHdl_Impl( this );
+    SelectColorModelHdl_Impl( *m_pLbColorModel );
 
     m_pCtlPreviewOld->Invalidate();
     UpdateModified();
@@ -656,7 +656,7 @@ VclPtr<SfxTabPage> SvxColorTabPage::Create( vcl::Window* pWindow,
 }
 
 // is called when the content of the MtrFields is changed for color values
-IMPL_LINK_NOARG(SvxColorTabPage, ModifiedHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvxColorTabPage, ModifiedHdl_Impl, Edit&, void)
 {
     if (eCM == CM_RGB)
     {
@@ -679,8 +679,6 @@ IMPL_LINK_NOARG(SvxColorTabPage, ModifiedHdl_Impl)
     m_pCtlPreviewNew->SetAttributes( aXFillAttr.GetItemSet() );
 
     m_pCtlPreviewNew->Invalidate();
-
-    return 0;
 }
 
 
@@ -762,7 +760,7 @@ IMPL_LINK_NOARG_TYPED(SvxColorTabPage, ClickAddHdl_Impl, Button*, void)
 
         *pnColorListState |= ChangeType::MODIFIED;
 
-        SelectColorLBHdl_Impl( this );
+        SelectColorLBHdl_Impl( *m_pLbColor );
     }
 
     UpdateModified();
@@ -900,7 +898,7 @@ IMPL_LINK_NOARG_TYPED(SvxColorTabPage, ClickDeleteHdl_Impl, Button*, void)
 
             // positioning
             m_pLbColor->SelectEntryPos( nPos );
-            SelectColorLBHdl_Impl( this );
+            SelectColorLBHdl_Impl( *m_pLbColor );
 
             m_pCtlPreviewOld->Invalidate();
 
@@ -912,7 +910,7 @@ IMPL_LINK_NOARG_TYPED(SvxColorTabPage, ClickDeleteHdl_Impl, Button*, void)
 
 
 
-IMPL_LINK_NOARG(SvxColorTabPage, SelectColorLBHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvxColorTabPage, SelectColorLBHdl_Impl, ListBox&, void)
 {
     sal_Int32 nPos = m_pLbColor->GetSelectEntryPos();
     if( nPos != LISTBOX_ENTRY_NOTFOUND )
@@ -931,7 +929,6 @@ IMPL_LINK_NOARG(SvxColorTabPage, SelectColorLBHdl_Impl)
         XColorEntry* pEntry = pColorList->GetColor(nPos);
         ChangeColor(pEntry->GetColor());
     }
-    return 0;
 }
 
 
@@ -980,7 +977,7 @@ void SvxColorTabPage::ConvertColorValues (Color& rColor, ColorModel eModell)
     }
 }
 
-IMPL_LINK_NOARG(SvxColorTabPage, SelectColorModelHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvxColorTabPage, SelectColorModelHdl_Impl, ListBox&, void)
 {
     int nPos = m_pLbColorModel->GetSelectEntryPos();
     if( nPos != LISTBOX_ENTRY_NOTFOUND )
@@ -1008,8 +1005,6 @@ IMPL_LINK_NOARG(SvxColorTabPage, SelectColorModelHdl_Impl)
         ChangeColor(aCurrentColor);
 
     }
-
-    return 0;
 }
 
 
@@ -1157,8 +1152,8 @@ void SvxColorTabPage::FillUserData()
 
 void SvxColorTabPage::SetupForViewFrame( SfxViewFrame *pViewFrame )
 {
-    const OfaRefItem<XColorList> *pPtr = NULL;
-    if ( pViewFrame != NULL && pViewFrame->GetDispatcher() )
+    const OfaRefItem<XColorList> *pPtr = nullptr;
+    if ( pViewFrame != nullptr && pViewFrame->GetDispatcher() )
         pPtr = static_cast<const OfaRefItem<XColorList> *>(pViewFrame->
             GetDispatcher()->Execute( SID_GET_COLORLIST,
                                       SfxCallMode::SYNCHRON ));

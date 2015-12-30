@@ -23,7 +23,8 @@
 #include "rangelst.hxx"
 #include "chartpos.hxx"
 
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <memory>
+#include <vector>
 
 class ScDocument;
 
@@ -39,7 +40,7 @@ class ScMemChart
     OUString* pColText;
     OUString* pRowText;
 
-    ScMemChart(const ScMemChart& rMemChart) SAL_DELETED_FUNCTION;
+    ScMemChart(const ScMemChart& rMemChart) = delete;
 
 public:
     ScMemChart(SCCOL nCols, SCROW nRows);
@@ -90,8 +91,9 @@ public:
 
 class ScChartCollection
 {
-    typedef ::boost::ptr_vector<ScChartArray> DataType;
-    DataType maData;
+    typedef ::std::vector<std::unique_ptr<ScChartArray>> DataType;
+    DataType m_Data;
+
 public:
     ScChartCollection();
     ScChartCollection(const ScChartCollection& rColl);

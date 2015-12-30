@@ -22,87 +22,87 @@
 #include "itratr.hxx"
 #include "inftxt.hxx"
 
-class SwTextFrm;
+class SwTextFrame;
 struct SwPosition;
-struct SwCrsrMoveState;
+struct SwCursorMoveState;
 class SwMarginPortion;
 class SwFlyPortion;
 
 class SwTextIter : public SwAttrIter
 {
 protected:
-    SwLineInfo aLineInf;
-    SwTextFrm  *pFrm;
-    SwTextInfo *pInf;
-    SwLineLayout *pCurr;
-    SwLineLayout *pPrev;
-    SwTwips nFrameStart;
-    SwTwips nY;
-    SwTwips nRegStart;          // The register's start position (Y)
-    sal_Int32 nStart;          // Start in the text string, end = pCurr->GetLen()
-    sal_uInt16 nRegDiff;            // Register's line distance
-    sal_uInt16 nLineNr;             // Line number
-    bool bPrev          : 1;
-    bool bRegisterOn    : 1;    // Keep in register
-    bool bOneBlock      : 1;    // Justified text: Dispose single words
-    bool bLastBlock     : 1;    // Justified text: Also the last line
-    bool bLastCenter    : 1;    // Justified text: Center last line
+    SwLineInfo m_aLineInf;
+    SwTextFrame  *m_pFrame;
+    SwTextInfo *m_pInf;
+    SwLineLayout *m_pCurr;
+    SwLineLayout *m_pPrev;
+    SwTwips m_nFrameStart;
+    SwTwips m_nY;
+    SwTwips m_nRegStart;          // The register's start position (Y)
+    sal_Int32 m_nStart;          // Start in the text string, end = pCurr->GetLen()
+    sal_uInt16 m_nRegDiff;            // Register's line distance
+    sal_uInt16 m_nLineNr;             // Line number
+    bool m_bPrev          : 1;
+    bool m_bRegisterOn    : 1;    // Keep in register
+    bool m_bOneBlock      : 1;    // Justified text: Dispose single words
+    bool m_bLastBlock     : 1;    // Justified text: Also the last line
+    bool m_bLastCenter    : 1;    // Justified text: Center last line
 
     SwLineLayout *_GetPrev();
 
     // Reset in the first line
     void Init();
-    void CtorInitTextIter( SwTextFrm *pFrm, SwTextInfo *pInf );
+    void CtorInitTextIter( SwTextFrame *pFrame, SwTextInfo *pInf );
     explicit SwTextIter(SwTextNode* pTextNode)
         : SwAttrIter(pTextNode)
-        , pFrm(NULL)
-        , pInf(NULL)
-        , pCurr(NULL)
-        , pPrev(NULL)
-        , nFrameStart(0)
-        , nY(0)
-        , nRegStart(0)
-        , nStart(0)
-        , nRegDiff(0)
-        , nLineNr(0)
-        , bPrev(false)
-        , bRegisterOn(false)
-        , bOneBlock(false)
-        , bLastBlock(false)
-        , bLastCenter(false)
+        , m_pFrame(nullptr)
+        , m_pInf(nullptr)
+        , m_pCurr(nullptr)
+        , m_pPrev(nullptr)
+        , m_nFrameStart(0)
+        , m_nY(0)
+        , m_nRegStart(0)
+        , m_nStart(0)
+        , m_nRegDiff(0)
+        , m_nLineNr(0)
+        , m_bPrev(false)
+        , m_bRegisterOn(false)
+        , m_bOneBlock(false)
+        , m_bLastBlock(false)
+        , m_bLastCenter(false)
     {
     }
 public:
-    SwTextIter(SwTextFrm *pTextFrm, SwTextInfo *pTextInf)
-        : SwAttrIter(pTextFrm->GetTextNode())
-        , bOneBlock(false)
-        , bLastBlock(false)
-        , bLastCenter(false)
+    SwTextIter(SwTextFrame *pTextFrame, SwTextInfo *pTextInf)
+        : SwAttrIter(pTextFrame->GetTextNode())
+        , m_bOneBlock(false)
+        , m_bLastBlock(false)
+        , m_bLastCenter(false)
     {
-        CtorInitTextIter(pTextFrm, pTextInf);
+        CtorInitTextIter(pTextFrame, pTextInf);
     }
-    inline const SwLineLayout *GetCurr() const { return pCurr; } // NEVER 0!
-    inline const SwLineLayout *GetNext() const { return pCurr->GetNext(); }
+    inline const SwLineLayout *GetCurr() const { return m_pCurr; } // NEVER 0!
+    inline const SwLineLayout *GetNext() const { return m_pCurr->GetNext(); }
            const SwLineLayout *GetPrev();
-    inline sal_Int32 GetLength() const { return pCurr->GetLen(); }
-    inline sal_uInt16 GetLineNr() const { return nLineNr; }
-    inline sal_Int32 GetStart() const { return nStart; }
+    inline sal_Int32 GetLength() const { return m_pCurr->GetLen(); }
+    inline sal_uInt16 GetLineNr() const { return m_nLineNr; }
+    inline sal_Int32 GetStart() const { return m_nStart; }
     inline sal_Int32 GetEnd() const { return GetStart() + GetLength(); }
-    inline SwTwips Y() const { return nY; }
+    inline SwTwips Y() const { return m_nY; }
 
-    inline SwTwips RegStart() const { return nRegStart; }
-    inline sal_uInt16 RegDiff() const { return nRegDiff; }
-    inline bool IsRegisterOn() const { return bRegisterOn; }
+    inline SwTwips RegStart() const { return m_nRegStart; }
+    inline sal_uInt16 RegDiff() const { return m_nRegDiff; }
+    inline bool IsRegisterOn() const { return m_bRegisterOn; }
 
-    inline SwTextInfo &GetInfo() { return *pInf; }
-    inline const SwTextInfo &GetInfo() const { return *pInf; }
+    inline SwTextInfo &GetInfo() { return *m_pInf; }
+    inline const SwTextInfo &GetInfo() const { return *m_pInf; }
 
     inline void Top() { Init(); }
     void Bottom();
     const SwLineLayout *Next();
     const SwLineLayout *Prev();
 
-    // Skips the FlyFrms dummy line
+    // Skips the FlyFrames dummy line
     const SwLineLayout *NextLine();
     const SwLineLayout *PrevLine();
     const SwLineLayout *GetNextLine() const;
@@ -114,26 +114,26 @@ public:
     // Truncates all after pCurr
     void TruncLines( bool bNoteFollow = false );
 
-    inline sal_uInt16 GetLineHeight() const { return pCurr->GetRealHeight(); }
+    inline sal_uInt16 GetLineHeight() const { return m_pCurr->GetRealHeight(); }
     void CalcAscentAndHeight( sal_uInt16 &rAscent, sal_uInt16 &rHeight ) const;
 
     // Lots of trouble for querying pCurr == pPara
     inline bool IsFirstTextLine() const
-    { return nStart == GetInfo().GetTextStart() &&
-        !( pCurr->IsDummy() && GetNextLine() ); }
+    { return m_nStart == GetInfo().GetTextStart() &&
+        !( m_pCurr->IsDummy() && GetNextLine() ); }
 
     // Replacement for the old IsFirstLine()
     inline bool IsParaLine() const
-        { return pCurr == pInf->GetParaPortion(); }
+        { return m_pCurr == m_pInf->GetParaPortion(); }
 
-    const SwLineInfo &GetLineInfo() const { return aLineInf; }
-    inline SwTwips GetFirstPos() const { return nFrameStart; }
+    const SwLineInfo &GetLineInfo() const { return m_aLineInf; }
+    inline SwTwips GetFirstPos() const { return m_nFrameStart; }
     inline bool SeekAndChg( SwTextSizeInfo &rInf );
     inline bool SeekAndChgBefore( SwTextSizeInfo &rInf );
     inline bool SeekStartAndChg( SwTextSizeInfo &rInf, const bool bPara=false );
 
-    inline SwTextFrm *GetTextFrm() { return pFrm; }
-    inline const SwTextFrm *GetTextFrm() const { return pFrm; }
+    inline SwTextFrame *GetTextFrame() { return m_pFrame; }
+    inline const SwTextFrame *GetTextFrame() const { return m_pFrame; }
 
     // Counts consecutive hyphens in order to be within the boundary given by MaxHyphens
     void CntHyphens( sal_uInt8 &nEndCnt, sal_uInt8 &nMidCnt) const;
@@ -157,7 +157,7 @@ protected:
     // For FormatQuoVadis
     inline void Right( const SwTwips nNew ) { nRight = nNew; }
 
-    void CtorInitTextMargin( SwTextFrm *pFrm, SwTextSizeInfo *pInf );
+    void CtorInitTextMargin( SwTextFrame *pFrame, SwTextSizeInfo *pInf );
     explicit SwTextMargin(SwTextNode* pTextNode)
         : SwTextIter(pTextNode)
         , nLeft(0)
@@ -172,22 +172,22 @@ protected:
     {
     }
 public:
-    SwTextMargin(SwTextFrm *pTextFrm, SwTextSizeInfo *pTextSizeInf)
-        : SwTextIter(pTextFrm->GetTextNode())
+    SwTextMargin(SwTextFrame *pTextFrame, SwTextSizeInfo *pTextSizeInf)
+        : SwTextIter(pTextFrame->GetTextNode())
     {
-        CtorInitTextMargin( pTextFrm, pTextSizeInf );
+        CtorInitTextMargin( pTextFrame, pTextSizeInf );
     }
     inline SwTwips GetLeftMargin() const;
     inline SwTwips Left() const;
     inline SwTwips Right() const { return nRight; }
     inline SwTwips FirstLeft() const { return nFirst; }
-    inline SwTwips CurrWidth() const { return pCurr->PrtWidth(); }
+    inline SwTwips CurrWidth() const { return m_pCurr->PrtWidth(); }
            SwTwips GetLineStart() const;
     inline SwTwips GetLineEnd() const { return GetLineStart() + CurrWidth(); }
     inline Point GetTopLeft() const { return Point( GetLineStart(), Y() ); }
-    inline bool IsOneBlock() const { return bOneBlock; }
-    inline bool IsLastBlock() const { return bLastBlock; }
-    inline bool IsLastCenter() const { return bLastCenter; }
+    inline bool IsOneBlock() const { return m_bOneBlock; }
+    inline bool IsLastBlock() const { return m_bLastBlock; }
+    inline bool IsLastCenter() const { return m_bLastCenter; }
     inline sal_uInt16 GetAdjust() const { return nAdjust; }
     inline sal_uInt16 GetLineWidth() const
            { return sal_uInt16( Right() - GetLeftMargin() + 1 ); }
@@ -223,7 +223,7 @@ public:
 
 class SwTextAdjuster : public SwTextMargin
 {
-    // Adjusts the portion, if we have adjustment and FlyFrms
+    // Adjusts the portion, if we have adjustment and FlyFrames
     void CalcFlyAdjust( SwLineLayout *pCurr );
 
     // Calls SplitGlues and CalcBlockAdjust
@@ -243,8 +243,8 @@ protected:
         SwTwips nReal = 0, bool bSkipKashida = false );
     SwTwips CalcKanaAdj( SwLineLayout *pCurr );
 public:
-    inline SwTextAdjuster( SwTextFrm *pTextFrm, SwTextSizeInfo *pTextSizeInf ) : SwTextMargin(pTextFrm!=NULL?pTextFrm->GetTextNode():NULL)
-           { CtorInitTextMargin( pTextFrm, pTextSizeInf ); }
+    inline SwTextAdjuster( SwTextFrame *pTextFrame, SwTextSizeInfo *pTextSizeInf ) : SwTextMargin(pTextFrame!=nullptr?pTextFrame->GetTextNode():nullptr)
+           { CtorInitTextMargin( pTextFrame, pTextSizeInf ); }
 
     // Is overloaded by SwTextFormatter due to UpdatePos
     void CalcAdjLine( SwLineLayout *pCurr );
@@ -252,8 +252,8 @@ public:
     // For adjusting afterwards
     inline void GetAdjusted() const
     {
-        if( pCurr->IsFormatAdj() )
-            const_cast<SwTextAdjuster*>(this)->CalcAdjLine( pCurr );
+        if( m_pCurr->IsFormatAdj() )
+            const_cast<SwTextAdjuster*>(this)->CalcAdjLine( m_pCurr );
     }
 
     // Special treatment for DropCaps
@@ -269,24 +269,24 @@ class SwTextCursor : public SwTextAdjuster
 
     // Ambiguities
     static bool bRightMargin;
-    void _GetCharRect(SwRect *, const sal_Int32, SwCrsrMoveState* );
+    void _GetCharRect(SwRect *, const sal_Int32, SwCursorMoveState* );
 protected:
-    void CtorInitTextCursor( SwTextFrm *pFrm, SwTextSizeInfo *pInf );
+    void CtorInitTextCursor( SwTextFrame *pFrame, SwTextSizeInfo *pInf );
     explicit SwTextCursor(SwTextNode* pTextNode) : SwTextAdjuster(pTextNode) { }
 public:
-    SwTextCursor( SwTextFrm *pTextFrm, SwTextSizeInfo *pTextSizeInf )
-        : SwTextAdjuster(pTextFrm->GetTextNode())
+    SwTextCursor( SwTextFrame *pTextFrame, SwTextSizeInfo *pTextSizeInf )
+        : SwTextAdjuster(pTextFrame->GetTextNode())
     {
-        CtorInitTextCursor(pTextFrm, pTextSizeInf);
+        CtorInitTextCursor(pTextFrame, pTextSizeInf);
     }
-    bool GetCharRect(SwRect *, const sal_Int32, SwCrsrMoveState* = 0,
+    bool GetCharRect(SwRect *, const sal_Int32, SwCursorMoveState* = nullptr,
         const long nMax = 0 );
-    bool GetEndCharRect(SwRect *, const sal_Int32, SwCrsrMoveState* = 0,
+    bool GetEndCharRect(SwRect *, const sal_Int32, SwCursorMoveState* = nullptr,
         const long nMax = 0 );
-    sal_Int32 GetCrsrOfst( SwPosition *pPos, const Point &rPoint,
-                bool bChgNode, SwCrsrMoveState* = 0 ) const;
+    sal_Int32 GetCursorOfst( SwPosition *pPos, const Point &rPoint,
+                bool bChgNode, SwCursorMoveState* = nullptr ) const;
     // Respects ambiguities: For the implementation see below
-    const SwLineLayout *CharCrsrToLine( const sal_Int32 nPos );
+    const SwLineLayout *CharCursorToLine( const sal_Int32 nPos );
 
     // calculates baseline for portion rPor
     // bAutoToCentered indicates, if AUTOMATIC mode means CENTERED or BASELINE
@@ -335,7 +335,7 @@ inline SwTwips SwTextMargin::GetLeftMargin() const
 
 inline SwTwips SwTextMargin::Left() const
 {
-    return (nDropLines >= nLineNr && 1 != nLineNr) ? nFirst + nDropLeft : nLeft;
+    return (nDropLines >= m_nLineNr && 1 != m_nLineNr) ? nFirst + nDropLeft : nLeft;
 }
 
 #endif

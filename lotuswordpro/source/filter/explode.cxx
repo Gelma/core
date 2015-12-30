@@ -53,9 +53,12 @@
  *
  *
  ************************************************************************/
-#include <assert.h>
+
 #include "explode.hxx"
+#include <tools/stream.hxx>
+#include <assert.h>
 #include <math.h>
+
     const static char Tree1String[][32] = {
         "101",
         "11",
@@ -459,12 +462,12 @@ HuffmanTreeNode::~HuffmanTreeNode()
     if (left)
     {
         delete left;
-        left = NULL;
+        left = nullptr;
     }
     if (right)
     {
         delete right;
-        right = NULL;
+        right = nullptr;
     }
 }
 

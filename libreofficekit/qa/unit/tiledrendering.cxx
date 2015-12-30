@@ -21,7 +21,6 @@
 
 #include <config_options.h>
     // see use of ENABLE_RUNTIME_OPTIMIZATIONS in LibreOfficeKintInit.h
-#define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitInit.h>
 #include <LibreOfficeKit/LibreOfficeKit.hxx>
 #include <LibreOfficeKit/LibreOfficeKitEnums.h>
@@ -83,7 +82,7 @@ void TiledRenderingTest::runAllTests()
     OUString aWorkdirRootPath = OUString::createFromAscii(pWorkdirRoot);
     OUString aWorkdirRootURL = getFileURLFromSystemPath(aWorkdirRootPath);
     OUString sUserInstallURL = aWorkdirRootURL + "/unittest";
-    rtl::Bootstrap::set(OUString("UserInstallation"), sUserInstallURL);
+    rtl::Bootstrap::set("UserInstallation", sUserInstallURL);
 
     std::unique_ptr< Office > pOffice( lok_cpp_init(
                                       m_sLOPath.c_str() ) );

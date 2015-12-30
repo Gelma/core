@@ -46,7 +46,6 @@ OXMLHierarchyCollection::OXMLHierarchyCollection( ODBFilter& rImport
                 ,const OUString& _sCollectionServiceName
                 ,const OUString& _sComponentServiceName) :
     SvXMLImportContext( rImport, nPrfx, _sLocalName )
-    ,m_xParentContainer(_xParentContainer)
     ,m_sCollectionServiceName(_sCollectionServiceName)
     ,m_sComponentServiceName(_sComponentServiceName)
 {
@@ -122,7 +121,7 @@ SvXMLImportContext* OXMLHierarchyCollection::CreateChildContext(
         const OUString& rLocalName,
         const Reference< XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
     const SvXMLTokenMap&    rTokenMap   = GetOwnImport().GetDocumentsElemTokenMap();
 
     switch( rTokenMap.Get( nPrefix, rLocalName ) )

@@ -81,7 +81,7 @@ public:
     explicit SvxXMLColorEntryExporter( SvXMLExport& rExport );
     virtual ~SvxXMLColorEntryExporter();
 
-    virtual void exportEntry( const OUString& rStrName, const Any& rValue ) SAL_OVERRIDE;
+    virtual void exportEntry( const OUString& rStrName, const Any& rValue ) override;
 };
 
 class SvxXMLLineEndEntryExporter : public SvxXMLTableEntryExporter
@@ -90,7 +90,7 @@ public:
     explicit SvxXMLLineEndEntryExporter( SvXMLExport& rExport );
     virtual ~SvxXMLLineEndEntryExporter();
 
-    virtual void exportEntry( const OUString& rStrName, const Any& rValue ) SAL_OVERRIDE;
+    virtual void exportEntry( const OUString& rStrName, const Any& rValue ) override;
 private:
     XMLMarkerStyleExport maMarkerStyle;
 };
@@ -101,7 +101,7 @@ public:
     explicit SvxXMLDashEntryExporter( SvXMLExport& rExport );
     virtual ~SvxXMLDashEntryExporter();
 
-    virtual void exportEntry( const OUString& rStrName, const Any& rValue ) SAL_OVERRIDE;
+    virtual void exportEntry( const OUString& rStrName, const Any& rValue ) override;
 
 private:
     XMLDashStyleExport maDashStyle;
@@ -113,7 +113,7 @@ public:
     explicit SvxXMLHatchEntryExporter( SvXMLExport& rExport );
     virtual ~SvxXMLHatchEntryExporter();
 
-    virtual void exportEntry( const OUString& rStrName, const Any& rValue ) SAL_OVERRIDE;
+    virtual void exportEntry( const OUString& rStrName, const Any& rValue ) override;
 private:
     XMLHatchStyleExport maHatchStyle;
 };
@@ -124,7 +124,7 @@ public:
     explicit SvxXMLGradientEntryExporter( SvXMLExport& rExport );
     virtual ~SvxXMLGradientEntryExporter();
 
-    virtual void exportEntry( const OUString& rStrName, const Any& rValue ) SAL_OVERRIDE;
+    virtual void exportEntry( const OUString& rStrName, const Any& rValue ) override;
 private:
     XMLGradientStyleExport maGradientStyle;
 };
@@ -135,7 +135,7 @@ public:
     explicit SvxXMLBitmapEntryExporter( SvXMLExport& rExport );
     virtual ~SvxXMLBitmapEntryExporter();
 
-    virtual void exportEntry( const OUString& rStrName, const Any& rValue ) SAL_OVERRIDE;
+    virtual void exportEntry( const OUString& rStrName, const Any& rValue ) override;
 
 private:
     XMLImageStyle maImageStyle;
@@ -143,14 +143,13 @@ private:
 
 
 
-// #110680#
 SvxXMLXTableExportComponent::SvxXMLXTableExportComponent(
-    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rContext,
+    const css::uno::Reference< css::uno::XComponentContext >& rContext,
     const OUString& rFileName,
     const uno::Reference<xml::sax::XDocumentHandler> & rHandler,
     const uno::Reference<container::XNameContainer >& xTable,
     uno::Reference<document::XGraphicObjectResolver >& xGrfResolver )
-:   SvXMLExport(rContext, "", rFileName, rHandler, NULL, FUNIT_100TH_MM),
+:   SvXMLExport(rContext, "", rFileName, rHandler, nullptr, FUNIT_100TH_MM),
     mxTable( xTable )
 {
 
@@ -178,14 +177,10 @@ static void initializeStreamMetadata( const uno::Reference< uno::XInterface > &x
 
     try
     {
-        xProps->setPropertyValue(
-            OUString( "MediaType" ),
-            uno::makeAny( OUString( "text/xml" ) ) );
+        xProps->setPropertyValue("MediaType",  uno::makeAny( OUString( "text/xml" ) ) );
 
         // use stock encryption
-        xProps->setPropertyValue(
-            OUString( "UseCommonStoragePasswordEncryption" ),
-            uno::makeAny( sal_True ) );
+        xProps->setPropertyValue("UseCommonStoragePasswordEncryption", uno::makeAny( sal_True ) );
     } catch ( const uno::Exception & )
     {
         OSL_FAIL( "exception setting stream metadata" );
@@ -198,7 +193,7 @@ static void createStorageStream( uno::Reference < io::XOutputStream > *xOut,
 {
     uno::Reference < io::XStream > xStream;
     xStream = xSubStorage->openStreamElement(
-                        OUString( "Content.xml" ),
+                        "Content.xml",
                         embed::ElementModes::WRITE );
     *ppGraphicHelper = SvXMLGraphicHelper::Create( xSubStorage, GRAPHICHELPER_MODE_WRITE );
     initializeStreamMetadata( xStream );
@@ -213,8 +208,8 @@ bool SvxXMLXTableExportComponent::save(
     throw (css::uno::RuntimeException, std::exception)
 {
     bool bRet = false;
-    SfxMedium* pMedium = NULL;
-    SvXMLGraphicHelper* pGraphicHelper = NULL;
+    SfxMedium* pMedium = nullptr;
+    SvXMLGraphicHelper* pGraphicHelper = nullptr;
     sal_Int32 eCreate = embed::ElementModes::WRITE | embed::ElementModes::TRUNCATE;
 
     INetURLObject aURLObj( rURL );

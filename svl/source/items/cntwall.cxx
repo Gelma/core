@@ -29,7 +29,6 @@
 #define CNTWALLPAPERITEM_STREAM_MAGIC   ( (sal_uInt32)0xfefefefe )
 #define CNTWALLPAPERITEM_STREAM_SEEKREL (-( (long)( sizeof( sal_uInt32 ) ) ) )
 
-TYPEINIT1( CntWallpaperItem, SfxPoolItem );
 
 
 CntWallpaperItem::CntWallpaperItem( sal_uInt16 which )
@@ -135,14 +134,14 @@ SfxPoolItem* CntWallpaperItem::Clone( SfxItemPool* ) const
 }
 
 // virtual
-bool CntWallpaperItem::QueryValue( com::sun::star::uno::Any&, sal_uInt8) const
+bool CntWallpaperItem::QueryValue( css::uno::Any&, sal_uInt8) const
 {
     OSL_FAIL("Not implemented!");
     return false;
 }
 
 // virtual
-bool CntWallpaperItem::PutValue( const com::sun::star::uno::Any&, sal_uInt8)
+bool CntWallpaperItem::PutValue( const css::uno::Any&, sal_uInt8)
 {
     OSL_FAIL("Not implemented!");
     return false;

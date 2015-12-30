@@ -80,16 +80,16 @@ SfxPrinter* Shell::GetPrinter( bool bCreate )
     if ( pCurWin )
     {
         DocShell* pDocShell = static_cast<DocShell*>(GetViewFrame()->GetObjectShell());
-        DBG_ASSERT( pDocShell, "DocShell ?!" );
+        assert(pDocShell && "DocShell ?!");
         return pDocShell->GetPrinter( bCreate );
     }
-    return 0;
+    return nullptr;
 }
 
 sal_uInt16 Shell::SetPrinter( SfxPrinter *pNewPrinter, SfxPrinterChangeFlags , bool )
 {
     DocShell* pDocShell = static_cast<DocShell*>(GetViewFrame()->GetObjectShell());
-    DBG_ASSERT( pDocShell, "DocShell ?!" );
+    assert(pDocShell && "DocShell ?!");
     pDocShell->SetPrinter( pNewPrinter );
     return 0;
 }
@@ -211,7 +211,7 @@ VclPtr<ModulWindow> Shell::FindBasWin (
 {
     if (BaseWindow* pWin = FindWindow(rDocument, rLibName, rName, TYPE_MODULE, bFindSuspended))
         return VclPtr<ModulWindow>(static_cast<ModulWindow*>(pWin));
-    return bCreateIfNotExist ? CreateBasWin(rDocument, rLibName, rName) : 0;
+    return bCreateIfNotExist ? CreateBasWin(rDocument, rLibName, rName) : nullptr;
 }
 
 void Shell::Move()

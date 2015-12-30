@@ -20,7 +20,7 @@
 #define INCLUDED_SVL_BRDCST_HXX
 
 #include <svl/svldllapi.h>
-#include <tools/rtti.hxx>
+#include <memory>
 
 class SfxListener;
 class SfxHint;
@@ -29,18 +29,17 @@ class SfxBroadcasterTest;
 class SVL_DLLPUBLIC SfxBroadcaster
 {
     struct Impl;
-    Impl* mpImpl;
+    std::unique_ptr<Impl> mpImpl;
 
 private:
     void                    AddListener( SfxListener& rListener );
     void                    RemoveListener( SfxListener& rListener );
-    const SfxBroadcaster&   operator=(const SfxBroadcaster &) SAL_DELETED_FUNCTION;
+    const SfxBroadcaster&   operator=(const SfxBroadcaster &) = delete;
 
 protected:
     void                    Forward(SfxBroadcaster& rBC, const SfxHint& rHint);
 
 public:
-                            TYPEINFO();
 
                             SfxBroadcaster();
                             SfxBroadcaster( const SfxBroadcaster &rBC );

@@ -30,16 +30,15 @@ class SD_DLLPUBLIC SdUndoGroup : public SdUndoAction
 {
     std::vector<SdUndoAction*>  aCtn;
 public:
-    TYPEINFO_OVERRIDE();
                    SdUndoGroup(SdDrawDocument* pSdDrawDocument)
                               : SdUndoAction(pSdDrawDocument),
                                 aCtn() {}
     virtual       ~SdUndoGroup();
 
-    virtual bool   Merge( SfxUndoAction* pNextAction ) SAL_OVERRIDE;
+    virtual bool   Merge( SfxUndoAction* pNextAction ) override;
 
-    virtual void   Undo() SAL_OVERRIDE;
-    virtual void   Redo() SAL_OVERRIDE;
+    virtual void   Undo() override;
+    virtual void   Redo() override;
 
     void           AddAction(SdUndoAction* pAction);
 

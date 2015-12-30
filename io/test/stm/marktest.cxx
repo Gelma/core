@@ -45,7 +45,7 @@ using namespace ::com::sun::star::test;
 class OMarkableOutputStreamTest : public WeakImplHelper< XSimpleTest >
 {
 public:
-    OMarkableOutputStreamTest( const Reference< XMultiServiceFactory > & rFactory );
+    explicit OMarkableOutputStreamTest( const Reference< XMultiServiceFactory > & rFactory );
     ~OMarkableOutputStreamTest();
 
 public: // implementation names
@@ -375,8 +375,7 @@ Reference < XInterface > SAL_CALL OMarkableOutputStreamTest_CreateInstance( cons
 
 Sequence<OUString> OMarkableOutputStreamTest_getSupportedServiceNames() throw ()
 {
-    Sequence<OUString> aRet(1);
-    aRet.getArray()[0] = OMarkableOutputStreamTest_getImplementationName();
+    Sequence<OUString> aRet { OMarkableOutputStreamTest_getImplementationName() };
 
     return aRet;
 }
@@ -404,7 +403,7 @@ OUString    OMarkableOutputStreamTest_getImplementationName() throw ()
 class OMarkableInputStreamTest : public WeakImplHelper< XSimpleTest >
 {
 public:
-    OMarkableInputStreamTest( const Reference< XMultiServiceFactory > & rFactory );
+    explicit OMarkableInputStreamTest( const Reference< XMultiServiceFactory > & rFactory );
     ~OMarkableInputStreamTest();
 
 public: // implementation names
@@ -647,8 +646,7 @@ Reference < XInterface > SAL_CALL OMarkableInputStreamTest_CreateInstance( const
 
 Sequence<OUString> OMarkableInputStreamTest_getSupportedServiceNames() throw ()
 {
-    Sequence<OUString> aRet(1);
-    aRet.getArray()[0] = OMarkableInputStreamTest_getImplementationName();
+    Sequence<OUString> aRet { OMarkableInputStreamTest_getImplementationName() };
 
     return aRet;
 }

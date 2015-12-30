@@ -24,6 +24,7 @@
 #include <unotools/syslocale.hxx>
 #include <unotools/syslocaleoptions.hxx>
 #include <comphelper/processfactory.hxx>
+#include <comphelper/sequence.hxx>
 #include <rtl/tencinfo.h>
 #include <rtl/locale.h>
 #include <osl/thread.h>
@@ -33,7 +34,7 @@
 using namespace osl;
 using namespace com::sun::star;
 
-SvtSysLocale_Impl*  SvtSysLocale::pImpl = NULL;
+SvtSysLocale_Impl*  SvtSysLocale::pImpl = nullptr;
 sal_Int32           SvtSysLocale::nRefCount = 0;
 
 class SvtSysLocale_Impl : public utl::ConfigurationListener
@@ -47,13 +48,13 @@ public:
     virtual                     ~SvtSysLocale_Impl();
 
     CharClass*                  GetCharClass();
-    virtual void                ConfigurationChanged( utl::ConfigurationBroadcaster*, sal_uInt32 ) SAL_OVERRIDE;
+    virtual void                ConfigurationChanged( utl::ConfigurationBroadcaster*, sal_uInt32 ) override;
 
 private:
     void                        setDateAcceptancePatternsConfig();
 };
 
-SvtSysLocale_Impl::SvtSysLocale_Impl() : pCharClass(NULL)
+SvtSysLocale_Impl::SvtSysLocale_Impl() : pCharClass(nullptr)
 {
     pLocaleData = new LocaleDataWrapper( aSysLocaleOptions.GetRealLanguageTag() );
     setDateAcceptancePatternsConfig();
@@ -106,10 +107,7 @@ void SvtSysLocale_Impl::setDateAcceptancePatternsConfig()
             if (!aTok.isEmpty())
                 aVec.push_back( aTok);
         }
-        uno::Sequence< OUString > aSeq( aVec.size());
-        for (sal_Int32 i=0; i < aSeq.getLength(); ++i)
-            aSeq[i] = aVec[i];
-        pLocaleData->setDateAcceptancePatterns( aSeq);
+        pLocaleData->setDateAcceptancePatterns( comphelper::containerToSequence(aVec) );
     }
 }
 
@@ -127,14 +125,14 @@ SvtSysLocale::~SvtSysLocale()
     if ( !--nRefCount )
     {
         delete pImpl;
-        pImpl = NULL;
+        pImpl = nullptr;
     }
 }
 
 // static
 Mutex& SvtSysLocale::GetMutex()
 {
-    static Mutex* pMutex = NULL;
+    static Mutex* pMutex = nullptr;
     if( !pMutex )
     {
         MutexGuard aGuard( Mutex::getGlobalMutex() );

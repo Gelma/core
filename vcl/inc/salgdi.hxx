@@ -142,7 +142,7 @@ public:
     virtual sal_uInt16          SetFont( FontSelectPattern*, int nFallbackLevel ) = 0;
 
     // release the fonts
-    void                        ReleaseFonts() { SetFont( NULL, 0 ); }
+    void                        ReleaseFonts() { SetFont( nullptr, 0 ); }
 
     // get the current font's metrics
     virtual void                GetFontMetric( ImplFontMetricData*, int nFallbackLevel = 0 ) = 0;
@@ -280,7 +280,7 @@ public:
                                     double i_fTransparency,
                                     const basegfx::B2DVector& i_rLineWidth,
                                     basegfx::B2DLineJoin i_eLineJoin,
-                                    com::sun::star::drawing::LineCap i_eLineCap,
+                                    css::drawing::LineCap i_eLineCap,
                                     const OutputDevice* i_pOutDev);
 
     bool                        DrawPolyLineBezier(
@@ -438,8 +438,6 @@ public:
                                     sal_uInt8 nTransparency,
                                     const OutputDevice *pOutDev );
 
-    virtual OpenGLContext      *BeginPaint() { return NULL; }
-
     virtual SystemGraphicsData  GetGraphicsData() const = 0;
 
 #if ENABLE_CAIRO_CANVAS
@@ -452,7 +450,7 @@ public:
     virtual cairo::SurfaceSharedPtr CreateSurface(const OutputDevice& rRefDevice, int x, int y, int width, int height) const = 0;
     /// Create Surface for given bitmap data
     virtual cairo::SurfaceSharedPtr CreateBitmapSurface(const OutputDevice& rRefDevice, const BitmapSystemData& rData, const Size& rSize) const = 0;
-    virtual css::uno::Any       GetNativeSurfaceHandle(cairo::SurfaceSharedPtr& rSurface, const ::basegfx::B2ISize& rSize) const = 0;
+    virtual css::uno::Any       GetNativeSurfaceHandle(cairo::SurfaceSharedPtr& rSurface, const basegfx::B2ISize& rSize) const = 0;
 
     virtual SystemFontData      GetSysFontData( int nFallbacklevel ) const = 0;
 
@@ -474,14 +472,14 @@ protected:
     virtual void                drawPolygon( sal_uInt32 nPoints, const SalPoint* pPtAry ) = 0;
 
     virtual void                drawPolyPolygon( sal_uInt32 nPoly, const sal_uInt32* pPoints, PCONSTSALPOINT* pPtAry ) = 0;
-    virtual bool                drawPolyPolygon( const ::basegfx::B2DPolyPolygon&, double fTransparency ) = 0;
+    virtual bool                drawPolyPolygon( const basegfx::B2DPolyPolygon&, double fTransparency ) = 0;
 
     virtual bool                drawPolyLine(
-                                    const ::basegfx::B2DPolygon&,
+                                    const basegfx::B2DPolygon&,
                                     double fTransparency,
-                                    const ::basegfx::B2DVector& rLineWidths,
+                                    const basegfx::B2DVector& rLineWidths,
                                     basegfx::B2DLineJoin,
-                                    com::sun::star::drawing::LineCap) = 0;
+                                    css::drawing::LineCap) = 0;
 
     virtual bool                drawPolyLineBezier(
                                     sal_uInt32 nPoints,

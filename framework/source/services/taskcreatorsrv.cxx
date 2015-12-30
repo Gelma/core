@@ -63,37 +63,36 @@ private:
 
 public:
 
-             TaskCreatorService(const css::uno::Reference< css::uno::XComponentContext >& xContext);
+    explicit TaskCreatorService(const css::uno::Reference< css::uno::XComponentContext >& xContext);
     virtual ~TaskCreatorService(                                                                   );
 
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return OUString("com.sun.star.comp.framework.TaskCreator");
     }
 
     virtual sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return cppu::supportsService(this, ServiceName);
     }
 
     virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
-        css::uno::Sequence< OUString > aSeq(1);
-        aSeq[0] = "com.sun.star.frame.TaskCreator";
+        css::uno::Sequence< OUString > aSeq { "com.sun.star.frame.TaskCreator" };
         return aSeq;
     }
 
     // XSingleServiceFactory
     virtual css::uno::Reference< css::uno::XInterface > SAL_CALL createInstance()
         throw(css::uno::Exception       ,
-              css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+              css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Reference< css::uno::XInterface > SAL_CALL createInstanceWithArguments(const css::uno::Sequence< css::uno::Any >& lArguments)
         throw(css::uno::Exception       ,
-              css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+              css::uno::RuntimeException, std::exception) override;
 
 private:
 
@@ -138,15 +137,15 @@ css::uno::Reference< css::uno::XInterface > SAL_CALL TaskCreatorService::createI
 {
     ::comphelper::SequenceAsHashMap lArgs(lArguments);
 
-    css::uno::Reference< css::frame::XFrame > xParentFrame                  = lArgs.getUnpackedValueOrDefault(OUString(ARGUMENT_PARENTFRAME)                  , css::uno::Reference< css::frame::XFrame >());
-    OUString                           sFrameName                    = lArgs.getUnpackedValueOrDefault(OUString(ARGUMENT_FRAMENAME)                    , OUString()                          );
-    bool                                  bVisible                      = lArgs.getUnpackedValueOrDefault(OUString(ARGUMENT_MAKEVISIBLE)                  , false );
-    bool                                  bCreateTopWindow              = lArgs.getUnpackedValueOrDefault(OUString(ARGUMENT_CREATETOPWINDOW)              , true );
+    css::uno::Reference< css::frame::XFrame > xParentFrame                  = lArgs.getUnpackedValueOrDefault(ARGUMENT_PARENTFRAME                  , css::uno::Reference< css::frame::XFrame >());
+    OUString                           sFrameName                    = lArgs.getUnpackedValueOrDefault(ARGUMENT_FRAMENAME                    , OUString()                          );
+    bool                                  bVisible                      = lArgs.getUnpackedValueOrDefault(ARGUMENT_MAKEVISIBLE                  , false );
+    bool                                  bCreateTopWindow              = lArgs.getUnpackedValueOrDefault(ARGUMENT_CREATETOPWINDOW              , true );
     // only possize=[0,0,0,0] triggers default handling of vcl !
-    css::awt::Rectangle                       aPosSize                      = lArgs.getUnpackedValueOrDefault(OUString(ARGUMENT_POSSIZE)                      , css::awt::Rectangle(0, 0, 0, 0)            );
-    css::uno::Reference< css::awt::XWindow >  xContainerWindow              = lArgs.getUnpackedValueOrDefault(OUString(ARGUMENT_CONTAINERWINDOW)              , css::uno::Reference< css::awt::XWindow >() );
-    bool                                  bSupportPersistentWindowState = lArgs.getUnpackedValueOrDefault(OUString(ARGUMENT_SUPPORTPERSISTENTWINDOWSTATE) , false );
-    bool                                  bEnableTitleBarUpdate         = lArgs.getUnpackedValueOrDefault(OUString(ARGUMENT_ENABLE_TITLEBARUPDATE)        , true );
+    css::awt::Rectangle                       aPosSize                      = lArgs.getUnpackedValueOrDefault(ARGUMENT_POSSIZE                      , css::awt::Rectangle(0, 0, 0, 0)            );
+    css::uno::Reference< css::awt::XWindow >  xContainerWindow              = lArgs.getUnpackedValueOrDefault(ARGUMENT_CONTAINERWINDOW              , css::uno::Reference< css::awt::XWindow >() );
+    bool                                  bSupportPersistentWindowState = lArgs.getUnpackedValueOrDefault(ARGUMENT_SUPPORTPERSISTENTWINDOWSTATE , false );
+    bool                                  bEnableTitleBarUpdate         = lArgs.getUnpackedValueOrDefault(ARGUMENT_ENABLE_TITLEBARUPDATE        , true );
 
     // We use FrameName property to set it as API name of the new created frame later.
     // But those frame names must be different from the set of special target names as e.g. _blank, _self etcpp !
@@ -238,7 +237,7 @@ css::uno::Reference< css::awt::XWindow > TaskCreatorService::implts_createContai
         if ( ! xParentWindow.is())
             bTopWindow = false;
         else
-            xParentWindowPeer = css::uno::Reference< css::awt::XWindowPeer >(xParentWindow, css::uno::UNO_QUERY_THROW);
+            xParentWindowPeer.set(xParentWindow, css::uno::UNO_QUERY_THROW);
     }
 
     // describe window properties.
@@ -248,7 +247,7 @@ css::uno::Reference< css::awt::XWindow > TaskCreatorService::implts_createContai
         aDescriptor.Type                =   css::awt::WindowClass_TOP;
         aDescriptor.WindowServiceName   =   "window";
         aDescriptor.ParentIndex         =   -1;
-        aDescriptor.Parent              =   css::uno::Reference< css::awt::XWindowPeer >();
+        aDescriptor.Parent.clear();
         aDescriptor.Bounds              =   aPosSize;
         aDescriptor.WindowAttributes    =   css::awt::WindowAttribute::BORDER               |
                                             css::awt::WindowAttribute::MOVEABLE             |

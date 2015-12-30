@@ -79,7 +79,7 @@ using namespace ::xmloff::token;
 #define DPMAP(name,prefix,token,type,context) _MAP(name,prefix,token,type|XML_TYPE_PROP_DRAWING_PAGE,context)
 #define TMAP(name,prefix,token,type,context) _MAP(name,prefix,token,type|XML_TYPE_PROP_TEXT,context)
 #define PMAP(name,prefix,token,type,context) _MAP(name,prefix,token,type|XML_TYPE_PROP_PARAGRAPH,context)
-#define MAP_END() { 0L, 0, 0, XML_EMPTY, 0 ,0, SvtSaveOptions::ODFVER_010, false }
+#define MAP_END() { nullptr, 0, 0, XML_EMPTY, 0 ,0, SvtSaveOptions::ODFVER_010, false }
 
 // entry list for graphic properties
 
@@ -734,12 +734,12 @@ class XMLCaptionEscapeRelative : public XMLPropertyHandler
 public:
     virtual bool importXML(
             const OUString& rStrImpValue,
-            ::com::sun::star::uno::Any& rValue,
-            const SvXMLUnitConverter& rUnitConverter ) const SAL_OVERRIDE;
+            css::uno::Any& rValue,
+            const SvXMLUnitConverter& rUnitConverter ) const override;
     virtual bool exportXML(
             OUString& rStrExpValue,
-            const ::com::sun::star::uno::Any& rValue,
-            const SvXMLUnitConverter& rUnitConverter ) const SAL_OVERRIDE;
+            const css::uno::Any& rValue,
+            const SvXMLUnitConverter& rUnitConverter ) const override;
 };
 
 bool XMLCaptionEscapeRelative::importXML( const OUString& rStrImpValue, Any& rValue, const SvXMLUnitConverter& ) const
@@ -774,12 +774,12 @@ public:
 
     virtual bool importXML(
             const OUString& rStrImpValue,
-            ::com::sun::star::uno::Any& rValue,
-            const SvXMLUnitConverter& rUnitConverter ) const SAL_OVERRIDE;
+            css::uno::Any& rValue,
+            const SvXMLUnitConverter& rUnitConverter ) const override;
     virtual bool exportXML(
             OUString& rStrExpValue,
-            const ::com::sun::star::uno::Any& rValue,
-            const SvXMLUnitConverter& rUnitConverter ) const SAL_OVERRIDE;
+            const css::uno::Any& rValue,
+            const SvXMLUnitConverter& rUnitConverter ) const override;
 private:
     const sal_Int32 mnType;
 };
@@ -813,8 +813,8 @@ class XMLSdHeaderFooterVisibilityTypeHdl : public XMLPropertyHandler
 public:
     virtual ~XMLSdHeaderFooterVisibilityTypeHdl();
 
-    virtual bool importXML( const OUString& rStrImpValue, ::com::sun::star::uno::Any& rValue, const SvXMLUnitConverter& rUnitConverter ) const SAL_OVERRIDE;
-    virtual bool exportXML( OUString& rStrExpValue, const ::com::sun::star::uno::Any& rValue, const SvXMLUnitConverter& rUnitConverter ) const SAL_OVERRIDE;
+    virtual bool importXML( const OUString& rStrImpValue, css::uno::Any& rValue, const SvXMLUnitConverter& rUnitConverter ) const override;
+    virtual bool exportXML( OUString& rStrExpValue, const css::uno::Any& rValue, const SvXMLUnitConverter& rUnitConverter ) const override;
 };
 
 XMLSdHeaderFooterVisibilityTypeHdl::~XMLSdHeaderFooterVisibilityTypeHdl()
@@ -823,7 +823,7 @@ XMLSdHeaderFooterVisibilityTypeHdl::~XMLSdHeaderFooterVisibilityTypeHdl()
 
 bool XMLSdHeaderFooterVisibilityTypeHdl::importXML(
         const OUString& rStrImpValue,
-        ::com::sun::star::uno::Any& rValue,
+        css::uno::Any& rValue,
         const SvXMLUnitConverter& ) const
 {
     // #i38644#
@@ -855,12 +855,12 @@ bool XMLSdHeaderFooterVisibilityTypeHdl::exportXML(
 }
 
 XMLSdPropHdlFactory::XMLSdPropHdlFactory( uno::Reference< frame::XModel > xModel, SvXMLImport& rImport )
-: mxModel( xModel ), mpExport(0), mpImport( &rImport )
+: mxModel( xModel ), mpExport(nullptr), mpImport( &rImport )
 {
 }
 
 XMLSdPropHdlFactory::XMLSdPropHdlFactory( uno::Reference< frame::XModel > xModel, SvXMLExport& rExport )
-: mxModel( xModel ), mpExport( &rExport ), mpImport(0)
+: mxModel( xModel ), mpExport( &rExport ), mpImport(nullptr)
 {
 }
 
@@ -997,7 +997,7 @@ const XMLPropertyHandler* XMLSdPropHdlFactory::GetPropertyHandler( sal_Int32 nTy
                 uno::Reference<ucb::XAnyCompareFactory> xCompareFac( mxModel, uno::UNO_QUERY );
                 uno::Reference<ucb::XAnyCompare> xCompare;
                 if( xCompareFac.is() )
-                    xCompare = xCompareFac->createAnyCompareByName( OUString( "NumberingRules" ) );
+                    xCompare = xCompareFac->createAnyCompareByName( "NumberingRules" );
 
                 pHdl = new XMLNumRulePropHdl( xCompare );
                 break;
@@ -1025,26 +1025,26 @@ const XMLPropertyHandler* XMLSdPropHdlFactory::GetPropertyHandler( sal_Int32 nTy
             }
             case XML_SD_TYPE_BITMAP_REFPOINT:
             {
-                pHdl = new XMLEnumPropertyHdl( aXML_RefPoint_EnumMap, cppu::UnoType<com::sun::star::drawing::RectanglePoint>::get());
+                pHdl = new XMLEnumPropertyHdl( aXML_RefPoint_EnumMap, cppu::UnoType<css::drawing::RectanglePoint>::get());
                 break;
             }
             case XML_TYPE_TEXT_ANIMATION:
-                pHdl = new XMLEnumPropertyHdl( pXML_TextAnimation_Enum, cppu::UnoType<com::sun::star::drawing::TextAnimationKind>::get());
+                pHdl = new XMLEnumPropertyHdl( pXML_TextAnimation_Enum, cppu::UnoType<css::drawing::TextAnimationKind>::get());
                 break;
             case XML_TYPE_TEXT_ANIMATION_BLINKING:
-                pHdl = new XMLEnumPropertyHdl( pXML_TextAnimation_Blinking_Enum, cppu::UnoType<com::sun::star::drawing::TextAnimationKind>::get());
+                pHdl = new XMLEnumPropertyHdl( pXML_TextAnimation_Blinking_Enum, cppu::UnoType<css::drawing::TextAnimationKind>::get());
                 break;
             case XML_TYPE_TEXT_ANIMATION_DIRECTION:
-                pHdl = new XMLEnumPropertyHdl( pXML_TextAnimationDirection_Enum, cppu::UnoType<com::sun::star::drawing::TextAnimationDirection>::get());
+                pHdl = new XMLEnumPropertyHdl( pXML_TextAnimationDirection_Enum, cppu::UnoType<css::drawing::TextAnimationDirection>::get());
                 break;
             case XML_TYPE_TEXT_ANIMATION_STEPS:
                 pHdl = new XMLTextAnimationStepPropertyHdl;
                 break;
             case XML_SD_TYPE_TEXT_ALIGN:
-                pHdl = new XMLEnumPropertyHdl( pXML_TextAlign_Enum, cppu::UnoType<com::sun::star::drawing::TextHorizontalAdjust>::get());
+                pHdl = new XMLEnumPropertyHdl( pXML_TextAlign_Enum, cppu::UnoType<css::drawing::TextHorizontalAdjust>::get());
                 break;
             case XML_SD_TYPE_VERTICAL_ALIGN:
-                pHdl = new XMLEnumPropertyHdl( pXML_VerticalAlign_Enum, cppu::UnoType<com::sun::star::drawing::TextVerticalAdjust>::get());
+                pHdl = new XMLEnumPropertyHdl( pXML_VerticalAlign_Enum, cppu::UnoType<css::drawing::TextVerticalAdjust>::get());
                 break;
             case XML_SD_TYPE_FITTOSIZE:
                 {
@@ -1052,12 +1052,12 @@ const XMLPropertyHandler* XMLSdPropHdlFactory::GetPropertyHandler( sal_Int32 nTy
                                         <= SvtSaveOptions::ODFVER_012))
                     {
                         pHdl = new XMLEnumPropertyHdl(pXML_FitToSize_Enum_Odf12,
-                            cppu::UnoType<com::sun::star::drawing::TextFitToSizeType>::get());
+                            cppu::UnoType<css::drawing::TextFitToSizeType>::get());
                     }
                     else
                     {
                         pHdl = new XMLEnumPropertyHdl(pXML_FitToSize_Enum,
-                            cppu::UnoType<com::sun::star::drawing::TextFitToSizeType>::get());
+                            cppu::UnoType<css::drawing::TextFitToSizeType>::get());
                     }
                 }
                 break;
@@ -1065,10 +1065,10 @@ const XMLPropertyHandler* XMLSdPropHdlFactory::GetPropertyHandler( sal_Int32 nTy
                 pHdl = new XMLEnumPropertyHdl( pXML_MeasureUnit_Enum, ::cppu::UnoType<sal_Int32>::get() );
                 break;
             case XML_SD_TYPE_MEASURE_HALIGN:
-                pHdl = new XMLEnumPropertyHdl( pXML_Measure_HAlign_Enum, cppu::UnoType<com::sun::star::drawing::MeasureTextHorzPos>::get());
+                pHdl = new XMLEnumPropertyHdl( pXML_Measure_HAlign_Enum, cppu::UnoType<css::drawing::MeasureTextHorzPos>::get());
                 break;
             case XML_SD_TYPE_MEASURE_VALIGN:
-                pHdl = new XMLEnumPropertyHdl( pXML_Measure_VAlign_Enum, cppu::UnoType<com::sun::star::drawing::MeasureTextVertPos>::get());
+                pHdl = new XMLEnumPropertyHdl( pXML_Measure_VAlign_Enum, cppu::UnoType<css::drawing::MeasureTextVertPos>::get());
                 break;
             case XML_SD_TYPE_MEASURE_PLACING:
                 {
@@ -1190,45 +1190,45 @@ void XMLShapeExportPropertyMapper::ContextFilter(
     std::vector< XMLPropertyState >& rProperties,
     uno::Reference< beans::XPropertySet > rPropSet ) const
 {
-    XMLPropertyState* pRepeatOffsetX = NULL;
-    XMLPropertyState* pRepeatOffsetY = NULL;
-    XMLPropertyState* pTextAnimationBlinking = NULL;
-    XMLPropertyState* pTextAnimationKind = NULL;
+    XMLPropertyState* pRepeatOffsetX = nullptr;
+    XMLPropertyState* pRepeatOffsetY = nullptr;
+    XMLPropertyState* pTextAnimationBlinking = nullptr;
+    XMLPropertyState* pTextAnimationKind = nullptr;
 
     // #FontWork#
-    XMLPropertyState* pFontWorkStyle = NULL;
-    XMLPropertyState* pFontWorkAdjust = NULL;
-    XMLPropertyState* pFontWorkDistance = NULL;
-    XMLPropertyState* pFontWorkStart = NULL;
-    XMLPropertyState* pFontWorkMirror = NULL;
-    XMLPropertyState* pFontWorkOutline = NULL;
-    XMLPropertyState* pFontWorkShadow = NULL;
-    XMLPropertyState* pFontWorkShadowColor = NULL;
-    XMLPropertyState* pFontWorkShadowOffsetx = NULL;
-    XMLPropertyState* pFontWorkShadowOffsety = NULL;
-    XMLPropertyState* pFontWorkForm = NULL;
-    XMLPropertyState* pFontWorkHideform = NULL;
-    XMLPropertyState* pFontWorkShadowTransparence = NULL;
+    XMLPropertyState* pFontWorkStyle = nullptr;
+    XMLPropertyState* pFontWorkAdjust = nullptr;
+    XMLPropertyState* pFontWorkDistance = nullptr;
+    XMLPropertyState* pFontWorkStart = nullptr;
+    XMLPropertyState* pFontWorkMirror = nullptr;
+    XMLPropertyState* pFontWorkOutline = nullptr;
+    XMLPropertyState* pFontWorkShadow = nullptr;
+    XMLPropertyState* pFontWorkShadowColor = nullptr;
+    XMLPropertyState* pFontWorkShadowOffsetx = nullptr;
+    XMLPropertyState* pFontWorkShadowOffsety = nullptr;
+    XMLPropertyState* pFontWorkForm = nullptr;
+    XMLPropertyState* pFontWorkHideform = nullptr;
+    XMLPropertyState* pFontWorkShadowTransparence = nullptr;
 
     // OLE
-    XMLPropertyState* pOLEVisAreaLeft = NULL;
-    XMLPropertyState* pOLEVisAreaTop = NULL;
-    XMLPropertyState* pOLEVisAreaWidth = NULL;
-    XMLPropertyState* pOLEVisAreaHeight = NULL;
-    XMLPropertyState* pOLEIsInternal = NULL;
+    XMLPropertyState* pOLEVisAreaLeft = nullptr;
+    XMLPropertyState* pOLEVisAreaTop = nullptr;
+    XMLPropertyState* pOLEVisAreaWidth = nullptr;
+    XMLPropertyState* pOLEVisAreaHeight = nullptr;
+    XMLPropertyState* pOLEIsInternal = nullptr;
 
     // caption
-    XMLPropertyState* pCaptionIsEscRel = NULL;
-    XMLPropertyState* pCaptionEscRel = NULL;
-    XMLPropertyState* pCaptionEscAbs = NULL;
+    XMLPropertyState* pCaptionIsEscRel = nullptr;
+    XMLPropertyState* pCaptionEscRel = nullptr;
+    XMLPropertyState* pCaptionEscAbs = nullptr;
 
     // filter fo:clip
-    XMLPropertyState* pClip11State = NULL;
-    XMLPropertyState* pClipState = NULL;
+    XMLPropertyState* pClip11State = nullptr;
+    XMLPropertyState* pClipState = nullptr;
 
-    XMLPropertyState* pShapeWritingMode = NULL;
-    XMLPropertyState* pTextWritingMode = NULL;
-    XMLPropertyState* pControlWritingMode = NULL;
+    XMLPropertyState* pShapeWritingMode = nullptr;
+    XMLPropertyState* pTextWritingMode = nullptr;
+    XMLPropertyState* pControlWritingMode = nullptr;
 
     // filter properties
     for( std::vector< XMLPropertyState >::iterator aIter = rProperties.begin();
@@ -1268,7 +1268,7 @@ void XMLShapeExportPropertyMapper::ContextFilter(
                         if( text::WritingMode_LR_TB == eWritingMode )
                         {
                             property->mnIndex = -1;
-                            pShapeWritingMode = 0;
+                            pShapeWritingMode = nullptr;
                         }
                     }
                 }
@@ -1504,7 +1504,7 @@ void XMLShapeExportPropertyMapper::ContextFilter(
         pCaptionIsEscRel->mnIndex = -1;
     }
 
-    if( pClipState != NULL && pClip11State != NULL  )
+    if( pClipState != nullptr && pClip11State != nullptr  )
         pClip11State->mnIndex = -1;
 
     SvXMLExportPropertyMapper::ContextFilter(bEnableFoFontFamily, rProperties, rPropSet);
@@ -1571,13 +1571,13 @@ void XMLPageExportPropertyMapper::ContextFilter(
     std::vector< XMLPropertyState >& rProperties,
     uno::Reference< beans::XPropertySet > rPropSet ) const
 {
-    XMLPropertyState* pRepeatOffsetX = NULL;
-    XMLPropertyState* pRepeatOffsetY = NULL;
-    XMLPropertyState* pTransType = NULL;
-    XMLPropertyState* pTransDuration = NULL;
-    XMLPropertyState* pDateTimeUpdate = NULL;
-    XMLPropertyState* pDateTimeFormat = NULL;
-    XMLPropertyState* pTransitionFadeColor = NULL;
+    XMLPropertyState* pRepeatOffsetX = nullptr;
+    XMLPropertyState* pRepeatOffsetY = nullptr;
+    XMLPropertyState* pTransType = nullptr;
+    XMLPropertyState* pTransDuration = nullptr;
+    XMLPropertyState* pDateTimeUpdate = nullptr;
+    XMLPropertyState* pDateTimeFormat = nullptr;
+    XMLPropertyState* pTransitionFadeColor = nullptr;
 
     sal_Int16 nTransitionType = 0;
 
@@ -1678,7 +1678,7 @@ void XMLPageExportPropertyMapper::ContextFilter(
         }
     }
 
-    if( pTransitionFadeColor && nTransitionType != ::com::sun::star::animations::TransitionType::FADE )
+    if( pTransitionFadeColor && nTransitionType != css::animations::TransitionType::FADE )
         pTransitionFadeColor->mnIndex = -1;
 
     if( pDateTimeFormat && pDateTimeUpdate )

@@ -45,23 +45,6 @@ sal_uIntPtr UniqueIndexImpl::Insert( void* p )
     return ( nUniqIndex + nStartIndex - 1 );
 }
 
-void UniqueIndexImpl::Insert( sal_uIntPtr nIndex, void* p )
-{
-    // NULL-Pointer not allowed
-    if ( !p )
-        return;
-
-    sal_uIntPtr nContIndex = nIndex - nStartIndex;
-
-    bool bFound = maMap.find( nContIndex ) != maMap.end();
-
-    // Insert object to array
-    maMap[ nContIndex ] = p;
-
-    if( !bFound )
-        nCount++;
-}
-
 void* UniqueIndexImpl::Remove( sal_uIntPtr nIndex )
 {
     // Check for valid index
@@ -79,7 +62,7 @@ void* UniqueIndexImpl::Remove( sal_uIntPtr nIndex )
             return p;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 void* UniqueIndexImpl::Get( sal_uIntPtr nIndex ) const
@@ -92,7 +75,7 @@ void* UniqueIndexImpl::Get( sal_uIntPtr nIndex ) const
         if( it != maMap.end() )
             return it->second;
     }
-    return NULL;
+    return nullptr;
 }
 
 sal_uIntPtr UniqueIndexImpl::FirstIndex() const

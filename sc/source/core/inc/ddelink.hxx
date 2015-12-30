@@ -47,7 +47,6 @@ static bool bIsInUpdate;
     ScMatrixRef     pResult;
 
 public:
-    TYPEINFO_OVERRIDE();
 
             ScDdeLink( ScDocument* pD,
                         const OUString& rA, const OUString& rT, const OUString& rI,
@@ -60,10 +59,10 @@ public:
 
                     // SvBaseLink override:
     virtual ::sfx2::SvBaseLink::UpdateResult DataChanged(
-        const OUString& rMimeType, const ::com::sun::star::uno::Any & rValue ) SAL_OVERRIDE;
+        const OUString& rMimeType, const css::uno::Any & rValue ) override;
 
                     // SvtBroadcaster override:
-    virtual void    ListenersGone() SAL_OVERRIDE;
+    virtual void    ListenersGone() override;
 
                     // for interpreter:
 

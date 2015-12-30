@@ -21,7 +21,6 @@
 
 #include <com/sun/star/embed/XClassifiedObject.hpp>
 #include <com/sun/star/embed/XEmbeddedObject.hpp>
-#include <tools/rtti.hxx>
 #include "swdllapi.h"
 #include <swtypes.hxx>
 #include <ring.hxx>
@@ -32,7 +31,6 @@
 #include <vcl/print.hxx>
 #include <vcl/vclptr.hxx>
 
-#define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitTypes.h>
 
 namespace com { namespace sun { namespace star { namespace accessibility {
@@ -54,7 +52,7 @@ class IDocumentListItems;
 class IDocumentOutlineNodes;
 class SfxPrinter;
 class SfxProgress;
-class SwRootFrm;
+class SwRootFrame;
 class SwNodes;
 class SdrView;
 class SfxItemPool;
@@ -68,10 +66,10 @@ class OutputDevice;
 class SwLayIdle;
 struct ShellResource;
 class SwRegionRects;
-class SwFrm;
+class SwFrame;
 class SvtAccessibilityOptions;
 class SwPagePreviewLayout;
-class SwTextFrm;
+class SwTextFrame;
 class BitmapEx;
 
 struct SwAccessibilityOptions;
@@ -90,7 +88,7 @@ namespace vcl
 // Currently the Preview flag is needed for DrawPage.
 #define VSHELLFLAG_ISPREVIEW            ((long)0x1)
 #define VSHELLFLAG_SHARELAYOUT          ((long)0x2)
-typedef std::shared_ptr<SwRootFrm> SwRootFrmPtr;
+typedef std::shared_ptr<SwRootFrame> SwRootFramePtr;
 
 class SwViewShell;
 class SW_DLLPUBLIC SwViewShell : public sw::Ring<SwViewShell>
@@ -108,8 +106,8 @@ class SW_DLLPUBLIC SwViewShell : public sw::Ring<SwViewShell>
     // Set SwVisArea in order to enable clean formatting before printing.
     friend void SetSwVisArea( SwViewShell *pSh, const SwRect & );
 
-    static BitmapEx*    mpReplaceBmp;    ///< replaced display of still loaded images
-    static BitmapEx*    mpErrorBmp;      ///< error display of missed images
+    BitmapEx* m_pReplaceBmp; ///< replaced display of still loaded images
+    BitmapEx* m_pErrorBmp;   ///< error display of missed images
 
     static bool mbLstAct;        // true if EndAction of last Shell
                                     // i.e. if the EndActions of the other
@@ -159,7 +157,7 @@ class SW_DLLPUBLIC SwViewShell : public sw::Ring<SwViewShell>
     SdrPaintWindow*         mpTargetPaintWindow;
     VclPtr<OutputDevice>    mpBufferedOut;
 
-    SwRootFrmPtr            mpLayout;
+    SwRootFramePtr            mpLayout;
 
     // Initialization; called by the diverse constructors.
     SAL_DLLPRIVATE void Init( const SwViewOption *pNewOpt );
@@ -197,7 +195,6 @@ protected:
     bool mbOutputToWindow;
 
 public:
-    TYPEINFO();
 
           SwViewShellImp *Imp() { return mpImp; }
     const SwViewShellImp *Imp() const { return mpImp; }
@@ -280,7 +277,7 @@ public:
     // Invalidate first visible page for all Shells in ring.
     void SetFirstVisPageInvalid();
 
-    SwRootFrm   *GetLayout() const;
+    SwRootFrame   *GetLayout() const;
     bool         IsNewLayout() const; // Has Layout been loaded or created?
 
      Size GetDocSize() const;   // Get document size.
@@ -499,11 +496,9 @@ public:
     sal_Int32 GetBrowseWidth() const;
     void SetBrowseBorder( const Size& rNew );
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > CreateAccessible();
+    css::uno::Reference< css::accessibility::XAccessible > CreateAccessible();
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessible >
-            CreateAccessiblePreview();
+    css::uno::Reference< css::accessibility::XAccessible >  CreateAccessiblePreview();
 
     void ShowPreviewSelection( sal_uInt16 nSelPage );
     void InvalidateAccessibleFocus();
@@ -515,18 +510,18 @@ public:
 
         @author OD
 
-        @param _pFromTextFrm
+        @param _pFromTextFrame
         input parameter - paragraph frame, for which the relation CONTENT_FLOWS_FROM
         has to be invalidated.
         If NULL, no CONTENT_FLOWS_FROM relation has to be invalidated
 
-        @param _pToTextFrm
+        @param _pToTextFrame
         input parameter - paragraph frame, for which the relation CONTENT_FLOWS_TO
         has to be invalidated.
         If NULL, no CONTENT_FLOWS_TO relation has to be invalidated
     */
-    void InvalidateAccessibleParaFlowRelation( const SwTextFrm* _pFromTextFrm,
-                                               const SwTextFrm* _pToTextFrm );
+    void InvalidateAccessibleParaFlowRelation( const SwTextFrame* _pFromTextFrame,
+                                               const SwTextFrame* _pToTextFrame );
 
     /** invalidate text selection for paragraphs
 
@@ -541,17 +536,17 @@ public:
 
         @author OD
 
-        @param rTextFrm
+        @param rTextFrame
         input parameter - paragraph frame, whose attributes have changed
     */
-    void InvalidateAccessibleParaAttrs( const SwTextFrm& rTextFrm );
+    void InvalidateAccessibleParaAttrs( const SwTextFrame& rTextFrame );
 
     SwAccessibleMap* GetAccessibleMap();
 
-    SwViewShell( SwViewShell&, vcl::Window *pWin = 0, OutputDevice *pOut = 0,
+    SwViewShell( SwViewShell&, vcl::Window *pWin = nullptr, OutputDevice *pOut = nullptr,
                 long nFlags = 0 );
     SwViewShell( SwDoc& rDoc, vcl::Window *pWin,
-               const SwViewOption *pOpt = 0, OutputDevice *pOut = 0,
+               const SwViewOption *pOpt = nullptr, OutputDevice *pOut = nullptr,
                long nFlags = 0 );
     virtual ~SwViewShell();
 
@@ -559,8 +554,8 @@ public:
 
     inline bool IsInConstructor() const { return mbInConstructor; }
 
-    static const BitmapEx& GetReplacementBitmap( bool bIsErrorState );
-    static void DeleteReplacementBitmaps();
+    const BitmapEx& GetReplacementBitmap(bool bIsErrorState);
+    void DeleteReplacementBitmaps();
 
     const SwPostItMgr* GetPostItMgr() const { return (const_cast<SwViewShell*>(this))->GetPostItMgr(); }
     SwPostItMgr* GetPostItMgr();
@@ -579,8 +574,6 @@ public:
     void libreOfficeKitCallback(int nType, const char* pPayload) const;
     /// Set if we are doing tiled rendering.
     void setTiledRendering(bool bTiledRendering);
-    /// Are we doing tiled rendering?
-    bool isTiledRendering() const;
 
     void setOutputToWindow(bool bOutputToWindow);
     bool isOutputToWindow() const;
@@ -593,7 +586,7 @@ class CurrShell
 {
 public:
     SwViewShell *pPrev;
-    SwRootFrm *pRoot;
+    SwRootFrame *pRoot;
 
     CurrShell( SwViewShell *pNew );
     ~CurrShell();

@@ -60,10 +60,10 @@ class FtFontInfo
 public:
                            FtFontInfo( const ImplDevFontAttributes&,
                                const OString& rNativeFileName,
-                               int nFaceNum, sal_IntPtr nFontId, int nSynthetic);
+                               int nFaceNum, sal_IntPtr nFontId);
                           ~FtFontInfo();
 
-    const unsigned char*  GetTable( const char*, sal_uLong* pLength=0 ) const;
+    const unsigned char*  GetTable( const char*, sal_uLong* pLength=nullptr ) const;
 
     FT_FaceRec_*          GetFaceFT();
 #if ENABLE_GRAPHITE
@@ -72,8 +72,6 @@ public:
     void                  ReleaseFaceFT();
 
     const OString&        GetFontFileName() const   { return mpFontFile->GetFileName(); }
-    int                   GetFaceNum() const        { return mnFaceNum; }
-    int                   GetSynthetic() const      { return mnSynthetic; }
     sal_IntPtr            GetFontId() const         { return mnFontId; }
     bool                  IsSymbolFont() const      { return maDevFontAttributes.IsSymbolFont(); }
     const ImplFontAttributes& GetFontAttributes() const { return maDevFontAttributes; }
@@ -91,7 +89,6 @@ private:
     FtFontFile*     mpFontFile;
     const int       mnFaceNum;
     int             mnRefCount;
-    const int       mnSynthetic;
 #if ENABLE_GRAPHITE
     bool            mbCheckedGraphite;
     GraphiteFaceWrapper * mpGraphiteFace;
@@ -158,9 +155,9 @@ private:
 public:
                             ImplFTSFontData( FtFontInfo*, const ImplDevFontAttributes& );
 
-    virtual ImplFontEntry*  CreateFontInstance( FontSelectPattern& ) const SAL_OVERRIDE;
-    virtual PhysicalFontFace* Clone() const SAL_OVERRIDE   { return new ImplFTSFontData( *this ); }
-    virtual sal_IntPtr      GetFontId() const SAL_OVERRIDE { return mpFtFontInfo->GetFontId(); }
+    virtual ImplFontEntry*  CreateFontInstance( FontSelectPattern& ) const override;
+    virtual PhysicalFontFace* Clone() const override   { return new ImplFTSFontData( *this ); }
+    virtual sal_IntPtr      GetFontId() const override { return mpFtFontInfo->GetFontId(); }
 };
 
 #endif // INCLUDED_VCL_GENERIC_GLYPHS_GCACH_FTYP_HXX

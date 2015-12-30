@@ -25,6 +25,7 @@ private:
     bool bUseEnglishFuncName;     // use English function name even if the locale is not English.
     formula::FormulaGrammar::Grammar eFormulaGrammar;  // formula grammar used to switch different formula syntax
     ScCalcConfig aCalcConfig;
+    bool mbWriteCalcConfig;
 
     OUString aFormulaSepArg;
     OUString aFormulaSepArrayRow;
@@ -49,6 +50,9 @@ public:
 
     void SetUseEnglishFuncName( bool bVal ) { bUseEnglishFuncName = bVal; }
     bool GetUseEnglishFuncName() const { return bUseEnglishFuncName; }
+
+    void SetWriteCalcConfig( bool bVal ) { mbWriteCalcConfig = bVal; }
+    bool GetWriteCalcConfig() const { return mbWriteCalcConfig; }
 
     void SetFormulaSepArg(const OUString& rSep) { aFormulaSepArg = rSep; }
     OUString GetFormulaSepArg() const { return aFormulaSepArg; }
@@ -81,14 +85,13 @@ public:
 class SC_DLLPUBLIC ScTpFormulaItem : public SfxPoolItem
 {
 public:
-    TYPEINFO_OVERRIDE();
     ScTpFormulaItem( sal_uInt16 nWhich,
                    const ScFormulaOptions& rOpt );
     ScTpFormulaItem( const ScTpFormulaItem& rItem );
     virtual ~ScTpFormulaItem();
 
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
 
     const ScFormulaOptions& GetFormulaOptions() const { return theOptions; }
 
@@ -101,18 +104,18 @@ private:
 class ScFormulaCfg : public ScFormulaOptions, public utl::ConfigItem
 {
     typedef std::map<OUString,sal_uInt16> PropsToIds;
-    static com::sun::star::uno::Sequence<OUString> GetPropertyNames();
+    static css::uno::Sequence<OUString> GetPropertyNames();
     static ScFormulaCfg::PropsToIds GetPropNamesToId();
-    void UpdateFromProperties( const com::sun::star::uno::Sequence<OUString>& rNames );
+    void UpdateFromProperties( const css::uno::Sequence<OUString>& rNames );
 
-    virtual void ImplCommit() SAL_OVERRIDE;
+    virtual void ImplCommit() override;
 
 public:
     ScFormulaCfg();
 
     void SetOptions( const ScFormulaOptions& rNew );
 
-    virtual void Notify( const ::com::sun::star::uno::Sequence< OUString >& aPropertyNames ) SAL_OVERRIDE;
+    virtual void Notify( const css::uno::Sequence< OUString >& aPropertyNames ) override;
 };
 
 #endif

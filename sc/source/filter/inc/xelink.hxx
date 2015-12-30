@@ -145,7 +145,7 @@ public:
         param pRefLogEntry  If not 0, data about the external link is stored here. */
     void                FindExtSheet( sal_uInt16& rnExtSheet,
                             sal_uInt16& rnXclTab, SCTAB nScTab,
-                            XclExpRefLogEntry* pRefLogEntry = 0 );
+                            XclExpRefLogEntry* pRefLogEntry = nullptr );
     /** Searches for an EXTERNSHEET index for the given Calc sheet range.
         @descr  See above for the meaning of EXTERNSHEET indexes.
         @param rnExtSheet  (out-param)  Returns the EXTERNSHEET index.
@@ -157,13 +157,13 @@ public:
     void                FindExtSheet( sal_uInt16& rnExtSheet,
                             sal_uInt16& rnFirstXclTab, sal_uInt16& rnLastXclTab,
                             SCTAB nFirstScTab, SCTAB nLastScTab,
-                            XclExpRefLogEntry* pRefLogEntry = 0 );
+                            XclExpRefLogEntry* pRefLogEntry = nullptr );
     /** Searches for a special EXTERNSHEET index for the own document. */
     sal_uInt16          FindExtSheet( sal_Unicode cCode );
 
     void                FindExtSheet( sal_uInt16 nFileId, const OUString& rTabName, sal_uInt16 nXclTabSpan,
                                       sal_uInt16& rnExtSheet, sal_uInt16& rnFirstSBTab, sal_uInt16& rnLastSBTab,
-                                      XclExpRefLogEntry* pRefLogEntry = NULL );
+                                      XclExpRefLogEntry* pRefLogEntry = nullptr );
 
     /** Stores the cell with the given address in a CRN record list. */
     void StoreCell( const ScSingleRefData& rRef, const ScAddress& rPos );
@@ -198,10 +198,10 @@ public:
                             const OUString& rName, const ScExternalRefCache::TokenArrayRef& rArray );
 
     /** Writes the entire Link table. */
-    virtual void        Save( XclExpStream& rStrm ) SAL_OVERRIDE;
+    virtual void        Save( XclExpStream& rStrm ) override;
 
     /** Writes the entire Link table to OOXML. */
-    virtual void        SaveXml( XclExpXmlStream& rStrm ) SAL_OVERRIDE;
+    virtual void        SaveXml( XclExpXmlStream& rStrm ) override;
 
 private:
     typedef std::shared_ptr< XclExpLinkManagerImpl > XclExpLinkMgrImplPtr;

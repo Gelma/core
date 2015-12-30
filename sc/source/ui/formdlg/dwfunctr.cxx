@@ -97,7 +97,7 @@ ScFunctionDockWin::ScFunctionDockWin( SfxBindings* pBindingsP,
     aInsertButton   ( VclPtr<ImageButton>::Create( this, ResId( IMB_INSERT, *rResId.GetResMgr() ) ) ),
     aFiFuncDesc     ( VclPtr<FixedText>::Create( this, ResId( FI_FUNCDESC, *rResId.GetResMgr() ) ) ),
     aOldSize        (0,0),
-    pFuncDesc       (NULL)
+    pFuncDesc       (nullptr)
 {
     FreeResource();
     InitLRUList();
@@ -106,13 +106,13 @@ ScFunctionDockWin::ScFunctionDockWin( SfxBindings* pBindingsP,
     aIdle.SetPriority(SchedulerPriority::LOWER);
     aIdle.SetIdleHdl(LINK( this, ScFunctionDockWin, TimerHdl));
 
-    if (pCW != NULL)
+    if (pCW != nullptr)
         eSfxNewAlignment=GetAlignment();
     else
         eSfxNewAlignment=SfxChildAlignment::RIGHT;
     eSfxOldAlignment=eSfxNewAlignment;
     aFiFuncDesc->SetUpdateMode(true);
-    pAllFuncList=aFuncList.get();
+    pAllFuncList=aFuncList;
     aDDFuncList->Disable();
     aDDFuncList->Hide();
     nArgs=0;
@@ -124,7 +124,7 @@ ScFunctionDockWin::ScFunctionDockWin( SfxBindings* pBindingsP,
     aFiFuncDesc->SetFont(aFont);
     aFiFuncDesc->SetBackground( GetBackground() );       //! never transparent?
 
-    Link<> aLink=LINK( this, ScFunctionDockWin, SelHdl);
+    Link<ListBox&,void> aLink=LINK( this, ScFunctionDockWin, SelHdl);
     aCatBox->SetSelectHdl(aLink);
     aFuncList->SetSelectHdl(aLink);
     aDDFuncList->SetSelectHdl(aLink);
@@ -148,7 +148,7 @@ ScFunctionDockWin::ScFunctionDockWin( SfxBindings* pBindingsP,
     Range aYRange(3*aTxtSize.Height()+aFuncList->GetPosPixel().Y(),
                 GetOutputSizePixel().Height()-2*aTxtSize.Height());
     aPrivatSplit->SetYRange(aYRange);
-    SelHdl(aCatBox.get());
+    SelHdl(*aCatBox.get());
     bInit = true;
 }
 
@@ -275,8 +275,8 @@ void ScFunctionDockWin::SetSize()
                             aPrivatSplit->Hide();
                             aFuncList->Disable();
                             aFuncList->Hide();
-                            pAllFuncList=aDDFuncList.get();
-                            SelHdl(aCatBox.get());
+                            pAllFuncList=aDDFuncList;
+                            SelHdl(*aCatBox.get());
                             aDDFuncList->SelectEntryPos(nSelEntry);
                         }
                         break;
@@ -293,8 +293,8 @@ void ScFunctionDockWin::SetSize()
                             aPrivatSplit->Show();
                             aFuncList->Enable();
                             aFuncList->Show();
-                            pAllFuncList=aFuncList.get();
-                            SelHdl(aCatBox.get());
+                            pAllFuncList=aFuncList;
+                            SelHdl(*aCatBox.get());
                             aFuncList->SelectEntryPos(nSelEntry);
                         }
                         break;
@@ -817,11 +817,14 @@ void ScFunctionDockWin::DoEnter()
     {
 
         ScModule* pScMod = SC_MOD();
-        ScTabViewShell* pViewSh = PTR_CAST( ScTabViewShell, pCurSh);
+        ScTabViewShell* pViewSh = dynamic_cast<ScTabViewShell*>( pCurSh );
         ScInputHandler* pHdl = pScMod->GetInputHdl( pViewSh );
         if(!pScMod->IsEditMode())
         {
             pScMod->SetInputMode(SC_INPUT_TABLE);
+            // the above call can result in us being disposed
+            if (OutputDevice::isDisposed())
+                return;
             aString = "=";
             aString += pAllFuncList->GetSelectEntry();
             if (pHdl)
@@ -876,7 +879,7 @@ void ScFunctionDockWin::DoEnter()
                 aString += pAllFuncList->GetSelectEntry();
             }
             EditView *pEdView=pHdl->GetActiveView();
-            if(pEdView!=NULL) // @ Wegen Absturz bei Namen festlegen
+            if(pEdView!=nullptr) // @ Wegen Absturz bei Namen festlegen
             {
                 if(nArgs>0)
                 {
@@ -922,21 +925,18 @@ void ScFunctionDockWin::DoEnter()
 #*
 #************************************************************************/
 
-IMPL_LINK( ScFunctionDockWin, SelHdl, ListBox*, pLb )
+IMPL_LINK_TYPED( ScFunctionDockWin, SelHdl, ListBox&, rLb, void )
 {
-    if ( pLb == aCatBox.get() )
+    if ( &rLb == aCatBox.get() )
     {
         UpdateFunctionList();
         SetDescription();
     }
 
-    if ( pLb == aFuncList.get() || pLb == aDDFuncList.get() )
+    if ( &rLb == aFuncList.get() || &rLb == aDDFuncList.get() )
     {
         SetDescription();
     }
-
-    //SetSize();
-    return 0;
 }
 
 /*************************************************************************
@@ -1018,7 +1018,7 @@ IMPL_LINK_NOARG_TYPED(ScFunctionDockWin, TimerHdl, Idle *, void)
 void ScFunctionDockWin::Initialize(SfxChildWinInfo *pInfo)
 {
     OUString aStr;
-    if(pInfo!=NULL)
+    if(pInfo!=nullptr)
     {
         if ( !pInfo->aExtraString.isEmpty() )
         {
@@ -1053,7 +1053,7 @@ void ScFunctionDockWin::Initialize(SfxChildWinInfo *pInfo)
         aStr = aStr.copy( n1+1 );
         sal_Int32 nSelPos = aStr.toInt32();
         aCatBox->SelectEntryPos(nSelPos);
-        SelHdl(aCatBox.get());
+        SelHdl(*aCatBox.get());
 
         //  if the window has already been shown (from SfxDockingWindow::Initialize if docked),
         //  set the splitter position now, otherwise it is set in StateChanged with type INITSHOW

@@ -85,8 +85,8 @@ StatusbarItem::~StatusbarItem()
 void SAL_CALL StatusbarItem::disposing()
 {
     osl::MutexGuard aGuard( m_aMutex );
-    m_pItemData = 0;
-    m_pStatusBar = 0;
+    m_pItemData = nullptr;
+    m_pStatusBar = nullptr;
 }
 
 OUString SAL_CALL StatusbarItem::getCommand()
@@ -130,15 +130,15 @@ throw (RuntimeException, std::exception)
     return ::sal_Int32(0);
 }
 
-::com::sun::star::awt::Rectangle SAL_CALL StatusbarItem::getItemRect()
+css::awt::Rectangle SAL_CALL StatusbarItem::getItemRect()
 throw (RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
-    ::com::sun::star::awt::Rectangle aAWTRect;
+    css::awt::Rectangle aAWTRect;
     if ( m_pStatusBar )
     {
         Rectangle aRect = m_pStatusBar->GetItemRect( m_nId );
-        return ::com::sun::star::awt::Rectangle( aRect.Left(),
+        return css::awt::Rectangle( aRect.Left(),
                                                  aRect.Top(),
                                                  aRect.GetWidth(),
                                                  aRect.GetHeight() );

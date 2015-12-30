@@ -24,7 +24,7 @@
 
 RefNode::RefNode( Atom nTyp )
 {
-    pObjBiTree = 0;
+    pObjBiTree = nullptr;
     nTypNameId = nTyp;
 }
 
@@ -50,11 +50,11 @@ bool RefNode::PutObjNode( ObjNode * pPutObject )
 // if the node with the same name is in pObjBiTree,
 // return NULL and no insert,
 // if not return the pointer to the Object
-ObjNode * RefNode :: GetObjNode( const RscId & rRscId )
+ObjNode * RefNode::GetObjNode( const RscId & rRscId )
 {
     if( pObjBiTree )
         return pObjBiTree->Search( rRscId );
-    return NULL;
+    return nullptr;
 }
 
 ObjNode::ObjNode( const RscId & rId, CLASS_DATA pData, sal_uLong lKey )

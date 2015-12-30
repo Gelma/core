@@ -39,6 +39,7 @@ $(eval $(call gb_CppunitTest_set_include,sw_ooxmlimport,\
     -I$(SRCDIR)/sw/inc \
     -I$(SRCDIR)/sw/source/core/inc \
     -I$(SRCDIR)/sw/qa/extras/inc \
+    -I$(SRCDIR)/sw/source/uibase/inc \
     $$(INCLUDE) \
 ))
 
@@ -95,6 +96,7 @@ $(eval $(call gb_CppunitTest_use_components,sw_ooxmlimport,\
     ucb/source/ucp/file/ucpfile1 \
     unotools/util/utl \
     unoxml/source/service/unoxml \
+    unoxml/source/rdf/unordf \
     writerfilter/util/writerfilter \
     xmloff/util/xo \
 ))

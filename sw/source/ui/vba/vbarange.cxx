@@ -224,7 +224,7 @@ SwVbaRange::Select() throw ( uno::RuntimeException, std::exception )
 void SAL_CALL
 SwVbaRange::InsertParagraph() throw ( uno::RuntimeException, std::exception )
 {
-    mxTextCursor->setString( OUString("") );
+    mxTextCursor->setString( "" );
     InsertParagraphBefore();
 }
 
@@ -247,7 +247,7 @@ uno::Reference< word::XParagraphFormat > SAL_CALL
 SwVbaRange::getParagraphFormat() throw ( uno::RuntimeException, std::exception )
 {
     uno::Reference< beans::XPropertySet > xParaProps( mxTextCursor, uno::UNO_QUERY_THROW );
-    return uno::Reference< word::XParagraphFormat >( new SwVbaParagraphFormat( this, mxContext, mxTextDocument, xParaProps ) );
+    return uno::Reference< word::XParagraphFormat >( new SwVbaParagraphFormat( this, mxContext, xParaProps ) );
 }
 
 void SAL_CALL

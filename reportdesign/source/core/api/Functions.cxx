@@ -53,7 +53,7 @@ void SAL_CALL OFunctions::dispose() throw(uno::RuntimeException, std::exception)
 
 void SAL_CALL OFunctions::disposing()
 {
-    ::std::for_each(m_aFunctions.begin(),m_aFunctions.end(),::boost::mem_fn(&com::sun::star::report::XFunction::dispose));
+    ::std::for_each(m_aFunctions.begin(),m_aFunctions.end(),::boost::mem_fn(&css::report::XFunction::dispose));
     m_aFunctions.clear();
     lang::EventObject aDisposeEvent( static_cast< ::cppu::OWeakObject* >( this ) );
     m_aContainerListeners.disposeAndClear( aDisposeEvent );
@@ -105,7 +105,7 @@ void SAL_CALL OFunctions::removeByIndex( ::sal_Int32 Index ) throw (lang::IndexO
         ::std::advance(aPos,Index);
         xFunction = *aPos;
         m_aFunctions.erase(aPos);
-        xFunction->setParent(NULL);
+        xFunction->setParent(nullptr);
     }
     container::ContainerEvent aEvent(static_cast<container::XContainer*>(this), uno::makeAny(Index), uno::makeAny(xFunction), uno::Any());
     m_aContainerListeners.notifyEach(&container::XContainerListener::elementRemoved,aEvent);

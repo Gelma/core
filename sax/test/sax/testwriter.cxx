@@ -49,7 +49,7 @@ class OFileWriter :
         public WeakImplHelper< XOutputStream >
 {
 public:
-    OFileWriter( char *pcFile ) { strncpy( m_pcFile, pcFile, 256 - 1 ); m_f = 0; }
+    explicit OFileWriter( char *pcFile ) { strncpy( m_pcFile, pcFile, 256 - 1 ); m_f = 0; }
 
 
 public:
@@ -94,7 +94,7 @@ class OSaxWriterTest :
         public WeakImplHelper< XSimpleTest >
 {
 public:
-    OSaxWriterTest( const Reference < XMultiServiceFactory > & rFactory ) : m_rFactory( rFactory )
+    explicit OSaxWriterTest( const Reference < XMultiServiceFactory > & rFactory ) : m_rFactory( rFactory )
     {
 
     }
@@ -326,10 +326,7 @@ OUString    OSaxWriterTest_getImplementationName( ) throw  ()
 
 Sequence<OUString> OSaxWriterTest_getSupportedServiceNames( ) throw  ()
 {
-    Sequence<OUString> aRet(1);
-
-    aRet.getArray()[0] = OSaxWriterTest_getImplementationName( );
-
+    Sequence<OUString> aRet { OSaxWriterTest_getImplementationName( ) };
     return aRet;
 }
 

@@ -40,17 +40,16 @@ OUString SAL_CALL SwUnoModule_getImplementationName() throw()
 
 uno::Sequence< OUString > SAL_CALL SwUnoModule_getSupportedServiceNames() throw()
 {
-    uno::Sequence< OUString > aSeq( 1 );
-    aSeq[0] = "com.sun.star.text.ModuleDispatcher";
+    uno::Sequence<OUString> aSeq { "com.sun.star.text.ModuleDispatcher" };
     return aSeq;
 }
 
 uno::Reference< uno::XInterface > SAL_CALL SwUnoModule_createInstance(
-                const uno::Reference< lang::XMultiServiceFactory > & rSMgr )
+                const uno::Reference< lang::XMultiServiceFactory > &  )
     throw (css::uno::Exception)
 {
     SolarMutexGuard aGuard;
-    return uno::Reference< uno::XInterface >( dynamic_cast< frame::XDispatch * >(new SwUnoModule( rSMgr )), uno::UNO_QUERY );
+    return uno::Reference< uno::XInterface >( dynamic_cast< frame::XDispatch * >(new SwUnoModule), uno::UNO_QUERY );
 }
 
     // XNotifyingDispatch
@@ -132,7 +131,7 @@ uno::Reference< frame::XDispatch > SAL_CALL SwUnoModule::queryDispatch(
     SwGlobals::ensure();
     const SfxSlot* pSlot = SW_MOD()->GetInterface()->GetSlot( aURL.Complete );
     if ( pSlot )
-        xReturn = uno::Reference< frame::XDispatch >(static_cast< frame::XDispatch* >(this), uno::UNO_QUERY);
+        xReturn.set(static_cast< frame::XDispatch* >(this), uno::UNO_QUERY);
 
     return xReturn;
 }

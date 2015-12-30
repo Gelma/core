@@ -37,7 +37,6 @@ using ::com::sun::star::container::XNameReplace;
 using ::com::sun::star::document::XEventsSupplier;
 using ::com::sun::star::lang::IllegalArgumentException;
 
-TYPEINIT1(XMLEventsImportContext,  SvXMLImportContext);
 
 
 XMLEventsImportContext::XMLEventsImportContext(
@@ -201,13 +200,11 @@ void XMLEventsImportContext::AddEventValues(
                 xEvents->replaceByName(rEventName, aAny);
             } catch ( const IllegalArgumentException & rException )
             {
-                Sequence<OUString> aMsgParams(1);
-
-                aMsgParams[0] = rEventName;
+                Sequence<OUString> aMsgParams { rEventName };
 
                 GetImport().SetError(XMLERROR_FLAG_ERROR |
                                      XMLERROR_ILLEGAL_EVENT,
-                                     aMsgParams, rException.Message, 0);
+                                     aMsgParams, rException.Message, nullptr);
             }
         }
     }

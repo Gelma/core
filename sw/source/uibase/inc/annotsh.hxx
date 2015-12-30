@@ -32,7 +32,6 @@ class SwAnnotationShell: public SfxShell
 
 public:
     SFX_DECL_INTERFACE(SW_ANNOTATIONSHELL)
-    TYPEINFO_OVERRIDE();
 
 private:
     /// SfxInterface initializer.
@@ -71,7 +70,7 @@ public:
     void        StateSearch(SfxItemSet &);
 
     virtual ::svl::IUndoManager*
-                GetUndoManager() SAL_OVERRIDE;
+                GetUndoManager() override;
 
     static SfxItemPool* GetAnnotationPool(SwView& rV);
 };

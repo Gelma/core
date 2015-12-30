@@ -51,6 +51,7 @@
 
 #include <comphelper/processfactory.hxx>
 #include <comphelper/property.hxx>
+#include <comphelper/sequence.hxx>
 #include <cppuhelper/component_context.hxx>
 #include <sfx2/bindings.hxx>
 #include <sfx2/childwin.hxx>
@@ -314,7 +315,7 @@ void FmPropBrw::implDetachController()
     {
         try
         {
-            m_xMeAsFrame->setComponent(NULL, NULL);
+            m_xMeAsFrame->setComponent(nullptr, nullptr);
         }
         catch( const Exception& )
         {
@@ -324,7 +325,7 @@ void FmPropBrw::implDetachController()
 
     // we attached a frame to the controller manually, so we need to manually tell it that it's detached, too
     if ( m_xBrowserController.is() )
-        m_xBrowserController->attachFrame( NULL );
+        m_xBrowserController->attachFrame( nullptr );
 
     m_xBrowserController.clear();
     m_xInspectorModel.clear();
@@ -396,10 +397,7 @@ void FmPropBrw::implSetNewSelection( const InterfaceBag& _rSelection )
             Reference< XObjectInspector > xInspector( m_xBrowserController, UNO_QUERY_THROW );
 
             // tell it the objects to inspect
-            Sequence< Reference< XInterface > > aSelection( _rSelection.size() );
-            ::std::copy( _rSelection.begin(), _rSelection.end(), aSelection.getArray() );
-
-            xInspector->inspect( aSelection );
+            xInspector->inspect( comphelper::containerToSequence< Reference< XInterface > >(_rSelection) );
         }
         catch( const VetoException& )
         {
@@ -444,12 +442,11 @@ void FmPropBrw::implSetNewSelection( const InterfaceBag& _rSelection )
 
         SetText( sTitle );
 
-        // #95343# ---------------------------------
-        Reference< ::com::sun::star::awt::XLayoutConstrains > xLayoutConstrains( m_xBrowserController, UNO_QUERY );
+        Reference< css::awt::XLayoutConstrains > xLayoutConstrains( m_xBrowserController, UNO_QUERY );
         if( xLayoutConstrains.is() )
         {
             ::Size aConstrainedSize;
-            ::com::sun::star::awt::Size aMinSize = xLayoutConstrains->getMinimumSize();
+            css::awt::Size aMinSize = xLayoutConstrains->getMinimumSize();
 
             sal_Int32 nLeft(0), nTop(0), nRight(0), nBottom(0);
             GetBorder( nLeft, nTop, nRight, nBottom );
@@ -496,14 +493,13 @@ namespace
 {
     static bool lcl_shouldEnableHelpSection( const Reference< XComponentContext >& _rxContext )
     {
-        const OUString sConfigName( "/org.openoffice.Office.Common/Forms/PropertyBrowser/" );
-        const OUString sPropertyName( "DirectHelp" );
-
         ::utl::OConfigurationTreeRoot aConfiguration(
-            ::utl::OConfigurationTreeRoot::createWithComponentContext( _rxContext, sConfigName ) );
+            ::utl::OConfigurationTreeRoot::createWithComponentContext(
+                _rxContext,
+                "/org.openoffice.Office.Common/Forms/PropertyBrowser/" ) );
 
         bool bEnabled = false;
-        OSL_VERIFY( aConfiguration.getNodeValue( sPropertyName ) >>= bEnabled );
+        OSL_VERIFY( aConfiguration.getNodeValue( "DirectHelp" ) >>= bEnabled );
         return bEnabled;
     }
 }
@@ -537,7 +533,7 @@ void FmPropBrw::impl_createPropertyBrowser_throw( FmFormShell* _pFormShell )
 
     // the mapping from control models to control shapes
     Reference< XMap > xControlMap;
-    FmFormPage* pFormPage = _pFormShell ? _pFormShell->GetCurPage() : NULL;
+    FmFormPage* pFormPage = _pFormShell ? _pFormShell->GetCurPage() : nullptr;
     if ( pFormPage )
         xControlMap = pFormPage->GetImpl().getControlToShapeMap();
 
@@ -594,7 +590,7 @@ void FmPropBrw::impl_ensurePropertyBrowser_nothrow( FmFormShell* _pFormShell )
 {
     // the document in which we live
     Reference< XInterface > xDocument;
-    SfxObjectShell* pObjectShell = _pFormShell ? _pFormShell->GetObjectShell() : NULL;
+    SfxObjectShell* pObjectShell = _pFormShell ? _pFormShell->GetObjectShell() : nullptr;
     if ( pObjectShell )
         xDocument = pObjectShell->GetModel();
     if ( ( xDocument == m_xLastKnownDocument ) && m_xBrowserController.is() )
@@ -605,7 +601,7 @@ void FmPropBrw::impl_ensurePropertyBrowser_nothrow( FmFormShell* _pFormShell )
     {
         // clean up any previous instances of the object inspector
         if ( m_xMeAsFrame.is() )
-            m_xMeAsFrame->setComponent( NULL, NULL );
+            m_xMeAsFrame->setComponent( nullptr, nullptr );
         else
             ::comphelper::disposeComponent( m_xBrowserController );
         m_xBrowserController.clear();
@@ -633,7 +629,7 @@ void FmPropBrw::StateChanged(sal_uInt16 nSID, SfxItemState eState, const SfxPool
     {
         if (eState >= SfxItemState::DEFAULT)
         {
-            FmFormShell* pShell = PTR_CAST(FmFormShell, static_cast<const SfxObjectItem*>(pState)->GetShell());
+            FmFormShell* pShell = dynamic_cast<FmFormShell*>( static_cast<const SfxObjectItem*>(pState)->GetShell() );
             InterfaceBag aSelection;
             if ( pShell )
                 pShell->GetImpl()->getCurrentSelection( aSelection );
@@ -647,7 +643,7 @@ void FmPropBrw::StateChanged(sal_uInt16 nSID, SfxItemState eState, const SfxPool
             if ( m_bInitialStateChange )
             {
                 // if we're just newly created, we want to have the focus
-                PostUserEvent( LINK( this, FmPropBrw, OnAsyncGetFocus ), NULL, true );
+                PostUserEvent( LINK( this, FmPropBrw, OnAsyncGetFocus ), nullptr, true );
 
                 // and additionally, we want to show the page which was active during
                 // our previous incarnation

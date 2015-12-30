@@ -73,13 +73,13 @@ public:
                     SfxStyleSheetBase&  rBase,
                     sal_uInt16          nRegion,
                     const OString&      sPage = OString(),
-                    SwWrtShell*         pActShell = 0,
+                    SwWrtShell*         pActShell = nullptr,
                     bool                bNew = false );
 
-    virtual void RefreshInputSet() SAL_OVERRIDE;
+    virtual void RefreshInputSet() override;
 
-    virtual void PageCreated( sal_uInt16 nId, SfxTabPage &rPage ) SAL_OVERRIDE;
-    virtual short Ok() SAL_OVERRIDE;
+    virtual void PageCreated( sal_uInt16 nId, SfxTabPage &rPage ) override;
+    virtual short Ok() override;
 };
 
 #endif

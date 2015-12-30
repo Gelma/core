@@ -32,8 +32,8 @@ class DtransX11ConfigItem : public ::utl::ConfigItem
 {
     sal_Int32           m_nSelectionTimeout;
 
-    virtual void Notify( const ::com::sun::star::uno::Sequence< OUString >& rPropertyNames ) SAL_OVERRIDE;
-    virtual void ImplCommit() SAL_OVERRIDE;
+    virtual void Notify( const css::uno::Sequence< OUString >& rPropertyNames ) override;
+    virtual void ImplCommit() override;
 
 public:
     DtransX11ConfigItem();
@@ -70,8 +70,7 @@ DtransX11ConfigItem::DtransX11ConfigItem() :
                 ConfigItemMode::DelayedUpdate ),
     m_nSelectionTimeout( 3 )
 {
-    Sequence< OUString > aKeys( 1 );
-    aKeys.getArray()[0] = SELECTION_PROPERTY;
+    Sequence<OUString> aKeys { SELECTION_PROPERTY };
     Sequence< Any > aValues = GetProperties( aKeys );
 #if OSL_DEBUG_LEVEL > 1
     fprintf( stderr, "found %" SAL_PRIdINT32 " properties for %s\n", aValues.getLength(), SELECTION_PROPERTY );

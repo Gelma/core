@@ -50,7 +50,7 @@
 
 KDEXLib::KDEXLib() :
     SalXLib(),  m_bStartupDone(false),
-    m_pFreeCmdLineArgs(0), m_pAppCmdLineArgs(0), m_nFakeCmdLineArgs( 0 ),
+    m_pFreeCmdLineArgs(nullptr), m_pAppCmdLineArgs(nullptr), m_nFakeCmdLineArgs( 0 ),
     m_frameWidth( -1 ), m_isGlibEventLoopType(false),
     m_allowKdeDialogs(false), blockIdleTimeout(false)
 {
@@ -74,10 +74,8 @@ KDEXLib::KDEXLib() :
 
     // Create the File picker in the main / GUI thread and block the calling thread until
     // the FilePicker is created.
-    connect( this, SIGNAL( createFilePickerSignal( const com::sun::star::uno::Reference<
-                                                   com::sun::star::uno::XComponentContext >&) ),
-             this, SLOT( createFilePicker( const com::sun::star::uno::Reference<
-                                                 com::sun::star::uno::XComponentContext >&) ),
+    connect( this, SIGNAL( createFilePickerSignal( const css::uno::Reference< css::uno::XComponentContext >&) ),
+             this, SLOT( createFilePicker( const css::uno::Reference< css::uno::XComponentContext >&) ),
              Qt::BlockingQueuedConnection );
 
     connect( this, SIGNAL( getFrameWidthSignal() ),
@@ -168,14 +166,14 @@ void KDEXLib::Init()
     // (QApplication::disableSessionManagement(false) wouldn't quite do,
     // since that still actually connects to the session manager, it just
     // won't save the application data on session shutdown).
-    char* session_manager = NULL;
-    if( getenv( "SESSION_MANAGER" ) != NULL )
+    char* session_manager = nullptr;
+    if( getenv( "SESSION_MANAGER" ) != nullptr )
     {
         session_manager = strdup( getenv( "SESSION_MANAGER" ));
         unsetenv( "SESSION_MANAGER" );
     }
     m_pApplication.reset( new VCLKDEApplication() );
-    if( session_manager != NULL )
+    if( session_manager != nullptr )
     {
         // coverity[tainted_string] - trusted source for setenv
         setenv( "SESSION_MANAGER", session_manager, 1 );
@@ -215,7 +213,7 @@ void KDEXLib::Init()
 #if KDE_HAVE_GLIB
 #include <glib.h>
 
-static GPollFunc old_gpoll = NULL;
+static GPollFunc old_gpoll = nullptr;
 
 static gint gpoll_wrapper( GPollFD* ufds, guint nfds, gint timeout )
 {
@@ -227,7 +225,7 @@ static gint gpoll_wrapper( GPollFD* ufds, guint nfds, gint timeout )
 static bool ( *old_qt_event_filter )( void* );
 static bool qt_event_filter( void* m )
 {
-    if( old_qt_event_filter != NULL && old_qt_event_filter( m ))
+    if( old_qt_event_filter != nullptr && old_qt_event_filter( m ))
         return true;
     if( SalKDEDisplay::self() && SalKDEDisplay::self()->checkDirectInputEvent( static_cast< XEvent* >( m )))
         return true;
@@ -240,8 +238,8 @@ void KDEXLib::setupEventLoop()
 #if KDE_HAVE_GLIB
     if( m_isGlibEventLoopType )
     {
-        old_gpoll = g_main_context_get_poll_func( NULL );
-        g_main_context_set_poll_func( NULL, gpoll_wrapper );
+        old_gpoll = g_main_context_get_poll_func( nullptr );
+        g_main_context_set_poll_func( nullptr, gpoll_wrapper );
         if( m_allowKdeDialogs )
             QApplication::clipboard()->setProperty( "useEventLoopWhenWaiting", true );
         return;
@@ -278,22 +276,27 @@ void KDEXLib::socketNotifierActivated( int fd )
     sdata.handle( fd, sdata.data );
 }
 
-void KDEXLib::Yield( bool bWait, bool bHandleAllCurrentEvents )
+SalYieldResult KDEXLib::Yield( bool bWait, bool bHandleAllCurrentEvents )
 {
     if( !m_isGlibEventLoopType )
     {
+        bool wasEvent = false;
         if( qApp->thread() == QThread::currentThread())
         {
             // even if we use the LO event loop, still process Qt's events,
             // otherwise they can remain unhandled for quite a long while
-            processYield( false, bHandleAllCurrentEvents );
+            wasEvent = processYield( false, bHandleAllCurrentEvents );
         }
-        return SalXLib::Yield( bWait, bHandleAllCurrentEvents );
+        SalYieldResult aResult = SalXLib::Yield(bWait, bHandleAllCurrentEvents);
+        return (aResult == SalYieldResult::EVENT || wasEvent) ?
+            SalYieldResult::EVENT : SalYieldResult::TIMEOUT;
     }
     // if we are the main thread (which is where the event processing is done),
     // good, just do it
     if( qApp->thread() == QThread::currentThread())
-        processYield( bWait, bHandleAllCurrentEvents );
+    {
+        return processYield( bWait, bHandleAllCurrentEvents );
+    }
     else
     {
         // we were called from another thread;
@@ -302,10 +305,11 @@ void KDEXLib::Yield( bool bWait, bool bHandleAllCurrentEvents )
         // temporarily do it while checking for new events)
         SalYieldMutexReleaser aReleaser;
         Q_EMIT processYieldSignal( bWait, bHandleAllCurrentEvents );
+        return SalYieldResult::TIMEOUT;
     }
 }
 
-void KDEXLib::processYield( bool bWait, bool bHandleAllCurrentEvents )
+SalYieldResult KDEXLib::processYield( bool bWait, bool bHandleAllCurrentEvents )
 {
     blockIdleTimeout = !bWait;
     QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance( qApp->thread());
@@ -321,6 +325,8 @@ void KDEXLib::processYield( bool bWait, bool bHandleAllCurrentEvents )
     if( bWait && !wasEvent )
         dispatcher->processEvents( QEventLoop::WaitForMoreEvents );
     blockIdleTimeout = false;
+    return wasEvent ? SalYieldResult::EVENT
+                    : SalYieldResult::TIMEOUT;
 }
 
 void KDEXLib::StartTimer( sal_uLong nMS )
@@ -434,7 +440,7 @@ int KDEXLib::getFrameWidth()
     }
 
     // fill in a default
-    QFrame aFrame( NULL );
+    QFrame aFrame( nullptr );
     aFrame.setFrameStyle( QFrame::StyledPanel | QFrame::Sunken );
     aFrame.ensurePolished();
     m_frameWidth = aFrame.frameWidth();

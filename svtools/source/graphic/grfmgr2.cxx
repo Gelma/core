@@ -328,7 +328,7 @@ bool ImplCreateRotatedScaled( const BitmapEx& rBmpEx, const GraphicAttr& rAttrib
     const long  aBitmapWidth  = rBmpEx.GetSizePixel().Width();
     const long  aBitmapHeight = rBmpEx.GetSizePixel().Height();
 
-    long    nX, nY, nTmpX, nTmpY, nTmpFX, nTmpFY, nTmp;
+    long    nTmpX, nTmpY, nTmpFX, nTmpFY, nTmp;
     double  fTmp;
 
     bool    bHMirr( rAttributes.GetMirrorFlags() & BmpMirrorFlags::Horizontal );
@@ -646,12 +646,12 @@ bool ImplCreateRotatedScaled( const BitmapEx& rBmpEx, const GraphicAttr& rAttrib
                         {
                             Scanline pLine0, pLine1, pLineW;
 
-                            for( nY = 0; nY < aTargetHeight; nY++ )
+                            for( long nY = 0; nY < aTargetHeight; nY++ )
                             {
                                 nSinY = pSinY[ nY ], nCosY = pCosY[ nY ];
                                 pLineW = pWriteAccess->GetScanline( nY );
 
-                                for( nX = 0; nX < aTargetWidth; nX++ )
+                                for( long nX = 0; nX < aTargetWidth; nX++ )
                                 {
                                     nUnRotX = ( pCosX[ nX ] - nSinY ) >> 8;
                                     nUnRotY = ( pSinX[ nX ] + nCosY ) >> 8;
@@ -743,11 +743,11 @@ bool ImplCreateRotatedScaled( const BitmapEx& rBmpEx, const GraphicAttr& rAttrib
                         const BitmapColor   aTrans( pWriteAccess->GetBestMatchingColor( Color( COL_WHITE ) ) );
                         BitmapColor         aAlphaVal( 0 );
 
-                        for( nY = 0; nY < aTargetHeight; nY++ )
+                        for( long nY = 0; nY < aTargetHeight; nY++ )
                         {
                             nSinY = pSinY[ nY ], nCosY = pCosY[ nY ];
 
-                            for( nX = 0; nX < aTargetWidth; nX++ )
+                            for( long nX = 0; nX < aTargetWidth; nX++ )
                             {
                                 nUnRotX = ( pCosX[ nX ] - nSinY ) >> 8;
                                 nUnRotY = ( pSinX[ nX ] + nCosY ) >> 8;
@@ -794,9 +794,9 @@ bool ImplCreateRotatedScaled( const BitmapEx& rBmpEx, const GraphicAttr& rAttrib
                 Bitmap              aMsk( rBmpEx.GetMask() );
                 const BitmapColor   aB( pWriteAccess->GetBestMatchingColor( Color( COL_BLACK ) ) );
                 const BitmapColor   aW( pWriteAccess->GetBestMatchingColor( Color( COL_WHITE ) ) );
-                BitmapReadAccess*   pMAcc = NULL;
+                BitmapReadAccess*   pMAcc = nullptr;
 
-                if( !aMsk || ( ( pMAcc = aMsk.AcquireReadAccess() ) != NULL ) )
+                if( !aMsk || ( ( pMAcc = aMsk.AcquireReadAccess() ) != nullptr ) )
                 {
                     std::unique_ptr<long[]> pMapLX(new long[ aUnrotatedWidth ]);
                     std::unique_ptr<long[]> pMapLY(new long[ aUnrotatedHeight ]);
@@ -806,20 +806,20 @@ bool ImplCreateRotatedScaled( const BitmapEx& rBmpEx, const GraphicAttr& rAttrib
                         aTestB = pMAcc->GetBestMatchingColor( Color( COL_BLACK ) );
 
                     // create new horizontal mapping table
-                    for( nX = 0UL; nX < aUnrotatedWidth; nX++ )
+                    for( long nX = 0UL; nX < aUnrotatedWidth; nX++ )
                         pMapLX[ nX ] = FRound( (double) pMapIX[ nX ] + pMapFX[ nX ] / 1048576.0 );
 
                     // create new vertical mapping table
-                    for( nY = 0UL; nY < aUnrotatedHeight; nY++ )
+                    for( long nY = 0UL; nY < aUnrotatedHeight; nY++ )
                         pMapLY[ nY ] = FRound( (double) pMapIY[ nY ] + pMapFY[ nY ] / 1048576.0 );
 
                     // do mask rotation
-                    for( nY = 0; nY < aTargetHeight; nY++ )
+                    for( long nY = 0; nY < aTargetHeight; nY++ )
                     {
                         nSinY = pSinY[ nY ];
                         nCosY = pCosY[ nY ];
 
-                        for( nX = 0; nX < aTargetWidth; nX++ )
+                        for( long nX = 0; nX < aTargetWidth; nX++ )
                         {
                             nUnRotX = ( pCosX[ nX ] - nSinY ) >> 8;
                             nUnRotY = ( pSinX[ nX ] + nCosY ) >> 8;
@@ -1126,7 +1126,7 @@ bool GraphicManager::ImplCreateOutput( OutputDevice* pOut,
         for( nCurPos = 0, pAct = rOutMtf.FirstAction(); pAct;
              pAct = rOutMtf.NextAction(), nCurPos++ )
         {
-            MetaAction* pModAct = NULL;
+            MetaAction* pModAct = nullptr;
             switch( pAct->GetType() )
             {
                 case MetaActionType::FONT:
@@ -1992,7 +1992,7 @@ bool GraphicObject::ImplDrawTiled( OutputDevice& rOut, const Point& rPosPixel,
     int     nX, nY;
 
     // #107607# Use logical coordinates for metafile playing, too
-    bool    bDrawInPixel( rOut.GetConnectMetaFile() == NULL && GRAPHIC_BITMAP == GetType() );
+    bool    bDrawInPixel( rOut.GetConnectMetaFile() == nullptr && GRAPHIC_BITMAP == GetType() );
     bool    bRet = false;
 
     // #105229# Switch off mapping (converting to logic and back to

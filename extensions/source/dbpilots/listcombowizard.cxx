@@ -183,8 +183,7 @@ namespace dbp
                 OUString sStatement = "SELECT " +
                     OUString( getSettings().sListContentField ) +  ", " + OUString( getSettings().sLinkedListField ) +
                     " FROM " + OUString( getSettings().sListContentTable );
-                Sequence< OUString > aListSource(1);
-                aListSource[0] = sStatement;
+                Sequence< OUString > aListSource { sStatement };
                 getContext().xObjectModel->setPropertyValue("ListSource", makeAny(aListSource));
             }
             else
@@ -300,10 +299,9 @@ namespace dbp
     }
 
 
-    IMPL_LINK( OContentTableSelection, OnTableSelected, ListBox*, /*_pListBox*/ )
+    IMPL_LINK_NOARG_TYPED( OContentTableSelection, OnTableSelected, ListBox&, void )
     {
         updateDialogTravelUI();
-        return 0L;
     }
 
 
@@ -409,11 +407,10 @@ namespace dbp
     }
 
 
-    IMPL_LINK( OContentFieldSelection, OnFieldSelected, ListBox*, /*NOTINTERESTEDIN*/ )
+    IMPL_LINK_NOARG_TYPED( OContentFieldSelection, OnFieldSelected, ListBox&, void )
     {
         updateDialogTravelUI();
         m_pDisplayedField->SetText(m_pSelectTableField->GetSelectEntry());
-        return 0L;
     }
 
 
@@ -435,8 +432,8 @@ namespace dbp
 
         m_pValueListField->SetModifyHdl(LINK(this, OLinkFieldsPage, OnSelectionModified));
         m_pTableField->SetModifyHdl(LINK(this, OLinkFieldsPage, OnSelectionModified));
-        m_pValueListField->SetSelectHdl(LINK(this, OLinkFieldsPage, OnSelectionModified));
-        m_pTableField->SetSelectHdl(LINK(this, OLinkFieldsPage, OnSelectionModified));
+        m_pValueListField->SetSelectHdl(LINK(this, OLinkFieldsPage, OnSelectionModifiedCombBox));
+        m_pTableField->SetSelectHdl(LINK(this, OLinkFieldsPage, OnSelectionModifiedCombBox));
     }
 
     OLinkFieldsPage::~OLinkFieldsPage()
@@ -490,12 +487,15 @@ namespace dbp
     }
 
 
-    IMPL_LINK_NOARG(OLinkFieldsPage, OnSelectionModified)
+    IMPL_LINK_NOARG_TYPED(OLinkFieldsPage, OnSelectionModified, Edit&, void)
     {
         implCheckFinish();
-        return 0L;
     }
 
+    IMPL_LINK_NOARG_TYPED(OLinkFieldsPage, OnSelectionModifiedCombBox, ComboBox&, void)
+    {
+        implCheckFinish();
+    }
 
     bool OLinkFieldsPage::commitPage( ::svt::WizardTypes::CommitPageReason _eReason )
     {

@@ -27,7 +27,6 @@
 #include <unordered_map>
 #include <vector>
 #include <o3tl/sorted_vector.hxx>
-#include <boost/ptr_container/ptr_map.hpp>
 
 #include "rangelst.hxx"
 #include "eeparser.hxx"
@@ -49,12 +48,12 @@ class ScHTMLTable;
 class ScHTMLStyles
 {
     typedef std::unordered_map<OUString, OUString, OUStringHash> PropsType;
-    typedef ::boost::ptr_map<OUString, PropsType> NamePropsType;
-    typedef ::boost::ptr_map<OUString, NamePropsType> ElemsType;
+    typedef ::std::map<OUString, std::unique_ptr<PropsType>> NamePropsType;
+    typedef ::std::map<OUString, std::unique_ptr<NamePropsType>> ElemsType;
 
-    NamePropsType maGlobalProps;     /// global properties (for a given class for all elements)
-    NamePropsType maElemGlobalProps; /// element global properties (no class specified)
-    ElemsType maElemProps;           /// element to class to properties (both element and class are given)
+    NamePropsType m_GlobalProps;     /// global properties (for a given class for all elements)
+    NamePropsType m_ElemGlobalProps; /// element global properties (no class specified)
+    ElemsType m_ElemProps;           /// element to class to properties (both element and class are given)
     const OUString maEmpty;     /// just a persistent empty string.
 public:
     ScHTMLStyles();
@@ -86,7 +85,7 @@ public:
     explicit                    ScHTMLParser( EditEngine* pEditEngine, ScDocument* pDoc );
     virtual                     ~ScHTMLParser();
 
-    virtual sal_uLong           Read( SvStream& rStrm, const OUString& rBaseURL  ) SAL_OVERRIDE = 0;
+    virtual sal_uLong           Read( SvStream& rStrm, const OUString& rBaseURL  ) override = 0;
 
     ScHTMLStyles&               GetStyles() { return maStyles;}
     ScDocument&                 GetDoc() { return *mpDoc;}
@@ -102,27 +101,26 @@ struct ScHTMLTableStackEntry
     ScRangeListRef      xLockedList;
     ScEEParseEntry*     pCellEntry;
     ScHTMLColOffset*    pLocalColOffset;
-    sal_uLong               nFirstTableCell;
-    SCCOL               nColCnt;
+    sal_uLong           nFirstTableCell;
     SCROW               nRowCnt;
     SCCOL               nColCntStart;
     SCCOL               nMaxCol;
-    sal_uInt16              nTable;
-    sal_uInt16              nTableWidth;
-    sal_uInt16              nColOffset;
-    sal_uInt16              nColOffsetStart;
+    sal_uInt16          nTable;
+    sal_uInt16          nTableWidth;
+    sal_uInt16          nColOffset;
+    sal_uInt16          nColOffsetStart;
     bool                bFirstRow;
                         ScHTMLTableStackEntry( ScEEParseEntry* pE,
                                 const ScRangeListRef& rL, ScHTMLColOffset* pTO,
                                 sal_uLong nFTC,
-                                SCCOL nCol, SCROW nRow,
+                                SCROW nRow,
                                 SCCOL nStart, SCCOL nMax, sal_uInt16 nTab,
                                 sal_uInt16 nTW, sal_uInt16 nCO, sal_uInt16 nCOS,
                                 bool bFR )
                             : xLockedList( rL ), pCellEntry( pE ),
                             pLocalColOffset( pTO ),
                             nFirstTableCell( nFTC ),
-                            nColCnt( nCol ), nRowCnt( nRow ),
+                            nRowCnt( nRow ),
                             nColCntStart( nStart ), nMaxCol( nMax ),
                             nTable( nTab ), nTableWidth( nTW ),
                             nColOffset( nCO ), nColOffsetStart( nCOS ),
@@ -217,8 +215,8 @@ private:
 public:
                         ScHTMLLayoutParser( EditEngine*, const OUString& rBaseURL, const Size& aPageSize, ScDocument* );
     virtual             ~ScHTMLLayoutParser();
-    virtual sal_uLong   Read( SvStream&, const OUString& rBaseURL  ) SAL_OVERRIDE;
-    virtual const ScHTMLTable*  GetGlobalTable() const SAL_OVERRIDE;
+    virtual sal_uLong   Read( SvStream&, const OUString& rBaseURL  ) override;
+    virtual const ScHTMLTable*  GetGlobalTable() const override;
 };
 
 // HTML DATA QUERY PARSER
@@ -254,11 +252,6 @@ struct ScHTMLPos
                             { return ScAddress( mnCol, mnRow, 0 ); }
 };
 
-inline bool operator==( const ScHTMLPos& rPos1, const ScHTMLPos& rPos2 )
-{
-    return (rPos1.mnRow == rPos2.mnRow) && (rPos1.mnCol == rPos2.mnCol);
-}
-
 inline bool operator<( const ScHTMLPos& rPos1, const ScHTMLPos& rPos2 )
 {
     return (rPos1.mnRow < rPos2.mnRow) || ((rPos1.mnRow == rPos2.mnRow) && (rPos1.mnCol < rPos2.mnCol));
@@ -276,11 +269,6 @@ struct ScHTMLSize
     inline void         Set( SCCOL nCols, SCROW nRows )
                             { mnCols = nCols; mnRows = nRows; }
 };
-
-inline bool operator==( const ScHTMLSize& rSize1, const ScHTMLSize& rSize2 )
-{
-    return (rSize1.mnRows == rSize2.mnRows) && (rSize1.mnCols == rSize2.mnCols);
-}
 
 /** A single entry containing a line of text or representing a table. */
 struct ScHTMLEntry : public ScEEParseEntry
@@ -585,10 +573,10 @@ public:
     explicit            ScHTMLQueryParser( EditEngine* pEditEngine, ScDocument* pDoc );
     virtual             ~ScHTMLQueryParser();
 
-    virtual sal_uLong   Read( SvStream& rStrm, const OUString& rBaseURL  ) SAL_OVERRIDE;
+    virtual sal_uLong   Read( SvStream& rStrm, const OUString& rBaseURL  ) override;
 
     /** Returns the "global table" which contains the entire HTML document. */
-    virtual const ScHTMLTable* GetGlobalTable() const SAL_OVERRIDE;
+    virtual const ScHTMLTable* GetGlobalTable() const override;
 
 private:
     /** Handles all possible tags in the HTML document. */

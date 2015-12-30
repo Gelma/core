@@ -19,7 +19,7 @@
 #ifndef INCLUDED_VBAHELPER_VBARETURNTYPES_HXX
 #define INCLUDED_VBAHELPER_VBARETURNTYPES_HXX
 
-#include <cppuhelper/implbase1.hxx>
+#include <cppuhelper/implbase.hxx>
 #include <com/sun/star/script/XDefaultProperty.hpp>
 #include <ooo/vba/msforms/XReturnInteger.hpp>
 #include <ooo/vba/msforms/XReturnBoolean.hpp>
@@ -34,14 +34,14 @@ namespace ooo
     namespace vba
     {
         template< typename T1,  typename T2 >
-        class DefaultReturnHelper : public ::cppu::WeakImplHelper2< T2, css::script::XDefaultProperty >
+        class DefaultReturnHelper : public ::cppu::WeakImplHelper< T2, css::script::XDefaultProperty >
         {
             T1 mnValue;
             public:
             DefaultReturnHelper( const T1& nValue ) : mnValue( nValue ) {}
-            virtual void  SAL_CALL setValue( T1 nValue ) throw (::com::sun::star::uno::RuntimeException) { mnValue = nValue; }
-            virtual T1  SAL_CALL getValue() throw (::com::sun::star::uno::RuntimeException) { return mnValue; }
-            OUString SAL_CALL getDefaultPropertyName(  ) throw (css::uno::RuntimeException) { return OUString("Value"); }
+            virtual void  SAL_CALL setValue( T1 nValue ) throw (css::uno::RuntimeException) SAL_OVERRIDE { mnValue = nValue; }
+            virtual T1  SAL_CALL getValue() throw (css::uno::RuntimeException) SAL_OVERRIDE { return mnValue; }
+            OUString SAL_CALL getDefaultPropertyName(  ) throw (css::uno::RuntimeException) SAL_OVERRIDE { return OUString("Value"); }
         };
 
         typedef DefaultReturnHelper< sal_Int32, ov::msforms::XReturnInteger > ReturnInteger_BASE;

@@ -32,15 +32,12 @@ class FileOpenDialog
     // a list of filters that are provided within the SaveDialog
     struct FilterEntry
     {
-        OUString maName;
+        OUString maFilterEntryName;
         OUString maType;
         OUString maUIName;
-        OUString maFilter;
         sal_Int32 maFlags;
-        css::uno::Sequence< OUString > maExtensions;
 
-        FilterEntry() :
-            maFlags( 0 ) {}
+        FilterEntry() : maFlags( 0 ) {}
     };
     css::uno::Reference < css::ui::dialogs::XFilePicker3 > mxFilePicker;
 

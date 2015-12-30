@@ -60,7 +60,6 @@ using namespace ::com::sun::star;
 DataProviderHandler::DataProviderHandler(uno::Reference< uno::XComponentContext > const & context)
     :DataProviderHandler_Base(m_aMutex)
     ,m_xContext(context)
-    ,m_pInfoService( new OPropertyInfoService() )
 {
     try
     {
@@ -94,8 +93,7 @@ OUString DataProviderHandler::getImplementationName_Static(  ) throw(uno::Runtim
 
 uno::Sequence< OUString > DataProviderHandler::getSupportedServiceNames_static(  ) throw(uno::RuntimeException)
 {
-    uno::Sequence< OUString > aSupported(1);
-    aSupported[0] = "com.sun.star.report.inspection.DataProviderHandler";
+    uno::Sequence< OUString > aSupported { "com.sun.star.report.inspection.DataProviderHandler" };
     return aSupported;
 }
 
@@ -387,8 +385,7 @@ uno::Sequence< beans::Property > SAL_CALL DataProviderHandler::getSupportedPrope
 
 uno::Sequence< OUString > SAL_CALL DataProviderHandler::getSupersededProperties() throw (uno::RuntimeException, std::exception)
 {
-    uno::Sequence< OUString > aRet(1);
-    aRet[0] = PROPERTY_TITLE; // have a look at OPropertyInfoService::getExcludeProperties
+    uno::Sequence< OUString > aRet { PROPERTY_TITLE }; // have a look at OPropertyInfoService::getExcludeProperties
     return aRet;
 }
 
@@ -396,8 +393,7 @@ uno::Sequence< OUString > SAL_CALL DataProviderHandler::getActuatingProperties()
 {
     ::osl::MutexGuard aGuard( m_aMutex );
 
-    uno::Sequence< OUString > aSeq(1);
-    aSeq[0] = PROPERTY_TITLE;
+    uno::Sequence< OUString > aSeq { PROPERTY_TITLE };
     return ::comphelper::concatSequences(m_xFormComponentHandler->getActuatingProperties(),aSeq);
 }
 
@@ -511,8 +507,8 @@ bool DataProviderHandler::impl_dialogLinkedFields_nothrow( ::osl::ClearableMutex
 
     uno::Reference< ui::dialogs::XExecutableDialog > xDialog(
         m_xContext->getServiceManager()->createInstanceWithArgumentsAndContext(
-        OUString("org.openoffice.comp.form.ui.MasterDetailLinkDialog"),aSeq
-            , m_xContext), uno::UNO_QUERY);
+            "org.openoffice.comp.form.ui.MasterDetailLinkDialog", aSeq, m_xContext),
+        uno::UNO_QUERY);
 
     _rClearBeforeDialog.clear();
     return ( xDialog->execute() != 0 );
@@ -531,8 +527,8 @@ bool DataProviderHandler::impl_dialogChartType_nothrow( ::osl::ClearableMutexGua
 
     uno::Reference< ui::dialogs::XExecutableDialog > xDialog(
         m_xContext->getServiceManager()->createInstanceWithArgumentsAndContext(
-        OUString("com.sun.star.comp.chart2.ChartTypeDialog"),aSeq
-            , m_xContext), uno::UNO_QUERY);
+            "com.sun.star.comp.chart2.ChartTypeDialog", aSeq, m_xContext),
+        uno::UNO_QUERY);
 
     _rClearBeforeDialog.clear();
     return ( xDialog->execute() != 0 );

@@ -46,21 +46,19 @@ class UcbPropertiesManager : public cppu::WeakImplHelper <
 
 private:
     bool queryProperty( const OUString& rName,
-                            com::sun::star::beans::Property& rProp );
+                            css::beans::Property& rProp );
 
 public:
-    explicit UcbPropertiesManager( const com::sun::star::uno::Reference<
-                            com::sun::star::lang::XMultiServiceFactory >&
-                                rxSMgr );
+    explicit UcbPropertiesManager( const css::uno::Reference< css::lang::XMultiServiceFactory >&  rxSMgr );
     virtual ~UcbPropertiesManager();
 
     // XServiceInfo
     virtual OUString SAL_CALL getImplementationName()
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
     virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName )
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
     virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
 
     static OUString getImplementationName_Static();
     static css::uno::Sequence< OUString > getSupportedServiceNames_Static();
@@ -70,17 +68,16 @@ public:
                           css::lang::XMultiServiceFactory >& rxServiceMgr );
 
     // XPropertySetInfo
-    virtual com::sun::star::uno::Sequence<
-                com::sun::star::beans::Property > SAL_CALL
+    virtual css::uno::Sequence< css::beans::Property > SAL_CALL
     getProperties()
-        throw( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual com::sun::star::beans::Property SAL_CALL
+        throw( css::uno::RuntimeException, std::exception ) override;
+    virtual css::beans::Property SAL_CALL
     getPropertyByName( const OUString& aName )
-        throw( com::sun::star::beans::UnknownPropertyException,
-               com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::beans::UnknownPropertyException,
+               css::uno::RuntimeException, std::exception ) override;
     virtual sal_Bool SAL_CALL
     hasPropertyByName( const OUString& Name )
-        throw( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
 };
 
 #endif // INCLUDED_UCB_SOURCE_CORE_UCBPROPS_HXX

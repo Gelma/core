@@ -117,7 +117,6 @@ void SwView::InitInterface_Impl()
 #endif
 }
 
-TYPEINIT1(SwView,SfxViewShell)
 
 ShellModes  SwView::GetShellMode()
 {
@@ -134,7 +133,7 @@ void SwView::ApplyAccessiblityOptions(SvtAccessibilityOptions& rAccessibilityOpt
     m_pWrtShell->ApplyAccessiblityOptions(rAccessibilityOptions);
     //to enable the right state of the selection cursor in readonly documents
     if(GetDocShell()->IsReadOnly())
-        m_pWrtShell->ShowCrsr();
+        m_pWrtShell->ShowCursor();
 
 }
 
@@ -304,7 +303,8 @@ void SwView::StateViewOptions(SfxItemSet &rSet)
                 aBool.SetValue( pOpt->IsShowHiddenPara()); break;
             case FN_VIEW_HIDE_WHITESPACE:
             {
-                if (pOpt->getBrowseMode())
+                if (pOpt->getBrowseMode() ||
+                    !pOpt->CanHideWhitespace())
                 {
                     rSet.DisableItem(nWhich);
                     nWhich = 0;
@@ -367,11 +367,10 @@ void SwView::ExecViewOptions(SfxRequest &rReq)
     int eState = STATE_TOGGLE;
     bool bSet = false;
     bool bBrowseModeChanged = false;
-    bool bHideWhitespaceModeChanged = false;
 
     const SfxItemSet *pArgs = rReq.GetArgs();
     sal_uInt16 nSlot = rReq.GetSlot();
-    const SfxPoolItem* pAttr=NULL;
+    const SfxPoolItem* pAttr=nullptr;
 
     if( pArgs && SfxItemState::SET == pArgs->GetItemState( nSlot , false, &pAttr ))
     {
@@ -453,7 +452,7 @@ void SwView::ExecViewOptions(SfxRequest &rReq)
     case FN_VIEW_HIDE_WHITESPACE:
         if ( STATE_TOGGLE == eState )
             bFlag = !pOpt->IsHideWhitespaceMode();
-        bHideWhitespaceModeChanged = (bFlag != pOpt->IsHideWhitespaceMode());
+
         pOpt->SetHideWhitespaceMode(bFlag);
         break;
 
@@ -542,7 +541,7 @@ void SwView::ExecViewOptions(SfxRequest &rReq)
             if (bSet)
             {
                 SwDocShell *pDocSh = GetDocShell();
-                SwDoc *pDoc = pDocSh? pDocSh->GetDoc() : NULL;
+                SwDoc *pDoc = pDocSh? pDocSh->GetDoc() : nullptr;
 
                 // right now we don't have view options for automatic grammar checking. Thus...
                 bool bIsAutoGrammar = false;
@@ -570,14 +569,14 @@ void SwView::ExecViewOptions(SfxRequest &rReq)
     }
 
     // Set UserPrefs, mark request as modified
-    bool bWebView =  0 != dynamic_cast<const SwWebView*>(this);
+    bool bWebView =  dynamic_cast<const SwWebView*>(this) !=  nullptr;
     SwWrtShell &rSh = GetWrtShell();
     rSh.StartAction();
     SwModule* pModule = SW_MOD();
     if( !(*rSh.GetViewOptions() == *pOpt ))
     {
         rSh.ApplyViewOptions( *pOpt );
-        if( bBrowseModeChanged || bHideWhitespaceModeChanged )
+        if( bBrowseModeChanged )
         {
             GetDocShell()->ToggleLayoutMode(this);
         }

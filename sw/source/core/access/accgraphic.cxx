@@ -33,8 +33,8 @@ using namespace ::com::sun::star::accessibility;
 
 SwAccessibleGraphic::SwAccessibleGraphic(
         SwAccessibleMap* pInitMap,
-        const SwFlyFrm* pFlyFrm  ) :
-    SwAccessibleNoTextFrame( pInitMap, AccessibleRole::GRAPHIC, pFlyFrm )
+        const SwFlyFrame* pFlyFrame  ) :
+    SwAccessibleNoTextFrame( pInitMap, AccessibleRole::GRAPHIC, pFlyFrame )
 {
 }
 
@@ -72,11 +72,11 @@ Sequence< sal_Int8 > SAL_CALL SwAccessibleGraphic::getImplementationId()
 
 //  Return this object's role.
 sal_Int16 SAL_CALL SwAccessibleGraphic::getAccessibleRole()
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard g;
 
-    SwFormatURL aURL( static_cast<const SwLayoutFrm*>(GetFrm())->GetFormat()->GetURL() );
+    SwFormatURL aURL( static_cast<const SwLayoutFrame*>(GetFrame())->GetFormat()->GetURL() );
 
     if (aURL.GetMap())
         return AccessibleRole::IMAGE_MAP;

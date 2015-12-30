@@ -52,6 +52,7 @@
 #include "htmlexp.hxx"
 #include "filter.hxx"
 #include "global.hxx"
+#include "postit.hxx"
 #include "document.hxx"
 #include "attrib.hxx"
 #include "patattr.hxx"
@@ -88,6 +89,13 @@ const static sal_Char sMyBegComment[]   = "<!-- ";
 const static sal_Char sMyEndComment[]   = " -->";
 const static sal_Char sFontFamily[]     = "font-family:";
 const static sal_Char sFontSize[]       = "font-size:";
+const static sal_Char sDisplay[]        = "display:";
+const static sal_Char sBorder[]         = "border:";
+const static sal_Char sPadding[]        = "padding:";
+const static sal_Char sPosition[]       = "position:";
+const static sal_Char sBackground[]     = "background:";
+const static sal_Char sWidth[]          = "width:";
+const static sal_Char sHeight[]         = "height:";
 
 const sal_uInt16 ScHTMLExport::nDefaultFontSize[SC_HTML_FONTSIZES] =
 {
@@ -152,7 +160,7 @@ static OString lcl_getColGroupString(sal_Int32 nSpan, sal_Int32 nWidth)
 }
 
 static void lcl_AddStamp( OUString& rStr, const OUString& rName,
-    const ::com::sun::star::util::DateTime& rDateTime,
+    const css::util::DateTime& rDateTime,
     const LocaleDataWrapper& rLoc )
 {
     Date aD(rDateTime.Day, rDateTime.Month, rDateTime.Year);
@@ -200,7 +208,6 @@ ScHTMLExport::ScHTMLExport( SvStream& rStrmP, const OUString& rBaseURL, ScDocume
     ScExportBase( rStrmP, pDocP, rRangeP ),
     aBaseURL( rBaseURL ),
     aStreamPath( rStreamPathP ),
-    aFilterOptions( rFilterOptions ),
     pAppWin( Application::GetDefaultDevice() ),
     nUsedTables( 0 ),
     nIndent( 0 ),
@@ -333,7 +340,7 @@ void ScHTMLExport::WriteHeader()
 
     if ( pDoc->IsClipOrUndo() )
     {   // no real DocInfo available, but some META information like charset needed
-        SfxFrameHTMLWriter::Out_DocInfo( rStrm, aBaseURL, NULL, sIndent, eDestEnc, &aNonConvertibleChars );
+        SfxFrameHTMLWriter::Out_DocInfo( rStrm, aBaseURL, nullptr, sIndent, eDestEnc, &aNonConvertibleChars );
     }
     else
     {
@@ -390,6 +397,38 @@ void ScHTMLExport::WriteHeader()
     }
     rStrm.WriteCharPtr( "; " ).WriteCharPtr( sFontSize )
        .WriteCharPtr( GetFontSizeCss( ( sal_uInt16 ) aHTMLStyle.nFontHeight ) ).WriteCharPtr( " }" );
+
+    OUT_LF();
+
+    // write the style for the comments to make them stand out from normal cell content
+    // this is done through only showing the cell contents when the custom indicator is hovered
+    rStrm.WriteCharPtr( OOO_STRING_SVTOOLS_HTML_anchor ).WriteCharPtr(".comment-indicator:hover")
+       .WriteCharPtr(" + ").WriteCharPtr( OOO_STRING_SVTOOLS_HTML_comment2 ).WriteCharPtr(" { ")
+       .WriteCharPtr(sBackground).WriteCharPtr("#ffd").WriteCharPtr("; ")
+       .WriteCharPtr(sPosition).WriteCharPtr("absolute").WriteCharPtr("; ")
+       .WriteCharPtr(sDisplay).WriteCharPtr("block").WriteCharPtr("; ")
+       .WriteCharPtr(sBorder).WriteCharPtr("1px solid black").WriteCharPtr("; ")
+       .WriteCharPtr(sPadding).WriteCharPtr("0.5em").WriteCharPtr("; ")
+       .WriteCharPtr(" } ");
+
+    OUT_LF();
+
+    rStrm.WriteCharPtr( OOO_STRING_SVTOOLS_HTML_anchor ).WriteCharPtr(".comment-indicator")
+        .WriteCharPtr(" { ")
+        .WriteCharPtr(sBackground).WriteCharPtr("red").WriteCharPtr("; ")
+        .WriteCharPtr(sDisplay).WriteCharPtr("inline-block").WriteCharPtr("; ")
+        .WriteCharPtr(sBorder).WriteCharPtr("1px solid black").WriteCharPtr("; ")
+        .WriteCharPtr(sWidth).WriteCharPtr("0.5em").WriteCharPtr("; ")
+        .WriteCharPtr(sHeight).WriteCharPtr("0.5em").WriteCharPtr("; ")
+        .WriteCharPtr(" } ");
+
+    OUT_LF();
+
+    rStrm.WriteCharPtr( OOO_STRING_SVTOOLS_HTML_comment2  ).WriteCharPtr(" { ")
+       .WriteCharPtr(sDisplay).WriteCharPtr("none").WriteCharPtr("; ")
+       .WriteCharPtr(" } ");
+
+
     IncIndent(-1); OUT_LF(); TAG_OFF_LF( OOO_STRING_SVTOOLS_HTML_style );
 
     IncIndent(-1); OUT_LF(); TAG_OFF_LF( OOO_STRING_SVTOOLS_HTML_head );
@@ -431,7 +470,7 @@ void ScHTMLExport::WriteOverview()
 const SfxItemSet& ScHTMLExport::PageDefaults( SCTAB nTab )
 {
     SfxStyleSheetBasePool*  pStylePool  = pDoc->GetStyleSheetPool();
-    SfxStyleSheetBase*      pStyleSheet = NULL;
+    SfxStyleSheetBase*      pStyleSheet = nullptr;
     OSL_ENSURE( pStylePool, "StylePool not found! :-(" );
 
     // remember defaults for compare in WriteCell
@@ -578,7 +617,7 @@ void ScHTMLExport::WriteBody()
                         {
                             aGrfNm = URIHelper::SmartRel2Abs(
                                     INetURLObject(aBaseURL),
-                                    aGrfNm, URIHelper::GetMaybeFileHdl(), true, false);
+                                    aGrfNm, URIHelper::GetMaybeFileHdl());
                             if ( HasCId() )
                                 MakeCIdURL( aGrfNm );
                             aLink = aGrfNm;
@@ -597,7 +636,7 @@ void ScHTMLExport::WriteBody()
                     else
                         aGrfNm = URIHelper::SmartRel2Abs(
                                 INetURLObject(aBaseURL),
-                                aGrfNm, URIHelper::GetMaybeFileHdl(), true, false);
+                                aGrfNm, URIHelper::GetMaybeFileHdl());
                     aLink = aGrfNm;
                 }
                 if( !aLink.isEmpty() )
@@ -825,7 +864,7 @@ void ScHTMLExport::WriteTables()
         }
 
         if ( bAll )
-            OUT_COMMENT( OUString("**************************************************************************") );
+            OUT_COMMENT( "**************************************************************************" );
     }
 }
 
@@ -839,7 +878,7 @@ void ScHTMLExport::WriteCell( SCCOL nCol, SCROW nRow, SCTAB nTab )
         return ;
 
     ScAddress aPos( nCol, nRow, nTab );
-    ScHTMLGraphEntry* pGraphEntry = NULL;
+    ScHTMLGraphEntry* pGraphEntry = nullptr;
     if ( bTabHasGraphics && !mbSkipImages )
     {
         size_t ListSize = aGraphList.size();
@@ -859,8 +898,7 @@ void ScHTMLExport::WriteCell( SCCOL nCol, SCROW nRow, SCTAB nTab )
         }
     }
 
-    ScRefCellValue aCell;
-    aCell.assign(*pDoc, aPos);
+    ScRefCellValue aCell(*pDoc, aPos);
 
     sal_uLong nFormat = pAttr->GetNumberFormat( pFormatter );
     bool bValueData = aCell.hasNumeric();
@@ -1021,7 +1059,7 @@ void ScHTMLExport::WriteCell( SCCOL nCol, SCROW nRow, SCTAB nTab )
         case SVX_VER_JUSTIFY_CENTER:    pChar = OOO_STRING_SVTOOLS_HTML_VA_middle;  break;
         case SVX_VER_JUSTIFY_BOTTOM:    pChar = OOO_STRING_SVTOOLS_HTML_VA_bottom;  break;
         case SVX_VER_JUSTIFY_STANDARD:
-        default:                        pChar = NULL;
+        default:                        pChar = nullptr;
     }
     if ( pChar )
     {
@@ -1058,6 +1096,28 @@ void ScHTMLExport::WriteCell( SCCOL nCol, SCROW nRow, SCTAB nTab )
         nFormat, *pFormatter, eDestEnc, &aNonConvertibleChars));
 
     TAG_ON(aStrTD.makeStringAndClear().getStr());
+
+    //write the note for this as the first thing in the tag
+    if (pDoc->HasNote(aPos))
+    {
+        ScPostIt* pNote = pDoc->GetNote(aPos);
+
+        //create the comment indicator
+        OStringBuffer aStr(OOO_STRING_SVTOOLS_HTML_anchor);
+        aStr.append(' ').append(OOO_STRING_SVTOOLS_HTML_O_class)
+           .append("=\"").append("comment-indicator").append("\"");
+        TAG_ON(aStr.makeStringAndClear().getStr());
+        TAG_OFF(OOO_STRING_SVTOOLS_HTML_anchor);
+        OUT_LF();
+
+        //create the element holding the contents
+        //this is a bit naive, since it doesn't separate
+        //lines into html breaklines yet
+        TAG_ON(OOO_STRING_SVTOOLS_HTML_comment2);
+        OUT_STR( pNote->GetText() );
+        TAG_OFF(OOO_STRING_SVTOOLS_HTML_comment2);
+        OUT_LF();
+    }
 
     if ( bBold )        TAG_ON( OOO_STRING_SVTOOLS_HTML_bold );
     if ( bItalic )      TAG_ON( OOO_STRING_SVTOOLS_HTML_italic );
@@ -1206,11 +1266,9 @@ bool ScHTMLExport::WriteFieldText( const EditTextObject* pData )
                     if ( aSet.GetItemState( EE_FEATURE_FIELD, false, &pItem ) == SfxItemState::SET )
                     {
                         const SvxFieldData* pField = static_cast<const SvxFieldItem*>(pItem)->GetField();
-                        if ( pField && pField->ISA(SvxURLField) )
+                        if (const SvxURLField* pURLField = dynamic_cast<const SvxURLField*>(pField))
                         {
                             bUrl = true;
-                            const SvxURLField*  pURLField = static_cast<const SvxURLField*>(pField);
-//                          String              aFieldText = rEngine.GetText( aSel );
                             rStrm.WriteChar( '<' ).WriteCharPtr( OOO_STRING_SVTOOLS_HTML_anchor ).WriteChar( ' ' ).WriteCharPtr( OOO_STRING_SVTOOLS_HTML_O_href ).WriteCharPtr( "=\"" );
                             OUT_STR( pURLField->GetURL() );
                             rStrm.WriteCharPtr( "\">" );

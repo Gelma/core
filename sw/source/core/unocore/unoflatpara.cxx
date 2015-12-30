@@ -47,6 +47,7 @@
 #include <viewopt.hxx>
 #include <comphelper/servicehelper.hxx>
 #include <comphelper/propertysetinfo.hxx>
+#include <comphelper/sequence.hxx>
 
 #include <com/sun/star/lang/XUnoTunnel.hpp>
 #include <com/sun/star/text/XTextRange.hpp>
@@ -107,17 +108,11 @@ throw (beans::UnknownPropertyException, lang::WrappedTargetException,
 
     if (rPropertyName == "FieldPositions")
     {
-        uno::Sequence<sal_Int32> ret(GetConversionMap().getFieldPositions().size());
-        std::copy(GetConversionMap().getFieldPositions().begin(),
-                GetConversionMap().getFieldPositions().end(), ret.begin());
-        return uno::makeAny(ret);
+        return uno::makeAny( comphelper::containerToSequence( GetConversionMap().getFieldPositions() ) );
     }
     else if (rPropertyName == "FootnotePositions")
     {
-        uno::Sequence<sal_Int32> ret(GetConversionMap().getFootnotePositions().size());
-        std::copy(GetConversionMap().getFootnotePositions().begin(),
-                GetConversionMap().getFootnotePositions().end(), ret.begin());
-        return uno::makeAny(ret);
+        return uno::makeAny( comphelper::containerToSequence( GetConversionMap().getFootnotePositions() ) );
     }
     return uno::Any();
 }
@@ -235,7 +230,7 @@ sal_Bool SAL_CALL SwXFlatParagraph::isChecked( ::sal_Int32 nType ) throw (uno::R
 sal_Bool SAL_CALL SwXFlatParagraph::isModified() throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
-    return 0 == GetTextNode();
+    return nullptr == GetTextNode();
 }
 
 // text::XFlatParagraph:
@@ -361,6 +356,9 @@ SwXFlatParagraphIterator::SwXFlatParagraphIterator( SwDoc& rDoc, sal_Int32 nType
 
 SwXFlatParagraphIterator::~SwXFlatParagraphIterator()
 {
+    SolarMutexGuard aGuard;
+    if(GetRegisteredIn())
+        GetRegisteredIn()->Remove(this);
 }
 
 void SwXFlatParagraphIterator::Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew )
@@ -370,7 +368,7 @@ void SwXFlatParagraphIterator::Modify( const SfxPoolItem* pOld, const SfxPoolIte
     if(!GetRegisteredIn())
     {
         SolarMutexGuard aGuard;
-        mpDoc = 0;
+        mpDoc = nullptr;
     }
 }
 
@@ -389,14 +387,14 @@ uno::Reference< text::XFlatParagraph > SwXFlatParagraphIterator::getNextPara()
     if (!mpDoc)
         return xRet;
 
-    SwTextNode* pRet = 0;
+    SwTextNode* pRet = nullptr;
     if ( mbAutomatic )
     {
         SwViewShell* pViewShell = mpDoc->getIDocumentLayoutAccess().GetCurrentViewShell();
 
-        SwPageFrm* pCurrentPage = pViewShell ? pViewShell->Imp()->GetFirstVisPage(pViewShell->GetOut()) : 0;
-        SwPageFrm* pStartPage = pCurrentPage;
-        SwPageFrm* pStopPage = 0;
+        SwPageFrame* pCurrentPage = pViewShell ? pViewShell->Imp()->GetFirstVisPage(pViewShell->GetOut()) : nullptr;
+        SwPageFrame* pStartPage = pCurrentPage;
+        SwPageFrame* pStopPage = nullptr;
 
         while ( pCurrentPage && pCurrentPage != pStopPage )
         {
@@ -408,7 +406,7 @@ uno::Reference< text::XFlatParagraph > SwXFlatParagraphIterator::getNextPara()
                     return xRet;
 
                 // search for invalid content:
-                SwContentFrm* pCnt = pCurrentPage->ContainsContent();
+                SwContentFrame* pCnt = pCurrentPage->ContainsContent();
 
                 while( pCnt && pCurrentPage->IsAnLower( pCnt ) )
                 {
@@ -424,7 +422,7 @@ uno::Reference< text::XFlatParagraph > SwXFlatParagraphIterator::getNextPara()
                         break;
                     }
 
-                    pCnt = pCnt->GetNextContentFrm();
+                    pCnt = pCnt->GetNextContentFrame();
                 }
             }
 
@@ -436,12 +434,12 @@ uno::Reference< text::XFlatParagraph > SwXFlatParagraphIterator::getNextPara()
             pCurrentPage->ValidateSpelling();
 
             // proceed with next page, wrap at end of document if required:
-            pCurrentPage = static_cast<SwPageFrm*>(pCurrentPage->GetNext());
+            pCurrentPage = static_cast<SwPageFrame*>(pCurrentPage->GetNext());
 
             if ( !pCurrentPage && !pStopPage )
             {
                 pStopPage = pStartPage;
-                pCurrentPage = static_cast<SwPageFrm*>(pViewShell->GetLayout()->Lower());
+                pCurrentPage = static_cast<SwPageFrame*>(pViewShell->GetLayout()->Lower());
             }
         }
     }
@@ -509,7 +507,7 @@ uno::Reference< text::XFlatParagraph > SwXFlatParagraphIterator::getParaAfter(co
     if ( !pCurrentNode )
         return xRet;
 
-    SwTextNode* pNextTextNode = 0;
+    SwTextNode* pNextTextNode = nullptr;
     const SwNodes& rNodes = pCurrentNode->GetDoc()->GetNodes();
 
     for( sal_uLong nCurrentNode = pCurrentNode->GetIndex() + 1; nCurrentNode < rNodes.Count(); ++nCurrentNode )
@@ -555,7 +553,7 @@ uno::Reference< text::XFlatParagraph > SwXFlatParagraphIterator::getParaBefore(c
     if ( !pCurrentNode )
         return xRet;
 
-    SwTextNode* pPrevTextNode = 0;
+    SwTextNode* pPrevTextNode = nullptr;
     const SwNodes& rNodes = pCurrentNode->GetDoc()->GetNodes();
 
     for( sal_uLong nCurrentNode = pCurrentNode->GetIndex() - 1; nCurrentNode > 0; --nCurrentNode )

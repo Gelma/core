@@ -320,11 +320,11 @@ public:
     void finalizeDrawingImport();
 
     /// Allow the threaded importer to override our progress bar impl.
-    virtual ISegmentProgressBarRef getRowProgress() SAL_OVERRIDE
+    virtual ISegmentProgressBarRef getRowProgress() override
     {
         return mxRowProgress;
     }
-    virtual void setCustomRowProgress( const ISegmentProgressBarRef &rxRowProgress ) SAL_OVERRIDE
+    virtual void setCustomRowProgress( const ISegmentProgressBarRef &rxRowProgress ) override
     {
         mxRowProgress = rxRowProgress;
         mbFastRowProgress = true;
@@ -992,14 +992,22 @@ OUString WorksheetGlobals::getHyperlinkUrl( const HyperlinkModel& rHyperlink ) c
         aUrlBuffer.append( '#' ).append( rHyperlink.maLocation );
     OUString aUrl = aUrlBuffer.makeStringAndClear();
 
-    // convert '#SheetName!A1' to '#SheetName.A1'
     if( aUrl.startsWith("#") )
     {
         sal_Int32 nSepPos = aUrl.lastIndexOf( '!' );
         if( nSepPos > 0 )
         {
-            // replace the exclamation mark with a period
-            aUrl = aUrl.replaceAt( nSepPos, 1, OUString( '.' ) );
+            // Do not attempt to blindly convert '#SheetName!A1' to
+            // '#SheetName.A1', it can be #SheetName!R1C1 as well. Hyperlink
+            // handler has to handle all, but prefer '#SheetName.A1' if
+            // possible.
+            if (nSepPos < aUrl.getLength() - 1)
+            {
+                ScRange aRange;
+                if ((aRange.ParseAny( aUrl.copy( nSepPos + 1 ), nullptr,
+                                formula::FormulaGrammar::CONV_XL_R1C1) & SCA_VALID) != SCA_VALID)
+                    aUrl = aUrl.replaceAt( nSepPos, 1, OUString( '.' ) );
+            }
             // #i66592# convert sheet names that have been renamed on import
             OUString aSheetName = aUrl.copy( 1, nSepPos - 1 );
             OUString aCalcName = getWorksheets().getCalcSheetName( aSheetName );
@@ -1015,8 +1023,7 @@ void WorksheetGlobals::insertHyperlink( const CellAddress& rAddress, const OUStr
 {
     ScDocumentImport& rDoc = getDocImport();
     ScAddress aPos(rAddress.Column, rAddress.Row, rAddress.Sheet);
-    ScRefCellValue aCell;
-    aCell.assign(rDoc.getDoc(), aPos);
+    ScRefCellValue aCell(rDoc.getDoc(), aPos);
 
     if (aCell.meType == CELLTYPE_STRING || aCell.meType == CELLTYPE_EDIT)
     {
@@ -1618,27 +1625,27 @@ void WorksheetHelper::finalizeDrawingImport()
     mrSheetGlob.finalizeDrawingImport();
 }
 
-void WorksheetHelper::setCellFormula( const ::com::sun::star::table::CellAddress& rTokenAddress, const OUString& rTokenStr )
+void WorksheetHelper::setCellFormula( const css::table::CellAddress& rTokenAddress, const OUString& rTokenStr )
 {
     getFormulaBuffer().setCellFormula( rTokenAddress,  rTokenStr );
 }
 
 void WorksheetHelper::setCellFormula(
-    const ::com::sun::star::table::CellAddress& rAddr, sal_Int32 nSharedId,
+    const css::table::CellAddress& rAddr, sal_Int32 nSharedId,
     const OUString& rCellValue, sal_Int32 nValueType )
 {
     getFormulaBuffer().setCellFormula(rAddr, nSharedId, rCellValue, nValueType);
 }
 
-void WorksheetHelper::setCellArrayFormula( const ::com::sun::star::table::CellRangeAddress& rRangeAddress, const ::com::sun::star::table::CellAddress& rTokenAddress, const OUString& rTokenStr )
+void WorksheetHelper::setCellArrayFormula( const css::table::CellRangeAddress& rRangeAddress, const css::table::CellAddress& rTokenAddress, const OUString& rTokenStr )
 {
     getFormulaBuffer().setCellArrayFormula( rRangeAddress,  rTokenAddress, rTokenStr );
 }
 
 void WorksheetHelper::createSharedFormulaMapEntry(
-    const table::CellAddress& rAddress, const table::CellRangeAddress& rRange, sal_Int32 nSharedId, const OUString& rTokens )
+    const table::CellAddress& rAddress, sal_Int32 nSharedId, const OUString& rTokens )
 {
-    getFormulaBuffer().createSharedFormulaMapEntry(rAddress, rRange, nSharedId, rTokens);
+    getFormulaBuffer().createSharedFormulaMapEntry(rAddress, nSharedId, rTokens);
 }
 
 } // namespace xls

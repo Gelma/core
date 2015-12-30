@@ -29,8 +29,6 @@ $(eval $(call gb_JunitTest_add_sourcefiles,sw_complex,\
     sw/qa/complex/checkColor/CheckChangeColor \
     sw/qa/complex/indeterminateState/CheckIndeterminateState \
     sw/qa/complex/writer/CheckBookmarks \
-    sw/qa/complex/writer/CheckCrossReferences \
-    sw/qa/complex/writer/CheckFlies \
     sw/qa/complex/writer/CheckIndexedPropertyValues \
     sw/qa/complex/writer/CheckNamedPropertyValues \
     sw/qa/complex/writer/CheckTable \
@@ -50,19 +48,11 @@ $(eval $(call gb_JunitTest_use_jars,sw_complex,\
 $(eval $(call gb_JunitTest_add_classes,sw_complex,\
     complex.accessibility.AccessibleRelationSet \
     complex.checkColor.CheckChangeColor \
-    complex.writer.CheckCrossReferences \
-    complex.writer.CheckFlies \
+    complex.writer.CheckBookmarks \
     complex.writer.CheckTable \
     complex.writer.CheckIndexedPropertyValues \
     complex.writer.CheckNamedPropertyValues \
     complex.writer.TextPortionEnumerationTest \
 ))
-
-# FIXME has never worked on windows, hashes are different
-ifneq ($(OS),WNT)
-$(eval $(call gb_JunitTest_add_classes,sw_complex,\
-    complex.writer.CheckBookmarks \
-))
-endif
 
 # vim: set noet sw=4 ts=4:

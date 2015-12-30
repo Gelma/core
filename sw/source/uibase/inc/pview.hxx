@@ -65,11 +65,11 @@ public:
     virtual ~SwPagePreviewWin();
 
     // calls SwViewShell::Paint
-    virtual void Paint( vcl::RenderContext& rRenderContext, const Rectangle& rRect ) SAL_OVERRIDE;
-    virtual void KeyInput( const KeyEvent & ) SAL_OVERRIDE;
-    virtual void Command( const CommandEvent& rCEvt ) SAL_OVERRIDE;
-    virtual void MouseButtonDown(const MouseEvent& rMEvt) SAL_OVERRIDE;
-    virtual void DataChanged( const DataChangedEvent& ) SAL_OVERRIDE;
+    virtual void Paint( vcl::RenderContext& rRenderContext, const Rectangle& rRect ) override;
+    virtual void KeyInput( const KeyEvent & ) override;
+    virtual void Command( const CommandEvent& rCEvt ) override;
+    virtual void MouseButtonDown(const MouseEvent& rMEvt) override;
+    virtual void DataChanged( const DataChangedEvent& ) override;
 
     void SetViewShell( SwViewShell* pShell );
 
@@ -120,7 +120,7 @@ public:
 
     // Add <MV_SELPAGE>, <MV_SCROLL>
     enum MoveMode{ MV_CALC, MV_PAGE_UP, MV_PAGE_DOWN, MV_DOC_STT, MV_DOC_END,
-                   MV_SELPAGE, MV_SCROLL, MV_NEWWINSIZE };
+                   MV_SELPAGE, MV_SCROLL, MV_NEWWINSIZE, MV_SPECIFIC_PAGE };
     bool MovePage( int eMoveMode );
 
     // Create the status bar's string
@@ -141,7 +141,7 @@ public:
         return maPaintedPreviewDocRect;
     }
 
-    void Scroll(long nXMove, long nYMove, ScrollFlags nFlags = ScrollFlags::NONE) SAL_OVERRIDE;
+    void Scroll(long nXMove, long nYMove, ScrollFlags nFlags = ScrollFlags::NONE) override;
 
     /** Method to enable/disable book preview
         @param _bBookPreview
@@ -152,7 +152,7 @@ public:
     */
     bool SetBookPreviewMode( const bool _bBookPreview );
 
-    virtual css::uno::Reference<css::accessibility::XAccessible> CreateAccessible() SAL_OVERRIDE;
+    virtual css::uno::Reference<css::accessibility::XAccessible> CreateAccessible() override;
 };
 
 /**
@@ -166,7 +166,7 @@ class SW_DLLPUBLIC SwPagePreview: public SfxViewShell
     //viewdata of the previous SwView and the new crsrposition
     OUString sSwViewData;
     //and the new cursor position if the user double click in the PagePreview
-    OUString sNewCrsrPos;
+    OUString sNewCursorPos;
     // to support keyboard the number of the page to go to can be set too
     sal_uInt16 nNewPage;
     // visible range
@@ -179,8 +179,6 @@ class SW_DLLPUBLIC SwPagePreview: public SfxViewShell
     VclPtr<SwScrollbar> pVScrollbar;
     bool mbHScrollbarEnabled : 1;
     bool mbVScrollbarEnabled : 1;
-    VclPtr<ImageButton> pPageUpBtn;
-    VclPtr<ImageButton> pPageDownBtn;
     // dummy window for filling the lower right edge when both scrollbars are active
     VclPtr<vcl::Window> pScrollFill;
 
@@ -192,7 +190,7 @@ class SW_DLLPUBLIC SwPagePreview: public SfxViewShell
     bool mbResetFormDesignMode:1;
     bool mbFormDesignModeToReset:1;
 
-    SAL_DLLPRIVATE void Init(const SwViewOption* = 0);
+    SAL_DLLPRIVATE void Init(const SwViewOption* = nullptr);
     SAL_DLLPRIVATE Point AlignToPixel(const Point& rPt) const;
 
     SAL_DLLPRIVATE int _CreateScrollbar( bool bHori);
@@ -200,10 +198,10 @@ class SW_DLLPUBLIC SwPagePreview: public SfxViewShell
     DECL_DLLPRIVATE_LINK_TYPED(EndScrollHdl, ScrollBar*, void);
     SAL_DLLPRIVATE bool ChgPage( int eMvMode, bool bUpdateScrollbar = true );
 
-    SAL_DLLPRIVATE virtual SfxPrinter*     GetPrinter( bool bCreate = false ) SAL_OVERRIDE;
-    SAL_DLLPRIVATE virtual sal_uInt16      SetPrinter( SfxPrinter *pNewPrinter, SfxPrinterChangeFlags nDiffFlags = SFX_PRINTER_ALL, bool bIsAPI=false ) SAL_OVERRIDE;
-    SAL_DLLPRIVATE virtual bool            HasPrintOptionsPage() const SAL_OVERRIDE;
-    SAL_DLLPRIVATE virtual VclPtr<SfxTabPage> CreatePrintOptionsPage(vcl::Window *pParent, const SfxItemSet &rOptions ) SAL_OVERRIDE;
+    SAL_DLLPRIVATE virtual SfxPrinter*     GetPrinter( bool bCreate = false ) override;
+    SAL_DLLPRIVATE virtual sal_uInt16      SetPrinter( SfxPrinter *pNewPrinter, SfxPrinterChangeFlags nDiffFlags = SFX_PRINTER_ALL, bool bIsAPI=false ) override;
+    SAL_DLLPRIVATE virtual bool            HasPrintOptionsPage() const override;
+    SAL_DLLPRIVATE virtual VclPtr<SfxTabPage> CreatePrintOptionsPage(vcl::Window *pParent, const SfxItemSet &rOptions ) override;
 
     SAL_DLLPRIVATE void CalcAndSetBorderPixel( SvBorder &rToFill, bool bInner );
 
@@ -217,26 +215,23 @@ class SW_DLLPUBLIC SwPagePreview: public SfxViewShell
         optional input parameter - pointer to the <SfxRequest> instance, if existing.
     */
     SAL_DLLPRIVATE void _ExecPgUpAndPgDown( const bool  _bPgUp,
-                             SfxRequest* _pReq = 0 );
+                             SfxRequest* _pReq = nullptr );
 
 protected:
-    virtual void    InnerResizePixel( const Point &rOfs, const Size &rSize ) SAL_OVERRIDE;
-    virtual void    OuterResizePixel( const Point &rOfs, const Size &rSize ) SAL_OVERRIDE;
+    virtual void    InnerResizePixel( const Point &rOfs, const Size &rSize ) override;
+    virtual void    OuterResizePixel( const Point &rOfs, const Size &rSize ) override;
 
     void         SetZoom(SvxZoomType eSet, sal_uInt16 nFactor);
 
 public:
     SFX_DECL_VIEWFACTORY(SwPagePreview);
     SFX_DECL_INTERFACE(SW_PAGEPREVIEW)
-    TYPEINFO_OVERRIDE();
 
 private:
     /// SfxInterface initializer.
     static void InitInterface_Impl();
 
 public:
-    inline vcl::Window& GetFrameWindow() const
-    { return GetViewFrame()->GetWindow(); }
     inline SwViewShell* GetViewShell() const
     { return pViewWin->GetViewShell(); }
     inline void RepaintCoreRect( const SwRect& rRect )
@@ -259,8 +254,8 @@ public:
     bool HandleWheelCommands( const CommandEvent& );
 
     OUString GetPrevSwViewData() const       { return sSwViewData; }
-    void SetNewCrsrPos( const OUString& rStr ) { sNewCrsrPos = rStr; }
-    const OUString& GetNewCrsrPos() const           { return sNewCrsrPos; }
+    void SetNewCursorPos( const OUString& rStr ) { sNewCursorPos = rStr; }
+    const OUString& GetNewCursorPos() const           { return sNewCursorPos; }
 
     sal_uInt16 GetNewPage() const {return nNewPage;}
     void SetNewPage(sal_uInt16 nSet)  {nNewPage = nSet;}

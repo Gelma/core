@@ -30,11 +30,6 @@
 #include "swdllapi.h"
 #include "cmdid.h"
 
-struct CollName {
-        sal_uLong nCnd;
-        sal_uLong nSubCond;
-    };
-
 #define COND_COMMAND_COUNT 28
 
 struct CommandStruct
@@ -56,10 +51,9 @@ public:
     SwCondCollItem(sal_uInt16 nWhich = FN_COND_COLL);
     virtual ~SwCondCollItem();
 
-                                TYPEINFO_OVERRIDE();
 
-    virtual SfxPoolItem*        Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual bool                operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*        Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual bool                operator==( const SfxPoolItem& ) const override;
 
     static inline const CommandStruct* GetCmds() { return aCmds; }
 

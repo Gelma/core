@@ -86,7 +86,7 @@ SvXMLImportContext* OXMLRowColumn::CreateChildContext(
         const OUString& rLocalName,
         const Reference< XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
     ORptFilter& rImport = GetOwnImport();
     const SvXMLTokenMap&    rTokenMap   = rImport.GetColumnTokenMap();
 
@@ -108,7 +108,7 @@ SvXMLImportContext* OXMLRowColumn::CreateChildContext(
             break;
         case XML_TOK_COV_CELL:
             m_pContainer->incrementColumnIndex();
-            m_pContainer->addCell(NULL);
+            m_pContainer->addCell(nullptr);
             break;
         default:
             break;
@@ -136,7 +136,7 @@ void OXMLRowColumn::fillStyle(const OUString& _sStyleName)
             };
             pInfo->add(pMap);
             Reference<XPropertySet> xProp = GenericPropertySet_CreateInstance(pInfo);
-            XMLPropStyleContext* pAutoStyle = const_cast<XMLPropStyleContext*>(PTR_CAST(XMLPropStyleContext,pAutoStyles->FindStyleChildContext(XML_STYLE_FAMILY_TABLE_COLUMN,_sStyleName)));
+            XMLPropStyleContext* pAutoStyle = const_cast<XMLPropStyleContext*>(dynamic_cast< const XMLPropStyleContext*>(pAutoStyles->FindStyleChildContext(XML_STYLE_FAMILY_TABLE_COLUMN,_sStyleName)));
             if ( pAutoStyle )
             {
                 pAutoStyle->FillPropertySet(xProp);
@@ -146,7 +146,7 @@ void OXMLRowColumn::fillStyle(const OUString& _sStyleName)
             }
             else
             {
-                pAutoStyle = const_cast<XMLPropStyleContext*>(PTR_CAST(XMLPropStyleContext,pAutoStyles->FindStyleChildContext(XML_STYLE_FAMILY_TABLE_ROW,_sStyleName)));
+                pAutoStyle = const_cast<XMLPropStyleContext*>(dynamic_cast< const XMLPropStyleContext* >(pAutoStyles->FindStyleChildContext(XML_STYLE_FAMILY_TABLE_ROW,_sStyleName)));
                 if ( pAutoStyle )
                 {
                     pAutoStyle->FillPropertySet(xProp);

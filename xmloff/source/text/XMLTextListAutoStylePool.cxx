@@ -145,7 +145,7 @@ XMLTextListAutoStylePool::XMLTextListAutoStylePool( SvXMLExport& rExp ) :
 {
     Reference<ucb::XAnyCompareFactory> xCompareFac( rExp.GetModel(), uno::UNO_QUERY );
     if( xCompareFac.is() )
-        mxNumRuleCompare = xCompareFac->createAnyCompareByName( OUString( "NumberingRules" ) );
+        mxNumRuleCompare = xCompareFac->createAnyCompareByName( "NumberingRules" );
     SvXMLExportFlags nExportFlags = rExport.getExportFlags();
     bool bStylesOnly = (nExportFlags & SvXMLExportFlags::STYLES) && !(nExportFlags & SvXMLExportFlags::CONTENT);
     if( bStylesOnly )
@@ -253,7 +253,7 @@ void XMLTextListAutoStylePool::exportXML() const
     sal_uInt32 i;
     for( i=0; i < nCount; i++ )
     {
-        aExpEntries[i] = 0;
+        aExpEntries[i] = nullptr;
     }
     for( i=0; i < nCount; i++ )
     {

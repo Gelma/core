@@ -24,29 +24,10 @@ struct BlockPos
     size_t mnEnd;
 };
 
-CellType toCellType( mdds::mtv::element_t eType )
-{
-    switch (eType)
-    {
-        case element_type_numeric:
-            return CELLTYPE_VALUE;
-        case element_type_string:
-            return CELLTYPE_STRING;
-        case element_type_edittext:
-            return CELLTYPE_EDIT;
-        case element_type_formula:
-            return CELLTYPE_FORMULA;
-        default:
-            ;
-    }
-
-    return CELLTYPE_NONE;
 }
 
-}
-
-CellValueSpan::CellValueSpan( SCROW nRow1, SCROW nRow2, CellType eType ) :
-    mnRow1(nRow1), mnRow2(nRow2), meType(eType) {}
+CellValueSpan::CellValueSpan( SCROW nRow1, SCROW nRow2 ) :
+    mnRow1(nRow1), mnRow2(nRow2) {}
 
 struct CellValuesImpl : boost::noncopyable
 {
@@ -61,7 +42,6 @@ CellValues::CellValues() :
 
 CellValues::~CellValues()
 {
-    delete mpImpl;
 }
 
 void CellValues::transferFrom( ScColumn& rCol, SCROW nRow, size_t nLen )
@@ -164,7 +144,7 @@ std::vector<CellValueSpan> CellValues::getNonEmptySpans() const
             // Record this span.
             size_t nRow1 = it->position;
             size_t nRow2 = nRow1 + it->size - 1;
-            aRet.push_back(CellValueSpan(nRow1, nRow2, toCellType(it->type)));
+            aRet.push_back(CellValueSpan(nRow1, nRow2));
         }
     }
     return aRet;
@@ -275,7 +255,7 @@ struct TableValues::Impl
     ScRange maRange;
     TablesType m_Tables;
 
-    Impl( const ScRange& rRange ) : maRange(rRange)
+    explicit Impl( const ScRange& rRange ) : maRange(rRange)
     {
         size_t nTabs = rRange.aEnd.Tab() - rRange.aStart.Tab() + 1;
         size_t nCols = rRange.aEnd.Col() - rRange.aStart.Col() + 1;
@@ -293,17 +273,17 @@ struct TableValues::Impl
     {
         if (nTab < maRange.aStart.Tab() || maRange.aEnd.Tab() < nTab)
             // sheet index out of bound.
-            return NULL;
+            return nullptr;
         if (nCol < maRange.aStart.Col() || maRange.aEnd.Col() < nCol)
             // column index out of bound.
-            return NULL;
+            return nullptr;
         size_t nTabOffset = nTab - maRange.aStart.Tab();
         if (nTabOffset >= m_Tables.size())
-            return NULL;
+            return nullptr;
         std::unique_ptr<TableType>& rTab2 = m_Tables[nTab-maRange.aStart.Tab()];
         size_t nColOffset = nCol - maRange.aStart.Col();
         if(nColOffset >= rTab2.get()->size())
-            return NULL;
+            return nullptr;
         return &rTab2.get()[0][nColOffset].get()[0];
     }
 };
@@ -316,7 +296,6 @@ TableValues::TableValues( const ScRange& rRange ) :
 
 TableValues::~TableValues()
 {
-    delete mpImpl;
 }
 
 const ScRange& TableValues::getRange() const

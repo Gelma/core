@@ -28,29 +28,29 @@
 
 class SVX_DLLPUBLIC SvxZoomSliderItem: public SfxUInt16Item
 {
-    com::sun::star::uno::Sequence < sal_Int32 > maValues;
+    css::uno::Sequence < sal_Int32 > maValues;
     sal_uInt16 mnMinZoom;
     sal_uInt16 mnMaxZoom;
 
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     SvxZoomSliderItem( sal_uInt16 nCurrentZoom = 100, sal_uInt16 nMinZoom = 20, sal_uInt16 nMaxZoom = 600, sal_uInt16 nWhich = SID_ATTR_ZOOMSLIDER );
     SvxZoomSliderItem( const SvxZoomSliderItem& );
     virtual ~SvxZoomSliderItem();
 
     void AddSnappingPoint( sal_Int32 nNew );
-    const com::sun::star::uno::Sequence < sal_Int32 >& GetSnappingPoints() const { return maValues;}
+    const css::uno::Sequence < sal_Int32 >& GetSnappingPoints() const { return maValues;}
     sal_uInt16 GetMinZoom() const {return mnMinZoom;}
     sal_uInt16 GetMaxZoom() const {return mnMaxZoom;}
 
     // "pure virtual Methoden" vom SfxPoolItem
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Create( SvStream& rStrm, sal_uInt16 nVersion ) const SAL_OVERRIDE;                       // leer
-    virtual SvStream&       Store( SvStream& rStrm , sal_uInt16 nItemVersion ) const SAL_OVERRIDE;                   // leer
-    virtual bool            QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool            PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual SfxPoolItem*    Create( SvStream& rStrm, sal_uInt16 nVersion ) const override;                       // leer
+    virtual SvStream&       Store( SvStream& rStrm , sal_uInt16 nItemVersion ) const override;                   // leer
+    virtual bool            QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool            PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 };
 
 

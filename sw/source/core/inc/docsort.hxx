@@ -57,11 +57,11 @@ public:
 
 // Functions for moving boxes
 void MoveCol(SwDoc* pDoc, const FlatFndBox& rBox,
-             sal_uInt16 nS, sal_uInt16 nT, SwMovedBoxes& rMovedList, SwUndoSort* pUD=0);
+             sal_uInt16 nS, sal_uInt16 nT, SwMovedBoxes& rMovedList, SwUndoSort* pUD=nullptr);
 void MoveRow(SwDoc* pDoc, const FlatFndBox& rBox,
-             sal_uInt16 nS, sal_uInt16 nT, SwMovedBoxes& rMovedList, SwUndoSort* pUD=0);
+             sal_uInt16 nS, sal_uInt16 nT, SwMovedBoxes& rMovedList, SwUndoSort* pUD=nullptr);
 void MoveCell(SwDoc* pDoc, const SwTableBox* pSource,
-              const SwTableBox* pTar, bool bMovedBefore, SwUndoSort* pUD=0);
+              const SwTableBox* pTar, bool bMovedBefore, SwUndoSort* pUD=nullptr);
 
 // Elements for sorting text and table content
 struct SwSortElement
@@ -70,11 +70,11 @@ struct SwSortElement
     static SwDoc*               pDoc;
     static const FlatFndBox*    pBox;
     static CollatorWrapper*     pSortCollator;
-    static ::com::sun::star::lang::Locale* pLocale;
+    static css::lang::Locale*   pLocale;
     static OUString*            pLastAlgorithm;
     static LocaleDataWrapper*   pLclData;
 
-    static void Init( SwDoc*, const SwSortOptions& rOpt, FlatFndBox* = 0 );
+    static void Init( SwDoc*, const SwSortOptions& rOpt, FlatFndBox* = nullptr );
     static void Finit();
 
     virtual ~SwSortElement();
@@ -99,7 +99,7 @@ struct SwSortTextElement : public SwSortElement
     SwSortTextElement( const SwNodeIndex& rPos );
     virtual ~SwSortTextElement();
 
-    virtual OUString GetKey( sal_uInt16 nKey ) const SAL_OVERRIDE;
+    virtual OUString GetKey( sal_uInt16 nKey ) const override;
 };
 
 // sort table
@@ -110,8 +110,8 @@ struct SwSortBoxElement : public SwSortElement
     SwSortBoxElement( sal_uInt16 nRC );
     virtual ~SwSortBoxElement();
 
-    virtual OUString GetKey( sal_uInt16 nKey ) const SAL_OVERRIDE;
-    virtual double GetValue( sal_uInt16 nKey ) const SAL_OVERRIDE;
+    virtual OUString GetKey( sal_uInt16 nKey ) const override;
+    virtual double GetValue( sal_uInt16 nKey ) const override;
 };
 
 // two-dimensional array of FndBoxes
@@ -150,7 +150,7 @@ private:
     bool            bSym;
 };
 
-inline bool FlatFndBox::HasItemSets() const { return 0 != ppItemSets; }
+inline bool FlatFndBox::HasItemSets() const { return nullptr != ppItemSets; }
 
 #endif
 

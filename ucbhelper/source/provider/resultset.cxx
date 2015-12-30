@@ -66,10 +66,10 @@ static const PropertyInfo aPropertyTable[] =
       beans::PropertyAttribute::BOUND | beans::PropertyAttribute::READONLY,
       &sal_Int32_getCppuType
     },
-    { 0,
+    { nullptr,
       0,
       0,
-      0
+      nullptr
     }
 };
 
@@ -100,26 +100,26 @@ public:
 
     // XInterface
     virtual css::uno::Any SAL_CALL queryInterface( const css::uno::Type & rType )
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL acquire()
-        throw() SAL_OVERRIDE;
+        throw() override;
     virtual void SAL_CALL release()
-        throw() SAL_OVERRIDE;
+        throw() override;
 
     // XTypeProvider
     virtual css::uno::Sequence< sal_Int8 > SAL_CALL getImplementationId()
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
     virtual css::uno::Sequence< css::uno::Type > SAL_CALL getTypes()
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
 
     // XPropertySetInfo
     virtual uno::Sequence< beans::Property > SAL_CALL getProperties()
-        throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( uno::RuntimeException, std::exception ) override;
     virtual beans::Property SAL_CALL getPropertyByName(
             const OUString& aName )
-        throw( beans::UnknownPropertyException, uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( beans::UnknownPropertyException, uno::RuntimeException, std::exception ) override;
     virtual sal_Bool SAL_CALL hasPropertyByName( const OUString& Name )
-        throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( uno::RuntimeException, std::exception ) override;
 };
 
 typedef cppu::OMultiTypeInterfaceContainerHelperVar<OUString>
@@ -147,8 +147,8 @@ namespace ucbhelper
 
 struct ResultSet_Impl
 {
-    uno::Reference< uno::XComponentContext >    m_xContext;
-    uno::Reference< com::sun::star::ucb::XCommandEnvironment >  m_xEnv;
+    uno::Reference< uno::XComponentContext >        m_xContext;
+    uno::Reference< css::ucb::XCommandEnvironment > m_xEnv;
     uno::Reference< beans::XPropertySetInfo >       m_xPropSetInfo;
     uno::Reference< sdbc::XResultSetMetaData >      m_xMetaData;
     uno::Sequence< beans::Property >                m_aProperties;
@@ -164,8 +164,7 @@ struct ResultSet_Impl
         const uno::Reference< uno::XComponentContext >& rxContext,
         const uno::Sequence< beans::Property >& rProperties,
         const rtl::Reference< ResultSetDataSupplier >& rDataSupplier,
-        const uno::Reference< com::sun::star::ucb::XCommandEnvironment >&
-            rxEnv );
+        const uno::Reference< css::ucb::XCommandEnvironment >& rxEnv );
     inline ~ResultSet_Impl();
 };
 
@@ -173,13 +172,13 @@ inline ResultSet_Impl::ResultSet_Impl(
     const uno::Reference< uno::XComponentContext >& rxContext,
     const uno::Sequence< beans::Property >& rProperties,
     const rtl::Reference< ResultSetDataSupplier >& rDataSupplier,
-    const uno::Reference< com::sun::star::ucb::XCommandEnvironment >& rxEnv )
+    const uno::Reference< css::ucb::XCommandEnvironment >& rxEnv )
 : m_xContext( rxContext ),
   m_xEnv( rxEnv ),
   m_aProperties( rProperties ),
   m_xDataSupplier( rDataSupplier ),
-  m_pDisposeEventListeners( 0 ),
-  m_pPropertyChangeListeners( 0 ),
+  m_pDisposeEventListeners( nullptr ),
+  m_pPropertyChangeListeners( nullptr ),
   m_nPos( 0 ), // Position is one-based. Zero means: before first element.
   m_bWasNull( false ),
   m_bAfterLast( false )
@@ -209,7 +208,7 @@ ResultSet::ResultSet(
                rxContext,
                rProperties,
                rDataSupplier,
-               uno::Reference< com::sun::star::ucb::XCommandEnvironment >() ) )
+               uno::Reference< css::ucb::XCommandEnvironment >() ) )
 {
     rDataSupplier->m_pResultSet = this;
 }
@@ -219,7 +218,7 @@ ResultSet::ResultSet(
     const uno::Reference< uno::XComponentContext >& rxContext,
     const uno::Sequence< beans::Property >& rProperties,
     const rtl::Reference< ResultSetDataSupplier >& rDataSupplier,
-    const uno::Reference< com::sun::star::ucb::XCommandEnvironment >& rxEnv )
+    const uno::Reference< css::ucb::XCommandEnvironment >& rxEnv )
 : m_pImpl( new ResultSet_Impl( rxContext, rProperties, rDataSupplier, rxEnv ) )
 {
     rDataSupplier->m_pResultSet = this;
@@ -229,7 +228,6 @@ ResultSet::ResultSet(
 // virtual
 ResultSet::~ResultSet()
 {
-    delete m_pImpl;
 }
 
 
@@ -271,9 +269,9 @@ css::uno::Any SAL_CALL ResultSet::queryInterface( const css::uno::Type & rType )
 
 XTYPEPROVIDER_IMPL_9( ResultSet,
                       lang::XTypeProvider,
-                         lang::XServiceInfo,
+                      lang::XServiceInfo,
                       lang::XComponent,
-                      com::sun::star::ucb::XContentAccess,
+                      css::ucb::XContentAccess,
                       sdbc::XResultSet,
                       sdbc::XResultSetMetaDataSupplier,
                       sdbc::XRow,
@@ -1278,7 +1276,7 @@ OUString SAL_CALL ResultSet::queryContentIdentifierString()
 
 
 // virtual
-uno::Reference< com::sun::star::ucb::XContentIdentifier > SAL_CALL
+uno::Reference< css::ucb::XContentIdentifier > SAL_CALL
 ResultSet::queryContentIdentifier()
     throw( uno::RuntimeException, std::exception )
 {
@@ -1286,19 +1284,19 @@ ResultSet::queryContentIdentifier()
         return m_pImpl->m_xDataSupplier->queryContentIdentifier(
                                                         m_pImpl->m_nPos - 1 );
 
-    return uno::Reference< com::sun::star::ucb::XContentIdentifier >();
+    return uno::Reference< css::ucb::XContentIdentifier >();
 }
 
 
 // virtual
-uno::Reference< com::sun::star::ucb::XContent > SAL_CALL
+uno::Reference< css::ucb::XContent > SAL_CALL
 ResultSet::queryContent()
     throw( uno::RuntimeException, std::exception )
 {
     if ( m_pImpl->m_nPos && !m_pImpl->m_bAfterLast )
         return m_pImpl->m_xDataSupplier->queryContent( m_pImpl->m_nPos - 1 );
 
-    return uno::Reference< com::sun::star::ucb::XContent >();
+    return uno::Reference< css::ucb::XContent >();
 }
 
 
@@ -1535,7 +1533,7 @@ const uno::Sequence< beans::Property >& ResultSet::getProperties()
 }
 
 
-const uno::Reference< com::sun::star::ucb::XCommandEnvironment >&
+const uno::Reference< css::ucb::XCommandEnvironment >&
 ResultSet::getEnvironment()
 {
     return m_pImpl->m_xEnv;

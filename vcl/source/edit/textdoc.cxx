@@ -19,13 +19,12 @@
 
 #include <textdoc.hxx>
 #include <stdlib.h>
-#include <boost/mem_fn.hpp>
 #include <osl/diagnose.h>
 
 // compare function called by QuickSort
-static bool CompareStart( const TextCharAttrib& pFirst, const TextCharAttrib& pSecond )
+static bool CompareStart( const std::unique_ptr<TextCharAttrib>& pFirst, const std::unique_ptr<TextCharAttrib>& pSecond )
 {
-    return pFirst.GetStart() < pSecond.GetStart();
+    return pFirst->GetStart() < pSecond->GetStart();
 }
 
 TextCharAttrib::TextCharAttrib( const TextAttrib& rAttr, sal_Int32 nStart, sal_Int32 nEnd )
@@ -71,33 +70,33 @@ void TextCharAttribList::InsertAttrib( TextCharAttrib* pAttrib )
     bool bInserted = false;
     for (TextCharAttribs::iterator it = maAttribs.begin(); it != maAttribs.end(); ++it)
     {
-        if ( it->GetStart() > nStart )
+        if ( (*it)->GetStart() > nStart )
         {
-            maAttribs.insert( it, pAttrib );
+            maAttribs.insert( it, std::unique_ptr<TextCharAttrib>(pAttrib) );
             bInserted = true;
             break;
         }
     }
     if ( !bInserted )
-        maAttribs.push_back( pAttrib );
+        maAttribs.push_back( std::unique_ptr<TextCharAttrib>(pAttrib) );
 }
 
 void TextCharAttribList::ResortAttribs()
 {
-    maAttribs.sort(CompareStart);
+    std::sort( maAttribs.begin(), maAttribs.end(), CompareStart );
 }
 
 TextCharAttrib* TextCharAttribList::FindAttrib( sal_uInt16 nWhich, sal_Int32 nPos )
 {
     for (TextCharAttribs::reverse_iterator it = maAttribs.rbegin(); it != maAttribs.rend(); ++it)
     {
-        if ( it->GetEnd() < nPos )
-            return 0;
+        if ( (*it)->GetEnd() < nPos )
+            return nullptr;
 
-        if ( ( it->Which() == nWhich ) && it->IsIn(nPos) )
-            return &*it;
+        if ( ( (*it)->Which() == nWhich ) && (*it)->IsIn(nPos) )
+            return it->get();
     }
-    return NULL;
+    return nullptr;
 }
 
 const TextCharAttrib* TextCharAttribList::FindNextAttrib( sal_uInt16 nWhich, sal_Int32 nFromPos, sal_Int32 nMaxPos ) const
@@ -105,19 +104,19 @@ const TextCharAttrib* TextCharAttribList::FindNextAttrib( sal_uInt16 nWhich, sal
     DBG_ASSERT( nWhich, "FindNextAttrib: Which?" );
     for (TextCharAttribs::const_iterator it = maAttribs.begin(); it != maAttribs.end(); ++it)
     {
-        if ( ( it->GetStart() >= nFromPos ) &&
-             ( it->GetEnd() <= nMaxPos ) &&
-             ( it->Which() == nWhich ) )
-            return &*it;
+        if ( ( (*it)->GetStart() >= nFromPos ) &&
+             ( (*it)->GetEnd() <= nMaxPos ) &&
+             ( (*it)->Which() == nWhich ) )
+            return it->get();
     }
-    return NULL;
+    return nullptr;
 }
 
 bool TextCharAttribList::HasAttrib( sal_uInt16 nWhich ) const
 {
     for (TextCharAttribs::const_reverse_iterator it = maAttribs.rbegin(); it != maAttribs.rend(); ++it)
     {
-        if ( it->Which() == nWhich )
+        if ( (*it)->Which() == nWhich )
             return true;
     }
     return false;
@@ -127,10 +126,10 @@ bool TextCharAttribList::HasBoundingAttrib( sal_Int32 nBound )
 {
     for (TextCharAttribs::reverse_iterator it = maAttribs.rbegin(); it != maAttribs.rend(); ++it)
     {
-        if ( it->GetEnd() < nBound )
+        if ( (*it)->GetEnd() < nBound )
             return false;
 
-        if ( ( it->GetStart() == nBound ) || ( it->GetEnd() == nBound ) )
+        if ( ( (*it)->GetStart() == nBound ) || ( (*it)->GetEnd() == nBound ) )
             return true;
     }
     return false;
@@ -139,22 +138,25 @@ bool TextCharAttribList::HasBoundingAttrib( sal_Int32 nBound )
 TextCharAttrib* TextCharAttribList::FindEmptyAttrib( sal_uInt16 nWhich, sal_Int32 nPos )
 {
     if ( !mbHasEmptyAttribs )
-        return 0;
+        return nullptr;
 
     for (TextCharAttribs::iterator it = maAttribs.begin(); it != maAttribs.end(); ++it)
     {
-        if ( it->GetStart() > nPos )
-            return 0;
+        if ( (*it)->GetStart() > nPos )
+            return nullptr;
 
-        if ( ( it->GetStart() == nPos ) && ( it->GetEnd() == nPos ) && ( it->Which() == nWhich ) )
-            return &*it;
+        if ( ( (*it)->GetStart() == nPos ) && ( (*it)->GetEnd() == nPos ) && ( (*it)->Which() == nWhich ) )
+            return it->get();
     }
-    return 0;
+    return nullptr;
 }
 
 void TextCharAttribList::DeleteEmptyAttribs()
 {
-    maAttribs.erase_if(boost::mem_fn(&TextCharAttrib::IsEmpty));
+    maAttribs.erase(
+        std::remove_if( maAttribs.begin(), maAttribs.end(),
+            [] (const std::unique_ptr<TextCharAttrib>& rAttrib) { return rAttrib->IsEmpty(); } ),
+        maAttribs.end() );
     mbHasEmptyAttribs = false;
 }
 
@@ -446,7 +448,7 @@ OUString TextDoc::GetText( const sal_Unicode* pSep ) const
 
 OUString TextDoc::GetText( sal_uInt32 nPara ) const
 {
-    TextNode* pNode = ( nPara < maTextNodes.size() ) ? maTextNodes[ nPara ] : 0;
+    TextNode* pNode = ( nPara < maTextNodes.size() ) ? maTextNodes[ nPara ] : nullptr;
     if ( pNode )
         return pNode->GetText();
 

@@ -52,9 +52,9 @@ class ODateTimeDialog : public ModalDialog
     svt::ControlDependencyManager           m_aTimeControlling;
 
     ::rptui::OReportController*             m_pController;
-    ::com::sun::star::uno::Reference< ::com::sun::star::report::XSection>
+    css::uno::Reference< css::report::XSection>
                                             m_xHoldAlive;
-    ::com::sun::star::lang::Locale          m_nLocale;
+    css::lang::Locale                       m_nLocale;
 
     /** returns the format string
     *
@@ -63,26 +63,26 @@ class ODateTimeDialog : public ModalDialog
     * \param _bTime
     * \return
     */
-    OUString getFormatStringByKey(::sal_Int32 _nNumberFormatKey,const ::com::sun::star::uno::Reference< ::com::sun::star::util::XNumberFormats>& _xFormats,bool _bTime);
+    OUString getFormatStringByKey(::sal_Int32 _nNumberFormatKey,const css::uno::Reference< css::util::XNumberFormats>& _xFormats,bool _bTime);
 
     /** returns the number format key
-        @param  _nNumberFormatIndex the number format index @see com::sun::star::i18n::NumberFormatIndex
+        @param  _nNumberFormatIndex the number format index @see css::i18n::NumberFormatIndex
     */
     sal_Int32 getFormatKey(bool _bDate) const;
 
     DECL_LINK_TYPED( CBClickHdl, Button*, void );
-    ODateTimeDialog(const ODateTimeDialog&) SAL_DELETED_FUNCTION;
-    void operator =(const ODateTimeDialog&) SAL_DELETED_FUNCTION;
+    ODateTimeDialog(const ODateTimeDialog&) = delete;
+    void operator =(const ODateTimeDialog&) = delete;
 
     // fill methods
     void InsertEntry(sal_Int16 _nNumberFormatId);
 public:
     ODateTimeDialog( vcl::Window* pParent
-                        ,const ::com::sun::star::uno::Reference< ::com::sun::star::report::XSection>& _xHoldAlive
+                        ,const css::uno::Reference< css::report::XSection>& _xHoldAlive
                         ,::rptui::OReportController* _pController);
     virtual ~ODateTimeDialog();
-    virtual void dispose() SAL_OVERRIDE;
-    virtual short   Execute() SAL_OVERRIDE;
+    virtual void dispose() override;
+    virtual short   Execute() override;
 };
 
 } // namespace rptui

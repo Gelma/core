@@ -238,7 +238,7 @@ namespace dbmm
             Command aCommand;
             aCommand.Name = OUString::createFromAscii( _pAsciiCommand );
             return _rxCommandProc->execute(
-                aCommand, _rxCommandProc->createCommandIdentifier(), NULL );
+                aCommand, _rxCommandProc->createCommandIdentifier(), nullptr );
         }
 
         OUString lcl_getMimeType_nothrow( const Reference< XCommandProcessor >& _rxContent )
@@ -280,7 +280,7 @@ namespace dbmm
                 aCommand.Argument <<= aLoadArgs.getPropertyValues();
                 Reference< XComponent > xDocComponent(
                     xCommandProcessor->execute(
-                        aCommand, xCommandProcessor->createCommandIdentifier(), NULL
+                        aCommand, xCommandProcessor->createCommandIdentifier(), nullptr
                     ),
                     UNO_QUERY
                 );
@@ -431,8 +431,7 @@ namespace dbmm
     {
     public:
         explicit DrawPageIterator( const Reference< XModel >& _rxDocument )
-            :m_xDocument( _rxDocument )
-            ,m_nPageCount( 0 )
+            :m_nPageCount( 0 )
             ,m_nCurrentPage( 0 )
         {
             Reference< XDrawPageSupplier > xSingle( _rxDocument, UNO_QUERY );
@@ -471,7 +470,6 @@ namespace dbmm
         }
 
     private:
-        const Reference< XModel >   m_xDocument;
         Reference< XDrawPage >      m_xSinglePage;
         Reference< XDrawPages >     m_xMultiPages;
         sal_Int32                   m_nPageCount;
@@ -747,15 +745,15 @@ namespace dbmm
         }
 
         // IProgressConsumer
-        virtual void    start( sal_uInt32 _nRange ) SAL_OVERRIDE
+        virtual void    start( sal_uInt32 _nRange ) override
         {
             m_rDelegator.startObject( m_sObjectName, m_sAction, _nRange );
         }
-        virtual void    advance( sal_uInt32 _nValue ) SAL_OVERRIDE
+        virtual void    advance( sal_uInt32 _nValue ) override
         {
             m_rDelegator.setObjectProgressValue( _nValue );
         }
-        virtual void    end() SAL_OVERRIDE
+        virtual void    end() override
         {
             m_rDelegator.endObject();
         }
@@ -1337,7 +1335,7 @@ namespace dbmm
 
             // now that the concrete scripts storage does not have any elements anymore,
             // remove it
-            xScriptsRoot.reset( NULL ); // need to reset the storage to be allowed to remove it
+            xScriptsRoot.reset( nullptr ); // need to reset the storage to be allowed to remove it
             aDocStorage.removeScriptTypeStorage( _eScriptType );
 
             // done so far
@@ -1551,7 +1549,7 @@ namespace dbmm
             Reference< XUriReferenceFactory > xUriRefFac = UriReferenceFactory::create( m_aContext );
             Reference< XVndSunStarScriptUrlReference > xUri( xUriRefFac->parse( _inout_rScriptCode ), UNO_QUERY_THROW );
 
-            OUString sScriptLanguage = xUri->getParameter( OUString( "language" ) );
+            OUString sScriptLanguage = xUri->getParameter( "language" );
             ScriptType eScriptType = eBasic;
             if ( !lcl_getScriptTypeFromLanguage( sScriptLanguage, eScriptType ) )
             {
@@ -1564,7 +1562,7 @@ namespace dbmm
                 return false;
             }
 
-            OUString sLocation = xUri->getParameter( OUString( "location" ) );
+            OUString sLocation = xUri->getParameter( "location" );
             if ( sLocation != "document" )
             {
                 // only document libraries must be migrated, of course

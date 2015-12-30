@@ -116,7 +116,7 @@ class CellInfo
 {
     SwRect m_aRect;
     WW8TableNodeInfo * m_pNodeInfo;
-    unsigned long m_nFormatFrmWidth;
+    unsigned long m_nFormatFrameWidth;
 
 public:
     CellInfo(const SwRect & aRect, WW8TableNodeInfo * pNodeInfo);
@@ -124,7 +124,7 @@ public:
     CellInfo(const CellInfo & aRectAndTableInfo)
         : m_aRect(aRectAndTableInfo.m_aRect),
           m_pNodeInfo(aRectAndTableInfo.m_pNodeInfo),
-          m_nFormatFrmWidth(aRectAndTableInfo.m_nFormatFrmWidth)
+          m_nFormatFrameWidth(aRectAndTableInfo.m_nFormatFrameWidth)
     {
     }
 
@@ -141,14 +141,14 @@ public:
     SwRect getRect() const { return m_aRect; }
     WW8TableNodeInfo * getTableNodeInfo() const
     { return m_pNodeInfo; }
-    unsigned long getFormatFrmWidth() const
+    unsigned long getFormatFrameWidth() const
     {
-        return m_nFormatFrmWidth;
+        return m_nFormatFrameWidth;
     }
 
-    void setFormatFrmWidth(unsigned long nFormatFrmWidth)
+    void setFormatFrameWidth(unsigned long nFormatFrameWidth)
     {
-        m_nFormatFrmWidth = nFormatFrmWidth;
+        m_nFormatFrameWidth = nFormatFrameWidth;
     }
 
 #ifdef DBG_UTIL
@@ -276,7 +276,7 @@ public:
     ~WW8TableCellGrid();
 
     void insert(const SwRect & rRect, WW8TableNodeInfo * pNodeInfo,
-                unsigned long * pFormatFrmWidth = NULL);
+                unsigned long * pFormatFrameWidth = nullptr);
     void addShadowCells();
     WW8TableNodeInfo *connectCells(RowEndInners_t &rLastRowEnds);
 
@@ -330,7 +330,7 @@ class WW8TableInfo
                         sal_uInt32 nRow,
                         sal_uInt32 nCell,
                         sal_uInt32 nDepth,
-                        SwRect * pRect = NULL);
+                        SwRect * pRect = nullptr);
 
     WW8TableCellGrid::Pointer_t getCellGridForTable(const SwTable * pTable,
                                                     bool bCreate = true);

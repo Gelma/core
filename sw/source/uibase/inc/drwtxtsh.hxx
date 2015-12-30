@@ -40,7 +40,6 @@ class SwDrawTextShell: public SfxShell
 
 public:
     SFX_DECL_INTERFACE(SW_DRWTXTSHELL)
-    TYPEINFO_OVERRIDE();
 
 private:
     /// SfxInterface initializer.
@@ -54,7 +53,7 @@ public:
     virtual     ~SwDrawTextShell();
 
     virtual ::svl::IUndoManager*
-                GetUndoManager() SAL_OVERRIDE;
+                GetUndoManager() override;
 
     static void StateDisableItems(SfxItemSet &);
 

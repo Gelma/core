@@ -41,7 +41,7 @@ SdrObject* SdrObjectPrimitiveHit(
     const SetOfByte* pVisiLayer,
     bool bTextOnly)
 {
-    SdrObject* pResult = 0;
+    SdrObject* pResult = nullptr;
 
     if(rObject.GetSubList() && rObject.GetSubList()->GetObjCount())
     {
@@ -100,7 +100,7 @@ SdrObject* SdrObjListPrimitiveHit(
     bool bTextOnly)
 {
     size_t nObjNum(rList.GetObjCount());
-    SdrObject* pRetval = 0;
+    SdrObject* pRetval = nullptr;
 
     while(!pRetval && nObjNum > 0)
     {
@@ -137,9 +137,9 @@ bool ViewObjectContactPrimitiveHit(
         {
             // get primitive sequence
             sdr::contact::DisplayInfo aDisplayInfo;
-            const drawinglayer::primitive2d::Primitive2DSequence& rSequence(rVOC.getPrimitive2DSequence(aDisplayInfo));
+            const drawinglayer::primitive2d::Primitive2DContainer& rSequence(rVOC.getPrimitive2DSequence(aDisplayInfo));
 
-            if(rSequence.hasElements())
+            if(!rSequence.empty())
             {
                 // create a HitTest processor
                 const drawinglayer::geometry::ViewInformation2D& rViewInformation2D = rVOC.GetObjectContact().getViewInformation2D();

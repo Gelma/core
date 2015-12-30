@@ -38,38 +38,38 @@
 
 void SwLabRec::SetFromItem( const SwLabItem& rItem )
 {
-    lHDist  = rItem.lHDist;
-    lVDist  = rItem.lVDist;
-    lWidth  = rItem.lWidth;
-    lHeight = rItem.lHeight;
-    lLeft   = rItem.lLeft;
-    lUpper  = rItem.lUpper;
-    nCols   = rItem.nCols;
-    nRows   = rItem.nRows;
-    lPWidth  = rItem.lPWidth;
-    lPHeight = rItem.lPHeight;
-    bCont   = rItem.bCont;
+    lHDist  = rItem.m_lHDist;
+    lVDist  = rItem.m_lVDist;
+    lWidth  = rItem.m_lWidth;
+    lHeight = rItem.m_lHeight;
+    lLeft   = rItem.m_lLeft;
+    lUpper  = rItem.m_lUpper;
+    nCols   = rItem.m_nCols;
+    nRows   = rItem.m_nRows;
+    lPWidth  = rItem.m_lPWidth;
+    lPHeight = rItem.m_lPHeight;
+    bCont   = rItem.m_bCont;
 }
 
 void SwLabRec::FillItem( SwLabItem& rItem ) const
 {
-    rItem.lHDist  = lHDist;
-    rItem.lVDist  = lVDist;
-    rItem.lWidth  = lWidth;
-    rItem.lHeight = lHeight;
-    rItem.lLeft   = lLeft;
-    rItem.lUpper  = lUpper;
-    rItem.nCols   = nCols;
-    rItem.lPWidth  = lPWidth;
-    rItem.lPHeight = lPHeight;
-    rItem.nRows   = nRows;
+    rItem.m_lHDist  = lHDist;
+    rItem.m_lVDist  = lVDist;
+    rItem.m_lWidth  = lWidth;
+    rItem.m_lHeight = lHeight;
+    rItem.m_lLeft   = lLeft;
+    rItem.m_lUpper  = lUpper;
+    rItem.m_nCols   = nCols;
+    rItem.m_lPWidth  = lPWidth;
+    rItem.m_lPHeight = lPHeight;
+    rItem.m_nRows   = nRows;
 }
 
 void SwLabDlg::_ReplaceGroup( const OUString &rMake )
 {
     // Remove old entries
-    pRecs->erase(pRecs->begin() + 1, pRecs->end());
-    aLabelsCfg.FillLabels(rMake, *pRecs);
+    m_pRecs->erase(m_pRecs->begin() + 1, m_pRecs->end());
+    aLabelsCfg.FillLabels(rMake, *m_pRecs);
     aLstGroup = rMake;
 }
 
@@ -94,9 +94,9 @@ SwLabDlg::SwLabDlg(vcl::Window* pParent, const SfxItemSet& rSet,
     : SfxTabDialog(pParent, "LabelDialog",
         "modules/swriter/ui/labeldialog.ui", &rSet)
     , pDBManager(pDBManager_)
-    , pPrtPage(0)
+    , pPrtPage(nullptr)
     , aTypeIds(50, 10)
-    , pRecs(new SwLabRecs())
+    , m_pRecs(new SwLabRecs)
     , m_bLabel(bLabel)
     , m_nFormatId(0)
     , m_nOptionsId(0)
@@ -107,9 +107,9 @@ SwLabDlg::SwLabDlg(vcl::Window* pParent, const SfxItemSet& rSet,
 {
     WaitObject aWait( pParent );
 
-    m_nFormatId = AddTabPage("format", SwLabFormatPage::Create, 0);
-    m_nOptionsId = AddTabPage("options", SwLabPrtPage::Create, 0);
-    m_nCardsId = AddTabPage("cards", SwVisitingCardPage::Create, 0);
+    m_nFormatId = AddTabPage("format", SwLabFormatPage::Create, nullptr);
+    m_nOptionsId = AddTabPage("options", SwLabPrtPage::Create, nullptr);
+    m_nCardsId = AddTabPage("cards", SwVisitingCardPage::Create, nullptr);
     m_sBusinessCardDlg = GetPageText(m_nCardsId);
 
     if (m_bLabel)
@@ -118,29 +118,29 @@ SwLabDlg::SwLabDlg(vcl::Window* pParent, const SfxItemSet& rSet,
         RemoveTabPage("private");
         RemoveTabPage("cards");
         RemoveTabPage("medium");
-        m_nLabelId = AddTabPage("labels", SwLabPage::Create, 0);
+        m_nLabelId = AddTabPage("labels", SwLabPage::Create, nullptr);
     }
     else
     {
         RemoveTabPage("labels");
         RemoveTabPage("cards");
-        m_nLabelId = AddTabPage("medium", SwLabPage::Create, 0);
-        m_nBusinessId = AddTabPage("business", SwBusinessDataPage::Create, 0 );
-        m_nPrivateId = AddTabPage("private", SwPrivateDataPage::Create, 0);
+        m_nLabelId = AddTabPage("medium", SwLabPage::Create, nullptr);
+        m_nBusinessId = AddTabPage("business", SwBusinessDataPage::Create, nullptr );
+        m_nPrivateId = AddTabPage("private", SwPrivateDataPage::Create, nullptr);
         SetText(m_sBusinessCardDlg);
     }
     // Read user label from writer.cfg
     SwLabItem aItem(static_cast<const SwLabItem&>(rSet.Get( FN_LABEL )));
-    SwLabRec* pRec = new SwLabRec;
+    std::unique_ptr<SwLabRec> pRec(new SwLabRec);
     pRec->aMake = pRec->aType = SW_RESSTR( STR_CUSTOM );
     pRec->SetFromItem( aItem );
 
     bool bDouble = false;
 
-    for (size_t nRecPos = 0; nRecPos < pRecs->size(); ++nRecPos)
+    for (size_t nRecPos = 0; nRecPos < m_pRecs->size(); ++nRecPos)
     {
-        if (pRec->aMake == (*pRecs)[nRecPos].aMake &&
-            pRec->aType == (*pRecs)[nRecPos].aType)
+        if (pRec->aMake == (*m_pRecs)[nRecPos]->aMake &&
+            pRec->aType == (*m_pRecs)[nRecPos]->aType)
         {
             bDouble = true;
             break;
@@ -148,16 +148,14 @@ SwLabDlg::SwLabDlg(vcl::Window* pParent, const SfxItemSet& rSet,
     }
 
     if (!bDouble)
-        pRecs->insert( pRecs->begin(), pRec );
-    else
-        delete pRec;
+        m_pRecs->insert( m_pRecs->begin(), std::move(pRec));
 
     size_t nLstGroup = 0;
     const std::vector<OUString>& rMan = aLabelsCfg.GetManufacturers();
     for(size_t nMan = 0; nMan < rMan.size(); ++nMan)
     {
         aMakes.push_back(rMan[nMan]);
-        if ( rMan[nMan] == aItem.aLstMake )
+        if ( rMan[nMan] == aItem.m_aLstMake )
             nLstGroup = nMan;
     }
 
@@ -175,7 +173,7 @@ SwLabDlg::~SwLabDlg()
 
 void SwLabDlg::dispose()
 {
-    delete pRecs;
+    delete m_pRecs;
     pPrtPage.clear();
     SfxTabDialog::dispose();
 }
@@ -196,21 +194,21 @@ void SwLabDlg::GetLabItem(SwLabItem &rItem)
 
         // In rItem there are only settings defined by users.
         // Therefore get the real settings directly from Record
-        SwLabRec* pRec = GetRecord(rItem.aType, rItem.bCont);
+        SwLabRec* pRec = GetRecord(rItem.m_aType, rItem.m_bCont);
         pRec->FillItem( rItem );
     }
 }
 
 SwLabRec* SwLabDlg::GetRecord(const OUString &rRecName, bool bCont)
 {
-    SwLabRec* pRec = NULL;
+    SwLabRec* pRec = nullptr;
     bool bFound = false;
     const OUString sCustom(SW_RES(STR_CUSTOM));
 
     const size_t nCount = Recs().size();
     for (size_t i = 0; i < nCount; ++i)
     {
-        pRec = &Recs()[i];
+        pRec = Recs()[i].get();
         if (pRec->aType != sCustom &&
             rRecName == pRec->aType && bCont == pRec->bCont)
         {
@@ -219,7 +217,7 @@ SwLabRec* SwLabDlg::GetRecord(const OUString &rRecName, bool bCont)
         }
     }
     if (!bFound)    // User defined
-        pRec = &Recs()[0];
+        pRec = Recs()[0].get();
 
     return pRec;
 }
@@ -229,13 +227,13 @@ Printer *SwLabDlg::GetPrt()
     if (pPrtPage)
         return pPrtPage->GetPrt();
     else
-        return NULL;
+        return nullptr;
 }
 
 SwLabPage::SwLabPage(vcl::Window* pParent, const SfxItemSet& rSet)
     : SfxTabPage(pParent, "CardMediumPage",
         "modules/swriter/ui/cardmediumpage.ui", &rSet)
-    , pDBManager(NULL)
+    , pDBManager(nullptr)
     , aItem(static_cast<const SwLabItem&>(rSet.Get(FN_LABEL)))
     , m_bLabel(false)
 {
@@ -285,12 +283,12 @@ SwLabPage::SwLabPage(vcl::Window* pParent, const SfxItemSet& rSet)
         OUString& rStr = GetParentSwLabDlg()->Makes()[i];
         m_pMakeBox->InsertEntry( rStr );
 
-        if ( rStr == aItem.aLstMake)
+        if ( rStr == aItem.m_aLstMake)
             nLstGroup = i;
     }
 
     m_pMakeBox->SelectEntryPos( nLstGroup );
-    m_pMakeBox->GetSelectHdl().Call(m_pMakeBox);
+    m_pMakeBox->GetSelectHdl().Call(*m_pMakeBox);
 }
 
 SwLabPage::~SwLabPage()
@@ -338,24 +336,23 @@ IMPL_LINK_NOARG_TYPED(SwLabPage, AddrHdl, Button*, void)
     m_pWritingEdit->GrabFocus();
 }
 
-IMPL_LINK( SwLabPage, DatabaseHdl, ListBox *, pListBox )
+IMPL_LINK_TYPED( SwLabPage, DatabaseHdl, ListBox&, rListBox, void )
 {
     sActDBName = m_pDatabaseLB->GetSelectEntry();
 
     WaitObject aObj( GetParentSwLabDlg() );
 
-    if (pListBox == m_pDatabaseLB)
+    if (&rListBox == m_pDatabaseLB)
         GetDBManager()->GetTableNames(m_pTableLB, sActDBName);
 
     GetDBManager()->GetColumnNames(m_pDBFieldLB, sActDBName, m_pTableLB->GetSelectEntry());
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(SwLabPage, FieldHdl, Button*, void)
 {
     OUString aStr("<" + m_pDatabaseLB->GetSelectEntry() + "." +
                   m_pTableLB->GetSelectEntry() + "." +
-                  (m_pTableLB->GetSelectEntryData() == 0 ? OUString("0") : OUString("1")) + "." +
+                  (m_pTableLB->GetSelectEntryData() == nullptr ? OUString("0") : OUString("1")) + "." +
                   m_pDBFieldLB->GetSelectEntry() + ">");
     m_pWritingEdit->ReplaceSelected(aStr);
     Selection aSel = m_pWritingEdit->GetSelection();
@@ -365,10 +362,10 @@ IMPL_LINK_NOARG_TYPED(SwLabPage, FieldHdl, Button*, void)
 
 IMPL_LINK_NOARG_TYPED(SwLabPage, PageHdl, Button*, void)
 {
-    m_pMakeBox->GetSelectHdl().Call(m_pMakeBox);
+    m_pMakeBox->GetSelectHdl().Call(*m_pMakeBox);
 }
 
-IMPL_LINK_NOARG(SwLabPage, MakeHdl)
+IMPL_LINK_NOARG_TYPED(SwLabPage, MakeHdl, ListBox&, void)
 {
     WaitObject aWait( GetParentSwLabDlg() );
 
@@ -378,7 +375,7 @@ IMPL_LINK_NOARG(SwLabPage, MakeHdl)
 
     const OUString aMake = m_pMakeBox->GetSelectEntry();
     GetParentSwLabDlg()->ReplaceGroup( aMake );
-    aItem.aLstMake = aMake;
+    aItem.m_aLstMake = aMake;
 
     const bool   bCont    = m_pContButton->IsChecked();
     const size_t nCount   = GetParentSwLabDlg()->Recs().size();
@@ -388,14 +385,14 @@ IMPL_LINK_NOARG(SwLabPage, MakeHdl)
     //insert the entries into the sorted list box
     for ( size_t i = 0; i < nCount; ++i )
     {
-        const OUString aType ( GetParentSwLabDlg()->Recs()[i].aType );
+        const OUString aType(GetParentSwLabDlg()->Recs()[i]->aType);
         bool bInsert = false;
-        if ( GetParentSwLabDlg()->Recs()[i].aType == sCustom )
+        if (GetParentSwLabDlg()->Recs()[i]->aType == sCustom)
         {
             bInsert = true;
             m_pTypeBox->InsertEntry(aType );
         }
-        else if ( GetParentSwLabDlg()->Recs()[i].bCont == bCont )
+        else if (GetParentSwLabDlg()->Recs()[i]->bCont == bCont)
         {
             if ( m_pHiddenSortTypeBox->GetEntryPos(aType) == LISTBOX_ENTRY_NOTFOUND )
             {
@@ -406,7 +403,7 @@ IMPL_LINK_NOARG(SwLabPage, MakeHdl)
         if(bInsert)
         {
             GetParentSwLabDlg()->TypeIds().push_back(i);
-            if ( !nLstType && aType == aItem.aLstType )
+            if ( !nLstType && aType == aItem.m_aLstType )
                 nLstType = GetParentSwLabDlg()->TypeIds().size();
         }
     }
@@ -415,18 +412,16 @@ IMPL_LINK_NOARG(SwLabPage, MakeHdl)
         m_pTypeBox->InsertEntry(m_pHiddenSortTypeBox->GetEntry(nEntry));
     }
     if (nLstType)
-        m_pTypeBox->SelectEntry(aItem.aLstType);
+        m_pTypeBox->SelectEntry(aItem.m_aLstType);
     else
         m_pTypeBox->SelectEntryPos(0);
-    m_pTypeBox->GetSelectHdl().Call(m_pTypeBox);
-    return 0;
+    m_pTypeBox->GetSelectHdl().Call(*m_pTypeBox);
 }
 
-IMPL_LINK_NOARG(SwLabPage, TypeHdl)
+IMPL_LINK_NOARG_TYPED(SwLabPage, TypeHdl, ListBox&, void)
 {
     DisplayFormat();
-    aItem.aType = m_pTypeBox->GetSelectEntry();
-    return 0;
+    aItem.m_aType = m_pTypeBox->GetSelectEntry();
 }
 
 void SwLabPage::DisplayFormat()
@@ -439,7 +434,7 @@ void SwLabPage::DisplayFormat()
     aField->SetMax         (LONG_MAX);
 
     SwLabRec* pRec = GetSelectedEntryPos();
-    aItem.aLstType = pRec->aType;
+    aItem.m_aLstType = pRec->aType;
     SETFLDVAL(*aField.get(), pRec->lWidth);
     aField->Reformat();
     const OUString aWString = aField->GetText();
@@ -466,7 +461,7 @@ void SwLabPage::InitDatabaseBox()
     if( GetDBManager() )
     {
         m_pDatabaseLB->Clear();
-        ::com::sun::star::uno::Sequence<OUString> aDataNames = SwDBManager::GetExistingDatabaseNames();
+        css::uno::Sequence<OUString> aDataNames = SwDBManager::GetExistingDatabaseNames();
         const OUString* pDataNames = aDataNames.getConstArray();
         for (long i = 0; i < aDataNames.getLength(); i++)
             m_pDatabaseLB->InsertEntry(pDataNames[i]);
@@ -503,18 +498,18 @@ SfxTabPage::sfxpg SwLabPage::DeactivatePage(SfxItemSet* _pSet)
 
 void SwLabPage::FillItem(SwLabItem& rItem)
 {
-    rItem.bAddr    = m_pAddrBox->IsChecked();
-    rItem.aWriting = m_pWritingEdit->GetText();
-    rItem.bCont    = m_pContButton->IsChecked();
-    rItem.aMake    = m_pMakeBox->GetSelectEntry();
-    rItem.aType    = m_pTypeBox->GetSelectEntry();
-    rItem.sDBName  = sActDBName;
+    rItem.m_bAddr    = m_pAddrBox->IsChecked();
+    rItem.m_aWriting = m_pWritingEdit->GetText();
+    rItem.m_bCont    = m_pContButton->IsChecked();
+    rItem.m_aMake    = m_pMakeBox->GetSelectEntry();
+    rItem.m_aType    = m_pTypeBox->GetSelectEntry();
+    rItem.m_sDBName  = sActDBName;
 
     SwLabRec* pRec = GetSelectedEntryPos();
     pRec->FillItem( rItem );
 
-    rItem.aLstMake = m_pMakeBox->GetSelectEntry();
-    rItem.aLstType = m_pTypeBox->GetSelectEntry();
+    rItem.m_aLstMake = m_pMakeBox->GetSelectEntry();
+    rItem.m_aLstType = m_pTypeBox->GetSelectEntry();
 }
 
 bool SwLabPage::FillItemSet(SfxItemSet* rSet)
@@ -528,11 +523,11 @@ bool SwLabPage::FillItemSet(SfxItemSet* rSet)
 void SwLabPage::Reset(const SfxItemSet* rSet)
 {
     aItem = static_cast<const SwLabItem&>( rSet->Get(FN_LABEL));
-    OUString sDBName  = aItem.sDBName;
+    OUString sDBName  = aItem.m_sDBName;
 
-    OUString aWriting(convertLineEnd(aItem.aWriting, GetSystemLineEnd()));
+    OUString aWriting(convertLineEnd(aItem.m_aWriting, GetSystemLineEnd()));
 
-    m_pAddrBox->Check( aItem.bAddr );
+    m_pAddrBox->Check( aItem.m_bAddr );
     m_pWritingEdit->SetText    ( aWriting );
 
     for(std::vector<OUString>::const_iterator i = GetParentSwLabDlg()->Makes().begin(); i != GetParentSwLabDlg()->Makes().end(); ++i)
@@ -541,26 +536,26 @@ void SwLabPage::Reset(const SfxItemSet* rSet)
             m_pMakeBox->InsertEntry(*i);
     }
 
-    m_pMakeBox->SelectEntry( aItem.aMake );
+    m_pMakeBox->SelectEntry( aItem.m_aMake );
     //save the current type
-    OUString sType(aItem.aType);
-    m_pMakeBox->GetSelectHdl().Call(m_pMakeBox);
-    aItem.aType = sType;
+    OUString sType(aItem.m_aType);
+    m_pMakeBox->GetSelectHdl().Call(*m_pMakeBox);
+    aItem.m_aType = sType;
     //#102806# a newly added make may not be in the type ListBox already
-    if (m_pTypeBox->GetEntryPos(aItem.aType) == LISTBOX_ENTRY_NOTFOUND && !aItem.aMake.isEmpty())
-        GetParentSwLabDlg()->UpdateGroup( aItem.aMake );
-    if (m_pTypeBox->GetEntryPos(aItem.aType) != LISTBOX_ENTRY_NOTFOUND)
+    if (m_pTypeBox->GetEntryPos(aItem.m_aType) == LISTBOX_ENTRY_NOTFOUND && !aItem.m_aMake.isEmpty())
+        GetParentSwLabDlg()->UpdateGroup( aItem.m_aMake );
+    if (m_pTypeBox->GetEntryPos(aItem.m_aType) != LISTBOX_ENTRY_NOTFOUND)
     {
-        m_pTypeBox->SelectEntry(aItem.aType);
-        m_pTypeBox->GetSelectHdl().Call(m_pTypeBox);
+        m_pTypeBox->SelectEntry(aItem.m_aType);
+        m_pTypeBox->GetSelectHdl().Call(*m_pTypeBox);
     }
     if (m_pDatabaseLB->GetEntryPos(sDBName) != LISTBOX_ENTRY_NOTFOUND)
     {
         m_pDatabaseLB->SelectEntry(sDBName);
-        m_pDatabaseLB->GetSelectHdl().Call(m_pDatabaseLB);
+        m_pDatabaseLB->GetSelectHdl().Call(*m_pDatabaseLB);
     }
 
-    if (aItem.bCont)
+    if (aItem.m_bCont)
         m_pContButton->Check();
     else
         m_pSheetButton->Check();
@@ -589,7 +584,7 @@ void SwVisitingCardPage::SetUserData( sal_uInt32 nCnt,
 SwVisitingCardPage::SwVisitingCardPage(vcl::Window* pParent, const SfxItemSet& rSet)
     : SfxTabPage(pParent, "CardFormatPage",
         "modules/swriter/ui/cardformatpage.ui", &rSet)
-    , pExampleFrame(0)
+    , pExampleFrame(nullptr)
 {
     get(m_pAutoTextLB, "treeview");
     m_pAutoTextLB->set_height_request(m_pAutoTextLB->GetTextHeight() * 16);
@@ -618,7 +613,7 @@ void SwVisitingCardPage::dispose()
 {
     for(sal_Int32 i = 0; i < m_pAutoTextGroupLB->GetEntryCount(); ++i)
         delete static_cast<OUString*>(m_pAutoTextGroupLB->GetEntryData( i ));
-    m_xAutoText = 0;
+    m_xAutoText = nullptr;
 
     ClearUserData();
     delete pExampleFrame;
@@ -652,11 +647,11 @@ bool SwVisitingCardPage::FillItemSet(SfxItemSet* rSet)
     OSL_ENSURE(pGroup, "no group selected?");
 
     if (pGroup)
-        aLabItem.sGlossaryGroup = *pGroup;
+        aLabItem.m_sGlossaryGroup = *pGroup;
 
     SvTreeListEntry* pSelEntry = m_pAutoTextLB->FirstSelected();
     if(pSelEntry)
-        aLabItem.sGlossaryBlockName = *static_cast<OUString*>(pSelEntry->GetUserData());
+        aLabItem.m_sGlossaryBlockName = *static_cast<OUString*>(pSelEntry->GetUserData());
     rSet->Put(aLabItem);
     return true;
 }
@@ -698,7 +693,7 @@ void SwVisitingCardPage::Reset(const SfxItemSet* rSet)
     bool bFound = false;
     sal_Int32 i;
     for(i = 0; i < m_pAutoTextGroupLB->GetEntryCount(); i++)
-        if( aLabItem.sGlossaryGroup == *static_cast<const OUString*>(m_pAutoTextGroupLB->GetEntryData( i )))
+        if( aLabItem.m_sGlossaryGroup == *static_cast<const OUString*>(m_pAutoTextGroupLB->GetEntryData( i )))
         {
             bFound = true;
             break;
@@ -720,16 +715,17 @@ void SwVisitingCardPage::Reset(const SfxItemSet* rSet)
         if(m_pAutoTextGroupLB->GetSelectEntryPos() != i)
         {
             m_pAutoTextGroupLB->SelectEntryPos(i);
-            AutoTextSelectHdl(m_pAutoTextGroupLB);
+            AutoTextSelectHdl(*m_pAutoTextGroupLB);
         }
-        if(lcl_FindBlock(*m_pAutoTextLB, aLabItem.sGlossaryBlockName))
+        if(lcl_FindBlock(*m_pAutoTextLB, aLabItem.m_sGlossaryBlockName))
         {
             SvTreeListEntry* pSelEntry = m_pAutoTextLB->FirstSelected();
             if( pSelEntry &&
-                *static_cast<OUString*>(pSelEntry->GetUserData()) != aLabItem.sGlossaryBlockName)
+                *static_cast<OUString*>(pSelEntry->GetUserData()) != aLabItem.m_sGlossaryBlockName)
             {
-                lcl_SelectBlock(*m_pAutoTextLB, aLabItem.sGlossaryBlockName);
-                AutoTextSelectHdl(m_pAutoTextLB);
+                lcl_SelectBlock(*m_pAutoTextLB, aLabItem.m_sGlossaryBlockName);
+                if(m_xAutoText.is() && pExampleFrame->IsInitialized())
+                    pExampleFrame->ClearDocument( true );
             }
         }
     }
@@ -810,24 +806,24 @@ bool SwPrivateDataPage::FillItemSet(SfxItemSet* rSet)
 {
 
     SwLabItem aItem = static_cast<const SwLabItem&>( GetTabDialog()->GetExampleSet()->Get(FN_LABEL) );
-    aItem.aPrivFirstName = m_pFirstNameED->GetText();
-    aItem.aPrivName      = m_pNameED->GetText(  );
-    aItem.aPrivShortCut  = m_pShortCutED->GetText(  );
-    aItem.aPrivFirstName2 = m_pFirstName2ED->GetText();
-    aItem.aPrivName2     = m_pName2ED->GetText(  );
-    aItem.aPrivShortCut2 = m_pShortCut2ED->GetText(  );
-    aItem.aPrivStreet    = m_pStreetED->GetText(  );
-    aItem.aPrivZip       = m_pZipED->GetText(  );
-    aItem.aPrivCity      = m_pCityED->GetText(  );
-    aItem.aPrivCountry   = m_pCountryED->GetText(  );
-    aItem.aPrivState     = m_pStateED->GetText(  );
-    aItem.aPrivTitle     = m_pTitleED->GetText(  );
-    aItem.aPrivProfession= m_pProfessionED->GetText(   );
-    aItem.aPrivPhone     = m_pPhoneED->GetText(  );
-    aItem.aPrivMobile    = m_pMobilePhoneED->GetText(  );
-    aItem.aPrivFax       = m_pFaxED->GetText(  );
-    aItem.aPrivWWW       = m_pHomePageED->GetText(  );
-    aItem.aPrivMail      = m_pMailED->GetText(  );
+    aItem.m_aPrivFirstName = m_pFirstNameED->GetText();
+    aItem.m_aPrivName      = m_pNameED->GetText(  );
+    aItem.m_aPrivShortCut  = m_pShortCutED->GetText(  );
+    aItem.m_aPrivFirstName2 = m_pFirstName2ED->GetText();
+    aItem.m_aPrivName2     = m_pName2ED->GetText(  );
+    aItem.m_aPrivShortCut2 = m_pShortCut2ED->GetText(  );
+    aItem.m_aPrivStreet    = m_pStreetED->GetText(  );
+    aItem.m_aPrivZip       = m_pZipED->GetText(  );
+    aItem.m_aPrivCity      = m_pCityED->GetText(  );
+    aItem.m_aPrivCountry   = m_pCountryED->GetText(  );
+    aItem.m_aPrivState     = m_pStateED->GetText(  );
+    aItem.m_aPrivTitle     = m_pTitleED->GetText(  );
+    aItem.m_aPrivProfession= m_pProfessionED->GetText(   );
+    aItem.m_aPrivPhone     = m_pPhoneED->GetText(  );
+    aItem.m_aPrivMobile    = m_pMobilePhoneED->GetText(  );
+    aItem.m_aPrivFax       = m_pFaxED->GetText(  );
+    aItem.m_aPrivWWW       = m_pHomePageED->GetText(  );
+    aItem.m_aPrivMail      = m_pMailED->GetText(  );
 
     rSet->Put(aItem);
     return true;
@@ -836,24 +832,24 @@ bool SwPrivateDataPage::FillItemSet(SfxItemSet* rSet)
 void SwPrivateDataPage::Reset(const SfxItemSet* rSet)
 {
     const SwLabItem& aItem = static_cast<const SwLabItem&>( rSet->Get(FN_LABEL) );
-    m_pFirstNameED->SetText(aItem.aPrivFirstName);
-    m_pNameED->SetText(aItem.aPrivName);
-    m_pShortCutED->SetText(aItem.aPrivShortCut);
-    m_pFirstName2ED->SetText(aItem.aPrivFirstName2);
-    m_pName2ED->SetText(aItem.aPrivName2);
-    m_pShortCut2ED->SetText(aItem.aPrivShortCut2);
-    m_pStreetED->SetText(aItem.aPrivStreet);
-    m_pZipED->SetText(aItem.aPrivZip);
-    m_pCityED->SetText(aItem.aPrivCity);
-    m_pCountryED->SetText(aItem.aPrivCountry);
-    m_pStateED->SetText(aItem.aPrivState);
-    m_pTitleED->SetText(aItem.aPrivTitle);
-    m_pProfessionED->SetText(aItem.aPrivProfession);
-    m_pPhoneED->SetText(aItem.aPrivPhone);
-    m_pMobilePhoneED->SetText(aItem.aPrivMobile);
-    m_pFaxED->SetText(aItem.aPrivFax);
-    m_pHomePageED->SetText(aItem.aPrivWWW);
-    m_pMailED->SetText(aItem.aPrivMail);
+    m_pFirstNameED->SetText(aItem.m_aPrivFirstName);
+    m_pNameED->SetText(aItem.m_aPrivName);
+    m_pShortCutED->SetText(aItem.m_aPrivShortCut);
+    m_pFirstName2ED->SetText(aItem.m_aPrivFirstName2);
+    m_pName2ED->SetText(aItem.m_aPrivName2);
+    m_pShortCut2ED->SetText(aItem.m_aPrivShortCut2);
+    m_pStreetED->SetText(aItem.m_aPrivStreet);
+    m_pZipED->SetText(aItem.m_aPrivZip);
+    m_pCityED->SetText(aItem.m_aPrivCity);
+    m_pCountryED->SetText(aItem.m_aPrivCountry);
+    m_pStateED->SetText(aItem.m_aPrivState);
+    m_pTitleED->SetText(aItem.m_aPrivTitle);
+    m_pProfessionED->SetText(aItem.m_aPrivProfession);
+    m_pPhoneED->SetText(aItem.m_aPrivPhone);
+    m_pMobilePhoneED->SetText(aItem.m_aPrivMobile);
+    m_pFaxED->SetText(aItem.m_aPrivFax);
+    m_pHomePageED->SetText(aItem.m_aPrivWWW);
+    m_pMailED->SetText(aItem.m_aPrivMail);
 }
 
 SwBusinessDataPage::SwBusinessDataPage(vcl::Window* pParent, const SfxItemSet& rSet)
@@ -923,20 +919,20 @@ bool SwBusinessDataPage::FillItemSet(SfxItemSet* rSet)
 {
     SwLabItem aItem = static_cast<const SwLabItem&>( GetTabDialog()->GetExampleSet()->Get(FN_LABEL) );
 
-    aItem.aCompCompany   = m_pCompanyED->GetText();
-    aItem.aCompCompanyExt= m_pCompanyExtED->GetText();
-    aItem.aCompSlogan    = m_pSloganED->GetText();
-    aItem.aCompStreet    = m_pStreetED->GetText();
-    aItem.aCompZip       = m_pZipED->GetText();
-    aItem.aCompCity      = m_pCityED->GetText();
-    aItem.aCompCountry   = m_pCountryED->GetText();
-    aItem.aCompState     = m_pStateED->GetText();
-    aItem.aCompPosition  = m_pPositionED->GetText();
-    aItem.aCompPhone     = m_pPhoneED->GetText();
-    aItem.aCompMobile    = m_pMobilePhoneED->GetText();
-    aItem.aCompFax       = m_pFaxED->GetText();
-    aItem.aCompWWW       = m_pHomePageED->GetText();
-    aItem.aCompMail      = m_pMailED->GetText();
+    aItem.m_aCompCompany   = m_pCompanyED->GetText();
+    aItem.m_aCompCompanyExt= m_pCompanyExtED->GetText();
+    aItem.m_aCompSlogan    = m_pSloganED->GetText();
+    aItem.m_aCompStreet    = m_pStreetED->GetText();
+    aItem.m_aCompZip       = m_pZipED->GetText();
+    aItem.m_aCompCity      = m_pCityED->GetText();
+    aItem.m_aCompCountry   = m_pCountryED->GetText();
+    aItem.m_aCompState     = m_pStateED->GetText();
+    aItem.m_aCompPosition  = m_pPositionED->GetText();
+    aItem.m_aCompPhone     = m_pPhoneED->GetText();
+    aItem.m_aCompMobile    = m_pMobilePhoneED->GetText();
+    aItem.m_aCompFax       = m_pFaxED->GetText();
+    aItem.m_aCompWWW       = m_pHomePageED->GetText();
+    aItem.m_aCompMail      = m_pMailED->GetText();
 
     rSet->Put(aItem);
     return true;
@@ -945,20 +941,20 @@ bool SwBusinessDataPage::FillItemSet(SfxItemSet* rSet)
 void SwBusinessDataPage::Reset(const SfxItemSet* rSet)
 {
     const SwLabItem& aItem = static_cast<const SwLabItem&>( rSet->Get(FN_LABEL) );
-    m_pCompanyED->SetText(aItem.aCompCompany);
-    m_pCompanyExtED->SetText(aItem.aCompCompanyExt);
-    m_pSloganED->SetText(aItem.aCompSlogan);
-    m_pStreetED->SetText(aItem.aCompStreet);
-    m_pZipED->SetText(aItem.aCompZip);
-    m_pCityED->SetText(aItem.aCompCity);
-    m_pCountryED->SetText(aItem.aCompCountry);
-    m_pStateED->SetText(aItem.aCompState);
-    m_pPositionED->SetText(aItem.aCompPosition);
-    m_pPhoneED->SetText(aItem.aCompPhone);
-    m_pMobilePhoneED->SetText(aItem.aCompMobile);
-    m_pFaxED->SetText(aItem.aCompFax);
-    m_pHomePageED->SetText(aItem.aCompWWW);
-    m_pMailED->SetText(aItem.aCompMail);
+    m_pCompanyED->SetText(aItem.m_aCompCompany);
+    m_pCompanyExtED->SetText(aItem.m_aCompCompanyExt);
+    m_pSloganED->SetText(aItem.m_aCompSlogan);
+    m_pStreetED->SetText(aItem.m_aCompStreet);
+    m_pZipED->SetText(aItem.m_aCompZip);
+    m_pCityED->SetText(aItem.m_aCompCity);
+    m_pCountryED->SetText(aItem.m_aCompCountry);
+    m_pStateED->SetText(aItem.m_aCompState);
+    m_pPositionED->SetText(aItem.m_aCompPosition);
+    m_pPhoneED->SetText(aItem.m_aCompPhone);
+    m_pMobilePhoneED->SetText(aItem.m_aCompMobile);
+    m_pFaxED->SetText(aItem.m_aCompFax);
+    m_pHomePageED->SetText(aItem.m_aCompWWW);
+    m_pMailED->SetText(aItem.m_aCompMail);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

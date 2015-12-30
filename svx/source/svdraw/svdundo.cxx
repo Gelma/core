@@ -57,28 +57,27 @@ static void ImplUnmarkObject( SdrObject* pObj )
 
 
 
-TYPEINIT1(SdrUndoAction,SfxUndoAction);
 
 SdrUndoAction::~SdrUndoAction() {}
 
 bool SdrUndoAction::CanRepeat(SfxRepeatTarget& rView) const
 {
-    SdrView* pV=PTR_CAST(SdrView,&rView);
-    if (pV!=NULL) return CanSdrRepeat(*pV);
+    SdrView* pV=dynamic_cast<SdrView*>( &rView );
+    if (pV!=nullptr) return CanSdrRepeat(*pV);
     return false;
 }
 
 void SdrUndoAction::Repeat(SfxRepeatTarget& rView)
 {
-    SdrView* pV=PTR_CAST(SdrView,&rView);
-    if (pV!=NULL) SdrRepeat(*pV);
-    DBG_ASSERT(pV!=NULL,"Repeat: SfxRepeatTarget that was handed over is not a SdrView");
+    SdrView* pV=dynamic_cast<SdrView*>( &rView );
+    if (pV!=nullptr) SdrRepeat(*pV);
+    DBG_ASSERT(pV!=nullptr,"Repeat: SfxRepeatTarget that was handed over is not a SdrView");
 }
 
 OUString SdrUndoAction::GetRepeatComment(SfxRepeatTarget& rView) const
 {
-    SdrView* pV=PTR_CAST(SdrView,&rView);
-    if (pV!=NULL) return GetSdrRepeatComment(*pV);
+    SdrView* pV=dynamic_cast<SdrView*>( &rView );
+    if (pV!=nullptr) return GetSdrRepeatComment(*pV);
     return OUString();
 }
 
@@ -265,21 +264,21 @@ void SdrUndoAttrObj::ensureStyleSheetInStyleSheetPool(SfxStyleSheetBasePool& rSt
 
 SdrUndoAttrObj::SdrUndoAttrObj(SdrObject& rNewObj, bool bStyleSheet1, bool bSaveText)
     : SdrUndoObj(rNewObj)
-    , pUndoSet(NULL)
-    , pRedoSet(NULL)
-    , pRepeatSet(NULL)
+    , pUndoSet(nullptr)
+    , pRedoSet(nullptr)
+    , pRepeatSet(nullptr)
     , mxUndoStyleSheet()
     , mxRedoStyleSheet()
     , bHaveToTakeRedoSet(true)
-    , pTextUndo(NULL)
-    , pTextRedo(NULL)
-    , pUndoGroup(NULL)
+    , pTextUndo(nullptr)
+    , pTextRedo(nullptr)
+    , pUndoGroup(nullptr)
 {
     bStyleSheet = bStyleSheet1;
 
     SdrObjList* pOL = rNewObj.GetSubList();
-    bool bIsGroup(pOL!=NULL && pOL->GetObjCount());
-    bool bIs3DScene(bIsGroup && pObj->ISA(E3dScene));
+    bool bIsGroup(pOL!=nullptr && pOL->GetObjCount());
+    bool bIs3DScene(bIsGroup && dynamic_cast< E3dScene* >(pObj) !=  nullptr);
 
     if(bIsGroup)
     {
@@ -323,7 +322,7 @@ SdrUndoAttrObj::~SdrUndoAttrObj()
 void SdrUndoAttrObj::Undo()
 {
     E3DModifySceneSnapRectUpdater aUpdater(pObj);
-    bool bIs3DScene(pObj && pObj->ISA(E3dScene));
+    bool bIs3DScene(dynamic_cast< E3dScene* >(pObj) !=  nullptr);
 
     // Trigger PageChangeCall
     ImpShowPageOfThisObject();
@@ -379,7 +378,7 @@ void SdrUndoAttrObj::Undo()
 
         if(pUndoSet)
         {
-            if(pObj->ISA(SdrCaptionObj))
+            if(dynamic_cast<const SdrCaptionObj*>( pObj) !=  nullptr)
             {
                 // do a more smooth item deletion here, else the text
                 // rect will be reformatted, especially when information regarding
@@ -430,7 +429,7 @@ void SdrUndoAttrObj::Undo()
 void SdrUndoAttrObj::Redo()
 {
     E3DModifySceneSnapRectUpdater aUpdater(pObj);
-    bool bIs3DScene(pObj && pObj->ISA(E3dScene));
+    bool bIs3DScene(dynamic_cast< E3dScene* >(pObj) !=  nullptr);
 
     if(!pUndoGroup || bIs3DScene)
     {
@@ -456,7 +455,7 @@ void SdrUndoAttrObj::Redo()
 
         if(pRedoSet)
         {
-            if(pObj->ISA(SdrCaptionObj))
+            if(dynamic_cast<const SdrCaptionObj*>( pObj) !=  nullptr)
             {
                 // do a more smooth item deletion here, else the text
                 // rect will be reformatted, especially when information regarding
@@ -534,7 +533,7 @@ void SdrUndoAttrObj::SdrRepeat(SdrView& rView)
 
 bool SdrUndoAttrObj::CanSdrRepeat(SdrView& rView) const
 {
-    return (pRepeatSet!=0L && rView.AreObjectsMarked());
+    return (pRepeatSet!=nullptr && rView.AreObjectsMarked());
 }
 
 OUString SdrUndoAttrObj::GetSdrRepeatComment(SdrView& /*rView*/) const
@@ -601,12 +600,12 @@ OUString SdrUndoMoveObj::GetSdrRepeatComment(SdrView& /*rView*/) const
 
 SdrUndoGeoObj::SdrUndoGeoObj(SdrObject& rNewObj)
      : SdrUndoObj(rNewObj)
-     , pUndoGeo(NULL)
-     , pRedoGeo(NULL)
-     , pUndoGroup(NULL)
+     , pUndoGeo(nullptr)
+     , pRedoGeo(nullptr)
+     , pUndoGroup(nullptr)
 {
     SdrObjList* pOL=rNewObj.GetSubList();
-    if (pOL!=NULL && pOL->GetObjCount() && !rNewObj.ISA(E3dScene))
+    if (pOL!=nullptr && pOL->GetObjCount() && dynamic_cast<const E3dScene* >( &rNewObj) ==  nullptr)
     {
         // this is a group object!
         // If this were 3D scene, we'd only add an Undo for the scene itself
@@ -682,8 +681,6 @@ OUString SdrUndoGeoObj::GetComment() const
 SdrUndoObjList::SdrUndoObjList(SdrObject& rNewObj, bool bOrdNumDirect)
     : SdrUndoObj(rNewObj)
     , bOwner(false)
-    , pView(NULL)
-    , pPageView(NULL)
 {
     pObjList=pObj->GetObjList();
     if (bOrdNumDirect)
@@ -700,7 +697,7 @@ SdrUndoObjList::~SdrUndoObjList()
 {
     SolarMutexGuard aGuard;
 
-    if (pObj!=NULL && IsOwner())
+    if (pObj!=nullptr && IsOwner())
     {
         // Attribute have to go back to the regular Pool
         SetOwner(false);
@@ -729,9 +726,7 @@ void SdrUndoRemoveObj::Undo()
         // position of the target object.
         Point aOwnerAnchorPos(0, 0);
 
-        if(pObjList &&
-           pObjList->GetOwnerObj() &&
-           pObjList->GetOwnerObj()->ISA(SdrObjGroup))
+        if (dynamic_cast<const SdrObjGroup*>(pObjList->GetOwnerObj()) != nullptr)
         {
             aOwnerAnchorPos = pObjList->GetOwnerObj()->GetAnchorPos();
         }
@@ -792,9 +787,7 @@ void SdrUndoInsertObj::Redo()
         // which becomes a member of a group, because its cleared in method
         // <InsertObject(..)>. Needed for correct Redo in Writer. (#i45952#)
         Point aAnchorPos( 0, 0 );
-        if ( pObjList &&
-             pObjList->GetOwnerObj() &&
-             pObjList->GetOwnerObj()->ISA(SdrObjGroup) )
+        if (dynamic_cast<const SdrObjGroup*>(pObjList->GetOwnerObj()) != nullptr)
         {
             aAnchorPos = pObj->GetAnchorPos();
         }
@@ -906,7 +899,7 @@ SdrUndoReplaceObj::SdrUndoReplaceObj(SdrObject& rOldObj1, SdrObject& rNewObj1, b
 
 SdrUndoReplaceObj::~SdrUndoReplaceObj()
 {
-    if (pObj!=NULL && IsOldOwner())
+    if (pObj!=nullptr && IsOldOwner())
     {
         // Attribute have to go back into the Pool
         SetOldOwner(false);
@@ -914,7 +907,7 @@ SdrUndoReplaceObj::~SdrUndoReplaceObj()
         // now delete
         SdrObject::Free( pObj );
     }
-    if (pNewObj!=NULL && IsNewOwner())
+    if (pNewObj!=nullptr && IsNewOwner())
     {
         // Attribute have to go back into the Pool
         SetNewOwner(false);
@@ -1023,7 +1016,7 @@ void SdrUndoObjOrdNum::Undo()
     ImpShowPageOfThisObject();
 
     SdrObjList* pOL=pObj->GetObjList();
-    if (pOL==NULL)
+    if (pOL==nullptr)
     {
         OSL_FAIL("UndoObjOrdNum: pObj does not have an ObjList.");
         return;
@@ -1034,7 +1027,7 @@ void SdrUndoObjOrdNum::Undo()
 void SdrUndoObjOrdNum::Redo()
 {
     SdrObjList* pOL=pObj->GetObjList();
-    if (pOL==NULL)
+    if (pOL==nullptr)
     {
         OSL_FAIL("RedoObjOrdNum: pObj does not have an ObjList.");
         return;
@@ -1056,8 +1049,8 @@ OUString SdrUndoObjOrdNum::GetComment() const
 
 SdrUndoObjSetText::SdrUndoObjSetText(SdrObject& rNewObj, sal_Int32 nText)
     : SdrUndoObj(rNewObj)
-    , pOldText(NULL)
-    , pNewText(NULL)
+    , pOldText(nullptr)
+    , pNewText(nullptr)
     , bNewTextAvailable(false)
     , bEmptyPresObj(false)
     , mnText(nText)
@@ -1110,7 +1103,7 @@ void SdrUndoObjSetText::Undo()
     if (pText)
     {
         // copy text for Undo, because the original now belongs to SetOutlinerParaObject()
-        OutlinerParaObject* pText1 = pOldText ? new OutlinerParaObject(*pOldText) : NULL;
+        OutlinerParaObject* pText1 = pOldText ? new OutlinerParaObject(*pOldText) : nullptr;
         pText->SetOutlinerParaObject(pText1);
         pTarget->NbcSetOutlinerParaObjectForText(pText1, pText);
     }
@@ -1119,7 +1112,7 @@ void SdrUndoObjSetText::Undo()
     pTarget->ActionChanged();
 
     // #i124389# if it's a table, also need to relayout TextFrame
-    if(0 != dynamic_cast< sdr::table::SdrTableObj* >(pTarget))
+    if(dynamic_cast< sdr::table::SdrTableObj* >(pTarget) !=  nullptr)
     {
         pTarget->NbcAdjustTextFrameWidthAndHeight();
     }
@@ -1145,14 +1138,14 @@ void SdrUndoObjSetText::Redo()
     if (pText)
     {
         // copy text for Undo, because the original now belongs to SetOutlinerParaObject()
-        OutlinerParaObject* pText1 = pNewText ? new OutlinerParaObject(*pNewText) : NULL;
+        OutlinerParaObject* pText1 = pNewText ? new OutlinerParaObject(*pNewText) : nullptr;
         pTarget->NbcSetOutlinerParaObjectForText( pText1, pText );
     }
 
     pTarget->ActionChanged();
 
     // #i124389# if it's a table, also need to relayout TextFrame
-    if(0 != dynamic_cast< sdr::table::SdrTableObj* >(pTarget))
+    if(dynamic_cast< sdr::table::SdrTableObj* >(pTarget) !=  nullptr)
     {
         pTarget->NbcAdjustTextFrameWidthAndHeight();
     }
@@ -1198,14 +1191,14 @@ void SdrUndoObjSetText::SdrRepeat(SdrView& rView)
         for (size_t nm=0; nm<nCount; ++nm)
         {
             SdrObject* pObj2=rML.GetMark(nm)->GetMarkedSdrObj();
-            SdrTextObj* pTextObj=PTR_CAST(SdrTextObj,pObj2);
-            if (pTextObj!=NULL)
+            SdrTextObj* pTextObj=dynamic_cast<SdrTextObj*>( pObj2 );
+            if (pTextObj!=nullptr)
             {
                 if( bUndo )
                     rView.AddUndo(new SdrUndoObjSetText(*pTextObj,0));
 
                 OutlinerParaObject* pText1=pNewText;
-                if (pText1!=NULL)
+                if (pText1!=nullptr)
                     pText1 = new OutlinerParaObject(*pText1);
                 pTextObj->SetOutlinerParaObject(pText1);
             }
@@ -1404,7 +1397,7 @@ void SdrUndoPage::ImpRemovePage(sal_uInt16 nNum)
     DBG_ASSERT(mrPage.IsInserted(),"SdrUndoPage::ImpRemovePage(): mrPage is not inserted.");
     if (mrPage.IsInserted())
     {
-        SdrPage* pChkPg=NULL;
+        SdrPage* pChkPg=nullptr;
         if (mrPage.IsMasterPage())
         {
             pChkPg=rMod.RemoveMasterPage(nNum);
@@ -1460,7 +1453,7 @@ SdrUndoPageList::~SdrUndoPageList()
 
 SdrUndoDelPage::SdrUndoDelPage(SdrPage& rNewPg)
     : SdrUndoPageList(rNewPg)
-    , pUndoGroup(NULL)
+    , pUndoGroup(nullptr)
 {
     bItsMine = true;
 
@@ -1499,7 +1492,7 @@ SdrUndoDelPage::~SdrUndoDelPage()
 void SdrUndoDelPage::Undo()
 {
     ImpInsertPage(nPageNum);
-    if (pUndoGroup!=NULL)
+    if (pUndoGroup!=nullptr)
     {
         // recover master page relationships
         pUndoGroup->Undo();
@@ -1519,14 +1512,14 @@ void SdrUndoDelPage::Redo()
 OUString SdrUndoDelPage::GetComment() const
 {
     OUString aStr;
-    ImpTakeDescriptionStr(STR_UndoDelPage,aStr,0);
+    ImpTakeDescriptionStr(STR_UndoDelPage,aStr);
     return aStr;
 }
 
 OUString SdrUndoDelPage::GetSdrRepeatComment(SdrView& /*rView*/) const
 {
     OUString aStr;
-    ImpTakeDescriptionStr(STR_UndoDelPage,aStr,0);
+    ImpTakeDescriptionStr(STR_UndoDelPage,aStr);
     return aStr;
 }
 
@@ -1558,7 +1551,7 @@ void SdrUndoNewPage::Redo()
 OUString SdrUndoNewPage::GetComment() const
 {
     OUString aStr;
-    ImpTakeDescriptionStr(STR_UndoNewPage,aStr,0);
+    ImpTakeDescriptionStr(STR_UndoNewPage,aStr);
     return aStr;
 }
 
@@ -1567,14 +1560,14 @@ OUString SdrUndoNewPage::GetComment() const
 OUString SdrUndoCopyPage::GetComment() const
 {
     OUString aStr;
-    ImpTakeDescriptionStr(STR_UndoCopPage,aStr,0);
+    ImpTakeDescriptionStr(STR_UndoCopPage,aStr);
     return aStr;
 }
 
 OUString SdrUndoCopyPage::GetSdrRepeatComment(SdrView& /*rView*/) const
 {
     OUString aStr;
-    ImpTakeDescriptionStr(STR_UndoCopPage,aStr,0);
+    ImpTakeDescriptionStr(STR_UndoCopPage,aStr);
     return aStr;
 }
 
@@ -1603,7 +1596,7 @@ void SdrUndoSetPageNum::Redo()
 OUString SdrUndoSetPageNum::GetComment() const
 {
     OUString aStr;
-    ImpTakeDescriptionStr(STR_UndoMovPage,aStr,0);
+    ImpTakeDescriptionStr(STR_UndoMovPage,aStr);
     return aStr;
 }
 
@@ -1646,7 +1639,7 @@ void SdrUndoPageRemoveMasterPage::Redo()
 OUString SdrUndoPageRemoveMasterPage::GetComment() const
 {
     OUString aStr;
-    ImpTakeDescriptionStr(STR_UndoDelPageMasterDscr,aStr,0);
+    ImpTakeDescriptionStr(STR_UndoDelPageMasterDscr,aStr);
     return aStr;
 }
 
@@ -1690,7 +1683,7 @@ void SdrUndoPageChangeMasterPage::Redo()
 OUString SdrUndoPageChangeMasterPage::GetComment() const
 {
     OUString aStr;
-    ImpTakeDescriptionStr(STR_UndoChgPageMasterDscr,aStr,0);
+    ImpTakeDescriptionStr(STR_UndoChgPageMasterDscr,aStr);
     return aStr;
 }
 

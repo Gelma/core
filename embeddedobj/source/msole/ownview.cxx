@@ -56,7 +56,7 @@ public:
     virtual ~DummyHandler_Impl();
 
     virtual void SAL_CALL handle( const uno::Reference< task::XInteractionRequest >& xRequest )
-            throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( uno::RuntimeException, std::exception ) override;
 };
 
 
@@ -133,7 +133,7 @@ bool OwnView_Impl::CreateModelFromURL( const OUString& aFileURL )
 
             uno::Reference< frame::XModel > xModel( xDocumentLoader->loadComponentFromURL(
                                                             aFileURL,
-                                                            OUString( "_blank" ),
+                                                            "_blank",
                                                             0,
                                                             aArgs ),
                                                         uno::UNO_QUERY );
@@ -186,7 +186,7 @@ bool OwnView_Impl::CreateModel( bool bUseNative )
 
 
 OUString OwnView_Impl::GetFilterNameFromExtentionAndInStream(
-                                                    const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XMultiServiceFactory >& xFactory,
+                                                    const css::uno::Reference< css::lang::XMultiServiceFactory >& xFactory,
                                                     const OUString& aNameWithExtention,
                                                     const uno::Reference< io::XInputStream >& xInputStream )
 {
@@ -412,7 +412,7 @@ void OwnView_Impl::CreateNative()
         aArgs[0] <<= xInStream;
         uno::Reference< container::XNameAccess > xNameAccess(
                 m_xFactory->createInstanceWithArguments(
-                        OUString( "com.sun.star.embed.OLESimpleStorage" ),
+                        "com.sun.star.embed.OLESimpleStorage",
                         aArgs ),
                 uno::UNO_QUERY_THROW );
 
@@ -541,7 +541,7 @@ void OwnView_Impl::Close()
         if ( !m_xModel.is() )
             return;
         xModel = m_xModel;
-        m_xModel = uno::Reference< frame::XModel >();
+        m_xModel.clear();
 
         if ( m_bBusy )
             return;
@@ -584,7 +584,7 @@ void SAL_CALL OwnView_Impl::notifyEvent( const document::EventObject& aEvent )
         {
             // SaveAs operation took place, so just forget the model and deregister listeners
             xModel = m_xModel;
-            m_xModel = uno::Reference< frame::XModel >();
+            m_xModel.clear();
         }
     }
 
@@ -621,7 +621,7 @@ void SAL_CALL OwnView_Impl::notifyClosing( const lang::EventObject& Source )
 {
     ::osl::MutexGuard aGuard( m_aMutex );
     if ( Source.Source == m_xModel )
-        m_xModel = uno::Reference< frame::XModel >();
+        m_xModel.clear();
 }
 
 
@@ -630,7 +630,7 @@ void SAL_CALL OwnView_Impl::disposing( const lang::EventObject& Source )
 {
     ::osl::MutexGuard aGuard( m_aMutex );
     if ( Source.Source == m_xModel )
-        m_xModel = uno::Reference< frame::XModel >();
+        m_xModel.clear();
 };
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

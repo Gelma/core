@@ -23,7 +23,7 @@
 rtl::OUString CFStringToOUString(const CFStringRef sOrig) {
     //DBG_PRINT_ENTRY("CFStringUtilities", __func__, "sOrig", sOrig);
 
-    if (NULL == sOrig) {
+    if (nullptr == sOrig) {
         return rtl::OUString();
     }
 
@@ -41,13 +41,13 @@ rtl::OUString CFStringToOUString(const CFStringRef sOrig) {
 
     //DBG_PRINT_EXIT("CFStringUtilities", __func__, unichars);
 
-    return rtl::OUString(unichars);
+    return rtl::OUString(reinterpret_cast<sal_Unicode *>(unichars));
 }
 
 CFStringRef CFStringCreateWithOUString(const rtl::OUString& aString) {
     //DBG_PRINT_ENTRY("CFStringUtilities", __func__);
 
-    CFStringRef ref = CFStringCreateWithCharacters(kCFAllocatorDefault, aString.getStr(), aString.getLength());
+    CFStringRef ref = CFStringCreateWithCharacters(kCFAllocatorDefault, reinterpret_cast<UniChar const *>(aString.getStr()), aString.getLength());
 
     //DBG_PRINT_EXIT("CFStringUtilities", __func__, ref);
 
@@ -59,7 +59,7 @@ rtl::OUString FSRefToOUString(FSRef const & fsRef, InfoType info)
     //DBG_PRINT_ENTRY("CFStringUtilities", __func__);
 
     SAL_WNODEPRECATED_DECLARATIONS_PUSH //TODO: 10.9 CFURLCreateFromFSRef
-    CFURLRef aUrlRef = CFURLCreateFromFSRef(NULL, &fsRef);
+    CFURLRef aUrlRef = CFURLCreateFromFSRef(nullptr, &fsRef);
     SAL_WNODEPRECATED_DECLARATIONS_POP
 
     rtl::OUString sResult = CFURLRefToOUString(aUrlRef, info);
@@ -76,7 +76,7 @@ rtl::OUString CFURLRefToOUString(CFURLRef aUrlRef, InfoType info)
 {
     //DBG_PRINT_ENTRY("CFStringUtilities", __func__);
 
-    CFStringRef sURLString = NULL;
+    CFStringRef sURLString = nullptr;
 
     switch(info) {
         case FULLPATH:
@@ -88,18 +88,18 @@ rtl::OUString CFURLRefToOUString(CFURLRef aUrlRef, InfoType info)
             {
                 SAL_INFO("fpicker.aqua","Extracting the file name of an item");
                 CFStringRef fullString = CFURLGetString(aUrlRef);
-                CFURLRef dirRef = CFURLCreateCopyDeletingLastPathComponent(NULL,aUrlRef);
+                CFURLRef dirRef = CFURLCreateCopyDeletingLastPathComponent(nullptr,aUrlRef);
                 CFIndex dirLength = CFStringGetLength(CFURLGetString(dirRef));
                 CFRelease(dirRef);
                 CFIndex fullLength = CFStringGetLength(fullString);
                 CFRange substringRange = CFRangeMake(dirLength, fullLength - dirLength);
-                sURLString = CFStringCreateWithSubstring(NULL, fullString, substringRange);
+                sURLString = CFStringCreateWithSubstring(nullptr, fullString, substringRange);
             }
             break;
         case PATHWITHOUTLASTCOMPONENT:
             {
                 SAL_INFO("fpicker.aqua","Extracting the last but one component of an item's path");
-                CFURLRef directoryRef = CFURLCreateCopyDeletingLastPathComponent(NULL,aUrlRef);
+                CFURLRef directoryRef = CFURLCreateCopyDeletingLastPathComponent(nullptr,aUrlRef);
                 sURLString = CFURLGetString(directoryRef);
                 CFRetain(sURLString);
                 CFRelease(directoryRef);

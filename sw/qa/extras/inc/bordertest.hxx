@@ -6,16 +6,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+#ifndef INCLUDED_SW_QA_EXTRAS_INC_BORDERTEST_HXX
+#define INCLUDED_SW_QA_EXTRAS_INC_BORDERTEST_HXX
 
 #include <com/sun/star/table/XCell.hpp>
 #include <com/sun/star/table/BorderLine.hpp>
 #include <com/sun/star/text/XTextTable.hpp>
 
-#ifndef INCLUDED_SW_QA_EXTRAS_INC_BORDERTEST_HXX
-#define INCLUDED_SW_QA_EXTRAS_INC_BORDERTEST_HXX
 
-typedef std::map<OUString, com::sun::star::table::BorderLine> BorderLineMap;
-typedef std::pair<OUString, com::sun::star::table::BorderLine> StringBorderPair;
+typedef std::map<OUString, css::table::BorderLine> BorderLineMap;
+typedef std::pair<OUString, css::table::BorderLine> StringBorderPair;
 
 using namespace com::sun::star;
 

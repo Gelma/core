@@ -213,7 +213,7 @@ static const std::map<InetMessageMime, const char*> ImplINetMIMEMessageHeaderDat
 };
 
 INetMIMEMessage::INetMIMEMessage()
-    : pParent(NULL)
+    : pParent(nullptr)
 {
     for (sal_uInt16 i = 0; i < static_cast<int>(InetMessageMime::NUMHDR); i++)
         m_nMIMEIndex[static_cast<InetMessageMime>(i)] = CONTAINER_ENTRY_NOTFOUND;
@@ -260,7 +260,7 @@ void INetMIMEMessage::SetContentTransferEncoding (
 
 OUString INetMIMEMessage::GetDefaultContentType()
 {
-    if (pParent != NULL)
+    if (pParent != nullptr)
     {
         OUString aParentCT (pParent->GetContentType());
         if (aParentCT.isEmpty())
@@ -290,10 +290,10 @@ bool INetMIMEMessage::EnableAttachMultipartFormDataChild()
     m_aBoundary += sTail;
 
     // Set header fields.
-    SetMIMEVersion(OUString("1.0"));
+    SetMIMEVersion("1.0");
     SetContentType(
         OUString::fromUtf8("multipart/form-data; boundary=" + m_aBoundary));
-    SetContentTransferEncoding(OUString("7bit"));
+    SetContentTransferEncoding("7bit");
 
     // Done.
     return true;

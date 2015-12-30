@@ -22,6 +22,7 @@
 #include <osl/thread.h>
 #include "dbase/DIndex.hxx"
 #include <tools/debug.hxx>
+#include <tools/stream.hxx>
 
 #include <algorithm>
 #include <memory>
@@ -75,7 +76,7 @@ ONDXPage::ONDXPage(ODbaseIndex& rInd, sal_uInt32 nPos, ONDXPage* pParent)
            ,nCount(0)
            ,aParent(pParent)
            ,rIndex(rInd)
-           ,ppNodes(NULL)
+           ,ppNodes(nullptr)
 {
     sal_uInt16 nT = rIndex.getHeader().db_maxkeys;
     ppNodes = new ONDXNode[nT];
@@ -820,7 +821,7 @@ ONDXPagePtr::ONDXPagePtr(const ONDXPagePtr& rRef)
               :mpPage(rRef.mpPage)
               ,nPagePos(rRef.nPagePos)
 {
-    if (mpPage != 0)
+    if (mpPage != nullptr)
         mpPage->AddNextRef();
 }
 
@@ -829,7 +830,7 @@ ONDXPagePtr::ONDXPagePtr(ONDXPage* pRefPage)
               :mpPage(pRefPage)
               ,nPagePos(0)
 {
-    if (mpPage != 0)
+    if (mpPage != nullptr)
         mpPage->AddFirstRef();
     if (pRefPage)
         nPagePos = pRefPage->GetPagePos();
@@ -837,12 +838,12 @@ ONDXPagePtr::ONDXPagePtr(ONDXPage* pRefPage)
 
 ONDXPagePtr& ONDXPagePtr::operator=(ONDXPagePtr const & rOther)
 {
-    if (rOther.mpPage != 0) {
+    if (rOther.mpPage != nullptr) {
         rOther.mpPage->AddNextRef();
     }
     ONDXPage * pOldObj = mpPage;
     mpPage = rOther.mpPage;
-    if (pOldObj != 0) {
+    if (pOldObj != nullptr) {
         pOldObj->ReleaseRef();
     }
     return *this;
@@ -894,11 +895,10 @@ SvStream& connectivity::dbase::WriteONDXPage(SvStream &rStream, const ONDXPage& 
         sal_Size nRemainSize = nBufferSize - nTell;
         if ( nRemainSize <= nBufferSize )
         {
-            char* pEmptyData = new char[nRemainSize];
-            memset(pEmptyData,0x00,nRemainSize);
-            rStream.Write(pEmptyData, nRemainSize);
+            std::unique_ptr<char[]> pEmptyData( new char[nRemainSize] );
+            memset(pEmptyData.get(), 0x00, nRemainSize);
+            rStream.Write(pEmptyData.get(), nRemainSize);
             rStream.Seek(nTell);
-            delete [] pEmptyData;
         }
     }
     return rStream;

@@ -60,13 +60,12 @@ void SdrPageObj::PageInDestruction(const SdrPage& rPage)
         // lead to the construction of a view contact object for a page that
         // is being destroyed.
 
-        mpShownPage = 0L;
+        mpShownPage = nullptr;
     }
 }
 
 
 
-TYPEINIT1(SdrPageObj,SdrObject);
 
 SdrPageObj::SdrPageObj(SdrPage* pNewPage)
 :   mpShownPage(pNewPage)

@@ -35,13 +35,13 @@ class SvXMLImportContext;
 /** import the data type declarations from an xsd:schema element */
 class SchemaContext : public TokenContext
 {
-    com::sun::star::uno::Reference<com::sun::star::xforms::XDataTypeRepository> mxRepository;
+    css::uno::Reference<css::xforms::XDataTypeRepository> mxRepository;
 
 public:
     SchemaContext( SvXMLImport& rImport,
                    sal_uInt16 nPrfx,
                    const OUString& rLName,
-                   const com::sun::star::uno::Reference<com::sun::star::xforms::XDataTypeRepository>& rRepository );
+                   const css::uno::Reference<css::xforms::XDataTypeRepository>& rRepository );
     virtual ~SchemaContext();
 
     // implement TokenContext methods:
@@ -49,13 +49,13 @@ public:
 protected:
     virtual void HandleAttribute(
         sal_uInt16 nToken,
-        const OUString& rValue ) SAL_OVERRIDE;
+        const OUString& rValue ) override;
 
     virtual SvXMLImportContext* HandleChild(
         sal_uInt16 nToken,
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const com::sun::star::uno::Reference<com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList ) override;
 };
 
 #endif

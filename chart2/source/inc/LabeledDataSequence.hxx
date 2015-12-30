@@ -45,9 +45,7 @@ class LabeledDataSequence :
         public impl::LabeledDataSequence_Base
 {
 public:
-    explicit LabeledDataSequence(
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::uno::XComponentContext > & xContext );
+    explicit LabeledDataSequence();
     explicit LabeledDataSequence(
         const ::com::sun::star::uno::Reference<
             ::com::sun::star::chart2::data::XDataSequence > & rValues );
@@ -61,11 +59,11 @@ public:
 
     /// declare XServiceInfo methods
     virtual OUString SAL_CALL getImplementationName()
-            throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
     virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName )
-            throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
     virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-            throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
 
     static OUString getImplementationName_Static();
     static css::uno::Sequence< OUString > getSupportedServiceNames_Static();
@@ -73,33 +71,32 @@ public:
 protected:
     // ____ XLabeledDataSequence ____
     virtual ::com::sun::star::uno::Reference< ::com::sun::star::chart2::data::XDataSequence > SAL_CALL getValues()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL setValues(
         const ::com::sun::star::uno::Reference< ::com::sun::star::chart2::data::XDataSequence >& xSequence )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
     virtual ::com::sun::star::uno::Reference< ::com::sun::star::chart2::data::XDataSequence > SAL_CALL getLabel()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL setLabel(
         const ::com::sun::star::uno::Reference< ::com::sun::star::chart2::data::XDataSequence >& xSequence )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
     // ____ XCloneable ____
     virtual ::com::sun::star::uno::Reference< ::com::sun::star::util::XCloneable > SAL_CALL createClone()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
     // ____ XModifyBroadcaster ____
     virtual void SAL_CALL addModifyListener(
         const ::com::sun::star::uno::Reference< ::com::sun::star::util::XModifyListener >& aListener )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL removeModifyListener(
         const ::com::sun::star::uno::Reference< ::com::sun::star::util::XModifyListener >& aListener )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
 private:
     ::com::sun::star::uno::Reference< ::com::sun::star::chart2::data::XDataSequence > m_xData;
     ::com::sun::star::uno::Reference< ::com::sun::star::chart2::data::XDataSequence > m_xLabel;
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >      m_xContext;
     ::com::sun::star::uno::Reference< ::com::sun::star::util::XModifyListener >       m_xModifyEventForwarder;
 };
 

@@ -133,8 +133,8 @@ SwEnvDlg::SwEnvDlg(vcl::Window* pParent, const SfxItemSet& rSet,
     , aEnvItem(static_cast<const SwEnvItem&>( rSet.Get(FN_ENVELOP)))
     , pSh(pWrtSh)
     , pPrinter(pPrt)
-    , pAddresseeSet(0)
-    , pSenderSet(0)
+    , pAddresseeSet(nullptr)
+    , pSenderSet(nullptr)
     , m_nEnvPrintId(0)
 {
     if (!bInsert)
@@ -142,9 +142,9 @@ SwEnvDlg::SwEnvDlg(vcl::Window* pParent, const SfxItemSet& rSet,
         GetUserButton()->SetText(get<PushButton>("modify")->GetText());
     }
 
-    AddTabPage("envelope", SwEnvPage   ::Create, 0);
-    AddTabPage("format", SwEnvFormatPage::Create, 0);
-    m_nEnvPrintId = AddTabPage("printer", SwEnvPrtPage::Create, 0);
+    AddTabPage("envelope", SwEnvPage   ::Create, nullptr);
+    AddTabPage("format", SwEnvFormatPage::Create, nullptr);
+    m_nEnvPrintId = AddTabPage("printer", SwEnvPrtPage::Create, nullptr);
 }
 
 SwEnvDlg::~SwEnvDlg()
@@ -247,13 +247,13 @@ void SwEnvPage::dispose()
     SfxTabPage::dispose();
 }
 
-IMPL_LINK( SwEnvPage, DatabaseHdl, ListBox *, pListBox )
+IMPL_LINK_TYPED( SwEnvPage, DatabaseHdl, ListBox&, rListBox, void )
 {
     SwWait aWait( *pSh->GetView().GetDocShell(), true );
 
-    if (pListBox == m_pDatabaseLB)
+    if (&rListBox == m_pDatabaseLB)
     {
-        sActDBName = pListBox->GetSelectEntry();
+        sActDBName = rListBox.GetSelectEntry();
         pSh->GetDBManager()->GetTableNames(m_pTableLB, sActDBName);
         sActDBName += OUString(DB_DELIM);
     }
@@ -263,14 +263,13 @@ IMPL_LINK( SwEnvPage, DatabaseHdl, ListBox *, pListBox )
     }
     pSh->GetDBManager()->GetColumnNames(m_pDBFieldLB, m_pDatabaseLB->GetSelectEntry(),
                                        m_pTableLB->GetSelectEntry());
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(SwEnvPage, FieldHdl, Button*, void)
 {
     OUString aStr("<" + m_pDatabaseLB->GetSelectEntry() + "." +
                   m_pTableLB->GetSelectEntry() + "." +
-                  OUString(m_pTableLB->GetSelectEntryData() == 0 ? '0' : '1') + "." +
+                  OUString(m_pTableLB->GetSelectEntryData() == nullptr ? '0' : '1') + "." +
                   m_pDBFieldLB->GetSelectEntry() + ">");
     m_pAddrEdit->ReplaceSelected(aStr);
     Selection aSel = m_pAddrEdit->GetSelection();

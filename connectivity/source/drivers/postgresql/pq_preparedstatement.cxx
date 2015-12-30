@@ -297,7 +297,7 @@ void PreparedStatement::close(  ) throw (SQLException, RuntimeException, std::ex
     Reference< XCloseable > resultSet;
     {
         MutexGuard guard( m_refMutex->mutex );
-        m_pSettings = 0;
+        m_pSettings = nullptr;
         r = m_connection;
         m_connection.clear();
 
@@ -429,7 +429,7 @@ sal_Bool PreparedStatement::execute( )
     data.pLastTableInserted = &m_lastTableInserted;
     data.pLastResultset = &m_lastResultset;
     data.owner = *this;
-    data.tableSupplier = Reference< com::sun::star::sdbcx::XTablesSupplier >( m_connection, UNO_QUERY );
+    data.tableSupplier.set( m_connection, UNO_QUERY );
     data.concurrency = extractIntProperty( this, getStatics().RESULT_SET_CONCURRENCY );
 
     return executePostgresCommand( m_executedStatement , &data );   // see pq_statement.cxx
@@ -725,7 +725,7 @@ void PreparedStatement::setArray(
     const Reference< XArray >& x )
     throw (SQLException, RuntimeException, std::exception)
 {
-    setString( parameterIndex, array2String( x->getArray( 0 ) ) );
+    setString( parameterIndex, array2String( x->getArray( nullptr ) ) );
 }
 
 void PreparedStatement::clearParameters(  )

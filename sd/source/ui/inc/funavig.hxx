@@ -28,11 +28,10 @@ class FuNavigation
     : public FuPoor
 {
 public:
-    TYPEINFO_OVERRIDE();
 
     static rtl::Reference<FuPoor> Create( ViewShell* pViewSh, ::sd::Window* pWin, ::sd::View* pView, SdDrawDocument* pDoc, SfxRequest& rReq );
 
-    virtual void DoExecute( SfxRequest& rReq ) SAL_OVERRIDE;
+    virtual void DoExecute( SfxRequest& rReq ) override;
 
 private:
     FuNavigation (

@@ -232,6 +232,12 @@ gb_CFLAGS += \
 
 endif
 
+ifeq ($(COM_IS_CLANG),TRUE)
+gb_CXXFLAGS += \
+	-Wno-missing-braces \
+
+endif
+
 # rc.exe does not support -nologo in 6.1.6723.1 that is in the Windows SDK 6.0A
 gb_RCFLAGS += -nologo
 
@@ -262,14 +268,22 @@ gb_LinkTarget_LDFLAGS := \
 	$(if $(findstring s,$(filter-out --%,$(MAKEFLAGS))),-nologo,) \
 	$(patsubst %,-LIBPATH:%,$(filter-out .,$(subst ;, ,$(subst \,/,$(ILIB))))) \
 
-gb_DEBUG_CFLAGS := -Zi
+# Prevent warning spamming
+# Happens because of the way we link our unit tests with our libraries.
+gb_LinkTarget_LDFLAGS += \
+	/ignore:4217
+
+
+gb_DEBUGINFO_FLAGS := -Zi
 
 ifeq ($(VCVER),120)
 # Use -FS with VS2013: "Force Synchronous PDB Writes. Forces writes to
 # the program database (PDB) file--created by /Zi or /ZI--to be
 # serialized through MSPDBSRV.EXE"
-gb_DEBUG_CFLAGS+=-FS
+gb_DEBUGINFO_FLAGS+=-FS
 endif
+
+gb_DEBUG_CFLAGS := $(gb_DEBUGINFO_FLAGS)
 
 # this does not use CFLAGS so it is not overridable
 ifeq ($(gb_SYMBOL),$(true))

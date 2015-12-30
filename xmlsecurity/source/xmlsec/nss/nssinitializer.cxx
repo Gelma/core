@@ -22,18 +22,13 @@
  * and turn off the additional virtual methods which are part of some interfaces when compiled
  * with debug
  */
-#ifdef DEBUG
 #undef DEBUG
-#endif
-
 
 #include <com/sun/star/mozilla/XMozillaBootstrap.hpp>
 #include <com/sun/star/xml/crypto/DigestID.hpp>
 #include <com/sun/star/xml/crypto/CipherID.hpp>
 #include <cppuhelper/supportsservice.hxx>
-
 #include <officecfg/Office/Common.hxx>
-
 #include <sal/types.h>
 #include <rtl/instance.hxx>
 #include <rtl/bootstrap.hxx>
@@ -104,9 +99,11 @@ struct GetNSSInitStaticMutex
     }
 };
 
+#ifdef XMLSEC_CRYPTO_NSS
+
 void deleteRootsModule()
 {
-    SECMODModule *RootsModule = 0;
+    SECMODModule *RootsModule = nullptr;
     SECMODModuleList *list = SECMOD_GetDefaultModuleList();
     SECMODListLock *lock = SECMOD_GetDefaultModuleListLock();
     SECMOD_GetReadLock(lock);
@@ -145,7 +142,7 @@ void deleteRootsModule()
             SAL_INFO("xmlsecurity.xmlsec", "Failed to delete \"" << RootsModule->commonName << "\": " << RootsModule->dllName);
         }
         SECMOD_DestroyModule(RootsModule);
-        RootsModule = 0;
+        RootsModule = nullptr;
     }
 }
 
@@ -193,8 +190,7 @@ OString getMozillaCurrentProfile( const css::uno::Reference< css::uno::XComponen
     uno::Reference<uno::XInterface> xInstance = rxContext->getServiceManager()->createInstanceWithContext("com.sun.star.mozilla.MozillaBootstrap", rxContext);
     OSL_ENSURE( xInstance.is(), "failed to create instance" );
 
-    uno::Reference<mozilla::XMozillaBootstrap> xMozillaBootstrap
-        =  uno::Reference<mozilla::XMozillaBootstrap>(xInstance,uno::UNO_QUERY);
+    uno::Reference<mozilla::XMozillaBootstrap> xMozillaBootstrap(xInstance,uno::UNO_QUERY);
     OSL_ENSURE( xMozillaBootstrap.is(), "failed to create instance" );
 
     if (xMozillaBootstrap.is())
@@ -217,6 +213,8 @@ OString getMozillaCurrentProfile( const css::uno::Reference< css::uno::XComponen
     SAL_INFO("xmlsecurity.xmlsec", "No Mozilla profile found");
     return OString();
 }
+
+#endif
 
 //Older versions of Firefox (FF), for example FF2, and Thunderbird (TB) 2 write
 //the roots certificate module (libnssckbi.so), which they use, into the
@@ -276,7 +274,7 @@ bool nsscrypto_initialize( const css::uno::Reference< css::uno::XComponentContex
     if( sCertDir.isEmpty() || !bSuccess )
     {
         SAL_INFO("xmlsecurity.xmlsec", "Initializing NSS without profile.");
-        if ( NSS_NoDB_Init(NULL) != SECSuccess )
+        if ( NSS_NoDB_Init(nullptr) != SECSuccess )
         {
             SAL_INFO("xmlsecurity.xmlsec", "Initializing NSS without profile failed.");
             int errlen = PR_GetErrorTextLength();
@@ -314,7 +312,7 @@ bool nsscrypto_initialize( const css::uno::Reference< css::uno::XComponentContex
             SECMODModule * RootsModule =
                 SECMOD_LoadUserModule(
                     const_cast<char*>(aStr.getStr()),
-                    0, // no parent
+                    nullptr, // no parent
                     PR_FALSE); // do not recurse
 
             if (RootsModule)
@@ -323,7 +321,7 @@ bool nsscrypto_initialize( const css::uno::Reference< css::uno::XComponentContex
                 bool found = RootsModule->loaded;
 
                 SECMOD_DestroyModule(RootsModule);
-                RootsModule = 0;
+                RootsModule = nullptr;
                 if (found)
                     SAL_INFO("xmlsecurity.xmlsec", "Added new root certificate module " ROOT_CERTS " contained in " << ospath);
                 else
@@ -472,9 +470,7 @@ OUString ONSSInitializer_getImplementationName ()
 cssu::Sequence< OUString > SAL_CALL ONSSInitializer_getSupportedServiceNames(  )
     throw (cssu::RuntimeException)
 {
-    cssu::Sequence < OUString > aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = NSS_SERVICE_NAME;
+    cssu::Sequence<OUString> aRet { NSS_SERVICE_NAME };
     return aRet;
 }
 

@@ -45,7 +45,6 @@ class XMLChangeImportContext : public SvXMLImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     /**
      * import a change mark
@@ -67,8 +66,7 @@ public:
     virtual ~XMLChangeImportContext();
 
     virtual void StartElement(
-        const ::com::sun::star::uno::Reference<
-                ::com::sun::star::xml::sax::XAttributeList> & xAttrList) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList) override;
 };
 
 #endif

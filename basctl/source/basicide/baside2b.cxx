@@ -71,7 +71,7 @@ SbxVariable* IsSbxVariable (SbxBase* pBase)
     if (SbxVariable* pVar = dynamic_cast<SbxVariable*>(pBase))
         if (!dynamic_cast<SbxMethod*>(pVar))
             return pVar;
-    return 0;
+    return nullptr;
 }
 
 Image GetImage (unsigned nId)
@@ -186,14 +186,14 @@ public:
 private:
     virtual ~ChangesListener() {}
 
-    virtual void SAL_CALL disposing(lang::EventObject const &) throw (RuntimeException, std::exception) SAL_OVERRIDE
+    virtual void SAL_CALL disposing(lang::EventObject const &) throw (RuntimeException, std::exception) override
     {
         osl::MutexGuard g(editor_.mutex_);
         editor_.notifier_.clear();
     }
 
     virtual void SAL_CALL propertiesChange(
-        Sequence< beans::PropertyChangeEvent > const &) throw (RuntimeException, std::exception) SAL_OVERRIDE
+        Sequence< beans::PropertyChangeEvent > const &) throw (RuntimeException, std::exception) override
     {
         SolarMutexGuard g;
         editor_.ImplSetFont();
@@ -712,7 +712,7 @@ void EditorWindow::HandleAutoCloseParen()
 
     if( aLine.getLength() > 0 && aLine[aSel.GetEnd().GetIndex()-1] != '(' )
     {
-        GetEditView()->InsertText(OUString(")"));
+        GetEditView()->InsertText(")");
         //leave the cursor on it's place: inside the parenthesis
         TextPaM aEnd(nLine, aSel.GetEnd().GetIndex());
         GetEditView()->SetSelection( TextSelection( aEnd, aEnd ) );
@@ -733,7 +733,7 @@ void EditorWindow::HandleAutoCloseDoubleQuotes()
 
     if( aLine.getLength() > 0 && !aLine.endsWith("\"") && (aPortions.back().tokenType != TT_STRING) )
     {
-        GetEditView()->InsertText(OUString("\""));
+        GetEditView()->InsertText("\"");
         //leave the cursor on it's place: inside the two double quotes
         TextPaM aEnd(nLine, aSel.GetEnd().GetIndex());
         GetEditView()->SetSelection( TextSelection( aEnd, aEnd ) );
@@ -1006,7 +1006,7 @@ void EditorWindow::CreateEditEngine()
     pEditEngine->SetUpdateMode(true);
     rModulWindow.Update();   // has only been invalidated at UpdateMode = true
 
-    pEditView->ShowCursor(true);
+    pEditView->ShowCursor();
 
     StartListening(*pEditEngine);
 
@@ -1062,7 +1062,7 @@ void EditorWindow::DataChanged(DataChangedEvent const & rDCEvt)
             SetBackground(Wallpaper(aColor));
             Invalidate();
         }
-        if (pEditEngine != 0)
+        if (pEditEngine != nullptr)
         {
             aColor = GetSettings().GetStyleSettings().GetFieldTextColor();
             if (!pOldSettings || aColor !=
@@ -1463,7 +1463,7 @@ BreakPoint* BreakPointWindow::FindBreakPoint( const Point& rMousePos )
         if ( ( nYPos > nY ) && ( nYPos < ( nY + nLineHeight ) ) )
             return pBrk;
     }
-    return 0;
+    return nullptr;
 }
 
 void BreakPointWindow::MouseButtonDown( const MouseEvent& rMEvt )
@@ -1488,7 +1488,7 @@ void BreakPointWindow::Command( const CommandEvent& rCEvt )
     {
         Point aPos( rCEvt.IsMouseEvent() ? rCEvt.GetMousePosPixel() : Point(1,1) );
         Point aEventPos( PixelToLogic( aPos ) );
-        BreakPoint* pBrk = rCEvt.IsMouseEvent() ? FindBreakPoint( aEventPos ) : 0;
+        BreakPoint* pBrk = rCEvt.IsMouseEvent() ? FindBreakPoint( aEventPos ) : nullptr;
         if ( pBrk )
         {
             // test if break point is enabled...
@@ -1712,7 +1712,7 @@ struct WatchItem
         maName(rName),
         nDimLevel(0),
         nDimCount(0),
-        mpArrayParentItem(0)
+        mpArrayParentItem(nullptr)
     { }
 
     void clearWatchItem ()
@@ -1739,7 +1739,7 @@ WatchItem* WatchItem::GetRootItem()
 SbxDimArray* WatchItem::GetRootArray()
 {
     WatchItem* pRootItem = GetRootItem();
-    SbxDimArray* pRet = NULL;
+    SbxDimArray* pRet = nullptr;
     if( pRootItem )
         pRet = pRootItem->mpArray;
     return pRet;
@@ -1753,7 +1753,7 @@ void WatchWindow::AddWatch( const OUString& rVName )
 
     OUString aWatchStr_( aVar );
     aWatchStr_ += "\t\t";
-    SvTreeListEntry* pNewEntry = aTreeListBox->InsertEntry( aWatchStr_, 0, true, TREELIST_APPEND );
+    SvTreeListEntry* pNewEntry = aTreeListBox->InsertEntry( aWatchStr_, nullptr, true );
     pNewEntry->SetUserData( pWatchItem );
 
     aTreeListBox->Select(pNewEntry);
@@ -1870,7 +1870,7 @@ StackWindow::StackWindow (Layout* pParent) :
     aTreeListBox->SetPosPixel( Point( DWBORDER, nVirtToolBoxHeight ) );
     aTreeListBox->SetHighlightRange();
     aTreeListBox->SetSelectionMode( NO_SELECTION );
-    aTreeListBox->InsertEntry( OUString(), 0, false, TREELIST_APPEND );
+    aTreeListBox->InsertEntry( OUString() );
     aTreeListBox->Show();
 
     SetText(IDEResId(RID_STR_STACKNAME).toString());
@@ -1974,7 +1974,7 @@ void StackWindow::UpdateCalls()
                 }
                 aEntry += ")";
             }
-            aTreeListBox->InsertEntry( aEntry, 0, false, TREELIST_APPEND );
+            aTreeListBox->InsertEntry( aEntry );
             nScope++;
             pMethod = StarBASIC::GetActiveMethod( nScope );
         }
@@ -1986,7 +1986,7 @@ void StackWindow::UpdateCalls()
     else
     {
         aTreeListBox->SetSelectionMode( NO_SELECTION );
-        aTreeListBox->InsertEntry( OUString(), 0, false, TREELIST_APPEND );
+        aTreeListBox->InsertEntry( OUString() );
     }
 
     aTreeListBox->SetUpdateMode(true);
@@ -2127,7 +2127,7 @@ void WatchTreeListBox::dispose()
     while ( pEntry )
     {
         delete static_cast<WatchItem*>(pEntry->GetUserData());
-        pEntry->SetUserData(NULL);
+        pEntry->SetUserData(nullptr);
         pEntry = Next( pEntry );
     }
     SvHeaderTabListBox::dispose();
@@ -2247,14 +2247,14 @@ void WatchTreeListBox::RequestingChildren( SvTreeListEntry * pParent )
 
 SbxBase* WatchTreeListBox::ImplGetSBXForEntry( SvTreeListEntry* pEntry, bool& rbArrayElement )
 {
-    SbxBase* pSBX = NULL;
+    SbxBase* pSBX = nullptr;
     rbArrayElement = false;
 
     WatchItem* pItem = static_cast<WatchItem*>(pEntry->GetUserData());
     OUString aVName( pItem->maName );
 
     SvTreeListEntry* pParentEntry = GetParent( pEntry );
-    WatchItem* pParentItem = pParentEntry ? static_cast<WatchItem*>(pParentEntry->GetUserData()) : NULL;
+    WatchItem* pParentItem = pParentEntry ? static_cast<WatchItem*>(pParentEntry->GetUserData()) : nullptr;
     if( pParentItem )
     {
         SbxObject* pObj = pParentItem->mpObject;
@@ -2271,11 +2271,11 @@ SbxBase* WatchTreeListBox::ImplGetSBXForEntry( SvTreeListEntry* pEntry, bool& rb
             }
         }
         // Array?
-        else if( (pArray = pItem->GetRootArray()) != NULL )
+        else if( (pArray = pItem->GetRootArray()) != nullptr )
         {
             rbArrayElement = true;
             if( pParentItem->nDimLevel + 1 == pParentItem->nDimCount )
-                pSBX = pArray->Get(pItem->vIndices.empty() ? 0 : &*pItem->vIndices.begin());
+                pSBX = pArray->Get(pItem->vIndices.empty() ? nullptr : &*pItem->vIndices.begin());
         }
     }
     else
@@ -2298,7 +2298,7 @@ bool WatchTreeListBox::EditingEntry( SvTreeListEntry* pEntry, Selection& )
         if (IsSbxVariable(pSbx) || bArrayElement)
         {
             // Accept no objects and only end nodes of arrays for editing
-            if( !pItem->mpObject && (pItem->mpArray == NULL || pItem->nDimLevel == pItem->nDimCount) )
+            if( !pItem->mpObject && (pItem->mpArray == nullptr || pItem->nDimLevel == pItem->nDimCount) )
             {
                 aEditingRes = SvHeaderTabListBox::GetEntryText( pEntry, ITEM_ID_VALUE-1 );
                 aEditingRes = comphelper::string::strip(aEditingRes, ' ');
@@ -2362,7 +2362,7 @@ void implCollapseModifiedObjectEntry( SvTreeListEntry* pParent, WatchTreeListBox
 
     SvTreeList* pModel = pThis->GetModel();
     SvTreeListEntry* pDeleteEntry;
-    while( (pDeleteEntry = pThis->SvTreeListBox::GetEntry( pParent, 0 )) != NULL )
+    while( (pDeleteEntry = pThis->SvTreeListBox::GetEntry( pParent, 0 )) != nullptr )
     {
         implCollapseModifiedObjectEntry( pDeleteEntry, pThis );
 
@@ -2456,7 +2456,7 @@ void WatchTreeListBox::UpdateWatches( bool bBasicStopped )
                         SbxDimArray* pOldArray = pItem->mpArray;
 
                         bool bArrayChanged = false;
-                        if( pNewArray != NULL && pOldArray != NULL )
+                        if( pNewArray != nullptr && pOldArray != nullptr )
                         {
                             // Compare Array dimensions to see if array has changed
                             // Can be a copy, so comparing pointers does not work
@@ -2483,7 +2483,7 @@ void WatchTreeListBox::UpdateWatches( bool bBasicStopped )
                                 }
                             }
                         }
-                        else if( pNewArray == NULL || pOldArray == NULL )
+                        else if( pNewArray == nullptr || pOldArray == nullptr )
                         {
                             bArrayChanged = true;
                         }
@@ -2505,7 +2505,7 @@ void WatchTreeListBox::UpdateWatches( bool bBasicStopped )
                                 pItem->nDimCount = nDims;
                             }
                         }
-                        if( bArrayChanged && pOldArray != NULL )
+                        if( bArrayChanged && pOldArray != nullptr )
                         {
                             bCollapse = true;
                         }
@@ -2548,7 +2548,7 @@ void WatchTreeListBox::UpdateWatches( bool bBasicStopped )
                     else
                     {
                         aWatchStr = "Null";
-                        if( pItem->mpObject != NULL )
+                        if( pItem->mpObject != nullptr )
                         {
                             bCollapse = true;
                             pItem->clearWatchItem();
@@ -2559,7 +2559,7 @@ void WatchTreeListBox::UpdateWatches( bool bBasicStopped )
                 }
                 else
                 {
-                    if( pItem->mpObject != NULL )
+                    if( pItem->mpObject != nullptr )
                     {
                         bCollapse = true;
                         pItem->clearWatchItem();
@@ -2604,7 +2604,7 @@ void WatchTreeListBox::UpdateWatches( bool bBasicStopped )
             if( pItem->mpObject || pItem->mpArray )
             {
                 implCollapseModifiedObjectEntry( pEntry, this );
-                pItem->mpObject = NULL;
+                pItem->mpObject = nullptr;
             }
         }
 
@@ -2647,10 +2647,9 @@ IMPL_LINK_NOARG_TYPED(CodeCompleteListBox, ImplDoubleClickHdl, ListBox&, void)
     InsertSelectedEntry();
 }
 
-IMPL_LINK_NOARG(CodeCompleteListBox, ImplSelectHdl)
+IMPL_LINK_NOARG_TYPED(CodeCompleteListBox, ImplSelectHdl, ListBox&, void)
 {//give back the focus to the parent
     pCodeCompleteWindow->pParent->GrabFocus();
-    return 0;
 }
 
 ExtTextView* CodeCompleteListBox::GetParentEditView()
@@ -2789,7 +2788,7 @@ void CodeCompleteListBox::KeyInput( const KeyEvent& rKeyEvt )
                 InsertSelectedEntry();
                 break;
             case KEY_UP: case KEY_DOWN:
-                NotifyEvent nEvt( MouseNotifyEvent::KEYINPUT, NULL, &rKeyEvt );
+                NotifyEvent nEvt( MouseNotifyEvent::KEYINPUT, nullptr, &rKeyEvt );
                 PreNotify(nEvt);
                 break;
         }
@@ -2961,7 +2960,7 @@ UnoTypeCodeCompletetor::UnoTypeCodeCompletetor( const std::vector< OUString >& a
 std::vector< OUString > UnoTypeCodeCompletetor::GetXIdlClassMethods() const
 {
     std::vector< OUString > aRetVect;
-    if( bCanComplete && ( xClass != NULL ) )
+    if( bCanComplete && ( xClass != nullptr ) )
     {
         Sequence< Reference< reflection::XIdlMethod > > aMethods = xClass->getMethods();
         if( aMethods.getLength() != 0 )
@@ -2978,7 +2977,7 @@ std::vector< OUString > UnoTypeCodeCompletetor::GetXIdlClassMethods() const
 std::vector< OUString > UnoTypeCodeCompletetor::GetXIdlClassFields() const
 {
     std::vector< OUString > aRetVect;
-    if( bCanComplete && ( xClass != NULL ) )
+    if( bCanComplete && ( xClass != nullptr ) )
     {
         Sequence< Reference< reflection::XIdlField > > aFields = xClass->getFields();
         if( aFields.getLength() != 0 )
@@ -2996,14 +2995,14 @@ std::vector< OUString > UnoTypeCodeCompletetor::GetXIdlClassFields() const
 bool UnoTypeCodeCompletetor::CheckField( const OUString& sFieldName )
 {// modifies xClass!!!
 
-    if ( xClass == NULL )
+    if ( xClass == nullptr )
         return false;
 
     Reference< reflection::XIdlField> xField = xClass->getField( sFieldName );
-    if( xField != NULL )
+    if( xField != nullptr )
     {
         xClass = xField->getType();
-        if( xClass != NULL )
+        if( xClass != nullptr )
         {
             return true;
         }
@@ -3015,14 +3014,14 @@ bool UnoTypeCodeCompletetor::CheckMethod( const OUString& sMethName )
 {// modifies xClass!!!
 
 
-    if ( xClass == NULL )
+    if ( xClass == nullptr )
         return false;
 
     Reference< reflection::XIdlMethod> xMethod = xClass->getMethod( sMethName );
-    if( xMethod != NULL ) //method OK, check return type
+    if( xMethod != nullptr ) //method OK, check return type
     {
         xClass = xMethod->getReturnType();
-        if( xClass != NULL )
+        if( xClass != nullptr )
         {
             return true;
         }

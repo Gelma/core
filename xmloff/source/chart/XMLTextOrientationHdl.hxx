@@ -28,11 +28,11 @@ public:
     virtual ~XMLTextOrientationHdl();
 
     virtual bool importXML( const OUString& rStrImpValue,
-                                ::com::sun::star::uno::Any& rValue,
-                                const SvXMLUnitConverter& rUnitConverter ) const SAL_OVERRIDE;
+                                css::uno::Any& rValue,
+                                const SvXMLUnitConverter& rUnitConverter ) const override;
     virtual bool exportXML( OUString& rStrExpValue,
-                                const ::com::sun::star::uno::Any& rValue,
-                                const SvXMLUnitConverter& rUnitConverter ) const SAL_OVERRIDE;
+                                const css::uno::Any& rValue,
+                                const SvXMLUnitConverter& rUnitConverter ) const override;
 };
 
 #endif // INCLUDED_XMLOFF_SOURCE_CHART_XMLTEXTORIENTATIONHDL_HXX

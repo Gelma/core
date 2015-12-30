@@ -239,7 +239,7 @@ SwFieldType *DocumentFieldsManager::GetSysFieldType( const sal_uInt16 eWhich ) c
     for( SwFieldTypes::size_type i = 0; i < INIT_FLDTYPES; ++i )
         if( eWhich == (*mpFieldTypes)[i]->Which() )
             return (*mpFieldTypes)[i];
-    return 0;
+    return nullptr;
 }
 
 /// Find first type with ResId and name
@@ -271,7 +271,7 @@ SwFieldType* DocumentFieldsManager::GetFieldType(
         break;
     }
 
-    SwFieldType* pRet = 0;
+    SwFieldType* pRet = nullptr;
     for( ; i < nSize; ++i )
     {
         SwFieldType* pFieldType = (*mpFieldTypes)[i];
@@ -358,10 +358,10 @@ void DocumentFieldsManager::UpdateFields( SfxPoolItem *pNewHt, bool bCloseDB )
             if( !pNewHt )
             {
                 SwMsgPoolItem aUpdateDDE( RES_UPDATEDDETBL );
-                pFieldType->ModifyNotification( 0, &aUpdateDDE );
+                pFieldType->ModifyNotification( nullptr, &aUpdateDDE );
             }
             else
-                pFieldType->ModifyNotification( 0, pNewHt );
+                pFieldType->ModifyNotification( nullptr, pNewHt );
             break;
         }
         case RES_GETEXPFLD:
@@ -372,12 +372,12 @@ void DocumentFieldsManager::UpdateFields( SfxPoolItem *pNewHt, bool bCloseDB )
             if( !pNewHt )
                 break;
         default:
-            pFieldType->ModifyNotification ( 0, pNewHt );
+            pFieldType->ModifyNotification ( nullptr, pNewHt );
         }
     }
 
     if( !IsExpFieldsLocked() )
-        UpdateExpFields( 0, false );      // update expression fields
+        UpdateExpFields( nullptr, false );      // update expression fields
 
     // Tables
     UpdateTableFields(pNewHt);
@@ -410,9 +410,10 @@ void DocumentFieldsManager::InsDeletedFieldType( SwFieldType& rFieldTyp )
 
     const ::utl::TransliterationWrapper& rSCmp = GetAppCmpStrIgnore();
     const OUString& rFieldNm = rFieldTyp.GetName();
-    SwFieldType* pFnd;
 
     for( SwFieldTypes::size_type i = INIT_FLDTYPES; i < nSize; ++i )
+    {
+        SwFieldType* pFnd;
         if( nFieldWhich == (pFnd = (*mpFieldTypes)[i])->Which() &&
             rSCmp.isEqual( rFieldNm, pFnd->GetName() ) )
         {
@@ -434,6 +435,7 @@ void DocumentFieldsManager::InsDeletedFieldType( SwFieldType& rFieldTyp )
             } while( true );
             break;
         }
+    }
 
     // not found, so insert and delete flag
     mpFieldTypes->insert( mpFieldTypes->begin() + nSize, &rFieldTyp );
@@ -515,7 +517,7 @@ bool DocumentFieldsManager::UpdateField(SwTextField * pDstTextField, SwField & r
                     if (bUpdateFields)
                         UpdateTableFields( &aTableUpdate );
                     else
-                        pNewField->GetTyp()->ModifyNotification(0, &aTableUpdate);
+                        pNewField->GetTyp()->ModifyNotification(nullptr, &aTableUpdate);
 
                     if (! bUpdateFields)
                         bTableSelBreak = true;
@@ -526,7 +528,7 @@ bool DocumentFieldsManager::UpdateField(SwTextField * pDstTextField, SwField & r
         case RES_MACROFLD:
             if( bUpdateFields && pDstTextField->GetpTextNode() )
                 (pDstTextField->GetpTextNode())->
-                    ModifyNotification( 0, pDstFormatField );
+                    ModifyNotification( nullptr, pDstFormatField );
             break;
 
         case RES_DBNAMEFLD:
@@ -554,7 +556,7 @@ bool DocumentFieldsManager::UpdateField(SwTextField * pDstTextField, SwField & r
             // no break;
 
         default:
-            pDstFormatField->ModifyNotification( 0, pMsgHint );
+            pDstFormatField->ModifyNotification( nullptr, pMsgHint );
         }
 
         // The fields we can calculate here are being triggered for an update
@@ -571,7 +573,7 @@ void DocumentFieldsManager::UpdateRefFields( SfxPoolItem* pHt )
 {
     for( auto pFieldType : *mpFieldTypes )
         if( RES_GETREFFLD == pFieldType->Which() )
-            pFieldType->ModifyNotification( 0, pHt );
+            pFieldType->ModifyNotification( nullptr, pHt );
 }
 
 void DocumentFieldsManager::UpdateTableFields( SfxPoolItem* pHt )
@@ -579,13 +581,13 @@ void DocumentFieldsManager::UpdateTableFields( SfxPoolItem* pHt )
     OSL_ENSURE( !pHt || RES_TABLEFML_UPDATE  == pHt->Which(),
             "What MessageItem is &m_rDoc?" );
 
-    SwFieldType* pFieldType(0);
+    SwFieldType* pFieldType(nullptr);
 
     for (auto pFieldTypeTmp : *mpFieldTypes)
     {
         if( RES_TABLEFLD == pFieldTypeTmp->Which() )
         {
-            SwTableFormulaUpdate* pUpdateField = 0;
+            SwTableFormulaUpdate* pUpdateField = nullptr;
             if( pHt && RES_TABLEFML_UPDATE == pHt->Which() )
                 pUpdateField = static_cast<SwTableFormulaUpdate*>(pHt);
 
@@ -602,37 +604,37 @@ void DocumentFieldsManager::UpdateTableFields( SfxPoolItem* pHt )
                         const SwTableNode* pTableNd;
                         const SwTextNode& rTextNd = pFormatField->GetTextField()->GetTextNode();
                         if( !rTextNd.GetNodes().IsDocNodes() ||
-                            0 == ( pTableNd = rTextNd.FindTableNode() ) )
+                            nullptr == ( pTableNd = rTextNd.FindTableNode() ) )
                             continue;
 
-                        switch( pUpdateField->eFlags )
+                        switch( pUpdateField->m_eFlags )
                         {
                         case TBL_CALC:
                             // re-set the value flag
                             // JP 17.06.96: internal representation of all formulas
                             //              (reference to other table!!!)
                             if( nsSwExtendedSubType::SUB_CMD & pField->GetSubType() )
-                                pField->PtrToBoxNm( pUpdateField->pTable );
+                                pField->PtrToBoxNm( pUpdateField->m_pTable );
                             else
                                 pField->ChgValid( false );
                             break;
                         case TBL_BOXNAME:
                             // is &m_rDoc the wanted table?
-                            if( &pTableNd->GetTable() == pUpdateField->pTable )
+                            if( &pTableNd->GetTable() == pUpdateField->m_pTable )
                                 // to the external representation
-                                pField->PtrToBoxNm( pUpdateField->pTable );
+                                pField->PtrToBoxNm( pUpdateField->m_pTable );
                             break;
                         case TBL_BOXPTR:
                             // to the internal representation
                             // JP 17.06.96: internal representation on all formulas
                             //              (reference to other table!!!)
-                            pField->BoxNmToPtr( pUpdateField->pTable );
+                            pField->BoxNmToPtr( pUpdateField->m_pTable );
                             break;
                         case TBL_RELBOXNAME:
                             // is &m_rDoc the wanted table?
-                            if( &pTableNd->GetTable() == pUpdateField->pTable )
+                            if( &pTableNd->GetTable() == pUpdateField->m_pTable )
                                 // to the relative representation
-                                pField->ToRelBoxNm( pUpdateField->pTable );
+                                pField->ToRelBoxNm( pUpdateField->m_pTable );
                             break;
                         default:
                             break;
@@ -653,7 +655,7 @@ void DocumentFieldsManager::UpdateTableFields( SfxPoolItem* pHt )
     sal_uInt32 nMaxItems = m_rDoc.GetAttrPool().GetItemCount2( RES_BOXATR_FORMULA );
     for (sal_uInt32 i = 0; i < nMaxItems; ++i)
     {
-        if( 0 != (pItem = m_rDoc.GetAttrPool().GetItem2( RES_BOXATR_FORMULA, i ) ) &&
+        if( nullptr != (pItem = m_rDoc.GetAttrPool().GetItem2( RES_BOXATR_FORMULA, i ) ) &&
             static_cast<const SwTableBoxFormula*>(pItem)->GetDefinedIn() )
         {
             const_cast<SwTableBoxFormula*>(static_cast<const SwTableBoxFormula*>(pItem))->ChangeState( pHt );
@@ -662,10 +664,10 @@ void DocumentFieldsManager::UpdateTableFields( SfxPoolItem* pHt )
 
     // all fields/boxes are now invalid, so we can start to calculate
     if( pHt && ( RES_TABLEFML_UPDATE != pHt->Which() ||
-                TBL_CALC != static_cast<SwTableFormulaUpdate*>(pHt)->eFlags ))
+                TBL_CALC != static_cast<SwTableFormulaUpdate*>(pHt)->m_eFlags ))
         return ;
 
-    SwCalc* pCalc = 0;
+    SwCalc* pCalc = nullptr;
 
     if( pFieldType )
     {
@@ -694,7 +696,7 @@ void DocumentFieldsManager::UpdateTableFields( SfxPoolItem* pHt )
 
                     // if &m_rDoc field is not in the to-be-updated table, skip it
                     if( pHt && &pTableNd->GetTable() !=
-                                            static_cast<SwTableFormulaUpdate*>(pHt)->pTable )
+                                            static_cast<SwTableFormulaUpdate*>(pHt)->m_pTable )
                         continue;
 
                     if( !pCalc )
@@ -702,24 +704,24 @@ void DocumentFieldsManager::UpdateTableFields( SfxPoolItem* pHt )
 
                     // get the values of all SetExpression fields that are valid
                     // until the table
-                    SwFrm* pFrm = 0;
+                    SwFrame* pFrame = nullptr;
                     if( pTableNd->GetIndex() < m_rDoc.GetNodes().GetEndOfExtras().GetIndex() )
                     {
                         // is in the special section, that's expensive!
                         Point aPt;      // return the first frame of the layout - Tab.Headline!!
-                        pFrm = rTextNd.getLayoutFrm( m_rDoc.getIDocumentLayoutAccess().GetCurrentLayout(), &aPt );
-                        if( pFrm )
+                        pFrame = rTextNd.getLayoutFrame( m_rDoc.getIDocumentLayoutAccess().GetCurrentLayout(), &aPt );
+                        if( pFrame )
                         {
                             SwPosition aPos( *pTableNd );
-                            if( GetBodyTextNode( m_rDoc, aPos, *pFrm ) )
+                            if( GetBodyTextNode( m_rDoc, aPos, *pFrame ) )
                                 FieldsToCalc( *pCalc, _SetGetExpField(
                                     aPos.nNode, pFormatField->GetTextField(),
                                     &aPos.nContent ));
                             else
-                                pFrm = 0;
+                                pFrame = nullptr;
                         }
                     }
-                    if( !pFrm )
+                    if( !pFrame )
                     {
                         // create index to determine the TextNode
                         SwNodeIndex aIdx( rTextNd );
@@ -741,14 +743,14 @@ void DocumentFieldsManager::UpdateTableFields( SfxPoolItem* pHt )
                     }
                     pCalc->SetCalcError( CALC_NOERR );
                 }
-                pFormatField->ModifyNotification( 0, pHt );
+                pFormatField->ModifyNotification( nullptr, pHt );
         }
     }
 
     // calculate the formula at the boxes
     for (sal_uInt32 i = 0; i < nMaxItems; ++i )
     {
-        if( 0 != (pItem = m_rDoc.GetAttrPool().GetItem2( RES_BOXATR_FORMULA, i ) ) &&
+        if( nullptr != (pItem = m_rDoc.GetAttrPool().GetItem2( RES_BOXATR_FORMULA, i ) ) &&
             static_cast<const SwTableBoxFormula*>(pItem)->GetDefinedIn() &&
             !static_cast<const SwTableBoxFormula*>(pItem)->IsValid() )
         {
@@ -759,7 +761,7 @@ void DocumentFieldsManager::UpdateTableFields( SfxPoolItem* pHt )
             {
                 const SwTableNode* pTableNd = pBox->GetSttNd()->FindTableNode();
                 if( !pHt || &pTableNd->GetTable() ==
-                                            static_cast<SwTableFormulaUpdate*>(pHt)->pTable )
+                                            static_cast<SwTableFormulaUpdate*>(pHt)->m_pTable )
                 {
                     double nValue;
                     if( !pCalc )
@@ -767,7 +769,7 @@ void DocumentFieldsManager::UpdateTableFields( SfxPoolItem* pHt )
 
                     // get the values of all SetExpression fields that are valid
                     // until the table
-                    SwFrm* pFrm = 0;
+                    SwFrame* pFrame = nullptr;
                     if( pTableNd->GetIndex() < m_rDoc.GetNodes().GetEndOfExtras().GetIndex() )
                     {
                         // is in the special section, that's expensive!
@@ -777,16 +779,16 @@ void DocumentFieldsManager::UpdateTableFields( SfxPoolItem* pHt )
                         if( !pCNd )
                             pCNd = m_rDoc.GetNodes().GoNext( &aCNdIdx );
 
-                        if( pCNd && 0 != (pFrm = pCNd->getLayoutFrm( m_rDoc.getIDocumentLayoutAccess().GetCurrentLayout(), &aPt )) )
+                        if( pCNd && nullptr != (pFrame = pCNd->getLayoutFrame( m_rDoc.getIDocumentLayoutAccess().GetCurrentLayout(), &aPt )) )
                         {
                             SwPosition aPos( *pCNd );
-                            if( GetBodyTextNode( m_rDoc, aPos, *pFrm ) )
+                            if( GetBodyTextNode( m_rDoc, aPos, *pFrame ) )
                                 FieldsToCalc( *pCalc, _SetGetExpField( aPos.nNode ));
                             else
-                                pFrm = 0;
+                                pFrame = nullptr;
                         }
                     }
-                    if( !pFrm )
+                    if( !pFrame )
                     {
                         // create index to determine the TextNode
                         SwNodeIndex aIdx( *pTableNd );
@@ -841,7 +843,7 @@ void DocumentFieldsManager::UpdateExpFields( SwTextField* pUpdateField, bool bUp
     if( mpUpdateFields->GetSortLst()->empty() )
     {
         if( bUpdRefFields )
-            UpdateRefFields(NULL);
+            UpdateRefFields(nullptr);
 
         mpUpdateFields->SetInUpdateFields( bOldInUpdateFields );
         mpUpdateFields->SetFieldsDirty( false );
@@ -881,7 +883,7 @@ void DocumentFieldsManager::UpdateExpFields( SwTextField* pUpdateField, bool bUp
                 }
                 break;
             case RES_SETEXPFLD:
-                const_cast<SwSetExpFieldType*>(static_cast<const SwSetExpFieldType*>(pFieldType))->SetOutlineChgNd( 0 );
+                const_cast<SwSetExpFieldType*>(static_cast<const SwSetExpFieldType*>(pFieldType))->SetOutlineChgNd( nullptr );
                 break;
             }
     }
@@ -986,6 +988,7 @@ void DocumentFieldsManager::UpdateExpFields( SwTextField* pUpdateField, bool bUp
         {
             const_cast<SwDBSetNumberField*>(static_cast<const SwDBSetNumberField*>(pField))->Evaluate(&m_rDoc);
             aCalc.VarChange( sDBNumNm, static_cast<const SwDBSetNumberField*>(pField)->GetSetNumber());
+            pField->ExpandField(m_rDoc.IsClipBoard());
         }
 #endif
         break;
@@ -1103,7 +1106,7 @@ void DocumentFieldsManager::UpdateExpFields( SwTextField* pUpdateField, bool bUp
                     SwSetExpFieldType* pSFieldTyp = static_cast<SwSetExpFieldType*>(pField->GetTyp());
                     aNew = pSFieldTyp->GetName();
 
-                    SwNode* pSeqNd = 0;
+                    SwNode* pSeqNd = nullptr;
 
                     if( pSField->IsSequenceField() )
                     {
@@ -1141,7 +1144,7 @@ void DocumentFieldsManager::UpdateExpFields( SwTextField* pUpdateField, bool bUp
         }
         } // switch
 
-        pFormatField->ModifyNotification( 0, 0 );        // trigger formatting
+        pFormatField->ModifyNotification( nullptr, nullptr );        // trigger formatting
 
         if( pUpdateField == pTextField )       // if only &m_rDoc one is updated
         {
@@ -1149,7 +1152,7 @@ void DocumentFieldsManager::UpdateExpFields( SwTextField* pUpdateField, bool bUp
                 RES_HIDDENTXTFLD == nWhich ||   // HiddenText?
                 RES_HIDDENPARAFLD == nWhich)    // HiddenParaField?
                 break;                          // quit
-            pUpdateField = 0;                       // update all from here on
+            pUpdateField = nullptr;                       // update all from here on
         }
     }
 
@@ -1161,7 +1164,7 @@ void DocumentFieldsManager::UpdateExpFields( SwTextField* pUpdateField, bool bUp
 
     // update reference fields
     if( bUpdRefFields )
-        UpdateRefFields(NULL);
+        UpdateRefFields(nullptr);
 
     mpUpdateFields->SetInUpdateFields( bOldInUpdateFields );
     mpUpdateFields->SetFieldsDirty( false );
@@ -1170,15 +1173,17 @@ void DocumentFieldsManager::UpdateExpFields( SwTextField* pUpdateField, bool bUp
 /// Insert field type that was marked as deleted
 void DocumentFieldsManager::UpdateUsrFields()
 {
-    SwCalc* pCalc = 0;
-    const SwFieldType* pFieldType;
+    SwCalc* pCalc = nullptr;
     for( SwFieldTypes::size_type i = INIT_FLDTYPES; i < mpFieldTypes->size(); ++i )
+    {
+        const SwFieldType* pFieldType;
         if( RES_USERFLD == ( pFieldType = (*mpFieldTypes)[i] )->Which() )
         {
             if( !pCalc )
                 pCalc = new SwCalc( m_rDoc );
             const_cast<SwUserFieldType*>(static_cast<const SwUserFieldType*>(pFieldType))->GetValue( *pCalc );
         }
+    }
 
     if( pCalc )
     {
@@ -1198,10 +1203,10 @@ void DocumentFieldsManager::UpdatePageFields( SfxPoolItem* pMsgHint )
         case RES_CHAPTERFLD:
         case RES_GETEXPFLD:
         case RES_REFPAGEGETFLD:
-            pFieldType->ModifyNotification( 0, pMsgHint );
+            pFieldType->ModifyNotification( nullptr, pMsgHint );
             break;
         case RES_DOCSTATFLD:
-            pFieldType->ModifyNotification( 0, 0 );
+            pFieldType->ModifyNotification( nullptr, nullptr );
             break;
         }
     }
@@ -1371,7 +1376,7 @@ void DocumentFieldsManager::SetFixFields( bool bOnlyTimeDate, const DateTime* pN
 
                 // Trigger formatting
                 if( bChgd )
-                    pFormatField->ModifyNotification( 0, 0 );
+                    pFormatField->ModifyNotification( nullptr, nullptr );
             }
         }
     }
@@ -1536,16 +1541,16 @@ SwField * DocumentFieldsManager::GetFieldAtPos(const SwPosition & rPos)
 {
     SwTextField * const pAttr = GetTextFieldAtPos(rPos);
 
-    return (pAttr) ? const_cast<SwField *>( pAttr->GetFormatField().GetField() ) : 0;
+    return (pAttr) ? const_cast<SwField *>( pAttr->GetFormatField().GetField() ) : nullptr;
 }
 
 SwTextField * DocumentFieldsManager::GetTextFieldAtPos(const SwPosition & rPos)
 {
     SwTextNode * const pNode = rPos.nNode.GetNode().GetTextNode();
 
-    return (pNode != NULL)
+    return (pNode != nullptr)
         ? pNode->GetFieldTextAttrAt( rPos.nContent.GetIndex(), true )
-        : 0;
+        : nullptr;
 }
 
 /// @note For simplicity assume that all field types have updatable contents so
@@ -1652,7 +1657,7 @@ void DocumentFieldsManager::UpdateDBNumFields( SwDBNameInfField& rDBField, SwCal
 
         SwDBData aTmpDBData( rDBField.GetDBData(&m_rDoc) );
 
-        if( pMgr->OpenDataSource( aTmpDBData.sDataSource, aTmpDBData.sCommand, -1 ))
+        if( pMgr->OpenDataSource( aTmpDBData.sDataSource, aTmpDBData.sCommand ))
             rCalc.VarChange( lcl_GetDBVarName( m_rDoc, rDBField),
                         pMgr->GetSelectedRecordId(aTmpDBData.sDataSource, aTmpDBData.sCommand, aTmpDBData.nCommandType) );
     }

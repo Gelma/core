@@ -29,31 +29,31 @@ namespace rptxml
     class OXMLCell;
     class OXMLSubDocument : public OXMLReportElementBase, public IMasterDetailFieds
     {
-        ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportComponent>   m_xFake;
+        css::uno::Reference< css::report::XReportComponent>   m_xFake;
         ::std::vector< OUString> m_aMasterFields;
         ::std::vector< OUString> m_aDetailFields;
         OXMLCell*       m_pCellParent;
         sal_Int32       m_nCurrentCount;
         bool            m_bContainsShape;
 
-        OXMLSubDocument(const OXMLSubDocument&) SAL_DELETED_FUNCTION;
-        void operator =(const OXMLSubDocument&) SAL_DELETED_FUNCTION;
+        OXMLSubDocument(const OXMLSubDocument&) = delete;
+        void operator =(const OXMLSubDocument&) = delete;
 
         virtual SvXMLImportContext* _CreateChildContext( sal_uInt16 nPrefix,
                     const OUString& rLocalName,
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+                    const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
     public:
 
         OXMLSubDocument( ORptFilter& rImport
                     ,sal_uInt16 nPrfx
                     ,const OUString& rLName
-                    ,const ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportComponent >& _xComponent
+                    ,const css::uno::Reference< css::report::XReportComponent >& _xComponent
                     ,OXMLTable* _pContainer
                     ,OXMLCell* _pCellParent);
         virtual ~OXMLSubDocument();
 
-        virtual void EndElement() SAL_OVERRIDE;
-        virtual void addMasterDetailPair(const ::std::pair< OUString,OUString >& _aPair) SAL_OVERRIDE;
+        virtual void EndElement() override;
+        virtual void addMasterDetailPair(const ::std::pair< OUString,OUString >& _aPair) override;
     };
 
 } // namespace rptxml

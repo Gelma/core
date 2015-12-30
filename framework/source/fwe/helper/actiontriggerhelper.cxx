@@ -50,7 +50,7 @@ bool IsSeparator( Reference< XPropertySet > xPropertySet )
     Reference< XServiceInfo > xServiceInfo( xPropertySet, UNO_QUERY );
     try
     {
-        return xServiceInfo->supportsService( OUString( SERVICENAME_ACTIONTRIGGERSEPARATOR ) );
+        return xServiceInfo->supportsService( SERVICENAME_ACTIONTRIGGERSEPARATOR );
     }
     catch (const Exception&)
     {
@@ -243,9 +243,8 @@ Reference< XPropertySet > CreateActionTrigger( sal_uInt16 nItemId, const Menu* p
     Reference< XMultiServiceFactory > xMultiServiceFactory( rActionTriggerContainer, UNO_QUERY );
     if ( xMultiServiceFactory.is() )
     {
-        xPropSet = Reference< XPropertySet >(   xMultiServiceFactory->createInstance(
-                                                    OUString( "com.sun.star.ui.ActionTrigger" ) ),
-                                                UNO_QUERY );
+        xPropSet.set( xMultiServiceFactory->createInstance( "com.sun.star.ui.ActionTrigger" ),
+                      UNO_QUERY );
 
         Any a;
 
@@ -289,7 +288,7 @@ Reference< XPropertySet > CreateActionTriggerSeparator( const Reference< XIndexC
     if ( xMultiServiceFactory.is() )
     {
         return Reference< XPropertySet >(   xMultiServiceFactory->createInstance(
-                                                OUString( "com.sun.star.ui.ActionTriggerSeparator" ) ),
+                                                "com.sun.star.ui.ActionTriggerSeparator" ),
                                             UNO_QUERY );
     }
 
@@ -302,7 +301,7 @@ Reference< XIndexContainer > CreateActionTriggerContainer( const Reference< XInd
     if ( xMultiServiceFactory.is() )
     {
         return Reference< XIndexContainer >( xMultiServiceFactory->createInstance(
-                                                OUString( "com.sun.star.ui.ActionTriggerContainer" ) ),
+                                                "com.sun.star.ui.ActionTriggerContainer" ),
                                              UNO_QUERY );
     }
 

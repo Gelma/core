@@ -39,7 +39,7 @@ namespace cppcanvas
 
         virtual ~Color() {}
 
-        virtual ::com::sun::star::uno::Sequence< double >   getDeviceColor( IntSRGBA aSRGBA ) const = 0;
+        virtual css::uno::Sequence< double >   getDeviceColor( IntSRGBA aSRGBA ) const = 0;
     };
 
     typedef std::shared_ptr< ::cppcanvas::Color > ColorSharedPtr;
@@ -67,11 +67,6 @@ namespace cppcanvas
     inline Color::IntSRGBA makeColor( sal_uInt8 nRed, sal_uInt8 nGreen, sal_uInt8 nBlue, sal_uInt8 nAlpha )
     {
         return (nRed << 24U)|(nGreen << 16U)|(nBlue << 8U)|(nAlpha);
-    }
-
-    inline sal_Int32 unMakeColor( sal_uInt8 nAlpha, sal_uInt8 nRed, sal_uInt8 nGreen, sal_uInt8 nBlue)
-    {
-        return (nAlpha << 24U)|(nRed << 16U)|(nGreen << 8U)|(nBlue);
     }
 
     inline sal_Int32 makeColorARGB( sal_uInt8 nAlpha, sal_uInt8 nRed, sal_uInt8 nGreen, sal_uInt8 nBlue)

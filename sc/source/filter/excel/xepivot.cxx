@@ -407,7 +407,7 @@ void XclExpPCField::InitNumGroupField( const ScDPObject& rDPObj, const ScDPNumGr
     {
         // special case: group by days with step count
         meFieldType = EXC_PCFIELD_DATEGROUP;
-        maNumGroupInfo.SetScDateType( com::sun::star::sheet::DataPilotFieldGroupBy::DAYS );
+        maNumGroupInfo.SetScDateType( css::sheet::DataPilotFieldGroupBy::DAYS );
         SetDateGroupLimit( rNumInfo, true );
     }
     else
@@ -510,7 +510,7 @@ void XclExpPCField::InsertNumDateGroupItems( const ScDPObject& rDPObj, const ScD
     {
         // get the string collection with original source elements
         const ScDPSaveData* pSaveData = rDPObj.GetSaveData();
-        const ScDPDimensionSaveData* pDimData = NULL;
+        const ScDPDimensionSaveData* pDimData = nullptr;
         if (pSaveData)
             pDimData = pSaveData->GetExistingDimensionData();
 
@@ -900,12 +900,12 @@ XclExpPTItem::XclExpPTItem( const XclExpPCField& rCacheField, sal_uInt16 nCacheI
 {
     maItemInfo.mnType = EXC_SXVI_TYPE_DATA;
     maItemInfo.mnCacheIdx = nCacheIdx;
-    maItemInfo.maVisName.mbUseCache = mpCacheItem != 0;
+    maItemInfo.maVisName.mbUseCache = mpCacheItem != nullptr;
 }
 
 XclExpPTItem::XclExpPTItem( sal_uInt16 nItemType, sal_uInt16 nCacheIdx, bool bUseCache ) :
     XclExpRecord( EXC_ID_SXVI, 8 ),
-    mpCacheItem( 0 )
+    mpCacheItem( nullptr )
 {
     maItemInfo.mnType = nItemType;
     maItemInfo.mnCacheIdx = nCacheIdx;
@@ -1030,7 +1030,7 @@ void XclExpPTField::SetPropertiesFromDim( const ScDPSaveDimension& rSaveDim )
     if( const DataPilotFieldSortInfo* pSortInfo = rSaveDim.GetSortInfo() )
     {
         maFieldExtInfo.SetApiSortMode( pSortInfo->Mode );
-        if( pSortInfo->Mode == ::com::sun::star::sheet::DataPilotFieldSortMode::DATA )
+        if( pSortInfo->Mode == css::sheet::DataPilotFieldSortMode::DATA )
             maFieldExtInfo.mnSortField = mrPTable.GetDataFieldIndex( pSortInfo->Field, EXC_SXVDEX_SORT_OWN );
         ::set_flag( maFieldExtInfo.mnFlags, EXC_SXVDEX_SORT_ASC, pSortInfo->IsAscending );
     }
@@ -1093,7 +1093,7 @@ void XclExpPTField::SetDataPropertiesFromDim( const ScDPSaveDimension& rSaveDim 
         if( const XclExpPTField* pRefField = mrPTable.GetField( pFieldRef->ReferenceField ) )
         {
             rDataInfo.mnRefField = pRefField->GetFieldIndex();
-            if( pFieldRef->ReferenceItemType == ::com::sun::star::sheet::DataPilotFieldReferenceItemType::NAMED )
+            if( pFieldRef->ReferenceItemType == css::sheet::DataPilotFieldReferenceItemType::NAMED )
                 rDataInfo.mnRefItem = pRefField->GetItemIndex( pFieldRef->ReferenceItemName, 0 );
         }
     }
@@ -1147,7 +1147,7 @@ void XclExpPTField::Save( XclExpStream& rStrm )
 
 XclExpPTItem* XclExpPTField::GetItemAcc( const OUString& rName )
 {
-    XclExpPTItem* pItem = 0;
+    XclExpPTItem* pItem = nullptr;
     for( size_t nPos = 0, nSize = maItemList.GetSize(); !pItem && (nPos < nSize); ++nPos )
         if( maItemList.GetRecord( nPos )->GetItemName() == rName )
             pItem = maItemList.GetRecord( nPos ).get();
@@ -1205,19 +1205,22 @@ XclExpPivotTable::XclExpPivotTable( const XclExpRoot& rRoot, const ScDPObject& r
             for( sal_uInt16 nFieldIdx = 0, nFieldCount = mrPCache.GetFieldCount(); nFieldIdx < nFieldCount; ++nFieldIdx )
                 maFieldList.AppendNewRecord( new XclExpPTField( *this, nFieldIdx ) );
 
-            boost::ptr_vector<ScDPSaveDimension>::const_iterator iter;
             const ScDPSaveData::DimsType& rDimList = pSaveData->GetDimensions();
 
             /*  2)  First process all data dimensions, they are needed for extended
                     settings of row/column/page fields (sorting/auto show). */
-            for (iter = rDimList.begin(); iter != rDimList.end(); ++iter)
+            for (auto const& iter : rDimList)
+            {
                 if (iter->GetOrientation() == DataPilotFieldOrientation_DATA)
                     SetDataFieldPropertiesFromDim(*iter);
+            }
 
             /*  3)  Row/column/page/hidden fields. */
-            for (iter = rDimList.begin(); iter != rDimList.end(); ++iter)
+            for (auto const& iter : rDimList)
+            {
                 if (iter->GetOrientation() != DataPilotFieldOrientation_DATA)
                     SetFieldPropertiesFromDim(*iter);
+            }
 
             // Finalize -------------------------------------------------------
 
@@ -1280,7 +1283,7 @@ void XclExpPivotTable::Save( XclExpStream& rStrm )
 
 XclExpPTField* XclExpPivotTable::GetFieldAcc( const OUString& rName )
 {
-    XclExpPTField* pField = 0;
+    XclExpPTField* pField = nullptr;
     for( size_t nPos = 0, nSize = maFieldList.GetSize(); !pField && (nPos < nSize); ++nPos )
         if( maFieldList.GetRecord( nPos )->GetFieldName() == rName )
             pField = maFieldList.GetRecord( nPos ).get();
@@ -1295,7 +1298,7 @@ XclExpPTField* XclExpPivotTable::GetFieldAcc( const ScDPSaveDimension& rSaveDim 
 
     // a real dimension
     OUString aFieldName = ScDPUtil::getSourceDimensionName(rSaveDim.GetName());
-    return aFieldName.isEmpty() ? NULL : GetFieldAcc(aFieldName);
+    return aFieldName.isEmpty() ? nullptr : GetFieldAcc(aFieldName);
 }
 
 // fill data --------------------------------------------------------------
@@ -1383,7 +1386,7 @@ void XclExpPivotTable::Finalize()
 
     // find data field orientation field
     maPTInfo.mnDataPos = EXC_SXVIEW_DATALAST;
-    const ScfUInt16Vec* pFieldVec = 0;
+    const ScfUInt16Vec* pFieldVec = nullptr;
     switch( maPTInfo.mnDataAxis )
     {
         case EXC_SXVD_AXIS_ROW: pFieldVec = &maRowFields;   break;
@@ -1598,7 +1601,7 @@ class XclExpPivotRecWrapper : public XclExpRecordBase
 {
 public:
     explicit            XclExpPivotRecWrapper( XclExpPivotTableManager& rPTMgr, SCTAB nScTab );
-    virtual void        Save( XclExpStream& rStrm ) SAL_OVERRIDE;
+    virtual void        Save( XclExpStream& rStrm ) override;
 private:
     XclExpPivotTableManager& mrPTMgr;
     SCTAB               mnScTab;
@@ -1698,7 +1701,7 @@ const XclExpPivotCache* XclExpPivotTableManager::CreatePivotCache( const ScDPObj
         return xNewPCache.get();
     }
 
-    return 0;
+    return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

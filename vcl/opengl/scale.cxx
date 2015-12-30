@@ -24,7 +24,6 @@
 #include "vcl/bitmap.hxx"
 
 #include "opengl/zone.hxx"
-#include "opengl/bmpop.hxx"
 #include "opengl/salbmp.hxx"
 #include "opengl/program.hxx"
 #include "opengl/texture.hxx"
@@ -36,21 +35,6 @@ using vcl::Lanczos3Kernel;
 using vcl::BicubicKernel;
 using vcl::BilinearKernel;
 using vcl::BoxKernel;
-
-class ScaleOp : public OpenGLSalBitmapOp
-{
-private:
-    OpenGLSalBitmap*    mpBitmap;
-    double              mfScaleX;
-    double              mfScaleY;
-    BmpScaleFlag        mnScaleFlag;
-
-public:
-    ScaleOp( OpenGLSalBitmap* pBitmap, const double& rScaleX, const double& rScaleY, BmpScaleFlag nScaleFlag );
-
-    bool Execute() SAL_OVERRIDE;
-    void GetSize( Size& rSize ) const SAL_OVERRIDE;
-};
 
 bool OpenGLSalBitmap::ImplScaleFilter(
     const double& rScaleX,
@@ -134,7 +118,7 @@ bool OpenGLSalBitmap::ImplScaleConvolution(
 {
     OpenGLFramebuffer* pFramebuffer;
     OpenGLProgram* pProgram;
-    GLfloat* pWeights( 0 );
+    GLfloat* pWeights( nullptr );
     sal_uInt32 nKernelSize;
     GLfloat aOffsets[32];
     int nNewWidth( mnWidth * rScaleX );
@@ -144,7 +128,7 @@ bool OpenGLSalBitmap::ImplScaleConvolution(
 
     pProgram = mpContext->UseProgram( "textureVertexShader",
                                       "convolutionFragmentShader" );
-    if( pProgram == 0 )
+    if( pProgram == nullptr )
         return false;
 
     // horizontal scaling in scratch texture
@@ -231,7 +215,7 @@ bool OpenGLSalBitmap::ImplScaleArea( double rScaleX, double rScaleY )
 
     OpenGLProgram* pProgram = mpContext->UseProgram( "textureVertexShader",
         fast ? OUString( "areaScaleFastFragmentShader" ) : OUString( "areaScaleFragmentShader" ));
-    if( pProgram == 0 )
+    if( pProgram == nullptr )
         return false;
 
     OpenGLTexture aScratchTex(nNewWidth, nNewHeight);
@@ -276,10 +260,10 @@ bool OpenGLSalBitmap::ImplScaleArea( double rScaleX, double rScaleY )
 
 bool OpenGLSalBitmap::ImplScale( const double& rScaleX, const double& rScaleY, BmpScaleFlag nScaleFlag )
 {
-    VCL_GL_INFO( "vcl.opengl", "::ImplScale" );
+    VCL_GL_INFO( "::ImplScale" );
 
     maUserBuffer.reset();
-    makeCurrent();
+    makeSomeOpenGLContextCurrent();
 
     if( nScaleFlag == BmpScaleFlag::Fast )
     {
@@ -310,36 +294,11 @@ bool OpenGLSalBitmap::ImplScale( const double& rScaleX, const double& rScaleY, B
     return false;
 }
 
-ScaleOp::ScaleOp(
-    OpenGLSalBitmap* pBitmap,
-    const double& rScaleX,
-    const double& rScaleY,
-    BmpScaleFlag nScaleFlag )
-: mpBitmap( pBitmap )
-, mfScaleX( rScaleX )
-, mfScaleY( rScaleY )
-, mnScaleFlag( nScaleFlag )
-{
-}
-
-bool ScaleOp::Execute()
-{
-    VCL_GL_INFO( "vcl.opengl", "::Execute" );
-    return mpBitmap->ImplScale( mfScaleX, mfScaleY, mnScaleFlag );
-}
-
-void ScaleOp::GetSize( Size& rSize ) const
-{
-    VCL_GL_INFO( "vcl.opengl", "::GetSize" );
-    rSize.setWidth( rSize.Width() * mfScaleX );
-    rSize.setHeight( rSize.Height() * mfScaleY );
-}
-
 bool OpenGLSalBitmap::Scale( const double& rScaleX, const double& rScaleY, BmpScaleFlag nScaleFlag )
 {
     OpenGLZone aZone;
 
-    VCL_GL_INFO("vcl.opengl", "::Scale " << int(nScaleFlag)
+    VCL_GL_INFO("::Scale " << int(nScaleFlag)
              << " from " << mnWidth << "x" << mnHeight
              << " to " << (mnWidth * rScaleX) << "x" << (mnHeight * rScaleY) );
 
@@ -350,16 +309,8 @@ bool OpenGLSalBitmap::Scale( const double& rScaleX, const double& rScaleY, BmpSc
         nScaleFlag == BmpScaleFlag::Default ||
         nScaleFlag == BmpScaleFlag::BestQuality )
     {
-        makeCurrent();
-        if( mpContext == NULL )
-        {
-            VCL_GL_INFO( "vcl.opengl", "Add ScaleOp to pending operations" );
-            maPendingOps.push_back( new ScaleOp( this, rScaleX, rScaleY, nScaleFlag ) );
-        }
-        else
-        {
-            ImplScale( rScaleX, rScaleY, nScaleFlag );
-        }
+        makeSomeOpenGLContextCurrent();
+        ImplScale( rScaleX, rScaleY, nScaleFlag );
         return true;
     }
 

@@ -110,17 +110,17 @@ namespace
     }
 
     /*
-     Utility to convert a SwPosFlyFrms into a simple vector of sw::Frames
+     Utility to convert a SwPosFlyFrames into a simple vector of ww8::Frames
 
-     The crucial thing is that a sw::Frame always has an anchor which
+     The crucial thing is that a ww8::Frame always has an anchor which
      points to some content in the document. This is a requirement of exporting
      to Word
     */
-    sw::Frames SwPosFlyFrmsToFrames(const SwPosFlyFrms &rFlys)
+    ww8::Frames SwPosFlyFramesToFrames(const SwPosFlyFrames &rFlys)
     {
-        sw::Frames aRet;
+        ww8::Frames aRet;
 
-        for(SwPosFlyFrms::const_iterator aIter(rFlys.begin()); aIter != rFlys.end(); ++aIter)
+        for(SwPosFlyFrames::const_iterator aIter(rFlys.begin()); aIter != rFlys.end(); ++aIter)
         {
             const SwFrameFormat &rEntry = (*aIter)->GetFormat();
 
@@ -130,7 +130,7 @@ namespace
                 // so set a dummy position and fix it in UpdateFramePositions
                 SwPosition const dummy(SwNodeIndex(
                             const_cast<SwNodes&>(pAnchor->nNode.GetNodes())));
-                aRet.push_back(sw::Frame(rEntry, dummy));
+                aRet.push_back(ww8::Frame(rEntry, dummy));
             }
             else
             {
@@ -141,36 +141,36 @@ namespace
                     aPos.nContent.Assign(pTextNd, 0);
                 }
 
-                aRet.push_back(sw::Frame(rEntry, aPos));
+                aRet.push_back(ww8::Frame(rEntry, aPos));
             }
         }
         return aRet;
     }
 
     //Utility to test if a frame is anchored at a given node index
-    class anchoredto: public std::unary_function<const sw::Frame&, bool>
+    class anchoredto: public std::unary_function<const ww8::Frame&, bool>
     {
     private:
         sal_uLong mnNode;
     public:
         explicit anchoredto(sal_uLong nNode) : mnNode(nNode) {}
-        bool operator()(const sw::Frame &rFrame) const
+        bool operator()(const ww8::Frame &rFrame) const
         {
             return (mnNode == rFrame.GetPosition().nNode.GetNode().GetIndex());
         }
     };
 }
 
-namespace sw
+namespace ww8
 {
     //For i120928,size conversion before exporting graphic of bullet
     Frame::Frame(const Graphic &rGrf, const SwPosition &rPos)
-        : mpFlyFrm(NULL)
+        : mpFlyFrame(nullptr)
         , maPos(rPos)
         , maSize()
         , maLayoutSize()
         , meWriterType(eBulletGrf)
-        , mpStartFrameContent(0)
+        , mpStartFrameContent(nullptr)
         , mbIsInline(true)
         , mbForBullet(true)
         , maGrf(rGrf)
@@ -190,12 +190,12 @@ namespace sw
     }
 
     Frame::Frame(const SwFrameFormat &rFormat, const SwPosition &rPos)
-        : mpFlyFrm(&rFormat)
+        : mpFlyFrame(&rFormat)
         , maPos(rPos)
         , maSize()
         , maLayoutSize() // #i43447#
         , meWriterType(eTextBox)
-        , mpStartFrameContent(0)
+        , mpStartFrameContent(nullptr)
         // #i43447# - move to initialization list
         , mbIsInline( (rFormat.GetAnchor().GetAnchorId() == FLY_AS_CHAR) )
         // #i120928# - handle graphic of bullet within existing implementation
@@ -217,7 +217,7 @@ namespace sw
                         // header/footer) - thus, get the values from the format.
                         if ( aLayRect.IsEmpty() )
                         {
-                            aRect.SetSize( rFormat.GetFrmSize().GetSize() );
+                            aRect.SetSize( rFormat.GetFrameSize().GetSize() );
                         }
                         maLayoutSize = aRect.GetSize();
                     }
@@ -268,7 +268,10 @@ namespace sw
     {
         mbIsInline = true;
     }
+}
 
+namespace sw
+{
     namespace hack
     {
 
@@ -321,7 +324,7 @@ namespace sw
                                                                     rName,
                                                                     OUString() );
 
-                mxIPRef = 0;
+                mxIPRef = nullptr;
             }
 
             return bSuccess;
@@ -334,15 +337,15 @@ namespace sw
                 OSL_ENSURE( !mrPers.GetEmbeddedObjectContainer().HasEmbeddedObject( mxIPRef ), "Object in adaptor is inserted?!" );
                 try
                 {
-                    uno::Reference < com::sun::star::util::XCloseable > xClose( mxIPRef, uno::UNO_QUERY );
+                    uno::Reference < css::util::XCloseable > xClose( mxIPRef, uno::UNO_QUERY );
                     if ( xClose.is() )
                         xClose->close(sal_True);
                 }
-                catch ( const com::sun::star::util::CloseVetoException& )
+                catch ( const css::util::CloseVetoException& )
                 {
                 }
 
-                mxIPRef = 0;
+                mxIPRef = nullptr;
             }
         }
     }
@@ -417,14 +420,14 @@ namespace sw
         }
         //SetLayer boilerplate end
 
-        void GetPoolItems(const SfxItemSet &rSet, PoolItems &rItems, bool bExportParentItemSet )
+        void GetPoolItems(const SfxItemSet &rSet, ww8::PoolItems &rItems, bool bExportParentItemSet )
         {
             if( bExportParentItemSet )
             {
                 sal_uInt16 nTotal = rSet.TotalCount();
                 for( sal_uInt16 nItem =0; nItem < nTotal; ++nItem )
                 {
-                    const SfxPoolItem* pItem = 0;
+                    const SfxPoolItem* pItem = nullptr;
                     if( SfxItemState::SET == rSet.GetItemState( rSet.GetWhichByPos( nItem ), true, &pItem ) )
                     {
                         rItems[pItem->Which()] = pItem;
@@ -438,18 +441,18 @@ namespace sw
                 {
                     do
                         rItems[pItem->Which()] = pItem;
-                    while (!aIter.IsAtEnd() && 0 != (pItem = aIter.NextItem()));
+                    while (!aIter.IsAtEnd() && nullptr != (pItem = aIter.NextItem()));
                 }
             }
         }
 
-        const SfxPoolItem *SearchPoolItems(const PoolItems &rItems,
+        const SfxPoolItem *SearchPoolItems(const ww8::PoolItems &rItems,
             sal_uInt16 eType)
         {
-            sw::cPoolItemIter aIter = rItems.find(eType);
+            ww8::cPoolItemIter aIter = rItems.find(eType);
             if (aIter != rItems.end())
                 return aIter->second;
-            return 0;
+            return nullptr;
         }
 
         void ClearOverridesFromSet(const SwFormatCharFormat &rFormat, SfxItemSet &rSet)
@@ -462,15 +465,15 @@ namespace sw
                     const SfxPoolItem *pItem = aIter.GetCurItem();
                     do
                         rSet.ClearItem(pItem->Which());
-                    while (!aIter.IsAtEnd() && 0 != (pItem = aIter.NextItem()));
+                    while (!aIter.IsAtEnd() && nullptr != (pItem = aIter.NextItem()));
                 }
             }
         }
 
-        ParaStyles GetParaStyles(const SwDoc &rDoc)
+        ww8::ParaStyles GetParaStyles(const SwDoc &rDoc)
         {
-            ParaStyles aStyles;
-            typedef ParaStyles::size_type mysizet;
+            ww8::ParaStyles aStyles;
+            typedef ww8::ParaStyles::size_type mysizet;
 
             const SwTextFormatColls *pColls = rDoc.GetTextFormatColls();
             mysizet nCount = pColls ? pColls->size() : 0;
@@ -510,25 +513,25 @@ namespace sw
         }
 
         // #i98791# - adjust sorting algorithm
-        void SortByAssignedOutlineStyleListLevel(ParaStyles &rStyles)
+        void SortByAssignedOutlineStyleListLevel(ww8::ParaStyles &rStyles)
         {
             std::sort(rStyles.begin(), rStyles.end(), outlinecmp());
         }
 
         /*
-           Utility to extract flyformtas from a document, potentially from a
+           Utility to extract FlyFormats from a document, potentially from a
            selection.
            */
-        Frames GetFrames(const SwDoc &rDoc, SwPaM *pPaM /*, bool bAll*/)
+        ww8::Frames GetFrames(const SwDoc &rDoc, SwPaM *pPaM /*, bool bAll*/)
         {
-            SwPosFlyFrms aFlys(rDoc.GetAllFlyFormats(pPaM, true));
-            sw::Frames aRet(SwPosFlyFrmsToFrames(aFlys));
+            SwPosFlyFrames aFlys(rDoc.GetAllFlyFormats(pPaM, true));
+            ww8::Frames aRet(SwPosFlyFramesToFrames(aFlys));
             return aRet;
         }
 
-        void UpdateFramePositions(Frames & rFrames)
+        void UpdateFramePositions(ww8::Frames & rFrames)
         {
-            for (Frame & rFrame : rFrames)
+            for (ww8::Frame & rFrame : rFrames)
             {
                 SwFormatAnchor const& rAnchor = rFrame.GetFrameFormat().GetAnchor();
                 if (SwPosition const*const pAnchor = rAnchor.GetContentAnchor())
@@ -542,9 +545,9 @@ namespace sw
             }
         }
 
-        Frames GetFramesInNode(const Frames &rFrames, const SwNode &rNode)
+        ww8::Frames GetFramesInNode(const ww8::Frames &rFrames, const SwNode &rNode)
         {
-            Frames aRet;
+            ww8::Frames aRet;
             my_copy_if(rFrames.begin(), rFrames.end(),
                 std::back_inserter(aRet), anchoredto(rNode.GetIndex()));
             return aRet;
@@ -556,17 +559,17 @@ namespace sw
             if (nLevel < 0 || nLevel >= MAXLEVEL)
             {
                 OSL_FAIL("Invalid level");
-                return NULL;
+                return nullptr;
             }
             return &(rRule.Get( static_cast< sal_uInt16 >(nLevel) ));
         }
 
         const SwNumFormat* GetNumFormatFromTextNode(const SwTextNode &rTextNode)
         {
-            const SwNumRule *pRule = 0;
+            const SwNumRule *pRule = nullptr;
             if (
                 rTextNode.IsNumbered() && rTextNode.IsCountedInList() &&
-                0 != (pRule = rTextNode.GetNumRule())
+                nullptr != (pRule = rTextNode.GetNumRule())
                 )
             {
                 return GetNumFormatFromSwNumRuleLevel(*pRule,
@@ -575,18 +578,18 @@ namespace sw
 
             OSL_ENSURE(rTextNode.GetDoc(), "No document for node?, suspicious");
             if (!rTextNode.GetDoc())
-                return 0;
+                return nullptr;
 
             if (
                 rTextNode.IsNumbered() && rTextNode.IsCountedInList() &&
-                0 != (pRule = rTextNode.GetDoc()->GetOutlineNumRule())
+                nullptr != (pRule = rTextNode.GetDoc()->GetOutlineNumRule())
                 )
             {
                 return GetNumFormatFromSwNumRuleLevel(*pRule,
                     rTextNode.GetActualListLevel());
             }
 
-            return 0;
+            return nullptr;
         }
 
         const SwNumRule* GetNumRuleFromTextNode(const SwTextNode &rTextNode)
@@ -596,16 +599,16 @@ namespace sw
 
         const SwNumRule* GetNormalNumRuleFromTextNode(const SwTextNode &rTextNode)
         {
-            const SwNumRule *pRule = 0;
+            const SwNumRule *pRule = nullptr;
 
             if (
                 rTextNode.IsNumbered() && rTextNode.IsCountedInList() &&
-                0 != (pRule = rTextNode.GetNumRule())
+                nullptr != (pRule = rTextNode.GetNumRule())
                )
             {
                 return pRule;
             }
-            return 0;
+            return nullptr;
         }
 
         SwNoTextNode *GetNoTextNodeFromSwFrameFormat(const SwFrameFormat &rFormat)
@@ -613,14 +616,14 @@ namespace sw
             const SwNodeIndex *pIndex = rFormat.GetContent().GetContentIdx();
             OSL_ENSURE(pIndex, "No NodeIndex in SwFrameFormat ?, suspicious");
             if (!pIndex)
-                return 0;
+                return nullptr;
             SwNodeIndex aIdx(*pIndex, 1);
             return aIdx.GetNode().GetNoTextNode();
         }
 
         bool HasPageBreak(const SwNode &rNd)
         {
-            const SvxFormatBreakItem *pBreak = 0;
+            const SvxFormatBreakItem *pBreak = nullptr;
             if (rNd.IsTableNode() && rNd.GetTableNode())
             {
                 const SwTable& rTable = rNd.GetTableNode()->GetTable();
@@ -766,13 +769,13 @@ namespace sw
                 {
                     SwRedlineData aData(pFltRedline->eTypePrev,
                         pFltRedline->nAutorNoPrev, pFltRedline->aStampPrev, OUString(),
-                        0);
+                        nullptr);
 
                     mrDoc.getIDocumentRedlineAccess().AppendRedline(new SwRangeRedline(aData, aRegion), true);
                 }
 
                 SwRedlineData aData(pFltRedline->eType, pFltRedline->nAutorNo,
-                        pFltRedline->aStamp, OUString(), 0);
+                        pFltRedline->aStamp, OUString(), nullptr);
 
                 SwRangeRedline *const pNewRedline(new SwRangeRedline(aData, aRegion));
                 // the point node may be deleted in AppendRedline, so park
@@ -841,7 +844,7 @@ namespace sw
         {
         }
 
-        void InsertedTablesManager::DelAndMakeTableFrms()
+        void InsertedTablesManager::DelAndMakeTableFrames()
         {
             if (!mbHasRoot)
                 return;
@@ -856,11 +859,11 @@ namespace sw
                 {
                     SwFrameFormat * pFrameFormat = pTable->GetTable().GetFrameFormat();
 
-                    if (pFrameFormat != NULL)
+                    if (pFrameFormat != nullptr)
                     {
                         SwNodeIndex *pIndex = aIter->second;
-                        pTable->DelFrms();
-                        pTable->MakeFrms(pIndex);
+                        pTable->DelFrames();
+                        pTable->MakeFrames(pIndex);
                     }
                 }
             }

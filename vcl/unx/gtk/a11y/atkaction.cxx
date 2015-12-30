@@ -203,6 +203,12 @@ appendKeyStrokes(OStringBuffer& rBuffer, const uno::Sequence< awt::KeyStroke >& 
 
             if( c != '\0' )
                 rBuffer.append( c );
+            else
+            {
+                // The KeyCode approach did not work, probably a non ascii character
+                // let's hope that there is a character given in KeyChar.
+                rBuffer.append( OUStringToGChar( OUString( rKeyStrokes[i].KeyChar ) ) );
+            }
         }
     }
 }
@@ -254,7 +260,7 @@ action_wrapper_set_description (AtkAction *, gint, const gchar *)
 void
 actionIfaceInit (AtkActionIface *iface)
 {
-  g_return_if_fail (iface != NULL);
+  g_return_if_fail (iface != nullptr);
 
   iface->do_action = action_wrapper_do_action;
   iface->get_n_actions = action_wrapper_get_n_actions;

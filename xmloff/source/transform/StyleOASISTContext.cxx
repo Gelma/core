@@ -62,8 +62,7 @@ static const sal_uInt16 aAttrActionMaps[XML_PROP_TYPE_END] =
 
 class XMLPropertiesTContext_Impl : public XMLPersElemContentTContext
 {
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::xml::sax::XAttributeList > m_xAttrList;
+    css::uno::Reference< css::xml::sax::XAttributeList > m_xAttrList;
 
     XMLPropType m_ePropType;
     bool        m_bControlStyle;
@@ -86,9 +85,9 @@ public:
 
     virtual ~XMLPropertiesTContext_Impl();
 
-    virtual void StartElement( const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+    virtual void StartElement( const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
 
-    virtual void Export() SAL_OVERRIDE;
+    virtual void Export() override;
 
     static XMLPropType GetPropType( const OUString& rLocalName );
 
@@ -117,7 +116,7 @@ XMLPropertiesTContext_Impl::~XMLPropertiesTContext_Impl()
 void XMLPropertiesTContext_Impl::StartElement(
         const Reference< XAttributeList >& rAttrList )
 {
-    XMLTransformerActions *pActions =  0;
+    XMLTransformerActions *pActions =  nullptr;
     sal_uInt16 nActionMap = aAttrActionMaps[m_ePropType];
     if( nActionMap < MAX_OASIS_PROP_ACTIONS )
     {
@@ -127,7 +126,7 @@ void XMLPropertiesTContext_Impl::StartElement(
 
     if( pActions )
     {
-        XMLMutableAttributeList *pAttrList = 0;
+        XMLMutableAttributeList *pAttrList = nullptr;
         if( !m_xAttrList.is() )
         {
             pAttrList = new XMLMutableAttributeList();
@@ -760,13 +759,13 @@ XMLStyleOASISTContext::~XMLStyleOASISTContext()
 {
 }
 
-XMLTransformerContext *XMLStyleOASISTContext::CreateChildContext(
+rtl::Reference<XMLTransformerContext> XMLStyleOASISTContext::CreateChildContext(
             sal_uInt16 nPrefix,
             const OUString& rLocalName,
             const OUString& rQName,
             const Reference< XAttributeList >& rAttrList )
 {
-    XMLTransformerContext *pContext = 0;
+    rtl::Reference<XMLTransformerContext> pContext;
 
     if( XML_NAMESPACE_STYLE == nPrefix || XML_NAMESPACE_LO_EXT == nPrefix )
     {
@@ -780,16 +779,16 @@ XMLTransformerContext *XMLStyleOASISTContext::CreateChildContext(
                     GetTransformer(), rQName, ePropType, m_aStyleFamily, m_bControlStyle );
             else
                 m_xPropContext->SetQNameAndPropType( rQName, ePropType );
-            pContext = m_xPropContext.get();
+            pContext.set(m_xPropContext.get());
         }
     }
-    if( !pContext )
+    if( !pContext.is() )
     {
         // if a properties context exist close it
         if( m_xPropContext.is() && !m_bPersistent )
         {
             m_xPropContext->Export();
-            m_xPropContext = 0;
+            m_xPropContext = nullptr;
         }
 
         pContext = m_bPersistent
@@ -810,7 +809,7 @@ void XMLStyleOASISTContext::StartElement(
     OSL_ENSURE( pActions, "go no actions" );
 
     Reference< XAttributeList > xAttrList( rAttrList );
-    XMLMutableAttributeList *pMutableAttrList = 0;
+    XMLMutableAttributeList *pMutableAttrList = nullptr;
     sal_Int16 nAttrCount = xAttrList.is() ? xAttrList->getLength() : 0;
     sal_Int16 nFamilyAttr = -1;
     m_bControlStyle = false;
@@ -919,7 +918,7 @@ void XMLStyleOASISTContext::EndElement()
         if( m_xPropContext.is() )
         {
             m_xPropContext->Export();
-            m_xPropContext = 0;
+            m_xPropContext = nullptr;
         }
         GetTransformer().GetDocHandler()->endElement( GetExportQName() );
     }
@@ -945,7 +944,7 @@ bool XMLStyleOASISTContext::IsPersistent() const
 XMLTransformerActions *XMLStyleOASISTContext::CreateTransformerActions(
         sal_uInt16 nType )
 {
-    XMLTransformerActionInit *pInit = 0;
+    XMLTransformerActionInit *pInit = nullptr;
 
     switch( nType )
     {
@@ -990,7 +989,7 @@ XMLTransformerActions *XMLStyleOASISTContext::CreateTransformerActions(
         break;
     }
 
-    XMLTransformerActions *pActions = 0;
+    XMLTransformerActions *pActions = nullptr;
     if( pInit )
         pActions = new XMLTransformerActions( pInit );
 

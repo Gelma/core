@@ -103,7 +103,7 @@ VendorSettings::VendorSettings():
     if (!sSettingsPath.isEmpty())
     {
         m_xmlDocVendorSettings = xmlParseFile(sSettingsPath.getStr());
-        if (m_xmlDocVendorSettings == NULL)
+        if (m_xmlDocVendorSettings == nullptr)
             throw FrameworkException(
                 JFW_E_ERROR,
                 OString("[Java framework] Error while parsing file: ")
@@ -179,7 +179,7 @@ VersionInfo VendorSettings::getVersionInformation(const OUString & sVendor)
     if (!xmlXPathNodeSetIsEmpty(xPathObjectVersions->nodesetval))
     {
         xmlNode* cur = xPathObjectVersions->nodesetval->nodeTab[0];
-        while (cur != NULL)
+        while (cur != nullptr)
         {
             if (cur->type == XML_ELEMENT_NODE )
             {
@@ -212,7 +212,7 @@ std::vector<OUString> VendorSettings::getSupportedVendors()
     {
         //get the values of the vendor elements + name attribute
         xmlNode* cur = result->nodesetval->nodeTab[0];
-        while (cur != NULL)
+        while (cur != nullptr)
         {
             //between vendor elements are also text elements
             if (cur->type == XML_ELEMENT_NODE)
@@ -263,9 +263,7 @@ OString BootParams::getClasspath()
 {
     OString sClassPath;
     OUString sCP;
-    if (Bootstrap::get()->getFrom(
-        OUString(UNO_JAVA_JFW_CLASSPATH),
-        sCP))
+    if (Bootstrap::get()->getFrom( UNO_JAVA_JFW_CLASSPATH, sCP ))
     {
         sClassPath = OUStringToOString(sCP, osl_getThreadTextEncoding());
         SAL_INFO(
@@ -275,9 +273,7 @@ OString BootParams::getClasspath()
     }
 
     OUString sEnvCP;
-    if (Bootstrap::get()->getFrom(
-        OUString(UNO_JAVA_JFW_ENV_CLASSPATH),
-        sEnvCP))
+    if (Bootstrap::get()->getFrom( UNO_JAVA_JFW_ENV_CLASSPATH, sEnvCP ))
     {
         char * pCp = getenv("CLASSPATH");
         if (pCp)
@@ -297,9 +293,7 @@ OString BootParams::getClasspath()
 OUString BootParams::getVendorSettings()
 {
     OUString sVendor;
-    OUString sName(
-        UNO_JAVA_JFW_VENDOR_SETTINGS);
-    if (Bootstrap::get()->getFrom(sName ,sVendor))
+    if (Bootstrap::get()->getFrom(UNO_JAVA_JFW_VENDOR_SETTINGS, sVendor))
     {
         //check the value of the bootstrap variable
         jfw::FileStatus s = checkFileURL(sVendor);
@@ -336,10 +330,8 @@ OUString BootParams::getJREHome()
 {
     OUString sJRE;
     OUString sEnvJRE;
-    bool bJRE = Bootstrap::get()->getFrom(
-        OUString(UNO_JAVA_JFW_JREHOME) ,sJRE);
-    bool bEnvJRE = Bootstrap::get()->getFrom(
-        OUString(UNO_JAVA_JFW_ENV_JREHOME) ,sEnvJRE);
+    bool bJRE = Bootstrap::get()->getFrom(UNO_JAVA_JFW_JREHOME, sJRE);
+    bool bEnvJRE = Bootstrap::get()->getFrom(UNO_JAVA_JFW_ENV_JREHOME, sEnvJRE);
 
     if (bJRE && bEnvJRE)
     {
@@ -354,7 +346,7 @@ OUString BootParams::getJREHome()
     else if (bEnvJRE)
     {
         const char * pJRE = getenv("JAVA_HOME");
-        if (pJRE == NULL)
+        if (pJRE == nullptr)
         {
             throw FrameworkException(
             JFW_E_CONFIGURATION,
@@ -394,9 +386,7 @@ OUString BootParams::getJREHome()
 OUString BootParams::getClasspathUrls()
 {
     OUString sParams;
-    Bootstrap::get()->getFrom(
-        OUString(UNO_JAVA_JFW_CLASSPATH_URLS),
-        sParams);
+    Bootstrap::get()->getFrom( UNO_JAVA_JFW_CLASSPATH_URLS, sParams);
     SAL_INFO(
         "jfw.level2",
         "Using bootstrap parameter " UNO_JAVA_JFW_CLASSPATH_URLS " = "
@@ -415,17 +405,13 @@ JFW_MODE getMode()
         bool bDirectMode = true;
         OUString sValue;
         const rtl::Bootstrap * aBoot = Bootstrap::get();
-        OUString sJREHome(UNO_JAVA_JFW_JREHOME);
-        if (!aBoot->getFrom(sJREHome, sValue))
+        if (!aBoot->getFrom(UNO_JAVA_JFW_JREHOME, sValue))
         {
-            OUString sEnvJRE(UNO_JAVA_JFW_ENV_JREHOME);
-            if (!aBoot->getFrom(sEnvJRE, sValue))
+            if (!aBoot->getFrom(UNO_JAVA_JFW_ENV_JREHOME, sValue))
             {
-                OUString sClasspath(UNO_JAVA_JFW_CLASSPATH);
-                if (!aBoot->getFrom(sClasspath, sValue))
+                if (!aBoot->getFrom(UNO_JAVA_JFW_CLASSPATH, sValue))
                 {
-                    OUString sEnvClasspath(UNO_JAVA_JFW_ENV_CLASSPATH);
-                    if (!aBoot->getFrom(sEnvClasspath, sValue))
+                    if (!aBoot->getFrom(UNO_JAVA_JFW_ENV_CLASSPATH, sValue))
                     {
                         OUString sParams = UNO_JAVA_JFW_PARAMETER +
                             OUString::number(1);

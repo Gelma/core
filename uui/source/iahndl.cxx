@@ -302,7 +302,7 @@ namespace
 
     static bool lcl_matchesRequest( const Any& i_rRequest, const OUString& i_rTypeName, const OUString& i_rPropagation )
     {
-        const ::com::sun::star::uno::TypeDescription aTypeDesc( i_rTypeName );
+        const css::uno::TypeDescription aTypeDesc( i_rTypeName );
         const typelib_TypeDescription* pTypeDesc = aTypeDesc.get();
         if ( !pTypeDesc || !pTypeDesc->pWeakRef )
         {
@@ -315,7 +315,7 @@ namespace
 #endif
             return false;
         }
-        const ::com::sun::star::uno::Type aType( pTypeDesc->pWeakRef );
+        const css::uno::Type aType( pTypeDesc->pWeakRef );
 
         const bool bExactMatch = i_rPropagation == "named-only";
         if ( bExactMatch )
@@ -363,7 +363,7 @@ bool UUIInteractionHelper::handleTypedHandlerImplementations( Reference< XIntera
     // the base registration node for "typed" interaction handlers
     const ::utl::OConfigurationTreeRoot aConfigRoot( ::utl::OConfigurationTreeRoot::createWithComponentContext(
         m_xContext,
-        OUString( "/org.openoffice.Interaction/InteractionHandlers" ),
+        "/org.openoffice.Interaction/InteractionHandlers",
         -1,
         ::utl::OConfigurationTreeRoot::CM_READONLY
     ) );
@@ -971,7 +971,7 @@ UUIInteractionHelper::getParentProperty()
     if ( xWindow.is() )
         return VCLUnoHelper::GetWindow(xWindow);
 
-    return 0;
+    return nullptr;
 }
 
 uno::Reference< awt::XWindow>

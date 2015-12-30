@@ -22,17 +22,15 @@
 
 #include <swrect.hxx>
 
-#include <boost/ptr_container/ptr_vector.hpp>
-
 #include <vector>
 #include <deque>
 
 class SwDoc;
-class SwFrm;
-class SwLayoutFrm;
-class SwPageFrm;
-class SwFlyFrm;
-class SwSectionFrm;
+class SwFrame;
+class SwLayoutFrame;
+class SwPageFrame;
+class SwFlyFrame;
+class SwSectionFrame;
 class SwSectionNode;
 class SvStream;
 
@@ -50,19 +48,19 @@ class SvStream;
  */
 
 class SwFlyCache;
-typedef boost::ptr_vector<SwFlyCache> SwPageFlyCache;
+typedef std::vector<SwFlyCache> SwPageFlyCache;
 
 class SwLayCacheImpl
 {
     std::vector<sal_uLong> mIndices;
     std::deque<sal_Int32> aOffset;
     std::vector<sal_uInt16> aType;
-    SwPageFlyCache aFlyCache;
+    SwPageFlyCache m_FlyCache;
     bool bUseFlyCache;
     void Insert( sal_uInt16 nType, sal_uLong nIndex, sal_Int32 nOffset );
 
 public:
-    SwLayCacheImpl() : mIndices(), aOffset(), aType(), aFlyCache(), bUseFlyCache(false) {}
+    SwLayCacheImpl() : bUseFlyCache(false) {}
 
     size_t size() const { return mIndices.size(); }
 
@@ -72,8 +70,8 @@ public:
     sal_Int32 GetBreakOfst( size_t nIdx ) const { return aOffset[ nIdx ]; }
     sal_uInt16 GetBreakType( sal_uInt16 nIdx ) const { return aType[ nIdx ]; }
 
-    size_t GetFlyCount() const { return aFlyCache.size(); }
-    SwFlyCache& GetFlyCache( size_t nIdx ) { return aFlyCache[ nIdx ]; }
+    size_t GetFlyCount() const { return m_FlyCache.size(); }
+    SwFlyCache& GetFlyCache( size_t nIdx ) { return m_FlyCache[ nIdx ]; }
 
     bool IsUseFlyCache() const { return bUseFlyCache; }
 };
@@ -83,15 +81,15 @@ public:
 class SwActualSection
 {
     SwActualSection *pUpper;
-    SwSectionFrm    *pSectFrm;
+    SwSectionFrame    *pSectFrame;
     SwSectionNode   *pSectNode;
 public:
     SwActualSection( SwActualSection *pUpper,
-                     SwSectionFrm    *pSect,
+                     SwSectionFrame    *pSect,
                      SwSectionNode   *pNd );
 
-    SwSectionFrm    *GetSectionFrm()                    { return pSectFrm; }
-    void             SetSectionFrm( SwSectionFrm *p )   { pSectFrm = p; }
+    SwSectionFrame    *GetSectionFrame()                    { return pSectFrame; }
+    void             SetSectionFrame( SwSectionFrame *p )   { pSectFrame = p; }
     SwSectionNode   *GetSectionNode()                   { return pSectNode;}
     SwActualSection *GetUpper()                         { return pUpper; }
 };
@@ -100,10 +98,10 @@ public:
 // If there's a layoutcache available, this information is used.
 class SwLayHelper
 {
-    SwFrm* &rpFrm;
-    SwFrm* &rpPrv;
-    SwPageFrm* &rpPage;
-    SwLayoutFrm* &rpLay;
+    SwFrame* &rpFrame;
+    SwFrame* &rpPrv;
+    SwPageFrame* &rpPage;
+    SwLayoutFrame* &rpLay;
     SwActualSection* &rpActualSection;
     bool &rbBreakAfter;
     SwDoc* pDoc;
@@ -114,10 +112,10 @@ class SwLayHelper
     sal_uInt16 nIndex;                      // the index in the page break array
     size_t nFlyIdx;                         // the index in the fly cache array
     bool bFirst : 1;
-    void _CheckFlyCache( SwPageFrm* pPage );
+    void _CheckFlyCache( SwPageFrame* pPage );
 public:
-    SwLayHelper( SwDoc *pD, SwFrm* &rpF, SwFrm* &rpP, SwPageFrm* &rpPg,
-            SwLayoutFrm* &rpL, SwActualSection* &rpA, bool &rBrk,
+    SwLayHelper( SwDoc *pD, SwFrame* &rpF, SwFrame* &rpP, SwPageFrame* &rpPg,
+            SwLayoutFrame* &rpL, SwActualSection* &rpA, bool &rBrk,
             sal_uLong nNodeIndex, bool bCache );
     ~SwLayHelper();
     sal_uLong CalcPageCount();
@@ -127,7 +125,7 @@ public:
 
     /// Look for fresh text frames at this (new) page and set them to the right
     /// position, if they are in the fly cache.
-    void CheckFlyCache( SwPageFrm* pPage )
+    void CheckFlyCache( SwPageFrame* pPage )
     { if( pImpl && nFlyIdx < pImpl->GetFlyCount() ) _CheckFlyCache( pPage ); }
 };
 

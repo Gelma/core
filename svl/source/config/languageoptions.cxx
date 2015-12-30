@@ -144,10 +144,10 @@ SvtScriptType SvtLanguageOptions::GetScriptTypeOfLanguage( sal_uInt16 nLang )
     SvtScriptType nScript;
     switch (nScriptType)
     {
-        case ::com::sun::star::i18n::ScriptType::ASIAN:
+        case css::i18n::ScriptType::ASIAN:
             nScript = SvtScriptType::ASIAN;
             break;
-        case ::com::sun::star::i18n::ScriptType::COMPLEX:
+        case css::i18n::ScriptType::COMPLEX:
             nScript = SvtScriptType::COMPLEX;
             break;
         default:
@@ -191,9 +191,7 @@ sal_Int16 SvtLanguageOptions::GetI18NScriptTypeOfLanguage( sal_uInt16 nLang )
 SvtSystemLanguageOptions::SvtSystemLanguageOptions() :
     utl::ConfigItem( "System/L10N")
 {
-    uno::Sequence< OUString > aPropertyNames(1);
-    OUString* pNames = aPropertyNames.getArray();
-    pNames[0] = "SystemLocale";
+    uno::Sequence< OUString > aPropertyNames { "SystemLocale" };
     uno::Sequence< uno::Any > aValues = GetProperties( aPropertyNames );
 
     if ( aValues.getLength() )
@@ -211,7 +209,7 @@ void    SvtSystemLanguageOptions::ImplCommit()
     //does nothing
 }
 
-void    SvtSystemLanguageOptions::Notify( const com::sun::star::uno::Sequence< OUString >& )
+void    SvtSystemLanguageOptions::Notify( const css::uno::Sequence< OUString >& )
 {
     // no listeners supported yet
 }
@@ -257,13 +255,13 @@ bool SvtSystemLanguageOptions::isKeyboardLayoutTypeInstalled(sal_Int16 scriptTyp
 
 bool SvtSystemLanguageOptions::isCTLKeyboardLayoutInstalled() const
 {
-    return isKeyboardLayoutTypeInstalled(::com::sun::star::i18n::ScriptType::COMPLEX);
+    return isKeyboardLayoutTypeInstalled(css::i18n::ScriptType::COMPLEX);
 }
 
 
 bool SvtSystemLanguageOptions::isCJKKeyboardLayoutInstalled() const
 {
-    return isKeyboardLayoutTypeInstalled(::com::sun::star::i18n::ScriptType::ASIAN);
+    return isKeyboardLayoutTypeInstalled(css::i18n::ScriptType::ASIAN);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

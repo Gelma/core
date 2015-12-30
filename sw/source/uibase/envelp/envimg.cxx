@@ -43,7 +43,8 @@
 using namespace utl;
 using namespace ::com::sun::star::uno;
 
-TYPEINIT1_AUTOFACTORY( SwEnvItem, SfxPoolItem );
+
+SfxPoolItem* SwEnvItem::CreateDefault() { return new SwEnvItem; }
 
 OUString MakeSender()
 {
@@ -264,7 +265,7 @@ void SwEnvCfgItem::ImplCommit()
     PutProperties(aNames, aValues);
 }
 
-void SwEnvCfgItem::Notify( const ::com::sun::star::uno::Sequence< OUString >& ) {}
+void SwEnvCfgItem::Notify( const css::uno::Sequence< OUString >& ) {}
 
 Sequence<OUString> SwEnvCfgItem::GetPropertyNames()
 {

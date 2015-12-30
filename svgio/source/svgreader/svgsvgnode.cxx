@@ -36,7 +36,7 @@ namespace svgio
             SvgNode* pParent)
         :   SvgNode(SVGTokenSvg, rDocument, pParent),
             maSvgStyleAttributes(*this),
-            mpViewBox(0),
+            mpViewBox(nullptr),
             maSvgAspectRatio(),
             maX(),
             maY(),
@@ -112,7 +112,7 @@ namespace svgio
         const SvgStyleAttributes* SvgSvgNode::getSvgStyleAttributes() const
         {
             // #i125258# svg node can have CssStyles, too, so check for it here
-            return checkForCssStyle(OUString("svg"), maSvgStyleAttributes);
+            return checkForCssStyle("svg", maSvgStyleAttributes);
         }
 
         void SvgSvgNode::parseAttribute(const OUString& rTokenName, SVGToken aSVGToken, const OUString& aContent)
@@ -215,7 +215,7 @@ namespace svgio
             {
                 return;
             }
-            const SvgSvgNode* pParentSvgSvgNode = 0;
+            const SvgSvgNode* pParentSvgSvgNode = nullptr;
             // enclosing svg might have relative width, need to cumulate them till they are
             // resolved somewhere up in the node tree
             double fPercentage(1.0);
@@ -257,7 +257,7 @@ namespace svgio
             {
                 return;
             }
-            const SvgSvgNode* pParentSvgSvgNode = 0;
+            const SvgSvgNode* pParentSvgSvgNode = nullptr;
             // enclosing svg might have relative width and height, need to cumulate them till they are
             // resolved somewhere up in the node tree
             double fPercentage(1.0);
@@ -294,9 +294,9 @@ namespace svgio
         }
 
 // ToDo: Consider attribute overflow in method decomposeSvgNode
-        void SvgSvgNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DSequence& rTarget, bool bReferenced) const
+        void SvgSvgNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DContainer& rTarget, bool bReferenced) const
         {
-            drawinglayer::primitive2d::Primitive2DSequence aSequence;
+            drawinglayer::primitive2d::Primitive2DContainer aSequence;
 
             // #i125258# check now if we need to init some style settings locally. Do not do this
             // in the constructor, there is not yet informatikon e.g. about existing CssStyles.
@@ -306,7 +306,7 @@ namespace svgio
             // decompose children
             SvgNode::decomposeSvgNode(aSequence, bReferenced);
 
-            if(aSequence.hasElements())
+            if(!aSequence.empty())
             {
                 if(getParent())
                 {
@@ -355,9 +355,8 @@ namespace svgio
                             // I use content itself as fallback to set missing values for viewport
                             // Any better idea for such ill structures svg documents?
                             const basegfx::B2DRange aChildRange(
-                                        drawinglayer::primitive2d::getB2DRangeFromPrimitive2DSequence(
-                                            aSequence,
-                                        drawinglayer::geometry::ViewInformation2D()));
+                                        aSequence.getB2DRange(
+                                            drawinglayer::geometry::ViewInformation2D()));
                             fWReference = aChildRange.getWidth();
                         }
                         // referenced values are already in 'user unit'
@@ -383,8 +382,7 @@ namespace svgio
                             // I use content itself as fallback to set missing values for viewport
                             // Any better idea for such ill structures svg documents?
                             const basegfx::B2DRange aChildRange(
-                                        drawinglayer::primitive2d::getB2DRangeFromPrimitive2DSequence(
-                                            aSequence,
+                                    aSequence.getB2DRange(
                                         drawinglayer::geometry::ViewInformation2D()));
                             fHReference = aChildRange.getHeight();
                         }
@@ -412,7 +410,7 @@ namespace svgio
                             if(aTarget.equal(*getViewBox()))
                             {
                                 // no mapping needed, append
-                                drawinglayer::primitive2d::appendPrimitive2DSequenceToPrimitive2DSequence(rTarget, aSequence);
+                                rTarget.append(aSequence);
                             }
                             else
                             {
@@ -435,7 +433,7 @@ namespace svgio
                                 if(rRatio.isMeetOrSlice())
                                 {
                                     // embed in transformation
-                                    drawinglayer::primitive2d::appendPrimitive2DReferenceToPrimitive2DSequence(rTarget, xRef);
+                                    rTarget.push_back(xRef);
                                 }
                                 else
                                 {
@@ -443,9 +441,9 @@ namespace svgio
                                     const drawinglayer::primitive2d::Primitive2DReference xMask(
                                         new drawinglayer::primitive2d::MaskPrimitive2D(
                                             basegfx::B2DPolyPolygon(basegfx::tools::createPolygonFromRect(aTarget)),
-                                            drawinglayer::primitive2d::Primitive2DSequence(&xRef, 1)));
+                                            drawinglayer::primitive2d::Primitive2DContainer { xRef }));
 
-                                    drawinglayer::primitive2d::appendPrimitive2DReferenceToPrimitive2DSequence(rTarget, xMask);
+                                    rTarget.push_back(xMask);
                                 }
                             }
                         }
@@ -463,7 +461,7 @@ namespace svgio
                                         basegfx::tools::createTranslateB2DHomMatrix(fX, fY),
                                         aSequence));
 
-                                aSequence = drawinglayer::primitive2d::Primitive2DSequence(&xRef, 1);
+                                aSequence = drawinglayer::primitive2d::Primitive2DContainer { xRef, };
                             }
 
                             // embed in MaskPrimitive2D to clip
@@ -475,15 +473,12 @@ namespace svgio
                                     aSequence));
 
                             // append
-                            drawinglayer::primitive2d::appendPrimitive2DReferenceToPrimitive2DSequence(rTarget, xMask);
+                            rTarget.push_back(xMask);
                         }
                     }
                 }
                 else // Outermost SVG element
                 {
-                    double fW = 0.0; // effective value depends on viewBox
-                    double fH = 0.0;
-
                     // Svg defines that a negative value is an error and that 0.0 disables rendering
                     // isPositive() not usable because it allows 0.0 in contrast to mathematical definition of 'positive'
                     const bool bWidthInvalid(getWidth().isSet() && basegfx::fTools::lessOrEqual(getWidth().getNumber(), 0.0));
@@ -491,6 +486,8 @@ namespace svgio
                     if(!bWidthInvalid && !bHeightInvalid)
                     {
                         basegfx::B2DRange aSvgCanvasRange; // effective value depends on viewBox
+                        double fW = 0.0; // effective value depends on viewBox
+                        double fH = 0.0;
                         if(getViewBox())
                         {
                             // SVG 1.1 defines in section 7.7 that a negative value for width or height
@@ -544,7 +541,7 @@ namespace svgio
                                         aViewBoxMapping,
                                         aSequence));
 
-                                aSequence = drawinglayer::primitive2d::Primitive2DSequence(&xTransform, 1);
+                                aSequence = drawinglayer::primitive2d::Primitive2DContainer { xTransform };
                             }
                         }
                         else // no viewbox
@@ -562,9 +559,8 @@ namespace svgio
                             else
                             {
                                 const basegfx::B2DRange aChildRange(
-                                    drawinglayer::primitive2d::getB2DRangeFromPrimitive2DSequence(
-                                        aSequence,
-                                     drawinglayer::geometry::ViewInformation2D()));
+                                     aSequence.getB2DRange(
+                                         drawinglayer::geometry::ViewInformation2D()));
                                 const double fChildWidth(aChildRange.getWidth());
                                 const double fChildHeight(aChildRange.getHeight());
                                 fW = bWidthIsAbsolute ? getWidth().solveNonPercentage(*this) : fChildWidth;
@@ -586,8 +582,7 @@ namespace svgio
                             // different from Svg we have the possibility with primitives to get
                             // a correct bounding box for the geometry. Get it for evtl. taking action
                             const basegfx::B2DRange aContentRange(
-                                drawinglayer::primitive2d::getB2DRangeFromPrimitive2DSequence(
-                                    aSequence,
+                                aSequence.getB2DRange(
                                     drawinglayer::geometry::ViewInformation2D()));
 
                             if(aSvgCanvasRange.isInside(aContentRange))
@@ -604,9 +599,9 @@ namespace svgio
                                         basegfx::BColor(0.0, 0.0, 0.0)));
                                 const drawinglayer::primitive2d::Primitive2DReference xHidden(
                                     new drawinglayer::primitive2d::HiddenGeometryPrimitive2D(
-                                        drawinglayer::primitive2d::Primitive2DSequence(&xLine, 1)));
+                                        drawinglayer::primitive2d::Primitive2DContainer { xLine }));
 
-                                drawinglayer::primitive2d::appendPrimitive2DReferenceToPrimitive2DSequence(aSequence, xHidden);
+                                aSequence.push_back(xHidden);
                             }
                             else if(aSvgCanvasRange.overlaps(aContentRange))
                             {
@@ -622,16 +617,16 @@ namespace svgio
                                                 aSvgCanvasRange)),
                                         aSequence));
 
-                                aSequence = drawinglayer::primitive2d::Primitive2DSequence(&xMask, 1);
+                                aSequence = drawinglayer::primitive2d::Primitive2DContainer { xMask };
                             }
                             else
                             {
                                 // not inside, no overlap. Empty Svg
-                                aSequence.realloc(0);
+                                aSequence.clear();
                             }
                         }
 
-                        if(aSequence.hasElements())
+                        if(!aSequence.empty())
                         {
                             // embed in transform primitive to scale to 1/100th mm
                             // where 1 inch == 25.4 mm to get from Svg coordinates (px) to
@@ -647,10 +642,10 @@ namespace svgio
                                     aTransform,
                                     aSequence));
 
-                            aSequence = drawinglayer::primitive2d::Primitive2DSequence(&xTransform, 1);
+                            aSequence = drawinglayer::primitive2d::Primitive2DContainer { xTransform };
 
                             // append to result
-                            drawinglayer::primitive2d::appendPrimitive2DSequenceToPrimitive2DSequence(rTarget, aSequence);
+                            rTarget.append(aSequence);
                         }
                     }
                 }
@@ -740,13 +735,13 @@ namespace svgio
                 {
                     // If width or height is not provided, the default would be 100%, see SVG 1.1 section 5.1.2
                     // But here it cannot be resolved and no fallback exists.
-                    // SVG 1.1 defines in section 5.1.2 that x,y has no meanig for the outermost SVG element.
+                    // SVG 1.1 defines in section 5.1.2 that x,y has no meaning for the outermost SVG element.
                     bool bWidthIsAbsolute(getWidth().isSet() && Unit_percent != getWidth().getUnit());
-                    double fW( bWidthIsAbsolute ? getWidth().solveNonPercentage(*this) : 0.0);
                     bool bHeightIsAbsolute(getHeight().isSet() && Unit_percent != getHeight().getUnit());
-                    double fH( bHeightIsAbsolute ? getHeight().solveNonPercentage(*this) : 0.0);
                     if (bWidthIsAbsolute && bHeightIsAbsolute)
                     {
+                        double fW( getWidth().solveNonPercentage(*this) );
+                        double fH( getHeight().solveNonPercentage(*this) );
                         return basegfx::B2DRange(0.0, 0.0, fW, fH);
                     }
                     else // no fallback exists
@@ -754,7 +749,7 @@ namespace svgio
                             return SvgNode::getCurrentViewPort();
                     }
                 }
-// ToDo: Is it possible to decompose and use the bounding box of the children, if even the
+// TODO: Is it possible to decompose and use the bounding box of the children, if even the
 //       outermost svg has no information to resolve percentage? Is it worth, how expensive is it?
 
             }

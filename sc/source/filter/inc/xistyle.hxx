@@ -22,9 +22,9 @@
 
 #include <list>
 #include <memory>
+#include <vector>
 #include <tools/mempool.hxx>
 #include <boost/noncopyable.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include "rangelst.hxx"
 #include "patattr.hxx"
 #include "xladdress.hxx"
@@ -117,7 +117,7 @@ public:
     /** Writes all font properties to the passed property set.
         @param pFontColor  If set, overrides internal stored font color. */
     void                WriteFontProperties( ScfPropertySet& rPropSet,
-                            XclFontPropSetType eType, const Color* pFontColor = 0 ) const;
+                            XclFontPropSetType eType, const Color* pFontColor = nullptr ) const;
 
 private:
     /** Reads and sets height and flags. */
@@ -185,7 +185,7 @@ public:
         @param pFontColor  If set, overrides internal stored font color. */
     void                WriteFontProperties(
                             ScfPropertySet& rPropSet, XclFontPropSetType eType,
-                            sal_uInt16 nFontIdx, const Color* pFontColor = 0 ) const;
+                            sal_uInt16 nFontIdx, const Color* pFontColor = nullptr ) const;
     /** Writes default font properties for form controls to the passed property set. */
     void                WriteDefaultCtrlFontProperties( ScfPropertySet& rPropSet ) const;
 
@@ -194,7 +194,7 @@ private:
     void                UpdateAppFont( const XclFontData& rFontData, bool bHasCharSet );
 
 private:
-    boost::ptr_vector< XclImpFont > maFontList; /// List of all FONT records in the Excel file.
+    std::vector< XclImpFont > maFontList; /// List of all FONT records in the Excel file.
     XclFontData         maAppFont;              /// Application font (for column width).
     XclImpFont          maFont4;                /// Built-in font with index 4.
     XclImpFont          maCtrlFont;             /// BIFF5 default form controls font (Helv,8pt,bold).
@@ -488,10 +488,10 @@ public:
 
     /** Returns the object that stores all contents of an XF record. */
     inline XclImpXF*    GetXF( sal_uInt16 nXFIndex )
-                            { return (nXFIndex >= maXFList.size()) ? NULL : &maXFList.at(nXFIndex); }
+                            { return (nXFIndex >= maXFList.size()) ? nullptr : maXFList.at(nXFIndex).get(); }
 
     inline const XclImpXF*    GetXF( sal_uInt16 nXFIndex ) const
-                            { return (nXFIndex >= maXFList.size()) ? NULL : &maXFList.at(nXFIndex); }
+                            { return (nXFIndex >= maXFList.size()) ? nullptr : maXFList.at(nXFIndex).get(); }
 
     /** Returns the index to the Excel font used in the specified XF record. */
     sal_uInt16          GetFontIndex( sal_uInt16 nXFIndex ) const;
@@ -505,10 +505,10 @@ public:
     ScStyleSheet*       CreateStyleSheet( sal_uInt16 nXFIndex );
 
 private:
-    typedef boost::ptr_vector< XclImpStyle >        XclImpStyleList;
+    typedef std::vector< std::unique_ptr<XclImpStyle> >        XclImpStyleList;
     typedef ::std::map< sal_uInt16, XclImpStyle* >  XclImpStyleMap;
 
-    boost::ptr_vector< XclImpXF > maXFList; /// List of contents of all XF record.
+    std::vector< std::unique_ptr<XclImpXF> > maXFList; /// List of contents of all XF record.
     XclImpStyleList     maBuiltinStyles;    /// List of built-in cell styles.
     XclImpStyleList     maUserStyles;       /// List of user defined cell styles.
     XclImpStyleMap      maStylesByXf;       /// Maps XF records to cell styles.
@@ -561,7 +561,7 @@ inline bool XclImpXFRange::Contains( SCROW nScRow ) const
 class XclImpXFRangeColumn : private boost::noncopyable
 {
 public:
-    typedef ::boost::ptr_vector<XclImpXFRange> IndexList;
+    typedef std::vector< std::unique_ptr<XclImpXFRange> > IndexList;
 
     inline explicit     XclImpXFRangeColumn() {}
 

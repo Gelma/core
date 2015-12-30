@@ -36,7 +36,6 @@
 
 #include <unomid.h>
 
-// STATIC DATA
 #include <sfx2/request.hxx>
     // needed for -fsanitize=function visibility of typeinfo for functions of
     // type void(SfxShell*,SfxRequest&) defined in swslots.hxx
@@ -56,7 +55,6 @@ void SwWebTextShell::InitInterface_Impl()
     GetStaticInterface()->RegisterChildWindow(FN_INSERT_FIELD);
 }
 
-TYPEINIT1(SwWebTextShell, SwTextShell)
 
 SwWebTextShell::SwWebTextShell(SwView &_rView) :
     SwTextShell(_rView)

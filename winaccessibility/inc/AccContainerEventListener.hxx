@@ -38,11 +38,11 @@
 class AccContainerEventListener: public AccEventListener
 {
 public:
-    AccContainerEventListener(com::sun::star::accessibility::XAccessible* pAcc, AccObjectManagerAgent* Agent);
+    AccContainerEventListener(css::accessibility::XAccessible* pAcc, AccObjectManagerAgent* Agent);
     virtual ~AccContainerEventListener();
 
     //AccessibleEventListener
-    virtual void SAL_CALL notifyEvent( const ::com::sun::star::accessibility::AccessibleEventObject& aEvent ) throw (::com::sun::star::uno::RuntimeException);
+    virtual void SAL_CALL notifyEvent( const css::accessibility::AccessibleEventObject& aEvent ) throw (css::uno::RuntimeException) override;
 
     //for child changed event
     virtual void HandleChildChangedEvent(
@@ -59,22 +59,20 @@ public:
     virtual void HandleTextChangedEvent(
             css::uno::Any oldValue, css::uno::Any newValue);
     virtual void HandleStateChangedEvent(
-            css::uno::Any oldValue, css::uno::Any newValue) SAL_OVERRIDE;
+            css::uno::Any oldValue, css::uno::Any newValue) override;
 
     //for value changed event
     virtual void HandleValueChangedEvent(
             css::uno::Any oldValue, css::uno::Any newValue);
 
     //state changed
-    virtual void SetComponentState(short state, bool enable) SAL_OVERRIDE;
-    virtual void FireStatePropertyChange(short state, bool set) SAL_OVERRIDE;
-    virtual void FireStateFocusedChange(bool enable) SAL_OVERRIDE;
-    virtual bool IsEditable(
-        css::uno::Reference<css::accessibility::XAccessibleContext> xContext);
+    virtual void SetComponentState(short state, bool enable) override;
+    virtual void FireStatePropertyChange(short state, bool set) override;
+    virtual void FireStateFocusedChange(bool enable) override;
+    virtual bool IsEditable(css::uno::Reference<css::accessibility::XAccessibleContext> xContext);
 
     // update all children's state
-    void UpdateAllChildrenState(
-            com::sun::star::accessibility::XAccessible* pXAccessible);
+    void UpdateAllChildrenState( css::accessibility::XAccessible* pXAccessible);
 
     bool NotifyChildEvent(short nWinEvent, const css::uno::Any &Value);
 
@@ -94,7 +92,7 @@ public:
             const css::uno::Any &oldValue, const css::uno::Any &newValue);
 
     //for name changed event
-    virtual void HandleNameChangedEvent(css::uno::Any name) SAL_OVERRIDE;
+    virtual void HandleNameChangedEvent(css::uno::Any name) override;
 };
 
 #endif // INCLUDED_WINACCESSIBILITY_INC_ACCCONTAINEREVENTLISTENER_HXX

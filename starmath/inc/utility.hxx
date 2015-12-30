@@ -44,14 +44,6 @@ inline long SmPtsTo100th_mm(long nNumPts)
 }
 
 
-inline long SmPtsTo100th_mm(const Fraction &rNumPts)
-    // as above but with argument 'rNumPts' as 'Fraction'
-{
-    Fraction  aTmp (254000L, 7227L);
-    return aTmp *= rNumPts;
-}
-
-
 inline Fraction Sm100th_mmToPts(long nNum100th_mm)
     // returns the length (in points) that corresponds to the length
     // 'nNum100th_mm' (in 100th of mm).
@@ -157,17 +149,17 @@ public:
 class SmFontPickListBox : public SmFontPickList, public ListBox
 {
 protected:
-    DECL_LINK(SelectHdl, ListBox *);
+    DECL_LINK_TYPED(SelectHdl, ListBox&, void);
 
 public:
     SmFontPickListBox(vcl::Window* pParent, WinBits nBits);
 
     SmFontPickListBox& operator = (const SmFontPickList& rList);
 
-    virtual void    Insert(const vcl::Font &rFont) SAL_OVERRIDE;
+    virtual void    Insert(const vcl::Font &rFont) override;
     using   Window::Update;
-    virtual void    Update(const vcl::Font &rFont, const vcl::Font &rNewFont) SAL_OVERRIDE;
-    virtual void    Remove(const vcl::Font &rFont) SAL_OVERRIDE;
+    virtual void    Update(const vcl::Font &rFont, const vcl::Font &rNewFont) override;
+    virtual void    Remove(const vcl::Font &rFont) override;
 };
 
 #endif

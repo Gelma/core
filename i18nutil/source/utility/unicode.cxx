@@ -1023,7 +1023,7 @@ bool ToggleUnicodeCodepoint::AllowMoreInput(sal_Unicode uChar)
 
     switch ( unicode::getUnicodeType(uChar) )
     {
-        case ::com::sun::star::i18n::UnicodeType::SURROGATE:
+        case css::i18n::UnicodeType::SURROGATE:
             if( bPreventNonHex )
             {
                 mbAllowMoreChars = false;
@@ -1045,8 +1045,8 @@ bool ToggleUnicodeCodepoint::AllowMoreInput(sal_Unicode uChar)
             mbAllowMoreChars = false;
             break;
 
-        case ::com::sun::star::i18n::UnicodeType::NON_SPACING_MARK:
-        case ::com::sun::star::i18n::UnicodeType::COMBINING_SPACING_MARK:
+        case css::i18n::UnicodeType::NON_SPACING_MARK:
+        case css::i18n::UnicodeType::COMBINING_SPACING_MARK:
             if( bPreventNonHex )
             {
                 mbAllowMoreChars = false;
@@ -1084,6 +1084,13 @@ bool ToggleUnicodeCodepoint::AllowMoreInput(sal_Unicode uChar)
                 return false;
             }
 
+            // 0 - 1f are control characters.  Do not process those.
+            if( uChar < 0x20 )
+            {
+                mbAllowMoreChars = false;
+                return false;
+            }
+
             switch( uChar )
             {
                 case 'u':
@@ -1116,9 +1123,6 @@ bool ToggleUnicodeCodepoint::AllowMoreInput(sal_Unicode uChar)
                         if( !bPreventNonHex )
                             maInput.insertUtf32(0, uChar);
                     }
-                    break;
-                case 0:
-                    mbAllowMoreChars = false;
                     break;
                 default:
                     // + already found. Since not U, cancel further input
@@ -1185,15 +1189,15 @@ OUString ToggleUnicodeCodepoint::StringToReplace()
     while( nUPlus != -1 )
     {
         nUnicode = sIn.copy(0, nUPlus).toString().toUInt32(16);
-        //strip out all null or invalid Unicode values
-        if( !nUnicode || nUnicode > 0x10ffff )
+        //prevent creating control characters or invalid Unicode values
+        if( nUnicode < 0x20 || nUnicode > 0x10ffff )
             maInput = sIn.copy(nUPlus);
         sIn = sIn.copy(nUPlus+2);
         nUPlus =  sIn.indexOf("U+");
     }
 
     nUnicode = sIn.toString().toUInt32(16);
-    if( !nUnicode || nUnicode > 0x10ffff )
+    if( nUnicode < 0x20 || nUnicode > 0x10ffff )
        maInput.truncate().append( sIn[sIn.getLength()-1] );
     return maInput.toString();
 }
@@ -1242,8 +1246,12 @@ OUString ToggleUnicodeCodepoint::ReplacementString()
         sal_Int32 nPos = 0;
         while( nPos < sIn.getLength() )
         {
+            OUStringBuffer aTmp = OUString::number(sIn.iterateCodePoints(&nPos),16);
+            //pad with zeros - minimum length of 4.
+            for( sal_Int32 i = 4 - aTmp.getLength(); i > 0; --i )
+                aTmp.insert( 0,"0" );
             maOutput.append( "U+" );
-            maOutput.append( OUString::number(sIn.iterateCodePoints(&nPos),16) );
+            maOutput.append( aTmp );
         }
     }
     return maOutput.toString();

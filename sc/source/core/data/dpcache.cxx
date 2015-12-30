@@ -34,6 +34,7 @@
 #include <unotools/textsearch.hxx>
 #include <unotools/localedatawrapper.hxx>
 #include <svl/zforlist.hxx>
+#include <o3tl/make_unique.hxx>
 
 #if DEBUG_PIVOT_TABLE
 #include <com/sun/star/sheet/DataPilotFieldGroupBy.hpp>
@@ -92,7 +93,7 @@ namespace {
 class MacroInterpretIncrementer
 {
 public:
-    MacroInterpretIncrementer(ScDocument* pDoc) :
+    explicit MacroInterpretIncrementer(ScDocument* pDoc) :
         mpDoc(pDoc)
     {
         mpDoc->IncMacroInterpretLevel();
@@ -116,7 +117,7 @@ OUString createLabelString(ScDocument* pDoc, SCCOL nCol, SCROW nRow, SCTAB nTab)
         aBuf.append(' ');
 
         ScAddress aColAddr(nCol, 0, 0);
-        aBuf.append(aColAddr.Format(SCA_VALID_COL, NULL));
+        aBuf.append(aColAddr.Format(SCA_VALID_COL));
         aDocStr = aBuf.makeStringAndClear();
     }
     return aDocStr;
@@ -208,9 +209,9 @@ struct EqualByOrderIndex : std::binary_function<Bucket, Bucket, bool>
 
 class PushBackValue : std::unary_function<Bucket, void>
 {
-    ScDPCache::ItemsType& mrItems;
+    ScDPCache::ScDPItemDataVec& mrItems;
 public:
-    PushBackValue(ScDPCache::ItemsType& _items) : mrItems(_items) {}
+    explicit PushBackValue(ScDPCache::ScDPItemDataVec& _items) : mrItems(_items) {}
     void operator() (const Bucket& v)
     {
         mrItems.push_back(v.maValue);
@@ -221,7 +222,7 @@ class PushBackOrderIndex : std::unary_function<Bucket, void>
 {
     ScDPCache::IndexArrayType& mrData;
 public:
-    PushBackOrderIndex(ScDPCache::IndexArrayType& _items) : mrData(_items) {}
+    explicit PushBackOrderIndex(ScDPCache::IndexArrayType& _items) : mrData(_items) {}
     void operator() (const Bucket& v)
     {
         mrData.push_back(v.mnOrderIndex);
@@ -333,7 +334,7 @@ bool ScDPCache::InitFromDoc(ScDocument* pDoc, const ScRange& rRange)
 
     maFields.reserve(mnColumnCount);
     for (size_t i = 0; i < static_cast<size_t>(mnColumnCount); ++i)
-        maFields.push_back(new Field);
+        maFields.push_back(o3tl::make_unique<Field>());
 
     maLabelNames.reserve(mnColumnCount+1);
 
@@ -341,7 +342,7 @@ bool ScDPCache::InitFromDoc(ScDocument* pDoc, const ScRange& rRange)
     for (sal_uInt16 nCol = nStartCol; nCol <= nEndCol; ++nCol)
     {
         AddLabel(createLabelString(pDoc, nCol, nStartRow, nDocTab));
-        Field& rField = maFields[nCol-nStartCol];
+        Field& rField = *maFields[nCol-nStartCol].get();
         std::vector<Bucket> aBuckets;
         aBuckets.reserve(nEndRow-nStartRow); // skip the topmost label cell.
 
@@ -391,7 +392,7 @@ bool ScDPCache::InitFromDataBase(DBConnector& rDB)
         maFields.clear();
         maFields.reserve(mnColumnCount);
         for (size_t i = 0; i < static_cast<size_t>(mnColumnCount); ++i)
-            maFields.push_back(new Field);
+            maFields.push_back(o3tl::make_unique<Field>());
 
         // Get column titles and types.
         maLabelNames.clear();
@@ -411,7 +412,7 @@ bool ScDPCache::InitFromDataBase(DBConnector& rDB)
                 continue;
 
             aBuckets.clear();
-            Field& rField = maFields[nCol];
+            Field& rField = *maFields[nCol].get();
             SCROW nRow = 0;
             do
             {
@@ -436,7 +437,7 @@ bool ScDPCache::InitFromDataBase(DBConnector& rDB)
         rDB.finish();
 
         if (!maFields.empty())
-            mnRowCount = maFields[0].maData.size();
+            mnRowCount = maFields[0]->maData.size();
 
         PostInit();
         return true;
@@ -578,7 +579,7 @@ bool ScDPCache::ValidQuery( SCROW nRow, const ScQueryParam &rParam) const
                     else
                     {
                         OUString aQueryStr = rEntry.GetQueryItem().maString.getString();
-                        ::com::sun::star::uno::Sequence< sal_Int32 > xOff;
+                        css::uno::Sequence< sal_Int32 > xOff;
                         OUString aCell = pTransliteration->transliterate(
                             aCellStr, ScGlobal::eLnge, 0, aCellStr.getLength(), &xOff);
                         OUString aQuer = pTransliteration->transliterate(
@@ -666,20 +667,20 @@ bool ScDPCache::IsRowEmpty(SCROW nRow) const
 const ScDPCache::GroupItems* ScDPCache::GetGroupItems(long nDim) const
 {
     if (nDim < 0)
-        return NULL;
+        return nullptr;
 
     long nSourceCount = static_cast<long>(maFields.size());
     if (nDim < nSourceCount)
-        return maFields[nDim].mpGroup.get();
+        return maFields[nDim]->mpGroup.get();
 
     nDim -= nSourceCount;
     if (nDim < static_cast<long>(maGroupFields.size()))
-        return &maGroupFields[nDim];
+        return maGroupFields[nDim].get();
 
-    return NULL;
+    return nullptr;
 }
 
-OUString ScDPCache::GetDimensionName(LabelsType::size_type nDim) const
+OUString ScDPCache::GetDimensionName(std::vector<OUString>::size_type nDim) const
 {
     OSL_ENSURE(nDim < maLabelNames.size()-1 , "ScDPTableDataCache::GetDimensionName");
     OSL_ENSURE(maLabelNames.size() == static_cast <sal_uInt16> (mnColumnCount+1), "ScDPTableDataCache::GetDimensionName");
@@ -700,7 +701,7 @@ class InsertLabel : public std::unary_function<OUString, void>
 {
     LabelSet& mrNames;
 public:
-    InsertLabel(LabelSet& rNames) : mrNames(rNames) {}
+    explicit InsertLabel(LabelSet& rNames) : mrNames(rNames) {}
     void operator() (const OUString& r)
     {
         mrNames.insert(r);
@@ -717,7 +718,7 @@ void ScDPCache::PostInit()
     typedef mdds::flat_segment_tree<SCROW, bool>::const_reverse_iterator itr_type;
     itr_type it = maEmptyRows.rbegin();
     OSL_ENSURE(it != maEmptyRows.rend(), "corrupt flat_segment_tree instance!");
-    mnDataSize = maFields[0].maData.size();
+    mnDataSize = maFields[0]->maData.size();
     ++it; // Skip the first position.
     OSL_ENSURE(it != maEmptyRows.rend(), "buggy version of flat_segment_tree is used.");
     if (it->second)
@@ -770,7 +771,7 @@ SCROW ScDPCache::GetItemDataId(sal_uInt16 nDim, SCROW nRow, bool bRepeatIfEmpty)
 {
     OSL_ENSURE(nDim < mnColumnCount, "ScDPTableDataCache::GetItemDataId ");
 
-    const Field& rField = maFields[nDim];
+    const Field& rField = *maFields[nDim].get();
     if (static_cast<size_t>(nRow) >= rField.maData.size())
     {
         // nRow is in the trailing empty rows area.
@@ -794,7 +795,7 @@ SCROW ScDPCache::GetItemDataId(sal_uInt16 nDim, SCROW nRow, bool bRepeatIfEmpty)
 const ScDPItemData* ScDPCache::GetItemDataById(long nDim, SCROW nId) const
 {
     if (nDim < 0 || nId < 0)
-        return NULL;
+        return nullptr;
 
     size_t nSourceCount = maFields.size();
     size_t nDimPos = static_cast<size_t>(nDim);
@@ -802,17 +803,17 @@ const ScDPItemData* ScDPCache::GetItemDataById(long nDim, SCROW nId) const
     if (nDimPos < nSourceCount)
     {
         // source field.
-        const Field& rField = maFields[nDimPos];
+        const Field& rField = *maFields[nDimPos].get();
         if (nItemId < rField.maItems.size())
             return &rField.maItems[nItemId];
 
         if (!rField.mpGroup)
-            return NULL;
+            return nullptr;
 
         nItemId -= rField.maItems.size();
-        const ItemsType& rGI = rField.mpGroup->maItems;
+        const ScDPItemDataVec& rGI = rField.mpGroup->maItems;
         if (nItemId >= rGI.size())
-            return NULL;
+            return nullptr;
 
         return &rGI[nItemId];
     }
@@ -820,11 +821,11 @@ const ScDPItemData* ScDPCache::GetItemDataById(long nDim, SCROW nId) const
     // Try group fields.
     nDimPos -= nSourceCount;
     if (nDimPos >= maGroupFields.size())
-        return NULL;
+        return nullptr;
 
-    const ItemsType& rGI = maGroupFields[nDimPos].maItems;
+    const ScDPItemDataVec& rGI = maGroupFields[nDimPos]->maItems;
     if (nItemId >= rGI.size())
-        return NULL;
+        return nullptr;
 
     return &rGI[nItemId];
 }
@@ -853,15 +854,15 @@ SCROW ScDPCache::GetDataSize() const
 const ScDPCache::IndexArrayType* ScDPCache::GetFieldIndexArray( size_t nDim ) const
 {
     if (nDim >= maFields.size())
-        return NULL;
+        return nullptr;
 
-    return &maFields[nDim].maData;
+    return &maFields[nDim]->maData;
 }
 
-const ScDPCache::ItemsType& ScDPCache::GetDimMemberValues(SCCOL nDim) const
+const ScDPCache::ScDPItemDataVec& ScDPCache::GetDimMemberValues(SCCOL nDim) const
 {
     OSL_ENSURE( nDim>=0 && nDim < mnColumnCount ," nDim < mnColumnCount ");
-    return maFields.at(nDim).maItems;
+    return maFields.at(nDim)->maItems;
 }
 
 sal_uLong ScDPCache::GetNumberFormat( long nDim ) const
@@ -871,7 +872,7 @@ sal_uLong ScDPCache::GetNumberFormat( long nDim ) const
 
     // TODO: Find a way to determine the dominant number format in presence of
     // multiple number formats in the same field.
-    return maFields[nDim].mnNumFormat;
+    return maFields[nDim]->mnNumFormat;
 }
 
 bool ScDPCache::IsDateDimension( long nDim ) const
@@ -883,14 +884,14 @@ bool ScDPCache::IsDateDimension( long nDim ) const
     if (!pFormatter)
         return false;
 
-    short eType = pFormatter->GetType(maFields[nDim].mnNumFormat);
+    short eType = pFormatter->GetType(maFields[nDim]->mnNumFormat);
     return (eType == css::util::NumberFormat::DATE) || (eType == css::util::NumberFormat::DATETIME);
 }
 
 long ScDPCache::GetDimMemberCount(long nDim) const
 {
     OSL_ENSURE( nDim>=0 && nDim < mnColumnCount ," ScDPTableDataCache::GetDimMemberCount : out of bound ");
-    return maFields[nDim].maItems.size();
+    return maFields[nDim]->maItems.size();
 }
 
 SCCOL ScDPCache::GetDimensionIndex(const OUString& sName) const
@@ -911,7 +912,7 @@ const OUString* ScDPCache::InternString(const OUString& rStr) const
         return &(*it);
 
     std::pair<StringSetType::iterator, bool> r = maStringPool.insert(rStr);
-    return r.second ? &(*r.first) : NULL;
+    return r.second ? &(*r.first) : nullptr;
 }
 
 void ScDPCache::AddReference(ScDPObject* pObj) const
@@ -930,7 +931,7 @@ void ScDPCache::RemoveReference(ScDPObject* pObj) const
         mpDoc->GetDPCollection()->RemoveCache(this);
 }
 
-const ScDPCache::ObjectSetType& ScDPCache::GetAllReferences() const
+const ScDPCache::ScDPObjectSet& ScDPCache::GetAllReferences() const
 {
     return maRefObjects;
 }
@@ -943,18 +944,18 @@ SCROW ScDPCache::GetIdByItemData(long nDim, const ScDPItemData& rItem) const
     if (nDim < mnColumnCount)
     {
         // source field.
-        const ItemsType& rItems = maFields[nDim].maItems;
+        const ScDPItemDataVec& rItems = maFields[nDim]->maItems;
         for (size_t i = 0, n = rItems.size(); i < n; ++i)
         {
             if (rItems[i] == rItem)
                 return i;
         }
 
-        if (!maFields[nDim].mpGroup)
+        if (!maFields[nDim]->mpGroup)
             return -1;
 
         // grouped source field.
-        const ItemsType& rGI = maFields[nDim].mpGroup->maItems;
+        const ScDPItemDataVec& rGI = maFields[nDim]->mpGroup->maItems;
         for (size_t i = 0, n = rGI.size(); i < n; ++i)
         {
             if (rGI[i] == rItem)
@@ -967,7 +968,7 @@ SCROW ScDPCache::GetIdByItemData(long nDim, const ScDPItemData& rItem) const
     nDim -= mnColumnCount;
     if (static_cast<size_t>(nDim) < maGroupFields.size())
     {
-        const ItemsType& rGI = maGroupFields[nDim].maItems;
+        const ScDPItemDataVec& rGI = maGroupFields[nDim]->maItems;
         for (size_t i = 0, n = rGI.size(); i < n; ++i)
         {
             if (rGI[i] == rItem)
@@ -991,7 +992,7 @@ OUString ScDPCache::GetFormattedString(long nDim, const ScDPItemData& rItem) con
         SvNumberFormatter* pFormatter = mpDoc->GetFormatTable();
         if (pFormatter)
         {
-            Color* pColor = NULL;
+            Color* pColor = nullptr;
             OUString aStr;
             pFormatter->GetOutputString(rItem.GetValue(), nNumFormat, aStr, &pColor);
             return aStr;
@@ -1028,7 +1029,7 @@ OUString ScDPCache::GetFormattedString(long nDim, const ScDPItemData& rItem) con
 
 long ScDPCache::AppendGroupField()
 {
-    maGroupFields.push_back(new GroupItems);
+    maGroupFields.push_back(o3tl::make_unique<GroupItems>());
     return static_cast<long>(maFields.size() + maGroupFields.size() - 1);
 }
 
@@ -1040,14 +1041,14 @@ void ScDPCache::ResetGroupItems(long nDim, const ScDPNumGroupInfo& rNumInfo, sal
     long nSourceCount = static_cast<long>(maFields.size());
     if (nDim < nSourceCount)
     {
-        maFields.at(nDim).mpGroup.reset(new GroupItems(rNumInfo, nGroupType));
+        maFields.at(nDim)->mpGroup.reset(new GroupItems(rNumInfo, nGroupType));
         return;
     }
 
     nDim -= nSourceCount;
     if (nDim < static_cast<long>(maGroupFields.size()))
     {
-        GroupItems& rGI = maGroupFields[nDim];
+        GroupItems& rGI = *maGroupFields[nDim].get();
         rGI.maItems.clear();
         rGI.maInfo = rNumInfo;
         rGI.mnGroupType = nGroupType;
@@ -1062,16 +1063,16 @@ SCROW ScDPCache::SetGroupItem(long nDim, const ScDPItemData& rData)
     long nSourceCount = static_cast<long>(maFields.size());
     if (nDim < nSourceCount)
     {
-        GroupItems& rGI = *maFields.at(nDim).mpGroup;
+        GroupItems& rGI = *maFields.at(nDim)->mpGroup;
         rGI.maItems.push_back(rData);
-        SCROW nId = maFields[nDim].maItems.size() + rGI.maItems.size() - 1;
+        SCROW nId = maFields[nDim]->maItems.size() + rGI.maItems.size() - 1;
         return nId;
     }
 
     nDim -= nSourceCount;
     if (nDim < static_cast<long>(maGroupFields.size()))
     {
-        ItemsType& rItems = maGroupFields.at(nDim).maItems;
+        ScDPItemDataVec& rItems = maGroupFields.at(nDim)->maItems;
         rItems.push_back(rData);
         return rItems.size()-1;
     }
@@ -1087,11 +1088,11 @@ void ScDPCache::GetGroupDimMemberIds(long nDim, std::vector<SCROW>& rIds) const
     long nSourceCount = static_cast<long>(maFields.size());
     if (nDim < nSourceCount)
     {
-        if (!maFields.at(nDim).mpGroup)
+        if (!maFields.at(nDim)->mpGroup)
             return;
 
-        size_t nOffset = maFields[nDim].maItems.size();
-        const ItemsType& rGI = maFields[nDim].mpGroup->maItems;
+        size_t nOffset = maFields[nDim]->maItems.size();
+        const ScDPItemDataVec& rGI = maFields[nDim]->mpGroup->maItems;
         for (size_t i = 0, n = rGI.size(); i < n; ++i)
             rIds.push_back(static_cast<SCROW>(i + nOffset));
 
@@ -1101,7 +1102,7 @@ void ScDPCache::GetGroupDimMemberIds(long nDim, std::vector<SCROW>& rIds) const
     nDim -= nSourceCount;
     if (nDim < static_cast<long>(maGroupFields.size()))
     {
-        const ItemsType& rGI = maGroupFields.at(nDim).maItems;
+        const ScDPItemDataVec& rGI = maGroupFields.at(nDim)->maItems;
         for (size_t i = 0, n = rGI.size(); i < n; ++i)
             rIds.push_back(static_cast<SCROW>(i));
     }
@@ -1109,11 +1110,11 @@ void ScDPCache::GetGroupDimMemberIds(long nDim, std::vector<SCROW>& rIds) const
 
 namespace {
 
-struct ClearGroupItems : std::unary_function<ScDPCache::Field, void>
+struct ClearGroupItems : std::unary_function<std::unique_ptr<ScDPCache::Field>, void>
 {
-    void operator() (ScDPCache::Field& r) const
+    void operator() (std::unique_ptr<ScDPCache::Field>& r) const
     {
-        r.mpGroup.reset();
+        r->mpGroup.reset();
     }
 };
 
@@ -1128,22 +1129,22 @@ void ScDPCache::ClearGroupFields()
 const ScDPNumGroupInfo* ScDPCache::GetNumGroupInfo(long nDim) const
 {
     if (nDim < 0)
-        return NULL;
+        return nullptr;
 
     long nSourceCount = static_cast<long>(maFields.size());
     if (nDim < nSourceCount)
     {
-        if (!maFields.at(nDim).mpGroup)
-            return NULL;
+        if (!maFields.at(nDim)->mpGroup)
+            return nullptr;
 
-        return &maFields[nDim].mpGroup->maInfo;
+        return &maFields[nDim]->mpGroup->maInfo;
     }
 
     nDim -= nSourceCount;
     if (nDim < static_cast<long>(maGroupFields.size()))
-        return &maGroupFields.at(nDim).maInfo;
+        return &maGroupFields.at(nDim)->maInfo;
 
-    return NULL;
+    return nullptr;
 }
 
 sal_Int32 ScDPCache::GetGroupType(long nDim) const
@@ -1154,15 +1155,15 @@ sal_Int32 ScDPCache::GetGroupType(long nDim) const
     long nSourceCount = static_cast<long>(maFields.size());
     if (nDim < nSourceCount)
     {
-        if (!maFields.at(nDim).mpGroup)
+        if (!maFields.at(nDim)->mpGroup)
             return 0;
 
-        return maFields[nDim].mpGroup->mnGroupType;
+        return maFields[nDim]->mpGroup->mnGroupType;
     }
 
     nDim -= nSourceCount;
     if (nDim < static_cast<long>(maGroupFields.size()))
-        return maGroupFields.at(nDim).mnGroupType;
+        return maGroupFields.at(nDim)->mnGroupType;
 
     return 0;
 }
@@ -1182,13 +1183,13 @@ std::ostream& operator<< (::std::ostream& os, const OUString& str)
     return os << OUStringToOString(str, RTL_TEXTENCODING_UTF8).getStr();
 }
 
-void dumpItems(const ScDPCache& rCache, long nDim, const ScDPCache::ItemsType& rItems, size_t nOffset)
+void dumpItems(const ScDPCache& rCache, long nDim, const ScDPCache::ScDPItemDataVec& rItems, size_t nOffset)
 {
     for (size_t i = 0; i < rItems.size(); ++i)
         cout << "      " << (i+nOffset) << ": " << rCache.GetFormattedString(nDim, rItems[i]) << endl;
 }
 
-void dumpSourceData(const ScDPCache& rCache, long nDim, const ScDPCache::ItemsType& rItems, const ScDPCache::IndexArrayType& rArray)
+void dumpSourceData(const ScDPCache& rCache, long nDim, const ScDPCache::ScDPItemDataVec& rItems, const ScDPCache::IndexArrayType& rArray)
 {
     ScDPCache::IndexArrayType::const_iterator it = rArray.begin(), itEnd = rArray.end();
     for (; it != itEnd; ++it)

@@ -47,22 +47,15 @@
 #include "scabstdlg.hxx"
 #include <memory>
 
-// STATIC DATA -----------------------------------------------------------
-static VclPtr<ScEditWindow> pActiveEdWnd = NULL;
-
-ScEditWindow* GetScEditWindow ()
-{
-    return pActiveEdWnd;
-}
 
 static void lcl_GetFieldData( ScHeaderFieldData& rData )
 {
     SfxViewShell* pShell = SfxViewShell::Current();
     if (pShell)
     {
-        if (pShell->ISA(ScTabViewShell))
+        if (dynamic_cast<const ScTabViewShell*>( pShell) !=  nullptr)
             static_cast<ScTabViewShell*>(pShell)->FillFieldData(rData);
-        else if (pShell->ISA(ScPreviewShell))
+        else if (dynamic_cast<const ScPreviewShell*>( pShell) !=  nullptr)
             static_cast<ScPreviewShell*>(pShell)->FillFieldData(rData);
     }
 }
@@ -72,7 +65,7 @@ static void lcl_GetFieldData( ScHeaderFieldData& rData )
 ScEditWindow::ScEditWindow( vcl::Window* pParent, WinBits nBits, ScEditWindowLocation eLoc )
     :   Control( pParent, nBits ),
     eLocation(eLoc),
-    pAcc(NULL)
+    pAcc(nullptr)
 {
     EnableRTL(false);
 
@@ -127,7 +120,7 @@ void ScEditWindow::dispose()
     // delete Accessible object before deleting EditEngine and EditView
     if (pAcc)
     {
-        ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > xTemp = xAcc;
+        css::uno::Reference< css::accessibility::XAccessible > xTemp = xAcc;
         if (xTemp.is())
             pAcc->dispose();
     }
@@ -191,14 +184,14 @@ void ScEditWindow::SetCharAttributes()
 
     SfxViewShell*       pViewSh = SfxViewShell::Current();
 
-    ScTabViewShell* pTabViewSh = PTR_CAST(ScTabViewShell, SfxViewShell::Current());
+    ScTabViewShell* pTabViewSh = dynamic_cast<ScTabViewShell*>( SfxViewShell::Current() );
 
     OSL_ENSURE( pDocSh,  "Current DocShell not found" );
     OSL_ENSURE( pViewSh, "Current ViewShell not found" );
 
     if ( pDocSh && pViewSh )
     {
-        if(pTabViewSh!=NULL) pTabViewSh->SetInFormatDialog(true);
+        if(pTabViewSh!=nullptr) pTabViewSh->SetInFormatDialog(true);
 
         SfxItemSet aSet( pEdView->GetAttribs() );
 
@@ -216,7 +209,7 @@ void ScEditWindow::SetCharAttributes()
             pEdView->SetAttribs( aSet );
         }
 
-        if(pTabViewSh!=NULL) pTabViewSh->SetInFormatDialog(false);
+        if(pTabViewSh!=nullptr) pTabViewSh->SetInFormatDialog(false);
     }
 }
 
@@ -234,7 +227,7 @@ void ScEditWindow::Paint( vcl::RenderContext& rRenderContext, const Rectangle& r
     pEdView->Paint(rRect);
 
     if( HasFocus() )
-        pEdView->ShowCursor(true);
+        pEdView->ShowCursor();
 }
 
 void ScEditWindow::MouseMove( const MouseEvent& rMEvt )
@@ -271,8 +264,7 @@ void ScEditWindow::KeyInput( const KeyEvent& rKEvt )
     else if ( !rKEvt.GetKeyCode().IsMod1() && !rKEvt.GetKeyCode().IsShift() &&
                 rKEvt.GetKeyCode().IsMod2() && rKEvt.GetKeyCode().GetCode() == KEY_DOWN )
     {
-        if (aObjectSelectLink.IsSet() )
-            aObjectSelectLink.Call(*this);
+        aObjectSelectLink.Call(*this);
     }
 }
 
@@ -283,33 +275,35 @@ void ScEditWindow::Command( const CommandEvent& rCEvt )
 
 void ScEditWindow::GetFocus()
 {
-    pEdView->ShowCursor(true);
-    pActiveEdWnd = this;
+    pEdView->ShowCursor();
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > xTemp = xAcc;
+    assert(m_GetFocusLink);
+    m_GetFocusLink(*this);
+
+    css::uno::Reference< css::accessibility::XAccessible > xTemp = xAcc;
     if (xTemp.is() && pAcc)
     {
         pAcc->GotFocus();
     }
     else
-        pAcc = NULL;
+        pAcc = nullptr;
 
     Control::GetFocus();
 }
 
 void ScEditWindow::LoseFocus()
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > xTemp = xAcc;
+    css::uno::Reference< css::accessibility::XAccessible > xTemp = xAcc;
     if (xTemp.is() && pAcc)
     {
         pAcc->LostFocus();
     }
     else
-        pAcc = NULL;
+        pAcc = nullptr;
     Control::LoseFocus();
 }
 
-::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > ScEditWindow::CreateAccessible()
+css::uno::Reference< css::accessibility::XAccessible > ScEditWindow::CreateAccessible()
 {
     OUString sName;
     OUString sDescription(GetHelpText());
@@ -333,13 +327,13 @@ void ScEditWindow::LoseFocus()
     }
     pAcc = new ScAccessibleEditObject(GetAccessibleParentWindow()->GetAccessible(), pEdView, this,
         OUString(sName), OUString(sDescription), ScAccessibleEditObject::EditControl);
-    ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > xAccessible = pAcc;
+    css::uno::Reference< css::accessibility::XAccessible > xAccessible = pAcc;
     xAcc = xAccessible;
     return pAcc;
 }
 
 ScExtIButton::ScExtIButton(vcl::Window* pParent, WinBits nBits )
-    : ImageButton(pParent,nBits), pPopupMenu(NULL)
+    : ImageButton(pParent,nBits), pPopupMenu(nullptr)
 {
     nSelected=0;
     aIdle.SetPriority(SchedulerPriority::LOWEST);
@@ -383,7 +377,7 @@ void ScExtIButton::StartPopup()
     nSelected=0;
     aSelectedIdent.clear();
 
-    if(pPopupMenu!=NULL)
+    if(pPopupMenu!=nullptr)
     {
         SetPressed( true );
         EndSelection();

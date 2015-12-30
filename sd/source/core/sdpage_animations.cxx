@@ -42,7 +42,7 @@ using ::com::sun::star::drawing::XShape;
 /** returns a helper class to manipulate effects inside the main sequence */
 sd::MainSequencePtr SdPage::getMainSequence()
 {
-    if( 0 == mpMainSequence.get() )
+    if( nullptr == mpMainSequence.get() )
         mpMainSequence.reset( new sd::MainSequence( getAnimationNode() ) );
 
     return mpMainSequence;
@@ -54,9 +54,8 @@ Reference< XAnimationNode > SdPage::getAnimationNode() throw (RuntimeException)
     if( !mxAnimationNode.is() )
     {
         mxAnimationNode.set( ParallelTimeContainer::create( ::comphelper::getProcessComponentContext() ), UNO_QUERY_THROW );
-        Sequence< ::com::sun::star::beans::NamedValue > aUserData( 1 );
-        aUserData[0].Name = "node-type";
-        aUserData[0].Value <<= ::com::sun::star::presentation::EffectNodeType::TIMING_ROOT;
+        Sequence< css::beans::NamedValue > aUserData
+            { { "node-type", css::uno::makeAny(css::presentation::EffectNodeType::TIMING_ROOT) } };
         mxAnimationNode->setUserData( aUserData );
     }
 
@@ -89,7 +88,7 @@ bool SdPage::hasAnimationNode() const
     return mxAnimationNode.is();
 }
 
-void SdPage::SetFadeEffect(::com::sun::star::presentation::FadeEffect eNewEffect)
+void SdPage::SetFadeEffect(css::presentation::FadeEffect eNewEffect)
 {
     EffectMigration::SetFadeEffect( this, eNewEffect );
 }
@@ -105,7 +104,7 @@ void SdPage::onParagraphInserted( ::Outliner* pOutliner, Paragraph* pPara, SdrOb
     if( mxAnimationNode.is() )
     {
         ParagraphTarget aTarget;
-        aTarget.Shape = Reference< XShape >( pObj->getUnoShape(), UNO_QUERY );
+        aTarget.Shape.set( pObj->getUnoShape(), UNO_QUERY );
         /* FIXME: Paragraph should be sal_Int32, though more than 64k
          * paragrapsh at a shape are unlikely.. */
         aTarget.Paragraph = (sal_Int16)pOutliner->GetAbsPos( pPara );
@@ -120,7 +119,7 @@ void SdPage::onParagraphRemoving( ::Outliner* pOutliner, Paragraph* pPara, SdrOb
     if( mxAnimationNode.is() )
     {
         ParagraphTarget aTarget;
-        aTarget.Shape = Reference< XShape >( pObj->getUnoShape(), UNO_QUERY );
+        aTarget.Shape.set( pObj->getUnoShape(), UNO_QUERY );
         /* FIXME: Paragraph should be sal_Int32, though more than 64k
          * paragrapsh at a shape are unlikely.. */
         aTarget.Paragraph = (sal_Int16)pOutliner->GetAbsPos( pPara );

@@ -27,8 +27,8 @@
 #include "token.hxx"
 #include "externalrefmgr.hxx"
 
-#include <boost/ptr_container/ptr_map.hpp>
 #include <memory>
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -46,13 +46,13 @@ public:
     public:
         ExternalRefListener(ScChartListener& rParent, ScDocument* pDoc);
         virtual ~ExternalRefListener();
-        virtual void notify(sal_uInt16 nFileId, ScExternalRefManager::LinkUpdateType eType) SAL_OVERRIDE;
+        virtual void notify(sal_uInt16 nFileId, ScExternalRefManager::LinkUpdateType eType) override;
         void addFileId(sal_uInt16 nFileId);
         void removeFileId(sal_uInt16 nFileId);
         std::unordered_set<sal_uInt16>& getAllFileIds() { return maFileIds;}
 
     private:
-        ExternalRefListener(const ExternalRefListener& r) SAL_DELETED_FUNCTION;
+        ExternalRefListener(const ExternalRefListener& r) = delete;
 
         ScChartListener& mrParent;
         std::unordered_set<sal_uInt16> maFileIds;
@@ -71,7 +71,7 @@ private:
     bool            bDirty:1;
     bool            bSeriesRangesScheduled:1;
 
-    ScChartListener& operator=( const ScChartListener& ) SAL_DELETED_FUNCTION;
+    ScChartListener& operator=( const ScChartListener& ) = delete;
 
 public:
     ScChartListener( const OUString& rName, ScDocument* pDoc,
@@ -83,14 +83,14 @@ public:
 
     const OUString& GetName() const { return maName;}
 
-    void            SetUno( const com::sun::star::uno::Reference< com::sun::star::chart::XChartDataChangeEventListener >& rListener,
-                            const com::sun::star::uno::Reference< com::sun::star::chart::XChartData >& rSource );
-    com::sun::star::uno::Reference< com::sun::star::chart::XChartDataChangeEventListener >  GetUnoListener() const;
-    com::sun::star::uno::Reference< com::sun::star::chart::XChartData >                     GetUnoSource() const;
+    void            SetUno( const css::uno::Reference< css::chart::XChartDataChangeEventListener >& rListener,
+                            const css::uno::Reference< css::chart::XChartData >& rSource );
+    css::uno::Reference< css::chart::XChartDataChangeEventListener >  GetUnoListener() const;
+    css::uno::Reference< css::chart::XChartData >                     GetUnoSource() const;
 
-    bool            IsUno() const   { return (pUnoData != NULL); }
+    bool            IsUno() const   { return (pUnoData != nullptr); }
 
-    virtual void Notify( const SfxHint& rHint ) SAL_OVERRIDE;
+    virtual void Notify( const SfxHint& rHint ) override;
     void            StartListeningTo();
     void            EndListeningTo();
     void            ChangeListening( const ScRangeListRef& rRangeListRef,
@@ -127,10 +127,10 @@ public:
 class SC_DLLPUBLIC ScChartListenerCollection
 {
 public:
-    typedef boost::ptr_map<OUString, ScChartListener> ListenersType;
+    typedef std::map<OUString, std::unique_ptr<ScChartListener>> ListenersType;
     typedef std::unordered_set<OUString, OUStringHash> StringSetType;
 private:
-    ListenersType maListeners;
+    ListenersType m_Listeners;
     enum UpdateStatus
     {
         SC_CLCUPDATE_NONE,
@@ -147,7 +147,7 @@ private:
 
                     DECL_LINK_TYPED(TimerHdl, Idle *, void);
 
-    ScChartListenerCollection& operator=( const ScChartListenerCollection& ) SAL_DELETED_FUNCTION;
+    ScChartListenerCollection& operator=( const ScChartListenerCollection& ) = delete;
 
 public:
     ScChartListenerCollection( ScDocument* pDoc );
@@ -164,8 +164,8 @@ public:
 
     void removeByName(const OUString& rName);
 
-    const ListenersType& getListeners() const { return maListeners;}
-    ListenersType& getListeners() { return maListeners;}
+    const ListenersType& getListeners() const { return m_Listeners; }
+    ListenersType& getListeners() { return m_Listeners; }
     StringSetType& getNonOleObjectNames() { return maNonOleObjectNames;}
 
     /**
@@ -179,8 +179,8 @@ public:
                                     bool bDirty = false );
     // use FreeUnused only the way it's used in ScDocument::UpdateChartListenerCollection
     void            FreeUnused();
-    void            FreeUno( const com::sun::star::uno::Reference< com::sun::star::chart::XChartDataChangeEventListener >& rListener,
-                             const com::sun::star::uno::Reference< com::sun::star::chart::XChartData >& rSource );
+    void            FreeUno( const css::uno::Reference< css::chart::XChartDataChangeEventListener >& rListener,
+                             const css::uno::Reference< css::chart::XChartData >& rSource );
     void            StartTimer();
     void            UpdateDirtyCharts();
     void            SetDirty();

@@ -36,7 +36,7 @@ namespace svx
 
     //= OComponentTransferable
 
-    class SVX_DLLPUBLIC SAL_WARN_UNUSED OComponentTransferable : public TransferableHelper
+    class SAL_WARN_UNUSED SVX_DLLPUBLIC OComponentTransferable : public TransferableHelper
     {
     protected:
         ODataAccessDescriptor   m_aDescriptor;
@@ -46,7 +46,7 @@ namespace svx
         */
         OComponentTransferable(
             const OUString&  _rDatasourceOrLocation
-            ,const ::com::sun::star::uno::Reference< ::com::sun::star::ucb::XContent>& _xContent
+            ,const css::uno::Reference< css::ucb::XContent>& _xContent
         );
 
         /** checks whether or not a component descriptor can be extracted from the data flavor vector given
@@ -62,8 +62,8 @@ namespace svx
 
     protected:
         // TransferableHelper overridables
-        virtual void        AddSupportedFormats() SAL_OVERRIDE;
-        virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) SAL_OVERRIDE;
+        virtual void        AddSupportedFormats() override;
+        virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) override;
 
         static SotClipboardFormatId getDescriptorFormatId(bool _bExtractForm);
     };

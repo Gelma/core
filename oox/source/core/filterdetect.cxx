@@ -154,7 +154,7 @@ void FilterDetectDocHandler::parseRelationship( const AttributeList& rAttribs )
         {
              // use '/' to representent the root of the zip package ( and provide a 'file' scheme to
              // keep the XUriReference implementation happy )
-             Reference< XUriReference > xBase = xFactory->parse( OUString("file:///") );
+             Reference< XUriReference > xBase = xFactory->parse( "file:///" );
 
              Reference< XUriReference > xPart = xFactory->parse(  rAttribs.getString( XML_Target, OUString() ) );
              Reference< XUriReference > xAbs = xFactory->makeAbsolute(  xBase, xPart, sal_True, RelativeUriExcessParentSegments_RETAIN );
@@ -228,8 +228,7 @@ void FilterDetectDocHandler::parseContentTypesOverride( const AttributeList& rAt
 /* Helper for XServiceInfo */
 Sequence< OUString > FilterDetect_getSupportedServiceNames()
 {
-    Sequence< OUString > aServiceNames( 1 );
-    aServiceNames[ 0 ] = "com.sun.star.frame.ExtendedTypeDetection";
+    Sequence<OUString> aServiceNames { "com.sun.star.frame.ExtendedTypeDetection" };
     return aServiceNames;
 }
 
@@ -268,9 +267,9 @@ class PasswordVerifier : public IDocPasswordVerifier
 public:
     explicit PasswordVerifier( DocumentDecryption& aDecryptor );
 
-    virtual DocPasswordVerifierResult verifyPassword( const OUString& rPassword, Sequence<NamedValue>& rEncryptionData ) SAL_OVERRIDE;
+    virtual DocPasswordVerifierResult verifyPassword( const OUString& rPassword, Sequence<NamedValue>& rEncryptionData ) override;
 
-    virtual DocPasswordVerifierResult verifyEncryptionData( const Sequence<NamedValue>& rEncryptionData ) SAL_OVERRIDE;
+    virtual DocPasswordVerifierResult verifyEncryptionData( const Sequence<NamedValue>& rEncryptionData ) override;
 private:
     DocumentDecryption& mDecryptor;
 };

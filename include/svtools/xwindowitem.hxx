@@ -33,18 +33,17 @@ namespace vcl { class Window; }
 
 class SVT_DLLPUBLIC XWindowItem : public SfxPoolItem
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindow >      m_xWin;
+    css::uno::Reference< css::awt::XWindow >      m_xWin;
 
-    XWindowItem & operator = ( const XWindowItem & ) SAL_DELETED_FUNCTION;
+    XWindowItem & operator = ( const XWindowItem & ) = delete;
 
 public:
-    TYPEINFO_OVERRIDE();
     XWindowItem();
     XWindowItem( const XWindowItem &rItem );
     virtual ~XWindowItem();
 
-    virtual SfxPoolItem*    Clone(SfxItemPool* pPool = 0) const SAL_OVERRIDE;
-    virtual bool operator == ( const SfxPoolItem& rAttr ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone(SfxItemPool* pPool = nullptr) const override;
+    virtual bool operator == ( const SfxPoolItem& rAttr ) const override;
 
     vcl::Window *        GetWindowPtr() const    { return VCLUnoHelper::GetWindow( m_xWin ); }
 };

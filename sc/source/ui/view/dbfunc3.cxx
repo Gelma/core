@@ -84,8 +84,6 @@ using ::com::sun::star::sheet::XDimensionsSupplier;
 using ::std::list;
 using ::std::vector;
 
-// STATIC DATA -----------------------------------------------------------
-
 //          outliner
 
 // create outline grouping
@@ -147,7 +145,7 @@ void ScDBFunc::TestRemoveOutline( bool& rCol, bool& rRow )
             {
                 ScOutlineArray& rArray = pTable->GetColArray();
                 ScSubOutlineIterator aColIter( &rArray );
-                while ((pEntry=aColIter.GetNext()) != NULL && !bColFound)
+                while ((pEntry=aColIter.GetNext()) != nullptr && !bColFound)
                 {
                     nStart = pEntry->GetStart();
                     nEnd   = pEntry->GetEnd();
@@ -162,7 +160,7 @@ void ScDBFunc::TestRemoveOutline( bool& rCol, bool& rRow )
             {
                 ScOutlineArray& rArray = pTable->GetRowArray();
                 ScSubOutlineIterator aRowIter( &rArray );
-                while ((pEntry=aRowIter.GetNext()) != NULL && !bRowFound)
+                while ((pEntry=aRowIter.GetNext()) != nullptr && !bRowFound)
                 {
                     nStart = pEntry->GetStart();
                     nEnd   = pEntry->GetEnd();
@@ -277,7 +275,7 @@ bool ScDBFunc::OutlinePossible(bool bHide)
 
             ScOutlineArray& rColArray = pTable->GetColArray();
             ScSubOutlineIterator aColIter( &rColArray );
-            while ((pEntry=aColIter.GetNext()) != NULL && !bEnable)
+            while ((pEntry=aColIter.GetNext()) != nullptr && !bEnable)
             {
                 nStart = pEntry->GetStart();
                 nEnd   = pEntry->GetEnd();
@@ -299,7 +297,7 @@ bool ScDBFunc::OutlinePossible(bool bHide)
 
             ScOutlineArray& rRowArray = pTable->GetRowArray();
             ScSubOutlineIterator aRowIter( &rRowArray );
-            while ((pEntry=aRowIter.GetNext()) != NULL)
+            while ((pEntry=aRowIter.GetNext()) != nullptr)
             {
                 nStart = pEntry->GetStart();
                 nEnd   = pEntry->GetEnd();
@@ -409,10 +407,10 @@ void ScDBFunc::DoSubTotals( const ScSubTotalParam& rParam, bool bRecord,
         ScDocShellModificator aModificator( *pDocSh );
 
         ScSubTotalParam aNewParam( rParam );        // change end of range
-        ScDocument*     pUndoDoc = NULL;
-        ScOutlineTable* pUndoTab = NULL;
-        ScRangeName*    pUndoRange = NULL;
-        ScDBCollection* pUndoDB = NULL;
+        ScDocument*     pUndoDoc = nullptr;
+        ScOutlineTable* pUndoTab = nullptr;
+        ScRangeName*    pUndoRange = nullptr;
+        ScDBCollection* pUndoDB = nullptr;
 
         if (bRecord)                                        // record old data
         {
@@ -432,19 +430,19 @@ void ScDBFunc::DoSubTotals( const ScSubTotalParam& rParam, bool bRecord,
                 pTable->GetRowArray().GetRange( nOutStartRow, nOutEndRow );
 
                 pUndoDoc->InitUndo( &rDoc, nTab, nTab, true, true );
-                rDoc.CopyToDocument( static_cast<SCCOL>(nOutStartCol), 0, nTab, static_cast<SCCOL>(nOutEndCol), MAXROW, nTab, IDF_NONE, false, pUndoDoc );
-                rDoc.CopyToDocument( 0, nOutStartRow, nTab, MAXCOL, nOutEndRow, nTab, IDF_NONE, false, pUndoDoc );
+                rDoc.CopyToDocument( static_cast<SCCOL>(nOutStartCol), 0, nTab, static_cast<SCCOL>(nOutEndCol), MAXROW, nTab, InsertDeleteFlags::NONE, false, pUndoDoc );
+                rDoc.CopyToDocument( 0, nOutStartRow, nTab, MAXCOL, nOutEndRow, nTab, InsertDeleteFlags::NONE, false, pUndoDoc );
             }
             else
                 pUndoDoc->InitUndo( &rDoc, nTab, nTab, false, bOldFilter );
 
             // record data range - including filter results
             rDoc.CopyToDocument( 0,rParam.nRow1+1,nTab, MAXCOL,rParam.nRow2,nTab,
-                                    IDF_ALL, false, pUndoDoc );
+                                    InsertDeleteFlags::ALL, false, pUndoDoc );
 
             // all formulas for reference
             rDoc.CopyToDocument( 0,0,0, MAXCOL,MAXROW,nTabCount-1,
-                                        IDF_FORMULA, false, pUndoDoc );
+                                        InsertDeleteFlags::FORMULA, false, pUndoDoc );
 
             // data base and othe ranges
             ScRangeName* pDocRange = rDoc.GetRangeName();
@@ -616,7 +614,7 @@ bool ScDBFunc::MakePivotTable(
     else
         aObj.SetSaveData( rData );
 
-    bool bAllowMove = (pDPObj != NULL);   // allow re-positioning when editing existing table
+    bool bAllowMove = (pDPObj != nullptr);   // allow re-positioning when editing existing table
 
     ScDBDocFunc aFunc( *pDocSh );
     bool bSuccess = aFunc.DataPilotUpdate(pDPObj, &aObj, true, false, bAllowMove);
@@ -783,7 +781,7 @@ bool ScDBFunc::HasSelectionForDateGroup( ScDPNumGroupInfo& rOldInfo, sal_Int32& 
                         //  of days with a "Number of days" value.
 
                         rOldInfo = pNumGroupDim->GetInfo();
-                        rParts = com::sun::star::sheet::DataPilotFieldGroupBy::DAYS;               // not found in CollectDateParts
+                        rParts = css::sheet::DataPilotFieldGroupBy::DAYS;               // not found in CollectDateParts
                         bFoundParts = true;
                         bFound = true;
                     }
@@ -1111,12 +1109,12 @@ void ScDBFunc::GroupDataPilot()
         }
     }
 
-    ScDPSaveGroupDimension* pNewGroupDim = NULL;
+    ScDPSaveGroupDimension* pNewGroupDim = nullptr;
     if ( !pGroupDimension )
     {
         // create a new group dimension
         OUString aGroupDimName =
-            pDimData->CreateGroupDimName(aBaseDimName, *pDPObj, false, NULL);
+            pDimData->CreateGroupDimName(aBaseDimName, *pDPObj, false, nullptr);
         pNewGroupDim = new ScDPSaveGroupDimension( aBaseDimName, aGroupDimName );
 
         pGroupDimension = pNewGroupDim;     // make changes to the new dim if none existed
@@ -1174,7 +1172,7 @@ void ScDBFunc::GroupDataPilot()
         delete pNewGroupDim;        // AddGroupDimension copies the object
         // don't access pGroupDimension after here
     }
-    pGroupDimension = pNewGroupDim = NULL;
+    pGroupDimension = pNewGroupDim = nullptr;
 
     // set orientation
     ScDPSaveDimension* pSaveDimension = aData.GetDimensionByName( aGroupDimName );
@@ -1588,7 +1586,7 @@ void ScDBFunc::DataPilotInput( const ScAddress& rPos, const OUString& rString )
 
 static void lcl_MoveToEnd( ScDPSaveDimension& rDim, const OUString& rItemName )
 {
-    ScDPSaveMember* pNewMember = NULL;
+    ScDPSaveMember* pNewMember = nullptr;
     const ScDPSaveMember* pOldMember = rDim.GetExistingMemberByName( rItemName );
     if ( pOldMember )
         pNewMember = new ScDPSaveMember( *pOldMember );
@@ -1603,7 +1601,7 @@ struct ScOUStringCollate
 {
     CollatorWrapper* mpCollator;
 
-    ScOUStringCollate(CollatorWrapper* pColl) : mpCollator(pColl) {}
+    explicit ScOUStringCollate(CollatorWrapper* pColl) : mpCollator(pColl) {}
 
     bool operator()(const OUString& rStr1, const OUString& rStr2) const
     {
@@ -1908,7 +1906,7 @@ void ScDBFunc::SetDataPilotDetails(bool bShow, const OUString* pNewDimensionName
                     //  add the new dimension with the same orientation, at the end
 
                     ScDPSaveDimension* pNewDim = aData.GetDimensionByName( *pNewDimensionName );
-                    ScDPSaveDimension* pDuplicated = NULL;
+                    ScDPSaveDimension* pDuplicated = nullptr;
                     if ( pNewDim->GetOrientation() == sheet::DataPilotFieldOrientation_DATA )
                     {
                         // Need to duplicate the dimension, create column/row in addition to data:
@@ -2029,7 +2027,7 @@ void ScDBFunc::ShowDataPilotSourceData( ScDPObject& rDPObj, const Sequence<sheet
         if (!xPropSet.is())
             continue;
 
-        Any any = xPropSet->getPropertyValue( OUString(SC_UNO_DP_NUMBERFO) );
+        Any any = xPropSet->getPropertyValue( SC_UNO_DP_NUMBERFO );
         sal_Int32 nNumFmt = 0;
         if (!(any >>= nNumFmt))
             continue;
@@ -2051,7 +2049,7 @@ void ScDBFunc::ShowDataPilotSourceData( ScDPObject& rDPObj, const Sequence<sheet
     OUString aNewTabName;
     pDoc->CreateValidTabName(aNewTabName);
     if ( InsertTable(aNewTabName, nNewTab) )
-        PasteFromClip( IDF_ALL, pInsDoc.get() );
+        PasteFromClip( InsertDeleteFlags::ALL, pInsDoc.get() );
 
     pMgr->LeaveListAction();
 }
@@ -2105,10 +2103,10 @@ void ScDBFunc::RepeatDB( bool bRecord )
 
         //! undo only needed data ?
 
-        ScDocument* pUndoDoc = NULL;
-        ScOutlineTable* pUndoTab = NULL;
-        ScRangeName* pUndoRange = NULL;
-        ScDBCollection* pUndoDB = NULL;
+        ScDocument* pUndoDoc = nullptr;
+        ScOutlineTable* pUndoTab = nullptr;
+        ScRangeName* pUndoRange = nullptr;
+        ScDBCollection* pUndoDB = nullptr;
 
         if (bRecord)
         {
@@ -2127,17 +2125,17 @@ void ScDBFunc::RepeatDB( bool bRecord )
                 pTable->GetRowArray().GetRange( nOutStartRow, nOutEndRow );
 
                 pUndoDoc->InitUndo( pDoc, nTab, nTab, true, true );
-                pDoc->CopyToDocument( static_cast<SCCOL>(nOutStartCol), 0, nTab, static_cast<SCCOL>(nOutEndCol), MAXROW, nTab, IDF_NONE, false, pUndoDoc );
-                pDoc->CopyToDocument( 0, nOutStartRow, nTab, MAXCOL, nOutEndRow, nTab, IDF_NONE, false, pUndoDoc );
+                pDoc->CopyToDocument( static_cast<SCCOL>(nOutStartCol), 0, nTab, static_cast<SCCOL>(nOutEndCol), MAXROW, nTab, InsertDeleteFlags::NONE, false, pUndoDoc );
+                pDoc->CopyToDocument( 0, nOutStartRow, nTab, MAXCOL, nOutEndRow, nTab, InsertDeleteFlags::NONE, false, pUndoDoc );
             }
             else
                 pUndoDoc->InitUndo( pDoc, nTab, nTab, false, true );
 
             // Record data range - including filter results
-            pDoc->CopyToDocument( 0,nStartRow,nTab, MAXCOL,nEndRow,nTab, IDF_ALL, false, pUndoDoc );
+            pDoc->CopyToDocument( 0,nStartRow,nTab, MAXCOL,nEndRow,nTab, InsertDeleteFlags::ALL, false, pUndoDoc );
 
             // all formulas for reference
-            pDoc->CopyToDocument( 0,0,0, MAXCOL,MAXROW,nTabCount-1, IDF_FORMULA, false, pUndoDoc );
+            pDoc->CopyToDocument( 0,0,0, MAXCOL,MAXROW,nTabCount-1, InsertDeleteFlags::FORMULA, false, pUndoDoc );
 
             // data base and other ranges
             ScRangeName* pDocRange = pDoc->GetRangeName();
@@ -2174,9 +2172,9 @@ void ScDBFunc::RepeatDB( bool bRecord )
                 Query( aQueryParam, &aAdvSource, false );
             }
             else
-                Query( aQueryParam, NULL, false );
+                Query( aQueryParam, nullptr, false );
 
-            //  bei nicht-inplace kann die Tabelle umgestellt worden sein
+            // if not inplace the sheet may have changed
             if ( !aQueryParam.bInplace && aQueryParam.nDestTab != nTab )
                 SetTabNo( nTab );
         }
@@ -2194,8 +2192,8 @@ void ScDBFunc::RepeatDB( bool bRecord )
             SCROW nDummyRow, nNewEndRow;
             pDBData->GetArea( nDummyTab, nDummyCol,nDummyRow, nDummyCol,nNewEndRow );
 
-            const ScRange* pOld = NULL;
-            const ScRange* pNew = NULL;
+            const ScRange* pOld = nullptr;
+            const ScRange* pNew = nullptr;
             if (bQuerySize)
             {
                 ScDBData* pDest = pDoc->GetDBAtCursor( aQueryParam.nDestCol, aQueryParam.nDestRow,

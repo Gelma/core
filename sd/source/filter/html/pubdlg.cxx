@@ -141,7 +141,7 @@ SdPublishingDesign::SdPublishingDesign()
     m_eFormat = FORMAT_PNG;
 
     FilterConfigItem aFilterConfigItem("Office.Common/Filter/Graphic/Export/JPG");
-    sal_Int32 nCompression = aFilterConfigItem.ReadInt32( OUString( KEY_QUALITY ), 75 );
+    sal_Int32 nCompression = aFilterConfigItem.ReadInt32( KEY_QUALITY, 75 );
     m_aCompression = OUString::number(nCompression) + "%";
 
     SvtUserOptions aUserOptions;
@@ -353,9 +353,9 @@ private:
 public:
     SdDesignNameDlg(vcl::Window* pWindow, const OUString& aName );
     virtual ~SdDesignNameDlg();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
     OUString GetDesignName();
-    DECL_LINK(ModifyHdl, void *);
+    DECL_LINK_TYPED(ModifyHdl, Edit&, void);
 };
 
 // SdPublishingDlg Methods
@@ -366,7 +366,7 @@ SdPublishingDlg::SdPublishingDlg(vcl::Window* pWindow, DocumentType eDocType)
 ,   aAssistentFunc(NOOFPAGES)
 ,   m_bButtonsDirty(true)
 ,   m_bDesignListDirty(false)
-,   m_pDesign(NULL)
+,   m_pDesign(nullptr)
 {
     get(pLastPageButton, "lastPageButton");
     get(pNextPageButton, "nextPageButton");
@@ -434,7 +434,7 @@ SdPublishingDlg::SdPublishingDlg(vcl::Window* pWindow, DocumentType eDocType)
     pPage2_ASP->SetClickHdl(LINK(this,SdPublishingDlg,WebServerHdl));
     pPage2_PERL->SetClickHdl(LINK(this,SdPublishingDlg,WebServerHdl));
     pPage2_Index->SetText("index" + SD_RESSTR(STR_HTMLEXP_DEFAULT_EXTENSION));
-    pPage2_CGI->SetText( OUString( "/cgi-bin/" ) );
+    pPage2_CGI->SetText( "/cgi-bin/" );
 
     pPage3_Png->SetClickHdl(LINK(this,SdPublishingDlg, GfxFormatHdl));
     pPage3_Gif->SetClickHdl(LINK(this,SdPublishingDlg, GfxFormatHdl));
@@ -460,16 +460,16 @@ SdPublishingDlg::SdPublishingDlg(vcl::Window* pWindow, DocumentType eDocType)
 
     pPage6_DocColors->Check();
 
-    pPage3_Quality->InsertEntry( OUString( "25%" ) );
-    pPage3_Quality->InsertEntry( OUString( "50%" ) );
-    pPage3_Quality->InsertEntry( OUString( "75%" ) );
-    pPage3_Quality->InsertEntry( OUString( "100%" ) );
+    pPage3_Quality->InsertEntry( "25%" );
+    pPage3_Quality->InsertEntry( "50%" );
+    pPage3_Quality->InsertEntry( "75%" );
+    pPage3_Quality->InsertEntry( "100%" );
 
     pPage5_Buttons->SetColCount();
     pPage5_Buttons->SetLineCount( 4 );
     pPage5_Buttons->SetExtraSpacing( 1 );
 
-    boost::ptr_vector<SdPublishingDesign>::iterator it;
+    std::vector<SdPublishingDesign>::iterator it;
     for( it = m_aDesignList.begin(); it != m_aDesignList.end(); ++it )
         pPage1_Designs->InsertEntry(it->m_aDesignName);
 
@@ -947,7 +947,7 @@ IMPL_LINK_TYPED( SdPublishingDlg, DesignHdl, Button *, pButton, void )
         pPage1_OldDesign->Check(false);
         pPage1_Designs->Disable();
         pPage1_DelDesign->Disable();
-        m_pDesign = NULL;
+        m_pDesign = nullptr;
 
         SdPublishingDesign aDefault;
         SetDesign(&aDefault);
@@ -971,7 +971,7 @@ IMPL_LINK_TYPED( SdPublishingDlg, DesignHdl, Button *, pButton, void )
 }
 
 // Clickhandler for the choice of one design
-IMPL_LINK_NOARG(SdPublishingDlg, DesignSelectHdl)
+IMPL_LINK_NOARG_TYPED(SdPublishingDlg, DesignSelectHdl, ListBox&, void)
 {
     const sal_Int32 nPos = pPage1_Designs->GetSelectEntryPos();
     m_pDesign = &m_aDesignList[nPos];
@@ -981,8 +981,6 @@ IMPL_LINK_NOARG(SdPublishingDlg, DesignSelectHdl)
         SetDesign(m_pDesign);
 
     UpdatePage();
-
-    return 0;
 }
 
 // Clickhandler for the delete of one design
@@ -990,7 +988,7 @@ IMPL_LINK_NOARG_TYPED(SdPublishingDlg, DesignDeleteHdl, Button*, void)
 {
     const sal_Int32 nPos = pPage1_Designs->GetSelectEntryPos();
 
-    boost::ptr_vector<SdPublishingDesign>::iterator iter = m_aDesignList.begin()+nPos;
+    std::vector<SdPublishingDesign>::iterator iter = m_aDesignList.begin()+nPos;
 
     DBG_ASSERT(iter != m_aDesignList.end(), "No Design? That's not allowed (CL)");
 
@@ -1118,21 +1116,21 @@ IMPL_LINK_NOARG_TYPED(SdPublishingDlg, SlideChgHdl, Button*, void)
 IMPL_LINK_NOARG_TYPED(SdPublishingDlg, FinishHdl, Button*, void)
 {
     //End
-    SdPublishingDesign* pDesign = new SdPublishingDesign();
-    GetDesign(pDesign);
+    SdPublishingDesign aDesign;
+    GetDesign(&aDesign);
 
     bool bSave = false;
 
     if(pPage1_OldDesign->IsChecked() && m_pDesign)
     {
         // are there changes?
-        if(!(*pDesign == *m_pDesign))
+        if(!(aDesign == *m_pDesign))
             bSave = true;
     }
     else
     {
         SdPublishingDesign aDefaultDesign;
-        if(!(aDefaultDesign == *pDesign))
+        if(!(aDefaultDesign == aDesign))
             bSave = true;
     }
 
@@ -1151,12 +1149,12 @@ IMPL_LINK_NOARG_TYPED(SdPublishingDlg, FinishHdl, Button*, void)
 
             if ( aDlg->Execute() == RET_OK )
             {
-                pDesign->m_aDesignName = aDlg->GetDesignName();
+                aDesign.m_aDesignName = aDlg->GetDesignName();
 
-                boost::ptr_vector<SdPublishingDesign>::iterator iter;
+                std::vector<SdPublishingDesign>::iterator iter;
                 for (iter = m_aDesignList.begin(); iter != m_aDesignList.end(); ++iter)
                 {
-                    if (iter->m_aDesignName == pDesign->m_aDesignName)
+                    if (iter->m_aDesignName == aDesign.m_aDesignName)
                         break;
                 }
 
@@ -1172,16 +1170,13 @@ IMPL_LINK_NOARG_TYPED(SdPublishingDlg, FinishHdl, Button*, void)
 
                 if(!bRetry)
                 {
-                    m_aDesignList.push_back(pDesign);
+                    m_aDesignList.push_back(aDesign);
                     m_bDesignListDirty = true;
-                    pDesign = NULL;
                 }
             }
         }
         while(bRetry);
     }
-
-    delete pDesign;
 
     if(m_bDesignListDirty)
         Save();
@@ -1522,11 +1517,11 @@ bool SdPublishingDlg::Load()
     m_bDesignListDirty = false;
 
     INetURLObject aURL( SvtPathOptions().GetUserConfigPath() );
-    aURL.Append( OUString( "designs.sod" ) );
+    aURL.Append( "designs.sod" );
 
     // check if file exists, SfxMedium shows an errorbox else
     {
-        com::sun::star::uno::Reference < com::sun::star::task::XInteractionHandler > xHandler;
+        css::uno::Reference < css::task::XInteractionHandler > xHandler;
         SvStream* pIStm = ::utl::UcbStreamHelper::CreateStream( aURL.GetMainURL( INetURLObject::NO_DECODE ), StreamMode::READ, xHandler );
 
         bool bOk = pIStm && ( pIStm->GetError() == 0);
@@ -1559,10 +1554,10 @@ bool SdPublishingDlg::Load()
          pStream->GetError() == SVSTREAM_OK && nIndex < nDesigns;
          nIndex++ )
     {
-        SdPublishingDesign* pDesign = new SdPublishingDesign();
-        *pStream >> *pDesign;
+        SdPublishingDesign aDesign;
+        *pStream >> aDesign;
 
-        m_aDesignList.push_back(pDesign);
+        m_aDesignList.push_back(aDesign);
     }
 
     return( pStream->GetError() == SVSTREAM_OK );
@@ -1572,7 +1567,7 @@ bool SdPublishingDlg::Load()
 bool SdPublishingDlg::Save()
 {
     INetURLObject aURL( SvtPathOptions().GetUserConfigPath() );
-    aURL.Append( OUString( "designs.sod" ) );
+    aURL.Append( "designs.sod" );
     SfxMedium aMedium( aURL.GetMainURL( INetURLObject::NO_DECODE ), StreamMode::WRITE | StreamMode::TRUNC );
 
     SvStream* pStream = aMedium.GetOutStream();
@@ -1630,11 +1625,9 @@ OUString SdDesignNameDlg::GetDesignName()
     return m_pEdit->GetText();
 }
 
-IMPL_LINK_NOARG(SdDesignNameDlg, ModifyHdl)
+IMPL_LINK_NOARG_TYPED(SdDesignNameDlg, ModifyHdl, Edit&, void)
 {
     m_pBtnOK->Enable(!m_pEdit->GetText().isEmpty());
-
-    return 0;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

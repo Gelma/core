@@ -37,7 +37,7 @@ class SwFont;
  * held by the corresponding SwTextNode.
  *
  * The SwPortionHandler can be used with the
- * SwTextFrm::VisitPortions(...) method.
+ * SwTextFrame::VisitPortions(...) method.
  */
 class SwPortionHandler
 {
@@ -71,7 +71,7 @@ public:
         sal_uInt16 nType,         /// type of this portion
         sal_Int32 nHeight = 0,     /// font height of the painted text
         sal_Int32 nWidth = 0,     /// width of this portion
-        const SwFont* pFont = 0 /// font of this portion
+        const SwFont* pFont = nullptr /// font of this portion
         ) = 0;
 
     /** line break. This method is called whenever a line break in the

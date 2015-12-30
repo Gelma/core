@@ -68,7 +68,6 @@
 
 namespace sd {
 
-TYPEINIT1( FuConstructCustomShape, FuConstruct );
 
 FuConstructCustomShape::FuConstructCustomShape (
         ViewShell*          pViewSh,
@@ -230,16 +229,6 @@ void FuConstructCustomShape::SetAttributes( SdrObject* pObj )
                                     pObj->NbcRotate( pObj->GetSnapRect().Center(), nAngle, sin( a ), cos( a ) );
                                 }
                                 bAttributesAppliedFromGallery = true;
-
-    /*
-                                com::sun::star::uno::Any aAny;
-                                if ( ((SdrCustomShapeGeometryItem&)pObj->GetMergedItem( SDRATTR_CUSTOMSHAPE_GEOMETRY )).QueryValue( aAny ) )
-                                {
-                                    aGeometryItem.PutValue( aAny );
-                                    pObj->SetMergedItem( aGeometryItem );
-                                    bAttributesAppliedFromGallery = sal_True;
-                                }
-    */
                             }
                         }
                     }
@@ -267,7 +256,7 @@ SdrObject* FuConstructCustomShape::CreateDefaultObject(const sal_uInt16, const R
 {
     SdrObject* pObj = SdrObjFactory::MakeNewObject(
         mpView->GetCurrentObjInventor(), mpView->GetCurrentObjIdentifier(),
-        0L, mpDoc);
+        nullptr, mpDoc);
 
     if( pObj )
     {

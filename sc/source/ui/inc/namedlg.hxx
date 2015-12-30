@@ -30,8 +30,7 @@
 #include "anyrefdg.hxx"
 #include "namemgrtable.hxx"
 
-#include <boost/ptr_container/ptr_map.hpp>
-
+#include <memory>
 #include <stack>
 #include <map>
 
@@ -76,9 +75,9 @@ private:
     //ugly hack to call DefineNames from ManageNames
     bool mbCloseWithoutUndo;
 
-    typedef boost::ptr_map<OUString, ScRangeName> RangeNameContainer;
+    typedef std::map<OUString, std::unique_ptr<ScRangeName>> RangeNameContainer;
 
-    RangeNameContainer maRangeMap;
+    RangeNameContainer m_RangeMap;
 
 private:
     void Init();
@@ -104,31 +103,32 @@ private:
     DECL_LINK_TYPED( CancelBtnHdl, Button*, void );
     DECL_LINK_TYPED( AddBtnHdl, Button*, void );
     DECL_LINK_TYPED( RemoveBtnHdl, Button*, void );
-    DECL_LINK( EdModifyHdl, void * );
+    DECL_LINK_TYPED( EdModifyHdl, Edit&, void );
     DECL_LINK_TYPED( EdModifyCheckBoxHdl, CheckBox&, void );
     DECL_LINK_TYPED( AssignGetFocusHdl, Control&, void );
     DECL_LINK_TYPED( SelectionChangedHdl_Impl, SvTreeListBox*, void );
-    DECL_LINK( ScopeChangedHdl, void* );
+    DECL_LINK_TYPED( ScopeChangedHdl, ListBox&, void );
 
 protected:
-    virtual void    RefInputDone( bool bForced = false ) SAL_OVERRIDE;
+    virtual void    RefInputDone( bool bForced = false ) override;
 
 public:
                     ScNameDlg( SfxBindings* pB, SfxChildWindow* pCW, vcl::Window* pParent,
                                ScViewData*      ptrViewData,
-                               const ScAddress& aCursorPos, boost::ptr_map<OUString, ScRangeName>* pRangeMap = NULL );
+                               const ScAddress& aCursorPos,
+                               std::map<OUString, std::unique_ptr<ScRangeName>>* pRangeMap = nullptr);
     virtual         ~ScNameDlg();
-    virtual void    dispose() SAL_OVERRIDE;
+    virtual void    dispose() override;
 
-    virtual void    SetReference( const ScRange& rRef, ScDocument* pDoc ) SAL_OVERRIDE;
-    virtual bool    IsRefInputMode() const SAL_OVERRIDE;
+    virtual void    SetReference( const ScRange& rRef, ScDocument* pDoc ) override;
+    virtual bool    IsRefInputMode() const override;
 
-    virtual void    SetActive() SAL_OVERRIDE;
-    virtual bool    Close() SAL_OVERRIDE;
+    virtual void    SetActive() override;
+    virtual bool    Close() override;
 
-    virtual void tableInitialized() SAL_OVERRIDE;
+    virtual void tableInitialized() override;
 
-    void GetRangeNames(boost::ptr_map<OUString, ScRangeName>& rRangeMap);
+    void GetRangeNames(std::map<OUString, std::unique_ptr<ScRangeName>>& rRangeMap);
     void SetEntry(const OUString& rName, const OUString& rScope);
 };
 

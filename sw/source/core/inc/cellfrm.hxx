@@ -24,43 +24,43 @@
 #include "layfrm.hxx"
 
 class SwTableBox;
-struct SwCrsrMoveState;
+struct SwCursorMoveState;
 class SwBorderAttrs;
 
-/// SwCellFrm is one table cell in the document layout.
-class SwCellFrm: public SwLayoutFrm
+/// SwCellFrame is one table cell in the document layout.
+class SwCellFrame: public SwLayoutFrame
 {
     const SwTableBox* m_pTabBox;
 
-    virtual void DestroyImpl() SAL_OVERRIDE;
-    virtual ~SwCellFrm();
+    virtual void DestroyImpl() override;
+    virtual ~SwCellFrame();
 
 protected:
-    virtual void Format( vcl::RenderContext* pRenderContext, const SwBorderAttrs *pAttrs = 0 ) SAL_OVERRIDE;
-    virtual void Modify( const SfxPoolItem*, const SfxPoolItem* ) SAL_OVERRIDE;
+    virtual void Format( vcl::RenderContext* pRenderContext, const SwBorderAttrs *pAttrs = nullptr ) override;
+    virtual void Modify( const SfxPoolItem*, const SfxPoolItem* ) override;
 
 public:
-    SwCellFrm( const SwTableBox &, SwFrm*, bool bInsertContent = true );
+    SwCellFrame( const SwTableBox &, SwFrame*, bool bInsertContent = true );
 
-    virtual bool GetCrsrOfst( SwPosition *, Point&, SwCrsrMoveState* = 0, bool bTestBackground = false ) const SAL_OVERRIDE;
+    virtual bool GetCursorOfst( SwPosition *, Point&, SwCursorMoveState* = nullptr, bool bTestBackground = false ) const override;
     virtual void Paint( vcl::RenderContext& rRenderContext, SwRect const&,
-                        SwPrintData const*const pPrintData = NULL ) const SAL_OVERRIDE;
-    virtual void CheckDirection( bool bVert ) SAL_OVERRIDE;
+                        SwPrintData const*const pPrintData = nullptr ) const override;
+    virtual void CheckDirection( bool bVert ) override;
 
     // #i103961#
-    virtual void Cut() SAL_OVERRIDE;
+    virtual void Cut() override;
 
     const SwTableBox *GetTabBox() const { return m_pTabBox; }
 
     // used for breaking table rows:
-    SwCellFrm* GetFollowCell() const;
-    SwCellFrm* GetPreviousCell() const;
+    SwCellFrame* GetFollowCell() const;
+    SwCellFrame* GetPreviousCell() const;
 
     // used for rowspan stuff:
-    const SwCellFrm& FindStartEndOfRowSpanCell( bool bStart, bool bCurrentTab ) const;
+    const SwCellFrame& FindStartEndOfRowSpanCell( bool bStart, bool bCurrentTab ) const;
     long GetLayoutRowSpan() const;
 
-    DECL_FIXEDMEMPOOL_NEWDEL(SwCellFrm)
+    DECL_FIXEDMEMPOOL_NEWDEL(SwCellFrame)
 };
 
 #endif

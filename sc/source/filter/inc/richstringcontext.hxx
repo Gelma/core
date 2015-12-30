@@ -34,14 +34,13 @@ public:
     explicit            RichStringContext( ParentType& rParent, RichStringRef xString );
 
 protected:
-    virtual ::oox::core::ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) SAL_OVERRIDE;
-    virtual void        onCharacters( const OUString& rChars ) SAL_OVERRIDE;
+    virtual ::oox::core::ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) override;
+    virtual void        onCharacters( const OUString& rChars ) override;
 
 private:
     RichStringRef       mxString;       /// Processed string.
     RichStringPortionRef mxPortion;     /// Processed portion in the string.
     RichStringPhoneticRef mxPhonetic;   /// Processed phonetic text portion.
-    FontRef             mxFont;         /// Processed font of the portion.
 };
 
 template< typename ParentType >

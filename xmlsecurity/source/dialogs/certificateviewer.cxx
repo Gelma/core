@@ -331,7 +331,6 @@ IMPL_LINK_NOARG_TYPED(CertificateViewerDetailsTP, ElementSelectHdl, SvTreeListBo
 struct CertPath_UserData
 {
     css::uno::Reference< css::security::XCertificate > mxCert;
-    OUString                                        maStatus;
     bool mbValid;
 
     CertPath_UserData( css::uno::Reference< css::security::XCertificate > xCert, bool bValid):
@@ -393,7 +392,7 @@ void CertificateViewerCertPathTP::ActivatePage()
         const Reference< security::XCertificate >* pCertPath = aCertPath.getConstArray();
 
         sal_Int32 i, nCnt = aCertPath.getLength();
-        SvTreeListEntry* pParent = NULL;
+        SvTreeListEntry* pParent = nullptr;
         for( i = nCnt; i; )
         {
             const Reference< security::XCertificate > rCert = pCertPath[ --i ];
@@ -414,7 +413,7 @@ void CertificateViewerCertPathTP::ActivatePage()
             pParent = mpCertPathLB->GetParent( pParent );
         }
 
-        CertSelectHdl( NULL );
+        CertSelectHdl( nullptr );
     }
 }
 

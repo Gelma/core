@@ -42,7 +42,7 @@ public:
     /** Create a substitution display of the currently selected pages or,
         when provided, the pages in the transferable.
     */
-    DragAndDropContext (SlideSorter& rSlideSorter);
+    explicit DragAndDropContext (SlideSorter& rSlideSorter);
     ~DragAndDropContext();
 
     /** Call this method (for example as reaction to ESC key press) to avoid
@@ -61,14 +61,13 @@ public:
         const bool bAllowAutoScroll = true);
 
     void SetTargetSlideSorter (
-        SlideSorter* pSlideSorter = NULL,
+        SlideSorter* pSlideSorter = nullptr,
         const Point& rMousePosition = Point(0,0),
         const InsertionIndicatorHandler::Mode eMode = InsertionIndicatorHandler::UnknownMode,
         const bool bIsOverSourceView = false);
 
 private:
     SlideSorter* mpTargetSlideSorter;
-    model::SharedPageDescriptor mpHitDescriptor;
     sal_Int32 mnInsertionIndex;
 };
 

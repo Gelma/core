@@ -44,7 +44,7 @@ namespace drawinglayer
         {
         private:
             /// result holding vector (2D)
-            primitive2d::Primitive2DSequence                maPrimitive2DSequence;
+            primitive2d::Primitive2DContainer                  maPrimitive2DSequence;
 
             /// object transformation for scene for 2d definition
             basegfx::B2DHomMatrix                           maObjectTransformation;
@@ -55,7 +55,7 @@ namespace drawinglayer
             /*  as tooling, the process() implementation takes over API handling and calls this
                 virtual render method when the primitive implementation is BasePrimitive3D-based.
              */
-            virtual void processBasePrimitive3D(const primitive3d::BasePrimitive3D& rCandidate) SAL_OVERRIDE;
+            virtual void processBasePrimitive3D(const primitive3d::BasePrimitive3D& rCandidate) override;
 
         public:
             Geometry2DExtractingProcessor(
@@ -63,7 +63,7 @@ namespace drawinglayer
                 const basegfx::B2DHomMatrix& rObjectTransformation);
 
             // data read access
-            const primitive2d::Primitive2DSequence& getPrimitive2DSequence() const { return maPrimitive2DSequence; }
+            const primitive2d::Primitive2DContainer& getPrimitive2DSequence() const { return maPrimitive2DSequence; }
             const basegfx::B2DHomMatrix& getObjectTransformation() const { return maObjectTransformation; }
         };
     } // end of namespace processor3d

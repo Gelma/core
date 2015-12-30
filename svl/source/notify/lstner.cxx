@@ -26,7 +26,6 @@
 #include <cassert>
 #include <deque>
 
-TYPEINIT0(SfxListener);
 
 typedef std::deque<SfxBroadcaster*> SfxBroadcasterArr_Impl;
 
@@ -59,8 +58,6 @@ SfxListener::~SfxListener()
         SfxBroadcaster *pBC = mpImpl->maBCs[nPos];
         pBC->RemoveListener(*this);
     }
-
-    delete mpImpl;
 }
 
 

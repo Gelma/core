@@ -126,36 +126,36 @@ namespace XSLT
     public:
 
         // ctor...
-        XSLTFilter(const css::uno::Reference<XComponentContext> &r);
+        explicit XSLTFilter(const css::uno::Reference<XComponentContext> &r);
 
         // XStreamListener
         virtual void SAL_CALL
-        error(const Any& a) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        error(const Any& a) throw (RuntimeException, std::exception) override;
         virtual void SAL_CALL
-        closed() throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        closed() throw (RuntimeException, std::exception) override;
         virtual void SAL_CALL
-        terminated() throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        terminated() throw (RuntimeException, std::exception) override;
         virtual void SAL_CALL
-        started() throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        started() throw (RuntimeException, std::exception) override;
         virtual void SAL_CALL
-        disposing(const EventObject& e) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        disposing(const EventObject& e) throw (RuntimeException, std::exception) override;
 
         // XImportFilter
         virtual sal_Bool SAL_CALL
         importer(const Sequence<PropertyValue>& aSourceData, const css::uno::Reference<
                 XDocumentHandler>& xHandler,
-                const Sequence<OUString>& msUserData) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+                const Sequence<OUString>& msUserData) throw (RuntimeException, std::exception) override;
 
         // XExportFilter
         virtual sal_Bool SAL_CALL
         exporter(const Sequence<PropertyValue>& aSourceData, const Sequence<
-                OUString>& msUserData) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+                OUString>& msUserData) throw (RuntimeException, std::exception) override;
 
         // XDocumentHandler
         virtual void SAL_CALL
-        startDocument() throw (SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
+        startDocument() throw (SAXException, RuntimeException, std::exception) override;
         virtual void SAL_CALL
-        endDocument() throw (SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
+        endDocument() throw (SAXException, RuntimeException, std::exception) override;
     };
 
     XSLTFilter::XSLTFilter(const css::uno::Reference<XComponentContext> &r):
@@ -255,7 +255,7 @@ namespace XSLT
 
         css::uno::Reference<XStringSubstitution>
                 subs(css::util::PathSubstitution::create(m_xContext));
-        OUString aWorkingDir(subs->getSubstituteVariableValue(OUString( "$(progurl)")));
+        OUString aWorkingDir(subs->getSubstituteVariableValue( "$(progurl)" ));
         INetURLObject aObj(aWorkingDir);
         aObj.setFinalSlash();
         bool bWasAbsolute;
@@ -365,11 +365,11 @@ namespace XSLT
                         while (osl::Condition::result_timeout == result) {
                                 if (xInterActionHandler.is()) {
                                         Sequence<Any> excArgs(0);
-                                        ::com::sun::star::ucb::InteractiveAugmentedIOException exc(
+                                        css::ucb::InteractiveAugmentedIOException exc(
                                                 OUString("Timeout!"),
                                                 static_cast< OWeakObject * >( this ),
                                                 InteractionClassification_ERROR,
-                                                ::com::sun::star::ucb::IOErrorCode_GENERAL,
+                                                css::ucb::IOErrorCode_GENERAL,
                                                  excArgs);
                                         Any r;
                                         r <<= exc;
@@ -562,14 +562,13 @@ extern "C"
     SAL_DLLPUBLIC_EXPORT void * SAL_CALL xsltfilter_component_getFactory(const sal_Char * pImplName,
             void * pServiceManager, void * /* pRegistryKey */)
     {
-        void * pRet = 0;
+        void * pRet = nullptr;
 
         if (pServiceManager)
             {
                 if (rtl_str_compare(pImplName, FILTER_IMPL_NAME) == 0)
                     {
-                        Sequence<OUString> serviceNames(1);
-                        serviceNames.getArray()[0] = FILTER_SERVICE_NAME;
+                        Sequence<OUString> serviceNames { FILTER_SERVICE_NAME };
 
                         css::uno::Reference<XSingleServiceFactory>
                                 xFactory(
@@ -588,8 +587,7 @@ extern "C"
                     }
                 else if (rtl_str_compare(pImplName, TRANSFORMER_IMPL_NAME) == 0)
                     {
-                        Sequence<OUString> serviceNames(1);
-                        serviceNames.getArray()[0] = TRANSFORMER_SERVICE_NAME;
+                        Sequence<OUString> serviceNames { TRANSFORMER_SERVICE_NAME };
                         css::uno::Reference<XSingleServiceFactory>
                                 xFactory(
                                         createSingleFactory(

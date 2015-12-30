@@ -67,10 +67,9 @@ namespace slideshow
                 @param nNumPropEntries
                 Number of property table entries (in pPropCopyTable)
              */
-            AppletShape( const ::com::sun::star::uno::Reference<
-                               ::com::sun::star::drawing::XShape >& xShape,
+            AppletShape( const css::uno::Reference< css::drawing::XShape >& xShape,
                          double                                     nPrio,
-                         const OUString&                     rServiceName,
+                         const OUString&                            rServiceName,
                          const char**                               pPropCopyTable,
                          sal_Size                                   nNumPropEntries,
                          const SlideShowContext&                    rContext ); // throw ShapeLoadFailedException;
@@ -81,22 +80,22 @@ namespace slideshow
 
 
             virtual void addViewLayer( const ViewLayerSharedPtr&    rNewLayer,
-                                       bool                         bRedrawLayer ) SAL_OVERRIDE;
-            virtual bool removeViewLayer( const ViewLayerSharedPtr& rNewLayer ) SAL_OVERRIDE;
-            virtual bool clearAllViewLayers() SAL_OVERRIDE;
+                                       bool                         bRedrawLayer ) override;
+            virtual bool removeViewLayer( const ViewLayerSharedPtr& rNewLayer ) override;
+            virtual bool clearAllViewLayers() override;
 
 
             // ExternalShapeBase methods
 
 
-            virtual bool implRender( const ::basegfx::B2DRange& rCurrBounds ) const SAL_OVERRIDE;
-            virtual void implViewChanged( const UnoViewSharedPtr& rView ) SAL_OVERRIDE;
-            virtual void implViewsChanged() SAL_OVERRIDE;
-            virtual bool implStartIntrinsicAnimation() SAL_OVERRIDE;
-            virtual bool implEndIntrinsicAnimation() SAL_OVERRIDE;
-            virtual bool implPauseIntrinsicAnimation() SAL_OVERRIDE;
-            virtual bool implIsIntrinsicAnimationPlaying() const SAL_OVERRIDE;
-            virtual void implSetIntrinsicAnimationTime(double) SAL_OVERRIDE;
+            virtual bool implRender( const ::basegfx::B2DRange& rCurrBounds ) const override;
+            virtual void implViewChanged( const UnoViewSharedPtr& rView ) override;
+            virtual void implViewsChanged() override;
+            virtual bool implStartIntrinsicAnimation() override;
+            virtual bool implEndIntrinsicAnimation() override;
+            virtual bool implPauseIntrinsicAnimation() override;
+            virtual bool implIsIntrinsicAnimationPlaying() const override;
+            virtual void implSetIntrinsicAnimationTime(double) override;
 
             const OUString                           maServiceName;
             const char**                                    mpPropCopyTable;

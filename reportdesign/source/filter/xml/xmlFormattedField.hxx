@@ -27,15 +27,15 @@ namespace rptxml
     class ORptFilter;
     class OXMLFormattedField : public OXMLReportElementBase
     {
-        OXMLFormattedField(const OXMLFormattedField&) SAL_DELETED_FUNCTION;
-        void operator =(const OXMLFormattedField&) SAL_DELETED_FUNCTION;
+        OXMLFormattedField(const OXMLFormattedField&) = delete;
+        void operator =(const OXMLFormattedField&) = delete;
     public:
 
         OXMLFormattedField( ORptFilter& rImport
                     ,sal_uInt16 nPrfx
                     ,const OUString& rLName
-                    ,const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList
-                    ,const ::com::sun::star::uno::Reference< ::com::sun::star::report::XFormattedField >& _xComponent
+                    ,const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList
+                    ,const css::uno::Reference< css::report::XFormattedField >& _xComponent
                     ,OXMLTable* _pContainer
                     ,bool _bPageCount);
         virtual ~OXMLFormattedField();

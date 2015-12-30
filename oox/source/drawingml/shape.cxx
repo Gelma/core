@@ -228,7 +228,7 @@ void Shape::setServiceName( const sal_Char* pServiceName )
 const ShapeStyleRef* Shape::getShapeStyleRef( sal_Int32 nRefType ) const
 {
     ShapeStyleRefMap::const_iterator aIt = maShapeStyleRefs.find( nRefType );
-    return (aIt == maShapeStyleRefs.end()) ? 0 : &aIt->second;
+    return (aIt == maShapeStyleRefs.end()) ? nullptr : &aIt->second;
 }
 
 void Shape::addShape(
@@ -300,7 +300,7 @@ void Shape::applyShapeReference( const Shape& rReferencedShape, bool bUseText )
     mpShapeRefLinePropPtr = LinePropertiesPtr( new LineProperties( *rReferencedShape.mpLinePropertiesPtr.get() ) );
     mpShapeRefFillPropPtr = FillPropertiesPtr( new FillProperties( *rReferencedShape.mpFillPropertiesPtr.get() ) );
     mpCustomShapePropertiesPtr = CustomShapePropertiesPtr( new CustomShapeProperties( *rReferencedShape.mpCustomShapePropertiesPtr.get() ) );
-    mpTablePropertiesPtr = table::TablePropertiesPtr( rReferencedShape.mpTablePropertiesPtr.get() ? new table::TableProperties( *rReferencedShape.mpTablePropertiesPtr.get() ) : NULL );
+    mpTablePropertiesPtr = table::TablePropertiesPtr( rReferencedShape.mpTablePropertiesPtr.get() ? new table::TableProperties( *rReferencedShape.mpTablePropertiesPtr.get() ) : nullptr );
     mpShapeRefEffectPropPtr = EffectPropertiesPtr( new EffectProperties( *rReferencedShape.mpEffectPropertiesPtr.get() ) );
     mpMasterTextListStyle = TextListStylePtr( new TextListStyle( *rReferencedShape.mpMasterTextListStyle.get() ) );
     maShapeStyleRefs = rReferencedShape.maShapeStyleRefs;
@@ -389,7 +389,7 @@ void Shape::addChildren(
     std::vector< ShapePtr >::iterator aIter( rMaster.maChildren.begin() );
     while( aIter != rMaster.maChildren.end() ) {
         (*aIter)->setMasterTextListStyle( mpMasterTextListStyle );
-        (*aIter++)->addShape( rFilterBase, pTheme, rxShapes, aChildTransformation, getFillProperties(), NULL, pShapeMap );
+        (*aIter++)->addShape( rFilterBase, pTheme, rxShapes, aChildTransformation, getFillProperties(), nullptr, pShapeMap );
     }
 }
 
@@ -397,7 +397,7 @@ Reference< XShape > Shape::createAndInsert(
         ::oox::core::XmlFilterBase& rFilterBase,
         const OUString& rServiceName,
         const Theme* pTheme,
-        const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShapes >& rxShapes,
+        const css::uno::Reference< css::drawing::XShapes >& rxShapes,
         const awt::Rectangle* /* pShapeRect */,
         bool bClearText,
         bool bDoNotInsertEmptyTextBody,
@@ -480,10 +480,11 @@ Reference< XShape > Shape::createAndInsert(
         aTransformation.translate( aCenter.getX(), aCenter.getY() );
     }
 
+    bool bInGroup = !aParentTransformation.isIdentity();
     if( maPosition.X != 0 || maPosition.Y != 0)
     {
         // if global position is used, add it to transformation
-        if (mbWps && aParentTransformation.isIdentity())
+        if (mbWps && !bInGroup)
             aTransformation.translate( maPosition.X * EMU_PER_HMM, maPosition.Y * EMU_PER_HMM);
         else
             aTransformation.translate( maPosition.X, maPosition.Y );
@@ -505,10 +506,18 @@ Reference< XShape > Shape::createAndInsert(
         sal_Int32 i, nNumPoints = aPoly.count();
         uno::Sequence< awt::Point > aPointSequence( nNumPoints );
         awt::Point* pPoints = aPointSequence.getArray();
+        uno::Reference<lang::XServiceInfo> xModelInfo(rFilterBase.getModel(), uno::UNO_QUERY);
+        bool bIsWriter = xModelInfo->supportsService("com.sun.star.text.TextDocument");
         for( i = 0; i < nNumPoints; ++i )
         {
             const ::basegfx::B2DPoint aPoint( aPoly.getB2DPoint( i ) );
-            pPoints[ i ] = awt::Point( static_cast< sal_Int32 >( aPoint.getX() ), static_cast< sal_Int32 >( aPoint.getY() ) );
+            if (bIsWriter && bInGroup)
+                // Writer's draw page is in twips, and these points get passed
+                // to core without any unit conversion when Writer
+                // postprocesses only the group shape itself.
+                pPoints[i] = awt::Point(static_cast<sal_Int32>(convertMm100ToTwip(aPoint.getX())), static_cast<sal_Int32>(convertMm100ToTwip(aPoint.getY())));
+            else
+                pPoints[i] = awt::Point(static_cast<sal_Int32>(aPoint.getX()), static_cast<sal_Int32>(aPoint.getY()));
         }
         uno::Sequence< uno::Sequence< awt::Point > > aPolyPolySequence( 1 );
         aPolyPolySequence.getArray()[ 0 ] = aPointSequence;
@@ -552,7 +561,7 @@ Reference< XShape > Shape::createAndInsert(
 
     Reference< lang::XMultiServiceFactory > xServiceFact( rFilterBase.getModel(), UNO_QUERY_THROW );
     if ( !mxShape.is() )
-        mxShape = Reference< drawing::XShape >( xServiceFact->createInstance( aServiceName ), UNO_QUERY_THROW );
+        mxShape.set( xServiceFact->createInstance( aServiceName ), UNO_QUERY_THROW );
 
     Reference< XPropertySet > xSet( mxShape, UNO_QUERY );
     if( mxShape.is() && xSet.is() )
@@ -953,12 +962,11 @@ Reference< XShape > Shape::createAndInsert(
             }
 
             // store unsupported effect attributes in the grab bag
-            if( aEffectProperties.maEffects.size() > 0 )
+            if (!aEffectProperties.m_Effects.empty())
             {
-                Sequence< PropertyValue > aEffects( aEffectProperties.maEffects.size() );
+                Sequence<PropertyValue> aEffects(aEffectProperties.m_Effects.size());
                 sal_uInt32 i = 0;
-                for( boost::ptr_vector< Effect >::iterator it = aEffectProperties.maEffects.begin();
-                        it != aEffectProperties.maEffects.end(); ++it )
+                for (auto const& it : aEffectProperties.m_Effects)
                 {
                     PropertyValue aEffect = it->getEffect();
                     if( !aEffect.Name.isEmpty() )
@@ -1125,8 +1133,8 @@ void Shape::keepDiagramCompatibilityInfo( XmlFilterBase& rFilterBase )
         } else
             xSet->setPropertyValue( aGrabBagPropName, Any( maDiagramDoms ) );
 
-        xSet->setPropertyValue( OUString( "MoveProtect" ), Any( sal_True ) );
-        xSet->setPropertyValue( OUString( "SizeProtect" ), Any( sal_True ) );
+        xSet->setPropertyValue( "MoveProtect", Any( sal_True ) );
+        xSet->setPropertyValue( "SizeProtect", Any( sal_True ) );
 
         // Replace existing shapes with a new Graphic Object rendered
         // from them
@@ -1193,7 +1201,7 @@ Reference < XShape > Shape::renderDiagramToGraphic( XmlFilterBase& rFilterBase )
 
         Graphic aGraphic;
         GraphicFilter aFilter( false );
-        if ( aFilter.ImportGraphic( aGraphic, "", mpTempStream, GRFILTER_FORMAT_NOTFOUND, NULL, GraphicFilterImportFlags::NONE, static_cast < Sequence < PropertyValue >* > ( NULL ), NULL ) != GRFILTER_OK )
+        if ( aFilter.ImportGraphic( aGraphic, "", mpTempStream, GRFILTER_FORMAT_NOTFOUND, nullptr, GraphicFilterImportFlags::NONE, static_cast < Sequence < PropertyValue >* > ( nullptr ) ) != GRFILTER_OK )
         {
             SAL_WARN( "oox.drawingml", OSL_THIS_FUNC
                       << "Unable to import rendered stream into graphic object" );
@@ -1202,12 +1210,12 @@ Reference < XShape > Shape::renderDiagramToGraphic( XmlFilterBase& rFilterBase )
 
         Reference < graphic::XGraphic > xGraphic( aGraphic.GetXGraphic() );
         Reference < lang::XMultiServiceFactory > xServiceFact( rFilterBase.getModel(), UNO_QUERY_THROW );
-        xShape = Reference < XShape > ( xServiceFact->createInstance( OUString( "com.sun.star.drawing.GraphicObjectShape" ) ), UNO_QUERY_THROW );
+        xShape.set( xServiceFact->createInstance( "com.sun.star.drawing.GraphicObjectShape" ), UNO_QUERY_THROW );
         Reference < XPropertySet > xPropSet( xShape, UNO_QUERY_THROW );
-        xPropSet->setPropertyValue( OUString( "Graphic" ), Any( xGraphic ) );
-        xPropSet->setPropertyValue( OUString( "MoveProtect" ), Any( sal_True ) );
-        xPropSet->setPropertyValue( OUString( "SizeProtect" ), Any( sal_True ) );
-        xPropSet->setPropertyValue( OUString( "Name" ), Any( OUString( "RenderedShapes" ) ) );
+        xPropSet->setPropertyValue(  "Graphic", Any( xGraphic ) );
+        xPropSet->setPropertyValue(  "MoveProtect", Any( sal_True ) );
+        xPropSet->setPropertyValue(  "SizeProtect", Any( sal_True ) );
+        xPropSet->setPropertyValue(  "Name", Any( OUString( "RenderedShapes" ) ) );
     }
     catch( const Exception& e )
     {

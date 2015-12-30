@@ -170,7 +170,7 @@ namespace frm
             mbCreatingPeer = true;
 
             // determine the VLC window for the parent
-            vcl::Window* pParentWin = NULL;
+            vcl::Window* pParentWin = nullptr;
             if ( _rParentPeer.is() )
             {
                 VCLXWindow* pParentXWin = VCLXWindow::GetImplementation( _rParentPeer );
@@ -241,7 +241,7 @@ namespace frm
         return aServices;
     }
 
-    Reference< XDispatch > SAL_CALL ORichTextControl::queryDispatch( const ::com::sun::star::util::URL& _rURL, const OUString& _rTargetFrameName, sal_Int32 _nSearchFlags ) throw (RuntimeException, std::exception)
+    Reference< XDispatch > SAL_CALL ORichTextControl::queryDispatch( const css::util::URL& _rURL, const OUString& _rTargetFrameName, sal_Int32 _nSearchFlags ) throw (RuntimeException, std::exception)
     {
         Reference< XDispatch > aReturn;
         Reference< XDispatchProvider > xTypedPeer( getPeer(), UNO_QUERY );
@@ -277,7 +277,7 @@ namespace frm
         RichTextEngine* pEngine = ORichTextModel::getEditEngine( _rxModel );
         OSL_ENSURE( pEngine, "ORichTextPeer::Create: could not obtaine the edit engine from the model!" );
         if ( !pEngine )
-            return NULL;
+            return nullptr;
 
         // the peer itself
         ORichTextPeer* pPeer = new ORichTextPeer;
@@ -330,7 +330,7 @@ namespace frm
     }
 
 
-    void SAL_CALL ORichTextPeer::draw( sal_Int32 _nX, sal_Int32 _nY ) throw(::com::sun::star::uno::RuntimeException, std::exception)
+    void SAL_CALL ORichTextPeer::draw( sal_Int32 _nX, sal_Int32 _nY ) throw(css::uno::RuntimeException, std::exception)
     {
         SolarMutexGuard aGuard;
 
@@ -339,7 +339,7 @@ namespace frm
             return;
 
         OutputDevice* pTargetDevice = VCLUnoHelper::GetOutputDevice( getGraphics() );
-        OSL_ENSURE( pTargetDevice != NULL, "ORichTextPeer::draw: no graphics -> no drawing!" );
+        OSL_ENSURE( pTargetDevice != nullptr, "ORichTextPeer::draw: no graphics -> no drawing!" );
         if ( !pTargetDevice )
             return;
 
@@ -463,15 +463,15 @@ namespace frm
     }
 
 
-    ORichTextPeer::SingleAttributeDispatcher ORichTextPeer::implCreateDispatcher( SfxSlotId _nSlotId, const ::com::sun::star::util::URL& _rURL )
+    ORichTextPeer::SingleAttributeDispatcher ORichTextPeer::implCreateDispatcher( SfxSlotId _nSlotId, const css::util::URL& _rURL )
     {
         VclPtr< RichTextControl > pRichTextControl = GetAs< RichTextControl >();
         OSL_PRECOND( pRichTextControl, "ORichTextPeer::implCreateDispatcher: invalid window!" );
         if ( !pRichTextControl )
-            return SingleAttributeDispatcher( NULL );
+            return SingleAttributeDispatcher( nullptr );
 
-        ORichTextFeatureDispatcher* pDispatcher = NULL;
-        OAttributeDispatcher* pAttributeDispatcher = NULL;
+        ORichTextFeatureDispatcher* pDispatcher = nullptr;
+        OAttributeDispatcher* pAttributeDispatcher = nullptr;
         switch ( _nSlotId )
         {
         case SID_CUT:
@@ -548,9 +548,9 @@ namespace frm
                 }
                 else
                 {
-                    SfxSlotPool& rSlotPool = SfxSlotPool::GetSlotPool( NULL );
+                    SfxSlotPool& rSlotPool = SfxSlotPool::GetSlotPool();
                     const SfxSlot* pSlot = rSlotPool.GetSlot( _nSlotId );
-                    const SfxType* pType = pSlot ? pSlot->GetType() : NULL;
+                    const SfxType* pType = pSlot ? pSlot->GetType() : nullptr;
                     if ( pType )
                     {
                         bNeedParametrizedDispatcher = ( pType->nAttribs > 0 );
@@ -625,7 +625,7 @@ namespace frm
     }
 
 
-    Reference< XDispatch > SAL_CALL ORichTextPeer::queryDispatch( const ::com::sun::star::util::URL& _rURL, const OUString& /*_rTargetFrameName*/, sal_Int32 /*_nSearchFlags*/ ) throw (RuntimeException, std::exception)
+    Reference< XDispatch > SAL_CALL ORichTextPeer::queryDispatch( const css::util::URL& _rURL, const OUString& /*_rTargetFrameName*/, sal_Int32 /*_nSearchFlags*/ ) throw (RuntimeException, std::exception)
     {
         Reference< XDispatch > xReturn;
         if ( !GetWindow() )
@@ -639,7 +639,7 @@ namespace frm
         if ( _rURL.Complete.startsWith( sUnoProtocolPrefix ) )
         {
             OUString sUnoSlotName = _rURL.Complete.copy( sUnoProtocolPrefix.getLength() );
-            SfxSlotId nSlotId = lcl_getSlotFromUnoName( SfxSlotPool::GetSlotPool( NULL ), sUnoSlotName );
+            SfxSlotId nSlotId = lcl_getSlotFromUnoName( SfxSlotPool::GetSlotPool(), sUnoSlotName );
             if ( nSlotId > 0 )
             {
                 // do we already have a dispatcher for this?
@@ -691,9 +691,9 @@ namespace frm
 
 }   // namespace frm
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_form_ORichTextControl_get_implementation(::com::sun::star::uno::XComponentContext*,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_form_ORichTextControl_get_implementation(css::uno::XComponentContext*,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new frm::ORichTextControl());
 }

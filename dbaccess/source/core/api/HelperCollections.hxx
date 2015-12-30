@@ -46,11 +46,11 @@ namespace dbaccess
     {
         ::rtl::Reference< ::connectivity::OSQLColumns>  m_aColumns;
     protected:
-        virtual connectivity::sdbcx::ObjectType createObject(const OUString& _rName) SAL_OVERRIDE;
-        virtual void impl_refresh() throw(RuntimeException) SAL_OVERRIDE {}
-        virtual Reference< XPropertySet > createDescriptor() SAL_OVERRIDE
+        virtual connectivity::sdbcx::ObjectType createObject(const OUString& _rName) override;
+        virtual void impl_refresh() throw(RuntimeException) override {}
+        virtual Reference< XPropertySet > createDescriptor() override
         {
-            return NULL;
+            return nullptr;
         }
     public:
         OPrivateColumns(const ::rtl::Reference< ::connectivity::OSQLColumns>& _rColumns,
@@ -70,7 +70,7 @@ namespace dbaccess
             ::osl::Mutex& _rMutex
         );
 
-        virtual void SAL_CALL disposing() SAL_OVERRIDE;
+        virtual void SAL_CALL disposing() override;
     };
     typedef connectivity::sdbcx::OCollection OPrivateTables_BASE;
 
@@ -79,11 +79,11 @@ namespace dbaccess
     {
         OSQLTables  m_aTables;
     protected:
-        virtual connectivity::sdbcx::ObjectType createObject(const OUString& _rName) SAL_OVERRIDE;
-        virtual void impl_refresh() throw(RuntimeException) SAL_OVERRIDE {}
-        virtual Reference< XPropertySet > createDescriptor() SAL_OVERRIDE
+        virtual connectivity::sdbcx::ObjectType createObject(const OUString& _rName) override;
+        virtual void impl_refresh() throw(RuntimeException) override {}
+        virtual Reference< XPropertySet > createDescriptor() override
         {
-            return NULL;
+            return nullptr;
         }
     public:
         OPrivateTables( const OSQLTables& _rTables,
@@ -95,7 +95,7 @@ namespace dbaccess
                         ,m_aTables(_rTables)
         {
         }
-        virtual void SAL_CALL disposing() SAL_OVERRIDE
+        virtual void SAL_CALL disposing() override
         {
             clear_NoDispose();
                 // we're not owner of the objects we're holding, instead the object we got in our ctor is

@@ -41,9 +41,8 @@ using namespace com::sun::star::linguistic2;
 
 
 EditSpellWrapper::EditSpellWrapper( vcl::Window* _pWin,
-        Reference< XSpellChecker1 >  &xChecker,
         bool bIsStart, bool bIsAllRight, EditView* pView ) :
-    SvxSpellWrapper( _pWin, xChecker, bIsStart, bIsAllRight )
+    SvxSpellWrapper( _pWin, bIsStart, bIsAllRight )
 {
     SAL_WARN_IF( !pView, "editeng", "One view has to be abandoned!" );
     // Keep IgnoreList, delete ReplaceList...
@@ -132,7 +131,7 @@ bool EditSpellWrapper::SpellMore()
     if ( pSpellInfo->bMultipleDoc )
     {
         bMore = pEE->SpellNextDocument();
-        SetCurTextObj( NULL );
+        SetCurTextObj( nullptr );
         if ( bMore )
         {
             // The text has been entered into the engine, when backwords then
@@ -681,7 +680,7 @@ OUString const* EdtAutoCorrDoc::GetPrevPara(bool const)
             bBullet = true;
     }
     if ( bBullet )
-        return 0;
+        return nullptr;
 
     for ( sal_Int32 n = nPos; n; )
     {
@@ -690,7 +689,7 @@ OUString const* EdtAutoCorrDoc::GetPrevPara(bool const)
         if ( pNode->Len() )
             return & pNode->GetString();
     }
-    return 0;
+    return nullptr;
 
 }
 

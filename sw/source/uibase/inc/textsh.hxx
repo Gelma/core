@@ -25,12 +25,11 @@
 
 class AbstractSvxPostItDialog;
 class SwFieldMgr;
-class SwFlyFrmAttrMgr;
+class SwFlyFrameAttrMgr;
 class SvxHyperlinkItem;
 
 class SW_DLLPUBLIC SwTextShell: public SwBaseShell
 {
-    SwFieldMgr*   pPostItFieldMgr;
     RotateTransliteration m_aRotateCase;
 
     void InsertSymbol( SfxRequest& );
@@ -39,7 +38,6 @@ class SW_DLLPUBLIC SwTextShell: public SwBaseShell
 
 public:
     SFX_DECL_INTERFACE(SW_TEXTSHELL)
-    TYPEINFO_OVERRIDE();
 
 private:
     /// SfxInterface initializer.
@@ -82,7 +80,7 @@ public:
              SwTextShell(SwView &rView);
     virtual ~SwTextShell();
     /// Create item set for the insert frame dialog.
-    SfxItemSet CreateInsertFrameItemSet(SwFlyFrmAttrMgr& rMgr);
+    SfxItemSet CreateInsertFrameItemSet(SwFlyFrameAttrMgr& rMgr);
 };
 
 void sw_CharDialog( SwWrtShell &rWrtSh, bool bUseDialog, sal_uInt16 nSlot,const SfxItemSet *pArgs, SfxRequest *pReq );

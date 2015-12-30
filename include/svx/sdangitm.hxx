@@ -28,19 +28,18 @@
 
 class SVX_DLLPUBLIC SdrAngleItem: public SfxInt32Item {
 public:
-    TYPEINFO_OVERRIDE();
     SdrAngleItem(): SfxInt32Item() {}
     SdrAngleItem(sal_uInt16 nId, sal_Int32 nAngle=0): SfxInt32Item(nId,nAngle) {}
     SdrAngleItem(sal_uInt16 nId, SvStream& rIn):  SfxInt32Item(nId,rIn) {}
-    virtual SfxPoolItem* Clone(SfxItemPool* pPool=NULL) const SAL_OVERRIDE;
-    virtual SfxPoolItem* Create(SvStream& rIn, sal_uInt16 nVer) const SAL_OVERRIDE;
+    virtual SfxPoolItem* Clone(SfxItemPool* pPool=nullptr) const override;
+    virtual SfxPoolItem* Create(SvStream& rIn, sal_uInt16 nVer) const override;
 
     virtual bool GetPresentation(SfxItemPresentation ePres,
                                                 SfxMapUnit eCoreMetric,
                                                 SfxMapUnit ePresMetric,
                                                 OUString& rText,
                                                 const IntlWrapper *
-                                                 pIntlWrapper = 0) const SAL_OVERRIDE;
+                                                 pIntlWrapper = nullptr) const override;
 };
 
 

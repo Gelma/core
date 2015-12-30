@@ -70,8 +70,8 @@ void throwNoMacOSException()
 
 MacabImplModule::MacabImplModule()
     :m_bAttemptedLoadModule(false)
-    ,m_hConnectorModule(NULL)
-    ,m_pConnectionFactoryFunc(NULL)
+    ,m_hConnectorModule(nullptr)
+    ,m_pConnectionFactoryFunc(nullptr)
 {
 }
 
@@ -87,7 +87,7 @@ namespace
     template< typename FUNCTION >
     void lcl_getFunctionFromModuleOrUnload( oslModule& _rModule, const sal_Char* _pAsciiSymbolName, FUNCTION& _rFunction )
     {
-        _rFunction = NULL;
+        _rFunction = nullptr;
         if ( _rModule )
         {
 
@@ -98,7 +98,7 @@ namespace
             {   // did not find the symbol
                 OSL_FAIL( OString( OString( "lcl_getFunctionFromModuleOrUnload: could not find the symbol " ) + OString( _pAsciiSymbolName ) ).getStr() );
                 osl_unloadModule( _rModule );
-                _rModule = NULL;
+                _rModule = nullptr;
             }
         }
     }
@@ -110,7 +110,7 @@ extern "C" { static void SAL_CALL thisModule() {} }
 bool MacabImplModule::impl_loadModule()
 {
     if ( m_bAttemptedLoadModule )
-        return ( m_hConnectorModule != NULL );
+        return ( m_hConnectorModule != nullptr );
     m_bAttemptedLoadModule = true;
 
     OSL_ENSURE( !m_hConnectorModule && !m_pConnectionFactoryFunc,
@@ -134,12 +134,12 @@ bool MacabImplModule::impl_loadModule()
 
 void MacabImplModule::impl_unloadModule()
 {
-    OSL_PRECOND( m_hConnectorModule != NULL, "MacabImplModule::impl_unloadModule: no module!" );
+    OSL_PRECOND( m_hConnectorModule != nullptr, "MacabImplModule::impl_unloadModule: no module!" );
 
     osl_unloadModule( m_hConnectorModule );
-    m_hConnectorModule = NULL;
+    m_hConnectorModule = nullptr;
 
-    m_pConnectionFactoryFunc = NULL;
+    m_pConnectionFactoryFunc = nullptr;
 
     m_bAttemptedLoadModule = false;
 }
@@ -224,8 +224,7 @@ Sequence< OUString > MacabDriver::getSupportedServiceNames_Static(  ) throw (Run
 {
     // which service is supported
     // for more information @see com.sun.star.sdbc.Driver
-    Sequence< OUString > aSNS( 1 );
-    aSNS[0] = "com.sun.star.sdbc.Driver";
+    Sequence<OUString> aSNS { "com.sun.star.sdbc.Driver" };
 
     return aSNS;
 }

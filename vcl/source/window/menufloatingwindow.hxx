@@ -63,8 +63,8 @@ private:
     DECL_LINK_TYPED( AutoScroll, Timer *, void );
     DECL_LINK_TYPED( ShowHideListener, VclWindowEvent&, void );
 
-    virtual void StateChanged( StateChangedType nType ) SAL_OVERRIDE;
-    virtual void DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual void StateChanged( StateChangedType nType ) override;
+    virtual void DataChanged( const DataChangedEvent& rDCEvt ) override;
 
     void InitMenuClipRegion(vcl::RenderContext& rRenderContext);
 
@@ -79,26 +79,26 @@ protected:
     long ImplGetStartY() const;
     Rectangle ImplGetItemRect( sal_uInt16 nPos );
     void RenderHighlightItem( vcl::RenderContext& rRenderContext, sal_uInt16 nPos, bool bHighlight );
-    long GetInitialItemY( long *pOptStartY = NULL ) const;
+    long GetInitialItemY( long *pOptStartY = nullptr ) const;
     void InvalidateItem( sal_uInt16 nPos );
 
 public:
     MenuFloatingWindow(Menu* pMenu, vcl::Window* pParent, WinBits nStyle);
     virtual ~MenuFloatingWindow();
 
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
     void doShutdown();
 
-    virtual void MouseMove(const MouseEvent& rMEvt) SAL_OVERRIDE;
-    virtual void MouseButtonDown(const MouseEvent& rMEvt) SAL_OVERRIDE;
-    virtual void MouseButtonUp(const MouseEvent& rMEvt) SAL_OVERRIDE;
-    virtual void KeyInput(const KeyEvent& rKEvent) SAL_OVERRIDE;
-    virtual void Command(const CommandEvent& rCEvt) SAL_OVERRIDE;
-    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) SAL_OVERRIDE;
-    virtual void RequestHelp( const HelpEvent& rHEvt ) SAL_OVERRIDE;
-    virtual void Resize() SAL_OVERRIDE;
+    virtual void MouseMove(const MouseEvent& rMEvt) override;
+    virtual void MouseButtonDown(const MouseEvent& rMEvt) override;
+    virtual void MouseButtonUp(const MouseEvent& rMEvt) override;
+    virtual void KeyInput(const KeyEvent& rKEvent) override;
+    virtual void Command(const CommandEvent& rCEvt) override;
+    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) override;
+    virtual void RequestHelp( const HelpEvent& rHEvt ) override;
+    virtual void Resize() override;
 
-    virtual void ApplySettings(vcl::RenderContext& rRenderContext) SAL_OVERRIDE;
+    virtual void ApplySettings(vcl::RenderContext& rRenderContext) override;
 
     void SetFocusId( sal_uLong nId ) { nSaveFocusId = nId; }
     sal_uLong GetFocusId() const      { return nSaveFocusId; }
@@ -113,14 +113,14 @@ public:
     void EndExecute( sal_uInt16 nSelectId );
 
     PopupMenu* GetActivePopup() const  { return pActivePopup; }
-    void KillActivePopup( PopupMenu* pThisOnly = NULL );
+    void KillActivePopup( PopupMenu* pThisOnly = nullptr );
 
     void ChangeHighlightItem(sal_uInt16 n, bool bStartPopupTimer);
     sal_uInt16 GetHighlightedItem() const { return nHighlightedItem; }
 
     void SetPosInParent( sal_uInt16 nPos ) { nPosInParent = nPos; }
 
-    virtual css::uno::Reference<css::accessibility::XAccessible> CreateAccessible() SAL_OVERRIDE;
+    virtual css::uno::Reference<css::accessibility::XAccessible> CreateAccessible() override;
 };
 
 #endif // INCLUDED_VCL_SOURCE_WINDOW_MENUFLOATINGWINDOW_HXX

@@ -79,22 +79,22 @@ struct SystemEnvData
 #if defined( WNT )
         , hWnd(0)
 #elif defined( MACOSX )
-        , mpNSView(NULL)
+        , mpNSView(nullptr)
         , mbOpenGL(false)
 #elif defined( ANDROID )
 #elif defined( IOS )
 #elif defined( UNX )
-        , pDisplay(NULL)
+        , pDisplay(nullptr)
         , aWindow(0)
-        , pSalFrame(NULL)
-        , pWidget(NULL)
-        , pVisual(NULL)
+        , pSalFrame(nullptr)
+        , pWidget(nullptr)
+        , pVisual(nullptr)
         , nScreen(0)
         , nDepth(0)
         , aColormap(0)
-        , pAppContext(NULL)
+        , pAppContext(nullptr)
         , aShellWindow(0)
-        , pShellWidget(NULL)
+        , pShellWidget(nullptr)
 #endif
     {
     }
@@ -120,17 +120,10 @@ struct SystemParentData
 
 struct SystemMenuData
 {
-    unsigned long   nSize;          // size in bytes of this structure
 #if defined( WNT )
     HMENU           hMenu;          // the menu handle of the menu bar
-#elif defined( MACOSX )
+#else
     // Nothing
-#elif defined( ANDROID )
-    // Nothing
-#elif defined( IOS )
-    // Nothing
-#elif defined( UNX )
-    long            aMenu;          // ???
 #endif
 };
 
@@ -161,19 +154,19 @@ struct SystemGraphicsData
         , hDC( 0 )
         , hWnd( 0 )
 #elif defined( MACOSX )
-        , rCGContext( NULL )
+        , rCGContext( nullptr )
 #elif defined( ANDROID )
     // Nothing
 #elif defined( IOS )
         , rCGContext( NULL )
 #elif defined( UNX )
-        , pDisplay( NULL )
+        , pDisplay( nullptr )
         , hDrawable( 0 )
-        , pVisual( NULL )
+        , pVisual( nullptr )
         , nScreen( 0 )
         , nDepth( 0 )
         , aColormap( 0 )
-        , pXRenderFormat( NULL )
+        , pXRenderFormat( nullptr )
 #endif
     { }
 };
@@ -219,7 +212,7 @@ struct SystemFontData
     SystemFontData()
         : nSize( sizeof( SystemFontData ) )
 #if defined( UNX )
-        , nFontId( NULL )
+        , nFontId( nullptr )
         , nFontFlags( 0 )
 #endif
         , bFakeBold( false )

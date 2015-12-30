@@ -70,12 +70,12 @@ public:
 
     SfxFrameWindow_Impl( SfxFrame* pF, vcl::Window& i_rContainerWindow );
 
-    virtual void        DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
-    virtual void        StateChanged( StateChangedType nStateChange ) SAL_OVERRIDE;
-    virtual bool        PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
-    virtual bool        Notify( NotifyEvent& rEvt ) SAL_OVERRIDE;
-    virtual void        Resize() SAL_OVERRIDE;
-    virtual void        GetFocus() SAL_OVERRIDE;
+    virtual void        DataChanged( const DataChangedEvent& rDCEvt ) override;
+    virtual void        StateChanged( StateChangedType nStateChange ) override;
+    virtual bool        PreNotify( NotifyEvent& rNEvt ) override;
+    virtual bool        Notify( NotifyEvent& rEvt ) override;
+    virtual void        Resize() override;
+    virtual void        GetFocus() override;
     void                DoResize();
 };
 
@@ -140,7 +140,7 @@ bool SfxFrameWindow_Impl::PreNotify( NotifyEvent& rNEvt )
     if ( nType == MouseNotifyEvent::KEYINPUT || nType == MouseNotifyEvent::KEYUP )
     {
         SfxViewFrame* pView = pFrame->GetCurrentViewFrame();
-        SfxViewShell* pShell = pView ? pView->GetViewShell() : NULL;
+        SfxViewShell* pShell = pView ? pView->GetViewShell() : nullptr;
         if ( pShell && pShell->HasKeyListeners_Impl() && pShell->HandleNotifyEvent_Impl( rNEvt ) )
             return true;
     }
@@ -148,7 +148,7 @@ bool SfxFrameWindow_Impl::PreNotify( NotifyEvent& rNEvt )
     {
         vcl::Window* pWindow = rNEvt.GetWindow();
         SfxViewFrame* pView = pFrame->GetCurrentViewFrame();
-        SfxViewShell* pShell = pView ? pView->GetViewShell() : NULL;
+        SfxViewShell* pShell = pView ? pView->GetViewShell() : nullptr;
         if ( pShell )
             if ( pWindow == pShell->GetWindow() || pShell->GetWindow()->IsChild( pWindow ) )
                 if ( pShell->HasMouseClickListeners_Impl() && pShell->HandleNotifyEvent_Impl( rNEvt ) )
@@ -223,7 +223,7 @@ Reference < XFrame > SfxFrame::CreateBlankFrame()
 
 SfxFrame* SfxFrame::Create( SfxObjectShell& rDoc, vcl::Window& rWindow, sal_uInt16 nViewId, bool bHidden )
 {
-    SfxFrame* pFrame = NULL;
+    SfxFrame* pFrame = nullptr;
     try
     {
         // create and initialize new top level frame for this window
@@ -255,7 +255,7 @@ SfxFrame* SfxFrame::Create( SfxObjectShell& rDoc, vcl::Window& rWindow, sal_uInt
         Reference< XComponentLoader > xLoader( xFrame, UNO_QUERY_THROW );
         xLoader->loadComponentFromURL(
             sLoaderURL,
-            OUString( "_self" ),
+            "_self",
             0,
             aLoadArgs
         );
@@ -293,10 +293,10 @@ SfxFrame* SfxFrame::Create( const Reference < XFrame >& i_rFrame )
 
 SfxFrame::SfxFrame( vcl::Window& i_rContainerWindow, bool i_bHidden )
     :SvCompatWeakBase<SfxFrame>( this )
-    ,pParentFrame( NULL )
-    ,pChildArr( NULL )
-    ,pImp( NULL )
-    ,pWindow( NULL )
+    ,pParentFrame( nullptr )
+    ,pChildArr( nullptr )
+    ,pImp( nullptr )
+    ,pWindow( nullptr )
 {
     Construct_Impl();
 
@@ -318,8 +318,8 @@ void SfxFrame::SetPresentationMode( bool bSet )
     if ( GetCurrentViewFrame() )
         GetCurrentViewFrame()->GetWindow().SetBorderStyle( bSet ? WindowBorderStyle::NOBORDER : WindowBorderStyle::NORMAL );
 
-    Reference< com::sun::star::beans::XPropertySet > xPropSet( GetFrameInterface(), UNO_QUERY );
-    Reference< ::com::sun::star::frame::XLayoutManager > xLayoutManager;
+    Reference< css::beans::XPropertySet > xPropSet( GetFrameInterface(), UNO_QUERY );
+    Reference< css::frame::XLayoutManager > xLayoutManager;
 
     if ( xPropSet.is() )
     {
@@ -347,7 +347,7 @@ SystemWindow* SfxFrame::GetTopWindow_Impl() const
     if ( pImp->pExternalContainerWindow->IsSystemWindow() )
         return static_cast<SystemWindow*>( pImp->pExternalContainerWindow.get() );
     else
-        return NULL;
+        return nullptr;
 }
 
 
@@ -366,8 +366,8 @@ void SfxFrame::SetMenuBarOn_Impl( bool bOn )
 {
     pImp->bMenuBarOn = bOn;
 
-    Reference< com::sun::star::beans::XPropertySet > xPropSet( GetFrameInterface(), UNO_QUERY );
-    Reference< ::com::sun::star::frame::XLayoutManager > xLayoutManager;
+    Reference< css::beans::XPropertySet > xPropSet( GetFrameInterface(), UNO_QUERY );
+    Reference< css::frame::XLayoutManager > xLayoutManager;
 
     if ( xPropSet.is() )
     {

@@ -28,7 +28,7 @@ using namespace ::com::sun::star::lang;
 namespace com { namespace sun { namespace star { namespace i18n {
 
 IndexEntrySupplier_Unicode::IndexEntrySupplier_Unicode(
-    const com::sun::star::uno::Reference < com::sun::star::uno::XComponentContext >& rxContext ) :
+    const css::uno::Reference < css::uno::XComponentContext >& rxContext ) :
     IndexEntrySupplier_Common(rxContext)
 {
     implementationName = "com.sun.star.i18n.IndexEntrySupplier_Unicode";
@@ -80,7 +80,7 @@ OUString SAL_CALL IndexEntrySupplier_Unicode::getIndexCharacter( const OUString&
 IndexTable::IndexTable()
     : start(0)
     , end(0)
-    , table(0)
+    , table(nullptr)
 {
 }
 
@@ -107,7 +107,7 @@ void IndexTable::init(sal_Unicode start_, sal_Unicode end_, IndexKey *keys, sal_
     }
 }
 
-Index::Index(const com::sun::star::uno::Reference < com::sun::star::uno::XComponentContext >& rxContext)
+Index::Index(const css::uno::Reference < css::uno::XComponentContext >& rxContext)
     : table_count(0)
     , key_count(0)
     , mkey_count(0)
@@ -218,7 +218,7 @@ void Index::makeIndexKeys(const lang::Locale &rLocale, const OUString &algorithm
             case sal_Unicode('('):
                 if (key_count > 0) {
                     sal_Int16 end = i+1;
-                    for (end=i+1; end < len && keyStr[end] != close; end++) ;
+                    for (; end < len && keyStr[end] != close; end++) ;
 
                     if (end >= len) // no found
                         throw RuntimeException();

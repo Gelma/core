@@ -37,12 +37,13 @@
 #include "PropertySetMerger.hxx"
 #include "animationimport.hxx"
 #include <tools/debug.hxx>
+#include <osl/diagnose.hxx>
 
 using namespace ::com::sun::star;
 
 SdXMLDrawPageContext::SdXMLDrawPageContext( SdXMLImport& rImport,
     sal_uInt16 nPrfx, const OUString& rLocalName,
-    const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList,
+    const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList,
     uno::Reference< drawing::XShapes >& rShapes)
 :   SdXMLGenericPageContext( rImport, nPrfx, rLocalName, xAttrList, rShapes )
 ,   mbHadSMILNodes( false )
@@ -64,7 +65,7 @@ SdXMLDrawPageContext::SdXMLDrawPageContext( SdXMLImport& rImport,
         {
             case XML_TOK_DRAWPAGE_NAME:
             {
-                maName = sValue;
+                maContextName = sValue;
                 break;
             }
             case XML_TOK_DRAWPAGE_STYLE_NAME:
@@ -127,13 +128,13 @@ SdXMLDrawPageContext::SdXMLDrawPageContext( SdXMLImport& rImport,
     uno::Reference< drawing::XDrawPage > xShapeDrawPage(rShapes, uno::UNO_QUERY);
 
     // set PageName?
-    if(!maName.isEmpty())
+    if(!maContextName.isEmpty())
     {
         if(xShapeDrawPage.is())
         {
             uno::Reference < container::XNamed > xNamed(xShapeDrawPage, uno::UNO_QUERY);
             if(xNamed.is())
-                xNamed->setName(maName);
+                xNamed->setName(maContextName);
         }
     }
 
@@ -212,9 +213,9 @@ SdXMLDrawPageContext::~SdXMLDrawPageContext()
 
 SvXMLImportContext *SdXMLDrawPageContext::CreateChildContext( sal_uInt16 nPrefix,
     const OUString& rLocalName,
-    const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList )
+    const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0L;
+    SvXMLImportContext *pContext = nullptr;
     const SvXMLTokenMap& rTokenMap = GetSdImport().GetDrawPageElemTokenMap();
 
     // some special objects inside draw:page context
@@ -277,6 +278,29 @@ void SdXMLDrawPageContext::EndElement()
         if(xNodeSupplier.is())
             xmloff::AnimationNodeContext::postProcessRootNode( GetSdImport(), xNodeSupplier->getAnimationNode(), xPageProps );
     }
+
+    // tdf#93994 call a custom slot to be able to reset the UNO API
+    // implementations held on the SdrObjects of type
+    // SdrObjCustomShape - those tend to linger until the entire file
+    // is loaded. For large files with a lot of these 32bit systems
+    // may crash due to being out of ressources after ca. 4200
+    // Outliners and VirtualDevices used there as RefDevice
+    try
+    {
+        uno::Reference< beans::XPropertySet > xPropSet(GetLocalShapesContext(), uno::UNO_QUERY);
+
+        if(xPropSet.is())
+        {
+            const OUString sFlushCustomShapeUnoApiObjects("FlushCustomShapeUnoApiObjects");
+            uno::Any aAny;
+            aAny <<= sal_True;
+            xPropSet->setPropertyValue(sFlushCustomShapeUnoApiObjects, aAny);
+        }
+    }
+    catch(const uno::Exception&)
+    {
+        OSL_FAIL("could not flush after load");
+    }
 }
 
 SdXMLBodyContext::SdXMLBodyContext( SdXMLImport& rImport,
@@ -294,7 +318,7 @@ SvXMLImportContext *SdXMLBodyContext::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0L;
+    SvXMLImportContext *pContext = nullptr;
     const SvXMLTokenMap& rTokenMap = GetSdImport().GetBodyElemTokenMap();
 
     switch(rTokenMap.Get(nPrefix, rLocalName))

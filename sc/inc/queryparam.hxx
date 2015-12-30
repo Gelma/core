@@ -23,7 +23,8 @@
 #include "global.hxx"
 #include "types.hxx"
 
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <memory>
+#include <vector>
 
 class SvNumberFormatter;
 
@@ -61,7 +62,7 @@ struct ScQueryParamBase
                             SvNumberFormatter* pFormatter );
 
 protected:
-    typedef boost::ptr_vector<ScQueryEntry> EntriesType;
+    typedef std::vector<std::unique_ptr<ScQueryEntry>> EntriesType;
 
 public:
     typedef EntriesType::const_iterator const_iterator;
@@ -73,7 +74,7 @@ protected:
     ScQueryParamBase();
     ScQueryParamBase(const ScQueryParamBase& r);
 
-    EntriesType maEntries;
+    EntriesType m_Entries;
 };
 
 struct ScQueryParamTable
@@ -133,7 +134,7 @@ struct ScDBQueryParamInternal : public ScDBQueryParamBase, public ScQueryParamTa
     ScDBQueryParamInternal();
     virtual ~ScDBQueryParamInternal();
 
-    virtual bool IsValidFieldIndex() const SAL_OVERRIDE;
+    virtual bool IsValidFieldIndex() const override;
 };
 
 struct ScDBQueryParamMatrix : public ScDBQueryParamBase
@@ -143,7 +144,7 @@ struct ScDBQueryParamMatrix : public ScDBQueryParamBase
     ScDBQueryParamMatrix();
     virtual ~ScDBQueryParamMatrix();
 
-    virtual bool IsValidFieldIndex() const SAL_OVERRIDE;
+    virtual bool IsValidFieldIndex() const override;
 };
 
 #endif

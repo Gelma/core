@@ -96,7 +96,7 @@ void SdTpOptionsSnap::Reset( const SfxItemSet* rAttrs )
     pMtrFldAngle->SetValue( aOptsItem.GetOptionsSnap().GetAngle() );
     pMtrFldBezAngle->SetValue( aOptsItem.GetOptionsSnap().GetEliminatePolyPointLimitAngle() );
 
-    pCbxRotate->GetClickHdl().Call(0);
+    pCbxRotate->GetClickHdl().Call(nullptr);
 }
 
 VclPtr<SfxTabPage> SdTpOptionsSnap::Create( vcl::Window* pWindow,
@@ -327,7 +327,7 @@ void SdTpOptionsMisc::ActivatePage( const SfxItemSet& rSet )
     m_pLbMetric->SaveValue();
     // change metric if necessary (since TabPage is in the Dialog where
     // the metric is set)
-    const SfxPoolItem* pAttr = NULL;
+    const SfxPoolItem* pAttr = nullptr;
     if( SfxItemState::SET == rSet.GetItemState( SID_ATTR_METRIC , false,
                                     &pAttr ))
     {
@@ -412,8 +412,8 @@ bool SdTpOptionsMisc::FillItemSet( SfxItemSet* rAttrs )
         aOptsItem.GetOptionsMisc().SetSummationOfParagraphs( m_pCbxCompatibility->IsChecked() );
         aOptsItem.GetOptionsMisc().SetPrinterIndependentLayout (
             m_pCbxUsePrinterMetrics->IsChecked()
-            ? ::com::sun::star::document::PrinterIndependentLayout::DISABLED
-            : ::com::sun::star::document::PrinterIndependentLayout::ENABLED);
+            ? css::document::PrinterIndependentLayout::DISABLED
+            : css::document::PrinterIndependentLayout::ENABLED);
         rAttrs->Put( aOptsItem );
 
         bModified = true;
@@ -535,7 +535,7 @@ VclPtr<SfxTabPage> SdTpOptionsMisc::Create( vcl::Window* pWindow,
     return VclPtr<SdTpOptionsMisc>::Create( pWindow, *rAttrs );
 }
 
-IMPL_LINK_NOARG(SdTpOptionsMisc, SelectMetricHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SdTpOptionsMisc, SelectMetricHdl_Impl, ListBox&, void)
 {
     sal_Int32 nPos = m_pLbMetric->GetSelectEntryPos();
 
@@ -547,7 +547,6 @@ IMPL_LINK_NOARG(SdTpOptionsMisc, SelectMetricHdl_Impl)
         SetFieldUnit( *m_pMtrFldTabstop, eUnit );
         m_pMtrFldTabstop->SetValue( m_pMtrFldTabstop->Normalize( nVal ), FUNIT_TWIP );
     }
-    return 0;
 }
 
 void SdTpOptionsMisc::SetImpressMode()
@@ -663,7 +662,7 @@ void SdTpOptionsMisc::UpdateCompatibilityControls()
 
 void SdTpOptionsMisc::PageCreated(const SfxAllItemSet& aSet)
 {
-    SFX_ITEMSET_ARG (&aSet,pFlagItem,SfxUInt32Item,SID_SDMODE_FLAG,false);
+    const SfxUInt32Item* pFlagItem = aSet.GetItem<SfxUInt32Item>(SID_SDMODE_FLAG, false);
     if (pFlagItem)
     {
         sal_uInt32 nFlags=pFlagItem->GetValue();

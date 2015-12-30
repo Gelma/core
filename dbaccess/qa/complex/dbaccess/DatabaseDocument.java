@@ -538,7 +538,7 @@ public class DatabaseDocument extends TestCase implements com.sun.star.document.
     }
 
 
-    /*  tests various aspects of database document "revenants"
+    /** Tests various aspects of database document "revenants"
      *
      *  Well, I do not really have a good term for this... The point is, database documents are in real
      *  only *one* aspect of a more complex thing. The second aspect is a data source. Both, in some sense,
@@ -573,7 +573,7 @@ public class DatabaseDocument extends TestCase implements com.sun.star.document.
         // obtain the DataSource associated with the document. Keeping this alive
         // ensures that the "impl data" of the document is kept alive, too, so when closing
         // and re-opening it, this "impl data" must be re-used.
-        XDocumentDataSource dataSource = UnoRuntime.queryInterface(XDocumentDataSource.class, (UnoRuntime.queryInterface(XOfficeDatabaseDocument.class, databaseDoc)).getDataSource());
+        XDocumentDataSource dataSource = UnoRuntime.queryInterface(XDocumentDataSource.class, UnoRuntime.queryInterface(XOfficeDatabaseDocument.class, databaseDoc).getDataSource());
 
         // close and reload the doc
         impl_closeDocument(databaseDoc);

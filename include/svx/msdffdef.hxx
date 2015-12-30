@@ -20,9 +20,9 @@
 #ifndef INCLUDED_SVX_MSDFFDEF_HXX
 #define INCLUDED_SVX_MSDFFDEF_HXX
 
+#include <limits.h>
 #include <sal/types.h>
 #include <svx/svxdllapi.h>
-#include <tools/stream.hxx>
 
 #define DFF_COMMON_RECORD_HEADER_SIZE           8
 
@@ -673,27 +673,6 @@ enum MSO_FillType {
    mso_fillBackground         // Use the background fill color/pattern
 };
 
-// MSO_SHADETYPE - how to interpret the colors in a shaded fill.
-enum MSO_ShadeType {
-   mso_shadeNone  = 0,        // Interpolate without correction between RGBs
-   mso_shadeGamma = 1,        // Apply gamma correction to colors
-   mso_shadeSigma = 2,        // Apply a sigma transfer function to position
-   mso_shadeBand  = 4,        // Add a flat band at the start of the shade
-   mso_shadeOneColor = 8,     // This is a one color shade
-
-   /* A parameter for the band or sigma function can be stored in the top
-      16 bits of the value - this is a proportion of *each* band of the
-      shade to make flat (or the approximate equal value for a sigma
-      function).  NOTE: the parameter is not used for the sigma function,
-      instead a built in value is used.  This value should not be changed
-      from the default! */
-   mso_shadeParameterShift = 16,
-   mso_shadeParameterMask  = 0xffff0000,
-
-   mso_shadeDefault = (mso_shadeGamma|mso_shadeSigma|
-                     (16384<<mso_shadeParameterShift))
-};
-
 // MSOLINESTYLE - compound line style
 enum MSO_LineStyle {
    mso_lineSimple,          // Single line (of width lineWidth)
@@ -767,20 +746,7 @@ enum MSO_LineCap {
 // Various enums from the OfficeDraw documentation Appendix D - End
 
 // BStore-Container
-// FBSE - File Blip Store Entry
-struct MSOF_BSE {
-   sal_uInt8      btWin32;    // Required type on Win32
-   sal_uInt8      btMacOS;    // Required type on Mac
-   sal_uInt8      rgbUid[16]; // Identifier of blip
-   sal_uInt16      tag;       // currently unused
-   sal_uIntPtr     size;      // Blip size in stream
-   sal_uIntPtr     cRef;      // Reference count on the blip
-   sal_uIntPtr /*MSOFO*/ foDelay;    // File offset in the delay stream
-   sal_uInt8      usage;      // How this blip is used (MSOBLIPUSAGE)
-   sal_uInt8      cbName;     // length of the blip name
-   sal_uInt8      unused2;    // for the future
-   sal_uInt8      unused3;    // for the future
-};
+
 
 enum MSO_BLIPUSAGE {
    mso_blipUsageDefault,  // All non-texture fill blips get this.

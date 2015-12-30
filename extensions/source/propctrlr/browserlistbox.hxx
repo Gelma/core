@@ -56,10 +56,10 @@ namespace pcr
     {
         OUString                         aName;
         BrowserLinePointer                      pLine;
-        ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyHandler >
+        css::uno::Reference< css::inspection::XPropertyHandler >
                                                 xHandler;
 
-        ListBoxLine( const OUString& rName, BrowserLinePointer _pLine, const ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyHandler >& _rxHandler )
+        ListBoxLine( const OUString& rName, BrowserLinePointer _pLine, const css::uno::Reference< css::inspection::XPropertyHandler >& _rxHandler )
             : aName( rName ),
               pLine( _pLine ),
               xHandler( _rxHandler )
@@ -69,22 +69,8 @@ namespace pcr
     typedef ::std::vector< ListBoxLine > ListBoxLines;
 
 
-    /** non-UNO version of XPropertyControlContext
-    */
-    class SAL_NO_VTABLE IControlContext
-    {
-    public:
-        virtual void SAL_CALL focusGained( const ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControl >& Control ) throw (::com::sun::star::uno::RuntimeException) = 0;
-        virtual void SAL_CALL valueChanged( const ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControl >& Control ) throw (::com::sun::star::uno::RuntimeException) = 0;
-        virtual void SAL_CALL activateNextControl( const ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControl >& CurrentControl ) throw (::com::sun::star::uno::RuntimeException) = 0;
-
-    protected:
-        ~IControlContext() {}
-    };
-
     class OBrowserListBox   :public Control
                             ,public IButtonClickListener
-                            ,public IControlContext
                             ,public PcrClient
     {
     protected:
@@ -96,7 +82,7 @@ namespace pcr
         IPropertyControlObserver*   m_pControlObserver;
         long                        m_nYOffset;
         long                        m_nCurrentPreferredHelpHeight;
-        ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControl >
+        css::uno::Reference< css::inspection::XPropertyControl >
                                     m_xActiveControl;
         sal_uInt16                  m_nTheNameSize;
         long                        m_nRowHeight;
@@ -113,13 +99,13 @@ namespace pcr
         void    UpdateVScroll();
         void    ShowEntry(sal_uInt16 nPos);
         void    MoveThumbTo(sal_Int32 nNewThumbPos);
-        void    Resize() SAL_OVERRIDE;
+        void    Resize() override;
 
     public:
                                     OBrowserListBox( vcl::Window* pParent, WinBits nWinStyle = WB_DIALOGCONTROL );
 
                                     virtual ~OBrowserListBox();
-        virtual void                dispose() SAL_OVERRIDE;
+        virtual void                dispose() override;
 
         void                        UpdateAll();
 
@@ -128,8 +114,8 @@ namespace pcr
         sal_uInt16                  CalcVisibleLines();
         void                        EnableUpdate();
         void                        DisableUpdate();
-        bool                        Notify( NotifyEvent& _rNEvt ) SAL_OVERRIDE;
-        virtual bool                PreNotify( NotifyEvent& _rNEvt ) SAL_OVERRIDE;
+        bool                        Notify( NotifyEvent& _rNEvt ) override;
+        virtual bool                PreNotify( NotifyEvent& _rNEvt ) override;
 
         void                        SetListener( IPropertyLineListener* _pListener );
         void                        SetObserver( IPropertyControlObserver* _pObserver );
@@ -142,12 +128,12 @@ namespace pcr
         void                        Clear();
 
         sal_uInt16                  InsertEntry( const OLineDescriptor&, sal_uInt16 nPos = EDITOR_LIST_APPEND );
-        bool                    RemoveEntry( const OUString& _rName );
+        bool                        RemoveEntry( const OUString& _rName );
         void                        ChangeEntry( const OLineDescriptor&, sal_uInt16 nPos );
 
-        void                        SetPropertyValue( const OUString& rEntryName, const ::com::sun::star::uno::Any& rValue, bool _bUnknownValue );
+        void                        SetPropertyValue( const OUString& rEntryName, const css::uno::Any& rValue, bool _bUnknownValue );
         sal_uInt16                  GetPropertyPos( const OUString& rEntryName ) const;
-        ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControl >
+        css::uno::Reference< css::inspection::XPropertyControl >
                                     GetPropertyControl( const OUString& rEntryName );
         void                        EnablePropertyControls( const OUString& _rEntryName, sal_Int16 _nControls, bool _bEnable );
         void                        EnablePropertyLine( const OUString& _rEntryName, bool _bEnable );
@@ -156,17 +142,16 @@ namespace pcr
         sal_Int32                   GetMinimumHeight();
 
 
-        bool    IsModified( ) const;
-        void        CommitModified( );
+        bool                        IsModified( ) const;
+        void                        CommitModified( );
+
+        void SAL_CALL               focusGained( const css::uno::Reference< css::inspection::XPropertyControl >& Control ) throw (css::uno::RuntimeException);
+        void SAL_CALL               valueChanged( const css::uno::Reference< css::inspection::XPropertyControl >& Control ) throw (css::uno::RuntimeException);
+        void SAL_CALL               activateNextControl( const css::uno::Reference< css::inspection::XPropertyControl >& CurrentControl ) throw (css::uno::RuntimeException);
 
     protected:
-        // IControlContext
-        virtual void SAL_CALL focusGained( const ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControl >& Control ) throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
-        virtual void SAL_CALL valueChanged( const ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControl >& Control ) throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
-        virtual void SAL_CALL activateNextControl( const ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControl >& CurrentControl ) throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
-
         // IButtonClickListener
-        void    buttonClicked( OBrowserLine* _pLine, bool _bPrimary ) SAL_OVERRIDE;
+        void    buttonClicked( OBrowserLine* _pLine, bool _bPrimary ) override;
 
         using Window::SetHelpText;
     private:
@@ -176,7 +161,7 @@ namespace pcr
             @param _rxControl
                 The control to lookup. Must denote a control of one of the lines in ->m_aLines
         */
-        sal_uInt16  impl_getControlPos( const ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControl >& _rxControl ) const;
+        sal_uInt16  impl_getControlPos( const css::uno::Reference< css::inspection::XPropertyControl >& _rxControl ) const;
 
         /** sets the given property value at the given control, after converting it as necessary
             @param _rLine
@@ -185,13 +170,13 @@ namespace pcr
                 the property value to set. If it's not compatible with the control value,
                 it will be converted, using <member>XPropertyHandler::convertToControlValue</member>
         */
-        static void impl_setControlAsPropertyValue( const ListBoxLine& _rLine, const ::com::sun::star::uno::Any& _rPropertyValue );
+        static void impl_setControlAsPropertyValue( const ListBoxLine& _rLine, const css::uno::Any& _rPropertyValue );
 
         /** retrieves the value for the given control, as a property value, after converting it as necessary
             @param _rLine
                 The line whose at which the value is to be set.
         */
-        static ::com::sun::star::uno::Any
+        static css::uno::Any
                     impl_getControlAsPropertyValue( const ListBoxLine& _rLine );
 
         /** retrieves the ->BrowserLinePointer for a given entry name

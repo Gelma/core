@@ -216,7 +216,7 @@ void ConfigurationAccess::LoadConfiguration()
                 OptimizerSettings& rCurrent( maSettings.front() );
                 rCurrent.LoadSettingsFromConfiguration( xSet );
             }
-            xSet = Reference< container::XNameAccess >( GetConfigurationNode( xRoot, "Settings/Templates" ), UNO_QUERY );
+            xSet.set( GetConfigurationNode( xRoot, "Settings/Templates" ), UNO_QUERY );
             if ( xSet.is() )
             {
                 const Sequence< OUString > aElements( xSet->getElementNames() );
@@ -261,7 +261,7 @@ void ConfigurationAccess::SaveConfiguration()
             rCurrent.SaveSettingsToConfiguration( xSet );
 
             // updating template elements
-            xSet = Reference< container::XNameReplace >( GetConfigurationNode( xRoot, "Settings/Templates" ), UNO_QUERY_THROW );
+            xSet.set( GetConfigurationNode( xRoot, "Settings/Templates" ), UNO_QUERY_THROW );
             Reference< container::XNameContainer > xNameContainer( xSet, UNO_QUERY_THROW );
 
             const Sequence< OUString > aElements( xSet->getElementNames() );
@@ -349,7 +349,7 @@ Reference< XInterface > ConfigurationAccess::GetConfigurationNode(
     return xNode;
 }
 
-com::sun::star::uno::Any ConfigurationAccess::GetConfigProperty( const PPPOptimizerTokenEnum ePropertyToken ) const
+css::uno::Any ConfigurationAccess::GetConfigProperty( const PPPOptimizerTokenEnum ePropertyToken ) const
 {
     Any aRetValue;
     const OptimizerSettings& rSettings( maSettings.front() );
@@ -383,7 +383,7 @@ com::sun::star::uno::Any ConfigurationAccess::GetConfigProperty( const PPPOptimi
     return aRetValue;
 }
 
-void ConfigurationAccess::SetConfigProperty( const PPPOptimizerTokenEnum ePropertyToken, const com::sun::star::uno::Any& rValue )
+void ConfigurationAccess::SetConfigProperty( const PPPOptimizerTokenEnum ePropertyToken, const css::uno::Any& rValue )
 {
     OptimizerSettings& rSettings( maSettings.front() );
     try

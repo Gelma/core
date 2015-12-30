@@ -44,21 +44,19 @@ class SW_DLLPUBLIC SwFormatField
     friend void _InitCore();
     SwFormatField( sal_uInt16 nWhich ); // for default-Attibute
 
-    ::com::sun::star::uno::WeakReference<
-        ::com::sun::star::text::XTextField> m_wXTextField;
+    css::uno::WeakReference<css::text::XTextField> m_wXTextField;
 
     SwField* mpField;
     SwTextField* mpTextField; // the TextAttribute
 
     // @@@ copy construction allowed, but copy assignment is not? @@@
-    SwFormatField& operator=(const SwFormatField& rField) SAL_DELETED_FUNCTION;
+    SwFormatField& operator=(const SwFormatField& rField) = delete;
 
 protected:
-    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew) SAL_OVERRIDE;
-    virtual void SwClientNotify( const SwModify& rModify, const SfxHint& rHint ) SAL_OVERRIDE;
+    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew) override;
+    virtual void SwClientNotify( const SwModify& rModify, const SfxHint& rHint ) override;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     /// Single argument constructors shall be explicit.
     explicit SwFormatField( const SwField &rField );
@@ -69,10 +67,10 @@ public:
     virtual ~SwFormatField();
 
     /// "Pure virtual methods" of SfxPoolItem.
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = nullptr ) const override;
 
-    virtual bool GetInfo( SfxPoolItem& rInfo ) const SAL_OVERRIDE;
+    virtual bool GetInfo( SfxPoolItem& rInfo ) const override;
 
     void InvalidateField();
 
@@ -109,12 +107,11 @@ public:
     bool IsFieldInDoc() const;
     bool IsProtect() const;
 
-    SAL_DLLPRIVATE ::com::sun::star::uno::WeakReference<
-        ::com::sun::star::text::XTextField> const& GetXTextField() const
+    SAL_DLLPRIVATE css::uno::WeakReference<css::text::XTextField> const& GetXTextField() const
             { return m_wXTextField; }
-    SAL_DLLPRIVATE void SetXTextField(::com::sun::star::uno::Reference<
-                    ::com::sun::star::text::XTextField> const& xTextField)
+    SAL_DLLPRIVATE void SetXTextField(css::uno::Reference<css::text::XTextField> const& xTextField)
             { m_wXTextField = xTextField; }
+    void dumpAsXml(struct _xmlTextWriter* pWriter) const override;
 };
 
 enum class SwFormatFieldHintWhich
@@ -133,7 +130,7 @@ class SW_DLLPUBLIC SwFormatFieldHint : public SfxHint
     const SwView*     pView;
 
 public:
-    SwFormatFieldHint( const SwFormatField* p, SwFormatFieldHintWhich n, const SwView* pV = 0)
+    SwFormatFieldHint( const SwFormatField* p, SwFormatFieldHintWhich n, const SwView* pV = nullptr)
         : pField(p)
         , nWhich(n)
         , pView(pV)

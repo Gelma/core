@@ -33,7 +33,6 @@
 
 using namespace ::com::sun::star;
 
-TYPEINIT1( XMLGradientStyleContext, SvXMLStyleContext );
 
 XMLGradientStyleContext::XMLGradientStyleContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
                                               const OUString& rLName,
@@ -77,7 +76,6 @@ bool XMLGradientStyleContext::IsTransient() const
     return true;
 }
 
-TYPEINIT1( XMLHatchStyleContext, SvXMLStyleContext );
 
 XMLHatchStyleContext::XMLHatchStyleContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
                                               const OUString& rLName,
@@ -120,7 +118,6 @@ bool XMLHatchStyleContext::IsTransient() const
     return true;
 }
 
-TYPEINIT1( XMLBitmapStyleContext, SvXMLStyleContext );
 
 XMLBitmapStyleContext::XMLBitmapStyleContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
                                               const OUString& rLName,
@@ -136,9 +133,9 @@ XMLBitmapStyleContext::~XMLBitmapStyleContext()
 {
 }
 
-SvXMLImportContext* XMLBitmapStyleContext::CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName, const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList )
+SvXMLImportContext* XMLBitmapStyleContext::CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName, const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
     if( (XML_NAMESPACE_OFFICE == nPrefix) && xmloff::token::IsXMLToken( rLocalName, xmloff::token::XML_BINARY_DATA ) )
     {
         OUString sURL;
@@ -168,7 +165,7 @@ void XMLBitmapStyleContext::EndElement()
     if( sURL.isEmpty() && mxBase64Stream.is() )
     {
         sURL = GetImport().ResolveGraphicObjectURLFromBase64( mxBase64Stream );
-        mxBase64Stream = 0;
+        mxBase64Stream = nullptr;
         maAny <<= sURL;
     }
 
@@ -197,7 +194,6 @@ bool XMLBitmapStyleContext::IsTransient() const
     return true;
 }
 
-TYPEINIT1( XMLTransGradientStyleContext, SvXMLStyleContext );
 
 XMLTransGradientStyleContext::XMLTransGradientStyleContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
                                               const OUString& rLName,
@@ -240,7 +236,6 @@ bool XMLTransGradientStyleContext::IsTransient() const
     return true;
 }
 
-TYPEINIT1( XMLMarkerStyleContext, SvXMLStyleContext );
 
 XMLMarkerStyleContext::XMLMarkerStyleContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
                                               const OUString& rLName,
@@ -283,7 +278,6 @@ bool XMLMarkerStyleContext::IsTransient() const
     return true;
 }
 
-TYPEINIT1( XMLDashStyleContext, SvXMLStyleContext );
 
 XMLDashStyleContext::XMLDashStyleContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
                                           const OUString& rLName,

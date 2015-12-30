@@ -138,7 +138,7 @@ uno::Reference< embed::XExtendedStorageStream > OHierarchyElement_Impl::GetStrea
             if ( !xChildStorage.is() )
                 throw uno::RuntimeException();
 
-            aElement = new OHierarchyElement_Impl( NULL, xChildStorage );
+            aElement = new OHierarchyElement_Impl( nullptr, xChildStorage );
         }
 
         xResult = aElement->GetStreamHierarchically( nStorageMode, aListPath, nStreamMode, aEncryptionData );
@@ -195,7 +195,7 @@ void OHierarchyElement_Impl::RemoveStreamHierarchically( OStringList_Impl& aList
             if ( !xChildStorage.is() )
                 throw uno::RuntimeException();
 
-            aElement = new OHierarchyElement_Impl( NULL, xChildStorage );
+            aElement = new OHierarchyElement_Impl( nullptr, xChildStorage );
         }
 
         aElement->RemoveStreamHierarchically( aListPath );
@@ -253,7 +253,7 @@ void OHierarchyElement_Impl::TestForClosing()
                 m_rParent->RemoveElement( this );
             }
 
-            m_xOwnStorage = uno::Reference< embed::XStorage >();
+            m_xOwnStorage.clear();
         }
     }
 }
@@ -302,13 +302,13 @@ void OHierarchyElement_Impl::RemoveElement( const ::rtl::Reference< OHierarchyEl
 }
 
 // XTransactionListener
-void SAL_CALL OHierarchyElement_Impl::preCommit( const ::com::sun::star::lang::EventObject& /*aEvent*/ )
-    throw (::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL OHierarchyElement_Impl::preCommit( const css::lang::EventObject& /*aEvent*/ )
+    throw (css::uno::Exception, css::uno::RuntimeException, std::exception)
 {
 }
 
-void SAL_CALL OHierarchyElement_Impl::commited( const ::com::sun::star::lang::EventObject& /*aEvent*/ )
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL OHierarchyElement_Impl::commited( const css::lang::EventObject& /*aEvent*/ )
+    throw (css::uno::RuntimeException, std::exception)
 {
     try
     {
@@ -323,13 +323,13 @@ void SAL_CALL OHierarchyElement_Impl::commited( const ::com::sun::star::lang::Ev
     }
 }
 
-void SAL_CALL OHierarchyElement_Impl::preRevert( const ::com::sun::star::lang::EventObject& /*aEvent*/ )
-    throw (::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL OHierarchyElement_Impl::preRevert( const css::lang::EventObject& /*aEvent*/ )
+    throw (css::uno::Exception, css::uno::RuntimeException, std::exception)
 {
 }
 
-void SAL_CALL OHierarchyElement_Impl::reverted( const ::com::sun::star::lang::EventObject& /*aEvent*/ )
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL OHierarchyElement_Impl::reverted( const css::lang::EventObject& /*aEvent*/ )
+    throw (css::uno::RuntimeException, std::exception)
 {
 }
 

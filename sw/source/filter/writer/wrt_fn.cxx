@@ -20,6 +20,9 @@
 #include <svl/itemiter.hxx>
 #include <svl/whiter.hxx>
 
+// tdf#94088 SdrAllFillAttributesHelper needed
+#include <svx/unobrushitemhelper.hxx>
+
 #include "shellio.hxx"
 #include "wrt_fn.hxx"
 #include "node.hxx"
@@ -30,7 +33,7 @@ Writer& Out( const SwAttrFnTab pTab, const SfxPoolItem& rHt, Writer & rWrt )
     sal_uInt16 nId = rHt.Which();
     OSL_ENSURE(  nId < POOLATTR_END && nId >= POOLATTR_BEGIN, "SwAttrFnTab::Out()" );
     FnAttrOut pOut;
-    if( 0 != ( pOut = pTab[ nId - RES_CHRATR_BEGIN] ))
+    if( nullptr != ( pOut = pTab[ nId - RES_CHRATR_BEGIN] ))
         (*pOut)( rWrt, rHt );
     return rWrt;
 
@@ -47,13 +50,18 @@ Writer& Out_SfxItemSet( const SwAttrFnTab pTab, Writer& rWrt,
     {
         if( !bDeep )
             return rWrt;
-        while( 0 != ( pSet = pSet->GetParent() ) && !pSet->Count() )
+        while( nullptr != ( pSet = pSet->GetParent() ) && !pSet->Count() )
             ;
         if( !pSet )
             return rWrt;
     }
-    const SfxPoolItem* pItem(0);
+    const SfxPoolItem* pItem(nullptr);
     FnAttrOut pOut;
+
+    // tdf#94088 check if any FillAttribute is used [XATTR_FILL_FIRST .. XATTR_FILL_LAST]
+    // while processing the items
+    bool bFillItemUsed = false;
+
     if( !bDeep || !pSet->GetParent() )
     {
         OSL_ENSURE( rSet.Count(), "It has been handled already, right?" );
@@ -61,9 +69,18 @@ Writer& Out_SfxItemSet( const SwAttrFnTab pTab, Writer& rWrt,
         pItem = aIter.GetCurItem();
         do {
             // pTab only covers POOLATTR_BEGIN..POOLATTR_END.
-            if( pItem->Which() <= POOLATTR_END && 0 != ( pOut = pTab[ pItem->Which() - RES_CHRATR_BEGIN] ))
+            if( pItem->Which() <= POOLATTR_END )
+            {
+                if( nullptr != ( pOut = pTab[ pItem->Which() - RES_CHRATR_BEGIN]) )
+                {
                     (*pOut)( rWrt, *pItem );
-        } while( !aIter.IsAtEnd() && 0 != ( pItem = aIter.NextItem() ) );
+                }
+            }
+            else if(XATTR_FILLSTYLE == pItem->Which())
+            {
+                bFillItemUsed = true;
+            }
+        } while( !aIter.IsAtEnd() && nullptr != ( pItem = aIter.NextItem() ) );
     }
     else
     {
@@ -76,11 +93,35 @@ Writer& Out_SfxItemSet( const SwAttrFnTab pTab, Writer& rWrt,
                     *pItem != rPool.GetDefaultItem( nWhich )
                     || ( pSet->GetParent() &&
                         *pItem != pSet->GetParent()->Get( nWhich ))
-                )) && 0 != ( pOut = pTab[ nWhich - RES_CHRATR_BEGIN] ))
+                )))
+            {
+                if( nullptr != ( pOut = pTab[ nWhich - RES_CHRATR_BEGIN] ))
+                {
                     (*pOut)( rWrt, *pItem );
+                }
+                else if(XATTR_FILLSTYLE == pItem->Which())
+                {
+                    bFillItemUsed = true;
+                }
+            }
             nWhich = aIter.NextWhich();
         }
     }
+
+    if(bFillItemUsed)
+    {
+        // tdf#94088 if used, construct a SvxBrushItem and export it using the
+        // existing mechanisms.
+        // This is the right place in the future if the adapted fill attributes
+        // may be handled more directly in HTML export to handle them.
+        const SvxBrushItem aSvxBrushItem = getSvxBrushItemFromSourceSet(*pSet, RES_BACKGROUND, bDeep);
+
+        if( nullptr != ( pOut = pTab[RES_BACKGROUND - RES_CHRATR_BEGIN] ))
+        {
+            (*pOut)( rWrt, aSvxBrushItem );
+        }
+    }
+
     return rWrt;
 }
 
@@ -108,7 +149,7 @@ Writer& Out( const SwNodeFnTab pTab, SwNode& rNode, Writer & rWrt )
             break;
     }
     FnNodeOut pOut;
-    if( 0 != ( pOut = pTab[ nId - RES_NODE_BEGIN ] ))
+    if( nullptr != ( pOut = pTab[ nId - RES_NODE_BEGIN ] ))
         (*pOut)( rWrt, *pCNd );
     return rWrt;
 }

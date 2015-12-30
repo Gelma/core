@@ -38,11 +38,8 @@ class XMLSignature_NssImpl : public ::cppu::WeakImplHelper<
     ::com::sun::star::xml::crypto::XXMLSignature ,
     ::com::sun::star::lang::XServiceInfo >
 {
-    private:
-        ::com::sun::star::uno::Reference< ::com::sun::star::lang::XMultiServiceFactory > m_xServiceManager ;
-
     public:
-        explicit XMLSignature_NssImpl(const css::uno::Reference<css::lang::XMultiServiceFactory>& rFactory);
+        explicit XMLSignature_NssImpl();
         virtual ~XMLSignature_NssImpl() ;
 
         //Methods from XXMLSignature
@@ -51,23 +48,23 @@ class XMLSignature_NssImpl : public ::cppu::WeakImplHelper<
             const ::com::sun::star::uno::Reference< ::com::sun::star::xml::crypto::XSecurityEnvironment >& aEnvironment
         ) throw (com::sun::star::xml::crypto::XMLSignatureException,
                  com::sun::star::uno::SecurityException,
-                 com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE ;
+                 com::sun::star::uno::RuntimeException, std::exception) override ;
 
         virtual ::com::sun::star::uno::Reference< ::com::sun::star::xml::crypto::XXMLSignatureTemplate > SAL_CALL validate(
             const ::com::sun::star::uno::Reference< ::com::sun::star::xml::crypto::XXMLSignatureTemplate >& aTemplate ,
             const ::com::sun::star::uno::Reference< ::com::sun::star::xml::crypto::XXMLSecurityContext >& aContext
         ) throw( com::sun::star::uno::RuntimeException,
                  com::sun::star::uno::SecurityException,
-                 com::sun::star::xml::crypto::XMLSignatureException, std::exception) SAL_OVERRIDE;
+                 com::sun::star::xml::crypto::XMLSignatureException, std::exception) override;
 
         //Methods from XServiceInfo
-        virtual OUString SAL_CALL getImplementationName() throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE ;
+        virtual OUString SAL_CALL getImplementationName() throw( ::com::sun::star::uno::RuntimeException, std::exception ) override ;
 
         virtual sal_Bool SAL_CALL supportsService(
             const OUString& ServiceName
-        ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE ;
+        ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) override ;
 
-        virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE ;
+        virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw( ::com::sun::star::uno::RuntimeException, std::exception ) override ;
 
         //Helper for XServiceInfo
         static ::com::sun::star::uno::Sequence< OUString > impl_getSupportedServiceNames() ;

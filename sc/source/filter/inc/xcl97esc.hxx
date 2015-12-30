@@ -38,7 +38,7 @@ public:
 
 private:
     /** Override to create a new temporary file and return its stream. */
-    virtual SvStream*   ImplQueryPictureStream() SAL_OVERRIDE;
+    virtual SvStream*   ImplQueryPictureStream() override;
 
 private:
     ::std::unique_ptr< ::utl::TempFile > mxPicTempFile;
@@ -57,9 +57,9 @@ class EscherExHostAppData;
 class ShapeInteractionHelper
 {
 public:
-   static XclExpShapeObj* CreateShapeObj( XclExpObjectManager& rObjMgr, const ::com::sun::star::uno::Reference<
-                            ::com::sun::star::drawing::XShape >& xShape, ScDocument* pDoc );
-   static void PopulateShapeInteractionInfo( XclExpObjectManager& rObjMgr, const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >& xShape, EscherExHostAppData& rHostAppData );
+   static XclExpShapeObj* CreateShapeObj( XclExpObjectManager& rObjMgr, const css::uno::Reference<
+                            css::drawing::XShape >& xShape, ScDocument* pDoc );
+   static void PopulateShapeInteractionInfo( XclExpObjectManager& rObjMgr, const css::uno::Reference< css::drawing::XShape >& xShape, EscherExHostAppData& rHostAppData );
 };
 
 class XclEscherEx : public EscherEx, protected XclExpRoot
@@ -69,7 +69,7 @@ public:
                             const XclExpRoot& rRoot,
                             XclExpObjectManager& rObjMgr,
                             SvStream& rStrm,
-                            const XclEscherEx* pParent = 0 );
+                            const XclEscherEx* pParent = nullptr );
     virtual             ~XclEscherEx();
 
     /** Called by MSODRAWING record constructors to initialize the DFF stream
@@ -92,45 +92,44 @@ public:
     XclExpDffAnchorBase* CreateDffAnchor( const SdrObject& rSdrObj ) const;
 
     virtual EscherExHostAppData* StartShape(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape>& rxShape,
-                            const Rectangle* pChildAnchor ) SAL_OVERRIDE;
-    virtual void                EndShape( sal_uInt16 nShapeType, sal_uInt32 nShapeID ) SAL_OVERRIDE;
-    virtual EscherExHostAppData*    EnterAdditionalTextGroup() SAL_OVERRIDE;
+                            const css::uno::Reference< css::drawing::XShape>& rxShape,
+                            const Rectangle* pChildAnchor ) override;
+    virtual void                EndShape( sal_uInt16 nShapeType, sal_uInt32 nShapeID ) override;
+    virtual EscherExHostAppData*    EnterAdditionalTextGroup() override;
 
                                 /// Flush and merge PicStream into EscherStream
             void                EndDocument();
     /** Creates an OCX form control OBJ record from the passed form control.
         @descr  Writes the form control data to the 'Ctls' stream. */
-    XclExpOcxControlObj* CreateOCXCtrlObj(
-                            ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > xShape,
+    std::unique_ptr<XclExpOcxControlObj> CreateOCXCtrlObj(
+                            css::uno::Reference< css::drawing::XShape > xShape,
                             const Rectangle* pChildAnchor );
 
 private:
     tools::SvRef<SotStorageStream>  mxCtlsStrm;         /// The 'Ctls' stream.
     /** Creates a TBX form control OBJ record from the passed form control. */
-    XclExpTbxControlObj* CreateTBXCtrlObj(
-                            ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > xShape,
+    std::unique_ptr<XclExpTbxControlObj> CreateTBXCtrlObj(
+                            css::uno::Reference< css::drawing::XShape > xShape,
                             const Rectangle* pChildAnchor );
 
 private:
     /** Tries to get the name of a Basic macro from a control. */
     void                ConvertTbxMacro(
                             XclExpTbxControlObj& rTbxCtrlObj,
-                            ::com::sun::star::uno::Reference<
-                                ::com::sun::star::awt::XControlModel > xCtrlModel );
+                            css::uno::Reference< css::awt::XControlModel > xCtrlModel );
 
     void                DeleteCurrAppData();
 
 private:
-    XclExpObjectManager& mrObjMgr;
-        std::stack< std::pair< XclObj*, XclEscherHostAppData* > > aStack;
-        XclObj*             pCurrXclObj;
-        XclEscherHostAppData*   pCurrAppData;
-        XclEscherClientData*    pTheClientData; // always the same
-        XclEscherClientTextbox* pAdditionalText;
-        sal_uInt16                  nAdditionalText;
-    sal_uInt32          mnNextKey;
-    bool                mbIsRootDff;
+    XclExpObjectManager&    mrObjMgr;
+    std::stack< std::pair< XclObj*, XclEscherHostAppData* > > aStack;
+    XclObj*                 pCurrXclObj;
+    XclEscherHostAppData*   pCurrAppData;
+    XclEscherClientData*    pTheClientData; // always the same
+    XclEscherClientTextbox* pAdditionalText;
+    sal_uInt16              nAdditionalText;
+    sal_uInt32              mnNextKey;
+    bool                    mbIsRootDff;
 };
 
 // --- class XclEscherHostAppData ------------------------------------
@@ -153,7 +152,7 @@ class XclEscherClientData : public EscherExClientRecord_Base
 {
 public:
                         XclEscherClientData() {}
-    virtual void        WriteData( EscherEx& rEx ) const SAL_OVERRIDE;
+    virtual void        WriteData( EscherEx& rEx ) const override;
 };
 
 // --- class XclEscherClientTextbox ----------------------------------
@@ -175,7 +174,7 @@ public:
                                 //! ONLY for the AdditionalText mimic
     inline  void        SetXclObj( XclObj* p )  { pXclObj = p; }
 
-    virtual void        WriteData( EscherEx& rEx ) const SAL_OVERRIDE;
+    virtual void        WriteData( EscherEx& rEx ) const override;
 };
 
 #endif // _XCL97ESC_HXX

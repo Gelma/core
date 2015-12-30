@@ -79,16 +79,16 @@ namespace dbaui
         virtual ~FrameWindowActivationListener();
 
         // XTopWindowListener
-        virtual void SAL_CALL windowOpened( const css::lang::EventObject& e ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL windowClosing( const css::lang::EventObject& e ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL windowClosed( const css::lang::EventObject& e ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL windowMinimized( const css::lang::EventObject& e ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL windowNormalized( const css::lang::EventObject& e ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL windowActivated( const css::lang::EventObject& e ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL windowDeactivated( const css::lang::EventObject& e ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL windowOpened( const css::lang::EventObject& e ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL windowClosing( const css::lang::EventObject& e ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL windowClosed( const css::lang::EventObject& e ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL windowMinimized( const css::lang::EventObject& e ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL windowNormalized( const css::lang::EventObject& e ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL windowActivated( const css::lang::EventObject& e ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL windowDeactivated( const css::lang::EventObject& e ) throw (css::uno::RuntimeException, std::exception) override;
 
         // XEventListener
-        virtual void SAL_CALL disposing( const css::lang::EventObject& Source ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing( const css::lang::EventObject& Source ) throw (css::uno::RuntimeException, std::exception) override;
 
     private:
         void impl_checkDisposed_throw() const;
@@ -126,7 +126,7 @@ namespace dbaui
         if ( _rData.m_pListener.get() )
         {
             _rData.m_pListener->dispose();
-            _rData.m_pListener = NULL;
+            _rData.m_pListener = nullptr;
         }
 
         // remember new frame
@@ -245,7 +245,7 @@ namespace dbaui
     void FrameWindowActivationListener::dispose()
     {
         impl_registerOnFrameContainerWindow_nothrow( false );
-        m_pData = NULL;
+        m_pData = nullptr;
     }
 
     void FrameWindowActivationListener::impl_registerOnFrameContainerWindow_nothrow( bool _bRegister )

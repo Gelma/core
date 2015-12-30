@@ -279,8 +279,8 @@ namespace basegfx
                     applyLineDashing(
                         aCandidate,
                         rDotDashArray,
-                        pLineTarget ? &aLineTarget : 0,
-                        pGapTarget ? &aGapTarget : 0,
+                        pLineTarget ? &aLineTarget : nullptr,
+                        pGapTarget ? &aGapTarget : nullptr,
                         fFullDashDotLen);
 
                     if(pLineTarget)
@@ -493,24 +493,6 @@ namespace basegfx
             }
 
             return aRetval;
-        }
-
-        bool containsOnlyHorizontalAndVerticalEdges(const B2DPolyPolygon& rCandidate)
-        {
-            if(rCandidate.areControlPointsUsed())
-            {
-                return false;
-            }
-
-            for(sal_uInt32 a(0); a < rCandidate.count(); a++)
-            {
-                if(!containsOnlyHorizontalAndVerticalEdges(rCandidate.getB2DPolygon(a)))
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         B2DPolyPolygon createSevenSegmentPolyPolygon(sal_Char nNumber, bool bLitSegments)

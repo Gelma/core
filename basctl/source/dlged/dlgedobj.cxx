@@ -52,7 +52,6 @@ using namespace ::com::sun::star::beans;
 using namespace ::com::sun::star::container;
 using namespace ::com::sun::star::script;
 
-TYPEINIT1(DlgEdObj, SdrUnoObj);
 
 DlgEditor& DlgEdObj::GetDialogEditor ()
 {
@@ -63,17 +62,17 @@ DlgEditor& DlgEdObj::GetDialogEditor ()
 }
 
 DlgEdObj::DlgEdObj()
-          :SdrUnoObj(OUString(), false)
+          :SdrUnoObj(OUString())
           ,bIsListening(false)
-          ,pDlgEdForm( NULL )
+          ,pDlgEdForm( nullptr )
 {
 }
 
 DlgEdObj::DlgEdObj(const OUString& rModelName,
                    const css::uno::Reference< css::lang::XMultiServiceFactory >& rxSFac)
-          :SdrUnoObj(rModelName, rxSFac, false)
+          :SdrUnoObj(rModelName, rxSFac)
           ,bIsListening(false)
-          ,pDlgEdForm( NULL )
+          ,pDlgEdForm( nullptr )
 {
 }
 
@@ -103,7 +102,7 @@ namespace
         if ( !_out_pDlgEdForm )
             _out_pDlgEdForm = _pObject->GetDlgEdForm();
         DBG_ASSERT( _out_pDlgEdForm, "lcl_getDlgEdForm: no form!" );
-        return ( _out_pDlgEdForm != NULL );
+        return ( _out_pDlgEdForm != nullptr );
     }
 }
 
@@ -127,7 +126,7 @@ bool DlgEdObj::TransformSdrToControlCoordinates(
     Size aSize( nWidthIn, nHeightIn );
 
     // form position
-    DlgEdForm* pForm = NULL;
+    DlgEdForm* pForm = nullptr;
     if ( !lcl_getDlgEdForm( this, pForm ) )
         return false;
     Rectangle aFormRect = pForm->GetSnapRect();
@@ -190,7 +189,7 @@ bool DlgEdObj::TransformSdrToFormCoordinates(
     aSize = pDevice->LogicToPixel( aSize, MapMode( MAP_100TH_MM ) );
 
     // take window borders into account
-    DlgEdForm* pForm = NULL;
+    DlgEdForm* pForm = nullptr;
     if ( !lcl_getDlgEdForm( this, pForm ) )
         return false;
 
@@ -229,7 +228,7 @@ bool DlgEdObj::TransformControlToSdrCoordinates(
     Size aSize( nWidthIn, nHeightIn );
 
     // form position
-    DlgEdForm* pForm = NULL;
+    DlgEdForm* pForm = nullptr;
     if ( !lcl_getDlgEdForm( this, pForm ) )
         return false;
 
@@ -295,7 +294,7 @@ bool DlgEdObj::TransformFormToSdrCoordinates(
         return false;
 
     // take window borders into account
-    DlgEdForm* pForm = NULL;
+    DlgEdForm* pForm = nullptr;
     if ( !lcl_getDlgEdForm( this, pForm ) )
         return false;
 
@@ -517,7 +516,7 @@ void DlgEdObj::UpdateStep()
     sal_Int32 nStep = GetStep();
 
     SdrLayerAdmin& rLayerAdmin = GetModel()->GetLayerAdmin();
-    SdrLayerID nHiddenLayerId   = rLayerAdmin.GetLayerID( OUString( "HiddenLayer" ), false );
+    SdrLayerID nHiddenLayerId   = rLayerAdmin.GetLayerID( "HiddenLayer", false );
     SdrLayerID nControlLayerId   = rLayerAdmin.GetLayerID( rLayerAdmin.GetControlLayerName(), false );
 
     if( nCurStep )
@@ -620,7 +619,6 @@ void DlgEdObj::TabIndexChange( const beans::PropertyChangeEvent& evt ) throw (Ru
             // reorder objects in drawing page
             GetModel()->GetPage(0)->SetObjectOrdNum( nOldTabIndex + 1, nNewTabIndex + 1 );
 
-            // #110559#
             pForm->UpdateTabOrderAndGroups();
         }
 
@@ -897,7 +895,6 @@ void DlgEdObj::clonedFrom(const DlgEdObj* _pSource)
             aCtrl <<= xCtrl;
             xCont->insertByName( aOUniqueName , aCtrl );
 
-            // #110559#
             pDlgEdForm->UpdateTabOrderAndGroups();
         }
     }
@@ -909,7 +906,7 @@ void DlgEdObj::clonedFrom(const DlgEdObj* _pSource)
 DlgEdObj* DlgEdObj::Clone() const
 {
     DlgEdObj* pDlgEdObj = CloneHelper< DlgEdObj >();
-    DBG_ASSERT( pDlgEdObj != NULL, "DlgEdObj::Clone: invalid clone!" );
+    DBG_ASSERT( pDlgEdObj != nullptr, "DlgEdObj::Clone: invalid clone!" );
     if ( pDlgEdObj )
         pDlgEdObj->clonedFrom( this );
 
@@ -1043,7 +1040,6 @@ void DlgEdObj::SetDefaults()
                     &GetDialogEditor(), aAny, aOUniqueName
                 );
 
-                // #110559#
                 pDlgEdForm->UpdateTabOrderAndGroups();
             }
         }
@@ -1220,7 +1216,6 @@ void DlgEdObj::SetLayer(SdrLayerID nLayer)
     }
 }
 
-TYPEINIT1(DlgEdForm, DlgEdObj);
 
 DlgEdForm::DlgEdForm (DlgEditor& rDlgEditor_) :
     rDlgEditor(rDlgEditor_)
@@ -1478,7 +1473,6 @@ void DlgEdForm::UpdateTabIndices()
             }
         }
 
-        // #110559#
         UpdateTabOrderAndGroups();
     }
 
@@ -1491,7 +1485,6 @@ void DlgEdForm::UpdateTabIndices()
 
 void DlgEdForm::UpdateTabOrder()
 {
-    // #110559#
     // When the tabindex of a control model changes, the dialog control is
     // notified about those changes. Due to #109067# (bad performance of
     // dialog editor) the dialog control doesn't activate the tab order
@@ -1511,7 +1504,6 @@ void DlgEdForm::UpdateTabOrder()
 
 void DlgEdForm::UpdateGroups()
 {
-    // #110559#
     // The grouping of radio buttons in a dialog is done by vcl.
     // In the dialog editor we have two views (=controls) for one
     // radio button model. One control is owned by the dialog control,
@@ -1528,7 +1520,7 @@ void DlgEdForm::UpdateGroups()
         sal_uInt32 nSize = aChildList.size();
         Sequence< Reference< awt::XControl > > aSeqControls( nSize );
         for ( sal_uInt32 i = 0; i < nSize; ++i )
-            aSeqControls.getArray()[i] = Reference< awt::XControl >( aChildList[i]->GetControl(), UNO_QUERY );
+            aSeqControls.getArray()[i].set( aChildList[i]->GetControl(), UNO_QUERY );
 
         sal_Int32 nGroupCount = xTabModel->getGroupCount();
         for ( sal_Int32 nGroup = 0; nGroup < nGroupCount; ++nGroup )
@@ -1556,7 +1548,7 @@ void DlgEdForm::UpdateGroups()
                         if ( xCtrlModel.get() == pModels[nModel].get() )
                         {
                             // get the control peer and insert into the list of peers
-                            aSeqPeers.getArray()[ nModel ] = Reference< awt::XWindow >( xCtrl->getPeer(), UNO_QUERY );
+                            aSeqPeers.getArray()[ nModel ].set( xCtrl->getPeer(), UNO_QUERY );
                             break;
                         }
                     }

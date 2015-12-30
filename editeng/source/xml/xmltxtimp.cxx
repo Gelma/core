@@ -60,7 +60,7 @@ public:
     SvxXMLTextImportContext( SvXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLName, const uno::Reference< XAttributeList >& xAttrList, const uno::Reference< XText >& xText );
     virtual ~SvxXMLTextImportContext();
 
-    virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName, const uno::Reference< XAttributeList >& xAttrList ) SAL_OVERRIDE;
+    virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName, const uno::Reference< XAttributeList >& xAttrList ) override;
 
 //  SvxXMLXTableImport& getImport() const { return *(SvxXMLXTableImport*)&GetImport(); }
 
@@ -81,7 +81,7 @@ SvxXMLTextImportContext::~SvxXMLTextImportContext()
 
 SvXMLImportContext *SvxXMLTextImportContext::CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName, const uno::Reference< XAttributeList >& xAttrList )
 {
-    SvXMLImportContext* pContext = NULL;
+    SvXMLImportContext* pContext = nullptr;
     if(XML_NAMESPACE_OFFICE == nPrefix && IsXMLToken( rLocalName, XML_BODY ) )
     {
         pContext = new SvxXMLTextImportContext( GetImport(), nPrefix, rLocalName, xAttrList, mxText );
@@ -97,7 +97,7 @@ SvXMLImportContext *SvxXMLTextImportContext::CreateChildContext( sal_uInt16 nPre
         pContext = GetImport().GetTextImport()->CreateTextChildContext( GetImport(), nPrefix, rLocalName, xAttrList );
     }
 
-    if( NULL == pContext )
+    if( nullptr == pContext )
         pContext = new SvXMLImportContext( GetImport(), nPrefix, rLocalName );
 
     return pContext;
@@ -182,7 +182,7 @@ void SvxReadXML( EditEngine& rEditEngine, SvStream& rStream, const ESelection& r
             xSource->setOutputStream( uno::Reference< io::XOutputStream >::query( xPipe ) );
 
             xml::sax::InputSource aParserInput;
-            aParserInput.aInputStream = uno::Reference< io::XInputStream >::query( xPipe );
+            aParserInput.aInputStream.set( xPipe, UNO_QUERY );
             aParserInput.sSystemId = aMedium.GetName();
 
 

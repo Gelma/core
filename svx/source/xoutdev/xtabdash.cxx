@@ -165,7 +165,7 @@ Bitmap XDashList::ImpCreateBitmapForXDash(const XDash* pDash)
 
     if(pProcessor2D)
     {
-        const drawinglayer::primitive2d::Primitive2DSequence aSequence(&aLinePrimitive, 1);
+        const drawinglayer::primitive2d::Primitive2DContainer aSequence { aLinePrimitive };
 
         pProcessor2D->process(aSequence);
         pProcessor2D.reset();
@@ -193,7 +193,7 @@ Bitmap XDashList::GetBitmapForUISolidLine() const
 {
     if(maBitmapSolidLine.IsEmpty())
     {
-        const_cast< XDashList* >(this)->maBitmapSolidLine = XDashList::ImpCreateBitmapForXDash(0);
+        const_cast< XDashList* >(this)->maBitmapSolidLine = XDashList::ImpCreateBitmapForXDash(nullptr);
     }
 
     return maBitmapSolidLine;

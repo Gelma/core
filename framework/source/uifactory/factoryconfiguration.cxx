@@ -201,7 +201,7 @@ void ConfigurationAccess_ControllerFactory::readConfigurationData()
 
         try
         {
-            m_xConfigAccess = Reference< XNameAccess >( m_xConfigProvider->createInstanceWithArguments(SERVICENAME_CFGREADACCESS,aArgs ), UNO_QUERY );
+            m_xConfigAccess.set( m_xConfigProvider->createInstanceWithArguments(SERVICENAME_CFGREADACCESS,aArgs ), UNO_QUERY );
         }
         catch ( const WrappedTargetException& )
         {
@@ -277,11 +277,11 @@ bool ConfigurationAccess_ControllerFactory::impl_getElementProps( const Any& aEl
             xPropertySet->getPropertyValue( m_aPropController ) >>= aServiceSpecifier;
             xPropertySet->getPropertyValue( m_aPropValue ) >>= aValue;
         }
-        catch ( const com::sun::star::beans::UnknownPropertyException& )
+        catch ( const css::beans::UnknownPropertyException& )
         {
             return false;
         }
-        catch ( const com::sun::star::lang::WrappedTargetException& )
+        catch ( const css::lang::WrappedTargetException& )
         {
             return false;
         }

@@ -22,7 +22,6 @@
 
 #include "SlsRequestPriorityClass.hxx"
 #include "cache/SlsCacheContext.hxx"
-#include "taskpane/SlideSorterCacheDisplay.hxx"
 #include <drawdoc.hxx>
 #include <osl/mutex.hxx>
 #include <svx/sdrpageuser.hxx>
@@ -39,7 +38,7 @@ class RequestData;
 class RequestQueue : public sdr::PageUser
 {
 public:
-    RequestQueue (const SharedCacheContext& rpCacheContext);
+    explicit RequestQueue (const SharedCacheContext& rpCacheContext);
     virtual ~RequestQueue();
 
     /** Insert a request with highest or lowest priority in its priority
@@ -104,7 +103,7 @@ public:
     /** Ensure we don't hand out a page deleted before anyone got a
         chance to process it
     */
-    virtual void PageInDestruction(const SdrPage& rPage) SAL_OVERRIDE;
+    virtual void PageInDestruction(const SdrPage& rPage) override;
 
 private:
     ::osl::Mutex maMutex;

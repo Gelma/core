@@ -55,16 +55,12 @@ class ODbDataSourceAdministrationHelper;
 class ODbTypeWizDialog : public svt::OWizardMachine , public IItemSetHelper, public IDatabaseSettingsDialog,public dbaui::OModuleClient
 {
 private:
-    OModuleClient m_aModuleClient;
+    OModuleClient           m_aModuleClient;
     ::std::unique_ptr<ODbDataSourceAdministrationHelper>  m_pImpl;
     SfxItemSet*             m_pOutSet;
     ::dbaccess::ODsnTypeCollection*
                             m_pCollection;  /// the DSN type collection instance
-    OUString         m_eType;
-
-    bool                m_bResetting : 1;   /// sal_True while we're resetting the pages
-    bool                m_bApplied : 1;     /// sal_True if any changes have been applied while the dialog was executing
-    bool                m_bUIEnabled : 1;   /// <TRUE/> if the UI is enabled, false otherwise. Cannot be switched back to <TRUE/>, once it is <FALSE/>
+    OUString                m_eType;
 
 public:
     /** ctor. The itemset given should have been created by <method>createItemSet</method> and should be destroyed
@@ -76,36 +72,31 @@ public:
         ,const css::uno::Any& _aDataSourceName
         );
     virtual ~ODbTypeWizDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual const SfxItemSet* getOutputSet() const SAL_OVERRIDE;
-    virtual SfxItemSet* getWriteOutputSet() SAL_OVERRIDE;
+    virtual const SfxItemSet* getOutputSet() const override;
+    virtual SfxItemSet* getWriteOutputSet() override;
 
     // forwards to ODbDataSourceAdministrationHelper
-    virtual css::uno::Reference< css::uno::XComponentContext > getORB() const SAL_OVERRIDE;
-    virtual ::std::pair< css::uno::Reference< css::sdbc::XConnection >,sal_Bool> createConnection() SAL_OVERRIDE;
-    virtual css::uno::Reference< css::sdbc::XDriver > getDriver() SAL_OVERRIDE;
-    virtual OUString getDatasourceType(const SfxItemSet& _rSet) const SAL_OVERRIDE;
-    virtual void clearPassword() SAL_OVERRIDE;
-    virtual bool saveDatasource() SAL_OVERRIDE;
-    virtual void setTitle(const OUString& _sTitle) SAL_OVERRIDE;
-    virtual void enableConfirmSettings( bool _bEnable ) SAL_OVERRIDE;
+    virtual css::uno::Reference< css::uno::XComponentContext > getORB() const override;
+    virtual ::std::pair< css::uno::Reference< css::sdbc::XConnection >,sal_Bool> createConnection() override;
+    virtual css::uno::Reference< css::sdbc::XDriver > getDriver() override;
+    virtual OUString getDatasourceType(const SfxItemSet& _rSet) const override;
+    virtual void clearPassword() override;
+    virtual bool saveDatasource() override;
+    virtual void setTitle(const OUString& _sTitle) override;
+    virtual void enableConfirmSettings( bool _bEnable ) override;
 
 protected:
     /// to override to create new pages
-    virtual VclPtr<TabPage> createPage(WizardState _nState) SAL_OVERRIDE;
-    virtual WizardState determineNextState(WizardState _nCurrentState) const SAL_OVERRIDE;
-    virtual bool        leaveState(WizardState _nState) SAL_OVERRIDE;
+    virtual VclPtr<TabPage> createPage(WizardState _nState) override;
+    virtual WizardState determineNextState(WizardState _nCurrentState) const override;
+    virtual bool        leaveState(WizardState _nState) override;
     virtual ::svt::IWizardPageController*
-                        getPageController( TabPage* _pCurrentPage ) const SAL_OVERRIDE;
-    virtual bool        onFinish() SAL_OVERRIDE;
+                        getPageController( TabPage* _pCurrentPage ) const override;
+    virtual bool        onFinish() override;
 
 protected:
-    inline void     disabledUI() { m_bUIEnabled = false; }
-
-    /// select a datasource with a given name, adjust the item set accordingly, and everything like that ..
-    void implSelectDatasource(const OUString& _rRegisteredName);
-    void resetPages(const css::uno::Reference< css::beans::XPropertySet >& _rxDatasource);
 
     enum ApplyResult
     {
@@ -113,9 +104,6 @@ protected:
         AR_LEAVE_UNCHANGED,     // no changes were made
         AR_KEEP                 // don't leave the page (e.g. because an error occurred)
     };
-    /** apply all changes made
-    */
-    ApplyResult implApplyChanges();
 
 private:
     DECL_LINK_TYPED(OnTypeSelected, OGeneralPage&, void);

@@ -37,7 +37,6 @@
 #include <com/sun/star/ui/XUIElement.hpp>
 #include <com/sun/star/ui/XSidebar.hpp>
 
-#include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 #include <cppuhelper/compbase4.hxx>
 #include <cppuhelper/basemutex.hxx>
@@ -66,8 +65,7 @@ class TabBar;
 class TabBarConfiguration;
 
 class SFX2_DLLPUBLIC SidebarController
-    : private ::boost::noncopyable,
-      private ::cppu::BaseMutex,
+    : private ::cppu::BaseMutex,
       public SidebarControllerInterfaceBase
 {
 public:
@@ -75,6 +73,8 @@ public:
         SidebarDockingWindow* pParentWindow,
         const css::uno::Reference<css::frame::XFrame>& rxFrame);
     virtual ~SidebarController();
+    SidebarController(const SidebarController&) = delete;
+    SidebarController& operator=( const SidebarController& ) = delete;
 
     /** Return the SidebarController object that is associated with
         the given XFrame.
@@ -91,23 +91,23 @@ public:
 
     // ui::XContextChangeEventListener
     virtual void SAL_CALL notifyContextChangeEvent (const css::ui::ContextChangeEventObject& rEvent)
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
 
     // XEventListener
     virtual void SAL_CALL disposing (const css::lang::EventObject& rEventObject)
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
 
     // beans::XPropertyChangeListener
     virtual void SAL_CALL propertyChange (const css::beans::PropertyChangeEvent& rEvent)
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
 
     // frame::XStatusListener
     virtual void SAL_CALL statusChanged (const css::frame::FeatureStateEvent& rEvent)
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
 
     // ui::XSidebar
     virtual void SAL_CALL requestLayout()
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(css::uno::RuntimeException, std::exception) override;
 
     void NotifyResize();
 
@@ -151,7 +151,8 @@ public:
     void SwitchToDeck ( const ::rtl::OUString& rsDeckId);
     void SwitchToDefaultDeck();
 
-    void CreateDeck(const ::rtl::OUString& rDeckId);
+    void CreateDeck(const ::rtl::OUString& rDeckId, bool bForceCreate = false);
+    void CreatePanels(const ::rtl::OUString& rDeckId);
 
     ResourceManager::DeckContextDescriptorContainer GetMatchingDecks();
     ResourceManager::PanelContextDescriptorContainer GetMatchingPanels( const ::rtl::OUString& rDeckId);
@@ -159,6 +160,8 @@ public:
     void notifyDeckTitle(const OUString& targetDeckId);
 
     void updateModel(css::uno::Reference<css::frame::XModel> xModel);
+
+    void disposeDecks();
 
 private:
 
@@ -221,7 +224,8 @@ private:
         const ::rtl::OUString& rsPanelId,
         vcl::Window* pParentWindow,
         const bool bIsInitiallyExpanded,
-        const Context& rContext);
+        const Context& rContext,
+        VclPtr<Deck> pDeck);
 
     void SwitchToDeck (
         const DeckDescriptor& rDeckDescriptor,
@@ -263,7 +267,7 @@ private:
     */
     void ShowPanel (const Panel& rPanel);
 
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
     std::unique_ptr<ResourceManager> mpResourceManager;
 

@@ -85,7 +85,7 @@ $(call gb_Helper_abbreviate_dirs,\
 		-I$(dir $(3)) \
 		$(6) \
 		-c $(3) \
-		-Yc$(notdir $(patsubst %.cxx,%.hxx,$(3))) -Fp$(1) -Fo$(1).obj) $(call gb_create_deps,$(call gb_PrecompiledHeader_get_dep_target,$(2)),$(1),$(3))
+		-Yc$(notdir $(patsubst %.cxx,%.hxx,$(3))) -Fp$(1) -Fo$(1).obj) $(call gb_create_deps,$(call gb_PrecompiledHeader_get_dep_target_tmp,$(2)),$(1),$(3))
 endef
 
 # AsmObject class
@@ -370,6 +370,8 @@ endef
 
 # CppunitTest class
 
+gb_CppunitTest_UNITTESTFAILED := $(GBUILDDIR)/platform/unittest-failed-WNT.sh
+gb_CppunitTest_PYTHONDEPS := $(call gb_Package_get_target,python3)
 gb_CppunitTest_DEFS := -D_DLL
 ifeq ($(GNUMAKE_WIN_NATIVE),TRUE)
 gb_CppunitTest_CPPTESTPRECOMMAND := $(call gb_Helper_prepend_ld_path,$(shell cygpath -w $(gb_Library_DLLDIR));$(shell cygpath -w $(WORKDIR)/UnpackedTarball/cppunit/src/cppunit/$(if $(MSVC_USE_DEBUG_RUNTIME),DebugDll,ReleaseDll)))
@@ -435,6 +437,11 @@ endef
 # PythonTest class
 
 gb_PythonTest_PRECOMMAND := $(gb_CppunitTest_CPPTESTPRECOMMAND)
+gb_PythonTest_DEPS := $(call gb_Package_get_target,python3)
+
+ifeq ($(strip $(CPPUNITTRACE)),TRUE)
+gb_CppunitTest_GDBTRACE := '$(DEVENV)' /debugexe
+endif
 
 # SrsPartTarget class
 

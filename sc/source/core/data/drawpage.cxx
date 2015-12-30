@@ -24,8 +24,6 @@
 #include "document.hxx"
 #include "pageuno.hxx"
 
-// STATIC DATA -----------------------------------------------------------
-
 ScDrawPage::ScDrawPage(ScDrawLayer& rNewModel, bool bMasterPage) :
     FmFormPage(rNewModel, bMasterPage)
 {
@@ -43,13 +41,13 @@ ScDrawPage::~ScDrawPage()
 
 ScDrawPage* ScDrawPage::Clone() const
 {
-    return Clone(0);
+    return Clone(nullptr);
 }
 
 ScDrawPage* ScDrawPage::Clone(SdrModel* const pNewModel) const
 {
     ScDrawPage* const pNewPage = new ScDrawPage(*this);
-    FmFormModel* pScDrawModel = 0;
+    FmFormModel* pScDrawModel = nullptr;
     if (pNewModel)
     {
         pScDrawModel = dynamic_cast<FmFormModel*>(pNewModel);
@@ -59,7 +57,7 @@ ScDrawPage* ScDrawPage::Clone(SdrModel* const pNewModel) const
     return pNewPage;
 }
 
-::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > ScDrawPage::createUnoPage()
+css::uno::Reference< css::uno::XInterface > ScDrawPage::createUnoPage()
 {
     return static_cast<cppu::OWeakObject*>( new ScPageObj( this ) );
 }

@@ -450,8 +450,7 @@ OUString SAL_CALL Content::getImplementationName()
 uno::Sequence< OUString > SAL_CALL Content::getSupportedServiceNames()
     throw( uno::RuntimeException )
 {
-    uno::Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[ 0 ] = WEBDAV_CONTENT_SERVICE_NAME;
+    uno::Sequence<OUString> aSNS { WEBDAV_CONTENT_SERVICE_NAME };
     return aSNS;
 }
 
@@ -848,7 +847,7 @@ void SAL_CALL Content::abort( sal_Int32 /*CommandId*/ )
 
 
 
-void Content::addProperty( const com::sun::star::ucb::PropertyCommandArgument &aCmdArg,
+void Content::addProperty( const css::ucb::PropertyCommandArgument &aCmdArg,
                            const uno::Reference< ucb::XCommandEnvironment >& xEnv  )
 throw( beans::PropertyExistException,
        beans::IllegalTypeException,
@@ -1283,8 +1282,7 @@ uno::Reference< sdbc::XRow > Content::getPropertyValues(
                 // Process local Additional Properties.
                 if ( !bTriedToGetAdditionalPropSet && !xAdditionalPropSet.is() )
                 {
-                    xAdditionalPropSet
-                        = uno::Reference< beans::XPropertySet >(
+                    xAdditionalPropSet.set(
                             rProvider->getAdditionalPropertySet( rContentId,
                                                                  false ),
                             uno::UNO_QUERY );
@@ -2141,8 +2139,7 @@ uno::Any Content::open(
             // Unreachable
         }
 
-        uno::Reference< io::XOutputStream > xOut
-            = uno::Reference< io::XOutputStream >( rArg.Sink, uno::UNO_QUERY );
+        uno::Reference< io::XOutputStream > xOut( rArg.Sink, uno::UNO_QUERY );
         if ( xOut.is() )
         {
             // PUSH: write data
@@ -2185,9 +2182,7 @@ uno::Any Content::open(
         }
         else
         {
-            uno::Reference< io::XActiveDataSink > xDataSink
-                = uno::Reference< io::XActiveDataSink >( rArg.Sink,
-                                                         uno::UNO_QUERY );
+            uno::Reference< io::XActiveDataSink > xDataSink( rArg.Sink, uno::UNO_QUERY );
             if ( xDataSink.is() )
             {
                 // PULL: wait for client read
@@ -2413,8 +2408,7 @@ void Content::insert(
     {
         SAL_WARN( "ucb.ucp.webdav", "Content::insert - Title missing!" );
 
-        uno::Sequence< OUString > aProps( 1 );
-        aProps[ 0 ] = "Title";
+        uno::Sequence<OUString> aProps { "Title" };
         ucbhelper::cancelCommandExecution(
             uno::makeAny( ucb::MissingPropertiesException(
                                 OUString(),

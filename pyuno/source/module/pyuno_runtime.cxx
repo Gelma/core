@@ -39,6 +39,7 @@
 #include <com/sun/star/script/Converter.hpp>
 #include <com/sun/star/script/InvocationAdapterFactory.hpp>
 #include <com/sun/star/reflection/theCoreReflection.hpp>
+#include <comphelper/sequence.hxx>
 
 
 using com::sun::star::uno::Reference;
@@ -80,30 +81,20 @@ static PyTypeObject RuntimeImpl_Type =
     nullptr,
     nullptr,
     nullptr,
-    0,
-    nullptr,
-    0,
-    0,
-    0,
     nullptr,
     nullptr,
     nullptr,
     nullptr,
     nullptr,
-    NULL,
-    0,
-    NULL,
+    nullptr,
+    nullptr,
+    nullptr,
     nullptr,
     nullptr,
     nullptr,
     0,
     nullptr,
     nullptr,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
     nullptr,
     nullptr,
     0,
@@ -112,17 +103,27 @@ static PyTypeObject RuntimeImpl_Type =
     nullptr,
     nullptr,
     nullptr,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    0,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
     nullptr
 #if PY_VERSION_HEX >= 0x02060000
     , 0
 #endif
 #if PY_VERSION_HEX >= 0x03040000
-    , 0
+    , nullptr
 #endif
 };
 
@@ -130,7 +131,7 @@ static PyTypeObject RuntimeImpl_Type =
   Runtime implementation
  -----------------------------------------------------------------------*/
 static void getRuntimeImpl( PyRef & globalDict, PyRef &runtimeImpl )
-    throw ( com::sun::star::uno::RuntimeException )
+    throw ( css::uno::RuntimeException )
 {
     PyThreadState * state = PyThreadState_Get();
     if( ! state )
@@ -182,7 +183,7 @@ static PyRef importUnoModule( ) throw ( RuntimeException )
 static void readLoggingConfig( sal_Int32 *pLevel, FILE **ppFile )
 {
     *pLevel = LogLevel::NONE;
-    *ppFile = 0;
+    *ppFile = nullptr;
     OUString fileName;
     osl_getModuleURLFromFunctionAddress(
         reinterpret_cast< oslGenericFunction >(readLoggingConfig),
@@ -223,7 +224,7 @@ static void readLoggingConfig( sal_Int32 *pLevel, FILE **ppFile )
                 oslProcessInfo data;
                 data.Size = sizeof( data );
                 osl_getProcessInfo(
-                    0 , osl_Process_IDENTIFIER , &data );
+                    nullptr , osl_Process_IDENTIFIER , &data );
                 osl_getSystemPathFromFileURL( str.pData, &str.pData);
                 OString o = OUStringToOString( str, osl_getThreadTextEncoding() );
                 o += ".";
@@ -233,7 +234,7 @@ static void readLoggingConfig( sal_Int32 *pLevel, FILE **ppFile )
                 if ( *ppFile )
                 {
                     // do not buffer (useful if e.g. analyzing a crash)
-                    setvbuf( *ppFile, 0, _IONBF, 0 );
+                    setvbuf( *ppFile, nullptr, _IONBF, 0 );
                 }
                 else
                 {
@@ -250,12 +251,12 @@ static void readLoggingConfig( sal_Int32 *pLevel, FILE **ppFile )
  RuntimeImpl implementations
  *-------------------------------------------------------------------*/
 PyRef stRuntimeImpl::create( const Reference< XComponentContext > &ctx )
-    throw( com::sun::star::uno::RuntimeException, std::exception )
+    throw( css::uno::RuntimeException, std::exception )
 {
     RuntimeImpl *me = PyObject_New (RuntimeImpl, &RuntimeImpl_Type);
     if( ! me )
         throw RuntimeException( "cannot instantiate pyuno::RuntimeImpl" );
-    me->cargo = 0;
+    me->cargo = nullptr;
     // must use a different struct here, as the PyObject_New
     // makes C++ unusable
     RuntimeCargo *c = new RuntimeCargo();
@@ -266,7 +267,7 @@ PyRef stRuntimeImpl::create( const Reference< XComponentContext > &ctx )
     c->xContext = ctx;
     c->xInvocation = Reference< XSingleServiceFactory > (
         ctx->getServiceManager()->createInstanceWithContext(
-            OUString(  "com.sun.star.script.Invocation"  ),
+            "com.sun.star.script.Invocation",
             ctx ),
         UNO_QUERY );
     if( ! c->xInvocation.is() )
@@ -327,7 +328,7 @@ bool Runtime::isInitialized() throw ( RuntimeException )
 }
 
 Runtime::Runtime() throw(  RuntimeException )
-    : impl( 0 )
+    : impl( nullptr )
 {
     PyRef globalDict, runtime;
     getRuntimeImpl( globalDict , runtime );
@@ -362,8 +363,8 @@ Runtime & Runtime::operator = ( const Runtime & r )
 }
 
 PyRef Runtime::any2PyObject (const Any &a ) const
-    throw ( com::sun::star::script::CannotConvertException,
-            com::sun::star::lang::IllegalArgumentException,
+    throw ( css::script::CannotConvertException,
+            css::lang::IllegalArgumentException,
             RuntimeException)
 {
     if( ! impl->cargo->valid )
@@ -443,7 +444,7 @@ PyRef Runtime::any2PyObject (const Any &a ) const
         OString o = OUStringToOString( t.getTypeName(), RTL_TEXTENCODING_ASCII_US );
         return PyRef(
             PyUNO_Type_new (
-                o.getStr(),  (com::sun::star::uno::TypeClass)t.getTypeClass(), *this),
+                o.getStr(),  (css::uno::TypeClass)t.getTypeClass(), *this),
             SAL_NO_ACQUIRE);
     }
     case typelib_TypeClass_ANY:
@@ -493,7 +494,7 @@ PyRef Runtime::any2PyObject (const Any &a ) const
             throw RuntimeException( buf.makeStringAndClear() );
         }
 
-        if( com::sun::star::uno::TypeClass_EXCEPTION == a.getValueTypeClass() )
+        if( css::uno::TypeClass_EXCEPTION == a.getValueTypeClass() )
         {
             // add the message in a standard python way !
             PyRef args( PyTuple_New( 1 ), SAL_NO_ACQUIRE, NOT_NULL );
@@ -537,7 +538,7 @@ PyRef Runtime::any2PyObject (const Any &a ) const
                     PyTuple_SetItem( tuple.get(), i, element.getAcquired() );
                 }
             }
-            catch( com::sun::star::uno::Exception & )
+            catch( css::uno::Exception & )
             {
                 for( ; i < s.getLength() ; i ++ )
                 {
@@ -576,7 +577,7 @@ static Sequence< Type > invokeGetTypes( const Runtime & r , PyObject * o )
     raiseInvocationTargetExceptionWhenNeeded( r );
     if( method.is() && PyCallable_Check( method.get() ) )
     {
-        PyRef types( PyObject_CallObject( method.get(), 0 ) , SAL_NO_ACQUIRE );
+        PyRef types( PyObject_CallObject( method.get(), nullptr ) , SAL_NO_ACQUIRE );
         raiseInvocationTargetExceptionWhenNeeded( r );
         if( types.is() && PyTuple_Check( types.get() ) )
         {
@@ -589,7 +590,7 @@ static Sequence< Type > invokeGetTypes( const Runtime & r , PyObject * o )
                 Any a = r.pyObject2Any(PyTuple_GetItem(types.get(),i));
                 a >>= ret[i];
             }
-            ret[size] = cppu::UnoType<com::sun::star::lang::XUnoTunnel>::get();
+            ret[size] = cppu::UnoType<css::lang::XUnoTunnel>::get();
         }
     }
     return ret;
@@ -636,16 +637,12 @@ bool Runtime::pyIterUnpack( PyObject *const pObj, Any &a ) const
         items.push_back( pyObject2Any( rItem.get() ) );
     }
     while( (pItem = PyIter_Next( pObj )) );
-    Sequence<Any> aSeq( items.size() );
-    ::std::list<Any>::iterator it = items.begin();
-    for( int i = 0; it != items.end(); ++it )
-        aSeq[i++] = *it;
-    a <<= aSeq;
+    a <<= comphelper::containerToSequence<Any>(items);
     return true;
 }
 
 Any Runtime::pyObject2Any ( const PyRef & source, enum ConversionMode mode ) const
-    throw ( com::sun::star::uno::RuntimeException )
+    throw ( css::uno::RuntimeException )
 {
     if( ! impl->cargo->valid )
     {
@@ -835,7 +832,7 @@ Any Runtime::pyObject2Any ( const PyRef & source, enum ConversionMode mode ) con
                 {
                     a = getImpl()->cargo->xTypeConverter->convertTo( a, t );
                 }
-                catch( const com::sun::star::uno::Exception & e )
+                catch( const css::uno::Exception & e )
                 {
                     throw WrappedTargetRuntimeException(
                             e.Message, e.Context, makeAny(e));
@@ -863,7 +860,7 @@ Any Runtime::pyObject2Any ( const PyRef & source, enum ConversionMode mode ) con
             if( adapterObject.is() )
             {
                 // object got already bridged !
-                Reference< com::sun::star::lang::XUnoTunnel > tunnel( adapterObject, UNO_QUERY );
+                Reference< css::lang::XUnoTunnel > tunnel( adapterObject, UNO_QUERY );
 
                 Adapter *pAdapter = reinterpret_cast<Adapter*>(
                         tunnel->getSomething(
@@ -885,7 +882,7 @@ Any Runtime::pyObject2Any ( const PyRef & source, enum ConversionMode mode ) con
 
                         // keep a list of exported objects to ensure object identity !
                         impl->cargo->mappedObjects[ PyRef(o) ] =
-                            com::sun::star::uno::WeakReference< XInvocation > ( pAdapter );
+                            css::uno::WeakReference< XInvocation > ( pAdapter );
                     }
                 } catch (InvocationTargetException const& e) {
                     OUString const msg(lcl_ExceptionMessage(o, &e.Message));
@@ -895,11 +892,11 @@ Any Runtime::pyObject2Any ( const PyRef & source, enum ConversionMode mode ) con
             }
             if( mappedObject.is() )
             {
-                a = com::sun::star::uno::makeAny( mappedObject );
+                a = css::uno::makeAny( mappedObject );
             }
             else
             {
-                OUString const msg(lcl_ExceptionMessage(o, 0));
+                OUString const msg(lcl_ExceptionMessage(o, nullptr));
                 throw RuntimeException(msg);
             }
         }
@@ -1001,14 +998,14 @@ Any Runtime::extractUnoException( const PyRef & excType, const PyRef &excValue, 
         fprintf( stderr, "Python exception: %s\n",
                  OUStringToOString(e.Message, RTL_TEXTENCODING_UTF8).getStr() );
 #endif
-        ret = com::sun::star::uno::makeAny( e );
+        ret = css::uno::makeAny( e );
     }
     return ret;
 }
 
 
 PyThreadAttach::PyThreadAttach( PyInterpreterState *interp)
-    throw ( com::sun::star::uno::RuntimeException )
+    throw ( css::uno::RuntimeException )
 {
     tstate = PyThreadState_New( interp );
     if( !tstate  )
@@ -1023,7 +1020,7 @@ PyThreadAttach::~PyThreadAttach()
     PyThreadState_Delete( tstate );
 }
 
-PyThreadDetach::PyThreadDetach() throw ( com::sun::star::uno::RuntimeException )
+PyThreadDetach::PyThreadDetach() throw ( css::uno::RuntimeException )
 {
     tstate = PyThreadState_Get();
     PyEval_ReleaseThread( tstate );

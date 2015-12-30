@@ -94,7 +94,7 @@ namespace svxform
                 if ( xChild.is() )
                     return getTypedModelNode< INTERFACE_TYPE >( xChild->getParent() );
                 else
-                    return NULL;
+                    return nullptr;
             }
         }
 
@@ -186,9 +186,7 @@ namespace svxform
                 // retrieve a default font for this locale, and set it at the control
                 vcl::Font aFont = OutputDevice::GetDefaultFont( DefaultFontType::SANS, LanguageTag::convertToLanguageType( aDocumentCharLocale ), GetDefaultFontFlags::OnlyOne );
                 FontDescriptor aFontDesc = VCLUnoHelper::CreateFontDescriptor( aFont );
-                _rxModel->setPropertyValue(
-                    OUString( "FontDescriptor" ),
-                    makeAny( aFontDesc )
+                _rxModel->setPropertyValue("FontDescriptor", makeAny( aFontDesc )
                 );
             }
             catch( const Exception& )

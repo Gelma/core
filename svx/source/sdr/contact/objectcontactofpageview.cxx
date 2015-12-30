@@ -35,6 +35,7 @@
 #include <com/sun/star/rendering/XSpriteCanvas.hpp>
 #include <drawinglayer/processor2d/processor2dtools.hxx>
 #include <svx/unoapi.hxx>
+#include <unotools/configmgr.hxx>
 
 #include "eventhandler.hxx"
 #include <memory>
@@ -163,7 +164,7 @@ namespace sdr
 
             // #114359# save old and set clip region
             OutputDevice* pOutDev = TryToGetOutputDevice();
-            OSL_ENSURE(0 != pOutDev, "ObjectContactOfPageView without OutDev, someone has overridden TryToGetOutputDevice wrong (!)");
+            OSL_ENSURE(nullptr != pOutDev, "ObjectContactOfPageView without OutDev, someone has overridden TryToGetOutputDevice wrong (!)");
             bool bClipRegionPushed(false);
             const vcl::Region& rRedrawArea(rDisplayInfo.GetRedrawArea());
 
@@ -242,9 +243,9 @@ namespace sdr
                 uno::Sequence<beans::PropertyValue>());
             updateViewInformation2D(aNewViewInformation2D);
 
-            drawinglayer::primitive2d::Primitive2DSequence xPrimitiveSequence;
+            drawinglayer::primitive2d::Primitive2DContainer xPrimitiveSequence;
 #if HAVE_FEATURE_DESKTOP || defined( ANDROID )
-            // get whole Primitive2DSequence; this will already make use of updated ViewInformation2D
+            // get whole Primitive2DContainer; this will already make use of updated ViewInformation2D
             // and may use the MapMode from the Target OutDev in the DisplayInfo
             xPrimitiveSequence = rDrawPageVOContact.getPrimitive2DSequenceHierarchy(rDisplayInfo);
 #else
@@ -275,7 +276,7 @@ namespace sdr
             }
 
             if (bGetHierarchy)
-                // get whole Primitive2DSequence; this will already make use of updated ViewInformation2D
+                // get whole Primitive2DContainer; this will already make use of updated ViewInformation2D
                 // and may use the MapMode from the Target OutDev in the DisplayInfo
                 xPrimitiveSequence = rDrawPageVOContact.getPrimitive2DSequenceHierarchy(rDisplayInfo);
 #endif
@@ -285,7 +286,7 @@ namespace sdr
             // createProcessor2DFromOutputDevice and takes into account things like the
             // Target is a MetaFile, a VDev or something else. The Canvas renderer is triggered
             // currently using the shown boolean. Canvas is not yet the default.
-            if(xPrimitiveSequence.hasElements())
+            if(!xPrimitiveSequence.empty())
             {
                 // prepare OutputDevice (historical stuff, maybe soon removed)
                 rDisplayInfo.ClearGhostedDrawMode(); // reset, else the VCL-paint with the processor will not do the right thing
@@ -329,7 +330,7 @@ namespace sdr
 
             if(pActiveGroupList)
             {
-                if(pActiveGroupList->ISA(SdrPage))
+                if(dynamic_cast<const SdrPage*>( pActiveGroupList) !=  nullptr)
                 {
                     // It's a Page itself
                     return &(static_cast<SdrPage*>(pActiveGroupList)->GetViewContact());
@@ -346,7 +347,7 @@ namespace sdr
                 return &(GetSdrPage()->GetViewContact());
             }
 
-            return 0;
+            return nullptr;
         }
 
         // Invalidate given rectangle at the window/output which is represented by
@@ -393,6 +394,8 @@ namespace sdr
         // check if text animation is allowed.
         bool ObjectContactOfPageView::IsTextAnimationAllowed() const
         {
+            if (utl::ConfigManager::IsAvoidConfig())
+                return true;
             SdrView& rView = GetPageWindow().GetPageView().GetView();
             const SvtAccessibilityOptions& rOpt = rView.getAccessibilityOptions();
             return rOpt.GetIsAllowAnimatedText();
@@ -401,6 +404,8 @@ namespace sdr
         // check if graphic animation is allowed.
         bool ObjectContactOfPageView::IsGraphicAnimationAllowed() const
         {
+            if (utl::ConfigManager::IsAvoidConfig())
+                return true;
             SdrView& rView = GetPageWindow().GetPageView().GetView();
             const SvtAccessibilityOptions& rOpt = rView.getAccessibilityOptions();
             return rOpt.GetIsAllowAnimatedGraphics();
@@ -441,7 +446,7 @@ namespace sdr
         // pdf export?
         bool ObjectContactOfPageView::isOutputToPDFFile() const
         {
-            return (0 != mrPageWindow.GetPaintWindow().GetOutputDevice().GetPDFWriter());
+            return (nullptr != mrPageWindow.GetPaintWindow().GetOutputDevice().GetPDFWriter());
         }
 
         // gray display mode

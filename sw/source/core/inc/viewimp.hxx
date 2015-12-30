@@ -28,15 +28,15 @@
 #include <vector>
 
 class SwViewShell;
-class SwFlyFrm;
+class SwFlyFrame;
 class SwViewOption;
 class SwRegionRects;
-class SwFrm;
+class SwFrame;
 class SwLayAction;
 class SwLayIdle;
 class SwDrawView;
 class SdrPageView;
-class SwPageFrm;
+class SwPageFrame;
 class SwRegionRects;
 class SwAccessibleMap;
 class SdrObject;
@@ -44,7 +44,7 @@ class Fraction;
 class SwPrintData;
 class SwPagePreviewLayout;
 struct PreviewPage;
-class SwTextFrm;
+class SwTextFrame;
 // --> OD #i76669#
 namespace sdr { namespace contact {
         class ViewObjectContactRedirector;
@@ -67,7 +67,7 @@ class SwViewShellImp
     SwDrawView  *m_pDrawView;     // Our DrawView
     SdrPageView *m_pSdrPageView;  // Exactly one Page for our DrawView
 
-    SwPageFrm     *m_pFirstVisiblePage; // Always points to the first visible Page
+    SwPageFrame     *m_pFirstVisiblePage; // Always points to the first visible Page
     SwRegionRects *m_pRegion;       // Collector of Paintrects from the LayAction
 
     SwLayAction   *m_pLayAction;      // Is set if an Action object exists
@@ -75,9 +75,6 @@ class SwViewShellImp
     SwLayIdle     *m_pIdleAct;     // The same as SwLayAction for SwLayIdle
 
     SwAccessibleMap *m_pAccessibleMap;    // Accessible wrappers
-
-    mutable const SdrObject * m_pSdrObjectCached;
-    mutable OUString m_sSdrObjectCachedComment;
 
     bool m_bFirstPageInvalid : 1; // Pointer to the first Page invalid?
     bool m_bResetHdlHiddenPaint : 1; // Ditto
@@ -106,18 +103,18 @@ private:
         implementation for wrapper method
         <SwViewShell::InvalidateAccessibleParaFlowRelation(..)>
 
-        @param _pFromTextFrm
+        @param _pFromTextFrame
         input parameter - paragraph frame, for which the relation CONTENT_FLOWS_FROM
         has to be invalidated.
         If NULL, no CONTENT_FLOWS_FROM relation has to be invalidated
 
-        @param _pToTextFrm
+        @param _pToTextFrame
         input parameter - paragraph frame, for which the relation CONTENT_FLOWS_TO
         has to be invalidated.
         If NULL, no CONTENT_FLOWS_TO relation has to be invalidated
     */
-    void _InvalidateAccessibleParaFlowRelation( const SwTextFrm* _pFromTextFrm,
-                                                const SwTextFrm* _pToTextFrm );
+    void _InvalidateAccessibleParaFlowRelation( const SwTextFrame* _pFromTextFrame,
+                                                const SwTextFrame* _pToTextFrame );
 
     /** invalidate text selection for paragraphs
 
@@ -133,7 +130,7 @@ private:
         implementation for wrapper method
         <SwViewShell::InvalidateAccessibleParaAttrs(..)>
     */
-    void _InvalidateAccessibleParaAttrs( const SwTextFrm& rTextFrm );
+    void _InvalidateAccessibleParaAttrs( const SwTextFrame& rTextFrame );
 
 public:
     SwViewShellImp( SwViewShell * );
@@ -146,8 +143,8 @@ public:
     Color GetRetoucheColor() const;
 
     /// Management of the first visible Page
-    const SwPageFrm *GetFirstVisPage(OutputDevice* pRenderContext) const;
-          SwPageFrm *GetFirstVisPage(OutputDevice* pRenderContext);
+    const SwPageFrame *GetFirstVisPage(OutputDevice* pRenderContext) const;
+          SwPageFrame *GetFirstVisPage(OutputDevice* pRenderContext);
     void SetFirstVisPageInvalid() { m_bFirstPageInvalid = true; }
 
     bool AddPaintRect( const SwRect &rRect );
@@ -155,7 +152,7 @@ public:
     void DelRegion();
 
     /// New Interface for StarView Drawing
-    bool  HasDrawView()             const { return 0 != m_pDrawView; }
+    bool  HasDrawView()             const { return nullptr != m_pDrawView; }
           SwDrawView* GetDrawView()       { return m_pDrawView; }
     const SwDrawView* GetDrawView() const { return m_pDrawView; }
           SdrPageView*GetPageView()       { return m_pSdrPageView; }
@@ -173,9 +170,9 @@ public:
     void   PaintLayer( const SdrLayerID _nLayerID,
                        SwPrintData const*const pPrintData,
                        const SwRect& _rRect,
-                       const Color* _pPageBackgrdColor = 0,
+                       const Color* _pPageBackgrdColor = nullptr,
                        const bool _bIsPageRightToLeft = false,
-                       sdr::contact::ViewObjectContactRedirector* pRedirector = 0 );
+                       sdr::contact::ViewObjectContactRedirector* pRedirector = nullptr );
 
     /**
      * Is passed to the DrawEngine as a Link and decides what is painted
@@ -187,16 +184,16 @@ public:
     void NotifySizeChg( const Size &rNewSz );
 
     /// SS for the Lay-/IdleAction and relatives
-    bool  IsAction() const                   { return m_pLayAction  != 0; }
-    bool  IsIdleAction() const               { return m_pIdleAct != 0; }
+    bool  IsAction() const                   { return m_pLayAction  != nullptr; }
+    bool  IsIdleAction() const               { return m_pIdleAct != nullptr; }
           SwLayAction &GetLayAction()        { return *m_pLayAction; }
     const SwLayAction &GetLayAction() const  { return *m_pLayAction; }
 
     /**
      * If an Action is running we ask it to check whether it's time
-     * to enable the WaitCrsr
+     * to enable the WaitCursor
      */
-    void CheckWaitCrsr();
+    void CheckWaitCursor();
 
     /// Asks the LayAction if present
     bool IsCalcLayoutProgress() const;
@@ -219,7 +216,7 @@ public:
     }
 
     /// Is this view accessible?
-    bool IsAccessible() const { return m_pAccessibleMap != 0; }
+    bool IsAccessible() const { return m_pAccessibleMap != nullptr; }
 
     inline SwAccessibleMap& GetAccessibleMap();
 
@@ -227,41 +224,41 @@ public:
     void UpdateAccessible();
 
     /// Remove a frame from the accessible view
-    void DisposeAccessible( const SwFrm *pFrm, const SdrObject *pObj,
+    void DisposeAccessible( const SwFrame *pFrame, const SdrObject *pObj,
                             bool bRecursive );
-    inline void DisposeAccessibleFrm( const SwFrm *pFrm,
+    inline void DisposeAccessibleFrame( const SwFrame *pFrame,
                                bool bRecursive = false );
     inline void DisposeAccessibleObj( const SdrObject *pObj );
 
     /// Move a frame's position in the accessible view
-    void MoveAccessible( const SwFrm *pFrm, const SdrObject *pObj,
-                         const SwRect& rOldFrm );
-    inline void MoveAccessibleFrm( const SwFrm *pFrm, const SwRect& rOldFrm );
+    void MoveAccessible( const SwFrame *pFrame, const SdrObject *pObj,
+                         const SwRect& rOldFrame );
+    inline void MoveAccessibleFrame( const SwFrame *pFrame, const SwRect& rOldFrame );
 
     /// Add a frame in the accessible view
-    inline void AddAccessibleFrm( const SwFrm *pFrm );
+    inline void AddAccessibleFrame( const SwFrame *pFrame );
 
     inline void AddAccessibleObj( const SdrObject *pObj );
 
     /// Invalidate accessible frame's frame's content
-    void InvalidateAccessibleFrmContent( const SwFrm *pFrm );
+    void InvalidateAccessibleFrameContent( const SwFrame *pFrame );
 
     /// Invalidate accessible frame's cursor position
-    void InvalidateAccessibleCursorPosition( const SwFrm *pFrm );
+    void InvalidateAccessibleCursorPosition( const SwFrame *pFrame );
 
     /// Invalidate editable state for all accessible frames
     void InvalidateAccessibleEditableState( bool bAllShells = true,
-                                               const SwFrm *pFrm=0 );
+                                               const SwFrame *pFrame=nullptr );
 
     /// Invalidate frame's relation set (for chained frames)
-    void InvalidateAccessibleRelationSet( const SwFlyFrm *pMaster,
-                                          const SwFlyFrm *pFollow );
+    void InvalidateAccessibleRelationSet( const SwFlyFrame *pMaster,
+                                          const SwFlyFrame *pFollow );
 
     /// update data for accessible preview
     /// change method signature due to new page preview functionality
     void UpdateAccessiblePreview( const std::vector<PreviewPage*>& _rPreviewPages,
                                   const Fraction&  _rScale,
-                                  const SwPageFrm* _pSelectedPageFrm,
+                                  const SwPageFrame* _pSelectedPageFrame,
                                   const Size&      _rPreviewWinSize );
 
     void InvalidateAccessiblePreviewSelection( sal_uInt16 nSelPage );
@@ -278,33 +275,33 @@ inline SwAccessibleMap& SwViewShellImp::GetAccessibleMap()
     return *m_pAccessibleMap;
 }
 
-inline void SwViewShellImp::DisposeAccessibleFrm( const SwFrm *pFrm,
+inline void SwViewShellImp::DisposeAccessibleFrame( const SwFrame *pFrame,
                                bool bRecursive )
 {
-    DisposeAccessible( pFrm, 0, bRecursive );
+    DisposeAccessible( pFrame, nullptr, bRecursive );
 }
 
 inline void SwViewShellImp::DisposeAccessibleObj( const SdrObject *pObj )
 {
-    DisposeAccessible( 0, pObj, false );
+    DisposeAccessible( nullptr, pObj, false );
 }
 
-inline void SwViewShellImp::MoveAccessibleFrm( const SwFrm *pFrm,
-                                          const SwRect& rOldFrm )
+inline void SwViewShellImp::MoveAccessibleFrame( const SwFrame *pFrame,
+                                          const SwRect& rOldFrame )
 {
-    MoveAccessible( pFrm, 0, rOldFrm );
+    MoveAccessible( pFrame, nullptr, rOldFrame );
 }
 
-inline void SwViewShellImp::AddAccessibleFrm( const SwFrm *pFrm )
+inline void SwViewShellImp::AddAccessibleFrame( const SwFrame *pFrame )
 {
     SwRect aEmptyRect;
-    MoveAccessible( pFrm, 0, aEmptyRect );
+    MoveAccessible( pFrame, nullptr, aEmptyRect );
 }
 
 inline void SwViewShellImp::AddAccessibleObj( const SdrObject *pObj )
 {
     SwRect aEmptyRect;
-    MoveAccessible( 0, pObj, aEmptyRect );
+    MoveAccessible( nullptr, pObj, aEmptyRect );
 }
 #endif // INCLUDED_SW_SOURCE_CORE_INC_VIEWIMP_HXX
 

@@ -45,20 +45,20 @@ using namespace cppu;
 ContentResultSetWrapper::ContentResultSetWrapper(
                                 Reference< XResultSet > xOrigin )
                 : m_xResultSetOrigin( xOrigin )
-                , m_xRowOrigin( NULL )
-                , m_xContentAccessOrigin( NULL )
-                , m_xPropertySetOrigin( NULL )
-                , m_xPropertySetInfo( NULL )
+                , m_xRowOrigin( nullptr )
+                , m_xContentAccessOrigin( nullptr )
+                , m_xPropertySetOrigin( nullptr )
+                , m_xPropertySetInfo( nullptr )
                 , m_nForwardOnly( 2 )
-                , m_xMetaDataFromOrigin( NULL )
+                , m_xMetaDataFromOrigin( nullptr )
                 , m_bDisposed( false )
                 , m_bInDispose( false )
-                , m_pDisposeEventListeners( NULL )
-                , m_pPropertyChangeListeners( NULL )
-                , m_pVetoableChangeListeners( NULL )
+                , m_pDisposeEventListeners( nullptr )
+                , m_pPropertyChangeListeners( nullptr )
+                , m_pVetoableChangeListeners( nullptr )
 {
     m_pMyListenerImpl = new ContentResultSetWrapperListener( this );
-    m_xMyListenerImpl = Reference< XPropertyChangeListener >( m_pMyListenerImpl );
+    m_xMyListenerImpl.set( m_pMyListenerImpl );
 
     OSL_ENSURE( m_xResultSetOrigin.is(), "XResultSet is required" );
 
@@ -471,8 +471,7 @@ Reference< XResultSetMetaData > SAL_CALL ContentResultSetWrapper::getMetaData()
     ReacquireableGuard aGuard( m_aMutex );
     if( !m_xMetaDataFromOrigin.is() && m_xResultSetOrigin.is() )
     {
-        Reference< XResultSetMetaDataSupplier > xMetaDataSupplier
-            = Reference< XResultSetMetaDataSupplier >(
+        Reference< XResultSetMetaDataSupplier > xMetaDataSupplier(
                 m_xResultSetOrigin, UNO_QUERY );
 
         if( xMetaDataSupplier.is() )
@@ -1250,7 +1249,7 @@ DateTime SAL_CALL ContentResultSetWrapper::getTimestamp( sal_Int32 columnIndex )
 }
 
 //virtual
-Reference< com::sun::star::io::XInputStream > SAL_CALL ContentResultSetWrapper::getBinaryStream( sal_Int32 columnIndex )
+Reference< css::io::XInputStream > SAL_CALL ContentResultSetWrapper::getBinaryStream( sal_Int32 columnIndex )
     throw( SQLException,
            RuntimeException, std::exception )
 {
@@ -1258,7 +1257,7 @@ Reference< com::sun::star::io::XInputStream > SAL_CALL ContentResultSetWrapper::
 }
 
 //virtual
-Reference< com::sun::star::io::XInputStream > SAL_CALL ContentResultSetWrapper::getCharacterStream( sal_Int32 columnIndex )
+Reference< css::io::XInputStream > SAL_CALL ContentResultSetWrapper::getCharacterStream( sal_Int32 columnIndex )
     throw( SQLException,
            RuntimeException, std::exception )
 {
@@ -1266,7 +1265,7 @@ Reference< com::sun::star::io::XInputStream > SAL_CALL ContentResultSetWrapper::
 }
 
 //virtual
-Any SAL_CALL ContentResultSetWrapper::getObject( sal_Int32 columnIndex, const Reference< com::sun::star::container::XNameAccess >& typeMap )
+Any SAL_CALL ContentResultSetWrapper::getObject( sal_Int32 columnIndex, const Reference< css::container::XNameAccess >& typeMap )
     throw( SQLException,
            RuntimeException, std::exception )
 {
@@ -1346,7 +1345,7 @@ void SAL_CALL ContentResultSetWrapperListener::release()
 }
 
 css::uno::Any SAL_CALL ContentResultSetWrapperListener::queryInterface( const css::uno::Type & rType )
-    throw( com::sun::star::uno::RuntimeException, std::exception )
+    throw( css::uno::RuntimeException, std::exception )
 {
     //list all interfaces inclusive baseclasses of interfaces
     css::uno::Any aRet = cppu::queryInterface( rType,
@@ -1395,7 +1394,7 @@ void SAL_CALL ContentResultSetWrapperListener::vetoableChange( const PropertyCha
 
 void SAL_CALL ContentResultSetWrapperListener::impl_OwnerDies()
 {
-    m_pOwner = NULL;
+    m_pOwner = nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

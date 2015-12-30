@@ -538,8 +538,7 @@ void generateAddinConstructorAndHelper(std::ostream& o,
             "        css::uno::Reference< css::uno::XInterface > xIface =\n"
             "            xProvider->createInstanceWithArguments(sReadOnlyView, "
             "aArguments);\n\n"
-            "         m_xHAccess = css::uno::Reference<\n            "
-            "css::container::XHierarchicalNameAccess >(xIface, css::uno::UNO_QUERY);"
+            "         m_xHAccess.set(xIface, css::uno::UNO_QUERY);"
             "\n\n";
 
         o << "        // extend arguments to create a view for all locales to get "
@@ -551,8 +550,7 @@ void generateAddinConstructorAndHelper(std::ostream& o,
             "        // create view for all locales\n"
             "        xIface = xProvider->createInstanceWithArguments(sReadOnlyView, "
             "aArguments);\n\n"
-            "        m_xCompAccess = css::uno::Reference<\n            "
-            "css::container::XHierarchicalNameAccess >(xIface, css::uno::UNO_QUERY);\n";
+            "        m_xCompAccess.set(xIface, css::uno::UNO_QUERY);\n";
 
         o << "    }\n    catch ( css::uno::Exception & ) {\n    }\n}\n\n";
 
@@ -586,7 +584,7 @@ void generateMemberInitialization(std::ostream& o,
              i != members.end(); ++i)
         {
             sal_Int32 rank;
-            if ((manager->decompose(i->type, true, 0, &rank, 0, 0)
+            if ((manager->decompose(i->type, true, nullptr, &rank, nullptr, nullptr)
                  <= codemaker::UnoType::SORT_CHAR)
                 && rank == 0)
             {
@@ -995,7 +993,7 @@ void generateSkeleton(ProgramOptions const & options,
 
     OString compFileName;
     OString tmpFileName;
-    std::ostream* pofs = NULL;
+    std::ostream* pofs = nullptr;
     bool standardout = getOutputStream(options, ".cxx",
                                        &pofs, compFileName, tmpFileName);
 
@@ -1156,7 +1154,7 @@ void generateCalcAddin(ProgramOptions const & options,
 
     OString compFileName;
     OString tmpFileName;
-    std::ostream* pofs = NULL;
+    std::ostream* pofs = nullptr;
     bool standardout = getOutputStream(options, ".cxx",
                                        &pofs, compFileName, tmpFileName);
 

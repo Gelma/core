@@ -82,9 +82,9 @@ PresenterPaneBorderManager::PresenterPaneBorderManager (
     {
         mxPointer = awt::Pointer::create(rxContext);
 
-        mxPresenterHelper = Reference<drawing::XPresenterHelper>(
+        mxPresenterHelper.set(
             xFactory->createInstanceWithContext(
-                OUString("com.sun.star.comp.Draw.PresenterHelper"),
+                "com.sun.star.comp.Draw.PresenterHelper",
                 rxContext),
             UNO_QUERY_THROW);
     }
@@ -216,7 +216,7 @@ void SAL_CALL PresenterPaneBorderManager::initialize (const Sequence<Any>& rArgu
     {
         try
         {
-            mxParentWindow = Reference<awt::XWindow>(rArguments[0], UNO_QUERY_THROW);
+            mxParentWindow.set(rArguments[0], UNO_QUERY_THROW);
 
             // Get the outer and inner windows from the argument list and
             // build a window list of it.
@@ -491,7 +491,7 @@ void PresenterPaneBorderManager::ReleaseMouse (const Reference<awt::XWindow>& rx
 }
 
 void PresenterPaneBorderManager::ThrowIfDisposed()
-    throw (::com::sun::star::lang::DisposedException)
+    throw (css::lang::DisposedException)
 {
     if (rBHelper.bDisposed || rBHelper.bInDispose)
     {

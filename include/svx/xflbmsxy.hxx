@@ -26,39 +26,39 @@
 class SVX_DLLPUBLIC XFillBmpSizeXItem : public SfxMetricItem
 {
 public:
-                            TYPEINFO_OVERRIDE();
+                            static SfxPoolItem* CreateDefault();
                             XFillBmpSizeXItem( long nSizeX = 0 );
                             SVX_DLLPRIVATE XFillBmpSizeXItem( SvStream& rIn );
 
-    SVX_DLLPRIVATE virtual SfxPoolItem*    Clone( SfxItemPool* pPool = 0 ) const SAL_OVERRIDE;
-    SVX_DLLPRIVATE virtual SfxPoolItem*    Create( SvStream& rIn, sal_uInt16 nVer ) const SAL_OVERRIDE;
+    SVX_DLLPRIVATE virtual SfxPoolItem*    Clone( SfxItemPool* pPool = nullptr ) const override;
+    SVX_DLLPRIVATE virtual SfxPoolItem*    Create( SvStream& rIn, sal_uInt16 nVer ) const override;
 
     SVX_DLLPRIVATE virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
-                                    OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    OUString &rText, const IntlWrapper * = nullptr ) const override;
     // This item records both metrical and percentage quotation (negative);
     // We have to consider that.
-    SVX_DLLPRIVATE virtual bool HasMetrics() const SAL_OVERRIDE;
+    SVX_DLLPRIVATE virtual bool HasMetrics() const override;
 };
 
 class SVX_DLLPUBLIC XFillBmpSizeYItem : public SfxMetricItem
 {
 public:
-                            TYPEINFO_OVERRIDE();
+                            static SfxPoolItem* CreateDefault();
                             XFillBmpSizeYItem( long nSizeY = 0 );
                             SVX_DLLPRIVATE XFillBmpSizeYItem( SvStream& rIn );
 
-    SVX_DLLPRIVATE virtual SfxPoolItem*    Clone( SfxItemPool* pPool = 0 ) const SAL_OVERRIDE;
-    SVX_DLLPRIVATE virtual SfxPoolItem*    Create( SvStream& rIn, sal_uInt16 nVer ) const SAL_OVERRIDE;
+    SVX_DLLPRIVATE virtual SfxPoolItem*    Clone( SfxItemPool* pPool = nullptr ) const override;
+    SVX_DLLPRIVATE virtual SfxPoolItem*    Create( SvStream& rIn, sal_uInt16 nVer ) const override;
 
     SVX_DLLPRIVATE virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
-                                    OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    OUString &rText, const IntlWrapper * = nullptr ) const override;
     // This item records both metrical and percentage quotation (negative);
     // We have to consider that.
-    SVX_DLLPRIVATE virtual bool HasMetrics() const SAL_OVERRIDE;
+    SVX_DLLPRIVATE virtual bool HasMetrics() const override;
 };
 
 #endif

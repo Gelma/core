@@ -54,13 +54,41 @@ bool getBool(utl::OConfigurationNode const & aNode, const char* pNodeName)
     return comphelper::getBOOL(aNode.getNodeValue(pNodeName));
 }
 
-} //end anonymous namespace
-
-ResourceManager& ResourceManager::Instance()
+css::uno::Sequence<OUString> BuildContextList (ContextList rContextList, bool isEnabled)
 {
-    static ResourceManager maInstance;
-    return maInstance;
+    const ::std::vector<ContextList::Entry>& entries = rContextList.GetEntries();
+
+     css::uno::Sequence<OUString> result(entries.size());
+     long i = 0;
+
+    for (::std::vector<ContextList::Entry>::const_iterator iEntry(entries.begin()), iEnd(entries.end());
+                                                            iEntry!=iEnd; ++iEntry)
+         {
+            OUString appName = iEntry->maContext.msApplication;
+            OUString contextName = iEntry->maContext.msContext;
+            OUString menuCommand = iEntry->msMenuCommand;
+
+            OUString visibility;
+            if (isEnabled)
+                visibility = "visible";
+            else
+                visibility = "hidden";
+
+            OUString element = appName + ", " + contextName +", " + visibility;
+
+            if (!menuCommand.isEmpty())
+                element += ", "+menuCommand;
+
+            result[i] = element;
+
+            i++;
+        }
+
+    return result;
+
 }
+
+} //end anonymous namespace
 
 ResourceManager::ResourceManager()
     : maDecks(),
@@ -76,9 +104,27 @@ ResourceManager::~ResourceManager()
 {
 }
 
-const DeckDescriptor* ResourceManager::GetDeckDescriptor(const OUString& rsDeckId) const
+void ResourceManager::InitDeckContext(const Context& rContext)
+{
+    DeckContainer::iterator iDeck;
+    for (iDeck = maDecks.begin(); iDeck != maDecks.end(); ++iDeck)
+    {
+        bool bIsEnabled;
+        const ContextList::Entry* pMatchingEntry = iDeck->maContextList.GetMatch(rContext);
+
+        if (pMatchingEntry)
+            bIsEnabled = pMatchingEntry->mbIsInitiallyVisible;
+        else
+            bIsEnabled = false;
+
+        iDeck->mbIsEnabled = bIsEnabled;
+    }
+}
+
+const DeckDescriptor* ResourceManager::ImplGetDeckDescriptor(const OUString& rsDeckId) const
 {
     DeckContainer::const_iterator iDeck;
+
     for (iDeck = maDecks.begin(); iDeck != maDecks.end(); ++iDeck)
     {
         if (iDeck->mbExperimental && !maMiscOptions.IsExperimentalMode())
@@ -86,10 +132,20 @@ const DeckDescriptor* ResourceManager::GetDeckDescriptor(const OUString& rsDeckI
         if (iDeck->msId.equals(rsDeckId))
             return &*iDeck;
     }
-    return NULL;
+    return nullptr;
+}
+const DeckDescriptor* ResourceManager::GetDeckDescriptor(const OUString& rsDeckId) const
+{
+    return ImplGetDeckDescriptor( rsDeckId );
 }
 
-const PanelDescriptor* ResourceManager::GetPanelDescriptor(const OUString& rsPanelId) const
+DeckDescriptor* ResourceManager::GetDeckDescriptor(const OUString& rsDeckId)
+{
+      const ResourceManager* constMe = this;
+      return const_cast<DeckDescriptor*>( constMe->ImplGetDeckDescriptor(rsDeckId) );
+}
+
+const PanelDescriptor* ResourceManager::ImplGetPanelDescriptor(const OUString& rsPanelId) const
 {
     PanelContainer::const_iterator iPanel;
     for (iPanel = maPanels.begin(); iPanel != maPanels.end(); ++iPanel)
@@ -97,83 +153,17 @@ const PanelDescriptor* ResourceManager::GetPanelDescriptor(const OUString& rsPan
         if (iPanel->msId.equals(rsPanelId))
             return &*iPanel;
     }
-    return NULL;
+    return nullptr;
+}
+const PanelDescriptor* ResourceManager::GetPanelDescriptor(const OUString& rsPanelId) const
+{
+    return ImplGetPanelDescriptor( rsPanelId );
 }
 
-void ResourceManager::SetIsDeckEnabled(const OUString& rsDeckId, const bool bIsEnabled)
+PanelDescriptor* ResourceManager::GetPanelDescriptor(const OUString& rsPanelId)
 {
-    DeckContainer::iterator iDeck;
-    for (iDeck = maDecks.begin(); iDeck != maDecks.end(); ++iDeck)
-    {
-        if (iDeck->mbExperimental && !maMiscOptions.IsExperimentalMode())
-            continue;
-        if (iDeck->msId.equals(rsDeckId))
-        {
-            iDeck->mbIsEnabled = bIsEnabled;
-            return;
-        }
-    }
-}
-
-void ResourceManager::SetDeckTitle(const OUString& rsDeckId, const OUString& sTitle)
-{
-    DeckContainer::iterator iDeck;
-    for (iDeck = maDecks.begin(); iDeck != maDecks.end(); ++iDeck)
-    {
-        if (iDeck->mbExperimental && !maMiscOptions.IsExperimentalMode())
-            continue;
-        if (iDeck->msId.equals(rsDeckId))
-        {
-            iDeck->msTitle = sTitle;
-            iDeck->msHelpText = sTitle;
-            return;
-        }
-    }
-}
-
-void ResourceManager::SetDeckToDescriptor(const OUString& rsDeckId, VclPtr<Deck> aDeck)
-{
-    DeckContainer::iterator iDeck;
-    for (iDeck = maDecks.begin(); iDeck != maDecks.end(); ++iDeck)
-    {
-        if (iDeck->mbExperimental && !maMiscOptions.IsExperimentalMode())
-            continue;
-        if (iDeck->msId.equals(rsDeckId))
-        {
-            iDeck->mpDeck = aDeck;
-            return;
-        }
-    }
-}
-
-void ResourceManager::SetDeckOrderIndex(const OUString& rsDeckId, const sal_Int32 orderIndex)
-{
-    DeckContainer::iterator iDeck;
-    for (iDeck = maDecks.begin(); iDeck != maDecks.end(); ++iDeck)
-    {
-        if (iDeck->mbExperimental && !maMiscOptions.IsExperimentalMode())
-            continue;
-        if (iDeck->msId.equals(rsDeckId))
-        {
-            iDeck->mnOrderIndex = orderIndex;
-            return;
-        }
-    }
-}
-
-void ResourceManager::SetPanelOrderIndex(const OUString& rsPanelId, const sal_Int32 orderIndex)
-{
-    PanelContainer::iterator iPanel;
-    for (iPanel = maPanels.begin(); iPanel != maPanels.end(); ++iPanel)
-    {
-        if (iPanel->mbExperimental && !maMiscOptions.IsExperimentalMode())
-            continue;
-        if (iPanel->msId.equals(rsPanelId))
-        {
-            iPanel->mnOrderIndex = orderIndex;
-            return;
-        }
-    }
+      const ResourceManager* constMe = this;
+      return const_cast<PanelDescriptor*>( constMe->ImplGetPanelDescriptor(rsPanelId) );
 }
 
 const ResourceManager::DeckContextDescriptorContainer& ResourceManager::GetMatchingDecks (
@@ -190,14 +180,18 @@ const ResourceManager::DeckContextDescriptorContainer& ResourceManager::GetMatch
     {
         if (iDeck->mbExperimental && !maMiscOptions.IsExperimentalMode())
             continue;
+
         const DeckDescriptor& rDeckDescriptor (*iDeck);
-        if (rDeckDescriptor.maContextList.GetMatch(rContext) == NULL)
+        if (rDeckDescriptor.maContextList.GetMatch(rContext) == nullptr)
             continue;
+
         DeckContextDescriptor aDeckContextDescriptor;
         aDeckContextDescriptor.msId = rDeckDescriptor.msId;
-        aDeckContextDescriptor.mbIsEnabled =
-            ! bIsDocumentReadOnly
-            || IsDeckEnabled(rDeckDescriptor.msId, rContext, rxController);
+
+        aDeckContextDescriptor.mbIsEnabled = (! bIsDocumentReadOnly || IsDeckEnabled(rDeckDescriptor.msId, rContext, rxController) )
+                                             && rDeckDescriptor.mbIsEnabled;
+
+
         aOrderedIds.insert(::std::multimap<sal_Int32,DeckContextDescriptor>::value_type(
                 rDeckDescriptor.mnOrderIndex,
                 aDeckContextDescriptor));
@@ -231,7 +225,7 @@ const ResourceManager::PanelContextDescriptorContainer& ResourceManager::GetMatc
             continue;
 
         const ContextList::Entry* pEntry = rPanelDescriptor.maContextList.GetMatch(rContext);
-        if (pEntry == NULL)
+        if (pEntry == nullptr)
             continue;
 
         PanelContextDescriptor aPanelContextDescriptor;
@@ -282,20 +276,98 @@ void ResourceManager::ReadDeckList()
         rDeckDescriptor.msHighContrastTitleBarIconURL = getString(aDeckNode, "HighContrastTitleBarIconURL");
         rDeckDescriptor.msHelpURL = getString(aDeckNode, "HelpURL");
         rDeckDescriptor.msHelpText = rDeckDescriptor.msTitle;
-        rDeckDescriptor.mbIsEnabled = true;
+    //  rDeckDescriptor.mbIsEnabled = true; // TODO ??? update rDeckDescriptor.mbIsEnabled according to context , see IsDeckEnabled ?
         rDeckDescriptor.mnOrderIndex = getInt32(aDeckNode, "OrderIndex");
         rDeckDescriptor.mbExperimental = getBool(aDeckNode, "IsExperimental");
+
+        rDeckDescriptor.msNodeName = aDeckNodeNames[nReadIndex];
 
         ReadContextList(
             aDeckNode,
             rDeckDescriptor.maContextList,
             OUString());
+
     }
 
     // When there where invalid nodes then we have to adapt the size
     // of the deck vector.
     if (nWriteIndex<nCount)
         maDecks.resize(nWriteIndex);
+}
+
+void ResourceManager::SaveDecksSettings(const Context& rContext)
+{
+
+    DeckContainer::const_iterator iDeck;
+    for (iDeck = maDecks.begin(); iDeck != maDecks.end(); ++iDeck)
+    {
+       const ContextList::Entry* pMatchingEntry = iDeck->maContextList.GetMatch(rContext);
+       if (pMatchingEntry)
+       {
+            const DeckDescriptor* pDeckDesc = GetDeckDescriptor(iDeck->msId);
+            if (pDeckDesc)
+                SaveDeckSettings(pDeckDesc);
+       }
+
+    }
+}
+
+void ResourceManager::SaveDeckSettings(const DeckDescriptor* pDeckDesc)
+{
+    const utl::OConfigurationTreeRoot aDeckRootNode(
+                                    comphelper::getProcessComponentContext(),
+                                    OUString("org.openoffice.Office.UI.Sidebar/Content/DeckList"),
+                                    true);
+    if (!aDeckRootNode.isValid())
+        return;
+
+    // save deck settings
+
+    ::uno::Sequence< OUString > sContextList = BuildContextList(pDeckDesc->maContextList, pDeckDesc->mbIsEnabled);
+
+    utl::OConfigurationNode aDeckNode (aDeckRootNode.openNode(pDeckDesc->msNodeName));
+
+    aDeckNode.setNodeValue("Title", makeAny(pDeckDesc->msTitle));
+    aDeckNode.setNodeValue("OrderIndex", makeAny(pDeckDesc->mnOrderIndex));
+    aDeckNode.setNodeValue("ContextList", makeAny( sContextList ));
+
+    aDeckRootNode.commit();
+
+    // save panel settings
+
+    const utl::OConfigurationTreeRoot aPanelRootNode(
+                                    comphelper::getProcessComponentContext(),
+                                    OUString("org.openoffice.Office.UI.Sidebar/Content/PanelList"),
+                                    true);
+
+    if (!aPanelRootNode.isValid())
+        return;
+
+    if (!pDeckDesc->mpDeck) // the deck has not been edited
+        return;
+
+    SharedPanelContainer rPanels = pDeckDesc->mpDeck->GetPanels();
+
+    for ( SharedPanelContainer::iterator iPanel(rPanels.begin()), iEnd(rPanels.end());
+              iPanel!=iEnd; ++iPanel)
+            {
+                Panel* aPanel = *iPanel;
+                OUString panelId = aPanel->GetId();
+                bool isExpanded = aPanel->IsExpanded();
+                const PanelDescriptor* pPanelDesc = GetPanelDescriptor(panelId);
+
+                ::uno::Sequence< OUString > sPanelContextList = BuildContextList(pPanelDesc->maContextList, isExpanded);
+
+                utl::OConfigurationNode aPanelNode (aPanelRootNode.openNode(pPanelDesc->msNodeName));
+
+                aPanelNode.setNodeValue("Title", makeAny(pPanelDesc->msTitle));
+                aPanelNode.setNodeValue("OrderIndex", makeAny(pPanelDesc->mnOrderIndex));
+                aPanelNode.setNodeValue("ContextList", makeAny( sPanelContextList ));
+
+            }
+
+     aPanelRootNode.commit();
+
 }
 
 void ResourceManager::ReadPanelList()
@@ -333,6 +405,8 @@ void ResourceManager::ReadPanelList()
         rPanelDescriptor.mbExperimental = getBool(aPanelNode, "IsExperimental");
         const OUString sDefaultMenuCommand(getString(aPanelNode, "DefaultMenuCommand"));
 
+        rPanelDescriptor.msNodeName = aPanelNodeNames[nReadIndex];
+
         ReadContextList(aPanelNode, rPanelDescriptor.maContextList, sDefaultMenuCommand);
     }
 
@@ -358,6 +432,7 @@ void ResourceManager::ReadContextList (
     for (sal_Int32 nIndex=0; nIndex<nCount; ++nIndex)
     {
         const OUString sValue (aValues[nIndex]);
+
         sal_Int32 nCharacterIndex (0);
         const OUString sApplicationName (sValue.getToken(0, ',', nCharacterIndex).trim());
         if (nCharacterIndex < 0)
@@ -404,6 +479,7 @@ void ResourceManager::ReadContextList (
         // for Impress).
         std::vector<EnumContext::Application> aApplications;
         EnumContext::Application eApplication (EnumContext::GetApplicationEnum(sApplicationName));
+
         if (eApplication == EnumContext::Application_None
             && !sApplicationName.equals(EnumContext::GetApplicationName(EnumContext::Application_None)))
         {
@@ -440,7 +516,7 @@ void ResourceManager::ReadContextList (
             }
             else
             {
-                SAL_WARN("sfx2.sidebar", "application name " << sApplicationName << " not recognized");
+                SAL_WARN("sfx.sidebar", "application name " << sApplicationName << " not recognized");
                 continue;
             }
         }
@@ -454,7 +530,7 @@ void ResourceManager::ReadContextList (
         const EnumContext::Context eContext (EnumContext::GetContextEnum(sContextName));
         if (eContext == EnumContext::Context_Unknown)
         {
-            SAL_WARN("sfx2.sidebar", "context name " << sContextName << " not recognized");
+            SAL_WARN("sfx.sidebar", "context name " << sContextName << " not recognized");
             continue;
         }
 
@@ -470,6 +546,7 @@ void ResourceManager::ReadContextList (
             OSL_FAIL("unrecognized state");
             continue;
         }
+
 
         // Add context descriptors.
         std::vector<EnumContext::Application>::const_iterator iApplication;
@@ -580,7 +657,7 @@ void ResourceManager::StorePanelExpansionState (
         if (iPanel->msId.equals(rsPanelId))
         {
             ContextList::Entry* pEntry(iPanel->maContextList.GetMatch(rContext));
-            if (pEntry != NULL)
+            if (pEntry != nullptr)
                 pEntry->mbIsInitiallyVisible = bExpansionState;
         }
     }
@@ -630,39 +707,43 @@ bool ResourceManager::IsDeckEnabled (
                         const Context& rContext,
                         const Reference<frame::XController>& rxController)
 {
+
     // Check if any panel that matches the current context can be
     // displayed.
-    ResourceManager::PanelContextDescriptorContainer aPanelContextDescriptors;
+    PanelContextDescriptorContainer aPanelContextDescriptors;
 
-    ResourceManager::Instance().GetMatchingPanels(aPanelContextDescriptors,
-                                                  rContext, rsDeckId, rxController);
+    GetMatchingPanels(aPanelContextDescriptors, rContext, rsDeckId, rxController);
 
-    ResourceManager::PanelContextDescriptorContainer::const_iterator iPanel;
+    PanelContextDescriptorContainer::const_iterator iPanel;
     for (iPanel = aPanelContextDescriptors.begin(); iPanel != aPanelContextDescriptors.end(); ++iPanel)
     {
         if (iPanel->mbShowForReadOnlyDocuments)
             return true;
     }
-
     return false;
 }
 
 void ResourceManager::UpdateModel(css::uno::Reference<css::frame::XModel> xModel)
 {
-    for (DeckContainer::iterator itr = maDecks.begin(); itr != maDecks.end(); ++itr) {
+    for (DeckContainer::iterator itr = maDecks.begin(); itr != maDecks.end(); ++itr)
+    {
         if (!itr->mpDeck)
             continue;
 
         const SharedPanelContainer& rContainer = itr->mpDeck->GetPanels();
 
-        for (SharedPanelContainer::const_iterator it = rContainer.begin(); it != rContainer.end(); ++it) {
+        for (SharedPanelContainer::const_iterator it = rContainer.begin(); it != rContainer.end(); ++it)
+        {
             css::uno::Reference<css::ui::XUpdateModel> xPanel((*it)->GetPanelComponent(), css::uno::UNO_QUERY);
             xPanel->updateModel(xModel);
         }
-
     }
+}
 
-
+void ResourceManager::disposeDecks()
+{
+    for (DeckContainer::iterator itr = maDecks.begin(); itr != maDecks.end(); ++itr)
+        itr->mpDeck.disposeAndClear();
 }
 
 } } // end of namespace sfx2::sidebar

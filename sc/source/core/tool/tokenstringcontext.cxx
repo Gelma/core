@@ -21,10 +21,9 @@ namespace {
 
 void insertAllNames( TokenStringContext::IndexNameMapType& rMap, const ScRangeName& rNames )
 {
-    ScRangeName::const_iterator it = rNames.begin(), itEnd = rNames.end();
-    for (; it != itEnd; ++it)
+    for (auto const& it : rNames)
     {
-        const ScRangeData* pData = it->second;
+        const ScRangeData *const pData = it.second.get();
         rMap.insert(
             TokenStringContext::IndexNameMapType::value_type(pData->GetIndex(), pData->GetName()));
     }
@@ -36,7 +35,7 @@ TokenStringContext::TokenStringContext( const ScDocument* pDoc, formula::Formula
     meGram(eGram),
     mpRefConv(ScCompiler::GetRefConvention(formula::FormulaGrammar::extractRefConvention(eGram)))
 {
-    ScCompiler aComp(NULL, ScAddress());
+    ScCompiler aComp(nullptr, ScAddress());
     mxOpCodeMap = aComp.GetOpCodeMap(formula::FormulaGrammar::extractFormulaLanguage(eGram));
     if (mxOpCodeMap)
         maErrRef = mxOpCodeMap->getSymbol(ocErrRef);

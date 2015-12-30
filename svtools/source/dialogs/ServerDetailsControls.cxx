@@ -80,10 +80,9 @@ void DetailsContainer::setActive( bool bActive )
     m_bIsActive = bActive;
 }
 
-IMPL_LINK_NOARG( DetailsContainer, ValueChangeHdl )
+IMPL_LINK_NOARG_TYPED( DetailsContainer, ValueChangeHdl, Edit&, void )
 {
     notifyChange( );
-    return 0;
 }
 
 HostDetailsContainer::HostDetailsContainer( VclBuilderContainer* pBuilder, sal_uInt16 nPort, const OUString& sScheme ) :
@@ -137,6 +136,7 @@ bool HostDetailsContainer::setUrl( const INetURLObject& rUrl )
 
     if ( bSuccess )
     {
+        m_sHost = rUrl.GetHost( );
         m_pEDHost->SetText( rUrl.GetHost( ) );
         m_pEDPort->SetValue( rUrl.GetPort( ) );
         m_pEDRoot->SetText( rUrl.GetURLPath() );
@@ -282,7 +282,7 @@ CmisDetailsContainer::CmisDetailsContainer( VclBuilderContainer* pBuilder, OUStr
 {
     Reference< XComponentContext > xContext = ::comphelper::getProcessComponentContext();
     Reference< XInteractionHandler > xGlobalInteractionHandler(
-        InteractionHandler::createWithParent(xContext, 0), UNO_QUERY );
+        InteractionHandler::createWithParent(xContext, nullptr), UNO_QUERY );
     m_xCmdEnv = new ucbhelper::CommandEnvironment( xGlobalInteractionHandler, Reference< XProgressHandler >() );
 
     pBuilder->get( m_pFTRepository, "repositoryLabel" );
@@ -434,14 +434,13 @@ IMPL_LINK_NOARG_TYPED( CmisDetailsContainer, RefreshReposHdl, Button*, void  )
     // temporary remember the password
     try
     {
-        if( xMasterPasswd->isPersistentStoringAllowed() && !sUrl.isEmpty() && !m_sUsername.isEmpty() && !m_sPassword.isEmpty() )
+        if( !sUrl.isEmpty() && !m_sUsername.isEmpty() && !m_sPassword.isEmpty() )
         {
             Reference< XInteractionHandler > xInteractionHandler(
-                InteractionHandler::createWithParent( xContext, 0 ),
+                InteractionHandler::createWithParent( xContext, nullptr ),
                 UNO_QUERY );
 
-            Sequence< OUString > aPasswd( 1 );
-            aPasswd[0] = m_sPassword;
+            Sequence<OUString> aPasswd { m_sPassword };
 
             xMasterPasswd->add(
                 sUrl, m_sUsername, aPasswd, xInteractionHandler );
@@ -452,8 +451,7 @@ IMPL_LINK_NOARG_TYPED( CmisDetailsContainer, RefreshReposHdl, Button*, void  )
 
     // Get the Content
     ::ucbhelper::Content aCnt( sUrl, m_xCmdEnv, comphelper::getProcessComponentContext() );
-    Sequence< OUString > aProps( 1 );
-    aProps[0] = "Title";
+    Sequence<OUString> aProps { "Title" };
 
     try
     {
@@ -492,10 +490,9 @@ IMPL_LINK_NOARG_TYPED( CmisDetailsContainer, RefreshReposHdl, Button*, void  )
     {}
 }
 
-IMPL_LINK_NOARG( CmisDetailsContainer, SelectRepoHdl  )
+IMPL_LINK_NOARG_TYPED( CmisDetailsContainer, SelectRepoHdl, ListBox&, void )
 {
     selectRepository( );
-    return 0;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

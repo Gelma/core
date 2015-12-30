@@ -208,18 +208,18 @@ public class dbg {
 
         if (ps.Value instanceof String[] ){
             String[] values = (String[]) ps.Value;
-            String oneValue = "value is an empty String[]";
+            StringBuilder oneValue = new StringBuilder("value is an empty String[]");
             if (values.length > 0){
-                oneValue = "['";
+                oneValue.append("['");
                 for( int i=0; i < values.length; i++){
-                    oneValue += values[i];
-                    if (i+1 < values.length) oneValue += "';'";
+                    oneValue.append(values[i]);
+                    if (i+1 < values.length) oneValue.append("';'");
                 }
-                oneValue += "']";
+                oneValue.append("']");
             }
             out.println("--------");
             out.println("   Name: '" + ps.Name + "' contains String[]:");
-            out.println(oneValue);
+            out.println(oneValue.toString());
             out.println("--------");
 
         } else if (ps.Value instanceof PropertyValue){
@@ -258,15 +258,15 @@ public class dbg {
     public static void getSuppServices (Object aObject) {
         XServiceInfo xSI = UnoRuntime.queryInterface(XServiceInfo.class,aObject);
         printArray(xSI.getSupportedServiceNames());
-        String str="Therein not Supported Service";
+        StringBuilder str = new StringBuilder("Therein not Supported Service");
         boolean notSupportedServices = false;
         for (int i=0;i<xSI.getSupportedServiceNames().length;i++) {
             if (! xSI.supportsService(xSI.getSupportedServiceNames()[i])) {
                 notSupportedServices = true;
-                str+="\n" + xSI.getSupportedServiceNames()[i];
+                str.append("\n").append(xSI.getSupportedServiceNames()[i]);
             }
         }
         if (notSupportedServices)
-            System.out.println(str);
+            System.out.println(str.toString());
     }
 }

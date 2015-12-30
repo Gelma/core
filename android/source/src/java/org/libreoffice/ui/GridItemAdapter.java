@@ -9,15 +9,6 @@
 
 package org.libreoffice.ui;
 
-import org.libreoffice.R;
-import org.libreoffice.storage.IFile;
-
-
-import java.io.File;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.util.List;
-
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,12 +17,11 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.graphics.BitmapFactory;
-import android.graphics.Bitmap;
-import android.graphics.BlurMaskFilter;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Color;
+
+import org.libreoffice.R;
+import org.libreoffice.storage.IFile;
+
+import java.util.List;
 
 public class GridItemAdapter extends BaseAdapter {
     Context mContext;
@@ -69,7 +59,7 @@ public class GridItemAdapter extends BaseAdapter {
         if (convertView == null) {
             gridView = new View(mContext);
         } else {
-            gridView = (View) convertView;
+            gridView = convertView;
         }
 
         // get layout from mobile.xml
@@ -111,7 +101,9 @@ public class GridItemAdapter extends BaseAdapter {
                 case FileUtilities.CALC:
                     imageView.setImageResource(R.drawable.calc);
                     break;
-                case FileUtilities.DRAWING: // FIXME: only for now ...
+                case FileUtilities.DRAWING:
+                    imageView.setImageResource(R.drawable.draw);
+                    break;
                 case FileUtilities.IMPRESS:
                     imageView.setImageResource(R.drawable.impress);
                     break;

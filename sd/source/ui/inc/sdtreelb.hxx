@@ -76,8 +76,8 @@ public:
         ::sd::DrawDocShell&     GetDocShell() const { return mrDocShell;}
         NavigatorDragType   GetDragType() const { return meDragType;}
 
-        static const ::com::sun::star::uno::Sequence< sal_Int8 >& getUnoTunnelId();
-        static SdPageObjsTransferable* getImplementation( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >& rxData ) throw();
+        static const css::uno::Sequence< sal_Int8 >& getUnoTunnelId();
+        static SdPageObjsTransferable* getImplementation( const css::uno::Reference< css::uno::XInterface >& rxData ) throw();
         /** Return a temporary transferable data flavor that is used
             internally in the navigator for reordering entries.  Its
             lifetime ends with the office application.
@@ -96,11 +96,11 @@ public:
         NavigatorDragType   meDragType;
         SAL_DLLPRIVATE virtual               ~SdPageObjsTransferable();
 
-        SAL_DLLPRIVATE virtual void      AddSupportedFormats() SAL_OVERRIDE;
-        SAL_DLLPRIVATE virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) SAL_OVERRIDE;
-        SAL_DLLPRIVATE virtual void      DragFinished( sal_Int8 nDropAction ) SAL_OVERRIDE;
+        SAL_DLLPRIVATE virtual void      AddSupportedFormats() override;
+        SAL_DLLPRIVATE virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) override;
+        SAL_DLLPRIVATE virtual void      DragFinished( sal_Int8 nDropAction ) override;
 
-        SAL_DLLPRIVATE virtual sal_Int64 SAL_CALL getSomething( const ::com::sun::star::uno::Sequence< sal_Int8 >& rId ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        SAL_DLLPRIVATE virtual sal_Int64 SAL_CALL getSomething( const css::uno::Sequence< sal_Int8 >& rId ) throw( css::uno::RuntimeException, std::exception ) override;
     };
 
     friend class SdPageObjsTLB::SdPageObjsTransferable;
@@ -125,23 +125,23 @@ protected:
     SfxMedium*              mpOwnMedium;
     Image                   maImgOle;
     Image                   maImgGraphic;
-    bool                mbLinkableSelected;
+    bool                    mbLinkableSelected;
     OUString                maDocName;
     ::sd::DrawDocShellRef   mxBookmarkDocShRef; ///< for the loading of bookmarks
     VclPtr<SdNavigatorWin>  mpDropNavWin;
     SfxViewFrame*           mpFrame;
     std::vector<OUString>   maTreeItem;
-    bool                mbSaveTreeItemState;
+    bool                    mbSaveTreeItemState;
     OUString                maSelectionEntryText;
 
     // DragSourceHelper
-    virtual void            StartDrag( sal_Int8 nAction, const Point& rPosPixel ) SAL_OVERRIDE;
+    virtual void            StartDrag( sal_Int8 nAction, const Point& rPosPixel ) override;
 
     // DropTargetHelper
-    virtual sal_Int8        AcceptDrop( const AcceptDropEvent& rEvt ) SAL_OVERRIDE;
-    virtual sal_Int8        ExecuteDrop( const ExecuteDropEvent& rEvt ) SAL_OVERRIDE;
+    virtual sal_Int8        AcceptDrop( const AcceptDropEvent& rEvt ) override;
+    virtual sal_Int8        ExecuteDrop( const ExecuteDropEvent& rEvt ) override;
 
-    virtual void            RequestingChildren( SvTreeListEntry* pParent ) SAL_OVERRIDE;
+    virtual void            RequestingChildren( SvTreeListEntry* pParent ) override;
 
     void                    DoDrag();
     void                    OnDragFinished( sal_uInt8 nDropAction );
@@ -173,25 +173,25 @@ protected:
         SvTreeListEntry*  pTarget,
         SvTreeListEntry*  pEntry,
         SvTreeListEntry*& rpNewParent,
-        sal_uLong&        rNewChildPos) SAL_OVERRIDE;
+        sal_uLong&        rNewChildPos) override;
 
     using Window::GetDropTarget;
-    virtual SvTreeListEntry* GetDropTarget (const Point& rLocation) SAL_OVERRIDE;
-    virtual void InitEntry(SvTreeListEntry*, const OUString&, const Image&, const Image&,SvLBoxButtonKind) SAL_OVERRIDE;
+    virtual SvTreeListEntry* GetDropTarget (const Point& rLocation) override;
+    virtual void InitEntry(SvTreeListEntry*, const OUString&, const Image&, const Image&,SvLBoxButtonKind) override;
 
 public:
 
     SdPageObjsTLB( vcl::Window* pParent, const SdResId& rSdResId );
     SdPageObjsTLB( vcl::Window* pParent, WinBits nStyle );
                             virtual ~SdPageObjsTLB();
-    virtual void      dispose() SAL_OVERRIDE;
+    virtual void            dispose() override;
 
    // helper function for   GetEntryAltText and GetEntryLongDescription
-    OUString          getAltLongDescText( SvTreeListEntry* pEntry , bool isAltText) const;
-    OUString          GetEntryAltText( SvTreeListEntry* pEntry ) const SAL_OVERRIDE;
-    OUString          GetEntryLongDescription( SvTreeListEntry* pEntry ) const SAL_OVERRIDE;
-    virtual void            SelectHdl() SAL_OVERRIDE;
-    virtual void            KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
+    OUString                getAltLongDescText( SvTreeListEntry* pEntry , bool isAltText) const;
+    OUString                GetEntryAltText( SvTreeListEntry* pEntry ) const override;
+    OUString                GetEntryLongDescription( SvTreeListEntry* pEntry ) const override;
+    virtual void            SelectHdl() override;
+    virtual void            KeyInput( const KeyEvent& rKEvt ) override;
 
     void                    SetViewFrame( SfxViewFrame* pViewFrame ) { mpFrame = pViewFrame; }
 
@@ -199,7 +199,7 @@ public:
     void                    Fill( const SdDrawDocument*, SfxMedium* pSfxMedium, const OUString& rDocName );
     void                    SetShowAllShapes (const bool bShowAllShapes, const bool bFill);
     bool                    GetShowAllShapes() const { return mbShowAllShapes;}
-    bool                    IsEqualToDoc( const SdDrawDocument* pInDoc = NULL );
+    bool                    IsEqualToDoc( const SdDrawDocument* pInDoc = nullptr );
     bool                    HasSelectedChildren( const OUString& rName );
     bool                    SelectEntry( const OUString& rName );
     OUString                GetSelectEntry();
@@ -219,7 +219,7 @@ public:
 
     std::vector<OUString> GetSelectEntryList (const sal_uInt16 nDepth) const;
 
-    SdDrawDocument*         GetBookmarkDoc(SfxMedium* pMedium = NULL);
+    SdDrawDocument*         GetBookmarkDoc(SfxMedium* pMedium = nullptr);
 
     bool                    IsLinkableSelected() const { return mbLinkableSelected; }
 

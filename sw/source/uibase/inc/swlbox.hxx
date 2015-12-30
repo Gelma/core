@@ -22,12 +22,13 @@
 #include <vcl/lstbox.hxx>
 #include <vcl/combobox.hxx>
 #include "swdllapi.h"
-#include <boost/ptr_container/ptr_vector.hpp>
+
+#include <vector>
 
 class SwBoxEntry;
 namespace vcl { class Window; }
 
-typedef boost::ptr_vector<SwBoxEntry> SwEntryLst;
+typedef std::vector<SwBoxEntry> SwEntryList;
 
 class SW_DLLPUBLIC SwBoxEntry
 {
@@ -50,11 +51,11 @@ public:
 // for combo boxes
 class SW_DLLPUBLIC SwComboBox : public ComboBox
 {
-    SwEntryLst              aEntryLst;
-    SwEntryLst              aDelEntryLst;
+    SwEntryList             m_EntryList;
+    SwEntryList             m_DelEntryList;
     SwBoxEntry              aDefault;
 
-    SAL_DLLPRIVATE void InsertSorted(SwBoxEntry* pEntry);
+    SAL_DLLPRIVATE void InsertSorted(SwBoxEntry const& rEntry);
     SAL_DLLPRIVATE void Init();
 
 public:
@@ -63,9 +64,9 @@ public:
     virtual ~SwComboBox();
 
     void                    InsertSwEntry(const SwBoxEntry&);
-    virtual sal_Int32       InsertEntry(const OUString& rStr, sal_Int32 = 0) SAL_OVERRIDE;
+    virtual sal_Int32       InsertEntry(const OUString& rStr, sal_Int32 = 0) override;
 
-    virtual void            RemoveEntryAt(sal_Int32 nPos) SAL_OVERRIDE;
+    virtual void            RemoveEntryAt(sal_Int32 nPos) override;
 
     sal_Int32               GetSwEntryPos(const SwBoxEntry& rEntry) const;
     const SwBoxEntry&       GetSwEntry(sal_Int32) const;

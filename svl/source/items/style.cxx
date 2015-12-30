@@ -58,9 +58,7 @@ aDbgStyleSheetReferences;
 
 #endif
 
-TYPEINIT0(SfxStyleSheetBase)
 
-TYPEINIT3(SfxStyleSheet, SfxStyleSheetBase, SfxListener, SfxBroadcaster)
 
 SfxStyleSheetHintExtended::SfxStyleSheetHintExtended
 (
@@ -86,8 +84,8 @@ SfxStyleSheetHint::SfxStyleSheetHint
 class SfxStyleSheetBasePool_Impl
 {
 private:
-    SfxStyleSheetBasePool_Impl(const SfxStyleSheetBasePool_Impl&) SAL_DELETED_FUNCTION;
-    SfxStyleSheetBasePool_Impl& operator=(const SfxStyleSheetBasePool_Impl&) SAL_DELETED_FUNCTION;
+    SfxStyleSheetBasePool_Impl(const SfxStyleSheetBasePool_Impl&) = delete;
+    SfxStyleSheetBasePool_Impl& operator=(const SfxStyleSheetBasePool_Impl&) = delete;
 public:
     SfxStyleSheetIteratorPtr pIter;
 
@@ -110,7 +108,7 @@ SfxStyleSheetBase::SfxStyleSheetBase( const OUString& rName, SfxStyleSheetBasePo
     , aName( rName )
     , aParent()
     , aFollow( rName )
-    , pSet( NULL )
+    , pSet( nullptr )
     , nMask(mask)
     , nHelpId( 0 )
     , bMySet( false )
@@ -140,7 +138,7 @@ SfxStyleSheetBase::SfxStyleSheetBase( const SfxStyleSheetBase& r )
     if( r.pSet )
         pSet = bMySet ? new SfxItemSet( *r.pSet ) : r.pSet;
     else
-        pSet = NULL;
+        pSet = nullptr;
 }
 
 SfxStyleSheetBase::~SfxStyleSheetBase()
@@ -152,7 +150,7 @@ SfxStyleSheetBase::~SfxStyleSheetBase()
     if( bMySet )
     {
         delete pSet;
-        pSet = 0;
+        pSet = nullptr;
     }
 }
 
@@ -380,13 +378,13 @@ inline bool SfxStyleSheetIterator::IsTrivialSearch()
 
 namespace {
 
-struct DoesStyleMatchStyleSheetPredicate SAL_FINAL : public svl::StyleSheetPredicate
+struct DoesStyleMatchStyleSheetPredicate final : public svl::StyleSheetPredicate
 {
     explicit DoesStyleMatchStyleSheetPredicate(SfxStyleSheetIterator *it)
             : mIterator(it) {;}
 
     bool
-    Check(const SfxStyleSheetBase& styleSheet) SAL_OVERRIDE
+    Check(const SfxStyleSheetBase& styleSheet) override
     {
         bool bMatchFamily = ((mIterator->GetSearchFamily() == SFX_STYLE_FAMILY_ALL) ||
                 ( styleSheet.GetFamily() == mIterator->GetSearchFamily() ));
@@ -411,7 +409,7 @@ struct DoesStyleMatchStyleSheetPredicate SAL_FINAL : public svl::StyleSheetPredi
 
 SfxStyleSheetIterator::SfxStyleSheetIterator(SfxStyleSheetBasePool *pBase,
                                              SfxStyleFamily eFam, sal_uInt16 n)
-    : pAktStyle(NULL)
+    : pAktStyle(nullptr)
     , nAktPosition(0)
 {
     pBasePool=pBase;
@@ -451,7 +449,7 @@ sal_uInt16 SfxStyleSheetIterator::Count()
 
 SfxStyleSheetBase* SfxStyleSheetIterator::operator[](sal_uInt16 nIdx)
 {
-    SfxStyleSheetBase* retval = NULL;
+    SfxStyleSheetBase* retval = nullptr;
     if( IsTrivialSearch())
     {
         retval = pBasePool->pImp->mxIndexedStyleSheets->GetStyleSheetByPosition(nIdx).get();
@@ -471,14 +469,14 @@ SfxStyleSheetBase* SfxStyleSheetIterator::operator[](sal_uInt16 nIdx)
         DoesStyleMatchStyleSheetPredicate predicate(this);
         rtl::Reference< SfxStyleSheetBase > ref =
                 pBasePool->pImp->mxIndexedStyleSheets->GetNthStyleSheetThatMatchesPredicate(nIdx, predicate);
-        if (ref.get() != NULL)
+        if (ref.get() != nullptr)
         {
             nAktPosition = pBasePool->pImp->mxIndexedStyleSheets->FindStyleSheetPosition(*ref);
             retval = ref.get();
         }
     }
 
-    if (retval == NULL)
+    if (retval == nullptr)
     {
         OSL_FAIL("Incorrect index");
     }
@@ -492,14 +490,14 @@ SfxStyleSheetBase* SfxStyleSheetIterator::First()
         return operator[](0);
     }
     else {
-        return NULL;
+        return nullptr;
     }
 }
 
 
 SfxStyleSheetBase* SfxStyleSheetIterator::Next()
 {
-    SfxStyleSheetBase* retval = NULL;
+    SfxStyleSheetBase* retval = nullptr;
 
     if ( IsTrivialSearch() )
     {
@@ -530,7 +528,7 @@ SfxStyleSheetBase* SfxStyleSheetIterator::Next()
                 pBasePool->pImp->mxIndexedStyleSheets->GetNthStyleSheetThatMatchesPredicate(
                         0, predicate, nAktPosition+1);
         retval = ref.get();
-        if (retval != NULL) {
+        if (retval != nullptr) {
             nAktPosition = pBasePool->pImp->mxIndexedStyleSheets->FindStyleSheetPosition(*ref);
         }
     }
@@ -546,7 +544,7 @@ SfxStyleSheetBase* SfxStyleSheetIterator::Find(const OUString& rStr)
             pBasePool->pImp->mxIndexedStyleSheets->FindPositionsByNameAndPredicate(rStr, predicate,
                     svl::IndexedStyleSheets::RETURN_FIRST);
     if (positions.empty()) {
-        return NULL;
+        return nullptr;
     }
 
     unsigned pos = positions.front();
@@ -707,7 +705,7 @@ struct AddStyleSheetCallback : svl::StyleSheetCallback
     explicit AddStyleSheetCallback(SfxStyleSheetBasePool *pool)
     : mPool(pool) {;}
 
-    void DoIt(const SfxStyleSheetBase& ssheet) SAL_OVERRIDE
+    void DoIt(const SfxStyleSheetBase& ssheet) override
     {
         mPool->Add(ssheet);
     }
@@ -771,12 +769,12 @@ void SfxStyleSheetBasePool::Remove( SfxStyleSheetBase* p )
             // this works well under normal conditions (checked breaking and counting
             // on SfxStyleSheetBase constructors and destructors)
 
-            // com::sun::star::uno::Reference< com::sun::star::lang::XComponent > xComp( static_cast< ::cppu::OWeakObject* >((*aIter).get()), com::sun::star::uno::UNO_QUERY );
+            // css::uno::Reference< css::lang::XComponent > xComp( static_cast< ::cppu::OWeakObject* >((*aIter).get()), css::uno::UNO_QUERY );
             // if( xComp.is() ) try
             // {
             //  xComp->dispose();
             // }
-            // catch( com::sun::star::uno::Exception& )
+            // catch( css::uno::Exception& )
             // {
             // }
             Broadcast( SfxStyleSheetHint( SfxStyleSheetHintId::ERASED, *p ) );
@@ -805,22 +803,21 @@ void SfxStyleSheetBasePool::Insert( SfxStyleSheetBase* p )
 namespace
 {
 
-struct StyleSheetDisposerFunctor SAL_FINAL : public svl::StyleSheetDisposer
+struct StyleSheetDisposerFunctor final : public svl::StyleSheetDisposer
 {
     explicit StyleSheetDisposerFunctor(SfxStyleSheetBasePool* pool)
             : mPool(pool) {;}
 
     void
-    Dispose(rtl::Reference<SfxStyleSheetBase> styleSheet) SAL_OVERRIDE
+    Dispose(rtl::Reference<SfxStyleSheetBase> styleSheet) override
     {
         cppu::OWeakObject* weakObject = static_cast< ::cppu::OWeakObject* >(styleSheet.get());
-        com::sun::star::uno::Reference< com::sun::star::lang::XComponent >
-            xComp( weakObject, com::sun::star::uno::UNO_QUERY );
+        css::uno::Reference< css::lang::XComponent > xComp( weakObject, css::uno::UNO_QUERY );
         if( xComp.is() ) try
         {
             xComp->dispose();
         }
-        catch( com::sun::star::uno::Exception& )
+        catch( css::uno::Exception& )
         {
         }
         mPool->Broadcast( SfxStyleSheetHint( SfxStyleSheetHintId::ERASED, *styleSheet.get() ) );
@@ -938,16 +935,16 @@ SfxStyleSheetBase* SfxStyleSheetPool::Create( const OUString& rName,
 }
 
 SfxUnoStyleSheet::SfxUnoStyleSheet( const OUString& _rName, const SfxStyleSheetBasePool& _rPool, SfxStyleFamily _eFamily, sal_uInt16 _nMaske )
-: ::cppu::ImplInheritanceHelper2< SfxStyleSheet, ::com::sun::star::style::XStyle, ::com::sun::star::lang::XUnoTunnel >( _rName, _rPool, _eFamily, _nMaske )
+: ::cppu::ImplInheritanceHelper2< SfxStyleSheet, css::style::XStyle, css::lang::XUnoTunnel >( _rName, _rPool, _eFamily, _nMaske )
 {
 }
 
-SfxUnoStyleSheet* SfxUnoStyleSheet::getUnoStyleSheet( const ::com::sun::star::uno::Reference< ::com::sun::star::style::XStyle >& xStyle )
+SfxUnoStyleSheet* SfxUnoStyleSheet::getUnoStyleSheet( const css::uno::Reference< css::style::XStyle >& xStyle )
 {
     SfxUnoStyleSheet* pRet = dynamic_cast< SfxUnoStyleSheet* >( xStyle.get() );
     if( !pRet )
     {
-        ::com::sun::star::uno::Reference< ::com::sun::star::lang::XUnoTunnel > xUT( xStyle, ::com::sun::star::uno::UNO_QUERY );
+        css::uno::Reference< css::lang::XUnoTunnel > xUT( xStyle, css::uno::UNO_QUERY );
         if( xUT.is() )
             pRet = reinterpret_cast<SfxUnoStyleSheet*>(sal::static_int_cast<sal_uIntPtr>(xUT->getSomething( SfxUnoStyleSheet::getIdentifier())));
     }
@@ -957,7 +954,7 @@ SfxUnoStyleSheet* SfxUnoStyleSheet::getUnoStyleSheet( const ::com::sun::star::un
 /**
  * XUnoTunnel
  */
-::sal_Int64 SAL_CALL SfxUnoStyleSheet::getSomething( const ::com::sun::star::uno::Sequence< ::sal_Int8 >& rId ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+::sal_Int64 SAL_CALL SfxUnoStyleSheet::getSomething( const css::uno::Sequence< ::sal_Int8 >& rId ) throw (css::uno::RuntimeException, std::exception)
 {
     if( rId.getLength() == 16 && 0 == memcmp( getIdentifier().getConstArray(), rId.getConstArray(), 16 ) )
     {
@@ -980,7 +977,7 @@ namespace
     class theSfxUnoStyleSheetIdentifier : public rtl::Static< UnoTunnelIdInit, theSfxUnoStyleSheetIdentifier > {};
 }
 
-const ::com::sun::star::uno::Sequence< ::sal_Int8 >& SfxUnoStyleSheet::getIdentifier()
+const css::uno::Sequence< ::sal_Int8 >& SfxUnoStyleSheet::getIdentifier()
 {
     return theSfxUnoStyleSheetIdentifier::get().getSeq();
 }

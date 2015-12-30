@@ -34,30 +34,29 @@ class DataSupplier : public ucbhelper::ResultSetDataSupplier
     ::std::unique_ptr<DataSupplier_Impl> m_pImpl;
 
 public:
-    DataSupplier( const rtl::Reference< ODocumentContainer >& rxContent,
-                  sal_Int32 nOpenMode );
+    DataSupplier( const rtl::Reference< ODocumentContainer >& rxContent );
     virtual ~DataSupplier();
 
-    virtual OUString queryContentIdentifierString( sal_uInt32 nIndex ) SAL_OVERRIDE;
+    virtual OUString queryContentIdentifierString( sal_uInt32 nIndex ) override;
     virtual css::uno::Reference< css::ucb::XContentIdentifier >
-    queryContentIdentifier( sal_uInt32 nIndex ) SAL_OVERRIDE;
+    queryContentIdentifier( sal_uInt32 nIndex ) override;
     virtual css::uno::Reference< css::ucb::XContent >
-    queryContent( sal_uInt32 nIndex ) SAL_OVERRIDE;
+    queryContent( sal_uInt32 nIndex ) override;
 
-    virtual bool getResult( sal_uInt32 nIndex ) SAL_OVERRIDE;
+    virtual bool getResult( sal_uInt32 nIndex ) override;
 
-    virtual sal_uInt32 totalCount() SAL_OVERRIDE;
-    virtual sal_uInt32 currentCount() SAL_OVERRIDE;
-    virtual bool isCountFinal() SAL_OVERRIDE;
+    virtual sal_uInt32 totalCount() override;
+    virtual sal_uInt32 currentCount() override;
+    virtual bool isCountFinal() override;
 
     virtual css::uno::Reference< css::sdbc::XRow >
-    queryPropertyValues( sal_uInt32 nIndex  ) SAL_OVERRIDE;
-    virtual void releasePropertyValues( sal_uInt32 nIndex ) SAL_OVERRIDE;
+    queryPropertyValues( sal_uInt32 nIndex  ) override;
+    virtual void releasePropertyValues( sal_uInt32 nIndex ) override;
 
-    virtual void close() SAL_OVERRIDE;
+    virtual void close() override;
 
     virtual void validate()
-        throw( css::ucb::ResultSetException ) SAL_OVERRIDE;
+        throw( css::ucb::ResultSetException ) override;
 };
 
 }

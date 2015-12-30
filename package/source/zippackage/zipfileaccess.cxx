@@ -44,8 +44,8 @@ using namespace ::com::sun::star;
 OZipFileAccess::OZipFileAccess( const uno::Reference< uno::XComponentContext >& rxContext )
 : m_aMutexHolder( new SotMutexHolder )
 , m_xContext( rxContext )
-, m_pZipFile( NULL )
-, m_pListenersContainer( NULL )
+, m_pZipFile( nullptr )
+, m_pListenersContainer( nullptr )
 , m_bDisposed( false )
 , m_bOwnContent( false )
 {
@@ -187,25 +187,25 @@ void SAL_CALL OZipFileAccess::initialize( const uno::Sequence< uno::Any >& aArgu
     {
         ::ucbhelper::Content aContent(
             aParamURL,
-            uno::Reference< ::com::sun::star::ucb::XCommandEnvironment >(),
+            uno::Reference< css::ucb::XCommandEnvironment >(),
             m_xContext );
         uno::Reference < io::XActiveDataSink > xSink = new ZipPackageSink;
         if ( aContent.openStream ( xSink ) )
         {
             m_xContentStream = xSink->getInputStream();
             m_bOwnContent = true;
-            xSeekable = uno::Reference< io::XSeekable >( m_xContentStream, uno::UNO_QUERY );
+            xSeekable.set( m_xContentStream, uno::UNO_QUERY );
         }
     }
     else if ( (aArguments[0] >>= xStream ) )
     {
         // a writable stream can implement both XStream & XInputStream
         m_xContentStream = xStream->getInputStream();
-        xSeekable = uno::Reference< io::XSeekable >( xStream, uno::UNO_QUERY );
+        xSeekable.set( xStream, uno::UNO_QUERY );
     }
     else if ( aArguments[0] >>= m_xContentStream )
     {
-        xSeekable = uno::Reference< io::XSeekable >( m_xContentStream, uno::UNO_QUERY );
+        xSeekable.set( m_xContentStream, uno::UNO_QUERY );
     }
     else
         throw lang::IllegalArgumentException(THROW_WHERE, uno::Reference< uno::XInterface >(), 1 );
@@ -404,13 +404,13 @@ void SAL_CALL OZipFileAccess::dispose()
            lang::EventObject aSource( static_cast< ::cppu::OWeakObject* >(this) );
         m_pListenersContainer->disposeAndClear( aSource );
         delete m_pListenersContainer;
-        m_pListenersContainer = NULL;
+        m_pListenersContainer = nullptr;
     }
 
     if ( m_pZipFile )
     {
         delete m_pZipFile;
-        m_pZipFile = NULL;
+        m_pZipFile = nullptr;
     }
 
     if ( m_xContentStream.is() && m_bOwnContent )

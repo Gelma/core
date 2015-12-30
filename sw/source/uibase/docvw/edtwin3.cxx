@@ -40,7 +40,7 @@ void ScrollMDI( SwViewShell* pVwSh, const SwRect &rRect,
                 sal_uInt16 nRangeX, sal_uInt16 nRangeY)
 {
     SfxViewShell *pSfxVwSh = pVwSh->GetSfxViewShell();
-    if (pSfxVwSh && pSfxVwSh->ISA(SwView))
+    if (pSfxVwSh && dynamic_cast< const SwView *>( pSfxVwSh ) !=  nullptr)
         static_cast<SwView *>(pSfxVwSh)->Scroll( rRect.SVRect(), nRangeX, nRangeY );
 }
 
@@ -48,7 +48,7 @@ void ScrollMDI( SwViewShell* pVwSh, const SwRect &rRect,
 bool IsScrollMDI( SwViewShell* pVwSh, const SwRect &rRect )
 {
     SfxViewShell *pSfxVwSh = pVwSh->GetSfxViewShell();
-    if (pSfxVwSh && pSfxVwSh->ISA(SwView))
+    if (pSfxVwSh && dynamic_cast< const SwView *>( pSfxVwSh ) !=  nullptr)
         return static_cast<SwView *>(pSfxVwSh)->IsScroll(rRect.SVRect());
     return false;
 }
@@ -59,9 +59,9 @@ void SizeNotify(SwViewShell* pVwSh, const Size &rSize)
     SfxViewShell *pSfxVwSh = pVwSh->GetSfxViewShell();
     if (pSfxVwSh)
     {
-        if (pSfxVwSh->ISA(SwView))
+        if (dynamic_cast< const SwView *>( pSfxVwSh ) !=  nullptr)
             static_cast<SwView *>(pSfxVwSh)->DocSzChgd(rSize);
-        else if (pSfxVwSh->ISA(SwPagePreview))
+        else if (dynamic_cast< const SwPagePreview *>( pSfxVwSh ) !=  nullptr)
             static_cast<SwPagePreview *>(pSfxVwSh)->DocSzChgd( rSize );
     }
 }
@@ -71,15 +71,15 @@ void PageNumNotify( SwViewShell* pVwSh, sal_uInt16 nPhyNum, sal_uInt16 nVirtNum,
                                                     const OUString& rPgStr)
 {
     SfxViewShell *pSfxVwSh = pVwSh->GetSfxViewShell();
-    if ( pSfxVwSh && pSfxVwSh->ISA(SwView) &&
+    if ( pSfxVwSh && dynamic_cast< const SwView *>( pSfxVwSh ) !=  nullptr &&
          static_cast<SwView*>(pSfxVwSh)->GetCurShell() )
             static_cast<SwView *>(pSfxVwSh)->UpdatePageNums(nPhyNum, nVirtNum, rPgStr);
 }
 
 void FrameNotify( SwViewShell* pVwSh, FlyMode eMode )
 {
-    if ( pVwSh->ISA(SwCrsrShell) )
-        SwBaseShell::SetFrmMode( eMode, static_cast<SwWrtShell*>(pVwSh) );
+    if ( dynamic_cast< const SwCursorShell *>( pVwSh ) !=  nullptr )
+        SwBaseShell::SetFrameMode( eMode, static_cast<SwWrtShell*>(pVwSh) );
 }
 
 // Notify for page number update
@@ -110,14 +110,14 @@ TableChgMode GetTableChgDefaultMode()
 void RepaintPagePreview( SwViewShell* pVwSh, const SwRect& rRect )
 {
     SfxViewShell *pSfxVwSh = pVwSh->GetSfxViewShell();
-    if (pSfxVwSh && pSfxVwSh->ISA( SwPagePreview ))
+    if (pSfxVwSh && dynamic_cast< const SwPagePreview *>( pSfxVwSh ) !=  nullptr)
         static_cast<SwPagePreview *>(pSfxVwSh)->RepaintCoreRect( rRect );
 }
 
 bool JumpToSwMark( SwViewShell* pVwSh, const OUString& rMark )
 {
     SfxViewShell *pSfxVwSh = pVwSh->GetSfxViewShell();
-    if( pSfxVwSh && pSfxVwSh->ISA( SwView ) )
+    if( pSfxVwSh && dynamic_cast< const SwView *>( pSfxVwSh ) !=  nullptr )
         return static_cast<SwView *>(pSfxVwSh)->JumpToSwMark( rMark );
     return false;
 }
@@ -144,7 +144,7 @@ void SwEditWin::DataChanged( const DataChangedEvent& rDCEvt )
         {
             pSh->LockPaint();
             bUnlockPaint = true;
-            SwViewShell::DeleteReplacementBitmaps();
+            pSh->DeleteReplacementBitmaps();
             GetView().InvalidateBorder();               //Scrollbar work
         }
         break;

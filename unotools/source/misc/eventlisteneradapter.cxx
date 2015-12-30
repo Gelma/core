@@ -49,7 +49,7 @@ namespace utl
         const Reference< XComponent >&  getComponent() const { return m_xComponent; }
 
     protected:
-        virtual void SAL_CALL disposing( const EventObject& _rSource ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing( const EventObject& _rSource ) throw (RuntimeException, std::exception) override;
     };
 
     OEventListenerImpl::OEventListenerImpl( OEventListenerAdapter* _pAdapter, const Reference< XComponent >& _rxComp )
@@ -105,11 +105,9 @@ namespace utl
     OEventListenerAdapter::~OEventListenerAdapter()
     {
         stopAllComponentListening( );
-        delete m_pImpl;
-        m_pImpl = NULL;
     }
 
-    void OEventListenerAdapter::stopComponentListening( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XComponent >& _rxComp )
+    void OEventListenerAdapter::stopComponentListening( const css::uno::Reference< css::lang::XComponent >& _rxComp )
     {
         if ( m_pImpl->aListeners.empty() )
             return;

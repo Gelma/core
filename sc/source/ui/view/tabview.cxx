@@ -50,6 +50,7 @@
 
 #include <string>
 #include <algorithm>
+#include <boost/property_tree/json_parser.hpp>
 
 #include <basegfx/tools/zoomtools.hxx>
 
@@ -193,11 +194,11 @@ bool lcl_HasRowOutline( const ScViewData& rViewData )
 ScTabView::ScTabView( vcl::Window* pParent, ScDocShell& rDocSh, ScTabViewShell* pViewShell ) :
     pFrameWin( pParent ),
     aViewData( &rDocSh, pViewShell ),
-    pSelEngine( NULL ),
+    pSelEngine( nullptr ),
     aFunctionSet( &aViewData ),
-    pHdrSelEng( NULL ),
+    pHdrSelEng( nullptr ),
     aHdrFunc( &aViewData ),
-    pDrawView( NULL ),
+    pDrawView( nullptr ),
     aVScrollTop( VclPtr<ScrollBar>::Create( pFrameWin, WinBits( WB_VSCROLL | WB_DRAG ) ) ),
     aVScrollBottom( VclPtr<ScrollBar>::Create( pFrameWin, WinBits( WB_VSCROLL | WB_DRAG ) ) ),
     aHScrollLeft( VclPtr<ScrollBar>::Create( pFrameWin, WinBits( WB_HSCROLL | WB_DRAG ) ) ),
@@ -205,11 +206,11 @@ ScTabView::ScTabView( vcl::Window* pParent, ScDocShell& rDocSh, ScTabViewShell* 
     aCornerButton( VclPtr<ScCornerButton>::Create( pFrameWin, &aViewData, false ) ),
     aTopButton( VclPtr<ScCornerButton>::Create( pFrameWin, &aViewData, true ) ),
     aScrollBarBox( VclPtr<ScrollBarBox>::Create( pFrameWin, WB_SIZEABLE ) ),
-    mpInputHintWindow( NULL ),
-    pPageBreakData( NULL ),
-    pBrushDocument( NULL ),
-    pDrawBrushSet( NULL ),
-    pTimerWindow( NULL ),
+    mpInputHintWindow( nullptr ),
+    pPageBreakData( nullptr ),
+    pBrushDocument( nullptr ),
+    pDrawBrushSet( nullptr ),
+    pTimerWindow( nullptr ),
     nTipVisible( 0 ),
     nPrevDragPos( 0 ),
     meBlockMode(None),
@@ -265,7 +266,7 @@ void ScTabView::SetTimer( ScGridWindow* pWin, const MouseEvent& rMEvt )
 void ScTabView::ResetTimer()
 {
     aScrollTimer.Stop();
-    pTimerWindow = NULL;
+    pTimerWindow = nullptr;
 }
 
 IMPL_LINK_NOARG_TYPED(ScTabView, TimerHdl, Timer *, void)
@@ -1478,11 +1479,11 @@ void ScTabView::UpdateShow()
         pRowOutline[SC_SPLIT_TOP] = VclPtr<ScOutlineWindow>::Create( pFrameWin, SC_OUTLINE_VER, &aViewData, SC_SPLIT_TOPLEFT );
 
     if (bShowH && bHeader && !pColBar[SC_SPLIT_RIGHT])
-        pColBar[SC_SPLIT_RIGHT] = VclPtr<ScColBar>::Create( pFrameWin, &aViewData, SC_SPLIT_RIGHT,
-                                                &aHdrFunc, pHdrSelEng );
+        pColBar[SC_SPLIT_RIGHT] = VclPtr<ScColBar>::Create( pFrameWin, SC_SPLIT_RIGHT,
+                                                            &aHdrFunc, pHdrSelEng, this );
     if (bShowV && bHeader && !pRowBar[SC_SPLIT_TOP])
-        pRowBar[SC_SPLIT_TOP] = VclPtr<ScRowBar>::Create( pFrameWin, &aViewData, SC_SPLIT_TOP,
-                                                &aHdrFunc, pHdrSelEng );
+        pRowBar[SC_SPLIT_TOP] = VclPtr<ScRowBar>::Create( pFrameWin, SC_SPLIT_TOP,
+                                                          &aHdrFunc, pHdrSelEng, this );
 
         // show Windows
 
@@ -2144,7 +2145,7 @@ void ScTabView::SetNewVisArea()
     if (pViewFrame)
     {
         SfxFrame& rFrame = pViewFrame->GetFrame();
-        com::sun::star::uno::Reference<com::sun::star::frame::XController> xController = rFrame.GetController();
+        css::uno::Reference<css::frame::XController> xController = rFrame.GetController();
         if (xController.is())
         {
             ScTabViewObj* pImp = ScTabViewObj::getImplementation( xController );
@@ -2276,6 +2277,83 @@ void ScTabView::SetAutoSpellData( SCCOL nPosX, SCROW nPosY, const std::vector<ed
 
         pGridWin[i]->SetAutoSpellData(nPosX, nPosY, pRanges);
     }
+}
+
+OUString ScTabView::getRowColumnHeaders(const Rectangle& rRectangle)
+{
+    ScDocument* pDoc = aViewData.GetDocument();
+    if (!pDoc)
+        return OUString();
+
+    SCCOL nEndCol = 0;
+    SCROW nEndRow = 0;
+    pDoc->GetTiledRenderingArea(aViewData.GetTabNo(), nEndCol, nEndRow);
+
+    boost::property_tree::ptree aRows;
+    long nTotal = 0;
+    long nTotalPixels = 0;
+    for (SCROW nRow = 0; nRow <= nEndRow; ++nRow)
+    {
+        sal_uInt16 nSize = pDoc->GetOriginalHeight(nRow, aViewData.GetTabNo());
+        long nSizePixels = ScViewData::ToPixel(nSize, aViewData.GetPPTY());
+        OUString aText = pRowBar[SC_SPLIT_BOTTOM]->GetEntryText(nRow);
+
+        bool bSkip = false;
+        if (!rRectangle.IsEmpty())
+        {
+            long nTop = std::max(rRectangle.Top(), nTotal);
+            long nBottom = std::min(rRectangle.Bottom(), nTotal + nSize);
+            if (nBottom < nTop)
+                // They do not intersect.
+                bSkip = true;
+        }
+        if (!bSkip)
+        {
+            boost::property_tree::ptree aRow;
+            aRow.put("size", OString::number((nTotalPixels + nSizePixels) / aViewData.GetPPTY()).getStr());
+            aRow.put("text", aText.toUtf8().getStr());
+            aRows.push_back(std::make_pair("", aRow));
+        }
+        nTotal += nSize;
+        nTotalPixels += nSizePixels;
+    }
+
+    boost::property_tree::ptree aCols;
+    nTotal = 0;
+    nTotalPixels = 0;
+    for (SCCOL nCol = 0; nCol <= nEndCol; ++nCol)
+    {
+        sal_uInt16 nSize = pDoc->GetColWidth(nCol, aViewData.GetTabNo());
+        long nSizePixels = ScViewData::ToPixel(nSize, aViewData.GetPPTX());
+        OUString aText = pColBar[SC_SPLIT_LEFT]->GetEntryText(nCol);
+
+        bool bSkip = false;
+        if (!rRectangle.IsEmpty())
+        {
+            long nLeft = std::max(rRectangle.Left(), nTotal);
+            long nRight = std::min(rRectangle.Right(), nTotal + nSize);
+            if (nRight < nLeft)
+                // They do not intersect.
+                bSkip = true;
+        }
+        if (!bSkip)
+        {
+            boost::property_tree::ptree aCol;
+            aCol.put("size", OString::number((nTotalPixels + nSizePixels) / aViewData.GetPPTX()).getStr());
+            aCol.put("text", aText.toUtf8().getStr());
+            aCols.push_back(std::make_pair("", aCol));
+        }
+        nTotal += nSize;
+        nTotalPixels += nSizePixels;
+    }
+
+    boost::property_tree::ptree aTree;
+    aTree.put("commandName", ".uno:ViewRowColumnHeaders");
+    aTree.add_child("rows", aRows);
+    aTree.add_child("columns", aCols);
+    std::stringstream aStream;
+    boost::property_tree::write_json(aStream, aTree);
+    return OUString::fromUtf8(aStream.str().c_str());
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

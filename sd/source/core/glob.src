@@ -318,11 +318,6 @@ String STR_TASKPANELAYOUTMENU
     Text [ en-US ] = "Layout" ;
 };
 
-String STR_MASTERPAGESSELECTOR
-{
-    Text [ en-US ] = "Master Pages" ;
-};
-
 String STR_POWERPOINT_IMPORT
 {
     Text [ en-US ] = "PowerPoint Import";
@@ -359,15 +354,6 @@ Resource RID_SD_ERRHDL
     {
         Text [ en-US ] = "Format error discovered in the file in sub-document $(ARG1) at position $(ARG2)(row,col).";
     };
-};
-
-String STR_3DOBJECTBARSHELL
-{
-    Text [ en-US ] = "3-D Settings" ;
-};
-String STR_FONTWORKOBJECTBARSHELL
-{
-    Text [ en-US ] = "Fontwork" ;
 };
 
 String STR_POOLSHEET_BANDED_CELL

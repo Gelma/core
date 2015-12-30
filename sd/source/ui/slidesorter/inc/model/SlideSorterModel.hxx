@@ -43,7 +43,6 @@ class SlideSorter;
 namespace sd { namespace slidesorter { namespace model {
 
 inline sal_Int32 FromCoreIndex (const sal_uInt16 nCoreIndex) { return (nCoreIndex-1)/2; }
-inline sal_uInt16 ToCoreIndex (const sal_Int32 nIndex) { return static_cast<sal_uInt16>(nIndex*2+1); }
 
 /** The model of the slide sorter gives access to the slides that are to be
     displayed in the slide sorter view.  Via the SetDocumentSlides() method
@@ -115,7 +114,7 @@ public:
             there is no such page descriptor.
     */
     sal_Int32 GetIndex (
-        const ::com::sun::star::uno::Reference<com::sun::star::drawing::XDrawPage>& rxSlide) const;
+        const css::uno::Reference<css::drawing::XDrawPage>& rxSlide) const;
 
     /** Return a page descriptor for the given SdrPage.  Page descriptors
         are created on demand.  The page descriptor is found (or not found)
@@ -208,7 +207,7 @@ public:
 private:
     mutable ::osl::Mutex maMutex;
     SlideSorter& mrSlideSorter;
-    ::com::sun::star::uno::Reference<com::sun::star::container::XIndexAccess> mxSlides;
+    css::uno::Reference<css::container::XIndexAccess> mxSlides;
     PageKind mePageKind;
     EditMode meEditMode;
     typedef ::std::vector<SharedPageDescriptor> DescriptorContainer;

@@ -136,7 +136,7 @@ void BreakPointDialog::CheckButtons()
     // "OK" and "Delete" buttons are enabled:
     size_t nLine;
     if (lcl_ParseText(m_pComboBox->GetText(), nLine)
-        && m_aModifiedBreakPointList.FindBreakPoint(nLine) == 0)
+        && m_aModifiedBreakPointList.FindBreakPoint(nLine) == nullptr)
     {
         m_pNewButton->Enable();
         m_pOKButton->Disable();
@@ -158,33 +158,30 @@ IMPL_LINK_TYPED( BreakPointDialog, CheckBoxHdl, Button *, pButton, void )
         pBrk->bEnabled = pChkBx->IsChecked();
 }
 
-IMPL_LINK( BreakPointDialog, ComboBoxHighlightHdl, ComboBox *, pBox )
+IMPL_LINK_TYPED( BreakPointDialog, ComboBoxHighlightHdl, ComboBox&, rBox, void )
 {
     m_pNewButton->Disable();
     m_pOKButton->Enable();
     m_pDelButton->Enable();
 
-    sal_Int32 nEntry = pBox->GetEntryPos( pBox->GetText() );
+    sal_Int32 nEntry = rBox.GetEntryPos( rBox.GetText() );
     BreakPoint* pBrk = m_aModifiedBreakPointList.at( nEntry );
     DBG_ASSERT( pBrk, "Kein passender Breakpoint zur Liste ?" );
     UpdateFields( pBrk );
-
-    return 0;
 }
 
 
 
-IMPL_LINK( BreakPointDialog, EditModifyHdl, Edit *, pEdit )
+IMPL_LINK_TYPED( BreakPointDialog, EditModifyHdl, Edit&, rEdit, void )
 {
-    if (pEdit == m_pComboBox)
+    if (&rEdit == m_pComboBox)
         CheckButtons();
-    else if (pEdit == m_pNumericField)
+    else if (&rEdit == m_pNumericField)
     {
         BreakPoint* pBrk = GetSelectedBreakPoint();
         if ( pBrk )
-            pBrk->nStopAfter = pEdit->GetText().toInt32();
+            pBrk->nStopAfter = rEdit.GetText().toInt32();
     }
-    return 0;
 }
 
 

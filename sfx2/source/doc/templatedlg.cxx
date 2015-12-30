@@ -389,7 +389,7 @@ IMPL_LINK_NOARG_TYPED(SfxTemplateManagerDlg, ActivatePageHdl, TabControl*, void)
     mpCurView->showRootRegion(); // fdo#60586 show the root region of the applied filter
 
     if (mpSearchView->IsVisible())
-        SearchUpdateHdl(NULL);
+        SearchUpdateHdl(*mpSearchEdit);
 }
 
 void SfxTemplateManagerDlg::readSettings ()
@@ -432,19 +432,17 @@ void SfxTemplateManagerDlg::readSettings ()
 
 void SfxTemplateManagerDlg::writeSettings ()
 {
-    Sequence< NamedValue > aSettings(2);
-
     OUString aLastFolder;
 
     if (mpCurView == mpLocalView && mpLocalView->getCurRegionId())
         aLastFolder = mpLocalView->getRegionName(mpLocalView->getCurRegionId()-1);
 
     // last folder
-    aSettings[0].Name = TM_SETTING_LASTFOLDER;
-    aSettings[0].Value  <<= aLastFolder;
-
-    aSettings[1].Name = TM_SETTING_FILTER;
-    aSettings[1].Value <<= sal_uInt16(getCurrentFilter());
+    Sequence< NamedValue > aSettings
+    {
+        { TM_SETTING_LASTFOLDER, css::uno::makeAny(aLastFolder) },
+        { TM_SETTING_FILTER,     css::uno::makeAny(sal_uInt16(getCurrentFilter())) }
+    };
 
     // write
     SvtViewOptions aViewSettings(E_DIALOG, TM_SETTING_MANAGER);
@@ -635,7 +633,7 @@ IMPL_LINK_TYPED(SfxTemplateManagerDlg, RepositoryMenuSelectHdl, Menu*, pMenu, bo
     {
         sal_uInt16 nRepoId = nMenuId - MNI_REPOSITORY_BASE;
 
-        TemplateRepository *pRepository = NULL;
+        TemplateRepository *pRepository = nullptr;
 
         for (size_t i = 0, n = maRepositories.size(); i < n; ++i)
         {
@@ -692,7 +690,7 @@ IMPL_LINK_TYPED(SfxTemplateManagerDlg, OpenTemplateHdl, ThumbnailViewItem*, pIte
         aArgs[2].Name = "UpdateDocMode";
         aArgs[2].Value <<= UpdateDocMode::ACCORDING_TO_CONFIG;
         aArgs[3].Name = "InteractionHandler";
-        aArgs[3].Value <<= task::InteractionHandler::createWithParent( ::comphelper::getProcessComponentContext(), 0 );
+        aArgs[3].Value <<= task::InteractionHandler::createWithParent( ::comphelper::getProcessComponentContext(), nullptr );
 
         TemplateViewItem *pTemplateItem = static_cast<TemplateViewItem*>(pItem);
 
@@ -708,7 +706,7 @@ IMPL_LINK_TYPED(SfxTemplateManagerDlg, OpenTemplateHdl, ThumbnailViewItem*, pIte
     }
 }
 
-IMPL_LINK_NOARG(SfxTemplateManagerDlg, SearchUpdateHdl)
+IMPL_LINK_NOARG_TYPED(SfxTemplateManagerDlg, SearchUpdateHdl, Edit&, void)
 {
     OUString aKeyword = mpSearchEdit->GetText();
 
@@ -754,8 +752,6 @@ IMPL_LINK_NOARG(SfxTemplateManagerDlg, SearchUpdateHdl)
         mpSearchView->Hide();
         mpCurView->Show();
     }
-
-    return 0;
 }
 
 void SfxTemplateManagerDlg::OnRegionState (const ThumbnailViewItem *pItem)
@@ -849,13 +845,13 @@ void SfxTemplateManagerDlg::OnTemplateState (const ThumbnailViewItem *pItem)
 void SfxTemplateManagerDlg::OnTemplateImport ()
 {
     sal_Int16 nDialogType =
-        com::sun::star::ui::dialogs::TemplateDescription::FILEOPEN_SIMPLE;
+        css::ui::dialogs::TemplateDescription::FILEOPEN_SIMPLE;
 
     sfx2::FileDialogHelper aFileDlg(nDialogType, SFXWB_MULTISELECTION);
 
     // add "All" filter
     aFileDlg.AddFilter( SfxResId(STR_SFX_FILTERNAME_ALL).toString(),
-                        OUString(FILEDIALOG_FILTER_ALL) );
+                        FILEDIALOG_FILTER_ALL );
 
     // add template filter
     OUString sFilterExt;
@@ -906,7 +902,7 @@ void SfxTemplateManagerDlg::OnTemplateImport ()
 
     if ( nCode == ERRCODE_NONE )
     {
-        com::sun::star::uno::Sequence<OUString> aFiles = aFileDlg.GetSelectedFiles();
+        css::uno::Sequence<OUString> aFiles = aFileDlg.GetSelectedFiles();
 
         if (aFiles.hasElements())
         {
@@ -1098,10 +1094,9 @@ void SfxTemplateManagerDlg::OnTemplateLink ()
             sURL = value.get<OUString> ();
             localizeWebserviceURI(sURL);
 
-            Reference< com::sun::star::system::XSystemShellExecute > xSystemShellExecute(
-                com::sun::star::system::SystemShellExecute::create(comphelper::getProcessComponentContext()));
-            //throws css::lang::IllegalArgumentException, css::system::SystemShellExecuteException
-            xSystemShellExecute->execute( sURL, OUString(), com::sun::star::system::SystemShellExecuteFlags::URIS_ONLY);
+            Reference< css::system::XSystemShellExecute > xSystemShellExecute(
+                css::system::SystemShellExecute::create(comphelper::getProcessComponentContext()));
+            xSystemShellExecute->execute( sURL, OUString(), css::system::SystemShellExecuteFlags::URIS_ONLY);
         }
     }
     catch (const Exception&)
@@ -1136,9 +1131,8 @@ void SfxTemplateManagerDlg::OnTemplateEdit ()
 
         try
         {
-            xStorable = uno::Reference< XStorable >(
-                        mxDesktop->loadComponentFromURL(pItem->getPath(),"_default", 0, aArgs ),
-                        uno::UNO_QUERY );
+            xStorable.set( mxDesktop->loadComponentFromURL(pItem->getPath(),"_default", 0, aArgs ),
+                           uno::UNO_QUERY );
         }
         catch( const uno::Exception& )
         {
@@ -1589,7 +1583,7 @@ void SfxTemplateManagerDlg::localSearchMoveTo(sal_uInt16 nMenuId)
     // Deselect all items and update search results
     mpSearchView->deselectItems();
 
-    SearchUpdateHdl(mpSearchEdit);
+    SearchUpdateHdl(*mpSearchEdit);
 }
 
 void SfxTemplateManagerDlg::loadRepositories()
@@ -1597,10 +1591,10 @@ void SfxTemplateManagerDlg::loadRepositories()
     uno::Reference < uno::XComponentContext > m_context(comphelper::getProcessComponentContext());
 
     // Load from user settings
-    com::sun::star::uno::Sequence<OUString>  aUrls =
+    css::uno::Sequence<OUString>  aUrls =
             officecfg::Office::Common::Misc::TemplateRepositoryUrls::get(m_context);
 
-    com::sun::star::uno::Sequence<OUString> aNames =
+    css::uno::Sequence<OUString> aNames =
             officecfg::Office::Common::Misc::TemplateRepositoryNames::get(m_context);
 
     for (sal_Int32 i = 0; i < aUrls.getLength() && i < aNames.getLength(); ++i)
@@ -1710,7 +1704,7 @@ static std::vector<OUString> lcl_getAllFactoryURLs ()
 {
     SvtModuleOptions aModOpt;
     std::vector<OUString> aList;
-    const ::com::sun::star::uno::Sequence<OUString> &aServiceNames = aModOpt.GetAllServiceNames();
+    const css::uno::Sequence<OUString> &aServiceNames = aModOpt.GetAllServiceNames();
 
     for( sal_Int32 i=0, nCount = aServiceNames.getLength(); i < nCount; ++i )
     {

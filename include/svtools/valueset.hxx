@@ -89,7 +89,7 @@ WB_NONEFIELD        There is a NoSelection field which can be selected if
                     is selected. This field shows the text which is specified
                     by SetText() respectively no one, if no text was set. With
                     SetNoSelection() the selection can be disabled.
-WB_VSCROLL          A scroolbar will be always shown. The visible number of
+WB_VSCROLL          A scrollbar will be always shown. The visible number of
                     lines have to be specified with SetLineCount() if this
                     flag is set.
 WB_BORDER           A border will be drawn around the window.
@@ -178,7 +178,6 @@ to be set (before Show) with SetStyle().
 *************************************************************************/
 
 typedef std::vector<ValueSetItem*> ValueItemList;
-typedef std::unique_ptr<ValueSetItem> ValueSetItemPtr;
 
 // - ValueSet types -
 #define WB_RADIOSEL             ((WinBits)0x00008000)
@@ -201,7 +200,7 @@ private:
     ScopedVclPtr<VirtualDevice> maVirDev;
     Timer           maTimer;
     ValueItemList   mItemList;
-    ValueSetItemPtr mpNoneItem;
+    std::unique_ptr<ValueSetItem> mpNoneItem;
     VclPtr<ScrollBar> mxScrollBar;
     Rectangle       maNoneItemRect;
     Rectangle       maItemListRect;
@@ -213,6 +212,7 @@ private:
     long            mnUserItemWidth;
     long            mnUserItemHeight;
     sal_uInt16      mnSelItemId;
+    sal_uInt16      mnSavedItemId;
     sal_uInt16      mnHighItemId;
     sal_uInt16      mnCols;
     sal_uInt16      mnCurCol;
@@ -248,7 +248,7 @@ private:
     SVT_DLLPRIVATE void         ImplInit();
     SVT_DLLPRIVATE void         ImplInitSettings( bool bFont, bool bForeground, bool bBackground );
 
-    virtual void ApplySettings(vcl::RenderContext& rRenderContext) SAL_OVERRIDE;
+    virtual void ApplySettings(vcl::RenderContext& rRenderContext) override;
 
     SVT_DLLPRIVATE void         ImplInitScrollBar();
     SVT_DLLPRIVATE void         ImplDeleteItems();
@@ -267,52 +267,57 @@ private:
     SVT_DLLPRIVATE sal_uInt16          ImplGetVisibleItemCount() const;
     SVT_DLLPRIVATE void         ImplInsertItem( ValueSetItem *const pItem, const size_t nPos );
     SVT_DLLPRIVATE Rectangle    ImplGetItemRect( size_t nPos ) const;
-    SVT_DLLPRIVATE void            ImplFireAccessibleEvent( short nEventId, const ::com::sun::star::uno::Any& rOldValue, const ::com::sun::star::uno::Any& rNewValue );
+    SVT_DLLPRIVATE void         ImplFireAccessibleEvent( short nEventId, const css::uno::Any& rOldValue, const css::uno::Any& rNewValue );
     SVT_DLLPRIVATE bool         ImplHasAccessibleListeners();
     SVT_DLLPRIVATE void         ImplTracking( const Point& rPos, bool bRepeat );
     SVT_DLLPRIVATE void         ImplEndTracking( const Point& rPos, bool bCancel );
     DECL_DLLPRIVATE_LINK_TYPED( ImplScrollHdl, ScrollBar*, void );
     DECL_DLLPRIVATE_LINK_TYPED( ImplTimerHdl, Timer*, void );
 
-    ValueSet (const ValueSet &) SAL_DELETED_FUNCTION;
-    ValueSet & operator= (const ValueSet &) SAL_DELETED_FUNCTION;
+    ValueSet (const ValueSet &) = delete;
+    ValueSet & operator= (const ValueSet &) = delete;
 
 protected:
     bool StartDrag( const CommandEvent& rCEvt, vcl::Region& rRegion );
 
-    virtual css::uno::Reference<css::accessibility::XAccessible> CreateAccessible() SAL_OVERRIDE;
+    virtual css::uno::Reference<css::accessibility::XAccessible> CreateAccessible() override;
 
 public:
                     ValueSet( vcl::Window* pParent, WinBits nWinStyle, bool bDisableTransientChildren = false );
                     ValueSet( vcl::Window* pParent, const ResId& rResId, bool bDisableTransientChildren = false );
     virtual         ~ValueSet();
-    virtual void    dispose() SAL_OVERRIDE;
+    virtual void    dispose() override;
 
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    MouseButtonUp( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    MouseMove( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    Tracking( const TrackingEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
-    virtual void    Command( const CommandEvent& rCEvt ) SAL_OVERRIDE;
-    virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) SAL_OVERRIDE;
-    virtual void    GetFocus() SAL_OVERRIDE;
-    virtual void    LoseFocus() SAL_OVERRIDE;
-    virtual void    Resize() SAL_OVERRIDE;
-    virtual Size    GetOptimalSize() const SAL_OVERRIDE;
-    virtual void    RequestHelp( const HelpEvent& rHEvt ) SAL_OVERRIDE;
-    virtual void    StateChanged( StateChangedType nStateChange ) SAL_OVERRIDE;
-    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void    MouseButtonUp( const MouseEvent& rMEvt ) override;
+    virtual void    MouseMove( const MouseEvent& rMEvt ) override;
+    virtual void    Tracking( const TrackingEvent& rMEvt ) override;
+    virtual void    KeyInput( const KeyEvent& rKEvt ) override;
+    virtual void    Command( const CommandEvent& rCEvt ) override;
+    virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) override;
+    virtual void    GetFocus() override;
+    virtual void    LoseFocus() override;
+    virtual void    Resize() override;
+    virtual Size    GetOptimalSize() const override;
+    virtual void    RequestHelp( const HelpEvent& rHEvt ) override;
+    virtual void    StateChanged( StateChangedType nStateChange ) override;
+    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) override;
 
     virtual void    Select();
     void            DoubleClick();
     virtual void    UserDraw( const UserDrawEvent& rUDEvt );
 
+    /// Insert @rImage item.
     void            InsertItem(sal_uInt16 nItemId, const Image& rImage, size_t nPos = VALUESET_APPEND);
+    /// Insert @rImage item with @rStr as either a legend or tooltip depending on @bShowLegend.
     void            InsertItem(sal_uInt16 nItemId, const Image& rImage,
-                               const OUString& rStr, size_t nPos = VALUESET_APPEND);
+                               const OUString& rStr, size_t nPos = VALUESET_APPEND, bool bShowLegend = false);
+    /// Insert an @rColor item with @rStr tooltip.
     void            InsertItem(sal_uInt16 nItemId, const Color& rColor,
                                const OUString& rStr, size_t nPos = VALUESET_APPEND);
+    /// Insert an User Drawn item.
     void            InsertItem(sal_uInt16 nItemId, size_t nPos = VALUESET_APPEND);
+    /// Insert an User Drawn item with @rStr tooltip.
     void            InsertItem(sal_uInt16 nItemId, const OUString& rStr, size_t nPos = VALUESET_APPEND);
     void            RemoveItem(sal_uInt16 nItemId);
 
@@ -336,14 +341,17 @@ public:
         return mnUserVisLines;
     }
     void           SetItemWidth( long nItemWidth = 0 );
-
     void           SetItemHeight( long nLineHeight = 0 );
+    Size           GetLargestItemSize();
+    void           RecalculateItemSizes();
 
     void           SelectItem( sal_uInt16 nItemId );
     sal_uInt16     GetSelectItemId() const
     {
         return mnSelItemId;
     }
+    void                SaveValue() { mnSavedItemId = GetSelectItemId(); }
+    sal_Int32           GetSavedValue() const { return mnSavedItemId; }
     bool IsItemSelected( sal_uInt16 nItemId ) const
     {
         return !mbNoSelection && (nItemId == mnSelItemId);

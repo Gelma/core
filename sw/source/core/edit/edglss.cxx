@@ -39,7 +39,7 @@
 void SwEditShell::InsertGlossary( SwTextBlocks& rGlossary, const OUString& rStr )
 {
     StartAllAction();
-    GetDoc()->InsertGlossary( rGlossary, rStr, *GetCrsr(), this );
+    GetDoc()->InsertGlossary( rGlossary, rStr, *GetCursor(), this );
     EndAllAction();
 }
 
@@ -96,7 +96,7 @@ sal_uInt16 SwEditShell::SaveGlossaryDoc( SwTextBlocks& rBlock,
     {
         KillPams();
 
-        SwPaM* pCrsr = GetCrsr();
+        SwPaM* pCursor = GetCursor();
 
         SwNodeIndex aStt( pMyDoc->GetNodes().GetEndOfExtras(), 1 );
         SwContentNode* pContentNd = pMyDoc->GetNodes().GoNext( &aStt );
@@ -104,16 +104,16 @@ sal_uInt16 SwEditShell::SaveGlossaryDoc( SwTextBlocks& rBlock,
         if( !pNd )
             pNd = pContentNd;
 
-        pCrsr->GetPoint()->nNode = *pNd;
+        pCursor->GetPoint()->nNode = *pNd;
         if( pNd == pContentNd )
-            pCrsr->GetPoint()->nContent.Assign( pContentNd, 0 );
-        pCrsr->SetMark();
+            pCursor->GetPoint()->nContent.Assign( pContentNd, 0 );
+        pCursor->SetMark();
 
         // then until the end of the Node array
-        pCrsr->GetPoint()->nNode = pMyDoc->GetNodes().GetEndOfContent().GetIndex()-1;
-        pContentNd = pCrsr->GetContentNode();
+        pCursor->GetPoint()->nNode = pMyDoc->GetNodes().GetEndOfContent().GetIndex()-1;
+        pContentNd = pCursor->GetContentNode();
         if( pContentNd )
-            pCrsr->GetPoint()->nContent.Assign( pContentNd, pContentNd->Len() );
+            pCursor->GetPoint()->nContent.Assign( pContentNd, pContentNd->Len() );
 
         OUString sBuf;
         if( GetSelectedText( sBuf, GETSELTXT_PARABRK_TO_ONLYCR ) && !sBuf.isEmpty() )
@@ -182,7 +182,7 @@ bool SwEditShell::_CopySelToDoc( SwDoc* pInsDoc, SwNodeIndex* pSttNd )
         SwTableNode* pTableNd;
         SwSelBoxes aBoxes;
         GetTableSel( *this, aBoxes );
-        if( !aBoxes.empty() && 0 != (pTableNd = const_cast<SwTableNode*>(aBoxes[0]
+        if( !aBoxes.empty() && nullptr != (pTableNd = const_cast<SwTableNode*>(aBoxes[0]
             ->GetSttNd()->FindTableNode()) ))
         {
             // check if the table name can be copied
@@ -198,24 +198,24 @@ bool SwEditShell::_CopySelToDoc( SwDoc* pInsDoc, SwNodeIndex* pSttNd )
                         break;
                     }
             }
-            bRet = pInsDoc->InsCopyOfTable( aPos, aBoxes, 0, bCpyTableNm );
+            bRet = pInsDoc->InsCopyOfTable( aPos, aBoxes, nullptr, bCpyTableNm );
         }
         else
             bRet = false;
     }
     else
     {
-        bool bColSel = _GetCrsr()->IsColumnSelection();
+        bool bColSel = _GetCursor()->IsColumnSelection();
         if( bColSel && pInsDoc->IsClipBoard() )
             pInsDoc->SetColumnSelection( true );
         bool bSelectAll = StartsWithTable() && ExtendedSelectedAll(/*bFootnotes =*/ false);
         {
-            for(SwPaM& rPaM : GetCrsr()->GetRingContainer())
+            for(SwPaM& rPaM : GetCursor()->GetRingContainer())
             {
                 if( !rPaM.HasMark() )
                 {
                     SwContentNode *const pNd = rPaM.GetContentNode();
-                    if (0 != pNd &&
+                    if (nullptr != pNd &&
                         ( bColSel || !pNd->GetTextNode() ) )
                     {
                         rPaM.SetMark();
@@ -248,7 +248,7 @@ bool SwEditShell::_CopySelToDoc( SwDoc* pInsDoc, SwNodeIndex* pSttNd )
 
     pInsDoc->getIDocumentFieldsAccess().UnlockExpFields();
     if( !pInsDoc->getIDocumentFieldsAccess().IsExpFieldsLocked() )
-        pInsDoc->getIDocumentFieldsAccess().UpdateExpFields(NULL, true);
+        pInsDoc->getIDocumentFieldsAccess().UpdateExpFields(nullptr, true);
 
     // set the saved Node position back to the correct Node
     if( bRet && pSttNd )
@@ -263,7 +263,7 @@ bool SwEditShell::_CopySelToDoc( SwDoc* pInsDoc, SwNodeIndex* pSttNd )
  */
 bool SwEditShell::GetSelectedText( OUString &rBuf, int nHndlParaBrk )
 {
-    GetCrsr();  // creates all cursors if needed
+    GetCursor();  // creates all cursors if needed
     if( IsSelOnePara() )
     {
         rBuf = GetSelText();
@@ -290,7 +290,7 @@ bool SwEditShell::GetSelectedText( OUString &rBuf, int nHndlParaBrk )
         aStream.SetEndian( SvStreamEndian::LITTLE );
 #endif
         WriterRef xWrt;
-        SwReaderWriter::GetWriter( OUString(FILTER_TEXT), OUString(), xWrt );
+        SwReaderWriter::GetWriter( FILTER_TEXT, OUString(), xWrt );
         if( xWrt.Is() )
         {
             // write selected areas into a ASCII document
@@ -325,8 +325,9 @@ bool SwEditShell::GetSelectedText( OUString &rBuf, int nHndlParaBrk )
                     rBuf = OUString(p);
                 else
                 {
-                    sal_Size nLen = aStream.GetSize();
-                    rtl_uString *pStr = rtl_uString_alloc(nLen / sizeof( sal_Unicode ));
+                    const sal_uInt64 nLen = aStream.GetSize();
+                    OSL_ENSURE( nLen/sizeof( sal_Unicode )<static_cast<sal_uInt64>(SAL_MAX_INT32), "Stream can't fit in OUString" );
+                    rtl_uString *pStr = rtl_uString_alloc(static_cast<sal_Int32>(nLen / sizeof( sal_Unicode )));
                     aStream.Seek( 0 );
                     aStream.ResetError();
                     //endian specific?, yipes!

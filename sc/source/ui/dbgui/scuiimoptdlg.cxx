@@ -32,7 +32,7 @@
 class ScDelimiterTable
 {
 public:
-        ScDelimiterTable( const OUString& rDelTab )
+    explicit ScDelimiterTable( const OUString& rDelTab )
             :   theDelTab ( rDelTab ),
                 cSep      ( '\t' ),
                 nCount    ( comphelper::string::getTokenCount(rDelTab, '\t') ),
@@ -117,6 +117,8 @@ ScImportOptionsDlg::ScImportOptionsDlg(
     {
         get(m_pLbCharset, "charsetlist");
         m_pLbCharset->set_height_request(6 * m_pLbCharset->GetTextHeight());
+        get(m_pEncGrid, "grid2");
+        m_pEncGrid->set_vexpand(true);
     }
     m_pLbCharset->SetStyle(m_pLbCharset->GetStyle() | WB_SORT);
     m_pLbCharset->Show();
@@ -208,7 +210,7 @@ ScImportOptionsDlg::ScImportOptionsDlg(
         m_pCbQuoteAll->Show();
         m_pCbQuoteAll->Check( false );
         m_pCbFormulas->Show();
-        ScTabViewShell* pViewSh = PTR_CAST( ScTabViewShell, SfxViewShell::Current());
+        ScTabViewShell* pViewSh = dynamic_cast<ScTabViewShell*>( SfxViewShell::Current() );
         bool bFormulas = pViewSh &&
                 pViewSh->GetViewData().GetOptions().GetOption( VOPT_FORMULAS);
         m_pCbFormulas->Check( bFormulas );

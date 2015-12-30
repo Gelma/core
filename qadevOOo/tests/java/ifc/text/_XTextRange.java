@@ -46,8 +46,6 @@ public class _XTextRange extends MultiMethodTest {
                                             // in MultiMethodTest
     XTextRange oStartRange = null;          // startrange of textrang
     XTextRange oEndRange = null;            // endrange of textrang
-    String startStr = null;                 // string in startrange
-    String endStr = null;                   // string in endrange
 
     /**
     * Retrieves the start range and sets its context to
@@ -80,9 +78,7 @@ public class _XTextRange extends MultiMethodTest {
 
         log.println("Start: "+exp);
 
-        tRes.tested( "getStart()", oStartRange != null &&
-            exp.startsWith("Start"));
-
+        tRes.tested( "getStart()", exp.startsWith("Start"));
 
         oStartRange.setString("");
 
@@ -117,8 +113,7 @@ public class _XTextRange extends MultiMethodTest {
 
         log.println("End: "+exp);
 
-        tRes.tested( "getEnd()", oEndRange != null &&
-            exp.endsWith("End"));
+        tRes.tested( "getEnd()", exp.endsWith("End"));
 
         oEndRange.setString("");
     }

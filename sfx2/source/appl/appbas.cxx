@@ -101,7 +101,7 @@ BasicManager* SfxApplication::GetBasicManager()
     return 0;
 #else
     if (utl::ConfigManager::IsAvoidConfig())
-        return 0;
+        return nullptr;
     return BasicManagerRepository::getApplicationBasicManager( true );
 #endif
 }
@@ -112,7 +112,7 @@ XLibraryContainer * SfxApplication::GetDialogContainer()
     return NULL;
 #else
     if (utl::ConfigManager::IsAvoidConfig())
-        return NULL;
+        return nullptr;
     if ( !pAppData_Impl->pBasicManager->isValid() )
         GetBasicManager();
     return pAppData_Impl->pBasicManager->getLibraryContainer( SfxBasicManagerHolder::DIALOGS );
@@ -127,7 +127,7 @@ XLibraryContainer * SfxApplication::GetBasicContainer()
     return NULL;
 #else
     if (utl::ConfigManager::IsAvoidConfig())
-        return NULL;
+        return nullptr;
     if ( !pAppData_Impl->pBasicManager->isValid() )
         GetBasicManager();
     return pAppData_Impl->pBasicManager->getLibraryContainer( SfxBasicManagerHolder::SCRIPTS );
@@ -140,7 +140,7 @@ StarBASIC* SfxApplication::GetBasic()
     return 0;
 #else
     if (utl::ConfigManager::IsAvoidConfig())
-        return 0;
+        return nullptr;
     return GetBasicManager()->GetLib(0);
 #endif
 }
@@ -152,12 +152,14 @@ void SfxApplication::PropExec_Impl( SfxRequest &rReq )
     {
         case SID_ATTR_UNDO_COUNT:
         {
-            SFX_REQUEST_ARG(rReq, pCountItem, SfxUInt16Item, nSID, false);
-            std::shared_ptr< comphelper::ConfigurationChanges > batch(
-                comphelper::ConfigurationChanges::create());
-            officecfg::Office::Common::Undo::Steps::set(
-                pCountItem->GetValue(), batch);
-            batch->commit();
+            if (const SfxUInt16Item* pCountItem = rReq.GetArg<SfxUInt16Item>(nSID))
+            {
+                std::shared_ptr< comphelper::ConfigurationChanges > batch(
+                    comphelper::ConfigurationChanges::create());
+                officecfg::Office::Common::Undo::Steps::set(
+                    pCountItem->GetValue(), batch);
+                batch->commit();
+            }
             break;
         }
 

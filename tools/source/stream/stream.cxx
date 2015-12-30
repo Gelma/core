@@ -127,6 +127,8 @@ inline static void SwapDouble( double& r )
     }
 #endif
 
+static void SwapUnicode(sal_Unicode & r) { r = OSL_SWAPWORD(r); }
+
 //SDO
 
 #define READNUMBER_WITHOUT_SWAP(datatype,value) \
@@ -167,10 +169,9 @@ void SvLockBytes::close()
 {
     if (m_bOwner)
         delete m_pStream;
-    m_pStream = 0;
+    m_pStream = nullptr;
 }
 
-TYPEINIT0(SvLockBytes);
 
 // virtual
 ErrCode SvLockBytes::ReadAt(sal_uInt64 const nPos, void * pBuffer, sal_Size nCount,
@@ -251,11 +252,9 @@ ErrCode SvLockBytes::Stat(SvLockBytesStat * pStat, SvLockBytesStatFlag) const
 
 //  class SvOpenLockBytes
 
-TYPEINIT1(SvOpenLockBytes, SvLockBytes);
 
 //  class SvAsyncLockBytes
 
-TYPEINIT1(SvAsyncLockBytes, SvOpenLockBytes);
 
 // virtual
 ErrCode SvAsyncLockBytes::ReadAt(sal_uInt64 const nPos, void * pBuffer, sal_Size nCount,
@@ -612,7 +611,7 @@ bool SvStream::ReadUniStringLine( OUString& rStr, sal_Int32 nMaxCodepointsToRead
         for( j = n = 0; j < nLen ; ++j )
         {
             if (m_isSwap)
-                SwapUShort( buf[n] );
+                SwapUnicode( buf[n] );
             c = buf[j];
             if ( c == '\n' || c == '\r' )
             {
@@ -654,7 +653,7 @@ bool SvStream::ReadUniStringLine( OUString& rStr, sal_Int32 nMaxCodepointsToRead
         sal_Unicode cTemp;
         Read( &cTemp, sizeof(cTemp) );
         if (m_isSwap)
-            SwapUShort( cTemp );
+            SwapUnicode( cTemp );
         if( cTemp == c || (cTemp != '\n' && cTemp != '\r') )
             Seek( nOldFilePos );
     }
@@ -732,7 +731,7 @@ sal_Size write_uInt16s_FromOUString(SvStream& rStrm, const OUString& rStr,
         const sal_Unicode* const pStop = pTmp + nLen;
         while ( p < pStop )
         {
-            SwapUShort( *p );
+            SwapUnicode( *p );
             p++;
         }
         nWritten = rStrm.Write( pTmp, nLen * sizeof(sal_Unicode) );
@@ -989,6 +988,19 @@ SvStream& SvStream::ReadUChar( unsigned char& r )
     }
     else
         Read( &r, sizeof(char) );
+    return *this;
+}
+
+SvStream& SvStream::ReadUtf16(sal_Unicode& r)
+{
+    sal_uInt16 n = 0;
+    READNUMBER_WITHOUT_SWAP(sal_uInt16, n)
+    if (good())
+    {
+        if (m_isSwap)
+            SwapUShort(n);
+        r = sal_Unicode(n);
+    }
     return *this;
 }
 
@@ -1688,7 +1700,7 @@ SvMemoryStream::SvMemoryStream( sal_Size nInitSize, sal_Size nResizeOffset )
     nEndOfData  = 0L;
     nResize     = nResizeOffset;
     nPos        = 0;
-    pBuf        = 0;
+    pBuf        = nullptr;
     if( nResize != 0 && nResize < 16 )
         nResize = 16;
     if( nInitSize && !AllocateMemory( nInitSize ) )
@@ -1714,11 +1726,10 @@ SvMemoryStream::~SvMemoryStream()
 
 const void* SvMemoryStream::GetBuffer()
 {
-    Flush();
     return GetData();
 }
 
-sal_uIntPtr SvMemoryStream::GetSize()
+sal_uInt64 SvMemoryStream::GetSize()
 {
     Flush();
     sal_uInt64 const nTemp = Tell();
@@ -1735,7 +1746,7 @@ void* SvMemoryStream::SetBuffer( void* pNewBuf, sal_Size nCount,
     Seek( 0 );
     if( bOwnsData )
     {
-        pResult = 0;
+        pResult = nullptr;
         if( pNewBuf != pBuf )
             FreeMemory();
     }
@@ -1875,7 +1886,7 @@ void SvMemoryStream::ResetError()
 bool SvMemoryStream::AllocateMemory( sal_Size nNewSize )
 {
     pBuf = new sal_uInt8[nNewSize];
-    return( pBuf != 0 );
+    return( pBuf != nullptr );
 }
 
 // (using Bozo algorithm)
@@ -1917,7 +1928,7 @@ bool SvMemoryStream::ReAllocateMemory( long nDiff )
     {
         bRetVal = true;
         FreeMemory();
-        pBuf = 0;
+        pBuf = nullptr;
         nSize = 0;
         nEndOfData = 0;
         nPos = 0;
@@ -1935,11 +1946,11 @@ void* SvMemoryStream::SwitchBuffer( sal_Size nInitSize, sal_Size nResizeOffset)
 {
     Flush();
     if( !bOwnsData )
-        return 0;
+        return nullptr;
     Seek( STREAM_SEEK_TO_BEGIN );
 
     void* pRetVal = pBuf;
-    pBuf          = 0;
+    pBuf          = nullptr;
     nEndOfData    = 0L;
     nResize       = nResizeOffset;
     nPos          = 0;
@@ -1968,22 +1979,22 @@ void SvMemoryStream::SetSize(sal_uInt64 const nNewSize)
 }
 
 SvScriptStream::SvScriptStream(const OUString& rUrl):
-    mpProcess(NULL), mpHandle(NULL)
+    mpProcess(nullptr), mpHandle(nullptr)
 {
     oslProcessError rc;
     rc = osl_executeProcess_WithRedirectedIO(
         rUrl.pData,
-        NULL, 0,
+        nullptr, 0,
         osl_Process_HIDDEN,
-        NULL,
-        NULL,
-        NULL, 0,
+        nullptr,
+        nullptr,
+        nullptr, 0,
         &mpProcess,
-        NULL, &mpHandle, NULL);
+        nullptr, &mpHandle, nullptr);
     if (osl_Process_E_None != rc)
     {
-        mpProcess = NULL;
-        mpHandle = NULL;
+        mpProcess = nullptr;
+        mpHandle = nullptr;
     }
 }
 
@@ -2021,13 +2032,13 @@ bool SvScriptStream::ReadLine(OString &rStr, sal_Int32)
 
 bool SvScriptStream::good() const
 {
-    return mpHandle != NULL;
+    return mpHandle != nullptr;
 }
 
 //Create a OString of nLen bytes from rStream
 OString read_uInt8s_ToOString(SvStream& rStrm, sal_Size nLen)
 {
-    rtl_String *pStr = NULL;
+    rtl_String *pStr = nullptr;
     if (nLen)
     {
         nLen = std::min(nLen, static_cast<sal_Size>(SAL_MAX_INT32));
@@ -2056,7 +2067,7 @@ OString read_uInt8s_ToOString(SvStream& rStrm, sal_Size nLen)
 //Create a OUString of nLen sal_Unicodes from rStream
 OUString read_uInt16s_ToOUString(SvStream& rStrm, sal_Size nLen)
 {
-    rtl_uString *pStr = NULL;
+    rtl_uString *pStr = nullptr;
     if (nLen)
     {
         nLen = std::min(nLen, static_cast<sal_Size>(SAL_MAX_INT32));

@@ -26,16 +26,13 @@
 #include "hints.hxx"
 #include "sc.hrc"
 
-// STATIC DATA -----------------------------------------------------------
-
 void ScPreviewShell::Notify( SfxBroadcaster&, const SfxHint& rHint )
 {
     bool bDataChanged = false;
 
     if (dynamic_cast<const SfxSimpleHint*>(&rHint))
     {
-        sal_uLong nSlot = static_cast<const SfxSimpleHint&>(rHint).GetId();
-        switch ( nSlot )
+        switch ( static_cast<const SfxSimpleHint&>(rHint).GetId() )
         {
             case FID_DATACHANGED:
             case SID_SCPRINTOPTIONS:

@@ -31,7 +31,7 @@ namespace svgio
             SvgNode* pParent)
         :   SvgNode(aType, rDocument, pParent),
             maSvgStyleAttributes(*this),
-            mpaTransform(0)
+            mpaTransform(nullptr)
         {
             OSL_ENSURE(aType == SVGTokenDefs || aType == SVGTokenG, "SvgGNode should ony be used for Group and Defs (!)");
         }
@@ -51,7 +51,7 @@ namespace svgio
             else
             {
                 // #i125258# for SVGTokenG take CssStyles into account
-                return checkForCssStyle(OUString("g"), maSvgStyleAttributes);
+                return checkForCssStyle("g", maSvgStyleAttributes);
             }
         }
 
@@ -88,7 +88,7 @@ namespace svgio
             }
         }
 
-        void SvgGNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DSequence& rTarget, bool bReferenced) const
+        void SvgGNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DContainer& rTarget, bool bReferenced) const
         {
             if(SVGTokenDefs == getType())
             {
@@ -106,12 +106,12 @@ namespace svgio
 
                     if(fOpacity > 0.0 && Display_none != getDisplay())
                     {
-                        drawinglayer::primitive2d::Primitive2DSequence aContent;
+                        drawinglayer::primitive2d::Primitive2DContainer aContent;
 
                         // decompose children
                         SvgNode::decomposeSvgNode(aContent, bReferenced);
 
-                        if(aContent.hasElements())
+                        if(!aContent.empty())
                         {
                             pStyle->add_postProcess(rTarget, aContent, getTransform());
                         }

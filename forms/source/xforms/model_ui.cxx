@@ -89,30 +89,30 @@ OUString Model::getDefaultServiceNameForNode( const XNode_t& xNode )
 
         switch( mxDataTypes->getDataType( sTypeName )->getTypeClass() )
         {
-        case com::sun::star::xsd::DataTypeClass::BOOLEAN:
+        case css::xsd::DataTypeClass::BOOLEAN:
             sService = "com.sun.star.form.component.CheckBox";
             break;
-        case com::sun::star::xsd::DataTypeClass::DOUBLE:
-        case com::sun::star::xsd::DataTypeClass::DECIMAL:
-        case com::sun::star::xsd::DataTypeClass::FLOAT:
+        case css::xsd::DataTypeClass::DOUBLE:
+        case css::xsd::DataTypeClass::DECIMAL:
+        case css::xsd::DataTypeClass::FLOAT:
             sService = "com.sun.star.form.component.NumericField";
             break;
 
-        case com::sun::star::xsd::DataTypeClass::STRING:
-        case com::sun::star::xsd::DataTypeClass::DURATION:
-        case com::sun::star::xsd::DataTypeClass::DATETIME:
-        case com::sun::star::xsd::DataTypeClass::TIME:
-        case com::sun::star::xsd::DataTypeClass::DATE:
-        case com::sun::star::xsd::DataTypeClass::gYearMonth:
-        case com::sun::star::xsd::DataTypeClass::gYear:
-        case com::sun::star::xsd::DataTypeClass::gMonthDay:
-        case com::sun::star::xsd::DataTypeClass::gDay:
-        case com::sun::star::xsd::DataTypeClass::gMonth:
-        case com::sun::star::xsd::DataTypeClass::hexBinary:
-        case com::sun::star::xsd::DataTypeClass::base64Binary:
-        case com::sun::star::xsd::DataTypeClass::anyURI:
-        case com::sun::star::xsd::DataTypeClass::QName:
-        case com::sun::star::xsd::DataTypeClass::NOTATION:
+        case css::xsd::DataTypeClass::STRING:
+        case css::xsd::DataTypeClass::DURATION:
+        case css::xsd::DataTypeClass::DATETIME:
+        case css::xsd::DataTypeClass::TIME:
+        case css::xsd::DataTypeClass::DATE:
+        case css::xsd::DataTypeClass::gYearMonth:
+        case css::xsd::DataTypeClass::gYear:
+        case css::xsd::DataTypeClass::gMonthDay:
+        case css::xsd::DataTypeClass::gDay:
+        case css::xsd::DataTypeClass::gMonth:
+        case css::xsd::DataTypeClass::hexBinary:
+        case css::xsd::DataTypeClass::base64Binary:
+        case css::xsd::DataTypeClass::anyURI:
+        case css::xsd::DataTypeClass::QName:
+        case css::xsd::DataTypeClass::NOTATION:
         default:
             // keep default
             break;
@@ -134,7 +134,7 @@ static void lcl_OutPosition( OUStringBuffer& rBuffer,
     if( xNode->getParentNode().is() )
     {
         for( Reference<XNode> xIter = xNode->getParentNode()->getFirstChild();
-             xIter != NULL;
+             xIter != nullptr;
              xIter = xIter->getNextSibling() )
         {
             if( xIter->getNodeType() == xNode->getNodeType() &&
@@ -192,7 +192,7 @@ static void lcl_OutInstance( OUStringBuffer& rBuffer,
             // get ID and instance
             OUString sId;
             Reference<XDocument> xInstance;
-            getInstanceData( aValues, &sId, &xInstance, NULL, NULL );
+            getInstanceData( aValues, &sId, &xInstance, nullptr, nullptr );
 
             // now check whether this was our instance:
             if( xInstance == xDoc )
@@ -247,7 +247,7 @@ OUString Model::getDefaultBindingExpressionForNode(
         default:
             // unknown type? fail!
             OSL_FAIL( "unknown node type!" );
-            xCurrent.set( NULL );
+            xCurrent.set( nullptr );
             aBuffer.makeStringAndClear();
             // we'll remove the slash below
             aBuffer.insert( 0, '/' );
@@ -399,7 +399,7 @@ void Model::removeBindingIfUseless( const XPropertySet_t& xBinding )
     throw( RuntimeException, std::exception )
 {
     Binding* pBinding = Binding::getBinding( xBinding );
-    if( pBinding != NULL )
+    if( pBinding != nullptr )
     {
         if( ! pBinding->isUseful() )
             mpBindings->removeItem( pBinding );
@@ -450,7 +450,7 @@ sal_Int32 xforms::lcl_findInstance( const InstanceCollection* pInstances,
     for( ; !bFound  &&  n < nLength; n++ )
     {
         OUString sName;
-        getInstanceData( pInstances->getItem( n ), &sName, NULL, NULL, NULL );
+        getInstanceData( pInstances->getItem( n ), &sName, nullptr, nullptr, nullptr );
         bFound = ( sName == rName );
     }
     return bFound ? ( n - 1 ) : -1;
@@ -506,7 +506,7 @@ void Model::removeInstance( const OUString& sName )
 }
 
 static Reference<XNameContainer> lcl_getModels(
-    const Reference<com::sun::star::frame::XModel>& xComponent )
+    const Reference<css::frame::XModel>& xComponent )
 {
     Reference<XNameContainer> xRet;
     Reference<XFormsSupplier> xSupplier( xComponent, UNO_QUERY );
@@ -517,7 +517,7 @@ static Reference<XNameContainer> lcl_getModels(
     return xRet;
 }
 
-css::uno::Reference<css::xforms::XModel> Model::newModel( const Reference<com::sun::star::frame::XModel>& xCmp,
+css::uno::Reference<css::xforms::XModel> Model::newModel( const Reference<css::frame::XModel>& xCmp,
                                  const OUString& sName )
     throw( RuntimeException, std::exception )
 {
@@ -538,7 +538,7 @@ css::uno::Reference<css::xforms::XModel> Model::newModel( const Reference<com::s
     return xModel;
 }
 
-void Model::renameModel( const Reference<com::sun::star::frame::XModel>& xCmp,
+void Model::renameModel( const Reference<css::frame::XModel>& xCmp,
                          const OUString& sFrom,
                          const OUString& sTo )
     throw( RuntimeException, std::exception )
@@ -555,7 +555,7 @@ void Model::renameModel( const Reference<com::sun::star::frame::XModel>& xCmp,
     }
 }
 
-void Model::removeModel( const Reference<com::sun::star::frame::XModel>& xCmp,
+void Model::removeModel( const Reference<css::frame::XModel>& xCmp,
                          const OUString& sName )
     throw( RuntimeException, std::exception )
 {
@@ -702,7 +702,7 @@ Model::XPropertySet_t Model::getBindingForNode( const XNode_t& xNode,
     // appropriateness of the respective binding for this node. The
     // best one will be used. If we don't find any and bCreate is set,
     // then we will create a suitable binding.
-    Binding* pBestBinding = NULL;
+    Binding* pBestBinding = nullptr;
     sal_Int32 nBestScore = 0;
 
     for( sal_Int32 n = 0; n < mpBindings->countItems(); n++ )
@@ -710,7 +710,7 @@ Model::XPropertySet_t Model::getBindingForNode( const XNode_t& xNode,
         Binding* pBinding = Binding::getBinding(
             mpBindings->Collection<XPropertySet_t>::getItem( n ) );
 
-        OSL_ENSURE( pBinding != NULL, "no binding?" );
+        OSL_ENSURE( pBinding != nullptr, "no binding?" );
         Reference<XNodeList> xNodeList = pBinding->getXNodeList();
 
         sal_Int32 nNodes = xNodeList.is() ? xNodeList->getLength() : 0;
@@ -736,9 +736,9 @@ Model::XPropertySet_t Model::getBindingForNode( const XNode_t& xNode,
     }
 
     // create binding, if none was found and bCreate is set
-    OSL_ENSURE( ( nBestScore == 0 ) == ( pBestBinding == NULL ),
+    OSL_ENSURE( ( nBestScore == 0 ) == ( pBestBinding == nullptr ),
                 "score != binding?" );
-    if( bCreate  &&  pBestBinding == NULL )
+    if( bCreate  &&  pBestBinding == nullptr )
     {
         pBestBinding = new Binding();
         pBestBinding->setBindingExpression(
@@ -905,7 +905,7 @@ OUString Model::getResultForExpression(
     throw( RuntimeException, std::exception )
 {
     Binding* pBinding = Binding::getBinding( xBinding );
-    if( pBinding == NULL )
+    if( pBinding == nullptr )
         throw RuntimeException();
 
     // prepare & evaluate expression
@@ -938,13 +938,13 @@ OUString Model::getResultForExpression(
 sal_Bool Model::isValidXMLName( const OUString& sName )
     throw( RuntimeException, std::exception )
 {
-    return isValidQName( sName, NULL );
+    return isValidQName( sName, nullptr );
 }
 
 sal_Bool Model::isValidPrefixName( const OUString& sName )
     throw( RuntimeException, std::exception )
 {
-    return ::isValidPrefixName( sName, NULL );
+    return ::isValidPrefixName( sName, nullptr );
 }
 
 void Model::setNodeValue(
@@ -973,7 +973,7 @@ void xforms::getInstanceData(
     {
         const PropertyValue& rValue = pValues[n];
 #define PROP(NAME) \
-        if( p##NAME != NULL && \
+        if( p##NAME != nullptr && \
             rValue.Name == #NAME ) \
             rValue.Value >>= (*p##NAME)
         PROP(ID);
@@ -997,13 +997,13 @@ void xforms::setInstanceData(
     OUString sURL;
     bool bURLOnce = false;
     getInstanceData( aSequence, &sID, &xInstance, &sURL, &bURLOnce );
-    const OUString* pID = !sID.isEmpty() ? &sID : NULL;
-    const Reference<XDocument>* pInstance = xInstance.is() ? &xInstance : NULL;
-    const OUString* pURL = !sURL.isEmpty() ? &sURL : NULL;
-    const bool* pURLOnce = ( bURLOnce && pURL != NULL ) ? &bURLOnce : NULL;
+    const OUString* pID = !sID.isEmpty() ? &sID : nullptr;
+    const Reference<XDocument>* pInstance = xInstance.is() ? &xInstance : nullptr;
+    const OUString* pURL = !sURL.isEmpty() ? &sURL : nullptr;
+    const bool* pURLOnce = ( bURLOnce && pURL != nullptr ) ? &bURLOnce : nullptr;
 
     // determine new instance data
-#define PROP(NAME) if( _p##NAME != NULL ) p##NAME = _p##NAME
+#define PROP(NAME) if( _p##NAME != nullptr ) p##NAME = _p##NAME
     PROP(ID);
     PROP(Instance);
     PROP(URL);
@@ -1012,7 +1012,7 @@ void xforms::setInstanceData(
 
     // count # of values we want to set
     sal_Int32 nCount = 0;
-#define PROP(NAME) if( p##NAME != NULL ) nCount++
+#define PROP(NAME) if( p##NAME != nullptr ) nCount++
     PROP(ID);
     PROP(Instance);
     PROP(URL);
@@ -1024,7 +1024,7 @@ void xforms::setInstanceData(
     PropertyValue* pSequence = aSequence.getArray();
     sal_Int32 nIndex = 0;
 #define PROP(NAME) \
-    if( p##NAME != NULL ) \
+    if( p##NAME != nullptr ) \
     { \
         pSequence[ nIndex ].Name = #NAME; \
         pSequence[ nIndex ].Value <<= *p##NAME; \

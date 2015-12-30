@@ -94,10 +94,10 @@ class AnnotationDragMove : public SdrDragMove
 {
 public:
     AnnotationDragMove(SdrDragView& rNewView, const rtl::Reference <AnnotationTag >& xTag);
-    virtual bool BeginSdrDrag() SAL_OVERRIDE;
-    virtual bool EndSdrDrag(bool bCopy) SAL_OVERRIDE;
-    virtual void MoveSdrDrag(const Point& rNoSnapPnt) SAL_OVERRIDE;
-    virtual void CancelSdrDrag() SAL_OVERRIDE;
+    virtual bool BeginSdrDrag() override;
+    virtual bool EndSdrDrag(bool bCopy) override;
+    virtual void MoveSdrDrag(const Point& rNoSnapPnt) override;
+    virtual void CancelSdrDrag() override;
 
 private:
     rtl::Reference <AnnotationTag > mxTag;
@@ -156,9 +156,9 @@ class AnnotationHdl : public SmartHdl
 public:
     AnnotationHdl( const SmartTagReference& xTag, const Reference< XAnnotation >& xAnnotation, const Point& rPnt );
     virtual ~AnnotationHdl();
-    virtual void CreateB2dIAObject() SAL_OVERRIDE;
-    virtual bool IsFocusHdl() const SAL_OVERRIDE;
-    virtual bool isMarkable() const SAL_OVERRIDE;
+    virtual void CreateB2dIAObject() override;
+    virtual bool IsFocusHdl() const override;
+    virtual bool isMarkable() const override;
 
 private:
     Reference< XAnnotation > mxAnnotation;
@@ -214,7 +214,7 @@ void AnnotationHdl::CreateB2dIAObject()
                         rtl::Reference< sdr::overlay::OverlayManager > xManager = rPageWindow.GetOverlayManager();
                         if(rPaintWindow.OutputToWindow() && xManager.is() )
                         {
-                            sdr::overlay::OverlayObject* pOverlayObject = 0;
+                            sdr::overlay::OverlayObject* pOverlayObject = nullptr;
 
                             // animate focused handles
                             if(bFocused)
@@ -255,8 +255,8 @@ AnnotationTag::AnnotationTag( AnnotationManagerImpl& rManager, ::sd::View& rView
 , maColor( rColor )
 , mnIndex( nIndex )
 , mrFont( rFont )
-, mnClosePopupEvent( 0 )
-, mpListenWindow( 0 )
+, mnClosePopupEvent( nullptr )
+, mpListenWindow( nullptr )
 {
 }
 
@@ -479,7 +479,7 @@ void AnnotationTag::disposing()
     if( mnClosePopupEvent )
     {
         Application::RemoveUserEvent( mnClosePopupEvent );
-        mnClosePopupEvent = 0;
+        mnClosePopupEvent = nullptr;
     }
 
     mxAnnotation.clear();
@@ -566,9 +566,9 @@ void AnnotationTag::OpenPopup( bool bEdit )
 
     if( !mpAnnotationWindow.get() )
     {
-           vcl::Window* pWindow = dynamic_cast< vcl::Window* >( getView().GetFirstOutputDevice() );
-           if( pWindow )
-           {
+        vcl::Window* pWindow = dynamic_cast< vcl::Window* >( getView().GetFirstOutputDevice() );
+        if( pWindow )
+        {
             RealPoint2D aPosition( mxAnnotation->getPosition() );
             Point aPos( pWindow->OutputToScreenPixel( pWindow->LogicToPixel( Point( static_cast<long>(aPosition.X * 100.0), static_cast<long>(aPosition.Y * 100.0) ) ) ) );
 
@@ -604,7 +604,7 @@ void AnnotationTag::ClosePopup()
     {
         mpAnnotationWindow->RemoveEventListener( LINK(this, AnnotationTag, WindowEventHandler));
         mpAnnotationWindow->Deactivate();
-        mpAnnotationWindow.reset();
+        mpAnnotationWindow.disposeAndClear();
     }
 }
 
@@ -632,8 +632,8 @@ IMPL_LINK_TYPED(AnnotationTag, WindowEventHandler, VclWindowEvent&, rEvent, void
                     {
                         // if we stop pressing the button without a mouse move we open the popup
                         mpListenWindow->RemoveEventListener( LINK(this, AnnotationTag, WindowEventHandler));
-                        mpListenWindow = 0;
-                        if( mpAnnotationWindow.get() == 0 )
+                        mpListenWindow = nullptr;
+                        if( mpAnnotationWindow.get() == nullptr )
                             OpenPopup(false);
                     }
                     break;
@@ -641,7 +641,7 @@ IMPL_LINK_TYPED(AnnotationTag, WindowEventHandler, VclWindowEvent&, rEvent, void
                     {
                         // if we move the mouse after a button down we wan't to start draging
                         mpListenWindow->RemoveEventListener( LINK(this, AnnotationTag, WindowEventHandler));
-                        mpListenWindow = 0;
+                        mpListenWindow = nullptr;
 
                         SdrHdl* pHdl = mrView.PickHandle(maMouseDownPos);
                         if( pHdl )
@@ -652,12 +652,12 @@ IMPL_LINK_TYPED(AnnotationTag, WindowEventHandler, VclWindowEvent&, rEvent, void
                             rtl::Reference< AnnotationTag > xTag( this );
 
                             SdrDragMethod* pDragMethod = new AnnotationDragMove( mrView, xTag );
-                            mrView.BegDragObj(maMouseDownPos, NULL, pHdl, nDrgLog, pDragMethod );
+                            mrView.BegDragObj(maMouseDownPos, nullptr, pHdl, nDrgLog, pDragMethod );
                         }
                     }
                     break;
                 case VCLEVENT_OBJECT_DYING:
-                    mpListenWindow = 0;
+                    mpListenWindow = nullptr;
                     break;
                 }
             }
@@ -666,7 +666,7 @@ IMPL_LINK_TYPED(AnnotationTag, WindowEventHandler, VclWindowEvent&, rEvent, void
 
 IMPL_LINK_NOARG_TYPED(AnnotationTag, ClosePopupHdl, void*, void)
 {
-    mnClosePopupEvent = 0;
+    mnClosePopupEvent = nullptr;
     ClosePopup();
 }
 

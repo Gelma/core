@@ -124,7 +124,7 @@ void FuncPage::UpdateFunctionList()
 
     if ( nSelPos > 0 )
     {
-        if ( pCategory == NULL )
+        if ( pCategory == nullptr )
         {
             const sal_uInt32 nCount = m_pFunctionManager->getCount();
             for(sal_uInt32 i = 0 ; i < nCount; ++i)
@@ -157,12 +157,12 @@ void FuncPage::UpdateFunctionList()
     m_pLbFunction->SetUpdateMode( true );
     m_pLbFunction->SelectEntryPos(0);
 
-    if(IsVisible()) SelHdl(m_pLbFunction);
+    if(IsVisible()) SelHdl(*m_pLbFunction);
 }
 
-IMPL_LINK( FuncPage, SelHdl, ListBox*, pLb )
+IMPL_LINK_TYPED( FuncPage, SelHdl, ListBox&, rLb, void )
 {
-    if(pLb==m_pLbFunction)
+    if(&rLb==m_pLbFunction)
     {
         const IFunctionDescription* pDesc = GetFuncDesc( GetFunction() );
         if ( pDesc )
@@ -178,7 +178,6 @@ IMPL_LINK( FuncPage, SelHdl, ListBox*, pLb )
         m_pLbFunction->SetHelpId(m_aHelpId);
         UpdateFunctionList();
     }
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(FuncPage, DblClkHdl, ListBox&, void)

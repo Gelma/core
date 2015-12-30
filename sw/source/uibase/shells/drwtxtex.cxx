@@ -135,7 +135,7 @@ void SwDrawTextShell::Execute( SfxRequest &rReq )
         case SID_THES:
         {
             OUString aReplaceText;
-            SFX_REQUEST_ARG( rReq, pItem2, SfxStringItem, SID_THES, false );
+            const SfxStringItem* pItem2 = rReq.GetArg<SfxStringItem>(SID_THES);
             if (pItem2)
                 aReplaceText = pItem2->GetValue();
             if (!aReplaceText.isEmpty())
@@ -167,6 +167,7 @@ void SwDrawTextShell::Execute( SfxRequest &rReq )
         break;
 
         case SID_ATTR_CHAR_COLOR: nEEWhich = EE_CHAR_COLOR; break;
+        case SID_ATTR_CHAR_BACK_COLOR: nEEWhich = EE_CHAR_BKGCOLOR; break;
 
         case SID_ATTR_CHAR_UNDERLINE:
         {
@@ -318,7 +319,7 @@ void SwDrawTextShell::Execute( SfxRequest &rReq )
         case SID_CHAR_DLG_FOR_PARAGRAPH:
         {
             const SfxItemSet* pArgs = rReq.GetArgs();
-            SFX_REQUEST_ARG(rReq, pItem, SfxStringItem, FN_PARAM_1, false);
+            const SfxStringItem* pItem = rReq.GetArg<SfxStringItem>(FN_PARAM_1);
 
             if( !pArgs || pItem )
             {
@@ -332,7 +333,7 @@ void SwDrawTextShell::Execute( SfxRequest &rReq )
                 }
 
                 SwView* pView = &GetView();
-                FieldUnit eMetric = ::GetDfltMetric(0 != PTR_CAST(SwWebView, pView));
+                FieldUnit eMetric = ::GetDfltMetric(dynamic_cast<SwWebView*>( pView) !=  nullptr );
                 SW_MOD()->PutItem(SfxUInt16Item(SID_ATTR_METRIC, static_cast< sal_uInt16 >(eMetric)) );
                 SfxItemSet aDlgAttr(GetPool(), EE_ITEMS_START, EE_ITEMS_END);
 
@@ -400,7 +401,7 @@ void SwDrawTextShell::Execute( SfxRequest &rReq )
             if (!pArgs)
             {
                 SwView* pView = &GetView();
-                FieldUnit eMetric = ::GetDfltMetric(0 != PTR_CAST(SwWebView, pView));
+                FieldUnit eMetric = ::GetDfltMetric(dynamic_cast<SwWebView*>( pView) !=  nullptr );
                 SW_MOD()->PutItem(SfxUInt16Item(SID_ATTR_METRIC, static_cast< sal_uInt16 >(eMetric)) );
                 SfxItemSet aDlgAttr(GetPool(),
                                     EE_ITEMS_START, EE_ITEMS_END,
@@ -421,7 +422,7 @@ void SwDrawTextShell::Execute( SfxRequest &rReq )
                 SwAbstractDialogFactory* pFact = SwAbstractDialogFactory::Create();
                 assert(pFact && "SwAbstractDialogFactory fail!");
 
-                std::unique_ptr<SfxAbstractTabDialog> pDlg(pFact->CreateSwParaDlg( GetView().GetWindow(), GetView(), aDlgAttr,DLG_STD, 0, true ));
+                std::unique_ptr<SfxAbstractTabDialog> pDlg(pFact->CreateSwParaDlg( GetView().GetWindow(), GetView(), aDlgAttr,DLG_STD, nullptr, true ));
                 assert(pDlg && "Dialog creation failed!");
                 sal_uInt16 nRet = pDlg->Execute();
                 if(RET_OK == nRet)
@@ -456,7 +457,7 @@ void SwDrawTextShell::Execute( SfxRequest &rReq )
         break;
         case SID_HYPERLINK_SETLINK:
         {
-            const SfxPoolItem* pItem = 0;
+            const SfxPoolItem* pItem = nullptr;
             if(pNewAttrs)
                 pNewAttrs->GetItemState(nSlot, false, &pItem);
 
@@ -468,7 +469,7 @@ void SwDrawTextShell::Execute( SfxRequest &rReq )
 
                 const SvxFieldItem* pFieldItem = pOLV->GetFieldAtSelection();
 
-                if (pFieldItem && pFieldItem->GetField()->ISA(SvxURLField))
+                if (pFieldItem && dynamic_cast< const SvxURLField *>( pFieldItem->GetField() ) != nullptr )
                 {
                     // Select field so that it will be deleted during insert
                     ESelection aSel = pOLV->GetSelection();
@@ -500,7 +501,7 @@ void SwDrawTextShell::Execute( SfxRequest &rReq )
                         : text::WritingMode_TB_RL, SDRATTR_TEXTDIRECTION ) );
                 pTmpView->SetAttributes( aAttr );
 
-                rSh.GetView().BeginTextEdit( pTmpObj, pTmpPV, &rSh.GetView().GetEditWin(), false);
+                rSh.GetView().BeginTextEdit( pTmpObj, pTmpPV, &rSh.GetView().GetEditWin());
                 rSh.GetView().AttrChangedNotify( &rSh );
             }
             return;
@@ -543,7 +544,7 @@ void SwDrawTextShell::Execute( SfxRequest &rReq )
                     aAttr.Put( SvxAdjustItem( SVX_ADJUST_RIGHT, EE_PARA_JUST ) );
             }
             pTmpView->SetAttributes( aAttr );
-            rSh.GetView().BeginTextEdit( pTmpObj, pTmpPV, &rSh.GetView().GetEditWin(), false );
+            rSh.GetView().BeginTextEdit( pTmpObj, pTmpPV, &rSh.GetView().GetEditWin() );
             rSh.GetView().AttrChangedNotify( &rSh );
         }
         return;
@@ -589,7 +590,7 @@ void SwDrawTextShell::GetState(SfxItemSet& rSet)
     sal_uInt16 nWhich = aIter.FirstWhich();
 
     SfxItemSet aEditAttr( pOLV->GetAttribs() );
-    const SfxPoolItem *pAdjust = 0, *pLSpace = 0, *pEscItem = 0;
+    const SfxPoolItem *pAdjust = nullptr, *pLSpace = nullptr, *pEscItem = nullptr;
     int eAdjust, nLSpace, nEsc;
 
     while(nWhich)
@@ -890,6 +891,7 @@ void SwDrawTextShell::GetDrawTextCtrlState(SfxItemSet& rSet)
             }
             break;
             case SID_ATTR_CHAR_COLOR: nEEWhich = EE_CHAR_COLOR; break;
+            case SID_ATTR_CHAR_BACK_COLOR: nEEWhich = EE_CHAR_BKGCOLOR; break;
             case SID_ATTR_CHAR_UNDERLINE: nEEWhich = EE_CHAR_UNDERLINE;break;
             case SID_ATTR_CHAR_OVERLINE: nEEWhich = EE_CHAR_OVERLINE;break;
             case SID_ATTR_CHAR_CONTOUR: nEEWhich = EE_CHAR_OUTLINE; break;
@@ -1043,7 +1045,7 @@ void SwDrawTextShell::StateInsert(SfxItemSet &rSet)
                     {
                         const SvxFieldData* pField = pFieldItem->GetField();
 
-                        if (pField->ISA(SvxURLField))
+                        if (dynamic_cast< const SvxURLField *>( pField ) !=  nullptr)
                         {
                             aHLinkItem.SetName(static_cast<const SvxURLField*>( pField)->GetRepresentation());
                             aHLinkItem.SetURL(static_cast<const SvxURLField*>( pField)->GetURL());

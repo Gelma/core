@@ -45,6 +45,7 @@ $(eval $(call gb_Module_add_moduledirs,external,\
 	$(call gb_Helper_optional,FREETYPE,freetype) \
 	$(call gb_Helper_optional,GLEW,glew) \
 	$(call gb_Helper_optional,GLM,glm) \
+	$(call gb_Helper_optional,GLYPHY,glyphy) \
 	$(call gb_Helper_optional,GRAPHITE,graphite) \
 	$(call gb_Helper_optional,HARFBUZZ,harfbuzz) \
 	$(call gb_Helper_optional,HSQLDB,hsqldb) \
@@ -67,9 +68,9 @@ $(eval $(call gb_Module_add_moduledirs,external,\
 	$(call gb_Helper_optional,LPSOLVE,lpsolve) \
 	$(call gb_Helper_optional,MARIADB,libmariadb) \
 	$(call gb_Helper_optional,MDDS,mdds) \
+	$(call gb_Helper_optional,MDNSRESPONDER,mdnsresponder) \
 	$(if $(WITH_EXTRA_EXTENSIONS),misc_extensions) \
 	$(call gb_Helper_optional,MORE_FONTS,more_fonts) \
-	$(call gb_Helper_optional,MOZ,moz) \
 	$(call gb_Helper_optional,MSPUB,libmspub) \
 	$(call gb_Helper_optional,MWAW,libmwaw) \
 	$(call gb_Helper_optional,MYSQLCPPCONN,mysqlcppconn) \
@@ -85,7 +86,7 @@ $(eval $(call gb_Module_add_moduledirs,external,\
 	$(call gb_Helper_optional,PAGEMAKER,libpagemaker) \
 	$(call gb_Helper_optional,POPPLER,poppler) \
 	$(call gb_Helper_optional,POSTGRESQL,postgresql) \
-	$(call gb_Helper_optional,PYTHON,python3) \
+	$(call gb_Helper_optional,PYTHON,$(if $(filter $(PYTHON_VERSION_MINOR),3),python33,python3)) \
 	$(call gb_Helper_optional,REDLAND,redland) \
 	$(call gb_Helper_optional,REVENGE,librevenge) \
 	$(call gb_Helper_optional,RHINO,rhino) \

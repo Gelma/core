@@ -116,7 +116,7 @@ void ScServerObject::Clear()
     if (pDocSh)
     {
         ScDocShell* pTemp = pDocSh;
-        pDocSh = NULL;
+        pDocSh = nullptr;
 
         pTemp->GetDocument().EndListeningArea(aRange, false, &aForwarder);
         pTemp->GetDocument().GetLinkManager()->RemoveServer( this );
@@ -132,7 +132,7 @@ void ScServerObject::EndListeningAll()
 }
 
 bool ScServerObject::GetData(
-        ::com::sun::star::uno::Any & rData /*out param*/,
+        css::uno::Any & rData /*out param*/,
         const OUString & rMimeType, bool /* bSynchron */ )
 {
     if (!pDocSh)
@@ -173,7 +173,7 @@ bool ScServerObject::GetData(
             OString aByteData;
             if( aObj.ExportByteString( aByteData, osl_getThreadTextEncoding(), SotClipboardFormatId::SYLK ) )
             {
-                rData <<= ::com::sun::star::uno::Sequence< sal_Int8 >(
+                rData <<= css::uno::Sequence< sal_Int8 >(
                                         reinterpret_cast<const sal_Int8*>(aByteData.getStr()),
                                         aByteData.getLength() + 1 );
                 return true;
@@ -204,12 +204,12 @@ void ScServerObject::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
         const SfxSimpleHint* pSimpleHint = dynamic_cast<const SfxSimpleHint*>( &rHint );
         if ( pSimpleHint && pSimpleHint->GetId() == SFX_HINT_DYING )
         {
-            pDocSh = NULL;
+            pDocSh = nullptr;
             EndListening(*SfxGetpApp());
             //  don't access DocShell anymore for EndListening etc.
         }
     }
-    else if (rBC.ISA(SfxApplication))
+    else if (dynamic_cast<const SfxApplication*>( &rBC) !=  nullptr)
     {
         const SfxSimpleHint* pSimpleHint = dynamic_cast<const SfxSimpleHint*>( &rHint );
         if ( !aItemStr.isEmpty() && pSimpleHint &&
@@ -228,19 +228,18 @@ void ScServerObject::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
         const ScHint* pScHint = dynamic_cast<const ScHint*>( &rHint );
         if (pScHint && (pScHint->GetId() & SC_HINT_DATACHANGED))
             bDataChanged = true;
-        else if ( dynamic_cast<const ScAreaChangedHint*>(&rHint) )      // position of broadcaster changed
+        else if (const ScAreaChangedHint *pChgHint = dynamic_cast<const ScAreaChangedHint*>(&rHint))      // position of broadcaster changed
         {
-            ScRange aNewRange = static_cast<const ScAreaChangedHint&>(rHint).GetRange();
+            ScRange aNewRange = pChgHint->GetRange();
             if ( aRange != aNewRange )
             {
                 bRefreshListener = true;
                 bDataChanged = true;
             }
         }
-        else if ( dynamic_cast<const SfxSimpleHint*>(&rHint) )
+        else if (const SfxSimpleHint *pSplHint = dynamic_cast<const SfxSimpleHint*>(&rHint))
         {
-            sal_uLong nId = static_cast<const SfxSimpleHint&>(rHint).GetId();
-            if (nId == SFX_HINT_DYING)
+            if (pSplHint->GetId() == SFX_HINT_DYING)
             {
                 //  If the range is being deleted, listening must be restarted
                 //  after the deletion is complete (done in GetData)

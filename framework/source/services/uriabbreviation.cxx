@@ -43,12 +43,11 @@ DEFINE_INIT_SERVICE                 (   UriAbbreviation,
                                         }
                                     )
 
-UriAbbreviation::UriAbbreviation(css::uno::Reference< css::uno::XComponentContext > const & context) :
-    m_xContext(context)
+UriAbbreviation::UriAbbreviation(css::uno::Reference< css::uno::XComponentContext > const & )
 {
 }
 
-// ::com::sun::star::util::XStringAbbreviation:
+// css::util::XStringAbbreviation:
 OUString SAL_CALL UriAbbreviation::abbreviateString(const css::uno::Reference< css::util::XStringWidth > & xStringWidth, ::sal_Int32 nWidth, const OUString & aString) throw (css::uno::RuntimeException, std::exception)
 {
     OUString aResult( aString );

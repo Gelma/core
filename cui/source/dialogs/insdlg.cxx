@@ -33,7 +33,6 @@
 #include <comphelper/processfactory.hxx>
 
 #include "insdlg.hxx"
-#include <plfilter.hxx>
 #include <dialmgr.hxx>
 #include <svtools/sores.hxx>
 
@@ -117,7 +116,7 @@ IMPL_LINK_NOARG_TYPED(SvInsertOleDlg, BrowseHdl, Button*, void)
     {
         xFilePicker->appendFilter(
              OUString(),
-             OUString( "*.*" )
+             "*.*"
              );
     }
     catch( const IllegalArgumentException& )
@@ -127,7 +126,7 @@ IMPL_LINK_NOARG_TYPED(SvInsertOleDlg, BrowseHdl, Button*, void)
 
     if( xFilePicker->execute() == ExecutableDialogResults::OK )
     {
-        Sequence< OUString > aPathSeq( xFilePicker->getFiles() );
+        Sequence< OUString > aPathSeq( xFilePicker->getSelectedFiles() );
         INetURLObject aObj( aPathSeq[0] );
         m_pEdFilepath->SetText( aObj.PathToFileName() );
     }
@@ -180,7 +179,7 @@ SvInsertOleDlg::SvInsertOleDlg
     m_pRbNewObject->SetClickHdl( aLink );
     m_pRbObjectFromfile->SetClickHdl( aLink );
     m_pRbNewObject->Check();
-    RadioHdl( NULL );
+    RadioHdl( nullptr );
 }
 
 SvInsertOleDlg::~SvInsertOleDlg()
@@ -319,7 +318,7 @@ short SvInsertOleDlg::Execute()
 
                 uno::Reference< uno::XComponentContext > xContext = ::comphelper::getProcessComponentContext();
                 uno::Reference< task::XInteractionHandler2 > xInteraction(
-                    task::InteractionHandler::createWithParent(xContext, 0) );
+                    task::InteractionHandler::createWithParent(xContext, nullptr) );
 
                aMedium[1].Name = "InteractionHandler";
                aMedium[1].Value <<= xInteraction;
@@ -342,7 +341,7 @@ short SvInsertOleDlg::Execute()
         }
     }
 
-    m_pServers = 0;
+    m_pServers = nullptr;
     return nRet;
 }
 
@@ -359,133 +358,6 @@ uno::Reference< io::XInputStream > SvInsertOleDlg::GetIconIfIconified( OUString*
     return uno::Reference< io::XInputStream >();
 }
 
-IMPL_LINK_NOARG_TYPED(SvInsertPlugInDialog, BrowseHdl, Button*, void)
-{
-    Sequence< OUString > aFilterNames, aFilterTypes;
-    fillNetscapePluginFilters( aFilterNames, aFilterTypes );
-
-    Reference< XComponentContext > xContext( ::comphelper::getProcessComponentContext() );
-    Reference< XFilePicker3 > xFilePicker = ui::dialogs::FilePicker::createWithMode( xContext, ui::dialogs::TemplateDescription::FILEOPEN_SIMPLE );
-
-    // add the filters
-    try
-    {
-        const OUString* pNames = aFilterNames.getConstArray();
-        const OUString* pTypes = aFilterTypes.getConstArray();
-        for( int i = 0; i < aFilterNames.getLength(); i++ )
-            xFilePicker->appendFilter( pNames[i], pTypes[i] );
-    }
-    catch( IllegalArgumentException& )
-    {
-        DBG_ASSERT( false, "caught IllegalArgumentException when registering filter\n" );
-    }
-
-    if( xFilePicker->execute() == ExecutableDialogResults::OK )
-    {
-        Sequence< OUString > aPathSeq( xFilePicker->getFiles() );
-        INetURLObject aObj( aPathSeq[0] );
-        m_pEdFileurl->SetText(aObj.PathToFileName());
-    }
-}
-
-
-
-SvInsertPlugInDialog::SvInsertPlugInDialog(vcl::Window* pParent,
-    const uno::Reference < embed::XStorage >& xStorage)
-    : InsertObjectDialog_Impl(pParent, "InsertPluginDialog", "cui/ui/insertplugin.ui", xStorage)
-    , m_pURL(0)
-{
-    get(m_pEdFileurl, "urled");
-    get(m_pBtnFileurl, "urlbtn");
-    get(m_pEdPluginsOptions, "pluginoptions");
-    m_pBtnFileurl->SetClickHdl(LINK(this, SvInsertPlugInDialog, BrowseHdl));
-}
-
-SvInsertPlugInDialog::~SvInsertPlugInDialog()
-{
-    disposeOnce();
-}
-
-void SvInsertPlugInDialog::dispose()
-{
-    delete m_pURL;
-    m_pURL = NULL;
-    m_pEdFileurl.clear();
-    m_pBtnFileurl.clear();
-    m_pEdPluginsOptions.clear();
-    InsertObjectDialog_Impl::dispose();
-}
-
-static void Plugin_ImplFillCommandSequence( const OUString& aCommands, uno::Sequence< beans::PropertyValue >& aCommandSequence )
-{
-    sal_Int32 nEaten;
-    SvCommandList aLst;
-    aLst.AppendCommands( aCommands, &nEaten );
-
-    const size_t nCount = aLst.size();
-    aCommandSequence.realloc( nCount );
-    for( size_t nIndex = 0; nIndex < nCount; nIndex++ )
-    {
-        aCommandSequence[nIndex].Name = aLst[ nIndex ].GetCommand();
-        aCommandSequence[nIndex].Handle = -1;
-        aCommandSequence[nIndex].Value = makeAny( aLst[ nIndex ].GetArgument() );
-        aCommandSequence[nIndex].State = beans::PropertyState_DIRECT_VALUE;
-    }
-}
-
-short SvInsertPlugInDialog::Execute()
-{
-    short nRet = RET_OK;
-    m_aCommands.clear();
-    DBG_ASSERT( m_xStorage.is(), "No storage!");
-    if ( m_xStorage.is() && ( nRet = Dialog::Execute() ) == RET_OK )
-    {
-        if ( !m_pURL )
-            m_pURL = new INetURLObject();
-        else
-            *m_pURL = INetURLObject();
-
-        m_aCommands = GetPlugInOptions();
-        OUString aURL = GetPlugInFile();
-
-        // URL can be a valid and absolute URL or a system file name
-        m_pURL->SetSmartProtocol( INetProtocol::File );
-        if ( aURL.isEmpty() || m_pURL->SetSmartURL( aURL ) )
-        {
-            // create a plugin object
-            OUString aName;
-            SvGlobalName aClassId( SO3_PLUGIN_CLASSID );
-            m_xObj = aCnt.CreateEmbeddedObject( aClassId.GetByteSequence(), aName );
-        }
-
-        if ( m_xObj.is() )
-        {
-            // set properties from dialog
-            if ( m_xObj->getCurrentState() == embed::EmbedStates::LOADED )
-                m_xObj->changeState( embed::EmbedStates::RUNNING );
-
-            uno::Reference < beans::XPropertySet > xSet( m_xObj->getComponent(), uno::UNO_QUERY );
-            if ( xSet.is() )
-            {
-                xSet->setPropertyValue( "PluginURL",
-                        makeAny( OUString( m_pURL->GetMainURL( INetURLObject::NO_DECODE ) ) ) );
-                uno::Sequence< beans::PropertyValue > aCommandSequence;
-                Plugin_ImplFillCommandSequence( m_aCommands, aCommandSequence );
-                xSet->setPropertyValue( "PluginCommands", makeAny( aCommandSequence ) );
-            }
-        }
-        else
-        {
-            // PlugIn couldn't be created
-            // global Resource from svtools (former so3 resource)
-            OUString aErr( impl_getSvtResString( STR_ERROR_OBJNOCREATE_PLUGIN ) );
-            aErr = aErr.replaceFirst( "%", aURL );
-            ScopedVclPtrInstance<MessageDialog>::Create(this, aErr)->Execute();
-        }
-    }
-
-    return nRet;
-}
 
 SfxInsertFloatingFrameDialog::SfxInsertFloatingFrameDialog( vcl::Window *pParent,
                             const css::uno::Reference < css::embed::XStorage >& xStorage )
@@ -569,7 +441,7 @@ short SfxInsertFloatingFrameDialog::Execute()
         {
             if ( m_xObj->getCurrentState() == embed::EmbedStates::LOADED )
                 m_xObj->changeState( embed::EmbedStates::RUNNING );
-            xSet = uno::Reference < beans::XPropertySet >( m_xObj->getComponent(), uno::UNO_QUERY );
+            xSet.set( m_xObj->getComponent(), uno::UNO_QUERY );
             OUString aStr;
             uno::Any aAny = xSet->getPropertyValue( "FrameURL" );
             if ( aAny >>= aStr )
@@ -671,7 +543,7 @@ short SfxInsertFloatingFrameDialog::Execute()
             m_xObj = aCnt.CreateEmbeddedObject( aClassId.GetByteSequence(), aName );
             if ( m_xObj->getCurrentState() == embed::EmbedStates::LOADED )
                 m_xObj->changeState( embed::EmbedStates::RUNNING );
-            xSet = uno::Reference < beans::XPropertySet >( m_xObj->getComponent(), uno::UNO_QUERY );
+            xSet.set( m_xObj->getComponent(), uno::UNO_QUERY );
         }
 
         if ( m_xObj.is() )

@@ -39,6 +39,7 @@
 
 #include "oox/helper/helper.hxx"
 #include "oox/core/xmlfilterbase.hxx"
+#include <oox/ppt/pptfilterhelpers.hxx>
 #include "sal/log.hxx"
 
 using namespace ::oox::core;
@@ -104,9 +105,7 @@ namespace oox { namespace ppt {
     {
     }
 
-// BEGIN CUT&PASTE from sd/source/filter/ppt/pptinanimations.hxx
-
-    static void fixMainSequenceTiming( const ::com::sun::star::uno::Reference< ::com::sun::star::animations::XAnimationNode >& xNode )
+    void fixMainSequenceTiming( const css::uno::Reference< css::animations::XAnimationNode >& xNode )
     {
         try
         {
@@ -149,7 +148,7 @@ namespace oox { namespace ppt {
                                 {
                                     sal_Int16 nNodeType = 0;
                                     p->Value >>= nNodeType;
-                                    if( nNodeType != ::com::sun::star::presentation::EffectNodeType::ON_CLICK )
+                                    if( nNodeType != css::presentation::EffectNodeType::ON_CLICK )
                                     {
                                         // first effect does not start on click, so correct
                                         // first click nodes begin to 0s
@@ -164,14 +163,13 @@ namespace oox { namespace ppt {
                 }
             }
         }
-        catch( Exception& e )
+        catch( Exception& )
         {
-            (void)e;
             SAL_INFO("oox.ppt","fixMainSequenceTiming(), exception caught!" );
         }
     }
 
-    static void fixInteractiveSequenceTiming( const ::com::sun::star::uno::Reference< ::com::sun::star::animations::XAnimationNode >& xNode )
+    void fixInteractiveSequenceTiming( const css::uno::Reference< css::animations::XAnimationNode >& xNode )
     {
         try
         {
@@ -188,14 +186,11 @@ namespace oox { namespace ppt {
                 xClickNode->setBegin( aBegin );
             }
         }
-        catch( Exception& e )
+        catch( Exception& )
         {
-            (void)e;
             SAL_INFO("oox.ppt","fixInteractiveSequenceTiming(), exception caught!" );
         }
     }
-
-// END CUT&PASTE
 
     void TimeNode::addNode( const XmlFilterBase& rFilter, const Reference< XAnimationNode >& rxNode, const SlidePersistPtr & pSlide )
     {

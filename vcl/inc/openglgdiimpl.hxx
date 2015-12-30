@@ -29,7 +29,6 @@
 #include "opengl/texture.hxx"
 #include "regionband.hxx"
 
-#include <tools/poly.hxx>
 #include <vcl/opengl/OpenGLContext.hxx>
 
 class SalFrame;
@@ -41,33 +40,51 @@ namespace basegfx
 class B2DTrapezoid;
 };
 
+namespace tools
+{
+    class Polygon;
+    class PolyPolygon;
+}
+
 struct TextureCombo
 {
     std::unique_ptr<OpenGLTexture> mpTexture;
     std::unique_ptr<OpenGLTexture> mpMask;
 };
 
+class OpenGLFlushIdle;
+
 class VCL_DLLPUBLIC OpenGLSalGraphicsImpl : public SalGraphicsImpl
 {
     friend class OpenGLTests;
 protected:
 
+    /// This context is solely for blitting @maOffscreenTex
+    rtl::Reference<OpenGLContext> mpWindowContext;
+
+    /// This context is whatever is most convenient to render
+    /// to @maOffscreenTex with.
     rtl::Reference<OpenGLContext> mpContext;
+
     SalGraphics& mrParent;
     /// Pointer to the SalFrame or SalVirtualDevice
     SalGeometryProvider* mpProvider;
     OpenGLFramebuffer* mpFramebuffer;
     OpenGLProgram* mpProgram;
 
-    /// Is it someone else's context we shouldn't be fiddling with ?
-    static bool IsForeignContext(const rtl::Reference<OpenGLContext> &xContext);
+    /// This idle handler is used to swap buffers after rendering.
+    OpenGLFlushIdle *mpFlush;
 
     // clipping
     vcl::Region maClipRegion;
     bool mbUseScissor;
     bool mbUseStencil;
 
-    bool mbOffscreen;
+    /**
+     * All rendering happens to this off-screen texture. For
+     * non-virtual devices, ie. windows - we will blit it and
+     * swapBuffers later.
+     */
     OpenGLTexture maOffscreenTex;
 
     SalColor mnLineColor;
@@ -75,6 +92,8 @@ protected:
 #ifdef DBG_UTIL
     bool mProgramIsSolidColor;
 #endif
+    sal_uInt32 mnDrawCount;
+    sal_uInt32 mnDrawCountAtFlush;
     SalColor mProgramSolidColor;
     double mProgramSolidTransparency;
 
@@ -126,7 +145,10 @@ public:
     // get the height of the device
     GLfloat GetHeight() const { return mpProvider ? mpProvider->GetHeight() : 1; }
 
-    // check whether this instance is used for offscreen rendering
+    /**
+     * check whether this instance is used for offscreen (Virtual Device)
+     * rendering ie. does it need its own context.
+     */
     bool IsOffscreen() const { return mpProvider == nullptr || mpProvider->IsOffScreen(); }
 
     // operations to do before painting
@@ -136,17 +158,21 @@ public:
     void PostDraw();
 
 protected:
-    bool AcquireContext();
+    bool AcquireContext(bool bForceCreate = false);
     bool ReleaseContext();
 
-    // retrieve the default context for offscreen rendering
+    /// retrieve the default context for offscreen rendering
     static rtl::Reference<OpenGLContext> GetDefaultContext();
 
-    // create a new context for window rendering
+    /// create a new context for rendering to the underlying window
     virtual rtl::Reference<OpenGLContext> CreateWinContext() = 0;
 
-    // check whether the given context can be used by this instance
-    virtual bool UseContext( const rtl::Reference<OpenGLContext> &pContext ) = 0;
+    /// check whether the given context can be used for off-screen rendering
+    static bool UseContext( const rtl::Reference<OpenGLContext> &pContext )
+    {
+        return pContext->isInitialized() &&  // not released by the OS etc.
+               pContext->isVCLOnly();
+    }
 
 public:
     OpenGLSalGraphicsImpl(SalGraphics& pParent, SalGeometryProvider *pProvider);
@@ -154,92 +180,92 @@ public:
 
     rtl::Reference<OpenGLContext> GetOpenGLContext();
 
-    virtual void Init() SAL_OVERRIDE;
+    virtual void Init() override;
 
-    virtual void DeInit() SAL_OVERRIDE;
+    virtual void DeInit() override;
 
-    virtual void freeResources() SAL_OVERRIDE;
+    virtual void freeResources() override;
 
     const vcl::Region& getClipRegion() const;
-    virtual bool setClipRegion( const vcl::Region& ) SAL_OVERRIDE;
+    virtual bool setClipRegion( const vcl::Region& ) override;
 
     //
     // get the depth of the device
-    virtual sal_uInt16 GetBitCount() const SAL_OVERRIDE;
+    virtual sal_uInt16 GetBitCount() const override;
 
     // get the width of the device
-    virtual long GetGraphicsWidth() const SAL_OVERRIDE;
+    virtual long GetGraphicsWidth() const override;
 
     // set the clip region to empty
-    virtual void ResetClipRegion() SAL_OVERRIDE;
+    virtual void ResetClipRegion() override;
 
     // set the line color to transparent (= don't draw lines)
 
-    virtual void SetLineColor() SAL_OVERRIDE;
+    virtual void SetLineColor() override;
 
     // set the line color to a specific color
-    virtual void SetLineColor( SalColor nSalColor ) SAL_OVERRIDE;
+    virtual void SetLineColor( SalColor nSalColor ) override;
 
     // set the fill color to transparent (= don't fill)
-    virtual void SetFillColor() SAL_OVERRIDE;
+    virtual void SetFillColor() override;
 
     // set the fill color to a specific color, shapes will be
     // filled accordingly
-    virtual void SetFillColor( SalColor nSalColor ) SAL_OVERRIDE;
+    virtual void SetFillColor( SalColor nSalColor ) override;
 
     // enable/disable XOR drawing
-    virtual void SetXORMode( bool bSet, bool bInvertOnly ) SAL_OVERRIDE;
+    virtual void SetXORMode( bool bSet, bool bInvertOnly ) override;
 
     // set line color for raster operations
-    virtual void SetROPLineColor( SalROPColor nROPColor ) SAL_OVERRIDE;
+    virtual void SetROPLineColor( SalROPColor nROPColor ) override;
 
     // set fill color for raster operations
-    virtual void SetROPFillColor( SalROPColor nROPColor ) SAL_OVERRIDE;
+    virtual void SetROPFillColor( SalROPColor nROPColor ) override;
 
     // draw --> LineColor and FillColor and RasterOp and ClipRegion
-    virtual void drawPixel( long nX, long nY ) SAL_OVERRIDE;
-    virtual void drawPixel( long nX, long nY, SalColor nSalColor ) SAL_OVERRIDE;
+    virtual void drawPixel( long nX, long nY ) override;
+    virtual void drawPixel( long nX, long nY, SalColor nSalColor ) override;
 
-    virtual void drawLine( long nX1, long nY1, long nX2, long nY2 ) SAL_OVERRIDE;
+    virtual void drawLine( long nX1, long nY1, long nX2, long nY2 ) override;
 
-    virtual void drawRect( long nX, long nY, long nWidth, long nHeight ) SAL_OVERRIDE;
+    virtual void drawRect( long nX, long nY, long nWidth, long nHeight ) override;
 
-    virtual void drawPolyLine( sal_uInt32 nPoints, const SalPoint* pPtAry ) SAL_OVERRIDE;
+    virtual void drawPolyLine( sal_uInt32 nPoints, const SalPoint* pPtAry ) override;
 
-    virtual void drawPolygon( sal_uInt32 nPoints, const SalPoint* pPtAry ) SAL_OVERRIDE;
+    virtual void drawPolygon( sal_uInt32 nPoints, const SalPoint* pPtAry ) override;
 
-    virtual void drawPolyPolygon( sal_uInt32 nPoly, const sal_uInt32* pPoints, PCONSTSALPOINT* pPtAry ) SAL_OVERRIDE;
-    virtual bool drawPolyPolygon( const ::basegfx::B2DPolyPolygon&, double fTransparency ) SAL_OVERRIDE;
+    virtual void drawPolyPolygon( sal_uInt32 nPoly, const sal_uInt32* pPoints, PCONSTSALPOINT* pPtAry ) override;
+    virtual bool drawPolyPolygon( const basegfx::B2DPolyPolygon&, double fTransparency ) override;
 
     virtual bool drawPolyLine(
-                const ::basegfx::B2DPolygon&,
+                const basegfx::B2DPolygon&,
                 double fTransparency,
-                const ::basegfx::B2DVector& rLineWidths,
+                const basegfx::B2DVector& rLineWidths,
                 basegfx::B2DLineJoin,
-                com::sun::star::drawing::LineCap) SAL_OVERRIDE;
+                css::drawing::LineCap) override;
 
     virtual bool drawPolyLineBezier(
                 sal_uInt32 nPoints,
                 const SalPoint* pPtAry,
-                const sal_uInt8* pFlgAry ) SAL_OVERRIDE;
+                const sal_uInt8* pFlgAry ) override;
 
     virtual bool drawPolygonBezier(
                 sal_uInt32 nPoints,
                 const SalPoint* pPtAry,
-                const sal_uInt8* pFlgAry ) SAL_OVERRIDE;
+                const sal_uInt8* pFlgAry ) override;
 
     virtual bool drawPolyPolygonBezier(
                 sal_uInt32 nPoly,
                 const sal_uInt32* pPoints,
                 const SalPoint* const* pPtAry,
-                const sal_uInt8* const* pFlgAry ) SAL_OVERRIDE;
+                const sal_uInt8* const* pFlgAry ) override;
 
     // CopyArea --> No RasterOp, but ClipRegion
     virtual void copyArea(
                 long nDestX, long nDestY,
                 long nSrcX, long nSrcY,
                 long nSrcWidth, long nSrcHeight,
-                sal_uInt16 nFlags ) SAL_OVERRIDE;
+                sal_uInt16 nFlags ) override;
 
     // CopyBits and DrawBitmap --> RasterOp and ClipRegion
     // CopyBits() --> pSrcGraphics == NULL, then CopyBits on same Graphics
@@ -247,43 +273,43 @@ public:
 
     virtual bool blendBitmap(
                 const SalTwoRect&,
-                const SalBitmap& rBitmap ) SAL_OVERRIDE;
+                const SalBitmap& rBitmap ) override;
 
     virtual bool blendAlphaBitmap(
                 const SalTwoRect&,
                 const SalBitmap& rSrcBitmap,
                 const SalBitmap& rMaskBitmap,
-                const SalBitmap& rAlphaBitmap ) SAL_OVERRIDE;
+                const SalBitmap& rAlphaBitmap ) override;
 
-    virtual void drawBitmap( const SalTwoRect& rPosAry, const SalBitmap& rSalBitmap ) SAL_OVERRIDE;
+    virtual void drawBitmap( const SalTwoRect& rPosAry, const SalBitmap& rSalBitmap ) override;
 
     virtual void drawBitmap(
                 const SalTwoRect& rPosAry,
                 const SalBitmap& rSalBitmap,
-                const SalBitmap& rMaskBitmap ) SAL_OVERRIDE;
+                const SalBitmap& rMaskBitmap ) override;
 
     virtual void drawMask(
                 const SalTwoRect& rPosAry,
                 const SalBitmap& rSalBitmap,
-                SalColor nMaskColor ) SAL_OVERRIDE;
+                SalColor nMaskColor ) override;
 
-    virtual SalBitmap* getBitmap( long nX, long nY, long nWidth, long nHeight ) SAL_OVERRIDE;
+    virtual SalBitmap* getBitmap( long nX, long nY, long nWidth, long nHeight ) override;
 
-    virtual SalColor getPixel( long nX, long nY ) SAL_OVERRIDE;
+    virtual SalColor getPixel( long nX, long nY ) override;
 
     // invert --> ClipRegion (only Windows or VirDevs)
     virtual void invert(
                 long nX, long nY,
                 long nWidth, long nHeight,
-                SalInvert nFlags) SAL_OVERRIDE;
+                SalInvert nFlags) override;
 
-    virtual void invert( sal_uInt32 nPoints, const SalPoint* pPtAry, SalInvert nFlags ) SAL_OVERRIDE;
+    virtual void invert( sal_uInt32 nPoints, const SalPoint* pPtAry, SalInvert nFlags ) override;
 
     virtual bool drawEPS(
                 long nX, long nY,
                 long nWidth, long nHeight,
                 void* pPtr,
-                sal_uLong nSize ) SAL_OVERRIDE;
+                sal_uLong nSize ) override;
 
     /** Render bitmap with alpha channel
 
@@ -300,7 +326,7 @@ public:
     virtual bool drawAlphaBitmap(
                 const SalTwoRect&,
                 const SalBitmap& rSourceBitmap,
-                const SalBitmap& rAlphaBitmap ) SAL_OVERRIDE;
+                const SalBitmap& rAlphaBitmap ) override;
 
     /** draw transformed bitmap (maybe with alpha) where Null, X, Y define the coordinate system */
     virtual bool drawTransformedBitmap(
@@ -308,7 +334,7 @@ public:
                 const basegfx::B2DPoint& rX,
                 const basegfx::B2DPoint& rY,
                 const SalBitmap& rSourceBitmap,
-                const SalBitmap* pAlphaBitmap) SAL_OVERRIDE;
+                const SalBitmap* pAlphaBitmap) override;
 
     /** Render solid rectangle with given transparency
 
@@ -319,12 +345,16 @@ public:
     virtual bool drawAlphaRect(
                     long nX, long nY,
                     long nWidth, long nHeight,
-                    sal_uInt8 nTransparency ) SAL_OVERRIDE;
+                    sal_uInt8 nTransparency ) override;
 
-    virtual bool drawGradient(const tools::PolyPolygon& rPolygon, const Gradient& rGradient) SAL_OVERRIDE;
+    virtual bool drawGradient(const tools::PolyPolygon& rPolygon, const Gradient& rGradient) override;
 
-    virtual OpenGLContext *beginPaint() SAL_OVERRIDE;
-private:
+    /// queue an idle flush of contents of the back-buffer to the screen
+    void flush();
+
+public:
+    /// do flush of contents of the back-buffer to the screen & swap.
+    void doFlush();
 };
 
 #endif

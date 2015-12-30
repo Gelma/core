@@ -55,8 +55,8 @@ class ResizableMultiLineEdit : public VclMultiLineEdit
 
         void SetInGrabFocus(bool bInGrabFocus) { mbIsInGrabFocus = bInGrabFocus; }
 
-        virtual bool PreNotify(NotifyEvent& rNEvt) SAL_OVERRIDE;
-        virtual void Modify() SAL_OVERRIDE;
+        virtual bool PreNotify(NotifyEvent& rNEvt) override;
+        virtual void Modify() override;
 };
 
 ResizableMultiLineEdit::ResizableMultiLineEdit (vcl::Window* pParent, ThumbnailViewItem* pItem) :
@@ -106,9 +106,9 @@ ThumbnailViewItem::ThumbnailViewItem(ThumbnailView &rView, sal_uInt16 nId)
     , mbVisible(true)
     , mbSelected(false)
     , mbHover(false)
-    , mpxAcc(NULL)
+    , mxAcc()
     , mbEditTitle(false)
-    , mpTitleED(NULL)
+    , mpTitleED(nullptr)
     , maTextEditMaxArea()
 {
     mpTitleED = VclPtr<ResizableMultiLineEdit>::Create(&rView, this);
@@ -117,10 +117,9 @@ ThumbnailViewItem::ThumbnailViewItem(ThumbnailView &rView, sal_uInt16 nId)
 ThumbnailViewItem::~ThumbnailViewItem()
 {
     mpTitleED.disposeAndClear();
-    if( mpxAcc )
+    if( mxAcc.is() )
     {
-        static_cast< ThumbnailViewItemAcc* >( mpxAcc->get() )->ParentDestroyed();
-        delete mpxAcc;
+        static_cast< ThumbnailViewItemAcc* >( mxAcc.get() )->ParentDestroyed();
     }
 }
 
@@ -218,10 +217,10 @@ void ThumbnailViewItem::setTitle (const OUString& rTitle)
 
 uno::Reference< accessibility::XAccessible > ThumbnailViewItem::GetAccessible( bool bIsTransientChildrenDisabled )
 {
-    if( !mpxAcc )
-        mpxAcc = new uno::Reference< accessibility::XAccessible >( new ThumbnailViewItemAcc( this, bIsTransientChildrenDisabled ) );
+    if( !mxAcc.is() )
+        mxAcc = new ThumbnailViewItemAcc( this, bIsTransientChildrenDisabled );
 
-    return *mpxAcc;
+    return mxAcc;
 }
 
 void ThumbnailViewItem::setDrawArea (const Rectangle &area)
@@ -236,7 +235,7 @@ void ThumbnailViewItem::calculateItemsPosition (const long nThumbnailHeight, con
     drawinglayer::primitive2d::TextLayouterDevice aTextDev;
     aTextDev.setFontAttribute(pAttrs->aFontAttr,
                               pAttrs->aFontSize.getX(), pAttrs->aFontSize.getY(),
-                              com::sun::star::lang::Locale() );
+                              css::lang::Locale() );
 
     Size aRectSize = maDrawArea.GetSize();
     Size aImageSize = maPreview1.GetSizePixel();
@@ -263,7 +262,7 @@ void ThumbnailViewItem::Paint (drawinglayer::processor2d::BaseProcessor2D *pProc
                                const ThumbnailItemAttributes *pAttrs)
 {
     BColor aFillColor = pAttrs->aFillColor;
-    drawinglayer::primitive2d::Primitive2DSequence aSeq(4);
+    drawinglayer::primitive2d::Primitive2DContainer aSeq(4);
     double fTransparence = 0.0;
 
     // Draw background
@@ -315,7 +314,7 @@ void ThumbnailViewItem::Paint (drawinglayer::processor2d::BaseProcessor2D *pProc
     pProcessor->process(aSeq);
 }
 
-void ThumbnailViewItem::addTextPrimitives (const OUString& rText, const ThumbnailItemAttributes *pAttrs, Point aPos, drawinglayer::primitive2d::Primitive2DSequence& rSeq)
+void ThumbnailViewItem::addTextPrimitives (const OUString& rText, const ThumbnailItemAttributes *pAttrs, Point aPos, drawinglayer::primitive2d::Primitive2DContainer& rSeq)
 {
     drawinglayer::primitive2d::TextLayouterDevice aTextDev;
 
@@ -327,8 +326,8 @@ void ThumbnailViewItem::addTextPrimitives (const OUString& rText, const Thumbnai
     aTextEngine.SetMaxTextWidth(maDrawArea.getWidth());
     aTextEngine.SetText(rText);
 
-    sal_Int32 nPrimitives = rSeq.getLength();
-    rSeq.realloc(nPrimitives + aTextEngine.GetLineCount(0));
+    sal_Int32 nPrimitives = rSeq.size();
+    rSeq.resize(nPrimitives + aTextEngine.GetLineCount(0));
 
     // Create the text primitives
     sal_uInt16 nLineStart = 0;
@@ -341,7 +340,7 @@ void ThumbnailViewItem::addTextPrimitives (const OUString& rText, const Thumbnai
         if (bTooLong && (nLineLength + nLineStart) < rText.getLength())
         {
             // Add the '...' to the last line to show, even though it may require to shorten the line
-            double nDotsWidth = aTextDev.getTextWidth(OUString("..."),0,3);
+            double nDotsWidth = aTextDev.getTextWidth("...",0,3);
 
             sal_Int32 nLength = nLineLength - 1;
             while ( nDotsWidth + aTextDev.getTextWidth(aText, nLineStart, nLength) > maDrawArea.getWidth() && nLength > 0)
@@ -370,7 +369,7 @@ void ThumbnailViewItem::addTextPrimitives (const OUString& rText, const Thumbnai
                                                      aText, nLineStart, nLineLength,
                                                      std::vector<double>(),
                                                      pAttrs->aFontAttr,
-                                                     com::sun::star::lang::Locale(),
+                                                     css::lang::Locale(),
                                                      aTextColor));
         nLineStart += nLineLength;
         aPos.setY(aPos.getY() + aTextEngine.GetCharHeight());

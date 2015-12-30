@@ -30,12 +30,10 @@ private:
     sal_Int16 mnWrapInfluenceOnPosition;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     // #i35017# - constant name has changed
     SwFormatWrapInfluenceOnObjPos(
-            sal_Int16 _nWrapInfluenceOnPosition =
-            com::sun::star::text::WrapInfluenceOnPosition::ONCE_CONCURRENT );
+            sal_Int16 _nWrapInfluenceOnPosition = css::text::WrapInfluenceOnPosition::ONCE_CONCURRENT );
     SwFormatWrapInfluenceOnObjPos(
             const SwFormatWrapInfluenceOnObjPos& _rCpy );
     virtual ~SwFormatWrapInfluenceOnObjPos();
@@ -44,11 +42,11 @@ public:
             const SwFormatWrapInfluenceOnObjPos& _rSource );
 
     /// pure virtual methods of class <SfxPoolItem>
-    virtual bool operator==( const SfxPoolItem& _rAttr ) const SAL_OVERRIDE;
-    virtual SfxPoolItem* Clone( SfxItemPool* pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool operator==( const SfxPoolItem& _rAttr ) const override;
+    virtual SfxPoolItem* Clone( SfxItemPool* pPool = nullptr ) const override;
 
-    virtual bool QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual bool QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
     /// direct accessors to data
     void SetWrapInfluenceOnObjPos( sal_Int16 _nWrapInfluenceOnPosition );
@@ -57,7 +55,7 @@ public:
     sal_Int16 GetWrapInfluenceOnObjPos(
                         const bool _bIterativeAsOnceConcurrent = false ) const;
 
-    void dumpAsXml(struct _xmlTextWriter* pWriter) const SAL_OVERRIDE;
+    void dumpAsXml(struct _xmlTextWriter* pWriter) const override;
 };
 
 inline const SwFormatWrapInfluenceOnObjPos& SwAttrSet::GetWrapInfluenceOnObjPos(bool bInP) const

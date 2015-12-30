@@ -18,12 +18,11 @@ class SFX2_DLLPUBLIC TemplateDefaultView : public TemplateLocalView
 public:
     TemplateDefaultView(Window *pParent);
 
-    virtual void reload() SAL_OVERRIDE;
+    virtual void reload() override;
 protected:
     long    mnItemMaxSize;
     long    mnTextHeight;
     long    mnItemPadding;
-    size_t mnLastMouseDownItem;
 };
 
 #endif // INCLUDED_SFX2_TEMPLATEDEFAULTVIEW_HXX

@@ -50,7 +50,7 @@ using namespace com::sun::star;
 SwFieldDokInfPage::SwFieldDokInfPage(vcl::Window* pParent, const SfxItemSet& rCoreSet)
     :  SwFieldPage(pParent, "FieldDocInfoPage",
         "modules/swriter/ui/flddocinfopage.ui", rCoreSet)
-    , pSelEntry(0)
+    , pSelEntry(nullptr)
     , nOldSel(0)
     , nOldFormat(0)
 {
@@ -82,7 +82,7 @@ SwFieldDokInfPage::SwFieldDokInfPage(vcl::Window* pParent, const SfxItemSet& rCo
     //enable 'active' language selection
     m_pFormatLB->SetShowLanguageControl(true);
 
-    SFX_ITEMSET_ARG( &rCoreSet, pItem, SfxUnoAnyItem, SID_DOCINFO, false );
+    const SfxUnoAnyItem* pItem = rCoreSet.GetItem<SfxUnoAnyItem>(SID_DOCINFO, false);
     if ( pItem )
         pItem->GetValue() >>= xCustomPropertySet;
 }
@@ -110,12 +110,12 @@ void SwFieldDokInfPage::Reset(const SfxItemSet* )
     // initialise TypeListBox
     m_pTypeTLB->SetUpdateMode(false);
     m_pTypeTLB->Clear();
-    pSelEntry = 0;
+    pSelEntry = nullptr;
 
     // display SubTypes in TypeLB
-    SvTreeListEntry* pEntry = 0;
+    SvTreeListEntry* pEntry = nullptr;
 
-    SvTreeListEntry* pInfo = 0;
+    SvTreeListEntry* pInfo = nullptr;
 
     sal_uInt16 nSubType = USHRT_MAX;
     if (IsFieldEdit())
@@ -189,7 +189,7 @@ void SwFieldDokInfPage::Reset(const SfxItemSet* )
     }
 
     // select old Pos
-    if (pSelEntry != 0)
+    if (pSelEntry != nullptr)
     {
         m_pTypeTLB->Select(pSelEntry);
         nSubType = (sal_uInt16)reinterpret_cast<sal_uLong>(pSelEntry->GetUserData());
@@ -202,7 +202,7 @@ void SwFieldDokInfPage::Reset(const SfxItemSet* )
 
     FillSelectionLB(nSubType);
     if ( pSelEntry )
-        TypeHdl(NULL);
+        TypeHdl(nullptr);
 
     m_pTypeTLB->SetUpdateMode(true);
     m_pTypeTLB->SetSelectHdl(LINK(this, SwFieldDokInfPage, TypeHdl));
@@ -235,10 +235,10 @@ IMPL_LINK_NOARG_TYPED(SwFieldDokInfPage, TypeHdl, SvTreeListBox*, void)
     else if (pOldEntry != pSelEntry)
         FillSelectionLB((sal_uInt16)reinterpret_cast<sal_uLong>(pSelEntry->GetUserData()));
 
-    SubTypeHdl();
+    SubTypeHdl(*m_pSelectionLB);
 }
 
-IMPL_LINK_NOARG(SwFieldDokInfPage, SubTypeHdl)
+IMPL_LINK_NOARG_TYPED(SwFieldDokInfPage, SubTypeHdl, ListBox&, void)
 {
     sal_uInt16 nSubType = (sal_uInt16)reinterpret_cast<sal_uLong>(pSelEntry->GetUserData());
     sal_Int32 nPos = m_pSelectionLB->GetSelectEntryPos();
@@ -279,7 +279,7 @@ IMPL_LINK_NOARG(SwFieldDokInfPage, SubTypeHdl)
                     }
                 }
                 else
-                    return 0;
+                    return;
             }
             nPos = 0;
         }
@@ -367,8 +367,6 @@ IMPL_LINK_NOARG(SwFieldDokInfPage, SubTypeHdl)
     {
         m_pFormatLB->SelectEntryPos(0);
     }
-
-    return 0;
 }
 
 sal_Int32 SwFieldDokInfPage::FillSelectionLB(sal_uInt16 nSubType)

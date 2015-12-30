@@ -57,6 +57,7 @@
 #include <com/sun/star/text/XText.hpp>
 #include <comphelper/extract.hxx>
 #include <comphelper/processfactory.hxx>
+#include <comphelper/sequence.hxx>
 
 #include <rtl/math.hxx>
 #include <boost/checked_delete.hpp>
@@ -97,25 +98,16 @@ const SfxItemPropertyMapEntry* lcl_GetDataSequencePropertyMap()
     static const SfxItemPropertyMapEntry aDataSequencePropertyMap_Impl[] =
     {
         {OUString(SC_UNONAME_HIDDENVALUES), 0, cppu::UnoType<uno::Sequence<sal_Int32>>::get(),                 0, 0 },
-        {OUString(SC_UNONAME_ROLE), 0, cppu::UnoType<com::sun::star::chart2::data::DataSequenceRole>::get(),                  0, 0 },
+        {OUString(SC_UNONAME_ROLE), 0, cppu::UnoType<css::chart2::data::DataSequenceRole>::get(),                  0, 0 },
         {OUString(SC_UNONAME_INCLUDEHIDDENCELLS), 0,        cppu::UnoType<bool>::get(),                  0, 0 },
         { OUString(), 0, css::uno::Type(), 0, 0 }
     };
     return aDataSequencePropertyMap_Impl;
 }
 
-template< typename T >
-::com::sun::star::uno::Sequence< T > lcl_VectorToSequence(
-    const ::std::vector< T > & rCont )
-{
-    ::com::sun::star::uno::Sequence< T > aResult( rCont.size());
-    ::std::copy( rCont.begin(), rCont.end(), aResult.getArray());
-    return aResult;
-}
-
 struct lcl_appendTableNumber : public ::std::unary_function< SCTAB, void >
 {
-    lcl_appendTableNumber( OUStringBuffer & rBuffer ) :
+    explicit lcl_appendTableNumber( OUStringBuffer & rBuffer ) :
             m_rBuffer( rBuffer )
     {}
     void operator() ( SCTAB nTab )
@@ -141,7 +133,7 @@ OUString lcl_createTableNumberList( const ::std::list< SCTAB > & rTableList )
 uno::Reference< frame::XModel > lcl_GetXModel( ScDocument * pDoc )
 {
     uno::Reference< frame::XModel > xModel;
-    SfxObjectShell * pObjSh( pDoc ? pDoc->GetDocumentShell() : 0 );
+    SfxObjectShell * pObjSh( pDoc ? pDoc->GetDocumentShell() : nullptr );
     if( pObjSh )
         xModel.set( pObjSh->GetModel());
     return xModel;
@@ -886,7 +878,7 @@ private:
 class Tokens2RangeStringXML : public unary_function<ScTokenRef, void>
 {
 public:
-    Tokens2RangeStringXML(ScDocument* pDoc) :
+    explicit Tokens2RangeStringXML(ScDocument* pDoc) :
         mpRangeStr(new OUStringBuffer),
         mpDoc(pDoc),
         mcRangeSep(' '),
@@ -1369,7 +1361,7 @@ class ShrinkRefTokenToDataRange : std::unary_function<ScTokenRef, void>
 {
     ScDocument* mpDoc;
 public:
-    ShrinkRefTokenToDataRange(ScDocument* pDoc) : mpDoc(pDoc) {}
+    explicit ShrinkRefTokenToDataRange(ScDocument* pDoc) : mpDoc(pDoc) {}
     void operator() (ScTokenRef& rRef)
     {
         if (ScRefTokenHelper::isExternalRef(rRef))
@@ -1588,7 +1580,7 @@ ScChart2DataProvider::createDataSource(
         if( nOldIndex < aSeqVector.size() )
         {
             pDS->AddLabeledSequence( aSeqVector[nOldIndex] );
-            aSeqVector[nOldIndex] = 0;
+            aSeqVector[nOldIndex] = nullptr;
         }
     }
 
@@ -1770,6 +1762,17 @@ bool RangeAnalyzer::inSameSingleColumn( RangeAnalyzer& rOther )
     return false;
 }
 
+std::pair<OUString, OUString> constructKey(const uno::Reference< chart2::data::XLabeledDataSequence>& xNew)
+{
+    std::pair<OUString, OUString> aKey;
+    if( xNew->getLabel().is() )
+        aKey.first = xNew->getLabel()->getSourceRangeRepresentation();
+    if( xNew->getValues().is() )
+        aKey.second = xNew->getValues()->getSourceRangeRepresentation();
+    return aKey;
+}
+
+
 } //end anonymous namespace
 
 uno::Sequence< beans::PropertyValue > SAL_CALL ScChart2DataProvider::detectArguments(
@@ -1795,7 +1798,7 @@ uno::Sequence< beans::PropertyValue > SAL_CALL ScChart2DataProvider::detectArgum
         SolarMutexGuard aGuard;
         OSL_ENSURE( m_pDocument, "No Document -> no detectArguments" );
         if(!m_pDocument ||!xDataSource.is())
-            return lcl_VectorToSequence( aResult );
+            return comphelper::containerToSequence( aResult );
 
         sal_Int32 nDataInRows = 0;
         sal_Int32 nDataInCols = 0;
@@ -1981,7 +1984,7 @@ uno::Sequence< beans::PropertyValue > SAL_CALL ScChart2DataProvider::detectArgum
         uno::Reference< chart2::data::XDataSource > xCompareDataSource;
         try
         {
-            xCompareDataSource.set( this->createDataSource( lcl_VectorToSequence( aResult ) ) );
+            xCompareDataSource.set( this->createDataSource( comphelper::containerToSequence( aResult ) ) );
         }
         catch( const lang::IllegalArgumentException & )
         {
@@ -1991,48 +1994,37 @@ uno::Sequence< beans::PropertyValue > SAL_CALL ScChart2DataProvider::detectArgum
 
         if( xDataSource.is() && xCompareDataSource.is() )
         {
-            uno::Sequence< uno::Reference< chart2::data::XLabeledDataSequence> > aOldSequences(
-                xCompareDataSource->getDataSequences() );
-            uno::Sequence< uno::Reference< chart2::data::XLabeledDataSequence > > aNewSequences(
-                xDataSource->getDataSequences());
+            const uno::Sequence< uno::Reference< chart2::data::XLabeledDataSequence> >& aOldSequences =
+                xCompareDataSource->getDataSequences();
+            const uno::Sequence< uno::Reference< chart2::data::XLabeledDataSequence> >& aNewSequences =
+                xDataSource->getDataSequences();
 
-            OUString aOldLabel;
-            OUString aNewLabel;
-            OUString aOldValues;
-            OUString aNewValues;
-
-            for( sal_Int32 nNewIndex = 0; nNewIndex < aNewSequences.getLength(); nNewIndex++ )
+            std::map<std::pair<OUString, OUString>,sal_Int32> aOldEntryToIndex;
+            for( sal_Int32 nIndex = 0, n = aOldSequences.getLength(); nIndex < n; nIndex++ )
             {
-                uno::Reference< chart2::data::XLabeledDataSequence> xNew( aNewSequences[nNewIndex] );
-                for( sal_Int32 nOldIndex = 0; nOldIndex < aOldSequences.getLength(); nOldIndex++ )
+                const uno::Reference< chart2::data::XLabeledDataSequence>& xOld( aOldSequences[nIndex] );
+                if( xOld.is() )
                 {
-                    uno::Reference< chart2::data::XLabeledDataSequence> xOld( aOldSequences[nOldIndex] );
-
-                    if( xOld.is() && xNew.is() )
-                    {
-                        aOldLabel.clear();
-                        aNewLabel.clear();
-                        aOldValues.clear();
-                        aNewValues.clear();
-                        if( xOld.is() && xOld->getLabel().is() )
-                            aOldLabel = xOld->getLabel()->getSourceRangeRepresentation();
-                        if( xNew.is() && xNew->getLabel().is() )
-                            aNewLabel = xNew->getLabel()->getSourceRangeRepresentation();
-                        if( xOld.is() && xOld->getValues().is() )
-                            aOldValues = xOld->getValues()->getSourceRangeRepresentation();
-                        if( xNew.is() && xNew->getValues().is() )
-                            aNewValues = xNew->getValues()->getSourceRangeRepresentation();
-
-                        if( aOldLabel.equals(aNewLabel)
-                            && ( aOldValues.equals(aNewValues) ) )
-                        {
-                            if( nOldIndex!=nNewIndex )
-                                bDifferentIndexes = true;
-                            aSequenceMappingVector.push_back(nOldIndex);
-                            break;
-                        }
-                    }
+                    std::pair<OUString, OUString> aKey = constructKey(xOld);
+                    aOldEntryToIndex[aKey] = nIndex;
                 }
+            }
+
+            for( sal_Int32 nNewIndex = 0, n = aNewSequences.getLength(); nNewIndex < n; nNewIndex++ )
+            {
+                const uno::Reference< chart2::data::XLabeledDataSequence>& xNew( aNewSequences[nNewIndex] );
+                if( !xNew.is() )
+                    continue;
+
+                std::pair<OUString, OUString> aKey = constructKey(xNew);
+                if (aOldEntryToIndex.find(aKey) == aOldEntryToIndex.end())
+                    continue;
+
+                sal_Int32 nOldIndex = aOldEntryToIndex[aKey];
+                if( nOldIndex != nNewIndex )
+                    bDifferentIndexes = true;
+
+                aSequenceMappingVector.push_back(nOldIndex);
             }
         }
 
@@ -2040,12 +2032,12 @@ uno::Sequence< beans::PropertyValue > SAL_CALL ScChart2DataProvider::detectArgum
         {
             aResult.push_back(
                 beans::PropertyValue( OUString("SequenceMapping"), -1,
-                    uno::makeAny( lcl_VectorToSequence(aSequenceMappingVector) )
+                    uno::makeAny( comphelper::containerToSequence(aSequenceMappingVector) )
                     , beans::PropertyState_DIRECT_VALUE ));
         }
     }
 
-    return lcl_VectorToSequence( aResult );
+    return comphelper::containerToSequence( aResult );
 }
 
 sal_Bool SAL_CALL ScChart2DataProvider::createDataSequenceByRangeRepresentationPossible( const OUString& aRangeRepresentation )
@@ -2265,8 +2257,6 @@ OUString SAL_CALL ScChart2DataProvider::convertRangeToXML( const OUString& sRang
 OUString SAL_CALL ScChart2DataProvider::convertRangeFromXML( const OUString& sXMLRange )
     throw ( uno::RuntimeException, lang::IllegalArgumentException, std::exception )
 {
-    const sal_Unicode cSep = ' ';
-
     if (!m_pDocument)
     {
         // #i74062# When loading flat XML, this is called before the referenced sheets are in the document,
@@ -2277,7 +2267,7 @@ OUString SAL_CALL ScChart2DataProvider::convertRangeFromXML( const OUString& sXM
         while( nOffset >= 0 )
         {
             OUString sToken;
-            ScRangeStringConverter::GetTokenByOffset( sToken, sXMLRange, nOffset, cSep );
+            ScRangeStringConverter::GetTokenByOffset( sToken, sXMLRange, nOffset );
             if( nOffset >= 0 )
             {
                 // convert one address (remove dots)
@@ -2417,21 +2407,7 @@ uno::Sequence< uno::Reference< chart2::data::XLabeledDataSequence> > SAL_CALL
 ScChart2DataSource::getDataSequences() throw ( uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
-
-    LabeledList::const_iterator aItr(m_aLabeledSequences.begin());
-    LabeledList::const_iterator aEndItr(m_aLabeledSequences.end());
-
-    uno::Sequence< uno::Reference< chart2::data::XLabeledDataSequence > > aRet(m_aLabeledSequences.size());
-
-    sal_Int32 i = 0;
-    while (aItr != aEndItr)
-    {
-        aRet[i] = *aItr;
-        ++i;
-        ++aItr;
-    }
-
-    return aRet;
+    return comphelper::containerToSequence< uno::Reference< chart2::data::XLabeledDataSequence> >(m_aLabeledSequences);
 }
 
 void ScChart2DataSource::AddLabeledSequence(const uno::Reference < chart2::data::XLabeledDataSequence >& xNew)
@@ -2682,7 +2658,7 @@ sal_Int32 ScChart2DataSequence::FillCacheFromExternalRef(const ScTokenRef& pToke
     pRefMgr->addLinkListener(nFileId, pExtRefListener);
     pExtRefListener->addFileId(nFileId);
 
-    ScExternalRefCache::TableTypeRef pTable = pRefMgr->getCacheTable(nFileId, aTabName, false, nullptr);
+    ScExternalRefCache::TableTypeRef pTable = pRefMgr->getCacheTable(nFileId, aTabName, false);
     sal_Int32 nDataCount = 0;
     for (FormulaToken* p = pArray->First(); p; p = pArray->Next())
     {
@@ -2830,7 +2806,7 @@ void ScChart2DataSequence::Notify( SfxBroadcaster& /*rBC*/, const SfxHint& rHint
     const SfxSimpleHint* pSimpleHint = dynamic_cast<const SfxSimpleHint*>(&rHint);
     if ( pSimpleHint )
     {
-        sal_uLong nId = pSimpleHint->GetId();
+        const sal_uInt32 nId = pSimpleHint->GetId();
         if ( nId ==SFX_HINT_DYING )
         {
             m_pDocument = nullptr;
@@ -3164,7 +3140,7 @@ public:
                     OUString aString = ScGlobal::GetRscString(STR_COLUMN);
                     aString += " ";
                     ScAddress aPos( nCol, 0, 0 );
-                    OUString aColStr(aPos.Format(SCA_VALID_COL, nullptr));
+                    OUString aColStr(aPos.Format(SCA_VALID_COL));
                     aString += aColStr;
                     pArr[mnCount] = aString;
                 }
@@ -3268,8 +3244,7 @@ sal_uLong getDisplayNumberFormat(ScDocument* pDoc, const ScAddress& rPos)
         // TODO: use nicer heuristic
         for (const Item& rItem : m_aDataArray)
         {
-            ScRefCellValue aCell;
-            aCell.assign(*m_pDocument, rItem.mAddress);
+            ScRefCellValue aCell(*m_pDocument, rItem.mAddress);
             if (!aCell.isEmpty())
             {
                 return static_cast<sal_Int32>(getDisplayNumberFormat(m_pDocument, rItem.mAddress));

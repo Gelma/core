@@ -30,17 +30,16 @@ using namespace ::xmloff::token;
 sal_Char const sXML_np__office[] = "_ooffice";
 sal_Char const sXML_np__text[] = "_otext";
 
-// #110680#
 SwXMLSectionList::SwXMLSectionList(
     const uno::Reference< uno::XComponentContext >& rContext,
     std::vector<OUString*> &rNewSectionList)
 :   SvXMLImport( rContext, "" ),
     rSectionList ( rNewSectionList )
 {
-    GetNamespaceMap().Add( OUString( sXML_np__office ),
+    GetNamespaceMap().Add( sXML_np__office,
                             GetXMLToken(XML_N_OFFICE_OOO),
                             XML_NAMESPACE_OFFICE );
-    GetNamespaceMap().Add( OUString( sXML_np__text ),
+    GetNamespaceMap().Add( sXML_np__text,
                             GetXMLToken(XML_N_TEXT_OOO),
                             XML_NAMESPACE_TEXT );
 }
@@ -55,7 +54,7 @@ SvXMLImportContext *SwXMLSectionList::CreateContext(
         const OUString& rLocalName,
         const uno::Reference< xml::sax::XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if(( nPrefix == XML_NAMESPACE_OFFICE && IsXMLToken ( rLocalName, XML_BODY )) ||
         ( nPrefix == XML_NAMESPACE_TEXT &&
@@ -93,7 +92,7 @@ SvXMLImportContext *SvXMLSectionListContext::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if (nPrefix == XML_NAMESPACE_TEXT && ( IsXMLToken ( rLocalName, XML_SECTION ) ||
                                            IsXMLToken ( rLocalName, XML_BOOKMARK) ) )

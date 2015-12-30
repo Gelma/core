@@ -93,7 +93,7 @@ namespace
         }
         catch(const Exception&)
         {
-            r = NULL;
+            r = nullptr;
         }
         catch(...)
         {
@@ -133,7 +133,7 @@ OKeySet::~OKeySet()
         tryDispose(i->second);
     }
 
-    m_xComposer = NULL;
+    m_xComposer = nullptr;
 
 }
 
@@ -410,7 +410,7 @@ void OKeySet::executeStatement(OUStringBuffer& io_aFilter, Reference<XSingleSele
 
 void OKeySet::invalidateRow()
 {
-    m_xRow = NULL;
+    m_xRow = nullptr;
     ::comphelper::disposeComponent(m_xSet);
 }
 
@@ -695,7 +695,18 @@ void OKeySet::executeInsert( const ORowSetRow& _rInsertRow,const OUString& i_sSQ
         for(;aIter != aEnd;++aIter)
         {
             if ( !(_rInsertRow->get())[aIter->second.nPosition].isModified() )
-                (_rInsertRow->get())[aIter->second.nPosition] = aIter->second.sDefaultValue;
+            {
+                if(aIter->second.bNullable && aIter->second.sDefaultValue.isEmpty())
+                {
+                    (_rInsertRow->get())[aIter->second.nPosition].setTypeKind(aIter->second.nType);
+                    (_rInsertRow->get())[aIter->second.nPosition].setNull();
+                }
+                else
+                {
+                    (_rInsertRow->get())[aIter->second.nPosition] = aIter->second.sDefaultValue;
+                    (_rInsertRow->get())[aIter->second.nPosition].setTypeKind(aIter->second.nType);
+                }
+            }
         }
         try
         {
@@ -754,7 +765,7 @@ void OKeySet::executeInsert( const ORowSetRow& _rInsertRow,const OUString& i_sSQ
 
         if(!sMaxStmt.isEmpty())
         {
-            sMaxStmt = sMaxStmt.replaceAt(sMaxStmt.getLength()-1,1,OUString(" "));
+            sMaxStmt = sMaxStmt.replaceAt(sMaxStmt.getLength()-1,1," ");
             OUString sStmt = "SELECT " + sMaxStmt + "FROM ";
             OUString sCatalog,sSchema,sTable;
             ::dbtools::qualifiedNameComponents(m_xConnection->getMetaData(),m_sUpdateTableName,sCatalog,sSchema,sTable,::dbtools::eInDataManipulation);
@@ -1077,11 +1088,11 @@ bool SAL_CALL OKeySet::last(  ) throw(SQLException, RuntimeException)
 bool OKeySet::last_checked( bool /* i_bFetchRow */ )
 {
     m_bInserted = m_bUpdated = m_bDeleted = false;
-    bool fetchedRow = fillAllRows();
+    bool bFetchedRow = fillAllRows();
 
     m_aKeyIter = m_aKeyMap.end();
     --m_aKeyIter;
-    if ( !fetchedRow )
+    if ( !bFetchedRow )
     {
         invalidateRow();
     }
@@ -1105,11 +1116,11 @@ bool OKeySet::absolute_checked( sal_Int32 row, bool /* i_bFetchRow */ )
 {
     m_bInserted = m_bUpdated = m_bDeleted = false;
     OSL_ENSURE(row,"absolute(0) isn't allowed!");
-    bool fetchedRow = false;
+    bool bFetchedRow = false;
     if(row < 0)
     {
         if(!m_bRowCountFinal)
-            fetchedRow = fillAllRows();
+            bFetchedRow = fillAllRows();
 
         for(;row < 0 && m_aKeyIter != m_aKeyMap.begin();++row)
             --m_aKeyIter;
@@ -1129,7 +1140,7 @@ bool OKeySet::absolute_checked( sal_Int32 row, bool /* i_bFetchRow */ )
                 // that is fetchRow called at least once.
                 if ( bNext )
                 {
-                    fetchedRow = true;
+                    bFetchedRow = true;
                 }
                 else
                 {
@@ -1152,7 +1163,7 @@ bool OKeySet::absolute_checked( sal_Int32 row, bool /* i_bFetchRow */ )
                 ++m_aKeyIter;
         }
     }
-    if ( !fetchedRow )
+    if ( !bFetchedRow )
     {
         invalidateRow();
     }

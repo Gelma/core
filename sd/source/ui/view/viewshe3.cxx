@@ -141,7 +141,7 @@ void  ViewShell::GetMenuState( SfxItemSet &rSet )
             // Set the necessary string like in
             // sfx2/source/view/viewfrm.cxx ver 1.23 ln 1072 ff.
             OUString aTmp(SVT_RESSTR(STR_UNDO));
-            aTmp += pUndoManager->GetUndoActionComment(0);
+            aTmp += pUndoManager->GetUndoActionComment();
             rSet.Put(SfxStringItem(SID_UNDO, aTmp));
         }
         else
@@ -168,7 +168,7 @@ void  ViewShell::GetMenuState( SfxItemSet &rSet )
             // Set the necessary string like in
             // sfx2/source/view/viewfrm.cxx ver 1.23 ln 1081 ff.
             OUString aTmp(SVT_RESSTR(STR_REDO));
-            aTmp += pUndoManager->GetRedoActionComment(0);
+            aTmp += pUndoManager->GetRedoActionComment();
             rSet.Put(SfxStringItem(SID_REDO, aTmp));
         }
         else
@@ -199,9 +199,9 @@ SdPage* ViewShell::CreateOrDuplicatePage (
     // size, master page, to the new page.  This is usually the given page.
     // When the given page is NULL then use the first page of the document.
     SdPage* pTemplatePage = pPage;
-    if (pTemplatePage == NULL)
+    if (pTemplatePage == nullptr)
         pTemplatePage = pDocument->GetSdPage(0, ePageKind);
-    if (pTemplatePage != NULL && pTemplatePage->TRG_HasMasterPage())
+    if (pTemplatePage != nullptr && pTemplatePage->TRG_HasMasterPage())
         aVisibleLayers = pTemplatePage->TRG_GetMasterPageVisibleLayers();
     else
         aVisibleLayers.SetAll();
@@ -221,21 +221,21 @@ SdPage* ViewShell::CreateOrDuplicatePage (
         pDocument->StopWorkStartupDelay();
 
         // Use the layouts of the previous page and notes page as template.
-        if (pTemplatePage != NULL)
+        if (pTemplatePage != nullptr)
         {
             eStandardLayout = pTemplatePage->GetAutoLayout();
             if( eStandardLayout == AUTOLAYOUT_TITLE )
                 eStandardLayout = AUTOLAYOUT_ENUM;
 
             SdPage* pNotesTemplatePage = static_cast<SdPage*>(pDocument->GetPage(pTemplatePage->GetPageNum()+1));
-            if (pNotesTemplatePage != NULL)
+            if (pNotesTemplatePage != nullptr)
                 eNotesLayout = pNotesTemplatePage->GetAutoLayout();
         }
     }
     else if (pArgs->Count() == 1)
     {
         pDocument->StopWorkStartupDelay();
-        SFX_REQUEST_ARG (rRequest, pLayout, SfxUInt32Item, ID_VAL_WHATLAYOUT, false);
+        const SfxUInt32Item* pLayout = rRequest.GetArg<SfxUInt32Item>(ID_VAL_WHATLAYOUT);
         if( pLayout )
         {
             if (ePageKind == PK_NOTES)
@@ -253,10 +253,10 @@ SdPage* ViewShell::CreateOrDuplicatePage (
         // AutoLayouts must be ready
         pDocument->StopWorkStartupDelay();
 
-        SFX_REQUEST_ARG (rRequest, pPageName, SfxStringItem, ID_VAL_PAGENAME, false);
-        SFX_REQUEST_ARG (rRequest, pLayout, SfxUInt32Item, ID_VAL_WHATLAYOUT, false);
-        SFX_REQUEST_ARG (rRequest, pIsPageBack, SfxBoolItem, ID_VAL_ISPAGEBACK, false);
-        SFX_REQUEST_ARG (rRequest, pIsPageObj, SfxBoolItem, ID_VAL_ISPAGEOBJ, false);
+        const SfxStringItem* pPageName = rRequest.GetArg<SfxStringItem>(ID_VAL_PAGENAME);
+        const SfxUInt32Item* pLayout = rRequest.GetArg<SfxUInt32Item>(ID_VAL_WHATLAYOUT);
+        const SfxBoolItem* pIsPageBack = rRequest.GetArg<SfxBoolItem>(ID_VAL_ISPAGEBACK);
+        const SfxBoolItem* pIsPageObj = rRequest.GetArg<SfxBoolItem>(ID_VAL_ISPAGEOBJ);
 
         if (CHECK_RANGE (AUTOLAYOUT__START, (AutoLayout) pLayout->GetValue (), AUTOLAYOUT__END))
         {
@@ -284,7 +284,7 @@ SdPage* ViewShell::CreateOrDuplicatePage (
             StarBASIC::FatalError (ERRCODE_BASIC_BAD_PROP_VALUE);
 #endif
             rRequest.Ignore ();
-            return NULL;
+            return nullptr;
         }
     }
     else
@@ -297,7 +297,7 @@ SdPage* ViewShell::CreateOrDuplicatePage (
         StarBASIC::FatalError (ERRCODE_BASIC_WRONG_ARGS);
 #endif
         rRequest.Ignore ();
-        return NULL;
+        return nullptr;
     }
 
     // 2. Create a new page or duplicate an existing one.
@@ -319,8 +319,8 @@ SdPage* ViewShell::CreateOrDuplicatePage (
             // then to the head of the document. c) pPage is NULL and the
             // document is empty: We use CreateFirstPages to create the
             // first page of the document.
-            if (pPage == NULL)
-                if (pTemplatePage == NULL)
+            if (pPage == nullptr)
+                if (pTemplatePage == nullptr)
                 {
                     pDocument->CreateFirstPages();
                     nNewPageIndex = 0;
@@ -367,7 +367,7 @@ SdPage* ViewShell::CreateOrDuplicatePage (
 
         case SID_DUPLICATE_PAGE:
             // Duplication makes no sense when pPage is NULL.
-            if (pPage != NULL)
+            if (pPage != nullptr)
                 nNewPageIndex = pDocument->DuplicatePage (
                     pPage,
                     ePageKind,
@@ -379,10 +379,10 @@ SdPage* ViewShell::CreateOrDuplicatePage (
             break;
 
         default:
-            DBG_WARNING("wrong slot id given to CreateOrDuplicatePage");
+            SAL_INFO("sd", "wrong slot id given to CreateOrDuplicatePage");
             // Try to handle another slot id gracefully.
     }
-    SdPage* pNewPage = 0;
+    SdPage* pNewPage = nullptr;
     if(nNewPageIndex != 0xffff)
         pNewPage = pDocument->GetSdPage(nNewPageIndex, PK_STANDARD);
 

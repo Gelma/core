@@ -81,7 +81,7 @@ void ShareControlFile::OpenStream()
         uno::Reference< ucb::XCommandEnvironment > xDummyEnv;
         ::ucbhelper::Content aContent = ::ucbhelper::Content( m_aURL, xDummyEnv, comphelper::getProcessComponentContext() );
 
-        uno::Reference< ucb::XContentIdentifier > xContId( aContent.get().is() ? aContent.get()->getIdentifier() : 0 );
+        uno::Reference< ucb::XContentIdentifier > xContId( aContent.get().is() ? aContent.get()->getIdentifier() : nullptr );
         if ( !xContId.is() || xContId->getContentProviderScheme() != "file" )
             throw io::IOException(); // the implementation supports only local files for now
 
@@ -105,7 +105,7 @@ void ShareControlFile::OpenStream()
                 ucb::InsertCommandArgument aInsertArg;
                 aInsertArg.Data = xInput;
                 aInsertArg.ReplaceExisting = sal_False;
-                aContent.executeCommand( OUString("insert"), uno::makeAny( aInsertArg ) );
+                aContent.executeCommand( "insert", uno::makeAny( aInsertArg ) );
 
                 // try to let the file be hidden if possible
                 try {
@@ -144,11 +144,11 @@ void ShareControlFile::Close()
         catch( uno::Exception& )
         {}
 
-        m_xStream = uno::Reference< io::XStream >();
-        m_xInputStream = uno::Reference< io::XInputStream >();
-        m_xOutputStream = uno::Reference< io::XOutputStream >();
-        m_xSeekable = uno::Reference< io::XSeekable >();
-        m_xTruncate = uno::Reference< io::XTruncate >();
+        m_xStream.clear();
+        m_xInputStream.clear();
+        m_xOutputStream.clear();
+        m_xSeekable.clear();
+        m_xTruncate.clear();
         m_aUsersData.clear();
     }
 }

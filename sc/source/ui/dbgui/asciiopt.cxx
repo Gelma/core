@@ -18,15 +18,10 @@
  */
 
 #include "global.hxx"
-#include "scresid.hxx"
-#include "impex.hxx"
 #include "asciiopt.hxx"
 #include "asciiopt.hrc"
 #include <comphelper/string.hxx>
 #include <osl/thread.h>
-#include <rtl/tencinfo.h>
-#include <unotools/transliterationwrapper.hxx>
-#include "editutil.hxx"
 
 static const sal_Char pStrFix[] = "FIX";
 static const sal_Char pStrMrg[] = "MRG";
@@ -43,8 +38,8 @@ ScAsciiOptions::ScAsciiOptions() :
     bCharSetSystem  ( false ),
     nStartRow       ( 1 ),
     nInfoCount      ( 0 ),
-    pColStart       ( NULL ),
-    pColFormat      ( NULL )
+    pColStart       ( nullptr ),
+    pColFormat      ( nullptr )
 {
 }
 
@@ -73,8 +68,8 @@ ScAsciiOptions::ScAsciiOptions(const ScAsciiOptions& rOpt) :
     }
     else
     {
-        pColStart = NULL;
-        pColFormat = NULL;
+        pColStart = nullptr;
+        pColFormat = nullptr;
     }
 }
 
@@ -103,17 +98,17 @@ void ScAsciiOptions::SetColInfo( sal_uInt16 nCount, const sal_Int32* pStart, con
     }
     else
     {
-        pColStart = NULL;
-        pColFormat = NULL;
+        pColStart = nullptr;
+        pColFormat = nullptr;
     }
 }
 
 void ScAsciiOptions::SetColumnInfo( const ScCsvExpDataVec& rDataVec )
 {
     delete[] pColStart;
-    pColStart = NULL;
+    pColStart = nullptr;
     delete[] pColFormat;
-    pColFormat = NULL;
+    pColFormat = nullptr;
 
     nInfoCount = static_cast< sal_uInt16 >( rDataVec.size() );
     if( nInfoCount )
@@ -171,10 +166,13 @@ bool ScAsciiOptions::operator==( const ScAsciiOptions& rCmp ) const
 static OUString lcl_decodeSepString( const OUString & rSepNums, bool & o_bMergeFieldSeps )
 {
     OUString aFieldSeps;
-    sal_Int32 nSub = comphelper::string::getTokenCount( rSepNums, '/');
-    for (sal_Int32 i=0; i<nSub; ++i)
+    if ( rSepNums.isEmpty() )
+        return aFieldSeps;
+
+    sal_Int32 nPos = 0;
+    do
     {
-        OUString aCode = rSepNums.getToken( i, '/' );
+        const OUString aCode = rSepNums.getToken( 0, '/', nPos );
         if ( aCode == pStrMrg )
             o_bMergeFieldSeps = true;
         else
@@ -184,6 +182,8 @@ static OUString lcl_decodeSepString( const OUString & rSepNums, bool & o_bMergeF
                 aFieldSeps += OUString((sal_Unicode) nVal);
         }
     }
+    while ( nPos >= 0 );
+
     return aFieldSeps;
 }
 
@@ -192,87 +192,81 @@ static OUString lcl_decodeSepString( const OUString & rSepNums, bool & o_bMergeF
 
 void ScAsciiOptions::ReadFromString( const OUString& rString )
 {
-    sal_Int32 nCount = comphelper::string::getTokenCount(rString, ',');
-    OUString aToken;
+    sal_Int32 nPos = rString.isEmpty() ? -1 : 0;
 
-    // Field separator.
-    if ( nCount >= 1 )
+    // Token 0: Field separator.
+    if ( nPos >= 0 )
     {
         bFixedLen = bMergeFieldSeps = false;
 
-        aToken = rString.getToken(0,',');
+        const OUString aToken = rString.getToken(0, ',', nPos);
         if ( aToken == pStrFix )
             bFixedLen = true;
         aFieldSeps = lcl_decodeSepString( aToken, bMergeFieldSeps);
     }
 
-    // Text separator.
-    if ( nCount >= 2 )
+    // Token 1: Text separator.
+    if ( nPos >= 0 )
     {
-        aToken = rString.getToken(1,',');
-        sal_Int32 nVal = aToken.toInt32();
-        cTextSep = (sal_Unicode) nVal;
+        const sal_Int32 nVal = rString.getToken(0, ',', nPos).toInt32();
+        cTextSep = static_cast<sal_Unicode>(nVal);
     }
 
-    // Text encoding.
-    if ( nCount >= 3 )
+    // Token 2: Text encoding.
+    if ( nPos >= 0 )
     {
-        aToken = rString.getToken(2,',');
-        eCharSet = ScGlobal::GetCharsetValue( aToken );
+        eCharSet = ScGlobal::GetCharsetValue( rString.getToken(0, ',', nPos) );
     }
 
-    // Number of start row.
-    if ( nCount >= 4 )
+    // Token 3: Number of start row.
+    if ( nPos >= 0 )
     {
-        aToken = rString.getToken(3,',');
-        nStartRow = aToken.toInt32();
+        nStartRow = rString.getToken(0, ',', nPos).toInt32();
     }
 
-    // Column info.
-    if ( nCount >= 5 )
+    // Token 4: Column info.
+    if ( nPos >= 0 )
     {
         delete[] pColStart;
         delete[] pColFormat;
 
-        aToken = rString.getToken(4,',');
+        const OUString aToken = rString.getToken(0, ',', nPos);
         sal_Int32 nSub = comphelper::string::getTokenCount(aToken, '/');
         nInfoCount = nSub / 2;
         if (nInfoCount)
         {
             pColStart = new sal_Int32[nInfoCount];
             pColFormat = new sal_uInt8[nInfoCount];
-            for (sal_uInt16 nInfo=0; nInfo<nInfoCount; nInfo++)
+            sal_Int32 nP = 0;
+            for (sal_Int32 nInfo=0; nInfo<nInfoCount; ++nInfo)
             {
-                pColStart[nInfo]  = (sal_Int32) aToken.getToken( 2*nInfo, '/' ).toInt32();
-                pColFormat[nInfo] = (sal_uInt8) aToken.getToken( 2*nInfo+1, '/' ).toInt32();
+                pColStart[nInfo]  = aToken.getToken(0, '/', nP).toInt32();
+                pColFormat[nInfo] = static_cast<sal_uInt8>(aToken.getToken(0, '/', nP).toInt32());
             }
         }
         else
         {
-            pColStart = NULL;
-            pColFormat = NULL;
+            pColStart = nullptr;
+            pColFormat = nullptr;
         }
     }
 
-    // Language
-    if (nCount >= 6)
+    // Token 5: Language.
+    if (nPos >= 0)
     {
-        aToken = rString.getToken(5, ',');
-        eLang = static_cast<LanguageType>(aToken.toInt32());
+        eLang = static_cast<LanguageType>(rString.getToken(0, ',', nPos).toInt32());
     }
 
-    // Import quoted field as text.
-    if (nCount >= 7)
+    // Token 6: Import quoted field as text.
+    if (nPos >= 0)
     {
-        aToken = rString.getToken(6, ',');
-        bQuotedFieldAsText = aToken == "true";
+        bQuotedFieldAsText = rString.getToken(0, ',', nPos) == "true";
     }
 
-    // Detect special numbers.
-    if (nCount >= 8)
+    // Token 7: Detect special numbers.
+    if (nPos >= 0)
     {
-        aToken = rString.getToken(7, ',');
-        bDetectSpecialNumber = aToken == "true";
+        bDetectSpecialNumber = rString.getToken(0, ',', nPos) == "true";
     }
     else
         bDetectSpecialNumber = true;    // default of versions that didn't add the parameter

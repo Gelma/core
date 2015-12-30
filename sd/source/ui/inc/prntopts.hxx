@@ -52,8 +52,6 @@ private:
     VclPtr<CheckBox>            m_pCbxBack;
     VclPtr<CheckBox>            m_pCbxPaperbin;
 
-    const SfxItemSet&   rOutAttrs;
-
     DECL_LINK_TYPED( ClickCheckboxHdl, Button*, void );
     DECL_LINK_TYPED( ClickBookletHdl, Button*, void );
 
@@ -63,15 +61,15 @@ private:
 public:
             SdPrintOptions( vcl::Window* pParent, const SfxItemSet& rInAttrs);
             virtual ~SdPrintOptions();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     static  VclPtr<SfxTabPage> Create( vcl::Window*, const SfxItemSet* );
 
-    virtual bool FillItemSet( SfxItemSet* ) SAL_OVERRIDE;
-    virtual void Reset( const SfxItemSet * ) SAL_OVERRIDE;
+    virtual bool FillItemSet( SfxItemSet* ) override;
+    virtual void Reset( const SfxItemSet * ) override;
 
     void         SetDrawMode();
-    virtual void PageCreated(const SfxAllItemSet& aSet) SAL_OVERRIDE;
+    virtual void PageCreated(const SfxAllItemSet& aSet) override;
 };
 
 #endif // INCLUDED_SD_SOURCE_UI_INC_PRNTOPTS_HXX

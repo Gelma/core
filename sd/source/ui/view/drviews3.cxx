@@ -132,7 +132,7 @@ void  DrawViewShell::ExecCtrl(SfxRequest& rReq)
             // switch page in running slide show
             if(SlideShow::IsRunning(GetViewShellBase()) && rReq.GetArgs())
             {
-                SFX_REQUEST_ARG(rReq, pWhatPage, SfxUInt32Item, ID_VAL_WHATPAGE, false);
+                const SfxUInt32Item* pWhatPage = rReq.GetArg<SfxUInt32Item>(ID_VAL_WHATPAGE);
                 SlideShow::GetSlideShow(GetViewShellBase())->jumpToPageNumber((sal_Int32)((pWhatPage->GetValue()-1)>>1));
             }
             else
@@ -146,8 +146,8 @@ void  DrawViewShell::ExecCtrl(SfxRequest& rReq)
                 }
                 else if (pArgs->Count () == 2)
                 {
-                    SFX_REQUEST_ARG (rReq, pWhatPage, SfxUInt32Item, ID_VAL_WHATPAGE, false);
-                    SFX_REQUEST_ARG (rReq, pWhatKind, SfxUInt32Item, ID_VAL_WHATKIND, false);
+                    const SfxUInt32Item* pWhatPage = rReq.GetArg<SfxUInt32Item>(ID_VAL_WHATPAGE);
+                    const SfxUInt32Item* pWhatKind = rReq.GetArg<SfxUInt32Item>(ID_VAL_WHATKIND);
 
                     sal_Int32 nWhatPage = (sal_Int32)pWhatPage->GetValue ();
                     sal_Int32 nWhatKind = (sal_Int32)pWhatKind->GetValue ();
@@ -214,7 +214,7 @@ void  DrawViewShell::ExecCtrl(SfxRequest& rReq)
 
             if(pArgs && 1 == pArgs->Count())
             {
-                SFX_REQUEST_ARG (rReq, pWhatLayer, SfxUInt32Item, ID_VAL_WHATLAYER, false);
+                const SfxUInt32Item* pWhatLayer = rReq.GetArg<SfxUInt32Item>(ID_VAL_WHATLAYER);
 
                 if(pWhatLayer)
                 {
@@ -241,8 +241,8 @@ void  DrawViewShell::ExecCtrl(SfxRequest& rReq)
 
             if ( pArgs && pArgs->Count () == 2)
             {
-                SFX_REQUEST_ARG (rReq, pIsActive, SfxBoolItem, ID_VAL_ISACTIVE, false);
-                SFX_REQUEST_ARG (rReq, pWhatKind, SfxUInt32Item, ID_VAL_WHATKIND, false);
+                const SfxBoolItem* pIsActive = rReq.GetArg<SfxBoolItem>(ID_VAL_ISACTIVE);
+                const SfxUInt32Item* pWhatKind = rReq.GetArg<SfxUInt32Item>(ID_VAL_WHATKIND);
 
                 sal_Int32 nWhatKind = (sal_Int32)pWhatKind->GetValue ();
                 if (CHECK_RANGE (PK_STANDARD, nWhatKind, PK_HANDOUT))
@@ -269,8 +269,8 @@ void  DrawViewShell::ExecCtrl(SfxRequest& rReq)
 
             if ( pArgs && pArgs->Count () == 2)
             {
-                SFX_REQUEST_ARG (rReq, pWhatLayerMode, SfxBoolItem, ID_VAL_ISACTIVE, false);
-                SFX_REQUEST_ARG (rReq, pWhatLayer, SfxUInt32Item, ID_VAL_WHATLAYER, false);
+                const SfxBoolItem* pWhatLayerMode = rReq.GetArg<SfxBoolItem>(ID_VAL_ISACTIVE);
+                const SfxUInt32Item* pWhatLayer = rReq.GetArg<SfxUInt32Item>(ID_VAL_WHATLAYER);
 
                 sal_Int32 nWhatLayer = (sal_Int32)pWhatLayer->GetValue ();
                 if (CHECK_RANGE (EM_PAGE, nWhatLayer, EM_MASTERPAGE))
@@ -293,7 +293,7 @@ void  DrawViewShell::ExecCtrl(SfxRequest& rReq)
         case SID_INSERT_DATE_TIME:
         {
             SdAbstractDialogFactory* pFact = SdAbstractDialogFactory::Create();
-            std::unique_ptr<AbstractHeaderFooterDialog> pDlg(pFact ? pFact->CreateHeaderFooterDialog( this, GetActiveWindow(), GetDoc(), mpActualPage ) : 0);
+            std::unique_ptr<AbstractHeaderFooterDialog> pDlg(pFact ? pFact->CreateHeaderFooterDialog( this, GetActiveWindow(), GetDoc(), mpActualPage ) : nullptr);
             if( pDlg )
             {
                 pDlg->Execute();
@@ -317,7 +317,7 @@ void  DrawViewShell::ExecCtrl(SfxRequest& rReq)
                 pPage = static_cast<SdPage*>(&pPage->TRG_GetMasterPage());
 
             SdAbstractDialogFactory* pFact = SdAbstractDialogFactory::Create();
-            std::unique_ptr<VclAbstractDialog> pDlg(pFact ? pFact->CreateMasterLayoutDialog( GetActiveWindow(), GetDoc(), pPage ) : 0);
+            std::unique_ptr<VclAbstractDialog> pDlg(pFact ? pFact->CreateMasterLayoutDialog( GetActiveWindow(), GetDoc(), pPage ) : nullptr);
             if( pDlg )
             {
                 pDlg->Execute();
@@ -330,7 +330,7 @@ void  DrawViewShell::ExecCtrl(SfxRequest& rReq)
         case SID_OBJECTRESIZE:
         {
             // The server likes to change the client size
-            OSL_ASSERT (GetViewShell()!=NULL);
+            OSL_ASSERT (GetViewShell()!=nullptr);
             SfxInPlaceClient* pIPClient = GetViewShell()->GetIPClient();
 
             if ( pIPClient && pIPClient->IsObjectInPlaceActive() )
@@ -396,9 +396,8 @@ void  DrawViewShell::ExecCtrl(SfxRequest& rReq)
                 Reference<XController> xController( xFrame->getController(), UNO_SET_THROW );
 
                 // Restore the configuration.
-                xControllerManager = Reference<XControllerManager>( xController, UNO_QUERY_THROW);
-                xConfigurationController = Reference<XConfigurationController>(
-                    xControllerManager->getConfigurationController());
+                xControllerManager.set( xController, UNO_QUERY_THROW );
+                xConfigurationController.set( xControllerManager->getConfigurationController() );
                 if ( ! xConfigurationController.is())
                     throw RuntimeException();
                 xConfigurationController->restoreConfiguration(xConfiguration);
@@ -416,7 +415,7 @@ void  DrawViewShell::ExecCtrl(SfxRequest& rReq)
         {
             if( rReq.GetArgs() )
             {
-                SFX_REQUEST_ARG(rReq, pBookmark, SfxStringItem, SID_JUMPTOMARK, false);
+                const SfxStringItem* pBookmark = rReq.GetArg<SfxStringItem>(SID_JUMPTOMARK);
 
                 if (pBookmark)
                 {
@@ -455,7 +454,7 @@ void  DrawViewShell::ExecCtrl(SfxRequest& rReq)
         case SID_ATTR_YEAR2000:
         {
             FmFormShell* pFormShell = GetViewShellBase().GetFormShellManager()->GetFormShell();
-            if (pFormShell != NULL)
+            if (pFormShell != nullptr)
             {
                 const SfxPoolItem* pItem;
                 if (rReq.GetArgs()->GetItemState(
@@ -896,7 +895,7 @@ void  DrawViewShell::GetRulerState(SfxItemSet& rSet)
 
     maMarkRect = mpDrawView->GetAllMarkedRect();
 
-    const bool bRTL = GetDoc() && GetDoc()->GetDefaultWritingMode() == ::com::sun::star::text::WritingMode_RL_TB;
+    const bool bRTL = GetDoc() && GetDoc()->GetDefaultWritingMode() == css::text::WritingMode_RL_TB;
     rSet.Put(SfxBoolItem(SID_RULER_TEXT_RIGHT_TO_LEFT, bRTL));
 
     if( mpDrawView->AreObjectsMarked() )
@@ -970,7 +969,7 @@ void  DrawViewShell::GetRulerState(SfxItemSet& rSet)
                 if( aEditAttr.GetItemState( EE_PARA_WRITINGDIR ) >= SfxItemState::DEFAULT )
                 {
                     const SvxFrameDirectionItem& rItem = static_cast<const SvxFrameDirectionItem&>( aEditAttr.Get( EE_PARA_WRITINGDIR ) );
-                    rSet.Put(SfxBoolItem(SID_RULER_TEXT_RIGHT_TO_LEFT, rItem.GetValue() == ::com::sun::star::text::WritingMode_RL_TB));
+                    rSet.Put(SfxBoolItem(SID_RULER_TEXT_RIGHT_TO_LEFT, rItem.GetValue() == css::text::WritingMode_RL_TB));
                 }
             }
         }

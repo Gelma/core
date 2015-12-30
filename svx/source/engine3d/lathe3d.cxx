@@ -52,7 +52,6 @@ sdr::properties::BaseProperties* E3dLatheObj::CreateObjectSpecificProperties()
 
 
 
-TYPEINIT1(E3dLatheObj, E3dCompoundObject);
 
 // Constructor from 3D polygon, scale is the conversion factor for the coordinates
 
@@ -117,7 +116,7 @@ E3dLatheObj* E3dLatheObj::Clone() const
 
 SdrObject *E3dLatheObj::DoConvertToPolyObj(bool /*bBezier*/, bool /*bAddText*/) const
 {
-    return NULL;
+    return nullptr;
 }
 
 // Set Local parameters set to re-create geometry
@@ -186,7 +185,7 @@ SdrAttrObj* E3dLatheObj::GetBreakObj()
     SfxItemSet aSet(GetObjectItemSet());
 
     // Enable lines to guarantee that the object becomes visible
-    aSet.Put(XLineStyleItem(com::sun::star::drawing::LineStyle_SOLID));
+    aSet.Put(XLineStyleItem(css::drawing::LineStyle_SOLID));
 
     pPathObj->SetMergedItemSet(aSet);
 

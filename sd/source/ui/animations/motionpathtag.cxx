@@ -75,7 +75,7 @@ private:
     basegfx::B2DPolyPolygon         maPathPolyPolygon;
 
 protected:
-    virtual void createSdrDragEntries() SAL_OVERRIDE;
+    virtual void createSdrDragEntries() override;
 
 public:
     PathDragMove(SdrDragView& rNewView,
@@ -93,8 +93,8 @@ public:
         mxTag( xTag )
     {}
 
-    virtual bool BeginSdrDrag() SAL_OVERRIDE;
-    virtual bool EndSdrDrag(bool bCopy) SAL_OVERRIDE;
+    virtual bool BeginSdrDrag() override;
+    virtual bool EndSdrDrag(bool bCopy) override;
 
     rtl::Reference <MotionPathTag > mxTag;
 };
@@ -138,7 +138,7 @@ private:
     basegfx::B2DPolyPolygon         maPathPolyPolygon;
 
 protected:
-    virtual void createSdrDragEntries() SAL_OVERRIDE;
+    virtual void createSdrDragEntries() override;
 
 public:
     PathDragResize(SdrDragView& rNewView,
@@ -156,7 +156,7 @@ public:
         mxTag( xTag )
     {}
 
-    virtual bool EndSdrDrag(bool bCopy) SAL_OVERRIDE;
+    virtual bool EndSdrDrag(bool bCopy) override;
     rtl::Reference <MotionPathTag > mxTag;
 };
 
@@ -197,7 +197,7 @@ private:
     basegfx::B2DPolyPolygon         maPathPolyPolygon;
 
 protected:
-    virtual void createSdrDragEntries() SAL_OVERRIDE;
+    virtual void createSdrDragEntries() override;
 
 public:
     PathDragObjOwn(SdrDragView& rNewView,
@@ -206,12 +206,12 @@ public:
         maPathPolyPolygon(rPathPolyPolygon)
     {}
 
-    PathDragObjOwn(SdrDragView& rNewView)
+    explicit PathDragObjOwn(SdrDragView& rNewView)
     :   SdrDragObjOwn(rNewView),
         maPathPolyPolygon()
     {}
 
-    virtual bool EndSdrDrag(bool bCopy) SAL_OVERRIDE;
+    virtual bool EndSdrDrag(bool bCopy) override;
 };
 
 void PathDragObjOwn::createSdrDragEntries()
@@ -246,19 +246,17 @@ class SdPathHdl : public SmartHdl
 public:
     SdPathHdl( const SmartTagReference& xTag, SdrPathObj* mpPathObj );
     virtual ~SdPathHdl();
-    virtual void CreateB2dIAObject() SAL_OVERRIDE;
-    virtual bool IsFocusHdl() const SAL_OVERRIDE;
-    virtual bool isMarkable() const SAL_OVERRIDE;
+    virtual void CreateB2dIAObject() override;
+    virtual bool IsFocusHdl() const override;
+    virtual bool isMarkable() const override;
 
 private:
     SdrPathObj* mpPathObj;
-    rtl::Reference< MotionPathTag > mxTag;
 };
 
 SdPathHdl::SdPathHdl( const SmartTagReference& xTag, SdrPathObj* pPathObj )
 : SmartHdl( xTag, pPathObj->GetCurrentBoundRect().TopLeft() )
 , mpPathObj( pPathObj )
-, mxTag( dynamic_cast< MotionPathTag* >( xTag.get() ) )
 {
 }
 
@@ -291,7 +289,7 @@ void SdPathHdl::CreateB2dIAObject()
                         if (xManager.is() && mpPathObj)
                         {
                             const sdr::contact::ViewContact& rVC = mpPathObj->GetViewContact();
-                            const drawinglayer::primitive2d::Primitive2DSequence aSequence = rVC.getViewIndependentPrimitive2DSequence();
+                            const drawinglayer::primitive2d::Primitive2DContainer aSequence = rVC.getViewIndependentPrimitive2DSequence();
                             sdr::overlay::OverlayObject* pNew = new sdr::overlay::OverlayPrimitive2DSequenceObject(aSequence);
 
                             xManager->add(*pNew);
@@ -368,7 +366,7 @@ MotionPathTag::MotionPathTag( CustomAnimationPane& rPane, ::sd::View& rView, con
 
 MotionPathTag::~MotionPathTag()
 {
-    DBG_ASSERT( mpPathObj == 0, "sd::MotionPathTag::~MotionPathTag(), dispose me first!" );
+    DBG_ASSERT( mpPathObj == nullptr, "sd::MotionPathTag::~MotionPathTag(), dispose me first!" );
     Dispose();
 }
 
@@ -402,7 +400,7 @@ void MotionPathTag::updatePathAttributes()
 
 void MotionPathTag::Notify( SfxBroadcaster& /*rBC*/, const SfxHint& rHint )
 {
-    if( mpPathObj && !mbInUpdatePath && dynamic_cast< const SdrHint* >( &rHint ) && (mpEffect.get() != 0) )
+    if( mpPathObj && !mbInUpdatePath && dynamic_cast< const SdrHint* >( &rHint ) && (mpEffect.get() != nullptr) )
     {
         if( mxPolyPoly != mpPathObj->GetPathPoly() )
         {
@@ -505,7 +503,7 @@ bool MotionPathTag::MouseButtonDown( const MouseEvent& rMEvt, SmartHdl& rHdl )
                         if (mrView.IsPointMarked(*pHdl) )
                         {
                             mrView.UnmarkPoint(*pHdl);
-                            pHdl = NULL;
+                            pHdl = nullptr;
                         }
                         else
                         {
@@ -543,7 +541,7 @@ bool MotionPathTag::MouseButtonDown( const MouseEvent& rMEvt, SmartHdl& rHdl )
                         pDragMethod = new PathDragResize( mrView, xTag, aDragPoly );
                     }
 
-                    mrView.BegDragObj(aMDPos, NULL, pHdl, nDrgLog, pDragMethod );
+                    mrView.BegDragObj(aMDPos, nullptr, pHdl, nDrgLog, pDragMethod );
                 }
                 return true;
             }
@@ -652,10 +650,10 @@ bool MotionPathTag::OnMarkHandle( const KeyEvent& rKEvt )
             mrView.MarkPoint(*pHdl);
         }
 
-        if(0L == rHdlList.GetFocusHdl())
+        if(nullptr == rHdlList.GetFocusHdl())
         {
             // restore point with focus
-            SdrHdl* pNewOne = 0L;
+            SdrHdl* pNewOne = nullptr;
 
             for(size_t a = 0; !pNewOne && a < rHdlList.GetHdlCount(); ++a)
             {
@@ -715,7 +713,7 @@ bool MotionPathTag::OnMove( const KeyEvent& rKEvt )
 
             // start dragging
             rtl::Reference< MotionPathTag > xTag( this );
-            SdrDragMethod* pDragMethod = 0;
+            SdrDragMethod* pDragMethod = nullptr;
             if( (pHdl->GetKind() == HDL_MOVE) || (pHdl->GetKind() == HDL_SMARTTAG) )
             {
                 pDragMethod = new PathDragMove( mrView, xTag );
@@ -728,7 +726,7 @@ bool MotionPathTag::OnMove( const KeyEvent& rKEvt )
             {
                 pDragMethod = new PathDragResize( mrView, xTag );
             }
-            mrView.BegDragObj(aStartPoint, 0, pHdl, 0, pDragMethod);
+            mrView.BegDragObj(aStartPoint, nullptr, pHdl, 0, pDragMethod);
 
             if(mrView.IsDragObj())
             {
@@ -822,7 +820,7 @@ bool MotionPathTag::MarkPoints(const Rectangle* pRect, bool bUnmark )
             if( pHdl && (pHdl->getTag().get() == this) && mrView.IsPointMarkable(*pHdl) && pHdl->IsSelected() == bUnmark)
             {
                 Point aPos(pHdl->GetPos());
-                if( pRect==NULL || pRect->IsInside(aPos))
+                if( pRect==nullptr || pRect->IsInside(aPos))
                 {
                     if( mrView.MarkPointHelper(pHdl,mpMark,bUnmark) )
                         bChgd=true;
@@ -881,7 +879,7 @@ void MotionPathTag::addCustomHandles( SdrHdlList& rHandlerList )
 {
     if( mpPathObj )
     {
-        ::com::sun::star::awt::Point aPos;
+        css::awt::Point aPos;
         if (mxOrigin.is())
             aPos = mxOrigin->getPosition();
         if( (aPos.X != maOriginPos.X) || (aPos.Y != maOriginPos.Y) )
@@ -934,7 +932,7 @@ void MotionPathTag::addCustomHandles( SdrHdlList& rHandlerList )
                         for (sal_uInt32 nPlusNum=0; nPlusNum<nPlusAnz; nPlusNum++)
                         {
                             SdrHdl* pPlusHdl = mpPathObj->GetPlusHdl(*pSmartHdl,nPlusNum);
-                            if (pPlusHdl!=NULL)
+                            if (pPlusHdl!=nullptr)
                             {
                                 pPlusHdl->SetObj(mpPathObj);
                                 pPlusHdl->SetPageView(mrView.GetSdrPageView());
@@ -998,7 +996,7 @@ void MotionPathTag::disposing()
     if( mpPathObj )
     {
         SdrPathObj* pPathObj = mpPathObj;
-        mpPathObj = 0;
+        mpPathObj = nullptr;
         mrView.updateHandles();
         delete pPathObj;
     }
@@ -1006,7 +1004,7 @@ void MotionPathTag::disposing()
     if( mpMark )
     {
         delete mpMark;
-        mpMark = 0;
+        mpMark = nullptr;
     }
 
     SmartTag::disposing();
@@ -1199,7 +1197,7 @@ void SAL_CALL MotionPathTag::disposing( const EventObject& /*Source*/ ) throw (R
         Dispose();
 }
 
-Any SAL_CALL MotionPathTag::queryInterface( const ::com::sun::star::uno::Type& aType ) throw (RuntimeException, std::exception)
+Any SAL_CALL MotionPathTag::queryInterface( const css::uno::Type& aType ) throw (RuntimeException, std::exception)
 {
     if( aType == cppu::UnoType<XChangesListener>::get() )
         return Any( Reference< XChangesListener >( this ) );

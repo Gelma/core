@@ -29,11 +29,11 @@
 class SfxPoolItem;
 class SwClient;
 class SwDoc;
-class SwUnoTableCrsr;
+class SwUnoTableCursor;
 
 typedef ::cppu::WeakImplHelper
-<   ::com::sun::star::lang::XServiceInfo
-,   ::com::sun::star::container::XEnumeration
+<   css::lang::XServiceInfo
+,   css::container::XEnumeration
 >
 SwSimpleEnumeration_Base;
 
@@ -79,7 +79,7 @@ private:
 
 public:
         UnoActionRemoveContext(SwDoc *const pDoc);
-        UnoActionRemoveContext(SwUnoTableCrsr const& rCursor);
+        UnoActionRemoveContext(SwUnoTableCursor const& rCursor);
         ~UnoActionRemoveContext();
 };
 
@@ -104,9 +104,7 @@ namespace sw {
     using UnoImplPtr = ::std::unique_ptr<T, UnoImplPtrDeleter<T> >;
 
     template< class C > C *
-    UnoTunnelGetImplementation(
-            ::com::sun::star::uno::Reference<
-                ::com::sun::star::lang::XUnoTunnel > const & xUnoTunnel)
+    UnoTunnelGetImplementation( css::uno::Reference< css::lang::XUnoTunnel > const & xUnoTunnel)
     {
         if (!xUnoTunnel.is()) { return 0; }
         C *const pC( reinterpret_cast< C* >(
@@ -116,7 +114,7 @@ namespace sw {
     }
 
     template< class C > sal_Int64
-    UnoTunnelImpl(const ::com::sun::star::uno::Sequence< sal_Int8 > & rId,
+    UnoTunnelImpl(const css::uno::Sequence< sal_Int8 > & rId,
                   C *const pThis)
     {
         if ((rId.getLength() == 16) &&
@@ -129,7 +127,7 @@ namespace sw {
         return 0;
     }
 
-    ::com::sun::star::uno::Sequence< OUString >
+    css::uno::Sequence< OUString >
     GetSupportedServiceNamesImpl(
             size_t const nServices, char const*const pServices[]);
 

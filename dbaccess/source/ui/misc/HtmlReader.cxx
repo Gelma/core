@@ -21,6 +21,7 @@
 #include <connectivity/dbconversion.hxx>
 #include <connectivity/dbtools.hxx>
 #include <toolkit/helper/vclunohelper.hxx>
+#include <tools/stream.hxx>
 #include <tools/tenccvt.hxx>
 #include <comphelper/extract.hxx>
 #include <comphelper/string.hxx>
@@ -162,7 +163,7 @@ void OHTMLReader::NextToken( int nToken )
             case HTML_TABLE_OFF:
                 if(!--m_nTableCount)
                 {
-                    m_xTable = NULL;
+                    m_xTable = nullptr;
                 }
                 break;
             case HTML_TABLEROW_ON:
@@ -516,7 +517,7 @@ bool OHTMLReader::CreateTable(int nToken)
 void OHTMLReader::setTextEncoding()
 {
     m_bMetaOptions = true;
-    ParseMetaOptions(NULL, NULL);
+    ParseMetaOptions(nullptr, nullptr);
 }
 
 void OHTMLReader::release()

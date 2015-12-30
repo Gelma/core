@@ -60,7 +60,7 @@ public:
 
     virtual ~SfxCloseButton() {}
 
-    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) SAL_OVERRIDE;
+    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) override;
 };
 
 void SfxCloseButton::Paint(vcl::RenderContext& rRenderContext, const Rectangle&)
@@ -71,7 +71,7 @@ void SfxCloseButton::Paint(vcl::RenderContext& rRenderContext, const Rectangle&)
 
     const Rectangle aRect(Point(0, 0), PixelToLogic(GetSizePixel()));
 
-    drawinglayer::primitive2d::Primitive2DSequence aSeq(2);
+    drawinglayer::primitive2d::Primitive2DContainer aSeq(2);
 
     BColor aLightColor;
     BColor aDarkColor;
@@ -127,11 +127,12 @@ SfxInfoBarWindow::SfxInfoBarWindow(vcl::Window* pParent, const OUString& sId,
     SetPosSizePixel(Point(0, 0), Size(nWidth, INFO_BAR_BASE_HEIGHT * nScaleFactor));
 
     m_pMessage->SetText(sMessage);
-    m_pMessage->SetBackground(Wallpaper(Color(constLightColor)));
     m_pMessage->Show();
 
     m_pCloseBtn->SetClickHdl(LINK(this, SfxInfoBarWindow, CloseHandler));
     m_pCloseBtn->Show();
+
+    EnableChildTransparentMode();
 
     Resize();
 }
@@ -167,14 +168,11 @@ void SfxInfoBarWindow::Paint(vcl::RenderContext& rRenderContext, const Rectangle
 
     const Rectangle aRect(Point(0, 0), PixelToLogic(GetSizePixel()));
 
-    drawinglayer::primitive2d::Primitive2DSequence aSeq(2);
+    drawinglayer::primitive2d::Primitive2DContainer aSeq(2);
 
     BColor aLightColor;
     BColor aDarkColor;
     lclDetermineLightDarkColor(aLightColor, aDarkColor);
-
-    // Update the label background color
-    m_pMessage->SetBackground(Wallpaper(Color(aLightColor)));
 
     // Light background
     B2DPolygon aPolygon;
@@ -277,7 +275,7 @@ SfxInfoBarWindow* SfxInfoBarContainerWindow::getInfoBar(const OUString& sId)
         if ((*it)->getId() == sId)
             return it->get();
     }
-    return NULL;
+    return nullptr;
 }
 
 void SfxInfoBarContainerWindow::removeInfoBar(SfxInfoBarWindow* pInfoBar)

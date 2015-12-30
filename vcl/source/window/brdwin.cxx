@@ -36,6 +36,8 @@
 #include <vcl/metric.hxx>
 #include <vcl/settings.hxx>
 
+#include "notebookbarwindow.hxx"
+
 using namespace ::com::sun::star::uno;
 
 // useful caption height for title bar buttons
@@ -54,7 +56,7 @@ static void ImplGetPinImage( DrawButtonFlags nStyle, bool bPinIn, Image& rImage 
             Color aMaskColor( 0x00, 0x00, 0xFF );
             pSVData->maCtrlData.mpPinImgList->InsertFromHorizontalBitmap
                 ( ResId( SV_RESID_BITMAP_PIN, *pResMgr ), 4,
-                  &aMaskColor, NULL, NULL );
+                  &aMaskColor );
         }
     }
 
@@ -440,7 +442,7 @@ void ImplNoBorderWindowView::DrawWindow(vcl::RenderContext&, sal_uInt16, const P
 // - ImplSmallBorderWindowView -
 ImplSmallBorderWindowView::ImplSmallBorderWindowView( ImplBorderWindow* pBorderWindow )
     : mpBorderWindow(pBorderWindow)
-    , mpOutDev(NULL)
+    , mpOutDev(nullptr)
     , mnWidth(0)
     , mnHeight(0)
     , mnLeftBorder(0)
@@ -458,7 +460,7 @@ void ImplSmallBorderWindowView::Init( OutputDevice* pDev, long nWidth, long nHei
     mnHeight    = nHeight;
     mbNWFBorder = false;
 
-    vcl::Window *pWin = NULL, *pCtrl = NULL;
+    vcl::Window *pWin = nullptr, *pCtrl = nullptr;
     if (mpOutDev->GetOutDevType() == OUTDEV_WINDOW)
         pWin = static_cast<vcl::Window*>(mpOutDev.get());
 
@@ -550,7 +552,7 @@ void ImplSmallBorderWindowView::Init( OutputDevice* pDev, long nWidth, long nHei
                         mpBorderWindow->SetBackground();
                         pCtrl->SetPaintTransparent( true );
 
-                        vcl::Window* pCompoundParent = NULL;
+                        vcl::Window* pCompoundParent = nullptr;
                         if( pWin->GetParent() && pWin->GetParent()->IsCompoundControl() )
                             pCompoundParent = pWin->GetParent();
 
@@ -803,8 +805,8 @@ ImplStdBorderWindowView::ImplStdBorderWindowView( ImplBorderWindow* pBorderWindo
     maFrameData.mnHelpState     = DrawButtonFlags::NONE;
     maFrameData.mbTitleClipped  = false;
 
-    mpATitleVirDev              = NULL;
-    mpDTitleVirDev              = NULL;
+    mpATitleVirDev              = nullptr;
+    mpDTitleVirDev              = nullptr;
 }
 
 ImplStdBorderWindowView::~ImplStdBorderWindowView()
@@ -1243,7 +1245,7 @@ bool ImplStdBorderWindowView::Tracking( const TrackingEvent& rTEvt )
                 aPos.Y() += aMousePos.Y();
                 if ( maFrameData.mbDragFull )
                 {
-                    pBorderWindow->SetPosPixel( aPos );
+                    pBorderWindow->MoveToByDrag(aPos);
                     pBorderWindow->ImplUpdateAll();
                     pBorderWindow->ImplGetFrameWindow()->ImplUpdateAll();
                 }
@@ -1431,74 +1433,60 @@ void ImplStdBorderWindowView::Init( OutputDevice* pDev, long nWidth, long nHeigh
 
         if ( pData->mnTitleType & (BORDERWINDOW_TITLE_NORMAL | BORDERWINDOW_TITLE_SMALL) )
         {
-            long nLeft          = pData->maTitleRect.Left();
-            long nRight         = pData->maTitleRect.Right();
-            long nItemTop       = pData->maTitleRect.Top();
-            long nItemBottom    = pData->maTitleRect.Bottom();
-            nLeft              += 1;
-            nRight             -= 3;
-            nItemTop           += 2;
-            nItemBottom        -= 2;
+            long nLeft          = pData->maTitleRect.Left() + 1;
+            long nRight         = pData->maTitleRect.Right() - 3;
+            long const nItemTop = pData->maTitleRect.Top() + 2;
+            long const nItemBottom = pData->maTitleRect.Bottom() - 2;
+
+            auto addOnLeft = [&nLeft, nItemTop, nItemBottom](
+                Rectangle & rect, long width, long gap)
+            {
+                rect.Top() = nItemTop;
+                rect.Bottom() = nItemBottom;
+                rect.Left() = nLeft;
+                rect.Right() = rect.Left() + width;
+                nLeft += rect.GetWidth() + gap;
+            };
+            auto addSquareOnRight = [&nRight, nItemTop, nItemBottom](
+                Rectangle & rect, long gap)
+            {
+                rect.Top() = nItemTop;
+                rect.Bottom() = nItemBottom;
+                rect.Right() = nRight;
+                rect.Left() = rect.Right() - rect.GetHeight() + 1;
+                nRight -= rect.GetWidth() + gap;
+            };
 
             if ( pBorderWindow->GetStyle() & WB_PINABLE )
             {
                 Image aImage;
                 ImplGetPinImage( DrawButtonFlags::NONE, false, aImage );
-                pData->maPinRect.Top()    = nItemTop;
-                pData->maPinRect.Bottom() = nItemBottom;
-                pData->maPinRect.Left()   = nLeft;
-                pData->maPinRect.Right()  = pData->maPinRect.Left()+aImage.GetSizePixel().Width();
-                nLeft += pData->maPinRect.GetWidth()+3;
+                addOnLeft(pData->maPinRect, aImage.GetSizePixel().Width(), 3);
             }
 
             if ( pBorderWindow->GetStyle() & WB_CLOSEABLE )
             {
-                pData->maCloseRect.Top()    = nItemTop;
-                pData->maCloseRect.Bottom() = nItemBottom;
-                pData->maCloseRect.Right()  = nRight;
-                pData->maCloseRect.Left()   = pData->maCloseRect.Right()-pData->maCloseRect.GetHeight()+1;
-                nRight -= pData->maCloseRect.GetWidth()+3;
+                addSquareOnRight(pData->maCloseRect, 3);
             }
 
             if ( pBorderWindow->mbMenuBtn )
             {
-                pData->maMenuRect.Top()    = nItemTop;
-                pData->maMenuRect.Bottom() = nItemBottom;
-                pData->maMenuRect.Right()  = nRight;
-                pData->maMenuRect.Left()   = pData->maMenuRect.Right()-pData->maMenuRect.GetHeight()+1;
-                nRight -= pData->maMenuRect.GetWidth();
+                addSquareOnRight(pData->maMenuRect, 0);
             }
 
             if ( pBorderWindow->mbDockBtn )
             {
-                pData->maDockRect.Top()    = nItemTop;
-                pData->maDockRect.Bottom() = nItemBottom;
-                pData->maDockRect.Right()  = nRight;
-                pData->maDockRect.Left()   = pData->maDockRect.Right()-pData->maDockRect.GetHeight()+1;
-                nRight -= pData->maDockRect.GetWidth();
-                if ( !pBorderWindow->mbHideBtn &&
-                     !(pBorderWindow->GetStyle() & WB_ROLLABLE) )
-                    nRight -= 3;
+                addSquareOnRight(pData->maDockRect, 0);
             }
 
             if ( pBorderWindow->mbHideBtn )
             {
-                pData->maHideRect.Top()    = nItemTop;
-                pData->maHideRect.Bottom() = nItemBottom;
-                pData->maHideRect.Right()  = nRight;
-                pData->maHideRect.Left()   = pData->maHideRect.Right()-pData->maHideRect.GetHeight()+1;
-                nRight -= pData->maHideRect.GetWidth();
-                if ( !(pBorderWindow->GetStyle() & WB_ROLLABLE) )
-                    nRight -= 3;
+                addSquareOnRight(pData->maHideRect, 0);
             }
 
             if ( pBorderWindow->GetStyle() & WB_ROLLABLE )
             {
-                pData->maRollRect.Top()    = nItemTop;
-                pData->maRollRect.Bottom() = nItemBottom;
-                pData->maRollRect.Right()  = nRight;
-                pData->maRollRect.Left()   = pData->maRollRect.Right()-pData->maRollRect.GetHeight()+1;
-                nRight -= pData->maRollRect.GetWidth();
+                addSquareOnRight(pData->maRollRect, 0);
             }
         }
         else
@@ -1738,9 +1726,9 @@ void ImplStdBorderWindowView::DrawWindow(vcl::RenderContext& rRenderContext, sal
 
 void ImplBorderWindow::ImplInit( vcl::Window* pParent,
                                  WinBits nStyle, sal_uInt16 nTypeStyle,
-                                 const ::com::sun::star::uno::Any& )
+                                 const css::uno::Any& )
 {
-    ImplInit( pParent, nStyle, nTypeStyle, NULL );
+    ImplInit( pParent, nStyle, nTypeStyle, nullptr );
 }
 
 void ImplBorderWindow::ImplInit( vcl::Window* pParent,
@@ -1750,7 +1738,7 @@ void ImplBorderWindow::ImplInit( vcl::Window* pParent,
 {
     // remove all unwanted WindowBits
     WinBits nOrgStyle = nStyle;
-    WinBits nTestStyle = (WB_MOVEABLE | WB_SIZEABLE | WB_ROLLABLE | WB_PINABLE | WB_CLOSEABLE | WB_STANDALONE | WB_DIALOGCONTROL | WB_NODIALOGCONTROL | WB_SYSTEMFLOATWIN | WB_INTROWIN | WB_DEFAULTWIN | WB_TOOLTIPWIN | WB_NOSHADOW | WB_OWNERDRAWDECORATION | WB_SYSTEMCHILDWINDOW  | WB_NEEDSFOCUS | WB_POPUP);
+    WinBits nTestStyle = (WB_MOVEABLE | WB_SIZEABLE | WB_ROLLABLE | WB_PINABLE | WB_CLOSEABLE | WB_STANDALONE | WB_DIALOGCONTROL | WB_NODIALOGCONTROL | WB_SYSTEMFLOATWIN | WB_INTROWIN | WB_DEFAULTWIN | WB_TOOLTIPWIN | WB_NOSHADOW | WB_OWNERDRAWDECORATION | WB_SYSTEMCHILDWINDOW  | WB_POPUP);
     if ( nTypeStyle & BORDERWINDOW_STYLE_APP )
         nTestStyle |= WB_APP;
     nStyle &= nTestStyle;
@@ -1798,7 +1786,7 @@ void ImplBorderWindow::ImplInit( vcl::Window* pParent,
     SetBackground();
     SetTextFillColor();
 
-    mpMenuBarWindow = NULL;
+    mpMenuBarWindow = nullptr;
     mnMinWidth      = 0;
     mnMinHeight     = 0;
     mnMaxWidth      = SHRT_MAX;
@@ -1833,7 +1821,7 @@ ImplBorderWindow::ImplBorderWindow( vcl::Window* pParent, WinBits nStyle ,
                                     sal_uInt16 nTypeStyle ) :
     Window( WINDOW_BORDERWINDOW )
 {
-    ImplInit( pParent, nStyle, nTypeStyle, ::com::sun::star::uno::Any() );
+    ImplInit( pParent, nStyle, nTypeStyle, css::uno::Any() );
 }
 
 ImplBorderWindow::~ImplBorderWindow()
@@ -1844,8 +1832,9 @@ ImplBorderWindow::~ImplBorderWindow()
 void ImplBorderWindow::dispose()
 {
     delete mpBorderView;
-    mpBorderView = NULL;
+    mpBorderView = nullptr;
     mpMenuBarWindow.clear();
+    mpNotebookBarWindow.disposeAndClear();
     vcl::Window::dispose();
 }
 
@@ -1926,12 +1915,14 @@ void ImplBorderWindow::Resize()
     {
         vcl::Window* pClientWindow = ImplGetClientWindow();
 
-        if ( mpMenuBarWindow )
+        sal_Int32 nLeftBorder;
+        sal_Int32 nTopBorder;
+        sal_Int32 nRightBorder;
+        sal_Int32 nBottomBorder;
+        mpBorderView->GetBorder( nLeftBorder, nTopBorder, nRightBorder, nBottomBorder );
+
+        if (mpMenuBarWindow)
         {
-            sal_Int32 nLeftBorder;
-            sal_Int32 nTopBorder;
-            sal_Int32 nRightBorder;
-            sal_Int32 nBottomBorder;
             long nMenuHeight = mpMenuBarWindow->GetSizePixel().Height();
             if ( mbMenuHide )
             {
@@ -1944,13 +1935,22 @@ void ImplBorderWindow::Resize()
                 if ( !nMenuHeight )
                     nMenuHeight = mnOrgMenuHeight;
             }
-            mpBorderView->GetBorder( nLeftBorder, nTopBorder, nRightBorder, nBottomBorder );
-            mpMenuBarWindow->setPosSizePixel( nLeftBorder,
-                                              nTopBorder,
-                                              aSize.Width()-nLeftBorder-nRightBorder,
-                                              nMenuHeight,
-                                              PosSizeFlags::Pos |
-                                              PosSizeFlags::Width | PosSizeFlags::Height );
+            mpMenuBarWindow->setPosSizePixel(
+                    nLeftBorder, nTopBorder,
+                    aSize.Width()-nLeftBorder-nRightBorder,
+                    nMenuHeight);
+
+            // shift the notebookbar down accordingly
+            nTopBorder += nMenuHeight;
+        }
+
+        if (mpNotebookBarWindow)
+        {
+            long nNotebookBarHeight = mpNotebookBarWindow->GetSizePixel().Height();
+            mpNotebookBarWindow->setPosSizePixel(
+                    nLeftBorder, nTopBorder,
+                    aSize.Width() - nLeftBorder - nRightBorder,
+                    nNotebookBarHeight);
         }
 
         GetBorder( pClientWindow->mpWindowImpl->mnLeftBorder, pClientWindow->mpWindowImpl->mnTopBorder,
@@ -2177,12 +2177,23 @@ void ImplBorderWindow::SetMenuBarMode( bool bHide )
     UpdateMenuHeight();
 }
 
+void ImplBorderWindow::SetNotebookBarWindow(const OUString& rUIXMLDescription, const css::uno::Reference<css::frame::XFrame>& rFrame)
+{
+    mpNotebookBarWindow = VclPtr<NotebookBarWindow>::Create(this, "NotebookBar", rUIXMLDescription, rFrame);
+    Resize();
+    mpNotebookBarWindow->Show();
+}
+
 void ImplBorderWindow::GetBorder( sal_Int32& rLeftBorder, sal_Int32& rTopBorder,
                                   sal_Int32& rRightBorder, sal_Int32& rBottomBorder ) const
 {
-    mpBorderView->GetBorder( rLeftBorder, rTopBorder, rRightBorder, rBottomBorder );
-    if ( mpMenuBarWindow && !mbMenuHide )
+    mpBorderView->GetBorder(rLeftBorder, rTopBorder, rRightBorder, rBottomBorder);
+
+    if (mpMenuBarWindow && !mbMenuHide)
         rTopBorder += mpMenuBarWindow->GetSizePixel().Height();
+
+    if (mpNotebookBarWindow)
+        rTopBorder += mpNotebookBarWindow->GetSizePixel().Height();
 }
 
 long ImplBorderWindow::CalcTitleWidth() const
@@ -2193,6 +2204,11 @@ long ImplBorderWindow::CalcTitleWidth() const
 Rectangle ImplBorderWindow::GetMenuRect() const
 {
     return mpBorderView->GetMenuRect();
+}
+
+void ImplBorderWindow::MoveToByDrag(const Point& rNewPos)
+{
+    setPosSizePixel(rNewPos.X(), rNewPos.Y(), 0, 0, PosSizeFlags::Pos | PosSizeFlags::ByDrag);
 }
 
 Size ImplBorderWindow::GetOptimalSize() const

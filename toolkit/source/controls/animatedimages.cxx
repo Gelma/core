@@ -54,29 +54,29 @@ class AnimatedImagesControl : public AnimatedImagesControl_Base
 {
 public:
     AnimatedImagesControl();
-    OUString GetComponentServiceName() SAL_OVERRIDE;
+    OUString GetComponentServiceName() override;
 
     // XAnimation
-    virtual void SAL_CALL startAnimation(  ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL stopAnimation(  ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL isAnimationRunning(  ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL startAnimation(  ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL stopAnimation(  ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL isAnimationRunning(  ) throw (css::uno::RuntimeException, std::exception) override;
 
     // XServiceInfo
-    OUString SAL_CALL getImplementationName(  ) throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    OUString SAL_CALL getImplementationName(  ) throw(css::uno::RuntimeException, std::exception) override;
+    css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw(css::uno::RuntimeException, std::exception) override;
 
     // XControl
-    sal_Bool SAL_CALL setModel( const css::uno::Reference< css::awt::XControlModel >& i_rModel ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    void SAL_CALL createPeer( const css::uno::Reference< css::awt::XToolkit >& i_toolkit, const css::uno::Reference< css::awt::XWindowPeer >& i_parentPeer ) throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    sal_Bool SAL_CALL setModel( const css::uno::Reference< css::awt::XControlModel >& i_rModel ) throw ( css::uno::RuntimeException, std::exception ) override;
+    void SAL_CALL createPeer( const css::uno::Reference< css::awt::XToolkit >& i_toolkit, const css::uno::Reference< css::awt::XWindowPeer >& i_parentPeer ) throw(css::uno::RuntimeException, std::exception) override;
 
 
     // XContainerListener
-    virtual void SAL_CALL elementInserted( const css::container::ContainerEvent& Event ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL elementRemoved( const css::container::ContainerEvent& Event ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL elementReplaced( const css::container::ContainerEvent& Event ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL elementInserted( const css::container::ContainerEvent& Event ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL elementRemoved( const css::container::ContainerEvent& Event ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL elementReplaced( const css::container::ContainerEvent& Event ) throw (css::uno::RuntimeException, std::exception) override;
 
     // XEventListener
-    virtual void SAL_CALL disposing( const css::lang::EventObject& i_event ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing( const css::lang::EventObject& i_event ) throw (css::uno::RuntimeException, std::exception) override;
 };
 
     AnimatedImagesControl::AnimatedImagesControl()
@@ -226,7 +226,7 @@ namespace toolkit {
             const sal_Int32 i_accessor, const Sequence< OUString >& i_imageURLs, const Reference< XInterface >& i_context )
         {
             ::cppu::OInterfaceContainerHelper* pContainerListeners = i_broadcaseHelper.getContainer( cppu::UnoType<XContainerListener>::get() );
-            if ( pContainerListeners == NULL )
+            if ( pContainerListeners == nullptr )
                 return;
 
             ContainerEvent aEvent;
@@ -240,7 +240,7 @@ namespace toolkit {
     }
 
 
-    AnimatedImagesControlModel::AnimatedImagesControlModel( Reference< com::sun::star::uno::XComponentContext > const & i_factory )
+    AnimatedImagesControlModel::AnimatedImagesControlModel( Reference< css::uno::XComponentContext > const & i_factory )
         :AnimatedImagesControlModel_Base( i_factory )
         ,m_xData( new AnimatedImagesControlModel_Data )
     {
@@ -351,7 +351,7 @@ namespace toolkit {
 
     ::cppu::IPropertyArrayHelper& SAL_CALL AnimatedImagesControlModel::getInfoHelper()
     {
-        static UnoPropertyArrayHelper* pHelper = NULL;
+        static UnoPropertyArrayHelper* pHelper = nullptr;
         if ( !pHelper )
         {
             Sequence< sal_Int32 > aIDs = ImplGetPropertyIds();

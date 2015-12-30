@@ -213,7 +213,7 @@ public:
     void EndListeningArea(
         const ScRange& rRange, bool bGroupListening, SvtListener* pListener, ScBroadcastArea*& rpArea );
 
-    bool AreaBroadcast( const ScRange& rRange, sal_uLong nHint );
+    bool AreaBroadcast( const ScRange& rRange, sal_uInt32 nHint );
     bool                AreaBroadcast( const ScHint& rHint );
     void                DelBroadcastAreasInRange( const ScRange& rRange );
     void                UpdateRemove( UpdateRefMode eUpdateRefMode,
@@ -279,8 +279,8 @@ private:
     private:
         ScBroadcastAreaSlot**   ppSlots;
 
-        TableSlots( const TableSlots& ) SAL_DELETED_FUNCTION;
-        TableSlots& operator=( const TableSlots& ) SAL_DELETED_FUNCTION;
+        TableSlots( const TableSlots& ) = delete;
+        TableSlots& operator=( const TableSlots& ) = delete;
     };
 
     typedef ::std::map< SCTAB, TableSlots* > TableSlotsMap;
@@ -296,7 +296,7 @@ private:
     ScDocument           *pDoc;
     ScBroadcastArea      *pUpdateChain;
     ScBroadcastArea      *pEOUpdateChain;
-    sal_uLong             nInBulkBroadcast;
+    sal_uInt32            nInBulkBroadcast;
 
     static inline SCSIZE ComputeSlotOffset( const ScAddress& rAddress );
     static void          ComputeAreaPoints( const ScRange& rRange,
@@ -312,7 +312,7 @@ public:
     void EndListeningArea(
         const ScRange& rRange, bool bGroupListening, SvtListener* pListener );
 
-    bool AreaBroadcast( const ScRange& rRange, sal_uLong nHint );
+    bool AreaBroadcast( const ScRange& rRange, sal_uInt32 nHint );
     bool                AreaBroadcast( const ScHint& rHint ) const;
         // return: at least one broadcast occurred
     void                DelBroadcastAreasInRange( const ScRange& rRange );

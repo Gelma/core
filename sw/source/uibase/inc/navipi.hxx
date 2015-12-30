@@ -40,11 +40,12 @@ class SfxObjectShellLock;
 class SfxChildWindowContext;
 class SwNavigationPI;
 enum class RegionMode;
+class SpinField;
 
 class SwNavHelpToolBox : public SwHelpToolBox
 {
-    virtual void    MouseButtonDown(const MouseEvent &rEvt) SAL_OVERRIDE;
-    virtual void    RequestHelp( const HelpEvent& rHEvt ) SAL_OVERRIDE;
+    virtual void    MouseButtonDown(const MouseEvent &rEvt) override;
+    virtual void    RequestHelp( const HelpEvent& rHEvt ) override;
     public:
         SwNavHelpToolBox(SwNavigationPI* pParent, const ResId &rResId);
 };
@@ -56,52 +57,50 @@ class SwNavigationPI : public vcl::Window,
     friend class SwContentTree;
     friend class SwGlobalTree;
 
-    VclPtr<SwNavHelpToolBox>    aContentToolBox;
-    VclPtr<SwHelpToolBox>       aGlobalToolBox;
-    ImageList                   aContentImageList;
-    VclPtr<SwContentTree>       aContentTree;
-    VclPtr<SwGlobalTree>        aGlobalTree;
-    VclPtr<ListBox>             aDocListBox;
-    Idle                aPageChgIdle;
-    OUString            sContentFileName;
-    OUString            aContextArr[3];
-    OUString            aStatusArr[4];
-    Point               aBoxBottomLeft; // Pos when Box is at bottom
+    VclPtr<SwNavHelpToolBox>    m_aContentToolBox;
+    VclPtr<SwHelpToolBox>       m_aGlobalToolBox;
+    ImageList                   m_aContentImageList;
+    VclPtr<SwContentTree>       m_aContentTree;
+    VclPtr<SwGlobalTree>        m_aGlobalTree;
+    VclPtr<ListBox>             m_aDocListBox;
+    Idle                m_aPageChgIdle;
+    OUString            m_sContentFileName;
+    OUString            m_aContextArr[3];
+    OUString            m_aStatusArr[4];
 
-    SfxObjectShellLock  *pxObjectShell;
-    SwView              *pContentView;
-    SwWrtShell          *pContentWrtShell;
-    SwView              *pActContView;
-    SwView              *pCreateView;
-    VclPtr<SfxPopupWindow>      pPopupWindow;
-    VclPtr<SfxPopupWindow>      pFloatingWindow;
+    SfxObjectShellLock  *m_pxObjectShell;
+    SwView              *m_pContentView;
+    SwWrtShell          *m_pContentWrtShell;
+    SwView              *m_pActContView;
+    SwView              *m_pCreateView;
+    VclPtr<SfxPopupWindow>      m_pPopupWindow;
+    VclPtr<SfxPopupWindow>      m_pFloatingWindow;
 
-    SfxChildWindowContext* pContextWin;
+    SfxChildWindowContext* m_pContextWin;
 
-    SwNavigationConfig  *pConfig;
-    SfxBindings         &rBindings;
+    SwNavigationConfig  *m_pConfig;
+    SfxBindings         &m_rBindings;
 
-    long    nDocLBIniHeight;
-    long    nWishWidth;
-    sal_uInt16  nAutoMarkIdx;
-    RegionMode  nRegionMode; // 0 - URL, 1 - region with link 2 - region without link
-    short   nZoomIn;
-    short   nZoomOutInit;
-    short   nZoomOut;
+    long    m_nDocLBIniHeight;
+    long    m_nWishWidth;
+    sal_uInt16  m_nAutoMarkIdx;
+    RegionMode  m_nRegionMode; // 0 - URL, 1 - region with link 2 - region without link
+    short   m_nZoomIn;
+    short   m_nZoomOutInit;
+    short   m_nZoomOut;
 
-    bool    bSmallMode : 1;
-    bool    bIsZoomedIn : 1;
-    bool    bPageCtrlsVisible : 1;
-    bool    bGlobalMode : 1;
+    bool    m_bIsZoomedIn : 1;
+    bool    m_bPageCtrlsVisible : 1;
+    bool    m_bGlobalMode : 1;
 
-    bool _IsZoomedIn() const {return bIsZoomedIn;}
+    bool _IsZoomedIn() const {return m_bIsZoomedIn;}
     void _ZoomOut();
     void _ZoomIn();
 
     void FillBox();
     void MakeMark();
 
-    DECL_LINK( DocListBoxSelectHdl, ListBox * );
+    DECL_LINK_TYPED( DocListBoxSelectHdl, ListBox&, void );
     DECL_LINK_TYPED( ToolBoxSelectHdl, ToolBox *, void );
     DECL_LINK_TYPED( ToolBoxClickHdl, ToolBox *, void );
     DECL_LINK_TYPED( ToolBoxDropdownClickHdl, ToolBox*, void );
@@ -110,7 +109,7 @@ class SwNavigationPI : public vcl::Window,
     DECL_LINK_TYPED( DoneLink, SfxPoolItem *, void );
     DECL_LINK_TYPED( MenuSelectHdl, Menu *, bool );
     DECL_LINK_TYPED( ChangePageHdl, Idle*, void );
-    DECL_LINK( PageEditModifyHdl, void* );
+    DECL_LINK_TYPED( PageEditModifyHdl, SpinField&, void );
     DECL_LINK_TYPED( PopupModeEndHdl, FloatingWindow*, void );
     DECL_LINK_TYPED( ClosePopupWindow, SfxPopupWindow *, void );
     void UsePage(SwWrtShell *);
@@ -123,21 +122,21 @@ class SwNavigationPI : public vcl::Window,
 
 protected:
 
-    virtual         void Resize() SAL_OVERRIDE;
-    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual         void Resize() override;
+    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) override;
 
     // release ObjectShellLock early enough for app end
-    virtual void    Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+    virtual void    Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
     NumEditAction&  GetPageEdit();
     bool            ToggleTree();
-    void            SetGlobalMode(bool bSet) {bGlobalMode = bSet;}
+    void            SetGlobalMode(bool bSet) {m_bGlobalMode = bSet;}
 
 public:
 
     SwNavigationPI(SfxBindings*, SfxChildWindowContext*, vcl::Window*);
     virtual ~SwNavigationPI();
-    virtual void    dispose() SAL_OVERRIDE;
+    virtual void    dispose() override;
 
     void            GotoPage(); // jump to page; bindable function
 
@@ -145,19 +144,19 @@ public:
     void            MoveOutline(sal_uInt16 nSource, sal_uInt16 nTarget, bool bWithCilds);
 
     virtual void    StateChanged( sal_uInt16 nSID, SfxItemState eState,
-                                            const SfxPoolItem* pState ) SAL_OVERRIDE;
+                                            const SfxPoolItem* pState ) override;
 
     static OUString CreateDropFileName( TransferableDataHelper& rData );
     static OUString CleanEntry(const OUString& rEntry);
 
-    RegionMode      GetRegionDropMode() const {return nRegionMode;}
+    RegionMode      GetRegionDropMode() const {return m_nRegionMode;}
     void            SetRegionDropMode(RegionMode nNewMode);
 
     sal_Int8        AcceptDrop( const AcceptDropEvent& rEvt );
     sal_Int8        ExecuteDrop( const ExecuteDropEvent& rEvt );
 
     bool            IsGlobalDoc() const;
-    bool            IsGlobalMode() const {return    bGlobalMode;}
+    bool            IsGlobalMode() const {return    m_bGlobalMode;}
 
     SwView*         GetCreateView() const;
     void            CreateNavigationTool(const Rectangle& rRect, bool bSetFocus, vcl::Window *pParent);

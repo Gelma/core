@@ -7,11 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <o3tl/lru_map.hxx>
-
-
 #include "opengl/win/gdiimpl.hxx"
-
+#include <o3tl/lru_map.hxx>
 #include <win/wincomp.hxx>
 #include <win/saldata.hxx>
 #include <win/salframe.h>
@@ -32,19 +29,9 @@ void WinOpenGLSalGraphicsImpl::copyBits( const SalTwoRect& rPosAry, SalGraphics*
 rtl::Reference<OpenGLContext> WinOpenGLSalGraphicsImpl::CreateWinContext()
 {
     rtl::Reference<OpenGLContext> pContext = OpenGLContext::Create();
-    pContext->requestSingleBufferedRendering();
+    pContext->setVCLOnly();
     pContext->init( mrParent.mhLocalDC, mrParent.mhWnd );
     return pContext;
-}
-
-bool WinOpenGLSalGraphicsImpl::UseContext( const rtl::Reference<OpenGLContext> &pContext )
-{
-    if( !pContext.is() || !pContext->isInitialized() || IsForeignContext( pContext ) )
-        return false;
-    if( IsOffscreen() )
-        return true;
-    return pContext->getOpenGLWindow().hWnd == mrParent.mhWnd &&
-           pContext->getOpenGLWindow().hDC == mrParent.mhLocalDC;
 }
 
 void WinOpenGLSalGraphicsImpl::Init()
@@ -87,19 +74,25 @@ bool WinOpenGLSalGraphicsImpl::TryRenderCachedNativeControl(ControlCacheKey& rCo
 
     const std::unique_ptr<TextureCombo>& pCombo = iterator->second;
 
+    bool bRet = false;
+
     PreDraw();
 
-    OpenGLTexture& rTexture = *pCombo->mpTexture;
-
-    SalTwoRect aPosAry(0,  0,  rTexture.GetWidth(), rTexture.GetHeight(),
-                       nX, nY, rTexture.GetWidth(), rTexture.GetHeight());
-
-    if (pCombo->mpMask)
-        DrawTextureDiff(rTexture, *pCombo->mpMask, aPosAry);
-    else
-        DrawTexture(rTexture, aPosAry);
+    bRet = RenderTextureCombo(*pCombo, nX, nY);
 
     PostDraw();
+
+    return bRet;
+}
+
+bool WinOpenGLSalGraphicsImpl::RenderTextureCombo(TextureCombo& rCombo, int nX, int nY)
+{
+    OpenGLTexture& rTexture = *rCombo.mpTexture;
+
+    SalTwoRect aPosAry(0,   0, rTexture.GetWidth(), rTexture.GetHeight(),
+                       nX, nY, rTexture.GetWidth(), rTexture.GetHeight());
+
+    DrawTextureDiff(rTexture, *rCombo.mpMask, aPosAry);
 
     return true;
 }
@@ -107,24 +100,17 @@ bool WinOpenGLSalGraphicsImpl::TryRenderCachedNativeControl(ControlCacheKey& rCo
 bool WinOpenGLSalGraphicsImpl::RenderCompatibleDC(OpenGLCompatibleDC& rWhite, OpenGLCompatibleDC& rBlack,
                                                   int nX, int nY, TextureCombo& rCombo)
 {
+    bool bRet = false;
+
     PreDraw();
 
     rCombo.mpTexture.reset(rWhite.getTexture());
     rCombo.mpMask.reset(rBlack.getTexture());
 
-
-    if (rCombo.mpTexture && rCombo.mpMask)
-    {
-        OpenGLTexture& rTexture = *rCombo.mpTexture;
-
-        SalTwoRect aPosAry(0,   0, rTexture.GetWidth(), rTexture.GetHeight(),
-                           nX, nY, rTexture.GetWidth(), rTexture.GetHeight());
-
-        DrawTextureDiff(*rCombo.mpTexture, *rCombo.mpMask, aPosAry);
-    }
+    bRet = RenderTextureCombo(rCombo, nX, nY);
 
     PostDraw();
-    return true;
+    return bRet;
 }
 
 bool WinOpenGLSalGraphicsImpl::RenderAndCacheNativeControl(OpenGLCompatibleDC& rWhite, OpenGLCompatibleDC& rBlack,

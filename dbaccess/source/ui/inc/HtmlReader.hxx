@@ -22,9 +22,10 @@
 #include "DExport.hxx"
 #include <svtools/parhtml.hxx>
 #include <editeng/svxenum.hxx>
-#include <tools/stream.hxx>
 #include <com/sun/star/awt/FontDescriptor.hpp>
 #include <com/sun/star/uno/XComponentContext.hpp>
+
+class SvStream;
 
 namespace dbaui
 {
@@ -38,10 +39,10 @@ namespace dbaui
         bool            m_bSDNum;
 
     protected:
-        virtual void        NextToken( int nToken ) SAL_OVERRIDE; // base class
-        virtual bool        CreateTable(int nToken) SAL_OVERRIDE;
+        virtual void        NextToken( int nToken ) override; // base class
+        virtual bool        CreateTable(int nToken) override;
         virtual TypeSelectionPageFactory
-                            getTypeSelectionPageFactory() SAL_OVERRIDE;
+                            getTypeSelectionPageFactory() override;
 
         void                TableDataOn(SvxCellHorJustify& eVal);
         void                TableFontOn(css::awt::FontDescriptor& _rFont,sal_Int32 &_rTextColor);
@@ -55,8 +56,8 @@ namespace dbaui
                     const SharedConnection& _rxConnection,
                     const css::uno::Reference< css::util::XNumberFormatter >& _rxNumberF,
                     const css::uno::Reference< css::uno::XComponentContext >& _rxContext,
-                    const TColumnVector* rList = 0,
-                    const OTypeInfoMap* _pInfoMap = 0);
+                    const TColumnVector* rList = nullptr,
+                    const OTypeInfoMap* _pInfoMap = nullptr);
         // required for automatic type recognition
         OHTMLReader(SvStream& rIn,
                     sal_Int32 nRows,
@@ -67,8 +68,8 @@ namespace dbaui
                     const OTypeInfoMap* _pInfoMap,
                     bool _bAutoIncrementEnabled);
 
-        virtual SvParserState CallParser() SAL_OVERRIDE;// base class
-        virtual void release() SAL_OVERRIDE;
+        virtual SvParserState CallParser() override;// base class
+        virtual void release() override;
         ///< @attention recovers only valid data if 1. CTOR has been used
     };
 

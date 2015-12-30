@@ -45,7 +45,7 @@ public:
 
                             MediaFloater( SfxBindings* pBindings, SfxChildWindow* pCW, vcl::Window* pParent );
                             virtual ~MediaFloater();
-    virtual void            dispose() SAL_OVERRIDE;
+    virtual void            dispose() override;
 
     void                    setURL( const OUString& rURL, const OUString& rReferer, bool bPlayImmediately );
 
@@ -53,22 +53,22 @@ public:
 
 private:
 
-    virtual void            Resize() SAL_OVERRIDE;
-    virtual void            ToggleFloatingMode() SAL_OVERRIDE;
+    virtual void            Resize() override;
+    virtual void            ToggleFloatingMode() override;
 
     MediaWindow*            mpMediaWindow;
 };
 
 inline MediaFloater * getMediaFloater() {
     SfxViewFrame * cur = SfxViewFrame::Current();
-    if (cur != 0) {
+    if (cur != nullptr) {
         SfxChildWindow * win = cur->GetChildWindow(
             MediaPlayer::GetChildWindowId());
-        if (win != 0) {
+        if (win != nullptr) {
             return static_cast<MediaFloater *>(win->GetWindow());
         }
     }
-    return 0;
+    return nullptr;
 }
 
 }

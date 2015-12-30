@@ -12,6 +12,7 @@
 
 #include <boost/noncopyable.hpp>
 #include <rtl/ustring.hxx>
+#include <memory>
 
 class ScDocument;
 class SfxObjectShell;
@@ -30,10 +31,10 @@ struct DocumentLinkManagerImpl;
 
 class DocumentLinkManager : boost::noncopyable
 {
-    DocumentLinkManagerImpl* mpImpl;
+    std::unique_ptr<DocumentLinkManagerImpl> mpImpl;
 
 public:
-    DocumentLinkManager( ScDocument& rDoc, SfxObjectShell* pShell );
+    DocumentLinkManager( SfxObjectShell* pShell );
     ~DocumentLinkManager();
 
     void setDataStream( DataStream* p );

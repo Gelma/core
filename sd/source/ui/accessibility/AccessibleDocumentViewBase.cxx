@@ -68,7 +68,7 @@ AccessibleDocumentViewBase::AccessibleDocumentViewBase (
                                      AccessibleRole::DOCUMENT),
       mpWindow (pSdWindow),
       mxController (rxController),
-      mxModel (NULL),
+      mxModel (nullptr),
       maViewForwarder (
         static_cast<SdrPaintView*>(pViewShell->GetView()),
         *static_cast<OutputDevice*>(pSdWindow))
@@ -113,8 +113,7 @@ void AccessibleDocumentViewBase::Init()
     uno::Reference<drawing::XShapes> xShapeList;
     uno::Reference<drawing::XDrawView> xView (mxController, uno::UNO_QUERY);
     if (xView.is())
-        xShapeList = uno::Reference<drawing::XShapes> (
-            xView->getCurrentPage(), uno::UNO_QUERY);
+        xShapeList.set( xView->getCurrentPage(), uno::UNO_QUERY);
 
     // Register this object as dispose event listener at the model.
     if (mxModel.is())
@@ -136,7 +135,7 @@ void AccessibleDocumentViewBase::Init()
     // Register at VCL Window to be informed of activated and deactivated
     // OLE objects.
     vcl::Window* pWindow = maShapeTreeInfo.GetWindow();
-    if (pWindow != NULL)
+    if (pWindow != nullptr)
     {
         maWindowLink = LINK(
             this, AccessibleDocumentViewBase, WindowChildEventListener);
@@ -173,7 +172,7 @@ IMPL_LINK_TYPED(AccessibleDocumentViewBase, WindowChildEventListener,
                 vcl::Window* pWindow = maShapeTreeInfo.GetWindow();
                 vcl::Window* pDyingWindow = static_cast<vcl::Window*>(
                     rEvent.GetWindow());
-                if (pWindow==pDyingWindow && pWindow!=NULL && maWindowLink.IsSet())
+                if (pWindow==pDyingWindow && pWindow!=nullptr && maWindowLink.IsSet())
                 {
                     pWindow->RemoveChildEventListener (maWindowLink);
                     maWindowLink = Link<VclWindowEvent&,void>();
@@ -186,7 +185,7 @@ IMPL_LINK_TYPED(AccessibleDocumentViewBase, WindowChildEventListener,
                 // A new window has been created.  Is it an OLE object?
                 vcl::Window* pChildWindow = static_cast<vcl::Window*>(
                     rEvent.GetData());
-                if (pChildWindow!=NULL
+                if (pChildWindow!=nullptr
                     && (pChildWindow->GetAccessibleRole()
                         == AccessibleRole::EMBEDDED_OBJECT))
                 {
@@ -201,11 +200,11 @@ IMPL_LINK_TYPED(AccessibleDocumentViewBase, WindowChildEventListener,
                 // object?
                 vcl::Window* pChildWindow = static_cast<vcl::Window*>(
                     rEvent.GetData());
-                if (pChildWindow!=NULL
+                if (pChildWindow!=nullptr
                     && (pChildWindow->GetAccessibleRole()
                         == AccessibleRole::EMBEDDED_OBJECT))
                 {
-                    SetAccessibleOLEObject (NULL);
+                    SetAccessibleOLEObject (nullptr);
                 }
             }
             break;
@@ -302,7 +301,7 @@ uno::Reference<XAccessible > SAL_CALL
 
 awt::Rectangle SAL_CALL
     AccessibleDocumentViewBase::getBounds()
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     ThrowIfDisposed ();
 
@@ -415,14 +414,14 @@ void SAL_CALL
 
 OUString SAL_CALL
     AccessibleDocumentViewBase::getImplementationName()
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     return OUString("AccessibleDocumentViewBase");
 }
 
-::com::sun::star::uno::Sequence< OUString> SAL_CALL
+css::uno::Sequence< OUString> SAL_CALL
     AccessibleDocumentViewBase::getSupportedServiceNames()
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     ThrowIfDisposed ();
     return AccessibleContextBase::getSupportedServiceNames ();
@@ -430,9 +429,9 @@ OUString SAL_CALL
 
 //=====  XTypeProvider  =======================================================
 
-::com::sun::star::uno::Sequence< ::com::sun::star::uno::Type> SAL_CALL
+css::uno::Sequence< css::uno::Type> SAL_CALL
     AccessibleDocumentViewBase::getTypes()
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     ThrowIfDisposed ();
 
@@ -492,7 +491,7 @@ void AccessibleDocumentViewBase::impl_dispose()
     {
         mxWindow->removeWindowListener (this);
         mxWindow->removeFocusListener (this);
-        mxWindow = NULL;
+        mxWindow = nullptr;
     }
 
     // Unregister form the model.
@@ -512,21 +511,21 @@ void AccessibleDocumentViewBase::impl_dispose()
     }
 
     // Propagate change of controller down the shape tree.
-    maShapeTreeInfo.SetModelBroadcaster (NULL);
+    maShapeTreeInfo.SetModelBroadcaster (nullptr);
 
     // Reset the model reference.
-    mxModel = NULL;
+    mxModel = nullptr;
     // Reset the model reference.
-    mxController = NULL;
+    mxController = nullptr;
 
-    maShapeTreeInfo.SetDocumentWindow (NULL);
+    maShapeTreeInfo.SetDocumentWindow (nullptr);
 }
 
 //=====  XEventListener  ======================================================
 
 void SAL_CALL
     AccessibleDocumentViewBase::disposing (const lang::EventObject& rEventObject)
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     ThrowIfDisposed ();
 
@@ -546,7 +545,7 @@ void SAL_CALL
 //=====  XPropertyChangeListener  =============================================
 
 void SAL_CALL AccessibleDocumentViewBase::propertyChange (const beans::PropertyChangeEvent& )
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     // Empty
 }
@@ -554,8 +553,8 @@ void SAL_CALL AccessibleDocumentViewBase::propertyChange (const beans::PropertyC
 //=====  XWindowListener  =====================================================
 
 void SAL_CALL
-    AccessibleDocumentViewBase::windowResized (const ::com::sun::star::awt::WindowEvent& )
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    AccessibleDocumentViewBase::windowResized (const css::awt::WindowEvent& )
+    throw (css::uno::RuntimeException, std::exception)
 {
     if( IsDisposed() )
         return;
@@ -566,8 +565,8 @@ void SAL_CALL
 }
 
 void SAL_CALL
-    AccessibleDocumentViewBase::windowMoved (const ::com::sun::star::awt::WindowEvent& )
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    AccessibleDocumentViewBase::windowMoved (const css::awt::WindowEvent& )
+    throw (css::uno::RuntimeException, std::exception)
 {
     if( IsDisposed() )
         return;
@@ -578,8 +577,8 @@ void SAL_CALL
 }
 
 void SAL_CALL
-    AccessibleDocumentViewBase::windowShown (const ::com::sun::star::lang::EventObject& )
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    AccessibleDocumentViewBase::windowShown (const css::lang::EventObject& )
+    throw (css::uno::RuntimeException, std::exception)
 {
     if( IsDisposed() )
         return;
@@ -590,8 +589,8 @@ void SAL_CALL
 }
 
 void SAL_CALL
-    AccessibleDocumentViewBase::windowHidden (const ::com::sun::star::lang::EventObject& )
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    AccessibleDocumentViewBase::windowHidden (const css::lang::EventObject& )
+    throw (css::uno::RuntimeException, std::exception)
 {
     if( IsDisposed() )
         return;
@@ -603,16 +602,16 @@ void SAL_CALL
 
 //=====  XFocusListener  ==================================================
 
-void AccessibleDocumentViewBase::focusGained (const ::com::sun::star::awt::FocusEvent& e)
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+void AccessibleDocumentViewBase::focusGained (const css::awt::FocusEvent& e)
+    throw (css::uno::RuntimeException, std::exception)
 {
     ThrowIfDisposed ();
     if (e.Source == mxWindow)
         Activated ();
 }
 
-void AccessibleDocumentViewBase::focusLost (const ::com::sun::star::awt::FocusEvent& e)
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+void AccessibleDocumentViewBase::focusLost (const css::awt::FocusEvent& e)
+    throw (css::uno::RuntimeException, std::exception)
 {
     ThrowIfDisposed ();
     if (e.Source == mxWindow)
@@ -632,7 +631,7 @@ void SAL_CALL AccessibleDocumentViewBase::disposing()
 /// Create a name for this view.
 OUString
     AccessibleDocumentViewBase::CreateAccessibleName()
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     return OUString ("AccessibleDocumentViewBase");
 }
@@ -642,7 +641,7 @@ OUString
 */
 OUString
     AccessibleDocumentViewBase::CreateAccessibleDescription()
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     OUString sDescription;
 
@@ -731,15 +730,15 @@ void
 }
 
 uno::Any SAL_CALL AccessibleDocumentViewBase::getExtendedAttributes()
-    throw (::com::sun::star::lang::IndexOutOfBoundsException,
-           ::com::sun::star::uno::RuntimeException,
+    throw (css::lang::IndexOutOfBoundsException,
+           css::uno::RuntimeException,
            std::exception)
 {
     ::osl::MutexGuard aGuard (maMutex);
 
     uno::Any anyAtrribute;
     OUString sValue;
-    if (mpViewShell && mpViewShell->ISA(::sd::DrawViewShell))
+    if (nullptr != dynamic_cast<const ::sd::DrawViewShell* > (mpViewShell))
     {
         ::sd::DrawViewShell* pDrViewSh = static_cast< ::sd::DrawViewShell*>(mpViewShell);
         OUString sDisplay;
@@ -796,7 +795,7 @@ uno::Any SAL_CALL AccessibleDocumentViewBase::getExtendedAttributes()
             sValue += ";";
         }
     }
-    if (mpViewShell && mpViewShell->ISA(::sd::PresentationViewShell))
+    if (dynamic_cast<const ::sd::PresentationViewShell* >(mpViewShell) !=  nullptr )
     {
         ::sd::PresentationViewShell* pPresViewSh = static_cast< ::sd::PresentationViewShell*>(mpViewShell);
         SdPage* pCurrPge = pPresViewSh->getCurrentPage();
@@ -827,7 +826,7 @@ uno::Any SAL_CALL AccessibleDocumentViewBase::getExtendedAttributes()
             }
         }
     }
-    if (mpViewShell && mpViewShell->ISA(::sd::OutlineViewShell) )
+    if (dynamic_cast<const ::sd::OutlineViewShell* >(mpViewShell ) !=  nullptr )
     {
         OUString sName;
         OUString sDisplay;
@@ -856,11 +855,11 @@ uno::Any SAL_CALL AccessibleDocumentViewBase::getExtendedAttributes()
     return anyAtrribute;
 }
 
-::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any >
-        SAL_CALL AccessibleDocumentViewBase::getAccFlowTo(const ::com::sun::star::uno::Any&, sal_Int32 )
-        throw ( ::com::sun::star::uno::RuntimeException, std::exception )
+css::uno::Sequence< css::uno::Any >
+        SAL_CALL AccessibleDocumentViewBase::getAccFlowTo(const css::uno::Any&, sal_Int32 )
+        throw ( css::uno::RuntimeException, std::exception )
 {
-    ::com::sun::star::uno::Sequence< uno::Any> aRet;
+    css::uno::Sequence< uno::Any> aRet;
 
     return aRet;
 }

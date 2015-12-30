@@ -25,6 +25,8 @@
 
 #include <osl/diagnose.h>
 
+#include <algorithm>
+
 ScSortParam::ScSortParam()
 {
     Clear();
@@ -55,7 +57,7 @@ void ScSortParam::Clear()
     nUserIndex = 0;
     bHasHeader=bCaseSens=bUserDef=bNaturalSort = false;
     bByRow=bIncludePattern=bInplace = true;
-    aCollatorLocale = ::com::sun::star::lang::Locale();
+    aCollatorLocale = css::lang::Locale();
     aCollatorAlgorithm.clear();
 
     aKeyState.bDoSort = false;

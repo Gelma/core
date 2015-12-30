@@ -122,11 +122,11 @@ SvxHyperlinkTabPageBase::SvxHyperlinkTabPageBase ( vcl::Window *pParent,
                                                    const OUString& rUIXMLDescription,
                                                    const SfxItemSet& rItemSet )
 :   IconChoicePage          ( pParent, rID, rUIXMLDescription, rItemSet ),
-    mpCbbFrame              ( NULL ),
-    mpLbForm                ( NULL ),
-    mpEdIndication          ( NULL ),
-    mpEdText                ( NULL ),
-    mpBtScript              ( NULL ),
+    mpCbbFrame              ( nullptr ),
+    mpLbForm                ( nullptr ),
+    mpEdIndication          ( nullptr ),
+    mpEdText                ( nullptr ),
+    mpBtScript              ( nullptr ),
     mbIsCloseDisabled       ( false ),
     mpDialog                ( pDlg ),
     mbStdControlsInit       ( false )
@@ -178,8 +178,8 @@ void SvxHyperlinkTabPageBase::InitStdControls ()
         get(mpCbbFrame, "frame");
 
         SfxDispatcher* pDispatch = GetDispatcher();
-        SfxViewFrame* pViewFrame = pDispatch ? pDispatch->GetFrame() : 0;
-        SfxFrame* pFrame = pViewFrame ? &pViewFrame->GetTopFrame() : 0;
+        SfxViewFrame* pViewFrame = pDispatch ? pDispatch->GetFrame() : nullptr;
+        SfxFrame* pFrame = pViewFrame ? &pViewFrame->GetTopFrame() : nullptr;
         if ( pFrame )
         {
             std::unique_ptr<TargetList> pList(new TargetList);
@@ -225,7 +225,7 @@ void SvxHyperlinkTabPageBase::ShowMarkWnd ()
     static_cast<vcl::Window*>(mpMarkWnd)->Show();
 
     // Size of dialog-window in screen pixels
-    Rectangle aDlgRect( mpDialog->GetWindowExtentsRelative( NULL ) );
+    Rectangle aDlgRect( mpDialog->GetWindowExtentsRelative( nullptr ) );
     Point aDlgPos ( aDlgRect.TopLeft() );
     Size aDlgSize ( mpDialog->GetSizePixel () );
 
@@ -379,7 +379,7 @@ IMPL_LINK_NOARG_TYPED(SvxHyperlinkTabPageBase, ClickScriptHdl_Impl, Button*, voi
                                   SFX_EVENT_MOUSEOUT_OBJECT);
 
         if ( bIsInputEnabled )
-            GetParent()->EnableInput( true );
+            GetParent()->EnableInput();
         // execute dlg
         DisableClose( true );
         short nRet = aDlg->Execute();
@@ -422,7 +422,6 @@ OUString SvxHyperlinkTabPageBase::GetSchemeFromURL( const OUString& rStrURL )
     INetURLObject aURL( rStrURL );
     INetProtocol aProtocol = aURL.GetProtocol();
 
-    // #77696#
     // our new INetUrlObject now has the ability
     // to detect if an Url is valid or not :-(
     if ( aProtocol == INetProtocol::NotValid )

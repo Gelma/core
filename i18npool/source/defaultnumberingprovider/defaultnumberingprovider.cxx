@@ -260,7 +260,7 @@ static const sal_Unicode table_PersianWord_decadeX[][8]={
 };
 
 
-DefaultNumberingProvider::DefaultNumberingProvider( const Reference < XComponentContext >& rxContext ) : m_xContext(rxContext),translit(NULL)
+DefaultNumberingProvider::DefaultNumberingProvider( const Reference < XComponentContext >& rxContext ) : m_xContext(rxContext),translit(nullptr)
 {
 
 }
@@ -565,8 +565,8 @@ DefaultNumberingProvider::makeNumberingString( const Sequence<beans::PropertyVal
 
      sal_Int16 natNum = 0;
      sal_Int16 tableSize = 0;
-     const sal_Unicode *table = NULL;     // initialize to avoid compiler warning
-     bool recycleSymbol = false;
+     const sal_Unicode *table = nullptr;     // initialize to avoid compiler warning
+     bool bRecycleSymbol = false;
      Locale locale;
 
      OUString  prefix;
@@ -705,42 +705,42 @@ DefaultNumberingProvider::makeNumberingString( const Sequence<beans::PropertyVal
           case AIU_FULLWIDTH_JA:
               table = table_AIUFullWidth_ja_JP;
               tableSize = SAL_N_ELEMENTS(table_AIUFullWidth_ja_JP);
-              recycleSymbol = true;
+              bRecycleSymbol = true;
               break;
           case AIU_HALFWIDTH_JA:
               table = table_AIUHalfWidth_ja_JP;
               tableSize = SAL_N_ELEMENTS(table_AIUHalfWidth_ja_JP);
-              recycleSymbol = true;
+              bRecycleSymbol = true;
               break;
           case IROHA_FULLWIDTH_JA:
               table = table_IROHAFullWidth_ja_JP;
               tableSize = SAL_N_ELEMENTS(table_IROHAFullWidth_ja_JP);
-              recycleSymbol = true;
+              bRecycleSymbol = true;
               break;
           case IROHA_HALFWIDTH_JA:
               table = table_IROHAHalfWidth_ja_JP;
               tableSize = SAL_N_ELEMENTS(table_IROHAHalfWidth_ja_JP);
-              recycleSymbol = true;
+              bRecycleSymbol = true;
               break;
           case HANGUL_JAMO_KO:
               table = table_HangulJamo_ko;
               tableSize = SAL_N_ELEMENTS(table_HangulJamo_ko);
-              recycleSymbol = true;
+              bRecycleSymbol = true;
               break;
           case HANGUL_SYLLABLE_KO:
               table = table_HangulSyllable_ko;
               tableSize = SAL_N_ELEMENTS(table_HangulSyllable_ko);
-              recycleSymbol = true;
+              bRecycleSymbol = true;
               break;
           case HANGUL_CIRCLED_JAMO_KO:
               table = table_HangulCircledJamo_ko;
               tableSize = SAL_N_ELEMENTS(table_HangulCircledJamo_ko);
-              recycleSymbol = true;
+              bRecycleSymbol = true;
               break;
           case HANGUL_CIRCLED_SYLLABLE_KO:
               table = table_HangulCircledSyllable_ko;
               tableSize = SAL_N_ELEMENTS(table_HangulCircledSyllable_ko);
-              recycleSymbol = true;
+              bRecycleSymbol = true;
               break;
           case CHARS_ARABIC:
               lcl_formatChars(table_Alphabet_ar, SAL_N_ELEMENTS(table_Alphabet_ar), number - 1, result);
@@ -861,7 +861,7 @@ DefaultNumberingProvider::makeNumberingString( const Sequence<beans::PropertyVal
             uno::Reference<NativeNumberSupplierService> xNatNum(new NativeNumberSupplierService);
             result += xNatNum->getNativeNumberString(OUString::number( number ), locale, natNum);
         } else if (tableSize) {
-            if ( number > tableSize && !recycleSymbol)
+            if ( number > tableSize && !bRecycleSymbol)
                 result += OUString::number( number);
             else
                 result += OUString(&table[--number % tableSize], 1);
@@ -897,33 +897,33 @@ static const Supported_NumberingType aSupportedTypes[] =
         {style::NumberingType::CHARS_UPPER_LETTER_N,    "AAA", LANG_ALL},
         {style::NumberingType::CHARS_LOWER_LETTER_N,    "aaa", LANG_ALL},
         {style::NumberingType::NATIVE_NUMBERING,        "Native Numbering", LANG_CJK|LANG_CTL},
-        {style::NumberingType::FULLWIDTH_ARABIC,        NULL, LANG_CJK},
-        {style::NumberingType::CIRCLE_NUMBER,           NULL, LANG_CJK},
-        {style::NumberingType::NUMBER_LOWER_ZH,         NULL, LANG_CJK},
-        {style::NumberingType::NUMBER_UPPER_ZH,         NULL, LANG_CJK},
-        {style::NumberingType::NUMBER_UPPER_ZH_TW,      NULL, LANG_CJK},
-        {style::NumberingType::TIAN_GAN_ZH,             NULL, LANG_CJK},
-        {style::NumberingType::DI_ZI_ZH,                NULL, LANG_CJK},
-        {style::NumberingType::NUMBER_TRADITIONAL_JA,   NULL, LANG_CJK},
-        {style::NumberingType::AIU_FULLWIDTH_JA,        NULL, LANG_CJK},
-        {style::NumberingType::AIU_HALFWIDTH_JA,        NULL, LANG_CJK},
-        {style::NumberingType::IROHA_FULLWIDTH_JA,      NULL, LANG_CJK},
-        {style::NumberingType::IROHA_HALFWIDTH_JA,      NULL, LANG_CJK},
-        {style::NumberingType::NUMBER_UPPER_KO,         NULL, LANG_CJK},
-        {style::NumberingType::NUMBER_HANGUL_KO,        NULL, LANG_CJK},
-        {style::NumberingType::HANGUL_JAMO_KO,          NULL, LANG_CJK},
-        {style::NumberingType::HANGUL_SYLLABLE_KO,      NULL, LANG_CJK},
-        {style::NumberingType::HANGUL_CIRCLED_JAMO_KO,  NULL, LANG_CJK},
-        {style::NumberingType::HANGUL_CIRCLED_SYLLABLE_KO,      NULL, LANG_CJK},
-        {style::NumberingType::CHARS_ARABIC,    NULL, LANG_CTL},
-        {style::NumberingType::CHARS_ARABIC_ABJAD,   NULL, LANG_CTL},
-        {style::NumberingType::CHARS_THAI,      NULL, LANG_CTL},
-        {style::NumberingType::CHARS_HEBREW,    NULL, LANG_CTL},
-        {style::NumberingType::CHARS_NEPALI,    NULL, LANG_CTL},
-        {style::NumberingType::CHARS_KHMER,     NULL, LANG_CTL},
-        {style::NumberingType::CHARS_LAO,       NULL, LANG_CTL},
-        {style::NumberingType::CHARS_MYANMAR,   NULL, LANG_CTL},
-        {style::NumberingType::CHARS_TIBETAN,   NULL, LANG_CTL},
+        {style::NumberingType::FULLWIDTH_ARABIC,        nullptr, LANG_CJK},
+        {style::NumberingType::CIRCLE_NUMBER,           nullptr, LANG_CJK},
+        {style::NumberingType::NUMBER_LOWER_ZH,         nullptr, LANG_CJK},
+        {style::NumberingType::NUMBER_UPPER_ZH,         nullptr, LANG_CJK},
+        {style::NumberingType::NUMBER_UPPER_ZH_TW,      nullptr, LANG_CJK},
+        {style::NumberingType::TIAN_GAN_ZH,             nullptr, LANG_CJK},
+        {style::NumberingType::DI_ZI_ZH,                nullptr, LANG_CJK},
+        {style::NumberingType::NUMBER_TRADITIONAL_JA,   nullptr, LANG_CJK},
+        {style::NumberingType::AIU_FULLWIDTH_JA,        nullptr, LANG_CJK},
+        {style::NumberingType::AIU_HALFWIDTH_JA,        nullptr, LANG_CJK},
+        {style::NumberingType::IROHA_FULLWIDTH_JA,      nullptr, LANG_CJK},
+        {style::NumberingType::IROHA_HALFWIDTH_JA,      nullptr, LANG_CJK},
+        {style::NumberingType::NUMBER_UPPER_KO,         nullptr, LANG_CJK},
+        {style::NumberingType::NUMBER_HANGUL_KO,        nullptr, LANG_CJK},
+        {style::NumberingType::HANGUL_JAMO_KO,          nullptr, LANG_CJK},
+        {style::NumberingType::HANGUL_SYLLABLE_KO,      nullptr, LANG_CJK},
+        {style::NumberingType::HANGUL_CIRCLED_JAMO_KO,  nullptr, LANG_CJK},
+        {style::NumberingType::HANGUL_CIRCLED_SYLLABLE_KO,      nullptr, LANG_CJK},
+        {style::NumberingType::CHARS_ARABIC,    nullptr, LANG_CTL},
+        {style::NumberingType::CHARS_ARABIC_ABJAD,   nullptr, LANG_CTL},
+        {style::NumberingType::CHARS_THAI,      nullptr, LANG_CTL},
+        {style::NumberingType::CHARS_HEBREW,    nullptr, LANG_CTL},
+        {style::NumberingType::CHARS_NEPALI,    nullptr, LANG_CTL},
+        {style::NumberingType::CHARS_KHMER,     nullptr, LANG_CTL},
+        {style::NumberingType::CHARS_LAO,       nullptr, LANG_CTL},
+        {style::NumberingType::CHARS_MYANMAR,   nullptr, LANG_CTL},
+        {style::NumberingType::CHARS_TIBETAN,   nullptr, LANG_CTL},
         {style::NumberingType::CHARS_CYRILLIC_UPPER_LETTER_BG,   C_CYR_A ", " C_CYR_B ", .., " C_CYR_A S_CYR_A ", " C_CYR_A S_CYR_B ", ... (bg)", LANG_ALL},
         {style::NumberingType::CHARS_CYRILLIC_LOWER_LETTER_BG,   S_CYR_A ", " S_CYR_B ", .., " S_CYR_A S_CYR_A ", " S_CYR_A S_CYR_B ", ... (bg)", LANG_ALL},
         {style::NumberingType::CHARS_CYRILLIC_UPPER_LETTER_N_BG, C_CYR_A ", " C_CYR_B ", .., " C_CYR_A S_CYR_A ", " C_CYR_B S_CYR_B ", ... (bg)", LANG_ALL},
@@ -936,8 +936,8 @@ static const Supported_NumberingType aSupportedTypes[] =
         {style::NumberingType::CHARS_CYRILLIC_LOWER_LETTER_SR,   S_CYR_A ", " S_CYR_B ", .., " S_CYR_A S_CYR_A ", " S_CYR_A S_CYR_B ", ... (sr)", LANG_ALL},
         {style::NumberingType::CHARS_CYRILLIC_UPPER_LETTER_N_SR, C_CYR_A ", " C_CYR_B ", .., " C_CYR_A S_CYR_A ", " C_CYR_B S_CYR_B ", ... (sr)", LANG_ALL},
         {style::NumberingType::CHARS_CYRILLIC_LOWER_LETTER_N_SR, S_CYR_A ", " S_CYR_B ", .., " S_CYR_A S_CYR_A ", " S_CYR_B S_CYR_B ", ... (sr)", LANG_ALL},
-        {style::NumberingType::CHARS_PERSIAN,   NULL, LANG_CTL},
-        {style::NumberingType::CHARS_PERSIAN_WORD,   NULL, LANG_CTL},
+        {style::NumberingType::CHARS_PERSIAN,   nullptr, LANG_CTL},
+        {style::NumberingType::CHARS_PERSIAN_WORD,   nullptr, LANG_CTL},
         {style::NumberingType::CHARS_GREEK_UPPER_LETTER,   C_GR_A ", " C_GR_B ", ... (gr)", LANG_ALL},
         {style::NumberingType::CHARS_GREEK_LOWER_LETTER,   S_GR_A ", " S_GR_B ", ... (gr)", LANG_ALL},
 };
@@ -983,7 +983,7 @@ DefaultNumberingProvider::isScriptFlagEnabled(const OUString& aName) throw(Runti
         aArgs[0] <<= aPath;
 
         Reference<XInterface> xInterface = xConfigProvider->createInstanceWithArguments(
-            OUString("com.sun.star.configuration.ConfigurationAccess"), aArgs);
+            "com.sun.star.configuration.ConfigurationAccess", aArgs);
 
         xHierarchicalNameAccess.set(xInterface, UNO_QUERY);
 
@@ -1006,8 +1006,8 @@ Sequence< sal_Int16 > DefaultNumberingProvider::getSupportedNumberingTypes(  )
     Sequence< sal_Int16 > aRet(nSupported_NumberingTypes );
     sal_Int16* pArray = aRet.getArray();
 
-    bool cjkEnabled = isScriptFlagEnabled(OUString("CJK/CJKFont"));
-    bool ctlEnabled = isScriptFlagEnabled(OUString("CTL/CTLFont"));
+    bool cjkEnabled = isScriptFlagEnabled("CJK/CJKFont");
+    bool ctlEnabled = isScriptFlagEnabled("CTL/CTLFont");
 
     for(sal_Int16 i = 0; i < nSupported_NumberingTypes; i++) {
         if ( (aSupportedTypes[i].langOption & LANG_ALL) ||
@@ -1060,8 +1060,7 @@ sal_Bool DefaultNumberingProvider::supportsService(const OUString& rServiceName)
 Sequence< OUString > DefaultNumberingProvider::getSupportedServiceNames()
                 throw( RuntimeException, std::exception )
 {
-    Sequence< OUString > aRet(1);
-    aRet[0] = "com.sun.star.text.DefaultNumberingProvider";
+    Sequence< OUString > aRet { "com.sun.star.text.DefaultNumberingProvider" };
     return aRet;
 }
 

@@ -55,9 +55,9 @@ namespace {
     public:
         ViewRedirector();
         virtual ~ViewRedirector();
-        virtual drawinglayer::primitive2d::Primitive2DSequence createRedirectedPrimitive2DSequence(
+        virtual drawinglayer::primitive2d::Primitive2DContainer createRedirectedPrimitive2DSequence(
             const sdr::contact::ViewObjectContact& rOriginal,
-                const sdr::contact::DisplayInfo& rDisplayInfo) SAL_OVERRIDE;
+            const sdr::contact::DisplayInfo& rDisplayInfo) override;
     };
 }
 
@@ -67,11 +67,11 @@ PreviewRenderer::PreviewRenderer (
     OutputDevice* pTemplate,
     const bool bHasFrame)
     : mpPreviewDevice (VclPtr<VirtualDevice>::Create()),
-      mpDocShellOfView(NULL),
+      mpDocShellOfView(nullptr),
       maFrameColor (svtools::ColorConfig().GetColorValue(svtools::DOCBOUNDARIES).nColor),
       mbHasFrame(bHasFrame)
 {
-    if (pTemplate != NULL)
+    if (pTemplate != nullptr)
     {
         mpPreviewDevice->SetDigitLanguage (pTemplate->GetDigitLanguage());
         mpPreviewDevice->SetBackground(pTemplate->GetBackground());
@@ -85,7 +85,7 @@ PreviewRenderer::PreviewRenderer (
 
 PreviewRenderer::~PreviewRenderer()
 {
-    if (mpDocShellOfView != NULL)
+    if (mpDocShellOfView != nullptr)
         EndListening (*mpDocShellOfView);
 }
 
@@ -96,7 +96,7 @@ Image PreviewRenderer::RenderPage (
     const bool bObeyHighContrastMode,
     const bool bDisplayPresentationObjects)
 {
-    if (pPage != NULL)
+    if (pPage != nullptr)
     {
         const Size aPageModelSize (pPage->GetSize());
         const double nAspectRatio (
@@ -124,7 +124,7 @@ Image PreviewRenderer::RenderPage (
 {
     Image aPreview;
 
-    if (pPage != NULL)
+    if (pPage != nullptr)
     {
         try
         {
@@ -142,7 +142,7 @@ Image PreviewRenderer::RenderPage (
                 Cleanup();
             }
         }
-        catch (const com::sun::star::uno::Exception&)
+        catch (const css::uno::Exception&)
         {
             DBG_UNHANDLED_EXCEPTION();
         }
@@ -201,7 +201,7 @@ Image PreviewRenderer::RenderSubstitution (
             mpPreviewDevice->PixelToLogic(Point(0,0)),
             mpPreviewDevice->PixelToLogic(aSize)));
     }
-    catch (const com::sun::star::uno::Exception&)
+    catch (const css::uno::Exception&)
     {
         DBG_UNHANDLED_EXCEPTION();
     }
@@ -214,11 +214,11 @@ bool PreviewRenderer::Initialize (
     const Size& rPixelSize,
     const bool bObeyHighContrastMode)
 {
-    if (pPage == NULL)
+    if (pPage == nullptr)
         return false;
 
     SdrModel* pModel = pPage->GetModel();
-    if (pModel == NULL)
+    if (pModel == nullptr)
         return false;
 
     SetupOutputSize(*pPage, rPixelSize);
@@ -229,7 +229,7 @@ bool PreviewRenderer::Initialize (
 
     // Create view
     ProvideView (pDocShell);
-    if (mpView.get() == NULL)
+    if (mpView.get() == nullptr)
         return false;
 
     // Adjust contrast mode.
@@ -254,7 +254,7 @@ bool PreviewRenderer::Initialize (
     // Make sure that a page view exists.
     SdrPageView* pPageView = mpView->GetSdrPageView();
 
-    if (pPageView == NULL)
+    if (pPageView == nullptr)
         return false;
 
     // #i121224# No need to set SetApplicationBackgroundColor (which is the color
@@ -275,7 +275,7 @@ bool PreviewRenderer::Initialize (
     }
 
     pPageView->SetApplicationDocumentColor(aApplicationDocumentColor);
-    SdrOutliner& rOutliner(pDocument->GetDrawOutliner(NULL));
+    SdrOutliner& rOutliner(pDocument->GetDrawOutliner());
     rOutliner.SetBackgroundColor(aApplicationDocumentColor);
     rOutliner.SetDefaultLanguage(pDocument->GetLanguage(EE_CHAR_LANGUAGE));
     mpPreviewDevice->SetBackground(Wallpaper(aApplicationDocumentColor));
@@ -298,9 +298,9 @@ void PreviewRenderer::PaintPage (
     vcl::Region aRegion (aPaintRectangle);
 
     // Turn off online spelling and redlining.
-    SdrOutliner* pOutliner = NULL;
+    SdrOutliner* pOutliner = nullptr;
     EEControlBits nSavedControlWord = EEControlBits::NONE;
-    if (mpDocShellOfView!=NULL && mpDocShellOfView->GetDoc()!=NULL)
+    if (mpDocShellOfView!=nullptr && mpDocShellOfView->GetDoc()!=nullptr)
     {
         pOutliner = &mpDocShellOfView->GetDoc()->GetDrawOutliner();
         nSavedControlWord = pOutliner->GetControlWord();
@@ -316,13 +316,13 @@ void PreviewRenderer::PaintPage (
     {
         mpView->CompleteRedraw(mpPreviewDevice.get(), aRegion, pRedirector.get());
     }
-    catch (const ::com::sun::star::uno::Exception&)
+    catch (const css::uno::Exception&)
     {
         DBG_UNHANDLED_EXCEPTION();
     }
 
     // Restore the previous online spelling and redlining states.
-    if (pOutliner != NULL)
+    if (pOutliner != nullptr)
         pOutliner->SetControlWord(nSavedControlWord);
 }
 
@@ -410,15 +410,15 @@ void PreviewRenderer::ProvideView (DrawDocShell* pDocShell)
 
         // Switch our attention, i.e. listening for DYING events, to
         // the new doc shell.
-        if (mpDocShellOfView != NULL)
+        if (mpDocShellOfView != nullptr)
             EndListening (*mpDocShellOfView);
         mpDocShellOfView = pDocShell;
-        if (mpDocShellOfView != NULL)
+        if (mpDocShellOfView != nullptr)
             StartListening (*mpDocShellOfView);
     }
-    if (mpView.get() == NULL)
+    if (mpView.get() == nullptr)
     {
-        mpView.reset (new DrawView (pDocShell, mpPreviewDevice.get(), NULL));
+        mpView.reset (new DrawView (pDocShell, mpPreviewDevice.get(), nullptr));
     }
     mpView->SetPreviewRenderer(true);
 #if 1
@@ -491,15 +491,18 @@ Image PreviewRenderer::ScaleBitmap (
 
 void PreviewRenderer::Notify(SfxBroadcaster&, const SfxHint& rHint)
 {
+    if (!mpDocShellOfView)
+        return;
+
     const SfxSimpleHint* pSimpleHint = dynamic_cast<const SfxSimpleHint*>(&rHint);
-    if (pSimpleHint && mpDocShellOfView && pSimpleHint->GetId() == SFX_HINT_DYING)
+    if (pSimpleHint && pSimpleHint->GetId() == SFX_HINT_DYING)
     {
         // The doc shell is dying.  Our view uses its item pool and
         // has to be destroyed as well.  The next call to
         // ProvideView will create a new one (for another
         // doc shell, of course.)
         mpView.reset();
-        mpDocShellOfView = NULL;
+        mpDocShellOfView = nullptr;
     }
 }
 
@@ -515,13 +518,13 @@ ViewRedirector::~ViewRedirector()
 {
 }
 
-drawinglayer::primitive2d::Primitive2DSequence ViewRedirector::createRedirectedPrimitive2DSequence(
+drawinglayer::primitive2d::Primitive2DContainer ViewRedirector::createRedirectedPrimitive2DSequence(
     const sdr::contact::ViewObjectContact& rOriginal,
     const sdr::contact::DisplayInfo& rDisplayInfo)
 {
     SdrObject* pObject = rOriginal.GetViewContact().TryToGetSdrObject();
 
-    if (pObject==NULL || pObject->GetPage() == NULL)
+    if (pObject==nullptr || pObject->GetPage() == nullptr)
     {
         // not a SdrObject visualisation (maybe e.g. page) or no page
         return sdr::contact::ViewObjectContactRedirector::createRedirectedPrimitive2DSequence(
@@ -534,11 +537,11 @@ drawinglayer::primitive2d::Primitive2DSequence ViewRedirector::createRedirectedP
     if ( ! bDoCreateGeometry
         && (pObject->GetObjInventor() != SdrInventor || pObject->GetObjIdentifier() != OBJ_PAGE))
     {
-        return drawinglayer::primitive2d::Primitive2DSequence();
+        return drawinglayer::primitive2d::Primitive2DContainer();
     }
 
     if (pObject->IsEmptyPresObj())
-        return drawinglayer::primitive2d::Primitive2DSequence();
+        return drawinglayer::primitive2d::Primitive2DContainer();
 
     return sdr::contact::ViewObjectContactRedirector::createRedirectedPrimitive2DSequence(
         rOriginal,

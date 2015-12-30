@@ -24,7 +24,7 @@
 #include <com/sun/star/uno/XComponentContext.hpp>
 #include <vbahelper/vbahelperinterface.hxx>
 
-typedef InheritedHelperInterfaceImpl1< ov::excel::XOutline > ScVbaOutline_BASE;
+typedef InheritedHelperInterfaceWeakImpl< ov::excel::XOutline > ScVbaOutline_BASE;
 
 class ScVbaOutline :  public ScVbaOutline_BASE
 {
@@ -35,10 +35,10 @@ public:
     {}
     virtual ~ScVbaOutline(){}
 
-    virtual void SAL_CALL ShowLevels( const css::uno::Any& RowLevels, const css::uno::Any& ColumnLevels ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE ;
+    virtual void SAL_CALL ShowLevels( const css::uno::Any& RowLevels, const css::uno::Any& ColumnLevels ) throw (css::uno::RuntimeException, std::exception) override ;
     // XHelperInterface
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 #endif
 

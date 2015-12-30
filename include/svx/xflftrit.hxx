@@ -34,21 +34,21 @@ private:
     bool                    bEnabled;
 
 public:
-                            TYPEINFO_OVERRIDE();
 
+                            static SfxPoolItem* CreateDefault();
                             XFillFloatTransparenceItem();
                             XFillFloatTransparenceItem(const OUString& rName, const XGradient& rGradient, bool bEnable = true );
                             XFillFloatTransparenceItem(SfxItemPool* pPool, const XGradient& rTheGradient, bool bEnable = true );
                             XFillFloatTransparenceItem( const XFillFloatTransparenceItem& rItem );
 
-    virtual bool            operator==( const SfxPoolItem& rItem ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = NULL ) const SAL_OVERRIDE;
-    virtual sal_uInt16          GetVersion( sal_uInt16 nFileFormatVersion ) const SAL_OVERRIDE;
-    virtual bool            QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool            PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& rItem ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = nullptr ) const override;
+    virtual sal_uInt16          GetVersion( sal_uInt16 nFileFormatVersion ) const override;
+    virtual bool            QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool            PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
     virtual bool GetPresentation( SfxItemPresentation ePres, SfxMapUnit eCoreMetric,
-                                    SfxMapUnit ePresMetric, OUString &rText, const IntlWrapper * pIntlWrapper = 0 ) const SAL_OVERRIDE;
+                                    SfxMapUnit ePresMetric, OUString &rText, const IntlWrapper * pIntlWrapper = nullptr ) const override;
 
     bool                    IsEnabled() const { return bEnabled; }
     void                    SetEnabled( bool bEnable ) { bEnabled = bEnable; }

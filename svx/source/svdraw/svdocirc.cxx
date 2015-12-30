@@ -60,7 +60,7 @@ Point GetAnglePnt(const Rectangle& rR, long nAngle)
     long nMaxRad=((nWdt>nHgt ? nWdt : nHgt)+1) /2;
     double a;
     a=nAngle*nPi180;
-    Point aRetval(Round(cos(a)*nMaxRad),-Round(sin(a)*nMaxRad));
+    Point aRetval(svx::Round(cos(a)*nMaxRad),-svx::Round(sin(a)*nMaxRad));
     if (nWdt==0) aRetval.X()=0;
     if (nHgt==0) aRetval.Y()=0;
     if (nWdt!=nHgt) {
@@ -106,7 +106,6 @@ sdr::contact::ViewContact* SdrCircObj::CreateObjectSpecificViewContact()
 
 
 
-TYPEINIT1(SdrCircObj,SdrRectObj);
 
 SdrCircObj::SdrCircObj(SdrObjKind eNewKind)
 {
@@ -356,7 +355,6 @@ struct ImpCircUser : public SdrDragStatUserData
 {
     Rectangle                   aR;
     Point                       aCenter;
-    Point                       aRadius;
     Point                       aP1;
     Point                       aP2;
     long                        nMaxRad;
@@ -364,8 +362,6 @@ struct ImpCircUser : public SdrDragStatUserData
     long                        nWdt;
     long                        nStart;
     long                        nEnd;
-    long                        nAngle;
-    bool                        bRight; // not yet implemented
 
 public:
     ImpCircUser()
@@ -373,9 +369,7 @@ public:
         nHgt(0),
         nWdt(0),
         nStart(0),
-        nEnd(0),
-        nAngle(0),
-        bRight(false)
+        nEnd(0)
     {}
     void SetCreateParams(SdrDragStat& rStat);
 };
@@ -399,7 +393,7 @@ SdrHdl* SdrCircObj::GetHdl(sal_uInt32 nHdlNum) const
         nHdlNum += 2L;
     }
 
-    SdrHdl* pH = NULL;
+    SdrHdl* pH = nullptr;
     Point aPnt;
     SdrHdlKind eLocalKind(HDL_MOVE);
     sal_uInt32 nPNum(0);
@@ -639,7 +633,7 @@ void ImpCircUser::SetCreateParams(SdrDragStat& rStat)
             if (nWdt!=0) aP.X()=aP.X()*nHgt/nWdt;
         }
         nStart=NormAngle360(GetAngle(aP));
-        if (rStat.GetView()!=NULL && rStat.GetView()->IsAngleSnapEnabled()) {
+        if (rStat.GetView()!=nullptr && rStat.GetView()->IsAngleSnapEnabled()) {
             long nSA=rStat.GetView()->GetSnapAngle();
             if (nSA!=0) { // angle snapping
                 nStart+=nSA/2;
@@ -660,7 +654,7 @@ void ImpCircUser::SetCreateParams(SdrDragStat& rStat)
             aP.X()=BigMulDiv(aP.X(),nHgt,nWdt);
         }
         nEnd=NormAngle360(GetAngle(aP));
-        if (rStat.GetView()!=NULL && rStat.GetView()->IsAngleSnapEnabled()) {
+        if (rStat.GetView()!=nullptr && rStat.GetView()->IsAngleSnapEnabled()) {
             long nSA=rStat.GetView()->GetSnapAngle();
             if (nSA!=0) { // angle snapping
                 nEnd+=nSA/2;
@@ -676,7 +670,7 @@ void ImpCircUser::SetCreateParams(SdrDragStat& rStat)
 void SdrCircObj::ImpSetCreateParams(SdrDragStat& rStat) const
 {
     ImpCircUser* pU=static_cast<ImpCircUser*>(rStat.GetUser());
-    if (pU==NULL) {
+    if (pU==nullptr) {
         pU=new ImpCircUser;
         rStat.SetUser(pU);
     }
@@ -746,7 +740,7 @@ bool SdrCircObj::EndCreate(SdrDragStat& rStat, SdrCreateCmd eCmd)
     ImpSetCircInfoToAttr();
     if (bRet) {
         delete pU;
-        rStat.SetUser(NULL);
+        rStat.SetUser(nullptr);
     }
     return bRet;
 }
@@ -755,7 +749,7 @@ void SdrCircObj::BrkCreate(SdrDragStat& rStat)
 {
     ImpCircUser* pU=static_cast<ImpCircUser*>(rStat.GetUser());
     delete pU;
-    rStat.SetUser(NULL);
+    rStat.SetUser(nullptr);
 }
 
 bool SdrCircObj::BckCreate(SdrDragStat& rStat)
@@ -884,13 +878,13 @@ void SdrCircObj::NbcMirror(const Point& rRef1, const Point& rRef2)
         double a;
         // starting point
         a=nStartAngle*nPi180;
-        aTmpPt1=Point(Round(cos(a)*nMaxRad),-Round(sin(a)*nMaxRad));
+        aTmpPt1=Point(svx::Round(cos(a)*nMaxRad),-svx::Round(sin(a)*nMaxRad));
         if (nWdt==0) aTmpPt1.X()=0;
         if (nHgt==0) aTmpPt1.Y()=0;
         aTmpPt1+=aCenter;
         // finishing point
         a=nEndAngle*nPi180;
-        aTmpPt2=Point(Round(cos(a)*nMaxRad),-Round(sin(a)*nMaxRad));
+        aTmpPt2=Point(svx::Round(cos(a)*nMaxRad),-svx::Round(sin(a)*nMaxRad));
         if (nWdt==0) aTmpPt2.X()=0;
         if (nHgt==0) aTmpPt2.Y()=0;
         aTmpPt2+=aCenter;
@@ -1002,7 +996,7 @@ void SdrCircObj::TakeUnrotatedSnapRect(Rectangle& rRect) const
         }
     }
     if (aGeo.nShearAngle!=0) {
-        long nDst=Round((rRect.Bottom()-rRect.Top())*aGeo.nTan);
+        long nDst=svx::Round((rRect.Bottom()-rRect.Top())*aGeo.nTan);
         if (aGeo.nShearAngle>0) {
             Point aRef(rRect.TopLeft());
             rRect.Left()-=nDst;

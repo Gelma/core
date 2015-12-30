@@ -37,6 +37,8 @@ $(call gb_ExternalProject_get_state_target,python3,build) :
 			/p:Platform=$(if $(filter INTEL,$(CPUNAME)),Win32,x64) \
 			$(if $(filter 120,$(VCVER)),/p:PlatformToolset=v120 \
 				/p:VisualStudioVersion=12.0 /ToolsVersion:12.0) \
+			$(if $(filter 140,$(VCVER)),/p:PlatformToolset=v140 \
+				/p:VisualStudioVersion=14.0 /ToolsVersion:14.0) \
 	,PCBuild)
 
 else
@@ -136,8 +138,7 @@ $(call gb_ExternalProject_get_state_target,python3,fixinstallnames) : $(call gb_
 $(call gb_ExternalProject_get_state_target,python3,executables) : $(call gb_ExternalProject_get_state_target,python3,build)
 	cd $(python3_fw_prefix)/Versions/$(PYTHON_VERSION_MAJOR).$(PYTHON_VERSION_MINOR)/bin ; \
 	for file in python$(PYTHON_VERSION_MAJOR).$(PYTHON_VERSION_MINOR) \
-	            python$(PYTHON_VERSION_MAJOR).$(PYTHON_VERSION_MINOR)m \
-	            pythonw$(PYTHON_VERSION_MAJOR).$(PYTHON_VERSION_MINOR) ; do \
+	            python$(PYTHON_VERSION_MAJOR).$(PYTHON_VERSION_MINOR)m ; do \
 	$(INSTALL_NAME_TOOL) -change \
 		$(python3_fw_prefix)/Versions/$(PYTHON_VERSION_MAJOR).$(PYTHON_VERSION_MINOR)/LibreOfficePython \
 		@executable_path/../LibreOfficePython $$file ; done

@@ -35,38 +35,38 @@ namespace rptxml
             sal_Int32 nHeight;
             sal_Int32 nColSpan;
             sal_Int32 nRowSpan;
-            ::std::vector< ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportComponent> > xElements;
+            ::std::vector< css::uno::Reference< css::report::XReportComponent> > xElements;
             TCell() : nWidth(0),nHeight(0),nColSpan(1),nRowSpan(1){}
         };
     private:
         ::std::vector< ::std::vector<TCell> >                                               m_aGrid;
         ::std::vector<sal_Int32>                                                            m_aHeight;
         ::std::vector<sal_Int32>                                                            m_aWidth;
-        ::com::sun::star::uno::Reference< ::com::sun::star::report::XSection >              m_xSection;
-        OUString                                                                     m_sStyleName;
+        css::uno::Reference< css::report::XSection >                                        m_xSection;
+        OUString                                                                            m_sStyleName;
         sal_Int32                                                                           m_nColSpan;
         sal_Int32                                                                           m_nRowSpan;
         sal_Int32                                                                           m_nRowIndex;
         sal_Int32                                                                           m_nColumnIndex;
         ORptFilter& GetOwnImport();
 
-        OXMLTable(const OXMLTable&) SAL_DELETED_FUNCTION;
-        void operator =(const OXMLTable&) SAL_DELETED_FUNCTION;
+        OXMLTable(const OXMLTable&) = delete;
+        void operator =(const OXMLTable&) = delete;
     public:
 
         OXMLTable( ORptFilter& rImport
                     ,sal_uInt16 nPrfx
                     ,const OUString& rLName
-                    ,const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList
-                    ,const ::com::sun::star::uno::Reference< ::com::sun::star::report::XSection >& _xSection
+                    ,const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList
+                    ,const css::uno::Reference< css::report::XSection >& _xSection
                     );
         virtual ~OXMLTable();
 
         virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                     const OUString& rLocalName,
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+                    const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
 
-        virtual void EndElement() SAL_OVERRIDE;
+        virtual void EndElement() override;
 
         inline void addHeight(sal_Int32 _nHeight)   { m_aHeight.push_back( _nHeight ); }
         inline void addWidth(sal_Int32 _nWidth)     { m_aWidth.push_back( _nWidth ); }
@@ -77,9 +77,9 @@ namespace rptxml
         void incrementRowIndex();
         inline void incrementColumnIndex()  { ++m_nColumnIndex; }
 
-        void addCell(const ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportComponent>& _xElement);
+        void addCell(const css::uno::Reference< css::report::XReportComponent>& _xElement);
 
-        inline ::com::sun::star::uno::Reference< ::com::sun::star::report::XSection > getSection() const { return m_xSection; }
+        inline css::uno::Reference< css::report::XSection > getSection() const { return m_xSection; }
     };
 
 } // namespace rptxml

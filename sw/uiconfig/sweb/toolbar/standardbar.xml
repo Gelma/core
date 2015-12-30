@@ -21,9 +21,9 @@
  <toolbar:toolbaritem xlink:href=".uno:OpenUrl" toolbar:visible="false"/>
  <toolbar:toolbaritem xlink:href=".uno:AddDirect" toolbar:helpid="5537"/>
  <toolbar:toolbaritem xlink:href=".uno:NewDoc" toolbar:visible="false" toolbar:helpid="5500"/>
- <toolbar:toolbaritem xlink:href=".uno:Open" toolbar:style="dropdown"/>
+ <toolbar:toolbaritem xlink:href=".uno:Open"/>
  <toolbar:toolbaritem xlink:href=".uno:Save" toolbar:helpid="5505"/>
- <toolbar:toolbaritem xlink:href=".uno:SaveAs" toolbar:helpid="5502"/>
+ <toolbar:toolbaritem xlink:href=".uno:SaveAs" toolbar:helpid="5502" toolbar:visible="false"/>
  <toolbar:toolbaritem xlink:href=".uno:SendMail" toolbar:visible="false" toolbar:helpid="5331"/>
  <toolbar:toolbarseparator/>
  <toolbar:toolbaritem xlink:href=".uno:EditDoc" toolbar:helpid="6312" toolbar:visible="false"/>
@@ -58,13 +58,12 @@
  <toolbar:toolbaritem xlink:href=".uno:InsertBookmark"/>
  <toolbar:toolbaritem xlink:href=".uno:InsertFootnote"/>
  <toolbar:toolbarseparator/>
- <toolbar:toolbaritem xlink:href=".uno:InsertPlugin"/>
  <toolbar:toolbaritem xlink:href=".uno:InsertScript" toolbar:visible="false"/>
  <toolbar:toolbaritem xlink:href=".uno:InsertFieldCtrl" toolbar:visible="false"/>
  <toolbar:toolbaritem xlink:href=".uno:InsertObjectChart"/>
  <toolbar:toolbaritem xlink:href=".uno:InsertAnnotation"/>
  <toolbar:toolbarseparator/>
- <toolbar:toolbaritem xlink:href=".uno:SetDocumentProperties" toolbar:text="Properties"/>
+ <toolbar:toolbaritem xlink:href=".uno:SetDocumentProperties"/>
  <toolbar:toolbarseparator/>
  <toolbar:toolbaritem xlink:href=".uno:ViewDataSourceBrowser" toolbar:visible="false" toolbar:helpid="6660"/>
  <toolbar:toolbaritem xlink:href=".uno:Zoom" toolbar:visible="false"/>

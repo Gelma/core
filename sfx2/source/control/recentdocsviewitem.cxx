@@ -15,6 +15,7 @@
 #include <drawinglayer/primitive2d/discretebitmapprimitive2d.hxx>
 #include <drawinglayer/processor2d/baseprocessor2d.hxx>
 #include <i18nutil/paper.hxx>
+#include <officecfg/Office/Common.hxx>
 #include <sfx2/recentdocsview.hxx>
 #include <sfx2/sfxresid.hxx>
 #include <sfx2/templateabstractview.hxx>
@@ -50,7 +51,9 @@ RecentDocsViewItem::RecentDocsViewItem(ThumbnailView &rView, const OUString &rUR
         aTitle = aURLObj.GetName(INetURLObject::DECODE_WITH_CHARSET);
 
     BitmapEx aThumbnail(rThumbnail);
-    if (aThumbnail.IsEmpty() && aURLObj.GetProtocol() == INetProtocol::File)
+    //fdo#74834: only load thumbnail if the corresponding option is not disabled in the configuration
+    if (aThumbnail.IsEmpty() && aURLObj.GetProtocol() == INetProtocol::File &&
+            officecfg::Office::Common::History::RecentDocsThumbnail::get())
         aThumbnail = ThumbnailView::readThumbnail(rURL);
 
     if (aThumbnail.IsEmpty())
@@ -149,7 +152,7 @@ void RecentDocsViewItem::Paint(drawinglayer::processor2d::BaseProcessor2D *pProc
     // paint the remove icon when highlighted
     if (isHighlighted())
     {
-        drawinglayer::primitive2d::Primitive2DSequence aSeq(1);
+        drawinglayer::primitive2d::Primitive2DContainer aSeq(1);
 
         Point aIconPos(getRemoveIconArea().TopLeft());
 
@@ -191,7 +194,7 @@ void RecentDocsViewItem::OpenDocument()
     uno::Reference<frame::XFrame> xActiveFrame = xDesktop->getActiveFrame();
 
     //osl::ClearableMutexGuard aLock(m_aMutex);
-    xDispatchProvider = Reference<frame::XDispatchProvider>(xActiveFrame, UNO_QUERY);
+    xDispatchProvider.set(xActiveFrame, UNO_QUERY);
     //aLock.clear();
 
     aTargetURL.Complete = maURL;
@@ -219,7 +222,7 @@ void RecentDocsViewItem::OpenDocument()
         pLoadRecentFile->aTargetURL = aTargetURL;
         pLoadRecentFile->aArgSeq = aArgsList;
 
-        Application::PostUserEvent(LINK(0, RecentDocsView, ExecuteHdl_Impl), pLoadRecentFile, true);
+        Application::PostUserEvent(LINK(nullptr, RecentDocsView, ExecuteHdl_Impl), pLoadRecentFile, true);
     }
 }
 

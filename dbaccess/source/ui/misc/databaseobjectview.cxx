@@ -141,7 +141,7 @@ namespace dbaui
                 Reference< XComponentLoader > xFrameLoader( m_xFrameLoader, UNO_QUERY_THROW );
                 xReturn = xFrameLoader->loadComponentFromURL(
                     m_sComponentURL,
-                    OUString("_self"),
+                    "_self",
                     0,
                     i_rDispatchArgs.getPropertyValues()
                 );
@@ -188,7 +188,7 @@ namespace dbaui
         DatabaseObjectView::fillDispatchArgs( i_rDispatchArgs, _aDataSource, _rObjectName );
 
         const bool bIncludeQueryName = !_rObjectName.isEmpty();
-        const bool bGraphicalDesign = i_rDispatchArgs.getOrDefault( OUString(PROPERTY_GRAPHICAL_DESIGN), sal_True );
+        const bool bGraphicalDesign = i_rDispatchArgs.getOrDefault( PROPERTY_GRAPHICAL_DESIGN, sal_True );
         const bool bEditViewAsSQLCommand = ( m_nCommandType == CommandType::TABLE ) && !bGraphicalDesign;
 
         i_rDispatchArgs.put( OUString(PROPERTY_COMMAND_TYPE), m_nCommandType );
@@ -240,7 +240,7 @@ namespace dbaui
         {
             try { AsyncDialogExecutor::executeModalDialogAsync( xDialog ); }
             catch( const Exception& ) { DBG_UNHANDLED_EXCEPTION(); }
-            return NULL;
+            return nullptr;
         }
 
         Reference< XComponent > xDesignerComponent( xDesigner, UNO_QUERY );

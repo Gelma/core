@@ -188,10 +188,9 @@ inline void * ObjectFunction::operator new ( size_t nSize )
     if (pMem != 0)
     {
         DWORD old_protect;
-#if OSL_DEBUG_LEVEL > 0
         BOOL success =
-#endif
-        VirtualProtect( pMem, nSize, PAGE_EXECUTE_READWRITE, &old_protect );
+            VirtualProtect(pMem, nSize, PAGE_EXECUTE_READWRITE, &old_protect);
+        (void) success;
         assert(success && "VirtualProtect() failed!");
     }
     return pMem;
@@ -293,8 +292,8 @@ struct ExceptionType
     }
 
     // Copy assignment is forbidden and not implemented.
-    ExceptionType (const ExceptionType &) SAL_DELETED_FUNCTION;
-    ExceptionType & operator= (const ExceptionType &) SAL_DELETED_FUNCTION;
+    ExceptionType (const ExceptionType &) = delete;
+    ExceptionType & operator= (const ExceptionType &) = delete;
 };
 
 struct RaiseInfo

@@ -216,7 +216,7 @@ public:
     void EncryptBytes( SvStream& rStrm, ::std::vector<sal_uInt8>& aBytes );
 
 private:
-    void Init( const ::com::sun::star::uno::Sequence< ::com::sun::star::beans::NamedValue >& aEncryptionData );
+    void Init( const css::uno::Sequence< css::beans::NamedValue >& aEncryptionData );
 
     static sal_uInt32 GetBlockPos( sal_Size nStrmPos );
     static sal_uInt16 GetOffsetInBlock( sal_Size nStrmPos );
@@ -233,7 +233,7 @@ private:
 
 // `s.GetChar(0) != 0` needed because some strings on export only contain NULL.
 #define XESTRING_TO_PSZ(s) \
-    (s.Len() && s.GetChar( 0 ) != 0 ? XclXmlUtils::ToOString( s ).getStr() : NULL)
+    (s.Len() && s.GetChar( 0 ) != 0 ? XclXmlUtils::ToOString( s ).getStr() : nullptr)
 
 class ScAddress;
 class ScDocShell;
@@ -252,8 +252,8 @@ class XclXmlUtils
 {
     XclXmlUtils();
     ~XclXmlUtils();
-    XclXmlUtils(const XclXmlUtils&) SAL_DELETED_FUNCTION;
-    XclXmlUtils& operator=(const XclXmlUtils&) SAL_DELETED_FUNCTION;
+    XclXmlUtils(const XclXmlUtils&) = delete;
+    XclXmlUtils& operator=(const XclXmlUtils&) = delete;
 public:
     static void                     GetFormulaTypeAndValue( ScFormulaCell& rCell, const char*& sType, OUString& rValue);
     static OUString          GetStreamName( const char* sStreamDir, const char* sStream, sal_Int32 nId );
@@ -293,7 +293,7 @@ public:
 class XclExpXmlStream : public oox::core::XmlFilterBase
 {
 public:
-    XclExpXmlStream( const com::sun::star::uno::Reference< com::sun::star::uno::XComponentContext >& rCC, bool bExportVBA );
+    XclExpXmlStream( const css::uno::Reference< css::uno::XComponentContext >& rCC, bool bExportVBA );
     virtual ~XclExpXmlStream();
 
     /** Returns the filter root data. */
@@ -314,23 +314,23 @@ public:
     sax_fastparser::FSHelperPtr     CreateOutputStream (
                                         const OUString& sFullStream,
                                         const OUString& sRelativeStream,
-                                        const ::com::sun::star::uno::Reference< ::com::sun::star::io::XOutputStream >& xParentRelation,
+                                        const css::uno::Reference< css::io::XOutputStream >& xParentRelation,
                                         const char* sContentType,
                                         const char* sRelationshipType,
-                                        OUString* pRelationshipId = NULL );
+                                        OUString* pRelationshipId = nullptr );
 
     // ignore
     virtual bool exportDocument()
         throw (css::uno::RuntimeException,
                css::ucb::ContentCreationException,
-               std::exception) SAL_OVERRIDE;
+               std::exception) override;
 
     // only needed for import; ignore
-    virtual bool importDocument() throw() SAL_OVERRIDE;
-    virtual oox::vml::Drawing* getVmlDrawing() SAL_OVERRIDE;
-    virtual const oox::drawingml::Theme* getCurrentTheme() const SAL_OVERRIDE;
-    virtual const oox::drawingml::table::TableStyleListPtr getTableStyles() SAL_OVERRIDE;
-    virtual oox::drawingml::chart::ChartConverter* getChartConverter() SAL_OVERRIDE;
+    virtual bool importDocument() throw() override;
+    virtual oox::vml::Drawing* getVmlDrawing() override;
+    virtual const oox::drawingml::Theme* getCurrentTheme() const override;
+    virtual const oox::drawingml::table::TableStyleListPtr getTableStyles() override;
+    virtual oox::drawingml::chart::ChartConverter* getChartConverter() override;
 
     /*
       Now create all the overloads in a typesafe way (i.e. without varargs) by creating a number of overloads
@@ -362,8 +362,8 @@ public:
     #undef SAX_ARGS_FUNC
 
 private:
-    virtual ::oox::ole::VbaProject* implCreateVbaProject() const SAL_OVERRIDE;
-    virtual OUString SAL_CALL getImplementationName() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual ::oox::ole::VbaProject* implCreateVbaProject() const override;
+    virtual OUString SAL_CALL getImplementationName() throw (css::uno::RuntimeException, std::exception) override;
     ScDocShell *getDocShell();
     sax_fastparser::FSHelperPtr&    WriteAttributesInternal( sal_Int32 nAttribute, ... );
 

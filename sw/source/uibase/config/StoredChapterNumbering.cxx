@@ -72,7 +72,7 @@ public:
 
     // XNamed
     virtual OUString SAL_CALL getName()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (uno::RuntimeException, std::exception) override
     {
         SolarMutexGuard g;
         SwNumRulesWithName const* pRules(m_rNumRules.GetRules(m_nIndex));
@@ -84,7 +84,7 @@ public:
     }
 
     virtual void SAL_CALL setName(OUString const& rName)
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (uno::RuntimeException, std::exception) override
     {
         SolarMutexGuard g;
         SwNumRulesWithName *const pRules(GetOrCreateRules());
@@ -93,27 +93,27 @@ public:
 
     // XElementAccess
     virtual uno::Type SAL_CALL getElementType()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (uno::RuntimeException, std::exception) override
     {
         return ::cppu::UnoType<uno::Sequence<beans::PropertyValue>>::get();
     }
 
     virtual ::sal_Bool SAL_CALL hasElements()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (uno::RuntimeException, std::exception) override
     {
         return sal_True;
     }
 
     // XIndexAccess
     virtual sal_Int32 SAL_CALL getCount()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (uno::RuntimeException, std::exception) override
     {
         return MAXLEVEL;
     }
 
     virtual uno::Any SAL_CALL getByIndex(sal_Int32 nIndex)
         throw (lang::IndexOutOfBoundsException, lang::WrappedTargetException,
-               uno::RuntimeException, std::exception) SAL_OVERRIDE
+               uno::RuntimeException, std::exception) override
     {
         if (nIndex < 0 || MAXLEVEL <= nIndex)
             throw lang::IndexOutOfBoundsException();
@@ -124,8 +124,8 @@ public:
         {
             return uno::Any();
         }
-        SwNumFormat const* pNumFormat(0);
-        OUString const* pCharStyleName(0);
+        SwNumFormat const* pNumFormat(nullptr);
+        OUString const* pCharStyleName(nullptr);
         pRules->GetNumFormat(nIndex, pNumFormat, pCharStyleName);
         if (!pNumFormat)
         {   // the dialog only fills in those levels that are non-default
@@ -144,7 +144,7 @@ public:
             sal_Int32 nIndex, uno::Any const& rElement)
         throw (lang::IllegalArgumentException, lang::IndexOutOfBoundsException,
                lang::WrappedTargetException, uno::RuntimeException,
-               std::exception) SAL_OVERRIDE
+               std::exception) override
     {
         if (nIndex < 0 || MAXLEVEL <= nIndex)
             throw lang::IndexOutOfBoundsException();
@@ -159,7 +159,7 @@ public:
         SwXNumberingRules::SetPropertiesToNumFormat(
             aNumberFormat,
             charStyleName,
-            0, 0, 0, 0, 0,
+            nullptr, nullptr, nullptr, nullptr, nullptr,
             props);
         SwNumRulesWithName *const pRules(GetOrCreateRules());
         pRules->SetNumFormat(nIndex, aNumberFormat, charStyleName);
@@ -189,9 +189,9 @@ public:
                                GetXMLToken(XML_N_SVG), XML_NAMESPACE_SVG);
     }
 
-    virtual void _ExportAutoStyles() SAL_OVERRIDE {}
-    virtual void _ExportMasterStyles() SAL_OVERRIDE {}
-    virtual void _ExportContent() SAL_OVERRIDE {}
+    virtual void _ExportAutoStyles() override {}
+    virtual void _ExportMasterStyles() override {}
+    virtual void _ExportContent() override {}
 
     void ExportRule(SvxXMLNumRuleExport & rExport,
             uno::Reference<container::XIndexReplace> const& xRule)
@@ -338,7 +338,7 @@ public:
     {
     }
 
-    virtual void EndElement() SAL_OVERRIDE
+    virtual void EndElement() override
     {
         assert(m_Contexts.size() < SwChapterNumRules::nMaxRules);
         for (auto iter = m_Contexts.begin(); iter != m_Contexts.end(); ++iter)
@@ -355,7 +355,7 @@ public:
 
     virtual SvXMLImportContext * CreateChildContext(
         sal_uInt16 const nPrefix, OUString const& rLocalName,
-        uno::Reference<xml::sax::XAttributeList> const& xAttrList) SAL_OVERRIDE
+        uno::Reference<xml::sax::XAttributeList> const& xAttrList) override
     {
         if (XML_NAMESPACE_TEXT == nPrefix && IsXMLToken(rLocalName, XML_OUTLINE_STYLE))
         {
@@ -397,7 +397,7 @@ public:
 
     virtual SvXMLImportContext * CreateContext(
         sal_uInt16 const nPrefix, OUString const& rLocalName,
-        uno::Reference<xml::sax::XAttributeList> const& xAttrList) SAL_OVERRIDE
+        uno::Reference<xml::sax::XAttributeList> const& xAttrList) override
     {
         if (XML_NAMESPACE_OFFICE == nPrefix && IsXMLToken(rLocalName, XML_STYLES))
         {
@@ -438,8 +438,8 @@ void ExportStoredChapterNumberingRules(SwChapterNumRules & rRules,
         {
             for (size_t j = 0; j < MAXLEVEL; ++j)
             {
-                SwNumFormat const* pDummy(0);
-                OUString const* pCharStyleName(0);
+                SwNumFormat const* pDummy(nullptr);
+                OUString const* pCharStyleName(nullptr);
                 pRule->GetNumFormat(j, pDummy, pCharStyleName);
                 if (pCharStyleName && !pCharStyleName->isEmpty())
                 {

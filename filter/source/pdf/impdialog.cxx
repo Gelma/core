@@ -245,14 +245,14 @@ ImpPDFTabDialog::ImpPDFTabDialog(vcl::Window* pParent, Sequence< PropertyValue >
     mbSignPDF = maConfigItem.ReadBool( "SignPDF", false );
 
 //queue the tab pages for later creation (created when first shown)
-    mnSigningPageId = AddTabPage("digitalsignatures", ImpPDFTabSigningPage::Create, 0);
-    mnSecurityPageId = AddTabPage("security", ImpPDFTabSecurityPage::Create, 0);
-    mnLinksPage = AddTabPage("links", ImpPDFTabLinksPage::Create, 0);
-    mnInterfacePageId = AddTabPage("userinterface", ImpPDFTabViewerPage::Create, 0);
-    mnViewPageId = AddTabPage("initialview", ImpPDFTabOpnFtrPage::Create, 0);
+    mnSigningPageId = AddTabPage("digitalsignatures", ImpPDFTabSigningPage::Create, nullptr);
+    mnSecurityPageId = AddTabPage("security", ImpPDFTabSecurityPage::Create, nullptr);
+    mnLinksPage = AddTabPage("links", ImpPDFTabLinksPage::Create, nullptr);
+    mnInterfacePageId = AddTabPage("userinterface", ImpPDFTabViewerPage::Create, nullptr);
+    mnViewPageId = AddTabPage("initialview", ImpPDFTabOpnFtrPage::Create, nullptr);
 
     //last queued is the first to be displayed (or so it seems..)
-    mnGeneralPageId = AddTabPage("general", ImpPDFTabGeneralPage::Create, 0 );
+    mnGeneralPageId = AddTabPage("general", ImpPDFTabGeneralPage::Create, nullptr );
 
     //get the string property value (from sfx2/source/dialog/mailmodel.cxx) to overwrite the text for the Ok button
     OUString sOkButtonText = maConfigItem.ReadString( "_OkButtonString", OUString() );
@@ -278,7 +278,7 @@ ImpPDFTabSecurityPage* ImpPDFTabDialog::getSecurityPage() const
     {
         return static_cast<ImpPDFTabSecurityPage*>(pSecurityPage);
     }
-    return NULL;
+    return nullptr;
 }
 
 ImpPDFTabLinksPage* ImpPDFTabDialog::getLinksPage() const
@@ -288,7 +288,7 @@ ImpPDFTabLinksPage* ImpPDFTabDialog::getLinksPage() const
     {
         return static_cast<ImpPDFTabLinksPage*>(pLinksPage);
     }
-    return NULL;
+    return nullptr;
 }
 
 ImpPDFTabGeneralPage* ImpPDFTabDialog::getGeneralPage() const
@@ -298,7 +298,7 @@ ImpPDFTabGeneralPage* ImpPDFTabDialog::getGeneralPage() const
     {
         return static_cast<ImpPDFTabGeneralPage*>(pGeneralPage);
     }
-    return NULL;
+    return nullptr;
 }
 
 IMPL_LINK_NOARG_TYPED(ImpPDFTabDialog, CancelHdl, Button*, void)
@@ -513,7 +513,7 @@ ImpPDFTabGeneralPage::ImpPDFTabGeneralPage(vcl::Window* pParent, const SfxItemSe
     , mbExportFormFieldsUserSelection(false)
     , mbIsPresentation(false)
     , mbIsWriter(false)
-    , mpaParent(0)
+    , mpaParent(nullptr)
 {
     get(mpRbAll, "all");
     get(mpRbRange, "range");
@@ -656,9 +656,9 @@ void ImpPDFTabGeneralPage::SetFilterConfigItem( ImpPDFTabDialog* paParent )
     if ( mbIsPresentation )
     {
         mpRbRange->SetText(get<FixedText>("slides")->GetText());
-        mpCbExportNotesPages->Show(true);
+        mpCbExportNotesPages->Show();
         mpCbExportNotesPages->Check(paParent->mbExportNotesPages);
-        mpCbExportHiddenSlides->Show(true);
+        mpCbExportHiddenSlides->Show();
         mpCbExportHiddenSlides->Check(paParent->mbExportHiddenSlides);
     }
     else
@@ -671,7 +671,7 @@ void ImpPDFTabGeneralPage::SetFilterConfigItem( ImpPDFTabDialog* paParent )
 
     mpCbExportEmptyPages->Check(!paParent->mbIsSkipEmptyPages);
 
-    mpCbAddStream->Show(true);
+    mpCbAddStream->Show();
     mpCbAddStream->Check(paParent->mbAddStream);
 
     mpCbAddStream->SetToggleHdl( LINK( this, ImpPDFTabGeneralPage, ToggleAddStreamHdl ) );
@@ -794,9 +794,9 @@ IMPL_LINK_NOARG_TYPED(ImpPDFTabGeneralPage, ToggleAddStreamHdl, CheckBox&, void)
         }
         else
         {
-            mpRbAll->Enable( true );
-            mpRbRange->Enable( true );
-            mpRbSelection->Enable( true );
+            mpRbAll->Enable();
+            mpRbRange->Enable();
+            mpRbSelection->Enable();
         }
     }
 }
@@ -805,7 +805,7 @@ IMPL_LINK_NOARG_TYPED(ImpPDFTabGeneralPage, ToggleAddStreamHdl, CheckBox&, void)
 IMPL_LINK_NOARG_TYPED(ImpPDFTabGeneralPage, ToggleExportPDFAHdl, CheckBox&, void)
 {
     //set the security page status (and its controls as well)
-    ImpPDFTabSecurityPage* pSecPage = mpaParent ? mpaParent->getSecurityPage() : NULL;
+    ImpPDFTabSecurityPage* pSecPage = mpaParent ? mpaParent->getSecurityPage() : nullptr;
     if (pSecPage)
     {
         pSecPage->ImplPDFASecurityControl(!mpCbPDFA1b->IsChecked());
@@ -834,7 +834,7 @@ IMPL_LINK_NOARG_TYPED(ImpPDFTabGeneralPage, ToggleExportPDFAHdl, CheckBox&, void
     }
     // PDF/A-1 doesn't allow launch action, so enable/disable the selection on
     // Link page
-    ImpPDFTabLinksPage* pLinksPage = mpaParent ? mpaParent->getLinksPage() : NULL;
+    ImpPDFTabLinksPage* pLinksPage = mpaParent ? mpaParent->getLinksPage() : nullptr;
     if (pLinksPage)
         pLinksPage->ImplPDFALinkControl(!mpCbPDFA1b->IsChecked());
 
@@ -997,7 +997,7 @@ void ImpPDFTabOpnFtrPage::SetFilterConfigItem( const  ImpPDFTabDialog* paParent 
         break;
     case 4:
         mpRbMagnZoom->Check();
-        mpNumZoom->Enable( true );
+        mpNumZoom->Enable();
         break;
     }
 
@@ -1122,7 +1122,7 @@ void ImpPDFTabViewerPage::SetFilterConfigItem( const  ImpPDFTabDialog* paParent 
     else
     {
         m_pRbVisibleBookmarkLevels->Check();
-        m_pNumBookmarkLevels->Enable( true );
+        m_pNumBookmarkLevels->Enable();
         m_pNumBookmarkLevels->SetValue( paParent->mnOpenBookmarkLevels );
     }
 }
@@ -1319,7 +1319,7 @@ void ImpPDFTabSecurityPage::enablePermissionControls()
 {
     bool bIsPDFASel = false;
     ImpPDFTabDialog* pParent = static_cast<ImpPDFTabDialog*>(GetTabDialog());
-    ImpPDFTabGeneralPage* pGeneralPage = pParent ? pParent->getGeneralPage() : NULL;
+    ImpPDFTabGeneralPage* pGeneralPage = pParent ? pParent->getGeneralPage() : nullptr;
     if (pGeneralPage)
     {
         bIsPDFASel = pGeneralPage->IsPdfaSelected();
@@ -1544,7 +1544,7 @@ IMPL_LINK_NOARG_TYPED(ImpPDFTabLinksPage, ClickRbOpnLnksBrowserHdl, Button*, voi
 }
 
 ImplErrorDialog::ImplErrorDialog(const std::set< vcl::PDFWriter::ErrorCode >& rErrors)
-    : MessageDialog(NULL, "WarnPDFDialog", "filter/ui/warnpdfdialog.ui")
+    : MessageDialog(nullptr, "WarnPDFDialog", "filter/ui/warnpdfdialog.ui")
 {
     get(m_pErrors, "errors");
     get(m_pExplanation, "message");
@@ -1629,11 +1629,10 @@ void ImplErrorDialog::dispose()
     MessageDialog::dispose();
 }
 
-IMPL_LINK_NOARG(ImplErrorDialog, SelectHdl)
+IMPL_LINK_NOARG_TYPED(ImplErrorDialog, SelectHdl, ListBox&, void)
 {
     OUString* pStr = static_cast<OUString*>(m_pErrors->GetSelectEntryData());
     m_pExplanation->SetText( pStr ? *pStr : OUString() );
-    return 0;
 }
 
 
@@ -1652,7 +1651,7 @@ ImpPDFTabSigningPage::ImpPDFTabSigningPage(vcl::Window* pParent, const SfxItemSe
     get(mpEdSignReason, "reason");
     get(mpLBSignTSA, "tsa");
 
-    mpPbSignCertSelect->Enable( true );
+    mpPbSignCertSelect->Enable();
     mpPbSignCertSelect->SetClickHdl( LINK( this, ImpPDFTabSigningPage, ClickmaPbSignCertSelect ) );
     mpPbSignCertClear->SetClickHdl( LINK( this, ImpPDFTabSigningPage, ClickmaPbSignCertClear ) );
 }
@@ -1687,11 +1686,11 @@ IMPL_LINK_NOARG_TYPED( ImpPDFTabSigningPage, ClickmaPbSignCertSelect, Button*, v
     if (maSignCertificate.is())
     {
         mpEdSignCert->SetText(maSignCertificate->getSubjectName());
-        mpPbSignCertClear->Enable( true );
-        mpEdSignLocation->Enable( true );
-        mpEdSignPassword->Enable( true );
-        mpEdSignContactInfo->Enable( true );
-        mpEdSignReason->Enable( true );
+        mpPbSignCertClear->Enable();
+        mpEdSignLocation->Enable();
+        mpEdSignPassword->Enable();
+        mpEdSignContactInfo->Enable();
+        mpEdSignReason->Enable();
 
         try
         {
@@ -1715,7 +1714,7 @@ IMPL_LINK_NOARG_TYPED( ImpPDFTabSigningPage, ClickmaPbSignCertSelect, Button*, v
 
 IMPL_LINK_NOARG_TYPED( ImpPDFTabSigningPage, ClickmaPbSignCertClear, Button*, void )
 {
-    mpEdSignCert->SetText(OUString(""));
+    mpEdSignCert->SetText("");
     maSignCertificate.clear();
     mpPbSignCertClear->Enable( false );
     mpEdSignLocation->Enable( false );

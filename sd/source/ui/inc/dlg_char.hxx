@@ -34,10 +34,11 @@ private:
     sal_uInt16 mnCharName;
     sal_uInt16 mnCharEffects;
     sal_uInt16 mnCharPosition;
+    sal_uInt16 mnCharBackground;
 
     const SfxObjectShell&   rDocShell;
 
-    virtual void    PageCreated( sal_uInt16 nId, SfxTabPage &rPage ) SAL_OVERRIDE;
+    virtual void    PageCreated( sal_uInt16 nId, SfxTabPage &rPage ) override;
 
 public:
 

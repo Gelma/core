@@ -39,10 +39,10 @@
 
 // Global Pointer
 
-SwGlossaries*       pGlossaries = 0;
+SwGlossaries*       pGlossaries = nullptr;
 
 // Provides all needed paths. Is initialized by UI.
-SwGlossaryList*     pGlossaryList = 0;
+SwGlossaryList*     pGlossaryList = nullptr;
 
 namespace
 {
@@ -51,13 +51,13 @@ enum CachedStringID
 {
     OldGrfCat,
     OldTabCat,
-    OldFrmCat,
+    OldFrameCat,
     OldDrwCat,
     CurrGlosGroup,
     CachedStrings
 };
 
-OUString *StringCache[CachedStrings] = {0};
+OUString *StringCache[CachedStrings] = {nullptr};
 
 inline OUString GetCachedString(CachedStringID id)
 {
@@ -106,14 +106,14 @@ void SetOldTabCat(const OUString& sStr)
     SetCachedString(OldTabCat, sStr);
 }
 
-OUString GetOldFrmCat()
+OUString GetOldFrameCat()
 {
-    return GetCachedString(OldFrmCat);
+    return GetCachedString(OldFrameCat);
 }
 
-void SetOldFrmCat(const OUString& sStr)
+void SetOldFrameCat(const OUString& sStr)
 {
-    SetCachedString(OldFrmCat, sStr);
+    SetCachedString(OldFrameCat, sStr);
 }
 
 OUString GetOldDrwCat()
@@ -139,8 +139,8 @@ void SetCurrGlosGroup(const OUString& sStr)
 namespace
 {
 
-std::vector<OUString>* pAuthFieldNameList = 0;
-std::vector<OUString>* pAuthFieldTypeList = 0;
+std::vector<OUString>* pAuthFieldNameList = nullptr;
+std::vector<OUString>* pAuthFieldTypeList = nullptr;
 
 }
 
@@ -149,7 +149,7 @@ std::vector<OUString>* pAuthFieldTypeList = 0;
 void _FinitUI()
 {
     delete SwViewShell::GetShellRes();
-    SwViewShell::SetShellRes( 0 );
+    SwViewShell::SetShellRes( nullptr );
 
     SwEditWin::_FinitStaticData();
 
@@ -189,11 +189,8 @@ ShellResource::ShellResource()
     aCalc_Default( SW_RES( STR_CALC_DEFAULT ) ),
     aCalc_Error( SW_RES( STR_CALC_ERROR ) ),
 
-    aGetRefField_Up( SW_RES( STR_GETREFFLD_UP ) ),
-    aGetRefField_Down( SW_RES( STR_GETREFFLD_DOWN ) ),
     // #i81002#
     aGetRefField_RefItemNotFound( SW_RES( STR_GETREFFLD_REFITEMNOTFOUND ) ),
-    aStrAllPageHeadFoot( SW_RES( STR_ALLPAGE_HEADFOOT ) ),
     aStrNone( SW_RES( STR_TEMPLATE_NONE )),
     aFixedStr( SW_RES( STR_FIELD_FIXED )),
     sDurationFormat( SW_RES( STR_DURATION_FORMAT )),
@@ -208,7 +205,7 @@ ShellResource::ShellResource()
     aTOXCitationName(    SW_RES(STR_TOX_CITATION)),
     aLinkCtrlClick(SW_RESSTR(STR_LINK_CTRL_CLICK)),
     aLinkClick(SW_RESSTR(STR_LINK_CLICK)),
-    pAutoFormatNameLst(0),
+    pAutoFormatNameLst(nullptr),
     sPageDescFirstName(     SW_RES(STR_PAGEDESC_FIRSTNAME)),
     sPageDescFollowName(    SW_RES(STR_PAGEDESC_FOLLOWNAME)),
     sPageDescName(          SW_RES(STR_PAGEDESC_NAME))
@@ -262,7 +259,7 @@ SwGlossaries* GetGlossaries()
 
 bool HasGlossaryList()
 {
-    return pGlossaryList != 0;
+    return pGlossaryList != nullptr;
 }
 
 SwGlossaryList* GetGlossaryList()

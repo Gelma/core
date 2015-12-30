@@ -64,7 +64,6 @@
 
 namespace sd {
 
-TYPEINIT1( FuConstructRectangle, FuConstruct );
 
 FuConstructRectangle::FuConstructRectangle (
     ViewShell*  pViewSh,
@@ -101,10 +100,10 @@ void FuConstructRectangle::DoExecute( SfxRequest& rReq )
         {
             case SID_DRAW_ELLIPSE :
             {
-                SFX_REQUEST_ARG (rReq, pCenterX, SfxUInt32Item, ID_VAL_CENTER_X, false);
-                SFX_REQUEST_ARG (rReq, pCenterY, SfxUInt32Item, ID_VAL_CENTER_Y, false);
-                SFX_REQUEST_ARG (rReq, pAxisX, SfxUInt32Item, ID_VAL_AXIS_X, false);
-                SFX_REQUEST_ARG (rReq, pAxisY, SfxUInt32Item, ID_VAL_AXIS_Y, false);
+                const SfxUInt32Item* pCenterX = rReq.GetArg<SfxUInt32Item>(ID_VAL_CENTER_X);
+                const SfxUInt32Item* pCenterY = rReq.GetArg<SfxUInt32Item>(ID_VAL_CENTER_Y);
+                const SfxUInt32Item* pAxisX = rReq.GetArg<SfxUInt32Item>(ID_VAL_AXIS_X);
+                const SfxUInt32Item* pAxisY = rReq.GetArg<SfxUInt32Item>(ID_VAL_AXIS_Y);
 
                 Rectangle   aNewRectangle (pCenterX->GetValue () - pAxisX->GetValue () / 2,
                                            pCenterY->GetValue () - pAxisY->GetValue () / 2,
@@ -119,10 +118,10 @@ void FuConstructRectangle::DoExecute( SfxRequest& rReq )
 
             case SID_DRAW_RECT :
             {
-                SFX_REQUEST_ARG (rReq, pMouseStartX, SfxUInt32Item, ID_VAL_MOUSESTART_X, false);
-                SFX_REQUEST_ARG (rReq, pMouseStartY, SfxUInt32Item, ID_VAL_MOUSESTART_Y, false);
-                SFX_REQUEST_ARG (rReq, pMouseEndX, SfxUInt32Item, ID_VAL_MOUSEEND_X, false);
-                SFX_REQUEST_ARG (rReq, pMouseEndY, SfxUInt32Item, ID_VAL_MOUSEEND_Y, false);
+                const SfxUInt32Item* pMouseStartX = rReq.GetArg<SfxUInt32Item>(ID_VAL_MOUSESTART_X);
+                const SfxUInt32Item* pMouseStartY = rReq.GetArg<SfxUInt32Item>(ID_VAL_MOUSESTART_Y);
+                const SfxUInt32Item* pMouseEndX = rReq.GetArg<SfxUInt32Item>(ID_VAL_MOUSEEND_X);
+                const SfxUInt32Item* pMouseEndY = rReq.GetArg<SfxUInt32Item>(ID_VAL_MOUSEEND_Y);
 
                 Rectangle   aNewRectangle (pMouseStartX->GetValue (),
                                            pMouseStartY->GetValue (),
@@ -239,7 +238,7 @@ bool FuConstructRectangle::MouseButtonUp(const MouseEvent& rMEvt)
             }
 
             // init text position when vertical caption object is created
-            if(pObj->ISA(SdrCaptionObj) && SID_DRAW_CAPTION_VERTICAL == nSlotId)
+            if( dynamic_cast< const SdrCaptionObj *>( pObj ) !=  nullptr && SID_DRAW_CAPTION_VERTICAL == nSlotId)
             {
                 // draw text object, needs to be initialized when vertical text is used
                 SfxItemSet aSet(pObj->GetMergedItemSet());
@@ -251,7 +250,7 @@ bool FuConstructRectangle::MouseButtonUp(const MouseEvent& rMEvt)
                 // calling SetVerticalWriting() again since this item may not yet
                 // be set at the object and thus may differ from vertical state of
                 // the object.
-                aSet.Put(SvxWritingModeItem(com::sun::star::text::WritingMode_TB_RL, SDRATTR_TEXTDIRECTION));
+                aSet.Put(SvxWritingModeItem(css::text::WritingMode_TB_RL, SDRATTR_TEXTDIRECTION));
                 pObj->SetMergedItemSet(aSet);
             }
 
@@ -783,7 +782,7 @@ SdrObject* FuConstructRectangle::CreateDefaultObject(const sal_uInt16 nID, const
 
     SdrObject* pObj = SdrObjFactory::MakeNewObject(
         mpView->GetCurrentObjInventor(), mpView->GetCurrentObjIdentifier(),
-        0L, mpDoc);
+        nullptr, mpDoc);
 
     if(pObj)
     {
@@ -815,7 +814,7 @@ SdrObject* FuConstructRectangle::CreateDefaultObject(const sal_uInt16 nID, const
             case SID_LINE_ARROW_SQUARE:
             case SID_LINE_SQUARE_ARROW:
             {
-                if(pObj->ISA(SdrPathObj))
+                if( dynamic_cast< const SdrPathObj *>( pObj ) !=  nullptr)
                 {
                     sal_Int32 nYMiddle((aRect.Top() + aRect.Bottom()) / 2);
 
@@ -834,7 +833,7 @@ SdrObject* FuConstructRectangle::CreateDefaultObject(const sal_uInt16 nID, const
 
             case SID_DRAW_MEASURELINE:
             {
-                if(pObj->ISA(SdrMeasureObj))
+                if( dynamic_cast< SdrMeasureObj *>( pObj ) !=  nullptr)
                 {
                     sal_Int32 nYMiddle((aRect.Top() + aRect.Bottom()) / 2);
                     static_cast<SdrMeasureObj*>(pObj)->SetPoint(Point(aStart.X(), nYMiddle), 0);
@@ -877,7 +876,7 @@ SdrObject* FuConstructRectangle::CreateDefaultObject(const sal_uInt16 nID, const
             case SID_CONNECTOR_LINES_CIRCLE_END:
             case SID_CONNECTOR_LINES_CIRCLES:
             {
-                if(pObj->ISA(SdrEdgeObj))
+                if( dynamic_cast< SdrEdgeObj *>( pObj ) !=  nullptr)
                 {
                     static_cast<SdrEdgeObj*>(pObj)->SetTailPoint(false, aStart);
                     static_cast<SdrEdgeObj*>(pObj)->SetTailPoint(true, aEnd);
@@ -892,7 +891,7 @@ SdrObject* FuConstructRectangle::CreateDefaultObject(const sal_uInt16 nID, const
             case SID_DRAW_CAPTION:
             case SID_DRAW_CAPTION_VERTICAL:
             {
-                if(pObj->ISA(SdrCaptionObj))
+                if( dynamic_cast< SdrCaptionObj *>( pObj ) !=  nullptr)
                 {
                     bool bIsVertical(SID_DRAW_CAPTION_VERTICAL == nID);
 

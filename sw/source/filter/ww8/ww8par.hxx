@@ -45,6 +45,7 @@
 #include <xmloff/odffields.hxx>
 #include <IMark.hxx>
 
+#include <com/sun/star/drawing/TextVerticalAdjust.hpp>
 #include <swtypes.hxx>
 #include <fmtfsize.hxx>
 #include <fmtornt.hxx>
@@ -131,13 +132,13 @@ struct WW8LFOInfo;
 
 class WW8Reader : public StgReader
 {
-    virtual sal_uLong Read(SwDoc &, const OUString& rBaseURL, SwPaM &, const OUString &) SAL_OVERRIDE;
+    virtual sal_uLong Read(SwDoc &, const OUString& rBaseURL, SwPaM &, const OUString &) override;
     sal_uLong OpenMainStream( tools::SvRef<SotStorageStream>& rRef, sal_uInt16& rBuffSize );
 public:
-    virtual int GetReaderType() SAL_OVERRIDE;
+    virtual int GetReaderType() override;
 
-    virtual bool HasGlossaries() const SAL_OVERRIDE;
-    virtual bool ReadGlossaries( SwTextBlocks&, bool bSaveRelFiles ) const SAL_OVERRIDE;
+    virtual bool HasGlossaries() const override;
+    virtual bool ReadGlossaries( SwTextBlocks&, bool bSaveRelFiles ) const override;
 };
 
 class SwWW8ImplReader;
@@ -151,7 +152,7 @@ public:
     //the rParaSprms returns back the original word paragraph indent
     //sprms which were attached to the original numbering format
     SwNumRule* GetNumRuleForActivation(sal_uInt16 nLFOPosition, const sal_uInt8 nLevel,
-        std::vector<sal_uInt8> &rParaSprms, SwTextNode *pNode=0);
+        std::vector<sal_uInt8> &rParaSprms, SwTextNode *pNode=nullptr);
     SwNumRule* CreateNextRule(bool bSimple);
     ~WW8ListManager();
     SwNumRule* GetNumRule(size_t i);
@@ -163,7 +164,7 @@ private:
     const WW8Fib&    rFib;
     SvStream&        rSt;
     std::vector<WW8LSTInfo* > maLSTInfos;
-    boost::ptr_vector<WW8LFOInfo > pLFOInfos;// D. from PLF LFO, sorted exactly like in the WW8 Stream
+    std::vector<std::unique_ptr<WW8LFOInfo>> m_LFOInfos;// D. from PLF LFO, sorted exactly like in the WW8 Stream
     sal_uInt16       nUniqueList; // current number for creating unique list names
     sal_uInt8* GrpprlHasSprm(sal_uInt16 nId, sal_uInt8& rSprms, sal_uInt8 nLen);
     WW8LSTInfo* GetLSTByListId(    sal_uInt32  nIdLst     ) const;
@@ -182,8 +183,8 @@ private:
         WW8aCFormat& aCharFormat, bool& bNewCharFormatCreated,
         const OUString& aPrefix = OUString());
 
-    WW8ListManager(const WW8ListManager&) SAL_DELETED_FUNCTION;
-    WW8ListManager& operator=(const WW8ListManager&) SAL_DELETED_FUNCTION;
+    WW8ListManager(const WW8ListManager&) = delete;
+    WW8ListManager& operator=(const WW8ListManager&) = delete;
     sal_uInt16 nLastLFOPosition;
 };
 
@@ -203,7 +204,7 @@ struct WW8FlyPara
                                 // the contained graphics *not* as a character
     bool mbVertSet;             // true if vertical positioning has been set
 
-    WW8FlyPara(bool bIsVer67, const WW8FlyPara* pSrc = 0);
+    WW8FlyPara(bool bIsVer67, const WW8FlyPara* pSrc = nullptr);
     bool operator==(const WW8FlyPara& rSrc) const;
     void Read(sal_uInt8 nSprm29, WW8PLCFx_Cp_FKP* pPap);
     void ReadFull(sal_uInt8 nSprm29, SwWW8ImplReader* pIo);
@@ -214,20 +215,20 @@ struct WW8FlyPara
 
 class SwWW8StyInf
 {
-    OUString        sWWStyleName;
-    sal_uInt16      nWWStyleId;
+    OUString        m_sWWStyleName;
+    sal_uInt16      m_nWWStyleId;
 public:
-    rtl_TextEncoding eLTRFontSrcCharSet;    // rtl_TextEncoding for the font
-    rtl_TextEncoding eRTLFontSrcCharSet;    // rtl_TextEncoding for the font
-    rtl_TextEncoding eCJKFontSrcCharSet;    // rtl_TextEncoding for the font
-    SwFormat*      pFormat;
-    WW8FlyPara* pWWFly;
-    SwNumRule*  pOutlineNumrule;
-    long        nFilePos;
-    sal_uInt16      nBase;
-    sal_uInt16      nFollow;
-    sal_uInt16      nLFOIndex;
-    sal_uInt8        nListLevel;
+    rtl_TextEncoding m_eLTRFontSrcCharSet;    // rtl_TextEncoding for the font
+    rtl_TextEncoding m_eRTLFontSrcCharSet;    // rtl_TextEncoding for the font
+    rtl_TextEncoding m_eCJKFontSrcCharSet;    // rtl_TextEncoding for the font
+    SwFormat*      m_pFormat;
+    WW8FlyPara* m_pWWFly;
+    SwNumRule*  m_pOutlineNumrule;
+    long        m_nFilePos;
+    sal_uInt16      m_nBase;
+    sal_uInt16      m_nFollow;
+    sal_uInt16      m_nLFOIndex;
+    sal_uInt8        m_nListLevel;
 
     // WW8 outline level is zero-based:
     // 0: outline level 1
@@ -237,95 +238,95 @@ public:
     // 9: body text
     sal_uInt8 mnWW8OutlineLevel;
 
-    sal_uInt16  n81Flags;           // for bold, italic, ...
-    sal_uInt16  n81BiDiFlags;       // for bold, italic, ...
+    sal_uInt16  m_n81Flags;           // for bold, italic, ...
+    sal_uInt16  m_n81BiDiFlags;       // for bold, italic, ...
     SvxLRSpaceItem maWordLR;
-    bool bValid;            // empty of valid
-    bool bImported;         // for recursive imports
-    bool bColl;             // true-> pFormat is SwTextFormatColl
-    bool bImportSkipped;    // only true if !bNewDoc && existing style
-    bool bHasStyNumRule;    // true-> named NumRule in style
-    bool bHasBrokenWW6List; // true-> WW8+ style has a WW7- list
-    bool bListReleventIndentSet; //true if this style's indent has
+    bool m_bValid;            // empty of valid
+    bool m_bImported;         // for recursive imports
+    bool m_bColl;             // true-> pFormat is SwTextFormatColl
+    bool m_bImportSkipped;    // only true if !bNewDoc && existing style
+    bool m_bHasStyNumRule;    // true-> named NumRule in style
+    bool m_bHasBrokenWW6List; // true-> WW8+ style has a WW7- list
+    bool m_bListReleventIndentSet; //true if this style's indent has
                                  //been explicitly set, it's set to the value
                                  //of pFormat->GetItemState(RES_LR_SPACE, false)
                                  //if it was possible to get the ItemState
                                  //for L of the LR space independently
-    bool bParaAutoBefore;   // For Auto spacing before a paragraph
-    bool bParaAutoAfter;    // For Auto Spacing after a paragraph
+    bool m_bParaAutoBefore;   // For Auto spacing before a paragraph
+    bool m_bParaAutoAfter;    // For Auto Spacing after a paragraph
 
     SwWW8StyInf() :
-        sWWStyleName( OUString() ),
-        nWWStyleId( 0 ),
-        eLTRFontSrcCharSet(0),
-        eRTLFontSrcCharSet(0),
-        eCJKFontSrcCharSet(0),
-        pFormat( 0 ),
-        pWWFly( 0 ),
-        pOutlineNumrule( 0 ),
-        nFilePos( 0 ),
-        nBase( 0 ),
-        nFollow( 0 ),
-        nLFOIndex( USHRT_MAX ),
-        nListLevel(WW8ListManager::nMaxLevel),
+        m_sWWStyleName( OUString() ),
+        m_nWWStyleId( 0 ),
+        m_eLTRFontSrcCharSet(0),
+        m_eRTLFontSrcCharSet(0),
+        m_eCJKFontSrcCharSet(0),
+        m_pFormat( nullptr ),
+        m_pWWFly( nullptr ),
+        m_pOutlineNumrule( nullptr ),
+        m_nFilePos( 0 ),
+        m_nBase( 0 ),
+        m_nFollow( 0 ),
+        m_nLFOIndex( USHRT_MAX ),
+        m_nListLevel(WW8ListManager::nMaxLevel),
         mnWW8OutlineLevel( MAXLEVEL ),
-        n81Flags( 0 ),
-        n81BiDiFlags(0),
+        m_n81Flags( 0 ),
+        m_n81BiDiFlags(0),
         maWordLR( RES_LR_SPACE ),
-        bValid(false),
-        bImported(false),
-        bColl(false),
-        bImportSkipped(false),
-        bHasStyNumRule(false),
-        bHasBrokenWW6List(false),
-        bListReleventIndentSet(false),
-        bParaAutoBefore(false),
-        bParaAutoAfter(false)
+        m_bValid(false),
+        m_bImported(false),
+        m_bColl(false),
+        m_bImportSkipped(false),
+        m_bHasStyNumRule(false),
+        m_bHasBrokenWW6List(false),
+        m_bListReleventIndentSet(false),
+        m_bParaAutoBefore(false),
+        m_bParaAutoAfter(false)
 
     {}
 
     ~SwWW8StyInf()
     {
-        delete pWWFly;
+        delete m_pWWFly;
     }
 
     void SetOrgWWIdent( const OUString& rName, const sal_uInt16 nId )
     {
-        sWWStyleName = rName;
-        nWWStyleId = nId;
+        m_sWWStyleName = rName;
+        m_nWWStyleId = nId;
 
         // apply default WW8 outline level to WW8 Built-in Heading styles
         if (IsWW8BuiltInHeadingStyle())
         {
-            mnWW8OutlineLevel = nWWStyleId - 1;
+            mnWW8OutlineLevel = m_nWWStyleId - 1;
         }
     }
 
     const OUString& GetOrgWWName() const
     {
-        return sWWStyleName;
+        return m_sWWStyleName;
     }
 
     bool HasWW8OutlineLevel() const
     {
-        return (pFormat != NULL && (MAXLEVEL > mnWW8OutlineLevel));
+        return (m_pFormat != nullptr && (MAXLEVEL > mnWW8OutlineLevel));
     }
 
     bool IsOutlineNumbered() const
     {
-        return pOutlineNumrule && HasWW8OutlineLevel();
+        return m_pOutlineNumrule && HasWW8OutlineLevel();
     }
 
     const SwNumRule* GetOutlineNumrule() const
     {
-        return pOutlineNumrule;
+        return m_pOutlineNumrule;
     }
     rtl_TextEncoding GetCharSet() const;
     rtl_TextEncoding GetCJKCharSet() const;
 
     sal_uInt16 GetWWStyleId() const
     {
-        return nWWStyleId;
+        return m_nWWStyleId;
     }
 
     bool IsWW8BuiltInHeadingStyle() const
@@ -365,19 +366,19 @@ private:
     SwWW8ImplReader& rReader;
     sal_uInt16 nToggleAttrFlags;
     sal_uInt16 nToggleBiDiAttrFlags;
-    SwWW8FltControlStack(const SwWW8FltControlStack&) SAL_DELETED_FUNCTION;
-    SwWW8FltControlStack& operator=(const SwWW8FltControlStack&) SAL_DELETED_FUNCTION;
+    SwWW8FltControlStack(const SwWW8FltControlStack&) = delete;
+    SwWW8FltControlStack& operator=(const SwWW8FltControlStack&) = delete;
     const SwNumFormat* GetNumFormatFromStack(const SwPosition &rPos,
         const SwTextNode &rTextNode);
 protected:
     virtual void SetAttrInDoc(const SwPosition& rTmpPos,
-        SwFltStackEntry& rEntry) SAL_OVERRIDE;
+        SwFltStackEntry& rEntry) override;
 
-    virtual sal_Int32 GetCurrAttrCP() const SAL_OVERRIDE;
-    virtual bool IsParaEndInCPs(sal_Int32 nStart,sal_Int32 nEnd,bool bSdOD=true) const SAL_OVERRIDE;
+    virtual sal_Int32 GetCurrAttrCP() const override;
+    virtual bool IsParaEndInCPs(sal_Int32 nStart,sal_Int32 nEnd,bool bSdOD=true) const override;
     //Clear the para end position recorded in reader intermittently for the least impact on loading performance
-    virtual void ClearParaEndPosition() SAL_OVERRIDE;
-    virtual bool CheckSdOD(sal_Int32 nStart,sal_Int32 nEnd) SAL_OVERRIDE;
+    virtual void ClearParaEndPosition() override;
+    virtual bool CheckSdOD(sal_Int32 nStart,sal_Int32 nEnd) override;
 
 public:
     SwWW8FltControlStack(SwDoc* pDo, sal_uLong nFieldFl, SwWW8ImplReader& rReader_ )
@@ -387,7 +388,7 @@ public:
 
     void NewAttr(const SwPosition& rPos, const SfxPoolItem& rAttr);
 
-    virtual SwFltStackEntry* SetAttr(const SwPosition& rPos, sal_uInt16 nAttrId=0, bool bTstEnde=true, long nHand=LONG_MAX, bool consumedByField=false) SAL_OVERRIDE;
+    virtual SwFltStackEntry* SetAttr(const SwPosition& rPos, sal_uInt16 nAttrId=0, bool bTstEnde=true, long nHand=LONG_MAX, bool consumedByField=false) override;
 
     void SetToggleAttr(sal_uInt8 nId, bool bOn)
     {
@@ -426,8 +427,8 @@ public:
     void AddAnchor(const SwPosition& rPos,SwFrameFormat *pFormat);
     void Flush();
 private:
-    SwWW8FltAnchorStack(const SwWW8FltAnchorStack&) SAL_DELETED_FUNCTION;
-    SwWW8FltAnchorStack& operator=(const SwWW8FltAnchorStack&) SAL_DELETED_FUNCTION;
+    SwWW8FltAnchorStack(const SwWW8FltAnchorStack&) = delete;
+    SwWW8FltAnchorStack& operator=(const SwWW8FltAnchorStack&) = delete;
 };
 
 //For fields whose handling cannot be fully resolved until we hit the end of
@@ -442,7 +443,7 @@ public:
     explicit Position(const SwPaM &rPaM);
     Position(const Position &rEntry);
 private:
-    Position& operator=(const Position&) SAL_DELETED_FUNCTION;
+    Position& operator=(const Position&) = delete;
 };
 
 namespace SwWW8
@@ -477,7 +478,7 @@ public:
     std::set<OUString, SwWW8::ltstr> aReferencedTOCBookmarks;
 protected:
     virtual void SetAttrInDoc( const SwPosition& rTmpPos,
-                               SwFltStackEntry& rEntry ) SAL_OVERRIDE;
+                               SwFltStackEntry& rEntry ) override;
 };
 
 class SwWW8FltRefStack : public SwFltEndStack
@@ -496,10 +497,10 @@ public:
 protected:
     SwFltStackEntry *RefToVar(const SwField* pField,SwFltStackEntry& rEntry);
     virtual void SetAttrInDoc(const SwPosition& rTmpPos,
-        SwFltStackEntry& rEntry) SAL_OVERRIDE;
+        SwFltStackEntry& rEntry) override;
 private:
-    SwWW8FltRefStack(const SwWW8FltRefStack&) SAL_DELETED_FUNCTION;
-    SwWW8FltRefStack& operator=(const SwWW8FltRefStack&) SAL_DELETED_FUNCTION;
+    SwWW8FltRefStack(const SwWW8FltRefStack&) = delete;
+    SwWW8FltRefStack& operator=(const SwWW8FltRefStack&) = delete;
 };
 
 template< typename Type >
@@ -520,12 +521,12 @@ public:
     SwMacroInfo();
     virtual ~SwMacroInfo();
 
-    virtual SdrObjUserData* Clone( SdrObject* pObj ) const SAL_OVERRIDE;
+    virtual SdrObjUserData* Clone( SdrObject* pObj ) const override;
 
     void SetHlink( const OUString& rHlink ) { maHlink = rHlink; }
     const OUString& GetHlink() const { return maHlink; }
-    void SetTarFrm( const OUString& rTarFrm ) { maTarFrm = rTarFrm; }
-    const OUString& GetTarFrm() const { return maTarFrm; }
+    void SetTarFrame( const OUString& rTarFrame ) { maTarFrame = rTarFrame; }
+    const OUString& GetTarFrame() const { return maTarFrame; }
     void SetShapeId( const sal_Int32& rShapeId ) { mnShapeId = rShapeId; }
     const sal_Int32& GetShapeId() const { return mnShapeId; }
     void SetName( const OUString& rName ) { maNameStr = rName; }
@@ -535,13 +536,13 @@ private:
     sal_Int32 mnShapeId;
     OUString maHlink;
     OUString maNameStr;
-    OUString maTarFrm;
+    OUString maTarFrame;
 };
 
 struct HyperLinksTable
 {
     OUString hLinkAddr;
-    OUString tarFrm;
+    OUString tarFrame;
 };
 
 namespace sw
@@ -686,59 +687,51 @@ public:
     std::vector<OUString> maListEntries;
     virtual ~WW8FormulaControl() {}
     void FormulaRead(SwWw8ControlType nWhich,SvStream *pD);
-    virtual bool Import(const com::sun::star::uno::Reference <
-        com::sun::star::lang::XMultiServiceFactory> &rServiceFactory,
-        com::sun::star::uno::Reference <
-        com::sun::star::form::XFormComponent> &rFComp,
-        com::sun::star::awt::Size &rSz) = 0;
+    virtual bool Import(const css::uno::Reference< css::lang::XMultiServiceFactory> &rServiceFactory,
+        css::uno::Reference< css::form::XFormComponent> &rFComp,
+        css::awt::Size &rSz) = 0;
     OUString msName;
 };
 
 class WW8FormulaCheckBox : public WW8FormulaControl
 {
 private:
-    WW8FormulaCheckBox(const WW8FormulaCheckBox&) SAL_DELETED_FUNCTION;
-    WW8FormulaCheckBox& operator=(const WW8FormulaCheckBox&) SAL_DELETED_FUNCTION;
+    WW8FormulaCheckBox(const WW8FormulaCheckBox&) = delete;
+    WW8FormulaCheckBox& operator=(const WW8FormulaCheckBox&) = delete;
 
 public:
     explicit WW8FormulaCheckBox(SwWW8ImplReader &rR);
 
-    virtual bool Import(const com::sun::star::uno::Reference <
-        com::sun::star::lang::XMultiServiceFactory> &rServiceFactory,
-        com::sun::star::uno::Reference <
-        com::sun::star::form::XFormComponent> &rFComp,
-        com::sun::star::awt::Size &rSz) SAL_OVERRIDE;
+    virtual bool Import(const css::uno::Reference< css::lang::XMultiServiceFactory> &rServiceFactory,
+        css::uno::Reference< css::form::XFormComponent> &rFComp,
+        css::awt::Size &rSz) override;
 };
 
 class WW8FormulaListBox : public WW8FormulaControl
 {
 private:
-    WW8FormulaListBox(const WW8FormulaListBox&) SAL_DELETED_FUNCTION;
-    WW8FormulaListBox& operator=(const WW8FormulaListBox&) SAL_DELETED_FUNCTION;
+    WW8FormulaListBox(const WW8FormulaListBox&) = delete;
+    WW8FormulaListBox& operator=(const WW8FormulaListBox&) = delete;
 
 public:
     explicit WW8FormulaListBox(SwWW8ImplReader &rR);
 
-    virtual bool Import(const com::sun::star::uno::Reference <
-        com::sun::star::lang::XMultiServiceFactory> &rServiceFactory,
-        com::sun::star::uno::Reference <
-        com::sun::star::form::XFormComponent> &rFComp,
-        com::sun::star::awt::Size &rSz) SAL_OVERRIDE;
+    virtual bool Import(const css::uno::Reference< css::lang::XMultiServiceFactory> &rServiceFactory,
+        css::uno::Reference< css::form::XFormComponent> &rFComp,
+        css::awt::Size &rSz) override;
 };
 
 class WW8FormulaEditBox : public WW8FormulaControl
 {
 private:
-    WW8FormulaEditBox(const WW8FormulaEditBox&) SAL_DELETED_FUNCTION;
-    WW8FormulaEditBox& operator=(const WW8FormulaEditBox&) SAL_DELETED_FUNCTION;
+    WW8FormulaEditBox(const WW8FormulaEditBox&) = delete;
+    WW8FormulaEditBox& operator=(const WW8FormulaEditBox&) = delete;
 public:
     explicit WW8FormulaEditBox(SwWW8ImplReader &rR);
     //no real implementation, return false
-    virtual bool Import(const com::sun::star::uno::Reference <
-        com::sun::star::lang::XMultiServiceFactory> & /* rServiceFactory */,
-        com::sun::star::uno::Reference <
-        com::sun::star::form::XFormComponent> & /* rFComp */,
-        com::sun::star::awt::Size & /* rSz */) SAL_OVERRIDE { return false; }
+    virtual bool Import(const css::uno::Reference< css::lang::XMultiServiceFactory> & /* rServiceFactory */,
+        css::uno::Reference< css::form::XFormComponent> & /* rFComp */,
+        css::awt::Size & /* rSz */) override { return false; }
 };
 
 class SwMSConvertControls: public oox::ole::MSConvertOCXControls
@@ -746,15 +739,12 @@ class SwMSConvertControls: public oox::ole::MSConvertOCXControls
 public:
     SwMSConvertControls( SfxObjectShell *pDSh,SwPaM *pP );
     bool InsertFormula( WW8FormulaControl &rFormula);
-    virtual bool InsertControl(const com::sun::star::uno::Reference<
-        com::sun::star::form::XFormComponent >& rFComp,
-        const ::com::sun::star::awt::Size& rSize,
-        com::sun::star::uno::Reference <
-        com::sun::star::drawing::XShape > *pShape, bool bFloatingCtrl) SAL_OVERRIDE;
+    virtual bool InsertControl(const css::uno::Reference< css::form::XFormComponent >& rFComp,
+        const css::awt::Size& rSize,
+        css::uno::Reference<  css::drawing::XShape > *pShape, bool bFloatingCtrl) override;
     bool ExportControl(WW8Export &rWrt, const SdrUnoObj& rFormObj);
     bool ReadOCXStream( tools::SvRef<SotStorage>& rSrc1,
-        com::sun::star::uno::Reference<
-        com::sun::star::drawing::XShape > *pShapeRef=0,
+        css::uno::Reference< css::drawing::XShape > *pShapeRef=nullptr,
         bool bFloatingCtrl=false );
 private:
     sal_uInt32 GenerateObjectID() { return ++mnObjectId; }
@@ -770,8 +760,8 @@ private:
     std::map<sal_uInt32,OString> aOldEscherBlipCache;
 
     virtual bool GetOLEStorageName( long nOLEId, OUString& rStorageName,
-        tools::SvRef<SotStorage>& rSrcStorage, com::sun::star::uno::Reference < com::sun::star::embed::XStorage >& rDestStorage ) const SAL_OVERRIDE;
-    virtual bool ShapeHasText( sal_uLong nShapeId, sal_uLong nFilePos ) const SAL_OVERRIDE;
+        tools::SvRef<SotStorage>& rSrcStorage, css::uno::Reference < css::embed::XStorage >& rDestStorage ) const override;
+    virtual bool ShapeHasText( sal_uLong nShapeId, sal_uLong nFilePos ) const override;
     // #i32596# - new parameter <_nCalledByGroup>, which
     // indicates, if the OLE object is imported inside a group object
     virtual SdrObject* ImportOLE( long nOLEId,
@@ -779,10 +769,10 @@ private:
                                   const Rectangle& rBoundRect,
                                   const Rectangle& rVisArea,
                                   const int _nCalledByGroup,
-                                  sal_Int64 nAspect ) const SAL_OVERRIDE;
+                                  sal_Int64 nAspect ) const override;
 
-    SwMSDffManager(const SwMSDffManager&) SAL_DELETED_FUNCTION;
-    SwMSDffManager& operator=(const SwMSDffManager&) SAL_DELETED_FUNCTION;
+    SwMSDffManager(const SwMSDffManager&) = delete;
+    SwMSDffManager& operator=(const SwMSDffManager&) = delete;
 public:
     static sal_uInt32 GetFilterFlags();
     static sal_Int32 GetEscherLineMatch(MSO_LineStyle eStyle, MSO_SPT eShapeType,
@@ -791,7 +781,7 @@ public:
     void DisableFallbackStream();
     void EnableFallbackStream();
 protected:
-    virtual SdrObject* ProcessObj( SvStream& rSt, DffObjData& rObjData, void* pData, Rectangle& rTextRect, SdrObject* pObj ) SAL_OVERRIDE;
+    virtual SdrObject* ProcessObj( SvStream& rSt, DffObjData& rObjData, void* pData, Rectangle& rTextRect, SdrObject* pObj ) override;
 };
 
 class wwSection
@@ -810,6 +800,7 @@ public:
     sal_uInt32 nPgLeft;
     sal_uInt32 nPgRight;
 
+    css::drawing::TextVerticalAdjust mnVerticalAdjustment;
     sal_uInt8 mnBorders;
     bool mbHasFootnote;
     void SetDirection();
@@ -890,12 +881,13 @@ private:
     SwFormatPageDesc SetSwFormatPageDesc(mySegIter &rIter, mySegIter &rStart,
         bool bIgnoreCols);
 
-    wwSectionManager(const wwSectionManager&) SAL_DELETED_FUNCTION;
-    wwSectionManager& operator=(const wwSectionManager&) SAL_DELETED_FUNCTION;
+    wwSectionManager(const wwSectionManager&) = delete;
+    wwSectionManager& operator=(const wwSectionManager&) = delete;
 public:
     explicit wwSectionManager(SwWW8ImplReader &rReader) : mrReader(rReader), mnDesc(0)
         {}
     void SetCurrentSectionHasFootnote();
+    void SetCurrentSectionVerticalAdjustment(const css::drawing::TextVerticalAdjust nVA);
     bool CurrentSectionIsVertical() const;
     bool CurrentSectionIsProtected() const;
     void PrependedInlineNode(const SwPosition &rPos, const SwNode &rNode);
@@ -958,8 +950,8 @@ private:
     const SwDoc &mrDoc;
     OUString msFileLinkSeed;
     int mnFileSectionNo;
-    wwSectionNamer(const wwSectionNamer&) SAL_DELETED_FUNCTION;
-    wwSectionNamer& operator=(const wwSectionNamer&) SAL_DELETED_FUNCTION;
+    wwSectionNamer(const wwSectionNamer&) = delete;
+    wwSectionNamer& operator=(const wwSectionNamer&) = delete;
 public:
     OUString UniqueName();
     wwSectionNamer(const SwDoc &rDoc, const OUString &rSeed)
@@ -986,7 +978,7 @@ struct ApoTestResults
     WW8FlyPara* mpStyleApo;
     ApoTestResults()
         : mbStartApo(false), mbStopApo(false), m_bHasSprm37(false)
-        , m_bHasSprm29(false), m_nSprm29(0), mpStyleApo(0) {}
+        , m_bHasSprm29(false), m_nSprm29(0), mpStyleApo(nullptr) {}
     bool HasStartStop() const { return (mbStartApo || mbStopApo); }
     bool HasFrame() const { return (m_bHasSprm29 || m_bHasSprm37 || mpStyleApo); }
 };
@@ -997,7 +989,7 @@ struct ANLDRuleMap
     SwNumRule* mpNumberingNumRule;  // WinWord 6 numbering, variant 2
     SwNumRule* GetNumRule(sal_uInt8 nNumType);
     void SetNumRule(SwNumRule*, sal_uInt8 nNumType);
-    ANLDRuleMap() : mpOutlineNumRule(0), mpNumberingNumRule(0) {}
+    ANLDRuleMap() : mpOutlineNumRule(nullptr), mpNumberingNumRule(nullptr) {}
 };
 
 struct SprmReadInfo;
@@ -1099,7 +1091,7 @@ private:
 
 // general stuff
     SwDoc& m_rDoc;
-    std::shared_ptr<SwUnoCrsr> mpCrsr;
+    std::shared_ptr<SwUnoCursor> mpCursor;
     SwPaM* m_pPaM;
 
     SwWW8FltControlStack* m_pCtrlStck;    // stack for the attributes
@@ -1258,9 +1250,8 @@ private:
     SwMSDffManager* m_pMSDffManager;
 
     std::vector<OUString>* m_pAtnNames;
-    std::shared_ptr< std::map<sal_uInt32, int> > m_pAtnIndexes;
-    std::shared_ptr<WW8PLCFspecial> m_pAtnStarts;
-    std::shared_ptr<WW8PLCFspecial> m_pAtnEnds;
+
+    std::unique_ptr<WW8SmartTagData> m_pSmartTagData;
 
     sw::util::AuthorInfos m_aAuthorInfos;
     OUString m_sBaseURL;
@@ -1403,16 +1394,16 @@ private:
     void CopyPageDescHdFt( const SwPageDesc* pOrgPageDesc,
                            SwPageDesc* pNewPageDesc, sal_uInt8 nCode );
 
-    void DeleteStk(SwFltControlStack* prStck);
-    void DeleteCtrlStk()    { DeleteStk( m_pCtrlStck  ); m_pCtrlStck   = 0; }
-    void DeleteRefStks()
+    void DeleteStack(SwFltControlStack* prStck);
+    void DeleteCtrlStack()    { DeleteStack( m_pCtrlStck  ); m_pCtrlStck   = nullptr; }
+    void DeleteRefStacks()
     {
-        DeleteStk( m_pReffedStck );
-        m_pReffedStck = 0;
-        DeleteStk( m_pReffingStck );
-        m_pReffingStck = 0;
+        DeleteStack( m_pReffedStck );
+        m_pReffedStck = nullptr;
+        DeleteStack( m_pReffingStck );
+        m_pReffingStck = nullptr;
     }
-    void DeleteAnchorStk()  { DeleteStk( m_pAnchorStck ); m_pAnchorStck = 0; }
+    void DeleteAnchorStack()  { DeleteStack( m_pAnchorStck ); m_pAnchorStck = nullptr; }
     void emulateMSWordAddTextToParagraph(const OUString& rAddString);
     void simpleAddTextToParagraph(const OUString& rAddString);
     bool HandlePageBreakChar();
@@ -1466,14 +1457,14 @@ private:
     // Note #i20672# we can't properly support between lines so best to ignore
     // them for now
     static bool SetBorder(SvxBoxItem& rBox, const WW8_BRCVer9* pbrc,
-        short *pSizeArray=0, sal_uInt8 nSetBorders=0xFF);
+        short *pSizeArray=nullptr, sal_uInt8 nSetBorders=0xFF);
     static void GetBorderDistance(const WW8_BRCVer9* pbrc, Rectangle& rInnerDist);
     static sal_uInt16 GetParagraphAutoSpace(bool fDontUseHTMLAutoSpacing);
     static bool SetShadow(SvxShadowItem& rShadow, const short *pSizeArray,
         const WW8_BRCVer9& aRightBrc);
     //returns true is a shadow was set
     static bool SetFlyBordersShadow(SfxItemSet& rFlySet, const WW8_BRCVer9 *pbrc,
-        short *SizeArray=0);
+        short *SizeArray=nullptr);
     static void SetPageBorder(SwFrameFormat &rFormat, const wwSection &rSection);
 
     static sal_Int32 MatchSdrBoxIntoFlyBoxItem( const Color& rLineColor,
@@ -1496,7 +1487,7 @@ private:
     //Apo == Absolutely Positioned Object, MSWord's old-style frames
     WW8FlyPara *ConstructApo(const ApoTestResults &rApo,
         const WW8_TablePos *pTabPos);
-    bool StartApo(const ApoTestResults &rApo, const WW8_TablePos *pTabPos, SvxULSpaceItem* pULSpaceItem = 0);
+    bool StartApo(const ApoTestResults &rApo, const WW8_TablePos *pTabPos, SvxULSpaceItem* pULSpaceItem = nullptr);
     void StopApo();
     bool TestSameApo(const ApoTestResults &rApo, const WW8_TablePos *pTabPos);
     ApoTestResults TestApo(int nCellLevel, bool bTableRowEnd,
@@ -1523,13 +1514,13 @@ private:
 
     SwFrameFormat *AddAutoAnchor(SwFrameFormat *pFormat);
     SwFrameFormat* ImportGraf1(WW8_PIC& rPic, SvStream* pSt, sal_uLong nFilePos);
-    SwFrameFormat* ImportGraf(SdrTextObj* pTextObj = 0, SwFrameFormat* pFlyFormat = 0);
+    SwFrameFormat* ImportGraf(SdrTextObj* pTextObj = nullptr, SwFrameFormat* pFlyFormat = nullptr);
 
-    SdrObject* ImportOleBase( Graphic& rGraph, const Graphic* pGrf=0,
-        const SfxItemSet* pFlySet=0, const Rectangle& aVisArea = Rectangle() );
+    SdrObject* ImportOleBase( Graphic& rGraph, const Graphic* pGrf=nullptr,
+        const SfxItemSet* pFlySet=nullptr, const Rectangle& aVisArea = Rectangle() );
 
-    SwFrameFormat* ImportOle( const Graphic* = 0, const SfxItemSet* pFlySet = 0,
-        const SfxItemSet* pGrfSet = 0, const Rectangle& aVisArea = Rectangle() );
+    SwFrameFormat* ImportOle( const Graphic* = nullptr, const SfxItemSet* pFlySet = nullptr,
+        const SfxItemSet* pGrfSet = nullptr, const Rectangle& aVisArea = Rectangle() );
     SwFlyFrameFormat* InsertOle(SdrOle2Obj &rObject, const SfxItemSet &rFlySet,
         const SfxItemSet *rGrfSet);
 
@@ -1547,7 +1538,7 @@ private:
 
     void ReadDocVars();
 
-    bool StartTable(WW8_CP nStartCp, SvxULSpaceItem* pULSpaceItem = 0);
+    bool StartTable(WW8_CP nStartCp, SvxULSpaceItem* pULSpaceItem = nullptr);
     bool InEqualApo(int nLvl) const;
     bool InLocalApo() const { return InEqualApo(m_nInTable); }
     bool InEqualOrHigherApo(int nLvl) const;
@@ -1595,9 +1586,9 @@ private:
     SwFrameFormat* InsertTxbxText(SdrTextObj* pTextObj, Size* pObjSiz,
         sal_uInt16 nTxBxS, sal_uInt16 nSequence, long nPosCp, SwFrameFormat* pFlyFormat,
         bool bMakeSdrGrafObj, bool& rbEraseTextObj,
-        bool* pbTestTxbxContainsText = 0, long* pnStartCp = 0,
-        long* pnEndCp = 0, bool* pbContainsGraphics = 0,
-        SvxMSDffImportRec* pRecord = 0);
+        bool* pbTestTxbxContainsText = nullptr, long* pnStartCp = nullptr,
+        long* pnEndCp = nullptr, bool* pbContainsGraphics = nullptr,
+        SvxMSDffImportRec* pRecord = nullptr);
     bool TxbxChainContainsRealText( sal_uInt16 nTxBxS,
                                     long&  rStartCp,
                                     long&  rEndCp );
@@ -1649,6 +1640,8 @@ private:
 
     const OUString* GetAnnotationAuthor(sal_uInt16 nIdx);
 
+    void GetSmartTagInfo(SwFltRDFMark& rMark);
+
     // interfaces for the toggle attributes
     void SetToggleAttr(sal_uInt8 nAttrId, bool bOn);
     void SetToggleBiDiAttr(sal_uInt8 nAttrId, bool bOn);
@@ -1689,9 +1682,9 @@ private:
     // #i84783#
     // determine object attribute "Layout in Table Cell"
     bool IsObjectLayoutInTableCell( const sal_uInt32 nLayoutInTableCell ) const;
-    bool ReadGlobalTemplateSettings( const OUString& sCreatedFrom, const com::sun::star::uno::Reference< com::sun::star::container::XNameContainer >& xPrjNameMap );
-    SwWW8ImplReader(const SwWW8ImplReader &) SAL_DELETED_FUNCTION;
-    SwWW8ImplReader& operator=(const SwWW8ImplReader&) SAL_DELETED_FUNCTION;
+    bool ReadGlobalTemplateSettings( const OUString& sCreatedFrom, const css::uno::Reference< css::container::XNameContainer >& xPrjNameMap );
+    SwWW8ImplReader(const SwWW8ImplReader &) = delete;
+    SwWW8ImplReader& operator=(const SwWW8ImplReader&) = delete;
 public:     // really private, but can only be done public
     sal_uInt16 GetToggleAttrFlags() const;
     sal_uInt16 GetToggleBiDiAttrFlags() const;
@@ -1709,6 +1702,7 @@ public:     // really private, but can only be done public
     long Read_Book(WW8PLCFManResult*);
     long Read_And(WW8PLCFManResult* pRes);
     long Read_AtnBook(WW8PLCFManResult*);
+    long Read_FactoidBook(WW8PLCFManResult*);
 
     // attributes
 
@@ -1817,6 +1811,7 @@ public:     // really private, but can only be done public
     void Read_ParaBiDi(sal_uInt16, const sal_uInt8* pData, short nLen);
     static sal_uInt32 ExtractColour(const sal_uInt8* &rpData, bool bVer67);
 
+    void Read_TextVerticalAdjustment(sal_uInt16, const sal_uInt8* pData, short nLen);
     void Read_UnderlineColor(sal_uInt16, const sal_uInt8* pData, short nLen);
     long MapBookmarkVariables(const WW8FieldDesc* pF, OUString &rOrigName,
         const OUString &rData);
@@ -1848,9 +1843,8 @@ public:     // really private, but can only be done public
     eF_ResT Read_F_FormTextBox( WW8FieldDesc* pF, OUString& rStr);
     eF_ResT Read_F_FormCheckBox( WW8FieldDesc* pF, OUString& rStr );
     eF_ResT Read_F_FormListBox( WW8FieldDesc* pF, OUString& rStr);
-    com::sun::star::awt::Size MiserableDropDownFormHack(const OUString &rString,
-        com::sun::star::uno::Reference<com::sun::star::beans::XPropertySet>&
-        rPropSet);
+    css::awt::Size MiserableDropDownFormHack(const OUString &rString,
+        css::uno::Reference<css::beans::XPropertySet>& rPropSet);
 
     eF_ResT Read_F_Macro( WW8FieldDesc*, OUString& rStr);
     eF_ResT Read_F_DBField( WW8FieldDesc*, OUString& rStr );
@@ -1892,7 +1886,7 @@ public:     // really private, but can only be done public
 
     const OUString& GetBaseURL() const { return m_sBaseURL; }
     // load a complete doc file
-    sal_uLong LoadDoc(WW8Glossary *pGloss=0);
+    sal_uLong LoadDoc(WW8Glossary *pGloss=nullptr);
     rtl_TextEncoding GetCurrentCharSet();
     rtl_TextEncoding GetCurrentCJKCharSet();
     rtl_TextEncoding GetCharSetFromLanguage();

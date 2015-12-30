@@ -49,7 +49,7 @@ public:
     virtual ~DocumentChartTypeTemplateProvider();
 
     // ____ ChartTypeTemplateProvider ____
-    virtual Reference< chart2::XChartTypeTemplate > getCurrentTemplate() const SAL_OVERRIDE;
+    virtual Reference< chart2::XChartTypeTemplate > getCurrentTemplate() const override;
 
 private:
     Reference< chart2::XChartTypeTemplate > m_xTemplate;
@@ -86,7 +86,7 @@ class DataSourceTabControl : public TabControl
 public:
     explicit DataSourceTabControl(vcl::Window* pParent);
 
-    virtual bool DeactivatePage() SAL_OVERRIDE;
+    virtual bool DeactivatePage() override;
 
     void DisableTabToggling();
     void EnableTabToggling();
@@ -129,13 +129,11 @@ DataSourceDialog::DataSourceDialog(vcl::Window * pParent,
     const Reference< uno::XComponentContext > & xContext)
     : TabDialog(pParent, "DataRangeDialog",
         "modules/schart/ui/datarangedialog.ui")
-    , m_xChartDocument(xChartDocument)
-    , m_xContext(xContext)
     , m_apDocTemplateProvider(new DocumentChartTypeTemplateProvider(xChartDocument))
     , m_apDialogModel(new DialogModel(xChartDocument, xContext))
     , m_pTabControl(VclPtr<DataSourceTabControl>::Create(get_content_area()))
-    , m_pRangeChooserTabPage(0)
-    , m_pDataSourceTabPage(0)
+    , m_pRangeChooserTabPage(nullptr)
+    , m_pDataSourceTabPage(nullptr)
     , m_bRangeChooserTabIsValid(true)
     , m_bDataSourceTabIsValid(true)
 {
@@ -217,7 +215,7 @@ void DataSourceDialog::setValidPage( TabPage * pTabPage )
 
     if( m_bRangeChooserTabIsValid && m_bDataSourceTabIsValid )
     {
-        m_pBtnOK->Enable( true );
+        m_pBtnOK->Enable();
         OSL_ASSERT( m_pTabControl );
         m_pTabControl->EnableTabToggling();
     }

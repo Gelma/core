@@ -117,9 +117,9 @@ template<typename T> T CachedContentResultSet::rowOriginGet(
 
 CachedContentResultSet::CCRS_Cache::CCRS_Cache(
     const Reference< XContentIdentifierMapping > & xMapping )
-    : m_pResult( NULL )
+    : m_pResult( nullptr )
     , m_xContentIdentifierMapping( xMapping )
-    , m_pMappedReminder( NULL )
+    , m_pMappedReminder( nullptr )
 {
 }
 
@@ -134,7 +134,7 @@ void SAL_CALL CachedContentResultSet::CCRS_Cache
     if( m_pResult )
     {
         delete m_pResult;
-        m_pResult = NULL;
+        m_pResult = nullptr;
     }
     clearMappedReminder();
 }
@@ -252,7 +252,7 @@ void SAL_CALL CachedContentResultSet::CCRS_Cache
     ::clearMappedReminder()
 {
     delete m_pMappedReminder;
-    m_pMappedReminder = NULL;
+    m_pMappedReminder = nullptr;
 }
 
 Sequence< sal_Bool >* SAL_CALL CachedContentResultSet::CCRS_Cache
@@ -299,7 +299,7 @@ const Any& SAL_CALL CachedContentResultSet::CCRS_Cache
 
 const OUString& SAL_CALL CachedContentResultSet::CCRS_Cache
     ::getContentIdentifierString( sal_Int32 nRow )
-    throw( com::sun::star::uno::RuntimeException )
+    throw( css::uno::RuntimeException )
 {
     try
     {
@@ -322,7 +322,7 @@ const OUString& SAL_CALL CachedContentResultSet::CCRS_Cache
 
 const Reference< XContentIdentifier >& SAL_CALL CachedContentResultSet::CCRS_Cache
     ::getContentIdentifier( sal_Int32 nRow )
-    throw( com::sun::star::uno::RuntimeException )
+    throw( css::uno::RuntimeException )
 {
     try
     {
@@ -345,7 +345,7 @@ const Reference< XContentIdentifier >& SAL_CALL CachedContentResultSet::CCRS_Cac
 
 const Reference< XContent >& SAL_CALL CachedContentResultSet::CCRS_Cache
     ::getContent( sal_Int32 nRow )
-    throw( com::sun::star::uno::RuntimeException )
+    throw( css::uno::RuntimeException )
 {
     try
     {
@@ -374,13 +374,13 @@ const Reference< XContent >& SAL_CALL CachedContentResultSet::CCRS_Cache
 
 class CCRS_PropertySetInfo :
                 public cppu::OWeakObject,
-                public com::sun::star::lang::XTypeProvider,
-                public com::sun::star::beans::XPropertySetInfo
+                public css::lang::XTypeProvider,
+                public css::beans::XPropertySetInfo
 {
     friend class CachedContentResultSet;
 
     //my Properties
-    Sequence< com::sun::star::beans::Property >*
+    Sequence< css::beans::Property >*
                             m_pProperties;
 
     //some helping variables ( names for my special properties )
@@ -399,7 +399,7 @@ private:
     bool SAL_CALL
     impl_queryProperty(
             const OUString& rName
-            , com::sun::star::beans::Property& rProp ) const;
+            , css::beans::Property& rProp ) const;
     sal_Int32 SAL_CALL
     impl_getPos( const OUString& rName ) const;
 
@@ -414,30 +414,30 @@ public:
 
     // XInterface
     virtual css::uno::Any SAL_CALL queryInterface( const css::uno::Type & rType )
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL acquire()
-        throw() SAL_OVERRIDE;
+        throw() override;
     virtual void SAL_CALL release()
-        throw() SAL_OVERRIDE;
+        throw() override;
 
     // XTypeProvider
     virtual css::uno::Sequence< sal_Int8 > SAL_CALL getImplementationId()
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual css::uno::Sequence< com::sun::star::uno::Type > SAL_CALL getTypes()
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
+    virtual css::uno::Sequence< css::uno::Type > SAL_CALL getTypes()
+        throw( css::uno::RuntimeException, std::exception ) override;
 
     // XPropertySetInfo
-    virtual Sequence< com::sun::star::beans::Property > SAL_CALL
+    virtual Sequence< css::beans::Property > SAL_CALL
     getProperties()
-        throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception ) override;
 
-    virtual com::sun::star::beans::Property SAL_CALL
+    virtual css::beans::Property SAL_CALL
     getPropertyByName( const OUString& aName )
-        throw( com::sun::star::beans::UnknownPropertyException, RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::beans::UnknownPropertyException, RuntimeException, std::exception ) override;
 
     virtual sal_Bool SAL_CALL
     hasPropertyByName( const OUString& Name )
-        throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception ) override;
 };
 
 OUString    CCRS_PropertySetInfo::m_aPropertyNameForCount( "RowCount" );
@@ -447,7 +447,7 @@ OUString    CCRS_PropertySetInfo::m_aPropertyNameForFetchDirection( "FetchDirect
 
 CCRS_PropertySetInfo::CCRS_PropertySetInfo(
         Reference< XPropertySetInfo > xInfo )
-        : m_pProperties( NULL )
+        : m_pProperties( nullptr )
         , m_nFetchSizePropertyHandle( -1 )
         , m_nFetchDirectionPropertyHandle( -1 )
 {
@@ -673,11 +673,11 @@ CachedContentResultSet::CachedContentResultSet(
                 : ContentResultSetWrapper( xOrigin )
 
                 , m_xContext( rxContext )
-                , m_xFetchProvider( NULL )
-                , m_xFetchProviderForContentAccess( NULL )
+                , m_xFetchProvider( nullptr )
+                , m_xFetchProviderForContentAccess( nullptr )
 
-                , m_xMyPropertySetInfo( NULL )
-                , m_pMyPropSetInfo( NULL )
+                , m_xMyPropertySetInfo( nullptr )
+                , m_pMyPropSetInfo( nullptr )
 
                 , m_xContentIdentifierMapping( xContentIdentifierMapping )
                 , m_nRow( 0 ) // Position is one-based. Zero means: before first element.
@@ -698,12 +698,12 @@ CachedContentResultSet::CachedContentResultSet(
                 , m_aCacheContentIdentifier( m_xContentIdentifierMapping )
                 , m_aCacheContent( m_xContentIdentifierMapping )
                 , m_bTriedToGetTypeConverter( false )
-                , m_xTypeConverter( NULL )
+                , m_xTypeConverter( nullptr )
 {
-    m_xFetchProvider = Reference< XFetchProvider >( m_xResultSetOrigin, UNO_QUERY );
+    m_xFetchProvider.set( m_xResultSetOrigin, UNO_QUERY );
     OSL_ENSURE( m_xFetchProvider.is(), "interface XFetchProvider is required" );
 
-    m_xFetchProviderForContentAccess = Reference< XFetchProviderForContentAccess >( m_xResultSetOrigin, UNO_QUERY );
+    m_xFetchProviderForContentAccess.set( m_xResultSetOrigin, UNO_QUERY );
     OSL_ENSURE( m_xFetchProviderForContentAccess.is(), "interface XFetchProviderForContentAccess is required" );
 
     impl_init();
@@ -852,7 +852,7 @@ if( bIsFinalCount && !bCurIsFinalCount )                            \
 void SAL_CALL CachedContentResultSet
     ::impl_fetchData( sal_Int32 nRow
         , sal_Int32 nFetchSize, sal_Int32 nFetchDirection )
-        throw( com::sun::star::uno::RuntimeException )
+        throw( css::uno::RuntimeException )
 {
     FETCH_XXX( m_aCache, m_xFetchProvider, fetch );
 }
@@ -1127,30 +1127,26 @@ Any SAL_CALL CachedContentResultSet
         throw UnknownPropertyException();
     }
 
-    Property aProp = m_pMyPropSetInfo->getPropertyByName( rPropertyName );
+    m_pMyPropSetInfo->getPropertyByName( rPropertyName );
         //throws UnknownPropertyException, if so
 
     Any aValue;
-    if( rPropertyName == CCRS_PropertySetInfo
-                        ::m_aPropertyNameForCount )
+    if( rPropertyName == CCRS_PropertySetInfo::m_aPropertyNameForCount )
     {
         osl::Guard< osl::Mutex > aGuard( m_aMutex );
         aValue <<= m_nKnownCount;
     }
-    else if( rPropertyName == CCRS_PropertySetInfo
-                            ::m_aPropertyNameForFinalCount )
+    else if( rPropertyName == CCRS_PropertySetInfo::m_aPropertyNameForFinalCount )
     {
         osl::Guard< osl::Mutex > aGuard( m_aMutex );
         aValue <<= m_bFinalCount;
     }
-    else if( rPropertyName == CCRS_PropertySetInfo
-                            ::m_aPropertyNameForFetchSize )
+    else if( rPropertyName == CCRS_PropertySetInfo::m_aPropertyNameForFetchSize )
     {
         osl::Guard< osl::Mutex > aGuard( m_aMutex );
         aValue <<= m_nFetchSize;
     }
-    else if( rPropertyName == CCRS_PropertySetInfo
-                            ::m_aPropertyNameForFetchDirection )
+    else if( rPropertyName == CCRS_PropertySetInfo::m_aPropertyNameForFetchDirection )
     {
         osl::Guard< osl::Mutex > aGuard( m_aMutex );
         aValue <<= m_nFetchDirection;
@@ -2072,7 +2068,7 @@ DateTime SAL_CALL CachedContentResultSet
 }
 
 //virtual
-Reference< com::sun::star::io::XInputStream >
+Reference< css::io::XInputStream >
     SAL_CALL CachedContentResultSet
     ::getBinaryStream( sal_Int32 columnIndex )
     throw( SQLException,
@@ -2083,7 +2079,7 @@ Reference< com::sun::star::io::XInputStream >
 }
 
 //virtual
-Reference< com::sun::star::io::XInputStream >
+Reference< css::io::XInputStream >
     SAL_CALL CachedContentResultSet
     ::getCharacterStream( sal_Int32 columnIndex )
     throw( SQLException,
@@ -2097,7 +2093,7 @@ Reference< com::sun::star::io::XInputStream >
 Any SAL_CALL CachedContentResultSet
     ::getObject( sal_Int32 columnIndex,
            const Reference<
-            com::sun::star::container::XNameAccess >& typeMap )
+            css::container::XNameAccess >& typeMap )
     throw( SQLException,
            RuntimeException, std::exception )
 {
@@ -2190,7 +2186,7 @@ const Reference< XTypeConverter >& CachedContentResultSet::getTypeConverter()
     if ( !m_bTriedToGetTypeConverter && !m_xTypeConverter.is() )
     {
         m_bTriedToGetTypeConverter = true;
-        m_xTypeConverter = Reference< XTypeConverter >( Converter::create(m_xContext) );
+        m_xTypeConverter.set( Converter::create(m_xContext) );
 
         OSL_ENSURE( m_xTypeConverter.is(),
                     "PropertyValueSet::getTypeConverter() - "
@@ -2271,7 +2267,7 @@ Reference< XResultSet > SAL_CALL CachedContentResultSetFactory
     ::createCachedContentResultSet(
             const Reference< XResultSet > & xSource,
             const Reference< XContentIdentifierMapping > & xMapping )
-            throw( com::sun::star::uno::RuntimeException, std::exception )
+            throw( css::uno::RuntimeException, std::exception )
 {
     Reference< XResultSet > xRet;
     xRet = new CachedContentResultSet( m_xContext, xSource, xMapping );

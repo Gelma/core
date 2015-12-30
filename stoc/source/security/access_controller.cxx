@@ -89,7 +89,7 @@ public:
     // XAccessControlContext impl
     virtual void SAL_CALL checkPermission(
         Any const & perm )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 };
 
 inline acc_Intersection::acc_Intersection(
@@ -142,7 +142,7 @@ public:
     // XAccessControlContext impl
     virtual void SAL_CALL checkPermission(
         Any const & perm )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 };
 
 inline acc_Union::acc_Union(
@@ -198,7 +198,7 @@ public:
     // XAccessControlContext impl
     virtual void SAL_CALL checkPermission(
         Any const & perm )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 };
 
 acc_Policy::~acc_Policy()
@@ -226,7 +226,7 @@ public:
 
     // XCurrentContext impl
     virtual Any SAL_CALL getValueByName( OUString const & name )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 };
 
 inline acc_CurrentContext::acc_CurrentContext(
@@ -265,7 +265,7 @@ static inline Reference< security::XAccessControlContext > getDynamicRestriction
 {
     if (xContext.is())
     {
-        Any acc(xContext->getValueByName(OUString(s_acRestriction)));
+        Any acc(xContext->getValueByName(s_acRestriction));
         if (typelib_TypeClass_INTERFACE == acc.pType->eTypeClass)
         {
             // avoid ref-counting
@@ -293,7 +293,7 @@ public:
     explicit cc_reset( void * cc )
         : m_cc( cc ) {}
     inline ~cc_reset()
-        { ::uno_setCurrentContext( m_cc, s_envType.pData, 0 ); }
+        { ::uno_setCurrentContext( m_cc, s_envType.pData, nullptr ); }
 };
 
 struct MutexHolder
@@ -336,7 +336,7 @@ class AccessController
         Any const & demanded_perm );
 
 protected:
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
 public:
     explicit AccessController( Reference< XComponentContext > const & xComponentContext );
@@ -345,30 +345,30 @@ public:
     //  XInitialization impl
     virtual void SAL_CALL initialize(
         Sequence< Any > const & arguments )
-        throw (Exception, std::exception) SAL_OVERRIDE;
+        throw (Exception, std::exception) override;
 
     // XAccessController impl
     virtual void SAL_CALL checkPermission(
         Any const & perm )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
     virtual Any SAL_CALL doRestricted(
         Reference< security::XAction > const & xAction,
         Reference< security::XAccessControlContext > const & xRestriction )
-        throw (Exception, std::exception) SAL_OVERRIDE;
+        throw (Exception, std::exception) override;
     virtual Any SAL_CALL doPrivileged(
         Reference< security::XAction > const & xAction,
         Reference< security::XAccessControlContext > const & xRestriction )
-        throw (Exception, std::exception) SAL_OVERRIDE;
+        throw (Exception, std::exception) override;
     virtual Reference< security::XAccessControlContext > SAL_CALL getContext()
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 
     // XServiceInfo impl
     virtual OUString SAL_CALL getImplementationName()
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL supportsService( OUString const & serviceName )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
     virtual Sequence< OUString > SAL_CALL getSupportedServiceNames()
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 };
 
 AccessController::AccessController( Reference< XComponentContext > const & xComponentContext )
@@ -377,7 +377,7 @@ AccessController::AccessController( Reference< XComponentContext > const & xComp
     , m_mode( ON ) // default
     , m_defaultPerm_init( false )
     , m_singleUser_init( false )
-    , m_rec( 0 )
+    , m_rec( nullptr )
 {
     // The .../mode value had originally been set in
     // cppu::add_access_control_entries (cppuhelper/source/servicefactory.cxx)
@@ -527,14 +527,14 @@ static void dumpPermissions(
 inline void AccessController::clearPostPoned()
 {
     delete static_cast< t_rec_vec * >( m_rec.getData() );
-    m_rec.setData( 0 );
+    m_rec.setData( nullptr );
 }
 
 void AccessController::checkAndClearPostPoned()
 {
     // check postponed permissions
     std::unique_ptr< t_rec_vec > rec( static_cast< t_rec_vec * >( m_rec.getData() ) );
-    m_rec.setData( 0 ); // takeover ownership
+    m_rec.setData( nullptr ); // takeover ownership
     OSL_ASSERT( rec.get() );
     if (rec.get())
     {
@@ -753,7 +753,7 @@ PermissionCollection AccessController::getEffectivePermissions(
         // don't check postponed, just cleanup
         clearPostPoned();
         delete static_cast< t_rec_vec * >( m_rec.getData() );
-        m_rec.setData( 0 );
+        m_rec.setData( nullptr );
         throw;
     }
     catch (Exception &)
@@ -788,7 +788,7 @@ void AccessController::checkPermission(
 
     // first dynamic check of ac contexts
     Reference< XCurrentContext > xContext;
-    ::uno_getCurrentContext( reinterpret_cast<void **>(&xContext), s_envType.pData, 0 );
+    ::uno_getCurrentContext( reinterpret_cast<void **>(&xContext), s_envType.pData, nullptr );
     Reference< security::XAccessControlContext > xACC( getDynamicRestriction( xContext ) );
     if (xACC.is())
     {
@@ -819,13 +819,13 @@ Any AccessController::doRestricted(
     if (xRestriction.is())
     {
         Reference< XCurrentContext > xContext;
-        ::uno_getCurrentContext( reinterpret_cast<void **>(&xContext), s_envType.pData, 0 );
+        ::uno_getCurrentContext( reinterpret_cast<void **>(&xContext), s_envType.pData, nullptr );
 
         // override restriction
         Reference< XCurrentContext > xNewContext(
             new acc_CurrentContext( xContext, acc_Intersection::create(
                                         xRestriction, getDynamicRestriction( xContext ) ) ) );
-        ::uno_setCurrentContext( xNewContext.get(), s_envType.pData, 0 );
+        ::uno_setCurrentContext( xNewContext.get(), s_envType.pData, nullptr );
         cc_reset reset( xContext.get() );
         return xAction->run();
     }
@@ -852,7 +852,7 @@ Any AccessController::doPrivileged(
     }
 
     Reference< XCurrentContext > xContext;
-    ::uno_getCurrentContext( reinterpret_cast<void **>(&xContext), s_envType.pData, 0 );
+    ::uno_getCurrentContext( reinterpret_cast<void **>(&xContext), s_envType.pData, nullptr );
 
     Reference< security::XAccessControlContext > xOldRestr(
         getDynamicRestriction( xContext ) );
@@ -862,7 +862,7 @@ Any AccessController::doPrivileged(
         // override restriction
         Reference< XCurrentContext > xNewContext(
             new acc_CurrentContext( xContext, acc_Union::create( xRestriction, xOldRestr ) ) );
-        ::uno_setCurrentContext( xNewContext.get(), s_envType.pData, 0 );
+        ::uno_setCurrentContext( xNewContext.get(), s_envType.pData, nullptr );
         cc_reset reset( xContext.get() );
         return xAction->run();
     }
@@ -887,7 +887,7 @@ Reference< security::XAccessControlContext > AccessController::getContext()
     }
 
     Reference< XCurrentContext > xContext;
-    ::uno_getCurrentContext( reinterpret_cast<void **>(&xContext), s_envType.pData, 0 );
+    ::uno_getCurrentContext( reinterpret_cast<void **>(&xContext), s_envType.pData, nullptr );
 
     return acc_Intersection::create(
         getDynamicRestriction( xContext ),
@@ -911,8 +911,7 @@ sal_Bool AccessController::supportsService( OUString const & serviceName )
 Sequence< OUString > AccessController::getSupportedServiceNames()
     throw (RuntimeException, std::exception)
 {
-    Sequence< OUString > aSNS( 1 );
-    aSNS[0] = SERVICE_NAME;
+    Sequence<OUString> aSNS { SERVICE_NAME };
     return aSNS;
 }
 

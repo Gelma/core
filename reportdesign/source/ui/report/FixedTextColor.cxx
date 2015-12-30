@@ -118,7 +118,7 @@ namespace rptui
                 }
                 else
                 {
-                    com::sun::star::util::Color aColor2 = xSection->getBackColor();
+                    css::util::Color aColor2 = xSection->getBackColor();
                     Color aBackColor(aColor2);
                     bIsDark = aBackColor.IsDark();
                 }
@@ -172,7 +172,7 @@ namespace rptui
                 if ( pUnoObj ) // this doesn't need to be done for shapes
                 {
                     OSectionWindow* pSectionWindow = pController->getSectionWindow(xSection);
-                    if (pSectionWindow != 0)
+                    if (pSectionWindow != nullptr)
                     {
                         OReportSection& aOutputDevice = pSectionWindow->getReportSection(); // OutputDevice
                         OSectionView& aSdrView = aOutputDevice.getSectionView(); // SdrView
@@ -190,7 +190,7 @@ namespace rptui
         uno::Reference<awt::XVclWindowPeer> xVclWindowPeer;
         uno::Reference<awt::XControl> xControl = getXControl(_xComponent);
 
-        xVclWindowPeer = uno::Reference<awt::XVclWindowPeer>( xControl->getPeer(), uno::UNO_QUERY);
+        xVclWindowPeer.set( xControl->getPeer(), uno::UNO_QUERY);
 
         return xVclWindowPeer;
     }

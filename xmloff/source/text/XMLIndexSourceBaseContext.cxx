@@ -145,7 +145,6 @@ static const SvXMLTokenMapEntry aIndexSourceTokenMap[] =
 };
 
 
-TYPEINIT1( XMLIndexSourceBaseContext, SvXMLImportContext );
 
 XMLIndexSourceBaseContext::XMLIndexSourceBaseContext(
     SvXMLImport& rImport,
@@ -233,7 +232,7 @@ SvXMLImportContext* XMLIndexSourceBaseContext::CreateChildContext(
     const OUString& rLocalName,
     const Reference<XAttributeList> & xAttrList )
 {
-    SvXMLImportContext* pContext = NULL;
+    SvXMLImportContext* pContext = nullptr;
 
     if (XML_NAMESPACE_TEXT == nPrefix)
     {
@@ -255,7 +254,7 @@ SvXMLImportContext* XMLIndexSourceBaseContext::CreateChildContext(
     // else: unknown namespace -> ignore
 
     // use default context
-    if (pContext == NULL)
+    if (pContext == nullptr)
     {
         pContext = SvXMLImportContext::CreateChildContext(nPrefix, rLocalName,
                                                           xAttrList);

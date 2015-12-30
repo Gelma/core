@@ -115,24 +115,22 @@ private:
     class DataAccess
     {
     public:
-        DataAccess(const ScDBQueryDataIterator* pParent);
+        DataAccess();
         virtual ~DataAccess() = 0;
         virtual bool getCurrent(Value& rValue) = 0;
         virtual bool getFirst(Value& rValue) = 0;
         virtual bool getNext(Value& rValue) = 0;
-    protected:
-        const ScDBQueryDataIterator* mpParent;
     };
 
     class DataAccessInternal : public DataAccess
     {
         typedef std::pair<sc::CellStoreType::const_iterator,size_t> PositionType;
     public:
-        DataAccessInternal(const ScDBQueryDataIterator* pParent, ScDBQueryParamInternal* pParam, ScDocument* pDoc);
+        DataAccessInternal(ScDBQueryParamInternal* pParam, ScDocument* pDoc);
         virtual ~DataAccessInternal();
-        virtual bool getCurrent(Value& rValue) SAL_OVERRIDE;
-        virtual bool getFirst(Value& rValue) SAL_OVERRIDE;
-        virtual bool getNext(Value& rValue) SAL_OVERRIDE;
+        virtual bool getCurrent(Value& rValue) override;
+        virtual bool getFirst(Value& rValue) override;
+        virtual bool getNext(Value& rValue) override;
 
     private:
         void incBlock();
@@ -156,11 +154,11 @@ private:
     class DataAccessMatrix : public DataAccess
     {
     public:
-        DataAccessMatrix(const ScDBQueryDataIterator* pParent, ScDBQueryParamMatrix* pParam);
+        DataAccessMatrix(ScDBQueryParamMatrix* pParam);
         virtual ~DataAccessMatrix();
-        virtual bool getCurrent(Value& rValue) SAL_OVERRIDE;
-        virtual bool getFirst(Value& rValue) SAL_OVERRIDE;
-        virtual bool getNext(Value& rValue) SAL_OVERRIDE;
+        virtual bool getCurrent(Value& rValue) override;
+        virtual bool getFirst(Value& rValue) override;
+        virtual bool getNext(Value& rValue) override;
 
     private:
         bool isValidQuery(SCROW mnRow, const ScMatrix& rMat) const;
@@ -595,7 +593,7 @@ public:
      */
     explicit ScDocRowHeightUpdater(
         ScDocument& rDoc, OutputDevice* pOutDev, double fPPTX, double fPPTY,
-        const ::std::vector<TabRanges>* pTabRangesArray = NULL);
+        const ::std::vector<TabRanges>* pTabRangesArray = nullptr);
 
     void update();
 

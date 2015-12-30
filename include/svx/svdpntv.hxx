@@ -143,7 +143,6 @@ protected:
     // All windows this view is displayed on
     SdrPaintWindowVector        maPaintWindows;
 
-    MapMode                     maActualMapMode;
     Size                        maGridBig;   // FIXME: We need to get rid of this eventually
     Size                        maGridFin;   // FIXME: We need to get rid of this eventually
     SdrDragStat                 maDragStat;
@@ -185,12 +184,10 @@ protected:
     bool                        mbVisualizeEnteredGroup : 1;
     bool                        mbAnimationPause : 1;
 
-    // #114898#
     // Flag which decides if buffered output for this view is allowed. When
     // set, PreRendering for PageView rendering will be used. Default is sal_False
     bool                        mbBufferedOutputAllowed : 1;
 
-    // #114898#
     // Flag which decides if buffered overlay for this view is allowed. When
     // set, the output will be buffered in an overlay vdev. When not, overlay is
     // directly painted to OutDev. Default is sal_False.
@@ -209,7 +206,6 @@ protected:
     bool                        mbHideFormControl : 1;      // hide form controls only
 
 public:
-    // #114898#
     // Interface for PagePaintingAllowed flag
     bool IsBufferedOutputAllowed() const;
     void SetBufferedOutputAllowed(bool bNew);
@@ -230,7 +226,7 @@ protected:
 protected:
     void AppendPaintWindow(SdrPaintWindow& rNew);
     SdrPaintWindow* RemovePaintWindow(SdrPaintWindow& rOld);
-    void ConfigurationChanged( ::utl::ConfigurationBroadcaster*, sal_uInt32 ) SAL_OVERRIDE;
+    void ConfigurationChanged( ::utl::ConfigurationBroadcaster*, sal_uInt32 ) override;
 
 public:
     sal_uInt32 PaintWindowCount() const { return maPaintWindows.size(); }
@@ -258,7 +254,7 @@ public:
     bool ImpIsGlueVisible() { return mbGlueVisible || mbGlueVisible2 || mbGlueVisible3 || mbGlueVisible4; }
 protected:
 
-    virtual void Notify(SfxBroadcaster& rBC, const SfxHint& rHint) SAL_OVERRIDE;
+    virtual void Notify(SfxBroadcaster& rBC, const SfxHint& rHint) override;
     void GlueInvalidate() const;
 
     // ModelHasChanged is called, as soon as the system is idle again after many HINT_OBJCHG.
@@ -268,11 +264,10 @@ protected:
 
 protected:
     // #i71538# make constructors of SdrView sub-components protected to avoid incomplete incarnations which may get casted to SdrView
-    SdrPaintView(SdrModel* pModel1, OutputDevice* pOut = 0L);
+    SdrPaintView(SdrModel* pModel1, OutputDevice* pOut = nullptr);
     virtual ~SdrPaintView();
 
 public:
-    TYPEINFO_OVERRIDE();
 
     virtual void ClearPageView();
     SdrModel* GetModel() const { return mpModel; }
@@ -340,7 +335,7 @@ public:
 
 
     // Used internally for Draw/Impress/sch/chart2
-    virtual void CompleteRedraw(OutputDevice* pOut, const vcl::Region& rReg, sdr::contact::ViewObjectContactRedirector* pRedirector = 0);
+    virtual void CompleteRedraw(OutputDevice* pOut, const vcl::Region& rReg, sdr::contact::ViewObjectContactRedirector* pRedirector = nullptr);
 
     // #i72889# used from CompleteRedraw() implementation internally, added to be able to do a complete redraw in single steps
 
@@ -353,7 +348,7 @@ public:
     // SdrPaintWindow again, if needed.
     // This means: the SdrPaintWindow is no longer safe after this closing call.
     virtual SdrPaintWindow* BeginCompleteRedraw(OutputDevice* pOut);
-    void DoCompleteRedraw(SdrPaintWindow& rPaintWindow, const vcl::Region& rReg, sdr::contact::ViewObjectContactRedirector* pRedirector = 0);
+    void DoCompleteRedraw(SdrPaintWindow& rPaintWindow, const vcl::Region& rReg, sdr::contact::ViewObjectContactRedirector* pRedirector = nullptr);
     virtual void EndCompleteRedraw(SdrPaintWindow& rPaintWindow, bool bPaintFormLayer);
 
 
@@ -420,7 +415,7 @@ public:
     void setHideFormControl(bool bNew) { if(bNew != (bool)mbHideFormControl) mbHideFormControl = bNew; }
 
     void SetGridCoarse(const Size& rSiz) { maGridBig=rSiz; }
-    void SetGridFine(const Size& rSiz) { maGridFin=rSiz; if (maGridFin.Height()==0) maGridFin.Height()=maGridFin.Width(); if (mbGridVisible) InvalidateAllWin(); } // #40479#
+    void SetGridFine(const Size& rSiz) { maGridFin=rSiz; if (maGridFin.Height()==0) maGridFin.Height()=maGridFin.Width(); if (mbGridVisible) InvalidateAllWin(); }
     const Size& GetGridCoarse() const { return maGridBig; }
     const Size& GetGridFine() const { return maGridFin; }
 
@@ -504,7 +499,7 @@ public:
 
     /// Must be called by the App when scrolling etc. in order for
     /// an active FormularControl to be moved too
-    void VisAreaChanged(const OutputDevice* pOut=NULL);
+    void VisAreaChanged(const OutputDevice* pOut=nullptr);
     void VisAreaChanged(const SdrPageWindow& rWindow);
 
     bool IsPrintPreview() const { return mbPrintPreview; }

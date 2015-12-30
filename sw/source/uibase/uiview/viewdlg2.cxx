@@ -82,7 +82,7 @@ void SwView::AutoCaption(const sal_uInt16 nType, const SvGlobalName *pOleId)
 {
     SwModuleOptions* pModOpt = SW_MOD()->GetModuleConfig();
 
-    bool bWeb = 0 != PTR_CAST(SwWebView, this);
+    bool bWeb = dynamic_cast<SwWebView*>( this ) !=  nullptr;
     if (pModOpt->IsInsWithCaption(bWeb))
     {
         const InsCaptionOpt *pOpt = pModOpt->GetCapOption(bWeb, (SwCapObjType)nType, pOleId);
@@ -145,7 +145,7 @@ void SwView::InsertCaption(const InsCaptionOpt *pOpt)
     }
 
     sal_uInt16       nID    = USHRT_MAX;
-    SwFieldType* pType  = 0;
+    SwFieldType* pType  = nullptr;
     const size_t nCount = aMgr.GetFieldTypeCount();
     if( !rName.isEmpty() )
     {
@@ -179,10 +179,10 @@ void SwView::InsertCaption(const InsCaptionOpt *pOpt)
 
     rSh.EndAllAction();
 
-    if ( rSh.IsFrmSelected() )
+    if ( rSh.IsFrameSelected() )
     {
-        GetEditWin().StopInsFrm();
-        rSh.EnterSelFrmMode();
+        GetEditWin().StopInsFrame();
+        rSh.EnterSelFrameMode();
     }
 
     // remember category
@@ -191,9 +191,9 @@ void SwView::InsertCaption(const InsCaptionOpt *pOpt)
     else if( eType & nsSelectionType::SEL_TBL)
         SetOldTabCat(rName);
     else if( eType & nsSelectionType::SEL_FRM)
-        SetOldFrmCat(rName);
+        SetOldFrameCat(rName);
     else if( eType == nsSelectionType::SEL_TXT)
-        SetOldFrmCat(rName);
+        SetOldFrameCat(rName);
     else if( eType & nsSelectionType::SEL_DRW)
         SetOldDrwCat(rName);
 }

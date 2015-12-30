@@ -20,19 +20,13 @@
 #ifndef INCLUDED_OOX_EXPORT_UTILS_HXX
 #define INCLUDED_OOX_EXPORT_UTILS_HXX
 
+#include <rtl/ustring.hxx>
+
 #define I32S(x) OString::number( (sal_Int32) x ).getStr()
 #define I64S(x) OString::number( (sal_Int64) x ).getStr()
 #define IS(x) OString::number( x ).getStr()
 #define BS(x) (x ? "1":"0")
 #define USS(x) OUStringToOString( x, RTL_TEXTENCODING_UTF8 ).getStr()
-
-#ifndef DBG
-#  if OSL_DEBUG_LEVEL > 0
-#    define DBG(x) x
-#  else
-#    define DBG(x)
-#  endif
-#endif
 
 static inline sal_Int64 PPTtoEMU( sal_Int32 nPPT )
 {

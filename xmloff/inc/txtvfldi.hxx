@@ -30,17 +30,6 @@
 #include <com/sun/star/beans/XPropertySetInfo.hpp>
 
 
-
-/// variable type (for XMLSetVarFieldImportContext)
-enum VarType
-{
-    VarTypeSimple,
-    VarTypeUserField,
-    VarTypeSequence
-};
-
-
-
 /** helper class: parses value-type and associated value attributes */
 class XMLValueImportHelper
 {
@@ -92,8 +81,7 @@ public:
 
     /// prepare XTextField for insertion into document
     void PrepareField(
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet> & xPropertySet);
+        const css::uno::Reference<css::beans::XPropertySet> & xPropertySet);
 
     /// is value a string (rather than double)?
     inline bool IsStringValue() { return bStringType; }
@@ -169,7 +157,6 @@ private:
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLVarFieldImportContext(
         // for XMLTextFieldImportContext:
@@ -194,12 +181,12 @@ public:
 protected:
     /// process attribute values
     virtual void ProcessAttribute( sal_uInt16 nAttrToken,
-                                   const OUString& sAttrValue ) SAL_OVERRIDE;
+                                   const OUString& sAttrValue ) override;
 
     /// prepare XTextField for insertion into document
     virtual void PrepareField(
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet> & xPropertySet) SAL_OVERRIDE;
+        const css::uno::Reference<
+        css::beans::XPropertySet> & xPropertySet) override;
 
     // various accessor methods:
     inline OUString GetName()    { return sName; }
@@ -213,7 +200,6 @@ class XMLVariableGetFieldImportContext : public XMLVarFieldImportContext
 {
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLVariableGetFieldImportContext(
         SvXMLImport& rImport,                   /// XML Import
@@ -225,8 +211,8 @@ public:
 protected:
     /// prepare XTextField for insertion into document
     virtual void PrepareField(
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet> & xPropertySet) SAL_OVERRIDE;
+        const css::uno::Reference<
+        css::beans::XPropertySet> & xPropertySet) override;
 };
 
 
@@ -238,7 +224,6 @@ class XMLExpressionFieldImportContext : public XMLVarFieldImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLExpressionFieldImportContext(
         SvXMLImport& rImport,                   /// XML Import
@@ -248,8 +233,8 @@ public:
 
 protected:
     virtual void PrepareField(
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet> & xPropertySet) SAL_OVERRIDE;
+        const css::uno::Reference<
+        css::beans::XPropertySet> & xPropertySet) override;
 };
 
 /*** import text input fields (<text:text-input>) */
@@ -259,7 +244,6 @@ class XMLTextInputFieldImportContext : public XMLVarFieldImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLTextInputFieldImportContext(
         SvXMLImport& rImport,                   /// XML Import
@@ -269,8 +253,8 @@ public:
 
 protected:
     virtual void PrepareField(
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet> & xPropertySet) SAL_OVERRIDE;
+        const css::uno::Reference<
+        css::beans::XPropertySet> & xPropertySet) override;
 };
 
 
@@ -288,7 +272,6 @@ class XMLSetVarFieldImportContext : public XMLVarFieldImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLSetVarFieldImportContext(
         // for XMLTextFieldImportContext:
@@ -316,12 +299,12 @@ protected:
 
     /// create XTextField, attach master and insert into document;
     /// also calls PrepareTextField
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
     /// find appropriate field master
     bool FindFieldMaster(
-        ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet> & xMaster);
+        css::uno::Reference<
+        css::beans::XPropertySet> & xMaster);
 };
 
 
@@ -333,7 +316,6 @@ class XMLVariableSetFieldImportContext : public XMLSetVarFieldImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLVariableSetFieldImportContext(
         SvXMLImport& rImport,                   /// XML Import
@@ -344,8 +326,7 @@ public:
 protected:
     /// prepare XTextField for insertion into document
     virtual void PrepareField(
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet> & xPropertySet) SAL_OVERRIDE;
+        const css::uno::Reference<css::beans::XPropertySet> & xPropertySet) override;
 };
 
 
@@ -358,7 +339,6 @@ class XMLVariableInputFieldImportContext : public XMLSetVarFieldImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLVariableInputFieldImportContext(
         SvXMLImport& rImport,                   /// XML Import
@@ -370,8 +350,7 @@ protected:
 
     /// prepare XTextField for insertion into document
     virtual void PrepareField(
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet> & xPropertySet) SAL_OVERRIDE;
+        const css::uno::Reference<css::beans::XPropertySet> & xPropertySet) override;
 };
 
 
@@ -382,7 +361,6 @@ class XMLUserFieldImportContext : public XMLSetVarFieldImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLUserFieldImportContext(
         SvXMLImport& rImport,                   /// XML Import
@@ -397,7 +375,6 @@ class XMLUserFieldInputImportContext : public XMLVarFieldImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLUserFieldInputImportContext(
         SvXMLImport& rImport,                   /// XML Import
@@ -406,8 +383,7 @@ public:
         const OUString& rLocalName);     /// element name w/o prefix
 
     virtual void PrepareField(
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet> & xPropertySet) SAL_OVERRIDE;
+        const css::uno::Reference<css::beans::XPropertySet> & xPropertySet) override;
 };
 
 
@@ -425,7 +401,6 @@ class XMLSequenceFieldImportContext : public XMLSetVarFieldImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLSequenceFieldImportContext(
         SvXMLImport& rImport,                   /// XML Import
@@ -437,12 +412,11 @@ protected:
 
     /// process attribute values
     virtual void ProcessAttribute( sal_uInt16 nAttrToken,
-                                   const OUString& sAttrValue ) SAL_OVERRIDE;
+                                   const OUString& sAttrValue ) override;
 
     /// prepare XTextField for insertion into document
     virtual void PrepareField(
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet> & xPropertySet) SAL_OVERRIDE;
+        const css::uno::Reference<css::beans::XPropertySet> & xPropertySet) override;
 };
 
 
@@ -461,7 +435,6 @@ class XMLVariableDeclsImportContext : public SvXMLImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLVariableDeclsImportContext(
         SvXMLImport& rImport,                   /// XML Import
@@ -473,8 +446,7 @@ public:
     virtual SvXMLImportContext *CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::xml::sax::XAttributeList> & xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList ) override;
 };
 
 /**
@@ -495,20 +467,17 @@ class XMLVariableDeclImportContext : public SvXMLImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLVariableDeclImportContext(
         SvXMLImport& rImport,                   /// XML Import
         XMLTextImportHelper& rHlp,              /// text import helper
         sal_uInt16 nPrfx,                       /// namespace prefix
         const OUString& rLocalName,      /// element name w/o prefix
-        const ::com::sun::star::uno::Reference< /// list of element attributes
-        ::com::sun::star::xml::sax::XAttributeList> & xAttrList,
+        const css::uno::Reference< css::xml::sax::XAttributeList> & xAttrList,/// list of element attributes
         enum VarType eVarType);                 /// variable type
 
     /// get field master for name and rename if appropriate
-    static bool FindFieldMaster(::com::sun::star::uno::Reference<
-                                    ::com::sun::star::beans::XPropertySet> & xMaster,
+    static bool FindFieldMaster(css::uno::Reference<css::beans::XPropertySet> & xMaster,
                                     SvXMLImport& rImport,
                                     XMLTextImportHelper& rHelper,
                                     const OUString& sVarName,
@@ -529,7 +498,6 @@ class XMLTableFormulaImportContext : public XMLTextFieldImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLTableFormulaImportContext(
         SvXMLImport& rImport,                   /// XML Import
@@ -542,12 +510,11 @@ protected:
 
     /// process attribute values
     virtual void ProcessAttribute( sal_uInt16 nAttrToken,
-                                   const OUString& sAttrValue ) SAL_OVERRIDE;
+                                   const OUString& sAttrValue ) override;
 
     /// prepare XTextField for insertion into document
     virtual void PrepareField(
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet> & xPropertySet) SAL_OVERRIDE;
+        const css::uno::Reference<css::beans::XPropertySet> & xPropertySet) override;
 };
 
 
@@ -570,7 +537,6 @@ class XMLDatabaseDisplayImportContext : public XMLDatabaseFieldImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLDatabaseDisplayImportContext(
         SvXMLImport& rImport,                   /// XML Import
@@ -582,10 +548,10 @@ protected:
 
     /// process attribute values
     virtual void ProcessAttribute( sal_uInt16 nAttrToken,
-                                   const OUString& sAttrValue ) SAL_OVERRIDE;
+                                   const OUString& sAttrValue ) override;
 
     /// create, prepare and insert database field master and database field
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 };
 
 #endif

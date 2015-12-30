@@ -54,18 +54,18 @@ public:
         m_context(context) {}
 
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual sal_Bool SAL_CALL supportsService(OUString const & serviceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Sequence< OUString > SAL_CALL
-    getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Reference< css::uri::XUriReference > SAL_CALL
     createVndSunStarPkgUrlReference(
         css::uno::Reference< css::uri::XUriReference > const & authority)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
 private:
     virtual ~Factory() {}
@@ -88,8 +88,7 @@ sal_Bool Factory::supportsService(OUString const & serviceName)
 css::uno::Sequence< OUString > Factory::getSupportedServiceNames()
     throw (css::uno::RuntimeException, std::exception)
 {
-    css::uno::Sequence< OUString > s(1);
-    s[0] = "com.sun.star.uri.VndSunStarPkgUrlReferenceFactory";
+    css::uno::Sequence< OUString > s { "com.sun.star.uri.VndSunStarPkgUrlReferenceFactory" };
     return s;
 }
 
@@ -118,9 +117,9 @@ Factory::createVndSunStarPkgUrlReference(
 
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_uri_VndSunStarPkgUrlReferenceFactory_get_implementation(::com::sun::star::uno::XComponentContext* rxContext,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_uri_VndSunStarPkgUrlReferenceFactory_get_implementation(css::uno::XComponentContext* rxContext,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     return ::cppu::acquire(new Factory(rxContext));
 }

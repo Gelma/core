@@ -37,6 +37,7 @@
 #include <cppuhelper/supportsservice.hxx>
 #include <boost/checked_delete.hpp>
 #include <boost/noncopyable.hpp>
+#include <o3tl/make_unique.hxx>
 
 #include "lngsvcmgr.hxx"
 #include "lngopt.hxx"
@@ -97,10 +98,9 @@ static uno::Sequence< lang::Locale > GetAvailLocales(
             uno::Reference< linguistic2::XSupportedLocales > xSuppLoc;
             try
             {
-                xSuppLoc = uno::Reference< linguistic2::XSupportedLocales >(
-                                xContext->getServiceManager()->createInstanceWithArgumentsAndContext(
-                                   pImplNames[i], aArgs, xContext ),
-                                uno::UNO_QUERY );
+                xSuppLoc.set( xContext->getServiceManager()->createInstanceWithArgumentsAndContext(
+                                 pImplNames[i], aArgs, xContext ),
+                              uno::UNO_QUERY );
             }
             catch (uno::Exception &)
             {
@@ -200,18 +200,18 @@ public:
     // lang::XEventListener
     virtual void SAL_CALL
         disposing( const lang::EventObject& rSource )
-            throw(uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(uno::RuntimeException, std::exception) override;
 
     // linguistic2::XLinguServiceEventListener
     virtual void SAL_CALL
         processLinguServiceEvent( const linguistic2::LinguServiceEvent& aLngSvcEvent )
-            throw(uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(uno::RuntimeException, std::exception) override;
 
     // linguistic2::XDictionaryListEventListener
     virtual void SAL_CALL
         processDictionaryListEvent(
                 const linguistic2::DictionaryListEvent& rDicListEvent )
-            throw(uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(uno::RuntimeException, std::exception) override;
 
     inline  bool    AddLngSvcMgrListener(
                         const uno::Reference< lang::XEventListener >& rxListener );
@@ -256,7 +256,7 @@ void SAL_CALL LngSvcMgrListenerHelper::disposing( const lang::EventObject& rSour
         aLngSvcMgrListeners   .removeInterface( xRef );
         aLngSvcEvtBroadcasters.removeInterface( xRef );
         if (xDicList == xRef)
-            xDicList = 0;
+            xDicList = nullptr;
     }
 }
 
@@ -269,7 +269,7 @@ long LngSvcMgrListenerHelper::Timeout()
         // probably do not know (and need not to know) about the specific
         // SpellChecker's or Hyphenator's.
         linguistic2::LinguServiceEvent aEvtObj(
-            static_cast<com::sun::star::linguistic2::XLinguServiceManager*>(&rMyManager), nCombinedLngSvcEvt );
+            static_cast<css::linguistic2::XLinguServiceManager*>(&rMyManager), nCombinedLngSvcEvt );
         nCombinedLngSvcEvt = 0;
 
         if (rMyManager.pSpellDsp)
@@ -363,7 +363,7 @@ void SAL_CALL
 void LngSvcMgrListenerHelper::LaunchEvent( sal_Int16 nLngSvcEvtFlags )
 {
     linguistic2::LinguServiceEvent aEvt(
-        static_cast<com::sun::star::linguistic2::XLinguServiceManager*>(&rMyManager), nLngSvcEvtFlags );
+        static_cast<css::linguistic2::XLinguServiceManager*>(&rMyManager), nLngSvcEvtFlags );
 
     // pass event on to linguistic2::XLinguServiceEventListener's
     cppu::OInterfaceIteratorHelper aIt( aLngSvcMgrListeners );
@@ -411,7 +411,7 @@ void LngSvcMgrListenerHelper::DisposeAndClear( const lang::EventObject &rEvtObj 
     {
         xDicList->removeDictionaryListEventListener(
             static_cast<linguistic2::XDictionaryListEventListener *>(this) );
-        xDicList = 0;
+        xDicList = nullptr;
     }
 }
 
@@ -452,16 +452,16 @@ LngSvcMgr::LngSvcMgr()
 {
     bDisposing = false;
 
-    pSpellDsp   = 0;
-    pGrammarDsp = 0;
-    pHyphDsp    = 0;
-    pThesDsp    = 0;
+    pSpellDsp   = nullptr;
+    pGrammarDsp = nullptr;
+    pHyphDsp    = nullptr;
+    pThesDsp    = nullptr;
 
-    pAvailSpellSvcs     = 0;
-    pAvailGrammarSvcs   = 0;
-    pAvailHyphSvcs      = 0;
-    pAvailThesSvcs      = 0;
-    pListenerHelper     = 0;
+    pAvailSpellSvcs     = nullptr;
+    pAvailGrammarSvcs   = nullptr;
+    pAvailHyphSvcs      = nullptr;
+    pAvailThesSvcs      = nullptr;
+    pListenerHelper     = nullptr;
 
     // request notify events when properties (i.e. something in the subtree) changes
     uno::Sequence< OUString > aNames(4);
@@ -490,14 +490,14 @@ LngSvcMgr::LngSvcMgr()
     }
     if (xExtensionManager.is())
     {
-        xMB = uno::Reference<util::XModifyBroadcaster>(xExtensionManager, uno::UNO_QUERY_THROW);
+        xMB.set(xExtensionManager, uno::UNO_QUERY_THROW);
 
         uno::Reference<util::XModifyListener> xListener(this);
         xMB->addModifyListener( xListener );
     }
 }
 
-// ::com::sun::star::util::XModifyListener
+// css::util::XModifyListener
 void LngSvcMgr::modified(const lang::EventObject&)
     throw(uno::RuntimeException, std::exception)
 {
@@ -562,7 +562,7 @@ void LngSvcMgr::disposing(const lang::EventObject&)
 void LngSvcMgr::clearSvcInfoArray(SvcInfoArray* &rpInfo)
 {
     delete rpInfo;
-    rpInfo = NULL;
+    rpInfo = nullptr;
 }
 
 LngSvcMgr::~LngSvcMgr()
@@ -1005,7 +1005,7 @@ void LngSvcMgr::GetGrammarCheckerDsp_Impl( bool bSetSvcList  )
         {
             pGrammarDsp    = dynamic_cast< GrammarCheckingIterator * >(xGCI.get());
             xGrammarDsp    = xGCI;
-            SAL_WARN_IF( pGrammarDsp == NULL, "linguistic", "failed to get implementation" );
+            SAL_WARN_IF( pGrammarDsp == nullptr, "linguistic", "failed to get implementation" );
             if (bSetSvcList && pGrammarDsp)
                 SetCfgServiceLists( *pGrammarDsp );
         }
@@ -1068,7 +1068,7 @@ void LngSvcMgr::GetAvailableSpellSvcs_Impl()
                 {
                     try
                     {
-                        xSvc = uno::Reference< linguistic2::XSpellChecker >( ( xCompFactory.is() ? xCompFactory->createInstanceWithContext( xContext ) : xFactory->createInstance() ), uno::UNO_QUERY );
+                        xSvc.set( ( xCompFactory.is() ? xCompFactory->createInstanceWithContext( xContext ) : xFactory->createInstance() ), uno::UNO_QUERY );
                     }
                     catch (const uno::Exception &)
                     {
@@ -1091,7 +1091,7 @@ void LngSvcMgr::GetAvailableSpellSvcs_Impl()
                         aLanguages = LocaleSeqToLangSeq( aLocaleSequence );
                     }
 
-                    pAvailSpellSvcs->push_back( new SvcInfo( aImplName, aLanguages ) );
+                    pAvailSpellSvcs->push_back( o3tl::make_unique<SvcInfo>( aImplName, aLanguages ) );
                 }
             }
         }
@@ -1130,7 +1130,7 @@ void LngSvcMgr::GetAvailableGrammarSvcs_Impl()
                 {
                     try
                     {
-                        xSvc = uno::Reference< linguistic2::XProofreader >( ( xCompFactory.is() ? xCompFactory->createInstanceWithContext( xContext ) : xFactory->createInstance() ), uno::UNO_QUERY );
+                        xSvc.set( ( xCompFactory.is() ? xCompFactory->createInstanceWithContext( xContext ) : xFactory->createInstance() ), uno::UNO_QUERY );
                     }
                     catch (const uno::Exception &)
                     {
@@ -1154,7 +1154,7 @@ void LngSvcMgr::GetAvailableGrammarSvcs_Impl()
                         aLanguages = LocaleSeqToLangSeq( aLocaleSequence );
                     }
 
-                    pAvailGrammarSvcs->push_back( new SvcInfo( aImplName, aLanguages ) );
+                    pAvailGrammarSvcs->push_back( o3tl::make_unique<SvcInfo>( aImplName, aLanguages ) );
                 }
             }
         }
@@ -1192,7 +1192,7 @@ void LngSvcMgr::GetAvailableHyphSvcs_Impl()
                 {
                     try
                     {
-                        xSvc = uno::Reference< linguistic2::XHyphenator >( ( xCompFactory.is() ? xCompFactory->createInstanceWithContext( xContext ) : xFactory->createInstance() ), uno::UNO_QUERY );
+                        xSvc.set( ( xCompFactory.is() ? xCompFactory->createInstanceWithContext( xContext ) : xFactory->createInstance() ), uno::UNO_QUERY );
                     }
                     catch (const uno::Exception &)
                     {
@@ -1214,7 +1214,7 @@ void LngSvcMgr::GetAvailableHyphSvcs_Impl()
                         uno::Sequence<lang::Locale> aLocaleSequence(xSuppLoc->getLocales());
                         aLanguages = LocaleSeqToLangSeq( aLocaleSequence );
                     }
-                    pAvailHyphSvcs->push_back( new SvcInfo( aImplName, aLanguages ) );
+                    pAvailHyphSvcs->push_back( o3tl::make_unique<SvcInfo>( aImplName, aLanguages ) );
                 }
             }
         }
@@ -1253,7 +1253,7 @@ void LngSvcMgr::GetAvailableThesSvcs_Impl()
                 {
                     try
                     {
-                        xSvc = uno::Reference< linguistic2::XThesaurus >( ( xCompFactory.is() ? xCompFactory->createInstanceWithContext( xContext ) : xFactory->createInstance() ), uno::UNO_QUERY );
+                        xSvc.set( ( xCompFactory.is() ? xCompFactory->createInstanceWithContext( xContext ) : xFactory->createInstance() ), uno::UNO_QUERY );
                     }
                     catch (const uno::Exception &)
                     {
@@ -1276,7 +1276,7 @@ void LngSvcMgr::GetAvailableThesSvcs_Impl()
                         aLanguages = LocaleSeqToLangSeq( aLocaleSequence );
                     }
 
-                    pAvailThesSvcs->push_back( new SvcInfo( aImplName, aLanguages ) );
+                    pAvailThesSvcs->push_back( o3tl::make_unique<SvcInfo>( aImplName, aLanguages ) );
                 }
             }
         }
@@ -1551,7 +1551,7 @@ uno::Sequence< OUString > SAL_CALL
     osl::MutexGuard aGuard( GetLinguMutex() );
 
     uno::Sequence< OUString > aRes;
-    const SvcInfoArray *pInfoArray = 0;
+    const SvcInfoArray *pInfoArray = nullptr;
 
     if (rServiceName == SN_SPELLCHECKER)
     {
@@ -1585,7 +1585,7 @@ uno::Sequence< OUString > SAL_CALL
         LanguageType nLanguage = LinguLocaleToLanguage( rLocale );
         for (size_t i = 0;  i < nMaxCnt; ++i)
         {
-            const SvcInfo &rInfo = (*pInfoArray)[i];
+            const SvcInfo &rInfo = *(*pInfoArray)[i].get();
             if (LinguIsUnspecified( nLanguage )
                 || rInfo.HasLanguage( nLanguage ))
             {
@@ -1611,7 +1611,7 @@ uno::Sequence< lang::Locale > SAL_CALL
 
     uno::Sequence< lang::Locale > aRes;
 
-    uno::Sequence< lang::Locale >  *pAvailLocales     = NULL;
+    uno::Sequence< lang::Locale >  *pAvailLocales     = nullptr;
     if (rServiceName == SN_SPELLCHECKER)
         pAvailLocales       = &aAvailSpellLocales;
     else if (rServiceName == SN_GRAMMARCHECKER)
@@ -1681,7 +1681,7 @@ void SAL_CALL
             if (bChanged)
             {
                 pSpellDsp->SetServiceList( rLocale, rServiceImplNames );
-                SaveCfgSvcs( OUString(SN_SPELLCHECKER) );
+                SaveCfgSvcs( SN_SPELLCHECKER );
 
                 if (pListenerHelper  &&  bChanged)
                     pListenerHelper->AddLngSvcEvt(
@@ -1698,7 +1698,7 @@ void SAL_CALL
             if (bChanged)
             {
                 pGrammarDsp->SetServiceList( rLocale, rServiceImplNames );
-                SaveCfgSvcs( OUString(SN_GRAMMARCHECKER) );
+                SaveCfgSvcs( SN_GRAMMARCHECKER );
 
                 if (pListenerHelper  &&  bChanged)
                     pListenerHelper->AddLngSvcEvt(
@@ -1714,7 +1714,7 @@ void SAL_CALL
             if (bChanged)
             {
                 pHyphDsp->SetServiceList( rLocale, rServiceImplNames );
-                SaveCfgSvcs( OUString(SN_HYPHENATOR) );
+                SaveCfgSvcs( SN_HYPHENATOR );
 
                 if (pListenerHelper  &&  bChanged)
                     pListenerHelper->AddLngSvcEvt(
@@ -1730,7 +1730,7 @@ void SAL_CALL
             if (bChanged)
             {
                 pThesDsp->SetServiceList( rLocale, rServiceImplNames );
-                SaveCfgSvcs( OUString(SN_THESAURUS) );
+                SaveCfgSvcs( SN_THESAURUS );
             }
         }
     }
@@ -1743,7 +1743,7 @@ bool LngSvcMgr::SaveCfgSvcs( const OUString &rServiceName )
 
     bool bRes = false;
 
-    LinguDispatcher *pDsp = 0;
+    LinguDispatcher *pDsp = nullptr;
     uno::Sequence< lang::Locale > aLocales;
 
     if (rServiceName == SN_SPELLCHECKER)
@@ -1785,7 +1785,7 @@ bool LngSvcMgr::SaveCfgSvcs( const OUString &rServiceName )
         beans::PropertyValue *pValue  = pValues;
 
         // get node name to be used
-        const char *pNodeName = NULL;
+        const char *pNodeName = nullptr;
         if (pDsp == pSpellDsp)
             pNodeName = "ServiceManager/SpellCheckerList";
         else if (pDsp == pGrammarDsp)
@@ -2026,7 +2026,6 @@ OUString SAL_CALL
     LngSvcMgr::getImplementationName()
         throw(uno::RuntimeException, std::exception)
 {
-    osl::MutexGuard aGuard( GetLinguMutex() );
     return getImplementationName_Static();
 }
 
@@ -2043,7 +2042,6 @@ uno::Sequence< OUString > SAL_CALL
     LngSvcMgr::getSupportedServiceNames()
         throw(uno::RuntimeException, std::exception)
 {
-    osl::MutexGuard aGuard( GetLinguMutex() );
     return getSupportedServiceNames_Static();
 }
 
@@ -2051,10 +2049,7 @@ uno::Sequence< OUString > SAL_CALL
 uno::Sequence< OUString > LngSvcMgr::getSupportedServiceNames_Static()
         throw()
 {
-    osl::MutexGuard aGuard( GetLinguMutex() );
-
-    uno::Sequence< OUString > aSNS( 1 );    // more than 1 service possible
-    aSNS.getArray()[0] = "com.sun.star.linguistic2.LinguServiceManager";
+    uno::Sequence< OUString > aSNS { "com.sun.star.linguistic2.LinguServiceManager" };
     return aSNS;
 }
 
@@ -2073,7 +2068,7 @@ void * SAL_CALL LngSvcMgr_getFactory(
             void * /*pRegistryKey*/ )
 {
 
-    void * pRet = 0;
+    void * pRet = nullptr;
     if ( LngSvcMgr::getImplementationName_Static().equalsAscii( pImplName ) )
     {
         uno::Reference< lang::XSingleServiceFactory > xFactory =

@@ -59,20 +59,6 @@ class SgaObject;
 class FmFormModel;
 class ListBox;
 
-
-// - GalDragParams -
-
-
-struct GalDragParams
-{
-    vcl::Region  aDragRegion;
-    sal_uIntPtr nDragObjPos;
-    OUString aThemeName;
-    OUString aFileName;
-    SgaObjKind  eObjKind;
-};
-
-
 // - GalleryTheme -
 
 
@@ -110,7 +96,7 @@ private:
     SAL_DLLPRIVATE bool         ImplWriteSgaObject( const SgaObject& rObj, size_t nPos, GalleryObject* pExistentEntry );
     SAL_DLLPRIVATE void         ImplWrite();
     SAL_DLLPRIVATE const GalleryObject* ImplGetGalleryObject( size_t nPos ) const
-                                { return ( nPos < aObjectList.size() ) ? aObjectList[ nPos ] : NULL; }
+                                { return ( nPos < aObjectList.size() ) ? aObjectList[ nPos ] : nullptr; }
     const GalleryObject*        ImplGetGalleryObject( const INetURLObject& rURL );
 
     SAL_DLLPRIVATE size_t       ImplGetGalleryObjectPos( const GalleryObject* pObj ) const
@@ -178,7 +164,7 @@ public:
     bool                        IsDefault() const;
     SAL_DLLPRIVATE bool         IsModified() const;
 
-    void                        Actualize( const Link<const INetURLObject&, void>& rActualizeLink, GalleryProgress* pProgress = NULL );
+    void                        Actualize( const Link<const INetURLObject&, void>& rActualizeLink, GalleryProgress* pProgress = nullptr );
     SAL_DLLPRIVATE void         AbortActualize() { bAbortActualize = true; }
 
     SAL_DLLPRIVATE Gallery*     GetParent() const { return pParent; }
@@ -214,7 +200,7 @@ public:
     bool                        InsertURL( const INetURLObject& rURL, sal_uIntPtr nInsertPos = CONTAINER_APPEND );
     SAL_DLLPRIVATE bool         InsertFileOrDirURL( const INetURLObject& rFileOrDirURL, sal_uIntPtr nInsertPos = CONTAINER_APPEND );
 
-    SAL_DLLPRIVATE bool         InsertTransferable( const ::com::sun::star::uno::Reference< ::com::sun::star::datatransfer::XTransferable >& rxTransferable, sal_uIntPtr nInsertPos );
+    SAL_DLLPRIVATE bool         InsertTransferable( const css::uno::Reference< css::datatransfer::XTransferable >& rxTransferable, sal_uIntPtr nInsertPos );
 
     SAL_DLLPRIVATE void         CopyToClipboard( vcl::Window* pWindow, sal_uIntPtr nPos );
     SAL_DLLPRIVATE void         StartDrag( vcl::Window* pWindow, sal_uIntPtr nPos );

@@ -57,8 +57,8 @@ private:
     bool m_bModal;
 public:
     TableValueSet(vcl::Window *pParent, WinBits nStyle);
-    virtual void Resize() SAL_OVERRIDE;
-    virtual void DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual void Resize() override;
+    virtual void DataChanged( const DataChangedEvent& rDCEvt ) override;
     void updateSettings();
     void setModal(bool bModal) { m_bModal = bModal; }
 };
@@ -95,10 +95,9 @@ private:
     VclPtr<TableValueSet> m_pValueSet;
     VclPtr<CheckBox> m_aCheckBoxes[CB_COUNT];
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > mxSelectedTable;
-    ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XDrawView > mxView;
-    ::com::sun::star::uno::Reference< ::com::sun::star::container::XIndexAccess > mxTableFamily;
-    ::com::sun::star::uno::Reference< ::com::sun::star::ui::XUIElement > mxToolbar;
+    css::uno::Reference< css::beans::XPropertySet > mxSelectedTable;
+    css::uno::Reference< css::drawing::XDrawView > mxView;
+    css::uno::Reference< css::container::XIndexAccess > mxTableFamily;
 
     bool mbModal;
     bool mbStyleSelected;
@@ -112,7 +111,7 @@ private:
 public:
     TableDesignPane( vcl::Window* pParent, ViewShellBase& rBase )
         : PanelLayout(pParent, "TableDesignPanel",
-        "modules/simpress/ui/tabledesignpanel.ui", com::sun::star::uno::Reference<css::frame::XFrame>())
+        "modules/simpress/ui/tabledesignpanel.ui", css::uno::Reference<css::frame::XFrame>())
         , aImpl(this, rBase, false)
     {
     }
@@ -129,7 +128,7 @@ public:
         , aImpl(this, rBase, true)
     {
     }
-    virtual short Execute() SAL_OVERRIDE;
+    virtual short Execute() override;
 };
 
 void showTableDesignDialog( vcl::Window*, ViewShellBase& );

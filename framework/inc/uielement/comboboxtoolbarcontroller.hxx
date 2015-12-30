@@ -33,28 +33,12 @@ namespace framework
 
 class ComboBoxControl;
 
-class IComboBoxListener
-{
-    public:
-        virtual void Select() = 0;
-        virtual void DoubleClick() = 0;
-        virtual void Modify() = 0;
-        virtual void KeyInput( const KeyEvent& rKEvt ) = 0;
-        virtual void GetFocus() = 0;
-        virtual void LoseFocus() = 0;
-        virtual bool PreNotify( NotifyEvent& rNEvt ) = 0;
-
-    protected:
-        ~IComboBoxListener() {}
-};
-
-class ComboboxToolbarController : public IComboBoxListener,
-                                  public ComplexToolbarController
+class ComboboxToolbarController : public ComplexToolbarController
 
 {
     public:
-        ComboboxToolbarController( const com::sun::star::uno::Reference< com::sun::star::uno::XComponentContext >& rxContext,
-                                   const com::sun::star::uno::Reference< com::sun::star::frame::XFrame >& rFrame,
+        ComboboxToolbarController( const css::uno::Reference< css::uno::XComponentContext >& rxContext,
+                                   const css::uno::Reference< css::frame::XFrame >& rFrame,
                                    ToolBox*     pToolBar,
                                    sal_uInt16       nID,
                                    sal_Int32    nWidth,
@@ -62,20 +46,18 @@ class ComboboxToolbarController : public IComboBoxListener,
         virtual ~ComboboxToolbarController();
 
         // XComponent
-        virtual void SAL_CALL dispose() throw ( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual void SAL_CALL dispose() throw ( css::uno::RuntimeException, std::exception ) override;
 
-        // IComboBoxListener
-        virtual void Select() SAL_OVERRIDE;
-        virtual void DoubleClick() SAL_OVERRIDE;
-        virtual void Modify() SAL_OVERRIDE;
-        virtual void KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
-        virtual void GetFocus() SAL_OVERRIDE;
-        virtual void LoseFocus() SAL_OVERRIDE;
-        virtual bool PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+        // called from ComboBoxControl
+        void Select();
+        void Modify();
+        void GetFocus();
+        void LoseFocus();
+        bool PreNotify( NotifyEvent& rNEvt );
 
     protected:
-        virtual void executeControlCommand( const ::com::sun::star::frame::ControlCommand& rControlCommand ) SAL_OVERRIDE;
-        virtual ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue> getExecuteArgs(sal_Int16 KeyModifier) const SAL_OVERRIDE;
+        virtual void executeControlCommand( const css::frame::ControlCommand& rControlCommand ) override;
+        virtual css::uno::Sequence< css::beans::PropertyValue> getExecuteArgs(sal_Int16 KeyModifier) const override;
 
     private:
         VclPtr<ComboBoxControl>    m_pComboBox;

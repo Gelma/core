@@ -60,7 +60,7 @@ using ::com::sun::star::xml::sax::XDocumentHandler;
 
 
 XMLAutoTextEventExport::XMLAutoTextEventExport(
-    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& xContext,
+    const css::uno::Reference< css::uno::XComponentContext >& xContext,
     OUString const & implementationName, SvXMLExportFlags nFlags
     )
 :   SvXMLExport(util::MeasureUnit::INCH, xContext, implementationName, XML_AUTO_TEXT, nFlags)
@@ -129,7 +129,7 @@ sal_uInt32 XMLAutoTextEventExport::exportDoc( enum XMLTokenEnum )
                 SetDocHandler( xTmpDocHandler );
             }
         }
-        catch( com::sun::star::uno::Exception& )
+        catch( css::uno::Exception& )
         {
         }
     }
@@ -212,8 +212,7 @@ void XMLAutoTextEventExport::_ExportContent() {}
 Sequence< OUString > SAL_CALL XMLAutoTextEventExport_getSupportedServiceNames()
     throw()
 {
-    Sequence< OUString > aSeq( 1 );
-    aSeq[0] = XMLAutoTextEventExport_getImplementationName();
+    Sequence<OUString> aSeq { XMLAutoTextEventExport_getImplementationName() };
     return aSeq;
 }
 
@@ -234,8 +233,7 @@ Reference< XInterface > SAL_CALL XMLAutoTextEventExport_createInstance(
 Sequence< OUString > SAL_CALL XMLAutoTextEventExportOOO_getSupportedServiceNames()
     throw()
 {
-    Sequence< OUString > aSeq( 1 );
-    aSeq[0] = XMLAutoTextEventExportOOO_getImplementationName();
+    Sequence<OUString> aSeq { XMLAutoTextEventExportOOO_getImplementationName() };
     return aSeq;
 }
 

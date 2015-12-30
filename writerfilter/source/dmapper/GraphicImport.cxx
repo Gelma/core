@@ -83,11 +83,11 @@ public:
     XInputStreamHelper(const sal_uInt8* buf, size_t len, bool bBmp);
     virtual ~XInputStreamHelper();
 
-    virtual ::sal_Int32 SAL_CALL readBytes( uno::Sequence< ::sal_Int8 >& aData, ::sal_Int32 nBytesToRead ) throw (io::NotConnectedException, io::BufferSizeExceededException, io::IOException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::sal_Int32 SAL_CALL readSomeBytes( uno::Sequence< ::sal_Int8 >& aData, ::sal_Int32 nMaxBytesToRead ) throw (io::NotConnectedException, io::BufferSizeExceededException, io::IOException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL skipBytes( ::sal_Int32 nBytesToSkip ) throw (io::NotConnectedException, io::BufferSizeExceededException, io::IOException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::sal_Int32 SAL_CALL available(  ) throw (io::NotConnectedException, io::IOException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL closeInput(  ) throw (io::NotConnectedException, io::IOException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual ::sal_Int32 SAL_CALL readBytes( uno::Sequence< ::sal_Int8 >& aData, ::sal_Int32 nBytesToRead ) throw (io::NotConnectedException, io::BufferSizeExceededException, io::IOException, uno::RuntimeException, std::exception) override;
+    virtual ::sal_Int32 SAL_CALL readSomeBytes( uno::Sequence< ::sal_Int8 >& aData, ::sal_Int32 nMaxBytesToRead ) throw (io::NotConnectedException, io::BufferSizeExceededException, io::IOException, uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL skipBytes( ::sal_Int32 nBytesToSkip ) throw (io::NotConnectedException, io::BufferSizeExceededException, io::IOException, uno::RuntimeException, std::exception) override;
+    virtual ::sal_Int32 SAL_CALL available(  ) throw (io::NotConnectedException, io::IOException, uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL closeInput(  ) throw (io::NotConnectedException, io::IOException, uno::RuntimeException, std::exception) override;
 };
 
 XInputStreamHelper::XInputStreamHelper(const sal_uInt8* buf, size_t len, bool bBmp) :
@@ -196,12 +196,9 @@ public:
     GraphicImportType eGraphicImportType;
     DomainMapper&   rDomainMapper;
 
-    sal_Int32 nHoriScaling;
-    sal_Int32 nVertScaling;
     sal_Int32 nLeftPosition;
     sal_Int32 nTopPosition;
     sal_Int32 nRightPosition;
-    sal_Int32 nBottomPosition;
 
     bool      bUseSimplePos;
     sal_Int32 zOrder;
@@ -217,7 +214,6 @@ public:
     bool      bContour;
     bool      bContourOutside;
     WrapPolygon::Pointer_t mpWrapPolygon;
-    bool      bIgnoreWRK;
 
     sal_Int32 nLeftMargin;
     sal_Int32 nRightMargin;
@@ -241,11 +237,8 @@ public:
     GraphicBorderLine   aBorders[4];
     sal_Int32           nCurrentBorderLine;
 
-    sal_Int32       nDffType;
     bool            bIsGraphic;
     bool            bIsBitmap;
-    bool            bIsTiff;
-    sal_Int32       nBitsPerPixel;
 
     bool            bHoriFlip;
     bool            bVertFlip;
@@ -275,12 +268,9 @@ public:
         ,bYSizeValid(false)
         ,eGraphicImportType( eImportType )
         ,rDomainMapper( rDMapper )
-        ,nHoriScaling(0)
-        ,nVertScaling(0)
         ,nLeftPosition(0)
         ,nTopPosition(0)
         ,nRightPosition(0)
-        ,nBottomPosition(0)
         ,bUseSimplePos(false)
         ,zOrder(-1)
         ,nHoriOrient(   text::HoriOrientation::NONE )
@@ -293,7 +283,6 @@ public:
         ,bOpaque( true )
         ,bContour(false)
         ,bContourOutside(true)
-        ,bIgnoreWRK(true)
         ,nLeftMargin(319)
         ,nRightMargin(319)
         ,nTopMargin(0)
@@ -309,11 +298,8 @@ public:
         ,nFillColor( 0xffffffff )
         ,eColorMode( drawing::ColorMode_STANDARD )
         ,nCurrentBorderLine(BORDER_TOP)
-        ,nDffType( 0 )
         ,bIsGraphic(false)
         ,bIsBitmap(false)
-        ,bIsTiff(false)
-        ,nBitsPerPixel(0)
         ,bHoriFlip(false)
         ,bVertFlip(false)
         ,bSizeProtected(false)
@@ -1136,14 +1122,14 @@ uno::Reference< text::XTextContent > GraphicImport::createGraphicObject( const b
         if(xGraphic.is())
         {
             uno::Reference< beans::XPropertySet > xGraphicObjectProperties(
-            m_xTextFactory->createInstance("com.sun.star.text.TextGraphicObject"),
+                m_xTextFactory->createInstance("com.sun.star.text.TextGraphicObject"),
                 uno::UNO_QUERY_THROW);
             xGraphicObjectProperties->setPropertyValue(getPropertyName(PROP_GRAPHIC), uno::makeAny( xGraphic ));
             xGraphicObjectProperties->setPropertyValue(getPropertyName(PROP_ANCHOR_TYPE),
                 uno::makeAny( m_pImpl->eGraphicImportType == IMPORT_AS_DETECTED_ANCHOR ?
                                     text::TextContentAnchorType_AT_CHARACTER :
                                     text::TextContentAnchorType_AS_CHARACTER ));
-            xGraphicObject = uno::Reference< text::XTextContent >( xGraphicObjectProperties, uno::UNO_QUERY_THROW );
+            xGraphicObject.set( xGraphicObjectProperties, uno::UNO_QUERY_THROW );
 
             //shapes have only one border
             table::BorderLine2 aBorderLine;
@@ -1320,20 +1306,37 @@ uno::Reference< text::XTextContent > GraphicImport::createGraphicObject( const b
 
             //there seems to be no way to detect the original size via _real_ API
             uno::Reference< beans::XPropertySet > xGraphicProperties( xGraphic, uno::UNO_QUERY_THROW );
-            awt::Size aGraphicSize, aGraphicSizePixel;
-            xGraphicProperties->getPropertyValue(getPropertyName( PROP_SIZE100th_M_M )) >>= aGraphicSize;
-            xGraphicProperties->getPropertyValue(getPropertyName( PROP_SIZE_PIXEL )) >>= aGraphicSizePixel;
 
-            uno::Any aContourPolyPolygon;
-            if( aGraphicSize.Width && aGraphicSize.Height &&
-                m_pImpl->mpWrapPolygon.get() != nullptr)
+            if (m_pImpl->mpWrapPolygon.get() != nullptr)
             {
-                WrapPolygon::Pointer_t pCorrected = m_pImpl->mpWrapPolygon->correctWordWrapPolygon(aGraphicSize);
-                aContourPolyPolygon <<= pCorrected->getPointSequenceSequence();
+                uno::Any aContourPolyPolygon;
+                awt::Size aGraphicSize;
+                WrapPolygon::Pointer_t pCorrected;
+                xGraphicProperties->getPropertyValue(getPropertyName(PROP_SIZE100th_M_M)) >>= aGraphicSize;
+                if (aGraphicSize.Width && aGraphicSize.Height)
+                {
+                    pCorrected = m_pImpl->mpWrapPolygon->correctWordWrapPolygon(aGraphicSize);
+                }
+                else
+                {
+                    xGraphicProperties->getPropertyValue(getPropertyName(PROP_SIZE_PIXEL)) >>= aGraphicSize;
+                    if (aGraphicSize.Width && aGraphicSize.Height)
+                    {
+                        pCorrected = m_pImpl->mpWrapPolygon->correctWordWrapPolygonPixel(aGraphicSize);
+                    }
+                }
+                if (pCorrected)
+                {
+                    aContourPolyPolygon <<= pCorrected->getPointSequenceSequence();
+                    xGraphicObjectProperties->setPropertyValue(getPropertyName(PROP_CONTOUR_POLY_POLYGON),
+                        aContourPolyPolygon);
+                    // We should bring it to front, even if wp:anchor's behindDoc="1",
+                    // because otherwise paragraph background (if set) overlaps the graphic
+                    // TODO: if paragraph's background becomes bottommost, then remove this hack
+                    xGraphicObjectProperties->setPropertyValue("Opaque", uno::makeAny(true));
+                }
             }
 
-            xGraphicObjectProperties->setPropertyValue(getPropertyName( PROP_CONTOUR_POLY_POLYGON),
-                                                           aContourPolyPolygon);
 
             if(m_pImpl->eGraphicImportType == IMPORT_AS_DETECTED_INLINE || m_pImpl->eGraphicImportType == IMPORT_AS_DETECTED_ANCHOR)
             {

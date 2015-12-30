@@ -70,16 +70,16 @@ public:
                             vcl::Window* pParent ,
                             WinBits nBits);
     virtual             ~SfxTitleDockingWindow();
-    virtual void        dispose() SAL_OVERRIDE;
+    virtual void        dispose() override;
 
     vcl::Window*        GetWrappedWindow() const { return m_pWrappedWindow; }
     void                SetWrappedWindow(vcl::Window* const pWindow);
 
-    virtual void        StateChanged( StateChangedType nType ) SAL_OVERRIDE;
-    virtual bool        Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
-    virtual void        Resize() SAL_OVERRIDE;
-    virtual void        Resizing( Size& rSize ) SAL_OVERRIDE;
-    virtual bool        Close() SAL_OVERRIDE;
+    virtual void        StateChanged( StateChangedType nType ) override;
+    virtual bool        Notify( NotifyEvent& rNEvt ) override;
+    virtual void        Resize() override;
+    virtual void        Resizing( Size& rSize ) override;
+    virtual bool        Close() override;
 };
 
 namespace
@@ -155,7 +155,7 @@ SfxDockingWrapper::SfxDockingWrapper( vcl::Window* pParentWnd ,
     uno::Reference< awt::XWindow > xWindow;
     try
     {
-        xWindow = uno::Reference< awt::XWindow>(
+        xWindow.set(
             xFactoryMgr->createInstanceWithArgumentsAndContext( aArgs, xContext ),
             uno::UNO_QUERY );
 
@@ -322,7 +322,7 @@ static SfxWorkWindow* lcl_getWorkWindowFromXFrame( const uno::Reference< frame::
 {
     // We need to find the corresponding SfxFrame of our XFrame
     SfxFrame* pFrame  = SfxFrame::GetFirst();
-    SfxFrame* pXFrame = 0;
+    SfxFrame* pXFrame = nullptr;
     while ( pFrame )
     {
         uno::Reference< frame::XFrame > xViewShellFrame( pFrame->GetFrameInterface() );
@@ -339,7 +339,7 @@ static SfxWorkWindow* lcl_getWorkWindowFromXFrame( const uno::Reference< frame::
     if ( pXFrame )
         return pXFrame->GetWorkWindow_Impl();
     else
-        return NULL;
+        return nullptr;
 }
 
 /** Factory function used by the framework layout manager to "create" a docking window with a special name.
@@ -504,7 +504,7 @@ bool SfxDockingWindow::PrepareToggleFloatingMode()
         {
             // The DockingWindow is inside a SplitWindow and will be teared of.
             pImp->pSplitWin->RemoveWindow(this/*, sal_False*/);
-            pImp->pSplitWin = 0;
+            pImp->pSplitWin = nullptr;
         }
     }
     else if ( pMgr )
@@ -825,7 +825,7 @@ SfxDockingWindow::SfxDockingWindow( SfxBindings *pBindinx, SfxChildWindow *pCW,
     DockingWindow (pParent, nWinBits),
     pBindings(pBindinx),
     pMgr(pCW),
-    pImp(NULL)
+    pImp(nullptr)
 {
     if ( !GetHelpId().isEmpty() )
     {
@@ -836,7 +836,7 @@ SfxDockingWindow::SfxDockingWindow( SfxBindings *pBindinx, SfxChildWindow *pCW,
     {
         SfxViewFrame* pViewFrame = pBindings->GetDispatcher()->GetFrame();
         SfxSlotPool* pSlotPool = pViewFrame->GetObjectShell()->GetModule()->GetSlotPool();
-        const SfxSlot* pSlot = pCW ? pSlotPool->GetSlot( pCW->GetType() ) : NULL;
+        const SfxSlot* pSlot = pCW ? pSlotPool->GetSlot( pCW->GetType() ) : nullptr;
         if ( pSlot )
         {
             OString aCmd("SFXDOCKINGWINDOW_");
@@ -847,7 +847,7 @@ SfxDockingWindow::SfxDockingWindow( SfxBindings *pBindinx, SfxChildWindow *pCW,
 
     pImp = new SfxDockingWindow_Impl;
     pImp->bConstructed = false;
-    pImp->pSplitWin = 0;
+    pImp->pSplitWin = nullptr;
     pImp->bEndDocked = false;
     pImp->bDockingPrevented = false;
 
@@ -857,6 +857,7 @@ SfxDockingWindow::SfxDockingWindow( SfxBindings *pBindinx, SfxChildWindow *pCW,
     pImp->nLine = pImp->nDockLine = 0;
     pImp->nPos  = pImp->nDockPos = 0;
     pImp->bNewLine = false;
+    pImp->SetDockAlignment(SfxChildAlignment::NOALIGNMENT);
     pImp->SetLastAlignment(SfxChildAlignment::NOALIGNMENT);
     pImp->aMoveIdle.SetPriority(SchedulerPriority::RESIZE);
     pImp->aMoveIdle.SetIdleHdl(LINK(this,SfxDockingWindow,TimerHdl));
@@ -870,7 +871,7 @@ SfxDockingWindow::SfxDockingWindow( SfxBindings *pBindinx, SfxChildWindow *pCW,
     DockingWindow(pParent, rResId),
     pBindings(pBindinx),
     pMgr(pCW),
-    pImp(NULL)
+    pImp(nullptr)
 {
     if ( !GetHelpId().isEmpty() )
     {
@@ -881,7 +882,7 @@ SfxDockingWindow::SfxDockingWindow( SfxBindings *pBindinx, SfxChildWindow *pCW,
     {
         SfxViewFrame* pViewFrame = pBindings->GetDispatcher()->GetFrame();
         SfxSlotPool* pSlotPool = pViewFrame->GetObjectShell()->GetModule()->GetSlotPool();
-        const SfxSlot* pSlot = pCW ? pSlotPool->GetSlot( pCW->GetType() ) : NULL;
+        const SfxSlot* pSlot = pCW ? pSlotPool->GetSlot( pCW->GetType() ) : nullptr;
         if ( pSlot )
         {
             OString aCmd("SFXDOCKINGWINDOW_");
@@ -892,7 +893,7 @@ SfxDockingWindow::SfxDockingWindow( SfxBindings *pBindinx, SfxChildWindow *pCW,
 
     pImp = new SfxDockingWindow_Impl;
     pImp->bConstructed = false;
-    pImp->pSplitWin = 0;
+    pImp->pSplitWin = nullptr;
     pImp->bEndDocked = false;
     pImp->bDockingPrevented = false;
 
@@ -902,6 +903,7 @@ SfxDockingWindow::SfxDockingWindow( SfxBindings *pBindinx, SfxChildWindow *pCW,
     pImp->nLine = pImp->nDockLine = 0;
     pImp->nPos  = pImp->nDockPos = 0;
     pImp->bNewLine = false;
+    pImp->SetDockAlignment(SfxChildAlignment::NOALIGNMENT);
     pImp->SetLastAlignment(SfxChildAlignment::NOALIGNMENT);
     pImp->aMoveIdle.SetPriority(SchedulerPriority::RESIZE);
     pImp->aMoveIdle.SetIdleHdl(LINK(this,SfxDockingWindow,TimerHdl));
@@ -915,7 +917,7 @@ SfxDockingWindow::SfxDockingWindow( SfxBindings *pBindinx, SfxChildWindow *pCW,
     : DockingWindow(pParent, rID, rUIXMLDescription)
     , pBindings(pBindinx)
     , pMgr(pCW)
-    , pImp(NULL)
+    , pImp(nullptr)
 {
     if ( !GetHelpId().isEmpty() )
     {
@@ -926,7 +928,7 @@ SfxDockingWindow::SfxDockingWindow( SfxBindings *pBindinx, SfxChildWindow *pCW,
     {
         SfxViewFrame* pViewFrame = pBindings->GetDispatcher()->GetFrame();
         SfxSlotPool* pSlotPool = pViewFrame->GetObjectShell()->GetModule()->GetSlotPool();
-        const SfxSlot* pSlot = pCW ? pSlotPool->GetSlot( pCW->GetType() ) : NULL;
+        const SfxSlot* pSlot = pCW ? pSlotPool->GetSlot( pCW->GetType() ) : nullptr;
         if ( pSlot )
         {
             OString aCmd("SFXDOCKINGWINDOW_");
@@ -937,7 +939,7 @@ SfxDockingWindow::SfxDockingWindow( SfxBindings *pBindinx, SfxChildWindow *pCW,
 
     pImp = new SfxDockingWindow_Impl;
     pImp->bConstructed = false;
-    pImp->pSplitWin = 0;
+    pImp->pSplitWin = nullptr;
     pImp->bEndDocked = false;
     pImp->bDockingPrevented = false;
 
@@ -947,6 +949,7 @@ SfxDockingWindow::SfxDockingWindow( SfxBindings *pBindinx, SfxChildWindow *pCW,
     pImp->nLine = pImp->nDockLine = 0;
     pImp->nPos  = pImp->nDockPos = 0;
     pImp->bNewLine = false;
+    pImp->SetDockAlignment(SfxChildAlignment::NOALIGNMENT);
     pImp->SetLastAlignment(SfxChildAlignment::NOALIGNMENT);
     pImp->aMoveIdle.SetPriority(SchedulerPriority::RESIZE);
     pImp->aMoveIdle.SetIdleHdl(LINK(this,SfxDockingWindow,TimerHdl));
@@ -1225,19 +1228,19 @@ SfxDockingWindow::~SfxDockingWindow()
 void SfxDockingWindow::dispose()
 {
     ReleaseChildWindow_Impl();
-    delete pImp; pImp = NULL;
+    delete pImp; pImp = nullptr;
     DockingWindow::dispose();
 }
 
 void SfxDockingWindow::ReleaseChildWindow_Impl()
 {
     if ( pMgr && pMgr->GetFrame() == pBindings->GetActiveFrame() )
-        pBindings->SetActiveFrame( NULL );
+        pBindings->SetActiveFrame( nullptr );
 
     if ( pMgr && pImp->pSplitWin && pImp->pSplitWin->IsItemValid( GetType() ) )
         pImp->pSplitWin->RemoveWindow(this);
 
-    pMgr=NULL;
+    pMgr=nullptr;
 }
 
 /** This method calculates a resulting alignment for the given mouse position
@@ -1247,7 +1250,7 @@ void SfxDockingWindow::ReleaseChildWindow_Impl()
     and thus the behavior of his DockinWindow class when docking where the
     called virtual method:
 
-    SfxDockingWindow :: CalcDockingSize (SfxChildAlignment eAlign)
+    SfxDockingWindow::CalcDockingSize (SfxChildAlignment eAlign)
 
     is overridden (see below).
 */
@@ -1707,7 +1710,7 @@ void SfxDockingWindow::Paint(vcl::RenderContext& rRenderContext, const Rectangle
     }
 
     DecorationView aView(&rRenderContext);
-    aView.DrawFrame(aRect, DrawFrameStyle::Out);
+    aView.DrawFrame(aRect);
 }
 
 /** With this method, a minimal OutputSize be can set, that is queried in
@@ -1732,12 +1735,12 @@ bool SfxDockingWindow::Notify( NotifyEvent& rEvt )
 
     if ( rEvt.GetType() == MouseNotifyEvent::GETFOCUS )
     {
-        if (pMgr != NULL)
+        if (pMgr != nullptr)
             pBindings->SetActiveFrame( pMgr->GetFrame() );
 
         if ( pImp->pSplitWin )
             pImp->pSplitWin->SetActiveWindow_Impl( this );
-        else if (pMgr != NULL)
+        else if (pMgr != nullptr)
             pMgr->Activate_Impl();
 
         // In VCL Notify goes first to the window itself, also call the
@@ -1756,8 +1759,8 @@ bool SfxDockingWindow::Notify( NotifyEvent& rEvt )
     }
     else if ( rEvt.GetType() == MouseNotifyEvent::LOSEFOCUS && !HasChildPathFocus() )
     {
-        pBindings->SetActiveFrame( NULL );
-        if (pMgr != NULL)
+        pBindings->SetActiveFrame( nullptr );
+        if (pMgr != nullptr)
             pMgr->Deactivate_Impl();
     }
 

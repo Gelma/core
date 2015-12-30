@@ -23,6 +23,7 @@
 #include <unotools/transliterationwrapper.hxx>
 #include <com/sun/star/sheet/NamedRangeFlag.hpp>
 #include <osl/diagnose.h>
+#include <o3tl/make_unique.hxx>
 
 #include "token.hxx"
 #include "tokenarray.hxx"
@@ -52,7 +53,7 @@ ScRangeData::ScRangeData( ScDocument* pDok,
                           const FormulaGrammar::Grammar eGrammar ) :
                 aName       ( rName ),
                 aUpperName  ( ScGlobal::pCharClass->uppercase( rName ) ),
-                pCode       ( NULL ),
+                pCode       ( nullptr ),
                 aPos        ( rAddress ),
                 eType       ( nType ),
                 pDoc        ( pDok ),
@@ -226,7 +227,7 @@ void ScRangeData::GuessPosition()
 
     formula::FormulaToken* t;
     pCode->Reset();
-    while ( ( t = pCode->GetNextReference() ) != NULL )
+    while ( ( t = pCode->GetNextReference() ) != nullptr )
     {
         ScSingleRefData& rRef1 = *t->GetSingleRef();
         if ( rRef1.IsColRel() && rRef1.Col() < nMinCol )
@@ -292,7 +293,7 @@ void ScRangeData::UpdateTranspose( const ScRange& rSource, const ScAddress& rDes
     formula::FormulaToken* t;
     pCode->Reset();
 
-    while ( ( t = pCode->GetNextReference() ) != NULL )
+    while ( ( t = pCode->GetNextReference() ) != nullptr )
     {
         if( t->GetType() != svIndex )
         {
@@ -324,7 +325,7 @@ void ScRangeData::UpdateGrow( const ScRange& rArea, SCCOL nGrowX, SCROW nGrowY )
     formula::FormulaToken* t;
     pCode->Reset();
 
-    while ( ( t = pCode->GetNextReference() ) != NULL )
+    while ( ( t = pCode->GetNextReference() ) != nullptr )
     {
         if( t->GetType() != svIndex )
         {
@@ -463,7 +464,7 @@ void ScRangeData::MakeValidName( OUString& rName )
         ScAddress::Details details( static_cast<FormulaGrammar::AddressConvention>( nConv ) );
         // Don't check Parse on VALID, any partial only VALID may result in
         // #REF! during compile later!
-        while (aRange.Parse( rName, NULL, details) || aAddr.Parse( rName, NULL, details))
+        while (aRange.Parse( rName, nullptr, details) || aAddr.Parse( rName, nullptr, details))
         {
             // Range Parse is partially valid also with invalid sheet name,
             // Address Parse dito, during compile name would generate a #REF!
@@ -527,10 +528,10 @@ bool ScRangeData::HasReferences() const
 sal_uInt32 ScRangeData::GetUnoType() const
 {
     sal_uInt32 nUnoType = 0;
-    if ( HasType(RT_CRITERIA) )  nUnoType |= com::sun::star::sheet::NamedRangeFlag::FILTER_CRITERIA;
-    if ( HasType(RT_PRINTAREA) ) nUnoType |= com::sun::star::sheet::NamedRangeFlag::PRINT_AREA;
-    if ( HasType(RT_COLHEADER) ) nUnoType |= com::sun::star::sheet::NamedRangeFlag::COLUMN_HEADER;
-    if ( HasType(RT_ROWHEADER) ) nUnoType |= com::sun::star::sheet::NamedRangeFlag::ROW_HEADER;
+    if ( HasType(RT_CRITERIA) )  nUnoType |= css::sheet::NamedRangeFlag::FILTER_CRITERIA;
+    if ( HasType(RT_PRINTAREA) ) nUnoType |= css::sheet::NamedRangeFlag::PRINT_AREA;
+    if ( HasType(RT_COLHEADER) ) nUnoType |= css::sheet::NamedRangeFlag::COLUMN_HEADER;
+    if ( HasType(RT_ROWHEADER) ) nUnoType |= css::sheet::NamedRangeFlag::ROW_HEADER;
     return nUnoType;
 }
 
@@ -548,7 +549,7 @@ void ScRangeData::ValidateTabRefs()
     SCTAB nMaxTab = nMinTab;
     formula::FormulaToken* t;
     pCode->Reset();
-    while ( ( t = pCode->GetNextReference() ) != NULL )
+    while ( ( t = pCode->GetNextReference() ) != nullptr )
     {
         ScSingleRefData& rRef1 = *t->GetSingleRef();
         ScAddress aAbs = rRef1.toAbs(aPos);
@@ -584,7 +585,7 @@ void ScRangeData::ValidateTabRefs()
         aPos.SetTab( aPos.Tab() - nMove );
 
         pCode->Reset();
-        while ( ( t = pCode->GetNextReference() ) != NULL )
+        while ( ( t = pCode->GetNextReference() ) != nullptr )
         {
             switch (t->GetType())
             {
@@ -666,8 +667,8 @@ class MatchByRange : public unary_function<ScRangeData, bool>
 {
     const ScRange& mrRange;
 public:
-    MatchByRange(const ScRange& rRange) : mrRange(rRange) {}
-    bool operator() ( boost::ptr_container_detail::ref_pair<OUString, const ScRangeData* const> const& r) const
+    explicit MatchByRange(const ScRange& rRange) : mrRange(rRange) {}
+    bool operator() (std::pair<OUString const, std::unique_ptr<ScRangeData>> const& r) const
     {
         return r.second->IsRangeAtBlock(mrRange);
     }
@@ -677,131 +678,139 @@ public:
 
 ScRangeName::ScRangeName() {}
 
-ScRangeName::ScRangeName(const ScRangeName& r) :
-    maData(r.maData)
+ScRangeName::ScRangeName(const ScRangeName& r)
 {
-    // boost::ptr_map clones and deletes, so each collection needs its own
-    // index to data.
-    maIndexToData.resize( r.maIndexToData.size(), NULL);
-    DataType::const_iterator itr = maData.begin(), itrEnd = maData.end();
-    for (; itr != itrEnd; ++itr)
+    for (auto const& it : r.m_Data)
     {
-        size_t nPos = itr->second->GetIndex() - 1;
+        m_Data.insert(std::make_pair(it.first, o3tl::make_unique<ScRangeData>(*it.second)));
+    }
+    // std::map was cloned, so each collection needs its own index to data.
+    maIndexToData.resize( r.maIndexToData.size(), nullptr);
+    for (auto const& itr : m_Data)
+    {
+        size_t nPos = itr.second->GetIndex() - 1;
         if (nPos >= maIndexToData.size())
         {
             OSL_FAIL( "ScRangeName copy-ctor: maIndexToData size doesn't fit");
-            maIndexToData.resize(nPos+1, NULL);
+            maIndexToData.resize(nPos+1, nullptr);
         }
-        maIndexToData[nPos] = const_cast<ScRangeData*>(itr->second);
+        maIndexToData[nPos] = itr.second.get();
     }
 }
 
 const ScRangeData* ScRangeName::findByRange(const ScRange& rRange) const
 {
     DataType::const_iterator itr = std::find_if(
-        maData.begin(), maData.end(), MatchByRange(rRange));
-    return itr == maData.end() ? NULL : itr->second;
+        m_Data.begin(), m_Data.end(), MatchByRange(rRange));
+    return itr == m_Data.end() ? nullptr : itr->second.get();
 }
 
 ScRangeData* ScRangeName::findByUpperName(const OUString& rName)
 {
-    DataType::iterator itr = maData.find(rName);
-    return itr == maData.end() ? NULL : itr->second;
+    DataType::iterator itr = m_Data.find(rName);
+    return itr == m_Data.end() ? nullptr : itr->second.get();
 }
 
 const ScRangeData* ScRangeName::findByUpperName(const OUString& rName) const
 {
-    DataType::const_iterator itr = maData.find(rName);
-    return itr == maData.end() ? NULL : itr->second;
+    DataType::const_iterator itr = m_Data.find(rName);
+    return itr == m_Data.end() ? nullptr : itr->second.get();
 }
 
 ScRangeData* ScRangeName::findByIndex(sal_uInt16 i) const
 {
     if (!i)
         // index should never be zero.
-        return NULL;
+        return nullptr;
 
     size_t nPos = i - 1;
-    return nPos < maIndexToData.size() ? maIndexToData[nPos] : NULL;
+    return nPos < maIndexToData.size() ? maIndexToData[nPos] : nullptr;
 }
 
 void ScRangeName::UpdateReference(sc::RefUpdateContext& rCxt, SCTAB nLocalTab )
 {
-    DataType::iterator itr = maData.begin(), itrEnd = maData.end();
-    for (; itr != itrEnd; ++itr)
-        itr->second->UpdateReference(rCxt, nLocalTab);
+    for (auto const& itr : m_Data)
+    {
+        itr.second->UpdateReference(rCxt, nLocalTab);
+    }
 }
 
 void ScRangeName::UpdateInsertTab( sc::RefUpdateInsertTabContext& rCxt, SCTAB nLocalTab )
 {
-    DataType::iterator itr = maData.begin(), itrEnd = maData.end();
-    for (; itr != itrEnd; ++itr)
-        itr->second->UpdateInsertTab(rCxt, nLocalTab);
+    for (auto const& itr : m_Data)
+    {
+        itr.second->UpdateInsertTab(rCxt, nLocalTab);
+    }
 }
 
 void ScRangeName::UpdateDeleteTab( sc::RefUpdateDeleteTabContext& rCxt, SCTAB nLocalTab )
 {
-    DataType::iterator itr = maData.begin(), itrEnd = maData.end();
-    for (; itr != itrEnd; ++itr)
-        itr->second->UpdateDeleteTab(rCxt, nLocalTab);
+    for (auto const& itr : m_Data)
+    {
+        itr.second->UpdateDeleteTab(rCxt, nLocalTab);
+    }
 }
 
 void ScRangeName::UpdateMoveTab( sc::RefUpdateMoveTabContext& rCxt, SCTAB nLocalTab )
 {
-    DataType::iterator itr = maData.begin(), itrEnd = maData.end();
-    for (; itr != itrEnd; ++itr)
-        itr->second->UpdateMoveTab(rCxt, nLocalTab);
+    for (auto const& itr : m_Data)
+    {
+        itr.second->UpdateMoveTab(rCxt, nLocalTab);
+    }
 }
 
 void ScRangeName::UpdateTranspose(const ScRange& rSource, const ScAddress& rDest)
 {
-    DataType::iterator itr = maData.begin(), itrEnd = maData.end();
-    for (; itr != itrEnd; ++itr)
-        itr->second->UpdateTranspose(rSource, rDest);
+    for (auto const& itr : m_Data)
+    {
+        itr.second->UpdateTranspose(rSource, rDest);
+    }
 }
 
 void ScRangeName::UpdateGrow(const ScRange& rArea, SCCOL nGrowX, SCROW nGrowY)
 {
-    DataType::iterator itr = maData.begin(), itrEnd = maData.end();
-    for (; itr != itrEnd; ++itr)
-        itr->second->UpdateGrow(rArea, nGrowX, nGrowY);
+    for (auto const& itr : m_Data)
+    {
+        itr.second->UpdateGrow(rArea, nGrowX, nGrowY);
+    }
 }
 
 void ScRangeName::CompileUnresolvedXML( sc::CompileFormulaContext& rCxt )
 {
-    DataType::iterator itr = maData.begin(), itrEnd = maData.end();
-    for (; itr != itrEnd; ++itr)
-        itr->second->CompileUnresolvedXML(rCxt);
+    for (auto const& itr : m_Data)
+    {
+        itr.second->CompileUnresolvedXML(rCxt);
+    }
 }
 
 ScRangeName::const_iterator ScRangeName::begin() const
 {
-    return maData.begin();
+    return m_Data.begin();
 }
 
 ScRangeName::const_iterator ScRangeName::end() const
 {
-    return maData.end();
+    return m_Data.end();
 }
 
 ScRangeName::iterator ScRangeName::begin()
 {
-    return maData.begin();
+    return m_Data.begin();
 }
 
 ScRangeName::iterator ScRangeName::end()
 {
-    return maData.end();
+    return m_Data.end();
 }
 
 size_t ScRangeName::size() const
 {
-    return maData.size();
+    return m_Data.size();
 }
 
 bool ScRangeName::empty() const
 {
-    return maData.empty();
+    return m_Data.empty();
 }
 
 bool ScRangeName::insert(ScRangeData* p)
@@ -813,7 +822,7 @@ bool ScRangeName::insert(ScRangeData* p)
     {
         // Assign a new index.  An index must be unique and is never 0.
         IndexDataType::iterator itr = std::find(
-            maIndexToData.begin(), maIndexToData.end(), static_cast<ScRangeData*>(NULL));
+            maIndexToData.begin(), maIndexToData.end(), static_cast<ScRangeData*>(nullptr));
         if (itr != maIndexToData.end())
         {
             // Empty slot exists.  Re-use it.
@@ -827,13 +836,14 @@ bool ScRangeName::insert(ScRangeData* p)
 
     OUString aName(p->GetUpperName());
     erase(aName); // ptr_map won't insert it if a duplicate name exists.
-    pair<DataType::iterator, bool> r = maData.insert(aName, p);
+    pair<DataType::iterator, bool> r =
+        m_Data.insert(std::make_pair(aName, std::unique_ptr<ScRangeData>(p)));
     if (r.second)
     {
         // Data inserted.  Store its index for mapping.
         size_t nPos = p->GetIndex() - 1;
         if (nPos >= maIndexToData.size())
-            maIndexToData.resize(nPos+1, NULL);
+            maIndexToData.resize(nPos+1, nullptr);
         maIndexToData[nPos] = p;
     }
     return r.second;
@@ -846,29 +856,42 @@ void ScRangeName::erase(const ScRangeData& r)
 
 void ScRangeName::erase(const OUString& rName)
 {
-    DataType::iterator itr = maData.find(rName);
-    if (itr != maData.end())
+    DataType::iterator itr = m_Data.find(rName);
+    if (itr != m_Data.end())
         erase(itr);
 }
 
 void ScRangeName::erase(const iterator& itr)
 {
     sal_uInt16 nIndex = itr->second->GetIndex();
-    maData.erase(itr);
+    m_Data.erase(itr);
     OSL_ENSURE( 0 < nIndex && nIndex <= maIndexToData.size(), "ScRangeName::erase: bad index");
     if (0 < nIndex && nIndex <= maIndexToData.size())
-        maIndexToData[nIndex-1] = NULL;
+        maIndexToData[nIndex-1] = nullptr;
 }
 
 void ScRangeName::clear()
 {
-    maData.clear();
+    m_Data.clear();
     maIndexToData.clear();
 }
 
 bool ScRangeName::operator== (const ScRangeName& r) const
 {
-    return maData == r.maData;
+    if (m_Data.size() != r.m_Data.size())
+    {
+        return false;
+    }
+    for (auto iter1 = m_Data.begin(), iter2 = r.m_Data.begin();
+         iter1 != m_Data.end();
+         ++iter1, ++iter2)
+    {
+        if (!(iter1->first == iter2->first && *iter1->second == *iter2->second))
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

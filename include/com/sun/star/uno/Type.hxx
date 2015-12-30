@@ -19,6 +19,10 @@
 #ifndef INCLUDED_COM_SUN_STAR_UNO_TYPE_HXX
 #define INCLUDED_COM_SUN_STAR_UNO_TYPE_HXX
 
+#include <sal/config.h>
+
+#include <cstddef>
+
 #include <com/sun/star/uno/Type.h>
 #include <cppu/unotype.hxx>
 
@@ -40,13 +44,13 @@ inline Type::Type()
 }
 
 inline Type::Type( TypeClass eTypeClass, const ::rtl::OUString & rTypeName )
-    : _pType( 0 )
+    : _pType( NULL )
 {
     ::typelib_typedescriptionreference_new( &_pType, (typelib_TypeClass)eTypeClass, rTypeName.pData );
 }
 
 inline Type::Type( TypeClass eTypeClass, const sal_Char * pTypeName )
-    : _pType( 0 )
+    : _pType( NULL )
 {
     ::typelib_typedescriptionreference_newByAsciiName( &_pType, (typelib_TypeClass)eTypeClass, pTypeName );
 }
@@ -86,7 +90,7 @@ inline Type & Type::operator = ( const Type & rType )
 
 
 template< class T >
-typelib_TypeDescriptionReference * Array< T >::s_pType = 0;
+typelib_TypeDescriptionReference * Array< T >::s_pType = NULL;
 
 }
 }

@@ -44,7 +44,7 @@ void ScTabViewShell::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
 {
     if (dynamic_cast<const SfxSimpleHint*>(&rHint))                       // ohne Parameter
     {
-        sal_uLong nSlot = static_cast<const SfxSimpleHint&>(rHint).GetId();
+        const sal_uInt32 nSlot = static_cast<const SfxSimpleHint&>(rHint).GetId();
         switch ( nSlot )
         {
             case FID_DATACHANGED:
@@ -313,8 +313,7 @@ SvxNumberInfoItem* ScTabViewShell::MakeNumberInfoItem( ScDocument* pDoc, ScViewD
     double              nCellValue      = 0;
     OUString aCellString;
 
-    ScRefCellValue aCell;
-    aCell.assign(*pDoc, pViewData->GetCurPos());
+    ScRefCellValue aCell(*pDoc, pViewData->GetCurPos());
 
     switch (aCell.meType)
     {

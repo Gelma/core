@@ -24,7 +24,9 @@
 #include <tools/time.hxx>
 #include <com/sun/star/util/DateTime.hpp>
 
-class TOOLS_DLLPUBLIC SAL_WARN_UNUSED DateTime : public Date, public tools::Time
+#include <iomanip>
+
+class SAL_WARN_UNUSED TOOLS_DLLPUBLIC DateTime : public Date, public tools::Time
 {
 public:
     enum DateTimeInitSystem
@@ -111,6 +113,19 @@ inline DateTime& DateTime::operator =( const DateTime& rDateTime )
     Date::operator=( rDateTime );
     Time::operator=( rDateTime );
     return *this;
+}
+
+template< typename charT, typename traits >
+inline std::basic_ostream<charT, traits> & operator <<(
+    std::basic_ostream<charT, traits> & stream, const DateTime& datetime)
+{
+    return stream << datetime.GetYear() << '-' <<
+        std::setw(2) << std::setfill('0') << datetime.GetMonth() << '-' <<
+        std::setw(2) << std::setfill('0') << datetime.GetDay() << ' ' <<
+        std::setw(2) << std::setfill('0') << datetime.GetHour() << ':' <<
+        std::setw(2) << std::setfill('0') << datetime.GetMin() << ':' <<
+        std::setw(2) << std::setfill('0') << datetime.GetSec() << "." <<
+        std::setw(9) << std::setfill('0') << datetime.GetNanoSec();
 }
 
 #endif

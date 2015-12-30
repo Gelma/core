@@ -67,19 +67,19 @@ public:
     explicit SwStyleManager( SfxItemSet* pIgnorableParagraphItems )
         : aAutoCharPool(),
           aAutoParaPool( pIgnorableParagraphItems ),
-          mpCharCache(0),
-          mpParaCache(0)
+          mpCharCache(nullptr),
+          mpParaCache(nullptr)
     {}
     virtual ~SwStyleManager();
     virtual StylePool::SfxItemSet_Pointer_t getAutomaticStyle( const SfxItemSet& rSet,
-                                                               IStyleAccess::SwAutoStyleFamily eFamily ) SAL_OVERRIDE;
+                                                               IStyleAccess::SwAutoStyleFamily eFamily ) override;
     virtual StylePool::SfxItemSet_Pointer_t getByName( const OUString& rName,
-                                                               IStyleAccess::SwAutoStyleFamily eFamily ) SAL_OVERRIDE;
+                                                               IStyleAccess::SwAutoStyleFamily eFamily ) override;
     virtual void getAllStyles( std::vector<StylePool::SfxItemSet_Pointer_t> &rStyles,
-                                                               IStyleAccess::SwAutoStyleFamily eFamily ) SAL_OVERRIDE;
+                                                               IStyleAccess::SwAutoStyleFamily eFamily ) override;
     virtual StylePool::SfxItemSet_Pointer_t cacheAutomaticStyle( const SfxItemSet& rSet,
-                                                               SwAutoStyleFamily eFamily ) SAL_OVERRIDE;
-    virtual void clearCaches() SAL_OVERRIDE;
+                                                               SwAutoStyleFamily eFamily ) override;
+    virtual void clearCaches() override;
 };
 
 IStyleAccess *createStyleManager( SfxItemSet* pIgnorableParagraphItems )
@@ -96,9 +96,9 @@ SwStyleManager::~SwStyleManager()
 void SwStyleManager::clearCaches()
 {
     delete mpCharCache;
-    mpCharCache = 0;
+    mpCharCache = nullptr;
     delete mpParaCache;
-    mpParaCache = 0;
+    mpParaCache = nullptr;
 }
 
 StylePool::SfxItemSet_Pointer_t SwStyleManager::getAutomaticStyle( const SfxItemSet& rSet,

@@ -244,7 +244,7 @@ bool isSubSet(const css::uno::Any& aSubSet,
                 {
                     if (::std::find(stl_s2.begin(), stl_s2.end(), *it1) == stl_s2.end())
                     {
-                        _FILTER_CONFIG_LOG_1_("isSubSet() ... check for list types [OUString] ... don't found \"%s\" => return FALSE\n", _FILTER_CONFIG_TO_ASCII_(*it1))
+                        _FILTER_CONFIG_LOG_1_("isSubSet() ... check for list types [OUString] ... didn't found \"%s\" => return FALSE\n", _FILTER_CONFIG_TO_ASCII_(*it1))
                         return false;
                     }
                     _FILTER_CONFIG_LOG_1_("isSubSet() ... check for list types [OUString] ... found \"%s\" => continue loop\n", _FILTER_CONFIG_TO_ASCII_(*it1))
@@ -271,7 +271,7 @@ bool isSubSet(const css::uno::Any& aSubSet,
                     ::comphelper::SequenceAsHashMap::const_iterator it2 = stl_p2.find(it1->first);
                     if (it2 == stl_p2.end())
                     {
-                        _FILTER_CONFIG_LOG_1_("isSubSet() ... check for list types [PropertyValue] ... don't found \"%s\" => return FALSE\n", _FILTER_CONFIG_TO_ASCII_(it1->first))
+                        _FILTER_CONFIG_LOG_1_("isSubSet() ... check for list types [PropertyValue] ... didn't found \"%s\" => return FALSE\n", _FILTER_CONFIG_TO_ASCII_(it1->first))
                         return false;
                     }
                     if (!isSubSet(it1->second, it2->second))
@@ -303,7 +303,7 @@ bool isSubSet(const css::uno::Any& aSubSet,
                     ::comphelper::SequenceAsHashMap::const_iterator it2 = stl_n2.find(it1->first);
                     if (it2 == stl_n2.end())
                     {
-                        _FILTER_CONFIG_LOG_1_("isSubSet() ... check for list types [NamedValue] ... don't found \"%s\" => return FALSE\n", _FILTER_CONFIG_TO_ASCII_(it1->first))
+                        _FILTER_CONFIG_LOG_1_("isSubSet() ... check for list types [NamedValue] ... didn't found \"%s\" => return FALSE\n", _FILTER_CONFIG_TO_ASCII_(it1->first))
                         return false;
                     }
                     if (!isSubSet(it1->second, it2->second))
@@ -337,7 +337,7 @@ bool CacheItem::haveProps(const CacheItem& lProps) const
         const_iterator pItThis = this->find(pIt->first);
         if (pItThis == this->end())
         {
-            _FILTER_CONFIG_LOG_1_("CacheItem::haveProps() ... don't found \"%s\" => return FALSE\n", _FILTER_CONFIG_TO_ASCII_(pIt->first))
+            _FILTER_CONFIG_LOG_1_("CacheItem::haveProps() ... didn't found \"%s\" => return FALSE\n", _FILTER_CONFIG_TO_ASCII_(pIt->first))
             return false;
         }
 
@@ -364,10 +364,10 @@ bool CacheItem::dontHaveProps(const CacheItem& lProps) const
                         pIt != lProps.end()  ;
                       ++pIt                  )
     {
-        // i) one item does not exists in general
+        // i) one item does not exist in general
         //    => continue with next one, because
         //    "excluding" means... "don't have it".
-        //    And "not exists" match to "don't have it".
+        //    And "not exists" matches to "don't have it".
         const_iterator pItThis = this->find(pIt->first);
         if (pItThis == this->end())
         {

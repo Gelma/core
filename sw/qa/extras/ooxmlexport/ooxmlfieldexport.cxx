@@ -61,7 +61,7 @@ protected:
     /**
      * Blacklist handling
      */
-    bool mustTestImportOf(const char* filename) const SAL_OVERRIDE {
+    bool mustTestImportOf(const char* filename) const override {
         // If the testcase is stored in some other format, it's pointless to test.
         return (OString(filename).endsWith(".docx"));
     }
@@ -139,7 +139,7 @@ DECLARE_OOXMLEXPORT_TEST(testFdo69649, "fdo69649.docx")
 
 DECLARE_OOXMLEXPORT_TEST(testFieldFlagO,"TOC_field_f.docx")
 {
-   // This test case is to verify \o flag should come once.
+    // This test case is to verify \o flag should come once.
     xmlDocPtr pXmlDoc = parseExport();
     if (!pXmlDoc)
         return;
@@ -658,7 +658,7 @@ DECLARE_OOXMLEXPORT_TEST(testFixedDateFields, "fixed-date-field.docx")
 
     // Check fixed property was imported and date value was parsed correctly
     CPPUNIT_ASSERT_EQUAL(true, getProperty<bool>(xField, "IsFixed"));
-    com::sun::star::util::DateTime date = getProperty<com::sun::star::util::DateTime>(xField, "DateTimeValue");
+    css::util::DateTime date = getProperty<css::util::DateTime>(xField, "DateTimeValue");
     CPPUNIT_ASSERT_EQUAL((sal_uInt16)24, date.Day);
     CPPUNIT_ASSERT_EQUAL((sal_uInt16)7, date.Month);
     CPPUNIT_ASSERT_EQUAL((sal_Int16)2014, date.Year);

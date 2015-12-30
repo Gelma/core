@@ -48,14 +48,14 @@ using namespace ::com::sun::star::i18n;
 sal_uInt16 SwDoc::FillRubyList( const SwPaM& rPam, SwRubyList& rList,
                             sal_uInt16 nMode )
 {
-    const SwPaM *_pStartCrsr = rPam.GetNext(),
-                *__pStartCrsr = _pStartCrsr;
-    bool bCheckEmpty = &rPam != _pStartCrsr;
+    const SwPaM *_pStartCursor = rPam.GetNext(),
+                *__pStartCursor = _pStartCursor;
+    bool bCheckEmpty = &rPam != _pStartCursor;
     do {
-        const SwPosition* pStt = _pStartCrsr->Start(),
-                        * pEnd = pStt == _pStartCrsr->GetPoint()
-                                                ? _pStartCrsr->GetMark()
-                                                : _pStartCrsr->GetPoint();
+        const SwPosition* pStt = _pStartCursor->Start(),
+                        * pEnd = pStt == _pStartCursor->GetPoint()
+                                                ? _pStartCursor->GetMark()
+                                                : _pStartCursor->GetPoint();
         if( !bCheckEmpty || ( pStt != pEnd && *pStt != *pEnd ))
         {
             SwPaM aPam( *pStt );
@@ -85,7 +85,7 @@ sal_uInt16 SwDoc::FillRubyList( const SwPaM& rPam, SwRubyList& rList,
             } while( 30 > rList.size() && *aPam.GetPoint() < *pEnd );
         }
     } while( 30 > rList.size() &&
-        (_pStartCrsr = _pStartCrsr->GetNext()) != __pStartCrsr );
+        (_pStartCursor = _pStartCursor->GetNext()) != __pStartCursor );
 
     return rList.size();
 }
@@ -93,20 +93,20 @@ sal_uInt16 SwDoc::FillRubyList( const SwPaM& rPam, SwRubyList& rList,
 sal_uInt16 SwDoc::SetRubyList( const SwPaM& rPam, const SwRubyList& rList,
                             sal_uInt16 nMode )
 {
-    GetIDocumentUndoRedo().StartUndo( UNDO_SETRUBYATTR, NULL );
+    GetIDocumentUndoRedo().StartUndo( UNDO_SETRUBYATTR, nullptr );
     std::set<sal_uInt16> aDelArr;
     aDelArr.insert( RES_TXTATR_CJK_RUBY );
 
     sal_uInt16 nListEntry = 0;
 
-    const SwPaM *_pStartCrsr = rPam.GetNext(),
-                *__pStartCrsr = _pStartCrsr;
-    bool bCheckEmpty = &rPam != _pStartCrsr;
+    const SwPaM *_pStartCursor = rPam.GetNext(),
+                *__pStartCursor = _pStartCursor;
+    bool bCheckEmpty = &rPam != _pStartCursor;
     do {
-        const SwPosition* pStt = _pStartCrsr->Start(),
-                        * pEnd = pStt == _pStartCrsr->GetPoint()
-                                                ? _pStartCrsr->GetMark()
-                                                : _pStartCrsr->GetPoint();
+        const SwPosition* pStt = _pStartCursor->Start(),
+                        * pEnd = pStt == _pStartCursor->GetPoint()
+                                                ? _pStartCursor->GetMark()
+                                                : _pStartCursor->GetPoint();
         if( !bCheckEmpty || ( pStt != pEnd && *pStt != *pEnd ))
         {
 
@@ -172,9 +172,9 @@ sal_uInt16 SwDoc::SetRubyList( const SwPaM& rPam, const SwRubyList& rList,
             } while( nListEntry < rList.size() && *aPam.GetPoint() < *pEnd );
         }
     } while( 30 > rList.size() &&
-        (_pStartCrsr = _pStartCrsr->GetNext()) != __pStartCrsr );
+        (_pStartCursor = _pStartCursor->GetNext()) != __pStartCursor );
 
-    GetIDocumentUndoRedo().EndUndo( UNDO_SETRUBYATTR, NULL );
+    GetIDocumentUndoRedo().EndUndo( UNDO_SETRUBYATTR, nullptr );
 
     return nListEntry;
 }
@@ -205,7 +205,7 @@ bool SwDoc::_SelectNextRubyChars( SwPaM& rPam, SwRubyListEntry& rEntry, sal_uInt
     // search the start
     // look where a ruby attribute starts
     const SwpHints* pHts = pTNd->GetpSwpHints();
-    const SwTextAttr* pAttr = 0;
+    const SwTextAttr* pAttr = nullptr;
     if( pHts )
     {
         for( size_t nHtIdx = 0; nHtIdx < pHts->Count(); ++nHtIdx )

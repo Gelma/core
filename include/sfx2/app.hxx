@@ -98,9 +98,9 @@ public:
     SfxLinkItem( sal_uInt16 nWhichId, const Link<SfxPoolItem*, void>& rValue ) : SfxPoolItem( nWhichId )
     {   aLink = rValue; }
 
-    virtual SfxPoolItem*     Clone( SfxItemPool* = 0 ) const SAL_OVERRIDE
+    virtual SfxPoolItem*     Clone( SfxItemPool* = nullptr ) const override
     {   return new SfxLinkItem( *this ); }
-    virtual bool             operator==( const SfxPoolItem& rL) const SAL_OVERRIDE
+    virtual bool             operator==( const SfxPoolItem& rL) const override
     {   return static_cast<const SfxLinkItem&>(rL).aLink == aLink; }
     const Link<SfxPoolItem*, void>&
                              GetValue() const { return aLink; }
@@ -115,8 +115,6 @@ class SfxObjectShellLock;
 
 class SFX2_DLLPUBLIC SfxApplication: public SfxShell
 {
-    SAL_DLLPRIVATE static SfxApplication* pApp;
-
     SfxAppData_Impl*            pAppData_Impl;
 
     DECL_DLLPRIVATE_LINK_TYPED( GlobalBasicErrorHdl_Impl, StarBASIC*, bool );
@@ -124,7 +122,6 @@ class SFX2_DLLPUBLIC SfxApplication: public SfxShell
     void                        Deinitialize();
 
 public:
-                                TYPEINFO_OVERRIDE();
                                 SFX_DECL_INTERFACE(SFX_INTERFACE_SFXAPP)
 
 private:
@@ -136,7 +133,7 @@ public:
                                 SfxApplication();
                                 virtual ~SfxApplication();
     static SfxApplication*      GetOrCreate();
-    static SfxApplication*      Get() { return pApp;}
+    static SfxApplication*      Get();
 
     // Resource Manager
     static ResMgr*              GetSfxResManager();
@@ -157,7 +154,7 @@ public:
     /**
     * @param pArgs Takes ownership
     */
-    sal_uIntPtr                       LoadTemplate( SfxObjectShellLock& xDoc, const OUString& rFileName, bool bCopy=true, SfxItemSet* pArgs = 0 );
+    sal_uIntPtr                       LoadTemplate( SfxObjectShellLock& xDoc, const OUString& rFileName, bool bCopy=true, SfxItemSet* pArgs = nullptr );
     vcl::Window*                     GetTopWindow() const;
 
     // members
@@ -172,18 +169,18 @@ public:
     static OUString             ChooseScript();
     static void                 MacroOrganizer( sal_Int16 nTabId );
     static ErrCode              CallBasic( const OUString&, BasicManager*, SbxArray *pArgs, SbxValue *pRet );
-    static ErrCode              CallAppBasic( const OUString& i_macroName, SbxArray* i_args = NULL, SbxValue* i_ret = NULL )
+    static ErrCode              CallAppBasic( const OUString& i_macroName, SbxArray* i_args = nullptr, SbxValue* i_ret = nullptr )
                                 { return CallBasic( i_macroName, SfxApplication::GetBasicManager(), i_args, i_ret ); }
     static BasicManager*        GetBasicManager();
-    com::sun::star::script::XLibraryContainer * GetDialogContainer();
-    com::sun::star::script::XLibraryContainer * GetBasicContainer();
+    css::script::XLibraryContainer * GetDialogContainer();
+    css::script::XLibraryContainer * GetBasicContainer();
     static StarBASIC*           GetBasic();
     sal_uInt16                  SaveBasicAndDialogContainer() const;
 
     // misc.
     bool                        GetOptions(SfxItemSet &);
     void                        SetOptions(const SfxItemSet &);
-    virtual void                Invalidate(sal_uInt16 nId = 0) SAL_OVERRIDE;
+    virtual void                Invalidate(sal_uInt16 nId = 0) override;
     void                        NotifyEvent(const SfxEventHint& rEvent, bool bSynchron = true );
     bool                        IsDowning() const;
     void                        ResetLastDir();
@@ -199,9 +196,9 @@ public:
     // Object-Factories/global arrays
     SAL_DLLPRIVATE void         RegisterChildWindow_Impl(SfxModule*, SfxChildWinFactory*);
     SAL_DLLPRIVATE void         RegisterChildWindowContext_Impl(SfxModule*, sal_uInt16, SfxChildWinContextFactory*);
-    SAL_DLLPRIVATE void         RegisterStatusBarControl_Impl(SfxModule*, SfxStbCtrlFactory*);
-    SAL_DLLPRIVATE void         RegisterMenuControl_Impl(SfxModule*, SfxMenuCtrlFactory*);
-    SAL_DLLPRIVATE void         RegisterToolBoxControl_Impl( SfxModule*, SfxTbxCtrlFactory*);
+    SAL_DLLPRIVATE void         RegisterStatusBarControl_Impl(SfxModule*, const SfxStbCtrlFactory&);
+    SAL_DLLPRIVATE void         RegisterMenuControl_Impl(SfxModule*, const SfxMenuCtrlFactory&);
+    SAL_DLLPRIVATE void         RegisterToolBoxControl_Impl( SfxModule*, const SfxTbxCtrlFactory&);
     SAL_DLLPRIVATE SfxTbxCtrlFactArr_Impl& GetTbxCtrlFactories_Impl() const;
     SAL_DLLPRIVATE SfxStbCtrlFactArr_Impl& GetStbCtrlFactories_Impl() const;
     SAL_DLLPRIVATE SfxMenuCtrlFactArr_Impl& GetMenuCtrlFactories_Impl() const;
@@ -229,7 +226,7 @@ public:
     SAL_DLLPRIVATE void         SetLastDir_Impl( const OUString & );
 
     SAL_DLLPRIVATE void         Registrations_Impl();
-    SAL_DLLPRIVATE SfxWorkWindow* GetWorkWindow_Impl(const SfxViewFrame *pFrame=0) const;
+    SAL_DLLPRIVATE SfxWorkWindow* GetWorkWindow_Impl(const SfxViewFrame *pFrame=nullptr) const;
 
     // TODO/CLEANUP: still needed? -- unclear whether this comment
     // refers to the GetDisabledSlotList_Impl() method which was

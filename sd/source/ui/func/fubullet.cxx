@@ -52,7 +52,6 @@ const sal_Unicode CHAR_LRM          =   ((sal_Unicode)0x200E);
 const sal_Unicode CHAR_ZWSP         =   ((sal_Unicode)0x200B);
 const sal_Unicode CHAR_ZWNBSP       =   ((sal_Unicode)0x2060);
 
-TYPEINIT1( FuBullet, FuPoor );
 
 FuBullet::FuBullet (
     ViewShell* pViewSh,
@@ -99,17 +98,17 @@ void FuBullet::DoExecute( SfxRequest& rReq )
 
 void FuBullet::InsertFormattingMark( sal_Unicode cMark )
 {
-    OutlinerView* pOV = NULL;
-    ::Outliner*   pOL = NULL;
+    OutlinerView* pOV = nullptr;
+    ::Outliner*   pOL = nullptr;
 
     // depending on ViewShell set Outliner and OutlinerView
-    if (mpViewShell->ISA(DrawViewShell))
+    if( dynamic_cast< const DrawViewShell *>( mpViewShell ) !=  nullptr)
     {
         pOV = mpView->GetTextEditOutlinerView();
         if (pOV)
             pOL = mpView->GetTextEditOutliner();
     }
-    else if (mpViewShell->ISA(OutlineViewShell))
+    else if( dynamic_cast< const OutlineViewShell *>( mpViewShell ) !=  nullptr)
     {
         pOL = &static_cast<OutlineView*>(mpView)->GetOutliner();
         pOV = static_cast<OutlineView*>(mpView)->GetViewByWindow(
@@ -151,7 +150,7 @@ void FuBullet::InsertFormattingMark( sal_Unicode cMark )
 void FuBullet::InsertSpecialCharacter( SfxRequest& rReq )
 {
     const SfxItemSet *pArgs = rReq.GetArgs();
-    const SfxPoolItem* pItem = 0;
+    const SfxPoolItem* pItem = nullptr;
     if( pArgs )
         pArgs->GetItemState(mpDoc->GetPool().GetWhich(SID_CHARMAP), false, &pItem);
 
@@ -160,9 +159,9 @@ void FuBullet::InsertSpecialCharacter( SfxRequest& rReq )
     if ( pItem )
     {
         aChars = static_cast<const SfxStringItem*>(pItem)->GetValue();
-        const SfxPoolItem* pFtItem = NULL;
+        const SfxPoolItem* pFtItem = nullptr;
         pArgs->GetItemState( mpDoc->GetPool().GetWhich(SID_ATTR_SPECIALCHAR), false, &pFtItem);
-        const SfxStringItem* pFontItem = PTR_CAST( SfxStringItem, pFtItem );
+        const SfxStringItem* pFontItem = dynamic_cast<const SfxStringItem*>( pFtItem  );
         if ( pFontItem )
         {
             OUString aFontName = pFontItem->GetValue();
@@ -192,7 +191,7 @@ void FuBullet::InsertSpecialCharacter( SfxRequest& rReq )
         SvxAbstractDialogFactory* pFact = SvxAbstractDialogFactory::Create();
         std::unique_ptr<SfxAbstractDialog> pDlg(pFact ? pFact->CreateSfxDialog( &mpView->GetViewShell()->GetViewFrame()->GetWindow(), aSet,
             mpView->GetViewShell()->GetViewFrame()->GetFrame().GetFrameInterface(),
-            RID_SVXDLG_CHARMAP ) : 0);
+            RID_SVXDLG_CHARMAP ) : nullptr);
         if( !pDlg )
             return;
 
@@ -202,8 +201,8 @@ void FuBullet::InsertSpecialCharacter( SfxRequest& rReq )
         sal_uInt16 nResult = pDlg->Execute();
         if( nResult == RET_OK )
         {
-            SFX_ITEMSET_ARG( pDlg->GetOutputItemSet(), pCItem, SfxStringItem, SID_CHARMAP, false );
-            SFX_ITEMSET_ARG( pDlg->GetOutputItemSet(), pFItem, SvxFontItem, SID_ATTR_CHAR_FONT, false );
+            const SfxStringItem* pCItem = SfxItemSet::GetItem<SfxStringItem>(pDlg->GetOutputItemSet(), SID_CHARMAP, false);
+            const SvxFontItem* pFItem = SfxItemSet::GetItem<SvxFontItem>(pDlg->GetOutputItemSet(), SID_ATTR_CHAR_FONT, false);
             if ( pFItem )
             {
                 aFont.SetName( pFItem->GetFamilyName() );
@@ -219,11 +218,11 @@ void FuBullet::InsertSpecialCharacter( SfxRequest& rReq )
 
     if (!aChars.isEmpty())
     {
-        OutlinerView* pOV = NULL;
-        ::Outliner*   pOL = NULL;
+        OutlinerView* pOV = nullptr;
+        ::Outliner*   pOL = nullptr;
 
         // determine depending on ViewShell Outliner and OutlinerView
-        if(mpViewShell && mpViewShell->ISA(DrawViewShell))
+        if(mpViewShell && dynamic_cast< const DrawViewShell *>( mpViewShell ) !=  nullptr)
         {
             pOV = mpView->GetTextEditOutlinerView();
             if (pOV)
@@ -231,7 +230,7 @@ void FuBullet::InsertSpecialCharacter( SfxRequest& rReq )
                 pOL = mpView->GetTextEditOutliner();
             }
         }
-        else if(mpViewShell && mpViewShell->ISA(OutlineViewShell))
+        else if(mpViewShell && dynamic_cast< const OutlineViewShell *>( mpViewShell ) !=  nullptr)
         {
             pOL = &static_cast<OutlineView*>(mpView)->GetOutliner();
             pOV = static_cast<OutlineView*>(mpView)->GetViewByWindow(
@@ -299,8 +298,8 @@ void FuBullet::GetSlotState( SfxItemSet& rSet, ViewShell* pViewShell, SfxViewFra
         SfxItemState::DEFAULT == rSet.GetItemState( SID_INSERT_ZWNBSP ) ||
         SfxItemState::DEFAULT == rSet.GetItemState( SID_INSERT_ZWSP ))
     {
-        ::sd::View* pView = pViewShell ? pViewShell->GetView() : 0;
-        OutlinerView* pOLV = pView ? pView->GetTextEditOutlinerView() : 0;
+        ::sd::View* pView = pViewShell ? pViewShell->GetView() : nullptr;
+        OutlinerView* pOLV = pView ? pView->GetTextEditOutlinerView() : nullptr;
 
         const bool bTextEdit = pOLV;
 
@@ -314,7 +313,7 @@ void FuBullet::GetSlotState( SfxItemSet& rSet, ViewShell* pViewShell, SfxViewFra
             rSet.DisableItem(FN_INSERT_HARD_SPACE);
         }
 
-        if( !bTextEdit && (dynamic_cast<OutlineViewShell*>( pViewShell ) == 0) )
+        if( !bTextEdit && (dynamic_cast<OutlineViewShell*>( pViewShell ) == nullptr) )
             rSet.DisableItem(SID_CHARMAP);
 
         if(!bTextEdit || !bCtlEnabled )

@@ -101,11 +101,10 @@ void ButtonFrame::Draw( OutputDevice& rDev )
     rDev.SetFillColor( aOldFillColor );
 }
 
-BrowserColumn::BrowserColumn( sal_uInt16 nItemId, const class Image &rImage,
+BrowserColumn::BrowserColumn( sal_uInt16 nItemId,
                               const OUString& rTitle, sal_uLong nWidthPixel, const Fraction& rCurrentZoom )
 :   _nId( nItemId ),
     _nWidth( nWidthPixel ),
-    _aImage( rImage ),
     _aTitle( rTitle ),
     _bFrozen( false )
 {
@@ -196,9 +195,9 @@ BrowserDataWin::BrowserDataWin( BrowseBox* pParent )
     :Control( pParent, WinBits(WB_CLIPCHILDREN) )
     ,DragSourceHelper( this )
     ,DropTargetHelper( this )
-    ,pHeaderBar( 0 )
+    ,pHeaderBar( nullptr )
     ,pEventWin( pParent )
-    ,pCornerWin( 0 )
+    ,pCornerWin( nullptr )
     ,bInDtor( false )
     ,bInPaint( false )
     ,bInCommand( false )
@@ -288,9 +287,9 @@ void BrowserDataWin::DataChanged( const DataChangedEvent& rDCEvt )
     {
         if( !bOwnDataChangedHdl )
         {
-            InitSettings_Impl(this, true, true);
+            InitSettings_Impl(this);
             Invalidate();
-            InitSettings_Impl(GetParent(), true, true);
+            InitSettings_Impl(GetParent());
             GetParent()->Invalidate();
             GetParent()->Resize();
         }

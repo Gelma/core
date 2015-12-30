@@ -50,19 +50,19 @@ class SvPasteObjectDialog : public ModalDialog
     FixedText&      ObjectSource()  { return *m_pFtObjectSource; }
 
     void            SelectObject();
-    DECL_LINK( SelectHdl, ListBox * );
+    DECL_LINK_TYPED( SelectHdl, ListBox&, void );
     DECL_LINK_TYPED( DoubleClickHdl, ListBox&, void );
 
 public:
                 SvPasteObjectDialog( vcl::Window* pParent );
     virtual     ~SvPasteObjectDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void        Insert( SotClipboardFormatId nFormat, const OUString & rFormatName );
     void        SetObjName( const SvGlobalName & rClass, const OUString & rObjName );
     SotClipboardFormatId GetFormat( const TransferableDataHelper& aHelper,
-                        const DataFlavorExVector* pFormats=0,
-                        const TransferableObjectDescriptor* pDesc=0 );
+                        const DataFlavorExVector* pFormats=nullptr,
+                        const TransferableObjectDescriptor* pDesc=nullptr );
 };
 
 #endif // INCLUDED_CUI_SOURCE_INC_PASTEDLG_HXX

@@ -105,7 +105,7 @@ OTableContainer::OTableContainer(::cppu::OWeakObject& _rParent,
                                  ,oslInterlockedCount& _nInAppend)
     :OFilteredContainer(_rParent,_rMutex,_xCon,_bCase,_pRefreshListener,_pWarningsContainer,_nInAppend)
     ,m_xTableDefinitions(_xTableDefinitions)
-    ,m_pTableMediator( NULL )
+    ,m_pTableMediator( nullptr )
     ,m_bInDrop(false)
 {
 }
@@ -196,7 +196,9 @@ connectivity::sdbcx::ObjectType OTableContainer::createObject(const OUString& _r
             Sequence< OUString> aTypeFilter;
             getAllTableTypeFilter( aTypeFilter );
 
-            Reference< XResultSet > xRes =  m_xMetaData.is() ? m_xMetaData->getTables(aCatalog,sSchema,sTable,aTypeFilter) : Reference< XResultSet >();
+            Reference< XResultSet > xRes;
+            if ( m_xMetaData.is() )
+                xRes = m_xMetaData->getTables(aCatalog,sSchema,sTable,aTypeFilter);
             if(xRes.is() && xRes->next())
             {
                 Reference< XRow > xRow(xRes,UNO_QUERY);
@@ -224,7 +226,7 @@ connectivity::sdbcx::ObjectType OTableContainer::createObject(const OUString& _r
 
         if ( !m_pTableMediator.is() )
             m_pTableMediator = new OContainerMediator(
-                    this, m_xTableDefinitions.get(), m_xConnection );
+                    this, m_xTableDefinitions.get() );
         if ( m_pTableMediator.is() )
             m_pTableMediator->notifyElementCreated(_rName,xDest);
     }
@@ -242,8 +244,8 @@ Reference< XPropertySet > OTableContainer::createDescriptor()
     Reference<XDataDescriptorFactory> xDataFactory(m_xMasterContainer,UNO_QUERY);
     if ( xDataFactory.is() && m_xMetaData.is() )
     {
-        xMasterColumnsSup = Reference< XColumnsSupplier >( xDataFactory->createDataDescriptor(), UNO_QUERY );
-        ODBTableDecorator* pTable = new ODBTableDecorator( m_xConnection, xMasterColumnsSup, ::dbtools::getNumberFormats( m_xConnection ) ,NULL);
+        xMasterColumnsSup.set( xDataFactory->createDataDescriptor(), UNO_QUERY );
+        ODBTableDecorator* pTable = new ODBTableDecorator( m_xConnection, xMasterColumnsSup, ::dbtools::getNumberFormats( m_xConnection ) ,nullptr);
         xRet = pTable;
         pTable->construct();
     }
@@ -444,8 +446,8 @@ void SAL_CALL OTableContainer::disposing()
 {
     OFilteredContainer::disposing();
     // say goodbye to our listeners
-    m_xTableDefinitions = NULL;
-    m_pTableMediator = NULL;
+    m_xTableDefinitions = nullptr;
+    m_pTableMediator = nullptr;
 }
 
 void SAL_CALL OTableContainer::disposing( const css::lang::EventObject& /*Source*/ ) throw (css::uno::RuntimeException, std::exception)

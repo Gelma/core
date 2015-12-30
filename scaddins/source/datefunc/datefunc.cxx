@@ -118,7 +118,7 @@ extern "C" {
 SAL_DLLPUBLIC_EXPORT void * SAL_CALL date_component_getFactory(
     const sal_Char * pImplName, void * pServiceManager, void * /*pRegistryKey*/ )
 {
-    void* pRet = 0;
+    void* pRet = nullptr;
 
     if ( pServiceManager &&
             OUString::createFromAscii( pImplName ) == ScaDateAddIn::getImplementationName_Static() )
@@ -517,8 +517,7 @@ sal_Int32 GetNullDate( const uno::Reference< beans::XPropertySet >& xOptions )
     {
         try
         {
-            uno::Any aAny = xOptions->getPropertyValue(
-                                        OUString( "NullDate" ) );
+            uno::Any aAny = xOptions->getPropertyValue( "NullDate" );
             util::Date aDate;
             if ( aAny >>= aDate )
                 return DateToDays( aDate.Day, aDate.Month, aDate.Year );

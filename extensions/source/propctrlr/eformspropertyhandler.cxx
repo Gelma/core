@@ -78,8 +78,7 @@ namespace pcr
 
     Sequence< OUString > SAL_CALL EFormsPropertyHandler::getSupportedServiceNames_static(  ) throw (RuntimeException)
     {
-        Sequence< OUString > aSupported( 1 );
-        aSupported[0] = "com.sun.star.form.inspection.XMLFormsPropertyHandler";
+        Sequence<OUString> aSupported { "com.sun.star.form.inspection.XMLFormsPropertyHandler" };
         return aSupported;
     }
 
@@ -186,7 +185,7 @@ namespace pcr
                 if ( m_pHelper->getCurrentFormModelName() != m_sBindingLessModelName )
                 {
                     OUString sOldBindingName = m_pHelper->getCurrentBindingName();
-                    m_pHelper->setBinding( NULL );
+                    m_pHelper->setBinding( nullptr );
                     firePropertyChange( PROPERTY_BINDING_NAME, PROPERTY_ID_BINDING_NAME,
                         makeAny( sOldBindingName ), makeAny( OUString() ) );
                 }
@@ -399,8 +398,7 @@ namespace pcr
         if ( !m_pHelper.get() )
             return Sequence< OUString >();
 
-        Sequence< OUString > aReturn( 1 );
-        aReturn[ 0 ] = PROPERTY_INPUT_REQUIRED;
+        Sequence<OUString> aReturn { PROPERTY_INPUT_REQUIRED };
         return aReturn;
     }
 

@@ -57,11 +57,11 @@ public:
         const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XModel >& xChartModel,
         const XColorListRef &pColorTable );
     virtual ~ThreeD_SceneIllumination_TabPage();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
 private:
     DECL_LINK_TYPED( ClickLightSourceButtonHdl, Button*, void );
-    DECL_LINK( SelectColorHdl, ColorLB* );
+    DECL_LINK_TYPED( SelectColorHdl, ListBox&, void );
     DECL_LINK_TYPED( ColorDialogHdl, Button*, void );
     DECL_LINK_TYPED( PreviewChangeHdl, SvxLightCtl3D*, void );
     DECL_LINK_TYPED( PreviewSelectHdl, SvxLightCtl3D*, void );
@@ -99,7 +99,6 @@ private:
 
     bool            m_bInCommitToModel;
 
-    ModifyListenerCallBack m_aModelChangeListener;
     ::com::sun::star::uno::Reference<
         ::com::sun::star::frame::XModel >       m_xChartModel;
 };

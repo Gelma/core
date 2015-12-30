@@ -93,35 +93,35 @@ namespace
 OFieldDescControl::OFieldDescControl( vcl::Window* pParent, OTableDesignHelpBar* pHelpBar )
     :TabPage( pParent, WB_3DLOOK | WB_DIALOGCONTROL )
     ,pHelp( pHelpBar )
-    ,pLastFocusWindow(NULL)
-    ,m_pActFocusWindow(NULL)
-    ,pDefaultText(NULL)
-    ,pRequiredText(NULL)
-    ,pAutoIncrementText(NULL)
-    ,pTextLenText(NULL)
-    ,pNumTypeText(NULL)
-    ,pLengthText(NULL)
-    ,pScaleText(NULL)
-    ,pFormatText(NULL)
-    ,pBoolDefaultText(NULL)
-    ,m_pColumnNameText(NULL)
-    ,m_pTypeText(NULL)
-    ,m_pAutoIncrementValueText(NULL)
-    ,pRequired(NULL)
-    ,pNumType(NULL)
-    ,pAutoIncrement(NULL)
-    ,pDefault(NULL)
-    ,pTextLen(NULL)
-    ,pLength(NULL)
-    ,pScale(NULL)
-    ,pFormatSample(NULL)
-    ,pBoolDefault(NULL)
-    ,m_pColumnName(NULL)
-    ,m_pType(NULL)
-    ,m_pAutoIncrementValue(NULL)
-    ,pFormat(NULL)
-    ,m_pVertScroll( NULL )
-    ,m_pHorzScroll( NULL )
+    ,pLastFocusWindow(nullptr)
+    ,m_pActFocusWindow(nullptr)
+    ,pDefaultText(nullptr)
+    ,pRequiredText(nullptr)
+    ,pAutoIncrementText(nullptr)
+    ,pTextLenText(nullptr)
+    ,pNumTypeText(nullptr)
+    ,pLengthText(nullptr)
+    ,pScaleText(nullptr)
+    ,pFormatText(nullptr)
+    ,pBoolDefaultText(nullptr)
+    ,m_pColumnNameText(nullptr)
+    ,m_pTypeText(nullptr)
+    ,m_pAutoIncrementValueText(nullptr)
+    ,pRequired(nullptr)
+    ,pNumType(nullptr)
+    ,pAutoIncrement(nullptr)
+    ,pDefault(nullptr)
+    ,pTextLen(nullptr)
+    ,pLength(nullptr)
+    ,pScale(nullptr)
+    ,pFormatSample(nullptr)
+    ,pBoolDefault(nullptr)
+    ,m_pColumnName(nullptr)
+    ,m_pType(nullptr)
+    ,m_pAutoIncrementValue(nullptr)
+    ,pFormat(nullptr)
+    ,m_pVertScroll( nullptr )
+    ,m_pHorzScroll( nullptr )
     ,m_pPreviousType()
     ,m_nPos(-1)
     ,aYes(ModuleRes(STR_VALUE_YES))
@@ -131,7 +131,7 @@ OFieldDescControl::OFieldDescControl( vcl::Window* pParent, OTableDesignHelpBar*
     ,m_nWidth(50)
     ,m_bAdded(false)
     ,m_bRightAligned(false)
-    ,pActFieldDescr(NULL)
+    ,pActFieldDescr(nullptr)
 {
     Contruct();
 }
@@ -389,7 +389,7 @@ void OFieldDescControl::ScrollAllAggregates()
         OSL_ENSURE(sizeof(ppAggregates)/sizeof(ppAggregates[0]) == sizeof(ppAggregatesText)/sizeof(ppAggregatesText[0]),"Lists are not identical!");
 
         for (sal_uInt16 i=0; i<sizeof(ppAggregates)/sizeof(ppAggregates[0]); ++i)
-            ScrollAggregate(ppAggregatesText[i],ppAggregates[i],NULL,nDeltaX, nDeltaY);
+            ScrollAggregate(ppAggregatesText[i],ppAggregates[i],nullptr,nDeltaX, nDeltaY);
 
         ScrollAggregate(pFormatText,pFormatSample,pFormat,nDeltaX, nDeltaY);
     }
@@ -449,63 +449,6 @@ void OFieldDescControl::SetReadOnly( bool bReadOnly )
     }
 }
 
-OUString OFieldDescControl::GetControlText( sal_uInt16 nControlId )
-{
-    // Read out the Controls' texts
-    switch( nControlId )
-    {
-        case FIELD_PROPERTY_BOOL_DEFAULT:
-            if (pBoolDefault)
-                return pBoolDefault->GetSelectEntry();
-            break;
-        case FIELD_PROPERTY_DEFAULT:
-            if (pDefault)
-                return pDefault->GetText();
-            break;
-        case FIELD_PROPERTY_REQUIRED:
-            if (pRequired)
-                return pRequired->GetSelectEntry();
-            break;
-        case FIELD_PROPERTY_TEXTLEN:
-            if (pTextLen)
-                return OUString::number(pTextLen->GetValue());
-            break;
-        case FIELD_PROPERTY_NUMTYPE:
-            if (pNumType)
-                return pNumType->GetSelectEntry();
-            break;
-        case FIELD_PROPERTY_AUTOINC:
-            if (pAutoIncrement)
-                return pAutoIncrement->GetSelectEntry();
-            break;
-        case FIELD_PROPERTY_LENGTH:
-            if (pLength)
-                return pLength->GetText();
-            break;
-        case FIELD_PROPERTY_SCALE:
-            if (pScale)
-                return pScale->GetText();
-            break;
-        case FIELD_PROPERTY_FORMAT:
-            if (pFormatSample)
-                return pFormatSample->GetText();
-            break;
-        case FIELD_PROPERTY_COLUMNNAME:
-            if(m_pColumnName)
-                return m_pColumnName->GetText();
-            break;
-        case FIELD_PROPERTY_TYPE:
-            if(m_pType)
-                return m_pType->GetSelectEntry();
-            break;
-        case FIELD_PROPERTY_AUTOINCREMENT:
-            if(m_pAutoIncrementValue)
-                return m_pAutoIncrementValue->GetText();
-    }
-
-    return OUString();
-}
-
 void OFieldDescControl::SetControlText( sal_uInt16 nControlId, const OUString& rText )
 {
     // Set the Controls' texts
@@ -517,7 +460,7 @@ void OFieldDescControl::SetControlText( sal_uInt16 nControlId, const OUString& r
                 OUString sOld = pBoolDefault->GetSelectEntry();
                 pBoolDefault->SelectEntry(rText);
                 if (sOld != rText)
-                    LINK(this, OFieldDescControl, ChangeHdl).Call(pBoolDefault);
+                    LINK(this, OFieldDescControl, ChangeHdl).Call(*pBoolDefault);
             }
             break;
         case FIELD_PROPERTY_DEFAULT:
@@ -549,7 +492,7 @@ void OFieldDescControl::SetControlText( sal_uInt16 nControlId, const OUString& r
                 OUString sOld = pAutoIncrement->GetSelectEntry();
                 pAutoIncrement->SelectEntry(rText);
                 if (sOld != rText)
-                    LINK(this, OFieldDescControl, ChangeHdl).Call(pAutoIncrement);
+                    LINK(this, OFieldDescControl, ChangeHdl).Call(*pAutoIncrement);
             }
             break;
 
@@ -622,16 +565,16 @@ void OFieldDescControl::SetModified(bool /*bModified*/)
 {
 }
 
-IMPL_LINK( OFieldDescControl, ChangeHdl, ListBox *, pListBox )
+IMPL_LINK_TYPED( OFieldDescControl, ChangeHdl, ListBox&, rListBox, void )
 {
     if ( !pActFieldDescr )
-        return 0;
+        return;
 
-    if ( pListBox->IsValueChangedFromSaved() )
+    if ( rListBox.IsValueChangedFromSaved() )
         SetModified(true);
 
     // Special treatment for Bool fields
-    if(pListBox == pRequired && pBoolDefault )
+    if(&rListBox == pRequired && pBoolDefault )
     {
         // If pRequired = sal_True then the sal_Bool field must NOT contain <<none>>
         OUString sDef = BoolStringUI(::comphelper::getString(pActFieldDescr->GetControlDefault()));
@@ -652,9 +595,9 @@ IMPL_LINK( OFieldDescControl, ChangeHdl, ListBox *, pListBox )
     }
 
     // A special treatment only for AutoIncrement
-    if (pListBox == pAutoIncrement)
+    if (&rListBox == pAutoIncrement)
     {
-        if(pListBox->GetSelectEntryPos() == 1)
+        if(rListBox.GetSelectEntryPos() == 1)
         { // no
             DeactivateAggregate( tpAutoIncrementValue );
             if(pActFieldDescr->IsPrimaryKey())
@@ -682,7 +625,7 @@ IMPL_LINK( OFieldDescControl, ChangeHdl, ListBox *, pListBox )
         ArrangeAggregates();
     }
 
-    if(pListBox == m_pType)
+    if(&rListBox == m_pType)
     {
         TOTypeInfoSP pTypeInfo = getTypeInfo(m_pType->GetSelectEntryPos());
         pActFieldDescr->FillFromTypeInfo(pTypeInfo,true,false); // SetType(pTypeInfo);
@@ -690,8 +633,6 @@ IMPL_LINK( OFieldDescControl, ChangeHdl, ListBox *, pListBox )
         DisplayData(pActFieldDescr);
         CellModified(-1, m_pType->GetPos());
     }
-
-    return 0;
 }
 
 // Rearrange all Controls, such that they are in fixed order and really on top
@@ -733,7 +674,7 @@ void OFieldDescControl::ArrangeAggregates()
 
     // And go ...
     int nCurrentControlPos = 0;
-    Control* pZOrderPredecessor = NULL;
+    Control* pZOrderPredecessor = nullptr;
     for (size_t i=0; i<sizeof(adAggregates)/sizeof(adAggregates[0]); i++)
     {
         if (adAggregates[i].pctrlInputControl)
@@ -765,8 +706,8 @@ void OFieldDescControl::ArrangeAggregates()
     }
 
     // Finally, put the ScrollBars at the top of the z-order
-    m_pVertScroll->SetZOrder(NULL, ZOrderFlags::First);
-    m_pHorzScroll->SetZOrder(NULL, ZOrderFlags::First);
+    m_pVertScroll->SetZOrder(nullptr, ZOrderFlags::First);
+    m_pHorzScroll->SetZOrder(nullptr, ZOrderFlags::First);
 }
 
 void OFieldDescControl::ActivateAggregate( EControlType eType )
@@ -987,7 +928,7 @@ VclPtr<OPropNumericEditCtrl> OFieldDescControl::CreateNumericControl(sal_uInt16 
 
 void OFieldDescControl::DeactivateAggregate( EControlType eType )
 {
-    pLastFocusWindow = NULL;
+    pLastFocusWindow = nullptr;
     // Destroy Controls
     switch( eType )
     {
@@ -1130,7 +1071,7 @@ void OFieldDescControl::DisplayData(OFieldDescription* pFieldDescr )
         DeactivateAggregate( tpAutoIncrementValue );
         m_pPreviousType = TOTypeInfoSP();
         // Reset the saved focus' pointer
-        pLastFocusWindow = NULL;
+        pLastFocusWindow = nullptr;
         if ( m_bAdded )
         {
             ::dbaui::notifySystemWindow(this,this,::comphelper::mem_fun(&TaskPaneList::RemoveWindow));
@@ -1157,7 +1098,7 @@ void OFieldDescControl::DisplayData(OFieldDescription* pFieldDescr )
     if( m_pPreviousType != pFieldType )
     {
         // Reset the saved focus' pointer
-        pLastFocusWindow = NULL;
+        pLastFocusWindow = nullptr;
 
         // Controls, which must NOT be displayed again
         DeactivateAggregate( tpNumType );
@@ -1568,7 +1509,7 @@ void OFieldDescControl::GetFocus()
     if( pLastFocusWindow )
     {
         pLastFocusWindow->GrabFocus();
-        pLastFocusWindow = NULL;
+        pLastFocusWindow = nullptr;
     }
 }
 
@@ -1587,7 +1528,7 @@ void OFieldDescControl::implFocusLost(vcl::Window* _pWhich)
 
 void OFieldDescControl::LoseFocus()
 {
-    implFocusLost(NULL);
+    implFocusLost(nullptr);
 
     TabPage::LoseFocus();
 }
@@ -1718,7 +1659,7 @@ OUString OFieldDescControl::getControlDefault( const OFieldDescription* _pFieldD
             if ( !bTextFormat )
             {
                 Locale aLocale;
-                ::comphelper::getNumberFormatProperty(xNumberFormatter,nFormatKey,OUString("Locale")) >>= aLocale;
+                ::comphelper::getNumberFormatProperty(xNumberFormatter,nFormatKey,"Locale") >>= aLocale;
 
                 sal_Int32 nNumberFormat = ::comphelper::getNumberFormatType(xNumberFormatter,nFormatKey);
                 if(     (nNumberFormat & css::util::NumberFormat::DATE)    == css::util::NumberFormat::DATE

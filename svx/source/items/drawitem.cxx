@@ -23,12 +23,13 @@
 
 using namespace ::com::sun::star;
 
-TYPEINIT1_FACTORY( SvxColorListItem, SfxPoolItem , new SvxColorListItem );
-TYPEINIT1_FACTORY( SvxGradientListItem, SfxPoolItem , new  SvxGradientListItem );
-TYPEINIT1_FACTORY( SvxHatchListItem, SfxPoolItem , new  SvxHatchListItem );
-TYPEINIT1_FACTORY( SvxBitmapListItem, SfxPoolItem , new  SvxBitmapListItem );
-TYPEINIT1_FACTORY( SvxDashListItem, SfxPoolItem , new  SvxDashListItem );
-TYPEINIT1_FACTORY( SvxLineEndListItem, SfxPoolItem , new  SvxLineEndListItem );
+
+SfxPoolItem* SvxColorListItem::CreateDefault() { return new  SvxColorListItem ;}
+SfxPoolItem* SvxGradientListItem::CreateDefault() { return new   SvxGradientListItem ;}
+SfxPoolItem* SvxHatchListItem::CreateDefault() { return new   SvxHatchListItem ;}
+SfxPoolItem* SvxBitmapListItem::CreateDefault() { return new   SvxBitmapListItem ;}
+SfxPoolItem* SvxDashListItem::CreateDefault() { return new   SvxDashListItem ;}
+SfxPoolItem* SvxLineEndListItem::CreateDefault() { return new   SvxLineEndListItem ;}
 
 SvxColorListItem::SvxColorListItem()
 {
@@ -74,13 +75,13 @@ SfxPoolItem* SvxColorListItem::Clone( SfxItemPool * ) const
 
 // Should be a template class but ...
 #define QUERY_PUT_IMPL(svtype, xtype) \
-bool svtype::QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 ) const \
+bool svtype::QueryValue( css::uno::Any& rVal, sal_uInt8 ) const \
 { \
     rVal = uno::makeAny( uno::Reference< uno::XWeak >( p##xtype.get() ) ); \
     return true; \
 } \
 \
-bool svtype::PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 ) \
+bool svtype::PutValue( const css::uno::Any& rVal, sal_uInt8 ) \
 { \
     uno::Reference< uno::XWeak > xRef; \
     if( rVal >>= xRef ) { \
@@ -228,7 +229,7 @@ SfxPoolItem* SvxBitmapListItem::Clone( SfxItemPool * ) const
 QUERY_PUT_IMPL( SvxBitmapListItem, BitmapList )
 
 SvxDashListItem::SvxDashListItem() :
-    pDashList( 0 )
+    pDashList( nullptr )
 {
 }
 

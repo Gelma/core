@@ -36,8 +36,7 @@ using namespace     ::com::sun::star::lang;
 using namespace     ::com::sun::star::uno;
 using namespace     ::com::sun::star::beans;
 
-SvtFolderPicker::SvtFolderPicker( const Reference < XMultiServiceFactory >& _rxFactory )
-    :SvtFolderPicker_Base( _rxFactory )
+SvtFolderPicker::SvtFolderPicker()
 {
 }
 
@@ -60,7 +59,7 @@ void SAL_CALL SvtFolderPicker::setDialogTitle( const OUString& _rTitle) throw (R
     setTitle( _rTitle );
 }
 
-void SAL_CALL SvtFolderPicker::startExecuteModal( const Reference< ::com::sun::star::ui::dialogs::XDialogClosedListener >& xListener ) throw (RuntimeException, std::exception)
+void SAL_CALL SvtFolderPicker::startExecuteModal( const Reference< css::ui::dialogs::XDialogClosedListener >& xListener ) throw (RuntimeException, std::exception)
 {
     m_xListener = xListener;
     prepareDialog();
@@ -98,17 +97,16 @@ void SvtFolderPicker::prepareExecute()
     }
 }
 
-IMPL_LINK( SvtFolderPicker, DialogClosedHdl, Dialog*, pDlg )
+IMPL_LINK_TYPED( SvtFolderPicker, DialogClosedHdl, Dialog&, rDlg, void )
 {
     if ( m_xListener.is() )
     {
-        sal_Int16 nRet = static_cast< sal_Int16 >( pDlg->GetResult() );
-        ::com::sun::star::ui::dialogs::DialogClosedEvent aEvent( *this, nRet );
+        sal_Int16 nRet = static_cast< sal_Int16 >( rDlg.GetResult() );
+        css::ui::dialogs::DialogClosedEvent aEvent( *this, nRet );
         m_xListener->dialogClosed( aEvent );
         m_xListener.clear();
     }
-    return 0;
-  }
+}
 
 void SAL_CALL SvtFolderPicker::setDisplayDirectory( const OUString& aDirectory )
     throw( IllegalArgumentException, RuntimeException, std::exception )
@@ -174,8 +172,7 @@ Sequence< OUString > SAL_CALL SvtFolderPicker::getSupportedServiceNames() throw(
 /* Helper for XServiceInfo */
 Sequence< OUString > SvtFolderPicker::impl_getStaticSupportedServiceNames()
 {
-    Sequence< OUString > seqServiceNames(1);
-    seqServiceNames[0] = "com.sun.star.ui.dialogs.OfficeFolderPicker";
+    Sequence< OUString > seqServiceNames { "com.sun.star.ui.dialogs.OfficeFolderPicker" };
     return seqServiceNames ;
 }
 
@@ -186,11 +183,10 @@ OUString SvtFolderPicker::impl_getStaticImplementationName()
 }
 
 /* Helper for registry */
-Reference< XInterface > SAL_CALL SvtFolderPicker::impl_createInstance( const Reference< XComponentContext >& rxContext )
+Reference< XInterface > SAL_CALL SvtFolderPicker::impl_createInstance( const Reference< XComponentContext >&  )
     throw( Exception )
 {
-    Reference< XMultiServiceFactory > xServiceManager (rxContext->getServiceManager(), UNO_QUERY_THROW);
-    return Reference< XInterface >( *new SvtFolderPicker( xServiceManager ) );
+    return Reference< XInterface >( *new SvtFolderPicker );
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

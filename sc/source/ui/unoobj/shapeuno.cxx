@@ -67,7 +67,7 @@ const SvEventDescription* ScShapeObj::GetSupportedMacroItems()
 {
     static const SvEventDescription aMacroDescriptionsImpl[] =
     {
-        { 0, NULL }
+        { 0, nullptr }
     };
     return aMacroDescriptionsImpl;
 }
@@ -77,7 +77,7 @@ ScMacroInfo* ScShapeObj_getShapeHyperMacroInfo( ScShapeObj* pShape, bool bCreate
         if( pShape )
             if( SdrObject* pObj = pShape->GetSdrObject() )
                 return ScDrawLayer::GetMacroInfo( pObj, bCreate );
-        return 0;
+        return nullptr;
 }
 
 namespace
@@ -90,8 +90,8 @@ namespace
 }
 
 ScShapeObj::ScShapeObj( uno::Reference<drawing::XShape>& xShape ) :
-      pShapePropertySet(NULL),
-      pShapePropertyState(NULL),
+      pShapePropertySet(nullptr),
+      pShapePropertyState(nullptr),
       bIsTextShape(false),
       bIsNoteCaption(false),
       bInitializedNotifier(false)
@@ -99,19 +99,19 @@ ScShapeObj::ScShapeObj( uno::Reference<drawing::XShape>& xShape ) :
     osl_atomic_increment( &m_refCount );
 
     {
-        mxShapeAgg = uno::Reference<uno::XAggregation>( xShape, uno::UNO_QUERY );
+        mxShapeAgg.set( xShape, uno::UNO_QUERY );
         // extra block to force deletion of the temporary before setDelegator
     }
 
     if (mxShapeAgg.is())
     {
-        xShape = NULL;      // during setDelegator, mxShapeAgg must be the only ref
+        xShape = nullptr;      // during setDelegator, mxShapeAgg must be the only ref
 
         mxShapeAgg->setDelegator( static_cast<cppu::OWeakObject*>(this) );
 
         xShape.set(uno::Reference<drawing::XShape>( mxShapeAgg, uno::UNO_QUERY ));
 
-        bIsTextShape = ( SvxUnoTextBase::getImplementation( mxShapeAgg ) != NULL );
+        bIsTextShape = ( SvxUnoTextBase::getImplementation( mxShapeAgg ) != nullptr );
     }
 
     {
@@ -344,7 +344,7 @@ void SAL_CALL ScShapeObj::setPropertyValue(const OUString& aPropertyName, const 
                     if ( pDoc )
                     {
                         SfxObjectShell* pObjSh = pDoc->GetDocumentShell();
-                        if ( pObjSh && pObjSh->ISA(ScDocShell) )
+                        if ( pObjSh && dynamic_cast<const ScDocShell*>( pObjSh) !=  nullptr )
                         {
                             ScDocShell* pDocSh = static_cast<ScDocShell*>(pObjSh);
 
@@ -479,7 +479,7 @@ void SAL_CALL ScShapeObj::setPropertyValue(const OUString& aPropertyName, const 
                         if ( pDoc )
                         {
                             SfxObjectShell* pObjSh = pDoc->GetDocumentShell();
-                            if ( pObjSh && pObjSh->ISA(ScDocShell) )
+                            if ( pObjSh && dynamic_cast<const ScDocShell*>( pObjSh) !=  nullptr )
                             {
                                 ScDocShell* pDocSh = static_cast<ScDocShell*>(pObjSh);
                                 uno::Reference<drawing::XShape> xShape( mxShapeAgg, uno::UNO_QUERY );
@@ -577,7 +577,7 @@ void SAL_CALL ScShapeObj::setPropertyValue(const OUString& aPropertyName, const 
                         if ( pDoc )
                         {
                             SfxObjectShell* pObjSh = pDoc->GetDocumentShell();
-                            if ( pObjSh && pObjSh->ISA(ScDocShell) )
+                            if ( pObjSh && dynamic_cast<const ScDocShell*>( pObjSh) !=  nullptr )
                             {
                                 ScDocShell* pDocSh = static_cast<ScDocShell*>(pObjSh);
                                 uno::Reference<drawing::XShape> xShape( mxShapeAgg, uno::UNO_QUERY );
@@ -676,7 +676,7 @@ uno::Any SAL_CALL ScShapeObj::getPropertyValue( const OUString& aPropertyName )
                     if ( lcl_GetPageNum( pPage, *pModel, nTab ) )
                     {
                         SfxObjectShell* pObjSh = pDoc->GetDocumentShell();
-                        if ( pObjSh && pObjSh->ISA(ScDocShell) )
+                        if ( pObjSh && dynamic_cast<const ScDocShell*>( pObjSh) !=  nullptr )
                         {
                             ScDocShell* pDocSh = static_cast<ScDocShell*>(pObjSh);
                             uno::Reference< uno::XInterface > xAnchor;
@@ -1033,7 +1033,7 @@ uno::Reference<text::XTextRange> SAL_CALL ScShapeObj::getAnchor()
             if ( pDoc )
             {
                 SfxObjectShell* pObjSh = pDoc->GetDocumentShell();
-                if ( pObjSh && pObjSh->ISA(ScDocShell) )
+                if ( pObjSh && dynamic_cast<const ScDocShell*>( pObjSh) !=  nullptr )
                 {
                     ScDocShell* pDocSh = static_cast<ScDocShell*>(pObjSh);
 
@@ -1293,7 +1293,7 @@ uno::Reference< uno::XInterface > SAL_CALL ScShapeObj::getParent() throw (uno::R
             if ( pDoc )
             {
                 SfxObjectShell* pObjSh = pDoc->GetDocumentShell();
-                if ( pObjSh && pObjSh->ISA(ScDocShell) )
+                if ( pObjSh && dynamic_cast<const ScDocShell*>( pObjSh) !=  nullptr )
                 {
                     ScDocShell* pDocSh = static_cast<ScDocShell*>(pObjSh);
 
@@ -1309,7 +1309,7 @@ uno::Reference< uno::XInterface > SAL_CALL ScShapeObj::getParent() throw (uno::R
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 void SAL_CALL ScShapeObj::setParent( const uno::Reference< uno::XInterface >& ) throw (lang::NoSupportException, uno::RuntimeException, std::exception)
@@ -1354,7 +1354,7 @@ SdrObject* ScShapeObj::GetSdrObject() const throw()
             return pShape->GetSdrObject();
     }
 
-    return NULL;
+    return nullptr;
 }
 
 #define SC_EVENTACC_ONCLICK     "OnClick"
@@ -1372,7 +1372,7 @@ private:
     }
 
 public:
-    ShapeUnoEventAccessImpl( ScShapeObj* pShape ): mpShape( pShape )
+    explicit ShapeUnoEventAccessImpl( ScShapeObj* pShape ): mpShape( pShape )
     {
     }
 
@@ -1380,7 +1380,7 @@ public:
     virtual void SAL_CALL replaceByName( const OUString& aName, const uno::Any& aElement )
         throw (lang::IllegalArgumentException, container::NoSuchElementException,
                lang::WrappedTargetException, uno::RuntimeException,
-               std::exception) SAL_OVERRIDE
+               std::exception) override
     {
         if ( !hasByName( aName ) )
             throw container::NoSuchElementException();
@@ -1418,7 +1418,7 @@ public:
     // XNameAccess
     virtual uno::Any SAL_CALL getByName( const OUString& aName )
         throw (container::NoSuchElementException, lang::WrappedTargetException,
-               uno::RuntimeException, std::exception) SAL_OVERRIDE
+               uno::RuntimeException, std::exception) override
     {
         uno::Sequence< beans::PropertyValue > aProperties;
         ScMacroInfo* pInfo = getInfo();
@@ -1442,25 +1442,24 @@ public:
         return uno::Any( aProperties );
     }
 
-    virtual uno::Sequence< OUString > SAL_CALL getElementNames() throw(uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Sequence< OUString > SAL_CALL getElementNames() throw(uno::RuntimeException, std::exception) override
     {
-        uno::Sequence< OUString > aSeq( 1 );
-        aSeq[ 0 ] = SC_EVENTACC_ONCLICK;
+        uno::Sequence<OUString> aSeq { SC_EVENTACC_ONCLICK };
         return aSeq;
     }
 
-    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw(uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw(uno::RuntimeException, std::exception) override
     {
         return aName == SC_EVENTACC_ONCLICK;
     }
 
     // XElementAccess
-    virtual uno::Type SAL_CALL getElementType() throw(uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Type SAL_CALL getElementType() throw(uno::RuntimeException, std::exception) override
     {
         return cppu::UnoType<uno::Sequence< beans::PropertyValue >>::get();
     }
 
-    virtual sal_Bool SAL_CALL hasElements() throw(uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasElements() throw(uno::RuntimeException, std::exception) override
     {
         // elements are always present (but contained property sequences may be empty)
         return sal_True;

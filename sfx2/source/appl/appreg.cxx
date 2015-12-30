@@ -28,7 +28,6 @@
 #include <sfx2/stbitem.hxx>
 #include <sfx2/infobar.hxx>
 #include <sfx2/navigat.hxx>
-#include <sfx2/taskpane.hxx>
 #include <sfx2/module.hxx>
 #include <sfx2/viewfrm.hxx>
 #include "partwnd.hxx"
@@ -53,24 +52,23 @@ void SfxApplication::Registrations_Impl()
 
     // ChildWindows
     SfxRecordingFloatWrapper_Impl::RegisterChildWindow();
-    SfxNavigatorWrapper::RegisterChildWindow( false, NULL, SfxChildWindowFlags::NEVERHIDE );
+    SfxNavigatorWrapper::RegisterChildWindow( false, nullptr, SfxChildWindowFlags::NEVERHIDE );
     SfxPartChildWnd_Impl::RegisterChildWindow();
     SfxDockingWrapper::RegisterChildWindow();
-    SfxInfoBarContainerChild::RegisterChildWindow( true, NULL, SfxChildWindowFlags::NEVERHIDE );
+    SfxInfoBarContainerChild::RegisterChildWindow( true, nullptr, SfxChildWindowFlags::NEVERHIDE );
 
     // Controller
     SfxToolBoxControl::RegisterControl(SID_REPEAT);
     SfxURLToolBoxControl_Impl::RegisterControl(SID_OPENURL);
-    SfxRecentFilesToolBoxControl::RegisterControl( SID_OPENDOC );
-};
+}
 
 
 
-void SfxApplication::RegisterToolBoxControl_Impl( SfxModule *pMod, SfxTbxCtrlFactory *pFact )
+void SfxApplication::RegisterToolBoxControl_Impl( SfxModule *pMod, const SfxTbxCtrlFactory& rFact )
 {
     if ( pMod )
     {
-        pMod->RegisterToolBoxControl( pFact );
+        pMod->RegisterToolBoxControl( rFact );
         return;
     }
 
@@ -78,24 +76,24 @@ void SfxApplication::RegisterToolBoxControl_Impl( SfxModule *pMod, SfxTbxCtrlFac
     for ( size_t n=0; n<pAppData_Impl->pTbxCtrlFac->size(); n++ )
     {
         SfxTbxCtrlFactory *pF = &(*pAppData_Impl->pTbxCtrlFac)[n];
-        if ( pF->nTypeId && pF->nTypeId == pFact->nTypeId &&
-            (pF->nSlotId == pFact->nSlotId || pF->nSlotId == 0) )
+        if ( pF->nTypeId == rFact.nTypeId &&
+            (pF->nSlotId == rFact.nSlotId || pF->nSlotId == 0) )
         {
-            DBG_WARNING("TbxController registration is not clearly defined!");
+            SAL_INFO("sfx", "TbxController registration is not clearly defined!");
         }
     }
 #endif
 
-    pAppData_Impl->pTbxCtrlFac->push_back( pFact );
+    pAppData_Impl->pTbxCtrlFac->push_back( rFact );
 }
 
 
 
-void SfxApplication::RegisterStatusBarControl_Impl( SfxModule *pMod, SfxStbCtrlFactory *pFact )
+void SfxApplication::RegisterStatusBarControl_Impl( SfxModule *pMod, const SfxStbCtrlFactory& rFact )
 {
     if ( pMod )
     {
-        pMod->RegisterStatusBarControl( pFact );
+        pMod->RegisterStatusBarControl( rFact );
         return;
     }
 
@@ -103,24 +101,24 @@ void SfxApplication::RegisterStatusBarControl_Impl( SfxModule *pMod, SfxStbCtrlF
     for ( size_t n=0; n<pAppData_Impl->pStbCtrlFac->size(); n++ )
     {
         SfxStbCtrlFactory *pF = &(*pAppData_Impl->pStbCtrlFac)[n];
-        if ( pF->nTypeId && pF->nTypeId == pFact->nTypeId &&
-            (pF->nSlotId == pFact->nSlotId || pF->nSlotId == 0) )
+        if ( pF->nTypeId == rFact.nTypeId &&
+            (pF->nSlotId == rFact.nSlotId || pF->nSlotId == 0) )
         {
-            DBG_WARNING("StbController registration is not clearly defined!");
+            SAL_INFO("sfx", "StbController registration is not clearly defined!");
         }
     }
 #endif
 
-    pAppData_Impl->pStbCtrlFac->push_back( pFact );
+    pAppData_Impl->pStbCtrlFac->push_back( rFact );
 }
 
 
 
-void SfxApplication::RegisterMenuControl_Impl( SfxModule *pMod, SfxMenuCtrlFactory *pFact )
+void SfxApplication::RegisterMenuControl_Impl( SfxModule *pMod, const SfxMenuCtrlFactory& rFact )
 {
     if ( pMod )
     {
-        pMod->RegisterMenuControl( pFact );
+        pMod->RegisterMenuControl( rFact );
         return;
     }
 
@@ -128,15 +126,15 @@ void SfxApplication::RegisterMenuControl_Impl( SfxModule *pMod, SfxMenuCtrlFacto
     for ( size_t n=0; n<pAppData_Impl->pMenuCtrlFac->size(); n++ )
     {
         SfxMenuCtrlFactory *pF = &(*pAppData_Impl->pMenuCtrlFac)[n];
-        if ( pF->nTypeId && pF->nTypeId == pFact->nTypeId &&
-            (pF->nSlotId == pFact->nSlotId || pF->nSlotId == 0) )
+        if ( pF->nTypeId == rFact.nTypeId &&
+            (pF->nSlotId == rFact.nSlotId || pF->nSlotId == 0) )
         {
-            DBG_WARNING("MenuController register is not clearly defined!");
+            SAL_INFO("sfx", "MenuController register is not clearly defined!");
         }
     }
 #endif
 
-    pAppData_Impl->pMenuCtrlFac->push_back( pFact );
+    pAppData_Impl->pMenuCtrlFac->push_back( rFact );
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

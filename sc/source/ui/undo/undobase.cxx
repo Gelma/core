@@ -35,16 +35,10 @@
 #include <column.hxx>
 #include <sortparam.hxx>
 
-TYPEINIT1(ScSimpleUndo,     SfxUndoAction);
-TYPEINIT1(ScBlockUndo,      ScSimpleUndo);
-TYPEINIT1(ScMultiBlockUndo, ScSimpleUndo);
-TYPEINIT1(ScMoveUndo,       ScSimpleUndo);
-TYPEINIT1(ScDBFuncUndo,     ScSimpleUndo);
-TYPEINIT1(ScUndoWrapper,    SfxUndoAction);
 
 ScSimpleUndo::ScSimpleUndo( ScDocShell* pDocSh ) :
     pDocShell( pDocSh ),
-    pDetectiveUndo( NULL )
+    pDetectiveUndo( nullptr )
 {
 }
 
@@ -75,7 +69,7 @@ bool ScSimpleUndo::Merge( SfxUndoAction *pNextAction )
     // AddUndoAction is only called with bTryMerg=sal_True
     // for automatic update.
 
-    if ( !pDetectiveUndo && pNextAction->ISA(ScUndoDraw) )
+    if ( !pDetectiveUndo && dynamic_cast<const ScUndoDraw*>( pNextAction) !=  nullptr )
     {
         // Take SdrUndoAction from ScUndoDraw Action,
         // ScUndoDraw is later deleted by the UndoManager
@@ -159,15 +153,15 @@ class SpanBroadcaster : public sc::ColumnSpanSet::ColumnAction
     SCCOL mnCurCol;
 
 public:
-    SpanBroadcaster( ScDocument& rDoc ) : mrDoc(rDoc), mnCurTab(-1), mnCurCol(-1) {}
+    explicit SpanBroadcaster( ScDocument& rDoc ) : mrDoc(rDoc), mnCurTab(-1), mnCurCol(-1) {}
 
-    virtual void startColumn( ScColumn* pCol ) SAL_OVERRIDE
+    virtual void startColumn( ScColumn* pCol ) override
     {
         mnCurTab = pCol->GetTab();
         mnCurCol = pCol->GetCol();
     }
 
-    virtual void execute( SCROW nRow1, SCROW nRow2, bool bVal ) SAL_OVERRIDE
+    virtual void execute( SCROW nRow1, SCROW nRow2, bool bVal ) override
     {
         if (!bVal)
             return;
@@ -443,7 +437,7 @@ void ScMoveUndo::UndoRef()
 {
     ScDocument& rDoc = pDocShell->GetDocument();
     ScRange aRange(0,0,0, MAXCOL,MAXROW,pRefUndoDoc->GetTableCount()-1);
-    pRefUndoDoc->CopyToDocument( aRange, IDF_FORMULA, false, &rDoc, NULL, false );
+    pRefUndoDoc->CopyToDocument( aRange, InsertDeleteFlags::FORMULA, false, &rDoc, nullptr, false );
     if (pRefUndoData)
         pRefUndoData->DoUndo( &rDoc, (eMode == SC_UNDO_REFFIRST) );
         // HACK: ScDragDropUndo is the only one with REFFIRST.
@@ -579,7 +573,7 @@ ScUndoWrapper::~ScUndoWrapper()
 
 void ScUndoWrapper::ForgetWrappedUndo()
 {
-    pWrappedUndo = NULL;    // don't delete in dtor - pointer must be stored outside
+    pWrappedUndo = nullptr;    // don't delete in dtor - pointer must be stored outside
 }
 
 OUString ScUndoWrapper::GetComment() const

@@ -23,6 +23,7 @@
 #include <unotools/accessiblestatesethelper.hxx>
 #include <vcl/window.hxx>
 #include <toolkit/helper/convert.hxx>
+#include <comphelper/sequence.hxx>
 
 #include <algorithm>
 #include <vector>
@@ -31,17 +32,17 @@ namespace accessibility
 {
 void SfxListenerGuard::startListening(::SfxBroadcaster & rNotifier)
 {
-    OSL_ENSURE(m_pNotifier == 0, "called more than once");
+    OSL_ENSURE(m_pNotifier == nullptr, "called more than once");
     m_pNotifier = &rNotifier;
     m_rListener.StartListening(*m_pNotifier, true);
 }
 
 void SfxListenerGuard::endListening()
 {
-    if (m_pNotifier != 0)
+    if (m_pNotifier != nullptr)
     {
         m_rListener.EndListening(*m_pNotifier);
-        m_pNotifier = 0;
+        m_pNotifier = nullptr;
     }
 }
 
@@ -221,7 +222,7 @@ Paragraph::getAccessibleAtPoint(css::awt::Point const &)
     throw (css::uno::RuntimeException, std::exception)
 {
     checkDisposed();
-    return 0;
+    return nullptr;
 }
 
 // virtual
@@ -1101,7 +1102,7 @@ Document::retrieveCharacterAttributes(
         aCharAttrSeq[ pValues->Name ] = *pValues;
     }
 
-    css::uno::Sequence< css::beans::PropertyValue > aRes = convertHashMapToSequence( aCharAttrSeq );
+    css::uno::Sequence< css::beans::PropertyValue > aRes = comphelper::mapValuesToSequence( aCharAttrSeq );
 
     // sort the attributes
     sal_Int32 nLength = aRes.getLength();
@@ -1143,24 +1144,7 @@ Document::retrieveDefaultAttributes(
 
     tPropValMap aDefAttrSeq;
     retrieveDefaultAttributesImpl( pParagraph, RequestedAttributes, aDefAttrSeq );
-    return convertHashMapToSequence( aDefAttrSeq );
-}
-
-// static
-css::uno::Sequence< css::beans::PropertyValue >
-Document::convertHashMapToSequence(tPropValMap& rAttrSeq)
-{
-    css::uno::Sequence< css::beans::PropertyValue > aValues( rAttrSeq.size() );
-    css::beans::PropertyValue* pValues = aValues.getArray();
-    ::sal_Int32 i = 0;
-    for ( tPropValMap::const_iterator aIter  = rAttrSeq.begin();
-          aIter != rAttrSeq.end();
-          ++aIter )
-    {
-        pValues[i] = aIter->second;
-        ++i;
-    }
-    return aValues;
+    return comphelper::mapValuesToSequence( aDefAttrSeq );
 }
 
 void Document::retrieveRunAttributesImpl(
@@ -1233,7 +1217,7 @@ Document::retrieveRunAttributes(
 
     tPropValMap aRunAttrSeq;
     retrieveRunAttributesImpl( pParagraph, Index, RequestedAttributes, aRunAttrSeq );
-    return convertHashMapToSequence( aRunAttrSeq );
+    return comphelper::mapValuesToSequence( aRunAttrSeq );
 }
 
 void Document::changeParagraphText(Paragraph * pParagraph,
@@ -1442,16 +1426,14 @@ Document::retrieveParagraphRelationSet( Paragraph const * pParagraph )
 
     if ( aPara > m_aVisibleBegin && aPara < m_aVisibleEnd )
     {
-        css::uno::Sequence< css::uno::Reference< css::uno::XInterface > > aSequence(1);
-        aSequence[0] = getAccessibleChild( aPara - 1 );
+        css::uno::Sequence< css::uno::Reference< css::uno::XInterface > > aSequence { getAccessibleChild( aPara - 1 ) };
         css::accessibility::AccessibleRelation aRelation( css::accessibility::AccessibleRelationType::CONTENT_FLOWS_FROM, aSequence );
         pRelationSetHelper->AddRelation( aRelation );
     }
 
     if ( aPara >= m_aVisibleBegin && aPara < m_aVisibleEnd -1 )
     {
-        css::uno::Sequence< css::uno::Reference< css::uno::XInterface > > aSequence(1);
-        aSequence[0] = getAccessibleChild( aPara + 1 );
+        css::uno::Sequence< css::uno::Reference< css::uno::XInterface > > aSequence { getAccessibleChild( aPara + 1 ) };
         css::accessibility::AccessibleRelation aRelation( css::accessibility::AccessibleRelationType::CONTENT_FLOWS_TO, aSequence );
         pRelationSetHelper->AddRelation( aRelation );
     }
@@ -1513,7 +1495,7 @@ Document::getAccessibleAtPoint(css::awt::Point const & rPoint)
                 return getAccessibleChild(aIt);
         }
     }
-    return 0;
+    return nullptr;
 }
 void Document::FillAccessibleStateSet( utl::AccessibleStateSetHelper& rStateSet )
 {
@@ -1526,8 +1508,7 @@ void    Document::FillAccessibleRelationSet( utl::AccessibleRelationSetHelper& r
 {
     if( getAccessibleParent()->getAccessibleContext()->getAccessibleRole() == css::accessibility::AccessibleRole::SCROLL_PANE )
     {
-        css::uno::Sequence< css::uno::Reference< css::uno::XInterface > > aSequence(1);
-        aSequence[0] = getAccessibleParent();
+        css::uno::Sequence< css::uno::Reference< css::uno::XInterface > > aSequence {  getAccessibleParent() };
         rRelationSet.AddRelation( css::accessibility::AccessibleRelation( css::accessibility::AccessibleRelationType::MEMBER_OF, aSequence ) );
     }
     else
@@ -1540,7 +1521,7 @@ void SAL_CALL Document::disposing()
 {
     m_aEngineListener.endListening();
     m_aViewListener.endListening();
-    if (m_xParagraphs.get() != 0)
+    if (m_xParagraphs.get() != nullptr)
         disposeParagraphs();
     VCLXAccessibleComponent::disposing();
 }
@@ -1754,7 +1735,7 @@ IMPL_LINK_TYPED(Document, WindowEventHandler, ::VclWindowEvent&, rEvent, void)
 
 void Document::init()
 {
-    if (m_xParagraphs.get() == 0)
+    if (m_xParagraphs.get() == nullptr)
     {
         const sal_uInt32 nCount = m_rEngine.GetParagraphCount();
         m_xParagraphs.reset(new Paragraphs);

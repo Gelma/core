@@ -298,7 +298,7 @@ public class APIDescGetter extends DescGetter
                 }
                 if (aToken.hasMoreTokens())
                 {
-                    StringHelper.removeQuoteIfExists(aToken.nextToken());
+                    aToken.nextToken();
                 }
                 if (aToken.hasMoreTokens())
                 {
@@ -392,7 +392,6 @@ public class APIDescGetter extends DescGetter
     private static String createClassName(String _ifc_name)
     {
         StringTokenizer st = new StringTokenizer(_ifc_name, ":");
-        String className = "";
 
         int count = 3;
 
@@ -400,6 +399,8 @@ public class APIDescGetter extends DescGetter
         {
             count = 4;
         }
+
+        StringBuilder className = new StringBuilder();
 
         for (int i = 0; st.hasMoreTokens(); i++)
         {
@@ -414,10 +415,10 @@ public class APIDescGetter extends DescGetter
                     token = "_" + token;
                 }
 
-                className += ("." + token);
+                className.append(".").append(token);
             }
         }
-        return className;
+        return className.toString();
     }
 
     private static String entryType;
@@ -580,7 +581,7 @@ public class APIDescGetter extends DescGetter
                             entry.endsWith(sEndsWithCSVName))
                     {
                         InputStream input = this.getClass().getResourceAsStream("/" + entry);
-                        csvFile = new BufferedReader(new InputStreamReader(input));
+                        csvFile = new BufferedReader(new InputStreamReader(input, "UTF-8"));
                         break;
                     }
                 }
@@ -588,7 +589,7 @@ public class APIDescGetter extends DescGetter
             else
             {
                 InputStream in = con.getInputStream();
-                java.io.BufferedReader buf = new java.io.BufferedReader(new InputStreamReader(in));
+                java.io.BufferedReader buf = new java.io.BufferedReader(new InputStreamReader(in, "UTF-8"));
                 while (true)
                 {
                     String entry = buf.readLine();
@@ -602,7 +603,7 @@ public class APIDescGetter extends DescGetter
                                 module +
                                 "/" +
                                 entry);
-                        csvFile = new BufferedReader(new InputStreamReader(input));
+                        csvFile = new BufferedReader(new InputStreamReader(input, "UTF-8"));
                         break;
                     }
                 }

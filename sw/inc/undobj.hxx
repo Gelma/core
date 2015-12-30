@@ -23,7 +23,7 @@
 #include <memory>
 
 #include <svl/undo.hxx>
-
+#include <tools/solar.h>
 #include <SwRewriter.hxx>
 #include <swundo.hxx>
 
@@ -54,7 +54,7 @@ protected:
     bool bCacheComment;
     mutable OUString * pComment;
 
-    static void RemoveIdxFromSection( SwDoc&, sal_uLong nSttIdx, sal_uLong* pEndIdx = 0 );
+    static void RemoveIdxFromSection( SwDoc&, sal_uLong nSttIdx, sal_uLong* pEndIdx = nullptr );
     static void RemoveIdxFromRange( SwPaM& rPam, bool bMoveNext );
     static void RemoveIdxRel( sal_uLong, const SwPosition& );
 
@@ -70,7 +70,7 @@ protected:
     virtual SwRewriter GetRewriter() const;
 
     // return type is sal_uInt16 because this overrides SfxUndoAction::GetId()
-    virtual sal_uInt16 GetId() const SAL_OVERRIDE { return static_cast<sal_uInt16>(m_nId); }
+    virtual sal_uInt16 GetId() const override { return static_cast<sal_uInt16>(m_nId); }
 
     // the 4 methods that derived classes have to override
     // base implementation does nothing
@@ -82,12 +82,12 @@ public: // should not be public, but ran into trouble in untbl.cxx
 
 private:
     // SfxUndoAction
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
-    virtual void UndoWithContext(SfxUndoContext &) SAL_OVERRIDE;
-    virtual void RedoWithContext(SfxUndoContext &) SAL_OVERRIDE;
-    virtual void Repeat(SfxRepeatTarget &) SAL_OVERRIDE;
-    virtual bool CanRepeat(SfxRepeatTarget &) const SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
+    virtual void UndoWithContext(SfxUndoContext &) override;
+    virtual void RedoWithContext(SfxUndoContext &) override;
+    virtual void Repeat(SfxRepeatTarget &) override;
+    virtual bool CanRepeat(SfxRepeatTarget &) const override;
 
 public:
     SwUndo(SwUndoId const nId);
@@ -102,7 +102,7 @@ public:
 
        @return textual comment for this undo object
     */
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
     // UndoObject remembers which mode was turned on.
     // In Undo/Redo/Repeat this remembered mode is switched on.
@@ -149,11 +149,11 @@ protected:
     // MoveTo:      moves from the NodesArray into the UndoNodesArray.
     // MoveFrom:    moves from the UndoNodesArray into the NodesArray.
     static void MoveToUndoNds( SwPaM& rPam,
-                        SwNodeIndex* pNodeIdx = 0,
-                        sal_uLong* pEndNdIdx = 0, sal_Int32 * pEndCntIdx = 0 );
+                        SwNodeIndex* pNodeIdx = nullptr,
+                        sal_uLong* pEndNdIdx = nullptr, sal_Int32 * pEndCntIdx = nullptr );
     static void MoveFromUndoNds( SwDoc& rDoc, sal_uLong nNodeIdx,
                           SwPosition& rInsPos,
-                          sal_uLong* pEndNdIdx = 0, sal_Int32 * pEndCntIdx = 0 );
+                          sal_uLong* pEndNdIdx = nullptr, sal_Int32 * pEndCntIdx = nullptr );
 
     // These two methods move the SPoint back/forth from PaM. With it
     // a range can be spanned for Undo/Redo. (In this case the SPoint
@@ -234,9 +234,9 @@ protected:
 public:
     virtual ~SwUndoInserts();
 
-    virtual void UndoImpl( ::sw::UndoRedoContext & ) SAL_OVERRIDE;
-    virtual void RedoImpl( ::sw::UndoRedoContext & ) SAL_OVERRIDE;
-    virtual void RepeatImpl( ::sw::RepeatContext & ) SAL_OVERRIDE;
+    virtual void UndoImpl( ::sw::UndoRedoContext & ) override;
+    virtual void RedoImpl( ::sw::UndoRedoContext & ) override;
+    virtual void RepeatImpl( ::sw::RepeatContext & ) override;
 
     // Set destination range after reading.
     void SetInsertRange( const SwPaM&, bool bScanFlys = true,
@@ -279,35 +279,35 @@ public:
 
 class SwUndoInsLayFormat : public SwUndoFlyBase
 {
-    sal_uLong mnCrsrSaveIndexPara;           // Cursor position
-    sal_Int32 mnCrsrSaveIndexPos;            // for undo
+    sal_uLong mnCursorSaveIndexPara;           // Cursor position
+    sal_Int32 mnCursorSaveIndexPos;            // for undo
 public:
     SwUndoInsLayFormat( SwFrameFormat* pFormat, sal_uLong nNodeIdx, sal_Int32 nCntIdx );
 
     virtual ~SwUndoInsLayFormat();
 
-    virtual void UndoImpl( ::sw::UndoRedoContext & ) SAL_OVERRIDE;
-    virtual void RedoImpl( ::sw::UndoRedoContext & ) SAL_OVERRIDE;
-    virtual void RepeatImpl( ::sw::RepeatContext & ) SAL_OVERRIDE;
+    virtual void UndoImpl( ::sw::UndoRedoContext & ) override;
+    virtual void RedoImpl( ::sw::UndoRedoContext & ) override;
+    virtual void RepeatImpl( ::sw::RepeatContext & ) override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 };
 
 class SwUndoDelLayFormat : public SwUndoFlyBase
 {
-    bool bShowSelFrm;
+    bool bShowSelFrame;
 public:
     SwUndoDelLayFormat( SwFrameFormat* pFormat );
 
-    virtual void UndoImpl( ::sw::UndoRedoContext & ) SAL_OVERRIDE;
-    virtual void RedoImpl( ::sw::UndoRedoContext & ) SAL_OVERRIDE;
+    virtual void UndoImpl( ::sw::UndoRedoContext & ) override;
+    virtual void RedoImpl( ::sw::UndoRedoContext & ) override;
 
     void RedoForRollback();
 
-    void ChgShowSel( bool bNew ) { bShowSelFrm = bNew; }
+    void ChgShowSel( bool bNew ) { bShowSelFrame = bNew; }
 
-    virtual SwRewriter GetRewriter() const SAL_OVERRIDE;
+    virtual SwRewriter GetRewriter() const override;
 
 };
 

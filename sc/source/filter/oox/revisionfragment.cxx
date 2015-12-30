@@ -71,7 +71,7 @@ public:
 
 protected:
     virtual oox::core::ContextHandlerRef onCreateContext(
-        sal_Int32 nElement, const AttributeList& /*rAttribs*/ ) SAL_OVERRIDE
+        sal_Int32 nElement, const AttributeList& /*rAttribs*/ ) override
     {
         if (nElement == XLS_TOKEN(is))
         {
@@ -82,7 +82,7 @@ protected:
         return this;
     }
 
-    virtual void onStartElement( const AttributeList& rAttribs ) SAL_OVERRIDE
+    virtual void onStartElement( const AttributeList& rAttribs ) override
     {
         switch (getCurrentElement())
         {
@@ -95,7 +95,7 @@ protected:
         }
     }
 
-    virtual void onCharacters( const OUString& rChars ) SAL_OVERRIDE
+    virtual void onCharacters( const OUString& rChars ) override
     {
         switch (getCurrentElement())
         {
@@ -133,7 +133,7 @@ protected:
         }
     }
 
-    virtual void onEndElement() SAL_OVERRIDE
+    virtual void onEndElement() override
     {
         switch (getCurrentElement())
         {
@@ -144,7 +144,7 @@ protected:
                 {
                     // The value is a rich text string.
                     ScDocument& rDoc = getScDocument();
-                    EditTextObject* pTextObj = mxRichString->convert(rDoc.GetEditEngine(), NULL);
+                    EditTextObject* pTextObj = mxRichString->convert(rDoc.GetEditEngine(), nullptr);
                     if (pTextObj)
                     {
                         svl::SharedStringPool& rPool = rDoc.GetSharedStringPool();
@@ -166,7 +166,7 @@ private:
         OUString aRefStr = rAttribs.getString(XML_r, OUString());
         if (!aRefStr.isEmpty())
         {
-            mrPos.Parse(aRefStr, NULL, formula::FormulaGrammar::CONV_XL_OOX);
+            mrPos.Parse(aRefStr, nullptr, formula::FormulaGrammar::CONV_XL_OOX);
             if (mnSheetIndex != -1)
                 mrPos.SetTab(mnSheetIndex-1);
         }
@@ -201,7 +201,6 @@ RevisionHeadersFragment::RevisionHeadersFragment(
 
 RevisionHeadersFragment::~RevisionHeadersFragment()
 {
-    delete mpImpl;
 }
 
 oox::core::ContextHandlerRef RevisionHeadersFragment::onCreateContext(
@@ -293,7 +292,7 @@ void RevisionHeadersFragment::importHeader( const AttributeList& rAttribs )
     if (!aDateTimeStr.isEmpty())
     {
         util::DateTime aDateTime;
-        sax::Converter::parseDateTime(aDateTime, 0, aDateTimeStr);
+        sax::Converter::parseDateTime(aDateTime, nullptr, aDateTimeStr);
         Date aDate(aDateTime);
         tools::Time aTime(aDateTime);
         aMetadata.maDateTime.SetDate(aDate.GetDate());
@@ -325,7 +324,7 @@ struct RevisionLogFragment::Impl
 
     bool mbEndOfList;
 
-    Impl( ScChangeTrack& rChangeTrack ) :
+    explicit Impl( ScChangeTrack& rChangeTrack ) :
         mrChangeTrack(rChangeTrack),
         mnRevIndex(-1),
         mnSheetIndex(-1),
@@ -340,7 +339,6 @@ RevisionLogFragment::RevisionLogFragment(
 
 RevisionLogFragment::~RevisionLogFragment()
 {
-    delete mpImpl;
 }
 
 oox::core::ContextHandlerRef RevisionLogFragment::onCreateContext(

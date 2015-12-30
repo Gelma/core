@@ -70,7 +70,7 @@
 #include "lwpglobalmgr.hxx"
 
 LwpFribSection::LwpFribSection(LwpPara *pPara)
-     : LwpFrib(pPara),m_pMasterPage(NULL)
+     : LwpFrib(pPara),m_pMasterPage(nullptr)
 {
 
 }
@@ -80,7 +80,7 @@ LwpFribSection::~LwpFribSection()
     if(m_pMasterPage)
     {
         delete m_pMasterPage;
-        m_pMasterPage = NULL;
+        m_pMasterPage = nullptr;
     }
 }
 
@@ -99,7 +99,7 @@ void LwpFribSection::Read(LwpObjectStream *pObjStrm, sal_uInt16 /*len*/)
  */
 LwpSection* LwpFribSection::GetSection()
 {
-    return static_cast<LwpSection*>(m_Section.obj().get());
+    return dynamic_cast<LwpSection*>(m_Section.obj().get());
 }
 
 /**
@@ -123,11 +123,12 @@ void LwpFribSection::RegisterSectionStyle()
 void LwpFribSection::SetSectionName()
 {
     LwpSection* pSection = GetSection();
-    if(pSection)
-    {
-        LwpStory* pStory = static_cast<LwpStory*>(m_pPara->GetStoryID().obj().get());
-        pStory->SetSectionName(pSection->GetSectionName());
-    }
+    if (!pSection)
+        return;
+    LwpStory* pStory = dynamic_cast<LwpStory*>(m_pPara->GetStoryID().obj().get());
+    if (!pStory)
+        return;
+    pStory->SetSectionName(pSection->GetSectionName());
 }
 
 /**
@@ -138,7 +139,7 @@ LwpPageLayout* LwpFribSection::GetPageLayout()
 {
     if(GetSection())
         return GetSection()->GetPageLayout();
-    return NULL;
+    return nullptr;
 }
 
 /**
@@ -161,24 +162,14 @@ void LwpFribSection::ParseSection()
             m_pMasterPage->ParseSection(this);
         }
     }
-    else
+    else if (LwpStory* pStory = dynamic_cast<LwpStory*>(m_pPara->GetStoryID().obj().get()))
     {
-        LwpStory* pStory = static_cast<LwpStory*> ( m_pPara->GetStoryID().obj().get() );
-        if (m_Section.obj()->GetTag() == VO_INDEXSECTION)
+        rtl::Reference<LwpObject> xObj(m_Section.obj());
+        if (xObj.is() && xObj->GetTag() == VO_INDEXSECTION)
         {
             //create a new section and add it to container
             XFIndex* pIndex = new XFIndex;
             pIndex->SetIndexType(enumXFIndexAlphabetical);
-            /*
-            sal_Bool bRunin = sal_False;
-            sal_Bool bSeparator = sal_False;
-            LwpIndexSection* pIndexSection = static_cast<LwpIndexSection*>(m_Section.obj());
-            if (pIndexSection->IsFormatRunin())
-                bRunin = sal_True;
-            if (pIndexSection->IsFormatSeparator())
-                bSeparator = sal_True;
-            pIndex->SetDefaultAlphaIndex("",bRunin,bSeparator);
-            */
             SetDefaultAlphaIndex(pIndex);
 
             pStory->AddXFContent( pIndex );
@@ -197,9 +188,9 @@ void LwpFribSection::SetDefaultAlphaIndex(XFIndex * pXFIndex)
     LwpFoundry* pFoundry = m_pPara->GetFoundry();
     OUString styleName = pFoundry->FindActuralStyleName("Separator");
 
-    LwpIndexSection* pIndexSection = static_cast<LwpIndexSection*>(m_Section.obj().get());
+    LwpIndexSection* pIndexSection = dynamic_cast<LwpIndexSection*>(m_Section.obj().get());
     XFIndexTemplate * pTemplateSep = new XFIndexTemplate();
-    if (pIndexSection->IsFormatSeparator())
+    if (pIndexSection && pIndexSection->IsFormatSeparator())
     {
         pXFIndex->SetSeparator(true);
         pTemplateSep->AddEntry(enumXFIndexTemplateText,"");
@@ -225,7 +216,7 @@ void LwpFribSection::SetDefaultAlphaIndex(XFIndex * pXFIndex)
     pTemplate3->AddEntry(enumXFIndexTemplateTab,"");
     pTemplate3->AddEntry(enumXFIndexTemplatePage,"");
 
-    if (pIndexSection->IsFormatRunin())
+    if (pIndexSection && pIndexSection->IsFormatRunin())
     {
         //pXFIndex->AddTemplate(OUString::number(2),"Primary",pTemplate2);
         //pXFIndex->AddTemplate(OUString::number(3),"Primary",pTemplate3);
@@ -254,9 +245,12 @@ LwpMasterPage::LwpMasterPage(LwpPara* pPara, LwpPageLayout* pLayout)
 bool LwpMasterPage::RegisterMasterPage(LwpFrib* pFrib)
 {
     //if there is no other frib after current frib, register master page in starting para of next page
-    if(IsNextPageType()&&(!pFrib->HasNextFrib()))
+    LwpStory* pStory = nullptr;
+    if (IsNextPageType()&&(!pFrib->HasNextFrib()))
+        pStory = dynamic_cast<LwpStory*>(m_pPara->GetStoryID().obj().get());
+
+    if (pStory)
     {
-        LwpStory* pStory = static_cast<LwpStory*>(m_pPara->GetStoryID().obj().get());
         pStory->SetCurrentLayout(m_pLayout);
         RegisterFillerPageStyle();
         return false;
@@ -287,14 +281,17 @@ bool LwpMasterPage::RegisterMasterPage(LwpFrib* pFrib)
         case LwpLayout::StartOnOddPage: //fall through
         case LwpLayout::StartOnEvenPage:
         {
-            LwpStory* pStory = static_cast<LwpStory*>(m_pPara->GetStoryID().obj().get());
-            pStory->SetCurrentLayout(m_pLayout);
-            //get odd page layout when the current pagelayout is mirror
-            m_pLayout = pStory->GetCurrentLayout();
-            m_bNewSection = IsNeedSection();
-            //bSectionColumns = m_bNewSection;
-            pOverStyle->SetMasterPage( m_pLayout->GetStyleName());
-            RegisterFillerPageStyle();
+            pStory = dynamic_cast<LwpStory*>(m_pPara->GetStoryID().obj().get());
+            if (pStory)
+            {
+                pStory->SetCurrentLayout(m_pLayout);
+                //get odd page layout when the current pagelayout is mirror
+                m_pLayout = pStory->GetCurrentLayout();
+                m_bNewSection = IsNeedSection();
+                //bSectionColumns = m_bNewSection;
+                pOverStyle->SetMasterPage( m_pLayout->GetStyleName());
+                RegisterFillerPageStyle();
+            }
             break;
         }
         default:
@@ -302,7 +299,10 @@ bool LwpMasterPage::RegisterMasterPage(LwpFrib* pFrib)
     }
 
     //register tab style;
-    LwpStory* pStory = static_cast<LwpStory*>(m_pPara->GetStoryID().obj().get());
+    pStory = dynamic_cast<LwpStory*>(m_pPara->GetStoryID().obj().get());
+    if (!pStory)
+        return false;
+
     pStory->SetTabLayout(m_pLayout);
     m_pPara->RegisterTabStyle(pOverStyle);
 
@@ -313,8 +313,8 @@ bool LwpMasterPage::RegisterMasterPage(LwpFrib* pFrib)
     {
         XFSectionStyle* pSectStyle= new XFSectionStyle();
         //set margin
-        pStory = static_cast<LwpStory*>(m_pPara->GetStoryID().obj().get());
-        if(pStory)
+        pStory = dynamic_cast<LwpStory*>(m_pPara->GetStoryID().obj().get());
+        if (pStory)
         {
             LwpPageLayout* pCurrentLayout = pStory->GetCurrentLayout();
             double fLeft = m_pLayout->GetMarginsValue(MARGIN_LEFT)- pCurrentLayout->GetMarginsValue(MARGIN_LEFT);
@@ -345,9 +345,9 @@ bool LwpMasterPage::IsNeedSection()
 {
     bool bNewSection = false;
     //get story
-    LwpStory* pStory = static_cast<LwpStory*>(m_pPara->GetStoryID().obj().get());
+    LwpStory* pStory = dynamic_cast<LwpStory*>(m_pPara->GetStoryID().obj().get());
     //if pagelayout is modified, register the pagelayout
-    if(pStory->IsPMModified())
+    if (pStory && pStory->IsPMModified())
     {
         bNewSection = pStory->IsNeedSection();
     }
@@ -367,7 +367,7 @@ XFSection* LwpMasterPage::CreateXFSection()
         pXFSection->SetStyleName(m_SectionStyleName);
         return pXFSection;
     }
-    return NULL;
+    return nullptr;
 }
 
 /**
@@ -393,7 +393,7 @@ void LwpMasterPage::ParseSection(LwpFrib* pFrib)
     XFContentContainer* pContent = CreateXFSection();
     if(pContent)
     {
-        LwpStory* pStory = static_cast<LwpStory*> ( m_pPara->GetStoryID().obj().get() );
+        LwpStory* pStory = dynamic_cast<LwpStory*> ( m_pPara->GetStoryID().obj().get() );
         //delete the additional blank para
         XFParagraph* pCurrPara = rFribPtr.GetXFPara();
         if(!pCurrPara->HasContents())
@@ -404,12 +404,13 @@ void LwpMasterPage::ParseSection(LwpFrib* pFrib)
                 pCurrContainer->RemoveLastContent();
             }
         }
-        pStory->AddXFContent( pContent );
+        if (pStory)
+            pStory->AddXFContent( pContent );
     }
     else
     {
-        LwpStory* pStory = static_cast<LwpStory*> ( m_pPara->GetStoryID().obj().get() );
-        pContent = pStory->GetXFContent();
+        LwpStory* pStory = dynamic_cast<LwpStory*> ( m_pPara->GetStoryID().obj().get() );
+        pContent = pStory ? pStory->GetXFContent() : nullptr;
     }
     if(pContent)
     {

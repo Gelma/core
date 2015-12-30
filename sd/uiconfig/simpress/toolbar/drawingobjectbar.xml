@@ -27,7 +27,7 @@
  <toolbar:toolbarseparator/>
  <toolbar:toolbaritem xlink:href=".uno:LineWidth" toolbar:helpid="10171"/>
  <toolbar:toolbarseparator/>
- <toolbar:toolbaritem xlink:href=".uno:XLineColor" toolbar:style="dropdown" toolbar:helpid="10172"/>
+ <toolbar:toolbaritem xlink:href=".uno:XLineColor" toolbar:helpid="10172"/>
  <toolbar:toolbarseparator/>
  <toolbar:toolbaritem xlink:href=".uno:FormatArea" toolbar:helpid="10142"/>
  <toolbar:toolbarseparator/>
@@ -37,17 +37,17 @@
  <toolbar:toolbaritem xlink:href=".uno:ImageMapDialog" toolbar:visible="false" toolbar:helpid="10371"/>
  <toolbar:toolbarseparator/>
  <toolbar:toolbaritem xlink:href=".uno:TransformDialog"/>
- <toolbar:toolbaritem xlink:href=".uno:ToggleObjectRotateMode" toolbar:style="radio"/>
+ <toolbar:toolbaritem xlink:href=".uno:ToggleObjectRotateMode"/>
  <toolbar:toolbaritem xlink:href=".uno:Mirror" toolbar:visible="false"/>
- <toolbar:toolbaritem xlink:href=".uno:ObjectAlign" toolbar:style="dropdown"/>
- <toolbar:toolbaritem xlink:href=".uno:ObjectPosition" toolbar:style="dropdown"/>
+ <toolbar:toolbaritem xlink:href=".uno:ObjectAlign"/>
+ <toolbar:toolbaritem xlink:href=".uno:ObjectPosition"/>
  <toolbar:toolbaritem xlink:href=".uno:DistributeSelection"/>
  <toolbar:toolbarseparator/>
- <toolbar:toolbaritem xlink:href=".uno:CustomAnimation" toolbar:style="auto" toolbar:visible="false"/>
+ <toolbar:toolbaritem xlink:href=".uno:CustomAnimation" toolbar:visible="false"/>
  <toolbar:toolbaritem xlink:href=".uno:AnimationEffects" toolbar:visible="false"/>
- <toolbar:toolbaritem xlink:href=".uno:Window3D" toolbar:style="auto" toolbar:visible="false"/>
+ <toolbar:toolbaritem xlink:href=".uno:Window3D" toolbar:visible="false"/>
  <toolbar:toolbaritem xlink:href=".uno:ZoomObjects"/>
  <toolbar:toolbarseparator/>
- <toolbar:toolbaritem xlink:href=".uno:GridVisible" toolbar:style="auto"/>
+ <toolbar:toolbaritem xlink:href=".uno:GridVisible"/>
  <toolbar:toolbaritem xlink:href=".uno:HelplinesMove"/>
 </toolbar:toolbar>

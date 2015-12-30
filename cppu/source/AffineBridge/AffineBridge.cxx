@@ -71,13 +71,13 @@ public:
     explicit  AffineBridge();
     virtual  ~AffineBridge();
 
-    virtual void  v_callInto_v(uno_EnvCallee * pCallee, va_list * pParam) SAL_OVERRIDE;
-    virtual void  v_callOut_v (uno_EnvCallee * pCallee, va_list * pParam) SAL_OVERRIDE;
+    virtual void  v_callInto_v(uno_EnvCallee * pCallee, va_list * pParam) override;
+    virtual void  v_callOut_v (uno_EnvCallee * pCallee, va_list * pParam) override;
 
-    virtual void  v_enter() SAL_OVERRIDE;
-    virtual void  v_leave() SAL_OVERRIDE;
+    virtual void  v_enter() override;
+    virtual void  v_leave() override;
 
-    virtual bool v_isValid(rtl::OUString * pReason) SAL_OVERRIDE;
+    virtual bool v_isValid(rtl::OUString * pReason) override;
 
     void innerDispatch();
     void outerDispatch(int loop);
@@ -85,7 +85,7 @@ public:
 
 class InnerThread : public osl::Thread
 {
-    virtual void SAL_CALL run() SAL_OVERRIDE;
+    virtual void SAL_CALL run() override;
 
     AffineBridge * m_pAffineBridge;
 
@@ -108,7 +108,7 @@ void InnerThread::run()
 
 class OuterThread : public osl::Thread
 {
-    virtual void SAL_CALL run() SAL_OVERRIDE;
+    virtual void SAL_CALL run() override;
 
     AffineBridge * m_pAffineBridge;
 
@@ -132,20 +132,20 @@ void OuterThread::run()
     m_pAffineBridge->outerDispatch(0);
     m_pAffineBridge->m_outerThreadId = 0;
 
-    m_pAffineBridge->m_pOuterThread = NULL;
-    m_pAffineBridge = NULL;
+    m_pAffineBridge->m_pOuterThread = nullptr;
+    m_pAffineBridge = nullptr;
 }
 
 
 AffineBridge::AffineBridge()
     : m_message      (CB_DONE),
-      m_pCallee      (0),
-      m_pParam       (0),
+      m_pCallee      (nullptr),
+      m_pParam       (nullptr),
       m_innerThreadId(0),
-      m_pInnerThread (NULL),
+      m_pInnerThread (nullptr),
       m_enterCount   (0),
       m_outerThreadId(0),
-      m_pOuterThread (NULL)
+      m_pOuterThread (nullptr)
 {
     LOG_LIFECYCLE_AffineBridge_emit(fprintf(stderr, "LIFE: %s -> %p\n", "AffineBridge::AffineBridge(uno_Environment * pEnv)", this));
 }
@@ -255,11 +255,11 @@ void AffineBridge::v_callInto_v(uno_EnvCallee * pCallee, va_list * pParam)
         m_pInnerThread->resume();
     }
 
-    bool resetId = false;
+    bool bResetId = false;
     if (!m_outerThreadId)
     {
         m_outerThreadId = osl::Thread::getCurrentIdentifier();
-        resetId = true;
+        bResetId = true;
     }
 
     m_message = CB_FPOINTER;
@@ -269,7 +269,7 @@ void AffineBridge::v_callInto_v(uno_EnvCallee * pCallee, va_list * pParam)
 
     outerDispatch(1);
 
-    if (resetId)
+    if (bResetId)
         m_outerThreadId = 0;
 }
 

@@ -293,7 +293,7 @@ HRESULT DocumentHolder::InPlaceActivate(
             }
 
             aAny <<= sal_Int32(hWndxWinParent);
-            xWin = uno::Reference<awt::XWindow>(
+            xWin.set(
                 xToolkit->createSystemChild(
                     aAny,
                     aProcessIdent,
@@ -367,7 +367,7 @@ HRESULT DocumentHolder::InPlaceActivate(
 
             // determine the menuhandle to get menutitems.
             if(m_xLayoutManager.is()) {
-                uno::Reference< ::com::sun::star::ui::XUIElement > xUIEl(
+                uno::Reference< css::ui::XUIElement > xUIEl(
                     m_xLayoutManager->getElement(
                         OUString(
                             "private:resource/menubar/menubar")));
@@ -377,7 +377,7 @@ HRESULT DocumentHolder::InPlaceActivate(
                     uno::UNO_QUERY);
                 aAny = xSDMP->getMenuHandle(
                     aProcessIdent,lang::SystemDependent::SYSTEM_WIN32);
-                sal_Int32 tmp;
+                sal_Int64 tmp;
                 if( aAny >>= tmp )
                     m_nMenuHandle = HMENU(tmp);
                 m_xLayoutManager->hideElement(
@@ -574,7 +574,7 @@ BOOL DocumentHolder::InPlaceMenuCreate()
         uno::Sequence<sal_Int8> aProcessIdent(16);
         rtl_getGlobalProcessId((sal_uInt8*)aProcessIdent.getArray());
         uno::Any aAny = xSysDepWin->getWindowHandle(aProcessIdent,lang::SystemDependent::SYSTEM_WIN32);
-        sal_Int32 tmp;
+        sal_Int64 tmp;
         aAny >>= tmp;
         HWND aHwnd = (HWND) tmp;
         m_pIOleIPFrame->SetMenu(
@@ -646,9 +646,9 @@ void DocumentHolder::DisconnectFrameDocument( sal_Bool bComplete )
 
     if ( bComplete )
     {
-        m_xFrame = uno::Reference<frame::XFrame2>();
+        m_xFrame.clear();
         m_pIDispatch = NULL;
-        m_xDocument = uno::Reference< frame::XModel >();
+        m_xDocument.clear();
     }
 }
 
@@ -670,7 +670,7 @@ void DocumentHolder::CloseDocument()
     }
 
     m_pIDispatch = NULL;
-    m_xDocument = uno::Reference< frame::XModel >();
+    m_xDocument.clear();
 }
 
 
@@ -699,7 +699,7 @@ void DocumentHolder::CloseFrame()
             xComp->dispose();
     }
 
-    m_xFrame = uno::Reference< frame::XFrame2 >();
+    m_xFrame.clear();
 }
 
 void DocumentHolder::SetDocument( const uno::Reference< frame::XModel >& xDoc, sal_Bool bLink )
@@ -760,7 +760,7 @@ sal_Bool DocumentHolder::ExecuteSuspendCloseFrame()
         {
         }
 
-        m_xFrame = uno::Reference< frame::XFrame2 >();
+        m_xFrame.clear();
     }
 
     return sal_True;
@@ -818,14 +818,14 @@ void DocumentHolder::ClearInterceptorInternally()
     if ( xInterceptor.is() && m_pInterceptor )
         m_pInterceptor->DisconnectDocHolder();
 
-    m_xInterceptorLocker = uno::Reference< frame::XDispatchProviderInterceptor >();
+    m_xInterceptorLocker.clear();
     m_pInterceptor = 0;
 }
 
 void DocumentHolder::ClearInterceptor()
 {
     ::osl::MutexGuard aGuard( m_aMutex );
-    m_xInterceptorLocker = uno::Reference< frame::XDispatchProviderInterceptor >();
+    m_xInterceptorLocker.clear();
     m_pInterceptor = 0;
 }
 
@@ -955,9 +955,7 @@ void DocumentHolder::setTitle(const OUString& aDocumentName)
             if(aFilterName.getLength())
             {
                 uno::Reference<container::XNameAccess> xNameAccess(
-                    m_xFactory->createInstance(
-                        OUString(
-                            "com.sun.star.document.FilterFactory")),
+                    m_xFactory->createInstance("com.sun.star.document.FilterFactory"),
                     uno::UNO_QUERY);
                 try {
                     if(xNameAccess.is() &&
@@ -1215,12 +1213,9 @@ HRESULT DocumentHolder::SetObjectRects(LPCRECT aRect, LPCRECT aClip)
 }
 
 
-::com::sun::star::uno::Reference<
-    ::com::sun::star::awt::XWindow> SAL_CALL
-DocumentHolder::getContainerWindow(
-)
+css::uno::Reference< css::awt::XWindow> SAL_CALL DocumentHolder::getContainerWindow()
     throw (
-        ::com::sun::star::uno::RuntimeException
+        css::uno::RuntimeException
     )
 {
     if(m_xContainerWindow.is())
@@ -1239,7 +1234,7 @@ DocumentHolder::getContainerWindow(
 
         uno::Any aAny;
         aAny <<= sal_Int32(hWnd);
-        xWin = uno::Reference<awt::XWindow>(
+        xWin.set(
             xToolkit->createSystemChild(
                 aAny,
                 aProcessIdent,
@@ -1261,7 +1256,7 @@ DocumentHolder::getContainerWindow(
             if(xSysWin.is()) {
                 aAny = xSysWin->getWindowHandle(
                     aProcessIdent,lang::SystemDependent::SYSTEM_WIN32);
-                sal_Int32 tmp;
+                sal_Int64 tmp;
                 if( aAny >>= tmp )
                     SetContainerWindowHandle((HWND) tmp);
             }
@@ -1274,12 +1269,9 @@ DocumentHolder::getContainerWindow(
 
 
 
-sal_Bool SAL_CALL
-DocumentHolder::requestDockingAreaSpace(
-    const ::com::sun::star::awt::Rectangle& RequestedSpace
-)
+sal_Bool SAL_CALL DocumentHolder::requestDockingAreaSpace( const css::awt::Rectangle& RequestedSpace )
     throw(
-        ::com::sun::star::uno::RuntimeException
+        css::uno::RuntimeException
     )
 {
     if(m_bOnDeactivate)
@@ -1296,12 +1288,9 @@ DocumentHolder::requestDockingAreaSpace(
 }
 
 
-void SAL_CALL
-DocumentHolder::setDockingAreaSpace(
-    const ::com::sun::star::awt::Rectangle& BorderSpace
-)
+void SAL_CALL DocumentHolder::setDockingAreaSpace( const css::awt::Rectangle& BorderSpace )
     throw (
-        ::com::sun::star::uno::RuntimeException
+        css::uno::RuntimeException
     )
 {
     if(m_bOnDeactivate)
@@ -1334,20 +1323,17 @@ DocumentHolder::setDockingAreaSpace(
 }
 
 
-void SAL_CALL
-DocumentHolder::disposing(
-    const com::sun::star::lang::EventObject& aSource
-)
+void SAL_CALL DocumentHolder::disposing( const css::lang::EventObject& aSource )
         throw( uno::RuntimeException )
 {
     if ( m_xDocument.is() && m_xDocument == aSource.Source )
     {
         m_pIDispatch = NULL;
-        m_xDocument = uno::Reference< frame::XModel >();
+        m_xDocument.clear();
     }
 
     if( m_xFrame.is() && m_xFrame == aSource.Source )
-        m_xFrame = uno::Reference< frame::XFrame2 >();
+        m_xFrame.clear();
 }
 
 
@@ -1360,8 +1346,9 @@ DocumentHolder::queryClosing(
         util::CloseVetoException
     )
 {
-    if ( !m_bLink
-      && ( m_xDocument.is() && m_xDocument == aSource.Source || m_xFrame.is() && m_xFrame == aSource.Source ) )
+    if (!m_bLink
+        && ((m_xDocument.is() && m_xDocument == aSource.Source)
+            || (m_xFrame.is() && m_xFrame == aSource.Source)))
         throw util::CloseVetoException();
 }
 
@@ -1384,15 +1371,15 @@ DocumentHolder::notifyClosing(
     {
         // can happen only in case of links
         m_pIDispatch = NULL;
-        m_xDocument = uno::Reference< frame::XModel >();
-        m_xFrame = uno::Reference< frame::XFrame2 >();
+        m_xDocument.clear();
+        m_xFrame.clear();
 
         LockedEmbedDocument_Impl aDocLock = m_xOleAccess->GetEmbedDocument();
         if ( aDocLock.GetEmbedDocument() )
             aDocLock.GetEmbedDocument()->OLENotifyClosing();
     }
     else if( m_xFrame.is() && m_xFrame == aSource.Source )
-        m_xFrame = uno::Reference< frame::XFrame2 >();
+        m_xFrame.clear();
 }
 
 void SAL_CALL

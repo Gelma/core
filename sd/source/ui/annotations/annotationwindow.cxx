@@ -111,7 +111,7 @@ Color ColorFromAlphaColor(sal_uInt8 aTransparency, Color &aFront, Color &aBack )
 
 AnnotationTextWindow::AnnotationTextWindow( AnnotationWindow* pParent, WinBits nBits )
 : Control(pParent, nBits)
-, mpOutlinerView(0)
+, mpOutlinerView(nullptr)
 , mpAnnotationWindow( pParent )
 {
 }
@@ -204,7 +204,6 @@ void AnnotationTextWindow::MouseButtonDown( const MouseEvent& rMEvt )
     GrabFocus();
     if ( mpOutlinerView )
         mpOutlinerView->MouseButtonDown( rMEvt );
-    // todo mpOutlinerView->DocView()->GetViewFrame()->GetBindings().InvalidateAll(sal_False);
 }
 
 void AnnotationTextWindow::MouseButtonUp( const MouseEvent& rMEvt )
@@ -273,20 +272,20 @@ Selection AnnotationTextWindow::GetSurroundingTextSelection() const
 /************** AnnotationWindow***********************************++*/
 
 AnnotationWindow::AnnotationWindow( AnnotationManagerImpl& rManager, DrawDocShell* pDocShell, vcl::Window* pParent )
-: FloatingWindow(pParent, WB_SYSTEMWINDOW|WB_BORDER|WB_NEEDSFOCUS)
+: FloatingWindow(pParent, WB_BORDER)
 , mrManager( rManager )
 , mpDocShell( pDocShell )
-, mpView( pDocShell->GetViewShell()->GetView() )
 , mpDoc( pDocShell->GetDoc() )
-, mpOutlinerView(0)
-, mpOutliner(0)
-, mpVScrollbar(0)
+, mpOutlinerView(nullptr)
+, mpOutliner(nullptr)
+, mpVScrollbar(nullptr)
 , mbReadonly(pDocShell->IsReadOnly())
 , mbProtected(false)
 , mbMouseOverButton(false)
-, mpTextWindow(0)
-, mpMeta(0)
+, mpTextWindow(nullptr)
+, mpMeta(nullptr)
 {
+    EnableAlwaysOnTop();
 }
 
 AnnotationWindow::~AnnotationWindow()
@@ -522,7 +521,7 @@ TextApiObject* getTextApiObject( const Reference< XAnnotation >& xAnnotation )
         Reference< XText > xText( xAnnotation->getTextRange() );
         return TextApiObject::getImplementation( xText );
     }
-    return 0;
+    return nullptr;
 }
 
 void AnnotationWindow::setAnnotation( const Reference< XAnnotation >& xAnnotation, bool bGrabFocus )
@@ -638,7 +637,7 @@ void AnnotationWindow::Deactivate()
                 if( mpDoc->IsUndoEnabled() )
                     mpDoc->EndUndo();
 
-                DocView()->GetDocSh()->SetModified();
+                mpDocShell->SetModified();
             }
 
         }

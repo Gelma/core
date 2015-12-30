@@ -19,7 +19,6 @@
 
 #include <sfx2/sfxcommands.h>
 #include <svx/svxcommands.h>
-#include "sccommands.h"
 
 #define HID_INSWIN_POS                                          "SC_HID_INSWIN_POS"
 #define HID_INSWIN_CALC                                         "SC_HID_INSWIN_CALC"
@@ -87,11 +86,6 @@
 #define HID_SC_REN_AFMT_DLG                                     "SC_HID_SC_REN_AFMT_DLG"
 
 // Hilfe IDs fuer Submenus (max.50) ------------------------------------------
-#define HID_SCMENU_OBJMIRROR                                    "SC_HID_SCMENU_OBJMIRROR"
-#define HID_SCMENU_OBJARRANGE                                   "SC_HID_SCMENU_OBJARRANGE"
-#define HID_SCMENU_ANCHOR                                       "SC_HID_SCMENU_ANCHOR"
-
-
 #define HID_SC_SORT_ACTION                                      "SC_HID_SC_SORT_ACTION"
 #define HID_SC_SORT_AUTHOR                                      "SC_HID_SC_SORT_AUTHOR"
 #define HID_SC_SORT_DATE                                        "SC_HID_SC_SORT_DATE"
@@ -284,6 +278,7 @@
 #define HID_FUNC_DATEDIF                                        "SC_HID_FUNC_DATEDIF"
 #define HID_FUNC_KALENDERWOCHE                                  "SC_HID_FUNC_KALENDERWOCHE"
 #define HID_FUNC_OSTERSONNTAG                                   "SC_HID_FUNC_OSTERSONNTAG"
+#define HID_FUNC_ISOWEEKNUM                                     "SC_HID_FUNC_ISOWEEKNUM"
 
 #define HID_FUNC_BW                                             "SC_HID_FUNC_BW"
 #define HID_FUNC_ZW                                             "SC_HID_FUNC_ZW"
@@ -631,5 +626,6 @@
 #define HID_FUNC_CEIL_MATH                                      "SC_HID_FUNC_CEIL_MATH"
 #define HID_FUNC_FLOOR_MATH                                     "SC_HID_FUNC_FLOOR_MATH"
 #define HID_FUNC_FLOOR_PRECISE                                  "SC_HID_FUNC_FLOOR_PRECISE"
+#define HID_FUNC_RAWSUBTRACT                                    "SC_HID_FUNC_RAWSUBTRACT"
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

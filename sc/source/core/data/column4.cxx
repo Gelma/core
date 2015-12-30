@@ -104,21 +104,21 @@ void ScColumn::DeleteBeforeCopyFromClip(
         SCROW nRow1 = it->mnRow1;
         SCROW nRow2 = it->mnRow2;
 
-        if (nDelFlag & IDF_CONTENTS)
+        if (nDelFlag & InsertDeleteFlags::CONTENTS)
         {
             sc::SingleColumnSpanSet aDeletedRows;
             DeleteCells(aBlockPos, nRow1, nRow2, nDelFlag, aDeletedRows);
             rBroadcastSpans.set(nTab, nCol, aDeletedRows, true);
         }
 
-        if (nDelFlag & IDF_NOTE)
+        if (nDelFlag & InsertDeleteFlags::NOTE)
             DeleteCellNotes(aBlockPos, nRow1, nRow2, false);
 
-        if (nDelFlag & IDF_EDITATTR)
+        if (nDelFlag & InsertDeleteFlags::EDITATTR)
             RemoveEditAttribs(nRow1, nRow2);
 
         // Delete attributes just now
-        if (nDelFlag & IDF_ATTRIB)
+        if (nDelFlag & InsertDeleteFlags::ATTRIB)
         {
             pAttrArray->DeleteArea(nRow1, nRow2);
 
@@ -133,7 +133,7 @@ void ScColumn::DeleteBeforeCopyFromClip(
             if (pCondList)
                 pCondList->DeleteArea(nCol, nRow1, nCol, nRow2);
         }
-        else if ((nDelFlag & IDF_HARDATTR) == IDF_HARDATTR)
+        else if ((nDelFlag & InsertDeleteFlags::HARDATTR) == InsertDeleteFlags::HARDATTR)
             pAttrArray->DeleteHardAttr(nRow1, nRow2);
     }
 }
@@ -154,7 +154,7 @@ void ScColumn::CopyOneCellFromClip( sc::CopyFromClipContext& rCxt, SCROW nRow1, 
 
     InsertDeleteFlags nFlags = rCxt.getInsertFlag();
 
-    if ((nFlags & IDF_ATTRIB) != IDF_NONE)
+    if ((nFlags & InsertDeleteFlags::ATTRIB) != InsertDeleteFlags::NONE)
     {
         if (!rCxt.isSkipAttrForEmptyCells() || rSrcCell.meType != CELLTYPE_NONE)
         {
@@ -164,7 +164,7 @@ void ScColumn::CopyOneCellFromClip( sc::CopyFromClipContext& rCxt, SCROW nRow1, 
         }
     }
 
-    if ((nFlags & IDF_CONTENTS) != IDF_NONE)
+    if ((nFlags & InsertDeleteFlags::CONTENTS) != InsertDeleteFlags::NONE)
     {
         std::vector<sc::CellTextAttr> aTextAttrs(nDestSize, rSrcAttr);
 
@@ -184,7 +184,7 @@ void ScColumn::CopyOneCellFromClip( sc::CopyFromClipContext& rCxt, SCROW nRow1, 
             {
                 // Compare the ScDocumentPool* to determine if we are copying within the
                 // same document. If not, re-intern shared strings.
-                svl::SharedStringPool* pSharedStringPool = (bSameDocPool ? NULL : &pDocument->GetSharedStringPool());
+                svl::SharedStringPool* pSharedStringPool = (bSameDocPool ? nullptr : &pDocument->GetSharedStringPool());
                 svl::SharedString aStr = (pSharedStringPool ?
                         pSharedStringPool->intern( rSrcCell.mpString->getString()) :
                         *rSrcCell.mpString);
@@ -216,7 +216,7 @@ void ScColumn::CopyOneCellFromClip( sc::CopyFromClipContext& rCxt, SCROW nRow1, 
                 std::vector<sc::RowSpan> aRanges;
                 aRanges.reserve(1);
                 aRanges.push_back(sc::RowSpan(nRow1, nRow2));
-                CloneFormulaCell(*rSrcCell.mpFormula, rSrcAttr, aRanges, NULL);
+                CloneFormulaCell(*rSrcCell.mpFormula, rSrcAttr, aRanges, nullptr);
             }
             break;
             default:
@@ -225,7 +225,7 @@ void ScColumn::CopyOneCellFromClip( sc::CopyFromClipContext& rCxt, SCROW nRow1, 
     }
 
     const ScPostIt* pNote = rCxt.getSingleCellNote(nColOffset);
-    if (pNote && (nFlags & (IDF_NOTE | IDF_ADDNOTES)) != IDF_NONE)
+    if (pNote && (nFlags & (InsertDeleteFlags::NOTE | InsertDeleteFlags::ADDNOTES)) != InsertDeleteFlags::NONE)
     {
         // Duplicate the cell note over the whole pasted range.
 
@@ -236,7 +236,7 @@ void ScColumn::CopyOneCellFromClip( sc::CopyFromClipContext& rCxt, SCROW nRow1, 
         aNotes.reserve(nDestSize);
         for (size_t i = 0; i < nDestSize; ++i)
         {
-            bool bCloneCaption = (nFlags & IDF_NOCAPTIONS) == IDF_NONE;
+            bool bCloneCaption = (nFlags & InsertDeleteFlags::NOCAPTIONS) == InsertDeleteFlags::NONE;
             aNotes.push_back(pNote->Clone(rSrcPos, *pDocument, aDestPos, bCloneCaption));
             aDestPos.IncRow();
         }
@@ -403,7 +403,7 @@ class StartListeningHandler
     sc::StartListeningContext& mrCxt;
 
 public:
-    StartListeningHandler( sc::StartListeningContext& rCxt ) :
+    explicit StartListeningHandler( sc::StartListeningContext& rCxt ) :
         mrCxt(rCxt) {}
 
     void operator() (size_t /*nRow*/, ScFormulaCell* pCell)
@@ -417,7 +417,7 @@ class EndListeningHandler
     sc::EndListeningContext& mrCxt;
 
 public:
-    EndListeningHandler( sc::EndListeningContext& rCxt ) :
+    explicit EndListeningHandler( sc::EndListeningContext& rCxt ) :
         mrCxt(rCxt) {}
 
     void operator() (size_t /*nRow*/, ScFormulaCell* pCell)
@@ -553,9 +553,9 @@ void ScColumn::CloneFormulaCell(
 ScPostIt* ScColumn::ReleaseNote( SCROW nRow )
 {
     if (!ValidRow(nRow))
-        return NULL;
+        return nullptr;
 
-    ScPostIt* p = NULL;
+    ScPostIt* p = nullptr;
     maCellNotes.release(nRow, p);
     return p;
 }
@@ -727,7 +727,7 @@ public:
         // Perform end listening, remove from formula tree, and set them up
         // for re-compilation.
 
-        ScFormulaCell* pTop = NULL;
+        ScFormulaCell* pTop = nullptr;
 
         if (rEntry.mbShared)
         {
@@ -911,7 +911,7 @@ private:
             // In theory this should never return NULL. But let's be safe.
             return;
 
-        const SfxItemSet* pCondSet = NULL;
+        const SfxItemSet* pCondSet = nullptr;
         if (mpCFList)
         {
             maPos.SetRow(nRow);
@@ -931,7 +931,7 @@ private:
     }
 
 public:
-    ScriptTypeUpdater( ScColumn& rCol ) :
+    explicit ScriptTypeUpdater( ScColumn& rCol ) :
         mrCol(rCol),
         mrTextAttrs(rCol.GetCellAttrStore()),
         miPosAttr(mrTextAttrs.begin()),
@@ -1053,7 +1053,7 @@ class RelativeRefBoundChecker
     ScRange maBoundRange;
 
 public:
-    RelativeRefBoundChecker( const ScRange& rBoundRange ) :
+    explicit RelativeRefBoundChecker( const ScRange& rBoundRange ) :
         maBoundRange(rBoundRange) {}
 
     void operator() ( size_t /*nRow*/, ScFormulaCell* pCell )
@@ -1100,7 +1100,7 @@ class ListenerCollector
 {
     std::vector<SvtListener*>& mrListeners;
 public:
-    ListenerCollector( std::vector<SvtListener*>& rListener ) :
+    explicit ListenerCollector( std::vector<SvtListener*>& rListener ) :
         mrListeners(rListener) {}
 
     void operator() ( size_t /*nRow*/, SvtBroadcaster* p )
@@ -1114,7 +1114,7 @@ class FormulaCellCollector
 {
     std::vector<ScFormulaCell*>& mrCells;
 public:
-    FormulaCellCollector( std::vector<ScFormulaCell*>& rCells ) : mrCells(rCells) {}
+    explicit FormulaCellCollector( std::vector<ScFormulaCell*>& rCells ) : mrCells(rCells) {}
 
     void operator() ( size_t /*nRow*/, ScFormulaCell* p )
     {
@@ -1273,7 +1273,7 @@ class EndListeningFormulaCellsHandler
     SCROW mnEndRow;
 
 public:
-    EndListeningFormulaCellsHandler( sc::EndListeningContext& rEndCxt ) :
+    explicit EndListeningFormulaCellsHandler( sc::EndListeningContext& rEndCxt ) :
         mrEndCxt(rEndCxt), mnStartRow(-1), mnEndRow(-1) {}
 
     void operator() ( const sc::CellStoreType::value_type& node, size_t nOffset, size_t nDataSize )

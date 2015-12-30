@@ -76,8 +76,8 @@ static const sal_uInt64 n2power48 = SAL_CONST_UINT64( 281474976710656); // 2^48
 IMPL_FIXEDMEMPOOL_NEWDEL( ScTokenStack )
 IMPL_FIXEDMEMPOOL_NEWDEL( ScInterpreter )
 
-ScCalcConfig ScInterpreter::maGlobalConfig;
-ScTokenStack* ScInterpreter::pGlobalStack = NULL;
+ScCalcConfig *ScInterpreter::mpGlobalConfig = nullptr;
+ScTokenStack* ScInterpreter::pGlobalStack = nullptr;
 bool ScInterpreter::bGlobalStackInUse = false;
 
 using namespace formula;
@@ -100,7 +100,7 @@ void ScInterpreter::ScIfJump()
                 FormulaTokenRef xNew;
                 ScTokenMatrixMap::const_iterator aMapIter;
                 // DoubleError handled by JumpMatrix
-                pMat->SetErrorInterpreter( NULL);
+                pMat->SetErrorInterpreter( nullptr);
                 SCSIZE nCols, nRows;
                 pMat->GetDimensions( nCols, nRows );
                 if ( nCols == 0 || nRows == 0 )
@@ -279,8 +279,7 @@ void ScInterpreter::ScIfError( bool bNAonly )
                 else
                 {
 
-                    ScRefCellValue aCell;
-                    aCell.assign(*pDok, aAdr);
+                    ScRefCellValue aCell(*pDok, aAdr);
                     nGlobalError = GetCellErrCode(aCell);
                     if (nGlobalError)
                         bError = true;
@@ -353,11 +352,11 @@ void ScInterpreter::ScIfError( bool bNAonly )
                     SCSIZE nC = 0, nR = 0;
                     for ( ; nC < nCols && (nC != nErrorCol || nR != nErrorRow); /*nop*/ )
                     {
-                        for ( ; nR < nRows && (nC != nErrorCol || nR != nErrorRow); ++nR)
+                        for (nR = 0 ; nR < nRows && (nC != nErrorCol || nR != nErrorRow); ++nR)
                         {
                             lcl_storeJumpMatResult(pMatPtr, pJumpMat, nC, nR);
                         }
-                        if (nC != nErrorCol || nR != nErrorRow)
+                        if (nC != nErrorCol && nR != nErrorRow)
                             ++nC;
                     }
                     // Now the mixed cases.
@@ -375,6 +374,7 @@ void ScInterpreter::ScIfError( bool bNAonly )
                                 lcl_storeJumpMatResult(pMatPtr, pJumpMat, nC, nR);
                             }
                         }
+                        nR = 0;
                     }
                     xNew = new ScJumpMatrixToken( pJumpMat );
                     GetTokenMatrixMap().insert( ScTokenMatrixMap::value_type( pCur, xNew ));
@@ -423,7 +423,7 @@ void ScInterpreter::ScChooseJump()
                 FormulaTokenRef xNew;
                 ScTokenMatrixMap::const_iterator aMapIter;
                 // DoubleError handled by JumpMatrix
-                pMat->SetErrorInterpreter( NULL);
+                pMat->SetErrorInterpreter( nullptr);
                 SCSIZE nCols, nRows;
                 pMat->GetDimensions( nCols, nRows );
                 if ( nCols == 0 || nRows == 0 )
@@ -592,8 +592,7 @@ bool ScInterpreter::JumpMatrix( short nStackLevel )
                     }
                     else
                     {
-                        ScRefCellValue aCell;
-                        aCell.assign(*pDok, aAdr);
+                        ScRefCellValue aCell(*pDok, aAdr);
                         if (aCell.hasEmptyValue())
                             pJumpMatrix->PutResultEmpty( nC, nR );
                         else if (aCell.hasNumeric())
@@ -660,8 +659,7 @@ bool ScInterpreter::JumpMatrix( short nStackLevel )
                                 nRow = aRange.aStart.Row();
                             aAdr.SetCol( static_cast<SCCOL>(nCol) );
                             aAdr.SetRow( static_cast<SCROW>(nRow) );
-                            ScRefCellValue aCell;
-                            aCell.assign(*pDok, aAdr);
+                            ScRefCellValue aCell(*pDok, aAdr);
                             if (aCell.hasEmptyValue())
                                 pJumpMatrix->PutResultEmpty( nC, nR );
                             else if (aCell.hasNumeric())
@@ -785,7 +783,7 @@ bool ScInterpreter::JumpMatrix( short nStackLevel )
     if ( !bCont )
     {   // we're done with it, throw away jump matrix, keep result
         ScMatrix* pResMat = pJumpMatrix->GetResultMatrix();
-        pJumpMatrix = NULL;
+        pJumpMatrix = nullptr;
         Pop();
         PushMatrix( pResMat );
         // Remove jump matrix from map and remember result matrix in case it
@@ -831,8 +829,7 @@ double ScInterpreter::Compare( ScQueryOp eOp )
                 ScAddress aAdr;
                 if ( !PopDoubleRefOrSingleRef( aAdr ) )
                     break;
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (aCell.hasEmptyValue())
                     rCell.mbEmpty = true;
                 else if (aCell.hasString())
@@ -921,8 +918,7 @@ sc::RangeMatrix ScInterpreter::CompareMat( ScQueryOp eOp, sc::CompareOptions* pO
             case svSingleRef:
             {
                 PopSingleRef( aAdr );
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (aCell.hasEmptyValue())
                     rCell.mbEmpty = true;
                 else if (aCell.hasString())
@@ -945,7 +941,7 @@ sc::RangeMatrix ScInterpreter::CompareMat( ScQueryOp eOp, sc::CompareOptions* pO
                 if (!aMat[i].mpMat)
                     SetError( errIllegalParameter);
                 else
-                    aMat[i].mpMat->SetErrorInterpreter(NULL);
+                    aMat[i].mpMat->SetErrorInterpreter(nullptr);
                     // errors are transported as DoubleError inside matrix
                 break;
             default:
@@ -1205,8 +1201,7 @@ void ScInterpreter::ScAnd()
                         PopSingleRef( aAdr );
                         if ( !nGlobalError )
                         {
-                            ScRefCellValue aCell;
-                            aCell.assign(*pDok, aAdr);
+                            ScRefCellValue aCell(*pDok, aAdr);
                             if (aCell.hasNumeric())
                             {
                                 bHaveValue = true;
@@ -1304,8 +1299,7 @@ void ScInterpreter::ScOr()
                         PopSingleRef( aAdr );
                         if ( !nGlobalError )
                         {
-                            ScRefCellValue aCell;
-                            aCell.assign(*pDok, aAdr);
+                            ScRefCellValue aCell(*pDok, aAdr);
                             if (aCell.hasNumeric())
                             {
                                 bHaveValue = true;
@@ -1405,8 +1399,7 @@ void ScInterpreter::ScXor()
                         PopSingleRef( aAdr );
                         if ( !nGlobalError )
                         {
-                            ScRefCellValue aCell;
-                            aCell.assign(*pDok, aAdr);
+                            ScRefCellValue aCell(*pDok, aAdr);
                             if (aCell.hasNumeric())
                             {
                                 bHaveValue = true;
@@ -1825,8 +1818,7 @@ void ScInterpreter::ScIsEmpty()
             // NOTE: this differs from COUNTBLANK() ScCountEmptyCells() that
             // may treat ="" in the referenced cell as blank for Excel
             // interoperability.
-            ScRefCellValue aCell;
-            aCell.assign(*pDok, aAdr);
+            ScRefCellValue aCell(*pDok, aAdr);
             if (aCell.meType == CELLTYPE_NONE)
                 nRes = 1;
         }
@@ -1875,8 +1867,7 @@ bool ScInterpreter::IsString()
             if ( !PopDoubleRefOrSingleRef( aAdr ) )
                 break;
 
-            ScRefCellValue aCell;
-            aCell.assign(*pDok, aAdr);
+            ScRefCellValue aCell(*pDok, aAdr);
             if (GetCellErrCode(aCell) == 0)
             {
                 switch (aCell.meType)
@@ -1940,8 +1931,7 @@ void ScInterpreter::ScIsLogical()
             if ( !PopDoubleRefOrSingleRef( aAdr ) )
                 break;
 
-            ScRefCellValue aCell;
-            aCell.assign(*pDok, aAdr);
+            ScRefCellValue aCell(*pDok, aAdr);
             if (GetCellErrCode(aCell) == 0)
             {
                 if (aCell.hasNumeric())
@@ -1978,8 +1968,7 @@ void ScInterpreter::ScType()
             if ( !PopDoubleRefOrSingleRef( aAdr ) )
                 break;
 
-            ScRefCellValue aCell;
-            aCell.assign(*pDok, aAdr);
+            ScRefCellValue aCell(*pDok, aAdr);
             if (GetCellErrCode(aCell) == 0)
             {
                 switch (aCell.meType)
@@ -2135,8 +2124,7 @@ void ScInterpreter::ScCell()
             PushIllegalParameter();
         else
         {
-            ScRefCellValue aCell;
-            aCell.assign(*pDok, aCellPos);
+            ScRefCellValue aCell(*pDok, aCellPos);
 
             ScCellKeywordTranslator::transKeyword(aInfoType, ScGlobal::GetLocale(), ocCell);
 
@@ -2192,11 +2180,11 @@ void ScInterpreter::ScCell()
                 OUStringBuffer aFuncResult;
                 OUString aCellStr =
                 ScAddress( static_cast<SCCOL>(aCellPos.Tab()), 0, 0 ).Format(
-                    (SCA_COL_ABSOLUTE|SCA_VALID_COL), NULL, pDok->GetAddressConvention() );
+                    (SCA_COL_ABSOLUTE|SCA_VALID_COL), nullptr, pDok->GetAddressConvention() );
                 aFuncResult.append(aCellStr);
                 aFuncResult.append(':');
                 aCellStr = aCellPos.Format((SCA_COL_ABSOLUTE|SCA_VALID_COL|SCA_ROW_ABSOLUTE|SCA_VALID_ROW),
-                                 NULL, pDok->GetAddressConvention());
+                                 nullptr, pDok->GetAddressConvention());
                 aFuncResult.append(aCellStr);
                 PushString( aFuncResult.makeStringAndClear() );
             }
@@ -2334,7 +2322,7 @@ void ScInterpreter::ScCellExternal()
         // For SHEET, No idea what number we should set, but let's always set
         // 1 if the external sheet exists, no matter what sheet.  Excel does
         // the same.
-        if (pRefMgr->getCacheTable(nFileId, aTabName, false, NULL).get())
+        if (pRefMgr->getCacheTable(nFileId, aTabName, false).get())
             PushInt(1);
         else
             SetError(errNoName);
@@ -2488,8 +2476,7 @@ void ScInterpreter::ScIsValue()
             if ( !PopDoubleRefOrSingleRef( aAdr ) )
                 break;
 
-            ScRefCellValue aCell;
-            aCell.assign(*pDok, aAdr);
+            ScRefCellValue aCell(*pDok, aAdr);
             if (GetCellErrCode(aCell) == 0)
             {
                 switch (aCell.meType)
@@ -2591,8 +2578,7 @@ void ScInterpreter::ScFormula()
                     for (SCROW nRow = nRow1; nRow <= nRow2; ++nRow)
                     {
                         aAdr.SetRow(nRow);
-                        ScRefCellValue aCell;
-                        aCell.assign(*pDok, aAdr);
+                        ScRefCellValue aCell(*pDok, aAdr);
                         switch (aCell.meType)
                         {
                             case CELLTYPE_FORMULA :
@@ -2618,8 +2604,7 @@ void ScInterpreter::ScFormula()
             if ( !PopDoubleRefOrSingleRef( aAdr ) )
                 break;
 
-            ScRefCellValue aCell;
-            aCell.assign(*pDok, aAdr);
+            ScRefCellValue aCell(*pDok, aAdr);
             switch (aCell.meType)
             {
                 case CELLTYPE_FORMULA :
@@ -2652,8 +2637,7 @@ void ScInterpreter::ScIsNV()
                 bRes = true;
             else if (bOk)
             {
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 sal_uInt16 nErr = GetCellErrCode(aCell);
                 bRes = (nErr == NOTAVAILABLE);
             }
@@ -2700,8 +2684,7 @@ void ScInterpreter::ScIsErr()
                 bRes = true;
             else
             {
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 sal_uInt16 nErr = GetCellErrCode(aCell);
                 bRes = (nErr && nErr != NOTAVAILABLE);
             }
@@ -2758,8 +2741,7 @@ void ScInterpreter::ScIsError()
                 bRes = true;
             else
             {
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 bRes = (GetCellErrCode(aCell) != 0);
             }
         }
@@ -2804,8 +2786,7 @@ bool ScInterpreter::IsEven()
             if ( !PopDoubleRefOrSingleRef( aAdr ) )
                 break;
 
-            ScRefCellValue aCell;
-            aCell.assign(*pDok, aAdr);
+            ScRefCellValue aCell(*pDok, aAdr);
             sal_uInt16 nErr = GetCellErrCode(aCell);
             if (nErr != 0)
                 SetError(nErr);
@@ -2971,8 +2952,7 @@ void ScInterpreter::ScT()
                 return ;
             }
             bool bValue = false;
-            ScRefCellValue aCell;
-            aCell.assign(*pDok, aAdr);
+            ScRefCellValue aCell(*pDok, aAdr);
             if (GetCellErrCode(aCell) == 0)
             {
                 switch (aCell.meType)
@@ -3049,8 +3029,7 @@ void ScInterpreter::ScValue()
                 PushInt(0);
                 return;
             }
-            ScRefCellValue aCell;
-            aCell.assign(*pDok, aAdr);
+            ScRefCellValue aCell(*pDok, aAdr);
             if (aCell.hasString())
             {
                 svl::SharedString aSS;
@@ -3268,11 +3247,11 @@ static OUString lcl_convertIntoHalfWidth( const OUString & rStr )
 
     if( bFirstASCCall )
     {
-        aTrans.loadModuleByImplName( OUString( "FULLWIDTH_HALFWIDTH_LIKE_ASC" ), LANGUAGE_SYSTEM );
+        aTrans.loadModuleByImplName( "FULLWIDTH_HALFWIDTH_LIKE_ASC", LANGUAGE_SYSTEM );
         bFirstASCCall = false;
     }
 
-    return aTrans.transliterate( rStr, 0, sal_uInt16( rStr.getLength() ), NULL );
+    return aTrans.transliterate( rStr, 0, sal_uInt16( rStr.getLength() ), nullptr );
 }
 
 static OUString lcl_convertIntoFullWidth( const OUString & rStr )
@@ -3282,11 +3261,11 @@ static OUString lcl_convertIntoFullWidth( const OUString & rStr )
 
     if( bFirstJISCall )
     {
-        aTrans.loadModuleByImplName( OUString( "HALFWIDTH_FULLWIDTH_LIKE_JIS" ), LANGUAGE_SYSTEM );
+        aTrans.loadModuleByImplName( "HALFWIDTH_FULLWIDTH_LIKE_JIS", LANGUAGE_SYSTEM );
         bFirstJISCall = false;
     }
 
-    return aTrans.transliterate( rStr, 0, sal_uInt16( rStr.getLength() ), NULL );
+    return aTrans.transliterate( rStr, 0, sal_uInt16( rStr.getLength() ), nullptr );
 }
 
 /* ODFF:
@@ -3372,8 +3351,7 @@ void ScInterpreter::ScMin( bool bTextAsZero )
             case svSingleRef :
             {
                 PopSingleRef( aAdr );
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (aCell.hasNumeric())
                 {
                     nVal = GetCellValue(aAdr, aCell);
@@ -3468,8 +3446,7 @@ void ScInterpreter::ScMax( bool bTextAsZero )
             case svSingleRef :
             {
                 PopSingleRef( aAdr );
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (aCell.hasNumeric())
                 {
                     nVal = GetCellValue(aAdr, aCell);
@@ -3569,8 +3546,7 @@ void ScInterpreter::GetStVarParams( double& rVal, double& rValCount,
             case svSingleRef :
             {
                 PopSingleRef( aAdr );
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (aCell.hasNumeric())
                 {
                     fVal = GetCellValue(aAdr, aCell);
@@ -4260,7 +4236,7 @@ void ScInterpreter::ScMatch()
         SCCOL nCol2 = 0;
         SCROW nRow2 = 0;
         SCTAB nTab2 = 0;
-        ScMatrixRef pMatSrc = NULL;
+        ScMatrixRef pMatSrc = nullptr;
 
         switch (GetStackType())
         {
@@ -4340,8 +4316,7 @@ void ScInterpreter::ScMatch()
                         PushInt(0);
                         return ;
                     }
-                    ScRefCellValue aCell;
-                    aCell.assign(*pDok, aAdr);
+                    ScRefCellValue aCell(*pDok, aAdr);
                     if (aCell.hasNumeric())
                     {
                         fVal = GetCellValue(aAdr, aCell);
@@ -4600,8 +4575,7 @@ void ScInterpreter::ScCountEmptyCells()
                 nMaxCount = 1;
                 ScAddress aAdr;
                 PopSingleRef( aAdr );
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (!isCellContentEmpty(aCell))
                     nCount = 1;
             }
@@ -4677,7 +4651,7 @@ double ScInterpreter::IterateParametersIf( ScIterFuncIf eFunc )
                 break;
             case svExternalSingleRef:
                 {
-                    pSumExtraMatrix = new ScMatrix(1, 1, 0.0);
+                    pSumExtraMatrix = new ScFullMatrix(1, 1, 0.0);
                     ScExternalRefCache::TokenRef pToken;
                     PopExternalSingleRef(pToken);
                     if (!pToken)
@@ -4713,8 +4687,7 @@ double ScInterpreter::IterateParametersIf( ScIterFuncIf eFunc )
                 if ( !PopDoubleRefOrSingleRef( aAdr ) )
                     return 0;
 
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 switch (aCell.meType)
                 {
                     case CELLTYPE_VALUE :
@@ -4960,8 +4933,7 @@ double ScInterpreter::IterateParametersIf( ScIterFuncIf eFunc )
                             {
                                 aAdr.SetCol( nCol + nColDiff);
                                 aAdr.SetRow( nRow + nRowDiff);
-                                ScRefCellValue aCell;
-                                aCell.assign(*pDok, aAdr);
+                                ScRefCellValue aCell(*pDok, aAdr);
                                 if (aCell.hasNumeric())
                                 {
                                     fVal = GetCellValue(aAdr, aCell);
@@ -5012,8 +4984,7 @@ double ScInterpreter::IterateParametersIf( ScIterFuncIf eFunc )
                         {
                             aAdr.SetCol( aCellIter.GetCol() + nColDiff);
                             aAdr.SetRow( aCellIter.GetRow() + nRowDiff);
-                            ScRefCellValue aCell;
-                            aCell.assign(*pDok, aAdr);
+                            ScRefCellValue aCell(*pDok, aAdr);
                             if (aCell.hasNumeric())
                             {
                                 fVal = GetCellValue(aAdr, aCell);
@@ -5074,8 +5045,7 @@ void ScInterpreter::ScCountIf()
                     PushInt(0);
                     return ;
                 }
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 switch (aCell.meType)
                 {
                     case CELLTYPE_VALUE :
@@ -5292,8 +5262,7 @@ double ScInterpreter::IterateParametersIfs( ScIterFuncIfs eFunc )
                         if ( !PopDoubleRefOrSingleRef( aAdr ) )
                             return 0;
 
-                        ScRefCellValue aCell;
-                        aCell.assign(*pDok, aAdr);
+                        ScRefCellValue aCell(*pDok, aAdr);
                         switch (aCell.meType)
                         {
                             case CELLTYPE_VALUE :
@@ -5624,8 +5593,7 @@ double ScInterpreter::IterateParametersIfs( ScIterFuncIfs eFunc )
                         {
                             aAdr.SetCol( static_cast<SCCOL>(nCol) + nMainCol1);
                             aAdr.SetRow( static_cast<SCROW>(nRow) + nMainRow1);
-                            ScRefCellValue aCell;
-                            aCell.assign(*pDok, aAdr);
+                            ScRefCellValue aCell(*pDok, aAdr);
                             if (aCell.hasNumeric())
                             {
                                 fVal = GetCellValue(aAdr, aCell);
@@ -5684,7 +5652,7 @@ void ScInterpreter::ScLookup()
     if ( !MustHaveParamCount( nParamCount, 2, 3 ) )
         return ;
 
-    ScMatrixRef pDataMat = NULL, pResMat = NULL;
+    ScMatrixRef pDataMat = nullptr, pResMat = nullptr;
     SCCOL nCol1 = 0, nCol2 = 0, nResCol1 = 0, nResCol2 = 0;
     SCROW nRow1 = 0, nRow2 = 0, nResRow1 = 0, nResRow2 = 0;
     SCTAB nTab1 = 0, nResTab = 0;
@@ -5807,8 +5775,7 @@ void ScInterpreter::ScLookup()
         case svSingleRef:
         {
             PopSingleRef( aDataAdr );
-            ScRefCellValue aCell;
-            aCell.assign(*pDok, aDataAdr);
+            ScRefCellValue aCell(*pDok, aDataAdr);
             if (aCell.hasEmptyValue())
             {
                 // Empty cells aren't found anywhere, bail out early.
@@ -5894,7 +5861,7 @@ void ScInterpreter::ScLookup()
                     aResAdr.Set( nResCol1, nResRow1, nResTab);
                     // fallthru
                 case svSingleRef:
-                    PushCellResultToken( true, aResAdr, NULL, NULL);
+                    PushCellResultToken( true, aResAdr, nullptr, nullptr);
                     break;
                 default:
                     OSL_FAIL( "ScInterpreter::ScLookup: unhandled eResArrayType, single value data");
@@ -5911,7 +5878,7 @@ void ScInterpreter::ScLookup()
                     PushString( aDataStr );
                     break;
                 case svSingleRef:
-                    PushCellResultToken( true, aDataAdr, NULL, NULL);
+                    PushCellResultToken( true, aDataAdr, nullptr, nullptr);
                     break;
                 default:
                     OSL_FAIL( "ScInterpreter::ScLookup: unhandled eDataArrayType, single value data");
@@ -5936,7 +5903,7 @@ void ScInterpreter::ScLookup()
         ScMatrixRef pDataMat2;
         if (bVertical)
         {
-            ScMatrixRef pTempMat(new ScMatrix(1, nR, 0.0));
+            ScMatrixRef pTempMat(new ScFullMatrix(1, nR, 0.0));
             for (SCSIZE i = 0; i < nR; ++i)
                 if (pDataMat->IsValue(0, i))
                     pTempMat->PutDouble(pDataMat->GetDouble(0, i), 0, i);
@@ -5946,7 +5913,7 @@ void ScInterpreter::ScLookup()
         }
         else
         {
-            ScMatrixRef pTempMat(new ScMatrix(nC, 1, 0.0));
+            ScMatrixRef pTempMat(new ScFullMatrix(nC, 1, 0.0));
             for (SCSIZE i = 0; i < nC; ++i)
                 if (pDataMat->IsValue(i, 0))
                     pTempMat->PutDouble(pDataMat->GetDouble(i, 0), i, 0);
@@ -6073,7 +6040,7 @@ void ScInterpreter::ScLookup()
                 aAdr.SetCol(nTempCol);
                 aAdr.SetRow(nResRow1);
             }
-            PushCellResultToken(true, aAdr, NULL, NULL);
+            PushCellResultToken(true, aAdr, nullptr, nullptr);
         }
         else
         {
@@ -6169,7 +6136,7 @@ void ScInterpreter::ScLookup()
                     aAdr.SetCol(nTempCol);
                     aAdr.SetRow(nResRow1);
                 }
-                PushCellResultToken( true, aAdr, NULL, NULL);
+                PushCellResultToken( true, aAdr, nullptr, nullptr);
             }
             break;
             case svDouble:
@@ -6189,7 +6156,7 @@ void ScInterpreter::ScLookup()
                             PushString( aResStr );
                             break;
                         case svSingleRef:
-                            PushCellResultToken( true, aResAdr, NULL, NULL);
+                            PushCellResultToken( true, aResAdr, nullptr, nullptr);
                             break;
                         default:
                             ;   // nothing
@@ -6230,7 +6197,7 @@ void ScInterpreter::ScLookup()
             aAdr.SetCol(nTempCol);
             aAdr.SetRow(nRow2);
         }
-        PushCellResultToken(true, aAdr, NULL, NULL);
+        PushCellResultToken(true, aAdr, nullptr, nullptr);
     }
 }
 
@@ -6253,7 +6220,7 @@ void ScInterpreter::CalculateLookup(bool bHLookup)
     // Index of column to search.
     double fIndex = ::rtl::math::approxFloor( GetDouble() ) - 1.0;
 
-    ScMatrixRef pMat = NULL;
+    ScMatrixRef pMat = nullptr;
     SCSIZE nC = 0, nR = 0;
     SCCOL nCol1 = 0;
     SCROW nRow1 = 0;
@@ -6484,7 +6451,7 @@ void ScInterpreter::CalculateLookup(bool bHLookup)
         if ( bFound )
         {
             ScAddress aAdr( nCol, nRow, nTab1 );
-            PushCellResultToken( true, aAdr, NULL, NULL);
+            PushCellResultToken( true, aAdr, nullptr, nullptr);
         }
         else
             PushNA();
@@ -6517,8 +6484,7 @@ bool ScInterpreter::FillEntry(ScQueryEntry& rEntry)
                 PushInt(0);
                 return false;
             }
-            ScRefCellValue aCell;
-            aCell.assign(*pDok, aAdr);
+            ScRefCellValue aCell(*pDok, aAdr);
             if (aCell.hasNumeric())
             {
                 rItem.meType = ScQueryEntry::ByValue;
@@ -6696,7 +6662,7 @@ std::unique_ptr<ScDBQueryParamBase> ScInterpreter::GetDBParams( bool& rMissingFi
         // First, get the query criteria range.
         ::std::unique_ptr<ScDBRangeBase> pQueryRef( PopDBDoubleRef() );
         if (!pQueryRef.get())
-            return NULL;
+            return nullptr;
 
         bool    bByVal = true;
         double  nVal = 0.0;
@@ -6718,8 +6684,7 @@ std::unique_ptr<ScDBQueryParamBase> ScInterpreter::GetDBParams( bool& rMissingFi
                 {
                     ScAddress aAdr;
                     PopSingleRef( aAdr );
-                    ScRefCellValue aCell;
-                    aCell.assign(*pDok, aAdr);
+                    ScRefCellValue aCell(*pDok, aAdr);
                     if (aCell.hasNumeric())
                         nVal = GetCellValue(aAdr, aCell);
                     else
@@ -6754,12 +6719,12 @@ std::unique_ptr<ScDBQueryParamBase> ScInterpreter::GetDBParams( bool& rMissingFi
         }
 
         if (nGlobalError)
-            return NULL;
+            return nullptr;
 
         unique_ptr<ScDBRangeBase> pDBRef( PopDBDoubleRef() );
 
         if (nGlobalError || !pDBRef.get())
-            return NULL;
+            return nullptr;
 
         if ( bRangeFake )
         {
@@ -6771,7 +6736,7 @@ std::unique_ptr<ScDBQueryParamBase> ScInterpreter::GetDBParams( bool& rMissingFi
         }
 
         if (nGlobalError)
-            return NULL;
+            return nullptr;
 
         SCCOL nField = pDBRef->getFirstFieldColumn();
         if (rMissingField)
@@ -6786,7 +6751,7 @@ std::unique_ptr<ScDBQueryParamBase> ScInterpreter::GetDBParams( bool& rMissingFi
         }
 
         if (!ValidCol(nField))
-            return NULL;
+            return nullptr;
 
         unique_ptr<ScDBQueryParamBase> pParam( pDBRef->createQueryParam(pQueryRef.get()) );
 
@@ -6819,7 +6784,7 @@ std::unique_ptr<ScDBQueryParamBase> ScInterpreter::GetDBParams( bool& rMissingFi
             return pParam;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 void ScInterpreter::DBIterator( ScIterFunc eFunc )
@@ -7081,10 +7046,9 @@ void ScInterpreter::ScIndirect()
             // Use the current address syntax if unspecified.
             eConv = pDok->GetAddressConvention();
 
-        // either CONV_A1_XL_A1 was explicitly configured, or nothing at all
-        // was configured
-        bool bTryXlA1 = (eConv == FormulaGrammar::CONV_A1_XL_A1 ||
-                          !maCalcConfig.mbHasStringRefSyntax);
+        // either CONV_A1_XL_A1 was explicitly configured, or it wasn't possible
+        // to determine which syntax to use during doc import
+        bool bTryXlA1 = (eConv == FormulaGrammar::CONV_A1_XL_A1);
 
         if (nParamCount == 2 && 0.0 == ::rtl::math::approxFloor( GetDouble()))
         {
@@ -7761,7 +7725,7 @@ void ScInterpreter::ScCurrency()
             fVal = ceil(fVal*fFac-0.5)/fFac;
         else
             fVal = floor(fVal*fFac+0.5)/fFac;
-        Color* pColor = NULL;
+        Color* pColor = nullptr;
         if ( fDec < 0.0 )
             fDec = 0.0;
         sal_uLong nIndex = pFormatter->GetStandardFormat(
@@ -7850,7 +7814,7 @@ void ScInterpreter::ScFixed()
             fVal = ceil(fVal*fFac-0.5)/fFac;
         else
             fVal = floor(fVal*fFac+0.5)/fFac;
-        Color* pColor = NULL;
+        Color* pColor = nullptr;
         if (fDec < 0.0)
             fDec = 0.0;
         sal_uLong nIndex = pFormatter->GetStandardFormat(
@@ -7878,17 +7842,17 @@ void ScInterpreter::ScFind()
     sal_uInt8 nParamCount = GetByte();
     if ( MustHaveParamCount( nParamCount, 2, 3 ) )
     {
-        double fAnz;
+        sal_Int32 nAnz;
         if (nParamCount == 3)
-            fAnz = GetDouble();
+            nAnz = GetDouble();
         else
-            fAnz = 1.0;
+            nAnz = 1;
         OUString sStr = GetString().getString();
-        if( fAnz < 1.0 || fAnz > (double) sStr.getLength() )
+        if (nAnz < 1 || nAnz > sStr.getLength())
             PushNoValue();
         else
         {
-            sal_Int32 nPos = sStr.indexOf(GetString().getString(), static_cast<sal_Int32>(fAnz - 1));
+            sal_Int32 nPos = sStr.indexOf(GetString().getString(), nAnz - 1);
             if (nPos == -1)
                 PushNoValue();
             else
@@ -8246,7 +8210,7 @@ void ScInterpreter::ScText()
         else
         {
             OUString aResult;
-            Color* pColor = NULL;
+            Color* pColor = nullptr;
             LanguageType eCellLang;
             const ScPatternAttr* pPattern = pDok->GetPattern(
                     aPos.Col(), aPos.Row(), aPos.Tab() );

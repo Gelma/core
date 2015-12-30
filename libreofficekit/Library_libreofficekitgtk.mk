@@ -16,6 +16,10 @@ $(eval $(call gb_Library_add_exception_objects,libreofficekitgtk,\
     libreofficekit/source/gtk/tilebuffer \
 ))
 
+$(eval $(call gb_Library_use_externals,libreofficekitgtk,\
+    boost_headers \
+))
+
 $(eval $(call gb_Library_add_cxxflags,libreofficekitgtk,\
     $$(GTK3_CFLAGS) \
 ))
@@ -24,10 +28,13 @@ $(eval $(call gb_Library_add_libs,libreofficekitgtk,\
     $(GTK3_LIBS) \
 ))
 
-ifeq ($(OS),LINUX)
+$(eval $(call gb_Library_add_defs,libreofficekitgtk,\
+	-DLOK_PATH="\"$(LIBDIR)/libreoffice/$(LIBO_LIB_FOLDER)\"" \
+))
+
+ifeq ($(OS),$(filter LINUX %BSD SOLARIS, $(OS)))
 $(eval $(call gb_Library_add_libs,libreofficekitgtk,\
-    -ldl \
-    -lm \
+    $(DLOPEN_LIBS) -lm \
 ))
 endif
 

@@ -87,9 +87,9 @@
 
 LwpFrib::LwpFrib(LwpPara* pPara)
     : m_pPara(pPara)
-    , m_pNext(NULL)
+    , m_pNext(nullptr)
     , m_nFribType(0)
-    , m_pModifiers(NULL)
+    , m_pModifiers(nullptr)
     , m_ModFlag(false)
     , m_nRevisionType(0)
     , m_bRevisionFlag(false)
@@ -105,7 +105,7 @@ LwpFrib::~LwpFrib()
 LwpFrib* LwpFrib::CreateFrib(LwpPara* pPara, LwpObjectStream* pObjStrm, sal_uInt8 fribtag,sal_uInt8 editID)
 {
     //Read Modifier
-    ModifierInfo* pModInfo = NULL;
+    ModifierInfo* pModInfo = nullptr;
     if(fribtag & FRIB_TAG_MODIFIER)
     {
         pModInfo  = new ModifierInfo();
@@ -119,7 +119,7 @@ LwpFrib* LwpFrib::CreateFrib(LwpPara* pPara, LwpObjectStream* pObjStrm, sal_uInt
     }
 
     //Read frib data
-    LwpFrib* newFrib = NULL;
+    LwpFrib* newFrib = nullptr;
     sal_uInt16 friblen = pObjStrm->QuickReaduInt16();
     sal_uInt8 fribtype = fribtag&~FRIB_TAG_TYPEMASK;
     switch(fribtype)
@@ -242,18 +242,24 @@ void LwpFrib::RegisterStyle(LwpFoundry* pFoundry)
     //so we can only handle fontid and characstyle, if others ,we should not reg style
     //note by ,1-27
     rtl::Reference<XFFont> pFont;
-    XFTextStyle* pStyle = NULL;
+    XFTextStyle* pStyle = nullptr;
     m_StyleName.clear();
     XFStyleManager* pXFStyleManager = LwpGlobalMgr::GetInstance()->GetXFStyleManager();
-    if (m_pModifiers->HasCharStyle)
+    XFTextStyle* pNamedStyle = nullptr;
+    if (m_pModifiers->HasCharStyle && pFoundry)
     {
-        XFTextStyle* pNamedStyle = static_cast<XFTextStyle*>
+        pNamedStyle = static_cast<XFTextStyle*>
                                 (pFoundry->GetStyleManager()->GetStyle(m_pModifiers->CharStyleID));
-        if (m_pModifiers->FontID)
+    }
+    if (pNamedStyle)
+    {
+        LwpCharacterStyle* pCharStyle = nullptr;
+        if (m_pModifiers->FontID && pFoundry)
+            pCharStyle = dynamic_cast<LwpCharacterStyle*>(m_pModifiers->CharStyleID.obj().get());
+        if (pCharStyle)
         {
             pStyle = new XFTextStyle();
             *pStyle = *pNamedStyle;
-            LwpCharacterStyle* pCharStyle = static_cast<LwpCharacterStyle*>(m_pModifiers->CharStyleID.obj().get());
 
             pStyle->SetStyleName("");
             pFont = pFoundry->GetFontManger().CreateOverrideFont(pCharStyle->GetFinalFontID(),m_pModifiers->FontID);
@@ -262,14 +268,14 @@ void LwpFrib::RegisterStyle(LwpFoundry* pFoundry)
             m_StyleName = aNewStyle.m_pStyle->GetStyleName();
             pStyle = dynamic_cast<XFTextStyle*>(aNewStyle.m_pStyle);
             if (aNewStyle.m_bOrigDeleted)
-                pStyle = NULL;
+                pStyle = nullptr;
         }
         else
             m_StyleName =  pNamedStyle->GetStyleName();
     }
     else
     {
-        if (m_pModifiers->FontID)
+        if (m_pModifiers->FontID && pFoundry)
         {
             pStyle = new XFTextStyle();
             pFont = pFoundry->GetFontManger().CreateFont(m_pModifiers->FontID);
@@ -278,7 +284,7 @@ void LwpFrib::RegisterStyle(LwpFoundry* pFoundry)
             m_StyleName = aNewStyle.m_pStyle->GetStyleName();
             pStyle = dynamic_cast<XFTextStyle*>(aNewStyle.m_pStyle);
             if (aNewStyle.m_bOrigDeleted)
-                pStyle = NULL;
+                pStyle = nullptr;
         }
     }
 

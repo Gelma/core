@@ -22,7 +22,6 @@ interface XToolkitExperimental : XToolkit2
   /** Process all pending idle events
    */
   void processEventsToIdle();
-
 };
 
 }; }; }; };

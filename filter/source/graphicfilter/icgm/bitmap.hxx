@@ -47,9 +47,9 @@ class CGMBitmapDescriptor
         sal_uInt32              mnCompressionMode;
 
         CGMBitmapDescriptor()
-            : mpBuf(NULL)
-            , mpBitmap(NULL)
-            , mpAcc(NULL)
+            : mpBuf(nullptr)
+            , mpBitmap(nullptr)
+            , mpAcc(nullptr)
             , mbStatus(false)
             , mbVMirror(false)
             , mbHMirror(false)
@@ -73,17 +73,17 @@ class CGMBitmapDescriptor
 
 class CGMBitmap
 {
-        CGM*                    mpCGM;
-        CGMBitmapDescriptor*    pCGMBitmapDescriptor;
-        bool                ImplGetDimensions( CGMBitmapDescriptor& );
-        void                    ImplSetCurrentPalette( CGMBitmapDescriptor& );
-        void                    ImplGetBitmap( CGMBitmapDescriptor& );
-        void                    ImplInsert( CGMBitmapDescriptor& rSource, CGMBitmapDescriptor& rDest );
-    public:
-                                CGMBitmap( CGM& rCGM );
-                                ~CGMBitmap();
-        CGMBitmapDescriptor*    GetBitmap() { return pCGMBitmapDescriptor;}
-        CGMBitmap*              GetNext();
+    CGM*                    mpCGM;
+    CGMBitmapDescriptor*    pCGMBitmapDescriptor;
+    bool                ImplGetDimensions( CGMBitmapDescriptor& );
+    void                    ImplSetCurrentPalette( CGMBitmapDescriptor& );
+    void                    ImplGetBitmap( CGMBitmapDescriptor& );
+    void                    ImplInsert( CGMBitmapDescriptor& rSource, CGMBitmapDescriptor& rDest );
+public:
+    explicit CGMBitmap( CGM& rCGM );
+    ~CGMBitmap();
+    CGMBitmapDescriptor*    GetBitmap() { return pCGMBitmapDescriptor;}
+    CGMBitmap*              GetNext();
 };
 #endif
 

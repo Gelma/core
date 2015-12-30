@@ -72,7 +72,7 @@ class StringLength : public ::cppu::WeakImplHelper< XStringWidth >
 
         // XStringWidth
         sal_Int32 SAL_CALL queryStringWidth( const OUString& aString )
-            throw (RuntimeException, std::exception) SAL_OVERRIDE
+            throw (RuntimeException, std::exception) override
         {
             return aString.getLength();
         }
@@ -244,7 +244,7 @@ MenuManager::MenuManager(
                 }
 
                 Reference< XDispatch > aXDispatchRef;
-                m_aMenuItemHandlerVector.push_back( new MenuItemHandler( nItemId, NULL, aXDispatchRef ));
+                m_aMenuItemHandlerVector.push_back( new MenuItemHandler( nItemId, nullptr, aXDispatchRef ));
 
             }
         }
@@ -294,14 +294,14 @@ MenuManager::MenuItemHandler* MenuManager::GetMenuItemHandler( sal_uInt16 nItemI
             return pItemHandler;
     }
 
-    return 0;
+    return nullptr;
 }
 
 void SAL_CALL MenuManager::statusChanged( const FeatureStateEvent& Event )
 throw ( RuntimeException, std::exception )
 {
     OUString aFeatureURL = Event.FeatureURL.Complete;
-    MenuItemHandler* pStatusChangedMenu = NULL;
+    MenuItemHandler* pStatusChangedMenu = nullptr;
 
     {
         SolarMutexGuard g;
@@ -403,7 +403,7 @@ void SAL_CALL MenuManager::disposing( const EventObject& Source ) throw ( Runtim
     else
     {
         // disposing called from menu item dispatcher, remove listener
-        MenuItemHandler* pMenuItemDisposing = NULL;
+        MenuItemHandler* pMenuItemDisposing = nullptr;
 
         {
             SolarMutexGuard g;
@@ -451,7 +451,7 @@ void MenuManager::UpdateSpecialFileMenu( Menu* pMenu )
         Reference< XDispatch > aXDispatchRef;
         MenuItemHandler* pNewMenuItemHandler = new MenuItemHandler(
                                                     nPickItemId++,
-                                                    NULL,
+                                                    nullptr,
                                                     aXDispatchRef );
 
         for ( int j = 0; j < aPickListEntry.getLength(); j++ )
@@ -573,7 +573,7 @@ void MenuManager::UpdateSpecialFileMenu( Menu* pMenu )
                     OUString aCompactedSystemPath;
 
                     aTipHelpText = aSystemPath;
-                    oslFileError nError = osl_abbreviateSystemPath( aSystemPath.pData, &aCompactedSystemPath.pData, 46, NULL );
+                    oslFileError nError = osl_abbreviateSystemPath( aSystemPath.pData, &aCompactedSystemPath.pData, 46, nullptr );
                     if ( !nError )
                         aMenuTitle = aCompactedSystemPath;
                     else
@@ -604,7 +604,7 @@ void MenuManager::UpdateSpecialWindowMenu( Menu* pMenu,const Reference< XCompone
     // update window list
     ::std::vector< OUString > aNewWindowListVector;
 
-    Reference< XDesktop2 > xDesktop = Desktop::create( xContext );
+    Reference< XDesktop2 > xDesktop = css::frame::Desktop::create( xContext );
 
     sal_uInt16  nActiveItemId = 0;
     sal_uInt16  nItemId = START_ITEMID_WINDOWLIST;
@@ -762,7 +762,7 @@ IMPL_LINK_TYPED( MenuManager, Activate, Menu *, pMenu, bool )
                 {
                     MenuItemHandler* pMenuItemHandler = *p;
                     if ( pMenuItemHandler &&
-                         pMenuItemHandler->pSubMenuManager == 0 &&
+                         pMenuItemHandler->pSubMenuManager == nullptr &&
                          !pMenuItemHandler->xMenuItemDispatch.is() )
                     {
                         // There is no dispatch mechanism for the special window list menu items,
@@ -831,7 +831,7 @@ IMPL_LINK_TYPED( MenuManager, Select, Menu *, pMenu, bool )
             {
                 // window list menu item selected
 
-                Reference< XDesktop2 > xDesktop = Desktop::create( m_xContext );
+                Reference< XDesktop2 > xDesktop = css::frame::Desktop::create( m_xContext );
 
                 sal_uInt16 nTaskId = START_ITEMID_WINDOWLIST;
                 Reference< XIndexAccess > xList( xDesktop->getFrames(), UNO_QUERY );

@@ -107,21 +107,21 @@ public:
             rBar.LogicToPixel(Size(15, 0), MAP_APPFONT).Width());
         long nVersionWidth = 12 +
             std::max(rBar.GetTextWidth(rBar.GetItemText(3)),
-            GetTextWidth(OUString("0.0.0_00-icedtea")));
+            GetTextWidth("0.0.0_00-icedtea"));
         long nFeatureWidth = 12 +
             std::max(rBar.GetTextWidth(rBar.GetItemText(4)),
             GetTextWidth(m_sAccessibilityText));
         long nVendorWidth =
             std::max(GetSizePixel().Width() - (nCheckWidth + nVersionWidth + nFeatureWidth),
             6 + std::max(rBar.GetTextWidth(rBar.GetItemText(2)),
-            GetTextWidth(OUString("Sun Microsystems Inc."))));
+            GetTextWidth("Sun Microsystems Inc.")));
         long aStaticTabs[]= { 4, 0, 0, 0, 0, 0 };
         aStaticTabs[2] = nCheckWidth;
         aStaticTabs[3] = aStaticTabs[2] + nVendorWidth;
         aStaticTabs[4] = aStaticTabs[3] + nVersionWidth;
         SvSimpleTable::SetTabs(aStaticTabs, MAP_PIXEL);
     }
-    virtual void Resize() SAL_OVERRIDE
+    virtual void Resize() override
     {
         svx::SvxRadioButtonListBox::Resize();
         setColSizes();
@@ -132,12 +132,12 @@ public:
 
 SvxJavaOptionsPage::SvxJavaOptionsPage( vcl::Window* pParent, const SfxItemSet& rSet )
     : SfxTabPage(pParent, "OptAdvancedPage", "cui/ui/optadvancedpage.ui", &rSet)
-    , m_pParamDlg(NULL)
-    , m_pPathDlg(NULL)
+    , m_pParamDlg(nullptr)
+    , m_pPathDlg(nullptr)
 #if HAVE_FEATURE_JAVA
-    , m_parJavaInfo(NULL)
-    , m_parParameters(NULL)
-    , m_pClassPath(NULL)
+    , m_parJavaInfo(nullptr)
+    , m_parParameters(nullptr)
+    , m_pClassPath(nullptr)
     , m_nInfoSize(0)
     , m_nParamSize(0)
 #endif
@@ -456,7 +456,7 @@ void SvxJavaOptionsPage::ClearJavaInfo()
         }
 
         rtl_freeMemory( m_parJavaInfo );
-        m_parJavaInfo = NULL;
+        m_parJavaInfo = nullptr;
         m_nInfoSize = 0;
     }
 #else
@@ -502,7 +502,7 @@ void SvxJavaOptionsPage::LoadJREs()
         AddJRE( pInfo );
     }
 
-    JavaInfo* pSelectedJava = NULL;
+    JavaInfo* pSelectedJava = nullptr;
     eErr = jfw_getSelectedJRE( &pSelectedJava );
     if ( JFW_E_NONE == eErr && pSelectedJava )
     {
@@ -577,7 +577,7 @@ void SvxJavaOptionsPage::AddFolder( const OUString& _rFolder )
 {
 #if HAVE_FEATURE_JAVA
     bool bStartAgain = true;
-    JavaInfo* pInfo = NULL;
+    JavaInfo* pInfo = nullptr;
     javaFrameworkError eErr = jfw_getJavaInfoByPath( _rFolder.pData, &pInfo );
     if ( JFW_E_NONE == eErr && pInfo )
     {
@@ -708,17 +708,17 @@ bool SvxJavaOptionsPage::FillItemSet( SfxItemSet* /*rCoreSet*/ )
     {
         if ( m_pJavaList->GetCheckButtonState( m_pJavaList->GetEntry(i) ) == SV_BUTTON_CHECKED )
         {
-            JavaInfo* pInfo = NULL;
+            JavaInfo* pInfo = nullptr;
             if ( i < static_cast< sal_uLong >( m_nInfoSize ) )
                 pInfo = m_parJavaInfo[i];
             else
                 pInfo = m_aAddedInfos[ i - m_nInfoSize ];
 
-            JavaInfo* pSelectedJava = NULL;
+            JavaInfo* pSelectedJava = nullptr;
             eErr = jfw_getSelectedJRE( &pSelectedJava );
             if ( JFW_E_NONE == eErr || JFW_E_INVALID_SETTINGS == eErr )
             {
-                if (pSelectedJava == NULL || !jfw_areEqualJavaInfo( pInfo, pSelectedJava ) )
+                if (pSelectedJava == nullptr || !jfw_areEqualJavaInfo( pInfo, pSelectedJava ) )
                 {
                     sal_Bool bRunning = sal_False;
                     eErr = jfw_isVMRunning( &bRunning );
@@ -815,7 +815,7 @@ SvxJavaParameterDlg::SvxJavaParameterDlg( vcl::Window* pParent ) :
     m_pAssignedList->SetSelectHdl( LINK( this, SvxJavaParameterDlg, SelectHdl_Impl ) );
     m_pAssignedList->SetDoubleClickHdl( LINK( this, SvxJavaParameterDlg, DblClickHdl_Impl ) );
 
-    ModifyHdl_Impl( m_pParameterEdit );
+    ModifyHdl_Impl( *m_pParameterEdit );
     EnableRemoveButton();
 }
 
@@ -834,12 +834,10 @@ void SvxJavaParameterDlg::dispose()
 }
 
 
-IMPL_LINK_NOARG(SvxJavaParameterDlg, ModifyHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvxJavaParameterDlg, ModifyHdl_Impl, Edit&, void)
 {
     OUString sParam = comphelper::string::strip(m_pParameterEdit->GetText(), ' ');
     m_pAssignBtn->Enable(!sParam.isEmpty());
-
-    return 0;
 }
 
 
@@ -854,17 +852,16 @@ IMPL_LINK_NOARG_TYPED(SvxJavaParameterDlg, AssignHdl_Impl, Button*, void)
             nPos = m_pAssignedList->InsertEntry( sParam );
         m_pAssignedList->SelectEntryPos( nPos );
         m_pParameterEdit->SetText( OUString() );
-        ModifyHdl_Impl( m_pParameterEdit );
+        ModifyHdl_Impl( *m_pParameterEdit );
         EnableRemoveButton();
     }
 }
 
 
 
-IMPL_LINK_NOARG(SvxJavaParameterDlg, SelectHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvxJavaParameterDlg, SelectHdl_Impl, ListBox&, void)
 {
     EnableRemoveButton();
-    return 0;
 }
 
 
@@ -965,7 +962,7 @@ void SvxJavaClassPathDlg::dispose()
         sal_Int32 i, nCount = m_pPathList->GetEntryCount();
         for ( i = 0; i < nCount; ++i )
             delete static_cast< OUString* >( m_pPathList->GetEntryData(i) );
-        m_pPathList = NULL;
+        m_pPathList = nullptr;
     }
     m_pPathList.clear();
     m_pAddArchiveBtn.clear();
@@ -978,7 +975,7 @@ IMPL_LINK_NOARG_TYPED(SvxJavaClassPathDlg, AddArchiveHdl_Impl, Button*, void)
 {
     sfx2::FileDialogHelper aDlg( TemplateDescription::FILEOPEN_SIMPLE, 0 );
     aDlg.SetTitle( CUI_RES( RID_SVXSTR_ARCHIVE_TITLE ) );
-    aDlg.AddFilter( CUI_RES( RID_SVXSTR_ARCHIVE_HEADLINE ), OUString("*.jar;*.zip") );
+    aDlg.AddFilter( CUI_RES( RID_SVXSTR_ARCHIVE_HEADLINE ), "*.jar;*.zip" );
     OUString sFolder;
     if ( m_pPathList->GetSelectEntryCount() > 0 )
     {
@@ -1066,10 +1063,9 @@ IMPL_LINK_NOARG_TYPED(SvxJavaClassPathDlg, RemoveHdl_Impl, Button*, void)
 
 
 
-IMPL_LINK_NOARG(SvxJavaClassPathDlg, SelectHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvxJavaClassPathDlg, SelectHdl_Impl, ListBox&, void)
 {
     EnableRemoveButton();
-    return 0;
 }
 
 
@@ -1129,7 +1125,7 @@ void SvxJavaClassPathDlg::SetClassPath( const OUString& _rPath )
     }
     // select first entry
     m_pPathList->SelectEntryPos(0);
-    SelectHdl_Impl( NULL );
+    SelectHdl_Impl( *m_pPathList );
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

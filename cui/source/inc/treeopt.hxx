@@ -37,37 +37,32 @@ struct OrderedEntry
         m_nIndex( nIndex ), m_sId( rId ) {}
 };
 
-typedef std::vector< OrderedEntry* > VectorOfOrderedEntries;
 
 // struct Module ---------------------------------------------------------
 
 struct Module
 {
-    OUString           m_sName;
-    bool                    m_bActive;
-    VectorOfOrderedEntries  m_aNodeList;
+    bool                          m_bActive;
+    std::vector< OrderedEntry* >  m_aNodeList;
 
-    Module( const OUString& rName ) : m_sName( rName ), m_bActive( false ) {}
+    Module() : m_bActive( false ) {}
 };
 
 // struct OptionsLeaf ----------------------------------------------------
 
 struct OptionsLeaf
 {
-    OUString   m_sId;
     OUString   m_sLabel;
     OUString   m_sPageURL;
     OUString   m_sEventHdl;
     OUString   m_sGroupId;
     sal_Int32       m_nGroupIndex;
 
-    OptionsLeaf(    const OUString& rId,
-                    const OUString& rLabel,
+    OptionsLeaf(    const OUString& rLabel,
                     const OUString& rPageURL,
                     const OUString& rEventHdl,
                     const OUString& rGroupId,
                     sal_Int32 nGroupIndex ) :
-        m_sId( rId ),
         m_sLabel( rLabel ),
         m_sPageURL( rPageURL ),
         m_sEventHdl( rEventHdl ),
@@ -76,7 +71,6 @@ struct OptionsLeaf
 };
 
 typedef ::std::vector< OptionsLeaf* > VectorOfLeaves;
-typedef ::std::vector< VectorOfLeaves > VectorOfGroupedLeaves;
 
 // struct OptionsNode ----------------------------------------------------
 
@@ -86,23 +80,18 @@ struct OptionsNode
     OUString                m_sLabel;
     OUString                m_sPageURL;
     bool                    m_bAllModules;
-    OUString                m_sGroupId;
-    sal_Int32               m_nGroupIndex;
     VectorOfLeaves          m_aLeaves;
-    VectorOfGroupedLeaves   m_aGroupedLeaves;
+    ::std::vector< VectorOfLeaves >
+                            m_aGroupedLeaves;
 
     OptionsNode(    const OUString& rId,
                     const OUString& rLabel,
                     const OUString& rPageURL,
-                    bool bAllModules,
-                    const OUString& rGroupId,
-                    sal_Int32 nGroupIndex ) :
+                    bool bAllModules ) :
         m_sId( rId ),
         m_sLabel( rLabel ),
         m_sPageURL( rPageURL ),
-        m_bAllModules( bAllModules ),
-        m_sGroupId( rGroupId ),
-        m_nGroupIndex( nGroupIndex ) {}
+        m_bAllModules( bAllModules ) {}
 
     ~OptionsNode()
     {
@@ -133,7 +122,6 @@ struct OptionsPageInfo;
 struct Module;
 class ExtensionsTabPage;
 class SvxColorTabPage;
-typedef std::vector< ExtensionsTabPage* > VectorOfPages;
 
 class OfaTreeOptionsDialog : public SfxModalDialog
 {
@@ -184,8 +172,8 @@ protected:
     DECL_LINK_TYPED(OKHdl_Impl, Button*, void);
     void SelectHdl_Impl();
 
-    virtual bool    Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
-    virtual short   Execute() SAL_OVERRIDE;
+    virtual bool    Notify( NotifyEvent& rNEvt ) override;
+    virtual short   Execute() override;
 
 public:
     OfaTreeOptionsDialog( vcl::Window* pParent,
@@ -193,7 +181,7 @@ public:
         bool bActivateLastSelection = true );
     OfaTreeOptionsDialog( vcl::Window* pParent, const OUString& rExtensionId );
     virtual ~OfaTreeOptionsDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     OptionsPageInfo*    AddTabPage( sal_uInt16 nId, const OUString& rPageName, sal_uInt16 nGroup );
     sal_uInt16              AddGroup(   const OUString& rGroupName,  SfxShell* pCreateShell,
@@ -271,10 +259,10 @@ public:
             css::awt::XContainerWindowProvider >& rProvider );
 
     virtual ~ExtensionsTabPage();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void    ActivatePage() SAL_OVERRIDE;
-    virtual void    DeactivatePage() SAL_OVERRIDE;
+    virtual void    ActivatePage() override;
+    virtual void    DeactivatePage() override;
 
     void            ResetPage();
     void            SavePage();

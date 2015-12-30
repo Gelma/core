@@ -33,7 +33,7 @@
 using namespace ::ooo::vba;
 using namespace ::com::sun::star;
 
-SwVbaField::SwVbaField(  const uno::Reference< ooo::vba::XHelperInterface >& rParent, const uno::Reference< uno::XComponentContext >& rContext, const css::uno::Reference< css::text::XTextDocument >& rDocument, const  uno::Reference< css::text::XTextField >& xTextField) throw ( uno::RuntimeException ) : SwVbaField_BASE( rParent, rContext ), mxTextDocument( rDocument )
+SwVbaField::SwVbaField(  const uno::Reference< ooo::vba::XHelperInterface >& rParent, const uno::Reference< uno::XComponentContext >& rContext, const  uno::Reference< css::text::XTextField >& xTextField) throw ( uno::RuntimeException ) : SwVbaField_BASE( rParent, rContext )
 {
     mxTextField.set( xTextField, uno::UNO_QUERY_THROW );
 }
@@ -223,7 +223,7 @@ static uno::Any lcl_createField( const uno::Reference< XHelperInterface >& xPare
 {
     uno::Reference< text::XTextField > xTextField( aSource, uno::UNO_QUERY_THROW );
     uno::Reference< text::XTextDocument > xTextDocument( xModel, uno::UNO_QUERY_THROW );
-    uno::Reference< word::XField > xField( new SwVbaField( xParent, xContext, xTextDocument, xTextField ) );
+    uno::Reference< word::XField > xField( new SwVbaField( xParent, xContext, xTextField ) );
     return uno::makeAny( xField );
 }
 
@@ -237,11 +237,11 @@ public:
     FieldEnumeration(  const uno::Reference< XHelperInterface >& xParent, const uno::Reference< uno::XComponentContext > & xContext, const uno::Reference< frame::XModel >& xModel, const uno::Reference< container::XEnumeration >& xEnumeration ) : mxParent( xParent ), mxContext( xContext ), mxModel( xModel ), mxEnumeration( xEnumeration )
     {
     }
-    virtual sal_Bool SAL_CALL hasMoreElements(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasMoreElements(  ) throw (uno::RuntimeException, std::exception) override
     {
         return mxEnumeration->hasMoreElements();
     }
-    virtual uno::Any SAL_CALL nextElement(  ) throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Any SAL_CALL nextElement(  ) throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) override
     {
         if ( !hasMoreElements() )
             throw container::NoSuchElementException();
@@ -263,10 +263,10 @@ public:
         mxEnumerationAccess.set( xSupp->getTextFields(), uno::UNO_QUERY_THROW );
     }
     // XElementAccess
-    virtual uno::Type SAL_CALL getElementType(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE { return  mxEnumerationAccess->getElementType(); }
-    virtual sal_Bool SAL_CALL hasElements(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE { return mxEnumerationAccess->hasElements(); }
+    virtual uno::Type SAL_CALL getElementType(  ) throw (uno::RuntimeException, std::exception) override { return  mxEnumerationAccess->getElementType(); }
+    virtual sal_Bool SAL_CALL hasElements(  ) throw (uno::RuntimeException, std::exception) override { return mxEnumerationAccess->hasElements(); }
     // XIndexAccess
-    virtual ::sal_Int32 SAL_CALL getCount(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual ::sal_Int32 SAL_CALL getCount(  ) throw (uno::RuntimeException, std::exception) override
     {
         uno::Reference< container::XEnumeration > xEnumeration =  mxEnumerationAccess->createEnumeration();
         sal_Int32 nCount = 0;
@@ -277,7 +277,7 @@ public:
         }
         return nCount;
     }
-    virtual uno::Any SAL_CALL getByIndex( ::sal_Int32 Index ) throw (lang::IndexOutOfBoundsException, lang::WrappedTargetException, uno::RuntimeException, std::exception ) SAL_OVERRIDE
+    virtual uno::Any SAL_CALL getByIndex( ::sal_Int32 Index ) throw (lang::IndexOutOfBoundsException, lang::WrappedTargetException, uno::RuntimeException, std::exception ) override
     {
         if( Index < 0 || Index >= getCount() )
             throw lang::IndexOutOfBoundsException();
@@ -295,7 +295,7 @@ public:
         throw lang::IndexOutOfBoundsException();
     }
     // XEnumerationAccess
-    virtual uno::Reference< container::XEnumeration > SAL_CALL createEnumeration(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Reference< container::XEnumeration > SAL_CALL createEnumeration(  ) throw (uno::RuntimeException, std::exception) override
     {
         uno::Reference< container::XEnumeration > xEnumeration =  mxEnumerationAccess->createEnumeration();
         return uno::Reference< container::XEnumeration >( new FieldEnumeration( mxParent, mxContext, mxModel, xEnumeration ) );
@@ -341,7 +341,7 @@ SwVbaFields::Add( const css::uno::Reference< ::ooo::vba::word::XRange >& Range, 
     uno::Reference< text::XTextRange > xTextRange = rVbaRange.getXTextRange();
     uno::Reference< text::XText > xText = xTextRange->getText();
     xText->insertTextContent( xTextRange, xTextField, true );
-    return uno::Reference< word::XField >( new SwVbaField( mxParent, mxContext, uno::Reference< text::XTextDocument >( mxModel, uno::UNO_QUERY_THROW ), uno::Reference< text::XTextField >( xTextField, uno::UNO_QUERY_THROW ) ) );
+    return uno::Reference< word::XField >( new SwVbaField( mxParent, mxContext, uno::Reference< text::XTextField >( xTextField, uno::UNO_QUERY_THROW ) ) );
 }
 
 uno::Reference< text::XTextField > SwVbaFields::Create_Field_FileName( const OUString& _text )
@@ -386,32 +386,32 @@ struct DocPropertyTable
 static const DocPropertyTable aDocPropertyTables[] =
 {
     { "Author", "com.sun.star.text.textfield.docinfo.CreateAuthor" },
-    { "Bytes", NULL },
-    { "Category", NULL },
-    { "Characters",NULL },
-    { "CharactersWithSpaces", NULL },
+    { "Bytes", nullptr },
+    { "Category", nullptr },
+    { "Characters",nullptr },
+    { "CharactersWithSpaces", nullptr },
     { "Comments", "com.sun.star.text.textfield.docinfo.Description" },
-    { "Company", NULL },
+    { "Company", nullptr },
     { "CreateTime", "com.sun.star.text.textfield.docinfo.CreateDateTime" },
-    { "HyperlinkBase", NULL },
+    { "HyperlinkBase", nullptr },
     { "Keywords", "com.sun.star.text.textfield.docinfo.Keywords" },
     { "LastPrinted", "com.sun.star.text.textfield.docinfo.PrintDateTime" },
     { "LastSavedBy", "com.sun.star.text.textfield.docinfo.ChangeAuthor" },
     { "LastSavedTime", "com.sun.star.text.textfield.docinfo.ChangeDateTime" },
-    { "Lines", NULL },
-    { "Manager", NULL },
-    { "NameofApplication", NULL },
-    { "ODMADocID", NULL },
+    { "Lines", nullptr },
+    { "Manager", nullptr },
+    { "NameofApplication", nullptr },
+    { "ODMADocID", nullptr },
     { "Pages", "com.sun.star.text.textfield.PageCount" },
     { "Paragraphs", "com.sun.star.text.textfield.ParagraphCount" },
     { "RevisionNumber", "com.sun.star.text.textfield.docinfo.Revision" },
-    { "Security", NULL },
+    { "Security", nullptr },
     { "Subject", "com.sun.star.text.textfield.docinfo.Subject" },
     { "Template", "com.sun.star.text.textfield.TemplateName" },
     { "Title", "com.sun.star.text.textfield.docinfo.Title" },
     { "TotalEditingTime", "com.sun.star.text.textfield.docinfo.EditTime" },
     { "Words", "com.sun.star.text.textfield.WordCount" },
-    { NULL, NULL }
+    { nullptr, nullptr }
 };
 
 uno::Reference< text::XTextField > SwVbaFields::Create_Field_DocProperty( const OUString& _text ) throw (uno::RuntimeException)
@@ -443,11 +443,11 @@ uno::Reference< text::XTextField > SwVbaFields::Create_Field_DocProperty( const 
     bool bCustom = true;
     OUString sFieldService;
     // find the build in document properties
-    for( const DocPropertyTable* pTable = aDocPropertyTables; pTable->sDocPropertyName != NULL; pTable++ )
+    for( const DocPropertyTable* pTable = aDocPropertyTables; pTable->sDocPropertyName != nullptr; pTable++ )
     {
         if( aDocProperty.equalsIgnoreAsciiCaseAscii( pTable->sDocPropertyName ) )
         {
-            if( pTable->sFieldService != NULL )
+            if( pTable->sFieldService != nullptr )
                 sFieldService = OUString::createFromAscii(pTable->sFieldService);
             bCustom = false;
             break;

@@ -32,9 +32,9 @@ class filter_info_impl;
 class XMLFilterTabPageBasic : public TabPage
 {
 public:
-    XMLFilterTabPageBasic(vcl::Window* pParent);
+    explicit XMLFilterTabPageBasic(vcl::Window* pParent);
     virtual ~XMLFilterTabPageBasic();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     bool FillInfo( filter_info_impl* pInfo );
     void SetInfo(const filter_info_impl* pInfo);

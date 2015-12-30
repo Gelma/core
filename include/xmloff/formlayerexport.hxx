@@ -29,6 +29,7 @@
 #include <rtl/ref.hxx>
 #include <salhelper/simplereferenceobject.hxx>
 #include <xmloff/xmlexppr.hxx>
+#include <memory>
 
 namespace com { namespace sun { namespace star { namespace awt {
     class XControlModel;
@@ -52,10 +53,8 @@ namespace xmloff
                 :public ::salhelper::SimpleReferenceObject
     {
     protected:
-        /// our export context
-        SvXMLExport&                m_rContext;
         // impl class
-        OFormLayerXMLExport_Impl*   m_pImpl;
+        std::unique_ptr<OFormLayerXMLExport_Impl> m_pImpl;
 
     protected:
         virtual ~OFormLayerXMLExport();
@@ -75,7 +74,7 @@ namespace xmloff
             @see examineForms
         */
         bool seekPage(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XDrawPage >& _rxDrawPage);
+            const css::uno::Reference< css::drawing::XDrawPage >& _rxDrawPage);
 
         /** get the id for the given control
 
@@ -89,7 +88,7 @@ namespace xmloff
 
         */
         OUString getControlId(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& _rxControl);
+            const css::uno::Reference< css::beans::XPropertySet >& _rxControl);
 
         /** retrieves the style name for the control's number style.
 
@@ -103,7 +102,7 @@ namespace xmloff
             @see seekPage
         */
         OUString getControlNumberStyle(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& _rxControl );
+            const css::uno::Reference< css::beans::XPropertySet >& _rxControl );
 
         /** examines the forms collection given.
 
@@ -113,7 +112,7 @@ namespace xmloff
                 the draw page to examine. The object will be queried for a com.sun.star.form::XFormsSupplier
                 interface to obtain the forms container.
         */
-        void examineForms(const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XDrawPage >& _rxDrawPage);
+        void examineForms(const css::uno::Reference< css::drawing::XDrawPage >& _rxDrawPage);
 
         /** exports the structure of a form layer
 
@@ -134,7 +133,7 @@ namespace xmloff
                 the draw page to examine. The object will be queried for a com.sun.star.form::XFormsSupplier
                 interface to obtain the forms container.
         */
-        void exportForms(const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XDrawPage >& _rxDrawPage);
+        void exportForms(const css::uno::Reference< css::drawing::XDrawPage >& _rxDrawPage);
 
         /** exports the XForms model data
         */
@@ -142,7 +141,7 @@ namespace xmloff
 
         /** determines whether the given page contains logical forms
         */
-        static bool pageContainsForms( const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XDrawPage >& _rxDrawPage );
+        static bool pageContainsForms( const css::uno::Reference< css::drawing::XDrawPage >& _rxDrawPage );
 
         /** determines whether the given page contains XForm instances
         */
@@ -163,7 +162,7 @@ namespace xmloff
             to the form layer exporter.<br/>
             Of course you have to do this before calling <member>exportForms</member></p>
         */
-        void excludeFromExport( const ::com::sun::star::uno::Reference< ::com::sun::star::awt::XControlModel >& _rxControl );
+        void excludeFromExport( const css::uno::Reference< css::awt::XControlModel >& _rxControl );
     };
 
 
@@ -173,7 +172,7 @@ namespace xmloff
     class XMLOFF_DLLPUBLIC OOfficeFormsExport
     {
     private:
-        OFormsRootExport*   m_pImpl;
+        std::unique_ptr<OFormsRootExport>  m_pImpl;
 
     public:
         OOfficeFormsExport( SvXMLExport& _rExp );

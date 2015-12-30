@@ -60,7 +60,7 @@ ImplJobSetup::ImplJobSetup()
     mnPaperWidth        = 0;
     mnPaperHeight       = 0;
     mnDriverDataLen     = 0;
-    mpDriverData        = NULL;
+    mpDriverData        = nullptr;
     mbPapersizeFromSetup = false;
 }
 
@@ -83,7 +83,7 @@ ImplJobSetup::ImplJobSetup( const ImplJobSetup& rJobSetup ) :
         memcpy( mpDriverData, rJobSetup.mpDriverData, mnDriverDataLen );
     }
     else
-        mpDriverData = NULL;
+        mpDriverData = nullptr;
     mbPapersizeFromSetup = rJobSetup.mbPapersizeFromSetup;
     maValueMap          = rJobSetup.maValueMap;
 }
@@ -123,7 +123,7 @@ const ImplJobSetup* JobSetup::ImplGetConstData() const
 JobSetup::JobSetup()
 {
 
-    mpData = NULL;
+    mpData = nullptr;
 }
 
 JobSetup::JobSetup( const JobSetup& rJobSetup )
@@ -217,7 +217,6 @@ bool JobSetup::operator==( const JobSetup& rJobSetup ) const
 
 SvStream& ReadJobSetup( SvStream& rIStream, JobSetup& rJobSetup )
 {
-    DBG_ASSERTWARNING( rIStream.GetVersion(), "JobSetup::>> - Solar-Version not set on rOStream" );
 
     {
         sal_uInt16 nLen = 0;
@@ -311,11 +310,7 @@ SvStream& ReadJobSetup( SvStream& rIStream, JobSetup& rJobSetup )
 
 SvStream& WriteJobSetup( SvStream& rOStream, const JobSetup& rJobSetup )
 {
-    DBG_ASSERTWARNING( rOStream.GetVersion(), "JobSetup::<< - Solar-Version not set on rOStream" );
 
-    // We do not have a new FileFormat at this point in time
-    // #define JOBSET_FILEFORMAT2      3780
-    // if ( rOStream.GetVersion() < JOBSET_FILEFORMAT2 )
     {
         sal_uInt16 nLen = 0;
         if ( !rJobSetup.mpData )

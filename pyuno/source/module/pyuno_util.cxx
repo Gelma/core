@@ -57,7 +57,7 @@ PyRef ustring2PyUnicode( const OUString & str )
     ret = PyRef( PyUnicode_FromUnicode( (const Py_UNICODE*)str.getStr(), str.getLength() ), SAL_NO_ACQUIRE );
 #else
     OString sUtf8(OUStringToOString(str, RTL_TEXTENCODING_UTF8));
-    ret = PyRef( PyUnicode_DecodeUTF8( sUtf8.getStr(), sUtf8.getLength(), NULL) , SAL_NO_ACQUIRE );
+    ret = PyRef( PyUnicode_DecodeUTF8( sUtf8.getStr(), sUtf8.getLength(), nullptr) , SAL_NO_ACQUIRE );
 #endif
     return ret;
 }
@@ -172,7 +172,7 @@ void appendPointer(OUStringBuffer & buffer, void * pointer) {
 
 void logException( RuntimeCargo *cargo, const char *intro,
                    void * ptr, const OUString &aFunctionName,
-                   const void * data, const com::sun::star::uno::Type & type )
+                   const void * data, const css::uno::Type & type )
 {
     if( isLog( cargo, LogLevel::CALL ) )
     {

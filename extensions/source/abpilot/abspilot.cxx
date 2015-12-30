@@ -295,12 +295,11 @@ namespace abp
             // already a valid table selected
             return;
 
-        const sal_Char* pGuess = NULL;
+        const sal_Char* pGuess = nullptr;
         switch ( getSettings().eType )
         {
             case AST_MORK               :
             case AST_THUNDERBIRD        : pGuess = "Personal Address book"; break;
-            case AST_LDAP               : pGuess = "LDAP Directory"; break;
             case AST_EVOLUTION          :
             case AST_EVOLUTION_GROUPWISE:
             case AST_EVOLUTION_LDAP     : pGuess = "Personal"; break;
@@ -367,18 +366,6 @@ namespace abp
                 m_aNewDataSource = aContext.createNewMacab( m_aSettings.sDataSourceName );
                 break;
 
-            case AST_LDAP:
-                m_aNewDataSource = aContext.createNewLDAP( m_aSettings.sDataSourceName );
-                break;
-
-            case AST_OUTLOOK:
-                m_aNewDataSource = aContext.createNewOutlook( m_aSettings.sDataSourceName );
-                break;
-
-            case AST_OE:
-                m_aNewDataSource = aContext.createNewOE( m_aSettings.sDataSourceName );
-                break;
-
             case AST_OTHER:
                 m_aNewDataSource = aContext.createNewDBase( m_aSettings.sDataSourceName );
                 break;
@@ -424,7 +411,7 @@ namespace abp
 
             default:
                 OSL_FAIL("OAddessBookSourcePilot::createPage: invalid state!");
-                return NULL;
+                return nullptr;
         }
     }
 

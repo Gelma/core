@@ -27,36 +27,36 @@ class SwLabFormatPage;
 
 class SwLabPreview : public vcl::Window
 {
-    Color aGrayColor;
+    Color m_aGrayColor;
 
-    OUString aHDistStr;
-    OUString aVDistStr;
-    OUString aWidthStr;
-    OUString aHeightStr;
-    OUString aLeftStr;
-    OUString aUpperStr;
-    OUString aColsStr;
-    OUString aRowsStr;
-    OUString aPWidthStr;
-    OUString aPHeightStr;
+    OUString m_aHDistStr;
+    OUString m_aVDistStr;
+    OUString m_aWidthStr;
+    OUString m_aHeightStr;
+    OUString m_aLeftStr;
+    OUString m_aUpperStr;
+    OUString m_aColsStr;
+    OUString m_aRowsStr;
+    OUString m_aPWidthStr;
+    OUString m_aPHeightStr;
 
-    long lHDistWidth;
-    long lVDistWidth;
-    long lHeightWidth;
-    long lLeftWidth;
-    long lUpperWidth;
-    long lColsWidth;
-    long lPWidthWidth;
-    long lPHeightWidth;
+    long m_lHDistWidth;
+    long m_lVDistWidth;
+    long m_lHeightWidth;
+    long m_lLeftWidth;
+    long m_lUpperWidth;
+    long m_lColsWidth;
+    long m_lPWidthWidth;
+    long m_lPHeightWidth;
 
-    long lXWidth;
-    long lXHeight;
+    long m_lXWidth;
+    long m_lXHeight;
 
-    SwLabItem aItem;
+    SwLabItem m_aItem;
 
-    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle&) SAL_OVERRIDE;
+    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle&) override;
 
-    virtual Size GetOptimalSize() const SAL_OVERRIDE;
+    virtual Size GetOptimalSize() const override;
 
 public:
 
@@ -87,7 +87,7 @@ class SwLabFormatPage : public SfxTabPage
 
     SwLabItem    aItem;
 
-    DECL_LINK(ModifyHdl, void *);
+    DECL_LINK_TYPED( ModifyHdl, Edit&, void );
     DECL_LINK_TYPED( PreviewHdl, Idle *, void );
     DECL_LINK_TYPED( LoseFocusHdl, Control&, void );
     DECL_LINK_TYPED( SaveHdl, Button*, void );
@@ -100,15 +100,15 @@ class SwLabFormatPage : public SfxTabPage
 public:
     SwLabFormatPage(vcl::Window* pParent, const SfxItemSet& rSet);
     virtual ~SwLabFormatPage();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     static VclPtr<SfxTabPage> Create(vcl::Window* pParent, const SfxItemSet* rSet);
 
-    virtual void ActivatePage(const SfxItemSet& rSet) SAL_OVERRIDE;
-    virtual sfxpg DeactivatePage(SfxItemSet* pSet = 0) SAL_OVERRIDE;
+    virtual void ActivatePage(const SfxItemSet& rSet) override;
+    virtual sfxpg DeactivatePage(SfxItemSet* pSet = nullptr) override;
             void FillItem(SwLabItem& rItem);
-    virtual bool FillItemSet(SfxItemSet* rSet) SAL_OVERRIDE;
-    virtual void Reset(const SfxItemSet* rSet) SAL_OVERRIDE;
+    virtual bool FillItemSet(SfxItemSet* rSet) override;
+    virtual void Reset(const SfxItemSet* rSet) override;
 
     SwLabDlg* GetParentSwLabDlg() {return static_cast<SwLabDlg*>(GetParentDialog());}
 };
@@ -124,12 +124,12 @@ class SwSaveLabelDlg : public ModalDialog
     SwLabRec&       rLabRec;
 
     DECL_LINK_TYPED(OkHdl, Button*, void);
-    DECL_LINK(ModifyHdl, void *);
+    DECL_LINK_TYPED(ModifyHdl, Edit&, void);
 
 public:
     SwSaveLabelDlg(SwLabFormatPage* pParent, SwLabRec& rRec);
     virtual ~SwSaveLabelDlg();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void SetLabel(const OUString& rMake, const OUString& rType)
     {

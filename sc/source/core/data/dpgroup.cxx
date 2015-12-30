@@ -58,8 +58,8 @@ class ScDPGroupNumFilter : public ScDPFilteredCache::FilterBase
 public:
     ScDPGroupNumFilter(const std::vector<ScDPItemData>& rValues, const ScDPNumGroupInfo& rInfo);
     virtual ~ScDPGroupNumFilter() {}
-    virtual bool match(const ScDPItemData &rCellData) const SAL_OVERRIDE;
-    virtual std::vector<ScDPItemData> getMatchValues() const SAL_OVERRIDE;
+    virtual bool match(const ScDPItemData &rCellData) const override;
+    virtual std::vector<ScDPItemData> getMatchValues() const override;
 private:
     std::vector<ScDPItemData> maValues;
     ScDPNumGroupInfo maNumInfo;
@@ -117,8 +117,8 @@ public:
     ScDPGroupDateFilter(
         const std::vector<ScDPItemData>& rValues, const Date& rNullDate, const ScDPNumGroupInfo& rNumInfo);
 
-    virtual bool match(const ScDPItemData & rCellData) const SAL_OVERRIDE;
-    virtual std::vector<ScDPItemData> getMatchValues() const SAL_OVERRIDE;
+    virtual bool match(const ScDPItemData & rCellData) const override;
+    virtual std::vector<ScDPItemData> getMatchValues() const override;
 
 private:
     std::vector<ScDPItemData> maValues;
@@ -280,21 +280,21 @@ bool isDateInGroup(const ScDPItemData& rGroupItem, const ScDPItemData& rChildIte
 
     switch (nChildPart)        // inner part
     {
-        case com::sun::star::sheet::DataPilotFieldGroupBy::MONTHS:
+        case css::sheet::DataPilotFieldGroupBy::MONTHS:
             // a month is only contained in its quarter
-            if (nGroupPart == com::sun::star::sheet::DataPilotFieldGroupBy::QUARTERS)
+            if (nGroupPart == css::sheet::DataPilotFieldGroupBy::QUARTERS)
                 // months and quarters are both 1-based
                 return (nGroupValue - 1 == (nChildValue - 1) / 3);
             break;
-        case com::sun::star::sheet::DataPilotFieldGroupBy::DAYS:
+        case css::sheet::DataPilotFieldGroupBy::DAYS:
             // a day is only contained in its quarter or month
-            if (nGroupPart == com::sun::star::sheet::DataPilotFieldGroupBy::MONTHS ||
-                nGroupPart == com::sun::star::sheet::DataPilotFieldGroupBy::QUARTERS)
+            if (nGroupPart == css::sheet::DataPilotFieldGroupBy::MONTHS ||
+                nGroupPart == css::sheet::DataPilotFieldGroupBy::QUARTERS)
             {
                 Date aDate(1, 1, SC_DP_LEAPYEAR);
                 aDate += (nChildValue - 1);            // days are 1-based
                 sal_Int32 nCompare = aDate.GetMonth();
-                if (nGroupPart == com::sun::star::sheet::DataPilotFieldGroupBy::QUARTERS)
+                if (nGroupPart == css::sheet::DataPilotFieldGroupBy::QUARTERS)
                     nCompare = ( ( nCompare - 1 ) / 3 ) + 1;    // get quarter from date
 
                 return nGroupValue == nCompare;
@@ -406,7 +406,7 @@ const ScDPGroupItem* ScDPGroupDimension::GetGroupForData( const ScDPItemData& rD
         if (aIter->HasElement(rData))
             return &*aIter;
 
-    return NULL;
+    return nullptr;
 }
 
 const ScDPGroupItem* ScDPGroupDimension::GetGroupForName( const ScDPItemData& rName ) const
@@ -415,13 +415,13 @@ const ScDPGroupItem* ScDPGroupDimension::GetGroupForName( const ScDPItemData& rN
         if ( aIter->GetName().IsCaseInsEqual( rName ) )
             return &*aIter;
 
-    return NULL;
+    return nullptr;
 }
 
 const ScDPGroupItem* ScDPGroupDimension::GetGroupByIndex( size_t nIndex ) const
 {
     if (nIndex >= aItems.size())
-        return NULL;
+        return nullptr;
 
     return &aItems[nIndex];
 }
@@ -645,7 +645,7 @@ class FindCaseInsensitive : std::unary_function<ScDPItemData, bool>
 {
     ScDPItemData maValue;
 public:
-    FindCaseInsensitive(const ScDPItemData& rVal) : maValue(rVal) {}
+    explicit FindCaseInsensitive(const ScDPItemData& rVal) : maValue(rVal) {}
 
     bool operator() (const ScDPItemData& rItem) const
     {
@@ -968,8 +968,8 @@ bool ScDPGroupTableData::IsInGroup( const ScDPItemData& rGroupData, long nGroupI
 bool ScDPGroupTableData::HasCommonElement( const ScDPItemData& rFirstData, long nFirstIndex,
                                          const ScDPItemData& rSecondData, long nSecondIndex ) const
 {
-    const ScDPGroupDimension* pFirstDim = NULL;
-    const ScDPGroupDimension* pSecondDim = NULL;
+    const ScDPGroupDimension* pFirstDim = nullptr;
+    const ScDPGroupDimension* pSecondDim = nullptr;
     for ( ScDPGroupDimensionVec::const_iterator aIter(aGroups.begin()); aIter != aGroups.end(); ++aIter )
     {
         const ScDPGroupDimension* pDim = &(*aIter);

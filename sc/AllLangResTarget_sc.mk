@@ -33,12 +33,10 @@ $(eval $(call gb_SrsTarget_set_include,sc/res,\
 ))
 
 $(eval $(call gb_SrsTarget_add_files,sc/res,\
-    sc/source/ui/src/popup.src \
     sc/source/ui/src/globstr.src \
     sc/source/ui/src/toolbox.src \
     sc/source/ui/src/scfuncs.src \
     sc/source/ui/src/sc.src \
-    sc/source/ui/src/hdrcont.src \
     sc/source/ui/src/scerrors.src \
     sc/source/ui/src/scstring.src \
     sc/source/ui/src/filter.src \
@@ -47,8 +45,6 @@ $(eval $(call gb_SrsTarget_add_files,sc/res,\
     sc/source/ui/navipi/navipi.src \
     sc/source/ui/styleui/scstyles.src \
     sc/source/ui/dbgui/pvfundlg.src \
-    sc/source/ui/drawfunc/drformsh.src \
-    sc/source/ui/drawfunc/objdraw.src \
     sc/source/ui/miscdlgs/retypepassdlg.src \
     sc/source/ui/miscdlgs/conflictsdlg.src \
     sc/source/ui/miscdlgs/acredlin.src \

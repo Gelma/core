@@ -21,6 +21,7 @@
 
 #include <com/sun/star/frame/XFrame.hpp>
 #include <com/sun/star/frame/XModel.hpp>
+#include <com/sun/star/lang/XMultiServiceFactory.hpp>
 #include <rtl/ustring.hxx>
 #include <sfx2/dllapi.h>
 #include <tools/link.hxx>
@@ -65,7 +66,7 @@ protected:
     };
     ::std::vector< OUString > maAttachedDocuments;
     static SaveResult   SaveDocumentAsFormat( const OUString& aSaveFileName,
-                                              const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >& xFrameOrModel,
+                                              const css::uno::Reference< css::uno::XInterface >& xFrameOrModel,
                                               const OUString& rType,
                                               OUString& rFileNamePath );
 
@@ -76,13 +77,13 @@ private:
     OUString            maFromAddress;
     OUString            maSubject;
 
-    static SaveResult   ShowFilterOptionsDialog( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XMultiServiceFactory > xSMGR,
-                                                 const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XModel > xModel,
+    static SaveResult   ShowFilterOptionsDialog( const css::uno::Reference< css::lang::XMultiServiceFactory > xSMGR,
+                                                 const css::uno::Reference< css::frame::XModel > xModel,
                                                  const OUString& rFilterName,
                                                  const OUString& rType,
                                                  bool bModified,
                                                  sal_Int32& rNumArgs,
-                                                 ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue >& rArgs );
+                                                 css::uno::Sequence< css::beans::PropertyValue >& rArgs );
 
 public:
     enum SendMailResult
@@ -110,12 +111,12 @@ public:
     * \return @see error code
     */
     SendMailResult      AttachDocument( const OUString& sDocumentType,
-                                        const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >& xFrameOrModel,
+                                        const css::uno::Reference< css::uno::XInterface >& xFrameOrModel,
                                         const OUString& sAttachmentTitle );
 
-    SendMailResult      SaveAndSend( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& xFrame,
+    SendMailResult      SaveAndSend( const css::uno::Reference< css::frame::XFrame >& xFrame,
                                      const OUString& rType );
-    SendMailResult      Send( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& xFrame );
+    SendMailResult      Send( const css::uno::Reference< css::frame::XFrame >& xFrame );
 
     bool                IsEmpty() const;
 };

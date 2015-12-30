@@ -173,8 +173,8 @@ ScDataFormDlg::ScDataFormDlg(vcl::Window* pParent, ScTabViewShell* pTabViewShell
             }
             else
             {
-                maFixedTexts.push_back( NULL );
-                maEdits.push_back( NULL );
+                maFixedTexts.push_back( nullptr );
+                maEdits.push_back( nullptr );
             }
             if (maEdits[nIndex] != nullptr)
                 maEdits[nIndex]->SetModifyHdl( HDL(Impl_DataModifyHdl) );
@@ -251,11 +251,10 @@ void ScDataFormDlg::FillCtrls(SCROW /*nCurrentRow*/)
     m_pSlider->SetThumbPos(nCurrentRow-nStartRow-1);
 }
 
-IMPL_LINK( ScDataFormDlg, Impl_DataModifyHdl, Edit*, pEdit)
+IMPL_LINK_TYPED( ScDataFormDlg, Impl_DataModifyHdl, Edit&, rEdit, void)
 {
-    if ( pEdit->IsModified() )
-        m_pBtnRestore->Enable( true );
-    return 0;
+    if ( rEdit.IsModified() )
+        m_pBtnRestore->Enable();
 }
 
 IMPL_LINK_NOARG_TYPED(ScDataFormDlg, Impl_NewHdl, Button*, void)
@@ -364,14 +363,14 @@ void ScDataFormDlg::SetButtonState()
     }
     else
     {
-        m_pBtnDelete->Enable( true );
-        m_pBtnNext->Enable( true );
+        m_pBtnDelete->Enable();
+        m_pBtnNext->Enable();
     }
 
     if (nCurrentRow == nStartRow + 1)
         m_pBtnPrev->Enable( false );
     else
-        m_pBtnPrev->Enable( true );
+        m_pBtnPrev->Enable();
 
     m_pBtnRestore->Enable( false );
     if ( maEdits.size()>=1 && maEdits[0] != nullptr )

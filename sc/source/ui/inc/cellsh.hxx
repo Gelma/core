@@ -26,6 +26,7 @@
 #include <svx/svdmark.hxx>
 #include <unotools/caserotate.hxx>
 #include <tools/link.hxx>
+#include <memory>
 #include "formatsh.hxx"
 #include "address.hxx"
 
@@ -41,15 +42,15 @@ struct CellShell_Impl
     SfxRequest*                     m_pRequest;
 
     CellShell_Impl() :
-        m_pClipEvtLstnr( NULL ),
-        m_pLinkedDlg( NULL ),
-        m_pRequest( NULL ) {}
+        m_pClipEvtLstnr( nullptr ),
+        m_pLinkedDlg( nullptr ),
+        m_pRequest( nullptr ) {}
 };
 
 class ScCellShell: public ScFormatShell
 {
 private:
-    CellShell_Impl* pImpl;
+    std::unique_ptr<CellShell_Impl> pImpl;
     bool            bPastePossible;
 
     void        GetPossibleClipboardFormats( SvxClipboardFormatItem& rFormats );
@@ -64,12 +65,11 @@ private:
     void ExecuteFillSingleEdit();
 
     DECL_LINK_TYPED( ClipboardChanged, TransferableDataHelper*, void );
-    DECL_LINK( DialogClosed, void* );
+    DECL_LINK_TYPED( DialogClosed, Dialog&, void );
 
     RotateTransliteration m_aRotateCase;
 
 public:
-    TYPEINFO_OVERRIDE();
     SFX_DECL_INTERFACE(SCID_CELL_SHELL)
 
 private:

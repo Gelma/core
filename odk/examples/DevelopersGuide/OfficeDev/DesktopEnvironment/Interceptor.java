@@ -190,7 +190,7 @@ public class Interceptor implements com.sun.star.frame.XFrameActionListener,
 
 
     /*
-     * call back for frame action events
+     * callback for frame action events
      * We use it to update our interception. Because if a new component was loaded into
      * the frame or another interceptor was registered, we should refresh our connection
      * to the frame. Otherwhise we can't guarantee full functionality here.
@@ -284,7 +284,7 @@ public class Interceptor implements com.sun.star.frame.XFrameActionListener,
 
 
     /*
-     * Internal call back for frame action events, triggered by the used
+     * Internal callback for frame action events, triggered by the used
      * OnewayExecutor thread we started in frameAction().
      * We use it to update our interception on the internal saved frame.
      *
@@ -523,7 +523,7 @@ public class Interceptor implements com.sun.star.frame.XFrameActionListener,
 
     /*
      * Notification of status listener isn't guaranteed (instead of listener on XNotifyingDispatch interface).
-     * So this interceptor doesn't support that really ...
+     * So this interceptor doesn't support that really...
      */
     public /*ONEWAY*/ void addStatusListener(/*IN*/ com.sun.star.frame.XStatusListener xListener,/*IN*/ com.sun.star.util.URL aURL)
     {

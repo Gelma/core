@@ -118,7 +118,7 @@ bool WW8Export::TestOleNeedsGraphic(const SwAttrSet& rSet,
                 bGraphicNeeded = true;
         }
     } while( !bGraphicNeeded && !aIter.IsAtEnd() &&
-        0 != ( pItem = aIter.NextItem() ) );
+        nullptr != ( pItem = aIter.NextItem() ) );
 
     /*
     Now we must see if the object contains a preview itself which is equal to
@@ -141,14 +141,14 @@ bool WW8Export::TestOleNeedsGraphic(const SwAttrSet& rSet,
         if ( pOLENd )
             nAspect = pOLENd->GetAspect();
         SdrOle2Obj *pRet = SvxMSDffManager::CreateSdrOLEFromStorage(
-            rStorageName,xObjStg,m_pDoc->GetDocStorage(),aGraph,aRect,aVisArea,0,nErr,0,nAspect);
+            rStorageName,xObjStg,m_pDoc->GetDocStorage(),aGraph,aRect,aVisArea,nullptr,nErr,0,nAspect, m_pWriter->GetBaseURL());
 
         if (pRet)
         {
             uno::Reference< embed::XEmbeddedObject > xObj = pOLENd->GetOLEObj().GetOleRef();
             if ( xObj.is() )
             {
-                SvStream* pGraphicStream = NULL;
+                SvStream* pGraphicStream = nullptr;
                 comphelper::EmbeddedObjectContainer aCnt( m_pDoc->GetDocStorage() );
                 try
                 {
@@ -169,13 +169,13 @@ bool WW8Export::TestOleNeedsGraphic(const SwAttrSet& rSet,
                 {
                     Graphic aGr1;
                     GraphicFilter& rGF = GraphicFilter::GetGraphicFilter();
-                    if( rGF.ImportGraphic( aGr1, OUString(), *pGraphicStream, GRFILTER_FORMAT_DONTKNOW ) == GRFILTER_OK )
+                    if( rGF.ImportGraphic( aGr1, OUString(), *pGraphicStream ) == GRFILTER_OK )
                     {
                         Graphic aGr2;
                         delete pGraphicStream;
                         pGraphicStream =
                                 ::utl::UcbStreamHelper::CreateStream( aCnt.GetGraphicStream( pRet->GetObjRef() ) );
-                        if( pGraphicStream && rGF.ImportGraphic( aGr2, OUString(), *pGraphicStream, GRFILTER_FORMAT_DONTKNOW ) == GRFILTER_OK )
+                        if( pGraphicStream && rGF.ImportGraphic( aGr2, OUString(), *pGraphicStream ) == GRFILTER_OK )
                         {
                             if ( aGr1 == aGr2 )
                                 bGraphicNeeded = false;
@@ -210,8 +210,7 @@ void WW8Export::OutputOLENode( const SwOLENode& rOLENode )
     pDataAdr = pSpecOLE + 2; //WW6 sprm is 1 but has 1 byte len as well.
 
     tools::SvRef<SotStorage> xObjStg = GetWriter().GetStorage().OpenSotStorage(
-        OUString(SL::aObjectPool), STREAM_READWRITE |
-        StreamMode::SHARE_DENYALL );
+        OUString(SL::aObjectPool) );
 
     if( xObjStg.Is()  )
     {
@@ -232,8 +231,7 @@ void WW8Export::OutputOLENode( const SwOLENode& rOLENode )
             Set_UInt32(pDataAdr, nPictureId);
             OUString sStorageName('_');
             sStorageName += OUString::number( nPictureId );
-            tools::SvRef<SotStorage> xOleStg = xObjStg->OpenSotStorage( sStorageName,
-                                STREAM_READWRITE| StreamMode::SHARE_DENYALL );
+            tools::SvRef<SotStorage> xOleStg = xObjStg->OpenSotStorage( sStorageName );
             if( xOleStg.Is() )
             {
                 /*
@@ -265,7 +263,7 @@ void WW8Export::OutputOLENode( const SwOLENode& rOLENode )
                 // in the escher export
                 OUString sServer = FieldString(ww::eEMBED) + xOleStg->GetUserName() + " ";
 
-                OutputField(0, ww::eEMBED, sServer, WRITEFIELD_START |
+                OutputField(nullptr, ww::eEMBED, sServer, WRITEFIELD_START |
                     WRITEFIELD_CMD_START | WRITEFIELD_CMD_END);
 
                 m_pChpPlc->AppendFkpEntry( Strm().Tell(),
@@ -311,7 +309,7 @@ void WW8Export::OutputOLENode( const SwOLENode& rOLENode )
                     OutGrf(*m_pParentFrame);
                 }
 
-                OutputField(0, ww::eEMBED, OUString(),
+                OutputField(nullptr, ww::eEMBED, OUString(),
                     WRITEFIELD_END | WRITEFIELD_CLOSE);
 
                 if (bEndCR) //No newline in inline case
@@ -328,13 +326,11 @@ void WW8Export::OutputLinkedOLE( const OUString& rOleId )
     tools::SvRef<SotStorage> xObjSrc = SotStorage::OpenOLEStorage( xOleStg, rOleId, StreamMode::READ );
 
     tools::SvRef<SotStorage> xObjStg = GetWriter().GetStorage().OpenSotStorage(
-        OUString(SL::aObjectPool), STREAM_READWRITE |
-        StreamMode::SHARE_DENYALL );
+        OUString(SL::aObjectPool) );
 
     if( xObjStg.Is() && xObjSrc.Is() )
     {
-        tools::SvRef<SotStorage> xOleDst = xObjStg->OpenSotStorage( rOleId,
-                STREAM_READWRITE | StreamMode::SHARE_DENYALL );
+        tools::SvRef<SotStorage> xOleDst = xObjStg->OpenSotStorage( rOleId );
         if ( xOleDst.Is() )
             xObjSrc->CopyTo( xOleDst );
 
@@ -362,13 +358,13 @@ void WW8Export::OutputLinkedOLE( const OUString& rOleId )
     }
 }
 
-void WW8Export::OutGrf(const sw::Frame &rFrame)
+void WW8Export::OutGrf(const ww8::Frame &rFrame)
 {
     //Added for i120568,the hyperlink info within a graphic whose anchor type is "As character"
     //will be exported to ensure the fidelity
     const SwFormatURL& rURL = rFrame.GetFrameFormat().GetAttrSet().GetURL();
     bool bURLStarted = false;
-    if( !rURL.GetURL().isEmpty() && rFrame.GetWriterType() == sw::Frame::eGraphic)
+    if( !rURL.GetURL().isEmpty() && rFrame.GetWriterType() == ww8::Frame::eGraphic)
     {
         bURLStarted = true;
         m_pAttrOutput->StartURL( rURL.GetURL(), rURL.GetTargetFrameName() );
@@ -383,7 +379,7 @@ void WW8Export::OutGrf(const sw::Frame &rFrame)
     // #i29408#
     // linked, as-character anchored graphics have to be exported as fields.
     const SwGrfNode* pGrfNd = rFrame.IsInline() && rFrame.GetContent()
-                              ? rFrame.GetContent()->GetGrfNode() : 0;
+                              ? rFrame.GetContent()->GetGrfNode() : nullptr;
     if ( pGrfNd && pGrfNd->IsLinkedFile() )
     {
         OUString sStr( FieldString(ww::eINCLUDEPICTURE) );
@@ -392,13 +388,13 @@ void WW8Export::OutGrf(const sw::Frame &rFrame)
             if ( pGrfNd )
             {
                 OUString aFileURL;
-                pGrfNd->GetFileFilterNms( &aFileURL, 0 );
+                pGrfNd->GetFileFilterNms( &aFileURL, nullptr );
                 sStr += aFileURL;
             }
         }
         sStr += "\" \\d";
 
-        OutputField( 0, ww::eINCLUDEPICTURE, sStr,
+        OutputField( nullptr, ww::eINCLUDEPICTURE, sStr,
                    WRITEFIELD_START | WRITEFIELD_CMD_START | WRITEFIELD_CMD_END );
     }
 
@@ -417,7 +413,7 @@ void WW8Export::OutGrf(const sw::Frame &rFrame)
             bool bVert = false;
             //The default for word in vertical text mode is to center,
             //otherwise a sub/super script hack is employed
-            if (m_pOutFormatNode && m_pOutFormatNode->ISA(SwContentNode) )
+            if (m_pOutFormatNode && dynamic_cast< const SwContentNode *>( m_pOutFormatNode ) !=  nullptr )
             {
                 const SwTextNode* pTextNd = static_cast<const SwTextNode*>(m_pOutFormatNode);
                 SwPosition aPos(*pTextNd);
@@ -425,7 +421,7 @@ void WW8Export::OutGrf(const sw::Frame &rFrame)
             }
             if (!bVert)
             {
-                SwTwips nHeight = rFlyFormat.GetFrmSize().GetHeight();
+                SwTwips nHeight = rFlyFormat.GetFrameSize().GetHeight();
                 nHeight/=20; //nHeight was in twips, want it in half points, but
                              //then half of total height.
                 long nFontHeight = static_cast<const SvxFontHeightItem&>(
@@ -477,7 +473,7 @@ void WW8Export::OutGrf(const sw::Frame &rFrame)
     // linked, as-character anchored graphics have to be exported as fields.
     else if ( pGrfNd && pGrfNd->IsLinkedFile() )
     {
-        OutputField( 0, ww::eINCLUDEPICTURE, OUString(), WRITEFIELD_CLOSE );
+        OutputField( nullptr, ww::eINCLUDEPICTURE, OUString(), WRITEFIELD_CLOSE );
     }
     //Added for i120568,the hyperlink info within a graphic whose anchor type is
     //"As character" will be exported to ensure the fidelity
@@ -494,7 +490,7 @@ GraphicDetails& GraphicDetails::operator=(const GraphicDetails &rOther)
     return *this;
 }
 
-void SwWW8WrGrf::Insert(const sw::Frame &rFly)
+void SwWW8WrGrf::Insert(const ww8::Frame &rFly)
 {
     const Size aSize( rFly.GetLayoutSize() );
     const sal_uInt16 nWidth = static_cast< sal_uInt16 >(aSize.Width());
@@ -502,7 +498,7 @@ void SwWW8WrGrf::Insert(const sw::Frame &rFly)
     maDetails.push_back(GraphicDetails(rFly, nWidth, nHeight));
 }
 
-void SwWW8WrGrf::WritePICFHeader(SvStream& rStrm, const sw::Frame &rFly,
+void SwWW8WrGrf::WritePICFHeader(SvStream& rStrm, const ww8::Frame &rFly,
     sal_uInt16 mm, sal_uInt16 nWidth, sal_uInt16 nHeight, const SwAttrSet* pAttrSet)
 {
     sal_Int16 nXSizeAdd = 0, nYSizeAdd = 0;
@@ -536,9 +532,7 @@ void SwWW8WrGrf::WritePICFHeader(SvStream& rStrm, const sw::Frame &rFly,
         if( pBox )
         {
             bool bShadow = false;               // Shadow ?
-            const SvxShadowItem* pSI =
-                sw::util::HasItem<SvxShadowItem>(rAttrSet, RES_SHADOW);
-            if (pSI)
+            if (const SvxShadowItem* pSI = rAttrSet.GetItem<SvxShadowItem>(RES_SHADOW))
             {
                 bShadow = (pSI->GetLocation() != SVX_SHADOW_NONE) &&
                     (pSI->GetWidth() != 0);
@@ -660,12 +654,12 @@ void SwWW8WrGrf::WritePICFHeader(SvStream& rStrm, const sw::Frame &rFly,
 }
 
 void SwWW8WrGrf::WriteGrfFromGrfNode(SvStream& rStrm, const SwGrfNode &rGrfNd,
-    const sw::Frame &rFly, sal_uInt16 nWidth, sal_uInt16 nHeight)
+    const ww8::Frame &rFly, sal_uInt16 nWidth, sal_uInt16 nHeight)
 {
     if (rGrfNd.IsLinkedFile())     // Linked File
     {
         OUString aFileN;
-        rGrfNd.GetFileFilterNms( &aFileN, 0 );
+        rGrfNd.GetFileFilterNms( &aFileN, nullptr );
 
             sal_uInt16 mm = 94;                    // 94 = BMP, GIF
 
@@ -786,20 +780,20 @@ void SwWW8WrGrf::WriteGraphicNode(SvStream& rStrm, const GraphicDetails &rItem)
     sal_uInt16 nHeight = rItem.mnHei;
     sal_uInt32 nPos = rStrm.Tell();         // store start of graphic
 
-    const sw::Frame &rFly = rItem.maFly;
+    const ww8::Frame &rFly = rItem.maFly;
     switch (rFly.GetWriterType())
     {
-        case sw::Frame::eGraphic:
+        case ww8::Frame::eGraphic:
         {
             const SwNode *pNode = rItem.maFly.GetContent();
-            const SwGrfNode *pNd = pNode ? pNode->GetGrfNode() : 0;
+            const SwGrfNode *pNd = pNode ? pNode->GetGrfNode() : nullptr;
             OSL_ENSURE(pNd, "Impossible");
             if (pNd)
                 WriteGrfFromGrfNode(rStrm, *pNd, rItem.maFly, nWidth, nHeight);
         }
         break;
         //For i120928,add branch to export graphic of bullet
-        case sw::Frame::eBulletGrf:
+        case ww8::Frame::eBulletGrf:
         {
             if (rItem.maFly.HasGraphic())
             {
@@ -809,10 +803,10 @@ void SwWW8WrGrf::WriteGraphicNode(SvStream& rStrm, const GraphicDetails &rItem)
         }
         break;
 
-        case sw::Frame::eOle:
+        case ww8::Frame::eOle:
         {
             const SwNode *pNode = rItem.maFly.GetContent();
-            const SwOLENode *pNd = pNode ? pNode->GetOLENode() : 0;
+            const SwOLENode *pNd = pNode ? pNode->GetOLENode() : nullptr;
             OSL_ENSURE(pNd, "Impossible");
             if (pNd)
             {
@@ -852,9 +846,9 @@ void SwWW8WrGrf::WriteGraphicNode(SvStream& rStrm, const GraphicDetails &rItem)
             }
         }
         break;
-        case sw::Frame::eDrawing:
-        case sw::Frame::eTextBox:
-        case sw::Frame::eFormControl:
+        case ww8::Frame::eDrawing:
+        case ww8::Frame::eTextBox:
+        case ww8::Frame::eFormControl:
             /*
             #i3958# We only export an empty dummy picture frame here, this is
             what word does the escher export should contain an anchored to

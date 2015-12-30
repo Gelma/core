@@ -146,13 +146,13 @@ private:
     void UndirtyMrkPnt() const;
 
 protected:
-    virtual void Notify(SfxBroadcaster& rBC, const SfxHint& rHint) SAL_OVERRIDE;
-    virtual void ModelHasChanged() SAL_OVERRIDE; // Is called by the PaintView
+    virtual void Notify(SfxBroadcaster& rBC, const SfxHint& rHint) override;
+    virtual void ModelHasChanged() override; // Is called by the PaintView
     virtual void SetMarkHandles();                                           // maHdlList - fill (List of handles)
     void         SetMarkRects();                                             // Rects at the PageViews
     void         CheckMarked();                                              // Scan MarkList after Del and Lock Layer ...
     void         AddDragModeHdl(SdrDragMode eMode);
-    virtual bool MouseMove(const MouseEvent& rMEvt, vcl::Window* pWin) SAL_OVERRIDE;
+    virtual bool MouseMove(const MouseEvent& rMEvt, vcl::Window* pWin) override;
 
     // add custom handles (used by other apps, e.g. AnchorPos)
     virtual void AddCustomHdl();
@@ -176,19 +176,19 @@ protected:
 
 protected:
     // #i71538# make constructors of SdrView sub-components protected to avoid incomplete incarnations which may get casted to SdrView
-    SdrMarkView(SdrModel* pModel1, OutputDevice* pOut = 0L);
+    SdrMarkView(SdrModel* pModel1, OutputDevice* pOut = nullptr);
     virtual ~SdrMarkView();
 
 public:
-    virtual bool IsAction() const SAL_OVERRIDE;
-    virtual void MovAction(const Point& rPnt) SAL_OVERRIDE;
-    virtual void EndAction() SAL_OVERRIDE;
-    virtual void BckAction() SAL_OVERRIDE;
-    virtual void BrkAction() SAL_OVERRIDE;
-    virtual void TakeActionRect(Rectangle& rRect) const SAL_OVERRIDE;
+    virtual bool IsAction() const override;
+    virtual void MovAction(const Point& rPnt) override;
+    virtual void EndAction() override;
+    virtual void BckAction() override;
+    virtual void BrkAction() override;
+    virtual void TakeActionRect(Rectangle& rRect) const override;
 
-    virtual void ClearPageView() SAL_OVERRIDE;
-    virtual void HideSdrPage() SAL_OVERRIDE;
+    virtual void ClearPageView() override;
+    virtual void HideSdrPage() override;
     virtual bool IsObjMarkable(SdrObject* pObj, SdrPageView* pPV) const;
 
     // Returns sal_True if objects, points or glue points are selected by drawing a frame
@@ -200,7 +200,7 @@ public:
     void MovMarkObj(const Point& rPnt);
     bool EndMarkObj();
     void BrkMarkObj();
-    bool IsMarkObj() const { return (0L != mpMarkObjOverlay); }
+    bool IsMarkObj() const { return (nullptr != mpMarkObjOverlay); }
 
     // DragModes: SDRDRAG_CREATE,SDRDRAG_MOVE,SDRDRAG_RESIZE,SDRDRAG_ROTATE,SDRDRAG_MIRROR,SDRDRAG_SHEAR,SDRDRAG_CROOK
     // Move==Resize
@@ -274,13 +274,13 @@ public:
     bool IsMarkedObjHit(const Point& rPnt, short nTol=-2) const;
 
     // Pick: Supported options for nOptions are SEARCH_NEXT, SEARCH_BACKWARD (ni)
-    SdrHdl* PickHandle(const Point& rPnt, SdrSearchOptions nOptions=SdrSearchOptions::NONE, SdrHdl* pHdl0=NULL) const;
+    SdrHdl* PickHandle(const Point& rPnt, SdrSearchOptions nOptions=SdrSearchOptions::NONE, SdrHdl* pHdl0=nullptr) const;
 
     // Pick: Supported options for nOptions are:
     // SdrSearchOptions::DEEP SdrSearchOptions::ALSOONMASTER SdrSearchOptions::TESTMARKABLE SdrSearchOptions::TESTTEXTEDIT
     // SdrSearchOptions::WITHTEXT SdrSearchOptions::TESTTEXTAREA SdrSearchOptions::BACKWARD SdrSearchOptions::MARKED
     // SdrSearchOptions::WHOLEPAGE
-    bool PickObj(const Point& rPnt, short nTol, SdrObject*& rpObj, SdrPageView*& rpPV, SdrSearchOptions nOptions, SdrObject** ppRootObj, bool* pbHitPassDirect=NULL) const;
+    bool PickObj(const Point& rPnt, short nTol, SdrObject*& rpObj, SdrPageView*& rpPV, SdrSearchOptions nOptions, SdrObject** ppRootObj, bool* pbHitPassDirect=nullptr) const;
     bool PickObj(const Point& rPnt, short nTol, SdrObject*& rpObj, SdrPageView*& rpPV, SdrSearchOptions nOptions=SdrSearchOptions::NONE) const;
     bool MarkObj(const Point& rPnt, short nTol=-2, bool bToggle=false, bool bDeep=false);
 
@@ -305,13 +305,13 @@ public:
     // Just objects are marked which are inclosed completely
     bool MarkObj(const Rectangle& rRect, bool bUnmark=false);
     void MarkObj(SdrObject* pObj, SdrPageView* pPV, bool bUnmark=false, bool bImpNoSetMarkHdl=false);
-    void MarkAllObj(SdrPageView* pPV=NULL); // pPage=NULL => all displayed pages
-    void UnmarkAllObj(SdrPageView* pPV=NULL); // pPage=NULL => all displayed pages
+    void MarkAllObj(SdrPageView* pPV=nullptr); // pPage=NULL => all displayed pages
+    void UnmarkAllObj(SdrPageView* pPV=nullptr); // pPage=NULL => all displayed pages
 
     // This function is time-consuming intensive, as the MarkList has to be scanned.
     bool IsObjMarked(SdrObject* pObj) const;
     // void MarkAll(SdrPageView* pPV=NULL) { MarkAllObj(pPV); } -> replace with inline
-    void UnMarkAll(SdrPageView* pPV=NULL) { UnmarkAllObj(pPV); }
+    void UnMarkAll(SdrPageView* pPV=nullptr) { UnmarkAllObj(pPV); }
 
     // Request/set the size of the marking handles. Declaration in Pixel.
     // The value is meant to be the edge length ( link length ).
@@ -336,8 +336,8 @@ public:
     bool MarkPoints(const Rectangle& rRect, bool bUnmark=false) { return MarkPoints(&rRect,bUnmark); }
     bool UnmarkPoint(SdrHdl& rHdl) { return MarkPoint(rHdl,true); }
     bool IsPointMarked(const SdrHdl& rHdl) const { ForceUndirtyMrkPnt(); return rHdl.IsSelected(); }
-    bool MarkAllPoints() { return MarkPoints(NULL,false); }
-    bool UnmarkAllPoints() { return MarkPoints(NULL,true); }
+    bool MarkAllPoints() { return MarkPoints(nullptr,false); }
+    bool UnmarkAllPoints() { return MarkPoints(nullptr,true); }
 
     // Selects the first marked point (P1) which is hit by rPnt
     // and from there it searches the first non-marked point(P2).
@@ -358,7 +358,7 @@ public:
     void MovMarkPoints(const Point& rPnt);
     bool EndMarkPoints();
     void BrkMarkPoints();
-    bool IsMarkPoints() const { return (0L != mpMarkPointsOverlay); }
+    bool IsMarkPoints() const { return (nullptr != mpMarkPointsOverlay); }
 
     // Select that additional handles are displayed permanently.
     void SetPlusHandlesAlwaysVisible(bool bOn);
@@ -392,8 +392,8 @@ public:
     SdrHdl* GetGluePointHdl(const SdrObject* pObj, sal_uInt16 nId) const;
 
     // Mark all points within this rectangular (View coordinates)
-    bool MarkAllGluePoints() { return MarkGluePoints(NULL,false); }
-    bool UnmarkAllGluePoints() { return MarkGluePoints(NULL,true); }
+    bool MarkAllGluePoints() { return MarkGluePoints(nullptr,false); }
+    bool UnmarkAllGluePoints() { return MarkGluePoints(nullptr,true); }
 
     // Selects the first marked point (P1) which is hit by rPnt
     // and from there it searches the first non-marked point(P2).
@@ -410,7 +410,7 @@ public:
     void MovMarkGluePoints(const Point& rPnt);
     bool EndMarkGluePoints();
     void BrkMarkGluePoints();
-    bool IsMarkGluePoints() const { return (0L != mpMarkGluePointsOverlay); }
+    bool IsMarkGluePoints() const { return (nullptr != mpMarkGluePointsOverlay); }
 
     // bRestraintPaint=sal_False causes the handles not to be drawn immediately.
     // AdjustMarkHdl is just called in case of changes; usually this causes an Invalidate

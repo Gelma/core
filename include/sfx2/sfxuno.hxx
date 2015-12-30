@@ -42,11 +42,6 @@
 #include <rtl/ustring.hxx>
 
 
-inline bool operator==( const css::util::URL& aURL1, const css::util::URL& aURL2 )
-{
-    return aURL1.Complete == aURL2.Complete;
-}
-
 class SfxAllItemSet ;
 class SfxItemSet    ;
 class SfxSlot       ;
@@ -54,12 +49,12 @@ class SfxSlot       ;
 SFX2_DLLPUBLIC void TransformParameters(            sal_uInt16                          nSlotId     ,
                             const   css::uno::Sequence< css::beans::PropertyValue >&    seqArgs     ,
                                     SfxAllItemSet&                                      aSet        ,
-                            const   SfxSlot*                                            pSlot = 0   );
+                            const   SfxSlot*                                            pSlot = nullptr   );
 
 SFX2_DLLPUBLIC void TransformItems(         sal_uInt16                                  nSlotId     ,
                             const   SfxItemSet&                                         aSet        ,
                                     css::uno::Sequence< css::beans::PropertyValue >&    seqArgs     ,
-                            const   SfxSlot*                            pSlot = 0   );
+                            const   SfxSlot*                            pSlot = nullptr   );
 
 bool GetEncryptionData_Impl( const SfxItemSet* pSet, css::uno::Sequence< css::beans::NamedValue >& aEncryptionData );
 

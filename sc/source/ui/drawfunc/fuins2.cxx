@@ -28,7 +28,6 @@
 #include <sfx2/docfile.hxx>
 #include <svl/stritem.hxx>
 #include <svx/svdoole2.hxx>
-#include <svx/pfiledlg.hxx>
 #include <tools/urlobj.hxx>
 #include <vcl/msgbox.hxx>
 #include <vcl/syschild.hxx>
@@ -123,7 +122,7 @@ void lcl_ChartInit( const uno::Reference < embed::XEmbeddedObject >& xObj, ScVie
     {
         // connect to Calc data (if no range string, leave chart alone, with its own data)
 
-        uno::Reference< ::com::sun::star::chart2::data::XDataReceiver > xReceiver;
+        uno::Reference< css::chart2::data::XDataReceiver > xReceiver;
         uno::Reference< embed::XComponentSupplier > xCompSupp( xObj, uno::UNO_QUERY );
         if( xCompSupp.is())
             xReceiver.set( xCompSupp->getComponent(), uno::UNO_QUERY );
@@ -214,7 +213,7 @@ FuInsertOLE::FuInsertOLE(ScTabViewShell* pViewSh, vcl::Window* pWin, ScDrawView*
     uno::Reference< io::XInputStream > xIconMetaFile;
 
     sal_uInt16 nSlot = rReq.GetSlot();
-    SFX_REQUEST_ARG( rReq, pNameItem, SfxGlobalNameItem, SID_INSERT_OBJECT, false );
+    const SfxGlobalNameItem* pNameItem = rReq.GetArg<SfxGlobalNameItem>(SID_INSERT_OBJECT);
     if ( nSlot == SID_INSERT_OBJECT && pNameItem )
     {
         SvGlobalName aClassName = pNameItem->GetValue();
@@ -238,7 +237,6 @@ FuInsertOLE::FuInsertOLE(ScTabViewShell* pViewSh, vcl::Window* pWin, ScDrawView*
                 aServerLst.FillInsertObjects();
                 aServerLst.Remove( ScDocShell::Factory().GetClassId() );   // Starcalc nicht anzeigen
                 //TODO/LATER: currently no inserting of ClassId into SfxRequest!
-            case SID_INSERT_PLUGIN :
             case SID_INSERT_FLOATINGFRAME :
             {
                 SvxAbstractDialogFactory* pFact = SvxAbstractDialogFactory::Create();
@@ -261,44 +259,6 @@ FuInsertOLE::FuInsertOLE(ScTabViewShell* pViewSh, vcl::Window* pWin, ScDrawView*
                 }
 
                 break;
-            }
-            case SID_INSERT_SOUND :
-            case SID_INSERT_VIDEO :
-            {
-                // create special filedialog for plugins
-                SvxPluginFileDlg aPluginFileDialog(pWin, nSlot);
-
-                // open filedlg
-                if ( ERRCODE_NONE == aPluginFileDialog.Execute() )
-                {
-                    // get URL
-                    INetURLObject aURL;
-                    aURL.SetSmartProtocol( INetProtocol::File );
-                    if ( aURL.SetURL( aPluginFileDialog.GetPath() ) )
-                    {
-                        // create a plugin object
-                        OUString aObjName;
-                        SvGlobalName aClassId( SO3_PLUGIN_CLASSID );
-                        comphelper::EmbeddedObjectContainer aCnt( xStorage );
-                        xObj = aCnt.CreateEmbeddedObject( aClassId.GetByteSequence(), aObjName );
-                        if ( xObj.is() && svt::EmbeddedObjectRef::TryRunningState( xObj ) )
-                        {
-                            // set properties from dialog
-                            uno::Reference < beans::XPropertySet > xSet( xObj->getComponent(), uno::UNO_QUERY );
-                            if ( xSet.is() )
-                            {
-                                xSet->setPropertyValue("PluginURL",
-                                        uno::makeAny( OUString( aURL.GetMainURL( INetURLObject::NO_DECODE ) ) ) );
-                            }
-                        }
-                    }
-                    else
-                    {
-                        OSL_FAIL("Invalid URL!");
-                        //! error message
-                        //! can this happen???
-                    }
-                }
             }
         }
     }
@@ -494,7 +454,7 @@ FuInsertChart::FuInsertChart(ScTabViewShell* pViewSh, vcl::Window* pWin, ScDrawV
     uno::Reference < embed::XEmbeddedObject > xObj =
         pViewShell->GetObjectShell()->GetEmbeddedObjectContainer().CreateEmbeddedObject( SvGlobalName( SO3_SCH_CLASSID_60 ).GetByteSequence(), aName );
 
-    uno::Reference< ::com::sun::star::chart2::data::XDataReceiver > xReceiver;
+    uno::Reference< css::chart2::data::XDataReceiver > xReceiver;
     uno::Reference< embed::XComponentSupplier > xCompSupp( xObj, uno::UNO_QUERY );
     if( xCompSupp.is())
         xReceiver.set( xCompSupp->getComponent(), uno::UNO_QUERY );
@@ -551,9 +511,9 @@ FuInsertChart::FuInsertChart(ScTabViewShell* pViewSh, vcl::Window* pWin, ScDrawV
 
         if( pReqArgs->HasItem( FN_PARAM_4, &pItem ) )
         {
-            if ( pItem->ISA( SfxUInt16Item ) )
+            if ( dynamic_cast<const SfxUInt16Item*>( pItem) !=  nullptr )
                 nToTable = static_cast<const SfxUInt16Item*>(pItem)->GetValue();
-            else if ( pItem->ISA( SfxBoolItem ) )
+            else if ( dynamic_cast<const SfxBoolItem*>( pItem) !=  nullptr )
             {
                 //  in der idl fuer Basic steht FN_PARAM_4 als SfxBoolItem
                 //  -> wenn gesetzt, neue Tabelle, sonst aktuelle Tabelle
@@ -658,12 +618,12 @@ FuInsertChart::FuInsertChart(ScTabViewShell* pViewSh, vcl::Window* pWin, ScDrawV
             {
                 uno::Reference< ui::dialogs::XExecutableDialog > xDialog(
                     xMCF->createInstanceWithContext(
-                        OUString("com.sun.star.comp.chart2.WizardDialog")
+                        "com.sun.star.comp.chart2.WizardDialog"
                         , xContext), uno::UNO_QUERY);
                 uno::Reference< lang::XInitialization > xInit( xDialog, uno::UNO_QUERY );
                 if( xChartModel.is() && xInit.is() )
                 {
-                    uno::Reference< awt::XWindow > xDialogParentWindow(0);
+                    uno::Reference< awt::XWindow > xDialogParentWindow(nullptr);
                     //  initialize dialog
                     uno::Sequence<uno::Any> aSeq(2);
                     uno::Any* pArray = aSeq.getArray();

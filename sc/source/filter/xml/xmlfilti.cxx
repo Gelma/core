@@ -104,10 +104,9 @@ ScXMLFilterContext::~ScXMLFilterContext()
 
 SvXMLImportContext *ScXMLFilterContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext(0);
+    SvXMLImportContext *pContext(nullptr);
 
     const SvXMLTokenMap& rTokenMap(GetScImport().GetFilterElemTokenMap());
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -215,10 +214,9 @@ ScXMLAndContext::~ScXMLAndContext()
 
 SvXMLImportContext *ScXMLAndContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext(0);
+    SvXMLImportContext *pContext(nullptr);
 
     const SvXMLTokenMap& rTokenMap(GetScImport().GetFilterElemTokenMap());
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -250,8 +248,7 @@ void ScXMLAndContext::EndElement()
 ScXMLOrContext::ScXMLOrContext( ScXMLImport& rImport,
                                 sal_uInt16 nPrfx,
                                 const OUString& rLName,
-                                const Reference<
-                                    ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */,
+                                const Reference<css::xml::sax::XAttributeList>& /* xAttrList */,
                                 ScQueryParam& rParam,
                                 ScXMLFilterContext* pTempFilterContext) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
@@ -267,10 +264,9 @@ ScXMLOrContext::~ScXMLOrContext()
 
 SvXMLImportContext *ScXMLOrContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext(0);
+    SvXMLImportContext *pContext(nullptr);
 
     const SvXMLTokenMap& rTokenMap(GetScImport().GetFilterElemTokenMap());
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -362,7 +358,7 @@ SvXMLImportContext *ScXMLConditionContext::CreateChildContext( sal_uInt16 nPrefi
                                             const OUString& rLName,
                                             const Reference<XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = NULL;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap(GetScImport().GetFilterConditionElemTokenMap());
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -531,9 +527,8 @@ void ScXMLSetItemContext::EndElement()
 ScXMLDPFilterContext::ScXMLDPFilterContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDataPilotTableContext* pTempDataPilotTableContext) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDataPilotTableContext* pTempDataPilotTableContext) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDataPilotTable(pTempDataPilotTableContext),
     aFilterFields(),
@@ -598,10 +593,9 @@ ScXMLDPFilterContext::~ScXMLDPFilterContext()
 
 SvXMLImportContext *ScXMLDPFilterContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext(0);
+    SvXMLImportContext *pContext(nullptr);
 
     const SvXMLTokenMap& rTokenMap(GetScImport().GetFilterElemTokenMap());
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -657,9 +651,8 @@ void ScXMLDPFilterContext::AddFilterField (const ScQueryEntry& aFilterField)
 ScXMLDPAndContext::ScXMLDPAndContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */,
-                                        ScXMLDPFilterContext* pTempFilterContext) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */,
+                                      ScXMLDPFilterContext* pTempFilterContext) :
     SvXMLImportContext( rImport, nPrfx, rLName )
 {
     pFilterContext = pTempFilterContext;
@@ -672,10 +665,9 @@ ScXMLDPAndContext::~ScXMLDPAndContext()
 
 SvXMLImportContext *ScXMLDPAndContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext(0);
+    SvXMLImportContext *pContext(nullptr);
 
     const SvXMLTokenMap& rTokenMap(GetScImport().GetFilterElemTokenMap());
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -707,9 +699,8 @@ void ScXMLDPAndContext::EndElement()
 ScXMLDPOrContext::ScXMLDPOrContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */,
-                                        ScXMLDPFilterContext* pTempFilterContext) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */,
+                                      ScXMLDPFilterContext* pTempFilterContext) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pFilterContext(pTempFilterContext)
 {
@@ -722,10 +713,9 @@ ScXMLDPOrContext::~ScXMLDPOrContext()
 
 SvXMLImportContext *ScXMLDPOrContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext(0);
+    SvXMLImportContext *pContext(nullptr);
 
     const SvXMLTokenMap& rTokenMap(GetScImport().GetFilterElemTokenMap());
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -758,9 +748,8 @@ void ScXMLDPOrContext::EndElement()
 ScXMLDPConditionContext::ScXMLDPConditionContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDPFilterContext* pTempFilterContext) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDPFilterContext* pTempFilterContext) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pFilterContext(pTempFilterContext),
     sDataType(GetXMLToken(XML_TEXT)),
@@ -815,8 +804,7 @@ ScXMLDPConditionContext::~ScXMLDPConditionContext()
 
 SvXMLImportContext *ScXMLDPConditionContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ )
 {
     return new SvXMLImportContext( GetImport(), nPrefix, rLName );
 }

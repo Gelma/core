@@ -64,6 +64,7 @@ using namespace framework;
 #define RESOURCETYPE_MENUBAR   "menubar"
 #define RESOURCETYPE_TOOLBAR   "toolbar"
 #define RESOURCETYPE_STATUSBAR "statusbar"
+#define RESOURCETYPE_POPUPMENU "popupmenu"
 
 namespace {
 
@@ -80,57 +81,56 @@ public:
     virtual ~ModuleUIConfigurationManager();
 
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return OUString("com.sun.star.comp.framework.ModuleUIConfigurationManager");
     }
 
     virtual sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return cppu::supportsService(this, ServiceName);
     }
 
     virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
-        css::uno::Sequence< OUString > aSeq(1);
-        aSeq[0] = "com.sun.star.ui.ModuleUIConfigurationManager";
+        css::uno::Sequence< OUString > aSeq { "com.sun.star.ui.ModuleUIConfigurationManager" };
         return aSeq;
     }
 
     // XComponent
-    virtual void SAL_CALL dispose() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL addEventListener( const css::uno::Reference< css::lang::XEventListener >& xListener ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL removeEventListener( const css::uno::Reference< css::lang::XEventListener >& aListener ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL dispose() throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL addEventListener( const css::uno::Reference< css::lang::XEventListener >& xListener ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL removeEventListener( const css::uno::Reference< css::lang::XEventListener >& aListener ) throw (css::uno::RuntimeException, std::exception) override;
 
     // XUIConfiguration
-    virtual void SAL_CALL addConfigurationListener( const css::uno::Reference< css::ui::XUIConfigurationListener >& Listener ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL removeConfigurationListener( const css::uno::Reference< css::ui::XUIConfigurationListener >& Listener ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL addConfigurationListener( const css::uno::Reference< css::ui::XUIConfigurationListener >& Listener ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL removeConfigurationListener( const css::uno::Reference< css::ui::XUIConfigurationListener >& Listener ) throw (css::uno::RuntimeException, std::exception) override;
 
     // XUIConfigurationManager
-    virtual void SAL_CALL reset() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual css::uno::Sequence< css::uno::Sequence< css::beans::PropertyValue > > SAL_CALL getUIElementsInfo( sal_Int16 ElementType ) throw (css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::container::XIndexContainer > SAL_CALL createSettings(  ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL hasSettings( const OUString& ResourceURL ) throw (css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::container::XIndexAccess > SAL_CALL getSettings( const OUString& ResourceURL, sal_Bool bWriteable ) throw (css::container::NoSuchElementException, css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL replaceSettings( const OUString& ResourceURL, const css::uno::Reference< css::container::XIndexAccess >& aNewData ) throw (css::container::NoSuchElementException, css::lang::IllegalArgumentException, css::lang::IllegalAccessException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL removeSettings( const OUString& ResourceURL ) throw (css::container::NoSuchElementException, css::lang::IllegalArgumentException, css::lang::IllegalAccessException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL insertSettings( const OUString& NewResourceURL, const css::uno::Reference< css::container::XIndexAccess >& aNewData ) throw (css::container::ElementExistException, css::lang::IllegalArgumentException, css::lang::IllegalAccessException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::uno::XInterface > SAL_CALL getImageManager() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::ui::XAcceleratorConfiguration > SAL_CALL getShortCutManager() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::uno::XInterface > SAL_CALL getEventsManager() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL reset() throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< css::uno::Sequence< css::beans::PropertyValue > > SAL_CALL getUIElementsInfo( sal_Int16 ElementType ) throw (css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Reference< css::container::XIndexContainer > SAL_CALL createSettings(  ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL hasSettings( const OUString& ResourceURL ) throw (css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Reference< css::container::XIndexAccess > SAL_CALL getSettings( const OUString& ResourceURL, sal_Bool bWriteable ) throw (css::container::NoSuchElementException, css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL replaceSettings( const OUString& ResourceURL, const css::uno::Reference< css::container::XIndexAccess >& aNewData ) throw (css::container::NoSuchElementException, css::lang::IllegalArgumentException, css::lang::IllegalAccessException, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL removeSettings( const OUString& ResourceURL ) throw (css::container::NoSuchElementException, css::lang::IllegalArgumentException, css::lang::IllegalAccessException, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL insertSettings( const OUString& NewResourceURL, const css::uno::Reference< css::container::XIndexAccess >& aNewData ) throw (css::container::ElementExistException, css::lang::IllegalArgumentException, css::lang::IllegalAccessException, css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Reference< css::uno::XInterface > SAL_CALL getImageManager() throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Reference< css::ui::XAcceleratorConfiguration > SAL_CALL getShortCutManager() throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Reference< css::uno::XInterface > SAL_CALL getEventsManager() throw (css::uno::RuntimeException, std::exception) override;
 
     // XModuleUIConfigurationManager
-    virtual sal_Bool SAL_CALL isDefaultSettings( const OUString& ResourceURL ) throw (css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::container::XIndexAccess > SAL_CALL getDefaultSettings( const OUString& ResourceURL ) throw (css::container::NoSuchElementException, css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual sal_Bool SAL_CALL isDefaultSettings( const OUString& ResourceURL ) throw (css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Reference< css::container::XIndexAccess > SAL_CALL getDefaultSettings( const OUString& ResourceURL ) throw (css::container::NoSuchElementException, css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) override;
 
     // XUIConfigurationPersistence
-    virtual void SAL_CALL reload() throw (css::uno::Exception, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL store() throw (css::uno::Exception, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL storeToStorage( const css::uno::Reference< css::embed::XStorage >& Storage ) throw (css::uno::Exception, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL isModified() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL isReadOnly() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL reload() throw (css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL store() throw (css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL storeToStorage( const css::uno::Reference< css::embed::XStorage >& Storage ) throw (css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL isModified() throw (css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL isReadOnly() throw (css::uno::RuntimeException, std::exception) override;
 
 private:
     // private data types
@@ -199,29 +199,29 @@ private:
     void            impl_resetElementTypeData( UIElementType& rUserElementType, UIElementType& rDefaultElementType, ConfigEventNotifyContainer& rRemoveNotifyContainer, ConfigEventNotifyContainer& rReplaceNotifyContainer );
     void            impl_reloadElementTypeData( UIElementType& rUserElementType, UIElementType& rDefaultElementType, ConfigEventNotifyContainer& rRemoveNotifyContainer, ConfigEventNotifyContainer& rReplaceNotifyContainer );
 
-    UIElementTypesVector                                                            m_aUIElements[LAYER_COUNT];
-    PresetHandler*                                                                  m_pStorageHandler[css::ui::UIElementType::COUNT];
+    UIElementTypesVector                                      m_aUIElements[LAYER_COUNT];
+    PresetHandler*                                            m_pStorageHandler[css::ui::UIElementType::COUNT];
     css::uno::Reference< css::embed::XStorage >               m_xDefaultConfigStorage;
     css::uno::Reference< css::embed::XStorage >               m_xUserConfigStorage;
-    bool                                                                            m_bReadOnly;
-    bool                                                                            m_bModified;
-    bool                                                                            m_bConfigRead;
-    bool                                                                            m_bDisposed;
-    OUString                                                                   m_aXMLPostfix;
-    OUString                                                                   m_aPropUIName;
-    OUString                                                                   m_aPropResourceURL;
-    OUString                                                                   m_aModuleIdentifier;
-    OUString                                                                   m_aModuleShortName;
+    bool                                                      m_bReadOnly;
+    bool                                                      m_bModified;
+    bool                                                      m_bConfigRead;
+    bool                                                      m_bDisposed;
+    OUString                                                  m_aXMLPostfix;
+    OUString                                                  m_aPropUIName;
+    OUString                                                  m_aPropResourceURL;
+    OUString                                                  m_aModuleIdentifier;
+    OUString                                                  m_aModuleShortName;
     css::uno::Reference< css::embed::XTransactedObject >      m_xUserRootCommit;
     css::uno::Reference< css::uno::XComponentContext >        m_xContext;
-    osl::Mutex m_mutex;
-    ::cppu::OMultiTypeInterfaceContainerHelper                                      m_aListenerContainer;   /// container for ALL Listener
+    osl::Mutex                                                m_mutex;
+    ::cppu::OMultiTypeInterfaceContainerHelper                m_aListenerContainer;   /// container for ALL Listener
     css::uno::Reference< css::lang::XComponent >              m_xModuleImageManager;
     css::uno::Reference< css::ui::XAcceleratorConfiguration > m_xModuleAcceleratorManager;
 };
 
 // important: The order and position of the elements must match the constant
-// definition of "::com::sun::star::ui::UIElementType"
+// definition of "css::ui::UIElementType"
 static const char* UIELEMENTTYPENAMES[] =
 {
     "",  // Dummy value for unknown!
@@ -425,10 +425,11 @@ void ModuleUIConfigurationManager::impl_requestUIElementData( sal_Int16 nElement
             {
                 switch ( nElementType )
                 {
-                    case ::com::sun::star::ui::UIElementType::UNKNOWN:
+                    case css::ui::UIElementType::UNKNOWN:
                     break;
 
-                    case ::com::sun::star::ui::UIElementType::MENUBAR:
+                    case css::ui::UIElementType::MENUBAR:
+                    case css::ui::UIElementType::POPUPMENU:
                     {
                         try
                         {
@@ -436,79 +437,74 @@ void ModuleUIConfigurationManager::impl_requestUIElementData( sal_Int16 nElement
                             Reference< XIndexAccess > xContainer( aMenuCfg.CreateMenuBarConfigurationFromXML( xInputStream ));
                             RootItemContainer* pRootItemContainer = RootItemContainer::GetImplementation( xContainer );
                             if ( pRootItemContainer )
-                                aUIElementData.xSettings = Reference< XIndexAccess >( static_cast< OWeakObject * >( new ConstItemContainer( pRootItemContainer, true ) ), UNO_QUERY );
+                                aUIElementData.xSettings.set( static_cast< OWeakObject * >( new ConstItemContainer( pRootItemContainer, true ) ), UNO_QUERY );
                             else
-                                aUIElementData.xSettings = Reference< XIndexAccess >( static_cast< OWeakObject * >( new ConstItemContainer( xContainer, true ) ), UNO_QUERY );
+                                aUIElementData.xSettings.set( static_cast< OWeakObject * >( new ConstItemContainer( xContainer, true ) ), UNO_QUERY );
                             return;
                         }
-                        catch ( const ::com::sun::star::lang::WrappedTargetException& )
+                        catch ( const css::lang::WrappedTargetException& )
                         {
                         }
                     }
                     break;
 
-                    case ::com::sun::star::ui::UIElementType::POPUPMENU:
-                    {
-                        break;
-                    }
-
-                    case ::com::sun::star::ui::UIElementType::TOOLBAR:
+                    case css::ui::UIElementType::TOOLBAR:
                     {
                         try
                         {
                             Reference< XIndexContainer > xIndexContainer( static_cast< OWeakObject * >( new RootItemContainer() ), UNO_QUERY );
                             ToolBoxConfiguration::LoadToolBox( m_xContext, xInputStream, xIndexContainer );
                             RootItemContainer* pRootItemContainer = RootItemContainer::GetImplementation( xIndexContainer );
-                            aUIElementData.xSettings = Reference< XIndexAccess >( static_cast< OWeakObject * >( new ConstItemContainer( pRootItemContainer, true ) ), UNO_QUERY );
+                            aUIElementData.xSettings.set( static_cast< OWeakObject * >( new ConstItemContainer( pRootItemContainer, true ) ), UNO_QUERY );
                             return;
                         }
-                        catch ( const ::com::sun::star::lang::WrappedTargetException& )
+                        catch ( const css::lang::WrappedTargetException& )
                         {
                         }
 
                         break;
                     }
 
-                    case ::com::sun::star::ui::UIElementType::STATUSBAR:
+                    case css::ui::UIElementType::STATUSBAR:
                     {
                         try
                         {
                             Reference< XIndexContainer > xIndexContainer( static_cast< OWeakObject * >( new RootItemContainer() ), UNO_QUERY );
                             StatusBarConfiguration::LoadStatusBar( m_xContext, xInputStream, xIndexContainer );
                             RootItemContainer* pRootItemContainer = RootItemContainer::GetImplementation( xIndexContainer );
-                            aUIElementData.xSettings = Reference< XIndexAccess >( static_cast< OWeakObject * >( new ConstItemContainer( pRootItemContainer, true ) ), UNO_QUERY );
+                            aUIElementData.xSettings.set( static_cast< OWeakObject * >( new ConstItemContainer( pRootItemContainer, true ) ), UNO_QUERY );
                             return;
                         }
-                        catch ( const ::com::sun::star::lang::WrappedTargetException& )
+                        catch ( const css::lang::WrappedTargetException& )
                         {
                         }
 
                         break;
                     }
 
-                    case ::com::sun::star::ui::UIElementType::FLOATINGWINDOW:
+                    case css::ui::UIElementType::FLOATINGWINDOW:
                     {
                         break;
                     }
                 }
             }
         }
-        catch ( const ::com::sun::star::embed::InvalidStorageException& )
+        catch ( const css::embed::InvalidStorageException& )
         {
         }
-        catch ( const ::com::sun::star::lang::IllegalArgumentException& )
+        catch ( const css::lang::IllegalArgumentException& )
         {
         }
-        catch ( const ::com::sun::star::io::IOException& )
+        catch ( const css::io::IOException& )
         {
         }
-        catch ( const ::com::sun::star::embed::StorageWrappedTargetException& )
+        catch ( const css::embed::StorageWrappedTargetException& )
         {
         }
     }
 
     // At least we provide an empty settings container!
-    aUIElementData.xSettings = Reference< XIndexAccess >( static_cast< OWeakObject * >( new ConstItemContainer() ), UNO_QUERY );
+    aUIElementData.xSettings.set( static_cast< OWeakObject * >( new ConstItemContainer() ), UNO_QUERY );
 }
 
 ModuleUIConfigurationManager::UIElementData*  ModuleUIConfigurationManager::impl_findUIElementData( const OUString& aResourceURL, sal_Int16 nElementType, bool bLoad )
@@ -542,7 +538,7 @@ ModuleUIConfigurationManager::UIElementData*  ModuleUIConfigurationManager::impl
     }
 
     // Nothing has been found!
-    return NULL;
+    return nullptr;
 }
 
 void ModuleUIConfigurationManager::impl_storeElementTypeData( Reference< XStorage > xStorage, UIElementType& rElementType, bool bResetModifyState )
@@ -569,38 +565,40 @@ void ModuleUIConfigurationManager::impl_storeElementTypeData( Reference< XStorag
                 {
                     switch( rElementType.nElementType )
                     {
-                        case ::com::sun::star::ui::UIElementType::MENUBAR:
+                        case css::ui::UIElementType::MENUBAR:
+                        case css::ui::UIElementType::POPUPMENU:
                         {
                             try
                             {
                                 MenuConfiguration aMenuCfg( m_xContext );
-                                aMenuCfg.StoreMenuBarConfigurationToXML( rElement.xSettings, xOutputStream );
+                                aMenuCfg.StoreMenuBarConfigurationToXML(
+                                    rElement.xSettings, xOutputStream, rElementType.nElementType == css::ui::UIElementType::MENUBAR );
                             }
-                            catch ( const ::com::sun::star::lang::WrappedTargetException& )
+                            catch ( const css::lang::WrappedTargetException& )
                             {
                             }
                         }
                         break;
 
-                        case ::com::sun::star::ui::UIElementType::TOOLBAR:
+                        case css::ui::UIElementType::TOOLBAR:
                         {
                             try
                             {
                                 ToolBoxConfiguration::StoreToolBox( m_xContext, xOutputStream, rElement.xSettings );
                             }
-                            catch ( const ::com::sun::star::lang::WrappedTargetException& )
+                            catch ( const css::lang::WrappedTargetException& )
                             {
                             }
                         }
                         break;
 
-                        case ::com::sun::star::ui::UIElementType::STATUSBAR:
+                        case css::ui::UIElementType::STATUSBAR:
                         {
                             try
                             {
                                 StatusBarConfiguration::StoreStatusBar( m_xContext, xOutputStream, rElement.xSettings );
                             }
-                            catch ( const ::com::sun::star::lang::WrappedTargetException& )
+                            catch ( const css::lang::WrappedTargetException& )
                             {
                             }
                         }
@@ -788,7 +786,7 @@ void ModuleUIConfigurationManager::impl_Initialize()
     if ( m_xUserConfigStorage.is() )
     {
         // Try to access our module sub folder
-        for ( sal_Int16 i = 1; i < ::com::sun::star::ui::UIElementType::COUNT;
+        for ( sal_Int16 i = 1; i < css::ui::UIElementType::COUNT;
               i++ )
         {
             Reference< XStorage > xElementTypeStorage;
@@ -797,19 +795,19 @@ void ModuleUIConfigurationManager::impl_Initialize()
                 if ( m_pStorageHandler[i] )
                     xElementTypeStorage = m_pStorageHandler[i]->getWorkingStorageUser();
             }
-            catch ( const com::sun::star::container::NoSuchElementException& )
+            catch ( const css::container::NoSuchElementException& )
             {
             }
-            catch ( const ::com::sun::star::embed::InvalidStorageException& )
+            catch ( const css::embed::InvalidStorageException& )
             {
             }
-            catch ( const ::com::sun::star::lang::IllegalArgumentException& )
+            catch ( const css::lang::IllegalArgumentException& )
             {
             }
-            catch ( const ::com::sun::star::io::IOException& )
+            catch ( const css::io::IOException& )
             {
             }
-            catch ( const ::com::sun::star::embed::StorageWrappedTargetException& )
+            catch ( const css::embed::StorageWrappedTargetException& )
             {
             }
 
@@ -825,7 +823,7 @@ void ModuleUIConfigurationManager::impl_Initialize()
         Reference< XNameAccess > xNameAccess( m_xDefaultConfigStorage, UNO_QUERY_THROW );
 
         // Try to access our module sub folder
-        for ( sal_Int16 i = 1; i < ::com::sun::star::ui::UIElementType::COUNT;
+        for ( sal_Int16 i = 1; i < css::ui::UIElementType::COUNT;
               i++ )
         {
             Reference< XStorage > xElementTypeStorage;
@@ -835,7 +833,7 @@ void ModuleUIConfigurationManager::impl_Initialize()
                 if( xNameAccess->hasByName( sName ) )
                     xNameAccess->getByName( sName ) >>= xElementTypeStorage;
             }
-            catch ( const com::sun::star::container::NoSuchElementException& )
+            catch ( const css::container::NoSuchElementException& )
             {
             }
 
@@ -850,8 +848,8 @@ void ModuleUIConfigurationManager::impl_Initialize()
 ModuleUIConfigurationManager::ModuleUIConfigurationManager(
         const Reference< XComponentContext >& xContext,
         const css::uno::Sequence< css::uno::Any >& aArguments)
-    : m_xDefaultConfigStorage( 0 )
-    , m_xUserConfigStorage( 0 )
+    : m_xDefaultConfigStorage( nullptr )
+    , m_xUserConfigStorage( nullptr )
     , m_bReadOnly( true )
     , m_bModified( false )
     , m_bConfigRead( false )
@@ -862,13 +860,13 @@ ModuleUIConfigurationManager::ModuleUIConfigurationManager(
     , m_xContext( xContext )
     , m_aListenerContainer( m_mutex )
 {
-    for ( int i = 0; i < ::com::sun::star::ui::UIElementType::COUNT; i++ )
-        m_pStorageHandler[i] = 0;
+    for ( int i = 0; i < css::ui::UIElementType::COUNT; i++ )
+        m_pStorageHandler[i] = nullptr;
 
     // Make sure we have a default initialized entry for every layer and user interface element type!
     // The following code depends on this!
-    m_aUIElements[LAYER_DEFAULT].resize( ::com::sun::star::ui::UIElementType::COUNT );
-    m_aUIElements[LAYER_USERDEFINED].resize( ::com::sun::star::ui::UIElementType::COUNT );
+    m_aUIElements[LAYER_DEFAULT].resize( css::ui::UIElementType::COUNT );
+    m_aUIElements[LAYER_USERDEFINED].resize( css::ui::UIElementType::COUNT );
 
     SolarMutexGuard g;
 
@@ -882,15 +880,17 @@ ModuleUIConfigurationManager::ModuleUIConfigurationManager(
         m_aModuleIdentifier = lArgs.getUnpackedValueOrDefault("ModuleIdentifier", OUString());
     }
 
-    for ( int i = 1; i < ::com::sun::star::ui::UIElementType::COUNT; i++ )
+    for ( int i = 1; i < css::ui::UIElementType::COUNT; i++ )
     {
         OUString aResourceType;
-        if ( i == ::com::sun::star::ui::UIElementType::MENUBAR )
+        if ( i == css::ui::UIElementType::MENUBAR )
             aResourceType = RESOURCETYPE_MENUBAR;
-        else if ( i == ::com::sun::star::ui::UIElementType::TOOLBAR )
+        else if ( i == css::ui::UIElementType::TOOLBAR )
             aResourceType = RESOURCETYPE_TOOLBAR;
-        else if ( i == ::com::sun::star::ui::UIElementType::STATUSBAR )
+        else if ( i == css::ui::UIElementType::STATUSBAR )
             aResourceType = RESOURCETYPE_STATUSBAR;
+        else if ( i == css::ui::UIElementType::POPUPMENU )
+            aResourceType = RESOURCETYPE_POPUPMENU;
 
         if ( !aResourceType.isEmpty() )
         {
@@ -903,12 +903,11 @@ ModuleUIConfigurationManager::ModuleUIConfigurationManager(
     }
 
     // initialize root storages for all resource types
-    m_xUserRootCommit       = css::uno::Reference< css::embed::XTransactedObject >(
-                                m_pStorageHandler[::com::sun::star::ui::UIElementType::MENUBAR]->getOrCreateRootStorageUser(), css::uno::UNO_QUERY); // can be empty
-    m_xDefaultConfigStorage = m_pStorageHandler[::com::sun::star::ui::UIElementType::MENUBAR]->getParentStorageShare(
-                                m_pStorageHandler[::com::sun::star::ui::UIElementType::MENUBAR]->getWorkingStorageShare());
-    m_xUserConfigStorage    = m_pStorageHandler[::com::sun::star::ui::UIElementType::MENUBAR]->getParentStorageUser(
-                                m_pStorageHandler[::com::sun::star::ui::UIElementType::MENUBAR]->getWorkingStorageUser());
+    m_xUserRootCommit.set( m_pStorageHandler[css::ui::UIElementType::MENUBAR]->getOrCreateRootStorageUser(), css::uno::UNO_QUERY); // can be empty
+    m_xDefaultConfigStorage = m_pStorageHandler[css::ui::UIElementType::MENUBAR]->getParentStorageShare(
+                                m_pStorageHandler[css::ui::UIElementType::MENUBAR]->getWorkingStorageShare());
+    m_xUserConfigStorage    = m_pStorageHandler[css::ui::UIElementType::MENUBAR]->getParentStorageUser(
+                                m_pStorageHandler[css::ui::UIElementType::MENUBAR]->getWorkingStorageUser());
 
     if ( m_xUserConfigStorage.is() )
     {
@@ -927,12 +926,12 @@ ModuleUIConfigurationManager::ModuleUIConfigurationManager(
 
 ModuleUIConfigurationManager::~ModuleUIConfigurationManager()
 {
-    for ( int i = 0; i < ::com::sun::star::ui::UIElementType::COUNT; i++ )
+    for ( int i = 0; i < css::ui::UIElementType::COUNT; i++ )
         delete m_pStorageHandler[i];
 }
 
 // XComponent
-void SAL_CALL ModuleUIConfigurationManager::dispose() throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ModuleUIConfigurationManager::dispose() throw (css::uno::RuntimeException, std::exception)
 {
     Reference< XComponent > xThis( static_cast< OWeakObject* >(this), UNO_QUERY );
 
@@ -968,7 +967,7 @@ void SAL_CALL ModuleUIConfigurationManager::dispose() throw (::com::sun::star::u
     }
 }
 
-void SAL_CALL ModuleUIConfigurationManager::addEventListener( const Reference< XEventListener >& xListener ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ModuleUIConfigurationManager::addEventListener( const Reference< XEventListener >& xListener ) throw (css::uno::RuntimeException, std::exception)
 {
     {
         SolarMutexGuard g;
@@ -981,14 +980,14 @@ void SAL_CALL ModuleUIConfigurationManager::addEventListener( const Reference< X
     m_aListenerContainer.addInterface( cppu::UnoType<XEventListener>::get(), xListener );
 }
 
-void SAL_CALL ModuleUIConfigurationManager::removeEventListener( const Reference< XEventListener >& xListener ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ModuleUIConfigurationManager::removeEventListener( const Reference< XEventListener >& xListener ) throw (css::uno::RuntimeException, std::exception)
 {
     /* SAFE AREA ----------------------------------------------------------------------------------------------- */
     m_aListenerContainer.removeInterface( cppu::UnoType<XEventListener>::get(), xListener );
 }
 
 // XUIConfiguration
-void SAL_CALL ModuleUIConfigurationManager::addConfigurationListener( const Reference< ::com::sun::star::ui::XUIConfigurationListener >& xListener ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ModuleUIConfigurationManager::addConfigurationListener( const Reference< css::ui::XUIConfigurationListener >& xListener ) throw (css::uno::RuntimeException, std::exception)
 {
     {
         SolarMutexGuard g;
@@ -1001,14 +1000,14 @@ void SAL_CALL ModuleUIConfigurationManager::addConfigurationListener( const Refe
     m_aListenerContainer.addInterface( cppu::UnoType<ui::XUIConfigurationListener>::get(), xListener );
 }
 
-void SAL_CALL ModuleUIConfigurationManager::removeConfigurationListener( const Reference< ::com::sun::star::ui::XUIConfigurationListener >& xListener ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ModuleUIConfigurationManager::removeConfigurationListener( const Reference< css::ui::XUIConfigurationListener >& xListener ) throw (css::uno::RuntimeException, std::exception)
 {
     /* SAFE AREA ----------------------------------------------------------------------------------------------- */
     m_aListenerContainer.removeInterface( cppu::UnoType<ui::XUIConfigurationListener>::get(), xListener );
 }
 
 // XUIConfigurationManager
-void SAL_CALL ModuleUIConfigurationManager::reset() throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ModuleUIConfigurationManager::reset() throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexClearableGuard aGuard;
 
@@ -1021,7 +1020,7 @@ void SAL_CALL ModuleUIConfigurationManager::reset() throw (::com::sun::star::uno
         // Remove all elements from our user-defined storage!
         try
         {
-            for ( int i = 1; i < ::com::sun::star::ui::UIElementType::COUNT; i++ )
+            for ( int i = 1; i < css::ui::UIElementType::COUNT; i++ )
             {
                 UIElementType&        rElementType = m_aUIElements[LAYER_USERDEFINED][i];
                 Reference< XStorage > xSubStorage( rElementType.xStorage, UNO_QUERY );
@@ -1049,7 +1048,7 @@ void SAL_CALL ModuleUIConfigurationManager::reset() throw (::com::sun::star::uno
             // remove settings from user defined layer and notify listener about removed settings data!
             ConfigEventNotifyContainer aRemoveEventNotifyContainer;
             ConfigEventNotifyContainer aReplaceEventNotifyContainer;
-            for ( sal_Int16 j = 1; j < ::com::sun::star::ui::UIElementType::COUNT; j++ )
+            for ( sal_Int16 j = 1; j < css::ui::UIElementType::COUNT; j++ )
             {
                 try
                 {
@@ -1080,16 +1079,16 @@ void SAL_CALL ModuleUIConfigurationManager::reset() throw (::com::sun::star::uno
             for ( k = 0; k < aReplaceEventNotifyContainer.size(); k++ )
                 implts_notifyContainerListener( aReplaceEventNotifyContainer[k], NotifyOp_Replace );
         }
-        catch ( const ::com::sun::star::lang::IllegalArgumentException& )
+        catch ( const css::lang::IllegalArgumentException& )
         {
         }
-        catch ( const ::com::sun::star::container::NoSuchElementException& )
+        catch ( const css::container::NoSuchElementException& )
         {
         }
-        catch ( const ::com::sun::star::embed::InvalidStorageException& )
+        catch ( const css::embed::InvalidStorageException& )
         {
         }
-        catch ( const ::com::sun::star::embed::StorageWrappedTargetException& )
+        catch ( const css::embed::StorageWrappedTargetException& )
         {
         }
     }
@@ -1098,7 +1097,7 @@ void SAL_CALL ModuleUIConfigurationManager::reset() throw (::com::sun::star::uno
 Sequence< Sequence< PropertyValue > > SAL_CALL ModuleUIConfigurationManager::getUIElementsInfo( sal_Int16 ElementType )
 throw ( IllegalArgumentException, RuntimeException, std::exception )
 {
-    if (( ElementType < 0 ) || ( ElementType >= ::com::sun::star::ui::UIElementType::COUNT ))
+    if (( ElementType < 0 ) || ( ElementType >= css::ui::UIElementType::COUNT ))
         throw IllegalArgumentException();
 
     SolarMutexGuard g;
@@ -1108,9 +1107,9 @@ throw ( IllegalArgumentException, RuntimeException, std::exception )
     Sequence< Sequence< PropertyValue > > aElementInfoSeq;
     UIElementInfoHashMap aUIElementInfoCollection;
 
-    if ( ElementType == ::com::sun::star::ui::UIElementType::UNKNOWN )
+    if ( ElementType == css::ui::UIElementType::UNKNOWN )
     {
-        for ( sal_Int16 i = 0; i < ::com::sun::star::ui::UIElementType::COUNT; i++ )
+        for ( sal_Int16 i = 0; i < css::ui::UIElementType::COUNT; i++ )
             impl_fillSequenceWithElementTypeInfo( aUIElementInfoCollection, sal_Int16( i ) );
     }
     else
@@ -1135,7 +1134,7 @@ throw ( IllegalArgumentException, RuntimeException, std::exception )
     return aElementInfoSeq;
 }
 
-Reference< XIndexContainer > SAL_CALL ModuleUIConfigurationManager::createSettings() throw (::com::sun::star::uno::RuntimeException, std::exception)
+Reference< XIndexContainer > SAL_CALL ModuleUIConfigurationManager::createSettings() throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard g;
 
@@ -1147,12 +1146,12 @@ Reference< XIndexContainer > SAL_CALL ModuleUIConfigurationManager::createSettin
 }
 
 sal_Bool SAL_CALL ModuleUIConfigurationManager::hasSettings( const OUString& ResourceURL )
-throw (::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception)
 {
     sal_Int16 nElementType = RetrieveTypeFromResourceURL( ResourceURL );
 
-    if (( nElementType == ::com::sun::star::ui::UIElementType::UNKNOWN ) ||
-        ( nElementType >= ::com::sun::star::ui::UIElementType::COUNT   ))
+    if (( nElementType == css::ui::UIElementType::UNKNOWN ) ||
+        ( nElementType >= css::ui::UIElementType::COUNT   ))
         throw IllegalArgumentException();
     else
     {
@@ -1170,12 +1169,12 @@ throw (::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::uno::
 }
 
 Reference< XIndexAccess > SAL_CALL ModuleUIConfigurationManager::getSettings( const OUString& ResourceURL, sal_Bool bWriteable )
-throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::container::NoSuchElementException, css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception)
 {
     sal_Int16 nElementType = RetrieveTypeFromResourceURL( ResourceURL );
 
-    if (( nElementType == ::com::sun::star::ui::UIElementType::UNKNOWN ) ||
-        ( nElementType >= ::com::sun::star::ui::UIElementType::COUNT   ))
+    if (( nElementType == css::ui::UIElementType::UNKNOWN ) ||
+        ( nElementType >= css::ui::UIElementType::COUNT   ))
         throw IllegalArgumentException();
     else
     {
@@ -1198,13 +1197,13 @@ throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::la
     throw NoSuchElementException();
 }
 
-void SAL_CALL ModuleUIConfigurationManager::replaceSettings( const OUString& ResourceURL, const Reference< ::com::sun::star::container::XIndexAccess >& aNewData )
-throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::lang::IllegalAccessException, ::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ModuleUIConfigurationManager::replaceSettings( const OUString& ResourceURL, const Reference< css::container::XIndexAccess >& aNewData )
+throw (css::container::NoSuchElementException, css::lang::IllegalArgumentException, css::lang::IllegalAccessException, css::uno::RuntimeException, std::exception)
 {
     sal_Int16 nElementType = RetrieveTypeFromResourceURL( ResourceURL );
 
-    if (( nElementType == ::com::sun::star::ui::UIElementType::UNKNOWN ) ||
-        ( nElementType >= ::com::sun::star::ui::UIElementType::COUNT   ))
+    if (( nElementType == css::ui::UIElementType::UNKNOWN ) ||
+        ( nElementType >= css::ui::UIElementType::COUNT   ))
         throw IllegalArgumentException();
     else if ( m_bReadOnly )
         throw IllegalAccessException();
@@ -1226,7 +1225,7 @@ throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::la
                 // Create a copy of the data if the container is not const
                 Reference< XIndexReplace > xReplace( aNewData, UNO_QUERY );
                 if ( xReplace.is() )
-                    pDataSettings->xSettings = Reference< XIndexAccess >( static_cast< OWeakObject * >( new ConstItemContainer( aNewData ) ), UNO_QUERY );
+                    pDataSettings->xSettings.set( static_cast< OWeakObject * >( new ConstItemContainer( aNewData ) ), UNO_QUERY );
                 else
                     pDataSettings->xSettings = aNewData;
                 pDataSettings->bDefault  = false;
@@ -1264,7 +1263,7 @@ throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::la
                 // Create a copy of the data if the container is not const
                 Reference< XIndexReplace > xReplace( aNewData, UNO_QUERY );
                 if ( xReplace.is() )
-                    aUIElementData.xSettings = Reference< XIndexAccess >( static_cast< OWeakObject * >( new ConstItemContainer( aNewData ) ), UNO_QUERY );
+                    aUIElementData.xSettings.set( static_cast< OWeakObject * >( new ConstItemContainer( aNewData ) ), UNO_QUERY );
                 else
                     aUIElementData.xSettings = aNewData;
                 aUIElementData.aName        = RetrieveNameFromResourceURL( ResourceURL ) + m_aXMLPostfix;
@@ -1312,8 +1311,8 @@ throw ( NoSuchElementException, IllegalArgumentException, IllegalAccessException
 {
     sal_Int16 nElementType = RetrieveTypeFromResourceURL( ResourceURL );
 
-    if (( nElementType == ::com::sun::star::ui::UIElementType::UNKNOWN ) ||
-        ( nElementType >= ::com::sun::star::ui::UIElementType::COUNT   ))
+    if (( nElementType == css::ui::UIElementType::UNKNOWN ) ||
+        ( nElementType >= css::ui::UIElementType::COUNT   ))
         throw IllegalArgumentException();
     else if ( m_bReadOnly )
         throw IllegalAccessException();
@@ -1391,8 +1390,8 @@ throw ( ElementExistException, IllegalArgumentException, IllegalAccessException,
 {
     sal_Int16 nElementType = RetrieveTypeFromResourceURL( NewResourceURL );
 
-    if (( nElementType == ::com::sun::star::ui::UIElementType::UNKNOWN ) ||
-        ( nElementType >= ::com::sun::star::ui::UIElementType::COUNT   ))
+    if (( nElementType == css::ui::UIElementType::UNKNOWN ) ||
+        ( nElementType >= css::ui::UIElementType::COUNT   ))
         throw IllegalArgumentException();
     else if ( m_bReadOnly )
         throw IllegalAccessException();
@@ -1415,7 +1414,7 @@ throw ( ElementExistException, IllegalArgumentException, IllegalAccessException,
             // Create a copy of the data if the container is not const
             Reference< XIndexReplace > xReplace( aNewData, UNO_QUERY );
             if ( xReplace.is() )
-                aUIElementData.xSettings = Reference< XIndexAccess >( static_cast< OWeakObject * >( new ConstItemContainer( aNewData ) ), UNO_QUERY );
+                aUIElementData.xSettings.set( static_cast< OWeakObject * >( new ConstItemContainer( aNewData ) ), UNO_QUERY );
             else
                 aUIElementData.xSettings = aNewData;
             aUIElementData.aName        = RetrieveNameFromResourceURL( NewResourceURL ) + m_aXMLPostfix;
@@ -1448,7 +1447,7 @@ throw ( ElementExistException, IllegalArgumentException, IllegalAccessException,
     }
 }
 
-Reference< XInterface > SAL_CALL ModuleUIConfigurationManager::getImageManager() throw (::com::sun::star::uno::RuntimeException, std::exception)
+Reference< XInterface > SAL_CALL ModuleUIConfigurationManager::getImageManager() throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard g;
 
@@ -1457,8 +1456,8 @@ Reference< XInterface > SAL_CALL ModuleUIConfigurationManager::getImageManager()
 
     if ( !m_xModuleImageManager.is() )
     {
-        m_xModuleImageManager = Reference< XComponent >( static_cast< cppu::OWeakObject *>( new ModuleImageManager( m_xContext )),
-                                                         UNO_QUERY );
+        m_xModuleImageManager.set( static_cast< cppu::OWeakObject *>( new ModuleImageManager( m_xContext )),
+                                   UNO_QUERY );
         Reference< XInitialization > xInit( m_xModuleImageManager, UNO_QUERY );
 
         Sequence< Any > aPropSeq( 3 );
@@ -1479,7 +1478,7 @@ Reference< XInterface > SAL_CALL ModuleUIConfigurationManager::getImageManager()
     return Reference< XInterface >( m_xModuleImageManager, UNO_QUERY );
 }
 
-Reference< ui::XAcceleratorConfiguration > SAL_CALL ModuleUIConfigurationManager::getShortCutManager() throw (::com::sun::star::uno::RuntimeException, std::exception)
+Reference< ui::XAcceleratorConfiguration > SAL_CALL ModuleUIConfigurationManager::getShortCutManager() throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard g;
 
@@ -1500,19 +1499,19 @@ Reference< ui::XAcceleratorConfiguration > SAL_CALL ModuleUIConfigurationManager
     return m_xModuleAcceleratorManager;
 }
 
-Reference< XInterface > SAL_CALL ModuleUIConfigurationManager::getEventsManager() throw (::com::sun::star::uno::RuntimeException, std::exception)
+Reference< XInterface > SAL_CALL ModuleUIConfigurationManager::getEventsManager() throw (css::uno::RuntimeException, std::exception)
 {
     return Reference< XInterface >();
 }
 
 // XModuleUIConfigurationManager
 sal_Bool SAL_CALL ModuleUIConfigurationManager::isDefaultSettings( const OUString& ResourceURL )
-throw (::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception)
 {
     sal_Int16 nElementType = RetrieveTypeFromResourceURL( ResourceURL );
 
-    if (( nElementType == ::com::sun::star::ui::UIElementType::UNKNOWN ) ||
-        ( nElementType >= ::com::sun::star::ui::UIElementType::COUNT   ))
+    if (( nElementType == css::ui::UIElementType::UNKNOWN ) ||
+        ( nElementType >= css::ui::UIElementType::COUNT   ))
         throw IllegalArgumentException();
     else
     {
@@ -1530,12 +1529,12 @@ throw (::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::uno::
 }
 
 Reference< XIndexAccess > SAL_CALL ModuleUIConfigurationManager::getDefaultSettings( const OUString& ResourceURL )
-throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::container::NoSuchElementException, css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception)
 {
     sal_Int16 nElementType = RetrieveTypeFromResourceURL( ResourceURL );
 
-    if (( nElementType == ::com::sun::star::ui::UIElementType::UNKNOWN ) ||
-        ( nElementType >= ::com::sun::star::ui::UIElementType::COUNT   ))
+    if (( nElementType == css::ui::UIElementType::UNKNOWN ) ||
+        ( nElementType >= css::ui::UIElementType::COUNT   ))
         throw IllegalArgumentException();
     else
     {
@@ -1563,7 +1562,7 @@ throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::la
 }
 
 // XUIConfigurationPersistence
-void SAL_CALL ModuleUIConfigurationManager::reload() throw (::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ModuleUIConfigurationManager::reload() throw (css::uno::Exception, css::uno::RuntimeException, std::exception)
 {
     SolarMutexClearableGuard aGuard;
 
@@ -1575,7 +1574,7 @@ void SAL_CALL ModuleUIConfigurationManager::reload() throw (::com::sun::star::un
         // Try to access our module sub folder
         ConfigEventNotifyContainer aRemoveNotifyContainer;
         ConfigEventNotifyContainer aReplaceNotifyContainer;
-        for ( sal_Int16 i = 1; i < ::com::sun::star::ui::UIElementType::COUNT; i++ )
+        for ( sal_Int16 i = 1; i < css::ui::UIElementType::COUNT; i++ )
         {
             try
             {
@@ -1604,7 +1603,7 @@ void SAL_CALL ModuleUIConfigurationManager::reload() throw (::com::sun::star::un
     }
 }
 
-void SAL_CALL ModuleUIConfigurationManager::store() throw (::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ModuleUIConfigurationManager::store() throw (css::uno::Exception, css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard g;
 
@@ -1614,7 +1613,7 @@ void SAL_CALL ModuleUIConfigurationManager::store() throw (::com::sun::star::uno
     if ( m_xUserConfigStorage.is() && m_bModified && !m_bReadOnly )
     {
         // Try to access our module sub folder
-        for ( int i = 1; i < ::com::sun::star::ui::UIElementType::COUNT; i++ )
+        for ( int i = 1; i < css::ui::UIElementType::COUNT; i++ )
         {
             try
             {
@@ -1637,7 +1636,7 @@ void SAL_CALL ModuleUIConfigurationManager::store() throw (::com::sun::star::uno
     }
 }
 
-void SAL_CALL ModuleUIConfigurationManager::storeToStorage( const Reference< XStorage >& Storage ) throw (::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ModuleUIConfigurationManager::storeToStorage( const Reference< XStorage >& Storage ) throw (css::uno::Exception, css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard g;
 
@@ -1647,7 +1646,7 @@ void SAL_CALL ModuleUIConfigurationManager::storeToStorage( const Reference< XSt
     if ( m_xUserConfigStorage.is() && m_bModified && !m_bReadOnly )
     {
         // Try to access our module sub folder
-        for ( int i = 1; i < ::com::sun::star::ui::UIElementType::COUNT; i++ )
+        for ( int i = 1; i < css::ui::UIElementType::COUNT; i++ )
         {
             try
             {
@@ -1670,14 +1669,14 @@ void SAL_CALL ModuleUIConfigurationManager::storeToStorage( const Reference< XSt
     }
 }
 
-sal_Bool SAL_CALL ModuleUIConfigurationManager::isModified() throw (::com::sun::star::uno::RuntimeException, std::exception)
+sal_Bool SAL_CALL ModuleUIConfigurationManager::isModified() throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard g;
 
     return m_bModified;
 }
 
-sal_Bool SAL_CALL ModuleUIConfigurationManager::isReadOnly() throw (::com::sun::star::uno::RuntimeException, std::exception)
+sal_Bool SAL_CALL ModuleUIConfigurationManager::isReadOnly() throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard g;
 
@@ -1686,8 +1685,8 @@ sal_Bool SAL_CALL ModuleUIConfigurationManager::isReadOnly() throw (::com::sun::
 
 void ModuleUIConfigurationManager::implts_notifyContainerListener( const ui::ConfigurationEvent& aEvent, NotifyOp eOp )
 {
-    ::cppu::OInterfaceContainerHelper* pContainer = m_aListenerContainer.getContainer( cppu::UnoType<com::sun::star::ui::XUIConfigurationListener>::get());
-    if ( pContainer != NULL )
+    ::cppu::OInterfaceContainerHelper* pContainer = m_aListenerContainer.getContainer( cppu::UnoType<css::ui::XUIConfigurationListener>::get());
+    if ( pContainer != nullptr )
     {
         ::cppu::OInterfaceIteratorHelper pIterator( *pContainer );
         while ( pIterator.hasMoreElements() )
@@ -1697,13 +1696,13 @@ void ModuleUIConfigurationManager::implts_notifyContainerListener( const ui::Con
                 switch ( eOp )
                 {
                     case NotifyOp_Replace:
-                        static_cast< ::com::sun::star::ui::XUIConfigurationListener*>(pIterator.next())->elementReplaced( aEvent );
+                        static_cast< css::ui::XUIConfigurationListener*>(pIterator.next())->elementReplaced( aEvent );
                         break;
                     case NotifyOp_Insert:
-                        static_cast< ::com::sun::star::ui::XUIConfigurationListener*>(pIterator.next())->elementInserted( aEvent );
+                        static_cast< css::ui::XUIConfigurationListener*>(pIterator.next())->elementInserted( aEvent );
                         break;
                     case NotifyOp_Remove:
-                        static_cast< ::com::sun::star::ui::XUIConfigurationListener*>(pIterator.next())->elementRemoved( aEvent );
+                        static_cast< css::ui::XUIConfigurationListener*>(pIterator.next())->elementRemoved( aEvent );
                         break;
                 }
             }

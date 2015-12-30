@@ -45,8 +45,7 @@ OUString SAL_CALL ShapeContextHandler_getImplementationName()
 uno::Sequence< OUString > SAL_CALL
 ShapeContextHandler_getSupportedServiceNames()
 {
-    uno::Sequence< OUString > s(1);
-    s[0] = "com.sun.star.xml.sax.FastShapeContextHandler";
+    uno::Sequence< OUString > s { "com.sun.star.xml.sax.FastShapeContextHandler" };
     return s;
 }
 
@@ -57,9 +56,8 @@ ShapeContextHandler_createInstance( const uno::Reference< uno::XComponentContext
     return static_cast< ::cppu::OWeakObject* >( new ShapeContextHandler(context) );
 }
 
-ShapeContextHandler::ShapeContextHandler
-(uno::Reference< uno::XComponentContext > const & context) :
-mnStartToken(0), m_xContext(context)
+ShapeContextHandler::ShapeContextHandler(uno::Reference< uno::XComponentContext > const & context) :
+  mnStartToken(0)
 {
     try
     {
@@ -268,7 +266,7 @@ ShapeContextHandler::getContextHandler(sal_Int32 nElement)
     return xResult;
 }
 
-// ::com::sun::star::xml::sax::XFastContextHandler:
+// css::xml::sax::XFastContextHandler:
 void SAL_CALL ShapeContextHandler::startFastElement
 (::sal_Int32 Element,
  const uno::Reference< xml::sax::XFastAttributeList > & Attribs)
@@ -356,7 +354,7 @@ void SAL_CALL ShapeContextHandler::endFastElement(::sal_Int32 Element)
         {
             uno::Reference<beans::XPropertySet> xPropertySet(mxSavedShape, uno::UNO_QUERY);
             if (xPropertySet.is())
-                bTextBox = xPropertySet->getPropertyValue("TextBox").get<bool>();
+                xPropertySet->getPropertyValue("TextBox") >>= bTextBox;
         }
         if (bTextFrame || bTextBox)
             mxWpsContext.clear();
@@ -416,7 +414,7 @@ void SAL_CALL ShapeContextHandler::characters(const OUString & aChars)
         xContextHandler->characters(aChars);
 }
 
-// ::com::sun::star::xml::sax::XFastShapeContextHandler:
+// css::xml::sax::XFastShapeContextHandler:
 uno::Reference< drawing::XShape > SAL_CALL
 ShapeContextHandler::getShape() throw (uno::RuntimeException, std::exception)
 {
@@ -532,7 +530,7 @@ ShapeContextHandler::getShape() throw (uno::RuntimeException, std::exception)
                 mxWpgContext.clear();
             }
         }
-        else if (mpShape.get() != NULL)
+        else if (mpShape.get() != nullptr)
         {
             basegfx::B2DHomMatrix aTransformation;
             mpShape->addShape(*mxFilterBase, mpThemePtr.get(), xShapes, aTransformation, mpShape->getFillProperties() );
@@ -600,12 +598,12 @@ void SAL_CALL ShapeContextHandler::setRelationFragmentPath(const OUString & the_
     msRelationFragmentPath = the_value;
 }
 
-::sal_Int32 SAL_CALL ShapeContextHandler::getStartToken() throw (::com::sun::star::uno::RuntimeException, std::exception)
+::sal_Int32 SAL_CALL ShapeContextHandler::getStartToken() throw (css::uno::RuntimeException, std::exception)
 {
     return mnStartToken;
 }
 
-void SAL_CALL ShapeContextHandler::setStartToken( ::sal_Int32 _starttoken ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ShapeContextHandler::setStartToken( ::sal_Int32 _starttoken ) throw (css::uno::RuntimeException, std::exception)
 {
     mnStartToken = _starttoken;
 }

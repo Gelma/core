@@ -45,14 +45,13 @@ public:
 class SC_DLLPUBLIC ScTpDefaultsItem : public SfxPoolItem
 {
 public:
-    TYPEINFO_OVERRIDE();
     ScTpDefaultsItem( sal_uInt16 nWhich,
                    const ScDefaultsOptions& rOpt );
     ScTpDefaultsItem( const ScTpDefaultsItem& rItem );
     virtual ~ScTpDefaultsItem();
 
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
 
     const ScDefaultsOptions& GetDefaultsOptions() const { return theOptions; }
 
@@ -65,15 +64,15 @@ private:
 class ScDefaultsCfg : public ScDefaultsOptions, public utl::ConfigItem
 {
 private:
-    static com::sun::star::uno::Sequence<OUString> GetPropertyNames();
-    virtual void ImplCommit() SAL_OVERRIDE;
+    static css::uno::Sequence<OUString> GetPropertyNames();
+    virtual void ImplCommit() override;
 
 public:
     ScDefaultsCfg();
 
     void SetOptions( const ScDefaultsOptions& rNew );
 
-    virtual void Notify( const ::com::sun::star::uno::Sequence< OUString >& aPropertyNames ) SAL_OVERRIDE;
+    virtual void Notify( const css::uno::Sequence< OUString >& aPropertyNames ) override;
 };
 
 #endif

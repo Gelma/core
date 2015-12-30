@@ -45,16 +45,16 @@
 
 namespace sd {
 
-void DrawViewShell::ScannerEvent( const ::com::sun::star::lang::EventObject& )
+void DrawViewShell::ScannerEvent( const css::lang::EventObject& )
 {
     if( mxScannerManager.is() )
     {
-        const ::com::sun::star::scanner::ScannerContext aContext( mxScannerManager->getAvailableScanners().getConstArray()[ 0 ] );
-        const ::com::sun::star::scanner::ScanError      eError = mxScannerManager->getError( aContext );
+        const css::scanner::ScannerContext aContext( mxScannerManager->getAvailableScanners().getConstArray()[ 0 ] );
+        const css::scanner::ScanError      eError = mxScannerManager->getError( aContext );
 
-        if( ::com::sun::star::scanner::ScanError_ScanErrorNone == eError )
+        if( css::scanner::ScanError_ScanErrorNone == eError )
         {
-            const ::com::sun::star::uno::Reference< ::com::sun::star::awt::XBitmap > xBitmap( mxScannerManager->getBitmap( aContext ) );
+            const css::uno::Reference< css::awt::XBitmap > xBitmap( mxScannerManager->getBitmap( aContext ) );
 
             if( xBitmap.is() )
             {
@@ -98,7 +98,7 @@ void DrawViewShell::ScannerEvent( const ::com::sun::star::lang::EventObject& )
                     Point aPnt ( ( aPageSize.Width() - aBmpSize.Width() ) >> 1, ( aPageSize.Height() - aBmpSize.Height() ) >> 1 );
                     aPnt += Point( pPage->GetLftBorder(), pPage->GetUppBorder() );
                     Rectangle   aRect( aPnt, aBmpSize );
-                    SdrGrafObj* pGrafObj = NULL;
+                    SdrGrafObj* pGrafObj = nullptr;
                     bool        bInsertNewObject = true;
 
                     if( GetView()->AreObjectsMarked() )
@@ -110,7 +110,7 @@ void DrawViewShell::ScannerEvent( const ::com::sun::star::lang::EventObject& )
                             SdrMark*    pMark = rMarkList.GetMark(0);
                             SdrObject*  pObj = pMark->GetMarkedSdrObj();
 
-                            if( pObj->ISA( SdrGrafObj ) )
+                            if( dynamic_cast< SdrGrafObj *>( pObj ) !=  nullptr )
                             {
                                 pGrafObj = static_cast< SdrGrafObj* >( pObj );
 
@@ -118,7 +118,7 @@ void DrawViewShell::ScannerEvent( const ::com::sun::star::lang::EventObject& )
                                 {
                                     bInsertNewObject = false;
                                     pGrafObj->SetEmptyPresObj(false);
-                                    pGrafObj->SetOutlinerParaObject(NULL);
+                                    pGrafObj->SetOutlinerParaObject(nullptr);
                                     pGrafObj->SetGraphic( Graphic( aScanBmp ) );
                                 }
                             }

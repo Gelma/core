@@ -58,7 +58,6 @@ void SwListShell::InitInterface_Impl()
     GetStaticInterface()->RegisterObjectBar(SFX_OBJECTBAR_OBJECT, RID_NUM_TOOLBOX);
 }
 
-TYPEINIT1(SwListShell,SwBaseShell)
 
 // #i35572# Functionality of Numbering/Bullet toolbar
 // for outline numbered paragraphs should match the functions for outlines
@@ -137,7 +136,7 @@ void SwListShell::Execute(SfxRequest &rReq)
     SwWrtShell& rSh = GetShell();
 
     // #i35572#
-    const SwNumRule* pCurRule = rSh.GetNumRuleAtCurrCrsrPos();
+    const SwNumRule* pCurRule = rSh.GetNumRuleAtCurrCursorPos();
     OSL_ENSURE( pCurRule, "SwListShell::Execute without NumRule" );
     bool bOutline = pCurRule && pCurRule->IsOutlineRule();
 
@@ -261,7 +260,7 @@ void SwListShell::GetState(SfxItemSet &rSet)
             break;
 
             case FN_NUM_BULLET_NONUM:
-                if ( rSh.CrsrInsideInputField() )
+                if ( rSh.CursorInsideInputField() )
                 {
                     rSet.DisableItem(nWhich);
                 }
@@ -274,7 +273,7 @@ void SwListShell::GetState(SfxItemSet &rSet)
 SwListShell::SwListShell(SwView &_rView) :
     SwBaseShell(_rView)
 {
-    SetName(OUString("List"));
+    SetName("List");
     SetHelpId(SW_LISTSHELL);
 }
 

@@ -87,7 +87,7 @@ public:
     explicit BuiltinPropertyGetSetHelper( const uno::Reference< frame::XModel >& xModel ) :PropertGetSetHelper( xModel )
     {
     }
-    virtual uno::Any getPropertyValue( const OUString& rPropName ) SAL_OVERRIDE
+    virtual uno::Any getPropertyValue( const OUString& rPropName ) override
     {
         if ( rPropName == "EditingDuration" )
         {
@@ -148,7 +148,7 @@ public:
             return getUserDefinedProperties()->getPropertyValue(rPropName);
         }
     }
-    virtual void setPropertyValue( const OUString& rPropName, const uno::Any& aValue ) SAL_OVERRIDE
+    virtual void setPropertyValue( const OUString& rPropName, const uno::Any& aValue ) override
     {
         if ("EditingDuration" == rPropName)
         {
@@ -268,12 +268,12 @@ public:
     explicit CustomPropertyGetSetHelper( const uno::Reference< frame::XModel >& xModel ) :BuiltinPropertyGetSetHelper( xModel )
     {
     }
-    virtual uno::Any getPropertyValue( const OUString& rPropName ) SAL_OVERRIDE
+    virtual uno::Any getPropertyValue( const OUString& rPropName ) override
     {
         return getUserDefinedProperties()->getPropertyValue(rPropName);
     }
     virtual void setPropertyValue(
-            const OUString& rPropName, const uno::Any& rValue) SAL_OVERRIDE
+            const OUString& rPropName, const uno::Any& rValue) override
     {
         return getUserDefinedProperties()->setPropertyValue(rPropName, rValue);
     }
@@ -284,12 +284,12 @@ class StatisticPropertyGetSetHelper : public PropertGetSetHelper
     SwDocShell* mpDocShell;
     uno::Reference< beans::XPropertySet > mxModelProps;
 public:
-    explicit StatisticPropertyGetSetHelper( const uno::Reference< frame::XModel >& xModel ) :PropertGetSetHelper( xModel ) , mpDocShell( NULL )
+    explicit StatisticPropertyGetSetHelper( const uno::Reference< frame::XModel >& xModel ) :PropertGetSetHelper( xModel ) , mpDocShell( nullptr )
     {
             mxModelProps.set( m_xModel, uno::UNO_QUERY_THROW );
             mpDocShell = word::getDocShell( xModel );
     }
-    virtual uno::Any getPropertyValue( const OUString& rPropName ) SAL_OVERRIDE
+    virtual uno::Any getPropertyValue( const OUString& rPropName ) override
     {
         try
         {
@@ -334,7 +334,7 @@ public:
         return aReturn;
     }
 
-    virtual void setPropertyValue( const OUString& rPropName, const uno::Any& aValue ) SAL_OVERRIDE
+    virtual void setPropertyValue( const OUString& rPropName, const uno::Any& aValue ) override
     {
         uno::Sequence< beans::NamedValue > stats(
                 m_xDocProps->getDocumentStatistics());
@@ -439,7 +439,7 @@ public:
     MSOIndexToOODocPropInfo& getDocPropInfoMap() { return m_docPropInfoMap; }
 };
 
-typedef InheritedHelperInterfaceImpl1< ooo::vba::XDocumentProperty > SwVbaDocumentProperty_BASE;
+typedef InheritedHelperInterfaceWeakImpl< ooo::vba::XDocumentProperty > SwVbaDocumentProperty_BASE;
 
 class SwVbaBuiltInDocumentProperty : public SwVbaDocumentProperty_BASE
 {
@@ -448,22 +448,22 @@ protected:
 public:
     SwVbaBuiltInDocumentProperty(  const uno::Reference< ov::XHelperInterface >& xParent, const uno::Reference< uno::XComponentContext >& xContext, const DocPropInfo& rInfo );
     // XDocumentProperty
-    virtual void SAL_CALL Delete(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual OUString SAL_CALL getName(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setName( const OUString& Name ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::sal_Int8 SAL_CALL getType(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setType( ::sal_Int8 Type ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL getLinkToContent(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setLinkToContent( sal_Bool LinkToContent ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual uno::Any SAL_CALL getValue(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setValue( const uno::Any& Value ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual OUString SAL_CALL getLinkSource(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setLinkSource( const OUString& LinkSource ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL Delete(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
+    virtual OUString SAL_CALL getName(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setName( const OUString& Name ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
+    virtual ::sal_Int8 SAL_CALL getType(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setType( ::sal_Int8 Type ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL getLinkToContent(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setLinkToContent( sal_Bool LinkToContent ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
+    virtual uno::Any SAL_CALL getValue(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setValue( const uno::Any& Value ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
+    virtual OUString SAL_CALL getLinkSource(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setLinkSource( const OUString& LinkSource ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
     //XDefaultProperty
-    virtual OUString SAL_CALL getDefaultPropertyName(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE { return OUString("Value"); }
+    virtual OUString SAL_CALL getDefaultPropertyName(  ) throw (uno::RuntimeException, std::exception) override { return OUString("Value"); }
     // XHelperInterface
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override;
+    virtual uno::Sequence<OUString> getServiceNames() override;
 };
 
 class SwVbaCustomDocumentProperty : public SwVbaBuiltInDocumentProperty
@@ -472,14 +472,14 @@ public:
 
     SwVbaCustomDocumentProperty(  const uno::Reference< ov::XHelperInterface >& xParent, const uno::Reference< uno::XComponentContext >& xContext, const DocPropInfo& rInfo );
 
-    virtual sal_Bool SAL_CALL getLinkToContent(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setLinkToContent( sal_Bool LinkToContent ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual sal_Bool SAL_CALL getLinkToContent(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setLinkToContent( sal_Bool LinkToContent ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
 
-    virtual OUString SAL_CALL getLinkSource(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setLinkSource( const OUString& LinkSource ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL Delete(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setName( const OUString& Name ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setType( ::sal_Int8 Type ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getLinkSource(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setLinkSource( const OUString& LinkSource ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL Delete(  ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setName( const OUString& Name ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setType( ::sal_Int8 Type ) throw (script::BasicErrorException, uno::RuntimeException, std::exception) override;
 
 };
 
@@ -631,25 +631,25 @@ SwVbaBuiltInDocumentProperty::getServiceNames()
     }
     return aServiceNames;
 }
-typedef ::cppu::WeakImplHelper< com::sun::star::container::XIndexAccess
-        ,com::sun::star::container::XNameAccess
-        ,com::sun::star::container::XEnumerationAccess
+typedef ::cppu::WeakImplHelper< css::container::XIndexAccess
+        ,css::container::XNameAccess
+        ,css::container::XEnumerationAccess
         > PropertiesImpl_BASE;
 
 typedef std::unordered_map< sal_Int32, uno::Reference< XDocumentProperty > > DocProps;
 
-class DocPropEnumeration : public ::cppu::WeakImplHelper< com::sun::star::container::XEnumeration >
+class DocPropEnumeration : public ::cppu::WeakImplHelper< css::container::XEnumeration >
 {
     DocProps mDocProps;
     DocProps::iterator mIt;
 public:
 
     explicit DocPropEnumeration( const DocProps& rProps ) : mDocProps( rProps ), mIt( mDocProps.begin() ) {}
-    virtual sal_Bool SAL_CALL hasMoreElements(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasMoreElements(  ) throw (uno::RuntimeException, std::exception) override
     {
         return mIt != mDocProps.end();
     }
-    virtual uno::Any SAL_CALL nextElement(  ) throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Any SAL_CALL nextElement(  ) throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) override
     {
         if ( !hasMoreElements() )
             throw container::NoSuchElementException();
@@ -663,15 +663,13 @@ class BuiltInPropertiesImpl : public PropertiesImpl_BASE
 {
 protected:
 
-    uno::Reference< XHelperInterface > m_xParent;
-    uno::Reference< uno::XComponentContext > m_xContext;
     uno::Reference< frame::XModel > m_xModel;
 
     DocProps mDocProps;
     DocPropsByName mNamedDocProps;
 
     public:
-    BuiltInPropertiesImpl( const uno::Reference< XHelperInterface >& xParent, const uno::Reference< uno::XComponentContext >& xContext, const uno::Reference< frame::XModel >& xModel ) : m_xParent( xParent ), m_xContext( xContext ), m_xModel( xModel )
+    BuiltInPropertiesImpl( const uno::Reference< XHelperInterface >& xParent, const uno::Reference< uno::XComponentContext >& xContext, const uno::Reference< frame::XModel >& xModel ) : m_xModel( xModel )
     {
         BuiltInIndexHelper builtIns( m_xModel );
         for ( sal_Int32 index = word::WdBuiltInProperty::wdPropertyTitle; index <= word::WdBuiltInProperty::wdPropertyCharsWSpaces; ++index )
@@ -681,11 +679,11 @@ protected:
         }
     }
 // XIndexAccess
-    virtual ::sal_Int32 SAL_CALL getCount(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual ::sal_Int32 SAL_CALL getCount(  ) throw (uno::RuntimeException, std::exception) override
     {
         return mDocProps.size();
     }
-    virtual uno::Any SAL_CALL getByIndex( ::sal_Int32 Index ) throw (lang::IndexOutOfBoundsException, lang::WrappedTargetException, std::exception ) SAL_OVERRIDE
+    virtual uno::Any SAL_CALL getByIndex( ::sal_Int32 Index ) throw (lang::IndexOutOfBoundsException, lang::WrappedTargetException, std::exception ) override
     {
         // correct the correct by the base class for 1 based indices
         DocProps::iterator it = mDocProps.find( ++Index );
@@ -693,7 +691,7 @@ protected:
             throw lang::IndexOutOfBoundsException();
         return uno::makeAny( it->second  );
     }
-    virtual uno::Any SAL_CALL getByName( const OUString& aName ) throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Any SAL_CALL getByName( const OUString& aName ) throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) override
     {
         if ( !hasByName( aName ) )
             throw container::NoSuchElementException();
@@ -701,7 +699,7 @@ protected:
         return uno::Any( it->second );
 
     }
-    virtual uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw (uno::RuntimeException, std::exception) override
     {
         uno::Sequence< OUString > aNames( getCount() );
         OUString* pName = aNames.getArray();
@@ -711,7 +709,7 @@ protected:
         return aNames;
     }
 
-    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw (uno::RuntimeException, std::exception) override
     {
         DocPropsByName::iterator it = mNamedDocProps.find( aName );
         if ( it == mNamedDocProps.end() )
@@ -719,21 +717,21 @@ protected:
         return sal_True;
     }
 // XElementAccess
-    virtual uno::Type SAL_CALL getElementType(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Type SAL_CALL getElementType(  ) throw (uno::RuntimeException, std::exception) override
     {
         return  cppu::UnoType<XDocumentProperty>::get();
     }
-    virtual sal_Bool SAL_CALL hasElements(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasElements(  ) throw (uno::RuntimeException, std::exception) override
     {
         return !mDocProps.empty();
     }
-    virtual uno::Reference< container::XEnumeration > SAL_CALL createEnumeration(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Reference< container::XEnumeration > SAL_CALL createEnumeration(  ) throw (uno::RuntimeException, std::exception) override
     {
         return new DocPropEnumeration( mDocProps );
     }
 };
 
-SwVbaBuiltinDocumentProperties::SwVbaBuiltinDocumentProperties( const uno::Reference< XHelperInterface >& xParent, const uno::Reference< uno::XComponentContext >& xContext, const uno::Reference< frame::XModel >& xModel ) : SwVbaDocumentproperties_BASE( xParent, xContext,  uno::Reference< container::XIndexAccess >( new BuiltInPropertiesImpl( xParent, xContext, xModel ) ) ), m_xModel( xModel )
+SwVbaBuiltinDocumentProperties::SwVbaBuiltinDocumentProperties( const uno::Reference< XHelperInterface >& xParent, const uno::Reference< uno::XComponentContext >& xContext, const uno::Reference< frame::XModel >& xModel ) : SwVbaDocumentproperties_BASE( xParent, xContext,  uno::Reference< container::XIndexAccess >( new BuiltInPropertiesImpl( xParent, xContext, xModel ) ) )
 {
 }
 
@@ -800,12 +798,12 @@ public:
                 uno::UNO_SET_THROW);
     };
     // XIndexAccess
-    virtual ::sal_Int32 SAL_CALL getCount(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual ::sal_Int32 SAL_CALL getCount(  ) throw (uno::RuntimeException, std::exception) override
     {
         return mxUserDefinedProp->getPropertySetInfo()->getProperties().getLength();
     }
 
-    virtual uno::Any SAL_CALL getByIndex( ::sal_Int32 Index ) throw (lang::IndexOutOfBoundsException, lang::WrappedTargetException, std::exception ) SAL_OVERRIDE
+    virtual uno::Any SAL_CALL getByIndex( ::sal_Int32 Index ) throw (lang::IndexOutOfBoundsException, lang::WrappedTargetException, std::exception ) override
     {
         uno::Sequence< beans::Property > aProps = mxUserDefinedProp->getPropertySetInfo()->getProperties();
         if ( Index >= aProps.getLength() )
@@ -815,7 +813,7 @@ public:
         return uno::makeAny( uno::Reference< XDocumentProperty >( new SwVbaCustomDocumentProperty( m_xParent, m_xContext, aPropInfo ) ) );
     }
 
-    virtual uno::Any SAL_CALL getByName( const OUString& aName ) throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Any SAL_CALL getByName( const OUString& aName ) throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) override
     {
         if ( !hasByName( aName ) )
             throw container::NoSuchElementException();
@@ -824,7 +822,7 @@ public:
         return uno::makeAny( uno::Reference< XDocumentProperty >( new SwVbaCustomDocumentProperty( m_xParent, m_xContext, aPropInfo ) ) );
     }
 
-    virtual uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw (uno::RuntimeException, std::exception) override
     {
         uno::Sequence< beans::Property > aProps = mxUserDefinedProp->getPropertySetInfo()->getProperties();
         uno::Sequence< OUString > aNames( aProps.getLength() );
@@ -836,24 +834,24 @@ public:
         return aNames;
     }
 
-    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw (uno::RuntimeException, std::exception) override
     {
         OSL_TRACE("hasByName(%s) returns %d", OUStringToOString( aName, RTL_TEXTENCODING_UTF8 ).getStr(), mxUserDefinedProp->getPropertySetInfo()->hasPropertyByName( aName ) );
         return mxUserDefinedProp->getPropertySetInfo()->hasPropertyByName( aName );
     }
 
     // XElementAccess
-    virtual uno::Type SAL_CALL getElementType(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Type SAL_CALL getElementType(  ) throw (uno::RuntimeException, std::exception) override
     {
         return  cppu::UnoType<XDocumentProperty>::get();
     }
 
-    virtual sal_Bool SAL_CALL hasElements(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasElements(  ) throw (uno::RuntimeException, std::exception) override
     {
         return getCount() > 0;
     }
 
-    virtual uno::Reference< container::XEnumeration > SAL_CALL createEnumeration(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Reference< container::XEnumeration > SAL_CALL createEnumeration(  ) throw (uno::RuntimeException, std::exception) override
     {
         // create a map of properties ( the key doesn't matter )
         OSL_TRACE("Creating an enumeration");

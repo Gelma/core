@@ -56,6 +56,7 @@ static void lcl_InvalidateAttribs( SfxBindings& rBindings )
     rBindings.Invalidate( SID_ULINE_VAL_DOTTED );
     rBindings.Invalidate( SID_ATTR_CHAR_OVERLINE );
     rBindings.Invalidate( SID_ATTR_CHAR_COLOR );
+    rBindings.Invalidate( SID_ATTR_CHAR_BACK_COLOR );
     rBindings.Invalidate( SID_ATTR_CHAR_FONT );
     rBindings.Invalidate( SID_ATTR_CHAR_FONTHEIGHT );
     rBindings.Invalidate( SID_ATTR_PARA_ADJUST_LEFT );
@@ -95,7 +96,7 @@ static void lcl_UpdateHyphenator( Outliner& rOutliner, SdrObject* pObj )
 {
     // use hyphenator only if hyphenation attribute is set
     if ( pObj && static_cast<const SfxBoolItem&>(pObj->GetMergedItem(EE_PARA_HYPHENATE)).GetValue() ) {
-            com::sun::star::uno::Reference<com::sun::star::linguistic2::XHyphenator> xHyphenator( LinguMgr::GetHyphenator() );
+            css::uno::Reference<css::linguistic2::XHyphenator> xHyphenator( LinguMgr::GetHyphenator() );
             rOutliner.SetHyphenator( xHyphenator );
     }
 }
@@ -109,7 +110,7 @@ static void lcl_UpdateHyphenator( Outliner& rOutliner, SdrObject* pObj )
 FuText::FuText(ScTabViewShell* pViewSh, vcl::Window* pWin, ScDrawView* pViewP,
                    SdrModel* pDoc, SfxRequest& rReq) :
     FuConstruct(pViewSh, pWin, pViewP, pDoc, rReq),
-    pTextObj(NULL)
+    pTextObj(nullptr)
 {
 }
 
@@ -166,7 +167,7 @@ bool FuText::MouseButtonDown(const MouseEvent& rMEvt)
 
         const size_t nHdlNum = pView->GetHdlNum(pHdl);
 
-        if (pHdl != NULL)
+        if (pHdl != nullptr)
         {
             if (pView->HasMarkablePoints() && pView->IsPointMarkable(*pHdl))
             {
@@ -198,9 +199,9 @@ bool FuText::MouseButtonDown(const MouseEvent& rMEvt)
         SdrObject* pObj;
         SdrPageView* pPV;
 
-        if ( pHdl != NULL || pView->IsMarkedHit(aMDPos) )
+        if ( pHdl != nullptr || pView->IsMarkedHit(aMDPos) )
         {
-            if (pHdl == NULL &&
+            if (pHdl == nullptr &&
 //              pView->TakeTextEditObject(aMDPos, pObj, pPV) )
                 pView->PickObj(aMDPos, pView->getHitTolLog(), pObj, pPV, SdrSearchOptions::PICKTEXTEDIT) )
             {
@@ -283,7 +284,7 @@ bool FuText::MouseButtonDown(const MouseEvent& rMEvt)
 
                     pHdl=pView->PickHandle(aMDPos);
 
-                    if (pHdl!=NULL)
+                    if (pHdl!=nullptr)
                     {
                         pView->MarkPoint(*pHdl);
                         pHdl=pView->GetHdl(nHdlNum);
@@ -324,7 +325,7 @@ bool FuText::MouseButtonDown(const MouseEvent& rMEvt)
                     // also adjusted )
                     Point aGridOff = CurrentGridSyncOffsetAndPos( aMDPos );
 
-                    bool bRet = pView->BegCreateObj(aMDPos, nullptr);
+                    bool bRet = pView->BegCreateObj(aMDPos);
                     if ( bRet )
                     pView->GetCreateObj()->SetGridOffset( aGridOff );
                 }
@@ -333,7 +334,7 @@ bool FuText::MouseButtonDown(const MouseEvent& rMEvt)
                     pView->UnmarkAllObj();
                     ScViewData& rViewData = pViewShell->GetViewData();
                     rViewData.GetDispatcher().Execute(aSfxRequest.GetSlot(), SfxCallMode::SLOT | SfxCallMode::RECORD);
-                    pView->MarkObj(pObj,pPV,false);
+                    pView->MarkObj(pObj,pPV);
 
                     pHdl=pView->PickHandle(aMDPos);
                     pView->BegDragObj(aMDPos, nullptr, pHdl);
@@ -474,7 +475,7 @@ bool FuText::MouseButtonUp(const MouseEvent& rMEvt)
                 if(rMarkList.GetMark(0))
                 {
                     SdrObject* pObj = rMarkList.GetMark(0)->GetMarkedSdrObj();
-                    if(pObj && pObj->ISA(SdrTextObj))
+                    if(pObj && dynamic_cast<const SdrTextObj*>( pObj) !=  nullptr)
                     {
                         SdrTextObj* pText = static_cast<SdrTextObj*>(pObj);
                         SfxItemSet aSet(pDrDoc->GetItemPool());
@@ -642,7 +643,7 @@ void FuText::SetInEditMode(SdrObject* pObj, const Point* pMousePixel,
         }
     }
 
-    pTextObj = NULL;
+    pTextObj = nullptr;
 
     if ( pObj )
     {
@@ -651,7 +652,7 @@ void FuText::SetInEditMode(SdrObject* pObj, const Point* pMousePixel,
         if (nSdrObjKind == OBJ_TEXT ||
             nSdrObjKind == OBJ_TITLETEXT ||
             nSdrObjKind == OBJ_OUTLINETEXT ||
-            pObj->ISA(SdrTextObj))
+            dynamic_cast<const SdrTextObj*>( pObj) !=  nullptr)
         {
             SdrPageView* pPV = pView->GetSdrPageView();
 
@@ -724,11 +725,11 @@ SdrObject* FuText::CreateDefaultObject(const sal_uInt16 nID, const Rectangle& rR
 
     SdrObject* pObj = SdrObjFactory::MakeNewObject(
         pView->GetCurrentObjInventor(), pView->GetCurrentObjIdentifier(),
-        0L, pDrDoc);
+        nullptr, pDrDoc);
 
     if(pObj)
     {
-        if(pObj->ISA(SdrTextObj))
+        if(dynamic_cast<const SdrTextObj*>( pObj) !=  nullptr)
         {
             SdrTextObj* pText = static_cast<SdrTextObj*>(pObj);
             pText->SetLogicRect(rRectangle);

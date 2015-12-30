@@ -38,8 +38,8 @@ ScInsertTableDlg::ScInsertTableDlg( vcl::Window* pParent, ScViewData& rData, SCT
     : ModalDialog(pParent, "InsertSheetDialog", "modules/scalc/ui/insertsheet.ui")
     , rViewData(rData)
     , rDoc(*rData.GetDocument())
-    , pDocShTables(NULL)
-    , pDocInserter(NULL)
+    , pDocShTables(nullptr)
+    , pDocInserter(nullptr)
     , bMustClose(false)
     , nSelTabIndex(0)
     , nTableCount(nTabCount)
@@ -209,7 +209,7 @@ void ScInsertTableDlg::FillTables_Impl( ScDocument* pSrcDoc )
 
 const OUString* ScInsertTableDlg::GetFirstTable( sal_uInt16* pN )
 {
-    const OUString* pStr = NULL;
+    const OUString* pStr = nullptr;
 
     if ( m_pBtnNew->IsChecked() )
     {
@@ -230,7 +230,7 @@ const OUString* ScInsertTableDlg::GetFirstTable( sal_uInt16* pN )
 
 const OUString* ScInsertTableDlg::GetNextTable( sal_uInt16* pN )
 {
-    const OUString* pStr = NULL;
+    const OUString* pStr = nullptr;
 
     if ( !m_pBtnNew->IsChecked() && nSelTabIndex < m_pLbTables->GetSelectEntryCount() )
     {
@@ -246,7 +246,7 @@ const OUString* ScInsertTableDlg::GetNextTable( sal_uInt16* pN )
 
 // Handler:
 
-IMPL_LINK_NOARG(ScInsertTableDlg, CountHdl_Impl)
+IMPL_LINK_NOARG_TYPED(ScInsertTableDlg, CountHdl_Impl, Edit&, void)
 {
     nTableCount = static_cast<SCTAB>(m_pNfCount->GetValue());
     if ( nTableCount==1)
@@ -265,7 +265,6 @@ IMPL_LINK_NOARG(ScInsertTableDlg, CountHdl_Impl)
     }
 
     DoEnable_Impl();
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(ScInsertTableDlg, ChoiceHdl_Impl, Button*, void)
@@ -286,10 +285,9 @@ IMPL_LINK_NOARG_TYPED(ScInsertTableDlg, BrowseHdl_Impl, Button*, void)
     pDocInserter->StartExecuteModal( LINK( this, ScInsertTableDlg, DialogClosedHdl ) );
 }
 
-IMPL_LINK_NOARG(ScInsertTableDlg, SelectHdl_Impl)
+IMPL_LINK_NOARG_TYPED(ScInsertTableDlg, SelectHdl_Impl, ListBox&, void)
 {
     DoEnable_Impl();
-    return 0;
 }
 
 void ScInsertTableDlg::DoEnable_Impl()
@@ -355,9 +353,9 @@ IMPL_LINK_TYPED( ScInsertTableDlg, DialogClosedHdl, sfx2::FileDialogHelper*, _pF
             {
                 pDocShTables->DoClose();
                 aDocShTablesRef.Clear();
-                pDocShTables = NULL;
+                pDocShTables = nullptr;
 
-                FillTables_Impl( NULL );
+                FillTables_Impl( nullptr );
                 m_pFtPath->SetText( EMPTY_OUSTRING );
             }
         }

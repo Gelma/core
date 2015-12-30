@@ -20,57 +20,23 @@
 #ifndef INCLUDED_VCL_TOOLBOX_HXX
 #define INCLUDED_VCL_TOOLBOX_HXX
 
-#include <com/sun/star/frame/XFrame.hpp>
+#include <vcl/vclstatuslistener.hxx>
 #include <rsc/rsc-vcl-shared-types.hxx>
 #include <vcl/dllapi.h>
 #include <vcl/dockwin.hxx>
 #include <vcl/image.hxx>
-#include <vcl/timer.hxx>
-#include <vcl/idle.hxx>
 #include <vector>
 
-class UserDrawEvent;
+#include <com/sun/star/frame/XFrame.hpp>
+#include <com/sun/star/frame/FeatureStateEvent.hpp>
 
+class Timer;
+class UserDrawEvent;
 struct ImplToolItem;
 struct ImplToolSize;
 struct ImplToolBoxPrivateData;
 class  ImplTrackRect;
 class  PopupMenu;
-
-#define TOOLBOX_CUSTOMIZE_RESIZE        ((sal_uInt16)0xFFFE)
-
-class VCL_DLLPUBLIC ToolBoxCustomizeEvent
-{
-private:
-    VclPtr<ToolBox> mpTargetBox;
-    void*       mpData;
-    sal_uInt16      mnIdFrom;
-    sal_uInt16      mnPosTo;
-
-public:
-                ToolBoxCustomizeEvent();
-                ToolBoxCustomizeEvent( ToolBox* pDropBox,
-                                       sal_uInt16 nId, sal_uInt16 nPos = 0,
-                                       void* pUserData = NULL );
-};
-
-inline ToolBoxCustomizeEvent::ToolBoxCustomizeEvent()
-{
-    mpTargetBox = NULL;
-    mnIdFrom    = 0;
-    mnPosTo     = 0;
-    mpData      = NULL;
-}
-
-inline ToolBoxCustomizeEvent::ToolBoxCustomizeEvent( ToolBox* pDropBox,
-                                                     sal_uInt16 nId, sal_uInt16 nPos,
-                                                     void* pUserData )
-{
-    mpTargetBox = pDropBox;
-    mnIdFrom    = nId;
-    mnPosTo     = nPos;
-    mpData      = pUserData;
-}
 
 #define TOOLBOX_STYLE_FLAT          ((sal_uInt16)0x0004)
 
@@ -78,7 +44,7 @@ inline ToolBoxCustomizeEvent::ToolBoxCustomizeEvent( ToolBox* pDropBox,
 #define TOOLBOX_ITEM_NOTFOUND       ((sal_uInt16)0xFFFF)
 
 // item ids in the custom menu may not exceed this constant
-#define TOOLBOX_MENUITEM_START      ((sal_uInt16)0xE000)
+#define TOOLBOX_MENUITEM_START      ((sal_uInt16)0x1000)
 
 // defines for the menubutton
 #define TOOLBOX_MENUTYPE_NONE           ((sal_uInt16)0x0000)    // no menu at all, scrolling by spin buttons
@@ -102,23 +68,24 @@ struct ImplToolSize
     sal_uInt16 mnLines;
 };
 
+class Idle;
 class VCL_DLLPUBLIC ToolBox : public DockingWindow
 {
     friend class FloatingWindow;
     friend class ImplTBDragMgr;
 
 private:
-    ImplToolBoxPrivateData*     mpData;
+    ImplToolBoxPrivateData*   mpData;
     std::vector<ImplToolSize> maFloatSizes;
     ImageList           maImageList;
-    Idle                maIdle;
+    Idle               *mpIdle;
     Rectangle           maUpperRect;
     Rectangle           maLowerRect;
     Rectangle           maOutDockRect;
     Rectangle           maInDockRect;
     Rectangle           maPaintRect;
-    VclPtr<FloatingWindow>  mpFloatWin;
-    sal_uInt16              mnKeyModifier;
+    VclPtr<FloatingWindow> mpFloatWin;
+    sal_uInt16          mnKeyModifier;
     long                mnDX;
     long                mnDY;
     long                mnMaxItemWidth;    // max item width
@@ -130,22 +97,23 @@ private:
     long                mnBottomBorder;
     long                mnLastResizeDY;
     long                mnActivateCount;
-    sal_uInt16              mnLastFocusItemId;
-    sal_uInt16              mnFocusPos;
-    sal_uInt16              mnOutStyle;
-    sal_uInt16              mnHighItemId;
-    sal_uInt16              mnCurItemId;
-    sal_uInt16              mnDownItemId;
-    sal_uInt16              mnCurPos;
-    sal_uInt16              mnLines;        // total number of toolbox lines
-    sal_uInt16              mnCurLine;      // the currently visible line
-    sal_uInt16              mnCurLines;     // number of lines due to line breaking
-    sal_uInt16              mnVisLines;     // number of visible lines (for scrolling)
-    sal_uInt16              mnFloatLines;   // number of lines during floating mode
-    sal_uInt16              mnDockLines;
-    sal_uInt16              mnConfigItem;
-    sal_uInt16              mnMouseClicks;
-    sal_uInt16              mnMouseModifier;
+    long                mnImagesRotationAngle;
+    sal_uInt16          mnLastFocusItemId;
+    sal_uInt16          mnFocusPos;
+    sal_uInt16          mnOutStyle;
+    sal_uInt16          mnHighItemId;
+    sal_uInt16          mnCurItemId;
+    sal_uInt16          mnDownItemId;
+    sal_uInt16          mnCurPos;
+    sal_uInt16          mnLines;        // total number of toolbox lines
+    sal_uInt16          mnCurLine;      // the currently visible line
+    sal_uInt16          mnCurLines;     // number of lines due to line breaking
+    sal_uInt16          mnVisLines;     // number of visible lines (for scrolling)
+    sal_uInt16          mnFloatLines;   // number of lines during floating mode
+    sal_uInt16          mnDockLines;
+    sal_uInt16          mnConfigItem;
+    sal_uInt16          mnMouseClicks;
+    sal_uInt16          mnMouseModifier;
     bool                mbDrag:1,
                         mbSelection:1,
                         mbCommandDrag:1,
@@ -164,7 +132,8 @@ private:
                         mbMenuStrings:1,
                         mbIsShift:1,
                         mbIsKeyEvent:1,
-                        mbChangingHighlight:1;
+                        mbChangingHighlight:1,
+                        mbImagesMirrored:1;
     WindowAlign         meAlign;
     WindowAlign         meDockAlign;
     ButtonType          meButtonType;
@@ -179,6 +148,8 @@ private:
     Link<CommandEvent const *, void> maCommandHandler;
     Link<StateChangedType const *, void> maStateChangedHandler;
     Link<DataChangedEvent const *, void> maDataChangedHandler;
+    /** StatusListener. Notifies about rotated images etc */
+    rtl::Reference<VclStatusListener<ToolBox>> mpStatusListener;
 
 public:
     using Window::ImplInit;
@@ -193,7 +164,7 @@ private:
     SAL_DLLPRIVATE void            ImplLoadRes( const ResId& rResId );
     SAL_DLLPRIVATE ImplToolItem*   ImplGetItem( sal_uInt16 nId ) const;
     SAL_DLLPRIVATE bool            ImplCalcItem();
-    SAL_DLLPRIVATE sal_uInt16          ImplCalcBreaks( long nWidth, long* pMaxLineWidth, bool bCalcHorz );
+    SAL_DLLPRIVATE sal_uInt16      ImplCalcBreaks( long nWidth, long* pMaxLineWidth, bool bCalcHorz );
     SAL_DLLPRIVATE void            ImplFormat( bool bResize = false );
     SAL_DLLPRIVATE void            ImplDrawSpin(vcl::RenderContext& rRenderContext, bool bUpperIn, bool bLowerIn);
     SAL_DLLPRIVATE void            ImplDrawSeparator(vcl::RenderContext& rRenderContext, sal_uInt16 nPos, const Rectangle& rRect);
@@ -201,12 +172,12 @@ private:
     using Window::ImplInvalidate;
     SAL_DLLPRIVATE void            ImplInvalidate( bool bNewCalc = false, bool bFullPaint = false );
     SAL_DLLPRIVATE void            ImplUpdateItem( sal_uInt16 nIndex = 0xFFFF );
-    SAL_DLLPRIVATE const OUString ImplConvertMenuString( const OUString& rStr );
+    SAL_DLLPRIVATE const OUString  ImplConvertMenuString( const OUString& rStr );
     SAL_DLLPRIVATE bool            ImplHandleMouseMove( const MouseEvent& rMEvt, bool bRepeat = false );
     SAL_DLLPRIVATE bool            ImplHandleMouseButtonUp( const MouseEvent& rMEvt, bool bCancel = false );
     SAL_DLLPRIVATE void            ImplChangeHighlight( ImplToolItem* pItem, bool bNoGrabFocus = false );
     SAL_DLLPRIVATE bool            ImplChangeHighlightUpDn( bool bUp, bool bNoCycle = false );
-    SAL_DLLPRIVATE sal_uInt16          ImplGetItemLine( ImplToolItem* pCurrentItem );
+    SAL_DLLPRIVATE sal_uInt16      ImplGetItemLine( ImplToolItem* pCurrentItem );
     SAL_DLLPRIVATE ImplToolItem*   ImplGetFirstValidItem( sal_uInt16 nLine );
     SAL_DLLPRIVATE bool            ImplOpenItem( vcl::KeyCode aKeyCode );
     SAL_DLLPRIVATE bool            ImplActivateItem( vcl::KeyCode aKeyCode );
@@ -229,11 +200,11 @@ private:
     DECL_DLLPRIVATE_LINK_TYPED(    ImplCustomMenuListener, VclMenuEvent&, void );
     DECL_DLLPRIVATE_LINK_TYPED(    ImplDropdownLongClickHdl, Timer*, void );
 
-                                   ToolBox (const ToolBox &) SAL_DELETED_FUNCTION;
-                          ToolBox& operator= (const ToolBox &) SAL_DELETED_FUNCTION;
+                                   ToolBox (const ToolBox &) = delete;
+                          ToolBox& operator= (const ToolBox &) = delete;
 
 public:
-    SAL_DLLPRIVATE void            ImplFloatControl( bool bStart, FloatingWindow* pWindow = NULL );
+    SAL_DLLPRIVATE void            ImplFloatControl( bool bStart, FloatingWindow* pWindow = nullptr );
     SAL_DLLPRIVATE void            ImplDisableFlatButtons();
 
     static SAL_DLLPRIVATE int ImplGetDragWidth( ToolBox* pThis );
@@ -268,7 +239,7 @@ public:
     SAL_DLLPRIVATE ImplToolBoxPrivateData* ImplGetToolBoxPrivateData() const { return mpData; }
 
 protected:
-    virtual void ApplySettings(vcl::RenderContext& rRenderContext) SAL_OVERRIDE;
+    virtual void ApplySettings(vcl::RenderContext& rRenderContext) override;
     void SetCurItemId(sal_uInt16 nSet)
     {
         mnCurItemId = nSet;
@@ -278,39 +249,39 @@ public:
                         ToolBox( vcl::Window* pParent, WinBits nStyle = 0 );
                         ToolBox( vcl::Window* pParent, const ResId& rResId );
     virtual             ~ToolBox();
-    virtual void        dispose() SAL_OVERRIDE;
+    virtual void        dispose() override;
 
     virtual void        Click();
     void                DoubleClick();
-    virtual void        Activate() SAL_OVERRIDE;
-    virtual void        Deactivate() SAL_OVERRIDE;
+    virtual void        Activate() override;
+    virtual void        Deactivate() override;
     void                Highlight();
     virtual void        Select();
 
-    virtual void        MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void        MouseButtonUp( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void        MouseMove( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void        Tracking( const TrackingEvent& rTEvt ) SAL_OVERRIDE;
-    virtual void        Paint( vcl::RenderContext& rRenderContext, const Rectangle& rRect ) SAL_OVERRIDE;
-    virtual void        Move() SAL_OVERRIDE;
-    virtual void        Resize() SAL_OVERRIDE;
-    virtual void        RequestHelp( const HelpEvent& rHEvt ) SAL_OVERRIDE;
-    virtual bool        Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
-    virtual void        Command( const CommandEvent& rCEvt ) SAL_OVERRIDE;
-    virtual void        StateChanged( StateChangedType nType ) SAL_OVERRIDE;
-    virtual void        DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual void        MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void        MouseButtonUp( const MouseEvent& rMEvt ) override;
+    virtual void        MouseMove( const MouseEvent& rMEvt ) override;
+    virtual void        Tracking( const TrackingEvent& rTEvt ) override;
+    virtual void        Paint( vcl::RenderContext& rRenderContext, const Rectangle& rRect ) override;
+    virtual void        Move() override;
+    virtual void        Resize() override;
+    virtual void        RequestHelp( const HelpEvent& rHEvt ) override;
+    virtual bool        Notify( NotifyEvent& rNEvt ) override;
+    virtual void        Command( const CommandEvent& rCEvt ) override;
+    virtual void        StateChanged( StateChangedType nType ) override;
+    virtual void        DataChanged( const DataChangedEvent& rDCEvt ) override;
 
-    virtual void        GetFocus() SAL_OVERRIDE;
-    virtual void        LoseFocus() SAL_OVERRIDE;
-    virtual void        KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
+    virtual void        GetFocus() override;
+    virtual void        LoseFocus() override;
+    virtual void        KeyInput( const KeyEvent& rKEvt ) override;
 
-    virtual bool        PrepareToggleFloatingMode() SAL_OVERRIDE;
-    virtual void        ToggleFloatingMode() SAL_OVERRIDE;
-    virtual void        StartDocking() SAL_OVERRIDE;
-    virtual bool        Docking( const Point& rPos, Rectangle& rRect ) SAL_OVERRIDE;
-    virtual void        EndDocking( const Rectangle& rRect, bool bFloatMode ) SAL_OVERRIDE;
-    virtual void        Resizing( Size& rSize ) SAL_OVERRIDE;
-    virtual Size        GetOptimalSize() const SAL_OVERRIDE;
+    virtual bool        PrepareToggleFloatingMode() override;
+    virtual void        ToggleFloatingMode() override;
+    virtual void        StartDocking() override;
+    virtual bool        Docking( const Point& rPos, Rectangle& rRect ) override;
+    virtual void        EndDocking( const Rectangle& rRect, bool bFloatMode ) override;
+    virtual void        Resizing( Size& rSize ) override;
+    virtual Size        GetOptimalSize() const override;
 
     void                InsertItem( const ResId& rResId,
                                     sal_uInt16 nPos = TOOLBOX_APPEND );
@@ -334,12 +305,10 @@ public:
                                       ToolBoxItemBits nBits = ToolBoxItemBits::NONE,
                                       sal_uInt16 nPos = TOOLBOX_APPEND );
     void                InsertSpace( sal_uInt16 nPos = TOOLBOX_APPEND );
-    void                InsertSeparator( sal_uInt16 nPos = TOOLBOX_APPEND,
-                                         sal_uInt16 nPixSize = 0 );
+    void                InsertSeparator( sal_uInt16 nPos = TOOLBOX_APPEND, sal_uInt16 nPixSize = 0 );
     void                InsertBreak( sal_uInt16 nPos = TOOLBOX_APPEND );
     void                RemoveItem( sal_uInt16 nPos );
-    void                CopyItem( const ToolBox& rToolBox, sal_uInt16 nItemId,
-                                  sal_uInt16 nNewPos = TOOLBOX_APPEND );
+    void                CopyItem( const ToolBox& rToolBox, sal_uInt16 nItemId, sal_uInt16 nNewPos = TOOLBOX_APPEND );
     void                Clear();
 
     const ImageList&    GetImageList() const { return maImageList; }
@@ -394,6 +363,7 @@ public:
     void                SetItemImage( sal_uInt16 nItemId, const Image& rImage );
     Image               GetItemImage( sal_uInt16 nItemId ) const;
     Image               GetItemImageOriginal( sal_uInt16 nItemId ) const;
+    void                UpdateImageOrientation();
     void                SetItemImageAngle( sal_uInt16 nItemId, long nAngle10 );
     void                SetItemImageMirrorMode( sal_uInt16 nItemId, bool bMirror );
     void                SetItemText( sal_uInt16 nItemId, const OUString& rText );
@@ -469,7 +439,6 @@ public:
 
     // enable/disable undocking
     void                Lock( bool bLock = true );
-
     // read configuration to determine locking behaviour
     static bool         AlwaysLocked();
 
@@ -524,7 +493,7 @@ public:
     // accessibility helpers
 
     // gets the displayed text
-    OUString GetDisplayText() const SAL_OVERRIDE;
+    OUString GetDisplayText() const override;
     // returns the bounding box for the character at index nIndex
     // where nIndex is relative to the starting index of the item
     // with id nItemId (in coordinates of the displaying window)
@@ -538,6 +507,7 @@ public:
     void                ChangeHighlight( sal_uInt16 nPos );
 
     void SetToolbarLayoutMode( ToolBoxLayoutMode eLayout );
+    void statusChanged(const css::frame::FeatureStateEvent& rEvent);
 };
 
 inline void ToolBox::CheckItem( sal_uInt16 nItemId, bool bCheck )

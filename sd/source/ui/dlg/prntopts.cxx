@@ -29,8 +29,7 @@
  *  dialog to adjust print options
  */
 SdPrintOptions::SdPrintOptions( vcl::Window* pParent, const SfxItemSet& rInAttrs ) :
-    SfxTabPage          ( pParent, "prntopts" , "modules/simpress/ui/prntopts.ui" , &rInAttrs ),
-    rOutAttrs           ( rInAttrs )
+    SfxTabPage          ( pParent, "prntopts" , "modules/simpress/ui/prntopts.ui" , &rInAttrs )
 {
     get( m_pFrmContent , "contentframe" );
     get( m_pCbxDraw , "drawingcb" );
@@ -154,7 +153,7 @@ bool SdPrintOptions::FillItemSet( SfxItemSet* rAttrs )
 
 void SdPrintOptions::Reset( const SfxItemSet* rAttrs )
 {
-    const SdOptionsPrintItem* pPrintOpts = NULL;
+    const SdOptionsPrintItem* pPrintOpts = nullptr;
     if( SfxItemState::SET == rAttrs->GetItemState( ATTR_OPTIONS_PRINT, false,
                             reinterpret_cast<const SfxPoolItem**>(&pPrintOpts) ) )
     {
@@ -204,7 +203,7 @@ void SdPrintOptions::Reset( const SfxItemSet* rAttrs )
     m_pRbtGrayscale->SaveValue();
     m_pRbtBlackWhite->SaveValue();
 
-    ClickBookletHdl( NULL );
+    ClickBookletHdl( nullptr );
 }
 
 VclPtr<SfxTabPage> SdPrintOptions::Create( vcl::Window* pWindow,
@@ -253,7 +252,7 @@ void SdPrintOptions::PageCreated (const SfxAllItemSet&
                                   )
 {
 #ifdef MACOSX
-    SFX_ITEMSET_ARG (&aSet,pFlagItem,SfxUInt32Item,SID_SDMODE_FLAG,false);
+    const SfxUInt32Item* pFlagItem = aSet.GetItem<SfxUInt32Item>(SID_SDMODE_FLAG, false);
     if (pFlagItem)
     {
         sal_uInt32 nFlags=pFlagItem->GetValue();

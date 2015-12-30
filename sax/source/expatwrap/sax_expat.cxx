@@ -80,12 +80,12 @@ namespace {
                                             pThis->rDocumentLocator->getColumnNumber()\
                                      ) );\
         }\
-        catch( const com::sun::star::uno::RuntimeException &e ) {\
+        catch( const css::uno::RuntimeException &e ) {\
             pThis->bExceptionWasThrown = true; \
             pThis->bRTExceptionWasThrown = true; \
             pImpl->rtexception = e; \
         }\
-        catch( const com::sun::star::uno::Exception &e ) {\
+        catch( const css::uno::Exception &e ) {\
             pThis->bExceptionWasThrown = true; \
             pThis->bRTExceptionWasThrown = true; \
             pImpl->rtexception = WrappedTargetRuntimeException("Non-runtime UNO exception caught during parse", e.Context, makeAny(e)); \
@@ -107,31 +107,31 @@ public:
     SaxExpatParser();
     virtual ~SaxExpatParser();
 
-    // ::com::sun::star::lang::XInitialization:
+    // css::lang::XInitialization:
     virtual void SAL_CALL initialize(css::uno::Sequence<css::uno::Any> const& rArguments)
-        throw (css::uno::RuntimeException, css::uno::Exception, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, css::uno::Exception, std::exception) override;
 
     // The SAX-Parser-Interface
     virtual void SAL_CALL parseStream(  const InputSource& structSource)
         throw ( SAXException,
                 IOException,
-                css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+                css::uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL setDocumentHandler(const css::uno::Reference< XDocumentHandler > & xHandler)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL setErrorHandler(const css::uno::Reference< XErrorHandler > & xHandler)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL setDTDHandler(const css::uno::Reference < XDTDHandler > & xHandler)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL setEntityResolver(const css::uno::Reference<  XEntityResolver >& xResolver)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual void SAL_CALL setLocale( const Locale &locale )                     throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL setLocale( const Locale &locale )                     throw (css::uno::RuntimeException, std::exception) override;
 
 public: // XServiceInfo
-    OUString                     SAL_CALL getImplementationName() throw (std::exception) SAL_OVERRIDE;
-    css::uno::Sequence< OUString >         SAL_CALL getSupportedServiceNames() throw (std::exception) SAL_OVERRIDE;
-    sal_Bool                     SAL_CALL supportsService(const OUString& ServiceName) throw (std::exception) SAL_OVERRIDE;
+    OUString                     SAL_CALL getImplementationName() throw (std::exception) override;
+    css::uno::Sequence< OUString >         SAL_CALL getSupportedServiceNames() throw (std::exception) override;
+    sal_Bool                     SAL_CALL supportsService(const OUString& ServiceName) throw (std::exception) override;
 
 private:
 
@@ -317,7 +317,7 @@ extern "C"
 // LocatorImpl
 
 class LocatorImpl :
-    public WeakImplHelper< XLocator, com::sun::star::io::XSeekable >
+    public WeakImplHelper< XLocator, css::io::XSeekable >
     // should use a different interface for stream positions!
 {
 public:
@@ -327,33 +327,33 @@ public:
     }
 
 public: //XLocator
-    virtual sal_Int32 SAL_CALL getColumnNumber() throw (std::exception) SAL_OVERRIDE
+    virtual sal_Int32 SAL_CALL getColumnNumber() throw (std::exception) override
     {
         return XML_GetCurrentColumnNumber( m_pParser->getEntity().pParser );
     }
-    virtual sal_Int32 SAL_CALL getLineNumber() throw (std::exception) SAL_OVERRIDE
+    virtual sal_Int32 SAL_CALL getLineNumber() throw (std::exception) override
     {
         return XML_GetCurrentLineNumber( m_pParser->getEntity().pParser );
     }
-    virtual OUString SAL_CALL getPublicId() throw (std::exception) SAL_OVERRIDE
+    virtual OUString SAL_CALL getPublicId() throw (std::exception) override
     {
         return m_pParser->getEntity().structSource.sPublicId;
     }
-    virtual OUString SAL_CALL getSystemId() throw (std::exception) SAL_OVERRIDE
+    virtual OUString SAL_CALL getSystemId() throw (std::exception) override
     {
         return m_pParser->getEntity().structSource.sSystemId;
     }
 
     // XSeekable (only for getPosition)
 
-    virtual void SAL_CALL seek( sal_Int64 ) throw(std::exception) SAL_OVERRIDE
+    virtual void SAL_CALL seek( sal_Int64 ) throw(std::exception) override
     {
     }
-    virtual sal_Int64 SAL_CALL getPosition() throw(std::exception) SAL_OVERRIDE
+    virtual sal_Int64 SAL_CALL getPosition() throw(std::exception) override
     {
         return XML_GetCurrentByteIndex( m_pParser->getEntity().pParser );
     }
-    virtual ::sal_Int64 SAL_CALL getLength() throw(std::exception) SAL_OVERRIDE
+    virtual ::sal_Int64 SAL_CALL getLength() throw(std::exception) override
     {
         return 0;
     }
@@ -371,7 +371,7 @@ SaxExpatParser::SaxExpatParser(  )
     m_pImpl = new SaxExpatParser_Impl;
 
     LocatorImpl *pLoc = new LocatorImpl( m_pImpl );
-    m_pImpl->rDocumentLocator = css::uno::Reference< XLocator > ( pLoc );
+    m_pImpl->rDocumentLocator.set( pLoc );
 
     // Performance-improvement; handing out the same object with every call of
     // the startElement callback is allowed (see sax-specification):
@@ -386,7 +386,7 @@ SaxExpatParser::~SaxExpatParser()
     delete m_pImpl;
 }
 
-// ::com::sun::star::lang::XInitialization:
+// css::lang::XInitialization:
 void SAL_CALL
 SaxExpatParser::initialize(css::uno::Sequence< css::uno::Any > const& rArguments)
     throw (css::uno::RuntimeException, css::uno::Exception, std::exception)
@@ -435,7 +435,7 @@ void SaxExpatParser::parseStream(   const InputSource& structSource)
     }
 
     // create parser with proper encoding
-    entity.pParser = XML_ParserCreate( 0 );
+    entity.pParser = XML_ParserCreate( nullptr );
     if( ! entity.pParser )
     {
         throw SAXException("Couldn't create parser",
@@ -457,7 +457,7 @@ void SaxExpatParser::parseStream(   const InputSource& structSource)
     XML_SetNotationDeclHandler( entity.pParser, call_callbackNotationDecl );
     XML_SetExternalEntityRefHandler(    entity.pParser,
                                         call_callbackExternalEntityRef);
-    XML_SetUnknownEncodingHandler( entity.pParser,  call_callbackUnknownEncoding ,0);
+    XML_SetUnknownEncodingHandler( entity.pParser,  call_callbackUnknownEncoding ,nullptr);
 
     if( m_pImpl->rExtendedDocumentHandler.is() ) {
 
@@ -566,8 +566,7 @@ sal_Bool SaxExpatParser::supportsService(const OUString& ServiceName) throw (std
 // XServiceInfo
 css::uno::Sequence< OUString > SaxExpatParser::getSupportedServiceNames() throw (std::exception)
 {
-    css::uno::Sequence<OUString> seq(1);
-    seq[0] = "com.sun.star.xml.sax.Parser";
+    css::uno::Sequence<OUString> seq { "com.sun.star.xml.sax.Parser" };
     return seq;
 }
 
@@ -802,7 +801,7 @@ void SaxExpatParser_Impl::callbackEntityDecl(
         XML_StopParser(pImpl->getEntity().pParser, XML_FALSE);
         pImpl->exception = SAXParseException(
             "SaxExpatParser: internal entity declaration, stopping",
-            0, css::uno::Any(),
+            nullptr, css::uno::Any(),
             pImpl->rDocumentLocator->getPublicId(),
             pImpl->rDocumentLocator->getSystemId(),
             pImpl->rDocumentLocator->getLineNumber(),
@@ -874,7 +873,7 @@ bool SaxExpatParser_Impl::callbackExternalEntityRef(
     }
 
     if( entity.structSource.aInputStream.is() ) {
-        entity.pParser = XML_ExternalEntityParserCreate( parser , context, 0 );
+        entity.pParser = XML_ExternalEntityParserCreate( parser , context, nullptr );
         if( ! entity.pParser )
         {
             return false;

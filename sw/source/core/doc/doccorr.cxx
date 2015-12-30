@@ -35,12 +35,12 @@
 
 namespace
 {
-    /// find the relevant section in which the SwUnoCrsr may wander.
+    /// find the relevant section in which the SwUnoCursor may wander.
     /// returns NULL if no restrictions apply
-    static const SwStartNode* lcl_FindUnoCrsrSection( const SwNode& rNode )
+    static const SwStartNode* lcl_FindUnoCursorSection( const SwNode& rNode )
     {
         const SwStartNode* pStartNode = rNode.StartOfSectionNode();
-        while( ( pStartNode != NULL ) &&
+        while( ( pStartNode != nullptr ) &&
                ( pStartNode->StartOfSectionNode() != pStartNode ) &&
                ( pStartNode->GetStartNodeType() == SwNormalStartNode ) )
             pStartNode = pStartNode->StartOfSectionNode();
@@ -95,72 +95,71 @@ void PaMCorrAbs( const SwPaM& rRange,
     SwPosition const aEnd( *rRange.End() );
     SwPosition const aNewPos( rNewPos );
     SwDoc *const pDoc = aStart.nNode.GetNode().GetDoc();
-    SwCrsrShell *const pShell = pDoc->GetEditShell();
+    SwCursorShell *const pShell = pDoc->GetEditShell();
 
     if( pShell )
     {
         for(const SwViewShell& rShell : pShell->GetRingContainer())
         {
-            if(!rShell.IsA( TYPE( SwCrsrShell )))
+            if(dynamic_cast<const SwCursorShell *>(&rShell) == nullptr)
                 continue;
-            const SwCrsrShell* pCrsrShell = static_cast<const SwCrsrShell*>(&rShell);
-            SwPaM *_pStkCrsr = pCrsrShell->GetStkCrsr();
-            if( _pStkCrsr )
+            const SwCursorShell* pCursorShell = static_cast<const SwCursorShell*>(&rShell);
+            SwPaM *_pStackCursor = pCursorShell->GetStackCursor();
+            if( _pStackCursor )
                 do {
-                    lcl_PaMCorrAbs( *_pStkCrsr, aStart, aEnd, aNewPos );
-                } while ( (_pStkCrsr != 0 ) &&
-                    ((_pStkCrsr = static_cast<SwPaM *>(_pStkCrsr->GetNext())) != pCrsrShell->GetStkCrsr()) );
+                    lcl_PaMCorrAbs( *_pStackCursor, aStart, aEnd, aNewPos );
+                } while ( (_pStackCursor != nullptr ) &&
+                    ((_pStackCursor = static_cast<SwPaM *>(_pStackCursor->GetNext())) != pCursorShell->GetStackCursor()) );
 
-            for(SwPaM& rPaM : const_cast<SwShellCrsr*>(pCrsrShell->_GetCrsr())->GetRingContainer())
+            for(SwPaM& rPaM : const_cast<SwShellCursor*>(pCursorShell->_GetCursor())->GetRingContainer())
             {
                 lcl_PaMCorrAbs( rPaM, aStart, aEnd, aNewPos );
             }
 
-            if( pCrsrShell->IsTableMode() )
-                lcl_PaMCorrAbs( const_cast<SwPaM &>(*pCrsrShell->GetTableCrs()), aStart, aEnd, aNewPos );
+            if( pCursorShell->IsTableMode() )
+                lcl_PaMCorrAbs( const_cast<SwPaM &>(*pCursorShell->GetTableCrs()), aStart, aEnd, aNewPos );
         }
     }
+
+    for(const auto& pWeakUnoCursor : pDoc->mvUnoCursorTable)
     {
-        for(auto pWeakUnoCrsr : pDoc->mvUnoCrsrTbl)
+        auto pUnoCursor(pWeakUnoCursor.lock());
+        if(!pUnoCursor)
+            continue;
+
+        bool bChange = false; // has the UNO cursor been corrected?
+
+        // determine whether the UNO cursor will leave it's designated
+        // section
+        bool const bLeaveSection =
+            pUnoCursor->IsRemainInSection() &&
+            ( lcl_FindUnoCursorSection( aNewPos.nNode.GetNode() ) !=
+                lcl_FindUnoCursorSection(
+                    pUnoCursor->GetPoint()->nNode.GetNode() ) );
+
+        for(SwPaM& rPaM : pUnoCursor->GetRingContainer())
         {
-            auto pUnoCursor(pWeakUnoCrsr.lock());
-            if(!pUnoCursor)
-                continue;
+            bChange |= lcl_PaMCorrAbs( rPaM, aStart, aEnd, aNewPos );
+        }
 
-            bool bChange = false; // has the UNO cursor been corrected?
-
-            // determine whether the UNO cursor will leave it's designated
-            // section
-            bool const bLeaveSection =
-                pUnoCursor->IsRemainInSection() &&
-                ( lcl_FindUnoCrsrSection( aNewPos.nNode.GetNode() ) !=
-                  lcl_FindUnoCrsrSection(
-                      pUnoCursor->GetPoint()->nNode.GetNode() ) );
-
-            for(SwPaM& rPaM : pUnoCursor->GetRingContainer())
+        SwUnoTableCursor *const pUnoTableCursor =
+            dynamic_cast<SwUnoTableCursor *>(pUnoCursor.get());
+        if( pUnoTableCursor )
+        {
+            for(SwPaM& rPaM : (&pUnoTableCursor->GetSelRing())->GetRingContainer())
             {
-                bChange |= lcl_PaMCorrAbs( rPaM, aStart, aEnd, aNewPos );
+                bChange |=
+                    lcl_PaMCorrAbs( rPaM, aStart, aEnd, aNewPos );
             }
+        }
 
-            SwUnoTableCrsr *const pUnoTblCrsr =
-                dynamic_cast<SwUnoTableCrsr *>(pUnoCursor.get());
-            if( pUnoTblCrsr )
-            {
-                for(SwPaM& rPaM : (&pUnoTblCrsr->GetSelRing())->GetRingContainer())
-                {
-                    bChange |=
-                        lcl_PaMCorrAbs( rPaM, aStart, aEnd, aNewPos );
-                }
-            }
-
-            // if a UNO cursor leaves its designated section, we must inform
-            // (and invalidate) said cursor
-            if (bChange && bLeaveSection)
-            {
-                // the UNO cursor has left its section. We need to notify it!
-                SwMsgPoolItem aHint( RES_UNOCURSOR_LEAVES_SECTION );
-                pUnoCursor->ModifyNotification( &aHint, NULL );
-            }
+        // if a UNO cursor leaves its designated section, we must inform
+        // (and invalidate) said cursor
+        if (bChange && bLeaveSection)
+        {
+            // the UNO cursor has left its section. We need to notify it!
+            SwMsgPoolItem aHint( RES_UNOCURSOR_LEAVES_SECTION );
+            pUnoCursor->ModifyNotification( &aHint, nullptr );
         }
     }
 }
@@ -168,7 +167,7 @@ void PaMCorrAbs( const SwPaM& rRange,
 void SwDoc::CorrAbs(const SwNodeIndex& rOldNode,
     const SwPosition& rNewPos,
     const sal_Int32 nOffset,
-    bool bMoveCrsr)
+    bool bMoveCursor)
 {
     SwContentNode *const pContentNode( rOldNode.GetNode().GetContentNode() );
     SwPaM const aPam(rOldNode, 0,
@@ -188,7 +187,7 @@ void SwDoc::CorrAbs(const SwNodeIndex& rOldNode,
                 lcl_PaMCorrAbs(*pRedline, *aPam.Start(), *aPam.End(), aNewPos);
             // clean up empty redlines: docredln.cxx asserts these as invalid
             if (bChanged && (*pRedline->GetPoint() == *pRedline->GetMark())
-                         && (pRedline->GetContentIdx() == NULL))
+                         && (pRedline->GetContentIdx() == nullptr))
             {
                 rTable.DeleteAndDestroy(n);
             }
@@ -201,7 +200,7 @@ void SwDoc::CorrAbs(const SwNodeIndex& rOldNode,
         // To-Do - need to add here 'SwExtraRedlineTable' also ?
     }
 
-    if(bMoveCrsr)
+    if(bMoveCursor)
     {
         ::PaMCorrAbs(aPam, aNewPos);
     }
@@ -210,15 +209,15 @@ void SwDoc::CorrAbs(const SwNodeIndex& rOldNode,
 void SwDoc::CorrAbs(
     const SwPaM& rRange,
     const SwPosition& rNewPos,
-    bool bMoveCrsr )
+    bool bMoveCursor )
 {
     SwPosition aStart(*rRange.Start());
     SwPosition aEnd(*rRange.End());
     SwPosition aNewPos(rNewPos);
 
-    _DelBookmarks( aStart.nNode, aEnd.nNode, NULL, &aStart.nContent, &aEnd.nContent );
+    _DelBookmarks( aStart.nNode, aEnd.nNode, nullptr, &aStart.nContent, &aEnd.nContent );
 
-    if(bMoveCrsr)
+    if(bMoveCursor)
         ::PaMCorrAbs(rRange, rNewPos);
 }
 
@@ -226,11 +225,11 @@ void SwDoc::CorrAbs(
     const SwNodeIndex& rStartNode,
     const SwNodeIndex& rEndNode,
     const SwPosition& rNewPos,
-    bool bMoveCrsr )
+    bool bMoveCursor )
 {
     _DelBookmarks( rStartNode, rEndNode );
 
-    if(bMoveCrsr)
+    if(bMoveCursor)
     {
         SwContentNode *const pContentNode( rEndNode.GetNode().GetContentNode() );
         SwPaM const aPam(rStartNode, 0,
@@ -249,50 +248,49 @@ void PaMCorrRel( const SwNodeIndex &rOldNode,
 
     const sal_Int32 nCntIdx = rNewPos.nContent.GetIndex() + nOffset;
 
-    SwCrsrShell const* pShell = pDoc->GetEditShell();
+    SwCursorShell const* pShell = pDoc->GetEditShell();
     if( pShell )
     {
         for(const SwViewShell& rShell : pShell->GetRingContainer())
         {
-            if(!rShell.IsA( TYPE( SwCrsrShell )))
+            if(dynamic_cast<const SwCursorShell *>(&rShell) == nullptr)
                 continue;
-            SwCrsrShell* pCrsrShell = const_cast<SwCrsrShell*>(static_cast<const SwCrsrShell*>(&rShell));
-            SwPaM *_pStkCrsr = pCrsrShell->GetStkCrsr();
-            if( _pStkCrsr )
+            SwCursorShell* pCursorShell = const_cast<SwCursorShell*>(static_cast<const SwCursorShell*>(&rShell));
+            SwPaM *_pStackCursor = pCursorShell->GetStackCursor();
+            if( _pStackCursor )
                 do {
-                    lcl_PaMCorrRel1( _pStkCrsr, pOldNode, aNewPos, nCntIdx );
-                } while ( (_pStkCrsr != 0 ) &&
-                    ((_pStkCrsr = static_cast<SwPaM *>(_pStkCrsr->GetNext())) != pCrsrShell->GetStkCrsr()) );
+                    lcl_PaMCorrRel1( _pStackCursor, pOldNode, aNewPos, nCntIdx );
+                } while ( (_pStackCursor != nullptr ) &&
+                    ((_pStackCursor = static_cast<SwPaM *>(_pStackCursor->GetNext())) != pCursorShell->GetStackCursor()) );
 
-            SwPaM* pStartPaM = pCrsrShell->_GetCrsr();
+            SwPaM* pStartPaM = pCursorShell->_GetCursor();
             for(SwPaM& rPaM : pStartPaM->GetRingContainer())
             {
                 lcl_PaMCorrRel1( &rPaM, pOldNode, aNewPos, nCntIdx);
             }
 
-            if( pCrsrShell->IsTableMode() )
-                lcl_PaMCorrRel1( pCrsrShell->GetTableCrs(), pOldNode, aNewPos, nCntIdx );
+            if( pCursorShell->IsTableMode() )
+                lcl_PaMCorrRel1( pCursorShell->GetTableCrs(), pOldNode, aNewPos, nCntIdx );
        }
     }
+
+    for(const auto& pWeakUnoCursor : pDoc->mvUnoCursorTable)
     {
-        for(auto pWeakUnoCrsr : pDoc->mvUnoCrsrTbl)
+        auto pUnoCursor(pWeakUnoCursor.lock());
+        if(!pUnoCursor)
+            continue;
+        for(SwPaM& rPaM : pUnoCursor->GetRingContainer())
         {
-            auto pUnoCrsr(pWeakUnoCrsr.lock());
-            if(!pUnoCrsr)
-                continue;
-            for(SwPaM& rPaM : pUnoCrsr->GetRingContainer())
+            lcl_PaMCorrRel1( &rPaM, pOldNode, aNewPos, nCntIdx );
+        }
+
+        SwUnoTableCursor* pUnoTableCursor =
+            dynamic_cast<SwUnoTableCursor*>(pUnoCursor.get());
+        if( pUnoTableCursor )
+        {
+            for(SwPaM& rPaM : (&pUnoTableCursor->GetSelRing())->GetRingContainer())
             {
                 lcl_PaMCorrRel1( &rPaM, pOldNode, aNewPos, nCntIdx );
-            }
-
-            SwUnoTableCrsr* pUnoTblCrsr =
-                dynamic_cast<SwUnoTableCrsr*>(pUnoCrsr.get());
-            if( pUnoTblCrsr )
-            {
-                for(SwPaM& rPaM : (&pUnoTblCrsr->GetSelRing())->GetRingContainer())
-                {
-                    lcl_PaMCorrRel1( &rPaM, pOldNode, aNewPos, nCntIdx );
-                }
             }
         }
     }
@@ -301,7 +299,7 @@ void PaMCorrRel( const SwNodeIndex &rOldNode,
 void SwDoc::CorrRel(const SwNodeIndex& rOldNode,
     const SwPosition& rNewPos,
     const sal_Int32 nOffset,
-    bool bMoveCrsr)
+    bool bMoveCursor)
 {
     getIDocumentMarkAccess()->correctMarksRelative(rOldNode, rNewPos, nOffset);
 
@@ -317,7 +315,7 @@ void SwDoc::CorrRel(const SwNodeIndex& rOldNode,
         // To-Do - need to add here 'SwExtraRedlineTable' also ?
     }
 
-    if(bMoveCrsr)
+    if(bMoveCursor)
         ::PaMCorrRel(rOldNode, rNewPos, nOffset);
 }
 
@@ -330,7 +328,7 @@ SwEditShell const * SwDoc::GetEditShell() const
         for(const SwViewShell& rCurrentSh : pCurrentView->GetRingContainer())
         {
             // look for an EditShell (if it exists)
-            if( rCurrentSh.IsA( TYPE( SwEditShell ) ) )
+            if( dynamic_cast<const SwEditShell *>(&rCurrentSh) != nullptr )
             {
                 return static_cast<const SwEditShell*>(&rCurrentSh);
             }

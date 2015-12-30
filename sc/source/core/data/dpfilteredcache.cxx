@@ -100,7 +100,7 @@ size_t ScDPFilteredCache::GroupFilter::getMatchItemCount() const
 
 ScDPFilteredCache::Criterion::Criterion() :
     mnFieldIndex(-1),
-    mpFilter(static_cast<FilterBase*>(NULL))
+    mpFilter(static_cast<FilterBase*>(nullptr))
 {
 }
 
@@ -173,7 +173,7 @@ void ScDPFilteredCache::fillTable(
         {
             if (nRow > nEndSegment)
             {
-                if (!maShowByFilter.search_tree(nRow, bShow, NULL, &nEndSegment).second)
+                if (!maShowByFilter.search_tree(nRow, bShow, nullptr, &nEndSegment).second)
                 {
                     OSL_FAIL("Tree search failed!");
                     continue;
@@ -190,6 +190,11 @@ void ScDPFilteredCache::fillTable(
             SCROW nIndex = getCache().GetItemDataId(nCol, nRow, bRepeatIfEmpty);
             SCROW nOrder = getOrder(nCol, nIndex);
             aAdded[nOrder] = nIndex;
+
+            // tdf#96588 - large numbers of trailing identical empty
+            // rows generate the same nIndex & nOrder.
+            if (nRow == nDataSize)
+                break;
         }
         for (SCROW nRow = 0; nRow < nMemCount; ++nRow)
         {
@@ -245,8 +250,8 @@ bool ScDPFilteredCache::isRowActive(sal_Int32 nRow, sal_Int32* pLastRow) const
 {
     bool bFilter = false, bPage = true;
     SCROW nLastRowFilter = MAXROW, nLastRowPage = MAXROW;
-    maShowByFilter.search_tree(nRow, bFilter, NULL, &nLastRowFilter);
-    maShowByPage.search_tree(nRow, bPage, NULL, &nLastRowPage);
+    maShowByFilter.search_tree(nRow, bFilter, nullptr, &nLastRowFilter);
+    maShowByPage.search_tree(nRow, bPage, nullptr, &nLastRowPage);
     if (pLastRow)
     {
         // Return the last row of current segment.
@@ -260,13 +265,21 @@ bool ScDPFilteredCache::isRowActive(sal_Int32 nRow, sal_Int32* pLastRow) const
 void ScDPFilteredCache::filterByPageDimension(const vector<Criterion>& rCriteria, const std::unordered_set<sal_Int32>& rRepeatIfEmptyDims)
 {
     SCROW nRowSize = getRowSize();
+    SCROW nDataSize = mrCache.GetDataSize();
 
     maShowByPage.clear();
 
-    for (SCROW nRow = 0; nRow < nRowSize; ++nRow)
+    for (SCROW nRow = 0; nRow < nDataSize; ++nRow)
     {
         bool bShow = isRowQualified(nRow, rCriteria, rRepeatIfEmptyDims);
         maShowByPage.insert_back(nRow, nRow+1, bShow);
+    }
+
+    // tdf#96588 - rapidly extend for blank rows with identical data
+    if (nDataSize < nRowSize)
+    {
+        bool bBlankShow = isRowQualified(nDataSize, rCriteria, rRepeatIfEmptyDims);
+        maShowByPage.insert_back(nDataSize, nRowSize, bBlankShow);
     }
 
     maShowByPage.build_tree();

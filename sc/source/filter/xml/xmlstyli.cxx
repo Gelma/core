@@ -91,17 +91,17 @@ void ScXMLCellImportPropertyMapper::finished(::std::vector< XMLPropertyState >& 
                                             CTF_SC_TOPBORDER, CTF_SC_BOTTOMBORDER };
 
     SvXMLImportPropertyMapper::finished(rProperties, nStartIndex, nEndIndex);
-    XMLPropertyState* pAllPaddingProperty(NULL);
-    XMLPropertyState* pPadding[4] = { NULL, NULL, NULL, NULL };
-    XMLPropertyState* pNewPadding[4] = { NULL, NULL, NULL, NULL };
-    XMLPropertyState* pAllBorderProperty = NULL;
-    XMLPropertyState* pBorders[4] = { NULL, NULL, NULL, NULL };
-    XMLPropertyState* pNewBorders[4] = { NULL, NULL, NULL, NULL };
-    XMLPropertyState* pAllBorderWidthProperty = NULL;
-    XMLPropertyState* pBorderWidths[4] = { NULL, NULL, NULL, NULL };
-    XMLPropertyState* pDiagBorders[2] = { 0 };
-    XMLPropertyState* pOldDiagBorderWidths[2] = { 0 };      // old attribute names without "s"
-    XMLPropertyState* pDiagBorderWidths[2] = { 0 };
+    XMLPropertyState* pAllPaddingProperty(nullptr);
+    XMLPropertyState* pPadding[4] = { nullptr, nullptr, nullptr, nullptr };
+    XMLPropertyState* pNewPadding[4] = { nullptr, nullptr, nullptr, nullptr };
+    XMLPropertyState* pAllBorderProperty = nullptr;
+    XMLPropertyState* pBorders[4] = { nullptr, nullptr, nullptr, nullptr };
+    XMLPropertyState* pNewBorders[4] = { nullptr, nullptr, nullptr, nullptr };
+    XMLPropertyState* pAllBorderWidthProperty = nullptr;
+    XMLPropertyState* pBorderWidths[4] = { nullptr, nullptr, nullptr, nullptr };
+    XMLPropertyState* pDiagBorders[2] = { nullptr };
+    XMLPropertyState* pOldDiagBorderWidths[2] = { nullptr };      // old attribute names without "s"
+    XMLPropertyState* pDiagBorderWidths[2] = { nullptr };
 
     ::std::vector< XMLPropertyState >::iterator endproperty(rProperties.end());
     for (::std::vector< XMLPropertyState >::iterator aIter =  rProperties.begin();
@@ -229,9 +229,9 @@ ScXMLRowImportPropertyMapper::~ScXMLRowImportPropertyMapper()
 void ScXMLRowImportPropertyMapper::finished(::std::vector< XMLPropertyState >& rProperties, sal_Int32 nStartIndex, sal_Int32 nEndIndex ) const
 {
     SvXMLImportPropertyMapper::finished(rProperties, nStartIndex, nEndIndex);
-    XMLPropertyState* pHeight(NULL);
-    XMLPropertyState* pOptimalHeight(NULL);
-    XMLPropertyState* pPageBreak(NULL);
+    XMLPropertyState* pHeight(nullptr);
+    XMLPropertyState* pOptimalHeight(nullptr);
+    XMLPropertyState* pPageBreak(nullptr);
     ::std::vector< XMLPropertyState >::iterator endproperty(rProperties.end());
     for (::std::vector< XMLPropertyState >::iterator aIter = rProperties.begin();
         aIter != endproperty; ++aIter)
@@ -291,7 +291,7 @@ class XMLTableCellPropsContext : public SvXMLPropertySetContext
             const OUString& rLocalName,
             const uno::Reference< xml::sax::XAttributeList >& xAttrList,
            ::std::vector< XMLPropertyState > &rProperties,
-           const XMLPropertyState& rProp ) SAL_OVERRIDE;
+           const XMLPropertyState& rProp ) override;
 };
 
 XMLTableCellPropsContext::XMLTableCellPropsContext(
@@ -435,7 +435,6 @@ void XMLTableStyleContext::SetAttribute( sal_uInt16 nPrefixKey,
         XMLPropStyleContext::SetAttribute( nPrefixKey, rLocalName, rValue );
 }
 
-TYPEINIT1( XMLTableStyleContext, XMLPropStyleContext );
 
 XMLTableStyleContext::XMLTableStyleContext( ScXMLImport& rImport,
         sal_uInt16 nPrfx, const OUString& rLName,
@@ -447,7 +446,7 @@ XMLTableStyleContext::XMLTableStyleContext( ScXMLImport& rImport,
     nNumberFormat(-1),
     nLastSheet(-1),
     bParentSet(false),
-    mpCondFormat(NULL),
+    mpCondFormat(nullptr),
     mbDeleteCondFormat(true)
 {
 }
@@ -463,7 +462,7 @@ SvXMLImportContext *XMLTableStyleContext::CreateChildContext(
         const OUString& rLocalName,
         const uno::Reference< XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext(NULL);
+    SvXMLImportContext *pContext(nullptr);
 
     if( (XML_NAMESPACE_STYLE == nPrefix) &&
         IsXMLToken(rLocalName, XML_MAP ) )
@@ -594,7 +593,7 @@ void XMLTableStyleContext::AddProperty(const sal_Int16 nContextID, const uno::An
 
 XMLPropertyState* XMLTableStyleContext::FindProperty(const sal_Int16 nContextID)
 {
-    XMLPropertyState* pRet = NULL;
+    XMLPropertyState* pRet = nullptr;
     rtl::Reference < XMLPropertySetMapper > xPrMap;
     rtl::Reference < SvXMLImportPropertyMapper > xImpPrMap =
         pStyles->GetImportPropertyMapper( GetFamily() );
@@ -924,7 +923,6 @@ sal_Int32 XMLTableStylesContext::GetIndex(const sal_Int16 nContextID)
         return -1;
 }
 
-TYPEINIT1( ScXMLMasterStylesContext, SvXMLStylesContext );
 
 bool ScXMLMasterStylesContext::InsertStyleFamily( sal_uInt16 ) const
 {
@@ -948,7 +946,7 @@ SvXMLStyleContext *ScXMLMasterStylesContext::CreateStyleChildContext(
         const OUString& rLocalName,
         const uno::Reference< XAttributeList > & xAttrList )
 {
-    SvXMLStyleContext *pContext(0);
+    SvXMLStyleContext *pContext(nullptr);
 
     if( (XML_NAMESPACE_STYLE == nPrefix) &&
         IsXMLToken(rLocalName, XML_MASTER_PAGE) &&
@@ -968,7 +966,7 @@ SvXMLStyleContext *ScXMLMasterStylesContext::CreateStyleStyleChildContext(
         const OUString& /* rLocalName */,
         const uno::Reference< XAttributeList > & /* xAttrList */ )
 {
-    return 0;
+    return nullptr;
 }
 
 void ScXMLMasterStylesContext::EndElement()
@@ -976,7 +974,6 @@ void ScXMLMasterStylesContext::EndElement()
     FinishStyles(true);
 }
 
-TYPEINIT1( ScMasterPageContext, XMLTextMasterPageContext );
 
 ScMasterPageContext::ScMasterPageContext( SvXMLImport& rImport,
         sal_uInt16 nPrfx, const OUString& rLName,
@@ -1003,7 +1000,7 @@ SvXMLImportContext *ScMasterPageContext::CreateChildContext(
 SvXMLImportContext *ScMasterPageContext::CreateHeaderFooterContext(
             sal_uInt16 nPrefix,
             const OUString& rLocalName,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList,
+            const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList,
             const bool bFooter,
             const bool bLeft,
             const bool /*bFirst*/ )
@@ -1046,9 +1043,9 @@ void ScMasterPageContext::Finish( bool bOverwrite )
 {
     XMLTextMasterPageContext::Finish(bOverwrite);
     if (!bContainsRightFooter)
-        ClearContent(OUString(SC_UNO_PAGE_RIGHTFTRCON));
+        ClearContent(SC_UNO_PAGE_RIGHTFTRCON);
     if (!bContainsRightHeader)
-        ClearContent(OUString(SC_UNO_PAGE_RIGHTHDRCON));
+        ClearContent(SC_UNO_PAGE_RIGHTHDRCON);
 }
 
 ScCellTextStyleContext::ScCellTextStyleContext( SvXMLImport& rImport, sal_uInt16 nPrfx,

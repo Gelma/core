@@ -31,13 +31,13 @@ enum class SdrEscapeDirection;
 class GlueEscDirLB : public ListBox
 {
 private:
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > m_xFrame;
+    css::uno::Reference< css::frame::XFrame > m_xFrame;
 public:
                  GlueEscDirLB( vcl::Window* pParent,
-                              const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& rFrame );
+                              const css::uno::Reference< css::frame::XFrame >& rFrame );
                  virtual ~GlueEscDirLB();
 
-    virtual void Select() SAL_OVERRIDE;
+    virtual void Select() override;
 
     void         Fill();
 };
@@ -52,8 +52,8 @@ private:
 
 public:
     virtual void StateChanged( sal_uInt16 nSId, SfxItemState eState,
-                                const SfxPoolItem* pState ) SAL_OVERRIDE;
-    virtual VclPtr<vcl::Window> CreateItemWindow( vcl::Window *pParent ) SAL_OVERRIDE;
+                                const SfxPoolItem* pState ) override;
+    virtual VclPtr<vcl::Window> CreateItemWindow( vcl::Window *pParent ) override;
 
             SFX_DECL_TOOLBOX_CONTROL();
 

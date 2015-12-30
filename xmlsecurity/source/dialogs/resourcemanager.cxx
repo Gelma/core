@@ -33,8 +33,8 @@ using namespace std;
 
 namespace XmlSec
 {
-    static ResMgr*          pResMgr = 0;
-    static SvtSysLocale*    pSysLocale = 0;
+    static ResMgr*          pResMgr = nullptr;
+    static SvtSysLocale*    pSysLocale = nullptr;
 
     ResMgr* GetResMgr()
     {
@@ -81,7 +81,6 @@ namespace XmlSec
     {
         vector< pair< OUString, OUString > > vecAttrValueOfDN = parseDN(rRawString);
         OUStringBuffer s1, s2;
-        OUString sEqual(" = ");
         typedef vector< pair < OUString, OUString > >::const_iterator CIT;
         for (CIT i = vecAttrValueOfDN.begin(); i < vecAttrValueOfDN.end(); ++i)
         {
@@ -91,7 +90,7 @@ namespace XmlSec
                 s2.append('\n');
             }
             s1.append(i->second);
-            s2.append(i->first + sEqual + i->second);
+            s2.append(i->first + " = " + i->second);
         }
         return make_pair(s1.makeStringAndClear(), s2.makeStringAndClear());
     }
@@ -290,7 +289,7 @@ vector< pair< OUString, OUString> > parseDN(const OUString& rRawString)
 
     OUString GetContentPart( const OUString& _rRawString )
     {
-        char const * aIDs[] = { "CN", "OU", "O", "E", NULL };
+        char const * aIDs[] = { "CN", "OU", "O", "E", nullptr };
         OUString retVal;
         int i = 0;
         vector< pair< OUString, OUString > > vecAttrValueOfDN = parseDN(_rRawString);

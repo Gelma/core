@@ -35,6 +35,7 @@
 #include <vcl/sysdata.hxx>
 #include <unx/x11windowprovider.hxx>
 #include <unx/saltype.h>
+#include <unx/screensaverinhibitor.hxx>
 
 #include "tools/link.hxx"
 
@@ -61,19 +62,6 @@ typedef ::Window GdkNativeWindow;
 
 class GtkSalFrame : public SalFrame, public X11WindowProvider
 {
-    static const int nMaxGraphics = 2;
-
-    struct GraphicsHolder
-    {
-        GtkSalGraphics*     pGraphics;
-        bool                bInUse;
-        GraphicsHolder()
-                : pGraphics( NULL ),
-                  bInUse( false )
-        {}
-        ~GraphicsHolder();
-    };
-
     struct IMHandler
     {
 
@@ -95,7 +83,7 @@ class GtkSalFrame : public SalFrame, public X11WindowProvider
             guint8  group;
 
             PreviousKeyPress (GdkEventKey *event)
-            :   window (NULL),
+            :   window (nullptr),
                 send_event (0),
                 time (0),
                 state (0),
@@ -127,7 +115,7 @@ class GtkSalFrame : public SalFrame, public X11WindowProvider
 
             bool operator== (GdkEventKey *event) const
             {
-                return (event != NULL)
+                return (event != nullptr)
                     && (event->window == window)
                     && (event->send_event == send_event)
                     // ignore non-Gdk state bits, e.g., these used by IBus
@@ -180,19 +168,19 @@ class GtkSalFrame : public SalFrame, public X11WindowProvider
     GdkWindow*                      m_pForeignTopLevel;
     GdkNativeWindow                 m_aForeignTopLevelWindow;
     Pixmap                          m_hBackgroundPixmap;
-    sal_uLong                       m_nStyle;
+    SalFrameStyleFlags              m_nStyle;
     SalExtStyle                     m_nExtStyle;
     GtkSalFrame*                    m_pParent;
     std::list< GtkSalFrame* >       m_aChildren;
     GdkWindowState                  m_nState;
     SystemEnvData                   m_aSystemData;
-    GraphicsHolder                  m_aGraphics[ nMaxGraphics ];
+    GtkSalGraphics                 *m_pGraphics;
+    bool                            m_bGraphics;
     sal_uInt16                      m_nKeyModifiers;
     GdkCursor                      *m_pCurrentCursor;
     GdkVisibilityState              m_nVisibility;
     PointerStyle                    m_ePointerStyle;
-    int                             m_nSavedScreenSaverTimeout;
-    guint                           m_nGSMCookie;
+    ScreenSaverInhibitor            m_ScreenSaverInhibitor;
     int                             m_nWorkArea;
     bool                            m_bFullscreen;
     bool                            m_bSpanMonitorsWhenFullscreen;
@@ -201,8 +189,8 @@ class GtkSalFrame : public SalFrame, public X11WindowProvider
     bool                            m_bSendModChangeOnRelease;
     bool                            m_bWindowIsGtkPlug;
     bool                            m_bSetFocusOnMap;
-    OUString                   m_aTitle;
-    OUString                   m_sWMClass;
+    OUString                        m_aTitle;
+    OUString                        m_sWMClass;
 
     IMHandler*                      m_pIMHandler;
 
@@ -211,6 +199,11 @@ class GtkSalFrame : public SalFrame, public X11WindowProvider
     Rectangle                       m_aRestorePosSize;
 
 #if GTK_CHECK_VERSION(3,0,0)
+    OUString                        m_aTooltip;
+    Rectangle                       m_aHelpArea;
+    guint32                         m_nLastScrollEventTime;
+    long                            m_nWidthRequest;
+    long                            m_nHeightRequest;
     cairo_region_t*                 m_pRegion;
 #else
     GdkRegion*                      m_pRegion;
@@ -229,7 +222,7 @@ class GtkSalFrame : public SalFrame, public X11WindowProvider
 #endif
     guint                           m_nWatcherId;
 
-    void Init( SalFrame* pParent, sal_uLong nStyle );
+    void Init( SalFrame* pParent, SalFrameStyleFlags nStyle );
     void Init( SystemParentData* pSysData );
     void InitCommon();
     void InvalidateGraphics();
@@ -239,7 +232,10 @@ class GtkSalFrame : public SalFrame, public X11WindowProvider
     static void         signalStyleSet( GtkWidget*, GtkStyle* pPrevious, gpointer );
 #if GTK_CHECK_VERSION(3,0,0)
     static gboolean     signalDraw( GtkWidget*, cairo_t *cr, gpointer );
-    static void         signalFlagsChanged( GtkWidget*, GtkStateFlags, gpointer );
+    static void         sizeAllocated(GtkWidget*, GdkRectangle *pAllocation, gpointer frame);
+    static gboolean     signalTooltipQuery(GtkWidget*, gint x, gint y,
+                                     gboolean keyboard_mode, GtkTooltip *tooltip,
+                                     gpointer frame);
 #if GTK_CHECK_VERSION(3,14,0)
     static void         gestureSwipe(GtkGestureSwipe* gesture, gdouble velocity_x, gdouble velocity_y, gpointer frame);
     static void         gestureLongPress(GtkGestureLongPress* gesture, gpointer frame);
@@ -262,8 +258,6 @@ class GtkSalFrame : public SalFrame, public X11WindowProvider
 
     void            Center();
     void            SetDefaultSize();
-    void            setAutoLock( bool bLock );
-    void            setScreenSaverTimeout( int nTimeout );
 
     void            doKeyCallback( guint state,
                                    guint keyval,
@@ -282,20 +276,19 @@ class GtkSalFrame : public SalFrame, public X11WindowProvider
     bool isFloatGrabWindow() const
     {
         return
-            (m_nStyle & SAL_FRAME_STYLE_FLOAT) &&                // only a float can be floatgrab
-            !(m_nStyle & SAL_FRAME_STYLE_TOOLTIP) &&             // tool tips are not
-            !(m_nStyle & SAL_FRAME_STYLE_OWNERDRAWDECORATION) && // toolbars are also not
-            !(m_nStyle & SAL_FRAME_STYLE_FLOAT_FOCUSABLE);       // focusable floats are not
+            (m_nStyle & SalFrameStyleFlags::FLOAT) &&                // only a float can be floatgrab
+            !(m_nStyle & SalFrameStyleFlags::TOOLTIP) &&             // tool tips are not
+            !(m_nStyle & SalFrameStyleFlags::OWNERDRAWDECORATION);   // toolbars are also not
     }
 
     bool isChild( bool bPlug = true, bool bSysChild = true )
     {
-        sal_uLong nMask = 0;
+        SalFrameStyleFlags nMask = SalFrameStyleFlags::NONE;
         if( bPlug )
-            nMask |= SAL_FRAME_STYLE_PLUG;
+            nMask |= SalFrameStyleFlags::PLUG;
         if( bSysChild )
-            nMask |= SAL_FRAME_STYLE_SYSTEMCHILD;
-        return (m_nStyle & nMask) != 0;
+            nMask |= SalFrameStyleFlags::SYSTEMCHILD;
+        return bool(m_nStyle & nMask);
     }
 
     //call gtk_window_resize if the current size differs and
@@ -308,7 +301,10 @@ class GtkSalFrame : public SalFrame, public X11WindowProvider
     void widget_set_size_request(long nWidth, long nHeight);
 
     void resizeWindow( long nWidth, long nHeight );
-    void moveWindow( long nX, long nY );
+    void moveWindow(long nX, long nY);
+#if GTK_CHECK_VERSION(3,0,0)
+    void dragWindowTo(long nX, long nY);
+#endif
 
     Size calcDefaultSize();
 
@@ -320,14 +316,13 @@ class GtkSalFrame : public SalFrame, public X11WindowProvider
     void TriggerPaintEvent();
 
     void updateWMClass();
-    void SetScreen( unsigned int nNewScreen, int eType, Rectangle *pSize = NULL );
+    void SetScreen( unsigned int nNewScreen, int eType, Rectangle *pSize = nullptr );
 
-    DECL_LINK( ImplDelayedFullScreenHdl, void* );
 public:
 #if GTK_CHECK_VERSION(3,0,0)
     basebmp::BitmapDeviceSharedPtr  m_aFrame;
 #endif
-    GtkSalFrame( SalFrame* pParent, sal_uLong nStyle );
+    GtkSalFrame( SalFrame* pParent, SalFrameStyleFlags nStyle );
     GtkSalFrame( SystemParentData* pSysData );
 
     guint                           m_nMenuExportId;
@@ -367,102 +362,106 @@ public:
 
     // SalGraphics or NULL, but two Graphics for all SalFrames
     // must be returned
-    virtual SalGraphics*        AcquireGraphics() SAL_OVERRIDE;
-    virtual void                ReleaseGraphics( SalGraphics* pGraphics ) SAL_OVERRIDE;
+    virtual SalGraphics*        AcquireGraphics() override;
+    virtual void                ReleaseGraphics( SalGraphics* pGraphics ) override;
 
     // Event must be destroyed, when Frame is destroyed
     // When Event is called, SalInstance::Yield() must be returned
-    virtual bool                PostEvent(ImplSVEvent* pData) SAL_OVERRIDE;
+    virtual bool                PostEvent(ImplSVEvent* pData) override;
 
-    virtual void                SetTitle( const OUString& rTitle ) SAL_OVERRIDE;
-    virtual void                SetIcon( sal_uInt16 nIcon ) SAL_OVERRIDE;
-    virtual void                SetMenu( SalMenu *pSalMenu ) SAL_OVERRIDE;
+    virtual void                SetTitle( const OUString& rTitle ) override;
+    virtual void                SetIcon( sal_uInt16 nIcon ) override;
+    virtual void                SetMenu( SalMenu *pSalMenu ) override;
     SalMenu*                    GetMenu();
-    virtual void                DrawMenuBar() SAL_OVERRIDE;
+    virtual void                DrawMenuBar() override;
     void                        EnsureAppMenuWatch();
 
-    virtual void                SetExtendedFrameStyle( SalExtStyle nExtStyle ) SAL_OVERRIDE;
+    virtual void                SetExtendedFrameStyle( SalExtStyle nExtStyle ) override;
     // Before the window is visible, a resize event
     // must be sent with the correct size
-    virtual void                Show( bool bVisible, bool bNoActivate = false ) SAL_OVERRIDE;
+    virtual void                Show( bool bVisible, bool bNoActivate = false ) override;
     // Set ClientSize and Center the Window to the desktop
     // and send/post a resize message
-    virtual void                SetMinClientSize( long nWidth, long nHeight ) SAL_OVERRIDE;
-    virtual void                SetMaxClientSize( long nWidth, long nHeight ) SAL_OVERRIDE;
-    virtual void                SetPosSize( long nX, long nY, long nWidth, long nHeight, sal_uInt16 nFlags ) SAL_OVERRIDE;
-    virtual void                GetClientSize( long& rWidth, long& rHeight ) SAL_OVERRIDE;
-    virtual void                GetWorkArea( Rectangle& rRect ) SAL_OVERRIDE;
-    virtual SalFrame*           GetParent() const SAL_OVERRIDE;
-    virtual void                SetWindowState( const SalFrameState* pState ) SAL_OVERRIDE;
-    virtual bool                GetWindowState( SalFrameState* pState ) SAL_OVERRIDE;
-    virtual void                ShowFullScreen( bool bFullScreen, sal_Int32 nDisplay ) SAL_OVERRIDE;
+    virtual void                SetMinClientSize( long nWidth, long nHeight ) override;
+    virtual void                SetMaxClientSize( long nWidth, long nHeight ) override;
+    virtual void                SetPosSize( long nX, long nY, long nWidth, long nHeight, sal_uInt16 nFlags ) override;
+    virtual void                GetClientSize( long& rWidth, long& rHeight ) override;
+    virtual void                GetWorkArea( Rectangle& rRect ) override;
+    virtual SalFrame*           GetParent() const override;
+    virtual void                SetWindowState( const SalFrameState* pState ) override;
+    virtual bool                GetWindowState( SalFrameState* pState ) override;
+    virtual void                ShowFullScreen( bool bFullScreen, sal_Int32 nDisplay ) override;
     // Enable/Disable ScreenSaver, SystemAgents, ...
-    virtual void                StartPresentation( bool bStart ) SAL_OVERRIDE;
+    virtual void                StartPresentation( bool bStart ) override;
     // Show Window over all other Windows
-    virtual void                SetAlwaysOnTop( bool bOnTop ) SAL_OVERRIDE;
+    virtual void                SetAlwaysOnTop( bool bOnTop ) override;
 
     // Window to top and grab focus
-    virtual void                ToTop( sal_uInt16 nFlags ) SAL_OVERRIDE;
+    virtual void                ToTop( sal_uInt16 nFlags ) override;
 
     // this function can call with the same
     // pointer style
-    virtual void                SetPointer( PointerStyle ePointerStyle ) SAL_OVERRIDE;
-    virtual void                CaptureMouse( bool bMouse ) SAL_OVERRIDE;
-    virtual void                SetPointerPos( long nX, long nY ) SAL_OVERRIDE;
+    virtual void                SetPointer( PointerStyle ePointerStyle ) override;
+    virtual void                CaptureMouse( bool bMouse ) override;
+    virtual void                SetPointerPos( long nX, long nY ) override;
 
     // flush output buffer
     using SalFrame::Flush;
-    virtual void                Flush() SAL_OVERRIDE;
+    virtual void                Flush() override;
     // flush output buffer, wait till outstanding operations are done
-    virtual void                Sync() SAL_OVERRIDE;
 
-    virtual void                SetInputContext( SalInputContext* pContext ) SAL_OVERRIDE;
-    virtual void                EndExtTextInput( EndExtTextInputFlags nFlags ) SAL_OVERRIDE;
+    virtual void                SetInputContext( SalInputContext* pContext ) override;
+    virtual void                EndExtTextInput( EndExtTextInputFlags nFlags ) override;
 
-    virtual OUString            GetKeyName( sal_uInt16 nKeyCode ) SAL_OVERRIDE;
-    virtual bool                MapUnicodeToKeyCode( sal_Unicode aUnicode, LanguageType aLangType, vcl::KeyCode& rKeyCode ) SAL_OVERRIDE;
+    virtual OUString            GetKeyName( sal_uInt16 nKeyCode ) override;
+    virtual bool                MapUnicodeToKeyCode( sal_Unicode aUnicode, LanguageType aLangType, vcl::KeyCode& rKeyCode ) override;
 
     // returns the input language used for the last key stroke
     // may be LANGUAGE_DONTKNOW if not supported by the OS
-    virtual LanguageType        GetInputLanguage() SAL_OVERRIDE;
+    virtual LanguageType        GetInputLanguage() override;
 
-    virtual void                UpdateSettings( AllSettings& rSettings ) SAL_OVERRIDE;
+    virtual void                UpdateSettings( AllSettings& rSettings ) override;
 
-    virtual void                Beep() SAL_OVERRIDE;
+    virtual void                Beep() override;
 
     // returns system data (most prominent: window handle)
-    virtual const SystemEnvData*    GetSystemData() const SAL_OVERRIDE;
+    virtual const SystemEnvData*    GetSystemData() const override;
 
     // get current modifier and button mask
-    virtual SalPointerState     GetPointerState() SAL_OVERRIDE;
+    virtual SalPointerState     GetPointerState() override;
 
-    virtual KeyIndicatorState   GetIndicatorState() SAL_OVERRIDE;
+    virtual KeyIndicatorState   GetIndicatorState() override;
 
-    virtual void                SimulateKeyPress( sal_uInt16 nKeyCode ) SAL_OVERRIDE;
+    virtual void                SimulateKeyPress( sal_uInt16 nKeyCode ) override;
 
     // set new parent window
-    virtual void                SetParent( SalFrame* pNewParent ) SAL_OVERRIDE;
+    virtual void                SetParent( SalFrame* pNewParent ) override;
     // reparent window to act as a plugin; implementation
     // may choose to use a new system window internally
     // return false to indicate failure
-    virtual bool                SetPluginParent( SystemParentData* pNewParent ) SAL_OVERRIDE;
+    virtual bool                SetPluginParent( SystemParentData* pNewParent ) override;
 
-    virtual void                SetScreenNumber( unsigned int ) SAL_OVERRIDE;
-    virtual void                SetApplicationID( const OUString &rWMClass ) SAL_OVERRIDE;
+    virtual void                SetScreenNumber( unsigned int ) override;
+    virtual void                SetApplicationID( const OUString &rWMClass ) override;
 
     // shaped system windows
     // set clip region to none (-> rectangular windows, normal state)
-    virtual void                ResetClipRegion() SAL_OVERRIDE;
+    virtual void                ResetClipRegion() override;
     // start setting the clipregion consisting of nRects rectangles
-    virtual void                BeginSetClipRegion( sal_uLong nRects ) SAL_OVERRIDE;
+    virtual void                BeginSetClipRegion( sal_uLong nRects ) override;
     // add a rectangle to the clip region
-    virtual void                UnionClipRegion( long nX, long nY, long nWidth, long nHeight ) SAL_OVERRIDE;
+    virtual void                UnionClipRegion( long nX, long nY, long nWidth, long nHeight ) override;
     // done setting up the clipregion
-    virtual void                EndSetClipRegion() SAL_OVERRIDE;
+    virtual void                EndSetClipRegion() override;
+
+#if GTK_CHECK_VERSION(3,0,0)
+    virtual void                SetModal(bool bModal) override;
+    virtual bool                ShowTooltip(const OUString& rHelpText, const Rectangle& rHelpArea) override;
+#endif
 
     static GtkSalFrame         *getFromWindow( GtkWindow *pWindow );
 
-    virtual Window              GetX11Window() SAL_OVERRIDE;
+    virtual Window              GetX11Window() override;
 
     static void                 KeyCodeToGdkKey(const vcl::KeyCode& rKeyCode,
         guint* pGdkKeyCode, GdkModifierType *pGdkModifiers);

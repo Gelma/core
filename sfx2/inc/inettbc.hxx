@@ -35,13 +35,13 @@ private:
     void                    OpenURL( const OUString& rName, bool bNew ) const;
 
     DECL_LINK_TYPED(        OpenHdl, SvtURLBox*, void );
-    DECL_LINK(              SelectHdl, void* );
+    DECL_LINK_TYPED(        SelectHdl, ComboBox&, void );
 
     struct ExecuteInfo
     {
-        ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatch >     xDispatch;
-        ::com::sun::star::util::URL                                                aTargetURL;
-        ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue >  aArgs;
+        css::uno::Reference< css::frame::XDispatch >     xDispatch;
+        css::util::URL                                   aTargetURL;
+        css::uno::Sequence< css::beans::PropertyValue >  aArgs;
     };
 
     DECL_STATIC_LINK_TYPED( SfxURLToolBoxControl_Impl, ExecuteHdl_Impl, void*, void );
@@ -53,8 +53,8 @@ public:
                             SfxURLToolBoxControl_Impl( sal_uInt16 nSlotId, sal_uInt16 nId, ToolBox& rBox );
     virtual                 ~SfxURLToolBoxControl_Impl();
 
-    virtual VclPtr<vcl::Window> CreateItemWindow( vcl::Window* pParent ) SAL_OVERRIDE;
-    virtual void            StateChanged( sal_uInt16 nSID, SfxItemState eState, const SfxPoolItem* pState ) SAL_OVERRIDE;
+    virtual VclPtr<vcl::Window> CreateItemWindow( vcl::Window* pParent ) override;
+    virtual void            StateChanged( sal_uInt16 nSID, SfxItemState eState, const SfxPoolItem* pState ) override;
 };
 
 #endif

@@ -148,19 +148,19 @@ const ScRange* _ScRangeListTabs::First( SCTAB n )
     TabRangeType::iterator itr = maTabRanges.find(n);
     if (itr == maTabRanges.end())
         // No range list exists for this table.
-        return NULL;
+        return nullptr;
 
     const RangeListType& rList = *itr->second;
     maItrCur = rList.begin();
     maItrCurEnd = rList.end();
-    return rList.empty() ? NULL : &(*maItrCur);
+    return rList.empty() ? nullptr : &(*maItrCur);
 }
 
 const ScRange* _ScRangeListTabs::Next ()
 {
     ++maItrCur;
     if (maItrCur == maItrCurEnd)
-        return NULL;
+        return nullptr;
 
     return &(*maItrCur);
 }
@@ -168,8 +168,7 @@ const ScRange* _ScRangeListTabs::Next ()
 ConverterBase::ConverterBase( svl::SharedStringPool& rSPool, sal_uInt16 nNewBuffer ) :
     aPool(rSPool),
     aEingPos( 0, 0, 0 ),
-    eStatus( ConvOK ),
-    nBufferSize( nNewBuffer )
+    eStatus( ConvOK )
 {
     OSL_ENSURE( nNewBuffer > 0, "ConverterBase::ConverterBase - nNewBuffer == 0!" );
     pBuffer = new sal_Char[ nNewBuffer ];

@@ -42,7 +42,7 @@ SvxPostItDialog::SvxPostItDialog(vcl::Window* pParent, const SfxItemSet& rCoreSe
     bool bPrevNext)
     : SfxModalDialog(pParent, "CommentDialog", "cui/ui/comment.ui")
     , rSet(rCoreSet)
-    , pOutSet(0)
+    , pOutSet(nullptr)
 {
     get(m_pLastEditFT, "lastedit");
     get(m_pInsertAuthor, "insertauthor");
@@ -73,7 +73,7 @@ SvxPostItDialog::SvxPostItDialog(vcl::Window* pParent, const SfxItemSet& rCoreSe
     nWhich = rSet.GetPool()->GetWhich( SID_ATTR_POSTIT_AUTHOR );
     OUString aAuthorStr, aDateStr;
 
-    if ( rSet.GetItemState( nWhich, true ) >= SfxItemState::DEFAULT )
+    if ( rSet.GetItemState( nWhich ) >= SfxItemState::DEFAULT )
     {
         bNew = false;
         const SvxPostItAuthorItem& rAuthor =
@@ -85,7 +85,7 @@ SvxPostItDialog::SvxPostItDialog(vcl::Window* pParent, const SfxItemSet& rCoreSe
 
     nWhich = rSet.GetPool()->GetWhich( SID_ATTR_POSTIT_DATE );
 
-    if ( rSet.GetItemState( nWhich, true ) >= SfxItemState::DEFAULT )
+    if ( rSet.GetItemState( nWhich ) >= SfxItemState::DEFAULT )
     {
         const SvxPostItDateItem& rDate =
             static_cast<const SvxPostItDateItem&>(rSet.Get( nWhich ));
@@ -100,7 +100,7 @@ SvxPostItDialog::SvxPostItDialog(vcl::Window* pParent, const SfxItemSet& rCoreSe
     nWhich = rSet.GetPool()->GetWhich( SID_ATTR_POSTIT_TEXT );
 
     OUString aTextStr;
-    if ( rSet.GetItemState( nWhich, true ) >= SfxItemState::DEFAULT )
+    if ( rSet.GetItemState( nWhich ) >= SfxItemState::DEFAULT )
     {
         const SvxPostItTextItem& rText =
             static_cast<const SvxPostItTextItem&>(rSet.Get( nWhich ));
@@ -130,7 +130,7 @@ SvxPostItDialog::~SvxPostItDialog()
 void SvxPostItDialog::dispose()
 {
     delete pOutSet;
-    pOutSet = 0;
+    pOutSet = nullptr;
     m_pLastEditFT.clear();
     m_pEditED.clear();
     m_pInsertAuthor.clear();

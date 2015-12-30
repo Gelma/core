@@ -21,6 +21,7 @@
 #define INCLUDED_OOX_DRAWINGML_CHART_DATASOURCECONTEXT_HXX
 
 #include <drawingml/chart/chartcontextbase.hxx>
+#include <svl/zforlist.hxx>
 
 namespace oox {
 namespace drawingml {
@@ -42,11 +43,15 @@ public:
     explicit            DoubleSequenceContext( ::oox::core::ContextHandler2Helper& rParent, DataSequenceModel& rModel );
     virtual             ~DoubleSequenceContext();
 
-    virtual ::oox::core::ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) SAL_OVERRIDE;
-    virtual void        onCharacters( const OUString& rChars ) SAL_OVERRIDE;
+    virtual ::oox::core::ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) override;
+    virtual void        onCharacters( const OUString& rChars ) override;
+
+private:
+    SvNumberFormatter* getNumberFormatter();
 
 private:
     sal_Int32           mnPtIndex;          /// Current data point index.
+    SvNumberFormatter*   mpNumberFormatter;
 };
 
 
@@ -60,8 +65,8 @@ public:
     explicit            StringSequenceContext( ::oox::core::ContextHandler2Helper& rParent, DataSequenceModel& rModel );
     virtual             ~StringSequenceContext();
 
-    virtual ::oox::core::ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) SAL_OVERRIDE;
-    virtual void        onCharacters( const OUString& rChars ) SAL_OVERRIDE;
+    virtual ::oox::core::ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) override;
+    virtual void        onCharacters( const OUString& rChars ) override;
 
 private:
     sal_Int32           mnPtIndex;          /// Current data point index.
@@ -80,7 +85,7 @@ public:
     explicit            DataSourceContext( ::oox::core::ContextHandler2Helper& rParent, DataSourceModel& rModel );
     virtual             ~DataSourceContext();
 
-    virtual ::oox::core::ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) SAL_OVERRIDE;
+    virtual ::oox::core::ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) override;
 };
 
 

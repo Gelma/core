@@ -70,19 +70,19 @@ public:
                                 SfxItemSet& rSet,
                                 const OUString& rValue,
                                 const SvXMLUnitConverter& rUnitConverter,
-                                const SvXMLNamespaceMap& rNamespaceMap ) SAL_OVERRIDE;
+                                const SvXMLNamespaceMap& rNamespaceMap ) override;
 
     virtual bool
     handleNoItem(SvXMLItemMapEntry const& rEntry,
                  SfxItemSet & rSet,
                  OUString const& rValue,
                  SvXMLUnitConverter const& rUnitConverter,
-                 SvXMLNamespaceMap const& rNamespaceMap) SAL_OVERRIDE;
+                 SvXMLNamespaceMap const& rNamespaceMap) override;
 
     virtual void finished(SfxItemSet & rSet,
-                          SvXMLUnitConverter const& rUnitConverter) const SAL_OVERRIDE;
+                          SvXMLUnitConverter const& rUnitConverter) const override;
 
-    virtual void setMapEntries( SvXMLItemMapEntriesRef rMapEntries ) SAL_OVERRIDE;
+    virtual void setMapEntries( SvXMLItemMapEntriesRef rMapEntries ) override;
 
 private:
     void Reset();
@@ -212,7 +212,7 @@ void SwXMLImportTableItemMapper_Impl::finished(
                 continue; // already read fo:margin-top etc.
             }
             // first get item from itemset
-            SfxPoolItem const* pItem = 0;
+            SfxPoolItem const* pItem = nullptr;
             SfxItemState eState =
                 rSet.GetItemState(Ids[i][0], true, &pItem);
 
@@ -261,7 +261,7 @@ public:
                    const ::uno::Reference< xml::sax::XAttributeList > & xAttrList,
                    SfxItemSet&  rItemSet,
                    const SvXMLItemMapEntry& rEntry,
-                   const SvXMLUnitConverter& rUnitConv ) SAL_OVERRIDE;
+                   const SvXMLUnitConverter& rUnitConv ) override;
 };
 
 SwXMLItemSetContext_Impl::SwXMLItemSetContext_Impl(
@@ -294,7 +294,7 @@ SvXMLImportContext *SwXMLItemSetContext_Impl::CreateChildContext(
                    const SvXMLItemMapEntry& rEntry,
                    const SvXMLUnitConverter& _rUnitConv )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     switch( rEntry.nWhichId )
     {
@@ -329,21 +329,21 @@ SvXMLImportContext *SwXMLItemSetContext_Impl::CreateChildContext(
 
 void SwXMLImport::_InitItemImport()
 {
-    pTwipUnitConv = new SvXMLUnitConverter( GetComponentContext(),
+    m_pTwipUnitConv = new SvXMLUnitConverter( GetComponentContext(),
             util::MeasureUnit::TWIP, util::MeasureUnit::TWIP );
 
-    xTableItemMap = new SvXMLItemMapEntries( aXMLTableItemMap );
-    xTableColItemMap = new SvXMLItemMapEntries( aXMLTableColItemMap );
-    xTableRowItemMap = new SvXMLItemMapEntries( aXMLTableRowItemMap );
-    xTableCellItemMap = new SvXMLItemMapEntries( aXMLTableCellItemMap );
+    m_xTableItemMap = new SvXMLItemMapEntries( aXMLTableItemMap );
+    m_xTableColItemMap = new SvXMLItemMapEntries( aXMLTableColItemMap );
+    m_xTableRowItemMap = new SvXMLItemMapEntries( aXMLTableRowItemMap );
+    m_xTableCellItemMap = new SvXMLItemMapEntries( aXMLTableCellItemMap );
 
-    pTableItemMapper = new SwXMLImportTableItemMapper_Impl( xTableItemMap );
+    m_pTableItemMapper = new SwXMLImportTableItemMapper_Impl( m_xTableItemMap );
 }
 
 void SwXMLImport::_FinitItemImport()
 {
-    delete pTableItemMapper;
-    delete pTwipUnitConv;
+    delete m_pTableItemMapper;
+    delete m_pTwipUnitConv;
 }
 
 SvXMLImportContext *SwXMLImport::CreateTableItemImportContext(
@@ -358,20 +358,20 @@ SvXMLImportContext *SwXMLImport::CreateTableItemImportContext(
     switch( nFamily )
     {
     case XML_STYLE_FAMILY_TABLE_TABLE:
-        xItemMap = xTableItemMap;
+        xItemMap = m_xTableItemMap;
         break;
     case XML_STYLE_FAMILY_TABLE_COLUMN:
-        xItemMap = xTableColItemMap;
+        xItemMap = m_xTableColItemMap;
         break;
     case XML_STYLE_FAMILY_TABLE_ROW:
-        xItemMap = xTableRowItemMap;
+        xItemMap = m_xTableRowItemMap;
         break;
     case XML_STYLE_FAMILY_TABLE_CELL:
-        xItemMap = xTableCellItemMap;
+        xItemMap = m_xTableCellItemMap;
         break;
     }
 
-    pTableItemMapper->setMapEntries( xItemMap );
+    m_pTableItemMapper->setMapEntries( xItemMap );
 
     return new SwXMLItemSetContext_Impl( *this, nPrefix, rLocalName,
                                             xAttrList, rItemSet,

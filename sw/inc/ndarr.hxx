@@ -95,7 +95,7 @@ class SW_DLLPUBLIC SwNodes
     friend class SwStartNode;
     friend class ::sw::DocumentContentOperationsManager;
 
-    SwNodeIndex* vIndices; ///< ring of all indices on nodes.
+    SwNodeIndex* m_vIndices; ///< ring of all indices on nodes.
     void RemoveNode( sal_uLong nDelPos, sal_uLong nLen, bool bDel );
 
     void InsertNode( const SwNodePtr pNode,
@@ -103,30 +103,30 @@ class SW_DLLPUBLIC SwNodes
     void InsertNode( const SwNodePtr pNode,
                      sal_uLong nPos );
 
-    SwDoc* pMyDoc;                      ///< This Doc contains the nodes-array.
+    SwDoc* m_pMyDoc;                      ///< This Doc contains the nodes-array.
 
-    SwNode *pEndOfPostIts, *pEndOfInserts,  ///< These are the fixed ranges.
-           *pEndOfAutotext, *pEndOfRedlines,
-           *pEndOfContent;
+    SwNode *m_pEndOfPostIts, *m_pEndOfInserts,  ///< These are the fixed ranges.
+           *m_pEndOfAutotext, *m_pEndOfRedlines,
+           *m_pEndOfContent;
 
-    mutable SwOutlineNodes* pOutlineNds;        ///< Array of all outline nodes.
+    mutable SwOutlineNodes* m_pOutlineNodes;        ///< Array of all outline nodes.
 
-    bool bInNodesDel : 1;           /**< In Case of recursive calling.
+    bool m_bInNodesDel : 1;           /**< In Case of recursive calling.
                                            Do not update Num/Outline. */
-    bool bInDelUpdOutl : 1;         ///< Flag for updating of Outline.
-    bool bInDelUpdNum : 1;          ///< Flag for updating of Outline.
+    bool m_bInDelUpdOutline : 1;         ///< Flag for updating of Outline.
+    bool m_bInDelUpdNum : 1;          ///< Flag for updating of Outline.
 
     // Actions on the nodes.
     static void SectionUpDown( const SwNodeIndex & aStart, const SwNodeIndex & aEnd );
     void DelNodes( const SwNodeIndex& rStart, sal_uLong nCnt = 1 );
 
     void ChgNode( SwNodeIndex& rDelPos, sal_uLong nSize,
-                  SwNodeIndex& rInsPos, bool bNewFrms );
+                  SwNodeIndex& rInsPos, bool bNewFrames );
 
     void UpdateOutlineIdx( const SwNode& );   ///< Update all OutlineNodes starting from Node.
 
     void _CopyNodes( const SwNodeRange&, const SwNodeIndex&,
-                    bool bNewFrms = true, bool bTableInsDummyNode = false ) const;
+                    bool bNewFrames = true, bool bTableInsDummyNode = false ) const;
     void _DelDummyNodes( const SwNodeRange& rRg );
 
 protected:
@@ -141,27 +141,27 @@ public:
     SwNodePtr operator[]( sal_uLong n ) const; // defined in node.hxx
 
     sal_uLong Count() const { return BigPtrArray::Count(); }
-    void ForEach( FnForEach_SwNodes fnForEach, void* pArgs = 0 )
+    void ForEach( FnForEach_SwNodes fnForEach, void* pArgs = nullptr )
     {
         ForEach( 0, BigPtrArray::Count(), fnForEach, pArgs );
     }
-    void ForEach( sal_uLong nStt, sal_uLong nEnd, FnForEach_SwNodes fnForEach, void* pArgs = 0 );
+    void ForEach( sal_uLong nStt, sal_uLong nEnd, FnForEach_SwNodes fnForEach, void* pArgs = nullptr );
     void ForEach( const SwNodeIndex& rStart, const SwNodeIndex& rEnd,
-                    FnForEach_SwNodes fnForEach, void* pArgs = 0 );
+                    FnForEach_SwNodes fnForEach, void* pArgs = nullptr );
 
     /// A still empty section.
-    SwNode& GetEndOfPostIts() const     { return *pEndOfPostIts; }
+    SwNode& GetEndOfPostIts() const     { return *m_pEndOfPostIts; }
     /// Section fpr all footnotes.
-    SwNode& GetEndOfInserts() const     { return *pEndOfInserts; }
+    SwNode& GetEndOfInserts() const     { return *m_pEndOfInserts; }
     /// Section for all Flys/Header/Footers.
-    SwNode& GetEndOfAutotext() const    { return *pEndOfAutotext; }
+    SwNode& GetEndOfAutotext() const    { return *m_pEndOfAutotext; }
     /// Section for all Redlines.
-    SwNode& GetEndOfRedlines() const    { return *pEndOfRedlines; }
+    SwNode& GetEndOfRedlines() const    { return *m_pEndOfRedlines; }
     /** This is the last EndNode of a special section. After it
        there is only the regular ContentSection (i.e. the BodyText). */
-    SwNode& GetEndOfExtras() const      { return *pEndOfRedlines; }
+    SwNode& GetEndOfExtras() const      { return *m_pEndOfRedlines; }
     /// Regular ContentSection (i.e. the BodyText).
-    SwNode& GetEndOfContent() const     { return *pEndOfContent; }
+    SwNode& GetEndOfContent() const     { return *m_pEndOfContent; }
 
     /** Is the NodesArray the regular one of Doc? (and not the UndoNds, ...)
        Implementation in doc.hxx (because one needs to know Doc for it) ! */
@@ -171,12 +171,12 @@ public:
     void Delete(const SwNodeIndex &rPos, sal_uLong nNodes = 1);
 
     bool _MoveNodes( const SwNodeRange&, SwNodes& rNodes, const SwNodeIndex&,
-                bool bNewFrms = true );
+                bool bNewFrames = true );
     void MoveRange( SwPaM&, SwPosition&, SwNodes& rNodes );
 
     void _Copy( const SwNodeRange& rRg, const SwNodeIndex& rInsPos,
-                bool bNewFrms = true ) const
-        {   _CopyNodes( rRg, rInsPos, bNewFrms ); }
+                bool bNewFrames = true ) const
+        {   _CopyNodes( rRg, rInsPos, bNewFrames ); }
 
     void SectionUp( SwNodeRange *);
     void SectionDown( SwNodeRange *pRange, SwStartNodeType = SwNormalStartNode );
@@ -205,29 +205,29 @@ public:
     /// Implementations of "Make...Node" are in the given .cxx-files.
     SwTextNode *MakeTextNode( const SwNodeIndex & rWhere,
                             SwTextFormatColl *pColl,
-                            SwAttrSet* pAutoAttr = 0 ); ///< in ndtxt.cxx
+                            SwAttrSet* pAutoAttr = nullptr ); ///< in ndtxt.cxx
     SwStartNode* MakeTextSection( const SwNodeIndex & rWhere,
                             SwStartNodeType eSttNdTyp,
                             SwTextFormatColl *pColl,
-                            SwAttrSet* pAutoAttr = 0 );
+                            SwAttrSet* pAutoAttr = nullptr );
 
     static SwGrfNode *MakeGrfNode( const SwNodeIndex & rWhere,
                             const OUString& rGrfName,
                             const OUString& rFltName,
                             const Graphic* pGraphic,
                             SwGrfFormatColl *pColl,
-                            SwAttrSet* pAutoAttr = 0,
+                            SwAttrSet* pAutoAttr = nullptr,
                             bool bDelayed = false );    ///< in ndgrf.cxx
 
     static SwGrfNode *MakeGrfNode( const SwNodeIndex & rWhere,
                             const GraphicObject& rGrfObj,
                             SwGrfFormatColl *pColl,
-                            SwAttrSet* pAutoAttr = 0 ); ///< in ndgrf.cxx
+                            SwAttrSet* pAutoAttr = nullptr ); ///< in ndgrf.cxx
 
     SwOLENode *MakeOLENode( const SwNodeIndex & rWhere,
                             const svt::EmbeddedObjectRef&,
                             SwGrfFormatColl *pColl,
-                            SwAttrSet* pAutoAttr = 0 ); ///< in ndole.cxx
+                            SwAttrSet* pAutoAttr = nullptr ); ///< in ndole.cxx
     SwOLENode *MakeOLENode( const SwNodeIndex & rWhere,
                             const OUString &rName,
                             sal_Int64 nAspect,
@@ -235,7 +235,7 @@ public:
                             SwAttrSet* pAutoAttr ); ///< in ndole.cxx
 
     /// Array of all OutlineNodes.
-    const SwOutlineNodes& GetOutLineNds() const { return *pOutlineNds;}
+    const SwOutlineNodes& GetOutLineNds() const { return *m_pOutlineNodes;}
 
     /// Update all Nodes - Rule/Format-Change.
     void UpdateOutlineNode(SwNode & rNd);
@@ -251,8 +251,8 @@ public:
     static SwTableNode* InsertTable( const SwNodeIndex& rNdIdx,
                         sal_uInt16 nBoxes, SwTextFormatColl* pContentTextColl,
                         sal_uInt16 nLines = 0, sal_uInt16 nRepeat = 0,
-                        SwTextFormatColl* pHeadlineTextColl = 0,
-                        const SwAttrSet * pAttrSet = 0);
+                        SwTextFormatColl* pHeadlineTextColl = nullptr,
+                        const SwAttrSet * pAttrSet = nullptr);
 
     /// Create balanced table from selected range.
     SwTableNode* TextToTable( const SwNodeRange& rRange, sal_Unicode cCh,
@@ -260,7 +260,7 @@ public:
                                 SwTableLineFormat* pLineFormat,
                                 SwTableBoxFormat* pBoxFormat,
                                 SwTextFormatColl* pTextColl,
-                                SwUndoTextToTable* pUndo = 0 );
+                                SwUndoTextToTable* pUndo = nullptr );
 
     static SwNodeRange * ExpandRangeForTableBox(const SwNodeRange & rRange);
 
@@ -274,7 +274,7 @@ public:
 
     /// Create regular text from what was table.
     bool TableToText( const SwNodeRange& rRange, sal_Unicode cCh,
-                        SwUndoTableToText* = 0 );
+                        SwUndoTableToText* = nullptr );
     /// Is in untbl.cxx and may called only by Undo-object.
     SwTableNode* UndoTableToText( sal_uLong nStt, sal_uLong nEnd,
                         const SwTableToTextSaves& rSavedData );
@@ -296,7 +296,7 @@ public:
                                 bool bCalcNewSize = false );
     /// Two Tables that are following one another are merged.
     bool MergeTable( const SwNodeIndex& rPos, bool bWithPrev = true,
-                    sal_uInt16 nMode = 0, SwHistory* pHistory = 0 );
+                    sal_uInt16 nMode = 0, SwHistory* pHistory = nullptr );
 
     /// Insert a new SwSection.
     SwSectionNode* InsertTextSection(SwNodeIndex const& rNdIdx,
@@ -305,18 +305,18 @@ public:
                                 SwTOXBase const*const pTOXBase,
                                 SwNodeIndex const*const pEnde,
                                 bool const bInsAtStart = true,
-                                bool const bCreateFrms = true);
+                                bool const bCreateFrames = true);
 
     /// Which Doc contains the nodes-array?
-            SwDoc* GetDoc()         { return pMyDoc; }
-    const   SwDoc* GetDoc() const   { return pMyDoc; }
+            SwDoc* GetDoc()         { return m_pMyDoc; }
+    const   SwDoc* GetDoc() const   { return m_pMyDoc; }
 
     /** Search previous / next content node or table node with frames.
      If no end is given begin with the FrameIndex, else start search
-     with that before rFrmIdx and pEnd at the back.
-     If no valid node is found, return 0. rFrmIdx points to the node with frames. **/
-    SwNode* FindPrvNxtFrmNode( SwNodeIndex& rFrmIdx,
-                                const SwNode* pEnd = 0 ) const;
+     with that before rFrameIdx and pEnd at the back.
+     If no valid node is found, return 0. rFrameIdx points to the node with frames. **/
+    SwNode* FindPrvNxtFrameNode( SwNodeIndex& rFrameIdx,
+                                const SwNode* pEnd = nullptr ) const;
 
     SwNode * DocumentSectionStartNode(SwNode * pNode) const;
     SwNode * DocumentSectionEndNode(SwNode * pNode) const;

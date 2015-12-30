@@ -21,8 +21,11 @@
 #define INCLUDED_SW_SOURCE_CORE_INC_UNDOSORT_HXX
 
 #include <undobj.hxx>
-#include <boost/ptr_container/ptr_vector.hpp>
+
 #include <rtl/ustring.hxx>
+
+#include <memory>
+#include <vector>
 
 struct SwSortOptions;
 class SwTableNode;
@@ -59,8 +62,7 @@ typedef std::vector<SwNodeIndex*> SwUndoSortList;
 class SwUndoSort : public SwUndo, private SwUndRng
 {
     SwSortOptions*    pSortOpt;
-    boost::ptr_vector<SwSortUndoElement>
-                      aSortList;
+    std::vector<std::unique_ptr<SwSortUndoElement>> m_SortList;
     SwUndoAttrTable*  pUndoTableAttr;
     SwRedlineData*    pRedlData;
     sal_uLong         nTableNd;
@@ -72,9 +74,9 @@ public:
 
     virtual ~SwUndoSort();
 
-    virtual void UndoImpl( ::sw::UndoRedoContext & ) SAL_OVERRIDE;
-    virtual void RedoImpl( ::sw::UndoRedoContext & ) SAL_OVERRIDE;
-    virtual void RepeatImpl( ::sw::RepeatContext & ) SAL_OVERRIDE;
+    virtual void UndoImpl( ::sw::UndoRedoContext & ) override;
+    virtual void RedoImpl( ::sw::UndoRedoContext & ) override;
+    virtual void RepeatImpl( ::sw::RepeatContext & ) override;
 
     void Insert( const OUString& rOrgPos, const OUString& rNewPos );
     void Insert( sal_uLong nOrgPos, sal_uLong nNewPos );

@@ -111,7 +111,7 @@ namespace accessibility
         : AccessibleTextParaInterfaceBase( m_aMutex ),
           mnParagraphIndex( 0 ),
           mnIndexInParent( 0 ),
-          mpEditSource( NULL ),
+          mpEditSource( nullptr ),
           maEEOffset( 0, 0 ),
           mxParent( rParent ),
           // well, that's strictly (UNO) exception safe, though not
@@ -197,7 +197,7 @@ namespace accessibility
 
     void AccessibleEditableTextPara::implGetParagraphBoundary( css::i18n::Boundary& rBoundary, sal_Int32 /*nIndex*/ )
     {
-        DBG_WARNING( "AccessibleEditableTextPara::implGetParagraphBoundary: only a base implementation, ignoring the index" );
+        SAL_INFO( "editeng", "AccessibleEditableTextPara::implGetParagraphBoundary: only a base implementation, ignoring the index" );
 
         rBoundary.startPos = 0;
         //rBoundary.endPos = GetTextLen();
@@ -300,9 +300,9 @@ namespace accessibility
         int nClientId( getNotifierClientId() );
 
         // #108212# drop all references before notifying dispose
-        mxParent = NULL;
+        mxParent = nullptr;
         mnNotifierClientId = -1;
-        mpEditSource = NULL;
+        mpEditSource = nullptr;
 
         // notify listeners
         if( nClientId != -1 )
@@ -604,7 +604,7 @@ namespace accessibility
     void AccessibleEditableTextPara::SetState( const sal_Int16 nStateId )
     {
         ::utl::AccessibleStateSetHelper* pStateSet = static_cast< ::utl::AccessibleStateSetHelper*>(mxStateSet.get());
-        if( pStateSet != NULL &&
+        if( pStateSet != nullptr &&
             !pStateSet->contains(nStateId) )
         {
             pStateSet->AddState( nStateId );
@@ -615,7 +615,7 @@ namespace accessibility
     void AccessibleEditableTextPara::UnSetState( const sal_Int16 nStateId )
     {
         ::utl::AccessibleStateSetHelper* pStateSet = static_cast< ::utl::AccessibleStateSetHelper*>(mxStateSet.get());
-        if( pStateSet != NULL &&
+        if( pStateSet != nullptr &&
             pStateSet->contains(nStateId) )
         {
             pStateSet->RemoveState( nStateId );
@@ -823,9 +823,8 @@ namespace accessibility
             if ( nMyParaIndex > 0 &&
                  mpParaManager->IsReferencable( nMyParaIndex - 1 ) )
             {
-                uno::Sequence<uno::Reference<XInterface> > aSequence(1);
-                aSequence[0] =
-                    mpParaManager->GetChild( nMyParaIndex - 1 ).first.get().getRef();
+                uno::Sequence<uno::Reference<XInterface> > aSequence
+                    { mpParaManager->GetChild( nMyParaIndex - 1 ).first.get().getRef() };
                 AccessibleRelation aAccRel( AccessibleRelationType::CONTENT_FLOWS_FROM,
                                             aSequence );
                 pAccRelSetHelper->AddRelation( aAccRel );
@@ -835,9 +834,8 @@ namespace accessibility
             if ( (nMyParaIndex + 1) < (sal_Int32)mpParaManager->GetNum() &&
                  mpParaManager->IsReferencable( nMyParaIndex + 1 ) )
             {
-                uno::Sequence<uno::Reference<XInterface> > aSequence(1);
-                aSequence[0] =
-                    mpParaManager->GetChild( nMyParaIndex + 1 ).first.get().getRef();
+                uno::Sequence<uno::Reference<XInterface> > aSequence
+                    { mpParaManager->GetChild( nMyParaIndex + 1 ).first.get().getRef() };
                 AccessibleRelation aAccRel( AccessibleRelationType::CONTENT_FLOWS_TO,
                                             aSequence );
                 pAccRelSetHelper->AddRelation( aAccRel );
@@ -854,9 +852,9 @@ namespace accessibility
 
     static uno::Sequence< OUString > getAttributeNames()
     {
-        static uno::Sequence< OUString >* pNames = NULL;
+        static uno::Sequence< OUString >* pNames = nullptr;
 
-        if( pNames == NULL )
+        if( pNames == nullptr )
         {
             uno::Sequence< OUString >* pSeq = new uno::Sequence< OUString >( 21 );
             OUString* pStrings = pSeq->getArray();

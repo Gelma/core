@@ -39,12 +39,6 @@
 
 
 
-inline const OUString GetExportSymbolName( const OUString &rUiSymbolName )
-{
-    return SmLocalizedSymbolData::GetExportSymbolName( rUiSymbolName );
-}
-
-
 inline const OUString GetUiSymbolName( const OUString &rExportSymbolName )
 {
     return SmLocalizedSymbolData::GetUiSymbolName( rExportSymbolName );
@@ -118,7 +112,7 @@ private:
     SymbolMap_t         m_aSymbols;
     bool                m_bModified;
 
-    virtual void Notify(SfxBroadcaster& rBC, const SfxHint& rHint) SAL_OVERRIDE;
+    virtual void Notify(SfxBroadcaster& rBC, const SfxHint& rHint) override;
 
 public:
     SmSymbolManager();

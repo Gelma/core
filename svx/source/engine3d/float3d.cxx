@@ -72,11 +72,11 @@ namespace {
     */
     SfxDispatcher* LocalGetDispatcher (const SfxBindings* pBindings)
     {
-        SfxDispatcher* pDispatcher = NULL;
+        SfxDispatcher* pDispatcher = nullptr;
 
-        if (SfxViewFrame::Current() != NULL)
+        if (SfxViewFrame::Current() != nullptr)
             pDispatcher = SfxViewFrame::Current()->GetDispatcher();
-        else if (pBindings != NULL)
+        else if (pBindings != nullptr)
             pDispatcher = pBindings->GetDispatcher();
 
         return pDispatcher;
@@ -90,16 +90,16 @@ Svx3DWin::Svx3DWin(SfxBindings* pInBindings, SfxChildWindow *pCW, vcl::Window* p
     , aImgLightOff(SVX_RES(RID_SVXIMAGE_LIGHT_OFF))
     , bUpdate(false)
     , eViewType(VIEWTYPE_GEO)
-    , pModel(NULL)
-    , pVDev(NULL)
-    , p3DView(NULL)
+    , pModel(nullptr)
+    , pVDev(nullptr)
+    , p3DView(nullptr)
     , pBindings(pInBindings)
-    , pControllerItem(0)
-    , pConvertTo3DItem(0)
-    , pConvertTo3DLatheItem(0)
+    , pControllerItem(nullptr)
+    , pConvertTo3DItem(nullptr)
+    , pConvertTo3DLatheItem(nullptr)
     , mpImpl(new Svx3DWinImpl())
     , ePoolUnit(SFX_MAPUNIT_MM)
-    , mpRemember2DAttributes(NULL)
+    , mpRemember2DAttributes(nullptr)
     , bOnly3DChanged(false)
 {
     get(m_pBtnGeo, "geometry");
@@ -203,7 +203,7 @@ Svx3DWin::Svx3DWin(SfxBindings* pInBindings, SfxChildWindow *pCW, vcl::Window* p
     get(m_pBtnLatheObject, "tolathe");
     get(m_pBtnPerspective, "perspective");
 
-    mpImpl->pPool = NULL;
+    mpImpl->pPool = nullptr;
 
     // Set Metric
     eFUnit = pInBindings->GetDispatcher()->GetModule()->GetFieldUnit();
@@ -274,7 +274,7 @@ Svx3DWin::Svx3DWin(SfxBindings* pInBindings, SfxChildWindow *pCW, vcl::Window* p
     m_pBtnSpecularColor->SetClickHdl( aLink );
 
 
-    Link<> aLink2 = LINK( this, Svx3DWin, SelectHdl );
+    Link<ListBox&,void> aLink2 = LINK( this, Svx3DWin, SelectHdl );
     m_pLbMatFavorites->SetSelectHdl( aLink2 );
     m_pLbMatColor->SetSelectHdl( aLink2 );
     m_pLbMatEmission->SetSelectHdl( aLink2 );
@@ -290,11 +290,11 @@ Svx3DWin::Svx3DWin(SfxBindings* pInBindings, SfxChildWindow *pCW, vcl::Window* p
     m_pLbAmbientlight->SetSelectHdl( aLink2 );
     m_pLbShademode->SetSelectHdl( aLink2 );
 
-    aLink2 = LINK( this, Svx3DWin, ModifyHdl );
-    m_pMtrMatSpecularIntensity->SetModifyHdl( aLink2 );
-    m_pNumHorizontal->SetModifyHdl( aLink2 );
-    m_pNumVertical->SetModifyHdl( aLink2 );
-    m_pMtrSlant->SetModifyHdl( aLink2 );
+    Link<Edit&,void> aLink3 = LINK( this, Svx3DWin, ModifyHdl );
+    m_pMtrMatSpecularIntensity->SetModifyHdl( aLink3 );
+    m_pNumHorizontal->SetModifyHdl( aLink3 );
+    m_pNumVertical->SetModifyHdl( aLink3 );
+    m_pMtrSlant->SetModifyHdl( aLink3 );
 
     // Preview callback
     m_pCtlLightPreview->SetUserSelectionChangeCallback(LINK( this, Svx3DWin, ChangeSelectionCallbackHdl ));
@@ -306,7 +306,7 @@ Svx3DWin::Svx3DWin(SfxBindings* pInBindings, SfxChildWindow *pCW, vcl::Window* p
 
     // Initiation of the initialization of the ColorLBs
     SfxDispatcher* pDispatcher = LocalGetDispatcher(pBindings);
-    if (pDispatcher != NULL)
+    if (pDispatcher != nullptr)
     {
         SfxBoolItem aItem( SID_3D_INIT, true );
         pDispatcher->Execute(
@@ -368,7 +368,7 @@ void Svx3DWin::Reset()
     m_pMtrMatSpecularIntensity->SetValue( 50 );
 
     m_pBtnLight1->Check();
-    ClickUpdateHdl( NULL );
+    ClickUpdateHdl( nullptr );
 
     // Select nothing, to avoid errors when selecting the first
     m_pCtlLightPreview->GetSvx3DLightControl().SelectLight(0);
@@ -2148,7 +2148,7 @@ IMPL_LINK_NOARG_TYPED(Svx3DWin, ClickUpdateHdl, Button*, void)
     if( bUpdate )
     {
         SfxDispatcher* pDispatcher = LocalGetDispatcher(pBindings);
-        if (pDispatcher != NULL)
+        if (pDispatcher != nullptr)
         {
             SfxBoolItem aItem( SID_3D_STATE, true );
             pDispatcher->Execute(
@@ -2165,7 +2165,7 @@ IMPL_LINK_NOARG_TYPED(Svx3DWin, ClickUpdateHdl, Button*, void)
 IMPL_LINK_NOARG_TYPED(Svx3DWin, ClickAssignHdl, Button*, void)
 {
     SfxDispatcher* pDispatcher = LocalGetDispatcher(pBindings);
-    if (pDispatcher != NULL)
+    if (pDispatcher != nullptr)
     {
         SfxBoolItem aItem( SID_3D_ASSIGN, true );
         pDispatcher->Execute(
@@ -2419,7 +2419,7 @@ IMPL_LINK_TYPED( Svx3DWin, ClickHdl, Button *, pButton, void )
             bUpdatePreview = true;
         }
         // Other (no groups)
-        else if( pBtn != NULL )
+        else if( pBtn != nullptr )
         {
             pBtn->Check( !pBtn->IsChecked() );
             bUpdatePreview = true;
@@ -2428,7 +2428,7 @@ IMPL_LINK_TYPED( Svx3DWin, ClickHdl, Button *, pButton, void )
         if( nSId > 0 )
         {
             SfxDispatcher* pDispatcher = LocalGetDispatcher(pBindings);
-            if (pDispatcher != NULL)
+            if (pDispatcher != nullptr)
             {
                 SfxBoolItem aItem( nSId, true );
                 pDispatcher->Execute(
@@ -2465,140 +2465,132 @@ IMPL_LINK_TYPED( Svx3DWin, ClickColorHdl, Button *, pBtn, void)
     {
         aColor = aColorDlg.GetColor();
         if( LBSelectColor( pLb, aColor ) )
-            SelectHdl( pLb );
+            SelectHdl( *pLb );
     }
 }
 
 
-IMPL_LINK( Svx3DWin, SelectHdl, void *, p )
+IMPL_LINK_TYPED( Svx3DWin, SelectHdl, ListBox&, rListBox, void )
 {
-    if( p )
+    bool bUpdatePreview = false;
+
+    // Material
+    if (&rListBox == m_pLbMatFavorites)
     {
-        bool bUpdatePreview = false;
+        Color aColObj( COL_WHITE );
+        Color aColEmis( COL_BLACK );
+        Color aColSpec( COL_WHITE );
+        sal_uInt16 nSpecIntens = 20;
 
-        // Material
-        if (p == m_pLbMatFavorites)
+        switch( m_pLbMatFavorites->GetSelectEntryPos() )
         {
-            Color aColObj( COL_WHITE );
-            Color aColEmis( COL_BLACK );
-            Color aColSpec( COL_WHITE );
-            sal_uInt16 nSpecIntens = 20;
-
-            switch( m_pLbMatFavorites->GetSelectEntryPos() )
+            case 1: // Metall
             {
-                case 1: // Metall
-                {
-                    aColObj = Color(230,230,255);
-                    aColEmis = Color(10,10,30);
-                    aColSpec = Color(200,200,200);
-                    nSpecIntens = 20;
-                }
-                break;
-
-                case 2: // Gold
-                {
-                    aColObj = Color(230,255,0);
-                    aColEmis = Color(51,0,0);
-                    aColSpec = Color(255,255,240);
-                    nSpecIntens = 20;
-                }
-                break;
-
-                case 3: // Chrome
-                {
-                    aColObj = Color(36,117,153);
-                    aColEmis = Color(18,30,51);
-                    aColSpec = Color(230,230,255);
-                    nSpecIntens = 2;
-                }
-                break;
-
-                case 4: // Plastic
-                {
-                    aColObj = Color(255,48,57);
-                    aColEmis = Color(35,0,0);
-                    aColSpec = Color(179,202,204);
-                    nSpecIntens = 60;
-                }
-                break;
-
-                case 5: // Wood
-                {
-                    aColObj = Color(153,71,1);
-                    aColEmis = Color(21,22,0);
-                    aColSpec = Color(255,255,153);
-                    nSpecIntens = 75;
-                }
-                break;
+                aColObj = Color(230,230,255);
+                aColEmis = Color(10,10,30);
+                aColSpec = Color(200,200,200);
+                nSpecIntens = 20;
             }
-            LBSelectColor( m_pLbMatColor, aColObj );
-            LBSelectColor( m_pLbMatEmission, aColEmis );
-            LBSelectColor( m_pLbMatSpecular, aColSpec );
-            m_pMtrMatSpecularIntensity->SetValue( nSpecIntens );
+            break;
 
-            bUpdatePreview = true;
-        }
-        else if( p == m_pLbMatColor ||
-                 p == m_pLbMatEmission ||
-                 p == m_pLbMatSpecular )
-        {
-            m_pLbMatFavorites->SelectEntryPos( 0 );
-            bUpdatePreview = true;
-        }
-        // Lighting
-        else if( p == m_pLbAmbientlight )
-        {
-            bUpdatePreview = true;
-        }
-        else if( p == m_pLbLight1 ||
-                 p == m_pLbLight2 ||
-                 p == m_pLbLight3 ||
-                 p == m_pLbLight4 ||
-                 p == m_pLbLight5 ||
-                 p == m_pLbLight6 ||
-                 p == m_pLbLight7 ||
-                 p == m_pLbLight8 )
-        {
-            bUpdatePreview = true;
-        }
-        else if (p == m_pLbShademode)
-            bUpdatePreview = true;
+            case 2: // Gold
+            {
+                aColObj = Color(230,255,0);
+                aColEmis = Color(51,0,0);
+                aColSpec = Color(255,255,240);
+                nSpecIntens = 20;
+            }
+            break;
 
-        if( bUpdatePreview )
-            UpdatePreview();
+            case 3: // Chrome
+            {
+                aColObj = Color(36,117,153);
+                aColEmis = Color(18,30,51);
+                aColSpec = Color(230,230,255);
+                nSpecIntens = 2;
+            }
+            break;
+
+            case 4: // Plastic
+            {
+                aColObj = Color(255,48,57);
+                aColEmis = Color(35,0,0);
+                aColSpec = Color(179,202,204);
+                nSpecIntens = 60;
+            }
+            break;
+
+            case 5: // Wood
+            {
+                aColObj = Color(153,71,1);
+                aColEmis = Color(21,22,0);
+                aColSpec = Color(255,255,153);
+                nSpecIntens = 75;
+            }
+            break;
+        }
+        LBSelectColor( m_pLbMatColor, aColObj );
+        LBSelectColor( m_pLbMatEmission, aColEmis );
+        LBSelectColor( m_pLbMatSpecular, aColSpec );
+        m_pMtrMatSpecularIntensity->SetValue( nSpecIntens );
+
+        bUpdatePreview = true;
     }
-    return 0L;
+    else if( &rListBox == m_pLbMatColor ||
+             &rListBox == m_pLbMatEmission ||
+             &rListBox == m_pLbMatSpecular )
+    {
+        m_pLbMatFavorites->SelectEntryPos( 0 );
+        bUpdatePreview = true;
+    }
+    // Lighting
+    else if( &rListBox == m_pLbAmbientlight )
+    {
+        bUpdatePreview = true;
+    }
+    else if( &rListBox == m_pLbLight1 ||
+             &rListBox == m_pLbLight2 ||
+             &rListBox == m_pLbLight3 ||
+             &rListBox == m_pLbLight4 ||
+             &rListBox == m_pLbLight5 ||
+             &rListBox == m_pLbLight6 ||
+             &rListBox == m_pLbLight7 ||
+             &rListBox == m_pLbLight8 )
+    {
+        bUpdatePreview = true;
+    }
+    else if (&rListBox == m_pLbShademode)
+        bUpdatePreview = true;
+
+    if( bUpdatePreview )
+        UpdatePreview();
 }
 
 
-IMPL_LINK( Svx3DWin, ModifyHdl, void*, pField )
+IMPL_LINK_TYPED( Svx3DWin, ModifyHdl, Edit&, rField, void )
 {
-    if( pField )
+    bool bUpdatePreview = false;
+
+    // Material
+    if( &rField == m_pMtrMatSpecularIntensity )
     {
-        bool bUpdatePreview = false;
-
-        // Material
-        if( pField == m_pMtrMatSpecularIntensity )
-        {
-            bUpdatePreview = true;
-        }
-        else if (pField == m_pNumHorizontal)
-        {
-            bUpdatePreview = true;
-        }
-        else if (pField == m_pNumVertical)
-        {
-            bUpdatePreview = true;
-        }
-        else if (pField == m_pMtrSlant)
-        {
-            bUpdatePreview = true;
-        }
-
-        if( bUpdatePreview )
-            UpdatePreview();
+        bUpdatePreview = true;
     }
-    return 0L;
+    else if (&rField == m_pNumHorizontal)
+    {
+        bUpdatePreview = true;
+    }
+    else if (&rField == m_pNumVertical)
+    {
+        bUpdatePreview = true;
+    }
+    else if (&rField == m_pMtrSlant)
+    {
+        bUpdatePreview = true;
+    }
+
+    if( bUpdatePreview )
+        UpdatePreview();
 }
 
 
@@ -2634,7 +2626,7 @@ void Svx3DWin::ClickLight(PushButton& rBtn)
 IMPL_LINK_NOARG_TYPED(Svx3DWin, ChangeSelectionCallbackHdl, SvxLightCtl3D*, void)
 {
     const sal_uInt32 nLight(m_pCtlLightPreview->GetSvx3DLightControl().GetSelectedLight());
-    PushButton* pBtn = 0;
+    PushButton* pBtn = nullptr;
 
     switch( nLight )
     {
@@ -2730,14 +2722,14 @@ bool Svx3DWin::LBSelectColor( ColorLB* pLb, const Color& rColor )
 
 void Svx3DWin::UpdatePreview()
 {
-    if( pModel == NULL )
+    if( pModel == nullptr )
         pModel = new FmFormModel();
 
     if(bOnly3DChanged)
     {
         // Execute slot
         SfxDispatcher* pDispatcher = LocalGetDispatcher(pBindings);
-        if (pDispatcher != NULL)
+        if (pDispatcher != nullptr)
         {
             SfxBoolItem aItem( SID_3D_STATE, true );
             pDispatcher->Execute(
@@ -2761,7 +2753,7 @@ void Svx3DWin::UpdatePreview()
 void Svx3DWin::DocumentReload()
 {
     delete mpRemember2DAttributes;
-    mpRemember2DAttributes = 0L;
+    mpRemember2DAttributes = nullptr;
 }
 
 
@@ -2802,7 +2794,7 @@ sal_uInt16 Svx3DWin::GetLightSource( const PushButton* pBtn )
 {
     sal_uInt16 nLight = 8;
 
-    if( pBtn == NULL )
+    if( pBtn == nullptr )
     {
         if( m_pBtnLight1->IsChecked() )
             nLight = 0;
@@ -2846,9 +2838,9 @@ sal_uInt16 Svx3DWin::GetLightSource( const PushButton* pBtn )
 
 ColorLB* Svx3DWin::GetLbByButton( const PushButton* pBtn )
 {
-    ColorLB* pLb = NULL;
+    ColorLB* pLb = nullptr;
 
-    if( pBtn == NULL )
+    if( pBtn == nullptr )
     {
         if( m_pBtnLight1->IsChecked() )
             pLb = m_pLbLight1;
@@ -2930,7 +2922,7 @@ void SvxConvertTo3DItem::StateChanged(sal_uInt16 /*_nId*/, SfxItemState eState, 
     {
         bState = bNewState;
         SfxDispatcher* pDispatcher = LocalGetDispatcher(&GetBindings());
-        if (pDispatcher != NULL)
+        if (pDispatcher != nullptr)
         {
             SfxBoolItem aItem( SID_3D_STATE, true );
             pDispatcher->Execute(

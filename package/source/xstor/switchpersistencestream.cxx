@@ -33,7 +33,6 @@ struct SPStreamData_Impl
     // the streams below are not visible from outside so there is no need to remember position
 
     // original stream related members
-    uno::Reference< io::XStream > m_xOrigStream;
     uno::Reference< io::XTruncate > m_xOrigTruncate;
     uno::Reference< io::XSeekable > m_xOrigSeekable;
     uno::Reference< io::XInputStream > m_xOrigInStream;
@@ -44,7 +43,6 @@ struct SPStreamData_Impl
 
     SPStreamData_Impl(
             bool bInStreamBased,
-            const uno::Reference< io::XStream >& xOrigStream,
             const uno::Reference< io::XTruncate >& xOrigTruncate,
             const uno::Reference< io::XSeekable >& xOrigSeekable,
             const uno::Reference< io::XInputStream >& xOrigInStream,
@@ -52,7 +50,6 @@ struct SPStreamData_Impl
             bool bInOpen,
             bool bOutOpen )
     : m_bInStreamBased( bInStreamBased )
-    , m_xOrigStream( xOrigStream )
     , m_xOrigTruncate( xOrigTruncate )
     , m_xOrigSeekable( xOrigSeekable )
     , m_xOrigInStream( xOrigInStream )
@@ -67,7 +64,7 @@ SwitchablePersistenceStream::SwitchablePersistenceStream(
         const uno::Reference< uno::XComponentContext >& xContext,
         const uno::Reference< io::XStream >& xStream )
 : m_xContext( xContext )
-, m_pStreamData( NULL )
+, m_pStreamData( nullptr )
 {
     SwitchPersistenceTo( xStream );
 }
@@ -76,7 +73,7 @@ SwitchablePersistenceStream::SwitchablePersistenceStream(
         const uno::Reference< uno::XComponentContext >& xContext,
         const uno::Reference< io::XInputStream >& xInputStream )
 : m_xContext( xContext )
-, m_pStreamData( NULL )
+, m_pStreamData( nullptr )
 {
     SwitchPersistenceTo( xInputStream );
 }
@@ -116,7 +113,7 @@ void SwitchablePersistenceStream::SwitchPersistenceTo( const uno::Reference< io:
     CloseAll_Impl();
 
     m_pStreamData = new SPStreamData_Impl( false,
-                                            xStream, xNewTruncate, xNewSeekable, xNewInStream, xNewOutStream,
+                                            xNewTruncate, xNewSeekable, xNewInStream, xNewOutStream,
                                             bInOpen, bOutOpen );
 }
 
@@ -150,7 +147,7 @@ void SwitchablePersistenceStream::SwitchPersistenceTo( const uno::Reference< io:
     CloseAll_Impl();
 
     m_pStreamData = new SPStreamData_Impl( true,
-                                            xNewStream, xNewTruncate, xNewSeekable, xInputStream, xNewOutStream,
+                                            xNewTruncate, xNewSeekable, xInputStream, xNewOutStream,
                                             bInOpen, bOutOpen );
 
 }
@@ -162,16 +159,13 @@ void SwitchablePersistenceStream::CopyAndSwitchPersistenceTo( const uno::Referen
 
     if ( !xTargetStream.is() )
     {
-        xTargetStream = uno::Reference < io::XStream >(
-            io::TempFile::create(m_xContext),
-            uno::UNO_QUERY_THROW );
-
-        xTargetSeek = uno::Reference< io::XSeekable >( xTargetStream, uno::UNO_QUERY_THROW );
+        xTargetStream.set( io::TempFile::create(m_xContext), uno::UNO_QUERY_THROW );
+        xTargetSeek.set( xTargetStream, uno::UNO_QUERY_THROW );
     }
     else
     {
         // the provided stream must be empty
-        xTargetSeek = uno::Reference< io::XSeekable >( xTargetStream, uno::UNO_QUERY_THROW );
+        xTargetSeek.set( xTargetStream, uno::UNO_QUERY_THROW );
         if ( xTargetSeek->getLength() )
             throw io::IOException();
     }
@@ -197,7 +191,7 @@ void SwitchablePersistenceStream::CopyAndSwitchPersistenceTo( const uno::Referen
     CloseAll_Impl();
 
     m_pStreamData = new SPStreamData_Impl( false,
-                                        xTargetStream, xTargetTruncate, xTargetSeek, xTargetInStream, xTargetOutStream,
+                                        xTargetTruncate, xTargetSeek, xTargetInStream, xTargetOutStream,
                                         bInOpen, bOutOpen );
 }
 
@@ -206,11 +200,11 @@ void SwitchablePersistenceStream::CloseAll_Impl()
     if ( m_pStreamData )
     {
         delete m_pStreamData;
-        m_pStreamData = NULL;
+        m_pStreamData = nullptr;
     }
 }
 
-// com::sun::star::io::XStream
+// css::io::XStream
 uno::Reference< io::XInputStream > SAL_CALL SwitchablePersistenceStream::getInputStream(  )
     throw (uno::RuntimeException, std::exception)
 {
@@ -231,7 +225,7 @@ uno::Reference< io::XOutputStream > SAL_CALL SwitchablePersistenceStream::getOut
     return static_cast< io::XOutputStream* >( this );
 }
 
-// com::sun::star::io::XInputStream
+// css::io::XInputStream
 ::sal_Int32 SAL_CALL SwitchablePersistenceStream::readBytes( uno::Sequence< ::sal_Int8 >& aData, ::sal_Int32 nBytesToRead )
     throw (io::NotConnectedException, io::BufferSizeExceededException, io::IOException, uno::RuntimeException, std::exception)
 {
@@ -305,7 +299,7 @@ void SAL_CALL SwitchablePersistenceStream::closeInput()
         CloseAll_Impl();
 }
 
-// com::sun::star::io::XOutputStream
+// css::io::XOutputStream
 void SAL_CALL SwitchablePersistenceStream::writeBytes( const uno::Sequence< ::sal_Int8 >& aData )
     throw (io::NotConnectedException, io::BufferSizeExceededException, io::IOException, uno::RuntimeException, std::exception)
 {
@@ -358,7 +352,7 @@ void SAL_CALL SwitchablePersistenceStream::closeOutput(  )
         CloseAll_Impl();
 }
 
-// com::sun::star::io::XTruncate
+// css::io::XTruncate
 void SAL_CALL SwitchablePersistenceStream::truncate(  )
     throw (io::IOException, uno::RuntimeException, std::exception)
 {
@@ -377,7 +371,7 @@ void SAL_CALL SwitchablePersistenceStream::truncate(  )
     m_pStreamData->m_xOrigTruncate->truncate();
 }
 
-// com::sun::star::io::XSeekable
+// css::io::XSeekable
 void SAL_CALL SwitchablePersistenceStream::seek( ::sal_Int64 location )
     throw (lang::IllegalArgumentException, io::IOException, uno::RuntimeException, std::exception)
 {
@@ -424,7 +418,7 @@ void SAL_CALL SwitchablePersistenceStream::seek( ::sal_Int64 location )
 }
 
 void SAL_CALL SwitchablePersistenceStream::waitForCompletion()
-    throw (::com::sun::star::io::IOException, ::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::io::IOException, css::uno::RuntimeException, std::exception)
 {
     if ( !m_pStreamData )
         throw io::NotConnectedException();

@@ -27,24 +27,16 @@
 #include <glib.h>
 #include <osl/mutex.hxx>
 #include <osl/module.hxx>
-#include <vcl/bitmapex.hxx>
-#include <vcl/bmpacc.hxx>
 #include "tools/rc.hxx"
 #include <sfx2/app.hxx>
 #include "app.hrc"
-#ifndef __SHUTDOWNICON_HXX__
-#define USE_APP_SHORTCUTS
 #include "shutdownicon.hxx"
-#endif
 
 #ifdef ENABLE_GIO
 #include <gio/gio.h>
 #endif
 
 // Cut/paste from vcl/inc/svids.hrc
-#define SV_ICON_SMALL_START                 25000
-
-#define SV_ICON_ID_OFFICE                       1
 #define SV_ICON_ID_TEXT                         2
 #define SV_ICON_ID_SPREADSHEET                  4
 #define SV_ICON_ID_DRAWING                      6
@@ -64,17 +56,17 @@ void SAL_DLLPUBLIC_EXPORT plugin_shutdown_sys_tray();
 
 static ResMgr *pVCLResMgr;
 static GtkStatusIcon* pTrayIcon;
-static GtkWidget *pExitMenuItem = NULL;
-static GtkWidget *pOpenMenuItem = NULL;
-static GtkWidget *pDisableMenuItem = NULL;
+static GtkWidget *pExitMenuItem = nullptr;
+static GtkWidget *pOpenMenuItem = nullptr;
+static GtkWidget *pDisableMenuItem = nullptr;
 #ifdef ENABLE_GIO
-GFileMonitor* pMonitor = NULL;
+GFileMonitor* pMonitor = nullptr;
 #endif
 
 static void open_url_cb( GtkWidget *, gpointer data )
 {
     ShutdownIcon::OpenURL( *static_cast<OUString *>(data),
-                           OUString( "_default" ) );
+                           "_default" );
 }
 
 static void open_file_cb( GtkWidget * )
@@ -108,57 +100,6 @@ static void menu_deactivate_cb( GtkWidget *pMenu )
     gtk_menu_popdown( GTK_MENU( pMenu ) );
 }
 
-static GdkPixbuf * ResIdToPixbuf( sal_uInt16 nResId )
-{
-    ResId aResId( nResId, *pVCLResMgr );
-    BitmapEx aIcon( aResId );
-    Bitmap pInSalBitmap = aIcon.GetBitmap();
-    AlphaMask pInSalAlpha = aIcon.GetAlpha();
-
-    if( pInSalBitmap.GetBitCount() != 24 )
-        pInSalBitmap.Convert( BMP_CONVERSION_24BIT );
-
-    Bitmap::ScopedReadAccess pSalBitmap(pInSalBitmap);
-    AlphaMask::ScopedReadAccess pSalAlpha(pInSalAlpha);
-
-    g_return_val_if_fail( pSalBitmap, NULL );
-
-    Size aSize( pSalBitmap->Width(), pSalBitmap->Height() );
-    if (pSalAlpha)
-        g_return_val_if_fail( Size( pSalAlpha->Width(), pSalAlpha->Height() ) == aSize, NULL );
-
-    int nX, nY;
-    guchar *pPixbufData = static_cast<guchar *>(g_malloc( 4 * aSize.Width() * aSize.Height() ));
-    guchar *pDestData = pPixbufData;
-
-    for( nY = 0; nY < pSalBitmap->Height(); nY++ )
-    {
-        for( nX = 0; nX < pSalBitmap->Width(); nX++ )
-        {
-            BitmapColor aPix;
-            aPix = pSalBitmap->GetPixel( nY, nX );
-            pDestData[0] = aPix.GetRed();
-            pDestData[1] = aPix.GetGreen();
-            pDestData[2] = aPix.GetBlue();
-            if (pSalAlpha)
-            {
-                aPix = pSalAlpha->GetPixel( nY, nX );
-                pDestData[3] = 255 - aPix.GetIndex();
-            }
-            else
-                pDestData[3] = 255;
-            pDestData += 4;
-        }
-    }
-
-    return gdk_pixbuf_new_from_data( pPixbufData,
-        GDK_COLORSPACE_RGB, sal_True, 8,
-        aSize.Width(), aSize.Height(),
-        aSize.Width() * 4,
-        reinterpret_cast<GdkPixbufDestroyNotify>(g_free),
-        NULL );
-}
-
 extern "C" {
 static void oustring_delete (gpointer  data,
                              GClosure * /* closure */)
@@ -183,10 +124,24 @@ static void add_item( GtkMenuShell *pMenuShell, const char *pAsciiURL,
                                     RTL_TEXTENCODING_UTF8);
     }
 
-    GdkPixbuf *pPixbuf = ResIdToPixbuf( SV_ICON_SMALL_START + nResId );
-    GtkWidget *pImage = gtk_image_new_from_pixbuf( pPixbuf );
-    g_object_unref( G_OBJECT( pPixbuf ) );
+    gchar* appicon;
 
+    if (nResId == SV_ICON_ID_TEXT)
+        appicon = g_strdup ("libreoffice-writer");
+    else if (nResId == SV_ICON_ID_SPREADSHEET)
+        appicon = g_strdup ("libreoffice-calc");
+    else if (nResId == SV_ICON_ID_DRAWING)
+        appicon = g_strdup ("libreoffice-draw");
+    else if (nResId == SV_ICON_ID_PRESENTATION)
+        appicon = g_strdup ("libreoffice-impress");
+    else if (nResId == SV_ICON_ID_DATABASE)
+        appicon = g_strdup ("libreoffice-base");
+    else if (nResId == SV_ICON_ID_FORMULA)
+        appicon = g_strdup ("libreoffice-math");
+    else
+        appicon = g_strdup ("libreoffice-main");
+
+    GtkWidget *pImage = gtk_image_new_from_icon_name (appicon, GTK_ICON_SIZE_MENU);
     GtkWidget *pMenuItem = gtk_image_menu_item_new_with_label( aLabel.getStr() );
     gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM( pMenuItem ), pImage );
     g_signal_connect_data( pMenuItem, "activate", pFnCallback, pURL,
@@ -243,7 +198,7 @@ add_image_menu_item( GtkMenuShell *pMenuShell,
     gtk_image_menu_item_set_image( GTK_IMAGE_MENU_ITEM( pMenuItem ), pImage );
 
     gtk_menu_shell_append( pMenuShell, pMenuItem );
-    g_signal_connect( pMenuItem, "activate", activate_cb, NULL);
+    g_signal_connect( pMenuItem, "activate", activate_cb, nullptr);
 
     return pMenuItem;
 }
@@ -255,19 +210,19 @@ static void populate_menu( GtkWidget *pMenu )
     SvtModuleOptions aModuleOptions;
 
     if ( aModuleOptions.IsWriter() )
-        add_item (pMenuShell, WRITER_URL, NULL,
+        add_item (pMenuShell, WRITER_URL, nullptr,
                   SV_ICON_ID_TEXT, G_CALLBACK( open_url_cb ));
 
     if ( aModuleOptions.IsCalc() )
-        add_item (pMenuShell, CALC_URL, NULL,
+        add_item (pMenuShell, CALC_URL, nullptr,
                   SV_ICON_ID_SPREADSHEET, G_CALLBACK( open_url_cb ));
 
     if ( aModuleOptions.IsImpress() )
-        add_item (pMenuShell, IMPRESS_URL, NULL,
+        add_item (pMenuShell, IMPRESS_URL, nullptr,
                   SV_ICON_ID_PRESENTATION, G_CALLBACK( open_url_cb ));
 
     if ( aModuleOptions.IsDraw() )
-        add_item (pMenuShell, DRAW_URL, NULL,
+        add_item (pMenuShell, DRAW_URL, nullptr,
                   SV_ICON_ID_DRAWING, G_CALLBACK( open_url_cb ));
 
     if ( aModuleOptions.IsDataBase() )
@@ -275,7 +230,7 @@ static void populate_menu( GtkWidget *pMenu )
                           SV_ICON_ID_DATABASE, G_CALLBACK( open_url_cb ));
 
     if ( aModuleOptions.IsMath() )
-        add_item (pMenuShell, MATH_URL, NULL,
+        add_item (pMenuShell, MATH_URL, nullptr,
                   SV_ICON_ID_FORMULA, G_CALLBACK( open_url_cb ));
 
     OUString aULabel = pShutdownIcon->GetResString( STR_QUICKSTART_FROMTEMPLATE );
@@ -331,7 +286,7 @@ static gboolean display_menu_cb( GtkWidget *,
 
     refresh_menu( pMenu );
 
-    gtk_menu_popup( GTK_MENU( pMenu ), NULL, NULL,
+    gtk_menu_popup( GTK_MENU( pMenu ), nullptr, nullptr,
                     gtk_status_icon_position_menu, pTrayIcon,
                     0, event->time );
 
@@ -370,10 +325,8 @@ void plugin_init_sys_tray()
 {
     ::SolarMutexGuard aGuard;
 
-    if( /* need gtk_status to resolve */
-        (gtk_check_version( 2, 10, 0 ) != NULL) ||
-        /* we need the vcl plugin and mainloop initialized */
-        !g_type_from_name( "GdkDisplay" ) )
+    /* we need the vcl plugin and mainloop initialized */
+    if (!g_type_from_name( "GdkDisplay" ))
         return;
 
     OString aLabel;
@@ -385,33 +338,31 @@ void plugin_init_sys_tray()
 
     pVCLResMgr = ResMgr::CreateResMgr("vcl");
 
-    GdkPixbuf *pPixbuf = ResIdToPixbuf( SV_ICON_SMALL_START + SV_ICON_ID_OFFICE );
-    pTrayIcon = gtk_status_icon_new_from_pixbuf(pPixbuf);
-    g_object_unref( pPixbuf );
+    pTrayIcon = gtk_status_icon_new_from_icon_name ("libreoffice-main");
 
     g_object_set (pTrayIcon, "title", aLabel.getStr(),
-                  "tooltip_text", aLabel.getStr(), NULL);
+                  "tooltip_text", aLabel.getStr(), nullptr);
 
     GtkWidget *pMenu = gtk_menu_new();
     g_signal_connect(pTrayIcon,  "button-press-event",
                      G_CALLBACK(display_menu_cb), pMenu);
     g_signal_connect (pMenu, "deactivate",
-                      G_CALLBACK (menu_deactivate_cb), NULL);
+                      G_CALLBACK (menu_deactivate_cb), nullptr);
 
     // disable shutdown
     pShutdownIcon->SetVeto( true );
     ShutdownIcon::addTerminateListener();
 
 #ifdef ENABLE_GIO
-    GFile* pFile = NULL;
+    GFile* pFile = nullptr;
     OUString sLibraryFileUrl;
     if (osl::Module::getUrlFromAddress(plugin_init_sys_tray, sLibraryFileUrl))
         pFile = g_file_new_for_uri(OUStringToOString(sLibraryFileUrl, RTL_TEXTENCODING_UTF8).getStr());
 
     if (pFile)
     {
-        if ((pMonitor = g_file_monitor_file(pFile, G_FILE_MONITOR_NONE, NULL, NULL)))
-            g_signal_connect(pMonitor, "changed", reinterpret_cast<GCallback>(notify_file_changed), NULL);
+        if ((pMonitor = g_file_monitor_file(pFile, G_FILE_MONITOR_NONE, nullptr, nullptr)))
+            g_signal_connect(pMonitor, "changed", reinterpret_cast<GCallback>(notify_file_changed), nullptr);
         g_object_unref(pFile);
     }
 #endif
@@ -430,16 +381,16 @@ void plugin_shutdown_sys_tray()
             reinterpret_cast<gpointer>(&notify_file_changed), pMonitor);
         g_file_monitor_cancel(pMonitor);
         g_object_unref(pMonitor);
-        pMonitor = NULL;
+        pMonitor = nullptr;
     }
 #endif
 
     g_object_unref(pTrayIcon);
-    pTrayIcon = NULL;
+    pTrayIcon = nullptr;
 
-    pExitMenuItem = NULL;
-    pOpenMenuItem = NULL;
-    pDisableMenuItem = NULL;
+    pExitMenuItem = nullptr;
+    pOpenMenuItem = nullptr;
+    pDisableMenuItem = nullptr;
 }
 
 #endif // ENABLE_QUICKSTART_APPLET

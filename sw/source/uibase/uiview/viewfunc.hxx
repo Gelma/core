@@ -33,7 +33,6 @@ namespace vcl { class Window; }
 
 // The following functions are available in viewprt.cxx
 void SetPrinter( IDocumentDeviceAccess*, SfxPrinter*, bool bWeb );
-VclPtr<SfxTabPage> CreatePrintOptionsPage( vcl::Window*, const SfxItemSet& );
 void SetAppPrintOptions( SwViewShell* pSh, bool bWeb );
 
 // The following functions are available in viewport.cxx
@@ -44,8 +43,8 @@ void ViewResizePixel( const vcl::RenderContext &rRef,
                     SwScrollbar& rVScrollbar,
                     SwScrollbar& rHScrollbar,
                     vcl::Window& rScrollBarBox,
-                    SvxRuler* pVRuler = 0,
-                    SvxRuler* pHRuler = 0,
+                    SvxRuler* pVRuler = nullptr,
+                    SvxRuler* pHRuler = nullptr,
                     bool bVRulerRight = false );
 
 #endif

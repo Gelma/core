@@ -34,14 +34,11 @@ namespace sdbtools
     // DataSourceMetaData
     typedef ::cppu::WeakImplHelper<   css::sdb::tools::XDataSourceMetaData
                                   >   DataSourceMetaData_Base;
-    struct DataSourceMetaData_Impl;
     /** default implementation for XDataSourceMetaData
     */
     class DataSourceMetaData    :public DataSourceMetaData_Base
                                 ,public ConnectionDependentComponent
     {
-    private:
-        ::std::unique_ptr< DataSourceMetaData_Impl >   m_pImpl;
 
     public:
         /** constructs the instance
@@ -58,14 +55,14 @@ namespace sdbtools
         );
 
         // XDataSourceMetaData
-        virtual sal_Bool SAL_CALL supportsQueriesInFrom() throw (css::sdbc::SQLException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual sal_Bool SAL_CALL supportsQueriesInFrom() throw (css::sdbc::SQLException, css::uno::RuntimeException, std::exception) override;
 
     protected:
         virtual ~DataSourceMetaData();
 
     private:
-        DataSourceMetaData( const DataSourceMetaData& ) SAL_DELETED_FUNCTION;
-        DataSourceMetaData& operator=( const DataSourceMetaData& ) SAL_DELETED_FUNCTION;
+        DataSourceMetaData( const DataSourceMetaData& ) = delete;
+        DataSourceMetaData& operator=( const DataSourceMetaData& ) = delete;
     };
 
 } // namespace sdbtools

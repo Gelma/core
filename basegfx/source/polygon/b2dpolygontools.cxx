@@ -838,7 +838,7 @@ namespace basegfx
                                             const double fBezierDistance(aBezierSegmentHelper.distanceToRelative(fFrom - fPositionOfStart));
                                             B2DCubicBezier aRight;
 
-                                            aBezierSegment.split(fBezierDistance, 0, &aRight);
+                                            aBezierSegment.split(fBezierDistance, nullptr, &aRight);
                                             aRetval.append(aRight.getStartPoint());
                                             aRetval.setNextControlPoint(aRetval.count() - 1, aRight.getControlPointA());
                                             bDone = true;
@@ -896,7 +896,7 @@ namespace basegfx
                                         const double fBezierDistance(aBezierSegmentHelper.distanceToRelative(fTo - fPositionOfStart));
                                         B2DCubicBezier aLeft;
 
-                                        aBezierSegment.split(fBezierDistance, &aLeft, 0);
+                                        aBezierSegment.split(fBezierDistance, &aLeft, nullptr);
                                         aRetval.append(aLeft.getEndPoint());
                                         aRetval.setPrevControlPoint(aRetval.count() - 1, aLeft.getControlPointB());
                                         bDone = true;
@@ -1290,7 +1290,7 @@ namespace basegfx
                                 B2DCubicBezier aRight;
                                 const double fBezierSplit(aCubicBezierHelper.distanceToRelative(fLastDotDashMovingLength));
 
-                                aCurrentEdge.split(fBezierSplit, 0, &aRight);
+                                aCurrentEdge.split(fBezierSplit, nullptr, &aRight);
 
                                 if(!aSnippet.count())
                                 {
@@ -2186,7 +2186,9 @@ namespace basegfx
             const B2DVector aVectorToA(rEnd - rCandidateA);
             const double fCrossA(aLineVector.cross(aVectorToA));
 
-            if(fTools::equalZero(fCrossA))
+            // tdf#88352 increase numerical correctness and use rtl::math::approxEqual
+            // instead of fTools::equalZero which compares with a fixed small value
+            if(rtl::math::approxEqual(fCrossA, 0.0))
             {
                 // one point on the line
                 return bWithLine;
@@ -2195,7 +2197,8 @@ namespace basegfx
             const B2DVector aVectorToB(rEnd - rCandidateB);
             const double fCrossB(aLineVector.cross(aVectorToB));
 
-            if(fTools::equalZero(fCrossB))
+            // increase numerical correctness
+            if(rtl::math::approxEqual(fCrossB, 0.0))
             {
                 // one point on the line
                 return bWithLine;
@@ -3191,39 +3194,6 @@ namespace basegfx
             }
         }
 
-        bool containsOnlyHorizontalAndVerticalEdges(const B2DPolygon& rCandidate)
-        {
-            if(rCandidate.areControlPointsUsed())
-            {
-                return false;
-            }
-
-            const sal_uInt32 nPointCount(rCandidate.count());
-
-            if(nPointCount < 2)
-            {
-                return true;
-            }
-
-            const sal_uInt32 nEdgeCount(rCandidate.isClosed() ? nPointCount + 1 : nPointCount);
-            basegfx::B2DPoint aLast(rCandidate.getB2DPoint(0));
-
-            for(sal_uInt32 a(1); a < nEdgeCount; a++)
-            {
-                const sal_uInt32 nNextIndex(a % nPointCount);
-                const basegfx::B2DPoint aCurrent(rCandidate.getB2DPoint(nNextIndex));
-
-                if(!basegfx::fTools::equal(aLast.getX(), aCurrent.getX()) && !basegfx::fTools::equal(aLast.getY(), aCurrent.getY()))
-                {
-                    return false;
-                }
-
-                aLast = aCurrent;
-            }
-
-            return true;
-        }
-
         B2DVector getTangentEnteringPoint(const B2DPolygon& rCandidate, sal_uInt32 nIndex)
         {
             B2DVector aRetval(0.0, 0.0);
@@ -3462,7 +3432,6 @@ namespace basegfx
                     && aControlA.equal(aRetval.getB2DPoint(aRetval.count() - 1)))
                 {
                     bControlA = false;
-                    bControlB = false;
                 }
 
                 if(bControlA)

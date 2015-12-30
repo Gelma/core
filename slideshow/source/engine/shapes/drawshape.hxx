@@ -81,10 +81,8 @@ namespace slideshow
                 pre-rendererd bitmap.
              */
             static DrawShapeSharedPtr create(
-                const ::com::sun::star::uno::Reference<
-                   ::com::sun::star::drawing::XShape >&    xShape,
-                const ::com::sun::star::uno::Reference<
-                   ::com::sun::star::drawing::XDrawPage >& xContainingPage,
+                const css::uno::Reference< css::drawing::XShape >&    xShape,
+                const css::uno::Reference< css::drawing::XDrawPage >& xContainingPage,
                 double                                     nPrio,
                 bool                                       bForeignSource,
                 const SlideShowContext&                    rContext ); // throw ShapeLoadFailedException;
@@ -110,16 +108,13 @@ namespace slideshow
                 events.
              */
             static DrawShapeSharedPtr create(
-                const ::com::sun::star::uno::Reference<
-                   ::com::sun::star::drawing::XShape >&    xShape,
-                const ::com::sun::star::uno::Reference<
-                   ::com::sun::star::drawing::XDrawPage >& xContainingPage,
+                const css::uno::Reference< css::drawing::XShape >&    xShape,
+                const css::uno::Reference< css::drawing::XDrawPage >& xContainingPage,
                 double                                     nPrio,
                 const Graphic&                             rGraphic,
                 const SlideShowContext&                    rContext ); // throw ShapeLoadFailedException;
 
-            virtual ::com::sun::star::uno::Reference<
-                ::com::sun::star::drawing::XShape > getXShape() const SAL_OVERRIDE;
+            virtual css::uno::Reference< css::drawing::XShape > getXShape() const override;
 
             virtual ~DrawShape();
 
@@ -128,68 +123,68 @@ namespace slideshow
 
 
             virtual void addViewLayer( const ViewLayerSharedPtr&    rNewLayer,
-                                       bool                         bRedrawLayer ) SAL_OVERRIDE;
-            virtual bool removeViewLayer( const ViewLayerSharedPtr& rNewLayer ) SAL_OVERRIDE;
-            virtual bool clearAllViewLayers() SAL_OVERRIDE;
+                                       bool                         bRedrawLayer ) override;
+            virtual bool removeViewLayer( const ViewLayerSharedPtr& rNewLayer ) override;
+            virtual bool clearAllViewLayers() override;
 
             // attribute methods
 
 
-            virtual ShapeAttributeLayerSharedPtr createAttributeLayer() SAL_OVERRIDE;
-            virtual bool revokeAttributeLayer( const ShapeAttributeLayerSharedPtr& rLayer ) SAL_OVERRIDE;
-            virtual ShapeAttributeLayerSharedPtr getTopmostAttributeLayer() const SAL_OVERRIDE;
-            virtual void setVisibility( bool bVisible ) SAL_OVERRIDE;
-            virtual ::basegfx::B2DRectangle getBounds() const SAL_OVERRIDE;
-            virtual ::basegfx::B2DRectangle getDomBounds() const SAL_OVERRIDE;
-            virtual ::basegfx::B2DRectangle getUpdateArea() const SAL_OVERRIDE;
-            virtual bool isVisible() const SAL_OVERRIDE;
-            virtual double getPriority() const SAL_OVERRIDE;
+            virtual ShapeAttributeLayerSharedPtr createAttributeLayer() override;
+            virtual bool revokeAttributeLayer( const ShapeAttributeLayerSharedPtr& rLayer ) override;
+            virtual ShapeAttributeLayerSharedPtr getTopmostAttributeLayer() const override;
+            virtual void setVisibility( bool bVisible ) override;
+            virtual ::basegfx::B2DRectangle getBounds() const override;
+            virtual ::basegfx::B2DRectangle getDomBounds() const override;
+            virtual ::basegfx::B2DRectangle getUpdateArea() const override;
+            virtual bool isVisible() const override;
+            virtual double getPriority() const override;
 
 
             // animation methods
 
 
-            virtual void enterAnimationMode() SAL_OVERRIDE;
-            virtual void leaveAnimationMode() SAL_OVERRIDE;
-            virtual bool isBackgroundDetached() const SAL_OVERRIDE;
+            virtual void enterAnimationMode() override;
+            virtual void leaveAnimationMode() override;
+            virtual bool isBackgroundDetached() const override;
 
             // render methods
 
 
-            virtual bool update() const SAL_OVERRIDE;
-            virtual bool render() const SAL_OVERRIDE;
-            virtual bool isContentChanged() const SAL_OVERRIDE;
+            virtual bool update() const override;
+            virtual bool render() const override;
+            virtual bool isContentChanged() const override;
 
             // Sub item specialities
 
 
-            virtual const DocTreeNodeSupplier&  getTreeNodeSupplier() const SAL_OVERRIDE;
-            virtual DocTreeNodeSupplier&        getTreeNodeSupplier() SAL_OVERRIDE;
+            virtual const DocTreeNodeSupplier&  getTreeNodeSupplier() const override;
+            virtual DocTreeNodeSupplier&        getTreeNodeSupplier() override;
 
-            virtual DocTreeNode                 getSubsetNode() const SAL_OVERRIDE;
-            virtual AttributableShapeSharedPtr  getSubset( const DocTreeNode& rTreeNode ) const SAL_OVERRIDE;
+            virtual DocTreeNode                 getSubsetNode() const override;
+            virtual AttributableShapeSharedPtr  getSubset( const DocTreeNode& rTreeNode ) const override;
             virtual bool                        createSubset( AttributableShapeSharedPtr&   o_rSubset,
-                                                              const DocTreeNode&            rTreeNode ) SAL_OVERRIDE;
-            virtual bool                        revokeSubset( const AttributableShapeSharedPtr& rShape ) SAL_OVERRIDE;
+                                                              const DocTreeNode&            rTreeNode ) override;
+            virtual bool                        revokeSubset( const AttributableShapeSharedPtr& rShape ) override;
 
 
             // DocTreeNodeSupplier methods
 
 
-            virtual sal_Int32   getNumberOfTreeNodes        ( DocTreeNode::NodeType eNodeType ) const SAL_OVERRIDE; // throw ShapeLoadFailedException;
+            virtual sal_Int32   getNumberOfTreeNodes        ( DocTreeNode::NodeType eNodeType ) const override; // throw ShapeLoadFailedException;
             virtual DocTreeNode getTreeNode                 ( sal_Int32             nNodeIndex,
-                                                              DocTreeNode::NodeType eNodeType ) const SAL_OVERRIDE; // throw ShapeLoadFailedException;
+                                                              DocTreeNode::NodeType eNodeType ) const override; // throw ShapeLoadFailedException;
             virtual sal_Int32   getNumberOfSubsetTreeNodes  ( const DocTreeNode&    rParentNode,
-                                                              DocTreeNode::NodeType eNodeType ) const SAL_OVERRIDE; // throw ShapeLoadFailedException;
+                                                              DocTreeNode::NodeType eNodeType ) const override; // throw ShapeLoadFailedException;
             virtual DocTreeNode getSubsetTreeNode           ( const DocTreeNode&    rParentNode,
                                                               sal_Int32             nNodeIndex,
-                                                              DocTreeNode::NodeType eNodeType ) const SAL_OVERRIDE; // throw ShapeLoadFailedException;
+                                                              DocTreeNode::NodeType eNodeType ) const override; // throw ShapeLoadFailedException;
 
             // HyperlinkArea methods
 
 
-            virtual HyperlinkRegions getHyperlinkRegions() const SAL_OVERRIDE;
-            virtual double getHyperlinkPriority() const SAL_OVERRIDE;
+            virtual HyperlinkRegions getHyperlinkRegions() const override;
+            virtual double getHyperlinkPriority() const override;
 
 
             // intrinsic animation methods
@@ -229,10 +224,10 @@ namespace slideshow
                 unsupported content, and, if necessary, returned as a
                 pre-rendererd bitmap.
              */
-            DrawShape( const ::com::sun::star::uno::Reference<
-                            ::com::sun::star::drawing::XShape >&    xShape,
-                       const ::com::sun::star::uno::Reference<
-                            ::com::sun::star::drawing::XDrawPage >& xContainingPage,
+            DrawShape( const css::uno::Reference<
+                            css::drawing::XShape >&    xShape,
+                       const css::uno::Reference<
+                            css::drawing::XDrawPage >& xContainingPage,
                        double                                       nPrio,
                        bool                                         bForeignSource,
                        const SlideShowContext&                      rContext ); // throw ShapeLoadFailedException;
@@ -257,10 +252,8 @@ namespace slideshow
                 DrawShape will register itself for intrinsic animation
                 events.
              */
-            DrawShape( const ::com::sun::star::uno::Reference<
-                            ::com::sun::star::drawing::XShape >&    xShape,
-                       const ::com::sun::star::uno::Reference<
-                            ::com::sun::star::drawing::XDrawPage >& xContainingPage,
+            DrawShape( const css::uno::Reference< css::drawing::XShape >&    xShape,
+                       const css::uno::Reference< css::drawing::XDrawPage >& xContainingPage,
                        double                                       nPrio,
                        const Graphic&                               rGraphic,
                        const SlideShowContext&                      rContext ); // throw ShapeLoadFailedException;
@@ -283,10 +276,8 @@ namespace slideshow
             void prepareHyperlinkIndices() const;
 
             /// The associated XShape
-            ::com::sun::star::uno::Reference<
-                    ::com::sun::star::drawing::XShape >                             mxShape;
-            ::com::sun::star::uno::Reference<
-                    ::com::sun::star::drawing::XDrawPage >                          mxPage;
+            css::uno::Reference< css::drawing::XShape >                             mxShape;
+            css::uno::Reference< css::drawing::XDrawPage >                          mxPage;
 
             /** A vector of metafiles actually representing the Shape.
 
@@ -332,8 +323,7 @@ namespace slideshow
             typedef ::std::vector< ViewShapeSharedPtr > ViewShapeVector;
             ViewShapeVector                                                         maViewShapes;
 
-            ::com::sun::star::uno::Reference<
-                ::com::sun::star::uno::XComponentContext>                           mxComponentContext;
+            css::uno::Reference< css::uno::XComponentContext>                       mxComponentContext;
 
             /// hyperlink support
             typedef ::std::pair<sal_Int32 /* mtf start */,

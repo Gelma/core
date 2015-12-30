@@ -115,7 +115,7 @@ public:
         }
 
     //---  XGraphicRenderer  -----------------------------------
-    virtual void SAL_CALL render( const uno::Reference< graphic::XGraphic >& rGraphic ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual void SAL_CALL render( const uno::Reference< graphic::XGraphic >& rGraphic ) throw (uno::RuntimeException, std::exception) override
         {
             ::osl::MutexGuard aGuard( m_aMutex );
             mxGraphic = rGraphic;
@@ -439,7 +439,7 @@ bool getRectanglesFromScrollMtf( ::basegfx::B2DRectangle&       o_rScrollRect,
     bool bPaintRectSet(false);
 
     for ( MetaAction * pCurrAct = rMtf->FirstAction();
-          pCurrAct != 0; pCurrAct = rMtf->NextAction() )
+          pCurrAct != nullptr; pCurrAct = rMtf->NextAction() )
     {
         if (pCurrAct->GetType() == MetaActionType::COMMENT)
         {

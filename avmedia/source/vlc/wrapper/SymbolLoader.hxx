@@ -79,7 +79,7 @@ namespace
             if ( !aMethod )
             {
                 SAL_WARN("avmedia", "Cannot load method " << pMap[ i ].symName);
-                *pMap[ i ].refValue = NULL;
+                *pMap[ i ].refValue = nullptr;
                 return false;
             }
             else
@@ -104,7 +104,7 @@ namespace
                                             SAL_LOADMODULE_DEFAULT );
 
 
-        if( aModule == NULL)
+        if( aModule == nullptr)
         {
             SAL_WARN("avmedia", "Cannot load libvlc");
             return false;

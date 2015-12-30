@@ -42,8 +42,7 @@ class XMLChangedRegionImportContext : public SvXMLImportContext
 {
     /// if we replace the current XTextCursor/XText by the ones for
     /// the redline, we remember the old cursor here.
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::text::XTextCursor> xOldCursor;
+    css::uno::Reference<css::text::XTextCursor> xOldCursor;
 
     /// redline-ID
     OUString sID;
@@ -53,7 +52,6 @@ class XMLChangedRegionImportContext : public SvXMLImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLChangedRegionImportContext(
         SvXMLImport& rImport,
@@ -63,16 +61,14 @@ public:
     virtual ~XMLChangedRegionImportContext();
 
     virtual void StartElement(
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList> & xAttrList) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList) override;
 
     virtual SvXMLImportContext* CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
-         const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList> & xAttrList) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
 
     /// change info: To be called from change-info context

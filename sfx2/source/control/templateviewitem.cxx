@@ -52,7 +52,7 @@ void TemplateViewItem::calculateItemsPosition(const long nThumbnailHeight, const
         drawinglayer::primitive2d::TextLayouterDevice aTextDev;
         aTextDev.setFontAttribute(pAttrs->aFontAttr,
                                   pAttrs->aFontSize.getX(), pAttrs->aFontSize.getY(),
-                                  com::sun::star::lang::Locale() );
+                                  css::lang::Locale() );
 
         long nSpace = (nDisplayHeight + nPadding - 2*aTextDev.getTextHeight()) / 3;
 
@@ -69,7 +69,7 @@ void TemplateViewItem::Paint(drawinglayer::processor2d::BaseProcessor2D *pProces
     BColor aFillColor = pAttrs->aFillColor;
 
     int nCount = maSubTitle.isEmpty() ? 5 : 6;
-    drawinglayer::primitive2d::Primitive2DSequence aSeq(nCount);
+    drawinglayer::primitive2d::Primitive2DContainer aSeq(nCount);
     double fTransparence = 0.0;
 
     // Draw background

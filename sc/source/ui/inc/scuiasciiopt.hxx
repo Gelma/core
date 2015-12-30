@@ -20,8 +20,22 @@
 #ifndef INCLUDED_SC_SOURCE_UI_INC_SCUIASCIIOPT_HXX
 #define INCLUDED_SC_SOURCE_UI_INC_SCUIASCIIOPT_HXX
 
-#include "asciiopt.hxx"
+#include <vcl/dialog.hxx>
 #include <svx/langbox.hxx>
+
+#include "asciiopt.hxx"
+
+class Button;
+class CheckBox;
+class ComboBox;
+class Edit;
+class FixedText;
+class ListBox;
+class NumericField;
+class RadioButton;
+
+class ScCsvTableBox;
+class SvxTextEncodingBox;
 
 class ScImportAsciiDlg : public ModalDialog
 {
@@ -80,7 +94,7 @@ public:
                                     vcl::Window* pParent, const OUString& aDatName,
                                     SvStream* pInStream, ScImportAsciiCall eCall );
                                 virtual ~ScImportAsciiDlg();
-    virtual void                dispose() SAL_OVERRIDE;
+    virtual void                dispose() override;
 
     void                        GetOptions( ScAsciiOptions& rOpt );
     void                        SaveParameters();
@@ -100,12 +114,14 @@ private:
     void                        UpdateVertical();
     inline bool                 Seek( sal_uLong nPos ); // synced to and from mnStreamPos
 
-                                DECL_LINK( CharSetHdl, SvxTextEncodingBox* );
-                                DECL_LINK( FirstRowHdl, NumericField* );
+                                DECL_LINK_TYPED( CharSetHdl, ListBox&, void );
+                                DECL_LINK_TYPED( FirstRowHdl, Edit&, void );
                                 DECL_LINK_TYPED( RbSepFixHdl, Button*, void );
-                                DECL_LINK( SeparatorHdl, Control* );
+                                DECL_LINK_TYPED( SeparatorEditHdl, Edit&, void );
                                 DECL_LINK_TYPED( SeparatorClickHdl, Button*, void );
-                                DECL_LINK( LbColTypeHdl, ListBox* );
+                                DECL_LINK_TYPED( SeparatorComboBoxHdl, ComboBox&, void );
+                                void SeparatorHdl(Control*);
+                                DECL_LINK_TYPED( LbColTypeHdl, ListBox&, void );
                                 DECL_LINK_TYPED( UpdateTextHdl, ScCsvTableBox&, void );
                                 DECL_LINK_TYPED( ColTypeHdl, ScCsvTableBox&, void );
 };

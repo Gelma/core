@@ -43,7 +43,6 @@
 
 namespace sd {
 
-TYPEINIT1( FuScale, FuPoor );
 
 FuScale::FuScale (
     ViewShell* pViewSh,
@@ -77,7 +76,7 @@ void FuScale::DoExecute( SfxRequest& rReq )
         nValue = (sal_Int16) mpWindow->GetZoom();
 
         // zoom on page size?
-        if( mpViewShell && mpViewShell->ISA( DrawViewShell ) &&
+        if( mpViewShell && dynamic_cast< DrawViewShell *>( mpViewShell ) !=  nullptr &&
             static_cast<DrawViewShell*>(mpViewShell)->IsZoomOnPage() )
         {
             pZoomItem.reset(new SvxZoomItem( SvxZoomType::WHOLEPAGE, nValue ));
@@ -90,7 +89,7 @@ void FuScale::DoExecute( SfxRequest& rReq )
         // limit range
         if( mpViewShell )
         {
-            if( mpViewShell->ISA( DrawViewShell ) )
+            if( dynamic_cast< DrawViewShell *>( mpViewShell ) !=  nullptr )
             {
                 SdrPageView* pPageView = mpView->GetSdrPageView();
                 if( ( pPageView && pPageView->GetObjList()->GetObjCount() == 0 ) )
@@ -99,7 +98,7 @@ void FuScale::DoExecute( SfxRequest& rReq )
                     nZoomValues &= ~SvxZoomEnableFlags::OPTIMAL;
                 }
             }
-            else if( mpViewShell->ISA( OutlineViewShell ) )
+            else if( dynamic_cast< OutlineViewShell *>( mpViewShell ) !=  nullptr )
             {
                 nZoomValues &= ~SvxZoomEnableFlags::OPTIMAL;
                 nZoomValues &= ~SvxZoomEnableFlags::WHOLEPAGE;
@@ -114,7 +113,7 @@ void FuScale::DoExecute( SfxRequest& rReq )
         SvxAbstractDialogFactory* pFact = SvxAbstractDialogFactory::Create();
         if(pFact)
         {
-            pDlg.reset(pFact->CreateSvxZoomDialog(NULL, aNewAttr));
+            pDlg.reset(pFact->CreateSvxZoomDialog(nullptr, aNewAttr));
         }
 
         if( pDlg )
@@ -156,7 +155,7 @@ void FuScale::DoExecute( SfxRequest& rReq )
 
                 case SvxZoomType::OPTIMAL:
                 {
-                    if( mpViewShell->ISA( DrawViewShell ) )
+                    if( dynamic_cast< DrawViewShell *>( mpViewShell ) !=  nullptr )
                     {
                         // name confusion: SID_SIZE_ALL -> zoom onto all objects
                         // --> the program offers it as optimal
@@ -179,7 +178,7 @@ void FuScale::DoExecute( SfxRequest& rReq )
     }
     else if(mpViewShell && (pArgs->Count () == 1))
     {
-        SFX_REQUEST_ARG (rReq, pScale, SfxUInt32Item, ID_VAL_ZOOM, false);
+        const SfxUInt32Item* pScale = rReq.GetArg<SfxUInt32Item>(ID_VAL_ZOOM);
         mpViewShell->SetZoom (pScale->GetValue ());
 
         mpViewShell->GetViewFrame()->GetBindings().Invalidate( SidArrayZoom );

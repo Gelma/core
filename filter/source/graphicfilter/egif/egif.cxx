@@ -63,11 +63,11 @@ class GIFWriter
     void                WriteBitmapEx( const BitmapEx& rBmpEx, const Point& rPoint, bool bExtended,
                                        long nTimer = 0, Disposal eDisposal = DISPOSE_NOT );
 
-    com::sun::star::uno::Reference< com::sun::star::task::XStatusIndicator > xStatusIndicator;
+    css::uno::Reference< css::task::XStatusIndicator > xStatusIndicator;
 
 public:
 
-    GIFWriter(SvStream &rStream);
+    explicit GIFWriter(SvStream &rStream);
     ~GIFWriter() {}
 
     bool WriteGIF( const Graphic& rGraphic, FilterConfigItem* pConfigItem );
@@ -75,7 +75,7 @@ public:
 
 GIFWriter::GIFWriter(SvStream &rStream)
     : m_rGIF(rStream)
-    , m_pAcc(NULL)
+    , m_pAcc(nullptr)
     , nMinPercent(0)
     , nMaxPercent(0)
     , nLastPercent(0)
@@ -111,7 +111,7 @@ bool GIFWriter::WriteGIF(const Graphic& rGraphic, FilterConfigItem* pFilterConfi
     bStatus = true;
     nLastPercent = 0;
     nInterlaced = 0;
-    m_pAcc = NULL;
+    m_pAcc = nullptr;
 
     if ( pFilterConfigItem )
         nInterlaced = pFilterConfigItem->ReadInt32( "Interlaced", 0 );
@@ -285,7 +285,7 @@ bool GIFWriter::CreateAccess( const BitmapEx& rBmpEx )
 void GIFWriter::DestroyAccess()
 {
     Bitmap::ReleaseAccess( m_pAcc );
-    m_pAcc = NULL;
+    m_pAcc = nullptr;
 }
 
 
@@ -561,16 +561,8 @@ void GIFWriter::WriteTerminator()
 }
 
 
-
-// this needs to be kept in sync with
-// ImpFilterLibCacheEntry::GetImportFunction() from
-// vcl/source/filter/graphicfilter.cxx
-#if defined(DISABLE_DYNLOADING)
-#define GraphicExport egiGraphicExport
-#endif
-
 extern "C" SAL_DLLPUBLIC_EXPORT bool SAL_CALL
-GraphicExport( SvStream& rStream, Graphic& rGraphic, FilterConfigItem* pConfigItem )
+egiGraphicExport( SvStream& rStream, Graphic& rGraphic, FilterConfigItem* pConfigItem )
 {
     GIFWriter aWriter(rStream);
     return aWriter.WriteGIF(rGraphic, pConfigItem);

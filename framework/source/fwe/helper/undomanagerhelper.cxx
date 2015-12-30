@@ -69,15 +69,15 @@ namespace framework
     class UndoActionWrapper : public SfxUndoAction
     {
     public:
-                            UndoActionWrapper(
+        explicit            UndoActionWrapper(
                                 Reference< XUndoAction > const& i_undoAction
                             );
         virtual             ~UndoActionWrapper();
 
-        virtual OUString    GetComment() const SAL_OVERRIDE;
-        virtual void        Undo() SAL_OVERRIDE;
-        virtual void        Redo() SAL_OVERRIDE;
-        virtual bool        CanRepeat(SfxRepeatTarget&) const SAL_OVERRIDE;
+        virtual OUString    GetComment() const override;
+        virtual void        Undo() override;
+        virtual void        Redo() override;
+        virtual bool        CanRepeat(SfxRepeatTarget&) const override;
 
     private:
         const Reference< XUndoAction >  m_xUndoAction;
@@ -138,7 +138,7 @@ namespace framework
     class UndoManagerRequest : public ::comphelper::AnyEvent
     {
     public:
-        UndoManagerRequest( ::std::function<void ()> const& i_request )
+        explicit UndoManagerRequest( ::std::function<void ()> const& i_request )
             :m_request( i_request )
             ,m_caughtException()
             ,m_finishCondition()
@@ -211,7 +211,7 @@ namespace framework
         ::osl::Mutex&   getMutex() { return m_aMutex; }
 
     public:
-        UndoManagerHelper_Impl( IUndoManagerImplementation& i_undoManagerImpl )
+        explicit UndoManagerHelper_Impl( IUndoManagerImplementation& i_undoManagerImpl )
             :m_aMutex()
             ,m_aQueueMutex()
             ,m_disposed( false )
@@ -240,16 +240,16 @@ namespace framework
         }
 
         // SfxUndoListener
-        virtual void actionUndone( const OUString& i_actionComment ) SAL_OVERRIDE;
-        virtual void actionRedone( const OUString& i_actionComment ) SAL_OVERRIDE;
-        virtual void undoActionAdded( const OUString& i_actionComment ) SAL_OVERRIDE;
-        virtual void cleared() SAL_OVERRIDE;
-        virtual void clearedRedo() SAL_OVERRIDE;
-        virtual void resetAll() SAL_OVERRIDE;
-        virtual void listActionEntered( const OUString& i_comment ) SAL_OVERRIDE;
-        virtual void listActionLeft( const OUString& i_comment ) SAL_OVERRIDE;
-        virtual void listActionCancelled() SAL_OVERRIDE;
-        virtual void undoManagerDying() SAL_OVERRIDE;
+        virtual void actionUndone( const OUString& i_actionComment ) override;
+        virtual void actionRedone( const OUString& i_actionComment ) override;
+        virtual void undoActionAdded( const OUString& i_actionComment ) override;
+        virtual void cleared() override;
+        virtual void clearedRedo() override;
+        virtual void resetAll() override;
+        virtual void listActionEntered( const OUString& i_comment ) override;
+        virtual void listActionLeft( const OUString& i_comment ) override;
+        virtual void listActionCancelled() override;
+        virtual void undoManagerDying() override;
 
         // public operations
         void disposing();
@@ -597,7 +597,7 @@ namespace framework
         const bool bHasRedoActions = ( rUndoManager.GetRedoActionCount( IUndoManager::TopLevel ) > 0 );
 
         // prepare notification
-        void ( SAL_CALL XUndoManagerListener::*notificationMethod )( const UndoManagerEvent& ) = NULL;
+        void ( SAL_CALL XUndoManagerListener::*notificationMethod )( const UndoManagerEvent& ) = nullptr;
 
         UndoManagerEvent aContextEvent( buildEvent( OUString() ) );
         const EventObject aClearedEvent( getXUndoManager() );
@@ -611,7 +611,7 @@ namespace framework
         }
         else
         {
-            aContextEvent.UndoActionTitle = rUndoManager.GetUndoActionComment( 0 );
+            aContextEvent.UndoActionTitle = rUndoManager.GetUndoActionComment();
             notificationMethod = &XUndoManagerListener::leftContext;
         }
 

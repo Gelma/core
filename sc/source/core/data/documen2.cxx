@@ -127,57 +127,53 @@ private:
     }
 };
 
-// STATIC DATA -----------------------------------------------------------
-
 ScDocument::ScDocument( ScDocumentMode eMode, SfxObjectShell* pDocShell ) :
         mpCellStringPool(new svl::SharedStringPool(ScGlobal::pCharClass)),
         mpFormulaGroupCxt(nullptr),
         maCalcConfig( ScInterpreter::GetGlobalConfig()),
-        mpUndoManager( NULL ),
-        pEditEngine( NULL ),
-        pNoteEngine( NULL ),
+        mpUndoManager( nullptr ),
+        pEditEngine( nullptr ),
+        pNoteEngine( nullptr ),
         pShell( pDocShell ),
-        pPrinter( NULL ),
-        pVirtualDevice_100th_mm( NULL ),
-        pDrawLayer( NULL ),
-        pValidationList( NULL ),
-        pFormatExchangeList( NULL ),
-        pRangeName(NULL),
-        pDPCollection( NULL ),
-        pFormulaTree( NULL ),
-        pEOFormulaTree( NULL ),
-        pFormulaTrack( NULL ),
-        pEOFormulaTrack( NULL ),
-        pClipData( NULL ),
-        pDetOpList(NULL),
-        pChangeTrack( NULL ),
-        pUnoBroadcaster( NULL ),
-        pUnoListenerCalls( NULL ),
-        pUnoRefUndoList( NULL ),
-        pChangeViewSettings( NULL ),
-        pScriptTypeData( NULL ),
-        mpAnonymousDBData( NULL ),
-        pCacheFieldEditEngine( NULL ),
-        pViewOptions( NULL ),
-        pDocOptions( NULL ),
-        pExtDocOptions( NULL ),
-        pConsolidateDlgData( NULL ),
-        pRecursionHelper( NULL ),
-        pAutoNameCache( NULL ),
-        pLookupCacheMapImpl( NULL ),
-        pPreviewFont( NULL ),
-        pPreviewCellStyle( NULL ),
+        pPrinter( nullptr ),
+        pVirtualDevice_100th_mm( nullptr ),
+        pDrawLayer( nullptr ),
+        pValidationList( nullptr ),
+        pFormatExchangeList( nullptr ),
+        pRangeName(nullptr),
+        pDPCollection( nullptr ),
+        pFormulaTree( nullptr ),
+        pEOFormulaTree( nullptr ),
+        pFormulaTrack( nullptr ),
+        pEOFormulaTrack( nullptr ),
+        pClipData( nullptr ),
+        pDetOpList(nullptr),
+        pChangeTrack( nullptr ),
+        pUnoBroadcaster( nullptr ),
+        pUnoListenerCalls( nullptr ),
+        pUnoRefUndoList( nullptr ),
+        pChangeViewSettings( nullptr ),
+        pScriptTypeData( nullptr ),
+        mpAnonymousDBData( nullptr ),
+        pCacheFieldEditEngine( nullptr ),
+        pViewOptions( nullptr ),
+        pDocOptions( nullptr ),
+        pExtDocOptions( nullptr ),
+        pConsolidateDlgData( nullptr ),
+        pRecursionHelper( nullptr ),
+        pAutoNameCache( nullptr ),
+        pLookupCacheMapImpl( nullptr ),
+        pPreviewFont( nullptr ),
+        pPreviewCellStyle( nullptr ),
         nUnoObjectId( 0 ),
         nRangeOverflowType( 0 ),
         aCurTextWidthCalcPos(MAXCOL,0,0),
-        aTableOpList( 0 ),
         nFormulaCodeInTree(0),
         nXMLImportedFormulaCount( 0 ),
         nInterpretLevel(0),
         nMacroInterpretLevel(0),
         nInterpreterTableOpLevel(0),
         nSrcVer( SC_CURRENT_VERSION ),
-        nSrcMaxRow( MAXROW ),
         nFormulaTrackCount(0),
         eHardRecalcState(HARDRECALCSTATE_OFF),
         nVisibleTab( 0 ),
@@ -202,9 +198,7 @@ ScDocument::ScDocument( ScDocumentMode eMode, SfxObjectShell* pDocShell ) :
         bInDtorClear( false ),
         bExpandRefs( false ),
         bDetectiveDirty( false ),
-        nMacroCallMode( SC_MACROCALL_ALLOWED ),
         bHasMacroFunc( false ),
-        nVisSpellState( 0 ),
         nAsianCompression(SC_ASIANCOMPRESSION_INVALID),
         nAsianKerning(SC_ASIANKERNING_INVALID),
         bPastingDrawFromOtherDoc( false ),
@@ -236,12 +230,12 @@ ScDocument::ScDocument( ScDocumentMode eMode, SfxObjectShell* pDocShell ) :
     }
     else
     {
-        pBASM       = NULL;
-        pChartListenerCollection = NULL;
-        pRefreshTimerControl = NULL;
+        pBASM       = nullptr;
+        pChartListenerCollection = nullptr;
+        pRefreshTimerControl = nullptr;
     }
     pDBCollection = new ScDBCollection(this);
-    pSelectionAttr = NULL;
+    pSelectionAttr = nullptr;
     pChartCollection = new ScChartCollection;
     apTemporaryChartLock.reset( new ScTemporaryChartLock(this) );
     xColNameRanges = new ScRangePairList;
@@ -267,7 +261,7 @@ const sfx2::LinkManager* ScDocument::GetLinkManager() const
 sc::DocumentLinkManager& ScDocument::GetDocLinkManager()
 {
     if (!mpDocLinkMgr)
-        mpDocLinkMgr.reset(new sc::DocumentLinkManager(*this, pShell));
+        mpDocLinkMgr.reset(new sc::DocumentLinkManager(pShell));
     return *mpDocLinkMgr;
 }
 
@@ -284,13 +278,6 @@ void ScDocument::SetStorageGrammar( formula::FormulaGrammar::Grammar eGram )
             "ScDocument::SetStorageGrammar: wrong storage grammar");
 
     eStorageGrammar = eGram;
-
-    // FIXME: the XML import shouldn't strip brackets, the compiler should
-    // digest them instead, which could also speedup reference recognition
-    // during import.
-
-    eXmlImportGrammar = formula::FormulaGrammar::mergeToGrammar( eGram,
-            formula::FormulaGrammar::CONV_OOO);
 }
 
 void ScDocument::SetDocVisible( bool bSet )
@@ -318,7 +305,7 @@ void ScDocument::StartChangeTracking()
 void ScDocument::EndChangeTracking()
 {
     delete pChangeTrack;
-    pChangeTrack = NULL;
+    pChangeTrack = nullptr;
 }
 
 void ScDocument::SetChangeTrack( ScChangeTrack* pTrack )
@@ -378,7 +365,7 @@ ScDocument::~ScDocument()
     {   // To be sure there isn't anything running do it with a protector,
         // this ensures also that nothing needs the control anymore.
         ScRefreshTimerProtector aProt( GetRefreshTimerControlAddress() );
-        delete pRefreshTimerControl, pRefreshTimerControl = NULL;
+        delete pRefreshTimerControl, pRefreshTimerControl = nullptr;
     }
 
     mxFormulaParserPool.reset();
@@ -392,10 +379,10 @@ ScDocument::~ScDocument()
     DELETEZ( pLookupCacheMapImpl);  // before pBASM because of listeners
     // destroy BroadcastAreas first to avoid un-needed Single-EndListenings of Formula-Cells
     delete pBASM;       // BroadcastAreaSlotMachine
-    pBASM = NULL;
+    pBASM = nullptr;
 
     delete pUnoBroadcaster;     // broadcasted nochmal SFX_HINT_DYING
-    pUnoBroadcaster = NULL;
+    pUnoBroadcaster = nullptr;
 
     delete pUnoRefUndoList;
     delete pUnoListenerCalls;
@@ -477,7 +464,7 @@ void ScDocument::InitClipPtrs( ScDocument* pSourceDoc )
         pSourceDoc->SaveDdeLinks(*pClipData);
     }
     else
-        pClipData = NULL;
+        pClipData = nullptr;
 
     // Options pointers exist (ImplCreateOptions) for any document.
     // Must be copied for correct results in OLE objects (#i42666#).
@@ -556,7 +543,7 @@ void ScDocument::ResetClip( ScDocument* pSourceDoc, const ScMarkData* pMarks )
                     {
                         if( i > static_cast<SCTAB>(maTabs.size()) )
                         {
-                            maTabs.resize(i, NULL );
+                            maTabs.resize(i, nullptr );
                         }
                         maTabs.push_back(new ScTable(this, i, aString));
                     }
@@ -576,7 +563,7 @@ void ScDocument::ResetClip( ScDocument* pSourceDoc, SCTAB nTab )
         InitClipPtrs(pSourceDoc);
         if (nTab >= static_cast<SCTAB>(maTabs.size()))
         {
-            maTabs.resize(nTab+1, NULL );
+            maTabs.resize(nTab+1, nullptr );
         }
         maTabs[nTab] = new ScTable(this, nTab,
                             OUString("baeh"));
@@ -593,7 +580,7 @@ void ScDocument::EnsureTable( SCTAB nTab )
 {
     bool bExtras = !bIsUndo;        // Column-Widths, Row-Heights, Flags
     if (static_cast<size_t>(nTab) >= maTabs.size())
-        maTabs.resize(nTab+1, NULL);
+        maTabs.resize(nTab+1, nullptr);
 
     if (!maTabs[nTab])
         maTabs[nTab] = new ScTable(this, nTab, "temp", bExtras, bExtras);
@@ -710,15 +697,14 @@ bool ScDocument::GetDataStart( SCTAB nTab, SCCOL& rStartCol, SCROW& rStartRow ) 
 
 bool ScDocument::GetTiledRenderingArea(SCTAB nTab, SCCOL& rEndCol, SCROW& rEndRow) const
 {
-    if (!GetPrintArea(nTab, rEndCol, rEndRow, false))
-        return false;
+    bool bHasPrintArea = GetPrintArea(nTab, rEndCol, rEndRow, false);
 
     // we need some reasonable minimal document size
-    if (rEndCol < 12)
-        rEndCol = 12;
+    if (!bHasPrintArea || rEndCol < 20)
+        rEndCol = 20;
 
-    if (rEndRow < 36)
-        rEndRow = 36;
+    if (!bHasPrintArea || rEndRow < 50)
+        rEndRow = 50;
 
     return true;
 }
@@ -856,7 +842,7 @@ bool ScDocument::CopyTab( SCTAB nOldPos, SCTAB nNewPos, const ScMarkData* pOnlyM
                 for (TableContainer::iterator it = maTabs.begin(); it != maTabs.end(); ++it)
                     if (*it && it != (maTabs.begin() + nOldPos))
                         (*it)->UpdateInsertTab(aCxt);
-                maTabs.push_back(NULL);
+                maTabs.push_back(nullptr);
                 for (i = static_cast<SCTAB>(maTabs.size())-1; i > nNewPos; i--)
                     maTabs[i] = maTabs[i - 1];
                 if (nNewPos <= nOldPos)
@@ -886,7 +872,7 @@ bool ScDocument::CopyTab( SCTAB nOldPos, SCTAB nNewPos, const ScMarkData* pOnlyM
     {
         SetNoListening( true );     // noch nicht bei CopyToTable/Insert
         sc::CopyToDocContext aCopyDocCxt(*this);
-        maTabs[nOldPos]->CopyToTable(aCopyDocCxt, 0, 0, MAXCOL, MAXROW, IDF_ALL, (pOnlyMarked != NULL),
+        maTabs[nOldPos]->CopyToTable(aCopyDocCxt, 0, 0, MAXCOL, MAXROW, InsertDeleteFlags::ALL, (pOnlyMarked != nullptr),
                                         maTabs[nNewPos], pOnlyMarked );
         maTabs[nNewPos]->SetTabBgColor(maTabs[nOldPos]->GetTabBgColor());
 
@@ -895,7 +881,7 @@ bool ScDocument::CopyTab( SCTAB nOldPos, SCTAB nNewPos, const ScMarkData* pOnlyM
         aRefCxt.meMode = URM_COPY;
         aRefCxt.maRange = ScRange(0, 0, nNewPos, MAXCOL, MAXROW, nNewPos);
         aRefCxt.mnTabDelta = nDz;
-        maTabs[nNewPos]->UpdateReference(aRefCxt, NULL);
+        maTabs[nNewPos]->UpdateReference(aRefCxt);
 
         maTabs[nNewPos]->UpdateInsertTabAbs(nNewPos); // move all paragraphs up by one!!
         maTabs[nOldPos]->UpdateInsertTab(aCxt);
@@ -965,7 +951,7 @@ sal_uLong ScDocument::TransferTab( ScDocument* pSrcDoc, SCTAB nSrcPos,
     {
         if (ValidTab(nDestPos) && nDestPos < static_cast<SCTAB>(maTabs.size()) && maTabs[nDestPos])
         {
-            maTabs[nDestPos]->DeleteArea( 0,0, MAXCOL,MAXROW, IDF_ALL );
+            maTabs[nDestPos]->DeleteArea( 0,0, MAXCOL,MAXROW, InsertDeleteFlags::ALL );
         }
         else
             bValid = false;
@@ -991,7 +977,7 @@ sal_uLong ScDocument::TransferTab( ScDocument* pSrcDoc, SCTAB nSrcPos,
             {   // scope for bulk broadcast
                 ScBulkBroadcast aBulkBroadcast( pBASM);
                 pSrcDoc->maTabs[nSrcPos]->CopyToTable(aCxt, 0, 0, MAXCOL, MAXROW,
-                        ( bResultsOnly ? IDF_ALL & ~IDF_FORMULA : IDF_ALL),
+                        ( bResultsOnly ? InsertDeleteFlags::ALL & ~InsertDeleteFlags::FORMULA : InsertDeleteFlags::ALL),
                         false, maTabs[nDestPos] );
             }
         }
@@ -1004,7 +990,7 @@ sal_uLong ScDocument::TransferTab( ScDocument* pSrcDoc, SCTAB nSrcPos,
             aRefCxt.meMode = URM_COPY;
             aRefCxt.maRange = ScRange(0, 0, nDestPos, MAXCOL, MAXROW, nDestPos);
             aRefCxt.mnTabDelta = nDestPos - nSrcPos;
-            maTabs[nDestPos]->UpdateReference(aRefCxt, NULL);
+            maTabs[nDestPos]->UpdateReference(aRefCxt);
 
             // Readjust self-contained absolute references to this sheet
             maTabs[nDestPos]->TestTabRefAbs(nSrcPos);
@@ -1101,7 +1087,7 @@ ScFormulaCell* ScDocument::SetFormulaCell( const ScAddress& rPos, ScFormulaCell*
     if (!TableExists(rPos.Tab()))
     {
         delete pCell;
-        return NULL;
+        return nullptr;
     }
 
     return maTabs[rPos.Tab()]->SetFormulaCell(rPos.Col(), rPos.Row(), pCell);
@@ -1126,12 +1112,12 @@ void ScDocument::SetConsolidateDlgData( const ScConsolidateParam* pData )
     if ( pData )
         pConsolidateDlgData = new ScConsolidateParam( *pData );
     else
-        pConsolidateDlgData = NULL;
+        pConsolidateDlgData = nullptr;
 }
 
 void ScDocument::SetChangeViewSettings(const ScChangeViewSettings& rNew)
 {
-    if (pChangeViewSettings==NULL)
+    if (pChangeViewSettings==nullptr)
         pChangeViewSettings = new ScChangeViewSettings;
 
     OSL_ENSURE( pChangeViewSettings, "Oops. No ChangeViewSettings :-( by!" );
@@ -1141,7 +1127,7 @@ void ScDocument::SetChangeViewSettings(const ScChangeViewSettings& rNew)
 
 ScFieldEditEngine* ScDocument::CreateFieldEditEngine()
 {
-    ScFieldEditEngine* pNewEditEngine = NULL;
+    ScFieldEditEngine* pNewEditEngine = nullptr;
     if (!pCacheFieldEditEngine)
     {
         pNewEditEngine = new ScFieldEditEngine(
@@ -1158,7 +1144,7 @@ ScFieldEditEngine* ScDocument::CreateFieldEditEngine()
         }
 
         pNewEditEngine = pCacheFieldEditEngine;
-        pCacheFieldEditEngine = NULL;
+        pCacheFieldEditEngine = nullptr;
     }
     return pNewEditEngine;
 }
@@ -1172,7 +1158,7 @@ void ScDocument::DisposeFieldEditEngine(ScFieldEditEngine*& rpEditEngine)
     }
     else
         delete rpEditEngine;
-    rpEditEngine = NULL;
+    rpEditEngine = nullptr;
 }
 
 ScRecursionHelper* ScDocument::CreateRecursionHelperInstance()
@@ -1182,7 +1168,7 @@ ScRecursionHelper* ScDocument::CreateRecursionHelperInstance()
 
 ScLookupCache & ScDocument::GetLookupCache( const ScRange & rRange )
 {
-    ScLookupCache* pCache = 0;
+    ScLookupCache* pCache = nullptr;
     if (!pLookupCacheMapImpl)
         pLookupCacheMapImpl = new ScLookupCacheMapImpl;
     ScLookupCacheMap::iterator it( pLookupCacheMapImpl->aCacheMap.find( rRange));
@@ -1257,7 +1243,7 @@ bool ScDocument::IsCellInChangeTrack(const ScAddress &cell,Color *pColCellBoder)
                 {
                     if (aRange.In(cell))
                     {
-                        if (pColCellBoder != NULL)
+                        if (pColCellBoder != nullptr)
                         {
                             aColorChanger.Update( *pAction );
                             Color aColor( aColorChanger.GetColor() );
@@ -1277,7 +1263,7 @@ bool ScDocument::IsCellInChangeTrack(const ScAddress &cell,Color *pColCellBoder)
                 {
                     if (aRange.In(cell))
                     {
-                        if (pColCellBoder != NULL)
+                        if (pColCellBoder != nullptr)
                         {
                             aColorChanger.Update( *pAction );
                             Color aColor( aColorChanger.GetColor() );
@@ -1301,9 +1287,9 @@ void ScDocument::GetCellChangeTrackNote( const ScAddress &aCellPos, OUString &aT
     ScChangeViewSettings* pSettings = GetChangeViewSettings();
     if ( pTrack && pTrack->GetFirst() && pSettings && pSettings->ShowChanges())
     {
-        const ScChangeAction* pFound = NULL;
-        const ScChangeAction* pFoundContent = NULL;
-        const ScChangeAction* pFoundMove = NULL;
+        const ScChangeAction* pFound = nullptr;
+        const ScChangeAction* pFoundContent = nullptr;
+        const ScChangeAction* pFoundMove = nullptr;
         long nModified = 0;
         const ScChangeAction* pAction = pTrack->GetFirst();
         while (pAction)
@@ -1397,7 +1383,7 @@ void  ScDocument::SetPreviewSelection( ScMarkData& rSel )
 
 SfxItemSet* ScDocument::GetPreviewFont( SCCOL nCol, SCROW nRow, SCTAB nTab )
 {
-    SfxItemSet* pRet = NULL;
+    SfxItemSet* pRet = nullptr;
     if ( pPreviewFont )
     {
         ScMarkData aSel = GetPreviewSelection();
@@ -1409,10 +1395,20 @@ SfxItemSet* ScDocument::GetPreviewFont( SCCOL nCol, SCROW nRow, SCTAB nTab )
 
 ScStyleSheet* ScDocument::GetPreviewCellStyle( SCCOL nCol, SCROW nRow, SCTAB nTab )
 {
-    ScStyleSheet* pRet = NULL;
+    ScStyleSheet* pRet = nullptr;
     ScMarkData aSel = GetPreviewSelection();
     if ( pPreviewCellStyle && aSel.IsCellMarked( nCol, nRow ) && aSel.GetFirstSelected() == nTab  )
         pRet = pPreviewCellStyle;
     return pRet;
 }
+
+sc::IconSetBitmapMap& ScDocument::GetIconSetBitmapMap()
+{
+    if (!m_pIconSetBitmapMap)
+    {
+        m_pIconSetBitmapMap.reset(new sc::IconSetBitmapMap);
+    }
+    return *m_pIconSetBitmapMap;
+}
+
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

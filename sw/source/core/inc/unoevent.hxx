@@ -20,6 +20,7 @@
 #define INCLUDED_SW_SOURCE_CORE_INC_UNOEVENT_HXX
 
 #include <svtools/unoevent.hxx>
+#include <unostyle.hxx>
 #include <svl/macitem.hxx>
 
 class SvxMacroItem;
@@ -37,7 +38,7 @@ class SwHyperlinkEventDescriptor : public SvDetachedEventDescriptor
 
     //XServiceInfo
     virtual OUString SAL_CALL getImplementationName()
-        throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
 protected:
     virtual ~SwHyperlinkEventDescriptor();
 public:
@@ -48,8 +49,7 @@ public:
     void copyMacrosIntoINetFormat(SwFormatINetFormat& aFormat);
 
     void copyMacrosFromNameReplace(
-        ::com::sun::star::uno::Reference<
-            ::com::sun::star::container::XNameReplace> & xReplace);
+        css::uno::Reference<css::container::XNameReplace> & xReplace);
 };
 
 // SwEventDescriptor for
@@ -71,32 +71,32 @@ public:
     virtual ~SwFrameEventDescriptor();
 
     virtual OUString SAL_CALL getImplementationName()
-        throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
 
 protected:
-    virtual void setMacroItem(const SvxMacroItem& rItem) SAL_OVERRIDE;
-    virtual const SvxMacroItem& getMacroItem() SAL_OVERRIDE;
-    virtual sal_uInt16 getMacroItemWhich() const SAL_OVERRIDE;
+    virtual void setMacroItem(const SvxMacroItem& rItem) override;
+    virtual const SvxMacroItem& getMacroItem() override;
+    virtual sal_uInt16 getMacroItemWhich() const override;
 };
 
 class SwFrameStyleEventDescriptor : public SvEventDescriptor
 {
     OUString sSwFrameStyleEventDescriptor;
 
-    SwXFrameStyle& rStyle;
+    sw::ICoreFrameStyle& m_rStyle;
 
 public:
-    SwFrameStyleEventDescriptor( SwXFrameStyle& rStyleRef );
+    SwFrameStyleEventDescriptor( sw::ICoreFrameStyle& rStyle );
 
     virtual ~SwFrameStyleEventDescriptor();
 
     virtual OUString SAL_CALL getImplementationName()
-        throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
 
 protected:
-    virtual void setMacroItem(const SvxMacroItem& rItem) SAL_OVERRIDE;
-    virtual const SvxMacroItem& getMacroItem() SAL_OVERRIDE;
-    virtual sal_uInt16 getMacroItemWhich() const SAL_OVERRIDE;
+    virtual void setMacroItem(const SvxMacroItem& rItem) override;
+    virtual const SvxMacroItem& getMacroItem() override;
+    virtual sal_uInt16 getMacroItemWhich() const override;
 };
 
 #endif

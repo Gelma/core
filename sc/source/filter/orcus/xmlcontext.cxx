@@ -34,18 +34,11 @@ using namespace com::sun::star;
 namespace {
 
 ScOrcusXMLTreeParam::EntryData& setUserDataToEntry(
-    SvTreeListEntry& rEntry, ScOrcusXMLTreeParam::UserDataStoreType& rStore, ScOrcusXMLTreeParam::EntryType eType)
+    SvTreeListEntry& rEntry, ScOrcusXMLTreeParam::EntryDataVec& rStore, ScOrcusXMLTreeParam::EntryType eType)
 {
-    rStore.push_back(new ScOrcusXMLTreeParam::EntryData(eType));
+    rStore.push_back(ScOrcusXMLTreeParam::EntryData(eType));
     rEntry.SetUserData(&rStore.back());
     return rStore.back();
-}
-
-void setEntityNameToUserData(
-    ScOrcusXMLTreeParam::EntryData& rEntryData,
-    const orcus::xml_structure_tree::entity_name& entity, const orcus::xml_structure_tree::walker& walker)
-{
-    rEntryData.mnNamespaceID = walker.get_xmlns_index(entity.ns);
 }
 
 OUString toString(const orcus::xml_structure_tree::entity_name& entity, const orcus::xml_structure_tree::walker& walker)
@@ -75,8 +68,7 @@ void populateTree(
     ScOrcusXMLTreeParam::EntryData& rEntryData = setUserDataToEntry(
         *pEntry, rParam.maUserDataStore,
         bRepeat ? ScOrcusXMLTreeParam::ElementRepeat : ScOrcusXMLTreeParam::ElementDefault);
-
-    setEntityNameToUserData(rEntryData, rElemName, rWalker);
+    rEntryData.mnNamespaceID = rWalker.get_xmlns_index(rElemName.ns);
 
     if (bRepeat)
     {
@@ -104,7 +96,7 @@ void populateTree(
 
         ScOrcusXMLTreeParam::EntryData& rAttrData =
             setUserDataToEntry(*pAttr, rParam.maUserDataStore, ScOrcusXMLTreeParam::Attribute);
-        setEntityNameToUserData(rAttrData, rAttrName, rWalker);
+        rAttrData.mnNamespaceID = rWalker.get_xmlns_index(rAttrName.ns);
 
         rTreeCtrl.SetExpandedEntryBmp(pAttr, rParam.maImgAttribute);
         rTreeCtrl.SetCollapsedEntryBmp(pAttr, rParam.maImgAttribute);
@@ -129,7 +121,7 @@ class TreeUpdateSwitch
 {
     SvTreeListBox& mrTreeCtrl;
 public:
-    TreeUpdateSwitch(SvTreeListBox& rTreeCtrl) : mrTreeCtrl(rTreeCtrl)
+    explicit TreeUpdateSwitch(SvTreeListBox& rTreeCtrl) : mrTreeCtrl(rTreeCtrl)
     {
         mrTreeCtrl.SetUpdateMode(false);
     }
@@ -144,7 +136,7 @@ class InsertFieldPath : std::unary_function<OString, void>
 {
     orcus::orcus_xml& mrFilter;
 public:
-    InsertFieldPath(orcus::orcus_xml& rFilter) : mrFilter(rFilter) {}
+    explicit InsertFieldPath(orcus::orcus_xml& rFilter) : mrFilter(rFilter) {}
     void operator() (const OString& rPath)
     {
         mrFilter.append_field_link(rPath.getStr());
@@ -203,7 +195,7 @@ bool ScOrcusXMLContextImpl::loadXMLStructure(SvTreeListBox& rTreeCtrl, ScOrcusXM
 
         // Root element.
         orcus::xml_structure_tree::element aElem = aWalker.root();
-        populateTree(rTreeCtrl, aWalker, aElem.name, aElem.repeat, NULL, rParam);
+        populateTree(rTreeCtrl, aWalker, aElem.name, aElem.repeat, nullptr, rParam);
     }
     catch (const std::exception&)
     {
@@ -244,7 +236,7 @@ bool ScOrcusXMLContextImpl::importXML(const ScOrcusImportXMLParam& rParam)
     const char* path = aSysPath.getStr();
     try
     {
-        orcus::orcus_xml filter(maNsRepo, &aFactory, NULL);
+        orcus::orcus_xml filter(maNsRepo, &aFactory, nullptr);
 
         // Define all used namespaces.
         std::for_each(rParam.maNamespaces.begin(), rParam.maNamespaces.end(), SetNamespaceAlias(filter, maNsRepo));

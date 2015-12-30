@@ -32,20 +32,19 @@ class ParallelTimeContainer : public BaseContainerNode
 {
 public:
     ParallelTimeContainer(
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XAnimationNode >& xNode,
+        const css::uno::Reference< css::animations::XAnimationNode >& xNode,
         const BaseContainerNodeSharedPtr&               rParent,
         const NodeContext&                              rContext )
         : BaseContainerNode( xNode, rParent, rContext ) {}
 
 #if defined(DBG_UTIL)
-    virtual const char* getDescription() const SAL_OVERRIDE
+    virtual const char* getDescription() const override
         { return "ParallelTimeContainer"; }
 #endif
 
 private:
-    virtual void activate_st() SAL_OVERRIDE;
-    virtual void notifyDeactivating( AnimationNodeSharedPtr const& pChildNode ) SAL_OVERRIDE;
+    virtual void activate_st() override;
+    virtual void notifyDeactivating( AnimationNodeSharedPtr const& pChildNode ) override;
 };
 
 } // namespace internal

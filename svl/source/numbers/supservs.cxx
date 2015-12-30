@@ -40,8 +40,8 @@ using namespace ::com::sun::star::util;
 using namespace ::utl;
 
 
-SvNumberFormatsSupplierServiceObject::SvNumberFormatsSupplierServiceObject(const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& _rxORB)
-    :m_pOwnFormatter(NULL)
+SvNumberFormatsSupplierServiceObject::SvNumberFormatsSupplierServiceObject(const css::uno::Reference< css::uno::XComponentContext >& _rxORB)
+    :m_pOwnFormatter(nullptr)
     ,m_xORB(_rxORB)
 {
 }
@@ -51,7 +51,7 @@ SvNumberFormatsSupplierServiceObject::~SvNumberFormatsSupplierServiceObject()
     if (m_pOwnFormatter)
     {
         delete m_pOwnFormatter;
-        m_pOwnFormatter = NULL;
+        m_pOwnFormatter = nullptr;
     }
 }
 
@@ -72,14 +72,14 @@ void SAL_CALL SvNumberFormatsSupplierServiceObject::initialize( const Sequence< 
 {
     ::osl::MutexGuard aGuard( getSharedMutex() );
 
-    DBG_ASSERT(m_pOwnFormatter == NULL,
+    DBG_ASSERT(m_pOwnFormatter == nullptr,
         "SvNumberFormatsSupplierServiceObject::initialize : already initialized !");
         // maybe you already called a method which needed the formatter
         // you should use XMultiServiceFactory::createInstanceWithArguments to avoid that
     if (m_pOwnFormatter)
     {   // !!! this is only a emergency handling, normally this should not occur !!!
         delete m_pOwnFormatter;
-        m_pOwnFormatter = NULL;
+        m_pOwnFormatter = nullptr;
         SetNumberFormatter(m_pOwnFormatter);
     }
 
@@ -121,8 +121,7 @@ sal_Bool SAL_CALL SvNumberFormatsSupplierServiceObject::supportsService( const O
 
 Sequence< OUString > SAL_CALL SvNumberFormatsSupplierServiceObject::getSupportedServiceNames(  ) throw(RuntimeException, std::exception)
 {
-    Sequence< OUString > aSupported(1);
-    aSupported.getArray()[0] = "com.sun.star.util.NumberFormatsSupplier";
+    Sequence< OUString > aSupported { "com.sun.star.util.NumberFormatsSupplier" };
     return aSupported;
 }
 
@@ -166,9 +165,9 @@ void SvNumberFormatsSupplierServiceObject::implEnsureFormatter()
 }
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_uno_util_numbers_SvNumberFormatsSupplierServiceObject_get_implementation(::com::sun::star::uno::XComponentContext* context,
-                                                                    ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_uno_util_numbers_SvNumberFormatsSupplierServiceObject_get_implementation(css::uno::XComponentContext* context,
+                                                                    css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new SvNumberFormatsSupplierServiceObject(context));
 }

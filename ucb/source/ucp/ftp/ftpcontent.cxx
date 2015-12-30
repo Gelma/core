@@ -152,7 +152,7 @@ css::uno::Sequence< css::uno::Type > SAL_CALL FTPContent::getTypes()
     throw( css::uno::RuntimeException,
            std::exception )
 {
-    static cppu::OTypeCollection* pCollection = NULL;
+    static cppu::OTypeCollection* pCollection = nullptr;
     if ( !pCollection )
     {
         osl::Guard< osl::Mutex > aGuard( osl::Mutex::getGlobalMutex() );
@@ -201,8 +201,7 @@ css::uno::Sequence< OUString > SAL_CALL FTPContent::getSupportedServiceNames()
 
 css::uno::Sequence< OUString > FTPContent::getSupportedServiceNames_Static()
 {
-    css::uno::Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[ 0 ] = "com.sun.star.ucb.FTPContent";
+    css::uno::Sequence<OUString> aSNS { "com.sun.star.ucb.FTPContent" };
     return aSNS;
 }
 
@@ -239,26 +238,20 @@ public:
 
     ResultSetFactoryI(const Reference<XComponentContext >&  rxContext,
                       const Reference<XContentProvider >&  xProvider,
-                      sal_Int32 nOpenMode,
                       const Sequence<Property>& seq,
-                      const Sequence<NumberedSortingInfo>& seqSort,
                       const std::vector<FTPDirentry>& dirvec)
         : m_xContext(rxContext),
           m_xProvider(xProvider),
-          m_nOpenMode(nOpenMode),
           m_seq(seq),
-          m_seqSort(seqSort),
           m_dirvec(dirvec)
     {
     }
 
-    virtual ResultSetBase* createResultSet() SAL_OVERRIDE
+    virtual ResultSetBase* createResultSet() override
     {
         return new ResultSetI(m_xContext,
                               m_xProvider,
-                              m_nOpenMode,
                               m_seq,
-                              m_seqSort,
                               m_dirvec);
     }
 
@@ -266,9 +259,7 @@ public:
 
     Reference< XComponentContext >                  m_xContext;
     Reference< XContentProvider >                   m_xProvider;
-    sal_Int32                                       m_nOpenMode;
     Sequence< Property >                            m_seq;
-    Sequence< NumberedSortingInfo >                 m_seqSort;
     std::vector<FTPDirentry>                        m_dirvec;
 };
 
@@ -373,7 +364,7 @@ Any SAL_CALL FTPContent::execute( const Command& aCommand,
             case THROWAUTHENTICATIONREQUEST:
                 ucbhelper::cancelCommandExecution(
                     aRet,
-                    Reference<XCommandEnvironment>(0));
+                    Reference<XCommandEnvironment>(nullptr));
                 break;
 
             case THROWACCESSDENIED:
@@ -560,14 +551,10 @@ Any SAL_CALL FTPContent::execute( const Command& aCommand,
                     Reference< XDynamicResultSet > xSet
                         = new DynamicResultSet(
                             m_xContext,
-                            this,
                             aOpenCommand,
-                            Environment,
                             new ResultSetFactoryI(m_xContext,
                                                   m_xProvider.get(),
-                                                  aOpenCommand.Mode,
                                                   aOpenCommand.Properties,
-                                                  aOpenCommand.SortingInfo,
                                                   resvec));
                     aRet <<= xSet;
                 }
@@ -683,7 +670,7 @@ FTPContent::createNewContent( const ContentInfo& Info )
                               m_pFCP,
                               m_xIdentifier,Info);
     else
-        return Reference<XContent>(0);
+        return Reference<XContent>(nullptr);
 }
 
 
@@ -725,7 +712,7 @@ public:
     virtual ~InsertData() {}
 
     // returns the number of bytes actually read
-    virtual sal_Int32 read(sal_Int8 *dest,sal_Int32 nBytesRequested) SAL_OVERRIDE;
+    virtual sal_Int32 read(sal_Int8 *dest,sal_Int32 nBytesRequested) override;
 
 private:
 
@@ -918,7 +905,7 @@ Sequence<Any> FTPContent::setPropertyValues(
                 }
         } else {
             Sequence<Property> props =
-                getProperties(Reference<XCommandEnvironment>(0));
+                getProperties(Reference<XCommandEnvironment>(nullptr));
 
             // either unknown or read-only
             ret[i] <<= UnknownPropertyException();

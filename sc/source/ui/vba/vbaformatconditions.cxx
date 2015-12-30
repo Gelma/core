@@ -20,6 +20,7 @@
 #include <ooo/vba/excel/XRange.hpp>
 #include <com/sun/star/sheet/XCellRangeAddressable.hpp>
 #include <com/sun/star/sheet/XSheetConditionalEntry.hpp>
+#include <comphelper/sequence.hxx>
 #include <cppuhelper/exc_hlp.hxx>
 #include <vector>
 #include "unonames.hxx"
@@ -28,6 +29,7 @@
 #include "vbaworkbook.hxx"
 #include "vbastyles.hxx"
 #include "vbaglobals.hxx"
+
 using namespace ::ooo::vba;
 using namespace ::com::sun::star;
 
@@ -98,12 +100,12 @@ class EnumWrapper : public EnumerationHelper_BASE
         sal_Int32 nIndex;
 public:
         EnumWrapper( const uno::Reference< container::XIndexAccess >& xIndexAccess, const uno::Reference<excel::XRange >& xRange, const uno::Reference<uno::XComponentContext >& xContext, const uno::Reference<excel::XStyles >& xStyles, const uno::Reference< excel::XFormatConditions >& xCollection, const uno::Reference<beans::XPropertySet >& xProps  ) : m_xIndexAccess( xIndexAccess ), m_xParentRange( xRange ), m_xContext( xContext ), m_xStyles( xStyles ), m_xParentCollection( xCollection ), m_xProps( xProps ), nIndex( 0 ) {}
-        virtual sal_Bool SAL_CALL hasMoreElements(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+        virtual sal_Bool SAL_CALL hasMoreElements(  ) throw (uno::RuntimeException, std::exception) override
         {
                 return ( nIndex < m_xIndexAccess->getCount() );
         }
 
-        virtual uno::Any SAL_CALL nextElement(  ) throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+        virtual uno::Any SAL_CALL nextElement(  ) throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) override
         {
             try
             {
@@ -191,14 +193,7 @@ ScVbaFormatConditions::Add( ::sal_Int32 _nType, const uno::Any& _aOperator, cons
         aProperty.Name = STYLENAME;
         aProperty.Value = uno::makeAny( sStyleName );
 
-        // convert vector to sequence
-        uno::Sequence< beans::PropertyValue > aPropertyValueList(aPropertyValueVector.size());
-        VecPropValues::iterator it = aPropertyValueVector.begin();
-        VecPropValues::iterator it_end = aPropertyValueVector.end();
-        for ( sal_Int32 index=0; it != it_end; ++it )
-            aPropertyValueList[ index++ ] = *it;
-
-        mxSheetConditionalEntries->addNew(aPropertyValueList);
+        mxSheetConditionalEntries->addNew(comphelper::containerToSequence(aPropertyValueVector));
         for (sal_Int32 i = mxSheetConditionalEntries->getCount()-1; i >= 0; i--)
         {
             uno::Reference< sheet::XSheetConditionalEntry > xSheetConditionalEntry( mxSheetConditionalEntries->getByIndex(i), uno::UNO_QUERY_THROW );
@@ -253,7 +248,7 @@ ScVbaFormatConditions::getStyleName()
     if ( !pStyles )
         DebugHelper::basicexception(ERRCODE_BASIC_METHOD_FAILED, OUString() );
     uno::Sequence< OUString > sCellStyleNames = pStyles->getStyleNames();
-    return ContainerUtilities::getUniqueName(sCellStyleNames, sStyleNamePrefix, OUString("_"));
+    return ContainerUtilities::getUniqueName(sCellStyleNames, sStyleNamePrefix, "_");
 }
 
 void

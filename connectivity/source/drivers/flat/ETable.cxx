@@ -514,7 +514,7 @@ void SAL_CALL OFlatTable::disposing()
 {
     OFileTable::disposing();
     ::osl::MutexGuard aGuard(m_aMutex);
-    m_aColumns = NULL;
+    m_aColumns = nullptr;
 }
 
 Sequence< Type > SAL_CALL OFlatTable::getTypes(  ) throw(RuntimeException, std::exception)
@@ -555,7 +555,7 @@ Any SAL_CALL OFlatTable::queryInterface( const Type & rType ) throw(RuntimeExcep
 
 Sequence< sal_Int8 > OFlatTable::getUnoTunnelImplementationId()
 {
-    static ::cppu::OImplementationId * pId = 0;
+    static ::cppu::OImplementationId * pId = nullptr;
     if (! pId)
     {
         ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );
@@ -618,18 +618,14 @@ bool OFlatTable::fetchRow(OValueRefRow& _rRow, const OSQLColumns & _rCols, bool 
         }
         else
         {
-            // lengths depending on data-type:
-            sal_Int32   nLen;
             sal_Int32 nType = 0;
             if(bIsTable)
             {
-                nLen    = m_aPrecisions[i-1];
                 nType   = m_aTypes[i-1];
             }
             else
             {
                 Reference< XPropertySet> xColumn = *aIter;
-                xColumn->getPropertyValue(OMetaConnection::getPropMap().getNameByIndex(PROPERTY_ID_PRECISION))  >>= nLen;
                 xColumn->getPropertyValue(OMetaConnection::getPropMap().getNameByIndex(PROPERTY_ID_TYPE))       >>= nType;
             }
             switch(nType)
@@ -697,7 +693,7 @@ bool OFlatTable::fetchRow(OValueRefRow& _rRow, const OSQLColumns & _rCols, bool 
                         else
                             aStrConverted = aStr;
                     }
-                    const double nVal = ::rtl::math::stringToDouble(aStrConverted,'.',',',NULL,NULL);
+                    const double nVal = ::rtl::math::stringToDouble(aStrConverted,'.',',');
 
                     // #99178# OJ
                     if ( DataType::DECIMAL == nType || DataType::NUMERIC == nType )

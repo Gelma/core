@@ -167,8 +167,8 @@ const ScParameterClassification::RawData ScParameterClassification::pRawData[] =
     { ocRank,            {{ Value, Reference, Value                              }, 0 }},
     { ocRank_Avg,        {{ Value, Reference, Value                              }, 0 }},
     { ocRank_Eq,         {{ Value, Reference, Value                              }, 0 }},
-    { ocLinest,          {{ Reference, Reference, Value, Value                   }, 0 }},
-    { ocLogest,          {{ Reference, Reference, Value, Value                   }, 0 }},
+    { ocLinest,          {{ ForceArray, ForceArray, Value, Value                 }, 0 }},
+    { ocLogest,          {{ ForceArray, ForceArray, Value, Value                 }, 0 }},
     { ocRow,             {{ Reference                                            }, 0 }},
     { ocRows,            {{ Reference                                            }, 1 }},
     { ocRSQ,             {{ ForceArray, ForceArray                               }, 0 }},
@@ -225,7 +225,7 @@ const ScParameterClassification::RawData ScParameterClassification::pRawData[] =
     { ocNone, {{ Bounds }, 0 } }
 };
 
-ScParameterClassification::RunData * ScParameterClassification::pData = NULL;
+ScParameterClassification::RunData * ScParameterClassification::pData = nullptr;
 
 void ScParameterClassification::Init()
 {
@@ -306,7 +306,7 @@ void ScParameterClassification::Init()
 void ScParameterClassification::Exit()
 {
     delete [] pData;
-    pData = NULL;
+    pData = nullptr;
 }
 
 ScParameterClassification::Type ScParameterClassification::GetParameterType(
@@ -488,7 +488,7 @@ void ScParameterClassification::GenerateDocumentation()
     MergeArgumentsFromFunctionResource();
     ScAddress aAddress;
     ScCompiler aComp(NULL,aAddress);
-    ScCompiler::OpCodeMapPtr xMap( aComp.GetOpCodeMap(::com::sun::star::sheet::FormulaLanguage::ENGLISH));
+    ScCompiler::OpCodeMapPtr xMap( aComp.GetOpCodeMap(css::sheet::FormulaLanguage::ENGLISH));
     if (!xMap)
         return;
     fflush( stderr);

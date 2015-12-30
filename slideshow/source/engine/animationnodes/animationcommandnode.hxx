@@ -37,22 +37,20 @@ class AnimationCommandNode : public BaseNode
 {
 public:
     AnimationCommandNode(
-        ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XAnimationNode> const& xNode,
+        css::uno::Reference<css::animations::XAnimationNode> const& xNode,
         ::boost::shared_ptr<BaseContainerNode> const& pParent,
         NodeContext const& rContext );
 
 protected:
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
 private:
-    virtual void activate_st() SAL_OVERRIDE;
-    virtual bool hasPendingAnimation() const SAL_OVERRIDE;
+    virtual void activate_st() override;
+    virtual bool hasPendingAnimation() const override;
 
 private:
     IExternalMediaShapeBaseSharedPtr mpShape;
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XCommand > mxCommandNode;
+    css::uno::Reference<css::animations::XCommand > mxCommandNode;
 };
 
 } // namespace internal

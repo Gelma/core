@@ -46,12 +46,12 @@
 using namespace ::com::sun::star;
 
 SwLinePortion *SwFieldPortion::Compress()
-{ return (GetLen() || !aExpand.isEmpty() || SwLinePortion::Compress()) ? this : 0; }
+{ return (GetLen() || !aExpand.isEmpty() || SwLinePortion::Compress()) ? this : nullptr; }
 
 SwFieldPortion *SwFieldPortion::Clone( const OUString &rExpand ) const
 {
     SwFont *pNewFnt;
-    if( 0 != ( pNewFnt = pFnt ) )
+    if( nullptr != ( pNewFnt = pFnt ) )
     {
         pNewFnt = new SwFont( *pFnt );
     }
@@ -104,7 +104,7 @@ SwFieldPortion::SwFieldPortion( const SwFieldPortion& rField )
     if ( rField.HasFont() )
         pFnt = new SwFont( *rField.GetFont() );
     else
-        pFnt = 0;
+        pFnt = nullptr;
 
     SetWhichPor( POR_FLD );
 }
@@ -149,10 +149,10 @@ public:
 };
 
 SwFieldSlot::SwFieldSlot( const SwTextFormatInfo* pNew, const SwFieldPortion *pPor )
-    : pOldText(NULL)
+    : pOldText(nullptr)
     , nIdx(0)
     , nLen(0)
-    , pInf(NULL)
+    , pInf(nullptr)
 {
     bOn = pPor->GetExpText( *pNew, aText );
 
@@ -233,7 +233,7 @@ void SwFieldPortion::CheckScript( const SwTextSizeInfo &rInf )
         {
             UErrorCode nError = U_ZERO_ERROR;
             UBiDi* pBidi = ubidi_openSized( aText.getLength(), 0, &nError );
-            ubidi_setPara( pBidi, reinterpret_cast<const UChar *>(aText.getStr()), aText.getLength(), nFieldDir, NULL, &nError );
+            ubidi_setPara( pBidi, reinterpret_cast<const UChar *>(aText.getStr()), aText.getLength(), nFieldDir, nullptr, &nError );
             int32_t nEnd;
             UBiDiLevel nCurrDir;
             ubidi_getLogicalRun( pBidi, 0, &nEnd, &nCurrDir );
@@ -473,7 +473,7 @@ SwPosSize SwFieldPortion::GetTextSize( const SwTextSizeInfo &rInf ) const
 SwFieldPortion *SwHiddenPortion::Clone(const OUString &rExpand ) const
 {
     SwFont *pNewFnt;
-    if( 0 != ( pNewFnt = pFnt ) )
+    if( nullptr != ( pNewFnt = pFnt ) )
         pNewFnt = new SwFont( *pFnt );
     return new SwHiddenPortion( rExpand, pNewFnt );
 }
@@ -511,7 +511,7 @@ SwNumberPortion::SwNumberPortion( const OUString &rExpand,
     SetCenter( bCntr );
 }
 
-sal_Int32 SwNumberPortion::GetCrsrOfst( const sal_uInt16 ) const
+sal_Int32 SwNumberPortion::GetCursorOfst( const sal_uInt16 ) const
 {
     return 0;
 }
@@ -519,7 +519,7 @@ sal_Int32 SwNumberPortion::GetCrsrOfst( const sal_uInt16 ) const
 SwFieldPortion *SwNumberPortion::Clone( const OUString &rExpand ) const
 {
     SwFont *pNewFnt;
-    if( 0 != ( pNewFnt = pFnt ) )
+    if( nullptr != ( pNewFnt = pFnt ) )
         pNewFnt = new SwFont( *pFnt );
 
     return new SwNumberPortion( rExpand, pNewFnt, IsLeft(), IsCenter(),
@@ -549,12 +549,12 @@ bool SwNumberPortion::Format( SwTextFormatInfo &rInf )
 
         if ( !mbLabelAlignmentPosAndSpaceModeActive )
         {
-            if ( !rInf.GetTextFrm()->GetTextNode()->getIDocumentSettingAccess()->get(DocumentSettingId::IGNORE_FIRST_LINE_INDENT_IN_NUMBERING) &&
+            if ( !rInf.GetTextFrame()->GetTextNode()->getIDocumentSettingAccess()->get(DocumentSettingId::IGNORE_FIRST_LINE_INDENT_IN_NUMBERING) &&
                  // #i32902#
                  !IsFootnoteNumPortion() )
             {
                 nDiff = rInf.Left()
-                    + rInf.GetTextFrm()->GetTextNode()->
+                    + rInf.GetTextFrame()->GetTextNode()->
                     GetSwAttrSet().GetLRSpace().GetTextFirstLineOfst()
                     - rInf.First()
                     + rInf.ForcedLeftMargin();
@@ -577,7 +577,7 @@ bool SwNumberPortion::Format( SwTextFormatInfo &rInf )
             nDiff = nFixWidth + nMinDist;
 
         // Numbering evades the Fly, no nDiff in the second round
-        // Tricky special case: FlyFrm is in an Area we're just about to
+        // Tricky special case: FlyFrame is in an Area we're just about to
         // acquire
         // The NumberPortion is marked as hidden
         const bool bFly = rInf.GetFly() ||
@@ -687,8 +687,8 @@ void SwNumberPortion::Paint( const SwTextPaintInfo &rInf ) const
             sal_uInt16 nSpaceOffs = nFixWidth;
             pThis->Width( nFixWidth );
 
-            if( ( IsLeft() && ! rInf.GetTextFrm()->IsRightToLeft() ) ||
-                ( ! IsLeft() && ! IsCenter() && rInf.GetTextFrm()->IsRightToLeft() ) )
+            if( ( IsLeft() && ! rInf.GetTextFrame()->IsRightToLeft() ) ||
+                ( ! IsLeft() && ! IsCenter() && rInf.GetTextFrame()->IsRightToLeft() ) )
                 SwExpandPortion::Paint( rInf );
             else
             {
@@ -753,13 +753,13 @@ SwBulletPortion::SwBulletPortion( const sal_Unicode cBullet,
 #define GRFNUM_SECURE 10
 
 SwGrfNumPortion::SwGrfNumPortion(
-        SwFrm*,
+        SwFrame*,
         const OUString& rGraphicFollowedBy,
         const SvxBrushItem* pGrfBrush,
         const SwFormatVertOrient* pGrfOrient, const Size& rGrfSize,
         const bool bLft, const bool bCntr, const sal_uInt16 nMinDst,
         const bool bLabelAlignmentPosAndSpaceModeActive ) :
-    SwNumberPortion( rGraphicFollowedBy, NULL, bLft, bCntr, nMinDst,
+    SwNumberPortion( rGraphicFollowedBy, nullptr, bLft, bCntr, nMinDst,
                      bLabelAlignmentPosAndSpaceModeActive ),
     pBrush( new SvxBrushItem(RES_BACKGROUND) ), nId( 0 )
 {
@@ -798,7 +798,7 @@ SwGrfNumPortion::~SwGrfNumPortion()
     {
         Graphic* pGraph = const_cast<Graphic*>(pBrush->GetGraphic());
         if (pGraph)
-            pGraph->StopAnimation( 0, nId );
+            pGraph->StopAnimation( nullptr, nId );
     }
     delete pBrush;
 }
@@ -858,7 +858,7 @@ bool SwGrfNumPortion::Format( SwTextFormatInfo &rInf )
         nDiff = nFixWidth + nMinDist;
 
     // Numbering evades Fly, no nDiff in the second round
-    // Tricky special case: FlyFrm is in the Area we were just
+    // Tricky special case: FlyFrame is in the Area we were just
     // about to get a hold of.
     // The NumberPortion is marked as hidden
     if( nDiff > rInf.Width() )
@@ -895,8 +895,8 @@ void SwGrfNumPortion::Paint( const SwTextPaintInfo &rInf ) const
     Size aSize( nTmpWidth, GetGrfHeight() - 2 * GRFNUM_SECURE );
 
     const bool bTmpLeft = mbLabelAlignmentPosAndSpaceModeActive ||
-                              ( IsLeft() && ! rInf.GetTextFrm()->IsRightToLeft() ) ||
-                              ( ! IsLeft() && ! IsCenter() && rInf.GetTextFrm()->IsRightToLeft() );
+                              ( IsLeft() && ! rInf.GetTextFrame()->IsRightToLeft() ) ||
+                              ( ! IsLeft() && ! IsCenter() && rInf.GetTextFrame()->IsRightToLeft() );
 
     if( nFixWidth < Width() && !bTmpLeft )
     {
@@ -932,8 +932,8 @@ void SwGrfNumPortion::Paint( const SwTextPaintInfo &rInf ) const
         bDraw = !rInf.GetOpt().IsGraphic();
         if( !nId )
         {
-            SetId( sal_IntPtr( rInf.GetTextFrm() ) );
-            rInf.GetTextFrm()->SetAnimation();
+            SetId( sal_IntPtr( rInf.GetTextFrame() ) );
+            rInf.GetTextFrame()->SetAnimation();
         }
         if( aTmp.IsOver( rInf.GetPaintRect() ) && !bDraw )
         {
@@ -946,8 +946,8 @@ void SwGrfNumPortion::Paint( const SwTextPaintInfo &rInf ) const
             {
                 Graphic* pGraph = const_cast<Graphic*>(pBrush->GetGraphic());
                 if (pGraph)
-                    pGraph->StopAnimation(0,nId);
-                rInf.GetTextFrm()->getRootFrm()->GetCurrShell()->InvalidateWindows( aTmp );
+                    pGraph->StopAnimation(nullptr,nId);
+                rInf.GetTextFrame()->getRootFrame()->GetCurrShell()->InvalidateWindows( aTmp );
             }
 
             else if ( pViewShell &&
@@ -973,22 +973,22 @@ void SwGrfNumPortion::Paint( const SwTextPaintInfo &rInf ) const
 
             Graphic* pGraph = const_cast<Graphic*>(pBrush->GetGraphic());
             if (pGraph)
-                pGraph->StopAnimation( 0, nId );
+                pGraph->StopAnimation( nullptr, nId );
         }
     }
 
     SwRect aRepaint( rInf.GetPaintRect() );
-    const SwTextFrm& rFrm = *rInf.GetTextFrm();
-    if( rFrm.IsVertical() )
+    const SwTextFrame& rFrame = *rInf.GetTextFrame();
+    if( rFrame.IsVertical() )
     {
-        rFrm.SwitchHorizontalToVertical( aTmp );
-        rFrm.SwitchHorizontalToVertical( aRepaint );
+        rFrame.SwitchHorizontalToVertical( aTmp );
+        rFrame.SwitchHorizontalToVertical( aRepaint );
     }
 
-    if( rFrm.IsRightToLeft() )
+    if( rFrame.IsRightToLeft() )
     {
-        rFrm.SwitchLTRtoRTL( aTmp );
-        rFrm.SwitchLTRtoRTL( aRepaint );
+        rFrame.SwitchLTRtoRTL( aTmp );
+        rFrame.SwitchLTRtoRTL( aRepaint );
     }
 
     if( bDraw && aTmp.HasArea() )
@@ -1034,9 +1034,9 @@ void SwGrfNumPortion::SetBase( long nLnAscent, long nLnDescent,
     }
 }
 
-void SwTextFrm::StopAnimation( OutputDevice* pOut )
+void SwTextFrame::StopAnimation( OutputDevice* pOut )
 {
-    OSL_ENSURE( HasAnimation(), "SwTextFrm::StopAnimation: Which Animation?" );
+    OSL_ENSURE( HasAnimation(), "SwTextFrame::StopAnimation: Which Animation?" );
     if( HasPara() )
     {
         SwLineLayout *pLine = GetPara();
@@ -1050,9 +1050,9 @@ void SwTextFrm::StopAnimation( OutputDevice* pOut )
                 // The NumberPortion is always at the first char,
                 // which means we can cancel as soon as we've reached a portion
                 // with a length > 0
-                pPor = pPor->GetLen() ? 0 : pPor->GetPortion();
+                pPor = pPor->GetLen() ? nullptr : pPor->GetPortion();
             }
-            pLine = pLine->GetLen() ? 0 : pLine->GetNext();
+            pLine = pLine->GetLen() ? nullptr : pLine->GetNext();
         }
     }
 }
@@ -1178,7 +1178,7 @@ bool SwCombinedPortion::Format( SwTextFormatInfo &rInf )
     }
 
     const sal_Int32 nTop = ( nCount + 1 ) / 2; // the first character of the second line
-    SwViewShell *pSh = rInf.GetTextFrm()->getRootFrm()->GetCurrShell();
+    SwViewShell *pSh = rInf.GetTextFrame()->getRootFrame()->GetCurrShell();
     SwFont aTmpFont( *rInf.GetFont() );
     SwFontSave aFontSave( rInf, &aTmpFont );
     nProportion = 55;
@@ -1216,7 +1216,7 @@ bool SwCombinedPortion::Format( SwTextFormatInfo &rInf )
                 aTmpFont.SetSize( aFontSize, nScrp );
             }
 
-            SwDrawTextInfo aDrawInf( pSh, *rInf.GetOut(), 0, aExpand, i, 1 );
+            SwDrawTextInfo aDrawInf( pSh, *rInf.GetOut(), nullptr, aExpand, i, 1 );
             Size aSize = aTmpFont._GetTextSize( aDrawInf );
             const sal_uInt16 nAsc = aTmpFont.GetAscent( pSh, *rInf.GetOut() );
             aPos[ i ] = (sal_uInt16)aSize.Width();

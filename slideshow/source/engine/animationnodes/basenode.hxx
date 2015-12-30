@@ -78,8 +78,7 @@ class BaseNode : public AnimationNode,
                  private ::boost::noncopyable
 {
 public:
-    BaseNode( ::com::sun::star::uno::Reference<
-              ::com::sun::star::animations::XAnimationNode> const& xNode,
+    BaseNode( css::uno::Reference<css::animations::XAnimationNode> const& xNode,
               ::boost::shared_ptr<BaseContainerNode> const&        pParent,
               NodeContext const&                                   rContext );
 
@@ -102,21 +101,20 @@ public:
         { return mpParent; }
 
     // Disposable:
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     // AnimationNode:
-    virtual bool init() SAL_OVERRIDE;
-    virtual bool resolve() SAL_OVERRIDE;
-    virtual bool activate() SAL_OVERRIDE;
-    virtual void deactivate() SAL_OVERRIDE;
-    virtual void end() SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XAnimationNode> getXAnimationNode() const SAL_OVERRIDE;
-    virtual NodeState getState() const SAL_OVERRIDE;
+    virtual bool init() override;
+    virtual bool resolve() override;
+    virtual bool activate() override;
+    virtual void deactivate() override;
+    virtual void end() override;
+    virtual css::uno::Reference<css::animations::XAnimationNode> getXAnimationNode() const override;
+    virtual NodeState getState() const override;
     virtual bool registerDeactivatingListener(
-        const AnimationNodeSharedPtr& rNotifee ) SAL_OVERRIDE;
+        const AnimationNodeSharedPtr& rNotifee ) override;
     // nop:
-    virtual void notifyDeactivating( const AnimationNodeSharedPtr& rNotifier ) SAL_OVERRIDE;
+    virtual void notifyDeactivating( const AnimationNodeSharedPtr& rNotifier ) override;
 
     bool isMainSequenceRootNode() const { return mbIsMainSequenceRootNode; }
 
@@ -192,8 +190,7 @@ private:
     typedef ::std::vector< AnimationNodeSharedPtr >    ListenerVector;
 
     ListenerVector                                     maDeactivatingListeners;
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XAnimationNode > mxAnimationNode;
+    css::uno::Reference< css::animations::XAnimationNode > mxAnimationNode;
     ::boost::shared_ptr< BaseContainerNode >           mpParent;
     ::boost::shared_ptr< BaseNode >                    mpSelf;
     const int*                                         mpStateTransitionTable;

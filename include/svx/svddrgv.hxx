@@ -35,13 +35,12 @@ protected:
     SdrDragMethod*              mpCurrentSdrDragMethod;
     SdrUndoGeoObj*              mpInsPointUndo;
     Rectangle                   maDragLimit;
-    OUString               maInsPointUndoStr;
-    SdrMarkList                 maFollowingEdges; // If nodes are dragged, all edges should follow as Xor
+    OUString                    maInsPointUndoStr;
     SdrHdlKind                  meDragHdl;
 
-    sal_uIntPtr                     mnDragXorPolyLimit;
-    sal_uIntPtr                     mnDragXorPointLimit;
-    sal_uInt16                      mnDetailedEdgeDraggingLimit;
+    sal_uIntPtr                 mnDragXorPolyLimit;
+    sal_uIntPtr                 mnDragXorPointLimit;
+    sal_uInt16                  mnDetailedEdgeDraggingLimit;
 
     bool                        mbFramDrag : 1;        // currently frame dragging
     bool                        mbDragSpecial : 1;     // currently Special Obj-dragging
@@ -68,23 +67,23 @@ private:
     SVX_DLLPRIVATE void ImpClearVars();
 
 protected:
-    virtual void SetMarkHandles() SAL_OVERRIDE;
+    virtual void SetMarkHandles() override;
     void ShowDragObj();
     void HideDragObj();
     bool ImpBegInsObjPoint(bool bIdxZwang, sal_uInt32 nIdx, const Point& rPnt, bool bNewObj, OutputDevice* pOut);
 
 protected:
     // #i71538# make constructors of SdrView sub-components protected to avoid incomplete incarnations which may get casted to SdrView
-    SdrDragView(SdrModel* pModel1, OutputDevice* pOut = 0L);
+    SdrDragView(SdrModel* pModel1, OutputDevice* pOut = nullptr);
     virtual ~SdrDragView();
 
 public:
-    virtual bool IsAction() const SAL_OVERRIDE;
-    virtual void MovAction(const Point& rPnt) SAL_OVERRIDE;
-    virtual void EndAction() SAL_OVERRIDE;
-    virtual void BckAction() SAL_OVERRIDE;
-    virtual void BrkAction() SAL_OVERRIDE;
-    virtual void TakeActionRect(Rectangle& rRect) const SAL_OVERRIDE;
+    virtual bool IsAction() const override;
+    virtual void MovAction(const Point& rPnt) override;
+    virtual void EndAction() override;
+    virtual void BckAction() override;
+    virtual void BrkAction() override;
+    virtual void TakeActionRect(Rectangle& rRect) const override;
 
     // special implementation for Writer:
     // TakeDragObjAnchorPos() returns the position at which an object
@@ -101,7 +100,7 @@ public:
     // If pForcedMeth is passed, then pHdl, ... is not evaluated, but this Drag
     // method is used. In this, the ownership of the instance passes
     // to the View and is destroyed at the end of the dragging.
-    virtual bool BegDragObj(const Point& rPnt, OutputDevice* pOut=NULL, SdrHdl* pHdl=NULL, short nMinMov=-3, SdrDragMethod* pForcedMeth=NULL);
+    virtual bool BegDragObj(const Point& rPnt, OutputDevice* pOut=nullptr, SdrHdl* pHdl=nullptr, short nMinMov=-3, SdrDragMethod* pForcedMeth=nullptr);
     void MovDragObj(const Point& rPnt);
     bool EndDragObj(bool bCopy=false);
     void BrkDragObj();
@@ -122,7 +121,7 @@ public:
 
     // Interactive insertion of a new point. nIdx=0 => in front of the first point
     bool IsInsObjPointPossible() const;
-    bool BegInsObjPoint(const Point& rPnt, bool bNewObj) { return ImpBegInsObjPoint(false, 0L, rPnt, bNewObj, 0L); }
+    bool BegInsObjPoint(const Point& rPnt, bool bNewObj) { return ImpBegInsObjPoint(false, 0L, rPnt, bNewObj, nullptr); }
     void MovInsObjPoint(const Point& rPnt) { MovDragObj(rPnt); }
     bool EndInsObjPoint(SdrCreateCmd eCmd);
     bool IsInsObjPoint() const { return mpCurrentSdrDragMethod && mbInsPolyPoint; }

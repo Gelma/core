@@ -85,7 +85,7 @@ Any SAL_CALL OEditControl::queryAggregation(const Type& _rType) throw (RuntimeEx
 OEditControl::OEditControl(const Reference<XComponentContext>& _rxFactory)
                :OBoundControl( _rxFactory, FRM_SUN_CONTROL_RICHTEXTCONTROL )
                ,m_aChangeListeners(m_aMutex)
-               ,m_nKeyEvent( 0 )
+               ,m_nKeyEvent( nullptr )
 {
 
     osl_atomic_increment(&m_refCount);
@@ -116,13 +116,13 @@ OEditControl::~OEditControl()
 
 // XChangeBroadcaster
 
-void OEditControl::addChangeListener(const Reference<XChangeListener>& l) throw ( ::com::sun::star::uno::RuntimeException, std::exception)
+void OEditControl::addChangeListener(const Reference<XChangeListener>& l) throw ( css::uno::RuntimeException, std::exception)
 {
     m_aChangeListeners.addInterface( l );
 }
 
 
-void OEditControl::removeChangeListener(const Reference<XChangeListener>& l) throw ( ::com::sun::star::uno::RuntimeException, std::exception)
+void OEditControl::removeChangeListener(const Reference<XChangeListener>& l) throw ( css::uno::RuntimeException, std::exception)
 {
     m_aChangeListeners.removeInterface( l );
 }
@@ -160,7 +160,7 @@ void OEditControl::disposing(const EventObject& Source) throw( RuntimeException,
 
 // XFocusListener
 
-void OEditControl::focusGained( const FocusEvent& /*e*/ ) throw ( ::com::sun::star::uno::RuntimeException, std::exception)
+void OEditControl::focusGained( const FocusEvent& /*e*/ ) throw ( css::uno::RuntimeException, std::exception)
 {
     Reference<XPropertySet>  xSet(getModel(), UNO_QUERY);
     if (xSet.is())
@@ -168,7 +168,7 @@ void OEditControl::focusGained( const FocusEvent& /*e*/ ) throw ( ::com::sun::st
 }
 
 
-void OEditControl::focusLost( const FocusEvent& /*e*/ ) throw ( ::com::sun::star::uno::RuntimeException, std::exception)
+void OEditControl::focusLost( const FocusEvent& /*e*/ ) throw ( css::uno::RuntimeException, std::exception)
 {
     Reference<XPropertySet>  xSet(getModel(), UNO_QUERY);
     if (xSet.is())
@@ -185,7 +185,7 @@ void OEditControl::focusLost( const FocusEvent& /*e*/ ) throw ( ::com::sun::star
 
 // XKeyListener
 
-void OEditControl::keyPressed(const ::com::sun::star::awt::KeyEvent& e) throw ( ::com::sun::star::uno::RuntimeException, std::exception)
+void OEditControl::keyPressed(const css::awt::KeyEvent& e) throw ( css::uno::RuntimeException, std::exception)
 {
     if( e.KeyCode != KEY_RETURN || e.Modifiers != 0 )
         return;
@@ -242,20 +242,20 @@ void OEditControl::keyPressed(const ::com::sun::star::awt::KeyEvent& e) throw ( 
 }
 
 
-void OEditControl::keyReleased(const ::com::sun::star::awt::KeyEvent& /*e*/) throw ( ::com::sun::star::uno::RuntimeException, std::exception)
+void OEditControl::keyReleased(const css::awt::KeyEvent& /*e*/) throw ( css::uno::RuntimeException, std::exception)
 {
 }
 
 
 IMPL_LINK_NOARG_TYPED(OEditControl, OnKeyPressed, void*, void)
 {
-    m_nKeyEvent = 0;
+    m_nKeyEvent = nullptr;
 
     Reference<XFormComponent>  xFComp(getModel(), UNO_QUERY);
     css::uno::Reference<css::uno::XInterface>  xParent = xFComp->getParent();
     Reference<XSubmit>  xSubmit(xParent, UNO_QUERY);
     if (xSubmit.is())
-        xSubmit->submit( Reference<XControl>(), ::com::sun::star::awt::MouseEvent() );
+        xSubmit->submit( Reference<XControl>(), css::awt::MouseEvent() );
 }
 
 
@@ -319,7 +319,7 @@ void OEditModel::disposing()
 
 // XPersistObject
 
-OUString SAL_CALL OEditModel::getServiceName() throw ( ::com::sun::star::uno::RuntimeException, std::exception)
+OUString SAL_CALL OEditModel::getServiceName() throw ( css::uno::RuntimeException, std::exception)
 {
     return OUString(FRM_COMPONENT_EDIT);  // old (non-sun) name for compatibility !
 }
@@ -491,7 +491,7 @@ void OEditModel::writeAggregate( const Reference< XObjectOutputStream >& _rxOutS
     // but for compatibility, we need to use an "old" aggregate for writing and reading
 
     Reference< XPropertySet > xFakedAggregate(
-        getContext()->getServiceManager()->createInstanceWithContext( OUString(VCL_CONTROLMODEL_EDIT), getContext() ),
+        getContext()->getServiceManager()->createInstanceWithContext( VCL_CONTROLMODEL_EDIT, getContext() ),
         UNO_QUERY
     );
     OSL_ENSURE( xFakedAggregate.is(), "OEditModel::writeAggregate: could not create an old EditControlModel!" );
@@ -513,7 +513,7 @@ void OEditModel::readAggregate( const Reference< XObjectInputStream >& _rxInStre
     // but for compatibility, we need to use an "old" aggregate for writing and reading
 
     Reference< XPropertySet > xFakedAggregate(
-        getContext()->getServiceManager()->createInstanceWithContext( OUString(VCL_CONTROLMODEL_EDIT), getContext() ),
+        getContext()->getServiceManager()->createInstanceWithContext( VCL_CONTROLMODEL_EDIT, getContext() ),
         UNO_QUERY
     );
     Reference< XPersistObject > xFakedPersist( xFakedAggregate, UNO_QUERY );
@@ -526,7 +526,7 @@ void OEditModel::readAggregate( const Reference< XObjectInputStream >& _rxInStre
 }
 
 
-void OEditModel::write(const Reference<XObjectOutputStream>& _rxOutStream) throw ( ::com::sun::star::io::IOException, ::com::sun::star::uno::RuntimeException, std::exception)
+void OEditModel::write(const Reference<XObjectOutputStream>& _rxOutStream) throw ( css::io::IOException, css::uno::RuntimeException, std::exception)
 {
     Any aCurrentText;
     sal_Int16 nOldTextLen = 0;
@@ -556,7 +556,7 @@ void OEditModel::write(const Reference<XObjectOutputStream>& _rxOutStream) throw
 }
 
 
-void OEditModel::read(const Reference<XObjectInputStream>& _rxInStream) throw ( ::com::sun::star::io::IOException, ::com::sun::star::uno::RuntimeException, std::exception)
+void OEditModel::read(const Reference<XObjectInputStream>& _rxInStream) throw ( css::io::IOException, css::uno::RuntimeException, std::exception)
 {
     OEditBaseModel::read(_rxInStream);
 
@@ -728,16 +728,16 @@ Any OEditModel::getDefaultForReset() const
 
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_form_OEditModel_get_implementation(::com::sun::star::uno::XComponentContext* component,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_form_OEditModel_get_implementation(css::uno::XComponentContext* component,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new frm::OEditModel(component));
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_form_OEditControl_get_implementation(::com::sun::star::uno::XComponentContext* component,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_form_OEditControl_get_implementation(css::uno::XComponentContext* component,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new frm::OEditControl(component));
 }

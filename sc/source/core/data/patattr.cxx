@@ -62,21 +62,19 @@
 #include "scmod.hxx"
 #include "fillinfo.hxx"
 
-// STATIC DATA -----------------------------------------------------------
-
 using sc::HMMToTwips;
 using sc::TwipsToHMM;
 
 ScPatternAttr::ScPatternAttr( SfxItemSet* pItemSet, const OUString& rStyleName )
     :   SfxSetItem  ( ATTR_PATTERN, pItemSet ),
         pName       ( new OUString( rStyleName ) ),
-        pStyle      ( NULL )
+        pStyle      ( nullptr )
 {
 }
 
 ScPatternAttr::ScPatternAttr( SfxItemSet* pItemSet, ScStyleSheet* pStyleSheet )
     :   SfxSetItem  ( ATTR_PATTERN, pItemSet ),
-        pName       ( NULL ),
+        pName       ( nullptr ),
         pStyle      ( pStyleSheet )
 {
     if ( pStyleSheet )
@@ -85,8 +83,8 @@ ScPatternAttr::ScPatternAttr( SfxItemSet* pItemSet, ScStyleSheet* pStyleSheet )
 
 ScPatternAttr::ScPatternAttr( SfxItemPool* pItemPool )
     :   SfxSetItem  ( ATTR_PATTERN, new SfxItemSet( *pItemPool, ATTR_PATTERN_START, ATTR_PATTERN_END ) ),
-        pName       ( NULL ),
-        pStyle      ( NULL )
+        pName       ( nullptr ),
+        pStyle      ( nullptr )
 {
 }
 
@@ -97,7 +95,7 @@ ScPatternAttr::ScPatternAttr( const ScPatternAttr& rPatternAttr )
     if (rPatternAttr.pName)
         pName = new OUString(*rPatternAttr.pName);
     else
-        pName = NULL;
+        pName = nullptr;
 }
 
 ScPatternAttr::~ScPatternAttr()
@@ -110,7 +108,7 @@ SfxPoolItem* ScPatternAttr::Clone( SfxItemPool *pPool ) const
     ScPatternAttr* pPattern = new ScPatternAttr( GetItemSet().Clone(true, pPool) );
 
     pPattern->pStyle = pStyle;
-    pPattern->pName  = pName ? new OUString(*pName) : NULL;
+    pPattern->pName  = pName ? new OUString(*pName) : nullptr;
 
     return pPattern;
 }
@@ -383,7 +381,7 @@ void ScPatternAttr::GetFont(
 
     //  Size
 
-    if ( pOutDev != NULL )
+    if ( pOutDev != nullptr )
     {
         Size aEffSize;
         Fraction aFraction( 1,1 );
@@ -810,7 +808,7 @@ void ScPatternAttr::FillToEditItemSet( SfxItemSet& rEditSet, const SfxItemSet& r
     rEditSet.Put( SvxPostureItem    ( eCtlItalic,   EE_CHAR_ITALIC_CTL ) );
     rEditSet.Put( SvxContourItem    ( bOutline,     EE_CHAR_OUTLINE ) );
     rEditSet.Put( SvxShadowedItem   ( bShadow,      EE_CHAR_SHADOW ) );
-    rEditSet.Put( SfxBoolItem       ( EE_PARA_FORBIDDENRULES, bForbidden ) );
+    rEditSet.Put( SvxForbiddenRuleItem(bForbidden, EE_PARA_FORBIDDENRULES) );
     rEditSet.Put( SvxEmphasisMarkItem( eEmphasis,   EE_CHAR_EMPHASISMARK ) );
     rEditSet.Put( SvxCharReliefItem( eRelief,       EE_CHAR_RELIEF ) );
     rEditSet.Put( SvxLanguageItem   ( eLang,        EE_CHAR_LANGUAGE ) );
@@ -1027,7 +1025,7 @@ static SfxStyleSheetBase* lcl_CopyStyleToPool
     if ( !pSrcStyle || !pDestPool || !pSrcPool )
     {
         OSL_FAIL( "CopyStyleToPool: Invalid Arguments :-/" );
-        return NULL;
+        return nullptr;
     }
 
     const OUString       aStrSrcStyle = pSrcStyle->GetName();
@@ -1105,7 +1103,7 @@ ScPatternAttr* ScPatternAttr::PutInPool( ScDocument* pDestDoc, ScDocument* pSrcD
         SfxItemState eItemState = pSrcSet->GetItemState( nAttrId, false, &pSrcItem );
         if (eItemState==SfxItemState::SET)
         {
-            SfxPoolItem* pNewItem = NULL;
+            SfxPoolItem* pNewItem = nullptr;
 
             if ( nAttrId == ATTR_VALIDDATA )
             {
@@ -1213,7 +1211,7 @@ bool ScPatternAttr::IsVisibleEqual( const ScPatternAttr& rOther ) const
 
 const OUString* ScPatternAttr::GetStyleName() const
 {
-    return pName ? pName : ( pStyle ? &pStyle->GetName() : NULL );
+    return pName ? pName : ( pStyle ? &pStyle->GetName() : nullptr );
 }
 
 void ScPatternAttr::SetStyleSheet( ScStyleSheet* pNewStyle, bool bClearDirectFormat )
@@ -1227,7 +1225,7 @@ void ScPatternAttr::SetStyleSheet( ScStyleSheet* pNewStyle, bool bClearDirectFor
         {
             for (sal_uInt16 i=ATTR_PATTERN_START; i<=ATTR_PATTERN_END; i++)
             {
-                if (rStyleSet.GetItemState(i, true) == SfxItemState::SET)
+                if (rStyleSet.GetItemState(i) == SfxItemState::SET)
                     rPatternSet.ClearItem(i);
             }
         }
@@ -1238,8 +1236,8 @@ void ScPatternAttr::SetStyleSheet( ScStyleSheet* pNewStyle, bool bClearDirectFor
     else
     {
         OSL_FAIL( "ScPatternAttr::SetStyleSheet( NULL ) :-|" );
-        GetItemSet().SetParent(NULL);
-        pStyle = NULL;
+        GetItemSet().SetParent(nullptr);
+        pStyle = nullptr;
     }
 }
 
@@ -1265,7 +1263,7 @@ void ScPatternAttr::UpdateStyleSheet(ScDocument* pDoc)
         }
     }
     else
-        pStyle = NULL;
+        pStyle = nullptr;
 }
 
 void ScPatternAttr::StyleToName()
@@ -1279,8 +1277,8 @@ void ScPatternAttr::StyleToName()
         else
             pName = new OUString( pStyle->GetName() );
 
-        pStyle = NULL;
-        GetItemSet().SetParent( NULL );
+        pStyle = nullptr;
+        GetItemSet().SetParent( nullptr );
     }
 }
 

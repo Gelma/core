@@ -106,7 +106,7 @@ public:
     // XInteractionHandler methods.
     virtual void SAL_CALL handle(
             const uno::Reference< task::XInteractionRequest >& Request )
-        throw ( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( uno::RuntimeException, std::exception ) override;
 };
 
 
@@ -175,9 +175,9 @@ public:
     // XActiveDataSink methods.
     virtual void SAL_CALL setInputStream(
                         const uno::Reference< io::XInputStream >& aStream )
-        throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( uno::RuntimeException, std::exception ) override;
     virtual uno::Reference< io::XInputStream > SAL_CALL getInputStream()
-        throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( uno::RuntimeException, std::exception ) override;
 };
 
 
@@ -214,17 +214,17 @@ public:
 
     // XCommandInfo methods
     virtual uno::Sequence< ucb::CommandInfo > SAL_CALL getCommands()
-        throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( uno::RuntimeException, std::exception ) override;
     virtual ucb::CommandInfo SAL_CALL
     getCommandInfoByName( const OUString& Name )
-        throw( ucb::UnsupportedCommandException, uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( ucb::UnsupportedCommandException, uno::RuntimeException, std::exception ) override;
     virtual ucb::CommandInfo SAL_CALL
     getCommandInfoByHandle( sal_Int32 Handle )
-        throw( ucb::UnsupportedCommandException, uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( ucb::UnsupportedCommandException, uno::RuntimeException, std::exception ) override;
     virtual sal_Bool SAL_CALL hasCommandByName( const OUString& Name )
-        throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( uno::RuntimeException, std::exception ) override;
     virtual sal_Bool SAL_CALL hasCommandByHandle( sal_Int32 Handle )
-        throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( uno::RuntimeException, std::exception ) override;
 };
 
 
@@ -544,7 +544,7 @@ uno::Reference< ucb::XContent > createNew(
             ucb::IOErrorCode_CANT_CREATE,
             uno::Sequence< uno::Any >(&aProps, 1),
             rContext.xOrigEnv,
-            OUString("Target is no XCommandProcessor!"),
+            "Target is no XCommandProcessor!",
             rContext.xProcessor );
         // Unreachable
     }
@@ -595,7 +595,7 @@ uno::Reference< ucb::XContent > createNew(
                 ucb::IOErrorCode_CANT_CREATE,
                 uno::Sequence< uno::Any >(&aProps, 1),
                 rContext.xOrigEnv,
-                OUString("Target is no XContentCreator!"),
+                "Target is no XContentCreator!",
                 rContext.xProcessor );
             // Unreachable
         }
@@ -616,7 +616,7 @@ uno::Reference< ucb::XContent > createNew(
             ucb::IOErrorCode_CANT_CREATE,
             uno::Sequence< uno::Any >(&aProps, 1),
             rContext.xOrigEnv,
-            OUString("No types creatable!"),
+            "No types creatable!",
             rContext.xProcessor );
         // Unreachable
     }
@@ -730,7 +730,7 @@ uno::Reference< ucb::XContent > createNew(
                     ucb::IOErrorCode_CANT_CREATE,
                     uno::Sequence< uno::Any >(&aProps, 1),
                     rContext.xOrigEnv,
-                    OUString( "createNewContent failed!" ),
+                    "createNewContent failed!",
                     rContext.xProcessor );
                 // Unreachable
             }
@@ -769,7 +769,7 @@ void transferProperties(
             ucb::IOErrorCode_CANT_READ,
             uno::Sequence< uno::Any >(&aProps, 1),
             rContext.xOrigEnv,
-            OUString( "Unable to get propertyset info from source object!" ),
+            "Unable to get propertyset info from source object!",
             rContext.xProcessor );
         // Unreachable
     }
@@ -797,7 +797,7 @@ void transferProperties(
             ucb::IOErrorCode_CANT_READ,
             uno::Sequence< uno::Any >(&aProps, 1),
             rContext.xOrigEnv,
-            OUString( "Unable to get properties from source object!" ),
+            "Unable to get properties from source object!",
             rContext.xProcessor );
         // Unreachable
     }
@@ -966,8 +966,7 @@ uno::Reference< io::XInputStream > getInputStream(
 
             xCommandProcessorS->execute( aOpenCommand, 0, rContext.xEnv );
 
-            xInputStream = uno::Reference< io::XInputStream >(
-                                    xOutputStream, uno::UNO_QUERY );
+            xInputStream.set( xOutputStream, uno::UNO_QUERY );
         }
         catch ( uno::RuntimeException const & )
         {
@@ -1002,7 +1001,7 @@ uno::Reference< sdbc::XResultSet > getResultSet(
     ucb::OpenCommandArgument2 aArg;
     aArg.Mode       = ucb::OpenMode::ALL;
     aArg.Priority   = 0; // unused
-    aArg.Sink       = 0;
+    aArg.Sink       = nullptr;
     aArg.Properties = aProps;
 
     ucb::Command aOpenCommand( OUString("open"),
@@ -1068,7 +1067,7 @@ void handleNameClashRename(
             ucb::IOErrorCode_CANT_READ,
             uno::Sequence< uno::Any >( &aProps2, 1 ),
             rContext.xOrigEnv,
-            OUString( "Unable to get properties from new object!" ),
+            "Unable to get properties from new object!",
             rContext.xProcessor );
         // Unreachable
     }
@@ -1157,7 +1156,7 @@ void handleNameClashRename(
                             ucb::IOErrorCode_CANT_READ,
                             uno::Sequence< uno::Any >( &aProps2, 1 ),
                             rContext.xOrigEnv,
-                            OUString( "Got no data stream from source!" ),
+                            "Got no data stream from source!",
                             rContext.xProcessor );
                         // Unreachable
                     }
@@ -1262,7 +1261,7 @@ void globalTransfer_(
             ucb::IOErrorCode_CANT_CREATE,
             uno::Sequence< uno::Any >(&aProps, 1),
             rContext.xOrigEnv,
-            OUString( "No matching content type at target!" ),
+            "No matching content type at target!",
             rContext.xProcessor );
         // Unreachable
     }
@@ -1289,7 +1288,7 @@ void globalTransfer_(
             ucb::IOErrorCode_CANT_WRITE,
             uno::Sequence< uno::Any >(&aProps, 1),
             rContext.xOrigEnv,
-            OUString( "New content is not a XCommandProcessor!" ),
+            "New content is not a XCommandProcessor!",
             rContext.xProcessor );
         // Unreachable
     }
@@ -1310,7 +1309,7 @@ void globalTransfer_(
             ucb::IOErrorCode_CANT_READ,
             uno::Sequence< uno::Any >(&aProps, 1),
             rContext.xOrigEnv,
-            OUString( "Source content is not a XCommandProcessor!" ),
+            "Source content is not a XCommandProcessor!",
             rContext.xProcessor );
         // Unreachable
     }
@@ -1566,7 +1565,7 @@ void globalTransfer_(
                     ucb::IOErrorCode_CANT_READ,
                     uno::Sequence< uno::Any >(&aProps, 1),
                     rContext.xOrigEnv,
-                    OUString( "Unable to get properties from children of source!" ),
+                    "Unable to get properties from children of source!",
                     rContext.xProcessor );
                 // Unreachable
             }
@@ -1587,7 +1586,7 @@ void globalTransfer_(
                     ucb::IOErrorCode_CANT_READ,
                     uno::Sequence< uno::Any >(&aProps, 1),
                     rContext.xOrigEnv,
-                    OUString( "Unable to get children of source!" ),
+                    "Unable to get children of source!",
                     rContext.xProcessor );
                 // Unreachable
             }
@@ -1730,7 +1729,7 @@ void UniversalContentBroker::globalTransfer(
             ucb::IOErrorCode_CANT_READ,
             uno::Sequence< uno::Any >(&aProps, 1),
             xEnv,
-            OUString( "Can't instanciate target object!" ),
+            "Can't instanciate target object!",
             this );
         // Unreachable
     }
@@ -1753,7 +1752,7 @@ void UniversalContentBroker::globalTransfer(
                 ucb::IOErrorCode_CANT_READ,
                 uno::Sequence< uno::Any >(&aProps, 1),
                 xEnv,
-                OUString( "Target content is not a XCommandProcessor!" ),
+                "Target content is not a XCommandProcessor!",
                 this );
             // Unreachable
         }
@@ -1916,7 +1915,7 @@ void UniversalContentBroker::globalTransfer(
             ucb::IOErrorCode_CANT_READ,
             uno::Sequence< uno::Any >(&aProps, 1),
             xEnv,
-            OUString( "Can't instanciate source object!" ),
+            "Can't instanciate source object!",
             this );
         // Unreachable
     }
@@ -1935,7 +1934,7 @@ void UniversalContentBroker::globalTransfer(
             ucb::IOErrorCode_CANT_READ,
             uno::Sequence< uno::Any >(&aProps, 1),
             xEnv,
-            OUString( "Source content is not a XCommandProcessor!" ),
+            "Source content is not a XCommandProcessor!",
             this );
         // Unreachable
     }
@@ -1973,7 +1972,7 @@ void UniversalContentBroker::globalTransfer(
             ucb::IOErrorCode_CANT_READ,
             uno::Sequence< uno::Any >(&aProps2, 1),
             xEnv,
-            OUString( "Unable to get properties from source object!" ),
+            "Unable to get properties from source object!",
             this );
         // Unreachable
     }
@@ -2061,7 +2060,7 @@ uno::Any UniversalContentBroker::checkIn( const ucb::CheckinArgument& rArg,
             ucb::IOErrorCode_CANT_READ,
             uno::Sequence< uno::Any >( &aProps, 1 ),
             xEnv,
-            OUString( "Can't instanciate target object!" ),
+            "Can't instanciate target object!",
             this );
         // Unreachable
     }
@@ -2080,7 +2079,7 @@ uno::Any UniversalContentBroker::checkIn( const ucb::CheckinArgument& rArg,
             ucb::IOErrorCode_CANT_READ,
             uno::Sequence< uno::Any >( &aProps, 1 ),
             xEnv,
-            OUString( "Target content is not a XCommandProcessor!" ),
+            "Target content is not a XCommandProcessor!",
             this );
         // Unreachable
     }

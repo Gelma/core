@@ -73,13 +73,13 @@ struct SwInsertField_Data
     SwWrtShell* m_pSh;
     sal_Unicode m_cSeparator;
     bool m_bIsAutomaticLanguage;
-    ::com::sun::star::uno::Any m_aDBDataSource;
-    ::com::sun::star::uno::Any m_aDBConnection;
-    ::com::sun::star::uno::Any m_aDBColumn;
+    css::uno::Any m_aDBDataSource;
+    css::uno::Any m_aDBConnection;
+    css::uno::Any m_aDBColumn;
     VclPtr<vcl::Window> m_pParent; // parent dialog used for SwWrtShell::StartInputFieldDlg()
 
     SwInsertField_Data(sal_uInt16 nType, sal_uInt16 nSub, const OUString& rPar1, const OUString& rPar2,
-                    sal_uLong nFormatId, SwWrtShell* pShell = NULL, sal_Unicode cSep = ' ', bool bIsAutoLanguage = true) :
+                    sal_uLong nFormatId, SwWrtShell* pShell = nullptr, sal_Unicode cSep = ' ', bool bIsAutoLanguage = true) :
         m_nTypeId(nType),
         m_nSubType(nSub),
         m_sPar1(rPar1),
@@ -88,10 +88,10 @@ struct SwInsertField_Data
         m_pSh(pShell),
         m_cSeparator(cSep),
         m_bIsAutomaticLanguage(bIsAutoLanguage),
-        m_pParent(0) {}
+        m_pParent(nullptr) {}
 
     SwInsertField_Data() :
-        m_pSh(0),
+        m_pSh(nullptr),
         m_cSeparator(' '),
         m_bIsAutomaticLanguage(true){}
 };
@@ -100,7 +100,6 @@ class SW_DLLPUBLIC SwFieldMgr
 {
 private:
     SwField*            pCurField;
-    SbModule*           pModule;
     const SvxMacroItem* pMacroItem;
     SwWrtShell*         pWrtShell; // can be ZERO too!
     OUString          aCurPar1;
@@ -115,12 +114,11 @@ private:
 
     SAL_DLLPRIVATE sal_uInt16            GetCurrLanguage() const;
 
-    com::sun::star::uno::Reference<com::sun::star::container::XNameAccess> xDBContext;
-    com::sun::star::uno::Reference<com::sun::star::text::XNumberingTypeInfo> xNumberingInfo;
-    SAL_DLLPRIVATE com::sun::star::uno::Reference<com::sun::star::text::XNumberingTypeInfo> GetNumberingInfo()const;
+    css::uno::Reference<css::text::XNumberingTypeInfo> xNumberingInfo;
+    SAL_DLLPRIVATE css::uno::Reference<css::text::XNumberingTypeInfo> GetNumberingInfo()const;
 
 public:
-    explicit SwFieldMgr(SwWrtShell* pSh = 0);
+    explicit SwFieldMgr(SwWrtShell* pSh = nullptr);
     ~SwFieldMgr();
 
     void                SetWrtShell( SwWrtShell* pShell )
@@ -133,7 +131,7 @@ public:
     void            UpdateCurField(sal_uLong nFormat,
                                  const OUString& rPar1,
                                  const OUString& rPar2,
-                                 SwField * _pField = 0); // #111840#
+                                 SwField * _pField = nullptr);
 
     OUString        GetCurFieldPar1() const { return aCurPar1; }
     OUString        GetCurFieldPar2() const { return aCurPar2; }
@@ -149,9 +147,9 @@ public:
     inline OUString GetMacroName() const         { return sMacroName; }
 
     // previous and next of the same type
-    bool GoNextPrev( bool bNext = true, SwFieldType* pTyp = 0 );
-    bool GoNext( SwFieldType* pTyp = 0 )    { return GoNextPrev( true, pTyp ); }
-    bool GoPrev( SwFieldType* pTyp = 0 )    { return GoNextPrev( false, pTyp ); }
+    bool GoNextPrev( bool bNext = true, SwFieldType* pTyp = nullptr );
+    bool GoNext( SwFieldType* pTyp = nullptr )    { return GoNextPrev( true, pTyp ); }
+    bool GoPrev( SwFieldType* pTyp = nullptr )    { return GoNextPrev( false, pTyp ); }
 
     bool            IsDBNumeric(const OUString& rDBName, const OUString& rTableQryName,
                                     bool bIsTable, const OUString& rFieldName);
@@ -189,13 +187,13 @@ public:
     sal_uInt16          GetFormatCount(sal_uInt16 nTypeId, bool bIsText, bool bHtmlMode = false) const;
     OUString            GetFormatStr(sal_uInt16 nTypeId, sal_uLong nFormatId) const;
     sal_uInt16          GetFormatId(sal_uInt16 nTypeId, sal_uLong nFormatId) const;
-    sal_uLong           GetDefaultFormat(sal_uInt16 nTypeId, bool bIsText, SvNumberFormatter* pFormatter, double* pVal = 0L);
+    sal_uLong           GetDefaultFormat(sal_uInt16 nTypeId, bool bIsText, SvNumberFormatter* pFormatter, double* pVal = nullptr);
 
     // turn off evaluation of expression fields for insertation
     // of many expressino fields (see labels)
 
     inline void     SetEvalExpFields(bool bEval);
-    void            EvalExpFields(SwWrtShell* pSh = NULL);
+    void            EvalExpFields(SwWrtShell* pSh = nullptr);
 };
 
 inline void SwFieldMgr::SetEvalExpFields(bool bEval)

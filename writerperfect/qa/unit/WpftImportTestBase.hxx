@@ -10,6 +10,10 @@
 #ifndef INCLUDED_WRITERPERFECT_QA_UNIT_WPFTIMPORTTESTBASE_HXX
 #define INCLUDED_WRITERPERFECT_QA_UNIT_WPFTIMPORTTESTBASE_HXX
 
+#include "config_writerperfect.h"
+
+#include <unordered_map>
+
 #include <com/sun/star/uno/Reference.hxx>
 #include <com/sun/star/uno/Sequence.hxx>
 
@@ -18,6 +22,24 @@
 #include <test/bootstrapfixture.hxx>
 
 #include <unotest/filters-test.hxx>
+
+#define REQUIRE_VERSION(major, minor, micro, req_major, req_minor, req_micro) \
+    (major) > (req_major) || \
+    ((major) == (req_major) && \
+        ((minor) > (req_minor) \
+         || ((minor) == (req_minor) && ((micro) >= (req_micro)))))
+
+#define REQUIRE_EBOOK_VERSION(major, minor, micro) \
+    REQUIRE_VERSION(EBOOK_VERSION_MAJOR, EBOOK_VERSION_MINOR, EBOOK_VERSION_MICRO, major, minor, micro)
+
+#define REQUIRE_ETONYEK_VERSION(major, minor, micro) \
+    REQUIRE_VERSION(ETONYEK_VERSION_MAJOR, ETONYEK_VERSION_MINOR, ETONYEK_VERSION_MICRO, major, minor, micro)
+
+#define REQUIRE_MWAW_VERSION(major, minor, micro) \
+    REQUIRE_VERSION(MWAW_VERSION_MAJOR, MWAW_VERSION_MINOR, MWAW_VERSION_MICRO, major, minor, micro)
+
+#define REQUIRE_WPS_VERSION(major, minor, micro) \
+    REQUIRE_VERSION(WPS_VERSION_MAJOR, WPS_VERSION_MINOR, WPS_VERSION_MICRO, major, minor, micro)
 
 namespace com
 {
@@ -54,6 +76,8 @@ namespace writerperfect
 namespace test
 {
 
+typedef std::unordered_map<rtl::OUString, bool, rtl::OUStringHash> WpftOptionalMap_t;
+
 class WpftImportTestBase
     : public ::test::FiltersTest
     , public ::test::BootstrapFixture
@@ -61,24 +85,25 @@ class WpftImportTestBase
 public:
     explicit WpftImportTestBase(const rtl::OUString &rFactoryURL);
 
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
 protected:
     void doTest(const rtl::OUString &rFilter, const rtl::OUString &rPath);
+    void doTest(const rtl::OUString &rFilter, const rtl::OUString &rPath, const WpftOptionalMap_t &rOptionalMap);
 
 private:
     virtual bool load(const OUString &, const OUString &rURL, const OUString &,
-                      SfxFilterFlags, SotClipboardFormatId, unsigned int) SAL_OVERRIDE;
+                      SfxFilterFlags, SotClipboardFormatId, unsigned int) override;
 
-    void impl_detectFilterName(com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue> &rDescriptor, const rtl::OUString &rTypeName);
+    void impl_detectFilterName(css::uno::Sequence<css::beans::PropertyValue> &rDescriptor, const rtl::OUString &rTypeName);
 
 private:
     const rtl::OUString m_aFactoryURL;
-    com::sun::star::uno::Reference<com::sun::star::frame::XDesktop2> m_xDesktop;
-    com::sun::star::uno::Reference<com::sun::star::ucb::XSimpleFileAccess> m_xFileAccess;
-    com::sun::star::uno::Reference<com::sun::star::document::XFilter> m_xFilter;
-    com::sun::star::uno::Reference<com::sun::star::container::XNameAccess> m_xTypeMap;
+    css::uno::Reference<css::frame::XDesktop2> m_xDesktop;
+    css::uno::Reference<css::document::XFilter> m_xFilter;
+    css::uno::Reference<css::container::XNameAccess> m_xTypeMap;
+    const WpftOptionalMap_t *m_pOptionalMap;
 };
 
 }

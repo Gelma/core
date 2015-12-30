@@ -19,6 +19,10 @@
 #ifndef INCLUDED_COM_SUN_STAR_UNO_REFERENCE_HXX
 #define INCLUDED_COM_SUN_STAR_UNO_REFERENCE_HXX
 
+#include <sal/config.h>
+
+#include <cstddef>
+
 #include <com/sun/star/uno/Reference.h>
 #include <com/sun/star/uno/RuntimeException.hpp>
 #include <com/sun/star/uno/XInterface.hpp>
@@ -51,11 +55,11 @@ inline XInterface * BaseReference::iquery(
         if (typelib_TypeClass_INTERFACE == aRet.pType->eTypeClass)
         {
             XInterface * pRet = static_cast< XInterface * >( aRet.pReserved );
-            aRet.pReserved = 0;
+            aRet.pReserved = NULL;
             return pRet;
         }
     }
-    return 0;
+    return NULL;
 }
 
 template< class interface_type >
@@ -109,7 +113,7 @@ inline Reference< interface_type >::~Reference()
 template< class interface_type >
 inline Reference< interface_type >::Reference()
 {
-    _pInterface = 0;
+    _pInterface = NULL;
 }
 
 template< class interface_type >
@@ -119,6 +123,15 @@ inline Reference< interface_type >::Reference( const Reference< interface_type >
     if (_pInterface)
         _pInterface->acquire();
 }
+
+#if defined LIBO_INTERNAL_ONLY
+template< class interface_type >
+inline Reference< interface_type >::Reference( Reference< interface_type > && rRef )
+{
+    _pInterface = rRef._pInterface;
+    rRef._pInterface = nullptr;
+}
+#endif
 
 template< class interface_type > template< class derived_type >
 inline Reference< interface_type >::Reference(
@@ -167,7 +180,7 @@ template< class interface_type >
 inline Reference< interface_type >::Reference( const Any & rAny, UnoReference_Query )
 {
     _pInterface = (typelib_TypeClass_INTERFACE == rAny.pType->eTypeClass
-                   ? iquery( static_cast< XInterface * >( rAny.pReserved ) ) : 0);
+                   ? iquery( static_cast< XInterface * >( rAny.pReserved ) ) : NULL);
 }
 
 template< class interface_type >
@@ -186,7 +199,7 @@ template< class interface_type >
 inline Reference< interface_type >::Reference( const Any & rAny, UnoReference_QueryThrow )
 {
     _pInterface = iquery_throw( typelib_TypeClass_INTERFACE == rAny.pType->eTypeClass
-                                ? static_cast< XInterface * >( rAny.pReserved ) : 0 );
+                                ? static_cast< XInterface * >( rAny.pReserved ) : NULL );
 }
 
 template< class interface_type >
@@ -208,7 +221,7 @@ inline void Reference< interface_type >::clear()
     if (_pInterface)
     {
         XInterface * const pOld = _pInterface;
-        _pInterface = 0;
+        _pInterface = NULL;
         pOld->release();
     }
 }
@@ -223,7 +236,7 @@ inline bool Reference< interface_type >::set(
     _pInterface = castToXInterface(pInterface);
     if (pOld)
         pOld->release();
-    return (0 != pInterface);
+    return (NULL != pInterface);
 }
 
 template< class interface_type >
@@ -234,7 +247,7 @@ inline bool Reference< interface_type >::set(
     _pInterface = castToXInterface(pInterface);
     if (pOld)
         pOld->release();
-    return (0 != pInterface);
+    return (NULL != pInterface);
 }
 
 template< class interface_type >
@@ -275,7 +288,7 @@ inline bool Reference< interface_type >::set(
         castFromXInterface(
             iquery(
                 rAny.pType->eTypeClass == typelib_TypeClass_INTERFACE
-                ? static_cast< XInterface * >( rAny.pReserved ) : 0 )),
+                ? static_cast< XInterface * >( rAny.pReserved ) : NULL )),
         SAL_NO_ACQUIRE );
 }
 
@@ -302,7 +315,7 @@ inline void Reference< interface_type >::set(
     set( castFromXInterface(
              iquery_throw(
                  rAny.pType->eTypeClass == typelib_TypeClass_INTERFACE
-                 ? static_cast< XInterface * >( rAny.pReserved ) : 0 )),
+                 ? static_cast< XInterface * >( rAny.pReserved ) : NULL )),
          SAL_NO_ACQUIRE );
 }
 
@@ -337,6 +350,18 @@ inline Reference< interface_type > & Reference< interface_type >::operator = (
     return *this;
 }
 
+#if defined LIBO_INTERNAL_ONLY
+template< class interface_type >
+inline Reference< interface_type > & Reference< interface_type >::operator = (
+     Reference< interface_type > && rRef )
+{
+    if (_pInterface)
+        _pInterface->release();
+    _pInterface = rRef._pInterface;
+    rRef._pInterface = nullptr;
+    return *this;
+}
+#endif
 
 template< class interface_type >
 inline Reference< interface_type > Reference< interface_type >::query(

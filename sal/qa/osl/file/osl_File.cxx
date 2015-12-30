@@ -491,29 +491,29 @@ namespace osl_FileBase
 
   void getAbsoluteFileURL::getAbsoluteFileURL_001_1()
   {
-    rtl::OUString suAssume = aUserDirectoryURL.concat( rtl::OUString("/relative/file1") );
+    rtl::OUString suAssume = aUserDirectoryURL.concat( "/relative/file1" );
     check_getAbsoluteFileURL( aUserDirectoryURL, "relative/file1",::osl::FileBase::E_None, suAssume );
   }
   void getAbsoluteFileURL::getAbsoluteFileURL_001_2()
   {
-    rtl::OUString suAssume = aUserDirectoryURL.concat( rtl::OUString("/relative/file2") );
+    rtl::OUString suAssume = aUserDirectoryURL.concat( "/relative/file2" );
     check_getAbsoluteFileURL( aUserDirectoryURL, "relative/./file2",::osl::FileBase::E_None, suAssume );
   }
   void getAbsoluteFileURL::getAbsoluteFileURL_001_3()
   {
-    rtl::OUString suAssume = aUserDirectoryURL.concat( rtl::OUString("/file3") );
+    rtl::OUString suAssume = aUserDirectoryURL.concat( "/file3" );
     check_getAbsoluteFileURL( aUserDirectoryURL, "relative/../file3",::osl::FileBase::E_None, suAssume );
   }
   void getAbsoluteFileURL::getAbsoluteFileURL_001_4()
   {
-    rtl::OUString suAssume = aUserDirectoryURL.concat( rtl::OUString("/file4") );
+    rtl::OUString suAssume = aUserDirectoryURL.concat( "/file4" );
     check_getAbsoluteFileURL( aUserDirectoryURL, "././relative/../file4",::osl::FileBase::E_None, suAssume );
   }
   void getAbsoluteFileURL::getAbsoluteFileURL_001_5()
   {
     rtl::OUString suAssume;
 #if ( defined UNX )
-    suAssume = aUserDirectoryURL.concat( rtl::OUString("/relative/") );
+    suAssume = aUserDirectoryURL.concat( "/relative/" );
 #else
     suAssume = aUserDirectoryURL.concat( rtl::OUString("/relative") );
 #endif
@@ -521,14 +521,14 @@ namespace osl_FileBase
   }
   void getAbsoluteFileURL::getAbsoluteFileURL_001_6()
   {
-    rtl::OUString suAssume = aUserDirectoryURL.concat( rtl::OUString("/.relative") );
+    rtl::OUString suAssume = aUserDirectoryURL.concat( "/.relative" );
     check_getAbsoluteFileURL( aUserDirectoryURL, "./.relative",::osl::FileBase::E_None, suAssume );
   }
   void getAbsoluteFileURL::getAbsoluteFileURL_001_7()
   {
     rtl::OUString suAssume;
 #if (defined UNX )
-    suAssume = aUserDirectoryURL.concat( rtl::OUString("/.a/") );
+    suAssume = aUserDirectoryURL.concat( "/.a/" );
 #else //windows
     suAssume = aUserDirectoryURL.concat( rtl::OUString("/.a") );
 #endif
@@ -536,7 +536,7 @@ namespace osl_FileBase
   }
   void getAbsoluteFileURL::getAbsoluteFileURL_001_8()
   {
-    rtl::OUString suAssume = aUserDirectoryURL.concat( rtl::OUString("/tmp/ok") );
+    rtl::OUString suAssume = aUserDirectoryURL.concat( "/tmp/ok" );
 #if ( defined UNX )
     check_getAbsoluteFileURL( aUserDirectoryURL, "tmp//ok",::osl::FileBase::E_None, suAssume );
 #else
@@ -558,7 +558,7 @@ namespace osl_FileBase
                 sal_Int32 fd = symlink( strSrcFileName.getStr(), strLinkFileName.getStr() );
         CPPUNIT_ASSERT( fd == 0 );
         rtl::OString sLnkURL = OUStringToOString( aLnkURL1, RTL_TEXTENCODING_ASCII_US );
-            rtl::OUString suAssume = aUserDirectoryURL.concat( rtl::OUString("/canonical.name") );
+            rtl::OUString suAssume = aUserDirectoryURL.concat( "/canonical.name" );
         check_getAbsoluteFileURL( aUserDirectoryURL, sLnkURL, ::osl::FileBase::E_None, suAssume );
         deleteTestFile( aCanURL1 );
                 fd = remove( strLinkFileName.getStr() );
@@ -577,7 +577,7 @@ namespace osl_FileBase
         ::rtl::OUString aUStrBase = aUserDirectoryURL + "/test1/dir1";
         createTestDirectory( aUStrBase );
 
-        ::rtl::OUString suAssume = aUserDirectoryURL.concat( ::rtl::OUString("/mytestfile") );
+        ::rtl::OUString suAssume = aUserDirectoryURL.concat( "/mytestfile" );
         check_getAbsoluteFileURL( aUStrBase, "../../mytestfile" , ::osl::FileBase::E_None, suAssume );
         deleteTestDirectory( aUStrBase );
         deleteTestDirectory( aUStrUpBase );
@@ -1033,7 +1033,7 @@ namespace osl_FileBase
 
         void searchFileURL_003()
         {
-            OSLTEST_DECLARE( SystemPathList,  TEST_PLATFORM_ROOT ":" TEST_PLATFORM_ROOT TEST_PLATFORM_TEMP ":" TEST_PLATFORM_ROOT "system/path" );
+            OUString aSystemPathList( TEST_PLATFORM_ROOT ":" TEST_PLATFORM_ROOT TEST_PLATFORM_TEMP ":" TEST_PLATFORM_ROOT "system/path" );
             nError1 = ::osl::FileBase::searchFileURL( aUserDirectoryURL, aSystemPathList, aUStr );
             bool bOk = compareFileName( aUStr, aUserDirectoryURL );
             CPPUNIT_ASSERT_MESSAGE( "test for searchFileURL function: search directory is a list of system paths",
@@ -1043,7 +1043,7 @@ namespace osl_FileBase
 
         void searchFileURL_004()
         {
-            OSLTEST_DECLARE( SystemPathList,  TEST_PLATFORM_ROOT PATH_LIST_DELIMITER TEST_PLATFORM_ROOT TEST_PLATFORM_TEMP PATH_LIST_DELIMITER TEST_PLATFORM_ROOT "system/path/../name" );
+            OUString aSystemPathList( TEST_PLATFORM_ROOT PATH_LIST_DELIMITER TEST_PLATFORM_ROOT TEST_PLATFORM_TEMP PATH_LIST_DELIMITER TEST_PLATFORM_ROOT "system/path/../name" );
             nError1 = ::osl::FileBase::searchFileURL( aUserDirectoryURL, aSystemPathList, aUStr );
             bool bOk = compareFileName( aUStr, aUserDirectoryURL );
             CPPUNIT_ASSERT_MESSAGE( "test for searchFileURL function: search directory is a list of system paths",
@@ -1081,12 +1081,12 @@ namespace osl_FileBase
         public:
         getTempDirURL() :nError(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
              nError = FileBase::getTempDirURL( aUStr );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
         }
 
@@ -1132,14 +1132,14 @@ namespace osl_FileBase
             : nError1(FileBase::E_None)
             , nError2(FileBase::E_None)
             , bOK(false)
-            , pHandle(NULL)
-            , pUStr_DirURL(NULL)
-            , pUStr_FileURL(NULL)
+            , pHandle(nullptr)
+            , pUStr_DirURL(nullptr)
+            , pUStr_FileURL(nullptr)
         {
         }
 
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             pHandle = new oslFileHandle();
             pUStr_DirURL = new ::rtl::OUString( aUserDirectoryURL );
@@ -1147,7 +1147,7 @@ namespace osl_FileBase
             //*pUStr_DirURL = aUserDirectoryURL;                /// create temp file in /tmp/PID or c:\temp\PID.*/
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             delete pUStr_DirURL;
             delete pUStr_FileURL;
@@ -1166,7 +1166,7 @@ namespace osl_FileBase
             }
 
             CPPUNIT_ASSERT_MESSAGE( "test for createTempFile function: create temp file and test the existence",
-                                     ( osl::FileBase::E_None == nError1 ) && ( pHandle != NULL ) &&   ( osl::FileBase::E_EXIST== nError2 )   );
+                                     ( osl::FileBase::E_None == nError1 ) && ( pHandle != nullptr ) &&   ( osl::FileBase::E_EXIST== nError2 )   );
         }
 
         void createTempFile_002()
@@ -1177,7 +1177,7 @@ namespace osl_FileBase
             nError2 = testFile.open( osl_File_OpenFlag_Create );
 
             CPPUNIT_ASSERT_MESSAGE( "createTempFile function: create a temp file, but it does not exist",
-                ( osl::FileBase::E_None == nError1 ) && ( pHandle != NULL ) &&
+                ( osl::FileBase::E_None == nError1 ) && ( pHandle != nullptr ) &&
                 ( osl::FileBase::E_EXIST == nError2 ) );
 
             //check file if have the write permission
@@ -1193,9 +1193,9 @@ namespace osl_FileBase
 
         void createTempFile_003()
         {
-            nError1 = FileBase::createTempFile( pUStr_DirURL, pHandle, 0 );
+            nError1 = FileBase::createTempFile( pUStr_DirURL, pHandle, nullptr );
             //the temp file will be removed when return from createTempFile
-            bOK = (pHandle != NULL && nError1 == osl::FileBase::E_None);
+            bOK = (pHandle != nullptr && nError1 == osl::FileBase::E_None);
             if ( bOK )
                 osl_closeFile( *pHandle );
 
@@ -1204,8 +1204,8 @@ namespace osl_FileBase
         }
         void createTempFile_004()
         {
-            nError1 = FileBase::createTempFile( pUStr_DirURL, 0, pUStr_FileURL );
-            bOK = ( pUStr_FileURL != 0);
+            nError1 = FileBase::createTempFile( pUStr_DirURL, nullptr, pUStr_FileURL );
+            bOK = ( pUStr_FileURL != nullptr);
             CPPUNIT_ASSERT(bOK);
             ::osl::File testFile( *pUStr_FileURL );
             nError2 = testFile.open( osl_File_OpenFlag_Create );
@@ -1246,7 +1246,7 @@ namespace osl_FileStatus
         public:
         ctors() :nError1(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
@@ -1268,7 +1268,7 @@ namespace osl_FileStatus
             */
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -1314,12 +1314,12 @@ namespace osl_FileStatus
 
         public:
         isValid()
-            : pDir(NULL)
+            : pDir(nullptr)
         {
         }
 
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
@@ -1332,7 +1332,7 @@ namespace osl_FileStatus
             CPPUNIT_ASSERT( ::osl::FileBase::E_None == nError1 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             ::osl::FileBase::RC nError1 = pDir->close();
             delete pDir;
@@ -1446,11 +1446,11 @@ namespace osl_FileStatus
 
             // testDirectory is "/tmp/PID/tmpdir/"
             ::osl::Directory testDirectory( aTmpName3 );
-                ::osl::FileBase::RC nError1 = testDirectory.open();
+            testDirectory.open();
             ::rtl::OUString aFileName ("link.file");
             bool bOk = false;
             while (true) {
-                nError1 = testDirectory.getNextItem( rItem_link, 4 );
+                osl::FileBase::RC nError1 = testDirectory.getNextItem( rItem_link, 4 );
                 if (::osl::FileBase::E_None == nError1) {
                     sal_uInt32 mask_link = osl_FileStatus_Mask_FileName | osl_FileStatus_Mask_LinkTargetURL;
                     ::osl::FileStatus   rFileStatus( mask_link );
@@ -1520,7 +1520,7 @@ namespace osl_FileStatus
         public:
         getFileType() :nError1(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile: $TEMP/tmpdir/tmpname.
             //        a tempdirectory: $TEMP/tmpdir/tmpdir.
@@ -1546,7 +1546,7 @@ namespace osl_FileStatus
 
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove all in $TEMP/tmpdir.
             deleteTestDirectory( aTmpName3, aTmpName1 );
@@ -1566,32 +1566,32 @@ namespace osl_FileStatus
 
         void check_FileType(osl::FileStatus const& _rFileStatus )
         {
-            bool bOK = false;
-                if ( _rFileStatus.isValid(osl_FileStatus_Mask_FileName))
+            if ( _rFileStatus.isValid(osl_FileStatus_Mask_FileName))
+            {
+                rtl::OUString suFilename = _rFileStatus.getFileName();
+
+                if ( _rFileStatus.isValid(osl_FileStatus_Mask_Type))
                 {
-                    rtl::OUString suFilename = _rFileStatus.getFileName();
+                    osl::FileStatus::Type eType = _rFileStatus.getFileType();
+                    bool bOK = false;
 
-                    if ( _rFileStatus.isValid(osl_FileStatus_Mask_Type))
+                    if ( compareFileName( suFilename, aTmpName2) )
                     {
-                        osl::FileStatus::Type eType = _rFileStatus.getFileType();
+                        // regular
+                        bOK = ( eType == osl::FileStatus::Regular );
+                    }
+                    if ( compareFileName( suFilename, aTmpName1) )
+                    {
+                        // directory
+                        bOK = ( eType == ::osl::FileStatus::Directory );
+                    }
 
-                        if ( compareFileName( suFilename, aTmpName2) )
-                        {
-                            // regular
-                            bOK = ( eType == osl::FileStatus::Regular );
-                        }
-                        if ( compareFileName( suFilename, aTmpName1) )
-                        {
-                            // directory
-                            bOK = ( eType == ::osl::FileStatus::Directory );
-                        }
-
-                        CPPUNIT_ASSERT_MESSAGE( "test for getFileType function: ",
-                                     bOK );
-        }
+                    CPPUNIT_ASSERT_MESSAGE( "test for getFileType function: ",
+                                 bOK );
                 }
-                // LLA: it's not a bug, if a FileStatus not exist, so no else
             }
+            // LLA: it's not a bug, if a FileStatus not exist, so no else
+        }
 
         void getFileType_002()
         {
@@ -1647,7 +1647,7 @@ namespace osl_FileStatus
         public:
         getAttributes() :nError(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             aTypeURL = aUserDirectoryURL.copy( 0 );
             concatURL( aTypeURL, aTmpName2 );
@@ -1662,7 +1662,7 @@ namespace osl_FileStatus
             CPPUNIT_ASSERT( nError == FileBase::E_None );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             deleteTestFile( aTypeURL );
             deleteTestFile( aTypeURL_Hid );
@@ -1774,7 +1774,7 @@ namespace osl_FileStatus
         public:
         getAccessTime() :nError(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             aTypeURL = aUserDirectoryURL.copy( 0 );
             concatURL( aTypeURL, aTmpName2 );
@@ -1784,7 +1784,7 @@ namespace osl_FileStatus
 
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             deleteTestFile( aTypeURL );
         }
@@ -1792,10 +1792,10 @@ namespace osl_FileStatus
         // test code.
         void getAccessTime_001()
         {
-            TimeValue *pTV_current = NULL;
-            CPPUNIT_ASSERT( ( pTV_current = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != NULL );
-            TimeValue *pTV_access = NULL;
-            CPPUNIT_ASSERT( ( pTV_access = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != NULL );
+            TimeValue *pTV_current = nullptr;
+            CPPUNIT_ASSERT( ( pTV_current = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != nullptr );
+            TimeValue *pTV_access = nullptr;
+            CPPUNIT_ASSERT( ( pTV_access = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != nullptr );
 
               ::osl::FileStatus   rFileStatus( osl_FileStatus_Mask_AccessTime );
             nError = rItem.getFileStatus( rFileStatus );
@@ -1832,8 +1832,8 @@ namespace osl_FileStatus
         // test code.
         void getModifyTime_001()
         {
-            TimeValue *pTV_current = NULL;
-            CPPUNIT_ASSERT( ( pTV_current = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != NULL );
+            TimeValue *pTV_current = nullptr;
+            CPPUNIT_ASSERT( ( pTV_current = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != nullptr );
 
             //create file
             aTypeURL = aUserDirectoryURL.copy( 0 );
@@ -1852,8 +1852,8 @@ namespace osl_FileStatus
             CPPUNIT_ASSERT( nError == FileBase::E_None );
 
             //get modify time
-            TimeValue* pTV_modify = NULL;
-            CPPUNIT_ASSERT( ( pTV_modify = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != NULL );
+            TimeValue* pTV_modify = nullptr;
+            CPPUNIT_ASSERT( ( pTV_modify = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != nullptr );
             *pTV_modify = rFileStatus.getModifyTime();
 
             bool bOK = t_compareTime( pTV_modify, pTV_current, delta );
@@ -1885,7 +1885,7 @@ namespace osl_FileStatus
         getFileSize() :nError(FileBase::E_None) {}
 
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             aTypeURL = aUserDirectoryURL.copy( 0 );
             concatURL( aTypeURL, aTmpName2 );
@@ -1894,7 +1894,7 @@ namespace osl_FileStatus
             CPPUNIT_ASSERT( nError == FileBase::E_None );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             deleteTestFile( aTypeURL );
         }
@@ -1948,7 +1948,7 @@ namespace osl_FileStatus
         public:
         getFileName() :nError(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             aTypeURL = aUserDirectoryURL.copy( 0 );
             concatURL( aTypeURL, aTmpName2 );
@@ -1957,7 +1957,7 @@ namespace osl_FileStatus
             CPPUNIT_ASSERT( nError == FileBase::E_None );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             deleteTestFile( aTypeURL );
         }
@@ -1992,14 +1992,14 @@ namespace osl_FileStatus
         getFileURL() :nError(FileBase::E_None) {}
 
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             createTestFile( aTmpName6 );
             nError = ::osl::DirectoryItem::get( aTmpName6, rItem );
             CPPUNIT_ASSERT( nError == FileBase::E_None );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             deleteTestFile( aTmpName6 );
         }
@@ -2036,14 +2036,14 @@ namespace osl_FileStatus
         getLinkTargetURL() :nError(FileBase::E_None) {}
         // test code.
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             aTypeURL = aUserDirectoryURL.copy( 0 );
             concatURL( aTypeURL, aTmpName2 );
             createTestFile( aTypeURL );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             deleteTestFile( aTypeURL );
         }
@@ -2119,14 +2119,14 @@ namespace osl_File
 
         public:
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
             createTestFile( aTmpName4 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -2177,14 +2177,14 @@ namespace osl_File
             , nError2(FileBase::E_None)
             , nError3(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
             createTestFile( aTmpName4 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -2301,14 +2301,14 @@ namespace osl_File
             , nError2(FileBase::E_None)
             , nError3(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
             createTestFile( aTmpName4 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -2368,7 +2368,7 @@ namespace osl_File
         }
 
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
@@ -2385,7 +2385,7 @@ namespace osl_File
             CPPUNIT_ASSERT( ::osl::FileBase::E_None == nError1 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -2476,7 +2476,7 @@ namespace osl_File
         }
 
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
@@ -2493,7 +2493,7 @@ namespace osl_File
             CPPUNIT_ASSERT( ::osl::FileBase::E_None == nError1 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -2545,7 +2545,7 @@ namespace osl_File
         }
 
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
@@ -2562,7 +2562,7 @@ namespace osl_File
             CPPUNIT_ASSERT( ::osl::FileBase::E_None == nError1 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -2642,7 +2642,7 @@ namespace osl_File
         }
 
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
@@ -2659,7 +2659,7 @@ namespace osl_File
             CPPUNIT_ASSERT( ::osl::FileBase::E_None == nError1 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -2743,7 +2743,7 @@ namespace osl_File
         {
         }
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
@@ -2760,7 +2760,7 @@ namespace osl_File
             CPPUNIT_ASSERT( ::osl::FileBase::E_None == nError1 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -2835,13 +2835,13 @@ namespace osl_File
         }
 
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpname.
             createTestFile( aTmpName6 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpname.
             deleteTestFile( aTmpName6 );
@@ -2899,7 +2899,7 @@ namespace osl_File
         {
         }
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpname.
             createTestFile( aTmpName6 );
@@ -2924,7 +2924,7 @@ namespace osl_File
             CPPUNIT_ASSERT( ::osl::FileBase::E_None == nError1 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpname.
             deleteTestFile( aTmpName6 );
@@ -2986,7 +2986,7 @@ namespace osl_File
         }
 
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
@@ -3003,7 +3003,7 @@ namespace osl_File
             CPPUNIT_ASSERT( ::osl::FileBase::E_None == nError1 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -3117,7 +3117,7 @@ namespace osl_File
         }
 
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
@@ -3134,7 +3134,7 @@ namespace osl_File
             CPPUNIT_ASSERT( ::osl::FileBase::E_None == nError1 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -3258,7 +3258,7 @@ namespace osl_File
         }
 
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
@@ -3275,7 +3275,7 @@ namespace osl_File
             CPPUNIT_ASSERT( ::osl::FileBase::E_None == nError1 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -3342,13 +3342,13 @@ namespace osl_File
         public:
         setAttributes() :nError1(FileBase::E_None),nError2(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestFile( aTmpName6 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName6 );
@@ -3436,13 +3436,13 @@ namespace osl_File
         public:
         setTime() :nError1(FileBase::E_None),nError2(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestFile( aTmpName6 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName6 );
@@ -3451,14 +3451,14 @@ namespace osl_File
         // test code.
         void setTime_001()
         {
-             TimeValue *pTV_current  = NULL;
-            CPPUNIT_ASSERT( ( pTV_current = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != NULL );
-            TimeValue *pTV_creation = NULL;
-            CPPUNIT_ASSERT( ( pTV_creation = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != NULL );
-            TimeValue *pTV_access   = NULL;
-            CPPUNIT_ASSERT( ( pTV_access = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != NULL );
-            TimeValue *pTV_modify   = NULL;
-            CPPUNIT_ASSERT( ( pTV_modify = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != NULL );
+             TimeValue *pTV_current  = nullptr;
+            CPPUNIT_ASSERT( ( pTV_current = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != nullptr );
+            TimeValue *pTV_creation = nullptr;
+            CPPUNIT_ASSERT( ( pTV_creation = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != nullptr );
+            TimeValue *pTV_access   = nullptr;
+            CPPUNIT_ASSERT( ( pTV_access = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != nullptr );
+            TimeValue *pTV_modify   = nullptr;
+            CPPUNIT_ASSERT( ( pTV_modify = static_cast<TimeValue*>(malloc( sizeof( TimeValue ) )) ) != nullptr );
 
             //get current time
             bool bOk = osl_getSystemTime( pTV_current );
@@ -3519,14 +3519,14 @@ namespace osl_File
         public:
         sync() :nError1(FileBase::E_None),nError2(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestFile( aTmpName6 );
 
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName6 );
@@ -3603,13 +3603,13 @@ namespace osl_DirectoryItem
         public:
         ctors() :nError1(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpname.
             createTestFile( aTmpName6 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpname.
             deleteTestFile( aTmpName6 );
@@ -3644,13 +3644,13 @@ namespace osl_DirectoryItem
         public:
         copy_assin_Ctors() :nError1(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpname.
             createTestFile( aTmpName6 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpname.
             deleteTestFile( aTmpName6 );
@@ -3706,13 +3706,13 @@ namespace osl_DirectoryItem
         public:
         is() :nError1(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpname.
             createTestFile( aTmpName6 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpname.
             deleteTestFile( aTmpName6 );
@@ -3754,13 +3754,13 @@ namespace osl_DirectoryItem
         public:
         get() :nError1(FileBase::E_None),nError2(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpname.
             createTestFile( aTmpName6 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpname.
             deleteTestFile( aTmpName6 );
@@ -3820,14 +3820,14 @@ namespace osl_DirectoryItem
         public:
         getFileStatus() :nError1(FileBase::E_None),nError2(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
             createTestFile( aTmpName4 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -3910,14 +3910,14 @@ namespace osl_Directory
         public:
         ctors() :nError1(FileBase::E_None),nError2(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
             createTestFile( aTmpName4 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -3974,14 +3974,14 @@ namespace osl_Directory
         public:
         open() :nError1(FileBase::E_None),nError2(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
             createTestFile( aTmpName4 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -4072,14 +4072,14 @@ namespace osl_Directory
         public:
         isOpen() :nError1(FileBase::E_None),nError2(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempfile in $TEMP/tmpdir/tmpname.
             createTestDirectory( aTmpName3 );
             createTestFile( aTmpName4 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove the tempfile in $TEMP/tmpdir/tmpname.
             deleteTestFile( aTmpName4 );
@@ -4129,13 +4129,13 @@ namespace osl_Directory
         public:
         close() :nError1(FileBase::E_None),nError2(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempdirectory : $TEMP/tmpdir.
             createTestDirectory( aTmpName3 );
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove a tempdirectory : $TEMP/tmpdir.
             deleteTestDirectory( aTmpName3 );
@@ -4185,7 +4185,7 @@ namespace osl_Directory
         public:
         reset() :nError1(FileBase::E_None),nError2(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempdirectory : $TEMP/tmpdir.
             createTestDirectory( aTmpName3 );
@@ -4195,7 +4195,7 @@ namespace osl_Directory
             createTestFile( aTmpName3, aHidURL1);
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove three files : $TEMP/tmpdir/tmpname, $TEMP/tmpdir/tmpdir, $TEMP/tmpdir/hiddenfile,
             deleteTestFile( aTmpName3, aHidURL1);
@@ -4299,7 +4299,7 @@ namespace osl_Directory
         public:
         getNextItem() :nError1(FileBase::E_None),nError2(FileBase::E_None) {}
         // initialization
-        void setUp() SAL_OVERRIDE
+        void setUp() override
         {
             // create a tempdirectory : $TEMP/tmpdir.
             createTestDirectory( aTmpName3 );
@@ -4310,7 +4310,7 @@ namespace osl_Directory
 
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
             // remove three files : $TEMP/tmpdir/tmpname, $TEMP/tmpdir/tmpdir, $TEMP/tmpdir/hiddenfile,
             deleteTestFile( aTmpName3, aHidURL1 );
@@ -4666,7 +4666,7 @@ namespace osl_Directory
                 return;
 
             rtl::OUString aTmpDir;
-            nError1 = FileBase::createTempFile(NULL, NULL, &aTmpDir);
+            nError1 = FileBase::createTempFile(nullptr, nullptr, &aTmpDir);
             CPPUNIT_ASSERT_MESSAGE("temp File creation failed", osl::FileBase::E_None == nError1);
 
             nError1 = ::osl::File::remove(aTmpDir);
@@ -4850,7 +4850,7 @@ namespace osl_Directory
             CPPUNIT_ASSERT_MESSAGE
             (
              "mkdtemp call failed",
-             out != NULL
+             out != nullptr
             );
 
             tmp_x += rtl::OString('/');
@@ -4895,7 +4895,7 @@ namespace osl_Directory
         {
         }
 
-        virtual void DirectoryCreated(const rtl::OUString& /*aDirectoryUrl*/) SAL_OVERRIDE
+        virtual void DirectoryCreated(const rtl::OUString& /*aDirectoryUrl*/) override
         {
             i++;
         };
@@ -4918,7 +4918,7 @@ namespace osl_Directory
 
         void with_relative_path()
         {
-            FileBase::RC rc = Directory::createPath( OUString(TEST_PATH_POSTFIX));
+            FileBase::RC rc = Directory::createPath(TEST_PATH_POSTFIX);
 
             CPPUNIT_ASSERT_MESSAGE
             (

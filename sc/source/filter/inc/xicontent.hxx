@@ -29,7 +29,8 @@
 #include "tabprotection.hxx"
 
 #include <map>
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
+#include <memory>
 #include <boost/noncopyable.hpp>
 
 /* ============================================================================
@@ -157,7 +158,7 @@ public:
     void                Apply();
 
 private:
-    typedef boost::ptr_vector< XclImpCondFormat > XclImpCondFmtList;
+    typedef std::vector< std::unique_ptr<XclImpCondFormat> > XclImpCondFmtList;
     XclImpCondFmtList   maCondFmtList;      /// List with all conditional formatting.
 };
 
@@ -183,7 +184,7 @@ private:
 
         explicit DVItem ( const ScRangeList& rRanges, const ScValidationData& rValidData );
     };
-    typedef ::boost::ptr_vector<DVItem> DVItemList;
+    typedef std::vector< std::unique_ptr<DVItem> > DVItemList;
 
     DVItemList maDVItems;
 };
@@ -191,7 +192,7 @@ private:
 // Web queries ================================================================
 
 /** Stores the data of one web query. */
-class XclImpWebQuery : private boost::noncopyable
+class XclImpWebQuery
 {
 public:
     explicit            XclImpWebQuery( const ScRange& rDestRange );
@@ -245,7 +246,7 @@ public:
     void                Apply();
 
 private:
-    typedef boost::ptr_vector< XclImpWebQuery > XclImpWebQueryList;
+    typedef std::vector< XclImpWebQuery > XclImpWebQueryList;
     XclImpWebQueryList  maWQList;       /// List of the web query objects.
 };
 

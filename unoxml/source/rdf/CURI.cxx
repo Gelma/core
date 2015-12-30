@@ -41,36 +41,34 @@ class CURI:
     private boost::noncopyable
 {
 public:
-    explicit CURI(css::uno::Reference< css::uno::XComponentContext > const & context);
+    explicit CURI();
     virtual ~CURI() {}
 
     // css::lang::XServiceInfo:
-    virtual OUString SAL_CALL getImplementationName() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService(const OUString & ServiceName) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName() throw (css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL supportsService(const OUString & ServiceName) throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) override;
 
     // css::lang::XInitialization:
-    virtual void SAL_CALL initialize(const css::uno::Sequence< css::uno::Any > & aArguments) throw (css::uno::RuntimeException, css::uno::Exception, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL initialize(const css::uno::Sequence< css::uno::Any > & aArguments) throw (css::uno::RuntimeException, css::uno::Exception, std::exception) override;
 
     // css::rdf::XNode:
-    virtual OUString SAL_CALL getStringValue() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getStringValue() throw (css::uno::RuntimeException, std::exception) override;
 
     // css::rdf::XURI:
-    virtual OUString SAL_CALL getLocalName() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual OUString SAL_CALL getNamespace() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getLocalName() throw (css::uno::RuntimeException, std::exception) override;
+    virtual OUString SAL_CALL getNamespace() throw (css::uno::RuntimeException, std::exception) override;
 
 private:
     /// handle css.rdf.URIs
     void SAL_CALL initFromConstant(const sal_Int16 i_Constant);
 
-    css::uno::Reference< css::uno::XComponentContext > m_xContext;
-
     OUString m_Namespace;
     OUString m_LocalName;
 };
 
-CURI::CURI(css::uno::Reference< css::uno::XComponentContext > const & context) :
-    m_xContext(context), m_Namespace(), m_LocalName()
+CURI::CURI() :
+    m_Namespace(), m_LocalName()
 {}
 
 // com.sun.star.uno.XServiceInfo:
@@ -100,8 +98,8 @@ const char s_nsODF      [] =
 
 void SAL_CALL CURI::initFromConstant(const sal_Int16 i_Constant)
 {
-    const char *ns(0);
-    const char *ln(0);
+    const char *ns(nullptr);
+    const char *ln(nullptr);
     switch (i_Constant)
     {
         case css::rdf::URIs::XSD_NCNAME:
@@ -815,15 +813,14 @@ OUString SAL_CALL _getImplementationName() {
 
 css::uno::Sequence< OUString > SAL_CALL _getSupportedServiceNames()
 {
-    css::uno::Sequence< OUString > s(1);
-    s[0] = "com.sun.star.rdf.URI";
+    css::uno::Sequence< OUString > s { "com.sun.star.rdf.URI" };
     return s;
 }
 
 css::uno::Reference< css::uno::XInterface > SAL_CALL _create(
-    const css::uno::Reference< css::uno::XComponentContext > & context)
+    const css::uno::Reference< css::uno::XComponentContext > & )
 {
-    return static_cast< ::cppu::OWeakObject * >(new CURI(context));
+    return static_cast< ::cppu::OWeakObject * >(new CURI);
 }
 
 } // closing component helper namespace

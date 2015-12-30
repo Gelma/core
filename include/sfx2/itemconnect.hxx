@@ -206,8 +206,8 @@ protected:
     TriState            GetShowState( bool bKnown ) const;
 
 private:
-                        ItemConnectionBase( const ItemConnectionBase& ) SAL_DELETED_FUNCTION;
-    ItemConnectionBase& operator=( const ItemConnectionBase& ) SAL_DELETED_FUNCTION;
+                        ItemConnectionBase( const ItemConnectionBase& ) = delete;
+    ItemConnectionBase& operator=( const ItemConnectionBase& ) = delete;
 
     ItemConnFlags       mnFlags;    /// Flags for additional options.
 };
@@ -252,11 +252,11 @@ public:
 
 protected:
     /** Actions according to current flags for the control. */
-    virtual void        ApplyFlags( const SfxItemSet& rItemSet ) SAL_OVERRIDE;
+    virtual void        ApplyFlags( const SfxItemSet& rItemSet ) override;
     /** Resets the control according to the item contents. */
-    virtual void        Reset( const SfxItemSet& rItemSet ) SAL_OVERRIDE;
+    virtual void        Reset( const SfxItemSet& rItemSet ) override;
     /** Fills the item set according to the control's state. */
-    virtual bool        FillItemSet( SfxItemSet& rDestSet, const SfxItemSet& rOldSet ) SAL_OVERRIDE;
+    virtual bool        FillItemSet( SfxItemSet& rDestSet, const SfxItemSet& rOldSet ) override;
 
     ItemWrapperType     maItemWrp;
     ControlWrapperRef   mxCtrlWrp;
@@ -281,9 +281,9 @@ public:
                             ItemConnFlags nFlags = ITEMCONN_DEFAULT );
 
 protected:
-    virtual void        ApplyFlags( const SfxItemSet& rItemSet ) SAL_OVERRIDE;
-    virtual void        Reset( const SfxItemSet& rItemSet ) SAL_OVERRIDE;
-    virtual bool        FillItemSet( SfxItemSet& rDestSet, const SfxItemSet& rOldSet ) SAL_OVERRIDE;
+    virtual void        ApplyFlags( const SfxItemSet& rItemSet ) override;
+    virtual void        Reset( const SfxItemSet& rItemSet ) override;
+    virtual bool        FillItemSet( SfxItemSet& rDestSet, const SfxItemSet& rOldSet ) override;
 
 private:
     sal_uInt16              mnSlot;
@@ -314,8 +314,6 @@ public:
 
 
 
-typedef NumericConnection< UInt16ItemWrapper > UInt16NumericConnection;
-typedef NumericConnection< UInt32ItemWrapper > UInt32NumericConnection;
 
 
 
@@ -340,11 +338,6 @@ public:
     explicit            MetricConnection( sal_uInt16 nSlot, MetricField& rField,
                             FieldUnit eItemUnit = FUNIT_NONE, ItemConnFlags nFlags = ITEMCONN_DEFAULT );
 };
-
-
-
-typedef MetricConnection< UInt16ItemWrapper > UInt16MetricConnection;
-typedef MetricConnection< UInt32ItemWrapper > UInt32MetricConnection;
 
 
 
@@ -374,8 +367,6 @@ public:
 
 
 
-typedef ListBoxConnection< UInt16ItemWrapper > UInt16ListBoxConnection;
-typedef ListBoxConnection< UInt32ItemWrapper > UInt32ListBoxConnection;
 
 
 
@@ -405,8 +396,6 @@ public:
 
 
 
-typedef ValueSetConnection< UInt16ItemWrapper > UInt16ValueSetConnection;
-typedef ValueSetConnection< UInt32ItemWrapper > UInt32ValueSetConnection;
 
 
 // Array of connections
@@ -432,9 +421,9 @@ public:
     void                AddConnection( ItemConnectionBase* pConnection );
 
 protected:
-    virtual void        ApplyFlags( const SfxItemSet& rItemSet ) SAL_OVERRIDE;
-    virtual void        Reset( const SfxItemSet& rItemSet ) SAL_OVERRIDE;
-    virtual bool        FillItemSet( SfxItemSet& rDestSet, const SfxItemSet& rOldSet ) SAL_OVERRIDE;
+    virtual void        ApplyFlags( const SfxItemSet& rItemSet ) override;
+    virtual void        Reset( const SfxItemSet& rItemSet ) override;
+    virtual bool        FillItemSet( SfxItemSet& rDestSet, const SfxItemSet& rOldSet ) override;
 
 private:
     std::unique_ptr< ItemConnectionArrayImpl > mxImpl;
@@ -484,7 +473,7 @@ template< typename ItemWrpT, typename ControlWrpT >
 void ItemControlConnection< ItemWrpT, ControlWrpT >::Reset( const SfxItemSet& rItemSet )
 {
     const ItemType* pItem = maItemWrp.GetUniqueItem( rItemSet );
-    mxCtrlWrp->SetControlDontKnow( pItem == 0 );
+    mxCtrlWrp->SetControlDontKnow( pItem == nullptr );
     if( pItem )
         mxCtrlWrp->SetControlValue( maItemWrp.GetItemValue( *pItem ) );
 }

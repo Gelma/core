@@ -81,16 +81,15 @@ namespace dbaui
             vcl::Window* _pParent,
             IAddTableDialogContext& _rContext );
         virtual ~OAddTableDlg();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
-        void DetermineAddTable() { m_pAddButton->Enable( impl_isAddAllowed() ); }
         void Update();
 
         static  OUString  getDialogTitleForContext(
             IAddTableDialogContext& _rContext );
 
     private:
-        virtual bool Close() SAL_OVERRIDE;
+        virtual bool Close() override;
 
         bool impl_isAddAllowed();
         void impl_addTable();

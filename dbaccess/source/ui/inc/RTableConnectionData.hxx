@@ -35,7 +35,6 @@ namespace dbaui
     class ORelationTableConnectionData :    public OTableConnectionData
     {
         friend bool operator==(const ORelationTableConnectionData& lhs, const ORelationTableConnectionData& rhs);
-        friend bool operator!=(const ORelationTableConnectionData& lhs, const ORelationTableConnectionData& rhs) { return !(lhs == rhs); }
 
         ::osl::Mutex    m_aMutex;
 
@@ -49,8 +48,7 @@ namespace dbaui
         bool IsDestPrimKey()    const { return checkPrimaryKey(getReferencedTable()->getTable(),JTCS_TO);       }
 
     protected:
-        virtual OConnectionLineDataRef CreateLineDataObj() SAL_OVERRIDE;
-        virtual OConnectionLineDataRef CreateLineDataObj( const OConnectionLineData& rConnLineData ) SAL_OVERRIDE;
+        virtual OConnectionLineDataRef CreateLineDataObj() override;
 
         ORelationTableConnectionData& operator=( const ORelationTableConnectionData& rConnData );
     public:
@@ -61,14 +59,14 @@ namespace dbaui
                                       const OUString& rConnName = OUString() );
         virtual ~ORelationTableConnectionData();
 
-        virtual void CopyFrom(const OTableConnectionData& rSource) SAL_OVERRIDE;
-        virtual OTableConnectionData* NewInstance() const SAL_OVERRIDE { return new ORelationTableConnectionData(); }
+        virtual void CopyFrom(const OTableConnectionData& rSource) override;
+        virtual OTableConnectionData* NewInstance() const override { return new ORelationTableConnectionData(); }
 
         /** Update create a new relation
 
             @return true if successful
         */
-        virtual bool Update() SAL_OVERRIDE;
+        virtual bool Update() override;
 
         void        SetCardinality();
         inline void SetUpdateRules( sal_Int32 nAttr ){ m_nUpdateRules = nAttr; }

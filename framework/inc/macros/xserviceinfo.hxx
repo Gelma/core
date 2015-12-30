@@ -69,14 +69,13 @@ namespace framework{
                                                                                                                                                     \
     css::uno::Sequence< OUString > CLASS::impl_getStaticSupportedServiceNames()                                                                     \
     {                                                                                                                                               \
-        css::uno::Sequence< OUString > seqServiceNames( 1 );                                                                                        \
-        seqServiceNames.getArray() [0] = SERVICENAME;                                                                                              \
+        css::uno::Sequence< OUString > seqServiceNames { SERVICENAME };                                                                             \
         return seqServiceNames;                                                                                                                     \
     }                                                                                                                                               \
                                                                                                                                                     \
     OUString CLASS::impl_getStaticImplementationName()                                                                                              \
     {                                                                                                                                               \
-        return IMPLEMENTATIONNAME;                                                                                                                 \
+        return OUString(IMPLEMENTATIONNAME);                                                                                                                 \
     }
 
 #define PRIVATE_DEFINE_XSERVICEINFO_OLDSTYLE( CLASS, XINTERFACECAST, SERVICENAME, IMPLEMENTATIONNAME )                                              \
@@ -145,14 +144,14 @@ namespace framework{
 
 #define DECLARE_XSERVICEINFO_NOFACTORY                                                                                                                                                                                                  \
     /* interface XServiceInfo */                                                                                                                                                                                                        \
-    virtual OUString                                        SAL_CALL getImplementationName              (                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;   \
-    virtual sal_Bool                                        SAL_CALL supportsService                    ( const OUString&   sServiceName    ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;   \
-    virtual css::uno::Sequence< OUString >                  SAL_CALL getSupportedServiceNames           (                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;   \
+    virtual OUString                                        SAL_CALL getImplementationName              (                                   ) throw( css::uno::RuntimeException, std::exception ) override;   \
+    virtual sal_Bool                                        SAL_CALL supportsService                    ( const OUString&   sServiceName    ) throw( css::uno::RuntimeException, std::exception ) override;   \
+    virtual css::uno::Sequence< OUString >                  SAL_CALL getSupportedServiceNames           (                                   ) throw( css::uno::RuntimeException, std::exception ) override;   \
     /* Helper for XServiceInfo */                                                                                                                                                                                 \
     static css::uno::Sequence< OUString >                   SAL_CALL impl_getStaticSupportedServiceNames(                                   );                                                                    \
     static OUString                                         SAL_CALL impl_getStaticImplementationName   (                                   );                                                                    \
     /* Helper for initialization of service by using own reference! */                                                                                                                                            \
-    virtual void                                            SAL_CALL impl_initService                   (                                   );                                                                    \
+    void                                                    SAL_CALL impl_initService                   (                                   );                                                                    \
 
 #define DECLARE_XSERVICEINFO                                                                                                                                                                                                            \
     DECLARE_XSERVICEINFO_NOFACTORY \

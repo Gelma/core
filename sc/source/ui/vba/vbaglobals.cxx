@@ -151,7 +151,7 @@ ScVbaGlobals::getThisWorkbook() throw (uno::RuntimeException, std::exception)
     return getApplication()->getThisWorkbook();
 }
 void SAL_CALL
-ScVbaGlobals::Calculate()  throw (::com::sun::star::script::BasicErrorException, ::com::sun::star::uno::RuntimeException, std::exception)
+ScVbaGlobals::Calculate()  throw (css::script::BasicErrorException, css::uno::RuntimeException, std::exception)
 {
     return getApplication()->Calculate();
 }
@@ -217,7 +217,7 @@ ScVbaGlobals::getDebug() throw (uno::RuntimeException, std::exception)
     {
         uno::Reference< lang::XMultiComponentFactory > xServiceManager( mxContext->getServiceManager(), uno::UNO_SET_THROW );
         uno::Reference< uno::XInterface > xVBADebug = xServiceManager->createInstanceWithContext(
-            OUString( "ooo.vba.Debug" ), mxContext );
+            "ooo.vba.Debug", mxContext );
         return uno::Any( xVBADebug );
     }
     catch( uno::Exception& )

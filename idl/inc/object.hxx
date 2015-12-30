@@ -27,10 +27,8 @@
 struct SvSlotElement
 {
     SvMetaSlotRef   xSlot;
-    OString aPrefix;
-    SvSlotElement( SvMetaSlot * pS, const OString& rPrefix )
+    SvSlotElement( SvMetaSlot * pS )
     : xSlot( pS )
-    , aPrefix( rPrefix )
     {
     }
 };
@@ -46,7 +44,6 @@ class SvClassElement : public SvRttiBase
     OString                aPrefix;
     SvMetaClassRef              xClass;
 public:
-            TYPEINFO_OVERRIDE();
             SvClassElement();
 
     void            SetPrefix( const OString& rPrefix )
@@ -94,17 +91,16 @@ class SvMetaClass : public SvMetaType
 
 protected:
     virtual void    ReadAttributesSvIdl( SvIdlDataBase & rBase,
-                                      SvTokenStream & rInStm ) SAL_OVERRIDE;
+                                      SvTokenStream & rInStm ) override;
     virtual void    ReadContextSvIdl( SvIdlDataBase &,
-                                     SvTokenStream & rInStm ) SAL_OVERRIDE;
+                                     SvTokenStream & rInStm ) override;
 public:
-            TYPEINFO_OVERRIDE();
             SvMetaClass();
 
     void                FillClasses( SvMetaClassList & rList );
 
-    virtual bool        ReadSvIdl( SvIdlDataBase &, SvTokenStream & rInStm ) SAL_OVERRIDE;
-    virtual void        WriteSfx( SvIdlDataBase & rBase, SvStream & rOutStm ) SAL_OVERRIDE;
+    virtual bool        ReadSvIdl( SvIdlDataBase &, SvTokenStream & rInStm ) override;
+    virtual void        WriteSfx( SvIdlDataBase & rBase, SvStream & rOutStm ) override;
 };
 
 #endif // INCLUDED_IDL_INC_OBJECT_HXX

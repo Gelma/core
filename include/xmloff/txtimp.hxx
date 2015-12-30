@@ -362,14 +362,25 @@ enum XMLTextType
     XML_TEXT_TYPE_CHANGED_REGION
 };
 
+/// variable type (for XMLSetVarFieldImportContext)
+enum VarType
+{
+    VarTypeSimple,
+    VarTypeUserField,
+    VarTypeSequence
+    // see following NOTE!
+};
+
+// NOTE: these values must be distinct from any in "enum VarType" because they
+// are used as keys to SvI18NMap::Add()
 #define XML_TEXT_RENAME_TYPE_FRAME 10
 #define XML_TEXT_RENAME_TYPE_TABLE 20
 
 class XMLOFF_DLLPUBLIC XMLTextImportHelper : public salhelper::SimpleReferenceObject
 {
 private:
-    XMLTextImportHelper(const XMLTextImportHelper&) SAL_DELETED_FUNCTION;
-    XMLTextImportHelper& operator=(const XMLTextImportHelper&) SAL_DELETED_FUNCTION;
+    XMLTextImportHelper(const XMLTextImportHelper&) = delete;
+    XMLTextImportHelper& operator=(const XMLTextImportHelper&) = delete;
 
     struct Impl;
     std::unique_ptr<Impl> m_xImpl;
@@ -382,8 +393,7 @@ protected:
     virtual SvXMLImportContext *CreateTableChildContext(
                 SvXMLImport& rImport,
                 sal_uInt16 nPrefix, const OUString& rLocalName,
-                const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList );
+                const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList );
 
     // access, lazy initialization and destruction of backpatchers
     // Code is implemented in XMLPropertyBackpatcher.cxx
@@ -394,8 +404,7 @@ protected:
 public:
 
     XMLTextImportHelper(
-            ::com::sun::star::uno::Reference <
-                ::com::sun::star::frame::XModel> const& rModel,
+            css::uno::Reference< css::frame::XModel > const& rModel,
             SvXMLImport& rImport,
             bool const bInsertMode = false, bool const bStylesOnlyMode = false,
             bool const bProgress = false, bool const bBlockMode = false,
@@ -404,8 +413,7 @@ public:
     virtual ~XMLTextImportHelper();
 
     void SetCursor(
-            const ::com::sun::star::uno::Reference <
-                ::com::sun::star::text::XTextCursor >& rCursor );
+            const css::uno::Reference< css::text::XTextCursor >& rCursor );
     void ResetCursor();
 
     void SetAutoStyles( SvXMLStylesContext *pStyles );
@@ -413,8 +421,7 @@ public:
     SvXMLImportContext *CreateTextChildContext(
             SvXMLImport& rImport,
             sal_uInt16 nPrefix, const OUString& rLocalName,
-            const ::com::sun::star::uno::Reference<
-                ::com::sun::star::xml::sax::XAttributeList > & xAttrList,
+            const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList,
             XMLTextType eType = XML_TEXT_TYPE_SHAPE );
 
     SvXMLTokenMap const& GetTextElemTokenMap();
@@ -430,12 +437,9 @@ public:
     const SvXMLTokenMap& GetTextListBlockElemTokenMap();
     const SvXMLTokenMap& GetTextFieldAttrTokenMap(); // impl: txtfldi.cxx
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::text::XText > & GetText();
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::text::XTextCursor > & GetCursor();
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::text::XTextRange > & GetCursorAsRange();
+    css::uno::Reference< css::text::XText > & GetText();
+    css::uno::Reference< css::text::XTextCursor > & GetCursor();
+    css::uno::Reference< css::text::XTextRange > & GetCursorAsRange();
 
     bool IsInsertMode() const;
     bool IsStylesOnlyMode() const;
@@ -457,15 +461,13 @@ public:
     void DeleteParagraph();
 
     void InsertControlCharacter( sal_Int16 nControl );
-    void InsertTextContent( ::com::sun::star::uno::Reference <
-                            ::com::sun::star::text::XTextContent > & xContent);
+    void InsertTextContent( css::uno::Reference< css::text::XTextContent > & xContent);
 
     // Add parameter <bOutlineLevelAttrFound> (#i73509#)
     // Add parameter <bSetListAttrs> in order to suppress the handling of the list attributes (#i80724#)
     OUString SetStyleAndAttrs(
             SvXMLImport& rImport,
-            const ::com::sun::star::uno::Reference <
-                ::com::sun::star::text::XTextCursor >& rCursor,
+            const css::uno::Reference< css::text::XTextCursor >& rCursor,
             const OUString& rStyleName,
             bool bPara,
             bool bOutlineLevelAttrFound = false,
@@ -488,18 +490,16 @@ public:
 
     void SetHyperlink(
             SvXMLImport& rImport,
-            const ::com::sun::star::uno::Reference <
-                ::com::sun::star::text::XTextCursor >& rCursor,
+            const css::uno::Reference< css::text::XTextCursor >& rCursor,
             const OUString& rHRef,
             const OUString& rName,
             const OUString& rTargetFrameName,
             const OUString& rStyleName,
             const OUString& rVisitedStyleName,
-            XMLEventsImportContext* pEvents = NULL);
+            XMLEventsImportContext* pEvents = nullptr);
     void SetRuby(
             SvXMLImport& rImport,
-            const ::com::sun::star::uno::Reference <
-                ::com::sun::star::text::XTextCursor >& rCursor,
+            const css::uno::Reference< css::text::XTextCursor >& rCursor,
             const OUString& rStyleName,
             const OUString& rTextStyleName,
             const OUString& rText );
@@ -508,7 +508,7 @@ public:
     /// return -1 if style is not found
     /// (may return whether data style uses the system language)
     sal_Int32 GetDataStyleKey( const OUString& sStyleName,
-                               bool* pIsSystemLanguage = NULL );
+                               bool* pIsSystemLanguage = nullptr );
 
     const SvxXMLListStyleContext *FindAutoListStyle(
             const OUString& rName ) const;
@@ -519,31 +519,24 @@ public:
     XMLPropStyleContext* FindPageMaster(
             const OUString& rName ) const;
 
-    const ::com::sun::star::uno::Reference<
-        ::com::sun::star::container::XNameContainer> & GetParaStyles() const;
+    const css::uno::Reference< css::container::XNameContainer> & GetParaStyles() const;
 
-    const ::com::sun::star::uno::Reference<
-        ::com::sun::star::container::XNameContainer> & GetTextStyles() const;
+    const css::uno::Reference< css::container::XNameContainer> & GetTextStyles() const;
 
-    const ::com::sun::star::uno::Reference<
-        ::com::sun::star::container::XNameContainer> &
+    const css::uno::Reference< css::container::XNameContainer> &
         GetNumberingStyles() const;
 
-    const ::com::sun::star::uno::Reference<
-        ::com::sun::star::container::XNameContainer> & GetFrameStyles() const;
+    const css::uno::Reference< css::container::XNameContainer> & GetFrameStyles() const;
 
-    const ::com::sun::star::uno::Reference<
-        ::com::sun::star::container::XNameContainer> & GetPageStyles() const;
+    const css::uno::Reference< css::container::XNameContainer> & GetPageStyles() const;
 
-    const ::com::sun::star::uno::Reference<
-        ::com::sun::star::container::XIndexReplace > &
+    const css::uno::Reference< css::container::XIndexReplace > &
         GetChapterNumbering() const;
 
     bool HasFrameByName( const OUString& rName ) const;
     void ConnectFrameChains( const OUString& rFrmName,
         const OUString& rNextFrmName,
-        const ::com::sun::star::uno::Reference <
-            ::com::sun::star::beans::XPropertySet >& rFrmPropSet );
+        const css::uno::Reference< css::beans::XPropertySet >& rFrmPropSet );
 
     rtl::Reference< SvXMLImportPropertyMapper > const&
         GetParaImportPropertySetMapper() const;
@@ -565,8 +558,7 @@ public:
     /// save the start of a range reference
     void InsertBookmarkStartRange(
         const OUString & sName,
-        const ::com::sun::star::uno::Reference<
-                ::com::sun::star::text::XTextRange> & rRange,
+        const css::uno::Reference< css::text::XTextRange> & rRange,
         OUString const& i_rXmlId,
         std::shared_ptr< ::xmloff::ParsedRDFaAttributes > &
             i_rpRDFaAttributes);
@@ -574,18 +566,16 @@ public:
     /// process the start of a range reference
     bool FindAndRemoveBookmarkStartRange(
         const OUString & sName,
-        ::com::sun::star::uno::Reference<
-                ::com::sun::star::text::XTextRange> & o_rRange,
+        css::uno::Reference< css::text::XTextRange> & o_rRange,
         OUString & o_rXmlId,
-        std::shared_ptr< ::xmloff::ParsedRDFaAttributes > &
-            o_rpRDFaAttributes);
+        std::shared_ptr< ::xmloff::ParsedRDFaAttributes > & o_rpRDFaAttributes);
 
     OUString FindActiveBookmarkName();
 
     void pushFieldCtx( const OUString& name, const OUString& type );
     void popFieldCtx();
     void addFieldParam( const OUString& name, const OUString& value );
-    void setCurrentFieldParamsTo(::com::sun::star::uno::Reference< ::com::sun::star::text::XFormField> &xFormField);
+    void setCurrentFieldParamsTo(css::uno::Reference< css::text::XFormField> &xFormField);
     OUString getCurrentFieldType();
     bool hasCurrentFieldCtx();
 
@@ -600,8 +590,7 @@ public:
     // Code is implemented in XMLPropertyBackpatcher.cxx
     void ProcessFootnoteReference(
         const OUString& sXMLId,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::beans::XPropertySet> & xPropSet);
+        const css::uno::Reference< css::beans::XPropertySet> & xPropSet);
 
     /// insert new sequence ID
     /// Also fixup open references from backpatch list to this ID.
@@ -614,30 +603,26 @@ public:
     // Code is implemented in XMLPropertyBackpatcher.cxx
     void ProcessSequenceReference(
         const OUString& sXMLId,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::beans::XPropertySet> & xPropSet);
+        const css::uno::Reference< css::beans::XPropertySet> & xPropSet);
 
     bool IsInFrame() const;
     virtual bool IsInHeaderFooter() const;
 
-    virtual ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet>
+    virtual css::uno::Reference< css::beans::XPropertySet>
             createAndInsertOLEObject( SvXMLImport& rImport,
                                       const OUString& rHRef,
                                       const OUString &rStyleName,
                                       const OUString &rTblName,
                                          sal_Int32 nWidth, sal_Int32 nHeight );
 
-    virtual ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet>
+    virtual css::uno::Reference< css::beans::XPropertySet>
             createAndInsertOOoLink( SvXMLImport& rImport,
                                       const OUString& rHRef,
                                       const OUString &rStyleName,
                                       const OUString &rTblName,
                                          sal_Int32 nWidth, sal_Int32 nHeight );
 
-    virtual ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet>
+    virtual css::uno::Reference< css::beans::XPropertySet>
         createAndInsertApplet(
             const OUString &rName,
             const OUString &rCode,
@@ -645,15 +630,13 @@ public:
             const OUString& rHRef,
             sal_Int32 nWidth, sal_Int32 nHeight );
 
-    virtual ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet>
+    virtual css::uno::Reference< css::beans::XPropertySet>
         createAndInsertPlugin(
             const OUString &rMimeType,
             const OUString& rHRef,
             sal_Int32 nWidth, sal_Int32 nHeight );
 
-    virtual ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet>
+    virtual css::uno::Reference< css::beans::XPropertySet>
         createAndInsertFloatingFrame(
             const OUString &rName,
             const OUString &rHRef,
@@ -661,8 +644,7 @@ public:
             sal_Int32 nWidth, sal_Int32 nHeight );
 
     virtual void endAppletOrPlugin(
-        const com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet> &rPropSet,
+        const css::uno::Reference< css::beans::XPropertySet> &rPropSet,
         ::std::map < const OUString, OUString > &rParamMap );
 
     // applet helper methods
@@ -681,14 +663,13 @@ public:
             /// redline comment
             const OUString& rComment,
             /// date+time
-            const ::com::sun::star::util::DateTime& rDateTime,
+            const css::util::DateTime& rDateTime,
             /// merge last paras
             bool bMergeLastParagraph);
 
-    virtual ::com::sun::star::uno::Reference<
-        ::com::sun::star::text::XTextCursor> RedlineCreateText(
+    virtual css::uno::Reference< css::text::XTextCursor> RedlineCreateText(
             /// needed to get the document
-            ::com::sun::star::uno::Reference< ::com::sun::star::text::XTextCursor > & rOldCursor,
+            css::uno::Reference< css::text::XTextCursor > & rOldCursor,
             /// ID used to RedlineAdd() call
             const OUString& rId);
 
@@ -704,7 +685,7 @@ public:
     virtual void SetShowChanges( bool bShowChanges );
     virtual void SetRecordChanges( bool bRecordChanges );
     virtual void SetChangesProtectionKey(
-        const ::com::sun::star::uno::Sequence<sal_Int8> & rProtectionKey );
+        const css::uno::Sequence<sal_Int8> & rProtectionKey );
 
     /// get the last open redline ID
     OUString GetOpenRedlineId();
@@ -713,7 +694,6 @@ public:
     /// reset the last open redline ID
     void ResetOpenRedlineId();
 
-    // #107848#
     /** redlining : Setter to remember the fact we are inside/outside
      * a <text:deletion> element (deleted redline section) */
     void SetInsideDeleteContext(bool const bNew);
@@ -727,7 +707,7 @@ public:
 
     // forwards to TextListHelper; these are used in many places
     /// push a list context on the list context stack
-    void PushListContext(XMLTextListBlockContext *i_pListBlock = 0);
+    void PushListContext(XMLTextListBlockContext *i_pListBlock = nullptr);
     /// pop the list context stack
     void PopListContext();
 

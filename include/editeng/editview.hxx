@@ -30,7 +30,6 @@
 #include <vcl/cursor.hxx>
 #include <editeng/editstat.hxx>
 #include <svl/languageoptions.hxx>
-#define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitTypes.h>
 
 class EditEngine;
@@ -93,8 +92,8 @@ private:
     ImpEditView*    pImpEditView;
     OUString        aDicNameSingle;
 
-                    EditView( const EditView& ) SAL_DELETED_FUNCTION;
-    EditView&       operator=( const EditView& ) SAL_DELETED_FUNCTION;
+                    EditView( const EditView& ) = delete;
+    EditView&       operator=( const EditView& ) = delete;
 
 public:
                     EditView( EditEngine* pEng, vcl::Window* pWindow );
@@ -106,7 +105,7 @@ public:
     void            SetWindow( vcl::Window* pWin );
     vcl::Window*         GetWindow() const;
 
-    void            Paint( const Rectangle& rRect, OutputDevice* pTargetDevice = 0 );
+    void            Paint( const Rectangle& rRect, OutputDevice* pTargetDevice = nullptr );
     void            Invalidate();
     Pair            Scroll( long nHorzScroll, long nVertScroll, ScrollRangeCheck nRangeCheck = ScrollRangeCheck::NoNegative );
 
@@ -121,7 +120,9 @@ public:
     bool            HasSelection() const;
     ESelection      GetSelection() const;
     void            SetSelection( const ESelection& rNewSel );
-    bool            SelectCurrentWord( sal_Int16 nWordType = ::com::sun::star::i18n::WordType::ANYWORD_IGNOREWHITESPACES );
+    bool            SelectCurrentWord( sal_Int16 nWordType = css::i18n::WordType::ANYWORD_IGNOREWHITESPACES );
+    /// Returns the rectangles of the current selection in TWIPs.
+    void GetSelectionRectangles(std::vector<Rectangle>& rLogicRects) const;
 
     bool            IsInsertMode() const;
     void            SetInsertMode( bool bInsert );
@@ -147,7 +148,7 @@ public:
 
     void            InsertText( const OUString& rNew, bool bSelect = false );
 
-    bool            PostKeyEvent( const KeyEvent& rKeyEvent, vcl::Window* pFrameWin = NULL );
+    bool            PostKeyEvent( const KeyEvent& rKeyEvent, vcl::Window* pFrameWin = nullptr );
 
     bool            MouseButtonUp( const MouseEvent& rMouseEvent );
     bool            MouseButtonDown( const MouseEvent& rMouseEvent );
@@ -175,13 +176,12 @@ public:
     void                RemoveCharAttribs( sal_Int32 nPara, sal_uInt16 nWhich = 0 );
     void                RemoveAttribsKeepLanguages( bool bRemoveParaAttribs = false );
 
-    sal_uInt32          Read( SvStream& rInput, const OUString& rBaseURL, EETextFormat eFormat, bool bSelect = false, SvKeyValueIterator* pHTTPHeaderAttrs = NULL );
+    sal_uInt32          Read( SvStream& rInput, const OUString& rBaseURL, EETextFormat eFormat, bool bSelect = false, SvKeyValueIterator* pHTTPHeaderAttrs = nullptr );
 
     void            SetBackgroundColor( const Color& rColor );
     Color           GetBackgroundColor() const;
 
     void            setTiledRendering(bool bTiledRendering);
-    bool            isTiledRendering();
     /// @see vcl::ITiledRenderable::registerCallback().
     void registerLibreOfficeKitCallback(LibreOfficeKitCallback pCallback, void* pLibreOfficeKitData);
 
@@ -190,9 +190,9 @@ public:
 
     EditTextObject* CreateTextObject();
     void            InsertText( const EditTextObject& rTextObject );
-    void            InsertText( ::com::sun::star::uno::Reference< ::com::sun::star::datatransfer::XTransferable > xDataObj, const OUString& rBaseURL, bool bUseSpecial );
+    void            InsertText( css::uno::Reference< css::datatransfer::XTransferable > xDataObj, const OUString& rBaseURL, bool bUseSpecial );
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::datatransfer::XTransferable > GetTransferable();
+    css::uno::Reference< css::datatransfer::XTransferable > GetTransferable();
 
     // An EditView, so that when TRUE the update will be free from flickering:
     void            SetEditEngineUpdateMode( bool bUpdate );
@@ -204,7 +204,7 @@ public:
     void            SetAnchorMode( EVAnchorMode eMode );
     EVAnchorMode    GetAnchorMode() const;
 
-    void            CompleteAutoCorrect( vcl::Window* pFrameWin = NULL );
+    void            CompleteAutoCorrect( vcl::Window* pFrameWin = nullptr );
 
     EESpellState    StartSpeller( bool bMultipleDoc = false );
     EESpellState    StartThesaurus();
@@ -217,12 +217,12 @@ public:
 
     bool            IsCursorAtWrongSpelledWord( bool bMarkIfWrong = false );
     bool            IsWrongSpelledWordAtPos( const Point& rPosPixel, bool bMarkIfWrong = false );
-    void            ExecuteSpellPopup( const Point& rPosPixel, Link<SpellCallbackInfo&,void>* pCallBack = 0 );
+    void            ExecuteSpellPopup( const Point& rPosPixel, Link<SpellCallbackInfo&,void>* pCallBack = nullptr );
 
     void                InsertField( const SvxFieldItem& rFld );
     const SvxFieldItem* GetFieldUnderMousePointer() const;
     const SvxFieldItem* GetFieldUnderMousePointer( sal_Int32& nPara, sal_Int32& nPos ) const;
-    const SvxFieldItem* GetField( const Point& rPos, sal_Int32* pnPara = NULL, sal_Int32* pnPos = NULL ) const;
+    const SvxFieldItem* GetField( const Point& rPos, sal_Int32* pnPara = nullptr, sal_Int32* pnPos = nullptr ) const;
 
     const SvxFieldItem* GetFieldAtSelection() const;
 
@@ -253,8 +253,8 @@ public:
     */
     static LanguageType CheckLanguage(
                             const OUString &rText,
-                            com::sun::star::uno::Reference< com::sun::star::linguistic2::XSpellChecker1 > xSpell,
-                            com::sun::star::uno::Reference< com::sun::star::linguistic2::XLanguageGuessing > xLangGuess,
+                            css::uno::Reference< css::linguistic2::XSpellChecker1 > xSpell,
+                            css::uno::Reference< css::linguistic2::XLanguageGuessing > xLangGuess,
                             bool bIsParaText );
     /// Allows adjusting the point or mark of the selection to a document coordinate.
     void SetCursorLogicPosition(const Point& rPosition, bool bPoint, bool bClearMark);

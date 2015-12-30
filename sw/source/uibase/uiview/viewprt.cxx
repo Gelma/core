@@ -76,7 +76,7 @@ SfxPrinter* SwView::GetPrinter( bool bCreate )
     SfxPrinter *pPrt = rIDDA.getPrinter( bCreate );
     if ( pOld != pPrt )
     {
-        bool bWeb = 0 != dynamic_cast<SwWebView*>(this);
+        bool bWeb = dynamic_cast<SwWebView*>(this) !=  nullptr;
         ::SetAppPrintOptions( &GetWrtShell(), bWeb );
     }
     return pPrt;
@@ -117,7 +117,7 @@ sal_uInt16 SwView::SetPrinter(SfxPrinter* pNew, SfxPrinterChangeFlags nDiffFlags
         if ( nDiffFlags & SfxPrinterChangeFlags::PRINTER )
             rSh.SetModified();
     }
-    bool bWeb = this->ISA(SwWebView);
+    bool bWeb = dynamic_cast< const SwWebView *>( this ) !=  nullptr;
     if ( nDiffFlags & SfxPrinterChangeFlags::OPTIONS )
         ::SetPrinter( &rSh.getIDocumentDeviceAccess(), pNew, bWeb );
 
@@ -157,7 +157,7 @@ VclPtr<SfxTabPage> SwView::CreatePrintOptionsPage(vcl::Window* pParent,
 
 void SwView::ExecutePrint(SfxRequest& rReq)
 {
-    bool bWeb = 0 != PTR_CAST(SwWebView, this);
+    bool bWeb = dynamic_cast<SwWebView*>( this ) !=  nullptr;
     ::SetAppPrintOptions( &GetWrtShell(), bWeb );
     switch (rReq.GetSlot())
     {
@@ -190,9 +190,9 @@ void SwView::ExecutePrint(SfxRequest& rReq)
         case SID_PRINTDOCDIRECT:
         {
             SwWrtShell* pSh = &GetWrtShell();
-            SFX_REQUEST_ARG(rReq, pSilentItem, SfxBoolItem, SID_SILENT, false);
+            const SfxBoolItem* pSilentItem = rReq.GetArg<SfxBoolItem>(SID_SILENT);
             bool bSilent = pSilentItem && pSilentItem->GetValue();
-            SFX_REQUEST_ARG(rReq, pPrintFromMergeItem, SfxBoolItem, FN_QRY_MERGE, false);
+            const SfxBoolItem* pPrintFromMergeItem = rReq.GetArg<SfxBoolItem>(FN_QRY_MERGE);
             if(pPrintFromMergeItem)
                 rReq.RemoveItem(FN_QRY_MERGE);
             bool bFromMerge = pPrintFromMergeItem && pPrintFromMergeItem->GetValue();
@@ -218,7 +218,7 @@ void SwView::ExecutePrint(SfxRequest& rReq)
             }
             else if( rReq.GetSlot() == SID_PRINTDOCDIRECT && ! bSilent )
             {
-                if( ( pSh->IsSelection() || pSh->IsFrmSelected() || pSh->IsObjSelected() ) )
+                if( ( pSh->IsSelection() || pSh->IsFrameSelected() || pSh->IsObjSelected() ) )
                 {
                     short nBtn = ScopedVclPtr<SvxPrtQryBox>::Create(&GetEditWin())->Execute();
                     if( RET_CANCEL == nBtn )
@@ -232,7 +232,7 @@ void SwView::ExecutePrint(SfxRequest& rReq)
             //#i61455# if master documentes are printed silently without loaded links then update the links now
             if( bSilent && pSh->IsGlobalDoc() && !pSh->IsGlblDocSaveLinks() )
             {
-                pSh->GetLinkManager().UpdateAllLinks( false, false, false, 0 );
+                pSh->GetLinkManager().UpdateAllLinks( false, false );
             }
             SfxRequest aReq( rReq );
             SfxBoolItem aBool(SID_SELECTION, bPrintSelection);
@@ -255,17 +255,17 @@ VclPtr<SfxTabPage> CreatePrintOptionsPage( vcl::Window *pParent,
     SwAbstractDialogFactory* pFact = SwAbstractDialogFactory::Create();
     OSL_ENSURE(pFact, "No Print Dialog");
     if (!pFact)
-        return NULL;
+        return nullptr;
 
     ::CreateTabPage fnCreatePage = pFact->GetTabPageCreatorFunc(TP_OPTPRINT_PAGE);
     OSL_ENSURE(pFact, "No Page Creator");
     if (!fnCreatePage)
-        return NULL;
+        return nullptr;
 
     VclPtr<SfxTabPage> pPage = fnCreatePage(pParent, &rOptions);
     OSL_ENSURE(pPage, "No page");
     if (!pPage)
-        return NULL;
+        return nullptr;
 
     SfxAllItemSet aSet(*(rOptions.GetPool()));
     aSet.Put(SfxBoolItem(SID_PREVIEWFLAG_TYPE, bPreview));

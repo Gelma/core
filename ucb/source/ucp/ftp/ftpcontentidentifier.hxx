@@ -41,8 +41,8 @@ namespace ftp {
 
     class FTPContentIdentifier
         : public cppu::OWeakObject,
-          public com::sun::star::lang::XTypeProvider,
-          public com::sun::star::ucb::XContentIdentifier
+          public css::lang::XTypeProvider,
+          public css::ucb::XContentIdentifier
     {
     public:
 
@@ -52,47 +52,43 @@ namespace ftp {
 
         // XInterface
 
-        virtual com::sun::star::uno::Any SAL_CALL
-        queryInterface( const com::sun::star::uno::Type& rType )
-            throw( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual css::uno::Any SAL_CALL
+        queryInterface( const css::uno::Type& rType )
+            throw( css::uno::RuntimeException, std::exception ) override;
 
-        virtual void SAL_CALL acquire() throw() SAL_OVERRIDE;
+        virtual void SAL_CALL acquire() throw() override;
 
-        virtual void SAL_CALL release() throw() SAL_OVERRIDE;
+        virtual void SAL_CALL release() throw() override;
 
         // XTypeProvider
 
         virtual
-        com::sun::star::uno::Sequence<com::sun::star::uno::Type> SAL_CALL
-        getTypes(
-        )
+        css::uno::Sequence<css::uno::Type> SAL_CALL
+        getTypes()
             throw(
-                com::sun::star::uno::RuntimeException, std::exception
-            ) SAL_OVERRIDE;
+                css::uno::RuntimeException, std::exception
+            ) override;
 
-        virtual com::sun::star::uno::Sequence<sal_Int8> SAL_CALL
-        getImplementationId(
-        )
+        virtual css::uno::Sequence<sal_Int8> SAL_CALL
+        getImplementationId()
             throw(
-                com::sun::star::uno::RuntimeException, std::exception
-            ) SAL_OVERRIDE;
+                css::uno::RuntimeException, std::exception
+            ) override;
 
 
         // XContentIdentifier
 
         virtual OUString SAL_CALL
-        getContentIdentifier(
-        )
+        getContentIdentifier()
             throw (
-                com::sun::star::uno::RuntimeException, std::exception
-            ) SAL_OVERRIDE;
+                css::uno::RuntimeException, std::exception
+            ) override;
 
         virtual OUString SAL_CALL
-        getContentProviderScheme(
-        )
+        getContentProviderScheme()
             throw (
-                ::com::sun::star::uno::RuntimeException, std::exception
-            ) SAL_OVERRIDE;
+                css::uno::RuntimeException, std::exception
+            ) override;
 
 
     private:

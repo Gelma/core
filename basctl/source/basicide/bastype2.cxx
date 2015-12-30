@@ -221,7 +221,7 @@ void TreeListBox::dispose()
     while ( pEntry )
     {
         delete static_cast<Entry*>( pEntry->GetUserData() );
-        pEntry->SetUserData( NULL );
+        pEntry->SetUserData( nullptr );
         pEntry = Next( pEntry );
     }
     SvTreeListBox::dispose();
@@ -250,7 +250,7 @@ void TreeListBox::ScanEntry( const ScriptDocument& rDocument, LibraryLocation eL
         AddEntry(
             aRootName,
             aImage,
-            0, true, o3tl::make_unique<DocumentEntry>(rDocument, eLocation));
+            nullptr, true, o3tl::make_unique<DocumentEntry>(rDocument, eLocation));
     }
 
     SetUpdateMode(true);
@@ -365,7 +365,7 @@ void TreeListBox::ImpCreateLibSubEntries( SvTreeListEntry* pLibRootEntry, const 
                                 SvTreeListEntry* pEntry = FindEntry( pModuleEntry, aName, OBJ_TYPE_METHOD );
                                 if ( !pEntry )
                                 {
-                                    pEntry = AddEntry(
+                                    AddEntry(
                                         aName,
                                         Image( IDEResId( RID_IMG_MACRO ) ),
                                         pModuleEntry, false,
@@ -404,7 +404,7 @@ void TreeListBox::ImpCreateLibSubEntries( SvTreeListEntry* pLibRootEntry, const 
                     SvTreeListEntry* pDialogEntry = FindEntry( pLibRootEntry, aDlgName, OBJ_TYPE_DIALOG );
                     if ( !pDialogEntry )
                     {
-                        pDialogEntry = AddEntry(
+                        AddEntry(
                             aDlgName,
                             Image( IDEResId( RID_IMG_DIALOG ) ),
                             pLibRootEntry, false,
@@ -521,7 +521,7 @@ void TreeListBox::ImpCreateLibSubSubEntriesInVBAMode( SvTreeListEntry* pLibSubRo
                     SvTreeListEntry* pEntry = FindEntry( pModuleEntry, aName, OBJ_TYPE_METHOD );
                     if ( !pEntry )
                     {
-                        pEntry = AddEntry(
+                        AddEntry(
                             aName,
                             Image( IDEResId( RID_IMG_MACRO ) ),
                             pModuleEntry, false,
@@ -548,7 +548,7 @@ SvTreeListEntry* TreeListBox::ImpFindEntry( SvTreeListEntry* pParent, const OUSt
 
         pEntry = pParent ? NextSibling( pEntry ) : GetEntry( ++nRootPos );
     }
-    return 0;
+    return nullptr;
 }
 
 void TreeListBox::onDocumentCreated( const ScriptDocument& /*_rDocument*/ )
@@ -604,7 +604,7 @@ void TreeListBox::UpdateEntries()
     EntryDescriptor aCurDesc( GetEntryDescriptor( FirstSelected() ) );
 
     // removing the invalid entries
-    SvTreeListEntry* pLastValid = 0;
+    SvTreeListEntry* pLastValid = nullptr;
     SvTreeListEntry* pEntry = First();
     while ( pEntry )
     {
@@ -646,7 +646,7 @@ SvTreeListEntry* TreeListBox::CloneEntry( SvTreeListEntry* pSource )
     SvTreeListEntry* pNew = SvTreeListBox::CloneEntry( pSource );
     Entry* pUser = static_cast<Entry*>(pSource->GetUserData());
 
-    DBG_ASSERT( pUser, "User-Daten?!" );
+    assert(pUser && "User-Daten?!");
     DBG_ASSERT( pUser->GetType() != OBJ_TYPE_DOCUMENT, "TreeListBox::CloneEntry: document?!" );
 
     Entry* pNewUser = new Entry( *pUser );
@@ -661,13 +661,13 @@ SvTreeListEntry* TreeListBox::FindEntry( SvTreeListEntry* pParent, const OUStrin
     while ( pEntry )
     {
         Entry* pBasicEntry = static_cast<Entry*>(pEntry->GetUserData());
-        DBG_ASSERT( pBasicEntry, "FindEntry: no Entry ?!" );
+        assert(pBasicEntry && "FindEntry: no Entry ?!");
         if ( ( pBasicEntry->GetType() == eType  ) && ( rText.equals(GetEntryText( pEntry )) ) )
             return pEntry;
 
         pEntry = pParent ? NextSibling( pEntry ) : GetEntry( ++nRootPos );
     }
-    return 0;
+    return nullptr;
 }
 
 bool TreeListBox::ExpandingHdl()
@@ -822,7 +822,7 @@ void TreeListBox::GetRootEntryBitmaps( const ScriptDocument& rDocument, Image& r
 
 void TreeListBox::SetCurrentEntry (EntryDescriptor& rDesc)
 {
-    SvTreeListEntry* pCurEntry = 0;
+    SvTreeListEntry* pCurEntry = nullptr;
     EntryDescriptor aDesc = rDesc;
     if ( aDesc.GetType() == OBJ_TYPE_UNKNOWN )
     {

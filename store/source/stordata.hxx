@@ -24,6 +24,7 @@
 
 #include "sal/types.h"
 #include "sal/macros.h"
+#include "rtl/string.h"
 
 #include "store/types.h"
 #include "storbase.hxx"
@@ -111,8 +112,8 @@ public:
 
     /** External representation.
      */
-    virtual storeError guard  (sal_uInt32 nAddr) SAL_OVERRIDE;
-    virtual storeError verify (sal_uInt32 nAddr) const SAL_OVERRIDE;
+    virtual storeError guard  (sal_uInt32 nAddr) override;
+    virtual storeError verify (sal_uInt32 nAddr) const override;
 };
 
 /*========================================================================
@@ -225,8 +226,8 @@ public:
         sal_uInt32       nAddr,
         OStorePageBIOS & rBIOS);
 
-    virtual storeError guard  (sal_uInt32 nAddr) SAL_OVERRIDE;
-    virtual storeError verify (sal_uInt32 nAddr) const SAL_OVERRIDE;
+    virtual storeError guard  (sal_uInt32 nAddr) override;
+    virtual storeError verify (sal_uInt32 nAddr) const override;
 
     /** read (indirect data page).
     */
@@ -646,8 +647,8 @@ public:
 
     /** External representation.
     */
-    virtual storeError guard  (sal_uInt32 nAddr) SAL_OVERRIDE;
-    virtual storeError verify (sal_uInt32 nAddr) const SAL_OVERRIDE;
+    virtual storeError guard  (sal_uInt32 nAddr) override;
+    virtual storeError verify (sal_uInt32 nAddr) const override;
 
     /** attrib.
     */
@@ -663,10 +664,6 @@ public:
 
     /** key.
     */
-    OStorePageKey key() const
-    {
-        return PAGE().m_aNameBlock.m_aKey;
-    }
     void key (OStorePageKey const & rKey)
     {
         PAGE().m_aNameBlock.m_aKey = rKey;
@@ -769,13 +766,13 @@ private:
     page & PAGE()
     {
         page * pImpl = static_cast<page*>(m_xPage.get());
-        OSL_PRECOND(pImpl != 0, "OStoreDirectoryPageObject::PAGE(): Null pointer");
+        OSL_PRECOND(pImpl != nullptr, "OStoreDirectoryPageObject::PAGE(): Null pointer");
         return (*pImpl);
     }
     page const & PAGE() const
     {
         page const * pImpl = static_cast<page const *>(m_xPage.get());
-        OSL_PRECOND(pImpl != 0, "OStoreDirectoryPageObject::PAGE(): Null pointer");
+        OSL_PRECOND(pImpl != nullptr, "OStoreDirectoryPageObject::PAGE(): Null pointer");
         return (*pImpl);
     }
 

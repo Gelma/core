@@ -318,8 +318,7 @@ ApiFilterSettings Top10Filter::finalizeImport( sal_Int32 /*nMaxCount*/ )
 
 FilterCriterionModel::FilterCriterionModel() :
     mnOperator( XML_equal ),
-    mnDataType( BIFF_FILTER_DATATYPE_NONE ),
-    mnStrLen( 0 )
+    mnDataType( BIFF_FILTER_DATATYPE_NONE )
 {
 }
 
@@ -724,7 +723,7 @@ AutoFilter* AutoFilterBuffer::getActiveAutoFilter()
     // Excel expects not more than one auto filter per sheet or table
     OSL_ENSURE( maAutoFilters.size() <= 1, "AutoFilterBuffer::getActiveAutoFilter - too many auto filters" );
     // stick to the last imported auto filter
-    return maAutoFilters.empty() ? 0 : maAutoFilters.back().get();
+    return maAutoFilters.empty() ? nullptr : maAutoFilters.back().get();
 }
 
 } // namespace xls

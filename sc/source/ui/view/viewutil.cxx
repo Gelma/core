@@ -77,7 +77,7 @@ sal_uInt16 ScViewUtil::GetEffLanguage( ScDocument* pDoc, const ScAddress& rPos )
     sal_uInt16 nWhich = ( nScript == SvtScriptType::ASIAN ) ? ATTR_CJK_FONT_LANGUAGE :
                     ( ( nScript == SvtScriptType::COMPLEX ) ? ATTR_CTL_FONT_LANGUAGE : ATTR_FONT_LANGUAGE );
     const SfxPoolItem* pItem = pDoc->GetAttr( rPos.Col(), rPos.Row(), rPos.Tab(), nWhich);
-    const SvxLanguageItem* pLangIt = PTR_CAST( SvxLanguageItem, pItem );
+    const SvxLanguageItem* pLangIt = dynamic_cast<const SvxLanguageItem*>( pItem  );
     LanguageType eLnge;
     if (pLangIt)
     {
@@ -104,31 +104,31 @@ sal_Int32 ScViewUtil::GetTransliterationType( sal_uInt16 nSlotID )
     switch ( nSlotID )
     {
         case SID_TRANSLITERATE_SENTENCE_CASE:
-            nType = com::sun::star::i18n::TransliterationModulesExtra::SENTENCE_CASE;
+            nType = css::i18n::TransliterationModulesExtra::SENTENCE_CASE;
             break;
         case SID_TRANSLITERATE_TITLE_CASE:
-            nType = com::sun::star::i18n::TransliterationModulesExtra::TITLE_CASE;
+            nType = css::i18n::TransliterationModulesExtra::TITLE_CASE;
             break;
         case SID_TRANSLITERATE_TOGGLE_CASE:
-            nType = com::sun::star::i18n::TransliterationModulesExtra::TOGGLE_CASE;
+            nType = css::i18n::TransliterationModulesExtra::TOGGLE_CASE;
             break;
         case SID_TRANSLITERATE_UPPER:
-            nType = com::sun::star::i18n::TransliterationModules_LOWERCASE_UPPERCASE;
+            nType = css::i18n::TransliterationModules_LOWERCASE_UPPERCASE;
             break;
         case SID_TRANSLITERATE_LOWER:
-            nType = com::sun::star::i18n::TransliterationModules_UPPERCASE_LOWERCASE;
+            nType = css::i18n::TransliterationModules_UPPERCASE_LOWERCASE;
             break;
         case SID_TRANSLITERATE_HALFWIDTH:
-            nType = com::sun::star::i18n::TransliterationModules_FULLWIDTH_HALFWIDTH;
+            nType = css::i18n::TransliterationModules_FULLWIDTH_HALFWIDTH;
             break;
         case SID_TRANSLITERATE_FULLWIDTH:
-            nType = com::sun::star::i18n::TransliterationModules_HALFWIDTH_FULLWIDTH;
+            nType = css::i18n::TransliterationModules_HALFWIDTH_FULLWIDTH;
             break;
         case SID_TRANSLITERATE_HIRAGANA:
-            nType = com::sun::star::i18n::TransliterationModules_KATAKANA_HIRAGANA;
+            nType = css::i18n::TransliterationModules_KATAKANA_HIRAGANA;
             break;
         case SID_TRANSLITERATE_KATAGANA:
-            nType = com::sun::star::i18n::TransliterationModules_HIRAGANA_KATAKANA;
+            nType = css::i18n::TransliterationModules_HIRAGANA_KATAKANA;
             break;
     }
     return nType;
@@ -256,7 +256,7 @@ void ScViewUtil::UnmarkFiltered( ScMarkData& rMark, ScDocument* pDoc )
         for (SCROW nRow = nStartRow; nRow <= nEndRow; ++nRow)
         {
             SCROW nLastRow = nRow;
-            if (pDoc->RowFiltered(nRow, nTab, NULL, &nLastRow))
+            if (pDoc->RowFiltered(nRow, nTab, nullptr, &nLastRow))
             {
                 // use nStartCol/nEndCol, so the multi mark area isn't extended to all columns
                 // (visible in repaint for indentation)
@@ -353,8 +353,8 @@ bool ScViewUtil::ExecuteCharMap( const SvxFontItem& rOldFont,
         std::unique_ptr<SfxAbstractDialog> pDlg(pFact->CreateSfxDialog( &rFrame.GetWindow(), aSet, rFrame.GetFrame().GetFrameInterface(), RID_SVXDLG_CHARMAP ));
         if ( pDlg->Execute() == RET_OK )
         {
-            SFX_ITEMSET_ARG( pDlg->GetOutputItemSet(), pItem, SfxStringItem, SID_CHARMAP, false );
-            SFX_ITEMSET_ARG( pDlg->GetOutputItemSet(), pFontItem, SvxFontItem, SID_ATTR_CHAR_FONT, false );
+            const SfxStringItem* pItem = SfxItemSet::GetItem<SfxStringItem>(pDlg->GetOutputItemSet(), SID_CHARMAP, false);
+            const SvxFontItem* pFontItem = SfxItemSet::GetItem<SvxFontItem>(pDlg->GetOutputItemSet(), SID_ATTR_CHAR_FONT, false);
             if ( pItem )
                 rString  = pItem->GetValue();
             if ( pFontItem )
@@ -368,12 +368,11 @@ bool ScViewUtil::ExecuteCharMap( const SvxFontItem& rOldFont,
 bool ScViewUtil::IsFullScreen( SfxViewShell& rViewShell )
 {
     SfxBindings&    rBindings       = rViewShell.GetViewFrame()->GetBindings();
-    SfxPoolItem*    pItem           = 0;
+    std::unique_ptr<SfxPoolItem> pItem;
     bool            bIsFullScreen   = false;
 
     if (rBindings.QueryState( SID_WIN_FULLSCREEN, pItem ) >= SfxItemState::DEFAULT)
-        bIsFullScreen = static_cast< SfxBoolItem* >( pItem )->GetValue();
-    delete pItem;
+        bIsFullScreen = static_cast< SfxBoolItem* >( pItem.get() )->GetValue();
 
     return bIsFullScreen;
 }

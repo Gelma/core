@@ -45,13 +45,13 @@ namespace abp
         // helper
         OAddessBookSourcePilot* getDialog();
         const OAddessBookSourcePilot*   getDialog() const;
-        const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > &
+        const css::uno::Reference< css::uno::XComponentContext > &
                                 getORB();
         AddressSettings&        getSettings();
         const AddressSettings&  getSettings() const;
 
         // TabDialog overridables
-        virtual void        DeactivatePage() SAL_OVERRIDE;
+        virtual void        DeactivatePage() override;
     };
 
 

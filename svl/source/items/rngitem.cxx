@@ -32,8 +32,6 @@ static inline sal_uInt16 Count_Impl(const sal_uInt16 * pRanges)
 
 
 
-TYPEINIT1_AUTOFACTORY(SfxRangeItem, SfxPoolItem);
-TYPEINIT1_AUTOFACTORY(SfxUShortRangesItem, SfxPoolItem);
 
 SfxRangeItem::SfxRangeItem()
 {
@@ -110,7 +108,7 @@ SvStream& SfxRangeItem::Store(SvStream &rStream, sal_uInt16) const
 }
 
 SfxUShortRangesItem::SfxUShortRangesItem()
-:   _pRanges(0)
+:   _pRanges(nullptr)
 {
 }
 

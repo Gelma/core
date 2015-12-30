@@ -52,7 +52,6 @@ using namespace com::sun::star;
 
 namespace sd {
 
-TYPEINIT1( FuConstruct3dObject, FuConstruct );
 
 FuConstruct3dObject::FuConstruct3dObject (
     ViewShell*  pViewSh,
@@ -83,7 +82,7 @@ void FuConstruct3dObject::DoExecute( SfxRequest& rReq )
 
 E3dCompoundObject* FuConstruct3dObject::ImpCreateBasic3DShape()
 {
-    E3dCompoundObject* p3DObj = NULL;
+    E3dCompoundObject* p3DObj = nullptr;
 
     switch (nSlotId)
     {
@@ -310,7 +309,7 @@ bool FuConstruct3dObject::MouseButtonDown(const MouseEvent& rMEvt)
         mpWindow->CaptureMouse();
         sal_uInt16 nDrgLog = sal_uInt16 ( mpWindow->PixelToLogic(Size(DRGPIX,0)).Width() );
 
-        E3dCompoundObject* p3DObj = NULL;
+        E3dCompoundObject* p3DObj = nullptr;
 
         WaitObject aWait( static_cast<vcl::Window*>(mpViewShell->GetActiveWindow()) );
 

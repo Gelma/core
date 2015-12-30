@@ -248,7 +248,7 @@ DifParser::DifParser( SvStream& rNewIn, const sal_uInt32 nOption, ScDocument& rD
     bPlain = ( nOption == SC_DIFOPT_PLAIN );
 
     if( bPlain )
-        pNumFormatter = NULL;
+        pNumFormatter = nullptr;
     else
         pNumFormatter = rDoc.GetFormatTable();
 }
@@ -612,7 +612,7 @@ const sal_Unicode* DifParser::ScanIntVal( const sal_Unicode* pStart, sal_uInt32&
     if( IsNumber( cAkt ) )
         rRet = ( sal_uInt32 ) ( cAkt - '0' );
     else
-        return NULL;
+        return nullptr;
 
     pStart++;
     cAkt = *pStart;
@@ -778,6 +778,7 @@ bool DifParser::ScanFloatVal( const sal_Unicode* pStart )
                     eS = S_END;
                 }
                 break;
+            // coverity[dead_error_begin] - following conditions exist to avoid compiler warning
             case S_END:
                 OSL_FAIL( "DifParser::ScanFloatVal - unexpected state" );
                 break;
@@ -807,7 +808,7 @@ bool DifParser::ScanFloatVal( const sal_Unicode* pStart )
 }
 
 DifColumn::DifColumn ()
-    : pAkt(NULL)
+    : mpAkt(nullptr)
 {
 }
 
@@ -815,23 +816,22 @@ void DifColumn::SetLogical( SCROW nRow )
 {
     OSL_ENSURE( ValidRow(nRow), "*DifColumn::SetLogical(): Row too big!" );
 
-    if( pAkt )
+    if( mpAkt )
     {
         OSL_ENSURE( nRow > 0, "*DifColumn::SetLogical(): more cannot be zero!" );
 
         nRow--;
 
-        if( pAkt->nEnd == nRow )
-            pAkt->nEnd++;
+        if( mpAkt->nEnd == nRow )
+            mpAkt->nEnd++;
         else
-            pAkt = NULL;
+            mpAkt = nullptr;
     }
     else
     {
-        pAkt = new ENTRY;
-        pAkt->nStart = pAkt->nEnd = nRow;
-
-        aEntries.push_back(pAkt);
+        maEntries.push_back(ENTRY());
+        mpAkt = &maEntries.back();
+        mpAkt->nStart = mpAkt->nEnd = nRow;
     }
 }
 
@@ -841,15 +841,15 @@ void DifColumn::SetNumFormat( SCROW nRow, const sal_uInt32 nNumFormat )
 
     if( nNumFormat > 0 )
     {
-        if(pAkt)
+        if(mpAkt)
         {
             OSL_ENSURE( nRow > 0,
                 "*DifColumn::SetNumFormat(): more cannot be zero!" );
-            OSL_ENSURE( nRow > pAkt->nEnd,
+            OSL_ENSURE( nRow > mpAkt->nEnd,
                 "*DifColumn::SetNumFormat(): start from scratch?" );
 
-            if( pAkt->nNumFormat == nNumFormat && pAkt->nEnd == nRow - 1 )
-                pAkt->nEnd = nRow;
+            if( mpAkt->nNumFormat == nNumFormat && mpAkt->nEnd == nRow - 1 )
+                mpAkt->nEnd = nRow;
             else
                 NewEntry( nRow, nNumFormat );
         }
@@ -857,21 +857,21 @@ void DifColumn::SetNumFormat( SCROW nRow, const sal_uInt32 nNumFormat )
             NewEntry(nRow,nNumFormat );
     }
     else
-        pAkt = NULL;
+        mpAkt = nullptr;
 }
 
 void DifColumn::NewEntry( const SCROW nPos, const sal_uInt32 nNumFormat )
 {
-    pAkt = new ENTRY;
-    pAkt->nStart = pAkt->nEnd = nPos;
-    pAkt->nNumFormat = nNumFormat;
+    maEntries.push_back(ENTRY());
+    mpAkt = &maEntries.back();
+    mpAkt->nStart = mpAkt->nEnd = nPos;
+    mpAkt->nNumFormat = nNumFormat;
 
-    aEntries.push_back(pAkt);
 }
 
 void DifColumn::Apply( ScDocument& rDoc, const SCCOL nCol, const SCTAB nTab, const ScPatternAttr& rPattAttr )
 {
-    for (boost::ptr_vector<ENTRY>::const_iterator it = aEntries.begin(); it != aEntries.end(); ++it)
+    for (std::vector<ENTRY>::const_iterator it = maEntries.begin(); it != maEntries.end(); ++it)
         rDoc.ApplyPatternAreaTab( nCol, it->nStart, nCol, it->nEnd, nTab, rPattAttr );
 }
 
@@ -880,7 +880,7 @@ void DifColumn::Apply( ScDocument& rDoc, const SCCOL nCol, const SCTAB nTab )
     ScPatternAttr aAttr( rDoc.GetPool() );
     SfxItemSet &rItemSet = aAttr.GetItemSet();
 
-    for (boost::ptr_vector<ENTRY>::const_iterator it = aEntries.begin(); it != aEntries.end(); ++it)
+    for (std::vector<ENTRY>::const_iterator it = maEntries.begin(); it != maEntries.end(); ++it)
     {
         OSL_ENSURE( it->nNumFormat > 0,
             "+DifColumn::Apply(): Number format must not be 0!" );
@@ -898,7 +898,7 @@ DifAttrCache::DifAttrCache( const bool bNewPlain )
     bPlain = bNewPlain;
     ppCols = new DifColumn *[ MAXCOL + 1 ];
     for( SCCOL nCnt = 0 ; nCnt <= MAXCOL ; nCnt++ )
-        ppCols[ nCnt ] = NULL;
+        ppCols[ nCnt ] = nullptr;
 }
 
 DifAttrCache::~DifAttrCache()

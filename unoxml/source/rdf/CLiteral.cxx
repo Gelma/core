@@ -42,35 +42,33 @@ class CLiteral:
     private boost::noncopyable
 {
 public:
-    explicit CLiteral(css::uno::Reference< css::uno::XComponentContext > const & context);
+    explicit CLiteral();
     virtual ~CLiteral() {}
 
     // css::lang::XServiceInfo:
-    virtual OUString SAL_CALL getImplementationName() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService(const OUString & ServiceName) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName() throw (css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL supportsService(const OUString & ServiceName) throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) override;
 
     // css::lang::XInitialization:
-    virtual void SAL_CALL initialize(const css::uno::Sequence< css::uno::Any > & aArguments) throw (css::uno::RuntimeException, css::uno::Exception, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL initialize(const css::uno::Sequence< css::uno::Any > & aArguments) throw (css::uno::RuntimeException, css::uno::Exception, std::exception) override;
 
     // css::rdf::XNode:
-    virtual OUString SAL_CALL getStringValue() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getStringValue() throw (css::uno::RuntimeException, std::exception) override;
 
     // css::rdf::XLiteral:
-    virtual OUString SAL_CALL getValue() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual OUString SAL_CALL getLanguage() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::rdf::XURI > SAL_CALL getDatatype() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getValue() throw (css::uno::RuntimeException, std::exception) override;
+    virtual OUString SAL_CALL getLanguage() throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Reference< css::rdf::XURI > SAL_CALL getDatatype() throw (css::uno::RuntimeException, std::exception) override;
 
 private:
-    css::uno::Reference< css::uno::XComponentContext > m_xContext;
-
     OUString m_Value;
     OUString m_Language;
     css::uno::Reference< css::rdf::XURI > m_xDatatype;
 };
 
-CLiteral::CLiteral(css::uno::Reference< css::uno::XComponentContext > const & context) :
-    m_xContext(context), m_Value(), m_Language(), m_xDatatype()
+CLiteral::CLiteral() :
+    m_Value(), m_Language(), m_xDatatype()
 {}
 
 // com.sun.star.uno.XServiceInfo:
@@ -188,15 +186,14 @@ OUString SAL_CALL _getImplementationName() {
 
 css::uno::Sequence< OUString > SAL_CALL _getSupportedServiceNames()
 {
-    css::uno::Sequence< OUString > s(1);
-    s[0] = "com.sun.star.rdf.Literal";
+    css::uno::Sequence< OUString > s { "com.sun.star.rdf.Literal" };
     return s;
 }
 
 css::uno::Reference< css::uno::XInterface > SAL_CALL _create(
-    const css::uno::Reference< css::uno::XComponentContext > & context)
+    const css::uno::Reference< css::uno::XComponentContext > & )
 {
-    return static_cast< ::cppu::OWeakObject * >(new CLiteral(context));
+    return static_cast< ::cppu::OWeakObject * >(new CLiteral);
 }
 
 } // closing component helper namespace

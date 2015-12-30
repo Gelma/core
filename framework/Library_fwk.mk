@@ -144,6 +144,7 @@ $(eval $(call gb_Library_add_exception_objects,fwk,\
     framework/source/uielement/popuptoolbarcontroller \
     framework/source/uielement/progressbarwrapper \
     framework/source/uielement/recentfilesmenucontroller \
+    framework/source/uielement/resourcemenucontroller \
     framework/source/uielement/saveasmenucontroller \
     framework/source/uielement/spinfieldtoolbarcontroller \
     framework/source/uielement/statusbar \
@@ -153,7 +154,9 @@ $(eval $(call gb_Library_add_exception_objects,fwk,\
     framework/source/uielement/statusbarwrapper \
     framework/source/uielement/statusindicatorinterfacewrapper \
     framework/source/uielement/subtoolbarcontroller \
+    framework/source/uielement/thesaurusmenucontroller \
     framework/source/uielement/togglebuttontoolbarcontroller \
+    framework/source/uielement/toolbarasmenucontroller \
     framework/source/uielement/toolbarmanager \
     framework/source/uielement/toolbarmerger \
     framework/source/uielement/toolbarwrapper \

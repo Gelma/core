@@ -127,7 +127,7 @@ void SwDoc::ReplaceDocumentProperties(const SwDoc& rSource, bool mailMerge)
 
 /// inserts an AutoText block
 bool SwDoc::InsertGlossary( SwTextBlocks& rBlock, const OUString& rEntry,
-                            SwPaM& rPaM, SwCrsrShell* pShell )
+                            SwPaM& rPaM, SwCursorShell* pShell )
 {
     bool bRet = false;
     const sal_uInt16 nIdx = rBlock.GetIndex( rEntry );
@@ -150,7 +150,7 @@ bool SwDoc::InsertGlossary( SwTextBlocks& rBlock, const OUString& rEntry,
             OSL_ENSURE(pGDoc->GetDocShell(), "no SwDocShell at glossary");
             if (GetDocShell() && pGDoc->GetDocShell())
                 pGDoc->ReplaceDocumentProperties( *this );
-            pGDoc->getIDocumentFieldsAccess().SetFixFields(false, NULL);
+            pGDoc->getIDocumentFieldsAccess().SetFixFields(false, nullptr);
 
             // StartAllAction();
             getIDocumentFieldsAccess().LockExpFields();
@@ -167,11 +167,11 @@ bool SwDoc::InsertGlossary( SwTextBlocks& rBlock, const OUString& rEntry,
             aCpyPam.GetPoint()->nContent.Assign(
                     pContentNd, (pContentNd) ? pContentNd->Len() : 0 );
 
-            GetIDocumentUndoRedo().StartUndo( UNDO_INSGLOSSARY, NULL );
-            SwPaM *_pStartCrsr = &rPaM, *__pStartCrsr = _pStartCrsr;
+            GetIDocumentUndoRedo().StartUndo( UNDO_INSGLOSSARY, nullptr );
+            SwPaM *_pStartCursor = &rPaM, *__pStartCursor = _pStartCursor;
             do {
 
-                SwPosition& rInsPos = *_pStartCrsr->GetPoint();
+                SwPosition& rInsPos = *_pStartCursor->GetPoint();
                 SwStartNode* pBoxSttNd = const_cast<SwStartNode*>(rInsPos.nNode.GetNode().
                                             FindTableBoxStartNode());
 
@@ -192,13 +192,13 @@ bool SwDoc::InsertGlossary( SwTextBlocks& rBlock, const OUString& rEntry,
                 aACD.RestoreDontExpandItems( rInsPos );
                 if( pShell )
                     pShell->SaveTableBoxContent( &rInsPos );
-            } while( (_pStartCrsr = static_cast<SwPaM *>(_pStartCrsr->GetNext())) !=
-                        __pStartCrsr );
-            GetIDocumentUndoRedo().EndUndo( UNDO_INSGLOSSARY, NULL );
+            } while( (_pStartCursor = static_cast<SwPaM *>(_pStartCursor->GetNext())) !=
+                        __pStartCursor );
+            GetIDocumentUndoRedo().EndUndo( UNDO_INSGLOSSARY, nullptr );
 
             getIDocumentFieldsAccess().UnlockExpFields();
             if( !getIDocumentFieldsAccess().IsExpFieldsLocked() )
-                getIDocumentFieldsAccess().UpdateExpFields(NULL, true);
+                getIDocumentFieldsAccess().UpdateExpFields(nullptr, true);
             bRet = true;
         }
         mbInsOnlyTextGlssry = bSav_IsInsGlossary;

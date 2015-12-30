@@ -89,7 +89,7 @@ namespace com{namespace sun{namespace star{
     }
 }}}
 
-typedef   void (*SwLabDlgMethod) (::com::sun::star::uno::Reference< ::com::sun::star::frame::XModel>& xModel,   const SwLabItem& rItem);
+typedef   void (*SwLabDlgMethod) (css::uno::Reference< css::frame::XModel>& xModel,   const SwLabItem& rItem);
 
 typedef OUString    (*GlossaryGetCurrGroup)();
 typedef void        (*GlossarySetActGroup)(const OUString& rNewGroup);
@@ -107,7 +107,7 @@ public:
     //from class SalFrame
     virtual void         SetWindowState( const OString & rStr ) = 0;
     virtual OString GetWindowState( sal_uLong nMask = WINDOWSTATE_MASK_ALL ) const = 0;
-    virtual void         EndDialog(long ) SAL_OVERRIDE = 0;
+    virtual void         EndDialog(long ) override = 0;
 };
 
 class AbstractInsFootNoteDlg : public VclAbstractDialog
@@ -144,8 +144,8 @@ class AbstractMailMergeDlg : public VclAbstractDialog
 public:
     virtual DBManagerOptions GetMergeType() = 0;
     virtual const OUString& GetSaveFilter() const = 0;
-    virtual const ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any > GetSelection() const = 0;
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XResultSet> GetResultSet() const = 0;
+    virtual const css::uno::Sequence< css::uno::Any > GetSelection() const = 0;
+    virtual css::uno::Reference< css::sdbc::XResultSet> GetResultSet() const = 0;
     virtual bool IsSaveSingleDoc() const = 0;
     virtual bool IsGenerateFromDataBase() const = 0;
     virtual OUString GetColumnName() const = 0;
@@ -232,10 +232,10 @@ class AbstractSwInsertDBColAutoPilot :  public VclAbstractDialog
 {
 public:
 
-    virtual void DataToDoc( const ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any >& rSelection,
-        ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XDataSource> rxSource,
-        ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XConnection> xConnection,
-        ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XResultSet > xResultSet) = 0;
+    virtual void DataToDoc( const css::uno::Sequence< css::uno::Any >& rSelection,
+        css::uno::Reference< css::sdbc::XDataSource> rxSource,
+        css::uno::Reference< css::sdbc::XConnection> xConnection,
+        css::uno::Reference< css::sdbc::XResultSet > xResultSet) = 0;
 };
 
 class AbstractDropDownFieldDialog : public VclAbstractDialog
@@ -282,8 +282,8 @@ class AbstractSwRenameXNamedDlg : public VclAbstractDialog
 public:
     virtual void    SetForbiddenChars( const OUString& rSet ) = 0;
     virtual void SetAlternativeAccess(
-             ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameAccess > & xSecond,
-             ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameAccess > & xThird ) = 0;
+             css::uno::Reference< css::container::XNameAccess > & xSecond,
+             css::uno::Reference< css::container::XNameAccess > & xThird ) = 0;
 };
 
 class AbstractSwModalRedlineAcceptDlg : public VclAbstractDialog
@@ -321,11 +321,11 @@ class SwAbstractDialogFactory
 public:
     static SwAbstractDialogFactory*     Create();
 
-    virtual SfxAbstractDialog*              CreateSfxDialog( vcl::Window* pParent,
-                                                                        const SfxItemSet& rAttr,
-                                    const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& _rxFrame,
-                                                                        sal_uInt32 nResId
-                                                                        ) = 0;
+    virtual SfxAbstractDialog*          CreateSfxDialog( vcl::Window* pParent,
+                                                         const SfxItemSet& rAttr,
+                                                         const css::uno::Reference< css::frame::XFrame >& _rxFrame,
+                                                         sal_uInt32 nResId
+                                                        ) = 0;
     virtual AbstractSwWordCountFloatDlg* CreateSwWordCountDialog(SfxBindings* pBindings,
         SfxChildWindow* pChild, vcl::Window *pParent, SfxChildWinInfo* pInfo) = 0;
 
@@ -337,13 +337,13 @@ public:
     virtual AbstractSwBreakDlg * CreateSwBreakDlg(vcl::Window *pParent, SwWrtShell &rSh) = 0;
     virtual VclAbstractDialog   * CreateSwChangeDBDlg(SwView& rVw) = 0;
     virtual SfxAbstractTabDialog *  CreateSwCharDlg(vcl::Window* pParent, SwView& pVw, const SfxItemSet& rCoreSet,
-        sal_uInt8 nDialogMode, const OUString* pFormatStr = 0) = 0;
+        sal_uInt8 nDialogMode, const OUString* pFormatStr = nullptr) = 0;
     virtual AbstractSwConvertTableDlg* CreateSwConvertTableDlg(SwView& rView, bool bToTable) = 0;
     virtual VclAbstractDialog * CreateSwCaptionDialog ( vcl::Window *pParent, SwView &rV,int nResId) = 0;
 
     virtual AbstractSwInsertDBColAutoPilot* CreateSwInsertDBColAutoPilot(SwView& rView,
-        ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XDataSource> rxSource,
-        com::sun::star::uno::Reference<com::sun::star::sdbcx::XColumnsSupplier> xColSupp,
+        css::uno::Reference< css::sdbc::XDataSource> rxSource,
+        css::uno::Reference<css::sdbcx::XColumnsSupplier> xColSupp,
         const SwDBData& rData) = 0;
     virtual SfxAbstractTabDialog * CreateSwFootNoteOptionDlg(vcl::Window *pParent, SwWrtShell &rSh) = 0;
 
@@ -360,7 +360,7 @@ public:
                                                     SwView& rVw,
                                                     const SfxItemSet& rCoreSet,
                                                     sal_uInt8 nDialogMode,
-                                                    const OUString *pCollName = 0,
+                                                    const OUString *pCollName = nullptr,
                                                     bool bDraw = false,
                                                     const OString& sDefPage = OString() ) = 0;
 
@@ -371,7 +371,7 @@ public:
 
     virtual AbstractSwAutoFormatDlg * CreateSwAutoFormatDlg( vcl::Window* pParent, SwWrtShell* pShell,
                                                             bool bSetAutoFormat = true,
-                                                            const SwTableAutoFormat* pSelFormat = 0 ) = 0;
+                                                            const SwTableAutoFormat* pSelFormat = nullptr ) = 0;
     virtual SfxAbstractDialog * CreateSwBorderDlg ( vcl::Window* pParent, SfxItemSet& rSet, SwBorderModes nType, int nResId ) = 0;
     virtual SfxAbstractDialog * CreateSwWrapDlg ( vcl::Window* pParent, SfxItemSet& rSet, SwWrtShell* pSh, bool bDrawMode, int nResId ) = 0;
 
@@ -382,18 +382,18 @@ public:
     virtual AbstractSwFieldDlg * CreateSwFieldDlg(SfxBindings* pB, SwChildWinWrapper* pCW, vcl::Window *pParent) = 0;
     virtual SfxAbstractDialog*   CreateSwFieldEditDlg ( SwView& rVw, int nResId ) = 0;
     virtual AbstractSwRenameXNamedDlg * CreateSwRenameXNamedDlg(vcl::Window* pParent,
-        ::com::sun::star::uno::Reference< ::com::sun::star::container::XNamed > & xNamed,
-        ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameAccess > & xNameAccess) = 0;
+        css::uno::Reference< css::container::XNamed > & xNamed,
+        css::uno::Reference< css::container::XNameAccess > & xNameAccess) = 0;
     virtual AbstractSwModalRedlineAcceptDlg * CreateSwModalRedlineAcceptDlg(vcl::Window *pParent) = 0;
 
     virtual VclAbstractDialog*          CreateTableMergeDialog( vcl::Window* pParent, bool& rWithPrev ) = 0;
-    virtual SfxAbstractTabDialog*       CreateFrmTabDialog(const OUString &rDialogType,
+    virtual SfxAbstractTabDialog*       CreateFrameTabDialog(const OUString &rDialogType,
                                                 SfxViewFrame *pFrame, vcl::Window *pParent,
                                                 const SfxItemSet& rCoreSet,
-                                                bool bNewFrm = true,
+                                                bool bNewFrame = true,
                                                 bool bFormat = false,
                                                 const OString& sDefPage = OString(),
-                                                const OUString* pFormatStr = 0) = 0;
+                                                const OUString* pFormatStr = nullptr) = 0;
     /// @param nSlot
     /// Identifies optional Slot by which the creation of the Template (Style) dialog is triggered.
     /// Currently used, if nRegion == SFX_STYLE_FAMILY_PAGE in order to activate certain dialog pane
@@ -402,7 +402,7 @@ public:
                                                 SfxStyleSheetBase&  rBase,
                                                 sal_uInt16          nRegion,
                                                 const OString&      sPage = OString(),
-                                                SwWrtShell*         pActShell = 0,
+                                                SwWrtShell*         pActShell = nullptr,
                                                 bool                bNew = false) = 0;
     virtual AbstractGlossaryDlg*        CreateGlossaryDlg(SfxViewFrame* pViewFrame,
                                                 SwGlossaryHdl* pGlosHdl,
@@ -421,8 +421,8 @@ public:
                                                  const OUString& rSourceName,
                                                 const OUString& rTableName,
                                                 sal_Int32 nCommandType,
-                                                const ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XConnection>& xConnection,
-                                                ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any >* pSelection = 0 ) = 0;
+                                                const css::uno::Reference< css::sdbc::XConnection>& xConnection,
+                                                css::uno::Sequence< css::uno::Any >* pSelection = nullptr ) = 0;
     virtual AbstractMailMergeCreateFromDlg*     CreateMailMergeCreateFromDlg(vcl::Window* pParent) = 0;
     virtual AbstractMailMergeFieldConnectionsDlg* CreateMailMergeFieldConnectionsDlg(vcl::Window* pParent) = 0;
     virtual VclAbstractDialog*          CreateMultiTOXMarkDlg(vcl::Window* pParent, SwTOXMgr &rTOXMgr) = 0;

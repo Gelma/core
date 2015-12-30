@@ -29,12 +29,11 @@ class BASIC_DLLPUBLIC SbxMethod : public SbxVariable
     SbxDataType    mbRuntimeFunctionReturnType;
 public:
     SBX_DECL_PERSIST_NODATA(SBXCR_SBX,SBXID_METHOD,1);
-    TYPEINFO_OVERRIDE();
     SbxMethod( const OUString& r, SbxDataType t, bool bIsRuntimeFunction=false );
     SbxMethod( const SbxMethod& r );
     virtual ~SbxMethod();
     SbxMethod& operator=( const SbxMethod& r ) { SbxVariable::operator=( r ); return *this; }
-    virtual SbxClassType GetClass() const SAL_OVERRIDE;
+    virtual SbxClassType GetClass() const override;
     bool IsRuntimeFunction() const { return mbIsRuntimeFunction; }
     SbxDataType GetRuntimeFunctionReturnType() const{ return mbRuntimeFunctionReturnType; }
 };

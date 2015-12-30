@@ -318,9 +318,9 @@ sal_Int32 XclImpChRoot::CalcHmmFromChartY( sal_Int32 nPosY ) const
     return static_cast< sal_Int32 >( mxChData->mfUnitSizeY * nPosY + mxChData->mnBorderGapY + 0.5 );
 }
 
-::com::sun::star::awt::Rectangle XclImpChRoot::CalcHmmFromChartRect( const XclChRectangle& rRect ) const
+css::awt::Rectangle XclImpChRoot::CalcHmmFromChartRect( const XclChRectangle& rRect ) const
 {
-    return ::com::sun::star::awt::Rectangle(
+    return css::awt::Rectangle(
         CalcHmmFromChartX( rRect.mnX ),
         CalcHmmFromChartY( rRect.mnY ),
         CalcHmmFromChartX( rRect.mnWidth ),
@@ -554,7 +554,7 @@ void XclImpChEscherFormat::Convert( const XclImpChRoot& rRoot,
         ScfPropertySet& rPropSet, XclChObjectType eObjType, bool bUsePicFmt ) const
 {
     const XclChFormatInfo& rFmtInfo = rRoot.GetFormatInfo( eObjType );
-    rRoot.ConvertEscherFormat( rPropSet, maData, bUsePicFmt ? &maPicFmt : 0, mnDffFillType, rFmtInfo.mePropMode );
+    rRoot.ConvertEscherFormat( rPropSet, maData, bUsePicFmt ? &maPicFmt : nullptr, mnDffFillType, rFmtInfo.mePropMode );
 }
 
 XclImpChFrameBase::XclImpChFrameBase( const XclChFormatInfo& rFmtInfo )
@@ -703,7 +703,7 @@ namespace {
 /** Creates a labeled data sequence object, adds link for series title if present. */
 Reference< XLabeledDataSequence > lclCreateLabeledDataSequence(
         const XclImpChSourceLinkRef& xValueLink, const OUString& rValueRole,
-        const XclImpChSourceLink* pTitleLink = 0 )
+        const XclImpChSourceLink* pTitleLink = nullptr )
 {
     // create data sequence for values and title
     Reference< XDataSequence > xValueSeq;
@@ -1191,17 +1191,13 @@ void XclImpChText::ConvertTitlePosition( const XclChTextKey& rTitleKey ) const
     {
         Reference< XShape > xTitleShape( GetTitleShape( rTitleKey ), UNO_SET_THROW );
         // the call to XShape.getSize() may recalc the chart view
-        ::com::sun::star::awt::Size aTitleSize = xTitleShape->getSize();
+        css::awt::Size aTitleSize = xTitleShape->getSize();
         // rotated titles need special handling...
         sal_Int32 nScRot = XclTools::GetScRotation( GetRotation(), 0 );
         double fRad = nScRot * F_PI18000;
         double fSin = fabs( sin( fRad ) );
-        double fCos = fabs( cos( fRad ) );
-        ::com::sun::star::awt::Size aBoundSize(
-            static_cast< sal_Int32 >( fCos * aTitleSize.Width + fSin * aTitleSize.Height + 0.5 ),
-            static_cast< sal_Int32 >( fSin * aTitleSize.Width + fCos * aTitleSize.Height + 0.5 ) );
         // calculate the title position from the values in the CHTEXT record
-        ::com::sun::star::awt::Point aTitlePos(
+        css::awt::Point aTitlePos(
             CalcHmmFromChartX( maData.maRect.mnX ),
             CalcHmmFromChartY( maData.maRect.mnY ) );
         // add part of height to X direction, if title is rotated down (clockwise)
@@ -1512,7 +1508,7 @@ void XclImpChDataFormat::UpdateTrendLineFormat()
     mx3dDataFmt.reset();
     mxAttLabel.reset();
     // update data label
-    UpdateDataLabel( 0 );
+    UpdateDataLabel( nullptr );
 }
 
 void XclImpChDataFormat::Convert( ScfPropertySet& rPropSet, const XclChExtTypeInfo& rTypeInfo ) const
@@ -1580,7 +1576,7 @@ void XclImpChDataFormat::UpdateDataLabel( const XclImpChDataFormat* pParentFmt )
         group, the contents of the CHATTACHEDLABEL record are used. In this
         case a new CHTEXT group is created and filled with the settings from
         the CHATTACHEDLABEL record. */
-    const XclImpChText* pDefText = NULL;
+    const XclImpChText* pDefText = nullptr;
     if (pParentFmt)
         pDefText = pParentFmt->GetDataLabel();
     if (!pDefText)
@@ -1713,8 +1709,8 @@ Reference< XPropertySet > XclImpChSerErrorBar::CreateErrorBar( const XclImpChSer
         ScfPropertySet aBarProp( xErrorBar );
 
         // plus/minus bars visible?
-        aBarProp.SetBoolProperty( EXC_CHPROP_SHOWPOSITIVEERROR, pPosBar != 0 );
-        aBarProp.SetBoolProperty( EXC_CHPROP_SHOWNEGATIVEERROR, pNegBar != 0 );
+        aBarProp.SetBoolProperty( EXC_CHPROP_SHOWPOSITIVEERROR, pPosBar != nullptr );
+        aBarProp.SetBoolProperty( EXC_CHPROP_SHOWNEGATIVEERROR, pNegBar != nullptr );
 
         // type of displayed error
         switch( pPrimaryBar->maData.mnSourceType )
@@ -2576,7 +2572,7 @@ Reference< XLegend > XclImpChLegend::CreateLegend() const
         // no automatic position/size: try to find the correct position and size
         if( eApiPos == cssc2::LegendPosition_CUSTOM )
         {
-            const XclChFramePos* pFramePos = mxFramePos ? &mxFramePos->GetFramePosData() : 0;
+            const XclChFramePos* pFramePos = mxFramePos ? &mxFramePos->GetFramePosData() : nullptr;
 
             /*  Legend position. Only the settings from the CHFRAMEPOS record
                 are used by Excel, the position in the CHLEGEND record will be
@@ -2586,7 +2582,7 @@ Reference< XLegend > XclImpChLegend::CreateLegend() const
                 RelativePosition aRelPos(
                     CalcRelativeFromChartX( pFramePos->maRect.mnX ),
                     CalcRelativeFromChartY( pFramePos->maRect.mnY ),
-                    ::com::sun::star::drawing::Alignment_TOP_LEFT );
+                    css::drawing::Alignment_TOP_LEFT );
                 aLegendProp.SetProperty( EXC_CHPROP_RELATIVEPOSITION, aRelPos );
             }
             else
@@ -2883,7 +2879,7 @@ void XclImpChTypeGroup::CreateDataSeries( Reference< XChartType > xChartType, sa
     if( bSpline && !maTypeInfo.IsSeriesFrameFormat() && (maTypeInfo.meTypeCateg != EXC_CHTYPECATEG_RADAR) )
     {
         ScfPropertySet aTypeProp( xChartType );
-        aTypeProp.SetProperty( EXC_CHPROP_CURVESTYLE, ::com::sun::star::chart2::CurveStyle_CUBIC_SPLINES );
+        aTypeProp.SetProperty( EXC_CHPROP_CURVESTYLE, css::chart2::CurveStyle_CUBIC_SPLINES );
     }
 }
 
@@ -3430,7 +3426,7 @@ void XclImpChAxis::ConvertAxisPosition( ScfPropertySet& rPropSet, const XclImpCh
 
 void XclImpChAxis::ReadChAxisLine( XclImpStream& rStrm )
 {
-    XclImpChLineFormatRef* pxLineFmt = 0;
+    XclImpChLineFormatRef* pxLineFmt = nullptr;
     bool bWallFrame = false;
     switch( rStrm.ReaduInt16() )
     {
@@ -3616,7 +3612,7 @@ void XclImpChAxesSet::Convert( Reference< XDiagram > xDiagram ) const
             // create the axes with grids and axis titles and insert them into the diagram
             ConvertAxis( mxXAxis, mxXAxisTitle, xCoordSystem, mxYAxis.get() );
             ConvertAxis( mxYAxis, mxYAxisTitle, xCoordSystem, mxXAxis.get() );
-            ConvertAxis( mxZAxis, mxZAxisTitle, xCoordSystem, 0 );
+            ConvertAxis( mxZAxis, mxZAxisTitle, xCoordSystem, nullptr );
         }
     }
 }
@@ -3909,7 +3905,7 @@ const XclImpChText* XclImpChChart::GetDefaultText( XclChTextType eTextType ) con
     }
 
     XclImpChTextMap::const_iterator itr = maDefTexts.find(nDefTextId);
-    return itr == maDefTexts.end() ? NULL : itr->second;
+    return itr == maDefTexts.end() ? nullptr : itr->second;
 }
 
 bool XclImpChChart::IsManualPlotArea() const
@@ -3977,7 +3973,7 @@ void XclImpChChart::Convert( const Reference<XChartDocument>& xChartDoc,
             if( (rFramePos.mnTLMode == EXC_CHFRAMEPOS_PARENT) && (rFramePos.mnBRMode == EXC_CHFRAMEPOS_PARENT) )
             {
                 Reference< cssc::XDiagramPositioning > xPositioning( xDiagram1, UNO_QUERY_THROW );
-                ::com::sun::star::awt::Rectangle aDiagramRect = CalcHmmFromChartRect( rFramePos.maRect );
+                css::awt::Rectangle aDiagramRect = CalcHmmFromChartRect( rFramePos.maRect );
                 // for pie charts, always set inner plot area size to exclude the data labels as Excel does
                 const XclImpChTypeGroup* pFirstTypeGroup = mxPrimAxesSet->GetFirstTypeGroup().get();
                 if( pFirstTypeGroup && (pFirstTypeGroup->GetTypeInfo().meTypeCateg == EXC_CHTYPECATEG_PIE) )
@@ -4186,8 +4182,8 @@ void XclImpChartDrawing::ConvertObjects( XclImpDffConverter& rDffConv,
 {
     maChartRect = rChartRect;   // needed in CalcAnchorRect() callback
 
-    SdrModel* pSdrModel = 0;
-    SdrPage* pSdrPage = 0;
+    SdrModel* pSdrModel = nullptr;
+    SdrPage* pSdrPage = nullptr;
     if( mbOwnTab )
     {
         // chart sheet: insert all shapes into the sheet, not into the chart object
@@ -4202,7 +4198,7 @@ void XclImpChartDrawing::ConvertObjects( XclImpDffConverter& rDffConv,
             Reference< XDrawPageSupplier > xDrawPageSupp( rxModel, UNO_QUERY_THROW );
             Reference< XDrawPage > xDrawPage( xDrawPageSupp->getDrawPage(), UNO_SET_THROW );
             pSdrPage = ::GetSdrPageFromXDrawPage( xDrawPage );
-            pSdrModel = pSdrPage ? pSdrPage->GetModel() : 0;
+            pSdrModel = pSdrPage ? pSdrPage->GetModel() : nullptr;
         }
         catch( Exception& )
         {

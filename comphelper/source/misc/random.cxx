@@ -39,7 +39,7 @@ struct RandomNumberGenerator
     STD_RNG_ALGO global_rng;
     RandomNumberGenerator()
     {
-        bool bRepeatable = (getenv("SAL_RAND_REPEATABLE") != 0);
+        bool bRepeatable = (getenv("SAL_RAND_REPEATABLE") != nullptr);
         if (bRepeatable)
         {
             global_rng.seed(42);
@@ -58,7 +58,7 @@ struct RandomNumberGenerator
         }
         catch (std::runtime_error& e)
         {
-            SAL_WARN("comphelper.random", "Using std::random_device failed: " << e.what());
+            SAL_WARN("comphelper", "Using std::random_device failed: " << e.what());
             global_rng.seed(time(nullptr));
         }
     }

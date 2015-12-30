@@ -34,8 +34,6 @@ struct SbxVarEntry
     boost::optional<OUString> maAlias;
 };
 
-TYPEINIT1(SbxArray,SbxBase)
-TYPEINIT1(SbxDimArray,SbxArray)
 
 //  SbxArray
 
@@ -62,18 +60,16 @@ SbxArray& SbxArray::operator=( const SbxArray& rArray )
     {
         eType = rArray.eType;
         Clear();
-        VarEntriesType* pSrc = rArray.mpVarEntries;
-        for( size_t i = 0; i < pSrc->size(); i++ )
+        for( const auto& rpSrcRef : *rArray.mpVarEntries )
         {
-            SbxVarEntry* pSrcRef = (*pSrc)[i];
-            SbxVariableRef pSrc_ = pSrcRef->mpVar;
+            SbxVariableRef pSrc_ = rpSrcRef->mpVar;
             if( !pSrc_ )
                 continue;
             SbxVarEntry* pDstRef = new SbxVarEntry;
-            pDstRef->mpVar = pSrcRef->mpVar;
+            pDstRef->mpVar = rpSrcRef->mpVar;
 
-            if (pSrcRef->maAlias)
-                pDstRef->maAlias.reset(*pSrcRef->maAlias);
+            if (rpSrcRef->maAlias)
+                pDstRef->maAlias.reset(*rpSrcRef->maAlias);
 
             if( eType != SbxVARIANT )
             {
@@ -167,7 +163,7 @@ SbxVariable* SbxArray::Get32( sal_uInt32 nIdx )
     if( !CanRead() )
     {
         SetError( ERRCODE_SBX_PROP_WRITEONLY );
-        return NULL;
+        return nullptr;
     }
     SbxVariableRef& rRef = GetRef32( nIdx );
 
@@ -182,7 +178,7 @@ SbxVariable* SbxArray::Get( sal_uInt16 nIdx )
     if( !CanRead() )
     {
         SetError( ERRCODE_SBX_PROP_WRITEONLY );
-        return NULL;
+        return nullptr;
     }
     SbxVariableRef& rRef = GetRef( nIdx );
 
@@ -388,7 +384,7 @@ void SbxArray::Merge( SbxArray* p )
 
 SbxVariable* SbxArray::FindUserData( sal_uInt32 nData )
 {
-    SbxVariable* p = NULL;
+    SbxVariable* p = nullptr;
     for (size_t i = 0; i < mpVarEntries->size(); ++i)
     {
         SbxVarEntry* pEntry = (*mpVarEntries)[i];
@@ -439,10 +435,10 @@ SbxVariable* SbxArray::FindUserData( sal_uInt32 nData )
 
 SbxVariable* SbxArray::Find( const OUString& rName, SbxClassType t )
 {
-    SbxVariable* p = NULL;
+    SbxVariable* p = nullptr;
     sal_uInt32 nCount = mpVarEntries->size();
     if( !nCount )
-        return NULL;
+        return nullptr;
     bool bExtSearch = IsSet( SbxFlagBits::ExtSearch );
     sal_uInt16 nHash = SbxVariable::MakeHashCode( rName );
     for( sal_uInt32 i = 0; i < nCount; i++ )
@@ -494,7 +490,7 @@ SbxVariable* SbxArray::Find( const OUString& rName, SbxClassType t )
     return p;
 }
 
-bool SbxArray::LoadData( SvStream& rStrm, sal_uInt16 nVer )
+bool SbxArray::LoadData( SvStream& rStrm, sal_uInt16 /*nVer*/ )
 {
     sal_uInt16 nElem;
     Clear();
@@ -519,8 +515,6 @@ bool SbxArray::LoadData( SvStream& rStrm, sal_uInt16 nVer )
             break;
         }
     }
-    if( bRes )
-        bRes = LoadPrivateData( rStrm, nVer );
     nFlags = f;
     return bRes;
 }
@@ -547,7 +541,7 @@ bool SbxArray::StoreData( SvStream& rStrm ) const
                 return false;
         }
     }
-    return StorePrivateData( rStrm );
+    return true;
 }
 
 // #100883 Method to set method directly to parameter array
@@ -670,15 +664,14 @@ bool SbxDimArray::GetDim( short n, short& rlb, short& rub ) const
 sal_uInt32 SbxDimArray::Offset32( const sal_Int32* pIdx )
 {
     sal_uInt32 nPos = 0;
-    for( std::vector<SbxDim>::const_iterator it = m_vDimensions.begin();
-         it != m_vDimensions.end(); ++it )
+    for( const auto& rDimension : m_vDimensions )
     {
         sal_Int32 nIdx = *pIdx++;
-        if( nIdx < it->nLbound || nIdx > it->nUbound )
+        if( nIdx < rDimension.nLbound || nIdx > rDimension.nUbound )
         {
             nPos = (sal_uInt32)SBX_MAXINDEX32 + 1; break;
         }
-        nPos = nPos * it->nSize + nIdx - it->nLbound;
+        nPos = nPos * rDimension.nSize + nIdx - rDimension.nLbound;
     }
     if( m_vDimensions.empty() || nPos > SBX_MAXINDEX32 )
     {

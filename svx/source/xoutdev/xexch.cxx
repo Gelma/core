@@ -18,6 +18,7 @@
  */
 
 #include <sot/formats.hxx>
+#include <tools/stream.hxx>
 #include <tools/vcompat.hxx>
 #include <svx/xflasit.hxx>
 #include <svx/xfillit0.hxx>
@@ -31,8 +32,8 @@
 
 /// default CTOR, for Assign()
 XFillExchangeData::XFillExchangeData() :
-    pXFillAttrSetItem( NULL ),
-    pPool( NULL )
+    pXFillAttrSetItem( nullptr ),
+    pPool( nullptr )
 {
 }
 
@@ -131,8 +132,8 @@ XFillExchangeData& XFillExchangeData::operator=( const XFillExchangeData& rData 
         pXFillAttrSetItem = static_cast<XFillAttrSetItem*>( rData.pXFillAttrSetItem->Clone( pPool = rData.pXFillAttrSetItem->GetItemSet().GetPool() ) );
     else
     {
-        pPool = NULL;
-        pXFillAttrSetItem = NULL;
+        pPool = nullptr;
+        pXFillAttrSetItem = nullptr;
     }
 
     return( *this );

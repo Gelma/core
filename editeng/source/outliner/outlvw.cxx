@@ -210,7 +210,7 @@ bool OutlinerView::PostKeyEvent( const KeyEvent& rKEvt, vcl::Window* pFrameWin )
                                     ESelection aTmpSel(nTemp,0,nTemp,0);
                                     pEditView->SetSelection( aTmpSel );
                                 }
-                                pEditView->ShowCursor( true );
+                                pEditView->ShowCursor();
                                 pOwner->UndoActionEnd( OLUNDO_INSERT );
                                 bKeyProcessed = true;
                             }
@@ -228,7 +228,7 @@ bool OutlinerView::PostKeyEvent( const KeyEvent& rKEvt, vcl::Window* pFrameWin )
                         // Position the cursor
                         ESelection aTmpSel(nTemp,0,nTemp,0);
                         pEditView->SetSelection( aTmpSel );
-                        pEditView->ShowCursor( true );
+                        pEditView->ShowCursor();
                         pOwner->UndoActionEnd( OLUNDO_INSERT );
                         bKeyProcessed = true;
                     }
@@ -668,7 +668,7 @@ void OutlinerView::InsertText( const OutlinerParaObject& rParaObj )
 
     pOwner->UndoActionEnd( OLUNDO_INSERT );
 
-    pEditView->ShowCursor( true );
+    pEditView->ShowCursor();
 }
 
 
@@ -678,8 +678,7 @@ void OutlinerView::Cut()
     if ( !ImpCalcSelectedPages( false ) || pOwner->ImpCanDeleteSelectedPages( this ) ) {
         pEditView->Cut();
         // Chaining handling
-        if (aEndCutPasteLink.IsSet())
-            aEndCutPasteLink.Call(NULL);
+        aEndCutPasteLink.Call(nullptr);
     }
 }
 
@@ -708,12 +707,11 @@ void OutlinerView::PasteSpecial()
 
         pEditView->SetEditEngineUpdateMode( true );
         pOwner->UndoActionEnd( OLUNDO_INSERT );
-        pEditView->ShowCursor( true );
+        pEditView->ShowCursor();
 
         // Chaining handling
         // NOTE: We need to do this last because it pEditView may be deleted if a switch of box occurs
-        if (aEndCutPasteLink.IsSet())
-            aEndCutPasteLink.Call(NULL);
+        aEndCutPasteLink.Call(nullptr);
     }
 }
 
@@ -826,7 +824,7 @@ sal_Int32 OutlinerView::ImpCalcSelectedPages( bool bIncludeFirstSelected )
     if( nPages )
     {
         pOwner->nDepthChangedHdlPrevDepth = nPages;
-        pOwner->pHdlParagraph = 0;
+        pOwner->pHdlParagraph = nullptr;
         pOwner->mnFirstSelPage = nFirstPage;
     }
 
@@ -845,7 +843,7 @@ void OutlinerView::ToggleBullets()
     pOwner->pEditEngine->SetUpdateMode( false );
 
     sal_Int16 nNewDepth = -2;
-    const SvxNumRule* pDefaultBulletNumRule = 0;
+    const SvxNumRule* pDefaultBulletNumRule = nullptr;
 
     for ( sal_Int32 nPara = aSel.nStartPara; nPara <= aSel.nEndPara; nPara++ )
     {
@@ -864,7 +862,7 @@ void OutlinerView::ToggleBullets()
                     const SfxItemSet aTmpSet(pOwner->pEditEngine->GetAttribs(aSelection));
                     const SfxPoolItem& rPoolItem = aTmpSet.GetPool()->GetDefaultItem( EE_PARA_NUMBULLET );
                     const SvxNumBulletItem* pNumBulletItem = dynamic_cast< const SvxNumBulletItem* >(&rPoolItem);
-                    pDefaultBulletNumRule =  pNumBulletItem ? pNumBulletItem->GetNumRule() : 0;
+                    pDefaultBulletNumRule =  pNumBulletItem ? pNumBulletItem->GetNumRule() : nullptr;
                 }
             }
 
@@ -1069,7 +1067,7 @@ void OutlinerView::ApplyBulletsNumbering(
 
                     // Get old bullet space.
                     {
-                        const SfxPoolItem* pPoolItem=NULL;
+                        const SfxPoolItem* pPoolItem=nullptr;
                         SfxItemState eState = rAttrs.GetItemState(EE_PARA_NUMBULLET, false, &pPoolItem);
                         if (eState != SfxItemState::SET)
                         {
@@ -1220,6 +1218,11 @@ void OutlinerView::SetVisArea( const Rectangle& rRect )
 void OutlinerView::SetSelection( const ESelection& rSel )
 {
     pEditView->SetSelection( rSel );
+}
+
+void OutlinerView::GetSelectionRectangles(std::vector<Rectangle>& rLogicRects) const
+{
+    pEditView->GetSelectionRectangles(rLogicRects);
 }
 
 void OutlinerView::SetReadOnly( bool bReadOnly )

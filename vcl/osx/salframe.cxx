@@ -49,14 +49,14 @@
 
 using namespace std;
 
-AquaSalFrame* AquaSalFrame::s_pCaptureFrame = NULL;
+AquaSalFrame* AquaSalFrame::s_pCaptureFrame = nullptr;
 
-AquaSalFrame::AquaSalFrame( SalFrame* pParent, sal_uLong salFrameStyle ) :
+AquaSalFrame::AquaSalFrame( SalFrame* pParent, SalFrameStyleFlags salFrameStyle ) :
     mpNSWindow(nil),
     mpNSView(nil),
     mpDockMenuEntry(nil),
-    mpGraphics(NULL),
-    mpParent(NULL),
+    mpGraphics(nullptr),
+    mpParent(nullptr),
     mnMinWidth(0),
     mnMinHeight(0),
     mnMaxWidth(0),
@@ -72,11 +72,11 @@ AquaSalFrame::AquaSalFrame( SalFrame* pParent, sal_uLong salFrameStyle ) :
     mnStyleMask( 0 ),
     mnLastEventTime( 0 ),
     mnLastModifierFlags( 0 ),
-    mpMenu( NULL ),
+    mpMenu( nullptr ),
     mnExtStyle( 0 ),
     mePointerStyle( PointerStyle::Arrow ),
     mnTrackingRectTag( 0 ),
-    mrClippingPath( 0 ),
+    mrClippingPath( nullptr ),
     mnICOptions( InputContextFlags::NONE )
 {
     maSysData.nSize     = sizeof( SystemEnvData );
@@ -109,13 +109,21 @@ AquaSalFrame::~AquaSalFrame()
 
     DBG_ASSERT( this != s_pCaptureFrame, "capture frame destroyed" );
     if( this == s_pCaptureFrame )
-        s_pCaptureFrame = NULL;
+        s_pCaptureFrame = nullptr;
 
     delete mpGraphics;
 
     if( mpDockMenuEntry )
+    {
+        NSMenu* pDock = AquaSalInstance::GetDynamicDockMenu();
         // life cycle comment: the menu has ownership of the item, so no release
-        [AquaSalInstance::GetDynamicDockMenu() removeItem: mpDockMenuEntry];
+        [pDock removeItem: mpDockMenuEntry];
+        if ([pDock numberOfItems] != 0
+            && [[pDock itemAtIndex: 0] isSeparatorItem])
+        {
+            [pDock removeItemAtIndex: 0];
+        }
+    }
     if ( mpNSView ) {
         [AquaA11yFactory revokeView: mpNSView];
         [mpNSView release];
@@ -143,10 +151,10 @@ void AquaSalFrame::initWindowAndView()
     maGeometry.nHeight = static_cast<unsigned int>(aVisibleRect.size.height * 0.8);
 
     // calculate style mask
-    if( (mnStyle & SAL_FRAME_STYLE_FLOAT) ||
-        (mnStyle & SAL_FRAME_STYLE_OWNERDRAWDECORATION) )
+    if( (mnStyle & SalFrameStyleFlags::FLOAT) ||
+        (mnStyle & SalFrameStyleFlags::OWNERDRAWDECORATION) )
         mnStyleMask = NSBorderlessWindowMask;
-    else if( mnStyle & SAL_FRAME_STYLE_DEFAULT )
+    else if( mnStyle & SalFrameStyleFlags::DEFAULT )
     {
         mnStyleMask = NSTitledWindowMask            |
                       NSMiniaturizableWindowMask    |
@@ -161,15 +169,15 @@ void AquaSalFrame::initWindowAndView()
     }
     else
     {
-        if( (mnStyle & SAL_FRAME_STYLE_MOVEABLE) )
+        if( (mnStyle & SalFrameStyleFlags::MOVEABLE) )
         {
             mnStyleMask |= NSTitledWindowMask;
-            if( mpParent == NULL )
+            if( mpParent == nullptr )
                 mnStyleMask |= NSMiniaturizableWindowMask;
         }
-        if( (mnStyle & SAL_FRAME_STYLE_SIZEABLE) )
+        if( (mnStyle & SalFrameStyleFlags::SIZEABLE) )
             mnStyleMask |= NSResizableWindowMask;
-        if( (mnStyle & SAL_FRAME_STYLE_CLOSEABLE) )
+        if( (mnStyle & SalFrameStyleFlags::CLOSEABLE) )
             mnStyleMask |= NSClosableWindowMask;
         // documentation says anything other than NSBorderlessWindowMask (=0)
         // should also include NSTitledWindowMask;
@@ -188,7 +196,7 @@ void AquaSalFrame::initWindowAndView()
         return;
     }
 
-    if( (mnStyle & SAL_FRAME_STYLE_TOOLTIP) )
+    if( (mnStyle & SalFrameStyleFlags::TOOLTIP) )
         [mpNSWindow setIgnoresMouseEvents: YES];
     else
         [mpNSWindow setAcceptsMouseMovedEvents: YES];
@@ -248,13 +256,13 @@ void AquaSalFrame::screenParametersChanged()
 
     if( mpGraphics )
         mpGraphics->updateResolution();
-    CallCallback( SALEVENT_DISPLAYCHANGED, 0 );
+    CallCallback( SALEVENT_DISPLAYCHANGED, nullptr );
 }
 
 SalGraphics* AquaSalFrame::AcquireGraphics()
 {
     if ( mbGraphics )
-        return NULL;
+        return nullptr;
 
     if ( !mpGraphics )
     {
@@ -291,13 +299,20 @@ void AquaSalFrame::SetTitle(const OUString& rTitle)
     [mpNSWindow setTitle: pTitle];
 
     // create an entry in the dock menu
-    const sal_uLong nAppWindowStyle = (SAL_FRAME_STYLE_CLOSEABLE | SAL_FRAME_STYLE_MOVEABLE);
-    if( mpParent == NULL &&
+    const SalFrameStyleFlags nAppWindowStyle = (SalFrameStyleFlags::CLOSEABLE | SalFrameStyleFlags::MOVEABLE);
+    if( mpParent == nullptr &&
         (mnStyle & nAppWindowStyle) == nAppWindowStyle )
     {
-        if( mpDockMenuEntry == NULL )
+        if( mpDockMenuEntry == nullptr )
         {
             NSMenu* pDock = AquaSalInstance::GetDynamicDockMenu();
+
+            if ([pDock numberOfItems] != 0) {
+                NSMenuItem* pTopItem = [pDock itemAtIndex: 0];
+                if ( [pTopItem hasSubmenu] )
+                    [pDock insertItem: [NSMenuItem separatorItem] atIndex: 0];
+            }
+
             mpDockMenuEntry = [pDock insertItemWithTitle: pTitle
                                      action: @selector(dockMenuItemTriggered:)
                                      keyEquivalent: @""
@@ -361,7 +376,7 @@ void AquaSalFrame::initShow()
                         nNewY - mpParent->maGeometry.nY,
                         0, 0,  SAL_FRAME_POSSIZE_X | SAL_FRAME_POSSIZE_Y );
         }
-        else if( ! (mnStyle & SAL_FRAME_STYLE_SIZEABLE) )
+        else if( ! (mnStyle & SalFrameStyleFlags::SIZEABLE) )
         {
             // center on screen
             long nNewX = (aScreenRect.GetWidth() - maGeometry.nWidth)/2;
@@ -402,7 +417,7 @@ void AquaSalFrame::Show(bool bVisible, bool bNoActivate)
         if( mbInitShow )
             initShow();
 
-        CallCallback(SALEVENT_RESIZE, 0);
+        CallCallback(SALEVENT_RESIZE, nullptr);
         // trigger filling our backbuffer
         SendPaintEvent();
 
@@ -420,7 +435,7 @@ void AquaSalFrame::Show(bool bVisible, bool bNoActivate)
                floaters and ownerdraw windows have not yet shown up in cases where
                we don't want the parent to become visible
             */
-            if( mpParent->mbShown || (mnStyle & (SAL_FRAME_STYLE_OWNERDRAWDECORATION | SAL_FRAME_STYLE_FLOAT) ) )
+            if( mpParent->mbShown || (mnStyle & (SalFrameStyleFlags::OWNERDRAWDECORATION | SalFrameStyleFlags::FLOAT) ) )
             {
                 [mpParent->mpNSWindow addChildWindow: mpNSWindow ordered: NSWindowAbove];
             }
@@ -574,7 +589,7 @@ void AquaSalFrame::SetWindowState( const SalFrameState* pState )
     }
     // send event that we were moved/sized
     if( nEvent )
-        CallCallback( nEvent, NULL );
+        CallCallback( nEvent, nullptr );
 
     if( mbShown && mpNSWindow )
     {
@@ -731,7 +746,7 @@ void AquaSalFrame::ShowFullScreen( bool bFullScreen, sal_Int32 nDisplay )
         UpdateFrameGeometry();
 
         if( mbShown )
-            CallCallback( SALEVENT_MOVERESIZE, NULL );
+            CallCallback( SALEVENT_MOVERESIZE, nullptr );
     }
     else
     {
@@ -741,7 +756,7 @@ void AquaSalFrame::ShowFullScreen( bool bFullScreen, sal_Int32 nDisplay )
         UpdateFrameGeometry();
 
         if( mbShown )
-            CallCallback( SALEVENT_MOVERESIZE, NULL );
+            CallCallback( SALEVENT_MOVERESIZE, nullptr );
 
         // show the dock and the menubar
         [NSMenu setMenuBarVisible:YES];
@@ -900,18 +915,6 @@ void AquaSalFrame::Flush( const Rectangle& rRect )
     // => fall back to synchronous painting
     if( ImplGetSVData()->maAppData.mnDispatchLevel <= 0 )
     {
-        [mpNSView display];
-    }
-}
-
-void AquaSalFrame::Sync()
-{
-    if( mbGraphics && mpGraphics && mpNSView && mbShown )
-    {
-        // #i113170# may not be the main thread if called from UNO API
-        SalData::ensureThreadAutoreleasePool();
-
-        [mpNSView setNeedsDisplay: YES];
         [mpNSView display];
     }
 }
@@ -1136,7 +1139,7 @@ void AquaSalFrame::UpdateSettings( AllSettings& rSettings )
     StyleSettings aStyleSettings = rSettings.GetStyleSettings();
 
     // Background Color
-    Color aBackgroundColor = Color( 0xEC, 0xEC, 0xEC );
+    Color aBackgroundColor( 0xEC, 0xEC, 0xEC );
     aStyleSettings.Set3DColors( aBackgroundColor );
     aStyleSettings.SetFaceColor( aBackgroundColor );
     Color aInactiveTabColor( aBackgroundColor );
@@ -1312,7 +1315,7 @@ void AquaSalFrame::SetPosSize(long nX, long nY, long nWidth, long nHeight, sal_u
     UpdateFrameGeometry();
 
     if (nEvent)
-        CallCallback(nEvent, NULL);
+        CallCallback(nEvent, nullptr);
 
     if( mbShown && bPaint )
     {
@@ -1574,7 +1577,7 @@ void AquaSalFrame::CaptureMouse( bool bCapture )
     if( bCapture )
         s_pCaptureFrame = this;
     else if( ! bCapture && s_pCaptureFrame == this )
-        s_pCaptureFrame = NULL;
+        s_pCaptureFrame = nullptr;
 }
 
 void AquaSalFrame::ResetClipRegion()
@@ -1589,7 +1592,7 @@ void AquaSalFrame::ResetClipRegion()
 
     // release old path and indicate no clipping
     CGPathRelease( mrClippingPath );
-    mrClippingPath = NULL;
+    mrClippingPath = nullptr;
 
     if( mpNSView && mbShown )
         [mpNSView setNeedsDisplay: YES];
@@ -1614,7 +1617,7 @@ void AquaSalFrame::BeginSetClipRegion( sal_uLong nRects )
     if( mrClippingPath )
     {
         CGPathRelease( mrClippingPath );
-        mrClippingPath = NULL;
+        mrClippingPath = nullptr;
     }
 
     if( maClippingRects.size() > SAL_CLIPRECT_COUNT && nRects < maClippingRects.size() )
@@ -1652,13 +1655,13 @@ void AquaSalFrame::EndSetClipRegion()
     if( ! maClippingRects.empty() )
     {
         mrClippingPath = CGPathCreateMutable();
-        CGPathAddRects( mrClippingPath, NULL, &maClippingRects[0], maClippingRects.size() );
+        CGPathAddRects( mrClippingPath, nullptr, &maClippingRects[0], maClippingRects.size() );
     }
     if( mpNSView && mbShown )
         [mpNSView setNeedsDisplay: YES];
     if( mpNSWindow )
     {
-        [mpNSWindow setOpaque: (mrClippingPath != NULL) ? NO : YES];
+        [mpNSWindow setOpaque: (mrClippingPath != nullptr) ? NO : YES];
         [mpNSWindow setBackgroundColor: [NSColor clearColor]];
         // shadow is invalidated when view gets drawn again
     }

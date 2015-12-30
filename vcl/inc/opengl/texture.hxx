@@ -37,6 +37,7 @@ public:
     int    mnWidth;
     int    mnHeight;
     GLenum mnFilter;
+    GLuint mnOptStencil;
 
     std::unique_ptr<std::vector<int>> mpSlotReferences;
     int mnFreeSlots;
@@ -76,7 +77,8 @@ public:
     }
 
     bool InitializeSlots(int nSlotSize);
-    int FindFreeSlot();
+    int  FindFreeSlot();
+    GLuint AddStencil();
 };
 
 class VCL_DLLPUBLIC OpenGLTexture
@@ -110,6 +112,8 @@ public:
     void            Bind();
     void            Unbind();
     void            Read( GLenum nFormat, GLenum nType, sal_uInt8* pData );
+    GLuint          AddStencil();
+    GLuint          StencilId() const;
 
     void            SaveToFile(const OUString& rFileName);
 

@@ -28,8 +28,8 @@ OFSStreamContainer::OFSStreamContainer( const uno::Reference < io::XStream >& xS
 : m_bDisposed( false )
 , m_bInputClosed( false )
 , m_bOutputClosed( false )
-, m_pListenersContainer( NULL )
-, m_pTypeCollection( NULL )
+, m_pListenersContainer( nullptr )
+, m_pTypeCollection( nullptr )
 {
     try
     {
@@ -37,20 +37,20 @@ OFSStreamContainer::OFSStreamContainer( const uno::Reference < io::XStream >& xS
         if ( !m_xStream.is() )
             throw uno::RuntimeException();
 
-        m_xSeekable = uno::Reference< io::XSeekable >( xStream, uno::UNO_QUERY );
+        m_xSeekable.set( xStream, uno::UNO_QUERY );
         m_xInputStream = xStream->getInputStream();
         m_xOutputStream = xStream->getOutputStream();
-        m_xTruncate = uno::Reference< io::XTruncate >( m_xOutputStream, uno::UNO_QUERY );
-        m_xAsyncOutputMonitor = uno::Reference< io::XAsyncOutputMonitor >( m_xOutputStream, uno::UNO_QUERY );
+        m_xTruncate.set( m_xOutputStream, uno::UNO_QUERY );
+        m_xAsyncOutputMonitor.set( m_xOutputStream, uno::UNO_QUERY );
     }
     catch( uno::Exception& )
     {
-        m_xStream = uno::Reference< io::XStream >();
-        m_xSeekable = uno::Reference< io::XSeekable >();
-        m_xInputStream = uno::Reference< io::XInputStream >();
-        m_xOutputStream = uno::Reference< io::XOutputStream >();
-        m_xTruncate = uno::Reference< io::XTruncate >();
-        m_xAsyncOutputMonitor = uno::Reference< io::XAsyncOutputMonitor >();
+        m_xStream.clear();
+        m_xSeekable.clear();
+        m_xInputStream.clear();
+        m_xOutputStream.clear();
+        m_xTruncate.clear();
+        m_xAsyncOutputMonitor.clear();
     }
 }
 
@@ -59,7 +59,7 @@ OFSStreamContainer::~OFSStreamContainer()
     if ( m_pListenersContainer )
     {
         delete m_pListenersContainer;
-        m_pListenersContainer = NULL;
+        m_pListenersContainer = nullptr;
     }
 }
 
@@ -145,11 +145,11 @@ void SAL_CALL OFSStreamContainer::release()
 uno::Sequence< uno::Type > SAL_CALL OFSStreamContainer::getTypes()
         throw( uno::RuntimeException, std::exception )
 {
-    if ( m_pTypeCollection == NULL )
+    if ( m_pTypeCollection == nullptr )
     {
         ::osl::MutexGuard aGuard( m_aMutex );
 
-        if ( m_pTypeCollection == NULL )
+        if ( m_pTypeCollection == nullptr )
         {
             ::cppu::OTypeCollection aTypeCollection
                                     (   cppu::UnoType<lang::XTypeProvider>::get()

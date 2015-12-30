@@ -218,11 +218,11 @@ Any PresenterTextView::SetPropertyValue (
 }
 
 void PresenterTextView::ThrowIfDisposed()
-    throw (::com::sun::star::lang::DisposedException)
+    throw (css::lang::DisposedException)
 {
     if (PresenterTextViewInterfaceBase::rBHelper.bDisposed
         || PresenterTextViewInterfaceBase::rBHelper.bInDispose
-        || mpImplementation.get()==NULL)
+        || mpImplementation.get()==nullptr)
     {
         throw lang::DisposedException ("PresenterTextView object has already been disposed",
             static_cast<uno::XWeak*>(this));
@@ -242,8 +242,8 @@ PresenterTextView::Implementation::Implementation()
       msTotalHeightPropertyName("TotalHeight"),
       mxBitmap(),
       mpCanvas(),
-      mpOutputDevice(VclPtr<VirtualDevice>::Create(*Application::GetDefaultDevice(), 0, 0)),
-      mpEditEngine(NULL),
+      mpOutputDevice(VclPtr<VirtualDevice>::Create(*Application::GetDefaultDevice(), DeviceFormat::DEFAULT, DeviceFormat::DEFAULT)),
+      mpEditEngine(nullptr),
       mpEditEngineItemPool(EditEngine::CreatePool()),
       maSize(100,100),
       maBackgroundColor(0xffffffff),
@@ -266,7 +266,7 @@ PresenterTextView::Implementation::~Implementation()
 
 EditEngine * PresenterTextView::Implementation::GetEditEngine()
 {
-    if (mpEditEngine == NULL)
+    if (mpEditEngine == nullptr)
         mpEditEngine = CreateEditEngine ();
     return mpEditEngine;
 }
@@ -274,7 +274,7 @@ EditEngine * PresenterTextView::Implementation::GetEditEngine()
 EditEngine* PresenterTextView::Implementation::CreateEditEngine()
 {
     EditEngine* pEditEngine = mpEditEngine;
-    if (pEditEngine == NULL)
+    if (pEditEngine == nullptr)
     {
 
         // set fonts to be used
@@ -299,9 +299,9 @@ EditEngine* PresenterTextView::Implementation::CreateEditEngine()
             {   LANGUAGE_ARABIC_SAUDI_ARABIA,  LANGUAGE_NONE,
                 DefaultFontType::CTL_TEXT,   EE_CHAR_FONTINFO_CTL }
         };
-        aTable[0].nLang = MsLangId::resolveSystemLanguageByScriptType(aOpt.nDefaultLanguage, ::com::sun::star::i18n::ScriptType::LATIN);
-        aTable[1].nLang = MsLangId::resolveSystemLanguageByScriptType(aOpt.nDefaultLanguage_CJK, ::com::sun::star::i18n::ScriptType::ASIAN);
-        aTable[2].nLang = MsLangId::resolveSystemLanguageByScriptType(aOpt.nDefaultLanguage_CTL, ::com::sun::star::i18n::ScriptType::COMPLEX);
+        aTable[0].nLang = MsLangId::resolveSystemLanguageByScriptType(aOpt.nDefaultLanguage, css::i18n::ScriptType::LATIN);
+        aTable[1].nLang = MsLangId::resolveSystemLanguageByScriptType(aOpt.nDefaultLanguage_CJK, css::i18n::ScriptType::ASIAN);
+        aTable[2].nLang = MsLangId::resolveSystemLanguageByScriptType(aOpt.nDefaultLanguage_CTL, css::i18n::ScriptType::COMPLEX);
 
         for (int i = 0;  i < 3;  ++i)
         {
@@ -324,7 +324,7 @@ EditEngine* PresenterTextView::Implementation::CreateEditEngine()
 
         pEditEngine->EnableUndo (true);
         pEditEngine->SetDefTab (sal_uInt16(
-            Application::GetDefaultDevice()->GetTextWidth(OUString("XXXX"))));
+            Application::GetDefaultDevice()->GetTextWidth("XXXX")));
 
         pEditEngine->SetControlWord(
                 EEControlBits(pEditEngine->GetControlWord() | EEControlBits::AUTOINDENTING) &
@@ -344,26 +344,26 @@ EditEngine* PresenterTextView::Implementation::CreateEditEngine()
 void PresenterTextView::Implementation::SetCanvas (const cppcanvas::CanvasSharedPtr& rpCanvas)
 {
     mpCanvas = rpCanvas;
-    mxBitmap = NULL;
+    mxBitmap = nullptr;
 }
 
 void PresenterTextView::Implementation::SetSize (const Size aSize)
 {
-    DBG_ASSERT(mpEditEngine!=NULL, "EditEngine missing");
+    DBG_ASSERT(mpEditEngine!=nullptr, "EditEngine missing");
 
     maSize = aSize;
     mpEditEngine->SetPaperSize(maSize);
     mnTotalHeight = -1;
-    mxBitmap = NULL;
+    mxBitmap = nullptr;
 }
 
 void PresenterTextView::Implementation::SetBackgroundColor (const Color aColor)
 {
     maBackgroundColor = aColor;
-    mxBitmap = NULL;
+    mxBitmap = nullptr;
 
-    DBG_ASSERT(mpEditEngine!=NULL, "EditEngine missing");
-    DBG_ASSERT(mpEditEngineItemPool!=NULL, "EditEngineItemPool missing");
+    DBG_ASSERT(mpEditEngine!=nullptr, "EditEngine missing");
+    DBG_ASSERT(mpEditEngineItemPool!=nullptr, "EditEngineItemPool missing");
     mpEditEngine->SetBackgroundColor(aColor);
     mpEditEngine->EnableAutoColor(false);
     mpEditEngine->ForceAutoColor(false);
@@ -372,18 +372,18 @@ void PresenterTextView::Implementation::SetBackgroundColor (const Color aColor)
 void PresenterTextView::Implementation::SetTextColor (const Color aColor)
 {
     maTextColor = aColor;
-    mxBitmap = NULL;
+    mxBitmap = nullptr;
 
-    DBG_ASSERT(mpEditEngineItemPool!=NULL, "EditEngineItemPool missing");
+    DBG_ASSERT(mpEditEngineItemPool!=nullptr, "EditEngineItemPool missing");
     mpEditEngineItemPool->SetPoolDefaultItem(SvxColorItem(aColor, EE_CHAR_COLOR));
 }
 
 void PresenterTextView::Implementation::SetFontDescriptor (
     const awt::FontDescriptor& rFontDescriptor)
 {
-    mxBitmap = NULL;
+    mxBitmap = nullptr;
 
-    DBG_ASSERT(mpEditEngineItemPool!=NULL, "EditEngineItemPool missing");
+    DBG_ASSERT(mpEditEngineItemPool!=nullptr, "EditEngineItemPool missing");
 
     const sal_Int32 nFontHeight = rFontDescriptor.Height;
 
@@ -403,7 +403,7 @@ void PresenterTextView::Implementation::SetFontDescriptor (
     mpEditEngineItemPool->SetPoolDefaultItem(aSvxFontItem);
 
     mnTotalHeight = -1;
-    mxBitmap = NULL;
+    mxBitmap = nullptr;
 
     CheckTop();
     mnTotalHeight = -1;
@@ -415,22 +415,22 @@ void PresenterTextView::Implementation::SetTop (const sal_Int32 nTop)
         return;
 
     mnTop = nTop;
-    mxBitmap = NULL;
+    mxBitmap = nullptr;
     CheckTop();
 }
 
 void PresenterTextView::Implementation::SetText (const OUString& rText)
 {
-    DBG_ASSERT(mpEditEngine!=NULL, "EditEngine missing");
+    DBG_ASSERT(mpEditEngine!=nullptr, "EditEngine missing");
     msText = rText;
     mpEditEngine->SetPaperSize(maSize);
     mnTotalHeight = -1;
-    mxBitmap = NULL;
+    mxBitmap = nullptr;
 }
 
 sal_Int32 PresenterTextView::Implementation::ParseDistance (const OUString& rsDistance) const
 {
-    DBG_ASSERT(mpEditEngine!=NULL, "EditEngine missing");
+    DBG_ASSERT(mpEditEngine!=nullptr, "EditEngine missing");
     sal_Int32 nDistance (0);
     if (rsDistance.endsWith("px"))
     {
@@ -449,12 +449,13 @@ sal_Int32 PresenterTextView::Implementation::ParseDistance (const OUString& rsDi
 
 Reference<rendering::XBitmap> PresenterTextView::Implementation::GetBitmap()
 {
-    DBG_ASSERT(mpEditEngine!=NULL, "EditEngine missing");
+    DBG_ASSERT(mpEditEngine!=nullptr, "EditEngine missing");
 
     if ( ! mxBitmap.is())
     {
         mpOutputDevice.disposeAndClear();
-        mpOutputDevice = VclPtr<VirtualDevice>::Create(*Application::GetDefaultDevice(), 0, 0);
+        mpOutputDevice = VclPtr<VirtualDevice>::Create(*Application::GetDefaultDevice(),
+                                                       DeviceFormat::DEFAULT, DeviceFormat::DEFAULT);
         mpOutputDevice->SetMapMode(MAP_PIXEL);
         mpOutputDevice->SetOutputSizePixel(maSize);
         mpOutputDevice->SetLineColor();
@@ -485,7 +486,7 @@ Reference<rendering::XBitmap> PresenterTextView::Implementation::GetBitmap()
 
 sal_Int32 PresenterTextView::Implementation::GetTotalHeight()
 {
-    DBG_ASSERT(mpEditEngine!=NULL, "EditEngine missing");
+    DBG_ASSERT(mpEditEngine!=nullptr, "EditEngine missing");
 
     if (mnTotalHeight < 0)
     {
@@ -498,11 +499,11 @@ sal_Int32 PresenterTextView::Implementation::GetTotalHeight()
 
 void PresenterTextView::Implementation::CheckTop()
 {
-    DBG_ASSERT(mpEditEngine!=NULL, "EditEngine missing");
+    DBG_ASSERT(mpEditEngine!=nullptr, "EditEngine missing");
 
-    if (mpEditEngine!=NULL && mnTotalHeight < 0)
+    if (mpEditEngine!=nullptr && mnTotalHeight < 0)
         mnTotalHeight = mpEditEngine->GetTextHeight();
-    if (mpEditEngine!=NULL && mnTop >= mnTotalHeight)
+    if (mpEditEngine!=nullptr && mnTop >= mnTotalHeight)
         mnTop = mnTotalHeight - mpEditEngine->GetLineHeight(0);
 
     if (mnTotalHeight < maSize.Height())
@@ -518,9 +519,9 @@ void PresenterTextView::Implementation::CheckTop()
 } } // end of namespace ::sd::presenter
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_Draw_PresenterTextView_get_implementation(::com::sun::star::uno::XComponentContext* context,
-                                                            ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_Draw_PresenterTextView_get_implementation(css::uno::XComponentContext* context,
+                                                            css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new sd::presenter::PresenterTextView(context));
 }

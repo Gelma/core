@@ -83,15 +83,15 @@ namespace sw { namespace sidebar {
 
 VclPtr<vcl::Window> PagePropertyPanel::Create (
     vcl::Window* pParent,
-    const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame>& rxFrame,
+    const css::uno::Reference< css::frame::XFrame>& rxFrame,
     SfxBindings* pBindings)
 {
-    if (pParent == NULL)
-        throw ::com::sun::star::lang::IllegalArgumentException("no parent Window given to PagePropertyPanel::Create", NULL, 0);
+    if (pParent == nullptr)
+        throw css::lang::IllegalArgumentException("no parent Window given to PagePropertyPanel::Create", nullptr, 0);
     if ( ! rxFrame.is())
-        throw ::com::sun::star::lang::IllegalArgumentException("no XFrame given to PagePropertyPanel::Create", NULL, 1);
-    if (pBindings == NULL)
-        throw ::com::sun::star::lang::IllegalArgumentException("no SfxBindings given to PagePropertyPanel::Create", NULL, 2);
+        throw css::lang::IllegalArgumentException("no XFrame given to PagePropertyPanel::Create", nullptr, 1);
+    if (pBindings == nullptr)
+        throw css::lang::IllegalArgumentException("no SfxBindings given to PagePropertyPanel::Create", nullptr, 2);
 
     return VclPtr<PagePropertyPanel>::Create( pParent,
                                               rxFrame,
@@ -100,14 +100,14 @@ VclPtr<vcl::Window> PagePropertyPanel::Create (
 
 PagePropertyPanel::PagePropertyPanel(
             vcl::Window* pParent,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame>& rxFrame,
+            const css::uno::Reference< css::frame::XFrame>& rxFrame,
             SfxBindings* pBindings)
     : PanelLayout(pParent, "PagePropertyPanel", "modules/swriter/ui/sidebarpage.ui", rxFrame)
     , mpBindings(pBindings)
 
     // image resources
-    , maImgSize                 (NULL)
-    , maImgSize_L                   (NULL)
+    , maImgSize                 (nullptr)
+    , maImgSize_L                   (nullptr)
     , mImgPortrait              (SW_RES(IMG_PAGE_PORTRAIT))
     , mImgLandscape             (SW_RES(IMG_PAGE_LANDSCAPE))
     , mImgNarrow                    (SW_RES(IMG_PAGE_NARROW))
@@ -203,9 +203,9 @@ PagePropertyPanel::~PagePropertyPanel()
 void PagePropertyPanel::dispose()
 {
     delete[] maImgSize;
-    maImgSize = NULL;
+    maImgSize = nullptr;
     delete[] maImgSize_L;
-    maImgSize_L = NULL;
+    maImgSize_L = nullptr;
 
     mpPageItem.reset();
     mpPageLRMarginItem.reset();
@@ -223,6 +223,11 @@ void PagePropertyPanel::dispose()
     m_aSwPagePgControl.dispose();
     m_aSwPageColControl.dispose();
     m_aSwPagePgMetricControl.dispose();
+
+    maColumnPopup.dispose();
+    maSizePopup.dispose();
+    maMarginPopup.dispose();
+    maOrientationPopup.dispose();
 
     PanelLayout::dispose();
 }
@@ -488,7 +493,7 @@ void PagePropertyPanel::NotifyItemUpdate(
     case SID_ATTR_PAGE_COLUMN:
         {
             if ( eState >= SfxItemState::DEFAULT &&
-                 pState && pState->ISA(SfxInt16Item) )
+                 pState && dynamic_cast< const SfxInt16Item *>( pState ) !=  nullptr )
             {
                 mpPageColumnTypeItem.reset( static_cast<SfxInt16Item*>(pState->Clone()) );
                 ChangeColumnImage( mpPageColumnTypeItem->GetValue() );
@@ -497,7 +502,7 @@ void PagePropertyPanel::NotifyItemUpdate(
         break;
     case SID_ATTR_PAGE_LRSPACE:
         if ( eState >= SfxItemState::DEFAULT &&
-             pState && pState->ISA(SvxLongLRSpaceItem) )
+             pState && dynamic_cast< const SvxLongLRSpaceItem *>( pState ) !=  nullptr )
         {
             mpPageLRMarginItem.reset( static_cast<SvxLongLRSpaceItem*>(pState->Clone()) );
             ChangeMarginImage();
@@ -506,7 +511,7 @@ void PagePropertyPanel::NotifyItemUpdate(
 
     case SID_ATTR_PAGE_ULSPACE:
         if ( eState >= SfxItemState::DEFAULT &&
-             pState && pState->ISA(SvxLongULSpaceItem) )
+             pState && dynamic_cast< const SvxLongULSpaceItem *>( pState ) !=  nullptr )
         {
             mpPageULMarginItem.reset( static_cast<SvxLongULSpaceItem*>(pState->Clone()) );
             ChangeMarginImage();
@@ -515,7 +520,7 @@ void PagePropertyPanel::NotifyItemUpdate(
 
     case SID_ATTR_PAGE:
         if ( eState >= SfxItemState::DEFAULT &&
-             pState && pState->ISA(SvxPageItem) )
+             pState && dynamic_cast< const SvxPageItem *>( pState ) !=  nullptr )
         {
             const sal_uInt16 nIdOrientation = mpToolBoxOrientation->GetItemId(UNO_ORIENTATION);
             mpPageItem.reset( static_cast<SvxPageItem*>(pState->Clone()) );
@@ -539,7 +544,7 @@ void PagePropertyPanel::NotifyItemUpdate(
             mpBindings->Invalidate( SID_ATTR_PAGE, true );
         }
         if ( eState >= SfxItemState::DEFAULT &&
-             pState && pState->ISA(SvxSizeItem) )
+             pState && dynamic_cast< const SvxSizeItem *>( pState ) !=  nullptr )
         {
             mpPageSizeItem.reset( static_cast<SvxSizeItem*>(pState->Clone()) );
             ChangeSizeImage();
@@ -561,7 +566,7 @@ void PagePropertyPanel::MetricState( SfxItemState eState, const SfxPoolItem* pSt
     else
     {
         SfxViewFrame* pFrame = SfxViewFrame::Current();
-        SfxObjectShell* pSh = NULL;
+        SfxObjectShell* pSh = nullptr;
         if ( pFrame )
             pSh = pFrame->GetObjectShell();
         if ( pSh )
@@ -583,9 +588,9 @@ void PagePropertyPanel::MetricState( SfxItemState eState, const SfxPoolItem* pSt
 
 void PagePropertyPanel::ChangeMarginImage()
 {
-    if ( mpPageLRMarginItem.get() == 0 ||
-         mpPageULMarginItem.get() == 0 ||
-         mpPageItem.get() == 0 )
+    if ( mpPageLRMarginItem.get() == nullptr ||
+         mpPageULMarginItem.get() == nullptr ||
+         mpPageItem.get() == nullptr )
     {
         return;
     }
@@ -627,8 +632,8 @@ void PagePropertyPanel::ChangeMarginImage()
 
 void PagePropertyPanel::ChangeSizeImage()
 {
-    if ( mpPageSizeItem.get() == 0 ||
-         mpPageItem.get() == 0 )
+    if ( mpPageSizeItem.get() == nullptr ||
+         mpPageItem.get() == nullptr )
     {
         return;
     }
@@ -690,7 +695,7 @@ void PagePropertyPanel::ChangeSizeImage()
 
 void PagePropertyPanel::ChangeColumnImage( const sal_uInt16 nColumnType )
 {
-    if ( mpPageItem.get() == 0 )
+    if ( mpPageItem.get() == nullptr )
     {
         return;
     }
@@ -748,7 +753,7 @@ void PagePropertyPanel::StartUndo()
 {
     if ( mxUndoManager.is() )
     {
-        mxUndoManager->enterUndoContext( OUString("") );
+        mxUndoManager->enterUndoContext( "" );
     }
 }
 

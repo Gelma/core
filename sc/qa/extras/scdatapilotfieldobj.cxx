@@ -28,9 +28,9 @@ class ScDataPilotFieldObj : public CalcUnoApiTest, apitest::XDataPilotFieldGroup
                                 apitest::DataPilotField
 {
 public:
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
-    virtual uno::Reference< uno::XInterface > init() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
+    virtual uno::Reference< uno::XInterface > init() override;
 
     ScDataPilotFieldObj();
 
@@ -60,7 +60,7 @@ ScDataPilotFieldObj::ScDataPilotFieldObj()
 uno::Reference< uno::XInterface > ScDataPilotFieldObj::init()
 {
     OUString aFileURL;
-    createFileURL(OUString("scdatapilotfieldobj.ods"), aFileURL);
+    createFileURL("scdatapilotfieldobj.ods", aFileURL);
     if(!mxComponent.is())
         mxComponent = loadFromDesktop(aFileURL, "com.sun.star.sheet.SpreadsheetDocument");
     CPPUNIT_ASSERT(mxComponent.is());

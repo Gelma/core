@@ -79,11 +79,11 @@ namespace vcl
         virtual ~ReferenceDeviceTextLayout();
 
         // ITextLayout
-        virtual long        GetTextWidth( const OUString& rStr, sal_Int32 nIndex, sal_Int32 nLen ) const SAL_OVERRIDE;
-        virtual void        DrawText( const Point& _rStartPoint, const OUString& _rText, sal_Int32 _nStartIndex, sal_Int32 _nLength, MetricVector* _pVector, OUString* _pDisplayText ) SAL_OVERRIDE;
-        virtual bool        GetCaretPositions( const OUString& _rText, long* _pCaretXArray, sal_Int32 _nStartIndex, sal_Int32 _nLength ) const SAL_OVERRIDE;
-        virtual sal_Int32   GetTextBreak(const OUString& _rText, long _nMaxTextWidth, sal_Int32 _nStartIndex, sal_Int32 _nLength) const SAL_OVERRIDE;
-        virtual bool        DecomposeTextRectAction() const SAL_OVERRIDE;
+        virtual long        GetTextWidth( const OUString& rStr, sal_Int32 nIndex, sal_Int32 nLen ) const override;
+        virtual void        DrawText( const Point& _rStartPoint, const OUString& _rText, sal_Int32 _nStartIndex, sal_Int32 _nLength, MetricVector* _pVector, OUString* _pDisplayText ) override;
+        virtual bool        GetCaretPositions( const OUString& _rText, long* _pCaretXArray, sal_Int32 _nStartIndex, sal_Int32 _nLength ) const override;
+        virtual sal_Int32   GetTextBreak(const OUString& _rText, long _nMaxTextWidth, sal_Int32 _nStartIndex, sal_Int32 _nLength) const override;
+        virtual bool        DecomposeTextRectAction() const override;
 
     public:
         // equivalents to the respective OutputDevice methods, which take the reference device into account
@@ -205,7 +205,7 @@ namespace vcl
 
     long ReferenceDeviceTextLayout::GetTextWidth( const OUString& _rText, sal_Int32 _nStartIndex, sal_Int32 _nLength ) const
     {
-        return GetTextArray( _rText, NULL, _nStartIndex, _nLength );
+        return GetTextArray( _rText, nullptr, _nStartIndex, _nLength );
     }
 
     void ReferenceDeviceTextLayout::DrawText( const Point& _rStartPoint, const OUString& _rText, sal_Int32 _nStartIndex, sal_Int32 _nLength, MetricVector* _pVector, OUString* _pDisplayText )
@@ -286,7 +286,7 @@ namespace vcl
             // the disadvantage of less accuracy, compared with the approach to calculate the rect from the
             // single "DrawText( Point, ... )" calls, since more intermediate arithmetic will translate
             // from ref- to target-units.
-            aTextRect = m_rTargetDevice.GetTextRect( aRect, _rText, _nStyle, NULL, this );
+            aTextRect = m_rTargetDevice.GetTextRect( aRect, _rText, _nStyle, nullptr, this );
         }
 
         // similar to above, the text rect now contains TWIPs (or whatever unit the ref device has), but the caller

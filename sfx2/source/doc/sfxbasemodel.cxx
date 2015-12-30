@@ -156,9 +156,9 @@ public:
     virtual ~SfxDocInfoListener_Impl();
 
     virtual void SAL_CALL disposing( const lang::EventObject& )
-        throw ( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( RuntimeException, std::exception ) override;
     virtual void SAL_CALL modified( const lang::EventObject& )
-        throw ( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( RuntimeException, std::exception ) override;
 };
 SfxDocInfoListener_Impl::~SfxDocInfoListener_Impl()
 {
@@ -204,11 +204,9 @@ struct IMPL_SfxBaseModel_DataContainer : public ::sfx2::IModifiableDocument
     bool                                                       m_bClosing               ;
     bool                                                       m_bSaving                ;
     bool                                                       m_bSuicide               ;
-    bool                                                       m_bInitialized           ;
     bool                                                       m_bExternalTitle         ;
     bool                                                       m_bModifiedSinceLastSave ;
     Reference< view::XPrintable>                               m_xPrintable             ;
-    Reference< script::provider::XScriptProvider >             m_xScriptProvider        ;
     Reference< ui::XUIConfigurationManager2 >                  m_xUIConfigurationManager;
     ::rtl::Reference< ::sfx2::DocumentStorageModifyListener >  m_pStorageModifyListen   ;
     OUString                                                   m_sModuleIdentifier      ;
@@ -227,10 +225,9 @@ struct IMPL_SfxBaseModel_DataContainer : public ::sfx2::IModifiableDocument
             ,   m_bClosing              ( false     )
             ,   m_bSaving               ( false     )
             ,   m_bSuicide              ( false     )
-            ,   m_bInitialized          ( false     )
             ,   m_bExternalTitle        ( false     )
             ,   m_bModifiedSinceLastSave( false     )
-            ,   m_pStorageModifyListen  ( NULL          )
+            ,   m_pStorageModifyListen  ( nullptr          )
             ,   m_xTitleHelper          ()
             ,   m_xNumberedControllers  ()
             ,   m_xDocumentMetadata     () // lazy
@@ -248,7 +245,7 @@ struct IMPL_SfxBaseModel_DataContainer : public ::sfx2::IModifiableDocument
     }
 
     // ::sfx2::IModifiableDocument
-    virtual void storageIsModified() SAL_OVERRIDE
+    virtual void storageIsModified() override
     {
         if ( m_pObjectShell.Is() && !m_pObjectShell->IsModified() )
             m_pObjectShell->SetModified();
@@ -264,7 +261,7 @@ struct IMPL_SfxBaseModel_DataContainer : public ::sfx2::IModifiableDocument
             OSL_ENSURE(m_pObjectShell, "GetDMA: no object shell?");
             if (!m_pObjectShell)
             {
-                return 0;
+                return nullptr;
             }
 
             const Reference<XComponentContext> xContext(
@@ -277,8 +274,7 @@ struct IMPL_SfxBaseModel_DataContainer : public ::sfx2::IModifiableDocument
             const Reference<frame::
                 XTransientDocumentsDocumentContentFactory> xTDDCF(
                     xMsf->createInstanceWithContext(
-                        OUString("com.sun.star.frame."
-                            "TransientDocumentsDocumentContentFactory"),
+                        "com.sun.star.frame.TransientDocumentsDocumentContentFactory",
                     xContext),
                 UNO_QUERY_THROW);
             const Reference<ucb::XContent> xContent(
@@ -286,7 +282,7 @@ struct IMPL_SfxBaseModel_DataContainer : public ::sfx2::IModifiableDocument
             OSL_ENSURE(xContent.is(), "GetDMA: cannot create DocumentContent");
             if (!xContent.is())
             {
-                return 0;
+                return nullptr;
             }
             uri = xContent->getIdentifier()->getContentIdentifier();
             OSL_ENSURE(!uri.isEmpty(), "GetDMA: empty uri?");
@@ -306,7 +302,7 @@ struct IMPL_SfxBaseModel_DataContainer : public ::sfx2::IModifiableDocument
         return (m_pObjectShell)
             ? new ::sfx2::DocumentMetadataAccess(
                 ::comphelper::getProcessComponentContext(), *m_pObjectShell)
-            : 0;
+            : nullptr;
     }
 };
 
@@ -324,19 +320,19 @@ public:
         : m_pData( pData )
     {}
 
-    virtual void SAL_CALL disposing( const lang::EventObject& aEvent ) throw ( RuntimeException, std::exception ) SAL_OVERRIDE ;
-    virtual void SAL_CALL printJobEvent( const view::PrintJobEvent& rEvent ) throw ( RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing( const lang::EventObject& aEvent ) throw ( RuntimeException, std::exception ) override ;
+    virtual void SAL_CALL printJobEvent( const view::PrintJobEvent& rEvent ) throw ( RuntimeException, std::exception) override;
 };
 
 void SAL_CALL SfxPrintHelperListener_Impl::disposing( const lang::EventObject& ) throw ( RuntimeException, std::exception )
 {
-    m_pData->m_xPrintable = 0;
+    m_pData->m_xPrintable = nullptr;
 }
 
 void SAL_CALL SfxPrintHelperListener_Impl::printJobEvent( const view::PrintJobEvent& rEvent ) throw (RuntimeException, std::exception)
 {
     ::cppu::OInterfaceContainerHelper* pContainer = m_pData->m_aInterfaceContainer.getContainer( cppu::UnoType<view::XPrintJobListener>::get());
-    if ( pContainer!=NULL )
+    if ( pContainer!=nullptr )
     {
         ::cppu::OInterfaceIteratorHelper pIterator(*pContainer);
         while (pIterator.hasMoreElements())
@@ -407,7 +403,7 @@ SfxOwnFramesLocker::~SfxOwnFramesLocker()
 
 vcl::Window* SfxOwnFramesLocker::GetVCLWindow( const Reference< frame::XFrame >& xFrame )
 {
-    vcl::Window* pWindow = NULL;
+    vcl::Window* pWindow = nullptr;
 
     if ( xFrame.is() )
     {
@@ -434,7 +430,7 @@ void SfxOwnFramesLocker::UnlockFrames()
 
                 pWindow->Enable();
 
-                m_aLockedFrames[nInd] = Reference< frame::XFrame >();
+                m_aLockedFrames[nInd].clear();
             }
         }
         catch( Exception& )
@@ -464,7 +460,7 @@ SfxSaveGuard::SfxSaveGuard(const Reference< frame::XModel >&             xModel 
                                  bool                             bRejectConcurrentSaveRequest)
     : m_xModel     (xModel)
     , m_pData      (pData )
-    , m_pFramesLock(0     )
+    , m_pFramesLock(nullptr     )
 {
     if ( m_pData->m_bClosed )
         throw lang::DisposedException("Object already disposed.");
@@ -483,7 +479,7 @@ SfxSaveGuard::SfxSaveGuard(const Reference< frame::XModel >&             xModel 
 SfxSaveGuard::~SfxSaveGuard()
 {
     SfxOwnFramesLocker* pFramesLock = m_pFramesLock;
-    m_pFramesLock = 0;
+    m_pFramesLock = nullptr;
     delete pFramesLock;
 
     m_pData->m_bSaving = false;
@@ -516,7 +512,7 @@ SfxBaseModel::SfxBaseModel( SfxObjectShell *pObjectShell )
 , m_bSupportEmbeddedScripts( pObjectShell && pObjectShell->Get_Impl() && !pObjectShell->Get_Impl()->m_bNoBasicCapabilities )
 , m_bSupportDocRecovery( pObjectShell && pObjectShell->Get_Impl() && pObjectShell->Get_Impl()->m_bDocRecoverySupport )
 {
-    if ( pObjectShell != NULL )
+    if ( pObjectShell != nullptr )
     {
         StartListening( *pObjectShell ) ;
     }
@@ -527,7 +523,7 @@ SfxBaseModel::~SfxBaseModel()
 {
     //In SvxDrawingLayerImport when !xTargetDocument the fallback SvxUnoDrawingModel created there
     //never gets disposed called on it, so m_pData leaks.
-    delete m_pData, m_pData = 0;
+    delete m_pData, m_pData = nullptr;
 }
 
 //  XInterface
@@ -577,7 +573,7 @@ namespace
             io_rTypes.getConstArray(),
             io_rTypes.getConstArray() + io_rTypes.getLength(),
             aStrippedTypes.getArray(),
-            ::std::bind2nd( ::std::equal_to< uno::Type >(), i_rTypeToStrip )
+            [&i_rTypeToStrip](const uno::Type& aType) { return aType == i_rTypeToStrip; }
         );
         io_rTypes = aStrippedTypes;
     }
@@ -764,13 +760,13 @@ void SAL_CALL SfxBaseModel::dispose() throw(RuntimeException, std::exception)
     if ( m_pData->m_pStorageModifyListen.is() )
     {
         m_pData->m_pStorageModifyListen->dispose();
-        m_pData->m_pStorageModifyListen = NULL;
+        m_pData->m_pStorageModifyListen = nullptr;
     }
 
     if ( m_pData->m_pDocumentUndoManager.is() )
     {
         m_pData->m_pDocumentUndoManager->disposing();
-        m_pData->m_pDocumentUndoManager = NULL;
+        m_pData->m_pDocumentUndoManager = nullptr;
     }
 
     lang::EventObject aEvent( static_cast<frame::XModel *>(this) );
@@ -785,14 +781,14 @@ void SAL_CALL SfxBaseModel::dispose() throw(RuntimeException, std::exception)
         EndListening( *m_pData->m_pObjectShell );
     }
 
-    m_pData->m_xCurrent = Reference< frame::XController > ();
-    m_pData->m_seqControllers = Sequence< Reference< frame::XController > > () ;
+    m_pData->m_xCurrent.clear();
+    m_pData->m_seqControllers.realloc(0);
 
     // m_pData member must be set to zero before 0delete is called to
     // force disposed exception whenever someone tries to access our
     // instance while in the dtor.
     IMPL_SfxBaseModel_DataContainer* pData = m_pData;
-    m_pData = 0;
+    m_pData = nullptr;
     delete pData;
 }
 
@@ -940,12 +936,12 @@ sal_Bool SAL_CALL SfxBaseModel::attachResource( const   OUString&               
             aSet.ClearItem( SID_FILLFRAME );
 
             pMedium->GetItemSet()->Put( aSet );
-            SFX_ITEMSET_ARG( &aSet, pItem, SfxStringItem, SID_FILTER_NAME, false );
+            const SfxStringItem* pItem = aSet.GetItem<SfxStringItem>(SID_FILTER_NAME, false);
             if ( pItem )
                 pMedium->SetFilter(
                     pObjectShell->GetFactory().GetFilterContainer()->GetFilter4FilterName( pItem->GetValue() ) );
 
-            SFX_ITEMSET_ARG( &aSet, pTitleItem, SfxStringItem, SID_DOCINFO_TITLE, false );
+            const SfxStringItem* pTitleItem = aSet.GetItem<SfxStringItem>(SID_DOCINFO_TITLE, false);
             if ( pTitleItem )
             {
                 SfxViewFrame* pFrame = SfxViewFrame::GetFirst( pObjectShell );
@@ -1122,7 +1118,7 @@ void SAL_CALL SfxBaseModel::disconnectController( const Reference< frame::XContr
     m_pData->m_seqControllers = aNewSeq;
 
     if ( xController == m_pData->m_xCurrent )
-        m_pData->m_xCurrent = Reference< frame::XController > ();
+        m_pData->m_xCurrent.clear();
 }
 
 namespace
@@ -1138,9 +1134,9 @@ namespace
         }
 
         // XUndoAction
-        virtual OUString SAL_CALL getTitle() throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL undo(  ) throw (UndoFailedException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL redo(  ) throw (UndoFailedException, RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual OUString SAL_CALL getTitle() throw (RuntimeException, std::exception) override;
+        virtual void SAL_CALL undo(  ) throw (UndoFailedException, RuntimeException, std::exception) override;
+        virtual void SAL_CALL redo(  ) throw (UndoFailedException, RuntimeException, std::exception) override;
 
     private:
         const Reference< XModel >   m_xModel;
@@ -1369,7 +1365,7 @@ void SAL_CALL SfxBaseModel::close( sal_Bool bDeliverOwnership ) throw (util::Clo
     Reference< XInterface > xSelfHold( static_cast< ::cppu::OWeakObject* >(this) );
     lang::EventObject       aSource  ( static_cast< ::cppu::OWeakObject* >(this) );
     ::cppu::OInterfaceContainerHelper* pContainer = m_pData->m_aInterfaceContainer.getContainer( cppu::UnoType<util::XCloseListener>::get());
-    if (pContainer!=NULL)
+    if (pContainer!=nullptr)
     {
         ::cppu::OInterfaceIteratorHelper pIterator(*pContainer);
         while (pIterator.hasMoreElements())
@@ -1397,7 +1393,7 @@ void SAL_CALL SfxBaseModel::close( sal_Bool bDeliverOwnership ) throw (util::Clo
     // no own objections against closing!
     m_pData->m_bClosing = true;
     pContainer = m_pData->m_aInterfaceContainer.getContainer( cppu::UnoType<util::XCloseListener>::get());
-    if (pContainer!=NULL)
+    if (pContainer!=nullptr)
     {
         ::cppu::OInterfaceIteratorHelper pCloseIterator(*pContainer);
         while (pCloseIterator.hasMoreElements())
@@ -1528,7 +1524,7 @@ void SAL_CALL SfxBaseModel::storeSelf( const    Sequence< beans::PropertyValue >
 
     if ( m_pData->m_pObjectShell.Is() )
     {
-        m_pData->m_pObjectShell->AddLog( OUString( OSL_LOG_PREFIX "storeSelf"  ) );
+        m_pData->m_pObjectShell->AddLog( OSL_LOG_PREFIX "storeSelf" );
         SfxSaveGuard aSaveGuard(this, m_pData, false);
 
         bool bCheckIn = false;
@@ -1541,7 +1537,7 @@ void SAL_CALL SfxBaseModel::storeSelf( const    Sequence< beans::PropertyValue >
               && aSeqArgs[nInd].Name != "FailOnWarning"
               && aSeqArgs[nInd].Name != "CheckIn" )
             {
-                m_pData->m_pObjectShell->AddLog( OUString( OSL_LOG_PREFIX "unexpected parameter for storeSelf, might be no problem if SaveAs is executed."  ) );
+                m_pData->m_pObjectShell->AddLog( OSL_LOG_PREFIX "unexpected parameter for storeSelf, might be no problem if SaveAs is executed." );
                 m_pData->m_pObjectShell->StoreLog();
 
                 OUString aMessage( "Unexpected MediaDescriptor parameter: "  );
@@ -1615,14 +1611,14 @@ void SAL_CALL SfxBaseModel::storeSelf( const    Sequence< beans::PropertyValue >
 
         if ( bRet )
         {
-            m_pData->m_pObjectShell->AddLog( OUString( OSL_LOG_PREFIX "successful saving."  ) );
+            m_pData->m_pObjectShell->AddLog( OSL_LOG_PREFIX "successful saving." );
             m_pData->m_aPreusedFilterName = GetMediumFilterName_Impl();
 
             SfxGetpApp()->NotifyEvent( SfxEventHint( SFX_EVENT_SAVEDOCDONE, GlobalEventConfig::GetEventName(GlobalEventId::SAVEDOCDONE), m_pData->m_pObjectShell ) );
         }
         else
         {
-            m_pData->m_pObjectShell->AddLog( OUString( OSL_LOG_PREFIX "Storing failed!"  ) );
+            m_pData->m_pObjectShell->AddLog( OSL_LOG_PREFIX "Storing failed!" );
             m_pData->m_pObjectShell->StoreLog();
 
             // write the contents of the logger to the file
@@ -1657,7 +1653,7 @@ void SAL_CALL SfxBaseModel::storeAsURL( const   OUString&                   rURL
 
     if ( m_pData->m_pObjectShell.Is() )
     {
-        m_pData->m_pObjectShell->AddLog( OUString( OSL_LOG_PREFIX "storeAsURL"  ) );
+        m_pData->m_pObjectShell->AddLog( OSL_LOG_PREFIX "storeAsURL" );
         SfxSaveGuard aSaveGuard(this, m_pData, false);
 
         impl_store( rURL, rArgs, false );
@@ -1669,7 +1665,7 @@ void SAL_CALL SfxBaseModel::storeAsURL( const   OUString&                   rURL
         loadCmisProperties( );
 
 #if OSL_DEBUG_LEVEL > 0
-        SFX_ITEMSET_ARG( m_pData->m_pObjectShell->GetMedium()->GetItemSet(), pPasswdItem, SfxStringItem, SID_PASSWORD, false);
+        const SfxStringItem* pPasswdItem = SfxItemSet::GetItem<SfxStringItem>(m_pData->m_pObjectShell->GetMedium()->GetItemSet(), SID_PASSWORD, false);
         OSL_ENSURE( !pPasswdItem, "There should be no Password property in the document MediaDescriptor!" );
 #endif
     }
@@ -1698,7 +1694,7 @@ void SAL_CALL SfxBaseModel::storeToURL( const   OUString&                   rURL
 
     if ( m_pData->m_pObjectShell.Is() )
     {
-        m_pData->m_pObjectShell->AddLog( OUString( OSL_LOG_PREFIX "storeToURL"  ) );
+        m_pData->m_pObjectShell->AddLog( OSL_LOG_PREFIX "storeToURL" );
         SfxSaveGuard aSaveGuard(this, m_pData, false);
         impl_store( rURL, rArgs, true );
     }
@@ -1770,7 +1766,7 @@ void SAL_CALL SfxBaseModel::initNew()
         if( m_pData->m_pObjectShell->GetMedium() )
             throw frame::DoubleInitializationException();
 
-        bool bRes = m_pData->m_pObjectShell->DoInitNew( NULL );
+        bool bRes = m_pData->m_pObjectShell->DoInitNew();
         sal_uInt32 nErrCode = m_pData->m_pObjectShell->GetError() ?
                                     m_pData->m_pObjectShell->GetError() : ERRCODE_IO_CANTCREATE;
         m_pData->m_pObjectShell->ResetError();
@@ -1799,7 +1795,7 @@ void setUpdatePickList( SfxMedium* pMedium )
         return;
 
     bool bHidden = false;
-    SFX_ITEMSET_ARG(pMedium->GetItemSet(), pHidItem, SfxBoolItem, SID_HIDDEN, false);
+    const SfxBoolItem* pHidItem = SfxItemSet::GetItem<SfxBoolItem>(pMedium->GetItemSet(), SID_HIDDEN, false);
     if (pHidItem)
         bHidden = pHidItem->GetValue();
 
@@ -1843,7 +1839,7 @@ void SAL_CALL SfxBaseModel::load(   const Sequence< beans::PropertyValue >& seqA
     }
 
     OUString aFilterName;
-    SFX_ITEMSET_ARG( pMedium->GetItemSet(), pFilterNameItem, SfxStringItem, SID_FILTER_NAME, false );
+    const SfxStringItem* pFilterNameItem = SfxItemSet::GetItem<SfxStringItem>(pMedium->GetItemSet(), SID_FILTER_NAME, false);
     if( pFilterNameItem )
         aFilterName = pFilterNameItem->GetValue();
     if( !m_pData->m_pObjectShell->GetFactory().GetFilterContainer()->GetFilter4FilterName( aFilterName ) )
@@ -1853,7 +1849,7 @@ void SAL_CALL SfxBaseModel::load(   const Sequence< beans::PropertyValue >& seqA
         throw frame::IllegalArgumentIOException();
     }
 
-    SFX_ITEMSET_ARG( pMedium->GetItemSet(), pSalvageItem, SfxStringItem, SID_DOC_SALVAGE, false );
+    const SfxStringItem* pSalvageItem = SfxItemSet::GetItem<SfxStringItem>(pMedium->GetItemSet(), SID_DOC_SALVAGE, false);
     bool bSalvage = pSalvageItem != nullptr;
 
     // load document
@@ -1868,7 +1864,7 @@ void SAL_CALL SfxBaseModel::load(   const Sequence< beans::PropertyValue >& seqA
         if ( nError == ERRCODE_IO_BROKENPACKAGE && xHandler.is() )
         {
             OUString aDocName = pMedium->GetURLObject().getName( INetURLObject::LAST_SEGMENT, true, INetURLObject::DECODE_WITH_CHARSET );
-            SFX_ITEMSET_ARG( pMedium->GetItemSet(), pRepairItem, SfxBoolItem, SID_REPAIRPACKAGE, false );
+            const SfxBoolItem* pRepairItem = SfxItemSet::GetItem<SfxBoolItem>(pMedium->GetItemSet(), SID_REPAIRPACKAGE, false);
             if ( !pRepairItem || !pRepairItem->GetValue() )
             {
                 RequestPackageReparation aRequest( aDocName );
@@ -1907,7 +1903,7 @@ void SAL_CALL SfxBaseModel::load(   const Sequence< beans::PropertyValue >& seqA
     if( bSalvage )
     {
         // file recovery: restore original filter
-        SFX_ITEMSET_ARG( pMedium->GetItemSet(), pFilterItem, SfxStringItem, SID_FILTER_NAME, false );
+        const SfxStringItem* pFilterItem = SfxItemSet::GetItem<SfxStringItem>(pMedium->GetItemSet(), SID_FILTER_NAME, false);
         SfxFilterMatcher& rMatcher = SfxGetpApp()->GetFilterMatcher();
         const SfxFilter* pSetFilter = rMatcher.GetFilter4FilterName( pFilterItem->GetValue() );
         pMedium->SetFilter( pSetFilter );
@@ -1917,7 +1913,7 @@ void SAL_CALL SfxBaseModel::load(   const Sequence< beans::PropertyValue >& seqA
     // TODO/LATER: may be the mode should be retrieved from outside and the preused filter should not be set
     if ( m_pData->m_pObjectShell->GetCreateMode() == SfxObjectCreateMode::EMBEDDED )
     {
-        SFX_ITEMSET_ARG( pMedium->GetItemSet(), pFilterItem, SfxStringItem, SID_FILTER_NAME, false );
+        const SfxStringItem* pFilterItem = SfxItemSet::GetItem<SfxStringItem>(pMedium->GetItemSet(), SID_FILTER_NAME, false);
         if ( pFilterItem )
             m_pData->m_aPreusedFilterName = pFilterItem->GetValue();
     }
@@ -1932,7 +1928,7 @@ void SAL_CALL SfxBaseModel::load(   const Sequence< beans::PropertyValue >& seqA
     setUpdatePickList(pMedium);
 
 #if OSL_DEBUG_LEVEL > 0
-    SFX_ITEMSET_ARG( pMedium->GetItemSet(), pPasswdItem, SfxStringItem, SID_PASSWORD, false);
+    const SfxStringItem* pPasswdItem = SfxItemSet::GetItem<SfxStringItem>(pMedium->GetItemSet(), SID_PASSWORD, false);
     OSL_ENSURE( !pPasswdItem, "There should be no Password property in the document MediaDescriptor!" );
 #endif
 }
@@ -2374,7 +2370,7 @@ Reference< document::XEmbeddedScripts > SAL_CALL SfxBaseModel::getScriptContaine
             Reference< container::XChild > xDocAsChild( xDocument, UNO_QUERY );
             if ( !xDocAsChild.is() )
             {
-                xDocument = NULL;
+                xDocument = nullptr;
                 break;
             }
 
@@ -2385,7 +2381,7 @@ Reference< document::XEmbeddedScripts > SAL_CALL SfxBaseModel::getScriptContaine
     catch( const Exception& )
     {
         DBG_UNHANDLED_EXCEPTION();
-        xDocumentScripts = NULL;
+        xDocumentScripts = nullptr;
     }
 
     return xDocumentScripts;
@@ -2680,7 +2676,7 @@ SfxMedium* SfxBaseModel::handleLoadError( sal_uInt32 nError, SfxMedium* pMedium 
     }
 
     bool bSilent = false;
-    SFX_ITEMSET_ARG( pMedium->GetItemSet(), pSilentItem, SfxBoolItem, SID_SILENT, false);
+    const SfxBoolItem* pSilentItem = SfxItemSet::GetItem<SfxBoolItem>(pMedium->GetItemSet(), SID_SILENT, false);
     if( pSilentItem )
         bSilent = pSilentItem->GetValue();
 
@@ -2700,7 +2696,7 @@ SfxMedium* SfxBaseModel::handleLoadError( sal_uInt32 nError, SfxMedium* pMedium 
         // for whatever reason document now has another medium
         OSL_FAIL("Document has rejected the medium?!");
         delete pMedium;
-        pMedium = NULL;
+        pMedium = nullptr;
     }
 
     if ( !bWarning )    // #i30711# don't abort loading if it's only a warning
@@ -2877,7 +2873,7 @@ void SfxBaseModel::changing()
 
 SfxObjectShell* SfxBaseModel::GetObjectShell() const
 {
-    return m_pData ? static_cast<SfxObjectShell*>(m_pData->m_pObjectShell) : 0;
+    return m_pData ? static_cast<SfxObjectShell*>(m_pData->m_pObjectShell) : nullptr;
 }
 
 
@@ -2892,7 +2888,7 @@ bool SfxBaseModel::IsInitialized() const
         return false;
     }
 
-    return m_pData->m_pObjectShell->GetMedium() != NULL;
+    return m_pData->m_pObjectShell->GetMedium() != nullptr;
 }
 
 void SfxBaseModel::MethodEntryCheck( const bool i_mustBeInitialized ) const
@@ -2905,7 +2901,7 @@ void SfxBaseModel::MethodEntryCheck( const bool i_mustBeInitialized ) const
 
 bool SfxBaseModel::impl_isDisposed() const
 {
-    return ( m_pData == NULL ) ;
+    return ( m_pData == nullptr ) ;
 }
 
 
@@ -2914,7 +2910,7 @@ bool SfxBaseModel::impl_isDisposed() const
 
 OUString SfxBaseModel::GetMediumFilterName_Impl()
 {
-    const SfxFilter* pFilter = NULL;
+    const SfxFilter* pFilter = nullptr;
     SfxMedium* pMedium = m_pData->m_pObjectShell->GetMedium();
     if ( pMedium )
         pFilter = pMedium->GetFilter();
@@ -2978,7 +2974,7 @@ void SfxBaseModel::impl_store(  const   OUString&                   sURL        
                             // TODO/LATER: need a new interaction for this case
                             if ( m_pData->m_pObjectShell->IsDocShared() )
                             {
-                                m_pData->m_pObjectShell->AddLog( OUString( OSL_LOG_PREFIX "Can't store shared document!" ) );
+                                m_pData->m_pObjectShell->AddLog( OSL_LOG_PREFIX "Can't store shared document!" );
                                 m_pData->m_pObjectShell->StoreLog();
 
                                 uno::Sequence< beans::NamedValue > aNewEncryptionData = aArgHash.getUnpackedValueOrDefault("EncryptionData", uno::Sequence< beans::NamedValue >() );
@@ -3012,18 +3008,18 @@ void SfxBaseModel::impl_store(  const   OUString&                   sURL        
         SfxGetpApp()->NotifyEvent( SfxEventHint( bSaveTo ? SFX_EVENT_SAVETODOC : SFX_EVENT_SAVEASDOC, GlobalEventConfig::GetEventName( bSaveTo ? GlobalEventId::SAVETODOC : GlobalEventId::SAVEASDOC ),
                                                 m_pData->m_pObjectShell ) );
 
-        SfxAllItemSet *aParams = new SfxAllItemSet( SfxGetpApp()->GetPool() );
-        aParams->Put( SfxStringItem( SID_FILE_NAME, sURL ) );
+        std::unique_ptr<SfxAllItemSet> pItemSet(new SfxAllItemSet(SfxGetpApp()->GetPool()));
+        pItemSet->Put(SfxStringItem(SID_FILE_NAME, sURL));
         if ( bSaveTo )
-            aParams->Put( SfxBoolItem( SID_SAVETO, true ) );
+            pItemSet->Put(SfxBoolItem(SID_SAVETO, true));
 
-        TransformParameters( SID_SAVEASDOC, seqArguments, *aParams );
+        TransformParameters(SID_SAVEASDOC, seqArguments, *pItemSet);
 
-        SFX_ITEMSET_ARG( aParams, pCopyStreamItem, SfxBoolItem, SID_COPY_STREAM_IF_POSSIBLE, false );
+        const SfxBoolItem* pCopyStreamItem = pItemSet->GetItem<SfxBoolItem>(SID_COPY_STREAM_IF_POSSIBLE, false);
 
         if ( pCopyStreamItem && pCopyStreamItem->GetValue() && !bSaveTo )
         {
-            m_pData->m_pObjectShell->AddLog( OUString( OSL_LOG_PREFIX "Misuse of CopyStreamIfPossible!"  ) );
+            m_pData->m_pObjectShell->AddLog( OSL_LOG_PREFIX "Misuse of CopyStreamIfPossible!" );
             m_pData->m_pObjectShell->StoreLog();
 
             throw frame::IllegalArgumentIOException(
@@ -3032,7 +3028,7 @@ void SfxBaseModel::impl_store(  const   OUString&                   sURL        
 
         sal_uInt32 nModifyPasswordHash = 0;
         Sequence< beans::PropertyValue > aModifyPasswordInfo;
-        SFX_ITEMSET_ARG( aParams, pModifyPasswordInfoItem, SfxUnoAnyItem, SID_MODIFYPASSWORDINFO, false );
+        const SfxUnoAnyItem* pModifyPasswordInfoItem = pItemSet->GetItem<SfxUnoAnyItem>(SID_MODIFYPASSWORDINFO, false);
         if ( pModifyPasswordInfoItem )
         {
             // it contains either a simple hash or a set of PropertyValues
@@ -3042,7 +3038,7 @@ void SfxBaseModel::impl_store(  const   OUString&                   sURL        
             nModifyPasswordHash = (sal_uInt32)nMPHTmp;
             pModifyPasswordInfoItem->GetValue() >>= aModifyPasswordInfo;
         }
-        aParams->ClearItem( SID_MODIFYPASSWORDINFO );
+        pItemSet->ClearItem(SID_MODIFYPASSWORDINFO);
         sal_uInt32 nOldModifyPasswordHash = m_pData->m_pObjectShell->GetModifyPasswordHash();
         m_pData->m_pObjectShell->SetModifyPasswordHash( nModifyPasswordHash );
         Sequence< beans::PropertyValue > aOldModifyPasswordInfo = m_pData->m_pObjectShell->GetModifyPasswordInfo();
@@ -3064,7 +3060,7 @@ void SfxBaseModel::impl_store(  const   OUString&                   sURL        
             m_pData->m_xDocumentProperties = xNewDocProps;
         }
 
-        bool bRet = m_pData->m_pObjectShell->APISaveAs_Impl( sURL, aParams );
+        bool bRet = m_pData->m_pObjectShell->APISaveAs_Impl(sURL, *pItemSet);
 
         if ( bCopyTo )
         {
@@ -3073,16 +3069,16 @@ void SfxBaseModel::impl_store(  const   OUString&                   sURL        
         }
 
         Reference < task::XInteractionHandler > xHandler;
-        SFX_ITEMSET_ARG( aParams, pItem, SfxUnoAnyItem, SID_INTERACTIONHANDLER, false);
+        const SfxUnoAnyItem* pItem = pItemSet->GetItem<SfxUnoAnyItem>(SID_INTERACTIONHANDLER, false);
         if ( pItem )
             pItem->GetValue() >>= xHandler;
 
-        DELETEZ( aParams );
+        pItemSet.reset();
 
         sal_uInt32 nErrCode = m_pData->m_pObjectShell->GetErrorCode();
         if ( !bRet && !nErrCode )
         {
-            m_pData->m_pObjectShell->AddLog( OUString( OSL_LOG_PREFIX "Storing has failed, no error is set!"  ) );
+            m_pData->m_pObjectShell->AddLog( OSL_LOG_PREFIX "Storing has failed, no error is set!" );
             nErrCode = ERRCODE_IO_CANTWRITE;
         }
         m_pData->m_pObjectShell->ResetError();
@@ -3103,7 +3099,7 @@ void SfxBaseModel::impl_store(  const   OUString&                   sURL        
                 }
             }
 
-            m_pData->m_pObjectShell->AddLog( OUString( OSL_LOG_PREFIX "Storing succeeded!"  ) );
+            m_pData->m_pObjectShell->AddLog( OSL_LOG_PREFIX "Storing succeeded!" );
             if ( !bSaveTo )
             {
                 m_pData->m_aPreusedFilterName = GetMediumFilterName_Impl();
@@ -3122,7 +3118,7 @@ void SfxBaseModel::impl_store(  const   OUString&                   sURL        
         else
         {
             // let the logring be stored to the related file
-            m_pData->m_pObjectShell->AddLog( OUString( OSL_LOG_PREFIX "Storing failed!"  ) );
+            m_pData->m_pObjectShell->AddLog( OSL_LOG_PREFIX "Storing failed!" );
             m_pData->m_pObjectShell->StoreLog();
 
             m_pData->m_pObjectShell->SetModifyPasswordHash( nOldModifyPasswordHash );
@@ -3219,10 +3215,8 @@ Reference < container::XIndexAccess > SAL_CALL SfxBaseModel::getViewData() throw
             // currently no frame for this document at all or View is under construction
             return Reference < container::XIndexAccess >();
 
-        m_pData->m_contViewData = Reference < container::XIndexAccess >(
-                document::IndexedPropertyValues::create(
-                   ::comphelper::getProcessComponentContext() ),
-                UNO_QUERY );
+        m_pData->m_contViewData.set( document::IndexedPropertyValues::create( ::comphelper::getProcessComponentContext() ),
+                                     UNO_QUERY );
 
         if ( !m_pData->m_contViewData.is() )
         {
@@ -3285,7 +3279,7 @@ void SfxBaseModel::notifyEvent( const document::EventObject& aEvent ) const
 /** returns true if someone added a XEventListener to this XEventBroadcaster */
 bool SfxBaseModel::hasEventListeners() const
 {
-    return !impl_isDisposed() && (NULL != m_pData->m_aInterfaceContainer.getContainer( cppu::UnoType<document::XEventListener>::get()) );
+    return !impl_isDisposed() && (nullptr != m_pData->m_aInterfaceContainer.getContainer( cppu::UnoType<document::XEventListener>::get()) );
 }
 
 void SAL_CALL SfxBaseModel::addPrintJobListener( const Reference< view::XPrintJobListener >& xListener ) throw (RuntimeException, std::exception)
@@ -3453,7 +3447,7 @@ bool SfxBaseModel::hasValidSignatures() const
     return false;
 }
 
-void SfxBaseModel::getGrabBagItem(com::sun::star::uno::Any& rVal) const
+void SfxBaseModel::getGrabBagItem(css::uno::Any& rVal) const
 {
     if (m_pData->m_xGrabBagItem.get())
         m_pData->m_xGrabBagItem->QueryValue(rVal);
@@ -3463,7 +3457,7 @@ void SfxBaseModel::getGrabBagItem(com::sun::star::uno::Any& rVal) const
     }
 }
 
-void SfxBaseModel::setGrabBagItem(const com::sun::star::uno::Any& rVal)
+void SfxBaseModel::setGrabBagItem(const css::uno::Any& rVal)
 {
     if (!m_pData->m_xGrabBagItem.get())
         m_pData->m_xGrabBagItem.reset(new SfxGrabBagItem);
@@ -3491,8 +3485,6 @@ static void ConvertSlotsToCommands( SfxObjectShell* pDoc, Reference< container::
     if ( pDoc )
     {
         SfxModule*    pModule( pDoc->GetFactory().GetModule() );
-        OUString aSlotCmd( "slot:" );
-        OUString aUnoCmd( ".uno:" );
         Sequence< beans::PropertyValue > aSeqPropValue;
 
         for ( sal_Int32 i = 0; i < rToolbarDefinition->getCount(); i++ )
@@ -3503,7 +3495,7 @@ static void ConvertSlotsToCommands( SfxObjectShell* pDoc, Reference< container::
             if ( rToolbarDefinition->getByIndex( i ) >>= aSeqPropValue )
             {
                 GetCommandFromSequence( aCommand, nIndex, aSeqPropValue );
-                if ( nIndex >= 0 && ( aCommand.startsWith( aSlotCmd ) ))
+                if ( nIndex >= 0 && aCommand.startsWith( "slot:" ) )
                 {
                     OUString aSlot( aCommand.copy( 5 ));
 
@@ -3511,7 +3503,7 @@ static void ConvertSlotsToCommands( SfxObjectShell* pDoc, Reference< container::
                     const SfxSlot* pSlot = pModule->GetSlotPool()->GetSlot( sal_uInt16( aSlot.toInt32() ));
                     if ( pSlot )
                     {
-                        OUStringBuffer aStrBuf( aUnoCmd );
+                        OUStringBuffer aStrBuf( ".uno:"  );
                         aStrBuf.appendAscii( pSlot->GetUnoName() );
 
                         aCommand = aStrBuf.makeStringAndClear();
@@ -3739,7 +3731,7 @@ void SAL_CALL SfxBaseModel::loadFromStorage( const Reference< embed::XStorage >&
     // allow to use an interactionhandler (if there is one)
     pMedium->UseInteractionHandler( true );
 
-    SFX_ITEMSET_ARG( &aSet, pTemplateItem, SfxBoolItem, SID_TEMPLATE, false);
+    const SfxBoolItem* pTemplateItem = aSet.GetItem<SfxBoolItem>(SID_TEMPLATE, false);
     bool bTemplate = pTemplateItem && pTemplateItem->GetValue();
     m_pData->m_pObjectShell->SetActivateEvent_Impl( bTemplate ? SFX_EVENT_CREATEDOC : SFX_EVENT_OPENDOC );
     m_pData->m_pObjectShell->Get_Impl()->bOwnsStorage = false;
@@ -3773,7 +3765,7 @@ void SAL_CALL SfxBaseModel::storeToStorage( const Reference< embed::XStorage >& 
     TransformParameters( SID_SAVEASDOC, aMediaDescriptor, aSet );
 
     // TODO/LATER: may be a special URL "private:storage" should be used
-    SFX_ITEMSET_ARG( &aSet, pItem, SfxStringItem, SID_FILTER_NAME, false );
+    const SfxStringItem* pItem = aSet.GetItem<SfxStringItem>(SID_FILTER_NAME, false);
     sal_Int32 nVersion = SOFFICE_FILEFORMAT_CURRENT;
     if( pItem )
     {
@@ -3802,7 +3794,7 @@ void SAL_CALL SfxBaseModel::storeToStorage( const Reference< embed::XStorage >& 
         {
             // storing without a valid filter will often crash
             bSuccess = m_pData->m_pObjectShell->DoSaveObjectAs( aMedium, true );
-            m_pData->m_pObjectShell->DoSaveCompleted( NULL );
+            m_pData->m_pObjectShell->DoSaveCompleted();
         }
     }
 
@@ -3935,7 +3927,7 @@ Reference< frame::XTitle > SfxBaseModel::impl_getTitleHelper ()
         Reference< frame::XModel >              xThis   (static_cast< frame::XModel* >(this), UNO_QUERY_THROW);
 
         ::framework::TitleHelper* pHelper = new ::framework::TitleHelper(xContext);
-        m_pData->m_xTitleHelper = Reference< frame::XTitle >(static_cast< ::cppu::OWeakObject* >(pHelper), UNO_QUERY_THROW);
+        m_pData->m_xTitleHelper.set(static_cast< ::cppu::OWeakObject* >(pHelper), UNO_QUERY_THROW);
         pHelper->setOwner                   (xThis   );
         pHelper->connectWithUntitledNumbers (xDesktop);
     }
@@ -3953,10 +3945,10 @@ Reference< frame::XUntitledNumbers > SfxBaseModel::impl_getUntitledHelper ()
         Reference< frame::XModel > xThis   (static_cast< frame::XModel* >(this), UNO_QUERY_THROW);
         ::comphelper::NumberedCollection*         pHelper = new ::comphelper::NumberedCollection();
 
-        m_pData->m_xNumberedControllers = Reference< frame::XUntitledNumbers >(static_cast< ::cppu::OWeakObject* >(pHelper), UNO_QUERY_THROW);
+        m_pData->m_xNumberedControllers.set(static_cast< ::cppu::OWeakObject* >(pHelper), UNO_QUERY_THROW);
 
         pHelper->setOwner          (xThis);
-        pHelper->setUntitledPrefix (OUString(" : "));
+        pHelper->setUntitledPrefix (" : ");
     }
 
     return m_pData->m_xNumberedControllers;
@@ -3998,7 +3990,7 @@ OUString SAL_CALL SfxBaseModel::getTitle()
             catch (const ucb::CommandAbortedException &)
             {
             }
-            SFX_ITEMSET_ARG( pMedium->GetItemSet(), pRepairedDocItem, SfxBoolItem, SID_REPAIRPACKAGE, false );
+            const SfxBoolItem* pRepairedDocItem = SfxItemSet::GetItem<SfxBoolItem>(pMedium->GetItemSet(), SID_REPAIRPACKAGE, false);
             if ( pRepairedDocItem && pRepairedDocItem->GetValue() )
                 aResult += SfxResId(STR_REPAIREDDOCUMENT).toString();
         }
@@ -4167,7 +4159,7 @@ namespace sfx { namespace intern {
         void takeFrameOwnership( SfxFrame* i_pFrame )
         {
             OSL_PRECOND( !m_aWeakFrame, "ViewCreationGuard::takeFrameOwnership: already have a frame!" );
-            OSL_PRECOND( i_pFrame != NULL, "ViewCreationGuard::takeFrameOwnership: invalid frame!" );
+            OSL_PRECOND( i_pFrame != nullptr, "ViewCreationGuard::takeFrameOwnership: invalid frame!" );
             m_aWeakFrame = i_pFrame;
         }
 
@@ -4181,7 +4173,7 @@ namespace sfx { namespace intern {
         {
             if ( m_aWeakFrame && !m_aWeakFrame->GetCurrentDocument() )
             {
-                m_aWeakFrame->SetFrameInterface_Impl( NULL );
+                m_aWeakFrame->SetFrameInterface_Impl( nullptr );
                 m_aWeakFrame->DoClose();
             }
         }
@@ -4195,7 +4187,7 @@ namespace sfx { namespace intern {
 
 SfxViewFrame* SfxBaseModel::FindOrCreateViewFrame_Impl( const Reference< XFrame >& i_rFrame, ::sfx::intern::ViewCreationGuard& i_rGuard ) const
 {
-    SfxViewFrame* pViewFrame = NULL;
+    SfxViewFrame* pViewFrame = nullptr;
     for (   pViewFrame = SfxViewFrame::GetFirst( GetObjectShell(), false );
             pViewFrame;
             pViewFrame= SfxViewFrame::GetNext( *pViewFrame, GetObjectShell(), false )
@@ -4214,8 +4206,8 @@ SfxViewFrame* SfxBaseModel::FindOrCreateViewFrame_Impl( const Reference< XFrame 
         {
             if ( pCheckFrame->GetFrameInterface() == i_rFrame )
             {
-                if  (   ( pCheckFrame->GetCurrentViewFrame() != NULL )
-                    ||  ( pCheckFrame->GetCurrentDocument() != NULL )
+                if  (   ( pCheckFrame->GetCurrentViewFrame() != nullptr )
+                    ||  ( pCheckFrame->GetCurrentDocument() != nullptr )
                     )
                     // Note that it is perfectly letgitimate that during loading into an XFrame which already contains
                     // a document, there exist two SfxFrame instances bound to this XFrame - the old one, which will be
@@ -4270,7 +4262,7 @@ Reference< frame::XController2 > SAL_CALL SfxBaseModel::createViewController(
         xPreviousController.clear();
     }
     SfxViewShell* pOldViewShell = SfxViewShell::Get( xPreviousController );
-    OSL_ENSURE( !xPreviousController.is() || ( pOldViewShell != NULL ),
+    OSL_ENSURE( !xPreviousController.is() || ( pOldViewShell != nullptr ),
         "SfxBaseModel::createViewController: invalid old controller!" );
 
     // a guard which will clean up in case of failure

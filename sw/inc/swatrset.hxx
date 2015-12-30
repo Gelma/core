@@ -58,7 +58,7 @@ class SvxCharHiddenItem;
 
 // Frame attributes
 class SwFormatFillOrder;
-class SwFormatFrmSize;
+class SwFormatFrameSize;
 class SvxPaperBinItem;
 class SvxLRSpaceItem;
 class SvxULSpaceItem;
@@ -157,7 +157,7 @@ private:
     static sal_uInt16* pVersionMap6;
     static sal_uInt16* pVersionMap7;
 
-    SwDoc* pDoc;
+    SwDoc* m_pDoc;
 
 public:
     SwAttrPool( SwDoc* pDoc );
@@ -165,18 +165,18 @@ protected:
     virtual ~SwAttrPool();
 public:
 
-          SwDoc* GetDoc()           { return pDoc; }
-    const SwDoc* GetDoc() const     { return pDoc; }
+          SwDoc* GetDoc()           { return m_pDoc; }
+    const SwDoc* GetDoc() const     { return m_pDoc; }
 
 };
 
 class SW_DLLPUBLIC SwAttrSet : public SfxItemSet
 {
     // Pointer for Modify-System
-    SwAttrSet *pOldSet, *pNewSet;
+    SwAttrSet *m_pOldSet, *m_pNewSet;
 
     // Notification-Callback
-    virtual void Changed( const SfxPoolItem& rOld, const SfxPoolItem& rNew ) SAL_OVERRIDE;
+    virtual void Changed( const SfxPoolItem& rOld, const SfxPoolItem& rNew ) override;
 
     void PutChgd( const SfxPoolItem& rI ) { SfxItemSet::PutDirect( rI ); }
 public:
@@ -184,7 +184,7 @@ public:
     SwAttrSet( SwAttrPool&, const sal_uInt16* nWhichPairTable );
     SwAttrSet( const SwAttrSet& );
 
-    virtual SfxItemSet* Clone(bool bItems = true, SfxItemPool *pToPool = 0) const SAL_OVERRIDE;
+    virtual SfxItemSet* Clone(bool bItems = true, SfxItemPool *pToPool = nullptr) const override;
 
     bool Put_BC( const SfxPoolItem& rAttr, SwAttrSet* pOld, SwAttrSet* pNew );
     bool Put_BC( const SfxItemSet& rSet, SwAttrSet* pOld, SwAttrSet* pNew );
@@ -192,7 +192,7 @@ public:
     // Delete an item or a range.
     sal_uInt16 ClearItem_BC( sal_uInt16 nWhich, SwAttrSet* pOld, SwAttrSet* pNew );
     sal_uInt16 ClearItem_BC( sal_uInt16 nWhich1, sal_uInt16 nWhich2,
-                        SwAttrSet* pOld = 0, SwAttrSet* pNew = 0 );
+                        SwAttrSet* pOld = nullptr, SwAttrSet* pNew = nullptr );
 
     int Intersect_BC( const SfxItemSet& rSet, SwAttrSet* pOld, SwAttrSet* pNew );
 
@@ -256,7 +256,7 @@ public:
 
     // Frame attributes. Implementation in frmatr.hxx.
     inline const SwFormatFillOrder       &GetFillOrder( bool = true ) const;
-    inline const SwFormatFrmSize             &GetFrmSize( bool = true ) const;
+    inline const SwFormatFrameSize             &GetFrameSize( bool = true ) const;
     inline const SvxPaperBinItem      &GetPaperBin( bool = true ) const;
     inline const SvxLRSpaceItem           &GetLRSpace( bool = true ) const;
     inline const SvxULSpaceItem           &GetULSpace( bool = true ) const;
@@ -287,7 +287,7 @@ public:
     inline const SwFormatFootnoteAtTextEnd     &GetFootnoteAtTextEnd( bool = true ) const;
     inline const SwFormatEndAtTextEnd     &GetEndAtTextEnd( bool = true ) const;
     inline const SwFormatNoBalancedColumns &GetBalancedColumns( bool = true ) const;
-    inline const SvxFrameDirectionItem    &GetFrmDir( bool = true ) const;
+    inline const SvxFrameDirectionItem    &GetFrameDir( bool = true ) const;
     inline const SwHeaderAndFooterEatSpacingItem &GetHeaderAndFooterEatSpacing( bool = true ) const;
     inline const SwFormatFollowTextFlow    &GetFollowTextFlow(bool = true) const;
     inline const SwFormatWrapInfluenceOnObjPos& GetWrapInfluenceOnObjPos(bool = true) const;

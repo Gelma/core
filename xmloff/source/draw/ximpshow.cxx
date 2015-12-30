@@ -54,34 +54,28 @@ public:
     Reference< XPropertySet > mxPresProps;
     Reference< XNameAccess > mxPages;
     OUString maCustomShowName;
-    SdXMLImport& mrImport;
-
-    explicit ShowsImpImpl( SdXMLImport& rImport )
-    :   mrImport( rImport )
-    {}
 };
 
-TYPEINIT1( SdXMLShowsContext, SvXMLImportContext );
 
 SdXMLShowsContext::SdXMLShowsContext( SdXMLImport& rImport,  sal_uInt16 nPrfx, const OUString& rLocalName,  const Reference< XAttributeList >& xAttrList )
-:   SvXMLImportContext(rImport, nPrfx, rLocalName)
+:   SvXMLImportContext(rImport, nPrfx, rLocalName),
+    mpImpl(new ShowsImpImpl )
 {
-    mpImpl = new ShowsImpImpl( rImport );
 
     Reference< XCustomPresentationSupplier > xShowsSupplier( rImport.GetModel(), UNO_QUERY );
     if( xShowsSupplier.is() )
     {
         mpImpl->mxShows = xShowsSupplier->getCustomPresentations();
-        mpImpl->mxShowFactory = Reference< XSingleServiceFactory >::query( mpImpl->mxShows );
+        mpImpl->mxShowFactory.set( mpImpl->mxShows, UNO_QUERY );
     }
 
     Reference< XDrawPagesSupplier > xDrawPagesSupplier( rImport.GetModel(), UNO_QUERY );
     if( xDrawPagesSupplier.is() )
-        mpImpl->mxPages = Reference< XNameAccess >::query( xDrawPagesSupplier->getDrawPages() );
+        mpImpl->mxPages.set( xDrawPagesSupplier->getDrawPages(), UNO_QUERY );
 
     Reference< XPresentationSupplier > xPresentationSupplier( rImport.GetModel(), UNO_QUERY );
     if( xPresentationSupplier.is() )
-        mpImpl->mxPresProps = Reference< XPropertySet >::query( xPresentationSupplier->getPresentation() );
+        mpImpl->mxPresProps.set( xPresentationSupplier->getPresentation(), UNO_QUERY );
 
     if( mpImpl->mxPresProps.is() )
     {
@@ -187,8 +181,6 @@ SdXMLShowsContext::~SdXMLShowsContext()
         aAny <<= mpImpl->maCustomShowName;
         mpImpl->mxPresProps->setPropertyValue("CustomShow", aAny );
     }
-
-    delete mpImpl;
 }
 
 SvXMLImportContext * SdXMLShowsContext::CreateChildContext( sal_uInt16 p_nPrefix, const OUString& rLocalName, const Reference< XAttributeList>& xAttrList )

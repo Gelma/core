@@ -111,6 +111,12 @@ struct SC_DLLPUBLIC ScRefCellValue
     ScRefCellValue( const EditTextObject* pEditText );
     ScRefCellValue( ScFormulaCell* pFormula );
     ScRefCellValue( const ScRefCellValue& r );
+
+    /**
+     * Take cell value from specified position in specified document.
+     */
+    ScRefCellValue( ScDocument& rDoc, const ScAddress& rPos );
+
     ~ScRefCellValue();
 
     void clear();

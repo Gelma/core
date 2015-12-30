@@ -160,14 +160,15 @@ public class _XChartDataArray extends MultiMethodTest {
     */
     public void _getColumnDescriptions() {
         requiredMethod("setColumnDescriptions()");
-        bResult = true;
 
         String[] dscs = oObj.getColumnDescriptions();
-        bResult &= dscs.length == colDscs.length;
+        bResult = dscs.length == colDscs.length;
         if (bResult) {
             for (int i = 0; i < dscs.length; i++) {
                 log.println("Col " + i + ": got " + dscs[i] + " expected: " + colDscs[i]);
-                bResult &= dscs[i].equals(colDscs[i]);
+                if (!dscs[i].equals(colDscs[i])) {
+                    bResult = false;
+                }
             }
         }
 
@@ -185,14 +186,15 @@ public class _XChartDataArray extends MultiMethodTest {
     */
     public void _getRowDescriptions() {
         requiredMethod("setRowDescriptions()");
-        bResult = true;
 
         String[] dscs = oObj.getRowDescriptions();
-        bResult &= dscs.length == rowDscs.length;
+        bResult = dscs.length == rowDscs.length;
         if (bResult) {
             for (int i = 0; i < dscs.length; i++) {
                 log.println("Row " + i + ": got " + dscs[i] + " expected: " + rowDscs[i]);
-                bResult &= dscs[i].equals(rowDscs[i]);
+                if (!dscs[i].equals(rowDscs[i])) {
+                    bResult = false;
+                }
             }
         }
 
@@ -220,7 +222,9 @@ public class _XChartDataArray extends MultiMethodTest {
             bResult = false;
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[i].length; j++) {
-                bResult &= data[i][j] == _data[i][j];
+                if (data[i][j] != _data[i][j]) {
+                    bResult = false;
+                }
             }
         }
 

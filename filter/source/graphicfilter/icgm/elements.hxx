@@ -32,7 +32,6 @@ class CGMElements
 {
         void                ImplInsertHatch( sal_Int32 Key, int Style, long Distance, long Angle );
     public:
-        CGM*                mpCGM;
         long                nMetaFileVersion;
 
         sal_uInt32          nIntegerPrecision;  // maybe 1, 2, 4 Bytes
@@ -125,9 +124,9 @@ class CGMElements
 
         // Delimiter Counts -> which will be increased by each 'begin' operation
         //                     and decreased by each 'end' operation
-        bool            bSegmentCount;
-                            CGMElements( CGM& rCGM );
-                            ~CGMElements();
+        bool                bSegmentCount;
+        explicit CGMElements();
+        ~CGMElements();
         CGMElements&        operator=( CGMElements& );
         void                Init();
         static Bundle*      GetBundleIndex( long nIndex, BundleList&, Bundle& );

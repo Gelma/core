@@ -34,11 +34,11 @@
 #include <cppuhelper/supportsservice.hxx>
 
 using namespace com::sun::star;
-using namespace com::sun::star::uno;
-using namespace com::sun::star::lang;
-using namespace com::sun::star::frame;
-using namespace com::sun::star::beans;
-using namespace com::sun::star::util;
+using namespace css::uno;
+using namespace css::lang;
+using namespace css::frame;
+using namespace css::beans;
+using namespace css::util;
 
 namespace svt
 {
@@ -70,11 +70,11 @@ PopupMenuControllerBase::~PopupMenuControllerBase()
 void PopupMenuControllerBase::throwIfDisposed() throw ( RuntimeException )
 {
     if (rBHelper.bDisposed || rBHelper.bInDispose)
-        throw com::sun::star::lang::DisposedException();
+        throw css::lang::DisposedException();
 }
 
 // protected function
-void PopupMenuControllerBase::resetPopupMenu( com::sun::star::uno::Reference< com::sun::star::awt::XPopupMenu >& rPopupMenu )
+void PopupMenuControllerBase::resetPopupMenu( css::uno::Reference< css::awt::XPopupMenu >& rPopupMenu )
 {
     if ( rPopupMenu.is() && rPopupMenu->getItemCount() > 0 )
     {
@@ -124,7 +124,7 @@ void SAL_CALL PopupMenuControllerBase::itemSelected( const awt::MenuEvent& rEven
     }
 }
 
-void PopupMenuControllerBase::dispatchCommand( const OUString& sCommandURL, const ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue >& rArgs )
+void PopupMenuControllerBase::dispatchCommand( const OUString& sCommandURL, const css::uno::Sequence< css::beans::PropertyValue >& rArgs )
 {
     osl::MutexGuard aLock( m_aMutex );
 
@@ -139,7 +139,7 @@ void PopupMenuControllerBase::dispatchCommand( const OUString& sCommandURL, cons
 
         Reference< XDispatch > xDispatch( xDispatchProvider->queryDispatch( aURL, OUString(), 0 ), UNO_QUERY_THROW );
 
-        Application::PostUserEvent( LINK(0, PopupMenuControllerBase, ExecuteHdl_Impl), new PopupMenuControllerBaseDispatchInfo( xDispatch, aURL, rArgs ) );
+        Application::PostUserEvent( LINK(nullptr, PopupMenuControllerBase, ExecuteHdl_Impl), new PopupMenuControllerBaseDispatchInfo( xDispatch, aURL, rArgs ) );
 
     }
     catch( Exception& )
@@ -163,7 +163,7 @@ void SAL_CALL PopupMenuControllerBase::itemDeactivated( const awt::MenuEvent& ) 
 {
 }
 
-void SAL_CALL PopupMenuControllerBase::updatePopupMenu() throw ( ::com::sun::star::uno::RuntimeException, std::exception )
+void SAL_CALL PopupMenuControllerBase::updatePopupMenu() throw ( css::uno::RuntimeException, std::exception )
 {
     osl::ClearableMutexGuard aLock( m_aMutex );
     throwIfDisposed();
@@ -233,7 +233,7 @@ void SAL_CALL
 PopupMenuControllerBase::dispatch(
     const URL& /*aURL*/,
     const Sequence< PropertyValue >& /*seqProperties*/ )
-throw( ::com::sun::star::uno::RuntimeException, std::exception )
+throw( css::uno::RuntimeException, std::exception )
 {
     // must be implemented by subclass
     osl::MutexGuard aLock( m_aMutex );
@@ -244,7 +244,7 @@ void SAL_CALL
 PopupMenuControllerBase::addStatusListener(
     const Reference< XStatusListener >& xControl,
     const URL& aURL )
-throw( ::com::sun::star::uno::RuntimeException, std::exception )
+throw( css::uno::RuntimeException, std::exception )
 {
     osl::ResettableMutexGuard aLock( m_aMutex );
     throwIfDisposed();
@@ -273,7 +273,7 @@ throw( ::com::sun::star::uno::RuntimeException, std::exception )
 void SAL_CALL PopupMenuControllerBase::removeStatusListener(
     const Reference< XStatusListener >& xControl,
     const URL& /*aURL*/ )
-throw( ::com::sun::star::uno::RuntimeException, std::exception )
+throw( css::uno::RuntimeException, std::exception )
 {
     rBHelper.removeListener( cppu::UnoType<decltype(xControl)>::get(), xControl );
 }
@@ -319,7 +319,7 @@ void SAL_CALL PopupMenuControllerBase::initialize( const Sequence< Any >& aArgum
                     aPropValue.Value >>= xFrame;
                 else if ( aPropValue.Name == "CommandURL" )
                     aPropValue.Value >>= aCommandURL;
-                else if ( aPropValue.Name == "ModuleName" )
+                else if ( aPropValue.Name == "ModuleIdentifier" )
                     aPropValue.Value >>= m_aModuleName;
             }
         }

@@ -84,6 +84,7 @@ public:
 
 private:
     LwpFoundry* m_pOwnedFoundry;
+    bool m_bGettingFirstDivisionWithContentsThatIsNotOLE;
 
     //Data members in file format
     LwpObjectID m_DocSockID;
@@ -114,7 +115,7 @@ private:
     LwpObjectID m_STXInfo;
 
 protected:
-    void Read() SAL_OVERRIDE;
+    void Read() override;
     void ReadPlug();
     void ParseDocContent(IXFStream* pOutputStream);
     void RegisterTextStyles();
@@ -128,11 +129,11 @@ protected:
     void RegisterDefaultParaStyles();
 
 public:
-    void Parse(IXFStream* pOutputStream) SAL_OVERRIDE;
-    void RegisterStyle() SAL_OVERRIDE;
+    void Parse(IXFStream* pOutputStream) override;
+    void RegisterStyle() override;
 
     inline bool IsChildDoc();
-    inline bool HonorProtection();
+    inline bool GetHonorProtection();
     inline LwpObjectID& GetDocData();
     inline LwpObjectID& GetSocket();
 
@@ -154,12 +155,20 @@ public:
     LwpDocument* GetLastDivisionWithContents();
     LwpDocument* GetLastInGroupWithContents();
     LwpDocument* GetRootDocument();
-    LwpDocument* GetFirstDivisionWithContentsThatIsNotOLE();
+    LwpDocument* GetFirstDivisionWithContentsThatIsNotOLE()
+    {
+        if (m_bGettingFirstDivisionWithContentsThatIsNotOLE)
+            throw std::runtime_error("recursion in page divisions");
+        m_bGettingFirstDivisionWithContentsThatIsNotOLE = true;
+        LwpDocument* pRet = ImplGetFirstDivisionWithContentsThatIsNotOLE();
+        m_bGettingFirstDivisionWithContentsThatIsNotOLE = false;
+        return pRet;
+    }
     LwpDocument* GetLastDivisionThatHasEndnote();
 
     LwpDocument* GetLastDivision();
     LwpDocument* GetFirstDivision();
-    LwpVirtualLayout* GetEnSuperTableLayout();
+    rtl::Reference<LwpVirtualLayout> GetEnSuperTableLayout();
     bool GetNumberOfPages(LwpDocument* pEndDivision, sal_uInt16& nCount);
 
     sal_uInt16 GetNumberOfPagesBefore();
@@ -167,6 +176,7 @@ public:
 
 private:
     void MaxNumberOfPages(sal_uInt16& nNumPages);
+    LwpDocument* ImplGetFirstDivisionWithContentsThatIsNotOLE();
     void XFConvertFrameInPage(XFContentContainer* pCont);
     static void ChangeStyleName();
     bool IsSkippedDivision();
@@ -176,7 +186,7 @@ inline bool LwpDocument::IsChildDoc()
 {
     return (m_nPersistentFlags & DOC_CHILDDOC) != 0;
 }
-inline bool LwpDocument::HonorProtection()
+inline bool LwpDocument::GetHonorProtection()
 {
     return (m_nPersistentFlags & DOC_PROTECTED) != 0;
 }
@@ -220,10 +230,10 @@ public:
 private:
     LwpObjectID m_Doc;
 protected:
-    void Read() SAL_OVERRIDE;
+    void Read() override;
 public:
-    void RegisterStyle() SAL_OVERRIDE;
-    void Parse(IXFStream* pOutputStream) SAL_OVERRIDE;
+    void RegisterStyle() override;
+    void Parse(IXFStream* pOutputStream) override;
 };
 
 #endif

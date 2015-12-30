@@ -20,11 +20,8 @@
 #define INCLUDED_TOOLS_REF_HXX
 
 #include <sal/config.h>
-
 #include <cassert>
-
 #include <tools/toolsdllapi.h>
-#include <vector>
 
 /**
    This implements similar functionality to boost::intrusive_ptr
@@ -39,24 +36,24 @@ public:
 
     SvRef(SvRef const & rObj): pObj(rObj.pObj)
     {
-        if (pObj != 0) pObj->AddNextRef();
+        if (pObj != nullptr) pObj->AddNextRef();
     }
 
     SvRef(T * pObjP): pObj(pObjP)
     {
-        if (pObj != 0) pObj->AddFirstRef();
+        if (pObj != nullptr) pObj->AddFirstRef();
     }
 
     ~SvRef()
     {
-        if (pObj != 0) pObj->ReleaseRef();
+        if (pObj != nullptr) pObj->ReleaseRef();
     }
 
     void Clear()
     {
-        if (pObj != 0) {
+        if (pObj != nullptr) {
             T * pRefObj = pObj;
-            pObj = 0;
+            pObj = nullptr;
             pRefObj->ReleaseRef();
         }
     }
@@ -68,21 +65,21 @@ public:
         }
         T * pRefObj = pObj;
         pObj = rObj.pObj;
-        if (pRefObj != 0) {
+        if (pRefObj != nullptr) {
             pRefObj->ReleaseRef();
         }
         return *this;
     }
 
-    bool Is()         const { return pObj != 0; }
+    bool Is()         const { return pObj != nullptr; }
 
     T * get()         const { return pObj; }
 
     T * operator &()  const { return pObj; }
 
-    T * operator ->() const { assert(pObj != 0); return pObj; }
+    T * operator ->() const { assert(pObj != nullptr); return pObj; }
 
-    T & operator *()  const { assert(pObj != 0); return *pObj; }
+    T & operator *()  const { assert(pObj != nullptr); return *pObj; }
 
     operator T *()    const { return pObj; }
 
@@ -92,81 +89,22 @@ protected:
 
 }
 
-template<typename T>
-class SvRefMemberList : private std::vector<T>
-{
-private:
-    typedef typename std::vector<T> base_t;
-
-public:
-    using base_t::size;
-    using base_t::front;
-    using base_t::back;
-    using base_t::operator[];
-    using base_t::begin;
-    using base_t::end;
-    using typename base_t::iterator;
-    using typename base_t::const_iterator;
-    using base_t::rbegin;
-    using base_t::rend;
-    using typename base_t::reverse_iterator;
-    using base_t::empty;
-
-    inline ~SvRefMemberList() { clear(); }
-    inline void clear()
-    {
-        for( typename base_t::const_iterator it = base_t::begin(); it != base_t::end(); ++it )
-        {
-              T p = *it;
-              if( p )
-                  p->ReleaseRef();
-        }
-        base_t::clear();
-    }
-
-    inline void push_back( T p )
-    {
-        base_t::push_back( p );
-        p->AddFirstRef();
-    }
-
-    inline void insert(const SvRefMemberList& rOther)
-    {
-       for( typename base_t::const_iterator it = rOther.begin(); it != rOther.end(); ++it )
-       {
-           push_back(*it);
-       }
-    }
-
-    inline T pop_back()
-    {
-        T p = base_t::back();
-        base_t::pop_back();
-        if( p )
-            p->ReleaseRef();
-        return p;
-    }
-};
-
-
 /** Classes that want to be referenced-counted via SvRef<T>, should extend this base class */
 class TOOLS_DLLPUBLIC SvRefBase
 {
-    // the only reason this is not bool is because MSVC cannot handle mixed type bitfields
-#if defined(__AFL_HAVE_MANUAL_INIT)
-    bool bNoDelete;
-#else
-    unsigned int bNoDelete : 1;
-#endif
+    // work around a clang 3.5 optimization bug: if the bNoDelete is *first*
+    // it mis-compiles "if (--nRefCount == 0)" and never deletes any object
     unsigned int nRefCount : 31;
+    // the only reason this is not bool is because MSVC cannot handle mixed type bitfields
+    unsigned int bNoDelete : 1;
 
 protected:
     virtual         ~SvRefBase();
 
 public:
-                    SvRefBase() : bNoDelete(1), nRefCount(0) {}
+                    SvRefBase() : nRefCount(0), bNoDelete(1) {}
 
-                    SvRefBase( const SvRefBase & /* rObj */ )  : bNoDelete(1), nRefCount(0) {}
+                    SvRefBase(const SvRefBase &) : nRefCount(0), bNoDelete(1) {}
 
     SvRefBase &     operator = ( const SvRefBase & )
                     { return *this; }
@@ -219,7 +157,7 @@ class SvCompatWeakHdl : public SvRefBase
     SvCompatWeakHdl( T* pObj ) : _pObj( pObj ) {}
 
 public:
-    void  ResetWeakBase( ) { _pObj = 0; }
+    void  ResetWeakBase( ) { _pObj = nullptr; }
     T*    GetObj()        { return _pObj; }
 };
 
@@ -245,7 +183,7 @@ public:
 /** We only have one weak reference in LO, in include/sfx2/frame.hxx, class SfxFrameWeak.
 */
 template<typename T>
-class SvCompatWeakRef
+class SAL_WARN_UNUSED SvCompatWeakRef
 {
     tools::SvRef< SvCompatWeakHdl<T> > _xHdl;
 public:

@@ -30,11 +30,11 @@ public:
         XMLTransformerBase & rTransformer, const OUString & rQName );
     virtual ~XMLChartPlotAreaOASISTContext();
 
-    virtual XMLTransformerContext *CreateChildContext( sal_uInt16 nPrefix,
+    virtual rtl::Reference<XMLTransformerContext> CreateChildContext( sal_uInt16 nPrefix,
                                    const OUString& rLocalName,
                                    const OUString& rQName,
-                                   const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
-    virtual void EndElement() SAL_OVERRIDE;
+                                   const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
+    virtual void EndElement() override;
 
     void ExportCategories();
 

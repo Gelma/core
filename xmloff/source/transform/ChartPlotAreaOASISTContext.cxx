@@ -40,14 +40,14 @@ public:
                          ::rtl::Reference< XMLPersAttrListTContext > & rOutCategoriesContext );
     virtual ~XMLAxisOASISContext();
 
-    virtual XMLTransformerContext *CreateChildContext(
+    virtual rtl::Reference<XMLTransformerContext> CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
         const OUString& rQName,
-        const Reference< xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+        const Reference< xml::sax::XAttributeList >& xAttrList ) override;
 
-    virtual void StartElement( const Reference< xml::sax::XAttributeList >& rAttrList ) SAL_OVERRIDE;
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void StartElement( const Reference< xml::sax::XAttributeList >& rAttrList ) override;
+    virtual void EndElement() override;
 
     bool IsCategoryAxis() const { return m_bHasCategories;}
 
@@ -68,13 +68,13 @@ XMLAxisOASISContext::XMLAxisOASISContext(
 XMLAxisOASISContext::~XMLAxisOASISContext()
 {}
 
-XMLTransformerContext * XMLAxisOASISContext::CreateChildContext(
+rtl::Reference<XMLTransformerContext> XMLAxisOASISContext::CreateChildContext(
     sal_uInt16 nPrefix,
     const OUString& rLocalName,
     const OUString& rQName,
     const Reference< xml::sax::XAttributeList >& xAttrList )
 {
-    XMLTransformerContext * pContext = 0;
+    rtl::Reference<XMLTransformerContext> pContext;
 
     if( XML_NAMESPACE_CHART == nPrefix &&
         IsXMLToken( rLocalName, XML_CATEGORIES ) )
@@ -97,7 +97,7 @@ void XMLAxisOASISContext::StartElement(
     const Reference< xml::sax::XAttributeList >& rAttrList )
 {
     Reference< xml::sax::XAttributeList > xAttrList( rAttrList );
-    XMLMutableAttributeList *pMutableAttrList = 0;
+    XMLMutableAttributeList *pMutableAttrList = nullptr;
     sal_Int16 nAttrCount = xAttrList.is() ? xAttrList->getLength() : 0;
     for( sal_Int16 i=0; i < nAttrCount; i++ )
     {
@@ -194,18 +194,18 @@ XMLChartPlotAreaOASISTContext::XMLChartPlotAreaOASISTContext(
 XMLChartPlotAreaOASISTContext::~XMLChartPlotAreaOASISTContext()
 {}
 
-XMLTransformerContext * XMLChartPlotAreaOASISTContext::CreateChildContext(
+rtl::Reference<XMLTransformerContext> XMLChartPlotAreaOASISTContext::CreateChildContext(
     sal_uInt16 nPrefix,
     const OUString& rLocalName,
     const OUString& rQName,
     const uno::Reference< xml::sax::XAttributeList >& xAttrList )
 {
-    XMLTransformerContext *pContext = 0;
+    rtl::Reference<XMLTransformerContext> pContext;
 
     if( XML_NAMESPACE_CHART == nPrefix &&
         IsXMLToken( rLocalName, XML_AXIS ) )
     {
-        pContext = new XMLAxisOASISContext( GetTransformer(), rQName, m_rCategoriesContext );
+        pContext.set(new XMLAxisOASISContext( GetTransformer(), rQName, m_rCategoriesContext ));
     }
     else
     {

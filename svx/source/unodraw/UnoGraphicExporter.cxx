@@ -95,10 +95,10 @@ namespace {
         OUString maFilterName;
         OUString maMediaType;
         URL maURL;
-        com::sun::star::uno::Reference< com::sun::star::io::XOutputStream > mxOutputStream;
-        com::sun::star::uno::Reference< com::sun::star::graphic::XGraphicRenderer > mxGraphicRenderer;
-        com::sun::star::uno::Reference< com::sun::star::task::XStatusIndicator >    mxStatusIndicator;
-        com::sun::star::uno::Reference< com::sun::star::task::XInteractionHandler > mxInteractionHandler;
+        css::uno::Reference< css::io::XOutputStream >         mxOutputStream;
+        css::uno::Reference< css::graphic::XGraphicRenderer > mxGraphicRenderer;
+        css::uno::Reference< css::task::XStatusIndicator >    mxStatusIndicator;
+        css::uno::Reference< css::task::XInteractionHandler > mxInteractionHandler;
 
         sal_Int32 mnWidth;
         sal_Int32 mnHeight;
@@ -143,20 +143,20 @@ namespace {
         virtual ~GraphicExporter();
 
         // XFilter
-        virtual sal_Bool SAL_CALL filter( const Sequence< PropertyValue >& aDescriptor ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL cancel(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual sal_Bool SAL_CALL filter( const Sequence< PropertyValue >& aDescriptor ) throw(RuntimeException, std::exception) override;
+        virtual void SAL_CALL cancel(  ) throw(RuntimeException, std::exception) override;
 
         // XExporter
-        virtual void SAL_CALL setSourceDocument( const Reference< XComponent >& xDoc ) throw(IllegalArgumentException, RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL setSourceDocument( const Reference< XComponent >& xDoc ) throw(IllegalArgumentException, RuntimeException, std::exception) override;
 
         // XServiceInfo
-        virtual OUString SAL_CALL getImplementationName(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual OUString SAL_CALL getImplementationName(  ) throw(RuntimeException, std::exception) override;
+        virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw(RuntimeException, std::exception) override;
+        virtual Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw(RuntimeException, std::exception) override;
 
         // XMimeTypeInfo
-        virtual sal_Bool SAL_CALL supportsMimeType( const OUString& MimeTypeName ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Sequence< OUString > SAL_CALL getSupportedMimeTypeNames(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual sal_Bool SAL_CALL supportsMimeType( const OUString& MimeTypeName ) throw (RuntimeException, std::exception) override;
+        virtual Sequence< OUString > SAL_CALL getSupportedMimeTypeNames(  ) throw (RuntimeException, std::exception) override;
 
         VclPtr<VirtualDevice> CreatePageVDev( SdrPage* pPage, sal_uIntPtr nWidthPixel, sal_uIntPtr nHeightPixel ) const;
 
@@ -262,7 +262,7 @@ namespace {
     Size* CalcSize( sal_Int32 nWidth, sal_Int32 nHeight, const Size& aBoundSize, Size& aOutSize )
     {
         if( (nWidth == 0) && (nHeight == 0) )
-            return NULL;
+            return nullptr;
 
         if( (nWidth == 0) && (nHeight != 0) && (aBoundSize.Height() != 0) )
         {
@@ -285,9 +285,9 @@ public:
     explicit ImplExportCheckVisisbilityRedirector( SdrPage* pCurrentPage );
     virtual ~ImplExportCheckVisisbilityRedirector();
 
-    virtual drawinglayer::primitive2d::Primitive2DSequence createRedirectedPrimitive2DSequence(
+    virtual drawinglayer::primitive2d::Primitive2DContainer createRedirectedPrimitive2DSequence(
         const sdr::contact::ViewObjectContact& rOriginal,
-        const sdr::contact::DisplayInfo& rDisplayInfo) SAL_OVERRIDE;
+        const sdr::contact::DisplayInfo& rDisplayInfo) override;
 
 private:
     SdrPage*    mpCurrentPage;
@@ -302,7 +302,7 @@ ImplExportCheckVisisbilityRedirector::~ImplExportCheckVisisbilityRedirector()
 {
 }
 
-drawinglayer::primitive2d::Primitive2DSequence ImplExportCheckVisisbilityRedirector::createRedirectedPrimitive2DSequence(
+drawinglayer::primitive2d::Primitive2DContainer ImplExportCheckVisisbilityRedirector::createRedirectedPrimitive2DSequence(
     const sdr::contact::ViewObjectContact& rOriginal,
     const sdr::contact::DisplayInfo& rDisplayInfo)
 {
@@ -311,15 +311,15 @@ drawinglayer::primitive2d::Primitive2DSequence ImplExportCheckVisisbilityRedirec
     if(pObject)
     {
         SdrPage* pPage = mpCurrentPage;
-        if( pPage == 0 )
+        if( pPage == nullptr )
             pPage = pObject->GetPage();
 
-        if( (pPage == 0) || pPage->checkVisibility(rOriginal, rDisplayInfo, false) )
+        if( (pPage == nullptr) || pPage->checkVisibility(rOriginal, rDisplayInfo, false) )
         {
             return sdr::contact::ViewObjectContactRedirector::createRedirectedPrimitive2DSequence(rOriginal, rDisplayInfo);
         }
 
-        return drawinglayer::primitive2d::Primitive2DSequence();
+        return drawinglayer::primitive2d::Primitive2DContainer();
     }
     else
     {
@@ -329,7 +329,7 @@ drawinglayer::primitive2d::Primitive2DSequence ImplExportCheckVisisbilityRedirec
 }
 
 GraphicExporter::GraphicExporter()
-: mpUnoPage( NULL ), mnPageNumber(-1), mpCurrentPage(0), mpDoc( NULL )
+: mpUnoPage( nullptr ), mnPageNumber(-1), mpCurrentPage(nullptr), mpDoc( nullptr )
 {
 }
 
@@ -348,7 +348,7 @@ IMPL_LINK_TYPED(GraphicExporter, CalcFieldValueHdl, EditFieldInfo*, pInfo, void)
         else if( mnPageNumber != -1 )
         {
             const SvxFieldData* pField = pInfo->GetField().GetField();
-            if( pField && pField->ISA( SvxPageField ) )
+            if( pField && dynamic_cast<const SvxPageField*>( pField) !=  nullptr )
             {
                 OUString aPageNumValue;
                 bool bUpper = false;
@@ -384,7 +384,7 @@ IMPL_LINK_TYPED(GraphicExporter, CalcFieldValueHdl, EditFieldInfo*, pInfo, void)
     maOldCalcFieldValueHdl.Call( pInfo );
 
     if( pInfo && mpCurrentPage )
-        pInfo->SetSdrPage( 0 );
+        pInfo->SetSdrPage( nullptr );
 }
 
 /** creates an virtual device for the given page
@@ -623,7 +623,7 @@ bool GraphicExporter::GetGraphic( ExportSettings& rSettings, Graphic& aGraphic, 
     ScopedVclPtrInstance< VirtualDevice > aVDev;
     const MapMode       aMap( mpDoc->GetScaleUnit(), Point(), rSettings.maScaleX, rSettings.maScaleY );
 
-    SdrOutliner& rOutl=mpDoc->GetDrawOutliner(NULL);
+    SdrOutliner& rOutl=mpDoc->GetDrawOutliner();
     maOldCalcFieldValueHdl = rOutl.GetCalcFieldValueHdl();
     rOutl.SetCalcFieldValueHdl( LINK(this, GraphicExporter, CalcFieldValueHdl) );
     rOutl.SetBackgroundColor( pPage->GetPageBackgroundColor() );
@@ -633,7 +633,7 @@ bool GraphicExporter::GetGraphic( ExportSettings& rSettings, Graphic& aGraphic, 
     EEControlBits nCntrl = nOldCntrl & ~EEControlBits::ONLINESPELLING;
     rOutl.SetControlWord(nCntrl);
 
-    SdrObject* pTempBackgroundShape = 0;
+    SdrObject* pTempBackgroundShape = nullptr;
     std::vector< SdrObject* > aShapes;
     bool bRet = true;
 
@@ -698,9 +698,9 @@ bool GraphicExporter::GetGraphic( ExportSettings& rSettings, Graphic& aGraphic, 
                 }
 
                 std::unique_ptr< SdrView > pLocalView;
-                if( PTR_CAST( FmFormModel, mpDoc ) )
+                if( dynamic_cast<FmFormModel*>( mpDoc )  )
                 {
-                    pLocalView.reset( new FmFormView( PTR_CAST( FmFormModel, mpDoc ), aVDev ) );
+                    pLocalView.reset( new FmFormView( dynamic_cast<FmFormModel*>( mpDoc ), aVDev )  );
                 }
                 else
                 {
@@ -731,9 +731,9 @@ bool GraphicExporter::GetGraphic( ExportSettings& rSettings, Graphic& aGraphic, 
 
                 // create a view
                 std::unique_ptr< SdrView > pView;
-                if( PTR_CAST( FmFormModel, mpDoc ) )
+                if( dynamic_cast<FmFormModel*>( mpDoc ) !=  nullptr  )
                 {
-                    pView.reset(new FmFormView( PTR_CAST( FmFormModel, mpDoc ), aVDev ));
+                    pView.reset(new FmFormView( dynamic_cast<FmFormModel*>( mpDoc ), aVDev ) );
                 }
                 else
                 {
@@ -827,7 +827,7 @@ bool GraphicExporter::GetGraphic( ExportSettings& rSettings, Graphic& aGraphic, 
             if( !bVectorType )
             {
                 SdrObject* pObj = aShapes.front();
-                if( pObj && pObj->ISA( SdrGrafObj ) && !static_cast<SdrGrafObj*>(pObj)->HasText() )
+                if( pObj && dynamic_cast<const SdrGrafObj*>( pObj) != nullptr && !static_cast<SdrGrafObj*>(pObj)->HasText() )
                 {
                     aGraphic = static_cast<SdrGrafObj*>(pObj)->GetTransformedGraphic();
                     if ( aGraphic.GetType() == GRAPHIC_BITMAP )
@@ -853,7 +853,7 @@ bool GraphicExporter::GetGraphic( ExportSettings& rSettings, Graphic& aGraphic, 
             else if( rSettings.mbScrollText )
             {
                 SdrObject* pObj = aShapes.front();
-                if( pObj && pObj->ISA( SdrTextObj )
+                if( pObj && dynamic_cast<const SdrTextObj*>( pObj) !=  nullptr
                     && static_cast<SdrTextObj*>(pObj)->HasText() )
                 {
                     Rectangle aScrollRectangle;
@@ -1001,10 +1001,10 @@ sal_Bool SAL_CALL GraphicExporter::filter( const Sequence< PropertyValue >& aDes
 {
     ::SolarMutexGuard aGuard;
 
-    if( NULL == mpUnoPage )
+    if( nullptr == mpUnoPage )
         return sal_False;
 
-    if( NULL == mpUnoPage->GetSdrPage() || NULL == mpDoc )
+    if( nullptr == mpUnoPage->GetSdrPage() || nullptr == mpDoc )
         return sal_False;
 
     GraphicFilter &rFilter = GraphicFilter::GetGraphicFilter();
@@ -1065,9 +1065,9 @@ sal_Bool SAL_CALL GraphicExporter::filter( const Sequence< PropertyValue >& aDes
     if ( aSettings.mxInteractionHandler.is() && ( nStatus != GRFILTER_OK ) )
     {
         Any aInteraction;
-        Sequence< ::com::sun::star::uno::Reference< ::com::sun::star::task::XInteractionContinuation > > lContinuations(1);
+        Sequence< css::uno::Reference< css::task::XInteractionContinuation > > lContinuations(1);
         ::comphelper::OInteractionApprove* pApprove = new ::comphelper::OInteractionApprove();
-        lContinuations[0] = Reference< XInteractionContinuation >(static_cast< XInteractionContinuation* >(pApprove), UNO_QUERY);
+        lContinuations[0].set(static_cast< XInteractionContinuation* >(pApprove), UNO_QUERY);
 
         GraphicFilterRequest aErrorCode;
         aErrorCode.ErrCode = nStatus;
@@ -1090,17 +1090,17 @@ void SAL_CALL GraphicExporter::setSourceDocument( const Reference< lang::XCompon
 {
     ::SolarMutexGuard aGuard;
 
-    mxShapes = NULL;
-    mpUnoPage = NULL;
+    mxShapes = nullptr;
+    mpUnoPage = nullptr;
 
     try
     {
     // any break inside this one loop while will throw a IllegalArgumentException
     do
     {
-        mxPage = Reference< XDrawPage >::query( xComponent );
-        mxShapes = Reference< XShapes >::query( xComponent );
-        mxShape = Reference< XShape >::query( xComponent );
+        mxPage.set( xComponent, UNO_QUERY );
+        mxShapes.set( xComponent, UNO_QUERY );
+        mxShape.set( xComponent, UNO_QUERY );
 
         // Step 1: try a generic XShapes
         if( !mxPage.is() && !mxShape.is() && mxShapes.is() )
@@ -1114,13 +1114,13 @@ void SAL_CALL GraphicExporter::setSourceDocument( const Reference< lang::XCompon
         }
         else
         {
-            mxShapes = NULL;
+            mxShapes = nullptr;
         }
 
         // Step 2: try a shape
         if( mxShape.is() )
         {
-            if( NULL == GetSdrObjectFromXShape( mxShape ) )
+            if( nullptr == GetSdrObjectFromXShape( mxShape ) )
                 break;
 
             // get page for this shape
@@ -1132,9 +1132,9 @@ void SAL_CALL GraphicExporter::setSourceDocument( const Reference< lang::XCompon
             do
             {
                 xInt = xChild->getParent();
-                mxPage = Reference< XDrawPage >::query( xInt );
+                mxPage.set( xInt, UNO_QUERY );
                 if( !mxPage.is() )
-                    xChild = Reference< XChild >::query( xInt );
+                    xChild.set( xInt, UNO_QUERY );
             }
             while( !mxPage.is() && xChild.is() );
 
@@ -1148,7 +1148,7 @@ void SAL_CALL GraphicExporter::setSourceDocument( const Reference< lang::XCompon
 
         mpUnoPage = SvxDrawPage::getImplementation( mxPage );
 
-        if( NULL == mpUnoPage || NULL == mpUnoPage->GetSdrPage() )
+        if( nullptr == mpUnoPage || nullptr == mpUnoPage->GetSdrPage() )
             break;
 
         mpDoc = mpUnoPage->GetSdrPage()->GetModel();
@@ -1207,8 +1207,7 @@ sal_Bool SAL_CALL GraphicExporter::supportsService( const OUString& ServiceName 
 Sequence< OUString > SAL_CALL GraphicExporter::getSupportedServiceNames(  )
     throw(RuntimeException, std::exception)
 {
-    Sequence< OUString > aSupportedServiceNames(1);
-    aSupportedServiceNames[0] = "com.sun.star.drawing.GraphicExportFilter";
+    Sequence< OUString > aSupportedServiceNames { "com.sun.star.drawing.GraphicExportFilter" };
     return aSupportedServiceNames;
 }
 

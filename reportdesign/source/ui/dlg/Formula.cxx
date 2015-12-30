@@ -47,14 +47,14 @@ FormulaDialog::FormulaDialog(vcl::Window* pParent
                              , const uno::Reference<lang::XMultiServiceFactory>& _xServiceFactory
                              , const std::shared_ptr< IFunctionManager >&  _pFunctionMgr
                              , const OUString& _sFormula
-                             , const ::com::sun::star::uno::Reference < ::com::sun::star::beans::XPropertySet >& _xRowSet
+                             , const css::uno::Reference < css::beans::XPropertySet >& _xRowSet
                              , svl::SharedStringPool& rStrPool )
     : FormulaModalDialog( pParent, false,false,false,_pFunctionMgr.get(),this)
     ,m_aFunctionManager(_pFunctionMgr)
     ,m_pFormulaData(new FormEditData())
-    ,m_pAddField(NULL)
+    ,m_pAddField(nullptr)
     ,m_xRowSet(_xRowSet)
-    ,m_pEdit(NULL)
+    ,m_pEdit(nullptr)
     ,m_sFormula("=")
     ,m_nStart(0)
     ,m_nEnd(1)
@@ -107,7 +107,7 @@ void FormulaDialog::dispose()
 
 //                          Funktionen fuer rechte Seite
 
-bool FormulaDialog::calculateValue( const OUString& rStrExp, OUString& rStrResult )
+bool FormulaDialog::calculateValue( const OUString& rStrExp, OUString& rStrResult, bool /*bMatrixFormula*/ )
 {
     rStrResult = rStrExp;
     return false;
@@ -237,7 +237,7 @@ IMPL_LINK_TYPED( FormulaDialog, OnClickHdl, OAddFieldWindow& ,_rAddFieldDlg, voi
             m_pEdit->SetText(sName);
         }
     }
-    m_pEdit = NULL;
+    m_pEdit = nullptr;
     _rAddFieldDlg.Hide();
     RefInputDoneAfter( true );
 }
@@ -260,7 +260,7 @@ table::CellAddress FormulaDialog::getReferencePosition() const
 ::std::unique_ptr<formula::FormulaTokenArray> FormulaDialog::convertToTokenArray(const uno::Sequence< sheet::FormulaToken >& _aTokenList)
 {
     ::std::unique_ptr<formula::FormulaTokenArray> pArray(new FormulaTokenArray());
-    pArray->Fill(_aTokenList, mrStringPool, NULL);
+    pArray->Fill(_aTokenList, mrStringPool, nullptr);
     return pArray;
 }
 

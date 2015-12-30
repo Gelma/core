@@ -107,6 +107,7 @@
 #include <connectivity/FValue.hxx>
 
 #include <editeng/justifyitem.hxx>
+#include <memory>
 
 namespace dbaui
 {
@@ -185,7 +186,7 @@ SQLExceptionInfo createConnection(  const Reference< css::beans::XPropertySet>& 
             }
             else
             {   // instantiate the default SDB interaction handler
-                Reference< XInteractionHandler > xHandler( InteractionHandler::createWithParent(_rxContext, 0), UNO_QUERY);
+                Reference< XInteractionHandler > xHandler( InteractionHandler::createWithParent(_rxContext, nullptr), UNO_QUERY);
                 _rOUTConnection = xConnectionCompletion->connectWithCompletion(xHandler);
             }
         }
@@ -825,7 +826,7 @@ bool callColumnFormatDialog(vcl::Window* _pParent,
     pPool->SetDefaultMetric( SFX_MAPUNIT_TWIP );    // ripped, don't understand why
     pPool->FreezeIdRanges();                        // the same
 
-    SfxItemSet* pFormatDescriptor = new SfxItemSet(*pPool, aAttrMap);
+    std::unique_ptr<SfxItemSet> pFormatDescriptor(new SfxItemSet(*pPool, aAttrMap));
     // fill it
     pFormatDescriptor->Put(SvxHorJustifyItem(_eJustify, SBA_ATTR_ALIGN_HOR_JUSTIFY));
     bool bText = false;
@@ -852,7 +853,7 @@ bool callColumnFormatDialog(vcl::Window* _pParent,
     }
 
     {   // want the dialog to be destroyed before our set
-        ScopedVclPtrInstance< SbaSbAttrDlg > aDlg(_pParent, pFormatDescriptor, _pFormatter, _bHasFormat);
+        ScopedVclPtrInstance< SbaSbAttrDlg > aDlg(_pParent, pFormatDescriptor.get(), _pFormatter, _bHasFormat);
         if (RET_OK == aDlg->Execute())
         {
             // ItemSet->UNO
@@ -862,14 +863,14 @@ bool callColumnFormatDialog(vcl::Window* _pParent,
             // won't reflect these changes, and why do we have a model, then ?)
 
             // horizontal justify
-            SFX_ITEMSET_GET(*pSet, pHorJustify, SvxHorJustifyItem, SBA_ATTR_ALIGN_HOR_JUSTIFY, true);
+            const SvxHorJustifyItem* pHorJustify = pSet->GetItem<SvxHorJustifyItem>(SBA_ATTR_ALIGN_HOR_JUSTIFY);
 
             _eJustify = (SvxCellHorJustify)pHorJustify->GetValue();
 
             // format key
             if (_bHasFormat)
             {
-                SFX_ITEMSET_GET(*pSet, pFormat, SfxUInt32Item, SBA_DEF_FMTVALUE, true);
+                const SfxUInt32Item* pFormat = pSet->GetItem<SfxUInt32Item>(SBA_DEF_FMTVALUE);
                 _nFormatKey = (sal_Int32)pFormat->GetValue();
             }
             bRet = true;
@@ -890,7 +891,7 @@ bool callColumnFormatDialog(vcl::Window* _pParent,
         }
     }
 
-    delete pFormatDescriptor;
+    pFormatDescriptor.reset();
     SfxItemPool::Free(pPool);
     for (sal_uInt16 i=0; i<sizeof(pDefaults)/sizeof(pDefaults[0]); ++i)
         delete pDefaults[i];
@@ -900,7 +901,7 @@ bool callColumnFormatDialog(vcl::Window* _pParent,
 
 const SfxFilter* getStandardDatabaseFilter()
 {
-    const SfxFilter* pFilter = SfxFilter::GetFilterByName(OUString("StarOffice XML (Base)"));
+    const SfxFilter* pFilter = SfxFilter::GetFilterByName("StarOffice XML (Base)");
     OSL_ENSURE(pFilter,"Filter: StarOffice XML (Base) could not be found!");
     return pFilter;
 }
@@ -959,7 +960,7 @@ bool appendToFilter(const Reference<XConnection>& _xConnection,
 void notifySystemWindow(vcl::Window* _pWindow, vcl::Window* _pToRegister, const ::comphelper::mem_fun1_t<TaskPaneList,vcl::Window*>& _rMemFunc)
 {
     OSL_ENSURE(_pWindow,"Window can not be null!");
-    SystemWindow* pSystemWindow = _pWindow ? _pWindow->GetSystemWindow() : NULL;
+    SystemWindow* pSystemWindow = _pWindow ? _pWindow->GetSystemWindow() : nullptr;
     if ( pSystemWindow )
     {
         _rMemFunc( pSystemWindow->GetTaskPaneList(), _pToRegister );
@@ -1273,9 +1274,9 @@ TOTypeInfoSP queryTypeInfoByType(sal_Int32 _nDataType,const OTypeInfoMap& _rType
     }
     if ( !pTypeInfo )
     {
-        OUString sCreate("x"),sTypeName;
+        OUString sTypeName;
         bool bForce = true;
-        pTypeInfo = ::dbaui::getTypeInfoFromType(_rTypeInfo,DataType::VARCHAR,sTypeName,sCreate,50,0,false,bForce);
+        pTypeInfo = ::dbaui::getTypeInfoFromType(_rTypeInfo,DataType::VARCHAR,sTypeName,"x",50,0,false,bForce);
     }
     OSL_ENSURE(pTypeInfo,"Wrong DataType supplied!");
     return pTypeInfo;
@@ -1325,11 +1326,11 @@ Reference< XPropertySet > createView( const OUString& _rName, const Reference< X
     Reference<XDataDescriptorFactory> xFact(xViews,UNO_QUERY);
     OSL_ENSURE(xFact.is(),"No XDataDescriptorFactory available!");
     if(!xFact.is())
-        return NULL;
+        return nullptr;
 
     Reference<XPropertySet> xView = xFact->createDataDescriptor();
     if ( !xView.is() )
-        return NULL;
+        return nullptr;
 
     OUString sCatalog,sSchema,sTable;
     ::dbtools::qualifiedNameComponents(_rxConnection->getMetaData(),
@@ -1349,7 +1350,7 @@ Reference< XPropertySet > createView( const OUString& _rName, const Reference< X
     if(xAppend.is())
         xAppend->appendByDescriptor(xView);
 
-    xView = NULL;
+    xView = nullptr;
     // we need to reget the view because after appending it, it is no longer valid
     // but this time it isn't a view object it is a table object with type "VIEW"
     Reference<XTablesSupplier> xTabSup(_rxConnection,UNO_QUERY);
@@ -1449,7 +1450,7 @@ bool insertHierachyElement( vcl::Window* _pParent, const Reference< XComponentCo
     {
         OUString sError(ModuleRes(STR_NAME_ALREADY_EXISTS));
         sError = sError.replaceFirst("#",sNewName);
-        throw SQLException(sError,NULL,OUString("S1000") ,0,Any());
+        throw SQLException(sError,nullptr,OUString("S1000") ,0,Any());
     }
 
     try
@@ -1501,8 +1502,7 @@ Reference< XNumberFormatter > getNumberFormatter(const Reference< XConnection >&
         if ( xSupplier.is() )
         {
             // create a new formatter
-            xFormatter = Reference< util::XNumberFormatter > (
-                util::NumberFormatter::create( _rxContext ), UNO_QUERY_THROW);
+            xFormatter.set(util::NumberFormatter::create( _rxContext ), UNO_QUERY_THROW);
             xFormatter->attachNumberFormatsSupplier(xSupplier);
         }
     }

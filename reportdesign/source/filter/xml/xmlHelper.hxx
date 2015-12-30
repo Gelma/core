@@ -38,16 +38,13 @@ namespace rptxml
 {
     class OPropertyHandlerFactory : public ::xmloff::OControlPropertyHandlerFactory
     {
-        OPropertyHandlerFactory(const OPropertyHandlerFactory&) SAL_DELETED_FUNCTION;
-        void operator =(const OPropertyHandlerFactory&) SAL_DELETED_FUNCTION;
-    protected:
-        mutable ::std::unique_ptr<XMLConstantsPropertyHandler>    m_pDisplayHandler;
-        mutable ::std::unique_ptr<XMLPropertyHandler>             m_pTextAlignHandler;
+        OPropertyHandlerFactory(const OPropertyHandlerFactory&) = delete;
+        void operator =(const OPropertyHandlerFactory&) = delete;
     public:
         OPropertyHandlerFactory();
         virtual ~OPropertyHandlerFactory();
 
-        virtual const XMLPropertyHandler* GetPropertyHandler(sal_Int32 _nType) const SAL_OVERRIDE;
+        virtual const XMLPropertyHandler* GetPropertyHandler(sal_Int32 _nType) const override;
     };
 
     class OXMLHelper
@@ -66,8 +63,8 @@ namespace rptxml
 
         static const XMLPropertyMapEntry* GetRowStyleProps();
 
-        static void copyStyleElements(const bool _bOld,const OUString& _sStyleName,const SvXMLStylesContext* _pAutoStyles,const com::sun::star::uno::Reference< com::sun::star::beans::XPropertySet>& _xProp);
-        static com::sun::star::uno::Reference< com::sun::star::beans::XPropertySet> createBorderPropertySet();
+        static void copyStyleElements(const bool _bOld,const OUString& _sStyleName,const SvXMLStylesContext* _pAutoStyles,const css::uno::Reference< css::beans::XPropertySet>& _xProp);
+        static css::uno::Reference< css::beans::XPropertySet> createBorderPropertySet();
 
         static SvXMLTokenMap* GetReportElemTokenMap();
         static SvXMLTokenMap* GetSubDocumentElemTokenMap();

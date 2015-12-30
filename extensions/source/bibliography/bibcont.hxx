@@ -38,25 +38,25 @@ class BibWindowContainer : public BibWindow     //Window
         BibShortCutHandler*     pChild;
 
     protected:
-        virtual void            Resize() SAL_OVERRIDE;
+        virtual void            Resize() override;
 
     public:
         BibWindowContainer( vcl::Window* pParent, BibShortCutHandler* pChild, WinBits nStyle = WB_3DLOOK);
         virtual ~BibWindowContainer();
-        virtual void            dispose() SAL_OVERRIDE;
+        virtual void            dispose() override;
 
         inline vcl::Window*     GetChild();
 
-        virtual void            GetFocus() SAL_OVERRIDE;
+        virtual void            GetFocus() override;
 
-        virtual bool            HandleShortCutKey( const KeyEvent& rKeyEvent ) SAL_OVERRIDE; // returns true, if key was handled
+        virtual bool            HandleShortCutKey( const KeyEvent& rKeyEvent ) override; // returns true, if key was handled
 
         using Window::GetChild;
 };
 
 inline vcl::Window* BibWindowContainer::GetChild()
 {
-    return pChild ? pChild->GetWindow() : NULL;
+    return pChild ? pChild->GetWindow() : nullptr;
 }
 
 
@@ -64,11 +64,8 @@ class BibBookContainer: public BibSplitWindow
 {
     private:
 
-        ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >             xTopFrameRef;
-        ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >             xBottomFrameRef;
-
-        ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindow >              xTopPeerRef;
-        ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindow >              xBottomPeerRef;
+        css::uno::Reference< css::frame::XFrame >             xTopFrameRef;
+        css::uno::Reference< css::frame::XFrame >             xBottomFrameRef;
 
         VclPtr<BibWindowContainer>     pTopWin;
         VclPtr<BibWindowContainer>     pBottomWin;
@@ -79,24 +76,24 @@ class BibBookContainer: public BibSplitWindow
 
     protected:
 
-        virtual void            Split() SAL_OVERRIDE;
+        virtual void            Split() override;
 
-        virtual bool            PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+        virtual bool            PreNotify( NotifyEvent& rNEvt ) override;
 
     public:
 
         BibBookContainer(vcl::Window* pParent, WinBits nStyle = WB_3DLOOK );
         virtual ~BibBookContainer();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
         // !BibShortCutHandler is also always a Window!
         void                    createTopFrame( BibShortCutHandler* pWin );
 
         void                    createBottomFrame( BibShortCutHandler* pWin );
 
-        virtual void            GetFocus() SAL_OVERRIDE;
+        virtual void            GetFocus() override;
 
-        virtual bool        HandleShortCutKey( const KeyEvent& rKeyEvent ) SAL_OVERRIDE; // returns true, if key was handled
+        virtual bool        HandleShortCutKey( const KeyEvent& rKeyEvent ) override; // returns true, if key was handled
 };
 
 #endif

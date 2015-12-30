@@ -21,10 +21,14 @@
 
 #include "optutil.hxx"
 #include "global.hxx"
+#include <unotools/configmgr.hxx>
 #include <unotools/syslocale.hxx>
 
 bool ScOptionsUtil::IsMetricSystem()
 {
+    if (utl::ConfigManager::IsAvoidConfig())
+        return true;
+
     //TODO: which language should be used here - system language or installed office language?
 
     MeasurementSystem eSys = ScGlobal::pLocaleData->getMeasurementSystemEnum();
@@ -47,7 +51,7 @@ void ScLinkConfigItem::SetCommitLink( const Link<ScLinkConfigItem&,void>& rLink 
     aCommitLink = rLink;
 }
 
-void ScLinkConfigItem::Notify( const com::sun::star::uno::Sequence<OUString>& /* aPropertyNames */ )
+void ScLinkConfigItem::Notify( const css::uno::Sequence<OUString>& /* aPropertyNames */ )
 {
     //TODO: not implemented yet...
 }

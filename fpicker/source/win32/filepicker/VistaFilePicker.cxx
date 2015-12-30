@@ -43,9 +43,6 @@
 #include <osl/mutex.hxx>
 #include <osl/file.hxx>
 #include <tchar.h>
-#ifdef RGB
-#undef RGB
-#endif
 #include <officecfg/Office/Common.hxx>
 
 #ifdef _MSC_VER
@@ -72,10 +69,6 @@ namespace vista{
 
 namespace
 {
-    // controlling event notifications
-    const bool STARTUP_SUSPENDED = true;
-    const bool STARTUP_ALIVE     = false;
-
     css::uno::Sequence< OUString > SAL_CALL VistaFilePicker_getSupportedServiceNames()
     {
         css::uno::Sequence< OUString > aRet(2);

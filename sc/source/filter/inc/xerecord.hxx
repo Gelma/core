@@ -49,7 +49,7 @@ public:
                         XclExpDelegatingRecord( XclExpRecordBase* pRecord );
                         virtual ~XclExpDelegatingRecord();
 
-    virtual void        SaveXml( XclExpXmlStream& rStrm ) SAL_OVERRIDE;
+    virtual void        SaveXml( XclExpXmlStream& rStrm ) override;
 private:
     XclExpRecordBase*   mpRecord;
 };
@@ -71,7 +71,7 @@ public:
     virtual             ~XclExpXmlStartElementRecord();
 
     /** Starts the element nElement */
-    virtual void        SaveXml( XclExpXmlStream& rStrm ) SAL_OVERRIDE;
+    virtual void        SaveXml( XclExpXmlStream& rStrm ) override;
 };
 
 class XclExpXmlEndElementRecord : public XclExpXmlElementRecord
@@ -81,7 +81,7 @@ public:
     virtual             ~XclExpXmlEndElementRecord();
 
     /** Ends the element nElement */
-    virtual void        SaveXml( XclExpXmlStream& rStrm ) SAL_OVERRIDE;
+    virtual void        SaveXml( XclExpXmlStream& rStrm ) override;
 };
 
 class XclExpXmlStartSingleElementRecord : public XclExpXmlElementRecord
@@ -91,7 +91,7 @@ public:
     virtual             ~XclExpXmlStartSingleElementRecord();
 
     /** Starts the single element nElement */
-    virtual void        SaveXml( XclExpXmlStream& rStrm ) SAL_OVERRIDE;
+    virtual void        SaveXml( XclExpXmlStream& rStrm ) override;
 };
 
 class XclExpXmlEndSingleElementRecord : public XclExpRecordBase
@@ -101,7 +101,7 @@ public:
     virtual             ~XclExpXmlEndSingleElementRecord();
 
     /** Ends the single element nElement */
-    virtual void        SaveXml( XclExpXmlStream& rStrm ) SAL_OVERRIDE;
+    virtual void        SaveXml( XclExpXmlStream& rStrm ) override;
 };
 
 /** Base class for single records with any content.
@@ -139,7 +139,7 @@ public:
     void                SetRecHeader( sal_uInt16 nRecId, sal_Size nRecSize );
 
     /** Writes the record header and calls WriteBody(). */
-    virtual void        Save( XclExpStream& rStrm ) SAL_OVERRIDE;
+    virtual void        Save( XclExpStream& rStrm ) override;
 
 protected:
     /** Writes the body of the record (without record header).
@@ -185,11 +185,11 @@ public:
     XclExpValueRecord*  SetAttribute( sal_Int32 nId );
 
     /** Write the OOXML attribute and its value */
-    void                SaveXml( XclExpXmlStream& rStrm ) SAL_OVERRIDE;
+    void                SaveXml( XclExpXmlStream& rStrm ) override;
 
 private:
     /** Writes the body of the record. */
-    virtual void WriteBody( XclExpStream& rStrm ) SAL_OVERRIDE { rStrm << maValue; }
+    virtual void WriteBody( XclExpStream& rStrm ) override { rStrm << maValue; }
     // inlining prevents warning in wntmsci10
 
 private:
@@ -220,9 +220,6 @@ XclExpValueRecord< Type >* XclExpValueRecord< Type >::SetAttribute( sal_Int32 nI
 /** A record containing an unsigned 16-bit value. */
 typedef XclExpValueRecord< sal_uInt16 >     XclExpUInt16Record;
 
-/** A record containing an unsigned 32-bit value. */
-typedef XclExpValueRecord< sal_uInt32 >     XclExpUInt32Record;
-
 /** A record containing a double value. */
 typedef XclExpValueRecord< double >         XclExpDoubleRecord;
 
@@ -239,11 +236,11 @@ public:
     /** Returns the Boolean value of the record. */
     inline bool         GetBool() const { return mbValue; }
 
-    virtual void        SaveXml( XclExpXmlStream& rStrm ) SAL_OVERRIDE;
+    virtual void        SaveXml( XclExpXmlStream& rStrm ) override;
 
 private:
     /** Writes the body of the record. */
-    virtual void        WriteBody( XclExpStream& rStrm ) SAL_OVERRIDE;
+    virtual void        WriteBody( XclExpStream& rStrm ) override;
 
 private:
     bool                mbValue;        /// The record data.
@@ -265,7 +262,7 @@ public:
 
 private:
     /** Writes the body of the record. */
-    virtual void        WriteBody( XclExpStream& rStrm ) SAL_OVERRIDE;
+    virtual void        WriteBody( XclExpStream& rStrm ) override;
 
 private:
     const void*         mpData;         /// The record data.
@@ -280,7 +277,7 @@ public:
                             sal_uInt16 nRecId, sal_Size nRecSize = 0 );
 
     /** Writes the extended record header and calls WriteBody(). */
-    virtual void        Save( XclExpStream& rStrm ) SAL_OVERRIDE;
+    virtual void        Save( XclExpStream& rStrm ) override;
 
 private:
     XclFutureRecType    meRecType;
@@ -326,15 +323,9 @@ public:
     inline void         ReplaceRecord( RecordRefType xRec, size_t nPos )
                             { RemoveRecord( nPos ); InsertRecord( xRec, nPos ); }
 
-    /** Inserts a newly created record at the specified position into the list. */
-    inline void         InsertNewRecord( RecType* pRec, size_t nPos )
-                            { if( pRec ) InsertRecord( RecordRefType( pRec ), nPos ); }
     /** Appends a newly created record to the list. */
     inline void         AppendNewRecord( RecType* pRec )
                             { if( pRec ) AppendRecord( RecordRefType( pRec ) ); }
-    /** Replaces the record at the specified position from the list with the passed newly created record. */
-    inline void         ReplaceNewRecord( RecType* pRec, size_t nPos )
-                            { RemoveRecord( nPos ); InsertNewRecord( pRec, nPos ); }
 
     /** Removes the record at the specified position from the list. */
     inline void         RemoveRecord( size_t nPos )
@@ -343,14 +334,14 @@ public:
     inline void         RemoveAllRecords() { maRecs.clear(); }
 
     /** Writes the complete record list. */
-    virtual void Save( XclExpStream& rStrm ) SAL_OVERRIDE
+    virtual void Save( XclExpStream& rStrm ) override
     {
         // inlining prevents warning in wntmsci10
         for( typename RecordVec::iterator aIt = maRecs.begin(), aEnd = maRecs.end(); aIt != aEnd; ++aIt )
             (*aIt)->Save( rStrm );
     }
 
-    virtual void SaveXml( XclExpXmlStream& rStrm ) SAL_OVERRIDE
+    virtual void SaveXml( XclExpXmlStream& rStrm ) override
     {
         // inlining prevents warning in wntmsci10
         for( typename RecordVec::iterator aIt = maRecs.begin(), aEnd = maRecs.end(); aIt != aEnd; ++aIt )
@@ -369,7 +360,7 @@ public:
     explicit            XclExpSubStream( sal_uInt16 nSubStrmType );
 
     /** Writes the complete substream, including leading BOF and trailing EOF. */
-    virtual void        Save( XclExpStream& rStrm ) SAL_OVERRIDE;
+    virtual void        Save( XclExpStream& rStrm ) override;
 
 private:
     sal_uInt16          mnSubStrmType;  /// Substream type, stored in leading BOF record.

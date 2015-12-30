@@ -34,6 +34,7 @@
 #include <com/sun/star/sheet/TableValidationVisibility.hpp>
 #include <comphelper/extract.hxx>
 #include <sfx2/app.hxx>
+#include <o3tl/make_unique.hxx>
 
 #include <algorithm>
 
@@ -311,7 +312,7 @@ void ScMyValidationsContainer::WriteMessage(ScXMLExport& rExport,
         rExport.AddAttribute(XML_NAMESPACE_TABLE, XML_DISPLAY, XML_TRUE);
     else
         rExport.AddAttribute(XML_NAMESPACE_TABLE, XML_DISPLAY, XML_FALSE);
-    SvXMLElementExport* pMessage(NULL);
+    SvXMLElementExport* pMessage(nullptr);
     if (bIsHelpMessage)
         pMessage = new SvXMLElementExport(rExport, XML_NAMESPACE_TABLE, XML_HELP_MESSAGE, true, true);
     else
@@ -525,7 +526,7 @@ bool ScMyRowFormatRange::operator< (const ScMyRowFormatRange& rRange) const
 
 ScRowFormatRanges::ScRowFormatRanges()
     : aRowFormatRanges(),
-    pColDefaults(NULL),
+    pColDefaults(nullptr),
     nSize(0)
 {
 }
@@ -594,53 +595,53 @@ void ScRowFormatRanges::AddRange(ScMyRowFormatRange& rFormatRange)
         return;
     sal_Int32 nPrevIndex = -1;
     bool bPrevAutoStyle = true;
+
+    sal_uInt32 nPrevStartCol(rFormatRange.nStartColumn);
+    OSL_ENSURE( static_cast<size_t>(nPrevStartCol) < pColDefaults->size(), "nPrevStartCol out of bounds");
+    sal_uInt32 nRepeat;
+    if (static_cast<size_t>(nPrevStartCol) < pColDefaults->size())
     {
-        sal_uInt32 nPrevStartCol(rFormatRange.nStartColumn);
-        OSL_ENSURE( static_cast<size_t>(nPrevStartCol) < pColDefaults->size(), "nPrevStartCol out of bounds");
-        sal_uInt32 nRepeat;
-        if (static_cast<size_t>(nPrevStartCol) < pColDefaults->size())
+        nRepeat = (*pColDefaults)[nPrevStartCol].nRepeat;
+        nPrevIndex = (*pColDefaults)[nPrevStartCol].nIndex;
+        bPrevAutoStyle = (*pColDefaults)[nPrevStartCol].bIsAutoStyle;
+    }
+    else
+    {
+        /* Again, this is to prevent out-of-bounds accesses, so FIXME
+         * elsewhere! */
+        if (pColDefaults->empty())
         {
-            nRepeat = (*pColDefaults)[nPrevStartCol].nRepeat;
-            nPrevIndex = (*pColDefaults)[nPrevStartCol].nIndex;
-            bPrevAutoStyle = (*pColDefaults)[nPrevStartCol].bIsAutoStyle;
+            nRepeat = 1;
+            nPrevIndex = -1;
+            bPrevAutoStyle = false;
         }
         else
         {
-            /* Again, this is to prevent out-of-bounds accesses, so FIXME
-             * elsewhere! */
-            if (pColDefaults->empty())
-            {
-                nRepeat = 1;
-                nPrevIndex = -1;
-                bPrevAutoStyle = false;
-            }
-            else
-            {
-                nRepeat = (*pColDefaults)[pColDefaults->size()-1].nRepeat;
-                nPrevIndex = (*pColDefaults)[pColDefaults->size()-1].nIndex;
-                bPrevAutoStyle = (*pColDefaults)[pColDefaults->size()-1].bIsAutoStyle;
-            }
+            nRepeat = (*pColDefaults)[pColDefaults->size()-1].nRepeat;
+            nPrevIndex = (*pColDefaults)[pColDefaults->size()-1].nIndex;
+            bPrevAutoStyle = (*pColDefaults)[pColDefaults->size()-1].bIsAutoStyle;
         }
-        sal_uInt32 nEnd = nPrevStartCol + rFormatRange.nRepeatColumns;
-        for(sal_uInt32 i = nPrevStartCol + nRepeat; i < nEnd && i < pColDefaults->size(); i += (*pColDefaults)[i].nRepeat)
-        {
-            OSL_ENSURE(sal_uInt32(nPrevStartCol + nRepeat) <= nEnd, "something wents wrong");
-            if ((nPrevIndex != (*pColDefaults)[i].nIndex) ||
-                (bPrevAutoStyle != (*pColDefaults)[i].bIsAutoStyle))
-            {
-                AddRange(nPrevStartCol, nRepeat, nPrevIndex, bPrevAutoStyle, rFormatRange);
-                nPrevStartCol = i;
-                nRepeat = (*pColDefaults)[i].nRepeat;
-                nPrevIndex = (*pColDefaults)[i].nIndex;
-                bPrevAutoStyle = (*pColDefaults)[i].bIsAutoStyle;
-            }
-            else
-                nRepeat += (*pColDefaults)[i].nRepeat;
-        }
-        if (sal_uInt32(nPrevStartCol + nRepeat) > nEnd)
-            nRepeat = nEnd - nPrevStartCol;
-        AddRange(nPrevStartCol, nRepeat, nPrevIndex, bPrevAutoStyle, rFormatRange);
     }
+    sal_uInt32 nEnd = nPrevStartCol + rFormatRange.nRepeatColumns;
+    for(sal_uInt32 i = nPrevStartCol + nRepeat; i < nEnd && i < pColDefaults->size(); i += (*pColDefaults)[i].nRepeat)
+    {
+        OSL_ENSURE(sal_uInt32(nPrevStartCol + nRepeat) <= nEnd, "something wents wrong");
+        if ((nPrevIndex != (*pColDefaults)[i].nIndex) ||
+            (bPrevAutoStyle != (*pColDefaults)[i].bIsAutoStyle))
+        {
+            AddRange(nPrevStartCol, nRepeat, nPrevIndex, bPrevAutoStyle, rFormatRange);
+            nPrevStartCol = i;
+            nRepeat = (*pColDefaults)[i].nRepeat;
+            nPrevIndex = (*pColDefaults)[i].nIndex;
+            bPrevAutoStyle = (*pColDefaults)[i].bIsAutoStyle;
+        }
+        else
+            nRepeat += (*pColDefaults)[i].nRepeat;
+    }
+    if (sal_uInt32(nPrevStartCol + nRepeat) > nEnd)
+        nRepeat = nEnd - nPrevStartCol;
+    AddRange(nPrevStartCol, nRepeat, nPrevIndex, bPrevAutoStyle, rFormatRange);
+
 }
 
 bool ScRowFormatRanges::GetNext(ScMyRowFormatRange& aFormatRange)
@@ -705,7 +706,7 @@ ScFormatRangeStyles::ScFormatRangeStyles()
     : aTables(),
     aStyleNames(),
     aAutoStyleNames(),
-    pColDefaults(0)
+    pColDefaults(nullptr)
 {
 }
 
@@ -1118,7 +1119,7 @@ void ScRowStyles::AddNewTable(const sal_Int32 nTable, const sal_Int32 nFields)
     if (nTable > nSize)
         for (sal_Int32 i = nSize; i < nTable; ++i)
         {
-            aTables.push_back(new StylesType(0, nFields+1, -1));
+            aTables.push_back(o3tl::make_unique<StylesType>(0, nFields+1, -1));
         }
 }
 
@@ -1132,7 +1133,7 @@ sal_Int32 ScRowStyles::GetStyleNameIndex(const sal_Int32 nTable, const sal_Int32
         // Cache hit !
         return maCache.mnStyle;
 
-    StylesType& r = aTables[nTable];
+    StylesType& r = *aTables[nTable].get();
     if (!r.is_tree_valid())
         r.build_tree();
     sal_Int32 nStyle(0);
@@ -1154,7 +1155,7 @@ void ScRowStyles::AddFieldStyleName(const sal_Int32 nTable, const sal_Int32 nFie
     const sal_Int32 nStringIndex)
 {
     OSL_ENSURE(static_cast<size_t>(nTable) < aTables.size(), "wrong table");
-    StylesType& r = aTables[nTable];
+    StylesType& r = *aTables[nTable].get();
     r.insert_back(nField, nField+1, nStringIndex);
 }
 
@@ -1163,7 +1164,7 @@ void ScRowStyles::AddFieldStyleName(const sal_Int32 nTable, const sal_Int32 nSta
 {
     OSL_ENSURE( nStartField <= nEndField, "bad field range");
     OSL_ENSURE(static_cast<size_t>(nTable) < aTables.size(), "wrong table");
-    StylesType& r = aTables[nTable];
+    StylesType& r = *aTables[nTable].get();
     r.insert_back(nStartField, nEndField+1, nStringIndex);
 }
 

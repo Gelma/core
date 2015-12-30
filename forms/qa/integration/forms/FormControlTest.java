@@ -475,7 +475,7 @@ public class FormControlTest extends complexlib.ComplexTestCase implements XSQLE
         if ( databaseContext.hasByName( m_dataSourceName ) )
             namingService.revokeObject( m_dataSourceName );
 
-        // // create a new ODB file, and register it with its URL
+        // create a new ODB file, and register it with its URL
         m_databaseDocument = new HsqlDatabase( m_orb );
         String documentURL = m_databaseDocument.getDocumentURL();
         namingService.registerObject( m_dataSourceName, databaseContext.getByName( documentURL ) );
@@ -669,7 +669,7 @@ public class FormControlTest extends complexlib.ComplexTestCase implements XSQLE
     {
         try
         {
-            if ( ( "f_time" ).equals(fieldName) )
+            if ( "f_time".equals(fieldName) )
                 // http://bugs.mysql.com/bug.php?id=5681
                 return true;
             if (fieldName == null) {

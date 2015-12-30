@@ -348,7 +348,7 @@ void IconSetRule::importCfvo( const AttributeList& rAttribs )
 
 void IconSetRule::importAttribs( const AttributeList& rAttribs )
 {
-    maIconSetType = rAttribs.getString( XML_iconSet, OUString("3TrafficLights1") );
+    maIconSetType = rAttribs.getString( XML_iconSet, "3TrafficLights1" );
     mxFormatData->mbShowValue = rAttribs.getBool( XML_showValue, true );
     mxFormatData->mbReverse = rAttribs.getBool( XML_reverse, false );
     mbCustom = rAttribs.getBool(XML_custom, false);
@@ -406,7 +406,7 @@ void IconSetRule::SetData( ScIconSetFormat* pFormat, ScDocument* pDoc, const ScA
     for(size_t i = 0; i < maEntries.size(); ++i)
     {
         ScColorScaleEntry* pModelEntry = ConvertToModel( maEntries[i], pDoc, rPos );
-        mxFormatData->maEntries.push_back(pModelEntry);
+        mxFormatData->m_Entries.push_back(std::unique_ptr<ScColorScaleEntry>(pModelEntry));
     }
 
     mxFormatData->eIconSetType = getType(maIconSetType);
@@ -860,7 +860,7 @@ void CondFormatRule::finalizeImport()
     {
         ScDocument& rDoc = getScDocument();
         OUString aStyleName = getStyles().createDxfStyle( maModel.mnDxfId );
-        ScCondFormatEntry* pNewEntry = new ScCondFormatEntry( eOperator, NULL, NULL, &rDoc, aPos, aStyleName );
+        ScCondFormatEntry* pNewEntry = new ScCondFormatEntry( eOperator, nullptr, nullptr, &rDoc, aPos, aStyleName );
         mpFormat->AddEntry(pNewEntry);
     }
     else if( eOperator == SC_COND_BEGINS_WITH || eOperator == SC_COND_ENDS_WITH ||
@@ -871,7 +871,7 @@ void CondFormatRule::finalizeImport()
         svl::SharedStringPool& rSPool = rDoc.GetSharedStringPool();
         aTokenArray.AddString(rSPool.intern(maModel.maText));
         OUString aStyleName = getStyles().createDxfStyle( maModel.mnDxfId );
-        ScCondFormatEntry* pNewEntry = new ScCondFormatEntry( eOperator, &aTokenArray, NULL, &rDoc, aPos, aStyleName );
+        ScCondFormatEntry* pNewEntry = new ScCondFormatEntry( eOperator, &aTokenArray, nullptr, &rDoc, aPos, aStyleName );
         mpFormat->AddEntry(pNewEntry);
     }
     else if( (eOperator != SC_COND_NONE) && !maModel.maFormulas.empty() )
@@ -898,7 +898,7 @@ void CondFormatRule::finalizeImport()
         ScTokenArray aTokenArray;
         aTokenArray.AddDouble( maModel.mnRank );
         OUString aStyleName = getStyles().createDxfStyle( maModel.mnDxfId );
-        ScCondFormatEntry* pNewEntry = new ScCondFormatEntry( eOperator, &aTokenArray, NULL, &rDoc, aPos, aStyleName );
+        ScCondFormatEntry* pNewEntry = new ScCondFormatEntry( eOperator, &aTokenArray, nullptr, &rDoc, aPos, aStyleName );
         mpFormat->AddEntry(pNewEntry);
     }
     else if( eOperator == SC_COND_ABOVE_AVERAGE || eOperator == SC_COND_BELOW_AVERAGE ||
@@ -909,14 +909,14 @@ void CondFormatRule::finalizeImport()
         ScTokenArray aTokenArrayDev;
         aTokenArrayDev.AddDouble( maModel.mnStdDev );
         OUString aStyleName = getStyles().createDxfStyle( maModel.mnDxfId );
-        ScCondFormatEntry* pNewEntry = new ScCondFormatEntry( eOperator, &aTokenArrayDev, NULL, &rDoc, aPos, aStyleName );
+        ScCondFormatEntry* pNewEntry = new ScCondFormatEntry( eOperator, &aTokenArrayDev, nullptr, &rDoc, aPos, aStyleName );
         mpFormat->AddEntry(pNewEntry);
     }
     else if( eOperator == SC_COND_DUPLICATE || eOperator == SC_COND_NOTDUPLICATE )
     {
         ScDocument& rDoc = getScDocument();
         OUString aStyleName = getStyles().createDxfStyle( maModel.mnDxfId );
-        ScCondFormatEntry* pNewEntry = new ScCondFormatEntry( eOperator, NULL, NULL, &rDoc, aPos, aStyleName );
+        ScCondFormatEntry* pNewEntry = new ScCondFormatEntry( eOperator, nullptr, nullptr, &rDoc, aPos, aStyleName );
         mpFormat->AddEntry(pNewEntry);
     }
     else if( maModel.mnType == XML_timePeriod )
@@ -1025,7 +1025,7 @@ CondFormatModel::CondFormatModel() :
 
 CondFormat::CondFormat( const WorksheetHelper& rHelper ) :
     WorksheetHelper( rHelper ),
-    mpFormat(NULL),
+    mpFormat(nullptr),
     mbReadyForFinalize(false)
 {
 }
@@ -1121,7 +1121,7 @@ ScConditionalFormat* findFormatByRange(const ScRangeList& rRange, ScDocument* pD
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 }
@@ -1147,7 +1147,7 @@ void CondFormatBuffer::finalizeImport()
     {
         ScDocument* pDoc = &getScDocument();
 
-        const ScRangeList& rRange = itr->getRange();
+        const ScRangeList& rRange = (*itr)->getRange();
         SCTAB nTab = rRange.front()->aStart.Tab();
         ScConditionalFormat* pFormat = findFormatByRange(rRange, pDoc, nTab);
         if (!pFormat)
@@ -1159,10 +1159,10 @@ void CondFormatBuffer::finalizeImport()
             pDoc->AddCondFormatData(rRange, nTab, nKey);
         }
 
-        const boost::ptr_vector<ScFormatEntry>& rEntries = itr->getEntries();
+        const std::vector< std::unique_ptr<ScFormatEntry> >& rEntries = (*itr)->getEntries();
         for (auto i = rEntries.begin(); i != rEntries.end(); ++i)
         {
-            pFormat->AddEntry(i->Clone(pDoc));
+            pFormat->AddEntry((*i)->Clone(pDoc));
         }
     }
 }
@@ -1181,7 +1181,7 @@ ExtCfDataBarRuleRef CondFormatBuffer::createExtCfDataBarRule(ScDataBarFormatData
     return extRule;
 }
 
-boost::ptr_vector<ExtCfCondFormat>& CondFormatBuffer::importExtCondFormat()
+std::vector< std::unique_ptr<ExtCfCondFormat> >& CondFormatBuffer::importExtCondFormat()
 {
     return maExtCondFormats;
 }
@@ -1269,7 +1269,7 @@ void ExtCfDataBarRule::finalizeImport()
         case CFVO:
         {
             ScDataBarFormatData* pDataBar = mpTarget;
-            ScColorScaleEntry* pEntry = NULL;
+            ScColorScaleEntry* pEntry = nullptr;
             if(maModel.mbIsLower)
                 pEntry = pDataBar->mpLowerLimit.get();
             else
@@ -1328,10 +1328,10 @@ void ExtCfDataBarRule::importCfvo( const AttributeList& rAttribs )
     maModel.maColorScaleType = rAttribs.getString( XML_type, OUString() );
 }
 
-ExtCfCondFormat::ExtCfCondFormat(const ScRangeList& rRange, boost::ptr_vector<ScFormatEntry>& rEntries):
+ExtCfCondFormat::ExtCfCondFormat(const ScRangeList& rRange, std::vector< std::unique_ptr<ScFormatEntry> >& rEntries):
     maRange(rRange)
 {
-    maEntries.transfer(maEntries.begin(), rEntries.begin(), rEntries.end(), rEntries);
+    maEntries.swap(rEntries);
 }
 
 ExtCfCondFormat::~ExtCfCondFormat()
@@ -1343,7 +1343,7 @@ const ScRangeList& ExtCfCondFormat::getRange()
     return maRange;
 }
 
-const boost::ptr_vector<ScFormatEntry>& ExtCfCondFormat::getEntries()
+const std::vector< std::unique_ptr<ScFormatEntry> >& ExtCfCondFormat::getEntries()
 {
     return maEntries;
 }

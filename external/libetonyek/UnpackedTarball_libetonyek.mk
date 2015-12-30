@@ -14,12 +14,9 @@ $(eval $(call gb_UnpackedTarball_set_tarball,libetonyek,$(ETONYEK_TARBALL)))
 $(eval $(call gb_UnpackedTarball_set_patchlevel,libetonyek,0))
 
 $(eval $(call gb_UnpackedTarball_add_patches,libetonyek,\
-	external/libetonyek/assert.patch \
 	external/libetonyek/win_build.patch.1 \
 	external/libetonyek/ubsan.patch \
 	external/libetonyek/rpath.patch \
-	external/libetonyek/0001-add-missing-include.patch.1 \
-	external/libetonyek/0001-try-to-fix-build-on-Windows.patch.1 \
 ))
 
 ifneq ($(OS),MACOSX)
@@ -30,7 +27,7 @@ $(eval $(call gb_UnpackedTarball_add_patches,libetonyek,\
 endif
 endif
 
-ifeq ($(COM_GCC_IS_CLANG),TRUE)
+ifeq ($(COM_IS_CLANG),TRUE)
 ifneq ($(filter -fsanitize=%,$(CC)),)
 $(eval $(call gb_UnpackedTarball_add_patches,libetonyek, \
     external/libetonyek/ubsan-visibility.patch \

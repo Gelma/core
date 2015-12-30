@@ -59,7 +59,7 @@ public:
     static sal_uLong GetElementCount() {return nSwAutoCompleteClientCount;}
 #endif
 protected:
-    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew) SAL_OVERRIDE;
+    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew) override;
 };
 
 typedef std::vector<SwAutoCompleteClient> SwAutoCompleteClientVector;
@@ -225,7 +225,6 @@ SwAutoCompleteWord::SwAutoCompleteWord( sal_uInt16 nWords, sal_uInt16 nMWrdLen )
 SwAutoCompleteWord::~SwAutoCompleteWord()
 {
     m_WordList.DeleteAndDestroyAll(); // so the assertion below works
-    delete pImpl;
 #if OSL_DEBUG_LEVEL > 0
     sal_uLong nStrings = SwAutoCompleteString::GetElementCount();
     sal_uLong nClients = SwAutoCompleteClient::GetElementCount();
@@ -236,7 +235,7 @@ SwAutoCompleteWord::~SwAutoCompleteWord()
 bool SwAutoCompleteWord::InsertWord( const OUString& rWord, SwDoc& rDoc )
 {
     SwDocShell* pDocShell = rDoc.GetDocShell();
-    SfxMedium* pMedium = pDocShell ? pDocShell->GetMedium() : 0;
+    SfxMedium* pMedium = pDocShell ? pDocShell->GetMedium() : nullptr;
     // strings from help module should not be added
     if( pMedium )
     {

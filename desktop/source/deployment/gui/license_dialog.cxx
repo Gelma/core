@@ -56,7 +56,7 @@ class LicenseView : public MultiLineEdit, public SfxListener
 public:
     LicenseView( vcl::Window* pParent, WinBits nStyle );
     virtual ~LicenseView();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void ScrollDown( ScrollType eScroll );
 
@@ -67,7 +67,7 @@ public:
 
     void SetScrolledHdl( const Link<LicenseView&,void>& rHdl ) { maScrolledHdl = rHdl; }
 
-    virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+    virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
 protected:
     using MultiLineEdit::Notify;
@@ -75,7 +75,6 @@ protected:
 
 struct LicenseDialogImpl : public ModalDialog
 {
-    cssu::Reference<cssu::XComponentContext> m_xComponentContext;
     VclPtr<FixedText> m_pFtHead;
     VclPtr<FixedImage> m_pArrow1;
     VclPtr<FixedImage> m_pArrow2;
@@ -95,13 +94,12 @@ struct LicenseDialogImpl : public ModalDialog
 
     LicenseDialogImpl(
         vcl::Window * pParent,
-        css::uno::Reference< css::uno::XComponentContext > const & xContext,
         const OUString & sExtensionName,
         const OUString & sLicenseText);
     virtual ~LicenseDialogImpl() { disposeOnce(); }
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void Activate() SAL_OVERRIDE;
+    virtual void Activate() override;
 
 };
 
@@ -179,7 +177,7 @@ void LicenseView::Notify( SfxBroadcaster&, const SfxHint& rHint )
     if ( pTextHint )
     {
         bool    bLastVal = EndReached();
-        sal_uLong   nId = pTextHint->GetId();
+        const sal_uInt32 nId = pTextHint->GetId();
 
         if ( nId == TEXT_HINT_PARAINSERTED )
         {
@@ -204,11 +202,9 @@ void LicenseView::Notify( SfxBroadcaster&, const SfxHint& rHint )
 
 LicenseDialogImpl::LicenseDialogImpl(
     vcl::Window * pParent,
-    cssu::Reference< cssu::XComponentContext > const & xContext,
     const OUString & sExtensionName,
     const OUString & sLicenseText)
     : ModalDialog(pParent, "LicenseDialog", "desktop/ui/licensedialog.ui")
-    , m_xComponentContext(xContext)
     , m_bLicenseRead(false)
 {
     get(m_pFtHead, "head");
@@ -217,7 +213,7 @@ LicenseDialogImpl::LicenseDialogImpl(
     get(m_pDown, "down");
     get(m_pAcceptButton, "accept");
     get(m_pDeclineButton, "decline");
-    m_pArrow1->Show(true);
+    m_pArrow1->Show();
     m_pArrow2->Show(false);
     get(m_pLicense, "textview");
 
@@ -289,7 +285,7 @@ IMPL_LINK_NOARG_TYPED(LicenseDialogImpl, EndReachedHdl, LicenseView&, void)
     m_pAcceptButton->Enable();
     m_pAcceptButton->GrabFocus();
     m_pArrow1->Show(false);
-    m_pArrow2->Show(true);
+    m_pArrow2->Show();
     m_bLicenseRead = true;
 }
 
@@ -299,8 +295,7 @@ IMPL_LINK_NOARG_TYPED(LicenseDialogImpl, EndReachedHdl, LicenseView&, void)
 
 
 LicenseDialog::LicenseDialog( Sequence<Any> const& args,
-                          Reference<XComponentContext> const& xComponentContext)
-    : m_xComponentContext(xComponentContext)
+                          Reference<XComponentContext> const& )
 {
     comphelper::unwrapArgs( args, m_parent, m_sExtensionName, m_sLicenseText );
 }
@@ -321,11 +316,8 @@ sal_Int16 LicenseDialog::execute() throw (RuntimeException, std::exception)
 
 sal_Int16 LicenseDialog::solar_execute()
 {
-    VclPtr<LicenseDialogImpl> dlg(
-        VclPtr<LicenseDialogImpl>::Create(
-
-            VCLUnoHelper::GetWindow(m_parent),
-            m_xComponentContext, m_sExtensionName, m_sLicenseText));
+    ScopedVclPtrInstance<LicenseDialogImpl> dlg(
+            VCLUnoHelper::GetWindow(m_parent), m_sExtensionName, m_sLicenseText);
 
     return dlg->Execute();
 }

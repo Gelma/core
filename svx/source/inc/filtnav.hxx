@@ -62,8 +62,7 @@ class FmFilterData
     OUString         m_aText;
 
 public:
-    TYPEINFO();
-    FmFilterData(FmParentData* pParent = NULL, const OUString& rText = OUString())
+    FmFilterData(FmParentData* pParent = nullptr, const OUString& rText = OUString())
         :m_pParent( pParent )
         ,m_aText( rText )
     {}
@@ -83,7 +82,6 @@ protected:
     ::std::vector< FmFilterData* >  m_aChildren;
 
 public:
-    TYPEINFO_OVERRIDE();
     FmParentData(FmParentData* pParent, const OUString& rText)
         : FmFilterData(pParent, rText)
     {}
@@ -96,40 +94,38 @@ public:
 // Item representing the forms and subforms
 class FmFormItem : public FmParentData
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::form::runtime::XFormController >    m_xController;
-    ::com::sun::star::uno::Reference< ::com::sun::star::form::runtime::XFilterController >  m_xFilterController;
+    css::uno::Reference< css::form::runtime::XFormController >    m_xController;
+    css::uno::Reference< css::form::runtime::XFilterController >  m_xFilterController;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     FmFormItem(  FmParentData* _pParent,
-                 const ::com::sun::star::uno::Reference< ::com::sun::star::form::runtime::XFormController > & _xController,
+                 const css::uno::Reference< css::form::runtime::XFormController > & _xController,
                  const OUString& _rText)
         :FmParentData( _pParent, _rText )
         ,m_xController( _xController )
-        ,m_xFilterController( _xController, ::com::sun::star::uno::UNO_QUERY_THROW )
+        ,m_xFilterController( _xController, css::uno::UNO_QUERY_THROW )
     {
     }
 
-    inline const ::com::sun::star::uno::Reference< ::com::sun::star::form::runtime::XFormController >&
+    inline const css::uno::Reference< css::form::runtime::XFormController >&
         GetController() { return m_xController; }
 
-    inline const ::com::sun::star::uno::Reference< ::com::sun::star::form::runtime::XFilterController >&
+    inline const css::uno::Reference< css::form::runtime::XFilterController >&
         GetFilterController() { return m_xFilterController; }
 
-    virtual Image GetImage() const SAL_OVERRIDE;
+    virtual Image GetImage() const override;
 };
 
 
 class FmFilterItems : public FmParentData
 {
 public:
-    TYPEINFO_OVERRIDE();
-    FmFilterItems() : FmParentData(NULL, OUString()) {}
+    FmFilterItems() : FmParentData(nullptr, OUString()) {}
     FmFilterItems(FmFormItem* pParent, const OUString& rText ) : FmParentData(pParent, rText) {}
 
     FmFilterItem* Find( const ::sal_Int32 _nFilterComponentIndex ) const;
-    virtual Image GetImage() const SAL_OVERRIDE;
+    virtual Image GetImage() const override;
 };
 
 
@@ -139,7 +135,6 @@ class FmFilterItem : public FmFilterData
     const sal_Int32     m_nComponentIndex;
 
 public:
-    TYPEINFO_OVERRIDE();
     FmFilterItem(
         FmFilterItems* pParent,
         const OUString& aFieldName,
@@ -150,7 +145,7 @@ public:
     const OUString& GetFieldName() const {return m_aFieldName;}
     sal_Int32 GetComponentIndex() const { return m_nComponentIndex; }
 
-    virtual Image GetImage() const SAL_OVERRIDE;
+    virtual Image GetImage() const override;
 };
 
 
@@ -160,28 +155,27 @@ class FmFilterModel : public FmParentData
 {
     friend class FmFilterAdapter;
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::container::XIndexAccess >           m_xControllers;
-    ::com::sun::star::uno::Reference< ::com::sun::star::form::runtime::XFormController >    m_xController;
+    css::uno::Reference< css::container::XIndexAccess >           m_xControllers;
+    css::uno::Reference< css::form::runtime::XFormController >    m_xController;
     FmFilterAdapter*        m_pAdapter;
     FmFilterItems*          m_pCurrentItems;
 
 public:
-    TYPEINFO_OVERRIDE();
     FmFilterModel();
     virtual ~FmFilterModel();
 
-    void Update(const ::com::sun::star::uno::Reference< ::com::sun::star::container::XIndexAccess > & xControllers, const ::com::sun::star::uno::Reference< ::com::sun::star::form::runtime::XFormController > & xCurrent);
+    void Update(const css::uno::Reference< css::container::XIndexAccess > & xControllers, const css::uno::Reference< css::form::runtime::XFormController > & xCurrent);
     void Clear();
     bool ValidateText(FmFilterItem* pItem, OUString& rText, OUString& rErrorMsg) const;
     void Append(FmFilterItems* pItems, FmFilterItem* pFilterItem);
     void SetTextForItem(FmFilterItem* pItem, const OUString& rText);
 
-    FmFormItem* GetCurrentForm() const {return m_pCurrentItems ? static_cast<FmFormItem*>(m_pCurrentItems->GetParent()) : NULL;}
+    FmFormItem* GetCurrentForm() const {return m_pCurrentItems ? static_cast<FmFormItem*>(m_pCurrentItems->GetParent()) : nullptr;}
     FmFilterItems* GetCurrentItems() const {return m_pCurrentItems;}
     void SetCurrentItems(FmFilterItems* pCurrent);
 
-    const ::com::sun::star::uno::Reference< ::com::sun::star::form::runtime::XFormController > & GetCurrentController() const {return m_xController;}
-    void SetCurrentController(const ::com::sun::star::uno::Reference< ::com::sun::star::form::runtime::XFormController > & xController);
+    const css::uno::Reference< css::form::runtime::XFormController > & GetCurrentController() const {return m_xController;}
+    void SetCurrentController(const css::uno::Reference< css::form::runtime::XFormController > & xController);
 
     void Remove(FmFilterData* pFilterItem);
     static void AppendFilterItems( FmFormItem& _rItem );
@@ -190,9 +184,9 @@ public:
 protected:
     void Insert(const ::std::vector<FmFilterData*>::iterator& rPos, FmFilterData* pFilterItem);
     void Remove( const ::std::vector<FmFilterData*>::iterator& rPos );
-    FmFormItem* Find(const ::std::vector<FmFilterData*>& rItems, const ::com::sun::star::uno::Reference< ::com::sun::star::form::runtime::XFormController > & xController) const;
-    FmFormItem* Find(const ::std::vector<FmFilterData*>& rItems, const ::com::sun::star::uno::Reference< ::com::sun::star::form::XForm >& xForm) const;
-    void Update(const ::com::sun::star::uno::Reference< ::com::sun::star::container::XIndexAccess > & xControllers, FmParentData* pParent);
+    FmFormItem* Find(const ::std::vector<FmFilterData*>& rItems, const css::uno::Reference< css::form::runtime::XFormController > & xController) const;
+    FmFormItem* Find(const ::std::vector<FmFilterData*>& rItems, const css::uno::Reference< css::form::XForm >& xForm) const;
+    void Update(const css::uno::Reference< css::container::XIndexAccess > & xControllers, FmParentData* pParent);
 };
 
 
@@ -215,7 +209,7 @@ public:
     void setFormItem( FmFormItem* _pItem ) { m_pFormItem = _pItem; }
 
 protected:
-    virtual void AddSupportedFormats() SAL_OVERRIDE;
+    virtual void AddSupportedFormats() override;
 };
 
 inline bool OFilterItemExchange::hasFormat( const DataFlavorExVector& _rFormats )
@@ -231,7 +225,7 @@ public:
     OFilterItemExchange* operator->() const { return static_cast<OFilterItemExchange*>(m_pTransferable); }
 
 protected:
-    virtual OLocalExchange* createExchange() const SAL_OVERRIDE;
+    virtual OLocalExchange* createExchange() const override;
 };
 
 
@@ -252,28 +246,28 @@ class FmFilterNavigator : public SvTreeListBox, public SfxListener
 public:
     FmFilterNavigator( vcl::Window* pParent );
     virtual ~FmFilterNavigator();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void UpdateContent(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::container::XIndexAccess > & xControllers,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::form::runtime::XFormController > & xCurrent
+            const css::uno::Reference< css::container::XIndexAccess > & xControllers,
+            const css::uno::Reference< css::form::runtime::XFormController > & xCurrent
         );
     const FmFilterModel* GetFilterModel() const {return m_pModel;}
 
 protected:
     using Control::Notify;
 
-    virtual void KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
-    virtual void Command( const CommandEvent& rEvt ) SAL_OVERRIDE;
-    virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
-    virtual void InitEntry(SvTreeListEntry* pEntry, const OUString& rStr, const Image& rImg1, const Image& rImg2, SvLBoxButtonKind eButtonKind) SAL_OVERRIDE;
-    virtual bool Select( SvTreeListEntry* pEntry, bool bSelect=true ) SAL_OVERRIDE;
-    virtual bool EditingEntry( SvTreeListEntry* pEntry, Selection& rSelection ) SAL_OVERRIDE;
-    virtual bool EditedEntry( SvTreeListEntry* pEntry, const OUString& rNewText ) SAL_OVERRIDE;
+    virtual void KeyInput( const KeyEvent& rKEvt ) override;
+    virtual void Command( const CommandEvent& rEvt ) override;
+    virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
+    virtual void InitEntry(SvTreeListEntry* pEntry, const OUString& rStr, const Image& rImg1, const Image& rImg2, SvLBoxButtonKind eButtonKind) override;
+    virtual bool Select( SvTreeListEntry* pEntry, bool bSelect=true ) override;
+    virtual bool EditingEntry( SvTreeListEntry* pEntry, Selection& rSelection ) override;
+    virtual bool EditedEntry( SvTreeListEntry* pEntry, const OUString& rNewText ) override;
 
-    virtual sal_Int8    AcceptDrop( const AcceptDropEvent& rEvt ) SAL_OVERRIDE;
-    virtual sal_Int8    ExecuteDrop( const ExecuteDropEvent& rEvt ) SAL_OVERRIDE;
-    virtual void        StartDrag( sal_Int8 nAction, const Point& rPosPixel ) SAL_OVERRIDE;
+    virtual sal_Int8    AcceptDrop( const AcceptDropEvent& rEvt ) override;
+    virtual sal_Int8    ExecuteDrop( const ExecuteDropEvent& rEvt ) override;
+    virtual void        StartDrag( sal_Int8 nAction, const Point& rPosPixel ) override;
 
     void DeleteSelection();
     SvTreeListEntry* FindEntry(const FmFilterData* pItem) const;
@@ -301,8 +295,8 @@ private:
      *        If <TRUE/> the items will not be removed from the model, otherwise they will.
      */
     void insertFilterItem(const ::std::vector<FmFilterItem*>& _rFilterList,FmFilterItems* _pTargetItems, bool _bCopy = false);
-    SvTreeListEntry* getPrevEntry(SvTreeListEntry* _pStartWith = NULL);
-    SvTreeListEntry* getNextEntry(SvTreeListEntry* _pStartWith = NULL);
+    SvTreeListEntry* getPrevEntry(SvTreeListEntry* _pStartWith = nullptr);
+    SvTreeListEntry* getNextEntry(SvTreeListEntry* _pStartWith = nullptr);
 
     using SvTreeListBox::Select;
     using SvTreeListBox::ExecuteDrop;
@@ -316,24 +310,24 @@ private:
     VclPtr<FmFilterNavigator> m_pNavigator;
 
 protected:
-    virtual void Resize() SAL_OVERRIDE;
-    virtual bool Close() SAL_OVERRIDE;
-    virtual Size CalcDockingSize( SfxChildAlignment ) SAL_OVERRIDE;
-    virtual SfxChildAlignment CheckAlignment( SfxChildAlignment, SfxChildAlignment ) SAL_OVERRIDE;
+    virtual void Resize() override;
+    virtual bool Close() override;
+    virtual Size CalcDockingSize( SfxChildAlignment ) override;
+    virtual SfxChildAlignment CheckAlignment( SfxChildAlignment, SfxChildAlignment ) override;
 
 public:
     FmFilterNavigatorWin( SfxBindings *pBindings, SfxChildWindow *pMgr,
                    vcl::Window* pParent );
     virtual ~FmFilterNavigatorWin();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void UpdateContent( FmFormShell* pFormShell );
-    void StateChanged( sal_uInt16 nSID, SfxItemState eState, const SfxPoolItem* pState ) SAL_OVERRIDE;
-    void FillInfo( SfxChildWinInfo& rInfo ) const SAL_OVERRIDE;
+    void StateChanged( sal_uInt16 nSID, SfxItemState eState, const SfxPoolItem* pState ) override;
+    void FillInfo( SfxChildWinInfo& rInfo ) const override;
 
     using SfxDockingWindow::StateChanged;
 
-    virtual void GetFocus() SAL_OVERRIDE;
+    virtual void GetFocus() override;
 };
 
 

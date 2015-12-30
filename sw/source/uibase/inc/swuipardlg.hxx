@@ -37,14 +37,14 @@ class SwParaDlg: public SfxTabDialog
     sal_uInt16 m_nAreaId;
     sal_uInt16 m_nTransparenceId;
 
-    void PageCreated(sal_uInt16 nId, SfxTabPage& rPage) SAL_OVERRIDE;
+    void PageCreated(sal_uInt16 nId, SfxTabPage& rPage) override;
 
 public:
     SwParaDlg(  vcl::Window *pParent,
                 SwView& rVw,
                 const SfxItemSet&,
                 sal_uInt8 nDialogMode,
-                const OUString *pCollName = 0,
+                const OUString *pCollName = nullptr,
                 bool bDraw = false,
                 const OString& sDefPage = OString());
     virtual ~SwParaDlg();

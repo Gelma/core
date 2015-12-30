@@ -52,21 +52,21 @@ namespace connectivity
     {
         void release(oslInterlockedCount& _refCount,
                      ::cppu::OBroadcastHelper& rBHelper,
-                     ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >& _xInterface,
-                     ::com::sun::star::lang::XComponent* _pObject);
+                     css::uno::Reference< css::uno::XInterface >& _xInterface,
+                     css::lang::XComponent* _pObject);
 
-        void checkDisposed(bool _bThrow) throw (::com::sun::star::lang::DisposedException);
+        void checkDisposed(bool _bThrow) throw (css::lang::DisposedException);
 
         template <class SELF, class WEAK> class OSubComponent
         {
         protected:
             // the parent must support the tunnel implementation
-            ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > m_xParent;
+            css::uno::Reference< css::uno::XInterface > m_xParent;
             SELF*   m_pDerivedImplementation;
 
         public:
             OSubComponent(
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >& _xParent,
+                    const css::uno::Reference< css::uno::XInterface >& _xParent,
                     SELF* _pDerivedImplementation)
                 :m_xParent(_xParent)
                 ,m_pDerivedImplementation(_pDerivedImplementation)
@@ -77,7 +77,7 @@ namespace connectivity
             void dispose_ChildImpl()
             {
                 ::osl::MutexGuard aGuard(m_pDerivedImplementation->rBHelper.rMutex);
-                m_xParent = NULL;
+                m_xParent = nullptr;
             }
             void relase_ChildImpl()
             {
@@ -108,7 +108,7 @@ namespace connectivity
                 if (!--s_nRefCount)
                 {
                     delete s_pProps;
-                    s_pProps = NULL;
+                    s_pProps = nullptr;
                 }
             }
 
@@ -134,7 +134,7 @@ namespace connectivity
         sal_Int32                       OPropertyArrayUsageHelper< TYPE >::s_nRefCount  = 0;
 
         template<class TYPE>
-        ::cppu::IPropertyArrayHelper*   OPropertyArrayUsageHelper< TYPE >::s_pProps = NULL;
+        ::cppu::IPropertyArrayHelper*   OPropertyArrayUsageHelper< TYPE >::s_pProps = nullptr;
 
         template<class TYPE>
         ::osl::Mutex                    OPropertyArrayUsageHelper< TYPE >::s_aMutex;
@@ -178,14 +178,14 @@ namespace connectivity
 
         /// concat two sequences
         template <class T>
-        ::com::sun::star::uno::Sequence<T> concatSequences(const ::com::sun::star::uno::Sequence<T>& _rLeft, const ::com::sun::star::uno::Sequence<T>& _rRight)
+        css::uno::Sequence<T> concatSequences(const css::uno::Sequence<T>& _rLeft, const css::uno::Sequence<T>& _rRight)
         {
             sal_Int32 nLeft(_rLeft.getLength()), nRight(_rRight.getLength());
             const T* pLeft = _rLeft.getConstArray();
             const T* pRight = _rRight.getConstArray();
 
             sal_Int32 nReturnLen(nLeft + nRight);
-            ::com::sun::star::uno::Sequence<T> aReturn(nReturnLen);
+            css::uno::Sequence<T> aReturn(nReturnLen);
             T* pReturn = aReturn.getArray();
 
             internal::implCopySequence(pLeft, pReturn, nLeft);

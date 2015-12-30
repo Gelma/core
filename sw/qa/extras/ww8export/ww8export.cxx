@@ -9,8 +9,10 @@
 
 #include <swmodeltestbase.hxx>
 
+#include <com/sun/star/awt/Size.hpp>
 #include <com/sun/star/form/validation/XValidatableFormComponent.hpp>
 #include <com/sun/star/frame/XStorable.hpp>
+#include <com/sun/star/drawing/TextVerticalAdjust.hpp>
 #include <com/sun/star/drawing/XControlShape.hpp>
 #include <com/sun/star/beans/XPropertySet.hpp>
 #include <com/sun/star/view/XViewSettingsSupplier.hpp>
@@ -19,13 +21,25 @@
 #include <com/sun/star/text/GraphicCrop.hpp>
 #include <com/sun/star/text/XFormField.hpp>
 #include <com/sun/star/view/DocumentZoomType.hpp>
+#include <com/sun/star/rdf/URI.hpp>
+#include <com/sun/star/rdf/Statement.hpp>
+#include <pagedesc.hxx>
+
+#include <sfx2/bindings.hxx>
+#include <sfx2/request.hxx>
+
+#include <cmdid.h>
+#include <envimg.hxx>
+#include <swmodule.hxx>
+#include <view.hxx>
+#include <wrtsh.hxx>
 
 class Test : public SwModelTestBase
 {
 public:
     Test() : SwModelTestBase("/sw/qa/extras/ww8export/data/", "MS Word 97") {}
 
-    bool mustTestImportOf(const char* filename) const SAL_OVERRIDE
+    bool mustTestImportOf(const char* filename) const override
     {
         // If the testcase is stored in some other format, it's pointless to test.
         return OString(filename).endsWith(".doc");
@@ -53,6 +67,23 @@ protected:
         }
         return false;
     }
+
+    virtual void postLoad(const char* pFilename) override
+    {
+        if (OString(pFilename) == "tdf94386.odt")
+        {
+            SwXTextDocument* pTextDoc = dynamic_cast<SwXTextDocument *>(mxComponent.get());
+            CPPUNIT_ASSERT(pTextDoc);
+            SwWrtShell* pWrtShell = pTextDoc->GetDocShell()->GetWrtShell();
+
+            // emulate the behavior from tdf#94386 - insert an envelope to the
+            // document
+            SfxItemSet aSet(pWrtShell->GetView().GetCurShell()->GetPool(), FN_ENVELOP, FN_ENVELOP);
+            aSet.Put(SwEnvItem());
+            SfxRequest aRequest(FN_ENVELOP, SfxCallMode::SYNCHRON, aSet);
+            SW_MOD()->ExecOther(aRequest);
+        }
+    }
 };
 
 DECLARE_WW8EXPORT_TEST(testN325936, "n325936.doc")
@@ -67,6 +98,44 @@ DECLARE_WW8EXPORT_TEST(testN325936, "n325936.doc")
     uno::Reference<beans::XPropertySet> xPropertySet(getShape(1), uno::UNO_QUERY);
     sal_Int32 nValue = getProperty< sal_Int32 >(getShape(1), "BackColorTransparency");
     CPPUNIT_ASSERT_EQUAL(sal_Int32(100), nValue);
+}
+
+DECLARE_WW8EXPORT_TEST(testTscp, "tscp.doc")
+{
+    uno::Reference<uno::XComponentContext> xComponentContext(comphelper::getProcessComponentContext());
+    uno::Reference<rdf::XURI> xType = rdf::URI::create(xComponentContext, "urn:tscp:names:baf:1.1");
+    uno::Reference<rdf::XDocumentMetadataAccess> xDocumentMetadataAccess(mxComponent, uno::UNO_QUERY);
+    uno::Sequence< uno::Reference<rdf::XURI> > aGraphNames = xDocumentMetadataAccess->getMetadataGraphsWithType(xType);
+    // This failed, no graphs had the urn:tscp:names:baf:1.1 type.
+    CPPUNIT_ASSERT_EQUAL(static_cast<sal_Int32>(1), aGraphNames.getLength());
+    uno::Reference<rdf::XURI> xGraphName = aGraphNames[0];
+    uno::Reference<rdf::XNamedGraph> xGraph = xDocumentMetadataAccess->getRDFRepository()->getGraph(xGraphName);
+
+    // No RDF statement on the first paragraph.
+    uno::Reference<rdf::XResource> xParagraph(getParagraph(1), uno::UNO_QUERY);
+    uno::Reference<container::XEnumeration> xStatements = xGraph->getStatements(xParagraph, uno::Reference<rdf::XURI>(), uno::Reference<rdf::XURI>());
+    CPPUNIT_ASSERT_EQUAL(false, static_cast<bool>(xStatements->hasMoreElements()));
+
+    // 3 RDF statements on the second paragraph.
+    xParagraph.set(getParagraph(2), uno::UNO_QUERY);
+    std::map<OUString, OUString> aExpectedStatements = {
+        {"urn:tscp:names:baf:1.1#BusinessAuthorization", "urn:example:tscp:1"},
+        {"urn:tscp:names:baf:1.1#BusinessAuthorizationCategory", "urn:example:tscp:1:confidential"},
+        {"urn:tscp:names:baf:1.1#BusinessAuthorizationDate", "2015-11-27T11:45:00"}
+    };
+    std::map<OUString, OUString> aActualStatements;
+    xStatements = xGraph->getStatements(xParagraph, uno::Reference<rdf::XURI>(), uno::Reference<rdf::XURI>());
+    while (xStatements->hasMoreElements())
+    {
+        rdf::Statement aStatement = xStatements->nextElement().get<rdf::Statement>();
+        aActualStatements[aStatement.Predicate->getNamespace() + aStatement.Predicate->getLocalName()] = aStatement.Object->getStringValue();
+    }
+    CPPUNIT_ASSERT(aExpectedStatements == aActualStatements);
+
+    // No RDF statement on the third paragraph.
+    xParagraph.set(getParagraph(3), uno::UNO_QUERY);
+    xStatements = xGraph->getStatements(xParagraph, uno::Reference<rdf::XURI>(), uno::Reference<rdf::XURI>());
+    CPPUNIT_ASSERT_EQUAL(false, static_cast<bool>(xStatements->hasMoreElements()));
 }
 
 DECLARE_WW8EXPORT_TEST(testFdo45724, "fdo45724.odt")
@@ -472,6 +541,31 @@ DECLARE_WW8EXPORT_TEST(testCommentedTable, "commented-table.doc")
     CPPUNIT_ASSERT_EQUAL(OUString("fore." SAL_NEWLINE_STRING "A1" SAL_NEWLINE_STRING "B1" SAL_NEWLINE_STRING "Afte"), xField->getAnchor()->getString());
 }
 
+DECLARE_WW8EXPORT_TEST(testTextVerticalAdjustment, "tdf36117_verticalAdjustment.doc")
+{
+    //Preserve the page vertical alignment setting for .doc
+    SwXTextDocument* pTextDoc = dynamic_cast<SwXTextDocument *>(mxComponent.get());
+    CPPUNIT_ASSERT(pTextDoc);
+    SwDoc* pDoc = pTextDoc->GetDocShell()->GetDoc();
+    CPPUNIT_ASSERT(pDoc);
+
+    SwPageDesc &Desc = pDoc->GetPageDesc( 0 );
+    drawing::TextVerticalAdjust nVA = Desc.GetVerticalAdjustment();
+    CPPUNIT_ASSERT_EQUAL( drawing::TextVerticalAdjust_CENTER, nVA );
+
+    Desc = pDoc->GetPageDesc( 1 );
+    nVA = Desc.GetVerticalAdjustment();
+    CPPUNIT_ASSERT_EQUAL( drawing::TextVerticalAdjust_TOP, nVA );
+
+    Desc = pDoc->GetPageDesc( 2 );
+    nVA = Desc.GetVerticalAdjustment();
+    CPPUNIT_ASSERT_EQUAL( drawing::TextVerticalAdjust_BOTTOM, nVA );
+
+    Desc = pTextDoc->GetDocShell()->GetDoc()->GetPageDesc( 3 );
+    nVA = Desc.GetVerticalAdjustment();
+    CPPUNIT_ASSERT_EQUAL( drawing::TextVerticalAdjust_BLOCK, nVA );
+}
+
 DECLARE_WW8EXPORT_TEST(testCommentExport, "comment-export.odt")
 {
     struct TextPortionInfo {
@@ -537,9 +631,41 @@ DECLARE_WW8EXPORT_TEST(testCommentExport, "comment-export.odt")
     }
 }
 
+DECLARE_WW8EXPORT_TEST(testTableKeep, "tdf91083.odt")
+{
+    //emulate table "keep with next" -do not split table
+    CPPUNIT_ASSERT_EQUAL( OUString("Row 1"), parseDump("/root/page[5]/body/tab[1]/row[2]/cell[1]/txt[1]") );
+}
+
 DECLARE_WW8EXPORT_TEST(testMoveRange, "fdo66304-1.odt")
 {
     //the save must survive without asserting
+}
+
+DECLARE_WW8EXPORT_TEST(testTdf94386, "tdf94386.odt")
+{
+    // check that the first and next page use different page styles
+    uno::Reference<frame::XModel> xModel(mxComponent, uno::UNO_QUERY);
+    uno::Reference<text::XTextViewCursorSupplier> xTextViewCursorSupplier(
+        xModel->getCurrentController(), uno::UNO_QUERY);
+    uno::Reference<text::XPageCursor> xCursor(
+        xTextViewCursorSupplier->getViewCursor(), uno::UNO_QUERY);
+
+    xCursor->jumpToFirstPage();
+    OUString firstPageStyleName = getProperty<OUString>(xCursor, "PageStyleName");
+    xCursor->jumpToLastPage();
+    OUString lastPageStyleName = getProperty<OUString>(xCursor, "PageStyleName");
+    CPPUNIT_ASSERT(firstPageStyleName != lastPageStyleName);
+
+    uno::Reference<beans::XPropertySet> xFirstPropertySet(getStyles("PageStyles")->getByName(firstPageStyleName), uno::UNO_QUERY);
+    awt::Size fSize;
+    xFirstPropertySet->getPropertyValue("Size") >>= fSize;
+
+    uno::Reference<beans::XPropertySet> xNextPropertySet(getStyles("PageStyles")->getByName(lastPageStyleName), uno::UNO_QUERY);
+    awt::Size lSize;
+    xNextPropertySet->getPropertyValue("Size") >>= lSize;
+
+    CPPUNIT_ASSERT((fSize.Width != lSize.Width) && (fSize.Height != lSize.Height));
 }
 
 CPPUNIT_PLUGIN_IMPLEMENT();

@@ -44,7 +44,7 @@ void ListBox::EnableQuickSelection( const bool& b )
 
 ListBox::ListBox(WindowType nType)
     : Control(nType)
-    , mpImplLB(NULL)
+    , mpImplLB(nullptr)
 {
     ImplInitListBoxData();
 }
@@ -87,9 +87,9 @@ void ListBox::dispose()
 
 void ListBox::ImplInitListBoxData()
 {
-    mpFloatWin      = NULL;
-    mpImplWin       = NULL;
-    mpBtn           = NULL;
+    mpFloatWin      = nullptr;
+    mpImplWin       = nullptr;
+    mpBtn           = nullptr;
     mnDDHeight      = 0;
     mnSaveValue     = LISTBOX_ENTRY_NOTFOUND;
     mnLineCount     = 0;
@@ -104,9 +104,9 @@ void ListBox::ImplInit( vcl::Window* pParent, WinBits nStyle )
     if ( !(nStyle & WB_NOBORDER) && ( nStyle & WB_DROPDOWN ) )
         nStyle |= WB_BORDER;
 
-    Control::ImplInit( pParent, nStyle, NULL );
+    Control::ImplInit( pParent, nStyle, nullptr );
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::datatransfer::dnd::XDropTargetListener> xDrop = new DNDEventDispatcher(this);
+    css::uno::Reference< css::datatransfer::dnd::XDropTargetListener> xDrop = new DNDEventDispatcher(this);
 
     if( nStyle & WB_DROPDOWN )
     {
@@ -137,15 +137,18 @@ void ListBox::ImplInit( vcl::Window* pParent, WinBits nStyle )
         mpFloatWin->GetDropTarget()->addDropTargetListener(xDrop);
 
         mpImplWin = VclPtr<ImplWin>::Create( this, (nStyle & (WB_LEFT|WB_RIGHT|WB_CENTER))|WB_NOBORDER );
-        mpImplWin->buttonDownSignal.connect( boost::bind( &ListBox::ImplClickButtonHandler, this, _1 ));
-        mpImplWin->userDrawSignal.connect( boost::bind( &ListBox::ImplUserDrawHandler, this, _1 ) );
+        mpImplWin->buttonDownSignal.connect( [this]( Control* pControl )
+                                             { this->ImplClickButtonHandler( pControl ); } );
+        mpImplWin->userDrawSignal.connect( [this]( UserDrawEvent* pUserDrawEvent )
+                                           { this->ImplUserDrawHandler( pUserDrawEvent ); } );
         mpImplWin->Show();
         mpImplWin->GetDropTarget()->addDropTargetListener(xDrop);
         mpImplWin->SetEdgeBlending(GetEdgeBlending());
 
         mpBtn = VclPtr<ImplBtn>::Create( this, WB_NOLIGHTBORDER | WB_RECTSTYLE );
         ImplInitDropDownButton( mpBtn );
-        mpBtn->buttonDownSignal.connect( boost::bind( &ListBox::ImplClickButtonHandler, this, _1 ));
+        mpBtn->buttonDownSignal.connect( [this]( Control* pControl )
+                                         { this->ImplClickButtonHandler( pControl ); } );
         mpBtn->Show();
         mpBtn->GetDropTarget()->addDropTargetListener(xDrop);
     }
@@ -158,7 +161,8 @@ void ListBox::ImplInit( vcl::Window* pParent, WinBits nStyle )
     mpImplLB->SetScrollHdl( LINK( this, ListBox, ImplScrollHdl ) );
     mpImplLB->SetCancelHdl( LINK( this, ListBox, ImplCancelHdl ) );
     mpImplLB->SetDoubleClickHdl( LINK( this, ListBox, ImplDoubleClickHdl ) );
-    mpImplLB->userDrawSignal.connect( boost::bind( &ListBox::ImplUserDrawHandler, this, _1 ) );
+    mpImplLB->userDrawSignal.connect( [this]( UserDrawEvent* pUserDrawEvent )
+                                      { this->ImplUserDrawHandler( pUserDrawEvent ); } );
     mpImplLB->SetFocusHdl( LINK( this, ListBox, ImplFocusHdl ) );
     mpImplLB->SetListItemSelectHdl( LINK( this, ListBox, ImplListItemSelectHdl ) );
     mpImplLB->SetPosPixel( Point() );
@@ -961,7 +965,7 @@ bool ListBox::PreNotify( NotifyEvent& rNEvt )
 
 void ListBox::Select()
 {
-    ImplCallEventListenersAndHandler( VCLEVENT_LISTBOX_SELECT, [this] () { maSelectHdl.Call(this); } );
+    ImplCallEventListenersAndHandler( VCLEVENT_LISTBOX_SELECT, [this] () { maSelectHdl.Call(*this); } );
 }
 
 void ListBox::DoubleClick()
@@ -971,6 +975,8 @@ void ListBox::DoubleClick()
 
 void ListBox::Clear()
 {
+    if (!mpImplLB)
+        return;
     mpImplLB->Clear();
     if( IsDropDownBox() )
     {
@@ -1026,13 +1032,15 @@ void ListBox::RemoveEntry( sal_Int32 nPos )
 
 Image ListBox::GetEntryImage( sal_Int32 nPos ) const
 {
-    if ( mpImplLB->GetEntryList()->HasEntryImage( nPos ) )
+    if ( mpImplLB && mpImplLB->GetEntryList()->HasEntryImage( nPos ) )
         return mpImplLB->GetEntryList()->GetEntryImage( nPos );
     return Image();
 }
 
 sal_Int32 ListBox::GetEntryPos( const OUString& rStr ) const
 {
+    if (!mpImplLB)
+        return LISTBOX_ENTRY_NOTFOUND;
     sal_Int32 nPos = mpImplLB->GetEntryList()->FindEntry( rStr );
     if ( nPos != LISTBOX_ENTRY_NOTFOUND )
         nPos = nPos - mpImplLB->GetEntryList()->GetMRUCount();
@@ -1041,6 +1049,8 @@ sal_Int32 ListBox::GetEntryPos( const OUString& rStr ) const
 
 sal_Int32 ListBox::GetEntryPos( const void* pData ) const
 {
+    if (!mpImplLB)
+        return LISTBOX_ENTRY_NOTFOUND;
     sal_Int32 nPos = mpImplLB->GetEntryList()->FindEntry( pData );
     if ( nPos != LISTBOX_ENTRY_NOTFOUND )
         nPos = nPos - mpImplLB->GetEntryList()->GetMRUCount();
@@ -1049,11 +1059,15 @@ sal_Int32 ListBox::GetEntryPos( const void* pData ) const
 
 OUString ListBox::GetEntry( sal_Int32 nPos ) const
 {
+    if (!mpImplLB)
+        return OUString();
     return mpImplLB->GetEntryList()->GetEntryText( nPos + mpImplLB->GetEntryList()->GetMRUCount() );
 }
 
 sal_Int32 ListBox::GetEntryCount() const
 {
+    if (!mpImplLB)
+        return 0;
     return mpImplLB->GetEntryList()->GetEntryCount() - mpImplLB->GetEntryList()->GetMRUCount();
 }
 
@@ -1064,11 +1078,16 @@ OUString ListBox::GetSelectEntry(sal_Int32 nIndex) const
 
 sal_Int32 ListBox::GetSelectEntryCount() const
 {
+    if (!mpImplLB)
+        return 0;
     return mpImplLB->GetEntryList()->GetSelectEntryCount();
 }
 
 sal_Int32 ListBox::GetSelectEntryPos( sal_Int32 nIndex ) const
 {
+    if (!mpImplLB || !mpImplLB->GetEntryList())
+        return LISTBOX_ENTRY_NOTFOUND;
+
     sal_Int32 nPos = mpImplLB->GetEntryList()->GetSelectEntryPos( nIndex );
     if ( nPos != LISTBOX_ENTRY_NOTFOUND )
     {
@@ -1096,6 +1115,9 @@ void ListBox::SelectEntry( const OUString& rStr, bool bSelect )
 
 void ListBox::SelectEntryPos( sal_Int32 nPos, bool bSelect )
 {
+    if (!mpImplLB)
+        return;
+
     if ( 0 <= nPos && nPos < mpImplLB->GetEntryList()->GetEntryCount() )
     {
         sal_Int32 oldSelectCount = GetSelectEntryCount(), newSelectCount = 0, nCurrentPos = mpImplLB->GetCurrentPos();

@@ -85,7 +85,7 @@ class SvtCmdOptions
         CommandHashMap m_aCommandHashMap;
 };
 
-typedef ::std::vector< ::com::sun::star::uno::WeakReference< ::com::sun::star::frame::XFrame > > SvtFrameVector;
+typedef ::std::vector< css::uno::WeakReference< css::frame::XFrame > > SvtFrameVector;
 
 class SvtCommandOptions_Impl : public ConfigItem
 {
@@ -105,7 +105,7 @@ class SvtCommandOptions_Impl : public ConfigItem
             @param      "lPropertyNames" is the list of properties which should be updated.
         *//*-*****************************************************************************************************/
 
-        virtual void Notify( const Sequence< OUString >& lPropertyNames ) SAL_OVERRIDE;
+        virtual void Notify( const Sequence< OUString >& lPropertyNames ) override;
 
         /*-****************************************************************************************************
             @short      base implementation of public interface for "SvtDynamicMenuOptions"!
@@ -115,11 +115,11 @@ class SvtCommandOptions_Impl : public ConfigItem
 
         bool                HasEntries  (   SvtCommandOptions::CmdOption    eOption     ) const;
         bool                Lookup      (   SvtCommandOptions::CmdOption    eCmdOption, const OUString& ) const;
-        void EstablisFrameCallback(const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& xFrame);
+        void EstablisFrameCallback(const css::uno::Reference< css::frame::XFrame >& xFrame);
 
     private:
 
-        virtual void ImplCommit() SAL_OVERRIDE;
+        virtual void ImplCommit() override;
 
         /*-****************************************************************************************************
             @short      return list of key names of our configuration management which represent oue module tree
@@ -169,8 +169,7 @@ SvtCommandOptions_Impl::SvtCommandOptions_Impl()
 /*TODO: Not used in the moment! see Notify() ...
     // Enable notification mechanism of our baseclass.
     // We need it to get information about changes outside these class on our used configuration keys! */
-    Sequence< OUString > aNotifySeq( 1 );
-    aNotifySeq[0] = "Disabled";
+    Sequence<OUString> aNotifySeq { "Disabled" };
     EnableNotification( aNotifySeq, true );
 }
 
@@ -216,7 +215,7 @@ void SvtCommandOptions_Impl::Notify( const Sequence< OUString >& )
                                         pIt != m_lFrames.end();
                                       ++pIt                     )
     {
-        ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > xFrame(pIt->get(), ::com::sun::star::uno::UNO_QUERY);
+        css::uno::Reference< css::frame::XFrame > xFrame(pIt->get(), css::uno::UNO_QUERY);
         if (xFrame.is())
             xFrame->contextChanged();
     }
@@ -258,12 +257,12 @@ bool SvtCommandOptions_Impl::Lookup( SvtCommandOptions::CmdOption eCmdOption, co
 
 //  public method
 
-void SvtCommandOptions_Impl::EstablisFrameCallback(const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& xFrame)
+void SvtCommandOptions_Impl::EstablisFrameCallback(const css::uno::Reference< css::frame::XFrame >& xFrame)
 {
     // check if frame already exists inside list
     // ignore double registrations
     // every frame must be notified one times only!
-    ::com::sun::star::uno::WeakReference< ::com::sun::star::frame::XFrame > xWeak(xFrame);
+    css::uno::WeakReference< css::frame::XFrame > xWeak(xFrame);
     SvtFrameVector::const_iterator pIt = ::std::find(m_lFrames.begin(), m_lFrames.end(), xWeak);
     if (pIt == m_lFrames.end())
         m_lFrames.push_back(xWeak);
@@ -291,7 +290,7 @@ Sequence< OUString > SvtCommandOptions_Impl::impl_GetPropertyNames()
 //  DON'T DO IT IN YOUR HEADER!
 //  see definition for further information
 
-SvtCommandOptions_Impl*     SvtCommandOptions::m_pDataContainer = NULL;
+SvtCommandOptions_Impl*     SvtCommandOptions::m_pDataContainer = nullptr;
 sal_Int32                   SvtCommandOptions::m_nRefCount      = 0;
 
 //  constructor
@@ -303,7 +302,7 @@ SvtCommandOptions::SvtCommandOptions()
     // Increase our refcount ...
     ++m_nRefCount;
     // ... and initialize our data container only if it not already exist!
-    if( m_pDataContainer == NULL )
+    if( m_pDataContainer == nullptr )
     {
         m_pDataContainer = new SvtCommandOptions_Impl;
         ItemHolder1::holdConfigItem(E_CMDOPTIONS);
@@ -323,7 +322,7 @@ SvtCommandOptions::~SvtCommandOptions()
     if( m_nRefCount <= 0 )
     {
         delete m_pDataContainer;
-        m_pDataContainer = NULL;
+        m_pDataContainer = nullptr;
     }
 }
 
@@ -345,7 +344,7 @@ bool SvtCommandOptions::Lookup( CmdOption eCmdOption, const OUString& aCommandUR
 
 //  public method
 
-void SvtCommandOptions::EstablisFrameCallback(const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& xFrame)
+void SvtCommandOptions::EstablisFrameCallback(const css::uno::Reference< css::frame::XFrame >& xFrame)
 {
     MutexGuard aGuard( GetOwnStaticMutex() );
     m_pDataContainer->EstablisFrameCallback(xFrame);

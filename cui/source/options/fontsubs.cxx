@@ -40,7 +40,7 @@ SvxFontSubstTabPage::SvxFontSubstTabPage( vcl::Window* pParent,
                                 const SfxItemSet& rSet )
     : SfxTabPage(pParent, "OptFontsPage", "cui/ui/optfontspage.ui", &rSet)
     , pConfig(new SvtFontSubstConfig)
-    , pCheckButtonData(0)
+    , pCheckButtonData(nullptr)
 {
     get(m_pUseTableCB, "usetable");
     get(m_pReplacements, "replacements");
@@ -88,14 +88,15 @@ SvxFontSubstTabPage::SvxFontSubstTabPage( vcl::Window* pParent,
     m_pCheckLB->setColSizes();
 
     aTextColor = m_pCheckLB->GetTextColor();
-    Link<> aLink(LINK(this, SvxFontSubstTabPage, SelectHdl));
+    Link<Edit&,void> aLink(LINK(this, SvxFontSubstTabPage, SelectEditHdl));
+    Link<ComboBox&,void> aLink2(LINK(this, SvxFontSubstTabPage, SelectComboBoxHdl));
     Link<Button*,void> aClickLink(LINK(this, SvxFontSubstTabPage, ClickHdl));
 
     m_pCheckLB->SetSelectHdl(LINK(this, SvxFontSubstTabPage, TreeListBoxSelectHdl));
     m_pUseTableCB->SetClickHdl(aClickLink);
-    m_pFont1CB->SetSelectHdl(aLink);
+    m_pFont1CB->SetSelectHdl(aLink2);
     m_pFont1CB->SetModifyHdl(aLink);
-    m_pFont2CB->SetSelectHdl(aLink);
+    m_pFont2CB->SetSelectHdl(aLink2);
     m_pFont2CB->SetModifyHdl(aLink);
     m_pApply->SetClickHdl(aClickLink);
     m_pDelete->SetClickHdl(aClickLink);
@@ -146,9 +147,9 @@ SvxFontSubstTabPage::~SvxFontSubstTabPage()
 void SvxFontSubstTabPage::dispose()
 {
     delete pCheckButtonData;
-    pCheckButtonData = NULL;
+    pCheckButtonData = nullptr;
     delete pConfig;
-    pConfig = NULL;
+    pConfig = nullptr;
     m_pCheckLB.disposeAndClear();
     m_pUseTableCB.clear();
     m_pReplacements.clear();
@@ -265,7 +266,15 @@ IMPL_LINK_TYPED(SvxFontSubstTabPage, TreeListBoxSelectHdl, SvTreeListBox*, pButt
 {
     SelectHdl(pButton);
 }
-IMPL_LINK(SvxFontSubstTabPage, SelectHdl, vcl::Window*, pWin)
+IMPL_LINK_TYPED(SvxFontSubstTabPage, SelectComboBoxHdl, ComboBox&, rBox, void)
+{
+    SelectHdl(&rBox);
+}
+IMPL_LINK_TYPED(SvxFontSubstTabPage, SelectEditHdl, Edit&, rBox, void)
+{
+    SelectHdl(&rBox);
+}
+void SvxFontSubstTabPage::SelectHdl(vcl::Window* pWin)
 {
     if (pWin == m_pApply || pWin == m_pDelete)
     {
@@ -313,7 +322,7 @@ IMPL_LINK(SvxFontSubstTabPage, SelectHdl, vcl::Window*, pWin)
     {
         SvTreeListEntry* pEntry = m_pCheckLB->FirstSelected();
 
-        if (m_pCheckLB->NextSelected(pEntry) == 0)
+        if (m_pCheckLB->NextSelected(pEntry) == nullptr)
         {
             m_pFont1CB->SetText(SvTabListBox::GetEntryText(pEntry, 0));
             m_pFont2CB->SetText(SvTabListBox::GetEntryText(pEntry, 1));
@@ -337,8 +346,6 @@ IMPL_LINK(SvxFontSubstTabPage, SelectHdl, vcl::Window*, pWin)
     }
 
     CheckEnable();
-
-    return 0;
 }
 
 
@@ -380,12 +387,12 @@ void SvxFontSubstTabPage::CheckEnable()
             bApply = false;
         else if(m_pCheckLB->GetEntryPos(sEntry) != 0xffffffff)
             bApply = false;
-        else if(pEntry != 0 && m_pCheckLB->NextSelected(pEntry) != 0)
+        else if(pEntry != nullptr && m_pCheckLB->NextSelected(pEntry) != nullptr)
             bApply = false;
         else
             bApply = true;
 
-        bDelete = pEntry != 0;
+        bDelete = pEntry != nullptr;
 
         m_pApply->Enable(bApply);
         m_pDelete->Enable(bDelete);

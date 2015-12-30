@@ -27,7 +27,6 @@
 using namespace ::com::sun::star;
 using namespace ::xmloff::token;
 
-TYPEINIT1( SdXMLGroupShapeContext, SvXMLImportContext );
 
 SdXMLGroupShapeContext::SdXMLGroupShapeContext(
     SvXMLImport& rImport,
@@ -47,7 +46,7 @@ SvXMLImportContext* SdXMLGroupShapeContext::CreateChildContext( sal_uInt16 nPref
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext* pContext = 0L;
+    SvXMLImportContext* pContext = nullptr;
 
     // #i68101#
     if( nPrefix == XML_NAMESPACE_SVG &&
@@ -88,7 +87,7 @@ void SdXMLGroupShapeContext::StartElement(const uno::Reference< xml::sax::XAttri
     {
         SetStyle( false );
 
-        mxChildren = uno::Reference< drawing::XShapes >::query( mxShape );
+        mxChildren.set( mxShape, uno::UNO_QUERY );
         if( mxChildren.is() )
             GetImport().GetShapeImport()->pushGroupForSorting( mxChildren );
     }

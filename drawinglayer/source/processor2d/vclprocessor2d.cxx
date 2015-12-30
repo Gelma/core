@@ -160,7 +160,7 @@ namespace drawinglayer
                     const primitive2d::TextDecoratedPortionPrimitive2D* pTCPP =
                         dynamic_cast<const primitive2d::TextDecoratedPortionPrimitive2D*>( &rTextCandidate );
 
-                    if( pTCPP != NULL )
+                    if( pTCPP != nullptr )
                     {
 
                         // set the color of text decorations
@@ -275,7 +275,7 @@ namespace drawinglayer
                     sal_Int32 nPos = rTextCandidate.getTextPosition();
                     sal_Int32 nLen = rTextCandidate.getTextLength();
 
-                    long* pDXArray = aTransformedDXArray.size() ? &(aTransformedDXArray[0]) : NULL ;
+                    long* pDXArray = aTransformedDXArray.size() ? &(aTransformedDXArray[0]) : nullptr ;
 
                     if ( rTextCandidate.isFilled() )
                     {
@@ -599,7 +599,7 @@ namespace drawinglayer
                                         // offset in X, so iterate over Y first and draw lines
                                         for(sal_Int32 nYPos(nBTop); nYPos < nOTop + nOHeight; nYPos += nBHeight, nPosY++)
                                         {
-                                            for(sal_Int32 nXPos(nPosY % 2 ? nBLeft - nBWidth + nOffsetX : nBLeft);
+                                            for(sal_Int32 nXPos((nPosY % 2) ? nBLeft - nBWidth + nOffsetX : nBLeft);
                                                 nXPos < nOLeft + nOWidth; nXPos += nBWidth)
                                             {
                                                 const Rectangle aOutRectPixel(Point(nXPos, nYPos), aNeededBitmapSizePixel);
@@ -626,7 +626,7 @@ namespace drawinglayer
                                         // possible offset in Y, so iterate over X first and draw columns
                                         for(sal_Int32 nXPos(nBLeft); nXPos < nOLeft + nOWidth; nXPos += nBWidth, nPosX++)
                                         {
-                                            for(sal_Int32 nYPos(nPosX % 2 ? nBTop - nBHeight + nOffsetY : nBTop);
+                                            for(sal_Int32 nYPos((nPosX % 2) ? nBTop - nBHeight + nOffsetY : nBTop);
                                                 nYPos < nOTop + nOHeight; nYPos += nBHeight)
                                             {
                                                 const Rectangle aOutRectPixel(Point(nXPos, nYPos), aNeededBitmapSizePixel);
@@ -864,7 +864,7 @@ namespace drawinglayer
         // mask group. Force output to VDev and create mask from given mask
         void VclProcessor2D::RenderMaskPrimitive2DPixel(const primitive2d::MaskPrimitive2D& rMaskCandidate)
         {
-            if(rMaskCandidate.getChildren().hasElements())
+            if(!rMaskCandidate.getChildren().empty())
             {
                 basegfx::B2DPolyPolygon aMask(rMaskCandidate.getMask());
 
@@ -917,7 +917,7 @@ namespace drawinglayer
         // modified color group. Force output to unified color.
         void VclProcessor2D::RenderModifiedColorPrimitive2D(const primitive2d::ModifiedColorPrimitive2D& rModifiedCandidate)
         {
-            if(rModifiedCandidate.getChildren().hasElements())
+            if(!rModifiedCandidate.getChildren().empty())
             {
                 maBColorModifierStack.push(rModifiedCandidate.getColorModifier());
                 process(rModifiedCandidate.getChildren());
@@ -930,7 +930,7 @@ namespace drawinglayer
         {
             static bool bForceToDecomposition(false);
 
-            if(rTransCandidate.getChildren().hasElements())
+            if(!rTransCandidate.getChildren().empty())
             {
                 if(bForceToDecomposition)
                 {
@@ -947,7 +947,7 @@ namespace drawinglayer
                     else if(rTransCandidate.getTransparence() > 0.0 && rTransCandidate.getTransparence() < 1.0)
                     {
                         // transparence is in visible range
-                        basegfx::B2DRange aRange(primitive2d::getB2DRangeFromPrimitive2DSequence(rTransCandidate.getChildren(), getViewInformation2D()));
+                        basegfx::B2DRange aRange(rTransCandidate.getChildren().getB2DRange(getViewInformation2D()));
                         aRange.transform(maCurrentTransformation);
                         impBufferDevice aBufferDevice(*mpOutputDevice, aRange, true);
 
@@ -974,9 +974,9 @@ namespace drawinglayer
         // sub-transparence group. Draw to VDev first.
         void VclProcessor2D::RenderTransparencePrimitive2D(const primitive2d::TransparencePrimitive2D& rTransCandidate)
         {
-            if(rTransCandidate.getChildren().hasElements())
+            if(!rTransCandidate.getChildren().empty())
             {
-                basegfx::B2DRange aRange(primitive2d::getB2DRangeFromPrimitive2DSequence(rTransCandidate.getChildren(), getViewInformation2D()));
+                basegfx::B2DRange aRange(rTransCandidate.getChildren().getB2DRange(getViewInformation2D()));
                 aRange.transform(maCurrentTransformation);
                 impBufferDevice aBufferDevice(*mpOutputDevice, aRange, true);
 
@@ -1156,7 +1156,7 @@ namespace drawinglayer
                     // else apply LineStyle
                     basegfx::tools::applyLineDashing(rPolygonStrokeCandidate.getB2DPolygon(),
                         rStrokeAttribute.getDotDashArray(),
-                        &aHairlinePolyPolygon, 0, rStrokeAttribute.getFullDotDashLen());
+                        &aHairlinePolyPolygon, nullptr, rStrokeAttribute.getFullDotDashLen());
                 }
 
                 const sal_uInt32 nCount(aHairlinePolyPolygon.count());
@@ -1365,8 +1365,7 @@ namespace drawinglayer
                         mpOutputDevice->DrawEPS(
                         aRectangle.TopLeft(),
                         aRectangle.GetSize(),
-                        rEpsPrimitive2D.getGfxLink(),
-                        0);
+                        rEpsPrimitive2D.getGfxLink());
 
                     if(!bEPSPaintedDirectly)
                     {

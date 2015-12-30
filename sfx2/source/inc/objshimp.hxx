@@ -30,6 +30,7 @@
 #include <sfx2/objsh.hxx>
 #include <sfx2/docmacromode.hxx>
 #include "bitset.hxx"
+#include <vcl/timer.hxx>
 
 #include <appbaslib.hxx>
 
@@ -45,16 +46,26 @@ struct MarkData_Impl
 
 class SfxBasicManagerHolder;
 
+class AutoReloadTimer_Impl : public Timer
+{
+    OUString          aUrl;
+    SfxObjectShell*   pObjSh;
+
+public:
+    AutoReloadTimer_Impl( const OUString& rURL, sal_uInt32 nTime,
+                          SfxObjectShell* pSh );
+    virtual void Invoke() override;
+};
+
 struct SfxObjectShell_Impl : public ::sfx2::IMacroDocumentAccess
 {
     ::comphelper::EmbeddedObjectContainer* mpObjectContainer;
     SfxBasicManagerHolder aBasicManager;
     SfxObjectShell&     rDocShell;
-    ::com::sun::star::uno::Reference< ::com::sun::star::script::XLibraryContainer >
+    css::uno::Reference< css::script::XLibraryContainer >
                         xBasicLibraries;
-    ::com::sun::star::uno::Reference< ::com::sun::star::script::XLibraryContainer >
+    css::uno::Reference< css::script::XLibraryContainer >
                         xDialogLibraries;
-    com::sun::star::uno::Sequence < OUString > xEventNames;
     ::sfx2::DocumentMacroMode
                         aMacroMode;
     SfxProgress*        pProgress;
@@ -64,7 +75,7 @@ struct SfxObjectShell_Impl : public ::sfx2::IMacroDocumentAccess
     sal_uInt16          nVisualDocumentNumber;
     SignatureState      nDocumentSignatureState;
     SignatureState      nScriptingSignatureState;
-    bool            bInList:1,          // if reachable by First/Next
+    bool                bInList:1,          // if reachable by First/Next
                         bClosing:1,         // sal_True while Close(), to prevent recurrences Notification
                         bIsSaving:1,
                         bPasswd:1,
@@ -78,7 +89,6 @@ struct SfxObjectShell_Impl : public ::sfx2::IMacroDocumentAccess
                         bBasicInitialized :1,
                         bIsPrintJobCancelable :1, // Stampit disable/enable cancel button for print jobs ... default = true = enable!
                         bOwnsStorage:1,
-                        bNoBaseURL:1,
                         bInitialized:1,
                         bSignatureErrorIsShown:1,
                         bModelInitialized:1, // whether the related model is initialized
@@ -89,6 +99,7 @@ struct SfxObjectShell_Impl : public ::sfx2::IMacroDocumentAccess
                         bQueryLoadTemplate:1,
                         bLoadReadonly:1,
                         bUseUserData:1,
+                        bUseThumbnailSave:1,
                         bSaveVersionOnClose:1,
                         m_bSharedXMLFlag:1, // whether the flag should be stored in xml file
                         m_bAllowShareControlFileClean:1, // whether the flag should be stored in xml file
@@ -106,12 +117,11 @@ struct SfxObjectShell_Impl : public ::sfx2::IMacroDocumentAccess
     bool                bRunningMacro;
     bool                bReloadAvailable;
     sal_uInt16          nAutoLoadLocks;
-    SfxModule*          pModule;
-    SfxObjectShellFlags     eFlags;
+    SfxObjectShellFlags eFlags;
     bool                bReadOnlyUI;
     tools::SvRef<SvRefBase>  xHeaderAttributes;
     ::rtl::Reference< SfxBaseModel >
-                            pBaseModel;
+                        pBaseModel;
     sal_uInt16          nStyleFilter;
     bool                bDisposing;
 
@@ -122,34 +132,34 @@ struct SfxObjectShell_Impl : public ::sfx2::IMacroDocumentAccess
     MapUnit             m_nMapUnit;
 
     bool                m_bCreateTempStor;
-    ::com::sun::star::uno::Reference< ::com::sun::star::embed::XStorage > m_xDocStorage;
+    css::uno::Reference< css::embed::XStorage > m_xDocStorage;
 
     bool                m_bIsInit;
 
-    OUString         m_aSharedFileURL;
+    OUString            m_aSharedFileURL;
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::logging::XSimpleLogRing > m_xLogRing;
+    css::uno::Reference< css::logging::XSimpleLogRing > m_xLogRing;
 
     bool                m_bIncomplEncrWarnShown;
 
     // TODO/LATER: m_aModifyPasswordInfo should completely replace m_nModifyPasswordHash in future
-    sal_uInt32              m_nModifyPasswordHash;
-    ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue > m_aModifyPasswordInfo;
+    sal_uInt32          m_nModifyPasswordHash;
+    css::uno::Sequence< css::beans::PropertyValue > m_aModifyPasswordInfo;
     bool                m_bModifyPasswordEntered;
 
     SfxObjectShell_Impl( SfxObjectShell& _rDocShell );
     virtual ~SfxObjectShell_Impl();
 
     // IMacroDocumentAccess overridables
-    virtual sal_Int16 getCurrentMacroExecMode() const SAL_OVERRIDE;
-    virtual bool setCurrentMacroExecMode( sal_uInt16 nMacroMode ) SAL_OVERRIDE;
-    virtual OUString getDocumentLocation() const SAL_OVERRIDE;
-    virtual bool documentStorageHasMacros() const SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::document::XEmbeddedScripts > getEmbeddedDocumentScripts() const SAL_OVERRIDE;
-    virtual SignatureState getScriptingSignatureState() SAL_OVERRIDE;
+    virtual sal_Int16 getCurrentMacroExecMode() const override;
+    virtual bool setCurrentMacroExecMode( sal_uInt16 nMacroMode ) override;
+    virtual OUString getDocumentLocation() const override;
+    virtual bool documentStorageHasMacros() const override;
+    virtual css::uno::Reference< css::document::XEmbeddedScripts > getEmbeddedDocumentScripts() const override;
+    virtual SignatureState getScriptingSignatureState() override;
 
-    virtual bool hasTrustedScriptingSignature( bool bAllowUIToAddAuthor ) SAL_OVERRIDE;
-    virtual void showBrokenSignatureWarning( const ::com::sun::star::uno::Reference< ::com::sun::star::task::XInteractionHandler >& _rxInteraction ) const SAL_OVERRIDE;
+    virtual bool hasTrustedScriptingSignature( bool bAllowUIToAddAuthor ) override;
+    virtual void showBrokenSignatureWarning( const css::uno::Reference< css::task::XInteractionHandler >& _rxInteraction ) const override;
 };
 
 #endif

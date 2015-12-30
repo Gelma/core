@@ -36,7 +36,7 @@ struct ScHeaderFieldData;
 class ScPreviewLocationData;
 class CommandEvent;
 
-class ScPreviewShell: public SfxViewShell
+class SC_DLLPUBLIC ScPreviewShell: public SfxViewShell
 {
     ScDocShell*     pDocShell;
 
@@ -46,7 +46,7 @@ class ScPreviewShell: public SfxViewShell
     VclPtr<ScrollBar>      pVerScroll;
     VclPtr<vcl::Window>    pCorner;
 
-    ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue > aSourceData;  // ViewData
+    css::uno::Sequence< css::beans::PropertyValue > aSourceData;  // ViewData
     TriState        nSourceDesignMode;      // form design mode from TabView
     SvxZoomType     eZoom;
     long            nMaxVertPos;
@@ -61,21 +61,20 @@ private:
     void            ExitPreview();
 
 protected:
-    virtual void    Activate(bool bMDI) SAL_OVERRIDE;
-    virtual void    Deactivate(bool bMDI) SAL_OVERRIDE;
-    virtual void    AdjustPosSizePixel( const Point &rPos, const Size &rSize ) SAL_OVERRIDE;
+    virtual void    Activate(bool bMDI) override;
+    virtual void    Deactivate(bool bMDI) override;
+    virtual void    AdjustPosSizePixel( const Point &rPos, const Size &rSize ) override;
 
-    virtual void    InnerResizePixel( const Point &rOfs, const Size &rSize ) SAL_OVERRIDE;
-    virtual void    OuterResizePixel( const Point &rOfs, const Size &rSize ) SAL_OVERRIDE;
+    virtual void    InnerResizePixel( const Point &rOfs, const Size &rSize ) override;
+    virtual void    OuterResizePixel( const Point &rOfs, const Size &rSize ) override;
 
-    virtual void    WriteUserData(OUString &, bool bBrowse = false) SAL_OVERRIDE;
-    virtual void    ReadUserData(const OUString &, bool bBrowse = false) SAL_OVERRIDE;
+    virtual void    WriteUserData(OUString &, bool bBrowse = false) override;
+    virtual void    ReadUserData(const OUString &, bool bBrowse = false) override;
 
-    virtual void    WriteUserDataSequence (::com::sun::star::uno::Sequence < ::com::sun::star::beans::PropertyValue >&, bool bBrowse = false ) SAL_OVERRIDE;
-    virtual void    ReadUserDataSequence (const ::com::sun::star::uno::Sequence < ::com::sun::star::beans::PropertyValue >&, bool bBrowse = false ) SAL_OVERRIDE;
+    virtual void    WriteUserDataSequence (css::uno::Sequence < css::beans::PropertyValue >&, bool bBrowse = false ) override;
+    virtual void    ReadUserDataSequence (const css::uno::Sequence < css::beans::PropertyValue >&, bool bBrowse = false ) override;
 
 public:
-                    TYPEINFO_VISIBILITY_OVERRIDE( SC_DLLPUBLIC );
                     SFX_DECL_INTERFACE(SCID_PREVIEW_SHELL)
                     SFX_DECL_VIEWFACTORY(ScPreviewShell);
 
@@ -102,12 +101,12 @@ public:
 
     TriState        GetSourceDesignMode() const { return nSourceDesignMode; }
 
-    virtual void    Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+    virtual void    Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
-    virtual SfxPrinter*     GetPrinter( bool bCreate = false ) SAL_OVERRIDE;
-    virtual sal_uInt16      SetPrinter( SfxPrinter* pNewPrinter, SfxPrinterChangeFlags nDiffFlags = SFX_PRINTER_ALL, bool bIsAPI=false ) SAL_OVERRIDE;
-    virtual bool            HasPrintOptionsPage() const SAL_OVERRIDE;
-    virtual VclPtr<SfxTabPage> CreatePrintOptionsPage( vcl::Window *pParent, const SfxItemSet &rOptions ) SAL_OVERRIDE;
+    virtual SfxPrinter*     GetPrinter( bool bCreate = false ) override;
+    virtual sal_uInt16      SetPrinter( SfxPrinter* pNewPrinter, SfxPrinterChangeFlags nDiffFlags = SFX_PRINTER_ALL, bool bIsAPI=false ) override;
+    virtual bool            HasPrintOptionsPage() const override;
+    virtual VclPtr<SfxTabPage> CreatePrintOptionsPage( vcl::Window *pParent, const SfxItemSet &rOptions ) override;
 
     void            AddAccessibilityObject( SfxListener& rObject );
     void            RemoveAccessibilityObject( SfxListener& rObject );
@@ -116,7 +115,7 @@ public:
 
     const ScPreviewLocationData& GetLocationData();
     ScDocument&     GetDocument();
-    SC_DLLPUBLIC ScPreview*      GetPreview() { return pPreview; }
+    ScPreview*      GetPreview() { return pPreview; }
 };
 
 #endif

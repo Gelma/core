@@ -81,16 +81,16 @@ class EmptyInputStream : public ::cppu::WeakImplHelper< XInputStream >
 public:
     virtual sal_Int32 SAL_CALL readBytes(
         Sequence< sal_Int8 > & data, sal_Int32 nBytesToRead )
-        throw (IOException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (IOException, RuntimeException, std::exception) override;
     virtual sal_Int32 SAL_CALL readSomeBytes(
         Sequence< sal_Int8 > & data, sal_Int32 nMaxBytesToRead )
-        throw (IOException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (IOException, RuntimeException, std::exception) override;
     virtual void SAL_CALL skipBytes( sal_Int32 nBytesToSkip )
-        throw (IOException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (IOException, RuntimeException, std::exception) override;
     virtual sal_Int32 SAL_CALL available()
-        throw (IOException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (IOException, RuntimeException, std::exception) override;
     virtual void SAL_CALL closeInput()
-        throw (IOException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (IOException, RuntimeException, std::exception) override;
 };
 
 sal_Int32 EmptyInputStream::readBytes(
@@ -145,19 +145,19 @@ public:
 
     // XInterface
     virtual css::uno::Any SAL_CALL queryInterface( const css::uno::Type & rType )
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL acquire()
-        throw() SAL_OVERRIDE;
+        throw() override;
     virtual void SAL_CALL release()
-        throw() SAL_OVERRIDE;
+        throw() override;
 
     // XContentEventListener
     virtual void SAL_CALL contentEvent( const ContentEvent& evt )
-        throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception ) override;
 
     // XEventListener ( base of XContentEventListener )
     virtual void SAL_CALL disposing( const EventObject& Source )
-        throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception ) override;
 };
 
 
@@ -448,8 +448,7 @@ Reference< XPropertySetInfo > Content::getProperties()
 Any Content::getPropertyValue( const OUString& rPropertyName )
     throw( CommandAbortedException, RuntimeException, Exception )
 {
-    Sequence< OUString > aNames( 1 );
-    aNames.getArray()[ 0 ] = rPropertyName;
+    Sequence<OUString> aNames { rPropertyName };
 
     Sequence< Any > aRet = getPropertyValues( aNames );
     return aRet.getConstArray()[ 0 ];
@@ -460,8 +459,7 @@ Any Content::setPropertyValue( const OUString& rName,
                                 const Any& rValue )
     throw( CommandAbortedException, RuntimeException, Exception )
 {
-    Sequence< OUString > aNames( 1 );
-    aNames.getArray()[ 0 ] = rName;
+    Sequence<OUString> aNames { rName };
 
     Sequence< Any > aValues( 1 );
     aValues.getArray()[ 0 ] = rValue;
@@ -886,7 +884,7 @@ Sequence< ContentInfo > Content::queryCreatableContentsInfo()
     // First, try it using "CreatableContentsInfo" property -> the "new" way.
     Sequence< ContentInfo > aInfo;
     if ( getPropertyValue(
-             OUString("CreatableContentsInfo") )
+             "CreatableContentsInfo" )
          >>= aInfo )
         return aInfo;
 
@@ -967,7 +965,7 @@ bool Content::insertNewContent( const OUString& rContentType,
     Content aNewContent(
         xNew, m_xImpl->getEnvironment(), m_xImpl->getComponentContext() );
     aNewContent.setPropertyValues( rPropertyNames, rPropertyValues );
-    aNewContent.executeCommand( OUString("insert"),
+    aNewContent.executeCommand( "insert",
                                 makeAny(
                                     InsertCommandArgument(
                                         rData.is() ? rData : new EmptyInputStream,
@@ -1042,7 +1040,7 @@ bool Content::transferContent( const Content& rSourceContent,
     }
 
     Any aRet = pBroker->execute( aCommand, 0, m_xImpl->getEnvironment() );
-    if ( pResultURL != NULL )
+    if ( pResultURL != nullptr )
         aRet >>= *pResultURL;
     return true;
 }
@@ -1096,7 +1094,28 @@ bool Content::isDocument()
 
 SAL_WNOUNREACHABLE_CODE_POP
 
+void Content::lock()
+    throw( CommandAbortedException, RuntimeException, Exception )
+{
+    Command aCommand;
+    aCommand.Name     = "lock";
+    aCommand.Handle   = -1; // n/a
 
+    m_xImpl->executeCommand( aCommand );
+
+}
+
+void Content::unlock()
+    throw( CommandAbortedException, RuntimeException, Exception )
+{
+
+    Command aCommand;
+    aCommand.Name     = "unlock";
+    aCommand.Handle   = -1; // n/a
+
+    m_xImpl->executeCommand( aCommand );
+
+}
 
 
 // Content_Impl Implementation.
@@ -1130,7 +1149,7 @@ void Content_Impl::reinit( const Reference< XContent >& xContent )
 {
     osl::MutexGuard aGuard( m_aMutex );
 
-    m_xCommandProcessor = 0;
+    m_xCommandProcessor = nullptr;
 
     // #92581# - Don't reset m_aURL!!!
 
@@ -1162,7 +1181,7 @@ void Content_Impl::reinit( const Reference< XContent >& xContent )
         // content object again if demanded ( --> Content_Impl::getContent() )
         getURL();
 
-        m_xContent = 0;
+        m_xContent = nullptr;
     }
 }
 
@@ -1195,8 +1214,8 @@ void Content_Impl::disposing( const EventObject& Source )
         xContent = m_xContent;
 
         m_aURL.clear();
-        m_xCommandProcessor = 0;
-        m_xContent = 0;
+        m_xCommandProcessor = nullptr;
+        m_xContent = nullptr;
     }
 
     if ( xContent.is() )
@@ -1277,8 +1296,7 @@ Reference< XCommandProcessor > Content_Impl::getCommandProcessor()
         osl::MutexGuard aGuard( m_aMutex );
 
         if ( !m_xCommandProcessor.is() )
-            m_xCommandProcessor
-                = Reference< XCommandProcessor >( getContent(), UNO_QUERY );
+            m_xCommandProcessor.set( getContent(), UNO_QUERY );
     }
 
     return m_xCommandProcessor;

@@ -55,7 +55,7 @@ namespace {
 //----- CallbackCaller --------------------------------------------------------
 
 typedef ::cppu::WeakComponentImplHelper <
-    ::com::sun::star::drawing::framework::XConfigurationChangeListener
+    css::drawing::framework::XConfigurationChangeListener
     > CallbackCallerInterfaceBase;
 
 /** A CallbackCaller registers as listener at an XConfigurationController
@@ -94,13 +94,13 @@ public:
         const ::sd::framework::FrameworkHelper::Callback& rCallback);
     virtual ~CallbackCaller();
 
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
     // XEventListener
     virtual void SAL_CALL disposing (const lang::EventObject& rEvent)
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
     // XConfigurationChangeListener
     virtual void SAL_CALL notifyConfigurationChange (const ConfigurationChangeEvent& rEvent)
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 
 private:
     OUString msEventType;
@@ -112,7 +112,7 @@ private:
 //----- LifetimeController ----------------------------------------------------
 
 typedef ::cppu::WeakComponentImplHelper <
-    ::com::sun::star::lang::XEventListener
+    css::lang::XEventListener
     > LifetimeControllerInterfaceBase;
 
 /** This class helps controlling the lifetime of the
@@ -129,17 +129,17 @@ public:
     explicit LifetimeController (::sd::ViewShellBase& rBase);
     virtual ~LifetimeController();
 
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
     /** XEventListener.  This method is called when the frame::XController
         is being destroyed.
     */
     virtual void SAL_CALL disposing (const lang::EventObject& rEvent)
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 
     /** This method is called when the ViewShellBase is being destroyed.
     */
-    virtual void Notify (SfxBroadcaster& rBroadcaster, const SfxHint& rHint) SAL_OVERRIDE;
+    virtual void Notify (SfxBroadcaster& rBroadcaster, const SfxHint& rHint) override;
 
 private:
     ::sd::ViewShellBase& mrBase;
@@ -168,7 +168,7 @@ namespace {
     class FrameworkHelperResourceIdFilter
     {
     public:
-        FrameworkHelperResourceIdFilter (
+        explicit FrameworkHelperResourceIdFilter (
             const css::uno::Reference<css::drawing::framework::XResourceId>& rxResourceId);
         bool operator() (const css::drawing::framework::ConfigurationChangeEvent& rEvent)
         { return mxResourceId.is() && rEvent.ResourceId.is()
@@ -264,7 +264,7 @@ namespace
         {
             DBG_UNHANDLED_EXCEPTION();
         }
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -287,7 +287,7 @@ public:
 
 namespace {
     typedef ::cppu::WeakComponentImplHelper <
-        ::com::sun::star::lang::XEventListener
+        css::lang::XEventListener
         > FrameworkHelperDisposeListenerInterfaceBase;
 }
 
@@ -296,13 +296,13 @@ class FrameworkHelper::DisposeListener
       public FrameworkHelperDisposeListenerInterfaceBase
 {
 public:
-    DisposeListener (const ::std::shared_ptr<FrameworkHelper>& rpHelper);
+    explicit DisposeListener (const ::std::shared_ptr<FrameworkHelper>& rpHelper);
     virtual ~DisposeListener();
 
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
     virtual void SAL_CALL disposing (const lang::EventObject& rEventObject)
-        throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(RuntimeException, std::exception) override;
 
 private:
     ::std::shared_ptr<FrameworkHelper> mpHelper;
@@ -398,7 +398,7 @@ void FrameworkHelper::Dispose()
 {
     if (mxDisposeListener.is())
         mxDisposeListener->dispose();
-    mxConfigurationController = NULL;
+    mxConfigurationController = nullptr;
 }
 
 bool FrameworkHelper::IsValid()
@@ -425,7 +425,7 @@ Reference<XView> FrameworkHelper::GetView (const Reference<XResourceId>& rxPaneO
     Reference<XView> xView;
 
     if ( ! rxPaneOrViewId.is() || ! mxConfigurationController.is())
-        return NULL;
+        return nullptr;
 
     try
     {
@@ -471,11 +471,11 @@ Reference<XResourceId> FrameworkHelper::RequestView (
     catch (lang::DisposedException&)
     {
         Dispose();
-        xViewId = NULL;
+        xViewId = nullptr;
     }
     catch (RuntimeException&)
     {
-        xViewId = NULL;
+        xViewId = nullptr;
     }
 
     return xViewId;
@@ -522,31 +522,26 @@ void FrameworkHelper::HandleModeChangeSlot (
     sal_uLong nSlotId,
     SfxRequest& rRequest)
 {
-    bool bIsActive = true;
-
     if ( ! mxConfigurationController.is())
         return;
 
-    switch (nSlotId)
+    // Parameters are allowed for NotesMasterPage and SlideMasterPage
+    // for these command, transfor xxxxMasterPage with param = false
+    // to ActivatexxxxxMode
+    if (nSlotId == SID_NOTES_MASTER_MODE || nSlotId == SID_SLIDE_MASTER_MODE)
     {
-        case SID_DRAWINGMODE:
-        case SID_NOTESMODE:
-        case SID_HANDOUTMODE:
-        case SID_DIAMODE:
-        case SID_OUTLINEMODE:
+        const SfxItemSet* pRequestArguments = rRequest.GetArgs();
+        if (pRequestArguments)
         {
-            const SfxItemSet* pRequestArguments = rRequest.GetArgs();
-            if (pRequestArguments)
+            const SfxBoolItem* pIsActive = rRequest.GetArg<SfxBoolItem>((sal_uInt16)nSlotId);
+            if (!pIsActive->GetValue ())
             {
-                SFX_REQUEST_ARG (rRequest,
-                    pIsActive,
-                    SfxBoolItem,
-                    (sal_uInt16)nSlotId,
-                    false);
-                bIsActive = pIsActive->GetValue ();
+                if (nSlotId == SID_NOTES_MASTER_MODE)
+                    nSlotId = SID_NOTES_MODE;
+                else
+                    nSlotId = SID_NORMAL_MULTI_PANE_GUI;
             }
         }
-        break;
     }
 
     try
@@ -559,59 +554,67 @@ void FrameworkHelper::HandleModeChangeSlot (
         Reference<XView> xView (GetView(xPaneId));
         ::std::shared_ptr<ViewShell> pCenterViewShell (GetViewShell(xView));
 
+        // Compute requested view
         OUString sRequestedView;
-        if (bIsActive)
+        switch (nSlotId)
         {
-            switch (nSlotId)
-            {
-                case SID_NORMAL_MULTI_PANE_GUI:
-                case SID_DRAWINGMODE:
-                    sRequestedView = FrameworkHelper::msImpressViewURL;
-                    break;
-
-                case SID_NOTESMODE:
-                    sRequestedView = FrameworkHelper::msNotesViewURL;
+            // draw
+            case SID_DRAWINGMODE:
+            // impress
+            case SID_NORMAL_MULTI_PANE_GUI:
+            case SID_SLIDE_MASTER_MODE:
+                sRequestedView = FrameworkHelper::msImpressViewURL;
                 break;
 
-                case SID_HANDOUTMODE:
-                    sRequestedView = FrameworkHelper::msHandoutViewURL;
-                    break;
+            case SID_NOTES_MODE:
+            case SID_NOTES_MASTER_MODE:
+                sRequestedView = FrameworkHelper::msNotesViewURL;
+            break;
 
-                case SID_SLIDE_SORTER_MULTI_PANE_GUI:
-                case SID_DIAMODE:
-                    sRequestedView = FrameworkHelper::msSlideSorterURL;
-                    break;
+            case SID_HANDOUT_MASTER_MODE:
+                sRequestedView = FrameworkHelper::msHandoutViewURL;
+                break;
 
-                case SID_OUTLINEMODE:
-                    sRequestedView = FrameworkHelper::msOutlineViewURL;
-                    break;
-            }
+            case SID_SLIDE_SORTER_MULTI_PANE_GUI:
+            case SID_SLIDE_SORTER_MODE:
+                sRequestedView = FrameworkHelper::msSlideSorterURL;
+                break;
+
+            case SID_OUTLINE_MODE:
+                sRequestedView = FrameworkHelper::msOutlineViewURL;
+                break;
         }
 
-        if (xView.is()
-            && xView->getResourceId()->getResourceURL().equals(sRequestedView))
-        {
-            // We do not have to switch the view shell but maybe the edit mode
-            // has changed.
-            DrawViewShell* pDrawViewShell
-                = dynamic_cast<DrawViewShell*>(pCenterViewShell.get());
-            if (pDrawViewShell != NULL)
-            {
-                pCenterViewShell->Broadcast (
-                    ViewShellHint(ViewShellHint::HINT_CHANGE_EDIT_MODE_START));
+        // Compute requested mode
+        EditMode eEMode = EM_PAGE;
+        if (nSlotId == SID_SLIDE_MASTER_MODE
+            || nSlotId == SID_NOTES_MASTER_MODE
+            || nSlotId == SID_HANDOUT_MASTER_MODE)
+            eEMode = EM_MASTERPAGE;
+        // Ensure we have the expected view shell
+        if (!(xView.is() && xView->getResourceId()->getResourceURL().equals(sRequestedView)))
 
-                pDrawViewShell->ChangeEditMode (
-                    EM_PAGE, pDrawViewShell->IsLayerModeActive());
-
-                pCenterViewShell->Broadcast (
-                    ViewShellHint(ViewShellHint::HINT_CHANGE_EDIT_MODE_END));
-            }
-        }
-        else
         {
             mxConfigurationController->requestResourceActivation(
                 CreateResourceId(sRequestedView, msCenterPaneURL),
                 ResourceActivationMode_REPLACE);
+        }
+
+        // Ensure we have the expected edit mode
+        // The check is only for DrawViewShell as OutlineViewShell
+        // and SlideSorterViewShell have no master mode
+        DrawViewShell* pDrawViewShell
+            = dynamic_cast<DrawViewShell*>(pCenterViewShell.get());
+        if (pDrawViewShell != nullptr)
+        {
+            pCenterViewShell->Broadcast (
+                ViewShellHint(ViewShellHint::HINT_CHANGE_EDIT_MODE_START));
+
+            pDrawViewShell->ChangeEditMode (
+                eEMode, pDrawViewShell->IsLayerModeActive());
+
+            pCenterViewShell->Broadcast (
+                ViewShellHint(ViewShellHint::HINT_CHANGE_EDIT_MODE_END));
         }
     }
     catch (RuntimeException&)
@@ -654,7 +657,7 @@ void FrameworkHelper::RunOnResourceActivation(
 class FlagUpdater
 {
 public:
-    FlagUpdater (bool& rFlag) : mrFlag(rFlag) {}
+    explicit FlagUpdater (bool& rFlag) : mrFlag(rFlag) {}
     void operator() (bool) const {mrFlag = true;}
 private:
     bool& mrFlag;
@@ -706,7 +709,7 @@ void FrameworkHelper::RunOnEvent(
 void FrameworkHelper::disposing (const lang::EventObject& rEventObject)
 {
     if (rEventObject.Source == mxConfigurationController)
-        mxConfigurationController = NULL;
+        mxConfigurationController = nullptr;
 }
 
 void FrameworkHelper::UpdateConfiguration()
@@ -801,7 +804,7 @@ void SAL_CALL FrameworkHelper::DisposeListener::disposing()
 void SAL_CALL FrameworkHelper::DisposeListener::disposing (const lang::EventObject& rEventObject)
     throw(RuntimeException, std::exception)
 {
-    if (mpHelper.get() != NULL)
+    if (mpHelper.get() != nullptr)
         mpHelper->disposing(rEventObject);
 }
 
@@ -846,7 +849,7 @@ CallbackCaller::CallbackCaller (
                 // called.
                 // Call the callback now and tell him that the event it is
                 // waiting for was not sent.
-                mxConfigurationController = NULL;
+                mxConfigurationController = nullptr;
                 maCallback(false);
             }
         }
@@ -868,7 +871,7 @@ void CallbackCaller::disposing()
         if (mxConfigurationController.is())
         {
             Reference<XConfigurationController> xCC (mxConfigurationController);
-            mxConfigurationController = NULL;
+            mxConfigurationController = nullptr;
             xCC->removeConfigurationChangeListener(this);
         }
     }
@@ -883,7 +886,7 @@ void SAL_CALL CallbackCaller::disposing (const lang::EventObject& rEvent)
 {
     if (rEvent.Source == mxConfigurationController)
     {
-        mxConfigurationController = NULL;
+        mxConfigurationController = nullptr;
         maCallback(false);
     }
 }
@@ -900,7 +903,7 @@ void SAL_CALL CallbackCaller::notifyConfigurationChange (
             // Reset the reference to the configuration controller so that
             // dispose() will not try to remove the listener a second time.
             Reference<XConfigurationController> xCC (mxConfigurationController);
-            mxConfigurationController = NULL;
+            mxConfigurationController = nullptr;
 
             // Removing this object from the controller may very likely lead
             // to its destruction, so no calls after that.
@@ -955,7 +958,7 @@ void LifetimeController::Notify (SfxBroadcaster& rBroadcaster, const SfxHint& rH
 {
     (void)rBroadcaster;
     const SfxSimpleHint* pSimpleHint = dynamic_cast<const SfxSimpleHint*>(&rHint);
-    if (pSimpleHint != NULL && pSimpleHint->GetId() == SFX_HINT_DYING)
+    if (pSimpleHint != nullptr && pSimpleHint->GetId() == SFX_HINT_DYING)
     {
         mbListeningToViewShellBase = false;
         Update();

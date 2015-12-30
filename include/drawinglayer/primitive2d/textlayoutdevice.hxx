@@ -22,7 +22,6 @@
 
 #include <drawinglayer/drawinglayerdllapi.h>
 
-#include <tools/poly.hxx>
 #include <basegfx/range/b2drange.hxx>
 #include <vector>
 #include <com/sun/star/lang/Locale.hpp>
@@ -36,6 +35,7 @@ namespace rtl {
 };
 class OutputDevice;
 class GDIMetaFile;
+class Rectangle;
 enum class DrawTextFlags;
 namespace drawinglayer { namespace attribute {
     class FontAttribute;
@@ -70,7 +70,7 @@ namespace drawinglayer
                 const attribute::FontAttribute& rFontAttribute,
                 double fFontScaleX,
                 double fFontScaleY,
-                const ::com::sun::star::lang::Locale & rLocale);
+                const css::lang::Locale & rLocale);
 
             double getTextHeight() const;
             double getOverlineHeight() const;
@@ -130,7 +130,7 @@ namespace drawinglayer
             double fFontScaleX,
             double fFontScaleY,
             double fFontRotation,
-            const ::com::sun::star::lang::Locale & rLocale);
+            const css::lang::Locale & rLocale);
 
         /** Generate FontAttribute DataSet derived from the given VCL-Font.
             The FontScaling with fFontScaleY, fFontScaleX relationship (see

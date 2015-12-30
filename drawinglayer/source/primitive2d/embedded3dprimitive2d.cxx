@@ -43,7 +43,7 @@ namespace drawinglayer
             osl::MutexGuard aGuard( m_aMutex );
 
             // create on demand
-            if(!mbShadow3DChecked && getChildren3D().hasElements())
+            if(!mbShadow3DChecked && !getChildren3D().empty())
             {
                 // create shadow extraction processor
                 processor3d::Shadow3DExtractingProcessor aShadowProcessor(
@@ -62,10 +62,10 @@ namespace drawinglayer
             }
 
             // return if there are shadow primitives
-            return maShadowPrimitives.hasElements();
+            return !maShadowPrimitives.empty();
         }
 
-        Primitive2DSequence Embedded3DPrimitive2D::create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const
+        Primitive2DContainer Embedded3DPrimitive2D::create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const
         {
             // use info to create a yellow 2d rectangle, similar to empty 3d scenes and/or groups
             const basegfx::B2DRange aLocal2DRange(getB2DRange(rViewInformation));
@@ -73,11 +73,11 @@ namespace drawinglayer
             const basegfx::BColor aYellow(1.0, 1.0, 0.0);
             const Primitive2DReference xRef(new PolygonHairlinePrimitive2D(aOutline, aYellow));
 
-            return Primitive2DSequence(&xRef, 1L);
+            return Primitive2DContainer { xRef };
         }
 
         Embedded3DPrimitive2D::Embedded3DPrimitive2D(
-            const primitive3d::Primitive3DSequence& rxChildren3D,
+            const primitive3d::Primitive3DContainer& rxChildren3D,
             const basegfx::B2DHomMatrix& rObjectTransformation,
             const geometry::ViewInformation3D& rViewInformation3D,
             const basegfx::B3DVector& rLightNormal,
@@ -103,7 +103,7 @@ namespace drawinglayer
             {
                 const Embedded3DPrimitive2D& rCompare = static_cast< const Embedded3DPrimitive2D& >(rPrimitive);
 
-                return (primitive3d::arePrimitive3DSequencesEqual(getChildren3D(), rCompare.getChildren3D())
+                return (getChildren3D() == rCompare.getChildren3D()
                     && getObjectTransformation() == rCompare.getObjectTransformation()
                     && getViewInformation3D() == rCompare.getViewInformation3D()
                     && getLightNormal() == rCompare.getLightNormal()
@@ -119,7 +119,7 @@ namespace drawinglayer
             if(maB2DRange.isEmpty())
             {
                 // use the 3d transformation stack to create a projection of the 3D range
-                basegfx::B3DRange a3DRange(primitive3d::getB3DRangeFromPrimitive3DSequence(getChildren3D(), getViewInformation3D()));
+                basegfx::B3DRange a3DRange(getChildren3D().getB3DRange(getViewInformation3D()));
                 a3DRange.transform(getViewInformation3D().getObjectToView());
 
                 // create 2d range from projected 3d and transform with scene's object transformation
@@ -132,7 +132,7 @@ namespace drawinglayer
                 // taken into account
                 if(impGetShadow3D(rViewInformation))
                 {
-                    const basegfx::B2DRange aShadow2DRange(getB2DRangeFromPrimitive2DSequence(maShadowPrimitives, rViewInformation));
+                    const basegfx::B2DRange aShadow2DRange(maShadowPrimitives.getB2DRange(rViewInformation));
 
                     if(!aShadow2DRange.isEmpty())
                     {

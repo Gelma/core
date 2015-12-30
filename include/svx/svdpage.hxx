@@ -28,7 +28,6 @@
 #include <tools/contnr.hxx>
 #include <cppuhelper/weakref.hxx>
 #include <svx/svdtypes.hxx>
-#include <svx/svdlayer.hxx>
 #include <svx/sdrpageuser.hxx>
 #include <svx/sdr/contact/viewobjectcontactredirector.hxx>
 #include <svx/sdrmasterpagedescriptor.hxx>
@@ -76,8 +75,8 @@ public:
 
 class SVX_DLLPUBLIC SdrObjList
 {
-    SdrObjList(const SdrObjList& rSrcList) SAL_DELETED_FUNCTION;
-    SdrObjList &operator=(const SdrObjList& rSrcList) SAL_DELETED_FUNCTION;
+    SdrObjList(const SdrObjList& rSrcList) = delete;
+    SdrObjList &operator=(const SdrObjList& rSrcList) = delete;
 
 private:
     ::std::vector<SdrObject*> maList;
@@ -104,8 +103,7 @@ private:
     /// simple ActionChildInserted forwarder to have it on a central place
     static void impChildInserted(SdrObject& rChild);
 public:
-    TYPEINFO();
-    SdrObjList(SdrModel* pNewModel, SdrPage* pNewPage, SdrObjList* pNewUpList=NULL);
+    SdrObjList(SdrModel* pNewModel, SdrPage* pNewPage, SdrObjList* pNewUpList=nullptr);
     virtual ~SdrObjList();
 
     virtual SdrObjList* Clone() const;
@@ -127,9 +125,9 @@ public:
     void           RecalcObjOrdNums();
     bool           IsObjOrdNumsDirty() const        { return bObjOrdNumsDirty; }
     virtual void   NbcInsertObject(SdrObject* pObj, size_t nPos=SAL_MAX_SIZE,
-                                   const SdrInsertReason* pReason=NULL);
+                                   const SdrInsertReason* pReason=nullptr);
     virtual void   InsertObject(SdrObject* pObj, size_t nPos=SAL_MAX_SIZE,
-                                const SdrInsertReason* pReason=NULL);
+                                const SdrInsertReason* pReason=nullptr);
     /// remove from list without delete
     virtual SdrObject* NbcRemoveObject(size_t nObjNum);
     virtual SdrObject* RemoveObject(size_t nObjNum);
@@ -241,7 +239,7 @@ public:
     void SetNavigationOrder (const css::uno::Reference<
                              css::container::XIndexAccess>& rxOrder);
 
-    void dumpAsXml(struct _xmlTextWriter* pWriter) const;
+    virtual void dumpAsXml(struct _xmlTextWriter* pWriter) const;
 
 private:
     class WeakSdrObjectContainerType;
@@ -313,8 +311,8 @@ public:
 class SVX_DLLPUBLIC SdrPageGridFrameList {
     std::vector<SdrPageGridFrame*> aList;
 private:
-    SdrPageGridFrameList(const SdrPageGridFrameList& rSrcList) SAL_DELETED_FUNCTION;
-    void           operator=(const SdrPageGridFrameList& rSrcList) SAL_DELETED_FUNCTION;
+    SdrPageGridFrameList(const SdrPageGridFrameList& rSrcList) = delete;
+    void           operator=(const SdrPageGridFrameList& rSrcList) = delete;
 protected:
     SdrPageGridFrame* GetObject(sal_uInt16 i) const { return aList[i]; }
 public:
@@ -342,7 +340,7 @@ private:
     void ImpRemoveStyleSheet();
     void ImpAddStyleSheet(SfxStyleSheet& rNewStyleSheet);
 
-    SdrPageProperties& operator=(const SdrPageProperties& rCandidate) SAL_DELETED_FUNCTION;
+    SdrPageProperties& operator=(const SdrPageProperties& rCandidate) = delete;
 
 public:
     // construct/destruct
@@ -350,9 +348,9 @@ public:
     virtual ~SdrPageProperties();
 
     // Notify(...) from baseclass SfxListener
-    virtual void Notify(SfxBroadcaster& rBC, const SfxHint& rHint) SAL_OVERRIDE;
+    virtual void Notify(SfxBroadcaster& rBC, const SfxHint& rHint) override;
 
-    virtual bool isUsedByModel() const SAL_OVERRIDE;
+    virtual bool isUsedByModel() const override;
 
     // data read/write
     const SfxItemSet& GetItemSet() const { return *mpProperties;}
@@ -377,40 +375,37 @@ public:
 */
 class SVX_DLLPUBLIC SdrPage : public SdrObjList, public tools::WeakBase< SdrPage >
 {
-    SdrPage& operator=(const SdrPage& rSrcPage) SAL_DELETED_FUNCTION;
+    // #i9076#
+    friend class SdrModel;
+    friend class SvxUnoDrawPagesAccess;
+
+    // this class uses its own UNO wrapper
+    // and thus has to set mxUnoPage (it also relies on mxUnoPage not being WeakRef)
+    friend class reportdesign::OSection;
+
+    SdrPage& operator=(const SdrPage& rSrcPage) = delete;
 
     // start PageUser section
 private:
     // #111111# PageUser section
     sdr::PageUserVector                                             maPageUsers;
 
+    std::unique_ptr<sdr::contact::ViewContact> mpViewContact;
+
 public:
     void AddPageUser(sdr::PageUser& rNewUser);
     void RemovePageUser(sdr::PageUser& rOldUser);
 
-
-    // end PageUser section
-
-
-    // #110094# DrawContact section
-private:
-    sdr::contact::ViewContact*                                      mpViewContact;
 protected:
     sdr::contact::ViewContact* CreateObjectSpecificViewContact();
 public:
-    sdr::contact::ViewContact& GetViewContact() const;
+    const sdr::contact::ViewContact& GetViewContact() const;
+    sdr::contact::ViewContact& GetViewContact();
 
     // #110094# DrawContact support: Methods for handling Page changes
-    void ActionChanged() const;
+    void ActionChanged();
 
-    // #i9076#
-    friend class SdrModel;
-    friend class SvxUnoDrawPagesAccess;
-
-// this class uses its own UNO wrapper
-// and thus has to set mxUnoPage (it also relies on mxUnoPage not being WeakRef)
-friend class reportdesign::OSection;
-
+private:
     sal_Int32 nWdt;     // Seitengroesse
     sal_Int32 nHgt;     // Seitengroesse
     sal_Int32 nBordLft; // Seitenrand links
@@ -418,15 +413,13 @@ friend class reportdesign::OSection;
     sal_Int32 nBordRgt; // Seitenrand rechts
     sal_Int32 nBordLwr; // Seitenrand unten
 
-protected:
-    SdrLayerAdmin*      pLayerAdmin;
-private:
-    SdrPageProperties*  mpSdrPageProperties;
+    std::unique_ptr<SdrLayerAdmin> mpLayerAdmin;
+    std::unique_ptr<SdrPageProperties> mpSdrPageProperties;
     css::uno::Reference< css::uno::XInterface > mxUnoPage;
 
 public:
-    SdrPageProperties& getSdrPageProperties() { return *mpSdrPageProperties; }
-    const SdrPageProperties& getSdrPageProperties() const { return *mpSdrPageProperties; }
+    SdrPageProperties& getSdrPageProperties();
+    const SdrPageProperties& getSdrPageProperties() const;
     const SdrPageProperties* getCorrectSdrPageProperties() const;
 
 protected:
@@ -454,13 +447,12 @@ protected:
     // classes that needs access to the page objects must be deferred to lateInit. And it must
     // call lateInit() of its parent class.
     SdrPage(const SdrPage& rSrcPage);
-    void lateInit(const SdrPage& rSrcPage, SdrModel* pNewModel = 0);
+    void lateInit(const SdrPage& rSrcPage, SdrModel* pNewModel = nullptr);
 
 public:
-    TYPEINFO_OVERRIDE();
     explicit SdrPage(SdrModel& rNewModel, bool bMasterPage=false);
     virtual ~SdrPage();
-    virtual SdrPage* Clone() const SAL_OVERRIDE;
+    virtual SdrPage* Clone() const override;
     virtual SdrPage* Clone(SdrModel* pNewModel) const;
     bool             IsMasterPage() const       { return mbMaster; }
     void             SetInserted(bool bNew = true);
@@ -492,10 +484,10 @@ public:
     sal_Int32 GetRgtBorder() const;
     sal_Int32 GetLwrBorder() const;
 
-    virtual void SetModel(SdrModel* pNewModel) SAL_OVERRIDE;
+    virtual void SetModel(SdrModel* pNewModel) override;
 
     // New MasterPage interface
-    bool TRG_HasMasterPage() const { return (0L != mpMasterPageDescriptor); }
+    bool TRG_HasMasterPage() const { return (nullptr != mpMasterPageDescriptor); }
     void TRG_SetMasterPage(SdrPage& rNew);
     void TRG_ClearMasterPage();
     SdrPage& TRG_GetMasterPage() const;
@@ -508,8 +500,8 @@ protected:
 public:
 
     /// changing the layers does not set the modified-flag!
-    const         SdrLayerAdmin& GetLayerAdmin() const                  { return *pLayerAdmin; }
-                  SdrLayerAdmin& GetLayerAdmin()                        { return *pLayerAdmin; }
+    const SdrLayerAdmin& GetLayerAdmin() const;
+    SdrLayerAdmin& GetLayerAdmin();
 
     virtual OUString GetLayoutName() const;
 
@@ -557,9 +549,9 @@ public:
 
     // all default implementations just call the same methods at the original. To do something
     // different, override the method and at least do what the method does.
-    virtual drawinglayer::primitive2d::Primitive2DSequence createRedirectedPrimitive2DSequence(
+    virtual drawinglayer::primitive2d::Primitive2DContainer createRedirectedPrimitive2DSequence(
         const sdr::contact::ViewObjectContact& rOriginal,
-        const sdr::contact::DisplayInfo& rDisplayInfo) SAL_OVERRIDE;
+        const sdr::contact::DisplayInfo& rDisplayInfo) override;
 };
 
 

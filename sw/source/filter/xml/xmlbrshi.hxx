@@ -35,32 +35,28 @@ namespace com { namespace sun { namespace star {
 class SwXMLBrushItemImportContext : public SvXMLImportContext
 {
 private:
-    ::com::sun::star::uno::Reference < ::com::sun::star::io::XOutputStream > xBase64Stream;
+    css::uno::Reference < css::io::XOutputStream > xBase64Stream;
     SvxBrushItem                *pItem;
 
     void ProcessAttrs(
-            const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList,
+               const css::uno::Reference<css::xml::sax::XAttributeList > & xAttrList,
                const SvXMLUnitConverter& rUnitConv );
 
 public:
-    TYPEINFO_OVERRIDE();
 
     SwXMLBrushItemImportContext(
             SvXMLImport& rImport,
             sal_uInt16 nPrfx,
             const OUString& rLName,
-            const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList,
+            const css::uno::Reference<css::xml::sax::XAttributeList > & xAttrList,
             const SvXMLUnitConverter& rUnitConv,
-               const SvxBrushItem& rItem    );
+            const SvxBrushItem& rItem    );
 
     SwXMLBrushItemImportContext(
             SvXMLImport& rImport,
             sal_uInt16 nPrfx,
             const OUString& rLName,
-            const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList,
+            const css::uno::Reference<css::xml::sax::XAttributeList > & xAttrList,
             const SvXMLUnitConverter& rUnitConv,
             sal_uInt16 nWhich   );
 
@@ -68,10 +64,9 @@ public:
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                 const OUString& rLocalName,
-                 const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+                 const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
     const SvxBrushItem& GetItem() const { return *pItem; }
 };

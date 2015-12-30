@@ -25,7 +25,7 @@
 #include <vcl/cursor.hxx>
 #include <vcl/idle.hxx>
 
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
 
 class TextNode;
 class TextView;
@@ -105,9 +105,9 @@ private:
     sal_uInt16          mnStartPortion;
     sal_uInt16          mnEndPortion;
 
-    short           mnStartX;
+    short               mnStartX;
 
-    bool            mbInvalid;  // fuer geschickte Formatierung/Ausgabe
+    bool                mbInvalid;  // fuer geschickte Formatierung/Ausgabe
 
 public:
                     TextLine()
@@ -131,12 +131,12 @@ public:
     sal_Int32&      GetEnd()                        { return mnEnd; }
 
     void            SetStartPortion( sal_uInt16 n )     { mnStartPortion = n; }
-    sal_uInt16          GetStartPortion() const         { return mnStartPortion; }
-    sal_uInt16&         GetStartPortion()               { return mnStartPortion; }
+    sal_uInt16      GetStartPortion() const         { return mnStartPortion; }
+    sal_uInt16&     GetStartPortion()               { return mnStartPortion; }
 
     void            SetEndPortion( sal_uInt16 n )       { mnEndPortion = n; }
-    sal_uInt16          GetEndPortion() const           { return mnEndPortion; }
-    sal_uInt16&         GetEndPortion()                 { return mnEndPortion; }
+    sal_uInt16      GetEndPortion() const           { return mnEndPortion; }
+    sal_uInt16&     GetEndPortion()                 { return mnEndPortion; }
 
     sal_Int32       GetLen() const                  { return mnEnd - mnStart; }
 
@@ -170,15 +170,15 @@ class TEParaPortion
 private:
     TextNode*               mpNode;
 
-    boost::ptr_vector<TextLine> maLines;
+    std::vector<TextLine>   maLines;
     TETextPortionList       maTextPortions;
     std::vector<TEWritingDirectionInfo> maWritingDirectionInfos;
 
-    sal_Int32           mnInvalidPosStart;
-    sal_Int32           mnInvalidDiff;
+    sal_Int32               mnInvalidPosStart;
+    sal_Int32               mnInvalidDiff;
 
-    bool                mbInvalid;
-    bool                mbSimple;   // only type linearly
+    bool                    mbInvalid;
+    bool                    mbSimple;   // only type linearly
 
                         TEParaPortion( const TEParaPortion& ) {;}
 
@@ -198,7 +198,7 @@ public:
     sal_Int32           GetInvalidDiff() const      { return mnInvalidDiff; }
 
     TextNode*           GetNode() const             { return mpNode; }
-    boost::ptr_vector<TextLine>& GetLines()         { return maLines; }
+    std::vector<TextLine>& GetLines()               { return maLines; }
     TETextPortionList&  GetTextPortions()           { return maTextPortions; }
     std::vector<TEWritingDirectionInfo>& GetWritingDirectionInfos() { return maWritingDirectionInfos; }
 
@@ -229,17 +229,17 @@ private:
 public:
                     TextSelFunctionSet( TextView* pView );
 
-    virtual void    BeginDrag() SAL_OVERRIDE;
+    virtual void    BeginDrag() override;
 
-    virtual void    CreateAnchor() SAL_OVERRIDE;
+    virtual void    CreateAnchor() override;
 
-    virtual bool    SetCursorAtPoint( const Point& rPointPixel, bool bDontSelectAtCursor = false ) SAL_OVERRIDE;
+    virtual bool    SetCursorAtPoint( const Point& rPointPixel, bool bDontSelectAtCursor = false ) override;
 
-    virtual bool    IsSelectionAtPoint( const Point& rPointPixel ) SAL_OVERRIDE;
-    virtual void    DeselectAll() SAL_OVERRIDE;
+    virtual bool    IsSelectionAtPoint( const Point& rPointPixel ) override;
+    virtual void    DeselectAll() override;
 
-    virtual void    DeselectAtPoint( const Point& ) SAL_OVERRIDE;
-    virtual void    DestroyAnchor() SAL_OVERRIDE;
+    virtual void    DeselectAtPoint( const Point& ) override;
+    virtual void    DestroyAnchor() override;
 };
 
 class IdleFormatter : public Idle

@@ -192,10 +192,10 @@ STDMETHODIMP ProviderOleWrapper_Impl::LockServer(int /*fLock*/)
 OneInstanceOleWrapper_Impl::OneInstanceOleWrapper_Impl(  const Reference<XMultiServiceFactory>& smgr,
                                                          const Reference<XInterface>& xInst,
                                                          GUID* pGuid )
-    : m_xInst(xInst)
-    , m_refCount(0)
-    , m_smgr(smgr)
+    : m_refCount(0)
+    , m_xInst(xInst)
     , m_factoryHandle(0)
+    , m_smgr(smgr)
 {
     m_guid = *pGuid;
 
@@ -442,12 +442,14 @@ sal_Bool OleConverter_Impl2::supportsService(OUString const & ServiceName)
 css::uno::Sequence<OUString> OleConverter_Impl2::getSupportedServiceNames()
     throw (css::uno::RuntimeException, std::exception)
 {
-    return m_nUnoWrapperClass == INTERFACE_OLE_WRAPPER_IMPL
-        ? css::uno::Sequence<OUString>{
+    if (m_nUnoWrapperClass == INTERFACE_OLE_WRAPPER_IMPL)
+    {
+        return css::uno::Sequence<OUString>{
             "com.sun.star.bridge.OleBridgeSupplier2",
-            "com.sun.star.bridge.oleautomation.BridgeSupplier"}
-        : css::uno::Sequence<OUString>{
-            "com.sun.star.bridge.OleBridgeSupplierVar1"};
+            "com.sun.star.bridge.oleautomation.BridgeSupplier"};
+    }
+    return css::uno::Sequence<OUString>{
+        "com.sun.star.bridge.OleBridgeSupplierVar1"};
 }
 
 // XInitialize ------------------------------------------------------------------------------

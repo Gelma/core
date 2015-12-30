@@ -51,17 +51,13 @@ void BitmapTest::testConvert()
     {
         Bitmap::ScopedReadAccess pReadAccess(aBitmap);
         CPPUNIT_ASSERT_EQUAL(static_cast<sal_uInt16>(8), pReadAccess->GetBitCount());
-#if defined WNT
+#if defined MACOSX || defined IOS
+        //it would be nice to find and change the stride for quartz to be the same as everyone else
+        CPPUNIT_ASSERT_EQUAL(static_cast<sal_uLong>(10), pReadAccess->GetScanlineSize());
+#else
         if (!OpenGLHelper::isVCLOpenGLEnabled())
-        {
-            // GDI Scanlines padded to DWORD multiples, it seems
             CPPUNIT_ASSERT_EQUAL(static_cast<sal_uLong>(12), pReadAccess->GetScanlineSize());
-        }
-        else
 #endif
-        {
-            CPPUNIT_ASSERT_EQUAL(static_cast<sal_uLong>(10), pReadAccess->GetScanlineSize());
-        }
         CPPUNIT_ASSERT(pReadAccess->HasPalette());
         const BitmapColor& rColor = pReadAccess->GetPaletteColor(pReadAccess->GetPixelIndex(1, 1));
         CPPUNIT_ASSERT_EQUAL(sal_Int32(204), sal_Int32(rColor.GetRed()));
@@ -74,8 +70,8 @@ void BitmapTest::testConvert()
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(24), aBitmap.GetBitCount());
     {
         Bitmap::ScopedReadAccess pReadAccess(aBitmap);
-#if defined LINUX
-        // 24 bit Bitmap on SVP backend uses 32bit BGRX format
+#if defined LINUX || defined FREEBSD
+        // 24 bit Bitmap on SVP backend uses 32bit BGRA format
         CPPUNIT_ASSERT_EQUAL(static_cast<sal_uInt16>(32), pReadAccess->GetBitCount());
         CPPUNIT_ASSERT_EQUAL(sal_uLong(40), pReadAccess->GetScanlineSize());
 #else
@@ -121,7 +117,7 @@ void BitmapTest::testScale()
     CPPUNIT_ASSERT_EQUAL(static_cast<long>(10), aBitmap24Bit.GetSizePixel().Height());
 
     // Check symmetry of the bitmap
-    CPPUNIT_ASSERT(aBitmapSymmetryCheck.check(aBitmap24Bit));
+    CPPUNIT_ASSERT(BitmapSymmetryCheck::check(aBitmap24Bit));
 
     if (bExportBitmap)
     {
@@ -137,7 +133,7 @@ void BitmapTest::testScale()
 
     // After scaling the bitmap should still be symmetrical. This check guarantees that
     // scaling doesn't misalign the bitmap.
-    CPPUNIT_ASSERT(aBitmapSymmetryCheck.check(aBitmap24Bit));
+    CPPUNIT_ASSERT(BitmapSymmetryCheck::check(aBitmap24Bit));
 
     if (bExportBitmap)
     {
@@ -178,7 +174,7 @@ void BitmapTest::testCRC()
 {
     CRCHash aCRCs;
 
-    Bitmap aBitmap(Size(1023,759), 24, 0);
+    Bitmap aBitmap(Size(1023,759), 24, nullptr);
     aBitmap.Erase(COL_BLACK);
     checkAndInsert(aCRCs, aBitmap, "black bitmap");
     aBitmap.Invert();

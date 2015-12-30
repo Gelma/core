@@ -98,14 +98,14 @@ public:
     virtual void drawPolygon( sal_uInt32 nPoints, const SalPoint* pPtAry ) = 0;
 
     virtual void drawPolyPolygon( sal_uInt32 nPoly, const sal_uInt32* pPoints, PCONSTSALPOINT* pPtAry ) = 0;
-    virtual bool drawPolyPolygon( const ::basegfx::B2DPolyPolygon&, double fTransparency ) = 0;
+    virtual bool drawPolyPolygon( const basegfx::B2DPolyPolygon&, double fTransparency ) = 0;
 
     virtual bool drawPolyLine(
-                const ::basegfx::B2DPolygon&,
+                const basegfx::B2DPolygon&,
                 double fTransparency,
-                const ::basegfx::B2DVector& rLineWidths,
+                const basegfx::B2DVector& rLineWidths,
                 basegfx::B2DLineJoin,
-                com::sun::star::drawing::LineCap) = 0;
+                css::drawing::LineCap) = 0;
 
     virtual bool drawPolyLineBezier(
                 sal_uInt32 nPoints,
@@ -211,8 +211,6 @@ public:
                     sal_uInt8 nTransparency ) = 0;
 
     virtual bool drawGradient(const tools::PolyPolygon& rPolygon, const Gradient& rGradient) = 0;
-
-    virtual OpenGLContext *beginPaint() { return NULL; }
 };
 
 #endif

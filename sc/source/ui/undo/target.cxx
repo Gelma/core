@@ -19,10 +19,6 @@
 
 #include "target.hxx"
 
-// STATIC DATA -----------------------------------------------------------
-
-TYPEINIT1(ScTabViewTarget, SfxRepeatTarget);
-
 ScTabViewTarget::~ScTabViewTarget()
 {
 }

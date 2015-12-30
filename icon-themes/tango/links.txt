@@ -250,10 +250,8 @@ cmd/sc_nextpage.png cmd/sc_navigateforward.png
 res/sc06300.png cmd/sc_navigateforward.png
 cmd/lc_openfromwriter.png cmd/lc_open.png
 cmd/lc_openfromcalc.png cmd/lc_open.png
-cmd/lc_openremote.png cmd/lc_open.png
 cmd/sc_openfromwriter.png cmd/sc_open.png
 cmd/sc_openfromcalc.png cmd/sc_open.png
-cmd/sc_openremote.png cmd/sc_open.png
 sc/imglst/lc26048.png cmd/lc_autosum.png
 sc/imglst/sc26048.png cmd/sc_autosum.png
 cmd/lc_fontcolor.png cmd/lc_color.png
@@ -371,14 +369,14 @@ sc/res/sf02.png sw/imglst/sf04.png
 svx/res/symphony/spacing3.png cmd/sc_spacepara2.png
 cmd/sc_graphicdialog.png cmd/sc_insertgraphic.png
 
-cmd/lc_insertrowsbefore.png cmd/lc_insertrows.png
-cmd/sc_insertrowsbefore.png cmd/sc_insertrows.png
-cmd/lc_insertcolumnsbefore.png cmd/lc_insertcolumns.png
-cmd/sc_insertcolumnsbefore.png cmd/sc_insertcolumns.png
-cmd/lc_insertrowsafter.png cmd/lc_insertrows.png
-cmd/sc_insertrowsafter.png cmd/sc_insertrows.png
-cmd/lc_insertcolumnsafter.png cmd/lc_insertcolumns.png
-cmd/sc_insertcolumnsafter.png cmd/sc_insertcolumns.png
+#cmd/lc_insertrowsbefore.png cmd/lc_insertrows.png
+#cmd/sc_insertrowsbefore.png cmd/sc_insertrows.png
+#cmd/lc_insertcolumnsbefore.png cmd/lc_insertcolumns.png
+#cmd/sc_insertcolumnsbefore.png cmd/sc_insertcolumns.png
+#cmd/lc_insertrowsafter.png cmd/lc_insertrows.png
+#cmd/sc_insertrowsafter.png cmd/sc_insertrows.png
+#cmd/lc_insertcolumnsafter.png cmd/lc_insertcolumns.png
+#cmd/sc_insertcolumnsafter.png cmd/sc_insertcolumns.png
 
 # RTL
 cmd/ar/sc_undo.png cmd/fa/sc_undo.png
@@ -539,3 +537,7 @@ cmd/lc_charbackcolor.png cmd/lc_backcolor.png
 # Toggle graphics visibility in Writer
 cmd/sc_showgraphics.png cmd/sc_insertgraphic.png
 cmd/lc_showgraphics.png cmd/lc_insertgraphic.png
+
+# Modified state for the save button
+res/savemodified_small.png cmd/sc_saveas.png
+res/savemodified_large.png cmd/lc_saveas.png

@@ -31,23 +31,16 @@ namespace ftp {
 
     class DynamicResultSet : public ::ucbhelper::ResultSetImplHelper
     {
-        rtl::Reference< FTPContent > m_xContent;
-        com::sun::star::uno::Reference<
-            com::sun::star::ucb::XCommandEnvironment > m_xEnv;
         ResultSetFactory*                    m_pFactory;
 
     private:
-        virtual void initStatic() SAL_OVERRIDE;
-        virtual void initDynamic() SAL_OVERRIDE;
+        virtual void initStatic() override;
+        virtual void initDynamic() override;
 
     public:
         DynamicResultSet(
-            const com::sun::star::uno::Reference<
-                com::sun::star::uno::XComponentContext >& rxContext,
-            const rtl::Reference< FTPContent >& rxContent,
-            const com::sun::star::ucb::OpenCommandArgument2& rCommand,
-            const com::sun::star::uno::Reference<
-                com::sun::star::ucb::XCommandEnvironment >& rxEnv,
+            const css::uno::Reference< css::uno::XComponentContext >& rxContext,
+            const css::ucb::OpenCommandArgument2& rCommand,
             ResultSetFactory* pFactory );
 
         virtual ~DynamicResultSet();

@@ -59,10 +59,10 @@ private:
 public:
     ContentListBox_Impl(vcl::Window* pParent, WinBits nStyle);
     virtual ~ContentListBox_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void    RequestingChildren( SvTreeListEntry* pParent ) SAL_OVERRIDE;
-    virtual bool    Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual void    RequestingChildren( SvTreeListEntry* pParent ) override;
+    virtual bool    Notify( NotifyEvent& rNEvt ) override;
 
     inline void     SetOpenHdl( const Link<SvTreeListBox*,bool>& rLink ) { SetDoubleClickHdl( rLink ); }
     OUString        GetSelectEntry() const;
@@ -81,7 +81,7 @@ public:
     HelpTabPage_Impl(vcl::Window* pParent, SfxHelpIndexWindow_Impl* _pIdxWin,
         const OString& rID, const OUString& rUIXMLDescription);
     virtual ~HelpTabPage_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     virtual Control*    GetLastFocusControl() = 0;
 };
@@ -96,10 +96,10 @@ private:
 public:
     ContentTabPage_Impl(vcl::Window* pParent, SfxHelpIndexWindow_Impl* _pIdxWin);
     virtual ~ContentTabPage_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void        ActivatePage() SAL_OVERRIDE;
-    virtual Control*    GetLastFocusControl() SAL_OVERRIDE;
+    virtual void        ActivatePage() override;
+    virtual Control*    GetLastFocusControl() override;
 
     void     SetOpenHdl( const Link<SvTreeListBox*,bool>& rLink ) { m_pContentBox->SetOpenHdl( rLink ); }
     OUString GetSelectEntry() const { return m_pContentBox->GetSelectEntry(); }
@@ -113,8 +113,8 @@ class IndexBox_Impl : public ComboBox
 public:
     IndexBox_Impl(vcl::Window* pParent, WinBits nStyle);
 
-    virtual void        UserDraw( const UserDrawEvent& rUDEvt ) SAL_OVERRIDE;
-    virtual bool        Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual void        UserDraw( const UserDrawEvent& rUDEvt ) override;
+    virtual bool        Notify( NotifyEvent& rNEvt ) override;
 
     void                SelectExecutableEntry();
 };
@@ -144,12 +144,12 @@ private:
 public:
     IndexTabPage_Impl( vcl::Window* pParent, SfxHelpIndexWindow_Impl* _pIdxWin );
     virtual ~IndexTabPage_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void        ActivatePage() SAL_OVERRIDE;
-    virtual Control*    GetLastFocusControl() SAL_OVERRIDE;
+    virtual void        ActivatePage() override;
+    virtual Control*    GetLastFocusControl() override;
 
-    void                SetDoubleClickHdl( const Link<>& rLink );
+    void                SetDoubleClickHdl( const Link<ComboBox&,void>& rLink );
     void                SetFactory( const OUString& rFactory );
     inline OUString     GetFactory() const { return sFactory; }
     OUString            GetSelectEntry() const;
@@ -179,8 +179,8 @@ public:
         SetDropDownLineCount(5);
     }
 
-    virtual bool        PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
-    virtual void        Select() SAL_OVERRIDE;
+    virtual bool        PreNotify( NotifyEvent& rNEvt ) override;
+    virtual void        Select() override;
 
     inline void         SetSearchLink( const Link<LinkParamNone*,void>& rLink ) { aSearchLink = rLink; }
 };
@@ -193,7 +193,7 @@ public:
     {
     }
 
-    virtual bool    Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual bool    Notify( NotifyEvent& rNEvt ) override;
 };
 
 class SearchTabPage_Impl : public HelpTabPage_Impl
@@ -206,10 +206,10 @@ private:
     VclPtr<SearchResultsBox_Impl>  m_pResultsLB;
     VclPtr<PushButton>             m_pOpenBtn;
 
-    OUString                aFactory;
+    OUString                       aFactory;
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::i18n::XBreakIterator >
-                            xBreakIterator;
+    css::uno::Reference< css::i18n::XBreakIterator >
+                                   xBreakIterator;
 
     void                ClearSearchResults();
     void                RememberSearchText( const OUString& rSearchText );
@@ -217,15 +217,15 @@ private:
     DECL_LINK_TYPED(SearchHdl, LinkParamNone*, void);
     DECL_LINK_TYPED(ClickHdl, Button*, void);
     DECL_LINK_TYPED(OpenHdl, Button*, void);
-    DECL_LINK(ModifyHdl, void *);
+    DECL_LINK_TYPED(ModifyHdl, Edit&, void);
 
 public:
     SearchTabPage_Impl( vcl::Window* pParent, SfxHelpIndexWindow_Impl* _pIdxWin );
     virtual ~SearchTabPage_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void        ActivatePage() SAL_OVERRIDE;
-    virtual Control*    GetLastFocusControl() SAL_OVERRIDE;
+    virtual void        ActivatePage() override;
+    virtual Control*    GetLastFocusControl() override;
 
     void                SetDoubleClickHdl( const Link<ListBox&,void>& rLink );
     inline void         SetFactory( const OUString& rFactory ) { aFactory = rFactory; }
@@ -248,9 +248,9 @@ private:
 public:
     BookmarksBox_Impl(vcl::Window* pParent, WinBits nStyle);
     virtual ~BookmarksBox_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual bool        Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual bool        Notify( NotifyEvent& rNEvt ) override;
 };
 
 class BookmarksTabPage_Impl : public HelpTabPage_Impl
@@ -264,10 +264,10 @@ private:
 public:
     BookmarksTabPage_Impl( vcl::Window* pParent, SfxHelpIndexWindow_Impl* _pIdxWin );
     virtual ~BookmarksTabPage_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void        ActivatePage() SAL_OVERRIDE;
-    virtual Control*    GetLastFocusControl() SAL_OVERRIDE;
+    virtual void        ActivatePage() override;
+    virtual Control*    GetLastFocusControl() override;
 
     void                SetDoubleClickHdl( const Link<ListBox&,void>& rLink );
     OUString            GetSelectEntry() const;
@@ -288,9 +288,9 @@ private:
     Idle                aIdle;
 
     Link<SfxHelpIndexWindow_Impl*,void> aSelectFactoryLink;
-    Link<>              aPageDoubleClickLink;
+    Link<Control*,bool>                 aPageDoubleClickLink;
     Link<IndexTabPage_Impl&,void>       aIndexKeywordLink;
-    OUString            sKeyword;
+    OUString                            sKeyword;
 
     VclPtr<SfxHelpWindow_Impl>     pParentWin;
 
@@ -313,24 +313,25 @@ private:
     inline BookmarksTabPage_Impl*   GetBookmarksPage();
 
     DECL_LINK_TYPED(ActivatePageHdl, TabControl*, void );
-    DECL_LINK(SelectHdl, void *);
+    DECL_LINK_TYPED(SelectHdl, ListBox&, void);
     DECL_LINK_TYPED(InitHdl, Idle *, void);
     DECL_LINK_TYPED(SelectFactoryHdl, Idle *, void);
     DECL_LINK_TYPED(KeywordHdl, IndexTabPage_Impl&, void);
     DECL_LINK_TYPED(ContentTabPageDoubleClickHdl, SvTreeListBox*, bool);
     DECL_LINK_TYPED(TabPageDoubleClickHdl, ListBox&, void);
+    DECL_LINK_TYPED(IndexTabPageDoubleClickHdl, ComboBox&, void);
 
 public:
     explicit SfxHelpIndexWindow_Impl( SfxHelpWindow_Impl* pParent );
     virtual ~SfxHelpIndexWindow_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void        Resize() SAL_OVERRIDE;
-    virtual Size        GetOptimalSize() const SAL_OVERRIDE;
-    virtual bool        PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
-    virtual void        DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual void        Resize() override;
+    virtual Size        GetOptimalSize() const override;
+    virtual bool        PreNotify( NotifyEvent& rNEvt ) override;
+    virtual void        DataChanged( const DataChangedEvent& rDCEvt ) override;
 
-    void                SetDoubleClickHdl( const Link<>& rLink );
+    void                SetDoubleClickHdl( const Link<Control*,bool>& rLink );
     inline void         SetSelectFactoryHdl( const Link<SfxHelpIndexWindow_Impl*,void>& rLink ) { aSelectFactoryLink = rLink; }
     void                SetFactory( const OUString& rFactory, bool bActive );
     inline OUString     GetFactory() const { return pIPage->GetFactory(); }
@@ -364,7 +365,7 @@ IndexTabPage_Impl* SfxHelpIndexWindow_Impl::GetIndexPage()
     if ( !pIPage )
     {
         pIPage = VclPtr<IndexTabPage_Impl>::Create( m_pTabCtrl, this );
-        pIPage->SetDoubleClickHdl( aPageDoubleClickLink );
+        pIPage->SetDoubleClickHdl( LINK(this, SfxHelpIndexWindow_Impl, IndexTabPageDoubleClickHdl) );
         pIPage->SetKeywordHdl( aIndexKeywordLink );
     }
     return pIPage;
@@ -404,7 +405,7 @@ class TextWin_Impl : public DockingWindow
 public:
     explicit                TextWin_Impl( vcl::Window* pParent );
 
-    virtual bool            Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual bool            Notify( NotifyEvent& rNEvt ) override;
 };
 
 // class SfxHelpTextWindow_Impl ------------------------------------------
@@ -429,11 +430,11 @@ private:
     VclPtr<SfxHelpWindow_Impl>     pHelpWin;
     VclPtr<vcl::Window>            pTextWin;
     VclPtr<sfx2::SearchDialog>     pSrchDlg;
-    ::com::sun::star::uno::Reference < ::com::sun::star::frame::XFrame2 >
+    css::uno::Reference < css::frame::XFrame2 >
                             xFrame;
-    ::com::sun::star::uno::Reference< ::com::sun::star::i18n::XBreakIterator >
+    css::uno::Reference< css::i18n::XBreakIterator >
                             xBreakIterator;
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >
+    css::uno::Reference< css::uno::XInterface >
                             xConfiguration;
     long                    nMinPos;
     bool                    bIsDebug;
@@ -446,9 +447,9 @@ private:
     void                    InitOnStartupBox( bool bOnlyText );
     void                    SetOnStartupBoxPosition();
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::i18n::XBreakIterator >
+    css::uno::Reference< css::i18n::XBreakIterator >
                             GetBreakIterator();
-    ::com::sun::star::uno::Reference< ::com::sun::star::text::XTextRange >
+    css::uno::Reference< css::text::XTextRange >
                             getCursor() const;
     bool                    isHandledKey( const vcl::KeyCode& _rKeyCode );
 
@@ -462,14 +463,14 @@ private:
 public:
     explicit SfxHelpTextWindow_Impl( SfxHelpWindow_Impl* pParent );
     virtual ~SfxHelpTextWindow_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void            Resize() SAL_OVERRIDE;
-    virtual bool            PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
-    virtual void            GetFocus() SAL_OVERRIDE;
-    virtual void            DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual void            Resize() override;
+    virtual bool            PreNotify( NotifyEvent& rNEvt ) override;
+    virtual void            GetFocus() override;
+    virtual void            DataChanged( const DataChangedEvent& rDCEvt ) override;
 
-    inline ::com::sun::star::uno::Reference < ::com::sun::star::frame::XFrame2 >
+    inline css::uno::Reference < css::frame::XFrame2 >
                             getFrame() const { return xFrame; }
 
     inline void             SetSelectHdl( const Link<ToolBox *, void>& rLink ) { aToolBox->SetSelectHdl( rLink ); }
@@ -490,11 +491,9 @@ class SfxHelpWindow_Impl : public SplitWindow
 private:
 friend class SfxHelpIndexWindow_Impl;
 
-    ::com::sun::star::uno::Reference < ::com::sun::star::awt::XWindow >
+    css::uno::Reference < css::awt::XWindow >
                                 xWindow;
-    ::com::sun::star::uno::Reference < ::com::sun::star::frame::XDispatchResultListener >
-                                xOpenListener;
-    ::com::sun::star::uno::Reference < ::com::sun::star::frame::XFrame2 >
+    css::uno::Reference < css::frame::XFrame2 >
                                 xFrame;
 
     VclPtr<SfxHelpIndexWindow_Impl>    pIndexWin;
@@ -507,14 +506,14 @@ friend class SfxHelpIndexWindow_Impl;
     sal_Int32           nHeight;
     long                nIndexSize;
     long                nTextSize;
-    bool            bIndex;
-    bool            bGrabFocusToToolBox;
+    bool                bIndex;
+    bool                bGrabFocusToToolBox;
     Point               aWinPos;
     OUString            sTitle;
 
-    virtual void        Resize() SAL_OVERRIDE;
-    virtual void        Split() SAL_OVERRIDE;
-    virtual void        GetFocus() SAL_OVERRIDE;
+    virtual void        Resize() override;
+    virtual void        Split() override;
+    virtual void        GetFocus() override;
 
     void                MakeLayout();
     void                InitSizes();
@@ -523,21 +522,20 @@ friend class SfxHelpIndexWindow_Impl;
     void                ShowStartPage();
 
     DECL_LINK_TYPED(    SelectHdl, ToolBox*, void );
-    DECL_LINK(OpenHdl, void *);
+    DECL_LINK_TYPED(    OpenHdl, Control*, bool );
     DECL_LINK_TYPED(    SelectFactoryHdl, SfxHelpIndexWindow_Impl*, void );
     DECL_LINK_TYPED(    ChangeHdl, HelpListener_Impl&, void );
 
 public:
-    SfxHelpWindow_Impl( const ::com::sun::star::uno::Reference < ::com::sun::star::frame::XFrame2 >& rFrame,
+    SfxHelpWindow_Impl( const css::uno::Reference < css::frame::XFrame2 >& rFrame,
                         vcl::Window* pParent, WinBits nBits );
     virtual ~SfxHelpWindow_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual bool        PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual bool        PreNotify( NotifyEvent& rNEvt ) override;
 
-    void                setContainerWindow(
-                            ::com::sun::star::uno::Reference < ::com::sun::star::awt::XWindow > xWin );
-    inline ::com::sun::star::uno::Reference < ::com::sun::star::frame::XFrame2 >
+    void                setContainerWindow( css::uno::Reference < css::awt::XWindow > xWin );
+    inline css::uno::Reference < css::frame::XFrame2 >
                         getTextFrame() const { return pTextWin->getFrame(); }
 
     void                SetFactory( const OUString& rFactory );
@@ -570,7 +568,7 @@ private:
 public:
     SfxAddHelpBookmarkDialog_Impl( vcl::Window* pParent, bool bRename = true );
     virtual ~SfxAddHelpBookmarkDialog_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void SetTitle( const OUString& rTitle );
     OUString GetTitle() const { return m_pTitleED->GetText(); }

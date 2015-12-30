@@ -72,9 +72,6 @@ struct XMLSignatureVerifyResult
     }
 };
 
-typedef ::std::vector<XMLSignatureCreationResult> XMLSignatureCreationResults;
-typedef ::std::vector<XMLSignatureVerifyResult> XMLSignatureVerifyResults;
-
 
 
 /**********************************************************
@@ -100,8 +97,10 @@ private:
     ::com::sun::star::uno::Reference< com::sun::star::xml::crypto::XSEInitializer > mxSEInitializer;
     ::com::sun::star::uno::Reference< com::sun::star::xml::crypto::XXMLSecurityContext > mxSecurityContext;
 
-    XMLSignatureCreationResults maCreationResults;
-    XMLSignatureVerifyResults   maVerifyResults;
+    std::vector<XMLSignatureCreationResult>
+                                maCreationResults;
+    std::vector<XMLSignatureVerifyResult>
+                                maVerifyResults;
     XSecController*             mpXSecController;
     bool                        mbError;
     bool mbODFPre1_2;
@@ -112,7 +111,7 @@ private:
     DECL_LINK_TYPED( SignatureVerifyResultListener, XMLSignatureVerifyResult&, void );
     DECL_LINK_TYPED( StartVerifySignatureElement, LinkParamNone*, void );
 
-    XMLSignatureHelper(const XMLSignatureHelper&) SAL_DELETED_FUNCTION;
+    XMLSignatureHelper(const XMLSignatureHelper&) = delete;
 
 public:
     XMLSignatureHelper(const com::sun::star::uno::Reference< com::sun::star::uno::XComponentContext >& mrCtx );

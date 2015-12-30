@@ -16,10 +16,11 @@
  *   except in compliance with the License. You may obtain a copy of
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
-#include <unotools/unotoolsdllapi.h>
 
 #ifndef INCLUDED_UNOTOOLS_PROGRESSHANDLERWRAP_HXX
 #define INCLUDED_UNOTOOLS_PROGRESSHANDLERWRAP_HXX
+
+#include <unotools/unotoolsdllapi.h>
 #include <cppuhelper/implbase1.hxx>
 #include <com/sun/star/task/XStatusIndicator.hpp>
 #include <com/sun/star/ucb/XProgressHandler.hpp>
@@ -27,20 +28,20 @@
 namespace utl
 {
 
-class UNOTOOLS_DLLPUBLIC ProgressHandlerWrap : public ::cppu::WeakImplHelper1< ::com::sun::star::ucb::XProgressHandler >
+class UNOTOOLS_DLLPUBLIC ProgressHandlerWrap : public ::cppu::WeakImplHelper1< css::ucb::XProgressHandler >
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::task::XStatusIndicator > m_xStatusIndicator;
+    css::uno::Reference< css::task::XStatusIndicator > m_xStatusIndicator;
 
 public:
-    ProgressHandlerWrap( ::com::sun::star::uno::Reference< ::com::sun::star::task::XStatusIndicator > xSI );
+    ProgressHandlerWrap( css::uno::Reference< css::task::XStatusIndicator > xSI );
 
     // XProgressHandler
-    virtual void SAL_CALL push( const ::com::sun::star::uno::Any& Status )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL update( const ::com::sun::star::uno::Any& Status )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL push( const css::uno::Any& Status )
+        throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL update( const css::uno::Any& Status )
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL pop()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 };
 
 }   // namespace utl

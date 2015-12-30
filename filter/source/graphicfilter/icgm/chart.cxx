@@ -21,9 +21,8 @@
 #include <chart.hxx>
 
 
-CGMChart::CGMChart(CGM& rCGM)
-    : mpCGM(&rCGM)
-    , mnCurrentFileType(0)
+CGMChart::CGMChart()
+    : mnCurrentFileType(0)
 {
     for ( sal_Int8 i = 0; i < 7; i++ )
     {
@@ -49,7 +48,7 @@ void CGMChart::DeleteTextEntry( TextEntry* pTextEntry )
     if ( pTextEntry )
     {
         delete pTextEntry->pText;
-        for ( TextAttribute* pTAttr = pTextEntry->pAttribute; pTAttr != NULL ; )
+        for ( TextAttribute* pTAttr = pTextEntry->pAttribute; pTAttr != nullptr ; )
         {
             TextAttribute* pTempTAttr = pTAttr;
             pTAttr = pTAttr->pNextAttribute;

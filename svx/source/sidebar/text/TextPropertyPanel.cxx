@@ -68,12 +68,12 @@ VclPtr<vcl::Window> TextPropertyPanel::Create (
     SfxBindings* pBindings,
     const ::sfx2::sidebar::EnumContext& rContext)
 {
-    if (pParent == NULL)
-        throw lang::IllegalArgumentException("no parent Window given to TextPropertyPanel::Create", NULL, 0);
+    if (pParent == nullptr)
+        throw lang::IllegalArgumentException("no parent Window given to TextPropertyPanel::Create", nullptr, 0);
     if ( ! rxFrame.is())
-        throw lang::IllegalArgumentException("no XFrame given to TextPropertyPanel::Create", NULL, 1);
-    if (pBindings == NULL)
-        throw lang::IllegalArgumentException("no SfxBindings given to TextPropertyPanel::Create", NULL, 2);
+        throw lang::IllegalArgumentException("no XFrame given to TextPropertyPanel::Create", nullptr, 1);
+    if (pBindings == nullptr)
+        throw lang::IllegalArgumentException("no SfxBindings given to TextPropertyPanel::Create", nullptr, 2);
 
     return VclPtr<TextPropertyPanel>::Create(
                 pParent,
@@ -106,7 +106,7 @@ TextPropertyPanel::TextPropertyPanel ( vcl::Window* pParent, const css::uno::Ref
     InitToolBoxSpacing();
 
     //init state
-    mpHeightItem = NULL;
+    mpHeightItem = nullptr;
     meUnderline = UNDERLINE_NONE;
     meUnderlineColor = COL_AUTO;
     mbKernAvailable = true;
@@ -261,15 +261,15 @@ void TextPropertyPanel::NotifyItemUpdate (
     {
     case SID_ATTR_CHAR_FONTHEIGHT:
         {
-            if (  eState >= SfxItemState::DEFAULT && pState->ISA(SvxFontHeightItem) )
+            if (  eState >= SfxItemState::DEFAULT && dynamic_cast<const SvxFontHeightItem*>( pState) !=  nullptr )
                 mpHeightItem = const_cast<SvxFontHeightItem*>(static_cast<const SvxFontHeightItem*>(pState));
             else
-                mpHeightItem = NULL;
+                mpHeightItem = nullptr;
         }
         break;
     case SID_ATTR_CHAR_UNDERLINE:
         {
-            if( eState >= SfxItemState::DEFAULT && pState->ISA(SvxUnderlineItem) )
+            if( eState >= SfxItemState::DEFAULT && dynamic_cast<const SvxUnderlineItem*>( pState) !=  nullptr )
             {
                 const SvxUnderlineItem* pItem = static_cast<const SvxUnderlineItem*>(pState);
                 meUnderline = (FontUnderline)pItem->GetValue();
@@ -285,7 +285,7 @@ void TextPropertyPanel::NotifyItemUpdate (
             {
                 mbKernLBAvailable = true;
 
-                if(pState->ISA(SvxKerningItem))
+                if(dynamic_cast<const SvxKerningItem*>( pState) !=  nullptr)
                 {
                     const SvxKerningItem* pKerningItem = static_cast<const SvxKerningItem*>(pState);
                     mlKerning = (long)pKerningItem->GetValue();

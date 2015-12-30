@@ -124,7 +124,7 @@ namespace dbaui
 
         Reference< XInteractionSupplyParameters > xParamCallback;
         if (-1 != nParamPos)
-            xParamCallback = Reference< XInteractionSupplyParameters >(_rContinuations[nParamPos], UNO_QUERY);
+            xParamCallback.set(_rContinuations[nParamPos], UNO_QUERY);
         OSL_ENSURE(xParamCallback.is(), "BasicInteractionHandler::implHandle(ParametersRequest): can't set the parameters without an appropriate interaction handler!s");
 
         ScopedVclPtrInstance< OParameterDialog > aDlg(nullptr, _rParamRequest.Parameters, _rParamRequest.Connection, m_xContext);
@@ -238,7 +238,7 @@ namespace dbaui
         if ( -1 != nApprovePos )
         {
             // ask whether it should be saved
-            nRet = ExecuteQuerySaveDocument(NULL,_rDocuRequest.Name);
+            nRet = ExecuteQuerySaveDocument(nullptr,_rDocuRequest.Name);
         }
 
         if ( RET_CANCEL == nRet )
@@ -292,7 +292,7 @@ namespace dbaui
         if ( m_xContext.is() )
         {
             Reference< XInteractionHandler2 > xFallbackHandler(
-                InteractionHandler::createWithParent(m_xContext, 0) );
+                InteractionHandler::createWithParent(m_xContext, nullptr) );
             xFallbackHandler->handle( _rxRequest );
             return true;
         }

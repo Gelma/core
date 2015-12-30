@@ -64,10 +64,9 @@ IMPL_LINK_NOARG_TYPED(SwBreakDlg, ClickHdl, Button*, void)
     CheckEnable();
 }
 
-IMPL_LINK_NOARG(SwBreakDlg, SelectHdl)
+IMPL_LINK_NOARG_TYPED(SwBreakDlg, SelectHdl, ListBox&, void)
 {
     CheckEnable();
-    return 0;
 }
 
 // Handler for Change Page Number
@@ -80,10 +79,9 @@ IMPL_LINK_TYPED( SwBreakDlg, PageNumHdl, Button*, pBox, void )
 }
 
 // By changing the Page number the checkbox is checked.
-IMPL_LINK_NOARG(SwBreakDlg, PageNumModifyHdl)
+IMPL_LINK_NOARG_TYPED(SwBreakDlg, PageNumModifyHdl, Edit&, void)
 {
     m_pPageNumBox->Check();
-    return 0;
 }
 
 /*
@@ -199,8 +197,8 @@ void SwBreakDlg::CheckEnable()
         m_pPageCollBox->Enable(false);
         bEnable = false;
     }
-    else if(rSh.GetFrmType(0,true)
-        & (FrmTypeFlags::FLY_ANY | FrmTypeFlags::HEADER | FrmTypeFlags::FOOTER  | FrmTypeFlags::FOOTNOTE))
+    else if(rSh.GetFrameType(nullptr,true)
+        & (FrameTypeFlags::FLY_ANY | FrameTypeFlags::HEADER | FrameTypeFlags::FOOTER  | FrameTypeFlags::FOOTNOTE))
     {
         m_pPageBtn->Enable(false);
         if(m_pPageBtn->IsChecked())

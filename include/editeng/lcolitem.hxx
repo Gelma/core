@@ -30,7 +30,7 @@
 class EDITENG_DLLPUBLIC SvxLineColorItem : public SvxColorItem
 {
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     explicit SvxLineColorItem( const sal_uInt16 nId  );
     SvxLineColorItem( const SvxLineColorItem& rCopy );
@@ -40,8 +40,8 @@ public:
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
                                     OUString &rText,
-                                    const IntlWrapper * pIntlWrapper = 0 )
-        const SAL_OVERRIDE;
+                                    const IntlWrapper * pIntlWrapper = nullptr )
+        const override;
 
     inline SvxLineColorItem& operator=(const SvxLineColorItem& rColor)
         { return static_cast<SvxLineColorItem&>(SvxColorItem::

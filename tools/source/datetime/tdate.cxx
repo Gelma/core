@@ -31,6 +31,15 @@ static const sal_uInt16 aDaysInMonth[12] = { 31, 28, 31, 30, 31, 30,
 
 #define MAX_DAYS    3636532
 
+namespace
+{
+
+inline long ImpYearToDays( sal_uInt16 nYear )
+{
+    const long nYr(static_cast<long>(nYear) - 1);
+    return nYr*365 + nYr/4 - nYr/100 + nYr/400;
+}
+
 inline bool ImpIsLeapYear( sal_uInt16 nYear )
 {
     return ( ( ((nYear % 4) == 0) && ((nYear % 100) != 0) ) ||
@@ -49,6 +58,8 @@ inline sal_uInt16 ImplDaysInMonth( sal_uInt16 nMonth, sal_uInt16 nYear )
         else
             return aDaysInMonth[nMonth-1];
     }
+}
+
 }
 
 // static
@@ -75,31 +86,32 @@ long Date::GetAsNormalizedDays() const
 
 long Date::DateToDays( sal_uInt16 nDay, sal_uInt16 nMonth, sal_uInt16 nYear )
 {
-    long nDays;
-
     Normalize( nDay, nMonth, nYear);
 
-    nDays = ((sal_uIntPtr)nYear-1) * 365;
-    nDays += ((nYear-1) / 4) - ((nYear-1) / 100) + ((nYear-1) / 400);
+    long nDays = ImpYearToDays(nYear);
     for( sal_uInt16 i = 1; i < nMonth; i++ )
         nDays += ImplDaysInMonth(i,nYear);
     nDays += nDay;
     return nDays;
 }
 
-static void DaysToDate( long nDays,
-                        sal_uInt16& rDay, sal_uInt16& rMonth, sal_uInt16& rYear )
+static Date lcl_DaysToDate( long nDays )
 {
+    if ( nDays >= MAX_DAYS )
+        return Date( 31, 12, 9999 );
+
+    if ( nDays <= 0 )
+        return Date( 1, 0, 0 );
+
     long    nTempDays;
     long    i = 0;
     bool    bCalc;
 
+    sal_uInt16 nYear;
     do
     {
-        nTempDays = (long)nDays;
-        rYear = (sal_uInt16)((nTempDays / 365) - i);
-        nTempDays -= ((sal_uIntPtr)rYear-1) * 365;
-        nTempDays -= ((rYear-1) / 4) - ((rYear-1) / 100) + ((rYear-1) / 400);
+        nYear = (sal_uInt16)((nDays / 365) - i);
+        nTempDays = nDays - ImpYearToDays(nYear);
         bCalc = false;
         if ( nTempDays < 1 )
         {
@@ -110,7 +122,7 @@ static void DaysToDate( long nDays,
         {
             if ( nTempDays > 365 )
             {
-                if ( (nTempDays != 366) || !ImpIsLeapYear( rYear ) )
+                if ( (nTempDays != 366) || !ImpIsLeapYear( nYear ) )
                 {
                     i--;
                     bCalc = true;
@@ -120,13 +132,14 @@ static void DaysToDate( long nDays,
     }
     while ( bCalc );
 
-    rMonth = 1;
-    while ( (sal_uIntPtr)nTempDays > ImplDaysInMonth( rMonth, rYear ) )
+    sal_uInt16 nMonth = 1;
+    while ( nTempDays > static_cast<long>(ImplDaysInMonth( nMonth, nYear )) )
     {
-        nTempDays -= ImplDaysInMonth( rMonth, rYear );
-        rMonth++;
+        nTempDays -= ImplDaysInMonth( nMonth, nYear );
+        nMonth++;
     }
-    rDay = (sal_uInt16)nTempDays;
+
+    return Date( static_cast<sal_uInt16>(nTempDays), nMonth, nYear );
 }
 
 Date::Date( DateInitSystem )
@@ -136,60 +149,49 @@ Date::Date( DateInitSystem )
     GetLocalTime( &aDateTime );
 
     // Combine to date
-    nDate = ((sal_uIntPtr)aDateTime.wDay) +
-            (((sal_uIntPtr)aDateTime.wMonth)*100) +
-            (((sal_uIntPtr)aDateTime.wYear)*10000);
+    setDateFromDMY( aDateTime.wDay, aDateTime.wMonth, aDateTime.wYear );
 #else
     time_t     nTmpTime;
     struct tm aTime;
 
     // get current time
-    nTmpTime = time( 0 );
+    nTmpTime = time( nullptr );
 
     // compute date
     if ( localtime_r( &nTmpTime, &aTime ) )
     {
-        nDate = ((sal_uIntPtr)aTime.tm_mday) +
-                (((sal_uIntPtr)(aTime.tm_mon+1))*100) +
-                (((sal_uIntPtr)(aTime.tm_year+1900))*10000);
+        setDateFromDMY( static_cast<sal_uInt16>(aTime.tm_mday),
+            static_cast<sal_uInt16>(aTime.tm_mon+1),
+            static_cast<sal_uInt16>(aTime.tm_year+1900) );
     }
     else
-        nDate = 1 + 100 + (((sal_uIntPtr)1900)*10000);
+        setDateFromDMY( 1, 100, 1900 );
 #endif
 }
 
-Date::Date( const ::com::sun::star::util::DateTime& rDateTime )
+Date::Date( const css::util::DateTime& rDateTime )
 {
-  init( rDateTime.Day, rDateTime.Month, rDateTime.Year );
+    setDateFromDMY( rDateTime.Day, rDateTime.Month, rDateTime.Year );
 }
 
 void Date::SetDay( sal_uInt16 nNewDay )
 {
-    sal_uIntPtr  nMonth  = GetMonth();
-    sal_uIntPtr  nYear   = GetYear();
-
-    nDate = ((sal_uIntPtr)(nNewDay%100)) + (nMonth*100) + (nYear*10000);
+    setDateFromDMY( nNewDay, GetMonth(), GetYear() );
 }
 
 void Date::SetMonth( sal_uInt16 nNewMonth )
 {
-    sal_uIntPtr  nDay    = GetDay();
-    sal_uIntPtr  nYear   = GetYear();
-
-    nDate = nDay + (((sal_uIntPtr)(nNewMonth%100))*100) + (nYear*10000);
+    setDateFromDMY( GetDay(), nNewMonth, GetYear() );
 }
 
 void Date::SetYear( sal_uInt16 nNewYear )
 {
-    sal_uIntPtr  nDay   = GetDay();
-    sal_uIntPtr  nMonth = GetMonth();
-
-    nDate = nDay + (nMonth*100) + (((sal_uIntPtr)(nNewYear%10000))*10000);
+    setDateFromDMY( GetDay(), GetMonth(), nNewYear );
 }
 
 DayOfWeek Date::GetDayOfWeek() const
 {
-    return (DayOfWeek)((sal_uIntPtr)(GetAsNormalizedDays()-1) % 7);
+    return static_cast<DayOfWeek>((GetAsNormalizedDays()-1) % 7);
 }
 
 sal_uInt16 Date::GetDayOfYear() const
@@ -282,11 +284,7 @@ sal_uInt16 Date::GetWeekOfYear( DayOfWeek eStartDay,
                 long nTempDays = GetAsNormalizedDays();
 
                 nTempDays +=  6 - (GetDayOfWeek()+(7-(short)eStartDay)) % 7;
-                sal_uInt16  nDay;
-                sal_uInt16  nMonth;
-                sal_uInt16  nYear;
-                DaysToDate( nTempDays, nDay, nMonth, nYear );
-                nWeek = Date( nDay, nMonth, nYear ).GetWeekOfYear( eStartDay, nMinimumNumberOfDaysInWeek );
+                nWeek = lcl_DaysToDate( nTempDays ).GetWeekOfYear( eStartDay, nMinimumNumberOfDaysInWeek );
             }
         }
     }
@@ -357,9 +355,7 @@ bool Date::Normalize()
     if (!Normalize( nDay, nMonth, nYear))
         return false;
 
-    SetDay( nDay);
-    SetMonth( nMonth);
-    SetYear( nYear);
+    setDateFromDMY( nDay, nMonth, nYear );
 
     return true;
 }
@@ -415,84 +411,29 @@ bool Date::Normalize( sal_uInt16 & rDay, sal_uInt16 & rMonth, sal_uInt16 & rYear
 
 Date& Date::operator +=( long nDays )
 {
-    sal_uInt16  nDay;
-    sal_uInt16  nMonth;
-    sal_uInt16  nYear;
-
-    if (nDays == 0)
-        return *this;
-
-    long nTempDays = GetAsNormalizedDays();
-
-    nTempDays += nDays;
-    if ( nTempDays > MAX_DAYS )
-        nDate = 31 + (12*100) + (((sal_uIntPtr)9999)*10000);
-    else if ( nTempDays <= 0 )
-        nDate = 1 + 100;
-    else
-    {
-        DaysToDate( nTempDays, nDay, nMonth, nYear );
-        nDate = ((sal_uIntPtr)nDay) + (((sal_uIntPtr)nMonth)*100) + (((sal_uIntPtr)nYear)*10000);
-    }
+    if (nDays != 0)
+        *this = lcl_DaysToDate( GetAsNormalizedDays() + nDays );
 
     return *this;
 }
 
 Date& Date::operator -=( long nDays )
 {
-    sal_uInt16  nDay;
-    sal_uInt16  nMonth;
-    sal_uInt16  nYear;
-
-    if (nDays == 0)
-        return *this;
-
-    long nTempDays = GetAsNormalizedDays();
-
-    nTempDays -= nDays;
-    if ( nTempDays > MAX_DAYS )
-        nDate = 31 + (12*100) + (((sal_uIntPtr)9999)*10000);
-    else if ( nTempDays <= 0 )
-        nDate = 1 + 100;
-    else
-    {
-        DaysToDate( nTempDays, nDay, nMonth, nYear );
-        nDate = ((sal_uIntPtr)nDay) + (((sal_uIntPtr)nMonth)*100) + (((sal_uIntPtr)nYear)*10000);
-    }
+    if (nDays != 0)
+        *this = lcl_DaysToDate( GetAsNormalizedDays() - nDays );
 
     return *this;
 }
 
 Date& Date::operator ++()
 {
-    sal_uInt16  nDay;
-    sal_uInt16  nMonth;
-    sal_uInt16  nYear;
-    long nTempDays = GetAsNormalizedDays();
-
-    if ( nTempDays < MAX_DAYS )
-    {
-        nTempDays++;
-        DaysToDate( nTempDays, nDay, nMonth, nYear );
-        nDate = ((sal_uIntPtr)nDay) + (((sal_uIntPtr)nMonth)*100) + (((sal_uIntPtr)nYear)*10000);
-    }
-
+    *this = lcl_DaysToDate( GetAsNormalizedDays() + 1 );
     return *this;
 }
 
 Date& Date::operator --()
 {
-    sal_uInt16  nDay;
-    sal_uInt16  nMonth;
-    sal_uInt16  nYear;
-    long nTempDays = GetAsNormalizedDays();
-
-    if ( nTempDays > 1 )
-    {
-        nTempDays--;
-        DaysToDate( nTempDays, nDay, nMonth, nYear );
-        nDate = ((sal_uIntPtr)nDay) + (((sal_uIntPtr)nMonth)*100) + (((sal_uIntPtr)nYear)*10000);
-    }
+    *this = lcl_DaysToDate( GetAsNormalizedDays() - 1 );
     return *this;
 }
 
@@ -526,10 +467,7 @@ Date operator -( const Date& rDate, long nDays )
 
 long operator -( const Date& rDate1, const Date& rDate2 )
 {
-    sal_uIntPtr nTempDays1 = rDate1.GetAsNormalizedDays();
-    sal_uIntPtr nTempDays2 = rDate2.GetAsNormalizedDays();
-
-    return nTempDays1 - nTempDays2;
+    return rDate1.GetAsNormalizedDays() - rDate2.GetAsNormalizedDays();
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

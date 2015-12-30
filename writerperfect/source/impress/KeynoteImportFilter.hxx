@@ -20,39 +20,39 @@
 class KeynoteImportFilter : public writerperfect::ImportFilter<OdpGenerator>
 {
 public:
-    explicit KeynoteImportFilter(const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > &rxContext)
+    explicit KeynoteImportFilter(const css::uno::Reference< css::uno::XComponentContext > &rxContext)
         : writerperfect::ImportFilter<OdpGenerator>(rxContext) {}
     virtual ~KeynoteImportFilter() {}
 
     //XExtendedFilterDetection
-    virtual OUString SAL_CALL detect(com::sun::star::uno::Sequence< com::sun::star::beans::PropertyValue > &Descriptor)
-    throw(com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL detect(css::uno::Sequence< css::beans::PropertyValue > &Descriptor)
+    throw(css::uno::RuntimeException, std::exception) override;
 
     // XServiceInfo
     virtual OUString SAL_CALL getImplementationName()
-    throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    throw (css::uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL supportsService(const OUString &ServiceName)
-    throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-    throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
+    throw (css::uno::RuntimeException, std::exception) override;
 
 private:
-    virtual bool doDetectFormat(librevenge::RVNGInputStream &rInput, OUString &rTypeName) SAL_OVERRIDE;
-    virtual bool doImportDocument(librevenge::RVNGInputStream &rInput, OdpGenerator &rGenerator, utl::MediaDescriptor &) SAL_OVERRIDE;
+    virtual bool doDetectFormat(librevenge::RVNGInputStream &rInput, OUString &rTypeName) override;
+    virtual bool doImportDocument(librevenge::RVNGInputStream &rInput, OdpGenerator &rGenerator, utl::MediaDescriptor &) override;
 };
 
 OUString KeynoteImportFilter_getImplementationName()
-throw (::com::sun::star::uno::RuntimeException);
+throw (css::uno::RuntimeException);
 
 bool SAL_CALL KeynoteImportFilter_supportsService(const OUString &ServiceName)
-throw (::com::sun::star::uno::RuntimeException);
+throw (css::uno::RuntimeException);
 
-::com::sun::star::uno::Sequence< OUString > SAL_CALL KeynoteImportFilter_getSupportedServiceNames()
-throw (::com::sun::star::uno::RuntimeException);
+css::uno::Sequence< OUString > SAL_CALL KeynoteImportFilter_getSupportedServiceNames()
+throw (css::uno::RuntimeException);
 
-::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >
-SAL_CALL KeynoteImportFilter_createInstance(const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > &rContext)
-throw (::com::sun::star::uno::Exception);
+css::uno::Reference< css::uno::XInterface >
+SAL_CALL KeynoteImportFilter_createInstance(const css::uno::Reference< css::uno::XComponentContext > &rContext)
+throw (css::uno::Exception);
 
 #endif
 

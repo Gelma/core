@@ -30,8 +30,10 @@
 #include <sfx2/dispatch.hxx>
 #include <svx/ctredlin.hxx>
 #include <svx/postattr.hxx>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <o3tl/sorted_vector.hxx>
+
+#include <memory>
+#include <vector>
 
 class SwChildWinWrapper;
 
@@ -57,36 +59,41 @@ struct SwRedlineDataParent
 
 class SwRedlineDataParentSortArr : public o3tl::sorted_vector<SwRedlineDataParent*, o3tl::less_ptr_to<SwRedlineDataParent> > {};
 
-typedef boost::ptr_vector<SwRedlineDataChild> SwRedlineDataChildArr;
+typedef std::vector<std::unique_ptr<SwRedlineDataChild>> SwRedlineDataChildArr;
 
 class SW_DLLPUBLIC SwRedlineAcceptDlg
 {
-    VclPtr<vcl::Window>     pParentDlg;
-    boost::ptr_vector<SwRedlineDataParent>
-                            aRedlineParents;
-    SwRedlineDataChildArr   aRedlineChildren;
-    SwRedlineDataParentSortArr aUsedSeqNo;
-    VclPtr<SvxAcceptChgCtr>    aTabPagesCTRL;
-    PopupMenu               aPopup;
-    Timer                   aDeselectTimer;
-    Timer                   aSelectTimer;
-    OUString                sInserted;
-    OUString                sDeleted;
-    OUString                sFormated;
-    OUString                sTableChgd;
-    OUString                sFormatCollSet;
-    OUString                sFilterAction;
-    OUString                sAutoFormat;
-    VclPtr<SvxTPView>       pTPView;
-    VclPtr<SvxRedlinTable>  pTable; // PB 2006/02/02 #i48648 now SvHeaderTabListBox
-    Link<SvTreeListBox*,void> aOldSelectHdl;
-    Link<SvTreeListBox*,void> aOldDeselectHdl;
-    bool                    bOnlyFormatedRedlines;
-    bool                    bHasReadonlySel;
-    bool                    bRedlnAutoFormat;
+    VclPtr<vcl::Window>     m_pParentDlg;
+    std::vector<std::unique_ptr<SwRedlineDataParent>> m_RedlineParents;
+    SwRedlineDataChildArr   m_RedlineChildren;
+    SwRedlineDataParentSortArr m_aUsedSeqNo;
+    VclPtr<SvxAcceptChgCtr>    m_aTabPagesCTRL;
+    PopupMenu               m_aPopup;
+    Timer                   m_aDeselectTimer;
+    Timer                   m_aSelectTimer;
+    OUString                m_sInserted;
+    OUString                m_sDeleted;
+    OUString                m_sFormated;
+    OUString                m_sTableChgd;
+    OUString                m_sFormatCollSet;
+    OUString                m_sFilterAction;
+    OUString                m_sAutoFormat;
+    VclPtr<SvxTPView>       m_pTPView;
+    VclPtr<SvxRedlinTable>  m_pTable; // PB 2006/02/02 #i48648 now SvHeaderTabListBox
+    Link<SvTreeListBox*,void> m_aOldSelectHdl;
+    Link<SvTreeListBox*,void> m_aOldDeselectHdl;
+    bool                    m_bOnlyFormatedRedlines;
+    bool                    m_bHasReadonlySel;
+    bool                    m_bRedlnAutoFormat;
 
     // prevent update dialog data during longer operations (cf #102657#)
-    bool                    bInhibitActivate;
+    bool                    m_bInhibitActivate;
+
+    Image                   m_aInserted;
+    Image                   m_aDeleted;
+    Image                   m_aFormated;
+    Image                   m_aTableChgd;
+    Image                   m_aFormatCollSet;
 
     DECL_DLLPRIVATE_LINK_TYPED( AcceptHdl,     SvxTPView*, void );
     DECL_DLLPRIVATE_LINK_TYPED( AcceptAllHdl,  SvxTPView*, void );
@@ -110,14 +117,17 @@ class SW_DLLPUBLIC SwRedlineAcceptDlg
     SAL_DLLPRIVATE OUString      GetActionText(const SwRangeRedline& rRedln, sal_uInt16 nStack = 0);
     SAL_DLLPRIVATE sal_uInt16    GetRedlinePos( const SvTreeListEntry& rEntry) const;
 
+    SwRedlineAcceptDlg(SwRedlineAcceptDlg const&) = delete;
+    SwRedlineAcceptDlg& operator=(SwRedlineAcceptDlg const&) = delete;
+
 public:
     SwRedlineAcceptDlg(vcl::Window *pParent, VclBuilderContainer *pBuilder, vcl::Window *pContentArea, bool bAutoFormat = false);
     virtual ~SwRedlineAcceptDlg();
 
     DECL_LINK_TYPED( FilterChangedHdl, SvxTPFilter*, void );
 
-    inline SvxAcceptChgCtr& GetChgCtrl()        { return *aTabPagesCTRL.get(); }
-    inline bool     HasRedlineAutoFormat() const   { return bRedlnAutoFormat; }
+    inline SvxAcceptChgCtr& GetChgCtrl()        { return *m_aTabPagesCTRL.get(); }
+    inline bool     HasRedlineAutoFormat() const   { return m_bRedlnAutoFormat; }
 
     void            Init(sal_uInt16 nStart = 0);
     void            CallAcceptReject( bool bSelect, bool bAccept );
@@ -136,10 +146,10 @@ class SwModelessRedlineAcceptDlg : public SfxModelessDialog
 public:
     SwModelessRedlineAcceptDlg(SfxBindings*, SwChildWinWrapper*, vcl::Window *pParent);
     virtual ~SwModelessRedlineAcceptDlg();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void    Activate() SAL_OVERRIDE;
-    virtual void    FillInfo(SfxChildWinInfo&) const SAL_OVERRIDE;
+    virtual void    Activate() override;
+    virtual void    FillInfo(SfxChildWinInfo&) const override;
     void            Initialize (SfxChildWinInfo* pInfo);
 };
 
@@ -153,7 +163,7 @@ public:
 
     SFX_DECL_CHILDWINDOW_WITHID( SwRedlineAcceptChild );
 
-    virtual bool    ReInitDlg(SwDocShell *pDocSh) SAL_OVERRIDE;
+    virtual bool    ReInitDlg(SwDocShell *pDocSh) override;
 };
 
 /// Redline (Manage Changes) panel for the sidebar.
@@ -163,11 +173,11 @@ class SwRedlineAcceptPanel : public PanelLayout, public SfxListener
 public:
     SwRedlineAcceptPanel(vcl::Window* pParent, const css::uno::Reference<css::frame::XFrame>& rFrame);
     virtual ~SwRedlineAcceptPanel();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     /// We need to be a SfxListener to be able to update the list of changes when we get SFX_HINT_DOCCHANGED.
     using Control::Notify;
-    virtual void Notify(SfxBroadcaster& rBC, const SfxHint& rHint) SAL_OVERRIDE;
+    virtual void Notify(SfxBroadcaster& rBC, const SfxHint& rHint) override;
 };
 
 #endif

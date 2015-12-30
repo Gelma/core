@@ -72,14 +72,10 @@ static OUString xModelToTdocUrl( const css::uno::Reference< css::frame::XModel >
             css::frame::XTransientDocumentsDocumentContentFactory > xDocFac;
     try
     {
-        xDocFac =
-            css::uno::Reference<
-                css::frame::XTransientDocumentsDocumentContentFactory >(
-                    xMCF->createInstanceWithContext(
-                        OUString(
-                                "com.sun.star.frame.TransientDocumentsDocumentContentFactory" ),
+        xDocFac.set(xMCF->createInstanceWithContext(
+                        "com.sun.star.frame.TransientDocumentsDocumentContentFactory",
                         xContext ),
-                css::uno::UNO_QUERY );
+                    css::uno::UNO_QUERY );
     }
     catch ( css::uno::Exception const & )
     {
@@ -110,7 +106,7 @@ static css::uno::Reference< css::frame::XModel > tDocUrlToModel( const OUString&
 
     try
     {
-        ::ucbhelper::Content root( url, NULL, comphelper::getProcessComponentContext() );
+        ::ucbhelper::Content root( url, nullptr, comphelper::getProcessComponentContext() );
         OUString propName =  "DocumentModel";
         result = getUCBProperty( root, propName );
     }

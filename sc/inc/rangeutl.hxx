@@ -55,24 +55,24 @@ public:
 
     static bool IsAbsTabArea    ( const OUString&   rAreaStr,
                                   ScDocument*       pDoc,
-                                  ScArea***         pppAreas    = 0,
-                                  sal_uInt16*       pAreaCount  = 0,
+                                  ScArea***         pppAreas    = nullptr,
+                                  sal_uInt16*       pAreaCount  = nullptr,
                                   bool              bAcceptCellRef = false,
                                   ScAddress::Details const & rDetails = ScAddress::detailsOOOa1 );
 
     static bool IsAbsArea       ( const OUString& rAreaStr,
                                   ScDocument*   pDoc,
                                   SCTAB     nTab,
-                                  OUString*     pCompleteStr = 0,
-                                  ScRefAddress* pStartPos    = 0,
-                                  ScRefAddress* pEndPos      = 0,
+                                  OUString*     pCompleteStr = nullptr,
+                                  ScRefAddress* pStartPos    = nullptr,
+                                  ScRefAddress* pEndPos      = nullptr,
                                   ScAddress::Details const & rDetails = ScAddress::detailsOOOa1 );
 
     static bool IsAbsPos        ( const OUString& rPosStr,
                                   ScDocument*   pDoc,
                                   SCTAB     nTab,
-                                  OUString*       pCompleteStr = 0,
-                                  ScRefAddress* pPosTripel   = 0,
+                                  OUString*       pCompleteStr = nullptr,
+                                  ScRefAddress* pPosTripel   = nullptr,
                                   ScAddress::Details const & rDetails = ScAddress::detailsOOOa1 );
 
     static bool MakeRangeFromName( const OUString& rName,
@@ -158,7 +158,7 @@ public:
 
 /// String to Range API
     static bool     GetAddressFromString(
-                            ::com::sun::star::table::CellAddress& rAddress,
+                            css::table::CellAddress& rAddress,
                             const OUString& rAddressStr,
                             const ScDocument* pDocument,
                             formula::FormulaGrammar::AddressConvention eConv,
@@ -166,7 +166,7 @@ public:
                             sal_Unicode cSeparator = ' ',
                             sal_Unicode cQuote = '\'');
     static bool     GetRangeFromString(
-                            ::com::sun::star::table::CellRangeAddress& rRange,
+                            css::table::CellRangeAddress& rRange,
                             const OUString& rRangeStr,
                             const ScDocument* pDocument,
                             formula::FormulaGrammar::AddressConvention eConv,
@@ -211,7 +211,7 @@ public:
 /// Range to String API
     static void         GetStringFromAddress(
                             OUString& rString,
-                            const ::com::sun::star::table::CellAddress& rAddress,
+                            const css::table::CellAddress& rAddress,
                             const ScDocument* pDocument,
                             formula::FormulaGrammar::AddressConvention eConv,
                             sal_Unicode cSeparator = ' ',
@@ -219,7 +219,7 @@ public:
                             sal_uInt16 nFormatFlags = (SCA_VALID | SCA_TAB_3D) );
     static void         GetStringFromRange(
                             OUString& rString,
-                            const ::com::sun::star::table::CellRangeAddress& rRange,
+                            const css::table::CellRangeAddress& rRange,
                             const ScDocument* pDocument,
                             formula::FormulaGrammar::AddressConvention eConv,
                             sal_Unicode cSeparator = ' ',
@@ -227,7 +227,7 @@ public:
                             sal_uInt16 nFormatFlags = (SCA_VALID | SCA_TAB_3D) );
     static void         GetStringFromRangeList(
                             OUString& rString,
-                            const ::com::sun::star::uno::Sequence< ::com::sun::star::table::CellRangeAddress >& rRangeSeq,
+                            const css::uno::Sequence< css::table::CellRangeAddress >& rRangeSeq,
                             const ScDocument* pDocument,
                             formula::FormulaGrammar::AddressConvention eConv,
                             sal_Unicode cSeparator = ' ',

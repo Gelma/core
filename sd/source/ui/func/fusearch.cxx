@@ -42,13 +42,14 @@ namespace sd {
 
 static sal_uInt16 SidArraySpell[] = {
             SID_DRAWINGMODE,
-            SID_OUTLINEMODE,
-            SID_DIAMODE,
-            SID_NOTESMODE,
-            SID_HANDOUTMODE,
+            SID_SLIDE_MASTER_MODE,
+            SID_OUTLINE_MODE,
+            SID_SLIDE_SORTER_MODE,
+            SID_NOTES_MODE,
+            SID_NOTES_MASTER_MODE,
+            SID_HANDOUT_MASTER_MODE,
             0 };
 
-TYPEINIT1( FuSearch, FuPoor );
 
 FuSearch::FuSearch (
     ViewShell* pViewSh,
@@ -57,7 +58,7 @@ FuSearch::FuSearch (
     SdDrawDocument* pDoc,
     SfxRequest& rReq )
     : FuPoor(pViewSh, pWin, pView, pDoc, rReq),
-      pSdOutliner(NULL),
+      pSdOutliner(nullptr),
       bOwnOutliner(false)
 {
 }
@@ -73,12 +74,12 @@ void FuSearch::DoExecute( SfxRequest& )
 {
     mpViewShell->GetViewFrame()->GetBindings().Invalidate( SidArraySpell );
 
-    if ( mpViewShell->ISA(DrawViewShell) )
+    if ( dynamic_cast< const DrawViewShell *>( mpViewShell ) !=  nullptr )
     {
         bOwnOutliner = true;
         pSdOutliner = new ::sd::Outliner( mpDoc, OUTLINERMODE_TEXTOBJECT );
     }
-    else if ( mpViewShell->ISA(OutlineViewShell) )
+    else if ( dynamic_cast< const OutlineViewShell *>( mpViewShell ) !=  nullptr )
     {
         bOwnOutliner = false;
         pSdOutliner = mpDoc->GetOutliner();
@@ -90,7 +91,7 @@ void FuSearch::DoExecute( SfxRequest& )
 
 FuSearch::~FuSearch()
 {
-    if ( ! mpDocSh->IsInDestruction() && mpDocSh->GetViewShell()!=NULL)
+    if ( ! mpDocSh->IsInDestruction() && mpDocSh->GetViewShell()!=nullptr)
         mpDocSh->GetViewShell()->GetViewFrame()->GetBindings().Invalidate( SidArraySpell );
 
     if (pSdOutliner)
@@ -102,14 +103,14 @@ FuSearch::~FuSearch()
 
 void FuSearch::SearchAndReplace( const SvxSearchItem* pSearchItem )
 {
-    ViewShellBase* pBase = PTR_CAST(ViewShellBase, SfxViewShell::Current());
-    ViewShell* pViewShell = NULL;
-    if (pBase != NULL)
+    ViewShellBase* pBase = dynamic_cast<ViewShellBase*>( SfxViewShell::Current() );
+    ViewShell* pViewShell = nullptr;
+    if (pBase != nullptr)
         pViewShell = pBase->GetMainViewShell().get();
 
-    if (pViewShell != NULL)
+    if (pViewShell != nullptr)
     {
-        if ( pSdOutliner && pViewShell->ISA(DrawViewShell) && !bOwnOutliner )
+        if ( pSdOutliner && dynamic_cast< const DrawViewShell *>( pViewShell ) !=  nullptr && !bOwnOutliner )
         {
             pSdOutliner->EndSpelling();
 
@@ -117,7 +118,7 @@ void FuSearch::SearchAndReplace( const SvxSearchItem* pSearchItem )
             pSdOutliner = new ::sd::Outliner( mpDoc, OUTLINERMODE_TEXTOBJECT );
             pSdOutliner->PrepareSpelling();
         }
-        else if ( pSdOutliner && pViewShell->ISA(OutlineViewShell) && bOwnOutliner )
+        else if ( pSdOutliner && dynamic_cast< const OutlineViewShell *>( pViewShell ) !=  nullptr && bOwnOutliner )
         {
             pSdOutliner->EndSpelling();
             delete pSdOutliner;

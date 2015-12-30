@@ -21,19 +21,18 @@
 #include <cppuhelper/supportsservice.hxx>
 #include <osl/diagnose.h>
 #include <rtl/ustrbuf.hxx>
-#include <tools/rtti.hxx>
 #include <svtools/unoevent.hxx>
 #include <svl/macitem.hxx>
 
 using namespace ::com::sun::star;
-using namespace ::com::sun::star::uno;
+using namespace css::uno;
 
-using ::com::sun::star::container::NoSuchElementException;
-using ::com::sun::star::container::XNameReplace;
-using ::com::sun::star::lang::IllegalArgumentException;
-using ::com::sun::star::lang::WrappedTargetException;
-using ::com::sun::star::lang::XServiceInfo;
-using ::com::sun::star::beans::PropertyValue;
+using css::container::NoSuchElementException;
+using css::container::XNameReplace;
+using css::lang::IllegalArgumentException;
+using css::lang::WrappedTargetException;
+using css::lang::XServiceInfo;
+using css::beans::PropertyValue;
 
 
 const sal_Char sAPI_ServiceName[] = "com.sun.star.container.XNameReplace";
@@ -52,7 +51,7 @@ SvBaseEventDescriptor::SvBaseEventDescriptor( const SvEventDescription* pSupport
         mpSupportedMacroItems(pSupportedMacroItems),
         mnMacroItems(0)
 {
-    assert(pSupportedMacroItems != NULL && "Need a list of supported events!");
+    assert(pSupportedMacroItems != nullptr && "Need a list of supported events!");
 
     for( ; mpSupportedMacroItems[mnMacroItems].mnEvent != 0; mnMacroItems++) ;
 }
@@ -152,8 +151,7 @@ sal_Bool SvBaseEventDescriptor::supportsService(const OUString& rServiceName)
 Sequence<OUString> SvBaseEventDescriptor::getSupportedServiceNames()
     throw(RuntimeException, std::exception)
 {
-    Sequence<OUString> aSequence(1);
-    aSequence[0] = sServiceName;
+    Sequence<OUString> aSequence { sServiceName };
 
     return aSequence;
 }
@@ -426,7 +424,7 @@ SvDetachedEventDescriptor::SvDetachedEventDescriptor(
     // ... and initialize
     for(sal_Int16 i = 0; i < mnMacroItems; i++)
     {
-        aMacros[i] = NULL;
+        aMacros[i] = nullptr;
     }
 }
 
@@ -435,7 +433,7 @@ SvDetachedEventDescriptor::~SvDetachedEventDescriptor()
     // delete contents of aMacros
     for(sal_Int16 i = 0; i < mnMacroItems; i++)
     {
-        if (NULL != aMacros[i])
+        if (nullptr != aMacros[i])
             delete aMacros[i];
     }
 
@@ -455,7 +453,7 @@ sal_Int16 SvDetachedEventDescriptor::getIndex(const sal_uInt16 nID) const
 }
 
 OUString SvDetachedEventDescriptor::getImplementationName()
-    throw( ::com::sun::star::uno::RuntimeException, std::exception )
+    throw( css::uno::RuntimeException, std::exception )
 {
     return sImplName;
 }
@@ -503,7 +501,7 @@ bool SvDetachedEventDescriptor::hasById(
     if (-1 == nIndex)
         throw IllegalArgumentException();
 
-    return (NULL != aMacros[nIndex]) && aMacros[nIndex]->HasMacro();
+    return (nullptr != aMacros[nIndex]) && aMacros[nIndex]->HasMacro();
 }
 
 
@@ -531,7 +529,7 @@ void SvMacroTableEventDescriptor::copyMacrosFromTable(
     {
         const sal_uInt16 nEvent = mpSupportedMacroItems[i].mnEvent;
         const SvxMacro* pMacro = rMacroTable.Get(nEvent);
-        if (NULL != pMacro)
+        if (nullptr != pMacro)
             replaceByName(nEvent, *pMacro);
     }
 

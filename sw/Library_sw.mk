@@ -214,6 +214,7 @@ $(eval $(call gb_Library_add_exception_objects,sw,\
     sw/source/core/doc/notxtfrm \
     sw/source/core/doc/number \
     sw/source/core/doc/poolfmt \
+    sw/source/core/doc/rdfhelper \
     sw/source/core/doc/sortopt \
     sw/source/core/doc/swserv \
     sw/source/core/doc/swstylemanager \
@@ -345,7 +346,6 @@ $(eval $(call gb_Library_add_exception_objects,sw,\
     sw/source/core/objectpositioning/tolayoutanchoredobjectposition \
     sw/source/core/ole/ndole \
     sw/source/core/para/paratr \
-    sw/source/core/sw3io/sw3convert \
     sw/source/core/sw3io/swacorr \
     sw/source/core/swg/SwXMLBlockExport \
     sw/source/core/swg/SwXMLBlockImport \
@@ -468,6 +468,7 @@ $(eval $(call gb_Library_add_exception_objects,sw,\
     sw/source/core/unocore/unoftn \
     sw/source/core/unocore/unoidx \
     sw/source/core/unocore/unomap \
+    sw/source/core/unocore/unomap1 \
     sw/source/core/unocore/unoobj \
     sw/source/core/unocore/unoobj2 \
     sw/source/core/unocore/unoparagraph \
@@ -600,6 +601,7 @@ $(eval $(call gb_Library_add_exception_objects,sw,\
     sw/source/uibase/docvw/OverlayRanges \
     sw/source/uibase/docvw/PostItMgr \
     sw/source/uibase/docvw/ShadowOverlayObject \
+    sw/source/uibase/docvw/SidebarScrollBar \
     sw/source/uibase/docvw/SidebarTxtControl \
     sw/source/uibase/docvw/SidebarTxtControlAcc \
     sw/source/uibase/docvw/SidebarWin \
@@ -683,7 +685,6 @@ $(eval $(call gb_Library_add_exception_objects,sw,\
     sw/source/uibase/sidebar/WrapPropertyPanel \
     sw/source/uibase/sidebar/ThemePanel \
     sw/source/uibase/sidebar/SwPanelFactory \
-    sw/source/uibase/smartmenu/stmenu \
     sw/source/uibase/table/chartins \
     sw/source/uibase/table/swtablerep \
     sw/source/uibase/table/tablemgr \

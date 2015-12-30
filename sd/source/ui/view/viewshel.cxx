@@ -98,8 +98,8 @@ public:
     virtual SfxShell* CreateShell (
         ::sd::ShellId nId,
         vcl::Window* pParentWindow,
-        ::sd::FrameView* pFrameView) SAL_OVERRIDE;
-    virtual void ReleaseShell (SfxShell* pShell) SAL_OVERRIDE;
+        ::sd::FrameView* pFrameView) override;
+    virtual void ReleaseShell (SfxShell* pShell) override;
 private:
     ::sd::ViewShell& mrViewShell;
     /** This cache holds the already created object bars.
@@ -114,26 +114,25 @@ namespace sd {
 
 bool ViewShell::IsPageFlipMode() const
 {
-    return this->ISA(DrawViewShell) && mpContentWindow.get() != NULL &&
+    return dynamic_cast< const DrawViewShell *>( this ) !=  nullptr && mpContentWindow.get() != nullptr &&
         mpContentWindow->GetVisibleHeight() >= 1.0;
 }
 
 SfxViewFrame* ViewShell::GetViewFrame() const
 {
     const SfxViewShell* pViewShell = GetViewShell();
-    if (pViewShell != NULL)
+    if (pViewShell != nullptr)
     {
         return pViewShell->GetViewFrame();
     }
     else
     {
-        OSL_ASSERT (GetViewShell()!=NULL);
-        return NULL;
+        OSL_ASSERT (GetViewShell()!=nullptr);
+        return nullptr;
     }
 }
 
 /// declare SFX-Slotmap and standard interface
-TYPEINIT1(ViewShell, SfxShell);
 
 ViewShell::ViewShell( SfxViewFrame*, vcl::Window* pParentWindow, ViewShellBase& rViewShellBase, bool bAllowCenter)
 :   SfxShell(&rViewShellBase)
@@ -148,13 +147,13 @@ ViewShell::~ViewShell()
     // Keep the content window from accessing in its destructor the
     // WindowUpdater.
     if (mpContentWindow)
-        mpContentWindow->SetViewShell(NULL);
+        mpContentWindow->SetViewShell(nullptr);
 
     delete mpZoomList;
 
     mpLayerTabBar.disposeAndClear();
 
-    if (mpImpl->mpSubShellFactory.get() != NULL)
+    if (mpImpl->mpSubShellFactory.get() != nullptr)
         GetViewShellBase().GetViewShellManager()->RemoveSubShellFactory(
             this,mpImpl->mpSubShellFactory);
 
@@ -180,10 +179,10 @@ ViewShell::~ViewShell()
 void ViewShell::construct()
 {
     mbHasRulers = false;
-    mpActiveWindow = 0;
-    mpView = 0;
-    mpFrameView = 0;
-    mpZoomList = 0;
+    mpActiveWindow = nullptr;
+    mpView = nullptr;
+    mpFrameView = nullptr;
+    mpZoomList = nullptr;
     mbStartShowWithDialog = false;
     mnPrintedHandoutPageNum = 1;
     mnPrintedHandoutPageCount = 0;
@@ -191,7 +190,7 @@ void ViewShell::construct()
     mpImpl.reset(new Implementation(*this));
     meShellType = ST_NONE;
 
-    OSL_ASSERT (GetViewShell()!=NULL);
+    OSL_ASSERT (GetViewShell()!=nullptr);
 
     if (IsMainViewShell())
         GetDocSh()->Connect (this);
@@ -236,7 +235,7 @@ void ViewShell::construct()
           static_cast< ::sd::SpellDialogChildWindow*> (
               GetViewFrame()->GetChildWindow (
                   ::sd::SpellDialogChildWindow::GetChildWindowId()));
-    if (pSpellDialog != NULL)
+    if (pSpellDialog != nullptr)
         pSpellDialog->InvalidateSpellDialog();
 
     // Register the sub shell factory.
@@ -280,7 +279,7 @@ void ViewShell::Init (bool bIsMainViewShell)
 void ViewShell::Exit()
 {
     sd::View* pView = GetView();
-    if (pView!=NULL && pView->IsTextEdit())
+    if (pView!=nullptr && pView->IsTextEdit())
     {
         pView->SdrEndTextEdit();
         pView->UnmarkAll();
@@ -306,16 +305,16 @@ void ViewShell::Activate(bool bIsMDIActivate)
        is sent sometimes asynchronous,  it can happen, that the wrong window
        gets the focus. */
 
-    if (mpHorizontalRuler.get() != NULL)
+    if (mpHorizontalRuler.get() != nullptr)
         mpHorizontalRuler->SetActive();
-    if (mpVerticalRuler.get() != NULL)
+    if (mpVerticalRuler.get() != nullptr)
         mpVerticalRuler->SetActive();
 
     if (bIsMDIActivate)
     {
         // thus, the Navigator will also get a current status
         SfxBoolItem aItem( SID_NAVIGATOR_INIT, true );
-        if (GetDispatcher() != NULL)
+        if (GetDispatcher() != nullptr)
             GetDispatcher()->Execute(
                 SID_NAVIGATOR_INIT,
                 SfxCallMode::ASYNCHRON | SfxCallMode::RECORD,
@@ -323,7 +322,7 @@ void ViewShell::Activate(bool bIsMDIActivate)
                 0L);
 
         SfxViewShell* pViewShell = GetViewShell();
-        OSL_ASSERT (pViewShell!=NULL);
+        OSL_ASSERT (pViewShell!=nullptr);
         SfxBindings& rBindings = pViewShell->GetViewFrame()->GetBindings();
         rBindings.Invalidate( SID_3D_STATE, true );
 
@@ -346,13 +345,13 @@ void ViewShell::Activate(bool bIsMDIActivate)
 
 void ViewShell::UIActivating( SfxInPlaceClient*  )
 {
-    OSL_ASSERT (GetViewShell()!=NULL);
+    OSL_ASSERT (GetViewShell()!=nullptr);
     GetViewShellBase().GetToolBarManager()->ToolBarsDestroyed();
 }
 
 void ViewShell::UIDeactivated( SfxInPlaceClient*  )
 {
-    OSL_ASSERT (GetViewShell()!=NULL);
+    OSL_ASSERT (GetViewShell()!=nullptr);
     GetViewShellBase().GetToolBarManager()->ToolBarsDestroyed();
     if ( GetDrawView() )
         GetViewShellBase().GetToolBarManager()->SelectionHasChanged(*this, *GetDrawView());
@@ -367,9 +366,9 @@ void ViewShell::Deactivate(bool bIsMDIActivate)
         GetDocSh()->Disconnect(this);
 
     if( pDragTransferable )
-        pDragTransferable->SetView( NULL );
+        pDragTransferable->SetView( nullptr );
 
-    OSL_ASSERT (GetViewShell()!=NULL);
+    OSL_ASSERT (GetViewShell()!=nullptr);
 
     // remember view attributes of FrameView
     WriteFrameViewData();
@@ -384,9 +383,9 @@ void ViewShell::Deactivate(bool bIsMDIActivate)
             GetCurrentFunction()->Deactivate();
     }
 
-    if (mpHorizontalRuler.get() != NULL)
+    if (mpHorizontalRuler.get() != nullptr)
         mpHorizontalRuler->SetActive(false);
-    if (mpVerticalRuler.get() != NULL)
+    if (mpVerticalRuler.get() != nullptr)
         mpVerticalRuler->SetActive(false);
 
     SfxShell::Deactivate(bIsMDIActivate);
@@ -408,7 +407,7 @@ bool ViewShell::KeyInput(const KeyEvent& rKEvt, ::sd::Window* pWin)
     {
         // give key input first to SfxViewShell to give CTRL+Key
         // (e.g. CTRL+SHIFT+'+', to front) priority.
-        OSL_ASSERT (GetViewShell()!=NULL);
+        OSL_ASSERT (GetViewShell()!=nullptr);
         bReturn = GetViewShell()->KeyInput(rKEvt);
     }
 
@@ -480,7 +479,7 @@ void ViewShell::MouseButtonDown(const MouseEvent& rMEvt, ::sd::Window* pWin)
     }
 
     // insert MouseEvent into E3dView
-    if (GetView() != NULL)
+    if (GetView() != nullptr)
         GetView()->SetMouseEvent(rMEvt);
 
     bool bConsumed = false;
@@ -637,7 +636,7 @@ void ViewShell::MouseMove(const MouseEvent& rMEvt, ::sd::Window* pWin)
         {
             std::shared_ptr<ViewShell::Implementation::ToolBarManagerLock> pLock(
                 mpImpl->mpUpdateLockForMouse);
-            if (pLock.get() != NULL)
+            if (pLock.get() != nullptr)
                 pLock->Release();
         }
     }
@@ -648,7 +647,7 @@ void ViewShell::MouseMove(const MouseEvent& rMEvt, ::sd::Window* pWin)
     }
 
     // insert MouseEvent into E3dView
-    if (GetView() != NULL)
+    if (GetView() != nullptr)
         GetView()->SetMouseEvent(rMEvt);
 
     if(HasCurrentFunction())
@@ -668,7 +667,7 @@ void ViewShell::MouseButtonUp(const MouseEvent& rMEvt, ::sd::Window* pWin)
         SetActiveWindow(pWin);
 
     // insert MouseEvent into E3dView
-    if (GetView() != NULL)
+    if (GetView() != nullptr)
         GetView()->SetMouseEvent(rMEvt);
 
     if( HasCurrentFunction())
@@ -685,7 +684,7 @@ void ViewShell::MouseButtonUp(const MouseEvent& rMEvt, ::sd::Window* pWin)
     {
         std::shared_ptr<ViewShell::Implementation::ToolBarManagerLock> pLock(
             mpImpl->mpUpdateLockForMouse);
-        if (pLock.get() != NULL)
+        if (pLock.get() != nullptr)
             pLock->Release();
     }
 }
@@ -778,7 +777,7 @@ bool ViewShell::HandleScrollCommand(const CommandEvent& rCEvt, ::sd::Window* pWi
         {
             const CommandWheelData* pData = rCEvt.GetWheelData();
 
-            if (pData != NULL)
+            if (pData != nullptr)
             {
                 if (pData->IsMod1())
                 {
@@ -833,24 +832,24 @@ bool ViewShell::HandleScrollCommand(const CommandEvent& rCEvt, ::sd::Window* pWi
 
 void ViewShell::SetupRulers()
 {
-    if(mbHasRulers && (mpContentWindow.get() != NULL) && !SlideShow::IsRunning(GetViewShellBase()))
+    if(mbHasRulers && (mpContentWindow.get() != nullptr) && !SlideShow::IsRunning(GetViewShellBase()))
     {
         long nHRulerOfs = 0;
 
-        if ( mpVerticalRuler.get() == NULL )
+        if ( mpVerticalRuler.get() == nullptr )
         {
             mpVerticalRuler.reset(CreateVRuler(GetActiveWindow()));
-            if ( mpVerticalRuler.get() != NULL )
+            if ( mpVerticalRuler.get() != nullptr )
             {
                 nHRulerOfs = mpVerticalRuler->GetSizePixel().Width();
                 mpVerticalRuler->SetActive();
                 mpVerticalRuler->Show();
             }
         }
-        if ( mpHorizontalRuler.get() == NULL )
+        if ( mpHorizontalRuler.get() == nullptr )
         {
             mpHorizontalRuler.reset(CreateHRuler(GetActiveWindow(), true));
-            if ( mpHorizontalRuler.get() != NULL )
+            if ( mpHorizontalRuler.get() != nullptr )
             {
                 mpHorizontalRuler->SetWinPos(nHRulerOfs);
                 mpHorizontalRuler->SetActive();
@@ -862,7 +861,7 @@ void ViewShell::SetupRulers()
 
 const SfxPoolItem* ViewShell::GetNumBulletItem(SfxItemSet& aNewAttr, sal_uInt16& nNumItemId)
 {
-    const SfxPoolItem* pTmpItem = NULL;
+    const SfxPoolItem* pTmpItem = nullptr;
 
     if(aNewAttr.GetItemState(nNumItemId, false, &pTmpItem) == SfxItemState::SET)
     {
@@ -902,7 +901,7 @@ const SfxPoolItem* ViewShell::GetNumBulletItem(SfxItemSet& aNewAttr, sal_uInt16&
                 }
             }
 
-            const SvxNumBulletItem *pItem = NULL;
+            const SvxNumBulletItem *pItem = nullptr;
             if(bOutliner)
             {
                 SfxStyleSheetBasePool* pSSPool = mpView->GetDocSh()->GetStyleSheetPool();
@@ -912,14 +911,14 @@ const SfxPoolItem* ViewShell::GetNumBulletItem(SfxItemSet& aNewAttr, sal_uInt16&
                     pFirstStyleSheet->GetItemSet().GetItemState(EE_PARA_NUMBULLET, false, reinterpret_cast<const SfxPoolItem**>(&pItem));
             }
 
-            if( pItem == NULL )
+            if( pItem == nullptr )
                 pItem = static_cast<const SvxNumBulletItem*>( aNewAttr.GetPool()->GetSecondaryPool()->GetPoolDefaultItem(EE_PARA_NUMBULLET) );
 
             aNewAttr.Put(*pItem, EE_PARA_NUMBULLET);
 
-            if(bTitle && aNewAttr.GetItemState(EE_PARA_NUMBULLET,true) == SfxItemState::SET )
+            if(bTitle && aNewAttr.GetItemState(EE_PARA_NUMBULLET) == SfxItemState::SET )
             {
-                const SvxNumBulletItem* pBulletItem = static_cast<const SvxNumBulletItem*>(aNewAttr.GetItem(EE_PARA_NUMBULLET,true));
+                const SvxNumBulletItem* pBulletItem = static_cast<const SvxNumBulletItem*>(aNewAttr.GetItem(EE_PARA_NUMBULLET));
                 SvxNumRule* pRule = pBulletItem->GetNumRule();
                 if(pRule)
                 {
@@ -971,26 +970,26 @@ SvBorder ViewShell::GetBorder (bool )
     SvBorder aBorder;
 
     // Horizontal scrollbar.
-    if (mpHorizontalScrollBar.get()!=NULL
+    if (mpHorizontalScrollBar.get()!=nullptr
         && mpHorizontalScrollBar->IsVisible())
     {
         aBorder.Bottom() = maScrBarWH.Height();
     }
 
     // Vertical scrollbar.
-    if (mpVerticalScrollBar.get()!=NULL
+    if (mpVerticalScrollBar.get()!=nullptr
         && mpVerticalScrollBar->IsVisible())
     {
         aBorder.Right() = maScrBarWH.Width();
     }
 
     // Place horizontal ruler below tab bar.
-    if (mbHasRulers && mpContentWindow.get() != NULL)
+    if (mbHasRulers && mpContentWindow.get() != nullptr)
     {
         SetupRulers();
-        if (mpHorizontalRuler.get() != NULL)
+        if (mpHorizontalRuler.get() != nullptr)
             aBorder.Top() = mpHorizontalRuler->GetSizePixel().Height();
-        if (mpVerticalRuler.get() != NULL)
+        if (mpVerticalRuler.get() != nullptr)
             aBorder.Left() = mpVerticalRuler->GetSizePixel().Width();
     }
 
@@ -1010,11 +1009,11 @@ void ViewShell::ArrangeGUIElements()
     long nBottom = maViewPos.Y() + maViewSize.Height();
 
     // Horizontal scrollbar.
-    if (mpHorizontalScrollBar.get()!=NULL
+    if (mpHorizontalScrollBar.get()!=nullptr
         && mpHorizontalScrollBar->IsVisible())
     {
         nBottom -= maScrBarWH.Height();
-        if (mpLayerTabBar.get()!=NULL && mpLayerTabBar->IsVisible())
+        if (mpLayerTabBar.get()!=nullptr && mpLayerTabBar->IsVisible())
             nBottom -= mpLayerTabBar->GetSizePixel().Height();
         mpHorizontalScrollBar->SetPosSizePixel (
             Point(nLeft, nBottom),
@@ -1022,7 +1021,7 @@ void ViewShell::ArrangeGUIElements()
     }
 
     // Vertical scrollbar.
-    if (mpVerticalScrollBar.get()!=NULL
+    if (mpVerticalScrollBar.get()!=nullptr
         && mpVerticalScrollBar->IsVisible())
     {
         nRight -= maScrBarWH.Width();
@@ -1032,11 +1031,11 @@ void ViewShell::ArrangeGUIElements()
     }
 
     // Filler in the lower right corner.
-    if (mpScrollBarBox.get() != NULL)
+    if (mpScrollBarBox.get() != nullptr)
     {
-        if (mpHorizontalScrollBar.get()!=NULL
+        if (mpHorizontalScrollBar.get()!=nullptr
             && mpHorizontalScrollBar->IsVisible()
-            && mpVerticalScrollBar.get()!=NULL
+            && mpVerticalScrollBar.get()!=nullptr
             && mpVerticalScrollBar->IsVisible())
         {
             mpScrollBarBox->Show();
@@ -1047,20 +1046,20 @@ void ViewShell::ArrangeGUIElements()
     }
 
     // Place horizontal ruler below tab bar.
-    if (mbHasRulers && mpContentWindow.get() != NULL)
+    if (mbHasRulers && mpContentWindow.get() != nullptr)
     {
-        if (mpHorizontalRuler.get() != NULL)
+        if (mpHorizontalRuler.get() != nullptr)
         {
             Size aRulerSize = mpHorizontalRuler->GetSizePixel();
             aRulerSize.Width() = nRight - nLeft;
             mpHorizontalRuler->SetPosSizePixel (
                 Point(nLeft,nTop), aRulerSize);
-            if (mpVerticalRuler.get() != NULL)
+            if (mpVerticalRuler.get() != nullptr)
                 mpHorizontalRuler->SetBorderPos(
                     mpVerticalRuler->GetSizePixel().Width()-1);
             nTop += aRulerSize.Height();
         }
-        if (mpVerticalRuler.get() != NULL)
+        if (mpVerticalRuler.get() != nullptr)
         {
             Size aRulerSize = mpVerticalRuler->GetSizePixel();
             aRulerSize.Height() = nBottom  - nTop;
@@ -1077,7 +1076,7 @@ void ViewShell::ArrangeGUIElements()
     bool bSlideShowActive = (xSlideShow.is() && xSlideShow->isRunning()) && !xSlideShow->isFullScreen() && xSlideShow->getAnimationMode() == ANIMATIONMODE_SHOW;
     if ( !bSlideShowActive)
     {
-        OSL_ASSERT (GetViewShell()!=NULL);
+        OSL_ASSERT (GetViewShell()!=nullptr);
 
         if (mpContentWindow)
             mpContentWindow->SetPosSizePixel(
@@ -1091,7 +1090,7 @@ void ViewShell::ArrangeGUIElements()
         Size(maViewSize.Width()-maScrBarWH.Width(),
             maViewSize.Height()-maScrBarWH.Height()));
 
-    if (mpContentWindow.get() != NULL)
+    if (mpContentWindow.get() != nullptr)
         mpContentWindow->UpdateMapOrigin();
 
     UpdateScrollBars();
@@ -1102,10 +1101,10 @@ void ViewShell::ArrangeGUIElements()
 void ViewShell::SetUIUnit(FieldUnit eUnit)
 {
     // Set unit at horizontal and vertical rulers.
-    if (mpHorizontalRuler.get() != NULL)
+    if (mpHorizontalRuler.get() != nullptr)
         mpHorizontalRuler->SetUnit(eUnit);
 
-    if (mpVerticalRuler.get() != NULL)
+    if (mpVerticalRuler.get() != nullptr)
         mpVerticalRuler->SetUnit(eUnit);
 }
 
@@ -1114,7 +1113,7 @@ void ViewShell::SetUIUnit(FieldUnit eUnit)
  */
 void ViewShell::SetDefTabHRuler( sal_uInt16 nDefTab )
 {
-    if (mpHorizontalRuler.get() != NULL)
+    if (mpHorizontalRuler.get() != nullptr)
         mpHorizontalRuler->SetDefTabDist( nDefTab );
 }
 
@@ -1126,7 +1125,7 @@ bool ViewShell::PrepareClose (bool bUI)
     bool bResult = true;
 
     FmFormShell* pFormShell = GetViewShellBase().GetFormShellManager()->GetFormShell();
-    if (pFormShell != NULL)
+    if (pFormShell != nullptr)
         bResult = pFormShell->PrepareClose (bUI);
 
     return bResult;
@@ -1143,7 +1142,7 @@ void ViewShell::UpdatePreview (SdPage*, bool )
 {
     const ViewShell* pMainViewShell = GetViewShellBase().GetMainViewShell().get();
 
-    if( pMainViewShell == 0 )
+    if( pMainViewShell == nullptr )
         pMainViewShell = this;
 
     ::sd::View* pView = pMainViewShell->GetView();
@@ -1171,7 +1170,7 @@ void ViewShell::UpdatePreview (SdPage*, bool )
     if( GetDocSh() )
         return GetDocSh()->GetUndoManager();
 
-    return NULL;
+    return nullptr;
 }
 
 void ViewShell::ImpGetUndoStrings(SfxItemSet &rSet) const
@@ -1360,14 +1359,12 @@ void ViewShell::ExecReq( SfxRequest& rReq )
 /** This default implementation returns only an empty reference.  See derived
     classes for more interesting examples.
 */
-::com::sun::star::uno::Reference<
-    ::com::sun::star::accessibility::XAccessible>
+css::uno::Reference<css::accessibility::XAccessible>
 ViewShell::CreateAccessibleDocumentView (::sd::Window* )
 {
     OSL_FAIL("ViewShell::CreateAccessibleDocumentView should not be called!, perhaps Meyers, 3rd edition, Item 9:\n");
 
-    return ::com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessible> ();
+    return css::uno::Reference<css::accessibility::XAccessible> ();
 }
 
 ::sd::WindowUpdater* ViewShell::GetWindowUpdater() const
@@ -1502,23 +1499,23 @@ void ViewShell::ShowUIControls (bool bVisible)
 
     if (mbHasRulers)
     {
-        if (mpHorizontalRuler.get() != NULL)
+        if (mpHorizontalRuler.get() != nullptr)
             mpHorizontalRuler->Show( bVisible );
 
-        if (mpVerticalRuler.get() != NULL)
+        if (mpVerticalRuler.get() != nullptr)
             mpVerticalRuler->Show( bVisible );
     }
 
-    if (mpVerticalScrollBar.get() != NULL)
+    if (mpVerticalScrollBar.get() != nullptr)
         mpVerticalScrollBar->Show( bVisible );
 
-    if (mpHorizontalScrollBar.get() != NULL)
+    if (mpHorizontalScrollBar.get() != nullptr)
         mpHorizontalScrollBar->Show( bVisible );
 
-    if (mpScrollBarBox.get() != NULL)
+    if (mpScrollBarBox.get() != nullptr)
         mpScrollBarBox->Show(bVisible);
 
-    if (mpContentWindow.get() != NULL)
+    if (mpContentWindow.get() != nullptr)
         mpContentWindow->Show( bVisible );
 }
 
@@ -1529,20 +1526,20 @@ bool ViewShell::RelocateToParentWindow (vcl::Window* pParentWindow)
     if (mpParentWindow)
         mpParentWindow->SetBackground (Wallpaper());
 
-    if (mpContentWindow.get() != NULL)
+    if (mpContentWindow.get() != nullptr)
         mpContentWindow->SetParent(pParentWindow);
 
-    if (mpHorizontalScrollBar.get() != NULL)
+    if (mpHorizontalScrollBar.get() != nullptr)
         mpHorizontalScrollBar->SetParent(mpParentWindow);
-    if (mpVerticalScrollBar.get() != NULL)
+    if (mpVerticalScrollBar.get() != nullptr)
         mpVerticalScrollBar->SetParent(mpParentWindow);
-    if (mpScrollBarBox.get() != NULL)
+    if (mpScrollBarBox.get() != nullptr)
         mpScrollBarBox->SetParent(mpParentWindow);
 
     return true;
 }
 
-void ViewShell::SwitchViewFireFocus(::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > xAcc )
+void ViewShell::SwitchViewFireFocus(css::uno::Reference< css::accessibility::XAccessible > xAcc )
 {
     if (xAcc.get())
     {
@@ -1595,10 +1592,10 @@ SfxShell* ViewShellObjectBarFactory::CreateShell (
     vcl::Window*,
     ::sd::FrameView* )
 {
-    SfxShell* pShell = NULL;
+    SfxShell* pShell = nullptr;
 
     ShellCache::iterator aI (maShellCache.find(nId));
-    if (aI == maShellCache.end() || aI->second==NULL)
+    if (aI == maShellCache.end() || aI->second==nullptr)
     {
         ::sd::View* pView = mrViewShell.GetView();
         switch (nId)
@@ -1635,7 +1632,7 @@ SfxShell* ViewShellObjectBarFactory::CreateShell (
                 break;
 
             default:
-                pShell = NULL;
+                pShell = nullptr;
                 break;
         }
     }
@@ -1647,7 +1644,7 @@ SfxShell* ViewShellObjectBarFactory::CreateShell (
 
 void ViewShellObjectBarFactory::ReleaseShell (SfxShell* pShell)
 {
-    if (pShell != NULL)
+    if (pShell != nullptr)
         delete pShell;
 }
 

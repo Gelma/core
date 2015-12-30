@@ -63,16 +63,16 @@ public:
     /** Returns the text data of this portion. */
     inline const OUString& getText() const { return maText; }
     /** Returns true, if the portion contains font formatting. */
-    inline bool         hasFont() const { return mxFont.get() != 0; }
+    inline bool         hasFont() const { return mxFont.get() != nullptr; }
 
     /** Converts the portion and replaces or appends to the passed XText. */
     void                convert(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::text::XText >& rxText,
+                            const css::uno::Reference< css::text::XText >& rxText,
                             const oox::xls::Font* pFont, bool bReplace );
     void                convert( ScEditEngineDefaulter& rEE, ESelection& rSelection, const oox::xls::Font* pFont );
 
     void                writeFontProperties(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::text::XText >& rxText,
+        const css::uno::Reference< css::text::XText >& rxText,
         const oox::xls::Font* pFont ) const;
 
 private:
@@ -248,7 +248,7 @@ public:
         if there is only one unformatted portion. */
     bool                extractPlainString(
                             OUString& orString,
-                            const oox::xls::Font* pFirstPortionFont = 0 ) const;
+                            const oox::xls::Font* pFirstPortionFont = nullptr ) const;
 
     /** Converts the string and writes it into the passed XText.
         @param rxText  The XText interface of the target object.
@@ -256,9 +256,9 @@ public:
         @param pFirstPortionFont  Optional font providing additional rich-text
             formatting for the first text portion, e.g. font escapement. */
     void                convert(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::text::XText >& rxText,
+                            const css::uno::Reference< css::text::XText >& rxText,
                             bool bReplaceOld,
-                            const oox::xls::Font* pFirstPortionFont = 0 ) const;
+                            const oox::xls::Font* pFirstPortionFont = nullptr ) const;
     ::EditTextObject*   convert( ScEditEngineDefaulter& rEE, const oox::xls::Font* pFont ) const;
 
 private:

@@ -141,7 +141,7 @@ FmGridHeader::~FmGridHeader()
 void FmGridHeader::dispose()
 {
     delete m_pImpl;
-    m_pImpl = NULL;
+    m_pImpl = nullptr;
     svt::EditBrowserHeader::dispose();
 }
 
@@ -188,10 +188,10 @@ void FmGridHeader::RequestHelp( const HelpEvent& rHEvt )
             aItemRect.Bottom() = aPt.Y();
 
             sal_uInt16 nPos = GetModelColumnPos(nItemId);
-            Reference< ::com::sun::star::container::XIndexContainer >  xColumns(static_cast<FmGridControl*>(GetParent())->GetPeer()->getColumns());
+            Reference< css::container::XIndexContainer >  xColumns(static_cast<FmGridControl*>(GetParent())->GetPeer()->getColumns());
             try
             {
-                Reference< ::com::sun::star::beans::XPropertySet >  xColumn(xColumns->getByIndex(nPos),UNO_QUERY);
+                Reference< css::beans::XPropertySet >  xColumn(xColumns->getByIndex(nPos),UNO_QUERY);
                 OUString aHelpText;
                 xColumn->getPropertyValue(FM_PROP_HELPTEXT) >>= aHelpText;
                 if ( aHelpText.isEmpty() )
@@ -363,7 +363,7 @@ sal_Int8 FmGridHeader::ExecuteDrop( const ExecuteDropEvent& _rEvt )
         m_pImpl->xDroppedStatement = xStatement;
         m_pImpl->xDroppedResultSet = xResultSet;
 
-        PostUserEvent(LINK(this, FmGridHeader, OnAsyncExecuteDrop), NULL, true);
+        PostUserEvent(LINK(this, FmGridHeader, OnAsyncExecuteDrop), nullptr, true);
     }
     catch (Exception&)
     {
@@ -637,17 +637,16 @@ void FmGridHeader::PreExecuteColumnContextMenu(sal_uInt16 nColId, PopupMenu& rMe
 {
     bool bDesignMode = static_cast<FmGridControl*>(GetParent())->IsDesignMode();
 
-    Reference< ::com::sun::star::container::XIndexContainer >  xCols(static_cast<FmGridControl*>(GetParent())->GetPeer()->getColumns());
+    Reference< css::container::XIndexContainer >  xCols(static_cast<FmGridControl*>(GetParent())->GetPeer()->getColumns());
     // Aufbau des Insert Menues
     // mark the column if nColId != HEADERBAR_ITEM_NOTFOUND
     if(nColId > 0)
     {
         sal_uInt16 nPos2 = GetModelColumnPos(nColId);
 
-        Reference< ::com::sun::star::container::XIndexContainer >  xColumns(static_cast<FmGridControl*>(GetParent())->GetPeer()->getColumns());
-        Reference< ::com::sun::star::beans::XPropertySet> xColumn(
-            xColumns->getByIndex(nPos2), css::uno::UNO_QUERY);
-        Reference< ::com::sun::star::view::XSelectionSupplier >  xSelSupplier(xColumns, UNO_QUERY);
+        Reference< css::container::XIndexContainer >  xColumns(static_cast<FmGridControl*>(GetParent())->GetPeer()->getColumns());
+        Reference< css::beans::XPropertySet>          xColumn( xColumns->getByIndex(nPos2), css::uno::UNO_QUERY);
+        Reference< css::view::XSelectionSupplier >    xSelSupplier(xColumns, UNO_QUERY);
         if (xSelSupplier.is())
             xSelSupplier->select(makeAny(xColumn));
     }
@@ -676,21 +675,20 @@ void FmGridHeader::PreExecuteColumnContextMenu(sal_uInt16 nColId, PopupMenu& rMe
 
     if (pMenu && xCols.is() && nColId)
     {
-        Reference< ::com::sun::star::beans::XPropertySet > xSet(
-            xCols->getByIndex(nPos), css::uno::UNO_QUERY);
+        Reference< css::beans::XPropertySet > xSet( xCols->getByIndex(nPos), css::uno::UNO_QUERY);
         sal_Int16 nClassId;
         xSet->getPropertyValue(FM_PROP_CLASSID) >>= nClassId;
 
-        Reference< ::com::sun::star::io::XPersistObject >  xServiceQuestion(xSet, UNO_QUERY);
+        Reference< css::io::XPersistObject >  xServiceQuestion(xSet, UNO_QUERY);
         sal_Int32 nColType = xServiceQuestion.is() ? getColumnTypeByModelName(xServiceQuestion->getServiceName()) : 0;
         if (nColType == TYPE_TEXTFIELD)
         {   // edit fields and formatted fields have the same service name, thus getColumnTypeByModelName returns TYPE_TEXTFIELD
-            // in both cases. And as columns don't have an ::com::sun::star::lang::XServiceInfo interface, we have to distinguish both
+            // in both cases. And as columns don't have an css::lang::XServiceInfo interface, we have to distinguish both
             // types via the existence of special properties
-            Reference< ::com::sun::star::beans::XPropertySet >  xProps(xSet, UNO_QUERY);
+            Reference< css::beans::XPropertySet >  xProps(xSet, UNO_QUERY);
             if (xProps.is())
             {
-                Reference< ::com::sun::star::beans::XPropertySetInfo >  xPropsInfo = xProps->getPropertySetInfo();
+                Reference< css::beans::XPropertySetInfo >  xPropsInfo = xProps->getPropertySetInfo();
                 if (xPropsInfo.is() && xPropsInfo->hasPropertyByName(FM_PROP_FORMATSSUPPLIER))
                     nColType = TYPE_FORMATTEDFIELD;
             }
@@ -721,7 +719,7 @@ void FmGridHeader::PreExecuteColumnContextMenu(sal_uInt16 nColId, PopupMenu& rMe
         if (xCols.is())
         {
             // check for hidden cols
-            Reference< ::com::sun::star::beans::XPropertySet >  xCurCol;
+            Reference< css::beans::XPropertySet >  xCurCol;
             Any aHidden,aName;
             for (sal_Int32 i=0; i<xCols->getCount(); ++i)
             {
@@ -763,15 +761,14 @@ void FmGridHeader::PreExecuteColumnContextMenu(sal_uInt16 nColId, PopupMenu& rMe
         // ask the bindings of the current view frame (which should be the one we're residing in) for the state
         if (pCurrentFrame)
         {
-            SfxPoolItem* pItem = NULL;
+            std::unique_ptr<SfxPoolItem> pItem;
             eState = pCurrentFrame->GetBindings().QueryState(SID_FM_CTL_PROPERTIES, pItem);
 
-            if (eState >= SfxItemState::DEFAULT && pItem )
+            if (eState >= SfxItemState::DEFAULT && pItem.get() != nullptr )
             {
-                bool bChecked = pItem->ISA(SfxBoolItem) && static_cast<SfxBoolItem*>(pItem)->GetValue();
+                bool bChecked = dynamic_cast<const SfxBoolItem*>( pItem.get()) != nullptr && static_cast<SfxBoolItem*>(pItem.get())->GetValue();
                 rMenu.CheckItem(SID_FM_SHOW_PROPERTY_BROWSER,bChecked);
             }
-            delete pItem;
         }
     }
 }
@@ -780,7 +777,7 @@ enum InspectorAction { eOpenInspector, eCloseInspector, eUpdateInspector, eNone 
 
 void FmGridHeader::PostExecuteColumnContextMenu(sal_uInt16 nColId, const PopupMenu& rMenu, sal_uInt16 nExecutionResult)
 {
-    Reference< ::com::sun::star::container::XIndexContainer >  xCols(static_cast<FmGridControl*>(GetParent())->GetPeer()->getColumns());
+    Reference< css::container::XIndexContainer >  xCols(static_cast<FmGridControl*>(GetParent())->GetPeer()->getColumns());
     sal_uInt16 nPos = GetModelColumnPos(nColId);
 
     // remove and delete the menu we inserted in PreExecuteColumnContextMenu
@@ -856,8 +853,7 @@ void FmGridHeader::PostExecuteColumnContextMenu(sal_uInt16 nColId, const PopupMe
             break;
         case SID_FM_HIDECOL:
         {
-            Reference< ::com::sun::star::beans::XPropertySet > xCurCol(
-                xCols->getByIndex(nPos), css::uno::UNO_QUERY);
+            Reference< css::beans::XPropertySet > xCurCol( xCols->getByIndex(nPos), css::uno::UNO_QUERY);
             xCurCol->setPropertyValue(FM_PROP_HIDDEN, makeAny(true));
         }
         break;
@@ -866,7 +862,7 @@ void FmGridHeader::PostExecuteColumnContextMenu(sal_uInt16 nColId, const PopupMe
             SvxAbstractDialogFactory* pFact = SvxAbstractDialogFactory::Create();
             if(pFact)
             {
-                std::unique_ptr<AbstractFmShowColsDialog> pDlg(pFact->CreateFmShowColsDialog(NULL));
+                std::unique_ptr<AbstractFmShowColsDialog> pDlg(pFact->CreateFmShowColsDialog(nullptr));
                 DBG_ASSERT(pDlg, "Dialog creation failed!");
                 pDlg->SetColumns(xCols);
                 pDlg->Execute();
@@ -877,7 +873,7 @@ void FmGridHeader::PostExecuteColumnContextMenu(sal_uInt16 nColId, const PopupMe
         case SID_FM_SHOWALLCOLS:
         {
             // just iterate through all the cols ...
-            Reference< ::com::sun::star::beans::XPropertySet >  xCurCol;
+            Reference< css::beans::XPropertySet >  xCurCol;
             for (sal_Int32 i=0; i<xCols->getCount(); ++i)
             {
                 xCurCol.set(xCols->getByIndex(i), css::uno::UNO_QUERY);
@@ -891,7 +887,7 @@ void FmGridHeader::PostExecuteColumnContextMenu(sal_uInt16 nColId, const PopupMe
             if (nExecutionResult>0 && nExecutionResult<=16)
             {   // it was a "show column/<colname>" command (there are at most 16 such items)
                 // search the nExecutionResult'th hidden col
-                Reference< ::com::sun::star::beans::XPropertySet >  xCurCol;
+                Reference< css::beans::XPropertySet >  xCurCol;
                 for (sal_uInt16 i=0; i<xCols->getCount() && nExecutionResult; ++i)
                 {
                     xCurCol.set(xCols->getByIndex(i), css::uno::UNO_QUERY);
@@ -1006,7 +1002,7 @@ void FmGridHeader::Command(const CommandEvent& rEvt)
 }
 
 FmGridControl::FmGridControl(
-                const Reference< ::com::sun::star::uno::XComponentContext >& _rxContext,
+                const Reference< css::uno::XComponentContext >& _rxContext,
                 vcl::Window* pParent,
                 FmXGridPeer* _pPeer,
                 WinBits nBits)
@@ -1045,8 +1041,8 @@ void FmGridControl::Command(const CommandEvent& _rEvt)
     DbGridControl::Command( _rEvt );
 }
 
-// ::com::sun::star::beans::XPropertyChangeListener
-void FmGridControl::propertyChange(const ::com::sun::star::beans::PropertyChangeEvent& evt)
+// css::beans::XPropertyChangeListener
+void FmGridControl::propertyChange(const css::beans::PropertyChangeEvent& evt)
 {
     if (evt.PropertyName == FM_PROP_ROWCOUNT)
     {
@@ -1087,12 +1083,12 @@ void FmGridControl::SetDesignMode(bool bMode)
         }
         else
         {
-            Reference< ::com::sun::star::container::XIndexContainer >  xColumns(GetPeer()->getColumns());
-            Reference< ::com::sun::star::view::XSelectionSupplier >  xSelSupplier(xColumns, UNO_QUERY);
+            Reference< css::container::XIndexContainer >  xColumns(GetPeer()->getColumns());
+            Reference< css::view::XSelectionSupplier >  xSelSupplier(xColumns, UNO_QUERY);
             if (xSelSupplier.is())
             {
                 Any aSelection = xSelSupplier->getSelection();
-                Reference< ::com::sun::star::beans::XPropertySet >  xColumn;
+                Reference< css::beans::XPropertySet >  xColumn;
                 if (aSelection.getValueType().getTypeClass() == TypeClass_INTERFACE)
                     xColumn.set(aSelection, css::uno::UNO_QUERY);
                 Reference< XInterface >  xCurrent;
@@ -1130,24 +1126,23 @@ void FmGridControl::DeleteSelectedRows()
         return;
 
     // try to confirm the delete
-    Reference< ::com::sun::star::frame::XDispatchProvider >  xDispatcher = static_cast<com::sun::star::frame::XDispatchProvider*>(GetPeer());
+    Reference< css::frame::XDispatchProvider >  xDispatcher = static_cast<css::frame::XDispatchProvider*>(GetPeer());
     if (xDispatcher.is())
     {
-        ::com::sun::star::util::URL aUrl;
+        css::util::URL aUrl;
         aUrl.Complete = FMURL_CONFIRM_DELETION;
-        // #100312# ------------
-        Reference< ::com::sun::star::util::XURLTransformer > xTransformer(
-            ::com::sun::star::util::URLTransformer::create(::comphelper::getProcessComponentContext()) );
+        Reference< css::util::XURLTransformer > xTransformer(
+            css::util::URLTransformer::create(::comphelper::getProcessComponentContext()) );
         xTransformer->parseStrict( aUrl );
 
-        Reference< ::com::sun::star::frame::XDispatch >  xDispatch = xDispatcher->queryDispatch(aUrl, OUString(), 0);
-        Reference< ::com::sun::star::form::XConfirmDeleteListener >  xConfirm(xDispatch, UNO_QUERY);
+        Reference< css::frame::XDispatch >  xDispatch = xDispatcher->queryDispatch(aUrl, OUString(), 0);
+        Reference< css::form::XConfirmDeleteListener >  xConfirm(xDispatch, UNO_QUERY);
         if (xConfirm.is())
         {
-            ::com::sun::star::sdb::RowChangeEvent aEvent;
+            css::sdb::RowChangeEvent aEvent;
             aEvent.Source = Reference< XInterface >(*getDataSource());
             aEvent.Rows = nSelectedRows;
-            aEvent.Action = ::com::sun::star::sdb::RowChangeAction::DELETE;
+            aEvent.Action = css::sdb::RowChangeAction::DELETE;
             if (!xConfirm->confirmDelete(aEvent))
                 return;
         }
@@ -1181,7 +1176,7 @@ void FmGridControl::DeleteSelectedRows()
     }
     else
     {
-        Reference< ::com::sun::star::sdbcx::XDeleteRows >  xDeleteThem(Reference< XInterface >(*getDataSource()), UNO_QUERY);
+        Reference< css::sdbcx::XDeleteRows >  xDeleteThem(Reference< XInterface >(*getDataSource()), UNO_QUERY);
 
         // collect the bookmarks of the selected rows
         Sequence < Any> aBookmarks = getSelectionBookmarks();
@@ -1280,7 +1275,7 @@ void FmGridControl::DeleteSelectedRows()
                     }
                     else
                     {
-                        Reference< ::com::sun::star::beans::XPropertySet >  xSet(Reference< XInterface >(*m_pDataCursor), UNO_QUERY);
+                        Reference< css::beans::XPropertySet >  xSet(Reference< XInterface >(*m_pDataCursor), UNO_QUERY);
 
                         sal_Int32 nRecordCount(0);
                         xSet->getPropertyValue(FM_PROP_ROWCOUNT) >>= nRecordCount;
@@ -1384,7 +1379,7 @@ void FmGridControl::DeleteSelectedRows()
 }
 
 // XCurrentRecordListener
-void FmGridControl::positioned(const ::com::sun::star::lang::EventObject& /*rEvent*/)
+void FmGridControl::positioned(const css::lang::EventObject& /*rEvent*/)
 {
     SAL_INFO("svx.fmcomp", "FmGridControl::positioned");
     // position on the data source (force it to be done in the main thread)
@@ -1393,7 +1388,7 @@ void FmGridControl::positioned(const ::com::sun::star::lang::EventObject& /*rEve
 
 bool FmGridControl::commit()
 {
-    // Commit nur ausfuehren, wenn nicht bereits ein Update vom ::com::sun::star::form::component::GridControl ausgefuehrt
+    // Commit nur ausfuehren, wenn nicht bereits ein Update vom css::form::component::GridControl ausgefuehrt
     // wird
     if (!IsUpdating())
     {
@@ -1406,7 +1401,7 @@ bool FmGridControl::commit()
     return true;
 }
 
-void FmGridControl::inserted(const ::com::sun::star::lang::EventObject& /*rEvent*/)
+void FmGridControl::inserted(const css::lang::EventObject& /*rEvent*/)
 {
     const DbGridRowRef& xRow = GetCurrentRow();
     if (!xRow.Is())
@@ -1484,7 +1479,7 @@ void FmGridControl::ColumnResized(sal_uInt16 nId)
 
     // Wert ans model uebergeben
     DbGridColumn* pCol = DbGridControl::GetColumns().at( GetModelColumnPos(nId) );
-    Reference< ::com::sun::star::beans::XPropertySet >  xColModel(pCol->getModel());
+    Reference< css::beans::XPropertySet >  xColModel(pCol->getModel());
     if (xColModel.is())
     {
         Any aWidth;
@@ -1519,14 +1514,14 @@ void FmGridControl::ColumnMoved(sal_uInt16 nId)
     m_bInColumnMove = true;
 
     DbGridControl::ColumnMoved(nId);
-    Reference< ::com::sun::star::container::XIndexContainer >  xColumns(GetPeer()->getColumns());
+    Reference< css::container::XIndexContainer >  xColumns(GetPeer()->getColumns());
 
     if (xColumns.is())
     {
         // suchen der Spalte und verschieben im Model
         // ColumnPos holen
         DbGridColumn* pCol = DbGridControl::GetColumns().at( GetModelColumnPos(nId) );
-        Reference< ::com::sun::star::beans::XPropertySet >  xCol;
+        Reference< css::beans::XPropertySet >  xCol;
 
         // Einfuegen muss sich an den Column Positionen orientieren
         sal_Int32 i;
@@ -1541,7 +1536,7 @@ void FmGridControl::ColumnMoved(sal_uInt16 nId)
             }
         }
 
-        DBG_ASSERT(i < xColumns->getCount(), "Falscher ::com::sun::star::sdbcx::Index");
+        DBG_ASSERT(i < xColumns->getCount(), "Falscher css::sdbcx::Index");
         xColumns->removeByIndex(i);
         Any aElement;
         aElement <<= xCol;
@@ -1555,7 +1550,7 @@ void FmGridControl::ColumnMoved(sal_uInt16 nId)
     m_bInColumnMove = false;
 }
 
-void FmGridControl::InitColumnsByModels(const Reference< ::com::sun::star::container::XIndexContainer >& xColumns)
+void FmGridControl::InitColumnsByModels(const Reference< css::container::XIndexContainer >& xColumns)
 {
     // Spalten wieder neu setzen
     // wenn es nur eine HandleColumn gibt, dann nicht
@@ -1575,7 +1570,7 @@ void FmGridControl::InitColumnsByModels(const Reference< ::com::sun::star::conta
     Any aWidth;
     for (i = 0; i < xColumns->getCount(); ++i)
     {
-        Reference< ::com::sun::star::beans::XPropertySet > xCol(
+        Reference< css::beans::XPropertySet > xCol(
             xColumns->getByIndex(i), css::uno::UNO_QUERY);
 
         OUString aName(
@@ -1598,8 +1593,7 @@ void FmGridControl::InitColumnsByModels(const Reference< ::com::sun::star::conta
     Any aHidden;
     for (i = 0; i < xColumns->getCount(); ++i)
     {
-        Reference< ::com::sun::star::beans::XPropertySet > xCol(
-            xColumns->getByIndex(i), css::uno::UNO_QUERY);
+        Reference< css::beans::XPropertySet > xCol( xColumns->getByIndex(i), css::uno::UNO_QUERY);
         aHidden = xCol->getPropertyValue(FM_PROP_HIDDEN);
         if (::comphelper::getBOOL(aHidden))
             HideColumn(GetColumnIdFromModelPos((sal_uInt16)i));
@@ -1680,7 +1674,7 @@ void FmGridControl::InitColumnByField(
     _pColumn->CreateControl( nFieldPos, xField, nTypeId );
 }
 
-void FmGridControl::InitColumnsByFields(const Reference< ::com::sun::star::container::XIndexAccess >& _rxFields)
+void FmGridControl::InitColumnsByFields(const Reference< css::container::XIndexAccess >& _rxFields)
 {
     if ( !_rxFields.is() )
         return;
@@ -1725,10 +1719,10 @@ bool FmGridControl::isColumnSelected(sal_uInt16 /*nId*/,DbGridColumn* _pColumn)
     OSL_ENSURE(_pColumn,"Column can not be null!");
     bool bSelected = false;
     // if the column which is shown here is selected ...
-    Reference< ::com::sun::star::view::XSelectionSupplier >  xSelSupplier(GetPeer()->getColumns(), UNO_QUERY);
+    Reference< css::view::XSelectionSupplier >  xSelSupplier(GetPeer()->getColumns(), UNO_QUERY);
     if ( xSelSupplier.is() )
     {
-        Reference< ::com::sun::star::beans::XPropertySet >  xColumn;
+        Reference< css::beans::XPropertySet >  xColumn;
         xSelSupplier->getSelection() >>= xColumn;
         bSelected = (xColumn.get() == _pColumn->getModel().get());
     }
@@ -2031,7 +2025,7 @@ void FmGridControl::KeyInput( const KeyEvent& rKEvt )
             case KEY_DELETE:
                 if ( GetSelectColumnCount() && GetPeer() && m_nCurrentSelectedColumn >= 0 )
                 {
-                    Reference< ::com::sun::star::container::XIndexContainer >  xCols(GetPeer()->getColumns());
+                    Reference< css::container::XIndexContainer >  xCols(GetPeer()->getColumns());
                     if ( xCols.is() )
                     {
                         try

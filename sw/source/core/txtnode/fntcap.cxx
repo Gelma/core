@@ -94,7 +94,7 @@ protected:
     SwDrawTextInfo &rInf;
     SwCapitalInfo* pCapInf; // referes to additional information
                            // required by the ::Do function
-    explicit SwDoCapitals ( SwDrawTextInfo &rInfo ) : rInf( rInfo ), pCapInf( 0 ) { }
+    explicit SwDoCapitals ( SwDrawTextInfo &rInfo ) : rInf( rInfo ), pCapInf( nullptr ) { }
     ~SwDoCapitals() {}
 public:
     virtual void Init( SwFntObj *pUpperFont, SwFntObj *pLowerFont ) = 0;
@@ -112,8 +112,8 @@ protected:
 public:
     explicit SwDoGetCapitalSize( SwDrawTextInfo &rInfo ) : SwDoCapitals ( rInfo ) { }
     virtual ~SwDoGetCapitalSize() {}
-    virtual void Init( SwFntObj *pUpperFont, SwFntObj *pLowerFont ) SAL_OVERRIDE;
-    virtual void Do() SAL_OVERRIDE;
+    virtual void Init( SwFntObj *pUpperFont, SwFntObj *pLowerFont ) override;
+    virtual void Do() override;
     const Size &GetSize() const { return aTextSize; }
 };
 
@@ -165,8 +165,8 @@ public:
         ,   m_nBreak( -1 )
         { }
     virtual ~SwDoGetCapitalBreak() {}
-    virtual void Init( SwFntObj *pUpperFont, SwFntObj *pLowerFont ) SAL_OVERRIDE;
-    virtual void Do() SAL_OVERRIDE;
+    virtual void Init( SwFntObj *pUpperFont, SwFntObj *pLowerFont ) override;
+    virtual void Do() override;
     sal_Int32 getBreak() const { return m_nBreak; }
 };
 
@@ -217,9 +217,9 @@ sal_Int32 SwFont::GetCapitalBreak( SwViewShell const * pSh, const OutputDevice* 
         0, false);
     aInfo.SetPos( aPos );
     aInfo.SetSpace( 0 );
-    aInfo.SetWrong( NULL );
-    aInfo.SetGrammarCheck( NULL );
-    aInfo.SetSmartTags( NULL );
+    aInfo.SetWrong( nullptr );
+    aInfo.SetGrammarCheck( nullptr );
+    aInfo.SetSmartTags( nullptr );
     aInfo.SetDrawSpace( false );
     aInfo.SetKern( CheckKerning() );
     aInfo.SetKanaComp( pScript ? 0 : 100 );
@@ -237,11 +237,11 @@ protected:
     SwFntObj *pLowerFnt;
 public:
     explicit SwDoDrawCapital( SwDrawTextInfo &rInfo ) :
-        SwDoCapitals( rInfo ), pUpperFnt(0), pLowerFnt(0)
+        SwDoCapitals( rInfo ), pUpperFnt(nullptr), pLowerFnt(nullptr)
         { }
     virtual ~SwDoDrawCapital() {}
-    virtual void Init( SwFntObj *pUpperFont, SwFntObj *pLowerFont ) SAL_OVERRIDE;
-    virtual void Do() SAL_OVERRIDE;
+    virtual void Init( SwFntObj *pUpperFont, SwFntObj *pLowerFont ) override;
+    virtual void Do() override;
     void DrawSpace( Point &rPos );
 };
 
@@ -276,11 +276,11 @@ void SwDoDrawCapital::DrawSpace( Point &rPos )
     long nDiff = rInf.GetPos().X() - rPos.X();
 
     Point aPos( rPos );
-    const bool bSwitchL2R = rInf.GetFrm()->IsRightToLeft() &&
-                          ! rInf.IsIgnoreFrmRTL();
+    const bool bSwitchL2R = rInf.GetFrame()->IsRightToLeft() &&
+                          ! rInf.IsIgnoreFrameRTL();
 
     if ( bSwitchL2R )
-       rInf.GetFrm()->SwitchLTRtoRTL( aPos );
+       rInf.GetFrame()->SwitchLTRtoRTL( aPos );
 
     const ComplexTextLayoutMode nMode = rInf.GetpOut()->GetLayoutMode();
     const bool bBidiPor = ( bSwitchL2R !=
@@ -289,14 +289,14 @@ void SwDoDrawCapital::DrawSpace( Point &rPos )
     if ( bBidiPor )
         nDiff = -nDiff;
 
-    if ( rInf.GetFrm()->IsVertical() )
-        rInf.GetFrm()->SwitchHorizontalToVertical( aPos );
+    if ( rInf.GetFrame()->IsVertical() )
+        rInf.GetFrame()->SwitchHorizontalToVertical( aPos );
 
     if ( nDiff )
     {
         rInf.ApplyAutoColor();
         GetOut().DrawStretchText( aPos, nDiff,
-            OUString("  "), 0, 2 );
+            "  ", 0, 2 );
     }
     rPos.X() = rInf.GetPos().X() + rInf.GetWidth();
 }
@@ -312,38 +312,38 @@ void SwSubFont::DrawCapital( SwDrawTextInfo &rInf )
     DoOnCapitals( aDo );
 }
 
-class SwDoCapitalCrsrOfst : public SwDoCapitals
+class SwDoCapitalCursorOfst : public SwDoCapitals
 {
 protected:
     SwFntObj *pUpperFnt;
     SwFntObj *pLowerFnt;
-    sal_Int32 nCrsr;
+    sal_Int32 nCursor;
     sal_uInt16 nOfst;
 public:
-    SwDoCapitalCrsrOfst( SwDrawTextInfo &rInfo, const sal_uInt16 nOfs ) :
-        SwDoCapitals( rInfo ), pUpperFnt(0), pLowerFnt(0), nCrsr( 0 ), nOfst( nOfs )
+    SwDoCapitalCursorOfst( SwDrawTextInfo &rInfo, const sal_uInt16 nOfs ) :
+        SwDoCapitals( rInfo ), pUpperFnt(nullptr), pLowerFnt(nullptr), nCursor( 0 ), nOfst( nOfs )
         { }
-    virtual ~SwDoCapitalCrsrOfst() {}
-    virtual void Init( SwFntObj *pUpperFont, SwFntObj *pLowerFont ) SAL_OVERRIDE;
-    virtual void Do() SAL_OVERRIDE;
+    virtual ~SwDoCapitalCursorOfst() {}
+    virtual void Init( SwFntObj *pUpperFont, SwFntObj *pLowerFont ) override;
+    virtual void Do() override;
 
-    inline sal_Int32 GetCrsr(){ return nCrsr; }
+    inline sal_Int32 GetCursor(){ return nCursor; }
 };
 
-void SwDoCapitalCrsrOfst::Init( SwFntObj *pUpperFont, SwFntObj *pLowerFont )
+void SwDoCapitalCursorOfst::Init( SwFntObj *pUpperFont, SwFntObj *pLowerFont )
 {
     pUpperFnt = pUpperFont;
     pLowerFnt = pLowerFont;
 }
 
-void SwDoCapitalCrsrOfst::Do()
+void SwDoCapitalCursorOfst::Do()
 {
     if ( nOfst )
     {
         if ( static_cast<long>(nOfst) > rInf.GetSize().Width() )
         {
             nOfst -= rInf.GetSize().Width();
-            nCrsr = nCrsr + rInf.GetLen();
+            nCursor = nCursor + rInf.GetLen();
         }
         else
         {
@@ -355,35 +355,35 @@ void SwDoCapitalCrsrOfst::Do()
             aDrawInf.SetOfst( nOfst );
             aDrawInf.SetKern( rInf.GetKern() );
             aDrawInf.SetKanaComp( rInf.GetKanaComp() );
-            aDrawInf.SetFrm( rInf.GetFrm() );
+            aDrawInf.SetFrame( rInf.GetFrame() );
             aDrawInf.SetFont( rInf.GetFont() );
 
             if ( rInf.GetUpper() )
             {
                 aDrawInf.SetSpace( 0 );
-                nCrsr = nCrsr + pUpperFnt->GetCrsrOfst( aDrawInf );
+                nCursor = nCursor + pUpperFnt->GetCursorOfst( aDrawInf );
             }
             else
             {
                 aDrawInf.SetSpace( rInf.GetSpace() );
-                nCrsr = nCrsr + pLowerFnt->GetCrsrOfst( aDrawInf );
+                nCursor = nCursor + pLowerFnt->GetCursorOfst( aDrawInf );
             }
             nOfst = 0;
         }
     }
 }
 
-sal_Int32 SwSubFont::GetCapitalCrsrOfst( SwDrawTextInfo& rInf )
+sal_Int32 SwSubFont::GetCapitalCursorOfst( SwDrawTextInfo& rInf )
 {
     const long nOldKern = rInf.GetKern();
     rInf.SetKern( CheckKerning() );
-    SwDoCapitalCrsrOfst aDo( rInf, rInf.GetOfst() );
+    SwDoCapitalCursorOfst aDo( rInf, rInf.GetOfst() );
     Point aPos;
     rInf.SetPos( aPos );
     rInf.SetDrawSpace( false );
     DoOnCapitals( aDo );
     rInf.SetKern( nOldKern );
-    return aDo.GetCrsr();
+    return aDo.GetCursor();
 }
 
 class SwDoDrawStretchCapital : public SwDoDrawCapital
@@ -392,7 +392,7 @@ class SwDoDrawStretchCapital : public SwDoDrawCapital
     const sal_uInt16 nCapWidth;
     const sal_uInt16 nOrgWidth;
 public:
-    virtual void Do() SAL_OVERRIDE;
+    virtual void Do() override;
 
     SwDoDrawStretchCapital( SwDrawTextInfo &rInfo, const sal_uInt16 nCapitalWidth )
             : SwDoDrawCapital( rInfo ),
@@ -425,14 +425,14 @@ void SwDoDrawStretchCapital::Do()
         rInf.ApplyAutoColor();
 
         Point aPos( rInf.GetPos() );
-        const bool bSwitchL2R = rInf.GetFrm()->IsRightToLeft() &&
-                              ! rInf.IsIgnoreFrmRTL();
+        const bool bSwitchL2R = rInf.GetFrame()->IsRightToLeft() &&
+                              ! rInf.IsIgnoreFrameRTL();
 
         if ( bSwitchL2R )
-            rInf.GetFrm()->SwitchLTRtoRTL( aPos );
+            rInf.GetFrame()->SwitchLTRtoRTL( aPos );
 
-        if ( rInf.GetFrm()->IsVertical() )
-            rInf.GetFrm()->SwitchHorizontalToVertical( aPos );
+        if ( rInf.GetFrame()->IsVertical() )
+            rInf.GetFrame()->SwitchHorizontalToVertical( aPos );
 
         // Optimierung:
         if( 1 >= rInf.GetLen() )
@@ -480,7 +480,6 @@ void SwSubFont::DoOnCapitals( SwDoCapitals &rDo )
     sal_Int32 nOldPos = nPos;
     nMaxPos = nMaxPos + nPos;
 
-    // #107816#
     // Look if the length of the original text and the ToUpper-converted
     // text is different. If yes, do special handling.
     OUString aNewText;
@@ -490,12 +489,12 @@ void SwSubFont::DoOnCapitals( SwDoCapitals &rDo )
         rDo.SetCapInf( aCapInf );
 
     SwFntObj *pOldLast = pLastFont;
-    SwFntAccess *pBigFontAccess = NULL;
+    SwFntAccess *pBigFontAccess = nullptr;
     SwFntObj *pBigFont;
-    SwFntAccess *pSpaceFontAccess = NULL;
-    SwFntObj *pSpaceFont = NULL;
+    SwFntAccess *pSpaceFontAccess = nullptr;
+    SwFntObj *pSpaceFont = nullptr;
 
-    const void *pMagic2 = NULL;
+    const void *pMagic2 = nullptr;
     sal_uInt16 nIndex2 = 0;
     SwSubFont aFont( *this );
     Point aStartPos( rDo.GetInf().GetPos() );
@@ -523,7 +522,7 @@ void SwSubFont::DoOnCapitals( SwDoCapitals &rDo )
         aFont.SetUnderline( UNDERLINE_NONE );
         aFont.SetOverline( UNDERLINE_NONE );
         aFont.SetStrikeout( STRIKEOUT_NONE );
-        pMagic2 = NULL;
+        pMagic2 = nullptr;
         nIndex2 = 0;
         pBigFontAccess = new SwFntAccess( pMagic2, nIndex2, &aFont,
                                           rDo.GetInf().GetShell() );
@@ -537,9 +536,9 @@ void SwSubFont::DoOnCapitals( SwDoCapitals &rDo )
     // NOTE: There are more uses of SMALL_CAPS_PERCENTAGE in editeng, but it seems they
     // do not matter for Writer (and if they did it'd be pretty ugly to propagate
     // the option there).
-    int smallCapsPercentage = smallCapsPercentage66 ? 66 : SMALL_CAPS_PERCENTAGE;
+    int smallCapsPercentage = m_bSmallCapsPercentage66 ? 66 : SMALL_CAPS_PERCENTAGE;
     aFont.SetProportion( (aFont.GetPropr() * smallCapsPercentage ) / 100 );
-    pMagic2 = NULL;
+    pMagic2 = nullptr;
     nIndex2 = 0;
     SwFntAccess *pSmallFontAccess = new SwFntAccess( pMagic2, nIndex2, &aFont,
                                                      rDo.GetInf().GetShell() );

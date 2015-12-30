@@ -101,9 +101,9 @@ class PagePreviewProvider : public PreviewProvider
 public:
     PagePreviewProvider();
     virtual ~PagePreviewProvider() {}
-    virtual Image operator () (int nWidth, SdPage* pPage, ::sd::PreviewRenderer& rRenderer) SAL_OVERRIDE;
-    virtual int GetCostIndex() SAL_OVERRIDE;
-    virtual bool NeedsPageObject() SAL_OVERRIDE;
+    virtual Image operator () (int nWidth, SdPage* pPage, ::sd::PreviewRenderer& rRenderer) override;
+    virtual int GetCostIndex() override;
+    virtual bool NeedsPageObject() override;
 private:
 };
 
@@ -113,11 +113,11 @@ private:
 class TemplatePageObjectProvider : public PageObjectProvider
 {
 public:
-    TemplatePageObjectProvider (const OUString& rsURL);
+    explicit TemplatePageObjectProvider (const OUString& rsURL);
     virtual ~TemplatePageObjectProvider() {};
-    virtual SdPage* operator () (SdDrawDocument* pDocument) SAL_OVERRIDE;
-    virtual int GetCostIndex() SAL_OVERRIDE;
-    virtual bool operator== (const PageObjectProvider& rProvider) SAL_OVERRIDE;
+    virtual SdPage* operator () (SdDrawDocument* pDocument) override;
+    virtual int GetCostIndex() override;
+    virtual bool operator== (const PageObjectProvider& rProvider) override;
 private:
     OUString msURL;
     SfxObjectShellLock mxDocumentShell;
@@ -130,11 +130,11 @@ private:
 class TemplatePreviewProvider : public PreviewProvider
 {
 public:
-    TemplatePreviewProvider (const OUString& rsURL);
+    explicit TemplatePreviewProvider (const OUString& rsURL);
     virtual ~TemplatePreviewProvider() {};
-    virtual Image operator() (int nWidth, SdPage* pPage, ::sd::PreviewRenderer& rRenderer) SAL_OVERRIDE;
-    virtual int GetCostIndex() SAL_OVERRIDE;
-    virtual bool NeedsPageObject() SAL_OVERRIDE;
+    virtual Image operator() (int nWidth, SdPage* pPage, ::sd::PreviewRenderer& rRenderer) override;
+    virtual int GetCostIndex() override;
+    virtual bool NeedsPageObject() override;
 private:
     OUString msURL;
 };
@@ -146,9 +146,9 @@ class DefaultPageObjectProvider : public PageObjectProvider
 public:
     DefaultPageObjectProvider();
     virtual ~DefaultPageObjectProvider() {}
-    virtual SdPage* operator () (SdDrawDocument* pDocument) SAL_OVERRIDE;
-    virtual int GetCostIndex() SAL_OVERRIDE;
-    virtual bool operator== (const PageObjectProvider& rProvider) SAL_OVERRIDE;
+    virtual SdPage* operator () (SdDrawDocument* pDocument) override;
+    virtual int GetCostIndex() override;
+    virtual bool operator== (const PageObjectProvider& rProvider) override;
 };
 
 /** This implementation of the PageObjectProvider simply returns an already
@@ -157,11 +157,11 @@ public:
 class ExistingPageProvider : public PageObjectProvider
 {
 public:
-    ExistingPageProvider (SdPage* pPage);
+    explicit ExistingPageProvider (SdPage* pPage);
     virtual ~ExistingPageProvider() {}
-    virtual SdPage* operator() (SdDrawDocument* pDocument) SAL_OVERRIDE;
-    virtual int GetCostIndex() SAL_OVERRIDE;
-    virtual bool operator== (const PageObjectProvider& rProvider) SAL_OVERRIDE;
+    virtual SdPage* operator() (SdDrawDocument* pDocument) override;
+    virtual int GetCostIndex() override;
+    virtual bool operator== (const PageObjectProvider& rProvider) override;
 private:
     SdPage* mpPage;
 };

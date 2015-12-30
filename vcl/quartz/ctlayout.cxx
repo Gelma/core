@@ -35,25 +35,25 @@ public:
     explicit        CTLayout( const CoreTextStyle* );
     virtual         ~CTLayout();
 
-    virtual bool    LayoutText( ImplLayoutArgs& ) SAL_OVERRIDE;
-    virtual void    AdjustLayout( ImplLayoutArgs& ) SAL_OVERRIDE;
-    virtual void    DrawText( SalGraphics& ) const SAL_OVERRIDE;
-    virtual bool    DrawTextSpecial( SalGraphics& rGraphics, sal_uInt32 flags ) const SAL_OVERRIDE;
+    virtual bool    LayoutText( ImplLayoutArgs& ) override;
+    virtual void    AdjustLayout( ImplLayoutArgs& ) override;
+    virtual void    DrawText( SalGraphics& ) const override;
+    virtual bool    DrawTextSpecial( SalGraphics& rGraphics, sal_uInt32 flags ) const override;
 
     virtual int     GetNextGlyphs( int nLen, sal_GlyphId* pOutGlyphIds, Point& rPos, int&,
                                    DeviceCoordinate* pGlyphAdvances, int* pCharIndexes,
-                                   const PhysicalFontFace** pFallbackFonts ) const SAL_OVERRIDE;
+                                   const PhysicalFontFace** pFallbackFonts ) const override;
 
-    virtual DeviceCoordinate GetTextWidth() const SAL_OVERRIDE;
-    virtual DeviceCoordinate FillDXArray( DeviceCoordinate* pDXArray ) const SAL_OVERRIDE;
-    virtual sal_Int32 GetTextBreak(DeviceCoordinate nMaxWidth, DeviceCoordinate nCharExtra, int nFactor) const SAL_OVERRIDE;
-    virtual void    GetCaretPositions( int nArraySize, long* pCaretXArray ) const SAL_OVERRIDE;
-    virtual bool    GetBoundRect( SalGraphics&, Rectangle& ) const SAL_OVERRIDE;
+    virtual DeviceCoordinate GetTextWidth() const override;
+    virtual DeviceCoordinate FillDXArray( DeviceCoordinate* pDXArray ) const override;
+    virtual sal_Int32 GetTextBreak(DeviceCoordinate nMaxWidth, DeviceCoordinate nCharExtra, int nFactor) const override;
+    virtual void    GetCaretPositions( int nArraySize, long* pCaretXArray ) const override;
+    virtual bool    GetBoundRect( SalGraphics&, Rectangle& ) const override;
 
-    virtual void    InitFont() const SAL_OVERRIDE;
-    virtual void    MoveGlyph( int nStart, long nNewXPos ) SAL_OVERRIDE;
-    virtual void    DropGlyph( int nStart ) SAL_OVERRIDE;
-    virtual void    Simplify( bool bIsBase ) SAL_OVERRIDE;
+    virtual void    InitFont() const override;
+    virtual void    MoveGlyph( int nStart, long nNewXPos ) override;
+    virtual void    DropGlyph( int nStart ) override;
+    virtual void    Simplify( bool bIsBase ) override;
 
 private:
     void            drawCTLine(AquaSalGraphics& rAquaGraphics, CTLineRef ctline, const CoreTextStyle* const pStyle) const;
@@ -85,8 +85,8 @@ private:
 
 CTLayout::CTLayout( const CoreTextStyle* pTextStyle )
     : mpTextStyle( pTextStyle )
-    , mpAttrString( NULL )
-    , mpCTLine( NULL )
+    , mpAttrString( nullptr )
+    , mpCTLine( nullptr )
     , mnCharCount( 0 )
     , mnTrailingSpaceCount( 0 )
     , mfTrailingSpaceWidth( 0.0 )
@@ -115,13 +115,13 @@ bool CTLayout::LayoutText( ImplLayoutArgs& rArgs )
     // release an eventual older layout
     if( mpAttrString )
         CFRelease( mpAttrString );
-    mpAttrString = NULL;
+    mpAttrString = nullptr;
     if( mpCTLine )
     {
         SAL_INFO( "vcl.ct", "CFRelease(" << mpCTLine << ")" );
         CFRelease( mpCTLine );
     }
-    mpCTLine = NULL;
+    mpCTLine = nullptr;
 
     // initialize the new layout
     SalLayout::AdjustLayout( rArgs );
@@ -131,13 +131,15 @@ bool CTLayout::LayoutText( ImplLayoutArgs& rArgs )
     if( mnCharCount <= 0 )
         return false;
 
+    const sal_Unicode *pStr = rArgs.mrStr.getStr();
+
     // create the CoreText line layout
-    CFStringRef aCFText = CFStringCreateWithCharactersNoCopy( NULL,
-                                                              rArgs.mpStr + mnMinCharPos,
+    CFStringRef aCFText = CFStringCreateWithCharactersNoCopy( nullptr,
+                                                              reinterpret_cast<UniChar const *>(pStr + mnMinCharPos),
                                                               mnCharCount,
                                                               kCFAllocatorNull );
     // CFAttributedStringCreate copies the attribues parameter
-    mpAttrString = CFAttributedStringCreate( NULL, aCFText, mpTextStyle->GetStyleDict() );
+    mpAttrString = CFAttributedStringCreate( nullptr, aCFText, mpTextStyle->GetStyleDict() );
     mpCTLine = CTLineCreateWithAttributedString( mpAttrString );
     SAL_INFO( "vcl.ct", "CTLineCreateWithAttributedString(\"" << GetOUString(aCFText) << "\") =p " << mpCTLine );
     CFRelease( aCFText);
@@ -146,7 +148,7 @@ bool CTLayout::LayoutText( ImplLayoutArgs& rArgs )
     // reverse search for first 'non-space'...
     for( int i = mnEndCharPos - 1; i >= mnMinCharPos; i--)
     {
-        sal_Unicode nChar = rArgs.mpStr[i];
+        sal_Unicode nChar = pStr[i];
         if ((nChar <= 0x0020) ||                  // blank
             (nChar == 0x00A0) ||                  // non breaking space
             (nChar >= 0x2000 && nChar <= 0x200F) || // whitespace
@@ -209,11 +211,12 @@ void CTLayout::AdjustLayout( ImplLayoutArgs& rArgs )
         // recreate the CoreText line layout without trailing spaces
         SAL_INFO( "vcl.ct", "CFRelease(" << mpCTLine << ")" );
         CFRelease( mpCTLine );
-        CFStringRef aCFText = CFStringCreateWithCharactersNoCopy( NULL,
-                                                                  rArgs.mpStr + mnMinCharPos,
+        const sal_Unicode *pStr = rArgs.mrStr.getStr();
+        CFStringRef aCFText = CFStringCreateWithCharactersNoCopy( nullptr,
+                                                                  reinterpret_cast<UniChar const *>(pStr + mnMinCharPos),
                                                                   mnCharCount - mnTrailingSpaceCount,
                                                                   kCFAllocatorNull );
-        CFAttributedStringRef pAttrStr = CFAttributedStringCreate( NULL,
+        CFAttributedStringRef pAttrStr = CFAttributedStringCreate( nullptr,
                                                                    aCFText,
                                                                    mpTextStyle->GetStyleDict() );
         mpCTLine = CTLineCreateWithAttributedString( pAttrStr );
@@ -486,9 +489,9 @@ int CTLayout::GetNextGlyphs( int nLen, sal_GlyphId* pOutGlyphIds, Point& rPos, i
     {
         nStart = 0;
     }
-    const PhysicalFontFace* pFallbackFont = NULL;
-    CTFontRef pFont = NULL;
-    CTFontDescriptorRef pFontDesc = NULL;
+    const PhysicalFontFace* pFallbackFont = nullptr;
+    CTFontRef pFont = nullptr;
+    CTFontDescriptorRef pFontDesc = nullptr;
     ImplDevFontAttributes rDevFontAttr;
 
     boost::ptr_vector<CTRunData>::const_iterator iter = m_vRunData.begin();
@@ -507,7 +510,7 @@ int CTLayout::GetNextGlyphs( int nLen, sal_GlyphId* pOutGlyphIds, Point& rPos, i
         {
             pFont = static_cast<CTFontRef>(CFDictionaryGetValue( mpTextStyle->GetStyleDict(), kCTFontAttributeName ));
             pFontDesc = CTFontCopyFontDescriptor( iter->m_pFont );
-            rDevFontAttr = DevFontFromCTFontDescriptor( pFontDesc, NULL );
+            rDevFontAttr = DevFontFromCTFontDescriptor( pFontDesc, nullptr );
         }
     }
     int i = nStart;
@@ -534,7 +537,7 @@ int CTLayout::GetNextGlyphs( int nLen, sal_GlyphId* pOutGlyphIds, Point& rPos, i
             }
             else
             {
-                *(pFallbackFonts++) = NULL;
+                *(pFallbackFonts++) = nullptr;
             }
         }
         if( i == nStart )
@@ -556,7 +559,7 @@ int CTLayout::GetNextGlyphs( int nLen, sal_GlyphId* pOutGlyphIds, Point& rPos, i
             {
                 pFont = static_cast<CTFontRef>(CFDictionaryGetValue( mpTextStyle->GetStyleDict(), kCTFontAttributeName ));
                 pFontDesc = CTFontCopyFontDescriptor( iter->m_pFont );
-                rDevFontAttr = DevFontFromCTFontDescriptor( pFontDesc, NULL );
+                rDevFontAttr = DevFontFromCTFontDescriptor( pFontDesc, nullptr );
             }
         }
     }
@@ -573,7 +576,7 @@ DeviceCoordinate CTLayout::GetTextWidth() const
 
     if( mfCachedWidth < 0.0 )
     {
-        mfCachedWidth = CTLineGetTypographicBounds( mpCTLine, NULL, NULL, NULL);
+        mfCachedWidth = CTLineGetTypographicBounds( mpCTLine, nullptr, nullptr, nullptr);
     }
 
     return mfCachedWidth;

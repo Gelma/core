@@ -47,7 +47,7 @@ class SwAddressTable : public SvSimpleTable
 public:
     SwAddressTable(SvSimpleTableContainer& rParent, WinBits nBits = 0);
     void InsertHeaderItem(sal_uInt16 nColumn, const OUString& rText, HeaderBarItemBits nBits);
-    virtual void Resize() SAL_OVERRIDE;
+    virtual void Resize() override;
     void setColSizes();
 };
 
@@ -162,7 +162,7 @@ IMPL_LINK_TYPED(SwSelectDBTableDialog, PreviewHdl, Button*, pButton, void)
     if(pEntry)
     {
         OUString sTableOrQuery = SvTabListBox::GetEntryText(pEntry, 0);
-        sal_Int32 nCommandType = 0 == pEntry->GetUserData() ? 0 : 1;
+        sal_Int32 nCommandType = nullptr == pEntry->GetUserData() ? 0 : 1;
 
         OUString sDataSourceName;
         Reference<XChild> xChild(m_xConnection, UNO_QUERY);
@@ -204,7 +204,7 @@ void   SwSelectDBTableDialog::SetSelectedTable(const OUString& rTable, bool bIsT
     while(pEntry)
     {
         if((SvTabListBox::GetEntryText(pEntry, 0) == rTable) &&
-           ((pEntry->GetUserData() == 0 ) == bIsTable))
+           ((pEntry->GetUserData() == nullptr ) == bIsTable))
         {
             m_pTable->Select(pEntry);
             break;

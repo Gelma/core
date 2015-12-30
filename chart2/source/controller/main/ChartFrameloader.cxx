@@ -81,8 +81,7 @@ css::uno::Sequence< OUString > SAL_CALL ChartFrameLoader::getSupportedServiceNam
 
 uno::Sequence< OUString > ChartFrameLoader::getSupportedServiceNames_Static()
 {
-    uno::Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[ 0 ] = CHART_FRAMELOADER_SERVICE_NAME;
+    uno::Sequence<OUString> aSNS { CHART_FRAMELOADER_SERVICE_NAME };
     return aSNS;
 }
 
@@ -120,10 +119,10 @@ sal_Bool SAL_CALL ChartFrameLoader::load( const uno::Sequence< beans::PropertyVa
     }
 
     //create the controller(+XWindow)
-    uno::Reference< frame::XController >    xController = NULL;
-    uno::Reference< awt::XWindow >          xComponentWindow = NULL;
+    uno::Reference< frame::XController >    xController = nullptr;
+    uno::Reference< awt::XWindow >          xComponentWindow = nullptr;
     {
-        xController = uno::Reference< frame::XController >(
+        xController.set(
             m_xCC->getServiceManager()->createInstanceWithContext(
             CHART_CONTROLLER_SERVICE_IMPLEMENTATION_NAME,m_xCC )
             , uno::UNO_QUERY );
@@ -166,6 +165,11 @@ sal_Bool SAL_CALL ChartFrameLoader::load( const uno::Sequence< beans::PropertyVa
                 }
                 else
                 {
+                    // use the URL as BaseURL, similar to what SfxBaseModel effectively does
+                    if (!aURL.isEmpty())
+                    {
+                        aMediaDescriptor[utl::MediaDescriptor::PROP_DOCUMENTBASEURL()] <<= aURL;
+                    }
                     aMediaDescriptor.addInputStream();
                     uno::Sequence< beans::PropertyValue > aCompleteMediaDescriptor;
                     aMediaDescriptor >> aCompleteMediaDescriptor;

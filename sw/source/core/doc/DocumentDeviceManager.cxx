@@ -50,11 +50,11 @@ class SwWait;
 
 namespace sw {
 
-DocumentDeviceManager::DocumentDeviceManager( SwDoc& i_rSwdoc ) : m_rDoc( i_rSwdoc ), mpPrt(0), mpVirDev(0), mpPrtData(0) {}
+DocumentDeviceManager::DocumentDeviceManager( SwDoc& i_rSwdoc ) : m_rDoc( i_rSwdoc ), mpPrt(nullptr), mpVirDev(nullptr), mpPrtData(nullptr) {}
 
 SfxPrinter* DocumentDeviceManager::getPrinter(/*[in]*/ bool bCreate ) const
 {
-    SfxPrinter* pRet = 0;
+    SfxPrinter* pRet = nullptr;
     if ( !bCreate || mpPrt )
         pRet = mpPrt;
     else
@@ -95,7 +95,7 @@ void DocumentDeviceManager::setPrinter(/*[in]*/ SfxPrinter *pP,/*[in]*/ bool bDe
 
 VirtualDevice* DocumentDeviceManager::getVirtualDevice(/*[in]*/ bool bCreate ) const
 {
-    VirtualDevice* pRet = 0;
+    VirtualDevice* pRet = nullptr;
     if ( !bCreate || mpVirDev )
         pRet = mpVirDev;
     else
@@ -123,7 +123,7 @@ void DocumentDeviceManager::setVirtualDevice(/*[in]*/ VirtualDevice* pVd,/*[in]*
 
 OutputDevice* DocumentDeviceManager::getReferenceDevice(/*[in]*/ bool bCreate ) const
 {
-    OutputDevice* pRet = 0;
+    OutputDevice* pRet = nullptr;
     if ( !m_rDoc.GetDocumentSettingManager().get(DocumentSettingId::USE_VIRTUAL_DEVICE) )
     {
         pRet = getPrinter( bCreate );
@@ -181,7 +181,7 @@ void DocumentDeviceManager::setReferenceDeviceType(/*[in]*/ bool bNewVirtual, /*
 
 const JobSetup* DocumentDeviceManager::getJobsetup() const
 {
-    return mpPrt ? &mpPrt->GetJobSetup() : 0;
+    return mpPrt ? &mpPrt->GetJobSetup() : nullptr;
 }
 
 void DocumentDeviceManager::setJobsetup(/*[in]*/ const JobSetup &rJobSetup )
@@ -237,7 +237,7 @@ const SwPrintData & DocumentDeviceManager::getPrintData() const
         // is also derived from SwPrintData
         const SwDocShell *pDocSh = m_rDoc.GetDocShell();
         OSL_ENSURE( pDocSh, "pDocSh is 0, can't determine if this is a WebDoc or not" );
-        bool bWeb = 0 != dynamic_cast< const SwWebDocShell * >(pDocSh);
+        bool bWeb = dynamic_cast< const SwWebDocShell * >(pDocSh) !=  nullptr;
         SwPrintOptions aPrintOptions( bWeb );
         *pThis->mpPrtData = aPrintOptions;
     }
@@ -261,9 +261,9 @@ DocumentDeviceManager::~DocumentDeviceManager()
 VirtualDevice& DocumentDeviceManager::CreateVirtualDevice_() const
 {
 #ifdef IOS
-    VclPtr<VirtualDevice> pNewVir = VclPtr<VirtualDevice>::Create( 8 );
+    VclPtr<VirtualDevice> pNewVir = VclPtr<VirtualDevice>::Create(DeviceFormat::GRAYSCALE);
 #else
-    VclPtr<VirtualDevice> pNewVir = VclPtr<VirtualDevice>::Create( 1 );
+    VclPtr<VirtualDevice> pNewVir = VclPtr<VirtualDevice>::Create(DeviceFormat::BITMASK);
 #endif
 
     pNewVir->SetReferenceDevice( VirtualDevice::REFDEV_MODE_MSO1 );
@@ -308,8 +308,8 @@ void DocumentDeviceManager::PrtDataChanged()
 
     // #i41075#
     OSL_ENSURE( m_rDoc.getIDocumentSettingAccess().get(DocumentSettingId::USE_VIRTUAL_DEVICE) ||
-            0 != getPrinter( false ), "PrtDataChanged will be called recursively!" );
-    SwRootFrm* pTmpRoot = m_rDoc.getIDocumentLayoutAccess().GetCurrentLayout();
+            nullptr != getPrinter( false ), "PrtDataChanged will be called recursively!" );
+    SwRootFrame* pTmpRoot = m_rDoc.getIDocumentLayoutAccess().GetCurrentLayout();
     std::unique_ptr<SwWait> pWait;
     bool bEndAction = false;
 
@@ -339,8 +339,8 @@ void DocumentDeviceManager::PrtDataChanged()
 
             pFntCache->Flush();
 
-            std::set<SwRootFrm*> aAllLayouts = m_rDoc.GetAllLayouts();
-            std::for_each( aAllLayouts.begin(), aAllLayouts.end(),std::bind2nd(std::mem_fun(&SwRootFrm::InvalidateAllContent), INV_SIZE));
+            for(SwRootFrame* aLayout : m_rDoc.GetAllLayouts())
+                aLayout->InvalidateAllContent(INV_SIZE);
 
             for(SwViewShell& rShell : pSh->GetRingContainer())
                 rShell.InitPrt(getPrinter(false));

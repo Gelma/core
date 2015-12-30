@@ -35,8 +35,6 @@
 #include <basegfx/numeric/ftools.hxx>
 #include <comphelper/random.hxx>
 
-#include <boost/bind.hpp>
-
 #include <boxclipper.hxx>
 
 using namespace ::basegfx;
@@ -78,7 +76,7 @@ private:
 
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         B2DRange aCenter(100, 100, -100, -100);
         B2DRange aOffside(800, 800, 1000, 1000);
@@ -165,21 +163,13 @@ public:
         B2DPolyPolygon randomPoly;
         tools::importFromSvgD(
             randomPoly,
-            OUString::createFromAscii(randomSvg), false, 0);
-        std::for_each(randomPoly.begin(),
-                      randomPoly.end(),
-                      boost::bind(
-             &B2DPolyRange::appendElement,
-                          boost::ref(aRandomIntersections),
-                          boost::bind(
-                 &B2DPolygon::getB2DRange,
-                              _1),
-                          B2VectorOrientation::Negative,
-                          1));
+            OUString::createFromAscii(randomSvg), false, nullptr);
+        for (auto const& aPolygon : randomPoly)
+            aRandomIntersections.appendElement(aPolygon.getB2DRange(), B2VectorOrientation::Negative);
 #endif
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 
@@ -223,14 +213,9 @@ public:
         // now, sort all polygons with increasing 0th point
         std::sort(aRes.begin(),
                   aRes.end(),
-                  boost::bind(
-                      &compare,
-                      boost::bind(
-                          &B2DPolygon::getB2DPoint,
-                          _1,0),
-                      boost::bind(
-                          &B2DPolygon::getB2DPoint,
-                          _2,0)));
+                  [](const B2DPolygon& aPolygon1, const B2DPolygon& aPolygon2) {
+                      return compare(aPolygon1.getB2DPoint(0),
+                          aPolygon2.getB2DPoint(0)); } );
 
         return aRes;
     }
@@ -240,14 +225,14 @@ public:
         B2DPolyPolygon aTmp1;
         CPPUNIT_ASSERT_MESSAGE(sName,
                                tools::importFromSvgD(
-                                   aTmp1, OUString::createFromAscii(sSvg), false, 0));
+                                   aTmp1, OUString::createFromAscii(sSvg), false, nullptr));
 
         const OUString aSvg=
             tools::exportToSvgD(toTest.solveCrossovers(), true, true, false);
         B2DPolyPolygon aTmp2;
         CPPUNIT_ASSERT_MESSAGE(sName,
                                tools::importFromSvgD(
-                                   aTmp2, aSvg, false, 0));
+                                   aTmp2, aSvg, false, nullptr));
 
         CPPUNIT_ASSERT_MESSAGE(
             sName,

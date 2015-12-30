@@ -81,9 +81,9 @@ namespace svt
         ,m_rContentMutex         ( _rContentMutex  )
         ,m_xCommandEnv           ( _rxCommandEnv   )
         ,m_pTranslator           ( _pTranslator    )
-        ,m_pResultHandler        ( NULL            )
+        ,m_pResultHandler        ( nullptr            )
         ,m_bCancelled            ( false           )
-        ,m_rBlackList            ( ::com::sun::star::uno::Sequence< OUString >() )
+        ,m_rBlackList            ( css::uno::Sequence< OUString >() )
     {
     }
 
@@ -97,8 +97,8 @@ namespace svt
     {
         ::osl::MutexGuard aGuard( m_aMutex );
         m_bCancelled = true;
-        m_pResultHandler = NULL;
-        m_pTranslator = NULL;
+        m_pResultHandler = nullptr;
+        m_pTranslator = nullptr;
         m_aFolder.aContent = ::ucbhelper::Content();
         m_aFolder.sURL.clear();
     }
@@ -106,12 +106,12 @@ namespace svt
 
     EnumerationResult FileViewContentEnumerator::enumerateFolderContentSync(
         const FolderDescriptor& _rFolder,
-        const ::com::sun::star::uno::Sequence< OUString >& rBlackList )
+        const css::uno::Sequence< OUString >& rBlackList )
     {
         {
             ::osl::MutexGuard aGuard( m_aMutex );
             m_aFolder = _rFolder;
-            m_pResultHandler = NULL;
+            m_pResultHandler = nullptr;
             m_rBlackList = rBlackList;
         }
         return enumerateFolderContent();
@@ -208,7 +208,7 @@ namespace svt
                         // don't show hidden files
                         if ( !bIsHidden || xRow->wasNull() )
                         {
-                            pData = NULL;
+                            pData = nullptr;
 
                             aDT = xRow->getTimestamp( ROW_DATE_MOD );
                             bool bContainsDate = !xRow->wasNull();
@@ -322,7 +322,7 @@ namespace svt
             SAL_WARN( "svtools.contnr", "FileViewContentEnumerator::enumerateFolderContent: caught an exception other than CommandAbortedException!" );
         }
 
-        IEnumerationResultHandler* pHandler = NULL;
+        IEnumerationResultHandler* pHandler = nullptr;
         {
             ::osl::MutexGuard aGuard( m_aMutex );
             pHandler = m_pResultHandler;

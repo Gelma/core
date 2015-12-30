@@ -92,9 +92,9 @@ namespace sdr
             return aOverlayType;
         }
 
-        drawinglayer::primitive2d::Primitive2DSequence OverlaySelection::createOverlayObjectPrimitive2DSequence()
+        drawinglayer::primitive2d::Primitive2DContainer OverlaySelection::createOverlayObjectPrimitive2DSequence()
         {
-            drawinglayer::primitive2d::Primitive2DSequence aRetval;
+            drawinglayer::primitive2d::Primitive2DContainer aRetval;
             const sal_uInt32 nCount(getRanges().size());
 
             if(nCount)
@@ -102,12 +102,21 @@ namespace sdr
                 // create range primitives
                 const bool bInvert(OVERLAY_INVERT == maLastOverlayType);
                 basegfx::BColor aRGBColor(getBaseColor().getBColor());
-                aRetval.realloc(nCount);
+                aRetval.resize(nCount);
 
                 if(bInvert)
                 {
                     // force color to white for invert to get a full invert
+#ifdef WNT
+                    // tdf#96257: For likely separate reasons, neither the non-OpenGL nor the OpenGL
+                    // code path produces what we actually want here (a line drawn in 'invert' mode
+                    // if white is used, as happens on X11). In the non-OpenGL case we get a black
+                    // line, in the OpenGL case a white one. So let's use grey and at least get the
+                    // same on both.
+                    aRGBColor = basegfx::BColor(0.5, 0.5, 0.5);
+#else
                     aRGBColor = basegfx::BColor(1.0, 1.0, 1.0);
+#endif
                 }
 
                 for(sal_uInt32 a(0);a < nCount; a++)
@@ -125,7 +134,7 @@ namespace sdr
                     const drawinglayer::primitive2d::Primitive2DReference aInvert(
                         new drawinglayer::primitive2d::InvertPrimitive2D(
                             aRetval));
-                    aRetval = drawinglayer::primitive2d::Primitive2DSequence(&aInvert, 1);
+                    aRetval = drawinglayer::primitive2d::Primitive2DContainer { aInvert };
                 }
                 else if(OVERLAY_TRANSPARENT == maLastOverlayType)
                 {
@@ -145,14 +154,14 @@ namespace sdr
                                 aRGBColor));
 
                         // add both to result
-                        aRetval.realloc(2);
+                        aRetval.resize(2);
                         aRetval[0] = aUnifiedTransparence;
                         aRetval[1] = aSelectionOutline;
                     }
                     else
                     {
                         // just add transparent part
-                        aRetval = drawinglayer::primitive2d::Primitive2DSequence(&aUnifiedTransparence, 1);
+                        aRetval = drawinglayer::primitive2d::Primitive2DContainer { aUnifiedTransparence };
                     }
                 }
             }
@@ -184,24 +193,24 @@ namespace sdr
             }
         }
 
-        drawinglayer::primitive2d::Primitive2DSequence OverlaySelection::getOverlayObjectPrimitive2DSequence() const
+        drawinglayer::primitive2d::Primitive2DContainer OverlaySelection::getOverlayObjectPrimitive2DSequence() const
         {
             // get current values
                const OverlayType aNewOverlayType(impCheckPossibleOverlayType(meOverlayType));
             const SvtOptionsDrawinglayer aSvtOptionsDrawinglayer;
             const sal_uInt16 nNewTransparence(aSvtOptionsDrawinglayer.GetTransparentSelectionPercent());
 
-            if(getPrimitive2DSequence().hasElements())
+            if(!getPrimitive2DSequence().empty())
             {
                 if(aNewOverlayType != maLastOverlayType
                     || nNewTransparence != mnLastTransparence)
                 {
                     // conditions of last local decomposition have changed, delete
-                    const_cast< OverlaySelection* >(this)->setPrimitive2DSequence(drawinglayer::primitive2d::Primitive2DSequence());
+                    const_cast< OverlaySelection* >(this)->setPrimitive2DSequence(drawinglayer::primitive2d::Primitive2DContainer());
                 }
             }
 
-            if(!getPrimitive2DSequence().hasElements())
+            if(getPrimitive2DSequence().empty())
             {
                 // remember new values
                 const_cast< OverlaySelection* >(this)->maLastOverlayType = aNewOverlayType;

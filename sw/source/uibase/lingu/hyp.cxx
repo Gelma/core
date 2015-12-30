@@ -47,7 +47,6 @@ SwHyphWrapper::SwHyphWrapper( SwView* pVw,
             bool bStart, bool bOther, bool bSelect ) :
     SvxSpellWrapper( &pVw->GetEditWin(), rxHyph, bStart, bOther ),
     pView( pVw ),
-    xHyph( rxHyph ),
     nPageCount( 0 ),
     nPageStart( 0 ),
     bInSelection( bSelect ),
@@ -80,7 +79,7 @@ bool SwHyphWrapper::SpellContinue()
     }
 
         uno::Reference< uno::XInterface >  xHyphWord = bInSelection ?
-                PSH->HyphContinue( NULL, NULL ) :
+                PSH->HyphContinue( nullptr, nullptr ) :
                 PSH->HyphContinue( &nPageCount, &nPageStart );
         SetLast( xHyphWord );
 

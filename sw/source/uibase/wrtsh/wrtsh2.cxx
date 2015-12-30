@@ -63,10 +63,10 @@
 #include <com/sun/star/document/XDocumentProperties.hpp>
 #include <com/sun/star/document/XDocumentPropertiesSupplier.hpp>
 
-#include <xmloff/odffields.hxx>
 #include <memory>
 
 #include <LibreOfficeKit/LibreOfficeKitEnums.h>
+#include <comphelper/lok.hxx>
 
 void SwWrtShell::Insert(SwField &rField)
 {
@@ -119,7 +119,7 @@ void SwWrtShell::Insert(SwField &rField)
 
     if ( pAnnotationTextRange )
     {
-        if ( GetDoc() != NULL )
+        if ( GetDoc() != nullptr )
         {
             IDocumentMarkAccess* pMarksAccess = GetDoc()->getIDocumentMarkAccess();
             pMarksAccess->makeAnnotationMark( *pAnnotationTextRange, OUString() );
@@ -143,7 +143,7 @@ void SwWrtShell::UpdateInputFields( SwInputFieldList* pLst )
     const size_t nCnt = pTmp->Count();
     if(nCnt)
     {
-        pTmp->PushCrsr();
+        pTmp->PushCursor();
 
         bool bCancel = false;
         OString aDlgPos;
@@ -154,7 +154,7 @@ void SwWrtShell::UpdateInputFields( SwInputFieldList* pLst )
             if(pField->GetTyp()->Which() == RES_DROPDOWN)
                 bCancel = StartDropDownFieldDlg( pField, true, &aDlgPos );
             else
-                bCancel = StartInputFieldDlg( pField, true, 0, &aDlgPos);
+                bCancel = StartInputFieldDlg( pField, true, nullptr, &aDlgPos);
 
             if (!bCancel)
             {
@@ -162,7 +162,7 @@ void SwWrtShell::UpdateInputFields( SwInputFieldList* pLst )
                 pTmp->GetField( i )->GetTyp()->UpdateFields();
             }
         }
-        pTmp->PopCrsr();
+        pTmp->PopCursor();
     }
 
     if( !pLst )
@@ -179,7 +179,7 @@ class FieldDeletionModify : public SwModify
     public:
         FieldDeletionModify(AbstractFieldInputDlg* pInputFieldDlg, SwField* pField)
             : mpInputFieldDlg(pInputFieldDlg)
-            , mpFormatField(NULL)
+            , mpFormatField(nullptr)
         {
             SwInputField *const pInputField(dynamic_cast<SwInputField*>(pField));
             SwSetExpField *const pSetExpField(dynamic_cast<SwSetExpField*>(pField));
@@ -207,7 +207,7 @@ class FieldDeletionModify : public SwModify
             }
         }
 
-        void Modify( const SfxPoolItem* pOld, const SfxPoolItem *) SAL_OVERRIDE
+        void Modify( const SfxPoolItem* pOld, const SfxPoolItem *) override
         {
             // Input field has been deleted: better to close the dialog
             if (pOld)
@@ -216,7 +216,7 @@ class FieldDeletionModify : public SwModify
                 {
                 case RES_REMOVE_UNO_OBJECT:
                 case RES_OBJECTDYING:
-                    mpFormatField = NULL;
+                    mpFormatField = nullptr;
                     mpInputFieldDlg->EndDialog(RET_CANCEL);
                     break;
                 }
@@ -259,7 +259,7 @@ bool SwWrtShell::StartDropDownFieldDlg(SwField* pField, bool bNextButton, OStrin
     SwAbstractDialogFactory* pFact = SwAbstractDialogFactory::Create();
     OSL_ENSURE(pFact, "SwAbstractDialogFactory fail!");
 
-    std::unique_ptr<AbstractDropDownFieldDialog> pDlg(pFact->CreateDropDownFieldDialog(NULL, *this, pField, bNextButton));
+    std::unique_ptr<AbstractDropDownFieldDialog> pDlg(pFact->CreateDropDownFieldDialog(nullptr, *this, pField, bNextButton));
     OSL_ENSURE(pDlg, "Dialog creation failed!");
     if(pWindowState && !pWindowState->isEmpty())
         pDlg->SetWindowState(*pWindowState);
@@ -299,7 +299,7 @@ bool SwWrtShell::UpdateTableOf(const SwTOXBase& rTOX, const SfxItemSet* pSet)
     {
         bResult = SwEditShell::UpdateTableOf(rTOX, pSet);
 
-        if (pSet == NULL)
+        if (pSet == nullptr)
         {
             SwDoc *const pDoc_ = GetDoc();
             if (pDoc_)
@@ -379,7 +379,7 @@ void SwWrtShell::ClickToField( const SwField& rField )
 
     case RES_GETREFFLD:
         StartAllAction();
-        SwCrsrShell::GotoRefMark( static_cast<const SwGetRefField&>(rField).GetSetRefName(),
+        SwCursorShell::GotoRefMark( static_cast<const SwGetRefField&>(rField).GetSetRefName(),
                                     static_cast<const SwGetRefField&>(rField).GetSubType(),
                                     static_cast<const SwGetRefField&>(rField).GetSeqNo() );
         EndAllAction();
@@ -388,7 +388,7 @@ void SwWrtShell::ClickToField( const SwField& rField )
     case RES_INPUTFLD:
         {
             const SwInputField* pInputField = dynamic_cast<const SwInputField*>(&rField);
-            if ( pInputField == NULL )
+            if ( pInputField == nullptr )
             {
                 StartInputFieldDlg( const_cast<SwField*>(&rField), false );
             }
@@ -422,7 +422,7 @@ void SwWrtShell::ClickToINetAttr( const SwFormatINetFormat& rItem, sal_uInt16 nF
     {
         SwCallMouseEvent aCallEvent;
         aCallEvent.Set( &rItem );
-        GetDoc()->CallEvent( SFX_EVENT_MOUSECLICK_OBJECT, aCallEvent, false );
+        GetDoc()->CallEvent( SFX_EVENT_MOUSECLICK_OBJECT, aCallEvent );
     }
 
     // So that the implementation of templates is displayed immediately
@@ -452,7 +452,7 @@ bool SwWrtShell::ClickToINetGrf( const Point& rDocPt, sal_uInt16 nFilter )
         {
             SwCallMouseEvent aCallEvent;
             aCallEvent.Set( EVENT_OBJECT_URLITEM, pFnd );
-            GetDoc()->CallEvent( SFX_EVENT_MOUSECLICK_OBJECT, aCallEvent, false );
+            GetDoc()->CallEvent( SFX_EVENT_MOUSECLICK_OBJECT, aCallEvent );
         }
 
         ::LoadURL(*this, sURL, nFilter, sTargetFrameName);
@@ -468,17 +468,17 @@ void LoadURL( SwViewShell& rVSh, const OUString& rURL, sal_uInt16 nFilter,
         return ;
 
     // The shell could be 0 also!!!!!
-    if ( !rVSh.ISA(SwCrsrShell) )
+    if ( dynamic_cast<const SwCursorShell*>( &rVSh) ==  nullptr )
         return;
 
     // We are doing tiledRendering, let the client handles the URL loading.
-    if (rVSh.isTiledRendering())
+    if (comphelper::LibreOfficeKit::isActive())
     {
         rVSh.libreOfficeKitCallback(LOK_CALLBACK_HYPERLINK_CLICKED, rURL.toUtf8().getStr());
         return;
     }
 
-    //A CrsrShell is always a WrtShell
+    //A CursorShell is always a WrtShell
     SwWrtShell &rSh = static_cast<SwWrtShell&>(rVSh);
 
     SwDocShell* pDShell = rSh.GetView().GetDocShell();
@@ -497,8 +497,8 @@ void LoadURL( SwViewShell& rVSh, const OUString& rURL, sal_uInt16 nFilter,
     OUString sReferer;
     if( pDShell && pDShell->GetMedium() )
         sReferer = pDShell->GetMedium()->GetName();
-    SfxViewFrame* pViewFrm = rSh.GetView().GetViewFrame();
-    SfxFrameItem aView( SID_DOCFRAME, pViewFrm );
+    SfxViewFrame* pViewFrame = rSh.GetView().GetViewFrame();
+    SfxFrameItem aView( SID_DOCFRAME, pViewFrame );
     SfxStringItem aName( SID_FILE_NAME, rURL );
     SfxStringItem aTargetFrameName( SID_TARGETNAME, sTargetFrame );
     SfxStringItem aReferer( SID_REFERER, sReferer );
@@ -508,7 +508,7 @@ void LoadURL( SwViewShell& rVSh, const OUString& rURL, sal_uInt16 nFilter,
     SfxBoolItem aBrowse( SID_BROWSE, true );
 
     if( nFilter & URLLOAD_NEWVIEW )
-        aTargetFrameName.SetValue( OUString("_blank") );
+        aTargetFrameName.SetValue( "_blank" );
 
     const SfxPoolItem* aArr[] = {
                 &aName,
@@ -516,10 +516,10 @@ void LoadURL( SwViewShell& rVSh, const OUString& rURL, sal_uInt16 nFilter,
                 &aReferer,
                 &aView, &aTargetFrameName,
                 &aBrowse,
-                0L
+                nullptr
     };
 
-    pViewFrm->GetDispatcher()->GetBindings()->Execute( SID_OPENDOC, aArr, 0,
+    pViewFrame->GetDispatcher()->GetBindings()->Execute( SID_OPENDOC, aArr, 0,
             SfxCallMode::ASYNCHRON|SfxCallMode::RECORD );
 }
 
@@ -573,7 +573,7 @@ void SwWrtShell::NavigatorPaste( const NaviContentBookmark& rBkmk,
             // any undoobject. -  BUG 69145
             bool bDoesUndo = DoesUndo();
             SwUndoId nLastUndoId(UNDO_EMPTY);
-            if (GetLastUndoInfo(0, & nLastUndoId))
+            if (GetLastUndoInfo(nullptr, & nLastUndoId))
             {
                 if (UNDO_INSSECTION != nLastUndoId)
                 {

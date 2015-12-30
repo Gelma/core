@@ -68,20 +68,22 @@
 
 using namespace com::sun::star;
 
-static SfxFrameArr_Impl* pFramesArr_Impl=0;
+static SfxFrameArr_Impl* pFramesArr_Impl=nullptr;
 
 using namespace ::com::sun::star::uno;
 using namespace ::com::sun::star::util;
 using namespace ::com::sun::star::frame;
 using namespace ::com::sun::star::container;
 
-TYPEINIT1_AUTOFACTORY(SfxFrameItem, SfxPoolItem);
-TYPEINIT1(SfxUsrAnyItem, SfxPoolItem);
-TYPEINIT1_AUTOFACTORY(SfxUnoFrameItem, SfxPoolItem);
+SfxPoolItem* SfxUsrAnyItem::CreateDefault() { DBG_ASSERT(false, "No SfxUsrAnyItem factory available"); return nullptr; }
 
+SfxPoolItem* SfxUnoFrameItem::CreateDefault()
+{
+    return new SfxUnoFrameItem();
+}
 void SfxFrame::Construct_Impl()
 {
-    pImp = new SfxFrame_Impl( this );
+    pImp = new SfxFrame_Impl;
     if ( !pFramesArr_Impl )
         pFramesArr_Impl = new SfxFrameArr_Impl;
     pFramesArr_Impl->push_back( this );
@@ -101,7 +103,7 @@ SfxFrame::~SfxFrame()
     if ( pParentFrame )
     {
         pParentFrame->RemoveChildFrame_Impl( this );
-        pParentFrame = 0;
+        pParentFrame = nullptr;
     }
 
     delete pImp->pDescr;
@@ -134,18 +136,18 @@ bool SfxFrame::DoClose()
             else if ( pImp->xFrame.is() )
             {
                 Reference < XFrame > xFrame = pImp->xFrame;
-                xFrame->setComponent( Reference < com::sun::star::awt::XWindow >(), Reference < XController >() );
+                xFrame->setComponent( Reference < css::awt::XWindow >(), Reference < XController >() );
                 xFrame->dispose();
             }
             else
                 bRet = DoClose_Impl();
         }
-        catch( ::com::sun::star::util::CloseVetoException& )
+        catch( css::util::CloseVetoException& )
         {
             pImp->bClosing = false;
             bRet = false;
         }
-        catch( ::com::sun::star::lang::DisposedException& )
+        catch( css::lang::DisposedException& )
         {
         }
     }
@@ -155,7 +157,7 @@ bool SfxFrame::DoClose()
 
 bool SfxFrame::DoClose_Impl()
 {
-    SfxBindings* pBindings = NULL;
+    SfxBindings* pBindings = nullptr;
     if ( pImp->pCurrentViewFrame )
         pBindings = &pImp->pCurrentViewFrame->GetBindings();
 
@@ -243,7 +245,7 @@ SfxFrame* SfxFrame::GetChildFrame( sal_uInt16 nPos ) const
         return (*pChildArr)[nPos];
     }
 
-    return 0L;
+    return nullptr;
 }
 
 void SfxFrame::RemoveChildFrame_Impl( SfxFrame* pFrame )
@@ -341,7 +343,7 @@ SfxObjectShell* SfxFrame::GetCurrentDocument() const
 {
     return pImp->pCurrentViewFrame ?
             pImp->pCurrentViewFrame->GetObjectShell() :
-            NULL;
+            nullptr;
 }
 
 void SfxFrame::SetCurrentViewFrame_Impl( SfxViewFrame *pFrame )
@@ -376,7 +378,7 @@ void SfxFrame::GetViewData_Impl()
         bool bGetViewData = false;
         if ( GetController().is() && pSet->GetItemState( SID_VIEW_DATA ) != SfxItemState::SET )
         {
-            ::com::sun::star::uno::Any aData = GetController()->getViewData();
+            css::uno::Any aData = GetController()->getViewData();
             pSet->Put( SfxUsrAnyItem( SID_VIEW_DATA, aData ) );
             bGetViewData = true;
         }
@@ -415,7 +417,7 @@ void SfxFrame::UpdateDescriptor( SfxObjectShell *pDoc )
     const SfxMedium *pMed = pDoc->GetMedium();
     GetDescriptor()->SetActualURL( pMed->GetOrigURL() );
 
-    SFX_ITEMSET_ARG( pMed->GetItemSet(), pItem, SfxBoolItem, SID_EDITDOC, false );
+    const SfxBoolItem* pItem = SfxItemSet::GetItem<SfxBoolItem>(pMed->GetItemSet(), SID_EDITDOC, false);
     bool bEditable = ( !pItem || pItem->GetValue() );
 
     GetDescriptor()->SetEditable( bEditable );
@@ -428,9 +430,9 @@ void SfxFrame::UpdateDescriptor( SfxObjectShell *pDoc )
     if ( pFilter )
         aFilter = pFilter->GetFilterName();
 
-    SFX_ITEMSET_ARG( pItemSet, pRefererItem, SfxStringItem, SID_REFERER, false);
-    SFX_ITEMSET_ARG( pItemSet, pOptionsItem, SfxStringItem, SID_FILE_FILTEROPTIONS, false);
-    SFX_ITEMSET_ARG( pItemSet, pTitle1Item, SfxStringItem, SID_DOCINFO_TITLE, false);
+    const SfxStringItem* pRefererItem = SfxItemSet::GetItem<SfxStringItem>(pItemSet, SID_REFERER, false);
+    const SfxStringItem* pOptionsItem = SfxItemSet::GetItem<SfxStringItem>(pItemSet, SID_FILE_FILTEROPTIONS, false);
+    const SfxStringItem* pTitle1Item = SfxItemSet::GetItem<SfxStringItem>(pItemSet, SID_DOCINFO_TITLE, false);
 
     SfxItemSet *pSet = GetDescriptor()->GetArgs();
 
@@ -525,7 +527,7 @@ void SfxFrame::RemoveTopFrame_Impl( SfxFrame* pFrame )
 }
 
 SfxFrameItem::SfxFrameItem( sal_uInt16 nWhichId, SfxViewFrame *p )
-    : SfxPoolItem( nWhichId ), pFrame( p ? &p->GetFrame() : NULL )
+    : SfxPoolItem( nWhichId ), pFrame( p ? &p->GetFrame() : nullptr )
 {
     wFrame = pFrame;
 }
@@ -555,7 +557,7 @@ SfxPoolItem* SfxFrameItem::Clone( SfxItemPool *) const
     return pNew;
 }
 
-bool SfxFrameItem::QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 ) const
+bool SfxFrameItem::QueryValue( css::uno::Any& rVal, sal_uInt8 ) const
 {
     if ( wFrame )
     {
@@ -566,7 +568,7 @@ bool SfxFrameItem::QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 ) const
     return false;
 }
 
-bool SfxFrameItem::PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 )
+bool SfxFrameItem::PutValue( const css::uno::Any& rVal, sal_uInt8 )
 {
     Reference < XFrame > xFrame;
     if ( (rVal >>= xFrame) && xFrame.is() )
@@ -589,7 +591,7 @@ bool SfxFrameItem::PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 )
 }
 
 
-SfxUsrAnyItem::SfxUsrAnyItem( sal_uInt16 nWhichId, const ::com::sun::star::uno::Any& rAny )
+SfxUsrAnyItem::SfxUsrAnyItem( sal_uInt16 nWhichId, const css::uno::Any& rAny )
     : SfxPoolItem( nWhichId )
 {
     aValue = rAny;
@@ -605,13 +607,13 @@ SfxPoolItem* SfxUsrAnyItem::Clone( SfxItemPool *) const
     return new SfxUsrAnyItem( Which(), aValue );
 }
 
-bool SfxUsrAnyItem::QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 /*nMemberId*/ ) const
+bool SfxUsrAnyItem::QueryValue( css::uno::Any& rVal, sal_uInt8 /*nMemberId*/ ) const
 {
     rVal = aValue;
     return true;
 }
 
-bool SfxUsrAnyItem::PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 /*nMemberId*/ )
+bool SfxUsrAnyItem::PutValue( const css::uno::Any& rVal, sal_uInt8 /*nMemberId*/ )
 {
     aValue = rVal;
     return true;
@@ -623,7 +625,7 @@ SfxUnoFrameItem::SfxUnoFrameItem()
 {
 }
 
-SfxUnoFrameItem::SfxUnoFrameItem( sal_uInt16 nWhichId, const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& i_rFrame )
+SfxUnoFrameItem::SfxUnoFrameItem( sal_uInt16 nWhichId, const css::uno::Reference< css::frame::XFrame >& i_rFrame )
     : SfxPoolItem( nWhichId )
     , m_xFrame( i_rFrame )
 {
@@ -631,7 +633,7 @@ SfxUnoFrameItem::SfxUnoFrameItem( sal_uInt16 nWhichId, const ::com::sun::star::u
 
 bool SfxUnoFrameItem::operator==( const SfxPoolItem& i_rItem ) const
 {
-    return i_rItem.ISA( SfxUnoFrameItem ) && static_cast< const SfxUnoFrameItem& >( i_rItem ).m_xFrame == m_xFrame;
+    return dynamic_cast< const SfxUnoFrameItem* >(&i_rItem)  !=  nullptr && static_cast< const SfxUnoFrameItem& >( i_rItem ).m_xFrame == m_xFrame;
 }
 
 SfxPoolItem* SfxUnoFrameItem::Clone( SfxItemPool* ) const
@@ -639,13 +641,13 @@ SfxPoolItem* SfxUnoFrameItem::Clone( SfxItemPool* ) const
     return new SfxUnoFrameItem( Which(), m_xFrame );
 }
 
-bool SfxUnoFrameItem::QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 /*nMemberId*/ ) const
+bool SfxUnoFrameItem::QueryValue( css::uno::Any& rVal, sal_uInt8 /*nMemberId*/ ) const
 {
     rVal <<= m_xFrame;
     return true;
 }
 
-bool SfxUnoFrameItem::PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 /*nMemberId*/ )
+bool SfxUnoFrameItem::PutValue( const css::uno::Any& rVal, sal_uInt8 /*nMemberId*/ )
 {
     return ( rVal >>= m_xFrame );
 }
@@ -664,7 +666,7 @@ SfxFrame* SfxFrameIterator::FirstFrame()
 SfxFrame* SfxFrameIterator::NextFrame( SfxFrame& rPrev )
 {
     // If recursion is requested testing is done first on Children.
-    SfxFrame *pRet = NULL;
+    SfxFrame *pRet = nullptr;
     if ( bRecursive )
         pRet = rPrev.GetChildFrame( 0 );
     if ( !pRet )
@@ -679,7 +681,7 @@ SfxFrame* SfxFrameIterator::NextFrame( SfxFrame& rPrev )
 
 SfxFrame* SfxFrameIterator::NextSibling_Impl( SfxFrame& rPrev )
 {
-    SfxFrame *pRet = NULL;
+    SfxFrame *pRet = nullptr;
     if ( &rPrev != pFrame )
     {
         SfxFrameArr_Impl& rArr = *rPrev.pParentFrame->pChildArr;
@@ -694,23 +696,23 @@ SfxFrame* SfxFrameIterator::NextSibling_Impl( SfxFrame& rPrev )
     return pRet;
 }
 
-::com::sun::star::uno::Reference< ::com::sun::star::frame::XController > SfxFrame::GetController() const
+css::uno::Reference< css::frame::XController > SfxFrame::GetController() const
 {
     if ( pImp->pCurrentViewFrame && pImp->pCurrentViewFrame->GetViewShell() )
         return pImp->pCurrentViewFrame->GetViewShell()->GetController();
     else
-        return ::com::sun::star::uno::Reference< ::com::sun::star::frame::XController > ();
+        return css::uno::Reference< css::frame::XController > ();
 }
 
-::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >  SfxFrame::GetFrameInterface() const
+css::uno::Reference< css::frame::XFrame >  SfxFrame::GetFrameInterface() const
 {
     return pImp->xFrame;
 }
 
-void SfxFrame::SetFrameInterface_Impl( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& rFrame )
+void SfxFrame::SetFrameInterface_Impl( const css::uno::Reference< css::frame::XFrame >& rFrame )
 {
     pImp->xFrame = rFrame;
-    com::sun::star::uno::Reference< com::sun::star::frame::XDispatchRecorder > xRecorder;
+    css::uno::Reference< css::frame::XDispatchRecorder > xRecorder;
     if ( !rFrame.is() && GetCurrentViewFrame() )
         GetCurrentViewFrame()->GetBindings().SetRecorder_Impl( xRecorder );
 }
@@ -724,7 +726,7 @@ void SfxFrame::Appear()
         pImp->xFrame->getContainerWindow()->setVisible( sal_True );
         if ( pParentFrame )
             pParentFrame->Appear();
-        Reference < ::com::sun::star::awt::XTopWindow > xTopWindow( pImp->xFrame->getContainerWindow(), UNO_QUERY );
+        Reference < css::awt::XTopWindow > xTopWindow( pImp->xFrame->getContainerWindow(), UNO_QUERY );
         if ( xTopWindow.is() )
             xTopWindow->toFront();
     }
@@ -791,7 +793,7 @@ SfxWorkWindow* SfxFrame::GetWorkWindow_Impl() const
     else if ( pParentFrame )
         return pParentFrame->GetWorkWindow_Impl();
     else
-        return NULL;
+        return nullptr;
 }
 
 void SfxFrame::CreateWorkWindow_Impl()
@@ -883,7 +885,7 @@ void SfxFrame::Resize()
         {
             // check for IPClient that contains UIactive object or object that is currently UI activating
             SfxWorkWindow *pWork = GetWorkWindow_Impl();
-            SfxInPlaceClient* pClient = GetCurrentViewFrame()->GetViewShell() ? GetCurrentViewFrame()->GetViewShell()->GetUIActiveIPClient_Impl() : 0;
+            SfxInPlaceClient* pClient = GetCurrentViewFrame()->GetViewShell() ? GetCurrentViewFrame()->GetViewShell()->GetUIActiveIPClient_Impl() : nullptr;
             if ( pClient )
             {
                 uno::Reference < lang::XUnoTunnel > xObj( pClient->GetObject()->getComponent(), uno::UNO_QUERY );
@@ -893,7 +895,7 @@ void SfxFrame::Resize()
                 {
                     SfxObjectShell* pDoc = reinterpret_cast< SfxObjectShell* >( sal::static_int_cast< sal_IntPtr >( nHandle ));
                     SfxViewFrame *pFrame = SfxViewFrame::GetFirst( pDoc );
-                    pWork = pFrame ? pFrame->GetFrame().GetWorkWindow_Impl() : NULL;
+                    pWork = pFrame ? pFrame->GetFrame().GetWorkWindow_Impl() : nullptr;
                 }
             }
 
@@ -920,8 +922,8 @@ void SfxFrame::Resize()
 SfxFrame* SfxFrame::GetFirst()
 {
     if ( !pFramesArr_Impl )
-        return 0;
-    return pFramesArr_Impl->empty() ? 0 : pFramesArr_Impl->front();
+        return nullptr;
+    return pFramesArr_Impl->empty() ? nullptr : pFramesArr_Impl->front();
 }
 
 SfxFrame* SfxFrame::GetNext( SfxFrame& rFrame )
@@ -930,7 +932,7 @@ SfxFrame* SfxFrame::GetNext( SfxFrame& rFrame )
     if ( it != pFramesArr_Impl->end() && (++it) != pFramesArr_Impl->end() )
         return *it;
     else
-        return NULL;
+        return nullptr;
 }
 
 const SfxPoolItem* SfxFrame::OpenDocumentSynchron( SfxItemSet& i_rSet, const Reference< XFrame >& i_rTargetFrame )

@@ -30,10 +30,6 @@ namespace com { namespace sun { namespace star {
   namespace datatransfer {
     class XTransferable;
 } } } }
-
-typedef com::sun::star::uno::Reference<
-            com::sun::star::datatransfer::XTransferable> TranferableText;
-
 namespace rtl {
     class OUString;
 };
@@ -52,14 +48,14 @@ class Outliner;
 class TextChainingUtils
 {
 public:
-    static TranferableText CreateTransferableFromText(Outliner *);
+    static css::uno::Reference< css::datatransfer::XTransferable> CreateTransferableFromText(Outliner *);
 
     static OutlinerParaObject *JuxtaposeParaObject(
-            TranferableText xOverflowingContent,
+            css::uno::Reference< css::datatransfer::XTransferable > xOverflowingContent,
             Outliner *,
             OutlinerParaObject *);
     static OutlinerParaObject *DeeplyMergeParaObject(
-            TranferableText xOverflowingContent,
+            css::uno::Reference< css::datatransfer::XTransferable > xOverflowingContent,
             Outliner *,
             OutlinerParaObject *);
 };
@@ -75,13 +71,12 @@ class OverflowingText
 public:
     OutlinerParaObject *JuxtaposeParaObject(Outliner *, OutlinerParaObject *);
     OutlinerParaObject *DeeplyMergeParaObject(Outliner *, OutlinerParaObject *);
-    static ESelection GetInsertionPointSel();
 
 private:
     friend class Outliner;
-    OverflowingText(TranferableText xOverflowingContent);
+    OverflowingText(css::uno::Reference< css::datatransfer::XTransferable > xOverflowingContent);
 
-    TranferableText mxOverflowingContent;
+    css::uno::Reference< css::datatransfer::XTransferable > mxOverflowingContent;
 };
 
 class NonOverflowingText
@@ -116,13 +111,9 @@ public:
     OutlinerParaObject *InsertOverflowingText(Outliner *, OutlinerParaObject *);
     OutlinerParaObject *RemoveOverflowingText(Outliner *);
 
-    static ESelection GetInsertionPointSel();
     ESelection GetOverflowPointSel() const;
 
     bool IsLastParaInterrupted() const;
-
-protected:
-    void impSetOutlinerToEmptyTxt(Outliner *);
 
 private:
     NonOverflowingText *mpNonOverflowingTxt;
@@ -139,7 +130,7 @@ public:
     OutlinerParaObject *CreateMergedUnderflowParaObject(Outliner *, OutlinerParaObject *);
 
 private:
-    TranferableText mxUnderflowingTxt;
+    css::uno::Reference< css::datatransfer::XTransferable > mxUnderflowingTxt;
 
     bool mbIsDeepMerge;
 };

@@ -47,7 +47,6 @@ XResultSet_impl::XResultSet_impl( shell* pMyShell,
                                   const uno::Sequence< beans::Property >& seq,
                                   const uno::Sequence< ucb::NumberedSortingInfo >& seqSort )
     : m_pMyShell( pMyShell )
-    , m_xProvider( pMyShell->m_pProvider )
     , m_nRow( -1 )
     , m_nWasNull ( false )
     , m_nOpenMode( OpenMode )
@@ -56,9 +55,9 @@ XResultSet_impl::XResultSet_impl( shell* pMyShell,
     , m_aFolder( aUnqPath )
     , m_sProperty( seq )
     , m_sSortingInfo( seqSort )
-    , m_pDisposeEventListeners( 0 )
-    , m_pRowCountListeners( 0 )
-    , m_pIsFinalListeners( 0 )
+    , m_pDisposeEventListeners( nullptr )
+    , m_pRowCountListeners( nullptr )
+    , m_pIsFinalListeners( nullptr )
     , m_bStatic( false )
     , m_nErrorCode( TASKHANDLER_NO_ERROR )
     , m_nMinorErrorCode( TASKHANDLER_NO_ERROR )
@@ -217,7 +216,8 @@ bool SAL_CALL
 XResultSet_impl::OneMore(
     void )
     throw( sdbc::SQLException,
-           uno::RuntimeException )
+           uno::RuntimeException,
+           std::exception )
 {
     if( ! m_nIsOpen )
         return false;
@@ -560,9 +560,7 @@ XResultSet_impl::queryContentIdentifier(
     {
         if( ! m_aIdents[m_nRow].is() )
         {
-            FileContentIdentifier* p
-                = new FileContentIdentifier( m_aUnqPath[  m_nRow ] );
-            m_aIdents[m_nRow] = uno::Reference< ucb::XContentIdentifier >(p);
+            m_aIdents[m_nRow].set( new FileContentIdentifier( m_aUnqPath[  m_nRow ] ) );
         }
         return m_aIdents[m_nRow];
     }
@@ -672,7 +670,7 @@ XResultSet_impl::connectToCache(
         if( xStubFactory.is() )
         {
             xStubFactory->connectToCache(
-                this, xCache,m_sSortingInfo, NULL );
+                this, xCache,m_sSortingInfo, nullptr );
             return;
         }
     }

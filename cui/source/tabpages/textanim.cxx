@@ -50,8 +50,8 @@ SvxTextTabDialog::SvxTextTabDialog( vcl::Window* pParent,
                               , pAttr ),
         pView               ( pSdrView )
 {
-    m_nTextId = AddTabPage( "RID_SVXPAGE_TEXTATTR", SvxTextAttrPage::Create, 0);
-    m_nTextAnimId = AddTabPage( "RID_SVXPAGE_TEXTANIMATION", SvxTextAnimationPage::Create, 0);
+    m_nTextId = AddTabPage( "RID_SVXPAGE_TEXTATTR", SvxTextAttrPage::Create, nullptr);
+    m_nTextAnimId = AddTabPage( "RID_SVXPAGE_TEXTANIMATION", SvxTextAnimationPage::Create, nullptr);
 }
 
 /*************************************************************************
@@ -335,9 +335,9 @@ void SvxTextAnimationPage::Reset( const SfxItemSet* rAttrs )
     m_pMtrFldAmount->SaveValue();
 
 
-    SelectEffectHdl_Impl( NULL );
-    ClickEndlessHdl_Impl( NULL );
-    ClickAutoHdl_Impl( NULL );
+    SelectEffectHdl_Impl( *m_pLbEffect );
+    ClickEndlessHdl_Impl( nullptr );
+    ClickAutoHdl_Impl( nullptr );
     //ClickPixelHdl_Impl( NULL );
 }
 
@@ -467,7 +467,7 @@ VclPtr<SfxTabPage> SvxTextAnimationPage::Create( vcl::Window* pWindow,
     return VclPtr<SvxTextAnimationPage>::Create( pWindow, *rAttrs );
 }
 
-IMPL_LINK_NOARG(SvxTextAnimationPage, SelectEffectHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvxTextAnimationPage, SelectEffectHdl_Impl, ListBox&, void)
 {
     sal_Int32 nPos = m_pLbEffect->GetSelectEntryPos();
     if( nPos != LISTBOX_ENTRY_NOTFOUND )
@@ -501,11 +501,11 @@ IMPL_LINK_NOARG(SvxTextAnimationPage, SelectEffectHdl_Impl)
                     m_pTsbStartInside->Enable();
                     m_pTsbStopInside->Enable();
                     m_pTsbEndless->Enable();
-                    ClickEndlessHdl_Impl( NULL );
+                    ClickEndlessHdl_Impl( nullptr );
                 }
 
                 m_pTsbAuto->Enable();
-                ClickAutoHdl_Impl( NULL );
+                ClickAutoHdl_Impl( nullptr );
 
                 if( eAniKind == SDRTEXTANI_BLINK )
                 {
@@ -522,7 +522,6 @@ IMPL_LINK_NOARG(SvxTextAnimationPage, SelectEffectHdl_Impl)
         }
 
     }
-    return 0L;
 }
 
 IMPL_LINK_NOARG_TYPED(SvxTextAnimationPage, ClickEndlessHdl_Impl, Button*, void)

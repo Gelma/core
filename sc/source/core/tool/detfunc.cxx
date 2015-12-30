@@ -96,7 +96,7 @@ private:
     sal_uInt16  nMaxLevel;
 
 public:
-                ScDetectiveData( SdrModel* pModel );
+    explicit ScDetectiveData( SdrModel* pModel );
 
     SfxItemSet& GetBoxSet()     { return aBoxSet; }
     SfxItemSet& GetArrowSet()   { return aArrowSet; }
@@ -240,7 +240,7 @@ ScCommentData::ScCommentData( ScDocument& rDoc, SdrModel* pModel ) :
 void ScCommentData::UpdateCaptionSet( const SfxItemSet& rItemSet )
 {
     SfxWhichIter aWhichIter( rItemSet );
-    const SfxPoolItem* pPoolItem = 0;
+    const SfxPoolItem* pPoolItem = nullptr;
 
     for( sal_uInt16 nWhich = aWhichIter.FirstWhich(); nWhich > 0; nWhich = aWhichIter.NextWhich() )
     {
@@ -742,7 +742,7 @@ void ScDetectiveFunc::DeleteBox( SCCOL nCol1, SCROW nRow1, SCCOL nCol2, SCROW nR
         while (pObject)
         {
             if ( pObject->GetLayer() == SC_LAYER_INTERN &&
-                    pObject->Type() == TYPE(SdrRectObj) )
+                    dynamic_cast< const SdrRectObj* >(pObject) != nullptr )
             {
                 aObjRect = static_cast<SdrRectObj*>(pObject)->GetLogicRect();
                 aObjRect.Justify();
@@ -801,8 +801,7 @@ sal_uInt16 ScDetectiveFunc::InsertPredLevelArea( const ScRange& rRef,
 sal_uInt16 ScDetectiveFunc::InsertPredLevel( SCCOL nCol, SCROW nRow, ScDetectiveData& rData,
                                             sal_uInt16 nLevel )
 {
-    ScRefCellValue aCell;
-    aCell.assign(*pDoc, ScAddress(nCol, nRow, nTab));
+    ScRefCellValue aCell(*pDoc, ScAddress(nCol, nRow, nTab));
     if (aCell.meType != CELLTYPE_FORMULA)
         return DET_INS_EMPTY;
 
@@ -890,8 +889,7 @@ sal_uInt16 ScDetectiveFunc::FindPredLevel( SCCOL nCol, SCROW nRow, sal_uInt16 nL
 {
     OSL_ENSURE( nLevel<1000, "Level" );
 
-    ScRefCellValue aCell;
-    aCell.assign(*pDoc, ScAddress(nCol, nRow, nTab));
+    ScRefCellValue aCell(*pDoc, ScAddress(nCol, nRow, nTab));
     if (aCell.meType != CELLTYPE_FORMULA)
         return nLevel;
 
@@ -948,8 +946,7 @@ sal_uInt16 ScDetectiveFunc::FindPredLevel( SCCOL nCol, SCROW nRow, sal_uInt16 nL
 sal_uInt16 ScDetectiveFunc::InsertErrorLevel( SCCOL nCol, SCROW nRow, ScDetectiveData& rData,
                                             sal_uInt16 nLevel )
 {
-    ScRefCellValue aCell;
-    aCell.assign(*pDoc, ScAddress(nCol, nRow, nTab));
+    ScRefCellValue aCell(*pDoc, ScAddress(nCol, nRow, nTab));
     if (aCell.meType != CELLTYPE_FORMULA)
         return DET_INS_EMPTY;
 
@@ -1251,7 +1248,7 @@ bool ScDetectiveFunc::DeleteAll( ScDetectiveDelete eWhat )
                 bool bDoThis = true;
                 if ( eWhat != SC_DET_ALL )
                 {
-                    bool bCircle = ( pObject->ISA(SdrCircObj) );
+                    bool bCircle = ( dynamic_cast<const SdrCircObj*>( pObject) !=  nullptr );
                     bool bCaption = ScDrawLayer::IsNoteCaption( pObject );
                     if ( eWhat == SC_DET_DETECTIVE )        // detektive, from menue
                         bDoThis = !bCaption;                // also circles
@@ -1502,7 +1499,7 @@ void ScDetectiveFunc::UpdateAllArrowColors()
                     {
                         //  frame for area reference has no ObjType, always gets arrow color
 
-                        if ( pObject->ISA( SdrRectObj ) && !pObject->ISA( SdrCaptionObj ) )
+                        if ( dynamic_cast<const SdrRectObj*>( pObject) != nullptr && dynamic_cast<const SdrCaptionObj*>( pObject) ==  nullptr )
                         {
                             bArrow = true;
                         }
@@ -1544,7 +1541,7 @@ bool ScDetectiveFunc::FindFrameForObject( SdrObject* pObject, ScRange& rRange )
         {
             SdrObject* pPrevObj = pPage->GetObj(nOrdNum - 1);
 
-            if ( pPrevObj && pPrevObj->GetLayer() == SC_LAYER_INTERN && pPrevObj->ISA(SdrRectObj) )
+            if ( pPrevObj && pPrevObj->GetLayer() == SC_LAYER_INTERN && dynamic_cast<const SdrRectObj*>( pPrevObj) !=  nullptr )
             {
                 ScDrawObjData* pPrevData = ScDrawLayer::GetObjDataTab( pPrevObj, rRange.aStart.Tab() );
                 if ( pPrevData && pPrevData->maStart.IsValid() && pPrevData->maEnd.IsValid() && (pPrevData->maStart == rRange.aStart) )
@@ -1596,7 +1593,7 @@ ScDetectiveObjType ScDetectiveFunc::GetDetectiveObjectType( SdrObject* pObject, 
                 if ( nObjColor == GetErrorColor() && nObjColor != GetArrowColor() )
                     rRedLine = true;
             }
-            else if ( pObject->ISA(SdrCircObj) )
+            else if ( dynamic_cast<const SdrCircObj*>( pObject) !=  nullptr )
             {
                 if ( bValidStart )
                 {

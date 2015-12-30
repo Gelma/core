@@ -17,7 +17,6 @@
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
 
-#include <boost/bind.hpp>
 #include <chrono>
 #include <iostream>
 #include <osl/conditn.hxx>
@@ -75,7 +74,7 @@ VLCFrameGrabber::VLCFrameGrabber( wrapper::EventHandler& eh, const rtl::OUString
     const rtl::OUString& fileName = utl::TempFile::CreateTempName();
     {
         wrapper::EventManager manager( mPlayer, mEventHandler );
-        manager.onPaused(boost::bind(&osl::Condition::set, &condition));
+        manager.onPaused([&condition](){ condition.set(); });
 
         if ( !mPlayer.play() )
         {
@@ -127,8 +126,7 @@ sal_Bool SAL_CALL VLCFrameGrabber::supportsService( const ::rtl::OUString& servi
 ::uno::Sequence< ::rtl::OUString > SAL_CALL VLCFrameGrabber::getSupportedServiceNames()
         throw ( css::uno::RuntimeException, std::exception )
 {
-    ::uno::Sequence< OUString > aRet(1);
-    aRet[0] = AVMEDIA_VLC_GRABBER_SERVICENAME;
+    ::uno::Sequence< OUString > aRet { AVMEDIA_VLC_GRABBER_SERVICENAME };
     return aRet;
 }
 

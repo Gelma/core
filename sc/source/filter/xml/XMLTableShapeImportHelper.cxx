@@ -43,7 +43,7 @@ using namespace xmloff::token;
 XMLTableShapeImportHelper::XMLTableShapeImportHelper(
         ScXMLImport& rImp, SvXMLImportPropertyMapper *pImpMapper ) :
     XMLShapeImportHelper(rImp, rImp.GetModel(), pImpMapper ),
-    pAnnotationContext(NULL),
+    pAnnotationContext(nullptr),
     bOnTable(false)
 {
 }
@@ -60,7 +60,7 @@ void XMLTableShapeImportHelper::SetLayer(uno::Reference<drawing::XShape>& rShape
     {
         uno::Reference< beans::XPropertySet > xShapeProp( rShape, uno::UNO_QUERY );
         if( xShapeProp.is() )
-            xShapeProp->setPropertyValue(OUString( SC_LAYERID ), uno::makeAny(nLayerID) );
+            xShapeProp->setPropertyValue( SC_LAYERID, uno::makeAny(nLayerID) );
     }
 }
 
@@ -97,7 +97,7 @@ void XMLTableShapeImportHelper::finishShape(
             sal_Int32 nEndY(-1);
             sal_Int16 nAttrCount = xAttrList.is() ? xAttrList->getLength() : 0;
             table::CellAddress aEndCell;
-            OUString* pRangeList(NULL);
+            OUString* pRangeList(nullptr);
             sal_Int16 nLayerID(-1);
             for( sal_Int16 i=0; i < nAttrCount; ++i )
             {

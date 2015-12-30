@@ -8,8 +8,6 @@
  */
 package org.libreoffice.ui;
 
-import org.libreoffice.R;
-
 import org.libreoffice.storage.IFile;
 
 import java.io.File;
@@ -61,7 +59,7 @@ public class FileUtilities {
         mExtnMap.put(".fodt", DOC);
         mExtnMap.put(".fodg", DRAWING);
         mExtnMap.put(".fodp",  IMPRESS);
-        // mExtnMap.put(".fods",  CALC);
+        mExtnMap.put(".fods",  CALC);
 
         // ODF templates
         mExtnMap.put(".ott", DOC);
@@ -162,7 +160,7 @@ public class FileUtilities {
         if (filename == null)
             return false;
 
-        if (byMode == ALL && byFilename == "") {
+        if (byMode == ALL && byFilename.equals("")) {
             if (filename.startsWith(".")) {//ignore hidden files
                 return false;
             }
@@ -173,7 +171,7 @@ public class FileUtilities {
             if (mExtnMap.get (getExtension (filename)) != byMode)
                 return false;
         }
-        if (byFilename != "") {
+        if (!byFilename.equals("")) {
             // FIXME return false on a non-match
         }
         return true;
@@ -202,6 +200,8 @@ public class FileUtilities {
     }
 
     static void sortFiles(List<IFile> files, int sortMode) {
+        if (files == null)
+            return;
         switch (sortMode) {
             case SORT_AZ:
                 Collections.sort(files , new Comparator<IFile>() {

@@ -44,9 +44,9 @@ public:
 
     virtual ~LineItemWrapper() {}
 
-    virtual const editeng::SvxBorderLine* GetItemValue( const SvxLineItem& rItem ) const SAL_OVERRIDE
+    virtual const editeng::SvxBorderLine* GetItemValue( const SvxLineItem& rItem ) const override
                             { return rItem.GetLine(); }
-    virtual void        SetItemValue( SvxLineItem& rItem, const editeng::SvxBorderLine* pLine ) const SAL_OVERRIDE
+    virtual void        SetItemValue( SvxLineItem& rItem, const editeng::SvxBorderLine* pLine ) const override
                             { rItem.SetLine( pLine ); }
 };
 
@@ -58,11 +58,11 @@ public:
     inline explicit     FrameSelectorWrapper( FrameSelector& rFrameSel, FrameBorderType eBorder ) :
                             SingleControlWrapperType( rFrameSel ), meBorder( eBorder ) {}
 
-    virtual bool        IsControlDontKnow() const SAL_OVERRIDE;
-    virtual void        SetControlDontKnow( bool bSet ) SAL_OVERRIDE;
+    virtual bool        IsControlDontKnow() const override;
+    virtual void        SetControlDontKnow( bool bSet ) override;
 
-    virtual const editeng::SvxBorderLine* GetControlValue() const SAL_OVERRIDE;
-    virtual void        SetControlValue( const editeng::SvxBorderLine* pLine ) SAL_OVERRIDE;
+    virtual const editeng::SvxBorderLine* GetControlValue() const override;
+    virtual void        SetControlValue( const editeng::SvxBorderLine* pLine ) override;
 
 private:
     FrameBorderType       meBorder;         /// The line this wrapper works with.
@@ -91,8 +91,6 @@ void FrameSelectorWrapper::SetControlValue( const editeng::SvxBorderLine* pLine 
 
 // 3rd: connection ------------------------------------------------------------
 
-typedef sfx::ItemControlConnection< LineItemWrapper, FrameSelectorWrapper > FrameLineConnection;
-
 /* ============================================================================
 SvxMarginItem connection
 ------------------------
@@ -115,14 +113,14 @@ public:
                             MetricField& rMfLeft, MetricField& rMfRight,
                             MetricField& rMfTop, MetricField& rMfBottom );
 
-    virtual SvxMarginItem GetControlValue() const SAL_OVERRIDE;
-    virtual void        SetControlValue( SvxMarginItem aItem ) SAL_OVERRIDE;
+    virtual SvxMarginItem GetControlValue() const override;
+    virtual void        SetControlValue( SvxMarginItem aItem ) override;
 
 private:
-    sfx::Int16MetricFieldWrapper maLeftWrp;
-    sfx::Int16MetricFieldWrapper maRightWrp;
-    sfx::Int16MetricFieldWrapper maTopWrp;
-    sfx::Int16MetricFieldWrapper maBottomWrp;
+    sfx::MetricFieldWrapper<sal_Int16> maLeftWrp;
+    sfx::MetricFieldWrapper<sal_Int16> maRightWrp;
+    sfx::MetricFieldWrapper<sal_Int16> maTopWrp;
+    sfx::MetricFieldWrapper<sal_Int16> maBottomWrp;
 };
 
 MarginControlsWrapper::MarginControlsWrapper(
@@ -209,13 +207,13 @@ class ShadowControlsWrapper : public sfx::MultiControlWrapper< SvxShadowItem >
 public:
     explicit            ShadowControlsWrapper( ValueSet& rVsPos, MetricField& rMfSize, ColorListBox& rLbColor );
 
-    virtual SvxShadowItem GetControlValue() const SAL_OVERRIDE;
-    virtual void        SetControlValue( SvxShadowItem aItem ) SAL_OVERRIDE;
+    virtual SvxShadowItem GetControlValue() const override;
+    virtual void        SetControlValue( SvxShadowItem aItem ) override;
 
 private:
-    ShadowPosWrapper                maPosWrp;
-    sfx::UShortMetricFieldWrapper   maSizeWrp;
-    sfx::ColorListBoxWrapper        maColorWrp;
+    ShadowPosWrapper                    maPosWrp;
+    sfx::MetricFieldWrapper<sal_uInt16> maSizeWrp;
+    sfx::ColorListBoxWrapper            maColorWrp;
 };
 
 ShadowControlsWrapper::ShadowControlsWrapper(
@@ -271,7 +269,7 @@ ShadowConnection::ShadowConnection( const SfxItemSet& rItemSet,
 sfx::ItemConnectionBase* CreateFrameLineConnection( sal_uInt16 nSlot,
         FrameSelector& rFrameSel, FrameBorderType eBorder, sfx::ItemConnFlags nFlags )
 {
-    return new FrameLineConnection( nSlot, new FrameSelectorWrapper( rFrameSel, eBorder ), nFlags );
+    return new sfx::ItemControlConnection< LineItemWrapper, FrameSelectorWrapper >( nSlot, new FrameSelectorWrapper( rFrameSel, eBorder ), nFlags );
 }
 
 sfx::ItemConnectionBase* CreateMarginConnection( const SfxItemSet& rItemSet,

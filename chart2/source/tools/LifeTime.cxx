@@ -333,10 +333,10 @@ void CloseableLifeTimeManager::impl_doClose()
     NegativeGuard< osl::Mutex > aNegativeGuard( m_aAccessMutex );
     //mutex is not acquired, mutex will be reacquired at the end of this method automatically
 
-    uno::Reference< util::XCloseable > xCloseable=NULL;
+    uno::Reference< util::XCloseable > xCloseable=nullptr;
     try
     {
-        xCloseable = uno::Reference< util::XCloseable >(m_pCloseable);;
+        xCloseable.set(m_pCloseable);
         if(xCloseable.is())
         {
             //--call notifyClosing on all registered close listeners

@@ -44,12 +44,11 @@ void SwWebListShell::InitInterface_Impl()
     GetStaticInterface()->RegisterObjectBar(SFX_OBJECTBAR_OBJECT, RID_NUM_TOOLBOX);
 }
 
-TYPEINIT1(SwWebListShell,SwListShell)
 
 SwWebListShell::SwWebListShell(SwView &_rView) :
     SwListShell(_rView)
 {
-    SetName(OUString("List"));
+    SetName("List");
     SetHelpId(SW_LISTSHELL);
 }
 

@@ -10,7 +10,10 @@
 #ifndef INCLUDED_LIBREOFFICEKIT_LIBREOFFICEKIT_HXX
 #define INCLUDED_LIBREOFFICEKIT_LIBREOFFICEKIT_HXX
 
+#include <cstddef>
+
 #include "LibreOfficeKit.h"
+#include "LibreOfficeKitInit.h"
 
 /*
  * The reasons this C++ code is not as pretty as it could be are:
@@ -54,7 +57,7 @@ public:
     /// Gives access to the underlying C pointer.
     inline LibreOfficeKitDocument *get() { return mpDoc; }
 
-#ifdef LOK_USE_UNSTABLE_API
+#if defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
     /**
      * Get document type.
      *
@@ -128,8 +131,7 @@ public:
      * @param nTileWidth logical width of the rendered rectangle, in TWIPs.
      * @param nTileHeight logical height of the rendered rectangle, in TWIPs.
      */
-    inline void paintTile(
-                          unsigned char* pBuffer,
+    inline void paintTile(unsigned char* pBuffer,
                           const int nCanvasWidth,
                           const int nCanvasHeight,
                           const int nTilePosX,
@@ -139,6 +141,16 @@ public:
     {
         return mpDoc->pClass->paintTile(mpDoc, pBuffer, nCanvasWidth, nCanvasHeight,
                                 nTilePosX, nTilePosY, nTileWidth, nTileHeight);
+    }
+
+    /**
+     * Gets the tile mode: the pixel format used for the pBuffer of paintTile().
+     *
+     * @return an element of the LibreOfficeKitTileMode enum.
+     */
+    inline int getTileMode()
+    {
+        return mpDoc->pClass->getTileMode(mpDoc);
     }
 
     /// Get the document sizes in TWIPs.
@@ -154,10 +166,22 @@ public:
      * needed to render the document correctly using tiled rendering. This
      * method has to be called right after documentLoad() in case any of the
      * tiled rendering methods are to be used later.
+     *
+     * Example argument string for text documents:
+     *
+     * {
+     *     ".uno:HideWhitespace":
+     *     {
+     *         "type": "boolean",
+     *         "value": "true"
+     *     }
+     * }
+     *
+     * @param pArguments arguments of the rendering
      */
-    inline void initializeForRendering()
+    inline void initializeForRendering(const char* pArguments = NULL)
     {
-        mpDoc->pClass->initializeForRendering(mpDoc);
+        mpDoc->pClass->initializeForRendering(mpDoc, pArguments);
     }
 
     /**
@@ -191,10 +215,12 @@ public:
      * @param nX horizontal position in document coordinates
      * @param nY vertical position in document coordinates
      * @param nCount number of clicks: 1 for single click, 2 for double click
+     * @param nButtons: which mouse buttons: 1 for left, 2 for middle, 4 right
+     * @param nModifier: which keyboard modifier: (see include/rsc/rsc-vcl-shared-types.hxx for possible values)
      */
-    inline void postMouseEvent(int nType, int nX, int nY, int nCount)
+    inline void postMouseEvent(int nType, int nX, int nY, int nCount, int nButtons, int nModifier)
     {
-        mpDoc->pClass->postMouseEvent(mpDoc, nType, nX, nY, nCount);
+        mpDoc->pClass->postMouseEvent(mpDoc, nType, nX, nY, nCount, nButtons, nModifier);
     }
 
     /**
@@ -218,9 +244,9 @@ public:
      * @param pCommand uno command to be posted to the document, like ".uno:Bold"
      * @param pArguments arguments of the uno command.
      */
-    inline void postUnoCommand(const char* pCommand, const char* pArguments = 0)
+    inline void postUnoCommand(const char* pCommand, const char* pArguments = NULL, bool bNotifyWhenFinished = false)
     {
-        mpDoc->pClass->postUnoCommand(mpDoc, pCommand, pArguments);
+        mpDoc->pClass->postUnoCommand(mpDoc, pCommand, pArguments, bNotifyWhenFinished);
     }
 
     /**
@@ -241,9 +267,21 @@ public:
      * @param pMimeType suggests the return format, for example text/plain;charset=utf-8.
      * @param pUsedMimeType output parameter to inform about the determined format (suggested one or plain text).
      */
-    inline char* getTextSelection(const char* pMimeType, char** pUsedMimeType = 0)
+    inline char* getTextSelection(const char* pMimeType, char** pUsedMimeType = NULL)
     {
         return mpDoc->pClass->getTextSelection(mpDoc, pMimeType, pUsedMimeType);
+    }
+
+    /**
+     * Pastes content at the current cursor position.
+     *
+     * @param pMimeType format of pData, for example text/plain;charset=utf-8.
+     * @param pData the actual data to be pasted.
+     * @return if the supplied data was pasted successfully.
+     */
+    inline bool paste(const char* pMimeType, const char* pData, size_t nSize)
+    {
+        return mpDoc->pClass->paste(mpDoc, pMimeType, pData, nSize);
     }
 
     /**
@@ -275,6 +313,23 @@ public:
     inline char* getCommandValues(const char* pCommand)
     {
         return mpDoc->pClass->getCommandValues(mpDoc, pCommand);
+    }
+
+    /**
+     * Save the client's view so that we can compute the right zoom level
+     * for the mouse events. This only affects CALC.
+     * @param nTilePixelWidth - tile width in pixels
+     * @param nTilePixelHeight - tile height in pixels
+     * @param nTileTwipWidth - tile width in twips
+     * @param nTileTwipHeight - tile height in twips
+     */
+    inline void setClientZoom(
+            int nTilePixelWidth,
+            int nTilePixelHeight,
+            int nTileTwipWidth,
+            int nTileTwipHeight)
+    {
+        mpDoc->pClass->setClientZoom(mpDoc, nTilePixelWidth, nTilePixelHeight, nTileTwipWidth, nTileTwipHeight);
     }
 
     /**
@@ -321,7 +376,19 @@ public:
     {
         return mpDoc->pClass->getViews(mpDoc);
     }
-#endif // LOK_USE_UNSTABLE_API
+
+    /**
+     * Paints a font name to be displayed in the font list
+     * @param pFontName the font to be painted
+     */
+    inline unsigned char* renderFont(const char *pFontName,
+                          int *pFontWidth,
+                          int *pFontHeight)
+    {
+        return mpDoc->pClass->renderFont(mpDoc, pFontName, pFontWidth, pFontHeight);
+    }
+
+#endif // defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
 };
 
 /// The lok::Office class represents one started LibreOfficeKit instance.
@@ -368,7 +435,7 @@ public:
         return mpThis->pClass->getError(mpThis);
     }
 
-#ifdef LOK_USE_UNSTABLE_API
+#if defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
     /**
      * Returns details of filter types.
      *
@@ -387,7 +454,7 @@ public:
     {
         return mpThis->pClass->getFilterTypes(mpThis);
     }
-#endif // LOK_USE_UNSTABLE_API
+#endif // defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
 };
 
 /// Factory method to create a lok::Office instance.

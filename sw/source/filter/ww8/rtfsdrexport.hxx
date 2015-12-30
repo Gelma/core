@@ -27,6 +27,8 @@
 #include <map>
 #include <set>
 
+#include <wrtww8.hxx>
+
 class RtfExport;
 class RtfAttributeOutput;
 class SwFrameFormat;
@@ -68,6 +70,8 @@ public:
 
     /// Is this a standalone TextFrame, or used as a TextBox of a shape?
     bool isTextBox(const SwFrameFormat& rFrameFormat);
+    /// Write editeng text, e.g. shape or comment.
+    void WriteOutliner(const OutlinerParaObject& rParaObj, TextTypes eType);
 
 protected:
     /// Start the shape for which we just collected the information.
@@ -82,17 +86,17 @@ protected:
     using EscherEx::EndShape;
     void        EndShape(sal_Int32 nShapeElement);
 
-    virtual void        Commit(EscherPropertyContainer& rProps, const Rectangle& rRect) SAL_OVERRIDE;
+    virtual void        Commit(EscherPropertyContainer& rProps, const Rectangle& rRect) override;
 
 private:
 
-    virtual void OpenContainer(sal_uInt16 nEscherContainer, int nRecInstance = 0) SAL_OVERRIDE;
-    virtual void CloseContainer() SAL_OVERRIDE;
+    virtual void OpenContainer(sal_uInt16 nEscherContainer, int nRecInstance = 0) override;
+    virtual void CloseContainer() override;
 
-    virtual sal_uInt32 EnterGroup(const OUString& rShapeName, const Rectangle* pBoundRect = 0) SAL_OVERRIDE;
-    virtual void LeaveGroup() SAL_OVERRIDE;
+    virtual sal_uInt32 EnterGroup(const OUString& rShapeName, const Rectangle* pBoundRect = nullptr) override;
+    virtual void LeaveGroup() override;
 
-    virtual void AddShape(sal_uInt32 nShapeType, sal_uInt32 nShapeFlags, sal_uInt32 nShapeId = 0) SAL_OVERRIDE;
+    virtual void AddShape(sal_uInt32 nShapeType, sal_uInt32 nShapeFlags, sal_uInt32 nShapeId = 0) override;
 
 private:
     /// Add starting and ending point of a line to the m_pShapeAttrList.
@@ -100,8 +104,6 @@ private:
 
     /// Add position and size to the OStringBuffer.
     void AddRectangleDimensions(OStringBuffer& rBuffer, const Rectangle& rRectangle);
-
-    void WriteOutliner(const OutlinerParaObject& rParaObj);
 
     /// Exports the pib property of the shape
     void impl_writeGraphic();

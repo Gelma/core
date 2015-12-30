@@ -63,24 +63,23 @@ sdr::contact::ViewContact* SdrRectObj::CreateObjectSpecificViewContact()
 
 
 
-TYPEINIT1(SdrRectObj,SdrTextObj);
 
 SdrRectObj::SdrRectObj()
-:   mpXPoly(0L)
+:   mpXPoly(nullptr)
 {
     bClosedObj=true;
 }
 
 SdrRectObj::SdrRectObj(const Rectangle& rRect)
 :   SdrTextObj(rRect),
-    mpXPoly(NULL)
+    mpXPoly(nullptr)
 {
     bClosedObj=true;
 }
 
 SdrRectObj::SdrRectObj(SdrObjKind eNewTextKind)
 :   SdrTextObj(eNewTextKind),
-    mpXPoly(NULL)
+    mpXPoly(nullptr)
 {
     DBG_ASSERT(eTextKind==OBJ_TEXT || eTextKind==OBJ_TEXTEXT ||
                eTextKind==OBJ_OUTLINETEXT || eTextKind==OBJ_TITLETEXT,
@@ -90,7 +89,7 @@ SdrRectObj::SdrRectObj(SdrObjKind eNewTextKind)
 
 SdrRectObj::SdrRectObj(SdrObjKind eNewTextKind, const Rectangle& rRect)
 :   SdrTextObj(eNewTextKind,rRect),
-    mpXPoly(NULL)
+    mpXPoly(nullptr)
 {
     DBG_ASSERT(eTextKind==OBJ_TEXT || eTextKind==OBJ_TEXTEXT ||
                eTextKind==OBJ_OUTLINETEXT || eTextKind==OBJ_TITLETEXT,
@@ -115,7 +114,7 @@ SdrRectObj& SdrRectObj::operator=(const SdrRectObj& rCopy)
     if ( rCopy.mpXPoly )
         mpXPoly = new XPolygon( *rCopy.mpXPoly );
     else
-        mpXPoly = NULL;
+        mpXPoly = nullptr;
 
     return *this;
 }
@@ -123,7 +122,7 @@ SdrRectObj& SdrRectObj::operator=(const SdrRectObj& rCopy)
 void SdrRectObj::SetXPolyDirty()
 {
     delete mpXPoly;
-    mpXPoly = 0L;
+    mpXPoly = nullptr;
 }
 
 XPolygon SdrRectObj::ImpCalcXPoly(const Rectangle& rRect1, long nRad1) const
@@ -207,7 +206,7 @@ void SdrRectObj::TakeUnrotatedSnapRect(Rectangle& rRect) const
     rRect = maRect;
     if (aGeo.nShearAngle!=0)
     {
-        long nDst=Round((maRect.Bottom()-maRect.Top())*aGeo.nTan);
+        long nDst=svx::Round((maRect.Bottom()-maRect.Top())*aGeo.nTan);
         if (aGeo.nShearAngle>0)
         {
             Point aRef(rRect.TopLeft());
@@ -320,7 +319,7 @@ sal_uInt32 SdrRectObj::GetHdlCount() const
 
 SdrHdl* SdrRectObj::GetHdl(sal_uInt32 nHdlNum) const
 {
-    SdrHdl* pH = NULL;
+    SdrHdl* pH = nullptr;
     Point aPnt;
     SdrHdlKind eKind = HDL_MOVE;
 
@@ -594,7 +593,7 @@ SdrObject* SdrRectObj::DoConvertToPolyObj(bool bBezier, bool bAddText) const
 
     basegfx::B2DPolyPolygon aPolyPolygon(aXP.getB2DPolygon());
     aPolyPolygon.removeDoublePoints();
-    SdrObject* pRet = 0L;
+    SdrObject* pRet = nullptr;
 
     // small correction: Do not create something when no fill and no line. To
     // be sure to not damage something with non-text frames, do this only

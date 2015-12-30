@@ -24,6 +24,7 @@
 #include <tools/debug.hxx>
 #include <osl/mutex.hxx>
 
+#include <algorithm>
 #include <vector>
 
 #include "linguistic/spelldta.hxx"
@@ -277,8 +278,8 @@ void SpellAlternatives::SetAlternatives( const Sequence< OUString > &rAlt )
 }
 
 
-com::sun::star::uno::Reference < com::sun::star::linguistic2::XSpellAlternatives > SpellAlternatives::CreateSpellAlternatives(
-        const OUString &rWord, sal_Int16 nLang, sal_Int16 nTypeP, const ::com::sun::star::uno::Sequence< OUString > &rAlt )
+css::uno::Reference < css::linguistic2::XSpellAlternatives > SpellAlternatives::CreateSpellAlternatives(
+        const OUString &rWord, sal_Int16 nLang, sal_Int16 nTypeP, const css::uno::Sequence< OUString > &rAlt )
 {
     SpellAlternatives* pAlt = new SpellAlternatives;
     pAlt->SetWordLanguage( rWord, nLang );

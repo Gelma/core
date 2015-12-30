@@ -117,7 +117,7 @@ SfxScriptLibraryContainer::SfxScriptLibraryContainer( const uno::Reference< embe
 SfxLibrary* SfxScriptLibraryContainer::implCreateLibrary( const OUString& aName )
 {
     (void)aName;    // Only needed for SfxDialogLibrary
-    SfxLibrary* pRet = new SfxScriptLibrary( maModifiable, mxContext, mxSFI );
+    SfxLibrary* pRet = new SfxScriptLibrary( maModifiable, mxSFI );
     return pRet;
 }
 
@@ -127,7 +127,7 @@ SfxLibrary* SfxScriptLibraryContainer::implCreateLibraryLink( const OUString& aN
                                                               bool ReadOnly )
 {
     (void)aName;    // Only needed for SfxDialogLibrary
-    SfxLibrary* pRet = new SfxScriptLibrary( maModifiable, mxContext, mxSFI,
+    SfxLibrary* pRet = new SfxScriptLibrary( maModifiable, mxSFI,
                                              aLibInfoFileURL, StorageURL, ReadOnly );
     return pRet;
 }
@@ -340,7 +340,7 @@ void SAL_CALL SfxScriptLibraryContainer::importFromOldStorage( const OUString& a
         BasicManager* pBasicManager = new BasicManager( *static_cast<SotStorage*>(xStorage), aFile );
 
         // Set info
-        LibraryContainerInfo aInfo( this, NULL, static_cast< OldBasicPassword* >( this ) );
+        LibraryContainerInfo aInfo( this, nullptr, static_cast< OldBasicPassword* >( this ) );
         pBasicManager->SetLibraryContainerInfo( aInfo );
 
         // Now the libraries should be copied to this SfxScriptLibraryContainer
@@ -521,7 +521,7 @@ void SAL_CALL SfxScriptLibraryContainer::changeLibraryPassword( const OUString& 
                 }
                 else
                 {
-                    aElementInetObj.setExtension( OUString( "pba" ) );
+                    aElementInetObj.setExtension( "pba" );
                 }
                 OUString aElementPath( aElementInetObj.GetMainURL( INetURLObject::NO_DECODE ) );
 
@@ -732,7 +732,7 @@ bool SfxScriptLibraryContainer::implStorePasswordLibrary( SfxLibrary* pLib, cons
                 aElementInetObj.insertName( aElementName, false,
                                             INetURLObject::LAST_SEGMENT, true,
                                             INetURLObject::ENCODE_ALL );
-                aElementInetObj.setExtension( OUString( "pba" ) );
+                aElementInetObj.setExtension( "pba" );
                 OUString aElementPath = aElementInetObj.GetMainURL( INetURLObject::NO_DECODE );
 
                 if( !isLibraryElementValid( pLib->getByName( aElementName ) ) )
@@ -867,7 +867,7 @@ bool SfxScriptLibraryContainer::implLoadPasswordLibrary
         }
     }
 
-    StarBASIC* pBasicLib = NULL;
+    StarBASIC* pBasicLib = nullptr;
     bool bLoadBinary = false;
     if( !pScriptLib->mbLoadedBinary && !bVerifyPasswordOnly && !pLib->mbPasswordVerified )
     {
@@ -875,7 +875,7 @@ bool SfxScriptLibraryContainer::implLoadPasswordLibrary
         OSL_ENSURE( pBasicMgr, "SfxScriptLibraryContainer::implLoadPasswordLibrary: cannot do this without a BasicManager!" );
         bool bLoaded = pScriptLib->mbLoaded;
         pScriptLib->mbLoaded = true;        // Necessary to get lib
-        pBasicLib = pBasicMgr ? pBasicMgr->GetLib( Name ) : NULL;
+        pBasicLib = pBasicMgr ? pBasicMgr->GetLib( Name ) : nullptr;
         pScriptLib->mbLoaded = bLoaded;    // Restore flag
         if( !pBasicLib )
         {
@@ -1029,7 +1029,7 @@ bool SfxScriptLibraryContainer::implLoadPasswordLibrary
                 INetURLObject aElementInetObj( aLibDirPath );
                 aElementInetObj.insertName( aElementName, false,
                     INetURLObject::LAST_SEGMENT, true, INetURLObject::ENCODE_ALL );
-                aElementInetObj.setExtension( OUString( "pba" ) );
+                aElementInetObj.setExtension( "pba" );
                 OUString aElementPath = aElementInetObj.GetMainURL( INetURLObject::NO_DECODE );
 
                 uno::Reference< embed::XStorage > xElementRootStorage;
@@ -1181,21 +1181,19 @@ Sequence< OUString > SAL_CALL SfxScriptLibraryContainer::getSupportedServiceName
 
 // Ctor
 SfxScriptLibrary::SfxScriptLibrary( ModifiableHelper& _rModifiable,
-                                    const Reference< XComponentContext >& xContext,
                                     const Reference< XSimpleFileAccess3 >& xSFI )
-    : SfxLibrary( _rModifiable, cppu::UnoType<OUString>::get(), xContext, xSFI )
+    : SfxLibrary( _rModifiable, cppu::UnoType<OUString>::get(), xSFI )
     , mbLoadedSource( false )
     , mbLoadedBinary( false )
 {
 }
 
 SfxScriptLibrary::SfxScriptLibrary( ModifiableHelper& _rModifiable,
-                                    const Reference< XComponentContext >& xContext,
                                     const Reference< XSimpleFileAccess3 >& xSFI,
                                     const OUString& aLibInfoFileURL,
                                     const OUString& aStorageURL,
                                     bool ReadOnly )
-    : SfxLibrary( _rModifiable, cppu::UnoType<OUString>::get(), xContext, xSFI,
+    : SfxLibrary( _rModifiable, cppu::UnoType<OUString>::get(), xSFI,
                         aLibInfoFileURL, aStorageURL, ReadOnly)
     , mbLoadedSource( false )
     , mbLoadedBinary( false )

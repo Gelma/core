@@ -31,7 +31,6 @@ namespace dp_gui {
 class LicenseDialog
     : public ::cppu::WeakImplHelper<css::ui::dialogs::XExecutableDialog>
 {
-    css::uno::Reference<css::uno::XComponentContext> const m_xComponentContext;
     css::uno::Reference<css::awt::XWindow> /* const */ m_parent;
     OUString m_sExtensionName;
     OUString /* const */ m_sLicenseText;
@@ -44,8 +43,8 @@ public:
 
     // XExecutableDialog
     virtual void SAL_CALL setTitle( OUString const & title )
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Int16 SAL_CALL execute() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
+    virtual sal_Int16 SAL_CALL execute() throw (css::uno::RuntimeException, std::exception) override;
 };
 }
 #endif

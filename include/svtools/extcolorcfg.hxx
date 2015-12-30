@@ -25,6 +25,7 @@
 #include <com/sun/star/uno/Sequence.h>
 #include <svl/SfxBroadcaster.hxx>
 #include <svl/lstner.hxx>
+#include <memory>
 
 
 namespace svtools {
@@ -69,7 +70,7 @@ public:
     ExtendedColorConfig();
     virtual ~ExtendedColorConfig();
 
-    virtual void                    Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+    virtual void                    Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
     // get the configured value
     ExtendedColorConfigValue        GetColorValue(const OUString& _sComponentName,const OUString& _sName)const;
@@ -82,7 +83,7 @@ public:
 
 class SVT_DLLPUBLIC EditableExtendedColorConfig
 {
-    ExtendedColorConfig_Impl*   m_pImpl;
+    std::unique_ptr<ExtendedColorConfig_Impl> m_pImpl;
     bool                        m_bModified;
 public:
     EditableExtendedColorConfig();

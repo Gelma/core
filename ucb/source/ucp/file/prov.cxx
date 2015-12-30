@@ -50,7 +50,7 @@ using namespace com::sun::star::container;
 extern "C" SAL_DLLPUBLIC_EXPORT void * SAL_CALL ucpfile_component_getFactory(
     const sal_Char * pImplName, void * pServiceManager, void * )
 {
-    void * pRet = 0;
+    void * pRet = nullptr;
 
     Reference< XMultiServiceFactory > xSMgr(
             static_cast< XMultiServiceFactory * >( pServiceManager ) );
@@ -87,7 +87,7 @@ extern "C" SAL_DLLPUBLIC_EXPORT void * SAL_CALL ucpfile_component_getFactory(
 FileProvider::FileProvider( const Reference< XComponentContext >& rxContext )
     : m_xContext(rxContext)
     , m_FileSystemNotation(FileSystemNotation::UNKNOWN_NOTATION)
-    , m_pMyShell(NULL)
+    , m_pMyShell(nullptr)
 {
 }
 
@@ -146,30 +146,6 @@ Reference< XSingleServiceFactory > SAL_CALL
 FileProvider::createServiceFactory(
                    const Reference< XMultiServiceFactory >& rxServiceMgr )
 {
-  /**
-   * Create a single service factory.<BR>
-   * Note: The function pointer ComponentInstantiation points to a function throws Exception.
-   *
-   * @param rServiceManager     the service manager used by the implementation.
-   * @param rImplementationName the implementation name. An empty string is possible.
-   * @param ComponentInstantiation the function pointer to create an object.
-   * @param rServiceNames           the service supported by the implementation.
-   * @return a factory that support the interfaces XServiceProvider, XServiceInfo
-   *            XSingleServiceFactory and XComponent.
-   *
-   * @see createOneInstanceFactory
-   */
-  /*
-   *  Reference< ::com::sun::star::XSingleServiceFactory > createSingleFactory
-   *  (
-   *  const ::com::sun::star::Reference< ::com::sun::star::XMultiServiceFactory > & rServiceManager,
-   *  const OUString & rImplementationName,
-   *  ComponentInstantiation pCreateFunction,
-
-   *  const ::com::sun::star::Sequence< OUString > & rServiceNames
-   *  );
-   */
-
     return Reference< XSingleServiceFactory > ( cppu::createSingleFactory(
         rxServiceMgr,
         fileaccess::shell::getImplementationName_static(),
@@ -296,33 +272,33 @@ public:
     virtual Any SAL_CALL
     queryInterface(
         const Type& aType )
-        throw( RuntimeException, std::exception) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception) override;
 
     virtual void SAL_CALL
     acquire(
         void )
-        throw() SAL_OVERRIDE;
+        throw() override;
 
     virtual void SAL_CALL
     release(
         void )
-        throw() SAL_OVERRIDE;
+        throw() override;
 
 
     virtual Sequence< Property > SAL_CALL
     getProperties(
         void )
-        throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception ) override;
 
     virtual Property SAL_CALL
     getPropertyByName(
         const OUString& aName )
         throw( UnknownPropertyException,
-               RuntimeException, std::exception) SAL_OVERRIDE;
+               RuntimeException, std::exception) override;
 
     virtual sal_Bool SAL_CALL
     hasPropertyByName( const OUString& Name )
-        throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception ) override;
 
 
 private:
@@ -447,7 +423,7 @@ void SAL_CALL FileProvider::initProperties()
         // static const sal_Int32 MAC_NOTATION = (sal_Int32)3;
 
         XPropertySetInfoImpl2* p = new XPropertySetInfoImpl2();
-        m_xPropertySetInfo = Reference< XPropertySetInfo >( p );
+        m_xPropertySetInfo.set( p );
     }
 }
 

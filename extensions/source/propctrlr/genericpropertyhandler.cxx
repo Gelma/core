@@ -75,9 +75,9 @@ namespace pcr
 
         // IPropertyEnumRepresentation implementqation
         virtual ::std::vector< OUString >
-                                    SAL_CALL getDescriptions() const SAL_OVERRIDE;
-        virtual void                SAL_CALL getValueFromDescription( const OUString& _rDescription, ::com::sun::star::uno::Any& _out_rValue ) const SAL_OVERRIDE;
-        virtual OUString     SAL_CALL getDescriptionForValue( const ::com::sun::star::uno::Any& _rEnumValue ) const SAL_OVERRIDE;
+                                    SAL_CALL getDescriptions() const override;
+        virtual void                SAL_CALL getValueFromDescription( const OUString& _rDescription, css::uno::Any& _out_rValue ) const override;
+        virtual OUString            SAL_CALL getDescriptionForValue( const css::uno::Any& _rEnumValue ) const override;
 
     private:
         void            impl_getValues( Sequence< sal_Int32 >& _out_rValues ) const;
@@ -94,7 +94,7 @@ namespace pcr
                     _rxContext->getValueByName("/singletons/com.sun.star.reflection.theTypeDescriptionManager"),
                     UNO_QUERY_THROW );
 
-                m_xTypeDescription = Reference< XEnumTypeDescription >( xTypeDescProv->getByHierarchicalName( m_aEnumType.getTypeName() ), UNO_QUERY_THROW );
+                m_xTypeDescription.set( xTypeDescProv->getByHierarchicalName( m_aEnumType.getTypeName() ), UNO_QUERY_THROW );
             }
         }
         catch( const Exception& )
@@ -187,10 +187,10 @@ namespace pcr
         virtual ~UrlClickHandler();
 
         // XActionListener
-        virtual void SAL_CALL actionPerformed( const ActionEvent& rEvent ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL actionPerformed( const ActionEvent& rEvent ) throw (RuntimeException, std::exception) override;
 
         // XEventListener
-        virtual void SAL_CALL disposing( const EventObject& Source ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing( const EventObject& Source ) throw (RuntimeException, std::exception) override;
 
     protected:
         void impl_dispatch_throw( const OUString& _rURL );
@@ -288,8 +288,7 @@ namespace pcr
 
     Sequence< OUString > SAL_CALL GenericPropertyHandler::getSupportedServiceNames_static(  ) throw (RuntimeException)
     {
-        Sequence< OUString > aSupported( 1 );
-        aSupported[0] = "com.sun.star.inspection.GenericPropertyHandler";
+        Sequence<OUString> aSupported { "com.sun.star.inspection.GenericPropertyHandler" };
         return aSupported;
     }
 
@@ -322,7 +321,7 @@ namespace pcr
         if ( !xIntrospectionAccess.is() )
             throw RuntimeException("The introspection service could not handle the given component.", *this );
 
-        m_xComponent = Reference< XPropertySet >( xIntrospectionAccess->queryAdapter( cppu::UnoType<XPropertySet>::get() ), UNO_QUERY_THROW );
+        m_xComponent.set( xIntrospectionAccess->queryAdapter( cppu::UnoType<XPropertySet>::get() ), UNO_QUERY_THROW );
         // now that we survived so far, remember m_xComponentIntrospectionAccess
         m_xComponentIntrospectionAccess = xIntrospectionAccess;
         m_xPropertyState.set(m_xComponent, css::uno::UNO_QUERY);
@@ -529,10 +528,7 @@ namespace pcr
         ::osl::MutexGuard aGuard( m_aMutex );
         impl_ensurePropertyMap();
 
-        Sequence< Property > aReturn( m_aProperties.size() );
-        ::std::transform( m_aProperties.begin(), m_aProperties.end(),
-            aReturn.getArray(), ::o3tl::select2nd< PropertyMap::value_type >() );
-        return aReturn;
+        return comphelper::mapValuesToSequence( m_aProperties );
     }
 
     Sequence< OUString > SAL_CALL GenericPropertyHandler::getSupersededProperties( ) throw (RuntimeException, std::exception)

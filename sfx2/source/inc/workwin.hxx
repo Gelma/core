@@ -59,7 +59,7 @@ struct SfxObjectBar_Impl
         nPos(0),
         nIndex(0),
         bDestroy(false),
-        pIFace(0)
+        pIFace(nullptr)
     {}
 };
 
@@ -130,9 +130,9 @@ struct SfxChildWin_Impl
         nSaveId((sal_uInt16) (nID & 0xFFFF) ),
         nInterfaceId((sal_uInt16) (nID >> 16)),
         nId(nSaveId),
-        pWin(0),
+        pWin(nullptr),
         bCreate(false),
-        pCli(0),
+        pCli(nullptr),
         nVisibility( SFX_VISIBILITY_UNVISIBLE ),
         bEnable( true ),
         bDisabled( false )
@@ -156,15 +156,6 @@ enum class SfxDockingConfig
 };
 
 
-struct SfxObjectBarList_Impl
-{
-    std::deque<SfxObjectBar_Impl>   aArr;
-    sal_uInt16                  nAct;
-
-    SfxObjectBar_Impl       operator[] ( sal_uInt16 n )
-                            { return aArr[n]; }
-};
-
 #define SFX_SPLITWINDOWS_LEFT   0
 #define SFX_SPLITWINDOWS_TOP    2
 #define SFX_SPLITWINDOWS_RIGHT  1
@@ -180,30 +171,30 @@ class LayoutManagerListener : public ::cppu::WeakImplHelper<
         LayoutManagerListener( SfxWorkWindow* pWrkWin );
         virtual ~LayoutManagerListener();
 
-        void setFrame( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& rFrame );
+        void setFrame( const css::uno::Reference< css::frame::XFrame >& rFrame );
 
 
         //  XComponent
 
-        virtual void SAL_CALL addEventListener( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >& xListener ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL removeEventListener( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >& aListener ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL dispose() throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual void SAL_CALL addEventListener( const css::uno::Reference< css::lang::XEventListener >& xListener ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL removeEventListener( const css::uno::Reference< css::lang::XEventListener >& aListener ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL dispose() throw( css::uno::RuntimeException, std::exception ) override;
 
 
         //  XEventListener
 
-        virtual void SAL_CALL disposing( const ::com::sun::star::lang::EventObject& aEvent ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing( const css::lang::EventObject& aEvent ) throw( css::uno::RuntimeException, std::exception ) override;
 
 
         // XLayoutManagerEventListener
 
-        virtual void SAL_CALL layoutEvent( const ::com::sun::star::lang::EventObject& aSource, ::sal_Int16 eLayoutEvent, const ::com::sun::star::uno::Any& aInfo ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL layoutEvent( const css::lang::EventObject& aSource, ::sal_Int16 eLayoutEvent, const css::uno::Any& aInfo ) throw (css::uno::RuntimeException, std::exception) override;
 
     private:
-        bool                                                                m_bHasFrame;
-        SfxWorkWindow*                                                          m_pWrkWin;
-        ::com::sun::star::uno::WeakReference< ::com::sun::star::frame::XFrame > m_xFrame;
-        OUString                                                           m_aLayoutManagerPropName;
+        bool                                             m_bHasFrame;
+        SfxWorkWindow*                                   m_pWrkWin;
+        css::uno::WeakReference< css::frame::XFrame >    m_xFrame;
+        OUString                                         m_aLayoutManagerPropName;
 };
 
 class SfxWorkWindow
@@ -240,7 +231,7 @@ protected:
     OUString                m_aLayoutManagerPropName;
     OUString                m_aTbxTypeName;
     OUString                m_aProgressBarResName;
-    ::com::sun::star::uno::Reference< ::com::sun::star::lang::XComponent > m_xLayoutManagerListener;
+    css::uno::Reference< css::lang::XComponent > m_xLayoutManagerListener;
 
 protected:
     void                    CreateChildWin_Impl(SfxChildWin_Impl*,bool);
@@ -254,7 +245,7 @@ protected:
     static bool             IsPluginMode( SfxObjectShell* pObjShell );
 
 public:
-                            SfxWorkWindow( vcl::Window *pWin, SfxBindings& rBindings, SfxWorkWindow* pParent = NULL);
+                            SfxWorkWindow( vcl::Window *pWin, SfxBindings& rBindings, SfxWorkWindow* pParent = nullptr);
     virtual                 ~SfxWorkWindow();
     SfxBindings&            GetBindings()
                             { return *pBindings; }
@@ -317,14 +308,13 @@ public:
     bool                    IsFloating( sal_uInt16 nId );
     void                    SetActiveChild_Impl( vcl::Window *pChild );
     VclPtr<vcl::Window>     GetActiveChild_Impl() const { return pActiveChild; }
-    bool                    AllowChildWindowCreation_Impl( const SfxChildWin_Impl& i_rCW ) const;
 
     // Methods for StatusBar
     void                    ResetStatusBar_Impl();
     void                    SetStatusBar_Impl(sal_uInt32 nResId, SfxShell *pShell, SfxBindings& );
     void                    UpdateStatusBar_Impl();
-    ::com::sun::star::uno::Reference< ::com::sun::star::task::XStatusIndicator > GetStatusIndicator();
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > GetFrameInterface();
+    css::uno::Reference< css::task::XStatusIndicator > GetStatusIndicator();
+    css::uno::Reference< css::frame::XFrame > GetFrameInterface();
 };
 
 class SfxFrameWorkWin_Impl : public SfxWorkWindow
@@ -333,9 +323,9 @@ class SfxFrameWorkWin_Impl : public SfxWorkWindow
     SfxFrame*           pFrame;
 public:
                         SfxFrameWorkWin_Impl( vcl::Window* pWin, SfxFrame* pFrm, SfxFrame* pMaster );
-    virtual void        ArrangeChildren_Impl( bool bForce = true ) SAL_OVERRIDE;
-    virtual void        UpdateObjectBars_Impl() SAL_OVERRIDE;
-    virtual Rectangle   GetTopRect_Impl() SAL_OVERRIDE;
+    virtual void        ArrangeChildren_Impl( bool bForce = true ) override;
+    virtual void        UpdateObjectBars_Impl() override;
+    virtual Rectangle   GetTopRect_Impl() override;
 };
 
 

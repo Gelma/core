@@ -27,7 +27,7 @@ public:
     AstSequence(AstType const * pMemberType, AstScope* pScope)
         : AstType(NT_sequence, OString("[]")+pMemberType->getScopedName(), pScope)
         , m_pMemberType(pMemberType)
-        , m_pRelativName(NULL)
+        , m_pRelativName(nullptr)
     {}
     virtual ~AstSequence()
     {
@@ -38,10 +38,10 @@ public:
     AstType const * getMemberType() const
         { return m_pMemberType; }
 
-    virtual bool isUnsigned() const SAL_OVERRIDE
-    { return m_pMemberType != 0 && m_pMemberType->isUnsigned(); }
+    virtual bool isUnsigned() const override
+    { return m_pMemberType != nullptr && m_pMemberType->isUnsigned(); }
 
-    virtual const sal_Char* getRelativName() const SAL_OVERRIDE;
+    virtual const sal_Char* getRelativName() const override;
 private:
     AstType const * m_pMemberType;
     mutable OString* m_pRelativName;

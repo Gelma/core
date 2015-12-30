@@ -20,7 +20,6 @@
 #define INCLUDED_SVL_GLOBALNAMEITEM_HXX
 
 #include <svl/svldllapi.h>
-#include <tools/rtti.hxx>
 #include <tools/globname.hxx>
 #include <svl/poolitem.hxx>
 
@@ -29,19 +28,20 @@ class SVL_DLLPUBLIC SfxGlobalNameItem: public SfxPoolItem
     SvGlobalName            m_aName;
 
 public:
-                            TYPEINFO_OVERRIDE();
+                            static SfxPoolItem* CreateDefault();
+
                             SfxGlobalNameItem();
                             SfxGlobalNameItem( sal_uInt16 nWhich, const SvGlobalName& );
                             virtual ~SfxGlobalNameItem();
 
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
     SvGlobalName            GetValue() const { return m_aName; }
 
-    virtual bool            PutValue  ( const com::sun::star::uno::Any& rVal,
-                                        sal_uInt8 nMemberId ) SAL_OVERRIDE;
-    virtual bool            QueryValue( com::sun::star::uno::Any& rVal,
-                                        sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
+    virtual bool            PutValue  ( const css::uno::Any& rVal,
+                                        sal_uInt8 nMemberId ) override;
+    virtual bool            QueryValue( css::uno::Any& rVal,
+                                        sal_uInt8 nMemberId = 0 ) const override;
 };
 
 #endif

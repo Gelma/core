@@ -29,6 +29,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <memory>
 
 #define SUBDIVIDE_FOR_CUT_TEST_COUNT        (50)
 
@@ -229,7 +230,7 @@ namespace basegfx
                         const double fOne(1.0);
                         fCut = (aVecB.getY() * (rCurrB.getX() - rCurrA.getX()) + aVecB.getX() * (rCurrA.getY() - rCurrB.getY())) / fCut;
 
-                        if(fTools::moreOrEqual(fCut, fZero) && fTools::lessOrEqual(fCut, fOne))
+                        if (fTools::betweenOrEqualEither(fCut, fZero, fOne))
                         {
                             // it's a candidate, but also need to test parameter value of cut on line 2
                             double fCut2;
@@ -244,7 +245,7 @@ namespace basegfx
                                 fCut2 = (rCurrA.getY() + (fCut * aVecA.getY()) - rCurrB.getY()) / aVecB.getY();
                             }
 
-                            if(fTools::moreOrEqual(fCut2, fZero) && fTools::lessOrEqual(fCut2, fOne))
+                            if (fTools::betweenOrEqualEither(fCut2, fZero, fOne))
                             {
                                 // cut is in range, add point. Two edges can have only one cut, but
                                 // add a cut point to each list. The lists may be the same for
@@ -887,7 +888,7 @@ namespace basegfx
                 else
                 {
                     // first solve self cuts and self touches for all contained single polygons
-                    temporaryPolygonData *pTempData = new temporaryPolygonData[nCount];
+                    std::unique_ptr<temporaryPolygonData[]> pTempData(new temporaryPolygonData[nCount]);
                     sal_uInt32 a, b;
 
                     for(a = 0L; a < nCount; a++)
@@ -934,8 +935,6 @@ namespace basegfx
                     {
                         aRetval.append(mergeTemporaryPointsAndPolygon(pTempData[a].getPolygon(), pTempData[a].getTemporaryPointVector()));
                     }
-
-                    delete[] pTempData;
                 }
 
                 return aRetval;

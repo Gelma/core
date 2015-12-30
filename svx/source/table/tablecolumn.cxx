@@ -72,7 +72,7 @@ void TableColumn::dispose()
 
 
 
-void TableColumn::throwIfDisposed() const throw (::com::sun::star::uno::RuntimeException)
+void TableColumn::throwIfDisposed() const throw (css::uno::RuntimeException)
 {
     if( !mxTableModel.is() )
         throw DisposedException();
@@ -144,14 +144,14 @@ void SAL_CALL TableColumn::setName( const OUString& aName ) throw (RuntimeExcept
 // XFastPropertySet
 
 
-void SAL_CALL TableColumn::setFastPropertyValue( sal_Int32 nHandle, const Any& aValue ) throw (UnknownPropertyException, PropertyVetoException, IllegalArgumentException, ::com::sun::star::lang::WrappedTargetException, RuntimeException, std::exception)
+void SAL_CALL TableColumn::setFastPropertyValue( sal_Int32 nHandle, const Any& aValue ) throw (UnknownPropertyException, PropertyVetoException, IllegalArgumentException, css::lang::WrappedTargetException, RuntimeException, std::exception)
 {
     bool bOk = false;
     bool bChange = false;
 
     SdrModel* pModel = mxTableModel->getSdrTableObj()->GetModel();
 
-    TableColumnUndo* pUndo = 0;
+    TableColumnUndo* pUndo = nullptr;
     if( mxTableModel.is() && mxTableModel->getSdrTableObj() && mxTableModel->getSdrTableObj()->IsInserted() && pModel && pModel->IsUndoEnabled() )
     {
         TableColumnRef xThis( this );
@@ -223,7 +223,7 @@ void SAL_CALL TableColumn::setFastPropertyValue( sal_Int32 nHandle, const Any& a
         if( pUndo )
         {
             pModel->AddUndo( pUndo );
-            pUndo = 0;
+            pUndo = nullptr;
         }
         mxTableModel->setModified(sal_True);
     }

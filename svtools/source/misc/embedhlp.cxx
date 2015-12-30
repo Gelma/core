@@ -73,15 +73,15 @@ public:
     static EmbedEventListener_Impl* Create( EmbeddedObjectRef* );
 
     virtual void SAL_CALL changingState( const lang::EventObject& aEvent, ::sal_Int32 nOldState, ::sal_Int32 nNewState )
-                                    throw (embed::WrongStateException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
+                                    throw (embed::WrongStateException, uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL stateChanged( const lang::EventObject& aEvent, ::sal_Int32 nOldState, ::sal_Int32 nNewState )
-                                    throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+                                    throw (uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL queryClosing( const lang::EventObject& Source, sal_Bool GetsOwnership )
-                                    throw (util::CloseVetoException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL notifyClosing( const lang::EventObject& Source ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL notifyEvent( const document::EventObject& aEvent ) throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL disposing( const lang::EventObject& aEvent ) throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL modified( const ::com::sun::star::lang::EventObject& aEvent ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+                                    throw (util::CloseVetoException, uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL notifyClosing( const lang::EventObject& Source ) throw (uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL notifyEvent( const document::EventObject& aEvent ) throw( uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL disposing( const lang::EventObject& aEvent ) throw( uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL modified( const css::lang::EventObject& aEvent ) throw (css::uno::RuntimeException, std::exception) override;
 };
 
 EmbedEventListener_Impl* EmbedEventListener_Impl::Create( EmbeddedObjectRef* p )
@@ -205,12 +205,12 @@ void SAL_CALL EmbedEventListener_Impl::queryClosing( const lang::EventObject& So
         throw util::CloseVetoException();
 }
 
-void SAL_CALL EmbedEventListener_Impl::notifyClosing( const lang::EventObject& Source ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL EmbedEventListener_Impl::notifyClosing( const lang::EventObject& Source ) throw (css::uno::RuntimeException, std::exception)
 {
     if ( pObject && Source.Source == pObject->GetObject() )
     {
         pObject->Clear();
-        pObject = 0;
+        pObject = nullptr;
     }
 }
 
@@ -219,7 +219,7 @@ void SAL_CALL EmbedEventListener_Impl::disposing( const lang::EventObject& aEven
     if ( pObject && aEvent.Source == pObject->GetObject() )
     {
         pObject->Clear();
-        pObject = 0;
+        pObject = nullptr;
     }
 }
 
@@ -241,9 +241,9 @@ struct EmbeddedObjectRef_Impl
     awt::Size                                   aDefaultSizeForChart_In_100TH_MM;//#i103460# charts do not necessaryly have an own size within ODF files, in this case they need to use the size settings from the surrounding frame, which is made available with this member
 
     EmbeddedObjectRef_Impl() :
-        xListener(0),
-        pContainer(NULL),
-        pGraphic(NULL),
+        xListener(nullptr),
+        pContainer(nullptr),
+        pGraphic(nullptr),
         nViewAspect(embed::Aspects::MSOLE_CONTENT),
         bIsLocked(false),
         bNeedUpdate(false),
@@ -253,11 +253,11 @@ struct EmbeddedObjectRef_Impl
 
     EmbeddedObjectRef_Impl( const EmbeddedObjectRef_Impl& r ) :
         mxObj(r.mxObj),
-        xListener(0),
+        xListener(nullptr),
         aPersistName(r.aPersistName),
         aMediaType(r.aMediaType),
         pContainer(r.pContainer),
-        pGraphic(NULL),
+        pGraphic(nullptr),
         nViewAspect(r.nViewAspect),
         bIsLocked(r.bIsLocked),
         bNeedUpdate(r.bNeedUpdate),
@@ -303,7 +303,6 @@ EmbeddedObjectRef::EmbeddedObjectRef( const EmbeddedObjectRef& rObj ) :
 EmbeddedObjectRef::~EmbeddedObjectRef()
 {
     Clear();
-    delete mpImpl;
 }
 
 void EmbeddedObjectRef::Assign( const uno::Reference < embed::XEmbeddedObject >& xObj, sal_Int64 nAspect )
@@ -352,25 +351,25 @@ void EmbeddedObjectRef::Clear()
                 {
                     // there's still someone who needs the object!
                 }
-                catch (const uno::Exception&)
+                catch (const uno::Exception& e)
                 {
-                    OSL_FAIL( "Error on switching of the object to loaded state and closing!\n" );
+                    SAL_WARN("svtools.misc", "Error on switching of the object to loaded state and closing: \"" << e.Message << "\"");
                 }
             }
         }
 
         if ( mpImpl->xListener )
         {
-            mpImpl->xListener->pObject = 0;
+            mpImpl->xListener->pObject = nullptr;
             mpImpl->xListener->release();
-            mpImpl->xListener = 0;
+            mpImpl->xListener = nullptr;
         }
 
-        mpImpl->mxObj = NULL;
+        mpImpl->mxObj = nullptr;
         mpImpl->bNeedUpdate = false;
     }
 
-    mpImpl->pContainer = 0;
+    mpImpl->pContainer = nullptr;
     mpImpl->bIsLocked = false;
     mpImpl->bNeedUpdate = false;
 }
@@ -439,7 +438,7 @@ void EmbeddedObjectRef::GetReplacement( bool bUpdate )
     {
         GraphicFilter& rGF = GraphicFilter::GetGraphicFilter();
         if( mpImpl->pGraphic )
-            rGF.ImportGraphic( *mpImpl->pGraphic, OUString(), *pGraphicStream, GRFILTER_FORMAT_DONTKNOW );
+            rGF.ImportGraphic( *mpImpl->pGraphic, OUString(), *pGraphicStream );
         mpImpl->mnGraphicVersion++;
     }
 }
@@ -493,18 +492,18 @@ Size EmbeddedObjectRef::GetSize( MapMode* pTargetMapMode ) const
             catch(const embed::NoVisualAreaSizeException&)
             {
             }
-            catch(const uno::Exception&)
+            catch (const uno::Exception& e)
             {
-                OSL_FAIL( "Something went wrong on getting of the size of the object!" );
+                SAL_WARN("svtools.misc", "Something went wrong on getting of the size of the object: \"" << e.Message << "\"");
             }
 
             try
             {
                 aSourceMapMode = VCLUnoHelper::UnoEmbed2VCLMapUnit(mpImpl->mxObj->getMapUnit(mpImpl->nViewAspect));
             }
-            catch(const uno::Exception&)
+            catch (const uno::Exception& e)
             {
-                OSL_FAIL( "Can not get the map mode!" );
+                SAL_WARN("svtools.misc", "Can not get the map mode: \"" << e.Message << "\"");
             }
         }
 
@@ -537,7 +536,7 @@ void EmbeddedObjectRef::SetGraphicStream( const uno::Reference< io::XInputStream
     if ( pGraphicStream )
     {
         GraphicFilter& rGF = GraphicFilter::GetGraphicFilter();
-        rGF.ImportGraphic( *mpImpl->pGraphic, "", *pGraphicStream, GRFILTER_FORMAT_DONTKNOW );
+        rGF.ImportGraphic( *mpImpl->pGraphic, "", *pGraphicStream );
         mpImpl->mnGraphicVersion++;
 
         if ( mpImpl->pContainer )
@@ -638,13 +637,13 @@ SvStream* EmbeddedObjectRef::GetGraphicStream( bool bUpdate ) const
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void EmbeddedObjectRef::DrawPaintReplacement( const Rectangle &rRect, const OUString &rText, OutputDevice *pOut )
 {
     MapMode aMM( MAP_APPFONT );
-    Size aAppFontSz = pOut->LogicToLogic( Size( 0, 8 ), &aMM, NULL );
+    Size aAppFontSz = pOut->LogicToLogic( Size( 0, 8 ), &aMM, nullptr );
     vcl::Font aFnt( OUString("Helvetica"), aAppFontSz );
     aFnt.SetTransparent( true );
     aFnt.SetColor( Color( COL_LIGHTRED ) );
@@ -793,7 +792,7 @@ uno::Reference< io::XInputStream > EmbeddedObjectRef::GetGraphicReplacementStrea
     return ::comphelper::EmbeddedObjectContainer::GetGraphicReplacementStream(nViewAspect,xObj,pMediaType);
 }
 
-bool EmbeddedObjectRef::IsChart(const ::com::sun::star::uno::Reference < ::com::sun::star::embed::XEmbeddedObject >& xObj)
+bool EmbeddedObjectRef::IsChart(const css::uno::Reference < css::embed::XEmbeddedObject >& xObj)
 {
     SvGlobalName aObjClsId(xObj->getClassID());
     if(
@@ -808,7 +807,7 @@ bool EmbeddedObjectRef::IsChart(const ::com::sun::star::uno::Reference < ::com::
     return false;
 }
 
-bool EmbeddedObjectRef::IsGLChart(const ::com::sun::star::uno::Reference < ::com::sun::star::embed::XEmbeddedObject >& xObj)
+bool EmbeddedObjectRef::IsGLChart(const css::uno::Reference < css::embed::XEmbeddedObject >& xObj)
 {
     static const char* env = getenv("CHART_DUMMY_FACTORY");
     if (IsChart(xObj))
@@ -914,7 +913,7 @@ OUString EmbeddedObjectRef::GetChartType()
                                 if( xProp.is())
                                 {
                                     bool bCurrent = false;
-                                    if( xProp->getPropertyValue( OUString("SwapXAndYAxis") ) >>= bCurrent )
+                                    if( xProp->getPropertyValue( "SwapXAndYAxis" ) >>= bCurrent )
                                     {
                                         if (bCurrent)
                                             Style += "Bars";

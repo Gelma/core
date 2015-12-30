@@ -37,7 +37,7 @@ public:
                          apr_size_t inDataLen,
                          const char* inContentType,
                          const char* inReferer,
-                         const com::sun::star::uno::Reference< SerfInputStream > & xioInStrm );
+                         const css::uno::Reference< SerfInputStream > & xioInStrm );
 
     SerfPostReqProcImpl( const char* inPath,
                          const DAVRequestHeaders& inRequestHeaders,
@@ -45,27 +45,27 @@ public:
                          apr_size_t inDataLen,
                          const char* inContentType,
                          const char* inReferer,
-                         const com::sun::star::uno::Reference< com::sun::star::io::XOutputStream > & xioOutStrm );
+                         const css::uno::Reference< css::io::XOutputStream > & xioOutStrm );
 
     virtual ~SerfPostReqProcImpl();
 
     virtual
-    serf_bucket_t * createSerfRequestBucket( serf_request_t * inSerfRequest ) SAL_OVERRIDE;
+    serf_bucket_t * createSerfRequestBucket( serf_request_t * inSerfRequest ) override;
 
 protected:
     virtual
-    void processChunkOfResponseData( const char* data, apr_size_t len ) SAL_OVERRIDE;
+    void processChunkOfResponseData( const char* data, apr_size_t len ) override;
 
     virtual
-    void handleEndOfResponseData( serf_bucket_t * inSerfResponseBucket ) SAL_OVERRIDE;
+    void handleEndOfResponseData( serf_bucket_t * inSerfResponseBucket ) override;
 
 private:
     const char* mpPostData;
     apr_size_t mnPostDataLen;
     const char* mpContentType;
     const char* mpReferer;
-    com::sun::star::uno::Reference< SerfInputStream > xInputStream;
-    com::sun::star::uno::Reference< com::sun::star::io::XOutputStream > xOutputStream;
+    css::uno::Reference< SerfInputStream > xInputStream;
+    css::uno::Reference< css::io::XOutputStream > xOutputStream;
 
 };
 

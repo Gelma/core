@@ -39,6 +39,7 @@
 #include <vcl/rendersettings.hxx>
 #include "vcleventlisteners.hxx"
 #include <vector>
+#include <set>
 
 struct SalPaintEvent;
 struct ImplDelData;
@@ -173,11 +174,11 @@ struct ImplFrameData
     bool                mbInSysObjToTopHdl;     //< within a SysChildren's ToTop handler
     bool                mbSysObjFocus;          //< does a SysChild have focus
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::datatransfer::dnd::XDragSource > mxDragSource;
-    ::com::sun::star::uno::Reference< ::com::sun::star::datatransfer::dnd::XDropTarget > mxDropTarget;
-    ::com::sun::star::uno::Reference< ::com::sun::star::datatransfer::dnd::XDropTargetListener > mxDropTargetListener;
-    ::com::sun::star::uno::Reference< ::com::sun::star::datatransfer::clipboard::XClipboard > mxClipboard;
-    ::com::sun::star::uno::Reference< ::com::sun::star::datatransfer::clipboard::XClipboard > mxSelection;
+    css::uno::Reference< css::datatransfer::dnd::XDragSource > mxDragSource;
+    css::uno::Reference< css::datatransfer::dnd::XDropTarget > mxDropTarget;
+    css::uno::Reference< css::datatransfer::dnd::XDropTargetListener > mxDropTargetListener;
+    css::uno::Reference< css::datatransfer::clipboard::XClipboard > mxClipboard;
+    css::uno::Reference< css::datatransfer::clipboard::XClipboard > mxSelection;
 
     bool                mbInternalDragGestureRecognizer;
     VclPtr<VirtualDevice> mpBuffer; ///< Buffer for the double-buffering
@@ -203,8 +204,8 @@ enum AlwaysInputMode { AlwaysInputNone = 0, AlwaysInputEnabled = 1, AlwaysInputD
 class WindowImpl
 {
 private:
-    WindowImpl(const WindowImpl&) SAL_DELETED_FUNCTION;
-    WindowImpl& operator=(const WindowImpl&) SAL_DELETED_FUNCTION;
+    WindowImpl(const WindowImpl&) = delete;
+    WindowImpl& operator=(const WindowImpl&) = delete;
 public:
     WindowImpl( WindowType );
     ~WindowImpl();
@@ -231,9 +232,11 @@ public:
     VclPtr<vcl::Window> mpDlgCtrlDownWindow;
     std::vector<Link<VclWindowEvent&,void>> maEventListeners;
     std::vector<Link<VclWindowEvent&,void>> maChildEventListeners;
+    int mnChildEventListenersIteratingCount;
+    std::set<Link<VclWindowEvent&,void>> maChildEventListenersDeleted;
 
     // The canvas interface for this VCL window. Is persistent after the first GetCanvas() call
-    ::com::sun::star::uno::WeakReference< ::com::sun::star::rendering::XCanvas >    mxCanvas;
+    css::uno::WeakReference< css::rendering::XCanvas >    mxCanvas;
 
     ImplDelData*        mpFirstDel;
     void*               mpUserData;
@@ -261,8 +264,8 @@ public:
     OUString            maHelpText;
     OUString            maQuickHelpText;
     InputContext        maInputContext;
-    ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindowPeer > mxWindowPeer;
-    ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > mxAccessible;
+    css::uno::Reference< css::awt::XWindowPeer > mxWindowPeer;
+    css::uno::Reference< css::accessibility::XAccessible > mxAccessible;
     std::shared_ptr< VclSizeGroup > m_xSizeGroup;
     std::vector< VclPtr<FixedText> > m_aMnemonicLabels;
     ImplAccessibleInfos* mpAccessibleInfos;
@@ -379,9 +382,7 @@ public:
                         mbNonHomogeneous:1,
                         mbDoubleBufferingRequested:1;
 
-    vcl::RenderSettings maRenderSettings;
-
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > mxDNDListenerContainer;
+    css::uno::Reference< css::uno::XInterface > mxDNDListenerContainer;
 };
 
 /// Sets up the buffer to have settings matching the window, and restores the original state in the dtor.

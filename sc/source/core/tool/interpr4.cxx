@@ -87,10 +87,10 @@ using ::std::unique_ptr;
 
 void ScInterpreter::ReplaceCell( ScAddress& rPos )
 {
-    size_t ListSize = pDok->aTableOpList.size();
+    size_t ListSize = pDok->m_TableOpList.size();
     for ( size_t i = 0; i < ListSize; ++i )
     {
-        ScInterpreterTableOpParams* pTOp = &pDok->aTableOpList[ i ];
+        ScInterpreterTableOpParams *const pTOp = pDok->m_TableOpList[ i ].get();
         if ( rPos == pTOp->aOld1 )
         {
             rPos = pTOp->aNew1;
@@ -107,10 +107,10 @@ void ScInterpreter::ReplaceCell( ScAddress& rPos )
 void ScInterpreter::ReplaceCell( SCCOL& rCol, SCROW& rRow, SCTAB& rTab )
 {
     ScAddress aCellPos( rCol, rRow, rTab );
-    size_t ListSize = pDok->aTableOpList.size();
+    size_t ListSize = pDok->m_TableOpList.size();
     for ( size_t i = 0; i < ListSize; ++i )
     {
-        ScInterpreterTableOpParams* pTOp = &pDok->aTableOpList[ i ];
+        ScInterpreterTableOpParams *const pTOp = pDok->m_TableOpList[ i ].get();
         if ( aCellPos == pTOp->aOld1 )
         {
             rCol = pTOp->aNew1.Col();
@@ -134,10 +134,10 @@ bool ScInterpreter::IsTableOpInRange( const ScRange& rRange )
         return false;   // not considered to be a range in TableOp sense
 
     // we can't replace a single cell in a range
-    size_t ListSize = pDok->aTableOpList.size();
+    size_t ListSize = pDok->m_TableOpList.size();
     for ( size_t i = 0; i < ListSize; ++i )
     {
-        ScInterpreterTableOpParams* pTOp = &pDok->aTableOpList[ i ];
+        ScInterpreterTableOpParams *const pTOp = pDok->m_TableOpList[ i ].get();
         if ( rRange.In( pTOp->aOld1 ) )
             return true;
         if ( rRange.In( pTOp->aOld2 ) )
@@ -184,278 +184,18 @@ sal_uInt16 ScInterpreter::GetCellErrCode( const ScRefCellValue& rCell )
     return rCell.meType == CELLTYPE_FORMULA ? rCell.mpFormula->GetErrCode() : 0;
 }
 
-namespace
-{
-bool isEmptyString( const OUString& rStr )
-{
-    if (rStr.isEmpty())
-        return true;
-    else if (rStr[0] == ' ')
-    {
-        const sal_Unicode* p = rStr.getStr() + 1;
-        const sal_Unicode* const pStop = p - 1 + rStr.getLength();
-        while (p < pStop && *p == ' ')
-            ++p;
-        if (p == pStop)
-            return true;
-    }
-    return false;
-}
-}
-
-/** Convert string content to numeric value.
-
-    Depending on the string conversion configuration different approaches are
-    taken. For ScCalcConfig::StringConversion::UNAMBIGUOUS if the string is not
-    empty the following conversion rules are applied:
-
-    Converted are only integer numbers including exponent, and ISO 8601 dates
-    and times in their extended formats with separators. Anything else,
-    especially fractional numeric values with decimal separators or dates other
-    than ISO 8601 would be locale dependent and is a no-no. Leading and
-    trailing blanks are ignored.
-
-    The following ISO 8601 formats are converted:
-
-    CCYY-MM-DD
-    CCYY-MM-DDThh:mm
-    CCYY-MM-DDThh:mm:ss
-    CCYY-MM-DDThh:mm:ss,s
-    CCYY-MM-DDThh:mm:ss.s
-    hh:mm
-    hh:mm:ss
-    hh:mm:ss,s
-    hh:mm:ss.s
-
-    The century CC may not be omitted and the two-digit year setting is not
-    taken into account. Instead of the T date and time separator exactly one
-    blank may be used.
-
-    If a date is given, it must be a valid Gregorian calendar date. In this
-    case the optional time must be in the range 00:00 to 23:59:59.99999...
-    If only time is given, it may have any value for hours, taking elapsed time
-    into account; minutes and seconds are limited to the value 59 as well.
- */
-
 double ScInterpreter::ConvertStringToValue( const OUString& rStr )
 {
-    // We keep ScCalcConfig::StringConversion::LOCALE default until
-    // we provide a friendly way to convert string numbers into numbers in the UI.
-
-    double fValue = 0.0;
-    if (mnStringNoValueError == errCellNoValue)
-    {
-        // Requested that all strings result in 0, error handled by caller.
-        SetError( mnStringNoValueError);
-        return fValue;
-    }
-
-    switch (maCalcConfig.meStringConversion)
-    {
-        case ScCalcConfig::StringConversion::ILLEGAL:
-            SetError( mnStringNoValueError);
-            return fValue;
-        case ScCalcConfig::StringConversion::ZERO:
-            return fValue;
-        case ScCalcConfig::StringConversion::LOCALE:
-            {
-                if (maCalcConfig.mbEmptyStringAsZero)
-                {
-                    // The number scanner does not accept empty strings or strings
-                    // containing only spaces, be on par in these cases with what was
-                    // accepted in OOo and is in AOO (see also the
-                    // StringConversion::UNAMBIGUOUS branch) and convert to 0 to prevent
-                    // interoperability nightmares.
-
-                    if (isEmptyString( rStr))
-                        return fValue;
-                }
-
-                sal_uInt32 nFIndex = 0;
-                if (!pFormatter->IsNumberFormat(rStr, nFIndex, fValue))
-                {
-                    SetError( mnStringNoValueError);
-                    fValue = 0.0;
-                }
-                return fValue;
-            }
-            break;
-        case ScCalcConfig::StringConversion::UNAMBIGUOUS:
-            {
-                if (!maCalcConfig.mbEmptyStringAsZero)
-                {
-                    if (isEmptyString( rStr))
-                    {
-                        SetError( mnStringNoValueError);
-                        return fValue;
-                    }
-                }
-            }
-            // continue below, pulled from switch case for better readability
-            break;
-    }
-
-    OUString aStr( rStr);
-    rtl_math_ConversionStatus eStatus;
-    sal_Int32 nParseEnd;
-    // Decimal and group separator 0 => only integer and possibly exponent,
-    // stops at first non-digit non-sign.
-    fValue = ::rtl::math::stringToDouble( aStr, 0, 0, &eStatus, &nParseEnd);
-    sal_Int32 nLen;
-    if (eStatus == rtl_math_ConversionStatus_Ok && nParseEnd < (nLen = aStr.getLength()))
-    {
-        // Not at string end, check for trailing blanks or switch to date or
-        // time parsing or bail out.
-        const sal_Unicode* const pStart = aStr.getStr();
-        const sal_Unicode* p = pStart + nParseEnd;
-        const sal_Unicode* const pStop = pStart + nLen;
-        switch (*p++)
-        {
-            case ' ':
-                while (p < pStop && *p == ' ')
-                    ++p;
-                if (p < pStop)
-                    SetError( mnStringNoValueError);
-                break;
-            case '-':
-            case ':':
-                {
-                    bool bDate = (*(p-1) == '-');
-                    enum State { year = 0, month, day, hour, minute, second, fraction, done, blank, stop };
-                    sal_Int32 nUnit[done] = {0,0,0,0,0,0,0};
-                    const sal_Int32 nLimit[done] = {0,12,31,0,59,59,0};
-                    State eState = (bDate ? month : minute);
-                    nCurFmtType = (bDate ? css::util::NumberFormat::DATE : css::util::NumberFormat::TIME);
-                    nUnit[eState-1] = aStr.copy( 0, nParseEnd).toInt32();
-                    const sal_Unicode* pLastStart = p;
-                    // Ensure there's no preceding sign. Negative dates
-                    // currently aren't handled correctly. Also discard
-                    // +CCYY-MM-DD
-                    p = pStart;
-                    while (p < pStop && *p == ' ')
-                        ++p;
-                    if (p < pStop && !rtl::isAsciiDigit(*p))
-                        SetError( mnStringNoValueError);
-                    p = pLastStart;
-                    while (p < pStop && !nGlobalError && eState < blank)
-                    {
-                        if (eState == minute)
-                            nCurFmtType |= css::util::NumberFormat::TIME;
-                        if (rtl::isAsciiDigit(*p))
-                        {
-                            // Maximum 2 digits per unit, except fractions.
-                            if (p - pLastStart >= 2 && eState != fraction)
-                                SetError( mnStringNoValueError);
-                        }
-                        else if (p > pLastStart)
-                        {
-                            // We had at least one digit.
-                            if (eState < done)
-                            {
-                                nUnit[eState] = aStr.copy( pLastStart - pStart, p - pLastStart).toInt32();
-                                if (nLimit[eState] && nLimit[eState] < nUnit[eState])
-                                    SetError( mnStringNoValueError);
-                            }
-                            pLastStart = p + 1;     // hypothetical next start
-                            // Delimiters must match, a trailing delimiter
-                            // yields an invalid date/time.
-                            switch (eState)
-                            {
-                                case month:
-                                    // Month must be followed by separator and
-                                    // day, no trailing blanks.
-                                    if (*p != '-' || (p+1 == pStop))
-                                        SetError( mnStringNoValueError);
-                                    break;
-                                case day:
-                                    if ((*p != 'T' || (p+1 == pStop)) && *p != ' ')
-                                        SetError( mnStringNoValueError);
-                                    // Take one blank as a valid delimiter
-                                    // between date and time.
-                                    break;
-                                case hour:
-                                    // Hour must be followed by separator and
-                                    // minute, no trailing blanks.
-                                    if (*p != ':' || (p+1 == pStop))
-                                        SetError( mnStringNoValueError);
-                                    break;
-                                case minute:
-                                    if ((*p != ':' || (p+1 == pStop)) && *p != ' ')
-                                        SetError( mnStringNoValueError);
-                                    if (*p == ' ')
-                                        eState = done;
-                                    break;
-                                case second:
-                                    if (((*p != ',' && *p != '.') || (p+1 == pStop)) && *p != ' ')
-                                        SetError( mnStringNoValueError);
-                                    if (*p == ' ')
-                                        eState = done;
-                                    break;
-                                case fraction:
-                                    eState = done;
-                                    break;
-                                case year:
-                                case done:
-                                case blank:
-                                case stop:
-                                    SetError( mnStringNoValueError);
-                                    break;
-                            }
-                            eState = static_cast<State>(eState + 1);
-                        }
-                        else
-                            SetError( mnStringNoValueError);
-                        ++p;
-                    }
-                    if (eState == blank)
-                    {
-                        while (p < pStop && *p == ' ')
-                            ++p;
-                        if (p < pStop)
-                            SetError( mnStringNoValueError);
-                        eState = stop;
-                    }
-
-                    // Month without day, or hour without minute.
-                    if (eState == month || (eState == day && p <= pLastStart) ||
-                            eState == hour || (eState == minute && p <= pLastStart))
-                        SetError( mnStringNoValueError);
-
-                    if (!nGlobalError)
-                    {
-                        // Catch the very last unit at end of string.
-                        if (p > pLastStart && eState < done)
-                        {
-                            nUnit[eState] = aStr.copy( pLastStart - pStart, p - pLastStart).toInt32();
-                            if (nLimit[eState] && nLimit[eState] < nUnit[eState])
-                                SetError( mnStringNoValueError);
-                        }
-                        if (bDate && nUnit[hour] > 23)
-                            SetError( mnStringNoValueError);
-                        if (!nGlobalError)
-                        {
-                            if (bDate && nUnit[day] == 0)
-                                nUnit[day] = 1;
-                            double fFraction = (nUnit[fraction] <= 0 ? 0.0 :
-                                    ::rtl::math::pow10Exp( nUnit[fraction],
-                                        static_cast<int>( -ceil( log10( static_cast<double>( nUnit[fraction]))))));
-                            fValue = (bDate ? GetDateSerial(
-                                        sal::static_int_cast<sal_Int16>(nUnit[year]),
-                                        sal::static_int_cast<sal_Int16>(nUnit[month]),
-                                        sal::static_int_cast<sal_Int16>(nUnit[day]),
-                                        true, false) : 0.0);
-                            fValue += ((nUnit[hour] * 3600) + (nUnit[minute] * 60) + nUnit[second] + fFraction) / 86400.0;
-                        }
-                    }
-                }
-                break;
-            default:
-                SetError( mnStringNoValueError);
-        }
-        if (nGlobalError)
-            fValue = 0.0;
-    }
+    double fValue = ScGlobal::ConvertStringToValue( rStr, maCalcConfig, nGlobalError, mnStringNoValueError,
+            pFormatter, nCurFmtType);
+    if (nGlobalError)
+        SetError(nGlobalError);
     return fValue;
+}
+
+double ScInterpreter::ConvertStringToValue( const OUString& rStr, sal_uInt16& rError, short& rCurFmtType )
+{
+    return ScGlobal::ConvertStringToValue( rStr, maCalcConfig, rError, mnStringNoValueError, pFormatter, rCurFmtType);
 }
 
 double ScInterpreter::GetCellValue( const ScAddress& rPos, ScRefCellValue& rCell )
@@ -608,8 +348,7 @@ bool ScInterpreter::CreateDoubleArr(SCCOL nCol1, SCROW nRow1, SCTAB nTab1,
             {
                 aAdr.SetCol( nCol );
 
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (!aCell.isEmpty())
                 {
                     sal_uInt16  nErr = 0;
@@ -689,8 +428,7 @@ bool ScInterpreter::CreateStringArr(SCCOL nCol1, SCROW nRow1, SCTAB nTab1,
             SCCOL nCol = nCol1;
             while (nCol <= nCol2)
             {
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, ScAddress(nCol, nRow, nTab));
+                ScRefCellValue aCell(*pDok, ScAddress(nCol, nRow, nTab));
                 if (!aCell.isEmpty())
                 {
                     OUString  aStr;
@@ -790,8 +528,7 @@ bool ScInterpreter::CreateCellArr(SCCOL nCol1, SCROW nRow1, SCTAB nTab1,
             while (nCol <= nCol2)
             {
                 aAdr.SetCol( nCol );
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 if (!aCell.isEmpty())
                 {
                     sal_uInt16  nErr = 0;
@@ -974,8 +711,7 @@ void ScInterpreter::PushTempToken( const FormulaToken& r )
 void ScInterpreter::PushCellResultToken( bool bDisplayEmptyAsString,
         const ScAddress & rAddress, short * pRetTypeExpr, sal_uLong * pRetIndexExpr )
 {
-    ScRefCellValue aCell;
-    aCell.assign(*pDok, rAddress);
+    ScRefCellValue aCell(*pDok, rAddress);
     if (aCell.hasEmptyValue())
     {
         bool bInherited = (aCell.meType == CELLTYPE_FORMULA);
@@ -1054,7 +790,7 @@ FormulaTokenRef ScInterpreter::PopToken()
     }
     else
         SetError(errUnknownStackVariable);
-    return NULL;
+    return nullptr;
 }
 
 double ScInterpreter::PopDouble()
@@ -1175,7 +911,7 @@ void ScInterpreter::PopSingleRef(SCCOL& rCol, SCROW &rRow, SCTAB& rTab)
                 break;
             case svSingleRef:
                 SingleRefToVars( *p->GetSingleRef(), rCol, rRow, rTab);
-                if ( !pDok->aTableOpList.empty() )
+                if (!pDok->m_TableOpList.empty())
                     ReplaceCell( rCol, rRow, rTab );
                 break;
             default:
@@ -1204,7 +940,7 @@ void ScInterpreter::PopSingleRef( ScAddress& rAdr )
                     SCTAB nTab;
                     SingleRefToVars( *p->GetSingleRef(), nCol, nRow, nTab);
                     rAdr.Set( nCol, nRow, nTab );
-                    if ( !pDok->aTableOpList.empty() )
+                    if (!pDok->m_TableOpList.empty())
                         ReplaceCell( rAdr );
                 }
                 break;
@@ -1224,7 +960,7 @@ void ScInterpreter::DoubleRefToVars( const formula::FormulaToken* p,
     const ScComplexRefData& rCRef = *p->GetDoubleRef();
     SingleRefToVars( rCRef.Ref1, rCol1, rRow1, rTab1);
     SingleRefToVars( rCRef.Ref2, rCol2, rRow2, rTab2);
-    if ( !pDok->aTableOpList.empty() && !bDontCheckForTableOp )
+    if (!pDok->m_TableOpList.empty() && !bDontCheckForTableOp)
     {
         ScRange aRange( rCol1, rRow1, rTab1, rCol2, rRow2, rTab2 );
         if ( IsTableOpInRange( aRange ) )
@@ -1270,7 +1006,7 @@ ScDBRangeBase* ScInterpreter::PopDBDoubleRef()
             SetError( errIllegalParameter);
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void ScInterpreter::PopDoubleRef(SCCOL& rCol1, SCROW &rRow1, SCTAB& rTab1,
@@ -1309,7 +1045,7 @@ void ScInterpreter::DoubleRefToRange( const ScComplexRefData & rCRef,
     SingleRefToVars( rCRef.Ref2, nCol, nRow, nTab);
     rRange.aEnd.Set( nCol, nRow, nTab );
     rRange.PutInOrder();
-    if (! pDok->aTableOpList.empty() && !bDontCheckForTableOp )
+    if (!pDok->m_TableOpList.empty() && !bDontCheckForTableOp)
     {
         if ( IsTableOpInRange( rRange ) )
             SetError( errIllegalParameter );
@@ -1445,7 +1181,7 @@ void ScInterpreter::PopExternalSingleRef(
     ScAddress aAddr = rRef.toAbs(aPos);
     ScExternalRefCache::CellFormat aFmt;
     ScExternalRefCache::TokenRef xNew = pRefMgr->getSingleRefToken(
-        rFileId, rTabName, aAddr, &aPos, NULL, &aFmt);
+        rFileId, rTabName, aAddr, &aPos, nullptr, &aFmt);
 
     if (!xNew)
     {
@@ -1658,7 +1394,13 @@ bool ScInterpreter::ConvertMatrixParameters()
                     ScParameterClassification::Type eType =
                         ScParameterClassification::GetParameterType( pCur, nParams - i);
                     if ( eType != ScParameterClassification::Reference &&
-                            eType != ScParameterClassification::ReferenceOrForceArray)
+                            eType != ScParameterClassification::ReferenceOrForceArray &&
+                            // For scalar Value: convert to Array/JumpMatrix
+                            // only if in array formula context, else (function
+                            // has ForceArray or ReferenceOrForceArray
+                            // parameter *somewhere else*) pick a normal
+                            // position dependent implicit intersection later.
+                            (eType != ScParameterClassification::Value || bMatrixFormula || pCur->IsInForceArray()))
                     {
                         SCCOL nCol1, nCol2;
                         SCROW nRow1, nRow2;
@@ -1759,7 +1501,7 @@ bool ScInterpreter::ConvertMatrixParameters()
             GetTokenMatrixMap().insert( ScTokenMatrixMap::value_type( pCur,
                         xNew));
         }
-        PushTempToken( xNew.get());
+        PushTempTokenWithoutError( xNew.get());
         // set continuation point of path for main code line
         aCode.Jump( nNext, nNext);
         return true;
@@ -1793,7 +1535,7 @@ ScMatrixRef ScInterpreter::PopMatrix()
     }
     else
         SetError( errUnknownStackVariable);
-    return NULL;
+    return nullptr;
 }
 
 sc::RangeMatrix ScInterpreter::PopRangeMatrix()
@@ -1883,7 +1625,7 @@ void ScInterpreter::QueryMatrixType(ScMatrixRef& xMat, short& rRetTypeExpr, sal_
                 rRetTypeExpr = css::util::NumberFormat::NUMBER;
         }
         rRetIndexExpr = 0;
-        xMat->SetErrorInterpreter( NULL);
+        xMat->SetErrorInterpreter( nullptr);
     }
     else
         SetError( errUnknownStackVariable);
@@ -1997,14 +1739,14 @@ void ScInterpreter::PushMatrix( const sc::RangeMatrix& rMat )
         return;
     }
 
-    rMat.mpMat->SetErrorInterpreter(NULL);
+    rMat.mpMat->SetErrorInterpreter(nullptr);
     nGlobalError = 0;
     PushTempTokenWithoutError(new ScMatrixRangeToken(rMat));
 }
 
 void ScInterpreter::PushMatrix(const ScMatrixRef& pMat)
 {
-    pMat->SetErrorInterpreter( NULL);
+    pMat->SetErrorInterpreter( nullptr);
     // No   if (!IfErrorPushError())   because ScMatrix stores errors itself,
     // but with notifying ScInterpreter via nGlobalError, substituting it would
     // mean to inherit the error on all array elements in all following
@@ -2216,8 +1958,7 @@ double ScInterpreter::GetDouble()
         {
             ScAddress aAdr;
             PopSingleRef( aAdr );
-            ScRefCellValue aCell;
-            aCell.assign(*pDok, aAdr);
+            ScRefCellValue aCell(*pDok, aAdr);
             nVal = GetCellValue(aAdr, aCell);
         }
         break;
@@ -2228,8 +1969,7 @@ double ScInterpreter::GetDouble()
             ScAddress aAdr;
             if ( !nGlobalError && DoubleRefToPosSingleRef( aRange, aAdr ) )
             {
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 nVal = GetCellValue(aAdr, aCell);
             }
             else
@@ -2317,8 +2057,7 @@ svl::SharedString ScInterpreter::GetString()
             PopSingleRef( aAdr );
             if (nGlobalError == 0)
             {
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 svl::SharedString aSS;
                 GetCellString(aSS, aCell);
                 return aSS;
@@ -2333,8 +2072,7 @@ svl::SharedString ScInterpreter::GetString()
             ScAddress aAdr;
             if ( !nGlobalError && DoubleRefToPosSingleRef( aRange, aAdr ) )
             {
-                ScRefCellValue aCell;
-                aCell.assign(*pDok, aAdr);
+                ScRefCellValue aCell(*pDok, aAdr);
                 svl::SharedString aSS;
                 GetCellString(aSS, aCell);
                 return aSS;
@@ -2516,10 +2254,10 @@ void ScInterpreter::ScExternal()
             for (i = 0; i < MAXFUNCPARAM; i++)
             {
                 eParamType[i] = pLegacyFuncData->GetParamType(i);
-                ppParam[i] = NULL;
+                ppParam[i] = nullptr;
                 nVal[i] = 0.0;
-                pStr[i] = NULL;
-                pCellArr[i] = NULL;
+                pStr[i] = nullptr;
+                pCellArr[i] = nullptr;
             }
 
             for (i = nParamCount; (i > 0) && (nGlobalError == 0); i--)
@@ -2861,8 +2599,7 @@ void ScInterpreter::ScExternal()
                                     ScAddress aAdr;
                                     if ( PopDoubleRefOrSingleRef( aAdr ) )
                                     {
-                                        ScRefCellValue aCell;
-                                        aCell.assign(*pDok, aAdr);
+                                        ScRefCellValue aCell(*pDok, aAdr);
                                         if (aCell.hasString())
                                         {
                                             svl::SharedString aStr;
@@ -2912,8 +2649,7 @@ void ScInterpreter::ScExternal()
                                 ScAddress aAdr;
                                 if ( PopDoubleRefOrSingleRef( aAdr ) )
                                 {
-                                    ScRefCellValue aCell;
-                                    aCell.assign(*pDok, aAdr);
+                                    ScRefCellValue aCell(*pDok, aAdr);
                                     if (aCell.hasString())
                                     {
                                         svl::SharedString aStr;
@@ -3113,8 +2849,7 @@ static bool lcl_setVBARange( ScRange& aRange, ScDocument* pDok, SbxVariable* pPa
         xVBARange = ooo::vba::createVBAUnoAPIServiceWithArgs( pDok->GetDocumentShell(), "ooo.vba.excel.Range", aArgs );
         if ( xVBARange.is() )
         {
-            OUString sDummy("A-Range");
-            SbxObjectRef aObj = GetSbUnoObject( sDummy, uno::Any( xVBARange ) );
+            SbxObjectRef aObj = GetSbUnoObject( "A-Range", uno::Any( xVBARange ) );
             SetSbUnoObjectDfltPropName( aObj );
             bOk = pPar->PutObject( aObj );
         }
@@ -3163,11 +2898,11 @@ void ScInterpreter::ScMacro()
     }
     catch (...)
     {
-        pRoot = NULL;
+        pRoot = nullptr;
     }
 
-    SbxVariable* pVar = pRoot ? pRoot->Find(aMacro, SbxCLASS_METHOD) : NULL;
-    if( !pVar || pVar->GetType() == SbxVOID || !pVar->ISA(SbMethod) )
+    SbxVariable* pVar = pRoot ? pRoot->Find(aMacro, SbxCLASS_METHOD) : nullptr;
+    if( !pVar || pVar->GetType() == SbxVOID || dynamic_cast<const SbMethod*>( pVar) ==  nullptr )
     {
         PushError( errNoMacro );
         return;
@@ -3179,7 +2914,7 @@ void ScInterpreter::ScMacro()
     SbModule* pModule = pMethod->GetModule();
     bool bUseVBAObjects = pModule->IsVBACompat();
     SbxObject* pObject = pModule->GetParent();
-    OSL_ENSURE(pObject->IsA(TYPE(StarBASIC)), "No Basic found!");
+    OSL_ENSURE(dynamic_cast<const StarBASIC *>(pObject) != nullptr, "No Basic found!");
     OUString aMacroStr = pObject->GetName() + "." + pModule->GetName() + "." + pMethod->GetName();
     OUString aBasicStr;
     if (pObject->GetParent())
@@ -3355,7 +3090,7 @@ void ScInterpreter::ScMacro()
         else if ( eResType & SbxARRAY )
         {
             SbxBase* pElemObj = refRes->GetObject();
-            SbxDimArray* pDimArray = PTR_CAST(SbxDimArray,pElemObj);
+            SbxDimArray* pDimArray = dynamic_cast< SbxDimArray *>( pElemObj );
             short nDim = pDimArray->GetDims();
             if ( 1 <= nDim && nDim <= 2 )
             {
@@ -3435,8 +3170,7 @@ void ScInterpreter::ScMacro()
 bool ScInterpreter::SetSbxVariable( SbxVariable* pVar, const ScAddress& rPos )
 {
     bool bOk = true;
-    ScRefCellValue aCell;
-    aCell.assign(*pDok, rPos);
+    ScRefCellValue aCell(*pDok, rPos);
     if (!aCell.isEmpty())
     {
         sal_uInt16 nErr;
@@ -3483,10 +3217,10 @@ class FindByPointer : ::std::unary_function<ScInterpreterTableOpParams, bool>
 {
     const ScInterpreterTableOpParams* mpTableOp;
 public:
-    FindByPointer(const ScInterpreterTableOpParams* p) : mpTableOp(p) {}
-    bool operator() (const ScInterpreterTableOpParams& val) const
+    explicit FindByPointer(const ScInterpreterTableOpParams* p) : mpTableOp(p) {}
+    bool operator() (std::unique_ptr<ScInterpreterTableOpParams> const& val) const
     {
-        return &val == mpTableOp;
+        return val.get() == mpTableOp;
     }
 };
 
@@ -3511,7 +3245,8 @@ void ScInterpreter::ScTableOp()
     PopSingleRef( pTableOp->aFormulaPos );
 
     pTableOp->bValid = true;
-    pDok->aTableOpList.push_back( pTableOp );
+    pDok->m_TableOpList.push_back(
+            std::unique_ptr<ScInterpreterTableOpParams>(pTableOp));
     pDok->IncInterpreterTableOpLevel();
 
     bool bReuseLastParams = (pDok->aLastTableOpParams == *pTableOp);
@@ -3524,8 +3259,7 @@ void ScInterpreter::ScTableOp()
                 iBroadcast != pTableOp->aNotifiedFormulaPos.end();
                 ++iBroadcast )
         {   // emulate broadcast and indirectly collect cell pointers
-            ScRefCellValue aCell;
-            aCell.assign(*pDok, *iBroadcast);
+            ScRefCellValue aCell(*pDok, *iBroadcast);
             if (aCell.meType == CELLTYPE_FORMULA)
                 aCell.mpFormula->SetTableOpDirty();
         }
@@ -3538,8 +3272,7 @@ void ScInterpreter::ScTableOp()
     }
     pTableOp->bCollectNotifications = false;
 
-    ScRefCellValue aCell;
-    aCell.assign(*pDok, pTableOp->aFormulaPos);
+    ScRefCellValue aCell(*pDok, pTableOp->aFormulaPos);
     if (aCell.meType == CELLTYPE_FORMULA)
         aCell.mpFormula->SetDirtyVar();
     if (aCell.hasNumeric())
@@ -3553,10 +3286,13 @@ void ScInterpreter::ScTableOp()
         PushString( aCellString );
     }
 
-    boost::ptr_vector< ScInterpreterTableOpParams >::iterator itr =
-        ::std::find_if(pDok->aTableOpList.begin(), pDok->aTableOpList.end(), FindByPointer(pTableOp));
-    if (itr != pDok->aTableOpList.end())
-        pTableOp = pDok->aTableOpList.release(itr).release();
+    auto const itr =
+        ::std::find_if(pDok->m_TableOpList.begin(), pDok->m_TableOpList.end(), FindByPointer(pTableOp));
+    if (itr != pDok->m_TableOpList.end())
+    {
+        pTableOp = itr->release();
+        pDok->m_TableOpList.erase(itr);
+    }
 
     // set dirty again once more to be able to recalculate original
     for ( ::std::vector< ScFormulaCell* >::const_iterator iBroadcast(
@@ -3710,11 +3446,11 @@ ScInterpreter::ScInterpreter( ScFormulaCell* pCell, ScDocument* pDoc,
     , rArr(r)
     , pDok(pDoc)
     , mrStrPool(pDoc->GetSharedStringPool())
-    , pJumpMatrix(NULL)
-    , pTokenMatrixMap(NULL)
+    , pJumpMatrix(nullptr)
+    , pTokenMatrixMap(nullptr)
     , pMyFormulaCell(pCell)
     , pFormatter(pDoc->GetFormatTable())
-    , pCur(NULL)
+    , pCur(nullptr)
     , nGlobalError(0)
     , sp(0)
     , maxsp(0)
@@ -3763,19 +3499,26 @@ ScInterpreter::~ScInterpreter()
     delete pTokenMatrixMap;
 }
 
+ScCalcConfig& ScInterpreter::GetOrCreateGlobalConfig()
+{
+    if (!mpGlobalConfig)
+        mpGlobalConfig = new ScCalcConfig();
+    return *mpGlobalConfig;
+}
+
 void ScInterpreter::SetGlobalConfig(const ScCalcConfig& rConfig)
 {
-    maGlobalConfig = rConfig;
+    GetOrCreateGlobalConfig() = rConfig;
 }
 
 const ScCalcConfig& ScInterpreter::GetGlobalConfig()
 {
-    return maGlobalConfig;
+    return GetOrCreateGlobalConfig();
 }
 
 void ScInterpreter::MergeCalcConfig()
 {
-    maCalcConfig = maGlobalConfig;
+    maCalcConfig = GetOrCreateGlobalConfig();
     maCalcConfig.MergeDocumentSpecific( pDok->GetCalcConfig());
 }
 
@@ -3821,8 +3564,8 @@ StackVar ScInterpreter::Interpret()
     nRetFmtType = css::util::NumberFormat::UNDEFINED;
     nFuncFmtType = css::util::NumberFormat::UNDEFINED;
     nFuncFmtIndex = nCurFmtIndex = nRetFmtIndex = 0;
-    xResult = NULL;
-    pJumpMatrix = NULL;
+    xResult = nullptr;
+    pJumpMatrix = nullptr;
     mnSubTotalFlags = 0x00;
     ScTokenMatrixMap::const_iterator aTokenMatrixMapIter;
 
@@ -3834,7 +3577,7 @@ StackVar ScInterpreter::Interpret()
     SAL_MATH_FPEXCEPTIONS_OFF();
 
     aCode.Reset();
-    while( ( pCur = aCode.Next() ) != NULL
+    while( ( pCur = aCode.Next() ) != nullptr
             && (!nGlobalError || nErrorFunction <= nErrorFunctionCount) )
     {
         OpCode eOp = pCur->GetOpCode();
@@ -3957,6 +3700,7 @@ StackVar ScInterpreter::Interpret()
                 case ocGetDay           : ScGetDay();                   break;
                 case ocGetDayOfWeek     : ScGetDayOfWeek();             break;
                 case ocWeek             : ScGetWeekOfYear();            break;
+                case ocIsoWeeknum       : ScGetIsoWeekOfYear();         break;
                 case ocEasterSunday     : ScEasterSunday();             break;
                 case ocNetWorkdays      : ScNetWorkdays( false);        break;
                 case ocNetWorkdays_MS   : ScNetWorkdays( true );        break;
@@ -4025,6 +3769,7 @@ StackVar ScInterpreter::Interpret()
                 case ocSumX2MY2         : ScSumX2MY2();                 break;
                 case ocSumX2DY2         : ScSumX2DY2();                 break;
                 case ocSumXMY2          : ScSumXMY2();                  break;
+                case ocRawSubtract      : ScRawSubtract();              break;
                 case ocLog              : ScLog();                      break;
                 case ocGCD              : ScGCD();                      break;
                 case ocLCM              : ScLCM();                      break;
@@ -4346,7 +4091,7 @@ StackVar ScInterpreter::Interpret()
             if ( nLevel == 1 || (nLevel == 2 && aCode.IsEndOfPath()) )
                 bGotResult = JumpMatrix( nLevel );
             else
-                pJumpMatrix = NULL;
+                pJumpMatrix = nullptr;
         } while ( bGotResult );
 
 // Functions that evaluate an error code and directly set nGlobalError to 0,

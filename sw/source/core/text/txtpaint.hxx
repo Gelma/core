@@ -30,7 +30,7 @@ class SwSaveClip
           bool     bChg;
 protected:
     VclPtr<OutputDevice> pOut;
-    void _ChgClip( const SwRect &rRect, const SwTextFrm* pFrm,
+    void _ChgClip( const SwRect &rRect, const SwTextFrame* pFrame,
                    bool bEnlargeRect );
 public:
     explicit SwSaveClip(OutputDevice* pOutDev)
@@ -41,9 +41,9 @@ public:
     }
 
     inline ~SwSaveClip();
-    inline void ChgClip( const SwRect &rRect, const SwTextFrm* pFrm = 0,
+    inline void ChgClip( const SwRect &rRect, const SwTextFrame* pFrame = nullptr,
                          bool bEnlargeRect = false)
-             { if( pOut ) _ChgClip( rRect, pFrm, bEnlargeRect ); }
+             { if( pOut ) _ChgClip( rRect, pFrame, bEnlargeRect ); }
            void Reset();
     inline bool IsOn()  const { return bOn; }
     inline bool IsChg() const { return bChg; }
@@ -82,7 +82,7 @@ public:
 };
 
 inline SwDbgOut::SwDbgOut( OutputDevice* pOutDev, const bool bOn )
-               :pOut( bOn ? pOutDev : 0 )
+               :pOut( bOn ? pOutDev : nullptr )
 { }
 
 inline DbgBackColor::DbgBackColor( OutputDevice* pOutDev, const bool bOn,

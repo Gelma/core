@@ -65,7 +65,7 @@ struct resource {
 class IncreaseThread : public Thread
 {
 public:
-    IncreaseThread( struct resource *pData ): pResource( pData ) { }
+    explicit IncreaseThread( struct resource *pData ): pResource( pData ) { }
 
     virtual ~IncreaseThread( )
     {
@@ -74,7 +74,7 @@ public:
 protected:
     struct resource *pResource;
 
-    void SAL_CALL run( ) SAL_OVERRIDE
+    void SAL_CALL run( ) override
     {
         pResource->lock.acquire( );
         for( sal_Int8 i = 0; i < 3; i++ )
@@ -93,7 +93,7 @@ protected:
 class DecreaseThread : public Thread
 {
 public:
-    DecreaseThread( struct resource *pData ): pResource( pData ) { }
+    explicit DecreaseThread( struct resource *pData ): pResource( pData ) { }
 
     virtual ~DecreaseThread( )
     {
@@ -102,7 +102,7 @@ public:
 protected:
     struct resource *pResource;
 
-    void SAL_CALL run( ) SAL_OVERRIDE
+    void SAL_CALL run( ) override
     {
         pResource->lock.acquire( );
         for( sal_Int8 i = 0; i < 3; i++ )
@@ -130,7 +130,7 @@ class PutThread : public Thread
 {
 public:
     //get the struct pointer to write data to buffer
-    PutThread( struct chain* pData ): pChain( pData ) { }
+    explicit PutThread( struct chain* pData ): pChain( pData ) { }
 
     virtual ~PutThread( )
     {
@@ -139,7 +139,7 @@ public:
 protected:
     struct chain* pChain;
 
-    void SAL_CALL run( ) SAL_OVERRIDE
+    void SAL_CALL run( ) override
     {
         //block here if the mutex has been acquired
         pChain->lock.acquire( );
@@ -168,7 +168,7 @@ class HoldThread : public Thread
 {
 public:
     //get the Mutex pointer to operate
-    HoldThread( Mutex* pMutex ): pMyMutex( pMutex ) { }
+    explicit HoldThread( Mutex* pMutex ): pMyMutex( pMutex ) { }
 
     virtual ~HoldThread( )
     {
@@ -177,7 +177,7 @@ public:
 protected:
     Mutex* pMyMutex;
 
-    void SAL_CALL run() SAL_OVERRIDE
+    void SAL_CALL run() override
     {
         // block here if the mutex has been acquired
         pMyMutex->acquire( );
@@ -190,7 +190,7 @@ class WaitThread : public Thread
 {
 public:
     //get the Mutex pointer to operate
-    WaitThread( Mutex* pMutex ): pMyMutex( pMutex ) { }
+    explicit WaitThread( Mutex* pMutex ): pMyMutex( pMutex ) { }
 
     virtual ~WaitThread( )
     {
@@ -199,7 +199,7 @@ public:
 protected:
     Mutex* pMyMutex;
 
-    void SAL_CALL run( ) SAL_OVERRIDE
+    void SAL_CALL run( ) override
     {
         // block here if the mutex has been acquired
         pMyMutex->acquire( );
@@ -221,7 +221,7 @@ public:
         CPPUNIT_ASSERT_MESSAGE( "#GlobalMutexThread does not shutdown properly.\n", !isRunning( ) );
     }
 protected:
-    void SAL_CALL run( ) SAL_OVERRIDE
+    void SAL_CALL run( ) override
     {
         // block here if the mutex has been acquired
         Mutex* pGlobalMutex;
@@ -244,7 +244,7 @@ namespace osl_Mutex
         struct chain m_Data;
         struct resource m_Res;
 
-        void setUp( ) SAL_OVERRIDE
+        void setUp( ) override
         {
             for ( sal_Int8 i=0; i < BUFFER_SIZE; i++ )
                 m_Data.buffer[i] = 0;
@@ -254,7 +254,7 @@ namespace osl_Mutex
             m_Res.data2 = 0;
         }
 
-        void tearDown() SAL_OVERRIDE
+        void tearDown() override
         {
         }
 
@@ -525,7 +525,7 @@ class GuardThread : public Thread
 {
 public:
     //get the Mutex pointer to operate
-    GuardThread( Mutex* pMutex ): pMyMutex( pMutex ) { }
+    explicit GuardThread( Mutex* pMutex ): pMyMutex( pMutex ) { }
 
     virtual ~GuardThread( )
     {
@@ -534,7 +534,7 @@ public:
 protected:
     Mutex* pMyMutex;
 
-    void SAL_CALL run( ) SAL_OVERRIDE
+    void SAL_CALL run( ) override
     {
         // block here if the mutex has been acquired
         MutexGuard aGuard( pMyMutex );
@@ -606,7 +606,7 @@ class ClearGuardThread : public Thread
 {
 public:
     //get the Mutex pointer to operate
-    ClearGuardThread( Mutex* pMutex ): pMyMutex( pMutex ) {}
+    explicit ClearGuardThread( Mutex* pMutex ): pMyMutex( pMutex ) {}
 
     virtual ~ClearGuardThread( )
     {
@@ -615,7 +615,7 @@ public:
 protected:
     Mutex* pMyMutex;
 
-    void SAL_CALL run( ) SAL_OVERRIDE
+    void SAL_CALL run( ) override
     {
         // acquire the mutex
         // printf("# ClearGuardThread" );
@@ -743,7 +743,7 @@ class ResetGuardThread : public Thread
 {
 public:
     //get the Mutex pointer to operate
-    ResetGuardThread( Mutex* pMutex ): pMyMutex( pMutex ) {}
+    explicit ResetGuardThread( Mutex* pMutex ): pMyMutex( pMutex ) {}
 
     virtual ~ResetGuardThread( )
     {
@@ -752,7 +752,7 @@ public:
 protected:
     Mutex* pMyMutex;
 
-    void SAL_CALL run( ) SAL_OVERRIDE
+    void SAL_CALL run( ) override
     {
         // acquire the mutex
         printf("# ResettableGuard\n" );

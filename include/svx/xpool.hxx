@@ -38,13 +38,13 @@ protected:
 
 public:
     XOutdevItemPool(
-        SfxItemPool* pMaster = 0L,
+        SfxItemPool* pMaster = nullptr,
         sal_uInt16 nAttrStart = XATTR_START,
         sal_uInt16 nAttrEnd = XATTR_END,
         bool bLoadRefCounts = true);
     XOutdevItemPool(const XOutdevItemPool& rPool);
 
-    virtual SfxItemPool* Clone() const SAL_OVERRIDE;
+    virtual SfxItemPool* Clone() const override;
 protected:
     virtual ~XOutdevItemPool();
 };

@@ -63,11 +63,11 @@ protected:
     /** mutex should be locked before called
      */
     virtual void checkClosed()
-        throw ( com::sun::star::sdbc::SQLException, com::sun::star::uno::RuntimeException ) SAL_OVERRIDE;
+        throw ( com::sun::star::sdbc::SQLException, com::sun::star::uno::RuntimeException ) override;
 
     /** unchecked, acquire mutex before calling
      */
-    virtual ::com::sun::star::uno::Any getValue( sal_Int32 columnIndex ) SAL_OVERRIDE;
+    virtual ::com::sun::star::uno::Any getValue( sal_Int32 columnIndex ) override;
 
 public:
     SequenceResultSet(
@@ -76,20 +76,20 @@ public:
         const com::sun::star::uno::Sequence< OUString > &colNames,
         const com::sun::star::uno::Sequence< com::sun::star::uno::Sequence< com::sun::star::uno::Any > > &data,
         const com::sun::star::uno::Reference< com::sun::star::script::XTypeConverter > &tc,
-        const ColumnMetaDataVector *pVec = 0);
+        const ColumnMetaDataVector *pVec = nullptr);
     virtual ~SequenceResultSet();
 
 public: // XCloseable
     virtual void SAL_CALL close(  )
-        throw (::com::sun::star::sdbc::SQLException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::sdbc::SQLException, ::com::sun::star::uno::RuntimeException, std::exception) override;
 
 public: // XResultSetMetaDataSupplier
     virtual ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XResultSetMetaData > SAL_CALL getMetaData(  )
-        throw (::com::sun::star::sdbc::SQLException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::sdbc::SQLException, ::com::sun::star::uno::RuntimeException, std::exception) override;
 
 public: // XColumnLocate
     virtual sal_Int32 SAL_CALL findColumn( const OUString& columnName )
-        throw (::com::sun::star::sdbc::SQLException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::sdbc::SQLException, ::com::sun::star::uno::RuntimeException, std::exception) override;
 };
 
 }

@@ -151,7 +151,7 @@ Preedit_InsertText(preedit_text_t *pText, XIMText *pInsertText, int where)
     if (pInsertText->encoding_is_wchar)
     {
         wchar_t *pWCString = pInsertText->string.wide_char;
-          size_t nBytes = wcstombs ( NULL, pWCString, 1024 /* don't care */);
+          size_t nBytes = wcstombs ( nullptr, pWCString, 1024 /* don't care */);
           pMBString = static_cast<char*>(alloca( nBytes + 1 ));
           nMBLength = wcstombs ( pMBString, pWCString, nBytes + 1);
     }
@@ -306,8 +306,8 @@ PreeditDrawCallback(XIC ic, XPointer client_data,
     preedit_data_t* pPreeditData = reinterpret_cast<preedit_data_t*>(client_data);
 
     // if there's nothing to change then change nothing
-    if ( ( (call_data->text == NULL) && (call_data->chg_length == 0) )
-         || pPreeditData->pFrame == NULL )
+    if ( ( (call_data->text == nullptr) && (call_data->chg_length == 0) )
+         || pPreeditData->pFrame == nullptr )
         return;
 
     // Solaris 7 deletes the preedit buffer after commit
@@ -317,13 +317,13 @@ PreeditDrawCallback(XIC ic, XPointer client_data,
 
     if ( pPreeditData->eState == ePreeditStatusStartPending )
         pPreeditData->eState = ePreeditStatusActivationRequired;
-    PreeditStartCallback( ic, client_data, NULL );
+    PreeditStartCallback( ic, client_data, nullptr );
 
       // Edit the internal textbuffer as indicated by the call_data,
       // chg_first and chg_length are guaranteed to be nonnegative
 
       // handle text deletion
-    if (call_data->text == NULL)
+    if (call_data->text == nullptr)
     {
         Preedit_DeleteText(&(pPreeditData->aText),
                call_data->chg_first, call_data->chg_length );
@@ -332,13 +332,13 @@ PreeditDrawCallback(XIC ic, XPointer client_data,
     {
         // handle text insertion
         if (   (call_data->chg_length == 0)
-            && (call_data->text->string.wide_char != NULL))
+            && (call_data->text->string.wide_char != nullptr))
         {
               Preedit_InsertText(&(pPreeditData->aText), call_data->text,
                      call_data->chg_first);
         }
         else if (   (call_data->chg_length != 0)
-              && (call_data->text->string.wide_char != NULL))
+              && (call_data->text->string.wide_char != nullptr))
         {
             // handle text replacement by deletion and insertion of text,
             // not smart, just good enough
@@ -349,7 +349,7 @@ PreeditDrawCallback(XIC ic, XPointer client_data,
                        call_data->chg_first);
           }
         else if (   (call_data->chg_length != 0)
-            && (call_data->text->string.wide_char == NULL))
+            && (call_data->text->string.wide_char == nullptr))
         {
             // not really a text update, only attributes are concerned
               Preedit_UpdateAttributes(&(pPreeditData->aText),
@@ -397,8 +397,8 @@ GetPreeditSpotLocation(XIC ic, XPointer client_data)
     point.y = mPosEvent.mnY + mPosEvent.mnHeight;
 
     XVaNestedList preedit_attr;
-    preedit_attr = XVaCreateNestedList(0, XNSpotLocation, &point, NULL);
-    XSetICValues(ic, XNPreeditAttributes, preedit_attr, NULL);
+    preedit_attr = XVaCreateNestedList(0, XNSpotLocation, &point, nullptr);
+    XSetICValues(ic, XNPreeditAttributes, preedit_attr, nullptr);
     XFree(preedit_attr);
 
     return;
@@ -484,14 +484,14 @@ StatusDrawCallback (XIC, XPointer, XIMStatusDrawCallbackStruct *call_data)
         if( call_data->data.text )
         {
             // XIM with text
-            sal_Char* pMBString = NULL;
+            sal_Char* pMBString = nullptr;
             size_t nLength = 0;
             if( call_data->data.text->encoding_is_wchar )
             {
                 if( call_data->data.text->string.wide_char )
                 {
                     wchar_t* pWString = call_data->data.text->string.wide_char;
-                    size_t nBytes = wcstombs( NULL, pWString, 1024 );
+                    size_t nBytes = wcstombs( nullptr, pWString, 1024 );
                     pMBString = static_cast<sal_Char*>(alloca( nBytes+1 ));
                     nLength = wcstombs( pMBString, pWString, nBytes+1 );
                 }
@@ -519,20 +519,13 @@ StatusDrawCallback (XIC, XPointer, XIMStatusDrawCallbackStruct *call_data)
     return;
 }
 
-void
-SwitchIMCallback (XIC, XPointer, XPointer call_data)
-{
-    XIMSwitchIMNotifyCallbackStruct* pCallData = reinterpret_cast<XIMSwitchIMNotifyCallbackStruct*>(call_data);
-    vcl::I18NStatus::get().changeIM( OStringToOUString(pCallData->to->name, RTL_TEXTENCODING_UTF8) );
-}
-
 // vii. destroy callbacks: internally disable all IC/IM calls
 
 void
 IC_IMDestroyCallback (XIM, XPointer client_data, XPointer)
 {
     SalI18N_InputContext *pContext = reinterpret_cast<SalI18N_InputContext*>(client_data);
-    if (pContext != NULL)
+    if (pContext != nullptr)
         pContext->HandleDestroyIM();
 }
 
@@ -540,7 +533,7 @@ void
 IM_IMDestroyCallback (XIM, XPointer client_data, XPointer)
 {
     SalI18N_InputMethod *pMethod = reinterpret_cast<SalI18N_InputMethod*>(client_data);
-    if (pMethod != NULL)
+    if (pMethod != nullptr)
         pMethod->HandleDestroyIM();
 }
 

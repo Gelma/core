@@ -199,7 +199,7 @@ namespace dbp
                 ui::dialogs::TemplateDescription::FILEOPEN_READONLY_VERSION, 0);
         aFileDlg.SetDisplayDirectory( SvtPathOptions().GetWorkPath() );
 
-        const SfxFilter* pFilter = SfxFilter::GetFilterByName(OUString("StarOffice XML (Base)"));
+        const SfxFilter* pFilter = SfxFilter::GetFilterByName("StarOffice XML (Base)");
         OSL_ENSURE(pFilter,"Filter: StarOffice XML (Base) could not be found!");
         if ( pFilter )
         {
@@ -213,7 +213,7 @@ namespace dbp
             sDataSourceName = aFileNotation.get(::svt::OFileNotation::N_SYSTEM);
             m_pDatasource->InsertEntry(sDataSourceName);
             m_pDatasource->SelectEntry(sDataSourceName);
-            LINK(this, OTableSelectionPage, OnListboxSelection).Call(m_pDatasource);
+            LINK(this, OTableSelectionPage, OnListboxSelection).Call(*m_pDatasource);
         }
     }
 
@@ -224,16 +224,14 @@ namespace dbp
     }
 
 
-    IMPL_LINK( OTableSelectionPage, OnListboxSelection, ListBox*, _pBox )
+    IMPL_LINK_TYPED( OTableSelectionPage, OnListboxSelection, ListBox&, _rBox, void )
     {
-        if (m_pDatasource == _pBox)
+        if (m_pDatasource == &_rBox)
         {   // new data source selected
             implFillTables();
         }
 
         updateDialogTravelUI();
-
-        return 0L;
     }
 
 
@@ -380,9 +378,9 @@ namespace dbp
 
     OMaybeListSelectionPage::OMaybeListSelectionPage( OControlWizard* _pParent, const OString& _rID, const OUString& _rUIXMLDescription )
         :OControlWizardPage(_pParent, _rID, _rUIXMLDescription)
-        ,m_pYes(NULL)
-        ,m_pNo(NULL)
-        ,m_pList(NULL)
+        ,m_pYes(nullptr)
+        ,m_pNo(nullptr)
+        ,m_pList(nullptr)
     {
     }
 

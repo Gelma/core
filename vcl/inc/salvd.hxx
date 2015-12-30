@@ -35,7 +35,7 @@ public:
     virtual ~SalVirtualDevice();
 
     // SalGeometryProvider
-    virtual bool IsOffScreen() const SAL_OVERRIDE { return true; }
+    virtual bool IsOffScreen() const override { return true; }
 
     // SalGraphics or NULL, but two Graphics for all SalVirtualDevices
     // must be returned
@@ -47,9 +47,7 @@ public:
 
     // Set new size using a buffer at the given address
     virtual bool            SetSizeUsingBuffer( long nNewDX, long nNewDY,
-                                                const basebmp::RawMemorySharedArray & /* pBuffer */,
-                                                const bool /* bTopDown */
-                                              )
+                                                const basebmp::RawMemorySharedArray & /* pBuffer */ )
         {
             // Only the headless virtual device has an implementation that uses
             // pBuffer (and bTopDown).

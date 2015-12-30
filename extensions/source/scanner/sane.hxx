@@ -41,13 +41,13 @@ public:
 
 
     // XInterface
-    virtual Any SAL_CALL                queryInterface( const Type & rType ) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL               acquire() throw() SAL_OVERRIDE { OWeakObject::acquire(); }
-    virtual void SAL_CALL               release() throw() SAL_OVERRIDE { OWeakObject::release(); }
+    virtual Any SAL_CALL                queryInterface( const Type & rType ) throw( RuntimeException, std::exception ) override;
+    virtual void SAL_CALL               acquire() throw() override { OWeakObject::acquire(); }
+    virtual void SAL_CALL               release() throw() override { OWeakObject::release(); }
 
-    virtual css::awt::Size SAL_CALL          getSize() throw(std::exception) SAL_OVERRIDE;
-    virtual Sequence< sal_Int8 > SAL_CALL    getDIB() throw(std::exception) SAL_OVERRIDE;
-    virtual Sequence< sal_Int8 > SAL_CALL    getMaskDIB() throw(std::exception) SAL_OVERRIDE { return Sequence< sal_Int8 >(); }
+    virtual css::awt::Size SAL_CALL          getSize() throw(std::exception) override;
+    virtual Sequence< sal_Int8 > SAL_CALL    getDIB() throw(std::exception) override;
+    virtual Sequence< sal_Int8 > SAL_CALL    getMaskDIB() throw(std::exception) override { return Sequence< sal_Int8 >(); }
 
     // Misc
     void                                lock() { m_aProtector.acquire(); }
@@ -150,10 +150,10 @@ public:
     bool            GetOptionValue( int, double&, int nElement = 0 );
     bool            GetOptionValue( int, double* );
 
-    bool            SetOptionValue( int, bool );
-    bool            SetOptionValue( int, const OUString& );
-    bool            SetOptionValue( int, double, int nElement = 0 );
-    bool            SetOptionValue( int, double* );
+    void            SetOptionValue( int, bool );
+    void            SetOptionValue( int, const OUString& );
+    void            SetOptionValue( int, double, int nElement = 0 );
+    void            SetOptionValue( int, double* );
 
     bool            ActivateButtonOption( int );
 

@@ -45,23 +45,26 @@ public:
                         PhysicalFontFamily( const OUString& rSearchName );
                        ~PhysicalFontFamily();
 
-    const OUString&     GetFamilyName() const    { return maName; }
+    const OUString&     GetFamilyName() const    { return maFamilyName; }
     const OUString&     GetSearchName() const    { return maSearchName; }
     const OUString&     GetAliasNames() const    { return maMapNames; }
+    bool                IsScalable() const       { return maFontFaces[0]->IsScalable(); }
+    int                 GetMinQuality() const    { return mnMinQuality; }
+    int                 GetTypeFaces() const     { return mnTypeFaces; }
+    void                GetFontHeights( std::set<int>& rHeights ) const;
+
     const OUString&     GetMatchFamilyName() const { return maMatchFamilyName; }
     ImplFontAttrs       GetMatchType() const     { return mnMatchType ; }
     FontWeight          GetMatchWeight() const   { return meMatchWeight ; }
     FontWidth           GetMatchWidth() const    { return meMatchWidth ; }
-    bool                IsScalable() const       { return mpFirst->IsScalable(); }
-    int                 GetMinQuality() const    { return mnMinQuality; }
-    int                 GetTypeFaces() const     { return mnTypeFaces; }
-    bool                AddFontFace( PhysicalFontFace* );
     void                InitMatchData( const utl::FontSubstConfiguration&,
                                        const OUString& rSearchName );
+
+    bool                AddFontFace( PhysicalFontFace* );
+
     PhysicalFontFace*   FindBestFontFace( const FontSelectPattern& rFSD ) const;
 
-    void                GetFontHeights( std::set<int>& rHeights ) const;
-    void                UpdateDevFontList( ImplGetDevFontList& ) const;
+    void                UpdateDevFontList( ImplDeviceFontList& ) const;
     void                UpdateCloneFontList( PhysicalFontCollection&,
                                              bool bScalable, bool bEmbeddable ) const;
 
@@ -69,18 +72,20 @@ static void             CalcType( ImplFontAttrs& rType, FontWeight& rWeight, Fon
                                   FontFamily eFamily, const utl::FontNameAttr* pFontAttr );
 
 private:
-    PhysicalFontFace*   mpFirst;            // linked list of physical font faces
-    OUString            maName;             // Fontname (original font family name)
+    std::vector< PhysicalFontFace* > maFontFaces;
+
+    OUString            maFamilyName;       // original font family name
     OUString            maSearchName;       // normalized font family name
     OUString            maMapNames;         // fontname aliases
     int                 mnTypeFaces;        // Typeface Flags
+    FontFamily          meFamily;
+    FontPitch           mePitch;
+    int                 mnMinQuality;       // quality of the worst font face
+
     ImplFontAttrs       mnMatchType;        // MATCH - Type
     OUString            maMatchFamilyName;  // MATCH - FamilyName
     FontWeight          meMatchWeight;      // MATCH - Weight
     FontWidth           meMatchWidth;       // MATCH - Width
-    FontFamily          meFamily;
-    FontPitch           mePitch;
-    int                 mnMinQuality;       // quality of the worst font face
 };
 
 #endif // INCLUDED_VCL_INC_PHYSICALFONTFAMILY_HXX

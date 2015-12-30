@@ -28,14 +28,13 @@ class FuChar
     : public FuPoor
 {
 public:
-    TYPEINFO_OVERRIDE();
 
     static rtl::Reference<FuPoor> Create( ViewShell* pViewSh, ::sd::Window* pWin, ::sd::View* pView, SdDrawDocument* pDoc, SfxRequest& rReq );
 
-    virtual void DoExecute( SfxRequest& rReq ) SAL_OVERRIDE;
+    virtual void DoExecute( SfxRequest& rReq ) override;
 
-    virtual void Activate() SAL_OVERRIDE;
-    virtual void Deactivate() SAL_OVERRIDE;
+    virtual void Activate() override;
+    virtual void Deactivate() override;
 
 private:
     FuChar (

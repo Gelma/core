@@ -124,24 +124,24 @@ namespace rptui
         static void collectBoundResizeRect(const TRectangleMap& _rSortRectangles,sal_Int32 _nControlModification,bool _bAlignAtSection,bool _bBoundRects,Rectangle& _rBound,Rectangle& _rResize);
         void impl_resizeSectionWindow(OSectionWindow& _rSectionWindow,Point& _rStartPoint,bool _bSet);
 
-        OViewsWindow(OViewsWindow&) SAL_DELETED_FUNCTION;
-        void operator =(OViewsWindow&) SAL_DELETED_FUNCTION;
+        OViewsWindow(OViewsWindow&) = delete;
+        void operator =(OViewsWindow&) = delete;
     protected:
-        virtual void DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+        virtual void DataChanged( const DataChangedEvent& rDCEvt ) override;
         // Window overrides
-        virtual void MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-        virtual void MouseButtonUp( const MouseEvent& rMEvt ) SAL_OVERRIDE;
+        virtual void MouseButtonDown( const MouseEvent& rMEvt ) override;
+        virtual void MouseButtonUp( const MouseEvent& rMEvt ) override;
 
-        virtual void Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) SAL_OVERRIDE;
-        virtual void ConfigurationChanged( utl::ConfigurationBroadcaster*, sal_uInt32 ) SAL_OVERRIDE;
+        virtual void Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) override;
+        virtual void ConfigurationChanged( utl::ConfigurationBroadcaster*, sal_uInt32 ) override;
     public:
         OViewsWindow(
             OReportWindow* _pReportWindow);
         virtual ~OViewsWindow();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
         // Window overrides
-        virtual void Resize() SAL_OVERRIDE;
+        virtual void Resize() override;
 
         void resize(const OSectionWindow& _rSectionWindow);
 
@@ -157,7 +157,7 @@ namespace rptui
             If the section is <NULL/> nothing happens.
             If the position is grater than the current elements, the section will be appended.
         */
-        void            addSection(const ::com::sun::star::uno::Reference< ::com::sun::star::report::XSection >& _xSection
+        void            addSection(const css::uno::Reference< css::report::XSection >& _xSection
                                     ,const OUString& _sColorEntry
                                     ,sal_uInt16 _nPosition = USHRT_MAX);
 
@@ -221,7 +221,7 @@ namespace rptui
         /** returns the report section window for the given xsection
             @param  _xSection   the section
         */
-        OSectionWindow* getSectionWindow(const ::com::sun::star::uno::Reference< ::com::sun::star::report::XSection>& _xSection) const;
+        OSectionWindow* getSectionWindow(const css::uno::Reference< css::report::XSection>& _xSection) const;
 
         /** checks if the keycode is known by the child windows
             @param  _rCode  the keycode
@@ -234,12 +234,12 @@ namespace rptui
             @param  _bMark  the marked flag
         */
         void            setMarked(OSectionView* _pSectionView, bool _bMark);
-        void            setMarked(const ::com::sun::star::uno::Reference< ::com::sun::star::report::XSection>& _xSection, bool _bMark);
-        void            setMarked(const ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportComponent> >& _xShape, bool _bMark);
+        void            setMarked(const css::uno::Reference< css::report::XSection>& _xSection, bool _bMark);
+        void            setMarked(const css::uno::Sequence< css::uno::Reference< css::report::XReportComponent> >& _xShape, bool _bMark);
 
         // IMarkedSection
-        OSectionWindow* getMarkedSection(NearSectionAccess nsa = CURRENT) const SAL_OVERRIDE;
-        virtual void markSection(const sal_uInt16 _nPos) SAL_OVERRIDE;
+        OSectionWindow* getMarkedSection(NearSectionAccess nsa = CURRENT) const override;
+        virtual void markSection(const sal_uInt16 _nPos) override;
 
         /** align all marked objects in all sections
         */
@@ -262,7 +262,7 @@ namespace rptui
 
         /** returns the current position in the list
         */
-        sal_uInt16 getPosition(const OSectionWindow* _pSectionWindow = NULL) const;
+        sal_uInt16 getPosition(const OSectionWindow* _pSectionWindow = nullptr) const;
 
         /** calls on every section BrkAction
         *
@@ -309,7 +309,7 @@ namespace rptui
         *
         * \param _aCollpasedSections The position of the sections which should be collapsed.
         */
-        void collapseSections(const com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue>& _aCollpasedSections);
+        void collapseSections(const css::uno::Sequence< css::beans::PropertyValue>& _aCollpasedSections);
 
         /** zoom the ruler and view windows
         */
@@ -320,7 +320,7 @@ namespace rptui
         /** fills the vector with all selected control models
             /param  _rSelection The vector will be filled and will not be cleared before.
         */
-        void fillControlModelSelection(::std::vector< ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > >& _rSelection) const;
+        void fillControlModelSelection(::std::vector< css::uno::Reference< css::uno::XInterface > >& _rSelection) const;
     };
 
 } // rptui

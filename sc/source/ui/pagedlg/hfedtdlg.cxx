@@ -41,12 +41,11 @@
         static_cast<const SvxSetItem&>((set).Get(ATTR_PAGE_FOOTERSET)).GetItemSet(). \
             Get(ATTR_PAGE_SHARED)).GetValue()
 
-ScHFEditDlg::ScHFEditDlg( SfxViewFrame*     pFrameP,
-                          vcl::Window*           pParent,
+ScHFEditDlg::ScHFEditDlg( vcl::Window*           pParent,
                           const SfxItemSet& rCoreSet,
                           const OUString&   rPageStyle,
                           const OUString& rID, const OUString& rUIXMLDescription )
-    :   SfxTabDialog( pFrameP, pParent, rID, rUIXMLDescription, &rCoreSet )
+    :   SfxTabDialog( pParent, rID, rUIXMLDescription, &rCoreSet )
 {
     eNumType = static_cast<const SvxPageItem&>(rCoreSet.Get(ATTR_PAGE)).GetNumType();
 
@@ -57,110 +56,110 @@ ScHFEditDlg::ScHFEditDlg( SfxViewFrame*     pFrameP,
     SetText( aTmp );
 }
 
-ScHFEditHeaderDlg::ScHFEditHeaderDlg( SfxViewFrame*     pFrameP,
+ScHFEditHeaderDlg::ScHFEditHeaderDlg(
                           vcl::Window*           pParent,
                           const SfxItemSet& rCoreSet,
                           const OUString&   rPageStyle)
-    :   ScHFEditDlg( pFrameP, pParent, rCoreSet, rPageStyle,
+    :   ScHFEditDlg( pParent, rCoreSet, rPageStyle,
         "HeaderDialog", "modules/scalc/ui/headerdialog.ui" )
 {
-    AddTabPage( "headerright", ScRightHeaderEditPage::Create, NULL );
-    AddTabPage( "headerleft", ScLeftHeaderEditPage::Create, NULL );
+    AddTabPage( "headerright", ScRightHeaderEditPage::Create, nullptr );
+    AddTabPage( "headerleft", ScLeftHeaderEditPage::Create, nullptr );
 }
 
-ScHFEditFooterDlg::ScHFEditFooterDlg( SfxViewFrame*     pFrameP,
+ScHFEditFooterDlg::ScHFEditFooterDlg(
                           vcl::Window*           pParent,
                           const SfxItemSet& rCoreSet,
                           const OUString&   rPageStyle)
-    :   ScHFEditDlg( pFrameP, pParent, rCoreSet, rPageStyle,
+    :   ScHFEditDlg( pParent, rCoreSet, rPageStyle,
         "FooterDialog", "modules/scalc/ui/footerdialog.ui" )
 {
-    AddTabPage( "footerright", ScRightFooterEditPage::Create, NULL );
-    AddTabPage( "footerleft", ScLeftFooterEditPage::Create, NULL );
+    AddTabPage( "footerright", ScRightFooterEditPage::Create, nullptr );
+    AddTabPage( "footerleft", ScLeftFooterEditPage::Create, nullptr );
 }
 
-ScHFEditLeftHeaderDlg::ScHFEditLeftHeaderDlg( SfxViewFrame*     pFrameP,
+ScHFEditLeftHeaderDlg::ScHFEditLeftHeaderDlg(
                           vcl::Window*           pParent,
                           const SfxItemSet& rCoreSet,
                           const OUString&   rPageStyle)
-    :   ScHFEditDlg( pFrameP, pParent, rCoreSet, rPageStyle,
+    :   ScHFEditDlg( pParent, rCoreSet, rPageStyle,
         "LeftHeaderDialog", "modules/scalc/ui/leftheaderdialog.ui" )
 {
-    AddTabPage( "headerleft", ScLeftHeaderEditPage::Create, NULL );
+    AddTabPage( "headerleft", ScLeftHeaderEditPage::Create, nullptr );
 }
 
-ScHFEditRightHeaderDlg::ScHFEditRightHeaderDlg( SfxViewFrame*     pFrameP,
+ScHFEditRightHeaderDlg::ScHFEditRightHeaderDlg(
                           vcl::Window*           pParent,
                           const SfxItemSet& rCoreSet,
                           const OUString&   rPageStyle)
-    :   ScHFEditDlg( pFrameP, pParent, rCoreSet, rPageStyle,
+    :   ScHFEditDlg( pParent, rCoreSet, rPageStyle,
         "RightHeaderDialog", "modules/scalc/ui/rightheaderdialog.ui" )
 {
-    AddTabPage( "headerright", ScRightHeaderEditPage::Create, NULL );
+    AddTabPage( "headerright", ScRightHeaderEditPage::Create, nullptr );
 }
 
-ScHFEditLeftFooterDlg::ScHFEditLeftFooterDlg( SfxViewFrame*     pFrameP,
+ScHFEditLeftFooterDlg::ScHFEditLeftFooterDlg(
                           vcl::Window*           pParent,
                           const SfxItemSet& rCoreSet,
                           const OUString&   rPageStyle)
-    :   ScHFEditDlg( pFrameP, pParent, rCoreSet, rPageStyle,
+    :   ScHFEditDlg( pParent, rCoreSet, rPageStyle,
         "LeftFooterDialog", "modules/scalc/ui/leftfooterdialog.ui" )
 {
-    AddTabPage( "footerleft", ScLeftFooterEditPage::Create, NULL );
+    AddTabPage( "footerleft", ScLeftFooterEditPage::Create, nullptr );
 }
 
-ScHFEditRightFooterDlg::ScHFEditRightFooterDlg( SfxViewFrame*     pFrameP,
+ScHFEditRightFooterDlg::ScHFEditRightFooterDlg(
                           vcl::Window*           pParent,
                           const SfxItemSet& rCoreSet,
                           const OUString&   rPageStyle)
-    :   ScHFEditDlg( pFrameP, pParent, rCoreSet, rPageStyle,
+    :   ScHFEditDlg( pParent, rCoreSet, rPageStyle,
         "RightFooterDialog", "modules/scalc/ui/rightfooterdialog.ui" )
 {
-    AddTabPage( "footerright", ScRightFooterEditPage::Create, NULL );
+    AddTabPage( "footerright", ScRightFooterEditPage::Create, nullptr );
 }
 
-ScHFEditSharedHeaderDlg::ScHFEditSharedHeaderDlg( SfxViewFrame*     pFrameP,
+ScHFEditSharedHeaderDlg::ScHFEditSharedHeaderDlg(
                           vcl::Window*           pParent,
                           const SfxItemSet& rCoreSet,
                           const OUString&   rPageStyle)
-    :   ScHFEditDlg( pFrameP, pParent, rCoreSet, rPageStyle,
+    :   ScHFEditDlg( pParent, rCoreSet, rPageStyle,
         "SharedHeaderDialog", "modules/scalc/ui/sharedheaderdialog.ui" )
 {
-    AddTabPage( "header", ScRightHeaderEditPage::Create, NULL );
-    AddTabPage( "footerright", ScRightFooterEditPage::Create, NULL );
-    AddTabPage( "footerleft", ScLeftFooterEditPage::Create,  NULL );
+    AddTabPage( "header", ScRightHeaderEditPage::Create, nullptr );
+    AddTabPage( "footerright", ScRightFooterEditPage::Create, nullptr );
+    AddTabPage( "footerleft", ScLeftFooterEditPage::Create,  nullptr );
 }
 
-ScHFEditSharedFooterDlg::ScHFEditSharedFooterDlg( SfxViewFrame*     pFrameP,
+ScHFEditSharedFooterDlg::ScHFEditSharedFooterDlg(
                           vcl::Window*           pParent,
                           const SfxItemSet& rCoreSet,
                           const OUString&   rPageStyle)
-    :   ScHFEditDlg( pFrameP, pParent, rCoreSet, rPageStyle,
+    :   ScHFEditDlg( pParent, rCoreSet, rPageStyle,
         "SharedFooterDialog", "modules/scalc/ui/sharedfooterdialog.ui" )
 {
-    AddTabPage( "headerright", ScRightHeaderEditPage::Create, NULL );
-    AddTabPage( "headerleft", ScLeftHeaderEditPage::Create, NULL );
-    AddTabPage( "footer", ScRightFooterEditPage::Create, NULL );
+    AddTabPage( "headerright", ScRightHeaderEditPage::Create, nullptr );
+    AddTabPage( "headerleft", ScLeftHeaderEditPage::Create, nullptr );
+    AddTabPage( "footer", ScRightFooterEditPage::Create, nullptr );
 }
 
-ScHFEditAllDlg::ScHFEditAllDlg( SfxViewFrame*     pFrameP,
+ScHFEditAllDlg::ScHFEditAllDlg(
                           vcl::Window*           pParent,
                           const SfxItemSet& rCoreSet,
                           const OUString&   rPageStyle)
-    :   ScHFEditDlg( pFrameP, pParent, rCoreSet, rPageStyle,
+    :   ScHFEditDlg( pParent, rCoreSet, rPageStyle,
         "AllHeaderFooterDialog", "modules/scalc/ui/allheaderfooterdialog.ui" )
 {
-    AddTabPage( "headerright", ScRightHeaderEditPage::Create, NULL );
-    AddTabPage( "headerleft", ScLeftHeaderEditPage::Create, NULL );
-    AddTabPage( "footerright", ScRightFooterEditPage::Create, NULL );
-    AddTabPage( "footerleft", ScLeftFooterEditPage::Create, NULL );
+    AddTabPage( "headerright", ScRightHeaderEditPage::Create, nullptr );
+    AddTabPage( "headerleft", ScLeftHeaderEditPage::Create, nullptr );
+    AddTabPage( "footerright", ScRightFooterEditPage::Create, nullptr );
+    AddTabPage( "footerleft", ScLeftFooterEditPage::Create, nullptr );
 }
 
-ScHFEditActiveDlg::ScHFEditActiveDlg( SfxViewFrame*     pFrameP,
+ScHFEditActiveDlg::ScHFEditActiveDlg(
                           vcl::Window*           pParent,
                           const SfxItemSet& rCoreSet,
                           const OUString&   rPageStyle)
-    :   ScHFEditDlg( pFrameP, pParent, rCoreSet, rPageStyle,
+    :   ScHFEditDlg( pParent, rCoreSet, rPageStyle,
         "HeaderFooterDialog", "modules/scalc/ui/headerfooterdialog.ui" )
 {
     const SvxPageItem&  rPageItem = static_cast<const SvxPageItem&>(
@@ -172,8 +171,8 @@ ScHFEditActiveDlg::ScHFEditActiveDlg( SfxViewFrame*     pFrameP,
 
     if ( bRightPage )
     {
-        AddTabPage( "header", ScRightHeaderEditPage::Create, NULL );
-        AddTabPage( "footer", ScRightFooterEditPage::Create, NULL );
+        AddTabPage( "header", ScRightHeaderEditPage::Create, nullptr );
+        AddTabPage( "footer", ScRightFooterEditPage::Create, nullptr );
     }
     else
     {
@@ -181,15 +180,15 @@ ScHFEditActiveDlg::ScHFEditActiveDlg( SfxViewFrame*     pFrameP,
 
         bool bShareHeader = IS_SHARE_HEADER(rCoreSet);
         if ( bShareHeader )
-            AddTabPage( "header", ScRightHeaderEditPage::Create, NULL );
+            AddTabPage( "header", ScRightHeaderEditPage::Create, nullptr );
         else
-            AddTabPage( "header", ScLeftHeaderEditPage::Create, NULL );
+            AddTabPage( "header", ScLeftHeaderEditPage::Create, nullptr );
 
         bool bShareFooter = IS_SHARE_FOOTER(rCoreSet);
         if ( bShareFooter )
-            AddTabPage( "footer", ScRightFooterEditPage::Create, NULL );
+            AddTabPage( "footer", ScRightFooterEditPage::Create, nullptr );
         else
-            AddTabPage( "footer", ScLeftFooterEditPage::Create, NULL );
+            AddTabPage( "footer", ScLeftFooterEditPage::Create, nullptr );
     }
 }
 

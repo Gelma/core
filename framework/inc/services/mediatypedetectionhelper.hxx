@@ -20,7 +20,6 @@
 #ifndef INCLUDED_FRAMEWORK_INC_SERVICES_MEDIATYPEDETECTIONHELPER_HXX
 #define INCLUDED_FRAMEWORK_INC_SERVICES_MEDIATYPEDETECTIONHELPER_HXX
 
-#include <macros/generic.hxx>
 #include <macros/xinterface.hxx>
 #include <macros/xtypeprovider.hxx>
 #include <macros/xserviceinfo.hxx>
@@ -44,7 +43,7 @@ namespace framework{
     @devstatus      deprecated
 *//*-*************************************************************************************************************/
 
-class MediaTypeDetectionHelper  :   public ::cppu::WeakImplHelper< ::com::sun::star::util::XStringMapping, css::lang::XServiceInfo>
+class MediaTypeDetectionHelper  :   public ::cppu::WeakImplHelper< css::util::XStringMapping, css::lang::XServiceInfo>
 {
 
     //  public methods
@@ -78,14 +77,7 @@ class MediaTypeDetectionHelper  :   public ::cppu::WeakImplHelper< ::com::sun::s
         *//*-*****************************************************************************************************/
 
         virtual sal_Bool SAL_CALL mapStrings(css::uno::Sequence< OUString >& seqParameter)
-            throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-
-    //  variables
-    //  should be private every time
-
-    private:
-
-        css::uno::Reference< css::lang::XMultiServiceFactory >      m_xFactory; /// reference to global servicemanager
+            throw (css::uno::RuntimeException, std::exception) override;
 
 };
 

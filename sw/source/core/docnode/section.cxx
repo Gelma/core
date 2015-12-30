@@ -77,13 +77,13 @@ public:
         rSectFormat( rFormat )
     {}
 
-    virtual void Closed() SAL_OVERRIDE;
+    virtual void Closed() override;
     virtual ::sfx2::SvBaseLink::UpdateResult DataChanged(
-        const OUString& rMimeType, const ::com::sun::star::uno::Any & rValue ) SAL_OVERRIDE;
+        const OUString& rMimeType, const css::uno::Any & rValue ) override;
 
-    virtual const SwNode* GetAnchor() const SAL_OVERRIDE;
+    virtual const SwNode* GetAnchor() const override;
     virtual bool IsInRange( sal_uLong nSttNd, sal_uLong nEndNd, sal_Int32 nStt = 0,
-                            sal_Int32 nEnd = -1 ) const SAL_OVERRIDE;
+                            sal_Int32 nEnd = -1 ) const override;
 
     inline SwSectionNode* GetSectNode()
     {
@@ -92,8 +92,6 @@ public:
     }
 };
 
-TYPEINIT1(SwSectionFormat,SwFrameFormat );
-TYPEINIT1(SwSection,SwClient );
 
 SwSectionData::SwSectionData(SectionType const eType, OUString const& rName)
     : m_eType(eType)
@@ -319,12 +317,12 @@ void SwSection::ImplSetHiddenFlag(bool const bTmpHidden, bool const bCondition)
                 pFormat->ModifyNotification( &aMsgItem, &aMsgItem );
 
                 // Delete all Frames
-                pFormat->DelFrms();
+                pFormat->DelFrames();
             }
         }
         else if (m_Data.IsHiddenFlag()) // show Nodes again
         {
-            // Show all Frames (Child Sections are accounted for by MakeFrms)
+            // Show all Frames (Child Sections are accounted for by MakeFrames)
             // Only if the Parent Section is not restricting us!
             SwSection* pParentSect = pFormat->GetParentSection();
             if( !pParentSect || !pParentSect->IsHiddenFlag() )
@@ -333,7 +331,7 @@ void SwSection::ImplSetHiddenFlag(bool const bTmpHidden, bool const bCondition)
                 SwMsgPoolItem aMsgItem( RES_SECTION_NOT_HIDDEN );
                 pFormat->ModifyNotification( &aMsgItem, &aMsgItem );
 
-                pFormat->MakeFrms();
+                pFormat->MakeFrames();
             }
         }
     }
@@ -345,7 +343,7 @@ bool SwSection::CalcHiddenFlag() const
     do {
         if( pSect->IsHidden() && pSect->IsCondHidden() )
             return true;
-    } while( 0 != ( pSect = pSect->GetParent()) );
+    } while( nullptr != ( pSect = pSect->GetParent()) );
 
     return false;
 }
@@ -562,7 +560,7 @@ OUString SwSection::GetLinkFileName() const
                 OUString sFilter;
                 if (m_RefLink->GetLinkManager() &&
                     sfx2::LinkManager::GetDisplayNames(
-                        m_RefLink, 0, &sTmp, &sRange, &sFilter ))
+                        m_RefLink, nullptr, &sTmp, &sRange, &sFilter ))
                 {
                     sTmp += OUString(sfx2::cTokenSeparator) + sFilter
                          +  OUString(sfx2::cTokenSeparator) + sRange;
@@ -605,12 +603,12 @@ void SwSection::MakeChildLinksVisible( const SwSectionNode& rSectNd )
     {
         ::sfx2::SvBaseLink* pBLnk = &(*rLnks[ --n ]);
         if( pBLnk && !pBLnk->IsVisible() &&
-            pBLnk->ISA( SwBaseLink ) &&
-            0 != ( pNd = static_cast<SwBaseLink*>(pBLnk)->GetAnchor() ) )
+            dynamic_cast< const SwBaseLink *>( pBLnk ) !=  nullptr &&
+            nullptr != ( pNd = static_cast<SwBaseLink*>(pBLnk)->GetAnchor() ) )
         {
             pNd = pNd->StartOfSectionNode(); // If it's a SectionNode
             const SwSectionNode* pParent;
-            while( 0 != ( pParent = pNd->FindSectionNode() ) &&
+            while( nullptr != ( pParent = pNd->FindSectionNode() ) &&
                     ( CONTENT_SECTION == pParent->GetSection().GetType()
                         || pNd == &rSectNd ))
                     pNd = pParent->StartOfSectionNode();
@@ -624,14 +622,14 @@ void SwSection::MakeChildLinksVisible( const SwSectionNode& rSectNd )
 
 const SwTOXBase* SwSection::GetTOXBase() const
 {
-    const SwTOXBase* pRet = 0;
+    const SwTOXBase* pRet = nullptr;
     if( TOX_CONTENT_SECTION == GetType() )
         pRet = dynamic_cast<const SwTOXBaseSection*>(this);
     return pRet;
 }
 
-SwSectionFormat::SwSectionFormat( SwFrameFormat* pDrvdFrm, SwDoc *pDoc )
-    : SwFrameFormat( pDoc->GetAttrPool(), OUString(), pDrvdFrm )
+SwSectionFormat::SwSectionFormat( SwFrameFormat* pDrvdFrame, SwDoc *pDoc )
+    : SwFrameFormat( pDoc->GetAttrPool(), OUString(), pDrvdFrame )
 {
     LockModify();
     SetFormatAttr( *GetDfltAttr( RES_COL ) );
@@ -645,7 +643,7 @@ SwSectionFormat::~SwSectionFormat()
         SwSectionNode* pSectNd;
         const SwNodeIndex* pIdx = GetContent( false ).GetContentIdx();
         if( pIdx && &GetDoc()->GetNodes() == &pIdx->GetNodes() &&
-            0 != (pSectNd = pIdx->GetNode().GetSectionNode() ))
+            nullptr != (pSectNd = pIdx->GetNode().GetSectionNode() ))
         {
             SwSection& rSect = pSectNd->GetSection();
             // If it was a linked Section, we need to make all Child Links
@@ -665,7 +663,7 @@ SwSectionFormat::~SwSectionFormat()
             }
             // mba: test iteration; objects are removed while iterating
             // use hint which allows to specify, if the content shall be saved or not
-            CallSwClientNotify( SwSectionFrmMoveAndDeleteHint( true ) );
+            CallSwClientNotify( SwSectionFrameMoveAndDeleteHint( true ) );
 
             // Raise the Section up
             SwNodeRange aRg( *pSectNd, 0, *pSectNd->EndOfSectionNode() );
@@ -682,25 +680,25 @@ SwSection * SwSectionFormat::GetSection() const
     return SwIterator<SwSection,SwSectionFormat>( *this ).First();
 }
 
-// Do not destroy all Frms in aDepend (Frms are recognized with a PTR_CAST).
-void SwSectionFormat::DelFrms()
+// Do not destroy all Frames in aDepend (Frames are recognized with a dynamic_cast).
+void SwSectionFormat::DelFrames()
 {
     SwSectionNode* pSectNd;
     const SwNodeIndex* pIdx = GetContent(false).GetContentIdx();
     if( pIdx && &GetDoc()->GetNodes() == &pIdx->GetNodes() &&
-        0 != (pSectNd = pIdx->GetNode().GetSectionNode() ))
+        nullptr != (pSectNd = pIdx->GetNode().GetSectionNode() ))
     {
-        // First delete the <SwSectionFrm> of the <SwSectionFormat> instance
+        // First delete the <SwSectionFrame> of the <SwSectionFormat> instance
         // mba: test iteration as objects are removed in iteration
         // use hint which allows to specify, if the content shall be saved or not
-        CallSwClientNotify( SwSectionFrmMoveAndDeleteHint( false ) );
+        CallSwClientNotify( SwSectionFrameMoveAndDeleteHint( false ) );
 
         // Then delete frames of the nested <SwSectionFormat> instances
         SwIterator<SwSectionFormat,SwSectionFormat> aIter( *this );
         SwSectionFormat *pLast = aIter.First();
         while ( pLast )
         {
-            pLast->DelFrms();
+            pLast->DelFrames();
             pLast = aIter.Next();
         }
 
@@ -724,16 +722,16 @@ void SwSectionFormat::DelFrms()
 }
 
 // Create the Views
-void SwSectionFormat::MakeFrms()
+void SwSectionFormat::MakeFrames()
 {
     SwSectionNode* pSectNd;
     const SwNodeIndex* pIdx = GetContent(false).GetContentIdx();
 
     if( pIdx && &GetDoc()->GetNodes() == &pIdx->GetNodes() &&
-        0 != (pSectNd = pIdx->GetNode().GetSectionNode() ))
+        nullptr != (pSectNd = pIdx->GetNode().GetSectionNode() ))
     {
         SwNodeIndex aIdx( *pIdx );
-        pSectNd->MakeFrms( &aIdx );
+        pSectNd->MakeFrames( &aIdx );
     }
 }
 
@@ -825,7 +823,7 @@ void SwSectionFormat::Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNew )
     case RES_FMT_CHG:
         if( !GetDoc()->IsInDtor() &&
             static_cast<const SwFormatChg*>(pNew)->pChangedFormat == static_cast<void*>(GetRegisteredIn()) &&
-            static_cast<const SwFormatChg*>(pNew)->pChangedFormat->IsA( TYPE( SwSectionFormat )) )
+            dynamic_cast<const SwSectionFormat*>(static_cast<const SwFormatChg*>(pNew)->pChangedFormat) != nullptr )
         {
             // My Parent will be changed, thus I need to update
             SwFrameFormat::Modify( pOld, pNew ); // Rewire first!
@@ -838,7 +836,7 @@ void SwSectionFormat::Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNew )
 
     if (pOld && (RES_REMOVE_UNO_OBJECT == pOld->Which()))
     {   // invalidate cached uno object
-        SetXTextSection(uno::Reference<text::XTextSection>(0));
+        SetXTextSection(uno::Reference<text::XTextSection>(nullptr));
     }
 }
 
@@ -858,19 +856,19 @@ bool SwSectionFormat::GetInfo( SfxPoolItem& rInfo ) const
 
     case RES_CONTENT_VISIBLE:
         {
-            SwFrm* pFrm = SwIterator<SwFrm,SwFormat>(*this).First();
+            SwFrame* pFrame = SwIterator<SwFrame,SwFormat>(*this).First();
             // if the current section has no own frame search for the children
-            if(!pFrm)
+            if(!pFrame)
             {
                 SwIterator<SwSectionFormat,SwSectionFormat> aFormatIter(*this);
                 SwSectionFormat* pChild = aFormatIter.First();
-                while(pChild && !pFrm)
+                while(pChild && !pFrame)
                 {
-                    pFrm = SwIterator<SwFrm,SwFormat>(*pChild).First();
+                    pFrame = SwIterator<SwFrame,SwFormat>(*pChild).First();
                     pChild = aFormatIter.Next();
                 }
             }
-            static_cast<SwPtrMsgPoolItem&>(rInfo).pObject = pFrm;
+            static_cast<SwPtrMsgPoolItem&>(rInfo).pObject = pFrame;
         }
         return false;
     }
@@ -908,7 +906,7 @@ void SwSectionFormat::GetChildSections( SwSections& rArr,
         const SwNodeIndex* pIdx;
         for( SwSectionFormat* pLast = aIter.First(); pLast; pLast = aIter.Next() )
             if( bAllSections ||
-                ( 0 != ( pIdx = pLast->GetContent(false).
+                ( nullptr != ( pIdx = pLast->GetContent(false).
                 GetContentIdx()) && &pIdx->GetNodes() == &GetDoc()->GetNodes() ))
             {
                 SwSection* pDummy = pLast->GetSection();
@@ -944,16 +942,16 @@ void SwSectionFormat::UpdateParent()
     if( !HasWriterListeners() )
         return;
 
-    SwSection* pSection = 0;
-    const SvxProtectItem* pProtect(0);
+    SwSection* pSection = nullptr;
+    const SvxProtectItem* pProtect(nullptr);
     // edit in readonly sections
-    const SwFormatEditInReadonly* pEditInReadonly = 0;
+    const SwFormatEditInReadonly* pEditInReadonly = nullptr;
     bool bIsHidden = false;
 
     SwIterator<SwClient,SwSectionFormat> aIter(*this);
     for(SwClient* pLast = aIter.First(); pLast; pLast = aIter.Next())
     {
-        if( pLast->IsA( TYPE(SwSectionFormat) ) )
+        if( dynamic_cast<const SwSectionFormat*>(pLast) !=  nullptr )
         {
             if( !pSection )
             {
@@ -998,7 +996,7 @@ void SwSectionFormat::UpdateParent()
             }
         }
         else if( !pSection &&
-                pLast->IsA( TYPE(SwSection) ) )
+                dynamic_cast<const SwSection*>(pLast) !=  nullptr )
         {
             pSection = static_cast<SwSection*>(pLast);
             if( GetRegisteredIn() )
@@ -1025,7 +1023,7 @@ SwSectionNode* SwSectionFormat::GetSectionNode(bool const bAlways)
     const SwNodeIndex* pIdx = GetContent(false).GetContentIdx();
     if( pIdx && ( bAlways || &pIdx->GetNodes() == &GetDoc()->GetNodes() ))
         return pIdx->GetNode().GetSectionNode();
-    return 0;
+    return nullptr;
 }
 
 // Is this Section valid for the GlobalDocument?
@@ -1039,7 +1037,7 @@ const SwSection* SwSectionFormat::GetGlobalDocSection() const
         !pNd->StartOfSectionNode()->IsSectionNode() &&
         !pNd->StartOfSectionNode()->FindSectionNode() )
         return &pNd->GetSection();
-    return 0;
+    return nullptr;
 }
 
 // sw::Metadatable
@@ -1155,13 +1153,13 @@ static void lcl_UpdateLinksInSect( SwBaseLink& rUpdLnk, SwSectionNode& rSectNd )
         ::sfx2::SvBaseLink* pLnk = &(*rLnks[ --n ]);
         if( pLnk && pLnk != &rUpdLnk &&
             OBJECT_CLIENT_FILE == pLnk->GetObjType() &&
-            pLnk->ISA( SwBaseLink ) &&
+            dynamic_cast< const SwBaseLink *>( pLnk ) !=  nullptr &&
             ( pBLink = static_cast<SwBaseLink*>(pLnk) )->IsInRange( rSectNd.GetIndex(),
                                                 rSectNd.EndOfSectionIndex() ) )
         {
             // It's in the Section, so update. But only if it's not in the same File!
             OUString sFName;
-            sfx2::LinkManager::GetDisplayNames( pBLink, 0, &sFName, 0, 0 );
+            sfx2::LinkManager::GetDisplayNames( pBLink, nullptr, &sFName );
             if( sFName != sName )
             {
                 pBLink->DataChanged( sMimeType, aValue );
@@ -1244,7 +1242,7 @@ static void lcl_UpdateLinksInSect( SwBaseLink& rUpdLnk, SwSectionNode& rSectNd )
     SwSection& rSection = pSectNd->GetSection();
     rSection.SetConnectFlag(false);
 
-    Reader* pRead = 0;
+    Reader* pRead = nullptr;
     switch( nDataFormat )
     {
     case SotClipboardFormatId::STRING:
@@ -1263,7 +1261,7 @@ static void lcl_UpdateLinksInSect( SwBaseLink& rUpdLnk, SwSectionNode& rSectNd )
                 break;
             OUString sFilter;
             OUString sRange;
-            sfx2::LinkManager::GetDisplayNames( this, 0, &sFileName,
+            sfx2::LinkManager::GetDisplayNames( this, nullptr, &sFileName,
                                                     &sRange, &sFilter );
 
             RedlineMode_t eOldRedlineMode = nsRedlineMode_t::REDLINE_NONE;
@@ -1293,7 +1291,7 @@ static void lcl_UpdateLinksInSect( SwBaseLink& rUpdLnk, SwSectionNode& rSectNd )
                 rSection.SetConnectFlag();
 
                 SwNodeIndex aSave( pPam->GetPoint()->nNode, -1 );
-                SwNodeRange* pCpyRg = 0;
+                SwNodeRange* pCpyRg = nullptr;
 
                 if( xDocSh->GetMedium() &&
                     rSection.GetLinkFilePassword().isEmpty() )
@@ -1324,7 +1322,7 @@ static void lcl_UpdateLinksInSect( SwBaseLink& rUpdLnk, SwSectionNode& rSectNd )
 
                     SwNodeIndex& rInsPos = pPam->GetPoint()->nNode;
 
-                    SwPaM* pCpyPam = 0;
+                    SwPaM* pCpyPam = nullptr;
                     if( !bRecursion &&
                         pSrcDoc->GetDocumentLinksAdministrationManager().SelectServerObj( sRange, pCpyPam, pCpyRg )
                         && pCpyPam )
@@ -1339,7 +1337,7 @@ static void lcl_UpdateLinksInSect( SwBaseLink& rUpdLnk, SwSectionNode& rSectNd )
                     }
                     if( pCpyRg && pSrcDoc == pDoc &&
                         pCpyRg->aStart < rInsPos && rInsPos < pCpyRg->aEnd )
-                        delete pCpyRg, pCpyRg = 0;
+                        delete pCpyRg, pCpyRg = nullptr;
                 }
                 else if( pSrcDoc != pDoc )
                     pCpyRg = new SwNodeRange( pSrcDoc->GetNodes().GetEndOfExtras(), 2,
@@ -1351,23 +1349,23 @@ static void lcl_UpdateLinksInSect( SwBaseLink& rUpdLnk, SwSectionNode& rSectNd )
                 if ( pSrcDoc != pDoc &&
                      rSection.IsProtectFlag() )
                 {
-                    pSrcDoc->getIDocumentLinksAdministration().GetLinkManager().UpdateAllLinks( false, true, false, 0 );
+                    pSrcDoc->getIDocumentLinksAdministration().GetLinkManager().UpdateAllLinks( false );
                 }
 
                 if( pCpyRg )
                 {
                     SwNodeIndex& rInsPos = pPam->GetPoint()->nNode;
-                    bool bCreateFrm = rInsPos.GetIndex() <=
+                    bool bCreateFrame = rInsPos.GetIndex() <=
                                 pDoc->GetNodes().GetEndOfExtras().GetIndex() ||
                                 rInsPos.GetNode().FindTableNode();
 
                     SwTableNumFormatMerge aTNFM( *pSrcDoc, *pDoc );
 
-                    pSrcDoc->GetDocumentContentOperationsManager().CopyWithFlyInFly( *pCpyRg, 0, rInsPos, NULL, bCreateFrm );
+                    pSrcDoc->GetDocumentContentOperationsManager().CopyWithFlyInFly( *pCpyRg, 0, rInsPos, nullptr, bCreateFrame );
                     ++aSave;
 
-                    if( !bCreateFrm )
-                        ::MakeFrms( pDoc, aSave, rInsPos );
+                    if( !bCreateFrame )
+                        ::MakeFrames( pDoc, aSave, rInsPos );
 
                     // Delete last Node, only if it was copied successfully
                     // (the Section contains more than one Node)
@@ -1408,10 +1406,10 @@ static void lcl_UpdateLinksInSect( SwBaseLink& rUpdLnk, SwSectionNode& rSectNd )
         if( pESh )
         {
             pESh->Push();
-            SwPaM* pCrsr = pESh->GetCrsr();
-            *pCrsr->GetPoint() = *pPam->GetPoint();
+            SwPaM* pCursor = pESh->GetCursor();
+            *pCursor->GetPoint() = *pPam->GetPoint();
             delete pPam;
-            pPam = pCrsr;
+            pPam = pCursor;
         }
 
         SvMemoryStream aStrm( const_cast<sal_Int8 *>(aSeq.getConstArray()), aSeq.getLength(),
@@ -1429,7 +1427,7 @@ static void lcl_UpdateLinksInSect( SwBaseLink& rUpdLnk, SwSectionNode& rSectNd )
         if( pESh )
         {
             pESh->Pop( false );
-            pPam = 0; // pam was deleted earlier
+            pPam = nullptr; // pam was deleted earlier
         }
     }
 
@@ -1440,7 +1438,7 @@ static void lcl_UpdateLinksInSect( SwBaseLink& rUpdLnk, SwSectionNode& rSectNd )
 
     pDoc->getIDocumentFieldsAccess().UnlockExpFields();
     if( !pDoc->getIDocumentFieldsAccess().IsExpFieldsLocked() )
-        pDoc->getIDocumentFieldsAccess().UpdateExpFields(NULL, true);
+        pDoc->getIDocumentFieldsAccess().UpdateExpFields(nullptr, true);
 
     if( pESh )
         pESh->EndAllAction();
@@ -1539,8 +1537,8 @@ void SwSection::CreateLink( LinkCreateType eCreateType )
             pFormat->GetDoc()->getIDocumentLinksAdministration().GetLinkManager().InsertFileLink( *pLnk,
                                 static_cast<sal_uInt16>(m_Data.GetType()),
                                 sFile,
-                                ( !sFltr.isEmpty() ? &sFltr : 0 ),
-                                ( !sRange.isEmpty() ? &sRange : 0 ) );
+                                ( !sFltr.isEmpty() ? &sFltr : nullptr ),
+                                ( !sRange.isEmpty() ? &sRange : nullptr ) );
         }
         break;
     default:

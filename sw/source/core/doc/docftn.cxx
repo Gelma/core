@@ -87,9 +87,9 @@ bool SwEndNoteInfo::operator==( const SwEndNoteInfo& rInfo ) const
 
 SwEndNoteInfo::SwEndNoteInfo(const SwEndNoteInfo& rInfo) :
     SwClient( rInfo.GetFootnoteTextColl() ),
-    aPageDescDep( this, 0 ),
-    aCharFormatDep( this, 0 ),
-    aAnchorCharFormatDep( this, 0 ),
+    aPageDescDep( this, nullptr ),
+    aCharFormatDep( this, nullptr ),
+    aAnchorCharFormatDep( this, nullptr ),
     sPrefix( rInfo.sPrefix ),
     sSuffix( rInfo.sSuffix ),
     m_bEndNote( true ),
@@ -109,9 +109,9 @@ SwEndNoteInfo::SwEndNoteInfo(const SwEndNoteInfo& rInfo) :
 
 SwEndNoteInfo::SwEndNoteInfo(SwTextFormatColl *pFormat) :
     SwClient(pFormat),
-    aPageDescDep( this, 0 ),
-    aCharFormatDep( this, 0 ),
-    aAnchorCharFormatDep( this, 0 ),
+    aPageDescDep( this, nullptr ),
+    aCharFormatDep( this, nullptr ),
+    aAnchorCharFormatDep( this, nullptr ),
     m_bEndNote( true ),
     nFootnoteOffset( 0 )
 {
@@ -132,7 +132,7 @@ SwPageDesc *SwEndNoteInfo::GetPageDesc( SwDoc &rDoc ) const
 
 bool SwEndNoteInfo::KnowsPageDesc() const
 {
-    return (aPageDescDep.GetRegisteredIn() != 0);
+    return (aPageDescDep.GetRegisteredIn() != nullptr);
 }
 
 bool SwEndNoteInfo::DependsOn( const SwPageDesc* pDesc ) const
@@ -251,7 +251,7 @@ SwFootnoteInfo::SwFootnoteInfo(SwTextFormatColl *pFormat) :
 
 void SwDoc::SetFootnoteInfo(const SwFootnoteInfo& rInfo)
 {
-    SwRootFrm* pTmpRoot = getIDocumentLayoutAccess().GetCurrentLayout();
+    SwRootFrame* pTmpRoot = getIDocumentLayoutAccess().GetCurrentLayout();
     if( !(GetFootnoteInfo() == rInfo) )
     {
         const SwFootnoteInfo &rOld = GetFootnoteInfo();
@@ -277,14 +277,17 @@ void SwDoc::SetFootnoteInfo(const SwFootnoteInfo& rInfo)
 
         if (pTmpRoot)
         {
-            std::set<SwRootFrm*> aAllLayouts = GetAllLayouts();
+            std::set<SwRootFrame*> aAllLayouts = GetAllLayouts();
             if ( bFootnotePos )
-                std::for_each( aAllLayouts.begin(), aAllLayouts.end(),std::mem_fun(&SwRootFrm::AllRemoveFootnotes));
+                for( auto aLayout : aAllLayouts )
+                    aLayout->AllRemoveFootnotes();
             else
             {
-                std::for_each( aAllLayouts.begin(), aAllLayouts.end(),std::mem_fun(&SwRootFrm::UpdateFootnoteNums));
+                for( auto aLayout : aAllLayouts )
+                    aLayout->UpdateFootnoteNums();
                 if ( bFootnoteDesc )
-                    std::for_each( aAllLayouts.begin(), aAllLayouts.end(),std::bind2nd(std::mem_fun(&SwRootFrm::CheckFootnotePageDescs), false));
+                    for( auto aLayout : aAllLayouts )
+                        aLayout->CheckFootnotePageDescs(false);
                 if ( bExtra )
                 {
                     // For messages regarding ErgoSum etc. we save the extra code and use the
@@ -312,7 +315,7 @@ void SwDoc::SetFootnoteInfo(const SwFootnoteInfo& rInfo)
         // #i81002# no update during loading
         if ( !IsInReading() )
         {
-            getIDocumentFieldsAccess().UpdateRefFields(NULL);
+            getIDocumentFieldsAccess().UpdateRefFields(nullptr);
         }
         getIDocumentState().SetModified();
     }
@@ -320,7 +323,7 @@ void SwDoc::SetFootnoteInfo(const SwFootnoteInfo& rInfo)
 
 void SwDoc::SetEndNoteInfo(const SwEndNoteInfo& rInfo)
 {
-    SwRootFrm* pTmpRoot = getIDocumentLayoutAccess().GetCurrentLayout();
+    SwRootFrame* pTmpRoot = getIDocumentLayoutAccess().GetCurrentLayout();
     if( !(GetEndNoteInfo() == rInfo) )
     {
         if(GetIDocumentUndoRedo().DoesUndo())
@@ -351,8 +354,8 @@ void SwDoc::SetEndNoteInfo(const SwEndNoteInfo& rInfo)
         {
             if ( bFootnoteDesc )
             {
-                std::set<SwRootFrm*> aAllLayouts = GetAllLayouts();
-                std::for_each( aAllLayouts.begin(), aAllLayouts.end(),std::bind2nd(std::mem_fun(&SwRootFrm::CheckFootnotePageDescs), true));
+                for( auto aLayout : GetAllLayouts() )
+                    aLayout->CheckFootnotePageDescs(true);
             }
             if ( bExtra )
             {
@@ -380,7 +383,7 @@ void SwDoc::SetEndNoteInfo(const SwEndNoteInfo& rInfo)
         // #i81002# no update during loading
         if ( !IsInReading() )
         {
-            getIDocumentFieldsAccess().UpdateRefFields(NULL);
+            getIDocumentFieldsAccess().UpdateRefFields(nullptr);
         }
         getIDocumentState().SetModified();
     }
@@ -390,7 +393,7 @@ bool SwDoc::SetCurFootnote( const SwPaM& rPam, const OUString& rNumStr,
                        sal_uInt16 nNumber, bool bIsEndNote )
 {
     SwFootnoteIdxs& rFootnoteArr = GetFootnoteIdxs();
-    SwRootFrm* pTmpRoot = getIDocumentLayoutAccess().GetCurrentLayout();
+    SwRootFrame* pTmpRoot = getIDocumentLayoutAccess().GetCurrentLayout();
 
     const SwPosition* pStt = rPam.Start(), *pEnd = rPam.End();
     const sal_uLong nSttNd = pStt->nNode.GetIndex();
@@ -401,7 +404,7 @@ bool SwDoc::SetCurFootnote( const SwPaM& rPam, const OUString& rNumStr,
     size_t nPos = 0;
     rFootnoteArr.SeekEntry( pStt->nNode, &nPos );
 
-    SwUndoChangeFootNote* pUndo = 0;
+    SwUndoChangeFootNote* pUndo = nullptr;
     if (GetIDocumentUndoRedo().DoesUndo())
     {
         GetIDocumentUndoRedo().ClearRedo(); // AppendUndo far below, so leave it
@@ -487,8 +490,8 @@ bool SwDoc::SetCurFootnote( const SwPaM& rPam, const OUString& rNumStr,
         }
         else if( pTmpRoot )
         {
-            std::set<SwRootFrm*> aAllLayouts = GetAllLayouts();
-            std::for_each( aAllLayouts.begin(), aAllLayouts.end(),std::mem_fun(&SwRootFrm::UpdateFootnoteNums));
+            for( auto aLayout : GetAllLayouts() )
+                aLayout->UpdateFootnoteNums();
         }
         getIDocumentState().SetModified();
     }

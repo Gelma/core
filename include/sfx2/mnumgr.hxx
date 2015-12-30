@@ -25,7 +25,6 @@
 #include <com/sun/star/embed/VerbDescriptor.hpp>
 #include <com/sun/star/uno/Sequence.hxx>
 
-#include <tools/stream.hxx>
 #include <tools/resid.hxx>
 #include <sfx2/sfx.hrc>
 
@@ -75,8 +74,8 @@ private:
     // if we don't delete the pointer that got created in SfxPopupMenuManager::Popup
     static PopupMenu *  pStaticThesSubMenu;
 
-    SfxPopupMenuManager( const SfxPopupMenuManager& ) SAL_DELETED_FUNCTION;
-    SfxPopupMenuManager& operator=( const SfxPopupMenuManager& ) SAL_DELETED_FUNCTION;
+    SfxPopupMenuManager( const SfxPopupMenuManager& ) = delete;
+    SfxPopupMenuManager& operator=( const SfxPopupMenuManager& ) = delete;
 
 public:
                         SfxPopupMenuManager( PopupMenu*, SfxBindings& );

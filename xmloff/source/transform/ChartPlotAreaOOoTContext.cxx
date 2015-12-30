@@ -39,7 +39,7 @@ public:
                        const OUString& rQName );
     virtual ~XMLAxisOOoContext();
 
-    virtual void StartElement( const Reference< xml::sax::XAttributeList >& rAttrList ) SAL_OVERRIDE;
+    virtual void StartElement( const Reference< xml::sax::XAttributeList >& rAttrList ) override;
 
     bool IsCategoryAxis() const { return m_bIsCategoryAxis;}
 
@@ -61,7 +61,7 @@ void XMLAxisOOoContext::StartElement(
     const Reference< xml::sax::XAttributeList >& rAttrList )
 {
     Reference< xml::sax::XAttributeList > xAttrList( rAttrList );
-    XMLMutableAttributeList *pMutableAttrList = 0;
+    XMLMutableAttributeList *pMutableAttrList = nullptr;
     sal_Int16 nAttrCount = xAttrList.is() ? xAttrList->getLength() : 0;
     for( sal_Int16 i=0; i < nAttrCount; i++ )
     {
@@ -126,25 +126,25 @@ XMLChartPlotAreaOOoTContext::XMLChartPlotAreaOOoTContext(
 XMLChartPlotAreaOOoTContext::~XMLChartPlotAreaOOoTContext()
 {}
 
-XMLTransformerContext * XMLChartPlotAreaOOoTContext::CreateChildContext(
+rtl::Reference<XMLTransformerContext> XMLChartPlotAreaOOoTContext::CreateChildContext(
     sal_uInt16 nPrefix,
     const OUString& rLocalName,
     const OUString& rQName,
     const uno::Reference< xml::sax::XAttributeList >& xAttrList )
 {
-    XMLTransformerContext *pContext = 0;
+    rtl::Reference<XMLTransformerContext> pContext;
 
     if( XML_NAMESPACE_CHART == nPrefix &&
         IsXMLToken( rLocalName, XML_AXIS ) )
     {
-        XMLAxisOOoContext * pAxisContext( new XMLAxisOOoContext( GetTransformer(), rQName ));
+        rtl::Reference<XMLAxisOOoContext> pAxisContext( new XMLAxisOOoContext( GetTransformer(), rQName ));
         AddContent( pAxisContext );
-        pContext = pAxisContext;
+        pContext.set(pAxisContext.get());
     }
     else if( XML_NAMESPACE_CHART == nPrefix &&
              IsXMLToken( rLocalName, XML_CATEGORIES ) )
     {
-        pContext = new XMLPersAttrListTContext( GetTransformer(), rQName );
+        pContext.set(new XMLPersAttrListTContext( GetTransformer(), rQName ));
 
         // put categories at correct axis
         XMLAxisContextVector::iterator aIter = m_aChildContexts.begin();
@@ -154,7 +154,7 @@ XMLTransformerContext * XMLChartPlotAreaOOoTContext::CreateChildContext(
         for( ; ! bFound && aIter != m_aChildContexts.end(); ++aIter )
         {
             XMLAxisOOoContext * pAxisContext = (*aIter).get();
-            if( pAxisContext != 0 )
+            if( pAxisContext != nullptr )
             {
                 // iterate over attributes to find category axis
                 Reference< xml::sax::XAttributeList > xNewAttrList( pAxisContext->GetAttrList());
@@ -197,12 +197,11 @@ void XMLChartPlotAreaOOoTContext::EndElement()
     XMLProcAttrTransformerContext::EndElement();
 }
 
-void XMLChartPlotAreaOOoTContext::AddContent( XMLAxisOOoContext *pContext )
+void XMLChartPlotAreaOOoTContext::AddContent(rtl::Reference<XMLAxisOOoContext> const & pContext)
 {
-    OSL_ENSURE( pContext && pContext->IsPersistent(),
+    OSL_ENSURE( pContext.is() && pContext->IsPersistent(),
                 "non-persistent context" );
-    XMLAxisContextVector::value_type aVal( pContext );
-    m_aChildContexts.push_back( aVal );
+    m_aChildContexts.push_back(pContext);
 }
 
 

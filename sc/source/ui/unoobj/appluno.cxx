@@ -98,7 +98,7 @@ SAL_DLLPUBLIC_EXPORT void * SAL_CALL sc_component_getFactory(
     const sal_Char * pImplName, void * pServiceManager, void * /* pRegistryKey */ )
 {
     if (!pServiceManager)
-        return NULL;
+        return nullptr;
 
     uno::Reference<lang::XSingleServiceFactory> xFactory;
     OUString aImpl(OUString::createFromAscii(pImplName));
@@ -160,7 +160,7 @@ SAL_DLLPUBLIC_EXPORT void * SAL_CALL sc_component_getFactory(
                 ScDocument_getSupportedServiceNames() ));
     }
 
-    void* pRet = NULL;
+    void* pRet = nullptr;
     if (xFactory.is())
     {
         xFactory->acquire();
@@ -195,9 +195,7 @@ OUString ScSpreadsheetSettings::getImplementationName_Static()
 
 uno::Sequence<OUString> ScSpreadsheetSettings::getSupportedServiceNames_Static()
 {
-    uno::Sequence<OUString> aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = SCSPREADSHEETSETTINGS_SERVICE;
+    uno::Sequence<OUString> aRet { SCSPREADSHEETSETTINGS_SERVICE };
     return aRet;
 }
 
@@ -501,7 +499,7 @@ void SAL_CALL ScRecentFunctionsObj::setRecentFunctionIds(
     sal_uInt16 nCount = (sal_uInt16) std::min( aRecentFunctionIds.getLength(), (sal_Int32) LRU_MAX );
     const sal_Int32* pAry = aRecentFunctionIds.getConstArray();
 
-    std::unique_ptr<sal_uInt16[]> pFuncs(nCount ? new sal_uInt16[nCount] : NULL);
+    std::unique_ptr<sal_uInt16[]> pFuncs(nCount ? new sal_uInt16[nCount] : nullptr);
     for (sal_uInt16 i=0; i<nCount; i++)
         pFuncs[i] = (sal_uInt16)pAry[i];        //! auf gueltige Werte testen?
 

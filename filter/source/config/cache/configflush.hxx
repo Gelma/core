@@ -50,10 +50,6 @@ class ConfigFlush : public BaseLock
 
     protected:
 
-        /** @short  reference to an uno service manager, which can be used
-                    to create own needed services. */
-        css::uno::Reference< css::lang::XMultiServiceFactory > m_xSMGR;
-
         /** @short  holds all listener, which are registered at this instance. */
         ::cppu::OMultiTypeInterfaceContainerHelper m_lListener;
 
@@ -67,7 +63,7 @@ class ConfigFlush : public BaseLock
 
         /** @short  standard ctor.
          */
-        ConfigFlush(const css::uno::Reference< css::lang::XMultiServiceFactory >& xSMGR);
+        ConfigFlush();
 
 
 
@@ -84,25 +80,25 @@ class ConfigFlush : public BaseLock
         // XServiceInfo
 
         virtual OUString SAL_CALL getImplementationName()
-            throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw (css::uno::RuntimeException, std::exception) override;
 
         virtual sal_Bool SAL_CALL supportsService(const OUString& sServiceName)
-            throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw (css::uno::RuntimeException, std::exception) override;
 
         virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-            throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw (css::uno::RuntimeException, std::exception) override;
 
 
         // XRefreshable
 
         virtual void SAL_CALL refresh()
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 
         virtual void SAL_CALL addRefreshListener(const css::uno::Reference< css::util::XRefreshListener >& xListener)
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 
         virtual void SAL_CALL removeRefreshListener(const css::uno::Reference< css::util::XRefreshListener >& xListener)
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 
 
         // interface to register/create this instance as an UNO service

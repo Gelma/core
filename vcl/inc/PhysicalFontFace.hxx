@@ -46,6 +46,23 @@ public:
 // TODO: make cloning cheaper
 
 // abstract base class for physical font faces
+
+// Note about physical and logical fonts:
+//
+// A physical font is a concept we have taken from the Java world
+//
+// From https://docs.oracle.com/javase/tutorial/2d/text/fonts.html
+//
+//      There are two types of fonts: physical fonts and logical fonts.
+//      Physical fonts are the actual font libraries consisting of, for
+//      example, TrueType or PostScript Type 1 fonts. The physical fonts
+//      may be Time, Helvetica, Courier, or any number of other fonts,
+//      including international fonts. Logical fonts are the following
+//      five font families: Serif, SansSerif, Monospaced, Dialog, and
+//      DialogInput. These logical fonts are not actual font libraries.
+//      Instead, the logical font names are mapped to physical fonts by
+//      the Java runtime environment.
+
 class VCL_PLUGIN_PUBLIC PhysicalFontFace : public ImplDevFontAttributes
 {
 public:
@@ -60,7 +77,6 @@ public:
     int                     GetFontMagic() const        { return mnMagic; }
     bool                    IsScalable() const          { return (mnHeight == 0); }
     bool                    CheckMagic( int n ) const   { return (n == mnMagic); }
-    PhysicalFontFace*       GetNextFace() const         { return mpNext; }
 
     bool                    IsBetterMatch( const FontSelectPattern&, FontMatchStatus& ) const;
     sal_Int32               CompareWithSize( const PhysicalFontFace& ) const;
@@ -78,7 +94,6 @@ protected:
 private:
 friend class PhysicalFontFamily;
     const int               mnMagic;    // poor man's RTTI
-    PhysicalFontFace*       mpNext;
 };
 
 #endif // INCLUDED_VCL_INC_PHYSICALFONTFACE_HXX

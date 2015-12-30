@@ -50,13 +50,12 @@ void SwWebGrfShell::InitInterface_Impl()
     GetStaticInterface()->RegisterObjectBar(SFX_OBJECTBAR_OBJECT, RID_WEBGRAPHIC_TOOLBOX);
 }
 
-TYPEINIT1(SwWebGrfShell,SwGrfShell)
 
 SwWebGrfShell::SwWebGrfShell(SwView &_rView) :
     SwGrfShell(_rView)
 
 {
-    SetName(OUString("Graphic"));
+    SetName("Graphic");
     SetHelpId(SW_GRFSHELL);
 }
 

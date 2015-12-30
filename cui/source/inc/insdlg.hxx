@@ -79,40 +79,32 @@ class SvInsertOleDlg : public InsertObjectDialog_Impl
         { return m_pEdFilepath->GetText(); }
     bool IsLinked() const
         { return m_pCbFilelink->IsChecked(); }
-    bool IsCreateNew() const SAL_OVERRIDE
+    bool IsCreateNew() const override
         { return m_pRbNewObject->IsChecked(); }
 
 public:
     SvInsertOleDlg( vcl::Window* pParent,
         const css::uno::Reference < css::embed::XStorage >& xStorage,
-        const SvObjectServerList* pServers = NULL );
+        const SvObjectServerList* pServers = nullptr );
     virtual ~SvInsertOleDlg();
-    virtual void dispose() SAL_OVERRIDE;
-    virtual short Execute() SAL_OVERRIDE;
+    virtual void dispose() override;
+    virtual short Execute() override;
 
     /// get replacement for the iconified embedded object and the mediatype of the replacement
-    css::uno::Reference< css::io::XInputStream > GetIconIfIconified( OUString* pGraphicMediaType ) SAL_OVERRIDE;
+    css::uno::Reference< css::io::XInputStream > GetIconIfIconified( OUString* pGraphicMediaType ) override;
 };
 
 class SvInsertPlugInDialog : public InsertObjectDialog_Impl
 {
 private:
-    VclPtr<Edit> m_pEdFileurl;
-    VclPtr<PushButton> m_pBtnFileurl;
-    VclPtr<VclMultiLineEdit> m_pEdPluginsOptions;
-    INetURLObject* m_pURL;
-    OUString m_aCommands;
-
     DECL_LINK_TYPED(BrowseHdl, Button*, void);
-    OUString GetPlugInFile() const { return m_pEdFileurl->GetText(); }
-    OUString GetPlugInOptions() const { return m_pEdPluginsOptions->GetText(); }
 
 public:
     SvInsertPlugInDialog(vcl::Window* pParent,
         const css::uno::Reference < css::embed::XStorage >& xStorage);
     virtual ~SvInsertPlugInDialog();
-    virtual void dispose() SAL_OVERRIDE;
-    virtual short Execute() SAL_OVERRIDE;
+    virtual void dispose() override;
+    virtual short Execute() override;
 };
 
 class SfxInsertFloatingFrameDialog : public InsertObjectDialog_Impl
@@ -147,8 +139,8 @@ public:
     SfxInsertFloatingFrameDialog( vcl::Window* pParent,
         const css::uno::Reference < css::embed::XEmbeddedObject >& xObj );
     virtual ~SfxInsertFloatingFrameDialog();
-    virtual void dispose() SAL_OVERRIDE;
-    virtual short Execute() SAL_OVERRIDE;
+    virtual void dispose() override;
+    virtual short Execute() override;
 };
 
 #endif // INCLUDED_CUI_SOURCE_INC_INSDLG_HXX

@@ -57,13 +57,11 @@ class AccessibleChartView :
         public impl::AccessibleChartView_Base
 {
 public:
-    AccessibleChartView(
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::uno::XComponentContext >& xContext, SdrView* pView );
+    AccessibleChartView(SdrView* pView );
     virtual ~AccessibleChartView();
 
     // ____ WeakComponentHelper (called from XComponent::dispose()) ____
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
     // ____ lang::XInitialization ____
     // 0: view::XSelectionSupplier offers notifications for selection changes and access to the selection itself
@@ -75,33 +73,33 @@ public:
     virtual void SAL_CALL initialize(
         const ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any >& aArguments )
         throw (::com::sun::star::uno::Exception,
-               ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+               ::com::sun::star::uno::RuntimeException, std::exception) override;
 
     // ____ view::XSelectionChangeListener ____
-    virtual void SAL_CALL selectionChanged( const ::com::sun::star::lang::EventObject& aEvent ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL selectionChanged( const ::com::sun::star::lang::EventObject& aEvent ) throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
     // ________ XEventListener ________
-    virtual void SAL_CALL disposing( const ::com::sun::star::lang::EventObject& Source ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing( const ::com::sun::star::lang::EventObject& Source ) throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
     // ________ XAccessibleContext ________
     virtual OUString SAL_CALL getAccessibleDescription()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
     virtual ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > SAL_CALL getAccessibleParent()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
     virtual sal_Int32 SAL_CALL getAccessibleIndexInParent()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
     virtual OUString SAL_CALL getAccessibleName()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
     virtual sal_Int16 SAL_CALL getAccessibleRole()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
     // ________ XAccessibleComponent ________
-    virtual ::com::sun::star::awt::Rectangle SAL_CALL getBounds() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::awt::Point SAL_CALL getLocationOnScreen() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual ::com::sun::star::awt::Rectangle SAL_CALL getBounds() throw (::com::sun::star::uno::RuntimeException, std::exception) override;
+    virtual ::com::sun::star::awt::Point SAL_CALL getLocationOnScreen() throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
 protected:
     // ________ AccessibleChartElement ________
-    virtual ::com::sun::star::awt::Point   GetUpperLeftOnScreen() const SAL_OVERRIDE;
+    virtual ::com::sun::star::awt::Point   GetUpperLeftOnScreen() const override;
 
 private: // methods
     /** @return the result that m_xWindow->getPosSize() _should_ return.  It
@@ -115,8 +113,6 @@ private: // methods
     ExplicitValueProvider* getExplicitValueProvider();
 
 private: // members
-    ::com::sun::star::uno::Reference<
-                       ::com::sun::star::uno::XComponentContext>    m_xContext;
     ::com::sun::star::uno::WeakReference<
                        ::com::sun::star::view::XSelectionSupplier > m_xSelectionSupplier;
     ::com::sun::star::uno::WeakReference<

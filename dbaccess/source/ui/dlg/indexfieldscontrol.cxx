@@ -40,8 +40,7 @@ namespace dbaui
     class DbaMouseDownListBoxController : public ListBoxCellController
     {
     protected:
-        Link<>  m_aOriginalModifyHdl;
-        Link<>  m_aAdditionalModifyHdl;
+        Link<DbaMouseDownListBoxController&,void>  m_aAdditionalModifyHdl;
 
     public:
         explicit DbaMouseDownListBoxController(ListBoxControl* _pParent)
@@ -49,52 +48,30 @@ namespace dbaui
         {
         }
 
-        void SetAdditionalModifyHdl(const Link<>& _rHdl);
+        void SetAdditionalModifyHdl(const Link<DbaMouseDownListBoxController&,void>& _rHdl);
 
     protected:
-        virtual bool WantMouseEvent() const SAL_OVERRIDE { return true; }
-        virtual void SetModifyHdl(const Link<>& _rHdl) SAL_OVERRIDE;
-
-    private:
-        void implCheckLinks();
-        DECL_LINK( OnMultiplexModify, void* );
+        virtual bool WantMouseEvent() const override { return true; }
+        virtual void callModifyHdl() override;
     };
 
-    void DbaMouseDownListBoxController::SetAdditionalModifyHdl(const Link<>& _rHdl)
+    void DbaMouseDownListBoxController::SetAdditionalModifyHdl(const Link<DbaMouseDownListBoxController&,void>& _rHdl)
     {
         m_aAdditionalModifyHdl = _rHdl;
-        implCheckLinks();
     }
 
-    void DbaMouseDownListBoxController::SetModifyHdl(const Link<>& _rHdl)
+    void DbaMouseDownListBoxController::callModifyHdl()
     {
-        m_aOriginalModifyHdl = _rHdl;
-        implCheckLinks();
-    }
-
-    IMPL_LINK( DbaMouseDownListBoxController, OnMultiplexModify, void*, _pArg )
-    {
-        if (m_aAdditionalModifyHdl.IsSet())
-            m_aAdditionalModifyHdl.Call(_pArg);
-        if (m_aOriginalModifyHdl.IsSet())
-            m_aOriginalModifyHdl.Call(_pArg);
-        return 0L;
-    }
-
-    void DbaMouseDownListBoxController::implCheckLinks()
-    {
-        if (m_aAdditionalModifyHdl.IsSet() || m_aOriginalModifyHdl.IsSet())
-            ListBoxCellController::SetModifyHdl(LINK(this, DbaMouseDownListBoxController, OnMultiplexModify));
-        else
-            ListBoxCellController::SetModifyHdl(Link<>());
+        m_aAdditionalModifyHdl.Call(*this);
+        ListBoxCellController::callModifyHdl();
     }
 
     // IndexFieldsControl
     IndexFieldsControl::IndexFieldsControl( vcl::Window* _pParent, WinBits nWinStyle)
         : EditBrowseBox(_pParent, EditBrowseBoxFlags::SMART_TAB_TRAVEL | EditBrowseBoxFlags::ACTIVATE_ON_BUTTONDOWN, nWinStyle, BROWSER_STANDARD_FLAGS)
         , m_aSeekRow(m_aFields.end())
-        , m_pSortingCell(NULL)
-        , m_pFieldNameCell(NULL)
+        , m_pSortingCell(nullptr)
+        , m_pFieldNameCell(nullptr)
         , m_nMaxColumnsInIndex(0)
         , m_bAddIndexAppendix(false)
     {
@@ -274,12 +251,12 @@ namespace dbaui
     CellController* IndexFieldsControl::GetController(long _nRow, sal_uInt16 _nColumnId)
     {
         if (!IsEnabled())
-            return NULL;
+            return nullptr;
 
         IndexFields::const_iterator aRow;
         bool bNewField = !implGetFieldDesc(_nRow, aRow);
 
-        DbaMouseDownListBoxController* pReturn = NULL;
+        DbaMouseDownListBoxController* pReturn = nullptr;
         switch (_nColumnId)
         {
             case COLUMN_ID_ORDER:
@@ -334,7 +311,7 @@ namespace dbaui
                         OIndexField aNewField;
                         aNewField.sFieldName = sFieldSelected;
                         m_aFields.push_back(aNewField);
-                        RowInserted(GetRowCount(), 1, true);
+                        RowInserted(GetRowCount());
                     }
                 }
                 else
@@ -406,12 +383,13 @@ namespace dbaui
         }
     }
 
-    IMPL_LINK( IndexFieldsControl, OnListEntrySelected, ListBox*, _pBox )
+    IMPL_LINK_TYPED( IndexFieldsControl, OnListEntrySelected, DbaMouseDownListBoxController&, rController, void )
     {
-        if (!_pBox->IsTravelSelect() && m_aModifyHdl.IsSet())
-            m_aModifyHdl.Call(this);
+        ListBoxControl& rListBox = rController.GetListBox();
+        if (!rListBox.IsTravelSelect())
+            m_aModifyHdl.Call(*this);
 
-        if (_pBox == m_pFieldNameCell)
+        if (&rListBox == m_pFieldNameCell.get())
         {   // a field has been selected
             if (GetCurRow() >= GetRowCount() - 2)
             {   // and we're in one of the last two rows
@@ -425,21 +403,20 @@ namespace dbaui
                 {   // in the last row, an non-empty string has been selected
                     // -> insert a new row
                     m_aFields.push_back(OIndexField());
-                    RowInserted(GetRowCount(), 1);
+                    RowInserted(GetRowCount());
                     Invalidate(GetRowRectPixel(nCurrentRow));
                 }
                 else if (sSelectedEntry.isEmpty() && (nCurrentRow == rowCount - 2))
                 {   // in the (last-1)th row, an empty entry has been selected
                     // -> remove the last row
                     m_aFields.erase(m_aFields.end() - 1);
-                    RowRemoved(GetRowCount() - 1, 1);
+                    RowRemoved(GetRowCount() - 1);
                     Invalidate(GetRowRectPixel(nCurrentRow));
                 }
             }
 
             SaveModified();
         }
-        return 0L;
     }
     OUString IndexFieldsControl::GetCellText(long _nRow,sal_uInt16 nColId) const
     {

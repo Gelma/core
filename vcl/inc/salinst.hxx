@@ -28,6 +28,7 @@
 #include "tools/solar.h"
 #include "displayconnectiondispatch.hxx"
 #include "vcl/dllapi.h"
+#include "vcl/salgtype.hxx"
 #include <sal/types.h>
 
 #include "rtl/ref.hxx"
@@ -57,6 +58,11 @@ struct SystemGraphicsData;
 struct SystemWindowData;
 class Menu;
 enum class VclInputFlags;
+enum class SalFrameStyleFlags;
+
+enum SalYieldResult { EVENT, TIMEOUT };
+
+typedef struct _cairo_font_options cairo_font_options_t;
 
 class VCL_PLUGIN_PUBLIC SalInstance
 {
@@ -72,8 +78,8 @@ public:
 
     // Frame
     // DisplayName for Unix ???
-    virtual SalFrame*       CreateChildFrame( SystemParentData* pParent, sal_uLong nStyle ) = 0;
-    virtual SalFrame*       CreateFrame( SalFrame* pParent, sal_uLong nStyle ) = 0;
+    virtual SalFrame*       CreateChildFrame( SystemParentData* pParent, SalFrameStyleFlags nStyle ) = 0;
+    virtual SalFrame*       CreateFrame( SalFrame* pParent, SalFrameStyleFlags nStyle ) = 0;
     virtual void            DestroyFrame( SalFrame* pFrame ) = 0;
 
     // Object (System Child Window)
@@ -89,7 +95,7 @@ public:
     virtual SalVirtualDevice*
                             CreateVirtualDevice( SalGraphics* pGraphics,
                                                  long &rDX, long &rDY,
-                                                 sal_uInt16 nBitCount, const SystemGraphicsData *pData = NULL ) = 0;
+                                                 DeviceFormat eFormat, const SystemGraphicsData *pData = nullptr ) = 0;
 
     // Printer
     // pSetupData->mpDriverData can be 0
@@ -124,10 +130,13 @@ public:
     // return true, if yield mutex is owned by this thread, else false
     virtual bool            CheckYieldMutex() = 0;
 
-    // wait next event and dispatch
-    // must returned by UserEvent (SalFrame::PostEvent)
-    // and timer
-    virtual void            DoYield(bool bWait, bool bHandleAllCurrentEvents, sal_uLong nReleased) = 0;
+    /**
+     * Wait for the next event (if @bWait) and dispatch it,
+     * includes posted events, and timers.
+     * If @bHandleAllCurrentEvents - dispatch multiple posted
+     * user events. Returns true if events needed processing.
+     */
+    virtual SalYieldResult  DoYield(bool bWait, bool bHandleAllCurrentEvents, sal_uLong nReleased) = 0;
     virtual bool            AnyInput( VclInputFlags nType ) = 0;
 
     // menus
@@ -168,6 +177,11 @@ public:
     virtual void            updatePrinterUpdate() {}
     virtual void            jobStartedPrinterUpdate() {}
     virtual void            jobEndedPrinterUpdate() {}
+
+    /// get information about underlying versions
+    virtual OUString        getOSVersion() { return OUString("-"); }
+
+    virtual const cairo_font_options_t* GetCairoFontOptions() { return nullptr; }
 };
 
 // called from SVMain

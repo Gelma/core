@@ -115,7 +115,7 @@ DefaultFontConfiguration::DefaultFontConfiguration()
             aArgs.getArray()[0] <<= aVal;
             m_xConfigAccess =
                 Reference< XNameAccess >(
-                    m_xConfigProvider->createInstanceWithArguments( OUString( "com.sun.star.configuration.ConfigurationAccess" ),
+                    m_xConfigProvider->createInstanceWithArguments( "com.sun.star.configuration.ConfigurationAccess",
                                                                     aArgs ),
                     UNO_QUERY );
             if( m_xConfigAccess.is() )
@@ -376,7 +376,7 @@ FontSubstConfiguration::FontSubstConfiguration() :
         aArgs.getArray()[0] <<= aVal;
         m_xConfigAccess =
             Reference< XNameAccess >(
-                m_xConfigProvider->createInstanceWithArguments( OUString( "com.sun.star.configuration.ConfigurationAccess" ),
+                m_xConfigProvider->createInstanceWithArguments( "com.sun.star.configuration.ConfigurationAccess",
                                                                 aArgs ),
                 UNO_QUERY );
         if( m_xConfigAccess.is() )
@@ -444,7 +444,7 @@ static const char* const aImplKillLeadingList[] =
     "ipa",
     "sazanami",
     "kochi",
-    NULL
+    nullptr
 };
 
 static const char* const aImplKillTrailingList[] =
@@ -494,14 +494,14 @@ static const char* const aImplKillTrailingList[] =
     "24cpi",
     "scale",
     "pc",
-    NULL
+    nullptr
 };
 
 static const char* const aImplKillTrailingWithExceptionsList[] =
 {
-    "ce", "monospace", "oldface", NULL,
-    "ps", "caps", NULL,
-    NULL
+    "ce", "monospace", "oldface", nullptr,
+    "ps", "caps", nullptr,
+    nullptr
 };
 
 struct ImplFontAttrWeightSearchData
@@ -527,7 +527,7 @@ static ImplFontAttrWeightSearchData const aImplWeightAttrSearchList[] =
 {   "ultralight",           WEIGHT_ULTRALIGHT },
 {   "light",                WEIGHT_LIGHT },
 {   "medium",               WEIGHT_MEDIUM },
-{   NULL,                   WEIGHT_DONTKNOW },
+{   nullptr,                   WEIGHT_DONTKNOW },
 };
 
 struct ImplFontAttrWidthSearchData
@@ -548,7 +548,7 @@ static ImplFontAttrWidthSearchData const aImplWidthAttrSearchList[] =
 {   "condensed",            WIDTH_CONDENSED },
 {   "cond",                 WIDTH_CONDENSED },
 {   "cn",                   WIDTH_CONDENSED },
-{   NULL,                   WIDTH_DONTKNOW },
+{   nullptr,                   WIDTH_DONTKNOW },
 };
 
 struct ImplFontAttrTypeSearchData
@@ -618,7 +618,7 @@ static ImplFontAttrTypeSearchData const aImplTypeAttrSearchList[] =
 {   "ms",                   ImplFontAttrs::None },
 {   "cpi",                  ImplFontAttrs::None },
 {   "no",                   ImplFontAttrs::None },
-{   NULL,                   ImplFontAttrs::None },
+{   nullptr,                   ImplFontAttrs::None },
 };
 
 static bool ImplKillLeading( OUString& rName, const char* const* ppStr )
@@ -872,7 +872,7 @@ static const enum_convert pWidthNames[] =
     { "ultraexpanded", WIDTH_ULTRA_EXPANDED }
 };
 
-void FontSubstConfiguration::fillSubstVector( const com::sun::star::uno::Reference< XNameAccess >& rFont,
+void FontSubstConfiguration::fillSubstVector( const css::uno::Reference< XNameAccess >& rFont,
                                               const OUString& rType,
                                               std::vector< OUString >& rSubstVector ) const
 {
@@ -921,7 +921,7 @@ void FontSubstConfiguration::fillSubstVector( const com::sun::star::uno::Referen
     }
 }
 
-FontWeight FontSubstConfiguration::getSubstWeight( const com::sun::star::uno::Reference< XNameAccess >& rFont,
+FontWeight FontSubstConfiguration::getSubstWeight( const css::uno::Reference< XNameAccess >& rFont,
                                                    const OUString& rType ) const
 {
     int weight = -1;
@@ -953,7 +953,7 @@ FontWeight FontSubstConfiguration::getSubstWeight( const com::sun::star::uno::Re
     return (FontWeight)( weight >= 0 ? pWeightNames[weight].nEnum : WEIGHT_DONTKNOW );
 }
 
-FontWidth FontSubstConfiguration::getSubstWidth( const com::sun::star::uno::Reference< XNameAccess >& rFont,
+FontWidth FontSubstConfiguration::getSubstWidth( const css::uno::Reference< XNameAccess >& rFont,
                                                  const OUString& rType ) const
 {
     int width = -1;
@@ -985,31 +985,30 @@ FontWidth FontSubstConfiguration::getSubstWidth( const com::sun::star::uno::Refe
     return (FontWidth)( width >= 0 ? pWidthNames[width].nEnum : WIDTH_DONTKNOW );
 }
 
-ImplFontAttrs FontSubstConfiguration::getSubstType( const com::sun::star::uno::Reference< XNameAccess >& rFont,
+ImplFontAttrs FontSubstConfiguration::getSubstType( const css::uno::Reference< XNameAccess >& rFont,
                                                     const OUString& rType ) const
 {
-    unsigned long type = 0;
+    sal_uLong type = 0;
     try
     {
         Any aAny = rFont->getByName( rType );
-        if( aAny.getValueTypeClass() == TypeClass_STRING )
+        if( aAny.getValueTypeClass() != TypeClass_STRING )
+            return ImplFontAttrs::None;
+        const OUString* pLine = static_cast<const OUString*>(aAny.getValue());
+        if( pLine->isEmpty() )
+            return ImplFontAttrs::None;
+        sal_Int32 nIndex = 0;
+        while( nIndex != -1 )
         {
-            const OUString* pLine = static_cast<const OUString*>(aAny.getValue());
-            if( !pLine->isEmpty() )
-            {
-                sal_Int32 nIndex = 0;
-                while( nIndex != -1 )
+            OUString aToken( pLine->getToken( 0, ',', nIndex ) );
+            for( int k = 0; k < 32; k++ )
+                if( aToken.equalsIgnoreAsciiCaseAscii( pAttribNames[k] ) )
                 {
-                    OUString aToken( pLine->getToken( 0, ',', nIndex ) );
-                    for( int k = 0; k < 32; k++ )
-                        if( aToken.equalsIgnoreAsciiCaseAscii( pAttribNames[k] ) )
-                        {
-                            type |= 1 << k;
-                            break;
-                        }
+                    type |= sal_uLong(1) << k;
+                    break;
                 }
-            }
         }
+        assert(((type & ~o3tl::typed_flags<ImplFontAttrs>::mask) == 0) && "invalid font attributes");
     }
     catch (const NoSuchElementException&)
     {
@@ -1104,7 +1103,7 @@ const FontNameAttr* FontSubstConfiguration::getSubstInfo( const OUString& rFontN
         const LanguageTag& rLanguageTag ) const
 {
     if( rFontName.isEmpty() )
-        return NULL;
+        return nullptr;
 
     // search if a  (language dep.) replacement table for the given font exists
     // fallback is english
@@ -1142,7 +1141,7 @@ const FontNameAttr* FontSubstConfiguration::getSubstInfo( const OUString& rFontN
             }
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

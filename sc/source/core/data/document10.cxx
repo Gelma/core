@@ -103,7 +103,7 @@ bool ScDocument::CopyOneCellFromClip(
         const ScPatternAttr* pAttr = pClipDoc->GetPattern(aSrcPos);
         rCxt.setSingleCellPattern(nColOffset, pAttr);
 
-        if ((rCxt.getInsertFlag() & (IDF_NOTE | IDF_ADDNOTES)) != IDF_NONE)
+        if ((rCxt.getInsertFlag() & (InsertDeleteFlags::NOTE | InsertDeleteFlags::ADDNOTES)) != InsertDeleteFlags::NONE)
             rCxt.setSingleCellNote(nColOffset, pClipDoc->GetNote(aSrcPos));
 
         ScColumn& rSrcCol = pSrcTab->aCol[aSrcPos.Col()];
@@ -118,7 +118,7 @@ bool ScDocument::CopyOneCellFromClip(
     for (SCTAB i = rCxt.getTabStart(); i <= nTabEnd && i < static_cast<SCTAB>(maTabs.size()); ++i)
     {
         maTabs[i]->CopyOneCellFromClip(rCxt, nCol1, nRow1, nCol2, nRow2);
-        if (rCxt.getInsertFlag() & IDF_ATTRIB)
+        if (rCxt.getInsertFlag() & InsertDeleteFlags::ATTRIB)
             for (SCROW nRow = nRow1; nRow <= nRow2; ++nRow)
             {
                 maTabs[i]->CopyConditionalFormat(nCol1, nRow, nCol2, nRow, nCol1 - aClipRange.aStart.Col(),
@@ -168,7 +168,7 @@ std::set<Color> ScDocument::GetDocColors()
         for (sal_uInt32 j=0; j<nCount; j++)
         {
             const SvxColorItem *pItem = static_cast<const SvxColorItem*>(pPool->GetItem2(nAttrib, j));
-            if (pItem == 0)
+            if (pItem == nullptr)
                 continue;
             Color aColor( pItem->GetValue() );
             if (COL_AUTO != aColor.GetColor())
@@ -395,7 +395,7 @@ class StartNeededListenersHandler : std::unary_function<ScTable*, void>
 {
     std::shared_ptr<sc::StartListeningContext> mpCxt;
 public:
-    StartNeededListenersHandler( ScDocument& rDoc ) : mpCxt(new sc::StartListeningContext(rDoc)) {}
+    explicit StartNeededListenersHandler( ScDocument& rDoc ) : mpCxt(new sc::StartListeningContext(rDoc)) {}
 
     void operator() (ScTable* p)
     {

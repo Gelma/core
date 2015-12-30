@@ -68,8 +68,12 @@ public class SQLQueryComposer
 
     public String getSelectClause(boolean _baddAliasFieldNames) throws SQLException
     {
+        // getFromClause() must be called first to populate composedCommandNames,
+        // but it's idempotent, so let's call it now in case the caller didn't already:
+        getFromClause();
+
         String sSelectBaseClause = "SELECT ";
-        String sSelectClause = sSelectBaseClause;
+        StringBuilder sb = new StringBuilder(sSelectBaseClause);
         for (int i = 0; i < CurDBMetaData.FieldColumns.length; i++)
         {
             if (addtoSelectClause(CurDBMetaData.FieldColumns[i].getDisplayFieldName()))
@@ -77,23 +81,24 @@ public class SQLQueryComposer
                 int iAggregate = CurDBMetaData.getAggregateIndex(CurDBMetaData.FieldColumns[i].getDisplayFieldName());
                 if (iAggregate > -1)
                 {
-                    sSelectClause += CurDBMetaData.AggregateFieldNames[iAggregate][1] + "(" + getComposedAliasFieldName(CurDBMetaData.AggregateFieldNames[iAggregate][0]) + ")";
+                    sb.append(CurDBMetaData.AggregateFieldNames[iAggregate][1]).append("(").append(getComposedAliasDisplayName(CurDBMetaData.AggregateFieldNames[iAggregate][0])).append(")");
                     if (_baddAliasFieldNames)
                     {
-                        sSelectClause += getAliasFieldNameClause(CurDBMetaData.AggregateFieldNames[iAggregate][0]);
+                        sb.append(getAliasFieldNameClause(CurDBMetaData.AggregateFieldNames[iAggregate][0]));
                     }
                 }
                 else
                 {
-                    sSelectClause += getComposedAliasFieldName(CurDBMetaData.FieldColumns[i].getDisplayFieldName());
+                    sb.append(getComposedAliasDisplayName(CurDBMetaData.FieldColumns[i].getDisplayFieldName()));
                     if (_baddAliasFieldNames)
                     {
-                        sSelectClause += getAliasFieldNameClause(CurDBMetaData.FieldColumns[i].getDisplayFieldName());
+                        sb.append(getAliasFieldNameClause(CurDBMetaData.FieldColumns[i].getDisplayFieldName()));
                     }
                 }
-                sSelectClause += ", ";
+                sb.append(", ");
             }
         }
+        String sSelectClause = sb.toString();
         // TODO: little bit unhandy version of remove the append 'comma' at the end
         if (sSelectClause.equals(sSelectBaseClause))
         {
@@ -169,7 +174,6 @@ public class SQLQueryComposer
 
     private void appendSortingcriteria(boolean _baddAliasFieldNames) throws SQLException
     {
-        String sOrder = "";
         m_queryComposer.setOrder("");
         for (int i = 0; i < CurDBMetaData.getSortFieldNames().length; i++)
         {
@@ -177,12 +181,12 @@ public class SQLQueryComposer
             int iAggregate = CurDBMetaData.getAggregateIndex(sSortValue);
             if (iAggregate > -1)
             {
-                sOrder = m_xQueryAnalyzer.getOrder();
+                String sOrder = m_xQueryAnalyzer.getOrder();
                 if (sOrder.length() > 0)
                 {
                     sOrder += ", ";
                 }
-                sOrder += CurDBMetaData.AggregateFieldNames[iAggregate][1] + "(" + getComposedAliasFieldName(CurDBMetaData.AggregateFieldNames[iAggregate][0]) + ")";
+                sOrder += CurDBMetaData.AggregateFieldNames[iAggregate][1] + "(" + getComposedAliasDisplayName(CurDBMetaData.AggregateFieldNames[iAggregate][0]) + ")";
                 sOrder += " " + CurDBMetaData.getSortFieldNames()[i][1];
                 m_queryComposer.setOrder(sOrder);
             }
@@ -190,10 +194,7 @@ public class SQLQueryComposer
             {
                 appendSortingCriterion(i, _baddAliasFieldNames);
             }
-            sOrder = m_xQueryAnalyzer.getOrder();
         }
-        // just for debug!
-        sOrder = m_queryComposer.getOrder();
     }
 
     private void appendGroupByColumns(boolean _baddAliasFieldNames) throws SQLException
@@ -311,9 +312,27 @@ public class SQLQueryComposer
         }
     }
 
-    private String getComposedAliasFieldName(String _fieldname)
+    private String getComposedAliasDisplayName(String _fieldname)
     {
         FieldColumn CurFieldColumn = CurDBMetaData.getFieldColumnByDisplayName(_fieldname);
+        final String curCommandName = CurFieldColumn.getCommandName();
+        final String curFieldName = CurFieldColumn.getFieldName();
+        CommandName curComposedCommandName = getComposedCommandByDisplayName(curCommandName);
+        if (curComposedCommandName == null)
+        {
+            //return _fieldname;
+            if ( curCommandName.length() > 0 )
+                return quoteName(curCommandName) + "." + quoteName(curFieldName);
+            else
+                return quoteName(curFieldName);
+        }
+        String curAliasName = curComposedCommandName.getAliasName();
+        return quoteName(curAliasName) + "." + quoteName(curFieldName);
+    }
+
+    private String getComposedAliasFieldName(String _fieldname)
+    {
+        FieldColumn CurFieldColumn = CurDBMetaData.getFieldColumnByFieldName(_fieldname);
         final String curCommandName = CurFieldColumn.getCommandName();
         final String curFieldName = CurFieldColumn.getFieldName();
         CommandName curComposedCommandName = getComposedCommandByDisplayName(curCommandName);

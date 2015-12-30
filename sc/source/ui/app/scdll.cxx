@@ -24,7 +24,6 @@
 #include <svx/tbxcolor.hxx>
 
 #include <comphelper/classids.hxx>
-#include <sfx2/taskpane.hxx>
 #include <sfx2/sidebar/SidebarChildWindow.hxx>
 #include <sfx2/docfilt.hxx>
 #include <sfx2/fcontnr.hxx>
@@ -119,7 +118,7 @@ void ScDLL::Init()
     ScModule* pMod = new ScModule( &ScDocShell::Factory() );
     (*ppShlPtr) = pMod;
 
-    ScDocShell::Factory().SetDocumentServiceName( OUString( "com.sun.star.sheet.SpreadsheetDocument" ) );
+    ScDocShell::Factory().SetDocumentServiceName( "com.sun.star.sheet.SpreadsheetDocument" );
 
     // Not until the ResManager is initialized
     // The AppOptions must be initialized not until after ScGlobal::Init
@@ -148,9 +147,6 @@ void ScDLL::Init()
     ScMediaShell        ::RegisterInterface(pMod);
     ScPageBreakShell    ::RegisterInterface(pMod);
 
-    SfxRecentFilesToolBoxControl::RegisterControl(SID_OPEN_CALC, pMod);
-    SfxSaveAsToolBoxControl::RegisterControl(SID_SAVEDOC, pMod );
-
     // Own Controller
     ScZoomSliderControl ::RegisterControl(SID_PREVIEW_SCALINGFACTOR, pMod);
 
@@ -166,6 +162,7 @@ void ScDLL::Init()
     SvxFontNameToolBoxControl       ::RegisterControl(SID_ATTR_CHAR_FONT,       pMod);
     SvxColorToolBoxControl          ::RegisterControl(SID_ATTR_CHAR_COLOR,      pMod);
     SvxColorToolBoxControl          ::RegisterControl(SID_BACKGROUND_COLOR,     pMod);
+    SvxColorToolBoxControl          ::RegisterControl(SID_ATTR_CHAR_BACK_COLOR, pMod);
     SvxFrameToolBoxControl          ::RegisterControl(SID_ATTR_BORDER,          pMod);
     SvxFrameLineStyleToolBoxControl ::RegisterControl(SID_FRAME_LINESTYLE,      pMod);
     SvxColorToolBoxControl          ::RegisterControl(SID_FRAME_LINECOLOR,      pMod);
@@ -195,7 +192,6 @@ void ScDLL::Init()
     ::avmedia::MediaToolBoxControl::RegisterControl( SID_AVMEDIA_TOOLBOX, pMod );
 
     // Common SFX Controller
-    ::sfx2::TaskPaneWrapper::RegisterChildWindow( false, pMod );
     ::sfx2::sidebar::SidebarChildWindow::RegisterChildWindow(false, pMod);
 
     // SvxStatusBar Controller
@@ -242,6 +238,7 @@ void ScDLL::Init()
     ScCovarianceDialogWrapper           ::RegisterChildWindow(false, pMod);
     ScExponentialSmoothingDialogWrapper ::RegisterChildWindow(false, pMod);
     ScMovingAverageDialogWrapper        ::RegisterChildWindow(false, pMod);
+    ScRegressionDialogWrapper           ::RegisterChildWindow(false, pMod);
     ScTTestDialogWrapper                ::RegisterChildWindow(false, pMod);
     ScFTestDialogWrapper                ::RegisterChildWindow(false, pMod);
     ScZTestDialogWrapper                ::RegisterChildWindow(false, pMod);
@@ -276,7 +273,7 @@ void ScDLL::Init()
     // Add 3DObject Factory
     E3dObjFactory();
 
-    // Add ::com::sun::star::form::component::FormObject Factory
+    // Add css::form::component::FormObject Factory
     FmFormObjFactory();
 
     pMod->PutItem( SfxUInt16Item( SID_ATTR_METRIC, sal::static_int_cast<sal_uInt16>(pMod->GetAppOptions().GetAppMetric()) ) );

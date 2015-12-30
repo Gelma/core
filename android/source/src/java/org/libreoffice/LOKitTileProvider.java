@@ -55,7 +55,7 @@ public class LOKitTileProvider implements TileProvider {
     public LOKitTileProvider(GeckoLayerClient layerClient, Document.MessageCallback messageCallback, String input) {
         mLayerClient = layerClient;
         mMessageCallback = messageCallback;
-        mDPI = (float) LOKitShell.getDpi();
+        mDPI = LOKitShell.getDpi();
         mTileWidth = pixelToTwip(TILE_SIZE, mDPI);
         mTileHeight = pixelToTwip(TILE_SIZE, mDPI);
 
@@ -124,12 +124,23 @@ public class LOKitTileProvider implements TileProvider {
 
         mDocument.setPart(0);
 
+        setupDocumentFonts();
+
         LOKitShell.getMainHandler().post(new Runnable() {
             @Override
             public void run() {
                 LibreOfficeMainActivity.mAppContext.getDocumentPartViewListAdapter().notifyDataSetChanged();
             }
         });
+    }
+
+    private void setupDocumentFonts() {
+        String values = mDocument.getCommandValues(".uno:CharFontName");
+        if (values == null || values.isEmpty())
+            return;
+
+        LOKitShell.getFontController().parseJson(values);
+        LOKitShell.getFontController().setupFontViews();
     }
 
     private String getGenericPartName(int i) {
@@ -388,41 +399,42 @@ public class LOKitTileProvider implements TileProvider {
             String keyString = keyEvent.getCharacters();
             for (int i = 0; i < keyString.length(); i++) {
                 int codePoint = keyString.codePointAt(i);
-                mDocument.postKeyEvent(Office.KEY_PRESS, codePoint, getKeyCode(keyEvent));
+                mDocument.postKeyEvent(Document.KEY_EVENT_PRESS, codePoint, getKeyCode(keyEvent));
             }
         } else if (keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
-            mDocument.postKeyEvent(Office.KEY_PRESS, getCharCode(keyEvent), getKeyCode(keyEvent));
+            mDocument.postKeyEvent(Document.KEY_EVENT_PRESS, getCharCode(keyEvent), getKeyCode(keyEvent));
         } else if (keyEvent.getAction() == KeyEvent.ACTION_UP) {
-            mDocument.postKeyEvent(Office.KEY_RELEASE, getCharCode(keyEvent), getKeyCode(keyEvent));
+            mDocument.postKeyEvent(Document.KEY_EVENT_RELEASE, getCharCode(keyEvent), getKeyCode(keyEvent));
         }
     }
 
-    private void mouseButton(int type, PointF inDocument, int numberOfClicks) {
+    private void mouseButton(int type, PointF inDocument, int numberOfClicks, float zoomFactor) {
         int x = (int) pixelToTwip(inDocument.x, mDPI);
         int y = (int) pixelToTwip(inDocument.y, mDPI);
 
-        mDocument.postMouseEvent(type, x, y, numberOfClicks);
+        mDocument.setClientZoom(TILE_SIZE, TILE_SIZE, (int) (mTileWidth / zoomFactor), (int) (mTileHeight / zoomFactor));
+        mDocument.postMouseEvent(type, x, y, numberOfClicks, Document.MOUSE_BUTTON_LEFT, Document.KEYBOARD_MODIFIER_NONE);
     }
 
     /**
      * @see TileProvider#mouseButtonDown(android.graphics.PointF, int)
      */
     @Override
-    public void mouseButtonDown(PointF documentCoordinate, int numberOfClicks) {
-        mouseButton(Document.MOUSE_BUTTON_DOWN, documentCoordinate, numberOfClicks);
+    public void mouseButtonDown(PointF documentCoordinate, int numberOfClicks, float zoomFactor) {
+        mouseButton(Document.MOUSE_EVENT_BUTTON_DOWN, documentCoordinate, numberOfClicks, zoomFactor);
     }
 
     /**
      * @see TileProvider#mouseButtonUp(android.graphics.PointF, int)
      */
     @Override
-    public void mouseButtonUp(PointF documentCoordinate, int numberOfClicks) {
-        mouseButton(Document.MOUSE_BUTTON_UP, documentCoordinate, numberOfClicks);
+    public void mouseButtonUp(PointF documentCoordinate, int numberOfClicks, float zoomFactor) {
+        mouseButton(Document.MOUSE_EVENT_BUTTON_UP, documentCoordinate, numberOfClicks, zoomFactor);
     }
 
     @Override
-    public void postUnoCommand(String command) {
-        mDocument.postUnoCommand(command);
+    public void postUnoCommand(String command, String arguments) {
+        mDocument.postUnoCommand(command, arguments);
     }
 
     private void setTextSelection(int type, PointF documentCoordinate) {

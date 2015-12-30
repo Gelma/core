@@ -132,11 +132,10 @@ uno::Reference< container::XNameAccess > MimeConfigurationHelper::GetConfigurati
         aPathProp.Value <<= aPath;
         aArgs[0] <<= aPathProp;
 
-        xConfig = uno::Reference< container::XNameAccess >(
-                            m_xConfigProvider->createInstanceWithArguments(
-                                OUString( "com.sun.star.configuration.ConfigurationAccess" ),
-                                aArgs ),
-                            uno::UNO_QUERY );
+        xConfig.set( m_xConfigProvider->createInstanceWithArguments(
+                        "com.sun.star.configuration.ConfigurationAccess",
+                        aArgs ),
+                     uno::UNO_QUERY );
     }
     catch( uno::Exception& )
     {}
@@ -151,7 +150,7 @@ uno::Reference< container::XNameAccess > MimeConfigurationHelper::GetObjConfigur
 
     if ( !m_xObjectConfig.is() )
         m_xObjectConfig = GetConfigurationByPath(
-                                         OUString( "/org.openoffice.Office.Embedding/Objects" ) );
+                                         "/org.openoffice.Office.Embedding/Objects" );
 
     return m_xObjectConfig;
 }
@@ -163,7 +162,7 @@ uno::Reference< container::XNameAccess > MimeConfigurationHelper::GetVerbsConfig
 
     if ( !m_xVerbsConfig.is() )
         m_xVerbsConfig = GetConfigurationByPath(
-                                        OUString( "/org.openoffice.Office.Embedding/Verbs" ));
+                                        "/org.openoffice.Office.Embedding/Verbs");
 
     return m_xVerbsConfig;
 }
@@ -175,7 +174,7 @@ uno::Reference< container::XNameAccess > MimeConfigurationHelper::GetMediaTypeCo
 
     if ( !m_xMediaTypeConfig.is() )
         m_xMediaTypeConfig = GetConfigurationByPath(
-                    OUString( "/org.openoffice.Office.Embedding/MimeTypeClassIDRelations" ));
+                    "/org.openoffice.Office.Embedding/MimeTypeClassIDRelations");
 
     return m_xMediaTypeConfig;
 }
@@ -231,9 +230,7 @@ OUString MimeConfigurationHelper::GetDocServiceNameFromMediaType( const OUString
         try
         {
             // make query for all types matching the properties
-            uno::Sequence < beans::NamedValue > aSeq( 1 );
-            aSeq[0].Name = "MediaType";
-            aSeq[0].Value <<= aMediaType;
+            uno::Sequence < beans::NamedValue > aSeq { { "MediaType", css::uno::makeAny(aMediaType) } };
 
             uno::Reference < container::XEnumeration > xEnum = xTypeCFG->createSubSetEnumerationByProperties( aSeq );
             while ( xEnum->hasMoreElements() )
@@ -535,8 +532,7 @@ OUString MimeConfigurationHelper::GetFactoryNameByDocumentName( const OUString& 
                     OUString aEntryDocName;
 
                     if ( ( xObjConfig->getByName( aClassIDs[nInd] ) >>= xObjectProps ) && xObjectProps.is()
-                      && ( xObjectProps->getByName(
-                                  OUString( "ObjectDocumentServiceName" ) ) >>= aEntryDocName )
+                      && ( xObjectProps->getByName( "ObjectDocumentServiceName" ) >>= aEntryDocName )
                       && aEntryDocName == aDocName )
                     {
                         xObjectProps->getByName("ObjectFactory") >>= aResult;
@@ -723,11 +719,11 @@ OUString MimeConfigurationHelper::GetDefaultFilterFromServiceName( const OUStrin
                 GetFilterFactory(),
                 uno::UNO_QUERY_THROW );
 
-            uno::Sequence< beans::NamedValue > aSearchRequest( 2 );
-            aSearchRequest[0].Name = "DocumentService";
-            aSearchRequest[0].Value <<= aServiceName;
-            aSearchRequest[1].Name = "FileFormatVersion";
-            aSearchRequest[1].Value <<= nVersion;
+            uno::Sequence< beans::NamedValue > aSearchRequest
+            {
+                { "DocumentService", css::uno::makeAny(aServiceName) },
+                { "FileFormatVersion", css::uno::makeAny(nVersion) }
+            };
 
             uno::Reference< container::XEnumeration > xFilterEnum =
                                             xFilterQuery->createSubSetEnumerationByProperties( aSearchRequest );
@@ -805,11 +801,11 @@ OUString MimeConfigurationHelper::GetExportFilterFromImportFilter( const OUStrin
                     OSL_ENSURE( !aDocumentServiceName.isEmpty() && !aTypeName.isEmpty(), "Incomplete filter data!" );
                     if ( !(aDocumentServiceName.isEmpty() || aTypeName.isEmpty()) )
                     {
-                        uno::Sequence< beans::NamedValue > aSearchRequest( 2 );
-                        aSearchRequest[0].Name = "Type";
-                        aSearchRequest[0].Value <<= aTypeName;
-                        aSearchRequest[1].Name = "DocumentService";
-                        aSearchRequest[1].Value <<= aDocumentServiceName;
+                        uno::Sequence< beans::NamedValue > aSearchRequest
+                        {
+                            { "Type", css::uno::makeAny(aTypeName) },
+                            { "DocumentService", css::uno::makeAny(aDocumentServiceName) }
+                        };
 
                         uno::Sequence< beans::PropertyValue > aExportFilterProps = SearchForFilter(
                             uno::Reference< container::XContainerQuery >( xFilterFactory, uno::UNO_QUERY_THROW ),

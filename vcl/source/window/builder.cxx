@@ -7,16 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <com/sun/star/frame/ModuleManager.hpp>
-#include <com/sun/star/frame/XModuleManager2.hpp>
-#include <com/sun/star/frame/theUICommandDescription.hpp>
 #include <com/sun/star/packages/zip/ZipFileAccess.hpp>
-#include <com/sun/star/ui/ImageType.hpp>
-#include <com/sun/star/ui/XImageManager.hpp>
-#include <com/sun/star/ui/XModuleUIConfigurationManagerSupplier.hpp>
-#include <com/sun/star/ui/XUIConfigurationManager.hpp>
-#include <com/sun/star/ui/XUIConfigurationManagerSupplier.hpp>
-#include <com/sun/star/ui/theModuleUIConfigurationManagerSupplier.hpp>
 
 #include <comphelper/processfactory.hxx>
 #include <osl/module.hxx>
@@ -43,6 +34,7 @@
 #include <vcl/vclmedit.hxx>
 #include <vcl/settings.hxx>
 #include <vcl/slider.hxx>
+#include <vcl/commandinfoprovider.hxx>
 #include <svdata.hxx>
 #include <svids.hrc>
 #include <window.h>
@@ -376,9 +368,9 @@ VclBuilder::VclBuilder(vcl::Window *pParent, const OUString& sUIDir, const OUStr
     for (std::vector<ButtonImageWidgetMap>::iterator aI = m_pParserState->m_aButtonImageWidgetMaps.begin(),
          aEnd = m_pParserState->m_aButtonImageWidgetMaps.end(); aI != aEnd; ++aI)
     {
-        PushButton *pTargetButton = NULL;
-        RadioButton *pTargetRadio = NULL;
-        Button *pTarget = NULL;
+        PushButton *pTargetButton = nullptr;
+        RadioButton *pTargetRadio = nullptr;
+        Button *pTarget = nullptr;
 
         if (!aI->m_bRadio)
         {
@@ -888,15 +880,15 @@ namespace
         if (aCommand.isEmpty())
             return;
 
-        uno::Reference<uno::XComponentContext> xContext(comphelper::getProcessComponentContext());
-        uno::Reference<frame::XModuleManager2> xModuleManager(frame::ModuleManager::create(xContext));
-        OUString aModuleId(xModuleManager->identify(rFrame));
-
-        OUString aLabel(VclBuilder::getCommandLabel(aCommand, xContext, aModuleId));
+        OUString aLabel(vcl::CommandInfoProvider::Instance().GetLabelForCommand(aCommand, rFrame));
         if (!aLabel.isEmpty())
             pButton->SetText(aLabel);
 
-        Image aImage(VclBuilder::getCommandImage(aCommand, /* bLarge = */ false, xContext, rFrame, aModuleId));
+        OUString aTooltip(vcl::CommandInfoProvider::Instance().GetTooltipForCommand(aCommand, rFrame));
+        if (!aTooltip.isEmpty())
+            pButton->SetQuickHelpText(aTooltip);
+
+        Image aImage(vcl::CommandInfoProvider::Instance().GetImageForCommand(aCommand, /*bLarge=*/ false, rFrame));
         pButton->SetModeImage(aImage);
 
         pButton->SetCommandHandler(aCommand);
@@ -1676,10 +1668,8 @@ VclPtr<vcl::Window> VclBuilder::makeObject(vcl::Window *pParent, const OString &
             }
             else
             {
-                const sal_uInt16 COMMAND_ITEMID_START = 30000;
-                nItemId = COMMAND_ITEMID_START + pToolBox->GetItemCount();
-                pToolBox->InsertItem(nItemId,
-                    OStringToOUString(extractLabel(rMap), RTL_TEXTENCODING_UTF8), nBits);
+                nItemId = pToolBox->GetItemCount() + 1;
+                pToolBox->InsertItem(nItemId, OStringToOUString(extractLabel(rMap), RTL_TEXTENCODING_UTF8), nBits);
                 pToolBox->SetItemCommand(nItemId, aCommand);
                 pToolBox->SetHelpId(nItemId, m_sHelpRoot + id);
             }
@@ -1851,7 +1841,7 @@ VclPtr<vcl::Window> VclBuilder::insertObject(vcl::Window *pParent, const OString
         //deferred due to waiting to encounter it in this .ui, and it hasn't
         //been seen yet, then make unattached widgets parent-less toplevels
         if (pParent == m_pParent.get() && m_bToplevelHasDeferredInit)
-            pParent = NULL;
+            pParent = nullptr;
         pCurrentChild = makeObject(pParent, rClass, rID, rProps);
     }
 
@@ -2029,7 +2019,7 @@ bool VclBuilder::sortIntoBestTabTraversalOrder::operator()(const vcl::Window *pA
 
 void VclBuilder::handleChild(vcl::Window *pParent, xmlreader::XmlReader &reader)
 {
-    vcl::Window *pCurrentChild = NULL;
+    vcl::Window *pCurrentChild = nullptr;
 
     xmlreader::Span name;
     int nsId;
@@ -2102,7 +2092,7 @@ void VclBuilder::handleChild(vcl::Window *pParent, xmlreader::XmlReader &reader)
                         else if (sInternalChild.startsWith("action_area") || sInternalChild.startsWith("messagedialog-action_area"))
                         {
                             vcl::Window *pContentArea = pCurrentChild->GetParent();
-                            if (Dialog *pBoxParent = dynamic_cast<Dialog*>(pContentArea ? pContentArea->GetParent() : NULL))
+                            if (Dialog *pBoxParent = dynamic_cast<Dialog*>(pContentArea ? pContentArea->GetParent() : nullptr))
                             {
                                 pBoxParent->set_action_area(static_cast<VclButtonBox*>(pCurrentChild)); // FIXME-VCLPTR
                             }
@@ -2117,7 +2107,7 @@ void VclBuilder::handleChild(vcl::Window *pParent, xmlreader::XmlReader &reader)
                             aChilds.push_back(pChild);
                         }
 
-                        bool bIsButtonBox = dynamic_cast<VclButtonBox*>(pCurrentChild) != NULL;
+                        bool bIsButtonBox = dynamic_cast<VclButtonBox*>(pCurrentChild) != nullptr;
 
                         //sort child order within parent so that tabbing
                         //between controls goes in a visually sensible sequence
@@ -2162,101 +2152,6 @@ void VclBuilder::reorderWithinParent(std::vector<vcl::Window*>& rChilds, bool bI
             nBits |= WB_GROUP;
         rChilds[i]->SetStyle(nBits);
     }
-}
-
-OUString VclBuilder::getCommandLabel(const OUString& rCommand, const uno::Reference<uno::XComponentContext>& rContext, const OUString& rModuleId)
-{
-    if (rCommand.isEmpty())
-        return OUString();
-
-    try
-    {
-        uno::Reference<container::XNameAccess> xUICommandLabels;
-        uno::Reference<container::XNameAccess> xUICommandDescription(frame::theUICommandDescription::get(rContext));
-
-        if ((xUICommandDescription->getByName(rModuleId) >>= xUICommandLabels) && xUICommandLabels.is())
-        {
-            uno::Sequence<beans::PropertyValue> aProperties;
-            if (xUICommandLabels->getByName(rCommand) >>= aProperties)
-            {
-                for ( sal_Int32 i = 0; i < aProperties.getLength(); i++ )
-                {
-                    if (aProperties[i].Name == "Label")
-                    {
-                        OUString aLabel;
-                        if (aProperties[i].Value >>= aLabel)
-                            return aLabel;
-                    }
-                }
-            }
-        }
-    }
-    catch (uno::Exception&)
-    {
-    }
-
-    return OUString();
-}
-
-Image VclBuilder::getCommandImage(const OUString& rCommand, bool bLarge,
-        const uno::Reference<uno::XComponentContext>& rContext, const uno::Reference<frame::XFrame>& rFrame,
-        const OUString& rModuleId)
-{
-    if (rCommand.isEmpty())
-        return Image();
-
-    sal_Int16 nImageType(ui::ImageType::COLOR_NORMAL | ui::ImageType::SIZE_DEFAULT);
-    if (bLarge)
-        nImageType |= ui::ImageType::SIZE_LARGE;
-
-    try
-    {
-        uno::Reference<frame::XController> xController(rFrame->getController());
-        uno::Reference<frame::XModel> xModel(xController->getModel());
-
-        uno::Reference<ui::XUIConfigurationManagerSupplier> xSupplier(xModel, uno::UNO_QUERY);
-        if (xSupplier.is())
-        {
-            uno::Reference<ui::XUIConfigurationManager> xDocUICfgMgr(xSupplier->getUIConfigurationManager(), uno::UNO_QUERY);
-            uno::Reference<ui::XImageManager> xDocImgMgr(xDocUICfgMgr->getImageManager(), uno::UNO_QUERY);
-
-            uno::Sequence< uno::Reference<graphic::XGraphic> > aGraphicSeq;
-            uno::Sequence<OUString> aImageCmdSeq(1);
-            aImageCmdSeq[0] = rCommand;
-
-            aGraphicSeq = xDocImgMgr->getImages( nImageType, aImageCmdSeq );
-            uno::Reference<graphic::XGraphic> xGraphic = aGraphicSeq[0];
-            Image aImage(xGraphic);
-
-            if (!!aImage)
-                return aImage;
-        }
-    }
-    catch (uno::Exception&)
-    {
-    }
-
-    try {
-        uno::Reference<ui::XModuleUIConfigurationManagerSupplier> xModuleCfgMgrSupplier(ui::theModuleUIConfigurationManagerSupplier::get(rContext));
-        uno::Reference<ui::XUIConfigurationManager> xUICfgMgr(xModuleCfgMgrSupplier->getUIConfigurationManager(rModuleId));
-
-        uno::Sequence< uno::Reference<graphic::XGraphic> > aGraphicSeq;
-        uno::Reference<ui::XImageManager> xModuleImageManager(xUICfgMgr->getImageManager(), uno::UNO_QUERY);
-
-        uno::Sequence<OUString> aImageCmdSeq(1);
-        aImageCmdSeq[0] = rCommand;
-
-        aGraphicSeq = xModuleImageManager->getImages(nImageType, aImageCmdSeq);
-
-        uno::Reference<graphic::XGraphic> xGraphic(aGraphicSeq[0]);
-
-        return Image(xGraphic);
-    }
-    catch (uno::Exception&)
-    {
-    }
-
-    return Image();
 }
 
 void VclBuilder::collectPangoAttribute(xmlreader::XmlReader &reader, stringmap &rMap)
@@ -2677,7 +2572,7 @@ void VclBuilder::handleMenuObject(PopupMenu *pParent, xmlreader::XmlReader &read
 
 void VclBuilder::handleSizeGroup(xmlreader::XmlReader &reader, const OString &rID)
 {
-    m_pParserState->m_aSizeGroups.push_back(SizeGroup(rID));
+    m_pParserState->m_aSizeGroups.push_back(SizeGroup());
     SizeGroup &rSizeGroup = m_pParserState->m_aSizeGroups.back();
 
     int nLevel = 1;
@@ -2945,12 +2840,12 @@ VclPtr<vcl::Window> VclBuilder::handleObject(vcl::Window *pParent, xmlreader::Xm
     if (sClass == "GtkAdjustment")
     {
         handleAdjustment(sID, aProperties);
-        return NULL;
+        return nullptr;
     }
     else if (sClass == "GtkTextBuffer")
     {
         handleTextBuffer(sID, aProperties);
-        return NULL;
+        return nullptr;
     }
 
     if (!pCurrentChild)
@@ -3010,7 +2905,7 @@ void VclBuilder::applyPackingProperty(vcl::Window *pCurrent,
 
     //ToolBoxItems are not true widgets just elements
     //of the ToolBox itself
-    ToolBox *pToolBoxParent = NULL;
+    ToolBox *pToolBoxParent = nullptr;
     if (pCurrent == pParent)
         pToolBoxParent = dynamic_cast<ToolBox*>(pParent);
 
@@ -3217,7 +3112,7 @@ void VclBuilder::collectAccelerator(xmlreader::XmlReader &reader, stringmap &rMa
 
 vcl::Window *VclBuilder::get_widget_root()
 {
-    return m_aChildren.empty() ? NULL : m_aChildren[0].m_pWindow.get();
+    return m_aChildren.empty() ? nullptr : m_aChildren[0].m_pWindow.get();
 }
 
 vcl::Window *VclBuilder::get_by_name(const OString& sID)
@@ -3229,7 +3124,7 @@ vcl::Window *VclBuilder::get_by_name(const OString& sID)
             return aI->m_pWindow;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 PopupMenu *VclBuilder::get_menu(const OString& sID)
@@ -3241,7 +3136,7 @@ PopupMenu *VclBuilder::get_menu(const OString& sID)
             return aI->m_pMenu;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 short VclBuilder::get_response(const vcl::Window *pWindow) const
@@ -3355,7 +3250,7 @@ const VclBuilder::ListStore *VclBuilder::get_model_by_name(const OString& sID) c
     std::map<OString, ListStore>::const_iterator aI = m_pParserState->m_aModels.find(sID);
     if (aI != m_pParserState->m_aModels.end())
         return &(aI->second);
-    return NULL;
+    return nullptr;
 }
 
 const VclBuilder::TextBuffer *VclBuilder::get_buffer_by_name(const OString& sID) const
@@ -3363,7 +3258,7 @@ const VclBuilder::TextBuffer *VclBuilder::get_buffer_by_name(const OString& sID)
     std::map<OString, TextBuffer>::const_iterator aI = m_pParserState->m_aTextBuffers.find(sID);
     if (aI != m_pParserState->m_aTextBuffers.end())
         return &(aI->second);
-    return NULL;
+    return nullptr;
 }
 
 const VclBuilder::Adjustment *VclBuilder::get_adjustment_by_name(const OString& sID) const
@@ -3371,7 +3266,7 @@ const VclBuilder::Adjustment *VclBuilder::get_adjustment_by_name(const OString& 
     std::map<OString, Adjustment>::const_iterator aI = m_pParserState->m_aAdjustments.find(sID);
     if (aI != m_pParserState->m_aAdjustments.end())
         return &(aI->second);
-    return NULL;
+    return nullptr;
 }
 
 void VclBuilder::mungeModel(ListBox &rTarget, const ListStore &rStore, sal_uInt16 nActiveId)

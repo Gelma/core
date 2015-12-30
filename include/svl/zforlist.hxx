@@ -215,8 +215,8 @@ class SVL_DLLPUBLIC NfCurrencyEntry
     sal_uInt16      nDigits;            /// count of decimal digits
     sal_Unicode     cZeroChar;          /// which character is used for zeros as last decimal digits
 
-                        NfCurrencyEntry( const NfCurrencyEntry& ) SAL_DELETED_FUNCTION;
-    NfCurrencyEntry&    operator=( const NfCurrencyEntry& ) SAL_DELETED_FUNCTION;
+                        NfCurrencyEntry( const NfCurrencyEntry& ) = delete;
+    NfCurrencyEntry&    operator=( const NfCurrencyEntry& ) = delete;
 
 private:
 
@@ -228,7 +228,7 @@ public:
 
     NfCurrencyEntry( const LocaleDataWrapper& rLocaleData,
                      LanguageType eLang );
-    NfCurrencyEntry( const ::com::sun::star::i18n::Currency & rCurr,
+    NfCurrencyEntry( const css::i18n::Currency & rCurr,
                      const LocaleDataWrapper& rLocaleData,
                      LanguageType eLang );
     inline NfCurrencyEntry(const OUString& rSymbol, const OUString& rBankSymbol,
@@ -317,7 +317,7 @@ public:
 
     /// Preferred ctor with service manager and language/country enum
     SvNumberFormatter(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext,
+        const css::uno::Reference< css::uno::XComponentContext >& rxContext,
         LanguageType eLang
         );
 
@@ -622,7 +622,7 @@ public:
     /** Set TwoDigitYearStart, how the input string scanner handles a two digit year.
         Default from VCL: 1930, 30-99 19xx, 00-29 20xx
 
-        <p> Historically (prior to src513e) it was a two digit number determing
+        <p> Historically (prior to src513e) it was a two digit number determining
         until which number the string scanner recognizes a year to be 20xx,
         default <= 29 is used by SFX/OfaMiscCfg.
         The name Year2000 is kept although the actual functionality is now a
@@ -704,8 +704,8 @@ public:
         returned, even if the format code only contains [$xxx] !
      */
     bool    GetNewCurrencySymbolString( sal_uInt32 nFormat, OUString& rSymbol,
-                                        const NfCurrencyEntry** ppEntry = NULL,
-                                        bool* pBank = NULL ) const;
+                                        const NfCurrencyEntry** ppEntry = nullptr,
+                                        bool* pBank = nullptr ) const;
 
     /** Look up the corresponding NfCurrencyEntry matching
         rSymbol (may be CurrencySymbol or CurrencyAbbreviation) and possibly
@@ -758,6 +758,20 @@ public:
     /// Fill a NfKeywordIndex table with keywords of a language/country
     void    FillKeywordTable( NfKeywordTable& rKeywords, LanguageType eLang );
 
+    /** Fill a NfKeywordIndex table with keywords usable in Excel export with
+        GetFormatStringForExcel() or SvNumberformat::GetMappedFormatstring() */
+    void    FillKeywordTableForExcel( NfKeywordTable& rKeywords );
+
+    /** Return a format code string suitable for Excel export.
+
+        @param  rTempFormatter
+                SvNumberFormatter to use if a non-en-US format code needs to be
+                converted and put, should not be the same formatter to not
+                pollute the entries of this one here.
+     */
+    OUString GetFormatStringForExcel( sal_uInt32 nKey, const NfKeywordTable& rKeywords,
+            SvNumberFormatter& rTempFormatter ) const;
+
     /** Return a keyword for a language/country and NfKeywordIndex
         for XML import, to generate number format strings. */
     OUString GetKeyword( LanguageType eLnge, sal_uInt16 nIndex );
@@ -770,7 +784,7 @@ public:
     static bool IsLocaleInstalled( LanguageType eLang );
 
 private:
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > m_xContext;
+    css::uno::Reference< css::uno::XComponentContext > m_xContext;
     LanguageTag maLanguageTag;
     SvNumberFormatTable aFTable;            // Table of format keys to format entries
     typedef std::map<sal_uInt32, sal_uInt32> DefaultFormatKeysMap;
@@ -816,7 +830,7 @@ private:
                                                       NumberFormatCodeWrapper& rNumberFormatCode,
                                                       bool bAfterChangingSystemCL );
 
-    SVL_DLLPRIVATE SvNumberformat* ImpInsertFormat( const ::com::sun::star::i18n::NumberFormatCode& rCode,
+    SVL_DLLPRIVATE SvNumberformat* ImpInsertFormat( const css::i18n::NumberFormatCode& rCode,
                                                     sal_uInt32 nPos,
                                                     bool bAfterChangingSystemCL = false,
                                                     sal_Int16 nOrgIndex = 0 );
@@ -856,7 +870,7 @@ private:
     // Return the index in a sequence of format codes matching an enum of
     // NfIndexTableOffset. If not found 0 is returned. If the sequence doesn't
     // contain any format code elements a default element is created and inserted.
-    SVL_DLLPRIVATE sal_Int32 ImpGetFormatCodeIndex( ::com::sun::star::uno::Sequence< ::com::sun::star::i18n::NumberFormatCode >& rSeq,
+    SVL_DLLPRIVATE sal_Int32 ImpGetFormatCodeIndex( css::uno::Sequence< css::i18n::NumberFormatCode >& rSeq,
                                                     const NfIndexTableOffset nTabOff );
 
     // Adjust a sequence of format codes to contain only one (THE) default
@@ -865,7 +879,7 @@ private:
     // Return the default index in the sequence.
     // Non-PRODUCT version may check locale data for matching defaults in one
     // FormatElement group.
-    SVL_DLLPRIVATE sal_Int32 ImpAdjustFormatCodeDefault( ::com::sun::star::i18n::NumberFormatCode * pFormatArr,
+    SVL_DLLPRIVATE sal_Int32 ImpAdjustFormatCodeDefault( css::i18n::NumberFormatCode * pFormatArr,
                                                          sal_Int32 nCount, bool bCheckCorrectness = true );
 
     // Obtain the format entry for a given key index.

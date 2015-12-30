@@ -41,42 +41,41 @@ using namespace framework;
 namespace {
 
 typedef ::cppu::WeakComponentImplHelper<
-    com::sun::star::lang::XServiceInfo,
-    com::sun::star::lang::XSingleComponentFactory > WindowContentFactoryManager_BASE;
+    css::lang::XServiceInfo,
+    css::lang::XSingleComponentFactory > WindowContentFactoryManager_BASE;
 
 class WindowContentFactoryManager : private cppu::BaseMutex,
                                     public WindowContentFactoryManager_BASE
 {
 public:
-    WindowContentFactoryManager( const css::uno::Reference< css::uno::XComponentContext>& rxContext );
+    explicit WindowContentFactoryManager( const css::uno::Reference< css::uno::XComponentContext>& rxContext );
     virtual ~WindowContentFactoryManager();
 
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return OUString("com.sun.star.comp.framework.WindowContentFactoryManager");
     }
 
     virtual sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return cppu::supportsService(this, ServiceName);
     }
 
     virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
-        css::uno::Sequence< OUString > aSeq(1);
-        aSeq[0] = "com.sun.star.ui.WindowContentFactoryManager";
+        css::uno::Sequence< OUString > aSeq { "com.sun.star.ui.WindowContentFactoryManager" };
         return aSeq;
     }
 
     // XSingleComponentFactory
-    virtual css::uno::Reference< css::uno::XInterface > SAL_CALL createInstanceWithContext( const css::uno::Reference< css::uno::XComponentContext >& Context ) throw (css::uno::Exception, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::uno::XInterface > SAL_CALL createInstanceWithArgumentsAndContext( const css::uno::Sequence< css::uno::Any >& Arguments, const css::uno::Reference< css::uno::XComponentContext >& Context ) throw (css::uno::Exception, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Reference< css::uno::XInterface > SAL_CALL createInstanceWithContext( const css::uno::Reference< css::uno::XComponentContext >& Context ) throw (css::uno::Exception, css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Reference< css::uno::XInterface > SAL_CALL createInstanceWithArgumentsAndContext( const css::uno::Sequence< css::uno::Any >& Arguments, const css::uno::Reference< css::uno::XComponentContext >& Context ) throw (css::uno::Exception, css::uno::RuntimeException, std::exception) override;
 
 private:
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
     css::uno::Reference< css::uno::XComponentContext >     m_xContext;
     bool                                               m_bConfigRead;
@@ -106,7 +105,7 @@ void SAL_CALL WindowContentFactoryManager::disposing()
     {
         // reduce reference count
         m_pConfigAccess->release();
-        m_pConfigAccess = 0;
+        m_pConfigAccess = nullptr;
     }
 }
 

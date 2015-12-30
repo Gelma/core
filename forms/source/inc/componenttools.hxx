@@ -32,27 +32,22 @@ namespace frm
 {
 
 
-    struct TypeCompareLess : public ::std::binary_function< ::com::sun::star::uno::Type, ::com::sun::star::uno::Type, bool >
+    struct TypeCompareLess : public ::std::binary_function< css::uno::Type, css::uno::Type, bool >
     {
-    private:
-        typedef ::com::sun::star::uno::Type             Type;
-
-    public:
-        bool operator()( const Type& _rLHS, const Type& _rRHS ) const
+        bool operator()( const css::uno::Type& _rLHS, const css::uno::Type& _rRHS ) const
         {
             return _rLHS.getTypeName() < _rRHS.getTypeName();
         }
     };
 
-    /** a helper class which merges sequences of <type scope="com::sun::star::uno">Type</type>s,
+    /** a helper class which merges sequences of <type scope="css::uno">Type</type>s,
         so that the resulting sequence contains every type at most once
     */
     class TypeBag
     {
     public:
-        typedef ::com::sun::star::uno::Type             Type;
-        typedef ::com::sun::star::uno::Sequence< Type > TypeSequence;
-        typedef ::std::set< Type, TypeCompareLess >     TypeSet;
+        typedef css::uno::Sequence< css::uno::Type >            TypeSequence;
+        typedef ::std::set< css::uno::Type, TypeCompareLess >   TypeSet;
 
     private:
         TypeSet     m_aTypes;
@@ -72,17 +67,17 @@ namespace frm
             const TypeSequence& _rTypes3
         );
 
-        void    addType( const Type& i_rType );
+        void    addType( const css::uno::Type& i_rType );
         void    addTypes( const TypeSequence& _rTypes );
-        void    removeType( const Type& i_rType );
+        void    removeType( const css::uno::Type& i_rType );
 
         /** returns the types represented by this bag
         */
         TypeSequence    getTypes() const;
     };
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XModel >  getXModel(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >& _rxComponent );
+    css::uno::Reference< css::frame::XModel >  getXModel(
+        const css::uno::Reference< css::uno::XInterface >& _rxComponent );
 
 
 } // namespace frm

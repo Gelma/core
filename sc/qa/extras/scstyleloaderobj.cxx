@@ -25,13 +25,13 @@ class ScStyleLoaderObj : public CalcUnoApiTest, apitest::XStyleLoader
 public:
     ScStyleLoaderObj();
 
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
-    virtual uno::Reference< uno::XInterface > init() SAL_OVERRIDE;
-    virtual uno::Reference< lang::XComponent  > getTargetComponent() SAL_OVERRIDE;
-    virtual uno::Reference< lang::XComponent > getSourceComponent() SAL_OVERRIDE;
-    virtual OUString getTestURL() SAL_OVERRIDE;
+    virtual uno::Reference< uno::XInterface > init() override;
+    virtual uno::Reference< lang::XComponent  > getTargetComponent() override;
+    virtual uno::Reference< lang::XComponent > getSourceComponent() override;
+    virtual OUString getTestURL() override;
 
     CPPUNIT_TEST_SUITE(ScStyleLoaderObj);
     CPPUNIT_TEST(testLoadStylesFromURL);
@@ -93,7 +93,7 @@ uno::Reference< lang::XComponent > ScStyleLoaderObj::getSourceComponent(){
 OUString ScStyleLoaderObj::getTestURL(){
 
       OUString aFileURL;
-      createFileURL(OUString("ScStyleLoaderObj.ods"), aFileURL);
+      createFileURL("ScStyleLoaderObj.ods", aFileURL);
 
       return aFileURL;
 }

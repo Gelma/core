@@ -34,7 +34,6 @@ using ::com::sun::star::uno::Reference;
 using ::com::sun::star::xml::sax::XAttributeList;
 
 
-TYPEINIT1(XMLChangeInfoContext, SvXMLImportContext);
 
 XMLChangeInfoContext::XMLChangeInfoContext(
     SvXMLImport& rImport,
@@ -62,7 +61,7 @@ SvXMLImportContext* XMLChangeInfoContext::CreateChildContext(
     const OUString& rLocalName,
     const Reference<XAttributeList >& xAttrList )
 {
-    SvXMLImportContext* pContext = NULL;
+    SvXMLImportContext* pContext = nullptr;
 
     if( XML_NAMESPACE_DC == nPrefix )
     {

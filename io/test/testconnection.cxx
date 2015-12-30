@@ -185,12 +185,10 @@ int SAL_CALL main( int argc, char * argv[] )
         OUString("com.sun.star.loader.SharedLibrary"), aLibName, Reference< XSimpleRegistry >() );
 
     Reference < XAcceptor >  rAcceptor(
-        xMgr->createInstance(
-            OUString("com.sun.star.connection.Acceptor") ) , UNO_QUERY );
+        xMgr->createInstance( "com.sun.star.connection.Acceptor" ) , UNO_QUERY );
 
     Reference < XAcceptor >  rAcceptorPipe(
-        xMgr->createInstance(
-            OUString("com.sun.star.connection.Acceptor") ) , UNO_QUERY );
+        xMgr->createInstance( "com.sun.star.connection.Acceptor" ) , UNO_QUERY );
 
     Reference < XConnector >  rConnector(
         xMgr->createInstance("com.sun.star.connection.Connector") , UNO_QUERY );
@@ -207,7 +205,7 @@ int SAL_CALL main( int argc, char * argv[] )
     printf( " Done\n" );
 
     // check, if errornous strings make any problem
-    rAcceptor = Reference< XAcceptor > (
+    rAcceptor.set(
         xMgr->createInstance("com.sun.star.connection.Acceptor"),
         UNO_QUERY );
 

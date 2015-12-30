@@ -205,12 +205,11 @@ uno::Reference< drawing::XShape >
                     const uno::Reference< drawing::XShapes >& xTarget
                     , double, double
                     , double, double
-                    , const drawing::Direction3D& rOffset
-                    , const drawing::HomogenMatrix& rUnitCircleToScene
+                    , const drawing::Direction3D&
+                    , const drawing::HomogenMatrix&
                     , double )
 {
-    dummy::DummyPieSegment* pSegment = new dummy::DummyPieSegment(
-            rOffset, rUnitCircleToScene);
+    dummy::DummyPieSegment* pSegment = new dummy::DummyPieSegment;
 
     xTarget->add(pSegment);
     return pSegment;
@@ -218,14 +217,14 @@ uno::Reference< drawing::XShape >
 
 uno::Reference< drawing::XShape >
         OpenglShapeFactory::createStripe( const uno::Reference< drawing::XShapes >& xTarget
-                    , const Stripe& rStripe
+                    , const Stripe&
                     , const uno::Reference< beans::XPropertySet >& xSourceProp
                     , const tPropertyNameMap& rPropertyNameMap
                     , bool
                     , short
                     , bool )
 {
-    dummy::DummyStripe* pStripe = new dummy::DummyStripe(rStripe,
+    dummy::DummyStripe* pStripe = new dummy::DummyStripe(
             xSourceProp, rPropertyNameMap);
     xTarget->add(pStripe);
     return pStripe;
@@ -233,10 +232,10 @@ uno::Reference< drawing::XShape >
 
 uno::Reference< drawing::XShape >
         OpenglShapeFactory::createArea3D( const uno::Reference< drawing::XShapes >& xTarget
-                    , const drawing::PolyPolygonShape3D& rPolyPolygon
+                    , const drawing::PolyPolygonShape3D&
                     , double )
 {
-    dummy::DummyArea3D* pArea = new dummy::DummyArea3D(rPolyPolygon);
+    dummy::DummyArea3D* pArea = new dummy::DummyArea3D;
     xTarget->add(pArea);
     return pArea;
 }
@@ -270,10 +269,9 @@ uno::Reference< drawing::XShape >
                       const uno::Reference< drawing::XShapes >& xTarget
                     , const drawing::Position3D& rPosition
                     , const drawing::Direction3D& rSize
-                    , const uno::Reference< graphic::XGraphic >& xGraphic )
+                    , const uno::Reference< graphic::XGraphic >&  )
 {
-    dummy::DummyGraphic2D* pGraphic = new dummy::DummyGraphic2D(rPosition, rSize,
-            xGraphic);
+    dummy::DummyGraphic2D* pGraphic = new dummy::DummyGraphic2D(rPosition, rSize);
     xTarget->add(pGraphic);
     return pGraphic;
 }
@@ -323,10 +321,10 @@ uno::Reference< drawing::XShape >
 
 uno::Reference< drawing::XShape >
         OpenglShapeFactory::createLine3D( const uno::Reference< drawing::XShapes >& xTarget
-                    , const drawing::PolyPolygonShape3D& rPoints
+                    , const drawing::PolyPolygonShape3D&
                     , const VLineProperties& rLineProperties )
 {
-    dummy::DummyLine3D* pLine = new dummy::DummyLine3D(rPoints, rLineProperties);
+    dummy::DummyLine3D* pLine = new dummy::DummyLine3D(rLineProperties);
     xTarget->add(pLine);
     return pLine;
 }

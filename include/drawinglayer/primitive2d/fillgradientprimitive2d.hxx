@@ -69,21 +69,21 @@ namespace drawinglayer
             void generateMatricesAndColors(
                 std::vector< drawinglayer::texture::B2DHomMatrixAndBColor >& rEntries,
                 basegfx::BColor& rOuterColor) const;
-            Primitive2DSequence createOverlappingFill(
+            Primitive2DContainer createOverlappingFill(
                 const std::vector< drawinglayer::texture::B2DHomMatrixAndBColor >& rEntries,
                 const basegfx::BColor& rOuterColor,
                 const basegfx::B2DPolygon& rUnitPolygon) const;
-            Primitive2DSequence createNonOverlappingFill(
+            Primitive2DContainer createNonOverlappingFill(
                 const std::vector< drawinglayer::texture::B2DHomMatrixAndBColor >& rEntries,
                 const basegfx::BColor& rOuterColor,
                 const basegfx::B2DPolygon& rUnitPolygon) const;
 
         protected:
             /// local helper
-            Primitive2DSequence createFill(bool bOverlapping) const;
+            Primitive2DContainer createFill(bool bOverlapping) const;
 
             /// local decomposition.
-            virtual Primitive2DSequence create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const SAL_OVERRIDE;
+            virtual Primitive2DContainer create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const override;
 
         public:
             /// constructors. The one without definition range will use output range as definition range
@@ -101,10 +101,10 @@ namespace drawinglayer
             const attribute::FillGradientAttribute& getFillGradient() const { return maFillGradient; }
 
             /// compare operator
-            virtual bool operator==(const BasePrimitive2D& rPrimitive) const SAL_OVERRIDE;
+            virtual bool operator==(const BasePrimitive2D& rPrimitive) const override;
 
             /// get range
-            virtual basegfx::B2DRange getB2DRange(const geometry::ViewInformation2D& rViewInformation) const SAL_OVERRIDE;
+            virtual basegfx::B2DRange getB2DRange(const geometry::ViewInformation2D& rViewInformation) const override;
 
             /// provide unique ID
             DeclPrimitive2DIDBlock()

@@ -34,12 +34,11 @@ struct SfxPrinter_Impl;
 class SFX2_DLLPUBLIC SfxPrinter : public Printer
 {
 private:
-    JobSetup                aOrigJobSetup;
     SfxItemSet*             pOptions;
     SfxPrinter_Impl*        pImpl;
     bool                    bKnown;
 
-    SAL_DLLPRIVATE void operator =(SfxPrinter &) SAL_DELETED_FUNCTION;
+    SAL_DLLPRIVATE void operator =(SfxPrinter &) = delete;
 
 public:
                             SfxPrinter( SfxItemSet *pTheOptions );
@@ -49,7 +48,7 @@ public:
                                         const JobSetup &rTheOrigJobSetup );
                             SfxPrinter( const SfxPrinter &rPrinter );
                             virtual ~SfxPrinter();
-    virtual void            dispose() SAL_OVERRIDE;
+    virtual void            dispose() override;
 
     VclPtr<SfxPrinter>      Clone() const;
 

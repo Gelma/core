@@ -51,10 +51,10 @@ using namespace ::com::sun::star::uno;
 
 DictionaryList::DictionaryList(SvSimpleTableContainer& rParent, WinBits nBits)
     : SvSimpleTable(rParent, nBits)
-    , m_xDictionary(0)
-    , m_pED_Term(0)
-    , m_pED_Mapping(0)
-    , m_pLB_Property(0)
+    , m_xDictionary(nullptr)
+    , m_pED_Term(nullptr)
+    , m_pED_Mapping(nullptr)
+    , m_pLB_Property(nullptr)
     , m_aToBeDeleted()
     , m_nSortColumnIndex(0)
 {
@@ -187,7 +187,7 @@ void DictionaryList::refillFromDictionary( sal_Int32 nTextConversionOptions )
 
 DictionaryEntry* DictionaryList::getFirstSelectedEntry() const
 {
-    DictionaryEntry* pRet=0;
+    DictionaryEntry* pRet=nullptr;
     for( sal_Int32 nN=GetRowCount(); nN--; )
     {
         if( IsRowSelected( nN ) )
@@ -201,7 +201,7 @@ DictionaryEntry* DictionaryList::getFirstSelectedEntry() const
 
 DictionaryEntry* DictionaryList::getEntryOnPos( sal_Int32 nPos ) const
 {
-    DictionaryEntry* pEntry=0;
+    DictionaryEntry* pEntry=nullptr;
     SvTreeListEntry* pLBEntry = GetEntryOnPos( nPos );
     if(pLBEntry)
         pEntry = static_cast<DictionaryEntry*>(pLBEntry->GetUserData());
@@ -216,12 +216,12 @@ DictionaryEntry* DictionaryList::getTermEntry( const OUString& rTerm ) const
         if( pE && rTerm.equals( pE->m_aTerm ) )
             return pE;
     }
-    return 0;
+    return nullptr;
 }
 
 bool DictionaryList::hasTerm( const OUString& rTerm ) const
 {
-    return getTermEntry(rTerm) !=0 ;
+    return getTermEntry(rTerm) !=nullptr ;
 }
 
 void DictionaryList::addEntry( const OUString& rTerm, const OUString& rMapping
@@ -303,7 +303,7 @@ sal_Int32 DictionaryList::ColumnCompare( SvTreeListEntry* pLeft, SvTreeListEntry
     SvLBoxItem* pLeftItem = getItemAtColumn( pLeft, m_nSortColumnIndex );
     SvLBoxItem* pRightItem = getItemAtColumn( pRight, m_nSortColumnIndex );
 
-    if(pLeftItem != NULL && pRightItem != NULL)
+    if(pLeftItem != nullptr && pRightItem != nullptr)
     {
         sal_uInt16 nLeftKind = pLeftItem->GetType();
         sal_uInt16 nRightKind = pRightItem->GetType();
@@ -326,7 +326,7 @@ sal_Int32 DictionaryList::ColumnCompare( SvTreeListEntry* pLeft, SvTreeListEntry
 
 SvLBoxItem* DictionaryList::getItemAtColumn( SvTreeListEntry* pEntry, sal_uInt16 nColumn ) const
 {
-    SvLBoxItem* pItem = NULL;
+    SvLBoxItem* pItem = nullptr;
     if( pEntry )
     {
         sal_uInt16 nCount = pEntry->ItemCount();
@@ -444,7 +444,7 @@ ChineseDictionaryDialog::ChineseDictionaryDialog( vcl::Window* pParent )
     : ModalDialog(pParent, "ChineseDictionaryDialog",
          "svx/ui/chinesedictionary.ui")
     , m_nTextConversionOptions(i18n::TextConversionOption::NONE)
-    , m_xContext(0)
+    , m_xContext(nullptr)
 {
     get(m_pRB_To_Simplified, "tradtosimple");
     get(m_pRB_To_Traditional, "simpletotrad");
@@ -476,12 +476,12 @@ ChineseDictionaryDialog::ChineseDictionaryDialog( vcl::Window* pParent )
     m_pLB_Property->SetDropDownLineCount( m_pLB_Property->GetEntryCount() );
     m_pLB_Property->SelectEntryPos(0);
 
-    Reference< linguistic2::XConversionDictionary > xDictionary_To_Simplified(0);
-    Reference< linguistic2::XConversionDictionary > xDictionary_To_Traditional(0);
+    Reference< linguistic2::XConversionDictionary > xDictionary_To_Simplified(nullptr);
+    Reference< linguistic2::XConversionDictionary > xDictionary_To_Traditional(nullptr);
     //get dictionaries
     {
         if(!m_xContext.is())
-            m_xContext = Reference< XComponentContext >( ::cppu::defaultBootstrap_InitialComponentContext() );
+            m_xContext.set( ::cppu::defaultBootstrap_InitialComponentContext() );
         if(m_xContext.is())
         {
             Reference< linguistic2::XConversionDictionaryList > xDictionaryList = linguistic2::ConversionDictionaryList::create(m_xContext);
@@ -496,30 +496,30 @@ ChineseDictionaryDialog::ChineseDictionaryDialog( vcl::Window* pParent )
                     aLocale.Language = "zh";
 
                     if( xContainer->hasByName( aNameTo_Simplified ) )
-                        xDictionary_To_Simplified = Reference< linguistic2::XConversionDictionary >(
+                        xDictionary_To_Simplified.set(
                                 xContainer->getByName( aNameTo_Simplified ), UNO_QUERY );
                     else
                     {
                         aLocale.Country = "TW";
-                        xDictionary_To_Simplified = Reference< linguistic2::XConversionDictionary >(
+                        xDictionary_To_Simplified.set(
                                 xDictionaryList->addNewDictionary( aNameTo_Simplified
-                                , aLocale, linguistic2::ConversionDictionaryType::SCHINESE_TCHINESE
-                                    ), UNO_QUERY );
+                                    , aLocale, linguistic2::ConversionDictionaryType::SCHINESE_TCHINESE
+                                ), UNO_QUERY );
                     }
                     if (xDictionary_To_Simplified.is())
                         xDictionary_To_Simplified->setActive( sal_True );
 
 
                     if( xContainer->hasByName( aNameTo_Traditional ) )
-                        xDictionary_To_Traditional = Reference< linguistic2::XConversionDictionary >(
+                        xDictionary_To_Traditional.set(
                                 xContainer->getByName( aNameTo_Traditional ), UNO_QUERY );
                     else
                     {
                         aLocale.Country = "CN";
-                        xDictionary_To_Traditional = Reference< linguistic2::XConversionDictionary >(
+                        xDictionary_To_Traditional.set(
                                 xDictionaryList->addNewDictionary( aNameTo_Traditional
-                                , aLocale, linguistic2::ConversionDictionaryType::SCHINESE_TCHINESE
-                                    ), UNO_QUERY );
+                                    ,aLocale, linguistic2::ConversionDictionaryType::SCHINESE_TCHINESE),
+                                UNO_QUERY );
                     }
                     if (xDictionary_To_Traditional.is())
                         xDictionary_To_Traditional->setActive( sal_True );
@@ -540,7 +540,7 @@ ChineseDictionaryDialog::ChineseDictionaryDialog( vcl::Window* pParent )
 
     m_pED_Term->SetModifyHdl( LINK( this, ChineseDictionaryDialog, EditFieldsHdl ) );
     m_pED_Mapping->SetModifyHdl( LINK( this, ChineseDictionaryDialog, EditFieldsHdl ) );
-    m_pLB_Property->SetSelectHdl( LINK( this, ChineseDictionaryDialog, EditFieldsHdl ) );
+    m_pLB_Property->SetSelectHdl( LINK( this, ChineseDictionaryDialog, EditFieldsListBoxHdl ) );
 
     m_pRB_To_Simplified->SetClickHdl( LINK( this, ChineseDictionaryDialog, DirectionHdl ) );
     m_pRB_To_Traditional->SetClickHdl( LINK( this, ChineseDictionaryDialog, DirectionHdl ) );
@@ -560,7 +560,7 @@ ChineseDictionaryDialog::~ChineseDictionaryDialog()
 
 void ChineseDictionaryDialog::dispose()
 {
-    m_xContext=0;
+    m_xContext=nullptr;
     m_pCT_DictionaryToSimplified.disposeAndClear();
     m_pCT_DictionaryToTraditional.disposeAndClear();
     m_pRB_To_Simplified.clear();
@@ -602,7 +602,7 @@ IMPL_LINK_NOARG_TYPED(ChineseDictionaryDialog, DirectionHdl, Button*, void)
 
 void ChineseDictionaryDialog::updateAfterDirectionChange()
 {
-    Reference< linguistic2::XConversionDictionary > xDictionary(0);
+    Reference< linguistic2::XConversionDictionary > xDictionary(nullptr);
 
     if( m_pRB_To_Simplified->IsChecked() )
     {
@@ -620,10 +620,13 @@ void ChineseDictionaryDialog::updateAfterDirectionChange()
     updateButtons();
 }
 
-IMPL_LINK_NOARG(ChineseDictionaryDialog, EditFieldsHdl)
+IMPL_LINK_NOARG_TYPED(ChineseDictionaryDialog, EditFieldsListBoxHdl, ListBox&, void)
 {
     updateButtons();
-    return 0;
+}
+IMPL_LINK_NOARG_TYPED(ChineseDictionaryDialog, EditFieldsHdl, Edit&, void)
+{
+    updateButtons();
 }
 IMPL_LINK_NOARG_TYPED(ChineseDictionaryDialog, MappingSelectHdl, SvTreeListBox*, void)
 {
@@ -748,8 +751,8 @@ IMPL_LINK_NOARG_TYPED(ChineseDictionaryDialog, ModifyHdl, Button*, void)
         {
             if( m_pCB_Reverse->IsChecked() )
             {
-                sal_uIntPtr nPos = rReverse.deleteEntries( pE->m_aMapping );
-                nPos = rReverse.deleteEntries( aMapping );
+                rReverse.deleteEntries( pE->m_aMapping );
+                sal_uIntPtr nPos = rReverse.deleteEntries( aMapping );
                 rReverse.addEntry( aMapping, aTerm, nConversionPropertyType, nPos );
             }
 

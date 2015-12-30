@@ -70,7 +70,7 @@ ManageLanguageDialog::ManageLanguageDialog(vcl::Window* pParent, std::shared_ptr
 
     Init();
     FillLanguageBox();
-    SelectHdl( NULL );
+    SelectHdl( *m_pLanguageLB );
 }
 
 ManageLanguageDialog::~ManageLanguageDialog()
@@ -126,7 +126,7 @@ void ManageLanguageDialog::FillLanguageBox()
                 sLanguage += " " + m_sDefLangStr;
             }
             const sal_Int32 nPos = m_pLanguageLB->InsertEntry( sLanguage );
-            m_pLanguageLB->SetEntryData( nPos, new LanguageEntry( sLanguage, pLocale[i], bIsDefault ) );
+            m_pLanguageLB->SetEntryData( nPos, new LanguageEntry( pLocale[i], bIsDefault ) );
         }
     }
     else
@@ -193,7 +193,7 @@ IMPL_LINK_NOARG_TYPED(ManageLanguageDialog, DeleteHdl, Button*, void)
         if ( nCount <= nPos )
             nPos = nCount - 1;
         m_pLanguageLB->SelectEntryPos( nPos );
-        SelectHdl( NULL );
+        SelectHdl( *m_pLanguageLB );
     }
 }
 
@@ -210,11 +210,11 @@ IMPL_LINK_NOARG_TYPED(ManageLanguageDialog, MakeDefHdl, Button*, void)
         FillLanguageBox();
         // reset selection
         m_pLanguageLB->SelectEntryPos( nPos );
-        SelectHdl( NULL );
+        SelectHdl( *m_pLanguageLB );
     }
 }
 
-IMPL_LINK_NOARG(ManageLanguageDialog, SelectHdl)
+IMPL_LINK_NOARG_TYPED(ManageLanguageDialog, SelectHdl, ListBox&, void)
 {
     const sal_Int32 nCount = m_pLanguageLB->GetEntryCount();
     bool bEmpty = ( !nCount ||
@@ -224,15 +224,13 @@ IMPL_LINK_NOARG(ManageLanguageDialog, SelectHdl)
 
     m_pDeletePB->Enable(bEnable);
     m_pMakeDefPB->Enable(bEnable && nCount > 1 && m_pLanguageLB->GetSelectEntryCount() == 1);
-
-    return 1;
 }
 
 // class SetDefaultLanguageDialog -----------------------------------------------
 
 SetDefaultLanguageDialog::SetDefaultLanguageDialog(vcl::Window* pParent, std::shared_ptr<LocalizationMgr> xLMgr)
     : ModalDialog(pParent, "DefaultLanguageDialog", "modules/BasicIDE/ui/defaultlanguage.ui")
-    , m_pCheckLangLB(NULL)
+    , m_pCheckLangLB(nullptr)
     , m_xLocalizationMgr(xLMgr)
 {
     get(m_pLanguageLB, "entries");
@@ -297,7 +295,7 @@ void SetDefaultLanguageDialog::FillLanguageBox()
             m_pCheckLangLB->InsertEntry(
                 m_pLanguageLB->GetEntry(j), LISTBOX_APPEND, m_pLanguageLB->GetEntryData(j) );
         }
-        m_pLanguageLB = NULL;
+        m_pLanguageLB = nullptr;
     }
     else
         // preselect current UI language

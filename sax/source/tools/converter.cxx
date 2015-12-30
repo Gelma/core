@@ -126,8 +126,8 @@ bool Converter::convertMeasure( sal_Int32& rValue,
         {
             OSL_ENSURE( MeasureUnit::TWIP == nTargetUnit || MeasureUnit::POINT == nTargetUnit ||
                         MeasureUnit::MM_100TH == nTargetUnit || MeasureUnit::MM_10TH == nTargetUnit, "unit is not supported");
-            const sal_Char *aCmpsL[2] = { 0, 0 };
-            const sal_Char *aCmpsU[2] = { 0, 0 };
+            const sal_Char *aCmpsL[2] = { nullptr, nullptr };
+            const sal_Char *aCmpsU[2] = { nullptr, nullptr };
             double aScales[2] = { 1., 1. };
 
             if( MeasureUnit::TWIP == nTargetUnit )
@@ -209,7 +209,7 @@ bool Converter::convertMeasure( sal_Int32& rValue,
                 }
             }
 
-            if( aCmpsL[0] == NULL )
+            if( aCmpsL[0] == nullptr )
                 return false;
 
             double nScale = 0.;
@@ -286,7 +286,7 @@ void Converter::convertMeasure( OUStringBuffer& rBuffer,
     long nMul = 1000;
     long nDiv = 1;
     long nFac = 100;
-    const sal_Char* psUnit = 0;
+    const sal_Char* psUnit = nullptr;
     switch( nSourceUnit )
     {
     case MeasureUnit::TWIP:
@@ -617,7 +617,7 @@ bool Converter::convertDouble(double& rValue,
     const OUString& rString, sal_Int16 nSourceUnit, sal_Int16 nTargetUnit)
 {
     rtl_math_ConversionStatus eStatus;
-    rValue = ::rtl::math::stringToDouble( rString, '.', ',', &eStatus, NULL );
+    rValue = ::rtl::math::stringToDouble( rString, '.', ',', &eStatus );
 
     if(eStatus == rtl_math_ConversionStatus_Ok)
     {
@@ -636,8 +636,64 @@ bool Converter::convertDouble(double& rValue,
 bool Converter::convertDouble(double& rValue, const OUString& rString)
 {
     rtl_math_ConversionStatus eStatus;
-    rValue = ::rtl::math::stringToDouble( rString, '.', ',', &eStatus, NULL );
+    rValue = ::rtl::math::stringToDouble( rString, '.', ',', &eStatus );
     return ( eStatus == rtl_math_ConversionStatus_Ok );
+}
+
+/** convert number, 10th of degrees with range [0..3600] to SVG angle */
+void Converter::convertAngle(OUStringBuffer& rBuffer, sal_Int16 const nAngle)
+{
+#if 1
+    // wrong, but backward compatible with OOo/LO < 4.4
+    ::sax::Converter::convertNumber(rBuffer, nAngle);
+#else
+    // maybe in the future... (see other convertAngle)
+    double fAngle(double(nAngle) / 10.0);
+    ::sax::Converter::convertDouble(rBuffer, fAngle);
+    rBuffer.append("deg");
+#endif
+}
+
+/** convert SVG angle to number, 10th of degrees with range [0..3600] */
+bool Converter::convertAngle(sal_Int16& rAngle, OUString const& rString)
+{
+    // ODF 1.1 leaves it undefined what the number means, but ODF 1.2 says it's
+    // degrees, while OOo has historically used 10th of degrees :(
+    // So import degrees when we see the "deg" suffix but continue with 10th of
+    // degrees for now for the sake of existing OOo/LO documents, until the
+    // new versions that can read "deg" suffix are widely deployed and we can
+    // start to write the "deg" suffix.
+    sal_Int32 nValue(0);
+    double fValue(0.0);
+    bool bRet = ::sax::Converter::convertDouble(fValue, rString);
+    if (-1 != rString.indexOf("deg"))
+    {
+        nValue = fValue * 10.0;
+    }
+    else if (-1 != rString.indexOf("grad"))
+    {
+        nValue = (fValue * 9.0 / 10.0) * 10.0;
+    }
+    else if (-1 != rString.indexOf("rad"))
+    {
+        nValue = (fValue * 180.0 / M_PI) * 10.0;
+    }
+    else // no explicit unit
+    {
+        nValue = fValue; // wrong, but backward compatible with OOo/LO < 4.4
+    }
+    // limit to valid range [0..3600]
+    nValue = nValue % 3600;
+    if (nValue < 0)
+    {
+        nValue += 3600;
+    }
+    assert(0 <= nValue && nValue <= 3600);
+    if (bRet)
+    {
+        rAngle = sal::static_int_cast<sal_Int16>(nValue);
+    }
+    return bRet;
 }
 
 /** convert double to ISO "duration" string; negative durations allowed */
@@ -1241,7 +1297,7 @@ void Converter::convertDate(
 
 static void convertTime(
         OUStringBuffer& i_rBuffer,
-        const com::sun::star::util::DateTime& i_rDateTime)
+        const css::util::DateTime& i_rDateTime)
 {
     if (i_rDateTime.Hours   < 10) {
         i_rBuffer.append('0');
@@ -1270,7 +1326,7 @@ static void convertTime(
 
 static void convertTimeZone(
         OUStringBuffer& i_rBuffer,
-        const com::sun::star::util::DateTime& i_rDateTime,
+        const css::util::DateTime& i_rDateTime,
         sal_Int16 const* pTimeZoneOffset)
 {
     if (pTimeZoneOffset)
@@ -1286,7 +1342,7 @@ static void convertTimeZone(
 /** convert util::DateTime to ISO "time" or "dateTime" string */
 void Converter::convertTimeOrDateTime(
         OUStringBuffer& i_rBuffer,
-        const com::sun::star::util::DateTime& i_rDateTime,
+        const css::util::DateTime& i_rDateTime,
         sal_Int16 const* pTimeZoneOffset)
 {
     if (i_rDateTime.Year == 0 ||
@@ -1305,7 +1361,7 @@ void Converter::convertTimeOrDateTime(
 /** convert util::DateTime to ISO "date" or "dateTime" string */
 void Converter::convertDateTime(
         OUStringBuffer& i_rBuffer,
-        const com::sun::star::util::DateTime& i_rDateTime,
+        const css::util::DateTime& i_rDateTime,
         sal_Int16 const*const pTimeZoneOffset,
         bool i_bAddTimeIf0AM )
 {
@@ -1353,7 +1409,7 @@ bool Converter::parseDateTime(   util::DateTime& rDateTime,
                                  const OUString& rString )
 {
     bool isDateTime;
-    return parseDateOrDateTime(0, rDateTime, isDateTime, pTimeZoneOffset,
+    return parseDateOrDateTime(nullptr, rDateTime, isDateTime, pTimeZoneOffset,
             rString);
 }
 
@@ -1808,7 +1864,7 @@ bool Converter::parseTimeOrDateTime(
 {
     bool dummy;
     return lcl_parseDateTime(
-                0, rDateTime, dummy, pTimeZoneOffset, rString, true);
+                nullptr, rDateTime, dummy, pTimeZoneOffset, rString, true);
 }
 
 /** convert ISO "date" or "dateTime" string to util::DateTime or util::Date */
@@ -2038,7 +2094,7 @@ double Converter::GetConversionFactor(OUStringBuffer& rUnit, sal_Int16 nSourceUn
 
     if(nSourceUnit != nTargetUnit)
     {
-        const sal_Char* psUnit = 0;
+        const sal_Char* psUnit = nullptr;
 
         switch(nSourceUnit)
         {
@@ -2474,7 +2530,7 @@ sal_Int16 Converter::GetUnitFromString(const OUString& rString, sal_Int16 nDefau
 
 bool Converter::convertAny(OUStringBuffer&    rsValue,
                            OUStringBuffer&    rsType ,
-                           const com::sun::star::uno::Any& rValue)
+                           const css::uno::Any& rValue)
 {
     bool bConverted = false;
 
@@ -2483,11 +2539,11 @@ bool Converter::convertAny(OUStringBuffer&    rsValue,
 
     switch (rValue.getValueTypeClass())
     {
-        case com::sun::star::uno::TypeClass_BYTE :
-        case com::sun::star::uno::TypeClass_SHORT :
-        case com::sun::star::uno::TypeClass_UNSIGNED_SHORT :
-        case com::sun::star::uno::TypeClass_LONG :
-        case com::sun::star::uno::TypeClass_UNSIGNED_LONG :
+        case css::uno::TypeClass_BYTE :
+        case css::uno::TypeClass_SHORT :
+        case css::uno::TypeClass_UNSIGNED_SHORT :
+        case css::uno::TypeClass_LONG :
+        case css::uno::TypeClass_UNSIGNED_LONG :
             {
                 sal_Int32 nTempValue = 0;
                 if (rValue >>= nTempValue)
@@ -2499,7 +2555,7 @@ bool Converter::convertAny(OUStringBuffer&    rsValue,
             }
             break;
 
-        case com::sun::star::uno::TypeClass_BOOLEAN :
+        case css::uno::TypeClass_BOOLEAN :
             {
                 bool bTempValue = false;
                 if (rValue >>= bTempValue)
@@ -2511,8 +2567,8 @@ bool Converter::convertAny(OUStringBuffer&    rsValue,
             }
             break;
 
-        case com::sun::star::uno::TypeClass_FLOAT :
-        case com::sun::star::uno::TypeClass_DOUBLE :
+        case css::uno::TypeClass_FLOAT :
+        case css::uno::TypeClass_DOUBLE :
             {
                 double fTempValue = 0.0;
                 if (rValue >>= fTempValue)
@@ -2524,7 +2580,7 @@ bool Converter::convertAny(OUStringBuffer&    rsValue,
             }
             break;
 
-        case com::sun::star::uno::TypeClass_STRING :
+        case css::uno::TypeClass_STRING :
             {
                 OUString sTempValue;
                 if (rValue >>= sTempValue)
@@ -2536,17 +2592,17 @@ bool Converter::convertAny(OUStringBuffer&    rsValue,
             }
             break;
 
-        case com::sun::star::uno::TypeClass_STRUCT :
+        case css::uno::TypeClass_STRUCT :
             {
-                com::sun::star::util::Date     aDate    ;
-                com::sun::star::util::Time     aTime    ;
-                com::sun::star::util::DateTime aDateTime;
+                css::util::Date     aDate    ;
+                css::util::Time     aTime    ;
+                css::util::DateTime aDateTime;
 
                 if (rValue >>= aDate)
                 {
                     rsType.append("date");
                     bConverted = true;
-                    com::sun::star::util::DateTime aTempValue;
+                    css::util::DateTime aTempValue;
                     aTempValue.Day              = aDate.Day;
                     aTempValue.Month            = aDate.Month;
                     aTempValue.Year             = aDate.Year;
@@ -2554,14 +2610,14 @@ bool Converter::convertAny(OUStringBuffer&    rsValue,
                     aTempValue.Seconds          = 0;
                     aTempValue.Minutes          = 0;
                     aTempValue.Hours            = 0;
-                    ::sax::Converter::convertDateTime(rsValue, aTempValue, 0);
+                    ::sax::Converter::convertDateTime(rsValue, aTempValue, nullptr);
                 }
                 else
                 if (rValue >>= aTime)
                 {
                     rsType.append("time");
                     bConverted = true;
-                    com::sun::star::util::Duration aTempValue;
+                    css::util::Duration aTempValue;
                     aTempValue.Days             = 0;
                     aTempValue.Months           = 0;
                     aTempValue.Years            = 0;
@@ -2576,7 +2632,7 @@ bool Converter::convertAny(OUStringBuffer&    rsValue,
                 {
                     rsType.append("date");
                     bConverted = true;
-                    ::sax::Converter::convertDateTime(rsValue, aDateTime, 0);
+                    ::sax::Converter::convertDateTime(rsValue, aDateTime, nullptr);
                 }
             }
             break;

@@ -66,10 +66,10 @@ private:
     OUString  maURL2;
 
 public:
-                    HtmlErrorContext(vcl::Window *pWin=0);
+                    explicit HtmlErrorContext(vcl::Window *pWin=nullptr);
                     virtual ~HtmlErrorContext() {};
 
-    virtual bool    GetString( sal_uLong nErrId, OUString& rCtxStr ) SAL_OVERRIDE;
+    virtual bool    GetString( sal_uLong nErrId, OUString& rCtxStr ) override;
 
     void            SetContext( sal_uInt16 nResId, const OUString& rURL );
     void            SetContext( sal_uInt16 nResId, const OUString& rURL1, const OUString& rURL2 );
@@ -146,7 +146,7 @@ class HtmlExport
 
     static SdrTextObj* GetLayoutTextObject(SdrPage* pPage);
 
-    void SetDocColors( SdPage* pPage = NULL );
+    void SetDocColors( SdPage* pPage = nullptr );
 
     bool        CreateImagesForPresPages( bool bThumbnails = false );
     bool    CreateHtmlTextForPresPages();
@@ -165,7 +165,7 @@ class HtmlExport
     bool    CreateImageNumberFile();
 
     bool    checkForExistingFiles();
-    bool    checkFileExists( ::com::sun::star::uno::Reference< ::com::sun::star::ucb::XSimpleFileAccess3 >& xFileAccess, OUString const & aFileName );
+    bool    checkFileExists( css::uno::Reference< css::ucb::XSimpleFileAccess3 >& xFileAccess, OUString const & aFileName );
 
     OUString getDocumentTitle();
     bool    SavePresentation();
@@ -204,7 +204,7 @@ class HtmlExport
     /// Output document metadata.
     OUString DocumentMetadata() const;
 
-    void InitExportParameters( const com::sun::star::uno::Sequence< com::sun::star::beans::PropertyValue >& rParams);
+    void InitExportParameters( const css::uno::Sequence< css::beans::PropertyValue >& rParams);
     void ExportHtml();
     void ExportKiosk();
     void ExportWebCast();

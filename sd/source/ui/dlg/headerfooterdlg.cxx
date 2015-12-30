@@ -75,11 +75,11 @@ private:
     void Paint(vcl::RenderContext& rRenderContext, SdrTextObj* pObj, bool bVisible, bool bDotted = false);
 
 public:
-    PresLayoutPreview(vcl::Window* pParent);
+    explicit PresLayoutPreview(vcl::Window* pParent);
     virtual ~PresLayoutPreview();
 
-    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) SAL_OVERRIDE;
-    virtual Size GetOptimalSize() const SAL_OVERRIDE;
+    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) override;
+    virtual Size GetOptimalSize() const override;
 
     void init(SdPage* pMaster);
     void update(HeaderFooterSettings& rSettings);
@@ -146,8 +146,7 @@ private:
     bool            mbHandoutMode;
 
     DECL_LINK_TYPED( UpdateOnClickHdl, Button*, void );
-
-    DECL_LINK( LanguageChangeHdl, void * );
+    DECL_LINK_TYPED( LanguageChangeHdl, ListBox&, void );
 
     void FillFormatList(int eFormat);
     void GetOrSetDateTimeLanguage( LanguageType &rLanguage, bool bSet );
@@ -156,7 +155,7 @@ private:
 public:
     HeaderFooterTabPage( vcl::Window* pParent, SdDrawDocument* pDoc, SdPage* pActualPage, bool bHandoutMode );
     virtual ~HeaderFooterTabPage();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void    init( const HeaderFooterSettings& rSettings, bool bNotOnTitle );
     void    getData( HeaderFooterSettings& rSettings, bool& rNotOnTitle );
@@ -193,7 +192,7 @@ HeaderFooterDialog::HeaderFooterDialog( ViewShell* pViewShell, vcl::Window* pPar
         // handout
         pSlide = pDoc->GetSdPage( 0, PK_STANDARD );
         pNotes = pDoc->GetSdPage( 0, PK_NOTES );
-        mpCurrentPage = NULL;
+        mpCurrentPage = nullptr;
     }
 
     pDoc->StopWorkStartupDelay();
@@ -261,7 +260,7 @@ IMPL_LINK_TYPED( HeaderFooterDialog, ActivatePageHdl, TabControl *, pTabCtrl, vo
     TabPage* pTabPage = pTabCtrl->GetTabPage( nId );
     pTabPage->Show();
     maPBApply->Show( nId == mnSlidesId );
-    maPBApply->Enable( mpCurrentPage != NULL );
+    maPBApply->Enable( mpCurrentPage != nullptr );
 }
 
 IMPL_LINK_NOARG_TYPED(HeaderFooterDialog, ClickApplyToAllHdl, Button*, void)
@@ -477,11 +476,9 @@ void HeaderFooterTabPage::dispose()
     TabPage::dispose();
 }
 
-IMPL_LINK_NOARG(HeaderFooterTabPage, LanguageChangeHdl)
+IMPL_LINK_NOARG_TYPED(HeaderFooterTabPage, LanguageChangeHdl, ListBox&, void)
 {
     FillFormatList( (int)reinterpret_cast<sal_IntPtr>(mpCBDateTimeFormat->GetSelectEntryData()) );
-
-    return 0L;
 }
 
 void HeaderFooterTabPage::FillFormatList( int eFormat )
@@ -637,30 +634,30 @@ void HeaderFooterTabPage::GetOrSetDateTimeLanguage( LanguageType &rLanguage, boo
                 pOutl->SetText( *pOPO );
 
             EFieldInfo aFieldInfo;
-            aFieldInfo.pFieldItem = NULL;
+            aFieldInfo.pFieldItem = nullptr;
 
             sal_Int32 nParaCount = pEdit->GetParagraphCount();
             sal_Int32 nPara;
-            for( nPara = 0; (nPara < nParaCount) && (aFieldInfo.pFieldItem == NULL); nPara++ )
+            for( nPara = 0; (nPara < nParaCount) && (aFieldInfo.pFieldItem == nullptr); nPara++ )
             {
                 sal_uInt16 nFieldCount = pEdit->GetFieldCount( nPara );
                 sal_uInt16 nField;
-                for( nField = 0; (nField < nFieldCount) && (aFieldInfo.pFieldItem == NULL); nField++ )
+                for( nField = 0; (nField < nFieldCount) && (aFieldInfo.pFieldItem == nullptr); nField++ )
                 {
                     aFieldInfo = pEdit->GetFieldInfo( nPara, nField );
                     if( aFieldInfo.pFieldItem )
                     {
                         const SvxFieldData* pFieldData = aFieldInfo.pFieldItem->GetField();
-                        if( pFieldData && (pFieldData->ISA( SvxDateTimeField ) || pFieldData->ISA( SvxDateField )) )
+                        if( pFieldData && ( dynamic_cast< const SvxDateTimeField *>( pFieldData ) != nullptr || dynamic_cast< const SvxDateField *>( pFieldData ) != nullptr))
                         {
                             break;
                         }
                     }
-                    aFieldInfo.pFieldItem = NULL;
+                    aFieldInfo.pFieldItem = nullptr;
                 }
             }
 
-            if( aFieldInfo.pFieldItem != NULL )
+            if( aFieldInfo.pFieldItem != nullptr )
             {
                 if( bSet )
                 {
@@ -695,7 +692,7 @@ void HeaderFooterTabPage::GetOrSetDateTimeLanguage( LanguageType &rLanguage, boo
 
 PresLayoutPreview::PresLayoutPreview( vcl::Window* pParent )
     : Control(pParent)
-    , mpMaster(NULL)
+    , mpMaster(nullptr)
 {
 }
 

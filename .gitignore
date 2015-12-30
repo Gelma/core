@@ -20,6 +20,7 @@
 #
 
 # where stuff is built
+/buck-out
 /instdir
 /instdir_for_build
 /workdir
@@ -31,7 +32,6 @@
 
 # autoconf generated stuff
 /aclocal.m4
-/android/source/AndroidManifest.xml
 /autom4te.cache
 /autogen.input
 /autogen.lastrun
@@ -76,7 +76,13 @@
 \#*
 *.kdev4
 .kdev_include_paths
+.buckd
 .directory
+.cproject
+.project
+.settings
+.eclipsesettingfile
+eclipsesettingfile.xml
 
 # things below this point are targeted for elimination
 
@@ -122,6 +128,8 @@ DerivedData
 *.v12*
 *.vcxproj*
 *.opensdf
+!windows/*.sln
+!windows/*.vcxproj*
 
 # QtCreator specific
 *.pro

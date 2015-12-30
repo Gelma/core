@@ -67,7 +67,7 @@ void SAL_CALL AddonsToolBarWrapper::dispose() throw ( RuntimeException, std::exc
 {
     Reference< XComponent > xThis( static_cast< OWeakObject* >(this), UNO_QUERY );
 
-    com::sun::star::lang::EventObject aEvent( xThis );
+    css::lang::EventObject aEvent( xThis );
     m_aListenerContainer.disposeAndClear( aEvent );
 
     SolarMutexGuard g;
@@ -105,8 +105,8 @@ void SAL_CALL AddonsToolBarWrapper::initialize( const Sequence< Any >& aArgument
         if ( xFrame.is() && m_aConfigData.getLength() > 0 )
         {
             // Create VCL based toolbar which will be filled with settings data
-            ToolBox* pToolBar = 0;
-            AddonsToolBarManager* pToolBarManager = 0;
+            ToolBox* pToolBar = nullptr;
+            AddonsToolBarManager* pToolBarManager = nullptr;
             {
                 SolarMutexGuard aSolarMutexGuard;
                 vcl::Window* pWindow = VCLUnoHelper::GetWindow( xFrame->getContainerWindow() );
@@ -116,7 +116,7 @@ void SAL_CALL AddonsToolBarWrapper::initialize( const Sequence< Any >& aArgument
 
                     pToolBar = VclPtr<ToolBox>::Create( pWindow, nStyles );
                     pToolBarManager = new AddonsToolBarManager( m_xContext, xFrame, m_aResourceURL, pToolBar );
-                    m_xToolBarManager = Reference< XComponent >( static_cast< OWeakObject *>( pToolBarManager ), UNO_QUERY );
+                    m_xToolBarManager.set( static_cast< OWeakObject *>( pToolBarManager ), UNO_QUERY );
                 }
             }
 
@@ -142,7 +142,7 @@ void SAL_CALL AddonsToolBarWrapper::initialize( const Sequence< Any >& aArgument
 }
 
 // XUIElement interface
-Reference< XInterface > SAL_CALL AddonsToolBarWrapper::getRealInterface() throw (::com::sun::star::uno::RuntimeException, std::exception)
+Reference< XInterface > SAL_CALL AddonsToolBarWrapper::getRealInterface() throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard g;
 

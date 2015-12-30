@@ -47,9 +47,9 @@
 #define FILETYPE_OBJECT     3
 
 SvFileObject::SvFileObject()
-    : nPostUserEventId(0)
-    , pDelMed(NULL)
-    , pOldParent(NULL)
+    : nPostUserEventId(nullptr)
+    , mxDelMed()
+    , pOldParent(nullptr)
     , nType(FILETYPE_TEXT)
     , bLoadAgain(true)
     , bSynchron(false)
@@ -73,10 +73,9 @@ SvFileObject::~SvFileObject()
     }
     if (nPostUserEventId)
         Application::RemoveUserEvent(nPostUserEventId);
-    delete pDelMed;
 }
 
-bool SvFileObject::GetData( ::com::sun::star::uno::Any & rData,
+bool SvFileObject::GetData( css::uno::Any & rData,
                                 const OUString & rMimeType,
                                 bool bGetSynchron )
 {
@@ -96,7 +95,7 @@ bool SvFileObject::GetData( ::com::sun::star::uno::Any & rData,
     case FILETYPE_GRF:
         if( !bLoadError )
         {
-            SfxMediumRef xTmpMed;
+            tools::SvRef<SfxMedium> xTmpMed;
 
             if( SotClipboardFormatId::GDIMETAFILE == nFmt || SotClipboardFormatId::BITMAP == nFmt ||
                 SotClipboardFormatId::SVXB == nFmt )
@@ -135,7 +134,7 @@ bool SvFileObject::GetData( ::com::sun::star::uno::Any & rData,
                     bLoadError = !GetGraphic_Impl( aGrf, xMed->GetInStream() );
                 }
                 else if( !LoadFile_Impl() ||
-                        !GetGraphic_Impl( aGrf, xMed.Is() ? xMed->GetInStream() : 0 ))
+                        !GetGraphic_Impl( aGrf, xMed.Is() ? xMed->GetInStream() : nullptr ))
                 {
                     if( !xMed.Is() )
                         break;
@@ -205,7 +204,7 @@ bool SvFileObject::Connect( sfx2::SvBaseLink* pLink )
         return false;
 
     // Test if not another link of the same connection already exists
-    sfx2::LinkManager::GetDisplayNames( pLink, 0, &sFileNm, 0, &sFilter );
+    sfx2::LinkManager::GetDisplayNames( pLink, nullptr, &sFileNm, nullptr, &sFilter );
 
     if( OBJECT_CLIENT_GRF == pLink->GetObjType() )
     {
@@ -266,7 +265,7 @@ bool SvFileObject::LoadFile_Impl()
         bLoadAgain = bDataReady = bInNewData = false;
         bWaitForData = true;
 
-        SfxMediumRef xTmpMed = xMed;
+        tools::SvRef<SfxMedium> xTmpMed = xMed;
         bInCallDownload = true;
         xMed->Download( LINK( this, SvFileObject, LoadGrfReady_Impl ) );
         bInCallDownload = false;
@@ -346,10 +345,9 @@ OUString impl_getFilter( const OUString& _rURL )
 
     try
     {
-        css::uno::Reference< ::com::sun::star::document::XTypeDetection > xTypeDetection(
-            ::comphelper::getProcessServiceFactory()->createInstance(
-                OUString("com.sun.star.document.TypeDetection") ),
-                css::uno::UNO_QUERY );
+        css::uno::Reference< css::document::XTypeDetection > xTypeDetection(
+            ::comphelper::getProcessServiceFactory()->createInstance( "com.sun.star.document.TypeDetection" ),
+            css::uno::UNO_QUERY );
         if ( xTypeDetection.is() )
         {
             utl::MediaDescriptor aDescr;
@@ -379,7 +377,7 @@ OUString impl_getFilter( const OUString& _rURL )
                          * property value (since? expected?) */
                         ::comphelper::SequenceAsHashMap lTypeProps( xTypeCont->getByName( sType ) );
                         sFilter = lTypeProps.getUnpackedValueOrDefault(
-                                OUString("PreferredFilter"), OUString() );
+                                "PreferredFilter", OUString() );
                     }
                 }
             }
@@ -398,7 +396,7 @@ void SvFileObject::Edit( vcl::Window* pParent, sfx2::SvBaseLink* pLink, const Li
     OUString sFile, sRange, sTmpFilter;
     if( pLink && pLink->GetLinkManager() )
     {
-        sfx2::LinkManager::GetDisplayNames( pLink, 0, &sFile, &sRange, &sTmpFilter );
+        sfx2::LinkManager::GetDisplayNames( pLink, nullptr, &sFile, &sRange, &sTmpFilter );
 
         switch( pLink->GetObjType() )
         {
@@ -418,8 +416,7 @@ void SvFileObject::Edit( vcl::Window* pParent, sfx2::SvBaseLink* pLink, const Li
                     sFile += OUString(::sfx2::cTokenSeparator);
                     sFile += aDlg.GetCurrentFilter();
 
-                    if ( aEndEditLink.IsSet() )
-                        aEndEditLink.Call( sFile );
+                    aEndEditLink.Call( sFile );
                 }
                 else
                     sFile.clear();
@@ -486,22 +483,18 @@ IMPL_LINK_NOARG_TYPED( SvFileObject, LoadGrfReady_Impl, void*, void )
         if( xMed.Is() )
         {
             xMed->SetDoneLink( Link<void*,void>() );
-            pDelMed = new SfxMediumRef(xMed);
+            mxDelMed = xMed;
             nPostUserEventId = Application::PostUserEvent(
-                        LINK( this, SvFileObject, DelMedium_Impl ),
-                        pDelMed);
+                        LINK( this, SvFileObject, DelMedium_Impl ));
             xMed.Clear();
         }
     }
 }
 
-IMPL_LINK_TYPED( SvFileObject, DelMedium_Impl, void*, p, void )
+IMPL_LINK_NOARG_TYPED( SvFileObject, DelMedium_Impl, void*, void )
 {
-    SfxMediumRef* deleteMedium = static_cast<SfxMediumRef*>(p);
-    nPostUserEventId = 0;
-    assert(pDelMed == deleteMedium);
-    pDelMed = NULL;
-    delete deleteMedium;
+    nPostUserEventId = nullptr;
+    mxDelMed.Clear();
 }
 
 IMPL_LINK_TYPED( SvFileObject, DialogClosedHdl, sfx2::FileDialogHelper*, _pFileDlg, void )
@@ -525,8 +518,7 @@ IMPL_LINK_TYPED( SvFileObject, DialogClosedHdl, sfx2::FileDialogHelper*, _pFileD
         SAL_WARN( "sfx.appl", "SvFileObject::DialogClosedHdl(): wrong file type" );
     }
 
-    if ( aEndEditLink.IsSet() )
-        aEndEditLink.Call( sFile );
+    aEndEditLink.Call( sFile );
 }
 
 /*  [Description]

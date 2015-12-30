@@ -48,7 +48,7 @@ CenterViewFocusModule::CenterViewFocusModule (Reference<frame::XController>& rxC
     : CenterViewFocusModuleInterfaceBase(MutexOwner::maMutex),
       mbValid(false),
       mxConfigurationController(),
-      mpBase(NULL),
+      mpBase(nullptr),
       mbNewViewCreated(false)
 {
     Reference<XControllerManager> xControllerManager (rxController, UNO_QUERY);
@@ -62,12 +62,12 @@ CenterViewFocusModule::CenterViewFocusModule (Reference<frame::XController>& rxC
         {
             ::sd::DrawController* pController = reinterpret_cast<sd::DrawController*>(
                 xTunnel->getSomething(sd::DrawController::getUnoTunnelId()));
-            if (pController != NULL)
+            if (pController != nullptr)
                 mpBase = pController->GetViewShellBase();
         }
 
         // Check, if all required objects do exist.
-        if (mxConfigurationController.is() && mpBase!=NULL)
+        if (mxConfigurationController.is() && mpBase!=nullptr)
         {
             mbValid = true;
         }
@@ -96,8 +96,8 @@ void SAL_CALL CenterViewFocusModule::disposing()
         mxConfigurationController->removeConfigurationChangeListener(this);
 
     mbValid = false;
-    mxConfigurationController = NULL;
-    mpBase = NULL;
+    mxConfigurationController = nullptr;
+    mpBase = nullptr;
 }
 
 void SAL_CALL CenterViewFocusModule::notifyConfigurationChange (
@@ -133,17 +133,16 @@ void CenterViewFocusModule::HandleNewView (
             AnchorBindingMode_DIRECT));
         Reference<XView> xView;
         if (xViewIds.getLength() > 0)
-            xView = Reference<XView>(
-                mxConfigurationController->getResource(xViewIds[0]),UNO_QUERY);
+            xView.set( mxConfigurationController->getResource(xViewIds[0]),UNO_QUERY);
         Reference<lang::XUnoTunnel> xTunnel (xView, UNO_QUERY);
-        if (xTunnel.is() && mpBase!=NULL)
+        if (xTunnel.is() && mpBase!=nullptr)
         {
             ViewShellWrapper* pViewShellWrapper = reinterpret_cast<ViewShellWrapper*>(
                 xTunnel->getSomething(ViewShellWrapper::getUnoTunnelId()));
-            if (pViewShellWrapper != NULL)
+            if (pViewShellWrapper != nullptr)
             {
                 std::shared_ptr<ViewShell> pViewShell = pViewShellWrapper->GetViewShell();
-                if (pViewShell.get() != NULL)
+                if (pViewShell.get() != nullptr)
                     mpBase->GetViewShellManager()->MoveToTop(*pViewShell);
             }
         }
@@ -158,8 +157,8 @@ void SAL_CALL CenterViewFocusModule::disposing (
         if (rEvent.Source == mxConfigurationController)
         {
             mbValid = false;
-            mxConfigurationController = NULL;
-            mpBase = NULL;
+            mxConfigurationController = nullptr;
+            mpBase = nullptr;
         }
 }
 

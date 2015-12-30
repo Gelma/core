@@ -84,20 +84,20 @@ const SfxFilter* SwIoSystem::GetFilterOfFormat(const OUString& rFormatNm,
             break;
         pFltCnt = &aCntSwWeb;
     } while( true );
-    return 0;
+    return nullptr;
 }
 
-bool SwIoSystem::IsValidStgFilter( const com::sun::star::uno::Reference < com::sun::star::embed::XStorage >& rStg, const SfxFilter& rFilter)
+bool SwIoSystem::IsValidStgFilter( const css::uno::Reference < css::embed::XStorage >& rStg, const SfxFilter& rFilter)
 {
     bool bRet = false;
     try
     {
         SotClipboardFormatId nStgFormatId = SotStorage::GetFormatID( rStg );
-        bRet = rStg->isStreamElement( OUString("content.xml") );
+        bRet = rStg->isStreamElement( "content.xml" );
         if ( bRet )
             bRet = ( nStgFormatId != SotClipboardFormatId::NONE && ( rFilter.GetFormat() == nStgFormatId ) );
     }
-    catch (const com::sun::star::uno::Exception& )
+    catch (const css::uno::Exception& )
     {
     }
 
@@ -120,13 +120,13 @@ bool SwIoSystem::IsValidStgFilter(SotStorage& rStg, const SfxFilter& rFilter)
         /* Bug 62703 - and also WinWord Docs w/o ClipBoardId! */
         if (rFilter.GetUserData() == FILTER_WW8 || rFilter.GetUserData() == sWW6)
         {
-            bRet = (rStg.IsContained(OUString("0Table"))
-                    || rStg.IsContained(OUString("1Table")))
+            bRet = (rStg.IsContained("0Table")
+                    || rStg.IsContained("1Table"))
                 == (rFilter.GetUserData() == FILTER_WW8);
             if (bRet && !rFilter.IsAllowedAsTemplate())
             {
                 tools::SvRef<SotStorageStream> xRef =
-                    rStg.OpenSotStream(OUString("WordDocument"),
+                    rStg.OpenSotStream("WordDocument",
                             STREAM_STD_READ | StreamMode::NOCREATE );
                 xRef->Seek(10);
                 sal_uInt8 nByte;
@@ -151,7 +151,7 @@ const SfxFilter* SwIoSystem::GetFileFilter(const OUString& rFileName)
     SfxFilterMatcherIter aIter( aMatcher );
     const SfxFilter* pFilter = aIter.First();
     if ( !pFilter )
-        return 0;
+        return nullptr;
 
     if (SotStorage::IsStorageFile(rFileName))
     {
@@ -163,7 +163,7 @@ const SfxFilter* SwIoSystem::GetFileFilter(const OUString& rFileName)
         SfxMedium aMedium(aObj.GetMainURL(INetURLObject::NO_DECODE), STREAM_STD_READ);
 
         // templates should not get precedence over "normal" filters (#i35508, #i33168)
-        const SfxFilter* pTemplateFilter = 0;
+        const SfxFilter* pTemplateFilter = nullptr;
         if (aMedium.IsStorage())
         {
             uno::Reference<embed::XStorage> const xStor = aMedium.GetStorage();
@@ -230,7 +230,7 @@ const SfxFilter* SwIoSystem::GetFileFilter(const OUString& rFileName)
         return pFilter;
     }
 
-    return SwIoSystem::GetFilterOfFormat(FILTER_TEXT, 0);
+    return SwIoSystem::GetFilterOfFormat(FILTER_TEXT);
 }
 
 bool SwIoSystem::IsDetectableText(const sal_Char* pBuf, sal_uLong &rLen,

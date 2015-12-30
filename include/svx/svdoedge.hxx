@@ -155,8 +155,8 @@ private:
     friend class                ImpEdgeHdl;
 
 protected:
-    virtual sdr::contact::ViewContact* CreateObjectSpecificViewContact() SAL_OVERRIDE;
-    virtual sdr::properties::BaseProperties* CreateObjectSpecificProperties() SAL_OVERRIDE;
+    virtual sdr::contact::ViewContact* CreateObjectSpecificViewContact() override;
+    virtual sdr::properties::BaseProperties* CreateObjectSpecificProperties() override;
 
     SdrObjConnection            aCon1;  // Verbindungszustand des Linienanfangs
     SdrObjConnection            aCon2;  // Verbindungszustand des Linienendes
@@ -169,12 +169,10 @@ protected:
     bool                        bEdgeTrackDirty : 1; // sal_True=Verbindungsverlauf muss neu berechnet werden.
     bool                        bEdgeTrackUserDefined : 1;
 
-    // #109007#
     // Bool to allow supporession of default connects at object
     // inside test (HitTest) and object center test (see ImpFindConnector())
     bool                        mbSuppressDefaultConnect : 1;
 
-    // #110649#
     // Flag value for avoiding death loops when calculating BoundRects
     // from circulary connected connectors. A coloring algorithm is used
     // here. When the GetCurrentBoundRect() calculation of a SdrEdgeObj
@@ -186,16 +184,14 @@ protected:
     bool                        mbSuppressed : 1;
 
 public:
-    // #109007#
     // Interface to default connect suppression
     void SetSuppressDefaultConnect(bool bNew) { mbSuppressDefaultConnect = bNew; }
     bool GetSuppressDefaultConnect() const { return mbSuppressDefaultConnect; }
 
-    // #110649#
     bool IsBoundRectCalculationRunning() const { return mbBoundRectCalculationRunning; }
 
 protected:
-    virtual void Notify(SfxBroadcaster& rBC, const SfxHint& rHint) SAL_OVERRIDE;
+    virtual void Notify(SfxBroadcaster& rBC, const SfxHint& rHint) override;
 
     static XPolygon ImpCalcObjToCenter(const Point& rStPt, long nEscAngle, const Rectangle& rRect, const Point& rCenter);
     void ImpRecalcEdgeTrack();  // Neuberechnung des Verbindungsverlaufs
@@ -203,7 +199,7 @@ protected:
     XPolygon ImpCalcEdgeTrack(const Point& rPt1, long nAngle1, const Rectangle& rBoundRect1, const Rectangle& rBewareRect1,
         const Point& rPt2, long nAngle2, const Rectangle& rBoundRect2, const Rectangle& rBewareRect2,
         sal_uIntPtr* pnQuality, SdrEdgeInfoRec* pInfo) const;
-    static bool ImpFindConnector(const Point& rPt, const SdrPageView& rPV, SdrObjConnection& rCon, const SdrEdgeObj* pThis, OutputDevice* pOut=NULL);
+    static bool ImpFindConnector(const Point& rPt, const SdrPageView& rPV, SdrObjConnection& rCon, const SdrEdgeObj* pThis, OutputDevice* pOut=nullptr);
     static SdrEscapeDirection ImpCalcEscAngle(SdrObject* pObj, const Point& aPt2);
     void ImpSetTailPoint(bool bTail1, const Point& rPt);
     void ImpUndirtyEdgeTrack();  // eventuelle Neuberechnung des Verbindungsverlaufs
@@ -212,85 +208,84 @@ protected:
     void ImpSetEdgeInfoToAttr(); // Werte vom aEdgeInfo in den Pool kopieren
 
 public:
-    TYPEINFO_OVERRIDE();
 
     SdrEdgeObj();
     virtual ~SdrEdgeObj();
 
     SdrObjConnection& GetConnection(bool bTail1) { return *(bTail1 ? &aCon1 : &aCon2); }
-    virtual void TakeObjInfo(SdrObjTransformInfoRec& rInfo) const SAL_OVERRIDE;
-    virtual sal_uInt16 GetObjIdentifier() const SAL_OVERRIDE;
-    virtual const Rectangle& GetCurrentBoundRect() const SAL_OVERRIDE;
-    virtual const Rectangle& GetSnapRect() const SAL_OVERRIDE;
-    virtual bool IsNode() const SAL_OVERRIDE;
-    virtual SdrGluePoint GetVertexGluePoint(sal_uInt16 nNum) const SAL_OVERRIDE;
-    virtual SdrGluePoint GetCornerGluePoint(sal_uInt16 nNum) const SAL_OVERRIDE;
-    virtual const SdrGluePointList* GetGluePointList() const SAL_OVERRIDE;
-    virtual SdrGluePointList* ForceGluePointList() SAL_OVERRIDE;
+    virtual void TakeObjInfo(SdrObjTransformInfoRec& rInfo) const override;
+    virtual sal_uInt16 GetObjIdentifier() const override;
+    virtual const Rectangle& GetCurrentBoundRect() const override;
+    virtual const Rectangle& GetSnapRect() const override;
+    virtual bool IsNode() const override;
+    virtual SdrGluePoint GetVertexGluePoint(sal_uInt16 nNum) const override;
+    virtual SdrGluePoint GetCornerGluePoint(sal_uInt16 nNum) const override;
+    virtual const SdrGluePointList* GetGluePointList() const override;
+    virtual SdrGluePointList* ForceGluePointList() override;
 
     // bTail1=TRUE: Linienanfang, sonst LinienEnde
     // pObj=NULL: Disconnect
     void SetEdgeTrackDirty() { bEdgeTrackDirty=true; }
-    void ConnectToNode(bool bTail1, SdrObject* pObj) SAL_OVERRIDE;
-    void DisconnectFromNode(bool bTail1) SAL_OVERRIDE;
-    SdrObject* GetConnectedNode(bool bTail1) const SAL_OVERRIDE;
+    void ConnectToNode(bool bTail1, SdrObject* pObj) override;
+    void DisconnectFromNode(bool bTail1) override;
+    SdrObject* GetConnectedNode(bool bTail1) const override;
     const SdrObjConnection& GetConnection(bool bTail1) const { return *(bTail1 ? &aCon1 : &aCon2); }
     bool CheckNodeConnection(bool bTail1) const;
 
-    virtual void RecalcSnapRect() SAL_OVERRIDE;
-    virtual void TakeUnrotatedSnapRect(Rectangle& rRect) const SAL_OVERRIDE;
-    virtual SdrEdgeObj* Clone() const SAL_OVERRIDE;
+    virtual void RecalcSnapRect() override;
+    virtual void TakeUnrotatedSnapRect(Rectangle& rRect) const override;
+    virtual SdrEdgeObj* Clone() const override;
     SdrEdgeObj& operator=(const SdrEdgeObj& rObj);
-    virtual OUString TakeObjNameSingul() const SAL_OVERRIDE;
-    virtual OUString TakeObjNamePlural() const SAL_OVERRIDE;
+    virtual OUString TakeObjNameSingul() const override;
+    virtual OUString TakeObjNamePlural() const override;
 
     void    SetEdgeTrackPath( const basegfx::B2DPolyPolygon& rPoly );
     basegfx::B2DPolyPolygon GetEdgeTrackPath() const;
 
-    virtual basegfx::B2DPolyPolygon TakeXorPoly() const SAL_OVERRIDE;
-    virtual sal_uInt32 GetHdlCount() const SAL_OVERRIDE;
-    virtual SdrHdl* GetHdl(sal_uInt32 nHdlNum) const SAL_OVERRIDE;
+    virtual basegfx::B2DPolyPolygon TakeXorPoly() const override;
+    virtual sal_uInt32 GetHdlCount() const override;
+    virtual SdrHdl* GetHdl(sal_uInt32 nHdlNum) const override;
 
     // special drag methods
-    virtual bool hasSpecialDrag() const SAL_OVERRIDE;
-    virtual bool beginSpecialDrag(SdrDragStat& rDrag) const SAL_OVERRIDE;
-    virtual bool applySpecialDrag(SdrDragStat& rDrag) SAL_OVERRIDE;
-    virtual OUString getSpecialDragComment(const SdrDragStat& rDrag) const SAL_OVERRIDE;
+    virtual bool hasSpecialDrag() const override;
+    virtual bool beginSpecialDrag(SdrDragStat& rDrag) const override;
+    virtual bool applySpecialDrag(SdrDragStat& rDrag) override;
+    virtual OUString getSpecialDragComment(const SdrDragStat& rDrag) const override;
 
     // FullDrag support
-    virtual SdrObject* getFullDragClone() const SAL_OVERRIDE;
+    virtual SdrObject* getFullDragClone() const override;
 
-    virtual void NbcSetSnapRect(const Rectangle& rRect) SAL_OVERRIDE;
-    virtual void NbcMove(const Size& aSize) SAL_OVERRIDE;
-    virtual void NbcResize(const Point& rRefPnt, const Fraction& aXFact, const Fraction& aYFact) SAL_OVERRIDE;
+    virtual void NbcSetSnapRect(const Rectangle& rRect) override;
+    virtual void NbcMove(const Size& aSize) override;
+    virtual void NbcResize(const Point& rRefPnt, const Fraction& aXFact, const Fraction& aYFact) override;
 
     // #i54102# added rotate, mirror and shear support
-    virtual void NbcRotate(const Point& rRef, long nAngle, double sn, double cs) SAL_OVERRIDE;
-    virtual void NbcMirror(const Point& rRef1, const Point& rRef2) SAL_OVERRIDE;
-    virtual void NbcShear(const Point& rRef, long nAngle, double tn, bool bVShear) SAL_OVERRIDE;
+    virtual void NbcRotate(const Point& rRef, long nAngle, double sn, double cs) override;
+    virtual void NbcMirror(const Point& rRef1, const Point& rRef2) override;
+    virtual void NbcShear(const Point& rRef, long nAngle, double tn, bool bVShear) override;
 
     // #102344# Added missing implementation
-    virtual void NbcSetAnchorPos(const Point& rPnt) SAL_OVERRIDE;
+    virtual void NbcSetAnchorPos(const Point& rPnt) override;
 
-    virtual bool BegCreate(SdrDragStat& rStat) SAL_OVERRIDE;
-    virtual bool MovCreate(SdrDragStat& rStat) SAL_OVERRIDE;
-    virtual bool EndCreate(SdrDragStat& rStat, SdrCreateCmd eCmd) SAL_OVERRIDE;
-    virtual bool BckCreate(SdrDragStat& rStat) SAL_OVERRIDE;
-    virtual void BrkCreate(SdrDragStat& rStat) SAL_OVERRIDE;
-    virtual basegfx::B2DPolyPolygon TakeCreatePoly(const SdrDragStat& rDrag) const SAL_OVERRIDE;
-    virtual Pointer GetCreatePointer() const SAL_OVERRIDE;
-    virtual SdrObject* DoConvertToPolyObj(bool bBezier, bool bAddText) const SAL_OVERRIDE;
+    virtual bool BegCreate(SdrDragStat& rStat) override;
+    virtual bool MovCreate(SdrDragStat& rStat) override;
+    virtual bool EndCreate(SdrDragStat& rStat, SdrCreateCmd eCmd) override;
+    virtual bool BckCreate(SdrDragStat& rStat) override;
+    virtual void BrkCreate(SdrDragStat& rStat) override;
+    virtual basegfx::B2DPolyPolygon TakeCreatePoly(const SdrDragStat& rDrag) const override;
+    virtual Pointer GetCreatePointer() const override;
+    virtual SdrObject* DoConvertToPolyObj(bool bBezier, bool bAddText) const override;
 
-    virtual sal_uInt32 GetSnapPointCount() const SAL_OVERRIDE;
-    virtual Point GetSnapPoint(sal_uInt32 i) const SAL_OVERRIDE;
-    virtual bool IsPolyObj() const SAL_OVERRIDE;
-    virtual sal_uInt32 GetPointCount() const SAL_OVERRIDE;
-    virtual Point GetPoint(sal_uInt32 i) const SAL_OVERRIDE;
-    virtual void NbcSetPoint(const Point& rPnt, sal_uInt32 i) SAL_OVERRIDE;
+    virtual sal_uInt32 GetSnapPointCount() const override;
+    virtual Point GetSnapPoint(sal_uInt32 i) const override;
+    virtual bool IsPolyObj() const override;
+    virtual sal_uInt32 GetPointCount() const override;
+    virtual Point GetPoint(sal_uInt32 i) const override;
+    virtual void NbcSetPoint(const Point& rPnt, sal_uInt32 i) override;
 
-    virtual SdrObjGeoData* NewGeoData() const SAL_OVERRIDE;
-    virtual void SaveGeoData(SdrObjGeoData& rGeo) const SAL_OVERRIDE;
-    virtual void RestGeoData(const SdrObjGeoData& rGeo) SAL_OVERRIDE;
+    virtual SdrObjGeoData* NewGeoData() const override;
+    virtual void SaveGeoData(SdrObjGeoData& rGeo) const override;
+    virtual void RestGeoData(const SdrObjGeoData& rGeo) override;
 
     /** updates edges that are connected to the edges of this object
         as if the connected objects send a repaint broadcast
@@ -304,8 +299,8 @@ public:
     void setGluePointIndex( bool bTail, sal_Int32 nId = -1 );
     sal_Int32 getGluePointIndex( bool bTail );
 
-    virtual bool TRGetBaseGeometry(basegfx::B2DHomMatrix& rMatrix, basegfx::B2DPolyPolygon& rPolyPolygon) const SAL_OVERRIDE;
-    virtual void TRSetBaseGeometry(const basegfx::B2DHomMatrix& rMatrix, const basegfx::B2DPolyPolygon& rPolyPolygon) SAL_OVERRIDE;
+    virtual bool TRGetBaseGeometry(basegfx::B2DHomMatrix& rMatrix, basegfx::B2DPolyPolygon& rPolyPolygon) const override;
+    virtual void TRSetBaseGeometry(const basegfx::B2DHomMatrix& rMatrix, const basegfx::B2DPolyPolygon& rPolyPolygon) override;
 
     // for geometry access
     ::basegfx::B2DPolygon getEdgeTrack() const;

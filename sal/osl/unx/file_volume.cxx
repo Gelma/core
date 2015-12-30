@@ -87,8 +87,6 @@
 typedef struct _oslVolumeDeviceHandleImpl
 {
     sal_Char pszMountPoint[PATH_MAX];
-    sal_Char pszFilePath[PATH_MAX];
-    sal_Char pszDevice[PATH_MAX];
     sal_Char ident[4];
     sal_uInt32   RefCount;
 } oslVolumeDeviceHandleImpl;
@@ -297,7 +295,7 @@ static oslFileError osl_psz_getVolumeInformation (
                 rtl_str_getLength(__OSL_STATFS_TYPENAME(sfs)),
                 osl_getThreadTextEncoding(),
                 OUSTRING_TO_OSTRING_CVTFLAGS);
-            OSL_ASSERT(pInfo->ustrFileSystemName != 0);
+            OSL_ASSERT(pInfo->ustrFileSystemName != nullptr);
 
             pInfo->uValidFields |= osl_VolumeInfo_Mask_FileSystemName;
         }
@@ -347,7 +345,7 @@ static rtl_uString* oslMakeUStrFromPsz(const sal_Char* pszStr, rtl_uString** ust
         rtl_str_getLength( pszStr ),
         osl_getThreadTextEncoding(),
         OUSTRING_TO_OSTRING_CVTFLAGS );
-    OSL_ASSERT(*ustrValid != 0);
+    OSL_ASSERT(*ustrValid != nullptr);
 
     return *ustrValid;
 }
@@ -359,7 +357,7 @@ oslFileError osl_getVolumeDeviceMountPath( oslVolumeDeviceHandle Handle, rtl_uSt
 
     Buffer[0] = '\0';
 
-    if ( pItem == 0 || pstrPath == 0 )
+    if ( pItem == nullptr || pstrPath == nullptr )
     {
         return osl_File_E_INVAL;
     }
@@ -388,7 +386,7 @@ oslFileError SAL_CALL osl_acquireVolumeDeviceHandle( oslVolumeDeviceHandle Handl
 {
     oslVolumeDeviceHandleImpl* pItem =static_cast<oslVolumeDeviceHandleImpl*>(Handle);
 
-    if ( pItem == 0 )
+    if ( pItem == nullptr )
     {
         return osl_File_E_INVAL;
     }
@@ -411,7 +409,7 @@ oslFileError osl_releaseVolumeDeviceHandle( oslVolumeDeviceHandle Handle )
 {
     oslVolumeDeviceHandleImpl* pItem =static_cast<oslVolumeDeviceHandleImpl*>(Handle);
 
-    if ( pItem == 0 )
+    if ( pItem == nullptr )
     {
         return osl_File_E_INVAL;
     }

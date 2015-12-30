@@ -229,9 +229,9 @@ VDataSeries::VDataSeries( const uno::Reference< XDataSeries >& xDataSeries )
                     m_aValues_Bubble_Size.init( xDataSequence );
                 else
                 {
-                    VDataSequence* pSequence = new VDataSequence();
-                    pSequence->init( xDataSequence );
-                    maPropertyMap.insert(aRole, pSequence);
+                    VDataSequence aSequence;
+                    aSequence.init(xDataSequence);
+                    m_PropertyMap.insert(std::make_pair(aRole, aSequence));
                 }
             }
             catch( const uno::Exception& e )
@@ -315,12 +315,12 @@ void VDataSeries::doSortByXValues()
 
 void VDataSeries::releaseShapes()
 {
-    m_xGroupShape.set(0);
-    m_xLabelsGroupShape.set(0);
-    m_xErrorXBarsGroupShape.set(0);
-    m_xErrorYBarsGroupShape.set(0);
-    m_xFrontSubGroupShape.set(0);
-    m_xBackSubGroupShape.set(0);
+    m_xGroupShape.set(nullptr);
+    m_xLabelsGroupShape.set(nullptr);
+    m_xErrorXBarsGroupShape.set(nullptr);
+    m_xErrorYBarsGroupShape.set(nullptr);
+    m_xFrontSubGroupShape.set(nullptr);
+    m_xBackSubGroupShape.set(nullptr);
 
     m_aPolyPolygonShape3D.SequenceX.realloc(0);
     m_aPolyPolygonShape3D.SequenceY.realloc(0);
@@ -983,7 +983,7 @@ DataPointLabel* VDataSeries::getDataPointLabelIfLabel( sal_Int32 index ) const
     DataPointLabel* pLabel = this->getDataPointLabel( index );
     if( !pLabel || (!pLabel->ShowNumber && !pLabel->ShowNumberInPercent
         && !pLabel->ShowCategoryName ) )
-        return 0;
+        return nullptr;
     return pLabel;
 }
 
@@ -1087,7 +1087,7 @@ VDataSeries* VDataSeries::createCopyForTimeBased() const
     pNew->m_aValues_Y_First = m_aValues_Y_First;
     pNew->m_aValues_Y_Last = m_aValues_Y_Last;
     pNew->m_aValues_Bubble_Size = m_aValues_Bubble_Size;
-    pNew->maPropertyMap = maPropertyMap;
+    pNew->m_PropertyMap = m_PropertyMap;
 
     pNew->m_nPointCount = m_nPointCount;
 
@@ -1096,16 +1096,15 @@ VDataSeries* VDataSeries::createCopyForTimeBased() const
 
 double VDataSeries::getValueByProperty( sal_Int32 nIndex, const OUString& rPropName ) const
 {
-    boost::ptr_map<OUString, VDataSequence>::const_iterator itr =
-        maPropertyMap.find(rPropName);
-    if(itr == maPropertyMap.end())
+    auto const itr = m_PropertyMap.find(rPropName);
+    if (itr == m_PropertyMap.end())
     {
         double fNan;
         ::rtl::math::setNan( &fNan );
         return fNan;
     }
 
-    const VDataSequence* pData = itr->second;
+    const VDataSequence* pData = &itr->second;
     double fValue = pData->getValue(nIndex);
     if(mpOldSeries && mpOldSeries->hasPropertyMapping(rPropName))
     {
@@ -1129,7 +1128,7 @@ double VDataSeries::getValueByProperty( sal_Int32 nIndex, const OUString& rPropN
 
 bool VDataSeries::hasPropertyMapping(const OUString& rPropName ) const
 {
-    return maPropertyMap.find(rPropName) != maPropertyMap.end();
+    return m_PropertyMap.find(rPropName) != m_PropertyMap.end();
 }
 
 } //namespace chart

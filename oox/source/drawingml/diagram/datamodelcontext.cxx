@@ -44,7 +44,7 @@ public:
 
     virtual ContextHandlerRef
     onCreateContext( sal_Int32 aElementToken,
-                     const AttributeList& rAttribs ) SAL_OVERRIDE
+                     const AttributeList& rAttribs ) override
         {
             switch( aElementToken )
             {
@@ -65,7 +65,7 @@ public:
                     rConnection.mnDestOrder = rAttribs.getInteger( XML_destOrd, 0 );
 
                     // skip CT_extLst
-                    return 0;
+                    return nullptr;
                 }
                 default:
                     break;
@@ -90,7 +90,7 @@ public:
     }
     virtual ContextHandlerRef
     onCreateContext( sal_Int32 aElementToken,
-                     const AttributeList& rAttribs ) SAL_OVERRIDE
+                     const AttributeList& rAttribs ) override
     {
         switch( aElementToken )
         {
@@ -175,7 +175,7 @@ public:
 
     virtual ContextHandlerRef
     onCreateContext( sal_Int32 aElementToken,
-                     const AttributeList& ) SAL_OVERRIDE
+                     const AttributeList& ) override
         {
             switch( aElementToken )
             {
@@ -183,7 +183,7 @@ public:
                 return new PresLayoutVarsContext( *this, mrPoint );
             case DGM_TOKEN( style ):
                 // skip CT_shapeStyle
-                return 0;
+                return nullptr;
             default:
                 break;
             }
@@ -218,12 +218,12 @@ public:
 
     virtual ContextHandlerRef
     onCreateContext( sal_Int32 aElementToken,
-                     const AttributeList& rAttribs ) SAL_OVERRIDE
+                     const AttributeList& rAttribs ) override
         {
             switch( aElementToken )
             {
             case DGM_TOKEN( extLst ):
-                return 0;
+                return nullptr;
             case DGM_TOKEN( prSet ):
                 OSL_TRACE( "diagram property set for point");
                 return new PropertiesContext( *this, mrPoint, rAttribs );
@@ -262,7 +262,7 @@ public:
     {}
     virtual ContextHandlerRef
     onCreateContext( sal_Int32 aElementToken,
-                     const AttributeList& rAttribs ) SAL_OVERRIDE
+                     const AttributeList& rAttribs ) override
         {
             switch( aElementToken )
             {
@@ -296,7 +296,7 @@ public:
 
     virtual ContextHandlerRef
     onCreateContext( sal_Int32 aElementToken,
-                     const AttributeList& rAttribs ) SAL_OVERRIDE
+                     const AttributeList& rAttribs ) override
         {
             switch( aElementToken )
             {
@@ -355,7 +355,7 @@ DataModelContext::onCreateContext( ::sal_Int32 aElement,
     case DGM_TOKEN( whole ):
         // CT_WholeE2oFormatting
         // TODO
-        return 0;
+        return nullptr;
     case DGM_TOKEN( extLst ):
     case A_TOKEN( ext ):
         break;

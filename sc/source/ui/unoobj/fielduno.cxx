@@ -173,11 +173,11 @@ class ScUnoEditEngine : public ScEditEngineDefaulter
     sal_uInt16              nFieldIndex;
 
 public:
-                ScUnoEditEngine(ScEditEngineDefaulter* pSource);
-                virtual ~ScUnoEditEngine();
+    explicit ScUnoEditEngine(ScEditEngineDefaulter* pSource);
+    virtual ~ScUnoEditEngine();
 
     virtual OUString  CalcFieldValue( const SvxFieldItem& rField, sal_Int32 nPara, sal_Int32 nPos,
-                                    Color*& rTxtColor, Color*& rFldColor ) SAL_OVERRIDE;
+                                    Color*& rTxtColor, Color*& rFldColor ) override;
 
     sal_uInt16 CountFields();
     SvxFieldData* FindByIndex(sal_uInt16 nIndex);
@@ -692,7 +692,7 @@ SvxFieldData* ScEditFieldObj::getData()
     return mpData.get();
 }
 
-void ScEditFieldObj::setPropertyValueURL(const OUString& rName, const com::sun::star::uno::Any& rVal)
+void ScEditFieldObj::setPropertyValueURL(const OUString& rName, const css::uno::Any& rVal)
 {
     OUString aStrVal;
     if (mpEditSource)

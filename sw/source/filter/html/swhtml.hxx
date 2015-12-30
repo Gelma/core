@@ -31,8 +31,8 @@
 #include "calbck.hxx"
 #include "htmlvsh.hxx"
 
-#include <boost/ptr_container/ptr_vector.hpp>
-
+#include <memory>
+#include <vector>
 #include <deque>
 
 class SfxMedium;
@@ -88,7 +88,7 @@ class _HTMLAttr
     _HTMLAttr **ppHead; // der Listenkopf
 
     _HTMLAttr( const SwPosition& rPos, const SfxPoolItem& rItem,
-               _HTMLAttr **pHd=0 );
+               _HTMLAttr **pHd=nullptr );
 
     _HTMLAttr( const _HTMLAttr &rAttr, const SwNodeIndex &rEndPara,
                sal_Int32 nEndCnt, _HTMLAttr **pHd );
@@ -122,7 +122,7 @@ public:
 
     _HTMLAttr *GetPrev() const { return pPrev; }
     void InsertPrev( _HTMLAttr *pPrv );
-    void ClearPrev() { pPrev = 0; }
+    void ClearPrev() { pPrev = nullptr; }
 
     void SetHead( _HTMLAttr **ppHd ) { ppHead = ppHd; }
 
@@ -202,7 +202,7 @@ class _HTMLAttrContext
     OUString    aClass;          // die Klasse des Kontexts
 
     _HTMLAttrContext_SaveDoc *pSaveDocContext;
-    SfxItemSet *pFrmItemSet;
+    SfxItemSet *pFrameItemSet;
 
     sal_uInt16  nToken;         // das Token, zu dem der Kontext gehoehrt
 
@@ -233,8 +233,8 @@ public:
     _HTMLAttrContext( sal_uInt16 nTokn, sal_uInt16 nPoolId, const OUString& rClass,
                       bool bDfltColl=false ) :
         aClass( rClass ),
-        pSaveDocContext( 0 ),
-        pFrmItemSet( 0 ),
+        pSaveDocContext( nullptr ),
+        pFrameItemSet( nullptr ),
         nToken( nTokn ),
         nTextFormatColl( nPoolId ),
         nLeftMargin( 0 ),
@@ -255,8 +255,8 @@ public:
     {}
 
     explicit _HTMLAttrContext( sal_uInt16 nTokn ) :
-        pSaveDocContext( 0 ),
-        pFrmItemSet( 0 ),
+        pSaveDocContext( nullptr ),
+        pFrameItemSet( nullptr ),
         nToken( nTokn ),
         nTextFormatColl( 0 ),
         nLeftMargin( 0 ),
@@ -276,7 +276,7 @@ public:
         bRestartListing( false )
     {}
 
-    ~_HTMLAttrContext() { ClearSaveDocContext(); delete pFrmItemSet; }
+    ~_HTMLAttrContext() { ClearSaveDocContext(); delete pFrameItemSet; }
 
     sal_uInt16 GetToken() const { return nToken; }
 
@@ -305,11 +305,11 @@ public:
     void SetPopStack( bool bSet ) { bPopStack = bSet; }
     bool GetPopStack() const { return bPopStack; }
 
-    bool HasSaveDocContext() const { return pSaveDocContext!=0; }
+    bool HasSaveDocContext() const { return pSaveDocContext!=nullptr; }
     _HTMLAttrContext_SaveDoc *GetSaveDocContext( bool bCreate=false );
 
-    const SfxItemSet *GetFrmItemSet() const { return pFrmItemSet; }
-    SfxItemSet *GetFrmItemSet( SwDoc *pCreateDoc );
+    const SfxItemSet *GetFrameItemSet() const { return pFrameItemSet; }
+    SfxItemSet *GetFrameItemSet( SwDoc *pCreateDoc );
 
     void SetFinishPREListingXMP( bool bSet ) { bFinishPREListingXMP = bSet; }
     bool IsFinishPREListingXMP() const { return bFinishPREListingXMP; }
@@ -333,7 +333,7 @@ class HTMLTable;
 class SwCSS1Parser;
 class SwHTMLNumRuleInfo;
 
-typedef boost::ptr_vector<ImageMap> ImageMaps;
+typedef ::std::vector<std::unique_ptr<ImageMap>> ImageMaps;
 
 #define HTML_CNTXT_PROTECT_STACK    0x0001
 #define HTML_CNTXT_STRIP_PARA       0x0002
@@ -357,134 +357,132 @@ class SwHTMLParser : public SfxHTMLParser, public SwClient
     friend class _CellSaveStruct;
     friend class _CaptionSaveStruct;
 
-    OUString      aPathToFile;
-    OUString      sBaseURL;
-    OUString      sSaveBaseURL;
-    OUString      aBasicLib;
-    OUString      aBasicModule;
-    OUString      aScriptSource;  // Inhalt des aktuellen Script-Blocks
-    OUString      aScriptType;    // Type des gelesenen Scripts (StarBasic/VB/JAVA)
-    OUString      aScriptURL;     // URL eines Scripts
-    OUString      aStyleSource;   // Inhalt des aktuellen Style-Sheets
-    OUString      aContents;      // Text des akteullen Marquee, Feldes etc.
-    OUString      sTitle;
-    OUString      aUnknownToken;  // ein gestartetes unbekanntes Token
-    OUString      aBulletGrfs[MAXLEVEL];
-    OUString      sJmpMark;
+    OUString      m_aPathToFile;
+    OUString      m_sBaseURL;
+    OUString      m_aBasicLib;
+    OUString      m_aBasicModule;
+    OUString      m_aScriptSource;  // Inhalt des aktuellen Script-Blocks
+    OUString      m_aScriptType;    // Type des gelesenen Scripts (StarBasic/VB/JAVA)
+    OUString      m_aScriptURL;     // URL eines Scripts
+    OUString      m_aStyleSource;   // Inhalt des aktuellen Style-Sheets
+    OUString      m_aContents;      // Text des akteullen Marquee, Feldes etc.
+    OUString      m_sTitle;
+    OUString      m_aUnknownToken;  // ein gestartetes unbekanntes Token
+    OUString      m_aBulletGrfs[MAXLEVEL];
+    OUString      m_sJmpMark;
 
-    std::vector<sal_uInt16>   aBaseFontStack; // Stack fuer <BASEFONT>
+    std::vector<sal_uInt16>   m_aBaseFontStack; // Stack fuer <BASEFONT>
                                 // Bit 0-2: Fontgroesse (1-7)
-    std::vector<sal_uInt16>   aFontStack;     // Stack fuer <FONT>, <BIG>, <SMALL>
+    std::vector<sal_uInt16>   m_aFontStack;     // Stack fuer <FONT>, <BIG>, <SMALL>
                                 // Bit 0-2: Fontgroesse (1-7)
                                 // Bit 15: Fontfarbe wurde gesetzt
 
-    _HTMLAttrs      aSetAttrTab;// "geschlossene", noch nicht gesetzte Attr.
-    _HTMLAttrs      aParaAttrs; // vorlauefige Absatz-Attribute
-    _HTMLAttrTable  aAttrTab;   // "offene" Attribute
-    _HTMLAttrContexts aContexts;// der aktuelle Attribut/Token-Kontext
-    std::vector<SwFrameFormat *> aMoveFlyFrms;// Fly-Frames, the anchor is moved
-    std::deque<sal_Int32> aMoveFlyCnts;// and the Content-Positions
+    _HTMLAttrs      m_aSetAttrTab;// "geschlossene", noch nicht gesetzte Attr.
+    _HTMLAttrs      m_aParaAttrs; // vorlauefige Absatz-Attribute
+    _HTMLAttrTable  m_aAttrTab;   // "offene" Attribute
+    _HTMLAttrContexts m_aContexts;// der aktuelle Attribut/Token-Kontext
+    std::vector<SwFrameFormat *> m_aMoveFlyFrames;// Fly-Frames, the anchor is moved
+    std::deque<sal_Int32> m_aMoveFlyCnts;// and the Content-Positions
 
-    SwApplet_Impl *pAppletImpl; // das aktuelle Applet
+    SwApplet_Impl *m_pAppletImpl; // das aktuelle Applet
 
-    SwCSS1Parser    *pCSS1Parser;   // der Style-Sheet-Parser
-    SwHTMLNumRuleInfo *pNumRuleInfo;
-    SwPendingStack  *pPendStack;
+    SwCSS1Parser    *m_pCSS1Parser;   // der Style-Sheet-Parser
+    SwHTMLNumRuleInfo *m_pNumRuleInfo;
+    SwPendingStack  *m_pPendStack;
 
-    SwDoc           *pDoc;
-    SwPaM           *pPam;      // SwPosition duerfte doch reichen, oder ??
-    SwViewShell       *pActionViewShell;  // SwViewShell, an der das StartAction
+    SwDoc           *m_pDoc;
+    SwPaM           *m_pPam;      // SwPosition duerfte doch reichen, oder ??
+    SwViewShell       *m_pActionViewShell;  // SwViewShell, an der das StartAction
                                         // gerufen wurde.
-    SwNodeIndex     *pSttNdIdx;
+    SwNodeIndex     *m_pSttNdIdx;
 
-    HTMLTable       *pTable;    // die aktuelle "auesserste" Tabelle
-    SwHTMLForm_Impl *pFormImpl;// die aktuelle Form
-    SdrObject       *pMarquee;  // aktuelles Marquee
-    SwField         *pField;    // aktuelles Feld
-    ImageMap        *pImageMap; // aktuelle Image-Map
-    ImageMaps       *pImageMaps;// alle gelesenen Image-Maps
-    SwHTMLFootEndNote_Impl *pFootEndNoteImpl;
+    HTMLTable       *m_pTable;    // die aktuelle "auesserste" Tabelle
+    SwHTMLForm_Impl *m_pFormImpl;// die aktuelle Form
+    SdrObject       *m_pMarquee;  // aktuelles Marquee
+    SwField         *m_pField;    // aktuelles Feld
+    ImageMap        *m_pImageMap; // aktuelle Image-Map
+    ImageMaps       *m_pImageMaps; ///< all Image-Maps that have been read
+    SwHTMLFootEndNote_Impl *m_pFootEndNoteImpl;
 
-    Size    aHTMLPageSize;      // die Seitengroesse der HTML-Vorlage
+    Size    m_aHTMLPageSize;      // die Seitengroesse der HTML-Vorlage
 
-    sal_uInt32  aFontHeights[7];    // die Font-Hoehen 1-7
-    sal_uInt32  nScriptStartLineNr; // Zeilennummer eines Script-Blocks
-    ImplSVEvent * nEventId;
+    sal_uInt32  m_aFontHeights[7];    // die Font-Hoehen 1-7
+    sal_uInt32  m_nScriptStartLineNr; // Zeilennummer eines Script-Blocks
+    ImplSVEvent * m_nEventId;
 
-    sal_uInt16  nBaseFontStMin;
-    sal_uInt16  nFontStMin;
-    sal_uInt16  nDefListDeep;
-    sal_uInt16  nFontStHeadStart;   // Elemente im Font-Stack bei <Hn>
-    sal_uInt16  nSBModuleCnt;       // Zaehler fuer Basic-Module
-    sal_uInt16  nMissingImgMaps;    // Wie viele Image-Maps fehlen noch?
-    size_t nParaCnt;
-    size_t nContextStMin;           // Untergrenze fuer PopContext
-    size_t nContextStAttrMin;       // Untergrenze fuer Attributierung
-    sal_uInt16  nSelectEntryCnt;    // Anzahl der Eintraege der akt. Listbox
-    sal_uInt16  nOpenParaToken;     // ein geoeffnetes Absatz-Element
+    sal_uInt16  m_nBaseFontStMin;
+    sal_uInt16  m_nFontStMin;
+    sal_uInt16  m_nDefListDeep;
+    sal_uInt16  m_nFontStHeadStart;   // Elemente im Font-Stack bei <Hn>
+    sal_uInt16  m_nSBModuleCnt;       // Zaehler fuer Basic-Module
+    sal_uInt16  m_nMissingImgMaps;    // Wie viele Image-Maps fehlen noch?
+    size_t m_nParaCnt;
+    size_t m_nContextStMin;           // Untergrenze fuer PopContext
+    size_t m_nContextStAttrMin;       // Untergrenze fuer Attributierung
+    sal_uInt16  m_nSelectEntryCnt;    // Anzahl der Eintraege der akt. Listbox
+    sal_uInt16  m_nOpenParaToken;     // ein geoeffnetes Absatz-Element
 
     enum JumpToMarks { JUMPTO_NONE, JUMPTO_MARK, JUMPTO_TABLE, JUMPTO_FRAME,
-                        JUMPTO_REGION, JUMPTO_GRAPHIC } eJumpTo;
+                        JUMPTO_REGION, JUMPTO_GRAPHIC } m_eJumpTo;
 
 #ifdef DBG_UTIL
     sal_uInt16  m_nContinue;        // depth of Continue calls
 #endif
 
-    SvxAdjust   eParaAdjust;    // Ausrichtung des aktuellen Absatz
-    HTMLScriptLanguage eScriptLang; // die aktuelle Script-Language
+    SvxAdjust   m_eParaAdjust;    // Ausrichtung des aktuellen Absatz
+    HTMLScriptLanguage m_eScriptLang; // die aktuelle Script-Language
 
-    bool bOldIsHTMLMode : 1;    // War's mal ein HTML-Dokument?
+    bool m_bOldIsHTMLMode : 1;    // War's mal ein HTML-Dokument?
 
-    bool bDocInitalized : 1;    // Dokument bzw. Shell wurden initialisiert
+    bool m_bDocInitalized : 1;    // Dokument bzw. Shell wurden initialisiert
                                 // Flag um doppeltes init durch Rekursion
                                 // zu verhindern.
-    bool bViewCreated : 1;      // die View wurde schon erzeugt (asynchron)
-    bool bSetCrsr : 1;          // Crsr wieder auf den Anfang setzen
-    bool bSetModEnabled : 1;
+    bool m_bViewCreated : 1;      // die View wurde schon erzeugt (asynchron)
+    bool m_bSetCursor : 1;          // Cursor wieder auf den Anfang setzen
+    bool m_bSetModEnabled : 1;
 
-    bool bInFloatingFrame : 1;  // Wir sind in einen Floating Frame
-    bool bInField : 1;
-    bool bKeepUnknown : 1;      // unbekannte/nicht unterstuetze Tokens beh.
+    bool m_bInFloatingFrame : 1;  // Wir sind in einen Floating Frame
+    bool m_bInField : 1;
+    bool m_bKeepUnknown : 1;      // unbekannte/nicht unterstuetze Tokens beh.
     // 8
-    bool bCallNextToken : 1;    // In Tabellen: NextToken in jedem Fall rufen
-    bool bIgnoreRawData : 1;    // Inhalt eines Scripts/Styles ignorieren.
-    bool bLBEntrySelected : 1;  // Ist der aktuelle Listbox-Eintrag selekt.
-    bool bTAIgnoreNewPara : 1;  // naechstes LF in TextArea ignorieren?
-    bool bFixMarqueeWidth : 1;  // Groesse einer Laufschrift anpassen?
-    bool bFixMarqueeHeight : 1;
+    bool m_bCallNextToken : 1;    // In Tabellen: NextToken in jedem Fall rufen
+    bool m_bIgnoreRawData : 1;    // Inhalt eines Scripts/Styles ignorieren.
+    bool m_bLBEntrySelected : 1;  // Ist der aktuelle Listbox-Eintrag selekt.
+    bool m_bTAIgnoreNewPara : 1;  // naechstes LF in TextArea ignorieren?
+    bool m_bFixMarqueeWidth : 1;  // Groesse einer Laufschrift anpassen?
 
-    bool bUpperSpace : 1;       // obererer Absatz-Abstand wird benoetigt
-    bool bNoParSpace : 1;
+    bool m_bUpperSpace : 1;       // obererer Absatz-Abstand wird benoetigt
+    bool m_bNoParSpace : 1;
     // 16
 
-    bool bAnyStarBasic : 1;     // gibt es ueberhaupt ein StarBasic-Modul
-    bool bInNoEmbed : 1;        // Wir sind in einem NOEMBED-Bereich
+    bool m_bAnyStarBasic : 1;     // gibt es ueberhaupt ein StarBasic-Modul
+    bool m_bInNoEmbed : 1;        // Wir sind in einem NOEMBED-Bereich
 
-    bool bInTitle : 1;          // Wir sind im Titel
+    bool m_bInTitle : 1;          // Wir sind im Titel
 
-    bool bChkJumpMark : 1;      // springe ggfs. zu einem vorgegebenem Mark
-    bool bUpdateDocStat : 1;
-    bool bFixSelectWidth : 1;   // Breite eines Selects neu setzen?
-    bool bFixSelectHeight : 1;  // Breite eines Selects neu setzen?
-    bool bTextArea : 1;
+    bool m_bChkJumpMark : 1;      // springe ggfs. zu einem vorgegebenem Mark
+    bool m_bUpdateDocStat : 1;
+    bool m_bFixSelectWidth : 1;   // Breite eines Selects neu setzen?
+    bool m_bFixSelectHeight : 1;  // Breite eines Selects neu setzen?
+    bool m_bTextArea : 1;
     // 24
-    bool bSelect : 1;
-    bool bInFootEndNoteAnchor : 1;
-    bool bInFootEndNoteSymbol : 1;
-    bool bIgnoreHTMLComments : 1;
-    bool bRemoveHidden : 1; // the filter implementation might set the hidden flag
+    bool m_bSelect : 1;
+    bool m_bInFootEndNoteAnchor : 1;
+    bool m_bInFootEndNoteSymbol : 1;
+    bool m_bIgnoreHTMLComments : 1;
+    bool m_bRemoveHidden : 1; // the filter implementation might set the hidden flag
 
     /// the names corresponding to the DOCINFO field subtypes INFO[1-4]
     OUString m_InfoNames[4];
 
-    SfxViewFrame* pTempViewFrame;
+    SfxViewFrame* m_pTempViewFrame;
 
     void DeleteFormImpl();
 
     void DocumentDetected();
     void Show();
     void ShowStatline();
-    SwViewShell *CallStartAction( SwViewShell *pVSh = 0, bool bChkPtr = true );
+    SwViewShell *CallStartAction( SwViewShell *pVSh = nullptr, bool bChkPtr = true );
     SwViewShell *CallEndAction( bool bChkAction = false, bool bChkPtr = true );
     SwViewShell *CheckActionViewShell();
 
@@ -493,9 +491,9 @@ class SwHTMLParser : public SfxHTMLParser, public SwClient
     // Attribute am Dok setzen
     void _SetAttr( bool bChkEnd, bool bBeforeTable, _HTMLAttrs *pPostIts );
     inline void SetAttr( bool bChkEnd = true, bool bBeforeTable = false,
-                         _HTMLAttrs *pPostIts = 0 )
+                         _HTMLAttrs *pPostIts = nullptr )
     {
-        if( !aSetAttrTab.empty() || !aMoveFlyFrms.empty() )
+        if( !m_aSetAttrTab.empty() || !m_aMoveFlyFrames.empty() )
             _SetAttr( bChkEnd, bBeforeTable, pPostIts );
     }
 
@@ -509,7 +507,7 @@ class SwHTMLParser : public SfxHTMLParser, public SwClient
     // ppDepAttr gibt einen Attribut-Tabellen-Eintrag an, dessen Attribute
     // gesetzt sein muessen, bevor das Attribut beendet werden darf
     void NewAttr( _HTMLAttr **ppAttr, const SfxPoolItem& rItem );
-    bool EndAttr( _HTMLAttr *pAttr, _HTMLAttr **ppDepAttr=0,
+    bool EndAttr( _HTMLAttr *pAttr, _HTMLAttr **ppDepAttr=nullptr,
                   bool bChkEmpty=true );
     void DeleteAttr( _HTMLAttr* pAttr );
 
@@ -545,14 +543,14 @@ class SwHTMLParser : public SfxHTMLParser, public SwClient
 
     SwTwips GetCurrentBrowseWidth();
 
-    SwHTMLNumRuleInfo& GetNumInfo() { return *pNumRuleInfo; }
+    SwHTMLNumRuleInfo& GetNumInfo() { return *m_pNumRuleInfo; }
     // add parameter <bCountedInList>
     void SetNodeNum( sal_uInt8 nLevel, bool bCountedInList );
 
     // Verwalten von Absatz-Vorlagen
 
     // die Vorlagen auf dem Stack bzw. deren Attribute setzen
-    void SetTextCollAttrs( _HTMLAttrContext *pContext = 0 );
+    void SetTextCollAttrs( _HTMLAttrContext *pContext = nullptr );
 
     void InsertParaAttrs( const SfxItemSet& rItemSet );
 
@@ -606,7 +604,7 @@ class SwHTMLParser : public SfxHTMLParser, public SwClient
     void NewMultiCol( sal_uInt16 columnsFromCss=0 );
 
     // <MARQUEE>
-    void NewMarquee( HTMLTable *pCurTable=0 );
+    void NewMarquee( HTMLTable *pCurTable=nullptr );
     void EndMarquee();
     void InsertMarqueeText();
 
@@ -633,8 +631,8 @@ class SwHTMLParser : public SfxHTMLParser, public SwClient
     void NewStdAttr( int nToken );
     void NewStdAttr( int nToken,
                      _HTMLAttr **ppAttr, const SfxPoolItem & rItem,
-                     _HTMLAttr **ppAttr2=0, const SfxPoolItem *pItem2=0,
-                     _HTMLAttr **ppAttr3=0, const SfxPoolItem *pItem3=0 );
+                     _HTMLAttr **ppAttr2=nullptr, const SfxPoolItem *pItem2=nullptr,
+                     _HTMLAttr **ppAttr3=nullptr, const SfxPoolItem *pItem3=nullptr );
     void EndTag( int nToken );
 
     // Font-Attribute behandeln
@@ -669,20 +667,20 @@ private:
                                  sal_Int16 eHoriOri,
                                  const SfxItemSet &rItemSet,
                                  const SvxCSS1PropertyInfo &rPropInfo,
-                                 SfxItemSet& rFrmSet );
+                                 SfxItemSet& rFrameSet );
     void SetAnchorAndAdjustment( sal_Int16 eVertOri,
                                  sal_Int16 eHoriOri,
-                                 SfxItemSet& rFrmSet,
+                                 SfxItemSet& rFrameSet,
                                  bool bDontAppend=false );
     void SetAnchorAndAdjustment( const SfxItemSet &rItemSet,
                                  const SvxCSS1PropertyInfo &rPropInfo,
-                                 SfxItemSet &rFrmItemSet );
+                                 SfxItemSet &rFrameItemSet );
 
     static void SetFrameFormatAttrs( SfxItemSet &rItemSet, SvxCSS1PropertyInfo &rPropInfo,
-                         sal_uInt16 nFlags, SfxItemSet &rFrmItemSet );
+                         sal_uInt16 nFlags, SfxItemSet &rFrameItemSet );
 
     // Frames anlegen und Auto-gebundene Rahmen registrieren
-    void RegisterFlyFrm( SwFrameFormat *pFlyFrm );
+    void RegisterFlyFrame( SwFrameFormat *pFlyFrame );
 
     // Die Groesse des Fly-Frames an die Vorgaben und Gegebenheiten anpassen
     // (nicht fuer Grafiken, deshalb htmlplug.cxx)
@@ -717,7 +715,7 @@ private:
     void InsertParam();     // htmlplug.cxx
 
     void InsertFloatingFrame();
-    void EndFloatingFrame() { bInFloatingFrame = false; }
+    void EndFloatingFrame() { m_bInFloatingFrame = false; }
 
     // <BODY>-Tag auswerten: Hintergrund-Grafiken und -Farben setzen (htmlgrin.cxx)
     void InsertBodyOptions();
@@ -731,8 +729,8 @@ private:
     // eine Bookmark einfuegen
     void InsertBookmark( const OUString& rName );
 
-    void InsertCommentText( const sal_Char *pTag = 0 );
-    void InsertComment( const OUString& rName, const sal_Char *pTag = 0 );
+    void InsertCommentText( const sal_Char *pTag = nullptr );
+    void InsertComment( const OUString& rName, const sal_Char *pTag = nullptr );
 
     // sind im aktuellen Absatz Bookmarks vorhanden?
     bool HasCurrentParaBookmarks( bool bIgnoreStack=false ) const;
@@ -756,12 +754,12 @@ private:
     void EndStyle();
 
     static inline bool HasStyleOptions( const OUString &rStyle, const OUString &rId,
-                                 const OUString &rClass, const OUString *pLang=0,
-                                 const OUString *pDir=0 );
+                                 const OUString &rClass, const OUString *pLang=nullptr,
+                                 const OUString *pDir=nullptr );
     bool ParseStyleOptions( const OUString &rStyle, const OUString &rId,
                             const OUString &rClass, SfxItemSet &rItemSet,
                             SvxCSS1PropertyInfo &rPropInfo,
-                            const OUString *pLang=0, const OUString *pDir=0 );
+                            const OUString *pLang=nullptr, const OUString *pDir=nullptr );
 
     // Inserting Controls and Forms (htmlform.cxx)
 
@@ -772,8 +770,9 @@ private:
                            SfxItemSet& rCSS1ItemSet,
                            SvxCSS1PropertyInfo& rCSS1PropInfo,
                            bool bHidden=false );
-                        ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >  InsertControl( const ::com::sun::star::uno::Reference< ::com::sun::star::form::XFormComponent > & rFormComp,
-                        const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > & rFCompPropSet,
+     css::uno::Reference< css::drawing::XShape >  InsertControl(
+                        const css::uno::Reference< css::form::XFormComponent > & rFormComp,
+                        const css::uno::Reference< css::beans::XPropertySet > & rFCompPropSet,
                         const Size& rSize,
                         sal_Int16 eVertOri,
                         sal_Int16 eHoriOri,
@@ -784,7 +783,7 @@ private:
                         const std::vector<OUString>& rUnoMacroParamTable,
                         bool bSetPropSet = true,
                         bool bHidden = false );
-    void SetControlSize( const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & rShape, const Size& rTextSz,
+    void SetControlSize( const css::uno::Reference< css::drawing::XShape > & rShape, const Size& rTextSz,
                          bool bMinWidth, bool bMinHeight );
 
 public:
@@ -875,33 +874,32 @@ public:         // used in tables
 
 protected:
     // Executed for each token recognized by CallParser
-    virtual void NextToken( int nToken ) SAL_OVERRIDE;
+    virtual void NextToken( int nToken ) override;
     virtual ~SwHTMLParser();
 
     // If the document is removed, remove the parser as well
-    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew ) SAL_OVERRIDE;
+    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew ) override;
 
-    virtual void AddMetaUserDefined( OUString const & i_rMetaName ) SAL_OVERRIDE;
+    virtual void AddMetaUserDefined( OUString const & i_rMetaName ) override;
 
 public:
 
-    SwHTMLParser( SwDoc* pD, SwPaM & rCrsr, SvStream& rIn,
+    SwHTMLParser( SwDoc* pD, SwPaM & rCursor, SvStream& rIn,
                     const OUString& rFileName,
                     const OUString& rBaseURL,
                     bool bReadNewDoc = true,
-                    SfxMedium* pMed = 0, bool bReadUTF8 = false,
+                    SfxMedium* pMed = nullptr, bool bReadUTF8 = false,
                     bool bIgnoreHTMLComments = false );
 
-    virtual SvParserState CallParser() SAL_OVERRIDE;
+    virtual SvParserState CallParser() override;
 
     static sal_uInt16 ToTwips( sal_uInt16 nPixel );
 
     // for reading asynchronously from SvStream
-    virtual void Continue( int nToken ) SAL_OVERRIDE;
+    virtual void Continue( int nToken ) override;
 
-    virtual bool ParseMetaOptions( const ::com::sun::star::uno::Reference<
-                ::com::sun::star::document::XDocumentProperties>&,
-            SvKeyValueIterator* ) SAL_OVERRIDE;
+    virtual bool ParseMetaOptions( const css::uno::Reference<css::document::XDocumentProperties>&,
+            SvKeyValueIterator* ) override;
 };
 
 struct SwPendingStackData
@@ -916,7 +914,7 @@ struct SwPendingStack
     SwPendingStack* pNext;
 
     SwPendingStack( int nTkn, SwPendingStack* pNxt )
-        : nToken( nTkn ), pData( 0 ), pNext( pNxt )
+        : nToken( nTkn ), pData( nullptr ), pNext( pNxt )
         {}
 };
 
@@ -978,7 +976,7 @@ inline bool SwHTMLParser::HasStyleOptions( const OUString &rStyle,
 
 inline void SwHTMLParser::PushContext( _HTMLAttrContext *pCntxt )
 {
-    aContexts.push_back( pCntxt );
+    m_aContexts.push_back( pCntxt );
 }
 
 #endif

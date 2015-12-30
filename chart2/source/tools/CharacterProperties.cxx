@@ -40,6 +40,7 @@
 #include <com/sun/star/i18n/ScriptType.hpp>
 
 #include <comphelper/InlineContainer.hxx>
+#include <comphelper/sequence.hxx>
 
 #include <unotools/lingucfg.hxx>
 #include <i18nlangtag/mslangid.hxx>
@@ -407,11 +408,11 @@ void CharacterProperties::AddDefaultsToMap(
     using namespace ::com::sun::star::i18n::ScriptType;
     LanguageType nLang;
     nLang = MsLangId::resolveSystemLanguageByScriptType(LanguageTag::convertToLanguageType( aDefaultLocale, false), LATIN);
-    vcl::Font aFont = OutputDevice::GetDefaultFont( DefaultFontType::LATIN_SPREADSHEET, nLang, GetDefaultFontFlags::OnlyOne, 0 );
+    vcl::Font aFont = OutputDevice::GetDefaultFont( DefaultFontType::LATIN_SPREADSHEET, nLang, GetDefaultFontFlags::OnlyOne );
     nLang = MsLangId::resolveSystemLanguageByScriptType(LanguageTag::convertToLanguageType( aDefaultLocale_CJK, false), ASIAN);
-    vcl::Font aFontCJK = OutputDevice::GetDefaultFont( DefaultFontType::CJK_SPREADSHEET, nLang, GetDefaultFontFlags::OnlyOne, 0 );
+    vcl::Font aFontCJK = OutputDevice::GetDefaultFont( DefaultFontType::CJK_SPREADSHEET, nLang, GetDefaultFontFlags::OnlyOne );
     nLang = MsLangId::resolveSystemLanguageByScriptType(LanguageTag::convertToLanguageType( aDefaultLocale_CTL, false), COMPLEX);
-    vcl::Font aFontCTL = OutputDevice::GetDefaultFont( DefaultFontType::CTL_SPREADSHEET, nLang, GetDefaultFontFlags::OnlyOne, 0 );
+    vcl::Font aFontCTL = OutputDevice::GetDefaultFont( DefaultFontType::CTL_SPREADSHEET, nLang, GetDefaultFontFlags::OnlyOne );
 
     ::chart::PropertyHelper::setPropertyValueDefault( rOutMap, PROP_CHAR_FONT_NAME, OUString( aFont.GetName() ) );
     ::chart::PropertyHelper::setPropertyValueDefault( rOutMap, PROP_CHAR_FONT_STYLE_NAME, OUString(aFont.GetStyleName()) );
@@ -490,7 +491,7 @@ awt::FontDescriptor CharacterProperties::createFontDescriptorFromPropertySet(
         ( "CharWordMode")                    // WordLineMode
         ;
 
-    uno::Sequence< OUString > aPropNameSeq( ContainerHelper::ContainerToSequence( aPropNames ));
+    uno::Sequence< OUString > aPropNameSeq( comphelper::containerToSequence( aPropNames ));
     uno::Sequence< uno::Any > aValues( xMultiPropSet->getPropertyValues( aPropNameSeq ));
 
     sal_Int32 i=0;

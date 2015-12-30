@@ -84,7 +84,6 @@ using namespace com::sun::star;
 
 // List for 3D-Objects
 
-TYPEINIT1(E3dObjList, SdrObjList);
 
 E3dObjList::E3dObjList(SdrModel* pNewModel, SdrPage* pNewPage, E3dObjList* pNewUpList)
 :   SdrObjList(pNewModel, pNewPage, pNewUpList)
@@ -110,10 +109,10 @@ E3dObjList::~E3dObjList()
 void E3dObjList::NbcInsertObject(SdrObject* pObj, size_t nPos, const SdrInsertReason* pReason)
 {
     // Get owner
-    DBG_ASSERT(GetOwnerObj()->ISA(E3dObject), "Insert 3D object in parent != 3DObject");
+    DBG_ASSERT(dynamic_cast<const E3dObject*>(GetOwnerObj()), "Insert 3D object in parent != 3DObject");
 
     // Is it even a 3D object?
-    if(pObj && pObj->ISA(E3dObject))
+    if(pObj && dynamic_cast<const E3dObject*>(pObj))
     {
         // Normal 3D object, insert means
         // call parent
@@ -128,7 +127,7 @@ void E3dObjList::NbcInsertObject(SdrObject* pObj, size_t nPos, const SdrInsertRe
 
 void E3dObjList::InsertObject(SdrObject* pObj, size_t nPos, const SdrInsertReason* pReason)
 {
-    OSL_ENSURE(GetOwnerObj()->ISA(E3dObject), "Insert 3D object in non-3D Parent");
+    OSL_ENSURE(dynamic_cast<const E3dObject*>(GetOwnerObj()), "Insert 3D object in non-3D Parent");
 
     // call parent
     SdrObjList::InsertObject(pObj, nPos, pReason);
@@ -142,7 +141,7 @@ void E3dObjList::InsertObject(SdrObject* pObj, size_t nPos, const SdrInsertReaso
 
 SdrObject* E3dObjList::NbcRemoveObject(size_t nObjNum)
 {
-    DBG_ASSERT(GetOwnerObj()->ISA(E3dObject), "Remove 3D object from Parent != 3DObject");
+    DBG_ASSERT(dynamic_cast<const E3dObject*>(GetOwnerObj()), "Remove 3D object from Parent != 3DObject");
 
     // call parent
     SdrObject* pRetval = SdrObjList::NbcRemoveObject(nObjNum);
@@ -158,7 +157,7 @@ SdrObject* E3dObjList::NbcRemoveObject(size_t nObjNum)
 
 SdrObject* E3dObjList::RemoveObject(size_t nObjNum)
 {
-    OSL_ENSURE(GetOwnerObj()->ISA(E3dObject), "3D object is removed from non-3D Parent");
+    OSL_ENSURE(dynamic_cast<const E3dObject*>(GetOwnerObj()), "3D object is removed from non-3D Parent");
 
     // call parent
     SdrObject* pRetval = SdrObjList::RemoveObject(nObjNum);
@@ -181,7 +180,6 @@ sdr::properties::BaseProperties* E3dObject::CreateObjectSpecificProperties()
 
 
 
-TYPEINIT1(E3dObject, SdrAttrObj);
 
 E3dObject::E3dObject()
 :   maSubList(),
@@ -228,7 +226,7 @@ bool E3dObject::IsBreakObjPossible()
 
 SdrAttrObj* E3dObject::GetBreakObj()
 {
-    return 0L;
+    return nullptr;
 }
 
 // SetRectsDirty must be done through the local SdrSubList
@@ -503,11 +501,11 @@ void E3dObject::Remove3DObj(E3dObject* p3DObj)
 
 E3dObject* E3dObject::GetParentObj() const
 {
-    E3dObject* pRetval = NULL;
+    E3dObject* pRetval = nullptr;
 
     if(GetObjList()
         && GetObjList()->GetOwnerObj()
-        && GetObjList()->GetOwnerObj()->ISA(E3dObject))
+        && dynamic_cast<const E3dObject*>(GetObjList()->GetOwnerObj()))
         pRetval = static_cast<E3dObject*>(GetObjList()->GetOwnerObj());
     return pRetval;
 }
@@ -518,7 +516,7 @@ E3dScene* E3dObject::GetScene() const
 {
     if(GetParentObj())
         return GetParentObj()->GetScene();
-    return NULL;
+    return nullptr;
 }
 
 // Calculate enclosed volume, including all child objects
@@ -550,15 +548,14 @@ basegfx::B3DRange E3dObject::RecalcBoundVolume() const
         if(pVCOfE3D)
         {
             // BoundVolume is without 3D object transformation, use correct sequence
-            const drawinglayer::primitive3d::Primitive3DSequence xLocalSequence(pVCOfE3D->getVIP3DSWithoutObjectTransform());
+            const drawinglayer::primitive3d::Primitive3DContainer xLocalSequence(pVCOfE3D->getVIP3DSWithoutObjectTransform());
 
-            if(xLocalSequence.hasElements())
+            if(!xLocalSequence.empty())
             {
                 const uno::Sequence< beans::PropertyValue > aEmptyParameters;
                 const drawinglayer::geometry::ViewInformation3D aLocalViewInformation3D(aEmptyParameters);
 
-                aRetval = drawinglayer::primitive3d::getB3DRangeFromPrimitive3DSequence(
-                    xLocalSequence, aLocalViewInformation3D);
+                aRetval = xLocalSequence.getB3DRange(aLocalViewInformation3D);
             }
         }
     }
@@ -659,7 +656,7 @@ void E3dObject::SetTransform(const basegfx::B3DHomMatrix& rMatrix)
         NbcSetTransform(rMatrix);
         SetChanged();
         BroadcastObjectChange();
-        if (pUserCall != NULL) pUserCall->Changed(*this, SDRUSERCALL_RESIZE, Rectangle());
+        if (pUserCall != nullptr) pUserCall->Changed(*this, SDRUSERCALL_RESIZE, Rectangle());
     }
 }
 
@@ -776,7 +773,6 @@ sdr::properties::BaseProperties* E3dCompoundObject::CreateObjectSpecificProperti
 
 
 
-TYPEINIT1(E3dCompoundObject, E3dObject);
 
 E3dCompoundObject::E3dCompoundObject()
 :   E3dObject(),
@@ -910,13 +906,12 @@ void E3dCompoundObject::RecalcSnapRect()
         if(pVCOfE3D)
         {
             // get 3D primitive sequence
-            const drawinglayer::primitive3d::Primitive3DSequence xLocalSequence(pVCOfE3D->getViewIndependentPrimitive3DSequence());
+            const drawinglayer::primitive3d::Primitive3DContainer xLocalSequence(pVCOfE3D->getViewIndependentPrimitive3DContainer());
 
-            if(xLocalSequence.hasElements())
+            if(!xLocalSequence.empty())
             {
                 // get BoundVolume
-                basegfx::B3DRange aBoundVolume(drawinglayer::primitive3d::getB3DRangeFromPrimitive3DSequence(
-                    xLocalSequence, aViewInfo3D));
+                basegfx::B3DRange aBoundVolume(xLocalSequence.getB3DRange(aViewInfo3D));
 
                 // transform bound volume to relative scene coordinates
                 aBoundVolume.transform(aViewInfo3D.getObjectToView());
@@ -968,7 +963,7 @@ bool E3dCompoundObject::IsAOrdNumRemapCandidate(E3dScene*& prScene) const
 {
     if(GetObjList()
         && GetObjList()->GetOwnerObj()
-        && GetObjList()->GetOwnerObj()->ISA(E3dScene))
+        && dynamic_cast<const E3dObject*>(GetObjList()->GetOwnerObj()))
     {
         prScene = static_cast<E3dScene*>(GetObjList()->GetOwnerObj());
         return true;

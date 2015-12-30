@@ -98,7 +98,7 @@ class SVGExport : public SvXMLExport
 
 public:
 
-    SVGExport( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rContext,
+    SVGExport( const css::uno::Reference< css::uno::XComponentContext >& rContext,
                 const Reference< XDocumentHandler >& rxHandler,
                 const Sequence< PropertyValue >& rFilterData );
 
@@ -114,11 +114,11 @@ public:
 
 protected:
 
-    virtual void            _ExportStyles( bool /* bUsed */ ) SAL_OVERRIDE {}
-    virtual void            _ExportAutoStyles() SAL_OVERRIDE {}
-    virtual void            _ExportContent() SAL_OVERRIDE {}
-    virtual void            _ExportMasterStyles() SAL_OVERRIDE {}
-    virtual sal_uInt32        exportDoc( enum ::xmloff::token::XMLTokenEnum /* eClass */ ) SAL_OVERRIDE { return 0; }
+    virtual void            _ExportStyles( bool /* bUsed */ ) override {}
+    virtual void            _ExportAutoStyles() override {}
+    virtual void            _ExportContent() override {}
+    virtual void            _ExportMasterStyles() override {}
+    virtual sal_uInt32        exportDoc( enum ::xmloff::token::XMLTokenEnum /* eClass */ ) override { return 0; }
 
 private:
 
@@ -144,7 +144,7 @@ public:
     bool                          operator==( const ObjectRepresentation& rPresentation ) const;
 
     const Reference< XInterface >&    GetObject() const { return mxObject; }
-    bool                          HasRepresentation() const { return mpMtf != NULL; }
+    bool                          HasRepresentation() const { return mpMtf != nullptr; }
     const GDIMetaFile&                GetRepresentation() const { return *mpMtf; }
 };
 
@@ -240,9 +240,9 @@ private:
     Sequence< PropertyValue >           maFilterData;
     // #i124608# explicit ShapeSelection for export when export of the selection is wanted
     Reference< XShapes >                maShapeSelection;
-    bool                                mbExportSelection;
+    bool                                mbExportShapeSelection;
     XDrawPageSequence                   mSelectedPages;
-    XDrawPageSequence                   mMasterPageTargets;
+    std::vector< Reference< XDrawPage > > mMasterPageTargets;
 
     Link<EditFieldInfo*,void>           maOldFieldHdl;
     Link<EditFieldInfo*,void>           maNewFieldHdl;
@@ -263,7 +263,7 @@ private:
     bool                            implExportDocument();
     bool                            implExportAnimations();
 
-    bool                            implExportMasterPages( const XDrawPageSequence& rxPages,
+    bool                            implExportMasterPages( const std::vector< Reference< XDrawPage > >& rxPages,
                                                                sal_Int32 nFirstPage, sal_Int32 nLastPage );
     bool                            implExportDrawPages( const XDrawPageSequence& rxPages,
                                                              sal_Int32 nFirstPage, sal_Int32 nLastPage );
@@ -298,17 +298,17 @@ private:
 protected:
 
     // XFilter
-    virtual sal_Bool SAL_CALL filter( const Sequence< PropertyValue >& rDescriptor ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL cancel( ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual sal_Bool SAL_CALL filter( const Sequence< PropertyValue >& rDescriptor ) throw(RuntimeException, std::exception) override;
+    virtual void SAL_CALL cancel( ) throw (RuntimeException, std::exception) override;
 
     // XImporter
-    virtual void SAL_CALL setTargetDocument( const Reference< XComponent >& xDoc ) throw(IllegalArgumentException, RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL setTargetDocument( const Reference< XComponent >& xDoc ) throw(IllegalArgumentException, RuntimeException, std::exception) override;
 
     // XExporter
-    virtual void SAL_CALL setSourceDocument( const Reference< XComponent >& xDoc ) throw(IllegalArgumentException, RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL setSourceDocument( const Reference< XComponent >& xDoc ) throw(IllegalArgumentException, RuntimeException, std::exception) override;
 
     // XExtendedFilterDetection
-    virtual OUString SAL_CALL detect( Sequence< PropertyValue >& io_rDescriptor ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL detect( Sequence< PropertyValue >& io_rDescriptor ) throw (RuntimeException, std::exception) override;
 
 public:
 

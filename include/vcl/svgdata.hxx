@@ -21,20 +21,19 @@
 #define INCLUDED_VCL_SVGDATA_HXX
 
 #include <basegfx/range/b2drange.hxx>
-#include <boost/shared_array.hpp>
 #include <com/sun/star/graphic/XPrimitive2D.hpp>
 #include <vcl/bitmapex.hxx>
 #include <rtl/ustring.hxx>
 
 
-typedef boost::shared_array< sal_uInt8 > SvgDataArray;
+typedef css::uno::Sequence<sal_Int8> SvgDataArray;
 
 
 // helper to convert any Primitive2DSequence to a good quality BitmapEx,
 // using default parameters and graphic::XPrimitive2DRenderer
 
 BitmapEx VCL_DLLPUBLIC convertPrimitive2DSequenceToBitmapEx(
-    const css::uno::Sequence< css::uno::Reference< css::graphic::XPrimitive2D > >& rSequence,
+    const std::vector< css::uno::Reference< css::graphic::XPrimitive2D > >& rSequence,
     const basegfx::B2DRange& rTargetRange,
     const sal_uInt32 nMaximumQuadraticPixels = 500000);
 
@@ -44,14 +43,13 @@ class VCL_DLLPUBLIC SvgData
 private:
     // the file and length
     SvgDataArray            maSvgDataArray;
-    sal_uInt32              mnSvgDataArrayLength;
 
     // The absolute Path if available
     OUString           maPath;
 
     // on demand created content
     basegfx::B2DRange       maRange;
-    css::uno::Sequence< css::uno::Reference< css::graphic::XPrimitive2D > >
+    std::vector< css::uno::Reference< css::graphic::XPrimitive2D > >
                             maSequence;
     BitmapEx                maReplacement;
 
@@ -59,21 +57,21 @@ private:
     void ensureReplacement();
     void ensureSequenceAndRange();
 
-    SvgData(const SvgData&) SAL_DELETED_FUNCTION;
-    SvgData& operator=(const SvgData&) SAL_DELETED_FUNCTION;
+    SvgData(const SvgData&) = delete;
+    SvgData& operator=(const SvgData&) = delete;
 
 public:
-    SvgData(const SvgDataArray& rSvgDataArray, sal_uInt32 nSvgDataArrayLength, const OUString& rPath);
+    SvgData(const SvgDataArray& rSvgDataArray, const OUString& rPath);
     SvgData(const OUString& rPath);
 
     /// data read
     const SvgDataArray& getSvgDataArray() const { return maSvgDataArray; }
-    sal_uInt32 getSvgDataArrayLength() const { return mnSvgDataArrayLength; }
+    sal_uInt32 getSvgDataArrayLength() const { return maSvgDataArray.getLength(); }
     const OUString& getPath() const { return maPath; }
 
     /// data read and evtl. on demand creation
     const basegfx::B2DRange& getRange() const;
-    const css::uno::Sequence< css::uno::Reference< css::graphic::XPrimitive2D > >& getPrimitive2DSequence() const;
+    const std::vector< css::uno::Reference< css::graphic::XPrimitive2D > >& getPrimitive2DSequence() const;
     const BitmapEx& getReplacement() const;
 };
 

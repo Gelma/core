@@ -33,7 +33,6 @@ using ::xmloff::token::IsXMLToken;
 using ::xmloff::token::XML_P;
 using ::xmloff::token::XML_CHANGE_INFO;
 
-TYPEINIT1( XMLChangeElementImportContext, SvXMLImportContext );
 
 XMLChangeElementImportContext::XMLChangeElementImportContext(
     SvXMLImport& rImport,
@@ -52,7 +51,7 @@ SvXMLImportContext* XMLChangeElementImportContext::CreateChildContext(
     const OUString& rLocalName,
     const Reference<XAttributeList> & xAttrList)
 {
-    SvXMLImportContext* pContext = NULL;
+    SvXMLImportContext* pContext = nullptr;
 
     if ( (XML_NAMESPACE_OFFICE == nPrefix) &&
          IsXMLToken( rLocalName, XML_CHANGE_INFO) )
@@ -69,7 +68,7 @@ SvXMLImportContext* XMLChangeElementImportContext::CreateChildContext(
             GetImport(), nPrefix, rLocalName, xAttrList,
             XML_TEXT_TYPE_CHANGED_REGION);
 
-        if (NULL == pContext)
+        if (nullptr == pContext)
         {
             // no text element
             // illegal element content! TODO: discard this redline!
@@ -82,7 +81,6 @@ SvXMLImportContext* XMLChangeElementImportContext::CreateChildContext(
     return pContext;
 }
 
-// #107848#
 void XMLChangeElementImportContext::StartElement( const Reference< XAttributeList >& )
 {
     if(bAcceptContent)
@@ -91,7 +89,6 @@ void XMLChangeElementImportContext::StartElement( const Reference< XAttributeLis
     }
 }
 
-// #107848#
 void XMLChangeElementImportContext::EndElement()
 {
     if(bAcceptContent)

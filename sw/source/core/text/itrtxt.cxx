@@ -33,92 +33,92 @@
 #include "txtfrm.hxx"
 #include "porfly.hxx"
 
-void SwTextIter::CtorInitTextIter( SwTextFrm *pNewFrm, SwTextInfo *pNewInf )
+void SwTextIter::CtorInitTextIter( SwTextFrame *pNewFrame, SwTextInfo *pNewInf )
 {
-    SwTextNode *pNode = pNewFrm->GetTextNode();
+    SwTextNode *pNode = pNewFrame->GetTextNode();
 
-    OSL_ENSURE( pNewFrm->GetPara(), "No paragraph" );
+    OSL_ENSURE( pNewFrame->GetPara(), "No paragraph" );
 
-    CtorInitAttrIter( *pNode, pNewFrm->GetPara()->GetScriptInfo(), pNewFrm );
+    CtorInitAttrIter( *pNode, pNewFrame->GetPara()->GetScriptInfo(), pNewFrame );
 
-    pFrm = pNewFrm;
-    pInf = pNewInf;
-    aLineInf.CtorInitLineInfo( pNode->GetSwAttrSet(), *pNode );
-    nFrameStart = pFrm->Frm().Pos().Y() + pFrm->Prt().Pos().Y();
+    m_pFrame = pNewFrame;
+    m_pInf = pNewInf;
+    m_aLineInf.CtorInitLineInfo( pNode->GetSwAttrSet(), *pNode );
+    m_nFrameStart = m_pFrame->Frame().Pos().Y() + m_pFrame->Prt().Pos().Y();
     SwTextIter::Init();
 
     // Order is important: only execute FillRegister if GetValue!=0
-    bRegisterOn = pNode->GetSwAttrSet().GetRegister().GetValue()
-        && pFrm->FillRegister( nRegStart, nRegDiff );
+    m_bRegisterOn = pNode->GetSwAttrSet().GetRegister().GetValue()
+        && m_pFrame->FillRegister( m_nRegStart, m_nRegDiff );
 }
 
 void SwTextIter::Init()
 {
-    pCurr = pInf->GetParaPortion();
-    nStart = pInf->GetTextStart();
-    nY = nFrameStart;
-    bPrev = true;
-    pPrev = 0;
-    nLineNr = 1;
+    m_pCurr = m_pInf->GetParaPortion();
+    m_nStart = m_pInf->GetTextStart();
+    m_nY = m_nFrameStart;
+    m_bPrev = true;
+    m_pPrev = nullptr;
+    m_nLineNr = 1;
 }
 
 void SwTextIter::CalcAscentAndHeight( sal_uInt16 &rAscent, sal_uInt16 &rHeight ) const
 {
     rHeight = GetLineHeight();
-    rAscent = pCurr->GetAscent() + rHeight - pCurr->Height();
+    rAscent = m_pCurr->GetAscent() + rHeight - m_pCurr->Height();
 }
 
 SwLineLayout *SwTextIter::_GetPrev()
 {
-    pPrev = 0;
-    bPrev = true;
-    SwLineLayout *pLay = pInf->GetParaPortion();
-    if( pCurr == pLay )
-        return 0;
-    while( pLay->GetNext() != pCurr )
+    m_pPrev = nullptr;
+    m_bPrev = true;
+    SwLineLayout *pLay = m_pInf->GetParaPortion();
+    if( m_pCurr == pLay )
+        return nullptr;
+    while( pLay->GetNext() != m_pCurr )
         pLay = pLay->GetNext();
-    return pPrev = pLay;
+    return m_pPrev = pLay;
 }
 
 const SwLineLayout *SwTextIter::GetPrev()
 {
-    if(! bPrev)
+    if(! m_bPrev)
         _GetPrev();
-    return pPrev;
+    return m_pPrev;
 }
 
 const SwLineLayout *SwTextIter::Prev()
 {
-    if( !bPrev )
+    if( !m_bPrev )
         _GetPrev();
-    if( pPrev )
+    if( m_pPrev )
     {
-        bPrev = false;
-        pCurr = pPrev;
-        nStart = nStart - pCurr->GetLen();
-        nY = nY - GetLineHeight();
-        if( !pCurr->IsDummy() && !(--nLineNr) )
-            ++nLineNr;
-        return pCurr;
+        m_bPrev = false;
+        m_pCurr = m_pPrev;
+        m_nStart = m_nStart - m_pCurr->GetLen();
+        m_nY = m_nY - GetLineHeight();
+        if( !m_pCurr->IsDummy() && !(--m_nLineNr) )
+            ++m_nLineNr;
+        return m_pCurr;
     }
     else
-        return 0;
+        return nullptr;
 }
 
 const SwLineLayout *SwTextIter::Next()
 {
-    if(pCurr->GetNext())
+    if(m_pCurr->GetNext())
     {
-        pPrev = pCurr;
-        bPrev = true;
-        nStart = nStart + pCurr->GetLen();
-        nY += GetLineHeight();
-        if( pCurr->GetLen() || ( nLineNr>1 && !pCurr->IsDummy() ) )
-            ++nLineNr;
-        return pCurr = pCurr->GetNext();
+        m_pPrev = m_pCurr;
+        m_bPrev = true;
+        m_nStart = m_nStart + m_pCurr->GetLen();
+        m_nY += GetLineHeight();
+        if( m_pCurr->GetLen() || ( m_nLineNr>1 && !m_pCurr->IsDummy() ) )
+            ++m_nLineNr;
+        return m_pCurr = m_pCurr->GetNext();
     }
     else
-        return 0;
+        return nullptr;
 }
 
 const SwLineLayout *SwTextIter::NextLine()
@@ -133,7 +133,7 @@ const SwLineLayout *SwTextIter::NextLine()
 
 const SwLineLayout *SwTextIter::GetNextLine() const
 {
-    const SwLineLayout *pNext = pCurr->GetNext();
+    const SwLineLayout *pNext = m_pCurr->GetNext();
     while( pNext && pNext->IsDummy() && pNext->GetNext() )
     {
         pNext = pNext->GetNext();
@@ -143,19 +143,19 @@ const SwLineLayout *SwTextIter::GetNextLine() const
 
 const SwLineLayout *SwTextIter::GetPrevLine()
 {
-    const SwLineLayout *pRoot = pInf->GetParaPortion();
-    if( pRoot == pCurr )
-        return 0;
+    const SwLineLayout *pRoot = m_pInf->GetParaPortion();
+    if( pRoot == m_pCurr )
+        return nullptr;
     const SwLineLayout *pLay = pRoot;
 
-    while( pLay->GetNext() != pCurr )
+    while( pLay->GetNext() != m_pCurr )
         pLay = pLay->GetNext();
 
     if( pLay->IsDummy() )
     {
         const SwLineLayout *pTmp = pRoot;
-        pLay = pRoot->IsDummy() ? 0 : pRoot;
-        while( pTmp->GetNext() != pCurr )
+        pLay = pRoot->IsDummy() ? nullptr : pRoot;
+        while( pTmp->GetNext() != m_pCurr )
         {
             if( !pTmp->IsDummy() )
                 pLay = pTmp;
@@ -171,7 +171,7 @@ const SwLineLayout *SwTextIter::PrevLine()
 {
     const SwLineLayout *pMyPrev = Prev();
     if( !pMyPrev )
-        return 0;
+        return nullptr;
 
     const SwLineLayout *pLast = pMyPrev;
     while( pMyPrev && pMyPrev->IsDummy() )
@@ -192,23 +192,23 @@ void SwTextIter::Bottom()
 
 void SwTextIter::CharToLine(const sal_Int32 nChar)
 {
-    while( nStart + pCurr->GetLen() <= nChar && Next() )
+    while( m_nStart + m_pCurr->GetLen() <= nChar && Next() )
         ;
-    while( nStart > nChar && Prev() )
+    while( m_nStart > nChar && Prev() )
         ;
 }
 
 // 1170: beruecksichtigt Mehrdeutigkeiten:
-const SwLineLayout *SwTextCursor::CharCrsrToLine( const sal_Int32 nPosition )
+const SwLineLayout *SwTextCursor::CharCursorToLine( const sal_Int32 nPosition )
 {
     CharToLine( nPosition );
-    if( nPosition != nStart )
+    if( nPosition != m_nStart )
         bRightMargin = false;
-    bool bPrevious = bRightMargin && pCurr->GetLen() && GetPrev() &&
+    bool bPrevious = bRightMargin && m_pCurr->GetLen() && GetPrev() &&
         GetPrev()->GetLen();
     if( bPrevious && nPosition && CH_BREAK == GetInfo().GetChar( nPosition-1 ) )
         bPrevious = false;
-    return bPrevious ? PrevLine() : pCurr;
+    return bPrevious ? PrevLine() : m_pCurr;
 }
 
 sal_uInt16 SwTextCursor::AdjustBaseLine( const SwLineLayout& rLine,
@@ -224,7 +224,7 @@ sal_uInt16 SwTextCursor::AdjustBaseLine( const SwLineLayout& rLine,
 
     sal_uInt16 nOfst = rLine.GetRealHeight() - rLine.Height();
 
-    SwTextGridItem const*const pGrid(GetGridItem(pFrm->FindPageFrm()));
+    SwTextGridItem const*const pGrid(GetGridItem(m_pFrame->FindPageFrame()));
 
     if ( pGrid && GetInfo().SnapToGrid() )
     {
@@ -234,7 +234,7 @@ sal_uInt16 SwTextCursor::AdjustBaseLine( const SwLineLayout& rLine,
         if ( GetInfo().IsMulti() )
             // we are inside the GetCharRect recursion for multi portions
             // we center the portion in its surrounding line
-            nOfst = ( pCurr->Height() - nPorHeight ) / 2 + nPorAscent;
+            nOfst = ( m_pCurr->Height() - nPorHeight ) / 2 + nPorAscent;
         else
         {
             // We have to take care for ruby portions.
@@ -272,9 +272,9 @@ sal_uInt16 SwTextCursor::AdjustBaseLine( const SwLineLayout& rLine,
                 nOfst += rLine.Height() - nPorHeight + nPorAscent;
                 break;
             case SvxParaVertAlignItem::AUTOMATIC :
-                if ( bAutoToCentered || GetInfo().GetTextFrm()->IsVertical() )
+                if ( bAutoToCentered || GetInfo().GetTextFrame()->IsVertical() )
                 {
-                    if( GetInfo().GetTextFrm()->IsVertLR() )
+                    if( GetInfo().GetTextFrame()->IsVertLR() )
                             nOfst += rLine.Height() - ( rLine.Height() - nPorHeight ) / 2 - nPorAscent;
                     else
                             nOfst += ( rLine.Height() - nPorHeight ) / 2 + nPorAscent;
@@ -292,11 +292,11 @@ sal_uInt16 SwTextCursor::AdjustBaseLine( const SwLineLayout& rLine,
 
 const SwLineLayout *SwTextIter::TwipsToLine( const SwTwips y)
 {
-    while( nY + GetLineHeight() <= y && Next() )
+    while( m_nY + GetLineHeight() <= y && Next() )
         ;
-    while( nY > y && Prev() )
+    while( m_nY > y && Prev() )
         ;
-    return pCurr;
+    return m_pCurr;
 }
 
 // Local helper function to check, if pCurr needs a field rest portion:
@@ -316,19 +316,19 @@ static bool lcl_NeedsFieldRest( const SwLineLayout* pCurr )
 
 void SwTextIter::TruncLines( bool bNoteFollow )
 {
-    SwLineLayout *pDel = pCurr->GetNext();
-    const sal_Int32 nEnd = nStart + pCurr->GetLen();
+    SwLineLayout *pDel = m_pCurr->GetNext();
+    const sal_Int32 nEnd = m_nStart + m_pCurr->GetLen();
 
     if( pDel )
     {
-        pCurr->SetNext( 0 );
+        m_pCurr->SetNext( nullptr );
         if( GetHints() && bNoteFollow )
         {
             GetInfo().GetParaPortion()->SetFollowField( pDel->IsRest() ||
-                                                        lcl_NeedsFieldRest( pCurr ) );
+                                                        lcl_NeedsFieldRest( m_pCurr ) );
 
             // bug 88534: wrong positioning of flys
-            SwTextFrm* pFollow = GetTextFrm()->GetFollow();
+            SwTextFrame* pFollow = GetTextFrame()->GetFollow();
             if ( pFollow && ! pFollow->IsLocked() &&
                  nEnd == pFollow->GetOfst() )
             {
@@ -342,7 +342,7 @@ void SwTextIter::TruncLines( bool bNoteFollow )
                     pLine = pLine->GetNext();
                 }
 
-                SwpHints* pTmpHints = GetTextFrm()->GetTextNode()->GetpSwpHints();
+                SwpHints* pTmpHints = GetTextFrame()->GetTextNode()->GetpSwpHints();
 
                 // examine hints in range nEnd - (nEnd + nRangeChar)
                 for( size_t i = 0; i < pTmpHints->Count(); ++i )
@@ -361,24 +361,24 @@ void SwTextIter::TruncLines( bool bNoteFollow )
         }
         delete pDel;
     }
-    if( pCurr->IsDummy() &&
-        !pCurr->GetLen() &&
-         nStart < GetTextFrm()->GetText().getLength() )
-        pCurr->SetRealHeight( 1 );
+    if( m_pCurr->IsDummy() &&
+        !m_pCurr->GetLen() &&
+         m_nStart < GetTextFrame()->GetText().getLength() )
+        m_pCurr->SetRealHeight( 1 );
     if( GetHints() )
-        pFrm->RemoveFootnote( nEnd );
+        m_pFrame->RemoveFootnote( nEnd );
 }
 
 void SwTextIter::CntHyphens( sal_uInt8 &nEndCnt, sal_uInt8 &nMidCnt) const
 {
     nEndCnt = 0;
     nMidCnt = 0;
-    if ( bPrev && pPrev && !pPrev->IsEndHyph() && !pPrev->IsMidHyph() )
+    if ( m_bPrev && m_pPrev && !m_pPrev->IsEndHyph() && !m_pPrev->IsMidHyph() )
          return;
-    SwLineLayout *pLay = pInf->GetParaPortion();
-    if( pCurr == pLay )
+    SwLineLayout *pLay = m_pInf->GetParaPortion();
+    if( m_pCurr == pLay )
         return;
-    while( pLay != pCurr )
+    while( pLay != m_pCurr )
     {
         if ( pLay->IsEndHyph() )
             nEndCnt++;

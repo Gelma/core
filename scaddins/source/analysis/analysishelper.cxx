@@ -26,6 +26,7 @@
 #include <rtl/math.hxx>
 #include <sal/macros.h>
 #include <algorithm>
+#include <memory>
 #include "analysishelper.hxx"
 #include "analysis.hrc"
 
@@ -39,7 +40,10 @@ using namespace sca::analysis;
 #define INTPAR              true    // first parameter is internal
 
 #define FUNCDATA( FUNCNAME, DBL, OPT, NUMOFPAR, CAT ) \
-    { "get" #FUNCNAME, ANALYSIS_FUNCNAME_##FUNCNAME, ANALYSIS_##FUNCNAME, DBL, OPT, ANALYSIS_DEFFUNCNAME_##FUNCNAME, NUMOFPAR, CAT }
+    { "get" #FUNCNAME, ANALYSIS_FUNCNAME_##FUNCNAME, ANALYSIS_##FUNCNAME, DBL, OPT, ANALYSIS_DEFFUNCNAME_##FUNCNAME, NUMOFPAR, CAT, nullptr }
+
+#define FUNCDATAS( FUNCNAME, DBL, OPT, NUMOFPAR, CAT, SUFFIX ) \
+    { "get" #FUNCNAME, ANALYSIS_FUNCNAME_##FUNCNAME, ANALYSIS_##FUNCNAME, DBL, OPT, ANALYSIS_DEFFUNCNAME_##FUNCNAME, NUMOFPAR, CAT, SUFFIX }
 
 const FuncDataBase pFuncDatas[] =
 {
@@ -48,9 +52,9 @@ const FuncDataBase pFuncDatas[] =
     FUNCDATA( Workday,          UNIQUE,     INTPAR,     3,          FDCat_DateTime ),
     FUNCDATA( Yearfrac,         UNIQUE,     INTPAR,     3,          FDCat_DateTime ),
     FUNCDATA( Edate,            UNIQUE,     INTPAR,     2,          FDCat_DateTime ),
-    FUNCDATA( Weeknum,          DOUBLE,     INTPAR,     2,          FDCat_DateTime ),
+    FUNCDATAS( Weeknum,         DOUBLE,     INTPAR,     2,          FDCat_DateTime, "_EXCEL2003" ),
     FUNCDATA( Eomonth,          UNIQUE,     INTPAR,     2,          FDCat_DateTime ),
-    FUNCDATA( Networkdays,      DOUBLE,     INTPAR,     3,          FDCat_DateTime ),
+    FUNCDATAS( Networkdays,     DOUBLE,     INTPAR,     3,          FDCat_DateTime, "_EXCEL2003" ),
     FUNCDATA( Iseven,           DOUBLE,     STDPAR,     1,          FDCat_Inf ),
     FUNCDATA( Isodd,            DOUBLE,     STDPAR,     1,          FDCat_Inf ),
     FUNCDATA( Multinomial,      UNIQUE,     STDPAR,     1,          FDCat_Math ),
@@ -59,8 +63,8 @@ const FuncDataBase pFuncDatas[] =
     FUNCDATA( Mround,           UNIQUE,     STDPAR,     2,          FDCat_Math ),
     FUNCDATA( Sqrtpi,           UNIQUE,     STDPAR,     1,          FDCat_Math ),
     FUNCDATA( Randbetween,      UNIQUE,     STDPAR,     2,          FDCat_Math ),
-    FUNCDATA( Gcd,              DOUBLE,     INTPAR,     1,          FDCat_Math ),
-    FUNCDATA( Lcm,              DOUBLE,     INTPAR,     1,          FDCat_Math ),
+    FUNCDATAS( Gcd,             DOUBLE,     INTPAR,     1,          FDCat_Math, "_EXCEL2003" ),
+    FUNCDATAS( Lcm,             DOUBLE,     INTPAR,     1,          FDCat_Math, "_EXCEL2003" ),
     FUNCDATA( Besseli,          UNIQUE,     STDPAR,     2,          FDCat_Tech ),
     FUNCDATA( Besselj,          UNIQUE,     STDPAR,     2,          FDCat_Tech ),
     FUNCDATA( Besselk,          UNIQUE,     STDPAR,     2,          FDCat_Tech ),
@@ -743,14 +747,12 @@ OUString ConvertFromDec( double fNum, double fMin, double fMax, sal_uInt16 nBase
         else if( ( bNeg && nLen < nMaxPlaces ) || ( !bNeg && nLen < nPlaces ) )
         {
             sal_Int32   nLeft = nPlaces - nLen;
-            sal_Char*   p = new sal_Char[ nLeft + 1 ];
-            memset( p, bNeg? GetMaxChar( nBase ) : '0', nLeft );
+            std::unique_ptr<sal_Char[]> p( new sal_Char[ nLeft + 1 ] );
+            memset( p.get(), bNeg ? GetMaxChar( nBase ) : '0', nLeft );
             p[ nLeft ] = 0x00;
-            OUString  aTmp( p, nLeft, RTL_TEXTENCODING_MS_1252 );
+            OUString  aTmp( p.get(), nLeft, RTL_TEXTENCODING_MS_1252 );
             aTmp += aRet;
             aRet = aTmp;
-
-            delete[] p;
         }
     }
 
@@ -999,13 +1001,13 @@ double GetAmordegrc( sal_Int32 nNullDate, double fCost, sal_Int32 nDate, sal_Int
         fAmorCoeff = 2.5;
 
     fRate *= fAmorCoeff;
-    double      fNRate = ::rtl::math::round( GetYearFrac( nNullDate, nDate, nFirstPer, nBase ) * fRate * fCost, 0 );
+    double      fNRate = ::rtl::math::round( GetYearFrac( nNullDate, nDate, nFirstPer, nBase ) * fRate * fCost );
     fCost -= fNRate;
     double      fRest = fCost - fRestVal;   // aboriginal cost - residual value - sum of all write-downs
 
     for( sal_uInt32 n = 0 ; n < nPer ; n++ )
     {
-        fNRate = ::rtl::math::round( fRate * fCost, 0 );
+        fNRate = ::rtl::math::round( fRate * fCost );
         fRest -= fNRate;
 
         if( fRest < 0.0 )
@@ -1014,7 +1016,7 @@ double GetAmordegrc( sal_Int32 nNullDate, double fCost, sal_Int32 nDate, sal_Int
             {
                 case 0:
                 case 1:
-                    return ::rtl::math::round( fCost * 0.5, 0 );
+                    return ::rtl::math::round( fCost * 0.5 );
                 default:
                     return 0.0;
             }
@@ -1106,7 +1108,7 @@ double GetOddfprice( sal_Int32 /*nNullDate*/, sal_Int32 /*nSettle*/, sal_Int32 /
     // If you change this to not unconditionally throw, the
     // SAL_WNOUNREACHABLE_CODE_PUSH/POP around the caller in
     // financial.cxx can be removed.
-    throw uno::RuntimeException();  // #87380#
+    throw uno::RuntimeException();
 }
 
 
@@ -1192,7 +1194,7 @@ double GetOddfyield( sal_Int32 /*nNullDate*/, sal_Int32 /*nSettle*/, sal_Int32 /
     // If you change this to not unconditionally throw, the
     // SAL_WNOUNREACHABLE_CODE_PUSH/POP around the caller in
     // financial.cxx can be removed.
-    throw uno::RuntimeException();  // #87380#
+    throw uno::RuntimeException();
 }
 
 
@@ -1402,6 +1404,9 @@ FuncData::FuncData( const FuncDataBase& r, ResMgr& rResMgr ) :
     nCompID( r.nCompListID ),
     eCat( r.eCat )
 {
+    if (r.pSuffix)
+        aSuffix = OUString::createFromAscii( r.pSuffix);
+
     AnalysisRscStrArrLoader aArrLoader( RID_ANALYSIS_DEFFUNCTION_NAMES, nCompID, rResMgr );
     const ResStringArray&   rArr = aArrLoader.GetStringArray();
 
@@ -2541,8 +2546,8 @@ ConvertDataList::~ConvertDataList()
 
 double ConvertDataList::Convert( double fVal, const OUString& rFrom, const OUString& rTo ) throw( uno::RuntimeException, lang::IllegalArgumentException )
 {
-    ConvertData*    pFrom = NULL;
-    ConvertData*    pTo = NULL;
+    ConvertData*    pFrom = nullptr;
+    ConvertData*    pTo = nullptr;
     bool            bSearchFrom = true;
     bool            bSearchTo = true;
     sal_Int16       nLevelFrom = 0;

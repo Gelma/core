@@ -65,7 +65,7 @@
 #include "thessubmenu.hxx"
 
 // static member initialization
-PopupMenu * SfxPopupMenuManager::pStaticThesSubMenu = NULL;
+PopupMenu * SfxPopupMenuManager::pStaticThesSubMenu = nullptr;
 
 using namespace com::sun::star;
 
@@ -100,7 +100,7 @@ void SfxMenuManager::Construct( SfxVirtualMenu& rMenu )
 }
 
 
-void InsertVerbs_Impl( SfxBindings* pBindings, const com::sun::star::uno::Sequence < com::sun::star::embed::VerbDescriptor >& aVerbs, Menu* pMenu )
+void InsertVerbs_Impl( SfxBindings* pBindings, const css::uno::Sequence < css::embed::VerbDescriptor >& aVerbs, Menu* pMenu )
 {
     SfxViewShell *pView = pBindings->GetDispatcher()->GetFrame()->GetViewShell();
     if ( pView && aVerbs.getLength() )
@@ -133,18 +133,17 @@ PopupMenu* InsertThesaurusSubmenu_Impl( SfxBindings* pBindings, Menu* pSVMenu )
 
     // build thesaurus sub menu if look-up string is available
 
-    PopupMenu* pThesSubMenu = 0;
-    SfxPoolItem *pItem = 0;
+    PopupMenu* pThesSubMenu = nullptr;
+    std::unique_ptr<SfxPoolItem> pItem;
     pBindings->QueryState( SID_THES, pItem );
     OUString aThesLookUpStr;
-    SfxStringItem *pStrItem = dynamic_cast< SfxStringItem * >(pItem);
+    SfxStringItem *pStrItem = dynamic_cast< SfxStringItem * >(pItem.get());
     sal_Int32 nDelimPos = -1;
     if (pStrItem)
     {
         aThesLookUpStr = pStrItem->GetValue();
         nDelimPos = aThesLookUpStr.lastIndexOf( '#' );
     }
-    delete pItem;
     if ( !aThesLookUpStr.isEmpty() && nDelimPos != -1 )
     {
         // get synonym list for sub menu
@@ -192,7 +191,7 @@ PopupMenu* InsertThesaurusSubmenu_Impl( SfxBindings* pBindings, Menu* pSVMenu )
         pThesSubMenu->InsertSeparator();
         const OUString sThesaurus( SfxResId(STR_MENU_THESAURUS).toString() );
         pThesSubMenu->InsertItem( 100, sThesaurus );
-        pThesSubMenu->SetItemCommand( 100, OUString(".uno:ThesaurusDialog") );
+        pThesSubMenu->SetItemCommand( 100, ".uno:ThesaurusDialog" );
 
         pSVMenu->InsertSeparator();
         const OUString sSynonyms( SfxResId(STR_MENU_SYNONYMS).toString() );
@@ -255,14 +254,14 @@ void SfxPopupMenuManager::RemoveDisabledEntries()
 sal_uInt16 SfxPopupMenuManager::Execute( const Point& rPos, vcl::Window* pWindow )
 {
     sal_uInt16 nVal = static_cast<PopupMenu*>( GetMenu()->GetSVMenu() )->Execute( pWindow, rPos );
-    delete pStaticThesSubMenu;  pStaticThesSubMenu = NULL;
+    delete pStaticThesSubMenu;  pStaticThesSubMenu = nullptr;
     return nVal;
 }
 
 
 
 SfxMenuManager::SfxMenuManager( Menu* pMenuArg, SfxBindings &rBindings )
-:   pMenu(0),
+:   pMenu(nullptr),
     pBindings(&rBindings)
 {
     bAddClipboardFuncs = false;
@@ -305,8 +304,8 @@ SfxPopupMenuManager* SfxPopupMenuManager::Popup( const ResId& rResId, SfxViewFra
     }
 
     InsertVerbs_Impl( &pFrame->GetBindings(), pFrame->GetViewShell()->GetVerbs(), pSVMenu );
-    Menu* pMenu = NULL;
-    ::com::sun::star::ui::ContextMenuExecuteEvent aEvent;
+    Menu* pMenu = nullptr;
+    css::ui::ContextMenuExecuteEvent aEvent;
     aEvent.SourceWindow = VCLUnoHelper::GetInterface( pWindow );
     aEvent.ExecutePosition.X = rPoint.X();
     aEvent.ExecutePosition.Y = rPoint.Y();
@@ -324,7 +323,7 @@ SfxPopupMenuManager* SfxPopupMenuManager::Popup( const ResId& rResId, SfxViewFra
         return aMgr;
     }
 
-    return 0;
+    return nullptr;
 }
 
 
@@ -355,8 +354,8 @@ void SfxPopupMenuManager::ExecutePopup( const ResId& rResId, SfxViewFrame* pFram
     }
 
     InsertVerbs_Impl( &pFrame->GetBindings(), pFrame->GetViewShell()->GetVerbs(), pSVMenu );
-    Menu* pMenu = NULL;
-    ::com::sun::star::ui::ContextMenuExecuteEvent aEvent;
+    Menu* pMenu = nullptr;
+    css::ui::ContextMenuExecuteEvent aEvent;
     aEvent.SourceWindow = VCLUnoHelper::GetInterface( pWindow );
     aEvent.ExecutePosition.X = rPoint.X();
     aEvent.ExecutePosition.Y = rPoint.Y();
@@ -377,7 +376,7 @@ void SfxPopupMenuManager::ExecutePopup( const ResId& rResId, SfxViewFrame* pFram
         // the (manually inserted) sub-menu needs to be destroyed before
         // aPop gets destroyed.
         delete pThesSubMenu;
-        pThesSubMenu = 0;
+        pThesSubMenu = nullptr;
     }
 
     delete pThesSubMenu;

@@ -222,9 +222,9 @@ namespace
                         {
                             bRealExtensions = !_pDialog->ContentIsFolder( aURL.GetMainURL( INetURLObject::NO_DECODE ) );
                         }
-                        catch( const ::com::sun::star::uno::Exception& )
+                        catch( const css::uno::Exception& )
                         {
-                            DBG_WARNING( "Exception in lcl_autoUpdateFileExtension" );
+                            SAL_INFO( "fpicker", "Exception in lcl_autoUpdateFileExtension" );
                         }
                     }
                 }
@@ -238,7 +238,7 @@ namespace
         }
     }
 
-
+#if defined( UNX )
     bool lcl_getHomeDirectory( const OUString& _rForURL, OUString& /* [out] */ _rHomeDir )
     {
         _rHomeDir.clear();
@@ -273,7 +273,7 @@ namespace
         }
         return !_rHomeDir.isEmpty();
     }
-
+#endif
 
     static OUString lcl_ensureFinalSlash( const OUString& _rDir )
     {
@@ -305,15 +305,15 @@ SvtFileDialog::SvtFileDialog
 ) :
     SvtFileDialog_Base( _pParent, "ExplorerFileDialog", "fps/ui/explorerfiledialog.ui" )
 
-    ,_pCbReadOnly( NULL )
-    ,_pCbLinkBox( NULL)
-    ,_pCbPreviewBox( NULL )
-    ,_pCbSelection( NULL )
-    ,_pPbPlay( NULL )
-    ,_pPrevWin( NULL )
-    ,_pPrevBmp( NULL )
-    ,_pFileView( NULL )
-    ,_pFileNotifier( NULL )
+    ,_pCbReadOnly( nullptr )
+    ,_pCbLinkBox( nullptr)
+    ,_pCbPreviewBox( nullptr )
+    ,_pCbSelection( nullptr )
+    ,_pPbPlay( nullptr )
+    ,_pPrevWin( nullptr )
+    ,_pPrevBmp( nullptr )
+    ,_pFileView( nullptr )
+    ,_pFileNotifier( nullptr )
     ,_pImp( new SvtExpFileDlg_Impl( nBits ) )
     ,_nExtraBits( nExtraBits )
     ,_bIsInExecute( false )
@@ -328,15 +328,15 @@ SvtFileDialog::SvtFileDialog
 
 SvtFileDialog::SvtFileDialog ( vcl::Window* _pParent, WinBits nBits )
     :SvtFileDialog_Base( _pParent, "ExplorerFileDialog", "fps/ui/explorerfiledialog.ui" )
-    ,_pCbReadOnly( NULL )
-    ,_pCbLinkBox( NULL)
-    ,_pCbPreviewBox( NULL )
-    ,_pCbSelection( NULL )
-    ,_pPbPlay( NULL )
-    ,_pPrevWin( NULL )
-    ,_pPrevBmp( NULL )
-    ,_pFileView( NULL )
-    ,_pFileNotifier( NULL )
+    ,_pCbReadOnly( nullptr )
+    ,_pCbLinkBox( nullptr)
+    ,_pCbPreviewBox( nullptr )
+    ,_pCbSelection( nullptr )
+    ,_pPbPlay( nullptr )
+    ,_pPrevWin( nullptr )
+    ,_pPrevBmp( nullptr )
+    ,_pFileView( nullptr )
+    ,_pFileNotifier( nullptr )
     ,_pImp( new SvtExpFileDlg_Impl( nBits ) )
     ,_nExtraBits( 0L )
     ,_bIsInExecute( false )
@@ -368,14 +368,14 @@ class CustomContainer : public vcl::Window
 public:
     CustomContainer(vcl::Window *pParent)
         : Window(pParent)
-        , _pImp(NULL)
-        , _pFileView(NULL)
-        , _pSplitter(NULL)
+        , _pImp(nullptr)
+        , _pFileView(nullptr)
+        , _pSplitter(nullptr)
         , m_nCurrentFocus(FocusState::Prev)
     {
     }
     virtual ~CustomContainer() { disposeOnce(); }
-    virtual void dispose() SAL_OVERRIDE
+    virtual void dispose() override
     {
         _pFileView.clear();
         _pSplitter.clear();
@@ -400,7 +400,7 @@ public:
         m_pFocusWidgets[FocusState::Next] = pNext;
     }
 
-    virtual void Resize() SAL_OVERRIDE
+    virtual void Resize() override
     {
         Window::Resize();
 
@@ -450,7 +450,7 @@ public:
         }
     }
 
-    virtual void GetFocus() SAL_OVERRIDE
+    virtual void GetFocus() override
     {
         if( !_pFileView || !_pImp || !_pImp->_pPlaces )
             return;
@@ -469,7 +469,7 @@ public:
         }
     }
 
-    virtual bool Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE
+    virtual bool Notify( NotifyEvent& rNEvt ) override
     {
         if( rNEvt.GetType() == MouseNotifyEvent::GETFOCUS )
         {
@@ -515,7 +515,7 @@ void SvtFileDialog::dispose()
         SvtViewOptions aDlgOpt( E_DIALOG, _pImp->_aIniKey );
         aDlgOpt.SetWindowState(OStringToOUString(GetWindowState(), osl_getThreadTextEncoding()));
         OUString sUserData = _pFileView->GetConfigString();
-        aDlgOpt.SetUserItem( OUString( "UserData" ),
+        aDlgOpt.SetUserItem( "UserData",
                              makeAny( sUserData ) );
     }
 
@@ -758,7 +758,7 @@ void SvtFileDialog::Init_Impl
     /// read our settings from the configuration
     m_aConfiguration = OConfigurationTreeRoot::createWithComponentContext(
         ::comphelper::getProcessComponentContext(),
-        OUString( "/org.openoffice.Office.UI/FilePicker" )
+        "/org.openoffice.Office.UI/FilePicker"
     );
 
     _pContainer->init(_pImp, _pFileView, _pSplitter, _pImp->_pBtnNewFolder, _pImp->_pEdFileName);
@@ -1232,7 +1232,7 @@ void SvtFileDialog::EnableAutocompletion( bool _bEnable )
 
 
 
-IMPL_LINK_NOARG( SvtFileDialog, FilterSelectHdl_Impl )
+IMPL_LINK_NOARG_TYPED( SvtFileDialog, FilterSelectHdl_Impl, ListBox&, void )
 {
     OUString sSelectedFilterDisplayName;
     SvtFileDialogFilter_Impl* pSelectedFilter = _pImp->GetSelectedFilterEntry( sSelectedFilterDisplayName );
@@ -1302,8 +1302,6 @@ IMPL_LINK_NOARG( SvtFileDialog, FilterSelectHdl_Impl )
             }
         }
     }
-
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(SvtFileDialog, FilterSelectTimerHdl_Impl, Timer*, void)
@@ -1320,10 +1318,9 @@ IMPL_LINK_NOARG_TYPED( SvtFileDialog, FileNameGetFocusHdl_Impl, Control&, void )
 
 
 
-IMPL_LINK_NOARG( SvtFileDialog, FileNameModifiedHdl_Impl )
+IMPL_LINK_NOARG_TYPED( SvtFileDialog, FileNameModifiedHdl_Impl, Edit&, void )
 {
     FileNameGetFocusHdl_Impl( *_pImp->_pEdFileName );
-    return 0;
 }
 
 
@@ -1395,7 +1392,7 @@ SvtFileDialogFilter_Impl* SvtFileDialog::FindFilter_Impl
 */
 
 {
-    SvtFileDialogFilter_Impl* pFoundFilter = NULL;
+    SvtFileDialogFilter_Impl* pFoundFilter = nullptr;
     SvtFileDialogFilterList_Impl& rList = _pImp->m_aFilter;
     sal_uInt16 nFilter = rList.size();
 
@@ -1458,7 +1455,7 @@ void SvtFileDialog::OpenMultiSelection_Impl()
 
 {
     sal_uLong nCount = _pFileView->GetSelectionCount();
-    SvTreeListEntry* pEntry = nCount ? _pFileView->FirstSelected() : NULL;
+    SvTreeListEntry* pEntry = nCount ? _pFileView->FirstSelected() : nullptr;
 
     if ( nCount && pEntry )
         _aPath = SvtFileView::GetURL( pEntry );
@@ -1576,7 +1573,7 @@ IMPL_LINK_TYPED( SvtFileDialog, SelectHdl_Impl, SvTreeListBox*, pBox, void )
 IMPL_LINK_NOARG_TYPED(SvtFileDialog, DblClickHdl_Impl, SvTreeListBox*, bool)
 {
     _pImp->_bDoubleClick = true;
-    OpenHdl_Impl( NULL );
+    OpenHdl_Impl( nullptr );
     _pImp->_bDoubleClick = false;
 
     return false;
@@ -1584,11 +1581,9 @@ IMPL_LINK_NOARG_TYPED(SvtFileDialog, DblClickHdl_Impl, SvTreeListBox*, bool)
 
 
 
-IMPL_LINK_NOARG(SvtFileDialog, EntrySelectHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvtFileDialog, EntrySelectHdl_Impl, ComboBox&, void)
 {
     FileSelect();
-
-    return 0;
 }
 
 
@@ -1806,7 +1801,7 @@ short SvtFileDialog::Execute()
 }
 
 
-void SvtFileDialog::StartExecuteModal( const Link<>& rEndDialogHdl )
+void SvtFileDialog::StartExecuteModal( const Link<Dialog&,void>& rEndDialogHdl )
 {
     PrepareExecute();
 
@@ -1819,7 +1814,7 @@ void SvtFileDialog::onAsyncOperationStarted()
 {
     EnableUI( false );
     // the cancel button must be always enabled
-    _pImp->_pBtnCancel->Enable( true );
+    _pImp->_pBtnCancel->Enable();
     _pImp->_pBtnCancel->GrabFocus();
 }
 
@@ -1827,7 +1822,7 @@ void SvtFileDialog::onAsyncOperationStarted()
 void SvtFileDialog::onAsyncOperationFinished()
 {
     EnableUI( true );
-    m_pCurrentAsyncAction = NULL;
+    m_pCurrentAsyncAction = nullptr;
     if ( !m_bInExecuteAsync )
         _pImp->_pEdFileName->GrabFocus();
         // (if m_bInExecuteAsync is true, then the operation was finished within the minimum wait time,
@@ -1867,13 +1862,13 @@ void SvtFileDialog::displayIOException( const OUString& _rURL, IOErrorCode _eCod
         aException.Classification = InteractionClassification_ERROR;
 
         // let and interaction handler handle this exception
-        ::comphelper::OInteractionRequest* pRequest = NULL;
-        Reference< ::com::sun::star::task::XInteractionRequest > xRequest = pRequest =
+        ::comphelper::OInteractionRequest* pRequest = nullptr;
+        Reference< css::task::XInteractionRequest > xRequest = pRequest =
             new ::comphelper::OInteractionRequest( makeAny( aException ) );
         pRequest->addContinuation( new ::comphelper::OInteractionAbort( ) );
 
         Reference< XInteractionHandler2 > xHandler(
-            InteractionHandler::createWithParent( ::comphelper::getProcessComponentContext(), 0 ) );
+            InteractionHandler::createWithParent( ::comphelper::getProcessComponentContext(), nullptr ) );
         xHandler->handle( xRequest );
     }
     catch( const Exception& )
@@ -2048,7 +2043,7 @@ short SvtFileDialog::PrepareExecute()
         // if applicable set respectively create filter for all files
         if ( !bHasAll )
         {
-            SvtFileDialogFilter_Impl* pAllFilter = implAddFilter( aAll, OUString(FILEDIALOG_FILTER_ALL) );
+            SvtFileDialogFilter_Impl* pAllFilter = implAddFilter( aAll, FILEDIALOG_FILTER_ALL );
             _pImp->InsertFilterListEntry( pAllFilter );
             _pImp->SetCurFilter( pAllFilter, aAll );
         }
@@ -2159,14 +2154,14 @@ void SvtFileDialog::SetStandardDir( const OUString& rStdDir )
     _pImp->SetStandardDir( aObj.GetMainURL( INetURLObject::NO_DECODE ) );
 }
 
-void SvtFileDialog::SetBlackList( const ::com::sun::star::uno::Sequence< OUString >& rBlackList )
+void SvtFileDialog::SetBlackList( const css::uno::Sequence< OUString >& rBlackList )
 {
     _pImp->SetBlackList( rBlackList );
 }
 
 
 
-const ::com::sun::star::uno::Sequence< OUString >& SvtFileDialog::GetBlackList() const
+const css::uno::Sequence< OUString >& SvtFileDialog::GetBlackList() const
 {
     return _pImp->GetBlackList();
 }
@@ -2300,7 +2295,7 @@ void SvtFileDialog::InitSize()
     {
         SetWindowState(OUStringToOString(aDlgOpt.GetWindowState(), osl_getThreadTextEncoding()));
 
-        Any aUserData = aDlgOpt.GetUserItem( OUString( "UserData" ));
+        Any aUserData = aDlgOpt.GetUserItem( "UserData");
         OUString sCfgStr;
         if ( aUserData >>= sCfgStr )
             _pFileView->SetConfigString( sCfgStr );
@@ -2313,7 +2308,7 @@ std::vector<OUString> SvtFileDialog::GetPathList() const
 {
     std::vector<OUString> aList;
     sal_uLong           nCount = _pFileView->GetSelectionCount();
-    SvTreeListEntry*    pEntry = nCount ? _pFileView->FirstSelected() : NULL;
+    SvTreeListEntry*    pEntry = nCount ? _pFileView->FirstSelected() : nullptr;
 
     if ( ! pEntry )
     {
@@ -2442,12 +2437,12 @@ void SvtFileDialog::Resize()
 
 Control* SvtFileDialog::getControl( sal_Int16 _nControlId, bool _bLabelControl ) const
 {
-    Control* pReturn = NULL;
+    Control* pReturn = nullptr;
 
     switch ( _nControlId )
     {
         case CONTROL_FILEVIEW:
-            pReturn = _bLabelControl ? NULL : static_cast< Control* >( _pFileView );
+            pReturn = _bLabelControl ? nullptr : static_cast< Control* >( _pFileView );
             break;
 
         case EDIT_FILEURL:
@@ -2917,22 +2912,20 @@ IMPL_LINK_NOARG_TYPED(QueryFolderNameDialog, OKHdl, Button*, void)
 }
 
 
-IMPL_LINK_NOARG(QueryFolderNameDialog, NameHdl)
+IMPL_LINK_NOARG_TYPED(QueryFolderNameDialog, NameHdl, Edit&, void)
 {
     // trim the strings
     OUString aName = comphelper::string::strip(m_pNameEdit->GetText(), ' ');
     if ( !aName.isEmpty() )
     {
         if ( !m_pOKBtn->IsEnabled() )
-            m_pOKBtn->Enable( true );
+            m_pOKBtn->Enable();
     }
     else
     {
         if ( m_pOKBtn->IsEnabled() )
             m_pOKBtn->Enable( false );
     }
-
-    return 0;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -46,9 +46,9 @@ const sal_Int32 nBytesCount = 32000;
 
 OLESimpleStorage::OLESimpleStorage( uno::Reference< lang::XMultiServiceFactory > xFactory )
 : m_bDisposed( false )
-, m_pStream( NULL )
-, m_pStorage( NULL )
-, m_pListenersContainer( NULL )
+, m_pStream( nullptr )
+, m_pStorage( nullptr )
+, m_pListenersContainer( nullptr )
 , m_xFactory( xFactory )
 , m_bNoTemporaryCopy( false )
 {
@@ -69,15 +69,14 @@ OLESimpleStorage::~OLESimpleStorage()
     if ( m_pListenersContainer )
     {
         delete m_pListenersContainer;
-        m_pListenersContainer = NULL;
+        m_pListenersContainer = nullptr;
     }
 }
 
 
 uno::Sequence< OUString > SAL_CALL OLESimpleStorage::impl_staticGetSupportedServiceNames()
 {
-    uno::Sequence< OUString > aRet(1);
-    aRet[0] = "com.sun.star.embed.OLESimpleStorage";
+    uno::Sequence< OUString > aRet { "com.sun.star.embed.OLESimpleStorage" };
     return aRet;
 }
 
@@ -481,7 +480,7 @@ uno::Any SAL_CALL OLESimpleStorage::getByName( const OUString& aName )
 
         uno::Reference< container::XNameContainer > xResultNameContainer(
             m_xFactory->createInstanceWithArguments(
-                    OUString("com.sun.star.embed.OLESimpleStorage"),
+                    "com.sun.star.embed.OLESimpleStorage",
                     aArgs ),
             uno::UNO_QUERY_THROW );
 
@@ -647,8 +646,8 @@ void SAL_CALL OLESimpleStorage::dispose()
     DELETEZ( m_pStorage );
     DELETEZ( m_pStream );
 
-    m_xStream = uno::Reference< io::XStream >();
-    m_xTempStream = uno::Reference< io::XStream >();
+    m_xStream.clear();
+    m_xTempStream.clear();
 
     m_bDisposed = true;
 }
@@ -689,9 +688,9 @@ void SAL_CALL OLESimpleStorage::removeEventListener(
 
 
 void SAL_CALL OLESimpleStorage::commit()
-        throw ( ::com::sun::star::io::IOException,
-                ::com::sun::star::lang::WrappedTargetException,
-                ::com::sun::star::uno::RuntimeException, std::exception )
+        throw ( css::io::IOException,
+                css::lang::WrappedTargetException,
+                css::uno::RuntimeException, std::exception )
 {
     ::osl::MutexGuard aGuard( m_aMutex );
 
@@ -715,9 +714,9 @@ void SAL_CALL OLESimpleStorage::commit()
 
 
 void SAL_CALL OLESimpleStorage::revert()
-        throw ( ::com::sun::star::io::IOException,
-                ::com::sun::star::lang::WrappedTargetException,
-                ::com::sun::star::uno::RuntimeException, std::exception )
+        throw ( css::io::IOException,
+                css::lang::WrappedTargetException,
+                css::uno::RuntimeException, std::exception )
 {
     ::osl::MutexGuard aGuard( m_aMutex );
 

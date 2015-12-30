@@ -44,11 +44,6 @@
 #include "colorwindow.hxx"
 #include "extrusiondepthdialog.hxx"
 
-
-
-//using ::svtools::ToolbarMenu;
-
-using namespace ::com::sun::star;
 using namespace ::com::sun::star::uno;
 using namespace ::com::sun::star::lang;
 using namespace ::com::sun::star::beans;
@@ -62,7 +57,7 @@ static const sal_Int32 gSkewList[] = { 135, 90, 45, 180, 0, -360, -135, -90, -45
 
 ExtrusionDirectionWindow::ExtrusionDirectionWindow(
     svt::ToolboxController& rController,
-    const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& rFrame,
+    const css::uno::Reference< css::frame::XFrame >& rFrame,
     vcl::Window* pParentWindow
 )
     : ToolbarMenu(rFrame, pParentWindow,
@@ -169,8 +164,8 @@ void ExtrusionDirectionWindow::implSetProjection( sal_Int32 nProjection, bool bE
 
 
 void ExtrusionDirectionWindow::statusChanged(
-    const ::com::sun::star::frame::FeatureStateEvent& Event
-)   throw ( ::com::sun::star::uno::RuntimeException )
+    const css::frame::FeatureStateEvent& Event
+)   throw ( css::uno::RuntimeException )
 {
     if( Event.FeatureURL.Main.equals( msExtrusionDirection ) )
     {
@@ -242,7 +237,7 @@ ExtrusionDirectionControl::ExtrusionDirectionControl(
     const Reference< XComponentContext >& rxContext
 )   : svt::PopupWindowController(
         rxContext,
-        Reference< frame::XFrame >(),
+        Reference< css::frame::XFrame >(),
         OUString( ".uno:ExtrusionDirectionFloater" )
     )
 {
@@ -261,7 +256,7 @@ void SAL_CALL ExtrusionDirectionControl::initialize( const css::uno::Sequence< c
 {
     svt::PopupWindowController::initialize( aArguments );
 
-    ToolBox* pToolBox = 0;
+    ToolBox* pToolBox = nullptr;
     sal_uInt16 nId = 0;
     if ( getToolboxId( nId, &pToolBox ) )
         pToolBox->SetItemBits( nId, pToolBox->GetItemBits( nId ) | ToolBoxItemBits::DROPDOWNONLY );
@@ -279,8 +274,7 @@ OUString SAL_CALL ExtrusionDirectionControl_getImplementationName()
 
 Sequence< OUString > SAL_CALL ExtrusionDirectionControl_getSupportedServiceNames() throw( RuntimeException )
 {
-    Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[0] = "com.sun.star.frame.ToolbarController";
+    Sequence<OUString> aSNS { "com.sun.star.frame.ToolbarController" };
     return aSNS;
 }
 
@@ -336,7 +330,7 @@ double aDepthListMM[] = { 0, 1000, 2500, 5000, 10000 };
 
 ExtrusionDepthWindow::ExtrusionDepthWindow(
     svt::ToolboxController& rController,
-    const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& rFrame,
+    const css::uno::Reference< css::frame::XFrame >& rFrame,
     vcl::Window* pParentWindow
 )   : ToolbarMenu( rFrame, pParentWindow, WB_MOVEABLE|WB_CLOSEABLE|WB_HIDE|WB_3DLOOK)
     , mrController( rController )
@@ -401,8 +395,8 @@ void ExtrusionDepthWindow::implFillStrings( FieldUnit eUnit )
 
 
 void ExtrusionDepthWindow::statusChanged(
-    const ::com::sun::star::frame::FeatureStateEvent& Event
-)   throw ( ::com::sun::star::uno::RuntimeException, std::exception )
+    const css::frame::FeatureStateEvent& Event
+)   throw ( css::uno::RuntimeException, std::exception )
 {
     if( Event.FeatureURL.Main.equals( msExtrusionDepth ) )
     {
@@ -486,7 +480,7 @@ ExtrusionDepthController::ExtrusionDepthController(
     const Reference< XComponentContext >& rxContext
 )   : svt::PopupWindowController(
         rxContext,
-        Reference< frame::XFrame >(),
+        Reference< css::frame::XFrame >(),
         OUString( ".uno:ExtrusionDepthFloater" )
     )
 {
@@ -505,7 +499,7 @@ void SAL_CALL ExtrusionDepthController::initialize( const css::uno::Sequence< cs
 {
     svt::PopupWindowController::initialize( aArguments );
 
-    ToolBox* pToolBox = 0;
+    ToolBox* pToolBox = nullptr;
     sal_uInt16 nId = 0;
     if ( getToolboxId( nId, &pToolBox ) )
         pToolBox->SetItemBits( nId, pToolBox->GetItemBits( nId ) | ToolBoxItemBits::DROPDOWNONLY );
@@ -523,8 +517,7 @@ OUString SAL_CALL ExtrusionDepthController_getImplementationName()
 
 Sequence< OUString > SAL_CALL ExtrusionDepthController_getSupportedServiceNames() throw( RuntimeException )
 {
-    Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[0] = "com.sun.star.frame.ToolbarController";
+    Sequence<OUString> aSNS { "com.sun.star.frame.ToolbarController" };
     return aSNS;
 }
 
@@ -656,8 +649,8 @@ void ExtrusionLightingWindow::implSetDirection( int nDirection, bool bEnabled )
 
 
 void ExtrusionLightingWindow::statusChanged(
-    const ::com::sun::star::frame::FeatureStateEvent& Event
-)   throw ( ::com::sun::star::uno::RuntimeException )
+    const css::frame::FeatureStateEvent& Event
+)   throw ( css::uno::RuntimeException )
 {
     if( Event.FeatureURL.Main.equals( msExtrusionLightingIntensity ) )
     {
@@ -759,7 +752,7 @@ void ExtrusionLightingWindow::SelectHdl(void* pControl)
 ExtrusionLightingControl::ExtrusionLightingControl(
     const Reference< XComponentContext >& rxContext
 )   : svt::PopupWindowController( rxContext,
-                Reference< frame::XFrame >(),
+                Reference< css::frame::XFrame >(),
                 OUString( ".uno:ExtrusionDirectionFloater" )
     )
 {
@@ -778,7 +771,7 @@ void SAL_CALL ExtrusionLightingControl::initialize( const css::uno::Sequence< cs
 {
     svt::PopupWindowController::initialize( aArguments );
 
-    ToolBox* pToolBox = 0;
+    ToolBox* pToolBox = nullptr;
     sal_uInt16 nId = 0;
     if ( getToolboxId( nId, &pToolBox ) )
         pToolBox->SetItemBits( nId, pToolBox->GetItemBits( nId ) | ToolBoxItemBits::DROPDOWNONLY );
@@ -796,8 +789,7 @@ OUString SAL_CALL ExtrusionLightingControl_getImplementationName()
 
 Sequence< OUString > SAL_CALL ExtrusionLightingControl_getSupportedServiceNames() throw( RuntimeException )
 {
-    Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[0] = "com.sun.star.frame.ToolbarController";
+    Sequence<OUString> aSNS { "com.sun.star.frame.ToolbarController" };
     return aSNS;
 }
 
@@ -826,7 +818,7 @@ Sequence< OUString > SAL_CALL ExtrusionLightingControl::getSupportedServiceNames
 
 ExtrusionSurfaceWindow::ExtrusionSurfaceWindow(
     svt::ToolboxController& rController,
-    const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& rFrame,
+    const css::uno::Reference< css::frame::XFrame >& rFrame,
     vcl::Window* pParentWindow)
     : ToolbarMenu(rFrame, pParentWindow, WB_MOVEABLE|WB_CLOSEABLE|WB_HIDE|WB_3DLOOK)
     , mrController(rController)
@@ -858,8 +850,8 @@ void ExtrusionSurfaceWindow::implSetSurface( int nSurface, bool bEnabled )
 }
 
 void ExtrusionSurfaceWindow::statusChanged(
-    const ::com::sun::star::frame::FeatureStateEvent& Event
-)   throw ( ::com::sun::star::uno::RuntimeException )
+    const css::frame::FeatureStateEvent& Event
+)   throw ( css::uno::RuntimeException )
 {
     if( Event.FeatureURL.Main.equals( msExtrusionSurface ) )
     {
@@ -903,7 +895,7 @@ ExtrusionSurfaceControl::ExtrusionSurfaceControl(
 )
 :   svt::PopupWindowController(
         rxContext,
-        Reference< frame::XFrame >(),
+        Reference< css::frame::XFrame >(),
         OUString( ".uno:ExtrusionSurfaceFloater" )
     )
 {
@@ -922,7 +914,7 @@ void SAL_CALL ExtrusionSurfaceControl::initialize( const css::uno::Sequence< css
 {
     svt::PopupWindowController::initialize( aArguments );
 
-    ToolBox* pToolBox = 0;
+    ToolBox* pToolBox = nullptr;
     sal_uInt16 nId = 0;
     if ( getToolboxId( nId, &pToolBox ) )
         pToolBox->SetItemBits( nId, pToolBox->GetItemBits( nId ) | ToolBoxItemBits::DROPDOWNONLY );
@@ -940,8 +932,7 @@ OUString SAL_CALL ExtrusionSurfaceControl_getImplementationName()
 
 Sequence< OUString > SAL_CALL ExtrusionSurfaceControl_getSupportedServiceNames() throw( RuntimeException )
 {
-    Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[0] = "com.sun.star.frame.ToolbarController";
+    Sequence<OUString> aSNS { "com.sun.star.frame.ToolbarController" };
     return aSNS;
 }
 

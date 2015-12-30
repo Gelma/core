@@ -23,7 +23,7 @@
 
 SalGenericDisplay::SalGenericDisplay()
 {
-    m_pCapture = NULL;
+    m_pCapture = nullptr;
     m_aEventGuard = osl_createMutex();
 }
 
@@ -31,7 +31,7 @@ SalGenericDisplay::~SalGenericDisplay()
 {
     if (m_aEventGuard)
         osl_destroyMutex( m_aEventGuard );
-    m_aEventGuard = NULL;
+    m_aEventGuard = nullptr;
 }
 
 void SalGenericDisplay::registerFrame( SalFrame* pFrame )
@@ -47,7 +47,12 @@ void SalGenericDisplay::deregisterFrame( SalFrame* pFrame )
         while ( it != m_aUserEvents.end() )
         {
             if( it->m_pFrame == pFrame )
+            {
+                if (it->m_nEvent == SALEVENT_USEREVENT) {
+                    delete static_cast<ImplSVEvent *>(it->m_pData);
+                }
                 it = m_aUserEvents.erase( it );
+            }
             else
                 ++it;
         }
@@ -62,13 +67,13 @@ void SalGenericDisplay::deregisterFrame( SalFrame* pFrame )
 void SalGenericDisplay::emitDisplayChanged()
 {
     if( !m_aFrames.empty() )
-        m_aFrames.front()->CallCallback( SALEVENT_DISPLAYCHANGED, 0 );
+        m_aFrames.front()->CallCallback( SALEVENT_DISPLAYCHANGED, nullptr );
 }
 
 bool SalGenericDisplay::DispatchInternalEvent()
 {
-    void* pData = NULL;
-    SalFrame* pFrame = NULL;
+    void* pData = nullptr;
+    SalFrame* pFrame = nullptr;
     sal_uInt16 nEvent = 0;
 
     if( osl_acquireMutex( m_aEventGuard ) )
@@ -89,7 +94,7 @@ bool SalGenericDisplay::DispatchInternalEvent()
     if( pFrame )
         pFrame->CallCallback( nEvent, pData );
 
-    return pFrame != NULL;
+    return pFrame != nullptr;
 }
 
 void SalGenericDisplay::SendInternalEvent( SalFrame* pFrame, void* pData, sal_uInt16 nEvent )

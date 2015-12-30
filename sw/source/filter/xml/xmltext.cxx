@@ -36,11 +36,11 @@ public:
 
     virtual SvXMLImportContext *CreateChildContext(
             sal_uInt16 nPrefix, const OUString& rLocalName,
-            const Reference< xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+            const Reference< xml::sax::XAttributeList > & xAttrList ) override;
 
     // The body element's text:global attribute can be ignored, because
     // we must have the correct object shell already.
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 };
 
 SwXMLBodyContentContext_Impl::SwXMLBodyContentContext_Impl( SwXMLImport& rImport,
@@ -58,7 +58,7 @@ SvXMLImportContext *SwXMLBodyContentContext_Impl::CreateChildContext(
         sal_uInt16 nPrefix, const OUString& rLocalName,
         const Reference< xml::sax::XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     pContext = GetSwImport().GetTextImport()->CreateTextChildContext(
             GetImport(), nPrefix, rLocalName, xAttrList,
@@ -78,7 +78,7 @@ void SwXMLBodyContentContext_Impl::EndElement()
 SvXMLImportContext *SwXMLImport::CreateBodyContentContext(
                                        const OUString& rLocalName )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if( !IsStylesOnlyMode() )
          pContext = new SwXMLBodyContentContext_Impl( *this, XML_NAMESPACE_OFFICE,

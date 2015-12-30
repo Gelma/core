@@ -42,7 +42,7 @@ class SwDropPortionPart
 
 public:
     SwDropPortionPart( SwFont& rFont, const sal_Int32 nL )
-            : pFollow( 0 ), pFnt( &rFont ), nLen( nL ), nWidth( 0 ), m_bJoinBorderWithNext(false), m_bJoinBorderWithPrev(false) {};
+            : pFollow( nullptr ), pFnt( &rFont ), nLen( nL ), nWidth( 0 ), m_bJoinBorderWithNext(false), m_bJoinBorderWithPrev(false) {};
     ~SwDropPortionPart();
 
     inline SwDropPortionPart* GetFollow() const { return pFollow; };
@@ -81,11 +81,11 @@ public:
                    const sal_uInt16 nDistance );
     virtual ~SwDropPortion();
 
-    virtual void Paint( const SwTextPaintInfo &rInf ) const SAL_OVERRIDE;
+    virtual void Paint( const SwTextPaintInfo &rInf ) const override;
             void PaintDrop( const SwTextPaintInfo &rInf ) const;
-    virtual bool Format( SwTextFormatInfo &rInf ) SAL_OVERRIDE;
-    virtual SwPosSize GetTextSize( const SwTextSizeInfo &rInfo ) const SAL_OVERRIDE;
-    virtual sal_Int32 GetCrsrOfst( const sal_uInt16 nOfst ) const SAL_OVERRIDE;
+    virtual bool Format( SwTextFormatInfo &rInf ) override;
+    virtual SwPosSize GetTextSize( const SwTextSizeInfo &rInfo ) const override;
+    virtual sal_Int32 GetCursorOfst( const sal_uInt16 nOfst ) const override;
 
     inline sal_uInt16 GetLines() const { return nLines; }
     inline sal_uInt16 GetDistance() const { return nDistance; }
@@ -98,7 +98,7 @@ public:
 
     inline void SetY( short nNew )  { nY = nNew; }
 
-    inline SwFont* GetFnt() const { return pPart ? &pPart->GetFont() : NULL; }
+    inline SwFont* GetFnt() const { return pPart ? &pPart->GetFont() : nullptr; }
 
     static void DeleteDropCapCache();
 

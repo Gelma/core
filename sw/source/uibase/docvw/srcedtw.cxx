@@ -219,7 +219,7 @@ private:
     virtual ~ChangesListener() {}
 
     virtual void SAL_CALL disposing(css::lang::EventObject const &)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         osl::MutexGuard g(editor_.mutex_);
         editor_.notifier_.clear();
@@ -227,7 +227,7 @@ private:
 
     virtual void SAL_CALL propertiesChange(
         css::uno::Sequence< css::beans::PropertyChangeEvent > const &)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         SolarMutexGuard g;
         editor_.SetFont();
@@ -239,11 +239,11 @@ private:
 SwSrcEditWindow::SwSrcEditWindow( vcl::Window* pParent, SwSrcView* pParentView ) :
     Window( pParent, WB_BORDER|WB_CLIPCHILDREN ),
 
-    pTextEngine(0),
+    pTextEngine(nullptr),
 
-    pOutWin(0),
-    pHScrollbar(0),
-    pVScrollbar(0),
+    pOutWin(nullptr),
+    pHScrollbar(nullptr),
+    pVScrollbar(nullptr),
 
     pSrcView(pParentView),
 
@@ -289,7 +289,7 @@ void SwSrcEditWindow::dispose()
     }
     aSyntaxIdle.Stop();
     if ( pOutWin )
-        pOutWin->SetTextView( NULL );
+        pOutWin->SetTextView( nullptr );
 
     if ( pTextEngine )
     {
@@ -297,9 +297,9 @@ void SwSrcEditWindow::dispose()
         pTextEngine->RemoveView( pTextView );
 
         delete pTextView;
-        pTextView = NULL;
+        pTextView = nullptr;
         delete pTextEngine;
-        pTextEngine = NULL;
+        pTextEngine = nullptr;
     }
     pHScrollbar.disposeAndClear();
     pVScrollbar.disposeAndClear();
@@ -542,7 +542,7 @@ void SwSrcEditWindow::CreateTextEngine()
     pTextEngine->EnableUndo( true );
     pTextEngine->SetUpdateMode( true );
 
-    pTextView->ShowCursor( true );
+    pTextView->ShowCursor();
     InitScrollBars();
     StartListening( *pTextEngine );
 
@@ -596,7 +596,7 @@ IMPL_LINK_TYPED(SwSrcEditWindow, ScrollHdl, ScrollBar*, pScroll, void)
 IMPL_LINK_TYPED( SwSrcEditWindow, SyntaxTimerHdl, Idle *, pIdle, void )
 {
     tools::Time aSyntaxCheckStart( tools::Time::SYSTEM );
-    SAL_WARN_IF(pTextView == 0, "sw", "No View yet, but syntax highlighting?!");
+    SAL_WARN_IF(pTextView == nullptr, "sw", "No View yet, but syntax highlighting?!");
 
     bHighlighting = true;
     sal_uInt16 nCount  = 0;
@@ -661,7 +661,7 @@ void SwSrcEditWindow::DoSyntaxHighlight( sal_uInt16 nPara )
         ImpDoHighlight( aSource, nPara );
         TextView* pTmp = pTextEngine->GetActiveView();
         pTmp->SetAutoScroll(false);
-        pTextEngine->SetActiveView(0);
+        pTextEngine->SetActiveView(nullptr);
         pTextEngine->SetUpdateMode( true );
         pTextEngine->SetActiveView(pTmp);
         pTmp->SetAutoScroll(true);
@@ -744,26 +744,28 @@ void SwSrcEditWindow::ImpDoHighlight( const OUString& rSource, sal_uInt16 nLineO
 
 void SwSrcEditWindow::Notify( SfxBroadcaster& /*rBC*/, const SfxHint& rHint )
 {
-    if ( dynamic_cast<const TextHint*>(&rHint) )
+    if ( !dynamic_cast<const TextHint*>(&rHint) )
+        return;
+
+    const TextHint& rTextHint = static_cast<const TextHint&>(rHint);
+    switch (rTextHint.GetId())
     {
-        const TextHint& rTextHint = static_cast<const TextHint&>(rHint);
-        if( rTextHint.GetId() == TEXT_HINT_VIEWSCROLLED )
-        {
+        case TEXT_HINT_VIEWSCROLLED:
             pHScrollbar->SetThumbPos( pTextView->GetStartDocPos().X() );
             pVScrollbar->SetThumbPos( pTextView->GetStartDocPos().Y() );
-        }
-        else if( rTextHint.GetId() == TEXT_HINT_TEXTHEIGHTCHANGED )
-        {
+            break;
+
+        case TEXT_HINT_TEXTHEIGHTCHANGED:
             if ( pTextEngine->GetTextHeight() < pOutWin->GetOutputSizePixel().Height() )
                 pTextView->Scroll( 0, pTextView->GetStartDocPos().Y() );
             pVScrollbar->SetThumbPos( pTextView->GetStartDocPos().Y() );
             SetScrollBarRanges();
-        }
-        else if( ( rTextHint.GetId() == TEXT_HINT_PARAINSERTED ) ||
-                 ( rTextHint.GetId() == TEXT_HINT_PARACONTENTCHANGED ) )
-        {
+            break;
+
+        case TEXT_HINT_PARAINSERTED:
+        case TEXT_HINT_PARACONTENTCHANGED:
             DoDelayedSyntaxHighlight( (sal_uInt16)rTextHint.GetValue() );
-        }
+            break;
     }
 }
 

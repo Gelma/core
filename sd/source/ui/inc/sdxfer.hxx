@@ -66,18 +66,18 @@ public:
     void                            SetPageBookmarks( const std::vector<OUString>& rPageBookmarks, bool bPersistent );
     bool                            IsPageTransferable() const { return mbPageTransferable; }
     bool                            HasPageBookmarks() const { return( mpPageDocShell && ( !maPageBookmarks.empty() ) ); }
-    const std::vector<OUString>& GetPageBookmarks() const { return maPageBookmarks; }
-    ::sd::DrawDocShell*                 GetPageDocShell() const { return mpPageDocShell; }
+    const std::vector<OUString>&    GetPageBookmarks() const { return maPageBookmarks; }
+    ::sd::DrawDocShell*             GetPageDocShell() const { return mpPageDocShell; }
 
-    bool                        SetTableRTF( SdDrawDocument*, const ::com::sun::star::datatransfer::DataFlavor& );
+    bool                            SetTableRTF( SdDrawDocument*, const css::datatransfer::DataFlavor& );
 
-    static const ::com::sun::star::uno::Sequence< sal_Int8 >& getUnoTunnelId();
-    static SdTransferable*          getImplementation( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >& rxData ) throw();
+    static const css::uno::Sequence< sal_Int8 >& getUnoTunnelId();
+    static SdTransferable*          getImplementation( const css::uno::Reference< css::uno::XInterface >& rxData ) throw();
 
     // SfxListener
-    virtual void            Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+    virtual void                    Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
-    virtual void                    DragFinished( sal_Int8 nDropAction ) SAL_OVERRIDE;
+    virtual void                    DragFinished( sal_Int8 nDropAction ) override;
     SdDrawDocument*                 GetSourceDoc() const { return mpSourceDoc;}
 
     /** User data objects can be used to store information temporarily
@@ -104,12 +104,12 @@ public:
 
 protected:
 
-    virtual void                    AddSupportedFormats() SAL_OVERRIDE;
-    virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) SAL_OVERRIDE;
-    virtual bool                    WriteObject( tools::SvRef<SotStorageStream>& rxOStm, void* pUserObject, SotClipboardFormatId nUserObjectId, const ::com::sun::star::datatransfer::DataFlavor& rFlavor ) SAL_OVERRIDE;
-    virtual void                    ObjectReleased() SAL_OVERRIDE;
+    virtual void                    AddSupportedFormats() override;
+    virtual bool                    GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) override;
+    virtual bool                    WriteObject( tools::SvRef<SotStorageStream>& rxOStm, void* pUserObject, SotClipboardFormatId nUserObjectId, const css::datatransfer::DataFlavor& rFlavor ) override;
+    virtual void                    ObjectReleased() override;
 
-    virtual sal_Int64 SAL_CALL      getSomething( const ::com::sun::star::uno::Sequence< sal_Int8 >& rId ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual sal_Int64 SAL_CALL      getSomething( const css::uno::Sequence< sal_Int8 >& rId ) throw( css::uno::RuntimeException, std::exception ) override;
 
 private:
 
@@ -138,8 +138,8 @@ private:
     bool                            mbIsUnoObj                  : 1;
     ::std::vector<std::shared_ptr<UserData> > maUserData;
 
-                                    SdTransferable( const SdTransferable& ) SAL_DELETED_FUNCTION;
-    SdTransferable&                 operator=( const SdTransferable& ) SAL_DELETED_FUNCTION;
+                                    SdTransferable( const SdTransferable& ) = delete;
+    SdTransferable&                 operator=( const SdTransferable& ) = delete;
 
     void                            CreateObjectReplacement( SdrObject* pObj );
     void                            CreateData();

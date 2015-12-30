@@ -327,14 +327,13 @@ bool OleHelper::importStdPic( StreamDataSequence& orGraphicData, BinaryInputStre
     return !rInStrm.isEof() && (nStdPicId == OLE_STDPIC_ID) && (nBytes > 0) && (rInStrm.readData( orGraphicData, nBytes ) == nBytes);
 }
 
-Reference< ::com::sun::star::frame::XFrame >
-lcl_getFrame( const  Reference< ::com::sun::star::frame::XModel >& rxModel )
+Reference< css::frame::XFrame > lcl_getFrame( const  Reference< css::frame::XModel >& rxModel )
 {
-    Reference< ::com::sun::star::frame::XFrame > xFrame;
+    Reference< css::frame::XFrame > xFrame;
     if ( rxModel.is() )
     {
-        Reference< ::com::sun::star::frame::XController > xController =  rxModel->getCurrentController();
-        xFrame =  xController.is() ? xController->getFrame() : NULL;
+        Reference< css::frame::XController > xController =  rxModel->getCurrentController();
+        xFrame =  xController.is() ? xController->getFrame() : nullptr;
     }
     return xFrame;
 }
@@ -363,15 +362,15 @@ public:
     }
     OUString getFullName() { return maFullName; }
     OUString getTypeName() { return maTypeName; }
-    bool isValid() { return mpModel != NULL; }
+    bool isValid() { return mpModel != nullptr; }
     void exportName( const Reference< XOutputStream >& rxOut );
     void exportCompObj( const Reference< XOutputStream >& rxOut );
-    void exportControl( const Reference< XOutputStream >& rxOut, const ::com::sun::star::awt::Size& rSize );
+    void exportControl( const Reference< XOutputStream >& rxOut, const css::awt::Size& rSize );
 };
-OleFormCtrlExportHelper::OleFormCtrlExportHelper(  const Reference< XComponentContext >& rxCtx, const Reference< XModel >& rxDocModel, const Reference< XControlModel >& xCntrlModel ) : maControl( "Unknown" ), mpModel( NULL ), maGrfHelper( rxCtx, lcl_getFrame( rxDocModel ), StorageRef() ), mxDocModel( rxDocModel ), mxControlModel( xCntrlModel )
+OleFormCtrlExportHelper::OleFormCtrlExportHelper(  const Reference< XComponentContext >& rxCtx, const Reference< XModel >& rxDocModel, const Reference< XControlModel >& xCntrlModel ) : maControl( "Unknown" ), mpModel( nullptr ), maGrfHelper( rxCtx, lcl_getFrame( rxDocModel ), StorageRef() ), mxDocModel( rxDocModel ), mxControlModel( xCntrlModel )
 {
     // try to get the guid
-    Reference< com::sun::star::beans::XPropertySet > xProps( xCntrlModel, UNO_QUERY );
+    Reference< css::beans::XPropertySet > xProps( xCntrlModel, UNO_QUERY );
     if ( xProps.is() )
     {
         sal_Int16 nClassId = 0;
@@ -450,7 +449,7 @@ void OleFormCtrlExportHelper::exportControl( const Reference< XOutputStream >& r
     }
 }
 
-MSConvertOCXControls::MSConvertOCXControls( const Reference< ::com::sun::star::frame::XModel >& rxModel ) : SvxMSConvertOCXControls( rxModel ), mxCtx( comphelper::getProcessComponentContext() ), maGrfHelper( mxCtx, lcl_getFrame( rxModel ), StorageRef() )
+MSConvertOCXControls::MSConvertOCXControls( const Reference< css::frame::XModel >& rxModel ) : SvxMSConvertOCXControls( rxModel ), mxCtx( comphelper::getProcessComponentContext() ), maGrfHelper( mxCtx, lcl_getFrame( rxModel ), StorageRef() )
 {
 }
 
@@ -528,13 +527,13 @@ bool MSConvertOCXControls::ReadOCXStorage( tools::SvRef<SotStorage>& xOleStg,
 {
     if ( xOleStg.Is() )
     {
-        tools::SvRef<SotStorageStream> pNameStream = xOleStg->OpenSotStream( OUString("\3OCXNAME"));
+        tools::SvRef<SotStorageStream> pNameStream = xOleStg->OpenSotStream( "\3OCXNAME");
         BinaryXInputStream aNameStream( Reference< XInputStream >( new utl::OSeekableInputStreamWrapper( *pNameStream ) ), true );
 
-        tools::SvRef<SotStorageStream> pContents = xOleStg->OpenSotStream( OUString("contents"));
+        tools::SvRef<SotStorageStream> pContents = xOleStg->OpenSotStream( "contents");
         BinaryXInputStream aInStrm(  Reference< XInputStream >( new utl::OSeekableInputStreamWrapper( *pContents ) ), true );
 
-        tools::SvRef<SotStorageStream> pClsStrm = xOleStg->OpenSotStream(OUString("\1CompObj"));
+        tools::SvRef<SotStorageStream> pClsStrm = xOleStg->OpenSotStream("\1CompObj");
         BinaryXInputStream aClsStrm( Reference< XInputStream >( new utl::OSeekableInputStreamWrapper(*pClsStrm ) ), true );
         aClsStrm.skip(12);
 
@@ -556,7 +555,7 @@ bool MSConvertOCXControls::ReadOCXStorage( tools::SvRef<SotStorage>& xOleStg,
     return  false;
 }
 
-bool MSConvertOCXControls::WriteOCXExcelKludgeStream( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XModel >& rxModel, const ::com::sun::star::uno::Reference< ::com::sun::star::io::XOutputStream >& xOutStrm, const com::sun::star::uno::Reference< com::sun::star::awt::XControlModel > &rxControlModel, const com::sun::star::awt::Size& rSize,OUString &rName )
+bool MSConvertOCXControls::WriteOCXExcelKludgeStream( const css::uno::Reference< css::frame::XModel >& rxModel, const css::uno::Reference< css::io::XOutputStream >& xOutStrm, const css::uno::Reference< css::awt::XControlModel > &rxControlModel, const css::awt::Size& rSize,OUString &rName )
 {
     OleFormCtrlExportHelper exportHelper( comphelper::getProcessComponentContext(), rxModel, rxControlModel );
     if ( !exportHelper.isValid() )
@@ -573,7 +572,7 @@ bool MSConvertOCXControls::WriteOCXExcelKludgeStream( const ::com::sun::star::un
 
 bool MSConvertOCXControls::WriteOCXStream( const Reference< XModel >& rxModel, tools::SvRef<SotStorage> &xOleStg,
     const Reference< XControlModel > &rxControlModel,
-    const com::sun::star::awt::Size& rSize, OUString &rName)
+    const css::awt::Size& rSize, OUString &rName)
 {
     SvGlobalName aName;
 
@@ -589,17 +588,17 @@ bool MSConvertOCXControls::WriteOCXStream( const Reference< XModel >& rxModel, t
     rName = exportHelper.getTypeName();
     xOleStg->SetClass( aName, SotClipboardFormatId::EMBEDDED_OBJ_OLE, sFullName);
     {
-        tools::SvRef<SotStorageStream> pNameStream = xOleStg->OpenSotStream(OUString("\3OCXNAME"));
+        tools::SvRef<SotStorageStream> pNameStream = xOleStg->OpenSotStream("\3OCXNAME");
         Reference< XOutputStream > xOut = new utl::OSeekableOutputStreamWrapper( *pNameStream );
         exportHelper.exportName( xOut );
     }
     {
-        tools::SvRef<SotStorageStream> pObjStream = xOleStg->OpenSotStream(OUString("\1CompObj"));
+        tools::SvRef<SotStorageStream> pObjStream = xOleStg->OpenSotStream("\1CompObj");
         Reference< XOutputStream > xOut = new utl::OSeekableOutputStreamWrapper( *pObjStream );
         exportHelper.exportCompObj( xOut );
     }
     {
-        tools::SvRef<SotStorageStream> pContents = xOleStg->OpenSotStream(OUString("contents"));
+        tools::SvRef<SotStorageStream> pContents = xOleStg->OpenSotStream("contents");
         Reference< XOutputStream > xOut = new utl::OSeekableOutputStreamWrapper( *pContents );
         exportHelper.exportControl( xOut, rSize );
     }

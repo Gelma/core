@@ -55,18 +55,18 @@ public:
                                             , bool _bSupportResult
                                             , bool _bSupportMatrix
                                             ,IFunctionManager* _pFunctionMgr
-                                            ,IControlReferenceHandler* _pDlg = NULL );
+                                            ,IControlReferenceHandler* _pDlg = nullptr );
     virtual ~FormulaModalDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
 private:
     ::std::unique_ptr<FormulaDlg_Impl> m_pImpl;
 
 protected:
 
-    virtual bool    PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
-    ::std::pair<RefButton*,RefEdit*> RefInputStartBefore( RefEdit* pEdit, RefButton* pButton = NULL );
-    void            RefInputStartAfter( RefEdit* pEdit, RefButton* pButton = NULL );
+    virtual bool    PreNotify( NotifyEvent& rNEvt ) override;
+    ::std::pair<RefButton*,RefEdit*> RefInputStartBefore( RefEdit* pEdit, RefButton* pButton = nullptr );
+    void            RefInputStartAfter( RefEdit* pEdit, RefButton* pButton = nullptr );
     void            RefInputDoneAfter( bool bForced = false );
     void            SetFocusWin(vcl::Window *pWin,const OString& nUniqueId);
 
@@ -95,9 +95,9 @@ public:
                                     , bool _bSupportResult
                                     , bool _bSupportMatrix
                                     , IFunctionManager* _pFunctionMgr
-                                    , IControlReferenceHandler* _pDlg = NULL );
+                                    , IControlReferenceHandler* _pDlg = nullptr );
     virtual ~FormulaDlg();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 private:
     ::std::unique_ptr<FormulaDlg_Impl> m_pImpl;
 
@@ -107,9 +107,9 @@ protected:
 
 protected:
 
-    virtual bool    PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
-    ::std::pair<RefButton*,RefEdit*> RefInputStartBefore( RefEdit* pEdit, RefButton* pButton = NULL );
-    void            RefInputStartAfter( RefEdit* pEdit, RefButton* pButton = NULL );
+    virtual bool    PreNotify( NotifyEvent& rNEvt ) override;
+    ::std::pair<RefButton*,RefEdit*> RefInputStartBefore( RefEdit* pEdit, RefButton* pButton = nullptr );
+    void            RefInputStartAfter( RefEdit* pEdit, RefButton* pButton = nullptr );
     void            RefInputDoneAfter( bool bForced = false );
     void            SetFocusWin(vcl::Window *pWin,const OString& nUniqueId);
 

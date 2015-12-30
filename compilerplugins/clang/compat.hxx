@@ -41,6 +41,15 @@
 // Compatibility wrapper to abstract over (trivial) changes in the Clang API:
 namespace compat {
 
+inline bool isLookupContext(clang::DeclContext const & ctxt) {
+#if (__clang_major__ == 3 && __clang_minor__ >= 7) || __clang_major__ > 3
+    return ctxt.isLookupContext();
+#else
+    return !ctxt.isFunctionOrMethod()
+        && ctxt.getDeclKind() != clang::Decl::LinkageSpec;
+#endif
+}
+
 inline bool isExternCContext(clang::DeclContext const & ctxt) {
 #if (__clang_major__ == 3 && __clang_minor__ >= 4) || __clang_major__ > 3
     return ctxt.isExternCContext();
@@ -252,6 +261,16 @@ inline bool isMacroBodyExpansion(clang::CompilerInstance& compiler, clang::Sourc
 #else
     return location.isMacroID()
         && !compiler.getSourceManager().isMacroArgExpansion(location);
+#endif
+}
+
+inline auto getAsTagDecl(clang::Type const& t) -> clang::TagDecl *
+{
+#if (__clang_major__ == 3 && __clang_minor__ > 5) || __clang_major__ > 3
+    // TODO not sure if it works with clang 3.6, trunk is known to work
+    return t.getAsTagDecl();
+#else
+    return t.getAs<clang::TagType>()->getDecl();
 #endif
 }
 

@@ -54,7 +54,7 @@ namespace sd {
 Window::Window(vcl::Window* pParent)
     : vcl::Window(pParent, WinBits(WB_CLIPCHILDREN | WB_DIALOGCONTROL)),
       DropTargetHelper( this ),
-      mpShareWin(NULL),
+      mpShareWin(nullptr),
       maWinPos(0, 0),           // precautionary; but the values should be set
       maViewOrigin(0, 0),       // again from the owner of the window
       maViewSize(1000, 1000),
@@ -65,8 +65,7 @@ Window::Window(vcl::Window* pParent)
       mbCalcMinZoomByMinSide(true),
       mbCenterAllowed(true),
       mnTicks (0),
-      mbDraggedFrom(false),
-      mpViewShell(NULL),
+      mpViewShell(nullptr),
       mbUseDropScroll (true)
 {
     SetDialogControlFlags( DialogControlFlags::Return | DialogControlFlags::WantFocus );
@@ -99,10 +98,10 @@ Window::~Window()
 
 void Window::dispose()
 {
-    if (mpViewShell != NULL)
+    if (mpViewShell != nullptr)
     {
         WindowUpdater* pWindowUpdater = mpViewShell->GetWindowUpdater();
-        if (pWindowUpdater != NULL)
+        if (pWindowUpdater != nullptr)
             pWindowUpdater->UnregisterWindow (this);
     }
     mpShareWin.clear();
@@ -111,22 +110,22 @@ void Window::dispose()
 
 void Window::SetViewShell (ViewShell* pViewSh)
 {
-    WindowUpdater* pWindowUpdater = NULL;
+    WindowUpdater* pWindowUpdater = nullptr;
     // Unregister at device updater of old view shell.
-    if (mpViewShell != NULL)
+    if (mpViewShell != nullptr)
     {
         pWindowUpdater = mpViewShell->GetWindowUpdater();
-        if (pWindowUpdater != NULL)
+        if (pWindowUpdater != nullptr)
             pWindowUpdater->UnregisterWindow (this);
     }
 
     mpViewShell = pViewSh;
 
     // Register at device updater of new view shell
-    if (mpViewShell != NULL)
+    if (mpViewShell != nullptr)
     {
         pWindowUpdater = mpViewShell->GetWindowUpdater();
-        if (pWindowUpdater != NULL)
+        if (pWindowUpdater != nullptr)
             pWindowUpdater->RegisterWindow (this);
     }
 }
@@ -223,7 +222,7 @@ void Window::KeyInput(const KeyEvent& rKEvt)
 {
     if (getenv("SD_DEBUG") && rKEvt.GetKeyCode().GetCode() == KEY_F12 && mpViewShell)
     {
-        mpViewShell->GetDoc()->dumpAsXml(0);
+        mpViewShell->GetDoc()->dumpAsXml(nullptr);
         return;
     }
 
@@ -346,7 +345,7 @@ long Window::SetZoomFactor(long nZoom)
     UpdateMapOrigin();
 
     // Update the view's snapping to the new zoom factor.
-    if ( mpViewShell && mpViewShell->ISA(DrawViewShell) )
+    if ( mpViewShell && dynamic_cast< DrawViewShell *>( mpViewShell ) !=  nullptr )
         static_cast<DrawViewShell*>(mpViewShell)->GetView()->
                                         RecalcLogicSnapMagnetic(*this);
 
@@ -585,7 +584,7 @@ void Window::UpdateMapMode()
     // removed old stuff here which still forced zoom to be
     // %BRUSH_SIZE which is outdated now
 
-    if (mpViewShell && mpViewShell->ISA(DrawViewShell))
+    if (mpViewShell && dynamic_cast< DrawViewShell *>( mpViewShell ) !=  nullptr)
     {
         // page should not "stick" to the window border
         if (aPix.Width() == 0)
@@ -790,7 +789,7 @@ void Window::DataChanged( const DataChangedEvent& rDCEvt )
                 else
                     nPreviewSlot = SID_PREVIEW_QUALITY_COLOR;
 
-                if( mpViewShell->ISA( DrawViewShell ) )
+                if( dynamic_cast< DrawViewShell *>( mpViewShell ) !=  nullptr )
                 {
                     SetDrawMode( nOutputMode );
                     mpViewShell->GetFrameView()->SetDrawMode( nOutputMode );
@@ -798,7 +797,7 @@ void Window::DataChanged( const DataChangedEvent& rDCEvt )
                 }
 
                 // Overwrite window color for OutlineView
-                if( mpViewShell->ISA(OutlineViewShell ) )
+                if( dynamic_cast< OutlineViewShell *>( mpViewShell ) !=  nullptr )
                 {
                     svtools::ColorConfig aColorConfig;
                     const Color aDocColor( aColorConfig.GetColorValue( svtools::DOCCOLOR ).nColor );
@@ -811,7 +810,7 @@ void Window::DataChanged( const DataChangedEvent& rDCEvt )
                 mpViewShell->ArrangeGUIElements();
 
                 // re-create handles to show new outfit
-                if(mpViewShell->ISA(DrawViewShell))
+                if(dynamic_cast< DrawViewShell *>( mpViewShell ) !=  nullptr)
                 {
                     mpViewShell->GetView()->AdjustMarkHdl();
                 }
@@ -882,7 +881,7 @@ sal_Int8 Window::AcceptDrop( const AcceptDropEvent& rEvt )
         if( mpViewShell )
             nRet = mpViewShell->AcceptDrop( rEvt, *this, this, SDRPAGE_NOTFOUND, SDRLAYER_NOTFOUND );
 
-        if (mbUseDropScroll && ! mpViewShell->ISA(OutlineViewShell))
+        if (mbUseDropScroll && dynamic_cast< OutlineViewShell *>( mpViewShell ) ==  nullptr)
             DropScroll( rEvt.maPosPixel );
     }
 
@@ -948,21 +947,20 @@ void Window::DropScroll(const Point& rMousePos)
     }
 }
 
-::com::sun::star::uno::Reference<
-    ::com::sun::star::accessibility::XAccessible>
+css::uno::Reference<css::accessibility::XAccessible>
     Window::CreateAccessible()
 {
     // If current viewshell is PresentationViewShell, just return empty because the correct ShowWin will be created later.
-    if (mpViewShell && mpViewShell->ISA(PresentationViewShell))
+    if (mpViewShell && dynamic_cast< PresentationViewShell *>( mpViewShell ) !=  nullptr)
     {
         return vcl::Window::CreateAccessible ();
     }
-    ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > xAcc = GetAccessible(false);
+    css::uno::Reference< css::accessibility::XAccessible > xAcc = GetAccessible(false);
     if (xAcc.get())
     {
         return xAcc;
     }
-    if (mpViewShell != NULL)
+    if (mpViewShell != nullptr)
     {
         xAcc = mpViewShell->CreateAccessibleDocumentView (this);
         SetAccessible(xAcc);
@@ -1006,6 +1004,10 @@ Selection Window::GetSurroundingTextSelection() const
 
 void Window::LogicInvalidate(const Rectangle* pRectangle)
 {
+    DrawViewShell* pDrawViewShell = dynamic_cast<DrawViewShell*>(mpViewShell);
+    if (pDrawViewShell && pDrawViewShell->IsInSwitchPage())
+        return;
+
     OString sRectangle;
     if (!pRectangle)
         sRectangle = "EMPTY";

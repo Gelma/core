@@ -21,7 +21,6 @@
 #define INCLUDED_FRAMEWORK_INC_XML_IMAGESCONFIGURATION_HXX
 
 #include <framework/fwedllapi.h>
-#include <tools/stream.hxx>
 #include <tools/color.hxx>
 
 #include <com/sun/star/lang/XMultiServiceFactory.hpp>
@@ -30,7 +29,7 @@
 #include <com/sun/star/uno/XComponentContext.hpp>
 
 #include <vector>
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <memory>
 
 namespace framework
 {
@@ -55,14 +54,14 @@ struct ExternalImageItemDescriptor
     OUString  aURL;                       // a URL to an external bitmap
 };
 
-typedef boost::ptr_vector<ImageItemDescriptor> ImageItemListDescriptor;
+typedef std::vector<std::unique_ptr<ImageItemDescriptor> > ImageItemListDescriptor;
 
-typedef boost::ptr_vector<ExternalImageItemDescriptor> ExternalImageItemListDescriptor;
+typedef std::vector<std::unique_ptr<ExternalImageItemDescriptor> > ExternalImageItemListDescriptor;
 
 struct ImageListItemDescriptor
 {
     ImageListItemDescriptor() : nMaskMode( ImageMaskMode_Color ),
-                                pImageItemList( 0 ) {}
+                                pImageItemList( nullptr ) {}
 
     ~ImageListItemDescriptor() { delete pImageItemList; }
 
@@ -75,12 +74,12 @@ struct ImageListItemDescriptor
     OUString                    aHighContrastMaskURL;   // an URL to an optional high contrast bitmap as a mask
 };
 
-typedef boost::ptr_vector<ImageListItemDescriptor> ImageListDescriptor;
+typedef std::vector<std::unique_ptr<ImageListItemDescriptor> > ImageListDescriptor;
 
 struct ImageListsDescriptor
 {
-    ImageListsDescriptor() : pImageList( 0 ),
-                     pExternalImageList( 0 ) {}
+    ImageListsDescriptor() : pImageList( nullptr ),
+                     pExternalImageList( nullptr ) {}
     ~ImageListsDescriptor() { delete pImageList; delete pExternalImageList; }
 
     ImageListDescriptor*            pImageList;
@@ -91,13 +90,13 @@ class ImagesConfiguration
 {
     public:
         static bool LoadImages(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::io::XInputStream >& rInputStream,
+            const css::uno::Reference< css::uno::XComponentContext >& rxContext,
+            const css::uno::Reference< css::io::XInputStream >& rInputStream,
             ImageListsDescriptor& rItems );
 
         static bool StoreImages(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::io::XOutputStream >& rOutputStream,
+            const css::uno::Reference< css::uno::XComponentContext >& rxContext,
+            const css::uno::Reference< css::io::XOutputStream >& rOutputStream,
             const ImageListsDescriptor& rItems );
 };
 

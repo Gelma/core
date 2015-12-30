@@ -277,18 +277,6 @@ interface BaseText
         StateMethod = StateInsert ;
         DisableFlags="SW_DISABLE_ON_PROTECTED_CURSOR";
     ]
-    SID_INSERT_SOUND
-    [
-        ExecMethod = ExecInsert ;
-        StateMethod = StateInsert ;
-        DisableFlags="SW_DISABLE_ON_PROTECTED_CURSOR";
-    ]
-    SID_INSERT_VIDEO
-    [
-        ExecMethod = ExecInsert ;
-        StateMethod = StateInsert ;
-        DisableFlags="SW_DISABLE_ON_PROTECTED_CURSOR";
-    ]
     FN_INSERT_SMA // status(final|play)
     [
         ExecMethod = ExecInsert ;
@@ -302,12 +290,6 @@ interface BaseText
         DisableFlags="SW_DISABLE_ON_PROTECTED_CURSOR";
     ]
     SID_INSERT_OBJECT  // status(final|play)
-    [
-        ExecMethod = ExecInsert ;
-        StateMethod = StateInsert ;
-        DisableFlags="SW_DISABLE_ON_PROTECTED_CURSOR";
-    ]
-    SID_INSERT_PLUGIN  // status(final|play)
     [
         ExecMethod = ExecInsert ;
         StateMethod = StateInsert ;
@@ -736,6 +718,11 @@ interface BaseText
         StateMethod = GetState ;
         DisableFlags="SW_DISABLE_ON_PROTECTED_CURSOR";
     ]
+    FN_OUTLINE_RULE_INDEX // status(final|play)
+    [
+        StateMethod = GetState ;
+        DisableFlags="SW_DISABLE_ON_PROTECTED_CURSOR";
+    ]
     FN_NUMBER_BULLETS // status(final|play)
     [
         ExecMethod = ExecEnterNum ;
@@ -800,6 +787,11 @@ interface BaseText
         DisableFlags="SW_DISABLE_ON_PROTECTED_CURSOR";
     ]
     FN_SVX_SET_BULLET
+    [
+        ExecMethod = ExecSetNumber;
+        DisableFlags="SW_DISABLE_ON_PROTECTED_CURSOR";
+    ]
+    FN_SVX_SET_OUTLINE
     [
         ExecMethod = ExecSetNumber;
         DisableFlags="SW_DISABLE_ON_PROTECTED_CURSOR";
@@ -1424,7 +1416,7 @@ interface BaseText
         StateMethod = GetTextCtrlState;
         DisableFlags="SW_DISABLE_ON_PROTECTED_CURSOR";
     ]
-    SID_ATTR_CHAR_AUTOKERN // // status(final|play)
+    SID_ATTR_CHAR_AUTOKERN // status(final|play)
     [
         ExecMethod = ExecTextCtrl;
         StateMethod = GetTextCtrlState;

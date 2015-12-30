@@ -84,13 +84,9 @@ std::vector<OUString> getContents(OUString const & url) {
     try {
         std::vector<OUString> cs;
         ucbhelper::Content c(content(url));
-        css::uno::Sequence<OUString> args(1);
-        args[0] = "Title";
-        css::uno::Reference<css::sdbc::XResultSet> res(
-            c.createCursor(args),
-            css::uno::UNO_SET_THROW);
-        css::uno::Reference<com::sun::star::ucb::XContentAccess> acc(
-            res, css::uno::UNO_QUERY_THROW);
+        css::uno::Sequence<OUString> args { "Title" };
+        css::uno::Reference<css::sdbc::XResultSet> res( c.createCursor(args), css::uno::UNO_SET_THROW);
+        css::uno::Reference<css::ucb::XContentAccess> acc( res, css::uno::UNO_QUERY_THROW);
         while (res->next()) {
             cs.push_back(acc->queryContentIdentifierString());
         }
@@ -113,7 +109,7 @@ std::vector<OUString> getContents(OUString const & url) {
 OUString getCasePreservingUrl(const INetURLObject& url) {
     return
         content(url).executeCommand(
-            OUString("getCasePreservingURL"),
+            "getCasePreservingURL",
             css::uno::Any()).
         get<OUString>();
 }
@@ -186,7 +182,7 @@ bool utl::UCBContentHelper::IsFolder(OUString const & url) {
 bool utl::UCBContentHelper::GetTitle(
     OUString const & url, OUString * title)
 {
-    assert(title != 0);
+    assert(title != nullptr);
     try {
         return content(url).getPropertyValue("Title") >>= *title;
     } catch (css::uno::RuntimeException const &) {
@@ -208,7 +204,7 @@ bool utl::UCBContentHelper::GetTitle(
 bool utl::UCBContentHelper::Kill(OUString const & url) {
     try {
         content(url).executeCommand(
-            OUString("delete"),
+            "delete",
             css::uno::makeAny(true));
         return true;
     } catch (css::uno::RuntimeException const &) {
@@ -246,8 +242,7 @@ bool utl::UCBContentHelper::MakeFolder(
                 {
                     continue;
                 }
-                css::uno::Sequence<OUString> keys(1);
-                keys[0] = "Title";
+                css::uno::Sequence<OUString> keys { "Title" };
                 css::uno::Sequence<css::uno::Any> values(1);
                 values[0] <<= title;
                 if (parent.insertNewContent(info[i].Type, keys, values, result))
@@ -323,11 +318,11 @@ bool utl::UCBContentHelper::IsYounger(
         return
             convert(
                 content(younger).getPropertyValue(
-                    OUString("DateModified")).
+                    "DateModified").
                 get<css::util::DateTime>())
             > convert(
                 content(older).getPropertyValue(
-                    OUString("DateModified")).
+                    "DateModified").
                 get<css::util::DateTime>());
     } catch (css::uno::RuntimeException const &) {
         throw;

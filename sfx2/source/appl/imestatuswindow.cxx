@@ -44,13 +44,13 @@
 #include <cppuhelper/implbase.hxx>
 
 //TO-Do, merge into framework/inc/helpers/mischelpers.hxx and deliver
-class WeakPropertyChangeListener : public ::cppu::WeakImplHelper<com::sun::star::beans::XPropertyChangeListener>
+class WeakPropertyChangeListener : public ::cppu::WeakImplHelper<css::beans::XPropertyChangeListener>
 {
     private:
-        com::sun::star::uno::WeakReference<com::sun::star::beans::XPropertyChangeListener> mxOwner;
+        css::uno::WeakReference<css::beans::XPropertyChangeListener> mxOwner;
 
     public:
-        explicit WeakPropertyChangeListener(com::sun::star::uno::Reference<com::sun::star::beans::XPropertyChangeListener> xOwner)
+        explicit WeakPropertyChangeListener(css::uno::Reference<css::beans::XPropertyChangeListener> xOwner)
             : mxOwner(xOwner)
         {
         }
@@ -59,22 +59,22 @@ class WeakPropertyChangeListener : public ::cppu::WeakImplHelper<com::sun::star:
         {
         }
 
-        virtual void SAL_CALL propertyChange(const com::sun::star::beans::PropertyChangeEvent &rEvent )
-            throw(com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        virtual void SAL_CALL propertyChange(const css::beans::PropertyChangeEvent &rEvent )
+            throw(css::uno::RuntimeException, std::exception) override
         {
-            com::sun::star::uno::Reference<com::sun::star::beans::XPropertyChangeListener> xOwner(mxOwner.get(),
-                com::sun::star::uno::UNO_QUERY);
+            css::uno::Reference<css::beans::XPropertyChangeListener> xOwner(mxOwner.get(),
+                css::uno::UNO_QUERY);
             if (xOwner.is())
                 xOwner->propertyChange(rEvent);
 
         }
 
         // lang.XEventListener
-        virtual void SAL_CALL disposing(const com::sun::star::lang::EventObject& rEvent)
-            throw(com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        virtual void SAL_CALL disposing(const css::lang::EventObject& rEvent)
+            throw(css::uno::RuntimeException, std::exception) override
         {
-            com::sun::star::uno::Reference<com::sun::star::beans::XPropertyChangeListener> xOwner(mxOwner.get(),
-                com::sun::star::uno::UNO_QUERY);
+            css::uno::Reference<css::beans::XPropertyChangeListener> xOwner(mxOwner.get(),
+                css::uno::UNO_QUERY);
             if (xOwner.is())
                 xOwner->disposing(rEvent);
 
@@ -95,7 +95,7 @@ void ImeStatusWindow::init()
         try
         {
             bool bShow;
-            if (getConfig()->getPropertyValue(OUString("ShowStatusWindow")) >>= bShow)
+            if (getConfig()->getPropertyValue("ShowStatusWindow") >>= bShow)
                 Application::ShowImeStatusWindow(bShow);
         }
         catch (css::uno::Exception &)
@@ -111,7 +111,7 @@ bool ImeStatusWindow::isShowing()
     try
     {
         bool bShow(false);
-        if (getConfig()->getPropertyValue(OUString("ShowStatusWindow")) >>= bShow)
+        if (getConfig()->getPropertyValue("ShowStatusWindow") >>= bShow)
             return bShow;
     }
     catch (css::uno::Exception &)
@@ -129,7 +129,7 @@ void ImeStatusWindow::show(bool bShow)
     {
         css::uno::Reference< css::beans::XPropertySet > xConfig(getConfig());
         xConfig->setPropertyValue(
-            OUString("ShowStatusWindow"),
+            "ShowStatusWindow",
             css::uno::makeAny(bShow));
         css::uno::Reference< css::util::XChangesBatch > xCommit(
             xConfig, css::uno::UNO_QUERY);
@@ -158,7 +158,7 @@ ImeStatusWindow::~ImeStatusWindow()
         try
         {
             m_xConfig->removePropertyChangeListener(
-                OUString("ShowStatusWindow"),
+                "ShowStatusWindow",
                 m_xConfigListener);
         }
         catch (css::uno::Exception &)
@@ -171,7 +171,7 @@ void SAL_CALL ImeStatusWindow::disposing(css::lang::EventObject const & )
     throw (css::uno::RuntimeException, std::exception)
 {
     osl::MutexGuard aGuard(m_aMutex);
-    m_xConfig = 0;
+    m_xConfig = nullptr;
     m_bDisposed = true;
 }
 
@@ -197,9 +197,8 @@ css::uno::Reference< css::beans::XPropertySet > ImeStatusWindow::getConfig()
                 throw css::lang::DisposedException();
             if (!m_xContext.is())
                 throw css::uno::RuntimeException(
-                    OUString(
-                            "null comphelper::getProcessServiceFactory"),
-                    0);
+                    OUString("null comphelper::getProcessServiceFactory"),
+                    nullptr);
             css::uno::Reference< css::lang::XMultiServiceFactory > xProvider =
                 css::configuration::theDefaultProvider::get( m_xContext );
             css::beans::PropertyValue aArg(
@@ -210,11 +209,9 @@ css::uno::Reference< css::beans::XPropertySet > ImeStatusWindow::getConfig()
                 css::beans::PropertyState_DIRECT_VALUE);
             css::uno::Sequence< css::uno::Any > aArgs(1);
             aArgs[0] <<= aArg;
-            m_xConfig
-                = css::uno::Reference< css::beans::XPropertySet >(
+            m_xConfig.set(
                     xProvider->createInstanceWithArguments(
-                        OUString(
-                       "com.sun.star.configuration.ConfigurationUpdateAccess"),
+                        "com.sun.star.configuration.ConfigurationUpdateAccess",
                         aArgs),
                     css::uno::UNO_QUERY);
             if (!m_xConfig.is())
@@ -222,7 +219,7 @@ css::uno::Reference< css::beans::XPropertySet > ImeStatusWindow::getConfig()
                     OUString(
                                       "null com.sun.star.configuration."
                                       "ConfigurationUpdateAccess"),
-                    0);
+                    nullptr);
             bAdd = true;
         }
         xConfig = m_xConfig;
@@ -234,7 +231,7 @@ css::uno::Reference< css::beans::XPropertySet > ImeStatusWindow::getConfig()
         // no dispose notifications):
         m_xConfigListener = new WeakPropertyChangeListener(this);
         xConfig->addPropertyChangeListener(
-            OUString("ShowStatusWindow"),
+            "ShowStatusWindow",
             m_xConfigListener);
     }
     return xConfig;

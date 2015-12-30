@@ -10,6 +10,7 @@
 #include "sdmodeltestbase.hxx"
 #include "Outliner.hxx"
 #include <comphelper/processfactory.hxx>
+#include <comphelper/propertysequence.hxx>
 #include <svl/stritem.hxx>
 #include <editeng/editobj.hxx>
 #include <editeng/outlobj.hxx>
@@ -46,6 +47,8 @@
 #include <com/sun/star/animations/XAnimationNodeSupplier.hpp>
 #include <com/sun/star/animations/XAnimationNode.hpp>
 #include <com/sun/star/animations/XAnimate.hpp>
+#include <com/sun/star/animations/TransitionType.hpp>
+#include <com/sun/star/animations/TransitionSubType.hpp>
 #include <com/sun/star/beans/XPropertySet.hpp>
 #include <com/sun/star/chart/XChartDocument.hpp>
 #include <com/sun/star/chart2/XChartDocument.hpp>
@@ -59,6 +62,7 @@
 #include <com/sun/star/awt/FontDescriptor.hpp>
 #include <com/sun/star/graphic/XGraphic.hpp>
 #include <com/sun/star/frame/XStorable.hpp>
+#include <com/sun/star/drawing/EnhancedCustomShapeParameterPair.hpp>
 #include <com/sun/star/drawing/FillStyle.hpp>
 #include <com/sun/star/text/XTextField.hpp>
 #include <com/sun/star/text/WritingMode2.hpp>
@@ -66,6 +70,7 @@
 #include <com/sun/star/table/BorderLine2.hpp>
 #include <com/sun/star/table/XTable.hpp>
 #include <com/sun/star/table/XMergeableCell.hpp>
+
 
 #include <svx/svdotable.hxx>
 
@@ -91,7 +96,8 @@ template<> struct assertion_traits<Color>
 
 CPPUNIT_NS_END
 
-using namespace ::com::sun::star;
+using namespace css;
+using namespace css::animations;
 
 class SdExportTest : public SdModelTestBase
 {
@@ -127,6 +133,7 @@ public:
     void testBulletMarginAndIndentation();
     void testParaMarginAndindentation();
     void testTransparentBackground();
+    void testExportTransitionsPPTX();
 
     void testFdo90607();
     void testTdf91378();
@@ -134,6 +141,7 @@ public:
     void testBnc822341();
 #endif
     void testTdf80224();
+    void testTdf92527();
 
     CPPUNIT_TEST_SUITE(SdExportTest);
     CPPUNIT_TEST(testFdo90607);
@@ -174,6 +182,10 @@ public:
     CPPUNIT_TEST(testBnc822341);
 #endif
     CPPUNIT_TEST(testTdf80224);
+
+    CPPUNIT_TEST(testExportTransitionsPPTX);
+    CPPUNIT_TEST(testTdf92527);
+
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -186,16 +198,15 @@ void SdExportTest::testN821567()
     uno::Reference< drawing::XDrawPagesSupplier > xDoc(
         xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW );
     CPPUNIT_ASSERT_MESSAGE( "not exactly one page", xDoc->getDrawPages()->getCount() == 1 );
-    uno::Reference< drawing::XDrawPage > xPage(
-        xDoc->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW );
+    uno::Reference< drawing::XDrawPage > xPage( getPage( 0, xDocShRef ) );
 
     uno::Reference< beans::XPropertySet > xPropSet( xPage, uno::UNO_QUERY );
-    uno::Any aAny = xPropSet->getPropertyValue( OUString("Background") );
+    uno::Any aAny = xPropSet->getPropertyValue( "Background" );
     if(aAny.hasValue())
     {
         uno::Reference< beans::XPropertySet > aXBackgroundPropSet;
         aAny >>= aXBackgroundPropSet;
-        aAny = aXBackgroundPropSet->getPropertyValue( OUString("FillBitmapName"));
+        aAny = aXBackgroundPropSet->getPropertyValue( "FillBitmapName" );
         aAny >>= bgImage;
     }
     CPPUNIT_ASSERT_MESSAGE("Slide Background is not exported properly", !bgImage.isEmpty());
@@ -208,7 +219,7 @@ namespace {
 template< typename ItemValue, typename ItemType >
 void checkFontAttributes( const SdrTextObj* pObj, ItemValue nVal)
 {
-    CPPUNIT_ASSERT_MESSAGE( "no object", pObj != NULL);
+    CPPUNIT_ASSERT_MESSAGE( "no object", pObj != nullptr);
     const EditTextObject& aEdit = pObj->GetOutlinerParaObject()->GetTextObject();
     std::vector<EECharAttrib> rLst;
     aEdit.GetCharAttribs(0, rLst);
@@ -229,10 +240,7 @@ void SdExportTest::testBnc870233_1()
     ::sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("/sd/qa/unit/data/pptx/bnc870233_1.pptx"), PPTX);
     xDocShRef = saveAndReload( xDocShRef, PPTX );
 
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-    const SdrPage *pPage = pDoc->GetPage (1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
 
     // The problem was all shapes had the same font (the last parsed font attribues overwrote all previous ones)
 
@@ -258,10 +266,7 @@ void SdExportTest::testBnc870233_2()
     ::sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("/sd/qa/unit/data/pptx/bnc870233_2.pptx"), PPTX);
     xDocShRef = saveAndReload( xDocShRef, PPTX );
 
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-    const SdrPage *pPage = pDoc->GetPage (1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
 
     // The problem was in some SmartArts font color was wrong
 
@@ -293,10 +298,7 @@ void SdExportTest::testN828390_4()
 
     xDocShRef = saveAndReload( xDocShRef, PPTX );
 
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-    const SdrPage *pPage = pDoc->GetPage(1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
     {
         std::vector<EECharAttrib> rLst;
         SdrObject *pObj = pPage->GetObj(0);
@@ -331,10 +333,7 @@ void SdExportTest::testN828390_5()
 
     xDocShRef = saveAndReload( xDocShRef, PPTX );
 
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-    const SdrPage *pPage = pDoc->GetPage(1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
     {
         SdrObject *pObj = pPage->GetObj(0);
         SdrTextObj *pTxtObj = dynamic_cast<SdrTextObj *>( pObj );
@@ -353,10 +352,7 @@ void SdExportTest::testTransparentBackground()
    ::sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("/sd/qa/unit/data/odp/transparent_background.odp"), ODP);
     xDocShRef = saveAndReload( xDocShRef, ODP );
 
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-    const SdrPage *pPage = pDoc->GetPage (1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
 
     const SdrTextObj *pObj1 = dynamic_cast<SdrTextObj *>( pPage->GetObj( 0 ) );
     checkFontAttributes<Color, SvxBackgroundColorItem>( pObj1, Color(COL_TRANSPARENT) );
@@ -373,15 +369,12 @@ void SdExportTest::testMediaEmbedding()
     xDocShRef = saveAndReload( xDocShRef, ODP );
 #endif
 
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-    const SdrPage *pPage = pDoc->GetPage (1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
 
 #if HAVE_FEATURE_GLTF
     // First object is a glTF model
     SdrMediaObj *pModelObj = dynamic_cast<SdrMediaObj*>( pPage->GetObj( 2 ));
-    CPPUNIT_ASSERT_MESSAGE( "missing model", pModelObj != NULL);
+    CPPUNIT_ASSERT_MESSAGE( "missing model", pModelObj != nullptr);
     CPPUNIT_ASSERT_EQUAL( OUString( "vnd.sun.star.Package:Models/duck/duck.json" ), pModelObj->getMediaProperties().getURL());
     CPPUNIT_ASSERT_EQUAL( OUString( "model/vnd.gltf+json" ), pModelObj->getMediaProperties().getMimeType());
 #else
@@ -393,7 +386,7 @@ void SdExportTest::testMediaEmbedding()
 
     // Second object is a sound
     SdrMediaObj *pMediaObj = dynamic_cast<SdrMediaObj*>( pPage->GetObj( 3 ));
-    CPPUNIT_ASSERT_MESSAGE( "missing media object", pMediaObj != NULL);
+    CPPUNIT_ASSERT_MESSAGE( "missing media object", pMediaObj != nullptr);
     CPPUNIT_ASSERT_EQUAL( OUString( "vnd.sun.star.Package:Media/button-1.wav" ), pMediaObj->getMediaProperties().getURL());
     CPPUNIT_ASSERT_EQUAL( OUString( "application/vnd.sun.star.media" ), pMediaObj->getMediaProperties().getMimeType());
 
@@ -406,10 +399,7 @@ void SdExportTest::testFdo84043()
     xDocShRef = saveAndReload( xDocShRef, ODP );
 
     // the bug was duplicate attributes, causing crash in a build with asserts
-    SdDrawDocument const* pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE("no document", pDoc != nullptr);
-    SdrPage const* pPage = pDoc->GetPage(1);
-    CPPUNIT_ASSERT_MESSAGE("no page", pPage != nullptr);
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
     SdrObject const* pShape = pPage->GetObj(1);
     CPPUNIT_ASSERT_MESSAGE("no shape", pShape != nullptr);
 }
@@ -419,26 +409,22 @@ void SdExportTest::testFdo71961()
     ::sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("/sd/qa/unit/data/fdo71961.odp"), ODP);
 
     xDocShRef = saveAndReload( xDocShRef, PPTX );
-
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-    const SdrPage *pPage = pDoc->GetPage (1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
 
     // Export to .pptx changes all text frames to custom shape objects, which obey TextWordWrap property
     // (which is false for text frames otherwise and is ignored). Check that frames that should wrap still do.
     SdrObjCustomShape *pTxtObj = dynamic_cast<SdrObjCustomShape *>( pPage->GetObj( 1 ));
-    CPPUNIT_ASSERT_MESSAGE( "no text object", pTxtObj != NULL);
+    CPPUNIT_ASSERT_MESSAGE( "no text object", pTxtObj != nullptr);
     CPPUNIT_ASSERT_EQUAL( OUString( "Text to be always wrapped" ), pTxtObj->GetOutlinerParaObject()->GetTextObject().GetText(0));
     CPPUNIT_ASSERT_EQUAL( true, (static_cast<const SdrOnOffItem&>(pTxtObj->GetMergedItem(SDRATTR_TEXT_WORDWRAP))).GetValue());
 
     pTxtObj = dynamic_cast<SdrObjCustomShape *>( pPage->GetObj( 2 ));
-    CPPUNIT_ASSERT_MESSAGE( "no text object", pTxtObj != NULL);
+    CPPUNIT_ASSERT_MESSAGE( "no text object", pTxtObj != nullptr);
     CPPUNIT_ASSERT_EQUAL( OUString( "Custom shape non-wrapped text" ), pTxtObj->GetOutlinerParaObject()->GetTextObject().GetText(0));
     CPPUNIT_ASSERT_EQUAL( false, (static_cast<const SdrOnOffItem&>(pTxtObj->GetMergedItem(SDRATTR_TEXT_WORDWRAP))).GetValue());
 
     pTxtObj = dynamic_cast<SdrObjCustomShape *>( pPage->GetObj( 3 ));
-    CPPUNIT_ASSERT_MESSAGE( "no text object", pTxtObj != NULL);
+    CPPUNIT_ASSERT_MESSAGE( "no text object", pTxtObj != nullptr);
     CPPUNIT_ASSERT_EQUAL( OUString( "Custom shape wrapped text" ), pTxtObj->GetOutlinerParaObject()->GetTextObject().GetText(0));
     CPPUNIT_ASSERT_EQUAL( true, (static_cast<const SdrOnOffItem&>(pTxtObj->GetMergedItem(SDRATTR_TEXT_WORDWRAP))).GetValue());
 
@@ -452,10 +438,7 @@ void SdExportTest::testN828390()
 
     xDocShRef = saveAndReload( xDocShRef, PPTX );
 
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-    const SdrPage *pPage = pDoc->GetPage(1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
     {
         std::vector<EECharAttrib> rLst;
         // Get the object
@@ -487,20 +470,17 @@ void SdExportTest::testBnc880763()
     ::sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("/sd/qa/unit/data/pptx/bnc880763.pptx"), PPTX);
     xDocShRef = saveAndReload( xDocShRef, PPTX );
 
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-    const SdrPage *pPage = pDoc->GetPage (1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
 
     // Check z-order of the two shapes, use background color to identify them
     // First object in the background has blue background color
     const SdrObject *pObj = dynamic_cast<SdrObject *>( pPage->GetObj( 0 ) );
-    CPPUNIT_ASSERT_MESSAGE( "no object", pObj != NULL);
+    CPPUNIT_ASSERT_MESSAGE( "no object", pObj != nullptr);
     CPPUNIT_ASSERT_EQUAL( sal_uInt32(0x0000ff),(static_cast< const XColorItem& >(pObj->GetMergedItem(XATTR_FILLCOLOR))).GetColorValue().GetColor());
 
     // Second object at the front has green background color
     pObj = dynamic_cast<SdrObject *>( pPage->GetObj( 1 ) );
-    CPPUNIT_ASSERT_MESSAGE( "no object", pObj != NULL);
+    CPPUNIT_ASSERT_MESSAGE( "no object", pObj != nullptr);
     CPPUNIT_ASSERT_EQUAL( sal_uInt32(0x00ff00),(static_cast< const XColorItem& >(pObj->GetMergedItem(XATTR_FILLCOLOR))).GetColorValue().GetColor());
 
     xDocShRef->DoClose();
@@ -511,14 +491,11 @@ void SdExportTest::testBnc862510_5()
     ::sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("/sd/qa/unit/data/pptx/bnc862510_5.pptx"), PPTX);
     xDocShRef = saveAndReload( xDocShRef, PPTX );
 
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-    const SdrPage *pPage = pDoc->GetPage (1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
 
     // Same as testBnc870237, but here we check the horizontal spacing
     const SdrObject* pObj = dynamic_cast<SdrObject*>( pPage->GetObj( 1 ) );
-    CPPUNIT_ASSERT_MESSAGE( "no object", pObj != NULL);
+    CPPUNIT_ASSERT_MESSAGE( "no object", pObj != nullptr);
     CPPUNIT_ASSERT_EQUAL( sal_Int32(0), (static_cast< const SdrMetricItem& >(pObj->GetMergedItem(SDRATTR_TEXT_UPPERDIST))).GetValue());
     CPPUNIT_ASSERT_EQUAL( sal_Int32(0), (static_cast< const SdrMetricItem& >(pObj->GetMergedItem(SDRATTR_TEXT_LOWERDIST))).GetValue());
     CPPUNIT_ASSERT_EQUAL( sal_Int32(7510), (static_cast< const SdrMetricItem& >(pObj->GetMergedItem(SDRATTR_TEXT_RIGHTDIST))).GetValue());
@@ -564,18 +541,9 @@ void SdExportTest::testFdo90607()
     sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("/sd/qa/unit/data/fdo90607.pptx"), PPTX);
     xDocShRef = saveAndReload(xDocShRef, PPTX);
 
-    uno::Reference< drawing::XDrawPagesSupplier > xDoc(
-        xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW );
-
-    uno::Reference< drawing::XDrawPage > xPage(
-        xDoc->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW );
-     SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-
-    const SdrPage *pPage = pDoc->GetPage(1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
     SdrTextObj *pTxtObj = dynamic_cast<SdrTextObj *>( pPage->GetObj(1) );
-    CPPUNIT_ASSERT_MESSAGE( "no text object", pTxtObj != NULL);
+    CPPUNIT_ASSERT_MESSAGE( "no text object", pTxtObj != nullptr);
     OutlinerParaObject* pOutlinerParagraphObject = pTxtObj->GetOutlinerParaObject();
     const sal_Int16 nDepth = pOutlinerParagraphObject->GetDepth(0);
     CPPUNIT_ASSERT_MESSAGE("not equal", nDepth != -1);
@@ -588,13 +556,13 @@ void SdExportTest::testFdo83751()
     xDocShRef = saveAndReload( xDocShRef, PPTX );
 
     SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
+    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != nullptr );
 
     uno::Reference<document::XDocumentPropertiesSupplier> xDocumentPropertiesSupplier( xDocShRef->GetModel(), uno::UNO_QUERY );
     uno::Reference<document::XDocumentProperties> xProps( xDocumentPropertiesSupplier->getDocumentProperties(), uno::UNO_QUERY );
     uno::Reference<beans::XPropertySet> xUDProps( xProps->getUserDefinedProperties(), uno::UNO_QUERY );
     OUString propValue;
-    xUDProps->getPropertyValue(OUString("Testing")) >>= propValue;
+    xUDProps->getPropertyValue("Testing") >>= propValue;
     CPPUNIT_ASSERT_EQUAL(OUString("Document"), propValue);
     xDocShRef->DoClose();
 }
@@ -735,11 +703,11 @@ void SdExportTest::testLinkedGraphicRT()
 
         // Check whether graphic imported well after export
         SdDrawDocument *pDoc = xDocShRef->GetDoc();
-        CPPUNIT_ASSERT_MESSAGE( sFailedMessage.getStr(), pDoc != NULL );
+        CPPUNIT_ASSERT_MESSAGE( sFailedMessage.getStr(), pDoc != nullptr );
         const SdrPage *pPage = pDoc->GetPage(1);
-        CPPUNIT_ASSERT_MESSAGE( sFailedMessage.getStr(), pPage != NULL );
+        CPPUNIT_ASSERT_MESSAGE( sFailedMessage.getStr(), pPage != nullptr );
         SdrGrafObj* pObject = dynamic_cast<SdrGrafObj*>(pPage->GetObj(2));
-        CPPUNIT_ASSERT_MESSAGE( sFailedMessage.getStr(), pObject != NULL );
+        CPPUNIT_ASSERT_MESSAGE( sFailedMessage.getStr(), pObject != nullptr );
         CPPUNIT_ASSERT_MESSAGE( sFailedMessage.getStr(), pObject->IsLinkedGraphic() );
 
         const GraphicObject& rGraphicObj = pObject->GetGraphicObject(true);
@@ -852,10 +820,7 @@ void SdExportTest::testTableCellFillProperties()
     xComponent->dispose();
     xDocShRef = loadURL(aTempFile.GetURL(), PPTX);
 
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-    const SdrPage *pPage = pDoc->GetPage(1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
 
     sdr::table::SdrTableObj *pTableObj = dynamic_cast<sdr::table::SdrTableObj*>(pPage->GetObj(0));
     CPPUNIT_ASSERT( pTableObj );
@@ -887,18 +852,9 @@ void SdExportTest::testBulletStartNumber()
     ::sd::DrawDocShellRef xDocShRef = loadURL( getURLFromSrc("/sd/qa/unit/data/pptx/n90255.pptx"), PPTX );
     xDocShRef = saveAndReload( xDocShRef, PPTX );
 
-    uno::Reference< drawing::XDrawPagesSupplier > xDoc(
-        xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW );
-
-    uno::Reference< drawing::XDrawPage > xPage(
-        xDoc->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW );
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-
-    const SdrPage *pPage = pDoc->GetPage(1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
     SdrTextObj *pTxtObj = dynamic_cast<SdrTextObj *>( pPage->GetObj(0) );
-    CPPUNIT_ASSERT_MESSAGE( "no text object", pTxtObj != NULL);
+    CPPUNIT_ASSERT_MESSAGE( "no text object", pTxtObj != nullptr);
     const EditTextObject& aEdit = pTxtObj->GetOutlinerParaObject()->GetTextObject();
     const SvxNumBulletItem *pNumFmt = dynamic_cast<const SvxNumBulletItem *>(aEdit.GetParaAttribs(0).GetItem(EE_PARA_NUMBULLET));
     CPPUNIT_ASSERT(pNumFmt);
@@ -911,10 +867,7 @@ void SdExportTest::testLineStyle()
     ::sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("sd/qa/unit/data/pptx/lineStyle.pptx"), PPTX);
      xDocShRef = saveAndReload( xDocShRef, PPTX );
 
-    SdDrawDocument const* pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE("no document", pDoc != nullptr);
-    SdrPage const* pPage = pDoc->GetPage(1);
-    CPPUNIT_ASSERT_MESSAGE("no page", pPage != nullptr);
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
     SdrObject const* pShape = pPage->GetObj(0);
     CPPUNIT_ASSERT_MESSAGE("no shape", pShape != nullptr);
 
@@ -927,28 +880,13 @@ void SdExportTest::testLineStyle()
 
 void SdExportTest::testRightToLeftParaghraph()
 {
-        ::sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("/sd/qa/unit/data/pptx/rightToLeftParagraph.pptx"), PPTX);
+    ::sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("/sd/qa/unit/data/pptx/rightToLeftParagraph.pptx"), PPTX);
 
     xDocShRef = saveAndReload( xDocShRef, PPTX );
-
-    uno::Reference< drawing::XDrawPagesSupplier > xDoc(
-    xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW );
-
-    uno::Reference< drawing::XDrawPage > xPage(
-    xDoc->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW );
-
-    uno::Reference< beans::XPropertySet > xShape(
-    xPage->getByIndex(0), uno::UNO_QUERY );
-    CPPUNIT_ASSERT_MESSAGE( "no shape", xShape.is() );
+    uno::Reference< beans::XPropertySet > xShape( getShapeFromPage( 0, 0, xDocShRef ) );
 
     // Get first paragraph
-    uno::Reference<text::XText> xText = uno::Reference<text::XTextRange>(xShape, uno::UNO_QUERY)->getText();
-    CPPUNIT_ASSERT_MESSAGE( "not a text shape", xText.is() );
-    uno::Reference<container::XEnumerationAccess> paraEnumAccess;
-    paraEnumAccess.set(xText, uno::UNO_QUERY);
-    uno::Reference<container::XEnumeration> paraEnum = paraEnumAccess->createEnumeration();
-    uno::Reference<text::XTextRange> const xParagraph(paraEnum->nextElement(),
-                uno::UNO_QUERY_THROW);
+    uno::Reference<text::XTextRange> const xParagraph( getParagraphFromShape( 0, xShape ) );
     uno::Reference< beans::XPropertySet > xPropSet( xParagraph, uno::UNO_QUERY_THROW );
 
     sal_Int16 nWritingMode = 0;
@@ -963,31 +901,13 @@ void SdExportTest::testTextboxWithHyperlink()
     ::sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("/sd/qa/unit/data/pptx/hyperlinktest.pptx"), PPTX);
 
     xDocShRef = saveAndReload( xDocShRef, PPTX );
-
-    uno::Reference< drawing::XDrawPagesSupplier > xDoc(
-    xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW );
-
-    uno::Reference< drawing::XDrawPage > xPage(
-    xDoc->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW );
-
-    uno::Reference< beans::XPropertySet > xShape(
-        xPage->getByIndex(0), uno::UNO_QUERY );
-    CPPUNIT_ASSERT_MESSAGE( "no shape", xShape.is() );
+    uno::Reference< beans::XPropertySet > xShape( getShapeFromPage( 0, 0, xDocShRef ) );
 
     // Get first paragraph
-    uno::Reference<text::XText> xText = uno::Reference<text::XTextRange>(xShape, uno::UNO_QUERY)->getText();
-    CPPUNIT_ASSERT_MESSAGE( "not a text shape", xText.is() );
-    uno::Reference<container::XEnumerationAccess> paraEnumAccess;
-    paraEnumAccess.set(xText, uno::UNO_QUERY);
-    uno::Reference<container::XEnumeration> paraEnum = paraEnumAccess->createEnumeration();
-    uno::Reference<text::XTextRange> const xParagraph(paraEnum->nextElement(),
-                uno::UNO_QUERY_THROW);
+    uno::Reference<text::XTextRange> const xParagraph( getParagraphFromShape( 0, xShape ) );
 
     // first chunk of text
-    // FIXME: those should really be some convenience function (getShape, getParagraph, getRun etc.)
-    uno::Reference<container::XEnumerationAccess> xRunEnumAccess(xParagraph, uno::UNO_QUERY);
-    uno::Reference<container::XEnumeration> xRunEnum = xRunEnumAccess->createEnumeration();
-    uno::Reference<text::XTextRange> xRun(xRunEnum->nextElement(), uno::UNO_QUERY);
+    uno::Reference<text::XTextRange> xRun( getRunFromParagraph( 0, xParagraph ) );
     uno::Reference< beans::XPropertySet > xPropSet( xRun, uno::UNO_QUERY_THROW );
 
     uno::Reference<text::XTextField> xField;
@@ -1008,19 +928,10 @@ void SdExportTest::testBulletColor()
 
     xDocShRef = saveAndReload( xDocShRef, PPTX );
 
-    uno::Reference< drawing::XDrawPagesSupplier > xDoc(
-        xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW );
-
-    uno::Reference< drawing::XDrawPage > xPage(
-        xDoc->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW );
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-
-    const SdrPage *pPage = pDoc->GetPage(1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
 
     SdrTextObj *pTxtObj = dynamic_cast<SdrTextObj *>( pPage->GetObj(0) );
-    CPPUNIT_ASSERT_MESSAGE( "no text object", pTxtObj != NULL);
+    CPPUNIT_ASSERT_MESSAGE( "no text object", pTxtObj != nullptr);
 
     const EditTextObject& aEdit = pTxtObj->GetOutlinerParaObject()->GetTextObject();
     const SvxNumBulletItem *pNumFmt = dynamic_cast<const SvxNumBulletItem *>(aEdit.GetParaAttribs(0).GetItem(EE_PARA_NUMBULLET));
@@ -1031,11 +942,12 @@ void SdExportTest::testBulletColor()
 void SdExportTest::testTdf62176()
 {
     ::sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("/sd/qa/unit/data/odp/Tdf62176.odp"), ODP);
-    uno::Reference<drawing::XDrawPagesSupplier> xDoc(xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW);
-    uno::Reference<drawing::XDrawPage> xPage(xDoc->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW);
+    uno::Reference<drawing::XDrawPage> xPage( getPage( 0, xDocShRef ) );
+
     //there should be only *one* shape
     CPPUNIT_ASSERT_EQUAL(sal_Int32(1), xPage->getCount());
-    uno::Reference<beans::XPropertySet> xShape(xPage->getByIndex(0), uno::UNO_QUERY);
+
+    uno::Reference<beans::XPropertySet> xShape( getShape( 0, xPage ) );
     //checking Paragraph's Left Margin with expected value
     sal_Int32 nParaLeftMargin = 0;
     xShape->getPropertyValue("ParaLeftMargin") >>= nParaLeftMargin;
@@ -1044,19 +956,18 @@ void SdExportTest::testTdf62176()
     sal_Int32 nParaFirstLineIndent = 0;
     xShape->getPropertyValue("ParaFirstLineIndent") >>= nParaFirstLineIndent;
     CPPUNIT_ASSERT_EQUAL(sal_Int32(-1300), nParaFirstLineIndent);
+
     //Checking the *Text* in TextBox
-    uno::Reference<text::XText> xText = uno::Reference<text::XTextRange>(xShape, uno::UNO_QUERY)->getText();
-    uno::Reference<container::XEnumerationAccess> paraEnumAccess(xText, uno::UNO_QUERY);
-    uno::Reference<container::XEnumeration> paraEnum(paraEnumAccess->createEnumeration());
-    uno::Reference<text::XTextRange> xParagraph(paraEnum->nextElement(), uno::UNO_QUERY_THROW);
+    uno::Reference<text::XTextRange> xParagraph( getParagraphFromShape( 0, xShape ) );
     CPPUNIT_ASSERT_EQUAL(OUString("Hello World"), xParagraph->getString());
+
     //Saving and Reloading the file
     xDocShRef = saveAndReload(xDocShRef, ODP);
-    uno::Reference<drawing::XDrawPagesSupplier> xDoc2(xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW);
-    uno::Reference<drawing::XDrawPage> xPage2(xDoc2->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW);
+    uno::Reference<drawing::XDrawPage> xPage2( getPage(0, xDocShRef ) );
     //there should be only *one* shape
     CPPUNIT_ASSERT_EQUAL(sal_Int32(1), xPage2->getCount());
-    uno::Reference<beans::XPropertySet> xShape2(xPage2->getByIndex(0), uno::UNO_QUERY);
+
+    uno::Reference<beans::XPropertySet> xShape2( getShape( 0, xPage2 ) );
     //checking Paragraph's Left Margin with expected value
     sal_Int32 nParaLeftMargin2 = 0;
     xShape2->getPropertyValue("ParaLeftMargin") >>= nParaLeftMargin2;
@@ -1065,26 +976,21 @@ void SdExportTest::testTdf62176()
     sal_Int32 nParaFirstLineIndent2 = 0;
     xShape2->getPropertyValue("ParaFirstLineIndent") >>= nParaFirstLineIndent2;
     CPPUNIT_ASSERT_EQUAL(sal_Int32(-1300), nParaFirstLineIndent2);
+
     //Checking the *Text* in TextBox
-    uno::Reference<text::XText> xText2 = uno::Reference<text::XTextRange>(xShape2, uno::UNO_QUERY)->getText();
-    uno::Reference<container::XEnumerationAccess> paraEnumAccess2(xText2, uno::UNO_QUERY);
-    uno::Reference<container::XEnumeration> paraEnum2(paraEnumAccess2->createEnumeration());
-    uno::Reference<text::XTextRange> xParagraph2(paraEnum2->nextElement(), uno::UNO_QUERY_THROW);
+    uno::Reference<text::XTextRange> xParagraph2( getParagraphFromShape( 0, xShape2 ) );
     CPPUNIT_ASSERT_EQUAL(OUString("Hello World"), xParagraph2->getString());
 }
+
 void SdExportTest::testBulletCharAndFont()
 {
     ::sd::DrawDocShellRef xDocShRef = loadURL( getURLFromSrc("/sd/qa/unit/data/odp/bulletCharAndFont.odp"), ODP);
     xDocShRef = saveAndReload( xDocShRef, PPTX );
-    uno::Reference< drawing::XDrawPagesSupplier > xDoc( xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW );
-    uno::Reference< drawing::XDrawPage > xPage( xDoc->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW );
-    uno::Reference< drawing::XShape > xShape(xPage->getByIndex(0), uno::UNO_QUERY);
-    uno::Reference<text::XText> xText = uno::Reference<text::XTextRange>(xShape, uno::UNO_QUERY_THROW)->getText();
-    uno::Reference<container::XEnumerationAccess> paraEnumAccess;
-    paraEnumAccess.set(xText, uno::UNO_QUERY);
-    uno::Reference<container::XEnumeration> paraEnum = paraEnumAccess->createEnumeration();
-    uno::Reference<text::XTextRange> const xParagraph(paraEnum->nextElement(), uno::UNO_QUERY_THROW);
+
+    uno::Reference< beans::XPropertySet > xShape( getShapeFromPage( 0, 0, xDocShRef ) );
+    uno::Reference<text::XTextRange> const xParagraph( getParagraphFromShape( 0, xShape ) );
     uno::Reference< beans::XPropertySet > xPropSet( xParagraph, uno::UNO_QUERY_THROW );
+
     uno::Reference<container::XIndexAccess> xLevels(xPropSet->getPropertyValue("NumberingRules"), uno::UNO_QUERY);
     uno::Sequence<beans::PropertyValue> aProps;
     xLevels->getByIndex(0) >>= aProps; // 1st level
@@ -1112,12 +1018,12 @@ void SdExportTest::testTdf91378()
     for( sal_uInt32 i=0;i<2;i++)
     {
       SdDrawDocument *pDoc = xDocShRef->GetDoc();
-      CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
+      CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != nullptr );
       uno::Reference<document::XDocumentPropertiesSupplier> xDocumentPropertiesSupplier( xDocShRef->GetModel(), uno::UNO_QUERY );
       uno::Reference<document::XDocumentProperties> xProps( xDocumentPropertiesSupplier->getDocumentProperties(), uno::UNO_QUERY );
       uno::Reference<beans::XPropertySet> xUDProps( xProps->getUserDefinedProperties(), uno::UNO_QUERY );
       OUString propValue;
-      xUDProps->getPropertyValue(OUString("Testing")) >>= propValue;
+      xUDProps->getPropertyValue("Testing") >>= propValue;
       CPPUNIT_ASSERT(propValue.isEmpty());
       xDocShRef = saveAndReload( xDocShRef, PPTX );
     }
@@ -1134,13 +1040,10 @@ void SdExportTest::testBnc822341()
 
     // Export an LO specific ole object (imported from an ODP document)
     {
-        SdDrawDocument *pDoc = xDocShRef->GetDoc();
-        CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-        const SdrPage *pPage = pDoc->GetPage(1);
-        CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+        const SdrPage *pPage = GetPage( 1, xDocShRef );
 
         const SdrObject* pObj = dynamic_cast<SdrObject*>( pPage->GetObj(0) );
-        CPPUNIT_ASSERT_MESSAGE( "no object", pObj != NULL);
+        CPPUNIT_ASSERT_MESSAGE( "no object", pObj != nullptr);
         CPPUNIT_ASSERT_EQUAL( static_cast<sal_uInt16>(OBJ_OLE2), pObj->GetObjIdentifier() );
     }
 
@@ -1149,12 +1052,12 @@ void SdExportTest::testBnc822341()
     // Export an MS specific ole object (imported from a PPTX document)
     {
         SdDrawDocument *pDoc = xDocShRef->GetDoc();
-        CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
+        CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != nullptr );
         const SdrPage *pPage = pDoc->GetPage(1);
-        CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+        CPPUNIT_ASSERT_MESSAGE( "no page", pPage != nullptr );
 
         const SdrObject* pObj = dynamic_cast<SdrObject*>( pPage->GetObj(0) );
-        CPPUNIT_ASSERT_MESSAGE( "no object", pObj != NULL);
+        CPPUNIT_ASSERT_MESSAGE( "no object", pObj != nullptr);
         CPPUNIT_ASSERT_EQUAL( static_cast<sal_uInt16>(OBJ_OLE2), pObj->GetObjIdentifier() );
     }
 
@@ -1166,21 +1069,12 @@ void SdExportTest::testBnc822341()
 void SdExportTest::testBulletMarginAndIndentation()
 {
     ::sd::DrawDocShellRef xDocShRef = loadURL( getURLFromSrc("/sd/qa/unit/data/pptx/bulletMarginAndIndent.pptx"), PPTX );
-
     xDocShRef = saveAndReload( xDocShRef, PPTX );
 
-    uno::Reference< drawing::XDrawPagesSupplier > xDoc(
-    xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW );
-    uno::Reference< drawing::XDrawPage > xPage(
-    xDoc->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW );
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-
-    const SdrPage *pPage = pDoc->GetPage(1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
 
     SdrTextObj *pTxtObj = dynamic_cast<SdrTextObj *>( pPage->GetObj(0) );
-    CPPUNIT_ASSERT_MESSAGE( "no text object", pTxtObj != NULL);
+    CPPUNIT_ASSERT_MESSAGE( "no text object", pTxtObj != nullptr);
 
     const EditTextObject& aEdit = pTxtObj->GetOutlinerParaObject()->GetTextObject();
     const SvxNumBulletItem *pNumFmt = dynamic_cast<const SvxNumBulletItem *>(aEdit.GetParaAttribs(0).GetItem(EE_PARA_NUMBULLET));
@@ -1195,25 +1089,10 @@ void SdExportTest::testParaMarginAndindentation()
     ::sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("/sd/qa/unit/data/pptx/paraMarginAndIndentation.pptx"), PPTX);
 
     xDocShRef = saveAndReload( xDocShRef, PPTX );
-
-    uno::Reference< drawing::XDrawPagesSupplier > xDoc(
-    xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW );
-
-    uno::Reference< drawing::XDrawPage > xPage(
-    xDoc->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW );
-
-    uno::Reference< beans::XPropertySet > xShape(
-    xPage->getByIndex(0), uno::UNO_QUERY );
-    CPPUNIT_ASSERT_MESSAGE( "no shape", xShape.is() );
+    uno::Reference< beans::XPropertySet > xShape( getShapeFromPage( 0, 0, xDocShRef ) );
 
     // Get first paragraph
-    uno::Reference<text::XText> xText = uno::Reference<text::XTextRange>(xShape, uno::UNO_QUERY)->getText();
-    CPPUNIT_ASSERT_MESSAGE( "not a text shape", xText.is() );
-    uno::Reference<container::XEnumerationAccess> paraEnumAccess;
-    paraEnumAccess.set(xText, uno::UNO_QUERY);
-    uno::Reference<container::XEnumeration> paraEnum = paraEnumAccess->createEnumeration();
-    uno::Reference<text::XTextRange> const xParagraph(paraEnum->nextElement(),
-                uno::UNO_QUERY_THROW);
+    uno::Reference<text::XTextRange> const xParagraph( getParagraphFromShape( 0, xShape ) );
     uno::Reference< beans::XPropertySet > xPropSet( xParagraph, uno::UNO_QUERY_THROW );
 
     sal_Int32 nParaLeftMargin = 0;
@@ -1233,21 +1112,13 @@ void SdExportTest::testCellLeftAndRightMargin()
     xDocShRef = saveAndReload( xDocShRef, PPTX );
     sal_Int32 nLeftMargin, nRightMargin;
 
-    uno::Reference< drawing::XDrawPagesSupplier > xDoc(
-        xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW );
-
-    uno::Reference< drawing::XDrawPage > xPage(xDoc->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW );
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-
-    const SdrPage *pPage = pDoc->GetPage(1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
 
     sdr::table::SdrTableObj *pTableObj = dynamic_cast<sdr::table::SdrTableObj*>(pPage->GetObj(0));
     CPPUNIT_ASSERT( pTableObj );
 
-    uno::Reference< com::sun::star::table::XTable > xTable (pTableObj->getTable(), uno::UNO_QUERY_THROW);
-    uno::Reference< com::sun::star::table::XMergeableCell > xCell( xTable->getCellByPosition(0, 0), uno::UNO_QUERY_THROW );
+    uno::Reference< css::table::XTable > xTable (pTableObj->getTable(), uno::UNO_QUERY_THROW);
+    uno::Reference< css::table::XMergeableCell > xCell( xTable->getCellByPosition(0, 0), uno::UNO_QUERY_THROW );
     uno::Reference< beans::XPropertySet > xCellPropSet(xCell, uno::UNO_QUERY_THROW);
 
     uno::Any aLeftMargin = xCellPropSet->getPropertyValue("TextLeftDistance");
@@ -1271,14 +1142,7 @@ void SdExportTest::testTableCellBorder()
     ::sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("sd/qa/unit/data/pptx/n90190.pptx"), PPTX);
     xDocShRef = saveAndReload( xDocShRef, PPTX );
 
-    uno::Reference< drawing::XDrawPagesSupplier > xDoc(xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW );
-
-    uno::Reference< drawing::XDrawPage > xPage(xDoc->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW );
-    SdDrawDocument *pDoc = xDocShRef->GetDoc();
-    CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != NULL );
-
-    const SdrPage *pPage = pDoc->GetPage(1);
-    CPPUNIT_ASSERT_MESSAGE( "no page", pPage != NULL );
+    const SdrPage *pPage = GetPage( 1, xDocShRef );
 
     sdr::table::SdrTableObj *pTableObj = dynamic_cast<sdr::table::SdrTableObj*>(pPage->GetObj(0));
     CPPUNIT_ASSERT( pTableObj );
@@ -1286,7 +1150,7 @@ void SdExportTest::testTableCellBorder()
     table::BorderLine2 aBorderLine;
 
     uno::Reference< table::XTable > xTable(pTableObj->getTable(), uno::UNO_QUERY_THROW);
-    uno::Reference< com::sun::star::table::XMergeableCell > xCell(xTable->getCellByPosition(0, 0), uno::UNO_QUERY_THROW);
+    uno::Reference< css::table::XMergeableCell > xCell(xTable->getCellByPosition(0, 0), uno::UNO_QUERY_THROW);
     uno::Reference< beans::XPropertySet > xCellPropSet (xCell, uno::UNO_QUERY_THROW);
 
     xCellPropSet->getPropertyValue("LeftBorder") >>= aBorderLine;
@@ -1327,18 +1191,146 @@ void SdExportTest::testTdf80224()
 {
     ::sd::DrawDocShellRef xDocShRef = loadURL( getURLFromSrc("/sd/qa/unit/data/odp/tdf80224.odp"), ODP);
     xDocShRef = saveAndReload( xDocShRef, PPTX );
-    uno::Reference< drawing::XDrawPagesSupplier > xDoc( xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW );
-    uno::Reference< drawing::XDrawPage > xPage( xDoc->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW );
-    uno::Reference< drawing::XShape > xShape(xPage->getByIndex(0), uno::UNO_QUERY);
-    uno::Reference<text::XText> xText = uno::Reference<text::XTextRange>(xShape, uno::UNO_QUERY_THROW)->getText();
-    uno::Reference<container::XEnumerationAccess> paraEnumAccess;
-    paraEnumAccess.set(xText, uno::UNO_QUERY);
-    uno::Reference<container::XEnumeration> paraEnum = paraEnumAccess->createEnumeration();
-    uno::Reference<text::XTextRange> const xParagraph(paraEnum->nextElement(), uno::UNO_QUERY_THROW);
+    uno::Reference< beans::XPropertySet > xShape( getShapeFromPage( 0, 0, xDocShRef ) );
+
+    uno::Reference<text::XTextRange> const xParagraph( getParagraphFromShape( 0, xShape ) );
     uno::Reference< beans::XPropertySet > xPropSet( xParagraph->getStart(), uno::UNO_QUERY_THROW );
+
     sal_Int32 nCharColor;
     xPropSet->getPropertyValue("CharColor") >>= nCharColor;
     CPPUNIT_ASSERT_EQUAL(sal_Int32(6644396), nCharColor);
+    xDocShRef->DoClose();
+}
+
+bool checkTransitionOnPage(uno::Reference<drawing::XDrawPagesSupplier> xDoc, sal_Int32 nSlideNumber,
+                           sal_Int16 nExpectedTransitionType, sal_Int16 nExpectedTransitionSubType,
+                           bool bExpectedDirection = true)
+{
+    sal_Int32 nSlideIndex = nSlideNumber - 1;
+
+    CPPUNIT_ASSERT_MESSAGE("Slide/Page index out of range", nSlideIndex < xDoc->getDrawPages()->getCount());
+
+    uno::Reference<drawing::XDrawPage> xPage(xDoc->getDrawPages()->getByIndex(nSlideIndex), uno::UNO_QUERY_THROW);
+    uno::Reference<beans::XPropertySet> xPropSet(xPage, uno::UNO_QUERY);
+
+    sal_Int16 nTransitionType = 0;
+    xPropSet->getPropertyValue("TransitionType") >>= nTransitionType;
+
+    if (nExpectedTransitionType != nTransitionType)
+    {
+        std::cerr << "Transition type: " << nTransitionType << " " << nExpectedTransitionType << std::endl;
+        return false;
+    }
+
+    sal_Int16 nTransitionSubtype = 0;
+    xPropSet->getPropertyValue("TransitionSubtype") >>= nTransitionSubtype;
+    if (nExpectedTransitionSubType != nTransitionSubtype)
+    {
+        std::cerr << "Transition Subtype: " << nTransitionSubtype << " " << nExpectedTransitionSubType << std::endl;
+        return false;
+    }
+
+    bool bDirection = false;
+    xPropSet->getPropertyValue("TransitionDirection") >>= bDirection;
+
+    if (bExpectedDirection != bDirection)
+    {
+        std::cerr << "Transition Direction: " << (bExpectedDirection ? "normal" : "reversed")
+                  << " "                      << (bDirection ? "normal" : "reversed") << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+void SdExportTest::testExportTransitionsPPTX()
+{
+    sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("/sd/qa/unit/data/AllTransitions.odp"), ODP);
+    xDocShRef = saveAndReload(xDocShRef, PPTX);
+    uno::Reference<drawing::XDrawPagesSupplier> xDoc(xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW);
+
+    // WIPE TRANSITIONS
+    CPPUNIT_ASSERT(checkTransitionOnPage(xDoc, 01, TransitionType::BARWIPE, TransitionSubType::TOPTOBOTTOM, false));
+    CPPUNIT_ASSERT(checkTransitionOnPage(xDoc, 02, TransitionType::BARWIPE, TransitionSubType::LEFTTORIGHT));
+    CPPUNIT_ASSERT(checkTransitionOnPage(xDoc, 03, TransitionType::BARWIPE, TransitionSubType::LEFTTORIGHT, false));
+    CPPUNIT_ASSERT(checkTransitionOnPage(xDoc, 04, TransitionType::BARWIPE, TransitionSubType::TOPTOBOTTOM));
+
+    // CUT THROUGH BLACK
+    CPPUNIT_ASSERT(checkTransitionOnPage(xDoc, 31, TransitionType::BARWIPE, TransitionSubType::FADEOVERCOLOR));
+
+    // COMB
+    CPPUNIT_ASSERT(checkTransitionOnPage(xDoc, 41, TransitionType::PUSHWIPE, TransitionSubType::COMBHORIZONTAL));
+    CPPUNIT_ASSERT(checkTransitionOnPage(xDoc, 42, TransitionType::PUSHWIPE, TransitionSubType::COMBVERTICAL));
+
+    // OUTSIDE TURNING CUBE
+    CPPUNIT_ASSERT(checkTransitionOnPage(xDoc, 57, TransitionType::MISCSHAPEWIPE, TransitionSubType::CORNERSOUT));
+    // INSIDE TURNING CUBE
+    CPPUNIT_ASSERT(checkTransitionOnPage(xDoc, 60, TransitionType::MISCSHAPEWIPE, TransitionSubType::CORNERSIN));
+
+    // FALL
+    CPPUNIT_ASSERT(checkTransitionOnPage(xDoc, 61, TransitionType::MISCSHAPEWIPE, TransitionSubType::LEFTTORIGHT));
+
+    // VORTEX
+    CPPUNIT_ASSERT(checkTransitionOnPage(xDoc, 70, TransitionType::MISCSHAPEWIPE, TransitionSubType::VERTICAL));
+
+    // RIPPLE
+    CPPUNIT_ASSERT(checkTransitionOnPage(xDoc, 71, TransitionType::MISCSHAPEWIPE, TransitionSubType::HORIZONTAL));
+
+    // GLITTER
+    CPPUNIT_ASSERT(checkTransitionOnPage(xDoc, 72, TransitionType::MISCSHAPEWIPE, TransitionSubType::DIAMOND));
+
+    // HONEYCOMB
+    CPPUNIT_ASSERT(checkTransitionOnPage(xDoc, 73, TransitionType::MISCSHAPEWIPE, TransitionSubType::HEART));
+
+    // NEWSFLASH
+    CPPUNIT_ASSERT(checkTransitionOnPage(xDoc, 74, TransitionType::ZOOM, TransitionSubType::ROTATEIN));
+}
+
+void SdExportTest::testTdf92527()
+{
+    // We draw a diamond in an empty document. A newly created diamond shape does not have
+    // CustomShapeGeometry - Path - Segments property, and previously DrawingML exporter
+    // did not export custom shapes which did not have CustomShapeGeometry - Path - Segments property.
+    sd::DrawDocShellRef xDocShRef = loadURL(getURLFromSrc("/sd/qa/unit/data/empty.fodp"), FODG );
+    uno::Reference<css::lang::XMultiServiceFactory> xFactory(xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY);
+    uno::Reference<drawing::XShape> xShape1(xFactory->createInstance("com.sun.star.drawing.CustomShape"), uno::UNO_QUERY);
+    uno::Reference<drawing::XDrawPagesSupplier> xDoc1(xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW);
+    uno::Reference<drawing::XDrawPage> xPage1(xDoc1->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW);
+    xPage1->add(xShape1);
+    xShape1->setSize(awt::Size(10000, 10000));
+    xShape1->setPosition(awt::Point(1000, 1000));
+    uno::Sequence<beans::PropertyValue> aShapeGeometry(comphelper::InitPropertySequence(
+        {
+            {"Type", uno::makeAny(OUString("diamond"))},
+        }));
+    uno::Reference<beans::XPropertySet> xPropertySet1(xShape1, uno::UNO_QUERY);
+    xPropertySet1->setPropertyValue("CustomShapeGeometry", uno::makeAny(aShapeGeometry));
+
+    xDocShRef = saveAndReload(xDocShRef, PPTX);
+
+    uno::Reference<drawing::XDrawPagesSupplier> xDoc2(xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW);
+    uno::Reference<drawing::XDrawPage> xPage2(xDoc2->getDrawPages()->getByIndex(0), uno::UNO_QUERY_THROW);
+    uno::Reference<drawing::XShape> xShape2(xPage2->getByIndex(0), uno::UNO_QUERY_THROW);
+    uno::Reference< beans::XPropertySet > xPropertySet2( xShape2, uno::UNO_QUERY_THROW );
+    uno::Sequence<beans::PropertyValue> aProps;
+    xPropertySet2->getPropertyValue("CustomShapeGeometry") >>= aProps;
+    uno::Sequence<beans::PropertyValue> aPathProps;
+    for (int i = 0; i < aProps.getLength(); ++i)
+    {
+        const beans::PropertyValue& rProp = aProps[i];
+        if (rProp.Name == "Path")
+            aPathProps = rProp.Value.get< uno::Sequence<beans::PropertyValue> >();
+    }
+    uno::Sequence<drawing::EnhancedCustomShapeParameterPair> aCoordinates;
+    for (int i = 0; i < aPathProps.getLength(); ++i)
+    {
+        const beans::PropertyValue& rProp = aPathProps[i];
+        if (rProp.Name == "Coordinates")
+            aCoordinates = rProp.Value.get< uno::Sequence<drawing::EnhancedCustomShapeParameterPair> >();
+    }
+
+    // 5 coordinate pairs, 1 MoveTo, 4 LineTo
+    CPPUNIT_ASSERT_EQUAL(sal_Int32(5), aCoordinates.getLength());
     xDocShRef->DoClose();
 }
 

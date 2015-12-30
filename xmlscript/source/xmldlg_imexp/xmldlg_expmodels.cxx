@@ -751,6 +751,8 @@ void ElementDescriptor::readNumericFieldModel( StyleBag * all_styles )
 
     // collect elements
     readDefaults();
+    readAlignAttr( "Align", XMLNS_DIALOGS_PREFIX ":align" );
+    readVerticalAlignAttr( "VerticalAlign", XMLNS_DIALOGS_PREFIX ":valign" );
     readBoolAttr( "Tabstop", XMLNS_DIALOGS_PREFIX ":tabstop" );
     readBoolAttr( "ReadOnly", XMLNS_DIALOGS_PREFIX ":readonly" );
     readBoolAttr( "HideInactiveSelection", XMLNS_DIALOGS_PREFIX ":hide-inactive-selection" );
@@ -1053,7 +1055,7 @@ void ElementDescriptor::readBullitinBoard( StyleBag * all_styles )
     Sequence< OUString > aElements( xDialogModel->getElementNames() );
     OUString const * pElements = aElements.getConstArray();
 
-    ElementDescriptor * pRadioGroup = 0;
+    ElementDescriptor * pRadioGroup = nullptr;
 
     sal_Int32 nPos;
     for ( nPos = 0; nPos < aElements.getLength(); ++nPos )
@@ -1072,7 +1074,7 @@ void ElementDescriptor::readBullitinBoard( StyleBag * all_styles )
         if (! xServiceInfo.is())
             continue;
 
-        ElementDescriptor * pElem = 0;
+        ElementDescriptor * pElem = nullptr;
 
         // group up radio buttons
         if ( xServiceInfo->supportsService( "com.sun.star.awt.UnoControlRadioButtonModel" ) )
@@ -1089,7 +1091,7 @@ void ElementDescriptor::readBullitinBoard( StyleBag * all_styles )
         }
         else // no radio
         {
-            pRadioGroup = 0; // close radiogroup
+            pRadioGroup = nullptr; // close radiogroup
 
             if (xServiceInfo->supportsService( "com.sun.star.awt.UnoControlButtonModel" ) )
             {

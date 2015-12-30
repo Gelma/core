@@ -32,9 +32,9 @@ private:
     DECL_LINK_TYPED( CloseHdl, SystemWindow&, void );
     DECL_LINK_TYPED( CloseClickHdl, Button*, void );
 public:
-    RemoteDialog( vcl::Window* pWindow );
+    explicit RemoteDialog( vcl::Window* pWindow );
     virtual ~RemoteDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 };
 
 }

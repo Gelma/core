@@ -27,7 +27,6 @@
 #include "databaseregistrations.hxx"
 #include "datasource.hxx"
 #include "dbastrings.hrc"
-#include "module_dba.hxx"
 
 #include <com/sun/star/beans/NamedValue.hpp>
 #include <com/sun/star/beans/PropertyAttribute.hpp>
@@ -111,10 +110,10 @@ namespace dbaccess
 
         private:
             // XTerminateListener
-            virtual void SAL_CALL queryTermination( const lang::EventObject& Event ) throw (TerminationVetoException, RuntimeException, std::exception) SAL_OVERRIDE;
-            virtual void SAL_CALL notifyTermination( const lang::EventObject& Event ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+            virtual void SAL_CALL queryTermination( const lang::EventObject& Event ) throw (TerminationVetoException, RuntimeException, std::exception) override;
+            virtual void SAL_CALL notifyTermination( const lang::EventObject& Event ) throw (RuntimeException, std::exception) override;
             // XEventListener
-            virtual void SAL_CALL disposing( const css::lang::EventObject& Source ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            virtual void SAL_CALL disposing( const css::lang::EventObject& Source ) throw (css::uno::RuntimeException, std::exception) override;
         };
 
         DatabaseDocumentLoader::DatabaseDocumentLoader( const Reference<XComponentContext> & rxContext )
@@ -194,7 +193,7 @@ ODatabaseContext::~ODatabaseContext()
     if ( m_pDatabaseDocumentLoader )
         m_pDatabaseDocumentLoader->release();
 
-    m_xDBRegistrationAggregate->setDelegator( NULL );
+    m_xDBRegistrationAggregate->setDelegator( nullptr );
     m_xDBRegistrationAggregate.clear();
     m_xDatabaseRegistrations.clear();
 }
@@ -212,8 +211,7 @@ Reference< XInterface > ODatabaseContext::Create(const Reference< XComponentCont
 
 Sequence< OUString > ODatabaseContext::getSupportedServiceNames_static() throw( RuntimeException )
 {
-    Sequence< OUString > aSNS( 1 );
-    aSNS[0] = "com.sun.star.sdb.DatabaseContext";
+    Sequence<OUString> aSNS { "com.sun.star.sdb.DatabaseContext" };
     return aSNS;
 }
 
@@ -251,7 +249,7 @@ Reference< XInterface > SAL_CALL ODatabaseContext::createInstance(  ) throw (Exc
 Reference< XInterface > SAL_CALL ODatabaseContext::createInstanceWithArguments( const Sequence< Any >& _rArguments ) throw (Exception, RuntimeException, std::exception)
 {
     ::comphelper::NamedValueCollection aArgs( _rArguments );
-    OUString sURL = aArgs.getOrDefault( OUString(INFO_POOLURL), OUString() );
+    OUString sURL = aArgs.getOrDefault( INFO_POOLURL, OUString() );
 
     Reference< XInterface > xDataSource;
     if ( !sURL.isEmpty() )
@@ -319,7 +317,7 @@ Reference< XInterface > ODatabaseContext::loadObjectFromURL(const OUString& _rNa
     {
         if (!bEmbeddedDataSource)
         {
-            ::ucbhelper::Content aContent( _sURL, NULL, comphelper::getProcessComponentContext() );
+            ::ucbhelper::Content aContent( _sURL, nullptr, comphelper::getProcessComponentContext() );
             if ( !aContent.isDocument() )
                 throw InteractiveIOException(
                     _sURL, *this, InteractionClassification_ERROR, IOErrorCode_NO_FILE
@@ -362,7 +360,7 @@ Reference< XInterface > ODatabaseContext::loadObjectFromURL(const OUString& _rNa
         ::comphelper::NamedValueCollection aArgs;
         aArgs.put( "URL", _sURL );
         aArgs.put( "MacroExecutionMode", MacroExecMode::USE_CONFIG );
-        aArgs.put( "InteractionHandler", task::InteractionHandler::createWithParent(m_aContext, 0) );
+        aArgs.put( "InteractionHandler", task::InteractionHandler::createWithParent(m_aContext, nullptr) );
         if (bEmbeddedDataSource)
         {
             // In this case the host contains the real path, and the path is the embedded stream name.
@@ -734,7 +732,7 @@ sal_Int64 SAL_CALL ODatabaseContext::getSomething( const Sequence< sal_Int8 >& r
 
 Sequence< sal_Int8 > ODatabaseContext::getUnoTunnelImplementationId()
 {
-    static ::cppu::OImplementationId * pId = 0;
+    static ::cppu::OImplementationId * pId = nullptr;
     if (! pId)
     {
         ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );

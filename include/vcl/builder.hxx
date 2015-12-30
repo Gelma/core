@@ -106,22 +106,11 @@ public:
     static void     reorderWithinParent(std::vector< vcl::Window*>& rChilds, bool bIsButtonBox);
     static void     reorderWithinParent(vcl::Window &rWindow, sal_uInt16 nNewPosition);
 
-    /// Get label of the command (like of .uno:Save) from the description service
-    static          OUString getCommandLabel(const OUString& rCommand, const css::uno::Reference<css::uno::XComponentContext>& rContext, const OUString& rModuleId);
-
-    /// Get image of the command (like of .uno:Save) from the description service
-    static Image    getCommandImage(
-                        const OUString& rCommand,
-                        bool bLarge,
-                        const css::uno::Reference<css::uno::XComponentContext>& rContext,
-                        const css::uno::Reference<css::frame::XFrame>& rFrame,
-                        const OUString& rModuleId );
-
     css::uno::Reference<css::frame::XFrame> getFrame() { return m_xFrame; }
 
 private:
-    VclBuilder(const VclBuilder&) SAL_DELETED_FUNCTION;
-    VclBuilder& operator=(const VclBuilder&) SAL_DELETED_FUNCTION;
+    VclBuilder(const VclBuilder&) = delete;
+    VclBuilder& operator=(const VclBuilder&) = delete;
 
     typedef std::map<OUString, std::unique_ptr<osl::Module>> ModuleMap;
 
@@ -258,13 +247,9 @@ private:
 
     struct SizeGroup
     {
-        OString m_sID;
         std::vector<OString> m_aWidgets;
         stringmap m_aProperties;
-        SizeGroup(const OString &rId)
-            : m_sID(rId)
-        {
-        }
+        SizeGroup() {}
     };
 
     typedef std::map< VclPtr<vcl::Window>, stringmap> AtkMap;
@@ -455,7 +440,7 @@ public:
     void            disposeBuilder();
 
     static OUString getUIRootDir();
-    bool            hasBuilder() const { return m_pUIBuilder != NULL; }
+    bool            hasBuilder() const { return m_pUIBuilder != nullptr; }
 
     css::uno::Reference<css::frame::XFrame> getFrame() { return m_pUIBuilder->getFrame(); }
 

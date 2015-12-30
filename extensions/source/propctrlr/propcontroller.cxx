@@ -89,7 +89,7 @@ namespace pcr
             :m_xContext(_rxContext)
             ,m_aDisposeListeners( m_aMutex )
             ,m_aControlObservers( m_aMutex )
-            ,m_pView(NULL)
+            ,m_pView(nullptr)
             ,m_bContainerFocusListening( false )
             ,m_bSuspendingPropertyHandlers( false )
             ,m_bConstructed( false )
@@ -267,7 +267,7 @@ namespace pcr
     }
 
 
-    void SAL_CALL OPropertyBrowserController::inspect( const Sequence< Reference< XInterface > >& _rObjects ) throw (com::sun::star::util::VetoException, RuntimeException, std::exception)
+    void SAL_CALL OPropertyBrowserController::inspect( const Sequence< Reference< XInterface > >& _rObjects ) throw (css::util::VetoException, RuntimeException, std::exception)
     {
         SolarMutexGuard aSolarGuard;
         ::osl::MutexGuard aGuard( m_aMutex );
@@ -528,13 +528,13 @@ namespace pcr
         stopInspection( false );
 
         // say our dispose listeners goodbye
-        ::com::sun::star::lang::EventObject aEvt;
+        css::lang::EventObject aEvt;
         aEvt.Source = static_cast< ::cppu::OWeakObject* >(this);
         m_aDisposeListeners.disposeAndClear(aEvt);
         m_aControlObservers.disposeAndClear(aEvt);
 
         // don't delete explicitly (this is done by the frame we reside in)
-        m_pView = NULL;
+        m_pView = nullptr;
 
         Reference< XComponent > xViewAsComp( m_xView, UNO_QUERY );
         if ( xViewAsComp.is() )
@@ -542,7 +542,7 @@ namespace pcr
         m_xView.clear( );
 
         m_aInspectedObjects.clear();
-        impl_bindToNewModel_nothrow( NULL );
+        impl_bindToNewModel_nothrow( nullptr );
     }
 
 
@@ -583,8 +583,7 @@ namespace pcr
 
     Sequence< OUString > OPropertyBrowserController::getSupportedServiceNames_static(  ) throw(RuntimeException)
     {
-        Sequence< OUString > aSupported(1);
-        aSupported[0] = "com.sun.star.inspection.ObjectInspector";
+        Sequence< OUString > aSupported { "com.sun.star.inspection.ObjectInspector" };
         return aSupported;
     }
 
@@ -620,8 +619,8 @@ namespace pcr
     {
         if ( m_xView.is() && ( m_xView == _rSource.Source ) )
         {
-            m_xView = NULL;
-            m_pView = NULL;
+            m_xView = nullptr;
+            m_pView = nullptr;
         }
 
         for (   InterfaceArray::iterator loop = m_aInspectedObjects.begin();
@@ -990,7 +989,7 @@ namespace pcr
             {
                 DBG_ASSERT( aHandler->get(), "OPropertyBrowserController::doInspection: invalid handler!" );
 
-                StlSyntaxSequence< Property > aThisHandlersProperties = (*aHandler)->getSupportedProperties();
+                StlSyntaxSequence< Property > aThisHandlersProperties(  (*aHandler)->getSupportedProperties() );
 
                 if ( aThisHandlersProperties.empty() )
                 {
@@ -1032,7 +1031,7 @@ namespace pcr
                 }
 
                 // determine the superseded properties
-                StlSyntaxSequence< OUString > aSupersededByThisHandler = (*aHandler)->getSupersededProperties();
+                StlSyntaxSequence< OUString > aSupersededByThisHandler( (*aHandler)->getSupersededProperties() );
                 for (   StlSyntaxSequence< OUString >::const_iterator superseded = aSupersededByThisHandler.begin();
                         superseded != aSupersededByThisHandler.end();
                         ++superseded
@@ -1065,7 +1064,7 @@ namespace pcr
                 }
 
                 // see if the handler expresses interest in any actuating properties
-                StlSyntaxSequence< OUString > aInterestingActuations = (*aHandler)->getActuatingProperties();
+                StlSyntaxSequence< OUString > aInterestingActuations( (*aHandler)->getActuatingProperties() );
                 for (   StlSyntaxSequence< OUString >::const_iterator aLoop = aInterestingActuations.begin();
                         aLoop != aInterestingActuations.end();
                         ++aLoop
@@ -1103,9 +1102,9 @@ namespace pcr
     }
 
 
-    ::com::sun::star::awt::Size SAL_CALL OPropertyBrowserController::getMinimumSize() throw (::com::sun::star::uno::RuntimeException, std::exception)
+    css::awt::Size SAL_CALL OPropertyBrowserController::getMinimumSize() throw (css::uno::RuntimeException, std::exception)
     {
-        ::com::sun::star::awt::Size aSize;
+        css::awt::Size aSize;
         if( m_pView )
             return m_pView->getMinimumSize();
         else
@@ -1113,13 +1112,13 @@ namespace pcr
     }
 
 
-    ::com::sun::star::awt::Size SAL_CALL OPropertyBrowserController::getPreferredSize() throw (::com::sun::star::uno::RuntimeException, std::exception)
+    css::awt::Size SAL_CALL OPropertyBrowserController::getPreferredSize() throw (css::uno::RuntimeException, std::exception)
     {
         return getMinimumSize();
     }
 
 
-    ::com::sun::star::awt::Size SAL_CALL OPropertyBrowserController::calcAdjustedSize( const ::com::sun::star::awt::Size& _rNewSize ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+    css::awt::Size SAL_CALL OPropertyBrowserController::calcAdjustedSize( const css::awt::Size& _rNewSize ) throw (css::uno::RuntimeException, std::exception)
     {
         awt::Size aMinSize = getMinimumSize( );
         awt::Size aAdjustedSize( _rNewSize );
@@ -1180,7 +1179,7 @@ namespace pcr
 
         StlSyntaxSequence< PropertyCategoryDescriptor > aCategories;
         if ( m_xModel.is() )
-            aCategories = m_xModel->describeCategories();
+            aCategories = StlSyntaxSequence< PropertyCategoryDescriptor >(m_xModel->describeCategories());
 
         for (   StlSyntaxSequence< PropertyCategoryDescriptor >::const_iterator category = aCategories.begin();
                 category != aCategories.end();
@@ -1350,7 +1349,7 @@ namespace pcr
         {
             DBG_UNHANDLED_EXCEPTION();
         }
-        m_xInteractiveHandler = NULL;
+        m_xInteractiveHandler = nullptr;
     }
 
 

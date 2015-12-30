@@ -54,7 +54,6 @@ struct MenuItemData
     long            nItemImageAngle;
     Size            aSz;                    // only temporarily valid
     OUString        aAccessibleName;        // accessible name
-    OUString        aAccessibleDescription; // accessible description
 
     SalMenuItem*    pSalMenuItem;           // access to native menu
 
@@ -62,28 +61,28 @@ struct MenuItemData
         : nId(0)
         , eType(MenuItemType::DONTKNOW)
         , nBits(MenuItemBits::NONE)
-        , pSubMenu(NULL)
-        , pAutoSubMenu(NULL)
+        , pSubMenu(nullptr)
+        , pAutoSubMenu(nullptr)
         , nUserValue(0)
-        , aUserValueReleaseFunc(0)
+        , aUserValueReleaseFunc(nullptr)
         , bChecked(false)
         , bEnabled(false)
         , bVisible(false)
         , bIsTemporary(false)
         , bMirrorMode(false)
         , nItemImageAngle(0)
-        , pSalMenuItem(NULL)
+        , pSalMenuItem(nullptr)
     {
     }
     MenuItemData( const OUString& rStr, const Image& rImage )
         : nId(0)
         , eType(MenuItemType::DONTKNOW)
         , nBits(MenuItemBits::NONE)
-        , pSubMenu(NULL)
-        , pAutoSubMenu(NULL)
+        , pSubMenu(nullptr)
+        , pAutoSubMenu(nullptr)
         , aText(rStr)
         , nUserValue(0)
-        , aUserValueReleaseFunc(0)
+        , aUserValueReleaseFunc(nullptr)
         , aImage(rImage)
         , bChecked(false)
         , bEnabled(false)
@@ -91,7 +90,7 @@ struct MenuItemData
         , bIsTemporary(false)
         , bMirrorMode(false)
         , nItemImageAngle(0)
-        , pSalMenuItem(NULL)
+        , pSalMenuItem(nullptr)
     {
     }
     ~MenuItemData();
@@ -106,8 +105,6 @@ class MenuItemList
 private:
     typedef ::std::vector< MenuItemData* > MenuItemDataList_impl;
     MenuItemDataList_impl maItemList;
-
-    css::uno::Reference< css::i18n::XCharacterClassification > xCharClass;
 
 public:
                     MenuItemList() {}
@@ -134,7 +131,7 @@ public:
                     }
     MenuItemData*   GetDataFromPos( size_t nPos ) const
                     {
-                        return ( nPos < maItemList.size() ) ? maItemList[ nPos ] : NULL;
+                        return ( nPos < maItemList.size() ) ? maItemList[ nPos ] : nullptr;
                     }
 
     MenuItemData*   SearchItem(

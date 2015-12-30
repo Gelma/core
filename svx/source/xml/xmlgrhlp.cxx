@@ -62,7 +62,7 @@ namespace {
 
 const MetaCommentAction* ImplCheckForEPS( GDIMetaFile& rMtf )
 {
-    const MetaCommentAction* pComment = NULL;
+    const MetaCommentAction* pComment = nullptr;
 
     if ( rMtf.GetActionSize() >= 2
             && rMtf.GetAction(0)->GetType() == MetaActionType::EPS
@@ -78,11 +78,11 @@ class SvXMLGraphicInputStream:
 {
 private:
 
-    virtual sal_Int32   SAL_CALL    readBytes( Sequence< sal_Int8 >& aData, sal_Int32 nBytesToRead) throw(NotConnectedException, BufferSizeExceededException, RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Int32   SAL_CALL    readSomeBytes(Sequence< sal_Int8 >& aData, sal_Int32 nMaxBytesToRead) throw(NotConnectedException, BufferSizeExceededException, RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void        SAL_CALL    skipBytes(sal_Int32 nBytesToSkip) throw(NotConnectedException, BufferSizeExceededException, RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Int32   SAL_CALL    available() throw(NotConnectedException, RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void        SAL_CALL    closeInput() throw(NotConnectedException, RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual sal_Int32   SAL_CALL    readBytes( Sequence< sal_Int8 >& aData, sal_Int32 nBytesToRead) throw(NotConnectedException, BufferSizeExceededException, RuntimeException, std::exception) override;
+    virtual sal_Int32   SAL_CALL    readSomeBytes(Sequence< sal_Int8 >& aData, sal_Int32 nMaxBytesToRead) throw(NotConnectedException, BufferSizeExceededException, RuntimeException, std::exception) override;
+    virtual void        SAL_CALL    skipBytes(sal_Int32 nBytesToSkip) throw(NotConnectedException, BufferSizeExceededException, RuntimeException, std::exception) override;
+    virtual sal_Int32   SAL_CALL    available() throw(NotConnectedException, RuntimeException, std::exception) override;
+    virtual void        SAL_CALL    closeInput() throw(NotConnectedException, RuntimeException, std::exception) override;
 
 private:
 
@@ -205,9 +205,9 @@ class SvXMLGraphicOutputStream:
 private:
 
     // XOutputStream
-    virtual void SAL_CALL           writeBytes( const Sequence< sal_Int8 >& rData ) throw( NotConnectedException, BufferSizeExceededException, IOException, RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL           flush() throw( NotConnectedException, BufferSizeExceededException, IOException, RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL           closeOutput() throw( NotConnectedException, BufferSizeExceededException, IOException, RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL           writeBytes( const Sequence< sal_Int8 >& rData ) throw( NotConnectedException, BufferSizeExceededException, IOException, RuntimeException, std::exception ) override;
+    virtual void SAL_CALL           flush() throw( NotConnectedException, BufferSizeExceededException, IOException, RuntimeException, std::exception ) override;
+    virtual void SAL_CALL           closeOutput() throw( NotConnectedException, BufferSizeExceededException, IOException, RuntimeException, std::exception ) override;
 
 private:
 
@@ -336,8 +336,8 @@ const GraphicObject& SvXMLGraphicOutputStream::GetGraphicObject()
         maGrfObj = aGraphic;
         if( maGrfObj.GetType() != GRAPHIC_NONE )
         {
-            delete mpOStm, mpOStm = NULL;
-            delete mpTmp, mpTmp = NULL;
+            delete mpOStm, mpOStm = nullptr;
+            delete mpTmp, mpTmp = nullptr;
         }
     }
 
@@ -347,15 +347,15 @@ const GraphicObject& SvXMLGraphicOutputStream::GetGraphicObject()
 }
 
 SvXMLGraphicHelper::SvXMLGraphicHelper( SvXMLGraphicHelperMode eCreateMode ) :
-    ::cppu::WeakComponentImplHelper2< ::com::sun::star::document::XGraphicObjectResolver,
-                                      ::com::sun::star::document::XBinaryStreamResolver >( maMutex )
+    ::cppu::WeakComponentImplHelper2< css::document::XGraphicObjectResolver,
+                                      css::document::XBinaryStreamResolver >( maMutex )
 {
-    Init( NULL, eCreateMode, false );
+    Init( nullptr, eCreateMode, false );
 }
 
 SvXMLGraphicHelper::SvXMLGraphicHelper()
-    : ::cppu::WeakComponentImplHelper2< ::com::sun::star::document::XGraphicObjectResolver,
-                                      ::com::sun::star::document::XBinaryStreamResolver >( maMutex )
+    : ::cppu::WeakComponentImplHelper2< css::document::XGraphicObjectResolver,
+                                      css::document::XBinaryStreamResolver >( maMutex )
     , meCreateMode(GRAPHICHELPER_MODE_READ)
     , mbDirect(false)
 {
@@ -534,7 +534,33 @@ bool SvXMLGraphicHelper::ImplWriteGraphic( const OUString& rPictureStorageName,
                 xProps->setPropertyValue( "MediaType", aAny );
             }
 
-            const bool bCompressed = aMimeType.isEmpty() || aMimeType == "image/tiff" || aMimeType == "image/svg+xml";
+            // picture formats that actuall _do_ benefit from zip
+            // storage compression
+            // .svm pics gets compressed via ZBITMAP old-style stream
+            // option below
+            static const char* aCompressiblePics[] =
+            {
+                "image/svg+xml",
+                "image/x-wmf",
+                "image/tiff",
+                "image/x-eps",
+                "image/bmp",
+                "image/x-pict"
+            };
+
+            bool bCompressed = aMimeType.isEmpty();
+            if( !bCompressed )
+            {
+                for( size_t i = 0; i < SAL_N_ELEMENTS(aCompressiblePics); ++i )
+                {
+                    if( aMimeType.equalsIgnoreAsciiCaseAscii(aCompressiblePics[i]) )
+                    {
+                        bCompressed = true;
+                        break;
+                    }
+                }
+            }
+
             aAny <<= bCompressed;
             xProps->setPropertyValue( "Compressed", aAny );
 
@@ -764,7 +790,7 @@ SvXMLGraphicHelper* SvXMLGraphicHelper::Create( SvXMLGraphicHelperMode eCreateMo
     SvXMLGraphicHelper* pThis = new SvXMLGraphicHelper;
 
     pThis->acquire();
-    pThis->Init( NULL, eCreateMode, false );
+    pThis->Init( nullptr, eCreateMode, false );
 
     return pThis;
 }
@@ -924,33 +950,33 @@ public:
 protected:
     // is called from WeakComponentImplHelper when XComponent::dispose() was
     // called from outside
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
     // ____ XInitialization ____
     // one argument is allowed, which is the XStorage
     virtual void SAL_CALL initialize( const Sequence< Any >& aArguments )
         throw (Exception,
-               RuntimeException, std::exception) SAL_OVERRIDE;
+               RuntimeException, std::exception) override;
 
     // ____ XGraphicObjectResolver ____
     virtual OUString SAL_CALL resolveGraphicObjectURL( const OUString& aURL )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 
     // ____ XBinaryStreamResolver ____
     virtual Reference< io::XInputStream > SAL_CALL getInputStream( const OUString& aURL )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
     virtual Reference< io::XOutputStream > SAL_CALL createOutputStream()
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
     virtual OUString SAL_CALL resolveOutputStream( const Reference< io::XOutputStream >& aBinaryStream )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 
     // ____ XServiceInfo ____
     virtual OUString SAL_CALL getImplementationName()
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
     virtual Sequence< OUString > SAL_CALL getSupportedServiceNames()
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 
 private:
     SvXMLGraphicHelperMode              m_eGraphicHelperMode;

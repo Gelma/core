@@ -53,26 +53,8 @@ namespace sdr { namespace contact {
 
     //= ViewContactOfUnoControl
 
-    class ViewContactOfUnoControl_Impl: private boost::noncopyable
-    {
-    public:
-        ViewContactOfUnoControl_Impl();
-        ~ViewContactOfUnoControl_Impl();
-    };
-
-
-    ViewContactOfUnoControl_Impl::ViewContactOfUnoControl_Impl()
-    {
-    }
-
-
-    ViewContactOfUnoControl_Impl::~ViewContactOfUnoControl_Impl()
-    {
-    }
-
     ViewContactOfUnoControl::ViewContactOfUnoControl( SdrUnoObj& _rUnoObject )
         :ViewContactOfSdrObj( _rUnoObject )
-        ,m_pImpl( new ViewContactOfUnoControl_Impl )
     {
     }
 
@@ -88,7 +70,7 @@ namespace sdr { namespace contact {
         SdrUnoObj* pUnoObject = dynamic_cast< SdrUnoObj* >( TryToGetSdrObject() );
         OSL_ENSURE( pUnoObject, "ViewContactOfUnoControl::getTemporaryControlForDevice: no SdrUnoObj!" );
         if ( !pUnoObject )
-            return NULL;
+            return nullptr;
         return ViewObjectContactOfUnoControl::getTemporaryControlForWindow( _rWindow, _inout_ControlContainer, *pUnoObject );
     }
 
@@ -100,7 +82,7 @@ namespace sdr { namespace contact {
         ObjectContactOfPageView* const pPageViewContact = dynamic_cast< ObjectContactOfPageView* >( &_rObjectContact  );
 
         const bool bPrintOrPreview = pPageViewContact
-            && ( ( ( pDevice != NULL ) && ( pDevice->GetOutDevType() == OUTDEV_PRINTER ) )
+            && ( ( ( pDevice != nullptr ) && ( pDevice->GetOutDevType() == OUTDEV_PRINTER ) )
                     || pPageViewContact->GetPageWindow().GetPageView().GetView().IsPrintPreview()
                )
             ;
@@ -113,7 +95,7 @@ namespace sdr { namespace contact {
     }
 
 
-    drawinglayer::primitive2d::Primitive2DSequence ViewContactOfUnoControl::createViewIndependentPrimitive2DSequence() const
+    drawinglayer::primitive2d::Primitive2DContainer ViewContactOfUnoControl::createViewIndependentPrimitive2DSequence() const
     {
         // create range. Use model data directly, not getBoundRect()/getSnapRect; these will use
         // the primitive data themselves in the long run. Use SdrUnoObj's (which is a SdrRectObj)
@@ -147,7 +129,7 @@ namespace sdr { namespace contact {
                     aTransform,
                     xControlModel));
 
-            return drawinglayer::primitive2d::Primitive2DSequence(&xRetval, 1);
+            return drawinglayer::primitive2d::Primitive2DContainer { xRetval };
         }
         else
         {
@@ -156,7 +138,7 @@ namespace sdr { namespace contact {
                 drawinglayer::primitive2d::createHiddenGeometryPrimitives2D(
                     false, aTransform));
 
-            return drawinglayer::primitive2d::Primitive2DSequence(&xRetval, 1);
+            return drawinglayer::primitive2d::Primitive2DContainer { xRetval };
         }
     }
 

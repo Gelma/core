@@ -34,8 +34,6 @@ public class OfficeReport extends Element
 
     private Node pageHeader;
     private Node pageFooter;
-    private Node columnHeader;
-    private Node columnFooter;
     private Node reportHeader;
     private Node reportFooter;
     private Node bodySection;
@@ -84,12 +82,12 @@ public class OfficeReport extends Element
 
     public Node getColumnHeader()
     {
-        return columnHeader;
+        return null;
     }
 
     public Node getColumnFooter()
     {
-        return columnFooter;
+        return null;
     }
 
     public Node getReportHeader()

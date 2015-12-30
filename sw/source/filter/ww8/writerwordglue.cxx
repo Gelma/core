@@ -66,7 +66,7 @@ namespace myImplHelpers
         height, which is totally nonoptimum, but the best we can do.
         */
         long nDist=0;
-        const SwFormatFrmSize& rSz = rFormat.GetFrmSize();
+        const SwFormatFrameSize& rSz = rFormat.GetFrameSize();
 
         const SwHeaderAndFooterEatSpacingItem &rSpacingCtrl =
             sw::util::ItemGet<SwHeaderAndFooterEatSpacingItem>
@@ -75,12 +75,12 @@ namespace myImplHelpers
             nDist += rSz.GetHeight();
         else
         {
-            SwRect aRect(rFormat.FindLayoutRect(false));
+            SwRect aRect(rFormat.FindLayoutRect());
             if (aRect.Height())
                 nDist += aRect.Height();
             else
             {
-                const SwFormatFrmSize& rSize = rFormat.GetFrmSize();
+                const SwFormatFrameSize& rSize = rFormat.GetFrameSize();
                 if (ATT_VAR_SIZE != rSize.GetHeightSizeType())
                     nDist += rSize.GetHeight();
                 else
@@ -156,7 +156,7 @@ namespace myImplHelpers
 
         OSL_ENSURE(SAL_N_ELEMENTS(aArr) == 75, "Style Array has false size");
 
-        SwTextFormatColl* pRet = 0;
+        SwTextFormatColl* pRet = nullptr;
         //If this is a built-in word style that has a built-in writer
         //equivalent, then map it to one of our built in styles regardless
         //of its name
@@ -220,7 +220,7 @@ namespace myImplHelpers
                 eLookup = RES_POOLCHR_NORMAL_END;
                 break;
         }
-        SwCharFormat *pRet = 0;
+        SwCharFormat *pRet = nullptr;
         if (eLookup != RES_POOLCHR_NORMAL_END)
             pRet = mrDoc.getIDocumentStylePoolAccess().GetCharFormatFromPool( static_cast< sal_uInt16 >(eLookup) );
         return pRet;
@@ -256,14 +256,14 @@ namespace myImplHelpers
 
         //If we've used it once, don't reuse it
         if (pRet && (maUsedStyles.end() != maUsedStyles.find(pRet)))
-            pRet = 0;
+            pRet = nullptr;
 
         if (!pRet)
         {
             pRet = maHelper.GetStyle(rName);
             //If we've used it once, don't reuse it
             if (pRet && (maUsedStyles.end() != maUsedStyles.find(pRet)))
-                pRet = 0;
+                pRet = nullptr;
         }
 
         bool bStyExist = pRet != nullptr;
@@ -367,8 +367,8 @@ namespace sw
             const SwColumns& rFollowColumns = rFollowCols.GetColumns();
             SvxLRSpaceItem aOneLR = lcl_getWordLRSpace(rTitleFormat);
             SvxLRSpaceItem aTwoLR = lcl_getWordLRSpace(rFollowFormat);
-            const SwFormatFrmSize& rFirstFrmSize = rTitleFormat.GetFrmSize();
-            const SwFormatFrmSize& rFollowFrmSize = rFollowFormat.GetFrmSize();
+            const SwFormatFrameSize& rFirstFrameSize = rTitleFormat.GetFrameSize();
+            const SwFormatFrameSize& rFollowFrameSize = rFollowFormat.GetFrameSize();
 
             if (rFirstColumns.size() != rFollowColumns.size())
             {
@@ -377,7 +377,7 @@ namespace sw
             }
             else if (aOneLR != aTwoLR)
                 bPlausableSingleWordSection = false;
-            else if (rFirstFrmSize != rFollowFrmSize)
+            else if (rFirstFrameSize != rFollowFrameSize)
                 bPlausableSingleWordSection = false;
             else
             {
@@ -392,7 +392,7 @@ namespace sw
 
         HdFtDistanceGlue::HdFtDistanceGlue(const SfxItemSet &rPage)
         {
-            if (const SvxBoxItem *pBox = HasItem<SvxBoxItem>(rPage, RES_BOX))
+            if (const SvxBoxItem *pBox = rPage.GetItem<SvxBoxItem>(RES_BOX))
             {
                 dyaHdrTop = pBox->CalcLineSpace(SvxBoxItemLine::TOP);
                 dyaHdrBottom = pBox->CalcLineSpace(SvxBoxItemLine::BOTTOM);
@@ -410,7 +410,7 @@ namespace sw
             dyaTop = dyaHdrTop;
             dyaBottom = dyaHdrBottom;
 
-            const SwFormatHeader *pHd = HasItem<SwFormatHeader>(rPage, RES_HEADER);
+            const SwFormatHeader *pHd = rPage.GetItem<SwFormatHeader>(RES_HEADER);
             if (pHd && pHd->IsActive() && pHd->GetHeaderFormat())
             {
                 mbHasHeader = true;
@@ -419,7 +419,7 @@ namespace sw
             else
                 mbHasHeader = false;
 
-            const SwFormatFooter *pFt = HasItem<SwFormatFooter>(rPage, RES_FOOTER);
+            const SwFormatFooter *pFt = rPage.GetItem<SwFormatFooter>(RES_FOOTER);
             if (pFt && pFt->IsActive() && pFt->GetFooterFormat())
             {
                 mbHasFooter = true;
@@ -460,7 +460,6 @@ namespace sw
 
         ParaStyleMapper::~ParaStyleMapper()
         {
-            delete mpImpl;
         }
 
         ParaStyleMapper::StyleResult ParaStyleMapper::GetStyle(
@@ -567,7 +566,7 @@ namespace sw
             UErrorCode nError = U_ZERO_ERROR;
             UBiDi* pBidi = ubidi_openSized(rText.getLength(), 0, &nError);
             ubidi_setPara(pBidi, reinterpret_cast<const UChar *>(rText.getStr()), rText.getLength(),
-                    static_cast< UBiDiLevel >(eDefaultDir), 0, &nError);
+                    static_cast< UBiDiLevel >(eDefaultDir), nullptr, &nError);
 
             sal_Int32 nCount = ubidi_countRuns(pBidi, &nError);
             aDirChanges.reserve(nCount);

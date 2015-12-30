@@ -10,7 +10,6 @@ import org.libreoffice.canvas.SelectionHandle;
 import org.libreoffice.kit.Document;
 import org.libreoffice.overlay.DocumentOverlay;
 import org.mozilla.gecko.gfx.GeckoLayerClient;
-import org.mozilla.gecko.gfx.ImmutableViewportMetrics;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +27,7 @@ public class InvalidationHandler implements Document.MessageCallback {
 
     public InvalidationHandler(LibreOfficeMainActivity mainActivity) {
         mDocumentOverlay = mainActivity.getDocumentOverlay();
-        mLayerClient = mainActivity.getLayerClient();
+        mLayerClient = LibreOfficeMainActivity.getLayerClient();
         mState = OverlayState.NONE;
     }
 
@@ -85,15 +84,33 @@ public class InvalidationHandler implements Document.MessageCallback {
 
     private void stateChanged(String payload) {
         String[] parts = payload.split("=");
-        boolean pressed = Boolean.parseBoolean(parts[1]);
+        if (parts.length < 2) {
+            Log.e(LOGTAG, "LOK_CALLBACK_STATE_CHANGED unexpected payload: " + payload);
+            return;
+        }
+        final String value = parts[1];
+        boolean pressed = Boolean.parseBoolean(value);
+
         if (parts[0].equals(".uno:Bold")) {
-            LOKitShell.getToolbarController().onToggleStateChanged(Document.BOLD, pressed);
+            LOKitShell.getFormattingController().onToggleStateChanged(Document.BOLD, pressed);
         } else if (parts[0].equals(".uno:Italic")) {
-            LOKitShell.getToolbarController().onToggleStateChanged(Document.ITALIC, pressed);
+            LOKitShell.getFormattingController().onToggleStateChanged(Document.ITALIC, pressed);
         } else if (parts[0].equals(".uno:Underline")) {
-            LOKitShell.getToolbarController().onToggleStateChanged(Document.UNDERLINE, pressed);
-        } else if (parts[0].equals(".uno:StrikeOut")) {
-            LOKitShell.getToolbarController().onToggleStateChanged(Document.STRIKEOUT, pressed);
+            LOKitShell.getFormattingController().onToggleStateChanged(Document.UNDERLINE, pressed);
+        } else if (parts[0].equals(".uno:Strikeout")) {
+            LOKitShell.getFormattingController().onToggleStateChanged(Document.STRIKEOUT, pressed);
+        } else if (parts[0].equals(".uno:CharFontName")) {
+            LOKitShell.getFontController().selectFont(value);
+        } else if (parts[0].equals(".uno:FontHeight")) {
+            LOKitShell.getFontController().selectFontSize(value);
+        } else if (parts[0].equals(".uno:LeftPara")) {
+            LOKitShell.getFormattingController().onToggleStateChanged(Document.ALIGN_LEFT, pressed);
+        } else if (parts[0].equals(".uno:CenterPara")) {
+            LOKitShell.getFormattingController().onToggleStateChanged(Document.ALIGN_CENTER, pressed);
+        } else if (parts[0].equals(".uno:RightPara")) {
+            LOKitShell.getFormattingController().onToggleStateChanged(Document.ALIGN_RIGHT, pressed);
+        } else if (parts[0].equals(".uno:JustifyPara")) {
+            LOKitShell.getFormattingController().onToggleStateChanged(Document.ALIGN_JUSTIFY, pressed);
         } else {
             Log.d(LOGTAG, "LOK_CALLBACK_STATE_CHANGED type uncatched: " + payload);
         }
@@ -123,16 +140,14 @@ public class InvalidationHandler implements Document.MessageCallback {
         int width = Integer.decode(coordinates[2]);
         int height = Integer.decode(coordinates[3]);
 
-        float dpi = (float) LOKitShell.getDpi();
+        float dpi = LOKitShell.getDpi();
 
-        RectF rect = new RectF(
+        return new RectF(
                 LOKitTileProvider.twipToPixel(x, dpi),
                 LOKitTileProvider.twipToPixel(y, dpi),
                 LOKitTileProvider.twipToPixel(x + width, dpi),
                 LOKitTileProvider.twipToPixel(y + height, dpi)
         );
-
-        return rect;
     }
 
     /**
@@ -207,7 +222,7 @@ public class InvalidationHandler implements Document.MessageCallback {
         float newTop = moveToRect.top;
 
         if (cursorRectangle.right < moveToRect.left || cursorRectangle.left < moveToRect.left) {
-            newLeft = cursorRectangle.left -  (moveToRect.width() * 0.1f);
+            newLeft = cursorRectangle.left - (moveToRect.width() * 0.1f);
         } else if (cursorRectangle.right > moveToRect.right || cursorRectangle.left > moveToRect.right) {
             newLeft = cursorRectangle.right - (moveToRect.width() * 0.9f);
         }
@@ -305,6 +320,7 @@ public class InvalidationHandler implements Document.MessageCallback {
 
     /**
      * Trigger a transition to a new overlay state.
+     *
      * @param next - new state to transition to
      */
     public synchronized void changeStateTo(OverlayState next) {
@@ -313,6 +329,7 @@ public class InvalidationHandler implements Document.MessageCallback {
 
     /**
      * Executes a transition from old overlay state to a new overlay state.
+     *
      * @param previous - old state
      * @param next - new state
      */
@@ -380,7 +397,7 @@ public class InvalidationHandler implements Document.MessageCallback {
      * Handle a transition to OverlayState.CURSOR state.
      */
     private void handleCursorState(OverlayState previous) {
-        LibreOfficeMainActivity.mAppContext.showSoftKeyboard();
+        LibreOfficeMainActivity.mAppContext.showSoftKeyboardOrFormattingToolbar();
         if (previous == OverlayState.TRANSITION) {
             mDocumentOverlay.showHandle(SelectionHandle.HandleType.MIDDLE);
             mDocumentOverlay.showCursor();

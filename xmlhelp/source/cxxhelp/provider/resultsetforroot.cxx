@@ -32,12 +32,10 @@ using namespace com::sun::star::ucb;
 
 ResultSetForRoot::ResultSetForRoot( const uno::Reference< uno::XComponentContext >&  rxContext,
                                     const uno::Reference< XContentProvider >&  xProvider,
-                                    sal_Int32 nOpenMode,
                                     const uno::Sequence< beans::Property >& seq,
-                                    const uno::Sequence< NumberedSortingInfo >& seqSort,
                                     URLParameter& aURLParameter,
                                     Databases* pDatabases )
-    : ResultSetBase( rxContext, xProvider,nOpenMode,seq,seqSort ),
+    : ResultSetBase( rxContext, xProvider,seq ),
       m_aURLParameter( aURLParameter ),
       m_pDatabases( pDatabases )
 {
@@ -65,7 +63,7 @@ ResultSetForRoot::ResultSetForRoot( const uno::Reference< uno::XComponentContext
         if( content.is() )
         {
             uno::Reference< XCommandProcessor > cmd( content,uno::UNO_QUERY );
-            cmd->execute( aCommand,0,uno::Reference< XCommandEnvironment >( 0 ) ) >>= m_aItems[i]; //TODO: check return value of operator >>=
+            cmd->execute( aCommand,0,uno::Reference< XCommandEnvironment >( nullptr ) ) >>= m_aItems[i]; //TODO: check return value of operator >>=
         }
         m_nRow = 0xffffffff;
     }

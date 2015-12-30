@@ -71,18 +71,18 @@ namespace pcr
     class OFontPropertyExtractor
     {
     protected:
-        ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >
+        css::uno::Reference< css::beans::XPropertySet >
                     m_xPropValueAccess;
-        ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertyState >
+        css::uno::Reference< css::beans::XPropertyState >
                     m_xPropStateAccess;
 
     public:
-        OFontPropertyExtractor( const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >&
+        explicit OFontPropertyExtractor( const css::uno::Reference< css::beans::XPropertySet >&
             _rxProps );
 
     public:
-        bool        getCheckFontProperty(const OUString& _rPropName, ::com::sun::star::uno::Any& _rValue);
-        OUString getStringFontProperty(const OUString& _rPropName, const OUString& _rDefault);
+        bool            getCheckFontProperty(const OUString& _rPropName, css::uno::Any& _rValue);
+        OUString        getStringFontProperty(const OUString& _rPropName, const OUString& _rDefault);
         sal_Int16       getInt16FontProperty(const OUString& _rPropName, const sal_Int16 _nDefault);
         sal_Int32       getInt32FontProperty(const OUString& _rPropName, const sal_Int32 _nDefault);
         float           getFloatFontProperty(const OUString& _rPropName, const float _nDefault);
@@ -178,8 +178,8 @@ namespace pcr
     {
         SvxAbstractDialogFactory* pFact = SvxAbstractDialogFactory::Create();
         assert(pFact); //CreateFactory fail!
-        m_nCharsId = AddTabPage("font", pFact->GetTabPageCreatorFunc(RID_SVXPAGE_CHAR_NAME), 0 );
-        AddTabPage("fonteffects", pFact->GetTabPageCreatorFunc(RID_SVXPAGE_CHAR_EFFECTS), 0 );
+        m_nCharsId = AddTabPage("font", pFact->GetTabPageCreatorFunc(RID_SVXPAGE_CHAR_NAME), nullptr );
+        AddTabPage("fonteffects", pFact->GetTabPageCreatorFunc(RID_SVXPAGE_CHAR_EFFECTS), nullptr );
     }
 
 
@@ -200,7 +200,7 @@ namespace pcr
 
             // some items, which may be in default state, have to be filled with non-void information
             vcl::Font aDefaultVCLFont = Application::GetDefaultDevice()->GetSettings().GetStyleSettings().GetAppFont();
-            ::com::sun::star::awt::FontDescriptor aDefaultFont = VCLUnoHelper::CreateFontDescriptor(aDefaultVCLFont);
+            css::awt::FontDescriptor aDefaultFont = VCLUnoHelper::CreateFontDescriptor(aDefaultVCLFont);
 
             // get the current properties
             OUString aFontName       = aPropExtractor.getStringFontProperty(PROPERTY_FONT_NAME, aDefaultFont.Name);
@@ -262,10 +262,10 @@ namespace pcr
 
             aPropExtractor.invalidateItem(PROPERTY_FONT_NAME, CFID_FONT, *_pSet);
             aPropExtractor.invalidateItem(PROPERTY_FONT_HEIGHT, CFID_HEIGHT, *_pSet);
-            aPropExtractor.invalidateItem(PROPERTY_FONT_WEIGHT, CFID_WEIGHT, *_pSet, ::com::sun::star::awt::FontWeight::DONTKNOW == nFontWeight);
-            aPropExtractor.invalidateItem(PROPERTY_FONT_SLANT, CFID_POSTURE, *_pSet, ::com::sun::star::awt::FontSlant_DONTKNOW == nFontSlant);
-            aPropExtractor.invalidateItem(PROPERTY_FONT_UNDERLINE, CFID_UNDERLINE, *_pSet, ::com::sun::star::awt::FontUnderline::DONTKNOW == nFontUnderline);
-            aPropExtractor.invalidateItem(PROPERTY_FONT_STRIKEOUT, CFID_STRIKEOUT, *_pSet, ::com::sun::star::awt::FontStrikeout::DONTKNOW == nFontStrikeout);
+            aPropExtractor.invalidateItem(PROPERTY_FONT_WEIGHT, CFID_WEIGHT, *_pSet, css::awt::FontWeight::DONTKNOW == nFontWeight);
+            aPropExtractor.invalidateItem(PROPERTY_FONT_SLANT, CFID_POSTURE, *_pSet, css::awt::FontSlant_DONTKNOW == nFontSlant);
+            aPropExtractor.invalidateItem(PROPERTY_FONT_UNDERLINE, CFID_UNDERLINE, *_pSet, css::awt::FontUnderline::DONTKNOW == nFontUnderline);
+            aPropExtractor.invalidateItem(PROPERTY_FONT_STRIKEOUT, CFID_STRIKEOUT, *_pSet, css::awt::FontStrikeout::DONTKNOW == nFontStrikeout);
             aPropExtractor.invalidateItem(PROPERTY_WORDLINEMODE, CFID_WORDLINEMODE, *_pSet);
             aPropExtractor.invalidateItem(PROPERTY_TEXTCOLOR, CFID_CHARCOLOR, *_pSet);
             aPropExtractor.invalidateItem(PROPERTY_FONT_RELIEF, CFID_RELIEF, *_pSet);
@@ -356,7 +356,7 @@ namespace pcr
                 const SvxPostureItem& rPostureItem =
                     static_cast<const SvxPostureItem&>(_rSet.Get(CFID_POSTURE));
 
-                ::com::sun::star::awt::FontSlant eSlant = VCLUnoHelper::ConvertFontSlant(rPostureItem.GetPosture());
+                css::awt::FontSlant eSlant = VCLUnoHelper::ConvertFontSlant(rPostureItem.GetPosture());
                 lcl_pushBackPropertyValue( _out_properties, PROPERTY_FONT_SLANT, makeAny((sal_Int16)eSlant));
             }
 
@@ -483,9 +483,9 @@ namespace pcr
     SfxItemSet* ControlCharacterDialog::createItemSet(SfxItemSet*& _rpSet, SfxItemPool*& _rpPool, SfxPoolItem**& _rppDefaults)
     {
         // just to be sure ....
-        _rpSet = NULL;
-        _rpPool = NULL;
-        _rppDefaults = NULL;
+        _rpSet = nullptr;
+        _rpPool = nullptr;
+        _rppDefaults = nullptr;
 
         // create and initialize the defaults
         _rppDefaults = new SfxPoolItem*[CFID_LAST_ITEM_ID - CFID_FIRST_ITEM_ID + 1];
@@ -563,17 +563,17 @@ namespace pcr
         if (_rpSet)
         {
             delete _rpSet;
-            _rpSet = NULL;
+            _rpSet = nullptr;
         }
 
         // delete the pool
         _rpPool->ReleaseDefaults(true);
             // the "true" means delete the items, too
         SfxItemPool::Free(_rpPool);
-        _rpPool = NULL;
+        _rpPool = nullptr;
 
         // reset the defaults ptr
-        _rppDefaults = NULL;
+        _rppDefaults = nullptr;
             // no need to explicitly delete the defaults, this has been done by the ReleaseDefaults
 
         delete pFontList;

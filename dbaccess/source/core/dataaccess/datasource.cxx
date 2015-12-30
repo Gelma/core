@@ -18,8 +18,6 @@
  */
 
 #include "datasource.hxx"
-#include "module_dba.hxx"
-#include "services.hxx"
 #include "userinformation.hxx"
 #include "commandcontainer.hxx"
 #include "dbastrings.hrc"
@@ -125,9 +123,9 @@ protected:
 
 protected:
     // XFlushListener
-    virtual void SAL_CALL flushed( const css::lang::EventObject& rEvent ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL flushed( const css::lang::EventObject& rEvent ) throw (css::uno::RuntimeException, std::exception) override;
     // XEventListener
-    virtual void SAL_CALL disposing( const css::lang::EventObject& Source ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing( const css::lang::EventObject& Source ) throw (css::uno::RuntimeException, std::exception) override;
 };
 
 FlushNotificationAdapter::FlushNotificationAdapter( const Reference< XFlushable >& _rxBroadcaster, const Reference< XFlushListener >& _rxListener )
@@ -305,7 +303,7 @@ protected:
 public:
     explicit OSharedConnectionManager(const Reference< XComponentContext >& _rxContext);
 
-    void SAL_CALL disposing( const css::lang::EventObject& Source ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+    void SAL_CALL disposing( const css::lang::EventObject& Source ) throw(RuntimeException, std::exception) override;
     Reference<XConnection> getConnection(   const OUString& url,
                                             const OUString& user,
                                             const OUString& password,
@@ -472,17 +470,6 @@ namespace
     };
 }
 
-} // namespace dbaccess
-
-// ODatabaseContext
-
-extern "C" void SAL_CALL createRegistryInfo_ODatabaseSource()
-{
-    static ::dba::OAutoRegistration< ::dbaccess::ODatabaseSource > aAutoRegistration;
-}
-
-namespace dbaccess
-{
 
 ODatabaseSource::ODatabaseSource(const ::rtl::Reference<ODatabaseModelImpl>& _pImpl)
             :ModelDependentComponent( _pImpl )
@@ -560,31 +547,12 @@ void SAL_CALL ODatabaseSource::disposing( const css::lang::EventObject& Source )
 // XServiceInfo
 OUString ODatabaseSource::getImplementationName(  ) throw(RuntimeException, std::exception)
 {
-    return getImplementationName_static();
-}
-
-OUString ODatabaseSource::getImplementationName_static(  ) throw(RuntimeException)
-{
     return OUString("com.sun.star.comp.dba.ODatabaseSource");
 }
 
 Sequence< OUString > ODatabaseSource::getSupportedServiceNames(  ) throw (RuntimeException, std::exception)
 {
-    return getSupportedServiceNames_static();
-}
-
-Reference< XInterface > ODatabaseSource::Create( const Reference< XComponentContext >& _rxContext )
-{
-    Reference< XDatabaseContext > xDBContext( DatabaseContext::create(_rxContext) );
-    return xDBContext->createInstance();
-}
-
-Sequence< OUString > ODatabaseSource::getSupportedServiceNames_static(  ) throw (RuntimeException)
-{
-    Sequence< OUString > aSNS( 2 );
-    aSNS[0] = SERVICE_SDB_DATASOURCE;
-    aSNS[1] = "com.sun.star.sdb.DocumentDataSource";
-    return aSNS;
+    return { SERVICE_SDB_DATASOURCE, "com.sun.star.sdb.DocumentDataSource" };
 }
 
 sal_Bool ODatabaseSource::supportsService( const OUString& _rServiceName ) throw (RuntimeException, std::exception)
@@ -1188,7 +1156,7 @@ Reference< XConnection > ODatabaseSource::getConnection(const OUString& user, co
         Reference< XComponent> xComp(xConn,UNO_QUERY);
         if ( xComp.is() )
             xComp->addEventListener( static_cast< XContainerListener* >( this ) );
-        m_pImpl->m_aConnections.push_back(OWeakConnection(xConn));
+        m_pImpl->m_aConnections.push_back(css::uno::WeakReference< css::sdbc::XConnection >(xConn));
     }
 
     return xConn;
@@ -1354,5 +1322,15 @@ Reference< XInterface > ODatabaseSource::getThis() const
 }
 
 }   // namespace dbaccess
+
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_dba_ODatabaseSource(css::uno::XComponentContext* context,
+        css::uno::Sequence<css::uno::Any> const &)
+{
+    css::uno::Reference<XInterface> inst(
+        DatabaseContext::create(context)->createInstance());
+    inst->acquire();
+    return inst.get();
+}
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

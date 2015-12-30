@@ -45,7 +45,7 @@ private:
     tools::B2DClipState aSubtract;
 
 public:
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         B2DRange aCenter(100, 100, -100, -100);
         B2DRange aNorth(-10, -110, 10, -90);
@@ -86,7 +86,7 @@ public:
         aSubtract.subtractRange(aEast);
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {}
 
     void verifyPoly(const char* sName, const char* sSvg, const tools::B2DClipState& toTest)
@@ -101,14 +101,14 @@ public:
         B2DPolyPolygon aTmp1;
         CPPUNIT_ASSERT_MESSAGE(sName,
                                tools::importFromSvgD(
-                                   aTmp1, OUString::createFromAscii(sSvg), false, 0));
+                                   aTmp1, OUString::createFromAscii(sSvg), false, nullptr));
 
         const OUString aSvg=
             tools::exportToSvgD(toTest.getClipPoly(), true, true, false);
         B2DPolyPolygon aTmp2;
         CPPUNIT_ASSERT_MESSAGE(sName,
                                tools::importFromSvgD(
-                                   aTmp2, aSvg, false, 0));
+                                   aTmp2, aSvg, false, nullptr));
 
         CPPUNIT_ASSERT_MESSAGE(
             sName,
@@ -139,7 +139,7 @@ public:
 
         B2DPolyPolygon aTmp1;
         tools::importFromSvgD(
-            aTmp1, OUString::createFromAscii(unionSvg), false, 0);
+            aTmp1, OUString::createFromAscii(unionSvg), false, nullptr);
 
         aMixedClip.intersectPolyPolygon(aTmp1);
         aMixedClip.subtractRange(B2DRange(-20,-150,20,0));

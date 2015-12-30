@@ -23,25 +23,54 @@
 #include <tools/stream.hxx>
 #include <vcl/dllapi.h>
 #include <tools/solar.h>
+#include <rtl/ustring.hxx>
 #include <vcl/bitmap.hxx>
 #include <vcl/bitmapex.hxx>
 #include <vcl/animate.hxx>
 #include <vcl/gdimtf.hxx>
-#include <vcl/graph.h>
 #include <vcl/gfxlink.hxx>
 #include <com/sun/star/uno/Reference.hxx>
 #include <vcl/svgdata.hxx>
 
+
+enum GraphicType
+{
+    GRAPHIC_NONE,
+    GRAPHIC_BITMAP,
+    GRAPHIC_GDIMETAFILE,
+    GRAPHIC_DEFAULT
+};
+
 namespace com { namespace sun { namespace star { namespace graphic { class XGraphic;} } } }
-
-
-// - Graphic -
-
-
-class   ImpGraphic;
-class   OutputDevice;
 namespace vcl { class Font; }
-class   GfxLink;
+
+class GfxLink;
+class ImpGraphic;
+class OutputDevice;
+class ReaderData;
+
+class VCL_DLLPUBLIC GraphicReader
+{
+protected:
+
+    OUString        maUpperName;
+    ReaderData*     mpReaderData;
+
+                    GraphicReader() :
+                        mpReaderData( nullptr ) {}
+
+public:
+
+    virtual         ~GraphicReader();
+
+    const OUString&   GetUpperFilterName() const { return maUpperName; }
+
+    // TODO: when incompatible changes are possible again
+    // the preview size hint should be redone
+    void            DisablePreviewMode();
+    void            SetPreviewSize( const Size& );
+    Size            GetPreviewSize() const;
+};
 
 class VCL_DLLPUBLIC GraphicConversionParameters
 {
@@ -96,7 +125,7 @@ public:
                         Graphic( const SvgDataPtr& rSvgDataPtr );
                         Graphic( const Animation& rAnimation );
                         Graphic( const GDIMetaFile& rMtf );
-                        Graphic( const ::com::sun::star::uno::Reference< ::com::sun::star::graphic::XGraphic >& rxGraphic );
+                        Graphic( const css::uno::Reference< css::graphic::XGraphic >& rxGraphic );
     virtual             ~Graphic();
 
     Graphic&            operator=( const Graphic& rGraphic );
@@ -126,7 +155,7 @@ public:
     Animation               GetAnimation() const;
     const GDIMetaFile&      GetGDIMetaFile() const;
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::graphic::XGraphic > GetXGraphic() const;
+    css::uno::Reference< css::graphic::XGraphic > GetXGraphic() const;
 
     Size                GetPrefSize() const;
     void                SetPrefSize( const Size& rPrefSize );
@@ -134,7 +163,7 @@ public:
     MapMode             GetPrefMapMode() const;
     void                SetPrefMapMode( const MapMode& rPrefMapMode );
 
-    Size                GetSizePixel( const OutputDevice* pRefDevice = NULL ) const;
+    Size                GetSizePixel( const OutputDevice* pRefDevice = nullptr ) const;
 
     sal_uLong               GetSizeBytes() const;
 
@@ -151,8 +180,8 @@ public:
                                         const Point& rDestPt,
                                         const Size& rDestSize,
                                         long nExtraData = 0L,
-                                        OutputDevice* pFirstFrameOutDev = NULL );
-    void                StopAnimation( OutputDevice* pOutputDevice = NULL,
+                                        OutputDevice* pFirstFrameOutDev = nullptr );
+    void                StopAnimation( OutputDevice* pOutputDevice = nullptr,
                                        long nExtraData = 0L );
 
     void                SetAnimationNotifyHdl( const Link<Animation*,void>& rLink );

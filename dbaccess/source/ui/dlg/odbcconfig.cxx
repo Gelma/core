@@ -69,66 +69,53 @@ typedef SQLRETURN (SQL_API* TSQLDataSources) (SQLHENV EnvironmentHandle, SQLUSMA
 #endif
 
 // OOdbcLibWrapper
-#ifdef HAVE_ODBC_SUPPORT
-OOdbcLibWrapper::OOdbcLibWrapper()
-    :m_pOdbcLib(NULL)
-{
 
-}
-
-#endif
-
-bool OOdbcLibWrapper::load(const sal_Char* _pLibPath)
+bool OOdbcEnumeration::load(const sal_Char* _pLibPath)
 {
     m_sLibPath = OUString::createFromAscii(_pLibPath);
 #ifdef HAVE_ODBC_SUPPORT
     // load the module
     m_pOdbcLib = osl_loadModule(m_sLibPath.pData, SAL_LOADMODULE_NOW);
-    return (NULL != m_pOdbcLib);
+    return (nullptr != m_pOdbcLib);
 #else
     return sal_False;
 #endif
 }
 
-void OOdbcLibWrapper::unload()
+void OOdbcEnumeration::unload()
 {
 #ifdef HAVE_ODBC_SUPPORT
     if (isLoaded())
     {
         osl_unloadModule(m_pOdbcLib);
-        m_pOdbcLib = NULL;
+        m_pOdbcLib = nullptr;
     }
 #endif
 }
 
-oslGenericFunction OOdbcLibWrapper::loadSymbol(const sal_Char* _pFunctionName)
+oslGenericFunction OOdbcEnumeration::loadSymbol(const sal_Char* _pFunctionName)
 {
     return osl_getFunctionSymbol(m_pOdbcLib, OUString::createFromAscii(_pFunctionName).pData);
 }
 
-OOdbcLibWrapper::~OOdbcLibWrapper()
-{
-    unload();
 
-}
-
-// OOdbcEnumeration
 struct OdbcTypesImpl
 {
 #ifdef HAVE_ODBC_SUPPORT
     SQLHANDLE   hEnvironment;
-    OdbcTypesImpl() : hEnvironment(0) { }
+    OdbcTypesImpl() : hEnvironment(nullptr) { }
 #else
     void*       pDummy;
 #endif
 };
 
 OOdbcEnumeration::OOdbcEnumeration()
+    :m_pOdbcLib(nullptr)
 #ifdef HAVE_ODBC_SUPPORT
-    :m_pAllocHandle(NULL)
-    ,m_pFreeHandle(NULL)
-    ,m_pSetEnvAttr(NULL)
-    ,m_pDataSources(NULL)
+    ,m_pAllocHandle(nullptr)
+    ,m_pFreeHandle(nullptr)
+    ,m_pSetEnvAttr(nullptr)
+    ,m_pDataSources(nullptr)
     ,m_pImpl(new OdbcTypesImpl)
 #endif
 {
@@ -151,7 +138,7 @@ OOdbcEnumeration::OOdbcEnumeration()
         if (!m_pAllocHandle || !m_pSetEnvAttr || !m_pDataSources || !m_pFreeHandle)
         {
             unload();
-            m_pAllocHandle = m_pFreeHandle = m_pSetEnvAttr = m_pDataSources = NULL;
+            m_pAllocHandle = m_pFreeHandle = m_pSetEnvAttr = m_pDataSources = nullptr;
         }
 #endif
     }
@@ -161,9 +148,10 @@ OOdbcEnumeration::~OOdbcEnumeration()
 {
     freeEnv();
     delete m_pImpl;
-
+    unload();
 }
 
+// OOdbcEnumeration
 bool OOdbcEnumeration::allocEnv()
 {
     OSL_ENSURE(isLoaded(), "OOdbcEnumeration::allocEnv: not loaded!");
@@ -191,7 +179,7 @@ void OOdbcEnumeration::freeEnv()
 #ifdef HAVE_ODBC_SUPPORT
     if (m_pImpl->hEnvironment)
         NSQLFreeHandle(SQL_HANDLE_ENV, m_pImpl->hEnvironment);
-    m_pImpl->hEnvironment  = 0;
+    m_pImpl->hEnvironment  = nullptr;
 #endif
 }
 

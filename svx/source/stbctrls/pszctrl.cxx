@@ -101,7 +101,7 @@ public:
 private:
     sal_uInt16          nSelected;
 
-    virtual void    Select() SAL_OVERRIDE;
+    virtual void    Select() override;
 };
 
 
@@ -182,9 +182,9 @@ SvxPosSizeStatusBarControl::SvxPosSizeStatusBarControl( sal_uInt16 _nSlotId,
         pImp->aSizeImage = Image(b);
     }
 
-    addStatusListener( OUString( STR_POSITION ));         // SID_ATTR_POSITION
-    addStatusListener( OUString( STR_TABLECELL ));   // SID_TABLE_CELL
-    addStatusListener( OUString( STR_FUNC ));    // SID_PSZ_FUNCTION
+    addStatusListener( STR_POSITION);         // SID_ATTR_POSITION
+    addStatusListener( STR_TABLECELL);   // SID_TABLE_CELL
+    addStatusListener( STR_FUNC);    // SID_PSZ_FUNCTION
 }
 
 
@@ -238,7 +238,7 @@ void SvxPosSizeStatusBarControl::StateChanged( sal_uInt16 nSID, SfxItemState eSt
         if ( eState == SfxItemState::DEFAULT )
         {
             pImp->bHasMenu = true;
-            if ( pState && pState->ISA(SfxUInt16Item) )
+            if ( pState && dynamic_cast< const SfxUInt16Item* >(pState) !=  nullptr )
                 pImp->nFunction = static_cast<const SfxUInt16Item*>(pState)->GetValue();
         }
         else
@@ -260,21 +260,21 @@ void SvxPosSizeStatusBarControl::StateChanged( sal_uInt16 nSID, SfxItemState eSt
             SAL_WARN( "svx.stbcrtls","unknown slot id");
         }
     }
-    else if ( pState->ISA( SfxPointItem ) )
+    else if ( dynamic_cast<const SfxPointItem*>( pState) !=  nullptr )
     {
         // show position
         pImp->aPos = static_cast<const SfxPointItem*>(pState)->GetValue();
         pImp->bPos = true;
         pImp->bTable = false;
     }
-    else if ( pState->ISA( SvxSizeItem ) )
+    else if ( dynamic_cast<const SvxSizeItem*>( pState) !=  nullptr )
     {
         // show size
         pImp->aSize = static_cast<const SvxSizeItem*>(pState)->GetSize();
         pImp->bSize = true;
         pImp->bTable = false;
     }
-    else if ( pState->ISA( SfxStringItem ) )
+    else if ( dynamic_cast<const SfxStringItem*>( pState) !=  nullptr )
     {
         // show string (table cel or different)
         pImp->aStr = static_cast<const SfxStringItem*>(pState)->GetValue();
@@ -291,7 +291,7 @@ void SvxPosSizeStatusBarControl::StateChanged( sal_uInt16 nSID, SfxItemState eSt
     }
 
     if ( GetStatusBar().AreItemsVisible() )
-        GetStatusBar().SetItemData( GetId(), 0 );
+        GetStatusBar().SetItemData( GetId(), nullptr );
 
     //  set only strings as text at the statusBar, so that the Help-Tips
     //  can work with the text, when it is too long for the statusBar
@@ -324,15 +324,15 @@ void SvxPosSizeStatusBarControl::Command( const CommandEvent& rCEvt )
                 if (nSelect == PSZ_FUNC_NONE)
                     nSelect = 0;
 
-                ::com::sun::star::uno::Any a;
+                css::uno::Any a;
                 SfxUInt16Item aItem( SID_PSZ_FUNCTION, nSelect );
 
-                ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue > aArgs( 1 );
+                css::uno::Sequence< css::beans::PropertyValue > aArgs( 1 );
                 aArgs[0].Name  = "StatusBarFunc";
                 aItem.QueryValue( a );
                 aArgs[0].Value = a;
 
-                execute( OUString( ".uno:StatusBarFunc" ), aArgs );
+                execute( ".uno:StatusBarFunc", aArgs );
 //              GetBindings().GetDispatcher()->Execute( SID_PSZ_FUNCTION, SfxCallMode::RECORD, &aItem, 0L );
             }
         }

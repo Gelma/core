@@ -238,7 +238,7 @@ void OutputDevice::DrawTransparent( const basegfx::B2DPolyPolygon& rB2DPolyPoly,
        (ROP_OVERPAINT == GetRasterOp()) )
     {
         // b2dpolygon support not implemented yet on non-UNX platforms
-        const ::basegfx::B2DHomMatrix aTransform = ImplGetDeviceTransformation();
+        const basegfx::B2DHomMatrix aTransform = ImplGetDeviceTransformation();
         basegfx::B2DPolyPolygon aB2DPolyPolygon(rB2DPolyPoly);
 
         // transform the polygon into device space and ensure it is closed
@@ -255,8 +255,8 @@ void OutputDevice::DrawTransparent( const basegfx::B2DPolyPolygon& rB2DPolyPoly,
             const int nPolyCount = aB2DPolyPolygon.count();
             for( int nPolyIdx = 0; nPolyIdx < nPolyCount; ++nPolyIdx )
             {
-                const ::basegfx::B2DPolygon aOnePoly = aB2DPolyPolygon.getB2DPolygon( nPolyIdx );
-                mpGraphics->DrawPolyLine( aOnePoly, fTransparency, aHairlineWidth, ::basegfx::B2DLineJoin::NONE, com::sun::star::drawing::LineCap_BUTT, this );
+                const basegfx::B2DPolygon aOnePoly = aB2DPolyPolygon.getB2DPolygon( nPolyIdx );
+                mpGraphics->DrawPolyLine( aOnePoly, fTransparency, aHairlineWidth, basegfx::B2DLineJoin::NONE, css::drawing::LineCap_BUTT, this );
             }
         }
 
@@ -324,7 +324,7 @@ bool OutputDevice::DrawTransparentNatively ( const tools::PolyPolygon& rPolyPoly
 
         // get the polygon in device coordinates
         basegfx::B2DPolyPolygon aB2DPolyPolygon( rPolyPoly.getB2DPolyPolygon() );
-        const ::basegfx::B2DHomMatrix aTransform = ImplGetDeviceTransformation();
+        const basegfx::B2DHomMatrix aTransform = ImplGetDeviceTransformation();
         aB2DPolyPolygon.transform( aTransform );
 
         const double fTransparency = 0.01 * nTransparencePercent;
@@ -351,9 +351,9 @@ bool OutputDevice::DrawTransparentNatively ( const tools::PolyPolygon& rPolyPoly
             const int nPolyCount = aB2DPolyPolygon.count();
             for( int nPolyIdx = 0; nPolyIdx < nPolyCount; ++nPolyIdx )
             {
-                const ::basegfx::B2DPolygon& rPolygon = aB2DPolyPolygon.getB2DPolygon( nPolyIdx );
+                const basegfx::B2DPolygon& rPolygon = aB2DPolyPolygon.getB2DPolygon( nPolyIdx );
                 bDrawn = mpGraphics->DrawPolyLine( rPolygon, fTransparency, aLineWidths,
-                                                   ::basegfx::B2DLineJoin::NONE, css::drawing::LineCap_BUTT, this );
+                                                   basegfx::B2DLineJoin::NONE, css::drawing::LineCap_BUTT, this );
             }
             // prepare to restore the fill color
             mbInitFillColor = mbFillColor;
@@ -374,10 +374,10 @@ void OutputDevice::EmulateDrawTransparent ( const tools::PolyPolygon& rPolyPoly,
 
     // operation explicitly further below.
     if( mpAlphaVDev )
-        mpAlphaVDev = NULL;
+        mpAlphaVDev = nullptr;
 
     GDIMetaFile* pOldMetaFile = mpMetaFile;
-    mpMetaFile = NULL;
+    mpMetaFile = nullptr;
 
     tools::PolyPolygon aPolyPoly( LogicToPixel( rPolyPoly ) );
     Rectangle aPolyRect( aPolyPoly.GetBoundRect() );
@@ -431,7 +431,7 @@ void OutputDevice::EmulateDrawTransparent ( const tools::PolyPolygon& rPolyPoly,
 
         if( !bDrawn )
         {
-            ScopedVclPtrInstance< VirtualDevice > aVDev(  *this, 1  );
+            ScopedVclPtrInstance< VirtualDevice > aVDev(*this, DeviceFormat::BITMASK);
             const Size aDstSz( aDstRect.GetSize() );
             const sal_uInt8 cTrans = (sal_uInt8) MinMax( FRound( nTransparencePercent * 2.55 ), 0, 255 );
 
@@ -678,7 +678,7 @@ void OutputDevice::DrawTransparent( const GDIMetaFile& rMtf, const Point& rPos,
         Point aPoint;
         Rectangle aDstRect( aPoint, GetOutputSizePixel() );
 
-        mpMetaFile = NULL;
+        mpMetaFile = nullptr;
         aDstRect.Intersection( aOutRect );
 
         ClipToPaintRegion( aDstRect );

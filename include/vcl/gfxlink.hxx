@@ -21,11 +21,12 @@
 #define INCLUDED_VCL_GFXLINK_HXX
 
 #include <rtl/ustring.hxx>
-#include <tools/stream.hxx>
 #include <tools/gen.hxx>
 #include <tools/solar.h>
 #include <vcl/dllapi.h>
 #include <vcl/mapmod.hxx>
+
+class SvStream;
 
 
 // - ImpBuffer -
@@ -39,7 +40,7 @@ struct ImpBuffer
                 ImpBuffer( sal_uLong nSize )
                 {
                     mnRefCount = 1UL;
-                    mpBuffer = nSize ? new sal_uInt8[ nSize ] : NULL;
+                    mpBuffer = nSize ? new sal_uInt8[ nSize ] : nullptr;
                 }
 
                 ImpBuffer( sal_uInt8* pBuf ) { mnRefCount = 1UL; mpBuffer = pBuf; }
@@ -169,7 +170,7 @@ public:
 
     void                SwapOut();
     void                SwapIn();
-    bool                IsSwappedOut() const { return( mpSwap != NULL ); }
+    bool                IsSwappedOut() const { return( mpSwap != nullptr ); }
 
 public:
 

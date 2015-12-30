@@ -20,7 +20,6 @@
 #ifndef INCLUDED_FRAMEWORK_INC_HELPER_OCOMPONENTACCESS_HXX
 #define INCLUDED_FRAMEWORK_INC_HELPER_OCOMPONENTACCESS_HXX
 
-#include <macros/generic.hxx>
 #include <macros/xinterface.hxx>
 #include <macros/xtypeprovider.hxx>
 #include <general.h>
@@ -54,7 +53,7 @@ namespace framework{
     @devstatus      ready to use
 *//*-*************************************************************************************************************/
 
-class OComponentAccess  :   public ::cppu::WeakImplHelper< ::com::sun::star::container::XEnumerationAccess >
+class OComponentAccess  :   public ::cppu::WeakImplHelper< css::container::XEnumerationAccess >
 {
 
     //  public methods
@@ -91,7 +90,7 @@ class OComponentAccess  :   public ::cppu::WeakImplHelper< ::com::sun::star::con
                         An NULL-reference, other way.
         *//*-*****************************************************************************************************/
 
-        virtual css::uno::Reference< css::container::XEnumeration > SAL_CALL createEnumeration() throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual css::uno::Reference< css::container::XEnumeration > SAL_CALL createEnumeration() throw( css::uno::RuntimeException, std::exception ) override;
 
         //  XElementAccess
 
@@ -102,7 +101,7 @@ class OComponentAccess  :   public ::cppu::WeakImplHelper< ::com::sun::star::con
             @return     The uno-type XComponent.
         *//*-*****************************************************************************************************/
 
-        virtual css::uno::Type SAL_CALL getElementType() throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual css::uno::Type SAL_CALL getElementType() throw( css::uno::RuntimeException, std::exception ) override;
 
         /*-****************************************************************************************************
             @short      get state of componentlist of enumeration.
@@ -111,7 +110,7 @@ class OComponentAccess  :   public ::cppu::WeakImplHelper< ::com::sun::star::con
             @return     sal_False ,otherwise.
         *//*-*****************************************************************************************************/
 
-        virtual sal_Bool SAL_CALL hasElements() throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual sal_Bool SAL_CALL hasElements() throw( css::uno::RuntimeException, std::exception ) override;
 
     //  protected methods
 

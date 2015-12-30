@@ -24,7 +24,6 @@
 class XMLLabelSeparatorContext : public XMLElementPropertyContext
 {
 public:
-    TYPEINFO_OVERRIDE();
 
     XMLLabelSeparatorContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
                            const OUString& rLName,
@@ -32,12 +31,12 @@ public:
                            ::std::vector< XMLPropertyState > &rProps );
     virtual ~XMLLabelSeparatorContext();
 
-    virtual void StartElement( const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+    virtual void StartElement( const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
     virtual SvXMLImportContext *CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
-    virtual void EndElement() SAL_OVERRIDE;
+        const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
+    virtual void EndElement() override;
 
 private:
     OUString         m_aSeparator;

@@ -197,8 +197,7 @@ OUString SbaTableQueryBrowser::getImplementationName_Static() throw(RuntimeExcep
 
 css::uno::Sequence<OUString> SbaTableQueryBrowser::getSupportedServiceNames_Static() throw(RuntimeException)
 {
-    css::uno::Sequence<OUString> aSupported(1);
-    aSupported[0] = "com.sun.star.sdb.DataSourceBrowser";
+    css::uno::Sequence<OUString> aSupported { "com.sun.star.sdb.DataSourceBrowser" };
     return aSupported;
 }
 
@@ -213,12 +212,11 @@ SbaTableQueryBrowser::SbaTableQueryBrowser(const Reference< XComponentContext >&
     ,m_aSelectionListeners( getMutex() )
     ,m_aContextMenuInterceptors( getMutex() )
     ,m_aTableCopyHelper(this)
-    ,m_pTreeView(NULL)
-    ,m_pSplitter(NULL)
-    ,m_pTreeModel(NULL)
-    ,m_pCurrentlyDisplayed(NULL)
-    ,m_nAsyncDrop(0)
-    ,m_nBorder(1)
+    ,m_pTreeView(nullptr)
+    ,m_pSplitter(nullptr)
+    ,m_pTreeModel(nullptr)
+    ,m_pCurrentlyDisplayed(nullptr)
+    ,m_nAsyncDrop(nullptr)
     ,m_bQueryEscapeProcessing( false )
     ,m_bShowMenu(false)
     ,m_bInSuspend(false)
@@ -296,13 +294,13 @@ void SAL_CALL SbaTableQueryBrowser::disposing()
     // reset the content's tree view: it holds a reference to our model which is to be deleted immediately,
     // and it will live longer than we do.
     if (getBrowserView())
-        getBrowserView()->setTreeView(NULL);
+        getBrowserView()->setTreeView(nullptr);
 
     clearTreeModel();
     // clear the tree model
     {
         ::std::unique_ptr<SvTreeList> aTemp(m_pTreeModel);
-        m_pTreeModel = NULL;
+        m_pTreeModel = nullptr;
     }
 
     // remove ourself as status listener
@@ -553,8 +551,7 @@ bool SbaTableQueryBrowser::InitializeForm( const Reference< XPropertySet > & i_f
 
         ::std::vector< OUString > aNames( aPropertyValues.getNames() );
         ::std::sort(aNames.begin(), aNames.end());
-        Sequence< OUString > aPropNames( aNames.size() );
-        ::std::copy( aNames.begin(), aNames.end(), aPropNames.getArray() );
+        Sequence< OUString > aPropNames( comphelper::containerToSequence(aNames) );
 
         Sequence< Any > aPropValues( aNames.size() );
         ::std::transform( aNames.begin(), aNames.end(), aPropValues.getArray(), SelectValueByName( aPropertyValues ) );
@@ -1036,20 +1033,20 @@ void SAL_CALL SbaTableQueryBrowser::statusChanged( const FeatureStateEvent& _rEv
 
 void SbaTableQueryBrowser::checkDocumentDataSource()
 {
-    SvTreeListEntry* pDataSourceEntry = NULL;
-    SvTreeListEntry* pContainerEntry = NULL;
+    SvTreeListEntry* pDataSourceEntry = nullptr;
+    SvTreeListEntry* pContainerEntry = nullptr;
     SvTreeListEntry* pObjectEntry = getObjectEntry( m_aDocumentDataSource, &pDataSourceEntry, &pContainerEntry, false );
-    bool bKnownDocDataSource = (NULL != pObjectEntry);
+    bool bKnownDocDataSource = (nullptr != pObjectEntry);
     if (!bKnownDocDataSource)
     {
-        if (NULL != pDataSourceEntry)
+        if (nullptr != pDataSourceEntry)
         {   // at least the data source is known
-            if (NULL != pContainerEntry)
+            if (nullptr != pContainerEntry)
                 bKnownDocDataSource = true; // assume we know it.
                 // TODO: should we expand the object container? This may be too expensive just for checking ....
             else
             {
-                if ((NULL == pObjectEntry) && m_aDocumentDataSource.has(daCommandType) && m_aDocumentDataSource.has(daCommand))
+                if ((nullptr == pObjectEntry) && m_aDocumentDataSource.has(daCommandType) && m_aDocumentDataSource.has(daCommand))
                 {   // maybe we have a command to be displayed ?
                     sal_Int32 nCommandType = CommandType::TABLE;
                     m_aDocumentDataSource[daCommandType] >>= nCommandType;
@@ -1107,7 +1104,7 @@ namespace
 
         virtual ~FilterByEntryDataId() {}
 
-        virtual bool    includeEntry( SvTreeListEntry* _pEntry ) const SAL_OVERRIDE;
+        virtual bool    includeEntry( SvTreeListEntry* _pEntry ) const override;
     };
 
     bool FilterByEntryDataId::includeEntry( SvTreeListEntry* _pEntry ) const
@@ -1132,11 +1129,11 @@ SvTreeListEntry* SbaTableQueryBrowser::getObjectEntry(const OUString& _rDataSour
         const SharedConnection& _rxConnection )
 {
     if (_ppDataSourceEntry)
-        *_ppDataSourceEntry = NULL;
+        *_ppDataSourceEntry = nullptr;
     if (_ppContainerEntry)
-        *_ppContainerEntry = NULL;
+        *_ppContainerEntry = nullptr;
 
-    SvTreeListEntry* pObject = NULL;
+    SvTreeListEntry* pObject = nullptr;
     if ( m_pTreeView )
     {
         // look for the data source entry
@@ -1146,7 +1143,7 @@ SvTreeListEntry* SbaTableQueryBrowser::getObjectEntry(const OUString& _rDataSour
             // #i33699#
 
         FilterByEntryDataId aFilter( sDataSourceId );
-        SvTreeListEntry* pDataSource = m_pTreeView->getListBox().GetEntryPosByName( sDisplayName, NULL, &aFilter );
+        SvTreeListEntry* pDataSource = m_pTreeView->getListBox().GetEntryPosByName( sDisplayName, nullptr, &aFilter );
         if ( !pDataSource ) // check if the data source name is a file location
         {
             if ( bIsDataSourceURL )
@@ -1154,7 +1151,7 @@ SvTreeListEntry* SbaTableQueryBrowser::getObjectEntry(const OUString& _rDataSour
                 // special case, the data source is a URL
                 // add new entries to the list box model
                 implAddDatasource( _rDataSource, _rxConnection );
-                pDataSource = m_pTreeView->getListBox().GetEntryPosByName( sDisplayName, NULL, &aFilter );
+                pDataSource = m_pTreeView->getListBox().GetEntryPosByName( sDisplayName, nullptr, &aFilter );
                 OSL_ENSURE( pDataSource, "SbaTableQueryBrowser::getObjectEntry: hmm - did not find it again!" );
             }
         }
@@ -1169,7 +1166,7 @@ SvTreeListEntry* SbaTableQueryBrowser::getObjectEntry(const OUString& _rDataSour
                 m_pTreeView->getListBox().Expand(pDataSource);
 
             // look for the object container
-            SvTreeListEntry* pCommandType = NULL;
+            SvTreeListEntry* pCommandType = nullptr;
             switch (_nCommandType)
             {
                 case CommandType::TABLE:
@@ -1304,7 +1301,7 @@ void SbaTableQueryBrowser::connectExternalDispatches()
             )
         {
             feature->second.xDispatcher = xProvider->queryDispatch(
-                feature->second.aURL, OUString("_parent"), FrameSearchFlag::PARENT
+                feature->second.aURL, "_parent", FrameSearchFlag::PARENT
             );
 
             if ( feature->second.xDispatcher.get() == static_cast< XDispatch* >( this ) )
@@ -1391,7 +1388,7 @@ void SAL_CALL SbaTableQueryBrowser::disposing( const css::lang::EventObject& _rS
             {   // our connection is in dispose so we have to find the entry equal with this connection
                 // and close it what means to collapse the entry
                 // get the top-level representing the removed data source
-                SvTreeListEntry* pDSLoop = m_pTreeView->getListBox().FirstChild(NULL);
+                SvTreeListEntry* pDSLoop = m_pTreeView->getListBox().FirstChild(nullptr);
                 while (pDSLoop)
                 {
                     DBTreeListUserData* pData = static_cast<DBTreeListUserData*>(pDSLoop->GetUserData());
@@ -1511,7 +1508,7 @@ void SbaTableQueryBrowser::attachFrame(const Reference< css::frame::XFrame > & _
     Reference< XFrame > xCurrentFrame( getFrame() );
     if ( xCurrentFrame.is() )
     {
-        m_xCurrentFrameParent = xCurrentFrame->findFrame(OUString("_parent"),FrameSearchFlag::PARENT);
+        m_xCurrentFrameParent = xCurrentFrame->findFrame("_parent",FrameSearchFlag::PARENT);
         if ( m_xCurrentFrameParent.is() )
             m_xCurrentFrameParent->addFrameActionListener(static_cast<css::frame::XFrameActionListener*>(this));
 
@@ -1526,7 +1523,7 @@ void SbaTableQueryBrowser::attachFrame(const Reference< css::frame::XFrame > & _
             if ( xLayouter.is() )
             {
                 Reference< XUIElement > xUI(
-                    xLayouter->getElement( OUString( "private:resource/toolbar/toolbar" ) ),
+                    xLayouter->getElement( "private:resource/toolbar/toolbar" ),
                     UNO_SET_THROW );
                 m_xMainToolbar.set(xUI->getRealInterface(), css::uno::UNO_QUERY);
                 OSL_ENSURE( m_xMainToolbar.is(), "SbaTableQueryBrowser::attachFrame: where's my toolbox?" );
@@ -1694,19 +1691,19 @@ FeatureState SbaTableQueryBrowser::GetState(sal_uInt16 nId) const
             DBTreeListUserData* pDSData
                 =   pDataSourceEntry
                 ?   static_cast< DBTreeListUserData* >( pDataSourceEntry->GetUserData() )
-                :   NULL;
+                :   nullptr;
 
             if ( nId == ID_TREE_CLOSE_CONN )
             {
-                aReturn.bEnabled = ( pDSData != NULL ) && pDSData->xConnection.is();
+                aReturn.bEnabled = ( pDSData != nullptr ) && pDSData->xConnection.is();
             }
             else if ( nId == ID_TREE_EDIT_DATABASE )
             {
                 ::utl::OConfigurationTreeRoot aConfig( ::utl::OConfigurationTreeRoot::createWithComponentContext( getORB(),
-                    OUString( "/org.openoffice.Office.DataAccess/Policies/Features/Common" ) ) );
+                    "/org.openoffice.Office.DataAccess/Policies/Features/Common" ) );
                 bool bHaveEditDatabase( true );
                 OSL_VERIFY( aConfig.getNodeValue( "EditDatabaseFromDataSourceView" ) >>= bHaveEditDatabase );
-                aReturn.bEnabled = getORB().is() && ( pDataSourceEntry != NULL ) && bHaveEditDatabase;
+                aReturn.bEnabled = getORB().is() && ( pDataSourceEntry != nullptr ) && bHaveEditDatabase;
             }
             else if ( nId == ID_BROWSER_COPY )
             {
@@ -1946,7 +1943,7 @@ void SbaTableQueryBrowser::Execute(sal_uInt16 nId, const Sequence< PropertyValue
                     {   // transfer the selected rows only if not all rows are selected
                         // (all rows means the whole table)
                         // #i3832#
-                        if (pSelection != NULL)
+                        if (pSelection != nullptr)
                         {
                             aSelection.realloc(pSelection->GetSelectCount());
                             long nIdx = pSelection->FirstSelected();
@@ -2061,7 +2058,7 @@ void SbaTableQueryBrowser::implAddDatasource(const OUString& _rDbName, Image& _r
     OUString sDSDisplayName, sDataSourceId;
     getDataSourceDisplayName_isURL( _rDbName, sDSDisplayName, sDataSourceId );
 
-    SvTreeListEntry* pDatasourceEntry = m_pTreeView->getListBox().InsertEntry( sDSDisplayName, _rDbImage, _rDbImage, NULL, false );
+    SvTreeListEntry* pDatasourceEntry = m_pTreeView->getListBox().InsertEntry( sDSDisplayName, _rDbImage, _rDbImage );
     DBTreeListUserData* pDSData = new DBTreeListUserData;
     pDSData->eType = etDatasource;
     pDSData->sAccessor = sDataSourceId;
@@ -2452,8 +2449,8 @@ bool SbaTableQueryBrowser::implSelect(const OUString& _rDataSourceName, const OU
 {
     if (_rDataSourceName.getLength() && _rCommand.getLength() && (-1 != _nCommandType))
     {
-        SvTreeListEntry* pDataSource = NULL;
-        SvTreeListEntry* pCommandType = NULL;
+        SvTreeListEntry* pDataSource = nullptr;
+        SvTreeListEntry* pCommandType = nullptr;
         SvTreeListEntry* pCommand = getObjectEntry( _rDataSourceName, _rCommand, _nCommandType, &pDataSource, &pCommandType, true, _rxConnection );
 
         if (pCommand)
@@ -2479,7 +2476,7 @@ bool SbaTableQueryBrowser::implSelect(const OUString& _rDataSourceName, const OU
             if ( m_pCurrentlyDisplayed )
             {   // tell the old entry (if any) it has been deselected
                 selectPath(m_pCurrentlyDisplayed, false);
-                m_pCurrentlyDisplayed = NULL;
+                m_pCurrentlyDisplayed = nullptr;
             }
 
             // we have a command and need to display this in the rowset
@@ -2582,7 +2579,7 @@ bool SbaTableQueryBrowser::implSelect( SvTreeListEntry* _pEntry )
 
             // tell the old entry it has been deselected
             selectPath(m_pCurrentlyDisplayed, false);
-            m_pCurrentlyDisplayed = NULL;
+            m_pCurrentlyDisplayed = nullptr;
 
             // not really loaded
             m_pCurrentlyDisplayed = _pEntry;
@@ -2670,7 +2667,7 @@ bool SbaTableQueryBrowser::implSelect( SvTreeListEntry* _pEntry )
                                                 sReplace = sReplace.replaceFirst(sFilter, "");
                                                 xAnalyzer->setQuery(sReplace);
                                                 Reference<XSingleSelectQueryComposer> xComposer(xAnalyzer,UNO_QUERY);
-                                                xComposer->setFilter(OUString("0=1"));
+                                                xComposer->setFilter("0=1");
                                                 aName = xAnalyzer->getQuery();
                                                 nCommandType = CommandType::COMMAND;
                                             }
@@ -2725,8 +2722,8 @@ bool SbaTableQueryBrowser::implSelect( SvTreeListEntry* _pEntry )
 SvTreeListEntry* SbaTableQueryBrowser::getEntryFromContainer(const Reference<XNameAccess>& _rxNameAccess)
 {
     DBTreeListBox& rListBox = m_pTreeView->getListBox();
-    SvTreeListEntry* pContainer = NULL;
-    SvTreeListEntry* pDSLoop = rListBox.FirstChild(NULL);
+    SvTreeListEntry* pContainer = nullptr;
+    SvTreeListEntry* pDSLoop = rListBox.FirstChild(nullptr);
     while (pDSLoop)
     {
         pContainer  = rListBox.GetEntry(pDSLoop, CONTAINER_QUERIES);
@@ -2740,7 +2737,7 @@ SvTreeListEntry* SbaTableQueryBrowser::getEntryFromContainer(const Reference<XNa
             break;
 
         pDSLoop     = SvTreeList::NextSibling(pDSLoop);
-        pContainer  = NULL;
+        pContainer  = nullptr;
     }
     return pContainer;
 }
@@ -2812,7 +2809,7 @@ void SAL_CALL SbaTableQueryBrowser::elementRemoved( const ContainerEvent& _rEven
             unloadAndCleanup( false ); // don't dispose the connection
 
             DBTreeListUserData* pData = static_cast<DBTreeListUserData*>(pTemp->GetUserData());
-            pTemp->SetUserData(NULL);
+            pTemp->SetUserData(nullptr);
             delete pData;
                 // the data could be null because we have a table which isn't correct
             m_pTreeModel->Remove(pTemp);
@@ -2826,7 +2823,7 @@ void SAL_CALL SbaTableQueryBrowser::elementRemoved( const ContainerEvent& _rEven
                 if (m_pTreeView->getListBox().GetEntryText(pChild) == aName)
                 {
                     DBTreeListUserData* pData = static_cast<DBTreeListUserData*>(pChild->GetUserData());
-                    pChild->SetUserData(NULL);
+                    pChild->SetUserData(nullptr);
                     delete pData;
                     m_pTreeModel->Remove(pChild);
                     break;
@@ -2868,7 +2865,7 @@ void SAL_CALL SbaTableQueryBrowser::elementReplaced( const ContainerEvent& _rEve
                 }
                 else
                 {
-                    pTemp->SetUserData(NULL);
+                    pTemp->SetUserData(nullptr);
                     delete pData;
                 }
             }
@@ -2890,7 +2887,7 @@ void SAL_CALL SbaTableQueryBrowser::elementReplaced( const ContainerEvent& _rEve
                         }
                         else
                         {
-                            pChild->SetUserData(NULL);
+                            pChild->SetUserData(nullptr);
                             delete pData;
                         }
                     }
@@ -2975,7 +2972,7 @@ void SbaTableQueryBrowser::closeConnection(SvTreeListEntry* _pDSEntry, bool _bDi
             SvTreeListEntry* pRemove = pElements;
             pElements = SvTreeList::NextSibling(pElements);
             DBTreeListUserData* pData = static_cast<DBTreeListUserData*>(pRemove->GetUserData());
-            pRemove->SetUserData(NULL);
+            pRemove->SetUserData(nullptr);
             delete pData;
             m_pTreeModel->Remove(pRemove);
         }
@@ -3001,7 +2998,7 @@ void SbaTableQueryBrowser::unloadAndCleanup( bool _bDisposeConnection )
     {
         selectPath(m_pCurrentlyDisplayed, false);
     }
-    m_pCurrentlyDisplayed = NULL;
+    m_pCurrentlyDisplayed = nullptr;
 
     try
     {
@@ -3094,21 +3091,21 @@ void SbaTableQueryBrowser::impl_initialize()
 
     const NamedValueCollection& rArguments( getInitParams() );
 
-    rArguments.get_ensureType( OUString(PROPERTY_DATASOURCENAME), sInitialDataSourceName );
-    rArguments.get_ensureType( OUString(PROPERTY_COMMAND_TYPE), nInitialDisplayCommandType );
-    rArguments.get_ensureType( OUString(PROPERTY_COMMAND), sInitialCommand );
-    rArguments.get_ensureType( OUString(PROPERTY_ACTIVE_CONNECTION), xForeignConnection );
-    rArguments.get_ensureType( OUString(PROPERTY_UPDATE_CATALOGNAME), aCatalogName );
-    rArguments.get_ensureType( OUString(PROPERTY_UPDATE_SCHEMANAME), aSchemaName );
-    rArguments.get_ensureType( OUString(PROPERTY_UPDATE_TABLENAME), aTableName );
-    rArguments.get_ensureType( OUString(PROPERTY_ESCAPE_PROCESSING), bEscapeProcessing );
+    rArguments.get_ensureType( PROPERTY_DATASOURCENAME, sInitialDataSourceName );
+    rArguments.get_ensureType( PROPERTY_COMMAND_TYPE, nInitialDisplayCommandType );
+    rArguments.get_ensureType( PROPERTY_COMMAND, sInitialCommand );
+    rArguments.get_ensureType( PROPERTY_ACTIVE_CONNECTION, xForeignConnection );
+    rArguments.get_ensureType( PROPERTY_UPDATE_CATALOGNAME, aCatalogName );
+    rArguments.get_ensureType( PROPERTY_UPDATE_SCHEMANAME, aSchemaName );
+    rArguments.get_ensureType( PROPERTY_UPDATE_TABLENAME, aTableName );
+    rArguments.get_ensureType( PROPERTY_ESCAPE_PROCESSING, bEscapeProcessing );
     rArguments.get_ensureType( "Frame", xFrame );
-    rArguments.get_ensureType( OUString(PROPERTY_SHOWMENU), m_bShowMenu );
+    rArguments.get_ensureType( PROPERTY_SHOWMENU, m_bShowMenu );
 
     // disable the browser if either of ShowTreeViewButton (compatibility name) or EnableBrowser
     // is present and set to FALSE
     bool bDisableBrowser =  !rArguments.getOrDefault( "ShowTreeViewButton", sal_True )   // compatibility name
-                            ||  !rArguments.getOrDefault( OUString(PROPERTY_ENABLE_BROWSER), sal_True );
+                            ||  !rArguments.getOrDefault( PROPERTY_ENABLE_BROWSER, sal_True );
     OSL_ENSURE( !rArguments.has( "ShowTreeViewButton" ),
         "SbaTableQueryBrowser::impl_initialize: ShowTreeViewButton is superseded by EnableBrowser!" );
     m_bEnableBrowser = !bDisableBrowser;
@@ -3116,7 +3113,7 @@ void SbaTableQueryBrowser::impl_initialize()
     // hide the tree view it is disabled in general, or if the settings tell to hide it initially
     bool bHideTreeView =    ( !m_bEnableBrowser )
                             ||  !rArguments.getOrDefault( "ShowTreeView", sal_True )  // compatibility name
-                            ||  !rArguments.getOrDefault( OUString(PROPERTY_SHOW_BROWSER), sal_True );
+                            ||  !rArguments.getOrDefault( PROPERTY_SHOW_BROWSER, sal_True );
     OSL_ENSURE( !rArguments.has( "ShowTreeView" ),
         "SbaTableQueryBrowser::impl_initialize: ShowTreeView is superseded by ShowBrowser!" );
 
@@ -3287,7 +3284,7 @@ bool SbaTableQueryBrowser::ensureConnection(SvTreeListEntry* _pAnyEntry, SharedC
     DBTreeListUserData* pDSData =
                 pDSEntry
             ?   static_cast<DBTreeListUserData*>(pDSEntry->GetUserData())
-            :   NULL;
+            :   nullptr;
 
     return ensureConnection( pDSEntry, pDSData, _rConnection );
 }
@@ -3307,7 +3304,7 @@ bool SbaTableQueryBrowser::getExistentConnectionFor( SvTreeListEntry* _pAnyEntry
     DBTreeListUserData* pDSData =
                 pDSEntry
             ?   static_cast< DBTreeListUserData* >( pDSEntry->GetUserData() )
-            :   NULL;
+            :   nullptr;
     if ( pDSData )
         _rConnection = pDSData->xConnection;
     return _rConnection.is();
@@ -3342,7 +3339,7 @@ bool SbaTableQueryBrowser::ensureConnection( SvTreeListEntry* _pDSEntry, void* p
 
             // connect
             _rConnection.reset(
-                connect( getDataSourceAcessor( _pDSEntry ), sConnectingContext, NULL ),
+                connect( getDataSourceAcessor( _pDSEntry ), sConnectingContext, nullptr ),
                 SharedConnection::TakeOwnership
             );
 
@@ -3438,13 +3435,13 @@ void SbaTableQueryBrowser::implAdministrate( SvTreeListEntry* _pApplyTo )
         if (pTopLevelSelected)
             sInitialSelection = getDataSourceAcessor( pTopLevelSelected );
 
-        Reference< XDataSource > xDataSource( getDataSourceByName( sInitialSelection, getView(), getORB(), NULL ) );
+        Reference< XDataSource > xDataSource( getDataSourceByName( sInitialSelection, getView(), getORB(), nullptr ) );
         Reference< XModel > xDocumentModel( getDataSourceOrModel( xDataSource ), UNO_QUERY );
 
         if ( xDocumentModel.is() )
         {
             Reference< XInteractionHandler2 > xInteractionHandler(
-                InteractionHandler::createWithParent(getORB(), 0) );
+                InteractionHandler::createWithParent(getORB(), nullptr) );
 
             ::comphelper::NamedValueCollection aLoadArgs;
             aLoadArgs.put( "Model", xDocumentModel );
@@ -3456,7 +3453,7 @@ void SbaTableQueryBrowser::implAdministrate( SvTreeListEntry* _pApplyTo )
 
             xFrameLoader->loadComponentFromURL(
                 xDocumentModel->getURL(),
-                OUString("_default"),
+                "_default",
                 nFrameSearchFlag,
                 aLoadArgPV
             );
@@ -3484,7 +3481,7 @@ PopupMenu* SbaTableQueryBrowser::getContextMenu( Control& _rControl ) const
     OSL_PRECOND( &m_pTreeView->getListBox() == &_rControl,
         "SbaTableQueryBrowser::getContextMenu: where does this come from?" );
     if ( &m_pTreeView->getListBox() != &_rControl )
-        return NULL;
+        return nullptr;
 
     return new PopupMenu( ModuleRes( MENU_BROWSER_DEFAULTCONTEXT ) );
 }
@@ -3511,7 +3508,7 @@ Any SbaTableQueryBrowser::getCurrentSelection( Control& _rControl ) const
     if ( !pSelected )
         return Any();
 
-    OSL_ENSURE( m_pTreeView->getListBox().NextSelected( pSelected ) == NULL,
+    OSL_ENSURE( m_pTreeView->getListBox().NextSelected( pSelected ) == nullptr,
         "SbaTableQueryBrowser::getCurrentSelection: single-selection is expected here!" );
 
     NamedDatabaseObject aSelectedObject;
@@ -3629,7 +3626,7 @@ void SbaTableQueryBrowser::loadMenu(const Reference< XFrame >& _xFrame)
         if ( xLayoutManager.is() )
         {
             xLayoutManager->lock();
-            xLayoutManager->createElement( OUString( "private:resource/toolbar/toolbar" ));
+            xLayoutManager->createElement( "private:resource/toolbar/toolbar" );
             xLayoutManager->unlock();
             xLayoutManager->doLayout();
         }
@@ -3679,8 +3676,8 @@ bool SbaTableQueryBrowser::preReloadForm()
         extractDescriptorProps(aDesc, sDataSource, sCommand, nCommandType, bEscapeProcessing);
         if ( !sDataSource.isEmpty() && !sCommand.isEmpty() && (-1 != nCommandType) )
         {
-            SvTreeListEntry* pDataSource = NULL;
-            SvTreeListEntry* pCommandType = NULL;
+            SvTreeListEntry* pDataSource = nullptr;
+            SvTreeListEntry* pCommandType = nullptr;
             m_pCurrentlyDisplayed = getObjectEntry( sDataSource, sCommand, nCommandType, &pDataSource, &pCommandType, true, SharedConnection() );
             bIni = true;
         }
@@ -3740,7 +3737,7 @@ void SAL_CALL SbaTableQueryBrowser::registeredDatabaseLocation( const DatabaseRe
 void SbaTableQueryBrowser::impl_cleanupDataSourceEntry( const OUString& _rDataSourceName )
 {
     // get the top-level representing the removed data source
-    SvTreeListEntry* pDataSourceEntry = m_pTreeView->getListBox().FirstChild( NULL );
+    SvTreeListEntry* pDataSourceEntry = m_pTreeView->getListBox().FirstChild( nullptr );
     while ( pDataSourceEntry )
     {
         if ( m_pTreeView->getListBox().GetEntryText( pDataSourceEntry ) == _rDataSourceName )
@@ -3761,7 +3758,7 @@ void SbaTableQueryBrowser::impl_cleanupDataSourceEntry( const OUString& _rDataSo
     }
     else
         OSL_ENSURE(
-                ( NULL == m_pCurrentlyDisplayed )
+                ( nullptr == m_pCurrentlyDisplayed )
             ||  ( m_pTreeView->getListBox().GetRootLevelParent( m_pCurrentlyDisplayed ) != pDataSourceEntry ),
             "SbaTableQueryBrowser::impl_cleanupDataSourceEntry: inconsistence (2)!");
 
@@ -3775,13 +3772,13 @@ void SbaTableQueryBrowser::impl_cleanupDataSourceEntry( const OUString& _rDataSo
     {
         SvTreeListEntry* pEntry = (*it).get();
         const DBTreeListUserData* pData = static_cast<const DBTreeListUserData*>(pEntry->GetUserData());
-        pEntry->SetUserData(NULL);
+        pEntry->SetUserData(nullptr);
         delete pData;
     }
 
     // remove the entry
     DBTreeListUserData* pData = static_cast< DBTreeListUserData* >( pDataSourceEntry->GetUserData() );
-    pDataSourceEntry->SetUserData( NULL );
+    pDataSourceEntry->SetUserData( nullptr );
     delete pData;
     m_pTreeModel->Remove( pDataSourceEntry );
 }

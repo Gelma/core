@@ -16,10 +16,11 @@
  *   except in compliance with the License. You may obtain a copy of
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
-#include <unotools/unotoolsdllapi.h>
 
 #ifndef INCLUDED_UNOTOOLS_TEXTSEARCH_HXX
 #define INCLUDED_UNOTOOLS_TEXTSEARCH_HXX
+
+#include <unotools/unotoolsdllapi.h>
 #include <i18nlangtag/lang.h>
 #include <rtl/ustring.hxx>
 #include <com/sun/star/uno/Reference.h>
@@ -104,14 +105,14 @@ public:
 
 class UNOTOOLS_DLLPUBLIC TextSearch
 {
-    static ::com::sun::star::uno::Reference< ::com::sun::star::util::XTextSearch >
-        getXTextSearch( const ::com::sun::star::util::SearchOptions& rPara );
+    static css::uno::Reference< css::util::XTextSearch >
+        getXTextSearch( const css::util::SearchOptions& rPara );
 
-    com::sun::star::uno::Reference < com::sun::star::util::XTextSearch >
+    css::uno::Reference < css::util::XTextSearch >
             xTextSearch;
 
     void Init( const SearchParam & rParam,
-               const ::com::sun::star::lang::Locale& rLocale );
+               const css::lang::Locale& rLocale );
 
 public:
     // rText is the string being searched for
@@ -119,7 +120,7 @@ public:
     TextSearch( const SearchParam & rPara, LanguageType nLanguage );
     TextSearch( const SearchParam & rPara, const CharClass& rCClass );
 
-    TextSearch( const ::com::sun::star::util::SearchOptions& rPara );
+    TextSearch( const css::util::SearchOptions& rPara );
     ~TextSearch();
 
     /* search in the (selected) text the search string:
@@ -143,16 +144,16 @@ public:
     */
     bool SearchForward( const OUString &rStr,
                         sal_Int32* pStart, sal_Int32* pEnd,
-                        ::com::sun::star::util::SearchResult* pRes = 0 );
+                        css::util::SearchResult* pRes = nullptr );
     bool SearchBackward( const OUString &rStr,
                         sal_Int32* pStart, sal_Int32* pEnd,
-                        ::com::sun::star::util::SearchResult* pRes = 0 );
+                        css::util::SearchResult* pRes = nullptr );
 
-    void SetLocale( const ::com::sun::star::util::SearchOptions& rOpt,
-                    const ::com::sun::star::lang::Locale& rLocale );
+    void SetLocale( const css::util::SearchOptions& rOpt,
+                    const css::lang::Locale& rLocale );
 
     /* replace back references in the replace string by the sub expressions from the search result */
-    void ReplaceBackReferences( OUString& rReplaceStr, const OUString &rStr, const ::com::sun::star::util::SearchResult& rResult );
+    void ReplaceBackReferences( OUString& rReplaceStr, const OUString &rStr, const css::util::SearchResult& rResult );
 
 };
 

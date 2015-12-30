@@ -45,7 +45,7 @@ using namespace std;
 extern "C" SAL_DLLPUBLIC_EXPORT void* SAL_CALL analysis_component_getFactory(
     const sal_Char* pImplName, void* pServiceManager, void* /*pRegistryKey*/ )
 {
-    void* pRet = 0;
+    void* pRet = nullptr;
 
     if( pServiceManager && OUString::createFromAscii( pImplName ) == AnalysisAddIn::getImplementationName_Static() )
     {
@@ -86,7 +86,7 @@ OUString AnalysisAddIn::GetDisplFuncStr( sal_uInt16 nFuncNum ) throw( uno::Runti
 class AnalysisResourcePublisher : public Resource
 {
 public:
-                    AnalysisResourcePublisher( const AnalysisResId& rId ) : Resource( rId ) {}
+    explicit        AnalysisResourcePublisher( const AnalysisResId& rId ) : Resource( rId ) {}
     bool            IsAvailableRes( const ResId& rId ) const { return Resource::IsAvailableRes( rId ); }
     void            FreeResource() { Resource::FreeResource(); }
 };
@@ -134,22 +134,22 @@ void AnalysisAddIn::InitData()
     }
     else
     {
-        pFD = NULL;
+        pFD = nullptr;
     }
 
     if( pDefLocales )
     {
         delete pDefLocales;
-        pDefLocales = NULL;
+        pDefLocales = nullptr;
     }
 }
 
 AnalysisAddIn::AnalysisAddIn( const uno::Reference< uno::XComponentContext >& xContext ) :
-    pDefLocales( NULL ),
-    pFD( NULL ),
-    pFactDoubles( NULL ),
-    pCDL( NULL ),
-    pResMgr( NULL ),
+    pDefLocales( nullptr ),
+    pFD( nullptr ),
+    pFactDoubles( nullptr ),
+    pCDL( nullptr ),
+    pResMgr( nullptr ),
     aAnyConv( xContext )
 {
 }
@@ -289,7 +289,13 @@ OUString SAL_CALL AnalysisAddIn::getDisplayFunctionName( const OUString& aProgra
     {
         aRet = GetDisplFuncStr( it->GetUINameID() );
         if( it->IsDouble() )
-            aRet += "_ADD";
+        {
+            const OUString& rSuffix = it->GetSuffix();
+            if (!rSuffix.isEmpty())
+                aRet += rSuffix;
+            else
+                aRet += "_ADD";
+        }
     }
     else
     {

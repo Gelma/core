@@ -27,14 +27,14 @@
 using namespace com::sun::star;
 using namespace com::sun::star::uno;
 
-SwSmartTagMgr* SwSmartTagMgr::mpTheSwSmartTagMgr = 0;
+SwSmartTagMgr* SwSmartTagMgr::mpTheSwSmartTagMgr = nullptr;
 
 SwSmartTagMgr& SwSmartTagMgr::Get()
 {
     if ( !mpTheSwSmartTagMgr )
     {
         mpTheSwSmartTagMgr = new SwSmartTagMgr( SwDocShell::Factory().GetModuleName() );
-        mpTheSwSmartTagMgr->Init(OUString("Writer"));
+        mpTheSwSmartTagMgr->Init("Writer");
     }
     return *mpTheSwSmartTagMgr;
 }

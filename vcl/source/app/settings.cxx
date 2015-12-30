@@ -42,6 +42,7 @@
 #include <vcl/event.hxx>
 #include <vcl/settings.hxx>
 #include <vcl/i18nhelp.hxx>
+#include <vcl/implimagetree.hxx>
 #include <vcl/configsettings.hxx>
 #include <vcl/gradient.hxx>
 #include <vcl/outdev.hxx>
@@ -56,7 +57,6 @@
 using namespace ::com::sun::star;
 
 #include "svdata.hxx"
-#include "impimagetree.hxx"
 
 struct ImplMouseData
 {
@@ -194,7 +194,6 @@ struct ImplStyleData
     bool                            mbPrimaryButtonWarpsSlider;
     DialogStyle                     maDialogStyle;
     FrameStyle                      maFrameStyle;
-    const void*                     mpFontOptions;
 
     sal_uInt16                      mnEdgeBlending;
     Color                           maEdgeBlendingTopLeftColor;
@@ -549,7 +548,6 @@ ImplStyleData::ImplStyleData() :
     mbAutoMnemonic              = true;
     mnToolbarIconSize           = ToolbarIconSize::Unknown;
     meUseImagesInMenus          = TRISTATE_INDET;
-    mpFontOptions              = NULL;
     mnEdgeBlending = 35;
     maEdgeBlendingTopLeftColor = RGB_COLORDATA(0xC0, 0xC0, 0xC0);
     maEdgeBlendingBottomRightColor = RGB_COLORDATA(0x40, 0x40, 0x40);
@@ -670,7 +668,6 @@ ImplStyleData::ImplStyleData( const ImplStyleData& rData ) :
     mnToolbarIconSize           = rData.mnToolbarIconSize;
     mIconThemeScanner.reset(new vcl::IconThemeScanner(*rData.mIconThemeScanner));
     mIconThemeSelector.reset(new vcl::IconThemeSelector(*rData.mIconThemeSelector));
-    mpFontOptions               = rData.mpFontOptions;
     mnEdgeBlending              = rData.mnEdgeBlending;
     maEdgeBlendingTopLeftColor  = rData.maEdgeBlendingTopLeftColor;
     maEdgeBlendingBottomRightColor = rData.maEdgeBlendingBottomRightColor;
@@ -1546,19 +1543,6 @@ StyleSettings::GetPrimaryButtonWarpsSlider() const
 }
 
 void
-StyleSettings::SetCairoFontOptions( const void *pOptions )
-{
-    CopyData();
-    mxData->mpFontOptions = pOptions;
-}
-
-const void*
-StyleSettings::GetCairoFontOptions() const
-{
-    return mxData->mpFontOptions;
-}
-
-void
 StyleSettings::SetAppFont( const vcl::Font& rFont )
 {
     CopyData();
@@ -2422,7 +2406,7 @@ ImplMiscData::ImplMiscData()
     mnEnableATT                 = TRISTATE_INDET;
     mnDisablePrinting           = TRISTATE_INDET;
     static const char* pEnv = getenv("SAL_DECIMALSEP_ENABLED" ); // set default without UI
-    mbEnableLocalizedDecimalSep = (pEnv != NULL);
+    mbEnableLocalizedDecimalSep = (pEnv != nullptr);
     // Should we display any windows?
     mbPseudoHeadless = getenv("VCL_HIDE_WINDOWS") || comphelper::LibreOfficeKit::isActive();
 }
@@ -2477,8 +2461,8 @@ bool MiscSettings::GetDisablePrinting() const
     {
         OUString aEnable =
             vcl::SettingsConfigItem::get()->
-            getValue( OUString( "DesktopManagement"  ),
-                      OUString( "DisablePrinting"  ) );
+            getValue( "DesktopManagement",
+                      "DisablePrinting" );
         mxData->mnDisablePrinting = aEnable.equalsIgnoreAsciiCase("true") ? TRISTATE_TRUE : TRISTATE_FALSE;
     }
 
@@ -2543,8 +2527,8 @@ bool MiscSettings::GetEnableATToolSupport() const
         {
             OUString aEnable =
                 vcl::SettingsConfigItem::get()->
-                getValue( OUString( "Accessibility"  ),
-                          OUString( "EnableATToolSupport"  ) );
+                getValue( "Accessibility",
+                          "EnableATToolSupport" );
             mxData->mnEnableATT = aEnable.equalsIgnoreAsciiCase("true") ? TRISTATE_TRUE : TRISTATE_FALSE;
         }
         else
@@ -2707,10 +2691,10 @@ ImplAllSettingsData::ImplAllSettingsData()
 {
     mnWindowUpdate              = AllSettingsFlags::MOUSE | AllSettingsFlags::STYLE |
                                   AllSettingsFlags::MISC | AllSettingsFlags::LOCALE;
-    mpLocaleDataWrapper         = NULL;
-    mpUILocaleDataWrapper       = NULL;
-    mpI18nHelper                = NULL;
-    mpUII18nHelper              = NULL;
+    mpLocaleDataWrapper         = nullptr;
+    mpUILocaleDataWrapper       = nullptr;
+    mpI18nHelper                = nullptr;
+    mpUII18nHelper              = nullptr;
     if (!utl::ConfigManager::IsAvoidConfig())
         maMiscSettings.SetEnableLocalizedDecimalSep( maSysLocale.GetOptions().IsDecimalSeparatorAsLocale() );
 }
@@ -2727,10 +2711,10 @@ ImplAllSettingsData::ImplAllSettingsData( const ImplAllSettingsData& rData ) :
     // Pointer couldn't shared and objects haven't a copy ctor
     // So we create the cache objects new, if the GetFunction is
     // called
-    mpLocaleDataWrapper         = NULL;
-    mpUILocaleDataWrapper       = NULL;
-    mpI18nHelper                = NULL;
-    mpUII18nHelper              = NULL;
+    mpLocaleDataWrapper         = nullptr;
+    mpUILocaleDataWrapper       = nullptr;
+    mpI18nHelper                = nullptr;
+    mpUII18nHelper              = nullptr;
 }
 
 ImplAllSettingsData::~ImplAllSettingsData()
@@ -2857,12 +2841,12 @@ void AllSettings::SetLanguageTag( const LanguageTag& rLanguageTag )
         if ( mxData->mpLocaleDataWrapper )
         {
             delete mxData->mpLocaleDataWrapper;
-            mxData->mpLocaleDataWrapper = NULL;
+            mxData->mpLocaleDataWrapper = nullptr;
         }
         if ( mxData->mpI18nHelper )
         {
             delete mxData->mpI18nHelper;
-            mxData->mpI18nHelper = NULL;
+            mxData->mpI18nHelper = nullptr;
         }
     }
 }
@@ -2885,11 +2869,11 @@ namespace
             nUIMirroring = 0; // ask configuration only once
             utl::OConfigurationNode aNode = utl::OConfigurationTreeRoot::tryCreateWithComponentContext(
                 comphelper::getProcessComponentContext(),
-                OUString("org.openoffice.Office.Common/I18N/CTL") );    // note: case sensitive !
+                "org.openoffice.Office.Common/I18N/CTL" );    // note: case sensitive !
             if ( aNode.isValid() )
             {
                 bool bTmp = bool();
-                ::com::sun::star::uno::Any aValue = aNode.getNodeValue( OUString("UIMirroring") );
+                css::uno::Any aValue = aNode.getNodeValue( OUString("UIMirroring") );
                 if( aValue >>= bTmp )
                 {
                     // found true or false; if it was nil, nothing is changed

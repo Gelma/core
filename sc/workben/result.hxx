@@ -22,22 +22,20 @@
 
 #include <vcl/timer.hxx>
 #include <rtl/ustring.hxx>
-#include <boost/ptr_container/ptr_vector.hpp>
 
 #include <com/sun/star/sheet/XVolatileResult.hpp>
 
 #include <cppuhelper/implbase.hxx>
 
-typedef ::com::sun::star::uno::Reference< ::com::sun::star::sheet::XResultListener >* XResultListenerPtr;
-typedef boost::ptr_vector<XResultListenerPtr> XResultListenerArr_Impl;
+#include <vector>
 
-class ScAddInResult : public cppu::WeakImplHelper<
-                                com::sun::star::sheet::XVolatileResult>
+class ScAddInResult : public cppu::WeakImplHelper< css::sheet::XVolatileResult>
 {
 private:
     String                  aArg;
     long                    nTickCount;
-    XResultListenerArr_Impl aListeners;
+    std::vector<css::uno::Reference<css::sheet::XResultListener>>
+                            m_Listeners;
     Timer                   aTimer;
 
     DECL_LINK( TimeoutHdl, Timer* );
@@ -45,12 +43,12 @@ private:
     void                    NewValue();
 
 public:
-                            ScAddInResult(const String& rStr);
+    explicit                ScAddInResult(const String& rStr);
     virtual                 ~ScAddInResult();
 
                             // XVolatileResult
-    virtual void SAL_CALL addResultListener( const ::com::sun::star::uno::Reference< ::com::sun::star::sheet::XResultListener >& aListener ) throw(::com::sun::star::uno::RuntimeException);
-    virtual void SAL_CALL removeResultListener( const ::com::sun::star::uno::Reference< ::com::sun::star::sheet::XResultListener >& aListener ) throw(::com::sun::star::uno::RuntimeException);
+    virtual void SAL_CALL addResultListener( const css::uno::Reference< css::sheet::XResultListener >& aListener ) throw(css::uno::RuntimeException);
+    virtual void SAL_CALL removeResultListener( const css::uno::Reference< css::sheet::XResultListener >& aListener ) throw(css::uno::RuntimeException);
 };
 
 #endif

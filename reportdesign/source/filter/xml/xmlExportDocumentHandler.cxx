@@ -85,7 +85,7 @@ ExportDocumentHandler::~ExportDocumentHandler()
 {
     if ( m_xProxy.is() )
     {
-        m_xProxy->setDelegator( NULL );
+        m_xProxy->setDelegator( nullptr );
         m_xProxy.clear();
     }
 }
@@ -118,8 +118,7 @@ OUString ExportDocumentHandler::getImplementationName_Static(  ) throw(uno::Runt
 
 uno::Sequence< OUString > ExportDocumentHandler::getSupportedServiceNames_static(  ) throw(uno::RuntimeException)
 {
-    uno::Sequence< OUString > aSupported(1);
-    aSupported[0] = "com.sun.star.report.ExportDocumentHandler";
+    uno::Sequence< OUString > aSupported { "com.sun.star.report.ExportDocumentHandler" };
     return aSupported;
 }
 
@@ -174,10 +173,10 @@ void SAL_CALL ExportDocumentHandler::startElement(const OUString & _sName, const
         m_xDelegatee->startElement(lcl_createAttribute(XML_NP_OFFICE,XML_REPORT),xNewAttribs);
 
         const OUString sTableCalc = lcl_createAttribute(XML_NP_TABLE,XML_CALCULATION_SETTINGS);
-        m_xDelegatee->startElement(sTableCalc,NULL);
+        m_xDelegatee->startElement(sTableCalc,nullptr);
         pList = new SvXMLAttributeList();
         uno::Reference< xml::sax::XAttributeList > xNullAttr = pList;
-        pList->AddAttribute(lcl_createAttribute(XML_NP_TABLE,XML_DATE_VALUE),OUString("1899-12-30"));
+        pList->AddAttribute(lcl_createAttribute(XML_NP_TABLE,XML_DATE_VALUE),"1899-12-30");
 
         const OUString sNullDate = lcl_createAttribute(XML_NP_TABLE,XML_NULL_DATE);
         m_xDelegatee->startElement(sNullDate,xNullAttr);
@@ -187,7 +186,7 @@ void SAL_CALL ExportDocumentHandler::startElement(const OUString & _sName, const
     }
     else if ( _sName == "table:table" )
     {
-        m_xDelegatee->startElement(lcl_createAttribute(XML_NP_RPT,XML_DETAIL),NULL);
+        m_xDelegatee->startElement(lcl_createAttribute(XML_NP_RPT,XML_DETAIL),nullptr);
         lcl_exportPrettyPrinting(m_xDelegatee);
     }
     else if ( _sName == "table:table-header-rows" )
@@ -211,7 +210,7 @@ void SAL_CALL ExportDocumentHandler::startElement(const OUString & _sName, const
     else if ( _sName == "chart:plot-area" )
     {
         SvXMLAttributeList* pList = SvXMLAttributeList::getImplementation(xAttribs);
-        pList->RemoveAttribute(OUString("table:cell-range-address"));
+        pList->RemoveAttribute("table:cell-range-address");
     }
     else if ( _sName == "chart:categories" )
     {
@@ -362,7 +361,7 @@ uno::Sequence< uno::Type > SAL_CALL ExportDocumentHandler::getTypes(  ) throw (u
 void ExportDocumentHandler::exportTableRows()
 {
     const OUString sRow( lcl_createAttribute(XML_NP_TABLE, XML_TABLE_ROW) );
-    m_xDelegatee->startElement(sRow,NULL);
+    m_xDelegatee->startElement(sRow,nullptr);
 
     const OUString sValueType( lcl_createAttribute(XML_NP_OFFICE, XML_VALUE_TYPE) );
 
@@ -396,7 +395,7 @@ void ExportDocumentHandler::exportTableRows()
                 pCellAtt->RemoveAttribute(sValueType);
                 pCellAtt->AddAttribute(sValueType,s_sFloat);
             }
-            m_xDelegatee->startElement(sP,NULL);
+            m_xDelegatee->startElement(sP,nullptr);
             m_xDelegatee->endElement(sP);
             m_xDelegatee->endElement(sCell);
         }
@@ -417,10 +416,10 @@ void ExportDocumentHandler::exportTableRows()
             pCellAtt->RemoveAttribute(sValueType);
             pCellAtt->AddAttribute(sValueType,s_sFloat);
         }
-        m_xDelegatee->startElement(sP,NULL);
+        m_xDelegatee->startElement(sP,nullptr);
         m_xDelegatee->startElement(sFtext,xAttribs);
-        m_xDelegatee->startElement(sRElement,NULL);
-        m_xDelegatee->startElement(sRComponent,NULL);
+        m_xDelegatee->startElement(sRElement,nullptr);
+        m_xDelegatee->startElement(sRComponent,nullptr);
 
         m_xDelegatee->endElement(sRComponent);
         m_xDelegatee->endElement(sRElement);

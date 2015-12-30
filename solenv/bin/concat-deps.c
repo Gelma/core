@@ -33,9 +33,7 @@
 #define CORE_LITTLE_ENDIAN
 #endif /* Def _MSC_VER */
 
-#if defined(__linux) || defined(__OpenBSD__) || \
-    defined(__FreeBSD__) || defined(__NetBSD__) || \
-    defined(__DragonFly__) || defined(__FreeBSD_kernel__)
+#if defined(__linux) || defined(__FreeBSD_kernel__)
 #include <sys/param.h>
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 #undef CORE_BIG_ENDIAN
@@ -46,7 +44,21 @@
 #undef CORE_LITTLE_ENDIAN
 #endif /* __BYTE_ORDER == __BIG_ENDIAN */
 #endif /* !(__BYTE_ORDER == __LITTLE_ENDIAN) */
-#endif /* Def __linux || Def *BSD */
+#endif /* Def __linux */
+
+#if defined(__OpenBSD__) || defined(__FreeBSD__) || \
+    defined(__NetBSD__) || defined(__DragonFly__)
+#include <machine/endian.h>
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+#undef CORE_BIG_ENDIAN
+#define CORE_LITTLE_ENDIAN
+#else /* !(_BYTE_ORDER == _LITTLE_ENDIAN) */
+#if _BYTE_ORDER == _BIG_ENDIAN
+#define CORE_BIG_ENDIAN
+#undef CORE_LITTLE_ENDIAN
+#endif /* _BYTE_ORDER == _BIG_ENDIAN */
+#endif /* !(_BYTE_ORDER == _LITTLE_ENDIAN) */
+#endif /* Def *BSD */
 
 #ifdef __sun
 #ifdef __sparc
@@ -773,7 +785,7 @@ static inline void print_fullpaths(char* line)
     char* end;
     int boost_count = 0;
     int token_len;
-    const char * unpacked_end = 0; /* end of UnpackedTarget match (if any) */
+    const char * unpacked_end = NULL; /* end of UnpackedTarget match (if any) */
     /* for UnpackedTarget the target is GenC{,xx}Object, don't mangle! */
     int target_seen = 0;
 
@@ -815,7 +827,7 @@ static inline void print_fullpaths(char* line)
                 {
                     emit_unpacked_target(token, unpacked_end);
                 }
-                unpacked_end = 0;
+                unpacked_end = NULL;
             }
         }
         else
@@ -1111,7 +1123,7 @@ off_t in_list_size = 0;
 char* in_list;
 char* in_list_cursor;
 char* in_list_base;
-struct hash* dep_hash = 0;
+struct hash* dep_hash = NULL;
 const char *env_str;
 
     if(argc < 2)

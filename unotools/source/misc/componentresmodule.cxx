@@ -38,12 +38,12 @@ namespace utl
         bool            m_bInitialized;
         OString  m_sResFilePrefix;
 
-        OComponentResModuleImpl(const OComponentResModuleImpl&) SAL_DELETED_FUNCTION;
-        OComponentResModuleImpl& operator=(const OComponentResModuleImpl&) SAL_DELETED_FUNCTION;
+        OComponentResModuleImpl(const OComponentResModuleImpl&) = delete;
+        OComponentResModuleImpl& operator=(const OComponentResModuleImpl&) = delete;
 
     public:
         explicit OComponentResModuleImpl( const OString& _rResFilePrefix )
-            :m_pResources( NULL )
+            :m_pResources( nullptr )
             ,m_bInitialized( false )
             ,m_sResFilePrefix( _rResFilePrefix )
         {
@@ -65,7 +65,7 @@ namespace utl
 
     void OComponentResModuleImpl::freeResManager()
     {
-        delete m_pResources, m_pResources = NULL;
+        delete m_pResources, m_pResources = nullptr;
         m_bInitialized = false;
     }
 
@@ -103,11 +103,6 @@ namespace utl
     {
         ::osl::MutexGuard aGuard( m_aMutex );
         return m_pImpl->getResManager();
-    }
-
-    void OComponentResourceModule::onFirstClient()
-    {
-        BaseClass::onFirstClient();
     }
 
     void OComponentResourceModule::onLastClient()

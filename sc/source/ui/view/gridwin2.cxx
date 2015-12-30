@@ -55,8 +55,6 @@ using css::sheet::DataPilotFieldOrientation;
 using std::vector;
 using std::unique_ptr;
 
-// STATIC DATA -----------------------------------------------------------
-
 DataPilotFieldOrientation ScGridWindow::GetDPFieldOrientation( SCCOL nCol, SCROW nRow ) const
 {
     ScDocument* pDoc = pViewData->GetDocument();
@@ -390,7 +388,7 @@ public:
     explicit DPFieldPopupOKAction(ScGridWindow* p) :
         mpGridWindow(p) {}
 
-    virtual void execute() SAL_OVERRIDE
+    virtual void execute() override
     {
         mpGridWindow->UpdateDPFromFieldPopupMenu();
     }
@@ -406,7 +404,7 @@ public:
     explicit PopupSortAction(const ScAddress& rPos, SortType eType, sal_uInt16 nUserListIndex, ScTabViewShell* pViewShell) :
         maPos(rPos), meType(eType), mnUserListIndex(nUserListIndex), mpViewShell(pViewShell) {}
 
-    virtual void execute() SAL_OVERRIDE
+    virtual void execute() override
     {
         switch (meType)
         {
@@ -1063,7 +1061,7 @@ void ScGridWindow::PagebreakMove( const MouseEvent& rMEvt, bool bUp )
             else if (!bHide)
                 aNewRanges = aPagebreakDrag.Format(SCA_VALID);
 
-            pViewFunc->SetPrintRanges( rDoc.IsPrintEntireSheet( nTab ), &aNewRanges, NULL, NULL, false );
+            pViewFunc->SetPrintRanges( rDoc.IsPrintEntireSheet( nTab ), &aNewRanges, nullptr, nullptr, false );
         }
     }
 

@@ -91,14 +91,13 @@ css::uno::Sequence< OUString > SAL_CALL PopupMenuDispatcher::getSupportedService
 
 css::uno::Sequence< OUString > PopupMenuDispatcher::impl_getStaticSupportedServiceNames()
 {
-    css::uno::Sequence< OUString > seqServiceNames( 1 );
-    seqServiceNames.getArray() [0] = SERVICENAME_PROTOCOLHANDLER;
+    css::uno::Sequence<OUString> seqServiceNames { SERVICENAME_PROTOCOLHANDLER };
     return seqServiceNames;
 }
 
 OUString PopupMenuDispatcher::impl_getStaticImplementationName()
 {
-    return IMPLEMENTATIONNAME_POPUPMENUDISPATCHER;
+    return OUString(IMPLEMENTATIONNAME_POPUPMENUDISPATCHER);
 }
 
 css::uno::Reference< css::uno::XInterface >
@@ -297,7 +296,7 @@ void SAL_CALL PopupMenuDispatcher::disposing( const EventObject& ) throw( Runtim
         }
 
         // Forget our factory.
-        m_xContext = uno::Reference< XComponentContext >();
+        m_xContext.clear();
     }
 }
 
@@ -315,7 +314,7 @@ void PopupMenuDispatcher::impl_RetrievePopupControllerQuery()
             {
                 try
                 {
-                    xPropSet->getPropertyValue( FRAME_PROPNAME_LAYOUTMANAGER ) >>= xLayoutManager;
+                    xPropSet->getPropertyValue( FRAME_PROPNAME_ASCII_LAYOUTMANAGER ) >>= xLayoutManager;
 
                     if ( xLayoutManager.is() )
                     {
@@ -323,8 +322,7 @@ void PopupMenuDispatcher::impl_RetrievePopupControllerQuery()
                         OUString aMenuBar( "private:resource/menubar/menubar" );
                         xMenuBar = xLayoutManager->getElement( aMenuBar );
 
-                        m_xPopupCtrlQuery = css::uno::Reference< css::container::XNameAccess >(
-                                                xMenuBar, css::uno::UNO_QUERY );
+                        m_xPopupCtrlQuery.set( xMenuBar, css::uno::UNO_QUERY );
                     }
                 }
                 catch ( const css::uno::RuntimeException& )

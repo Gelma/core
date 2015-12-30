@@ -59,10 +59,10 @@ using namespace ::com::sun::star;
 
 sal_uInt16 SwNumRule::mnRefCount = 0;
 SwNumFormat* SwNumRule::maBaseFormats[ RULE_END ][ MAXLEVEL ] = {
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
+    {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr } };
 
 SwNumFormat* SwNumRule::maLabelAlignmentBaseFormats[ RULE_END ][ MAXLEVEL ] = {
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
+    {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr } };
 
 const sal_uInt16 SwNumRule::maDefNumIndents[ MAXLEVEL ] = {
 //inch:   0,5  1,0  1,5  2,0   2,5   3,0   3,5   4,0   4,5   5,0
@@ -87,7 +87,7 @@ const SwNumFormat& SwNumRule::Get( sal_uInt16 i ) const
 
 const SwNumFormat* SwNumRule::GetNumFormat( sal_uInt16 i ) const
 {
-    const SwNumFormat * pResult = NULL;
+    const SwNumFormat * pResult = nullptr;
 
     OSL_ASSERT( i < MAXLEVEL && meRuleType < RULE_END );
     if ( i < MAXLEVEL && meRuleType < RULE_END)
@@ -177,17 +177,17 @@ static void lcl_SetRuleChgd( SwTextNode& rNd, sal_uInt8 nLevel )
 
 SwNumFormat::SwNumFormat() :
     SvxNumberFormat(SVX_NUM_ARABIC),
-    SwClient( 0 ),
-    pVertOrient(new SwFormatVertOrient( 0, text::VertOrientation::NONE))
-    ,cGrfBulletCP(USHRT_MAX)//For i120928,record the cp info of graphic within bullet
+    SwClient( nullptr ),
+    m_pVertOrient(new SwFormatVertOrient( 0, text::VertOrientation::NONE))
+    ,m_cGrfBulletCP(USHRT_MAX)//For i120928,record the cp info of graphic within bullet
 {
 }
 
 SwNumFormat::SwNumFormat( const SwNumFormat& rFormat) :
     SvxNumberFormat(rFormat),
     SwClient( rFormat.GetRegisteredInNonConst() ),
-    pVertOrient(new SwFormatVertOrient( 0, rFormat.GetVertOrient()))
-    ,cGrfBulletCP(rFormat.cGrfBulletCP)//For i120928,record the cp info of graphic within bullet
+    m_pVertOrient(new SwFormatVertOrient( 0, rFormat.GetVertOrient()))
+    ,m_cGrfBulletCP(rFormat.m_cGrfBulletCP)//For i120928,record the cp info of graphic within bullet
 {
     sal_Int16 eMyVertOrient = rFormat.GetVertOrient();
     SetGraphicBrush( rFormat.GetBrush(), &rFormat.GetGraphicSize(),
@@ -196,8 +196,8 @@ SwNumFormat::SwNumFormat( const SwNumFormat& rFormat) :
 
 SwNumFormat::SwNumFormat(const SvxNumberFormat& rNumFormat, SwDoc* pDoc)
     : SvxNumberFormat(rNumFormat)
-    , pVertOrient(new SwFormatVertOrient( 0, rNumFormat.GetVertOrient()))
-    , cGrfBulletCP(USHRT_MAX)
+    , m_pVertOrient(new SwFormatVertOrient( 0, rNumFormat.GetVertOrient()))
+    , m_cGrfBulletCP(USHRT_MAX)
 {
     sal_Int16 eMyVertOrient = rNumFormat.GetVertOrient();
     SetGraphicBrush( rNumFormat.GetBrush(), &rNumFormat.GetGraphicSize(),
@@ -212,7 +212,7 @@ SwNumFormat::SwNumFormat(const SvxNumberFormat& rNumFormat, SwDoc* pDoc)
                                             nsSwGetPoolIdFromName::GET_POOLID_CHRFMT );
             pCFormat = nId != USHRT_MAX
                         ? pDoc->getIDocumentStylePoolAccess().GetCharFormatFromPool( nId )
-                        : pDoc->MakeCharFormat( rCharStyleName, 0 );
+                        : pDoc->MakeCharFormat( rCharStyleName, nullptr );
         }
         pCFormat->Add( this );
     }
@@ -222,7 +222,7 @@ SwNumFormat::SwNumFormat(const SvxNumberFormat& rNumFormat, SwDoc* pDoc)
 
 SwNumFormat::~SwNumFormat()
 {
-    delete pVertOrient;
+    delete m_pVertOrient;
 }
 
 // #i22362#
@@ -262,7 +262,7 @@ SwNumFormat& SwNumFormat::operator=( const SwNumFormat& rNumFormat)
     else if( GetRegisteredIn() )
         GetRegisteredInNonConst()->Remove( this );
     //For i120928,record the cp info of graphic within bullet
-    cGrfBulletCP = rNumFormat.cGrfBulletCP;
+    m_cGrfBulletCP = rNumFormat.m_cGrfBulletCP;
     return *this;
 }
 
@@ -285,7 +285,7 @@ void SwNumFormat::Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNew )
 {
     // Look for the NumRules object in the Doc where this NumFormat is set.
     // The format does not need to exist!
-    const SwCharFormat* pFormat = 0;
+    const SwCharFormat* pFormat = nullptr;
     sal_uInt16 nWhich = pOld ? pOld->Which() : pNew ? pNew->Which() : 0;
     switch( nWhich )
     {
@@ -318,7 +318,7 @@ void    SwNumFormat::SetGraphicBrush( const SvxBrushItem* pBrushItem, const Size
     const sal_Int16* pOrient)
 {
     if(pOrient)
-        pVertOrient->SetVertOrient( *pOrient );
+        m_pVertOrient->SetVertOrient( *pOrient );
     SvxNumberFormat::SetGraphicBrush( pBrushItem, pSize, pOrient);
 }
 
@@ -362,11 +362,11 @@ const SwFormatVertOrient*      SwNumFormat::GetGraphicOrientation() const
 {
     sal_Int16  eOrient = SvxNumberFormat::GetVertOrient();
     if(text::VertOrientation::NONE == eOrient)
-        return 0;
+        return nullptr;
     else
     {
-        pVertOrient->SetVertOrient(eOrient);
-        return pVertOrient;
+        m_pVertOrient->SetVertOrient(eOrient);
+        return m_pVertOrient;
     }
 }
 
@@ -376,7 +376,7 @@ SwNumRule::SwNumRule( const OUString& rNm,
                       bool bAutoFlg )
   : maTextNodeList(),
     maParagraphStyleList(),
-    mpNumRuleMap(0),
+    mpNumRuleMap(nullptr),
     msName( rNm ),
     meRuleType( eType ),
     mnPoolFormatId( USHRT_MAX ),
@@ -474,7 +474,7 @@ SwNumRule::SwNumRule( const OUString& rNm,
 SwNumRule::SwNumRule( const SwNumRule& rNumRule )
     : maTextNodeList(),
       maParagraphStyleList(),
-      mpNumRuleMap(0),
+      mpNumRuleMap(nullptr),
       msName( rNumRule.msName ),
       meRuleType( rNumRule.meRuleType ),
       mnPoolFormatId( rNumRule.GetPoolFormatId() ),
@@ -513,17 +513,17 @@ SwNumRule::~SwNumRule()
             int n;
 
             for( n = 0; n < MAXLEVEL; ++n, ++ppFormats )
-                delete *ppFormats, *ppFormats = 0;
+                delete *ppFormats, *ppFormats = nullptr;
 
             // Outline:
             for( n = 0; n < MAXLEVEL; ++n, ++ppFormats )
-                delete *ppFormats, *ppFormats = 0;
+                delete *ppFormats, *ppFormats = nullptr;
 
             ppFormats = &SwNumRule::maLabelAlignmentBaseFormats[0][0];
             for( n = 0; n < MAXLEVEL; ++n, ++ppFormats )
-                delete *ppFormats, *ppFormats = 0;
+                delete *ppFormats, *ppFormats = nullptr;
             for( n = 0; n < MAXLEVEL; ++n, ++ppFormats )
-                delete *ppFormats, *ppFormats = 0;
+                delete *ppFormats, *ppFormats = nullptr;
     }
 
     maTextNodeList.clear();
@@ -535,7 +535,7 @@ void SwNumRule::CheckCharFormats( SwDoc* pDoc )
     for( sal_uInt8 n = 0; n < MAXLEVEL; ++n )
     {
         SwCharFormat* pFormat;
-        if( maFormats[ n ] && 0 != ( pFormat = maFormats[ n ]->GetCharFormat() ) &&
+        if( maFormats[ n ] && nullptr != ( pFormat = maFormats[ n ]->GetCharFormat() ) &&
             pFormat->GetDoc() != pDoc )
         {
             // copy
@@ -619,7 +619,7 @@ void SwNumRule::Set( sal_uInt16 i, const SwNumFormat* pNumFormat )
         }
     }
     else if( !pNumFormat )
-        delete pOld, maFormats[ i ] = 0, mbInvalidRuleFlag = true;
+        delete pOld, maFormats[ i ] = nullptr, mbInvalidRuleFlag = true;
     else if( *pOld != *pNumFormat )
         *pOld = *pNumFormat, mbInvalidRuleFlag = true;
 }
@@ -629,7 +629,7 @@ OUString SwNumRule::MakeNumString( const SwNodeNum& rNum, bool bInclStrings,
 {
     if (rNum.IsCounted())
         return MakeNumString(rNum.GetNumberVector(),
-                             bInclStrings, bOnlyArabic, MAXLEVEL);
+                             bInclStrings, bOnlyArabic);
 
     return OUString();
 }
@@ -843,7 +843,7 @@ void SwNumRule::SetSvxRule(const SvxNumRule& rNumRule, SwDoc* pDoc)
     {
         const SvxNumberFormat* pSvxFormat = rNumRule.Get(n);
         delete maFormats[n];
-        maFormats[n] = pSvxFormat ? new SwNumFormat(*pSvxFormat, pDoc) : 0;
+        maFormats[n] = pSvxFormat ? new SwNumFormat(*pSvxFormat, pDoc) : nullptr;
     }
 
     mbInvalidRuleFlag = true;
@@ -861,7 +861,7 @@ SvxNumRule SwNumRule::MakeSvxNumRule() const
         SwNumFormat aNumFormat = Get(n);
         if(aNumFormat.GetCharFormat())
             aNumFormat.SetCharFormatName(aNumFormat.GetCharFormat()->GetName());
-        aRule.SetLevel(n, aNumFormat, maFormats[n] != 0);
+        aRule.SetLevel(n, aNumFormat, maFormats[n] != nullptr);
     }
     return aRule;
 }
@@ -883,8 +883,8 @@ void SwNumRule::SetInvalidRule(bool bFlag)
                 aLists.insert( pList );
             }
         }
-        std::for_each( aLists.begin(), aLists.end(),
-                       std::mem_fun( &SwList::InvalidateListTree ) );
+        for ( auto aList : aLists )
+            aList->InvalidateListTree();
     }
 
     mbInvalidRuleFlag = bFlag;
@@ -992,8 +992,8 @@ void SwNumRule::Validate()
         const SwTextNode* pTextNode = *aIter;
         aLists.insert( pTextNode->GetDoc()->getIDocumentListsAccess().getListByName( pTextNode->GetListId() ) );
     }
-    std::for_each( aLists.begin(), aLists.end(),
-                   std::mem_fun( &SwList::ValidateListTree ) );
+    for ( auto aList : aLists )
+        aList->ValidateListTree();
 
     SetInvalidRule(false);
 }
@@ -1109,8 +1109,8 @@ namespace numfunc
             void InitFont();
 
             /** catches notification about changed default bullet configuration data */
-            virtual void Notify( const uno::Sequence<OUString>& aPropertyNames ) SAL_OVERRIDE;
-            virtual void ImplCommit() SAL_OVERRIDE;
+            virtual void Notify( const uno::Sequence<OUString>& aPropertyNames ) override;
+            virtual void ImplCommit() override;
 
             // default bullet list configuration data
             OUString msFontname;
@@ -1141,7 +1141,7 @@ namespace numfunc
           mbUserDefinedFontname( false ),
           meFontWeight( WEIGHT_DONTKNOW ),
           meFontItalic( ITALIC_NONE ),
-          mpFont( 0 )
+          mpFont( nullptr )
     {
         SetToDefault();
         LoadConfig();
@@ -1318,14 +1318,14 @@ namespace numfunc
             void SetToDefault();
 
             /** returns sequence of configuration property names */
-            static com::sun::star::uno::Sequence<OUString> GetPropNames();
+            static css::uno::Sequence<OUString> GetPropNames();
 
             /** loads configuration properties and applies values to internal data */
             void LoadConfig();
 
             /** catches notification about changed configuration data */
-            virtual void Notify( const com::sun::star::uno::Sequence<OUString>& aPropertyNames ) SAL_OVERRIDE;
-            virtual void ImplCommit() SAL_OVERRIDE;
+            virtual void Notify( const css::uno::Sequence<OUString>& aPropertyNames ) override;
+            virtual void ImplCommit() override;
 
             // configuration data
             bool mbChangeIndentOnTabAtFirstPosOfFirstListItem;
@@ -1357,11 +1357,9 @@ namespace numfunc
         mbChangeIndentOnTabAtFirstPosOfFirstListItem = true;
     }
 
-    com::sun::star::uno::Sequence<OUString> SwNumberingUIBehaviorConfig::GetPropNames()
+    css::uno::Sequence<OUString> SwNumberingUIBehaviorConfig::GetPropNames()
     {
-        com::sun::star::uno::Sequence<OUString> aPropNames(1);
-        OUString* pNames = aPropNames.getArray();
-        pNames[0] = "ChangeIndentOnTabAtFirstPosOfFirstListItem";
+        css::uno::Sequence<OUString> aPropNames { "ChangeIndentOnTabAtFirstPosOfFirstListItem" };
 
         return aPropNames;
     }
@@ -1370,10 +1368,9 @@ namespace numfunc
 
     void SwNumberingUIBehaviorConfig::LoadConfig()
     {
-        com::sun::star::uno::Sequence<OUString> aPropNames = GetPropNames();
-        com::sun::star::uno::Sequence<com::sun::star::uno::Any> aValues =
-                                                    GetProperties( aPropNames );
-        const com::sun::star::uno::Any* pValues = aValues.getConstArray();
+        css::uno::Sequence<OUString> aPropNames = GetPropNames();
+        css::uno::Sequence<css::uno::Any> aValues = GetProperties( aPropNames );
+        const css::uno::Any* pValues = aValues.getConstArray();
         OSL_ENSURE( aValues.getLength() == aPropNames.getLength(),
                 "<SwNumberingUIBehaviorConfig::LoadConfig()> - GetProperties failed");
         if ( aValues.getLength() == aPropNames.getLength() )
@@ -1399,7 +1396,7 @@ namespace numfunc
         }
     }
 
-    void SwNumberingUIBehaviorConfig::Notify( const com::sun::star::uno::Sequence<OUString>& aPropertyNames )
+    void SwNumberingUIBehaviorConfig::Notify( const css::uno::Sequence<OUString>& aPropertyNames )
     {
         (void) aPropertyNames;
         SetToDefault();

@@ -191,7 +191,7 @@ void DrawViewShell::FuPermanent(SfxRequest& rReq)
         {
             if(GetOldFunction() == GetCurrentFunction())
             {
-                SetOldFunction(0);
+                SetOldFunction(nullptr);
             }
         }
 
@@ -219,7 +219,7 @@ void DrawViewShell::FuPermanent(SfxRequest& rReq)
             GetCurrentFunction()->Deactivate();
         }
 
-        SetCurrentFunction(0);
+        SetCurrentFunction(nullptr);
 
         SfxBindings& rBind = GetViewFrame()->GetBindings();
         rBind.Invalidate(nOldSId);
@@ -260,14 +260,14 @@ void DrawViewShell::FuPermanent(SfxRequest& rReq)
 
         case SID_FM_CREATE_FIELDCONTROL:
         {
-            SFX_REQUEST_ARG( rReq, pDescriptorItem, SfxUnoAnyItem, SID_FM_DATACCESS_DESCRIPTOR, false );
+            const SfxUnoAnyItem* pDescriptorItem = rReq.GetArg<SfxUnoAnyItem>(SID_FM_DATACCESS_DESCRIPTOR);
             DBG_ASSERT( pDescriptorItem, "DrawViewShell::FuPermanent(SID_FM_CREATE_FIELDCONTROL): invalid request args!" );
 
             if(pDescriptorItem)
             {
                 // get the form view
-                FmFormView* pFormView = PTR_CAST(FmFormView, mpDrawView);
-                SdrPageView* pPageView = pFormView ? pFormView->GetSdrPageView() : NULL;
+                FmFormView* pFormView = dynamic_cast<FmFormView*>( mpDrawView );
+                SdrPageView* pPageView = pFormView ? pFormView->GetSdrPageView() : nullptr;
 
                 if(pPageView)
                 {
@@ -348,7 +348,7 @@ void DrawViewShell::FuPermanent(SfxRequest& rReq)
 
                 while (i < nMarkCnt && !b3DObjMarked)
                 {
-                    if (rMarkList.GetMark(i)->GetMarkedSdrObj()->ISA(E3dObject))
+                    if (nullptr != dynamic_cast< E3dObject *>( rMarkList.GetMark(i)->GetMarkedSdrObj() ))
                     {
                         b3DObjMarked = true;
                     }
@@ -548,7 +548,7 @@ void DrawViewShell::FuPermanent(SfxRequest& rReq)
         sal_uInt16 nSlotId = GetOldFunction()->GetSlotID();
 
         GetOldFunction()->Deactivate();
-        SetOldFunction(0);
+        SetOldFunction(nullptr);
 
         SfxBindings& rBind = GetViewFrame()->GetBindings();
         rBind.Invalidate( nSlotId );
@@ -638,7 +638,7 @@ void DrawViewShell::FuDeleteSelectedObjects()
     bool bConsumed = false;
 
     //if any placeholders are selected
-    if (mpDrawView->IsPresObjSelected(false, true, false))
+    if (mpDrawView->IsPresObjSelected(false))
     {
         //If there are placeholders in the list which can be toggled
         //off in edit->master->master elements then do that here,
@@ -912,7 +912,7 @@ void DrawViewShell::FuSupport(SfxRequest& rReq)
 
             if( pReqArgs )
             {
-                SFX_REQUEST_ARG( rReq, pIsActive, SfxUInt32Item, SID_CLIPBOARD_FORMAT_ITEMS, false );
+                const SfxUInt32Item* pIsActive = rReq.GetArg<SfxUInt32Item>(SID_CLIPBOARD_FORMAT_ITEMS);
                 nFormat = static_cast<SotClipboardFormatId>(pIsActive->GetValue());
             }
 
@@ -933,7 +933,7 @@ void DrawViewShell::FuSupport(SfxRequest& rReq)
                         ( aDataHelper.HasFormat( SotClipboardFormatId::UNIFORMRESOURCELOCATOR ) &&
                           aDataHelper.GetINetBookmark( SotClipboardFormatId::UNIFORMRESOURCELOCATOR, aINetBookmark ) ) )
                     {
-                        InsertURLField( aINetBookmark.GetURL(), aINetBookmark.GetDescription(), "", NULL );
+                        InsertURLField( aINetBookmark.GetURL(), aINetBookmark.GetDescription(), "", nullptr );
                     }
                 }
             }
@@ -952,7 +952,7 @@ void DrawViewShell::FuSupport(SfxRequest& rReq)
                     KeyEvent aKEvt( 0, aKCode);
                     //pOLV->PostKeyEvent(aKEvt);
                     // We use SdrObjEditView to handle DEL for underflow handling
-                    mpDrawView->KeyInput(aKEvt, NULL);
+                    mpDrawView->KeyInput(aKEvt, nullptr);
 
                 }
             }
@@ -964,15 +964,18 @@ void DrawViewShell::FuSupport(SfxRequest& rReq)
         }
         break;
 
-        case SID_NOTESMODE:
-        case SID_HANDOUTMODE:
+        case SID_NOTES_MODE:
+        case SID_SLIDE_MASTER_MODE:
+        case SID_NOTES_MASTER_MODE:
+        case SID_HANDOUT_MASTER_MODE:
+
             // AutoLayouts have to be ready.
             GetDoc()->StopWorkStartupDelay();
             // Fall through to following case statements.
 
         case SID_DRAWINGMODE:
-        case SID_DIAMODE:
-        case SID_OUTLINEMODE:
+        case SID_SLIDE_SORTER_MODE:
+        case SID_OUTLINE_MODE:
             // Let the sub-shell manager handle the slot handling.
             framework::FrameworkHelper::Instance(GetViewShellBase())->HandleModeChangeSlot(
                 nSId,
@@ -981,10 +984,6 @@ void DrawViewShell::FuSupport(SfxRequest& rReq)
             break;
 
         case SID_MASTERPAGE:          // BASIC
-        case SID_SLIDE_MASTERPAGE:    // BASIC
-        case SID_TITLE_MASTERPAGE:    // BASIC
-        case SID_NOTES_MASTERPAGE:    // BASIC
-        case SID_HANDOUT_MASTERPAGE:  // BASIC
         {
             // AutoLayouts needs to be finished
             GetDoc()->StopWorkStartupDelay();
@@ -993,85 +992,21 @@ void DrawViewShell::FuSupport(SfxRequest& rReq)
 
             if ( pReqArgs )
             {
-                SFX_REQUEST_ARG (rReq, pIsActive, SfxBoolItem, SID_MASTERPAGE, false);
+                const SfxBoolItem* pIsActive = rReq.GetArg<SfxBoolItem>(SID_MASTERPAGE);
                 mbIsLayerModeActive = pIsActive->GetValue ();
             }
 
             Broadcast (
                 ViewShellHint(ViewShellHint::HINT_CHANGE_EDIT_MODE_START));
 
-            if (nSId == SID_MASTERPAGE                                       ||
-                (nSId == SID_SLIDE_MASTERPAGE   && mePageKind == PK_STANDARD) ||
-                (nSId == SID_TITLE_MASTERPAGE   && mePageKind == PK_STANDARD) ||
-                (nSId == SID_NOTES_MASTERPAGE   && mePageKind == PK_NOTES)    ||
-                (nSId == SID_HANDOUT_MASTERPAGE && mePageKind == PK_HANDOUT))
-            {
-                if (nSId == SID_TITLE_MASTERPAGE ||
-                    nSId == SID_SLIDE_MASTERPAGE)
-                {
-                    // Is there a page with the AutoLayout "Title"?
-                    bool bFound = false;
-                    sal_uInt16 i = 0;
-                    sal_uInt16 nCount = GetDoc()->GetSdPageCount(PK_STANDARD);
+            // turn on default layer of MasterPage
+            mpDrawView->SetActiveLayer( SD_RESSTR(STR_LAYER_BCKGRNDOBJ) );
 
-                    while (i < nCount && !bFound)
-                    {
-                        SdPage* pPage = GetDoc()->GetSdPage(i, PK_STANDARD);
+            ChangeEditMode(EM_MASTERPAGE, mbIsLayerModeActive);
 
-                        if (nSId == SID_TITLE_MASTERPAGE && pPage->GetAutoLayout() == AUTOLAYOUT_TITLE)
-                        {
-                            bFound = true;
-                            SwitchPage((pPage->GetPageNum() - 1) / 2);
-                        }
-                        else if (nSId == SID_SLIDE_MASTERPAGE && pPage->GetAutoLayout() != AUTOLAYOUT_TITLE)
-                        {
-                            bFound = true;
-                            SwitchPage((pPage->GetPageNum() - 1) / 2);
-                        }
+            if(HasCurrentFunction(SID_BEZIER_EDIT))
+                GetViewFrame()->GetDispatcher()->Execute(SID_OBJECT_SELECT, SfxCallMode::ASYNCHRON);
 
-                        i++;
-                    }
-                }
-
-                // turn on default layer of MasterPage
-                mpDrawView->SetActiveLayer( SD_RESSTR(STR_LAYER_BCKGRNDOBJ) );
-
-                ChangeEditMode(EM_MASTERPAGE, mbIsLayerModeActive);
-
-                if(HasCurrentFunction(SID_BEZIER_EDIT))
-                    GetViewFrame()->GetDispatcher()->Execute(SID_OBJECT_SELECT, SfxCallMode::ASYNCHRON);
-            }
-            else
-            {
-                // Switch to requested ViewShell.
-                ::OUString sRequestedView;
-                PageKind ePageKind;
-                switch (nSId)
-                {
-                    case SID_SLIDE_MASTERPAGE:
-                    case SID_TITLE_MASTERPAGE:
-                    default:
-                        sRequestedView = framework::FrameworkHelper::msImpressViewURL;
-                        ePageKind = PK_STANDARD;
-                        break;
-
-                    case SID_NOTES_MASTERPAGE:
-                        sRequestedView = framework::FrameworkHelper::msNotesViewURL;
-                        ePageKind = PK_NOTES;
-                        break;
-
-                    case SID_HANDOUT_MASTERPAGE:
-                        sRequestedView = framework::FrameworkHelper::msHandoutViewURL;
-                        ePageKind = PK_HANDOUT;
-                        break;
-                }
-
-                mpFrameView->SetViewShEditMode(EM_MASTERPAGE, ePageKind);
-                mpFrameView->SetLayerMode(mbIsLayerModeActive);
-                framework::FrameworkHelper::Instance(GetViewShellBase())->RequestView(
-                    sRequestedView,
-                    framework::FrameworkHelper::msCenterPaneURL);
-            }
             Broadcast (
                 ViewShellHint(ViewShellHint::HINT_CHANGE_EDIT_MODE_END));
 
@@ -1115,7 +1050,7 @@ void DrawViewShell::FuSupport(SfxRequest& rReq)
 
             if ( pReqArgs )
             {
-                SFX_REQUEST_ARG (rReq, pIsActive, SfxBoolItem, SID_RULER, false);
+                const SfxBoolItem* pIsActive = rReq.GetArg<SfxBoolItem>(SID_RULER);
                 SetRuler (pIsActive->GetValue ());
             }
             else SetRuler (!HasRuler());
@@ -1391,88 +1326,6 @@ void DrawViewShell::FuSupport(SfxRequest& rReq)
         }
         break;
 
-        case SID_CONVERT_TO_1BIT_THRESHOLD:
-        case SID_CONVERT_TO_1BIT_MATRIX:
-        case SID_CONVERT_TO_4BIT_GRAYS:
-        case SID_CONVERT_TO_4BIT_COLORS:
-        case SID_CONVERT_TO_8BIT_GRAYS:
-        case SID_CONVERT_TO_8BIT_COLORS:
-        case SID_CONVERT_TO_24BIT:
-        {
-            BmpConversion eBmpConvert = BMP_CONVERSION_NONE;
-
-            switch( nSId )
-            {
-                case SID_CONVERT_TO_1BIT_THRESHOLD:
-                    eBmpConvert = BMP_CONVERSION_1BIT_THRESHOLD;
-                    break;
-
-                case SID_CONVERT_TO_1BIT_MATRIX:
-                    eBmpConvert = BMP_CONVERSION_1BIT_MATRIX;
-                    break;
-
-                case SID_CONVERT_TO_4BIT_GRAYS:
-                    eBmpConvert = BMP_CONVERSION_4BIT_GREYS;
-                    break;
-
-                case SID_CONVERT_TO_4BIT_COLORS:
-                    eBmpConvert = BMP_CONVERSION_4BIT_COLORS;
-                    break;
-
-                case SID_CONVERT_TO_8BIT_GRAYS:
-                    eBmpConvert = BMP_CONVERSION_8BIT_GREYS;
-                    break;
-
-                case SID_CONVERT_TO_8BIT_COLORS:
-                    eBmpConvert = BMP_CONVERSION_8BIT_COLORS;
-                    break;
-
-                case SID_CONVERT_TO_24BIT:
-                    eBmpConvert = BMP_CONVERSION_24BIT;
-                    break;
-            }
-
-            mpDrawView->BegUndo(SD_RESSTR(STR_UNDO_COLORRESOLUTION));
-            const SdrMarkList& rMarkList = mpDrawView->GetMarkedObjectList();
-
-            for (size_t i=0; i<rMarkList.GetMarkCount(); ++i)
-            {
-                SdrObject* pObj = rMarkList.GetMark(i)->GetMarkedSdrObj();
-
-                if (pObj->GetObjInventor() == SdrInventor)
-                {
-                    if (pObj->GetObjIdentifier() == OBJ_GRAF && !static_cast<SdrGrafObj*>(pObj)->IsLinkedGraphic())
-                    {
-                        const Graphic& rGraphic = static_cast<SdrGrafObj*>(pObj)->GetGraphic();
-
-                        if( rGraphic.GetType() == GRAPHIC_BITMAP )
-                        {
-                            SdrGrafObj* pNewObj = static_cast<SdrGrafObj*>( pObj->Clone() );
-
-                            if( rGraphic.IsAnimated() )
-                            {
-                                Animation aAnim( rGraphic.GetAnimation() );
-                                aAnim.Convert( eBmpConvert );
-                                pNewObj->SetGraphic( aAnim );
-                            }
-                            else
-                            {
-                                BitmapEx aBmpEx( rGraphic.GetBitmapEx() );
-                                aBmpEx.Convert( eBmpConvert );
-                                pNewObj->SetGraphic( aBmpEx );
-                            }
-
-                            mpDrawView->ReplaceObjectAtView( pObj, *mpDrawView->GetSdrPageView(), pNewObj );
-                        }
-                    }
-                }
-            }
-
-            mpDrawView->EndUndo();
-            rReq.Done ();
-        }
-        break;
-
         case SID_TRANSLITERATE_SENTENCE_CASE:
         case SID_TRANSLITERATE_TITLE_CASE:
         case SID_TRANSLITERATE_TOGGLE_CASE:
@@ -1709,9 +1562,9 @@ void DrawViewShell::InsertURLButton(const OUString& rURL, const OUString& rText,
 
         SdrInsertFlags nOptions = SdrInsertFlags::SETDEFLAYER;
 
-        OSL_ASSERT (GetViewShell()!=NULL);
+        OSL_ASSERT (GetViewShell()!=nullptr);
         SfxInPlaceClient* pIpClient = GetViewShell()->GetIPClient();
-        if (pIpClient!=NULL && pIpClient->IsObjectInPlaceActive())
+        if (pIpClient!=nullptr && pIpClient->IsObjectInPlaceActive())
         {
             nOptions |= SdrInsertFlags::DONTMARK;
         }
@@ -1757,10 +1610,9 @@ namespace slideshowhelp
                 //show settings if any were set
                 Sequence< PropertyValue > aArguments(1);
                 PropertyValue aPage;
-                OUString sValue("0");
 
                 aPage.Name = "FirstPage";
-                aPage.Value <<= sValue;
+                aPage.Value <<= OUString("0");
 
                 aArguments[0] = aPage;
 

@@ -32,7 +32,7 @@ struct SvLBoxButtonData_Impl
     bool                bDefaultImages;
     bool                bShowRadioButton;
 
-    SvLBoxButtonData_Impl() : pEntry( NULL ), bDefaultImages( false ), bShowRadioButton( false ) {}
+    SvLBoxButtonData_Impl() : pEntry( nullptr ), bDefaultImages( false ), bShowRadioButton( false ) {}
 };
 
 void SvLBoxButtonData::InitData( bool bImagesFromDefault, bool _bRadioBtn, const Control* pCtrl )
@@ -40,8 +40,6 @@ void SvLBoxButtonData::InitData( bool bImagesFromDefault, bool _bRadioBtn, const
     nWidth = nHeight = 0;
 
     aBmps.resize((int)SvBmp::STATICIMAGE+1);
-
-    pImpl = new SvLBoxButtonData_Impl;
 
     bDataOk = false;
     eState = SV_BUTTON_UNCHECKED;
@@ -53,22 +51,19 @@ void SvLBoxButtonData::InitData( bool bImagesFromDefault, bool _bRadioBtn, const
 }
 
 SvLBoxButtonData::SvLBoxButtonData( const Control* pControlForSettings )
+    : pImpl( new SvLBoxButtonData_Impl )
 {
     InitData( true, false, pControlForSettings );
 }
 
 SvLBoxButtonData::SvLBoxButtonData( const Control* pControlForSettings, bool _bRadioBtn )
+    : pImpl( new SvLBoxButtonData_Impl )
 {
     InitData( true, _bRadioBtn, pControlForSettings );
 }
 
 SvLBoxButtonData::~SvLBoxButtonData()
 {
-
-    delete pImpl;
-#ifdef DBG_UTIL
-    pImpl = NULL;
-#endif
 }
 
 void SvLBoxButtonData::CallLink()
@@ -223,14 +218,14 @@ void SvLBoxString::InitViewData(
     long nTextWidth;
     if (pView->GetEntryCount() > 100)
     {
-        static SvTreeListBox *pPreviousView = NULL;
-        static float fApproximateCharWidth = 0.0;
-        if (pPreviousView != pView)
+        static SvTreeListBox *s_pPreviousView = nullptr;
+        static float s_fApproximateCharWidth = 0.0;
+        if (s_pPreviousView != pView)
         {
-            pPreviousView = pView;
-            fApproximateCharWidth = pView->approximate_char_width();
+            s_pPreviousView = pView;
+            s_fApproximateCharWidth = pView->approximate_char_width();
         }
-        nTextWidth = maText.getLength() * fApproximateCharWidth;
+        nTextWidth = maText.getLength() * s_fApproximateCharWidth;
     }
     else
         nTextWidth = pView->GetTextWidth(maText);
@@ -300,7 +295,7 @@ SvLBoxButton::SvLBoxButton( SvTreeListEntry* pEntry, SvLBoxButtonKind eTheKind,
 SvLBoxButton::SvLBoxButton()
     : SvLBoxItem()
     , isVis(false)
-    , pData(0)
+    , pData(nullptr)
     , eKind(SvLBoxButtonKind_enabledCheckbox)
     , nItemFlags(SvItemStateFlags::NONE)
 {

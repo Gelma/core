@@ -43,11 +43,11 @@ SvxClipBoardControl::SvxClipBoardControl(
         sal_uInt16 nSlotId, sal_uInt16 nId, ToolBox& rTbx ) :
 
     SfxToolBoxControl( nSlotId, nId, rTbx ),
-    pClipboardFmtItem( 0 ),
-    pPopup( 0 ),
+    pClipboardFmtItem( nullptr ),
+    pPopup( nullptr ),
     bDisabled( false )
 {
-    addStatusListener( OUString( ".uno:ClipboardFormatItems" ));
+    addStatusListener( ".uno:ClipboardFormatItems");
     ToolBox& rBox = GetToolBox();
     rBox.SetItemBits( nId, ToolBoxItemBits::DROPDOWN | rBox.GetItemBits( nId ) );
     rBox.Invalidate();
@@ -63,7 +63,7 @@ SvxClipBoardControl::~SvxClipBoardControl()
 
 VclPtr<SfxPopupWindow> SvxClipBoardControl::CreatePopupWindow()
 {
-    const SvxClipboardFormatItem* pFmtItem = PTR_CAST( SvxClipboardFormatItem, pClipboardFmtItem );
+    const SvxClipboardFormatItem* pFmtItem = dynamic_cast<SvxClipboardFormatItem*>( pClipboardFmtItem  );
     if ( pFmtItem )
     {
         if (pPopup)
@@ -98,13 +98,13 @@ VclPtr<SfxPopupWindow> SvxClipBoardControl::CreatePopupWindow()
         aArgs[0].Name = "SelectedFormat";
         aItem.QueryValue( a );
         aArgs[0].Value = a;
-        Dispatch( OUString( ".uno:ClipboardFormatItems" ),
+        Dispatch( ".uno:ClipboardFormatItems",
                   aArgs );
     }
 
     GetToolBox().EndSelection();
     DelPopup();
-    return 0;
+    return nullptr;
 }
 
 
@@ -136,7 +136,7 @@ void SvxClipBoardControl::DelPopup()
     if(pPopup)
     {
         delete pPopup;
-        pPopup = 0;
+        pPopup = nullptr;
     }
 }
 

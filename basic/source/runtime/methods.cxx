@@ -443,7 +443,7 @@ RTLFUNC(CurDir)
             StarBASIC::Error( ERRCODE_BASIC_NO_MEMORY );
             return;
           }
-        if( getcwd( pMem.get(), nSize-1 ) != NULL )
+        if( getcwd( pMem.get(), nSize-1 ) != nullptr )
           {
             rPar.Get(0)->PutString( OUString::createFromAscii(pMem.get()) );
             return;
@@ -682,8 +682,8 @@ void implRemoveDirRecursive( const OUString& aDirPath )
 
     FileStatus aFileStatus( osl_FileStatus_Mask_Type );
     nRet = aItem.getFileStatus( aFileStatus );
-    FileStatus::Type aType = aFileStatus.getFileType();
-    bool bFolder = isFolder( aType );
+    bool bFolder = nRet == FileBase::E_None
+        && isFolder( aFileStatus.getFileType() );
 
     if( !bExists || !bFolder )
     {
@@ -710,6 +710,11 @@ void implRemoveDirRecursive( const OUString& aDirPath )
         // Handle flags
         FileStatus aFileStatus2( osl_FileStatus_Mask_Type | osl_FileStatus_Mask_FileURL );
         nRet = aItem2.getFileStatus( aFileStatus2 );
+        if( nRet != FileBase::E_None )
+        {
+            SAL_WARN("basic", "getFileStatus failed");
+            continue;
+        }
         OUString aPath = aFileStatus2.getFileURL();
 
         // Directory?
@@ -1720,6 +1725,21 @@ RTLFUNC(String)
     }
 }
 
+RTLFUNC(Tab)
+{
+    (void)pBasic;
+    (void)bWrite;
+
+    if ( rPar.Count() < 2 )
+        StarBASIC::Error( ERRCODE_BASIC_BAD_ARGUMENT );
+    else
+    {
+        OUStringBuffer aStr;
+        comphelper::string::padToLength(aStr, rPar.Get(1)->GetLong(), '\t');
+        rPar.Get(0)->PutString(aStr.makeStringAndClear());
+    }
+}
+
 RTLFUNC(Tan)
 {
     (void)pBasic;
@@ -2119,7 +2139,7 @@ RTLFUNC(DateValue)
     else
     {
         // #39629 check GetSbData()->pInst, can be called from the URL line
-        SvNumberFormatter* pFormatter = NULL;
+        SvNumberFormatter* pFormatter = nullptr;
         if( GetSbData()->pInst )
         {
             pFormatter = GetSbData()->pInst->GetNumberFormatter();
@@ -2189,7 +2209,7 @@ RTLFUNC(TimeValue)
     }
     else
     {
-        SvNumberFormatter* pFormatter = NULL;
+        SvNumberFormatter* pFormatter = nullptr;
         if( GetSbData()->pInst )
             pFormatter = GetSbData()->pInst->GetNumberFormatter();
         else
@@ -2400,7 +2420,7 @@ RTLFUNC(Time)
             double nDays = (double)nSeconds * ( 1.0 / (24.0*3600.0) );
             Color* pCol;
 
-            SvNumberFormatter* pFormatter = NULL;
+            SvNumberFormatter* pFormatter = nullptr;
             sal_uInt32 nIndex;
             if( GetSbData()->pInst )
             {
@@ -2457,7 +2477,7 @@ RTLFUNC(Date)
             OUString aRes;
             Color* pCol;
 
-            SvNumberFormatter* pFormatter = NULL;
+            SvNumberFormatter* pFormatter = nullptr;
             sal_uInt32 nIndex;
             if( GetSbData()->pInst )
             {
@@ -2523,7 +2543,7 @@ RTLFUNC(IsObject)
 
         SbUnoClass* pUnoClass;
         bool bObject;
-        if( pObj &&  NULL != ( pUnoClass=dynamic_cast<SbUnoClass*>( pObj) )  )
+        if( pObj &&  nullptr != ( pUnoClass=dynamic_cast<SbUnoClass*>( pObj) )  )
         {
             bObject = pUnoClass->getUnoClass().is();
         }
@@ -2583,7 +2603,7 @@ RTLFUNC(IsEmpty)
     }
     else
     {
-        SbxVariable* pVar = NULL;
+        SbxVariable* pVar = nullptr;
         if( SbiRuntime::isVBAEnabled() )
         {
             pVar = getDefaultProp( rPar.Get(1) );
@@ -2705,7 +2725,7 @@ OUString implSetupWildcard( const OUString& rFileParam, SbiRTLData* pRTLData )
     static sal_Char cWild2 = '?';
 
     delete pRTLData->pWildCard;
-    pRTLData->pWildCard = NULL;
+    pRTLData->pWildCard = nullptr;
     pRTLData->sFullNameToBeChecked.clear();
 
     OUString aFileParam = rFileParam;
@@ -3001,7 +3021,7 @@ RTLFUNC(Dir)
                 if( nRet != FileBase::E_None )
                 {
                     delete pRTLData->pDir;
-                    pRTLData->pDir = NULL;
+                    pRTLData->pDir = nullptr;
                     rPar.Get(0)->PutString( OUString() );
                     return;
                 }
@@ -3048,7 +3068,7 @@ RTLFUNC(Dir)
                         if( nRet != FileBase::E_None )
                         {
                             delete pRTLData->pDir;
-                            pRTLData->pDir = NULL;
+                            pRTLData->pDir = nullptr;
                             aPath.clear();
                             break;
                         }
@@ -3056,6 +3076,11 @@ RTLFUNC(Dir)
                         // Handle flags
                         FileStatus aFileStatus( osl_FileStatus_Mask_Type | osl_FileStatus_Mask_FileName );
                         nRet = aItem.getFileStatus( aFileStatus );
+                        if( nRet != FileBase::E_None )
+                        {
+                            SAL_WARN("basic", "getFileStatus failed");
+                            continue;
+                        }
 
                         // Only directories?
                         if( bFolderFlag )
@@ -3245,7 +3270,7 @@ RTLFUNC(FileDateTime)
 
         Color* pCol;
 
-        SvNumberFormatter* pFormatter = NULL;
+        SvNumberFormatter* pFormatter = nullptr;
         sal_uInt32 nIndex;
         if( GetSbData()->pInst )
         {
@@ -3708,15 +3733,15 @@ RTLFUNC(Shell)
         ++iter;
 
         sal_uInt16 nParamCount = sal::static_int_cast< sal_uInt16 >(aTokenList.size() - 1 );
-        rtl_uString** pParamList = NULL;
+        std::unique_ptr<rtl_uString*[]> pParamList;
         if( nParamCount )
         {
-            pParamList = new rtl_uString*[nParamCount];
+            pParamList.reset( new rtl_uString*[nParamCount]);
             for(int iList = 0; iter != aTokenList.end(); ++iList, ++iter)
             {
                 const OUString& rParamStr = (*iter);
                 const OUString aTempStr( rParamStr.getStr(), rParamStr.getLength());
-                pParamList[iList] = NULL;
+                pParamList[iList] = nullptr;
                 rtl_uString_assign(&(pParamList[iList]), aTempStr.pData);
             }
         }
@@ -3724,12 +3749,12 @@ RTLFUNC(Shell)
         oslProcess pApp;
         bool bSucc = osl_executeProcess(
                     aOUStrProgURL.pData,
-                    pParamList,
+                    pParamList.get(),
                     nParamCount,
                     nOptions,
-                    NULL,
-                    NULL,
-                    NULL, 0,
+                    nullptr,
+                    nullptr,
+                    nullptr, 0,
                     &pApp ) == osl_Process_E_None;
 
         // 53521 only free process handle on success
@@ -3742,8 +3767,6 @@ RTLFUNC(Shell)
         {
             rtl_uString_release(pParamList[j]);
         }
-
-        delete [] pParamList;
 
         if( !bSucc )
         {
@@ -3874,7 +3897,7 @@ OUString getObjectTypeName( SbxVariable* pVar )
                         {
                             try
                             {
-                                xInv->getValue( OUString( "$GetTypeName" ) ) >>= sRet;
+                                xInv->getValue( "$GetTypeName" ) >>= sRet;
                             }
                             catch(const Exception& )
                             {
@@ -4342,7 +4365,7 @@ RTLFUNC(StrConv)
         // convert the string to byte string, preserving unicode (2 bytes per character)
         sal_Int32 nSize = aNewStr.getLength()*2;
         const sal_Unicode* pSrc = aNewStr.getStr();
-        sal_Char* pChar = new sal_Char[nSize+1];
+        std::unique_ptr<sal_Char[]> pChar(new sal_Char[nSize+1]);
         for( sal_Int32 i=0; i < nSize; i++ )
         {
             pChar[i] = static_cast< sal_Char >( (i%2) ? ((*pSrc) >> 8) & 0xff : (*pSrc) & 0xff );
@@ -4352,8 +4375,7 @@ RTLFUNC(StrConv)
             }
         }
         pChar[nSize] = '\0';
-        OString aOStr(pChar);
-        delete[] pChar;
+        OString aOStr(pChar.get());
 
         // there is no concept about default codepage in unix. so it is incorrectly in unix
         OUString aOUStr = OStringToOUString(aOStr, osl_getThreadTextEncoding());
@@ -4404,7 +4426,7 @@ RTLFUNC(StrConv)
         refVar->ResetFlag( SbxFlagBits::Fixed );
         refVar->PutObject( pArray );
         refVar->SetFlags( nFlags );
-        refVar->SetParameters( NULL );
+        refVar->SetParameters( nullptr );
         return;
     }
     rPar.Get(0)->PutString(aNewStr);
@@ -4439,13 +4461,13 @@ RTLFUNC(Load)
     SbxBase* pObj = static_cast<SbxObject*>(rPar.Get(1)->GetObject());
     if ( pObj )
     {
-        if( pObj->IsA( TYPE( SbUserFormModule ) ) )
+        if (SbUserFormModule* pModule = dynamic_cast<SbUserFormModule*>(pObj))
         {
-            static_cast<SbUserFormModule*>(pObj)->Load();
+            pModule->Load();
         }
-        else if( pObj->IsA( TYPE( SbxObject ) ) )
+        else if (SbxObject* pSbxObj = dynamic_cast<SbxObject*>(pObj))
         {
-            SbxVariable* pVar = static_cast<SbxObject*>(pObj)->Find( OUString("Load"), SbxCLASS_METHOD );
+            SbxVariable* pVar = pSbxObj->Find("Load", SbxCLASS_METHOD);
             if( pVar )
             {
                 pVar->GetInteger();
@@ -4470,14 +4492,13 @@ RTLFUNC(Unload)
     SbxBase* pObj = static_cast<SbxObject*>(rPar.Get(1)->GetObject());
     if ( pObj )
     {
-        if( pObj->IsA( TYPE( SbUserFormModule ) ) )
+        if (SbUserFormModule* pFormModule = dynamic_cast<SbUserFormModule*>(pObj))
         {
-            SbUserFormModule* pFormModule = static_cast<SbUserFormModule*>(pObj);
             pFormModule->Unload();
         }
-        else if( pObj->IsA( TYPE( SbxObject ) ) )
+        else if (SbxObject *pSbxObj = dynamic_cast<SbxObject*>(pObj))
         {
-            SbxVariable* pVar = static_cast<SbxObject*>(pObj)->Find( OUString("Unload"), SbxCLASS_METHOD );
+            SbxVariable* pVar = pSbxObj->Find("Unload", SbxCLASS_METHOD);
             if( pVar )
             {
                 pVar->GetInteger();
@@ -4524,16 +4545,13 @@ RTLFUNC(SavePicture)
     }
 
     SbxBase* pObj = static_cast<SbxObject*>(rPar.Get(1)->GetObject());
-    if( pObj->IsA( TYPE( SbStdPicture ) ) )
+    if (SbStdPicture *pPicture = dynamic_cast<SbStdPicture*>(pObj))
     {
         SvFileStream aOStream( rPar.Get(2)->GetOUString(), StreamMode::WRITE | StreamMode::TRUNC );
-        Graphic aGraphic = static_cast<SbStdPicture*>(pObj)->GetGraphic();
+        Graphic aGraphic = pPicture->GetGraphic();
         WriteGraphic( aOStream, aGraphic );
     }
 }
-
-
-
 
 RTLFUNC(MsgBox)
 {
@@ -4619,7 +4637,7 @@ RTLFUNC(MsgBox)
     }
     else
     {
-        aTitle = Application::GetAppName();
+        aTitle = Application::GetDisplayName();
     }
 
     nType &= (16+32+64);

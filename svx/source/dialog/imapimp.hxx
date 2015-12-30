@@ -30,7 +30,6 @@ class IMapOwnData
 public:
 
     Idle            aIdle;
-    Timer           aTbxTimer;
     Graphic         aUpdateGraphic;
     ImageMap        aUpdateImageMap;
     TargetList      aUpdateTargetList;
@@ -38,7 +37,7 @@ public:
     bool        bExecState;
 
     IMapOwnData()
-        : pUpdateEditingObject(NULL)
+        : pUpdateEditingObject(nullptr)
         , bExecState(false)
     {
     }

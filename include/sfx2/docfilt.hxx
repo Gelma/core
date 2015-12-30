@@ -19,7 +19,6 @@
 #ifndef INCLUDED_SFX2_DOCFILT_HXX
 #define INCLUDED_SFX2_DOCFILT_HXX
 
-#include <com/sun/star/plugin/PluginDescription.hpp>
 #include <com/sun/star/embed/XStorage.hpp>
 #include <com/sun/star/beans/UnknownPropertyException.hpp>
 #include <com/sun/star/lang/WrappedTargetException.hpp>
@@ -109,11 +108,11 @@ public:
 
     static OUString GetTypeFromStorage( const SotStorage& rStg );
     static OUString GetTypeFromStorage(
-        const com::sun::star::uno::Reference<com::sun::star::embed::XStorage>& xStorage,
-        bool bTemplate = false, OUString* pName = NULL )
-            throw ( com::sun::star::beans::UnknownPropertyException,
-                    com::sun::star::lang::WrappedTargetException,
-                    com::sun::star::uno::RuntimeException,
+        const css::uno::Reference<css::embed::XStorage>& xStorage,
+        bool bTemplate = false, OUString* pName = nullptr )
+            throw ( css::beans::UnknownPropertyException,
+                    css::lang::WrappedTargetException,
+                    css::uno::RuntimeException,
                     std::exception );
 };
 

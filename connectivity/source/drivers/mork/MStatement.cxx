@@ -77,14 +77,13 @@ OCommonStatement::OCommonStatement(OConnection* _pConnection )
     :OCommonStatement_IBASE(m_aMutex)
     ,OPropertySetHelper(OCommonStatement_IBASE::rBHelper)
     ,OCommonStatement_SBASE(static_cast<cppu::OWeakObject*>(_pConnection), this)
-    ,m_pTable(NULL)
+    ,m_pTable(nullptr)
     ,m_pConnection(_pConnection)
     ,m_aParser( comphelper::getComponentContext(_pConnection->getDriver()->getFactory()) )
-    ,m_pSQLIterator( new OSQLParseTreeIterator( _pConnection, _pConnection->createCatalog()->getTables(), m_aParser, NULL ) )
-    ,rBHelper(OCommonStatement_IBASE::rBHelper)
+    ,m_pSQLIterator( new OSQLParseTreeIterator( _pConnection, _pConnection->createCatalog()->getTables(), m_aParser, nullptr ) )
 {
     m_xDBMetaData = _pConnection->getMetaData();
-    m_pParseTree = NULL;
+    m_pParseTree = nullptr;
     m_pConnection->acquire();
 }
 
@@ -103,7 +102,7 @@ void OCommonStatement::disposing()
 
     if (m_pConnection)
         m_pConnection->release();
-    m_pConnection = NULL;
+    m_pConnection = nullptr;
 
     m_pSQLIterator->dispose();
     delete m_pParseTree;
@@ -182,7 +181,7 @@ OCommonStatement::StatementType OCommonStatement::parseSql( const OUString& sql 
 
             m_pTable = static_cast< OTable* > (xTabs.begin()->second.get());
             m_xColNames     = m_pTable->getColumns();
-            xNames = Reference<XIndexAccess>(m_xColNames,UNO_QUERY);
+            xNames.set(m_xColNames,UNO_QUERY);
             // set the binding of the resultrow
             m_aRow          = new OValueVector(xNames->getCount());
             (m_aRow->get())[0].setBound(true);
@@ -281,7 +280,7 @@ Reference< XResultSet > SAL_CALL OCommonStatement::executeQuery( const OUString&
     // parse the statement
     StatementType eStatementType = parseSql( sql );
     if ( eStatementType != eSelect )
-        return NULL;
+        return nullptr;
 
     return impl_executeCurrentQuery();
 }
@@ -500,7 +499,7 @@ void OCommonStatement::setOrderbyColumn(    OSQLParseNode* pColumnRef,
         aColumnName = pColumnRef->getChild(0)->getTokenValue();
     else if (pColumnRef->count() == 3)
     {
-        pColumnRef->getChild(2)->parseNodeToStr( aColumnName, getOwnConnection(), NULL, false, false );
+        pColumnRef->getChild(2)->parseNodeToStr( aColumnName, getOwnConnection(), nullptr, false, false );
     }
     else
     {

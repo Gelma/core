@@ -212,7 +212,7 @@ bool Submission::doSubmit( const Reference< XInteractionHandler >& xHandler )
     if( !msBind.isEmpty() )
     {
         Binding* pBinding = Binding::getBinding( mxModel->getBinding(msBind) );
-        if( pBinding != NULL )
+        if( pBinding != nullptr )
         {
             aExpression.setExpression( pBinding->getBindingExpression() );
             aEvalContext = pBinding->getEvaluationContext();
@@ -284,7 +284,7 @@ Submission* Submission::getSubmission(
     return xTunnel.is()
         ? reinterpret_cast<Submission*>(
             xTunnel->getSomething( getUnoTunnelID() ) )
-        : NULL;
+        : nullptr;
 }
 
 
@@ -303,7 +303,7 @@ void Submission::liveCheck()
 
 Model* Submission::getModelImpl() const
 {
-    Model* pModel = NULL;
+    Model* pModel = nullptr;
     if( mxModel.is() )
         pModel = Model::getModel( mxModel );
     return pModel;
@@ -433,7 +433,7 @@ void SAL_CALL Submission::submitWithInteraction(
               );
 
     Model* pModel = Model::getModel( xModel );
-    OSL_ENSURE( pModel != NULL, "illegal model?" );
+    OSL_ENSURE( pModel != nullptr, "illegal model?" );
 
     // #i36765# #i47248# warning on submission of illegal data
     // check for validity (and query user if invalid)
@@ -510,7 +510,7 @@ void SAL_CALL Submission::submitWithInteraction(
 
 void SAL_CALL Submission::submit( ) throw ( VetoException, WrappedTargetException, RuntimeException, std::exception )
 {
-    submitWithInteraction( NULL );
+    submitWithInteraction( nullptr );
 }
 
 void SAL_CALL Submission::addSubmissionVetoListener( const Reference< XSubmissionVetoListener >& /*listener*/ ) throw (NoSupportException, RuntimeException, std::exception)
@@ -562,7 +562,7 @@ static void _cloneNodes(Model& aModel, const Reference< XNode >& dstParent, cons
 }
 Reference< XDocument > Submission::getInstanceDocument(const Reference< XXPathObject >& aObj)
 {
-    using namespace com::sun::star::xml::xpath;
+    using namespace css::xml::xpath;
     // result
     Reference< XDocument > aDocument;
 
@@ -577,7 +577,7 @@ Reference< XDocument > Submission::getInstanceDocument(const Reference< XXPathOb
 
 Reference< XDocumentFragment > Submission::createSubmissionDocument(const Reference< XXPathObject >& aObj, bool bRemoveWSNodes)
 {
-    using namespace com::sun::star::xml::xpath;
+    using namespace css::xml::xpath;
     Reference< XDocumentBuilder > aDocBuilder = DocumentBuilder::create(comphelper::getProcessComponentContext());
     Reference< XDocument > aDocument = aDocBuilder->newDocument();
     Reference< XDocumentFragment > aFragment = aDocument->createDocumentFragment();
@@ -591,8 +591,7 @@ Reference< XDocumentFragment > Submission::createSubmissionDocument(const Refere
         {
             aListItem = aList->item(i);
             if (aListItem->getNodeType()==NodeType_DOCUMENT_NODE)
-                aListItem = Reference< XNode >(
-                    (Reference< XDocument >(aListItem, UNO_QUERY))->getDocumentElement(), UNO_QUERY);
+                aListItem.set( (Reference< XDocument >(aListItem, UNO_QUERY))->getDocumentElement(), UNO_QUERY);
             // copy relevant nodes from instance into fragment
             _cloneNodes(*getModelImpl(), aFragment, aListItem, bRemoveWSNodes);
         }
@@ -602,7 +601,7 @@ Reference< XDocumentFragment > Submission::createSubmissionDocument(const Refere
 
 // some forwarding: XPropertySet is implemented in our base class,
 // but also available as base of XSubmission
-Reference< ::com::sun::star::beans::XPropertySetInfo > SAL_CALL Submission::getPropertySetInfo(  ) throw(RuntimeException, std::exception)
+Reference< css::beans::XPropertySetInfo > SAL_CALL Submission::getPropertySetInfo(  ) throw(RuntimeException, std::exception)
 {
     return PropertySetBase::getPropertySetInfo();
 }
@@ -614,19 +613,19 @@ Any SAL_CALL Submission::getPropertyValue( const OUString& PropertyName ) throw(
 {
     return PropertySetBase::getPropertyValue( PropertyName );
 }
-void SAL_CALL Submission::addPropertyChangeListener( const OUString& aPropertyName, const Reference< ::com::sun::star::beans::XPropertyChangeListener >& xListener ) throw(UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception)
+void SAL_CALL Submission::addPropertyChangeListener( const OUString& aPropertyName, const Reference< css::beans::XPropertyChangeListener >& xListener ) throw(UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception)
 {
     PropertySetBase::addPropertyChangeListener( aPropertyName, xListener );
 }
-void SAL_CALL Submission::removePropertyChangeListener( const OUString& aPropertyName, const Reference< ::com::sun::star::beans::XPropertyChangeListener >& aListener ) throw(UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception)
+void SAL_CALL Submission::removePropertyChangeListener( const OUString& aPropertyName, const Reference< css::beans::XPropertyChangeListener >& aListener ) throw(UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception)
 {
     PropertySetBase::removePropertyChangeListener( aPropertyName, aListener );
 }
-void SAL_CALL Submission::addVetoableChangeListener( const OUString& PropertyName, const Reference< ::com::sun::star::beans::XVetoableChangeListener >& aListener ) throw(UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception)
+void SAL_CALL Submission::addVetoableChangeListener( const OUString& PropertyName, const Reference< css::beans::XVetoableChangeListener >& aListener ) throw(UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception)
 {
     PropertySetBase::addVetoableChangeListener( PropertyName, aListener );
 }
-void SAL_CALL Submission::removeVetoableChangeListener( const OUString& PropertyName, const Reference< ::com::sun::star::beans::XVetoableChangeListener >& aListener ) throw(UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception)
+void SAL_CALL Submission::removeVetoableChangeListener( const OUString& PropertyName, const Reference< css::beans::XVetoableChangeListener >& aListener ) throw(UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception)
 {
     PropertySetBase::removeVetoableChangeListener( PropertyName, aListener );
 }

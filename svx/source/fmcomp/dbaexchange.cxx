@@ -154,7 +154,7 @@ namespace svx
         static SotClipboardFormatId s_nFormat = static_cast<SotClipboardFormatId>(-1);
         if (static_cast<SotClipboardFormatId>(-1) == s_nFormat)
         {
-            s_nFormat = SotExchange::RegisterFormatName(OUString("application/x-openoffice;windows_formatname=\"dbaccess.ColumnDescriptorTransfer\""));
+            s_nFormat = SotExchange::RegisterFormatName("application/x-openoffice;windows_formatname=\"dbaccess.ColumnDescriptorTransfer\"");
             OSL_ENSURE(static_cast<SotClipboardFormatId>(-1) != s_nFormat, "OColumnTransferable::getDescriptorFormatId: bad exchange id!");
         }
         return s_nFormat;
@@ -377,7 +377,7 @@ namespace svx
             ,const OUString& _rCommand
         )
     {
-        construct(_rDatasource,_rConnectionResource,_nCommandType,_rCommand,NULL,(CommandType::COMMAND == _nCommandType),_rCommand);
+        construct(_rDatasource,_rConnectionResource,_nCommandType,_rCommand,nullptr,(CommandType::COMMAND == _nCommandType),_rCommand);
     }
 
     ODataAccessObjectTransferable::ODataAccessObjectTransferable(
@@ -616,7 +616,7 @@ namespace svx
         static SotClipboardFormatId s_nFormat = static_cast<SotClipboardFormatId>(-1);
         if (static_cast<SotClipboardFormatId>(-1) == s_nFormat)
         {
-            s_nFormat = SotExchange::RegisterFormatName(OUString("application/x-openoffice;windows_formatname=\"dbaccess.MultipleColumnDescriptorTransfer\""));
+            s_nFormat = SotExchange::RegisterFormatName("application/x-openoffice;windows_formatname=\"dbaccess.MultipleColumnDescriptorTransfer\"");
             OSL_ENSURE(static_cast<SotClipboardFormatId>(-1) != s_nFormat, "OColumnTransferable::getDescriptorFormatId: bad exchange id!");
         }
         return s_nFormat;

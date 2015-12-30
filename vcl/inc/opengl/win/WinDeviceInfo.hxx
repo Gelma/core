@@ -25,6 +25,7 @@ enum OperatingSystem {
     DRIVER_OS_WINDOWS_7,
     DRIVER_OS_WINDOWS_8,
     DRIVER_OS_WINDOWS_8_1,
+    DRIVER_OS_WINDOWS_10,
     DRIVER_OS_LINUX,
     DRIVER_OS_OS_X_10_5,
     DRIVER_OS_OS_X_10_6,
@@ -66,7 +67,6 @@ struct DriverInfo
             uint64_t driverVersion, bool bWhiteListed = false, const char *suggestedVersion = nullptr);
 
     DriverInfo();
-    DriverInfo(const DriverInfo&);
     ~DriverInfo();
 
     OperatingSystem meOperatingSystem;

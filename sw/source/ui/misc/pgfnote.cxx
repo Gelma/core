@@ -84,21 +84,18 @@ IMPL_LINK_NOARG_TYPED(SwFootNotePage, HeightModify, Control&, void)
             FUNIT_TWIP);
 }
 
-IMPL_LINK_NOARG(SwFootNotePage, LineWidthChanged_Impl)
+IMPL_LINK_NOARG_TYPED(SwFootNotePage, LineWidthChanged_Impl, Edit&, void)
 {
     sal_Int64 nVal = static_cast<sal_Int64>(MetricField::ConvertDoubleValue(
                 m_pLineWidthEdit->GetValue( ),
                 m_pLineWidthEdit->GetDecimalDigits( ),
                 m_pLineWidthEdit->GetUnit(), MAP_TWIP ));
     m_pLineTypeBox->SetWidth( nVal );
-
-    return 0;
 }
 
-IMPL_LINK_NOARG(SwFootNotePage, LineColorSelected_Impl)
+IMPL_LINK_NOARG_TYPED(SwFootNotePage, LineColorSelected_Impl, ListBox&, void)
 {
     m_pLineTypeBox->SetColor( m_pLineColorBox->GetSelectEntryColor() );
-    return 0;
 }
 
 SwFootNotePage::SwFootNotePage(vcl::Window *pParent, const SfxItemSet &rSet)
@@ -222,7 +219,7 @@ void SwFootNotePage::Reset(const SfxItemSet *rSet)
     if ( pDocSh )
     {
         const SfxPoolItem* pColorItem = pDocSh->GetItem( SID_COLOR_TABLE );
-        if ( pColorItem != NULL )
+        if ( pColorItem != nullptr )
             pColorList = static_cast<const SvxColorListItem*>(pColorItem)->GetColorList();
     }
 
@@ -306,7 +303,7 @@ bool SwFootNotePage::FillItemSet(SfxItemSet *rSet)
     rFootnoteInfo.SetWidth(Fraction( static_cast< long >(m_pLineLengthEdit->GetValue()), 100));
 
     const SfxPoolItem* pOldItem;
-    if(0 == (pOldItem = GetOldItem( *rSet, FN_PARAM_FTN_INFO )) ||
+    if(nullptr == (pOldItem = GetOldItem( *rSet, FN_PARAM_FTN_INFO )) ||
                 aItem != *pOldItem )
         rSet->Put(aItem);
 

@@ -25,68 +25,69 @@
 
 class ScHeaderFunctionSet;
 class ScHeaderSelectionEngine;
+class ScTabView;
 
 class ScColBar : public ScHeaderControl
 {
-    ScViewData*              pViewData;
-    ScHSplitPos              eWhich;
-    ScHeaderFunctionSet*     pFuncSet;
+    ScHSplitPos              meWhich;
+    ScHeaderFunctionSet*     mpFuncSet;
 
 public:
-                ScColBar( vcl::Window* pParent, ScViewData* pData, ScHSplitPos eWhichPos,
-                            ScHeaderFunctionSet* pFunc, ScHeaderSelectionEngine* pEng );
+                ScColBar( vcl::Window* pParent, ScHSplitPos eWhich,
+                          ScHeaderFunctionSet* pFuncSet, ScHeaderSelectionEngine* pEng,
+                          ScTabView* pTab );
                 virtual ~ScColBar();
 
-    virtual SCCOLROW    GetPos() const SAL_OVERRIDE;
-    virtual sal_uInt16  GetEntrySize( SCCOLROW nEntryNo ) const SAL_OVERRIDE;
-    virtual OUString    GetEntryText( SCCOLROW nEntryNo ) const SAL_OVERRIDE;
+    virtual SCCOLROW    GetPos() const override;
+    virtual sal_uInt16  GetEntrySize( SCCOLROW nEntryNo ) const override;
+    virtual OUString    GetEntryText( SCCOLROW nEntryNo ) const override;
 
-    virtual bool        IsLayoutRTL() const SAL_OVERRIDE;
+    virtual bool        IsLayoutRTL() const override;
 
-    virtual void        SetEntrySize( SCCOLROW nPos, sal_uInt16 nNewSize ) SAL_OVERRIDE;
-    virtual void        HideEntries( SCCOLROW nStart, SCCOLROW nEnd ) SAL_OVERRIDE;
+    virtual void        SetEntrySize( SCCOLROW nPos, sal_uInt16 nNewSize ) override;
+    virtual void        HideEntries( SCCOLROW nStart, SCCOLROW nEnd ) override;
 
-    virtual void        SetMarking( bool bSet ) SAL_OVERRIDE;
-    virtual void        SelectWindow() SAL_OVERRIDE;
-    virtual bool        IsDisabled() const SAL_OVERRIDE;
-    virtual bool        ResizeAllowed() const SAL_OVERRIDE;
+    virtual void        SetMarking( bool bSet ) override;
+    virtual void        SelectWindow() override;
+    virtual bool        IsDisabled() const override;
+    virtual bool        ResizeAllowed() const override;
 
-    virtual void        DrawInvert( long nDragPos ) SAL_OVERRIDE;
+    virtual void        DrawInvert( long nDragPos ) override;
 
-    virtual OUString    GetDragHelp( long nVal ) SAL_OVERRIDE;
+    virtual OUString    GetDragHelp( long nVal ) override;
 
             bool        UseNumericHeader() const;
 };
 
 class ScRowBar : public ScHeaderControl
 {
-    ScViewData*              pViewData;
-    ScVSplitPos              eWhich;
-    ScHeaderFunctionSet*     pFuncSet;
+    ScVSplitPos              meWhich;
+    ScHeaderFunctionSet*     mpFuncSet;
 
 public:
-                ScRowBar( vcl::Window* pParent, ScViewData* pData, ScVSplitPos eWhichPos,
-                            ScHeaderFunctionSet* pFunc, ScHeaderSelectionEngine* pEng );
+                ScRowBar( vcl::Window* pParent, ScVSplitPos eWhich,
+                          ScHeaderFunctionSet* pFuncSet, ScHeaderSelectionEngine* pEng,
+                          ScTabView* pTab );
                 virtual ~ScRowBar();
 
-    virtual SCCOLROW    GetPos() const SAL_OVERRIDE;
-    virtual sal_uInt16  GetEntrySize( SCCOLROW nEntryNo ) const SAL_OVERRIDE;
-    virtual OUString    GetEntryText( SCCOLROW nEntryNo ) const SAL_OVERRIDE;
+    virtual SCCOLROW    GetPos() const override;
+    virtual sal_uInt16  GetEntrySize( SCCOLROW nEntryNo ) const override;
+    virtual OUString    GetEntryText( SCCOLROW nEntryNo ) const override;
 
-    virtual bool        IsMirrored() const SAL_OVERRIDE;
-    virtual SCROW       GetHiddenCount( SCROW nEntryNo ) const SAL_OVERRIDE;
+    virtual bool        IsMirrored() const override;
+    virtual SCROW       GetHiddenCount( SCROW nEntryNo ) const override;
 
-    virtual void        SetEntrySize( SCCOLROW nPos, sal_uInt16 nNewSize ) SAL_OVERRIDE;
-    virtual void        HideEntries( SCCOLROW nStart, SCCOLROW nEnd ) SAL_OVERRIDE;
+    virtual void        SetEntrySize( SCCOLROW nPos, sal_uInt16 nNewSize ) override;
+    virtual void        HideEntries( SCCOLROW nStart, SCCOLROW nEnd ) override;
 
-    virtual void        SetMarking( bool bSet ) SAL_OVERRIDE;
-    virtual void        SelectWindow() SAL_OVERRIDE;
-    virtual bool        IsDisabled() const SAL_OVERRIDE;
-    virtual bool        ResizeAllowed() const SAL_OVERRIDE;
+    virtual void        SetMarking( bool bSet ) override;
+    virtual void        SelectWindow() override;
+    virtual bool        IsDisabled() const override;
+    virtual bool        ResizeAllowed() const override;
 
-    virtual void        DrawInvert( long nDragPos ) SAL_OVERRIDE;
+    virtual void        DrawInvert( long nDragPos ) override;
 
-    virtual OUString    GetDragHelp( long nVal ) SAL_OVERRIDE;
+    virtual OUString    GetDragHelp( long nVal ) override;
 };
 
 #endif

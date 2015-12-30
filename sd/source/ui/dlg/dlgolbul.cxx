@@ -91,7 +91,7 @@ OutlineBulletDlg::OutlineBulletDlg(
 
     if( SfxItemState::SET != aInputSet.GetItemState(EE_PARA_NUMBULLET))
     {
-        const SvxNumBulletItem *pItem = NULL;
+        const SvxNumBulletItem *pItem = nullptr;
         if(bOutliner)
         {
             SfxStyleSheetBasePool* pSSPool = pView->GetDocSh()->GetStyleSheetPool();
@@ -101,7 +101,7 @@ OutlineBulletDlg::OutlineBulletDlg(
                 pFirstStyleSheet->GetItemSet().GetItemState(EE_PARA_NUMBULLET, false, reinterpret_cast<const SfxPoolItem**>(&pItem));
         }
 
-        if( pItem == NULL )
+        if( pItem == nullptr )
             pItem = static_cast<const SvxNumBulletItem*>( aInputSet.GetPool()->GetSecondaryPool()->GetPoolDefaultItem(EE_PARA_NUMBULLET) );
 
         DBG_ASSERT( pItem, "No EE_PARA_NUMBULLET in Pool! [CL]" );
@@ -109,9 +109,9 @@ OutlineBulletDlg::OutlineBulletDlg(
         aInputSet.Put(*pItem, EE_PARA_NUMBULLET);
     }
 
-    if(bTitle && aInputSet.GetItemState(EE_PARA_NUMBULLET,true) == SfxItemState::SET )
+    if(bTitle && aInputSet.GetItemState(EE_PARA_NUMBULLET) == SfxItemState::SET )
     {
-        const SvxNumBulletItem* pItem = static_cast<const SvxNumBulletItem*>( aInputSet.GetItem(EE_PARA_NUMBULLET,true) );
+        const SvxNumBulletItem* pItem = static_cast<const SvxNumBulletItem*>( aInputSet.GetItem(EE_PARA_NUMBULLET) );
         SvxNumRule* pRule = pItem->GetNumRule();
         if(pRule)
         {
@@ -176,7 +176,7 @@ const SfxItemSet* OutlineBulletDlg::GetOutputItemSet() const
     SfxItemSet aSet( *SfxTabDialog::GetOutputItemSet() );
     pOutputSet->Put( aSet );
 
-    const SfxPoolItem *pItem = NULL;
+    const SfxPoolItem *pItem = nullptr;
     if( SfxItemState::SET == pOutputSet->GetItemState(pOutputSet->GetPool()->GetWhich(SID_ATTR_NUMBERING_RULE), false, &pItem ))
     {
         SdBulletMapper::MapFontsInNumRule( *static_cast<const SvxNumBulletItem*>(pItem)->GetNumRule(), *pOutputSet );
@@ -184,9 +184,9 @@ const SfxItemSet* OutlineBulletDlg::GetOutputItemSet() const
 // #i35937 - removed EE_PARA_BULLETSTATE setting
     }
 
-    if(bTitle && pOutputSet->GetItemState(EE_PARA_NUMBULLET,true) == SfxItemState::SET )
+    if(bTitle && pOutputSet->GetItemState(EE_PARA_NUMBULLET) == SfxItemState::SET )
     {
-        const SvxNumBulletItem* pBulletItem = static_cast<const SvxNumBulletItem*>(pOutputSet->GetItem(EE_PARA_NUMBULLET,true));
+        const SvxNumBulletItem* pBulletItem = static_cast<const SvxNumBulletItem*>(pOutputSet->GetItem(EE_PARA_NUMBULLET));
         SvxNumRule* pRule = pBulletItem->GetNumRule();
         if(pRule)
             pRule->SetFeatureFlag( SvxNumRuleFlags::NO_NUMBERS, false );

@@ -39,7 +39,7 @@ class TextParagraphContext : public ContextHandler2
 public:
     TextParagraphContext( ContextHandler2Helper& rParent, TextParagraph& rPara );
 
-    virtual ContextHandlerRef onCreateContext( sal_Int32 aElementToken, const AttributeList& rAttribs ) SAL_OVERRIDE;
+    virtual ContextHandlerRef onCreateContext( sal_Int32 aElementToken, const AttributeList& rAttribs ) override;
 
 protected:
     TextParagraph& mrParagraph;
@@ -94,7 +94,7 @@ ContextHandlerRef TextParagraphContext::onCreateContext( sal_Int32 aElementToken
             SAL_WARN("oox", "TextParagraphContext::onCreateContext: unhandled element: " << getBaseToken(aElementToken));
     }
 
-    return 0;
+    return nullptr;
 }
 
 RegularTextRunContext::RegularTextRunContext( ContextHandler2Helper& rParent, TextRunPtr pRunPtr )
@@ -177,7 +177,7 @@ ContextHandlerRef TextBodyContext::onCreateContext( sal_Int32 aElementToken, con
             SAL_WARN("oox", "TextBodyContext::onCreateContext: unhandled element: " << getBaseToken(aElementToken));
     }
 
-    return 0;
+    return nullptr;
 }
 
 } }

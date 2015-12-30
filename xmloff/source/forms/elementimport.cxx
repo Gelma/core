@@ -121,7 +121,7 @@ namespace xmloff
         :OPropertyImport(_rImport, _nPrefix, _rName)
         ,m_rFormImport(_rImport)
         ,m_rEventManager(_rEventManager)
-        ,m_pStyleElement( NULL )
+        ,m_pStyleElement( nullptr )
         ,m_xParentContainer(_rxParentContainer)
         ,m_bImplicitGenericAttributeHandling( true )
     {
@@ -466,7 +466,7 @@ namespace xmloff
         Sequence< OUString > aNames = m_xParentContainer->getElementNames();
 
         OUString sReturn;
-        const OUString* pNames = NULL;
+        const OUString* pNames = nullptr;
         const OUString* pNamesEnd = aNames.getConstArray() + aNames.getLength();
         for (sal_Int32 i=0; i<32768; ++i)   // the limit is nearly arbitrary ...
         {
@@ -619,7 +619,7 @@ namespace xmloff
             Reference< XInterface > xPure = xContext->getServiceManager()->createInstanceWithContext(m_sServiceName, xContext);
             OSL_ENSURE(xPure.is(),
                         OStringBuffer("OElementImport::createElement: service factory gave me no object (service name: ").append(OUStringToOString(m_sServiceName, RTL_TEXTENCODING_ASCII_US)).append(")!").getStr());
-            xReturn = Reference< XPropertySet >(xPure, UNO_QUERY);
+            xReturn.set(xPure, UNO_QUERY);
         }
         else
             OSL_FAIL("OElementImport::createElement: no service name to create an element!");
@@ -664,7 +664,7 @@ namespace xmloff
 
     OUString OControlImport::determineDefaultServiceName() const
     {
-        const sal_Char* pServiceName = NULL;
+        const sal_Char* pServiceName = nullptr;
         switch ( m_eElementType )
         {
         case OControlElement::TEXT:
@@ -688,7 +688,7 @@ namespace xmloff
         case OControlElement::DATE:              pServiceName = "com.sun.star.form.component.DateField"; break;
         default:                                 break;
         }
-        if ( pServiceName != NULL )
+        if ( pServiceName != nullptr )
             return OUString::createFromAscii( pServiceName );
         return OUString();
     }
@@ -800,7 +800,7 @@ namespace xmloff
 
     void OControlImport::StartElement(const Reference< XAttributeList >& _rxAttrList)
     {
-        ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > xAttributes;
+        css::uno::Reference< css::xml::sax::XAttributeList > xAttributes;
         if( m_xOuterAttributes.is() )
         {
             // merge the attribute lists
@@ -828,10 +828,10 @@ namespace xmloff
                 return;
             }
 
-            const sal_Char* pValueProperty = NULL;
-            const sal_Char* pCurrentValueProperty = NULL;
-            const sal_Char* pMinValueProperty = NULL;
-            const sal_Char* pMaxValueProperty = NULL;
+            const sal_Char* pValueProperty = nullptr;
+            const sal_Char* pCurrentValueProperty = nullptr;
+            const sal_Char* pMinValueProperty = nullptr;
+            const sal_Char* pMaxValueProperty = nullptr;
 
             bool bRetrievedValues = false;
             bool bRetrievedValueLimits = false;
@@ -944,7 +944,7 @@ namespace xmloff
             // we have exactly 2 properties where this type class is allowed:
             OSL_ENSURE(
                     _rPropValue.Name != PROPERTY_EFFECTIVE_VALUE
-                ||  _rPropValue.Name != PROPERTY_EFFECTIVE_DEFAULT,
+                &&  _rPropValue.Name != PROPERTY_EFFECTIVE_DEFAULT,
                 "OControlImport::implTranslateValueProperty: invalid property type/name combination!");
 
             // Both properties are allowed to have a double or a string value,
@@ -993,8 +993,8 @@ namespace xmloff
             DBG_UNHANDLED_EXCEPTION();
         }
 
-        const sal_Char* pValueProperty = NULL;
-        const sal_Char* pDefaultValueProperty = NULL;
+        const sal_Char* pValueProperty = nullptr;
+        const sal_Char* pDefaultValueProperty = nullptr;
         getRuntimeValuePropertyNames(m_eElementType, nClassId, pValueProperty, pDefaultValueProperty);
         if ( pDefaultValueProperty && pValueProperty )
         {
@@ -1661,8 +1661,7 @@ namespace xmloff
                 // a listbox which has a list-source attribute must have a list-source-type of something
                 // not equal to ValueList.
                 // In this case, the list-source value is simply the one and only element of the ListSource property.
-                Sequence< OUString > aListSourcePropValue( 1 );
-                aListSourcePropValue[0] = _rValue;
+                Sequence<OUString> aListSourcePropValue { _rValue };
                 aListSource.Value <<= aListSourcePropValue;
             }
 
@@ -1755,9 +1754,9 @@ namespace xmloff
         // the label and the value
         const SvXMLNamespaceMap& rMap = GetImport().GetNamespaceMap();
         const OUString sLabelAttribute = rMap.GetQNameByKey(
-            GetPrefix(), OUString("label"));
+            GetPrefix(), "label");
         const OUString sValueAttribute = rMap.GetQNameByKey(
-            GetPrefix(), OUString("value"));
+            GetPrefix(), "value");
 
         // the label attribute
         OUString sValue = _rxAttrList->getValueByName(sLabelAttribute);
@@ -1853,7 +1852,7 @@ namespace xmloff
         Reference< XCloneable > xCloneList(_rxAttrList, UNO_QUERY);
         OSL_ENSURE(xCloneList.is(), "OColumnWrapperImport::StartElement: AttributeList not cloneable!");
         if ( xCloneList.is() )
-            m_xOwnAttributes = Reference< XAttributeList >(xCloneList->createClone(), UNO_QUERY);
+            m_xOwnAttributes.set(xCloneList->createClone(), UNO_QUERY);
         OSL_ENSURE(m_xOwnAttributes.is(), "OColumnWrapperImport::StartElement: no cloned list!");
     }
 
@@ -2037,8 +2036,8 @@ namespace xmloff
                     SvXMLImport& _rImport
                     ,sal_uInt16 nPrfx
                     , const OUString& _sLocalName
-                    ,const Reference< ::com::sun::star::xml::sax::XAttributeList > & _xAttrList
-                    ,const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& _xElement) :
+                    ,const Reference< css::xml::sax::XAttributeList > & _xAttrList
+                    ,const css::uno::Reference< css::beans::XPropertySet >& _xElement) :
         SvXMLImportContext( _rImport, nPrfx, _sLocalName )
     {
         OSL_ENSURE(_xAttrList.is(),"Attribute list is NULL!");

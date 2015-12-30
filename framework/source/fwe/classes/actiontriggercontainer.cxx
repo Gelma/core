@@ -71,7 +71,7 @@ void ActionTriggerContainer::release() throw()
 
 // XMultiServiceFactory
 Reference< XInterface > SAL_CALL ActionTriggerContainer::createInstance( const OUString& aServiceSpecifier )
-throw ( ::com::sun::star::uno::Exception, RuntimeException, std::exception)
+throw ( css::uno::Exception, RuntimeException, std::exception)
 {
     if ( aServiceSpecifier == SERVICENAME_ACTIONTRIGGER )
         return static_cast<OWeakObject *>( new ActionTriggerPropertySet());
@@ -80,7 +80,7 @@ throw ( ::com::sun::star::uno::Exception, RuntimeException, std::exception)
     else if ( aServiceSpecifier == SERVICENAME_ACTIONTRIGGERSEPARATOR )
         return static_cast<OWeakObject *>( new ActionTriggerSeparatorPropertySet());
     else
-        throw com::sun::star::uno::RuntimeException("Unknown service specifier!", static_cast<OWeakObject *>(this) );
+        throw css::uno::RuntimeException("Unknown service specifier!", static_cast<OWeakObject *>(this) );
 }
 
 Reference< XInterface > SAL_CALL ActionTriggerContainer::createInstanceWithArguments( const OUString& ServiceSpecifier, const Sequence< Any >& /*Arguments*/ )
@@ -117,9 +117,7 @@ throw ( RuntimeException, std::exception )
 Sequence< OUString > SAL_CALL ActionTriggerContainer::getSupportedServiceNames()
 throw ( RuntimeException, std::exception )
 {
-    Sequence< OUString > seqServiceNames( 1 );
-
-    seqServiceNames[0] = SERVICENAME_ACTIONTRIGGERCONTAINER;
+    Sequence< OUString > seqServiceNames { SERVICENAME_ACTIONTRIGGERCONTAINER };
     return seqServiceNames;
 }
 
@@ -129,15 +127,15 @@ Sequence< Type > SAL_CALL ActionTriggerContainer::getTypes() throw ( RuntimeExce
     // Optimize this method !
     // We initialize a static variable only one time. And we don't must use a mutex at every call!
     // For the first call; pTypeCollection is NULL - for the second call pTypeCollection is different from NULL!
-    static ::cppu::OTypeCollection* pTypeCollection = NULL;
+    static ::cppu::OTypeCollection* pTypeCollection = nullptr;
 
-    if ( pTypeCollection == NULL )
+    if ( pTypeCollection == nullptr )
     {
         // Ready for multithreading; get global mutex for first call of this method only! see before
         osl::MutexGuard aGuard( osl::Mutex::getGlobalMutex() );
 
         // Control these pointer again ... it can be, that another instance will be faster then these!
-        if ( pTypeCollection == NULL )
+        if ( pTypeCollection == nullptr )
         {
             // Create a static typecollection ...
             static ::cppu::OTypeCollection aTypeCollection(

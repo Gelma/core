@@ -31,43 +31,13 @@ namespace unocontrols{
 
 //  class declaration OConnectionPointContainerHelper
 
-class OConnectionPointContainerHelper   :   public  ::com::sun::star::lang::XConnectionPointContainer
+class OConnectionPointContainerHelper   :   public  css::lang::XConnectionPointContainer
                                         ,   public  ::cppu::OWeakObject
 {
 
-//  public methods
-
 public:
 
-    //  construct/destruct
-
-    /**_________________________________________________________________________________________________________
-        @short
-        @descr
-
-        @seealso
-
-        @param
-
-        @return
-
-        @onerror
-    */
-
     OConnectionPointContainerHelper( ::osl::Mutex& aMutex );
-
-    /**_________________________________________________________________________________________________________
-        @short
-        @descr
-
-        @seealso
-
-        @param
-
-        @return
-
-        @onerror
-    */
 
     virtual ~OConnectionPointContainerHelper();
 
@@ -86,8 +56,8 @@ public:
         @onerror    A RuntimeException is thrown.
     */
 
-    virtual ::com::sun::star::uno::Any SAL_CALL queryInterface( const ::com::sun::star::uno::Type& aType )
-        throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual css::uno::Any SAL_CALL queryInterface( const css::uno::Type& aType )
+        throw( css::uno::RuntimeException, std::exception ) override;
 
     /**_______________________________________________________________________________________________________
         @short      increment refcount
@@ -96,7 +66,7 @@ public:
         @onerror    A RuntimeException is thrown.
     */
 
-    virtual void SAL_CALL acquire() throw() SAL_OVERRIDE;
+    virtual void SAL_CALL acquire() throw() override;
 
     /**_______________________________________________________________________________________________________
         @short      decrement refcount
@@ -105,78 +75,26 @@ public:
         @onerror    A RuntimeException is thrown.
     */
 
-    virtual void SAL_CALL release() throw() SAL_OVERRIDE;
+    virtual void SAL_CALL release() throw() override;
 
     //  XConnectionPointContainer
 
-    /**_________________________________________________________________________________________________________
-        @short
-        @descr
+    virtual css::uno::Sequence< css::uno::Type > SAL_CALL getConnectionPointTypes()
+        throw( css::uno::RuntimeException, std::exception ) override;
 
-        @seealso
-
-        @param
-
-        @return
-
-        @onerror
-    */
-
-    virtual ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Type > SAL_CALL getConnectionPointTypes()
-        throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-
-    /**_________________________________________________________________________________________________________
-        @short
-        @descr
-
-        @seealso
-
-        @param
-
-        @return
-
-        @onerror
-    */
-
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::lang::XConnectionPoint > SAL_CALL queryConnectionPoint(
-        const ::com::sun::star::uno::Type& aType
-    ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-
-    /**_________________________________________________________________________________________________________
-        @short
-        @descr
-
-        @seealso
-
-        @param
-
-        @return
-
-        @onerror
-    */
+    virtual css::uno::Reference< css::lang::XConnectionPoint > SAL_CALL queryConnectionPoint(
+        const css::uno::Type& aType
+    ) throw( css::uno::RuntimeException, std::exception ) override;
 
     virtual void SAL_CALL advise(
-        const   ::com::sun::star::uno::Type&                              aType ,
-        const   ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >&  xListener
-    ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-
-    /**_________________________________________________________________________________________________________
-        @short
-        @descr
-
-        @seealso
-
-        @param
-
-        @return
-
-        @onerror
-    */
+        const   css::uno::Type&                              aType ,
+        const   css::uno::Reference< css::uno::XInterface >&  xListener
+    ) throw( css::uno::RuntimeException, std::exception ) override;
 
     virtual void SAL_CALL unadvise(
-        const   ::com::sun::star::uno::Type&                              aType       ,
-        const   ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >&  xListener
-    ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        const   css::uno::Type&                              aType       ,
+        const   css::uno::Reference< css::uno::XInterface >&  xListener
+    ) throw( css::uno::RuntimeException, std::exception ) override;
 
     //  public but impl method!
     //  Is necessary to get container member at OConnectionPoint-instance.
@@ -184,8 +102,6 @@ public:
     // "Parent" function must do this.
     ::cppu::OMultiTypeInterfaceContainerHelper& impl_getMultiTypeContainer() { return m_aMultiTypeContainer; }
 
-
-//  private variables
 
 private:
 

@@ -57,7 +57,7 @@ using namespace ::com::sun::star;
 
 LookUpComboBox::LookUpComboBox(vcl::Window *pParent)
     : ComboBox(pParent, WB_LEFT|WB_DROPDOWN|WB_VCENTER|WB_3DLOOK|WB_TABSTOP)
-    , m_pDialog(NULL)
+    , m_pDialog(nullptr)
 {
     EnableAutoSize(true);
 
@@ -100,7 +100,7 @@ IMPL_LINK_NOARG_TYPED( LookUpComboBox, ModifyTimer_Hdl, Idle *, void )
 
 ReplaceEdit::ReplaceEdit(vcl::Window *pParent)
     : Edit(pParent, WB_BORDER | WB_TABSTOP)
-    , m_pBtn(NULL)
+    , m_pBtn(nullptr)
 {
 }
 
@@ -167,7 +167,7 @@ void AlternativesString::Paint(const Point& rPos, SvTreeListBox& /*rDev*/, vcl::
 
 ThesaurusAlternativesCtrl::ThesaurusAlternativesCtrl(vcl::Window* pParent)
     : SvxCheckListBox(pParent)
-    , m_pDialog(NULL)
+    , m_pDialog(nullptr)
 {
     SetStyle( GetStyle() | WB_CLIPCHILDREN | WB_HSCROLL | WB_FORCE_MAKEVISIBLE );
     SetHighlightRange();
@@ -215,7 +215,7 @@ void ThesaurusAlternativesCtrl::SetExtraData(
 AlternativesExtraData * ThesaurusAlternativesCtrl::GetExtraData(
     const SvTreeListEntry *pEntry )
 {
-    AlternativesExtraData *pRes = NULL;
+    AlternativesExtraData *pRes = nullptr;
     UserDataMap_t::iterator aIt( m_aUserData.find( pEntry ) );
     if (aIt != m_aUserData.end())
         pRes = &aIt->second;
@@ -351,16 +351,15 @@ IMPL_LINK_TYPED( SvxThesaurusDialog, LeftBtnHdl_Impl, Button *, pBtn, void )
     }
 }
 
-IMPL_LINK( SvxThesaurusDialog, LanguageHdl_Impl, ListBox*, pLB )
+IMPL_LINK_TYPED( SvxThesaurusDialog, LanguageHdl_Impl, ListBox&, rLB, void )
 {
-    OUString aLangText( pLB->GetSelectEntry() );
+    OUString aLangText( rLB.GetSelectEntry() );
     LanguageType nLang = SvtLanguageTable::GetLanguageType( aLangText );
     DBG_ASSERT( nLang != LANGUAGE_NONE && nLang != LANGUAGE_DONTKNOW, "failed to get language" );
     if (xThesaurus->hasLocale( LanguageTag::convertToLocale( nLang ) ))
         nLookUpLanguage = nLang;
     SetWindowTitle( nLang );
     LookUp_Impl();
-    return 0;
 }
 
 void SvxThesaurusDialog::LookUp_Impl()
@@ -382,23 +381,21 @@ void SvxThesaurusDialog::LookUp_Impl()
     m_pLeftBtn->Enable( aLookUpHistory.size() > 1 );
 }
 
-IMPL_LINK( SvxThesaurusDialog, WordSelectHdl_Impl, ComboBox *, pBox )
+IMPL_LINK_TYPED( SvxThesaurusDialog, WordSelectHdl_Impl, ComboBox&, rBox, void )
 {
-    if (pBox && !m_pWordCB->IsTravelSelect())  // act only upon return key and not when traveling with cursor keys
+    if (!m_pWordCB->IsTravelSelect())  // act only upon return key and not when traveling with cursor keys
     {
-        const sal_Int32 nPos = pBox->GetSelectEntryPos();
-        OUString aStr( pBox->GetEntry( nPos ) );
+        const sal_Int32 nPos = rBox.GetSelectEntryPos();
+        OUString aStr( rBox.GetEntry( nPos ) );
         aStr = linguistic::GetThesaurusReplaceText( aStr );
         m_pWordCB->SetText( aStr );
         LookUp_Impl();
     }
-
-    return 0;
 }
 
 IMPL_LINK_TYPED( SvxThesaurusDialog, AlternativesSelectHdl_Impl, SvTreeListBox *, pBox, void )
 {
-    SvTreeListEntry *pEntry = pBox ? pBox->GetCurEntry() : NULL;
+    SvTreeListEntry *pEntry = pBox ? pBox->GetCurEntry() : nullptr;
     if (pEntry)
     {
         AlternativesExtraData * pData = m_pAlternativesCT->GetExtraData( pEntry );
@@ -414,7 +411,7 @@ IMPL_LINK_TYPED( SvxThesaurusDialog, AlternativesSelectHdl_Impl, SvTreeListBox *
 
 IMPL_LINK_TYPED( SvxThesaurusDialog, AlternativesDoubleClickHdl_Impl, SvTreeListBox*, pBox, bool )
 {
-    SvTreeListEntry *pEntry = pBox ? pBox->GetCurEntry() : NULL;
+    SvTreeListEntry *pEntry = pBox ? pBox->GetCurEntry() : nullptr;
     if (pEntry)
     {
         AlternativesExtraData * pData = m_pAlternativesCT->GetExtraData( pEntry );
@@ -452,7 +449,7 @@ SvxThesaurusDialog::SvxThesaurusDialog(
     LanguageType nLanguage)
     : SvxStandardDialog(pParent, "ThesaurusDialog", "cui/ui/thesaurus.ui")
     , m_aErrStr(CUI_RESSTR(RID_SVXSTR_ERR_TEXTNOTFOUND))
-    , xThesaurus(NULL)
+    , xThesaurus(nullptr)
     , aLookUpText()
     , nLookUpLanguage(LANGUAGE_NONE)
     , m_bWordFound(false)

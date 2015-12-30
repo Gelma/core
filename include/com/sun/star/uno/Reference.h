@@ -22,6 +22,7 @@
 #include <sal/config.h>
 
 #include <cassert>
+#include <cstddef>
 
 #include <rtl/alloc.h>
 
@@ -90,7 +91,7 @@ public:
         @return true if reference acquires an interface, i.e. true if it is not null
     */
     inline bool SAL_CALL is() const
-        { return (0 != _pInterface); }
+        { return (NULL != _pInterface); }
 
     /** Equality operator: compares two interfaces
         Checks if both references are null or refer to the same object.
@@ -292,6 +293,14 @@ public:
     */
     inline Reference( const Reference< interface_type > & rRef );
 
+#if defined LIBO_INTERNAL_ONLY
+    /** Move constructor
+
+        @param rRef another reference
+    */
+    inline Reference( Reference< interface_type > && rRef );
+#endif
+
     /** Up-casting conversion constructor: Copies interface reference.
 
         Does not work for up-casts to ambiguous bases.  For the special case of
@@ -399,7 +408,7 @@ public:
         @return UNacquired interface pointer
     */
     inline interface_type * SAL_CALL operator -> () const {
-        assert(_pInterface != 0);
+        assert(_pInterface != NULL);
         return castFromXInterface(_pInterface);
     }
 
@@ -539,7 +548,15 @@ public:
         @return this reference
     */
     inline Reference< interface_type > & SAL_CALL operator = ( const Reference< interface_type > & rRef );
+#if defined LIBO_INTERNAL_ONLY
+    /** Assignment move operator: Acquires given interface reference and sets reference.
+        An interface already set will be released.
 
+        @param rRef an interface reference
+        @return this reference
+    */
+    inline Reference< interface_type > & SAL_CALL operator = ( Reference< interface_type > && rRef );
+#endif
     /** Queries given interface reference for type interface_type.
 
         @param rRef interface reference

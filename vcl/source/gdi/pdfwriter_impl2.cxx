@@ -31,6 +31,7 @@
 #include "unotools/streamwrap.hxx"
 
 #include <tools/fract.hxx>
+#include <tools/stream.hxx>
 
 #include "comphelper/processfactory.hxx"
 
@@ -60,7 +61,7 @@ void PDFWriterImpl::implWriteGradient( const tools::PolyPolygon& i_rPolyPoly, co
 
     m_rOuterFace.Push();
     m_rOuterFace.IntersectClipRegion( i_rPolyPoly.getB2DPolyPolygon() );
-    playMetafile( aTmpMtf, NULL, i_rContext, i_pDummyVDev );
+    playMetafile( aTmpMtf, nullptr, i_rContext, i_pDummyVDev );
     m_rOuterFace.Pop();
 }
 
@@ -410,7 +411,7 @@ void PDFWriterImpl::playMetafile( const GDIMetaFile& i_rMtf, vcl::PDFExtOutDevDa
                         const Color aTransCol( rTransparenceGradient.GetStartColor() );
                         const sal_uInt16 nTransPercent = aTransCol.GetLuminance() * 100 / 255;
                         m_rOuterFace.BeginTransparencyGroup();
-                        playMetafile( aTmpMtf, NULL, i_rContext, pDummyVDev );
+                        playMetafile( aTmpMtf, nullptr, i_rContext, pDummyVDev );
                         m_rOuterFace.EndTransparencyGroup( Rectangle( rPos, rSize ), nTransPercent );
                     }
                     else
@@ -504,7 +505,7 @@ void PDFWriterImpl::playMetafile( const GDIMetaFile& i_rMtf, vcl::PDFExtOutDevDa
 
                     m_rOuterFace.SetMapMode( aMapMode );
                     pDummyVDev->SetMapMode( aMapMode );
-                    playMetafile( aSubstitute, NULL, i_rContext, pDummyVDev );
+                    playMetafile( aSubstitute, nullptr, i_rContext, pDummyVDev );
                     pDummyVDev->Pop();
                     m_rOuterFace.Pop();
                 }
@@ -517,7 +518,7 @@ void PDFWriterImpl::playMetafile( const GDIMetaFile& i_rMtf, vcl::PDFExtOutDevDa
 
                     if( pA->GetComment().equalsIgnoreAsciiCase("XGRAD_SEQ_BEGIN"))
                     {
-                        const MetaGradientExAction* pGradAction = NULL;
+                        const MetaGradientExAction* pGradAction = nullptr;
                         bool                        bDone = false;
 
                         while( !bDone && ( ++i < nCount ) )
@@ -1068,7 +1069,7 @@ void PDFWriterImpl::playMetafile( const GDIMetaFile& i_rMtf, vcl::PDFExtOutDevDa
    is not sufficient, since an rtl MD5 digest cannot be created in an arbitrary state
    which would be needed in PDFWriterImpl::computeEncryptionKey.
 */
-class EncHashTransporter : public cppu::WeakImplHelper < com::sun::star::beans::XMaterialHolder >
+class EncHashTransporter : public cppu::WeakImplHelper < css::beans::XMaterialHolder >
 {
     rtlDigest                   maUDigest;
     sal_IntPtr                  maID;
@@ -1100,12 +1101,12 @@ public:
         if( maUDigest )
         {
             rtl_digest_destroyMD5( maUDigest );
-            maUDigest = NULL;
+            maUDigest = nullptr;
         }
     }
 
     // XMaterialHolder
-    virtual uno::Any SAL_CALL getMaterial() throw(std::exception) SAL_OVERRIDE
+    virtual uno::Any SAL_CALL getMaterial() throw(std::exception) override
     {
         return uno::makeAny( sal_Int64(maID) );
     }
@@ -1118,7 +1119,7 @@ std::map< sal_IntPtr, EncHashTransporter* > EncHashTransporter::sTransporters;
 
 EncHashTransporter* EncHashTransporter::getEncHashTransporter( const uno::Reference< beans::XMaterialHolder >& xRef )
 {
-    EncHashTransporter* pResult = NULL;
+    EncHashTransporter* pResult = nullptr;
     if( xRef.is() )
     {
         uno::Any aMat( xRef->getMaterial() );
@@ -1164,7 +1165,7 @@ void PDFWriterImpl::checkAndEnableStreamEncryption( register sal_Int32 nObject )
         rtl_digest_MD5( &m_aContext.Encryption.EncryptionKey[0], i+2, nMD5Sum, sizeof(nMD5Sum) );
         // initialize the RC4 with the key
         // key length: see algorithm 3.1, step 4: (N+5) max 16
-        rtl_cipher_initARCFOUR( m_aCipher, rtl_Cipher_DirectionEncode, nMD5Sum, m_nRC4KeyLength, NULL, 0 );
+        rtl_cipher_initARCFOUR( m_aCipher, rtl_Cipher_DirectionEncode, nMD5Sum, m_nRC4KeyLength, nullptr, 0 );
     }
 }
 
@@ -1183,7 +1184,7 @@ void PDFWriterImpl::enableStringEncryption( register sal_Int32 nObject )
         rtl_digest_MD5( &m_aContext.Encryption.EncryptionKey[0], i+2, nMD5Sum, sizeof(nMD5Sum) );
         // initialize the RC4 with the key
         // key length: see algorithm 3.1, step 4: (N+5) max 16
-        rtl_cipher_initARCFOUR( m_aCipher, rtl_Cipher_DirectionEncode, nMD5Sum, m_nRC4KeyLength, NULL, 0 );
+        rtl_cipher_initARCFOUR( m_aCipher, rtl_Cipher_DirectionEncode, nMD5Sum, m_nRC4KeyLength, nullptr, 0 );
     }
 }
 
@@ -1430,7 +1431,7 @@ bool PDFWriterImpl::computeODictionaryValue( const sal_uInt8* i_pPaddedOwnerPass
             //step 5 already done, data is in i_pPaddedUserPassword
             //step 6
             rtl_cipher_initARCFOUR( aCipher, rtl_Cipher_DirectionEncode,
-                                     nMD5Sum, i_nKeyLength , NULL, 0 );
+                                     nMD5Sum, i_nKeyLength , nullptr, 0 );
             // encrypt the user password using the key set above
             rtl_cipher_encodeARCFOUR( aCipher, i_pPaddedUserPassword, ENCRYPTED_PWD_SIZE, // the data to be encrypted
                                       &io_rOValue[0], sal_Int32(io_rOValue.size()) ); //encrypted data
@@ -1446,7 +1447,7 @@ bool PDFWriterImpl::computeODictionaryValue( const sal_uInt8* i_pPaddedOwnerPass
                         nLocalKey[y] = (sal_uInt8)( nMD5Sum[y] ^ i );
 
                     rtl_cipher_initARCFOUR( aCipher, rtl_Cipher_DirectionEncode,
-                                            nLocalKey, SECUR_128BIT_KEY, NULL, 0 ); //destination data area, on init can be NULL
+                                            nLocalKey, SECUR_128BIT_KEY, nullptr, 0 ); //destination data area, on init can be NULL
                     rtl_cipher_encodeARCFOUR( aCipher, &io_rOValue[0], sal_Int32(io_rOValue.size()), // the data to be encrypted
                                               &io_rOValue[0], sal_Int32(io_rOValue.size()) ); // encrypted data, can be the same as the input, encrypt "in place"
                     //step 8, store in class data member
@@ -1499,7 +1500,7 @@ bool PDFWriterImpl::computeUDictionaryValue( EncHashTransporter* i_pTransporter,
                 //step 2 and 3
                 rtl_cipher_initARCFOUR( aCipher, rtl_Cipher_DirectionEncode,
                                         &io_rProperties.EncryptionKey[0], 5 , // key and key length
-                                        NULL, 0 ); //destination data area
+                                        nullptr, 0 ); //destination data area
                 // encrypt the user password using the key set above, save for later use
                 rtl_cipher_encodeARCFOUR( aCipher, s_nPadString, sizeof( s_nPadString ), // the data to be encrypted
                                           &io_rProperties.UValue[0], sal_Int32(io_rProperties.UValue.size()) ); //encrypted data, stored in class data member
@@ -1510,19 +1511,18 @@ bool PDFWriterImpl::computeUDictionaryValue( EncHashTransporter* i_pTransporter,
                 //step6, initialize the last 16 bytes of the encrypted user password to 0
                 for(sal_uInt32 i = MD5_DIGEST_SIZE; i < sal_uInt32(io_rProperties.UValue.size()); i++)
                     io_rProperties.UValue[i] = 0;
-                //step 2
-                rtlDigestError nError = rtl_digest_updateMD5( aDigest, s_nPadString, sizeof( s_nPadString ) );
-                //step 3
-                if( nError == rtl_Digest_E_None )
-                    nError = rtl_digest_updateMD5( aDigest, &io_rProperties.DocumentIdentifier[0], sal_Int32(io_rProperties.DocumentIdentifier.size()) );
-                else
+                //steps 2 and 3
+                if (rtl_digest_updateMD5( aDigest, s_nPadString, sizeof( s_nPadString ) ) != rtl_Digest_E_None
+                    || rtl_digest_updateMD5( aDigest, &io_rProperties.DocumentIdentifier[0], sal_Int32(io_rProperties.DocumentIdentifier.size()) ) != rtl_Digest_E_None)
+                {
                     bSuccess = false;
+                }
 
                 sal_uInt8 nMD5Sum[ RTL_DIGEST_LENGTH_MD5 ];
                 rtl_digest_getMD5( aDigest, nMD5Sum, sizeof(nMD5Sum) );
                 //Step 4
                 rtl_cipher_initARCFOUR( aCipher, rtl_Cipher_DirectionEncode,
-                                        &io_rProperties.EncryptionKey[0], SECUR_128BIT_KEY, NULL, 0 ); //destination data area
+                                        &io_rProperties.EncryptionKey[0], SECUR_128BIT_KEY, nullptr, 0 ); //destination data area
                 rtl_cipher_encodeARCFOUR( aCipher, nMD5Sum, sizeof( nMD5Sum ), // the data to be encrypted
                                           &io_rProperties.UValue[0], sizeof( nMD5Sum ) ); //encrypted data, stored in class data member
                 //step 5
@@ -1536,7 +1536,7 @@ bool PDFWriterImpl::computeUDictionaryValue( EncHashTransporter* i_pTransporter,
 
                     rtl_cipher_initARCFOUR( aCipher, rtl_Cipher_DirectionEncode,
                                             nLocalKey, SECUR_128BIT_KEY, // key and key length
-                                            NULL, 0 ); //destination data area, on init can be NULL
+                                            nullptr, 0 ); //destination data area, on init can be NULL
                     rtl_cipher_encodeARCFOUR( aCipher, &io_rProperties.UValue[0], SECUR_128BIT_KEY, // the data to be encrypted
                                               &io_rProperties.UValue[0], SECUR_128BIT_KEY ); // encrypted data, can be the same as the input, encrypt "in place"
                 }

@@ -92,7 +92,6 @@ public:
     // list of used types while writing
     SvMetaTypeMemberList    aUsedTypes;
     OString                 aIFaceName;
-    SvIdentifier            aStructSlotId;
 
     void                    StartNewFile( const OUString& rName );
     void                    SetExportFile( const OUString& rName )
@@ -123,7 +122,7 @@ public:
 
     SvMetaType *            ReadKnownType( SvTokenStream & rInStm );
     SvMetaAttribute *       ReadKnownAttr( SvTokenStream & rInStm,
-                                            SvMetaType * pType = NULL );
+                                            SvMetaType * pType = nullptr );
     SvMetaAttribute *       SearchKnownAttr( const SvIdentifier& );
     SvMetaClass *           ReadKnownClass( SvTokenStream & rInStm );
     void AddDepFile(OUString const& rFileName);

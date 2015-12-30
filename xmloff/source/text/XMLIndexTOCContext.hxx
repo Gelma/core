@@ -58,8 +58,7 @@ class XMLIndexTOCContext : public SvXMLImportContext
     const OUString sName;
 
     /** XPropertySet of the index */
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet> xTOCPropertySet;
+    css::uno::Reference<css::beans::XPropertySet> xTOCPropertySet;
 
     enum IndexTypeEnum eIndexType;
 
@@ -69,7 +68,6 @@ class XMLIndexTOCContext : public SvXMLImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLIndexTOCContext(
         SvXMLImport& rImport,
@@ -81,16 +79,14 @@ public:
 protected:
 
     virtual void StartElement(
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList> & xAttrList) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
     virtual SvXMLImportContext *CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList> & xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList ) override;
 };
 
 #endif

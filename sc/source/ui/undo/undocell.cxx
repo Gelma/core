@@ -66,17 +66,6 @@ namespace HelperNotifyChanges
     }
 }
 
-TYPEINIT1(ScUndoCursorAttr, ScSimpleUndo);
-TYPEINIT1(ScUndoEnterData, ScSimpleUndo);
-TYPEINIT1(ScUndoEnterValue, ScSimpleUndo);
-TYPEINIT1(ScUndoSetCell, ScSimpleUndo);
-TYPEINIT1(ScUndoPageBreak, ScSimpleUndo);
-TYPEINIT1(ScUndoPrintZoom, ScSimpleUndo);
-TYPEINIT1(ScUndoThesaurus, ScSimpleUndo);
-TYPEINIT1(ScUndoReplaceNote, ScSimpleUndo);
-TYPEINIT1(ScUndoShowHideNote, ScSimpleUndo);
-TYPEINIT1(ScUndoDetective, ScSimpleUndo);
-TYPEINIT1(ScUndoRangeNames, ScSimpleUndo);
 
 ScUndoCursorAttr::ScUndoCursorAttr( ScDocShell* pNewDocShell,
             SCCOL nNewCol, SCROW nNewRow, SCTAB nNewTab,
@@ -86,8 +75,8 @@ ScUndoCursorAttr::ScUndoCursorAttr( ScDocShell* pNewDocShell,
     nCol( nNewCol ),
     nRow( nNewRow ),
     nTab( nNewTab ),
-    pOldEditData( static_cast<EditTextObject*>(NULL) ),
-    pNewEditData( static_cast<EditTextObject*>(NULL) ),
+    pOldEditData( static_cast<EditTextObject*>(nullptr) ),
+    pNewEditData( static_cast<EditTextObject*>(nullptr) ),
     bIsAutomatic( bAutomatic )
 {
     ScDocumentPool* pPool = pDocShell->GetDocument().GetPool();
@@ -125,7 +114,7 @@ void ScUndoCursorAttr::DoChange( const ScPatternAttr* pWhichPattern, const share
     rDoc.SetPattern( nCol, nRow, nTab, *pWhichPattern, true );
 
     if (rDoc.GetCellType(aPos) == CELLTYPE_EDIT && pEditData)
-        rDoc.SetEditText(aPos, *pEditData, NULL);
+        rDoc.SetEditText(aPos, *pEditData, nullptr);
 
     ScTabViewShell* pViewShell = ScTabViewShell::GetActiveViewShell();
     if (pViewShell)
@@ -136,9 +125,9 @@ void ScUndoCursorAttr::DoChange( const ScPatternAttr* pWhichPattern, const share
     }
 
     const SfxItemSet& rApplySet = pApplyPattern->GetItemSet();
-    bool bPaintExt = ( rApplySet.GetItemState( ATTR_SHADOW, true ) != SfxItemState::DEFAULT ||
-                       rApplySet.GetItemState( ATTR_CONDITIONAL, true ) != SfxItemState::DEFAULT );
-    bool bPaintRows = ( rApplySet.GetItemState( ATTR_HOR_JUSTIFY, true ) != SfxItemState::DEFAULT );
+    bool bPaintExt = ( rApplySet.GetItemState( ATTR_SHADOW ) != SfxItemState::DEFAULT ||
+                       rApplySet.GetItemState( ATTR_CONDITIONAL ) != SfxItemState::DEFAULT );
+    bool bPaintRows = ( rApplySet.GetItemState( ATTR_HOR_JUSTIFY ) != SfxItemState::DEFAULT );
 
     sal_uInt16 nFlags = SC_PF_TESTMERGE;
     if (bPaintExt)
@@ -175,13 +164,13 @@ void ScUndoCursorAttr::Redo()
 
 void ScUndoCursorAttr::Repeat(SfxRepeatTarget& rTarget)
 {
-    if (rTarget.ISA(ScTabViewTarget))
+    if (dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr)
         static_cast<ScTabViewTarget&>(rTarget).GetViewShell()->ApplySelectionPattern( *pApplyPattern );
 }
 
 bool ScUndoCursorAttr::CanRepeat(SfxRepeatTarget& rTarget) const
 {
-    return rTarget.ISA(ScTabViewTarget);
+    return dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr;
 }
 
 ScUndoEnterData::Value::Value() : mnTab(-1), mbHasFormat(false), mnFormat(0) {}
@@ -295,7 +284,7 @@ void ScUndoEnterData::Redo()
             ScAddress aPos = maPos;
             aPos.SetTab(nTab);
             // edit text wil be cloned.
-            rDoc.SetEditText(aPos, *mpNewEditData, NULL);
+            rDoc.SetEditText(aPos, *mpNewEditData, nullptr);
         }
         else
             rDoc.SetString(maPos.Col(), maPos.Row(), nTab, maNewString);
@@ -313,7 +302,7 @@ void ScUndoEnterData::Redo()
 
 void ScUndoEnterData::Repeat(SfxRepeatTarget& rTarget)
 {
-    if (rTarget.ISA(ScTabViewTarget))
+    if (dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr)
     {
         OUString aTemp = maNewString;
         static_cast<ScTabViewTarget&>(rTarget).GetViewShell()->EnterDataAtCursor( aTemp );
@@ -322,7 +311,7 @@ void ScUndoEnterData::Repeat(SfxRepeatTarget& rTarget)
 
 bool ScUndoEnterData::CanRepeat(SfxRepeatTarget& rTarget) const
 {
-    return rTarget.ISA(ScTabViewTarget);
+    return dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr;
 }
 
 ScUndoEnterValue::ScUndoEnterValue(
@@ -559,20 +548,20 @@ void ScUndoPageBreak::Redo()
 
 void ScUndoPageBreak::Repeat(SfxRepeatTarget& rTarget)
 {
-    if (rTarget.ISA(ScTabViewTarget))
+    if (dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr)
     {
         ScTabViewShell& rViewShell = *static_cast<ScTabViewTarget&>(rTarget).GetViewShell();
 
         if (bInsert)
-            rViewShell.InsertPageBreak(bColumn, true);
+            rViewShell.InsertPageBreak(bColumn);
         else
-            rViewShell.DeletePageBreak(bColumn, true);
+            rViewShell.DeletePageBreak(bColumn);
     }
 }
 
 bool ScUndoPageBreak::CanRepeat(SfxRepeatTarget& rTarget) const
 {
-    return rTarget.ISA(ScTabViewTarget);
+    return dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr;
 }
 
 ScUndoPrintZoom::ScUndoPrintZoom( ScDocShell* pNewDocShell,
@@ -632,7 +621,7 @@ void ScUndoPrintZoom::Redo()
 
 void ScUndoPrintZoom::Repeat(SfxRepeatTarget& rTarget)
 {
-    if (rTarget.ISA(ScTabViewTarget))
+    if (dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr)
     {
         ScTabViewShell& rViewShell = *static_cast<ScTabViewTarget&>(rTarget).GetViewShell();
         ScViewData& rViewData = rViewShell.GetViewData();
@@ -642,7 +631,7 @@ void ScUndoPrintZoom::Repeat(SfxRepeatTarget& rTarget)
 
 bool ScUndoPrintZoom::CanRepeat(SfxRepeatTarget& rTarget) const
 {
-    return rTarget.ISA(ScTabViewTarget);
+    return dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr;
 }
 
 ScUndoThesaurus::ScUndoThesaurus(
@@ -717,13 +706,13 @@ void ScUndoThesaurus::Redo()
 
 void ScUndoThesaurus::Repeat(SfxRepeatTarget& rTarget)
 {
-    if (rTarget.ISA(ScTabViewTarget))
+    if (dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr)
         static_cast<ScTabViewTarget&>(rTarget).GetViewShell()->DoThesaurus();
 }
 
 bool ScUndoThesaurus::CanRepeat(SfxRepeatTarget& rTarget) const
 {
-    return rTarget.ISA(ScTabViewTarget);
+    return dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr;
 }
 
 ScUndoReplaceNote::ScUndoReplaceNote( ScDocShell& rDocShell, const ScAddress& rPos,
@@ -871,7 +860,7 @@ ScUndoDetective::ScUndoDetective( ScDocShell* pNewDocShell,
     nAction     ( 0 ),
     pDrawUndo   ( pDraw )
 {
-    bIsDelete = ( pOperation == NULL );
+    bIsDelete = ( pOperation == nullptr );
     if (!bIsDelete)
     {
         nAction = (sal_uInt16) pOperation->GetOperation();

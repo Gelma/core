@@ -32,7 +32,6 @@ namespace DOM
             xmlNotationPtr const pNotation)
         : CNotation_Base(rDocument, rMutex,
             NodeType_NOTATION_NODE, reinterpret_cast<xmlNodePtr>(pNotation))
-        , m_aNotationPtr(pNotation)
     {
     }
 
@@ -59,7 +58,7 @@ namespace DOM
         ::osl::MutexGuard const g(m_rMutex);
 
        OUString aName;
-        if (m_aNodePtr != NULL)
+        if (m_aNodePtr != nullptr)
         {
             const xmlChar* xName = m_aNodePtr->name;
             aName = OUString(reinterpret_cast<char const *>(xName), strlen(reinterpret_cast<char const *>(xName)), RTL_TEXTENCODING_UTF8);

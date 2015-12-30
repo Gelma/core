@@ -40,14 +40,14 @@ public:
     virtual ~CoinMPSolver() {}
 
 private:
-    virtual void SAL_CALL solve() throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL solve() throw(css::uno::RuntimeException, std::exception) override;
     virtual OUString SAL_CALL getImplementationName()
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw(css::uno::RuntimeException, std::exception) override
     {
         return OUString("com.sun.star.comp.Calc.CoinMPSolver");
     }
     virtual OUString SAL_CALL getComponentDescription()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (uno::RuntimeException, std::exception) override
     {
         return SolverComponent::GetResourceString( RID_COINMP_SOLVER_COMPONENT );
     }
@@ -243,7 +243,7 @@ void SAL_CALL CoinMPSolver::solve() throw(uno::RuntimeException, std::exception)
     }
     pMatrixBegin[nVariables] = nMatrixPos;
     delete[] pCompMatrix;
-    pCompMatrix = NULL;
+    pCompMatrix = nullptr;
 
     // apply settings to all variables
 
@@ -291,10 +291,13 @@ void SAL_CALL CoinMPSolver::solve() throw(uno::RuntimeException, std::exception)
     HPROB hProb = CoinCreateProblem("");
     int nResult = CoinLoadProblem( hProb, nVariables, nRows, nMatrixPos, 0,
                     nObjectSense, nObjectConst, pObjectCoeffs,
-                    pLowerBounds, pUpperBounds, pRowType, pRHS, NULL,
+                    pLowerBounds, pUpperBounds, pRowType, pRHS, nullptr,
                     pMatrixBegin, pMatrixCount, pMatrixIndex, pMatrix,
-                    NULL, NULL, NULL );
-    nResult = CoinLoadInteger( hProb, pColType );
+                    nullptr, nullptr, nullptr );
+    if (nResult == SOLV_CALL_SUCCESS)
+    {
+        nResult = CoinLoadInteger( hProb, pColType );
+    }
 
     delete[] pColType;
     delete[] pMatrixIndex;
@@ -314,15 +317,21 @@ void SAL_CALL CoinMPSolver::solve() throw(uno::RuntimeException, std::exception)
 
     // solve model
 
-    nResult = CoinCheckProblem( hProb );
-
-    try
+    if (nResult == SOLV_CALL_SUCCESS)
     {
-        nResult = CoinOptimizeProblem( hProb, 0 );
+        nResult = CoinCheckProblem( hProb );
     }
-    catch (const CoinError& e)
+
+    if (nResult == SOLV_CALL_SUCCESS)
     {
-        throw std::runtime_error(e.message());
+        try
+        {
+            nResult = CoinOptimizeProblem( hProb, 0 );
+        }
+        catch (const CoinError& e)
+        {
+            throw std::runtime_error(e.message());
+        }
     }
 
     mbSuccess = ( nResult == SOLV_CALL_SUCCESS );
@@ -331,7 +340,7 @@ void SAL_CALL CoinMPSolver::solve() throw(uno::RuntimeException, std::exception)
         // get solution
 
         maSolution.realloc( nVariables );
-        CoinGetSolutionValues( hProb, maSolution.getArray(), NULL, NULL, NULL );
+        CoinGetSolutionValues( hProb, maSolution.getArray(), nullptr, nullptr, nullptr );
         mfResultValue = CoinGetObjectValue( hProb );
     }
     else

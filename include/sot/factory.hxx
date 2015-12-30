@@ -21,7 +21,6 @@
 #define INCLUDED_SOT_FACTORY_HXX
 
 #include <tools/globname.hxx>
-#include <tools/rtti.hxx>
 #include <sot/sotdllapi.h>
 #include <vector>
 
@@ -42,8 +41,8 @@ class SOT_DLLPUBLIC SotFactory : public SvGlobalName
 protected:
     virtual             ~SotFactory();
 public:
-    static  void        IncSvObjectCount( SotObject * = NULL );
-    static  void        DecSvObjectCount( SotObject * = NULL );
+    static  void        IncSvObjectCount( SotObject * = nullptr );
+    static  void        DecSvObjectCount( SotObject * = nullptr );
 
 #ifdef DBG_UTIL
     static  const SotFactory *      Find( const SvGlobalName & );
@@ -56,8 +55,8 @@ public:
     bool                Is( const SotFactory * pSuperClass ) const;
 
 private:
-                        SotFactory( const SotFactory & ) SAL_DELETED_FUNCTION;
-    SotFactory &        operator = ( const SotFactory & ) SAL_DELETED_FUNCTION;
+                        SotFactory( const SotFactory & ) = delete;
+    SotFactory &        operator = ( const SotFactory & ) = delete;
 };
 
 #endif // _FACTORY_HXX

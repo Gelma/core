@@ -1,4 +1,3 @@
-/* -*- Mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 /*
  * This file is part of the LibreOffice project.
  *
@@ -29,14 +28,7 @@ namespace svt
 {
 
 
-    TYPEINIT0(CellController);
-    TYPEINIT1(EditCellController, CellController);
-    TYPEINIT1(SpinCellController, CellController);
-    TYPEINIT1(CheckBoxCellController, CellController);
-    TYPEINIT1(ComboBoxCellController, CellController);
-    TYPEINIT1(ListBoxCellController, CellController);
 
-    TYPEINIT1( FormattedFieldCellController, EditCellController );
 
 
     //= ComboBoxControl
@@ -78,6 +70,12 @@ namespace svt
     ComboBoxCellController::ComboBoxCellController(ComboBoxControl* pWin)
                              :CellController(pWin)
     {
+        GetComboBox().SetModifyHdl( LINK(this, ComboBoxCellController, ModifyHdl) );
+    }
+
+    IMPL_LINK_NOARG_TYPED(ComboBoxCellController, ModifyHdl, Edit&, void)
+    {
+        callModifyHdl();
     }
 
 
@@ -130,11 +128,6 @@ namespace svt
         GetComboBox().SaveValue();
     }
 
-    void ComboBoxCellController::SetModifyHdl(const Link<>& rLink)
-    {
-        GetComboBox().SetModifyHdl(rLink);
-    }
-
     //= ListBoxControl
     ListBoxControl::ListBoxControl(vcl::Window* pParent, WinBits nWinStyle)
                   :ListBox(pParent, nWinStyle|WB_DROPDOWN|WB_NOBORDER)
@@ -175,6 +168,7 @@ namespace svt
     ListBoxCellController::ListBoxCellController(ListBoxControl* pWin)
                              :CellController(pWin)
     {
+        GetListBox().SetSelectHdl(LINK(this, ListBoxCellController, ListBoxSelectHdl));
     }
 
 
@@ -215,9 +209,9 @@ namespace svt
     }
 
 
-    void ListBoxCellController::SetModifyHdl(const Link<>& rLink)
+    IMPL_LINK_NOARG_TYPED(ListBoxCellController, ListBoxSelectHdl, ListBox&, void)
     {
-        GetListBox().SetSelectHdl(rLink);
+        callModifyHdl();
     }
 
 
@@ -262,7 +256,7 @@ namespace svt
     IMPL_LINK_NOARG_TYPED(CheckBoxControl, OnClick, Button*, void)
     {
         m_aClickLink.Call(pBox);
-        m_aModifyLink.Call(pBox);
+        m_aModifyLink.Call(nullptr);
     }
 
 
@@ -328,6 +322,12 @@ namespace svt
     //= CheckBoxCellController
 
 
+    CheckBoxCellController::CheckBoxCellController(CheckBoxControl* pWin)
+        : CellController(pWin)
+    {
+        static_cast<CheckBoxControl &>(GetWindow()).SetModifyHdl( LINK(this, CheckBoxCellController, ModifyHdl) );
+    }
+
     bool CheckBoxCellController::WantMouseEvent() const
     {
         return true;
@@ -352,11 +352,10 @@ namespace svt
     }
 
 
-    void CheckBoxCellController::SetModifyHdl(const Link<>& rLink)
+    IMPL_LINK_NOARG_TYPED(CheckBoxCellController, ModifyHdl, LinkParamNone*, void)
     {
-        static_cast<CheckBoxControl &>(GetWindow()).SetModifyHdl(rLink);
+        callModifyHdl();
     }
-
 
     //= MultiLineEditImplementation
 
@@ -381,6 +380,7 @@ namespace svt
         ,m_pEditImplementation( new EditImplementation( *_pEdit ) )
         ,m_bOwnImplementation( true )
     {
+        m_pEditImplementation->SetModifyHdl( LINK(this, EditCellController, ModifyHdl) );
     }
 
 
@@ -389,6 +389,7 @@ namespace svt
         ,m_pEditImplementation( _pImplementation )
         ,m_bOwnImplementation( false )
     {
+        m_pEditImplementation->SetModifyHdl( LINK(this, EditCellController, ModifyHdl) );
     }
 
 
@@ -441,11 +442,10 @@ namespace svt
     }
 
 
-    void EditCellController::SetModifyHdl(const Link<>& rLink)
+    IMPL_LINK_NOARG_TYPED(EditCellController, ModifyHdl, Edit&, void)
     {
-        m_pEditImplementation->SetModifyHdl(rLink);
+        callModifyHdl();
     }
-
 
     //= SpinCellController
 
@@ -453,6 +453,7 @@ namespace svt
     SpinCellController::SpinCellController(SpinField* pWin)
                          :CellController(pWin)
     {
+        GetSpinWindow().SetModifyHdl( LINK(this, SpinCellController, ModifyHdl) );
     }
 
 
@@ -497,12 +498,10 @@ namespace svt
         return GetSpinWindow().IsModified();
     }
 
-
-    void SpinCellController::SetModifyHdl(const Link<>& rLink)
+    IMPL_LINK_NOARG_TYPED(SpinCellController, ModifyHdl, Edit&, void)
     {
-        GetSpinWindow().SetModifyHdl(rLink);
+        callModifyHdl();
     }
-
 
     //= FormattedFieldCellController
 

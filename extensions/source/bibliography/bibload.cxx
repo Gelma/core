@@ -97,9 +97,9 @@ public:
                             virtual ~BibliographyLoader();
 
     // XServiceInfo
-    OUString               SAL_CALL getImplementationName() throw(std::exception  ) SAL_OVERRIDE;
-    sal_Bool                    SAL_CALL supportsService(const OUString& ServiceName) throw(std::exception  ) SAL_OVERRIDE;
-    Sequence< OUString >   SAL_CALL getSupportedServiceNames() throw(std::exception  ) SAL_OVERRIDE;
+    OUString               SAL_CALL getImplementationName() throw(std::exception  ) override;
+    sal_Bool                    SAL_CALL supportsService(const OUString& ServiceName) throw(std::exception  ) override;
+    Sequence< OUString >   SAL_CALL getSupportedServiceNames() throw(std::exception  ) override;
     static OUString                getImplementationName_Static() throw(  )
 
                             {
@@ -109,22 +109,22 @@ public:
                             }
 
     //XNameAccess
-    virtual Any SAL_CALL getByName(const OUString& aName) throw ( NoSuchElementException, WrappedTargetException, RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual Sequence< OUString > SAL_CALL getElementNames() throw ( RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL hasByName(const OUString& aName) throw ( RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual Any SAL_CALL getByName(const OUString& aName) throw ( NoSuchElementException, WrappedTargetException, RuntimeException, std::exception ) override;
+    virtual Sequence< OUString > SAL_CALL getElementNames() throw ( RuntimeException, std::exception ) override;
+    virtual sal_Bool SAL_CALL hasByName(const OUString& aName) throw ( RuntimeException, std::exception ) override;
 
     //XElementAccess
-    virtual Type  SAL_CALL getElementType() throw ( RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL hasElements() throw ( RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual Type  SAL_CALL getElementType() throw ( RuntimeException, std::exception ) override;
+    virtual sal_Bool SAL_CALL hasElements() throw ( RuntimeException, std::exception ) override;
 
     //XPropertySet
-    virtual Reference< XPropertySetInfo >  SAL_CALL getPropertySetInfo() throw ( RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL setPropertyValue(const OUString& PropertyName, const Any& aValue) throw( UnknownPropertyException, PropertyVetoException, IllegalArgumentException, WrappedTargetException, RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual Any SAL_CALL getPropertyValue(const OUString& PropertyName) throw ( UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL addPropertyChangeListener(const OUString& PropertyName, const Reference< XPropertyChangeListener > & aListener) throw( UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL removePropertyChangeListener(const OUString& PropertyName, const Reference< XPropertyChangeListener > & aListener) throw( UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL addVetoableChangeListener(const OUString& PropertyName, const Reference< XVetoableChangeListener > & aListener) throw( UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL removeVetoableChangeListener(const OUString& PropertyName, const Reference< XVetoableChangeListener > & aListener) throw( UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual Reference< XPropertySetInfo >  SAL_CALL getPropertySetInfo() throw ( RuntimeException, std::exception ) override;
+    virtual void SAL_CALL setPropertyValue(const OUString& PropertyName, const Any& aValue) throw( UnknownPropertyException, PropertyVetoException, IllegalArgumentException, WrappedTargetException, RuntimeException, std::exception ) override;
+    virtual Any SAL_CALL getPropertyValue(const OUString& PropertyName) throw ( UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception ) override;
+    virtual void SAL_CALL addPropertyChangeListener(const OUString& PropertyName, const Reference< XPropertyChangeListener > & aListener) throw( UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception ) override;
+    virtual void SAL_CALL removePropertyChangeListener(const OUString& PropertyName, const Reference< XPropertyChangeListener > & aListener) throw( UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception ) override;
+    virtual void SAL_CALL addVetoableChangeListener(const OUString& PropertyName, const Reference< XVetoableChangeListener > & aListener) throw( UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception ) override;
+    virtual void SAL_CALL removeVetoableChangeListener(const OUString& PropertyName, const Reference< XVetoableChangeListener > & aListener) throw( UnknownPropertyException, WrappedTargetException, RuntimeException, std::exception ) override;
 
     static Sequence<OUString>  SAL_CALL getSupportedServiceNames_Static() throw(  );
 
@@ -133,13 +133,13 @@ public:
     // XLoader
     virtual void            SAL_CALL load(const Reference< XFrame > & aFrame, const OUString& aURL,
                                 const Sequence< PropertyValue >& aArgs,
-                                const Reference< XLoadEventListener > & aListener) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void            SAL_CALL cancel() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+                                const Reference< XLoadEventListener > & aListener) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void            SAL_CALL cancel() throw (css::uno::RuntimeException, std::exception) override;
 };
 
 BibliographyLoader::BibliographyLoader() :
-    m_pBibMod(0),
-    m_pDatMan(0)
+    m_pBibMod(nullptr),
+    m_pDatMan(nullptr)
 {
 }
 
@@ -194,7 +194,7 @@ extern "C"
     SAL_DLLPUBLIC_EXPORT void * SAL_CALL bib_component_getFactory(
         const sal_Char * pImplName, void * pServiceManager, void * /*pRegistryKey*/ )
     {
-        void * pRet = 0;
+        void * pRet = nullptr;
         if (BibliographyLoader::getImplementationName_Static().equalsAscii( pImplName ) )
         {
             // create the factory
@@ -213,7 +213,7 @@ extern "C"
 
 }
 
-void BibliographyLoader::cancel() throw (::com::sun::star::uno::RuntimeException, std::exception)
+void BibliographyLoader::cancel() throw (css::uno::RuntimeException, std::exception)
 {
     //!
     //!
@@ -221,7 +221,7 @@ void BibliographyLoader::cancel() throw (::com::sun::star::uno::RuntimeException
 
 void BibliographyLoader::load(const Reference< XFrame > & rFrame, const OUString& rURL,
         const Sequence< PropertyValue >& rArgs,
-        const Reference< XLoadEventListener > & rListener) throw (::com::sun::star::uno::RuntimeException, std::exception)
+        const Reference< XLoadEventListener > & rListener) throw (css::uno::RuntimeException, std::exception)
 {
 
     SolarMutexGuard aGuard;
@@ -301,7 +301,6 @@ void BibliographyLoader::loadView(const Reference< XFrame > & rFrame, const OUSt
     }
 
     m_xDatMan->load();
-    // #100312# ----------
     m_pDatMan->RegisterInterceptor(pBeamer);
 
     if ( rListener.is() )
@@ -309,7 +308,7 @@ void BibliographyLoader::loadView(const Reference< XFrame > & rFrame, const OUSt
 
     // attach menu bar
     Reference< XPropertySet > xPropSet( rFrame, UNO_QUERY );
-    Reference< ::com::sun::star::frame::XLayoutManager > xLayoutManager;
+    Reference< css::frame::XLayoutManager > xLayoutManager;
     if ( xPropSet.is() )
     {
         try
@@ -323,7 +322,7 @@ void BibliographyLoader::loadView(const Reference< XFrame > & rFrame, const OUSt
     }
 
     if ( xLayoutManager.is() )
-        xLayoutManager->createElement( OUString( "private:resource/menubar/menubar" ));
+        xLayoutManager->createElement( "private:resource/menubar/menubar" );
 }
 
 BibDataManager* BibliographyLoader::GetDataManager()const
@@ -381,7 +380,7 @@ Reference< XNameAccess >  BibliographyLoader::GetDataColumns() const
             Reference< XComponent >  xSetComp(xRowSet, UNO_QUERY);
             if (xSetComp.is())
                 xSetComp->dispose();
-            xRowSet = NULL;
+            xRowSet = nullptr;
         }
         else
             const_cast<BibliographyLoader*>(this)->m_xCursor = xRowSet.get();
@@ -403,7 +402,7 @@ Reference< sdb::XColumn >  BibliographyLoader::GetIdentifierColumn() const
     Reference< sdb::XColumn >  xReturn;
     if (xColumns.is() && xColumns->hasByName(sIdentifierColumnName))
     {
-        xReturn = Reference< XColumn > (*static_cast<Reference< XInterface > const *>(
+        xReturn.set(*static_cast<Reference< XInterface > const *>(
                 xColumns->getByName(sIdentifierColumnName).getValue()), UNO_QUERY);
     }
     return xReturn;
@@ -437,7 +436,7 @@ static OUString lcl_AddProperty(Reference< XNameAccess >  xColumns,
     OUString uRet;
     Reference< sdb::XColumn >  xCol;
     if (xColumns->hasByName(uColumnName))
-        xCol = Reference< sdb::XColumn > (*static_cast<Reference< XInterface > const *>(xColumns->getByName(uColumnName).getValue()), UNO_QUERY);
+        xCol.set(*static_cast<Reference< XInterface > const *>(xColumns->getByName(uColumnName).getValue()), UNO_QUERY);
     if (xCol.is())
         uRet = xCol->getString();
     return uRet;
@@ -464,7 +463,7 @@ Any BibliographyLoader::getByName(const OUString& rName) throw
         OUString sId = sIdentifierMapping;
         Reference< sdb::XColumn >  xColumn;
         if (xColumns->hasByName(sId))
-            xColumn = Reference< sdb::XColumn > (*static_cast<Reference< XInterface > const *>(xColumns->getByName(sId).getValue()), UNO_QUERY);
+            xColumn.set(*static_cast<Reference< XInterface > const *>(xColumns->getByName(sId).getValue()), UNO_QUERY);
         if (xColumn.is())
         {
             do

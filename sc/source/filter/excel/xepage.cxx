@@ -113,7 +113,7 @@ void XclExpSetup::SaveXml( XclExpXmlStream& rStrm )
     pAttrList->add( XML_copies,             OString::number(  mrData.mnCopies ).getStr() );
     // OOXTODO: devMode settings part RelationshipId: FSNS( XML_r, XML_id ),
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XFastAttributeList > aAttrs(pAttrList);
+    css::uno::Reference< css::xml::sax::XFastAttributeList > aAttrs(pAttrList);
     rStrm.GetCurrentStream()->singleElement( XML_pageSetup, aAttrs );
 }
 
@@ -337,7 +337,7 @@ public:
     explicit XclExpXmlStartHeaderFooterElementRecord(sal_Int32 const nElement)
          : XclExpXmlElementRecord(nElement) {}
 
-    virtual void        SaveXml( XclExpXmlStream& rStrm ) SAL_OVERRIDE;
+    virtual void        SaveXml( XclExpXmlStream& rStrm ) override;
 };
 
 void XclExpXmlStartHeaderFooterElementRecord::SaveXml(XclExpXmlStream& rStrm)
@@ -412,7 +412,7 @@ XclExpImgData* XclExpPageSettings::getGraphicExport()
     if( const Graphic* pGraphic = maData.mxBrushItem->GetGraphic() )
         return new XclExpImgData( *pGraphic, EXC_ID8_IMGDATA );
 
-    return NULL;
+    return nullptr;
 }
 
 XclExpChartPageSettings::XclExpChartPageSettings( const XclExpRoot& rRoot ) :

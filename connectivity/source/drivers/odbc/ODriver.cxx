@@ -67,8 +67,7 @@ OUString ODBCDriver::getImplementationName_Static(  ) throw(RuntimeException)
 
 Sequence< OUString > ODBCDriver::getSupportedServiceNames_Static(  ) throw (RuntimeException)
 {
-    Sequence< OUString > aSNS( 1 );
-    aSNS[0] = "com.sun.star.sdbc.Driver";
+    Sequence<OUString> aSNS { "com.sun.star.sdbc.Driver" };
     return aSNS;
 }
 
@@ -93,7 +92,7 @@ Sequence< OUString > SAL_CALL ODBCDriver::getSupportedServiceNames(  ) throw(Run
 Reference< XConnection > SAL_CALL ODBCDriver::connect( const OUString& url, const Sequence< PropertyValue >& info ) throw(SQLException, RuntimeException, std::exception)
 {
     if ( ! acceptsURL(url) )
-        return NULL;
+        return nullptr;
 
     if(!m_pDriverHandle)
     {

@@ -33,6 +33,7 @@ define sw_ooxmlexport_components
 	dbaccess/util/dba \
 	drawinglayer/drawinglayer \
 	embeddedobj/util/embobj \
+	embeddedobj/source/msole/emboleobj$(if $(filter WNT,$(OS)),.windows) \
 	filter/source/config/cache/filterconfig1 \
 	filter/source/odfflatxml/odfflatxml \
 	filter/source/xmlfilterdetect/xmlfd \
@@ -45,6 +46,9 @@ define sw_ooxmlexport_components
 	package/source/xstor/xstor \
 	package/util/package2 \
 	sax/source/expatwrap/expwrap \
+	sc/util/sc \
+	sc/util/scd \
+	sc/util/scfilt \
 	sw/util/sw \
 	sw/util/swd \
 	sw/util/msword \
@@ -58,7 +62,9 @@ define sw_ooxmlexport_components
 	toolkit/util/tk \
 	ucb/source/core/ucb1 \
 	ucb/source/ucp/file/ucpfile1 \
+	ucb/source/ucp/tdoc/ucptdoc1 \
 	unotools/util/utl \
+	unoxml/source/rdf/unordf \
 	unoxml/source/service/unoxml \
 	uui/util/uui \
 	writerfilter/util/writerfilter \
@@ -87,6 +93,7 @@ $(eval $(call gb_CppunitTest_set_include,sw_ooxmlexport$(1),\
     -I$(SRCDIR)/sw/inc \
     -I$(SRCDIR)/sw/source/core/inc \
 	-I$(SRCDIR)/sw/qa/extras/inc \
+    -I$(SRCDIR)/sw/source/uibase/inc \
     $$(INCLUDE) \
 ))
 

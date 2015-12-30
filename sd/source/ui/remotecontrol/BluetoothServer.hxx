@@ -36,9 +36,11 @@ namespace sd
         static void doEnsureDiscoverable();
         static void doRestoreDiscoverable();
 
+#if defined(MACOSX)
         void addCommunicator( Communicator* pCommunicator );
+#endif
     private:
-        BluetoothServer( std::vector<Communicator*>* pCommunicators );
+        explicit BluetoothServer( std::vector<Communicator*>* pCommunicators );
         virtual ~BluetoothServer();
 
         enum { UNKNOWN, DISCOVERABLE, NOT_DISCOVERABLE } meWasDiscoverable;
@@ -48,7 +50,7 @@ namespace sd
         struct Impl;
         std::unique_ptr<Impl> mpImpl;
 #endif
-        virtual void SAL_CALL run() SAL_OVERRIDE;
+        virtual void SAL_CALL run() override;
 
         void cleanupCommunicators();
         std::vector<Communicator*>* mpCommunicators;

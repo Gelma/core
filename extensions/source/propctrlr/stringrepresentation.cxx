@@ -74,16 +74,16 @@ public:
     explicit StringRepresentation(uno::Reference< uno::XComponentContext > const & context);
 
     // lang::XServiceInfo:
-    virtual OUString SAL_CALL getImplementationName() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService(const OUString & ServiceName) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName() throw (uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL supportsService(const OUString & ServiceName) throw (uno::RuntimeException, std::exception) override;
+    virtual uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (uno::RuntimeException, std::exception) override;
 
     // inspection::XStringRepresentation:
-    virtual OUString SAL_CALL convertToControlValue(const uno::Any & PropertyValue) throw (uno::RuntimeException, uno::Exception, std::exception) SAL_OVERRIDE;
-    virtual uno::Any SAL_CALL convertToPropertyValue(const OUString & ControlValue, const uno::Type & ControlValueType) throw (uno::RuntimeException, uno::Exception, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL convertToControlValue(const uno::Any & PropertyValue) throw (uno::RuntimeException, uno::Exception, std::exception) override;
+    virtual uno::Any SAL_CALL convertToPropertyValue(const OUString & ControlValue, const uno::Type & ControlValueType) throw (uno::RuntimeException, uno::Exception, std::exception) override;
 
     // lang::XInitialization:
-    virtual void SAL_CALL initialize(const uno::Sequence< uno::Any > & aArguments) throw (uno::RuntimeException, uno::Exception, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL initialize(const uno::Sequence< uno::Any > & aArguments) throw (uno::RuntimeException, uno::Exception, std::exception) override;
 
 private:
     virtual ~StringRepresentation() {}
@@ -625,8 +625,7 @@ OUString SAL_CALL _getImplementationName() {
 
 uno::Sequence< OUString > SAL_CALL _getSupportedServiceNames()
 {
-    uno::Sequence< OUString > s(1);
-    s[0] = "com.sun.star.inspection.StringRepresentation";
+    uno::Sequence< OUString > s { "com.sun.star.inspection.StringRepresentation" };
     return s;
 }
 

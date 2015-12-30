@@ -44,7 +44,7 @@
 #include <xmloff/xmltoken.hxx>
 #include <xmloff/languagetagodf.hxx>
 
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
 
 using namespace ::com::sun::star;
 using namespace ::xmloff::token;
@@ -59,8 +59,6 @@ struct SvXMLNumFmtEntry
         aName(rN), nKey(nK), bRemoveAfterUse(bR) {}
 };
 
-typedef std::map<sal_Int32, OUString> SvXMLEmbeddedElementArr;
-
 class SvXMLNumImpData
 {
     SvNumberFormatter*  pFormatter;
@@ -69,7 +67,7 @@ class SvXMLNumImpData
     SvXMLTokenMap*      pStyleAttrTokenMap;
     SvXMLTokenMap*      pStyleElemAttrTokenMap;
     LocaleDataWrapper*  pLocaleData;
-    boost::ptr_vector<SvXMLNumFmtEntry>      aNameEntries;
+    std::vector<SvXMLNumFmtEntry> m_NameEntries;
 
     uno::Reference< uno::XComponentContext > m_xContext;
 
@@ -105,7 +103,7 @@ struct SvXMLNumberInfo
     bool        bDecReplace;
     bool        bExpSign;
     double      fDisplayFactor;
-    SvXMLEmbeddedElementArr m_EmbeddedElements;
+    std::map<sal_Int32, OUString> m_EmbeddedElements;
 
     SvXMLNumberInfo()
     {
@@ -132,16 +130,14 @@ public:
                 SvXMLNumFmtElementContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
                                     const OUString& rLName,
                                     SvXMLNumFormatContext& rParentContext, sal_uInt16 nNewType,
-                                    const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& xAttrList );
+                                    const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList );
     virtual     ~SvXMLNumFmtElementContext();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                     const OUString& rLocalName,
-                                    const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
-    virtual void Characters( const OUString& rChars ) SAL_OVERRIDE;
-    virtual void EndElement() SAL_OVERRIDE;
+                                    const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList ) override;
+    virtual void Characters( const OUString& rChars ) override;
+    virtual void EndElement() override;
 
     void    AddEmbeddedElement( sal_Int32 nFormatPos, const OUString& rContent );
 };
@@ -156,16 +152,14 @@ public:
                 SvXMLNumFmtEmbeddedTextContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
                                     const OUString& rLName,
                                     SvXMLNumFmtElementContext& rParentContext,
-                                    const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& xAttrList );
+                                    const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList );
     virtual     ~SvXMLNumFmtEmbeddedTextContext();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                     const OUString& rLocalName,
-                                    const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
-    virtual void Characters( const OUString& rChars ) SAL_OVERRIDE;
-    virtual void EndElement() SAL_OVERRIDE;
+                                    const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList ) override;
+    virtual void Characters( const OUString& rChars ) override;
+    virtual void EndElement() override;
 };
 
 class SvXMLNumFmtMapContext : public SvXMLImportContext
@@ -178,16 +172,14 @@ public:
                 SvXMLNumFmtMapContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
                                     const OUString& rLName,
                                     SvXMLNumFormatContext& rParentContext,
-                                    const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& xAttrList );
+                                    const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList );
     virtual     ~SvXMLNumFmtMapContext();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                     const OUString& rLocalName,
-                                    const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
-    virtual void Characters( const OUString& rChars ) SAL_OVERRIDE;
-    virtual void EndElement() SAL_OVERRIDE;
+                                    const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList ) override;
+    virtual void Characters( const OUString& rChars ) override;
+    virtual void EndElement() override;
 };
 
 class SvXMLNumFmtPropContext : public SvXMLImportContext
@@ -200,16 +192,14 @@ public:
                 SvXMLNumFmtPropContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
                                     const OUString& rLName,
                                     SvXMLNumFormatContext& rParentContext,
-                                    const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& xAttrList );
+                                    const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList );
     virtual     ~SvXMLNumFmtPropContext();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                     const OUString& rLocalName,
-                                    const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
-    virtual void Characters( const OUString& rChars ) SAL_OVERRIDE;
-    virtual void EndElement() SAL_OVERRIDE;
+                                    const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList ) override;
+    virtual void Characters( const OUString& rChars ) override;
+    virtual void EndElement() override;
 };
 
 enum SvXMLStyleTokens
@@ -361,11 +351,11 @@ SvXMLNumImpData::SvXMLNumImpData(
     SvNumberFormatter* pFmt,
     const uno::Reference<uno::XComponentContext>& rxContext )
 :   pFormatter(pFmt),
-    pStylesElemTokenMap(NULL),
-    pStyleElemTokenMap(NULL),
-    pStyleAttrTokenMap(NULL),
-    pStyleElemAttrTokenMap(NULL),
-    pLocaleData(NULL),
+    pStylesElemTokenMap(nullptr),
+    pStyleElemTokenMap(nullptr),
+    pStyleAttrTokenMap(nullptr),
+    pStyleElemAttrTokenMap(nullptr),
+    pLocaleData(nullptr),
     m_xContext(rxContext)
 {
     DBG_ASSERT( rxContext.is(), "got no service manager" );
@@ -382,10 +372,10 @@ SvXMLNumImpData::~SvXMLNumImpData()
 
 sal_uInt32 SvXMLNumImpData::GetKeyForName( const OUString& rName )
 {
-    sal_uInt16 nCount = aNameEntries.size();
+    sal_uInt16 nCount = m_NameEntries.size();
     for (sal_uInt16 i=0; i<nCount; i++)
     {
-        const SvXMLNumFmtEntry* pObj = &aNameEntries[i];
+        const SvXMLNumFmtEntry *const pObj = &m_NameEntries[i];
         if ( pObj->aName == rName )
             return pObj->nKey;              // found
     }
@@ -399,10 +389,10 @@ void SvXMLNumImpData::AddKey( sal_uInt32 nKey, const OUString& rName, bool bRemo
         //  if there is already an entry for this key without the bRemoveAfterUse flag,
         //  clear the flag for this entry, too
 
-        sal_uInt16 nCount = aNameEntries.size();
+        sal_uInt16 nCount = m_NameEntries.size();
         for (sal_uInt16 i=0; i<nCount; i++)
         {
-            SvXMLNumFmtEntry* pObj = &aNameEntries[i];
+            SvXMLNumFmtEntry *const pObj = &m_NameEntries[i];
             if ( pObj->nKey == nKey && !pObj->bRemoveAfterUse )
             {
                 bRemoveAfterUse = false;        // clear flag for new entry
@@ -416,16 +406,15 @@ void SvXMLNumImpData::AddKey( sal_uInt32 nKey, const OUString& rName, bool bRemo
         SetUsed( nKey );
     }
 
-    SvXMLNumFmtEntry* pObj = new SvXMLNumFmtEntry( rName, nKey, bRemoveAfterUse );
-    aNameEntries.push_back( pObj );
+    m_NameEntries.push_back(SvXMLNumFmtEntry(rName, nKey, bRemoveAfterUse));
 }
 
 void SvXMLNumImpData::SetUsed( sal_uInt32 nKey )
 {
-    sal_uInt16 nCount = aNameEntries.size();
+    sal_uInt16 nCount = m_NameEntries.size();
     for (sal_uInt16 i=0; i<nCount; i++)
     {
-        SvXMLNumFmtEntry* pObj = &aNameEntries[i];
+        SvXMLNumFmtEntry *const pObj = &m_NameEntries[i];
         if ( pObj->nKey == nKey )
         {
             pObj->bRemoveAfterUse = false;      // used -> don't remove
@@ -446,10 +435,10 @@ void SvXMLNumImpData::RemoveVolatileFormats()
     if ( !pFormatter )
         return;
 
-    sal_uInt16 nCount = aNameEntries.size();
+    sal_uInt16 nCount = m_NameEntries.size();
     for (sal_uInt16 i=0; i<nCount; i++)
     {
-        const SvXMLNumFmtEntry* pObj = &aNameEntries[i];
+        const SvXMLNumFmtEntry *const pObj = &m_NameEntries[i];
         if ( pObj->bRemoveAfterUse )
         {
             const SvNumberformat* pFormat = pFormatter->GetEntry(pObj->nKey);
@@ -1007,7 +996,7 @@ SvXMLNumFmtElementContext::SvXMLNumFmtElementContext( SvXMLImport& rImport,
     }
     if ( aNumInfo.nMinDecimalDigits == -1)
     {
-        if ( bVarDecimals )
+        if ( bVarDecimals || aNumInfo.bDecReplace )
             aNumInfo.nMinDecimalDigits = 0;
         else
             aNumInfo.nMinDecimalDigits = aNumInfo.nDecimals;
@@ -1318,7 +1307,7 @@ SvXMLNumFormatContext::SvXMLNumFormatContext( SvXMLImport& rImport,
 {
     LanguageTagODF aLanguageTagODF;
     OUString sNatNumAttrScript, sNatNumAttrRfcLanguageTag;
-    ::com::sun::star::i18n::NativeNumberXmlAttributes aNatNumAttr;
+    css::i18n::NativeNumberXmlAttributes aNatNumAttr;
     bool bAttrBool(false);
     sal_uInt16 nAttrEnum;
 
@@ -1430,7 +1419,7 @@ SvXMLNumFormatContext::SvXMLNumFormatContext( SvXMLImport& rImport,
                                     const sal_Int32 nTempKey,
                                     SvXMLStylesContext& rStyles ) :
     SvXMLStyleContext( rImport, nPrfx, rLName, xAttrList, XML_STYLE_FAMILY_DATA_STYLE ),
-    pData( NULL ),
+    pData( nullptr ),
     pStyles( &rStyles ),
     aMyConditions(),
     nType( 0 ),
@@ -1466,7 +1455,7 @@ SvXMLImportContext* SvXMLNumFormatContext::CreateChildContext(
                                     sal_uInt16 nPrfx, const OUString& rLName,
                                     const uno::Reference<xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext* pContext = NULL;
+    SvXMLImportContext* pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = pData->GetStyleElemTokenMap();
     sal_uInt16 nToken = rTokenMap.Get( nPrfx, rLName );
@@ -1553,11 +1542,11 @@ sal_Int32 SvXMLNumFormatContext::PrivateGetKey()
     }
 }
 
-sal_Int32 SvXMLNumFormatContext::CreateAndInsert( com::sun::star::uno::Reference< com::sun::star::util::XNumberFormatsSupplier >& xFormatsSupplier )
+sal_Int32 SvXMLNumFormatContext::CreateAndInsert( css::uno::Reference< css::util::XNumberFormatsSupplier >& xFormatsSupplier )
 {
     if (nKey <= -1)
     {
-        SvNumberFormatter* pFormatter = NULL;
+        SvNumberFormatter* pFormatter = nullptr;
         SvNumberFormatsSupplierObj* pObj =
                         SvNumberFormatsSupplierObj::getImplementation( xFormatsSupplier );
         if (pObj)
@@ -2201,7 +2190,7 @@ SvXMLNumFmtHelper::SvXMLNumFmtHelper(
 {
     DBG_ASSERT( rxContext.is(), "got no service manager" );
 
-    SvNumberFormatter* pFormatter = NULL;
+    SvNumberFormatter* pFormatter = nullptr;
     SvNumberFormatsSupplierObj* pObj =
                     SvNumberFormatsSupplierObj::getImplementation( rSupp );
     if (pObj)
@@ -2232,7 +2221,7 @@ SvXMLStyleContext*  SvXMLNumFmtHelper::CreateChildContext( SvXMLImport& rImport,
                 const uno::Reference<xml::sax::XAttributeList>& xAttrList,
                 SvXMLStylesContext& rStyles )
 {
-    SvXMLStyleContext* pContext = NULL;
+    SvXMLStyleContext* pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = pData->GetStylesElemTokenMap();
     sal_uInt16 nToken = rTokenMap.Get( nPrefix, rLocalName );

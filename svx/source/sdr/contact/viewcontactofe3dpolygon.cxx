@@ -41,9 +41,9 @@ namespace sdr
         {
         }
 
-        drawinglayer::primitive3d::Primitive3DSequence ViewContactOfE3dPolygon::createViewIndependentPrimitive3DSequence() const
+        drawinglayer::primitive3d::Primitive3DContainer ViewContactOfE3dPolygon::createViewIndependentPrimitive3DContainer() const
         {
-            drawinglayer::primitive3d::Primitive3DSequence xRetval;
+            drawinglayer::primitive3d::Primitive3DContainer xRetval;
             const SfxItemSet& rItemSet = GetE3dPolygonObj().GetMergedItemSet();
             const bool bSuppressFill(GetE3dPolygonObj().GetLineOnly());
             const drawinglayer::attribute::SdrLineFillShadowAttribute3D aAttribute(
@@ -149,11 +149,11 @@ namespace sdr
 
             // #i98295#
             // unfortunately, this SdrObject type which allows a free 3d geometry definition was defined
-            // wrong topologically in relation to it's plane normal and 3D visibility when it was invented
+            // wrong topologically in relation to its plane normal and 3D visibility when it was invented
             // a long time ago. Since the API allows creation of this SDrObject type, it is not possible to
             // simply change this definition. Only the chart should use it, and at least this object type
             // only exists at Runtime (is not saved and/or loaded in any FileFormat). Still someone external
-            // may have used it in it's API. To not risk wrong 3D lightings, I have to switch the orientation
+            // may have used it in its API. To not risk wrong 3D lightings, I have to switch the orientation
             // of the polygon here
             aPolyPolygon3D.flip();
 
@@ -162,7 +162,7 @@ namespace sdr
             const drawinglayer::primitive3d::Primitive3DReference xReference(
                 new drawinglayer::primitive3d::SdrPolyPolygonPrimitive3D(
                     aPolyPolygon3D, aWorldTransform, aTextureSize, aAttribute, *pSdr3DObjectAttribute));
-            xRetval = drawinglayer::primitive3d::Primitive3DSequence(&xReference, 1);
+            xRetval = { xReference };
 
             return xRetval;
         }

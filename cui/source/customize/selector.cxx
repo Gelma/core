@@ -77,8 +77,8 @@ using namespace ::com::sun::star::container;
  */
 SvxConfigFunctionListBox::SvxConfigFunctionListBox(vcl::Window* pParent, WinBits nStyle)
     : SvTreeListBox(pParent, nStyle | WB_CLIPCHILDREN | WB_HSCROLL | WB_SORT | WB_TABSTOP)
-    , pCurEntry(0)
-    , m_pDraggingEntry(0)
+    , pCurEntry(nullptr)
+    , m_pDraggingEntry(nullptr)
 {
     GetModel()->SetSortMode( SortAscending );
 
@@ -112,7 +112,7 @@ void SvxConfigFunctionListBox::dispose()
 
 SvTreeListEntry* SvxConfigFunctionListBox::GetLastSelectedEntry()
 {
-    if ( m_pDraggingEntry != NULL )
+    if ( m_pDraggingEntry != nullptr )
     {
         return m_pDraggingEntry;
     }
@@ -131,7 +131,8 @@ void SvxConfigFunctionListBox::MouseMove( const MouseEvent& rMEvt )
         aTimer.Start();
     else
     {
-        Help::ShowBalloon( this, aMousePos, OUString() );
+        Rectangle aRect(GetPosPixel(), GetSizePixel());
+        Help::ShowBalloon( this, aMousePos, aRect, OUString() );
         aTimer.Stop();
     }
 }
@@ -143,7 +144,10 @@ IMPL_LINK_NOARG_TYPED(SvxConfigFunctionListBox, TimerHdl, Timer *, void)
     Point aMousePos = GetPointerPosPixel();
     SvTreeListEntry *pEntry = GetCurEntry();
     if ( pEntry && GetEntry( aMousePos ) == pEntry && pCurEntry == pEntry )
-        Help::ShowBalloon( this, OutputToScreenPixel( aMousePos ), GetHelpText( pEntry ) );
+    {
+        Rectangle aRect(GetPosPixel(), GetSizePixel());
+        Help::ShowBalloon( this, OutputToScreenPixel(aMousePos), aRect, GetHelpText( pEntry ) );
+    }
 }
 
 void SvxConfigFunctionListBox::ClearAll()
@@ -155,7 +159,7 @@ void SvxConfigFunctionListBox::ClearAll()
 OUString SvxConfigFunctionListBox::GetHelpText( SvTreeListEntry *pEntry )
 {
     SvxGroupInfo_Impl *pInfo =
-        pEntry ? static_cast<SvxGroupInfo_Impl*>(pEntry->GetUserData()): 0;
+        pEntry ? static_cast<SvxGroupInfo_Impl*>(pEntry->GetUserData()): nullptr;
 
     if ( pInfo )
     {
@@ -178,7 +182,7 @@ OUString SvxConfigFunctionListBox::GetHelpText( SvTreeListEntry *pEntry )
 
 void SvxConfigFunctionListBox::FunctionSelected()
 {
-    Help::ShowBalloon( this, Point(), OUString() );
+    Help::ShowBalloon( this, Point(), Rectangle(), OUString() );
 }
 
 // drag and drop support
@@ -191,7 +195,7 @@ DragDropMode SvxConfigFunctionListBox::NotifyStartDrag(
 
 void SvxConfigFunctionListBox::DragFinished( sal_Int8 /*nDropAction*/ )
 {
-    m_pDraggingEntry = NULL;
+    m_pDraggingEntry = nullptr;
 }
 
 sal_Int8
@@ -204,8 +208,8 @@ SvxConfigGroupListBox::SvxConfigGroupListBox(vcl::Window* pParent, WinBits nStyl
     : SvTreeListBox(pParent, nStyle |
             WB_CLIPCHILDREN | WB_HSCROLL | WB_HASBUTTONS | WB_HASLINES | WB_HASLINESATROOT | WB_HASBUTTONSATROOT | WB_TABSTOP)
     , m_bShowSlots(false)
-    , pFunctionListBox(NULL)
-    , m_pImageProvider(NULL)
+    , pFunctionListBox(nullptr)
+    , m_pImageProvider(nullptr)
     , m_hdImage(CUI_RES(RID_CUIIMG_HARDDISK))
     , m_libImage(CUI_RES(RID_CUIIMG_LIB))
     , m_macImage(CUI_RES(RID_CUIIMG_MACRO))
@@ -378,7 +382,7 @@ void SvxConfigGroupListBox::fillScriptList( const Reference< browse::XBrowseNode
                 SvxGroupInfo_Impl* pInfo =
                     new SvxGroupInfo_Impl( SVX_CFGGROUP_SCRIPTCONTAINER, 0, theChild );
                 pNewEntry->SetUserData( pInfo );
-                aArr.push_back( pInfo );
+                aArr.push_back( std::unique_ptr<SvxGroupInfo_Impl>(pInfo) );
 
                 if ( _bCheapChildrenOnDemand )
                 {
@@ -450,8 +454,7 @@ void SvxConfigGroupListBox::Init(bool bShowSlots, const Reference< frame::XFrame
         {
             try
             {
-                xModuleCategories = Reference< container::XNameAccess >(
-                       xAllCategories->getByName( aModuleId ), UNO_QUERY );
+                xModuleCategories.set( xAllCategories->getByName( aModuleId ), UNO_QUERY );
             }
             catch ( container::NoSuchElementException& )
             {
@@ -497,11 +500,11 @@ void SvxConfigGroupListBox::Init(bool bShowSlots, const Reference< frame::XFrame
                 {
                 }
 
-                SvTreeListEntry *pEntry = InsertEntry( group, NULL );
+                SvTreeListEntry *pEntry = InsertEntry( group );
 
                 SvxGroupInfo_Impl *pInfo =
                     new SvxGroupInfo_Impl( SVX_CFGGROUP_FUNCTION, gids[i] );
-                aArr.push_back( pInfo );
+                aArr.push_back( std::unique_ptr<SvxGroupInfo_Impl>(pInfo) );
 
                 pEntry->SetUserData( pInfo );
             }
@@ -530,17 +533,17 @@ void SvxConfigGroupListBox::Init(bool bShowSlots, const Reference< frame::XFrame
 
             OUString aTitle = CUI_RESSTR(RID_SVXSTR_PRODMACROS);
 
-            SvTreeListEntry *pNewEntry = InsertEntry( aTitle, NULL );
+            SvTreeListEntry *pNewEntry = InsertEntry( aTitle );
             pNewEntry->SetUserData( pInfo );
             pNewEntry->EnableChildrenOnDemand();
-            aArr.push_back( pInfo );
+            aArr.push_back( std::unique_ptr<SvxGroupInfo_Impl>(pInfo) );
         }
         else
         {
-            fillScriptList( rootNode, NULL, false );
+            fillScriptList( rootNode, nullptr, false );
         }
     }
-    MakeVisible( GetEntry( 0,0 ) );
+    MakeVisible( GetEntry( nullptr,0 ) );
     SetUpdateMode( true );
 }
 
@@ -651,7 +654,7 @@ void SvxConfigGroupListBox::GroupSelected()
         case SVX_CFGGROUP_FUNCTION :
         {
             SvTreeListEntry *_pEntry = FirstSelected();
-            if ( _pEntry != NULL )
+            if ( _pEntry != nullptr )
             {
                 SvxGroupInfo_Impl *_pInfo =
                     static_cast<SvxGroupInfo_Impl*>(_pEntry->GetUserData());
@@ -712,7 +715,7 @@ void SvxConfigGroupListBox::GroupSelected()
                         aLabel = commands[i].Command;
                     }
 
-                    SvTreeListEntry* pFuncEntry = NULL;
+                    SvTreeListEntry* pFuncEntry = nullptr;
                     if ( !!aImage )
                     {
                         pFuncEntry = pFunctionListBox->InsertEntry(
@@ -721,13 +724,13 @@ void SvxConfigGroupListBox::GroupSelected()
                     else
                     {
                         pFuncEntry = pFunctionListBox->InsertEntry(
-                            aLabel, NULL );
+                            aLabel );
                     }
 
                     SvxGroupInfo_Impl *_pGroupInfo = new SvxGroupInfo_Impl(
                         SVX_CFGFUNCTION_SLOT, 123, aCmdURL, OUString() );
 
-                    pFunctionListBox->aArr.push_back( _pGroupInfo );
+                    pFunctionListBox->aArr.push_back( std::unique_ptr<SvxGroupInfo_Impl>(_pGroupInfo) );
 
                     pFuncEntry->SetUserData( _pGroupInfo );
                 }
@@ -760,14 +763,12 @@ void SvxConfigGroupListBox::GroupSelected()
                                 continue;
                             }
 
-                            Any value = xPropSet->getPropertyValue(
-                                OUString("URI"));
+                            Any value = xPropSet->getPropertyValue("URI");
                             value >>= uri;
 
                             try
                             {
-                                value = xPropSet->getPropertyValue(
-                                    OUString("Description"));
+                                value = xPropSet->getPropertyValue("Description");
                                 value >>= description;
                             }
                             catch (Exception &) {
@@ -780,13 +781,13 @@ void SvxConfigGroupListBox::GroupSelected()
 
                             Image aImage = GetImage( children[n], Reference< XComponentContext >(), false );
                             SvTreeListEntry* pNewEntry =
-                                pFunctionListBox->InsertEntry( children[n]->getName(), NULL );
+                                pFunctionListBox->InsertEntry( children[n]->getName() );
                             pFunctionListBox->SetExpandedEntryBmp( pNewEntry, aImage );
                             pFunctionListBox->SetCollapsedEntryBmp(pNewEntry, aImage );
 
                             pNewEntry->SetUserData( _pGroupInfo );
 
-                            pFunctionListBox->aArr.push_back( _pGroupInfo );
+                            pFunctionListBox->aArr.push_back( std::unique_ptr<SvxGroupInfo_Impl>(_pGroupInfo) );
 
                         }
                     }
@@ -806,7 +807,7 @@ void SvxConfigGroupListBox::GroupSelected()
     }
 
     if ( pFunctionListBox->GetEntryCount() )
-        pFunctionListBox->Select( pFunctionListBox->GetEntry( 0, 0 ) );
+        pFunctionListBox->Select( pFunctionListBox->GetEntry( nullptr, 0 ) );
 
     pFunctionListBox->SetUpdateMode(true);
 }
@@ -962,13 +963,13 @@ void
 SvxScriptSelectorDialog::UpdateUI()
 {
     OUString url = GetScriptURL();
-    if ( url != NULL && !url.isEmpty() )
+    if ( url != nullptr && !url.isEmpty() )
     {
         OUString sMessage =
             m_pCommands->GetHelpText(m_pCommands->FirstSelected());
         m_pDescriptionText->SetText(sMessage.isEmpty() ? m_sDefaultDesc : sMessage);
 
-        m_pOKButton->Enable( true );
+        m_pOKButton->Enable();
     }
     else
     {
@@ -1008,7 +1009,7 @@ IMPL_LINK_TYPED( SvxScriptSelectorDialog, ClickHdl, Button *, pButton, void )
             SvTreeListEntry* current = m_pCommands->FirstSelected();
             SvTreeListEntry* next = SvTreeListBox::NextSibling( current );
 
-            if ( next != NULL )
+            if ( next != nullptr )
             {
                 m_pCommands->Select( next );
             }

@@ -441,7 +441,7 @@ ORegistry::ORegistry()
 ORegistry::~ORegistry()
 {
     ORegKey* pRootKey = m_openKeyTable[ROOT];
-    if (pRootKey != 0)
+    if (pRootKey != nullptr)
         (void) releaseKey(pRootKey);
 
     if (m_file.isValid())
@@ -639,7 +639,7 @@ RegError ORegistry::createKey(RegKeyHandle hKey, const OUString& keyName,
 {
     ORegKey*    pKey;
 
-    *phNewKey = NULL;
+    *phNewKey = nullptr;
 
     if ( keyName.isEmpty() )
         return RegError::INVALID_KEYNAME;
@@ -700,7 +700,7 @@ RegError ORegistry::openKey(RegKeyHandle hKey, const OUString& keyName,
 {
     ORegKey*        pKey;
 
-    *phOpenKey = NULL;
+    *phOpenKey = nullptr;
 
     if ( keyName.isEmpty() )
     {
@@ -829,7 +829,7 @@ RegError ORegistry::eraseKey(ORegKey* pKey, const OUString& keyName)
             sFullPath += ROOT;
     }
 
-    ORegKey* pOldKey = 0;
+    ORegKey* pOldKey = nullptr;
     _ret = pKey->openKey(keyName, reinterpret_cast<RegKeyHandle*>(&pOldKey));
     if (_ret != RegError::NO_ERROR)
         return _ret;
@@ -940,54 +940,6 @@ RegError ORegistry::loadKey(RegKeyHandle hKey, const OUString& regFileName,
     }
 
     rStoreDir = OStoreDirectory();
-    (void) pReg->releaseKey(pRootKey);
-    return _ret;
-}
-
-
-
-//  saveKey
-
-RegError ORegistry::saveKey(RegKeyHandle hKey, const OUString& regFileName,
-                            bool bWarnings, bool bReport)
-{
-    ORegKey* pKey = static_cast< ORegKey* >(hKey);
-
-    std::unique_ptr< ORegistry > pReg (new ORegistry());
-    RegError _ret = pReg->initRegistry(regFileName, RegAccessMode::READWRITE, true/*bCreate*/);
-    if (_ret != RegError::NO_ERROR)
-        return _ret;
-    ORegKey* pRootKey = pReg->getRootKey();
-
-    REG_GUARD(m_mutex);
-
-    OStoreDirectory::iterator   iter;
-    OStoreDirectory             rStoreDir(pKey->getStoreDir());
-    storeError                  _err = rStoreDir.first(iter);
-
-    while ( _err == store_E_None )
-    {
-        OUString const keyName = iter.m_pszName;
-
-        if ( iter.m_nAttrib & STORE_ATTRIB_ISDIR )
-        {
-            _ret = loadAndSaveKeys(pRootKey, pKey, keyName,
-                                   pKey->getName().getLength(),
-                                   bWarnings, bReport);
-        }
-        else
-        {
-            _ret = loadAndSaveValue(pRootKey, pKey, keyName,
-                                    pKey->getName().getLength(),
-                                    bWarnings, bReport);
-        }
-
-        if (_ret != RegError::NO_ERROR)
-            break;
-
-        _err = rStoreDir.next(iter);
-    }
-
     (void) pReg->releaseKey(pRootKey);
     return _ret;
 }
@@ -1360,7 +1312,7 @@ RegError ORegistry::loadAndSaveKeys(ORegKey* pTargetKey,
         m_openKeyTable[sFullKeyName]->setDeleted(false);
     }
 
-    ORegKey* pTmpKey = 0;
+    ORegKey* pTmpKey = nullptr;
     _ret = pSourceKey->openKey(keyName, reinterpret_cast<RegKeyHandle*>(&pTmpKey));
     if (_ret != RegError::NO_ERROR)
         return _ret;

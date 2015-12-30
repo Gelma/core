@@ -50,7 +50,6 @@ FrameControl::FrameControl( const Reference< XComponentContext >& rxContext)
     : BaseControl                   ( rxContext                                     )
     , OBroadcastHelper              ( m_aMutex                                      )
     , OPropertySetHelper            ( *(static_cast< OBroadcastHelper * >(this))    )
-    , m_aInterfaceContainer         ( m_aMutex                                      )
     , m_aConnectionPointContainer   ( new OConnectionPointContainerHelper(m_aMutex) )
 {
 }
@@ -111,15 +110,15 @@ Sequence< Type > SAL_CALL FrameControl::getTypes() throw( RuntimeException, std:
     // Optimize this method !
     // We initialize a static variable only one time. And we don't must use a mutex at every call!
     // For the first call; pTypeCollection is NULL - for the second call pTypeCollection is different from NULL!
-    static OTypeCollection* pTypeCollection = NULL;
+    static OTypeCollection* pTypeCollection = nullptr;
 
-    if ( pTypeCollection == NULL )
+    if ( pTypeCollection == nullptr )
     {
         // Ready for multithreading; get global mutex for first call of this method only! see before
         MutexGuard aGuard( Mutex::getGlobalMutex() );
 
         // Control these pointer again ... it can be, that another instance will be faster then these!
-        if ( pTypeCollection == NULL )
+        if ( pTypeCollection == nullptr )
         {
             // Create a static typecollection ...
             static OTypeCollection aTypeCollection  (   cppu::UnoType<XControlModel>::get(),
@@ -266,9 +265,7 @@ void SAL_CALL FrameControl::unadvise(   const   Type&                       aTyp
 
 const Sequence< OUString > FrameControl::impl_getStaticSupportedServiceNames()
 {
-    MutexGuard aGuard( Mutex::getGlobalMutex() );
-    Sequence< OUString > seqServiceNames( 1 );
-    seqServiceNames.getArray() [0] = SERVICENAME_FRAMECONTROL;
+    Sequence<OUString> seqServiceNames { SERVICENAME_FRAMECONTROL };
     return seqServiceNames;
 }
 
@@ -312,7 +309,7 @@ sal_Bool FrameControl::convertFastPropertyValue(        Any&        rConvertedVa
 
 void FrameControl::setFastPropertyValue_NoBroadcast(            sal_Int32   nHandle ,
                                                         const   Any&        rValue  )
-                                                        throw ( ::com::sun::star::uno::Exception, std::exception )
+                                                        throw ( css::uno::Exception, std::exception )
 {
     // this method only set the value
     MutexGuard  aGuard (m_aMutex);
@@ -478,7 +475,7 @@ void FrameControl::impl_deleteFrame()
         // do not dispose the frame in this guarded section (deadlock?)
         MutexGuard aGuard( m_aMutex );
         xOldFrame = m_xFrame;
-        m_xFrame = Reference< XFrame2 > ();
+        m_xFrame.clear();
     }
 
     // notify the listeners

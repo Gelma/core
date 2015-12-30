@@ -73,8 +73,8 @@ void FrameListAnalyzer::impl_analyze()
     m_bReferenceIsHidden  = false;
     m_bReferenceIsHelp    = false;
     m_bReferenceIsBacking = false;
-    m_xHelp               = css::uno::Reference< css::frame::XFrame >();
-    m_xBackingComponent   = css::uno::Reference< css::frame::XFrame >();
+    m_xHelp.clear();
+    m_xBackingComponent.clear();
 
     // try to get the task container by using the given supplier
     css::uno::Reference< css::container::XIndexAccess > xFrameContainer(m_xSupplier->getFrames(), css::uno::UNO_QUERY);
@@ -112,7 +112,7 @@ void FrameListAnalyzer::impl_analyze()
         (xSet.is()                             )
        )
     {
-        xSet->getPropertyValue(FRAME_PROPNAME_ISHIDDEN) >>= m_bReferenceIsHidden;
+        xSet->getPropertyValue(FRAME_PROPNAME_ASCII_ISHIDDEN) >>= m_bReferenceIsHidden;
     }
 
     // check, if the reference frame includes the backing component.
@@ -229,10 +229,10 @@ void FrameListAnalyzer::impl_analyze()
             bool bHidden = false;
             if ((m_eDetectMode & E_HIDDEN) == E_HIDDEN )
             {
-                xSet = css::uno::Reference< css::beans::XPropertySet >(xFrame, css::uno::UNO_QUERY);
+                xSet.set(xFrame, css::uno::UNO_QUERY);
                 if (xSet.is())
                 {
-                    xSet->getPropertyValue(FRAME_PROPNAME_ISHIDDEN) >>= bHidden;
+                    xSet->getPropertyValue(FRAME_PROPNAME_ASCII_ISHIDDEN) >>= bHidden;
                 }
             }
 

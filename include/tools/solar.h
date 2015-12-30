@@ -33,7 +33,7 @@ typedef sal_uIntPtr    sal_uLong; /* Replaces type ULONG */
 
 // misc. macros to leverage platform and compiler differences
 
-#define DELETEZ( p )    ( delete p,p = 0 )
+#define DELETEZ( p )    ( delete p,p = NULL )
 
 // solar binary types
 
@@ -104,17 +104,6 @@ inline void     DoubleToSVBT64( double n, SVBT64 p ) { p[0] = reinterpret_cast<s
                                                        p[6] = reinterpret_cast<sal_uInt8*>(&n)[1];
                                                        p[7] = reinterpret_cast<sal_uInt8*>(&n)[0]; }
 #endif
-#endif
-
-// pragmas
-
-#if defined _MSC_VER
-/* deletion of pointer to incomplete type '...'; no destructor called
- serious error, memory deleted without call of dtor */
-#pragma warning( error: 4150 )
-// warning C4002: too many actual parameters for macro
-// warning C4003: not enough actual parameters for macro
-#pragma warning(error : 4002 4003)
 #endif
 
 #if defined WNT

@@ -31,11 +31,11 @@ public:
         EditTextObjectImpl::ContentInfosType& rContents = mrObj.GetContents();
         for (size_t i = 0; i < rContents.size(); ++i)
         {
-            ContentInfo& rContent = rContents[i];
+            ContentInfo& rContent = *rContents[i].get();
             ContentInfo::XEditAttributesType& rAttribs = rContent.GetAttribs();
             for (size_t j = 0; j < rAttribs.size(); ++j)
             {
-                XEditAttribute& rAttr = rAttribs[j];
+                XEditAttribute& rAttr = *rAttribs[j].get();
                 const SfxPoolItem* pItem = rAttr.GetItem();
                 if (pItem->Which() != EE_FEATURE_FIELD)
                     // This is not a field item.
@@ -61,7 +61,6 @@ FieldUpdater::FieldUpdater(const FieldUpdater& r) : mpImpl(new FieldUpdaterImpl(
 
 FieldUpdater::~FieldUpdater()
 {
-    delete mpImpl;
 }
 
 void FieldUpdater::updateTableFields(int nTab)

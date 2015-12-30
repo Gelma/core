@@ -40,7 +40,6 @@
 #include "TransformerTokenMap.hxx"
 
 #include "TransformerBase.hxx"
-#include "TContextVector.hxx"
 
 using namespace ::osl;
 using namespace ::xmloff::token;
@@ -179,7 +178,7 @@ XMLTransformerContext *XMLTransformerBase::CreateContext( sal_uInt16 nPrefix,
 
 XMLTransformerActions *XMLTransformerBase::GetUserDefinedActions( sal_uInt16 )
 {
-    return 0;
+    return nullptr;
 }
 
 XMLTransformerBase::XMLTransformerBase( XMLTransformerActionInit *pInit,
@@ -187,7 +186,6 @@ XMLTransformerBase::XMLTransformerBase( XMLTransformerActionInit *pInit,
     throw () :
     m_pNamespaceMap( new SvXMLNamespaceMap ),
     m_pReplaceNamespaceMap( new SvXMLNamespaceMap ),
-    m_pContexts( new XMLTransformerContextVector ),
     m_pElemActions( new XMLTransformerActions( pInit ) ),
     m_pTokenMap( new XMLTransformerTokenMap( pTKMapInit ) )
 {
@@ -204,7 +202,6 @@ XMLTransformerBase::~XMLTransformerBase() throw ()
 {
     delete m_pNamespaceMap;
     delete m_pReplaceNamespaceMap;
-    delete m_pContexts;
     delete m_pElemActions;
     delete m_pTokenMap;
 }
@@ -225,14 +222,14 @@ void SAL_CALL XMLTransformerBase::startElement( const OUString& rName,
                                          const Reference< XAttributeList >& rAttrList )
     throw(SAXException, RuntimeException, std::exception)
 {
-    SvXMLNamespaceMap *pRewindMap = 0;
+    SvXMLNamespaceMap *pRewindMap = nullptr;
 
     bool bRect = rName == "presentation:show-shape";
     (void)bRect;
 
     // Process namespace attributes. This must happen before creating the
     // context, because namespace decaration apply to the element name itself.
-    XMLMutableAttributeList *pMutableAttrList = 0;
+    XMLMutableAttributeList *pMutableAttrList = nullptr;
     Reference< XAttributeList > xAttrList( rAttrList );
     sal_Int16 nAttrCount = xAttrList.is() ? xAttrList->getLength() : 0;
     for( sal_Int16 i=0; i < nAttrCount; i++ )
@@ -288,9 +285,9 @@ void SAL_CALL XMLTransformerBase::startElement( const OUString& rName,
     // If there are contexts already, call a CreateChildContext at the topmost
     // context. Otherwise, create a default context.
     ::rtl::Reference < XMLTransformerContext > xContext;
-    if( !m_pContexts->empty() )
+    if( !m_pContexts.empty() )
     {
-        xContext = m_pContexts->back()->CreateChildContext( nPrefix,
+        xContext = m_pContexts.back()->CreateChildContext( nPrefix,
                                                           aLocalName,
                                                           rName,
                                                           xAttrList );
@@ -306,10 +303,10 @@ void SAL_CALL XMLTransformerBase::startElement( const OUString& rName,
 
     // Remember old namespace map.
     if( pRewindMap )
-        xContext->SetRewindMap( pRewindMap );
+        xContext->PutRewindMap( pRewindMap );
 
     // Push context on stack.
-    m_pContexts->push_back( xContext );
+    m_pContexts.push_back( xContext );
 
     // Call a startElement at the new context.
     xContext->StartElement( xAttrList );
@@ -322,10 +319,10 @@ rName
 )
     throw(SAXException, RuntimeException, std::exception)
 {
-    if( !m_pContexts->empty() )
+    if( !m_pContexts.empty() )
     {
         // Get topmost context
-        ::rtl::Reference< XMLTransformerContext > xContext = m_pContexts->back();
+        ::rtl::Reference< XMLTransformerContext > xContext = m_pContexts.back();
 
 #if OSL_DEBUG_LEVEL > 0
         OSL_ENSURE( xContext->GetQName() == rName,
@@ -336,13 +333,13 @@ rName
         xContext->EndElement();
 
         // and remove it from the stack.
-        m_pContexts->pop_back();
+        m_pContexts.pop_back();
 
         // Get a namespace map to rewind.
-        SvXMLNamespaceMap *pRewindMap = xContext->GetRewindMap();
+        SvXMLNamespaceMap *pRewindMap = xContext->TakeRewindMap();
 
         // Delete the current context.
-        xContext = 0;
+        xContext = nullptr;
 
         // Rewind a namespace map.
         if( pRewindMap )
@@ -356,9 +353,9 @@ rName
 void SAL_CALL XMLTransformerBase::characters( const OUString& rChars )
     throw(SAXException, RuntimeException, std::exception)
 {
-    if( !m_pContexts->empty() )
+    if( !m_pContexts.empty() )
     {
-        m_pContexts->back()->Characters( rChars );
+        m_pContexts.back()->Characters( rChars );
     }
 }
 
@@ -439,7 +436,7 @@ void SAL_CALL XMLTransformerBase::initialize( const Sequence< Any >& aArguments 
             m_xPropSet.set( *pAny, UNO_QUERY );
 
         // xmodel
-        if( cppu::UnoType<com::sun::star::frame::XModel>::get().isAssignableFrom( pAny->getValueType() ) )
+        if( cppu::UnoType<css::frame::XModel>::get().isAssignableFrom( pAny->getValueType() ) )
             mxModel.set( *pAny, UNO_QUERY );
     }
 
@@ -508,7 +505,7 @@ XMLMutableAttributeList *XMLTransformerBase::ProcessAttrList(
         Reference< XAttributeList >& rAttrList, sal_uInt16 nActionMap,
            bool bClone  )
 {
-    XMLMutableAttributeList *pMutableAttrList = 0;
+    XMLMutableAttributeList *pMutableAttrList = nullptr;
     XMLTransformerActions *pActions = GetUserDefinedActions( nActionMap );
     OSL_ENSURE( pActions, "go no actions" );
     if( pActions )
@@ -593,7 +590,7 @@ XMLMutableAttributeList *XMLTransformerBase::ProcessAttrList(
                             // convert twips value to inch
                             sal_Int32 nMeasure;
                             if (::sax::Converter::convertMeasure(nMeasure,
-                                    aAttrValue, util::MeasureUnit::MM_100TH))
+                                    aAttrValue))
                             {
 
                                 // #i13778#,#i36248# apply correct twip-to-1/100mm
@@ -756,7 +753,7 @@ XMLMutableAttributeList *XMLTransformerBase::ProcessAttrList(
                             // convert inch value to twips and export as faked inch
                             sal_Int32 nMeasure;
                             if (::sax::Converter::convertMeasure(nMeasure,
-                                    aAttrValue, util::MeasureUnit::MM_100TH))
+                                    aAttrValue))
                             {
 
                                 // #i13778#,#i36248#/ apply correct 1/100mm-to-twip conversion
@@ -784,7 +781,7 @@ XMLMutableAttributeList *XMLTransformerBase::ProcessAttrList(
 
                         sal_Int32 nMeasure;
                         if (::sax::Converter::convertMeasure(nMeasure,
-                                    aAttrValue, util::MeasureUnit::MM_100TH))
+                                    aAttrValue))
                         {
 
                             if( nMeasure > 0 )
@@ -811,7 +808,7 @@ XMLMutableAttributeList *XMLTransformerBase::ProcessAttrList(
 
                         sal_Int32 nMeasure;
                         if (::sax::Converter::convertMeasure(nMeasure,
-                                aAttrValue, util::MeasureUnit::MM_100TH))
+                                aAttrValue))
                         {
 
                             if( nMeasure > 0 )
@@ -852,7 +849,7 @@ XMLMutableAttributeList *XMLTransformerBase::ProcessAttrList(
                 case XML_ATACTION_WRITER_BACK_GRAPHIC_TRANSPARENCY:
                     {
                         // determine, if it's the transparency of a document style
-                        XMLTransformerContext* pFirstContext = (*m_pContexts)[0].get();
+                        XMLTransformerContext* pFirstContext = m_pContexts[0].get();
                         OUString aFirstContextLocalName;
                         /* sal_uInt16 nFirstContextPrefix = */
                             GetNamespaceMap().GetKeyByAttrName( pFirstContext->GetQName(),
@@ -1427,23 +1424,20 @@ XMLTokenEnum XMLTransformerBase::GetToken( const OUString& rStr ) const
 
 const XMLTransformerContext *XMLTransformerBase::GetCurrentContext() const
 {
-    OSL_ENSURE( !m_pContexts->empty(), "empty stack" );
+    OSL_ENSURE( !m_pContexts.empty(), "empty stack" );
 
 
-    return m_pContexts->empty() ? 0 : m_pContexts->back().get();
+    return m_pContexts.empty() ? nullptr : m_pContexts.back().get();
 }
 
 const XMLTransformerContext *XMLTransformerBase::GetAncestorContext(
                                                         sal_uInt32 n ) const
 {
-    XMLTransformerContextVector::size_type nSize =
-        m_pContexts->size();
-    XMLTransformerContextVector::size_type nPos =
-        static_cast<XMLTransformerContextVector::size_type>( n );
+    auto nSize = m_pContexts.size();
 
-    OSL_ENSURE( nSize >nPos+2 , "invalid context" );
+    OSL_ENSURE( nSize > n + 2 , "invalid context" );
 
-    return nSize > nPos+2 ? (*m_pContexts)[nSize-(nPos+2)].get() : 0;
+    return nSize > n + 2 ? m_pContexts[nSize - (n + 2)].get() : nullptr;
 }
 
 bool XMLTransformerBase::isWriter() const

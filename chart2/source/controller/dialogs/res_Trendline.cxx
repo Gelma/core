@@ -42,7 +42,7 @@ void lcl_setValue( FormattedField& rFmtField, double fValue )
 TrendlineResources::TrendlineResources( vcl::Window * pParent, const SfxItemSet& rInAttrs ) :
         m_eTrendLineType( CHREGRESS_LINEAR ),
         m_bTrendLineUnique( true ),
-        m_pNumFormatter( NULL ),
+        m_pNumFormatter( nullptr ),
         m_nNbPoints( 0 )
 {
     SfxTabPage* pTabPage = reinterpret_cast<SfxTabPage*>(pParent);
@@ -77,7 +77,7 @@ TrendlineResources::TrendlineResources( vcl::Window * pParent, const SfxItemSet&
     m_pRB_Polynomial->SetClickHdl( aLink );
     m_pRB_MovingAverage->SetClickHdl( aLink );
 
-    Link<> aLink2 = LINK(this, TrendlineResources, ChangeValue );
+    Link<Edit&,void> aLink2 = LINK(this, TrendlineResources, ChangeValue );
     m_pNF_Degree->SetModifyHdl( aLink2 );
     m_pNF_Period->SetModifyHdl( aLink2 );
     m_pFmtFld_InterceptValue->SetModifyHdl( aLink2 );
@@ -110,7 +110,7 @@ IMPL_LINK_TYPED( TrendlineResources, SelectTrendLine, Button *, pRadioButton, vo
 
 void TrendlineResources::Reset( const SfxItemSet& rInAttrs )
 {
-    const SfxPoolItem *pPoolItem = NULL;
+    const SfxPoolItem *pPoolItem = nullptr;
 
     if( rInAttrs.GetItemState( SCHATTR_REGRESSION_CURVE_NAME, true, &pPoolItem ) == SfxItemState::SET )
     {
@@ -316,9 +316,9 @@ void TrendlineResources::UpdateControlStates()
     m_pCB_ShowCorrelationCoeff->Enable( !bMovingAverage );
 }
 
-IMPL_LINK( TrendlineResources, ChangeValue, void *, pNumericField)
+IMPL_LINK_TYPED( TrendlineResources, ChangeValue, Edit&, rNumericField, void)
 {
-    if( pNumericField == m_pNF_Degree )
+    if( &rNumericField == m_pNF_Degree )
     {
         if( !m_pRB_Polynomial->IsChecked() )
         {
@@ -326,7 +326,7 @@ IMPL_LINK( TrendlineResources, ChangeValue, void *, pNumericField)
                 SelectTrendLine(m_pRB_Polynomial);
         }
     }
-    else if( pNumericField == m_pNF_Period )
+    else if( &rNumericField == m_pNF_Period )
     {
         if( !m_pRB_MovingAverage->IsChecked() )
         {
@@ -334,14 +334,12 @@ IMPL_LINK( TrendlineResources, ChangeValue, void *, pNumericField)
                 SelectTrendLine(m_pRB_MovingAverage);
         }
     }
-    else if( pNumericField == m_pFmtFld_InterceptValue )
+    else if( &rNumericField == m_pFmtFld_InterceptValue )
     {
         if( !m_pCB_SetIntercept->IsChecked() )
                 m_pCB_SetIntercept->Check();
     }
     UpdateControlStates();
-
-    return 0;
 }
 
 void TrendlineResources::SetNumFormatter( SvNumberFormatter* pFormatter )

@@ -62,13 +62,12 @@ SvxRTFParser::SvxRTFParser( SfxItemPool& rPool, SvStream& rIn,
             uno::Reference<document::XDocumentProperties> i_xDocProps,
             bool const bReadNewDoc )
     : SvRTFParser( rIn, 5 )
-    , rStrm(rIn)
     , aPlainMap(rPool)
     , aPardMap(rPool)
-    , pInsPos( 0 )
+    , pInsPos( nullptr )
     , pAttrPool( &rPool )
     , m_xDocProps( i_xDocProps )
-    , pRTFDefaults( 0 )
+    , pRTFDefaults( nullptr )
     , nVersionNo( 0 )
     , nDfltFont( 0)
     , bNewDoc( bReadNewDoc )
@@ -99,7 +98,7 @@ SvxRTFParser::~SvxRTFParser()
     delete pDfltColor;
 }
 
-void SvxRTFParser::SetInsPos( const SvxPosition& rNew )
+void SvxRTFParser::SetInsPos( const EditPosition& rNew )
 {
     delete pInsPos;
     pInsPos = rNew.Clone();
@@ -297,7 +296,7 @@ INSINGLECHAR:
 
 void SvxRTFParser::ReadStyleTable()
 {
-    int nToken, bSaveChkStyleAttr = bChkStyleAttr ? 1 : 0;
+    int bSaveChkStyleAttr = bChkStyleAttr ? 1 : 0;
     sal_uInt16 nStyleNo = 0;
     bool bHasStyleNo = false;
     int _nOpenBrakets = 1;      // the first was already detected earlier!!
@@ -310,7 +309,8 @@ void SvxRTFParser::ReadStyleTable()
 
     while( _nOpenBrakets && IsParserWorking() )
     {
-        switch( nToken = GetNextToken() )
+        int nToken = GetNextToken();
+        switch( nToken )
         {
         case '}':       if( --_nOpenBrakets && IsParserWorking() )
                             // Style has been completely read,
@@ -320,10 +320,10 @@ void SvxRTFParser::ReadStyleTable()
         case '{':
             {
                 if( RTF_IGNOREFLAG != GetNextToken() )
-                    nToken = SkipToken();
+                    SkipToken();
                 else if( RTF_UNKNOWNCONTROL != ( nToken = GetNextToken() ) &&
                             RTF_PN != nToken )
-                    nToken = SkipToken( -2 );
+                    SkipToken( -2 );
                 else
                 {
                     // filter out at once
@@ -458,9 +458,9 @@ void SvxRTFParser::ReadFontTable()
 
     while( _nOpenBrakets && IsParserWorking() )
     {
-        int nToken = 0;
         bool bCheckNewFont = false;
-        switch( ( nToken = GetNextToken() ))
+        int nToken = GetNextToken();
+        switch( nToken )
         {
             case '}':
                 bIsAltFntNm = false;
@@ -473,13 +473,13 @@ void SvxRTFParser::ReadFontTable()
                 break;
             case '{':
                 if( RTF_IGNOREFLAG != GetNextToken() )
-                    nToken = SkipToken();
+                    SkipToken();
                 // immediately skip unknown and all known but non-evaluated
                 // groups
                 else if( RTF_UNKNOWNCONTROL != ( nToken = GetNextToken() ) &&
                         RTF_PANOSE != nToken && RTF_FNAME != nToken &&
                         RTF_FONTEMB != nToken && RTF_FONTFILE != nToken )
-                    nToken = SkipToken( -2 );
+                    SkipToken( -2 );
                 else
                 {
                     // filter out at once
@@ -597,21 +597,20 @@ OUString& SvxRTFParser::GetTextToEndGroup( OUString& rStr )
 
     while( _nOpenBrakets && IsParserWorking() )
     {
-        int nToken = 0;
-        switch( nToken = GetNextToken() )
+        switch( GetNextToken() )
         {
         case '}':       --_nOpenBrakets;    break;
         case '{':
             {
                 if( RTF_IGNOREFLAG != GetNextToken() )
-                    nToken = SkipToken();
+                    SkipToken();
                 else if( RTF_UNKNOWNCONTROL != GetNextToken() )
-                    nToken = SkipToken( -2 );
+                    SkipToken( -2 );
                 else
                 {
                     // filter out at once
                     ReadUnknownData();
-                    nToken = GetNextToken();
+                    int nToken = GetNextToken();
                     if( '}' != nToken )
                         eState = SVPAR_ERROR;
                     break;
@@ -662,16 +661,16 @@ void SvxRTFParser::ReadInfo( const sal_Char* pChkForVerNo )
 
     while( _nOpenBrakets && IsParserWorking() )
     {
-        int nToken = 0;
-        switch( nToken = GetNextToken() )
+        int nToken = GetNextToken();
+        switch( nToken )
         {
         case '}':       --_nOpenBrakets;    break;
         case '{':
             {
                 if( RTF_IGNOREFLAG != GetNextToken() )
-                    nToken = SkipToken();
+                    SkipToken();
                 else if( RTF_UNKNOWNCONTROL != GetNextToken() )
-                    nToken = SkipToken( -2 );
+                    SkipToken( -2 );
                 else
                 {
                     // filter out at once
@@ -814,7 +813,7 @@ const vcl::Font& SvxRTFParser::GetFont( sal_uInt16 nId )
 
 SvxRTFItemStackType* SvxRTFParser::_GetAttrSet( bool const bCopyAttr )
 {
-    SvxRTFItemStackType* pAkt = aAttrStack.empty() ? 0 : aAttrStack.back();
+    SvxRTFItemStackType* pAkt = aAttrStack.empty() ? nullptr : aAttrStack.back();
     SvxRTFItemStackType* pNew;
     if( pAkt )
         pNew = new SvxRTFItemStackType( *pAkt, *pInsPos, bCopyAttr );
@@ -877,9 +876,9 @@ void SvxRTFParser::AttrGroupEnd()   // process the current, delete from Stack
 {
     if( !aAttrStack.empty() )
     {
-        SvxRTFItemStackType *pOld = aAttrStack.empty() ? 0 : aAttrStack.back();
+        SvxRTFItemStackType *pOld = aAttrStack.empty() ? nullptr : aAttrStack.back();
         aAttrStack.pop_back();
-        SvxRTFItemStackType *pAkt = aAttrStack.empty() ? 0 : aAttrStack.back();
+        SvxRTFItemStackType *pAkt = aAttrStack.empty() ? nullptr : aAttrStack.back();
 
         do {        // middle check loop
             sal_Int32 nOldSttNdIdx = pOld->pSttNd->GetIdx();
@@ -983,7 +982,7 @@ void SvxRTFParser::AttrGroupEnd()   // process the current, delete from Stack
                                 m_AttrSetList.push_back(std::unique_ptr<SvxRTFItemStackType>(pOld));
                                 m_AttrSetList.push_back(std::move(pNew));
                             }
-                            pOld = 0;   // Do not delete pOld
+                            pOld = nullptr;   // Do not delete pOld
                             break;
                         }
                     }
@@ -1023,10 +1022,9 @@ void SvxRTFParser::AttrGroupEnd()   // process the current, delete from Stack
 
                         // Set all until here valid Attributes
                         AttrGroupEnd();
-                        pAkt = aAttrStack.empty() ? 0 : aAttrStack.back();  // can be changed after AttrGroupEnd!
-                        pNew->aAttrSet.SetParent( pAkt ? &pAkt->aAttrSet : 0 );
+                        pAkt = aAttrStack.empty() ? nullptr : aAttrStack.back();  // can be changed after AttrGroupEnd!
+                        pNew->aAttrSet.SetParent( pAkt ? &pAkt->aAttrSet : nullptr );
                         aAttrStack.push_back( pNew );
-                        pAkt = pNew;
                     }
                 }
                 else
@@ -1034,7 +1032,7 @@ void SvxRTFParser::AttrGroupEnd()   // process the current, delete from Stack
                     // read. (Span no attributes!)
                     m_AttrSetList.push_back(std::unique_ptr<SvxRTFItemStackType>(pOld));
 
-                pOld = 0;
+                pOld = nullptr;
             }
 
             if( bCrsrBack )
@@ -1084,7 +1082,7 @@ void SvxRTFParser::SetAttrSet( SvxRTFItemStackType &rSet )
 // Has no text been inserted yet? (SttPos from the top Stack entry!)
 bool SvxRTFParser::IsAttrSttPos()
 {
-    SvxRTFItemStackType* pAkt = aAttrStack.empty() ? 0 : aAttrStack.back();
+    SvxRTFItemStackType* pAkt = aAttrStack.empty() ? nullptr : aAttrStack.back();
     return !pAkt || (pAkt->pSttNd->GetIdx() == pInsPos->GetNodeIdx() &&
         pAkt->nSttCnt == pInsPos->GetCntIdx());
 }
@@ -1138,7 +1136,7 @@ SvxRTFStyleType::SvxRTFStyleType( SfxItemPool& rPool, const sal_uInt16* pWhichRa
 
 SvxRTFItemStackType::SvxRTFItemStackType(
         SfxItemPool& rPool, const sal_uInt16* pWhichRange,
-        const SvxPosition& rPos )
+        const EditPosition& rPos )
     : aAttrSet( rPool, pWhichRange )
     , m_pChildList( nullptr )
     , nStyleNo( 0 )
@@ -1151,7 +1149,7 @@ SvxRTFItemStackType::SvxRTFItemStackType(
 
 SvxRTFItemStackType::SvxRTFItemStackType(
         const SvxRTFItemStackType& rCpy,
-        const SvxPosition& rPos,
+        const EditPosition& rPos,
         bool const bCopyAttr )
     : aAttrSet( *rCpy.aAttrSet.GetPool(), rCpy.aAttrSet.GetRanges() )
     , m_pChildList( nullptr )
@@ -1183,7 +1181,7 @@ void SvxRTFItemStackType::Add(std::unique_ptr<SvxRTFItemStackType> pIns)
     m_pChildList->push_back(std::move(pIns));
 }
 
-void SvxRTFItemStackType::SetStartPos( const SvxPosition& rPos )
+void SvxRTFItemStackType::SetStartPos( const EditPosition& rPos )
 {
     if (pSttNd != pEndNd)
         delete pEndNd;
@@ -1193,8 +1191,8 @@ void SvxRTFItemStackType::SetStartPos( const SvxPosition& rPos )
     nSttCnt = rPos.GetCntIdx();
 }
 
-void SvxRTFItemStackType::MoveFullNode(const SvxNodeIdx &rOldNode,
-    const SvxNodeIdx &rNewNode)
+void SvxRTFItemStackType::MoveFullNode(const EditNodeIdx &rOldNode,
+    const EditNodeIdx &rNewNode)
 {
     bool bSameEndAsStart = (pSttNd == pEndNd);
 
@@ -1233,7 +1231,7 @@ void SvxRTFItemStackType::Compress( const SvxRTFParser& rParser )
         nSttCnt != pTmp->nSttCnt )
         return;
 
-    SvxNodeIdx* pLastNd = pTmp->pEndNd;
+    EditNodeIdx* pLastNd = pTmp->pEndNd;
     sal_Int32 nLastCnt = pTmp->nEndCnt;
 
     SfxItemSet aMrgSet( pTmp->aAttrSet );

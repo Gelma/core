@@ -70,7 +70,7 @@ class SvtToolPanelOptions_Impl : public ConfigItem
             \sa baseclass ConfigItem
             \param[in,out] seqPropertyNames is the list of properties which should be updated.
         */
-        virtual void Notify( const Sequence< OUString >& seqPropertyNames ) SAL_OVERRIDE;
+        virtual void Notify( const Sequence< OUString >& seqPropertyNames ) override;
 
         /**
          loads required data from the configuration. It's called in the constructor to
@@ -87,7 +87,7 @@ class SvtToolPanelOptions_Impl : public ConfigItem
 
     private:
 
-        virtual void ImplCommit() SAL_OVERRIDE;
+        virtual void ImplCommit() override;
 
         /** return list of key names of our configuration management which represent oue module tree
 
@@ -299,7 +299,7 @@ Sequence< OUString > SvtToolPanelOptions_Impl::GetPropertyNames()
 
 //  initialize static member, see definition for further information
 //  DON'T DO IT IN YOUR HEADER!
-SvtToolPanelOptions_Impl* SvtToolPanelOptions::m_pDataContainer = NULL;
+SvtToolPanelOptions_Impl* SvtToolPanelOptions::m_pDataContainer = nullptr;
 sal_Int32               SvtToolPanelOptions::m_nRefCount = 0;
 
 SvtToolPanelOptions::SvtToolPanelOptions()
@@ -308,7 +308,7 @@ SvtToolPanelOptions::SvtToolPanelOptions()
     MutexGuard aGuard( GetInitMutex() );
     ++m_nRefCount;
     // ... and initialize our data container only if it not already exist!
-    if( m_pDataContainer == NULL )
+    if( m_pDataContainer == nullptr )
     {
        m_pDataContainer = new SvtToolPanelOptions_Impl;
     }
@@ -323,7 +323,7 @@ SvtToolPanelOptions::~SvtToolPanelOptions()
     if( m_nRefCount <= 0 )
     {
         delete m_pDataContainer;
-        m_pDataContainer = NULL;
+        m_pDataContainer = nullptr;
     }
 }
 

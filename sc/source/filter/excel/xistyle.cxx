@@ -58,14 +58,15 @@
 #include "root.hxx"
 #include "colrowst.hxx"
 #include <svl/poolcach.hxx>
+#include <o3tl/make_unique.hxx>
 
 #include <list>
-
-using ::std::list;
 
 #include <cppuhelper/implbase.hxx>
 #include <com/sun/star/container/XIndexAccess.hpp>
 #include <com/sun/star/beans/XPropertySet.hpp>
+
+using ::std::list;
 using namespace ::com::sun::star;
 
 typedef ::cppu::WeakImplHelper< container::XIndexAccess > XIndexAccess_BASE;
@@ -74,26 +75,26 @@ typedef ::std::vector< ColorData > ColorDataVec;
 class PaletteIndex : public XIndexAccess_BASE
 {
 public:
-    PaletteIndex( const ColorDataVec& rColorDataTable ) : maColorData( rColorDataTable ) {}
+    explicit PaletteIndex( const ColorDataVec& rColorDataTable ) : maColorData( rColorDataTable ) {}
 
     // Methods XIndexAccess
-    virtual ::sal_Int32 SAL_CALL getCount() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual ::sal_Int32 SAL_CALL getCount() throw (uno::RuntimeException, std::exception) override
     {
          return  maColorData.size();
     }
 
-    virtual uno::Any SAL_CALL getByIndex( ::sal_Int32 Index ) throw (lang::IndexOutOfBoundsException, lang::WrappedTargetException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Any SAL_CALL getByIndex( ::sal_Int32 Index ) throw (lang::IndexOutOfBoundsException, lang::WrappedTargetException, uno::RuntimeException, std::exception) override
     {
         //--Index;  // apparently the palette is already 1 based
         return uno::makeAny( sal_Int32( maColorData[ Index ] ) );
     }
 
     // Methods XElementAcess
-    virtual uno::Type SAL_CALL getElementType() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Type SAL_CALL getElementType() throw (uno::RuntimeException, std::exception) override
     {
         return ::cppu::UnoType<sal_Int32>::get();
     }
-    virtual sal_Bool SAL_CALL hasElements() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasElements() throw (uno::RuntimeException, std::exception) override
     {
         return (maColorData.size() > 0);
     }
@@ -494,7 +495,7 @@ void XclImpFont::GuessScriptType()
             mbHasWstrn = (!mbHasAsian && !mbHasCmplx) || pCharMap->HasChar( 'A' );
         }
 
-        pCharMap = 0;
+        pCharMap = nullptr;
     }
 }
 
@@ -552,24 +553,24 @@ const XclImpFont* XclImpFontBuffer::GetFont( sal_uInt16 nFontIndex ) const
     if (nFontIndex < 4)
     {
         // Font ID is zero-based when it's less than 4.
-        return nFontIndex >= maFontList.size() ? NULL : &maFontList[nFontIndex];
+        return nFontIndex >= maFontList.size() ? nullptr : &maFontList[nFontIndex];
     }
 
     // Font ID is greater than 4.  It is now 1-based.
-    return nFontIndex > maFontList.size() ? NULL : &maFontList[nFontIndex-1];
+    return nFontIndex > maFontList.size() ? nullptr : &maFontList[nFontIndex-1];
 }
 
 void XclImpFontBuffer::ReadFont( XclImpStream& rStrm )
 {
-    XclImpFont* pFont = new XclImpFont( GetRoot() );
-    pFont->ReadFont( rStrm );
-    maFontList.push_back( pFont );
+    maFontList.push_back( XclImpFont( GetRoot() ) );
+    XclImpFont& rFont = maFontList.back();
+    rFont.ReadFont( rStrm );
 
     if( maFontList.size() == 1 )
     {
-        UpdateAppFont( pFont->GetFontData(), pFont->HasCharSet() );
+        UpdateAppFont( rFont.GetFontData(), rFont.HasCharSet() );
         // #i71033# set text encoding from application font, if CODEPAGE is missing
-        SetAppFontEncoding( pFont->GetFontEncoding() );
+        SetAppFontEncoding( rFont.GetFontEncoding() );
     }
 }
 
@@ -1087,7 +1088,7 @@ void XclImpCellArea::FillToItemSet( SfxItemSet& rItemSet, const XclImpPalette& r
 XclImpXF::XclImpXF( const XclImpRoot& rRoot ) :
     XclXFBase( true ),      // default is cell XF
     XclImpRoot( rRoot ),
-    mpStyleSheet( 0 ),
+    mpStyleSheet( nullptr ),
     mnXclNumFmt( 0 ),
     mnXclFont( 0 )
 {
@@ -1238,7 +1239,7 @@ const ScPatternAttr& XclImpXF::CreatePattern( bool bSkipPoolDefs )
     // create new pattern attribute set
     mpPattern.reset( new ScPatternAttr( GetDoc().GetPool() ) );
     SfxItemSet& rItemSet = mpPattern->GetItemSet();
-    XclImpXF* pParentXF = IsCellXF() ? GetXFBuffer().GetXF( mnParent ) : 0;
+    XclImpXF* pParentXF = IsCellXF() ? GetXFBuffer().GetXF( mnParent ) : nullptr;
 
     // parent cell style
     if( IsCellXF() && !mpStyleSheet )
@@ -1310,8 +1311,8 @@ const ScPatternAttr& XclImpXF::CreatePattern( bool bSkipPoolDefs )
     if( mbAlignUsed || mbBorderUsed )
     {
         SvxRotateMode eRotateMode = SVX_ROTATE_MODE_STANDARD;
-        const XclImpCellAlign* pAlign = mbAlignUsed ? &maAlignment : (pParentXF ? &pParentXF->maAlignment : 0);
-        const XclImpCellBorder* pBorder = mbBorderUsed ? &maBorder : (pParentXF ? &pParentXF->maBorder : 0);
+        const XclImpCellAlign* pAlign = mbAlignUsed ? &maAlignment : (pParentXF ? &pParentXF->maAlignment : nullptr);
+        const XclImpCellBorder* pBorder = mbBorderUsed ? &maBorder : (pParentXF ? &pParentXF->maBorder : nullptr);
         if( pAlign && pBorder && (0 < pAlign->mnRotation) && (pAlign->mnRotation <= 180) && pBorder->HasAnyOuterBorder() )
             eRotateMode = SVX_ROTATE_MODE_BOTTOM;
         ScfTools::PutItem( rItemSet, SvxRotateModeItem( eRotateMode, ATTR_ROTATE_MODE ), bSkipPoolDefs );
@@ -1466,7 +1467,7 @@ XclImpStyle::XclImpStyle( const XclImpRoot& rRoot ) :
     mbBuiltin( false ),
     mbCustom( false ),
     mbHidden( false ),
-    mpStyleSheet( 0 )
+    mpStyleSheet( nullptr )
 {
 }
 
@@ -1569,14 +1570,14 @@ void XclImpXFBuffer::ReadXF( XclImpStream& rStrm )
 {
     XclImpXF* pXF = new XclImpXF( GetRoot() );
     pXF->ReadXF( rStrm );
-    maXFList.push_back( pXF );
+    maXFList.push_back( std::unique_ptr<XclImpXF>(pXF) );
 }
 
 void XclImpXFBuffer::ReadStyle( XclImpStream& rStrm )
 {
     XclImpStyle* pStyle = new XclImpStyle( GetRoot() );
     pStyle->ReadStyle( rStrm );
-    (pStyle->IsBuiltin() ? maBuiltinStyles : maUserStyles).push_back( pStyle );
+    (pStyle->IsBuiltin() ? maBuiltinStyles : maUserStyles).push_back( std::unique_ptr<XclImpStyle>(pStyle) );
     OSL_ENSURE( maStylesByXf.count( pStyle->GetXfId() ) == 0, "XclImpXFBuffer::ReadStyle - multiple styles with equal XF identifier" );
     maStylesByXf[ pStyle->GetXfId() ] = pStyle;
 }
@@ -1626,19 +1627,19 @@ void XclImpXFBuffer::CreateUserStyles()
     for( SfxStyleSheetBase* pStyleSheet = aStyleIter.First(); pStyleSheet; pStyleSheet = aStyleIter.Next() )
         if( (pStyleSheet->GetName() != aStandardName) && (bReserveAll || !pStyleSheet->IsUserDefined()) )
             if( aCellStyles.count( pStyleSheet->GetName() ) == 0 )
-                aCellStyles[ pStyleSheet->GetName() ] = 0;
+                aCellStyles[ pStyleSheet->GetName() ] = nullptr;
 
     /*  Calculate names of built-in styles. Store styles with reserved names
         in the aConflictNameStyles list. */
     for( XclImpStyleList::iterator itStyle = maBuiltinStyles.begin(); itStyle != maBuiltinStyles.end(); ++itStyle )
     {
-        OUString aStyleName = XclTools::GetBuiltInStyleName( itStyle->GetBuiltinId(), itStyle->GetName(), itStyle->GetLevel() );
+        OUString aStyleName = XclTools::GetBuiltInStyleName( (*itStyle)->GetBuiltinId(), (*itStyle)->GetName(), (*itStyle)->GetLevel() );
         OSL_ENSURE( bReserveAll || (aCellStyles.count( aStyleName ) == 0),
             "XclImpXFBuffer::CreateUserStyles - multiple styles with equal built-in identifier" );
         if( aCellStyles.count( aStyleName ) > 0 )
-            aConflictNameStyles.push_back( &(*itStyle) );
+            aConflictNameStyles.push_back( itStyle->get() );
         else
-            aCellStyles[ aStyleName ] = &(*itStyle);
+            aCellStyles[ aStyleName ] = itStyle->get();
     }
 
     /*  Calculate names of user defined styles. Store styles with reserved
@@ -1646,12 +1647,12 @@ void XclImpXFBuffer::CreateUserStyles()
     for( XclImpStyleList::iterator itStyle = maUserStyles.begin(); itStyle != maUserStyles.end(); ++itStyle )
     {
         // #i1624# #i1768# ignore unnamed user styles
-        if( !itStyle->GetName().isEmpty() )
+        if( !(*itStyle)->GetName().isEmpty() )
         {
-            if( aCellStyles.count( itStyle->GetName() ) > 0 )
-                aConflictNameStyles.push_back( &(*itStyle) );
+            if( aCellStyles.count( (*itStyle)->GetName() ) > 0 )
+                aConflictNameStyles.push_back( itStyle->get() );
             else
-                aCellStyles[ itStyle->GetName() ] = &(*itStyle);
+                aCellStyles[ (*itStyle)->GetName() ] = itStyle->get();
         }
     }
 
@@ -1678,7 +1679,7 @@ void XclImpXFBuffer::CreateUserStyles()
 ScStyleSheet* XclImpXFBuffer::CreateStyleSheet( sal_uInt16 nXFIndex )
 {
     XclImpStyleMap::iterator aIt = maStylesByXf.find( nXFIndex );
-    return (aIt == maStylesByXf.end()) ? 0 : aIt->second->CreateStyleSheet();
+    return (aIt == maStylesByXf.end()) ? nullptr : aIt->second->CreateStyleSheet();
 }
 
 // Buffer for XF indexes in cells =============================================
@@ -1722,7 +1723,7 @@ void XclImpXFRangeColumn::SetDefaultXF( const XclImpXFIndex& rXFIndex )
     OSL_ENSURE( maIndexList.empty(), "XclImpXFRangeColumn::SetDefaultXF - Setting Default Column XF is not empty" );
 
     // insert a complete row range with one insert.
-    maIndexList.push_back( new XclImpXFRange( 0, MAXROW, rXFIndex ) );
+    maIndexList.push_back( o3tl::make_unique<XclImpXFRange>( 0, MAXROW, rXFIndex ) );
 }
 
 void XclImpXFRangeColumn::SetXF( SCROW nScRow, const XclImpXFIndex& rXFIndex )
@@ -1746,7 +1747,7 @@ void XclImpXFRangeColumn::SetXF( SCROW nScRow, const XclImpXFIndex& rXFIndex )
             SCROW nLastScRow = pPrevRange->mnScRow2;
             sal_uLong nIndex = nNextIndex - 1;
             XclImpXFRange* pThisRange = pPrevRange;
-            pPrevRange = (nIndex > 0 && nIndex <= maIndexList.size()) ? &(maIndexList[ nIndex - 1 ]) : 0;
+            pPrevRange = (nIndex > 0 && nIndex <= maIndexList.size()) ? maIndexList[ nIndex - 1 ].get() : nullptr;
 
             if( nFirstScRow == nLastScRow )         // replace solely XF
             {
@@ -1793,7 +1794,7 @@ void XclImpXFRangeColumn::SetXF( SCROW nScRow, const XclImpXFIndex& rXFIndex )
 
 void XclImpXFRangeColumn::Insert(XclImpXFRange* pXFRange, sal_uLong nIndex)
 {
-    maIndexList.insert( maIndexList.begin() + nIndex, pXFRange );
+    maIndexList.insert( maIndexList.begin() + nIndex, std::unique_ptr<XclImpXFRange>(pXFRange) );
 }
 
 void XclImpXFRangeColumn::Find(
@@ -1804,20 +1805,20 @@ void XclImpXFRangeColumn::Find(
     // test whether list is empty
     if( maIndexList.empty() )
     {
-        rpPrevRange = rpNextRange = 0;
+        rpPrevRange = rpNextRange = nullptr;
         rnNextIndex = 0;
         return;
     }
 
-    rpPrevRange = &maIndexList.front();
-    rpNextRange = &maIndexList.back();
+    rpPrevRange = maIndexList.front().get();
+    rpNextRange = maIndexList.back().get();
 
     // test whether row is at end of list (contained in or behind last range)
     // rpPrevRange will contain a possible existing row
     if( rpNextRange->mnScRow1 <= nScRow )
     {
         rpPrevRange = rpNextRange;
-        rpNextRange = 0;
+        rpNextRange = nullptr;
         rnNextIndex = maIndexList.size();
         return;
     }
@@ -1826,7 +1827,7 @@ void XclImpXFRangeColumn::Find(
     if( nScRow < rpPrevRange->mnScRow1 )
     {
         rpNextRange = rpPrevRange;
-        rpPrevRange = 0;
+        rpPrevRange = nullptr;
         rnNextIndex = 0;
         return;
     }
@@ -1841,7 +1842,7 @@ void XclImpXFRangeColumn::Find(
     while( ((rnNextIndex - nPrevIndex) > 1) && (rpPrevRange->mnScRow2 < nScRow) )
     {
         nMidIndex = (nPrevIndex + rnNextIndex) / 2;
-        pMidRange = &maIndexList[nMidIndex];
+        pMidRange = maIndexList[nMidIndex].get();
         OSL_ENSURE( pMidRange, "XclImpXFRangeColumn::Find - missing XF index range" );
         if( nScRow < pMidRange->mnScRow1 )      // row is really before pMidRange
         {
@@ -1859,7 +1860,7 @@ void XclImpXFRangeColumn::Find(
     if( nScRow <= rpPrevRange->mnScRow2 )
     {
         rnNextIndex = nPrevIndex + 1;
-        rpNextRange = &maIndexList[rnNextIndex];
+        rpNextRange = maIndexList[rnNextIndex].get();
     }
 }
 
@@ -1868,8 +1869,8 @@ void XclImpXFRangeColumn::TryConcatPrev( sal_uLong nIndex )
     if( !nIndex || nIndex >= maIndexList.size() )
         return;
 
-    XclImpXFRange& prevRange = maIndexList[ nIndex - 1 ];
-    XclImpXFRange& nextRange = maIndexList[ nIndex ];
+    XclImpXFRange& prevRange = *maIndexList[ nIndex - 1 ];
+    XclImpXFRange& nextRange = *maIndexList[ nIndex ];
 
     if( prevRange.Expand( nextRange ) )
         maIndexList.erase( maIndexList.begin() + nIndex );
@@ -1913,7 +1914,7 @@ void XclImpXFRangeBuffer::SetXF( const ScAddress& rScPos, sal_uInt16 nXFIndex, X
         if( pXF && ((pXF->GetHorAlign() == EXC_XF_HOR_CENTER_AS) || (pXF->GetHorAlign() == EXC_XF_HOR_FILL)) )
         {
             // expand last merged range if this attribute is set repeatedly
-            ScRange* pRange = maMergeList.empty() ? NULL : maMergeList.back();
+            ScRange* pRange = maMergeList.empty() ? nullptr : maMergeList.back();
             if (pRange && (pRange->aEnd.Row() == nScRow) && (pRange->aEnd.Col() + 1 == nScCol) && (eMode == xlXFModeBlank))
                 pRange->aEnd.IncCol();
             else if( eMode != xlXFModeBlank )   // do not merge empty cells
@@ -2005,7 +2006,7 @@ void XclImpXFRangeBuffer::Finalize()
             for (XclImpXFRangeColumn::IndexList::iterator itr = rColumn.begin(), itrEnd = rColumn.end();
                  itr != itrEnd; ++itr)
             {
-                XclImpXFRange& rStyle = *itr;
+                XclImpXFRange& rStyle = **itr;
                 const XclImpXFIndex& rXFIndex = rStyle.maXFIndex;
                 XclImpXF* pXF = rXFBuffer.GetXF( rXFIndex.GetXFIndex() );
                 if (!pXF)

@@ -54,7 +54,7 @@ public:
         if (!--s_nRefCount)
         {
             delete s_pProps;
-            s_pProps = NULL;
+            s_pProps = nullptr;
         }
     }
 
@@ -90,8 +90,8 @@ protected:
         @param      _rAggregateProps    out parameter to be filled with the properties of your aggregate.
     */
     virtual void fillProperties(
-        ::com::sun::star::uno::Sequence< ::com::sun::star::beans::Property >& /* [out] */ _rProps,
-        ::com::sun::star::uno::Sequence< ::com::sun::star::beans::Property >& /* [out] */ _rAggregateProps
+        css::uno::Sequence< css::beans::Property >& /* [out] */ _rProps,
+        css::uno::Sequence< css::beans::Property >& /* [out] */ _rAggregateProps
         ) const = 0;
 
     /** creates an OPropertyArrayAggregationHelper filled with properties for which's initialization
@@ -104,7 +104,7 @@ protected:
         Beware of the lifetime of the returned object, as it has to exist 'til the last instance
         of this class dies.
     */
-    virtual IPropertyInfoService* getInfoService() const { return NULL; }
+    virtual IPropertyInfoService* getInfoService() const { return nullptr; }
 
     /** the return value is used for the construction of the OPropertyArrayAggregationHelper.
     */
@@ -115,7 +115,7 @@ template<class TYPE>
 sal_Int32                       OPropertyArrayUsageHelper< TYPE >::s_nRefCount  = 0;
 
 template<class TYPE>
-::cppu::IPropertyArrayHelper*   OPropertyArrayUsageHelper< TYPE >::s_pProps = NULL;
+::cppu::IPropertyArrayHelper*   OPropertyArrayUsageHelper< TYPE >::s_pProps = nullptr;
 
 template <class TYPE>
 OPropertyArrayUsageHelper<TYPE>::OPropertyArrayUsageHelper()
@@ -143,8 +143,8 @@ template <class TYPE>
 template <class TYPE> inline
 ::cppu::IPropertyArrayHelper* OAggregationArrayUsageHelper<TYPE>::createArrayHelper() const
 {
-    ::com::sun::star::uno::Sequence< ::com::sun::star::beans::Property > aProps;
-    ::com::sun::star::uno::Sequence< ::com::sun::star::beans::Property > aAggregateProps;
+    css::uno::Sequence< css::beans::Property > aProps;
+    css::uno::Sequence< css::beans::Property > aAggregateProps;
     fillProperties(aProps, aAggregateProps);
     OSL_ENSURE(aProps.getLength(), "OAggregationArrayUsageHelper::createArrayHelper : fillProperties returned nonsense !");
     return new OPropertyArrayAggregationHelper(aProps, aAggregateProps, getInfoService(), getFirstAggregateId());

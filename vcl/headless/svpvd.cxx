@@ -19,8 +19,6 @@
 
 #ifndef IOS
 
-#include <vcl/svpforlokit.hxx>
-
 #include "headless/svpbmp.hxx"
 #include "headless/svpinst.hxx"
 #include "headless/svpvd.hxx"
@@ -52,54 +50,39 @@ void SvpSalVirtualDevice::ReleaseGraphics( SalGraphics* pGraphics )
 
 bool SvpSalVirtualDevice::SetSize( long nNewDX, long nNewDY )
 {
-    return SetSizeUsingBuffer( nNewDX, nNewDY, basebmp::RawMemorySharedArray(), false );
+    return SetSizeUsingBuffer(nNewDX, nNewDY, basebmp::RawMemorySharedArray());
 }
 
 bool SvpSalVirtualDevice::SetSizeUsingBuffer( long nNewDX, long nNewDY,
-                                              const basebmp::RawMemorySharedArray &pBuffer,
-                                              const bool bTopDown )
+        const basebmp::RawMemorySharedArray &pBuffer )
 {
     B2IVector aDevSize( nNewDX, nNewDY );
     if( aDevSize.getX() == 0 )
         aDevSize.setX( 1 );
     if( aDevSize.getY() == 0 )
         aDevSize.setY( 1 );
-    if( ! m_aDevice.get() || m_aDevice->getSize() != aDevSize )
-    {
-        SvpSalInstance* pInst = SvpSalInstance::s_pDefaultInstance;
-        assert( pInst );
-        basebmp::Format nFormat = pInst->getFormatForBitCount( m_nBitCount );
-        sal_Int32 nStride = basebmp::getBitmapDeviceStrideForWidth(nFormat, aDevSize.getX());
+    if( ! m_aDevice.get() || m_aDevice->getSize() != aDevSize ) {
+        basebmp::Format nFormat = SvpSalInstance::getBaseBmpFormatForDeviceFormat(m_eFormat);
 
-        if ( m_nBitCount == 1 )
-        {
+        if (m_eFormat == DeviceFormat::BITMASK) {
             std::vector< basebmp::Color > aDevPal(2);
             aDevPal[0] = basebmp::Color( 0, 0, 0 );
             aDevPal[1] = basebmp::Color( 0xff, 0xff, 0xff );
-            m_aDevice = createBitmapDevice( aDevSize, bTopDown, nFormat, nStride,
+            m_aDevice = createBitmapDevice( aDevSize, true, nFormat,
                                             PaletteMemorySharedVector( new std::vector< basebmp::Color >(aDevPal) ) );
-        }
-        else
-        {
+        } else {
             m_aDevice = pBuffer ?
-                          createBitmapDevice( aDevSize, bTopDown, nFormat, nStride, pBuffer, PaletteMemorySharedVector() )
-                        : createBitmapDevice( aDevSize, bTopDown, nFormat, nStride );
+                        createBitmapDevice( aDevSize, true, nFormat, pBuffer, PaletteMemorySharedVector() )
+                        : createBitmapDevice( aDevSize, true, nFormat );
         }
 
         // update device in existing graphics
         for( std::list< SvpSalGraphics* >::iterator it = m_aGraphics.begin();
              it != m_aGraphics.end(); ++it )
-             (*it)->setDevice( m_aDevice );
+            (*it)->setDevice( m_aDevice );
 
     }
     return true;
-}
-
-void InitSvpForLibreOfficeKit()
-{
-    ImplSVData* pSVData = ImplGetSVData();
-    SvpSalInstance* pSalInstance = static_cast< SvpSalInstance* >(pSVData->mpDefInst);
-    pSalInstance->setBitCountFormatMapping( 32, ::basebmp::Format::ThirtyTwoBitTcMaskRGBA );
 }
 
 #endif

@@ -34,11 +34,10 @@
 #include <com/sun/star/uno/XInterface.hpp>
 using namespace com::sun::star::uno;
 
-///////////////////////////// SbxVariable
+// SbxVariable
 
-TYPEINIT1(SbxVariable,SbxValue)
 
-///////////////////////////// SbxVariableImpl
+// SbxVariableImpl
 
 class SbxVariableImpl
 {
@@ -48,7 +47,7 @@ class SbxVariableImpl
     StarBASIC*                  m_pComListenerParentBasic;
 
     SbxVariableImpl()
-        : m_pComListenerParentBasic( NULL )
+        : m_pComListenerParentBasic( nullptr )
     {}
     SbxVariableImpl( const SbxVariableImpl& r )
         : m_aDeclareClassName( r.m_aDeclareClassName )
@@ -59,13 +58,13 @@ class SbxVariableImpl
 };
 
 
-///////////////////////////// Constructors
+// Constructors
 
 SbxVariable::SbxVariable() : SbxValue()
 {
-    mpSbxVariableImpl = NULL;
-    pCst = NULL;
-    pParent = NULL;
+    mpSbxVariableImpl = nullptr;
+    pCst = nullptr;
+    pParent = nullptr;
     nUserData = 0;
     nHash = 0;
 }
@@ -76,8 +75,8 @@ SbxVariable::SbxVariable( const SbxVariable& r )
       mpPar( r.mpPar ),
       pInfo( r.pInfo )
 {
-    mpSbxVariableImpl = NULL;
-    if( r.mpSbxVariableImpl != NULL )
+    mpSbxVariableImpl = nullptr;
+    if( r.mpSbxVariableImpl != nullptr )
     {
         mpSbxVariableImpl = new SbxVariableImpl( *r.mpSbxVariableImpl );
 #if HAVE_FEATURE_SCRIPTING
@@ -87,7 +86,7 @@ SbxVariable::SbxVariable( const SbxVariable& r )
         }
 #endif
     }
-    pCst = NULL;
+    pCst = nullptr;
     if( r.CanRead() )
     {
         pParent = r.pParent;
@@ -97,7 +96,7 @@ SbxVariable::SbxVariable( const SbxVariable& r )
     }
     else
     {
-        pParent = NULL;
+        pParent = nullptr;
         nUserData = 0;
         nHash = 0;
     }
@@ -105,9 +104,9 @@ SbxVariable::SbxVariable( const SbxVariable& r )
 
 SbxVariable::SbxVariable( SbxDataType t, void* p ) : SbxValue( t, p )
 {
-    mpSbxVariableImpl = NULL;
-    pCst = NULL;
-    pParent = NULL;
+    mpSbxVariableImpl = nullptr;
+    pCst = nullptr;
+    pParent = nullptr;
     nUserData = 0;
     nHash = 0;
 }
@@ -124,7 +123,7 @@ SbxVariable::~SbxVariable()
     delete pCst;
 }
 
-////////////////////////////// Broadcasting
+// Broadcasting
 
 SfxBroadcaster& SbxVariable::GetBroadcaster()
 {
@@ -142,7 +141,7 @@ SbxArray* SbxVariable::GetParameters() const
 
 
 // Perhaps some day one could cut the parameter 0.
-// then the copying will be dropped ...
+// Then the copying will be dropped...
 
 void SbxVariable::Broadcast( sal_uInt32 nHintId )
 {
@@ -171,7 +170,7 @@ void SbxVariable::Broadcast( sal_uInt32 nHintId )
 
         // Avoid further broadcasting
         SfxBroadcaster* pSave = pCst;
-        pCst = NULL;
+        pCst = nullptr;
         SbxFlagBits nSaveFlags = GetFlags();
         SetFlag( SbxFlagBits::ReadWrite );
         if( mpPar.Is() )
@@ -210,7 +209,7 @@ void SbxVariable::SetParameters( SbxArray* p )
 }
 
 
-/////////////////////////// Name of the variables
+// Name of the variables
 
 void SbxVariable::SetName( const OUString& rName )
 {
@@ -335,7 +334,7 @@ sal_uInt16 SbxVariable::MakeHashCode( const OUString& rName )
     for( sal_Int32 i=0; i<nLen; ++i )
     {
         sal_uInt8 c = static_cast<sal_uInt8>(rName[i]);
-        // If we have a comment signe break!!
+        // If we have a comment sign break!!
         if( c >= 0x80 )
         {
             return 0;
@@ -345,13 +344,13 @@ sal_uInt16 SbxVariable::MakeHashCode( const OUString& rName )
     return n;
 }
 
-////////////////////////////// Operators
+// Operators
 
 SbxVariable& SbxVariable::operator=( const SbxVariable& r )
 {
     SbxValue::operator=( r );
     delete mpSbxVariableImpl;
-    if( r.mpSbxVariableImpl != NULL )
+    if( r.mpSbxVariableImpl != nullptr )
     {
         mpSbxVariableImpl = new SbxVariableImpl( *r.mpSbxVariableImpl );
 #if HAVE_FEATURE_SCRIPTING
@@ -363,12 +362,12 @@ SbxVariable& SbxVariable::operator=( const SbxVariable& r )
     }
     else
     {
-        mpSbxVariableImpl = NULL;
+        mpSbxVariableImpl = nullptr;
     }
     return *this;
 }
 
-//////////////////////////////// Conversion
+// Conversion
 
 SbxDataType SbxVariable::GetType() const
 {
@@ -432,7 +431,7 @@ void SbxVariable::SetParent( SbxObject* p )
 
 SbxVariableImpl* SbxVariable::getImpl()
 {
-    if( mpSbxVariableImpl == NULL )
+    if( mpSbxVariableImpl == nullptr )
     {
         mpSbxVariableImpl = new SbxVariableImpl();
     }
@@ -469,7 +468,7 @@ void SbxVariable::ClearComListener()
 }
 
 
-////////////////////////////// Loading/Saving
+// Loading/Saving
 
 bool SbxVariable::LoadData( SvStream& rStrm, sal_uInt16 nVer )
 {
@@ -522,7 +521,7 @@ bool SbxVariable::LoadData( SvStream& rStrm, sal_uInt16 nVer )
                     rStrm, RTL_TEXTENCODING_ASCII_US);
             double d;
             SbxDataType t;
-            if( ImpScan( aTmpString, d, t, NULL ) != ERRCODE_SBX_OK || t == SbxDOUBLE )
+            if( ImpScan( aTmpString, d, t, nullptr ) != ERRCODE_SBX_OK || t == SbxDOUBLE )
             {
                 aTmp.nSingle = 0;
                 return false;
@@ -537,7 +536,7 @@ bool SbxVariable::LoadData( SvStream& rStrm, sal_uInt16 nVer )
             aTmpString = read_uInt16_lenPrefixed_uInt8s_ToOUString(rStrm,
                                                                         RTL_TEXTENCODING_ASCII_US);
             SbxDataType t;
-            if( ImpScan( aTmpString, aTmp.nDouble, t, NULL ) != ERRCODE_SBX_OK )
+            if( ImpScan( aTmpString, aTmp.nDouble, t, nullptr ) != ERRCODE_SBX_OK )
             {
                 aTmp.nDouble = 0;
                 return false;
@@ -575,11 +574,6 @@ bool SbxVariable::LoadData( SvStream& rStrm, sal_uInt16 nVer )
         pInfo = new SbxInfo;
         pInfo->LoadData( rStrm, (sal_uInt16) cMark );
     }
-    // Load private data only, if it is a SbxVariable
-    if( GetClass() == SbxCLASS_VARIABLE && !LoadPrivateData( rStrm, nVer ) )
-    {
-        return false;
-    }
     Broadcast( SBX_HINT_DATACHANGED );
     nHash =  MakeHashCode( maName );
     SetModified( true );
@@ -590,7 +584,7 @@ bool SbxVariable::StoreData( SvStream& rStrm ) const
 {
     rStrm.WriteUChar( 0xFF );      // Marker
     bool bValStore;
-    if( this->IsA( TYPE(SbxMethod) ) )
+    if( dynamic_cast<const SbxMethod *>(this) != nullptr )
     {
         // #50200 Avoid that objects , which during the runtime
         // as return-value are saved in the method as a value were saved
@@ -626,18 +620,10 @@ bool SbxVariable::StoreData( SvStream& rStrm ) const
     {
         rStrm.WriteUChar( 0 );
     }
-    // Save private data only, if it is a SbxVariable
-    if( GetClass() == SbxCLASS_VARIABLE )
-    {
-        return StorePrivateData( rStrm );
-    }
-    else
-    {
-        return true;
-    }
+    return true;
 }
 
-////////////////////////////// SbxInfo
+// SbxInfo
 
 SbxInfo::SbxInfo()
         : aHelpFile(), nHelpId(0)
@@ -647,7 +633,7 @@ SbxInfo::SbxInfo( const OUString& r, sal_uInt32 n )
        : aHelpFile( r ), nHelpId( n )
 {}
 
-////////////////////////////// SbxAlias
+// SbxAlias
 
 SbxAlias::SbxAlias( const SbxAlias& r )
         : SvRefBase( r ), SbxVariable( r ),

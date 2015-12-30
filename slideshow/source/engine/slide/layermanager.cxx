@@ -25,7 +25,7 @@
 #include <comphelper/anytostring.hxx>
 #include <cppuhelper/exc_hlp.hxx>
 
-#include <boost/bind.hpp>
+#include <boost/mem_fn.hpp>
 #include <algorithm>
 
 #include "layermanager.hxx"
@@ -63,7 +63,7 @@ namespace slideshow
                 }
 
                 if( pCurrViewLayer )
-                    shapeFunc( rShape.first, pCurrViewLayer );
+                    shapeFunc(rShape.first,pCurrViewLayer);
             }
         }
 
@@ -86,9 +86,7 @@ namespace slideshow
             maLayers.reserve(4);
 
             // create initial background layer
-            maLayers.push_back(
-                    Layer::createBackgroundLayer(
-                        maPageBounds ));
+            maLayers.push_back( Layer::createBackgroundLayer() );
 
             // init views
             for( const auto& rView : mrViews )
@@ -103,8 +101,8 @@ namespace slideshow
 
             if( !bSlideBackgoundPainted )
             {
-                for( const auto& rView : mrViews )
-                    rView->clearAll();
+                for( const auto& pView : mrViews )
+                    pView->clearAll();
 
                 // force update of whole slide area
                 for( const auto& pLayer : maLayers )
@@ -166,14 +164,10 @@ namespace slideshow
 
             // add View to all registered shapes
             manageViews(
-                boost::bind(&Layer::addView,
-                            _1,
-                            boost::cref(rView)),
-                // repaint on view add
-                boost::bind(&Shape::addViewLayer,
-                            _1,
-                            _2,
-                            true) );
+                [&rView]( const LayerSharedPtr& pLayer )
+                { return pLayer->addView( rView ); },
+                []( const ShapeSharedPtr& pShape, const ViewLayerSharedPtr& pLayer )
+                { return pShape->addViewLayer( pLayer, true ); } );
 
             // in case we haven't reached all layers from the
             // maAllShapes, issue addView again for good measure
@@ -190,12 +184,10 @@ namespace slideshow
 
             // remove View from all registered shapes
             manageViews(
-                boost::bind(&Layer::removeView,
-                            _1,
-                            boost::cref(rView)),
-                boost::bind(&Shape::removeViewLayer,
-                            _1,
-                            _2) );
+                [&rView]( const LayerSharedPtr& pLayer )
+                { return pLayer->removeView( rView ); },
+                []( const ShapeSharedPtr& pShape, const ViewLayerSharedPtr& pLayer )
+                { return pShape->removeViewLayer( pLayer ); } );
 
             // in case we haven't reached all layers from the
             // maAllShapes, issue removeView again for good measure
@@ -222,8 +214,8 @@ namespace slideshow
                 return;
 
             // clear view area
-            for( const auto& rView : mrViews )
-                rView->clearAll();
+            for( const auto& pView : mrViews )
+                pView->clearAll();
 
             // TODO(F3): resize and repaint all layers
 
@@ -533,10 +525,10 @@ namespace slideshow
                 }
 
                 if( bIsCurrLayerUpdating &&
-                    rShape.first->isBackgroundDetached() &&
-                    pCurrLayer->isInsideUpdateArea( rShape.first ) )
+                    !rShape.first->isBackgroundDetached() &&
+                    pCurrLayer->isInsideUpdateArea(rShape.first) )
                 {
-                    if( rShape.first->render() )
+                    if( !rShape.first->render() )
                         bRet = false;
                 }
             }
@@ -557,61 +549,61 @@ namespace slideshow
                 {
                 }
 
-                virtual bool isOnView(std::shared_ptr<View> const& /*rView*/) const SAL_OVERRIDE
+                virtual bool isOnView(std::shared_ptr<View> const& /*rView*/) const override
                 {
                     return true; // visible on all views
                 }
 
-                virtual ::cppcanvas::CanvasSharedPtr getCanvas() const SAL_OVERRIDE
+                virtual ::cppcanvas::CanvasSharedPtr getCanvas() const override
                 {
                     return mpCanvas;
                 }
 
-                virtual void clear() const SAL_OVERRIDE
+                virtual void clear() const override
                 {
                     // NOOP
                 }
 
-                virtual void clearAll() const SAL_OVERRIDE
+                virtual void clearAll() const override
                 {
                     // NOOP
                 }
 
                 virtual ::cppcanvas::CustomSpriteSharedPtr createSprite( const ::basegfx::B2DSize& /*rSpriteSizePixel*/,
-                                                                         double                    /*nSpritePrio*/ ) const SAL_OVERRIDE
+                                                                         double                    /*nSpritePrio*/ ) const override
                 {
                     ENSURE_OR_THROW( false,
                                       "DummyLayer::createSprite(): This method is not supposed to be called!" );
                     return ::cppcanvas::CustomSpriteSharedPtr();
                 }
 
-                virtual void setPriority( const basegfx::B1DRange& /*rRange*/ ) SAL_OVERRIDE
+                virtual void setPriority( const basegfx::B1DRange& /*rRange*/ ) override
                 {
                     OSL_FAIL( "BitmapView::setPriority(): This method is not supposed to be called!" );
                 }
 
-                virtual ::com::sun::star::geometry::IntegerSize2D getTranslationOffset() const SAL_OVERRIDE
+                virtual css::geometry::IntegerSize2D getTranslationOffset() const override
                 {
                     return geometry::IntegerSize2D(0,0);
                 }
 
-                virtual ::basegfx::B2DHomMatrix getTransformation() const SAL_OVERRIDE
+                virtual ::basegfx::B2DHomMatrix getTransformation() const override
                 {
                     return mpCanvas->getTransformation();
                 }
 
-                virtual ::basegfx::B2DHomMatrix getSpriteTransformation() const SAL_OVERRIDE
+                virtual ::basegfx::B2DHomMatrix getSpriteTransformation() const override
                 {
                     OSL_FAIL( "BitmapView::getSpriteTransformation(): This method is not supposed to be called!" );
                     return ::basegfx::B2DHomMatrix();
                 }
 
-                virtual void setClip( const ::basegfx::B2DPolyPolygon& /*rClip*/ ) SAL_OVERRIDE
+                virtual void setClip( const ::basegfx::B2DPolyPolygon& /*rClip*/ ) override
                 {
                     OSL_FAIL( "BitmapView::setClip(): This method is not supposed to be called!" );
                 }
 
-                virtual bool resize( const ::basegfx::B2DRange& /*rArea*/ ) SAL_OVERRIDE
+                virtual bool resize( const ::basegfx::B2DRange& /*rArea*/ ) override
                 {
                     OSL_FAIL( "BitmapView::resize(): This method is not supposed to be called!" );
                     return false;
@@ -706,8 +698,7 @@ namespace slideshow
         {
             OSL_ASSERT( mbActive );
 
-            LayerSharedPtr pLayer( Layer::createLayer(
-                                       maPageBounds ));
+            LayerSharedPtr pLayer( Layer::createLayer() );
 
             // create ViewLayers for all registered views, and add to
             // newly created layer.

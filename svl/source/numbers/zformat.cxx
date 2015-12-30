@@ -337,15 +337,15 @@ sal_uInt8 SvNumberNatNum::MapNatNumToDBNum( sal_uInt8 nNatNum, LanguageType eLan
 ImpSvNumFor::ImpSvNumFor()
 {
     nAnzStrings = 0;
-    aI.nTypeArray = NULL;
-    aI.sStrArray = NULL;
+    aI.nTypeArray = nullptr;
+    aI.sStrArray = nullptr;
     aI.eScannedType = css::util::NumberFormat::UNDEFINED;
     aI.bThousand = false;
     aI.nThousand = 0;
     aI.nCntPre = 0;
     aI.nCntPost = 0;
     aI.nCntExp = 0;
-    pColor = NULL;
+    pColor = nullptr;
 }
 
 ImpSvNumFor::~ImpSvNumFor()
@@ -368,8 +368,8 @@ void ImpSvNumFor::Enlarge(sal_uInt16 nAnz)
         }
         else
         {
-            aI.nTypeArray = NULL;
-            aI.sStrArray  = NULL;
+            aI.nTypeArray = nullptr;
+            aI.sStrArray  = nullptr;
         }
     }
 }
@@ -481,7 +481,7 @@ void SvNumberformat::ImpCopyNumberformat( const SvNumberformat& rFormat )
     bAdditionalBuiltin = rFormat.bAdditionalBuiltin;
 
     // #121103# when copying between documents, get color pointers from own scanner
-    ImpSvNumberformatScan* pColorSc = ( &rScan != &rFormat.rScan ) ? &rScan : NULL;
+    ImpSvNumberformatScan* pColorSc = ( &rScan != &rFormat.rScan ) ? &rScan : nullptr;
 
     for (sal_uInt16 i = 0; i < 4; i++)
     {
@@ -719,7 +719,7 @@ SvNumberformat::SvNumberformat(OUString& rString,
                 switch ( eSymbolType )
                 {
                 case BRACKET_SYMBOLTYPE_COLOR :
-                    if ( NumFor[nIndex].GetColor() != NULL )
+                    if ( NumFor[nIndex].GetColor() != nullptr )
                     {                           // error, more than one color
                         bCancel = true;         // break for
                         nCheckPos = nPosOld;
@@ -728,7 +728,7 @@ SvNumberformat::SvNumberformat(OUString& rString,
                     {
                         Color* pColor = pSc->GetColor( sStr);
                         NumFor[nIndex].SetColor( pColor, sStr);
-                        if (pColor == NULL)
+                        if (pColor == nullptr)
                         {                       // error
                             bCancel = true;     // break for
                             nCheckPos = nPosOld;
@@ -1894,7 +1894,7 @@ bool SvNumberformat::GetOutputString(const OUString& sString,
     }
     else
     {
-        *ppColor = NULL; // no change of color
+        *ppColor = nullptr; // no change of color
         return false;
     }
     *ppColor = NumFor[nIx].GetColor();
@@ -2090,7 +2090,7 @@ bool SvNumberformat::GetOutputString(double fNumber,
     bool bRes = false;
     OUStringBuffer sBuff;
     OutString.clear();
-    *ppColor = NULL; // No color change
+    *ppColor = nullptr; // No color change
     if (eType & css::util::NumberFormat::LOGICAL)
     {
         if (fNumber)
@@ -3104,7 +3104,7 @@ void SvNumberformat::SwitchToOtherCalendar( OUString& rOrgCalendar,
     if ( rCal.getUniqueID() == GREGORIAN )
     {
         using namespace ::com::sun::star::i18n;
-        ::com::sun::star::uno::Sequence< OUString > xCals = rCal.getAllCalendars(
+        css::uno::Sequence< OUString > xCals = rCal.getAllCalendars(
                 rLoc().getLanguageTag().getLocale() );
         sal_Int32 nCnt = xCals.getLength();
         if ( nCnt > 1 )
@@ -4462,12 +4462,12 @@ const OUString* SvNumberformat::GetNumForString( sal_uInt16 nNumFor, sal_uInt16 
 {
     if ( nNumFor > 3 )
     {
-        return NULL;
+        return nullptr;
     }
     sal_uInt16 nAnz = NumFor[nNumFor].GetCount();
     if ( !nAnz )
     {
-        return NULL;
+        return nullptr;
     }
     if ( nPos == 0xFFFF )
     {
@@ -4483,13 +4483,13 @@ const OUString* SvNumberformat::GetNumForString( sal_uInt16 nNumFor, sal_uInt16 
             }
             if ( (*pType != NF_SYMBOLTYPE_STRING) && (*pType != NF_SYMBOLTYPE_CURRENCY) )
             {
-                return NULL;
+                return nullptr;
             }
         }
     }
     else if ( nPos > nAnz - 1 )
     {
-        return NULL;
+        return nullptr;
     }
     else if ( bString )
     {
@@ -4504,7 +4504,7 @@ const OUString* SvNumberformat::GetNumForString( sal_uInt16 nNumFor, sal_uInt16 
         if ( nPos >= nAnz || ((*pType != NF_SYMBOLTYPE_STRING) &&
                               (*pType != NF_SYMBOLTYPE_CURRENCY)) )
         {
-            return NULL;
+            return nullptr;
         }
     }
     return &NumFor[nNumFor].Info().sStrArray[nPos];
@@ -4685,7 +4685,7 @@ Color* SvNumberformat::GetColor( sal_uInt16 nNumFor ) const
 {
     if ( nNumFor > 3 )
     {
-        return NULL;
+        return nullptr;
     }
     return NumFor[nNumFor].GetColor();
 }
@@ -4785,7 +4785,7 @@ OUString SvNumberformat::GetMappedFormatstring( const NfKeywordTable& rKeywords,
             nSem++;
         }
         OUString aPrefix;
-        bool LCIDInserted = false;
+        bool bLCIDInserted = false;
 
         if ( !bDefaults )
         {
@@ -4861,6 +4861,11 @@ OUString SvNumberformat::GetMappedFormatstring( const NfKeywordTable& rKeywords,
                     case NF_SYMBOLTYPE_THSEP :
                         aStr.append( rLocWrp.getNumThousandSep() );
                         break;
+                    case NF_SYMBOLTYPE_EXP :
+                        // tdf#95677: Excel does not support exponent without sign
+                        aStr.append( rKeywords[NF_KEY_E] );
+                        aStr.append( "+" );
+                        break;
                     case NF_SYMBOLTYPE_DATESEP :
                         aStr.append( rLocWrp.getDateSep() );
                         break;
@@ -4890,20 +4895,19 @@ OUString SvNumberformat::GetMappedFormatstring( const NfKeywordTable& rKeywords,
                     case NF_SYMBOLTYPE_CALDEL :
                         if ( pStr[j+1] == "buddhist" )
                         {
-                            aStr.insert( 0, "[$-" );
                             if ( rNum.IsSet() && rNum.GetNatNum() == 1 &&
                                  MsLangId::getRealLanguage( rNum.GetLang() ) ==
                                  LANGUAGE_THAI )
                             {
-                                aStr.insert( 3, "D07041E]" ); // date in Thai digit, Buddhist era
+                                aStr.insert( 0, "[$-D07041E]" ); // date in Thai digit, Buddhist era
                             }
                             else
                             {
-                                aStr.insert( 3, "107041E]" ); // date in Arabic digit, Buddhist era
+                                aStr.insert( 0, "[$-107041E]" ); // date in Arabic digit, Buddhist era
                             }
                             j = j+2;
                         }
-                        LCIDInserted = true;
+                        bLCIDInserted = true;
                         break;
                     default:
                         aStr.append( pStr[j] );
@@ -4915,7 +4919,7 @@ OUString SvNumberformat::GetMappedFormatstring( const NfKeywordTable& rKeywords,
         if (rNum.IsSet() && rNum.GetNatNum() == 1 &&
             rKeywords[NF_KEY_THAI_T] == "T" &&
             MsLangId::getRealLanguage( rNum.GetLang()) ==
-            LANGUAGE_THAI && !LCIDInserted )
+            LANGUAGE_THAI && !bLCIDInserted )
         {
 
             aStr.insert( 0, "[$-D00041E]" ); // number in Thai digit
@@ -4978,7 +4982,7 @@ OUString SvNumberformat::ImpGetNatNumString( const SvNumberNatNum& rNum,
 OUString SvNumberformat::impTransliterateImpl(const OUString& rStr,
                                               const SvNumberNatNum& rNum ) const
 {
-    com::sun::star::lang::Locale aLocale( LanguageTag( rNum.GetLang() ).getLocale() );
+    css::lang::Locale aLocale( LanguageTag( rNum.GetLang() ).getLocale() );
     return GetFormatter().GetNatNum()->getNativeNumberString( rStr,
                                                               aLocale, rNum.GetNatNum() );
 }
@@ -4986,14 +4990,14 @@ OUString SvNumberformat::impTransliterateImpl(const OUString& rStr,
 void SvNumberformat::impTransliterateImpl(OUStringBuffer& rStr,
                                           const SvNumberNatNum& rNum ) const
 {
-    com::sun::star::lang::Locale aLocale( LanguageTag( rNum.GetLang() ).getLocale() );
+    css::lang::Locale aLocale( LanguageTag( rNum.GetLang() ).getLocale() );
 
     OUString sTemp(rStr.makeStringAndClear());
     sTemp = GetFormatter().GetNatNum()->getNativeNumberString( sTemp, aLocale, rNum.GetNatNum() );
     rStr.append(sTemp);
 }
 
-void SvNumberformat::GetNatNumXml( com::sun::star::i18n::NativeNumberXmlAttributes& rAttr,
+void SvNumberformat::GetNatNumXml( css::i18n::NativeNumberXmlAttributes& rAttr,
                                    sal_uInt16 nNumFor ) const
 {
     if ( nNumFor <= 3 )
@@ -5001,19 +5005,19 @@ void SvNumberformat::GetNatNumXml( com::sun::star::i18n::NativeNumberXmlAttribut
         const SvNumberNatNum& rNum = NumFor[nNumFor].GetNatNum();
         if ( rNum.IsSet() )
         {
-            com::sun::star::lang::Locale aLocale(
+            css::lang::Locale aLocale(
                     LanguageTag( rNum.GetLang() ).getLocale() );
             rAttr = GetFormatter().GetNatNum()->convertToXmlAttributes(
                     aLocale, rNum.GetNatNum() );
         }
         else
         {
-            rAttr = com::sun::star::i18n::NativeNumberXmlAttributes();
+            rAttr = css::i18n::NativeNumberXmlAttributes();
         }
     }
     else
     {
-        rAttr = com::sun::star::i18n::NativeNumberXmlAttributes();
+        rAttr = css::i18n::NativeNumberXmlAttributes();
     }
 }
 

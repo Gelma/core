@@ -94,11 +94,11 @@ public:
 
         // css.frame.XStatusListener
         virtual void SAL_CALL statusChanged(const css::frame::FeatureStateEvent& aEvent)
-          throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+          throw(css::uno::RuntimeException, std::exception) override;
 
         // css.lang.XEventListener
         virtual void SAL_CALL disposing(const css::lang::EventObject& aEvent)
-          throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+          throw(css::uno::RuntimeException, std::exception) override;
 
         bool IsSet() const {return m_bState;}
 };
@@ -135,17 +135,15 @@ SfxMailModel::SaveResult SfxMailModel::ShowFilterOptionsDialog(
     const OUString& rType,
     bool bModified,
     sal_Int32& rNumArgs,
-    ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue >& rArgs )
+    css::uno::Sequence< css::beans::PropertyValue >& rArgs )
 {
     SaveResult eRet( SAVE_ERROR );
 
     try
     {
         uno::Sequence < beans::PropertyValue > aProps;
-            ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameAccess > xFilterCFG =
-                uno::Reference< container::XNameAccess >(
-                    xSMGR->createInstance(
-                        OUString("com.sun.star.document.FilterFactory") ), uno::UNO_QUERY );
+        css::uno::Reference< css::container::XNameAccess > xFilterCFG(
+                    xSMGR->createInstance( "com.sun.star.document.FilterFactory" ), uno::UNO_QUERY );
         css::uno::Reference< css::util::XModifiable > xModifiable( xModel, css::uno::UNO_QUERY );
 
         if ( !xFilterCFG.is() )
@@ -226,7 +224,7 @@ SfxMailModel::SaveResult SfxMailModel::ShowFilterOptionsDialog(
                                     {
                                         xModifiable->setModified( sal_False );
                                     }
-                                    catch( com::sun::star::beans::PropertyVetoException& )
+                                    catch( css::beans::PropertyVetoException& )
                                     {
                                     }
                                 }
@@ -326,9 +324,8 @@ SfxMailModel::SaveResult SfxMailModel::SaveDocumentAsFormat(
             OUString aExtension;
 
             css::uno::Reference< css::container::XContainerQuery > xContainerQuery(
-                xSMGR->createInstance( OUString(
-                    "com.sun.star.document.FilterFactory" )),
-                    css::uno::UNO_QUERY );
+                xSMGR->createInstance( "com.sun.star.document.FilterFactory" ),
+                css::uno::UNO_QUERY );
 
             if ( bStoreTo )
             {
@@ -356,7 +353,7 @@ SfxMailModel::SaveResult SfxMailModel::SaveDocumentAsFormat(
                 {
                     ::comphelper::SequenceAsHashMap aFilterPropsHM( xEnumeration->nextElement() );
                     aFilterName = aFilterPropsHM.getUnpackedValueOrDefault(
-                                                OUString("Name"),
+                                                "Name",
                                                 OUString() );
                 }
 
@@ -365,7 +362,7 @@ SfxMailModel::SaveResult SfxMailModel::SaveDocumentAsFormat(
                     // Retrieve filter from media descriptor
                     ::comphelper::SequenceAsHashMap aMediaDescrPropsHM( xModel->getArgs() );
                     OUString aOrgFilterName = aMediaDescrPropsHM.getUnpackedValueOrDefault(
-                                    OUString( "FilterName" ),
+                                    "FilterName",
                                     OUString() );
                     if ( aOrgFilterName == aFilterName )
                     {
@@ -383,7 +380,7 @@ SfxMailModel::SaveResult SfxMailModel::SaveDocumentAsFormat(
                     // Retrieve filter from media descriptor
                     ::comphelper::SequenceAsHashMap aMediaDescrPropsHM( xModel->getArgs() );
                     aFilterName = aMediaDescrPropsHM.getUnpackedValueOrDefault(
-                                    OUString( "FilterName" ),
+                                    "FilterName",
                                     OUString() );
                 }
 
@@ -394,7 +391,7 @@ SfxMailModel::SaveResult SfxMailModel::SaveDocumentAsFormat(
                     {
                         ::comphelper::SequenceAsHashMap aFilterPropsHM( xModuleManager->getByName( aModule ) );
                         aFilterName = aFilterPropsHM.getUnpackedValueOrDefault(
-                                                    OUString("ooSetupFactoryDefaultFilter"),
+                                                    "ooSetupFactoryDefaultFilter",
                                                     OUString() );
                         css::uno::Reference< css::container::XNameAccess > xNameAccess(
                             xContainerQuery, css::uno::UNO_QUERY );
@@ -402,7 +399,7 @@ SfxMailModel::SaveResult SfxMailModel::SaveDocumentAsFormat(
                         {
                             ::comphelper::SequenceAsHashMap aFilterPropsHM2( xNameAccess->getByName( aFilterName ) );
                             aTypeName = aFilterPropsHM2.getUnpackedValueOrDefault(
-                                                        OUString("Type"),
+                                                        "Type",
                                                         OUString() );
                         }
                     }
@@ -430,8 +427,7 @@ SfxMailModel::SaveResult SfxMailModel::SaveDocumentAsFormat(
             else
             {
                 css::uno::Reference< container::XNameAccess > xTypeDetection(
-                    xSMGR->createInstance( OUString(
-                        "com.sun.star.document.TypeDetection" )),
+                    xSMGR->createInstance( "com.sun.star.document.TypeDetection" ),
                     css::uno::UNO_QUERY );
 
 
@@ -441,7 +437,7 @@ SfxMailModel::SaveResult SfxMailModel::SaveDocumentAsFormat(
                     {
                         ::comphelper::SequenceAsHashMap aTypeNamePropsHM( xTypeDetection->getByName( aTypeName ) );
                         uno::Sequence< OUString > aExtensions = aTypeNamePropsHM.getUnpackedValueOrDefault(
-                                                        OUString("Extensions"),
+                                                        "Extensions",
                                                         ::uno::Sequence< OUString >() );
                         if ( aExtensions.getLength() )
                             aExtension = aExtensions[0];
@@ -481,7 +477,7 @@ SfxMailModel::SaveResult SfxMailModel::SaveDocumentAsFormat(
             // This makes it possible to store the file for "send document as e-mail"
             // with the original file name. We cannot use the original file as
             // some mail programs need exclusive access.
-            ::utl::TempFile aTempDir( NULL, true );
+            ::utl::TempFile aTempDir( nullptr, true );
 
             INetURLObject aFilePathObj( aTempDir.GetURL() );
             aFilePathObj.insertName( aFileName );
@@ -522,8 +518,7 @@ SfxMailModel::SaveResult SfxMailModel::SaveDocumentAsFormat(
 
                     if ( xDispatchProvider.is() )
                     {
-                        xPrepareDispatch = css::uno::Reference< css::frame::XDispatch >(
-                            xDispatchProvider->queryDispatch( aPrepareURL, OUString(), 0 ));
+                        xPrepareDispatch.set( xDispatchProvider->queryDispatch( aPrepareURL, OUString(), 0 ));
                         if ( xPrepareDispatch.is() )
                         {
                                 PrepareListener_Impl* pPrepareListener;
@@ -591,7 +586,7 @@ SfxMailModel::SaveResult SfxMailModel::SaveDocumentAsFormat(
 
                         if ( xDispatchProvider.is() )
                         {
-                            css::uno::Reference< css::frame::XDispatch > xDispatch = css::uno::Reference< css::frame::XDispatch >(
+                            css::uno::Reference< css::frame::XDispatch > xDispatch(
                                 xDispatchProvider->queryDispatch( aURL, OUString(), 0 ));
                             if ( xDispatch.is() )
                             {
@@ -619,12 +614,12 @@ SfxMailModel::SaveResult SfxMailModel::SaveDocumentAsFormat(
                         {
                             xModifiable->setModified( sal_False );
                         }
-                        catch( com::sun::star::beans::PropertyVetoException& )
+                        catch( css::beans::PropertyVetoException& )
                         {
                         }
                     }
                 }
-                catch ( com::sun::star::io::IOException& )
+                catch ( css::io::IOException& )
                 {
                     eRet = SAVE_ERROR;
                 }
@@ -642,7 +637,7 @@ SfxMailModel::SaveResult SfxMailModel::SaveDocumentAsFormat(
                     rFileNamePath = aFileURL;
                     eRet = SAVE_SUCCESSFULL;
                 }
-                catch ( com::sun::star::io::IOException& )
+                catch ( css::io::IOException& )
                 {
                     eRet = SAVE_ERROR;
                 }
@@ -654,9 +649,9 @@ SfxMailModel::SaveResult SfxMailModel::SaveDocumentAsFormat(
 }
 
 SfxMailModel::SfxMailModel() :
-    mpToList    ( NULL ),
-    mpCcList    ( NULL ),
-    mpBccList   ( NULL )
+    mpToList    ( nullptr ),
+    mpCcList    ( nullptr ),
+    mpBccList   ( nullptr )
 {
 }
 
@@ -672,7 +667,7 @@ void SfxMailModel::AddAddress( const OUString& rAddress, AddressRole eRole )
     // don't add a empty address
     if ( !rAddress.isEmpty() )
     {
-        AddressList_Impl* pList = NULL;
+        AddressList_Impl* pList = nullptr;
         if ( ROLE_TO == eRole )
         {
             if ( !mpToList )
@@ -826,7 +821,11 @@ SfxMailModel::SendMailResult SfxMailModel::Send( const css::uno::Reference< css:
                     OUString subject(
                         url.getBase(
                             INetURLObject::LAST_SEGMENT, false,
+#ifdef WNT
+                            INetURLObject::NO_DECODE)); // MAPISendMail does not accept Unicode
+#else
                             INetURLObject::DECODE_WITH_CHARSET));
+#endif
                     if (subject.isEmpty()) {
                         subject = maAttachedDocuments[0];
                     }

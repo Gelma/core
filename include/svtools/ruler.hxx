@@ -573,8 +573,6 @@ struct RulerUnitData
     double          nTick2;             // Tick quarter unit
     double          nTick3;             // Tick half unit
     double          nTick4;             // Tick whole unit
-    long            n100THMM;           // 100mm Unit divider
-    sal_uInt16      nUnitDigits;        // Number of digits
     sal_Char        aUnitStr[8];        // Unit string
 };
 
@@ -686,7 +684,7 @@ private:
     SVT_DLLPRIVATE void ImplDrawExtra(vcl::RenderContext& rRenderContext, bool bPaint = false);
     SVT_DLLPRIVATE void ImplUpdate( bool bMustCalc = false );
 
-    virtual void ApplySettings(vcl::RenderContext& rRenderContext) SAL_OVERRIDE;
+    virtual void ApplySettings(vcl::RenderContext& rRenderContext) override;
 
     using Window::ImplHitTest;
     SVT_DLLPRIVATE bool ImplHitTest( const Point& rPosition,
@@ -698,8 +696,8 @@ private:
     SVT_DLLPRIVATE void     ImplDrag( const Point& rPos );
     SVT_DLLPRIVATE void     ImplEndDrag();
 
-    Ruler (const Ruler &) SAL_DELETED_FUNCTION;
-    Ruler& operator= (const Ruler &) SAL_DELETED_FUNCTION;
+    Ruler (const Ruler &) = delete;
+    Ruler& operator= (const Ruler &) = delete;
 
 protected:
     long            GetRulerVirHeight() const { return mnVirHeight;}
@@ -709,15 +707,15 @@ protected:
 public:
             Ruler( vcl::Window* pParent, WinBits nWinStyle = WB_STDRULER );
     virtual ~Ruler();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    MouseMove( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    Tracking( const TrackingEvent& rTEvt ) SAL_OVERRIDE;
-    virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) SAL_OVERRIDE;
-    virtual void    Resize() SAL_OVERRIDE;
-    virtual void    StateChanged( StateChangedType nStateChange ) SAL_OVERRIDE;
-    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void    MouseMove( const MouseEvent& rMEvt ) override;
+    virtual void    Tracking( const TrackingEvent& rTEvt ) override;
+    virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) override;
+    virtual void    Resize() override;
+    virtual void    StateChanged( StateChangedType nStateChange ) override;
+    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) override;
 
     virtual bool    StartDrag();
     virtual void    Drag();
@@ -726,8 +724,8 @@ public:
     void            DoubleClick();
     virtual void    ExtraDown();
 
-    void            Activate() SAL_OVERRIDE;
-    void            Deactivate() SAL_OVERRIDE;
+    void            Activate() override;
+    void            Deactivate() override;
 
     void            SetWinPos( long nOff = 0, long nWidth = 0 );
     long            GetWinOffset() const { return mnWinOff; }
@@ -762,7 +760,7 @@ public:
     RulerSelection  GetHoverSelection() const { return maHoverSelection; }
 
     using Window::GetType;
-    RulerType       GetType( const Point& rPos, sal_uInt16* pAryPos = NULL );
+    RulerType       GetType( const Point& rPos, sal_uInt16* pAryPos = nullptr );
 
     void            SetNullOffset( long nPos );
     long            GetNullOffset() const;
@@ -775,11 +773,11 @@ public:
 
     void            SetLeftFrameMargin( long nPos );
     void            SetRightFrameMargin( long nPos );
-    void            SetLines( sal_uInt32 n = 0, const RulerLine* pLineAry = NULL );
-    void            SetBorders( sal_uInt32 n = 0, const RulerBorder* pBrdAry = NULL );
-    void            SetIndents( sal_uInt32 n = 0, const RulerIndent* pIndentAry = NULL );
+    void            SetLines( sal_uInt32 n = 0, const RulerLine* pLineAry = nullptr );
+    void            SetBorders( sal_uInt32 n = 0, const RulerBorder* pBrdAry = nullptr );
+    void            SetIndents( sal_uInt32 n = 0, const RulerIndent* pIndentAry = nullptr );
 
-    void            SetTabs( sal_uInt32 n = 0, const RulerTab* pTabAry = NULL );
+    void            SetTabs( sal_uInt32 n = 0, const RulerTab* pTabAry = nullptr );
 
     static void     DrawTab(vcl::RenderContext& rRenderContext, const Color &rFillColor,
                             const Point& rPos, sal_uInt16 nStyle);
@@ -796,7 +794,7 @@ public:
 
     void            DrawTicks();
 
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > CreateAccessible() SAL_OVERRIDE;
+    virtual css::uno::Reference< css::accessibility::XAccessible > CreateAccessible() override;
 };
 
 #endif // INCLUDED_SVTOOLS_RULER_HXX

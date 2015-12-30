@@ -65,20 +65,19 @@ class PowerPointExport : public XmlFilterBase, public PPTWriterBase
     friend class PowerPointShapeExport;
 public:
 
-    PowerPointExport( const com::sun::star::uno::Reference< com::sun::star::uno::XComponentContext > & rxCtxt  );
+    PowerPointExport( const css::uno::Reference< css::uno::XComponentContext > & rxCtxt  );
 
     virtual ~PowerPointExport();
 
     // from FilterBase
-    virtual bool importDocument() throw() SAL_OVERRIDE;
-    virtual bool exportDocument() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual bool importDocument() throw() override;
+    virtual bool exportDocument() throw (css::uno::RuntimeException, std::exception) override;
 
     // only needed for import, leave them empty, refactor later XmlFilterBase to export and import base?
-    static sal_Int32 getSchemeClr( sal_Int32 /* nColorSchemeToken */ ) { return 0; }
-    virtual oox::vml::Drawing* getVmlDrawing() SAL_OVERRIDE { return NULL; }
-    virtual const oox::drawingml::Theme* getCurrentTheme() const SAL_OVERRIDE { return NULL; }
-    virtual const oox::drawingml::table::TableStyleListPtr getTableStyles() SAL_OVERRIDE { return oox::drawingml::table::TableStyleListPtr(); }
-    virtual oox::drawingml::chart::ChartConverter* getChartConverter() SAL_OVERRIDE { return NULL; }
+    virtual oox::vml::Drawing* getVmlDrawing() override { return nullptr; }
+    virtual const oox::drawingml::Theme* getCurrentTheme() const override { return nullptr; }
+    virtual const oox::drawingml::table::TableStyleListPtr getTableStyles() override { return oox::drawingml::table::TableStyleListPtr(); }
+    virtual oox::drawingml::chart::ChartConverter* getChartConverter() override { return nullptr; }
 
     static const char* GetSideDirection( sal_uInt8 nDirection );
     static const char* GetCornerDirection( sal_uInt8 nDirection );
@@ -88,34 +87,34 @@ public:
 protected:
 
     virtual void ImplWriteSlide( sal_uInt32 nPageNum, sal_uInt32 nMasterNum, sal_uInt16 nMode,
-                                 bool bHasBackground, ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > aXBackgroundPropSet ) SAL_OVERRIDE;
-    virtual void ImplWriteNotes( sal_uInt32 nPageNum ) SAL_OVERRIDE;
-    virtual void ImplWriteSlideMaster( sal_uInt32 nPageNum, ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > aXBackgroundPropSet ) SAL_OVERRIDE;
-    virtual void ImplWriteLayout( sal_Int32 nOffset, sal_uInt32 nMasterNum ) SAL_OVERRIDE;
+                                 bool bHasBackground, css::uno::Reference< css::beans::XPropertySet > aXBackgroundPropSet ) override;
+    virtual void ImplWriteNotes( sal_uInt32 nPageNum ) override;
+    virtual void ImplWriteSlideMaster( sal_uInt32 nPageNum, css::uno::Reference< css::beans::XPropertySet > aXBackgroundPropSet ) override;
+    virtual void ImplWriteLayout( sal_Int32 nOffset, sal_uInt32 nMasterNum ) override;
     void ImplWritePPTXLayout( sal_Int32 nOffset, sal_uInt32 nMasterNum );
     void WriteTheme( sal_Int32 nThemeNum );
 
-    virtual bool ImplCreateDocument() SAL_OVERRIDE;
-    virtual bool ImplCreateMainNotes() SAL_OVERRIDE;
-    virtual ::oox::ole::VbaProject* implCreateVbaProject() const SAL_OVERRIDE;
+    virtual bool ImplCreateDocument() override;
+    virtual bool ImplCreateMainNotes() override;
+    virtual ::oox::ole::VbaProject* implCreateVbaProject() const override;
     bool WriteNotesMaster();
 
     static void WriteAnimateTo( ::sax_fastparser::FSHelperPtr pFS, const css::uno::Any& rValue, const OUString& rAttributeName );
-    static void WriteAnimateValues( ::sax_fastparser::FSHelperPtr pFS, const ::com::sun::star::uno::Reference< ::com::sun::star::animations::XAnimate >& rXAnimate );
-    static void WriteAnimationCondition( ::sax_fastparser::FSHelperPtr pFS, ::com::sun::star::uno::Any& rAny, bool bWriteEvent, bool bMainSeqChild );
+    static void WriteAnimateValues( ::sax_fastparser::FSHelperPtr pFS, const css::uno::Reference< css::animations::XAnimate >& rXAnimate );
+    static void WriteAnimationCondition( ::sax_fastparser::FSHelperPtr pFS, css::uno::Any& rAny, bool bWriteEvent, bool bMainSeqChild );
     static void WriteAnimationCondition( ::sax_fastparser::FSHelperPtr pFS, const char* pDelay, const char* pEvent, double fDelay, bool bHasFDelay );
     void WriteAnimations( ::sax_fastparser::FSHelperPtr pFS );
     static void WriteAnimationAttributeName( ::sax_fastparser::FSHelperPtr pFS, const OUString& rAttributeName );
-    void WriteAnimationNode( ::sax_fastparser::FSHelperPtr pFS, const ::com::sun::star::uno::Reference< ::com::sun::star::animations::XAnimationNode >& rXNode, bool bMainSeqChild );
-    void WriteAnimationNodeAnimate( ::sax_fastparser::FSHelperPtr pFS, const ::com::sun::star::uno::Reference< ::com::sun::star::animations::XAnimationNode >& rXNode, sal_Int32 nXmlNodeType, bool bMainSeqChild );
-    void WriteAnimationNodeAnimateInside( ::sax_fastparser::FSHelperPtr pFS, const ::com::sun::star::uno::Reference< ::com::sun::star::animations::XAnimationNode >& rXNode, bool bMainSeqChild, bool bSimple );
-    void WriteAnimationNodeSeq( ::sax_fastparser::FSHelperPtr pFS, const ::com::sun::star::uno::Reference< ::com::sun::star::animations::XAnimationNode >& rXNode, sal_Int32 nXmlNodeType, bool bMainSeqChild );
-    void WriteAnimationNodeEffect( ::sax_fastparser::FSHelperPtr pFS, const ::com::sun::star::uno::Reference< ::com::sun::star::animations::XAnimationNode >& rXNode, sal_Int32 nXmlNodeType, bool bMainSeqChild );
-    void WriteAnimationNodeCommonPropsStart( ::sax_fastparser::FSHelperPtr pFS, const ::com::sun::star::uno::Reference< ::com::sun::star::animations::XAnimationNode >& rXNode, bool bSingle, bool bMainSeqChild );
-    static void WriteAnimationProperty( ::sax_fastparser::FSHelperPtr pFS, const ::com::sun::star::uno::Any& rAny );
+    void WriteAnimationNode( ::sax_fastparser::FSHelperPtr pFS, const css::uno::Reference< css::animations::XAnimationNode >& rXNode, bool bMainSeqChild );
+    void WriteAnimationNodeAnimate( ::sax_fastparser::FSHelperPtr pFS, const css::uno::Reference< css::animations::XAnimationNode >& rXNode, sal_Int32 nXmlNodeType, bool bMainSeqChild );
+    void WriteAnimationNodeAnimateInside( ::sax_fastparser::FSHelperPtr pFS, const css::uno::Reference< css::animations::XAnimationNode >& rXNode, bool bMainSeqChild, bool bSimple );
+    void WriteAnimationNodeSeq( ::sax_fastparser::FSHelperPtr pFS, const css::uno::Reference< css::animations::XAnimationNode >& rXNode, sal_Int32 nXmlNodeType, bool bMainSeqChild );
+    void WriteAnimationNodeEffect( ::sax_fastparser::FSHelperPtr pFS, const css::uno::Reference< css::animations::XAnimationNode >& rXNode, sal_Int32 nXmlNodeType, bool bMainSeqChild );
+    void WriteAnimationNodeCommonPropsStart( ::sax_fastparser::FSHelperPtr pFS, const css::uno::Reference< css::animations::XAnimationNode >& rXNode, bool bSingle, bool bMainSeqChild );
+    static void WriteAnimationProperty( ::sax_fastparser::FSHelperPtr pFS, const css::uno::Any& rAny );
     void WriteAnimationTarget( ::sax_fastparser::FSHelperPtr pFS, const css::uno::Any& rTarget );
     bool WriteComments( sal_uInt32 nPageNum );
-    void ImplWriteBackground( ::sax_fastparser::FSHelperPtr pFS, ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > aXBackgroundPropSet );
+    void ImplWriteBackground( ::sax_fastparser::FSHelperPtr pFS, css::uno::Reference< css::beans::XPropertySet > aXBackgroundPropSet );
     void WriteTransition( ::sax_fastparser::FSHelperPtr pFS );
 
     sal_Int32 GetLayoutFileId( sal_Int32 nOffset, sal_uInt32 nMasterNum );
@@ -133,9 +132,7 @@ private:
 
     void AddLayoutIdAndRelation( ::sax_fastparser::FSHelperPtr pFS, sal_Int32 nLayoutFileId );
 
-    virtual OUString SAL_CALL getImplementationName() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-
-    std::shared_ptr< ::oox::drawingml::chart::ChartConverter > mxChartConv;
+    virtual OUString SAL_CALL getImplementationName() throw (css::uno::RuntimeException, std::exception) override;
 
     ::sax_fastparser::FSHelperPtr mPresentationFS;
 

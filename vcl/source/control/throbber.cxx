@@ -74,8 +74,8 @@ namespace
         ::std::vector< Image > aImages;
         ENSURE_OR_RETURN( i_imageSet != Throbber::IMAGES_NONE, "lcl_loadImageSet: illegal image set", aImages );
 
-        const Reference< com::sun::star::uno::XComponentContext > aContext( ::comphelper::getProcessComponentContext() );
-        const Reference< XGraphicProvider > xGraphicProvider( com::sun::star::graphic::GraphicProvider::create(aContext) );
+        const Reference< css::uno::XComponentContext > aContext( ::comphelper::getProcessComponentContext() );
+        const Reference< XGraphicProvider > xGraphicProvider( css::graphic::GraphicProvider::create(aContext) );
 
         ::std::vector< OUString > aImageURLs( Throbber::getDefaultImageURLs( i_imageSet ) );
         aImages.reserve( aImageURLs.size() );
@@ -190,16 +190,6 @@ void Throbber::setImageList( ::std::vector< Image > const& i_images )
 
     const Image aInitialImage( maImageList.size() ? maImageList[ 0 ] : Image() );
     SetImage( aInitialImage );
-}
-
-void Throbber::setImageList( const Sequence< Reference< XGraphic > >& rImageList )
-{
-    ::std::vector< Image > aImages( rImageList.getLength() );
-    for (sal_Int32 i = 0; i < rImageList.getLength(); ++i)
-    {
-        aImages[i] = Image(rImageList[i]);
-    }
-    setImageList( aImages );
 }
 
 ::std::vector< OUString > Throbber::getDefaultImageURLs( const ImageSet i_imageSet )

@@ -176,8 +176,8 @@ bool SvcListHasLanguage(
 SpellCheckerDispatcher::SpellCheckerDispatcher( LngSvcMgr &rLngSvcMgr ) :
     rMgr    (rLngSvcMgr)
 {
-    pCache = NULL;
-    pCharClass = NULL;
+    pCache = nullptr;
+    pCharClass = nullptr;
 }
 
 
@@ -292,7 +292,7 @@ bool SpellCheckerDispatcher::isValid_Impl(
 
     // search for entry with that language
     SpellSvcByLangMap_t::iterator    aIt( aSvcMap.find( nLanguage ) );
-    LangSvcEntries_Spell    *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : NULL;
+    LangSvcEntries_Spell    *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : nullptr;
 
     if (pEntry)
     {
@@ -371,8 +371,7 @@ bool SpellCheckerDispatcher::isValid_Impl(
                 Reference< XSpellChecker > xSpell;
                 try
                 {
-                    xSpell = Reference< XSpellChecker >(
-                                xContext->getServiceManager()->createInstanceWithArgumentsAndContext(
+                    xSpell.set( xContext->getServiceManager()->createInstanceWithArgumentsAndContext(
                                     pImplNames[i], aArgs, xContext ),
                                 UNO_QUERY );
                 }
@@ -459,7 +458,7 @@ Reference< XSpellAlternatives > SpellCheckerDispatcher::spell_Impl(
 
     // search for entry with that language
     SpellSvcByLangMap_t::iterator    aIt( aSvcMap.find( nLanguage ) );
-    LangSvcEntries_Spell    *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : NULL;
+    LangSvcEntries_Spell    *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : nullptr;
 
     if (pEntry)
     {
@@ -498,7 +497,7 @@ Reference< XSpellAlternatives > SpellCheckerDispatcher::spell_Impl(
                 {
                     bool bOK = GetCache().CheckWord( aChkWord, nLanguage );
                     if (bOK)
-                        xTmpRes = NULL;
+                        xTmpRes = nullptr;
                     else
                     {
                         xTmpRes = pRef[i]->spell( aChkWord, aLocale, rProperties );
@@ -557,8 +556,7 @@ Reference< XSpellAlternatives > SpellCheckerDispatcher::spell_Impl(
                 Reference< XSpellChecker > xSpell;
                 try
                 {
-                    xSpell = Reference< XSpellChecker >(
-                                xContext->getServiceManager()->createInstanceWithArgumentsAndContext(
+                    xSpell.set( xContext->getServiceManager()->createInstanceWithArgumentsAndContext(
                                     pImplNames[i], aArgs, xContext ),
                                 UNO_QUERY );
                 }
@@ -578,7 +576,7 @@ Reference< XSpellAlternatives > SpellCheckerDispatcher::spell_Impl(
                 {
                     bool bOK = GetCache().CheckWord( aChkWord, nLanguage );
                     if (bOK)
-                        xTmpRes = NULL;
+                        xTmpRes = nullptr;
                     else
                     {
                         xTmpRes = xSpell->spell( aChkWord, aLocale, rProperties );
@@ -628,7 +626,7 @@ Reference< XSpellAlternatives > SpellCheckerDispatcher::spell_Impl(
         // if word is finally found to be correct
         // clear previously remembered alternatives
         if (bTmpResValid  &&  !xTmpRes.is())
-            xRes = NULL;
+            xRes = nullptr;
 
         // list of proposals found (to be checked against entries of
         // negative dictionaries)
@@ -665,7 +663,7 @@ Reference< XSpellAlternatives > SpellCheckerDispatcher::spell_Impl(
                 }
                 else    // positive entry found
                 {
-                    xRes = NULL;
+                    xRes = nullptr;
                     eFailureType = -1;  // no failure
                 }
             }
@@ -705,7 +703,7 @@ Reference< XSpellAlternatives > SpellCheckerDispatcher::spell_Impl(
                         }
                         else    // positive entry found
                         {
-                            xRes = NULL;
+                            xRes = nullptr;
                             eFailureType = -1;  // no failure
                         }
                     }
@@ -838,7 +836,7 @@ Sequence< OUString >
     // search for entry with that language and use data from that
     sal_Int16 nLanguage = LinguLocaleToLanguage( rLocale );
     const SpellSvcByLangMap_t::const_iterator aIt( aSvcMap.find( nLanguage ) );
-    const LangSvcEntries_Spell      *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : NULL;
+    const LangSvcEntries_Spell      *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : nullptr;
     if (pEntry)
         aRes = pEntry->aSvcImplNames;
 

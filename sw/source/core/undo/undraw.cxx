@@ -64,7 +64,7 @@ IMPL_LINK_TYPED( SwDoc, AddDrawUndo, SdrUndoAction *, pUndo, void )
     if (GetIDocumentUndoRedo().DoesUndo() &&
         GetIDocumentUndoRedo().DoesDrawUndo())
     {
-        const SdrMarkList* pMarkList = 0;
+        const SdrMarkList* pMarkList = nullptr;
         SwViewShell* pSh = getIDocumentLayoutAccess().GetCurrentViewShell();
         if( pSh && pSh->HasDrawView() )
             pMarkList = &pSh->GetDrawView()->GetMarkedObjectList();
@@ -81,7 +81,7 @@ SwSdrUndo::SwSdrUndo( SdrUndoAction* pUndo, const SdrMarkList* pMrkLst )
     if( pMrkLst && pMrkLst->GetMarkCount() )
         pMarkList = new SdrMarkList( *pMrkLst );
     else
-        pMarkList = 0;
+        pMarkList = nullptr;
 }
 
 SwSdrUndo::~SwSdrUndo()
@@ -93,13 +93,13 @@ SwSdrUndo::~SwSdrUndo()
 void SwSdrUndo::UndoImpl(::sw::UndoRedoContext & rContext)
 {
     pSdrUndo->Undo();
-    rContext.SetSelections(0, pMarkList);
+    rContext.SetSelections(nullptr, pMarkList);
 }
 
 void SwSdrUndo::RedoImpl(::sw::UndoRedoContext & rContext)
 {
     pSdrUndo->Redo();
-    rContext.SetSelections(0, pMarkList);
+    rContext.SetSelections(nullptr, pMarkList);
 }
 
 OUString SwSdrUndo::GetComment() const
@@ -216,7 +216,7 @@ void SwUndoDrawGroup::UndoImpl(::sw::UndoRedoContext &)
 
     // object will destroy itself
     pDrawContact->Changed( *pObj, SDRUSERCALL_DELETE, pObj->GetLastBoundRect() );
-    pObj->SetUserCall( 0 );
+    pObj->SetUserCall( nullptr );
 
     ::lcl_SaveAnchor( pFormat, pObjArr->nNodeIdx );
 
@@ -241,13 +241,14 @@ void SwUndoDrawGroup::UndoImpl(::sw::UndoRedoContext &)
         pContact->ConnectToLayout();
         // #i45718# - follow-up of #i35635# move object to visible layer
         pContact->MoveObjToVisibleLayer( pObj );
+
+        SwDrawFrameFormat* pDrawFrameFormat = dynamic_cast<SwDrawFrameFormat*>(rSave.pFormat);
+
         // #i45952# - notify that position attributes are already set
-        OSL_ENSURE( rSave.pFormat->ISA(SwDrawFrameFormat),
-                "<SwUndoDrawGroup::Undo(..)> - wrong type of frame format for drawing object" );
-        if ( rSave.pFormat->ISA(SwDrawFrameFormat) )
-        {
-            static_cast<SwDrawFrameFormat*>(rSave.pFormat)->PosAttrSet();
-        }
+        OSL_ENSURE(pDrawFrameFormat,
+                "<SwUndoDrawGroup::Undo(..)> - wrong type of frame format for drawing object");
+        if (pDrawFrameFormat)
+            pDrawFrameFormat->PosAttrSet();
     }
 }
 
@@ -269,7 +270,7 @@ void SwUndoDrawGroup::RedoImpl(::sw::UndoRedoContext &)
 
         // object will destroy itself
         pContact->Changed( *pObj, SDRUSERCALL_DELETE, pObj->GetLastBoundRect() );
-        pObj->SetUserCall( 0 );
+        pObj->SetUserCall( nullptr );
 
         ::lcl_SaveAnchor( rSave.pFormat, rSave.nNodeIdx );
 
@@ -288,13 +289,14 @@ void SwUndoDrawGroup::RedoImpl(::sw::UndoRedoContext &)
     pContact->ConnectToLayout();
     // #i45718# - follow-up of #i35635# move object to visible layer
     pContact->MoveObjToVisibleLayer( pObjArr->pObj );
+
+    SwDrawFrameFormat* pDrawFrameFormat = dynamic_cast<SwDrawFrameFormat*>(pObjArr->pFormat);
+
     // #i45952# - notify that position attributes are already set
-    OSL_ENSURE( pObjArr->pFormat->ISA(SwDrawFrameFormat),
-            "<SwUndoDrawGroup::Undo(..)> - wrong type of frame format for drawing object" );
-    if ( pObjArr->pFormat->ISA(SwDrawFrameFormat) )
-    {
-        static_cast<SwDrawFrameFormat*>(pObjArr->pFormat)->PosAttrSet();
-    }
+    OSL_ENSURE(pDrawFrameFormat,
+            "<SwUndoDrawGroup::Undo(..)> - wrong type of frame format for drawing object");
+    if (pDrawFrameFormat)
+        pDrawFrameFormat->PosAttrSet();
 }
 
 void SwUndoDrawGroup::AddObj( sal_uInt16 nPos, SwDrawFrameFormat* pFormat, SdrObject* pObj )
@@ -314,7 +316,7 @@ void SwUndoDrawGroup::AddObj( sal_uInt16 nPos, SwDrawFrameFormat* pFormat, SdrOb
 
 void SwUndoDrawGroup::SetGroupFormat( SwDrawFrameFormat* pFormat )
 {
-    pObjArr->pObj = 0;
+    pObjArr->pObj = nullptr;
     pObjArr->pFormat = pFormat;
 }
 
@@ -332,7 +334,7 @@ SwUndoDrawUnGroup::SwUndoDrawUnGroup( SdrObjGroup* pObj )
 
     // object will destroy itself
     pContact->Changed( *pObj, SDRUSERCALL_DELETE, pObj->GetLastBoundRect() );
-    pObj->SetUserCall( 0 );
+    pObj->SetUserCall( nullptr );
 
     ::lcl_SaveAnchor( pFormat, pObjArr->nNodeIdx );
 
@@ -386,13 +388,14 @@ void SwUndoDrawUnGroup::UndoImpl(::sw::UndoRedoContext & rContext)
     pContact->ConnectToLayout();
     // #i45718# - follow-up of #i35635# move object to visible layer
     pContact->MoveObjToVisibleLayer( pObjArr->pObj );
+
+    SwDrawFrameFormat* pDrawFrameFormat = dynamic_cast<SwDrawFrameFormat*>(pObjArr->pFormat);
+
     // #i45952# - notify that position attributes are already set
-    OSL_ENSURE( pObjArr->pFormat->ISA(SwDrawFrameFormat),
-            "<SwUndoDrawGroup::Undo(..)> - wrong type of frame format for drawing object" );
-    if ( pObjArr->pFormat->ISA(SwDrawFrameFormat) )
-    {
-        static_cast<SwDrawFrameFormat*>(pObjArr->pFormat)->PosAttrSet();
-    }
+    OSL_ENSURE(pDrawFrameFormat,
+            "<SwUndoDrawGroup::Undo(..)> - wrong type of frame format for drawing object");
+    if (pDrawFrameFormat)
+        pDrawFrameFormat->PosAttrSet();
 }
 
 void SwUndoDrawUnGroup::RedoImpl(::sw::UndoRedoContext &)
@@ -406,7 +409,7 @@ void SwUndoDrawUnGroup::RedoImpl(::sw::UndoRedoContext &)
         // object will destroy itself
     pContact->Changed( *pObjArr->pObj, SDRUSERCALL_DELETE,
         pObjArr->pObj->GetLastBoundRect() );
-    pObjArr->pObj->SetUserCall( 0 );
+    pObjArr->pObj->SetUserCall( nullptr );
 
     ::lcl_SaveAnchor( pFormat, pObjArr->nNodeIdx );
 
@@ -425,13 +428,13 @@ void SwUndoDrawUnGroup::RedoImpl(::sw::UndoRedoContext &)
         ::lcl_RestoreAnchor( rSave.pFormat, rSave.nNodeIdx );
         rFlyFormats.push_back( rSave.pFormat );
 
+        SwDrawFrameFormat* pDrawFrameFormat = dynamic_cast<SwDrawFrameFormat*>(rSave.pFormat);
+
         // #i45952# - notify that position attributes are already set
-        OSL_ENSURE( rSave.pFormat->ISA(SwDrawFrameFormat),
+        OSL_ENSURE(pDrawFrameFormat,
                 "<SwUndoDrawGroup::Undo(..)> - wrong type of frame format for drawing object" );
-        if ( rSave.pFormat->ISA(SwDrawFrameFormat) )
-        {
-            static_cast<SwDrawFrameFormat*>(rSave.pFormat)->PosAttrSet();
-        }
+        if (pDrawFrameFormat)
+            pDrawFrameFormat->PosAttrSet();
     }
 }
 
@@ -439,7 +442,7 @@ void SwUndoDrawUnGroup::AddObj( sal_uInt16 nPos, SwDrawFrameFormat* pFormat )
 {
     SwUndoGroupObjImpl& rSave = *( pObjArr + nPos + 1 );
     rSave.pFormat = pFormat;
-    rSave.pObj = 0;
+    rSave.pObj = nullptr;
 }
 
 SwUndoDrawUnGroupConnectToLayout::SwUndoDrawUnGroupConnectToLayout()
@@ -466,7 +469,7 @@ SwUndoDrawUnGroupConnectToLayout::UndoImpl(::sw::UndoRedoContext &)
             // deletion of instance <pDrawContact> and thus disconnection from
             // the Writer layout.
             pDrawContact->Changed( *pObj, SDRUSERCALL_DELETE, pObj->GetLastBoundRect() );
-            pObj->SetUserCall( 0 );
+            pObj->SetUserCall( nullptr );
         }
     }
 }
@@ -522,18 +525,19 @@ void SwUndoDrawDelete::UndoImpl(::sw::UndoRedoContext & rContext)
         rFlyFormats.push_back( rSave.pFormat );
         SdrObject *pObj = rSave.pObj;
         SwDrawContact *pContact = new SwDrawContact( rSave.pFormat, pObj );
-        pContact->_Changed( *pObj, SDRUSERCALL_INSERTED, NULL );
+        pContact->_Changed( *pObj, SDRUSERCALL_INSERTED, nullptr );
         // #i45718# - follow-up of #i35635# move object to visible layer
         pContact->MoveObjToVisibleLayer( pObj );
+
+        SwDrawFrameFormat* pDrawFrameFormat = dynamic_cast<SwDrawFrameFormat*>(rSave.pFormat);
+
         // #i45952# - notify that position attributes are already set
-        OSL_ENSURE( rSave.pFormat->ISA(SwDrawFrameFormat),
-                "<SwUndoDrawGroup::Undo(..)> - wrong type of frame format for drawing object" );
-        if ( rSave.pFormat->ISA(SwDrawFrameFormat) )
-        {
-            static_cast<SwDrawFrameFormat*>(rSave.pFormat)->PosAttrSet();
-        }
+        OSL_ENSURE(pDrawFrameFormat,
+                "<SwUndoDrawGroup::Undo(..)> - wrong type of frame format for drawing object");
+        if (pDrawFrameFormat)
+            pDrawFrameFormat->PosAttrSet();
     }
-    rContext.SetSelections(0, pMarkLst);
+    rContext.SetSelections(nullptr, pMarkLst);
 }
 
 void SwUndoDrawDelete::RedoImpl(::sw::UndoRedoContext & rContext)
@@ -549,7 +553,7 @@ void SwUndoDrawDelete::RedoImpl(::sw::UndoRedoContext & rContext)
 
         // object will destroy itself
         pContact->Changed( *pObj, SDRUSERCALL_DELETE, pObj->GetLastBoundRect() );
-        pObj->SetUserCall( 0 );
+        pObj->SetUserCall( nullptr );
 
            // notify UNO objects to decouple
         ::lcl_SendRemoveToUno( *pFormat );

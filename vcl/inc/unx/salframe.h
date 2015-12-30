@@ -26,6 +26,7 @@
 #include <unx/salunx.h>
 #include <unx/saltype.h>
 #include <unx/saldisp.hxx>
+#include <unx/screensaverinhibitor.hxx>
 #include <unx/x11windowprovider.hxx>
 #include <salframe.hxx>
 #include <salwtype.hxx>
@@ -87,7 +88,7 @@ class VCLPLUG_GEN_PUBLIC X11SalFrame : public SalFrame, public X11WindowProvider
     int             nWidth_;            // client width
     int             nHeight_;           // client height
     Rectangle       maRestorePosSize;
-    sal_uIntPtr         nStyle_;
+    SalFrameStyleFlags nStyle_;
     SalExtStyle     mnExtStyle;
     bool            bAlwaysOnTop_;
     bool            bViewable_;
@@ -99,7 +100,7 @@ class VCLPLUG_GEN_PUBLIC X11SalFrame : public SalFrame, public X11WindowProvider
     int             m_nWorkArea;
     bool            m_bSetFocusOnMap;
 
-    int             nScreenSaversTimeout_;
+    ScreenSaverInhibitor maScreenSaverInhibitor;
     Rectangle       maPaintRegion;
 
     Timer           maAlwaysOnTopRaiseTimer;
@@ -115,9 +116,9 @@ class VCLPLUG_GEN_PUBLIC X11SalFrame : public SalFrame, public X11WindowProvider
     // icon id
     int             mnIconID;
 
-    OUString          m_aTitle;
+    OUString        m_aTitle;
 
-    OUString   m_sWMClass;
+    OUString        m_sWMClass;
 
     SystemEnvData maSystemChildData;
 
@@ -146,7 +147,6 @@ class VCLPLUG_GEN_PUBLIC X11SalFrame : public SalFrame, public X11WindowProvider
     long            HandleFocusEvent    ( XFocusChangeEvent *pEvent );
     long            HandleExposeEvent   ( XEvent            *pEvent );
     long            HandleSizeEvent     ( XConfigureEvent   *pEvent );
-    long            HandleMapUnmapEvent ( XEvent            *pEvent );
     long            HandleStateEvent    ( XPropertyEvent    *pEvent );
     long            HandleReparentEvent ( XReparentEvent    *pEvent );
     long            HandleClientMessage ( XClientMessageEvent*pEvent );
@@ -161,11 +161,11 @@ class VCLPLUG_GEN_PUBLIC X11SalFrame : public SalFrame, public X11WindowProvider
 
     void            updateWMClass();
 public:
-    X11SalFrame( SalFrame* pParent, sal_uIntPtr nSalFrameStyle, SystemParentData* pSystemParent = NULL );
+    X11SalFrame( SalFrame* pParent, SalFrameStyleFlags nSalFrameStyle, SystemParentData* pSystemParent = NULL );
     virtual ~X11SalFrame();
 
     long            Dispatch( XEvent *pEvent );
-    void            Init( sal_uIntPtr nSalFrameStyle, SalX11Screen nScreen = SalX11Screen( -1 ),
+    void            Init( SalFrameStyleFlags nSalFrameStyle, SalX11Screen nScreen = SalX11Screen( -1 ),
                           SystemParentData* pParentData = NULL, bool bUseGeometry = false );
 
     SalDisplay* GetDisplay() const
@@ -176,31 +176,24 @@ public:
     {
         return pDisplay_->GetDisplay();
     }
-    ::Window GetDrawable() const
-    {
-        return GetWindow();
-    }
     SalX11Screen            GetScreenNumber() const { return m_nXScreen; }
     ::Window                GetWindow() const { return mhWindow; }
     ::Window                GetShellWindow() const { return mhShellWindow; }
     ::Window                GetForeignParent() const { return mhForeignParent; }
     ::Window                GetStackingWindow() const { return mhStackingWindow; }
-    long                    ShutDown() const { return CallCallback( SALEVENT_SHUTDOWN, 0 ); }
-    long                    Close() const { return CallCallback( SALEVENT_CLOSE, 0 ); }
-              sal_uIntPtr           GetStyle() const { return nStyle_; }
+    long                    Close() const { return CallCallback( SALEVENT_CLOSE, NULL ); }
+    SalFrameStyleFlags      GetStyle() const { return nStyle_; }
 
-    Cursor          GetCursor() const { return hCursor_; }
-    bool            IsCaptured() const { return nCaptured_ == 1; }
+    Cursor                  GetCursor() const { return hCursor_; }
+    bool                    IsCaptured() const { return nCaptured_ == 1; }
 #if !defined(__synchronous_extinput__)
-    void            HandleExtTextEvent (XClientMessageEvent *pEvent);
+    void                    HandleExtTextEvent (XClientMessageEvent *pEvent);
 #endif
     bool                    IsOverrideRedirect() const;
-    bool                    IsChildWindow() const { return (nStyle_ & (SAL_FRAME_STYLE_PLUG|SAL_FRAME_STYLE_SYSTEMCHILD)) != 0; }
-    bool                    IsSysChildWindow() const { return (nStyle_ & (SAL_FRAME_STYLE_SYSTEMCHILD)) != 0; }
+    bool                    IsChildWindow() const { return bool(nStyle_ & (SalFrameStyleFlags::PLUG|SalFrameStyleFlags::SYSTEMCHILD)); }
+    bool                    IsSysChildWindow() const { return bool(nStyle_ & (SalFrameStyleFlags::SYSTEMCHILD)); }
     bool                    IsFloatGrabWindow() const;
     SalI18N_InputContext* getInputContext() const { return mpInputContext; }
-    void                    getPosSize( Rectangle& rRect ) { GetPosSize( rRect ); }
-    void                    setPosSize( const Rectangle& rRect ) { SetPosSize( rRect ); }
     bool                    isMapped() const { return bMapped_; }
     bool                    hasFocus() const { return mbInputFocus; }
 
@@ -208,70 +201,67 @@ public:
     bool                    appendUnicodeSequence( sal_Unicode );
     bool                    endUnicodeSequence();
 
-    virtual SalGraphics*        AcquireGraphics() SAL_OVERRIDE;
-    virtual void                ReleaseGraphics( SalGraphics* pGraphics ) SAL_OVERRIDE;
+    virtual SalGraphics*        AcquireGraphics() override;
+    virtual void                ReleaseGraphics( SalGraphics* pGraphics ) override;
 
     // call with true to clear graphics (setting None as drawable)
     // call with false to setup graphics with window (GetWindow())
     virtual void                updateGraphics( bool bClear );
 
-    virtual bool                PostEvent(ImplSVEvent* pData) SAL_OVERRIDE;
+    virtual bool                PostEvent(ImplSVEvent* pData) override;
 
-    virtual void                SetTitle( const OUString& rTitle ) SAL_OVERRIDE;
-    virtual void                SetIcon( sal_uInt16 nIcon ) SAL_OVERRIDE;
-    virtual void                SetMenu( SalMenu* pMenu ) SAL_OVERRIDE;
-    virtual void                                DrawMenuBar() SAL_OVERRIDE;
+    virtual void                SetTitle( const OUString& rTitle ) override;
+    virtual void                SetIcon( sal_uInt16 nIcon ) override;
+    virtual void                SetMenu( SalMenu* pMenu ) override;
+    virtual void                                DrawMenuBar() override;
 
-    virtual void                SetExtendedFrameStyle( SalExtStyle nExtStyle ) SAL_OVERRIDE;
-    virtual void                Show( bool bVisible, bool bNoActivate = false ) SAL_OVERRIDE;
-    virtual void                SetMinClientSize( long nWidth, long nHeight ) SAL_OVERRIDE;
-    virtual void                SetMaxClientSize( long nWidth, long nHeight ) SAL_OVERRIDE;
-    virtual void                SetPosSize( long nX, long nY, long nWidth, long nHeight, sal_uInt16 nFlags ) SAL_OVERRIDE;
-    virtual void                GetClientSize( long& rWidth, long& rHeight ) SAL_OVERRIDE;
-    virtual void                GetWorkArea( Rectangle& rRect ) SAL_OVERRIDE;
-    virtual SalFrame*           GetParent() const SAL_OVERRIDE;
-    virtual void                SetWindowState( const SalFrameState* pState ) SAL_OVERRIDE;
-    virtual bool                GetWindowState( SalFrameState* pState ) SAL_OVERRIDE;
-    virtual void                ShowFullScreen( bool bFullScreen, sal_Int32 nMonitor ) SAL_OVERRIDE;
-    virtual void                StartPresentation( bool bStart ) SAL_OVERRIDE;
-    virtual void                SetAlwaysOnTop( bool bOnTop ) SAL_OVERRIDE;
-    virtual void                ToTop( sal_uInt16 nFlags ) SAL_OVERRIDE;
-    virtual void                SetPointer( PointerStyle ePointerStyle ) SAL_OVERRIDE;
-    virtual void                CaptureMouse( bool bMouse ) SAL_OVERRIDE;
-    virtual void                SetPointerPos( long nX, long nY ) SAL_OVERRIDE;
+    virtual void                SetExtendedFrameStyle( SalExtStyle nExtStyle ) override;
+    virtual void                Show( bool bVisible, bool bNoActivate = false ) override;
+    virtual void                SetMinClientSize( long nWidth, long nHeight ) override;
+    virtual void                SetMaxClientSize( long nWidth, long nHeight ) override;
+    virtual void                SetPosSize( long nX, long nY, long nWidth, long nHeight, sal_uInt16 nFlags ) override;
+    virtual void                GetClientSize( long& rWidth, long& rHeight ) override;
+    virtual void                GetWorkArea( Rectangle& rRect ) override;
+    virtual SalFrame*           GetParent() const override;
+    virtual void                SetWindowState( const SalFrameState* pState ) override;
+    virtual bool                GetWindowState( SalFrameState* pState ) override;
+    virtual void                ShowFullScreen( bool bFullScreen, sal_Int32 nMonitor ) override;
+    virtual void                StartPresentation( bool bStart ) override;
+    virtual void                SetAlwaysOnTop( bool bOnTop ) override;
+    virtual void                ToTop( sal_uInt16 nFlags ) override;
+    virtual void                SetPointer( PointerStyle ePointerStyle ) override;
+    virtual void                CaptureMouse( bool bMouse ) override;
+    virtual void                SetPointerPos( long nX, long nY ) override;
     using SalFrame::Flush;
-    virtual void                Flush() SAL_OVERRIDE;
-    virtual void                Sync() SAL_OVERRIDE;
-    virtual void                SetInputContext( SalInputContext* pContext ) SAL_OVERRIDE;
-    virtual void                EndExtTextInput( EndExtTextInputFlags nFlags ) SAL_OVERRIDE;
-    virtual OUString              GetKeyName( sal_uInt16 nKeyCode ) SAL_OVERRIDE;
-    virtual bool                MapUnicodeToKeyCode( sal_Unicode aUnicode, LanguageType aLangType, vcl::KeyCode& rKeyCode ) SAL_OVERRIDE;
-    virtual LanguageType        GetInputLanguage() SAL_OVERRIDE;
-    virtual void                UpdateSettings( AllSettings& rSettings ) SAL_OVERRIDE;
-    virtual void                Beep() SAL_OVERRIDE;
-    virtual const SystemEnvData*    GetSystemData() const SAL_OVERRIDE;
-    virtual SalPointerState     GetPointerState() SAL_OVERRIDE;
-    virtual KeyIndicatorState   GetIndicatorState() SAL_OVERRIDE;
-    virtual void                SimulateKeyPress( sal_uInt16 nKeyCode ) SAL_OVERRIDE;
-    virtual void                SetParent( SalFrame* pNewParent ) SAL_OVERRIDE;
-    virtual bool                SetPluginParent( SystemParentData* pNewParent ) SAL_OVERRIDE;
+    virtual void                Flush() override;
+    virtual void                SetInputContext( SalInputContext* pContext ) override;
+    virtual void                EndExtTextInput( EndExtTextInputFlags nFlags ) override;
+    virtual OUString              GetKeyName( sal_uInt16 nKeyCode ) override;
+    virtual bool                MapUnicodeToKeyCode( sal_Unicode aUnicode, LanguageType aLangType, vcl::KeyCode& rKeyCode ) override;
+    virtual LanguageType        GetInputLanguage() override;
+    virtual void                UpdateSettings( AllSettings& rSettings ) override;
+    virtual void                Beep() override;
+    virtual const SystemEnvData*    GetSystemData() const override;
+    virtual SalPointerState     GetPointerState() override;
+    virtual KeyIndicatorState   GetIndicatorState() override;
+    virtual void                SimulateKeyPress( sal_uInt16 nKeyCode ) override;
+    virtual void                SetParent( SalFrame* pNewParent ) override;
+    virtual bool                SetPluginParent( SystemParentData* pNewParent ) override;
 
-    virtual void                SetScreenNumber( unsigned int ) SAL_OVERRIDE;
-    virtual void                SetApplicationID( const OUString &rWMClass ) SAL_OVERRIDE;
+    virtual void                SetScreenNumber( unsigned int ) override;
+    virtual void                SetApplicationID( const OUString &rWMClass ) override;
 
     // shaped system windows
     // set clip region to none (-> rectangular windows, normal state)
-    virtual void                    ResetClipRegion() SAL_OVERRIDE;
+    virtual void                    ResetClipRegion() override;
     // start setting the clipregion consisting of nRects rectangles
-    virtual void                    BeginSetClipRegion( sal_uIntPtr nRects ) SAL_OVERRIDE;
+    virtual void                    BeginSetClipRegion( sal_uIntPtr nRects ) override;
     // add a rectangle to the clip region
-    virtual void                    UnionClipRegion( long nX, long nY, long nWidth, long nHeight ) SAL_OVERRIDE;
+    virtual void                    UnionClipRegion( long nX, long nY, long nWidth, long nHeight ) override;
     // done setting up the clipregion
-    virtual void                    EndSetClipRegion() SAL_OVERRIDE;
+    virtual void                    EndSetClipRegion() override;
 
-    virtual Window GetX11Window() SAL_OVERRIDE;
-
-    static Bool checkKeyReleaseForRepeat( Display*, XEvent*, XPointer pX11SalFrame );
+    virtual Window GetX11Window() override;
 
     /// @internal
     void setPendingSizeEvent();

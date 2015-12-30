@@ -714,6 +714,7 @@ struct oslHostAddrImpl {
     oslSocketAddr   pSockAddr;
 } ;
 
+#if _WIN32_WINNT < _WIN32_WINNT_VISTA
 static oslHostAddr __osl_hostentToHostAddr (const struct hostent *he)
 {
     oslHostAddr pAddr= NULL;
@@ -773,6 +774,7 @@ static oslHostAddr __osl_hostentToHostAddr (const struct hostent *he)
 
     return pAddr;
 }
+#endif
 
 /*****************************************************************************/
 /* osl_createHostAddr */
@@ -1092,7 +1094,7 @@ sal_Int32 SAL_CALL osl_getInetPortOfSocketAddr(oslSocketAddr pAddr)
     {
         struct sockaddr_in* pSystemInetAddr= (struct sockaddr_in*)&(pAddr->m_sockaddr);
 
-        if ( (pSystemInetAddr->sin_family == FAMILY_TO_NATIVE(osl_Socket_FamilyInet)))
+        if (pSystemInetAddr->sin_family == FAMILY_TO_NATIVE(osl_Socket_FamilyInet))
             return ntohs(pSystemInetAddr->sin_port);
     }
     return OSL_INVALID_PORT;

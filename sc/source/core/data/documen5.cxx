@@ -487,10 +487,9 @@ void ScDocument::UpdateChartRef( UpdateRefMode eUpdateRefMode,
         return;
 
     ScChartListenerCollection::ListenersType& rListeners = pChartListenerCollection->getListeners();
-    ScChartListenerCollection::ListenersType::iterator it = rListeners.begin(), itEnd = rListeners.end();
-    for (; it != itEnd; ++it)
+    for (auto const& it : rListeners)
     {
-        ScChartListener* pChartListener = it->second;
+        ScChartListener *const pChartListener = it.second.get();
         ScRangeListRef aRLR( pChartListener->GetRangeList() );
         ScRangeListRef aNewRLR( new ScRangeList );
         bool bChanged = false;
@@ -701,7 +700,7 @@ void ScDocument::UpdateChartListenerCollection()
             {
                 uno::Reference< embed::XEmbeddedObject > xIPObj = static_cast<SdrOle2Obj*>(pObject)->GetObjRef();
                 OSL_ENSURE( xIPObj.is(), "No embedded object is given!");
-                uno::Reference< ::com::sun::star::chart2::data::XDataReceiver > xReceiver;
+                uno::Reference< css::chart2::data::XDataReceiver > xReceiver;
                 uno::Reference< embed::XComponentSupplier > xCompSupp( xIPObj, uno::UNO_QUERY );
                 if( xCompSupp.is())
                     xReceiver.set( xCompSupp->getComponent(), uno::UNO_QUERY );

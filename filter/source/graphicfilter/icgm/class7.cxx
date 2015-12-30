@@ -41,8 +41,8 @@ void CGM::ImplDoClass7()
                 {
                     case 0x000 : /*AppData - Beginning of File Opcodes*/
                     {
-                        if ( mpChart == NULL )
-                            mpChart = new CGMChart( *this );
+                        if ( mpChart == nullptr )
+                            mpChart = new CGMChart;
                         mpChart->mnCurrentFileType = pAppData[ 3 ];
                     }
                     break;
@@ -120,14 +120,14 @@ void CGM::ImplDoClass7()
                         memcpy( pTextEntry->pText, pAppData, nLen );
                         pAppData += nLen;
 
-                        TextAttribute* pTextOld = 0;
+                        TextAttribute* pTextOld = nullptr;
                         for ( sal_uInt16 i = 0; i < nAttributes; i++ )
                         {
                             TextAttribute* pTextAttr = new TextAttribute;
 
                             *pTextAttr = *reinterpret_cast<TextAttribute*>( pAppData );
 
-                            pTextAttr->pNextAttribute = NULL;
+                            pTextAttr->pNextAttribute = nullptr;
                             if ( i == 0 )
                                 pTextEntry->pAttribute = pTextAttr;
                             else
@@ -179,11 +179,7 @@ void CGM::ImplDoClass7()
                         mpChart->mBulletOption = *reinterpret_cast<BulletOption*>( pAppData );
                     }
                     break;
-                    case 0x454 : /*AppData - BULLETLINES*/
-                    {
-                        mpChart->mBulletLines = *reinterpret_cast<BulletLines*>( pAppData );
-                    }
-                    break;
+                    case 0x454 : /*AppData - BULLETLINES*/break;
                     case 0x456 : /*AppData - BULAUTOBUILD */break;
                     case 0x4B2 : /*AppData - TBLTEXTOPTN */break;
                     case 0x4B6 : /*AppData - TBLOPTN */break;

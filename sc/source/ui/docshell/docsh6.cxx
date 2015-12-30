@@ -64,8 +64,6 @@ struct ScStylePair
 
 }
 
-// STATIC DATA -----------------------------------------------------------
-
 //  Ole
 
 void ScDocShell::SetVisArea( const Rectangle & rVisArea )
@@ -353,10 +351,9 @@ void ScDocShell::UpdateLinks()
     for (size_t k=nCount; k>0; )
     {
         --k;
-        ::sfx2::SvBaseLink* pBase = *pLinkManager->GetLinks()[k];
-        if (pBase->ISA(ScTableLink))
+        ::sfx2::SvBaseLink* pBase = pLinkManager->GetLinks()[k].get();
+        if (ScTableLink* pTabLink = dynamic_cast<ScTableLink*>(pBase))
         {
-            ScTableLink* pTabLink = static_cast<ScTableLink*>(pBase);
             if (pTabLink->IsUsed())
                 aNames.insert(pTabLink->GetFileName());
             else        // nicht mehr benutzt -> loeschen
@@ -417,10 +414,9 @@ bool ScDocShell::ReloadTabLinks()
     size_t nCount = pLinkManager->GetLinks().size();
     for (size_t i=0; i<nCount; i++ )
     {
-        ::sfx2::SvBaseLink* pBase = *pLinkManager->GetLinks()[i];
-        if (pBase->ISA(ScTableLink))
+        ::sfx2::SvBaseLink* pBase = pLinkManager->GetLinks()[i].get();
+        if (ScTableLink* pTabLink = dynamic_cast<ScTableLink*>(pBase))
         {
-            ScTableLink* pTabLink = static_cast<ScTableLink*>(pBase);
 //			pTabLink->SetAddUndo(sal_False);		//! Undo's zusammenfassen
 
 			// Painting only after Update() makes no sense:
@@ -474,8 +470,8 @@ void ScDocShell::SetFormulaOptions( const ScFormulaOptions& rOpt, bool bForLoadi
             if (rOpt.GetUseEnglishFuncName())
             {
                 // switch native symbols to English.
-                ScCompiler aComp(NULL, ScAddress());
-                ScCompiler::OpCodeMapPtr xMap = aComp.GetOpCodeMap(::com::sun::star::sheet::FormulaLanguage::ENGLISH);
+                ScCompiler aComp(nullptr, ScAddress());
+                ScCompiler::OpCodeMapPtr xMap = aComp.GetOpCodeMap(css::sheet::FormulaLanguage::ENGLISH);
                 ScCompiler::SetNativeSymbols(xMap);
             }
             else

@@ -24,40 +24,40 @@
 class SwNoTextNode;
 class OutputDevice;
 class SwBorderAttrs;
-struct SwCrsrMoveState;
+struct SwCursorMoveState;
 
-class SwNoTextFrm: public SwContentFrm
+class SwNoTextFrame: public SwContentFrame
 {
-    friend void _FrmFinit();
+    friend void _FrameFinit();
 
     const Size& GetSize() const;
 
     void InitCtor();
 
-    void Format ( vcl::RenderContext* pRenderContext, const SwBorderAttrs *pAttrs = 0 ) SAL_OVERRIDE;
+    void Format ( vcl::RenderContext* pRenderContext, const SwBorderAttrs *pAttrs = nullptr ) override;
     void PaintPicture( vcl::RenderContext*, const SwRect& ) const;
 
-    virtual void DestroyImpl() SAL_OVERRIDE;
-    virtual ~SwNoTextFrm();
+    virtual void DestroyImpl() override;
+    virtual ~SwNoTextFrame();
 
 protected:
-    virtual void MakeAll(vcl::RenderContext* pRenderContext) SAL_OVERRIDE;
-    virtual void Modify( const SfxPoolItem*, const SfxPoolItem* ) SAL_OVERRIDE;
+    virtual void MakeAll(vcl::RenderContext* pRenderContext) override;
+    virtual void Modify( const SfxPoolItem*, const SfxPoolItem* ) override;
 public:
-    SwNoTextFrm( SwNoTextNode * const, SwFrm* );
+    SwNoTextFrame( SwNoTextNode * const, SwFrame* );
 
     virtual void Paint( vcl::RenderContext& rRenderContext, SwRect const&,
-                        SwPrintData const*const pPrintData = NULL ) const SAL_OVERRIDE;
+                        SwPrintData const*const pPrintData = nullptr ) const override;
     virtual bool GetCharRect( SwRect &, const SwPosition&,
-                              SwCrsrMoveState* = 0) const SAL_OVERRIDE;
-    virtual bool GetCrsrOfst(SwPosition* pPos, Point& aPoint,
-                     SwCrsrMoveState* = 0, bool bTestBackground = false) const SAL_OVERRIDE;
+                              SwCursorMoveState* = nullptr) const override;
+    virtual bool GetCursorOfst(SwPosition* pPos, Point& aPoint,
+                     SwCursorMoveState* = nullptr, bool bTestBackground = false) const override;
 
-    void GetGrfArea( SwRect &rRect, SwRect * = 0, bool bMirror = true ) const;
+    void GetGrfArea( SwRect &rRect, SwRect * = nullptr, bool bMirror = true ) const;
 
     bool IsTransparent() const;
 
-    void StopAnimation( OutputDevice* = 0 ) const;
+    void StopAnimation( OutputDevice* = nullptr ) const;
     bool HasAnimation()  const;
 };
 

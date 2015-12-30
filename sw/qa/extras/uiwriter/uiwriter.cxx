@@ -37,6 +37,8 @@
 #include <unocrsr.hxx>
 #include <unocrsrhelper.hxx>
 #include <unotbl.hxx>
+#include <IMark.hxx>
+#include <IDocumentMarkAccess.hxx>
 #include <pagedesc.hxx>
 #include <postithelper.hxx>
 #include <PostItMgr.hxx>
@@ -56,6 +58,7 @@
 #include <ftnidx.hxx>
 #include <txtftn.hxx>
 #include <IDocumentFieldsAccess.hxx>
+#include <IDocumentState.hxx>
 #include <unofldmid.h>
 #include "UndoManager.hxx"
 #include <textsh.hxx>
@@ -96,10 +99,12 @@ public:
     //EDITING: undo search&replace corrupt text when searching backward
     void testReplaceBackward();
     void testRedlineFrame();
+    void testBookmarkCopy();
     void testFdo69893();
     void testFdo70807();
     void testImportRTF();
     void testExportRTF();
+    void testTdf67238();
     void testFdo75110();
     void testFdo75898();
     void testFdo74981();
@@ -140,6 +145,7 @@ public:
     void testUnoParagraph();
     void testTdf60967();
     void testSearchWithTransliterate();
+    void testNewDocModifiedState();
     void testTdf77342();
     void testTdf74230();
     void testTdf74363();
@@ -148,6 +154,7 @@ public:
     void testTdf90808();
     void testTdf75137();
     void testTdf83798();
+    void testTdf89714();
     void testPropertyDefaults();
     void testTableBackgroundColor();
     void testTdf88899();
@@ -161,19 +168,27 @@ public:
     void testTextTableCellNames();
     void testShapeAnchorUndo();
     void testDde();
+    void testTdf94804();
+    void testTdf34957();
     void testTdf89954();
     void testTdf89720();
     void testTdf88986();
     void testTdf87922();
+    void testTdf77014();
+    void testTdf92648();
+    void testTdf96515();
+    void testTdf96536();
 
     CPPUNIT_TEST_SUITE(SwUiWriterTest);
     CPPUNIT_TEST(testReplaceForward);
     CPPUNIT_TEST(testReplaceBackward);
     CPPUNIT_TEST(testRedlineFrame);
+    CPPUNIT_TEST(testBookmarkCopy);
     CPPUNIT_TEST(testFdo69893);
     CPPUNIT_TEST(testFdo70807);
     CPPUNIT_TEST(testImportRTF);
     CPPUNIT_TEST(testExportRTF);
+    CPPUNIT_TEST(testTdf67238);
     CPPUNIT_TEST(testFdo75110);
     CPPUNIT_TEST(testFdo75898);
     CPPUNIT_TEST(testFdo74981);
@@ -214,6 +229,7 @@ public:
     CPPUNIT_TEST(testUnoParagraph);
     CPPUNIT_TEST(testTdf60967);
     CPPUNIT_TEST(testSearchWithTransliterate);
+    CPPUNIT_TEST(testNewDocModifiedState);
     CPPUNIT_TEST(testTdf77342);
     CPPUNIT_TEST(testTdf74230);
     CPPUNIT_TEST(testTdf74363);
@@ -222,6 +238,7 @@ public:
     CPPUNIT_TEST(testTdf90808);
     CPPUNIT_TEST(testTdf75137);
     CPPUNIT_TEST(testTdf83798);
+    CPPUNIT_TEST(testTdf89714);
     CPPUNIT_TEST(testPropertyDefaults);
     CPPUNIT_TEST(testTableBackgroundColor);
     CPPUNIT_TEST(testTdf88899);
@@ -235,14 +252,20 @@ public:
     CPPUNIT_TEST(testTextTableCellNames);
     CPPUNIT_TEST(testShapeAnchorUndo);
     CPPUNIT_TEST(testDde);
+    CPPUNIT_TEST(testTdf94804);
+    CPPUNIT_TEST(testTdf34957);
     CPPUNIT_TEST(testTdf89954);
     CPPUNIT_TEST(testTdf89720);
     CPPUNIT_TEST(testTdf88986);
     CPPUNIT_TEST(testTdf87922);
+    CPPUNIT_TEST(testTdf77014);
+    CPPUNIT_TEST(testTdf92648);
+    CPPUNIT_TEST(testTdf96515);
+    CPPUNIT_TEST(testTdf96536);
     CPPUNIT_TEST_SUITE_END();
 
 private:
-    SwDoc* createDoc(const char* pName = 0);
+    SwDoc* createDoc(const char* pName = nullptr);
 };
 
 SwDoc* SwUiWriterTest::createDoc(const char* pName)
@@ -282,7 +305,7 @@ void SwUiWriterTest::testReplaceForward()
 
     SwTextNode* pTextNode = aPaM.GetNode().GetTextNode();
     lcl_selectCharacters(aPaM, 5, 9);
-    pDoc->getIDocumentContentOperations().ReplaceRange(aPaM, OUString("toto"), false);
+    pDoc->getIDocumentContentOperations().ReplaceRange(aPaM, "toto", false);
 
     CPPUNIT_ASSERT_EQUAL(EXPECTED_REPLACE_CONTENT, pTextNode->GetText());
 
@@ -316,6 +339,154 @@ void SwUiWriterTest::testRedlineFrame()
     CPPUNIT_ASSERT_EQUAL(sal_Int32(1), xDrawPage->getCount());
 }
 
+void SwUiWriterTest::testBookmarkCopy()
+{
+    SwDoc * pDoc(createDoc());
+
+    // add text and bookmark
+    IDocumentMarkAccess & rIDMA(*pDoc->getIDocumentMarkAccess());
+    IDocumentContentOperations & rIDCO(pDoc->getIDocumentContentOperations());
+    SwNodeIndex aIdx(pDoc->GetNodes().GetEndOfContent(), -1);
+    SwCursor aPaM(SwPosition(aIdx), nullptr, false);
+    rIDCO.InsertString(aPaM, "foo");
+    rIDCO.SplitNode(*aPaM.GetPoint(), false);
+    rIDCO.InsertString(aPaM, "bar");
+    aPaM.SetMark();
+    aPaM.MovePara(GetfnParaCurr(), GetfnParaStart());
+    rIDMA.makeMark(aPaM, "Mark", IDocumentMarkAccess::MarkType::BOOKMARK);
+    aPaM.Exchange();
+    aPaM.DeleteMark();
+    rIDCO.SplitNode(*aPaM.GetPoint(), false);
+    rIDCO.InsertString(aPaM, "baz");
+
+    // copy range
+    rIDCO.SplitNode(*aPaM.GetPoint(), false);
+    SwPosition target(*aPaM.GetPoint());
+    aPaM.Move(fnMoveBackward, fnGoContent);
+    aPaM.SetMark();
+    aPaM.SttEndDoc(true/*start*/);
+    aPaM.Move(fnMoveForward, fnGoContent); // partially select 1st para
+
+    rIDCO.CopyRange(aPaM, target, /*bCopyAll=*/false, /*bCheckPos=*/true);
+
+    // check bookmark was copied to correct position
+    CPPUNIT_ASSERT_EQUAL(sal_Int32(2), rIDMA.getBookmarksCount());
+    for (auto it(rIDMA.getBookmarksBegin()); it != rIDMA.getBookmarksEnd(); ++it)
+    {
+        OUString markText(SwPaM((*it)->GetMarkPos(), (*it)->GetOtherMarkPos()).GetText());
+        CPPUNIT_ASSERT_EQUAL(OUString("bar"), markText);
+    }
+
+    // copy 2nd time, such that bCanMoveBack is false in CopyImpl
+    SwPaM aCopyPaM(*aPaM.GetMark(), *aPaM.GetPoint());
+    aPaM.SttEndDoc(true/*start*/);
+    rIDCO.SplitNode(*aPaM.GetPoint(), false);
+    aPaM.SttEndDoc(true/*start*/);
+
+    rIDCO.CopyRange(aCopyPaM, *aPaM.GetPoint(), /*bCopyAll=*/false, /*bCheckPos=*/true);
+
+    // check bookmark was copied to correct position
+    CPPUNIT_ASSERT_EQUAL(sal_Int32(3), rIDMA.getBookmarksCount());
+    for (auto it(rIDMA.getBookmarksBegin()); it != rIDMA.getBookmarksEnd(); ++it)
+    {
+        OUString markText(SwPaM((*it)->GetMarkPos(), (*it)->GetOtherMarkPos()).GetText());
+        CPPUNIT_ASSERT_EQUAL(OUString("bar"), markText);
+    }
+}
+
+void SwUiWriterTest::testTdf67238()
+{
+    //create a new writer document
+    SwDoc* pDoc = createDoc();
+    SwWrtShell* pWrtShell = pDoc->GetDocShell()->GetWrtShell();
+    sw::UndoManager& rUndoManager = pDoc->GetUndoManager();
+    //insert a 3X3 table in the newly created document
+    SwInsertTableOptions TableOpt(tabopts::DEFAULT_BORDER, 0);
+    const SwTable& rTable = pWrtShell->InsertTable(TableOpt, 3, 3);
+    //checking for the rows and columns
+    uno::Reference<text::XTextTable> xTable(getParagraphOrTable(1), uno::UNO_QUERY);
+    CPPUNIT_ASSERT_EQUAL(sal_Int32(3), xTable->getRows()->getCount());
+    CPPUNIT_ASSERT_EQUAL(sal_Int32(3), xTable->getColumns()->getCount());
+    //selecting the table
+    pWrtShell->SttDoc();
+    pWrtShell->SelTable();
+    //making the table protected
+    pWrtShell->ProtectCells();
+    //checking each cell's protection, it should be protected
+    CPPUNIT_ASSERT(((rTable.GetTableBox("A1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("A2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("A3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("B1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("B2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("B3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("C1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("C2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("C3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    //undo the changes, make cells [un]protected
+    rUndoManager.Undo();
+    //checking each cell's protection, it should be [un]protected
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("A1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("A2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("A3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("B1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("B2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("B3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("C1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("C2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("C3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    //redo the changes, make cells protected
+    rUndoManager.Redo();
+    //checking each cell's protection, it should be protected
+    CPPUNIT_ASSERT(((rTable.GetTableBox("A1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("A2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("A3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("B1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("B2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("B3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("C1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("C2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("C3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    //moving the cursor to the starting of the document
+    pWrtShell->SttDoc();
+    //making the table [un]protected
+    pWrtShell->SelTable();
+    pWrtShell->UnProtectCells();
+    //checking each cell's protection, it should be [un]protected
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("A1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("A2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("A3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("B1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("B2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("B3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("C1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("C2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("C3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    //undo the changes, make cells protected
+    rUndoManager.Undo();
+    //checking each cell's protection, it should be protected
+    CPPUNIT_ASSERT(((rTable.GetTableBox("A1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("A2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("A3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("B1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("B2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("B3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("C1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("C2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(((rTable.GetTableBox("C3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    //redo the changes, make cells [un]protected
+    rUndoManager.Redo();
+    //checking each cell's protection, it should be [un]protected
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("A1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("A2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("A3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("B1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("B2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("B3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("C1"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("C2"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+    CPPUNIT_ASSERT(!((rTable.GetTableBox("C3"))->GetFrameFormat()->GetProtect()).IsContentProtected());
+}
+
 void SwUiWriterTest::testFdo75110()
 {
     SwDoc* pDoc = createDoc("fdo75110.odt");
@@ -338,8 +509,8 @@ void SwUiWriterTest::testFdo75898()
     pWrtShell->InsertRow(1, true);
 
     // Now check if the table has 3 lines.
-    SwShellCrsr* pShellCrsr = pWrtShell->getShellCrsr(false);
-    SwTableNode* pTableNode = pShellCrsr->Start()->nNode.GetNode().FindTableNode();
+    SwShellCursor* pShellCursor = pWrtShell->getShellCursor(false);
+    SwTableNode* pTableNode = pShellCursor->Start()->nNode.GetNode().FindTableNode();
     // This was 1, when doing the same using the UI, Writer even crashed.
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(3), pTableNode->GetTable().GetTabLines().size());
 }
@@ -353,11 +524,11 @@ void SwUiWriterTest::testReplaceBackward()
     SwNodeIndex aIdx(pDoc->GetNodes().GetEndOfContent(), -1);
     SwPaM aPaM(aIdx);
 
-    pDoc->getIDocumentContentOperations().InsertString(aPaM, OUString("toto titi tutu"));
+    pDoc->getIDocumentContentOperations().InsertString(aPaM, "toto titi tutu");
     SwTextNode* pTextNode = aPaM.GetNode().GetTextNode();
     lcl_selectCharacters(aPaM, 9, 5);
 
-    pDoc->getIDocumentContentOperations().ReplaceRange(aPaM, OUString("toto"), false);
+    pDoc->getIDocumentContentOperations().ReplaceRange(aPaM, "toto", false);
 
     CPPUNIT_ASSERT_EQUAL(EXPECTED_REPLACE_CONTENT, pTextNode->GetText());
 
@@ -374,8 +545,8 @@ void SwUiWriterTest::testFdo69893()
     pWrtShell->SelAll(); // A1 is empty -> selects the whole table.
     pWrtShell->SelAll(); // Selects the whole document.
 
-    SwShellCrsr* pShellCrsr = pWrtShell->getShellCrsr(false);
-    SwTextNode& rEnd = dynamic_cast<SwTextNode&>(pShellCrsr->End()->nNode.GetNode());
+    SwShellCursor* pShellCursor = pWrtShell->getShellCursor(false);
+    SwTextNode& rEnd = dynamic_cast<SwTextNode&>(pShellCursor->End()->nNode.GetNode());
     // Selection did not include the para after table, this was "B1".
     CPPUNIT_ASSERT_EQUAL(OUString("Para after table."), rEnd.GetText());
 }
@@ -420,12 +591,12 @@ void SwUiWriterTest::testImportRTF()
     // Insert the RTF at the cursor position.
     OString aData = "{\\rtf1 Hello world!\\par}";
     SvMemoryStream aStream(const_cast<sal_Char*>(aData.getStr()), aData.getLength(), StreamMode::READ);
-    SwReader aReader(aStream, OUString(), OUString(), *pWrtShell->GetCrsr());
+    SwReader aReader(aStream, OUString(), OUString(), *pWrtShell->GetCursor());
     Reader* pRTFReader = SwReaderWriter::GetReader(READER_WRITER_RTF);
-    CPPUNIT_ASSERT(pRTFReader != 0);
+    CPPUNIT_ASSERT(pRTFReader != nullptr);
     CPPUNIT_ASSERT_EQUAL(sal_uLong(0), aReader.Read(*pRTFReader));
 
-    sal_uLong nIndex = pWrtShell->GetCrsr()->GetNode().GetIndex();
+    sal_uLong nIndex = pWrtShell->GetCursor()->GetNode().GetIndex();
     CPPUNIT_ASSERT_EQUAL(OUString("fooHello world!"), pDoc->GetNodes()[nIndex - 1]->GetTextNode()->GetText());
     CPPUNIT_ASSERT_EQUAL(OUString("bar"), pDoc->GetNodes()[nIndex]->GetTextNode()->GetText());
 }
@@ -466,6 +637,8 @@ void SwUiWriterTest::testExportRTF()
     CPPUNIT_ASSERT_EQUAL(sal_Int32(-1), aData.indexOf("aaa"));
     CPPUNIT_ASSERT(aData.indexOf("bbb") != -1);
     CPPUNIT_ASSERT_EQUAL(sal_Int32(-1), aData.indexOf("ccc"));
+    // Ensure there's no extra newline
+    CPPUNIT_ASSERT(aData.endsWith("bbb}" SAL_NEWLINE_STRING "}"));
 }
 
 void SwUiWriterTest::testFdo74981()
@@ -627,9 +800,9 @@ void SwUiWriterTest::testCommentedWord()
     pWrtShell->SelWrd();
 
     // Make sure that not only the word, but its comment anchor is also selected.
-    SwShellCrsr* pShellCrsr = pWrtShell->getShellCrsr(false);
+    SwShellCursor* pShellCursor = pWrtShell->getShellCursor(false);
     // This was 9, only "word", not "word<anchor character>" was selected.
-    CPPUNIT_ASSERT_EQUAL(sal_Int32(10), pShellCrsr->End()->nContent.GetIndex());
+    CPPUNIT_ASSERT_EQUAL(sal_Int32(10), pShellCursor->End()->nContent.GetIndex());
 
     // Test that getAnchor() points to "word", not to an empty string.
     uno::Reference<text::XTextFieldsSupplier> xTextFieldsSupplier(mxComponent, uno::UNO_QUERY);
@@ -658,7 +831,7 @@ void SwUiWriterTest::testChineseConversionBlank()
     SwPaM aPaM(aIdx);
 
     // When
-    SwHHCWrapper aWrap( pView, xContext, LANGUAGE_CHINESE_TRADITIONAL, LANGUAGE_CHINESE_SIMPLIFIED, NULL,
+    SwHHCWrapper aWrap( pView, xContext, LANGUAGE_CHINESE_TRADITIONAL, LANGUAGE_CHINESE_SIMPLIFIED, nullptr,
                         i18n::TextConversionOption::CHARACTER_BY_CHARACTER, false,
                         true, false, false );
     aWrap.Convert();
@@ -682,7 +855,7 @@ void SwUiWriterTest::testChineseConversionNonChineseText()
     pDoc->getIDocumentContentOperations().InsertString(aPaM, NON_CHINESE_CONTENT);
 
     // When
-    SwHHCWrapper aWrap( pView, xContext, LANGUAGE_CHINESE_TRADITIONAL, LANGUAGE_CHINESE_SIMPLIFIED, NULL,
+    SwHHCWrapper aWrap( pView, xContext, LANGUAGE_CHINESE_TRADITIONAL, LANGUAGE_CHINESE_SIMPLIFIED, nullptr,
                         i18n::TextConversionOption::CHARACTER_BY_CHARACTER, false,
                         true, false, false );
     aWrap.Convert();
@@ -706,7 +879,7 @@ void SwUiWriterTest::testChineseConversionTraditionalToSimplified()
     pDoc->getIDocumentContentOperations().InsertString(aPaM, CHINESE_TRADITIONAL_CONTENT);
 
     // When
-    SwHHCWrapper aWrap( pView, xContext, LANGUAGE_CHINESE_TRADITIONAL, LANGUAGE_CHINESE_SIMPLIFIED, NULL,
+    SwHHCWrapper aWrap( pView, xContext, LANGUAGE_CHINESE_TRADITIONAL, LANGUAGE_CHINESE_SIMPLIFIED, nullptr,
                         i18n::TextConversionOption::CHARACTER_BY_CHARACTER, false,
                         true, false, false );
     aWrap.Convert();
@@ -730,7 +903,7 @@ void SwUiWriterTest::testChineseConversionSimplifiedToTraditional()
     pDoc->getIDocumentContentOperations().InsertString(aPaM, CHINESE_SIMPLIFIED_CONTENT);
 
     // When
-    SwHHCWrapper aWrap( pView, xContext, LANGUAGE_CHINESE_SIMPLIFIED, LANGUAGE_CHINESE_TRADITIONAL, NULL,
+    SwHHCWrapper aWrap( pView, xContext, LANGUAGE_CHINESE_SIMPLIFIED, LANGUAGE_CHINESE_TRADITIONAL, nullptr,
                         i18n::TextConversionOption::CHARACTER_BY_CHARACTER, false,
                         true, false, false );
     aWrap.Convert();
@@ -774,13 +947,13 @@ void SwUiWriterTest::testAutoCorr()
     //Normal AutoCorrect
     pWrtShell->Insert("tset");
     pWrtShell->AutoCorrect(corr, cIns);
-    sal_uLong nIndex = pWrtShell->GetCrsr()->GetNode().GetIndex();
+    sal_uLong nIndex = pWrtShell->GetCursor()->GetNode().GetIndex();
     CPPUNIT_ASSERT_EQUAL(OUString("Test "), static_cast<SwTextNode*>(pDoc->GetNodes()[nIndex])->GetText());
 
     //AutoCorrect with change style to bolt
     pWrtShell->Insert("Bolt");
     pWrtShell->AutoCorrect(corr, cIns);
-    nIndex = pWrtShell->GetCrsr()->GetNode().GetIndex();
+    nIndex = pWrtShell->GetCursor()->GetNode().GetIndex();
     const uno::Reference< text::XTextRange > xRun = getRun(getParagraph(1), 2);
     CPPUNIT_ASSERT_EQUAL(OUString("Bolt"), xRun->getString());
     CPPUNIT_ASSERT_EQUAL(OUString("Arial"), getProperty<OUString>(xRun, "CharFontName"));
@@ -844,7 +1017,7 @@ void SwUiWriterTest::testBookmarkUndo()
     IDocumentMarkAccess* const pMarkAccess = pDoc->getIDocumentMarkAccess();
     SwPaM aPaM( SwNodeIndex(pDoc->GetNodes().GetEndOfContent(), -1) );
 
-    pMarkAccess->makeMark(aPaM, OUString("Mark"), IDocumentMarkAccess::MarkType::BOOKMARK);
+    pMarkAccess->makeMark(aPaM, "Mark", IDocumentMarkAccess::MarkType::BOOKMARK);
     CPPUNIT_ASSERT_EQUAL(sal_Int32(1), pMarkAccess->getAllMarksCount());
     rUndoManager.Undo();
     CPPUNIT_ASSERT_EQUAL(sal_Int32(0), pMarkAccess->getAllMarksCount());
@@ -996,7 +1169,7 @@ void SwUiWriterTest::testTdf63214()
         aPaM.SetMark();
         aPaM.Move(fnMoveForward, fnGoContent);
         //Inserting a crossRefBookmark
-        pMarkAccess->makeMark(aPaM, OUString("Bookmark"), IDocumentMarkAccess::MarkType::CROSSREF_HEADING_BOOKMARK);
+        pMarkAccess->makeMark(aPaM, "Bookmark", IDocumentMarkAccess::MarkType::CROSSREF_HEADING_BOOKMARK);
         CPPUNIT_ASSERT_EQUAL(sal_Int32(1), pMarkAccess->getAllMarksCount());
     }
     //moving cursor to the end of paragraph
@@ -1025,7 +1198,7 @@ void SwUiWriterTest::testTdf51741()
     IDocumentMarkAccess* const pMarkAccess = pDoc->getIDocumentMarkAccess();
     SwPaM aPaM( SwNodeIndex(pDoc->GetNodes().GetEndOfContent(), -1) );
     //Modification 1
-    pMarkAccess->makeMark(aPaM, OUString("Mark"), IDocumentMarkAccess::MarkType::BOOKMARK);
+    pMarkAccess->makeMark(aPaM, "Mark", IDocumentMarkAccess::MarkType::BOOKMARK);
     CPPUNIT_ASSERT(pWrtShell->IsModified());
     pWrtShell->ResetModified();
     CPPUNIT_ASSERT_EQUAL(sal_Int32(1), pMarkAccess->getAllMarksCount());
@@ -1079,7 +1252,7 @@ void SwUiWriterTest::testTdf51741()
 void SwUiWriterTest::testDefaultsOfOutlineNumbering()
 {
     uno::Reference<text::XDefaultNumberingProvider> xDefNum(m_xSFactory->createInstance("com.sun.star.text.DefaultNumberingProvider"), uno::UNO_QUERY);
-    com::sun::star::lang::Locale alocale;
+    css::lang::Locale alocale;
     alocale.Language = "en";
     alocale.Country = "US";
     uno::Sequence<beans::PropertyValues> aPropVal(xDefNum->getDefaultContinuousNumberingLevels(alocale));
@@ -1108,17 +1281,17 @@ void SwUiWriterTest::testDeleteTableRedlines()
     SwDoc* pDoc = createDoc();
     SwWrtShell* pWrtShell = pDoc->GetDocShell()->GetWrtShell();
     SwInsertTableOptions TableOpt(tabopts::DEFAULT_BORDER, 0);
-    const SwTable& rTbl = pWrtShell->InsertTable(TableOpt, 1, 3);
+    const SwTable& rTable = pWrtShell->InsertTable(TableOpt, 1, 3);
     uno::Reference<text::XTextTable> xTable(getParagraphOrTable(1), uno::UNO_QUERY);
     CPPUNIT_ASSERT_EQUAL(sal_Int32(1), xTable->getRows()->getCount());
     CPPUNIT_ASSERT_EQUAL(sal_Int32(3), xTable->getColumns()->getCount());
     uno::Sequence<beans::PropertyValue> aDescriptor;
-    SwUnoCursorHelper::makeTableCellRedline((*const_cast<SwTableBox*>(rTbl.GetTableBox(OUString("A1")))), OUString("TableCellInsert"), aDescriptor);
-    SwUnoCursorHelper::makeTableCellRedline((*const_cast<SwTableBox*>(rTbl.GetTableBox(OUString("B1")))), OUString("TableCellInsert"), aDescriptor);
-    SwUnoCursorHelper::makeTableCellRedline((*const_cast<SwTableBox*>(rTbl.GetTableBox(OUString("C1")))), OUString("TableCellInsert"), aDescriptor);
+    SwUnoCursorHelper::makeTableCellRedline((*const_cast<SwTableBox*>(rTable.GetTableBox("A1"))), "TableCellInsert", aDescriptor);
+    SwUnoCursorHelper::makeTableCellRedline((*const_cast<SwTableBox*>(rTable.GetTableBox("B1"))), "TableCellInsert", aDescriptor);
+    SwUnoCursorHelper::makeTableCellRedline((*const_cast<SwTableBox*>(rTable.GetTableBox("C1"))), "TableCellInsert", aDescriptor);
     IDocumentRedlineAccess& rIDRA = pDoc->getIDocumentRedlineAccess();
     SwExtraRedlineTable& rExtras = rIDRA.GetExtraRedlineTable();
-    rExtras.DeleteAllTableRedlines(pDoc, rTbl, false, sal_uInt16(USHRT_MAX));
+    rExtras.DeleteAllTableRedlines(pDoc, rTable, false, sal_uInt16(USHRT_MAX));
     CPPUNIT_ASSERT(rExtras.IsEmpty());
 }
 
@@ -1153,18 +1326,18 @@ void SwUiWriterTest::testXFlatParagraph()
     //changing the attributes of last para
     uno::Sequence<beans::PropertyValue> aDescriptor =
     {
-        beans::PropertyValue("CharWeight", sal_Int32(0), uno::makeAny(float(com::sun::star::awt::FontWeight::BOLD)), beans::PropertyState_DIRECT_VALUE)
+        beans::PropertyValue("CharWeight", sal_Int32(0), uno::makeAny(float(css::awt::FontWeight::BOLD)), beans::PropertyState_DIRECT_VALUE)
     };
     xFlatPara3->changeAttributes(sal_Int32(0), sal_Int32(5), aDescriptor);
     //checking Language Portions
     uno::Sequence<::sal_Int32> aLangPortions(xFlatPara4->getLanguagePortions());
     CPPUNIT_ASSERT_EQUAL(sal_Int32(0), aLangPortions.getLength());
     //examining Language of text
-    com::sun::star::lang::Locale alocale = xFlatPara4->getLanguageOfText(sal_Int32(0), sal_Int32(4));
+    css::lang::Locale alocale = xFlatPara4->getLanguageOfText(sal_Int32(0), sal_Int32(4));
     CPPUNIT_ASSERT_EQUAL(OUString("en"), alocale.Language);
     CPPUNIT_ASSERT_EQUAL(OUString("US"), alocale.Country);
     //examining Primary Language of text
-    com::sun::star::lang::Locale aprimarylocale = xFlatPara4->getPrimaryLanguageOfText(sal_Int32(0), sal_Int32(20));
+    css::lang::Locale aprimarylocale = xFlatPara4->getPrimaryLanguageOfText(sal_Int32(0), sal_Int32(20));
     CPPUNIT_ASSERT_EQUAL(OUString("en"), aprimarylocale.Language);
     CPPUNIT_ASSERT_EQUAL(OUString("US"), aprimarylocale.Country);
 }
@@ -1172,7 +1345,7 @@ void SwUiWriterTest::testXFlatParagraph()
 void SwUiWriterTest::testTdf81995()
 {
     uno::Reference<text::XDefaultNumberingProvider> xDefNum(m_xSFactory->createInstance("com.sun.star.text.DefaultNumberingProvider"), uno::UNO_QUERY);
-    com::sun::star::lang::Locale alocale;
+    css::lang::Locale alocale;
     alocale.Language = "en";
     alocale.Country = "US";
     uno::Sequence<uno::Reference<container::XIndexAccess>> aIndexAccess(xDefNum->getDefaultOutlineNumberings(alocale));
@@ -1235,19 +1408,19 @@ void SwUiWriterTest::testTdf77340()
     uno::Reference<css::lang::XMultiServiceFactory> xFactory(mxComponent, uno::UNO_QUERY);
     uno::Reference<style::XStyle> xStyle(xFactory->createInstance("com.sun.star.style.ParagraphStyle"), uno::UNO_QUERY);
     uno::Reference<beans::XPropertySet> xPropSet(xStyle, uno::UNO_QUERY_THROW);
-    xPropSet->setPropertyValue(OUString("ParaBackColor"), uno::makeAny(sal_Int32(0xFF00FF)));
+    xPropSet->setPropertyValue("ParaBackColor", uno::makeAny(sal_Int32(0xFF00FF)));
     uno::Reference<style::XStyleFamiliesSupplier> xSupplier(mxComponent, uno::UNO_QUERY);
     uno::Reference<container::XNameAccess> xNameAccess(xSupplier->getStyleFamilies());
     uno::Reference<container::XNameContainer> xNameCont;
     xNameAccess->getByName("ParagraphStyles") >>= xNameCont;
-    xNameCont->insertByName(OUString("myStyle"), uno::makeAny(xStyle));
+    xNameCont->insertByName("myStyle", uno::makeAny(xStyle));
     CPPUNIT_ASSERT_EQUAL(OUString("myStyle"), xStyle->getName());
     //Setting the properties with proper values
-    xPropSet->setPropertyValue(OUString("PageDescName"), uno::makeAny(OUString("First Page")));
-    xPropSet->setPropertyValue(OUString("PageNumberOffset"), uno::makeAny(sal_Int16(3)));
+    xPropSet->setPropertyValue("PageDescName", uno::makeAny(OUString("First Page")));
+    xPropSet->setPropertyValue("PageNumberOffset", uno::makeAny(sal_Int16(3)));
     //Getting the properties and checking that they have proper values
-    CPPUNIT_ASSERT_EQUAL(uno::makeAny(OUString("First Page")), xPropSet->getPropertyValue(OUString("PageDescName")));
-    CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_Int16(3)), xPropSet->getPropertyValue(OUString("PageNumberOffset")));
+    CPPUNIT_ASSERT_EQUAL(uno::makeAny(OUString("First Page")), xPropSet->getPropertyValue("PageDescName"));
+    CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_Int16(3)), xPropSet->getPropertyValue("PageNumberOffset"));
 }
 
 void SwUiWriterTest::testTdf79236()
@@ -1255,7 +1428,7 @@ void SwUiWriterTest::testTdf79236()
     SwDoc* pDoc = createDoc();
     sw::UndoManager& rUndoManager = pDoc->GetUndoManager();
     //Getting some paragraph style
-    SwTextFormatColl* pTextFormat = pDoc->FindTextFormatCollByName(OUString("Text Body"));
+    SwTextFormatColl* pTextFormat = pDoc->FindTextFormatCollByName("Text Body");
     const SwAttrSet& rAttrSet = pTextFormat->GetAttrSet();
     SfxItemSet* pNewSet = rAttrSet.Clone();
     sal_uInt16 initialCount = pNewSet->Count();
@@ -1276,7 +1449,7 @@ void SwUiWriterTest::testTdf79236()
     //Setting the updated item set on the style
     pDoc->ChgFormat(*pTextFormat, *pNewSet);
     //Checking the Changes
-    SwTextFormatColl* pTextFormat2 = pDoc->FindTextFormatCollByName(OUString("Text Body"));
+    SwTextFormatColl* pTextFormat2 = pDoc->FindTextFormatCollByName("Text Body");
     const SwAttrSet& rAttrSet2 = pTextFormat2->GetAttrSet();
     const SvxAdjustItem& rAdjustItem2 = rAttrSet2.GetAdjust();
     SvxAdjust Adjust2 = rAdjustItem2.GetAdjust();
@@ -1284,7 +1457,7 @@ void SwUiWriterTest::testTdf79236()
     CPPUNIT_ASSERT_EQUAL(SVX_ADJUST_RIGHT, Adjust2);
     //Undo the changes
     rUndoManager.Undo();
-    SwTextFormatColl* pTextFormat3 = pDoc->FindTextFormatCollByName(OUString("Text Body"));
+    SwTextFormatColl* pTextFormat3 = pDoc->FindTextFormatCollByName("Text Body");
     const SwAttrSet& rAttrSet3 = pTextFormat3->GetAttrSet();
     const SvxAdjustItem& rAdjustItem3 = rAttrSet3.GetAdjust();
     SvxAdjust Adjust3 = rAdjustItem3.GetAdjust();
@@ -1292,7 +1465,7 @@ void SwUiWriterTest::testTdf79236()
     CPPUNIT_ASSERT_EQUAL(SVX_ADJUST_LEFT, Adjust3);
     //Redo the changes
     rUndoManager.Redo();
-    SwTextFormatColl* pTextFormat4 = pDoc->FindTextFormatCollByName(OUString("Text Body"));
+    SwTextFormatColl* pTextFormat4 = pDoc->FindTextFormatCollByName("Text Body");
     const SwAttrSet& rAttrSet4 = pTextFormat4->GetAttrSet();
     const SvxAdjustItem& rAdjustItem4 = rAttrSet4.GetAdjust();
     SvxAdjust Adjust4 = rAdjustItem4.GetAdjust();
@@ -1300,7 +1473,7 @@ void SwUiWriterTest::testTdf79236()
     CPPUNIT_ASSERT_EQUAL(SVX_ADJUST_RIGHT, Adjust4);
     //Undo the changes
     rUndoManager.Undo();
-    SwTextFormatColl* pTextFormat5 = pDoc->FindTextFormatCollByName(OUString("Text Body"));
+    SwTextFormatColl* pTextFormat5 = pDoc->FindTextFormatCollByName("Text Body");
     const SwAttrSet& rAttrSet5 = pTextFormat5->GetAttrSet();
     const SvxAdjustItem& rAdjustItem5 = rAttrSet5.GetAdjust();
     SvxAdjust Adjust5 = rAdjustItem5.GetAdjust();
@@ -1312,35 +1485,35 @@ void SwUiWriterTest::testTextSearch()
 {
     // Create a new empty Writer document
     SwDoc* pDoc = createDoc();
-    SwPaM* pCrsr = pDoc->GetEditShell()->GetCrsr();
+    SwPaM* pCursor = pDoc->GetEditShell()->GetCursor();
     IDocumentContentOperations & rIDCO(pDoc->getIDocumentContentOperations());
     // Insert some text
-    rIDCO.InsertString(*pCrsr, "Hello World This is a test");
+    rIDCO.InsertString(*pCursor, "Hello World This is a test");
     // Use cursor to select part of text
     for (int i = 0; i < 10; i++) {
-        pCrsr->Move(fnMoveBackward);
+        pCursor->Move(fnMoveBackward);
     }
-    pCrsr->SetMark();
+    pCursor->SetMark();
     for(int i = 0; i < 4; i++) {
-        pCrsr->Move(fnMoveBackward);
+        pCursor->Move(fnMoveBackward);
     }
     //Checking that the proper selection is made
-    CPPUNIT_ASSERT_EQUAL(OUString("This"), pCrsr->GetText());
+    CPPUNIT_ASSERT_EQUAL(OUString("This"), pCursor->GetText());
     // Apply a "Bold" attribute to selection
     SvxWeightItem aWeightItem(WEIGHT_BOLD, RES_CHRATR_WEIGHT);
-    rIDCO.InsertPoolItem(*pCrsr, aWeightItem);
+    rIDCO.InsertPoolItem(*pCursor, aWeightItem);
     //making another selection of text
     for (int i = 0; i < 7; i++) {
-        pCrsr->Move(fnMoveBackward);
+        pCursor->Move(fnMoveBackward);
     }
-    pCrsr->SetMark();
+    pCursor->SetMark();
     for(int i = 0; i < 5; i++) {
-        pCrsr->Move(fnMoveBackward);
+        pCursor->Move(fnMoveBackward);
     }
     //Checking that the proper selection is made
-    CPPUNIT_ASSERT_EQUAL(OUString("Hello"), pCrsr->GetText());
+    CPPUNIT_ASSERT_EQUAL(OUString("Hello"), pCursor->GetText());
     // Apply a "Bold" attribute to selection
-    rIDCO.InsertPoolItem(*pCrsr, aWeightItem);
+    rIDCO.InsertPoolItem(*pCursor, aWeightItem);
     //Performing Search Operation and also covering the UNO coverage for setProperty
     uno::Reference<util::XSearchable> xSearch(mxComponent, uno::UNO_QUERY);
     uno::Reference<util::XSearchDescriptor> xSearchDes(xSearch->createSearchDescriptor(), uno::UNO_QUERY);
@@ -1348,18 +1521,18 @@ void SwUiWriterTest::testTextSearch()
     //setting some properties
     uno::Sequence<beans::PropertyValue> aDescriptor =
     {
-        beans::PropertyValue("CharWeight", sal_Int32(0), uno::makeAny(float(com::sun::star::awt::FontWeight::BOLD)), beans::PropertyState_DIRECT_VALUE)
+        beans::PropertyValue("CharWeight", sal_Int32(0), uno::makeAny(float(css::awt::FontWeight::BOLD)), beans::PropertyState_DIRECT_VALUE)
     };
     xProp->setSearchAttributes(aDescriptor);
     //receiving the defined properties and asserting them with expected values, covering UNO
     uno::Sequence<beans::PropertyValue> aPropVal2(xProp->getSearchAttributes());
     CPPUNIT_ASSERT_EQUAL(sal_Int32(1), aPropVal2.getLength());
     CPPUNIT_ASSERT_EQUAL(OUString("CharWeight"), aPropVal2[0].Name);
-    CPPUNIT_ASSERT_EQUAL(uno::makeAny(float(com::sun::star::awt::FontWeight::BOLD)), aPropVal2[0].Value);
+    CPPUNIT_ASSERT_EQUAL(uno::makeAny(float(css::awt::FontWeight::BOLD)), aPropVal2[0].Value);
     //specifying the search attributes
     uno::Reference<beans::XPropertySet> xPropSet(xSearchDes, uno::UNO_QUERY_THROW);
-    xPropSet->setPropertyValue(OUString("SearchWords"), uno::makeAny(true));
-    xPropSet->setPropertyValue(OUString("SearchCaseSensitive"), uno::makeAny(true));
+    xPropSet->setPropertyValue("SearchWords", uno::makeAny(true));
+    xPropSet->setPropertyValue("SearchCaseSensitive", uno::makeAny(true));
     //this will search all the BOLD words
     uno::Reference<container::XIndexAccess> xIndex(xSearch->findAll(xSearchDes));
     CPPUNIT_ASSERT_EQUAL(sal_Int32(2), xIndex->getCount());
@@ -1372,7 +1545,7 @@ void SwUiWriterTest::testTextSearch()
     uno::Sequence<beans::PropertyValue> aRepProp(xProp2->getReplaceAttributes());
     CPPUNIT_ASSERT_EQUAL(sal_Int32(1), aRepProp.getLength());
     CPPUNIT_ASSERT_EQUAL(OUString("CharWeight"), aRepProp[0].Name);
-    CPPUNIT_ASSERT_EQUAL(uno::makeAny(float(com::sun::star::awt::FontWeight::BOLD)), aRepProp[0].Value);
+    CPPUNIT_ASSERT_EQUAL(uno::makeAny(float(css::awt::FontWeight::BOLD)), aRepProp[0].Value);
     //setting strings for replacement
     xReplaceDes->setSearchString("test");
     xReplaceDes->setReplaceString("task");
@@ -1396,8 +1569,8 @@ void SwUiWriterTest::testTdf69282()
     uno::Reference<lang::XComponent> xSourceDoc(mxComponent, uno::UNO_QUERY);
     mxComponent.clear();
     SwDoc* target = createDoc();
-    SwPageDesc* sPageDesc = source->MakePageDesc(OUString("SourceStyle"));
-    SwPageDesc* tPageDesc = target->MakePageDesc(OUString("TargetStyle"));
+    SwPageDesc* sPageDesc = source->MakePageDesc("SourceStyle");
+    SwPageDesc* tPageDesc = target->MakePageDesc("TargetStyle");
     sPageDesc->ChgFirstShare(false);
     CPPUNIT_ASSERT(!sPageDesc->IsFirstShared());
     SwFrameFormat& rSourceMasterFormat = sPageDesc->GetMaster();
@@ -1457,8 +1630,8 @@ void SwUiWriterTest::testTdf69282WithMirror()
     uno::Reference<lang::XComponent> xSourceDoc(mxComponent, uno::UNO_QUERY);
     mxComponent.clear();
     SwDoc* target = createDoc();
-    SwPageDesc* sPageDesc = source->MakePageDesc(OUString("SourceStyle"));
-    SwPageDesc* tPageDesc = target->MakePageDesc(OUString("TargetStyle"));
+    SwPageDesc* sPageDesc = source->MakePageDesc("SourceStyle");
+    SwPageDesc* tPageDesc = target->MakePageDesc("TargetStyle");
     //Enabling Mirror
     sPageDesc->SetUseOn(nsUseOnPage::PD_MIRROR);
     SwFrameFormat& rSourceMasterFormat = sPageDesc->GetMaster();
@@ -1579,25 +1752,25 @@ void SwUiWriterTest::testTdf60967()
 {
     SwDoc* pDoc = createDoc();
     SwWrtShell* pWrtShell = pDoc->GetDocShell()->GetWrtShell();
-    SwPaM* pCrsr = pDoc->GetEditShell()->GetCrsr();
+    SwPaM* pCursor = pDoc->GetEditShell()->GetCursor();
     sw::UndoManager& rUndoManager = pDoc->GetUndoManager();
-    pWrtShell->ChangeHeaderOrFooter(OUString("Default Style"), true, true, true);
+    pWrtShell->ChangeHeaderOrFooter("Default Style", true, true, true);
     //Inserting table
     SwInsertTableOptions TableOpt(tabopts::DEFAULT_BORDER, 0);
     pWrtShell->InsertTable(TableOpt, 2, 2);
     //getting the cursor's position just after the table insert
-    SwPosition aPosAfterTable(*(pCrsr->GetPoint()));
+    SwPosition aPosAfterTable(*(pCursor->GetPoint()));
     //moving cursor to B2 (bottom right cell)
-    pCrsr->Move(fnMoveBackward);
-    SwPosition aPosInTable(*(pCrsr->GetPoint()));
+    pCursor->Move(fnMoveBackward);
+    SwPosition aPosInTable(*(pCursor->GetPoint()));
     //deleting paragraph following table with Ctrl+Shift+Del
     sal_Int32 val = pWrtShell->DelToEndOfSentence();
     CPPUNIT_ASSERT_EQUAL(sal_Int32(1), val);
     //getting the cursor's position just after the paragraph deletion
-    SwPosition aPosAfterDel(*(pCrsr->GetPoint()));
+    SwPosition aPosAfterDel(*(pCursor->GetPoint()));
     //moving cursor forward to check whether there is any node following the table, BTW there should not be any such node
-    pCrsr->Move(fnMoveForward);
-    SwPosition aPosMoveAfterDel(*(pCrsr->GetPoint()));
+    pCursor->Move(fnMoveForward);
+    SwPosition aPosMoveAfterDel(*(pCursor->GetPoint()));
     //checking the positions to verify that the paragraph is actually deleted
     CPPUNIT_ASSERT(aPosInTable == aPosAfterDel);
     CPPUNIT_ASSERT(aPosInTable == aPosMoveAfterDel);
@@ -1605,12 +1778,12 @@ void SwUiWriterTest::testTdf60967()
     rUndoManager.Undo();
     {
         //paragraph *text node* should be back
-        SwPosition aPosAfterUndo(*(pCrsr->GetPoint()));
+        SwPosition aPosAfterUndo(*(pCursor->GetPoint()));
         //after undo aPosAfterTable increases the node position by one, since this contains the position *text node* so aPosAfterUndo should be less than aPosAfterTable
         CPPUNIT_ASSERT(aPosAfterTable > aPosAfterUndo);
         //moving cursor forward to check whether there is any node following the paragraph, BTW there should not be any such node as paragraph node is the last one in header
-        pCrsr->Move(fnMoveForward);
-        SwPosition aPosMoveAfterUndo(*(pCrsr->GetPoint()));
+        pCursor->Move(fnMoveForward);
+        SwPosition aPosMoveAfterUndo(*(pCursor->GetPoint()));
         //checking positions to verify that paragraph node is the last one and we are paragraph node only
         CPPUNIT_ASSERT(aPosAfterTable > aPosMoveAfterUndo);
         CPPUNIT_ASSERT(aPosMoveAfterUndo == aPosAfterUndo);
@@ -1618,12 +1791,12 @@ void SwUiWriterTest::testTdf60967()
     //Redo the changes
     rUndoManager.Redo();
     //paragraph *text node* should not be there
-    SwPosition aPosAfterRedo(*(pCrsr->GetPoint()));
+    SwPosition aPosAfterRedo(*(pCursor->GetPoint()));
     //position should be exactly same as it was after deletion of *text node*
     CPPUNIT_ASSERT(aPosMoveAfterDel == aPosAfterRedo);
     //moving the cursor forward, but it should not actually move as there is no *text node* after the table due to this same position is expected after move as it was before move
-    pCrsr->Move(fnMoveForward);
-    SwPosition aPosAfterUndoMove(*(pCrsr->GetPoint()));
+    pCursor->Move(fnMoveForward);
+    SwPosition aPosAfterUndoMove(*(pCursor->GetPoint()));
     CPPUNIT_ASSERT(aPosAfterUndoMove == aPosAfterRedo);
 }
 
@@ -1638,36 +1811,46 @@ void SwUiWriterTest::testSearchWithTransliterate()
     aIdx = SwNodeIndex(pDoc->GetNodes().GetEndOfContent(), -1);
     aPaM = SwPaM(aIdx);
     pDoc->getIDocumentContentOperations().InsertString(aPaM,"This is Other PARAGRAPH");
-    com::sun::star::util::SearchOptions SearchOpt;
-    SearchOpt.algorithmType = com::sun::star::util::SearchAlgorithms_ABSOLUTE;
+    css::util::SearchOptions SearchOpt;
+    SearchOpt.algorithmType = css::util::SearchAlgorithms_ABSOLUTE;
     SearchOpt.searchFlag = 0x00000001;
     SearchOpt.searchString = "other";
     SearchOpt.replaceString.clear();
     SearchOpt.changedChars = 0;
     SearchOpt.deletedChars = 0;
     SearchOpt.insertedChars = 0;
-    SearchOpt.transliterateFlags = com::sun::star::i18n::TransliterationModulesExtra::IGNORE_DIACRITICS_CTL;
+    SearchOpt.transliterateFlags = css::i18n::TransliterationModulesExtra::IGNORE_DIACRITICS_CTL;
     //transliteration option set so that at least one of the search strings is not found
-    sal_uLong case1 = pWrtShell->SearchPattern(SearchOpt,true,DOCPOS_START,DOCPOS_END,FND_IN_BODY);
-    SwShellCrsr* pShellCrsr = pWrtShell->getShellCrsr(true);
-    CPPUNIT_ASSERT_EQUAL(OUString(""),pShellCrsr->GetText());
+    sal_uLong case1 = pWrtShell->SearchPattern(SearchOpt,true,DOCPOS_START,DOCPOS_END);
+    SwShellCursor* pShellCursor = pWrtShell->getShellCursor(true);
+    CPPUNIT_ASSERT_EQUAL(OUString(""),pShellCursor->GetText());
     CPPUNIT_ASSERT_EQUAL(0,(int)case1);
     SearchOpt.searchString = "paragraph";
-    SearchOpt.transliterateFlags = com::sun::star::i18n::TransliterationModulesExtra::IGNORE_KASHIDA_CTL;
+    SearchOpt.transliterateFlags = css::i18n::TransliterationModulesExtra::IGNORE_KASHIDA_CTL;
     //transliteration option set so that all search strings are found
-    sal_uLong case2 = pWrtShell->SearchPattern(SearchOpt,true,DOCPOS_START,DOCPOS_END,FND_IN_BODY);
-    pShellCrsr = pWrtShell->getShellCrsr(true);
-    CPPUNIT_ASSERT_EQUAL(OUString("paragraph"),pShellCrsr->GetText());
+    sal_uLong case2 = pWrtShell->SearchPattern(SearchOpt,true,DOCPOS_START,DOCPOS_END);
+    pShellCursor = pWrtShell->getShellCursor(true);
+    CPPUNIT_ASSERT_EQUAL(OUString("paragraph"),pShellCursor->GetText());
     CPPUNIT_ASSERT_EQUAL(1,(int)case2);
+}
+
+void SwUiWriterTest::testNewDocModifiedState()
+{
+    //creating a new doc
+    SwDoc* pDoc = new SwDoc();
+    //getting the state of the document via IDocumentState
+    IDocumentState& rState(pDoc->getIDocumentState());
+    //the state should not be modified, no modifications yet
+    CPPUNIT_ASSERT(!(rState.IsModified()));
 }
 
 void SwUiWriterTest::testTdf77342()
 {
     SwDoc* pDoc = createDoc();
     SwWrtShell* pWrtShell = pDoc->GetDocShell()->GetWrtShell();
-    SwPaM* pCrsr = pDoc->GetEditShell()->GetCrsr();
+    SwPaM* pCursor = pDoc->GetEditShell()->GetCursor();
     //inserting first footnote
-    pWrtShell->InsertFootnote(OUString(""));
+    pWrtShell->InsertFootnote("");
     SwFieldType* pField = pWrtShell->GetFieldType(0, RES_GETREFFLD);
     SwGetRefFieldType* pRefType = static_cast<SwGetRefFieldType*>(pField);
     //moving cursor to the starting of document
@@ -1676,17 +1859,17 @@ void SwUiWriterTest::testTdf77342()
     SwGetRefField aField1(pRefType, OUString(""), REF_FOOTNOTE, sal_uInt16(0), REF_CONTENT);
     pWrtShell->Insert(aField1);
     //inserting second footnote
-    pWrtShell->InsertFootnote(OUString(""));
+    pWrtShell->InsertFootnote("");
     pWrtShell->SttDoc();
-    pCrsr->Move(fnMoveForward);
+    pCursor->Move(fnMoveForward);
     //inserting reference field 2
     SwGetRefField aField2(pRefType, OUString(""), REF_FOOTNOTE, sal_uInt16(1), REF_CONTENT);
     pWrtShell->Insert(aField2);
     //inserting third footnote
-    pWrtShell->InsertFootnote(OUString(""));
+    pWrtShell->InsertFootnote("");
     pWrtShell->SttDoc();
-    pCrsr->Move(fnMoveForward);
-    pCrsr->Move(fnMoveForward);
+    pCursor->Move(fnMoveForward);
+    pCursor->Move(fnMoveForward);
     //inserting reference field 3
     SwGetRefField aField3(pRefType, OUString(""), REF_FOOTNOTE, sal_uInt16(2), REF_CONTENT);
     pWrtShell->Insert(aField3);
@@ -1700,37 +1883,37 @@ void SwUiWriterTest::testTdf77342()
     pClpDoc->getIDocumentFieldsAccess().LockExpFields();
     //selecting reference field 2 and reference field 3 and footnote 1 and footnote 2
     //selection is such that more than one and not all footnotes and ref fields are selected
-    pCrsr->Move(fnMoveBackward);
-    pCrsr->Move(fnMoveBackward);
+    pCursor->Move(fnMoveBackward);
+    pCursor->Move(fnMoveBackward);
     //start marking
-    pCrsr->SetMark();
-    pCrsr->Move(fnMoveForward);
-    pCrsr->Move(fnMoveForward);
-    pCrsr->Move(fnMoveForward);
+    pCursor->SetMark();
+    pCursor->Move(fnMoveForward);
+    pCursor->Move(fnMoveForward);
+    pCursor->Move(fnMoveForward);
     //copying the selection to clipboard
     pWrtShell->Copy(pClpDoc);
     //deleting selection mark after copy
-    pCrsr->DeleteMark();
+    pCursor->DeleteMark();
     //checking that the footnotes reference fields have same values after copy operation
     uno::Any aAny;
     sal_uInt16 aFormat;
     //reference field 1
     pWrtShell->SttDoc();
-    SwField* pRef1 = SwCrsrShell::GetFieldAtCrsr(pCrsr, true);
+    SwField* pRef1 = SwCursorShell::GetFieldAtCursor(pCursor, true);
     aFormat = pRef1->GetFormat();
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(REF_CONTENT), aFormat);
     pRef1->QueryValue(aAny, sal_uInt16(FIELD_PROP_SHORT1));
     CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_uInt16(0)), aAny);
     //reference field 2
-    pCrsr->Move(fnMoveForward);
-    SwField* pRef2 = SwCrsrShell::GetFieldAtCrsr(pCrsr, true);
+    pCursor->Move(fnMoveForward);
+    SwField* pRef2 = SwCursorShell::GetFieldAtCursor(pCursor, true);
     aFormat = pRef2->GetFormat();
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(REF_CONTENT), aFormat);
     pRef2->QueryValue(aAny, sal_uInt16(FIELD_PROP_SHORT1));
     CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_uInt16(1)), aAny);
     //reference field 3
-    pCrsr->Move(fnMoveForward);
-    SwField* pRef3 = SwCrsrShell::GetFieldAtCrsr(pCrsr, true);
+    pCursor->Move(fnMoveForward);
+    SwField* pRef3 = SwCursorShell::GetFieldAtCursor(pCursor, true);
     aFormat = pRef3->GetFormat();
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(REF_CONTENT), aFormat);
     pRef3->QueryValue(aAny, sal_uInt16(FIELD_PROP_SHORT1));
@@ -1742,67 +1925,67 @@ void SwUiWriterTest::testTdf77342()
     //checking the fields, both new and old, for proper values
     pWrtShell->SttDoc();
     //old reference field 1
-    SwField* pOldRef11 = SwCrsrShell::GetFieldAtCrsr(pCrsr, true);
+    SwField* pOldRef11 = SwCursorShell::GetFieldAtCursor(pCursor, true);
     aFormat = pOldRef11->GetFormat();
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(REF_CONTENT), aFormat);
     pOldRef11->QueryValue(aAny, sal_uInt16(FIELD_PROP_SHORT1));
     CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_uInt16(0)), aAny);
     //old reference field 2
-    pCrsr->Move(fnMoveForward);
-    SwField* pOldRef12 = SwCrsrShell::GetFieldAtCrsr(pCrsr, true);
+    pCursor->Move(fnMoveForward);
+    SwField* pOldRef12 = SwCursorShell::GetFieldAtCursor(pCursor, true);
     aFormat = pOldRef12->GetFormat();
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(REF_CONTENT), aFormat);
     pOldRef12->QueryValue(aAny, sal_uInt16(FIELD_PROP_SHORT1));
     CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_uInt16(1)), aAny);
     //old reference field 3
-    pCrsr->Move(fnMoveForward);
-    SwField* pOldRef13 = SwCrsrShell::GetFieldAtCrsr(pCrsr, true);
+    pCursor->Move(fnMoveForward);
+    SwField* pOldRef13 = SwCursorShell::GetFieldAtCursor(pCursor, true);
     aFormat = pOldRef13->GetFormat();
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(REF_CONTENT), aFormat);
     pOldRef13->QueryValue(aAny, sal_uInt16(FIELD_PROP_SHORT1));
     CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_uInt16(2)), aAny);
     //old footnote 1
-    pCrsr->Move(fnMoveForward);
-    SwTextNode* pTextNd1 = pCrsr->GetNode().GetTextNode();
-    SwTextAttr* const pFootnote1 = pTextNd1->GetTextAttrForCharAt(pCrsr->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
+    pCursor->Move(fnMoveForward);
+    SwTextNode* pTextNd1 = pCursor->GetNode().GetTextNode();
+    SwTextAttr* const pFootnote1 = pTextNd1->GetTextAttrForCharAt(pCursor->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
     const SwFormatFootnote& rFootnote1(pFootnote1->GetFootnote());
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(1), rFootnote1.GetNumber());
     SwTextFootnote* pTFNote1 = static_cast<SwTextFootnote*> (pFootnote1);
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(2), pTFNote1->GetSeqRefNo());
     //old footnote 2
-    pCrsr->Move(fnMoveForward);
-    SwTextNode* pTextNd2 = pCrsr->GetNode().GetTextNode();
-    SwTextAttr* const pFootnote2 = pTextNd2->GetTextAttrForCharAt(pCrsr->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
+    pCursor->Move(fnMoveForward);
+    SwTextNode* pTextNd2 = pCursor->GetNode().GetTextNode();
+    SwTextAttr* const pFootnote2 = pTextNd2->GetTextAttrForCharAt(pCursor->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
     const SwFormatFootnote& rFootnote2(pFootnote2->GetFootnote());
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(2), rFootnote2.GetNumber());
     SwTextFootnote* pTFNote2 = static_cast<SwTextFootnote*> (pFootnote2);
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(1), pTFNote2->GetSeqRefNo());
     //old footnote 3
-    pCrsr->Move(fnMoveForward);
-    SwTextNode* pTextNd3 = pCrsr->GetNode().GetTextNode();
-    SwTextAttr* const pFootnote3 = pTextNd3->GetTextAttrForCharAt(pCrsr->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
+    pCursor->Move(fnMoveForward);
+    SwTextNode* pTextNd3 = pCursor->GetNode().GetTextNode();
+    SwTextAttr* const pFootnote3 = pTextNd3->GetTextAttrForCharAt(pCursor->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
     const SwFormatFootnote& rFootnote3(pFootnote3->GetFootnote());
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(3), rFootnote3.GetNumber());
     SwTextFootnote* pTFNote3 = static_cast<SwTextFootnote*> (pFootnote3);
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(0), pTFNote3->GetSeqRefNo());
     //new reference field 1
-    pCrsr->Move(fnMoveForward);
-    SwField* pNewRef11 = SwCrsrShell::GetFieldAtCrsr(pCrsr, true);
+    pCursor->Move(fnMoveForward);
+    SwField* pNewRef11 = SwCursorShell::GetFieldAtCursor(pCursor, true);
     aFormat = pNewRef11->GetFormat();
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(REF_CONTENT), aFormat);
     pNewRef11->QueryValue(aAny, sal_uInt16(FIELD_PROP_SHORT1));
     CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_uInt16(1)), aAny);
     //new reference field 2
-    pCrsr->Move(fnMoveForward);
-    SwField* pNewRef12 = SwCrsrShell::GetFieldAtCrsr(pCrsr, true);
+    pCursor->Move(fnMoveForward);
+    SwField* pNewRef12 = SwCursorShell::GetFieldAtCursor(pCursor, true);
     aFormat = pNewRef12->GetFormat();
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(REF_CONTENT), aFormat);
     pNewRef12->QueryValue(aAny, sal_uInt16(FIELD_PROP_SHORT1));
     CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_uInt16(3)), aAny);
     //new footnote 1
-    pCrsr->Move(fnMoveForward);
-    SwTextNode* pTextNd4 = pCrsr->GetNode().GetTextNode();
-    SwTextAttr* const pFootnote4 = pTextNd4->GetTextAttrForCharAt(pCrsr->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
+    pCursor->Move(fnMoveForward);
+    SwTextNode* pTextNd4 = pCursor->GetNode().GetTextNode();
+    SwTextAttr* const pFootnote4 = pTextNd4->GetTextAttrForCharAt(pCursor->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
     const SwFormatFootnote& rFootnote4(pFootnote4->GetFootnote());
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(4), rFootnote4.GetNumber());
     SwTextFootnote* pTFNote4 = static_cast<SwTextFootnote*> (pFootnote4);
@@ -1814,89 +1997,89 @@ void SwUiWriterTest::testTdf77342()
     //checking the fields, both new and old, for proper values
     pWrtShell->SttDoc();
     //new reference field 1
-    SwField* pNewRef21 = SwCrsrShell::GetFieldAtCrsr(pCrsr, true);
+    SwField* pNewRef21 = SwCursorShell::GetFieldAtCursor(pCursor, true);
     aFormat = pNewRef21->GetFormat();
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(REF_CONTENT), aFormat);
     pNewRef21->QueryValue(aAny, sal_uInt16(FIELD_PROP_SHORT1));
     CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_uInt16(1)), aAny);
     //new reference field 2
-    pCrsr->Move(fnMoveForward);
-    SwField* pNewRef22 = SwCrsrShell::GetFieldAtCrsr(pCrsr, true);
+    pCursor->Move(fnMoveForward);
+    SwField* pNewRef22 = SwCursorShell::GetFieldAtCursor(pCursor, true);
     aFormat = pNewRef22->GetFormat();
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(REF_CONTENT), aFormat);
     pNewRef22->QueryValue(aAny, sal_uInt16(FIELD_PROP_SHORT1));
     CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_uInt16(4)), aAny);
     //new footnote 1
-    pCrsr->Move(fnMoveForward);
-    SwTextNode* pTextNd11 = pCrsr->GetNode().GetTextNode();
-    SwTextAttr* const pFootnote11 = pTextNd11->GetTextAttrForCharAt(pCrsr->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
+    pCursor->Move(fnMoveForward);
+    SwTextNode* pTextNd11 = pCursor->GetNode().GetTextNode();
+    SwTextAttr* const pFootnote11 = pTextNd11->GetTextAttrForCharAt(pCursor->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
     const SwFormatFootnote& rFootnote11(pFootnote11->GetFootnote());
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(1), rFootnote11.GetNumber());
     SwTextFootnote* pTFNote11 = static_cast<SwTextFootnote*> (pFootnote11);
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(4), pTFNote11->GetSeqRefNo());
     //old reference field 1
-    pCrsr->Move(fnMoveForward);
-    SwField* pOldRef21 = SwCrsrShell::GetFieldAtCrsr(pCrsr, true);
+    pCursor->Move(fnMoveForward);
+    SwField* pOldRef21 = SwCursorShell::GetFieldAtCursor(pCursor, true);
     aFormat = pOldRef21->GetFormat();
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(REF_CONTENT), aFormat);
     pOldRef21->QueryValue(aAny, sal_uInt16(FIELD_PROP_SHORT1));
     CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_uInt16(0)), aAny);
     //old reference field 2
-    pCrsr->Move(fnMoveForward);
-    SwField* pOldRef22 = SwCrsrShell::GetFieldAtCrsr(pCrsr, true);
+    pCursor->Move(fnMoveForward);
+    SwField* pOldRef22 = SwCursorShell::GetFieldAtCursor(pCursor, true);
     aFormat = pOldRef22->GetFormat();
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(REF_CONTENT), aFormat);
     pOldRef22->QueryValue(aAny, sal_uInt16(FIELD_PROP_SHORT1));
     CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_uInt16(1)), aAny);
     //old reference field 3
-    pCrsr->Move(fnMoveForward);
-    SwField* pOldRef23 = SwCrsrShell::GetFieldAtCrsr(pCrsr, true);
+    pCursor->Move(fnMoveForward);
+    SwField* pOldRef23 = SwCursorShell::GetFieldAtCursor(pCursor, true);
     aFormat = pOldRef23->GetFormat();
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(REF_CONTENT), aFormat);
     pOldRef23->QueryValue(aAny, sal_uInt16(FIELD_PROP_SHORT1));
     CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_uInt16(2)), aAny);
     //old footnote 1
-    pCrsr->Move(fnMoveForward);
-    SwTextNode* pTextNd12 = pCrsr->GetNode().GetTextNode();
-    SwTextAttr* const pFootnote12 = pTextNd12->GetTextAttrForCharAt(pCrsr->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
+    pCursor->Move(fnMoveForward);
+    SwTextNode* pTextNd12 = pCursor->GetNode().GetTextNode();
+    SwTextAttr* const pFootnote12 = pTextNd12->GetTextAttrForCharAt(pCursor->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
     const SwFormatFootnote& rFootnote12(pFootnote12->GetFootnote());
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(2), rFootnote12.GetNumber());
     SwTextFootnote* pTFNote12 = static_cast<SwTextFootnote*> (pFootnote12);
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(2), pTFNote12->GetSeqRefNo());
     //old footnote 2
-    pCrsr->Move(fnMoveForward);
-    SwTextNode* pTextNd13 = pCrsr->GetNode().GetTextNode();
-    SwTextAttr* const pFootnote13 = pTextNd13->GetTextAttrForCharAt(pCrsr->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
+    pCursor->Move(fnMoveForward);
+    SwTextNode* pTextNd13 = pCursor->GetNode().GetTextNode();
+    SwTextAttr* const pFootnote13 = pTextNd13->GetTextAttrForCharAt(pCursor->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
     const SwFormatFootnote& rFootnote13(pFootnote13->GetFootnote());
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(3), rFootnote13.GetNumber());
     SwTextFootnote* pTFNote13 = static_cast<SwTextFootnote*> (pFootnote13);
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(1), pTFNote13->GetSeqRefNo());
     //old footnote 3
-    pCrsr->Move(fnMoveForward);
-    SwTextNode* pTextNd14 = pCrsr->GetNode().GetTextNode();
-    SwTextAttr* const pFootnote14 = pTextNd14->GetTextAttrForCharAt(pCrsr->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
+    pCursor->Move(fnMoveForward);
+    SwTextNode* pTextNd14 = pCursor->GetNode().GetTextNode();
+    SwTextAttr* const pFootnote14 = pTextNd14->GetTextAttrForCharAt(pCursor->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
     const SwFormatFootnote& rFootnote14(pFootnote14->GetFootnote());
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(4), rFootnote14.GetNumber());
     SwTextFootnote* pTFNote14 = static_cast<SwTextFootnote*> (pFootnote14);
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(0), pTFNote14->GetSeqRefNo());
     //old reference field 4
-    pCrsr->Move(fnMoveForward);
-    SwField* pOldRef24 = SwCrsrShell::GetFieldAtCrsr(pCrsr, true);
+    pCursor->Move(fnMoveForward);
+    SwField* pOldRef24 = SwCursorShell::GetFieldAtCursor(pCursor, true);
     aFormat = pOldRef24->GetFormat();
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(REF_CONTENT), aFormat);
     pOldRef24->QueryValue(aAny, sal_uInt16(FIELD_PROP_SHORT1));
     CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_uInt16(1)), aAny);
     //old reference field 5
-    pCrsr->Move(fnMoveForward);
-    SwField* pOldRef25 = SwCrsrShell::GetFieldAtCrsr(pCrsr, true);
+    pCursor->Move(fnMoveForward);
+    SwField* pOldRef25 = SwCursorShell::GetFieldAtCursor(pCursor, true);
     aFormat = pOldRef25->GetFormat();
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(REF_CONTENT), aFormat);
     pOldRef25->QueryValue(aAny, sal_uInt16(FIELD_PROP_SHORT1));
     CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_uInt16(3)), aAny);
     //old footnote 4
-    pCrsr->Move(fnMoveForward);
-    SwTextNode* pTextNd15 = pCrsr->GetNode().GetTextNode();
-    SwTextAttr* const pFootnote15 = pTextNd15->GetTextAttrForCharAt(pCrsr->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
+    pCursor->Move(fnMoveForward);
+    SwTextNode* pTextNd15 = pCursor->GetNode().GetTextNode();
+    SwTextAttr* const pFootnote15 = pTextNd15->GetTextAttrForCharAt(pCursor->GetPoint()->nContent.GetIndex(), RES_TXTATR_FTN);
     const SwFormatFootnote& rFootnote15(pFootnote15->GetFootnote());
     CPPUNIT_ASSERT_EQUAL(sal_uInt16(5), rFootnote15.GetNumber());
     SwTextFootnote* pTFNote15 = static_cast<SwTextFootnote*> (pFootnote15);
@@ -1934,7 +2117,7 @@ void SwUiWriterTest::testTdf74363()
     const sal_Unicode cChar = ' ';
     pWrtShell->AutoCorrect(corr, cChar);
     //The word should be capitalized due to autocorrect
-    sal_uLong nIndex = pWrtShell->GetCrsr()->GetNode().GetIndex();
+    sal_uLong nIndex = pWrtShell->GetCursor()->GetNode().GetIndex();
     CPPUNIT_ASSERT_EQUAL(OUString("Testing "), static_cast<SwTextNode*>(pDoc->GetNodes()[nIndex])->GetText());
 }
 
@@ -2113,58 +2296,58 @@ void SwUiWriterTest::testTdf90808()
     uno::Reference<text::XTextDocument> xTextDocument(mxComponent, uno::UNO_QUERY);
     uno::Reference<text::XTextRange> xTextRange(xTextDocument->getText(), uno::UNO_QUERY);
     uno::Reference<text::XText> xText(xTextRange->getText(), uno::UNO_QUERY);
-    uno::Reference<text::XParagraphCursor> xCrsr(xText->createTextCursor(), uno::UNO_QUERY);
+    uno::Reference<text::XParagraphCursor> xCursor(xText->createTextCursor(), uno::UNO_QUERY);
     //inserting text into document so that the paragraph is not empty
-    xText->setString(OUString("Hello World!"));
+    xText->setString("Hello World!");
     uno::Reference<lang::XMultiServiceFactory> xFact(mxComponent, uno::UNO_QUERY);
     //creating bookmark 1
     uno::Reference<text::XTextContent> xHeadingBookmark1(xFact->createInstance("com.sun.star.text.Bookmark"), uno::UNO_QUERY);
     uno::Reference<container::XNamed> xHeadingName1(xHeadingBookmark1, uno::UNO_QUERY);
     xHeadingName1->setName("__RefHeading__1");
     //moving cursor to the starting of paragraph
-    xCrsr->gotoStartOfParagraph(false);
+    xCursor->gotoStartOfParagraph(false);
     //inserting the bookmark in paragraph
-    xText->insertTextContent(xCrsr, xHeadingBookmark1, true);
+    xText->insertTextContent(xCursor, xHeadingBookmark1, true);
     //creating bookmark 2
     uno::Reference<text::XTextContent> xHeadingBookmark2(xFact->createInstance("com.sun.star.text.Bookmark"), uno::UNO_QUERY);
     uno::Reference<container::XNamed> xHeadingName2(xHeadingBookmark2, uno::UNO_QUERY);
     xHeadingName2->setName("__RefHeading__2");
     //inserting the bookmark in same paragraph, at the end
     //only one bookmark of this type is allowed in each paragraph an exception of com.sun.star.lang.IllegalArgumentException must be thrown when inserting the other bookmark in same paragraph
-    xCrsr->gotoEndOfParagraph(true);
-    CPPUNIT_ASSERT_THROW(xText->insertTextContent(xCrsr, xHeadingBookmark2, true), com::sun::star::lang::IllegalArgumentException);
+    xCursor->gotoEndOfParagraph(true);
+    CPPUNIT_ASSERT_THROW(xText->insertTextContent(xCursor, xHeadingBookmark2, true), css::lang::IllegalArgumentException);
     //now testing for __RefNumPara__
     //creating bookmark 1
     uno::Reference<text::XTextContent> xNumBookmark1(xFact->createInstance("com.sun.star.text.Bookmark"), uno::UNO_QUERY);
     uno::Reference<container::XNamed> xNumName1(xNumBookmark1, uno::UNO_QUERY);
     xNumName1->setName("__RefNumPara__1");
     //moving cursor to the starting of paragraph
-    xCrsr->gotoStartOfParagraph(false);
+    xCursor->gotoStartOfParagraph(false);
     //inserting the bookmark in paragraph
-    xText->insertTextContent(xCrsr, xNumBookmark1, true);
+    xText->insertTextContent(xCursor, xNumBookmark1, true);
     //creating bookmark 2
     uno::Reference<text::XTextContent> xNumBookmark2(xFact->createInstance("com.sun.star.text.Bookmark"), uno::UNO_QUERY);
     uno::Reference<container::XNamed> xNumName2(xNumBookmark2, uno::UNO_QUERY);
     xNumName2->setName("__RefNumPara__2");
     //inserting the bookmark in same paragraph, at the end
     //only one bookmark of this type is allowed in each paragraph an exception of com.sun.star.lang.IllegalArgumentException must be thrown when inserting the other bookmark in same paragraph
-    xCrsr->gotoEndOfParagraph(true);
-    CPPUNIT_ASSERT_THROW(xText->insertTextContent(xCrsr, xNumBookmark2, true), com::sun::star::lang::IllegalArgumentException);
+    xCursor->gotoEndOfParagraph(true);
+    CPPUNIT_ASSERT_THROW(xText->insertTextContent(xCursor, xNumBookmark2, true), css::lang::IllegalArgumentException);
 }
 
 void SwUiWriterTest::testTdf75137()
 {
     SwDoc* pDoc = createDoc();
     SwWrtShell* pWrtShell = pDoc->GetDocShell()->GetWrtShell();
-    SwShellCrsr* pShellCrsr = pWrtShell->getShellCrsr(true);
-    pWrtShell->InsertFootnote(OUString("This is first footnote"));
-    sal_uLong firstIndex = pShellCrsr->GetNode().GetIndex();
-    pShellCrsr->GotoFootnoteAnchor();
-    pWrtShell->InsertFootnote(OUString("This is second footnote"));
-    pWrtShell->Up(false, 1);
-    sal_uLong secondIndex = pShellCrsr->GetNode().GetIndex();
-    pWrtShell->Down(false, 1);
-    sal_uLong thirdIndex = pShellCrsr->GetNode().GetIndex();
+    SwShellCursor* pShellCursor = pWrtShell->getShellCursor(true);
+    pWrtShell->InsertFootnote("This is first footnote");
+    sal_uLong firstIndex = pShellCursor->GetNode().GetIndex();
+    pShellCursor->GotoFootnoteAnchor();
+    pWrtShell->InsertFootnote("This is second footnote");
+    pWrtShell->Up(false);
+    sal_uLong secondIndex = pShellCursor->GetNode().GetIndex();
+    pWrtShell->Down(false);
+    sal_uLong thirdIndex = pShellCursor->GetNode().GetIndex();
     CPPUNIT_ASSERT_EQUAL(firstIndex, thirdIndex);
     CPPUNIT_ASSERT(firstIndex != secondIndex);
 }
@@ -2175,35 +2358,46 @@ void SwUiWriterTest::testTdf83798()
     SwWrtShell* pWrtShell = pDoc->GetDocShell()->GetWrtShell();
     pWrtShell->GotoNextTOXBase();
     const SwTOXBase* pTOXBase = pWrtShell->GetCurTOX();
-    pWrtShell->UpdateTableOf(*pTOXBase, nullptr);
-    SwPaM* pCrsr = pDoc->GetEditShell()->GetCrsr();
-    pCrsr->SetMark();
-    pCrsr->Move(fnMoveForward, fnGoNode);
-    CPPUNIT_ASSERT_EQUAL(OUString("Table of Contents"), pCrsr->GetText());
-    pCrsr->DeleteMark();
-    pCrsr->SetMark();
-    pCrsr->Move(fnMoveForward, fnGoContent);
-    CPPUNIT_ASSERT_EQUAL(OUString("1"), pCrsr->GetText());
-    pCrsr->DeleteMark();
-    pCrsr->Move(fnMoveForward, fnGoNode);
-    pCrsr->SetMark();
-    pCrsr->Move(fnMoveForward, fnGoContent);
-    pCrsr->Move(fnMoveForward, fnGoContent);
-    pCrsr->Move(fnMoveForward, fnGoContent);
-    CPPUNIT_ASSERT_EQUAL(OUString("1.A"), pCrsr->GetText());
-    pCrsr->DeleteMark();
-    pCrsr->Move(fnMoveForward, fnGoNode);
-    pCrsr->SetMark();
-    pCrsr->Move(fnMoveForward, fnGoContent);
-    CPPUNIT_ASSERT_EQUAL(OUString("2"), pCrsr->GetText());
-    pCrsr->DeleteMark();
-    pCrsr->Move(fnMoveForward, fnGoNode);
-    pCrsr->SetMark();
-    pCrsr->Move(fnMoveForward, fnGoContent);
-    pCrsr->Move(fnMoveForward, fnGoContent);
-    pCrsr->Move(fnMoveForward, fnGoContent);
-    CPPUNIT_ASSERT_EQUAL(OUString("2.A"), pCrsr->GetText());
-    pCrsr->DeleteMark();
+    pWrtShell->UpdateTableOf(*pTOXBase);
+    SwPaM* pCursor = pDoc->GetEditShell()->GetCursor();
+    pCursor->SetMark();
+    pCursor->Move(fnMoveForward, fnGoNode);
+    CPPUNIT_ASSERT_EQUAL(OUString("Table of Contents"), pCursor->GetText());
+    pCursor->DeleteMark();
+    pCursor->SetMark();
+    pCursor->Move(fnMoveForward, fnGoContent);
+    CPPUNIT_ASSERT_EQUAL(OUString("1"), pCursor->GetText());
+    pCursor->DeleteMark();
+    pCursor->Move(fnMoveForward, fnGoNode);
+    pCursor->SetMark();
+    pCursor->Move(fnMoveForward, fnGoContent);
+    pCursor->Move(fnMoveForward, fnGoContent);
+    pCursor->Move(fnMoveForward, fnGoContent);
+    CPPUNIT_ASSERT_EQUAL(OUString("1.A"), pCursor->GetText());
+    pCursor->DeleteMark();
+    pCursor->Move(fnMoveForward, fnGoNode);
+    pCursor->SetMark();
+    pCursor->Move(fnMoveForward, fnGoContent);
+    CPPUNIT_ASSERT_EQUAL(OUString("2"), pCursor->GetText());
+    pCursor->DeleteMark();
+    pCursor->Move(fnMoveForward, fnGoNode);
+    pCursor->SetMark();
+    pCursor->Move(fnMoveForward, fnGoContent);
+    pCursor->Move(fnMoveForward, fnGoContent);
+    pCursor->Move(fnMoveForward, fnGoContent);
+    CPPUNIT_ASSERT_EQUAL(OUString("2.A"), pCursor->GetText());
+    pCursor->DeleteMark();
+}
+
+void SwUiWriterTest::testTdf89714()
+{
+    createDoc();
+    uno::Reference<lang::XMultiServiceFactory> xFact(mxComponent, uno::UNO_QUERY);
+    uno::Reference<uno::XInterface> xInterface(xFact->createInstance("com.sun.star.text.Defaults"), uno::UNO_QUERY);
+    uno::Reference<beans::XPropertyState> xPropState(xInterface, uno::UNO_QUERY);
+    //enabled Paragraph Orphan and Widows by default starting in LO5.1
+    CPPUNIT_ASSERT_EQUAL( uno::makeAny(sal_Int8(2)), xPropState->getPropertyDefault("ParaOrphans") );
+    CPPUNIT_ASSERT_EQUAL( uno::makeAny(sal_Int8(2)), xPropState->getPropertyDefault("ParaWidows")  );
 }
 
 void SwUiWriterTest::testPropertyDefaults()
@@ -2215,42 +2409,42 @@ void SwUiWriterTest::testPropertyDefaults()
     uno::Reference<beans::XPropertyState> xPropState(xInterface, uno::UNO_QUERY);
     //testing CharFontName from style::CharacterProperties
     //getting property default
-    uno::Any aCharFontName = xPropState->getPropertyDefault(OUString("CharFontName"));
+    uno::Any aCharFontName = xPropState->getPropertyDefault("CharFontName");
     //asserting property default and defaults received from "css.text.Defaults" service
-    CPPUNIT_ASSERT_EQUAL(xPropSet->getPropertyValue(OUString("CharFontName")), aCharFontName);
+    CPPUNIT_ASSERT_EQUAL(xPropSet->getPropertyValue("CharFontName"), aCharFontName);
     //changing the default value
-    xPropSet->setPropertyValue(OUString("CharFontName"), uno::makeAny(OUString("Symbol")));
-    CPPUNIT_ASSERT_EQUAL(uno::makeAny(OUString("Symbol")), xPropSet->getPropertyValue(OUString("CharFontName")));
+    xPropSet->setPropertyValue("CharFontName", uno::makeAny(OUString("Symbol")));
+    CPPUNIT_ASSERT_EQUAL(uno::makeAny(OUString("Symbol")), xPropSet->getPropertyValue("CharFontName"));
     //resetting the value to default
-    xPropState->setPropertyToDefault(OUString("CharFontName"));
-    CPPUNIT_ASSERT_EQUAL(xPropSet->getPropertyValue(OUString("CharFontName")), aCharFontName);
+    xPropState->setPropertyToDefault("CharFontName");
+    CPPUNIT_ASSERT_EQUAL(xPropSet->getPropertyValue("CharFontName"), aCharFontName);
     //testing CharHeight from style::CharacterProperties
     //getting property default
-    uno::Any aCharHeight = xPropState->getPropertyDefault(OUString("CharHeight"));
+    uno::Any aCharHeight = xPropState->getPropertyDefault("CharHeight");
     //asserting property default and defaults received from "css.text.Defaults" service
-    CPPUNIT_ASSERT_EQUAL(xPropSet->getPropertyValue(OUString("CharHeight")), aCharHeight);
+    CPPUNIT_ASSERT_EQUAL(xPropSet->getPropertyValue("CharHeight"), aCharHeight);
     //changing the default value
-    xPropSet->setPropertyValue(OUString("CharHeight"), uno::makeAny(float(14)));
-    CPPUNIT_ASSERT_EQUAL(uno::makeAny(float(14)), xPropSet->getPropertyValue(OUString("CharHeight")));
+    xPropSet->setPropertyValue("CharHeight", uno::makeAny(float(14)));
+    CPPUNIT_ASSERT_EQUAL(uno::makeAny(float(14)), xPropSet->getPropertyValue("CharHeight"));
     //resetting the value to default
-    xPropState->setPropertyToDefault(OUString("CharHeight"));
-    CPPUNIT_ASSERT_EQUAL(xPropSet->getPropertyValue(OUString("CharHeight")), aCharHeight);
+    xPropState->setPropertyToDefault("CharHeight");
+    CPPUNIT_ASSERT_EQUAL(xPropSet->getPropertyValue("CharHeight"), aCharHeight);
     //testing CharWeight from style::CharacterProperties
-    uno::Any aCharWeight = xPropSet->getPropertyValue(OUString("CharWeight"));
+    uno::Any aCharWeight = xPropSet->getPropertyValue("CharWeight");
     //changing the default value
-    xPropSet->setPropertyValue(OUString("CharWeight"), uno::makeAny(float(awt::FontWeight::BOLD)));
-    CPPUNIT_ASSERT_EQUAL(uno::makeAny(float(awt::FontWeight::BOLD)), xPropSet->getPropertyValue(OUString("CharWeight")));
+    xPropSet->setPropertyValue("CharWeight", uno::makeAny(float(awt::FontWeight::BOLD)));
+    CPPUNIT_ASSERT_EQUAL(uno::makeAny(float(awt::FontWeight::BOLD)), xPropSet->getPropertyValue("CharWeight"));
     //resetting the value to default
-    xPropState->setPropertyToDefault(OUString("CharWeight"));
-    CPPUNIT_ASSERT_EQUAL(xPropSet->getPropertyValue(OUString("CharWeight")), aCharWeight);
+    xPropState->setPropertyToDefault("CharWeight");
+    CPPUNIT_ASSERT_EQUAL(xPropSet->getPropertyValue("CharWeight"), aCharWeight);
     //testing CharUnderline from style::CharacterProperties
-    uno::Any aCharUnderline = xPropSet->getPropertyValue(OUString("CharUnderline"));
+    uno::Any aCharUnderline = xPropSet->getPropertyValue("CharUnderline");
     //changing the default value
-    xPropSet->setPropertyValue(OUString("CharUnderline"), uno::makeAny(sal_Int16(awt::FontUnderline::SINGLE)));
-    CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_Int16(awt::FontUnderline::SINGLE)), xPropSet->getPropertyValue(OUString("CharUnderline")));
+    xPropSet->setPropertyValue("CharUnderline", uno::makeAny(sal_Int16(awt::FontUnderline::SINGLE)));
+    CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_Int16(awt::FontUnderline::SINGLE)), xPropSet->getPropertyValue("CharUnderline"));
     //resetting the value to default
-    xPropState->setPropertyToDefault(OUString("CharUnderline"));
-    CPPUNIT_ASSERT_EQUAL(xPropSet->getPropertyValue(OUString("CharUnderline")), aCharUnderline);
+    xPropState->setPropertyToDefault("CharUnderline");
+    CPPUNIT_ASSERT_EQUAL(xPropSet->getPropertyValue("CharUnderline"), aCharUnderline);
 }
 
 void SwUiWriterTest::testTableBackgroundColor()
@@ -2297,21 +2491,21 @@ void SwUiWriterTest::testTdf88899()
     uno::Reference<document::XDocumentPropertiesSupplier> xDocumentPropertiesSupplier(mxComponent, uno::UNO_QUERY);
     uno::Reference<document::XDocumentProperties> xProps(xDocumentPropertiesSupplier->getDocumentProperties());
     uno::Reference<beans::XPropertyContainer> xUserProps(xProps->getUserDefinedProperties(), uno::UNO_QUERY);
-    com::sun::star::util::DateTime aDateTime = {sal_uInt32(1234567), sal_uInt16(3), sal_uInt16(3), sal_uInt16(3), sal_uInt16(10), sal_uInt16(11), sal_uInt16(2014), true};
+    css::util::DateTime aDateTime = {sal_uInt32(1234567), sal_uInt16(3), sal_uInt16(3), sal_uInt16(3), sal_uInt16(10), sal_uInt16(11), sal_uInt16(2014), true};
     xUserProps->addProperty("dateTime", sal_Int16(beans::PropertyAttribute::OPTIONAL), uno::makeAny(aDateTime));
     uno::Reference<lang::XMultiServiceFactory> xFact(mxComponent, uno::UNO_QUERY);
     uno::Reference<text::XTextField> xTextField(xFact->createInstance("com.sun.star.text.textfield.docinfo.Custom"), uno::UNO_QUERY);
     //Setting Name Property
     uno::Reference<beans::XPropertySet> xPropSet(xTextField, uno::UNO_QUERY_THROW);
-    xPropSet->setPropertyValue(OUString("Name"), uno::makeAny(OUString("dateTime")));
+    xPropSet->setPropertyValue("Name", uno::makeAny(OUString("dateTime")));
     //Setting NumberFormat
     uno::Reference<util::XNumberFormatsSupplier> xNumberFormatsSupplier(mxComponent, uno::UNO_QUERY);
     uno::Reference<util::XNumberFormatTypes> xNumFormat(xNumberFormatsSupplier->getNumberFormats(), uno::UNO_QUERY);
-    com::sun::star::lang::Locale alocale;
+    css::lang::Locale alocale;
     alocale.Language = "en";
     alocale.Country = "US";
     sal_Int16 key = xNumFormat->getStandardFormat(util::NumberFormat::DATETIME, alocale);
-    xPropSet->setPropertyValue(OUString("NumberFormat"), uno::makeAny(sal_Int16(key)));
+    xPropSet->setPropertyValue("NumberFormat", uno::makeAny(sal_Int16(key)));
     //Inserting Text Content
     uno::Reference<text::XTextDocument> xTextDocument(mxComponent, uno::UNO_QUERY);
     uno::Reference<text::XTextRange> xTextRange(xTextDocument->getText(), uno::UNO_QUERY);
@@ -2343,25 +2537,25 @@ void SwUiWriterTest::testUndoCharAttribute()
 {
     // Create a new empty Writer document
     SwDoc* pDoc = createDoc();
-    SwPaM* pCrsr = pDoc->GetEditShell()->GetCrsr();
+    SwPaM* pCursor = pDoc->GetEditShell()->GetCursor();
     sw::UndoManager& rUndoManager = pDoc->GetUndoManager();
     IDocumentContentOperations & rIDCO(pDoc->getIDocumentContentOperations());
     // Insert some text
-    rIDCO.InsertString(*pCrsr, "This will be bolded");
+    rIDCO.InsertString(*pCursor, "This will be bolded");
     // Position of word                   9876543210
     // Use cursor to select part of text
-    pCrsr->SetMark();
+    pCursor->SetMark();
     for (int i = 0; i < 9; i++) {
-        pCrsr->Move(fnMoveBackward);
+        pCursor->Move(fnMoveBackward);
     }
     // Check that correct text was selected
-    CPPUNIT_ASSERT_EQUAL(OUString("be bolded"), pCrsr->GetText());
+    CPPUNIT_ASSERT_EQUAL(OUString("be bolded"), pCursor->GetText());
     // Apply a "Bold" attribute to selection
     SvxWeightItem aWeightItem(WEIGHT_BOLD, RES_CHRATR_WEIGHT);
-    rIDCO.InsertPoolItem(*pCrsr, aWeightItem);
+    rIDCO.InsertPoolItem(*pCursor, aWeightItem);
     SfxItemSet aSet( pDoc->GetAttrPool(), RES_CHRATR_WEIGHT, RES_CHRATR_WEIGHT);
     // Adds selected text's attributes to aSet
-    pCrsr->GetNode().GetTextNode()->GetAttr(aSet, 10, 19);
+    pCursor->GetNode().GetTextNode()->GetAttr(aSet, 10, 19);
     SfxPoolItem const * pPoolItem = aSet.GetItem(RES_CHRATR_WEIGHT);
     // Check that bold is active on the selection; checks if it's in aSet
     CPPUNIT_ASSERT_EQUAL((*pPoolItem == aWeightItem), true);
@@ -2369,7 +2563,7 @@ void SwUiWriterTest::testUndoCharAttribute()
     rUndoManager.Undo();
     // Check that bold is no longer active
     aSet.ClearItem(RES_CHRATR_WEIGHT);
-    pCrsr->GetNode().GetTextNode()->GetAttr(aSet, 10, 19);
+    pCursor->GetNode().GetTextNode()->GetAttr(aSet, 10, 19);
     pPoolItem = aSet.GetItem(RES_CHRATR_WEIGHT);
     CPPUNIT_ASSERT_EQUAL((*pPoolItem == aWeightItem), false);
 }
@@ -2455,7 +2649,7 @@ void SwUiWriterTest::testUnoCursorPointer()
     SwDoc* const pDoc(pxDocDocument->GetDocShell()->GetDoc());
     std::unique_ptr<SwNodeIndex> pIdx(new SwNodeIndex(pDoc->GetNodes().GetEndOfContent(), -1));
     std::unique_ptr<SwPosition> pPos(new SwPosition(*pIdx));
-    sw::UnoCursorPointer pCursor(pDoc->CreateUnoCrsr(*pPos));
+    sw::UnoCursorPointer pCursor(pDoc->CreateUnoCursor(*pPos));
     CPPUNIT_ASSERT(static_cast<bool>(pCursor));
     pPos.reset(); // we need to kill the SwPosition before disposing
     pIdx.reset(); // we need to kill the SwNodeIndex before disposing
@@ -2466,13 +2660,13 @@ void SwUiWriterTest::testUnoCursorPointer()
 void SwUiWriterTest::testTextTableCellNames()
 {
     sal_Int32 nCol, nRow2;
-    SwXTextTable::GetCellPosition( OUString("z1"), nCol, nRow2);
+    SwXTextTable::GetCellPosition( "z1", nCol, nRow2);
     CPPUNIT_ASSERT(nCol == 51);
-    SwXTextTable::GetCellPosition( OUString("AA1"), nCol, nRow2);
+    SwXTextTable::GetCellPosition( "AA1", nCol, nRow2);
     CPPUNIT_ASSERT(nCol == 52);
-    SwXTextTable::GetCellPosition( OUString("AB1"), nCol, nRow2);
+    SwXTextTable::GetCellPosition( "AB1", nCol, nRow2);
     CPPUNIT_ASSERT(nCol == 53);
-    SwXTextTable::GetCellPosition( OUString("BB1"), nCol, nRow2);
+    SwXTextTable::GetCellPosition( "BB1", nCol, nRow2);
     CPPUNIT_ASSERT(nCol == 105);
 }
 
@@ -2485,14 +2679,14 @@ void SwUiWriterTest::testShapeAnchorUndo()
     Rectangle aOrigLogicRect(pObject->GetLogicRect());
 
     sw::UndoManager& rUndoManager = pDoc->GetUndoManager();
-    rUndoManager.StartUndo(UNDO_START, NULL);
+    rUndoManager.StartUndo(UNDO_START, nullptr);
 
     pWrtShell->SelectObj(Point(), 0, pObject);
 
     pWrtShell->GetDrawView()->MoveMarkedObj(Size(100, 100));
     pWrtShell->ChgAnchor(0, true);
 
-    rUndoManager.EndUndo(UNDO_END, NULL);
+    rUndoManager.EndUndo(UNDO_END, nullptr);
 
     CPPUNIT_ASSERT(aOrigLogicRect != pObject->GetLogicRect());
 
@@ -2539,6 +2733,27 @@ void SwUiWriterTest::testDde()
     CPPUNIT_ASSERT(xField->getString().endsWith("asdf"));
 }
 
+void SwUiWriterTest::testTdf94804()
+{
+    //create new writer document
+    SwDoc* pDoc = createDoc();
+    //get cursor for making bookmark at a particular location
+    SwPaM* pCrsr = pDoc->GetEditShell()->GetCursor();
+    IDocumentMarkAccess* pIDMAccess(pDoc->getIDocumentMarkAccess());
+    //make first bookmark, CROSSREF_HEADING, with *empty* name
+    sw::mark::IMark* pMark1(pIDMAccess->makeMark(*pCrsr, "", IDocumentMarkAccess::MarkType::CROSSREF_HEADING_BOOKMARK));
+    //get the new(autogenerated) bookmark name
+    rtl::OUString bookmark1name = pMark1->GetName();
+    //match the bookmark name, it should be like "__RefHeading__**"
+    CPPUNIT_ASSERT(bookmark1name.match("__RefHeading__"));
+    //make second bookmark, CROSSREF_NUMITEM, with *empty* name
+    sw::mark::IMark* pMark2(pIDMAccess->makeMark(*pCrsr, "", IDocumentMarkAccess::MarkType::CROSSREF_NUMITEM_BOOKMARK));
+    //get the new(autogenerated) bookmark name
+    rtl::OUString bookmark2name = pMark2->GetName();
+    //match the bookmark name, it should be like "__RefNumPara__**"
+    CPPUNIT_ASSERT(bookmark2name.match("__RefNumPara__"));
+}
+
 void SwUiWriterTest::testUnicodeNotationToggle()
 {
     SwDoc* pDoc = createDoc("unicodeAltX.odt");
@@ -2549,17 +2764,27 @@ void SwUiWriterTest::testUnicodeNotationToggle()
     uno::Sequence<beans::PropertyValue> aPropertyValues;
 
     pWrtShell->EndPara();
-    sOriginalDocString = pWrtShell->GetCrsr()->GetNode().GetTextNode()->GetText();
-    CPPUNIT_ASSERT_EQUAL(OUString("uU+2b"), sOriginalDocString);
+    sOriginalDocString = pWrtShell->GetCursor()->GetNode().GetTextNode()->GetText();
+    CPPUNIT_ASSERT_EQUAL(OUString("uU+002b"), sOriginalDocString);
 
     lcl_dispatchCommand(mxComponent, ".uno:UnicodeNotationToggle", aPropertyValues);
     sExpectedString = "u+";
-    sDocString = pWrtShell->GetCrsr()->GetNode().GetTextNode()->GetText();
+    sDocString = pWrtShell->GetCursor()->GetNode().GetTextNode()->GetText();
     CPPUNIT_ASSERT( sDocString.equals(sExpectedString) );
 
     lcl_dispatchCommand(mxComponent, ".uno:UnicodeNotationToggle", aPropertyValues);
-    sDocString = pWrtShell->GetCrsr()->GetNode().GetTextNode()->GetText();
+    sDocString = pWrtShell->GetCursor()->GetNode().GetTextNode()->GetText();
     CPPUNIT_ASSERT( sDocString.equals(sOriginalDocString) );
+}
+
+void SwUiWriterTest::testTdf34957()
+{
+    load(DATA_DIRECTORY, "tdf34957.odt");
+    // table with "keep with next" always started on a new page if the table was large,
+    // regardless of whether it was already kept with the previous paragraph,
+    // or whether the following paragraph actually fit on the same page (MAB 3.6 - 5.0)
+    CPPUNIT_ASSERT_EQUAL( OUString("Row 1"), parseDump("/root/page[2]/body/tab[1]/row[2]/cell[1]/txt") );
+    CPPUNIT_ASSERT_EQUAL( OUString("Row 1"), parseDump("/root/page[4]/body/tab[1]/row[2]/cell[1]/txt") );
 }
 
 void SwUiWriterTest::testTdf89954()
@@ -2606,7 +2831,7 @@ void SwUiWriterTest::testTdf88986()
 
     // Create the item set that is normally passed to the insert frame dialog.
     SwWrtShell* pWrtShell = pDoc->GetDocShell()->GetWrtShell();
-    SwFlyFrmAttrMgr aMgr(true, pWrtShell, FRMMGR_TYPE_TEXT);
+    SwFlyFrameAttrMgr aMgr(true, pWrtShell, FRMMGR_TYPE_TEXT);
     SfxItemSet aSet = aShell.CreateInsertFrameItemSet(aMgr);
 
     // This was missing along with the gradient and other tables.
@@ -2618,7 +2843,7 @@ void SwUiWriterTest::testTdf87922()
     // Create an SwDrawTextInfo.
     SwDoc* pDoc = createDoc("tdf87922.odt");
     SwWrtShell* pWrtShell = pDoc->GetDocShell()->GetWrtShell();
-    SwScriptInfo* pScriptInfo = 0;
+    SwScriptInfo* pScriptInfo = nullptr;
     // Get access to the single paragraph in the document.
     SwNodeIndex aNodeIndex(pDoc->GetNodes().GetEndOfContent(), -1);
     const OUString& rText = aNodeIndex.GetNode().GetTextNode()->GetText();
@@ -2626,8 +2851,8 @@ void SwUiWriterTest::testTdf87922()
     sal_Int32 nLength = rText.getLength();
     SwDrawTextInfo aDrawTextInfo(pWrtShell, *pWrtShell->GetOut(), pScriptInfo, rText, nIndex, nLength);
     // Root -> page -> body -> text.
-    SwTextFrm* pTextFrm = static_cast<SwTextFrm*>(pWrtShell->GetLayout()->GetLower()->GetLower()->GetLower());
-    aDrawTextInfo.SetFrm(pTextFrm);
+    SwTextFrame* pTextFrame = static_cast<SwTextFrame*>(pWrtShell->GetLayout()->GetLower()->GetLower()->GetLower());
+    aDrawTextInfo.SetFrame(pTextFrame);
 
     // If no color background color is found, assume white.
     Color* pColor = sw::GetActiveRetoucheColor();
@@ -2637,6 +2862,108 @@ void SwUiWriterTest::testTdf87922()
     vcl::Font aFont;
     aDrawTextInfo.ApplyAutoColor(&aFont);
     CPPUNIT_ASSERT_EQUAL(COL_WHITE, aFont.GetColor().GetColor());
+}
+
+void SwUiWriterTest::testTdf77014()
+{
+    // The problem described in the bug tdf#77014 is that the input
+    // field text ("ThisIsAllOneWord") is broken up on linebreak, but
+    // it should be in one piece (like normal text).
+
+    // This test checks that the input field is in one piece.
+
+    load(DATA_DIRECTORY, "tdf77014.odt");
+
+    // First paragraph
+    CPPUNIT_ASSERT_EQUAL(OUString("POR_TXT"), parseDump("/root/page/body/txt[4]/Text[1]", "nType"));
+    CPPUNIT_ASSERT_EQUAL(OUString("91"),      parseDump("/root/page/body/txt[4]/Text[1]", "nLength"));
+
+    // The "Unknown" is the input field:
+    // which is 16 chars + 2 hidden chars (start & end input field) = 18 chars
+    // If this is correct then the input field is in one piece
+    CPPUNIT_ASSERT_EQUAL(OUString("Unknown"), parseDump("/root/page/body/txt[4]/Text[2]", "nType"));
+    CPPUNIT_ASSERT_EQUAL(OUString("18"),      parseDump("/root/page/body/txt[4]/Text[2]", "nLength"));
+
+    CPPUNIT_ASSERT_EQUAL(OUString("POR_TXT"), parseDump("/root/page/body/txt[4]/Text[3]", "nType"));
+    CPPUNIT_ASSERT_EQUAL(OUString("1"),       parseDump("/root/page/body/txt[4]/Text[3]", "nLength"));
+
+    // Second paragraph
+    CPPUNIT_ASSERT_EQUAL(OUString("POR_TXT"), parseDump("/root/page/body/txt[5]/Text[1]", "nType"));
+    CPPUNIT_ASSERT_EQUAL(OUString("91"),      parseDump("/root/page/body/txt[5]/Text[1]", "nLength"));
+
+    // The input field here has more words ("One Two Three Four Five")
+    // and it should break after "Two".
+    // "One Two" = 7 chars + 1 start input field hidden character = 8 chars
+    CPPUNIT_ASSERT_EQUAL(OUString("Unknown"), parseDump("/root/page/body/txt[5]/Text[2]", "nType"));
+    CPPUNIT_ASSERT_EQUAL(OUString("8"),       parseDump("/root/page/body/txt[5]/Text[2]", "nLength"));
+
+    CPPUNIT_ASSERT_EQUAL(OUString("POR_HOLE"), parseDump("/root/page/body/txt[5]/Text[3]", "nType"));
+    CPPUNIT_ASSERT_EQUAL(OUString("1"),        parseDump("/root/page/body/txt[5]/Text[3]", "nLength"));
+
+    // In new line..
+    // "Three Four Five" = 16 chars + 1 end input field hidden character = 16 chars
+    CPPUNIT_ASSERT_EQUAL(OUString("Unknown"), parseDump("/root/page/body/txt[5]/Text[4]", "nType"));
+    CPPUNIT_ASSERT_EQUAL(OUString("16"),      parseDump("/root/page/body/txt[5]/Text[4]", "nLength"));
+
+    CPPUNIT_ASSERT_EQUAL(OUString("POR_TXT"), parseDump("/root/page/body/txt[5]/Text[5]", "nType"));
+    CPPUNIT_ASSERT_EQUAL(OUString("1"),       parseDump("/root/page/body/txt[5]/Text[5]", "nLength"));
+}
+
+void SwUiWriterTest::testTdf92648()
+{
+    SwDoc* pDoc = createDoc("tdf92648.docx");
+    SdrPage* pPage = pDoc->getIDocumentDrawModelAccess().GetDrawModel()->GetPage(0);
+    std::set<const SwFrameFormat*> aTextBoxes = SwTextBoxHelper::findTextBoxes(pDoc);
+    // Make sure we have ten draw shapes.
+    CPPUNIT_ASSERT_EQUAL(sal_Int32(10), SwTextBoxHelper::getCount(pPage, aTextBoxes));
+    // and the text boxes haven't got zero height
+    for (std::set<const SwFrameFormat*>::iterator it=aTextBoxes.begin(); it!=aTextBoxes.end(); ++it)
+    {
+        SwFormatFrameSize aSize((*it)->GetFrameSize());
+        CPPUNIT_ASSERT(aSize.GetHeight() != 0);
+    }
+}
+
+void SwUiWriterTest::testTdf96515()
+{
+    // Enable hide whitespace mode.
+    SwDoc* pDoc = createDoc();
+    SwWrtShell* pWrtShell = pDoc->GetDocShell()->GetWrtShell();
+    SwViewOption aViewOptions(*pWrtShell->GetViewOptions());
+    aViewOptions.SetHideWhitespaceMode(true);
+    pWrtShell->ApplyViewOptions(aViewOptions);
+
+    // Insert a new paragraph at the end of the document.
+    uno::Reference<text::XTextDocument> xTextDocument(mxComponent, uno::UNO_QUERY);
+    uno::Reference<text::XParagraphAppend> xParagraphAppend(xTextDocument->getText(), uno::UNO_QUERY);
+    xParagraphAppend->finishParagraph(uno::Sequence<beans::PropertyValue>());
+    calcLayout();
+
+    // This was 2, a new page was created for the new paragraph.
+    CPPUNIT_ASSERT_EQUAL(1, getPages());
+}
+
+void SwUiWriterTest::testTdf96536()
+{
+    // Enable hide whitespace mode.
+    SwDoc* pDoc = createDoc();
+    SwWrtShell* pWrtShell = pDoc->GetDocShell()->GetWrtShell();
+    SwViewOption aViewOptions(*pWrtShell->GetViewOptions());
+    aViewOptions.SetHideWhitespaceMode(true);
+    pWrtShell->ApplyViewOptions(aViewOptions);
+
+    // Insert a new paragraph at the end of the document, and then delete it.
+    uno::Reference<text::XTextDocument> xTextDocument(mxComponent, uno::UNO_QUERY);
+    uno::Reference<text::XParagraphAppend> xParagraphAppend(xTextDocument->getText(), uno::UNO_QUERY);
+    xParagraphAppend->finishParagraph(uno::Sequence<beans::PropertyValue>());
+    calcLayout();
+    uno::Reference<lang::XComponent> xParagraph(getParagraph(2), uno::UNO_QUERY);
+    xParagraph->dispose();
+    calcLayout();
+
+    // This was 552, page did not shrink after deleting the second paragraph.
+    // 276 is 12pt font size + default line spacing (15%).
+    CPPUNIT_ASSERT_EQUAL(static_cast<sal_Int32>(276), parseDump("/root/infos/bounds", "height").toInt32());
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SwUiWriterTest);

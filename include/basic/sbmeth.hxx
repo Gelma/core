@@ -46,14 +46,13 @@ class BASIC_DLLPUBLIC SbMethod : public SbxMethod
     SbxArrayRef   refStatics;
     BASIC_DLLPRIVATE SbMethod( const OUString&, SbxDataType, SbModule* );
     BASIC_DLLPRIVATE SbMethod( const SbMethod& );
-    virtual bool LoadData( SvStream&, sal_uInt16 ) SAL_OVERRIDE;
-    virtual bool StoreData( SvStream& ) const SAL_OVERRIDE;
+    virtual bool LoadData( SvStream&, sal_uInt16 ) override;
+    virtual bool StoreData( SvStream& ) const override;
     virtual ~SbMethod();
 
 public:
     SBX_DECL_PERSIST_NODATA(SBXCR_SBX,SBXID_BASICMETHOD,2);
-    TYPEINFO_OVERRIDE();
-    virtual SbxInfo* GetInfo() SAL_OVERRIDE;
+    virtual SbxInfo* GetInfo() override;
     SbxArray*  GetStatics();
     void       ClearStatics();
     SbModule*  GetModule()                { return pMod;        }
@@ -62,8 +61,8 @@ public:
     void       GetLineRange( sal_uInt16&, sal_uInt16& );
 
     // Interface to execute a method from the applications
-    ErrCode         Call( SbxValue* pRet = NULL,  SbxVariable* pCaller = NULL );
-    virtual void    Broadcast( sal_uInt32 nHintId ) SAL_OVERRIDE;
+    ErrCode         Call( SbxValue* pRet = nullptr,  SbxVariable* pCaller = nullptr );
+    virtual void    Broadcast( sal_uInt32 nHintId ) override;
 };
 
 typedef tools::SvRef<SbMethod> SbMethodRef;
@@ -75,9 +74,8 @@ class BASIC_DLLPUBLIC SbIfaceMapperMethod : public SbMethod
     SbMethodRef mxImplMeth;
 
 public:
-    TYPEINFO_OVERRIDE();
     SbIfaceMapperMethod( const OUString& rName, SbMethod* pImplMeth )
-        : SbMethod( rName, pImplMeth->GetType(), NULL )
+        : SbMethod( rName, pImplMeth->GetType(), nullptr )
         , mxImplMeth( pImplMeth )
     {}
     virtual ~SbIfaceMapperMethod();

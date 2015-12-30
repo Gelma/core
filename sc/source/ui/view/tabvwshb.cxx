@@ -26,7 +26,6 @@
 #include <toolkit/helper/vclunohelper.hxx>
 #include <svx/svxdlg.hxx>
 #include <svx/dataaccessdescriptor.hxx>
-#include <svx/pfiledlg.hxx>
 #include <svx/svditer.hxx>
 #include <svx/svdmark.hxx>
 #include <svx/svdograf.hxx>
@@ -39,6 +38,7 @@
 #include <sfx2/bindings.hxx>
 #include <sfx2/dispatch.hxx>
 #include <sfx2/viewfrm.hxx>
+#include <sfx2/filedlghelper.hxx>
 #include <svtools/soerr.hxx>
 #include <svl/rectitem.hxx>
 #include <svl/slstitm.hxx>
@@ -64,8 +64,6 @@
 #include <com/sun/star/ui/dialogs/TemplateDescription.hpp>
 
 using namespace com::sun::star;
-
-// STATIC DATA -----------------------------------------------------------
 
 void ScTabViewShell::ConnectObject( SdrOle2Obj* pObj )
 {
@@ -96,7 +94,7 @@ void ScTabViewShell::ConnectObject( SdrOle2Obj* pObj )
         aRect.SetSize( aOleSize );
         pClient->SetObjArea( aRect );
 
-        static_cast<ScClient*>(pClient)->SetGrafEdit( NULL );
+        static_cast<ScClient*>(pClient)->SetGrafEdit( nullptr );
     }
 }
 
@@ -164,7 +162,7 @@ bool ScTabViewShell::ActivateObject( SdrOle2Obj* pObj, long nVerb )
             aRect.SetSize( aOleSize );
             pClient->SetObjArea( aRect );
 
-            static_cast<ScClient*>(pClient)->SetGrafEdit( NULL );
+            static_cast<ScClient*>(pClient)->SetGrafEdit( nullptr );
 
             nErr = pClient->DoVerb( nVerb );
             bErrorShown = true;
@@ -221,7 +219,7 @@ ErrCode ScTabViewShell::DoVerb(long nVerb)
     if (!pView)
         return ERRCODE_SO_NOTIMPL;          // should not be
 
-    SdrOle2Obj* pOle2Obj = NULL;
+    SdrOle2Obj* pOle2Obj = nullptr;
     ErrCode nErr = ERRCODE_NONE;
 
     const SdrMarkList& rMarkList = pView->GetMarkedObjectList();
@@ -297,9 +295,6 @@ void ScTabViewShell::ExecDrawIns(SfxRequest& rReq)
             break;
 
         case SID_INSERT_OBJECT:
-        case SID_INSERT_PLUGIN:
-        case SID_INSERT_SOUND:
-        case SID_INSERT_VIDEO:
         case SID_INSERT_SMATH:
         case SID_INSERT_FLOATINGFRAME:
             FuInsertOLE(this, pWin, pView, pDrModel, rReq);
@@ -373,10 +368,9 @@ void ScTabViewShell::ExecDrawIns(SfxRequest& rReq)
             }
             break;
 
-        // #98721#
         case SID_FM_CREATE_FIELDCONTROL:
             {
-                SFX_REQUEST_ARG( rReq, pDescriptorItem, SfxUnoAnyItem, SID_FM_DATACCESS_DESCRIPTOR, false );
+                const SfxUnoAnyItem* pDescriptorItem = rReq.GetArg<SfxUnoAnyItem>(SID_FM_DATACCESS_DESCRIPTOR);
                 OSL_ENSURE( pDescriptorItem, "SID_FM_CREATE_FIELDCONTROL: invalid request args!" );
 
                 if(pDescriptorItem)
@@ -384,7 +378,7 @@ void ScTabViewShell::ExecDrawIns(SfxRequest& rReq)
                     //! merge with ScViewFunc::PasteDataFormat (SotClipboardFormatId::SBA_FIELDDATAEXCHANGE)?
 
                     ScDrawView* pDrView = GetScDrawView();
-                    SdrPageView* pPageView = pDrView ? pDrView->GetSdrPageView() : NULL;
+                    SdrPageView* pPageView = pDrView ? pDrView->GetSdrPageView() : nullptr;
                     if(pPageView)
                     {
                         svx::ODataAccessDescriptor aDescriptor(pDescriptorItem->GetValue());
@@ -402,17 +396,17 @@ void ScTabViewShell::ExecDrawIns(SfxRequest& rReq)
                             pNewDBField->SetLogicRect(aNewObjectRectangle);
 
                             // controls must be on control layer, groups on front layer
-                            if ( pNewDBField->ISA(SdrUnoObj) )
+                            if ( dynamic_cast<const SdrUnoObj*>( pNewDBField) !=  nullptr )
                                 pNewDBField->NbcSetLayer(SC_LAYER_CONTROLS);
                             else
                                 pNewDBField->NbcSetLayer(SC_LAYER_FRONT);
-                            if (pNewDBField->ISA(SdrObjGroup))
+                            if (dynamic_cast<const SdrObjGroup*>( pNewDBField) !=  nullptr)
                             {
                                 SdrObjListIter aIter( *pNewDBField, IM_DEEPWITHGROUPS );
                                 SdrObject* pSubObj = aIter.Next();
                                 while (pSubObj)
                                 {
-                                    if ( pSubObj->ISA(SdrUnoObj) )
+                                    if ( dynamic_cast<const SdrUnoObj*>( pSubObj) !=  nullptr )
                                         pSubObj->NbcSetLayer(SC_LAYER_CONTROLS);
                                     else
                                         pSubObj->NbcSetLayer(SC_LAYER_FRONT);
@@ -459,17 +453,7 @@ void ScTabViewShell::GetDrawInsState(SfxItemSet &rSet)
                 break;
 
             case SID_INSERT_OBJECT:
-            case SID_INSERT_PLUGIN:
             case SID_INSERT_FLOATINGFRAME:
-                if ( bOle || bTabProt || bShared )
-                    rSet.DisableItem( nWhich );
-                break;
-
-            case SID_INSERT_SOUND:
-            case SID_INSERT_VIDEO:
-                 /* #i102735# discussed with NN: removed for performance reasons
-                 || !SvxPluginFileDlg::IsAvailable(nWhich)
-                 */
                 if ( bOle || bTabProt || bShared )
                     rSet.DisableItem( nWhich );
                 break;
@@ -577,7 +561,7 @@ void ScTabViewShell::GetUndoState(SfxItemSet &rSet)
                 break;
             default:
                 // get state from sfx view frame
-                GetViewFrame()->GetSlotState( nWhich, NULL, &rSet );
+                GetViewFrame()->GetSlotState( nWhich, nullptr, &rSet );
         }
 
         nWhich = aIter.NextWhich();

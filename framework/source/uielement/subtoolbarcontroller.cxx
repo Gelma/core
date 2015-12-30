@@ -51,40 +51,40 @@ public:
     virtual ~SubToolBarController();
 
     // XStatusListener
-    virtual void SAL_CALL statusChanged( const css::frame::FeatureStateEvent& Event ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL statusChanged( const css::frame::FeatureStateEvent& Event ) throw ( css::uno::RuntimeException, std::exception ) override;
 
     // XToolbarController
-    virtual void SAL_CALL execute( sal_Int16 nKeyModifier ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::awt::XWindow > SAL_CALL createPopupWindow() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL execute( sal_Int16 nKeyModifier ) throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual css::uno::Reference< css::awt::XWindow > SAL_CALL createPopupWindow() throw ( css::uno::RuntimeException, std::exception ) override;
 
     // XSubToolbarController
-    virtual sal_Bool SAL_CALL opensSubToolbar() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual OUString SAL_CALL getSubToolbarName() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL functionSelected( const OUString& rCommand ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL updateImage() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual sal_Bool SAL_CALL opensSubToolbar() throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual OUString SAL_CALL getSubToolbarName() throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL functionSelected( const OUString& rCommand ) throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL updateImage() throw ( css::uno::RuntimeException, std::exception ) override;
 
     //  XDockableWindowListener
-    virtual void SAL_CALL startDocking( const css::awt::DockingEvent& e ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual css::awt::DockingData SAL_CALL docking( const css::awt::DockingEvent& e ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL endDocking( const css::awt::EndDockingEvent& e ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL prepareToggleFloatingMode( const css::lang::EventObject& e ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL toggleFloatingMode( const css::lang::EventObject& e ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL closed( const css::lang::EventObject& e ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL endPopupMode( const css::awt::EndPopupModeEvent& e ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL startDocking( const css::awt::DockingEvent& e ) throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual css::awt::DockingData SAL_CALL docking( const css::awt::DockingEvent& e ) throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL endDocking( const css::awt::EndDockingEvent& e ) throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual sal_Bool SAL_CALL prepareToggleFloatingMode( const css::lang::EventObject& e ) throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL toggleFloatingMode( const css::lang::EventObject& e ) throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL closed( const css::lang::EventObject& e ) throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL endPopupMode( const css::awt::EndPopupModeEvent& e ) throw ( css::uno::RuntimeException, std::exception ) override;
 
     // XEventListener
-    virtual void SAL_CALL disposing( const css::lang::EventObject& e ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing( const css::lang::EventObject& e ) throw ( css::uno::RuntimeException, std::exception ) override;
 
     // XUpdatable
-    virtual void SAL_CALL update() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL update() throw ( css::uno::RuntimeException, std::exception ) override;
 
     // XComponent
-    virtual void SAL_CALL dispose() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL dispose() throw ( css::uno::RuntimeException, std::exception ) override;
 
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName() throw ( css::uno::RuntimeException ) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService( const OUString& rServiceName ) throw ( css::uno::RuntimeException ) SAL_OVERRIDE;
-    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw ( css::uno::RuntimeException ) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName() throw ( css::uno::RuntimeException ) override;
+    virtual sal_Bool SAL_CALL supportsService( const OUString& rServiceName ) throw ( css::uno::RuntimeException ) override;
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw ( css::uno::RuntimeException ) override;
 };
 
 SubToolBarController::SubToolBarController( const css::uno::Sequence< css::uno::Any >& rxArgs )
@@ -109,7 +109,7 @@ SubToolBarController::SubToolBarController( const css::uno::Sequence< css::uno::
 SubToolBarController::~SubToolBarController()
 {
     disposeUIElement();
-    m_xUIElement = 0;
+    m_xUIElement = nullptr;
 }
 
 void SubToolBarController::disposeUIElement()
@@ -129,7 +129,7 @@ void SubToolBarController::statusChanged( const css::frame::FeatureStateEvent& E
     if ( m_bDisposed )
         return;
 
-    ToolBox* pToolBox = 0;
+    ToolBox* pToolBox = nullptr;
     sal_uInt16 nId = 0;
     if ( getToolboxId( nId, &pToolBox ) )
     {
@@ -192,7 +192,7 @@ css::uno::Reference< css::awt::XWindow > SubToolBarController::createPopupWindow
 {
     SolarMutexGuard aGuard;
 
-    ToolBox* pToolBox = 0;
+    ToolBox* pToolBox = nullptr;
     sal_uInt16 nId = 0;
     if ( getToolboxId( nId, &pToolBox ) )
     {
@@ -287,7 +287,7 @@ void SubToolBarController::updateImage()
     SolarMutexGuard aGuard;
     if ( !m_aLastCommand.isEmpty() )
     {
-        ToolBox* pToolBox = 0;
+        ToolBox* pToolBox = nullptr;
         sal_uInt16 nId = 0;
         if ( getToolboxId( nId, &pToolBox ) )
         {
@@ -352,7 +352,7 @@ void SubToolBarController::endPopupMode( const css::awt::EndPopupModeEvent& e )
         }
         disposeUIElement();
     }
-    m_xUIElement = 0;
+    m_xUIElement = nullptr;
 
     // if the toolbar was teared-off recreate it and place it at the given position
     if( e.bTearoff )
@@ -412,7 +412,7 @@ void SubToolBarController::update()
 {
     svt::ToolboxController::update();
 
-    ToolBox* pToolBox = 0;
+    ToolBox* pToolBox = nullptr;
     sal_uInt16 nId = 0;
     if ( getToolboxId( nId, &pToolBox ) )
     {
@@ -432,7 +432,7 @@ void SubToolBarController::dispose()
 
     svt::ToolboxController::dispose();
     disposeUIElement();
-    m_xUIElement = 0;
+    m_xUIElement = nullptr;
 }
 
 OUString SubToolBarController::getImplementationName()
@@ -450,8 +450,7 @@ sal_Bool SubToolBarController::supportsService( const OUString& rServiceName )
 css::uno::Sequence< OUString > SubToolBarController::getSupportedServiceNames()
     throw ( css::uno::RuntimeException )
 {
-    css::uno::Sequence< OUString > aRet( 1 );
-    aRet[0] = "com.sun.star.frame.ToolbarController";
+    css::uno::Sequence<OUString> aRet { "com.sun.star.frame.ToolbarController" };
     return aRet;
 }
 

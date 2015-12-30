@@ -30,7 +30,7 @@
 namespace frm
 {
 
-    typedef ::cppu::ImplHelper1 <   ::com::sun::star::sdb::XSQLErrorBroadcaster
+    typedef ::cppu::ImplHelper1 <   css::sdb::XSQLErrorBroadcaster
                                 >   OErrorBroadcaster_BASE;
 
     class OErrorBroadcaster : public OErrorBroadcaster_BASE
@@ -40,18 +40,18 @@ namespace frm
         ::cppu::OInterfaceContainerHelper   m_aErrorListeners;
 
     protected:
-        OErrorBroadcaster( ::cppu::OBroadcastHelper& _rBHelper );
+        explicit OErrorBroadcaster( ::cppu::OBroadcastHelper& _rBHelper );
         virtual ~OErrorBroadcaster( );
 
         void SAL_CALL disposing();
 
-        void SAL_CALL onError( const ::com::sun::star::sdbc::SQLException& _rException, const OUString& _rContextDescription );
-        void SAL_CALL onError( const ::com::sun::star::sdb::SQLErrorEvent& _rException );
+        void SAL_CALL onError( const css::sdbc::SQLException& _rException, const OUString& _rContextDescription );
+        void SAL_CALL onError( const css::sdb::SQLErrorEvent& _rException );
 
     protected:
     // XSQLErrorBroadcaster
-        virtual void SAL_CALL addSQLErrorListener( const ::com::sun::star::uno::Reference< ::com::sun::star::sdb::XSQLErrorListener >& _rListener ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL removeSQLErrorListener( const ::com::sun::star::uno::Reference< ::com::sun::star::sdb::XSQLErrorListener >& _rListener ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL addSQLErrorListener( const css::uno::Reference< css::sdb::XSQLErrorListener >& _rListener ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL removeSQLErrorListener( const css::uno::Reference< css::sdb::XSQLErrorListener >& _rListener ) throw (css::uno::RuntimeException, std::exception) override;
     };
 
 

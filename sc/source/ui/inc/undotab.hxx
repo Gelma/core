@@ -44,7 +44,6 @@ class ScMarkData;
 class ScUndoInsertTab : public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoInsertTab(
                             ScDocShell* pNewDocShell,
                             SCTAB nTabNum,
@@ -52,12 +51,12 @@ public:
                             const OUString& rNewName);
     virtual         ~ScUndoInsertTab();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     OUString        sNewName;
@@ -72,19 +71,18 @@ private:
 class ScUndoInsertTables : public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoInsertTables(
                             ScDocShell* pNewDocShell,
                             SCTAB nTabNum,
                             std::vector<OUString>& newNameList);
     virtual         ~ScUndoInsertTables();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
 
@@ -100,7 +98,6 @@ private:
 class ScUndoDeleteTab: public ScMoveUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoDeleteTab(
                             ScDocShell* pNewDocShell,
                             const std::vector<SCTAB> &theTabs,      //SCTAB nNewTab,
@@ -108,12 +105,12 @@ public:
                             ScRefUndoData* pRefData );
     virtual         ~ScUndoDeleteTab();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     std::vector<SCTAB> theTabs;
@@ -126,7 +123,6 @@ private:
 class ScUndoRenameTab: public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoRenameTab(
                             ScDocShell* pNewDocShell,
                             SCTAB nT,
@@ -134,12 +130,12 @@ public:
                             const OUString& rNewName);
     virtual         ~ScUndoRenameTab();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     SCTAB     nTab;
@@ -152,22 +148,21 @@ private:
 class ScUndoMoveTab: public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoMoveTab(
                         ScDocShell* pNewDocShell,
                         ::std::vector<SCTAB>* pOldTabs,
                         ::std::vector<SCTAB>* pNewTabs,
-                        ::std::vector< OUString>* pOldNames = NULL,
-                        ::std::vector< OUString>* pNewNames = NULL );
+                        ::std::vector< OUString>* pOldNames = nullptr,
+                        ::std::vector< OUString>* pNewNames = nullptr );
 
     virtual         ~ScUndoMoveTab();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     std::shared_ptr< ::std::vector<SCTAB> > mpOldTabs;
@@ -181,21 +176,20 @@ private:
 class ScUndoCopyTab: public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoCopyTab(
                         ScDocShell* pNewDocShell,
                         ::std::vector<SCTAB>* pOldTabs,
                         ::std::vector<SCTAB>* pNewTabs,
-                        ::std::vector< OUString>* pNewNames = NULL );
+                        ::std::vector< OUString>* pNewNames = nullptr );
 
     virtual         ~ScUndoCopyTab();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     std::shared_ptr< ::std::vector<SCTAB> > mpOldTabs;
@@ -209,7 +203,6 @@ private:
 class ScUndoTabColor: public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoTabColor(
                             ScDocShell* pNewDocShell,
                             SCTAB nT,
@@ -220,12 +213,12 @@ public:
                             const ScUndoTabColorInfo::List& rUndoTabColorList);
     virtual         ~ScUndoTabColor();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     ScUndoTabColorInfo::List aTabColorList;
@@ -236,7 +229,6 @@ private:
 class ScUndoMakeScenario: public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoMakeScenario(
                             ScDocShell* pNewDocShell,
                             SCTAB nSrc, SCTAB nDest,
@@ -245,12 +237,12 @@ public:
                             const ScMarkData& rMark );
     virtual         ~ScUndoMakeScenario();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     std::unique_ptr<ScMarkData> mpMarkData;
@@ -266,18 +258,17 @@ private:
 class ScUndoImportTab : public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoImportTab(
                             ScDocShell* pShell,
                             SCTAB nNewTab, SCTAB nNewCount );
     virtual         ~ScUndoImportTab();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     SCTAB       nTab;
@@ -291,18 +282,17 @@ private:
 class ScUndoRemoveLink : public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoRemoveLink(               // Call before delete!
                             ScDocShell* pShell,
                             const OUString& rDoc );
     virtual         ~ScUndoRemoveLink();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     OUString    aDocName;
@@ -320,19 +310,18 @@ private:
 class ScUndoShowHideTab : public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoShowHideTab(
                             ScDocShell* pShell,
                             const std::vector<SCTAB>& newUndoTabs,
                             bool bNewShow );
     virtual         ~ScUndoShowHideTab();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     std::vector<SCTAB>  undoTabs;
@@ -349,12 +338,12 @@ public:
                     ScUndoDocProtect(ScDocShell* pShell, ::std::unique_ptr<ScDocProtection> && pProtectSettings);
     virtual         ~ScUndoDocProtect();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     ::std::unique_ptr<ScDocProtection> mpProtectSettings;
@@ -371,12 +360,12 @@ public:
                                      std::unique_ptr<ScTableProtection> && pProtectSettings);
     virtual         ~ScUndoTabProtect();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     SCTAB   mnTab;
@@ -388,17 +377,16 @@ private:
 class ScUndoPrintRange : public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoPrintRange( ScDocShell* pShell, SCTAB nNewTab,
                                         ScPrintRangeSaver* pOld, ScPrintRangeSaver* pNew );
     virtual         ~ScUndoPrintRange();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     SCTAB               nTab;
@@ -411,7 +399,6 @@ private:
 class ScUndoScenarioFlags: public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoScenarioFlags(
                             ScDocShell* pNewDocShell, SCTAB nT,
                             const OUString& rON, const OUString& rNN,
@@ -421,12 +408,12 @@ public:
 
     virtual         ~ScUndoScenarioFlags();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     SCTAB       nTab;
@@ -443,19 +430,18 @@ private:
 class ScUndoRenameObject: public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoRenameObject(
                             ScDocShell* pNewDocShell, const OUString& rPN,
                             const OUString& rON, const OUString& rNN );
 
     virtual         ~ScUndoRenameObject();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     OUString  aPersistName;       // to find object (works only for OLE objects)
@@ -468,16 +454,15 @@ private:
 class ScUndoLayoutRTL : public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoLayoutRTL( ScDocShell* pShell, SCTAB nNewTab, bool bNewRTL );
     virtual         ~ScUndoLayoutRTL();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     SCTAB   nTab;

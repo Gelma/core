@@ -50,7 +50,7 @@ uno::Reference< media::XPlayer > SAL_CALL Manager::createPlayer( const OUString&
     const INetURLObject                 aURL( rURL );
 
     if( !pPlayer->create( aURL.GetMainURL( INetURLObject::DECODE_UNAMBIGUOUS ) )  )
-        xRet = uno::Reference< media::XPlayer >();
+        xRet.clear();
 
     return xRet;
 }
@@ -70,8 +70,7 @@ sal_Bool SAL_CALL Manager::supportsService( const OUString& ServiceName )
 uno::Sequence< OUString > SAL_CALL Manager::getSupportedServiceNames(  )
     throw (uno::RuntimeException)
 {
-    uno::Sequence< OUString > aRet(1);
-    aRet[0] = AVMEDIA_WIN_MANAGER_SERVICENAME ;
+    uno::Sequence<OUString> aRet { AVMEDIA_WIN_MANAGER_SERVICENAME };
 
     return aRet;
 }

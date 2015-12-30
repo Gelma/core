@@ -28,19 +28,19 @@ namespace sd
 class SlideLayoutController : public svt::PopupWindowController
 {
 public:
-    SlideLayoutController( const com::sun::star::uno::Reference< com::sun::star::uno::XComponentContext >& rxContext,
+    SlideLayoutController( const css::uno::Reference< css::uno::XComponentContext >& rxContext,
                            const OUString& sCommandURL,
                            bool bInsertPage );
 
-    virtual VclPtr<vcl::Window> createPopupWindow( vcl::Window* pParent ) SAL_OVERRIDE;
+    virtual VclPtr<vcl::Window> createPopupWindow( vcl::Window* pParent ) override;
 
     // XInitialization
     virtual void SAL_CALL initialize( const css::uno::Sequence< css::uno::Any >& aArguments )
-        throw ( css::uno::Exception, css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( css::uno::Exception, css::uno::RuntimeException, std::exception ) override;
 
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName() throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName() throw( css::uno::RuntimeException, std::exception ) override;
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw( css::uno::RuntimeException, std::exception ) override;
 
     using svt::PopupWindowController::createPopupWindow;
 private:

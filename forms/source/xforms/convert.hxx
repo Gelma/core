@@ -34,22 +34,18 @@ namespace xforms
 
 struct TypeLess
 {
-    bool operator()( const com::sun::star::uno::Type& rType1,
-                     const com::sun::star::uno::Type& rType2 ) const
+    bool operator()( const css::uno::Type& rType1,
+                     const css::uno::Type& rType2 ) const
     { return rType1.getTypeName() < rType2.getTypeName(); }
 };
 
 class Convert
 {
-    typedef com::sun::star::uno::Type Type_t;
-    typedef com::sun::star::uno::Sequence<com::sun::star::uno::Type> Types_t;
-    typedef com::sun::star::uno::Any Any_t;
-
     // hold conversion objects
-    typedef OUString (*fn_toXSD)( const Any_t& );
-    typedef Any_t (*fn_toAny)( const OUString& );
+    typedef OUString (*fn_toXSD)( const css::uno::Any& );
+    typedef css::uno::Any (*fn_toAny)( const OUString& );
     typedef std::pair<fn_toXSD,fn_toAny> Convert_t;
-    typedef std::map<Type_t,Convert_t,TypeLess> Map_t;
+    typedef std::map<css::uno::Type, Convert_t, TypeLess> Map_t;
     Map_t maMap;
 
     Convert();
@@ -61,16 +57,16 @@ public:
     static Convert& get();
 
     /// can we convert this type?
-    bool hasType( const Type_t& );
+    bool hasType( const css::uno::Type& );
 
     /// get list of convertible types
-    Types_t getTypes();
+    css::uno::Sequence<css::uno::Type> getTypes();
 
     /// convert any to XML representation
-    OUString toXSD( const Any_t& rAny );
+    OUString toXSD( const css::uno::Any& rAny );
 
     /// convert XML representation to Any of given type
-    Any_t toAny( const OUString&, const Type_t& );
+    css::uno::Any toAny( const OUString&, const css::uno::Type& );
 
     /** replace all sequences of 0x08, 0x0A, 0x0D, 0x20 with a single 0x20.
         also strip leading/trailing whitespace.

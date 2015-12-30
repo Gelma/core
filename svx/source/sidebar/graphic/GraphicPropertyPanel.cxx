@@ -52,7 +52,6 @@ GraphicPropertyPanel::GraphicPropertyPanel(
     maBlueControl(SID_ATTR_GRAF_BLUE, *pBindings, *this),
     maGammaControl(SID_ATTR_GRAF_GAMMA, *pBindings, *this),
     maModeControl(SID_ATTR_GRAF_MODE, *pBindings, *this),
-    mxFrame(rxFrame),
     mpBindings(pBindings)
 {
     get(mpMtrBrightness, "setbrightness");
@@ -99,18 +98,18 @@ void GraphicPropertyPanel::dispose()
 void GraphicPropertyPanel::Initialize()
 {
     mpMtrBrightness->SetModifyHdl( LINK( this, GraphicPropertyPanel, ModifyBrightnessHdl ) );
-    mpMtrBrightness->SetAccessibleName(::rtl::OUString( "Brightness"));
+    mpMtrBrightness->SetAccessibleName("Brightness");
     mpMtrContrast->SetModifyHdl( LINK( this, GraphicPropertyPanel, ModifyContrastHdl ) );
-    mpMtrContrast->SetAccessibleName(::rtl::OUString( "Contrast"));
+    mpMtrContrast->SetAccessibleName("Contrast");
     mpMtrTrans->SetModifyHdl( LINK( this, GraphicPropertyPanel, ModifyTransHdl ) );
-    mpMtrTrans->SetAccessibleName(::rtl::OUString( "Transparency"));
+    mpMtrTrans->SetAccessibleName("Transparency");
 
     mpLBColorMode->InsertEntry(SVX_RESSTR(RID_SVXSTR_GRAFMODE_STANDARD));
     mpLBColorMode->InsertEntry(SVX_RESSTR(RID_SVXSTR_GRAFMODE_GREYS));
     mpLBColorMode->InsertEntry(SVX_RESSTR(RID_SVXSTR_GRAFMODE_MONO));
     mpLBColorMode->InsertEntry(SVX_RESSTR(RID_SVXSTR_GRAFMODE_WATERMARK));
     mpLBColorMode->SetSelectHdl( LINK( this, GraphicPropertyPanel, ClickColorModeHdl ));
-    mpLBColorMode->SetAccessibleName(::rtl::OUString( "Color mode"));
+    mpLBColorMode->SetAccessibleName("Color mode");
 
     mpMtrRed->SetModifyHdl( LINK( this, GraphicPropertyPanel, RedHdl ) );
     mpMtrGreen->SetModifyHdl( LINK( this, GraphicPropertyPanel, GreenHdl ) );
@@ -119,7 +118,7 @@ void GraphicPropertyPanel::Initialize()
     mpMtrRed->SetAccessibleName(mpMtrRed->GetQuickHelpText());
     mpMtrGreen->SetAccessibleName(mpMtrGreen->GetQuickHelpText());
     mpMtrBlue->SetAccessibleName(mpMtrBlue->GetQuickHelpText());
-    mpMtrGamma->SetAccessibleName(::rtl::OUString( "Gamma value"));
+    mpMtrGamma->SetAccessibleName("Gamma value");
 
     mpMtrRed->SetAccessibleRelationLabeledBy(mpMtrRed);
     mpMtrGreen->SetAccessibleRelationLabeledBy(mpMtrGreen);
@@ -149,82 +148,74 @@ void GraphicPropertyPanel::Initialize()
 
 
 
-IMPL_LINK_NOARG( GraphicPropertyPanel, ModifyBrightnessHdl )
+IMPL_LINK_NOARG_TYPED( GraphicPropertyPanel, ModifyBrightnessHdl, Edit&, void )
 {
     const sal_Int16 nBright = mpMtrBrightness->GetValue();
     const SfxInt16Item aBrightItem( SID_ATTR_GRAF_LUMINANCE, nBright );
     GetBindings()->GetDispatcher()->Execute(SID_ATTR_GRAF_LUMINANCE, SfxCallMode::RECORD, &aBrightItem, 0L);
-    return 0L;
 }
 
 
 
-IMPL_LINK_NOARG( GraphicPropertyPanel, ModifyContrastHdl )
+IMPL_LINK_NOARG_TYPED( GraphicPropertyPanel, ModifyContrastHdl, Edit&, void )
 {
     const sal_Int16 nContrast = mpMtrContrast->GetValue();
     const SfxInt16Item aContrastItem( SID_ATTR_GRAF_CONTRAST, nContrast );
     GetBindings()->GetDispatcher()->Execute(SID_ATTR_GRAF_CONTRAST, SfxCallMode::RECORD, &aContrastItem, 0L);
-    return 0L;
 }
 
 
 
-IMPL_LINK_NOARG( GraphicPropertyPanel, ModifyTransHdl )
+IMPL_LINK_NOARG_TYPED( GraphicPropertyPanel, ModifyTransHdl, Edit&, void )
 {
     const sal_Int16 nTrans = mpMtrTrans->GetValue();
     const SfxInt16Item aTransItem( SID_ATTR_GRAF_TRANSPARENCE, nTrans );
     GetBindings()->GetDispatcher()->Execute(SID_ATTR_GRAF_TRANSPARENCE, SfxCallMode::RECORD, &aTransItem, 0L);
-    return 0L;
 }
 
 
 
-IMPL_LINK_NOARG( GraphicPropertyPanel, ClickColorModeHdl )
+IMPL_LINK_NOARG_TYPED( GraphicPropertyPanel, ClickColorModeHdl, ListBox&, void )
 {
     const sal_Int16 nTrans = mpLBColorMode->GetSelectEntryPos();
     const SfxInt16Item aTransItem( SID_ATTR_GRAF_MODE, nTrans );
     GetBindings()->GetDispatcher()->Execute(SID_ATTR_GRAF_MODE, SfxCallMode::RECORD, &aTransItem, 0L);
-    return 0L;
 }
 
 
 
-IMPL_LINK_NOARG( GraphicPropertyPanel, RedHdl )
+IMPL_LINK_NOARG_TYPED( GraphicPropertyPanel, RedHdl, Edit&, void )
 {
     const sal_Int16 nRed = mpMtrRed->GetValue();
     const SfxInt16Item aRedItem( SID_ATTR_GRAF_RED, nRed );
     GetBindings()->GetDispatcher()->Execute(SID_ATTR_GRAF_RED, SfxCallMode::RECORD, &aRedItem, 0L);
-    return 0L;
 }
 
 
 
-IMPL_LINK_NOARG( GraphicPropertyPanel, GreenHdl )
+IMPL_LINK_NOARG_TYPED( GraphicPropertyPanel, GreenHdl, Edit&, void )
 {
     const sal_Int16 nGreen = mpMtrGreen->GetValue();
     const SfxInt16Item aGreenItem( SID_ATTR_GRAF_GREEN, nGreen );
     GetBindings()->GetDispatcher()->Execute(SID_ATTR_GRAF_GREEN, SfxCallMode::RECORD, &aGreenItem, 0L);
-    return 0L;
 }
 
 
 
-IMPL_LINK_NOARG(GraphicPropertyPanel, BlueHdl)
+IMPL_LINK_NOARG_TYPED(GraphicPropertyPanel, BlueHdl, Edit&, void)
 {
     const sal_Int16 nBlue = mpMtrBlue->GetValue();
     const SfxInt16Item aBlueItem( SID_ATTR_GRAF_BLUE, nBlue );
     GetBindings()->GetDispatcher()->Execute(SID_ATTR_GRAF_BLUE, SfxCallMode::RECORD, &aBlueItem, 0L);
-    return 0L;
 }
 
 
 
-IMPL_LINK_NOARG(GraphicPropertyPanel, GammaHdl)
+IMPL_LINK_NOARG_TYPED(GraphicPropertyPanel, GammaHdl, Edit&, void)
 {
     const sal_Int32 nGamma = mpMtrGamma->GetValue();
     const SfxInt32Item nGammaItem( SID_ATTR_GRAF_GAMMA, nGamma );
     GetBindings()->GetDispatcher()->Execute(SID_ATTR_GRAF_GAMMA, SfxCallMode::RECORD, &nGammaItem, 0L);
-    return 0L;
 }
 
 
@@ -234,12 +225,12 @@ VclPtr<vcl::Window> GraphicPropertyPanel::Create (
     const css::uno::Reference<css::frame::XFrame>& rxFrame,
     SfxBindings* pBindings)
 {
-    if (pParent == NULL)
-        throw lang::IllegalArgumentException("no parent Window given to GraphicPropertyPanel::Create", NULL, 0);
+    if (pParent == nullptr)
+        throw lang::IllegalArgumentException("no parent Window given to GraphicPropertyPanel::Create", nullptr, 0);
     if ( ! rxFrame.is())
-        throw lang::IllegalArgumentException("no XFrame given to GraphicPropertyPanel::Create", NULL, 1);
-    if (pBindings == NULL)
-        throw lang::IllegalArgumentException("no SfxBindings given to GraphicPropertyPanel::Create", NULL, 2);
+        throw lang::IllegalArgumentException("no XFrame given to GraphicPropertyPanel::Create", nullptr, 1);
+    if (pBindings == nullptr)
+        throw lang::IllegalArgumentException("no SfxBindings given to GraphicPropertyPanel::Create", nullptr, 2);
 
     return VclPtr<GraphicPropertyPanel>::Create(
                 pParent,

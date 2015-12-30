@@ -88,7 +88,7 @@ namespace
         /************************************************************************************/\
         ScTabViewShell* pViewShell = lcl_GetTabViewShell( p );      \
         if (!pViewShell)                                            \
-            pViewShell = PTR_CAST( ScTabViewShell, SfxViewShell::Current() ); \
+            pViewShell = dynamic_cast<ScTabViewShell*>( SfxViewShell::Current()  ); \
         OSL_ENSURE( pViewShell, "missing view shell :-(" );         \
         SetWindow( pViewShell ?                                      \
             pViewShell->CreateRefDialog( p, this, pInfo, pParentP, sid ) : nullptr );    \
@@ -140,25 +140,25 @@ ScSimpleRefDlgWrapper::ScSimpleRefDlgWrapper( vcl::Window* pParentP,
         : SfxChildWindow(pParentP, nId)
 {
 
-    ScTabViewShell* pViewShell = NULL;
+    ScTabViewShell* pViewShell = nullptr;
     SfxDispatcher* pDisp = p->GetDispatcher();
     if ( pDisp )
     {
         SfxViewFrame* pViewFrm = pDisp->GetFrame();
         if ( pViewFrm )
-            pViewShell = PTR_CAST( ScTabViewShell, pViewFrm->GetViewShell() );
+            pViewShell = dynamic_cast<ScTabViewShell*>( pViewFrm->GetViewShell()  );
     }
 
     OSL_ENSURE( pViewShell, "missing view shell :-(" );
 
-    if(pInfo!=NULL && bScSimpleRefFlag)
+    if(pInfo!=nullptr && bScSimpleRefFlag)
     {
         pInfo->aPos.X()=nScSimpleRefX;
         pInfo->aPos.Y()=nScSimpleRefY;
         pInfo->aSize.Height()=nScSimpleRefHeight;
         pInfo->aSize.Width()=nScSimpleRefWidth;
     }
-    SetWindow(NULL);
+    SetWindow(nullptr);
 
     if(bAutoReOpen && pViewShell)
         SetWindow( pViewShell->CreateRefDialog( p, this, pInfo, pParentP, WID_SIMPLE_REF) );
@@ -236,7 +236,7 @@ ScAcceptChgDlgWrapper::ScAcceptChgDlgWrapper(   vcl::Window* pParentP,
                                             SfxChildWindow( pParentP, nId )
 {
         ScTabViewShell* pViewShell =
-            PTR_CAST( ScTabViewShell, SfxViewShell::Current() );
+            dynamic_cast<ScTabViewShell*>( SfxViewShell::Current()  );
         OSL_ENSURE( pViewShell, "missing view shell :-(" );
         if (pViewShell)
         {
@@ -244,7 +244,7 @@ ScAcceptChgDlgWrapper::ScAcceptChgDlgWrapper(   vcl::Window* pParentP,
             static_cast<ScAcceptChgDlg*>(GetWindow())->Initialize( pInfo );
         }
         else
-            SetWindow( NULL );
+            SetWindow( nullptr );
         if (pViewShell && !GetWindow())
             pViewShell->GetViewFrame()->SetChildWindow( nId, false );
 }
@@ -252,7 +252,7 @@ ScAcceptChgDlgWrapper::ScAcceptChgDlgWrapper(   vcl::Window* pParentP,
 void ScAcceptChgDlgWrapper::ReInitDlg()
 {
     ScTabViewShell* pViewShell =
-        PTR_CAST( ScTabViewShell, SfxViewShell::Current() );
+        dynamic_cast<ScTabViewShell*>( SfxViewShell::Current()  );
     OSL_ENSURE( pViewShell, "missing view shell :-(" );
 
     if(GetWindow() && pViewShell)
@@ -275,7 +275,7 @@ namespace
                     if( SfxViewShell* pViewSh = pFrm->GetViewShell() )
                         return dynamic_cast<ScTabViewShell*>( pViewSh );
 
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -286,7 +286,7 @@ ScValidityRefChildWin::ScValidityRefChildWin( vcl::Window*               pParent
                                              : SfxChildWindow(pParentP, nId),
                                              m_bVisibleLock( false ),
                                              m_bFreeWindowLock( false ),
-                                             m_pSavedWndParent( NULL )
+                                             m_pSavedWndParent( nullptr )
 {
     SetWantsFocus( false );
     VclPtr<ScValidationDlg> pDlg = ScValidationDlg::Find1AliveObject( pParentP );
@@ -297,7 +297,7 @@ ScValidityRefChildWin::ScValidityRefChildWin( vcl::Window*               pParent
     else
         pViewShell = lcl_GetTabViewShell( p );
     if (!pViewShell)
-        pViewShell = PTR_CAST( ScTabViewShell, SfxViewShell::Current() );
+        pViewShell = dynamic_cast<ScTabViewShell*>( SfxViewShell::Current()  );
     OSL_ENSURE( pViewShell, "missing view shell :-(" );
     if (pViewShell && !GetWindow())
         pViewShell->GetViewFrame()->SetChildWindow( nId, false );

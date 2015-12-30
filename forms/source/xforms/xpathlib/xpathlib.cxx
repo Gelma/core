@@ -83,7 +83,7 @@ xmlXPathFunction xforms_lookupFunc(void *, const xmlChar *xname, const xmlChar *
     else if ((strcmp("current", name))==0)
         return xforms_currentFunction;
     else
-        return NULL;
+        return nullptr;
 }
 
 // boolean functions
@@ -299,8 +299,6 @@ static bool parseDateTime(const OUString& aString, DateTime& aDateTime)
     sal_Int32 nDateLength = 10;
     sal_Int32 nTimeLength = 8;
 
-    OUString aUTCString("Z");
-
     OUString aDateString = aDateTimeString.copy(0, nDateLength);
     OUString aTimeString = aDateTimeString.copy(nDateLength+1, nTimeLength);
 
@@ -316,7 +314,7 @@ static bool parseDateTime(const OUString& aString, DateTime& aDateTime)
     Date tmpDate((sal_uInt16)nDay, (sal_uInt16)nMonth, (sal_uInt16)nYear);
     tools::Time tmpTime(nHour, nMinute, nSecond);
     DateTime tmpDateTime(tmpDate, tmpTime);
-    if (aString.indexOf(aUTCString) < 0)
+    if (aString.indexOf("Z") < 0)
         tmpDateTime.ConvertToUTC();
 
     aDateTime = tmpDateTime;

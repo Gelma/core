@@ -58,13 +58,13 @@
 
 #define SELF_TARGET         "_self"
 #define IMAP_ALL_FILTER     OUString("<Alle>")
-#define IMAP_CERN_FILTER    OUString("MAP - CERN")
-#define IMAP_NCSA_FILTER    OUString("MAP - NCSA")
-#define IMAP_BINARY_FILTER  OUString("SIP - StarView ImageMap")
-#define IMAP_ALL_TYPE       OUString("*.*")
-#define IMAP_BINARY_TYPE    OUString("*.sip")
-#define IMAP_CERN_TYPE      OUString("*.map")
-#define IMAP_NCSA_TYPE      OUString("*.map")
+#define IMAP_CERN_FILTER    "MAP - CERN"
+#define IMAP_NCSA_FILTER    "MAP - NCSA"
+#define IMAP_BINARY_FILTER  "SIP - StarView ImageMap"
+#define IMAP_ALL_TYPE       "*.*"
+#define IMAP_BINARY_TYPE    "*.sip"
+#define IMAP_CERN_TYPE      "*.map"
+#define IMAP_NCSA_TYPE      "*.map"
 
 SFX_IMPL_MODELESSDIALOG_WITHID( SvxIMapDlgChildWindow, SID_IMAP );
 
@@ -81,7 +81,7 @@ void SvxIMapDlgItem::StateChanged( sal_uInt16 nSID, SfxItemState /*eState*/,
 {
     if ( ( nSID == SID_IMAP_EXEC ) && pItem )
     {
-        const SfxBoolItem* pStateItem = PTR_CAST( SfxBoolItem, pItem );
+        const SfxBoolItem* pStateItem = dynamic_cast<const SfxBoolItem*>( pItem  );
         assert(pStateItem); //SfxBoolItem expected
         if (pStateItem)
         {
@@ -117,7 +117,7 @@ VCL_BUILDER_FACTORY(StatusBar)
 
 SvxIMapDlg::SvxIMapDlg(SfxBindings *_pBindings, SfxChildWindow *pCW, vcl::Window* _pParent)
     : SfxModelessDialog(_pBindings, pCW, _pParent, "ImapDialog", "svx/ui/imapdialog.ui")
-    , pCheckObj(NULL)
+    , pCheckObj(nullptr)
     , aIMapItem(SID_IMAP_EXEC, *this, *_pBindings)
 {
     get(m_pTbxIMapDlg1, "toolbar");
@@ -177,12 +177,12 @@ SvxIMapDlg::SvxIMapDlg(SfxBindings *_pBindings, SfxChildWindow *pCW, vcl::Window
     pIMapWnd->SetUpdateLink( LINK( this, SvxIMapDlg, StateHdl ) );
 
     m_pURLBox->SetModifyHdl( LINK( this, SvxIMapDlg, URLModifyHdl ) );
-    m_pURLBox->SetSelectHdl( LINK( this, SvxIMapDlg, URLModifyHdl ) );
+    m_pURLBox->SetSelectHdl( LINK( this, SvxIMapDlg, URLModifyComboBoxHdl ) );
     m_pURLBox->SetLoseFocusHdl( LINK( this, SvxIMapDlg, URLLoseFocusHdl ) );
     m_pEdtText->SetModifyHdl( LINK( this, SvxIMapDlg, URLModifyHdl ) );
     m_pCbbTarget->SetLoseFocusHdl( LINK( this, SvxIMapDlg, URLLoseFocusHdl ) );
 
-       SvtMiscOptions aMiscOptions;
+    SvtMiscOptions aMiscOptions;
     aMiscOptions.AddListenerLink( LINK( this, SvxIMapDlg, MiscHdl ) );
 
     m_pTbxIMapDlg1->SetSelectHdl( LINK( this, SvxIMapDlg, TbxClickHdl ) );
@@ -192,8 +192,8 @@ SvxIMapDlg::SvxIMapDlg(SfxBindings *_pBindings, SfxChildWindow *pCW, vcl::Window
     SetMinOutputSizePixel( aLastSize = GetOutputSizePixel() );
 
     m_pStbStatus->InsertItem( 1, 130, SIB_LEFT | SIB_IN | SIB_AUTOSIZE );
-    m_pStbStatus->InsertItem( 2, 10 + GetTextWidth( OUString(" 9999,99 cm / 9999,99 cm ") ), SIB_CENTER | SIB_IN );
-    m_pStbStatus->InsertItem( 3, 10 + GetTextWidth( OUString(" 9999,99 cm x 9999,99 cm ") ), SIB_CENTER | SIB_IN );
+    m_pStbStatus->InsertItem( 2, 10 + GetTextWidth( " 9999,99 cm / 9999,99 cm " ) );
+    m_pStbStatus->InsertItem( 3, 10 + GetTextWidth( " 9999,99 cm x 9999,99 cm " ) );
 
     m_pFtURL->Disable();
     m_pURLBox->Disable();
@@ -219,6 +219,9 @@ SvxIMapDlg::~SvxIMapDlg()
 void SvxIMapDlg::dispose()
 {
     pIMapWnd->SetUpdateLink( Link<GraphCtrl*,void>() );
+
+    SvtMiscOptions aMiscOptions;
+    aMiscOptions.RemoveListenerLink( LINK( this, SvxIMapDlg, MiscHdl ) );
 
     // Delete URL-List
     pIMapWnd.disposeAndClear();
@@ -454,7 +457,7 @@ IMPL_LINK_TYPED( SvxIMapDlg, TbxClickHdl, ToolBox*, pTbx, void )
 void SvxIMapDlg::DoOpen()
 {
     ::sfx2::FileDialogHelper aDlg(
-        com::sun::star::ui::dialogs::TemplateDescription::FILEOPEN_SIMPLE, 0 );
+        css::ui::dialogs::TemplateDescription::FILEOPEN_SIMPLE, 0 );
 
     ImageMap        aLoadIMap;
     const OUString  aFilter( IMAP_ALL_FILTER );
@@ -493,7 +496,7 @@ void SvxIMapDlg::DoOpen()
 bool SvxIMapDlg::DoSave()
 {
     ::sfx2::FileDialogHelper aDlg(
-        com::sun::star::ui::dialogs::TemplateDescription::FILESAVE_SIMPLE, 0 );
+        css::ui::dialogs::TemplateDescription::FILESAVE_SIMPLE, 0 );
 
     const OUString    aBinFilter( IMAP_BINARY_FILTER );
     const OUString    aCERNFilter( IMAP_CERN_FILTER );
@@ -682,7 +685,12 @@ IMPL_LINK_TYPED( SvxIMapDlg, GraphSizeHdl, GraphCtrl*, pWnd, void )
     m_pStbStatus->SetItemText( 3, aStr );
 }
 
-IMPL_LINK_NOARG(SvxIMapDlg, URLModifyHdl)
+
+IMPL_LINK_NOARG_TYPED(SvxIMapDlg, URLModifyComboBoxHdl, ComboBox&, void)
+{
+    URLModifyHdl(*m_pURLBox);
+}
+IMPL_LINK_NOARG_TYPED(SvxIMapDlg, URLModifyHdl, Edit&, void)
 {
     NotifyInfo  aNewInfo;
 
@@ -691,8 +699,6 @@ IMPL_LINK_NOARG(SvxIMapDlg, URLModifyHdl)
     aNewInfo.aMarkTarget = m_pCbbTarget->GetText();
 
     pIMapWnd->ReplaceActualIMapInfo( aNewInfo );
-
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(SvxIMapDlg, URLLoseFocusHdl, Control&, void)
@@ -755,7 +761,7 @@ IMPL_LINK_TYPED( SvxIMapDlg, StateHdl, GraphCtrl*, pWnd, void )
     const SdrObject*    pObj = pWnd->GetSelectedSdrObject();
     const SdrModel*     pModel = pWnd->GetSdrModel();
     const SdrView*      pView = pWnd->GetSdrView();
-    const bool          bPolyEdit = ( pObj != NULL ) && pObj->ISA( SdrPathObj );
+    const bool          bPolyEdit = ( pObj != nullptr ) && dynamic_cast<const SdrPathObj*>( pObj) !=  nullptr;
     const bool          bDrawEnabled = !( bPolyEdit && m_pTbxIMapDlg1->IsItemChecked( mnPolyEditId ) );
 
     m_pTbxIMapDlg1->EnableItem( mnApplyId, pOwnData->bExecState && pWnd->IsChanged() );
@@ -802,16 +808,19 @@ IMPL_LINK_TYPED( SvxIMapDlg, StateHdl, GraphCtrl*, pWnd, void )
 
 IMPL_LINK_NOARG_TYPED(SvxIMapDlg, MiscHdl, LinkParamNone*, void)
 {
-    SvtMiscOptions aMiscOptions;
-    m_pTbxIMapDlg1->SetOutStyle( aMiscOptions.GetToolboxStyle() );
+    if (m_pTbxIMapDlg1)
+    {
+        SvtMiscOptions aMiscOptions;
+        m_pTbxIMapDlg1->SetOutStyle( aMiscOptions.GetToolboxStyle() );
+    }
 }
 
 SvxIMapDlg* GetIMapDlg()
 {
-    SfxChildWindow* pWnd = NULL;
+    SfxChildWindow* pWnd = nullptr;
     if (SfxViewFrame::Current() && SfxViewFrame::Current()->HasChildWindow(SvxIMapDlgChildWindow::GetChildWindowId()))
         pWnd = SfxViewFrame::Current()->GetChildWindow(SvxIMapDlgChildWindow::GetChildWindowId());
-    return pWnd ? static_cast<SvxIMapDlg*>(pWnd->GetWindow()) : NULL;
+    return pWnd ? static_cast<SvxIMapDlg*>(pWnd->GetWindow()) : nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

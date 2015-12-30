@@ -66,20 +66,19 @@ SwFieldDlg::SwFieldDlg(SfxBindings* pB, SwChildWinWrapper* pCW, vcl::Window *pPa
 
     GetOKButton().SetClickHdl(LINK(this, SwFieldDlg, OKHdl));
 
-    m_nDokId = AddTabPage("document", SwFieldDokPage::Create, 0);
-    m_nVarId = AddTabPage("variables", SwFieldVarPage::Create, 0);
-    m_nDokInf = AddTabPage("docinfo", SwFieldDokInfPage::Create, 0);
+    m_nDokId = AddTabPage("document", SwFieldDokPage::Create, nullptr);
+    m_nVarId = AddTabPage("variables", SwFieldVarPage::Create, nullptr);
+    m_nDokInf = AddTabPage("docinfo", SwFieldDokInfPage::Create, nullptr);
 
     if (!m_bHtmlMode)
     {
-        m_nRefId = AddTabPage("ref", SwFieldRefPage::Create, 0);
-        m_nFuncId = AddTabPage("functions", SwFieldFuncPage::Create, 0);
+        m_nRefId = AddTabPage("ref", SwFieldRefPage::Create, nullptr);
+        m_nFuncId = AddTabPage("functions", SwFieldFuncPage::Create, nullptr);
 
         utl::OConfigurationTreeRoot aCfgRoot
             = utl::OConfigurationTreeRoot::createWithComponentContext(
                 ::comphelper::getProcessComponentContext(),
-                OUString(
-                        "/org.openoffice.Office.DataAccess/Policies/Features/Writer" ),
+                "/org.openoffice.Office.DataAccess/Policies/Features/Writer",
                 -1,
                 utl::OConfigurationTreeRoot::CM_READONLY);
 
@@ -88,7 +87,7 @@ SwFieldDlg::SwFieldDlg(SfxBindings* pB, SwChildWinWrapper* pCW, vcl::Window *pPa
             OUString("DatabaseFields")) >>= bDatabaseFields;
 
         if (bDatabaseFields)
-            m_nDbId = AddTabPage("database", SwFieldDBPage::Create, 0);
+            m_nDbId = AddTabPage("database", SwFieldDBPage::Create, nullptr);
         else
             RemoveTabPage("database");
     }
@@ -176,7 +175,7 @@ SfxItemSet* SwFieldDlg::CreateInputItemSet( sal_uInt16 nID  )
         return pISet;
     }
     else
-        return 0;
+        return nullptr;
 }
 
 // kick off inserting of new fields
@@ -185,7 +184,7 @@ IMPL_LINK_NOARG_TYPED(SwFieldDlg, OKHdl, Button*, void)
     if (GetOKButton().IsEnabled())
     {
         SfxTabPage* pPage = GetTabPage(GetCurPageId());
-        pPage->FillItemSet(0);
+        pPage->FillItemSet(nullptr);
 
         GetOKButton().GrabFocus();  // because of InputField-Dlg
     }
@@ -305,14 +304,13 @@ void SwFieldDlg::PageCreated(sal_uInt16 nId, SfxTabPage& rPage)
     if (nId == m_nDbId)
     {
         SfxDispatcher* pDispatch = m_pBindings->GetDispatcher();
-        SfxViewFrame* pViewFrame = pDispatch ? pDispatch->GetFrame() : 0;
+        SfxViewFrame* pViewFrame = pDispatch ? pDispatch->GetFrame() : nullptr;
         if(pViewFrame)
         {
-            const TypeId aSwViewTypeId = TYPE(SwView);
-            SfxViewShell* pViewShell = SfxViewShell::GetFirst( &aSwViewTypeId );
+            SfxViewShell* pViewShell = SfxViewShell::GetFirst( true, checkSfxViewShell<SwView> );
             while(pViewShell && pViewShell->GetViewFrame() != pViewFrame)
             {
-                pViewShell = SfxViewShell::GetNext( *pViewShell, &aSwViewTypeId );
+                pViewShell = SfxViewShell::GetNext( *pViewShell, true, checkSfxViewShell<SwView> );
             }
             if(pViewShell)
                 static_cast<SwFieldDBPage&>(rPage).SetWrtShell(static_cast<SwView*>(pViewShell)->GetWrtShell());

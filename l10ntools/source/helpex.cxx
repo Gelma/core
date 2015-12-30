@@ -24,13 +24,11 @@
 #include <string>
 #include <cstring>
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "sal/main.h"
 
 #include "helpmerge.hxx"
 #include "common.hxx"
+#include <memory>
 
 #ifndef TESTDRIVER
 
@@ -47,85 +45,91 @@ void WriteUsage()
             " (de, en-US, ...) or all\n");
 }
 
-SAL_IMPLEMENT_MAIN_WITH_ARGS(argc, argv) {
-
-    bool bMultiMerge = false;
-    for (int nIndex = 1; nIndex != argc; ++nIndex)
-    {
-        if (std::strcmp(argv[nIndex], "-mi") == 0)
-        {
-            argv[nIndex][1] = 'i';
-            argv[nIndex][2] = '\0';
-            bMultiMerge = true;
-            break;
-        }
-    }
-
-    common::HandledArgs aArgs;
-    if ( !common::handleArguments( argc, argv, aArgs) )
-    {
-        WriteUsage();
-        return 1;
-    }
+SAL_IMPLEMENT_MAIN_WITH_ARGS(argc, argv)
+{
     bool hasNoError = true;
-
-    if ( aArgs.m_bMergeMode )
+    try
     {
-        if( bMultiMerge )
+        bool bMultiMerge = false;
+        for (int nIndex = 1; nIndex != argc; ++nIndex)
         {
-            std::ifstream aInput( aArgs.m_sInputFile.getStr() );
-            if( !aInput.is_open() )
+            if (std::strcmp(argv[nIndex], "-mi") == 0)
             {
-                std::cerr << "Helpex error: cannot open input file\n";
-                return 1;
+                argv[nIndex][1] = 'i';
+                argv[nIndex][2] = '\0';
+                bMultiMerge = true;
+                break;
             }
-            MergeDataFile* pMergeDataFile = 0;
-            if( aArgs.m_sLanguage != "qtz")
+        }
+
+        common::HandledArgs aArgs;
+        if ( !common::handleArguments( argc, argv, aArgs) )
+        {
+            WriteUsage();
+            return 1;
+        }
+
+        if ( aArgs.m_bMergeMode )
+        {
+            if( bMultiMerge )
             {
-                pMergeDataFile = new MergeDataFile(aArgs.m_sMergeSrc, OString(), false, false );
-            }
-            std::string sTemp;
-            aInput >> sTemp;
-            while( !aInput.eof() )
-            {
-                // coverity[tainted_data] - this is a build time tool
-                const OString sXhpFile( sTemp.data(), (sal_Int32)sTemp.length() );
-                HelpParser aParser( sXhpFile );
-                const OString sOutput(
-                    aArgs.m_sOutputFile +
-                    sXhpFile.copy( sXhpFile.lastIndexOf('/') ));
-                if( !aParser.Merge( aArgs.m_sMergeSrc, sOutput,
-                    aArgs.m_sLanguage, pMergeDataFile ))
+                std::ifstream aInput( aArgs.m_sInputFile.getStr() );
+                if( !aInput.is_open() )
                 {
-                    hasNoError = false;
+                    std::cerr << "Helpex error: cannot open input file\n";
+                    return 1;
                 }
+                std::unique_ptr<MergeDataFile> pMergeDataFile;
+                if( aArgs.m_sLanguage != "qtz")
+                {
+                    pMergeDataFile.reset(new MergeDataFile(aArgs.m_sMergeSrc, OString(), false, false ));
+                }
+                std::string sTemp;
                 aInput >> sTemp;
+                while( !aInput.eof() )
+                {
+                    // coverity[tainted_data] - this is a build time tool
+                    const OString sXhpFile( sTemp.data(), (sal_Int32)sTemp.length() );
+                    HelpParser aParser( sXhpFile );
+                    const OString sOutput(
+                        aArgs.m_sOutputFile +
+                        sXhpFile.copy( sXhpFile.lastIndexOf('/') ));
+                    if( !aParser.Merge( aArgs.m_sMergeSrc, sOutput,
+                        aArgs.m_sLanguage, pMergeDataFile.get() ))
+                    {
+                        hasNoError = false;
+                    }
+                    aInput >> sTemp;
+                }
+                aInput.close();
             }
-            aInput.close();
-            delete pMergeDataFile;
+            else
+            {
+                HelpParser aParser( aArgs.m_sInputFile );
+                std::unique_ptr<MergeDataFile> pMergeDataFile;
+                if( aArgs.m_sLanguage != "qtz")
+                {
+                    pMergeDataFile.reset(new MergeDataFile(aArgs.m_sMergeSrc, aArgs.m_sInputFile, false, false ));
+                }
+                hasNoError =
+                    aParser.Merge(
+                        aArgs.m_sMergeSrc, aArgs.m_sOutputFile,
+                        aArgs.m_sLanguage, pMergeDataFile.get() );
+            }
         }
         else
         {
             HelpParser aParser( aArgs.m_sInputFile );
-            MergeDataFile* pMergeDataFile = 0;
-            if( aArgs.m_sLanguage != "qtz")
-            {
-                pMergeDataFile = new MergeDataFile(aArgs.m_sMergeSrc, aArgs.m_sInputFile, false, false );
-            }
             hasNoError =
-                aParser.Merge(
-                    aArgs.m_sMergeSrc, aArgs.m_sOutputFile,
-                    aArgs.m_sLanguage, pMergeDataFile );
-            delete pMergeDataFile;
+                HelpParser::CreatePO(
+                    aArgs.m_sOutputFile, aArgs.m_sInputFile,
+                    new XMLFile( OString('0') ), "help" );
         }
     }
-    else
+    catch (std::exception& e)
     {
-        HelpParser aParser( aArgs.m_sInputFile );
-        hasNoError =
-            HelpParser::CreatePO(
-                aArgs.m_sOutputFile, aArgs.m_sInputFile,
-                new XMLFile( OString('0') ), "help" );
+        std::cerr << "Helpex exception: " << e.what() << std::endl;
+        hasNoError = true;
     }
 
     if( hasNoError )

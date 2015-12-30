@@ -36,7 +36,6 @@
 
 namespace sd {
 
-TYPEINIT1( FuLineEnd, FuPoor );
 
 FuLineEnd::FuLineEnd(ViewShell* pViewSh, ::sd::Window* pWin, ::sd::View* pView,
                     SdDrawDocument* pDoc, SfxRequest& rReq)
@@ -59,9 +58,9 @@ void FuLineEnd::DoExecute( SfxRequest& )
     {
         const SdrObject* pObj = rMarkList.GetMark(0)->GetMarkedSdrObj();
         const SdrObject* pNewObj;
-        SdrObject* pConvPolyObj = NULL;
+        SdrObject* pConvPolyObj = nullptr;
 
-        if( pObj->ISA( SdrPathObj ) )
+        if( dynamic_cast< const SdrPathObj *>( pObj ) !=  nullptr )
         {
             pNewObj = pObj;
         }
@@ -78,7 +77,7 @@ void FuLineEnd::DoExecute( SfxRequest& )
             {
                 pNewObj = pConvPolyObj = pObj->ConvertToPolyObj( true, false );
 
-                if( !pNewObj || !pNewObj->ISA( SdrPathObj ) )
+                if( !pNewObj || dynamic_cast< const SdrPathObj *>( pNewObj ) ==  nullptr )
                     return; // Cancel, additional security, but it does not help
                             // for group objects
             }
@@ -114,7 +113,7 @@ void FuLineEnd::DoExecute( SfxRequest& )
         }
 
         SvxAbstractDialogFactory* pFact = SvxAbstractDialogFactory::Create();
-        std::unique_ptr<AbstractSvxNameDialog> pDlg(pFact ? pFact->CreateSvxNameDialog( NULL, aName, aDesc ) : 0);
+        std::unique_ptr<AbstractSvxNameDialog> pDlg(pFact ? pFact->CreateSvxNameDialog( nullptr, aName, aDesc ) : nullptr);
 
         if( pDlg )
         {

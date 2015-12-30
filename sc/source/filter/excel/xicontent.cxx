@@ -61,6 +61,7 @@
 
 #include <memory>
 #include <utility>
+#include <o3tl/make_unique.hxx>
 
 using ::com::sun::star::uno::Sequence;
 using ::std::unique_ptr;
@@ -75,10 +76,15 @@ XclImpSst::XclImpSst( const XclImpRoot& rRoot ) :
 void XclImpSst::ReadSst( XclImpStream& rStrm )
 {
     rStrm.Ignore( 4 );
-    sal_uInt32 nStrCount(0);
-    nStrCount = rStrm.ReaduInt32();
+    sal_uInt32 nStrCount = rStrm.ReaduInt32();
+    auto nBytesAvailable = rStrm.GetRecLeft();
+    if (nStrCount > nBytesAvailable)
+    {
+        SAL_WARN("sc.filter", "xls claimed to have " << nStrCount << " strings, but only " << nBytesAvailable << " bytes available, truncating");
+        nStrCount = nBytesAvailable;
+    }
     maStrings.clear();
-    maStrings.reserve( static_cast< size_t >( nStrCount ) );
+    maStrings.reserve(nStrCount);
     while( (nStrCount > 0) && rStrm.IsValid() )
     {
         XclImpString aString;
@@ -90,7 +96,7 @@ void XclImpSst::ReadSst( XclImpStream& rStrm )
 
 const XclImpString* XclImpSst::GetString( sal_uInt32 nSstIndex ) const
 {
-    return (nSstIndex < maStrings.size()) ? &maStrings[ nSstIndex ] : 0;
+    return (nSstIndex < maStrings.size()) ? &maStrings[ nSstIndex ] : nullptr;
 }
 
 // Hyperlinks =================================================================
@@ -327,9 +333,24 @@ OUString XclImpHyperlink::ReadEmbeddedData( XclImpStream& rStrm )
         if( xTextMark.get() )
         {
             if( xLongName->isEmpty() )
-                xTextMark.reset( new OUString( xTextMark->replace( '!', '.' ) ) );
-            xLongName.reset( new OUString( *xLongName + "#" ) );
-            xLongName.reset( new OUString( *xLongName + *xTextMark  ) );
+            {
+                sal_Int32 nSepPos = xTextMark->lastIndexOf( '!' );
+                if( nSepPos > 0 )
+                {
+                    // Do not attempt to blindly convert '#SheetName!A1' to
+                    // '#SheetName.A1', it can be #SheetName!R1C1 as well.
+                    // Hyperlink handler has to handle all, but prefer
+                    // '#SheetName.A1' if possible.
+                    if (nSepPos < xTextMark->getLength() - 1)
+                    {
+                        ScRange aRange;
+                        if ((aRange.ParseAny( xTextMark->copy( nSepPos + 1 ), nullptr,
+                                        formula::FormulaGrammar::CONV_XL_R1C1) & SCA_VALID) != SCA_VALID)
+                            xTextMark.reset( new OUString( xTextMark->replaceAt( nSepPos, 1, OUString( '.' ))));
+                    }
+                }
+            }
+            xLongName.reset( new OUString( *xLongName + "#" + *xTextMark ) );
         }
         return( *xLongName );
     }
@@ -421,7 +442,7 @@ void XclImpLabelranges::ReadLabelranges( XclImpStream& rStrm )
     SCTAB nScTab = rRoot.GetCurrScTab();
     XclImpAddressConverter& rAddrConv = rRoot.GetAddressConverter();
     ScRangePairListRef xLabelRangesRef;
-    const ScRange* pScRange = 0;
+    const ScRange* pScRange = nullptr;
 
     XclRangeList aRowXclRanges, aColXclRanges;
     rStrm >> aRowXclRanges >> aColXclRanges;
@@ -581,7 +602,7 @@ void XclImpCondFormat::ReadCF( XclImpStream& rStrm )
         nAlign = rStrm.ReaduInt16();
         nAlignMisc = rStrm.ReaduInt16();
         aAlign.FillFromCF( nAlign, nAlignMisc );
-        aAlign.FillToItemSet( rStyleItemSet, NULL );
+        aAlign.FillToItemSet( rStyleItemSet, nullptr );
         rStrm.Ignore(4);
     }
 
@@ -630,7 +651,7 @@ void XclImpCondFormat::ReadCF( XclImpStream& rStrm )
     ::std::unique_ptr< ScTokenArray > xTokArr1;
     if( nFmlaSize1 > 0 )
     {
-        const ScTokenArray* pTokArr = 0;
+        const ScTokenArray* pTokArr = nullptr;
         rFmlaConv.Reset( rPos );
         rFmlaConv.Convert( pTokArr, rStrm, nFmlaSize1, false, FT_CondFormat );
         // formula converter owns pTokArr -> create a copy of the token array
@@ -641,7 +662,7 @@ void XclImpCondFormat::ReadCF( XclImpStream& rStrm )
     ::std::unique_ptr< ScTokenArray > pTokArr2;
     if( nFmlaSize2 > 0 )
     {
-        const ScTokenArray* pTokArr = 0;
+        const ScTokenArray* pTokArr = nullptr;
         rFmlaConv.Reset( rPos );
         rFmlaConv.Convert( pTokArr, rStrm, nFmlaSize2, false, FT_CondFormat );
         // formula converter owns pTokArr -> create a copy of the token array
@@ -687,20 +708,20 @@ void XclImpCondFormatManager::ReadCondfmt( XclImpStream& rStrm )
 {
     XclImpCondFormat* pFmt = new XclImpCondFormat( GetRoot(), maCondFmtList.size() );
     pFmt->ReadCondfmt( rStrm );
-    maCondFmtList.push_back( pFmt );
+    maCondFmtList.push_back( std::unique_ptr<XclImpCondFormat>(pFmt) );
 }
 
 void XclImpCondFormatManager::ReadCF( XclImpStream& rStrm )
 {
     OSL_ENSURE( !maCondFmtList.empty(), "XclImpCondFormatManager::ReadCF - CF without leading CONDFMT" );
     if( !maCondFmtList.empty() )
-        maCondFmtList.back().ReadCF( rStrm );
+        maCondFmtList.back()->ReadCF( rStrm );
 }
 
 void XclImpCondFormatManager::Apply()
 {
     for( XclImpCondFmtList::iterator itFmt = maCondFmtList.begin(); itFmt != maCondFmtList.end(); ++itFmt )
-        itFmt->Apply();
+        (*itFmt)->Apply();
     maCondFmtList.clear();
 }
 
@@ -767,7 +788,7 @@ void XclImpValidationManager::ReadDV( XclImpStream& rStrm )
     rStrm.Ignore( 2 );
     if( nLen > 0 )
     {
-        const ScTokenArray* pTokArr = 0;
+        const ScTokenArray* pTokArr = nullptr;
         rFmlaConv.Reset();
             rFmlaConv.Convert( pTokArr, rStrm, nLen, false, FT_CondFormat );
         // formula converter owns pTokArr -> create a copy of the token array
@@ -783,7 +804,7 @@ void XclImpValidationManager::ReadDV( XclImpStream& rStrm )
     rStrm.Ignore( 2 );
     if( nLen > 0 )
     {
-        const ScTokenArray* pTokArr = 0;
+        const ScTokenArray* pTokArr = nullptr;
         rFmlaConv.Reset();
             rFmlaConv.Convert( pTokArr, rStrm, nLen, false, FT_CondFormat );
         // formula converter owns pTokArr -> create a copy of the token array
@@ -846,8 +867,8 @@ void XclImpValidationManager::ReadDV( XclImpStream& rStrm )
         XclTokenArrayHelper::ConvertStringToList(*xTokArr1, rDoc.GetSharedStringPool(), '\n', true);
 
     maDVItems.push_back(
-        new DVItem(aScRanges, ScValidationData(eValMode, eCondMode, xTokArr1.get(), xTokArr2.get(), &rDoc, rScRange.aStart)));
-    DVItem& rItem = maDVItems.back();
+        o3tl::make_unique<DVItem>(aScRanges, ScValidationData(eValMode, eCondMode, xTokArr1.get(), xTokArr2.get(), &rDoc, rScRange.aStart)));
+    DVItem& rItem = *maDVItems.back().get();
 
     rItem.maValidData.SetIgnoreBlank( ::get_flag( nFlags, EXC_DV_IGNOREBLANK ) );
     rItem.maValidData.SetListType( ::get_flagvalue( nFlags, EXC_DV_SUPPRESSDROPDOWN, css::sheet::TableValidationVisibility::INVISIBLE, css::sheet::TableValidationVisibility::UNSORTED ) );
@@ -880,7 +901,7 @@ void XclImpValidationManager::Apply()
     DVItemList::iterator itr = maDVItems.begin(), itrEnd = maDVItems.end();
     for (; itr != itrEnd; ++itr)
     {
-        DVItem& rItem = *itr;
+        DVItem& rItem = *itr->get();
         // set the handle ID
         sal_uLong nHandle = rDoc.AddValidationEntry( rItem.maValidData );
         ScPatternAttr aPattern( rDoc.GetPool() );
@@ -1003,7 +1024,7 @@ void XclImpWebQueryBuffer::ReadQsi( XclImpStream& rStrm )
             {
                 ScRange aRange;
                 if( pRangeData->IsReference( aRange ) )
-                    maWQList.push_back( new XclImpWebQuery( aRange ) );
+                    maWQList.push_back( XclImpWebQuery( aRange ) );
             }
         }
     }
@@ -1328,7 +1349,7 @@ XclImpSheetProtectBuffer::Sheet* XclImpSheetProtectBuffer::GetSheetItem( SCTAB n
     {
         // new sheet
         if ( !maProtectedSheets.insert( ProtectedSheetMap::value_type(nTab, Sheet()) ).second )
-            return NULL;
+            return nullptr;
 
         itr = maProtectedSheets.find(nTab);
     }

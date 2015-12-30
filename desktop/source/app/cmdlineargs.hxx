@@ -57,10 +57,14 @@ class CommandLineArgs: private boost::noncopyable
 
         // Access to bool parameters
         bool                IsMinimized() const { return m_minimized;}
-        bool                IsInvisible() const { return m_invisible;}
+        bool                IsInvisible() const
+        {
+            return m_invisible || (m_headless && !m_eventtesting);
+        }
         bool                IsNoRestore() const { return m_norestore;}
         bool                IsNoDefault() const { return m_nodefault;}
         bool                IsHeadless() const { return m_headless;}
+        bool                IsEventTesting() const { return m_eventtesting;}
         bool                IsQuickstart() const { return m_quickstart;}
         bool                IsNoQuickstart() const { return m_noquickstart;}
         bool                IsTerminateAfterInit() const { return m_terminateafterinit;}
@@ -111,7 +115,7 @@ class CommandLineArgs: private boost::noncopyable
         // Special analyzed states (does not match directly to a command line parameter!)
         bool IsEmpty() const { return m_bEmpty;}
 
-        void setHeadless() { m_headless = true; m_invisible = true; }
+        void setHeadless() { m_headless = true; }
 
     private:
         void                    ParseCommandLine_Impl( Supplier& supplier );
@@ -123,6 +127,7 @@ class CommandLineArgs: private boost::noncopyable
         bool m_invisible;
         bool m_norestore;
         bool m_headless;
+        bool m_eventtesting;
         bool m_quickstart;
         bool m_noquickstart;
         bool m_terminateafterinit;

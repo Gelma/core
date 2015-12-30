@@ -120,9 +120,9 @@ void TabBar::SetDecks(const ResourceManager::DeckContextDescriptorContainer& rDe
              iDeck(rDecks.begin()); iDeck != rDecks.end(); ++iDeck)
     {
         const DeckDescriptor* pDescriptor = pParentSidebarController->GetResourceManager()->GetDeckDescriptor(iDeck->msId);
-        if (pDescriptor == NULL)
+        if (pDescriptor == nullptr)
         {
-            OSL_ASSERT(pDescriptor!=NULL);
+            OSL_ASSERT(pDescriptor!=nullptr);
             continue;
         }
 
@@ -132,8 +132,8 @@ void TabBar::SetDecks(const ResourceManager::DeckContextDescriptorContainer& rDe
         rItem.mpButton = CreateTabItem(*pDescriptor);
         rItem.mpButton->SetClickHdl(LINK(&rItem, TabBar::Item, HandleClick));
         rItem.maDeckActivationFunctor = maDeckActivationFunctor;
-        rItem.mbIsHiddenByDefault = false;
         rItem.mbIsHidden = ! pDescriptor->mbIsEnabled;
+        rItem.mbIsHiddenByDefault = rItem.mbIsHidden; // the default is the state while creating
 
         rItem.mpButton->Enable(iDeck->mbIsEnabled);
     }
@@ -160,7 +160,7 @@ void TabBar::UpdateButtonIcons()
     {
         const DeckDescriptor* pDeckDescriptor = pParentSidebarController->GetResourceManager()->GetDeckDescriptor(iItem->msDeckId);
 
-        if (pDeckDescriptor != NULL)
+        if (pDeckDescriptor != nullptr)
         {
             aImage = GetItemImage(*pDeckDescriptor);
             if ( mpMenuButton->GetDPIScaleFactor() > 1 )
@@ -253,8 +253,41 @@ void TabBar::DataChanged (const DataChangedEvent& rDataChangedEvent)
     Window::DataChanged(rDataChangedEvent);
 }
 
-bool TabBar::Notify (NotifyEvent&)
+bool TabBar::Notify (NotifyEvent& rEvent)
 {
+    if(rEvent.GetType() == MouseNotifyEvent::COMMAND)
+    {
+        const CommandEvent& rCommandEvent = *rEvent.GetCommandEvent();
+        if(rCommandEvent.GetCommand() == CommandEventId::Wheel)
+        {
+            const CommandWheelData* pData = rCommandEvent.GetWheelData();
+            if(!pData->GetModifier() && (pData->GetMode() == CommandWheelMode::SCROLL))
+            {
+                auto pItem = std::find_if(maItems.begin(), maItems.end(),
+                    [] (Item const& rItem) { return rItem.mpButton->IsChecked(); });
+                if(pItem == maItems.end())
+                    return true;
+                if(pData->GetNotchDelta()<0)
+                {
+                    if(pItem+1 == maItems.end())
+                        return true;
+                    ++pItem;
+                }
+                else
+                {
+                    if(pItem == maItems.begin())
+                        return true;
+                    --pItem;
+                }
+                try
+                {
+                    pItem->maDeckActivationFunctor(pItem->msDeckId);
+                }
+                catch(const css::uno::Exception&) {};
+                return true;
+            }
+        }
+    }
     return false;
 }
 
@@ -302,9 +335,10 @@ void TabBar::ToggleHideFlag (const sal_Int32 nIndex)
     {
         maItems[nIndex].mbIsHidden = ! maItems[nIndex].mbIsHidden;
 
-    pParentSidebarController->GetResourceManager()->SetIsDeckEnabled(
-            maItems[nIndex].msDeckId,
-            maItems[nIndex].mbIsHidden);
+        DeckDescriptor* pDeckDescriptor = pParentSidebarController->GetResourceManager()->GetDeckDescriptor(maItems[nIndex].msDeckId);
+        if (pDeckDescriptor)
+            pDeckDescriptor->mbIsEnabled = ! maItems[nIndex].mbIsHidden;
+
         Layout();
     }
 }
@@ -318,6 +352,11 @@ void TabBar::RestoreHideFlags()
         {
             iItem->mbIsHidden = iItem->mbIsHiddenByDefault;
             bNeedsLayout = true;
+
+            DeckDescriptor* pDeckDescriptor = pParentSidebarController->GetResourceManager()->GetDeckDescriptor(iItem->msDeckId);
+            if (pDeckDescriptor)
+                pDeckDescriptor->mbIsEnabled = ! iItem->mbIsHidden;
+
         }
     }
     if (bNeedsLayout)
@@ -348,7 +387,7 @@ IMPL_LINK_NOARG_TYPED(TabBar, OnToolboxClicked, Button*, void)
     {
         const DeckDescriptor* pDeckDescriptor = pParentSidebarController->GetResourceManager()->GetDeckDescriptor(iItem->msDeckId);
 
-        if (pDeckDescriptor != NULL)
+        if (pDeckDescriptor != nullptr)
         {
             DeckMenuData aData;
             aData.msDisplayName = pDeckDescriptor->msTitle;

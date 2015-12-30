@@ -116,6 +116,7 @@
 #include <tools/date.hxx>
 #include <i18nlangtag/lang.h>
 #include <comphelper/extract.hxx>
+#include <o3tl/make_unique.hxx>
 
 using namespace com::sun::star;
 using namespace xmloff::token;
@@ -133,15 +134,14 @@ ScXMLTableRowCellContext::Field::~Field()
 ScXMLTableRowCellContext::ScXMLTableRowCellContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
                                       const bool bTempIsCovered,
                                       const sal_Int32 nTempRepeatedRows ) :
     ScXMLImportContext(rImport, nPrfx, rLName),
     mpEditEngine(GetScImport().GetEditEngine()),
     mnCurParagraph(0),
-    pDetectiveObjVec(NULL),
-    pCellRangeSource(NULL),
+    pDetectiveObjVec(nullptr),
+    pCellRangeSource(nullptr),
     fValue(0.0),
     nMergedRows(1),
     nMatrixRows(0),
@@ -172,8 +172,8 @@ ScXMLTableRowCellContext::ScXMLTableRowCellContext( ScXMLImport& rImport,
     rXMLImport.GetTables().AddColumn(bTempIsCovered);
     const sal_Int16 nAttrCount = xAttrList.is() ? xAttrList->getLength() : 0;
     OUString aLocalName;
-    OUString* pStyleName = NULL;
-    OUString* pCurrencySymbol = NULL;
+    OUString* pStyleName = nullptr;
+    OUString* pCurrencySymbol = nullptr;
     const SvXMLTokenMap& rTokenMap = rImport.GetTableRowCellAttrTokenMap();
     for (sal_Int16 i = 0; i < nAttrCount; ++i)
     {
@@ -361,8 +361,8 @@ void ScXMLTableRowCellContext::PushParagraphSpan(const OUString& rSpan, const OU
 void ScXMLTableRowCellContext::PushParagraphField(SvxFieldData* pData, const OUString& rStyleName)
 {
     mbHasFormatRuns = true;
-    maFields.push_back(new Field(pData));
-    Field& rField = maFields.back();
+    maFields.push_back(o3tl::make_unique<Field>(pData));
+    Field& rField = *maFields.back().get();
 
     sal_Int32 nPos = maParagraph.getLength();
     maParagraph.append('\1'); // Placeholder text for inserted field item.
@@ -404,8 +404,8 @@ void ScXMLTableRowCellContext::PushFormat(sal_Int32 nBegin, sal_Int32 nEnd, cons
     const ScXMLEditAttributeMap& rEditAttrMap = GetScImport().GetEditAttributeMap();
 
     mbHasFormatRuns = true;
-    maFormats.push_back(new ParaFormat(*mpEditEngine));
-    ParaFormat& rFmt = maFormats.back();
+    maFormats.push_back(o3tl::make_unique<ParaFormat>(*mpEditEngine));
+    ParaFormat& rFmt = *maFormats.back().get();
     rFmt.maSelection.nStartPara = rFmt.maSelection.nEndPara = mnCurParagraph;
     rFmt.maSelection.nStartPos = nBegin;
     rFmt.maSelection.nEndPos = nEnd;
@@ -667,10 +667,9 @@ void ScXMLTableRowCellContext::PushParagraphEnd()
 
 SvXMLImportContext *ScXMLTableRowCellContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = rXMLImport.GetTableRowCellElemTokenMap();
     bool bTextP(false);
@@ -731,7 +730,7 @@ SvXMLImportContext *ScXMLTableRowCellContext::CreateChildContext( sal_uInt16 nPr
             XMLTableShapeImportHelper* pTableShapeImport =
                     static_cast< XMLTableShapeImportHelper* >( rXMLImport.GetShapeImport().get() );
             pTableShapeImport->SetOnTable(false);
-            com::sun::star::table::CellAddress aCellAddress;
+            css::table::CellAddress aCellAddress;
             ScUnoConversion::FillApiAddress( aCellAddress, aCellPos );
             pTableShapeImport->SetCell(aCellAddress);
             pContext = rXMLImport.GetShapeImport()->CreateGroupChildContext(
@@ -867,7 +866,7 @@ void ScXMLTableRowCellContext::SetAnnotation(const ScAddress& rPos)
 
     LockSolarMutex();
 
-    ScPostIt* pNote = 0;
+    ScPostIt* pNote = nullptr;
 
     uno::Reference< drawing::XShapes > xShapes = rXMLImport.GetTables().GetCurrentXShapes();
     uno::Reference< container::XIndexAccess > xShapesIA( xShapes, uno::UNO_QUERY );
@@ -891,7 +890,7 @@ void ScXMLTableRowCellContext::SetAnnotation(const ScAddress& rPos)
                 // create the cell note with the caption object
                 pNote = ScNoteUtil::CreateNoteFromCaption( *pDoc, rPos, *pCaption, true );
                 // forget pointer to object (do not create note again below)
-                pObject = 0;
+                pObject = nullptr;
             }
         }
 
@@ -908,7 +907,7 @@ void ScXMLTableRowCellContext::SetAnnotation(const ScAddress& rPos)
                 aCaptionRect = pObject->GetLogicRect();
             // remove the shape from the drawing page, this invalidates pObject
             mxAnnotationData->mxShapes->remove( mxAnnotationData->mxShape );
-            pObject = 0;
+            pObject = nullptr;
             // update current number of existing objects
             if( xShapesIA.is() )
                 nOldShapeCount = xShapesIA->getCount();
@@ -939,7 +938,7 @@ void ScXMLTableRowCellContext::SetAnnotation(const ScAddress& rPos)
             SvNumberFormatter* pNumForm = pDoc->GetFormatTable();
             sal_uInt32 nfIndex = pNumForm->GetFormatIndex( NF_DATE_SYS_DDMMYYYY, LANGUAGE_SYSTEM );
             OUString aDate;
-            Color* pColor = 0;
+            Color* pColor = nullptr;
             Color** ppColor = &pColor;
             pNumForm->GetOutputString( fDate, nfIndex, aDate, ppColor );
             pNote->SetDate( aDate );
@@ -1109,13 +1108,13 @@ void ScXMLTableRowCellContext::PutTextCell( const ScAddress& rCurrentPos,
                 {
                     ParaFormatsType::const_iterator it = maFormats.begin(), itEnd = maFormats.end();
                     for (; it != itEnd; ++it)
-                        mpEditEngine->QuickSetAttribs(it->maItemSet, it->maSelection);
+                        mpEditEngine->QuickSetAttribs((*it)->maItemSet, (*it)->maSelection);
                 }
 
                 {
                     FieldsType::const_iterator it = maFields.begin(), itEnd = maFields.end();
                     for (; it != itEnd; ++it)
-                        mpEditEngine->QuickInsertField(SvxFieldItem(*it->mpData, EE_FEATURE_FIELD), it->maSelection);
+                        mpEditEngine->QuickInsertField(SvxFieldItem(*(*it)->mpData, EE_FEATURE_FIELD), (*it)->maSelection);
                 }
 
                 // This edit engine uses the SfxItemPool instance returned
@@ -1306,7 +1305,7 @@ OUString getOutputString( ScDocument* pDoc, const ScAddress& aCellPos )
             {
                 EditEngine& rEngine = pDoc->GetEditEngine();
                 rEngine.SetText(*pData);
-                return rEngine.GetText(LINEEND_LF);
+                return rEngine.GetText();
             }
             //  also don't format EditCells per NumberFormatter
         }
@@ -1332,7 +1331,7 @@ void ScXMLTableRowCellContext::AddNonFormulaCell( const ScAddress& rCellPos )
 
     if( nCellType == util::NumberFormat::TEXT )
     {
-        if( cellExists(rCellPos) && CellsAreRepeated() )
+        if( !bIsEmpty && !maStringValue && !mbEditEngineHasText && cellExists(rCellPos) && CellsAreRepeated() )
             pOUText.reset( getOutputString(rXMLImport.GetDocument(), rCellPos) );
 
         if (!mbEditEngineHasText && !pOUText && !maStringValue)
@@ -1440,7 +1439,7 @@ void ScXMLTableRowCellContext::AddFormulaCell( const ScAddress& rCellPos )
                 ScFormulaCell* pFCell = rXMLImport.GetDocument()->GetFormulaCell(rCellPos);
                 if (pFCell)
                 {
-                    ScMatrixRef pMat(new ScMatrix(nMatrixCols, nMatrixRows));
+                    ScMatrixRef pMat(new ScFullMatrix(nMatrixCols, nMatrixRows));
                     if (bFormulaTextResult && maStringValue)
                     {
                         if (!IsPossibleErrorString())

@@ -33,7 +33,7 @@ namespace abp
     class OAddessBookSourcePilot : public OAddessBookSourcePilot_Base
     {
     protected:
-        ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >
+        css::uno::Reference< css::uno::XComponentContext >
                                 m_xORB;
         AddressSettings         m_aSettings;
 
@@ -44,10 +44,10 @@ namespace abp
         /// ctor
         OAddessBookSourcePilot(
             vcl::Window* _pParent,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& _rxORB);
+            const css::uno::Reference< css::uno::XComponentContext >& _rxORB);
 
         /// get the service factory which was used to create the dialog
-        const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >&
+        const css::uno::Reference< css::uno::XComponentContext >&
                                 getORB() { return m_xORB; }
         AddressSettings&        getSettings() { return m_aSettings; }
         const AddressSettings&  getSettings() const { return m_aSettings; }
@@ -63,15 +63,15 @@ namespace abp
 
     protected:
         // OWizardMachine overridables
-        virtual VclPtr<TabPage>     createPage( WizardState _nState ) SAL_OVERRIDE;
-        virtual void                enterState( WizardState _nState ) SAL_OVERRIDE;
-        virtual bool                prepareLeaveCurrentState( CommitPageReason _eReason ) SAL_OVERRIDE;
-        virtual bool                onFinish() SAL_OVERRIDE;
+        virtual VclPtr<TabPage>     createPage( WizardState _nState ) override;
+        virtual void                enterState( WizardState _nState ) override;
+        virtual bool                prepareLeaveCurrentState( CommitPageReason _eReason ) override;
+        virtual bool                onFinish() override;
 
         // RoadmapWizard
-        virtual OUString            getStateDisplayName( WizardState _nState ) const SAL_OVERRIDE;
+        virtual OUString            getStateDisplayName( WizardState _nState ) const override;
 
-        virtual bool    Close() SAL_OVERRIDE;
+        virtual bool    Close() override;
 
     private:
         DECL_LINK_TYPED( OnCancelClicked, Button*, void );
@@ -89,9 +89,7 @@ namespace abp
 
         static inline bool needAdminInvokationPage( AddressSourceType _eType )
         {
-            return  (   ( AST_LDAP == _eType )
-                    ||  ( AST_OTHER == _eType )
-                    );
+            return  ( AST_OTHER == _eType );
         }
         /// check if with the current settings, we would need to invoke he administration dialog for more details about the data source
         inline bool needAdminInvokationPage() const
@@ -114,7 +112,7 @@ namespace abp
         /// determines whether the given address book type does provide one table only
         static inline bool needTableSelection( AddressSourceType _eType )
         {
-            return  ( AST_LDAP != _eType ) && ( AST_KAB != _eType );
+            return  ( AST_KAB != _eType );
         }
 
         void implCleanup();

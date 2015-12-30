@@ -110,7 +110,7 @@ SdrObject* ImpGetClone(std::vector<ImpRememberOrigAndClone*>& aConnectorContaine
         if(pConnObj == aConnectorContainer[a]->pOrig)
             return aConnectorContainer[a]->pClone;
     }
-    return 0L;
+    return nullptr;
 }
 
 // restrict movement to WorkArea
@@ -251,7 +251,7 @@ bool View::InsertMetaFile( TransferableDataHelper& rDataHelper, const Point& rPo
 
     aGraphic.SetPrefMapMode( aMtf.GetPrefMapMode() );
     aGraphic.SetPrefSize( aMtf.GetPrefSize() );
-    InsertGraphic( aGraphic, mnAction, aInsertPos, NULL, pImageMap );
+    InsertGraphic( aGraphic, mnAction, aInsertPos, nullptr, pImageMap );
 
     return true;
 }
@@ -265,39 +265,39 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
     mbIsDropAllowed = false;
 
     TransferableDataHelper  aDataHelper( rDataHelper );
-    SdrObject*              pPickObj = NULL;
-    SdPage*                 pPage = NULL;
+    SdrObject*              pPickObj = nullptr;
+    SdPage*                 pPage = nullptr;
     std::unique_ptr<ImageMap> pImageMap;
     bool bReturn = false;
     bool                    bLink = ( ( mnAction & DND_ACTION_LINK ) != 0 );
     bool                    bCopy = ( ( ( mnAction & DND_ACTION_COPY ) != 0 ) || bLink );
     SdrInsertFlags          nPasteOptions = SdrInsertFlags::SETDEFLAYER;
 
-    if (mpViewSh != NULL)
+    if (mpViewSh != nullptr)
     {
-        OSL_ASSERT (mpViewSh->GetViewShell()!=NULL);
+        OSL_ASSERT (mpViewSh->GetViewShell()!=nullptr);
         SfxInPlaceClient* pIpClient = mpViewSh->GetViewShell()->GetIPClient();
-        if( mpViewSh->ISA(::sd::slidesorter::SlideSorterViewShell)
-            || (pIpClient!=NULL && pIpClient->IsObjectInPlaceActive()))
+        if( dynamic_cast< ::sd::slidesorter::SlideSorterViewShell *>( mpViewSh ) !=  nullptr
+            || (pIpClient!=nullptr && pIpClient->IsObjectInPlaceActive()))
         nPasteOptions |= SdrInsertFlags::DONTMARK;
     }
 
     if( bDrag )
     {
-        SdrPageView* pPV = NULL;
+        SdrPageView* pPV = nullptr;
         PickObj( rPos, getHitTolLog(), pPickObj, pPV );
     }
 
     if( nPage != SDRPAGE_NOTFOUND )
         pPage = static_cast<SdPage*>( mrDoc.GetPage( nPage ) );
 
-    SdTransferable* pOwnData = NULL;
+    SdTransferable* pOwnData = nullptr;
     SdTransferable* pImplementation = SdTransferable::getImplementation( aDataHelper.GetTransferable() );
 
     if(pImplementation && (rDnDAction & DND_ACTION_LINK))
     {
         // suppress own data when it's intention is to use it as fill information
-        pImplementation = 0;
+        pImplementation = nullptr;
     }
 
     // try to get own transfer data
@@ -360,7 +360,7 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
     {
         const View* pSourceView = pOwnData->GetView();
 
-        if( pOwnData->GetDocShell() && pOwnData->IsPageTransferable() && ISA( View ) )
+        if( pOwnData->GetDocShell() && pOwnData->IsPageTransferable() && dynamic_cast< View *>( this) !=  nullptr )
         {
             mpClipboard->HandlePageDrop (*pOwnData);
             bReturn = true;
@@ -487,7 +487,7 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
                                         pRem->pClone = pObj;
                                         aConnectorContainer.push_back(pRem);
 
-                                        if(pObj->ISA(SdrEdgeObj))
+                                        if(dynamic_cast< SdrEdgeObj *>( pObj ) !=  nullptr)
                                             nConnectorCount++;
                                     }
                                 }
@@ -499,7 +499,7 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
                                     {
                                         ImpRememberOrigAndClone* pRem = aConnectorContainer[a];
 
-                                        if(pRem->pClone->ISA(SdrEdgeObj))
+                                        if(dynamic_cast< const SdrEdgeObj *>( pRem->pClone ) !=  nullptr)
                                         {
                                             SdrEdgeObj* pOrigEdge = static_cast<SdrEdgeObj*>(pRem->pOrig);
                                             SdrEdgeObj* pCloneEdge = static_cast<SdrEdgeObj*>(pRem->pClone);
@@ -605,7 +605,7 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
                     SdDrawDocument* pSourceDoc = static_cast<SdDrawDocument*>( pSourceView->GetModel() );
                     pSourceDoc->CreatingDataObj( pOwnData );
                     SdDrawDocument* pModel = static_cast<SdDrawDocument*>( pSourceView->GetMarkedObjModel() );
-                    bReturn = Paste(*pModel, maDropPos, pPage, nPasteOptions, OUString(), OUString());
+                    bReturn = Paste(*pModel, maDropPos, pPage, nPasteOptions);
 
                     if( !pPage )
                         pPage = static_cast<SdPage*>( GetSdrPageView()->GetPage() );
@@ -615,7 +615,7 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
                     if (nPos != -1)
                         aLayout = aLayout.copy(0, nPos);
                     pPage->SetPresentationLayout( aLayout, false, false );
-                    pSourceDoc->CreatingDataObj( NULL );
+                    pSourceDoc->CreatingDataObj( nullptr );
                 }
                 else
                 {
@@ -646,7 +646,7 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
                     pWorkModel->DeletePage( (sal_uInt16) i );
             }
 
-            bReturn = Paste(*pWorkModel, maDropPos, pPage, nPasteOptions, OUString(), OUString());
+            bReturn = Paste(*pWorkModel, maDropPos, pPage, nPasteOptions);
 
             if( !pPage )
                 pPage = static_cast<SdPage*>( GetSdrPageView()->GetPage() );
@@ -666,7 +666,7 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
         if( aDataHelper.GetSotStorageStream( SotClipboardFormatId::DRAWING, xStm ) )
         {
             DrawDocShellRef xShell = new DrawDocShell(SfxObjectCreateMode::INTERNAL);
-            xShell->DoInitNew(0);
+            xShell->DoInitNew();
 
             SdDrawDocument* pModel = xShell->GetDoc();
             pModel->InsertPage(pModel->AllocPage(false));
@@ -674,7 +674,7 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
             Reference< XComponent > xComponent( xShell->GetModel(), UNO_QUERY );
             xStm->Seek( 0 );
 
-            com::sun::star::uno::Reference< com::sun::star::io::XInputStream > xInputStream( new utl::OInputStreamWrapper( *xStm ) );
+            css::uno::Reference< css::io::XInputStream > xInputStream( new utl::OInputStreamWrapper( *xStm ) );
             bReturn = SvxDrawingLayerImport( pModel, xInputStream, xComponent, "com.sun.star.comp.Impress.XMLOasisImporter" );
 
             if( pModel->GetPageCount() == 0 )
@@ -691,8 +691,8 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
                     {
                         // only one object
                         SdrObject*      pObj = pModel->GetSdPage( 0, PK_STANDARD )->GetObj( 0 );
-                        SdrObject*      pPickObj2 = NULL;
-                        SdrPageView*    pPV = NULL;
+                        SdrObject*      pPickObj2 = nullptr;
+                        SdrPageView*    pPV = nullptr;
                         PickObj( rPos, getHitTolLog(), pPickObj2, pPV );
 
                         if( ( mnAction & DND_ACTION_MOVE ) && pPickObj2 && pObj )
@@ -737,7 +737,9 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
                             bChanged = true;
                             mnAction = DND_ACTION_COPY;
                         }
-                        else if( ( mnAction & DND_ACTION_LINK ) && pPickObj && pObj && !pPickObj->ISA( SdrGrafObj ) && !pPickObj->ISA( SdrOle2Obj ) )
+                        else if( ( mnAction & DND_ACTION_LINK ) && pPickObj && pObj &&
+                            dynamic_cast< const SdrGrafObj *>( pPickObj ) ==  nullptr &&
+                                dynamic_cast< const SdrOle2Obj *>( pPickObj ) ==  nullptr )
                         {
                             SfxItemSet aSet( mrDoc.GetPool() );
 
@@ -769,7 +771,7 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
 
                             pPickObj->SetMergedItemSetAndBroadcast( aSet );
 
-                            if( pPickObj->ISA( E3dObject ) && pObj->ISA( E3dObject ) )
+                            if( dynamic_cast< E3dObject *>( pPickObj ) !=  nullptr && dynamic_cast< E3dObject *>( pObj ) !=  nullptr )
                             {
                                 // handle 3D attribute in addition
                                 SfxItemSet aNewSet( mrDoc.GetPool(), SID_ATTR_3D_START, SID_ATTR_3D_END, 0 );
@@ -805,7 +807,7 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
                         maDropPos.Y() = pOwnData->GetStartPos().Y() + ( aSize.Height() >> 1 );
                     }
 
-                    bReturn = Paste(*pModel, maDropPos, pPage, nPasteOptions, OUString(), OUString());
+                    bReturn = Paste(*pModel, maDropPos, pPage, nPasteOptions);
                 }
 
                 xShell->DoClose();
@@ -888,7 +890,7 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
                             pModel->DeletePage( (sal_uInt16) i );
                     }
 
-                    bReturn = Paste(*pModel, maDropPos, pPage, nPasteOptions, OUString(), OUString());
+                    bReturn = Paste(*pModel, maDropPos, pPage, nPasteOptions);
 
                     if( !pPage )
                         pPage = static_cast<SdPage*>(GetSdrPageView()->GetPage());
@@ -981,12 +983,12 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
                     SdrPageView*    pPV = GetSdrPageView();
                     SdrInsertFlags  nOptions = SdrInsertFlags::SETDEFLAYER;
 
-                    if (mpViewSh!=NULL)
+                    if (mpViewSh!=nullptr)
                     {
-                        OSL_ASSERT (mpViewSh->GetViewShell()!=NULL);
+                        OSL_ASSERT (mpViewSh->GetViewShell()!=nullptr);
                         SfxInPlaceClient* pIpClient
                             = mpViewSh->GetViewShell()->GetIPClient();
-                        if (pIpClient!=NULL && pIpClient->IsObjectInPlaceActive())
+                        if (pIpClient!=nullptr && pIpClient->IsObjectInPlaceActive())
                             nOptions |= SdrInsertFlags::DONTMARK;
                     }
 
@@ -1151,12 +1153,12 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
                     SdrPageView*    pPV = GetSdrPageView();
                     SdrInsertFlags  nOptions = SdrInsertFlags::SETDEFLAYER;
 
-                    if (mpViewSh!=NULL)
+                    if (mpViewSh!=nullptr)
                     {
-                        OSL_ASSERT (mpViewSh->GetViewShell()!=NULL);
+                        OSL_ASSERT (mpViewSh->GetViewShell()!=nullptr);
                         SfxInPlaceClient* pIpClient
                             = mpViewSh->GetViewShell()->GetIPClient();
-                        if (pIpClient!=NULL && pIpClient->IsObjectInPlaceActive())
+                        if (pIpClient!=nullptr && pIpClient->IsObjectInPlaceActive())
                             nOptions |= SdrInsertFlags::DONTMARK;
                     }
 
@@ -1213,7 +1215,7 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
 
             ImpCheckInsertPos(aInsertPos, aImageMapSize, GetWorkArea());
 
-            InsertGraphic( aGraphic, mnAction, aInsertPos, NULL, pImageMap.get() );
+            InsertGraphic( aGraphic, mnAction, aInsertPos, nullptr, pImageMap.get() );
             bReturn = true;
         }
     }
@@ -1292,7 +1294,7 @@ bool View::InsertData( const TransferableDataHelper& rDataHelper,
             Size aImageMapSize(aBmpEx.GetPrefSize());
             ImpCheckInsertPos(aInsertPos, aImageMapSize, GetWorkArea());
 
-            InsertGraphic( aBmpEx, mnAction, aInsertPos, NULL, pImageMap.get() );
+            InsertGraphic( aBmpEx, mnAction, aInsertPos, nullptr, pImageMap.get() );
             bReturn = true;
         }
     }
@@ -1513,7 +1515,7 @@ bool View::PasteRTFTable( ::tools::SvRef<SotStorageStream> xStm, SdrPage* pPage,
     pModel->setUnoModel( Reference< XInterface >::query( xComponent ) );
 
     CreateTableFromRTF( *xStm, pModel.get() );
-    bool bRet = Paste(*pModel, maDropPos, pPage, nPasteOptions, OUString(), OUString());
+    bool bRet = Paste(*pModel, maDropPos, pPage, nPasteOptions);
 
     xComponent->dispose();
     xComponent.clear();

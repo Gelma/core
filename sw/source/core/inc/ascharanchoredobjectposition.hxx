@@ -25,7 +25,7 @@
 #include <swtypes.hxx>
 #include <swrect.hxx>
 
-class SwTextFrm;
+class SwTextFrame;
 class SwFormatVertOrient;
 
 namespace objectpositioning
@@ -69,8 +69,8 @@ namespace objectpositioning
         // 0 - no line alignment, 1 - at top, 2 - at center, 3 - at bottom
         sal_uInt8   mnLineAlignment;
 
-        // method to cast <SwAnchoredObjectPosition::GetAnchorFrm()>
-        const SwTextFrm& GetAnchorTextFrm() const;
+        // method to cast <SwAnchoredObjectPosition::GetAnchorFrame()>
+        const SwTextFrame& GetAnchorTextFrame() const;
 
         /** determine the relative position to base line for object position
 
@@ -125,7 +125,7 @@ namespace objectpositioning
             <mnLineAlignment> are calculated.
             calculated position is set at the given object.
         */
-        virtual void CalcPosition() SAL_OVERRIDE;
+        virtual void CalcPosition() override;
 
         // calculated anchored position for object position type AS_CHAR
         const Point& GetAnchorPos() const { return maAnchorPos;}

@@ -45,7 +45,6 @@ class XMLFootnoteSeparatorImport : public SvXMLImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLFootnoteSeparatorImport(
         SvXMLImport& rImport,
@@ -58,8 +57,7 @@ public:
     virtual ~XMLFootnoteSeparatorImport();
 
     virtual void StartElement(
-        const ::com::sun::star::uno::Reference<
-                ::com::sun::star::xml::sax::XAttributeList> & xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference< css::xml::sax::XAttributeList> & xAttrList ) override;
 };
 
 #endif

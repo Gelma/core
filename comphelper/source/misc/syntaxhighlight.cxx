@@ -344,7 +344,7 @@ bool SyntaxHighlighter::Tokenizer::getNextToken(const sal_Unicode*& pos, /*out*/
         reType = TT_IDENTIFIER;
 
         // Keyword table
-        if (ppListKeyWords != NULL)
+        if (ppListKeyWords != nullptr)
         {
             int nCount = pos - rpStartPos;
 
@@ -375,8 +375,7 @@ bool SyntaxHighlighter::Tokenizer::getNextToken(const sal_Unicode*& pos, /*out*/
                         sal_Unicode cPeek = *pos;
                         while( cPeek != 0 && !testCharFlags( cPeek, CHAR_EOL ) )
                         {
-                            c = *pos++;
-                            cPeek = *pos;
+                            cPeek = *++pos;
                         }
 
                         reType = TT_COMMENT;
@@ -658,7 +657,7 @@ SyntaxHighlighter::Tokenizer::Tokenizer( HighlighterLanguage aLang ): aLanguage(
     aCharTypeTab[(int)'\r'] |= CHAR_EOL;
     aCharTypeTab[(int)'\n'] |= CHAR_EOL;
 
-    ppListKeyWords = NULL;
+    ppListKeyWords = nullptr;
     nKeyWordCount = 0;
 }
 

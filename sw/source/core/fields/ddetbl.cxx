@@ -33,7 +33,6 @@
 #include <swtblfmt.hxx>
 #include <fieldhint.hxx>
 
-TYPEINIT1( SwDDETable, SwTable );
 
 /// Ctor moves all lines/boxes from a SwTable into itself.
 /// Afterwards the SwTable is empty and must be deleted.
@@ -44,11 +43,11 @@ SwDDETable::SwDDETable( SwTable& rTable, SwDDEFieldType* pDDEType, bool bUpdate 
     m_TabSortContentBoxes.insert(rTable.GetTabSortBoxes());
     rTable.GetTabSortBoxes().clear();
 
-    aLines.insert( aLines.begin(),
+    m_aLines.insert( m_aLines.begin(),
                    rTable.GetTabLines().begin(), rTable.GetTabLines().end() ); // move lines
     rTable.GetTabLines().clear();
 
-    if( !aLines.empty() )
+    if( !m_aLines.empty() )
     {
         const SwNode& rNd = *GetTabSortBoxes()[0]->GetSttNd();
         if( rNd.GetNodes().IsDocNodes() )
@@ -66,7 +65,7 @@ SwDDETable::~SwDDETable()
 {
     SwDDEFieldType* pFieldTyp = static_cast<SwDDEFieldType*>(aDepend.GetRegisteredIn());
     SwDoc* pDoc = GetFrameFormat()->GetDoc();
-    if( !pDoc->IsInDtor() && !aLines.empty() &&
+    if( !pDoc->IsInDtor() && !m_aLines.empty() &&
         GetTabSortBoxes()[0]->GetSttNd()->GetNodes().IsDocNodes() )
         pFieldTyp->DecRefCnt();
 
@@ -100,7 +99,7 @@ void SwDDETable::ChangeContent()
     OSL_ENSURE( GetFrameFormat(), "No FrameFormat" );
 
     // Is this the correct NodesArray? (because of UNDO)
-    if( aLines.empty() )
+    if( m_aLines.empty() )
         return;
     OSL_ENSURE( !GetTabSortBoxes().empty(), "Table without content?" );
     if( !GetTabSortBoxes()[0]->GetSttNd()->GetNodes().IsDocNodes() )
@@ -112,11 +111,11 @@ void SwDDETable::ChangeContent()
     OUString aExpand = comphelper::string::remove(pDDEType->GetExpansion(), '\r');
     sal_Int32 nExpandTokenPos = 0;
 
-    for( size_t n = 0; n < aLines.size(); ++n )
+    for( size_t n = 0; n < m_aLines.size(); ++n )
     {
         OUString aLine = aExpand.getToken( 0, '\n', nExpandTokenPos );
         sal_Int32 nLineTokenPos = 0;
-        SwTableLine* pLine = aLines[ n ];
+        SwTableLine* pLine = m_aLines[ n ];
         for( size_t i = 0; i < pLine->GetTabBoxes().size(); ++i )
         {
             SwTableBox* pBox = pLine->GetTabBoxes()[ i ];
@@ -138,7 +137,7 @@ void SwDDETable::ChangeContent()
     const IDocumentSettingAccess& rIDSA = GetFrameFormat()->getIDocumentSettingAccess();
     SwDoc* pDoc = GetFrameFormat()->GetDoc();
     if( AUTOUPD_FIELD_AND_CHARTS == rIDSA.getFieldUpdateFlags(true) )
-        pDoc->getIDocumentFieldsAccess().SetFieldsDirty( true, NULL, 0 );
+        pDoc->getIDocumentFieldsAccess().SetFieldsDirty( true, nullptr, 0 );
 }
 
 SwDDEFieldType* SwDDETable::GetDDEFieldType()
@@ -153,7 +152,7 @@ bool SwDDETable::NoDDETable()
     SwDoc* pDoc = GetFrameFormat()->GetDoc();
 
     // Is this the correct NodesArray? (because of UNDO)
-    if( aLines.empty() )
+    if( m_aLines.empty() )
         return false;
     OSL_ENSURE( !GetTabSortBoxes().empty(), "Table without content?" );
     SwNode* pNd = const_cast<SwNode*>(static_cast<SwNode const *>(GetTabSortBoxes()[0]->GetSttNd()));

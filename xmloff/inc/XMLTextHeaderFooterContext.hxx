@@ -29,10 +29,8 @@ namespace com { namespace sun { namespace star {
 
 class XMLTextHeaderFooterContext: public SvXMLImportContext
 {
-    ::com::sun::star::uno::Reference <
-        ::com::sun::star::text::XTextCursor > xOldTextCursor;
-    ::com::sun::star::uno::Reference <
-        ::com::sun::star::beans::XPropertySet > xPropSet;
+    css::uno::Reference< css::text::XTextCursor > xOldTextCursor;
+    css::uno::Reference< css::beans::XPropertySet > xPropSet;
 
     const OUString sOn;
     const OUString sShareContent;
@@ -46,14 +44,11 @@ class XMLTextHeaderFooterContext: public SvXMLImportContext
     bool    bFirst : 1;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     XMLTextHeaderFooterContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
             const OUString& rLName,
-            const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList,
-            const ::com::sun::star::uno::Reference <
-                       ::com::sun::star::beans::XPropertySet > & rPageStylePropSet,
+            const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList,
+            const css::uno::Reference< css::beans::XPropertySet > & rPageStylePropSet,
                bool bFooter, bool bLft, bool bFrst );
 
     virtual ~XMLTextHeaderFooterContext();
@@ -61,9 +56,9 @@ public:
     virtual SvXMLImportContext *CreateChildContext(
             sal_uInt16 nPrefix,
             const OUString& rLocalName,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+            const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 };
 
 

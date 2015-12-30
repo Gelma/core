@@ -61,22 +61,22 @@ namespace dbp
         const OControlWizard*           getDialog() const;
         const OControlWizardContext&    getContext();
         bool                        updateContext();
-        void                            setFormConnection(const ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XConnection >& _rxConn, bool _bAutoDispose = true );
-        ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XConnection >
+        void                            setFormConnection(const css::uno::Reference< css::sdbc::XConnection >& _rxConn, bool _bAutoDispose = true );
+        css::uno::Reference< css::sdbc::XConnection >
                                         getFormConnection() const;
     public:
         OControlWizardPage( OControlWizard* _pParent, const OString& rID, const OUString& rUIXMLDescription );
         virtual ~OControlWizardPage();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
     protected:
         static void fillListBox(
             ListBox& _rList,
-            const ::com::sun::star::uno::Sequence< OUString >& _rItems,
+            const css::uno::Sequence< OUString >& _rItems,
             bool _bClear = true);
         static void fillListBox(
             ComboBox& _rList,
-            const ::com::sun::star::uno::Sequence< OUString >& _rItems,
+            const css::uno::Sequence< OUString >& _rItems,
             bool _bClear = true);
 
     protected:
@@ -84,7 +84,7 @@ namespace dbp
 
     protected:
         // OWizardPage overridables
-        virtual void        initializePage() SAL_OVERRIDE;
+        virtual void        initializePage() override;
     };
 
     struct OAccessRegulator;
@@ -94,14 +94,14 @@ namespace dbp
     {
     private:
         OControlWizardContext   m_aContext;
-        ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >
-                    m_xContext;
+        css::uno::Reference< css::uno::XComponentContext >
+                                m_xContext;
 
     public:
         OControlWizard(
             vcl::Window* _pParent,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& _rxObjectModel,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& _rxContext
+            const css::uno::Reference< css::beans::XPropertySet >& _rxObjectModel,
+            const css::uno::Reference< css::uno::XComponentContext >& _rxContext
         );
         virtual ~OControlWizard();
 
@@ -109,19 +109,19 @@ namespace dbp
         bool    travelNext() { return OControlWizard_Base::travelNext(); }
 
     public:
-        ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >
+        css::uno::Reference< css::uno::XComponentContext >
             getComponentContext() const { return m_xContext; }
 
         const OControlWizardContext&    getContext() const { return m_aContext; }
         bool                        updateContext(const OAccessRegulator&);
-        void                            setFormConnection(const OAccessRegulator&, const ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XConnection >& _rxConn, bool _bAutoDispose = true );
-            ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XConnection >
+        void                            setFormConnection(const OAccessRegulator&, const css::uno::Reference< css::sdbc::XConnection >& _rxConn, bool _bAutoDispose = true );
+            css::uno::Reference< css::sdbc::XConnection >
                                         getFormConnection(const OAccessRegulator&) const;
 
         /** returns the com.sun.star.task.InteractionHandler
             @param  _pWindow    The window will be used when an error message has to be shown.
         */
-        ::com::sun::star::uno::Reference< ::com::sun::star::task::XInteractionHandler > getInteractionHandler(vcl::Window* _pWindow) const;
+        css::uno::Reference< css::task::XInteractionHandler > getInteractionHandler(vcl::Window* _pWindow) const;
 
     protected:
         // initialize the derivees settings (which have to be derived from OControlWizardSettings)
@@ -132,13 +132,13 @@ namespace dbp
 
         bool needDatasourceSelection();
 
-        ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XConnection >
+        css::uno::Reference< css::sdbc::XConnection >
                                         getFormConnection() const;
 
         virtual bool approveControl(sal_Int16 _nClassId) = 0;
 
         // ModalDialog overridables
-        virtual short   Execute() SAL_OVERRIDE;
+        virtual short   Execute() override;
 
     private:
         bool initContext();
@@ -149,7 +149,7 @@ namespace dbp
         void implDetermineShape();
 
         // made private. Not to be used by derived (or external) classes
-        virtual void ActivatePage() SAL_OVERRIDE;
+        virtual void ActivatePage() override;
     };
 
 

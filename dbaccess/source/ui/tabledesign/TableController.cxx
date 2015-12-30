@@ -123,8 +123,7 @@ OUString OTableController::getImplementationName_Static() throw( RuntimeExceptio
 
 Sequence< OUString> OTableController::getSupportedServiceNames_Static() throw( RuntimeException )
 {
-    Sequence< OUString> aSupported(1);
-    aSupported[0] = "com.sun.star.sdb.TableDesign";
+    Sequence<OUString> aSupported { "com.sun.star.sdb.TableDesign" };
     return aSupported;
 }
 
@@ -191,15 +190,10 @@ FeatureState OTableController::GetState(sal_uInt16 _nId) const
             break;
         case ID_BROWSER_EDITDOC:
             aReturn.bChecked = isEditable();
-            aReturn.bEnabled = m_bNew || isEditable();// the editable flag is set through this one -> || isAddAllowed() || isDropAllowed() || isAlterAllowed();
+            aReturn.bEnabled = true;
             break;
         case ID_BROWSER_SAVEDOC:
-            aReturn.bEnabled = impl_isModified();
-            if ( aReturn.bEnabled )
-            {
-                aReturn.bEnabled = ::std::any_of(m_vRowList.begin(),m_vRowList.end(),
-                                                 ::boost::mem_fn(&OTableRow::isValid));
-            }
+            aReturn.bEnabled = isEditable() && ::std::any_of(m_vRowList.begin(),m_vRowList.end(),::boost::mem_fn(&OTableRow::isValid));
             break;
         case ID_BROWSER_SAVEASDOC:
             aReturn.bEnabled = isConnected() && isEditable();
@@ -245,6 +239,7 @@ void OTableController::Execute(sal_uInt16 _nId, const Sequence< PropertyValue >&
         case ID_BROWSER_EDITDOC:
             setEditable(!isEditable());
             static_cast<OTableDesignView*>(getView())->setReadOnly(!isEditable());
+            InvalidateFeature(ID_BROWSER_SAVEDOC);
             InvalidateFeature(ID_BROWSER_PASTE);
             InvalidateFeature(SID_BROWSER_CLEAR_QUERY);
             break;
@@ -433,7 +428,7 @@ bool OTableController::doSaveDoc(bool _bSaveAs)
         {
             m_sName.clear();
             stopTableListening();
-            m_xTable = NULL;
+            m_xTable = nullptr;
         }
     }
     return ! (aInfo.isValid() || bError);
@@ -501,7 +496,7 @@ void OTableController::impl_initialize()
 
         const NamedValueCollection& rArguments( getInitParams() );
 
-        rArguments.get_ensureType( OUString(PROPERTY_CURRENTTABLE), m_sName );
+        rArguments.get_ensureType( PROPERTY_CURRENTTABLE, m_sName );
 
         // read autoincrement value set in the datasource
         ::dbaui::fillAutoIncrementValue(getDataSource(),m_bAllowAutoIncrementValue,m_sAutoIncrementValue);
@@ -631,7 +626,7 @@ void SAL_CALL OTableController::disposing( const EventObject& _rSource ) throw(R
     if ( _rSource.Source == m_xTable )
     {   // some deleted our table so we have a new one
         stopTableListening();
-        m_xTable    = NULL;
+        m_xTable    = nullptr;
         m_bNew      = true;
         setModified(sal_True);
     }
@@ -652,7 +647,7 @@ void OTableController::losingConnection( )
         xComponent->removeEventListener(xEvtL);
     }
     stopTableListening();
-    m_xTable    = NULL;
+    m_xTable    = nullptr;
     assignTable();
     if(!m_xTable.is())
     {
@@ -702,7 +697,7 @@ void OTableController::appendColumns(Reference<XColumnsSupplier>& _rxColSup, boo
                     xColumn->setPropertyValue(PROPERTY_NAME,makeAny(pField->GetName()));
 
                 xAppend->appendByDescriptor(xColumn);
-                xColumn = NULL;
+                xColumn = nullptr;
                 // now only the settings are missing
                 if(xColumns->hasByName(pField->GetName()))
                 {
@@ -959,7 +954,7 @@ bool OTableController::checkColumns(bool _bNew)
             pActFieldDescr->SetAutoIncrement(false);
             pActFieldDescr->SetIsNullable(ColumnValue::NO_NULLS);
 
-            pActFieldDescr->SetName( createUniqueName(OUString("ID") ));
+            pActFieldDescr->SetName( createUniqueName("ID" ));
             pActFieldDescr->SetPrimaryKey( true );
             m_vRowList.insert(m_vRowList.begin(),pNewRow);
 
@@ -1093,7 +1088,7 @@ void OTableController::alterColumns()
                     }
                 }
                 // exceptions are caught outside
-                xNewColumn = NULL;
+                xNewColumn = nullptr;
                 if(xColumns->hasByName(pField->GetName()))
                     xColumns->getByName(pField->GetName()) >>= xColumn;
                 bReload = true;
@@ -1197,7 +1192,7 @@ void OTableController::alterColumns()
                     ScopedVclPtrInstance< OSQLMessageBox > aMsg(getView(),aTitle,aMsgT,WB_YES_NO| WB_DEF_YES);
                     if(aMsg->Execute() == RET_YES)
                     {
-                        xKeyColumns = NULL;
+                        xKeyColumns = nullptr;
                         dropPrimaryKey();
                     }
                     else

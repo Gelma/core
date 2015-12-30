@@ -56,29 +56,26 @@ namespace framework
 class SpinfieldControl : public SpinField
 {
     public:
-        SpinfieldControl( vcl::Window* pParent, WinBits nStyle, ISpinfieldListener* pSpinFieldListener );
+        SpinfieldControl( vcl::Window* pParent, WinBits nStyle, SpinfieldToolbarController* pSpinfieldToolbarController );
         virtual ~SpinfieldControl();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
-        virtual void Up() SAL_OVERRIDE;
-        virtual void Down() SAL_OVERRIDE;
-        virtual void First() SAL_OVERRIDE;
-        virtual void Last() SAL_OVERRIDE;
-        virtual void KeyInput( const ::KeyEvent& rKEvt ) SAL_OVERRIDE;
-        virtual void Modify() SAL_OVERRIDE;
-        virtual void GetFocus() SAL_OVERRIDE;
-        virtual void LoseFocus() SAL_OVERRIDE;
-        virtual void StateChanged( StateChangedType nType ) SAL_OVERRIDE;
-        virtual void DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
-        virtual bool PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+        virtual void Up() override;
+        virtual void Down() override;
+        virtual void First() override;
+        virtual void Last() override;
+        virtual void Modify() override;
+        virtual void GetFocus() override;
+        virtual void LoseFocus() override;
+        virtual bool PreNotify( NotifyEvent& rNEvt ) override;
 
     private:
-        ISpinfieldListener* m_pSpinFieldListener;
+        SpinfieldToolbarController* m_pSpinfieldToolbarController;
 };
 
-SpinfieldControl::SpinfieldControl( vcl::Window* pParent, WinBits nStyle, ISpinfieldListener* pSpinFieldListener ) :
+SpinfieldControl::SpinfieldControl( vcl::Window* pParent, WinBits nStyle, SpinfieldToolbarController* pSpinfieldToolbarController ) :
     SpinField( pParent, nStyle )
-    , m_pSpinFieldListener( pSpinFieldListener )
+    , m_pSpinfieldToolbarController( pSpinfieldToolbarController )
 {
 }
 
@@ -89,85 +86,64 @@ SpinfieldControl::~SpinfieldControl()
 
 void SpinfieldControl::dispose()
 {
-    m_pSpinFieldListener = 0;
+    m_pSpinfieldToolbarController = nullptr;
     SpinField::dispose();
 }
 
 void SpinfieldControl::Up()
 {
     SpinField::Up();
-    if ( m_pSpinFieldListener )
-        m_pSpinFieldListener->Up();
+    if ( m_pSpinfieldToolbarController )
+        m_pSpinfieldToolbarController->Up();
 }
 
 void SpinfieldControl::Down()
 {
     SpinField::Down();
-    if ( m_pSpinFieldListener )
-        m_pSpinFieldListener->Down();
+    if ( m_pSpinfieldToolbarController )
+        m_pSpinfieldToolbarController->Down();
 }
 
 void SpinfieldControl::First()
 {
     SpinField::First();
-    if ( m_pSpinFieldListener )
-        m_pSpinFieldListener->First();
+    if ( m_pSpinfieldToolbarController )
+        m_pSpinfieldToolbarController->First();
 }
 
 void SpinfieldControl::Last()
 {
     SpinField::First();
-    if ( m_pSpinFieldListener )
-        m_pSpinFieldListener->Last();
-}
-
-void SpinfieldControl::KeyInput( const ::KeyEvent& rKEvt )
-{
-    SpinField::KeyInput( rKEvt );
-    if ( m_pSpinFieldListener )
-        m_pSpinFieldListener->KeyInput( rKEvt );
+    if ( m_pSpinfieldToolbarController )
+        m_pSpinfieldToolbarController->Last();
 }
 
 void SpinfieldControl::Modify()
 {
     SpinField::Modify();
-    if ( m_pSpinFieldListener )
-        m_pSpinFieldListener->Modify();
+    if ( m_pSpinfieldToolbarController )
+        m_pSpinfieldToolbarController->Modify();
 }
 
 void SpinfieldControl::GetFocus()
 {
     SpinField::GetFocus();
-    if ( m_pSpinFieldListener )
-        m_pSpinFieldListener->GetFocus();
+    if ( m_pSpinfieldToolbarController )
+        m_pSpinfieldToolbarController->GetFocus();
 }
 
 void SpinfieldControl::LoseFocus()
 {
     SpinField::GetFocus();
-    if ( m_pSpinFieldListener )
-        m_pSpinFieldListener->GetFocus();
-}
-
-void SpinfieldControl::StateChanged( StateChangedType nType )
-{
-    SpinField::StateChanged( nType );
-    if ( m_pSpinFieldListener )
-        m_pSpinFieldListener->StateChanged( nType );
-}
-
-void SpinfieldControl::DataChanged( const DataChangedEvent& rDCEvt )
-{
-    SpinField::DataChanged( rDCEvt );
-    if ( m_pSpinFieldListener )
-        m_pSpinFieldListener->DataChanged( rDCEvt );
+    if ( m_pSpinfieldToolbarController )
+        m_pSpinfieldToolbarController->GetFocus();
 }
 
 bool SpinfieldControl::PreNotify( NotifyEvent& rNEvt )
 {
     bool bRet = false;
-    if ( m_pSpinFieldListener )
-        bRet = m_pSpinFieldListener->PreNotify( rNEvt );
+    if ( m_pSpinfieldToolbarController )
+        bRet = m_pSpinfieldToolbarController->PreNotify( rNEvt );
     if ( !bRet )
         bRet = SpinField::PreNotify( rNEvt );
 
@@ -189,7 +165,7 @@ SpinfieldToolbarController::SpinfieldToolbarController(
     ,   m_nMin( 0.0 )
     ,   m_nValue( 0.0 )
     ,   m_nStep( 0.0 )
-    ,   m_pSpinfieldControl( 0 )
+    ,   m_pSpinfieldControl( nullptr )
 {
     m_pSpinfieldControl = VclPtr<SpinfieldControl>::Create( m_pToolbar, WB_SPIN|WB_BORDER, this );
     if ( nWidth == 0 )
@@ -211,7 +187,7 @@ throw ( RuntimeException, std::exception )
 {
     SolarMutexGuard aSolarMutexGuard;
 
-    m_pToolbar->SetItemWindow( m_nID, 0 );
+    m_pToolbar->SetItemWindow( m_nID, nullptr );
     m_pSpinfieldControl.disposeAndClear();
 
     ComplexToolbarController::dispose();
@@ -288,21 +264,9 @@ void SpinfieldToolbarController::Modify()
     notifyTextChanged( m_pSpinfieldControl->GetText() );
 }
 
-void SpinfieldToolbarController::KeyInput( const ::KeyEvent& /*rKEvt*/ )
-{
-}
-
 void SpinfieldToolbarController::GetFocus()
 {
     notifyFocusGet();
-}
-
-void SpinfieldToolbarController::StateChanged( StateChangedType /*nType*/ )
-{
-}
-
-void SpinfieldToolbarController::DataChanged( const DataChangedEvent& /*rDCEvt*/ )
-{
 }
 
 bool SpinfieldToolbarController::PreNotify( NotifyEvent& rNEvt )
@@ -323,7 +287,7 @@ bool SpinfieldToolbarController::PreNotify( NotifyEvent& rNEvt )
     return false;
 }
 
-void SpinfieldToolbarController::executeControlCommand( const ::com::sun::star::frame::ControlCommand& rControlCommand )
+void SpinfieldToolbarController::executeControlCommand( const css::frame::ControlCommand& rControlCommand )
 {
     OUString aValue;
     OUString aMax;

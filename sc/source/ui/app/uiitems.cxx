@@ -26,19 +26,6 @@
 #include <osl/diagnose.h>
 #include <editeng/editobj.hxx>
 
-// STATIC DATA -----------------------------------------------------------
-
-TYPEINIT1(ScInputStatusItem,    SfxPoolItem);
-TYPEINIT1(ScSortItem,           SfxPoolItem);
-TYPEINIT1(ScQueryItem,          SfxPoolItem);
-TYPEINIT1(ScSubTotalItem,       SfxPoolItem);
-TYPEINIT1(ScUserListItem,       SfxPoolItem);
-TYPEINIT1(ScConsolidateItem,    SfxPoolItem);
-TYPEINIT1(ScPivotItem,          SfxPoolItem);
-TYPEINIT1(ScSolveItem,          SfxPoolItem);
-TYPEINIT1(ScTabOpItem,          SfxPoolItem);
-
-
 /**
  * Status update for entry field
  */
@@ -177,10 +164,10 @@ SfxPoolItem* ScSortItem::Clone( SfxItemPool * ) const
     return new ScSortItem( *this );
 }
 
-bool ScSortItem::QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 /* nMemberUd */ ) const
+bool ScSortItem::QueryValue( css::uno::Any& rVal, sal_uInt8 /* nMemberUd */ ) const
 {
     // Return empty value as there is no useful conversion
-    rVal = com::sun::star::uno::Any();
+    rVal = css::uno::Any();
     return true;
 }
 
@@ -312,10 +299,10 @@ SfxPoolItem* ScSubTotalItem::Clone( SfxItemPool * ) const
     return new ScSubTotalItem( *this );
 }
 
-bool ScSubTotalItem::QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 /* nMemberUd */ ) const
+bool ScSubTotalItem::QueryValue( css::uno::Any& rVal, sal_uInt8 /* nMemberUd */ ) const
 {
     // Return empty value as there is no useful conversion
-    rVal = com::sun::star::uno::Any();
+    rVal = css::uno::Any();
     return true;
 }
 

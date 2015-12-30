@@ -32,18 +32,18 @@ class XFillAttrSetItem;
 class SVX_DLLPUBLIC SdrItemPool : public XOutdevItemPool
 {
 public:
-    SdrItemPool(SfxItemPool* pMaster = 0L, bool bLoadRefCounts = true);
+    SdrItemPool(SfxItemPool* pMaster = nullptr, bool bLoadRefCounts = true);
     SdrItemPool(const SdrItemPool& rPool);
 protected:
     virtual ~SdrItemPool();
 public:
 
-    virtual SfxItemPool* Clone() const SAL_OVERRIDE;
+    virtual SfxItemPool* Clone() const override;
     virtual bool GetPresentation(const SfxPoolItem& rItem,
         SfxMapUnit          ePresentationMetric,
         OUString&             rText,
         const IntlWrapper * pIntlWrapper
-        = 0) const SAL_OVERRIDE;
+        = nullptr) const override;
 
     static void TakeItemName(sal_uInt16 nWhich, OUString& rItemName);
 };

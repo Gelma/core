@@ -149,7 +149,7 @@ static bool lcl_FindAutoFormatIndex( const ScAutoFormat& rFormats, const OUStrin
     ScAutoFormat::const_iterator itBeg = rFormats.begin(), itEnd = rFormats.end();
     for (ScAutoFormat::const_iterator it = itBeg; it != itEnd; ++it)
     {
-        const ScAutoFormatData* pEntry = it->second;
+        const ScAutoFormatData *const pEntry = it->second.get();
         const OUString& aEntryName = pEntry->GetName();
         if ( aEntryName.equals(rName) )
         {
@@ -186,7 +186,7 @@ ScAutoFormatObj* ScAutoFormatsObj::GetObjectByIndex_Impl(sal_uInt16 nIndex)
     if (nIndex < ScGlobal::GetOrCreateAutoFormat()->size())
         return new ScAutoFormatObj(nIndex);
 
-    return NULL;    // falscher Index
+    return nullptr;    // falscher Index
 }
 
 ScAutoFormatObj* ScAutoFormatsObj::GetObjectByName_Impl(const OUString& aName)
@@ -196,7 +196,7 @@ ScAutoFormatObj* ScAutoFormatsObj::GetObjectByName_Impl(const OUString& aName)
     if (lcl_FindAutoFormatIndex(
             *ScGlobal::GetOrCreateAutoFormat(), aString, nIndex ))
         return GetObjectByIndex_Impl(nIndex);
-    return NULL;
+    return nullptr;
 }
 
 // container::XNameContainer
@@ -420,7 +420,7 @@ const uno::Sequence<sal_Int8>& ScAutoFormatObj::getUnoTunnelId()
 
 ScAutoFormatObj* ScAutoFormatObj::getImplementation(const uno::Reference<uno::XInterface>& rObj)
 {
-    ScAutoFormatObj* pRet = NULL;
+    ScAutoFormatObj* pRet = nullptr;
     uno::Reference<lang::XUnoTunnel> xUT(rObj, uno::UNO_QUERY);
     if (xUT.is())
         pRet = reinterpret_cast<ScAutoFormatObj*>(sal::static_int_cast<sal_IntPtr>(xUT->getSomething(getUnoTunnelId())));
@@ -439,7 +439,7 @@ ScAutoFormatFieldObj* ScAutoFormatObj::GetObjectByIndex_Impl(sal_uInt16 nIndex)
     if ( IsInserted() && nIndex < SC_AF_FIELD_COUNT )
         return new ScAutoFormatFieldObj( nFormatIndex, nIndex );
 
-    return NULL;
+    return nullptr;
 }
 
 // container::XEnumerationAccess
@@ -513,7 +513,7 @@ void SAL_CALL ScAutoFormatObj::setName( const OUString& aNewName )
     {
         ScAutoFormat::iterator it = pFormats->begin();
         std::advance(it, nFormatIndex);
-        ScAutoFormatData* pData = it->second;
+        ScAutoFormatData *const pData = it->second.get();
         OSL_ENSURE(pData,"AutoFormat Daten nicht da");
 
         ScAutoFormatData* pNew = new ScAutoFormatData(*pData);

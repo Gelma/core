@@ -32,7 +32,7 @@ struct SfxFrameDescriptor_Impl
     SfxItemSet* pArgs;
     bool        bEditable;
 
-    SfxFrameDescriptor_Impl() : pWallpaper( NULL ), pArgs( NULL ), bEditable( true ) {}
+    SfxFrameDescriptor_Impl() : pWallpaper( nullptr ), pArgs( nullptr ), bEditable( true ) {}
     ~SfxFrameDescriptor_Impl()
     {
         delete pWallpaper;
@@ -174,7 +174,6 @@ bool SfxFrameProperties::operator ==( const SfxFrameProperties& rProp ) const
             bResizable == rProp.bResizable && bSetResizable == rProp.bSetResizable;
 }
 
-TYPEINIT1(SfxFrameDescriptorItem, SfxPoolItem);
 
 SfxFrameDescriptorItem::~SfxFrameDescriptorItem()
 {}

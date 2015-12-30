@@ -59,14 +59,14 @@ ChildrenManagerImpl::ChildrenManagerImpl (
     const AccessibleShapeTreeInfo& rShapeTreeInfo,
     AccessibleContextBase& rContext)
     : ::cppu::WeakComponentImplHelper<
-          ::com::sun::star::document::XEventListener,
-          ::com::sun::star::view::XSelectionChangeListener>(maMutex),
+          css::document::XEventListener,
+          css::view::XSelectionChangeListener>(maMutex),
       mxShapeList (rxShapeList),
       mxParent (rxParent),
       maShapeTreeInfo (rShapeTreeInfo),
       mrContext (rContext),
       mnNewNameIndex(1),
-      mpFocusedShape(NULL)
+      mpFocusedShape(nullptr)
 {
 }
 
@@ -112,10 +112,9 @@ long ChildrenManagerImpl::GetChildCount() const throw ()
 }
 
 
-::com::sun::star::uno::Reference<
-        ::com::sun::star::drawing::XShape> ChildrenManagerImpl::GetChildShape(long nIndex)
-    throw (::com::sun::star::uno::RuntimeException,
-           ::com::sun::star::lang::IndexOutOfBoundsException)
+css::uno::Reference<css::drawing::XShape> ChildrenManagerImpl::GetChildShape(long nIndex)
+    throw (css::uno::RuntimeException,
+           css::lang::IndexOutOfBoundsException)
 {
     uno::Reference<XAccessible> xAcc = GetChild(nIndex);
     ChildDescriptorListType::iterator I, aEnd = maVisibleChildren.end();
@@ -132,8 +131,8 @@ long ChildrenManagerImpl::GetChildCount() const throw ()
 */
 uno::Reference<XAccessible>
     ChildrenManagerImpl::GetChild (long nIndex)
-    throw (::com::sun::star::uno::RuntimeException,
-           ::com::sun::star::lang::IndexOutOfBoundsException)
+    throw (css::uno::RuntimeException,
+           css::lang::IndexOutOfBoundsException)
 {
     // Check whether the given index is valid.
     if (nIndex < 0 || (unsigned long)nIndex >= maVisibleChildren.size())
@@ -152,7 +151,7 @@ uno::Reference<XAccessible>
 */
 uno::Reference<XAccessible>
     ChildrenManagerImpl::GetChild (ChildDescriptor& rChildDescriptor,sal_Int32 _nIndex)
-    throw (::com::sun::star::uno::RuntimeException)
+    throw (css::uno::RuntimeException)
 {
     if ( ! rChildDescriptor.mxAccessibleShape.is())
     {
@@ -168,16 +167,14 @@ uno::Reference<XAccessible>
                         mnNewNameIndex++);
             // Create accessible object that corresponds to the descriptor's
             // shape.
-            AccessibleShape* pShape =
+            rtl::Reference<AccessibleShape> pShape(
                 ShapeTypeHandler::Instance().CreateAccessibleObject (
                     aShapeInfo,
-                    maShapeTreeInfo);
-            rChildDescriptor.mxAccessibleShape = uno::Reference<XAccessible> (
-                static_cast<uno::XWeak*>(pShape),
+                    maShapeTreeInfo));
+            rChildDescriptor.mxAccessibleShape.set(
+                static_cast<uno::XWeak*>(pShape.get()),
                 uno::UNO_QUERY);
-            // Now that there is a reference to the new accessible shape we
-            // can safely call its Init() method.
-            if ( pShape != NULL )
+            if ( pShape.is() )
             {
                 pShape->Init();
                 pShape->setIndexInParent(_nIndex);
@@ -219,7 +216,7 @@ uno::Reference<XAccessible>
 */
 void ChildrenManagerImpl::Update (bool bCreateNewObjectsOnDemand)
 {
-    if (maShapeTreeInfo.GetViewForwarder() == NULL)
+    if (maShapeTreeInfo.GetViewForwarder() == nullptr)
         return;
     Rectangle aVisibleArea = maShapeTreeInfo.GetViewForwarder()->GetVisibleArea();
 
@@ -298,7 +295,7 @@ void ChildrenManagerImpl::CreateListOfVisibleShapes (
 {
     SolarMutexGuard g;
 
-    OSL_ASSERT (maShapeTreeInfo.GetViewForwarder() != NULL);
+    OSL_ASSERT (maShapeTreeInfo.GetViewForwarder() != nullptr);
 
     Rectangle aVisibleArea = maShapeTreeInfo.GetViewForwarder()->GetVisibleArea();
 
@@ -379,7 +376,7 @@ void ChildrenManagerImpl::RemoveNonVisibleChildren (
             {
                 AccessibleShape* pAccessibleShape = I->GetAccessibleShape();
                 pAccessibleShape->ResetState (AccessibleStateType::VISIBLE);
-                I->mxAccessibleShape = NULL;
+                I->mxAccessibleShape = nullptr;
             }
         }
     }
@@ -424,7 +421,7 @@ void ChildrenManagerImpl::SendVisibleAreaEvents (
         // change of the view forwarder.  (Actually we usually get here
         // as a result of a change of the view forwarder).
         AccessibleShape* pShape = I->GetAccessibleShape ();
-        if (pShape != NULL)
+        if (pShape != nullptr)
             pShape->ViewForwarderChanged (
                 IAccessibleViewForwarderListener::VISIBLE_AREA,
                 maShapeTreeInfo.GetViewForwarder());
@@ -540,8 +537,7 @@ void ChildrenManagerImpl::RemoveShape (const Reference<drawing::XShape>& rxShape
 
 
 
-void ChildrenManagerImpl::SetShapeList (const ::com::sun::star::uno::Reference<
-    ::com::sun::star::drawing::XShapes>& xShapeList)
+void ChildrenManagerImpl::SetShapeList (const css::uno::Reference<css::drawing::XShapes>& xShapeList)
 {
     mxShapeList = xShapeList;
 }
@@ -587,7 +583,7 @@ void ChildrenManagerImpl::ClearAccessibleShapeList()
         if ( I->mxAccessibleShape.is() && I->mxShape.is() )
         {
             ::comphelper::disposeComponent(I->mxAccessibleShape);
-            I->mxAccessibleShape = NULL;
+            I->mxAccessibleShape = nullptr;
         }
 
     // Dispose all objects in the accessible shape list.
@@ -597,7 +593,7 @@ void ChildrenManagerImpl::ClearAccessibleShapeList()
         {
             // Dispose the object.
             ::comphelper::disposeComponent(*J);
-            *J = NULL;
+            *J = nullptr;
         }
 }
 
@@ -617,8 +613,7 @@ void ChildrenManagerImpl::SetInfo (const AccessibleShapeTreeInfo& rShapeTreeInfo
         SolarMutexGuard g;
         xCurrentBroadcaster = maShapeTreeInfo.GetModelBroadcaster();
         xCurrentController = maShapeTreeInfo.GetController();
-        xCurrentSelectionSupplier = Reference<view::XSelectionSupplier> (
-            xCurrentController, uno::UNO_QUERY);
+        xCurrentSelectionSupplier.set( xCurrentController, uno::UNO_QUERY);
         maShapeTreeInfo = rShapeTreeInfo;
     }
 
@@ -688,7 +683,7 @@ void SAL_CALL
         {
             // Clear the descriptor.
             I->disposeAccessibleObject (mrContext);
-            I->mxShape = NULL;
+            I->mxShape = nullptr;
         }
     }
 }
@@ -749,7 +744,7 @@ void ChildrenManagerImpl::impl_dispose()
     catch( uno::RuntimeException&)
     {}
 
-    maShapeTreeInfo.SetController (NULL);
+    maShapeTreeInfo.SetController (nullptr);
 
     try
     {
@@ -757,13 +752,13 @@ void ChildrenManagerImpl::impl_dispose()
         if (maShapeTreeInfo.GetModelBroadcaster().is())
             maShapeTreeInfo.GetModelBroadcaster()->removeEventListener (
                 static_cast<document::XEventListener*>(this));
-        maShapeTreeInfo.SetModelBroadcaster (NULL);
+        maShapeTreeInfo.SetModelBroadcaster (nullptr);
     }
     catch( uno::RuntimeException& )
     {}
 
     ClearAccessibleShapeList ();
-    SetShapeList (NULL);
+    SetShapeList (nullptr);
 }
 
 
@@ -786,7 +781,7 @@ void ChildrenManagerImpl::ViewForwarderChanged (ChangeType aChangeType,
         for (I=maVisibleChildren.begin(); I != aEnd; ++I)
         {
             AccessibleShape* pShape = I->GetAccessibleShape();
-            if (pShape != NULL)
+            if (pShape != nullptr)
                 pShape->ViewForwarderChanged (aChangeType, pViewForwarder);
         }
     }
@@ -795,19 +790,18 @@ void ChildrenManagerImpl::ViewForwarderChanged (ChangeType aChangeType,
 // IAccessibleParent
 bool ChildrenManagerImpl::ReplaceChild (
     AccessibleShape* pCurrentChild,
-    const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >& _rxShape,
+    const css::uno::Reference< css::drawing::XShape >& _rxShape,
     const long _nIndex,
     const AccessibleShapeTreeInfo& _rShapeTreeInfo)
     throw (uno::RuntimeException)
 {
     AccessibleShapeInfo aShapeInfo( _rxShape, pCurrentChild->getAccessibleParent(), this, _nIndex );
     // create the new child
-    AccessibleShape* pNewChild = ShapeTypeHandler::Instance().CreateAccessibleObject (
+    rtl::Reference<AccessibleShape> pNewChild(ShapeTypeHandler::Instance().CreateAccessibleObject (
         aShapeInfo,
         _rShapeTreeInfo
-    );
-    Reference< XAccessible > xNewChild( pNewChild );    // keep this alive (do this before calling Init!)
-    if ( pNewChild )
+    ));
+    if ( pNewChild.is() )
         pNewChild->Init();
 
     bool bResult = false;
@@ -831,7 +825,7 @@ bool ChildrenManagerImpl::ReplaceChild (
 
             // Replace with replacement and send an event about existence
             // of the new child.
-            I->mxAccessibleShape = pNewChild;
+            I->mxAccessibleShape = pNewChild.get();
             mrContext.CommitChange (
                 AccessibleEventId::CHILD,
                 uno::makeAny (I->mxAccessibleShape),
@@ -848,7 +842,7 @@ bool ChildrenManagerImpl::ReplaceChild (
 }
 
 // Add the impl method for IAccessibleParent interface
-AccessibleControlShape * ChildrenManagerImpl::GetAccControlShapeFromModel(::com::sun::star::beans::XPropertySet* pSet) throw (::com::sun::star::uno::RuntimeException)
+AccessibleControlShape * ChildrenManagerImpl::GetAccControlShapeFromModel(css::beans::XPropertySet* pSet) throw (css::uno::RuntimeException)
 {
     sal_Int32 count = GetChildCount();
     for (sal_Int32 index=0;index<count;index++)
@@ -861,7 +855,7 @@ AccessibleControlShape * ChildrenManagerImpl::GetAccControlShapeFromModel(::com:
                 return pCtlAccShape;
                 }
     }
-    return NULL;
+    return nullptr;
 }
 uno::Reference<XAccessible>
     ChildrenManagerImpl::GetAccessibleCaption (const uno::Reference<drawing::XShape>& xShape)
@@ -898,15 +892,13 @@ void ChildrenManagerImpl::UpdateSelection()
     Reference<drawing::XShape> xSelectedShape;
     if (xSelectionSupplier.is())
     {
-        xSelectedShapeAccess = Reference<container::XIndexAccess> (
-            xSelectionSupplier->getSelection(), uno::UNO_QUERY);
-        xSelectedShape = Reference<drawing::XShape> (
-            xSelectionSupplier->getSelection(), uno::UNO_QUERY);
+        xSelectedShapeAccess.set( xSelectionSupplier->getSelection(), uno::UNO_QUERY);
+        xSelectedShape.set( xSelectionSupplier->getSelection(), uno::UNO_QUERY);
     }
 
     // Remember the current and new focused shape.
-    AccessibleShape* pCurrentlyFocusedShape = NULL;
-    AccessibleShape* pNewFocusedShape = NULL;
+    AccessibleShape* pCurrentlyFocusedShape = nullptr;
+    AccessibleShape* pNewFocusedShape = nullptr;
     typedef std::pair< AccessibleShape* , sal_Bool > PAIR_SHAPE;//sal_Bool Selected,UnSelected.
     typedef std::vector< PAIR_SHAPE > VEC_SHAPE;
     VEC_SHAPE vecSelect;
@@ -917,7 +909,7 @@ void ChildrenManagerImpl::UpdateSelection()
     for (I=maVisibleChildren.begin(); I != aEnd; ++I)
     {
         AccessibleShape* pAccessibleShape = I->GetAccessibleShape();
-        if (I->mxAccessibleShape.is() && I->mxShape.is() && pAccessibleShape!=NULL)
+        if (I->mxAccessibleShape.is() && I->mxShape.is() && pAccessibleShape!=nullptr)
         {
             short nRole = pAccessibleShape->getAccessibleRole();
             bool bDrawShape = (
@@ -997,9 +989,9 @@ void ChildrenManagerImpl::UpdateSelection()
     // Move focus from current to newly focused shape.
     if (pCurrentlyFocusedShape != pNewFocusedShape)
     {
-        if (pCurrentlyFocusedShape != NULL)
+        if (pCurrentlyFocusedShape != nullptr)
             pCurrentlyFocusedShape->ResetState (AccessibleStateType::FOCUSED);
-        if (pNewFocusedShape != NULL && bShapeActive)
+        if (pNewFocusedShape != nullptr && bShapeActive)
             pNewFocusedShape->SetState (AccessibleStateType::FOCUSED);
     }
 
@@ -1056,7 +1048,7 @@ void ChildrenManagerImpl::UpdateSelection()
 
 bool ChildrenManagerImpl::HasFocus()
 {
-    return mpFocusedShape != NULL;
+    return mpFocusedShape != nullptr;
 }
 
 
@@ -1064,10 +1056,10 @@ bool ChildrenManagerImpl::HasFocus()
 
 void ChildrenManagerImpl::RemoveFocus()
 {
-    if (mpFocusedShape != NULL)
+    if (mpFocusedShape != nullptr)
     {
         mpFocusedShape->ResetState (AccessibleStateType::FOCUSED);
-        mpFocusedShape = NULL;
+        mpFocusedShape = nullptr;
     }
 }
 
@@ -1097,7 +1089,7 @@ void ChildrenManagerImpl::UnregisterAsDisposeListener (
 // AccessibleChildDescriptor
 ChildDescriptor::ChildDescriptor (const Reference<drawing::XShape>& xShape)
     : mxShape (xShape),
-      mxAccessibleShape (NULL),
+      mxAccessibleShape (nullptr),
       mbCreateEventPending (true)
 {
     // Empty.
@@ -1107,7 +1099,7 @@ ChildDescriptor::ChildDescriptor (const Reference<drawing::XShape>& xShape)
 
 
 ChildDescriptor::ChildDescriptor (const Reference<XAccessible>& rxAccessibleShape)
-    : mxShape (NULL),
+    : mxShape (nullptr),
       mxAccessibleShape (rxAccessibleShape),
       mbCreateEventPending (true)
 {
@@ -1160,7 +1152,7 @@ void ChildDescriptor::disposeAccessibleObject (AccessibleContextBase& rParent)
         if (xComponent.is())
             xComponent->dispose ();
 
-        mxAccessibleShape = NULL;
+        mxAccessibleShape = nullptr;
     }
 }
 

@@ -103,8 +103,7 @@ OUString ORelationController::getImplementationName_Static() throw( RuntimeExcep
 
 Sequence< OUString> ORelationController::getSupportedServiceNames_Static() throw( RuntimeException )
 {
-    Sequence< OUString> aSupported(1);
-    aSupported[0] = "com.sun.star.sdb.RelationDesign";
+    Sequence<OUString> aSupported { "com.sun.star.sdb.RelationDesign" };
     return aSupported;
 }
 
@@ -302,8 +301,8 @@ namespace
         }
 
         /// Working method which should be overridden.
-        virtual void SAL_CALL run() SAL_OVERRIDE;
-        virtual void SAL_CALL onTerminated() SAL_OVERRIDE;
+        virtual void SAL_CALL run() override;
+        virtual void SAL_CALL onTerminated() override;
     protected:
         virtual ~RelationLoader(){}
 

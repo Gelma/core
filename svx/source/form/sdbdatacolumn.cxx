@@ -35,17 +35,17 @@ namespace svxform
 
     //= DataColumn - a class wrapping an object implementing a sdb::DataColumn service
 
-    DataColumn::DataColumn(const Reference< ::com::sun::star::beans::XPropertySet>& _rxIFace)
+    DataColumn::DataColumn(const Reference< css::beans::XPropertySet>& _rxIFace)
     {
         m_xPropertySet = _rxIFace;
-        m_xColumn = Reference< ::com::sun::star::sdb::XColumn>(_rxIFace, UNO_QUERY);
-        m_xColumnUpdate = Reference< ::com::sun::star::sdb::XColumnUpdate>(_rxIFace, UNO_QUERY);
+        m_xColumn.set(_rxIFace, UNO_QUERY);
+        m_xColumnUpdate.set(_rxIFace, UNO_QUERY);
 
         if (!m_xPropertySet.is() || !m_xColumn.is())
         {
-            m_xPropertySet = NULL;
-            m_xColumn = NULL;
-            m_xColumnUpdate = NULL;
+            m_xPropertySet = nullptr;
+            m_xColumn = nullptr;
+            m_xColumnUpdate = nullptr;
         }
     }
 

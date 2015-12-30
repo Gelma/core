@@ -37,42 +37,31 @@ namespace dbaui
     class OConnectionTabPageSetup : public OConnectionHelper
     {
         friend class VclPtr<OConnectionTabPageSetup>;
-        bool            m_bUserGrabFocus : 1;
     protected:
 
         VclPtr<FixedText>           m_pHelpText;
         VclPtr<FixedText>           m_pHeaderText;
 
         // called when the test connection button was clicked
-        DECL_LINK(OnEditModified,Edit*);
+        DECL_LINK_TYPED(OnEditModified, Edit&, void);
 
     public:
         virtual ~OConnectionTabPageSetup();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
         static  VclPtr<OGenericAdministrationPage> CreateDbaseTabPage( vcl::Window* pParent, const SfxItemSet& _rAttrSet );
         static  VclPtr<OGenericAdministrationPage> CreateMSAccessTabPage( vcl::Window* pParent, const SfxItemSet& _rAttrSet );
         static  VclPtr<OGenericAdministrationPage> CreateADOTabPage( vcl::Window* pParent, const SfxItemSet& _rAttrSet );
         static  VclPtr<OGenericAdministrationPage> CreateODBCTabPage( vcl::Window* pParent, const SfxItemSet& _rAttrSet );
         static  VclPtr<OGenericAdministrationPage> CreateUserDefinedTabPage( vcl::Window* pParent, const SfxItemSet& _rAttrSet );
 
-        virtual bool        FillItemSet (SfxItemSet* _rCoreAttrs) SAL_OVERRIDE;
+        virtual bool        FillItemSet (SfxItemSet* _rCoreAttrs) override;
 
-        virtual void        implInitControls(const SfxItemSet& _rSet, bool _bSaveValue) SAL_OVERRIDE;
-        virtual bool        commitPage( ::svt::WizardTypes::CommitPageReason _eReason ) SAL_OVERRIDE;
-
-        inline void enableConnectionURL() { m_pConnectionURL->SetReadOnly(false); }
-        inline void disableConnectionURL() { m_pConnectionURL->SetReadOnly(); }
-
-        /** changes the connection URL.
-            <p>The new URL must be of the type which is currently selected, only the parts which do not
-            affect the type may be changed (compared to the previous URL).</p>
-        */
-        void     changeConnectionURL( const OUString& _rNewDSN );
-        OUString getConnectionURL( ) const;
+        virtual void        implInitControls(const SfxItemSet& _rSet, bool _bSaveValue) override;
+        virtual bool        commitPage( ::svt::WizardTypes::CommitPageReason _eReason ) override;
 
     protected:
         OConnectionTabPageSetup(vcl::Window* pParent, const OString& _rId, const OUString& _rUIXMLDescription, const SfxItemSet& _rCoreAttrs, sal_uInt16 _nHelpTextResId, sal_uInt16 _nHeaderResId, sal_uInt16 _nUrlResId);
-        virtual bool checkTestConnection() SAL_OVERRIDE;
+        virtual bool checkTestConnection() override;
             // nControlFlags is a combination of the CBTP_xxx-constants
     };
 

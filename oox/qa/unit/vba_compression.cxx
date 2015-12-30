@@ -14,6 +14,7 @@
 #include <cppunit/TestFixture.h>
 
 #include <oox/ole/vbaexport.hxx>
+#include <tools/stream.hxx>
 #include <algorithm>
 
 class TestVbaCompression : public test::BootstrapFixtureBase
@@ -42,8 +43,8 @@ public:
     void testSpec323();
 
     // avoid the BootstrapFixtureBase::setUp and tearDown
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
     CPPUNIT_TEST_SUITE(TestVbaCompression);
     CPPUNIT_TEST(testSimple1);
@@ -96,9 +97,9 @@ void TestVbaCompression::testSimple1()
     const sal_uInt8* pReferenceData = static_cast<const sal_uInt8*>( aReferenceMemoryStream.GetData() );
     const sal_uInt8* pData = static_cast<const sal_uInt8*>( aOutputMemoryStream.GetData() );
 
-    size_t nSize = std::min(aReferenceMemoryStream.GetSize(),
+    const sal_uInt64 nSize = std::min(aReferenceMemoryStream.GetSize(),
             aOutputMemoryStream.GetSize());
-    for (size_t i = 0; i < nSize; ++i)
+    for (sal_uInt64 i = 0; i < nSize; ++i)
     {
         CPPUNIT_ASSERT_EQUAL((int)pReferenceData[i], (int)pData[i]);
     }
@@ -118,9 +119,9 @@ void TestVbaCompression::testSimple2()
     const sal_uInt8* pReferenceData = static_cast<const sal_uInt8*>( aReferenceMemoryStream.GetData() );
     const sal_uInt8* pData = static_cast<const sal_uInt8*>( aOutputMemoryStream.GetData() );
 
-    size_t nSize = std::min(aReferenceMemoryStream.GetSize(),
+    const sal_uInt64 nSize = std::min(aReferenceMemoryStream.GetSize(),
             aOutputMemoryStream.GetSize());
-    for (size_t i = 0; i < nSize; ++i)
+    for (sal_uInt64 i = 0; i < nSize; ++i)
     {
         CPPUNIT_ASSERT_EQUAL((int)pReferenceData[i], (int)pData[i]);
     }
@@ -140,9 +141,9 @@ void TestVbaCompression::testSimple3()
     const sal_uInt8* pReferenceData = static_cast<const sal_uInt8*>( aReferenceMemoryStream.GetData()  );
     const sal_uInt8* pData = static_cast<const sal_uInt8*>( aOutputMemoryStream.GetData() );
 
-    size_t nSize = std::min(aReferenceMemoryStream.GetSize(),
+    const sal_uInt64 nSize = std::min(aReferenceMemoryStream.GetSize(),
             aOutputMemoryStream.GetSize());
-    for (size_t i = 0; i < nSize; ++i)
+    for (sal_uInt64 i = 0; i < nSize; ++i)
     {
         CPPUNIT_ASSERT_EQUAL((int)pReferenceData[i], (int)pData[i]);
     }
@@ -162,9 +163,9 @@ void TestVbaCompression::testComplex1()
     const sal_uInt8* pReferenceData = static_cast<const sal_uInt8*>( aReferenceMemoryStream.GetData() );
     const sal_uInt8* pData = static_cast<const sal_uInt8*>( aOutputMemoryStream.GetData() );
 
-    size_t nSize = std::min(aReferenceMemoryStream.GetSize(),
+    const sal_uInt64 nSize = std::min(aReferenceMemoryStream.GetSize(),
             aOutputMemoryStream.GetSize());
-    for (size_t i = 0; i < nSize; ++i)
+    for (sal_uInt64 i = 0; i < nSize; ++i)
     {
         CPPUNIT_ASSERT_EQUAL((int)pReferenceData[i], (int)pData[i]);
     }
@@ -184,9 +185,9 @@ void TestVbaCompression::testSpec321()
     const sal_uInt8* pReferenceData = static_cast<const sal_uInt8*>( aReferenceMemoryStream.GetData() );
     const sal_uInt8* pData = static_cast<const sal_uInt8*>( aOutputMemoryStream.GetData() );
 
-    size_t nSize = std::min(aReferenceMemoryStream.GetSize(),
+    const sal_uInt64 nSize = std::min(aReferenceMemoryStream.GetSize(),
             aOutputMemoryStream.GetSize());
-    for (size_t i = 0; i < nSize; ++i)
+    for (sal_uInt64 i = 0; i < nSize; ++i)
     {
         CPPUNIT_ASSERT_EQUAL((int)pReferenceData[i], (int)pData[i]);
     }
@@ -206,9 +207,9 @@ void TestVbaCompression::testSpec322()
     const sal_uInt8* pReferenceData = static_cast<const sal_uInt8*>( aReferenceMemoryStream.GetData() );
     const sal_uInt8* pData = static_cast<const sal_uInt8*>( aOutputMemoryStream.GetData() );
 
-    size_t nSize = std::min(aReferenceMemoryStream.GetSize(),
+    const sal_uInt64 nSize = std::min(aReferenceMemoryStream.GetSize(),
             aOutputMemoryStream.GetSize());
-    for (size_t i = 0; i < nSize; ++i)
+    for (sal_uInt64 i = 0; i < nSize; ++i)
     {
         CPPUNIT_ASSERT_EQUAL((int)pReferenceData[i], (int)pData[i]);
     }
@@ -228,9 +229,9 @@ void TestVbaCompression::testSpec323()
     const sal_uInt8* pReferenceData = static_cast<const sal_uInt8*>( aReferenceMemoryStream.GetData() );
     const sal_uInt8* pData = static_cast<const sal_uInt8*>( aOutputMemoryStream.GetData() );
 
-    size_t nSize = std::min(aReferenceMemoryStream.GetSize(),
+    const sal_uInt64 nSize = std::min(aReferenceMemoryStream.GetSize(),
             aOutputMemoryStream.GetSize());
-    for (size_t i = 0; i < nSize; ++i)
+    for (sal_uInt64 i = 0; i < nSize; ++i)
     {
         CPPUNIT_ASSERT_EQUAL((int)pReferenceData[i], (int)pData[i]);
     }

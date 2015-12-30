@@ -57,12 +57,12 @@ VclPtr<vcl::Window> ParaPropertyPanel::Create (
     SfxBindings* pBindings,
     const css::uno::Reference<css::ui::XSidebar>& rxSidebar)
 {
-    if (pParent == NULL)
-        throw lang::IllegalArgumentException("no parent Window given to ParaPropertyPanel::Create", NULL, 0);
+    if (pParent == nullptr)
+        throw lang::IllegalArgumentException("no parent Window given to ParaPropertyPanel::Create", nullptr, 0);
     if ( ! rxFrame.is())
-        throw lang::IllegalArgumentException("no XFrame given to ParaPropertyPanel::Create", NULL, 1);
-    if (pBindings == NULL)
-        throw lang::IllegalArgumentException("no SfxBindings given to ParaPropertyPanel::Create", NULL, 2);
+        throw lang::IllegalArgumentException("no XFrame given to ParaPropertyPanel::Create", nullptr, 1);
+    if (pBindings == nullptr)
+        throw lang::IllegalArgumentException("no SfxBindings given to ParaPropertyPanel::Create", nullptr, 2);
 
     return VclPtr<ParaPropertyPanel>::Create(
                 pParent,
@@ -168,7 +168,7 @@ void ParaPropertyPanel::ReSize(bool /* bSize */)
 
 void ParaPropertyPanel::InitToolBoxIndent()
 {
-    Link<> aLink = LINK( this, ParaPropertyPanel, ModifyIndentHdl_Impl );
+    Link<Edit&,void> aLink = LINK( this, ParaPropertyPanel, ModifyIndentHdl_Impl );
     mpLeftIndent->SetModifyHdl( aLink );
     mpRightIndent->SetModifyHdl( aLink );
     mpFLineIndent->SetModifyHdl( aLink );
@@ -191,7 +191,7 @@ void ParaPropertyPanel::InitToolBoxIndent()
 
 void ParaPropertyPanel::InitToolBoxSpacing()
 {
-    Link<> aLink = LINK( this, ParaPropertyPanel, ULSpaceHdl_Impl );
+    Link<Edit&,void> aLink = LINK( this, ParaPropertyPanel, ULSpaceHdl_Impl );
     mpTopDist->SetModifyHdl(aLink);
     mpBottomDist->SetModifyHdl( aLink );
 
@@ -208,7 +208,7 @@ void ParaPropertyPanel::initial()
 }
 
 // for Paragraph Indent
-IMPL_LINK_NOARG( ParaPropertyPanel, ModifyIndentHdl_Impl)
+IMPL_LINK_NOARG_TYPED( ParaPropertyPanel, ModifyIndentHdl_Impl, Edit&, void)
 {
     SvxLRSpaceItem aMargin( SID_ATTR_PARA_LRSPACE );
     aMargin.SetTextLeft( (const long)GetCoreValue( *mpLeftIndent, m_eLRSpaceUnit ) );
@@ -217,7 +217,6 @@ IMPL_LINK_NOARG( ParaPropertyPanel, ModifyIndentHdl_Impl)
 
     GetBindings()->GetDispatcher()->Execute(
         SID_ATTR_PARA_LRSPACE, SfxCallMode::RECORD, &aMargin, 0L);
-    return 0;
 }
 
 IMPL_LINK_TYPED(ParaPropertyPanel, ClickIndent_IncDec_Hdl_Impl, ToolBox *, pControl, void)
@@ -300,7 +299,7 @@ IMPL_LINK_TYPED(ParaPropertyPanel, ClickIndent_IncDec_Hdl_Impl, ToolBox *, pCont
 }
 
 // for Paragraph Spacing
-IMPL_LINK_NOARG( ParaPropertyPanel, ULSpaceHdl_Impl)
+IMPL_LINK_NOARG_TYPED( ParaPropertyPanel, ULSpaceHdl_Impl, Edit&, void)
 {
     SvxULSpaceItem aMargin( SID_ATTR_PARA_ULSPACE );
     aMargin.SetUpper( (sal_uInt16)GetCoreValue( *mpTopDist, m_eULSpaceUnit ) );
@@ -308,7 +307,6 @@ IMPL_LINK_NOARG( ParaPropertyPanel, ULSpaceHdl_Impl)
 
     GetBindings()->GetDispatcher()->Execute(
         SID_ATTR_PARA_ULSPACE, SfxCallMode::RECORD, &aMargin, 0L);
-    return 0L;
 }
 
 // for Paragraph State change
@@ -547,7 +545,7 @@ FieldUnit ParaPropertyPanel::GetCurrentUnit( SfxItemState eState, const SfxPoolI
     else
     {
         SfxViewFrame* pFrame = SfxViewFrame::Current();
-        SfxObjectShell* pSh = NULL;
+        SfxObjectShell* pSh = nullptr;
         if ( pFrame )
             pSh = pFrame->GetObjectShell();
         if ( pSh )  //the object shell is not always available during reload
@@ -575,7 +573,6 @@ ParaPropertyPanel::ParaPropertyPanel(vcl::Window* pParent,
     const css::uno::Reference<css::ui::XSidebar>& rxSidebar)
     : PanelLayout(pParent, "ParaPropertyPanel", "svx/ui/sidebarparagraph.ui", rxFrame),
 
-      maSpace3 (SVX_RES(IMG_SPACE3)),
       maIndHang (SVX_RES(IMG_INDENT_HANG)),
       maTxtLeft (0),
       maUpper (0),
@@ -589,7 +586,6 @@ ParaPropertyPanel::ParaPropertyPanel(vcl::Window* pParent,
       maDecIndentControl(SID_DEC_INDENT, *pBindings,*this, OUString("DecrementIndent"), rxFrame),
       maIncIndentControl(SID_INC_INDENT, *pBindings,*this, OUString("IncrementIndent"), rxFrame),
       m_aMetricCtl (SID_ATTR_METRIC, *pBindings,*this),
-      mxFrame(rxFrame),
       maContext(),
       mpBindings(pBindings),
       mxSidebar(rxSidebar)

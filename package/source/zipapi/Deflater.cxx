@@ -60,7 +60,6 @@ void Deflater::init (sal_Int32 nLevelArg, sal_Int32 nStrategyArg, bool bNowrap)
 Deflater::Deflater(sal_Int32 nSetLevel, bool bNowrap)
 : bFinish(false)
 , bFinished(false)
-, nStrategy(DEFAULT_STRATEGY)
 , nOffset(0)
 , nLength(0)
 {
@@ -134,7 +133,7 @@ void SAL_CALL Deflater::reset(  )
 }
 void SAL_CALL Deflater::end(  )
 {
-    if (pStream != NULL)
+    if (pStream != nullptr)
     {
 #if !defined Z_PREFIX
         deflateEnd(pStream);
@@ -143,7 +142,7 @@ void SAL_CALL Deflater::end(  )
 #endif
         delete pStream;
     }
-    pStream = NULL;
+    pStream = nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

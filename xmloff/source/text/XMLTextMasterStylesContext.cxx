@@ -31,7 +31,6 @@ using namespace ::com::sun::star::xml::sax;
 using ::xmloff::token::IsXMLToken;
 using ::xmloff::token::XML_MASTER_PAGE;
 
-TYPEINIT1( XMLTextMasterStylesContext, SvXMLStylesContext );
 
 bool XMLTextMasterStylesContext::InsertStyleFamily( sal_uInt16 ) const
 {
@@ -55,7 +54,7 @@ SvXMLStyleContext *XMLTextMasterStylesContext::CreateStyleChildContext(
         const OUString& rLocalName,
         const Reference< XAttributeList > & xAttrList )
 {
-    SvXMLStyleContext *pContext = 0;
+    SvXMLStyleContext *pContext = nullptr;
 
     if( XML_NAMESPACE_STYLE == nPrefix &&
         IsXMLToken( rLocalName, XML_MASTER_PAGE ) &&
@@ -76,7 +75,7 @@ SvXMLStyleContext *XMLTextMasterStylesContext::CreateStyleStyleChildContext(
         const OUString& /*rLocalName*/,
         const Reference< XAttributeList > & /*xAttrList*/ )
 {
-    return 0;
+    return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

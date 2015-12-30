@@ -80,7 +80,6 @@ using namespace ::svx;
 
 
 
-TYPEINIT1(FmFormView, E3dView);
 
 
 FmFormView::FmFormView( FmFormModel* pModel, OutputDevice* pOut )
@@ -92,7 +91,7 @@ FmFormView::FmFormView( FmFormModel* pModel, OutputDevice* pOut )
 
 void FmFormView::Init()
 {
-    pFormShell = NULL;
+    pFormShell = nullptr;
     pImpl = new FmXFormView(this);
     pImpl->acquire();
 
@@ -100,8 +99,8 @@ void FmFormView::Init()
     // Model setzen
     SdrModel* pModel = GetModel();
 
-    DBG_ASSERT( pModel->ISA(FmFormModel), "Falsches Model" );
-    if( !pModel->ISA(FmFormModel) ) return;
+    DBG_ASSERT( dynamic_cast<const FmFormModel*>( pModel) !=  nullptr, "Falsches Model" );
+    if( dynamic_cast<const FmFormModel*>( pModel) ==  nullptr ) return;
     FmFormModel* pFormModel = static_cast<FmFormModel*>(pModel);
 
 
@@ -122,7 +121,7 @@ void FmFormView::Init()
     SfxObjectShell* pObjShell = pFormModel->GetObjectShell();
     if ( pObjShell && pObjShell->GetMedium() )
     {
-        const SfxPoolItem *pItem=0;
+        const SfxPoolItem *pItem=nullptr;
         if ( pObjShell->GetMedium()->GetItemSet()->GetItemState( SID_COMPONENTDATA, false, &pItem ) == SfxItemState::SET )
         {
             ::comphelper::NamedValueCollection aComponentData( static_cast<const SfxUnoAnyItem*>(pItem)->GetValue() );
@@ -139,18 +138,18 @@ void FmFormView::Init()
 FmFormView::~FmFormView()
 {
     if( pFormShell )
-        pFormShell->SetView( NULL );
+        pFormShell->SetView( nullptr );
 
     pImpl->notifyViewDying();
     pImpl->release();
-    pImpl = NULL;
+    pImpl = nullptr;
 }
 
 
 FmFormPage* FmFormView::GetCurPage()
 {
     SdrPageView* pPageView = GetSdrPageView();
-    FmFormPage*  pCurPage = pPageView ? PTR_CAST( FmFormPage, pPageView->GetPage() ) : NULL;
+    FmFormPage*  pCurPage = pPageView ? dynamic_cast<FmFormPage*>( pPageView->GetPage()  ) : nullptr;
     return pCurPage;
 }
 
@@ -164,11 +163,11 @@ void FmFormView::MarkListHasChanged()
         FmFormObj* pObj = getMarkedGrid();
         if ( pImpl->m_pMarkedGrid && pImpl->m_pMarkedGrid != pObj )
         {
-            pImpl->m_pMarkedGrid = NULL;
+            pImpl->m_pMarkedGrid = nullptr;
             if ( pImpl->m_xWindow.is() )
             {
                 pImpl->m_xWindow->removeFocusListener(pImpl);
-                pImpl->m_xWindow = NULL;
+                pImpl->m_xWindow = nullptr;
             }
             SetMoveOutside(false);
             //OLMRefreshAllIAOManagers();
@@ -194,7 +193,7 @@ namespace
                 return pPageWindow;
             }
         }
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -229,7 +228,7 @@ void FmFormView::ChangeDesignMode(bool bDesign)
     if (bDesign == IsDesignMode())
         return;
 
-    FmFormModel* pModel = PTR_CAST(FmFormModel, GetModel());
+    FmFormModel* pModel = dynamic_cast<FmFormModel*>( GetModel() );
     if (pModel)
     {   // fuer die Zeit des Uebergangs das Undo-Environment ausschalten, das sichert, dass man dort auch nicht-transiente
         // Properties mal eben aendern kann (sollte allerdings mit Vorsicht genossen und beim Rueckschalten des Modes
@@ -422,7 +421,7 @@ SdrObject* FmFormView::CreateFieldControl(const OUString& rFieldDesc) const
     OUString sFieldName      = rFieldDesc.getToken(3,sal_Unicode(11));
 
     if (sFieldName.isEmpty() || sObjectName.isEmpty() || sDataSource.isEmpty())
-        return NULL;
+        return nullptr;
 
     ODataAccessDescriptor aColumnDescriptor;
     aColumnDescriptor.setDataSource(sDataSource);
@@ -434,7 +433,7 @@ SdrObject* FmFormView::CreateFieldControl(const OUString& rFieldDesc) const
 }
 
 
-void FmFormView::InsertControlContainer(const Reference< ::com::sun::star::awt::XControlContainer > & xCC)
+void FmFormView::InsertControlContainer(const Reference< css::awt::XControlContainer > & xCC)
 {
     if( !IsDesignMode() )
     {
@@ -456,7 +455,7 @@ void FmFormView::InsertControlContainer(const Reference< ::com::sun::star::awt::
 }
 
 
-void FmFormView::RemoveControlContainer(const Reference< ::com::sun::star::awt::XControlContainer > & xCC)
+void FmFormView::RemoveControlContainer(const Reference< css::awt::XControlContainer > & xCC)
 {
     if( !IsDesignMode() )
     {
@@ -532,7 +531,7 @@ bool FmFormView::KeyInput(const KeyEvent& rKEvt, vcl::Window* pWin)
 
 bool FmFormView::checkUnMarkAll(const Reference< XInterface >& _xSource)
 {
-    Reference< ::com::sun::star::awt::XControl> xControl(pImpl->m_xWindow,UNO_QUERY);
+    Reference< css::awt::XControl> xControl(pImpl->m_xWindow,UNO_QUERY);
     bool bRet = !xControl.is() || !_xSource.is() || _xSource != xControl->getModel();
     if ( bRet )
         UnmarkAll();
@@ -558,7 +557,7 @@ bool FmFormView::MouseButtonDown( const MouseEvent& _rMEvt, vcl::Window* _pWin )
 
 FmFormObj* FmFormView::getMarkedGrid() const
 {
-    FmFormObj* pFormObject = NULL;
+    FmFormObj* pFormObject = nullptr;
     const SdrMarkList& rMarkList = GetMarkedObjectList();
     if ( 1 == rMarkList.GetMarkCount() )
     {
@@ -570,7 +569,7 @@ FmFormObj* FmFormView::getMarkedGrid() const
             {
                 Reference< XServiceInfo > xServInfo( pFormObject->GetUnoControlModel(), UNO_QUERY );
                 if ( !xServInfo.is() || !xServInfo->supportsService( FM_SUN_COMPONENT_GRIDCONTROL ) )
-                    pFormObject = NULL;
+                    pFormObject = nullptr;
             }
         }
     }

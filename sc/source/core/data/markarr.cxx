@@ -23,12 +23,10 @@
 
 #include <osl/diagnose.h>
 
-// STATIC DATA -----------------------------------------------------------
-
 ScMarkArray::ScMarkArray() :
     nCount( 0 ),
     nLimit( 0 ),
-    pData( NULL )
+    pData( nullptr )
 {
     // special case "no marks" with pData = NULL
 }
@@ -301,7 +299,7 @@ void ScMarkArray::CopyMarksTo( ScMarkArray& rDestMarkArray ) const
         memcpy( rDestMarkArray.pData, pData, nCount * sizeof(ScMarkEntry) );
     }
     else
-        rDestMarkArray.pData = NULL;
+        rDestMarkArray.pData = nullptr;
 
     rDestMarkArray.nCount = rDestMarkArray.nLimit = nCount;
 }

@@ -34,13 +34,14 @@ class ImageList;
 class Bitmap;
 class SfxItemSet;
 class Color;
+struct ScCalcConfig;
 enum class SvtScriptType;
 
 #define SC_COLLATOR_IGNORES ( \
-    ::com::sun::star::i18n::CollatorOptions::CollatorOptions_IGNORE_CASE )
+    css::i18n::CollatorOptions::CollatorOptions_IGNORE_CASE )
 
 #define SC_TRANSLITERATION_IGNORECASE ( \
-    ::com::sun::star::i18n::TransliterationModules_IGNORE_CASE )
+    css::i18n::TransliterationModules_IGNORE_CASE )
 #define SC_TRANSLITERATION_CASESENSE 0
 
 //  Calc has lots of names...
@@ -134,72 +135,37 @@ const ScBreakType BREAK_NONE   = 0;
 const ScBreakType BREAK_PAGE   = 1;
 const ScBreakType BREAK_MANUAL = 2;
 
-// insert/delete flags - typesafe bitfield
-struct InsertDeleteFlags SAL_FINAL {
-private:
-    sal_uInt16 v;
-    // hidden so that it doesn't accidentally get called in constructor initialiser lists
-    explicit InsertDeleteFlags(sal_uInt16 _v) : v(_v) {}
-public:
-    static InsertDeleteFlags fromInt(sal_uInt16 v) { return InsertDeleteFlags(v); }
-    operator bool() const { return v != 0; }
-    sal_uInt16 val() const { return v; }
-    bool operator ==(const InsertDeleteFlags& other) const { return v == other.v; }
-    bool operator !=(const InsertDeleteFlags& other) const { return v != other.v; }
-private:
-    // disallow implicit conversion to int
-    operator int() const { return v; }
+enum class InsertDeleteFlags : sal_uInt16
+{
+    NONE             = 0x0000,
+    VALUE            = 0x0001,   /// Numeric values (and numeric results if InsertDeleteFlags::FORMULA is not set).
+    DATETIME         = 0x0002,   /// Dates, times, datetime values.
+    STRING           = 0x0004,   /// Strings (and string results if InsertDeleteFlags::FORMULA is not set).
+    NOTE             = 0x0008,   /// Cell notes.
+    FORMULA          = 0x0010,   /// Formula cells.
+    HARDATTR         = 0x0020,   /// Hard cell attributes.
+    STYLES           = 0x0040,   /// Cell styles.
+    OBJECTS          = 0x0080,   /// Drawing objects.
+    EDITATTR         = 0x0100,   /// Rich-text attributes.
+    OUTLINE          = 0x0800,   /// Sheet / outlining (grouping) information
+    NOCAPTIONS       = 0x0200,   /// Internal use only (undo etc.): do not copy/delete caption objects of cell notes.
+    ADDNOTES         = 0x0400,   /// Internal use only (copy from clip): do not delete existing cell contents when pasting notes.
+    SPECIAL_BOOLEAN  = 0x1000,
+    FORGETCAPTIONS   = 0x2000,   /// Internal use only (d&d undo): do not delete caption objects of cell notes.
+    ATTRIB           = HARDATTR | STYLES,
+    CONTENTS         = VALUE | DATETIME | STRING | NOTE | FORMULA | OUTLINE,
+    ALL              = CONTENTS | ATTRIB | OBJECTS,
+    ALL_USED_BITS    = ALL | EDITATTR | NOCAPTIONS | ADDNOTES | SPECIAL_BOOLEAN | FORGETCAPTIONS,
+    /// Copy flags for auto/series fill functions: do not touch notes and drawing objects.
+    AUTOFILL         = ALL & ~(NOTE | OBJECTS)
 };
-// make combining these type-safe
-inline InsertDeleteFlags operator| (const InsertDeleteFlags& lhs, const InsertDeleteFlags& rhs)
+namespace o3tl
 {
-    return InsertDeleteFlags::fromInt(lhs.val() | rhs.val());
+    template<> struct typed_flags<InsertDeleteFlags> : is_typed_flags<InsertDeleteFlags, 0x3fff> {};
 }
-inline InsertDeleteFlags operator& (const InsertDeleteFlags& lhs, const InsertDeleteFlags& rhs)
-{
-    return InsertDeleteFlags::fromInt(lhs.val() & rhs.val());
-}
-inline InsertDeleteFlags& operator|= (InsertDeleteFlags& lhs, const InsertDeleteFlags& rhs)
-{
-    lhs = InsertDeleteFlags::fromInt(lhs.val() | rhs.val());
-    return lhs;
-}
-inline InsertDeleteFlags& operator&= (InsertDeleteFlags& lhs, const InsertDeleteFlags& rhs)
-{
-    lhs = InsertDeleteFlags::fromInt(lhs.val() & rhs.val());
-    return lhs;
-}
+// This doesn't work at the moment, perhaps when we have constexpr we can modify InsertDeleteFlags to make it work.
+//static_assert((InsertDeleteFlags::ATTRIB & InsertDeleteFlags::CONTENTS) == InsertDeleteFlags::NONE, "these must match");
 
-const InsertDeleteFlags IDF_NONE      = InsertDeleteFlags::fromInt(0x0000);
-const InsertDeleteFlags IDF_VALUE     = InsertDeleteFlags::fromInt(0x0001);   /// Numeric values (and numeric results if IDF_FORMULA is not set).
-const InsertDeleteFlags IDF_DATETIME  = InsertDeleteFlags::fromInt(0x0002);   /// Dates, times, datetime values.
-const InsertDeleteFlags IDF_STRING    = InsertDeleteFlags::fromInt(0x0004);   /// Strings (and string results if IDF_FORMULA is not set).
-const InsertDeleteFlags IDF_NOTE      = InsertDeleteFlags::fromInt(0x0008);   /// Cell notes.
-const InsertDeleteFlags IDF_FORMULA   = InsertDeleteFlags::fromInt(0x0010);   /// Formula cells.
-const InsertDeleteFlags IDF_HARDATTR  = InsertDeleteFlags::fromInt(0x0020);   /// Hard cell attributes.
-const InsertDeleteFlags IDF_STYLES    = InsertDeleteFlags::fromInt(0x0040);   /// Cell styles.
-const InsertDeleteFlags IDF_OBJECTS   = InsertDeleteFlags::fromInt(0x0080);   /// Drawing objects.
-const InsertDeleteFlags IDF_EDITATTR  = InsertDeleteFlags::fromInt(0x0100);   /// Rich-text attributes.
-const InsertDeleteFlags IDF_OUTLINE   = InsertDeleteFlags::fromInt(0x0800);   /// Sheet / outlining (grouping) information
-const InsertDeleteFlags IDF_NOCAPTIONS  = InsertDeleteFlags::fromInt(0x0200);   /// Internal use only (undo etc.): do not copy/delete caption objects of cell notes.
-const InsertDeleteFlags IDF_ADDNOTES    = InsertDeleteFlags::fromInt(0x0400);   /// Internal use only (copy from clip): do not delete existing cell contents when pasting notes.
-const InsertDeleteFlags IDF_SPECIAL_BOOLEAN  = InsertDeleteFlags::fromInt(0x1000);
-const InsertDeleteFlags IDF_FORGETCAPTIONS = InsertDeleteFlags::fromInt(0x2000); /// Internal use only (d&d undo): do not delete caption objects of cell notes.
-const InsertDeleteFlags IDF_ATTRIB     = IDF_HARDATTR | IDF_STYLES;
-const InsertDeleteFlags IDF_CONTENTS   = IDF_VALUE | IDF_DATETIME | IDF_STRING | IDF_NOTE | IDF_FORMULA | IDF_OUTLINE;
-const InsertDeleteFlags IDF_ALL        = IDF_CONTENTS | IDF_ATTRIB | IDF_OBJECTS;
-const InsertDeleteFlags IDF_ALL_USED_BITS = IDF_ALL | IDF_EDITATTR | IDF_NOCAPTIONS | IDF_ADDNOTES | IDF_SPECIAL_BOOLEAN | IDF_FORGETCAPTIONS;
-
-inline InsertDeleteFlags operator~ (const InsertDeleteFlags& rhs)
-{
-    return IDF_ALL_USED_BITS & InsertDeleteFlags::fromInt(~rhs.val());
-}
-
-// This doesnt work at the moment, perhaps when we have constexpr we can modify InsertDeleteFlags to make it work.
-//static_assert((IDF_ATTRIB & IDF_CONTENTS) == IDF_NONE, "these must match");
-
-/// Copy flags for auto/series fill functions: do not touch notes and drawing objects.
-const InsertDeleteFlags IDF_AUTOFILL   = IDF_ALL & ~(IDF_NOTE | IDF_OBJECTS);
 
 enum class ScPasteFunc {
     NONE, ADD, SUB, MUL, DIV
@@ -519,14 +485,14 @@ class ScGlobal
 
     static  SvNumberFormatter*  pEnglishFormatter;          // for UNO / XML export
 
-    static ::com::sun::star::uno::Reference< ::com::sun::star::i18n::XOrdinalSuffix> xOrdinalSuffix;
+    static css::uno::Reference< css::i18n::XOrdinalSuffix> xOrdinalSuffix;
     static CalendarWrapper*     pCalendar;
     static CollatorWrapper*     pCaseCollator;
     static CollatorWrapper*     pCollator;
     static ::utl::TransliterationWrapper* pTransliteration;
     static ::utl::TransliterationWrapper* pCaseTransliteration;
     static IntlWrapper*         pScIntlWrapper;
-    static ::com::sun::star::lang::Locale*      pLocale;
+    static css::lang::Locale*   pLocale;
 
     static ScFieldEditEngine*   pFieldEditEngine;
 
@@ -542,7 +508,7 @@ public:
     SC_DLLPUBLIC static CollatorWrapper*        GetCollator();
     static CollatorWrapper*     GetCaseCollator();
     static IntlWrapper*         GetScIntlWrapper();
-    static ::com::sun::star::lang::Locale*      GetLocale();
+    static css::lang::Locale*   GetLocale();
 
     SC_DLLPUBLIC static ::utl::TransliterationWrapper* GetpTransliteration();
     static ::utl::TransliterationWrapper* GetCaseTransliteration();
@@ -564,19 +530,18 @@ public:
     SC_DLLPUBLIC static const OUString&       GetRscString( sal_uInt16 nIndex );
     /// Open the specified URL.
     /// If pDrawLayer is specified, check if tiled-rendering, and leave clients to handle the openURL action if that's the case.
-    static void                 OpenURL(const OUString& rURL, const OUString& rTarget, const SdrModel* pDrawLayer = NULL);
+    static void                 OpenURL(const OUString& rURL, const OUString& rTarget, const SdrModel* pDrawLayer = nullptr);
     SC_DLLPUBLIC static OUString            GetAbsDocName( const OUString& rFileName,
                                                 SfxObjectShell* pShell );
     SC_DLLPUBLIC static OUString            GetDocTabName( const OUString& rFileName,
                                                 const OUString& rTabName );
-    SC_DLLPUBLIC static sal_uLong               GetStandardFormat( SvNumberFormatter&,
-                                    sal_uLong nFormat, short nType );
+    SC_DLLPUBLIC static sal_uInt32 GetStandardFormat( SvNumberFormatter&, sal_uInt32 nFormat, short nType );
 
     SC_DLLPUBLIC static sal_uInt16 GetStandardRowHeight();
     SC_DLLPUBLIC static double              nScreenPPTX;
     SC_DLLPUBLIC static double              nScreenPPTY;
 
-    static tools::SvRef<ScDocShell>*   pDrawClipDocShellRef;
+    static tools::SvRef<ScDocShell>   xDrawClipDocShellRef;
 
     static sal_uInt16           nDefFontHeight;
     SC_DLLPUBLIC static sal_uInt16           nStdRowHeight;
@@ -703,6 +668,117 @@ SC_DLLPUBLIC    static const sal_Unicode* FindUnquoted( const sal_Unicode* pStri
     SC_DLLPUBLIC static OUString    ReplaceOrAppend( const OUString& rString,
                                                      const OUString& rPlaceholder,
                                                      const OUString& rReplacement );
+
+
+    /** Convert string content to numeric value.
+
+        In any case, if rError is set 0.0 is returned.
+
+        If nStringNoValueError is errCellNoValue, that is unconditionally
+        assigned to rError and 0.0 is returned. The caller is expected to
+        handle this situation. Used by the interpreter.
+
+        Usually errNoValue is passed as nStringNoValueError.
+
+        Otherwise, depending on the string conversion configuration different
+        approaches are taken:
+
+
+        For ScCalcConfig::StringConversion::ILLEGAL
+        The error value passed in nStringNoValueError is assigned to rError
+        (and 0.0 returned).
+
+
+        For ScCalcConfig::StringConversion::ZERO
+        A zero value is returned and no error assigned.
+
+
+        For ScCalcConfig::StringConversion::LOCALE
+
+        If the string is empty or consists only of spaces, if "treat empty
+        string as zero" is set 0.0 is returned, else nStringNoValueError
+        assigned to rError (and 0.0 returned).
+
+        Else a non-empty string is passed to the number formatter's scanner to
+        be parsed locale dependent. If that does not detect a numeric value
+        nStringNoValueError is assigned to rError (and 0.0 returned).
+
+        If no number formatter was passed, the conversion falls back to
+        UNAMBIGUOUS.
+
+
+        For ScCalcConfig::StringConversion::UNAMBIGUOUS
+
+        If the string is empty or consists only of spaces, if "treat empty
+        string as zero" is set 0.0 is returned, else nStringNoValueError
+        assigned to rError (and 0.0 returned).
+
+        If the string is not empty the following conversion rules are applied:
+
+        Converted are only integer numbers including exponent, and ISO 8601 dates
+        and times in their extended formats with separators. Anything else,
+        especially fractional numeric values with decimal separators or dates other
+        than ISO 8601 would be locale dependent and is a no-no. Leading and
+        trailing blanks are ignored.
+
+        The following ISO 8601 formats are converted:
+
+        CCYY-MM-DD
+        CCYY-MM-DDThh:mm
+        CCYY-MM-DDThh:mm:ss
+        CCYY-MM-DDThh:mm:ss,s
+        CCYY-MM-DDThh:mm:ss.s
+        hh:mm
+        hh:mm:ss
+        hh:mm:ss,s
+        hh:mm:ss.s
+
+        The century CC may not be omitted and the two-digit year setting is not
+        taken into account. Instead of the T date and time separator exactly one
+        blank may be used.
+
+        If a date is given, it must be a valid Gregorian calendar date. In this
+        case the optional time must be in the range 00:00 to 23:59:59.99999...
+        If only time is given, it may have any value for hours, taking elapsed time
+        into account; minutes and seconds are limited to the value 59 as well.
+
+        If the string can not be converted to a numeric value, the error value
+        passed in nStringNoValueError is assigned to rError.
+
+
+        @param rStr
+            The string to be converted.
+
+        @param rConfig
+            The calculation configuration.
+
+        @param rError
+            Contains the error on return, if any. If an error was set before
+            and the conversion did not result in an error, still 0.0 is
+            returned.
+
+        @param nStringNoValueError
+            The error value to be assigned to rError if string could not be
+            converted to number.
+
+        @param pFormatter
+            The number formatter to use in case of
+            ScCalcConfig::StringConversion::LOCALE. Can but should not be
+            nullptr in which case conversion falls back to
+            ScCalcConfig::StringConversion::UNAMBIGUOUS and if a date is
+            detected the null date is assumed to be the standard 1899-12-30
+            instead of the configured null date.
+
+        @param rCurFmtType
+            Can be assigned a format type in case a date or time or date+time
+            string was converted, e.g. css::util::NumberFormat::DATE or
+            css::util::NumberFormat::TIME or a combination thereof.
+
+     */
+    static double ConvertStringToValue( const OUString& rStr, const ScCalcConfig& rConfig,
+            sal_uInt16 & rError, sal_uInt16 nStringNoValueError,
+            SvNumberFormatter* pFormatter, short & rCurFmtType );
+
 };
 
 // maybe move to dbdata.hxx (?):

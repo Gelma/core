@@ -42,7 +42,7 @@ public class DataSource
                 m_dataSource );
 
             Object[] descriptorProperties = new Object[] {
-                _descriptor.Name, _descriptor.URL, _descriptor.Info, _descriptor.User, _descriptor.Password,
+                null, _descriptor.URL, _descriptor.Info, _descriptor.User, _descriptor.Password,
                 _descriptor.IsPasswordRequired };
             String[] propertyNames = new String[] {
                 "Name", "URL", "Info", "User", "Password", "IsPasswordRequired" };
@@ -64,13 +64,10 @@ public class DataSource
     /**
      * retrieves the css.sdb.OfficeDatabaseDocument associated with the data source
      */
-    public DatabaseDocument getDatabaseDocument()
+    public synchronized DatabaseDocument getDatabaseDocument()
     {
-        synchronized ( this )
-        {
-            if ( m_document == null )
-                m_document = new DatabaseDocument( this );
-        }
+        if ( m_document == null )
+            m_document = new DatabaseDocument( this );
         return m_document;
     }
 
@@ -116,11 +113,15 @@ public class DataSource
             if ( docURL.length() == 0 )
             {
                 final java.io.File tempFile = java.io.File.createTempFile( _registrationName + "_", ".odb" );
-                if ( tempFile.exists() )
+                if ( tempFile.exists() ) {
                     // we did not really want to create that file, we just wanted its local name, but
                     // createTempFile actually creates it => throw it away
                     // (This is necessary since some JVM/platform combinations seem to actually lock the file)
-                    tempFile.delete();
+                    boolean bDeleteOk = tempFile.delete();
+                    if (!bDeleteOk) {
+                         System.out.println("delete failed");
+                    }
+                }
                 String localPart = tempFile.toURI().toURL().toString();
                 localPart = localPart.substring( localPart.lastIndexOf( '/' ) + 1 );
                 docURL = util.utils.getOfficeTemp( m_orb ) + localPart;

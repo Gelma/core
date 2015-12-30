@@ -52,7 +52,6 @@
 #include <svtools/miscopt.hxx>
 using namespace ::com::sun::star::script;
 
-TYPEINIT1(StarBASIC,SbxObject)
 
 #define RTLNAME "@SBRTL"
 //  i#i68894#
@@ -84,9 +83,9 @@ public:
         mbDisposed = bDisposed;
     }
 
-    virtual void SAL_CALL queryClosing( const lang::EventObject& rSource, sal_Bool bGetsOwnership ) throw (util::CloseVetoException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL notifyClosing( const lang::EventObject& rSource ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL disposing( const lang::EventObject& rSource ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL queryClosing( const lang::EventObject& rSource, sal_Bool bGetsOwnership ) throw (util::CloseVetoException, uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL notifyClosing( const lang::EventObject& rSource ) throw (uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL disposing( const lang::EventObject& rSource ) throw (uno::RuntimeException, std::exception) override;
 
 private:
     StarBASIC&      mrDocBasic;
@@ -185,7 +184,7 @@ const DocBasicItem* lclFindDocBasicItem( const StarBASIC* pDocBasic )
 {
     DocBasicItemMap::iterator it = GaDocBasicItems::get().find( pDocBasic );
     DocBasicItemMap::iterator end = GaDocBasicItems::get().end();
-    return (it != end) ? it->second.get() : 0;
+    return (it != end) ? it->second.get() : nullptr;
 }
 
 void lclInsertDocBasicItem( StarBASIC& rDocBasic )
@@ -212,13 +211,13 @@ void lclRemoveDocBasicItem( StarBASIC& rDocBasic )
 
 StarBASIC* lclGetDocBasicForModule( SbModule* pModule )
 {
-    StarBASIC* pRetBasic = NULL;
+    StarBASIC* pRetBasic = nullptr;
     SbxObject* pCurParent = pModule;
-    while( pCurParent->GetParent() != NULL )
+    while( pCurParent->GetParent() != nullptr )
     {
         pCurParent = pCurParent->GetParent();
         StarBASIC* pDocBasic = dynamic_cast<StarBASIC*>( pCurParent  );
-        if( pDocBasic != NULL && pDocBasic->IsDocBasic() )
+        if( pDocBasic != nullptr && pDocBasic->IsDocBasic() )
         {
             pRetBasic = pDocBasic;
             break;
@@ -262,14 +261,14 @@ SbxVariable* StarBASIC::VBAFind( const OUString& rName, SbxClassType t )
 {
     if( rName == "ThisComponent" )
     {
-        return NULL;
+        return nullptr;
     }
     // rename to init globals
     if ( getVBAGlobals( ) )
     {
         return pVBAGlobals->Find( rName, t );
     }
-    return NULL;
+    return nullptr;
 }
 
 // Create array for conversion SFX <-> VB error code
@@ -418,27 +417,27 @@ SbxBase* SbiFactory::Create( sal_uInt16 nSbxId, sal_uInt32 nCreator )
         switch( nSbxId )
         {
         case SBXID_BASIC:
-            return new StarBASIC( NULL );
+            return new StarBASIC( nullptr );
         case SBXID_BASICMOD:
             return new SbModule( "" );
         case SBXID_BASICPROP:
-            return new SbProperty( "", SbxVARIANT, NULL );
+            return new SbProperty( "", SbxVARIANT, nullptr );
         case SBXID_BASICMETHOD:
-            return new SbMethod( "", SbxVARIANT, NULL );
+            return new SbMethod( "", SbxVARIANT, nullptr );
         case SBXID_JSCRIPTMOD:
             return new SbJScriptModule( "" );
         case SBXID_JSCRIPTMETH:
-            return new SbJScriptMethod( "", SbxVARIANT, NULL );
+            return new SbJScriptMethod( "", SbxVARIANT, nullptr );
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 SbxObject* SbiFactory::CreateObject( const OUString& rClass )
 {
     if( rClass.equalsIgnoreAsciiCase( "StarBASIC" ) )
     {
-        return new StarBASIC( NULL );
+        return new StarBASIC( nullptr );
     }
     else if( rClass.equalsIgnoreAsciiCase( "StarBASICModule" ) )
     {
@@ -461,7 +460,7 @@ SbxObject* SbiFactory::CreateObject( const OUString& rClass )
         {
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 
@@ -469,14 +468,14 @@ SbxObject* SbiFactory::CreateObject( const OUString& rClass )
 class SbOLEFactory : public SbxFactory
 {
 public:
-    virtual SbxBase* Create( sal_uInt16 nSbxId, sal_uInt32 = SBXCR_SBX ) SAL_OVERRIDE;
-    virtual SbxObject* CreateObject( const OUString& ) SAL_OVERRIDE;
+    virtual SbxBase* Create( sal_uInt16 nSbxId, sal_uInt32 = SBXCR_SBX ) override;
+    virtual SbxObject* CreateObject( const OUString& ) override;
 };
 
 SbxBase* SbOLEFactory::Create( sal_uInt16, sal_uInt32 )
 {
     // Not supported
-    return NULL;
+    return nullptr;
 }
 
 SbxObject* SbOLEFactory::CreateObject( const OUString& rClassName )
@@ -492,14 +491,14 @@ SbxObject* SbOLEFactory::CreateObject( const OUString& rClassName )
 class SbFormFactory : public SbxFactory
 {
 public:
-    virtual SbxBase* Create( sal_uInt16 nSbxId, sal_uInt32 = SBXCR_SBX ) SAL_OVERRIDE;
-    virtual SbxObject* CreateObject( const OUString& ) SAL_OVERRIDE;
+    virtual SbxBase* Create( sal_uInt16 nSbxId, sal_uInt32 = SBXCR_SBX ) override;
+    virtual SbxObject* CreateObject( const OUString& ) override;
 };
 
 SbxBase* SbFormFactory::Create( sal_uInt16, sal_uInt32 )
 {
     // Not supported
-    return NULL;
+    return nullptr;
 }
 
 SbxObject* SbFormFactory::CreateObject( const OUString& rClassName )
@@ -526,7 +525,7 @@ SbxObject* SbFormFactory::CreateObject( const OUString& rClassName )
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 
@@ -581,8 +580,8 @@ SbxObject* cloneTypeObjectImpl( const SbxObject& rTypeObj )
             {
                 SbxBase* pObjBase = pVar->GetObject();
                 SbxObject* pSrcObj = dynamic_cast<SbxObject*>( pObjBase );
-                SbxObject* pDestObj = NULL;
-                if( pSrcObj != NULL )
+                SbxObject* pDestObj = nullptr;
+                if( pSrcObj != nullptr )
                     pDestObj = cloneTypeObjectImpl( *pSrcObj );
                 pNewProp->PutObject( pDestObj );
             }
@@ -596,19 +595,19 @@ SbxObject* cloneTypeObjectImpl( const SbxObject& rTypeObj )
 class SbTypeFactory : public SbxFactory
 {
 public:
-    virtual SbxBase* Create( sal_uInt16 nSbxId, sal_uInt32 = SBXCR_SBX ) SAL_OVERRIDE;
-    virtual SbxObject* CreateObject( const OUString& ) SAL_OVERRIDE;
+    virtual SbxBase* Create( sal_uInt16 nSbxId, sal_uInt32 = SBXCR_SBX ) override;
+    virtual SbxObject* CreateObject( const OUString& ) override;
 };
 
 SbxBase* SbTypeFactory::Create( sal_uInt16, sal_uInt32 )
 {
     // Not supported
-    return NULL;
+    return nullptr;
 }
 
 SbxObject* SbTypeFactory::CreateObject( const OUString& rClassName )
 {
-    SbxObject* pRet = NULL;
+    SbxObject* pRet = nullptr;
     SbModule* pMod = GetSbData()->pMod;
     if( pMod )
     {
@@ -628,7 +627,6 @@ SbxObject* createUserTypeImpl( const OUString& rClassName )
 }
 
 
-TYPEINIT1(SbClassModuleObject,SbModule)
 
 SbClassModuleObject::SbClassModuleObject( SbModule* pClassModule )
     : SbModule( pClassModule->GetName() )
@@ -691,7 +689,7 @@ SbClassModuleObject::SbClassModuleObject( SbModule* pClassModule )
 
             // Search for own copy of ImplMethod
             SbxVariable* p = pMethods->Find( pImplMethod->GetName(), SbxCLASS_METHOD );
-            SbMethod* pImplMethodCopy = p ? dynamic_cast<SbMethod*>( p ) : NULL;
+            SbMethod* pImplMethodCopy = p ? dynamic_cast<SbMethod*>( p ) : nullptr;
             if( !pImplMethodCopy )
             {
                 OSL_FAIL( "Found no ImplMethod copy" );
@@ -738,12 +736,12 @@ SbClassModuleObject::SbClassModuleObject( SbModule* pClassModule )
                 {
                     SbxBase* pObjBase = pProp->GetObject();
                     SbxObject* pObj = dynamic_cast<SbxObject*>( pObjBase );
-                    if( pObj != NULL )
+                    if( pObj != nullptr )
                     {
                         OUString aObjClass = pObj->GetClassName();
 
                         SbClassModuleObject* pClassModuleObj = dynamic_cast<SbClassModuleObject*>( pObjBase );
-                        if( pClassModuleObj != NULL )
+                        if( pClassModuleObj != nullptr )
                         {
                             SbModule* pLclClassModule = pClassModuleObj->getClassModule();
                             SbClassModuleObject* pNewObj = new SbClassModuleObject( pLclClassModule );
@@ -784,8 +782,8 @@ SbClassModuleObject::~SbClassModuleObject()
 
     // Must be deleted by base class dtor because this data
     // is not owned by the SbClassModuleObject object
-    pImage = NULL;
-    pBreaks = NULL;
+    pImage = nullptr;
+    pBreaks = nullptr;
 }
 
 void SbClassModuleObject::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
@@ -820,7 +818,7 @@ void SbClassModuleObject::triggerInitializeEvent()
     mbInitializeEventDone = true;
 
     // Search method
-    SbxVariable* pMeth = SbxObject::Find(OUString("Class_Initialize"), SbxCLASS_METHOD);
+    SbxVariable* pMeth = SbxObject::Find("Class_Initialize", SbxCLASS_METHOD);
     if( pMeth )
     {
         SbxValues aVals;
@@ -835,7 +833,7 @@ void SbClassModuleObject::triggerTerminateEvent()
         return;
     }
     // Search method
-    SbxVariable* pMeth = SbxObject::Find(OUString("Class_Terminate"), SbxCLASS_METHOD );
+    SbxVariable* pMeth = SbxObject::Find("Class_Terminate", SbxCLASS_METHOD );
     if( pMeth )
     {
         SbxValues aVals;
@@ -885,7 +883,7 @@ void SbClassFactory::RemoveClassModule( SbModule* pClassModule )
 SbxBase* SbClassFactory::Create( sal_uInt16, sal_uInt32 )
 {
     // Not supported
-    return NULL;
+    return nullptr;
 }
 
 SbxObject* SbClassFactory::CreateObject( const OUString& rClassName )
@@ -903,7 +901,7 @@ SbxObject* SbClassFactory::CreateObject( const OUString& rClassName )
         }
     }
     SbxVariable* pVar = xToUseClassModules->Find( rClassName, SbxCLASS_OBJECT );
-    SbxObject* pRet = NULL;
+    SbxObject* pRet = nullptr;
     if( pVar )
     {
         SbModule* pVarMod = static_cast<SbModule*>(pVar);
@@ -915,7 +913,7 @@ SbxObject* SbClassFactory::CreateObject( const OUString& rClassName )
 SbModule* SbClassFactory::FindClass( const OUString& rClassName )
 {
     SbxVariable* pVar = xClassModules->Find( rClassName, SbxCLASS_DONTCARE );
-    SbModule* pMod = pVar ? static_cast<SbModule*>(pVar) : NULL;
+    SbModule* pMod = pVar ? static_cast<SbModule*>(pVar) : nullptr;
     return pMod;
 }
 
@@ -923,7 +921,7 @@ StarBASIC::StarBASIC( StarBASIC* p, bool bIsDocBasic  )
     : SbxObject( OUString("StarBASIC") ), bDocBasic( bIsDocBasic )
 {
     SetParent( p );
-    pLibInfo = NULL;
+    pLibInfo = nullptr;
     bNoRtl = bBreak = false;
     bVBAEnabled = false;
     pModules = new SbxArray;
@@ -946,7 +944,7 @@ StarBASIC::StarBASIC( StarBASIC* p, bool bIsDocBasic  )
     pRtl = new SbiStdObject(OUString(RTLNAME), this );
     // Search via StarBasic is always global
     SetFlag( SbxFlagBits::GlobalSearch );
-    pVBAGlobals = NULL;
+    pVBAGlobals = nullptr;
     bQuit = false;
 
     if( bDocBasic )
@@ -970,22 +968,22 @@ StarBASIC::~StarBASIC()
     if( !--GetSbData()->nInst )
     {
         RemoveFactory( GetSbData()->pSbFac );
-        delete GetSbData()->pSbFac; GetSbData()->pSbFac = NULL;
+        delete GetSbData()->pSbFac; GetSbData()->pSbFac = nullptr;
         RemoveFactory( GetSbData()->pUnoFac );
-        delete GetSbData()->pUnoFac; GetSbData()->pUnoFac = NULL;
+        delete GetSbData()->pUnoFac; GetSbData()->pUnoFac = nullptr;
         RemoveFactory( GetSbData()->pTypeFac );
-        delete GetSbData()->pTypeFac; GetSbData()->pTypeFac = NULL;
+        delete GetSbData()->pTypeFac; GetSbData()->pTypeFac = nullptr;
         RemoveFactory( GetSbData()->pClassFac );
-        delete GetSbData()->pClassFac; GetSbData()->pClassFac = NULL;
+        delete GetSbData()->pClassFac; GetSbData()->pClassFac = nullptr;
         RemoveFactory( GetSbData()->pOLEFac );
-        delete GetSbData()->pOLEFac; GetSbData()->pOLEFac = NULL;
+        delete GetSbData()->pOLEFac; GetSbData()->pOLEFac = nullptr;
         RemoveFactory( GetSbData()->pFormFac );
-        delete GetSbData()->pFormFac; GetSbData()->pFormFac = NULL;
+        delete GetSbData()->pFormFac; GetSbData()->pFormFac = nullptr;
 
         if( SbiGlobals::pGlobals )
         {
             delete SbiGlobals::pGlobals;
-            SbiGlobals::pGlobals = 0;
+            SbiGlobals::pGlobals = nullptr;
         }
     }
     else if( bDocBasic )
@@ -1008,27 +1006,12 @@ StarBASIC::~StarBASIC()
         for( sal_uInt16 i = 0 ; i < uCount ; i++ )
         {
             SbxVariable* pListenerObj = xUnoListeners->Get( i );
-            pListenerObj->SetParent( NULL );
+            pListenerObj->SetParent( nullptr );
         }
-        xUnoListeners = NULL;
+        xUnoListeners = nullptr;
     }
 
     clearUnoMethodsForBasic( this );
-}
-
-// Override new() operator, so that everyone can create a new instance
-void* StarBASIC::operator new( size_t n )
-{
-    if( n < sizeof( StarBASIC ) )
-    {
-        n = sizeof( StarBASIC );
-    }
-    return ::operator new( n );
-}
-
-void StarBASIC::operator delete( void* p )
-{
-    ::operator delete( p );
 }
 
 void StarBASIC::implClearDependingVarsOnDelete( StarBASIC* pDeletedBasic )
@@ -1077,7 +1060,7 @@ SbModule* StarBASIC::MakeModule32( const OUString& rName, const ModuleInfo& mInf
     SAL_INFO(
         "basic",
         "create module " << rName  << " type mInfo " << mInfo.ModuleType);
-    SbModule* p = NULL;
+    SbModule* p = nullptr;
     switch ( mInfo.ModuleType )
     {
     case ModuleType::DOCUMENT:
@@ -1106,7 +1089,7 @@ SbModule* StarBASIC::MakeModule32( const OUString& rName, const ModuleInfo& mInf
 
 void StarBASIC::Insert( SbxVariable* pVar )
 {
-    if( pVar->IsA( TYPE(SbModule) ) )
+    if( dynamic_cast<const SbModule*>(pVar) != nullptr)
     {
         pModules->Insert( pVar, pModules->Count() );
         pVar->SetParent( this );
@@ -1125,12 +1108,12 @@ void StarBASIC::Insert( SbxVariable* pVar )
 
 void StarBASIC::Remove( SbxVariable* pVar )
 {
-    if( pVar->IsA( TYPE(SbModule) ) )
+    if( dynamic_cast<const SbModule*>(pVar) != nullptr)
     {
         // #87540 Can be last reference!
         SbxVariableRef xVar = pVar;
         pModules->Remove( pVar );
-        pVar->SetParent( 0 );
+        pVar->SetParent( nullptr );
         EndListening( pVar->GetBroadcaster() );
     }
     else
@@ -1162,7 +1145,7 @@ SbModule* StarBASIC::FindModule( const OUString& rName )
             return p;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 
@@ -1173,7 +1156,7 @@ struct ClassModuleRunInitItem
     bool            m_bRunInitDone;
 
     ClassModuleRunInitItem()
-        : m_pModule( NULL )
+        : m_pModule( nullptr )
         , m_bProcessing( false )
         , m_bRunInitDone( false )
     {}
@@ -1196,15 +1179,13 @@ void SbModule::implProcessModuleRunInit( ModuleInitDependencyMap& rMap, ClassMod
     rItem.m_bProcessing = true;
 
     SbModule* pModule = rItem.m_pModule;
-    if( pModule->pClassData != NULL )
+    if( pModule->pClassData != nullptr )
     {
         StringVector& rReqTypes = pModule->pClassData->maRequiredTypes;
         if( rReqTypes.size() > 0 )
         {
-            for( StringVector::iterator it = rReqTypes.begin() ; it != rReqTypes.end() ; ++it )
+            for( const auto& rStr : rReqTypes )
             {
-                OUString& rStr = *it;
-
                 // Is required type a class module?
                 ModuleInitDependencyMap::iterator itFind = rMap.find( rStr );
                 if( itFind != rMap.end() )
@@ -1300,7 +1281,7 @@ void StarBASIC::DeInitAllModules()
     for ( sal_uInt16 nMod = 0; nMod < pModules->Count(); nMod++ )
     {
         SbModule* pModule = static_cast<SbModule*>(pModules->Get( nMod ));
-        if( pModule->pImage && !pModule->isProxyModule() && 0 == dynamic_cast<const SbObjModule*>( pModule) )
+        if( pModule->pImage && !pModule->isProxyModule() && nullptr == dynamic_cast<const SbObjModule*>( pModule) )
         {
             pModule->pImage->bInit = false;
         }
@@ -1325,8 +1306,8 @@ void StarBASIC::DeInitAllModules()
 // If this fails again a conventional search over objects is performend.
 SbxVariable* StarBASIC::Find( const OUString& rName, SbxClassType t )
 {
-    SbxVariable* pRes = NULL;
-    SbModule* pNamed = NULL;
+    SbxVariable* pRes = nullptr;
+    SbModule* pNamed = nullptr;
     // "Extended" search in Runtime Lib
     // but only if SbiRuntime has not set the flag
     if( !bNoRtl )
@@ -1418,11 +1399,11 @@ SbxBase* StarBASIC::FindSBXInCurrentScope( const OUString& rName )
 {
     if( !GetSbData()->pInst )
     {
-        return NULL;
+        return nullptr;
     }
     if( !GetSbData()->pInst->pRun )
     {
-        return NULL;
+        return nullptr;
     }
     return GetSbData()->pInst->pRun->FindElementExtern( rName );
 }
@@ -1445,7 +1426,7 @@ void StarBASIC::Stop()
 
 bool StarBASIC::IsRunning()
 {
-    return GetSbData()->pInst != NULL;
+    return GetSbData()->pInst != nullptr;
 }
 
 /**************************************************************************
@@ -1462,7 +1443,7 @@ SbMethod* StarBASIC::GetActiveMethod( sal_uInt16 nLevel )
     }
     else
     {
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -1843,7 +1824,7 @@ sal_Int32 StarBASIC::GetErl()
 
 bool StarBASIC::ErrorHdl()
 {
-    return aErrorHdl.IsSet() && aErrorHdl.Call( this );
+    return aErrorHdl.Call( this );
 }
 
 Link<StarBASIC*,bool> StarBASIC::GetGlobalErrorHdl()
@@ -1893,7 +1874,7 @@ bool StarBASIC::LoadData( SvStream& r, sal_uInt16 nVer )
     {
         SbxVariable* pVar = pObjs->Get( nObj );
         StarBASIC* pBasic = dynamic_cast<StarBASIC*>( pVar  );
-        ppDeleteTab[nObj] = pBasic ? NULL : pVar;
+        ppDeleteTab[nObj] = pBasic ? nullptr : pVar;
     }
     for( nObj = 0 ; nObj < nObjCount ; nObj++ )
     {
@@ -1924,7 +1905,7 @@ bool StarBASIC::LoadData( SvStream& r, sal_uInt16 nVer )
         {
             return false;
         }
-        else if( 0 != dynamic_cast<const SbJScriptModule*>( pMod) )
+        else if( nullptr != dynamic_cast<const SbJScriptModule*>( pMod) )
         {
             // assign Ref, so that pMod will be deleted
             SbModuleRef xRef = pMod;
@@ -1936,12 +1917,12 @@ bool StarBASIC::LoadData( SvStream& r, sal_uInt16 nVer )
         }
     }
     // HACK for SFX-Bullshit!
-    SbxVariable* p = Find( OUString("FALSE"), SbxCLASS_PROPERTY );
+    SbxVariable* p = Find( "FALSE", SbxCLASS_PROPERTY );
     if( p )
     {
         Remove( p );
     }
-    p = Find( OUString("TRUE"), SbxCLASS_PROPERTY );
+    p = Find( "TRUE", SbxCLASS_PROPERTY );
     if( p )
     {
         Remove( p );
@@ -1986,16 +1967,16 @@ bool StarBASIC::GetUNOConstant( const sal_Char* _pAsciiName, css::uno::Any& aOut
 
 Reference< frame::XModel > StarBASIC::GetModelFromBasic( SbxObject* pBasic )
 {
-    OSL_PRECOND( pBasic != NULL, "getModelFromBasic: illegal call!" );
+    OSL_PRECOND( pBasic != nullptr, "getModelFromBasic: illegal call!" );
     if ( !pBasic )
     {
-        return NULL;
+        return nullptr;
     }
     // look for the ThisComponent variable, first in the parent (which
     // might be the document's Basic), then in the parent's parent (which might be
     // the application Basic)
     const OUString sThisComponent( "ThisComponent");
-    SbxVariable* pThisComponent = NULL;
+    SbxVariable* pThisComponent = nullptr;
 
     SbxObject* pLookup = pBasic->GetParent();
     while ( pLookup && !pThisComponent )
@@ -2007,7 +1988,7 @@ Reference< frame::XModel > StarBASIC::GetModelFromBasic( SbxObject* pBasic )
     {
         OSL_TRACE("Failed to get ThisComponent");
             // the application Basic, at the latest, should have this variable
-        return NULL;
+        return nullptr;
     }
 
     Any aThisComponentAny( sbxToUnoValue( pThisComponent ) );
@@ -2023,7 +2004,7 @@ Reference< frame::XModel > StarBASIC::GetModelFromBasic( SbxObject* pBasic )
     }
     if ( !xModel.is() )
     {
-        return NULL;
+        return nullptr;
     }
 #if OSL_DEBUG_LEVEL > 0
     OSL_TRACE("Have model ThisComponent points to url %s",
@@ -2047,7 +2028,6 @@ void StarBASIC::DetachAllDocBasicItems()
 
 // #118116 Implementation Collection object
 
-TYPEINIT1(BasicCollection,SbxObject)
 
 static const char pCountStr[]   = "Count";
 static const char pAddStr[]     = "Add";
@@ -2055,8 +2035,8 @@ static const char pItemStr[]    = "Item";
 static const char pRemoveStr[]  = "Remove";
 static sal_uInt16 nCountHash = 0, nAddHash, nItemHash, nRemoveHash;
 
-SbxInfoRef BasicCollection::xAddInfo = NULL;
-SbxInfoRef BasicCollection::xItemInfo = NULL;
+SbxInfoRef BasicCollection::xAddInfo = nullptr;
+SbxInfoRef BasicCollection::xItemInfo = nullptr;
 
 BasicCollection::BasicCollection( const OUString& rClass )
              : SbxObject( rClass )
@@ -2100,15 +2080,15 @@ void BasicCollection::Initialize()
     if ( !xAddInfo.Is() )
     {
         xAddInfo = new SbxInfo;
-        xAddInfo->AddParam(  OUString( "Item" ), SbxVARIANT );
-        xAddInfo->AddParam(  OUString( "Key" ), SbxVARIANT, SbxFlagBits::Read | SbxFlagBits::Optional );
-        xAddInfo->AddParam(  OUString( "Before" ), SbxVARIANT, SbxFlagBits::Read | SbxFlagBits::Optional );
-        xAddInfo->AddParam(  OUString( "After" ), SbxVARIANT, SbxFlagBits::Read | SbxFlagBits::Optional );
+        xAddInfo->AddParam(  "Item", SbxVARIANT );
+        xAddInfo->AddParam(  "Key", SbxVARIANT, SbxFlagBits::Read | SbxFlagBits::Optional );
+        xAddInfo->AddParam(  "Before", SbxVARIANT, SbxFlagBits::Read | SbxFlagBits::Optional );
+        xAddInfo->AddParam(  "After", SbxVARIANT, SbxFlagBits::Read | SbxFlagBits::Optional );
     }
     if ( !xItemInfo.Is() )
     {
         xItemInfo = new SbxInfo;
-        xItemInfo->AddParam(  OUString( "Index" ), SbxVARIANT, SbxFlagBits::Read | SbxFlagBits::Optional);
+        xItemInfo->AddParam(  "Index", SbxVARIANT, SbxFlagBits::Read | SbxFlagBits::Optional);
     }
 }
 
@@ -2123,7 +2103,7 @@ void BasicCollection::Notify( SfxBroadcaster& rCst, const SfxHint& rHint )
     const SbxHint* p = dynamic_cast<const SbxHint*>(&rHint);
     if( p )
     {
-        sal_uIntPtr nId = p->GetId();
+        const sal_uInt32 nId = p->GetId();
         bool bRead  = nId == SBX_HINT_DATAWANTED;
         bool bWrite = nId == SBX_HINT_DATACHANGED;
         bool bRequestInfo = nId == SBX_HINT_INFOWANTED;
@@ -2292,7 +2272,7 @@ void BasicCollection::CollItem( SbxArray* pPar_ )
         SetError( ERRCODE_SBX_WRONG_ARGS );
         return;
     }
-    SbxVariable* pRes = NULL;
+    SbxVariable* pRes = nullptr;
     SbxVariable* p = pPar_->Get( 1 );
     sal_Int32 nIndex = implGetIndex( p );
     if( nIndex >= 0 && nIndex < (sal_Int32)xItemArray->Count32() )
@@ -2311,7 +2291,7 @@ void BasicCollection::CollItem( SbxArray* pPar_ )
 
 void BasicCollection::CollRemove( SbxArray* pPar_ )
 {
-    if( pPar_ == NULL || pPar_->Count() != 2 )
+    if( pPar_ == nullptr || pPar_->Count() != 2 )
     {
         SetError( ERRCODE_SBX_WRONG_ARGS );
         return;
@@ -2325,11 +2305,11 @@ void BasicCollection::CollRemove( SbxArray* pPar_ )
 
         // Correct for stack if necessary
         SbiInstance* pInst = GetSbData()->pInst;
-        SbiRuntime* pRT = pInst ? pInst->pRun : NULL;
+        SbiRuntime* pRT = pInst ? pInst->pRun : nullptr;
         if( pRT )
         {
             SbiForStack* pStack = pRT->FindForStackItemForCollection( this );
-            if( pStack != NULL )
+            if( pStack != nullptr )
             {
                 if( pStack->nCurCollectionIndex >= nIndex )
                 {

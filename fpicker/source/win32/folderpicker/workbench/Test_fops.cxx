@@ -91,10 +91,7 @@ int SAL_CALL main(int /*nArgc*/, char* /*Argv[]*/, char* /*Env[]*/  )
     // try to get an Interface to a XFilePicker Service
 
 
-    Reference< XFolderPicker2 > xFolderPicker;
-
-    xFolderPicker = Reference< XFolderPicker2 >(
-        g_xFactory->createInstance( OUString( FOLDER_PICKER_SERVICE_NAME ) ), UNO_QUERY );
+    Reference< XFolderPicker2 > xFolderPicker( g_xFactory->createInstance( FOLDER_PICKER_SERVICE_NAME ), UNO_QUERY );
 
     if ( xFolderPicker.is() == sal_False )
     {
@@ -117,7 +114,7 @@ int SAL_CALL main(int /*nArgc*/, char* /*Argv[]*/, char* /*Env[]*/  )
         rootDir = xFolderPicker->getDisplayDirectory( );
         selectedDir = xFolderPicker->getDirectory( );
     }
-    catch( ::com::sun::star::uno::Exception& )
+    catch( css::uno::Exception& )
     {
         MessageBox( NULL, "Exception caught!", "Error", MB_OK );
     }

@@ -33,18 +33,16 @@ class SfxPickList : public SfxListener
 {
     struct PickListEntry
     {
-        PickListEntry( const OUString& _aName, const OUString& _aFilter, const OUString& _aTitle ) :
-            aName( _aName ), aFilter( _aFilter ), aTitle( _aTitle ) {}
+        PickListEntry( const OUString& _aName, const OUString& _aFilter ) :
+            aName( _aName ), aFilter( _aFilter ) {}
 
         OUString aName;
         OUString aFilter;
-        OUString aTitle;
-        OUString aOptions;
     };
 
     std::vector< PickListEntry* >   m_aPicklistVector;
     sal_uInt32                      m_nAllowedMenuSize;
-    ::com::sun::star::uno::Reference< ::com::sun::star::util::XStringWidth > m_xStringLength;
+    css::uno::Reference< css::util::XStringWidth > m_xStringLength;
 
                             SfxPickList( sal_uInt32 nMenuSize );
                             virtual ~SfxPickList();
@@ -68,7 +66,7 @@ class SfxPickList : public SfxListener
         static void         ExecuteMenuEntry( sal_uInt16 nId );
         static void         ExecuteEntry( sal_uInt32 nIndex );
 
-        virtual void        Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+        virtual void        Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 };
 
 #endif // INCLUDED_SFX2_SOURCE_INC_SFXPICKLIST_HXX

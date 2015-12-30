@@ -121,7 +121,7 @@ adjust_boundaries( css::uno::Reference<css::accessibility::XAccessibleText> cons
             break;
 
         default:
-            return NULL;
+            return nullptr;
         }
     }
 
@@ -216,16 +216,16 @@ text_wrapper_get_text (AtkText *text,
                        gint     start_offset,
                        gint     end_offset)
 {
-    gchar * ret = NULL;
+    gchar * ret = nullptr;
 
-    g_return_val_if_fail( (end_offset == -1) || (end_offset >= start_offset), NULL );
+    g_return_val_if_fail( (end_offset == -1) || (end_offset >= start_offset), nullptr );
 
     /* at-spi expects the delete event to be send before the deletion happened
      * so we save the deleted string object in the UNO event notification and
      * fool libatk-bridge.so here ..
      */
     void * pData = g_object_get_data( G_OBJECT(text), "ooo::text_changed::delete" );
-    if( pData != NULL )
+    if( pData != nullptr )
     {
         accessibility::TextSegment * pTextSegment =
             static_cast <accessibility::TextSegment *> (pData);
@@ -281,7 +281,7 @@ text_wrapper_get_text_after_offset (AtkText          *text,
         g_warning( "Exception in get_text_after_offset()" );
     }
 
-    return NULL;
+    return nullptr;
 }
 
 static gchar *
@@ -324,7 +324,7 @@ text_wrapper_get_text_at_offset (AtkText          *text,
         g_warning( "Exception in get_text_at_offset()" );
     }
 
-    return NULL;
+    return nullptr;
 }
 
 static gunichar
@@ -366,7 +366,7 @@ text_wrapper_get_text_before_offset (AtkText          *text,
         g_warning( "Exception in text_before_offset()" );
     }
 
-    return NULL;
+    return nullptr;
 }
 
 static gint
@@ -435,22 +435,22 @@ handle_text_markup_as_run_attribute( css::uno::Reference<css::accessibility::XAc
                                               nEndOffsetTextMarkup );
                     switch ( nTextMarkupType )
                     {
-                        case com::sun::star::text::TextMarkupType::SPELLCHECK:
+                        case css::text::TextMarkupType::SPELLCHECK:
                         {
                             pSet = attribute_set_prepend_misspelled( pSet );
                         }
                         break;
-                        case com::sun::star::text::TextMarkupType::TRACK_CHANGE_INSERTION:
+                        case css::text::TextMarkupType::TRACK_CHANGE_INSERTION:
                         {
                             pSet = attribute_set_prepend_tracked_change_insertion( pSet );
                         }
                         break;
-                        case com::sun::star::text::TextMarkupType::TRACK_CHANGE_DELETION:
+                        case css::text::TextMarkupType::TRACK_CHANGE_DELETION:
                         {
                             pSet = attribute_set_prepend_tracked_change_deletion( pSet );
                         }
                         break;
-                        case com::sun::star::text::TextMarkupType::TRACK_CHANGE_FORMATCHANGE:
+                        case css::text::TextMarkupType::TRACK_CHANGE_FORMATCHANGE:
                         {
                             pSet = attribute_set_prepend_tracked_change_formatchange( pSet );
                         }
@@ -487,7 +487,7 @@ text_wrapper_get_run_attributes( AtkText        *text,
                                  gint           *start_offset,
                                  gint           *end_offset)
 {
-    AtkAttributeSet *pSet = NULL;
+    AtkAttributeSet *pSet = nullptr;
 
     try {
         bool bOffsetsAreValid = false;
@@ -535,20 +535,20 @@ text_wrapper_get_run_attributes( AtkText        *text,
             // handle misspelled text
             pSet = handle_text_markup_as_run_attribute(
                     pTextMarkup,
-                    com::sun::star::text::TextMarkupType::SPELLCHECK,
+                    css::text::TextMarkupType::SPELLCHECK,
                     offset, pSet, start_offset, end_offset );
             // handle tracked changes
             pSet = handle_text_markup_as_run_attribute(
                     pTextMarkup,
-                    com::sun::star::text::TextMarkupType::TRACK_CHANGE_INSERTION,
+                    css::text::TextMarkupType::TRACK_CHANGE_INSERTION,
                     offset, pSet, start_offset, end_offset );
             pSet = handle_text_markup_as_run_attribute(
                     pTextMarkup,
-                    com::sun::star::text::TextMarkupType::TRACK_CHANGE_DELETION,
+                    css::text::TextMarkupType::TRACK_CHANGE_DELETION,
                     offset, pSet, start_offset, end_offset );
             pSet = handle_text_markup_as_run_attribute(
                     pTextMarkup,
-                    com::sun::star::text::TextMarkupType::TRACK_CHANGE_FORMATCHANGE,
+                    css::text::TextMarkupType::TRACK_CHANGE_FORMATCHANGE,
                     offset, pSet, start_offset, end_offset );
         }
     }
@@ -559,7 +559,7 @@ text_wrapper_get_run_attributes( AtkText        *text,
         if( pSet )
         {
             atk_attribute_set_free( pSet );
-            pSet = NULL;
+            pSet = nullptr;
         }
     }
 
@@ -571,7 +571,7 @@ text_wrapper_get_run_attributes( AtkText        *text,
 static AtkAttributeSet *
 text_wrapper_get_default_attributes( AtkText *text )
 {
-    AtkAttributeSet *pSet = NULL;
+    AtkAttributeSet *pSet = nullptr;
 
     try {
         css::uno::Reference<css::accessibility::XAccessibleTextAttributes>
@@ -591,7 +591,7 @@ text_wrapper_get_default_attributes( AtkText *text )
         if( pSet )
         {
             atk_attribute_set_free( pSet );
-            pSet = NULL;
+            pSet = nullptr;
         }
     }
 
@@ -732,7 +732,7 @@ text_wrapper_get_selection (AtkText *text,
         g_warning( "Exception in getSelectionEnd(), getSelectionStart() or getSelectedText()" );
     }
 
-    return NULL;
+    return nullptr;
 }
 
 static gboolean
@@ -801,7 +801,7 @@ text_wrapper_set_selection (AtkText *text,
 void
 textIfaceInit (AtkTextIface *iface)
 {
-  g_return_if_fail (iface != NULL);
+  g_return_if_fail (iface != nullptr);
 
   iface->get_text = text_wrapper_get_text;
   iface->get_character_at_offset = text_wrapper_get_character_at_offset;

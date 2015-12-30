@@ -178,7 +178,7 @@ public:
                                               bIsRootSet( false ),
                                               bIsInColSet( false ),
                                               bHasBorderInherited( true ),
-                                              pFrame( 0 ) {}
+                                              pFrame( nullptr ) {}
 
                                         ~SfxFrameProperties() { delete pFrame; }
 
@@ -190,7 +190,6 @@ class SfxFrameDescriptorItem : public SfxPoolItem
 {
     SfxFrameProperties                  aProperties;
 public:
-                                        TYPEINFO_OVERRIDE();
 
                                         SfxFrameDescriptorItem ( const sal_uInt16 nId = SID_FRAMEDESCRIPTOR )
                                             : SfxPoolItem( nId )
@@ -204,15 +203,15 @@ public:
 
     virtual                             ~SfxFrameDescriptorItem();
 
-    virtual bool                        operator ==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual bool                        operator ==( const SfxPoolItem& ) const override;
     SfxFrameDescriptorItem&             operator =( const SfxFrameDescriptorItem & );
 
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                             SfxMapUnit eCoreMetric,
                                             SfxMapUnit ePresMetric,
-                                            OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                            OUString &rText, const IntlWrapper * = nullptr ) const override;
 
-    virtual SfxPoolItem*                Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*                Clone( SfxItemPool *pPool = nullptr ) const override;
 };
 
 #endif // INCLUDED_SFX2_FRMDESCR_HXX

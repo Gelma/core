@@ -22,6 +22,7 @@
 #include <com/sun/star/frame/FrameSearchFlag.hpp>
 
 #include <vcl/svapp.hxx>
+#include <comphelper/sequence.hxx>
 
 namespace framework{
 
@@ -93,7 +94,7 @@ void FrameContainer::remove( const css::uno::Reference< css::frame::XFrame >& xF
 
         // If removed frame was the current active frame - reset state variable.
         if (m_xActiveFrame==xFrame)
-            m_xActiveFrame = css::uno::Reference< css::frame::XFrame >();
+            m_xActiveFrame.clear();
     }
 }
 
@@ -125,7 +126,7 @@ void FrameContainer::clear()
     // ... and don't forget to reset the active frame.
     // Its an reference to a valid container-item.
     // But no container item => no active frame!
-    m_xActiveFrame = css::uno::Reference< css::frame::XFrame >();
+    m_xActiveFrame.clear();
 }
 
 /**-***************************************************************************************************************
@@ -186,11 +187,7 @@ css::uno::Reference< css::frame::XFrame > FrameContainer::operator[]( sal_uInt32
 css::uno::Sequence< css::uno::Reference< css::frame::XFrame > > FrameContainer::getAllElements() const
 {
     SolarMutexGuard g;
-    sal_Int32                                                       nPosition = 0;
-    css::uno::Sequence< css::uno::Reference< css::frame::XFrame > > lElements ( (sal_uInt32)m_aContainer.size() );
-    for (TFrameContainer::const_iterator pItem=m_aContainer.begin(); pItem!=m_aContainer.end(); ++pItem)
-        lElements[nPosition++] = *pItem;
-    return lElements;
+    return comphelper::containerToSequence(m_aContainer);
 }
 
 /**-***************************************************************************************************************

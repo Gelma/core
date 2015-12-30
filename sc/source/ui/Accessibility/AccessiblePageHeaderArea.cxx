@@ -56,7 +56,7 @@ ScAccessiblePageHeaderArea::ScAccessiblePageHeaderArea(
         SvxAdjust eAdjust)
         : ScAccessibleContextBase(rxParent, AccessibleRole::TEXT),
         mpEditObj(pEditObj->Clone()),
-        mpTextHelper(NULL),
+        mpTextHelper(nullptr),
         mpViewShell(pViewShell),
         mbHeader(bHeader),
         meAdjust(eAdjust)
@@ -81,7 +81,7 @@ void SAL_CALL ScAccessiblePageHeaderArea::disposing()
     if (mpViewShell)
     {
         mpViewShell->RemoveAccessibilityObject(*this);
-        mpViewShell = NULL;
+        mpViewShell = nullptr;
     }
     if (mpTextHelper)
         DELETEZ(mpTextHelper);
@@ -261,7 +261,7 @@ OUString SAL_CALL ScAccessiblePageHeaderArea::createAccessibleName()
 }
 
 Rectangle ScAccessiblePageHeaderArea::GetBoundingBoxOnScreen() const
-    throw(::com::sun::star::uno::RuntimeException, std::exception)
+    throw(css::uno::RuntimeException, std::exception)
 {
     Rectangle aRect;
     if (mxParent.is())
@@ -278,7 +278,7 @@ Rectangle ScAccessiblePageHeaderArea::GetBoundingBoxOnScreen() const
 }
 
 Rectangle ScAccessiblePageHeaderArea::GetBoundingBox() const
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     Rectangle aRect;
     if (mxParent.is())

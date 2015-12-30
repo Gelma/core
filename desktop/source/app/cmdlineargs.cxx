@@ -81,10 +81,10 @@ public:
 
     virtual ~ExtCommandLineSupplier() {}
 
-    virtual boost::optional< OUString > getCwdUrl() SAL_OVERRIDE { return m_cwdUrl; }
+    virtual boost::optional< OUString > getCwdUrl() override { return m_cwdUrl; }
 
-    virtual bool next(OUString * argument) SAL_OVERRIDE {
-        OSL_ASSERT(argument != NULL);
+    virtual bool next(OUString * argument) override {
+        OSL_ASSERT(argument != nullptr);
         if (m_index < m_count) {
             rtl_getAppCommandArg(m_index++, &argument->pData);
             return true;
@@ -184,6 +184,10 @@ void CommandLineArgs::ParseCommandLine_Impl( Supplier& supplier )
             else if ( oArg == "headless" )
             {
                 setHeadless();
+            }
+            else if ( oArg == "eventtesting" )
+            {
+                m_eventtesting = true;
             }
             else if ( oArg == "cat" )
             {
@@ -598,6 +602,7 @@ void CommandLineArgs::InitParamValues()
     m_invisible = false;
     m_headless = false;
 #endif
+    m_eventtesting = false;
     m_quickstart = false;
     m_noquickstart = false;
     m_terminateafterinit = false;

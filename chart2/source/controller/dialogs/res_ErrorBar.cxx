@@ -96,7 +96,7 @@ ErrorBarResources::ErrorBarResources( VclBuilderContainer* pParent, Dialog * pPa
         m_fPlusValue(0.0),
         m_fMinusValue(0.0),
         m_pParentDialog( pParentDialog ),
-        m_pCurrentRangeChoosingField( 0 ),
+        m_pCurrentRangeChoosingField( nullptr ),
         m_bHasInternalDataProvider( true ),
         m_bEnableDataTableDialog( true )
 {
@@ -340,10 +340,9 @@ void ErrorBarResources::UpdateControlStates()
     }
 }
 
-IMPL_LINK_NOARG( ErrorBarResources, CategoryChosen2 )
+IMPL_LINK_NOARG_TYPED( ErrorBarResources, CategoryChosen2, ListBox&, void )
 {
-   CategoryChosen(NULL);
-   return 0;
+   CategoryChosen(nullptr);
 }
 
 IMPL_LINK_NOARG_TYPED( ErrorBarResources, CategoryChosen, Button*, void )
@@ -407,10 +406,10 @@ IMPL_LINK_NOARG_TYPED( ErrorBarResources, CategoryChosen, Button*, void )
 IMPL_LINK_NOARG_TYPED(ErrorBarResources, SynchronizePosAndNeg, CheckBox&, void)
 {
     UpdateControlStates();
-    PosValueChanged( 0 );
+    PosValueChanged( *m_pMfPositive );
 }
 
-IMPL_LINK_NOARG(ErrorBarResources, PosValueChanged)
+IMPL_LINK_NOARG_TYPED(ErrorBarResources, PosValueChanged, Edit&, void)
 {
     if( m_pCbSyncPosNeg->IsChecked())
     {
@@ -422,8 +421,6 @@ IMPL_LINK_NOARG(ErrorBarResources, PosValueChanged)
         else
             m_pMfNegative->SetValue( m_pMfPositive->GetValue());
     }
-
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(ErrorBarResources, IndicatorChanged, Button*, void)
@@ -470,29 +467,27 @@ IMPL_LINK_TYPED( ErrorBarResources, ChooseRange, Button*, pButton, void )
             aUIString, *this );
     }
     else
-        m_pCurrentRangeChoosingField = 0;
+        m_pCurrentRangeChoosingField = nullptr;
 }
 
-IMPL_LINK( ErrorBarResources, RangeChanged, Edit *, pEdit )
+IMPL_LINK_TYPED( ErrorBarResources, RangeChanged, Edit&, rEdit, void )
 {
-    if( pEdit == m_pEdRangePositive )
+    if( &rEdit == m_pEdRangePositive )
     {
         m_bRangePosUnique = true;
-        PosValueChanged( 0 );
+        PosValueChanged( *m_pMfPositive );
     }
     else
     {
         m_bRangeNegUnique = true;
     }
 
-    isRangeFieldContentValid( *pEdit );
-
-    return 0;
+    isRangeFieldContentValid( rEdit );
 }
 
 void ErrorBarResources::Reset(const SfxItemSet& rInAttrs)
 {
-    const SfxPoolItem *pPoolItem = NULL;
+    const SfxPoolItem *pPoolItem = nullptr;
 
     // category
     m_eErrorKind = CHERROR_NONE;
@@ -706,10 +701,10 @@ void ErrorBarResources::listeningFinished(
     {
         m_pCurrentRangeChoosingField->SetText( aRange );
         m_pCurrentRangeChoosingField->GrabFocus();
-        PosValueChanged( 0 );
+        PosValueChanged( *m_pMfPositive );
     }
 
-    m_pCurrentRangeChoosingField = 0;
+    m_pCurrentRangeChoosingField = nullptr;
 
     UpdateControlStates();
     OSL_ASSERT( m_pParentDialog );

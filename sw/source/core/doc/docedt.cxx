@@ -65,7 +65,7 @@ void _RestFlyInRange( _SaveFlyArr & rArr, const SwNodeIndex& rSttIdx,
 
         if( rSave.bInsertPosition )
         {
-            if( pInsertPos != NULL )
+            if( pInsertPos != nullptr )
                 aPos.nNode = *pInsertPos;
             else
                 aPos.nNode = rSttIdx.GetIndex();
@@ -80,8 +80,8 @@ void _RestFlyInRange( _SaveFlyArr & rArr, const SwNodeIndex& rSttIdx,
         // SetFormatAttr should call Modify() and add it to the node
         pFormat->SetFormatAttr( aAnchor );
         SwContentNode* pCNd = aPos.nNode.GetNode().GetContentNode();
-        if( pCNd && pCNd->getLayoutFrm( pFormat->GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout(), 0, 0, false ) )
-            pFormat->MakeFrms();
+        if( pCNd && pCNd->getLayoutFrame( pFormat->GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout(), nullptr, nullptr, false ) )
+            pFormat->MakeFrames();
     }
     sw::CheckAnchoredFlyConsistency(*rSttIdx.GetNode().GetDoc());
 }
@@ -102,7 +102,7 @@ void _SaveFlyInRange( const SwNodeRange& rRg, _SaveFlyArr& rArr )
             _SaveFly aSave( pAPos->nNode.GetIndex() - rRg.aStart.GetIndex(),
                             pFormat, false );
             rArr.push_back( aSave );
-            pFormat->DelFrms();
+            pFormat->DelFrames();
             // set a dummy anchor position to maintain anchoring invariants
             SwFormatAnchor aAnchor( pFormat->GetAnchor() );
             aAnchor.SetAnchor(nullptr);
@@ -131,18 +131,17 @@ void _SaveFlyInRange( const SwPaM& rPam, const SwNodeIndex& rInsPos,
                 pPos->nContent == rEndNdIdx.GetNode().GetContentNode()->Len() ))
                     ? 0 : 1;
 
-    const SwNodeIndex* pContentIdx;
-
     for( SwFrameFormats::size_type n = 0; n < rFormats.size(); ++n )
     {
         pFormat = rFormats[n];
         pAnchor = &pFormat->GetAnchor();
         const SwPosition* pAPos = pAnchor->GetContentAnchor();
+        const SwNodeIndex* pContentIdx;
         if (pAPos &&
             ((FLY_AT_PARA == pAnchor->GetAnchorId()) ||
              (FLY_AT_CHAR == pAnchor->GetAnchorId())) &&
             // do not move if the InsPos is in the ContentArea of the Fly
-            ( 0 == ( pContentIdx = pFormat->GetContent().GetContentIdx() ) ||
+            ( nullptr == ( pContentIdx = pFormat->GetContent().GetContentIdx() ) ||
               !( *pContentIdx < rInsPos &&
                 rInsPos < pContentIdx->GetNode().EndOfSectionIndex() )) )
         {
@@ -169,7 +168,7 @@ void _SaveFlyInRange( const SwPaM& rPam, const SwNodeIndex& rInsPos,
                 _SaveFly aSave( pAPos->nNode.GetIndex() - rSttNdIdx.GetIndex(),
                                 pFormat, bInsPos );
                 rArr.push_back( aSave );
-                pFormat->DelFrms();
+                pFormat->DelFrames();
                 // set a dummy anchor position to maintain anchoring invariants
                 SwFormatAnchor aAnchor( pFormat->GetAnchor() );
                 aAnchor.SetAnchor(nullptr);
@@ -241,7 +240,7 @@ void DelFlyInRange( const SwNodeIndex& rMkNdIdx,
 // From now on this class saves the redline positions of all redlines which ends exact at the
 // insert position (node _and_ content index)
 _SaveRedlEndPosForRestore::_SaveRedlEndPosForRestore( const SwNodeIndex& rInsIdx, sal_Int32 nCnt )
-    : pSavArr( 0 ), pSavIdx( 0 ), nSavContent( nCnt )
+    : pSavArr( nullptr ), pSavIdx( nullptr ), nSavContent( nCnt )
 {
     SwNode& rNd = rInsIdx.GetNode();
     SwDoc* pDest = rNd.GetDoc();
@@ -316,7 +315,7 @@ void sw_GetJoinFlags( SwPaM& rPam, bool& rJoinText, bool& rJoinPrev )
         if( pSttNd )
         {
             SwTextNode *pEndNd = pEnd->nNode.GetNode().GetTextNode();
-            rJoinText = 0 != pEndNd;
+            rJoinText = nullptr != pEndNd;
             if( rJoinText )
             {
                 bool bExchange = pStt == rPam.GetPoint();
@@ -404,7 +403,7 @@ bool sw_JoinText( SwPaM& rPam, bool bJoinPrev )
                 if( !pContentStore->Empty() )
                     pContentStore->Restore( pDoc, aIdx.GetIndex() );
 
-                // If the passed PaM is not in the Crsr ring,
+                // If the passed PaM is not in the Cursor ring,
                 // treat it separately (e.g. when it's being called from AutoFormat)
                 if( pOldTextNd == rPam.GetBound().nContent.GetIdxReg() )
                     rPam.GetBound() = aAlphaPos;
@@ -496,7 +495,7 @@ uno::Any SwDoc::Spell( SwPaM& rPaM,
 {
     SwPosition* pSttPos = rPaM.Start(), *pEndPos = rPaM.End();
 
-    SwSpellArgs      *pSpellArgs = 0;
+    SwSpellArgs      *pSpellArgs = nullptr;
     if (pConvArgs)
     {
         pConvArgs->SetStart(pSttPos->nNode.GetNode().GetTextNode(), pSttPos->nContent);
@@ -514,7 +513,7 @@ uno::Any SwDoc::Spell( SwPaM& rPaM,
     uno::Any aRet;
     if( nCurrNd <= nEndNd )
     {
-        SwContentFrm* pCntFrm;
+        SwContentFrame* pContentFrame;
         bool bGoOn = true;
         while( bGoOn )
         {
@@ -522,18 +521,18 @@ uno::Any SwDoc::Spell( SwPaM& rPaM,
             switch( pNd->GetNodeType() )
             {
             case ND_TEXTNODE:
-                if( 0 != ( pCntFrm = pNd->GetTextNode()->getLayoutFrm( getIDocumentLayoutAccess().GetCurrentLayout() )) )
+                if( nullptr != ( pContentFrame = pNd->GetTextNode()->getLayoutFrame( getIDocumentLayoutAccess().GetCurrentLayout() )) )
                 {
                     // skip protected and hidden Cells and Flys
-                    if( pCntFrm->IsProtected() )
+                    if( pContentFrame->IsProtected() )
                     {
                         nCurrNd = pNd->EndOfSectionIndex();
                     }
-                    else if( !static_cast<SwTextFrm*>(pCntFrm)->IsHiddenNow() )
+                    else if( !static_cast<SwTextFrame*>(pContentFrame)->IsHiddenNow() )
                     {
                         if( pPageCnt && *pPageCnt && pPageSt )
                         {
-                            sal_uInt16 nPageNr = pCntFrm->GetPhyPageNum();
+                            sal_uInt16 nPageNr = pContentFrame->GetPhyPageNum();
                             if( !*pPageSt )
                             {
                                 *pPageSt = nPageNr;
@@ -558,12 +557,12 @@ uno::Any SwDoc::Spell( SwPaM& rPaM,
                             {
                                 SwIndex aStartIndex( dynamic_cast< SwTextNode* >( pNd ), nBeginGrammarCheck );
                                 SwPosition aStart( *pNd, aStartIndex );
-                                SwCursor aCrsr(aStart, 0, false);
-                                SwPosition aOrigPos = *aCrsr.GetPoint();
-                                aCrsr.GoSentence( SwCursor::START_SENT );
-                                if( aOrigPos != *aCrsr.GetPoint() )
+                                SwCursor aCursor(aStart, nullptr, false);
+                                SwPosition aOrigPos = *aCursor.GetPoint();
+                                aCursor.GoSentence( SwCursor::START_SENT );
+                                if( aOrigPos != *aCursor.GetPoint() )
                                 {
-                                    nBeginGrammarCheck = aCrsr.GetPoint()->nContent.GetIndex();
+                                    nBeginGrammarCheck = aCursor.GetPoint()->nContent.GetIndex();
                                 }
                             }
                             nEndGrammarCheck = (pSpellArgs->pEndNode == pNd)
@@ -690,9 +689,9 @@ public:
     inline sal_uInt16 *GetPageSt() { return pPageSt; }
 };
 
-SwHyphArgs::SwHyphArgs( const SwPaM *pPam, const Point &rCrsrPos,
+SwHyphArgs::SwHyphArgs( const SwPaM *pPam, const Point &rCursorPos,
                          sal_uInt16* pPageCount, sal_uInt16* pPageStart )
-     : SwInterHyphInfo( rCrsrPos ), pNode(0),
+     : SwInterHyphInfo( rCursorPos ), pNode(nullptr),
      pPageCnt( pPageCount ), pPageSt( pPageStart )
 {
     // The following constraints have to be met:
@@ -747,14 +746,14 @@ static bool lcl_HyphenateNode( const SwNodePtr& rpNd, void* pArgs )
     SwHyphArgs *pHyphArgs = static_cast<SwHyphArgs*>(pArgs);
     if( pNode )
     {
-        SwContentFrm* pCntFrm = pNode->getLayoutFrm( pNode->GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout() );
-        if( pCntFrm && !static_cast<SwTextFrm*>(pCntFrm)->IsHiddenNow() )
+        SwContentFrame* pContentFrame = pNode->getLayoutFrame( pNode->GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout() );
+        if( pContentFrame && !static_cast<SwTextFrame*>(pContentFrame)->IsHiddenNow() )
         {
             sal_uInt16 *pPageSt = pHyphArgs->GetPageSt();
             sal_uInt16 *pPageCnt = pHyphArgs->GetPageCnt();
             if( pPageCnt && *pPageCnt && pPageSt )
             {
-                sal_uInt16 nPageNr = pCntFrm->GetPhyPageNum();
+                sal_uInt16 nPageNr = pContentFrame->GetPhyPageNum();
                 if( !*pPageSt )
                 {
                     *pPageSt = nPageNr;
@@ -778,7 +777,7 @@ static bool lcl_HyphenateNode( const SwNodePtr& rpNd, void* pArgs )
 }
 
 uno::Reference< XHyphenatedWord >  SwDoc::Hyphenate(
-                            SwPaM *pPam, const Point &rCrsrPos,
+                            SwPaM *pPam, const Point &rCursorPos,
                              sal_uInt16* pPageCnt, sal_uInt16* pPageSt )
 {
     OSL_ENSURE(this == pPam->GetDoc(), "SwDoc::Hyphenate: strangers in the night");
@@ -786,7 +785,7 @@ uno::Reference< XHyphenatedWord >  SwDoc::Hyphenate(
     if( *pPam->GetPoint() > *pPam->GetMark() )
         pPam->Exchange();
 
-    SwHyphArgs aHyphArg( pPam, rCrsrPos, pPageCnt, pPageSt );
+    SwHyphArgs aHyphArg( pPam, rCursorPos, pPageCnt, pPageSt );
     SwNodeIndex aTmpIdx( pPam->GetMark()->nNode, 1 );
     GetNodes().ForEach( pPam->GetPoint()->nNode, aTmpIdx,
                     lcl_HyphenateNode, &aHyphArg );
@@ -805,7 +804,7 @@ void SwDoc::SetAutoCorrExceptWord( SwAutoCorrExceptWord* pNew )
 void SwDoc::DeleteAutoCorrExceptWord()
 {
     delete mpACEWord;
-    mpACEWord = 0;
+    mpACEWord = nullptr;
 }
 
 void SwDoc::CountWords( const SwPaM& rPaM, SwDocStat& rStat )
@@ -839,10 +838,10 @@ void SwDoc::CountWords( const SwPaM& rPaM, SwDocStat& rStat )
         }
 
         for( ; aIdx.GetIndex() < nEndNd; ++aIdx )
-            if( 0 != ( pTNd = aIdx.GetNode().GetTextNode() ))
+            if( nullptr != ( pTNd = aIdx.GetNode().GetTextNode() ))
                 pTNd->CountWords( rStat, 0, pTNd->GetText().getLength() );
 
-        if( nEndCnt && 0 != ( pTNd = pEnd->nNode.GetNode().GetTextNode() ))
+        if( nEndCnt && nullptr != ( pTNd = pEnd->nNode.GetNode().GetTextNode() ))
             pTNd->CountWords( rStat, 0, nEndCnt );
     }
     else if( pTNd && nSttCnt < nEndCnt )

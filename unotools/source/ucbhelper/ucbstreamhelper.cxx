@@ -44,7 +44,7 @@ static SvStream* lcl_CreateStream( const OUString& rFileName, StreamMode eOpenMo
                                    Reference < XInteractionHandler > xInteractionHandler,
                                    UcbLockBytesHandler* pHandler, bool bEnsureFileExists )
 {
-    SvStream* pStream = NULL;
+    SvStream* pStream = nullptr;
     Reference< XUniversalContentBroker > ucb(
         UniversalContentBroker::create(
             comphelper::getProcessComponentContext() ) );
@@ -60,7 +60,7 @@ static SvStream* lcl_CreateStream( const OUString& rFileName, StreamMode eOpenMo
                 ::ucbhelper::Content aCnt(
                     rFileName, Reference < XCommandEnvironment >(),
                     comphelper::getProcessComponentContext() );
-                aCnt.executeCommand( OUString("delete"), makeAny( true ) );
+                aCnt.executeCommand( "delete", css::uno::makeAny( true ) );
             }
 
             catch ( const CommandAbortedException& )
@@ -93,7 +93,7 @@ static SvStream* lcl_CreateStream( const OUString& rFileName, StreamMode eOpenMo
                 aInsertArg.ReplaceExisting = sal_False;
                 Any aCmdArg;
                 aCmdArg <<= aInsertArg;
-                aContent.executeCommand( OUString("insert"), aCmdArg );
+                aContent.executeCommand( "insert", aCmdArg );
             }
 
             // it is NOT an error when the stream already exists and no truncation was desired
@@ -160,7 +160,7 @@ SvStream* UcbStreamHelper::CreateStream( const OUString& rFileName, StreamMode e
 
 SvStream* UcbStreamHelper::CreateStream( Reference < XInputStream > xStream )
 {
-    SvStream* pStream = NULL;
+    SvStream* pStream = nullptr;
     UcbLockBytesRef xLockBytes = UcbLockBytes::CreateInputLockBytes( xStream );
     if ( xLockBytes.Is() )
     {
@@ -174,7 +174,7 @@ SvStream* UcbStreamHelper::CreateStream( Reference < XInputStream > xStream )
 
 SvStream* UcbStreamHelper::CreateStream( Reference < XStream > xStream )
 {
-    SvStream* pStream = NULL;
+    SvStream* pStream = nullptr;
     if ( xStream->getOutputStream().is() )
     {
         UcbLockBytesRef xLockBytes = UcbLockBytes::CreateLockBytes( xStream );
@@ -193,7 +193,7 @@ SvStream* UcbStreamHelper::CreateStream( Reference < XStream > xStream )
 
 SvStream* UcbStreamHelper::CreateStream( Reference < XInputStream > xStream, bool bCloseStream )
 {
-    SvStream* pStream = NULL;
+    SvStream* pStream = nullptr;
     UcbLockBytesRef xLockBytes = UcbLockBytes::CreateInputLockBytes( xStream );
     if ( xLockBytes.Is() )
     {
@@ -210,7 +210,7 @@ SvStream* UcbStreamHelper::CreateStream( Reference < XInputStream > xStream, boo
 
 SvStream* UcbStreamHelper::CreateStream( Reference < XStream > xStream, bool bCloseStream )
 {
-    SvStream* pStream = NULL;
+    SvStream* pStream = nullptr;
     if ( xStream->getOutputStream().is() )
     {
         UcbLockBytesRef xLockBytes = UcbLockBytes::CreateLockBytes( xStream );

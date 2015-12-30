@@ -177,14 +177,14 @@ void testFormats(ScBootstrapFixture* pTest, ScDocument* pDoc, sal_Int32 nFormat)
 {
     //test Sheet1 with csv file
     OUString aCSVFileName;
-    pTest->createCSVPath(OUString("numberFormat."), aCSVFileName);
+    pTest->createCSVPath("numberFormat.", aCSVFileName);
     testFile(aCSVFileName, *pDoc, 0, PureString);
     //need to test the color of B3
     //it's not a font color!
     //formatting for B5: # ??/100 gets lost during import
 
     //test Sheet2
-    const ScPatternAttr* pPattern = NULL;
+    const ScPatternAttr* pPattern = nullptr;
     pPattern = pDoc->GetPattern(0,0,1);
     vcl::Font aFont;
     pPattern->GetFont(aFont,SC_AUTOCOL_RAW);
@@ -206,7 +206,7 @@ void testFormats(ScBootstrapFixture* pTest, ScDocument* pDoc, sal_Int32 nFormat)
     pPattern->GetFont(aFont, SC_AUTOCOL_RAW);
     CPPUNIT_ASSERT_EQUAL_MESSAGE("font should be striked out with a single line", STRIKEOUT_SINGLE, aFont.GetStrikeout());
     //some tests on sheet2 only for ods
-    if (nFormat == ODS)
+    if (nFormat == FORMAT_ODS)
     {
         pPattern = pDoc->GetPattern(1,2,1);
         pPattern->GetFont(aFont, SC_AUTOCOL_RAW);
@@ -247,12 +247,12 @@ void testFormats(ScBootstrapFixture* pTest, ScDocument* pDoc, sal_Int32 nFormat)
     CPPUNIT_ASSERT_EQUAL_MESSAGE("cell content should be aligned block horizontally", SVX_HOR_JUSTIFY_BLOCK, eHorJustify);
 
     //test Sheet3 only for ods and xlsx
-    if ( nFormat == ODS || nFormat == XLSX )
+    if ( nFormat == FORMAT_ODS || nFormat == FORMAT_XLSX )
     {
-        pTest->createCSVPath(OUString("conditionalFormatting."), aCSVFileName);
+        pTest->createCSVPath("conditionalFormatting.", aCSVFileName);
         testCondFile(aCSVFileName, pDoc, 2);
         // test parent cell style import ( fdo#55198 )
-        if ( nFormat == XLSX )
+        if ( nFormat == FORMAT_XLSX )
         {
             pPattern = pDoc->GetPattern(1,1,3);
             ScStyleSheet* pStyleSheet = const_cast<ScStyleSheet*>(pPattern->GetStyleSheet());
@@ -296,40 +296,40 @@ const SdrOle2Obj* getSingleChartObject(ScDocument& rDoc, sal_uInt16 nPage)
     if (!pDrawLayer)
     {
         cout << "Failed to retrieve the drawing layer object." << endl;
-        return NULL;
+        return nullptr;
     }
 
     const SdrPage* pPage = pDrawLayer->GetPage(nPage);
     if (!pPage)
     {
         cout << "Failed to retrieve the page object." << endl;
-        return NULL;
+        return nullptr;
     }
 
     if (pPage->GetObjCount() != 1)
     {
         cout << "This page should contain one drawing object." << endl;
-        return NULL;
+        return nullptr;
     }
 
     const SdrObject* pObj = pPage->GetObj(0);
     if (!pObj)
     {
         cout << "Failed to retrieve the drawing object." << endl;
-        return NULL;
+        return nullptr;
     }
 
     if (pObj->GetObjIdentifier() != OBJ_OLE2)
     {
         cout << "This is not an OLE2 object." << endl;
-        return NULL;
+        return nullptr;
     }
 
     const SdrOle2Obj& rOleObj = static_cast<const SdrOle2Obj&>(*pObj);
     if (!rOleObj.IsChart())
     {
         cout << "This should be a chart object." << endl;
-        return NULL;
+        return nullptr;
     }
 
     return &rOleObj;
@@ -415,7 +415,7 @@ ScTokenArray* getTokens(ScDocument& rDoc, const ScAddress& rPos)
     {
         OUString aStr = rPos.Format(SCA_VALID);
         cerr << aStr << " is not a formula cell." << endl;
-        return NULL;
+        return nullptr;
     }
 
     return pCell->GetCode();
@@ -552,7 +552,7 @@ ScDocShellRef ScBootstrapFixture::load( bool bReadWrite,
     {
         pSet->Put(SfxStringItem(SID_PASSWORD, *pPassword));
     }
-    pSet->Put(SfxUInt16Item(SID_MACROEXECMODE,::com::sun::star::document::MacroExecMode::ALWAYS_EXECUTE_NO_WARN));
+    pSet->Put(SfxUInt16Item(SID_MACROEXECMODE,css::document::MacroExecMode::ALWAYS_EXECUTE_NO_WARN));
     SAL_INFO( "sc.qa", "about to load " << rURL );
     if (!xDocShRef->DoLoad(pSrcMed))
     {

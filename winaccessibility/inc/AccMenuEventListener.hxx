@@ -35,11 +35,11 @@
 class AccMenuEventListener: public AccComponentEventListener
 {
 public:
-    AccMenuEventListener(com::sun::star::accessibility::XAccessible* pAcc, AccObjectManagerAgent* Agent);
+    AccMenuEventListener(css::accessibility::XAccessible* pAcc, AccObjectManagerAgent* Agent);
     virtual ~AccMenuEventListener();
 
     //AccessibleEventListener
-    virtual void SAL_CALL notifyEvent( const ::com::sun::star::accessibility::AccessibleEventObject& aEvent ) throw (::com::sun::star::uno::RuntimeException);
+    virtual void SAL_CALL notifyEvent( const css::accessibility::AccessibleEventObject& aEvent ) throw (css::uno::RuntimeException) override;
 
     //for child changed event
     virtual void HandleChildChangedEvent(
@@ -49,7 +49,7 @@ public:
     virtual void HandleSelectionChangedEventNoArgs();
 
     //for state changed event
-    virtual void FireStatePropertyChange(short state, bool set) SAL_OVERRIDE;
+    virtual void FireStatePropertyChange(short state, bool set) override;
 };
 
 #endif // INCLUDED_WINACCESSIBILITY_INC_ACCMENUEVENTLISTENER_HXX

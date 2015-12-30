@@ -82,7 +82,7 @@ InsertionIndicatorOverlay::~InsertionIndicatorOverlay()
 
 void InsertionIndicatorOverlay::Create (const SdTransferable* pTransferable)
 {
-    if (pTransferable == NULL)
+    if (pTransferable == nullptr)
         return;
 
     std::shared_ptr<controller::TransferableData> pData (
@@ -95,10 +95,10 @@ void InsertionIndicatorOverlay::Create (const SdTransferable* pTransferable)
     else
     {
         DrawDocShell* pDataDocShell = dynamic_cast<DrawDocShell*>(&pTransferable->GetDocShell());
-        if (pDataDocShell != NULL)
+        if (pDataDocShell != nullptr)
         {
             SdDrawDocument* pDataDocument = pDataDocShell->GetDoc();
-            if (pDataDocument != NULL)
+            if (pDataDocument != nullptr)
                 nSelectionCount = pDataDocument->GetSdPageCount(PK_STANDARD);
         }
     }
@@ -135,7 +135,7 @@ void InsertionIndicatorOverlay::Create (
     // Create virtual devices for bitmap and mask whose bitmaps later be
     // combined to form the BitmapEx of the icon.
     ScopedVclPtrInstance<VirtualDevice> pContent(
-        *mrSlideSorter.GetContentWindow(), 0, 0);
+        *mrSlideSorter.GetContentWindow(), DeviceFormat::DEFAULT, DeviceFormat::DEFAULT);
     pContent->SetOutputSizePixel(aIconSize);
 
     pContent->SetFillColor();

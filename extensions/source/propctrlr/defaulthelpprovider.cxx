@@ -77,8 +77,7 @@ namespace pcr
 
     Sequence< OUString > DefaultHelpProvider::getSupportedServiceNames_static(  ) throw(RuntimeException)
     {
-        Sequence< OUString > aSupported(1);
-        aSupported[0] = "com.sun.star.inspection.DefaultHelpProvider";
+        Sequence< OUString > aSupported { "com.sun.star.inspection.DefaultHelpProvider" };
         return aSupported;
     }
 
@@ -149,7 +148,7 @@ namespace pcr
 
     vcl::Window* DefaultHelpProvider::impl_getVclControlWindow_nothrow( const Reference< XPropertyControl >& _rxControl )
     {
-        vcl::Window* pControlWindow = NULL;
+        vcl::Window* pControlWindow = nullptr;
         OSL_PRECOND( _rxControl.is(), "DefaultHelpProvider::impl_getVclControlWindow_nothrow: illegal control!" );
         if ( !_rxControl.is() )
             return pControlWindow;

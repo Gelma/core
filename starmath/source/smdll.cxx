@@ -27,7 +27,6 @@
 #include <sfx2/docfile.hxx>
 #include <sfx2/docfilt.hxx>
 #include <sfx2/app.hxx>
-#include <sfx2/taskpane.hxx>
 
 #include <smdll.hxx>
 #include <document.hxx>
@@ -58,7 +57,7 @@ namespace
         SmModule *pModule = new SmModule( &rFactory );
         *ppShlPtr = pModule;
 
-        rFactory.SetDocumentServiceName( OUString("com.sun.star.formula.FormulaProperties") );
+        rFactory.SetDocumentServiceName( "com.sun.star.formula.FormulaProperties" );
 
         SmModule::RegisterInterface(pModule);
         SmDocShell::RegisterInterface(pModule);
@@ -75,8 +74,6 @@ namespace
 
         SmCmdBoxWrapper::RegisterChildWindow(true);
         SmElementsDockingWindowWrapper::RegisterChildWindow(true);
-
-        ::sfx2::TaskPaneWrapper::RegisterChildWindow(false, pModule);
     }
 
     SmDLL::~SmDLL()

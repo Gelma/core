@@ -43,7 +43,7 @@ namespace abp
     using namespace ::com::sun::star::sdbc;
 
     OAdminDialogInvokation::OAdminDialogInvokation(const Reference< XComponentContext >& _rxContext,
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& _rxDataSource
+                    const css::uno::Reference< css::beans::XPropertySet >& _rxDataSource
                     , vcl::Window* _pMessageParent)
         :m_xContext(_rxContext)
         ,m_xDataSource(_rxDataSource)
@@ -55,7 +55,7 @@ namespace abp
     }
 
 
-    bool OAdminDialogInvokation::invokeAdministration( bool _bFixedType )
+    bool OAdminDialogInvokation::invokeAdministration()
     {
         if (!m_xContext.is())
             return false;
@@ -87,8 +87,8 @@ namespace abp
                 // creating the dialog service is potentially expensive (if all the libraries invoked need to be loaded)
                 // so we display a wait cursor
                 WaitObject aWaitCursor(m_pMessageParent);
-                Reference<XInterface> x = m_xContext->getServiceManager()->createInstanceWithArgumentsAndContext(_bFixedType ? OUString(s_sAdministrationServiceName) : OUString(s_sDataSourceTypeChangeDialog), aArguments, m_xContext);
-                xDialog = Reference< XExecutableDialog >( x, UNO_QUERY );
+                Reference<XInterface> x = m_xContext->getServiceManager()->createInstanceWithArgumentsAndContext(s_sDataSourceTypeChangeDialog, aArguments, m_xContext);
+                xDialog.set( x, UNO_QUERY );
 
                 // just for a smoother UI: What the dialog does upon execution, is (amongst other things) creating
                 // the DriverManager service

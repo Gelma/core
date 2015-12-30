@@ -48,14 +48,14 @@
 #include <boost/optional.hpp>
 
 
-KDESalFrame::KDESalFrame( SalFrame* pParent, sal_uLong nState ) :
+KDESalFrame::KDESalFrame( SalFrame* pParent, SalFrameStyleFlags nState ) :
     X11SalFrame( pParent, nState )
 {
 }
 
 void KDESalFrame::Show( bool bVisible, bool bNoActivate )
 {
-    if ( !GetParent() && ! (GetStyle() & SAL_FRAME_STYLE_INTRO) )
+    if ( !GetParent() && ! (GetStyle() & SalFrameStyleFlags::INTRO) )
     {
         KDEXLib* pXLib = static_cast<KDEXLib*>(GetDisplay()->GetXLib());
         pXLib->doStartup();
@@ -82,7 +82,7 @@ static OUString readEntryUntranslated( KConfigGroup *pGroup, const char *pKey )
 
     Mostly grabbed from the Gtk+ vclplug (salnativewidgets-gtk.cxx).
 */
-static vcl::Font toFont( const QFont &rQFont, const ::com::sun::star::lang::Locale& rLocale )
+static vcl::Font toFont( const QFont &rQFont, const css::lang::Locale& rLocale )
 {
     psp::FastPrintFontInfo aInfo;
     QFontInfo qFontInfo( rQFont );
@@ -383,7 +383,7 @@ SalGraphics* KDESalFrame::AcquireGraphics()
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

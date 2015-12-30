@@ -49,7 +49,7 @@ void ShapeFilterBase::setCurrentTheme(::oox::drawingml::ThemePtr pTheme)
 
 ::oox::vml::Drawing* ShapeFilterBase::getVmlDrawing()
 {
-    return 0;
+    return nullptr;
 }
 
 const ::oox::drawingml::table::TableStyleListPtr ShapeFilterBase::getTableStyles()
@@ -77,7 +77,7 @@ class ShapeGraphicHelper : public GraphicHelper
 {
 public:
     explicit            ShapeGraphicHelper( const ShapeFilterBase& rFilter );
-    virtual sal_Int32   getSchemeColor( sal_Int32 nToken ) const SAL_OVERRIDE;
+    virtual sal_Int32   getSchemeColor( sal_Int32 nToken ) const override;
 private:
     const ShapeFilterBase& mrFilter;
 };

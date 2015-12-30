@@ -47,24 +47,24 @@ class SdAnimationPrmsUndoAction : public SdUndoAction
     bool            bNewPlayFull;
     bool            bOldSecondPlayFull;
     bool            bNewSecondPlayFull;
-    ::com::sun::star::presentation::AnimationEffect eOldEffect;
-    ::com::sun::star::presentation::AnimationEffect eNewEffect;
-    ::com::sun::star::presentation::AnimationEffect eOldTextEffect;
-    ::com::sun::star::presentation::AnimationEffect eNewTextEffect;
-    ::com::sun::star::presentation::AnimationSpeed  eOldSpeed;
-    ::com::sun::star::presentation::AnimationSpeed  eNewSpeed;
-    ::com::sun::star::presentation::AnimationEffect eOldSecondEffect;
-    ::com::sun::star::presentation::AnimationEffect eNewSecondEffect;
-    ::com::sun::star::presentation::AnimationSpeed  eOldSecondSpeed;
-    ::com::sun::star::presentation::AnimationSpeed  eNewSecondSpeed;
+    css::presentation::AnimationEffect eOldEffect;
+    css::presentation::AnimationEffect eNewEffect;
+    css::presentation::AnimationEffect eOldTextEffect;
+    css::presentation::AnimationEffect eNewTextEffect;
+    css::presentation::AnimationSpeed  eOldSpeed;
+    css::presentation::AnimationSpeed  eNewSpeed;
+    css::presentation::AnimationEffect eOldSecondEffect;
+    css::presentation::AnimationEffect eNewSecondEffect;
+    css::presentation::AnimationSpeed  eOldSecondSpeed;
+    css::presentation::AnimationSpeed  eNewSecondSpeed;
     Color           aOldDimColor;
     Color           aNewDimColor;
     OUString        aOldSoundFile;
     OUString        aNewSoundFile;
     SdrPathObj*     pOldPathObj;
     SdrPathObj*     pNewPathObj;
-    ::com::sun::star::presentation::ClickAction     eOldClickAction;
-    ::com::sun::star::presentation::ClickAction     eNewClickAction;
+    css::presentation::ClickAction     eOldClickAction;
+    css::presentation::ClickAction     eNewClickAction;
     OUString        aOldBookmark;
     OUString        aNewBookmark;
     sal_uInt16          nOldVerb;
@@ -75,7 +75,6 @@ class SdAnimationPrmsUndoAction : public SdUndoAction
     bool            bInfoCreated;
 
 public:
-    TYPEINFO_OVERRIDE();
     SdAnimationPrmsUndoAction(SdDrawDocument* pTheDoc, SdrObject* pObj,
                                   bool bCreated)
         : SdUndoAction(pTheDoc)
@@ -104,8 +103,8 @@ public:
         , eNewSecondEffect(css::presentation::AnimationEffect_NONE)
         , eOldSecondSpeed(css::presentation::AnimationSpeed_SLOW)
         , eNewSecondSpeed(css::presentation::AnimationSpeed_SLOW)
-        , pOldPathObj(NULL)
-        , pNewPathObj(NULL)
+        , pOldPathObj(nullptr)
+        , pNewPathObj(nullptr)
         , eOldClickAction(css::presentation::ClickAction_NONE)
         , eNewClickAction(css::presentation::ClickAction_NONE)
         , nOldVerb(0)
@@ -118,11 +117,11 @@ public:
 
         void SetActive(bool bTheOldActive, bool bTheNewActive)
             { bOldActive = bTheOldActive; bNewActive = bTheNewActive; }
-        void SetEffect(::com::sun::star::presentation::AnimationEffect eTheOldEffect, ::com::sun::star::presentation::AnimationEffect eTheNewEffect)
+        void SetEffect(css::presentation::AnimationEffect eTheOldEffect, css::presentation::AnimationEffect eTheNewEffect)
             { eOldEffect = eTheOldEffect; eNewEffect = eTheNewEffect; }
-        void SetTextEffect(::com::sun::star::presentation::AnimationEffect eTheOldEffect, ::com::sun::star::presentation::AnimationEffect eTheNewEffect)
+        void SetTextEffect(css::presentation::AnimationEffect eTheOldEffect, css::presentation::AnimationEffect eTheNewEffect)
             { eOldTextEffect = eTheOldEffect; eNewTextEffect = eTheNewEffect; }
-        void SetSpeed(::com::sun::star::presentation::AnimationSpeed eTheOldSpeed, ::com::sun::star::presentation::AnimationSpeed eTheNewSpeed)
+        void SetSpeed(css::presentation::AnimationSpeed eTheOldSpeed, css::presentation::AnimationSpeed eTheNewSpeed)
             { eOldSpeed = eTheOldSpeed; eNewSpeed = eTheNewSpeed; }
         void SetDim(bool bTheOldDim, bool bTheNewDim)
             { bOldDimPrevious = bTheOldDim; bNewDimPrevious = bTheNewDim; }
@@ -138,15 +137,15 @@ public:
             { bOldPlayFull = bTheOldPlayFull; bNewPlayFull = bTheNewPlayFull; }
         void SetPathObj(SdrPathObj* pTheOldPath, SdrPathObj* pTheNewPath)
             { pOldPathObj = pTheOldPath; pNewPathObj = pTheNewPath; }
-        void SetClickAction(::com::sun::star::presentation::ClickAction eTheOldAction, ::com::sun::star::presentation::ClickAction eTheNewAction)
+        void SetClickAction(css::presentation::ClickAction eTheOldAction, css::presentation::ClickAction eTheNewAction)
             { eOldClickAction = eTheOldAction; eNewClickAction = eTheNewAction; }
         void SetBookmark(const OUString& aTheOldBookmark, const OUString& aTheNewBookmark)
             { aOldBookmark = aTheOldBookmark; aNewBookmark = aTheNewBookmark; }
         void SetVerb(sal_uInt16 nTheOldVerb, sal_uInt16 nTheNewVerb)
             { nOldVerb = nTheOldVerb; nNewVerb = nTheNewVerb; }
-        void SetSecondEffect(::com::sun::star::presentation::AnimationEffect eTheOldEffect, ::com::sun::star::presentation::AnimationEffect eTheNewEffect)
+        void SetSecondEffect(css::presentation::AnimationEffect eTheOldEffect, css::presentation::AnimationEffect eTheNewEffect)
             { eOldSecondEffect = eTheOldEffect; eNewSecondEffect = eTheNewEffect; }
-        void SetSecondSpeed(::com::sun::star::presentation::AnimationSpeed eTheOldSpeed, ::com::sun::star::presentation::AnimationSpeed eTheNewSpeed)
+        void SetSecondSpeed(css::presentation::AnimationSpeed eTheOldSpeed, css::presentation::AnimationSpeed eTheNewSpeed)
             { eOldSecondSpeed = eTheOldSpeed; eNewSecondSpeed = eTheNewSpeed; }
         void SetSecondSoundOn(bool bTheOldSoundOn, bool bTheNewSoundOn)
             { bOldSecondSoundOn = bTheOldSoundOn; bNewSecondSoundOn = bTheNewSoundOn; }
@@ -154,8 +153,8 @@ public:
             { bOldSecondPlayFull = bTheOldPlayFull; bNewSecondPlayFull = bTheNewPlayFull; }
 
     virtual ~SdAnimationPrmsUndoAction();
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 };
 
 #endif // INCLUDED_SD_SOURCE_UI_INC_UNOAPRMS_HXX

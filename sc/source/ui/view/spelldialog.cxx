@@ -42,10 +42,10 @@ SFX_IMPL_CHILDWINDOW_WITHID( ScSpellDialogChildWindow, SID_SPELL_DIALOG )
 ScSpellDialogChildWindow::ScSpellDialogChildWindow( vcl::Window* pParentP, sal_uInt16 nId,
         SfxBindings* pBindings, SfxChildWinInfo* pInfo ) :
     svx::SpellDialogChildWindow( pParentP, nId, pBindings, pInfo ),
-    mpViewShell( 0 ),
-    mpViewData( 0 ),
-    mpDocShell( 0 ),
-    mpDoc( 0 ),
+    mpViewShell( nullptr ),
+    mpViewData( nullptr ),
+    mpDocShell( nullptr ),
+    mpDoc( nullptr ),
     mbNeedNextObj( false ),
     mbOldIdleEnabled(true)
 {
@@ -118,7 +118,7 @@ void ScSpellDialogChildWindow::LoseFocus()
 
 void ScSpellDialogChildWindow::Reset()
 {
-    if( mpViewShell && (mpViewShell == PTR_CAST( ScTabViewShell, SfxViewShell::Current() )) )
+    if( mpViewShell && (mpViewShell == dynamic_cast<ScTabViewShell*>( SfxViewShell::Current() ))  )
     {
         if( mxEngine.get() && mxEngine->IsAnyModified() )
         {
@@ -140,7 +140,7 @@ void ScSpellDialogChildWindow::Reset()
             mpDocShell->SetDocumentModified();
         }
 
-        mpViewData->SetSpellingView( 0 );
+        mpViewData->SetSpellingView( nullptr );
         mpViewShell->KillEditView( true );
         mpDocShell->PostPaintGridAll();
         mpViewShell->UpdateInputHandler();
@@ -151,10 +151,10 @@ void ScSpellDialogChildWindow::Reset()
     mxRedoDoc.reset();
     mxOldSel.reset();
     mxOldRangeList.reset();
-    mpViewShell = 0;
-    mpViewData = 0;
-    mpDocShell = 0;
-    mpDoc = 0;
+    mpViewShell = nullptr;
+    mpViewData = nullptr;
+    mpDocShell = nullptr;
+    mpDoc = nullptr;
     mbNeedNextObj = false;
     mbOldIdleEnabled = true;
 }
@@ -163,7 +163,7 @@ void ScSpellDialogChildWindow::Init()
 {
     if( mpViewShell )
         return;
-    if( (mpViewShell = PTR_CAST( ScTabViewShell, SfxViewShell::Current() )) == 0 )
+    if( (mpViewShell = dynamic_cast<ScTabViewShell*>( SfxViewShell::Current() )) == nullptr  )
         return;
 
     mpViewData = &mpViewShell->GetViewData();
@@ -262,7 +262,7 @@ void ScSpellDialogChildWindow::Init()
 
 bool ScSpellDialogChildWindow::IsSelectionChanged()
 {
-    if( !mxOldRangeList.get() || !mpViewShell || (mpViewShell != PTR_CAST( ScTabViewShell, SfxViewShell::Current() )) )
+    if( !mxOldRangeList.get() || !mpViewShell || (mpViewShell != dynamic_cast<ScTabViewShell*>( SfxViewShell::Current() ))  )
         return true;
 
     if( EditView* pEditView = mpViewData->GetSpellingView() )

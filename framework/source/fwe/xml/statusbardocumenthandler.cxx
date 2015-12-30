@@ -385,7 +385,7 @@ throw(  SAXException, RuntimeException, std::exception )
                             aStatusbarItemProp[2].Value <<= nOffset;
                             aStatusbarItemProp[3].Value <<= nItemBits;
                             aStatusbarItemProp[4].Value <<= nWidth;
-                            aStatusbarItemProp[5].Value = makeAny( ::com::sun::star::ui::ItemType::DEFAULT );
+                            aStatusbarItemProp[5].Value = makeAny( css::ui::ItemType::DEFAULT );
 
                             m_aStatusBarItems->insertByIndex( m_aStatusBarItems->getCount(), makeAny( aStatusbarItemProp ) );
                        }
@@ -488,7 +488,7 @@ OWriteStatusBarDocumentHandler::OWriteStatusBarDocumentHandler(
     m_xWriteDocumentHandler( rWriteDocumentHandler )
 {
     ::comphelper::AttributeList* pList = new ::comphelper::AttributeList;
-    m_xEmptyList        = Reference< XAttributeList >( static_cast<XAttributeList *>(pList), UNO_QUERY );
+    m_xEmptyList.set( static_cast<XAttributeList *>(pList), UNO_QUERY );
     m_aAttributeType    = ATTRIBUTE_TYPE_CDATA;
     m_aXMLXlinkNS       = XMLNS_XLINK_PREFIX;
     m_aXMLStatusBarNS   = XMLNS_STATUSBAR_PREFIX;
@@ -509,22 +509,22 @@ void OWriteStatusBarDocumentHandler::WriteStatusBarDocument() throw
     Reference< XExtendedDocumentHandler > xExtendedDocHandler( m_xWriteDocumentHandler, UNO_QUERY );
     if ( xExtendedDocHandler.is() )
     {
-        xExtendedDocHandler->unknown( OUString( STATUSBAR_DOCTYPE ) );
+        xExtendedDocHandler->unknown( STATUSBAR_DOCTYPE );
         m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
     }
 
     ::comphelper::AttributeList* pList = new ::comphelper::AttributeList;
     Reference< XAttributeList > xList( static_cast<XAttributeList *>(pList) , UNO_QUERY );
 
-    pList->AddAttribute( OUString( ATTRIBUTE_XMLNS_STATUSBAR ),
+    pList->AddAttribute( ATTRIBUTE_XMLNS_STATUSBAR,
                          m_aAttributeType,
-                         OUString( XMLNS_STATUSBAR ) );
+                         XMLNS_STATUSBAR );
 
-    pList->AddAttribute( OUString( ATTRIBUTE_XMLNS_XLINK ),
+    pList->AddAttribute( ATTRIBUTE_XMLNS_XLINK,
                          m_aAttributeType,
-                         OUString( XMLNS_XLINK ) );
+                         XMLNS_XLINK );
 
-    m_xWriteDocumentHandler->startElement( OUString( ELEMENT_NS_STATUSBAR ), pList );
+    m_xWriteDocumentHandler->startElement( ELEMENT_NS_STATUSBAR, pList );
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
 
     sal_Int32  nItemCount = m_aStatusBarItems->getCount();
@@ -556,7 +556,7 @@ void OWriteStatusBarDocumentHandler::WriteStatusBarDocument() throw
     }
 
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
-    m_xWriteDocumentHandler->endElement( OUString( ELEMENT_NS_STATUSBAR ) );
+    m_xWriteDocumentHandler->endElement( ELEMENT_NS_STATUSBAR );
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
     m_xWriteDocumentHandler->endDocument();
 }
@@ -587,19 +587,19 @@ throw ( SAXException, RuntimeException )
     {
         pList->AddAttribute( m_aXMLStatusBarNS + ATTRIBUTE_ALIGN,
                              m_aAttributeType,
-                             OUString( ATTRIBUTE_ALIGN_RIGHT ) );
+                             ATTRIBUTE_ALIGN_RIGHT );
     }
     else if ( nStyle & ItemStyle::ALIGN_CENTER )
     {
         pList->AddAttribute( m_aXMLStatusBarNS + ATTRIBUTE_ALIGN,
                              m_aAttributeType,
-                             OUString( ATTRIBUTE_ALIGN_CENTER ) );
+                             ATTRIBUTE_ALIGN_CENTER );
     }
     else
     {
         pList->AddAttribute( m_aXMLStatusBarNS + ATTRIBUTE_ALIGN,
                              m_aAttributeType,
-                             OUString( ATTRIBUTE_ALIGN_LEFT ) );
+                             ATTRIBUTE_ALIGN_LEFT );
     }
 
     // style ( SIB_IN is default )
@@ -607,13 +607,13 @@ throw ( SAXException, RuntimeException )
     {
         pList->AddAttribute( m_aXMLStatusBarNS + ATTRIBUTE_STYLE,
                              m_aAttributeType,
-                             OUString( ATTRIBUTE_STYLE_FLAT ) );
+                             ATTRIBUTE_STYLE_FLAT );
     }
     else if ( nStyle & ItemStyle::DRAW_OUT3D )
     {
         pList->AddAttribute( m_aXMLStatusBarNS + ATTRIBUTE_STYLE,
                              m_aAttributeType,
-                             OUString( ATTRIBUTE_STYLE_OUT ) );
+                             ATTRIBUTE_STYLE_OUT );
     }
 
     // autosize (default sal_False)
@@ -621,7 +621,7 @@ throw ( SAXException, RuntimeException )
     {
         pList->AddAttribute( m_aXMLStatusBarNS + ATTRIBUTE_AUTOSIZE,
                              m_aAttributeType,
-                             OUString( ATTRIBUTE_BOOLEAN_TRUE ) );
+                             ATTRIBUTE_BOOLEAN_TRUE );
     }
 
     // ownerdraw (default sal_False)
@@ -629,7 +629,7 @@ throw ( SAXException, RuntimeException )
     {
         pList->AddAttribute( m_aXMLStatusBarNS + ATTRIBUTE_OWNERDRAW,
                              m_aAttributeType,
-                             OUString( ATTRIBUTE_BOOLEAN_TRUE ) );
+                             ATTRIBUTE_BOOLEAN_TRUE );
     }
 
     // width (default 0)
@@ -649,9 +649,9 @@ throw ( SAXException, RuntimeException )
     }
 
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
-    m_xWriteDocumentHandler->startElement( OUString( ELEMENT_NS_STATUSBARITEM ), xList );
+    m_xWriteDocumentHandler->startElement( ELEMENT_NS_STATUSBARITEM, xList );
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
-    m_xWriteDocumentHandler->endElement( OUString( ELEMENT_NS_STATUSBARITEM ) );
+    m_xWriteDocumentHandler->endElement( ELEMENT_NS_STATUSBARITEM );
 }
 
 } // namespace framework

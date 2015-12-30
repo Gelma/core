@@ -44,7 +44,7 @@ class SvXMLImportContext;
  * XML data from a sequence of SAX events */
 class DomBuilderContext : public SvXMLImportContext
 {
-    com::sun::star::uno::Reference<com::sun::star::xml::dom::XNode> mxNode;
+    css::uno::Reference<css::xml::dom::XNode> mxNode;
 
 public:
 
@@ -57,7 +57,7 @@ public:
     DomBuilderContext( SvXMLImport& rImport,
                        sal_uInt16 nPrefix,
                        const OUString& rLocalName,
-                       com::sun::star::uno::Reference<com::sun::star::xml::dom::XNode>& );
+                       css::uno::Reference<css::xml::dom::XNode>& );
 
     virtual ~DomBuilderContext();
 
@@ -67,7 +67,7 @@ public:
 
 
     /** access the DOM tree */
-    com::sun::star::uno::Reference<com::sun::star::xml::dom::XDocument> getTree();
+    css::uno::Reference<css::xml::dom::XDocument> getTree();
 
 
 
@@ -77,14 +77,14 @@ public:
     virtual SvXMLImportContext* CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const com::sun::star::uno::Reference<com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList >& xAttrList ) override;
 
     virtual void StartElement(
-        const com::sun::star::uno::Reference<com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList ) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
-    virtual void Characters( const OUString& rChars ) SAL_OVERRIDE;
+    virtual void Characters( const OUString& rChars ) override;
 };
 
 #endif

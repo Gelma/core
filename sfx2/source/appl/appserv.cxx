@@ -141,9 +141,9 @@ namespace
     {
         try
         {
-            // if we get com::sun::star::sdbc::DriverManager, libsdbc2 is there
+            // if we get css::sdbc::DriverManager, libsdbc2 is there
             // and the bibliography is assumed to work
-            return com::sun::star::sdbc::DriverManager::create(comphelper::getProcessComponentContext()).is();
+            return css::sdbc::DriverManager::create(comphelper::getProcessComponentContext()).is();
         }
         catch (Exception & e)
         {
@@ -164,13 +164,12 @@ namespace
                 using namespace org::freedesktop::PackageKit;
                 using namespace svtools;
                 Reference< XSyncDbusSessionHelper > xSyncDbusSessionHelper(SyncDbusSessionHelper::create(comphelper::getProcessComponentContext()));
-                Sequence< OUString > vPackages(1);
-                vPackages[0] = "libreoffice-base";
+                Sequence< OUString > vPackages { "libreoffice-base" };
                 OUString sInteraction;
                 xSyncDbusSessionHelper->InstallPackageNames(0, vPackages, sInteraction);
                 // Ill be back (hopefully)!
                 SolarMutexGuard aGuard;
-                executeRestartDialog(comphelper::getProcessComponentContext(), NULL, RESTART_REASON_BIBLIOGRAPHY_INSTALL);
+                executeRestartDialog(comphelper::getProcessComponentContext(), nullptr, RESTART_REASON_BIBLIOGRAPHY_INSTALL);
             }
             catch (const Exception & e)
             {
@@ -231,9 +230,9 @@ static void showDocument( const char* pBaseName )
         if ( checkURL ( pBaseName, ".fodt", aURL ) ||
              checkURL ( pBaseName, ".html", aURL ) ||
              checkURL ( pBaseName, "", aURL ) ) {
-            xDesktop->loadComponentFromURL( aURL, OUString("_blank"), 0, args );
+            xDesktop->loadComponentFromURL( aURL, "_blank", 0, args );
         }
-    } catch (const ::com::sun::star::uno::Exception &) {
+    } catch (const css::uno::Exception &) {
     }
 }
 
@@ -244,7 +243,7 @@ namespace
     private:
         DECL_LINK_TYPED(ShowHdl, Button*, void);
     public:
-        explicit LicenseDialog(vcl::Window *pParent=NULL);
+        explicit LicenseDialog(vcl::Window *pParent=nullptr);
     };
 
     LicenseDialog::LicenseDialog(vcl::Window *pParent)
@@ -346,8 +345,7 @@ void SfxApplication::MiscExec_Impl( SfxRequest& rReq )
 
             if ( pFact )
             {
-                SFX_REQUEST_ARG(rReq, pStringItem,
-                    SfxStringItem, SID_CONFIG, false);
+                const SfxStringItem* pStringItem = rReq.GetArg<SfxStringItem>(SID_CONFIG);
 
                 SfxItemSet aSet(
                     GetPool(), SID_CONFIG, SID_CONFIG );
@@ -360,13 +358,13 @@ void SfxApplication::MiscExec_Impl( SfxRequest& rReq )
 
                 Reference< XFrame > xFrame;
                 const SfxItemSet* pIntSet = rReq.GetInternalArgs_Impl();
-                SFX_ITEMSET_ARG( pIntSet, pFrameItem, SfxUnoFrameItem, SID_FILLFRAME, false );
+                const SfxUnoFrameItem* pFrameItem = SfxItemSet::GetItem<SfxUnoFrameItem>(pIntSet, SID_FILLFRAME, false);
                 if ( pFrameItem )
                     xFrame = pFrameItem->GetFrame();
 
                 std::unique_ptr<SfxAbstractTabDialog> pDlg(pFact->CreateTabDialog(
                     RID_SVXDLG_CUSTOMIZE,
-                    NULL, &aSet, xFrame ));
+                    nullptr, &aSet, xFrame ));
 
                 if ( pDlg )
                 {
@@ -425,7 +423,7 @@ void SfxApplication::MiscExec_Impl( SfxRequest& rReq )
                 if ( pObjSh->IsModified() )
                 {
                     pObjSh->ExecuteSlot( aReq );
-                    const SfxBoolItem *pItem = PTR_CAST( SfxBoolItem, aReq.GetReturnValue() );
+                    const SfxBoolItem *pItem = dynamic_cast<const SfxBoolItem*>( aReq.GetReturnValue()  );
                     if ( !pItem || !pItem->GetValue() )
                         bOK = false;
                 }
@@ -443,9 +441,9 @@ void SfxApplication::MiscExec_Impl( SfxRequest& rReq )
                 "&LOlocale=" + utl::ConfigManager::getLocale() + "&LOmodule=" + module.copy(module.lastIndexOf('.') + 1 )  );
             try
             {
-                uno::Reference< com::sun::star::system::XSystemShellExecute > xSystemShellExecute(
-                    com::sun::star::system::SystemShellExecute::create(::comphelper::getProcessComponentContext()) );
-                xSystemShellExecute->execute( sURL, OUString(), com::sun::star::system::SystemShellExecuteFlags::URIS_ONLY );
+                uno::Reference< css::system::XSystemShellExecute > xSystemShellExecute(
+                    css::system::SystemShellExecute::create(::comphelper::getProcessComponentContext()) );
+                xSystemShellExecute->execute( sURL, OUString(), css::system::SystemShellExecuteFlags::URIS_ONLY );
             }
             catch ( uno::Exception& )
             {
@@ -472,7 +470,7 @@ void SfxApplication::MiscExec_Impl( SfxRequest& rReq )
             Help* pHelp = Application::GetHelp();
             if ( pHelp )
             {
-                pHelp->Start( OUString(".uno:HelpIndex"), NULL ); // show start page
+                pHelp->Start( ".uno:HelpIndex", nullptr ); // show start page
                 bDone = true;
             }
             break;
@@ -482,7 +480,7 @@ void SfxApplication::MiscExec_Impl( SfxRequest& rReq )
         case SID_HELPTIPS:
         {
             // Evaluate Parameter
-            SFX_REQUEST_ARG(rReq, pOnItem, SfxBoolItem, SID_HELPTIPS, false);
+            const SfxBoolItem* pOnItem = rReq.GetArg<SfxBoolItem>(SID_HELPTIPS);
             bool bOn = pOnItem
                             ? pOnItem->GetValue()
                             : !Help::IsQuickHelpEnabled();
@@ -509,7 +507,7 @@ void SfxApplication::MiscExec_Impl( SfxRequest& rReq )
         case SID_HELPBALLOONS:
         {
             // Evaluate Parameter
-            SFX_REQUEST_ARG(rReq, pOnItem, SfxBoolItem, SID_HELPBALLOONS, false);
+            const SfxBoolItem* pOnItem = rReq.GetArg<SfxBoolItem>(SID_HELPBALLOONS);
             bool bOn = pOnItem
                             ? pOnItem->GetValue()
                             : !Help::IsBalloonHelpEnabled();
@@ -534,7 +532,7 @@ void SfxApplication::MiscExec_Impl( SfxRequest& rReq )
             SfxAbstractDialogFactory* pFact = SfxAbstractDialogFactory::Create();
             if ( pFact )
             {
-                std::unique_ptr<VclAbstractDialog> pDlg(pFact->CreateVclDialog( 0, RID_DEFAULTABOUT ));
+                std::unique_ptr<VclAbstractDialog> pDlg(pFact->CreateVclDialog( nullptr, RID_DEFAULTABOUT ));
                 pDlg->Execute();
                 bDone = true;
             }
@@ -570,14 +568,12 @@ void SfxApplication::MiscExec_Impl( SfxRequest& rReq )
         case SID_SHOW_IME_STATUS_WINDOW:
             if (sfx2::appl::ImeStatusWindow::canToggle())
             {
-                SfxBoolItem const * pItem = static_cast< SfxBoolItem const * >(
-                    rReq.GetArg(SID_SHOW_IME_STATUS_WINDOW, false,
-                                TYPE(SfxBoolItem)));
-                bool bShow = pItem == 0
+                const SfxBoolItem * pItem = rReq.GetArg<SfxBoolItem>(SID_SHOW_IME_STATUS_WINDOW);
+                bool bShow = pItem == nullptr
                     ? !pAppData_Impl->m_xImeStatusWindow->isShowing()
                     : pItem->GetValue();
                 pAppData_Impl->m_xImeStatusWindow->show(bShow);
-                if (pItem == 0)
+                if (pItem == nullptr)
                     rReq.AppendItem(SfxBoolItem(SID_SHOW_IME_STATUS_WINDOW,
                                                 bShow));
             }
@@ -635,16 +631,15 @@ void SfxApplication::MiscExec_Impl( SfxRequest& rReq )
         }
         case SID_AVAILABLE_TOOLBARS:
         {
-            SfxStringItem const * pToolbarName = static_cast< SfxStringItem const *>(
-                    rReq.GetArg(SID_AVAILABLE_TOOLBARS, false, TYPE(SfxStringItem)));
+            const SfxStringItem* pToolbarName = rReq.GetArg<SfxStringItem>(SID_AVAILABLE_TOOLBARS);
 
             if ( pToolbarName )
             {
                 Reference < XDesktop2 > xDesktop = Desktop::create ( ::comphelper::getProcessComponentContext() );
                 Reference< XFrame > xFrame = xDesktop->getActiveFrame();
 
-                Reference< com::sun::star::beans::XPropertySet > xPropSet( xFrame, UNO_QUERY );
-                Reference< ::com::sun::star::frame::XLayoutManager > xLayoutManager;
+                Reference< css::beans::XPropertySet > xPropSet( xFrame, UNO_QUERY );
+                Reference< css::frame::XLayoutManager > xLayoutManager;
                 if ( xPropSet.is() )
                 {
                     try
@@ -652,11 +647,11 @@ void SfxApplication::MiscExec_Impl( SfxRequest& rReq )
                         Any aValue = xPropSet->getPropertyValue("LayoutManager");
                         aValue >>= xLayoutManager;
                     }
-                    catch ( const ::com::sun::star::uno::RuntimeException& )
+                    catch ( const css::uno::RuntimeException& )
                     {
                         throw;
                     }
-                    catch ( ::com::sun::star::uno::Exception& )
+                    catch ( css::uno::Exception& )
                     {
                     }
                 }
@@ -951,7 +946,7 @@ namespace
         {
                DBG_UNHANDLED_EXCEPTION();
         }
-        return NULL;
+        return nullptr;
     }
 #endif // HAVE_FEATURE_SCRIPTING
 }
@@ -963,22 +958,22 @@ void SfxApplication::OfaExec_Impl( SfxRequest& rReq )
         case SID_OPTIONS_TREEDIALOG:
         {
             OUString sPageURL;
-            SFX_REQUEST_ARG( rReq, pURLItem, SfxStringItem, SID_OPTIONS_PAGEURL, false );
+            const SfxStringItem* pURLItem = rReq.GetArg<SfxStringItem>(SID_OPTIONS_PAGEURL);
             if ( pURLItem )
                 sPageURL = pURLItem->GetValue();
             const SfxItemSet* pArgs = rReq.GetInternalArgs_Impl();
-            const SfxPoolItem* pItem = NULL;
+            const SfxPoolItem* pItem = nullptr;
             Reference < XFrame > xFrame;
             if ( pArgs && pArgs->GetItemState( SID_FILLFRAME, false, &pItem ) == SfxItemState::SET )
             {
-                OSL_ENSURE( pItem->ISA( SfxUnoFrameItem ), "SfxApplication::OfaExec_Impl: XFrames are to be transported via SfxUnoFrameItem by now!" );
+                OSL_ENSURE( dynamic_cast< const SfxUnoFrameItem *>( pItem ) !=  nullptr, "SfxApplication::OfaExec_Impl: XFrames are to be transported via SfxUnoFrameItem by now!" );
                 xFrame = static_cast< const SfxUnoFrameItem*>( pItem )->GetFrame();
             }
             SfxAbstractDialogFactory* pFact = SfxAbstractDialogFactory::Create();
             if ( pFact )
             {
                 VclAbstractDialog* pDlg =
-                    pFact->CreateFrameDialog( NULL, xFrame, rReq.GetSlot(), sPageURL );
+                    pFact->CreateFrameDialog( nullptr, xFrame, rReq.GetSlot(), sPageURL );
                 short nRet = pDlg->Execute();
                 delete pDlg;
                 SfxViewFrame* pView = SfxViewFrame::GetFirst();
@@ -1026,7 +1021,7 @@ void SfxApplication::OfaExec_Impl( SfxRequest& rReq )
                         css::system::SystemShellExecuteFlags::URIS_ONLY );
                 }
             }
-            catch( const ::com::sun::star::uno::Exception& )
+            catch( const css::uno::Exception& )
             {
                 SAL_WARN( "sfx.appl", "SfxApplication::OfaExec_Impl(SID_MORE_DICTIONARIES): caught an exception!" );
             }
@@ -1035,11 +1030,11 @@ void SfxApplication::OfaExec_Impl( SfxRequest& rReq )
 #if HAVE_FEATURE_SCRIPTING
         case SID_BASICIDE_APPEAR:
         {
-            SfxViewFrame* pView = lcl_getBasicIDEViewFrame( NULL );
+            SfxViewFrame* pView = lcl_getBasicIDEViewFrame( nullptr );
             if ( !pView )
             {
                 SfxObjectShell* pBasicIDE = SfxObjectShell::CreateObject( lcl_getBasicIDEServiceName() );
-                pBasicIDE->DoInitNew( 0 );
+                pBasicIDE->DoInitNew();
                 pBasicIDE->SetModified( false );
                 try
                 {
@@ -1071,7 +1066,7 @@ void SfxApplication::OfaExec_Impl( SfxRequest& rReq )
 
                 pView = lcl_getBasicIDEViewFrame( pBasicIDE );
                 if ( pView )
-                    pView->SetName( OUString( "BASIC:1" ) );
+                    pView->SetName( "BASIC:1" );
             }
 
             if ( pView )
@@ -1142,7 +1137,7 @@ void SfxApplication::OfaExec_Impl( SfxRequest& rReq )
 
             Reference< XFrame > xFrame;
             const SfxItemSet* pIntSet = rReq.GetInternalArgs_Impl();
-            SFX_ITEMSET_ARG( pIntSet, pFrameItem, SfxUnoFrameItem, SID_FILLFRAME, false );
+            const SfxUnoFrameItem* pFrameItem = SfxItemSet::GetItem<SfxUnoFrameItem>(pIntSet, SID_FILLFRAME, false);
             if ( pFrameItem )
                 xFrame = pFrameItem->GetFrame();
 
@@ -1221,7 +1216,7 @@ void SfxApplication::OfaExec_Impl( SfxRequest& rReq )
         case SID_OFFICE_CHECK_PLZ:
         {
             bool bRet = false;
-            SFX_REQUEST_ARG(rReq, pStringItem, SfxStringItem, rReq.GetSlot(), false);
+            const SfxStringItem* pStringItem = rReq.GetArg<SfxStringItem>(rReq.GetSlot());
 
             if ( pStringItem )
             {
@@ -1241,13 +1236,13 @@ void SfxApplication::OfaExec_Impl( SfxRequest& rReq )
             if ( pFact )
             {
                 SfxItemSet aSet(GetPool(), SID_AUTO_CORRECT_DLG, SID_AUTO_CORRECT_DLG);
-                const SfxPoolItem* pItem=NULL;
+                const SfxPoolItem* pItem=nullptr;
                 const SfxItemSet* pSet = rReq.GetArgs();
-                SfxItemPool* pSetPool = pSet ? pSet->GetPool() : NULL;
+                SfxItemPool* pSetPool = pSet ? pSet->GetPool() : nullptr;
                 if ( pSet && pSet->GetItemState( pSetPool->GetWhich( SID_AUTO_CORRECT_DLG ), false, &pItem ) == SfxItemState::SET )
                     aSet.Put( *pItem );
 
-                std::unique_ptr<SfxAbstractTabDialog> pDlg(pFact->CreateTabDialog( RID_OFA_AUTOCORR_DLG, NULL, &aSet, NULL ));
+                std::unique_ptr<SfxAbstractTabDialog> pDlg(pFact->CreateTabDialog( RID_OFA_AUTOCORR_DLG, nullptr, &aSet, nullptr ));
                 pDlg->Execute();
             }
 
@@ -1306,10 +1301,10 @@ void SfxApplication::OfaExec_Impl( SfxRequest& rReq )
             {
                 Reference< uno::XComponentContext > xORB = ::comphelper::getProcessComponentContext();
                 Reference< ui::dialogs::XExecutableDialog > xDialog;
-                xDialog = ui::dialogs::AddressBookSourcePilot::createWithParent(xORB, 0);
+                xDialog = ui::dialogs::AddressBookSourcePilot::createWithParent(xORB, nullptr);
                 xDialog->execute();
             }
-            catch(const ::com::sun::star::uno::Exception&)
+            catch(const css::uno::Exception&)
             {
                 DBG_UNHANDLED_EXCEPTION();
             }

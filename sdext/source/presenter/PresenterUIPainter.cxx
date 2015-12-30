@@ -17,6 +17,10 @@
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
 
+#include <sal/config.h>
+
+#include <algorithm>
+
 #include "PresenterUIPainter.hxx"
 
 #include "PresenterCanvasHelper.hxx"
@@ -58,11 +62,11 @@ void PresenterUIPainter::PaintHorizontalBitmapComposite (
     // Prepare painting.
     rendering::ViewState aViewState (
         geometry::AffineMatrix2D(1,0,0, 0,1,0),
-        NULL);
+        nullptr);
 
     rendering::RenderState aRenderState (
         geometry::AffineMatrix2D(1,0,0, 0,1,0),
-        NULL,
+        nullptr,
         Sequence<double>(4),
         rendering::CompositeOperation::SOURCE);
 
@@ -74,7 +78,7 @@ void PresenterUIPainter::PaintHorizontalBitmapComposite (
             rBoundingBox.Y,
             ::std::min(aLeftBitmapSize.Width, rBoundingBox.Width),
             rBoundingBox.Height);
-        aViewState.Clip = Reference<rendering::XPolyPolygon2D>(
+        aViewState.Clip.set(
             PresenterGeometryHelper::CreatePolygon(
                 PresenterGeometryHelper::Intersection(rRepaintBox, aLeftBoundingBox),
                 rxCanvas->getDevice()));
@@ -92,7 +96,7 @@ void PresenterUIPainter::PaintHorizontalBitmapComposite (
             rBoundingBox.Y,
             ::std::min(aRightBitmapSize.Width, rBoundingBox.Width),
             rBoundingBox.Height);
-        aViewState.Clip = Reference<rendering::XPolyPolygon2D>(
+        aViewState.Clip.set(
             PresenterGeometryHelper::CreatePolygon(
                 PresenterGeometryHelper::Intersection(rRepaintBox, aRightBoundingBox),
                 rxCanvas->getDevice()));
@@ -113,7 +117,7 @@ void PresenterUIPainter::PaintHorizontalBitmapComposite (
             rBoundingBox.Height);
         if (aCenterBoundingBox.Width > 0)
         {
-            aViewState.Clip = Reference<rendering::XPolyPolygon2D>(
+            aViewState.Clip.set(
                 PresenterGeometryHelper::CreatePolygon(
                     PresenterGeometryHelper::Intersection(rRepaintBox, aCenterBoundingBox),
                     rxCanvas->getDevice()));
@@ -160,11 +164,11 @@ void PresenterUIPainter::PaintVerticalBitmapComposite (
     // Prepare painting.
     rendering::ViewState aViewState (
         geometry::AffineMatrix2D(1,0,0, 0,1,0),
-        NULL);
+        nullptr);
 
     rendering::RenderState aRenderState (
         geometry::AffineMatrix2D(1,0,0, 0,1,0),
-        NULL,
+        nullptr,
         Sequence<double>(4),
         rendering::CompositeOperation::SOURCE);
 
@@ -176,7 +180,7 @@ void PresenterUIPainter::PaintVerticalBitmapComposite (
             rBoundingBox.Y,
             rBoundingBox.Width,
             ::std::min(aTopBitmapSize.Height, rBoundingBox.Height));
-        aViewState.Clip = Reference<rendering::XPolyPolygon2D>(
+        aViewState.Clip.set(
             PresenterGeometryHelper::CreatePolygon(
                 PresenterGeometryHelper::Intersection(rRepaintBox, aTopBoundingBox),
                 rxCanvas->getDevice()));
@@ -195,7 +199,7 @@ void PresenterUIPainter::PaintVerticalBitmapComposite (
             rBoundingBox.Y  + rBoundingBox.Height - nBBoxHeight,
             rBoundingBox.Width,
             nBBoxHeight);
-        aViewState.Clip = Reference<rendering::XPolyPolygon2D>(
+        aViewState.Clip.set(
             PresenterGeometryHelper::CreatePolygon(
                 PresenterGeometryHelper::Intersection(rRepaintBox, aBottomBoundingBox),
                 rxCanvas->getDevice()));
@@ -216,7 +220,7 @@ void PresenterUIPainter::PaintVerticalBitmapComposite (
             rBoundingBox.Height - aTopBitmapSize.Height - aBottomBitmapSize.Height);
         if (aCenterBoundingBox.Height > 0)
         {
-            aViewState.Clip = Reference<rendering::XPolyPolygon2D>(
+            aViewState.Clip.set(
                 PresenterGeometryHelper::CreatePolygon(
                     PresenterGeometryHelper::Intersection(rRepaintBox, aCenterBoundingBox),
                     rxCanvas->getDevice()));

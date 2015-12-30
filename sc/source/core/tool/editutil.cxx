@@ -50,7 +50,6 @@
 
 using namespace com::sun::star;
 
-// STATIC DATA
 //  Delimiters zusaetzlich zu EditEngine-Default:
 
 ScEditUtil::ScEditUtil( ScDocument* pDocument, SCCOL nX, SCROW nY, SCTAB nZ,
@@ -167,7 +166,7 @@ void ScEditUtil::RemoveCharAttribs( EditTextObject& rEditText, const ScPatternAt
 
 EditTextObject* ScEditUtil::Clone( const EditTextObject& rObj, ScDocument& rDestDoc )
 {
-    EditTextObject* pNew = NULL;
+    EditTextObject* pNew = nullptr;
 
     EditEngine& rEngine = rDestDoc.GetEditEngine();
     if (rObj.HasOnlineSpellErrors())
@@ -371,7 +370,7 @@ Rectangle ScEditUtil::GetEditArea( const ScPatternAttr* pPattern, bool bForceToT
 
 ScEditAttrTester::ScEditAttrTester( ScEditEngineDefaulter* pEng ) :
     pEngine( pEng ),
-    pEditAttrs( NULL ),
+    pEditAttrs( nullptr ),
     bNeedsObject( false ),
     bNeedsCellAttr( false )
 {
@@ -381,7 +380,7 @@ ScEditAttrTester::ScEditAttrTester( ScEditEngineDefaulter* pEng ) :
     }
     else
     {
-        const SfxPoolItem* pItem = NULL;
+        const SfxPoolItem* pItem = nullptr;
         pEditAttrs = new SfxItemSet( pEngine->GetAttribs(
                                         ESelection(0,0,0,pEngine->GetTextLen(0)), EditEngineAttribs_OnlyHard ) );
         const SfxItemSet& rEditDefaults = pEngine->GetDefaults();
@@ -435,7 +434,7 @@ ScEnginePoolHelper::ScEnginePoolHelper( SfxItemPool* pEnginePoolP,
                 bool bDeleteEnginePoolP )
             :
             pEnginePool( pEnginePoolP ),
-            pDefaults( NULL ),
+            pDefaults( nullptr ),
             bDeleteEnginePool( bDeleteEnginePoolP ),
             bDeleteDefaults( false )
 {
@@ -444,7 +443,7 @@ ScEnginePoolHelper::ScEnginePoolHelper( SfxItemPool* pEnginePoolP,
 ScEnginePoolHelper::ScEnginePoolHelper( const ScEnginePoolHelper& rOrg )
             :
             pEnginePool( rOrg.bDeleteEnginePool ? rOrg.pEnginePool->Clone() : rOrg.pEnginePool ),
-            pDefaults( NULL ),
+            pDefaults( nullptr ),
             bDeleteEnginePool( rOrg.bDeleteEnginePool ),
             bDeleteDefaults( false )
 {
@@ -623,7 +622,7 @@ void ScEditEngineDefaulter::RepeatDefaults()
 
 void ScEditEngineDefaulter::RemoveParaAttribs()
 {
-    SfxItemSet* pCharItems = NULL;
+    SfxItemSet* pCharItems = nullptr;
     bool bUpdateMode = GetUpdateMode();
     if ( bUpdateMode )
         SetUpdateMode( false );
@@ -875,12 +874,11 @@ OUString ScFieldEditEngine::CalcFieldValue( const SvxFieldItem& rField,
 
 void ScFieldEditEngine::FieldClicked( const SvxFieldItem& rField, sal_Int32, sal_Int32 )
 {
-    const SvxFieldData* pFld = rField.GetField();
-
-    if ( pFld && pFld->ISA( SvxURLField ) && bExecuteURL )
+    if (!bExecuteURL)
+        return;
+    if (const SvxURLField* pURLField = dynamic_cast<const SvxURLField*>(rField.GetField()))
     {
-        const SvxURLField* pURLField = static_cast<const SvxURLField*>(pFld);
-        ScGlobal::OpenURL( pURLField->GetURL(), pURLField->GetTargetFrame() );
+        ScGlobal::OpenURL(pURLField->GetURL(), pURLField->GetTargetFrame());
     }
 }
 

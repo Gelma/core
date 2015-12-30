@@ -36,7 +36,7 @@ namespace svgio
             maHeight(0),
             maRx(0),
             maRy(0),
-            mpaTransform(0)
+            mpaTransform(nullptr)
         {
         }
 
@@ -47,7 +47,7 @@ namespace svgio
 
         const SvgStyleAttributes* SvgRectNode::getSvgStyleAttributes() const
         {
-            return checkForCssStyle(OUString("rect"), maSvgStyleAttributes);
+            return checkForCssStyle("rect", maSvgStyleAttributes);
         }
 
         void SvgRectNode::parseAttribute(const OUString& rTokenName, SVGToken aSVGToken, const OUString& aContent)
@@ -155,7 +155,7 @@ namespace svgio
             }
         }
 
-        void SvgRectNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DSequence& rTarget, bool /*bReferenced*/) const
+        void SvgRectNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DContainer& rTarget, bool /*bReferenced*/) const
         {
             // get size range and create path
             const SvgStyleAttributes* pStyle = getSvgStyleAttributes();
@@ -202,11 +202,11 @@ namespace svgio
                         aPath = basegfx::tools::createPolygonFromRect(aRange);
                     }
 
-                    drawinglayer::primitive2d::Primitive2DSequence aNewTarget;
+                    drawinglayer::primitive2d::Primitive2DContainer aNewTarget;
 
-                    pStyle->add_path(basegfx::B2DPolyPolygon(aPath), aNewTarget, 0);
+                    pStyle->add_path(basegfx::B2DPolyPolygon(aPath), aNewTarget, nullptr);
 
-                    if(aNewTarget.hasElements())
+                    if(!aNewTarget.empty())
                     {
                         pStyle->add_postProcess(rTarget, aNewTarget, getTransform());
                     }

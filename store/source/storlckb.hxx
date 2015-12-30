@@ -86,26 +86,15 @@ public:
         sal_uInt32  nBytes,
         sal_uInt32 &rnDone);
 
-    /** flush.
-     *  @return store_E_None upon success
-     */
-    storeError flush();
-
     /** setSize.
      *  @param  nSize [in]
      *  @return store_E_None upon success
      */
     storeError setSize (sal_uInt32 nSize);
 
-    /** stat.
-     *  @paran  rnSize [out]
-     *  @return store_E_None upon success
-     */
-    storeError stat (sal_uInt32 &rnSize);
-
     /** IStoreHandle.
      */
-    virtual bool isKindOf (sal_uInt32 nMagic) SAL_OVERRIDE;
+    virtual bool isKindOf (sal_uInt32 nMagic) override;
 
 protected:
     /** Destruction (OReference).
@@ -120,7 +109,7 @@ private:
     /** IStoreHandle query() template specialization.
      */
     friend OStoreLockBytes*
-    SAL_CALL query<> (IStoreHandle *pHandle, OStoreLockBytes*);
+    SAL_CALL query<> (OStoreObject *pHandle, OStoreLockBytes*);
 
     /** Representation.
      */
@@ -134,19 +123,19 @@ private:
 
     bool m_bWriteable;
 
-    OStoreLockBytes (const OStoreLockBytes&) SAL_DELETED_FUNCTION;
-    OStoreLockBytes& operator= (const OStoreLockBytes&) SAL_DELETED_FUNCTION;
+    OStoreLockBytes (const OStoreLockBytes&) = delete;
+    OStoreLockBytes& operator= (const OStoreLockBytes&) = delete;
 };
 
 template<> inline OStoreLockBytes*
-SAL_CALL query (IStoreHandle *pHandle, SAL_UNUSED_PARAMETER OStoreLockBytes*)
+SAL_CALL query (OStoreObject *pHandle, SAL_UNUSED_PARAMETER OStoreLockBytes*)
 {
     if (pHandle && pHandle->isKindOf (OStoreLockBytes::m_nTypeId))
     {
         // Handle is kind of OStoreLockBytes.
         return static_cast<OStoreLockBytes*>(pHandle);
     }
-    return 0;
+    return nullptr;
 }
 
 /*========================================================================

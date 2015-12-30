@@ -99,7 +99,7 @@ void SfxStatusListener::ReBind()
 }
 
 // new UNO API
-void SAL_CALL SfxStatusListener::dispose() throw( ::com::sun::star::uno::RuntimeException, std::exception )
+void SAL_CALL SfxStatusListener::dispose() throw( css::uno::RuntimeException, std::exception )
 {
     if ( m_xDispatch.is() && !m_aCommand.Complete.isEmpty() )
     {
@@ -145,11 +145,11 @@ throw( RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
 
-    SfxViewFrame* pViewFrame = NULL;
+    SfxViewFrame* pViewFrame = nullptr;
     if ( m_xDispatch.is() )
     {
         Reference< XUnoTunnel > xTunnel( m_xDispatch, UNO_QUERY );
-        SfxOfficeDispatch* pDisp = NULL;
+        SfxOfficeDispatch* pDisp = nullptr;
         if ( xTunnel.is() )
         {
             sal_Int64 nImplementation = xTunnel->getSomething(SfxOfficeDispatch::impl_getStaticIdentifier());
@@ -164,11 +164,11 @@ throw( RuntimeException, std::exception )
     const SfxSlot* pSlot = rPool.GetSlot( m_nSlotID );
 
     SfxItemState eState = SfxItemState::DISABLED;
-    SfxPoolItem* pItem = NULL;
+    SfxPoolItem* pItem = nullptr;
     if ( rEvent.IsEnabled )
     {
         eState = SfxItemState::DEFAULT;
-        ::com::sun::star::uno::Type pType = rEvent.State.getValueType();
+        css::uno::Type pType = rEvent.State.getValueType();
 
         if ( pType == ::cppu::UnoType<void>::get() )
         {
@@ -199,14 +199,14 @@ throw( RuntimeException, std::exception )
             rEvent.State >>= sTemp ;
             pItem = new SfxStringItem( m_nSlotID, sTemp );
         }
-        else if ( pType == cppu::UnoType< ::com::sun::star::frame::status::ItemStatus >::get() )
+        else if ( pType == cppu::UnoType< css::frame::status::ItemStatus >::get() )
         {
             ItemStatus aItemStatus;
             rEvent.State >>= aItemStatus;
             eState = (SfxItemState) aItemStatus.State;
             pItem = new SfxVoidItem( m_nSlotID );
         }
-        else if ( pType == cppu::UnoType< ::com::sun::star::frame::status::Visibility >::get() )
+        else if ( pType == cppu::UnoType< css::frame::status::Visibility >::get() )
         {
             Visibility aVisibilityStatus;
             rEvent.State >>= aVisibilityStatus;

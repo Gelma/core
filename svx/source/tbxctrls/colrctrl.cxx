@@ -52,9 +52,9 @@ private:
 
 protected:
 
-    virtual void            AddSupportedFormats() SAL_OVERRIDE;
-    virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) SAL_OVERRIDE;
-    virtual bool            WriteObject( tools::SvRef<SotStorageStream>& rxOStm, void* pUserObject, SotClipboardFormatId nUserObjectId, const ::com::sun::star::datatransfer::DataFlavor& rFlavor ) SAL_OVERRIDE;
+    virtual void            AddSupportedFormats() override;
+    virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) override;
+    virtual bool            WriteObject( tools::SvRef<SotStorageStream>& rxOStm, void* pUserObject, SotClipboardFormatId nUserObjectId, const css::datatransfer::DataFlavor& rFlavor ) override;
 
 public:
 
@@ -80,7 +80,7 @@ bool SvxColorValueSetData::GetData( const css::datatransfer::DataFlavor& rFlavor
     return bRet;
 }
 
-bool SvxColorValueSetData::WriteObject( tools::SvRef<SotStorageStream>& rxOStm, void*, SotClipboardFormatId, const ::com::sun::star::datatransfer::DataFlavor&  )
+bool SvxColorValueSetData::WriteObject( tools::SvRef<SotStorageStream>& rxOStm, void*, SotClipboardFormatId, const css::datatransfer::DataFlavor&  )
 {
     WriteXFillExchangeData( *rxOStm, maData );
     return( rxOStm->GetError() == ERRCODE_NONE );
@@ -145,7 +145,7 @@ void SvxColorValueSet_docking::Command(const CommandEvent& rCEvt)
 
 void SvxColorValueSet_docking::StartDrag( sal_Int8 , const Point&  )
 {
-    Application::PostUserEvent(LINK(this, SvxColorValueSet_docking, ExecDragHdl), NULL, true);
+    Application::PostUserEvent(LINK(this, SvxColorValueSet_docking, ExecDragHdl), nullptr, true);
 }
 
 void SvxColorValueSet_docking::DoDrag()
@@ -201,17 +201,17 @@ SvxColorDockingWindow::SvxColorDockingWindow
 
     // Get the model from the view shell.  Using SfxObjectShell::Current()
     // is unreliable when called at the wrong times.
-    SfxObjectShell* pDocSh = NULL;
-    if (_pBindings != NULL)
+    SfxObjectShell* pDocSh = nullptr;
+    if (_pBindings != nullptr)
     {
         SfxDispatcher* pDispatcher = _pBindings->GetDispatcher();
-        if (pDispatcher != NULL)
+        if (pDispatcher != nullptr)
         {
             SfxViewFrame* pFrame = pDispatcher->GetFrame();
-            if (pFrame != NULL)
+            if (pFrame != nullptr)
             {
                 SfxViewShell* pViewShell = pFrame->GetViewShell();
-                if (pViewShell != NULL)
+                if (pViewShell != nullptr)
                     pDocSh = pViewShell->GetObjectShell();
             }
         }
@@ -235,7 +235,7 @@ SvxColorDockingWindow::SvxColorDockingWindow
 
     SetSize();
     aColorSet->Show();
-    if (_pBindings != NULL)
+    if (_pBindings != nullptr)
         StartListening( *_pBindings, true );
 }
 
@@ -255,7 +255,7 @@ void SvxColorDockingWindow::Notify( SfxBroadcaster& , const SfxHint& rHint )
 {
     const SfxPoolItemHint* pPoolItemHint = dynamic_cast<const SfxPoolItemHint*>(&rHint);
     if ( pPoolItemHint
-         && ( pPoolItemHint->GetObject()->ISA( SvxColorListItem ) ) )
+         && ( dynamic_cast<const SvxColorListItem*>(pPoolItemHint->GetObject()) != nullptr ) )
     {
         // Die Liste der Farben hat sich geaendert
         pColorList = static_cast<SvxColorListItem*>( pPoolItemHint->GetObject() )->GetColorList();

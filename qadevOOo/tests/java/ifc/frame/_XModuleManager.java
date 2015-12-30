@@ -100,7 +100,7 @@ public class _XModuleManager extends MultiMethodTest {
             (Status.failed("Relation 'xModelSeq' not found.")) ;
     }
 
-    /* The method <CODE>identify()</CODE> was used for every entry in sequecee of
+    /* The method <CODE>identify()</CODE> was used for every entry in sequence of
      * object relations.
      */
     public void _identify() {

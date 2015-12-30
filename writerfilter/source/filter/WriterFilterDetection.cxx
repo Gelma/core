@@ -33,25 +33,22 @@ class WriterFilterDetection : public cppu::WeakImplHelper
     lang::XServiceInfo
     >
 {
-    uno::Reference<uno::XComponentContext> m_xContext;
-
 public:
-    explicit WriterFilterDetection(const uno::Reference<uno::XComponentContext>& rxContext);
+    explicit WriterFilterDetection();
     virtual ~WriterFilterDetection();
 
     //XExtendedFilterDetection
-    virtual OUString SAL_CALL detect(uno::Sequence<beans::PropertyValue>& Descriptor) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL detect(uno::Sequence<beans::PropertyValue>& Descriptor) throw (uno::RuntimeException, std::exception) override;
 
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService(const OUString& rServiceName) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual uno::Sequence<OUString> SAL_CALL getSupportedServiceNames() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName() throw (uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL supportsService(const OUString& rServiceName) throw (uno::RuntimeException, std::exception) override;
+    virtual uno::Sequence<OUString> SAL_CALL getSupportedServiceNames() throw (uno::RuntimeException, std::exception) override;
 };
 
 uno::Sequence<OUString> SAL_CALL WriterFilterDetection_getSupportedServiceNames() throw (uno::RuntimeException);
 
-WriterFilterDetection::WriterFilterDetection(const uno::Reference<uno::XComponentContext>& rxContext)
-    : m_xContext(rxContext)
+WriterFilterDetection::WriterFilterDetection()
 {
 }
 
@@ -135,9 +132,9 @@ uno::Sequence<OUString> WriterFilterDetection::getSupportedServiceNames() throw 
     return WriterFilterDetection_getSupportedServiceNames();
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT uno::XInterface* SAL_CALL com_sun_star_comp_Writer_WriterFilterDetector_get_implementation(uno::XComponentContext* pComp, uno::Sequence<css::uno::Any> const&)
+extern "C" SAL_DLLPUBLIC_EXPORT uno::XInterface* SAL_CALL com_sun_star_comp_Writer_WriterFilterDetector_get_implementation(uno::XComponentContext* /*pComp*/, uno::Sequence<css::uno::Any> const&)
 {
-    return cppu::acquire(new WriterFilterDetection(pComp));
+    return cppu::acquire(new WriterFilterDetection);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

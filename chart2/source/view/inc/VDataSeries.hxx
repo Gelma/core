@@ -35,8 +35,8 @@
 
 #include <memory>
 #include <vector>
+#include <map>
 #include <boost/noncopyable.hpp>
-#include <boost/ptr_container/ptr_map.hpp>
 
 namespace chart
 {
@@ -56,7 +56,7 @@ public:
     mutable css::uno::Sequence<double> Doubles;
 };
 
-class VDataSeries SAL_FINAL : boost::noncopyable
+class VDataSeries final : boost::noncopyable
 {
 public:
     VDataSeries( const css::uno::Reference<css::chart2::XDataSeries>& xDataSeries );
@@ -206,7 +206,7 @@ private: //member
 
     VDataSequence*  m_pValueSequenceForDataLabelNumberFormatDetection;
 
-    boost::ptr_map<OUString, VDataSequence> maPropertyMap;
+    std::map<OUString, VDataSequence> m_PropertyMap;
 
     mutable double m_fXMeanValue;
     mutable double m_fYMeanValue;

@@ -10,7 +10,7 @@
 #include <sal/config.h>
 
 #include <memory>
-#include <boost/bind.hpp>
+#include <functional>
 #include <GL/glew.h>
 
 #include <basegfx/polygon/b2dpolygontriangulator.hxx>
@@ -37,9 +37,8 @@
 
 #include "ogl_canvashelper.hxx"
 
-#include <functional>
-
 using namespace ::com::sun::star;
+using namespace ::std::placeholders;
 
 namespace oglcanvas
 {
@@ -363,8 +362,8 @@ namespace oglcanvas
     }
 
     CanvasHelper::CanvasHelper() :
-        mpDevice( NULL ),
-        mpDeviceHelper( NULL ),
+        mpDevice( nullptr ),
+        mpDeviceHelper( nullptr ),
         mpRecordedActions()
     {}
 
@@ -383,8 +382,8 @@ namespace oglcanvas
     {
         RecordVectorT aThrowaway;
         mpRecordedActions.swap( aThrowaway );
-        mpDevice = NULL;
-        mpDeviceHelper = NULL;
+        mpDevice = nullptr;
+        mpDeviceHelper = nullptr;
     }
 
     void CanvasHelper::init( rendering::XGraphicDevice& rDevice,
@@ -410,7 +409,7 @@ namespace oglcanvas
             Action& rAct=mpRecordedActions->back();
 
             setupGraphicsState( rAct, viewState, renderState );
-            rAct.maFunction = ::boost::bind(&lcl_drawPoint,
+            rAct.maFunction = ::std::bind(&lcl_drawPoint,
                                             _1,_2,_3,_4,_5,
                                             aPoint);
         }
@@ -428,9 +427,9 @@ namespace oglcanvas
             Action& rAct=mpRecordedActions->back();
 
             setupGraphicsState( rAct, viewState, renderState );
-            rAct.maFunction = ::boost::bind(&lcl_drawLine,
-                                            _1,_2,_3,_4,_5,
-                                            aStartPoint,aEndPoint);
+            rAct.maFunction = ::std::bind(&lcl_drawLine,
+                                          _1, _2, _3, _4, _5,
+                                          aStartPoint, aEndPoint);
         }
     }
 
@@ -448,7 +447,7 @@ namespace oglcanvas
             setupGraphicsState( rAct, viewState, renderState );
 
             // TODO(F2): subdivide&render whole curve
-            rAct.maFunction = ::boost::bind(&lcl_drawLine,
+            rAct.maFunction = ::std::bind(&lcl_drawLine,
                                             _1,_2,_3,_4,_5,
                                             geometry::RealPoint2D(
                                                 aBezierSegment.Px,
@@ -479,7 +478,7 @@ namespace oglcanvas
         }
 
         // TODO(P1): Provide caching here.
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::strokePolyPolygon( const rendering::XCanvas*                            /*pCanvas*/,
@@ -506,7 +505,7 @@ namespace oglcanvas
         }
 
         // TODO(P1): Provide caching here.
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::strokeTexturedPolyPolygon( const rendering::XCanvas*                            /*pCanvas*/,
@@ -517,7 +516,7 @@ namespace oglcanvas
                                                                                            const rendering::StrokeAttributes&                   /*strokeAttributes*/ )
     {
         // TODO
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::strokeTextureMappedPolyPolygon( const rendering::XCanvas*                           /*pCanvas*/,
@@ -529,7 +528,7 @@ namespace oglcanvas
                                                                                                 const rendering::StrokeAttributes&                  /*strokeAttributes*/ )
     {
         // TODO
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XPolyPolygon2D >   CanvasHelper::queryStrokeShapes( const rendering::XCanvas*                            /*pCanvas*/,
@@ -539,7 +538,7 @@ namespace oglcanvas
                                                                                    const rendering::StrokeAttributes&                   /*strokeAttributes*/ )
     {
         // TODO
-        return uno::Reference< rendering::XPolyPolygon2D >(NULL);
+        return uno::Reference< rendering::XPolyPolygon2D >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::fillPolyPolygon( const rendering::XCanvas*                          /*pCanvas*/,
@@ -564,7 +563,7 @@ namespace oglcanvas
         }
 
         // TODO(P1): Provide caching here.
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::fillTexturedPolyPolygon( const rendering::XCanvas*                          /*pCanvas*/,
@@ -601,7 +600,7 @@ namespace oglcanvas
                     const ::canvas::ParametricPolyPolygon::Values& rValues(
                         pGradient->getValues() );
 
-                    rAct.maFunction = ::boost::bind(&lcl_fillGradientPolyPolygon,
+                    rAct.maFunction = ::std::bind(&lcl_fillGradientPolyPolygon,
                                                     _1,_2,_3,_4,
                                                     rValues,
                                                     textures[0],
@@ -644,7 +643,7 @@ namespace oglcanvas
                                 aPixelData,
                                 canvas::tools::getStdColorSpace()));
 
-                        rAct.maFunction = ::boost::bind(&lcl_fillTexturedPolyPolygon,
+                        rAct.maFunction = ::std::bind(&lcl_fillTexturedPolyPolygon,
                                                         _1,_2,_3,_4,
                                                         textures[0],
                                                         aSize,
@@ -660,7 +659,7 @@ namespace oglcanvas
         }
 
         // TODO(P1): Provide caching here.
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::fillTextureMappedPolyPolygon( const rendering::XCanvas*                             /*pCanvas*/,
@@ -671,7 +670,7 @@ namespace oglcanvas
                                                                                               const uno::Reference< geometry::XMapping2D >&         /*xMapping*/ )
     {
         // TODO
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XCanvasFont > CanvasHelper::createFont( const rendering::XCanvas*                    /*pCanvas*/,
@@ -702,7 +701,7 @@ namespace oglcanvas
                                                                           sal_Int8                                          /*textDirection*/ )
     {
         // TODO - but not used from slideshow
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::drawTextLayout( const rendering::XCanvas*                       /*pCanvas*/,
@@ -798,7 +797,7 @@ namespace oglcanvas
         }
 
         // TODO
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::drawBitmap( const rendering::XCanvas*                   /*pCanvas*/,
@@ -822,7 +821,7 @@ namespace oglcanvas
                 Action& rAct=mpRecordedActions->back();
 
                 setupGraphicsState( rAct, viewState, renderState );
-                rAct.maFunction = ::boost::bind(&lcl_drawOwnBitmap,
+                rAct.maFunction = ::std::bind(&lcl_drawOwnBitmap,
                                                 _1,_2,_3,_4,_5,
                                                 *pOwnBitmap);
             }
@@ -851,7 +850,7 @@ namespace oglcanvas
                     Action& rAct=mpRecordedActions->back();
 
                     setupGraphicsState( rAct, viewState, renderState );
-                    rAct.maFunction = ::boost::bind(&lcl_drawGenericBitmap,
+                    rAct.maFunction = ::std::bind(&lcl_drawGenericBitmap,
                                                     _1,_2,_3,_4,_5,
                                                     aSize, aARGBBytes,
                                                     rtl_crc32(0,
@@ -863,7 +862,7 @@ namespace oglcanvas
         }
 
         // TODO(P1): Provide caching here.
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::drawBitmapModulated( const rendering::XCanvas*                      pCanvas,

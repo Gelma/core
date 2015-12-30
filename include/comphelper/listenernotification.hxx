@@ -65,9 +65,9 @@ namespace comphelper
 
             You'll usually call this from within your own dispose/disposing method
         */
-        void    disposing( const ::com::sun::star::lang::EventObject& _rEventSource );
+        void    disposing( const css::lang::EventObject& _rEventSource );
 
-        /** clears the container without calling <member scope="com::sun::star::lang">XEventListener::disposing</member>
+        /** clears the container without calling <member scope="css::lang">XEventListener::disposing</member>
             at the listeners
         */
         void    clear();
@@ -90,8 +90,8 @@ namespace comphelper
 
         virtual ~OListenerContainer();
 
-        void    impl_addListener( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >& _rxListener );
-        void    impl_removeListener( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >& _rxListener );
+        void    impl_addListener( const css::uno::Reference< css::lang::XEventListener >& _rxListener );
+        void    impl_removeListener( const css::uno::Reference< css::lang::XEventListener >& _rxListener );
 
         /** notifies all listeners of the given event, using THB's notification pattern
 
@@ -103,14 +103,14 @@ namespace comphelper
 
             @see implNotify
         */
-        bool    impl_notify( const ::com::sun::star::lang::EventObject& _rEvent );
+        bool    impl_notify( const css::lang::EventObject& _rEvent );
 
     protected:
         /** call a single listener
 
             @pure
 
-            @throws ::com::sun::star::uno::Exception
+            @throws css::uno::Exception
                 if the listener throws an exception during notification. Please don't catch
                 any listener exceptions in your implementation of this method, simply let them
                 pass to the caller.
@@ -129,8 +129,8 @@ namespace comphelper
             @see notify
         */
         virtual bool    implNotify(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >& _rxListener,
-                            const ::com::sun::star::lang::EventObject& _rEvent
+                            const css::uno::Reference< css::lang::XEventListener >& _rxListener,
+                            const css::lang::EventObject& _rEvent
                         ) = 0;
     };
 
@@ -148,9 +148,9 @@ namespace comphelper
         This class is not threadsafe!
 
         @param LISTENER
-            the listener class to call, e.g. com::sun::star::lang::XEventListener
+            the listener class to call, e.g. css::lang::XEventListener
         @param EVENT
-            the event type to notify, e.g. com::sun::star::lang::EventObject
+            the event type to notify, e.g. css::lang::EventObject
     */
     template< class LISTENER, class EVENT >
     class OSimpleListenerContainer : protected OListenerContainer
@@ -166,16 +166,16 @@ namespace comphelper
     public:
         OSimpleListenerContainer( ::osl::Mutex& _rMutex )
             :OListenerContainer( _rMutex )
-            ,m_pNotificationMethod( NULL )
+            ,m_pNotificationMethod( nullptr )
         {
         }
 
-        inline void addListener( const ::com::sun::star::uno::Reference< ListenerClass >& _rxListener )
+        inline void addListener( const css::uno::Reference< ListenerClass >& _rxListener )
         {
             OListenerContainer::impl_addListener( _rxListener.get() );
         }
 
-        inline void removeListener( const ::com::sun::star::uno::Reference< ListenerClass >& _rxListener )
+        inline void removeListener( const css::uno::Reference< ListenerClass >& _rxListener )
         {
             OListenerContainer::impl_removeListener( _rxListener.get() );
         }
@@ -191,9 +191,9 @@ namespace comphelper
 
     protected:
         virtual bool    implNotify(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >& _rxListener,
-                            const ::com::sun::star::lang::EventObject& _rEvent
-                        ) SAL_OVERRIDE
+                            const css::uno::Reference< css::lang::XEventListener >& _rxListener,
+                            const css::lang::EventObject& _rEvent
+                        ) override
         {
             const EventClass& rTypedEvent( static_cast< const EventClass& >( _rEvent ) );
             ListenerClass* pTypedListener( static_cast< ListenerClass* >( _rxListener.get() ) );
@@ -208,7 +208,7 @@ namespace comphelper
     {
         m_pNotificationMethod = _pNotify;
         bool bRet = OListenerContainer::impl_notify( _rEvent );
-        m_pNotificationMethod = NULL;
+        m_pNotificationMethod = nullptr;
         return bRet;
     }
 
@@ -229,12 +229,12 @@ namespace comphelper
         {
         }
 
-        inline void addTypedListener( const ::com::sun::star::uno::Reference< ListenerClass >& _rxListener )
+        inline void addTypedListener( const css::uno::Reference< ListenerClass >& _rxListener )
         {
             OListenerContainer::impl_addListener( _rxListener.get() );
         }
 
-        inline void removeTypedListener( const ::com::sun::star::uno::Reference< ListenerClass >& _rxListener )
+        inline void removeTypedListener( const css::uno::Reference< ListenerClass >& _rxListener )
         {
             OListenerContainer::impl_removeListener( _rxListener.get() );
         }
@@ -248,18 +248,18 @@ namespace comphelper
 
     protected:
         virtual bool    implNotify(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >& _rxListener,
-                            const ::com::sun::star::lang::EventObject& _rEvent
-                        ) SAL_OVERRIDE
+                            const css::uno::Reference< css::lang::XEventListener >& _rxListener,
+                            const css::lang::EventObject& _rEvent
+                        ) override
         {
             return implTypedNotify(
-                ::com::sun::star::uno::Reference< ListenerClass >( static_cast< ListenerClass* >( _rxListener.get() ) ),
+                css::uno::Reference< ListenerClass >( static_cast< ListenerClass* >( _rxListener.get() ) ),
                 static_cast< const EventClass& >( _rEvent )
             );
         }
 
         virtual bool    implTypedNotify(
-                            const ::com::sun::star::uno::Reference< ListenerClass >& _rxListener,
+                            const css::uno::Reference< ListenerClass >& _rxListener,
                             const EventClass& _rEvent
                         ) = 0;
     };

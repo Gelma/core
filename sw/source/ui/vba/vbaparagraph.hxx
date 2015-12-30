@@ -23,11 +23,10 @@
 #include <ooo/vba/word/XParagraphs.hpp>
 #include <ooo/vba/word/XParagraph.hpp>
 #include <vbahelper/vbahelperinterface.hxx>
-#include <cppuhelper/implbase1.hxx>
 #include <com/sun/star/text/XTextRange.hpp>
 #include <com/sun/star/text/XTextDocument.hpp>
 
-typedef InheritedHelperInterfaceImpl1< ooo::vba::word::XParagraph > SwVbaParagraph_BASE;
+typedef InheritedHelperInterfaceWeakImpl< ooo::vba::word::XParagraph > SwVbaParagraph_BASE;
 
 class SwVbaParagraph : public SwVbaParagraph_BASE
 {
@@ -40,13 +39,13 @@ public:
     virtual ~SwVbaParagraph();
 
     // XParagraph
-    virtual css::uno::Reference< ooo::vba::word::XRange > SAL_CALL getRange() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual css::uno::Any SAL_CALL getStyle() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL setStyle( const css::uno::Any& style ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual css::uno::Reference< ooo::vba::word::XRange > SAL_CALL getRange() throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual css::uno::Any SAL_CALL getStyle() throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL setStyle( const css::uno::Any& style ) throw ( css::uno::RuntimeException, std::exception ) override;
 
     // XHelperInterface
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 
 typedef CollTestImplHelper< ooo::vba::word::XParagraphs > SwVbaParagraphs_BASE;
@@ -60,13 +59,13 @@ public:
     virtual ~SwVbaParagraphs() {}
 
     // XEnumerationAccess
-    virtual css::uno::Type SAL_CALL getElementType() throw (css::uno::RuntimeException) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::container::XEnumeration > SAL_CALL createEnumeration() throw (css::uno::RuntimeException) SAL_OVERRIDE;
+    virtual css::uno::Type SAL_CALL getElementType() throw (css::uno::RuntimeException) override;
+    virtual css::uno::Reference< css::container::XEnumeration > SAL_CALL createEnumeration() throw (css::uno::RuntimeException) override;
 
     // SwVbaParagraphs_BASE
-    virtual css::uno::Any createCollectionObject( const css::uno::Any& aSource ) SAL_OVERRIDE;
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual css::uno::Any createCollectionObject( const css::uno::Any& aSource ) override;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 
 #endif // INCLUDED_SW_SOURCE_UI_VBA_VBAPARAGRAPH_HXX

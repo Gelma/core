@@ -27,6 +27,7 @@
 #include <com/sun/star/chart2/XChartType.hpp>
 #include <com/sun/star/chart2/XDataSeriesContainer.hpp>
 #include <com/sun/star/drawing/LineJoint.hpp>
+#include <comphelper/sequence.hxx>
 
 #include "LinePropertiesHelper.hxx"
 #include "UserDefinedProperties.hxx"
@@ -82,7 +83,7 @@ private:
         ::std::sort( aProperties.begin(), aProperties.end(),
                      ::chart::PropertyNameLess() );
 
-        return ::chart::ContainerHelper::ContainerToSequence( aProperties );
+        return comphelper::containerToSequence( aProperties );
     }
 };
 
@@ -172,7 +173,7 @@ uno::Reference< beans::XPropertySetInfo > SAL_CALL MinMaxLineWrapper::getPropert
 void SAL_CALL MinMaxLineWrapper::setPropertyValue( const OUString& rPropertyName, const uno::Any& rValue )
                     throw (beans::UnknownPropertyException, beans::PropertyVetoException, lang::IllegalArgumentException, lang::WrappedTargetException, uno::RuntimeException, std::exception)
 {
-    Reference< beans::XPropertySet > xPropSet(0);
+    Reference< beans::XPropertySet > xPropSet(nullptr);
 
     Reference< chart2::XDiagram > xDiagram( m_spChart2ModelContact->getChart2Diagram() );
     Sequence< Reference< chart2::XChartType > > aTypes(
@@ -188,7 +189,7 @@ void SAL_CALL MinMaxLineWrapper::setPropertyValue( const OUString& rPropertyName
                 Sequence< Reference< chart2::XDataSeries > > aSeriesSeq( xSeriesContainer->getDataSeries() );
                 if(aSeriesSeq.getLength())
                 {
-                    xPropSet = Reference< beans::XPropertySet >(aSeriesSeq[0],uno::UNO_QUERY);
+                    xPropSet.set(aSeriesSeq[0],uno::UNO_QUERY);
                     if(xPropSet.is())
                     {
                         if( rPropertyName == "LineColor" )
@@ -211,7 +212,7 @@ uno::Any SAL_CALL MinMaxLineWrapper::getPropertyValue( const OUString& rProperty
 {
     Any aRet;
 
-    Reference< beans::XPropertySet > xPropSet(0);
+    Reference< beans::XPropertySet > xPropSet(nullptr);
 
     Reference< chart2::XDiagram > xDiagram( m_spChart2ModelContact->getChart2Diagram() );
     Sequence< Reference< chart2::XChartType > > aTypes(
@@ -227,7 +228,7 @@ uno::Any SAL_CALL MinMaxLineWrapper::getPropertyValue( const OUString& rProperty
                 Sequence< Reference< chart2::XDataSeries > > aSeriesSeq( xSeriesContainer->getDataSeries() );
                 if(aSeriesSeq.getLength())
                 {
-                    xPropSet = Reference< beans::XPropertySet >(aSeriesSeq[0],uno::UNO_QUERY);
+                    xPropSet.set(aSeriesSeq[0],uno::UNO_QUERY);
                     break;
                 }
             }

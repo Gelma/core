@@ -29,17 +29,6 @@
 namespace connectivity
 {
 
-struct OOO_DLLPUBLIC_DBTOOLS RowEquation
-{
-    sal_Int32   nOperation;
-    ORowSetValueDecoratorRef    nPara[ 3 ];
-
-    RowEquation() :
-        nOperation  ( 0 )
-        {
-        }
-};
-
 enum ExpressionFunct
 {
     FUNC_CONST,
@@ -121,8 +110,8 @@ private:
     // supposed to be a singleton
     FunctionParser();
 
-    FunctionParser(const FunctionParser&) SAL_DELETED_FUNCTION;
-    FunctionParser& operator=( const FunctionParser& ) SAL_DELETED_FUNCTION;
+    FunctionParser(const FunctionParser&) = delete;
+    FunctionParser& operator=( const FunctionParser& ) = delete;
 };
 
 

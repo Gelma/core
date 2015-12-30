@@ -81,15 +81,15 @@ ImpSdrGDIMetaFileImport::ImpSdrGDIMetaFileImport(
     mpVD(VclPtr<VirtualDevice>::Create()),
     maScaleRect(rRect),
     mnMapScalingOfs(0),
-    mpLineAttr(0),
-    mpFillAttr(0),
-    mpTextAttr(0),
+    mpLineAttr(nullptr),
+    mpFillAttr(nullptr),
+    mpTextAttr(nullptr),
     mpModel(&rModel),
     mnLayer(nLay),
     maOldLineColor(),
     mnLineWidth(0),
     maLineJoin(basegfx::B2DLineJoin::NONE),
-    maLineCap(com::sun::star::drawing::LineCap_BUTT),
+    maLineCap(css::drawing::LineCap_BUTT),
     maDash(css::drawing::DashStyle_RECT, 0, 0, 0, 0, 0),
     mbMov(false),
     mbSize(false),
@@ -356,19 +356,19 @@ void ImpSdrGDIMetaFileImport::SetAttributes(SdrObject* pObj, bool bForceTextAttr
         switch(maLineJoin)
         {
             default : // basegfx::B2DLineJoin::NONE
-                mpLineAttr->Put(XLineJointItem(com::sun::star::drawing::LineJoint_NONE));
+                mpLineAttr->Put(XLineJointItem(css::drawing::LineJoint_NONE));
                 break;
             case basegfx::B2DLineJoin::Middle:
-                mpLineAttr->Put(XLineJointItem(com::sun::star::drawing::LineJoint_MIDDLE));
+                mpLineAttr->Put(XLineJointItem(css::drawing::LineJoint_MIDDLE));
                 break;
             case basegfx::B2DLineJoin::Bevel:
-                mpLineAttr->Put(XLineJointItem(com::sun::star::drawing::LineJoint_BEVEL));
+                mpLineAttr->Put(XLineJointItem(css::drawing::LineJoint_BEVEL));
                 break;
             case basegfx::B2DLineJoin::Miter:
-                mpLineAttr->Put(XLineJointItem(com::sun::star::drawing::LineJoint_MITER));
+                mpLineAttr->Put(XLineJointItem(css::drawing::LineJoint_MITER));
                 break;
             case basegfx::B2DLineJoin::Round:
-                mpLineAttr->Put(XLineJointItem(com::sun::star::drawing::LineJoint_ROUND));
+                mpLineAttr->Put(XLineJointItem(css::drawing::LineJoint_ROUND));
                 break;
         }
 
@@ -523,7 +523,7 @@ void ImpSdrGDIMetaFileImport::InsertObj(SdrObject* pObj, bool bScale)
                     while(aIter.IsMore())
                     {
                         SdrObject* pCandidate = aIter.Next();
-                        OSL_ENSURE(pCandidate && 0 == dynamic_cast< SdrObjGroup* >(pCandidate), "SdrObjListIter with IM_DEEPNOGROUPS error (!)");
+                        OSL_ENSURE(pCandidate && dynamic_cast< SdrObjGroup* >(pCandidate) ==  nullptr, "SdrObjListIter with IM_DEEPNOGROUPS error (!)");
                         SdrObject* pNewClone = pCandidate->Clone();
 
                         if(pNewClone)
@@ -782,7 +782,7 @@ bool ImpSdrGDIMetaFileImport::CheckLastLineMerge(const basegfx::B2DPolygon& rSrc
     // #i73407# reformulation to use new B2DPolygon classes
     if(mbLastObjWasLine && (maOldLineColor == mpVD->GetLineColor()) && rSrcPoly.count())
     {
-        SdrObject* pTmpObj = maTmpList.size() ? maTmpList[maTmpList.size() - 1] : 0;
+        SdrObject* pTmpObj = maTmpList.size() ? maTmpList[maTmpList.size() - 1] : nullptr;
         SdrPathObj* pLastPoly = dynamic_cast< SdrPathObj* >(pTmpObj);
 
         if(pLastPoly)
@@ -848,14 +848,14 @@ bool ImpSdrGDIMetaFileImport::CheckLastPolyLineAndFillMerge(const basegfx::B2DPo
     // #i73407# reformulation to use new B2DPolygon classes
     if(mbLastObjWasPolyWithoutLine)
     {
-        SdrObject* pTmpObj = maTmpList.size() ? maTmpList[maTmpList.size() - 1] : 0;
+        SdrObject* pTmpObj = maTmpList.size() ? maTmpList[maTmpList.size() - 1] : nullptr;
         SdrPathObj* pLastPoly = dynamic_cast< SdrPathObj* >(pTmpObj);
 
         if(pLastPoly)
         {
             if(pLastPoly->GetPathPoly() == rPolyPolygon)
             {
-                SetAttributes(NULL);
+                SetAttributes(nullptr);
 
                 if(!mbNoLine && mbNoFill)
                 {
@@ -1278,7 +1278,7 @@ void ImpSdrGDIMetaFileImport::DoAction(MetaTextRectAction& rAct)
     GDIMetaFile aTemp;
 
     mpVD->AddTextRectActions(rAct.GetRect(), rAct.GetText(), rAct.GetStyle(), aTemp);
-    DoLoopActions(aTemp, 0, 0);
+    DoLoopActions(aTemp, nullptr, nullptr);
 }
 
 void ImpSdrGDIMetaFileImport::DoAction(MetaBmpScalePartAction& rAct)

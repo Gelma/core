@@ -90,12 +90,11 @@ void ScDrawTextObjectBar::InitInterface_Impl()
     GetStaticInterface()->RegisterObjectBar(SFX_OBJECTBAR_OBJECT|SFX_VISIBILITY_STANDARD|SFX_VISIBILITY_SERVER,
                                             RID_TEXT_TOOLBOX);
 
-    GetStaticInterface()->RegisterPopupMenu(ScResId(RID_POPUP_DRAWTEXT));
+    GetStaticInterface()->RegisterPopupMenu("drawtext");
 
     GetStaticInterface()->RegisterChildWindow(ScGetFontWorkId());
 }
 
-TYPEINIT1( ScDrawTextObjectBar, SfxShell );
 
 // abschalten der nicht erwuenschten Acceleratoren:
 
@@ -114,7 +113,7 @@ void ScDrawTextObjectBar::StateDisableItems( SfxItemSet &rSet )
 ScDrawTextObjectBar::ScDrawTextObjectBar(ScViewData* pData) :
     SfxShell(pData->GetViewShell()),
     pViewData(pData),
-    pClipEvtLstnr(NULL),
+    pClipEvtLstnr(nullptr),
     bPastePossible(false)
 {
     SetPool( pViewData->GetScDrawView()->GetDefaultAttr().GetPool() );
@@ -128,7 +127,7 @@ ScDrawTextObjectBar::ScDrawTextObjectBar(ScViewData* pData) :
     }
 
     SetHelpId( HID_SCSHELL_DRTXTOB );
-    SetName(OUString("DrawText"));
+    SetName("DrawText");
     SfxShell::SetContextName(sfx2::sidebar::EnumContext::GetContextName(sfx2::sidebar::EnumContext::Context_DrawText));
 }
 
@@ -182,7 +181,7 @@ void ScDrawTextObjectBar::Execute( SfxRequest &rReq )
                 const SfxPoolItem* pItem;
                 if ( pReqArgs &&
                      pReqArgs->GetItemState(nSlot, true, &pItem) == SfxItemState::SET &&
-                     pItem->ISA(SfxUInt32Item) )
+                     dynamic_cast<const SfxUInt32Item*>( pItem) !=  nullptr )
                 {
                     nFormat = static_cast<SotClipboardFormatId>(static_cast<const SfxUInt32Item*>(pItem)->GetValue());
                 }
@@ -218,16 +217,16 @@ void ScDrawTextObjectBar::Execute( SfxRequest &rReq )
                 SvxFontItem aNewItem( EE_CHAR_FONTINFO );
 
                 const SfxItemSet *pArgs = rReq.GetArgs();
-                const SfxPoolItem* pItem = 0;
+                const SfxPoolItem* pItem = nullptr;
                 if( pArgs )
                     pArgs->GetItemState(GetPool().GetWhich(SID_CHARMAP), false, &pItem);
 
                 if ( pItem )
                 {
                     aString = static_cast<const SfxStringItem*>(pItem)->GetValue();
-                    const SfxPoolItem* pFtItem = NULL;
+                    const SfxPoolItem* pFtItem = nullptr;
                     pArgs->GetItemState( GetPool().GetWhich(SID_ATTR_SPECIALCHAR), false, &pFtItem);
-                    const SfxStringItem* pFontItem = PTR_CAST( SfxStringItem, pFtItem );
+                    const SfxStringItem* pFontItem = dynamic_cast<const SfxStringItem*>( pFtItem  );
                     if ( pFontItem )
                     {
                         OUString aFontName(pFontItem->GetValue());
@@ -274,7 +273,7 @@ void ScDrawTextObjectBar::Execute( SfxRequest &rReq )
                         if (pFieldItem)
                         {
                             const SvxFieldData* pField = pFieldItem->GetField();
-                            if ( pField && pField->ISA(SvxURLField) )
+                            if ( pField && dynamic_cast<const SvxURLField*>( pField) !=  nullptr )
                             {
                                 //  altes Feld selektieren
 
@@ -323,9 +322,8 @@ void ScDrawTextObjectBar::Execute( SfxRequest &rReq )
                     if ( pFieldItem )
                     {
                         const SvxFieldData* pField = pFieldItem->GetField();
-                        if( pField && pField->ISA( SvxURLField ) )
+                        if (const SvxURLField* pURLField = dynamic_cast<const SvxURLField*>(pField))
                         {
-                            const SvxURLField* pURLField = static_cast< const SvxURLField* >( pField );
                             ScGlobal::OpenURL( pURLField->GetURL(), pURLField->GetTargetFrame() );
                         }
                     }
@@ -345,7 +343,7 @@ void ScDrawTextObjectBar::Execute( SfxRequest &rReq )
         case SID_THES:
             {
                 OUString aReplaceText;
-                SFX_REQUEST_ARG( rReq, pItem2, SfxStringItem, SID_THES, false );
+                const SfxStringItem* pItem2 = rReq.GetArg<SfxStringItem>(SID_THES);
                 if (pItem2)
                     aReplaceText = pItem2->GetValue();
                 if (!aReplaceText.isEmpty())
@@ -391,9 +389,8 @@ void ScDrawTextObjectBar::GetState( SfxItemSet& rSet )
             if (pFieldItem)
             {
                 const SvxFieldData* pField = pFieldItem->GetField();
-                if ( pField && pField->ISA(SvxURLField) )
+                if (const SvxURLField* pURLField = dynamic_cast<const SvxURLField*>(pField))
                 {
-                    const SvxURLField* pURLField = static_cast<const SvxURLField*>(pField);
                     aHLinkItem.SetName( pURLField->GetRepresentation() );
                     aHLinkItem.SetURL( pURLField->GetURL() );
                     aHLinkItem.SetTargetFrame( pURLField->GetTargetFrame() );
@@ -423,7 +420,7 @@ void ScDrawTextObjectBar::GetState( SfxItemSet& rSet )
             if ( pFieldItem )
             {
                 const SvxFieldData* pField = pFieldItem->GetField();
-                bEnable = pField && pField->ISA( SvxURLField );
+                bEnable = pField && dynamic_cast<const SvxURLField*>( pField) !=  nullptr;
             }
         }
         if( !bEnable )
@@ -789,7 +786,7 @@ void ScDrawTextObjectBar::ExecuteAttr( SfxRequest &rReq )
     }
 
     bool bDone = true;
-    bool bArgsInReq = ( pArgs != NULL );
+    bool bArgsInReq = ( pArgs != nullptr );
 
     if ( !bArgsInReq )
     {
@@ -798,7 +795,7 @@ void ScDrawTextObjectBar::ExecuteAttr( SfxRequest &rReq )
             case SID_TEXT_STANDARD: // Harte Textattributierung loeschen
             {
                 OutlinerView* pOutView = pView->IsTextEdit() ?
-                                pView->GetTextEditOutlinerView() : NULL;
+                                pView->GetTextEditOutlinerView() : nullptr;
                 if ( pOutView )
                     pOutView->Paint( Rectangle() );
 
@@ -1107,7 +1104,7 @@ void ScDrawTextObjectBar::GetAttrState( SfxItemSet& rDestSet )
 
     //  Unterstreichung
 
-    eState = aAttrSet.GetItemState( EE_CHAR_UNDERLINE, true );
+    eState = aAttrSet.GetItemState( EE_CHAR_UNDERLINE );
     if ( eState == SfxItemState::DONTCARE )
     {
         rDestSet.InvalidateItem( SID_ULINE_VAL_NONE );
@@ -1142,7 +1139,7 @@ void ScDrawTextObjectBar::GetAttrState( SfxItemSet& rDestSet )
             bLeftToRight = false;
     }
     else
-        bLeftToRight = static_cast<const SvxWritingModeItem&>( aAttrSet.Get( SDRATTR_TEXTDIRECTION ) ).GetValue() == com::sun::star::text::WritingMode_LR_TB;
+        bLeftToRight = static_cast<const SvxWritingModeItem&>( aAttrSet.Get( SDRATTR_TEXTDIRECTION ) ).GetValue() == css::text::WritingMode_LR_TB;
 
     if ( bDisableVerticalText )
     {

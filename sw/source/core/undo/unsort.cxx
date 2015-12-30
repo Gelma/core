@@ -44,8 +44,8 @@ SwSortUndoElement::~SwSortUndoElement()
 SwUndoSort::SwUndoSort(const SwPaM& rRg, const SwSortOptions& rOpt)
     : SwUndo(UNDO_SORT_TXT)
     , SwUndRng(rRg)
-    , pUndoTableAttr(0)
-    , pRedlData(0)
+    , pUndoTableAttr(nullptr)
+    , pRedlData(nullptr)
     , nTableNd(0)
 {
     pSortOpt = new SwSortOptions(rOpt);
@@ -53,7 +53,7 @@ SwUndoSort::SwUndoSort(const SwPaM& rRg, const SwSortOptions& rOpt)
 
 SwUndoSort::SwUndoSort( sal_uLong nStt, sal_uLong nEnd, const SwTableNode& rTableNd,
                         const SwSortOptions& rOpt, bool bSaveTable )
-    : SwUndo(UNDO_SORT_TBL), pUndoTableAttr( 0 ), pRedlData( 0 )
+    : SwUndo(UNDO_SORT_TBL), pUndoTableAttr( nullptr ), pRedlData( nullptr )
 {
     nSttNode = nStt;
     nEndNode = nEnd;
@@ -86,20 +86,20 @@ void SwUndoSort::UndoImpl(::sw::UndoRedoContext & rContext)
 
         SwTableNode* pTableNd = rDoc.GetNodes()[ nTableNd ]->GetTableNode();
 
-        // #i37739# A simple 'MakeFrms' after the node sorting
+        // #i37739# A simple 'MakeFrames' after the node sorting
         // does not work if the table is inside a frame and has no prev/next.
         SwNode2Layout aNode2Layout( *pTableNd );
 
-        pTableNd->DelFrms();
+        pTableNd->DelFrames();
         const SwTable& rTable = pTableNd->GetTable();
 
         SwMovedBoxes aMovedList;
-        for( size_t i=0; i < aSortList.size(); i++)
+        for (size_t i=0; i < m_SortList.size(); i++)
         {
             const SwTableBox* pSource = rTable.GetTableBox(
-                    *aSortList[i].SORT_TXT_TBL.TBL.pSource );
+                    *m_SortList[i]->SORT_TXT_TBL.TBL.pSource );
             const SwTableBox* pTarget = rTable.GetTableBox(
-                    *aSortList[i].SORT_TXT_TBL.TBL.pTarget );
+                    *m_SortList[i]->SORT_TXT_TBL.TBL.pTarget );
 
             // move back
             MoveCell(&rDoc, pTarget, pSource,
@@ -110,10 +110,10 @@ void SwUndoSort::UndoImpl(::sw::UndoRedoContext & rContext)
         }
 
         // Restore table frames:
-        // #i37739# A simple 'MakeFrms' after the node sorting
+        // #i37739# A simple 'MakeFrames' after the node sorting
         // does not work if the table is inside a frame and has no prev/next.
         const sal_uLong nIdx = pTableNd->GetIndex();
-        aNode2Layout.RestoreUpperFrms( rDoc.GetNodes(), nIdx, nIdx + 1 );
+        aNode2Layout.RestoreUpperFrames( rDoc.GetNodes(), nIdx, nIdx + 1 );
     }
     else
     {
@@ -125,17 +125,21 @@ void SwUndoSort::UndoImpl(::sw::UndoRedoContext & rContext)
         // The IndexList must be created based on (asc.) sorted SourcePosition.
         SwUndoSortList aIdxList;
 
-        for( size_t i = 0; i < aSortList.size(); ++i)
-            for( size_t ii=0; ii < aSortList.size(); ++ii )
-                if( aSortList[ii].SORT_TXT_TBL.TXT.nSource == nSttNode + i )
+        for (size_t i = 0; i < m_SortList.size(); ++i)
+        {
+            for (size_t ii = 0; ii < m_SortList.size(); ++ii)
+            {
+                if (m_SortList[ii]->SORT_TXT_TBL.TXT.nSource == nSttNode + i)
                 {
                     SwNodeIndex* pIdx = new SwNodeIndex( rDoc.GetNodes(),
-                        aSortList[ii].SORT_TXT_TBL.TXT.nTarget );
+                        m_SortList[ii]->SORT_TXT_TBL.TXT.nTarget );
                     aIdxList.insert( aIdxList.begin() + i, pIdx );
                     break;
                 }
+            }
+        }
 
-        for(size_t i=0; i < aSortList.size(); ++i)
+        for (size_t i = 0; i < m_SortList.size(); ++i)
         {
             SwNodeIndex aIdx( rDoc.GetNodes(), nSttNode + i );
             SwNodeRange aRg( *aIdxList[i], 0, *aIdxList[i], 1 );
@@ -161,20 +165,20 @@ void SwUndoSort::RedoImpl(::sw::UndoRedoContext & rContext)
 
         SwTableNode* pTableNd = rDoc.GetNodes()[ nTableNd ]->GetTableNode();
 
-        // #i37739# A simple 'MakeFrms' after the node sorting
+        // #i37739# A simple 'MakeFrames' after the node sorting
         // does not work if the table is inside a frame and has no prev/next.
         SwNode2Layout aNode2Layout( *pTableNd );
 
-        pTableNd->DelFrms();
+        pTableNd->DelFrames();
         const SwTable& rTable = pTableNd->GetTable();
 
         SwMovedBoxes aMovedList;
-        for(size_t i=0; i < aSortList.size(); ++i)
+        for (size_t i = 0; i < m_SortList.size(); ++i)
         {
             const SwTableBox* pSource = rTable.GetTableBox(
-                    *aSortList[i].SORT_TXT_TBL.TBL.pSource );
+                    *m_SortList[i]->SORT_TXT_TBL.TBL.pSource );
             const SwTableBox* pTarget = rTable.GetTableBox(
-                    *aSortList[i].SORT_TXT_TBL.TBL.pTarget );
+                    *m_SortList[i]->SORT_TXT_TBL.TBL.pTarget );
 
             // move back
             MoveCell(&rDoc, pSource, pTarget,
@@ -189,10 +193,10 @@ void SwUndoSort::RedoImpl(::sw::UndoRedoContext & rContext)
         }
 
         // Restore table frames:
-        // #i37739# A simple 'MakeFrms' after the node sorting
+        // #i37739# A simple 'MakeFrames' after the node sorting
         // does not work if the table is inside a frame and has no prev/next.
         const sal_uLong nIdx = pTableNd->GetIndex();
-        aNode2Layout.RestoreUpperFrms( rDoc.GetNodes(), nIdx, nIdx + 1 );
+        aNode2Layout.RestoreUpperFrames( rDoc.GetNodes(), nIdx, nIdx + 1 );
     }
     else
     {
@@ -203,14 +207,14 @@ void SwUndoSort::RedoImpl(::sw::UndoRedoContext & rContext)
 
         SwUndoSortList aIdxList;
 
-        for( size_t i = 0; i < aSortList.size(); ++i)
+        for (size_t i = 0; i < m_SortList.size(); ++i)
         {   // current position is starting point
             SwNodeIndex* pIdx = new SwNodeIndex( rDoc.GetNodes(),
-                    aSortList[i].SORT_TXT_TBL.TXT.nSource);
+                    m_SortList[i]->SORT_TXT_TBL.TXT.nSource);
             aIdxList.insert( aIdxList.begin() + i, pIdx );
         }
 
-        for( size_t i = 0; i < aSortList.size(); ++i)
+        for (size_t i = 0; i < m_SortList.size(); ++i)
         {
             SwNodeIndex aIdx( rDoc.GetNodes(), nSttNode + i);
             SwNodeRange aRg( *aIdxList[i], 0, *aIdxList[i], 1 );
@@ -245,14 +249,14 @@ void SwUndoSort::RepeatImpl(::sw::RepeatContext & rContext)
 
 void SwUndoSort::Insert( const OUString& rOrgPos, const OUString& rNewPos)
 {
-    SwSortUndoElement* pEle = new SwSortUndoElement(rOrgPos, rNewPos);
-    aSortList.push_back( pEle );
+    std::unique_ptr<SwSortUndoElement> p(new SwSortUndoElement(rOrgPos, rNewPos));
+    m_SortList.push_back(std::move(p));
 }
 
 void SwUndoSort::Insert( sal_uLong nOrgPos, sal_uLong nNewPos)
 {
-    SwSortUndoElement* pEle = new SwSortUndoElement(nOrgPos, nNewPos);
-    aSortList.push_back( pEle );
+    std::unique_ptr<SwSortUndoElement> p(new SwSortUndoElement(nOrgPos, nNewPos));
+    m_SortList.push_back(std::move(p));
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

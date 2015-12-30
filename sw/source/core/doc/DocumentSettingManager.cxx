@@ -405,7 +405,7 @@ void sw::DocumentSettingManager::set(/*[in]*/ DocumentSettingId id, /*[in]*/ boo
 const css::i18n::ForbiddenCharacters*
     sw::DocumentSettingManager::getForbiddenCharacters(/*[in]*/ sal_uInt16 nLang, /*[in]*/ bool bLocaleData ) const
 {
-    const css::i18n::ForbiddenCharacters* pRet = 0;
+    const css::i18n::ForbiddenCharacters* pRet = nullptr;
     if( mxForbiddenCharsTable.is() )
         pRet = mxForbiddenCharsTable->GetForbiddenCharacters( nLang, false );
     if( bLocaleData && !pRet && g_pBreakIt )
@@ -414,7 +414,7 @@ const css::i18n::ForbiddenCharacters*
 }
 
 void sw::DocumentSettingManager::setForbiddenCharacters(/*[in]*/ sal_uInt16 nLang,
-                                   /*[in]*/ const com::sun::star::i18n::ForbiddenCharacters& rFChars )
+                                   /*[in]*/ const css::i18n::ForbiddenCharacters& rFChars )
 {
     if( !mxForbiddenCharsTable.is() )
     {
@@ -430,12 +430,12 @@ void sw::DocumentSettingManager::setForbiddenCharacters(/*[in]*/ sal_uInt16 nLan
             pDrawModel->ReformatAllTextObjects();
     }
 
-    SwRootFrm* pTmpRoot = m_rDoc.getIDocumentLayoutAccess().GetCurrentLayout();
+    SwRootFrame* pTmpRoot = m_rDoc.getIDocumentLayoutAccess().GetCurrentLayout();
     if( pTmpRoot && !m_rDoc.IsInReading() )
     {
         pTmpRoot->StartAllAction();
-        std::set<SwRootFrm*> aAllLayouts = m_rDoc.GetAllLayouts();
-        std::for_each( aAllLayouts.begin(), aAllLayouts.end(), std::bind2nd(std::mem_fun(&SwRootFrm::InvalidateAllContent), INV_SIZE));
+        for(SwRootFrame* aLayout : m_rDoc.GetAllLayouts())
+            aLayout->InvalidateAllContent(INV_SIZE);
         pTmpRoot->EndAllAction();
     }
     m_rDoc.getIDocumentState().SetModified();
@@ -500,12 +500,12 @@ void sw::DocumentSettingManager::setCharacterCompressionType( /*[in]*/SwCharComp
                 pDrawModel->ReformatAllTextObjects();
         }
 
-        SwRootFrm* pTmpRoot = m_rDoc.getIDocumentLayoutAccess().GetCurrentLayout();
+        SwRootFrame* pTmpRoot = m_rDoc.getIDocumentLayoutAccess().GetCurrentLayout();
         if( pTmpRoot && !m_rDoc.IsInReading() )
         {
             pTmpRoot->StartAllAction();
-            std::set<SwRootFrm*> aAllLayouts = m_rDoc.GetAllLayouts();
-            std::for_each( aAllLayouts.begin(), aAllLayouts.end(), std::bind2nd(std::mem_fun(&SwRootFrm::InvalidateAllContent), INV_SIZE));
+            for( auto aLayout : m_rDoc.GetAllLayouts() )
+                aLayout->InvalidateAllContent(INV_SIZE);
             pTmpRoot->EndAllAction();
         }
         m_rDoc.getIDocumentState().SetModified();

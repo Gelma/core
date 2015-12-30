@@ -1,15 +1,19 @@
---- src/lib/VSDParser.cpp
-+++ src/lib/VSDParser.cpp
-@@ -1104,7 +1104,11 @@
-   input->seek(1, librevenge::RVNG_SEEK_CUR);
-   double scale = readDouble(input);
-   input->seek(1, librevenge::RVNG_SEEK_CUR);
--  scale /= readDouble(input);
-+  double scaleDenom = readDouble(input);
-+  if (scaleDenom != 0)
-+  {
-+    scale /= scaleDenom;
-+  }
+--- src/lib/VSDContentCollector.cpp
++++ src/lib/VSDContentCollector.cpp
+@@ -3220,7 +3220,7 @@
+     }
+     if (U_SUCCESS(status) && conv)
+     {
+-      const char *src = (const char *)&characters[0];
++      const char *src = (const char *)characters.data();
+       const char *srcLimit = (const char *)src + characters.size();
+       while (src < srcLimit)
+       {
+@@ -3285,6 +3285,7 @@
+   _handleLevelChange(level);
+   librevenge::RVNGString text;
+   std::vector<unsigned char> tmpData(layerMem.m_data.size());
++  if (!layerMem.m_data.empty())
+   memcpy(&tmpData[0], layerMem.m_data.getDataBuffer(), layerMem.m_data.size());
+   appendCharacters(text, tmpData, layerMem.m_format);
  
-   if (m_isStencilStarted && m_currentStencil)
-   {

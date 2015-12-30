@@ -28,7 +28,7 @@ namespace dbp
 {
     struct OGridSettings : public OControlWizardSettings
     {
-        ::com::sun::star::uno::Sequence< OUString >      aSelectedFields;
+        css::uno::Sequence< OUString >      aSelectedFields;
     };
 
     class OGridWizard : public OControlWizard
@@ -40,21 +40,21 @@ namespace dbp
     public:
         OGridWizard(
             vcl::Window* _pParent,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& _rxObjectModel,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& _rxContext
+            const css::uno::Reference< css::beans::XPropertySet >& _rxObjectModel,
+            const css::uno::Reference< css::uno::XComponentContext >& _rxContext
         );
 
         OGridSettings& getSettings() { return m_aSettings; }
 
     protected:
         // OWizardMachine overridables
-        virtual VclPtr<TabPage>     createPage( WizardState _nState ) SAL_OVERRIDE;
-        virtual WizardState         determineNextState( WizardState _nCurrentState ) const SAL_OVERRIDE;
-        virtual void                enterState( WizardState _nState ) SAL_OVERRIDE;
-        virtual bool                leaveState( WizardState _nState ) SAL_OVERRIDE;
-        virtual bool                onFinish() SAL_OVERRIDE;
+        virtual VclPtr<TabPage>     createPage( WizardState _nState ) override;
+        virtual WizardState         determineNextState( WizardState _nCurrentState ) const override;
+        virtual void                enterState( WizardState _nState ) override;
+        virtual bool                leaveState( WizardState _nState ) override;
+        virtual bool                onFinish() override;
 
-        virtual bool                approveControl(sal_Int16 _nClassId) SAL_OVERRIDE;
+        virtual bool                approveControl(sal_Int16 _nClassId) override;
 
     protected:
         void implApplySettings();
@@ -82,21 +82,21 @@ namespace dbp
     public:
         explicit OGridFieldsSelection( OGridWizard* _pParent );
         virtual ~OGridFieldsSelection();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
     protected:
         // TabPage overridables
-        virtual void ActivatePage() SAL_OVERRIDE;
+        virtual void ActivatePage() override;
 
         // OWizardPage overridables
-        virtual void        initializePage() SAL_OVERRIDE;
-        virtual bool        commitPage( ::svt::WizardTypes::CommitPageReason _eReason ) SAL_OVERRIDE;
-        virtual bool        canAdvance() const SAL_OVERRIDE;
+        virtual void        initializePage() override;
+        virtual bool        commitPage( ::svt::WizardTypes::CommitPageReason _eReason ) override;
+        virtual bool        canAdvance() const override;
 
     protected:
         DECL_LINK_TYPED(OnMoveOneEntry, Button*, void);
         DECL_LINK_TYPED(OnMoveAllEntries, Button*, void);
-        DECL_LINK(OnEntrySelected, ListBox*);
+        DECL_LINK_TYPED(OnEntrySelected, ListBox&, void);
         DECL_LINK_TYPED(OnEntryDoubleClicked, ListBox&, void);
 
         void implCheckButtons();

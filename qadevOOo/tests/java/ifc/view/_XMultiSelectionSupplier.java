@@ -51,7 +51,6 @@ import lib.StatusException;
 public class _XMultiSelectionSupplier extends MultiMethodTest {
 
     public XMultiSelectionSupplier oObj = null;
-    public boolean selectionChanged = false;
     Object[] selections = null;
     Comparator<Object> ObjCompare = null;
 
@@ -327,12 +326,10 @@ public class _XMultiSelectionSupplier extends MultiMethodTest {
 
             log.println("nextElement()-object and expected object 'selections["+i+"]' are equal: "+compRes);
 
-            if (!compRes) {
-                if ((selections[i]) instanceof Object[]){
-                    if (((Object[])selections[i])[0] instanceof Integer) {
-                        log.println("Getting: "+((Integer) ((Object[])shouldElement)[0]).intValue());
-                        log.println("Expected: "+((Integer) ((Object[])selections[i])[0]).intValue());
-                    }
+            if (!compRes && (selections[i]) instanceof Object[]) {
+                if (((Object[])selections[i])[0] instanceof Integer) {
+                    log.println("Getting: "+((Integer) ((Object[])shouldElement)[0]).intValue());
+                    log.println("Expected: "+((Integer) ((Object[])selections[i])[0]).intValue());
                 }
             }
             bOK &= compRes;
@@ -400,12 +397,10 @@ public class _XMultiSelectionSupplier extends MultiMethodTest {
 
             log.println("nextElement()-object and expected object 'selections["+i+"]' are equal: "+compRes);
 
-            if (!compRes) {
-                if ((selections[i]) instanceof Object[]){
-                    if (((Object[])selections[i])[0] instanceof Integer) {
-                        log.println("Getting: "+((Integer) ((Object[])shouldElement)[0]).intValue());
-                        log.println("Expected: "+((Integer) ((Object[])selections[i])[0]).intValue());
-                    }
+            if (!compRes && (selections[i]) instanceof Object[]){
+                if (((Object[])selections[i])[0] instanceof Integer) {
+                    log.println("Getting: "+((Integer) ((Object[])shouldElement)[0]).intValue());
+                    log.println("Expected: "+((Integer) ((Object[])selections[i])[0]).intValue());
                 }
             }
             bOK &= compRes;

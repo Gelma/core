@@ -19,8 +19,11 @@
 #ifndef INCLUDED_XMLOFF_SOURCE_TRANSFORM_CHARTPLOTAREAOOOTCONTEXT_HXX
 #define INCLUDED_XMLOFF_SOURCE_TRANSFORM_CHARTPLOTAREAOOOTCONTEXT_HXX
 
+#include <sal/config.h>
+
+#include <vector>
+
 #include "ProcAttrTContext.hxx"
-#include "TContextVector.hxx"
 
 class XMLAxisOOoContext;
 
@@ -36,15 +39,15 @@ public:
         XMLTransformerBase & rTransformer, const OUString & rQName );
     virtual ~XMLChartPlotAreaOOoTContext();
 
-    virtual XMLTransformerContext *CreateChildContext( sal_uInt16 nPrefix,
+    virtual rtl::Reference<XMLTransformerContext> CreateChildContext( sal_uInt16 nPrefix,
                                    const OUString& rLocalName,
                                    const OUString& rQName,
-                                   const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
-    virtual void EndElement() SAL_OVERRIDE;
-    virtual void ExportContent() SAL_OVERRIDE;
+                                   const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
+    virtual void EndElement() override;
+    virtual void ExportContent() override;
 
 protected:
-    void AddContent( XMLAxisOOoContext *pContent );
+    void AddContent( rtl::Reference<XMLAxisOOoContext> const & pContent );
 
 private:
     XMLAxisContextVector m_aChildContexts;

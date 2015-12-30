@@ -21,18 +21,17 @@
 
 #include <ooo/vba/word/XBookmark.hpp>
 #include <vbahelper/vbahelperinterface.hxx>
-#include <cppuhelper/implbase1.hxx>
 #include <com/sun/star/text/XBookmarksSupplier.hpp>
 #include <com/sun/star/text/XTextContent.hpp>
 
-typedef InheritedHelperInterfaceImpl1< ooo::vba::word::XBookmark > SwVbaBookmark_BASE;
+typedef InheritedHelperInterfaceWeakImpl< ooo::vba::word::XBookmark > SwVbaBookmark_BASE;
 
 class SwVbaBookmark : public SwVbaBookmark_BASE
 {
 private:
     css::uno::Reference< css::frame::XModel > mxModel;
     css::uno::Reference< css::text::XTextContent > mxBookmark;
-    OUString maName;
+    OUString maBookmarkName;
     bool mbValid;
 
 private:
@@ -44,15 +43,15 @@ public:
     virtual ~SwVbaBookmark();
 
    // Methods
-    virtual OUString SAL_CALL getName() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL setName( const OUString& ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL Delete() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL Select() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual css::uno::Any SAL_CALL Range() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getName() throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL setName( const OUString& ) throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL Delete() throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL Select() throw ( css::uno::RuntimeException, std::exception ) override;
+    virtual css::uno::Any SAL_CALL Range() throw ( css::uno::RuntimeException, std::exception ) override;
 
     // XHelperInterface
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 #endif // INCLUDED_SW_SOURCE_UI_VBA_VBABOOKMARK_HXX
 

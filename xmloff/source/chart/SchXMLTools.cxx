@@ -830,7 +830,7 @@ bool isDocumentGeneratedWithOpenOfficeOlderThan2_3( const uno::Reference< frame:
     return bResult;
 }
 
-bool isDocumentGeneratedWithOpenOfficeOlderThan2_0( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XModel >& xChartModel)
+bool isDocumentGeneratedWithOpenOfficeOlderThan2_0( const css::uno::Reference< css::frame::XModel >& xChartModel)
 {
     bool bResult = false;
     OUString aGenerator( lcl_getGeneratorFromModelOrItsParent(xChartModel) );
@@ -859,8 +859,7 @@ Reference< chart2::data::XDataProvider > getDataProviderFromParent( const Refere
             const OUString * pEnd = pBegin + aServiceNames.getLength();
             if( ::std::find( pBegin, pEnd, aDataProviderServiceName ) != pEnd )
             {
-                xRet = Reference< chart2::data::XDataProvider >(
-                    xFact->createInstance( aDataProviderServiceName ), uno::UNO_QUERY );
+                xRet.set( xFact->createInstance( aDataProviderServiceName ), uno::UNO_QUERY );
             }
         }
     }

@@ -33,13 +33,13 @@ namespace avmedia { namespace gstreamer {
 
 static ::osl::Mutex& ImplGetOwnStaticMutex()
 {
-    static ::osl::Mutex* pMutex = NULL;
+    static ::osl::Mutex* pMutex = nullptr;
 
-    if( pMutex == NULL )
+    if( pMutex == nullptr )
     {
         ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );
 
-        if( pMutex == NULL )
+        if( pMutex == nullptr )
         {
             static ::osl::Mutex aMutex;
             pMutex = &aMutex;
@@ -52,8 +52,7 @@ static ::osl::Mutex& ImplGetOwnStaticMutex()
 // Window
 
 
-Window::Window( const uno::Reference< lang::XMultiServiceFactory >& rxMgr ) :
-    mxMgr( rxMgr ),
+Window::Window() :
     meZoomLevel( media::ZoomLevel_NOT_AVAILABLE ),
     mnPointerType( awt::SystemPointer::ARROW )
 {
@@ -234,8 +233,7 @@ sal_Bool SAL_CALL Window::supportsService( const OUString& ServiceName )
 uno::Sequence< OUString > SAL_CALL Window::getSupportedServiceNames(  )
     throw (uno::RuntimeException, std::exception)
 {
-    uno::Sequence< OUString > aRet(1);
-    aRet[0] = AVMEDIA_GST_WINDOW_SERVICENAME ;
+    uno::Sequence<OUString> aRet { AVMEDIA_GST_WINDOW_SERVICENAME };
 
     return aRet;
 }

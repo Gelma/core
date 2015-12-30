@@ -31,7 +31,6 @@
 
 namespace sd {
 
-TYPEINIT1(GraphicViewShellBase, ViewShellBase);
 
 // We have to expand the SFX_IMPL_VIEWFACTORY macro to call LateInit() after a
 // new GraphicViewShellBase object has been constructed.
@@ -73,15 +72,16 @@ void GraphicViewShellBase::Execute (SfxRequest& rRequest)
     {
         case SID_NOTES_WINDOW:
         case SID_SLIDE_SORTER_MULTI_PANE_GUI:
-        case SID_DIAMODE:
-        case SID_OUTLINEMODE:
-        case SID_NOTESMODE:
-        case SID_HANDOUTMODE:
+        case SID_SLIDE_SORTER_MODE:
+        case SID_SLIDE_MASTER_MODE:
+        case SID_OUTLINE_MODE:
+        case SID_NOTES_MODE:
+        case SID_NOTES_MASTER_MODE:
+        case SID_HANDOUT_MASTER_MODE:
             // Prevent some Impress-only slots from being executed.
             rRequest.Cancel();
             break;
 
-        case SID_TASKPANE:
         case SID_SWITCH_SHELL:
         case SID_LEFT_PANE_DRAW:
         case SID_LEFT_PANE_IMPRESS:
@@ -95,7 +95,7 @@ void GraphicViewShellBase::Execute (SfxRequest& rRequest)
 
 void GraphicViewShellBase::InitializeFramework()
 {
-    com::sun::star::uno::Reference<com::sun::star::frame::XController>
+    css::uno::Reference<css::frame::XController>
         xController (GetController());
     sd::framework::DrawModule::Initialize(xController);
 }

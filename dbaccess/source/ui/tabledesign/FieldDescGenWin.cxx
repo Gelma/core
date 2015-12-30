@@ -49,7 +49,7 @@ void OFieldDescGenWin::dispose()
 
 void OFieldDescGenWin::Init()
 {
-    OSL_ENSURE(GetEditorCtrl() != NULL, "OFieldDescGenWin::Init : have no editor control !");
+    OSL_ENSURE(GetEditorCtrl() != nullptr, "OFieldDescGenWin::Init : have no editor control !");
 
     m_pFieldControl->Init();
 }
@@ -64,11 +64,6 @@ void OFieldDescGenWin::SetReadOnly( bool bReadOnly )
 {
 
     m_pFieldControl->SetReadOnly(bReadOnly);
-}
-
-OUString OFieldDescGenWin::GetControlText( sal_uInt16 nControlId )
-{
-    return m_pFieldControl->GetControlText(nControlId);
 }
 
 void OFieldDescGenWin::SetControlText( sal_uInt16 nControlId, const OUString& rText )

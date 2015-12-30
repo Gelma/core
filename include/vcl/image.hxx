@@ -25,6 +25,8 @@
 #include <tools/resid.hxx>
 #include <tools/solar.h>
 #include <vcl/bitmapex.hxx>
+#include <vcl/outdev.hxx>
+
 #include <com/sun/star/uno/Reference.hxx>
 
 #include <vector>
@@ -71,6 +73,8 @@ public:
     bool            operator==( const Image& rImage ) const;
     bool            operator!=( const Image& rImage ) const { return !(Image::operator==( rImage )); }
 
+    void Draw(OutputDevice* pOutDev, const Point& rPos, DrawImageFlags nStyle, const Size* pSize = nullptr);
+
 private:
 
     ImplImage*             mpImplData;
@@ -83,9 +87,8 @@ class VCL_DLLPUBLIC ImageList
 public:
                     explicit ImageList( sal_uInt16 nInit = 8, sal_uInt16 nGrow = 4 );
                     explicit ImageList( const ResId& rResId );
-                    ImageList( const ::std::vector< OUString >& rNameVector,
-                               const OUString& rPrefix,
-                               const Color* pMaskColor = NULL );
+                    ImageList( const std::vector<OUString>& rNameVector,
+                               const OUString& rPrefix);
                     ImageList( const ImageList& rImageList );
                     ~ImageList();
 
@@ -94,8 +97,8 @@ public:
     void                    InsertFromHorizontalBitmap( const ResId& rResId,
                                     sal_uInt16       nCount,
                                     const Color *pNonAlphaMaskColor,
-                                    const Color *pSearchColors = NULL,
-                                    const Color *pReplaceColors = NULL,
+                                    const Color *pSearchColors = nullptr,
+                                    const Color *pReplaceColors = nullptr,
                                     sal_uLong        nColorCount = 0);
     BitmapEx        GetAsHorizontalStrip() const;
     sal_uInt16          GetImageCount() const;

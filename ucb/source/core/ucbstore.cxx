@@ -111,25 +111,23 @@ PropertySetMap_Impl;
 // class PropertySetInfo_Impl
 class PropertySetInfo_Impl : public cppu::WeakImplHelper < XPropertySetInfo >
 {
-    Reference< XComponentContext >    m_xContext;
     Sequence< Property >*             m_pProps;
     PersistentPropertySet*            m_pOwner;
 
 public:
-    PropertySetInfo_Impl( const Reference< XComponentContext >& xContext,
-                          PersistentPropertySet* pOwner );
+    PropertySetInfo_Impl( PersistentPropertySet* pOwner );
     virtual ~PropertySetInfo_Impl();
 
     // XPropertySetInfo
     virtual Sequence< Property > SAL_CALL getProperties()
-        throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception ) override;
     virtual Property SAL_CALL getPropertyByName( const OUString& aName )
-        throw( UnknownPropertyException, RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( UnknownPropertyException, RuntimeException, std::exception ) override;
     virtual sal_Bool SAL_CALL hasPropertyByName( const OUString& Name )
-        throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception ) override;
 
     // Non-interface methods.
-    void reset() { delete m_pProps; m_pProps = 0; }
+    void reset() { delete m_pProps; m_pProps = nullptr; }
 };
 
 
@@ -165,7 +163,6 @@ UcbStore::UcbStore( const Reference< XComponentContext >& xContext )
 // virtual
 UcbStore::~UcbStore()
 {
-    delete m_pImpl;
 }
 
 
@@ -239,8 +236,8 @@ struct PropertySetRegistry_Impl
     Reference< XInterface >           m_xRootReadAccess;
     Reference< XInterface >           m_xRootWriteAccess;
     osl::Mutex                        m_aMutex;
-    bool                          m_bTriedToGetRootReadAccess;  // #82494#
-    bool                          m_bTriedToGetRootWriteAccess; // #82494#
+    bool                              m_bTriedToGetRootReadAccess;
+    bool                              m_bTriedToGetRootWriteAccess;
 
     explicit PropertySetRegistry_Impl(const Sequence<Any> &rInitArgs)
         : m_aInitArgs(rInitArgs)
@@ -268,7 +265,6 @@ PropertySetRegistry::PropertySetRegistry(
 // virtual
 PropertySetRegistry::~PropertySetRegistry()
 {
-    delete m_pImpl;
 }
 
 
@@ -317,7 +313,7 @@ PropertySetRegistry::openPropertySet( const OUString& key, sal_Bool create )
                     // Yep!
                     return Reference< XPersistentPropertySet >(
                                             new PersistentPropertySet(
-                                                    m_xContext, *this, key ) );
+                                                    *this, key ) );
                 }
                 else if ( create )
                 {
@@ -352,11 +348,6 @@ PropertySetRegistry::openPropertySet( const OUString& key, sal_Bool create )
                             {
                                 // Fill new item...
 
-//                              // Set Values
-//                              xNameReplace->replaceByName(
-//                                      OUString("Values"),
-//                                      makeAny( ... ) );
-
                                 // Insert new item.
                                 xContainer->insertByName(
                                         key, makeAny( xNameReplace ) );
@@ -365,7 +356,7 @@ PropertySetRegistry::openPropertySet( const OUString& key, sal_Bool create )
 
                                 return Reference< XPersistentPropertySet >(
                                             new PersistentPropertySet(
-                                                    m_xContext, *this, key ) );
+                                                    *this, key ) );
                             }
                         }
                         catch (const IllegalArgumentException&)
@@ -481,7 +472,7 @@ void SAL_CALL PropertySetRegistry::removePropertySet( const OUString& key )
 
 
 // virtual
-com::sun::star::uno::Type SAL_CALL PropertySetRegistry::getElementType()
+css::uno::Type SAL_CALL PropertySetRegistry::getElementType()
     throw( RuntimeException, std::exception )
 {
     return cppu::UnoType<XPersistentPropertySet>::get();
@@ -792,9 +783,7 @@ void PropertySetRegistry::renamePropertySet( const OUString& rOldKey,
                             Any aAny =
                                 xRootHierNameAccess->getByHierarchicalName(
                                     aNewKey1 );
-                            xNewPropNameReplace->replaceByName(
-                                OUString("Handle"),
-                                aAny );
+                            xNewPropNameReplace->replaceByName( "Handle", aAny );
 
                             // ... value
                             aNewKey1 = aKey;
@@ -802,9 +791,7 @@ void PropertySetRegistry::renamePropertySet( const OUString& rOldKey,
                             aAny =
                                 xRootHierNameAccess->getByHierarchicalName(
                                     aNewKey1 );
-                            xNewPropNameReplace->replaceByName(
-                                OUString("Value"),
-                                aAny );
+                            xNewPropNameReplace->replaceByName( "Value", aAny );
 
                             // ... state
                             aNewKey1 = aKey;
@@ -812,9 +799,7 @@ void PropertySetRegistry::renamePropertySet( const OUString& rOldKey,
                             aAny =
                                 xRootHierNameAccess->getByHierarchicalName(
                                     aNewKey1 );
-                            xNewPropNameReplace->replaceByName(
-                                OUString("State"),
-                                aAny );
+                            xNewPropNameReplace->replaceByName( "State", aAny );
 
                             // ... attributes
                             aNewKey1 = aKey;
@@ -822,9 +807,7 @@ void PropertySetRegistry::renamePropertySet( const OUString& rOldKey,
                             aAny =
                                 xRootHierNameAccess->getByHierarchicalName(
                                     aNewKey1 );
-                            xNewPropNameReplace->replaceByName(
-                                OUString("Attributes"),
-                                aAny );
+                            xNewPropNameReplace->replaceByName( "Attributes", aAny );
 
                             // Insert new item.
                             xNewContainer->insertByName(
@@ -965,7 +948,7 @@ Reference< XInterface > PropertySetRegistry::getRootConfigReadAccess()
 
         if ( !m_pImpl->m_xRootReadAccess.is() )
         {
-            if ( m_pImpl->m_bTriedToGetRootReadAccess ) // #82494#
+            if ( m_pImpl->m_bTriedToGetRootReadAccess )
             {
                 OSL_FAIL( "PropertySetRegistry::getRootConfigReadAccess - "
                             "Unable to read any config data! -> #82494#" );
@@ -987,7 +970,7 @@ Reference< XInterface > PropertySetRegistry::getRootConfigReadAccess()
 
                 m_pImpl->m_xRootReadAccess =
                     m_pImpl->m_xConfigProvider->createInstanceWithArguments(
-                        OUString( "com.sun.star.configuration.ConfigurationAccess" ),
+                        "com.sun.star.configuration.ConfigurationAccess",
                         aArguments );
 
                 if ( m_pImpl->m_xRootReadAccess.is() )
@@ -1023,7 +1006,7 @@ Reference< XInterface > PropertySetRegistry::getConfigWriteAccess(
 
         if ( !m_pImpl->m_xRootWriteAccess.is() )
         {
-            if ( m_pImpl->m_bTriedToGetRootWriteAccess ) // #82494#
+            if ( m_pImpl->m_bTriedToGetRootWriteAccess )
             {
                 OSL_FAIL( "PropertySetRegistry::getConfigWriteAccess - "
                             "Unable to write any config data! -> #82494#" );
@@ -1049,7 +1032,7 @@ Reference< XInterface > PropertySetRegistry::getConfigWriteAccess(
 
                 m_pImpl->m_xRootWriteAccess =
                     m_pImpl->m_xConfigProvider->createInstanceWithArguments(
-                        OUString( "com.sun.star.configuration.ConfigurationUpdateAccess" ),
+                        "com.sun.star.configuration.ConfigurationUpdateAccess",
                         aArguments );
 
                 OSL_ENSURE( m_pImpl->m_xRootWriteAccess.is(),
@@ -1117,9 +1100,9 @@ struct PersistentPropertySet_Impl
 
     PersistentPropertySet_Impl( PropertySetRegistry& rCreator,
                                 const OUString& rKey )
-    : m_pCreator( &rCreator ), m_pInfo( NULL ), m_aKey( rKey ),
-      m_pDisposeEventListeners( NULL ), m_pPropSetChangeListeners( NULL ),
-      m_pPropertyChangeListeners( NULL )
+    : m_pCreator( &rCreator ), m_pInfo( nullptr ), m_aKey( rKey ),
+      m_pDisposeEventListeners( nullptr ), m_pPropSetChangeListeners( nullptr ),
+      m_pPropertyChangeListeners( nullptr )
     {
         m_pCreator->acquire();
     }
@@ -1148,11 +1131,9 @@ struct PersistentPropertySet_Impl
 
 
 PersistentPropertySet::PersistentPropertySet(
-                        const Reference< XComponentContext >& xContext,
                         PropertySetRegistry& rCreator,
                         const OUString& rKey )
-: m_xContext( xContext ),
-  m_pImpl( new PersistentPropertySet_Impl( rCreator, rKey ) )
+: m_pImpl( new PersistentPropertySet_Impl( rCreator, rKey ) )
 {
     // register at creator.
     rCreator.add( this );
@@ -1164,8 +1145,6 @@ PersistentPropertySet::~PersistentPropertySet()
 {
     // deregister at creator.
     m_pImpl->m_pCreator->remove( this );
-
-    delete m_pImpl;
 }
 
 // XServiceInfo methods.
@@ -1250,7 +1229,7 @@ Reference< XPropertySetInfo > SAL_CALL PersistentPropertySet::getPropertySetInfo
     PropertySetInfo_Impl*& rpInfo = m_pImpl->m_pInfo;
     if ( !rpInfo )
     {
-        rpInfo = new PropertySetInfo_Impl( m_xContext, this );
+        rpInfo = new PropertySetInfo_Impl( this );
         rpInfo->acquire();
     }
     return Reference< XPropertySetInfo >( rpInfo );
@@ -1308,13 +1287,11 @@ void SAL_CALL PersistentPropertySet::setPropertyValue( const OUString& aProperty
                     }
 
                     // Write value
-                    xNameReplace->replaceByName(
-                                    OUString("Value"),
-                                    aValue );
+                    xNameReplace->replaceByName( "Value", aValue );
 
                     // Write state ( Now it is a directly set value )
                     xNameReplace->replaceByName(
-                                    OUString("State"),
+                                    "State",
                                     makeAny(
                                         sal_Int32(
                                             PropertyState_DIRECT_VALUE ) ) );
@@ -1588,24 +1565,24 @@ void SAL_CALL PersistentPropertySet::addProperty(
 
                 // Set handle
                 xNameReplace->replaceByName(
-                                    OUString("Handle"),
+                                    "Handle",
                                     makeAny( sal_Int32( -1 ) ) );
 
                 // Set default value
                 xNameReplace->replaceByName(
-                                    OUString("Value"),
+                                    "Value",
                                     DefaultValue );
 
                 // Set state ( always "default" )
                 xNameReplace->replaceByName(
-                                    OUString("State"),
+                                    "State",
                                     makeAny(
                                         sal_Int32(
                                             PropertyState_DEFAULT_VALUE ) ) );
 
                 // Set attributes
                 xNameReplace->replaceByName(
-                                    OUString("Attributes"),
+                                    "Attributes",
                                     makeAny( sal_Int32( Attributes ) ) );
 
                 // Insert new item.
@@ -2041,7 +2018,7 @@ void SAL_CALL PersistentPropertySet::setPropertyValues(
                     {
                         // Write handle
                         xNameReplace->replaceByName(
-                                    OUString("Handle"),
+                                    "Handle",
                                     makeAny( rNewValue.Handle ) );
 
                         // Save old value
@@ -2052,12 +2029,12 @@ void SAL_CALL PersistentPropertySet::setPropertyValues(
                                                                 aValueName );
                         // Write value
                         xNameReplace->replaceByName(
-                                    OUString("Value"),
+                                    "Value",
                                     rNewValue.Value );
 
                         // Write state ( Now it is a directly set value )
                         xNameReplace->replaceByName(
-                                    OUString("State"),
+                                    "State",
                                     makeAny(
                                         sal_Int32(
                                             PropertyState_DIRECT_VALUE ) ) );
@@ -2211,10 +2188,8 @@ PropertySetRegistry& PersistentPropertySet::getPropertySetRegistry()
 
 
 PropertySetInfo_Impl::PropertySetInfo_Impl(
-                        const Reference< XComponentContext >& xContext,
                         PersistentPropertySet* pOwner )
-: m_xContext( xContext ),
-  m_pProps( NULL ),
+: m_pProps( nullptr ),
   m_pOwner( pOwner )
 {
 }

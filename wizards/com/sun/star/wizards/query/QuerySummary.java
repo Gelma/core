@@ -26,10 +26,11 @@ import com.sun.star.wizards.db.FieldColumn;
 import com.sun.star.wizards.db.QueryMetaData;
 import com.sun.star.wizards.ui.FilterComponent;
 
+import static com.sun.star.wizards.ui.UIConsts.RID_QUERY;
+
 public class QuerySummary extends QueryMetaData
 {
 
-    static final private int RID_QUERY = 2300;
     private String sSummary;
     private Resource oResource;
     private final String sSeparator;
@@ -159,17 +160,17 @@ public class QuerySummary extends QueryMetaData
 
     private String ArrayFieldsToString(int _InitResID, String[] _FieldNames)
     {
-        String sReturn = oResource.getResText(_InitResID);
+        StringBuilder sReturn = new StringBuilder(oResource.getResText(_InitResID));
         int FieldCount = _FieldNames.length;
         for (int i = 0; i < FieldCount; i++)
         {
-            sReturn += this.getFieldColumnByDisplayName(_FieldNames[i]).getFieldTitle();
+            sReturn.append(this.getFieldColumnByDisplayName(_FieldNames[i]).getFieldTitle());
             if (i < FieldCount - 1)
             {
-                sReturn += sSeparator;
+                sReturn.append(sSeparator);
             }
         }
-        return sReturn;
+        return sReturn.toString();
     }
 
     private String combinePartString(int _InitResID, String[][] _FieldNames, int _AlternativeResID, int _BaseStringID, String[] _ReplaceTags)
@@ -184,7 +185,7 @@ public class QuerySummary extends QueryMetaData
     private String ArrayFieldsToString(int _InitResID, String[][] _FieldNames, int _BaseStringID, String[] _ReplaceTags)
     {
         String CurString = PropertyNames.EMPTY_STRING;
-        String sReturn = oResource.getResText(_InitResID);
+        StringBuilder sReturn = new StringBuilder(oResource.getResText(_InitResID));
         int FieldCount = _FieldNames.length;
         if (FieldCount > 0)
         {
@@ -212,13 +213,13 @@ public class QuerySummary extends QueryMetaData
                         CurString = JavaTools.replaceSubString(CurString, _FieldNames[i][a], _ReplaceTags[a]);
                     }
                 }
-                sReturn += CurString;
+                sReturn.append(CurString);
                 if (i < FieldCount - 1)
                 {
-                    sReturn += sSeparator;
+                    sReturn.append(sSeparator);
                 }
             }
         }
-        return sReturn;
+        return sReturn.toString();
     }
 }

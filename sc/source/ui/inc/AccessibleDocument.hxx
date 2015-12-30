@@ -44,26 +44,27 @@ namespace utl
         <code>AccessibleContext</code> service.
 */
 
-typedef cppu::ImplHelper3< ::com::sun::star::accessibility::XAccessibleSelection,
-                            ::com::sun::star::accessibility::XAccessibleExtendedAttributes,
-                            ::com::sun::star::view::XSelectionChangeListener >
+typedef cppu::ImplHelper3< css::accessibility::XAccessibleSelection,
+                            css::accessibility::XAccessibleExtendedAttributes,
+                            css::view::XSelectionChangeListener >
                     ScAccessibleDocumentImpl;
 
 class ScAccessibleDocument
     :   public ScAccessibleDocumentBase,
         public ScAccessibleDocumentImpl,
-        public com::sun::star::accessibility::XAccessibleGetAccFlowTo,
+        public css::accessibility::XAccessibleGetAccFlowTo,
         public accessibility::IAccessibleViewForwarder
 {
 public:
     //=====  internal  ========================================================
     ScAccessibleDocument(
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessible>& rxParent,
+        const css::uno::Reference<css::accessibility::XAccessible>& rxParent,
         ScTabViewShell* pViewShell,
         ScSplitPos eSplitPos);
 
-    virtual void Init() SAL_OVERRIDE;
+    void PreInit();
+
+    virtual void Init() override;
 
     DECL_LINK_TYPED( WindowChildEventListener, VclWindowEvent&, void );
 protected:
@@ -73,99 +74,99 @@ protected:
 
 public:
 
-     virtual void SAL_CALL disposing() SAL_OVERRIDE;
+     virtual void SAL_CALL disposing() override;
 
    ///=====  SfxListener  =====================================================
 
-    virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+    virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
     ///=====  XInterface  =====================================================
 
-    virtual ::com::sun::star::uno::Any SAL_CALL queryInterface(
-        ::com::sun::star::uno::Type const & rType )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Any SAL_CALL queryInterface(
+        css::uno::Type const & rType )
+        throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual void SAL_CALL acquire() throw () SAL_OVERRIDE;
+    virtual void SAL_CALL acquire() throw () override;
 
-    virtual void SAL_CALL release() throw () SAL_OVERRIDE;
+    virtual void SAL_CALL release() throw () override;
 
     ///=====  XAccessibleComponent  ============================================
 
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible >
+    virtual css::uno::Reference< css::accessibility::XAccessible >
         SAL_CALL getAccessibleAtPoint(
-        const ::com::sun::star::awt::Point& rPoint )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        const css::awt::Point& rPoint )
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL grabFocus(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     ///=====  XAccessibleContext  ==============================================
 
     /// Return the number of currently visible children.
     virtual sal_Int32 SAL_CALL
         getAccessibleChildCount()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     /// Return the specified child or NULL if index is invalid.
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible> SAL_CALL
+    virtual css::uno::Reference< css::accessibility::XAccessible> SAL_CALL
         getAccessibleChild(sal_Int32 nIndex)
-        throw (::com::sun::star::uno::RuntimeException,
-                ::com::sun::star::lang::IndexOutOfBoundsException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException,
+                css::lang::IndexOutOfBoundsException, std::exception) override;
 
     /// Return the set of current states.
-    virtual ::com::sun::star::uno::Reference<
-            ::com::sun::star::accessibility::XAccessibleStateSet> SAL_CALL
+    virtual css::uno::Reference<
+            css::accessibility::XAccessibleStateSet> SAL_CALL
         getAccessibleStateSet()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual OUString SAL_CALL
         getAccessibleName()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual ::com::sun::star::uno::Any SAL_CALL getExtendedAttributes()
-        throw (::com::sun::star::lang::IndexOutOfBoundsException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE ;
+    virtual css::uno::Any SAL_CALL getExtendedAttributes()
+        throw (css::lang::IndexOutOfBoundsException, css::uno::RuntimeException, std::exception) override ;
     ///=====  XAccessibleSelection  ===========================================
 
     virtual void SAL_CALL
         selectAccessibleChild( sal_Int32 nChildIndex )
-        throw (::com::sun::star::lang::IndexOutOfBoundsException,
-        ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::lang::IndexOutOfBoundsException,
+        css::uno::RuntimeException, std::exception) override;
 
     virtual sal_Bool SAL_CALL
         isAccessibleChildSelected( sal_Int32 nChildIndex )
-        throw (::com::sun::star::lang::IndexOutOfBoundsException,
-        ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::lang::IndexOutOfBoundsException,
+        css::uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL
         clearAccessibleSelection(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL
         selectAllAccessibleChildren(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual sal_Int32 SAL_CALL
         getSelectedAccessibleChildCount(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual ::com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessible > SAL_CALL
+    virtual css::uno::Reference<
+        css::accessibility::XAccessible > SAL_CALL
         getSelectedAccessibleChild( sal_Int32 nSelectedChildIndex )
-        throw (::com::sun::star::lang::IndexOutOfBoundsException,
-        ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::lang::IndexOutOfBoundsException,
+        css::uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL
         deselectAccessibleChild( sal_Int32 nChildIndex )
-        throw (::com::sun::star::lang::IndexOutOfBoundsException,
-        ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::lang::IndexOutOfBoundsException,
+        css::uno::RuntimeException, std::exception) override;
 
     ///=====  XSelectionListener  =============================================
 
-    virtual void SAL_CALL selectionChanged( const ::com::sun::star::lang::EventObject& aEvent )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL selectionChanged( const css::lang::EventObject& aEvent )
+        throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual void SAL_CALL disposing( const ::com::sun::star::lang::EventObject& Source )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing( const css::lang::EventObject& Source )
+        throw (css::uno::RuntimeException, std::exception) override;
 
     ///=====  XServiceInfo  ===================================================
 
@@ -173,26 +174,26 @@ public:
     */
     virtual OUString SAL_CALL
         getImplementationName()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     /** Returns a list of all supported services.
     */
-    virtual ::com::sun::star::uno::Sequence< OUString> SAL_CALL
+    virtual css::uno::Sequence< OUString> SAL_CALL
         getSupportedServiceNames()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     ///=====  XTypeProvider  ===================================================
 
     /// returns the possible types
-    virtual ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Type > SAL_CALL
+    virtual css::uno::Sequence< css::uno::Type > SAL_CALL
         getTypes()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     /** Returns a implementation id.
     */
-    virtual ::com::sun::star::uno::Sequence<sal_Int8> SAL_CALL
+    virtual css::uno::Sequence<sal_Int8> SAL_CALL
         getImplementationId()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     ///=====  IAccessibleViewForwarder  ========================================
 
@@ -203,7 +204,7 @@ public:
             The rectangle of the visible part of the document. The values
             are, contrary to the base class, in internal coordinates.
      */
-    virtual Rectangle GetVisibleArea() const SAL_OVERRIDE;
+    virtual Rectangle GetVisibleArea() const override;
 
     /** Transform the specified point from internal coordinates to an
         absolute screen position.
@@ -215,7 +216,7 @@ public:
             The same point but in screen coordinates relative to the upper
             left corner of the (current) screen.
      */
-    virtual Point LogicToPixel (const Point& rPoint) const SAL_OVERRIDE;
+    virtual Point LogicToPixel (const Point& rPoint) const override;
 
     /** Transform the specified size from internal coordinates to a screen
     * oriented pixel size.
@@ -226,42 +227,41 @@ public:
         @return
             The same size but in screen coordinates.
      */
-    virtual Size LogicToPixel (const Size& rSize) const SAL_OVERRIDE;
+    virtual Size LogicToPixel (const Size& rSize) const override;
 
     ///======== internal =====================================================
 
     utl::AccessibleRelationSetHelper* GetRelationSet(const ScAddress* pAddress) const;
 
-    ::com::sun::star::uno::Reference
-        < ::com::sun::star::accessibility::XAccessible >
+    css::uno::Reference< css::accessibility::XAccessible >
         GetAccessibleSpreadsheet();
 
 protected:
     /// Return this object's description.
     virtual OUString SAL_CALL
         createAccessibleDescription()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     /// Return the object's current name.
     virtual OUString SAL_CALL
         createAccessibleName()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     /// Return the object's current bounding box relative to the desktop.
     virtual Rectangle GetBoundingBoxOnScreen() const
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     /// Return the object's current bounding box relative to the parent object.
     virtual Rectangle GetBoundingBox() const
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
 private:
     ScTabViewShell* mpViewShell;
     ScSplitPos      meSplitPos;
-    ScAccessibleSpreadsheet* mpAccessibleSpreadsheet;
+    rtl::Reference<ScAccessibleSpreadsheet> mpAccessibleSpreadsheet;
     ScChildrenShapes* mpChildrenShapes;
     ScAccessibleEditObject* mpTempAccEdit;
-    com::sun::star::uno::Reference<com::sun::star::accessibility::XAccessible> mxTempAcc;
+    css::uno::Reference<css::accessibility::XAccessible> mxTempAcc;
     Rectangle maVisArea;
     bool mbCompleteSheetSelected;
 
@@ -274,30 +274,29 @@ private:
     bool IsTableSelected() const;
 
     bool IsDefunc(
-        const com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessibleStateSet>& rxParentStates);
+        const css::uno::Reference<css::accessibility::XAccessibleStateSet>& rxParentStates);
 
-    void AddChild(const com::sun::star::uno::Reference<com::sun::star::accessibility::XAccessible>& xAcc, bool bFireEvent);
-    void RemoveChild(const com::sun::star::uno::Reference<com::sun::star::accessibility::XAccessible>& xAcc, bool bFireEvent);
+    void AddChild(const css::uno::Reference<css::accessibility::XAccessible>& xAcc, bool bFireEvent);
+    void RemoveChild(const css::uno::Reference<css::accessibility::XAccessible>& xAcc, bool bFireEvent);
 
     OUString GetCurrentCellName() const;
     static OUString GetCurrentCellDescription();
 
     Rectangle GetVisibleArea_Impl() const;
-    com::sun::star::uno::Sequence< com::sun::star::uno::Any > GetScAccFlowToSequence();
+    css::uno::Sequence< css::uno::Any > GetScAccFlowToSequence();
 public:
     ScDocument *GetDocument() const ;
     ScAddress   GetCurCellAddress() const;
     //=====  XAccessibleGetAccFromXShape  ============================================
-    ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any >
-        SAL_CALL getAccFlowTo(const ::com::sun::star::uno::Any& rAny, sal_Int32 nType)
-        throw ( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    css::uno::Sequence< css::uno::Any >
+        SAL_CALL getAccFlowTo(const css::uno::Any& rAny, sal_Int32 nType)
+        throw ( css::uno::RuntimeException, std::exception ) override;
 
      virtual sal_Int32 SAL_CALL getForeground(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual sal_Int32 SAL_CALL getBackground(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 };
 
 #endif

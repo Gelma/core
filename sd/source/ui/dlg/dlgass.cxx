@@ -69,7 +69,6 @@
 
 #include <comphelper/processfactory.hxx>
 #include <vector>
-#include <boost/ptr_container/ptr_vector.hpp>
 
 using namespace ::com::sun::star;
 using namespace ::com::sun::star::uno;
@@ -93,7 +92,7 @@ public:
 class NextButton
 {
 public:
-    NextButton (vcl::Window* pParent);
+    explicit NextButton (vcl::Window* pParent);
 
     void ForceFocusEventBroadcast();
     void SetClickHdl (const Link<Button*,void>& rLink);
@@ -167,7 +166,7 @@ public:
     uno::Sequence < beans::NamedValue > GetPassword( const OUString& rPath );
     void DeletePasswords();
 
-    boost::ptr_vector< PasswordEntry > maPasswordList;
+    std::vector< PasswordEntry > maPasswordList;
 
     OUString maDocFile;
     OUString maLayoutFile;
@@ -225,22 +224,24 @@ public:
     static OUString GetUiTextForCommand (const OUString& aCommandURL);
     static Image GetUiIconForCommand (const OUString& aCommandURL);
 
-    DECL_LINK( SelectFileHdl, void * );
-    DECL_LINK( SelectRegionHdl, ListBox * );
+    DECL_LINK_TYPED( SelectFileHdl, ListBox&, void );
+    DECL_LINK_TYPED( SelectRegionHdl, ListBox&, void );
     DECL_LINK_TYPED( UpdatePreviewHdl, Idle *, void );
     DECL_LINK_TYPED( UpdatePageListHdl, Idle *, void );
     DECL_LINK_TYPED( StartTypeHdl, Button *, void );
-    DECL_LINK( SelectTemplateHdl, void * );
+    DECL_LINK_TYPED( SelectTemplateHdl, ListBox&, void);
     DECL_LINK_TYPED( NextPageHdl, Button*, void );
     DECL_LINK_TYPED( LastPageHdl, Button*, void );
     DECL_LINK_TYPED( PreviewFlagHdl, Button*, void );
     DECL_LINK_TYPED( EffectPreviewIdleHdl, Idle *, void );
     DECL_LINK_TYPED( EffectPreviewClickHdl, SdDocPreviewWin&, void );
-    DECL_LINK( SelectLayoutHdl, void * );
+    DECL_LINK_TYPED( SelectLayoutHdl, ListBox&, void );
     DECL_LINK_TYPED( PageSelectHdl, SvTreeListBox*, void );
     DECL_LINK_TYPED( PresTypeHdl, Button*, void );
-    DECL_LINK( UpdateUserDataHdl, void * );
-    DECL_LINK( SelectEffectHdl, void* );
+    DECL_LINK_TYPED( UpdateUserDataHdl, Edit&, void );
+    DECL_LINK_TYPED( SelectEffectHdl, ListBox&, void);
+    DECL_LINK_TYPED( SelectVariantHdl, ListBox&, void);
+    DECL_LINK_TYPED( SelectSpeedHdl, ListBox&, void);
     DECL_LINK_TYPED( OpenButtonHdl, Button *, void );
 
     OUString            maCreateStr;
@@ -288,7 +289,9 @@ public:
     VclPtr<FixedText>          mpPage3EffectFL;
     VclPtr<FixedText>          mpPage3EffectFT;
     VclPtr<FadeEffectLB>       mpPage3EffectLB;
+    VclPtr<FixedText>          mpPage3VariantFT;
     VclPtr<FixedText>          mpPage3SpeedFT;
+    VclPtr<ListBox>            mpPage3VariantLB;
     VclPtr<ListBox>            mpPage3SpeedLB;
     VclPtr<FixedText>          mpPage3PresTypeFL;
     VclPtr<RadioButton>        mpPage3PresTypeLiveRB;
@@ -320,10 +323,10 @@ public:
 };
 
 AssistentDlgImpl::AssistentDlgImpl( vcl::Window* pWindow, const Link<ListBox&,void>& rFinishLink, bool bAutoPilot ) :
-    mpTemplateRegion(NULL),
-    mpLayoutRegion(NULL),
+    mpTemplateRegion(nullptr),
+    mpLayoutRegion(nullptr),
     mbUserDataDirty(false),
-    xDocShell (NULL),
+    xDocShell (nullptr),
     mpWindowUpdater (new WindowUpdater()),
     mbPreview(true),
     mnShowPage(0),
@@ -477,6 +480,8 @@ AssistentDlgImpl::AssistentDlgImpl( vcl::Window* pWindow, const Link<ListBox&,vo
     assDlg->get(mpPage3EffectFL, "page3EffectLabel");
     assDlg->get(mpPage3EffectFT, "effectLabel");
     assDlg->get(mpPage3EffectLB, "effectCombobox");
+    assDlg->get(mpPage3VariantFT, "variantLabel");
+    assDlg->get(mpPage3VariantLB, "variantCombobox");
     assDlg->get(mpPage3SpeedFT, "speedLabel");
     assDlg->get(mpPage3SpeedLB, "speedCombobox");
     assDlg->get(mpPage3PresTypeFL, "presTypeLabel");
@@ -496,6 +501,8 @@ AssistentDlgImpl::AssistentDlgImpl( vcl::Window* pWindow, const Link<ListBox&,vo
     maAssistentFunc.InsertControl(3, mpPage3EffectFL );
     maAssistentFunc.InsertControl(3, mpPage3EffectFT );
     maAssistentFunc.InsertControl(3, mpPage3EffectLB );
+    maAssistentFunc.InsertControl(3, mpPage3VariantFT );
+    maAssistentFunc.InsertControl(3, mpPage3VariantLB );
     maAssistentFunc.InsertControl(3, mpPage3SpeedFT );
     maAssistentFunc.InsertControl(3, mpPage3SpeedLB );
     maAssistentFunc.InsertControl(3, mpPage3PresTypeFL );
@@ -511,11 +518,14 @@ AssistentDlgImpl::AssistentDlgImpl( vcl::Window* pWindow, const Link<ListBox&,vo
     mpPage3EffectLB->SetSelectHdl( LINK(this,AssistentDlgImpl,SelectEffectHdl ));
     mpPage3EffectLB->SetDropDownLineCount( 12 );
 
+    mpPage3VariantLB->SetSelectHdl( LINK(this,AssistentDlgImpl,SelectVariantHdl ));
+    mpPage3VariantLB->SetDropDownLineCount( 4 );
+
     mpPage3SpeedLB->InsertEntry( SD_RESSTR(STR_SLOW) );
     mpPage3SpeedLB->InsertEntry( SD_RESSTR(STR_MEDIUM) );
     mpPage3SpeedLB->InsertEntry( SD_RESSTR(STR_FAST) );
     mpPage3SpeedLB->SetDropDownLineCount( 3 );
-    mpPage3SpeedLB->SetSelectHdl( LINK(this,AssistentDlgImpl,SelectEffectHdl ));
+    mpPage3SpeedLB->SetSelectHdl( LINK(this,AssistentDlgImpl,SelectSpeedHdl ));
     mpPage3SpeedLB->SelectEntryPos( 1 );
 
     mpPage3PresTypeLiveRB->Check();
@@ -611,8 +621,8 @@ AssistentDlgImpl::AssistentDlgImpl( vcl::Window* pWindow, const Link<ListBox&,vo
         ProvideTemplates();
 
         //find aStandardTemplate in maPresentList
-        TemplateDir*   pStandardTemplateDir = 0;
-        TemplateEntry* pStandardTemplateEntry = 0;
+        TemplateDir*   pStandardTemplateDir = nullptr;
+        TemplateEntry* pStandardTemplateEntry = nullptr;
 
         std::vector<TemplateDir*>::iterator I;
         for (I=maPresentList.begin(); I!=maPresentList.end(); ++I)
@@ -639,7 +649,7 @@ AssistentDlgImpl::AssistentDlgImpl( vcl::Window* pWindow, const Link<ListBox&,vo
             mpPage1RegionLB->SelectEntry( pStandardTemplateDir->msRegion );
             SelectTemplateRegion( pStandardTemplateDir->msRegion );
             mpPage1TemplateLB->SelectEntry( pStandardTemplateEntry->msTitle );
-            SelectTemplateHdl(mpPage1TemplateLB);
+            SelectTemplateHdl(*mpPage1TemplateLB);
         }
     }
 }
@@ -669,19 +679,19 @@ void AssistentDlgImpl::CloseDocShell()
         if( xCloseable.is() )
         {
             xCloseable->close( sal_True );
-            xDocShell = NULL;
+            xDocShell = nullptr;
         }
         else
         {
             xDocShell->DoClose();
-            xDocShell = NULL;
+            xDocShell = nullptr;
         }
     }
 }
 
 void AssistentDlgImpl::EndDialog( long )
 {
-    mpWindow = NULL;
+    mpWindow = nullptr;
 }
 
 void    AssistentDlgImpl::ScanDocmenu()
@@ -799,7 +809,7 @@ void AssistentDlgImpl::TemplateScanDone (
     for (i=0,I=maPresentList.begin(); I!=maPresentList.end(); ++I,++i)
     {
         TemplateDir* pDir = *I;
-        if (pDir == NULL)
+        if (pDir == nullptr)
             continue;
 
         // HACK! presnt directory is always initially selected.
@@ -807,7 +817,7 @@ void AssistentDlgImpl::TemplateScanDone (
         if (!pDir->maEntries.empty() )
         {
             TemplateEntry* pEntry = pDir->maEntries.front();
-            if (pEntry != NULL)
+            if (pEntry != nullptr)
                 if (pEntry->msPath.indexOf("presnt") != -1)
                     nFirstEntry = i;
         }
@@ -824,7 +834,7 @@ void AssistentDlgImpl::TemplateScanDone (
     for (i=0,I=maPresentList.begin(); I!=maPresentList.end(); ++I,++i)
     {
         TemplateDir* pDir = *I;
-        if (pDir == NULL)
+        if (pDir == nullptr)
             continue;
 
         // HACK! layout directory is always initially selected.
@@ -832,7 +842,7 @@ void AssistentDlgImpl::TemplateScanDone (
         if (!pDir->maEntries.empty() )
         {
             TemplateEntry* pEntry = pDir->maEntries.front();
-            if (pEntry != NULL)
+            if (pEntry != nullptr)
                 if (pEntry->msPath.indexOf("layout") != -1)
                     nFirstEntry = i;
         }
@@ -896,7 +906,7 @@ OUString AssistentDlgImpl::GetDocFileName()
     if( GetStartType() == ST_TEMPLATE )
     {
         const sal_Int32 nEntry = mpPage1TemplateLB->GetSelectEntryPos();
-        TemplateEntry* pEntry = NULL;
+        TemplateEntry* pEntry = nullptr;
         if (mpTemplateRegion && nEntry != LISTBOX_ENTRY_NOTFOUND)
             pEntry = mpTemplateRegion->maEntries[nEntry];
 
@@ -925,7 +935,7 @@ OUString AssistentDlgImpl::GetDocFileName()
 OUString AssistentDlgImpl::GetLayoutFileName()
 {
     const sal_Int32 nEntry = mpPage2LayoutLB->GetSelectEntryPos();
-    TemplateEntry* pEntry = NULL;
+    TemplateEntry* pEntry = nullptr;
     if(nEntry != LISTBOX_ENTRY_NOTFOUND && nEntry > 0)
         pEntry = mpLayoutRegion->maEntries[nEntry-1];
 
@@ -941,8 +951,8 @@ SfxObjectShellLock AssistentDlgImpl::GetDocument()
     UpdatePageList();
 
     SfxObjectShell* pShell = xDocShell;
-    ::sd::DrawDocShell* pDocShell = PTR_CAST(::sd::DrawDocShell,pShell);
-    SdDrawDocument* pDoc = pDocShell?pDocShell->GetDoc():NULL;
+    ::sd::DrawDocShell* pDocShell = dynamic_cast< ::sd::DrawDocShell *>( pShell );
+    SdDrawDocument* pDoc = pDocShell?pDocShell->GetDoc():nullptr;
 
     if(pDoc)
     {
@@ -964,7 +974,7 @@ SfxObjectShellLock AssistentDlgImpl::GetDocument()
             SdPage* pPage = pDoc->GetSdPage( nPgRelNum, PK_STANDARD );
             if( mpPage5PageListCT->IsPageChecked(nPgAbsNum) )
             {
-                mpPage3EffectLB->applySelected(pPage);
+                mpPage3EffectLB->applySelected(pPage, *mpPage3VariantLB);
                 const sal_Int32 nPos = mpPage3SpeedLB->GetSelectEntryPos();
                 pPage->setTransitionDuration( (nPos == 0) ? 3.0 : (nPos == 1) ? 2.0 : 1.0 );
                 if(bKiosk)
@@ -990,7 +1000,7 @@ SfxObjectShellLock AssistentDlgImpl::GetDocument()
     }
 
     SfxObjectShellLock xRet = xDocShell;
-    xDocShell = NULL;
+    xDocShell = nullptr;
 
     return xRet;
 }
@@ -1028,7 +1038,7 @@ void AssistentDlgImpl::UpdatePage()
         {
             // Show elements on first page depending of start type
             SetStartType( GetStartType() );
-            mpPage1TemplateRB->Enable(true /*mbTemplatesReady*/);
+            mpPage1TemplateRB->Enable(/*mbTemplatesReady*/);
             break;
         }
 
@@ -1039,7 +1049,7 @@ void AssistentDlgImpl::UpdatePage()
 
             if( GetStartType() != ST_EMPTY )
             {
-                mpPage2Medium5RB->Enable( true );
+                mpPage2Medium5RB->Enable();
             }
             else
             {
@@ -1079,26 +1089,34 @@ void AssistentDlgImpl::UpdatePage()
 // UI-Handler
 // ********************************************************************
 
-IMPL_LINK( AssistentDlgImpl, SelectRegionHdl, ListBox *, pLB )
+IMPL_LINK_TYPED( AssistentDlgImpl, SelectRegionHdl, ListBox&, rLB, void )
 {
-    if( pLB == mpPage1RegionLB )
+    if( &rLB == mpPage1RegionLB )
     {
-        SelectTemplateRegion( pLB->GetSelectEntry() );
+        SelectTemplateRegion( rLB.GetSelectEntry() );
         SetStartType( ST_TEMPLATE );
         mpPage2Medium5RB->Check();
     }
     else
     {
-        SelectLayoutRegion( pLB->GetSelectEntry() );
+        SelectLayoutRegion( rLB.GetSelectEntry() );
     }
-
-    return 0;
 }
 
-IMPL_LINK_NOARG(AssistentDlgImpl, SelectEffectHdl)
+IMPL_LINK_NOARG_TYPED(AssistentDlgImpl, SelectEffectHdl, ListBox&, void)
 {
     maEffectPrevIdle.Start();
-    return 0;
+    mpPage3EffectLB->FillVariantLB(*mpPage3VariantLB);
+}
+
+IMPL_LINK_NOARG_TYPED(AssistentDlgImpl, SelectVariantHdl, ListBox&, void)
+{
+    maEffectPrevIdle.Start();
+}
+
+IMPL_LINK_NOARG_TYPED(AssistentDlgImpl, SelectSpeedHdl, ListBox&, void)
+{
+    maEffectPrevIdle.Start();
 }
 
 IMPL_LINK_NOARG_TYPED( AssistentDlgImpl, OpenButtonHdl, Button*, void )
@@ -1121,7 +1139,7 @@ IMPL_LINK_NOARG_TYPED(AssistentDlgImpl, EffectPreviewIdleHdl, Idle *, void)
             {
                 SdPage* pPage = pDoc->GetSdPage( mnShowPage, PK_STANDARD );
                 if( pPage )
-                    mpPage3EffectLB->applySelected(pPage);
+                    mpPage3EffectLB->applySelected(pPage, *mpPage3VariantLB);
             }
         }
         mpPreview->startPreview();
@@ -1142,26 +1160,23 @@ IMPL_LINK_NOARG_TYPED(AssistentDlgImpl, PreviewFlagHdl, Button*, void)
     }
 }
 
-IMPL_LINK_NOARG(AssistentDlgImpl, SelectTemplateHdl)
+IMPL_LINK_NOARG_TYPED(AssistentDlgImpl, SelectTemplateHdl, ListBox&, void)
 {
     SetStartType( ST_TEMPLATE );
     mpPage2Medium5RB->Check();
     mpPage2LayoutLB->SelectEntryPos(0);
     maPrevIdle.Start();
-    return 0;
 }
 
-IMPL_LINK_NOARG(AssistentDlgImpl, SelectLayoutHdl)
+IMPL_LINK_NOARG_TYPED(AssistentDlgImpl, SelectLayoutHdl, ListBox&, void)
 {
     maPrevIdle.Start();
-    return 0;
 }
 
-IMPL_LINK_NOARG(AssistentDlgImpl, SelectFileHdl)
+IMPL_LINK_NOARG_TYPED(AssistentDlgImpl, SelectFileHdl, ListBox&, void)
 {
     SetStartType( ST_OPEN );
     maPrevIdle.Start();
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(AssistentDlgImpl, PageSelectHdl, SvTreeListBox*, void)
@@ -1241,7 +1256,7 @@ IMPL_LINK_NOARG_TYPED(AssistentDlgImpl, PresTypeHdl, Button*, void)
     mpPage3LogoCB->Enable(bKiosk);
 }
 
-IMPL_LINK_NOARG(AssistentDlgImpl, UpdateUserDataHdl)
+IMPL_LINK_NOARG_TYPED(AssistentDlgImpl, UpdateUserDataHdl, Edit&, void)
 {
     mbUserDataDirty = true;
     OUString aTopic = mpPage4AskTopicEDT->GetText();
@@ -1250,8 +1265,6 @@ IMPL_LINK_NOARG(AssistentDlgImpl, UpdateUserDataHdl)
 
     if (aTopic.isEmpty() && aName.isEmpty() && aInfo.isEmpty())
         maDocFile.clear();
-
-    return 0;
 }
 
 // ********************************************************************
@@ -1274,7 +1287,7 @@ void AssistentDlgImpl::SelectTemplateRegion( const OUString& rRegion )
             if(GetStartType() == ST_TEMPLATE)
             {
                 mpPage1TemplateLB->SelectEntryPos( 0 );
-                SelectTemplateHdl(NULL);
+                SelectTemplateHdl(*mpPage1TemplateLB);
             }
             break;
         }
@@ -1309,9 +1322,9 @@ void AssistentDlgImpl::UpdateUserData()
     OUString aInfo  = mpPage4AskInfoEDT->GetText();
 
     SfxObjectShell* pShell = xDocShell;
-    DrawDocShell* pDocShell = PTR_CAST(DrawDocShell,pShell);
-    SdDrawDocument* pDoc = pDocShell?pDocShell->GetDoc():NULL;
-    SdPage* pPage = pDoc?pDoc->GetSdPage(0, PK_STANDARD):NULL;
+    DrawDocShell* pDocShell = dynamic_cast< DrawDocShell *>( pShell );
+    SdDrawDocument* pDoc = pDocShell?pDocShell->GetDoc():nullptr;
+    SdPage* pPage = pDoc?pDoc->GetSdPage(0, PK_STANDARD):nullptr;
 
     if (pPage && (!aTopic.isEmpty() || !aName.isEmpty() || !aInfo.isEmpty()))
     {
@@ -1325,7 +1338,7 @@ void AssistentDlgImpl::UpdateUserData()
             pObj  = dynamic_cast<SdrTextObj*>( pPage->GetPresObj( PRESOBJ_TITLE ) );
             if( pObj )
             {
-                pPage->SetObjText( pObj, NULL, PRESOBJ_TITLE, aTopic );
+                pPage->SetObjText( pObj, nullptr, PRESOBJ_TITLE, aTopic );
                 pObj->NbcSetStyleSheet( pPage->GetStyleSheetForPresObj( PRESOBJ_TITLE ), true );
                 pObj->SetEmptyPresObj(false);
             }
@@ -1342,7 +1355,7 @@ void AssistentDlgImpl::UpdateUserData()
             pObj = dynamic_cast<SdrTextObj*>( pPage->GetPresObj( PRESOBJ_OUTLINE ) );
             if( pObj )
             {
-                pPage->SetObjText( pObj, NULL, PRESOBJ_OUTLINE, aStrTmp );
+                pPage->SetObjText( pObj, nullptr, PRESOBJ_OUTLINE, aStrTmp );
                 pObj->NbcSetStyleSheet( pPage->GetStyleSheetForPresObj( PRESOBJ_OUTLINE ), true );
                 pObj->SetEmptyPresObj(false);
             }
@@ -1351,7 +1364,7 @@ void AssistentDlgImpl::UpdateUserData()
                 pObj = dynamic_cast<SdrTextObj*>( pPage->GetPresObj( PRESOBJ_TEXT ) );
                 if( pObj )
                 {
-                    pPage->SetObjText( pObj, NULL, PRESOBJ_TEXT, aStrTmp );
+                    pPage->SetObjText( pObj, nullptr, PRESOBJ_TEXT, aStrTmp );
                     pObj->NbcSetStyleSheet( pPage->GetStyleSheetForPresObj( PRESOBJ_TEXT ), true );
                     pObj->SetEmptyPresObj(false);
                 }
@@ -1372,8 +1385,8 @@ void AssistentDlgImpl::UpdatePageList()
     maPageListFile = maDocFile;
 
     SfxObjectShell* pShell = xDocShell;
-    DrawDocShell* pDocShell = PTR_CAST(DrawDocShell,pShell);
-    SdDrawDocument* pDoc = pDocShell?pDocShell->GetDoc():NULL;
+    DrawDocShell* pDocShell = dynamic_cast< DrawDocShell *>( pShell );
+    SdDrawDocument* pDoc = pDocShell?pDocShell->GetDoc():nullptr;
 
     mpPage5PageListCT->Clear();
 
@@ -1393,7 +1406,7 @@ void AssistentDlgImpl::UpdatePreview( bool bDocPreview )
     if(!mbPreview && bDocPreview)
     {
         mpPreview->Invalidate();
-        mpPreview->SetObjectShell(0);
+        mpPreview->SetObjectShell(nullptr);
         mbPreviewUpdating = false;
         return;
     }
@@ -1414,7 +1427,7 @@ void AssistentDlgImpl::UpdatePreview( bool bDocPreview )
 
             DrawDocShell* pNewDocSh;
             xDocShell = pNewDocSh = new DrawDocShell(SfxObjectCreateMode::STANDARD, false);
-            pNewDocSh->DoInitNew(NULL);
+            pNewDocSh->DoInitNew();
             SdDrawDocument* pDoc = pNewDocSh->GetDoc();
             pDoc->CreateFirstPages();
             pDoc->StopWorkStartupDelay();
@@ -1431,8 +1444,8 @@ void AssistentDlgImpl::UpdatePreview( bool bDocPreview )
         if( aLayoutFile != maLayoutFile )
         {
             SfxObjectShell* pShell = xDocShell;
-            DrawDocShell* pDocShell = PTR_CAST(DrawDocShell,pShell);
-            ::svl::IUndoManager* pUndoMgr = pDocShell?pDocShell->GetUndoManager():NULL;
+            DrawDocShell* pDocShell = dynamic_cast< DrawDocShell *>( pShell );
+            ::svl::IUndoManager* pUndoMgr = pDocShell?pDocShell->GetUndoManager():nullptr;
             if(pUndoMgr)
                 pUndoMgr->Undo();
             mbUserDataDirty = true;
@@ -1470,7 +1483,7 @@ void AssistentDlgImpl::UpdatePreview( bool bDocPreview )
             aReq.AppendItem( SfxBoolItem( SID_HIDDEN, true ) );
             aReq.AppendItem( SfxBoolItem( SID_PREVIEW, bDocPreview ) );
 
-            const SfxViewFrameItem* pRet = PTR_CAST( SfxViewFrameItem, SfxGetpApp()->ExecuteSlot( aReq ) );
+            const SfxViewFrameItem* pRet = dynamic_cast<const SfxViewFrameItem*>( SfxGetpApp()->ExecuteSlot( aReq )  );
 
             if ( pRet && pRet->GetFrame() && pRet->GetFrame()->GetObjectShell() )
                 xDocShell = pRet->GetFrame()->GetObjectShell();
@@ -1509,12 +1522,12 @@ void AssistentDlgImpl::UpdatePreview( bool bDocPreview )
 
         // determine the implementation
         SfxObjectShell* pShell = xDocShell;
-        DrawDocShell* pDocShell = PTR_CAST(DrawDocShell,pShell);
-        SdDrawDocument* pDoc = pDocShell?pDocShell->GetDoc():NULL;
+        DrawDocShell* pDocShell = dynamic_cast< DrawDocShell *>( pShell );
+        SdDrawDocument* pDoc = pDocShell?pDocShell->GetDoc():nullptr;
 
         pShell = xLayoutDocShell;
-        pDocShell = PTR_CAST(DrawDocShell,pShell);
-        SdDrawDocument* pLayoutDoc = pDocShell?pDocShell->GetDoc():NULL;
+        pDocShell = dynamic_cast< DrawDocShell *>( pShell );
+        SdDrawDocument* pLayoutDoc = pDocShell?pDocShell->GetDoc():nullptr;
 
         if( pDoc && pLayoutDoc )
         {
@@ -1533,7 +1546,7 @@ void AssistentDlgImpl::UpdatePreview( bool bDocPreview )
         UpdateUserData();
 
     if ( !xDocShell.Is() || !mbPreview )
-        mpPreview->SetObjectShell( 0 );
+        mpPreview->SetObjectShell( nullptr );
     else
     {
         mpPreview->SetObjectShell( xDocShell, mnShowPage );
@@ -1550,7 +1563,7 @@ void AssistentDlgImpl::SavePassword( SfxObjectShellLock xDoc, const OUString& rP
         if(pMedium && pMedium->IsStorage())
         {
           SfxItemSet * pSet = pMedium->GetItemSet();
-          SFX_ITEMSET_ARG( pSet, pEncryptionDataItem, SfxUnoAnyItem, SID_ENCRYPTIONDATA, false);
+          const SfxUnoAnyItem* pEncryptionDataItem = SfxItemSet::GetItem<SfxUnoAnyItem>(pSet, SID_ENCRYPTIONDATA, false);
           uno::Sequence < beans::NamedValue > aEncryptionData;
           if (pEncryptionDataItem)
               pEncryptionDataItem->GetValue() >>= aEncryptionData;
@@ -1559,7 +1572,7 @@ void AssistentDlgImpl::SavePassword( SfxObjectShellLock xDoc, const OUString& rP
           if( aEncryptionData.getLength() )
           {
 
-            PasswordEntry* pEntry = NULL;
+            PasswordEntry* pEntry = nullptr;
             for ( size_t i = 0, n = maPasswordList.size(); i < n; ++i )
             {
                 if ( maPasswordList[ i ].maPath == rPath )
@@ -1569,11 +1582,11 @@ void AssistentDlgImpl::SavePassword( SfxObjectShellLock xDoc, const OUString& rP
                 }
             }
 
-            if(pEntry == NULL)
+            if(pEntry == nullptr)
             {
-                pEntry = new PasswordEntry();
+                maPasswordList.push_back( PasswordEntry() );
+                pEntry = &maPasswordList.back();
                 pEntry->maPath = rPath;
-                maPasswordList.push_back( pEntry );
             }
 
             pEntry->aEncryptionData = aEncryptionData;
@@ -1661,7 +1674,7 @@ OUString AssistentDlgImpl::GetUiTextForCommand (const OUString& sCommandURL)
         }
         while(false);
     }
-    catch (com::sun::star::uno::Exception& )
+    catch (css::uno::Exception& )
     {
     }
 
@@ -1688,18 +1701,17 @@ Image AssistentDlgImpl::GetUiIconForCommand (const OUString& sCommandURL)
             Reference<ui::XModuleUIConfigurationManagerSupplier> xSupplier (
                 ui::theModuleUIConfigurationManagerSupplier::get(xContext));
 
-            Reference<com::sun::star::ui::XUIConfigurationManager> xManager (
+            Reference<css::ui::XUIConfigurationManager> xManager (
                 xSupplier->getUIConfigurationManager(
                     "com.sun.star.presentation.PresentationDocument"));
             if ( ! xManager.is())
                 break;
 
-            Reference<com::sun::star::ui::XImageManager> xImageManager (
+            Reference<css::ui::XImageManager> xImageManager (
                 xManager->getImageManager(),
                 UNO_QUERY_THROW);
 
-            Sequence<OUString> aCommandList(1);
-            aCommandList[0] = sCommandURL;
+            Sequence<OUString> aCommandList { sCommandURL };
             Sequence<Reference<graphic::XGraphic> > xIconList (
                 xImageManager->getImages(0,aCommandList));
             if ( ! xIconList.hasElements())
@@ -1709,7 +1721,7 @@ Image AssistentDlgImpl::GetUiIconForCommand (const OUString& sCommandURL)
         }
         while(false);
     }
-    catch (com::sun::star::uno::Exception& )
+    catch (css::uno::Exception& )
     {
     }
 

@@ -60,8 +60,8 @@ int main (int argc, char **argv)
     {
         // Create registration service
         Reference < XInterface > x = xSMgr->createInstance(
-            OUString("com.sun.star.registry.ImplementationRegistration") );
-        xReg = Reference<  XImplementationRegistration > ( x , UNO_QUERY );
+            "com.sun.star.registry.ImplementationRegistration" );
+        xReg.set( x , UNO_QUERY );
     }
     catch( Exception & ) {
         printf( "Couldn't create ImplementationRegistration service\n" );

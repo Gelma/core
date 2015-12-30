@@ -27,22 +27,29 @@ IMPORTANT OPTIONS
        (descriptions from GNU make man page)
 
 AVAILABLE TARGETS
-       all              build product and run unit tests (default goal)
-       build            build product
-       unitcheck        run unit tests
-       slowcheck        run slow unit tests
-       subsequentcheck  run system tests (requires full installation)
-       stagingcheck     run (unstable/failing) tests from staging area
-                        (requires full installation)
-       perfcheck        run performance/callgrind unit tests
-       check            run unit tests and if in toplevel subsequentcheck
-       clean            remove all generated files
-       debugrun         starts the INSTDIR instance and allows tests to be run
-                        against it
-       dump-deps-png    creates dependency diagrams in PNG format
-                        NOTE: needs graphviz to work
-       showmodules      shows all registered modules
+       all                  build product and run unit tests (default goal)
+       clean                remove all generated files
+       debugrun             starts the INSTDIR instance and allows tests to
+                            be run against it
+       check                run unit tests and if in toplevel subsequentcheck
+       unitcheck            run unit tests
+       slowcheck            run slow unit tests
+       subsequentcheck      run system tests (requires full installation)
+       stagingcheck         run (unstable/failing) tests from staging area
+                            (requires full installation)
+       perfcheck            run performance/callgrind unit tests
+
+       build-l10n-only      builds translation files for the build products
+       build-non-l10n-only  builds the product without the localization files
+       translations         extract .pot files to workdir/pot
+
+       packageinfo          generates package information for distros
+       dump-deps-png        creates dependency diagrams in PNG format
+                            NOTE: needs graphviz to work
+       showmodules          shows all registered modules
+
        <module>         build the named module
+       <module>.build   build the named module without running unittests
        <module>.check   run unittests of the named module
        <module>.clean   clean the named module
        <module>.all     build the named module and the pre-requisite modules for it
@@ -78,7 +85,7 @@ AVAILABLE TARGETS
            o Library
            o Package
            o Pagein
-           o PythonTest_pytests
+           o PythonTest
            o Pyuno
            o Rdb
            o StaticLibrary
@@ -89,6 +96,9 @@ AVAILABLE TARGETS
            o Zip
 
 INTERACTIVE VARIABLES:
+       BUILDTOOLTRACE  Run all commands that invoke built tools in strace,
+                       valgrind or a debugger:
+                       BUILDTOOLTRACE='$(DEVENV) /debugexe' PARALLELISM=1 make
        DEBUG / debug   If not empty, build as with --enable-debug.
        ENABLE_SYMBOLS / enable_symbols
                        If not empty, build as with --enable-symbols.

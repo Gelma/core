@@ -23,6 +23,8 @@
 #include <tools/ref.hxx>
 #include <bastype.hxx>
 #include <tools/pstm.hxx>
+#include <functional>
+#include <vector>
 
 class SvTokenStream;
 class SvMetaObject;
@@ -31,6 +33,54 @@ class SvIdlDataBase;
 typedef SvMetaObject * (*CreateMetaObjectType)();
 
 #define C_PREF  "C_"
+
+template<typename T>
+class SvRefMemberList : private std::vector<T>
+{
+private:
+    typedef typename std::vector<T> base_t;
+
+public:
+    using base_t::size;
+    using base_t::front;
+    using base_t::back;
+    using base_t::operator[];
+    using base_t::begin;
+    using base_t::end;
+    using typename base_t::iterator;
+    using typename base_t::const_iterator;
+    using base_t::rbegin;
+    using base_t::rend;
+    using typename base_t::reverse_iterator;
+    using base_t::empty;
+
+    inline ~SvRefMemberList() { clear(); }
+    inline void clear()
+    {
+        for( typename base_t::const_iterator it = base_t::begin(); it != base_t::end(); ++it )
+        {
+              T p = *it;
+              if( p )
+                  p->ReleaseRef();
+        }
+        base_t::clear();
+    }
+
+    inline void push_back( T p )
+    {
+        base_t::push_back( p );
+        p->AddFirstRef();
+    }
+
+    inline T pop_back()
+    {
+        T p = base_t::back();
+        base_t::pop_back();
+        if( p )
+            p->ReleaseRef();
+        return p;
+    }
+};
 
 class SvMetaObjectMemberList : public SvRefMemberList<SvMetaObject *> {};
 
@@ -50,15 +100,13 @@ protected:
     virtual void ReadAttributesSvIdl( SvIdlDataBase & rBase,
                                       SvTokenStream & rInStm );
 public:
-            TYPEINFO_OVERRIDE();
             SvMetaObject();
 
     static void         WriteTab( SvStream & rOutStm, sal_uInt16 nTab );
     static void         Back2Delemitter( SvStream & );
     static void         WriteStars( SvStream & );
 
-    virtual bool                SetName( const OString& rName, SvIdlDataBase * = NULL  );
-    const SvHelpContext&        GetHelpContext() const { return aHelpContext; }
+    virtual bool                SetName( const OString& rName, SvIdlDataBase * = nullptr  );
     virtual const SvString &    GetName() const { return aName; }
     virtual const SvString &    GetHelpText() const { return aHelpText; }
     virtual const SvString &    GetConfigName() const{ return aConfigName; }
@@ -67,6 +115,10 @@ public:
     virtual bool        Test( SvIdlDataBase &, SvTokenStream & rInStm );
     virtual bool        ReadSvIdl( SvIdlDataBase &, SvTokenStream & rInStm );
 };
+template<class T> bool checkSvMetaObject(const SvMetaObject* pObject)
+{
+    return dynamic_cast<const T*>(pObject) != nullptr;
+}
 
 class SvMetaObjectMemberStack
 {
@@ -77,12 +129,12 @@ public:
     void            Push( SvMetaObject * pObj )
                     { aList.push_back( pObj ); }
     SvMetaObject *  Pop() { return aList.pop_back(); }
-    SvMetaObject *  Get( TypeId nType )
+    SvMetaObject *  Get( std::function<bool ( const SvMetaObject* )> isSvMetaObject )
                     {
                         for( SvMetaObjectMemberList::reverse_iterator it = aList.rbegin(); it != aList.rend(); ++it )
-                            if( (*it)->IsA( nType ) )
+                            if( isSvMetaObject(*it) )
                                 return *it;
-                        return NULL;
+                        return nullptr;
                     }
 };
 
@@ -93,10 +145,9 @@ class SvMetaReference : public SvMetaObject
 protected:
     tools::SvRef<SvMetaReference>  aRef;
 public:
-            TYPEINFO_OVERRIDE();
             SvMetaReference();
 
-    const SvString &    GetName() const SAL_OVERRIDE
+    const SvString &    GetName() const override
                         {
                             return ( !aRef.Is()
                                     || !SvMetaObject::GetName().getString().isEmpty() )
@@ -104,7 +155,7 @@ public:
                                 : aRef->GetName();
                         }
 
-    const SvString &    GetHelpText() const SAL_OVERRIDE
+    const SvString &    GetHelpText() const override
                         {
                             return ( !aRef.Is()
                                     || !SvMetaObject::GetHelpText().getString().isEmpty() )
@@ -112,7 +163,7 @@ public:
                                 : aRef->GetHelpText();
                         }
 
-    const SvString &    GetConfigName() const SAL_OVERRIDE
+    const SvString &    GetConfigName() const override
                         {
                             return ( !aRef.Is()
                                     || !SvMetaObject::GetConfigName().getString().isEmpty() )
@@ -120,7 +171,7 @@ public:
                                 : aRef->GetConfigName();
                         }
 
-    const SvString &    GetDescription() const SAL_OVERRIDE
+    const SvString &    GetDescription() const override
                         {
                             return ( !aRef.Is()
                                     || !SvMetaObject::GetDescription().getString().isEmpty() )
@@ -145,17 +196,16 @@ class SvMetaExtern : public SvMetaReference
     bool                    bReadUUId;
     bool                    bReadVersion;
 public:
-                        TYPEINFO_OVERRIDE();
                         SvMetaExtern();
 
     SvMetaModule *      GetModule() const;
 
     const SvGlobalName &GetUUId() const;
     void                SetModule( SvIdlDataBase & rBase );
-    virtual bool        ReadSvIdl( SvIdlDataBase &, SvTokenStream & rInStm ) SAL_OVERRIDE;
+    virtual bool        ReadSvIdl( SvIdlDataBase &, SvTokenStream & rInStm ) override;
 
 protected:
-    virtual void        ReadAttributesSvIdl( SvIdlDataBase &, SvTokenStream & rInStm ) SAL_OVERRIDE;
+    virtual void        ReadAttributesSvIdl( SvIdlDataBase &, SvTokenStream & rInStm ) override;
 };
 
 class SvMetaExternMemberList : public SvRefMemberList<SvMetaExtern *> {};

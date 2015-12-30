@@ -12,12 +12,12 @@
 
 # sw only:
 
-for I in "FrmFmt/FrameFormat" "Fmt/Format" "Cntnt/Content" "Txt/Text" "Tbl/Table" "GotoFld/GotoFormatField" "Fld/Field" "Ftn/Footnote" "Updt/Update" "Fml/Formula" "Hnt/Hint"
+for I in "FrmFmt/FrameFormat" "Fmt/Format" "Cntnt/Content" "Txt/Text" "Tbl/Table" "GotoFld/GotoFormatField" "Fld/Field" "Ftn/Footnote" "Updt/Update" "Fml/Formula" "Hnt/Hint" "CurCrsr/CurrentCursor" "VisCrsr/VisibleCursor" "Crsr/Cursor" "CntFrm/ContentFrame" "Frm/Frame" "Stk/Stack"
 do
     S="${I%/*}"
     # change all except the filenames (in the .mk and in #include)
     # also avoid numFmt (OOXML token) and other stuff that must stay verbatim
-    git grep -l "$S" sw/ | grep -v -e '\.mk' -e '/data/' | xargs sed -i '/\(#include\|numFmt\|ForeignTxt\)/ !{ s/'"$I"'/g }'
+    git grep -l "$S" sw/ | grep -v -e '\.mk' -e '/data/' -e '/testdocuments/' | xargs sed -i '/\(#include\|numFmt\|ForeignTxt\)/ !{ s/'"$I"'/g }'
 done
 
 # global:

@@ -54,7 +54,7 @@ namespace
         CFPropertyListRef pref = CFPreferencesCopyAppValue(CFSTR("AppleLanguages"), kCFPreferencesCurrentApplication);
         CFPropertyListGuard proplGuard(pref);
 
-        if (pref == NULL) // return fallback value 'en_US'
+        if (pref == nullptr) // return fallback value 'en_US'
              return CFStringCreateWithCString(kCFAllocatorDefault, "en_US", kCFStringEncodingASCII);
 
         CFStringRef sref = (CFGetTypeID(pref) == CFArrayGetTypeID()) ? static_cast<CFStringRef>(CFArrayGetValueAtIndex(static_cast<CFArrayRef>(pref), 0)) : static_cast<CFStringRef>(pref);
@@ -65,7 +65,8 @@ namespace
     void append(rtl::OUStringBuffer & buffer, CFStringRef string) {
         CFIndex n = CFStringGetLength(string);
         CFStringGetCharacters(
-            string, CFRangeMake(0, n), buffer.appendUninitialized(n));
+            string, CFRangeMake(0, n),
+            reinterpret_cast<UniChar *>(buffer.appendUninitialized(n)));
     }
 }
 
@@ -76,11 +77,11 @@ rtl::OUString macosx_getLocale()
     CFStringRef sref = getProcessLocale();
     CFStringGuard sGuard(sref);
 
-    assert(sref != NULL && "osxlocale.cxx: getProcessLocale must return a non-NULL value");
+    assert(sref != nullptr && "osxlocale.cxx: getProcessLocale must return a non-NULL value");
 
     // split the string into substrings; the first two (if there are two) substrings
     // are language and country
-    CFArrayRef subs = CFStringCreateArrayBySeparatingStrings(NULL, sref, CFSTR("-"));
+    CFArrayRef subs = CFStringCreateArrayBySeparatingStrings(nullptr, sref, CFSTR("-"));
     CFArrayGuard arrGuard(subs);
 
     rtl::OUStringBuffer buf;

@@ -43,7 +43,7 @@ class ConfigurationControllerBroadcaster
 public:
     /** The given controller is used as origin of thrown exceptions.
     */
-    ConfigurationControllerBroadcaster (
+    explicit ConfigurationControllerBroadcaster (
         const css::uno::Reference<
             css::drawing::framework::XConfigurationController>& rxController);
 
@@ -107,11 +107,11 @@ public:
     void DisposeAndClear();
 
 private:
-    css::uno::Reference<
-        com::sun::star::drawing::framework::XConfigurationController> mxConfigurationController;
-    class ListenerDescriptor {public:
-        css::uno::Reference<
-            css::drawing::framework::XConfigurationChangeListener> mxListener;
+    css::uno::Reference<css::drawing::framework::XConfigurationController> mxConfigurationController;
+    class ListenerDescriptor
+    {
+    public:
+        css::uno::Reference<css::drawing::framework::XConfigurationChangeListener> mxListener;
         css::uno::Any maUserData;
     };
     typedef std::vector<ListenerDescriptor> ListenerList;

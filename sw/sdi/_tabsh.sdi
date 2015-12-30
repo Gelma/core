@@ -313,7 +313,7 @@ interface BaseTextTable
     SID_ATTR_BORDER // status()
     [
         ExecMethod = Execute ;
-        StateMethod = GetFrmBorderState ;
+        StateMethod = GetFrameBorderState ;
         GroupId = GID_TABLE;
         DisableFlags="SW_DISABLE_ON_PROTECTED_CURSOR";
     ]
@@ -322,7 +322,7 @@ interface BaseTextTable
     [
         ExecMethod = ExecTableStyle ;
         StateMethod = GetLineStyleState ;
-        Export = FALSE; //#44439#
+        Export = FALSE;
         DisableFlags="SW_DISABLE_ON_PROTECTED_CURSOR";
     ]
 

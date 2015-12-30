@@ -36,21 +36,21 @@ public:
         const css::uno::Reference<css::beans::XPropertySet>& rPropertySet,
         SfxItemPool& rItemPool, SdrModel& rDrawModel,
         const css::uno::Reference<css::lang::XMultiServiceFactory>& xNamedPropertyContainerFactory,
-        const css::awt::Size* pRefSize = NULL );
+        const css::awt::Size* pRefSize = nullptr );
 
     virtual ~TitleItemConverter();
 
-    virtual void FillItemSet( SfxItemSet & rOutItemSet ) const SAL_OVERRIDE;
-    virtual bool ApplyItemSet( const SfxItemSet & rItemSet ) SAL_OVERRIDE;
+    virtual void FillItemSet( SfxItemSet & rOutItemSet ) const override;
+    virtual bool ApplyItemSet( const SfxItemSet & rItemSet ) override;
 
 protected:
-    virtual const sal_uInt16 * GetWhichPairs() const SAL_OVERRIDE;
-    virtual bool GetItemProperty( tWhichIdType nWhichId, tPropertyNameWithMemberId & rOutProperty ) const SAL_OVERRIDE;
+    virtual const sal_uInt16 * GetWhichPairs() const override;
+    virtual bool GetItemProperty( tWhichIdType nWhichId, tPropertyNameWithMemberId & rOutProperty ) const override;
 
     virtual void FillSpecialItem( sal_uInt16 nWhichId, SfxItemSet & rOutItemSet ) const
-        throw (css::uno::Exception) SAL_OVERRIDE;
+        throw (css::uno::Exception) override;
     virtual bool ApplySpecialItem( sal_uInt16 nWhichId, const SfxItemSet & rItemSet )
-        throw (css::uno::Exception) SAL_OVERRIDE;
+        throw (css::uno::Exception) override;
 
 private:
     ::std::vector< ItemConverter * >    m_aConverters;

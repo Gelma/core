@@ -48,7 +48,7 @@ namespace pcr
         {
             sal_uInt16  nPos;
             VclPtr<TabPage>    pPage;
-            HiddenPage() : nPos( 0 ), pPage( NULL ) { }
+            HiddenPage() : nPos( 0 ), pPage( nullptr ) { }
             HiddenPage( sal_uInt16 _nPos, TabPage* _pPage ) : nPos( _nPos ), pPage( _pPage ) { }
         };
 
@@ -66,14 +66,14 @@ namespace pcr
         ::std::map< sal_uInt16, HiddenPage >    m_aHiddenPages;
 
     protected:
-        void                        Resize() SAL_OVERRIDE;
-        void                        GetFocus() SAL_OVERRIDE;
+        void                        Resize() override;
+        void                        GetFocus() override;
 
     public:
                                     OPropertyEditor (vcl::Window* pParent, WinBits nWinStyle = WB_DIALOGCONTROL);
 
                                     virtual ~OPropertyEditor();
-        virtual void                dispose() SAL_OVERRIDE;
+        virtual void                dispose() override;
 
         void                        EnableUpdate();
         void                        DisableUpdate();
@@ -93,9 +93,9 @@ namespace pcr
         sal_uInt16                  GetCurPage();
         void                        ClearAll();
 
-        void                        SetPropertyValue(const OUString& _rEntryName, const ::com::sun::star::uno::Any& _rValue, bool _bUnknownValue );
+        void                        SetPropertyValue(const OUString& _rEntryName, const css::uno::Any& _rValue, bool _bUnknownValue );
         sal_uInt16                  GetPropertyPos(const OUString& rEntryName ) const;
-        ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyControl >
+        css::uno::Reference< css::inspection::XPropertyControl >
                                     GetPropertyControl( const OUString& rEntryName );
         void                        EnablePropertyLine( const OUString& _rEntryName, bool _bEnable );
         void                        EnablePropertyControls( const OUString& _rEntryName, sal_Int16 _nControls, bool _bEnable );
@@ -106,11 +106,10 @@ namespace pcr
         void                        RemoveEntry( const OUString& _rName );
         void                        ChangeEntry( const OLineDescriptor& );
 
-        void    setPageActivationHandler(const Link<LinkParamNone*,void>& _rHdl) { m_aPageActivationHandler = _rHdl; }
+        void                        setPageActivationHandler(const Link<LinkParamNone*,void>& _rHdl) { m_aPageActivationHandler = _rHdl; }
 
-        // #95343# -------------------------------
-        sal_Int32 getMinimumWidth();
-        sal_Int32 getMinimumHeight();
+        sal_Int32                   getMinimumWidth();
+        sal_Int32                   getMinimumHeight();
 
         void                        CommitModified();
 
@@ -128,7 +127,7 @@ namespace pcr
         void Update(const ::std::mem_fun_t<void,OBrowserListBox>& _aUpdateFunction);
 
         typedef void (OPropertyEditor::*PageOperation)( OBrowserPage&, const void* );
-        void    forEachPage( PageOperation _pOperation, const void* _pArgument = NULL );
+        void    forEachPage( PageOperation _pOperation, const void* _pArgument = nullptr );
 
         void    setPageLineListener( OBrowserPage& _rPage, const void* );
         void    setPageControlObserver( OBrowserPage& _rPage, const void* );

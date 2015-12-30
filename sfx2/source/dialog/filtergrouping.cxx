@@ -31,6 +31,7 @@
 #include <unotools/confignode.hxx>
 #include <comphelper/processfactory.hxx>
 #include <comphelper/sequenceashashmap.hxx>
+#include <comphelper/sequence.hxx>
 #include <comphelper/string.hxx>
 #include <tools/diagnose_ex.h>
 
@@ -545,9 +546,6 @@ namespace sfx2
     {
         void operator() ( const MapGroupEntry2GroupEntry::value_type& _rMapEntry )
         {
-#ifdef DBG_UTIL
-            FilterDescriptor aHaveALook = *_rMapEntry.first;
-#endif
             *_rMapEntry.second = *_rMapEntry.first;
         }
     };
@@ -825,12 +823,7 @@ namespace sfx2
                     // create a representation of the group which is understandable by the XFilterGroupManager
                     if ( _rGroup.size() )
                     {
-                        Sequence< StringPair > aFilters( _rGroup.size() );
-                        ::std::copy(
-                            _rGroup.begin(),
-                            _rGroup.end(),
-                            aFilters.getArray()
-                        );
+                        Sequence< StringPair > aFilters( comphelper::containerToSequence<StringPair>(_rGroup) );
                         if ( _bAddExtension )
                         {
                             StringPair* pFilters = aFilters.getArray();
@@ -863,7 +856,7 @@ namespace sfx2
     };
 
 
-    TSortedFilterList::TSortedFilterList(const ::com::sun::star::uno::Reference< ::com::sun::star::container::XEnumeration >& xFilterList)
+    TSortedFilterList::TSortedFilterList(const css::uno::Reference< css::container::XEnumeration >& xFilterList)
         : m_nIterator(0)
     {
         if (!xFilterList.is())
@@ -874,7 +867,7 @@ namespace sfx2
         {
             ::comphelper::SequenceAsHashMap lFilterProps (xFilterList->nextElement());
             OUString                 sFilterName  = lFilterProps.getUnpackedValueOrDefault(
-                                                             OUString("Name"),
+                                                             "Name",
                                                              OUString());
             if (!sFilterName.isEmpty())
                 m_lFilters.push_back(sFilterName);
@@ -899,10 +892,10 @@ namespace sfx2
     const SfxFilter* TSortedFilterList::impl_getFilter(sal_Int32 nIndex)
     {
         if (nIndex<0 || nIndex>=(sal_Int32)m_lFilters.size())
-            return 0;
+            return nullptr;
         const OUString& sFilterName = m_lFilters[nIndex];
         if (sFilterName.isEmpty())
-            return 0;
+            return nullptr;
         return SfxFilter::GetFilterByName(sFilterName);
     }
 
@@ -987,11 +980,6 @@ namespace sfx2
         std::vector< ExportFilter >         aFilterGroup;
         Reference< XFilterGroupManager >    xFilterGroupManager( _rxFilterManager, UNO_QUERY );
         OUString                     sTypeName;
-        const OUString               sWriterHTMLType( "generic_HTML" );
-        const OUString               sGraphicHTMLType( "graphic_HTML" );
-        const OUString               sXHTMLType( "XHTML_File" );
-        const OUString               sPDFType( "pdf_Portable_Document_Format" );
-        const OUString               sFlashType( "graphic_SWF" );
 
         for ( const SfxFilter* pFilter = _rFilterMatcher.First(); pFilter; pFilter = _rFilterMatcher.Next() )
         {
@@ -1001,12 +989,12 @@ namespace sfx2
             ExportFilter aExportFilter( sUIName, sExtensions );
 
             if ( nHTMLIndex == -1 &&
-                ( sTypeName.equals( sWriterHTMLType ) || sTypeName.equals( sGraphicHTMLType ) ) )
+                ( sTypeName == "generic_HTML" || sTypeName == "graphic_HTML" ) )
             {
                 aImportantFilterGroup.insert( aImportantFilterGroup.begin(), aExportFilter );
                 nHTMLIndex = 0;
             }
-            else if ( nXHTMLIndex == -1 && sTypeName.equals( sXHTMLType ) )
+            else if ( nXHTMLIndex == -1 && sTypeName == "XHTML_File" )
             {
                 std::vector< ExportFilter >::iterator aIter = aImportantFilterGroup.begin();
                 if ( nHTMLIndex == -1 )
@@ -1015,7 +1003,7 @@ namespace sfx2
                     aImportantFilterGroup.insert( ++aIter, aExportFilter );
                 nXHTMLIndex = 0;
             }
-            else if ( nPDFIndex == -1 && sTypeName.equals( sPDFType ) )
+            else if ( nPDFIndex == -1 && sTypeName == "pdf_Portable_Document_Format" )
             {
                 std::vector< ExportFilter >::iterator aIter = aImportantFilterGroup.begin();
                 if ( nHTMLIndex != -1 )
@@ -1025,7 +1013,7 @@ namespace sfx2
                 aImportantFilterGroup.insert( aIter, aExportFilter );
                 nPDFIndex = 0;
             }
-            else if ( nFlashIndex == -1 && sTypeName.equals( sFlashType ) )
+            else if ( nFlashIndex == -1 && sTypeName == "graphic_SWF" )
             {
                 std::vector< ExportFilter >::iterator aIter = aImportantFilterGroup.begin();
                 if ( nHTMLIndex != -1 )

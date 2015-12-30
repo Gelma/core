@@ -23,9 +23,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include <tools/stream.hxx>
 #include <rtl/string.hxx>
 #include <rtl/ustring.hxx>
+#include <tools/solar.h>
 #include <vcl/dllapi.h>
 
 #include <com/sun/star/lang/Locale.hpp>
@@ -71,6 +71,7 @@ class VCL_DLLPUBLIC PPDKey
     const PPDValue*     m_pDefaultValue;
     bool                m_bQueryValue;
     PPDValue            m_aQueryValue;
+    OUString            m_aGroup;
 
 public:
     enum UIType { PickOne, PickMany, Boolean };
@@ -95,11 +96,10 @@ public:
     const PPDValue*     getValue( const OUString& rOption ) const;
     const PPDValue*     getValueCaseInsensitive( const OUString& rOption ) const;
     const PPDValue*     getDefaultValue() const { return m_pDefaultValue; }
-    const PPDValue*     getQueryValue() const { return m_bQueryValue ? &m_aQueryValue : NULL; }
+    const OUString&     getGroup() const { return m_aGroup; }
 
     const OUString&     getKey() const { return m_aKey; }
     bool                isUIKey() const { return m_bUIOption; }
-    UIType              getUIType() const { return m_eUIType; }
     SetupType           getSetupType() const { return m_eSetupType; }
     int                 getOrderDependency() const { return m_nOrderDependency; }
 };
@@ -138,7 +138,7 @@ public:
         const PPDKey*       m_pKey2;
         const PPDValue*     m_pOption2;
 
-        PPDConstraint() : m_pKey1( NULL ), m_pOption1( NULL ), m_pKey2( NULL ), m_pOption2( NULL ) {}
+        PPDConstraint() : m_pKey1( nullptr ), m_pOption1( nullptr ), m_pKey2( nullptr ), m_pOption2( nullptr ) {}
     };
 private:
     hash_type                                   m_aKeys;
@@ -184,7 +184,7 @@ private:
     ~PPDParser();
 
     void parseOrderDependency(const OString& rLine);
-    void parseOpenUI(const OString& rLine);
+    void parseOpenUI(const OString& rLine, const OString& rPPDGroup);
     void parseConstraint(const OString& rLine);
     void parse( std::list< OString >& rLines );
 
@@ -195,9 +195,6 @@ private:
     static OUString getPPDFile( const OUString& rFile );
 public:
     static const PPDParser* getParser( const OUString& rFile );
-    static void freeAll();
-
-    const OUString& getFilename() const { return m_aFile; }
 
     const PPDKey*   getKey( int n ) const;
     const PPDKey*   getKey( const OUString& rKey ) const;
@@ -205,11 +202,6 @@ public:
     bool            hasKey( const PPDKey* ) const;
 
     const ::std::list< PPDConstraint >& getConstraints() const { return m_aConstraints; }
-
-    const OUString& getPrinterName() const
-    { return m_aPrinterName.isEmpty() ? m_aNickName : m_aPrinterName; }
-    const OUString& getNickName() const
-    { return m_aNickName.isEmpty() ? m_aPrinterName : m_aNickName; }
 
     bool            isColorDevice() const { return m_bColorDevice; }
     bool            isType42Capable() const { return m_bType42Capable; }
@@ -222,8 +214,6 @@ public:
                             int& rWidth, int& rHeight ) const;
     // width and height in pt
     // returns false if paper not found
-    int             getPaperDimensions() const
-    { return m_pPaperDimensions ? m_pPaperDimensions->countValues() : 0; }
 
     // match the best paper for width and height
     OUString        matchPaper( int nWidth, int nHeight ) const;
@@ -237,26 +227,17 @@ public:
     // values int pt
 
     OUString        getDefaultInputSlot() const;
-    int             getInputSlots() const
-    { return m_pInputSlots ? m_pInputSlots->countValues() : 0; }
 
     void            getDefaultResolution( int& rXRes, int& rYRes ) const;
     // values in dpi
     static void     getResolutionFromString( const OUString&, int&, int& );
     // helper function
 
-    int             getDuplexTypes() const
-    { return m_pDuplexTypes ? m_pDuplexTypes->countValues() : 0; }
-
-    int             getFonts() const
-    { return m_pFontList ? m_pFontList->countValues() : 0; }
-
-
     OUString   translateKey( const OUString& i_rKey,
-                                  const com::sun::star::lang::Locale& i_rLocale = com::sun::star::lang::Locale() ) const;
+                                  const css::lang::Locale& i_rLocale = css::lang::Locale() ) const;
     OUString   translateOption( const OUString& i_rKey,
                                      const OUString& i_rOption,
-                                     const com::sun::star::lang::Locale& i_rLocale = com::sun::star::lang::Locale() ) const;
+                                     const css::lang::Locale& i_rLocale = css::lang::Locale() ) const;
 };
 
 
@@ -277,7 +258,7 @@ class VCL_DLLPUBLIC PPDContext
     bool checkConstraints( const PPDKey*, const PPDValue*, bool bDoReset );
     bool resetValue( const PPDKey*, bool bDefaultable = false );
 public:
-    PPDContext( const PPDParser* pParser = NULL );
+    PPDContext( const PPDParser* pParser = nullptr );
     PPDContext( const PPDContext& rContext ) { operator=( rContext ); }
     PPDContext& operator=( const PPDContext& rContext );
     ~PPDContext();

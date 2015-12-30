@@ -51,32 +51,32 @@ friend class ImpItemEdit;
 
 private:
     void ImpCtor();
-    void ImpSetEntry(const ImpItemListRow& rEntry, sal_uIntPtr nEntryNum);
-    ImpItemListRow* ImpGetEntry(sal_uIntPtr nPos) const { return aList[nPos]; }
+    void ImpSetEntry(const ImpItemListRow& rEntry, std::size_t nEntryNum);
+    ImpItemListRow* ImpGetEntry(std::size_t nPos) const { return aList[nPos]; }
     void ImpSaveWhich();
     void ImpRestoreWhich();
+    std::size_t GetCurrentPos() const;
+    bool BeginChangeEntry(std::size_t nPos);
 
 protected:
-    virtual long GetRowCount() const SAL_OVERRIDE;
-    virtual bool SeekRow(long nRow) SAL_OVERRIDE;
-    virtual void PaintField(OutputDevice& rDev, const Rectangle& rRect, sal_uInt16 nColumnId) const SAL_OVERRIDE;
-    virtual void DoubleClick(const BrowserMouseEvent&) SAL_OVERRIDE;
-    virtual void KeyInput(const KeyEvent& rEvt) SAL_OVERRIDE;
-    virtual void Select() SAL_OVERRIDE;
+    virtual long GetRowCount() const override;
+    virtual bool SeekRow(long nRow) override;
+    virtual void PaintField(OutputDevice& rDev, const Rectangle& rRect, sal_uInt16 nColumnId) const override;
+    virtual void DoubleClick(const BrowserMouseEvent&) override;
+    virtual void KeyInput(const KeyEvent& rEvt) override;
+    virtual void Select() override;
     void SetDirty(); // is called for example in mode switches
-    virtual Rectangle GetFieldCharacterBounds(sal_Int32 _nRow,sal_Int32 _nColumnPos,sal_Int32 nIndex) SAL_OVERRIDE;
-    virtual sal_Int32 GetFieldIndexAtPoint(sal_Int32 _nRow,sal_Int32 _nColumnPos,const Point& _rPoint) SAL_OVERRIDE;
+    virtual Rectangle GetFieldCharacterBounds(sal_Int32 _nRow,sal_Int32 _nColumnPos,sal_Int32 nIndex) override;
+    virtual sal_Int32 GetFieldIndexAtPoint(sal_Int32 _nRow,sal_Int32 _nColumnPos,const Point& _rPoint) override;
 public:
     _SdrItemBrowserControl(vcl::Window* pParent, WinBits nBits=WB_3DLOOK|WB_BORDER|WB_TABSTOP);
     virtual ~_SdrItemBrowserControl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
     void Clear();
-    void SetAttributes(const SfxItemSet* pAttr, const SfxItemSet* p2ndSet=NULL);
-    sal_uIntPtr GetCurrentPos() const;
+    void SetAttributes(const SfxItemSet* pAttr, const SfxItemSet* p2ndSet=nullptr);
     sal_uInt16 GetCurrentWhich() const;
-    bool BegChangeEntry(sal_uIntPtr nPos);
     bool EndChangeEntry();
-    void     BrkChangeEntry();
+    void BreakChangeEntry();
 
     /** GetCellText returns the text at the given position
         @param  _nRow
@@ -86,7 +86,7 @@ public:
         @return
             the text out of the cell
     */
-    virtual OUString  GetCellText(long _nRow, sal_uInt16 _nColId) const SAL_OVERRIDE;
+    virtual OUString  GetCellText(long _nRow, sal_uInt16 _nColId) const override;
 
     const ImpItemListRow* GetAktChangeEntry() const { return pAktChangeEntry; }
     OUString GetNewEntryValue() const                 { return pEditControl->GetText(); }
@@ -102,10 +102,10 @@ class _SdrItemBrowserWindow: public FloatingWindow {
 public:
     _SdrItemBrowserWindow(vcl::Window* pParent, WinBits nBits=WB_STDSIZEABLEDOCKWIN);
     virtual ~_SdrItemBrowserWindow();
-    virtual void dispose() SAL_OVERRIDE;
-    virtual void Resize() SAL_OVERRIDE;
-    virtual void GetFocus() SAL_OVERRIDE;
-    void SetAttributes(const SfxItemSet* pAttr, const SfxItemSet* p2ndSet=NULL) { aBrowse->SetAttributes(pAttr,p2ndSet); }
+    virtual void dispose() override;
+    virtual void Resize() override;
+    virtual void GetFocus() override;
+    void SetAttributes(const SfxItemSet* pAttr, const SfxItemSet* p2ndSet=nullptr) { aBrowse->SetAttributes(pAttr,p2ndSet); }
     _SdrItemBrowserControl *GetBrowserControl() { return aBrowse.get(); }
 };
 

@@ -49,8 +49,7 @@ OSimpleLogRing::~OSimpleLogRing()
 
 uno::Sequence< OUString > SAL_CALL OSimpleLogRing::getSupportedServiceNames_static()
 {
-    uno::Sequence< OUString > aResult( 1 );
-    aResult[0] = getServiceName_static();
+    uno::Sequence<OUString> aResult { getServiceName_static() };
     return aResult;
 }
 
@@ -58,12 +57,6 @@ uno::Sequence< OUString > SAL_CALL OSimpleLogRing::getSupportedServiceNames_stat
 OUString SAL_CALL OSimpleLogRing::getImplementationName_static()
 {
     return OUString( "com.sun.star.comp.logging.SimpleLogRing" );
-}
-
-
-OUString SAL_CALL OSimpleLogRing::getSingletonName_static()
-{
-    return OUString( "com.sun.star.logging.DocumentIOLogRing" );
 }
 
 

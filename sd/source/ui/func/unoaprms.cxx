@@ -21,7 +21,6 @@
 #include "unoaprms.hxx"
 #include "anminfo.hxx"
 
-TYPEINIT1(SdAnimationPrmsUndoAction, SdUndoAction);
 
 void SdAnimationPrmsUndoAction::Undo()
 {
@@ -66,7 +65,7 @@ void SdAnimationPrmsUndoAction::Undo()
 
 void SdAnimationPrmsUndoAction::Redo()
 {
-    SdAnimationInfo* pInfo = NULL;
+    SdAnimationInfo* pInfo = nullptr;
 
     pInfo = SdDrawDocument::GetShapeUserData(*pObject,true);
 

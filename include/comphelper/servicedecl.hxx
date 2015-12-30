@@ -24,12 +24,9 @@
 #include <com/sun/star/uno/XComponentContext.hpp>
 #include <com/sun/star/lang/XServiceInfo.hpp>
 #include <uno/environment.h>
-#include <boost/noncopyable.hpp>
-#include <boost/preprocessor/cat.hpp>
-#include <boost/preprocessor/repetition.hpp>
-#include <boost/preprocessor/seq/enum.hpp>
 
 #include <functional>
+#include <initializer_list>
 
 namespace comphelper {
 namespace service_decl {
@@ -97,7 +94,7 @@ typedef ::std::function<
 
     In the latter case, somePostProcCode gets the yet unacquired "raw" pointer.
 */
-class COMPHELPER_DLLPUBLIC ServiceDecl : private ::boost::noncopyable
+class COMPHELPER_DLLPUBLIC ServiceDecl
 {
 public:
     /** Ctor for multiple supported service names.
@@ -107,6 +104,8 @@ public:
         @param pSupportedServiceNames supported service names
         @param cDelim delimiter for supported service names
     */
+    ServiceDecl( const ServiceDecl& ) = delete;
+    ServiceDecl& operator=( const ServiceDecl& ) = delete;
     template <typename ImplClassT>
     ServiceDecl( ImplClassT const& implClass,
                  char const* pImplName,
@@ -120,8 +119,7 @@ public:
     void * getFactory( sal_Char const* pImplName ) const;
 
     /// @return supported service names
-    ::com::sun::star::uno::Sequence< OUString>
-    getSupportedServiceNames() const;
+    css::uno::Sequence< OUString> getSupportedServiceNames() const;
 
     /// @return whether name is in set of supported service names
     bool supportsService( OUString const& name ) const;
@@ -148,12 +146,13 @@ template <bool> struct with_args;
 namespace detail {
 template <typename ImplT>
 class OwnServiceImpl
-    : public ImplT,
-      private ::boost::noncopyable
+    : public ImplT
 {
     typedef ImplT BaseT;
 
 public:
+    OwnServiceImpl( const OwnServiceImpl& ) = delete;
+    OwnServiceImpl& operator=( const OwnServiceImpl& ) = delete;
     OwnServiceImpl(
         ServiceDecl const& rServiceDecl,
         css::uno::Sequence<css::uno::Any> const& args,
@@ -166,15 +165,15 @@ public:
 
     // XServiceInfo
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException) SAL_OVERRIDE {
+        throw (css::uno::RuntimeException) override {
         return m_rServiceDecl.getImplementationName();
     }
     virtual sal_Bool SAL_CALL supportsService( OUString const& name )
-        throw (css::uno::RuntimeException) SAL_OVERRIDE {
+        throw (css::uno::RuntimeException) override {
         return m_rServiceDecl.supportsService(name);
     }
     virtual css::uno::Sequence< OUString>
-    SAL_CALL getSupportedServiceNames() throw (css::uno::RuntimeException) SAL_OVERRIDE {
+    SAL_CALL getSupportedServiceNames() throw (css::uno::RuntimeException) override {
         return m_rServiceDecl.getSupportedServiceNames();
     }
 
@@ -334,46 +333,9 @@ struct inheritingClass_ : public serviceimpl_base< detail::InheritingServiceImpl
     explicit inheritingClass_( PostProcessFuncT const& postProcessFunc ) : baseT( postProcessFunc ) {}
 };
 
-// component_... helpers with arbitrary service declarations:
-
-
-#define COMPHELPER_SERVICEDECL_getFactory(z_, n_, unused_) \
-    if (pRet == 0) \
-        pRet = BOOST_PP_CAT(s, n_).getFactory(pImplName);
-
-/** The following preprocessor repetitions generate functions like
-
-    <pre>
-        inline void * component_getFactoryHelper(
-            sal_Char const* pImplName,
-            ServiceDecl const& s0, ServiceDecl const& s1, ... );
-    </pre>
-
-    which call on the passed service declarations.
-
-    The maximum number of service declarations can be set by defining
-    COMPHELPER_SERVICEDECL_COMPONENT_HELPER_MAX_ARGS; its default is 8.
-*/
-#define COMPHELPER_SERVICEDECL_make(z_, n_, unused_) \
-inline void * component_getFactoryHelper( \
-    sal_Char const* pImplName, \
-    BOOST_PP_ENUM_PARAMS(n_, ServiceDecl const& s) ) \
-{ \
-    void * pRet = 0; \
-    BOOST_PP_REPEAT(n_, COMPHELPER_SERVICEDECL_getFactory, ~) \
-    return pRet; \
-}
-
-#ifndef COMPHELPER_SERVICEDECL_COMPONENT_HELPER_MAX_ARGS
-#define COMPHELPER_SERVICEDECL_COMPONENT_HELPER_MAX_ARGS 8
-#endif
-
-BOOST_PP_REPEAT_FROM_TO(1, COMPHELPER_SERVICEDECL_COMPONENT_HELPER_MAX_ARGS,
-                        COMPHELPER_SERVICEDECL_make, ~)
-
-#undef COMPHELPER_SERVICEDECL_COMPONENT_HELPER_MAX_ARGS
-#undef COMPHELPER_SERVICEDECL_make
-#undef COMPHELPER_SERVICEDECL_getFactory
+COMPHELPER_DLLPUBLIC
+void* component_getFactoryHelper( const sal_Char* pImplName,
+                                  std::initializer_list<ServiceDecl const *> args );
 
 } // namespace service_decl
 } // namespace comphelper

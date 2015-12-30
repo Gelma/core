@@ -15,7 +15,6 @@ $(eval $(call gb_UnpackedTarball_set_patchlevel,libwps,1))
 
 $(eval $(call gb_UnpackedTarball_add_patches,libwps,\
 	external/libwps/0001-add-missing-include.patch \
-	external/libwps/0001-error-atoi-was-not-declared-in-this-scope.patch \
 	$(if $(SYSTEM_REVENGE),,external/libwps/rpath.patch.0) \
 ))
 
@@ -27,7 +26,7 @@ $(eval $(call gb_UnpackedTarball_add_patches,libwps,\
 endif
 endif
 
-ifeq ($(COM_GCC_IS_CLANG),TRUE)
+ifeq ($(COM_IS_CLANG),TRUE)
 ifneq ($(filter -fsanitize=%,$(CC)),)
 $(eval $(call gb_UnpackedTarball_add_patches,libwps, \
     external/libwps/ubsan-visibility.patch.0 \

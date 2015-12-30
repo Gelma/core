@@ -52,17 +52,17 @@ namespace stoc_connector
         Reference< XMultiComponentFactory > _xSMgr;
         Reference< XComponentContext > _xCtx;
     public:
-        OConnector(const Reference< XComponentContext > &xCtx);
+        explicit OConnector(const Reference< XComponentContext > &xCtx);
         virtual ~OConnector();
         // Methods
         virtual Reference< XConnection > SAL_CALL connect(
             const OUString& sConnectionDescription )
-            throw( NoConnectException, ConnectionSetupException, RuntimeException, std::exception) SAL_OVERRIDE;
+            throw( NoConnectException, ConnectionSetupException, RuntimeException, std::exception) override;
 
     public: // XServiceInfo
-                virtual OUString              SAL_CALL getImplementationName() throw(std::exception) SAL_OVERRIDE;
-                virtual Sequence< OUString >  SAL_CALL getSupportedServiceNames() throw(std::exception) SAL_OVERRIDE;
-                virtual sal_Bool              SAL_CALL supportsService(const OUString& ServiceName) throw(std::exception) SAL_OVERRIDE;
+                virtual OUString              SAL_CALL getImplementationName() throw(std::exception) override;
+                virtual Sequence< OUString >  SAL_CALL getSupportedServiceNames() throw(std::exception) override;
+                virtual sal_Bool              SAL_CALL supportsService(const OUString& ServiceName) throw(std::exception) override;
     };
 
     OConnector::OConnector(const Reference< XComponentContext > &xCtx)
@@ -94,7 +94,7 @@ namespace stoc_connector
 
                 if( pConn->m_pipe.create( aName.pData, osl_Pipe_OPEN, osl::Security() ) )
                 {
-                    r = Reference < XConnection > ( static_cast<XConnection *>(pConn) );
+                    r.set( static_cast<XConnection *>(pConn) );
                 }
                 else
                 {
@@ -141,7 +141,7 @@ namespace stoc_connector
                                                sizeof( nTcpNoDelay ) , osl_Socket_LevelTcp );
                 }
                 pConn->completeConnectionString();
-                r = Reference< XConnection > ( static_cast<XConnection *>(pConn) );
+                r.set( static_cast<XConnection *>(pConn) );
             }
             else
             {
@@ -177,8 +177,7 @@ namespace stoc_connector
 
     Sequence< OUString > connector_getSupportedServiceNames()
     {
-        Sequence< OUString > seqNames(1);
-        seqNames.getArray()[0] = SERVICE_NAME;
+        Sequence< OUString > seqNames { SERVICE_NAME };
         return seqNames;
     }
 

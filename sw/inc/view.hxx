@@ -78,7 +78,7 @@ class Graphic;
 class GraphicFilter;
 class SwPostItMgr;
 enum class SotExchangeDest;
-class SwCrsrShell;
+class SwCursorShell;
 
 namespace com{ namespace sun { namespace star {
     namespace view{ class XSelectionSupplier; }
@@ -138,10 +138,10 @@ struct SwApplyTemplate
     SwApplyTemplate() :
         eType(0),
         nColor(0),
-        m_pFormatClipboard(0),
+        m_pFormatClipboard(nullptr),
         nUndo(0)
     {
-        aColl.pTextColl = 0;
+        aColl.pTextColl = nullptr;
     }
 };
 
@@ -154,7 +154,6 @@ class SW_DLLPUBLIC SwView: public SfxViewShell
     friend class SwClipboardChangeListener;
 
     // search & replace
-    static VclPtr<SvxSearchDialog>  m_pSrchDlg;
     static SvxSearchItem           *m_pSrchItem;
 
     static sal_uInt16       m_nMoveType; // for buttons below the scrollbar (viewmdi)
@@ -167,11 +166,10 @@ class SW_DLLPUBLIC SwView: public SfxViewShell
     static SearchAttrItemList* m_pSrchList;
     static SearchAttrItemList* m_pReplList;
 
-    SvxHtmlOptions      m_aHTMLOpt;
     Timer               m_aTimer;         // for delayed ChgLnks during an action
     OUString            m_sSwViewData,
     //and the new cursor position if the user double click in the PagePreview
-                        m_sNewCrsrPos;
+                        m_sNewCursorPos;
     // to support keyboard the number of the page to go to can be set too
     sal_uInt16              m_nNewPage;
 
@@ -205,9 +203,6 @@ class SW_DLLPUBLIC SwView: public SfxViewShell
                         m_pVRuler;
     VclPtr<ImageButton> m_pTogglePageBtn;
 
-    VclPtr<SwHlpImageButton> m_pPageUpBtn,
-                             m_pPageDownBtn;
-
     SwGlossaryHdl       *m_pGlosHdl;          // handle text block
     SwDrawBase          *m_pDrawActual;
 
@@ -233,11 +228,10 @@ class SW_DLLPUBLIC SwView: public SfxViewShell
 
     bool m_bWheelScrollInProgress;
 
-    bool            m_bCenterCrsr : 1,
-                    m_bTopCrsr : 1,
+    bool            m_bCenterCursor : 1,
+                    m_bTopCursor : 1,
                     m_bAlwaysShowSel : 1,
                     m_bTabColFromDoc : 1,
-                    m_bNumIndentFromDoc : 1, // #i23726#
                     m_bTabRowFromDoc : 1,
                     m_bSetTabColFromDoc : 1 ,
                     m_bSetTabRowFromDoc : 1,
@@ -261,7 +255,7 @@ class SW_DLLPUBLIC SwView: public SfxViewShell
     // methods for searching
     // set search context
     SAL_DLLPRIVATE bool              SearchAndWrap(bool bApi = false);
-    SAL_DLLPRIVATE bool          SearchAll(sal_uInt16* pFound = 0);
+    SAL_DLLPRIVATE bool          SearchAll(sal_uInt16* pFound = nullptr);
     SAL_DLLPRIVATE sal_uLong         FUNC_Search( const SwSearchOptions& rOptions );
     SAL_DLLPRIVATE void          Replace();
 
@@ -286,8 +280,8 @@ class SW_DLLPUBLIC SwView: public SfxViewShell
     // scrollbar movements
     SAL_DLLPRIVATE long          PageUp();
     SAL_DLLPRIVATE long          PageDown();
-    SAL_DLLPRIVATE bool          PageUpCrsr(bool bSelect);
-    SAL_DLLPRIVATE bool          PageDownCrsr(bool bSelect);
+    SAL_DLLPRIVATE bool          PageUpCursor(bool bSelect);
+    SAL_DLLPRIVATE bool          PageDownCursor(bool bSelect);
     SAL_DLLPRIVATE long          PhyPageUp();
     SAL_DLLPRIVATE long          PhyPageDown();
 
@@ -309,15 +303,15 @@ class SW_DLLPUBLIC SwView: public SfxViewShell
 
     // used for spell checking and text conversion
     SAL_DLLPRIVATE void          SpellStart( SvxSpellArea eSpell, bool bStartDone,
-                                        bool bEndDone, SwConversionArgs *pConvArgs = 0 );
-    SAL_DLLPRIVATE void          SpellEnd( SwConversionArgs *pConvArgs = 0 );
+                                        bool bEndDone, SwConversionArgs *pConvArgs = nullptr );
+    SAL_DLLPRIVATE void          SpellEnd( SwConversionArgs *pConvArgs = nullptr );
 
     SAL_DLLPRIVATE void          HyphStart( SvxSpellArea eSpell );
     SAL_DLLPRIVATE void          SpellKontext(bool bOn = true)
-                                 { m_bCenterCrsr = bOn; m_bAlwaysShowSel = bOn; }
+                                 { m_bCenterCursor = bOn; m_bAlwaysShowSel = bOn; }
 
     // for readonly switching
-    SAL_DLLPRIVATE virtual void  Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+    SAL_DLLPRIVATE virtual void  Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
     SAL_DLLPRIVATE void          _CheckReadonlyState();
     SAL_DLLPRIVATE void          _CheckReadonlySelection();
 
@@ -332,7 +326,7 @@ class SW_DLLPUBLIC SwView: public SfxViewShell
 
     SAL_DLLPRIVATE void          ShowAtResize();
 
-    SAL_DLLPRIVATE virtual void  Move() SAL_OVERRIDE;
+    SAL_DLLPRIVATE virtual void  Move() override;
 
 public: // #i123922# Needs to be called from a 2nd place now as a helper method
     SAL_DLLPRIVATE bool          InsertGraphicDlg( SfxRequest& );
@@ -352,10 +346,10 @@ protected:
 
     virtual void    SelectShell();
 
-    virtual void    Activate(bool) SAL_OVERRIDE;
-    virtual void    Deactivate(bool) SAL_OVERRIDE;
-    virtual void    InnerResizePixel( const Point &rOfs, const Size &rSize ) SAL_OVERRIDE;
-    virtual void    OuterResizePixel( const Point &rOfs, const Size &rSize ) SAL_OVERRIDE;
+    virtual void    Activate(bool) override;
+    virtual void    Deactivate(bool) override;
+    virtual void    InnerResizePixel( const Point &rOfs, const Size &rSize ) override;
+    virtual void    OuterResizePixel( const Point &rOfs, const Size &rSize ) override;
 
     const SwFrameFormat* GetLastTableFrameFormat() const {return m_pLastTableFormat;}
     void            SetLastTableFrameFormat(const SwFrameFormat* pSet) {m_pLastTableFormat = pSet;}
@@ -368,7 +362,6 @@ protected:
 public:
     SFX_DECL_VIEWFACTORY(SwView);
     SFX_DECL_INTERFACE(SW_VIEWSHELL)
-    TYPEINFO_OVERRIDE();
 
 private:
     /// SfxInterface initializer.
@@ -378,23 +371,23 @@ public:
     SfxDispatcher   &GetDispatcher();
 
     void                    GotFocus() const;
-    virtual SdrView*        GetDrawView() const SAL_OVERRIDE;
-    virtual bool            HasUIFeature( sal_uInt32 nFeature ) SAL_OVERRIDE;
-    virtual void            ShowCursor( bool bOn = true ) SAL_OVERRIDE;
-    virtual ErrCode         DoVerb( long nVerb ) SAL_OVERRIDE;
+    virtual SdrView*        GetDrawView() const override;
+    virtual bool            HasUIFeature( sal_uInt32 nFeature ) override;
+    virtual void            ShowCursor( bool bOn = true ) override;
+    virtual ErrCode         DoVerb( long nVerb ) override;
 
     virtual sal_uInt16          SetPrinter( SfxPrinter* pNew,
-                                        SfxPrinterChangeFlags nDiff = SFX_PRINTER_ALL, bool bIsAPI=false) SAL_OVERRIDE;
+                                        SfxPrinterChangeFlags nDiff = SFX_PRINTER_ALL, bool bIsAPI=false) override;
     ShellModes              GetShellMode();
 
-    com::sun::star::view::XSelectionSupplier*       GetUNOObject();
+    css::view::XSelectionSupplier*       GetUNOObject();
 
     OUString                GetSelectionTextParam( bool bCompleteWords,
                                                    bool bEraseTrail );
-    virtual bool            HasSelection( bool bText ) const SAL_OVERRIDE;
-    virtual OUString        GetSelectionText( bool bCompleteWords = false ) SAL_OVERRIDE;
-    virtual bool            PrepareClose( bool bUI = true ) SAL_OVERRIDE;
-    virtual void            MarginChanged() SAL_OVERRIDE;
+    virtual bool            HasSelection( bool bText ) const override;
+    virtual OUString        GetSelectionText( bool bCompleteWords = false ) override;
+    virtual bool            PrepareClose( bool bUI = true ) override;
+    virtual void            MarginChanged() override;
 
     // replace word/selection with text from the thesaurus
     // (this code has special handling for "in word" character)
@@ -403,7 +396,7 @@ public:
     OUString                GetThesaurusLookUpText( bool bSelection ) const;
 
     // immediately switch shell -> for GetSelectionObject
-    void        StopShellTimer();
+    void                    StopShellTimer();
 
     inline SwWrtShell&      GetWrtShell   () const { return *m_pWrtShell; }
     inline SwWrtShell*      GetWrtShellPtr() const { return  m_pWrtShell; }
@@ -412,7 +405,7 @@ public:
     inline const SwEditWin &GetEditWin () const { return *m_pEditWin; }
 
 #if defined WNT || defined UNX
-    void ScannerEventHdl( const ::com::sun::star::lang::EventObject& rEventObject );
+    void ScannerEventHdl( const css::lang::EventObject& rEventObject );
 #endif
 
     // hand the handler for text blocks to the shell; create if applicable
@@ -431,7 +424,7 @@ public:
     void SpellError(LanguageType eLang);
     bool            ExecSpellPopup( const Point& rPt );
     void                ExecFieldPopup( const Point& rPt, sw::mark::IFieldmark *fieldBM );
-    bool            ExecSmartTagPopup( const Point& rPt );
+    void            ExecSmartTagPopup( const Point& rPt );
 
     DECL_LINK_TYPED( OnlineSpellCallback, SpellCallbackInfo&, void );
     bool            ExecDrwTextSpellPopup(const Point& rPt);
@@ -462,18 +455,18 @@ public:
     bool            HandleWheelCommands( const CommandEvent& );
 
     // insert frames
-    void            InsFrmMode(sal_uInt16 nCols);
+    void            InsFrameMode(sal_uInt16 nCols);
 
     void            SetZoom( SvxZoomType eZoomType, short nFactor = 100, bool bViewOnly = false);
-    virtual void    SetZoomFactor( const Fraction &rX, const Fraction & ) SAL_OVERRIDE;
+    virtual void    SetZoomFactor( const Fraction &rX, const Fraction & ) override;
 
     void            SetViewLayout( sal_uInt16 nColumns, bool bBookMode, bool bViewOnly = false );
 
     void            ShowHScrollbar(bool bShow);
-    bool        IsHScrollbarVisible()const;
+    bool            IsHScrollbarVisible()const;
 
     void            ShowVScrollbar(bool bShow);
-    bool        IsVScrollbarVisible()const;
+    bool            IsVScrollbarVisible()const;
 
     void            EnableHScrollbar(bool bEnable);
     void            EnableVScrollbar(bool bEnable);
@@ -536,20 +529,20 @@ public:
     bool            AreOnlyFormsSelected() const;
     bool            HasDrwObj(SdrObject *pSdrObj) const;
     bool            HasOnlyObj(SdrObject *pSdrObj, sal_uInt32 eObjInventor) const;
-    bool            BeginTextEdit(  SdrObject* pObj, SdrPageView* pPV=NULL,
-                                    vcl::Window* pWin=NULL, bool bIsNewObj=false, bool bSetSelectionToStart=false );
+    bool            BeginTextEdit(  SdrObject* pObj, SdrPageView* pPV=nullptr,
+                                    vcl::Window* pWin=nullptr, bool bIsNewObj=false, bool bSetSelectionToStart=false );
 
     void            StateTabWin(SfxItemSet&);
 
     // attributes have changed
-    DECL_LINK_TYPED( AttrChangedNotify, SwCrsrShell*, void );
+    DECL_LINK_TYPED( AttrChangedNotify, SwCursorShell*, void );
 
     // form control has been activated
     DECL_LINK_TYPED( FormControlActivated, LinkParamNone*, void );
 
     // edit links
     void            EditLinkDlg();
-    void            AutoCaption(const sal_uInt16 nType, const SvGlobalName *pOleId = 0);
+    void            AutoCaption(const sal_uInt16 nType, const SvGlobalName *pOleId = nullptr);
     void            InsertCaption(const InsCaptionOpt *pOpt);
 
     // Async call by Core
@@ -561,21 +554,21 @@ public:
                  SfxShell       *GetCurShell()  { return m_pShell; }
                  SwDocShell     *GetDocShell();
     inline const SwDocShell     *GetDocShell() const;
-    inline virtual       FmFormShell    *GetFormShell()       SAL_OVERRIDE { return m_pFormShell; }
-    inline virtual const FmFormShell    *GetFormShell() const SAL_OVERRIDE { return m_pFormShell; }
+    inline virtual       FmFormShell    *GetFormShell()       override { return m_pFormShell; }
+    inline virtual const FmFormShell    *GetFormShell() const override { return m_pFormShell; }
 
     // so that in the SubShells' DTors m_pShell can be reset if applicable
-    void ResetSubShell()    { m_pShell = 0; }
+    void ResetSubShell()    { m_pShell = nullptr; }
 
-    virtual void    WriteUserData(OUString &, bool bBrowse = false) SAL_OVERRIDE;
-    virtual void    ReadUserData(const OUString &, bool bBrowse = false) SAL_OVERRIDE;
-    virtual void    ReadUserDataSequence ( const com::sun::star::uno::Sequence < com::sun::star::beans::PropertyValue >&, bool bBrowse ) SAL_OVERRIDE;
-    virtual void    WriteUserDataSequence ( com::sun::star::uno::Sequence < com::sun::star::beans::PropertyValue >&, bool bBrowse ) SAL_OVERRIDE;
+    virtual void    WriteUserData(OUString &, bool bBrowse = false) override;
+    virtual void    ReadUserData(const OUString &, bool bBrowse = false) override;
+    virtual void    ReadUserDataSequence ( const css::uno::Sequence < css::beans::PropertyValue >&, bool bBrowse ) override;
+    virtual void    WriteUserDataSequence ( css::uno::Sequence < css::beans::PropertyValue >&, bool bBrowse ) override;
 
-    void SetCrsrAtTop( bool bFlag, bool bCenter = false )
-        { m_bTopCrsr = bFlag, m_bCenterCrsr = bCenter; }
-    bool IsCrsrAtTop() const                    { return m_bTopCrsr; }
-    bool IsCrsrAtCenter() const                 { return m_bCenterCrsr; }
+    void SetCursorAtTop( bool bFlag, bool bCenter = false )
+        { m_bTopCursor = bFlag, m_bCenterCursor = bCenter; }
+    bool IsCursorAtTop() const                    { return m_bTopCursor; }
+    bool IsCursorAtCenter() const                 { return m_bCenterCursor; }
 
     bool JumpToSwMark( const OUString& rMark );
 
@@ -617,8 +610,8 @@ public:
 
     //public fuer D&D
     int     InsertGraphic( const OUString &rPath, const OUString &rFilter,
-                            bool bLink = true, GraphicFilter *pFlt = 0,
-                            Graphic* pPreviewGrf = 0,
+                            bool bLink = true, GraphicFilter *pFlt = nullptr,
+                            Graphic* pPreviewGrf = nullptr,
                             bool bRule = false );
 
     void ExecuteScan( SfxRequest& rReq );
@@ -634,10 +627,11 @@ public:
     void SetAnnotationMode(bool bMode);
 
     // methods for printing
-    SAL_DLLPRIVATE virtual   SfxPrinter*     GetPrinter( bool bCreate = false ) SAL_OVERRIDE;
-    SAL_DLLPRIVATE virtual bool  HasPrintOptionsPage() const SAL_OVERRIDE;
+    SAL_DLLPRIVATE virtual   SfxPrinter*     GetPrinter( bool bCreate = false ) override;
+    SAL_DLLPRIVATE virtual bool  HasPrintOptionsPage() const override;
     SAL_DLLPRIVATE virtual VclPtr<SfxTabPage> CreatePrintOptionsPage( vcl::Window* pParent,
-                                                    const SfxItemSet& rSet) SAL_OVERRIDE;
+                                                    const SfxItemSet& rSet) override;
+    static SvxSearchItem* GetSearchItem() { return m_pSrchItem; }
 };
 
 inline long SwView::GetXScroll() const

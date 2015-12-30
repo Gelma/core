@@ -59,13 +59,11 @@ namespace cairo
 #include <cairo-xlib-xrender.h>
 
     X11SysData::X11SysData() :
-        pDisplay(NULL),
+        pDisplay(nullptr),
         hDrawable(0),
-        pVisual(NULL),
+        pVisual(nullptr),
         nScreen(0),
-        nDepth(-1),
-        aColormap(-1),
-        pRenderFormat(NULL)
+        pRenderFormat(nullptr)
     {}
 
     X11SysData::X11SysData( const SystemGraphicsData& pSysDat ) :
@@ -73,8 +71,6 @@ namespace cairo
         hDrawable(pSysDat.hDrawable),
         pVisual(pSysDat.pVisual),
         nScreen(pSysDat.nScreen),
-        nDepth(pSysDat.nDepth),
-        aColormap(pSysDat.aColormap),
         pRenderFormat(pSysDat.pXRenderFormat)
     {}
 
@@ -83,9 +79,7 @@ namespace cairo
         hDrawable(pSysDat.aWindow),
         pVisual(pSysDat.pVisual),
         nScreen(pSysDat.nScreen),
-        nDepth(pSysDat.nDepth),
-        aColormap(pSysDat.aColormap),
-        pRenderFormat(NULL)
+        pRenderFormat(nullptr)
     {}
 
     X11Pixmap::~X11Pixmap()
@@ -271,7 +265,7 @@ namespace cairo
         return VclPtr<VirtualDevice>(
             VclPtr<VirtualDevice>::Create(&aSystemGraphicsData,
                               Size(width, height),
-                              std::max(getDepth(), 0)));
+                              getFormat()));
     }
 
     /**
@@ -301,10 +295,27 @@ namespace cairo
      **/
     int X11Surface::getDepth() const
     {
-        if( maSysData.pRenderFormat )
+        if (maSysData.pRenderFormat)
             return static_cast<XRenderPictFormat*>(maSysData.pRenderFormat)->depth;
-
         return -1;
+    }
+
+    /**
+     * Surface::getFormat:  Get the device format of the Canvas surface.
+     *
+     * @return color format
+     **/
+    DeviceFormat X11Surface::getFormat() const
+    {
+        if (!maSysData.pRenderFormat)
+            return DeviceFormat::DEFAULT;
+        switch (static_cast<XRenderPictFormat*>(maSysData.pRenderFormat)->depth)
+        {
+            case 1:
+                return DeviceFormat::BITMASK;
+            default:
+                return DeviceFormat::DEFAULT;
+        }
     }
 }
 

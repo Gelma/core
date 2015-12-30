@@ -43,7 +43,7 @@ namespace com
             {
                 namespace dialogs
                 {
-                    class XFilePicker;
+                    class XFilePicker2;
                     class XFilePickerListener;
                     struct FilePickerEvent;
                     struct DialogClosedEvent;
@@ -64,8 +64,6 @@ namespace vcl { class Window; }
 #define SFXWB_GRAPHIC           0x00800000L     // register graphic formats
 
 #define FILEDIALOG_FILTER_ALL   "*.*"
-
-#define FILE_OPEN_SERVICE_NAME_OOO   "com.sun.star.ui.dialogs.OfficeFilePicker"
 
 namespace sfx2 {
 
@@ -95,14 +93,14 @@ private:
     Link<FileDialogHelper*,void>  m_aDialogClosedLink;
     ErrCode m_nError;
 
-    ::com::sun::star::uno::Reference < ::com::sun::star::ui::dialogs::XFilePickerListener > mxImp;
+    css::uno::Reference < css::ui::dialogs::XFilePickerListener > mxImp;
     FileDialogHelper_Impl   *mpImp;
 
 
 public:
                             FileDialogHelper( sal_Int16 nDialogType,
                                               sal_Int64 nFlags,
-                                              vcl::Window* _pPreferredParent = NULL );
+                                              vcl::Window* _pPreferredParent = nullptr );
 
                             FileDialogHelper( sal_Int16 nDialogType,
                                               sal_Int64 nFlags,
@@ -117,15 +115,15 @@ public:
                                               SfxFilterFlags nMust,
                                               SfxFilterFlags nDont,
                                               const OUString& rStandardDir,
-                                              const ::com::sun::star::uno::Sequence< OUString >& rBlackList);
+                                              const css::uno::Sequence< OUString >& rBlackList);
 
                             FileDialogHelper( sal_Int16 nDialogType,
                                               sal_Int64 nFlags,
                                               const OUString& aFilterUIName,
                                               const OUString& aExtName,
                                               const OUString& rStandardDir,
-                                              const ::com::sun::star::uno::Sequence< OUString >& rBlackList,
-                                              vcl::Window* _pPreferredParent = NULL );
+                                              const css::uno::Sequence< OUString >& rBlackList,
+                                              vcl::Window* _pPreferredParent = nullptr );
 
 
     virtual                 ~FileDialogHelper();
@@ -145,10 +143,10 @@ public:
         to different folders. As this method always provides the root folder for all selected
         files this cannot work.
     */
-    ::com::sun::star::uno::Sequence< OUString > GetMPath() const;
+    css::uno::Sequence< OUString > GetMPath() const;
 
     /** Provides the selected files with full path information */
-    ::com::sun::star::uno::Sequence< OUString > GetSelectedFiles() const;
+    css::uno::Sequence< OUString > GetSelectedFiles() const;
 
     void                     AddFilter( const OUString& rFilterName, const OUString& rExtension );
     void                     SetCurrentFilter( const OUString& rFilter );
@@ -171,7 +169,7 @@ public:
             specifies the URL of the folder whose content is to be displayed.<br/>
             If the URL doesn't denote a valid (existent and accessible) folder, the
             request is silently dropped.
-        @throws ::com::sun::star::uno::RuntimeException
+        @throws css::uno::RuntimeException
             if the invocation of any of the file picker or UCB methods throws a RuntimeException.
     */
     void                     SetDisplayFolder( const OUString& _rURL );
@@ -185,7 +183,7 @@ public:
         with the following differences:
         <ul><li>The FileDialogHelper remembers the given file name, and upon execution,
                 strips its extension if the dialog is set up for "automatic file name extension".</li>
-            <li>Exceptions thrown from the <code>XFilePicker</code> are caught and silenced.</li>
+            <li>Exceptions thrown from the <code>XFilePicker2</code> are caught and silenced.</li>
         </ul>
     */
     void                     SetFileName( const OUString& _rFileName );
@@ -194,17 +192,17 @@ public:
     OUString                 GetDisplayDirectory() const;
     ErrCode                  GetGraphic( Graphic& rGraphic ) const;
 
-    ::com::sun::star::uno::Reference < ::com::sun::star::ui::dialogs::XFilePicker > GetFilePicker() const;
+    css::uno::Reference < css::ui::dialogs::XFilePicker2 > GetFilePicker() const;
 
     // XFilePickerListener methods
-    void SAL_CALL   FileSelectionChanged( const ::com::sun::star::ui::dialogs::FilePickerEvent& aEvent );
-    void SAL_CALL   DirectoryChanged( const ::com::sun::star::ui::dialogs::FilePickerEvent& aEvent );
-    virtual void SAL_CALL   ControlStateChanged( const ::com::sun::star::ui::dialogs::FilePickerEvent& aEvent );
+    void SAL_CALL   FileSelectionChanged( const css::ui::dialogs::FilePickerEvent& aEvent );
+    void SAL_CALL   DirectoryChanged( const css::ui::dialogs::FilePickerEvent& aEvent );
+    virtual void SAL_CALL   ControlStateChanged( const css::ui::dialogs::FilePickerEvent& aEvent );
     void SAL_CALL   DialogSizeChanged();
-    static OUString SAL_CALL    HelpRequested( const ::com::sun::star::ui::dialogs::FilePickerEvent& aEvent );
+    static OUString SAL_CALL    HelpRequested( const css::ui::dialogs::FilePickerEvent& aEvent );
 
     // XDialogClosedListener methods
-    void SAL_CALL   DialogClosed( const ::com::sun::star::ui::dialogs::DialogClosedEvent& _rEvent );
+    void SAL_CALL   DialogClosed( const css::ui::dialogs::DialogClosedEvent& _rEvent );
 
     /** sets help ids for the controls in the dialog
         @param _pControlId
@@ -244,10 +242,10 @@ ErrCode FileOpenDialog_Impl( sal_Int16 nDialogType,
                              std::vector<OUString>& rpURLList,
                              OUString& rFilter,
                              SfxItemSet *& rpSet,
-                             const OUString* pPath = NULL,
+                             const OUString* pPath = nullptr,
                              sal_Int16 nDialog = SFX2_IMPL_DIALOG_CONFIG,
                              const OUString& rStandardDir = OUString(),
-                             const ::com::sun::star::uno::Sequence< OUString >& rBlackList = ::com::sun::star::uno::Sequence< OUString >());
+                             const css::uno::Sequence< OUString >& rBlackList = css::uno::Sequence< OUString >());
 
 
 ErrCode RequestPassword(const SfxFilter* pCurrentFilter, OUString& aURL, SfxItemSet* pSet);

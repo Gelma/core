@@ -93,7 +93,7 @@ gb_VISIBILITY_FLAGS := -DHAVE_GCC_VISIBILITY_FEATURE
 # If CC or CXX already include -fvisibility=hidden, don't duplicate it
 ifeq (,$(filter -fvisibility=hidden,$(CC)))
 gb__visibility_hidden := -fvisibility=hidden
-ifeq ($(COM_GCC_IS_CLANG),TRUE)
+ifeq ($(COM_IS_CLANG),TRUE)
 ifneq ($(filter -fsanitize=%,$(CC)),)
 gb__visibility_hidden := -fvisibility-ms-compat
 endif
@@ -115,11 +115,11 @@ endif
 gb_CFLAGS_WERROR := $(if $(ENABLE_WERROR),-Werror)
 
 # This is the default in non-C++11 mode
-ifeq ($(COM_GCC_IS_CLANG),TRUE)
+ifeq ($(COM_IS_CLANG),TRUE)
 gb_CXX03FLAGS := -std=gnu++98 -Werror=c++11-extensions -Wno-c++11-long-long \
     -Wno-deprecated-declarations
 else
-gb_CXX03FLAGS := -std=gnu++98 -pedantic-errors -Wno-long-long \
+gb_CXX03FLAGS := -std=gnu++98 -Wno-long-long \
     -Wno-variadic-macros -Wno-non-virtual-dtor -Wno-deprecated-declarations
 endif
 
@@ -128,7 +128,7 @@ endif
 gb_CFLAGS_COMMON += -std=gnu89
 
 ifeq ($(ENABLE_LTO),TRUE)
-ifeq ($(COM_GCC_IS_CLANG),TRUE)
+ifeq ($(COM_IS_CLANG),TRUE)
 gb_LTOFLAGS := -flto
 else
 gb_LTOFLAGS := -flto=$(PARALLELISM) -fuse-linker-plugin -O2
@@ -154,9 +154,9 @@ gb_COMPILERNOOPTFLAGS := -O0 -fstrict-aliasing -fstrict-overflow
 
 # Clang does not know -ggdb2 or some other options
 ifeq ($(HAVE_GCC_GGDB2),TRUE)
-GGDB2=-ggdb2
+gb_DEBUGINFO_FLAGS=-ggdb2
 else
-GGDB2=-g2
+gb_DEBUGINFO_FLAGS=-g2
 endif
 
 ifeq ($(HAVE_GCC_FINLINE_LIMIT),TRUE)
@@ -171,7 +171,7 @@ ifeq ($(HAVE_GCC_FNO_DEFAULT_INLINE),TRUE)
 FNO_DEFAULT_INLINE=-fno-default-inline
 endif
 
-gb_DEBUG_CFLAGS := $(GGDB2) $(FINLINE_LIMIT0) $(FNO_INLINE)
+gb_DEBUG_CFLAGS := $(gb_DEBUGINFO_FLAGS) $(FINLINE_LIMIT0) $(FNO_INLINE)
 gb_DEBUG_CXXFLAGS := $(FNO_DEFAULT_INLINE)
 
 
@@ -179,7 +179,7 @@ gb_LinkTarget_INCLUDE :=\
     $(subst -I. , ,$(SOLARINC)) \
     -I$(BUILDDIR)/config_$(gb_Side) \
 
-ifeq ($(COM_GCC_IS_CLANG),TRUE)
+ifeq ($(COM_IS_CLANG),TRUE)
 ifeq ($(COMPILER_PLUGIN_TOOL),)
 gb_COMPILER_PLUGINS := -Xclang -load -Xclang $(BUILDDIR)/compilerplugins/obj/plugin.so -Xclang -add-plugin -Xclang loplugin
 ifneq ($(COMPILER_PLUGIN_WARNINGS_ONLY),)

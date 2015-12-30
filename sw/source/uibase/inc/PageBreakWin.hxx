@@ -13,7 +13,7 @@
 
 #include <vcl/menubtn.hxx>
 
-class SwPageFrm;
+class SwPageFrame;
 
 /** Class for the page break control window.
 
@@ -33,21 +33,21 @@ class SwPageBreakWin : public SwFrameMenuButtonBase
     const Point*          m_pMousePt;
 
 public:
-    SwPageBreakWin( SwEditWin* pEditWin, const SwFrm *pFrm );
+    SwPageBreakWin( SwEditWin* pEditWin, const SwFrame *pFrame );
     virtual ~SwPageBreakWin();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) SAL_OVERRIDE;
-    virtual void Select( ) SAL_OVERRIDE;
-    virtual void MouseMove( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void Activate( ) SAL_OVERRIDE;
+    virtual void Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) override;
+    virtual void Select( ) override;
+    virtual void MouseMove( const MouseEvent& rMEvt ) override;
+    virtual void Activate( ) override;
 
-    void UpdatePosition( const Point* pEvtPt = NULL );
+    void UpdatePosition( const Point* pEvtPt = nullptr );
 
-    virtual void ShowAll( bool bShow ) SAL_OVERRIDE;
-    virtual bool Contains( const Point &rDocPt ) const SAL_OVERRIDE;
+    virtual void ShowAll( bool bShow ) override;
+    virtual bool Contains( const Point &rDocPt ) const override;
 
-    void SetReadonly( bool bReadonly ) SAL_OVERRIDE;
+    void SetReadonly( bool bReadonly ) override;
 
     void Fade( bool bFadeIn );
 

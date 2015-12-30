@@ -74,7 +74,7 @@ namespace drawinglayer
         private:
             /// local helper(s)
             Rectangle impDumpToMetaFile(
-                const primitive2d::Primitive2DSequence& rContent,
+                const primitive2d::Primitive2DContainer& rContent,
                 GDIMetaFile& o_rContentMetafile);
             void impConvertFillGradientAttributeToVCLGradient(
                 Gradient& o_rVCLGradient,
@@ -132,7 +132,7 @@ namespace drawinglayer
             /*  the local processor for BasePrinitive2D-Implementation based primitives,
                 called from the common process()-implementation
              */
-            virtual void processBasePrimitive2D(const primitive2d::BasePrimitive2D& rCandidate) SAL_OVERRIDE;
+            virtual void processBasePrimitive2D(const primitive2d::BasePrimitive2D& rCandidate) override;
 
         public:
             /// constructor/destructor

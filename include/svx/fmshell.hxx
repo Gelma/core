@@ -55,7 +55,7 @@ namespace svx
 }
 
 
-class SVX_DLLPUBLIC SAL_WARN_UNUSED FmDesignModeChangedHint : public SfxHint
+class SAL_WARN_UNUSED SVX_DLLPUBLIC FmDesignModeChangedHint : public SfxHint
 {
     bool m_bDesignMode;
 
@@ -74,7 +74,6 @@ class SVX_DLLPUBLIC FmFormShell : public SfxShell
     FmXFormShell*   m_pImpl;
     FmFormView*     m_pFormView;
     FmFormModel*    m_pFormModel;
-    SfxViewShell*   m_pParentShell;
 
     sal_uInt16  m_nLastSlot;
     bool        m_bDesignMode : 1;
@@ -88,30 +87,28 @@ class SVX_DLLPUBLIC FmFormShell : public SfxShell
 
     class FormShellWaitObject
     {
-        VclPtr<vcl::Window> m_pWindow;
     public:
         FormShellWaitObject(const FmFormShell* _pShell);
         ~FormShellWaitObject();
     };
     friend class FormShellWaitObject;
 
-    const OutputDevice* GetCurrentViewDevice() const { return m_pFormView ? m_pFormView->GetActualOutDev() : NULL; }
+    const OutputDevice* GetCurrentViewDevice() const { return m_pFormView ? m_pFormView->GetActualOutDev() : nullptr; }
 
 public:
     SFX_DECL_INTERFACE(SVX_INTERFACE_FORM_SH)
-    TYPEINFO_OVERRIDE();
 
 private:
     /// SfxInterface initializer.
     static void InitInterface_Impl();
 
 public:
-    FmFormShell(SfxViewShell* pParent, FmFormView* pView = NULL);
+    FmFormShell(SfxViewShell* pParent, FmFormView* pView = nullptr);
     virtual ~FmFormShell();
 
     void Execute( SfxRequest& );
     void GetState( SfxItemSet& );
-    virtual bool HasUIFeature( sal_uInt32 nFeature ) SAL_OVERRIDE;
+    virtual bool HasUIFeature( sal_uInt32 nFeature ) override;
 
     void ExecuteTextAttribute( SfxRequest& );
     void GetTextAttributeState( SfxItemSet& );
@@ -132,19 +129,19 @@ public:
     void        ForgetActiveControl();
     void        SetControlActivationHandler( const Link<LinkParamNone*,void>& _rHdl );
 
-    virtual void    Activate(bool bMDI) SAL_OVERRIDE;
-    virtual void    Deactivate(bool bMDI) SAL_OVERRIDE;
+    virtual void    Activate(bool bMDI) override;
+    virtual void    Deactivate(bool bMDI) override;
 
     // helper methods for implementing XFormLayerAccess
     SdrUnoObj* GetFormControl(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::awt::XControlModel >& _rxModel,
+        const css::uno::Reference< css::awt::XControlModel >& _rxModel,
         const SdrView& _rView,
         const OutputDevice& _rDevice,
-        ::com::sun::star::uno::Reference< ::com::sun::star::awt::XControl >& _out_rxControl
+        css::uno::Reference< css::awt::XControl >& _out_rxControl
     ) const;
 
-    static ::com::sun::star::uno::Reference< ::com::sun::star::form::runtime::XFormController > GetFormController(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::form::XForm >& _rxForm,
+    static css::uno::Reference< css::form::runtime::XFormController > GetFormController(
+        const css::uno::Reference< css::form::XForm >& _rxForm,
         const SdrView& _rView,
         const OutputDevice& _rDevice
     );
@@ -164,7 +161,7 @@ public:
                 const OutputDevice& i_rDevice
             );
 
-    virtual bool IsDesignMode() const SAL_OVERRIDE { return m_bDesignMode; }
+    virtual bool IsDesignMode() const override { return m_bDesignMode; }
     void         SetDesignMode( bool _bDesignMode );
 
 protected:

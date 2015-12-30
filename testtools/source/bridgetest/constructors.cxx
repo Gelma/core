@@ -61,7 +61,7 @@ private:
 
     virtual void SAL_CALL initialize(
         css::uno::Sequence< css::uno::Any > const & arguments)
-        throw (css::uno::Exception, std::exception) SAL_OVERRIDE;
+        throw (css::uno::Exception, std::exception) override;
 };
 
 void Impl::initialize(css::uno::Sequence< css::uno::Any > const & arguments)
@@ -208,17 +208,17 @@ private:
 
     virtual void SAL_CALL initialize(
         css::uno::Sequence< css::uno::Any > const & arguments)
-        throw (css::uno::Exception, std::exception) SAL_OVERRIDE;
+        throw (css::uno::Exception, std::exception) override;
 
     //XMultiBase1
     virtual double SAL_CALL getatt1()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL setatt1( double _att1 )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual ::sal_Int32 SAL_CALL fn11( ::sal_Int32 arg )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual OUString SAL_CALL fn12( const OUString& arg )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
 
     double m_attr1;
@@ -340,9 +340,9 @@ void Impl2::initialize(css::uno::Sequence< css::uno::Any > const & arguments)
           && (arguments[28] >>= arg28) && arg28.member.getLength() == 1
           && arg28.member[0] == 0.456
           && (arguments[29] >>= arg29) && arg29.member.getLength() == 1
-          && arg29.member[0] != NULL
+          && arg29.member[0] != nullptr
           && (arguments[30] >>= arg30) && arg30.member.getLength() == 1
-          && arg30.member[0] != NULL
+          && arg30.member[0] != nullptr
           && (arguments[31] >>= arg31) && arg31.member.getLength() == 1
           && arg31.member[0] == ttb::TestEnum_TWO
           && (arguments[32] >>= arg32) && arg32.member.getLength() == 1
@@ -411,24 +411,24 @@ void Impl2::initialize(css::uno::Sequence< css::uno::Any > const & arguments)
 
 //XMultiBase1
 double Impl2::getatt1()
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     return m_attr1;
 }
 
-void Impl2::setatt1( double _att1 )throw (::com::sun::star::uno::RuntimeException, std::exception)
+void Impl2::setatt1( double _att1 )throw (css::uno::RuntimeException, std::exception)
 {
     m_attr1 = _att1;
 }
 
 ::sal_Int32 Impl2::fn11( ::sal_Int32 arg )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     return 11 * arg;
 }
 
 OUString Impl2::fn12( const OUString& arg )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     return "12" + arg;
 }
@@ -446,8 +446,7 @@ OUString SAL_CALL getImplementationName() {
 }
 
 css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() {
-    css::uno::Sequence< OUString > s(1);
-    s[0] = "test.testtools.bridgetest.Constructors";
+    css::uno::Sequence< OUString > s { "test.testtools.bridgetest.Constructors" };
     return s;
 }
 
@@ -464,17 +463,16 @@ OUString SAL_CALL getImplementationName2() {
 }
 
 css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames2() {
-    css::uno::Sequence< OUString > s(1);
-    s[0] = "test.testtools.bridgetest.Constructors2";
+    css::uno::Sequence< OUString > s { "test.testtools.bridgetest.Constructors2" };
     return s;
 }
 
 ::cppu::ImplementationEntry entries[] = {
     { &create, &getImplementationName, &getSupportedServiceNames,
-      &::cppu::createSingleComponentFactory, 0, 0 },
+      &::cppu::createSingleComponentFactory, nullptr, 0 },
     { &create2, &getImplementationName2, &getSupportedServiceNames2,
-      &::cppu::createSingleComponentFactory, 0, 0 },
-    { 0, 0, 0, 0, 0, 0 } };
+      &::cppu::createSingleComponentFactory, nullptr, 0 },
+    { nullptr, nullptr, nullptr, nullptr, nullptr, 0 } };
 }
 
 extern "C" SAL_DLLPUBLIC_EXPORT void * SAL_CALL component_getFactory(

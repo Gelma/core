@@ -16,8 +16,11 @@
 #include <setupapi.h>
 #include <algorithm>
 #include <cstdint>
+
+#include <osl/file.hxx>
 #include <rtl/bootstrap.hxx>
 #include <rtl/ustrbuf.hxx>
+#include <tools/stream.hxx>
 
 OUString* WinOpenGLDeviceInfo::mpDeviceVendors[wgl::DeviceVendorMax];
 std::vector<wgl::DriverInfo> WinOpenGLDeviceInfo::maDriverInfo;
@@ -63,10 +66,8 @@ void GetDLLVersion(const sal_Unicode* aDLLPath, OUString& aVersion)
     vers[2] = HIWORD(fileVersLS);
     vers[3] = LOWORD(fileVersLS);
 
-    char buf[256];
-    sprintf(buf, "%d.%d.%d.%d", vers[0], vers[1], vers[2], vers[3]);
-    OString aBuf(buf);
-    aVersion = OStringToOUString(aBuf, RTL_TEXTENCODING_UTF8);
+    aVersion = OUString::number(vers[0]) + "." + OUString::number(vers[1])
+        + "." + OUString::number(vers[2]) + "." + OUString::number(vers[3]);
 }
 
 /*
@@ -169,19 +170,6 @@ bool GetKeyValue(const WCHAR* keyLocation, const WCHAR* keyName, OUString& destS
     return retval;
 }
 
-// The driver ID is a string like PCI\VEN_15AD&DEV_0405&SUBSYS_040515AD, possibly
-// followed by &REV_XXXX.  We uppercase the string, and strip the &REV_ part
-// from it, if found.
-void normalizeDriverId(OUString& driverid)
-{
-    driverid = driverid.toAsciiUpperCase();
-    int32_t rev = driverid.indexOf("&REV_");
-    if (rev != -1)
-    {
-        driverid = driverid.copy(0, rev - 1);
-    }
-}
-
 // The device ID is a string like PCI\VEN_15AD&DEV_0405&SUBSYS_040515AD
 // this function is used to extract the id's out of it
 uint32_t ParseIDFromDeviceID(const OUString &key, const char *prefix, int length)
@@ -200,13 +188,13 @@ uint32_t ParseIDFromDeviceID(const OUString &key, const char *prefix, int length
 // based on http://msdn.microsoft.com/en-us/library/ms724834(VS.85).aspx
 enum {
     kWindowsUnknown = 0,
-    kWindowsXP = 0x50001,
-    kWindowsServer2003 = 0x50002,
-    kWindowsVista = 0x60000,
-    kWindows7 = 0x60001,
-    kWindows8 = 0x60002,
-    kWindows8_1 = 0x60003,
-    kWindows10 = 0x60004
+    kWindowsXP =         0x00050001,
+    kWindowsServer2003 = 0x00050002,
+    kWindowsVista =      0x00060000,
+    kWindows7 =          0x00060001,
+    kWindows8 =          0x00060002,
+    kWindows8_1 =        0x00060003,
+    kWindows10 =         0x000A0000  // Major 10 Minor 0
 };
 
 
@@ -226,6 +214,8 @@ wgl::OperatingSystem WindowsVersionToOperatingSystem(int32_t aWindowsVersion)
             return wgl::DRIVER_OS_WINDOWS_8;
         case kWindows8_1:
             return wgl::DRIVER_OS_WINDOWS_8_1;
+        case kWindows10:
+            return wgl::DRIVER_OS_WINDOWS_10;
         case kWindowsUnknown:
         default:
             return wgl::DRIVER_OS_UNKNOWN;
@@ -244,7 +234,9 @@ int32_t WindowsOSVersion()
         vinfo.dwOSVersionInfoSize = sizeof (vinfo);
 #pragma warning(push)
 #pragma warning(disable:4996)
+        SAL_WNODEPRECATED_DECLARATIONS_PUSH
         if (!GetVersionEx(&vinfo))
+        SAL_WNODEPRECATED_DECLARATIONS_POP
         {
 #pragma warning(pop)
             winVersion = kWindowsUnknown;
@@ -411,17 +403,6 @@ DriverInfo::DriverInfo(OperatingSystem os, const OUString& vendor,
         maSuggestedVersion = OStringToOUString(OString(suggestedVersion), RTL_TEXTENCODING_UTF8);
 }
 
-DriverInfo::DriverInfo(const DriverInfo& aOrig)
-    : meOperatingSystem(aOrig.meOperatingSystem),
-    mnOperatingSystemVersion(aOrig.mnOperatingSystemVersion),
-    maAdapterVendor(aOrig.maAdapterVendor),
-    mbWhitelisted(aOrig.mbWhitelisted),
-    meComparisonOp(aOrig.meComparisonOp),
-    mnDriverVersion(aOrig.mnDriverVersion),
-    mnDriverVersionMax(aOrig.mnDriverVersionMax)
-{
-}
-
 DriverInfo::~DriverInfo()
 {
 }
@@ -445,8 +426,8 @@ namespace {
 
 struct compareIgnoreAsciiCase
 {
-    compareIgnoreAsciiCase(const OUString& rString):
-        maString(rString)
+    explicit compareIgnoreAsciiCase(const OUString& rString)
+        : maString(rString)
     {
     }
 
@@ -488,12 +469,10 @@ bool WinOpenGLDeviceInfo::FindBlocklistedDeviceInList()
             continue;
         }
 
-        if (std::none_of(maDriverInfo[i].maDevices.begin(), maDriverInfo[i].maDevices.end(), [](const OUString& rString){ return rString == "all"; } ))
+        if (std::none_of(maDriverInfo[i].maDevices.begin(), maDriverInfo[i].maDevices.end(), compareIgnoreAsciiCase("all")) &&
+            std::none_of(maDriverInfo[i].maDevices.begin(), maDriverInfo[i].maDevices.end(), compareIgnoreAsciiCase(maAdapterDeviceID)))
         {
-            if (std::none_of(maDriverInfo[i].maDevices.begin(), maDriverInfo[i].maDevices.end(), compareIgnoreAsciiCase(maAdapterDeviceID)))
-            {
-                continue;
-            }
+            continue;
         }
 
         switch (maDriverInfo[i].meComparisonOp)
@@ -553,6 +532,28 @@ bool WinOpenGLDeviceInfo::FindBlocklistedDeviceInList()
     return match;
 }
 
+namespace {
+
+OUString getCacheFolder()
+{
+    OUString url("${$BRAND_BASE_DIR/" LIBO_ETC_FOLDER "/" SAL_CONFIGFILE("bootstrap") ":UserInstallation}/cache/");
+    rtl::Bootstrap::expandMacros(url);
+
+    osl::Directory::create(url);
+
+    return url;
+}
+
+void writeToLog(SvStream& rStrm, const char* pKey, const OUString rVal)
+{
+    rStrm.WriteCharPtr(pKey);
+    rStrm.WriteCharPtr(": ");
+    rStrm.WriteOString(OUStringToOString(rVal, RTL_TEXTENCODING_UTF8));
+    rStrm.WriteChar('\n');
+}
+
+}
+
 bool WinOpenGLDeviceInfo::isDeviceBlocked()
 {
     SAL_INFO("vcl.opengl", maDriverVersion);
@@ -563,6 +564,20 @@ bool WinOpenGLDeviceInfo::isDeviceBlocked()
     SAL_INFO("vcl.opengl", maAdapterSubsysID);
     SAL_INFO("vcl.opengl", maDeviceKey);
     SAL_INFO("vcl.opengl", maDeviceString);
+
+    OUString aCacheFolder = getCacheFolder();
+
+    OUString aCacheFile(aCacheFolder + "/opengl_device.log");
+    SvFileStream aOpenGLLogFile(aCacheFile, StreamMode::WRITE);
+
+    writeToLog(aOpenGLLogFile, "DriverVersion", maDriverVersion);
+    writeToLog(aOpenGLLogFile, "DriverDate", maDriverDate);
+    writeToLog(aOpenGLLogFile, "DeviceID", maDeviceID);
+    writeToLog(aOpenGLLogFile, "AdapterVendorID", maAdapterVendorID);
+    writeToLog(aOpenGLLogFile, "AdapterDeviceID", maAdapterDeviceID);
+    writeToLog(aOpenGLLogFile, "AdapterSubsysID", maAdapterSubsysID);
+    writeToLog(aOpenGLLogFile, "DeviceKey", maDeviceKey);
+    writeToLog(aOpenGLLogFile, "DeviceString", maDeviceString);
 
     // Check if the device is blocked from the downloaded blocklist. If not, check
     // the static list after that. This order is used so that we can later escape

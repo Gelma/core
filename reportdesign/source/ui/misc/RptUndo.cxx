@@ -110,7 +110,6 @@ namespace
     }
 }
 
-TYPEINIT1( OSectionUndo,         OCommentUndoAction );
 
 OSectionUndo::OSectionUndo(OReportModel& _rMod
                            ,sal_uInt16 _nSlot
@@ -136,7 +135,7 @@ OSectionUndo::~OSectionUndo()
 
 #if OSL_DEBUG_LEVEL > 0
             SvxShape* pShape = SvxShape::getImplementation( xShape );
-            SdrObject* pObject = pShape ? pShape->GetSdrObject() : NULL;
+            SdrObject* pObject = pShape ? pShape->GetSdrObject() : nullptr;
             OSL_ENSURE( pShape && pShape->HasSdrObjectOwnership() && pObject && !pObject->IsInserted(),
                 "OSectionUndo::~OSectionUndo: inconsistency in the shape/object ownership!" );
 #endif
@@ -216,7 +215,6 @@ void OSectionUndo::Redo()
     }
 }
 
-TYPEINIT1( OReportSectionUndo,         OSectionUndo );
 
 OReportSectionUndo::OReportSectionUndo(OReportModel& _rMod,sal_uInt16 _nSlot
                                        ,::std::mem_fun_t< uno::Reference< report::XSection >
@@ -255,7 +253,6 @@ void OReportSectionUndo::implReRemove( )
     m_bInserted = false;
 }
 
-TYPEINIT1( OGroupSectionUndo,         OSectionUndo );
 
 OGroupSectionUndo::OGroupSectionUndo(OReportModel& _rMod,sal_uInt16 _nSlot
                                        ,::std::mem_fun_t< uno::Reference< report::XSection >
@@ -326,7 +323,6 @@ void OGroupSectionUndo::implReRemove( )
     m_bInserted = false;
 }
 
-TYPEINIT1( OGroupUndo,         OCommentUndoAction );
 
 OGroupUndo::OGroupUndo(OReportModel& _rMod
                        ,sal_uInt16 nCommentID

@@ -31,6 +31,7 @@
 #include <tools/urlobj.hxx>
 #include <unotools/transliterationwrapper.hxx>
 #include <tools/tenccvt.hxx>
+#include <o3tl/make_unique.hxx>
 
 #include "globstr.hrc"
 #include "document.hxx"
@@ -516,7 +517,7 @@ const SfxPoolItem* ScAutoFormatData::GetItem( sal_uInt16 nIndex, sal_uInt16 nWhi
         case ATTR_ROTATE_VALUE:     return &rField.GetRotateAngle();
         case ATTR_ROTATE_MODE:      return &rField.GetRotateMode();
     }
-    return NULL;
+    return nullptr;
 }
 
 void ScAutoFormatData::PutItem( sal_uInt16 nIndex, const SfxPoolItem& rItem )
@@ -896,9 +897,24 @@ ScAutoFormat::ScAutoFormat() :
     insert(pData);
 }
 
-ScAutoFormat::ScAutoFormat(const ScAutoFormat& r) :
-    maData(r.maData),
-    mbSaveLater(false) {}
+bool DefaultFirstEntry::operator() (const OUString& left, const OUString& right) const
+{
+    OUString aStrStandard(ScGlobal::GetRscString(STR_STYLENAME_STANDARD));
+    if ( ScGlobal::GetpTransliteration()->isEqual( left, aStrStandard ) )
+        return true;
+    if ( ScGlobal::GetpTransliteration()->isEqual( right, aStrStandard ) )
+        return false;
+    return ScGlobal::GetCollator()->compareString( left, right) < 0;
+}
+
+ScAutoFormat::ScAutoFormat(const ScAutoFormat& r)
+    : mbSaveLater(false)
+{
+    for (auto const& it : r.m_Data)
+    {
+        m_Data.insert(std::make_pair(it.first, o3tl::make_unique<ScAutoFormatData>(*it.second)));
+    }
+}
 
 ScAutoFormat::~ScAutoFormat()
 {
@@ -916,30 +932,30 @@ void ScAutoFormat::SetSaveLater( bool bSet )
 
 const ScAutoFormatData* ScAutoFormat::findByIndex(size_t nIndex) const
 {
-    if (nIndex >= maData.size())
-        return NULL;
+    if (nIndex >= m_Data.size())
+        return nullptr;
 
-    MapType::const_iterator it = maData.begin();
+    MapType::const_iterator it = m_Data.begin();
     std::advance(it, nIndex);
-    return it->second;
+    return it->second.get();
 }
 
 ScAutoFormatData* ScAutoFormat::findByIndex(size_t nIndex)
 {
-    if (nIndex >= maData.size())
-        return NULL;
+    if (nIndex >= m_Data.size())
+        return nullptr;
 
-    MapType::iterator it = maData.begin();
+    MapType::iterator it = m_Data.begin();
     std::advance(it, nIndex);
-    return it->second;
+    return it->second.get();
 }
 
 ScAutoFormat::iterator ScAutoFormat::find(const ScAutoFormatData* pData)
 {
-    MapType::iterator it = maData.begin(), itEnd = maData.end();
+    MapType::iterator it = m_Data.begin(), itEnd = m_Data.end();
     for (; it != itEnd; ++it)
     {
-        if (it->second == pData)
+        if (it->second.get() == pData)
             return it;
     }
     return itEnd;
@@ -947,43 +963,43 @@ ScAutoFormat::iterator ScAutoFormat::find(const ScAutoFormatData* pData)
 
 ScAutoFormat::iterator ScAutoFormat::find(const OUString& rName)
 {
-    return maData.find(rName);
+    return m_Data.find(rName);
 }
 
 bool ScAutoFormat::insert(ScAutoFormatData* pNew)
 {
     OUString aName = pNew->GetName();
-    return maData.insert(aName, pNew).second;
+    return m_Data.insert(std::make_pair(aName, std::unique_ptr<ScAutoFormatData>(pNew))).second;
 }
 
 void ScAutoFormat::erase(const iterator& it)
 {
-    maData.erase(it);
+    m_Data.erase(it);
 }
 
 size_t ScAutoFormat::size() const
 {
-    return maData.size();
+    return m_Data.size();
 }
 
 ScAutoFormat::const_iterator ScAutoFormat::begin() const
 {
-    return maData.begin();
+    return m_Data.begin();
 }
 
 ScAutoFormat::const_iterator ScAutoFormat::end() const
 {
-    return maData.end();
+    return m_Data.end();
 }
 
 ScAutoFormat::iterator ScAutoFormat::begin()
 {
-    return maData.begin();
+    return m_Data.begin();
 }
 
 ScAutoFormat::iterator ScAutoFormat::end()
 {
-    return maData.end();
+    return m_Data.end();
 }
 
 bool ScAutoFormat::Load()
@@ -992,7 +1008,7 @@ bool ScAutoFormat::Load()
     SvtPathOptions aPathOpt;
     aURL.SetSmartURL( aPathOpt.GetUserConfigPath() );
     aURL.setFinalSlash();
-    aURL.Append( OUString( sAutoTblFmtName ) );
+    aURL.Append( sAutoTblFmtName );
 
     SfxMedium aMedium( aURL.GetMainURL(INetURLObject::NO_DECODE), StreamMode::READ );
     SvStream* pStream = aMedium.GetInStream();
@@ -1074,9 +1090,9 @@ bool ScAutoFormat::Save()
 
         bRet &= (rStream.GetError() == 0);
 
-        rStream.WriteUInt16( maData.size() - 1 );
+        rStream.WriteUInt16( m_Data.size() - 1 );
         bRet &= (rStream.GetError() == 0);
-        MapType::iterator it = maData.begin(), itEnd = maData.end();
+        MapType::iterator it = m_Data.begin(), itEnd = m_Data.end();
         if (it != itEnd)
         {
             for (++it; bRet && it != itEnd; ++it) // Skip the first item.

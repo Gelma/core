@@ -11,7 +11,6 @@ package org.libreoffice;
 
 import android.graphics.Bitmap;
 import android.graphics.PointF;
-import android.graphics.RectF;
 import android.view.KeyEvent;
 
 import org.mozilla.gecko.gfx.CairoImage;
@@ -89,7 +88,7 @@ public interface TileProvider {
      * @param documentCoordinate - coordinate relative to the document where the mouse button should be triggered
      * @param numberOfClicks     - number of clicks (1 - single click, 2 - double click)
      */
-    void mouseButtonDown(PointF documentCoordinate, int numberOfClicks);
+    void mouseButtonDown(PointF documentCoordinate, int numberOfClicks, float zoomFactor);
 
 
     /**
@@ -108,14 +107,14 @@ public interface TileProvider {
      * @param documentCoordinate - coordinate relative to the document where the mouse button should be triggered
      * @param numberOfClicks     - number of clicks (1 - single click, 2 - double click)
      */
-    void mouseButtonUp(PointF documentCoordinate, int numberOfClicks);
+    void mouseButtonUp(PointF documentCoordinate, int numberOfClicks, float zoomFactor);
 
     /**
      * Post a UNO command to LOK.
      *
      * @param command - the .uno: command, like ".uno:Bold"
      */
-    void postUnoCommand(String command);
+    void postUnoCommand(String command, String arguments);
 
     /**
      * Send text selection start coordinate.

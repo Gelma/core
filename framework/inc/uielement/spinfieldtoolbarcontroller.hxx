@@ -35,31 +35,12 @@ namespace framework
 
 class SpinfieldControl;
 
-class ISpinfieldListener
-{
-    public:
-        virtual void Up() = 0;
-        virtual void Down() = 0;
-        virtual void First() = 0;
-        virtual void Last() = 0;
-        virtual void KeyInput( const KeyEvent& rKEvt ) = 0;
-        virtual void Modify() = 0;
-        virtual void GetFocus() = 0;
-        virtual void StateChanged( StateChangedType nType ) = 0;
-        virtual void DataChanged( const DataChangedEvent& rDCEvt ) = 0;
-        virtual bool PreNotify( NotifyEvent& rNEvt ) = 0;
-
-    protected:
-        ~ISpinfieldListener() {}
-};
-
-class SpinfieldToolbarController : public ISpinfieldListener,
-                                   public ComplexToolbarController
+class SpinfieldToolbarController : public ComplexToolbarController
 
 {
     public:
-        SpinfieldToolbarController( const com::sun::star::uno::Reference< com::sun::star::uno::XComponentContext >& rxContext,
-                                    const com::sun::star::uno::Reference< com::sun::star::frame::XFrame >& rFrame,
+        SpinfieldToolbarController( const css::uno::Reference< css::uno::XComponentContext >& rxContext,
+                                    const css::uno::Reference< css::frame::XFrame >& rFrame,
                                     ToolBox* pToolBar,
                                     sal_uInt16 nID,
                                     sal_Int32 nWidth,
@@ -67,26 +48,23 @@ class SpinfieldToolbarController : public ISpinfieldListener,
         virtual ~SpinfieldToolbarController();
 
         // XComponent
-        virtual void SAL_CALL dispose() throw ( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual void SAL_CALL dispose() throw ( css::uno::RuntimeException, std::exception ) override;
 
-        // ISpinfieldListener
-        virtual void Up() SAL_OVERRIDE;
-        virtual void Down() SAL_OVERRIDE;
-        virtual void First() SAL_OVERRIDE;
-        virtual void Last() SAL_OVERRIDE;
-        virtual void KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
-        virtual void Modify() SAL_OVERRIDE;
-        virtual void GetFocus() SAL_OVERRIDE;
-        virtual void StateChanged( StateChangedType nType ) SAL_OVERRIDE;
-        virtual void DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
-        virtual bool PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+        // called from SpinfieldControl
+        void Up();
+        void Down();
+        void First();
+        void Last();
+        void Modify();
+        void GetFocus();
+        bool PreNotify( NotifyEvent& rNEvt );
 
     protected:
-        virtual void executeControlCommand( const ::com::sun::star::frame::ControlCommand& rControlCommand ) SAL_OVERRIDE;
-        virtual ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue> getExecuteArgs(sal_Int16 KeyModifier) const SAL_OVERRIDE;
+        virtual void executeControlCommand( const css::frame::ControlCommand& rControlCommand ) override;
+        virtual css::uno::Sequence< css::beans::PropertyValue> getExecuteArgs(sal_Int16 KeyModifier) const override;
 
     private:
-        bool impl_getValue( const ::com::sun::star::uno::Any& rAny, sal_Int32& nValue, double& fValue, bool& bFloat );
+        bool impl_getValue( const css::uno::Any& rAny, sal_Int32& nValue, double& fValue, bool& bFloat );
         OUString impl_formatOutputString( double fValue );
 
         bool              m_bFloat,

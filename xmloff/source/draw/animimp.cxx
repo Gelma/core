@@ -326,7 +326,6 @@ public:
     OUString msDimPrev;
     OUString msEffect;
     OUString msPlayFull;
-    OUString msPresOrder;
     OUString msSound;
     OUString msSoundOn;
     OUString msSpeed;
@@ -341,7 +340,6 @@ public:
         msDimPrev( "DimPrevious" ),
         msEffect( "Effect" ),
         msPlayFull( "PlayFull" ),
-        msPresOrder( "PresentationOrder" ),
         msSound( "Sound" ),
         msSoundOn( "SoundOn" ),
         msSpeed( "Speed" ),
@@ -380,7 +378,6 @@ public:
     OUString        maPathShapeId;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     XMLAnimationsEffectContext( SvXMLImport& rImport,
         sal_uInt16 nPrfx,
@@ -389,10 +386,10 @@ public:
         AnimImpImpl* pImpl);
     virtual ~XMLAnimationsEffectContext();
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
     virtual SvXMLImportContext * CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName,
-        const Reference< XAttributeList >& xAttrList ) SAL_OVERRIDE;
+        const Reference< XAttributeList >& xAttrList ) override;
 };
 
 class XMLAnimationsSoundContext : public SvXMLImportContext
@@ -400,13 +397,11 @@ class XMLAnimationsSoundContext : public SvXMLImportContext
     XMLAnimationsEffectContext* mpParent;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     XMLAnimationsSoundContext( SvXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLocalName, const Reference< XAttributeList >& xAttrList, XMLAnimationsEffectContext* pParent );
     virtual ~XMLAnimationsSoundContext();
 };
 
-TYPEINIT1( XMLAnimationsSoundContext, SvXMLImportContext );
 
 XMLAnimationsSoundContext::XMLAnimationsSoundContext( SvXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLocalName, const Reference< XAttributeList >& xAttrList, XMLAnimationsEffectContext* pParent )
 : SvXMLImportContext( rImport, nPrfx, rLocalName ), mpParent( pParent )
@@ -443,7 +438,6 @@ XMLAnimationsSoundContext::~XMLAnimationsSoundContext()
 {
 }
 
-TYPEINIT1( XMLAnimationsEffectContext, SvXMLImportContext );
 
 XMLAnimationsEffectContext::XMLAnimationsEffectContext( SvXMLImport& rImport,  sal_uInt16 nPrfx, const OUString& rLocalName,  const Reference< XAttributeList >& xAttrList, AnimImpImpl* pImpl )
 :   SvXMLImportContext(rImport, nPrfx, rLocalName),
@@ -563,7 +557,7 @@ void XMLAnimationsEffectContext::EndElement()
             Reference< XPropertySet > xSet;
             if( mpImpl->maLastShapeId != maShapeId )
             {
-                xSet = Reference< XPropertySet >::query( GetImport().getInterfaceToIdentifierMapper().getReference( maShapeId ) );
+                xSet.set( GetImport().getInterfaceToIdentifierMapper().getReference( maShapeId ), UNO_QUERY );
                 if( xSet.is() )
                 {
                     // check for presentation shape service
@@ -650,10 +644,9 @@ void XMLAnimationsEffectContext::EndElement()
     }
 }
 
-TYPEINIT1( XMLAnimationsContext, SvXMLImportContext );
 
 XMLAnimationsContext::XMLAnimationsContext( SvXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& )
+        const css::uno::Reference< css::xml::sax::XAttributeList>& )
 : SvXMLImportContext(rImport, nPrfx, rLocalName)
 {
     mpImpl = new AnimImpImpl();
@@ -665,7 +658,7 @@ XMLAnimationsContext::~XMLAnimationsContext()
 }
 
 SvXMLImportContext * XMLAnimationsContext::CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList )
+        const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList )
 {
     return new XMLAnimationsEffectContext( GetImport(), nPrefix, rLocalName,  xAttrList, mpImpl );
 }

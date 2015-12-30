@@ -32,7 +32,6 @@
 #include <vector>
 
 #include <tools/solar.h>
-#include <tools/stream.hxx>
 #include <rtl/ustring.hxx>
 #include "sortedarray.hxx"
 
@@ -40,6 +39,8 @@
 #include <types.hxx>
 
 #include <unomid.h>
+
+class SvStream;
 
 //--Line below which the code has meaningful comments
 
@@ -81,7 +82,7 @@ public:
 
     SprmInfo const * search(sal_uInt16 id) const {
         Map::const_iterator i(map_.find(id));
-        return i == map_.end() ? 0 : &i->second;
+        return i == map_.end() ? nullptr : &i->second;
     }
 
 private:
@@ -169,7 +170,7 @@ class  WW8PLCFx_PCD;
  */
 void WW8ReadSTTBF(bool bVer8, SvStream& rStrm, sal_uInt32 nStart, sal_Int32 nLen,
     sal_uInt16 nExtraLen, rtl_TextEncoding eCS, ::std::vector<OUString> &rArray,
-    ::std::vector<ww::bytes>* pExtraArray = 0, ::std::vector<OUString>* pValueArray = 0);
+    ::std::vector<ww::bytes>* pExtraArray = nullptr, ::std::vector<OUString>* pValueArray = nullptr);
 
 struct WW8FieldDesc
 {
@@ -227,7 +228,7 @@ public:
 
     const void* GetData( long nInIdx ) const
     {
-        return ( nInIdx >= nIMax ) ? 0
+        return ( nInIdx >= nIMax ) ? nullptr
             : static_cast<const void*>(&pPLCF_Contents[nInIdx * nStru]);
     }
     sal_Int32 GetPos( long nInIdx ) const
@@ -262,13 +263,13 @@ public:
     const sal_uInt8* FindSprm(sal_uInt16 nId);
     void  advance();
     const sal_uInt8* GetSprms() const
-        { return ( pSprms && (0 < nRemLen) ) ? pSprms : 0; }
+        { return ( pSprms && (0 < nRemLen) ) ? pSprms : nullptr; }
     const sal_uInt8* GetAktParams() const { return pAktParams; }
     sal_uInt16 GetAktId() const { return nAktId; }
 
 private:
-    WW8SprmIter(const WW8SprmIter&) SAL_DELETED_FUNCTION;
-    WW8SprmIter& operator=(const WW8SprmIter&) SAL_DELETED_FUNCTION;
+    WW8SprmIter(const WW8SprmIter&) = delete;
+    WW8SprmIter& operator=(const WW8SprmIter&) = delete;
 };
 
 /* among others for FKPs to normal attr., i.e. one less attr than positions */
@@ -313,7 +314,7 @@ public:
 
     const void* GetData( sal_Int32 nInIdx ) const
     {
-        return ( nInIdx >= nIMax ) ? 0 :
+        return ( nInIdx >= nIMax ) ? nullptr :
             static_cast<const void*>(&pPLCF_Contents[nInIdx * nStru]);
     }
 };
@@ -341,8 +342,8 @@ private:
     WW8PLCFpcd& rPLCF;
     long nIdx;
 
-    WW8PLCFpcd_Iter(const WW8PLCFpcd_Iter&) SAL_DELETED_FUNCTION;
-    WW8PLCFpcd_Iter& operator=(const WW8PLCFpcd_Iter&) SAL_DELETED_FUNCTION;
+    WW8PLCFpcd_Iter(const WW8PLCFpcd_Iter&) = delete;
+    WW8PLCFpcd_Iter& operator=(const WW8PLCFpcd_Iter&) = delete;
 
 public:
     WW8PLCFpcd_Iter( WW8PLCFpcd& rPLCFpcd, long nStartPos = -1 );
@@ -363,7 +364,7 @@ public:
 enum ePLCFT{ CHP=0, PAP, SEP, /*HED, FNR, ENR,*/ PLCF_END };
 
 //Its hardcoded that eFTN be the first one: A very poor hack, needs to be fixed
-enum eExtSprm { eFTN = 256, eEDN = 257, eFLD = 258, eBKN = 259, eAND = 260, eATNBKN = 261 };
+enum eExtSprm { eFTN = 256, eEDN = 257, eFLD = 258, eBKN = 259, eAND = 260, eATNBKN = 261, eFACTOIDBKN = 262 };
 
 /*
     pure virtual:
@@ -376,8 +377,8 @@ private:
     WW8_FC nStartFc;
     bool bDirty;
 
-    WW8PLCFx(const WW8PLCFx&) SAL_DELETED_FUNCTION;
-    WW8PLCFx& operator=(const WW8PLCFx&) SAL_DELETED_FUNCTION;
+    WW8PLCFx(const WW8PLCFx&) = delete;
+    WW8PLCFx& operator=(const WW8PLCFx&) = delete;
 
 public:
     WW8PLCFx(ww::WordVersion eVersion, bool bSprm)
@@ -418,18 +419,18 @@ private:
                                 // 1 byte param
     sal_uInt16 nGrpprls;            // attribute count of this
 
-    WW8PLCFx_PCDAttrs(const WW8PLCFx_PCDAttrs&) SAL_DELETED_FUNCTION;
-    WW8PLCFx_PCDAttrs& operator=(const WW8PLCFx_PCDAttrs&) SAL_DELETED_FUNCTION;
+    WW8PLCFx_PCDAttrs(const WW8PLCFx_PCDAttrs&) = delete;
+    WW8PLCFx_PCDAttrs& operator=(const WW8PLCFx_PCDAttrs&) = delete;
 
 public:
     WW8PLCFx_PCDAttrs(ww::WordVersion eVersion, WW8PLCFx_PCD* pPLCFx_PCD,
         const WW8ScannerBase* pBase );
-    virtual sal_uInt32 GetIdx() const SAL_OVERRIDE;
-    virtual void SetIdx( sal_uLong nI ) SAL_OVERRIDE;
-    virtual bool SeekPos(WW8_CP nCpPos) SAL_OVERRIDE;
-    virtual WW8_FC Where() SAL_OVERRIDE;
-    virtual void GetSprms( WW8PLCFxDesc* p ) SAL_OVERRIDE;
-    virtual void advance() SAL_OVERRIDE;
+    virtual sal_uInt32 GetIdx() const override;
+    virtual void SetIdx( sal_uLong nI ) override;
+    virtual bool SeekPos(WW8_CP nCpPos) override;
+    virtual WW8_FC Where() override;
+    virtual void GetSprms( WW8PLCFxDesc* p ) override;
+    virtual void advance() override;
 
     WW8PLCFpcd_Iter* GetIter() const { return pPcdI; }
 };
@@ -441,20 +442,20 @@ private:
     bool bVer67;
     WW8_CP nClipStart;
 
-    WW8PLCFx_PCD(const WW8PLCFx_PCD&) SAL_DELETED_FUNCTION;
-    WW8PLCFx_PCD& operator=(const WW8PLCFx_PCD&) SAL_DELETED_FUNCTION;
+    WW8PLCFx_PCD(const WW8PLCFx_PCD&) = delete;
+    WW8PLCFx_PCD& operator=(const WW8PLCFx_PCD&) = delete;
 
 public:
     WW8PLCFx_PCD(ww::WordVersion eVersion, WW8PLCFpcd* pPLCFpcd,
         WW8_CP nStartCp, bool bVer67P);
     virtual ~WW8PLCFx_PCD();
     sal_uLong GetIMax() const;
-    virtual sal_uInt32 GetIdx() const SAL_OVERRIDE;
-    virtual void SetIdx( sal_uLong nI ) SAL_OVERRIDE;
-    virtual bool SeekPos(WW8_CP nCpPos) SAL_OVERRIDE;
-    virtual WW8_FC Where() SAL_OVERRIDE;
-    virtual long GetNoSprms( WW8_CP& rStart, WW8_CP&, sal_Int32& rLen ) SAL_OVERRIDE;
-    virtual void advance() SAL_OVERRIDE;
+    virtual sal_uInt32 GetIdx() const override;
+    virtual void SetIdx( sal_uLong nI ) override;
+    virtual bool SeekPos(WW8_CP nCpPos) override;
+    virtual WW8_FC Where() override;
+    virtual long GetNoSprms( WW8_CP& rStart, WW8_CP&, sal_Int32& rLen ) override;
+    virtual void advance() override;
     WW8_CP AktPieceStartFc2Cp( WW8_FC nStartPos );
     WW8_FC AktPieceStartCp2Fc( WW8_CP nCp );
     static void AktPieceFc2Cp(WW8_CP& rStartPos, WW8_CP& rEndPos,
@@ -490,7 +491,7 @@ public:
             sal_uInt16 mnIStd; // only for Fkp.Papx (actually Style-Nr)
             bool mbMustDelete;
 
-            explicit Entry(WW8_FC nFC) : mnFC(nFC), mpData(0), mnLen(0),
+            explicit Entry(WW8_FC nFC) : mnFC(nFC), mpData(nullptr), mnLen(0),
                 mnIStd(0), mbMustDelete(false) {}
             Entry(const Entry &rEntry);
             ~Entry();
@@ -574,8 +575,8 @@ private:
 
     bool NewFkp();
 
-    WW8PLCFx_Fc_FKP(const WW8PLCFx_Fc_FKP&) SAL_DELETED_FUNCTION;
-    WW8PLCFx_Fc_FKP& operator=(const WW8PLCFx_Fc_FKP&) SAL_DELETED_FUNCTION;
+    WW8PLCFx_Fc_FKP(const WW8PLCFx_Fc_FKP&) = delete;
+    WW8PLCFx_Fc_FKP& operator=(const WW8PLCFx_Fc_FKP&) = delete;
 
 protected:
     ePLCFT ePLCF;
@@ -585,17 +586,17 @@ public:
     WW8PLCFx_Fc_FKP( SvStream* pSt, SvStream* pTableSt, SvStream* pDataSt,
         const WW8Fib& rFib, ePLCFT ePl, WW8_FC nStartFcL );
     virtual ~WW8PLCFx_Fc_FKP();
-    virtual sal_uInt32 GetIdx() const SAL_OVERRIDE;
-    virtual void SetIdx( sal_uLong nIdx ) SAL_OVERRIDE;
-    virtual bool SeekPos(WW8_FC nFcPos) SAL_OVERRIDE;
-    virtual WW8_FC Where() SAL_OVERRIDE;
+    virtual sal_uInt32 GetIdx() const override;
+    virtual void SetIdx( sal_uLong nIdx ) override;
+    virtual bool SeekPos(WW8_FC nFcPos) override;
+    virtual WW8_FC Where() override;
     sal_uInt8* GetSprmsAndPos( WW8_FC& rStart, WW8_FC& rEnd, sal_Int32& rLen );
-    virtual void advance() SAL_OVERRIDE;
-    virtual sal_uInt16 GetIstd() const SAL_OVERRIDE;
+    virtual void advance() override;
+    virtual sal_uInt16 GetIstd() const override;
     void GetPCDSprms( WW8PLCFxDesc& rDesc );
     const sal_uInt8* HasSprm( sal_uInt16 nId );
     bool HasSprm(sal_uInt16 nId, std::vector<const sal_uInt8 *> &rResult);
-    bool HasFkp() const { return (0 != pFkp); }
+    bool HasFkp() const { return (nullptr != pFkp); }
 };
 
 /// iterator for Piece Table Exceptions of Fkps works on CPs (high-level)
@@ -609,8 +610,8 @@ private:
     bool bLineEnd : 1;
     bool bComplex : 1;
 
-    WW8PLCFx_Cp_FKP(const WW8PLCFx_Cp_FKP&) SAL_DELETED_FUNCTION;
-    WW8PLCFx_Cp_FKP& operator=(const WW8PLCFx_Cp_FKP&) SAL_DELETED_FUNCTION;
+    WW8PLCFx_Cp_FKP(const WW8PLCFx_Cp_FKP&) = delete;
+    WW8PLCFx_Cp_FKP& operator=(const WW8PLCFx_Cp_FKP&) = delete;
 
 public:
     WW8PLCFx_Cp_FKP( SvStream* pSt, SvStream* pTableSt, SvStream* pDataSt,
@@ -620,14 +621,14 @@ public:
     sal_uLong GetPCDIMax() const;
     sal_uLong GetPCDIdx() const;
     void SetPCDIdx( sal_uLong nIdx );
-    virtual sal_uLong GetIdx2() const SAL_OVERRIDE;
-    virtual void  SetIdx2( sal_uLong nIdx ) SAL_OVERRIDE;
-    virtual bool SeekPos(WW8_CP nCpPos) SAL_OVERRIDE;
-    virtual WW8_CP Where() SAL_OVERRIDE;
-    virtual void GetSprms( WW8PLCFxDesc* p ) SAL_OVERRIDE;
-    virtual void advance() SAL_OVERRIDE;
-    virtual void Save( WW8PLCFxSave1& rSave ) const SAL_OVERRIDE;
-    virtual void Restore( const WW8PLCFxSave1& rSave ) SAL_OVERRIDE;
+    virtual sal_uLong GetIdx2() const override;
+    virtual void  SetIdx2( sal_uLong nIdx ) override;
+    virtual bool SeekPos(WW8_CP nCpPos) override;
+    virtual WW8_CP Where() override;
+    virtual void GetSprms( WW8PLCFxDesc* p ) override;
+    virtual void advance() override;
+    virtual void Save( WW8PLCFxSave1& rSave ) const override;
+    virtual void Restore( const WW8PLCFxSave1& rSave ) override;
 };
 
 /// Iterator for Piece Table Exceptions of Sepx
@@ -641,19 +642,19 @@ private:
     sal_uInt16 nArrMax;
     sal_uInt16 nSprmSiz;
 
-    WW8PLCFx_SEPX(const WW8PLCFx_SEPX&) SAL_DELETED_FUNCTION;
-    WW8PLCFx_SEPX& operator=(const WW8PLCFx_SEPX&) SAL_DELETED_FUNCTION;
+    WW8PLCFx_SEPX(const WW8PLCFx_SEPX&) = delete;
+    WW8PLCFx_SEPX& operator=(const WW8PLCFx_SEPX&) = delete;
 
 public:
     WW8PLCFx_SEPX( SvStream* pSt, SvStream* pTablexySt, const WW8Fib& rFib,
         WW8_CP nStartCp );
     virtual ~WW8PLCFx_SEPX();
-    virtual sal_uInt32 GetIdx() const SAL_OVERRIDE;
-    virtual void SetIdx( sal_uLong nIdx ) SAL_OVERRIDE;
-    virtual bool SeekPos(WW8_CP nCpPos) SAL_OVERRIDE;
-    virtual WW8_FC Where() SAL_OVERRIDE;
-    virtual void GetSprms( WW8PLCFxDesc* p ) SAL_OVERRIDE;
-    virtual void advance() SAL_OVERRIDE;
+    virtual sal_uInt32 GetIdx() const override;
+    virtual void SetIdx( sal_uLong nIdx ) override;
+    virtual bool SeekPos(WW8_CP nCpPos) override;
+    virtual WW8_FC Where() override;
+    virtual void GetSprms( WW8PLCFxDesc* p ) override;
+    virtual void advance() override;
     const sal_uInt8* HasSprm( sal_uInt16 nId ) const;
     const sal_uInt8* HasSprm( sal_uInt16 nId, sal_uInt8 n2nd ) const;
     const sal_uInt8* HasSprm( sal_uInt16 nId, const sal_uInt8* pOtherSprms,
@@ -669,26 +670,26 @@ private:
     WW8PLCF* pRef;
     WW8PLCF* pText;
 
-    WW8PLCFx_SubDoc(const WW8PLCFx_SubDoc&) SAL_DELETED_FUNCTION;
-    WW8PLCFx_SubDoc& operator=(const WW8PLCFx_SubDoc&) SAL_DELETED_FUNCTION;
+    WW8PLCFx_SubDoc(const WW8PLCFx_SubDoc&) = delete;
+    WW8PLCFx_SubDoc& operator=(const WW8PLCFx_SubDoc&) = delete;
 
 public:
     WW8PLCFx_SubDoc(SvStream* pSt, ww::WordVersion eVersion, WW8_CP nStartCp,
     long nFcRef, long nLenRef, long nFcText, long nLenText, long nStruc = 0);
     virtual ~WW8PLCFx_SubDoc();
-    virtual sal_uInt32 GetIdx() const SAL_OVERRIDE;
-    virtual void SetIdx( sal_uLong nIdx ) SAL_OVERRIDE;
-    virtual bool SeekPos(WW8_CP nCpPos) SAL_OVERRIDE;
-    virtual WW8_FC Where() SAL_OVERRIDE;
+    virtual sal_uInt32 GetIdx() const override;
+    virtual void SetIdx( sal_uLong nIdx ) override;
+    virtual bool SeekPos(WW8_CP nCpPos) override;
+    virtual WW8_FC Where() override;
 
     // returns reference descriptors
     const void* GetData( long nIdx = -1 ) const
     {
-        return pRef ? pRef->GetData( -1L == nIdx ? pRef->GetIdx() : nIdx ) : 0;
+        return pRef ? pRef->GetData( -1L == nIdx ? pRef->GetIdx() : nIdx ) : nullptr;
     }
 
-    virtual void GetSprms(WW8PLCFxDesc* p) SAL_OVERRIDE;
-    virtual void advance() SAL_OVERRIDE;
+    virtual void GetSprms(WW8PLCFxDesc* p) override;
+    virtual void advance() override;
     long Count() const { return ( pRef ) ? pRef->GetIMax() : 0; }
 };
 
@@ -698,18 +699,18 @@ class WW8PLCFx_FLD : public WW8PLCFx
 private:
     WW8PLCFspecial* pPLCF;
     const WW8Fib& rFib;
-    WW8PLCFx_FLD(const WW8PLCFx_FLD&) SAL_DELETED_FUNCTION;
-    WW8PLCFx_FLD& operator=(const WW8PLCFx_FLD &) SAL_DELETED_FUNCTION;
+    WW8PLCFx_FLD(const WW8PLCFx_FLD&) = delete;
+    WW8PLCFx_FLD& operator=(const WW8PLCFx_FLD &) = delete;
 
 public:
     WW8PLCFx_FLD(SvStream* pSt, const WW8Fib& rMyFib, short nType);
     virtual ~WW8PLCFx_FLD();
-    virtual sal_uInt32 GetIdx() const SAL_OVERRIDE;
-    virtual void SetIdx( sal_uLong nIdx ) SAL_OVERRIDE;
-    virtual bool SeekPos(WW8_CP nCpPos) SAL_OVERRIDE;
-    virtual WW8_FC Where() SAL_OVERRIDE;
-    virtual void GetSprms(WW8PLCFxDesc* p) SAL_OVERRIDE;
-    virtual void advance() SAL_OVERRIDE;
+    virtual sal_uInt32 GetIdx() const override;
+    virtual void SetIdx( sal_uLong nIdx ) override;
+    virtual bool SeekPos(WW8_CP nCpPos) override;
+    virtual WW8_FC Where() override;
+    virtual void GetSprms(WW8PLCFxDesc* p) override;
+    virtual void advance() override;
     bool StartPosIsFieldStart();
     bool EndPosIsFieldEnd(WW8_CP&);
     bool GetPara(long nIdx, WW8FieldDesc& rF);
@@ -728,21 +729,21 @@ private:
     sal_uInt16 nIsEnd;
     sal_Int32 nBookmarkId; // counter incremented by GetUniqueBookmarkName.
 
-    WW8PLCFx_Book(const WW8PLCFx_Book&) SAL_DELETED_FUNCTION;
-    WW8PLCFx_Book& operator=(const WW8PLCFx_Book&) SAL_DELETED_FUNCTION;
+    WW8PLCFx_Book(const WW8PLCFx_Book&) = delete;
+    WW8PLCFx_Book& operator=(const WW8PLCFx_Book&) = delete;
 
 public:
     WW8PLCFx_Book(SvStream* pTableSt,const WW8Fib& rFib);
     virtual ~WW8PLCFx_Book();
     long GetIMax() const { return nIMax; }
-    virtual sal_uInt32 GetIdx() const SAL_OVERRIDE;
-    virtual void SetIdx( sal_uLong nI ) SAL_OVERRIDE;
-    virtual sal_uLong GetIdx2() const SAL_OVERRIDE;
-    virtual void SetIdx2( sal_uLong nIdx ) SAL_OVERRIDE;
-    virtual bool SeekPos(WW8_CP nCpPos) SAL_OVERRIDE;
-    virtual WW8_FC Where() SAL_OVERRIDE;
-    virtual long GetNoSprms( WW8_CP& rStart, WW8_CP& rEnd, sal_Int32& rLen ) SAL_OVERRIDE;
-    virtual void advance() SAL_OVERRIDE;
+    virtual sal_uInt32 GetIdx() const override;
+    virtual void SetIdx( sal_uLong nI ) override;
+    virtual sal_uLong GetIdx2() const override;
+    virtual void SetIdx2( sal_uLong nIdx ) override;
+    virtual bool SeekPos(WW8_CP nCpPos) override;
+    virtual WW8_FC Where() override;
+    virtual long GetNoSprms( WW8_CP& rStart, WW8_CP& rEnd, sal_Int32& rLen ) override;
+    virtual void advance() override;
     const OUString* GetName() const;
     WW8_CP GetStartPos() const
         { return ( nIsEnd ) ? WW8_CP_MAX : pBook[0]->Where(); }
@@ -766,22 +767,52 @@ private:
     sal_Int32 nIMax;
     bool m_bIsEnd;
 
-    WW8PLCFx_AtnBook(const WW8PLCFx_AtnBook&) SAL_DELETED_FUNCTION;
-    WW8PLCFx_AtnBook& operator=(const WW8PLCFx_AtnBook&) SAL_DELETED_FUNCTION;
+    WW8PLCFx_AtnBook(const WW8PLCFx_AtnBook&) = delete;
+    WW8PLCFx_AtnBook& operator=(const WW8PLCFx_AtnBook&) = delete;
 
 public:
     WW8PLCFx_AtnBook(SvStream* pTableSt,const WW8Fib& rFib);
     virtual ~WW8PLCFx_AtnBook();
-    virtual sal_uInt32 GetIdx() const SAL_OVERRIDE;
-    virtual void SetIdx( sal_uLong nI ) SAL_OVERRIDE;
-    virtual sal_uLong GetIdx2() const SAL_OVERRIDE;
-    virtual void SetIdx2( sal_uLong nIdx ) SAL_OVERRIDE;
-    virtual bool SeekPos(WW8_CP nCpPos) SAL_OVERRIDE;
-    virtual WW8_FC Where() SAL_OVERRIDE;
-    virtual long GetNoSprms( WW8_CP& rStart, WW8_CP& rEnd, sal_Int32& rLen ) SAL_OVERRIDE;
-    virtual void advance() SAL_OVERRIDE;
+    virtual sal_uInt32 GetIdx() const override;
+    virtual void SetIdx( sal_uLong nI ) override;
+    virtual sal_uLong GetIdx2() const override;
+    virtual void SetIdx2( sal_uLong nIdx ) override;
+    virtual bool SeekPos(WW8_CP nCpPos) override;
+    virtual WW8_FC Where() override;
+    virtual long GetNoSprms( WW8_CP& rStart, WW8_CP& rEnd, sal_Int32& rLen ) override;
+    virtual void advance() override;
 
     /// Handle is the unique ID of an annotation mark.
+    long getHandle() const;
+    bool getIsEnd() const;
+};
+
+/// Handles the import of PlcfBkfFactoid and PlcfBklFactoid: start / end position of factoids.
+class WW8PLCFx_FactoidBook : public WW8PLCFx
+{
+private:
+    /// Start and end positions.
+    WW8PLCFspecial* m_pBook[2];
+    /// Number of factoid marks
+    sal_Int32 m_nIMax;
+    bool m_bIsEnd;
+
+    WW8PLCFx_FactoidBook(const WW8PLCFx_FactoidBook&) = delete;
+    WW8PLCFx_FactoidBook& operator=(const WW8PLCFx_FactoidBook&) = delete;
+
+public:
+    WW8PLCFx_FactoidBook(SvStream* pTableSt,const WW8Fib& rFib);
+    virtual ~WW8PLCFx_FactoidBook();
+    virtual sal_uInt32 GetIdx() const override;
+    virtual void SetIdx(sal_uLong nI) override;
+    virtual sal_uLong GetIdx2() const override;
+    virtual void SetIdx2(sal_uLong nIdx) override;
+    virtual bool SeekPos(WW8_CP nCpPos) override;
+    virtual WW8_FC Where() override;
+    virtual long GetNoSprms(WW8_CP& rStart, WW8_CP& rEnd, sal_Int32& rLen) override;
+    virtual void advance() override;
+
+    /// Handle is the unique ID of a factoid mark.
     long getHandle() const;
     bool getIsEnd() const;
 };
@@ -820,7 +851,7 @@ enum ManTypes // enums for PLCFMan-ctor
 struct WW8PLCFxDesc
 {
     WW8PLCFx* pPLCFx;
-    ::std::stack<sal_uInt16>* pIdStk;  // memory for Attr-Id for Attr-end(s)
+    ::std::stack<sal_uInt16>* pIdStack;  // memory for Attr-Id for Attr-end(s)
     const sal_uInt8* pMemPos;// where are the Sprm(s)
     long nOrigSprmsLen;
 
@@ -833,7 +864,7 @@ struct WW8PLCFxDesc
                           // also a character run that ends on the same location
                           // as the paragraph mark is adjusted to end just before
                           // the paragraph mark so as to handle their close
-                          // first. The value being used to determing where the
+                          // first. The value being used to determining where the
                           // properties end is in nEndPos, but the original
                           // unadjusted end character position is important as
                           // it can be used as the beginning cp of the next set
@@ -850,9 +881,9 @@ struct WW8PLCFxDesc
     //GetSprms will not search for the sprms, but instead take the
     //existing ones.
     WW8PLCFxDesc()
-        : pPLCFx(0)
-        , pIdStk(0)
-        , pMemPos(0)
+        : pPLCFx(nullptr)
+        , pIdStack(nullptr)
+        , pMemPos(nullptr)
         , nOrigSprmsLen(0)
         , nStartPos(WW8_CP_MAX)
         , nEndPos(WW8_CP_MAX)
@@ -872,7 +903,7 @@ struct WW8PLCFxSaveAll;
 class WW8PLCFMan
 {
 public:
-    enum WW8PLCFManLimits {MAN_ANZ_PLCF = 11};
+    enum WW8PLCFManLimits {MAN_ANZ_PLCF = 12};
 
 private:
     wwSprmParser maSprmParser;
@@ -889,13 +920,13 @@ private:
 
     WW8PLCFxDesc aD[MAN_ANZ_PLCF];
     WW8PLCFxDesc *pChp, *pPap, *pSep, *pField, *pFootnote, *pEdn, *pBkm, *pPcd,
-        *pPcdA, *pAnd, *pAtnBkm;
+        *pPcdA, *pAnd, *pAtnBkm, *pFactoidBkm;
     WW8PLCFspecial *pFdoa, *pTxbx, *pTxbxBkd,*pMagicTables, *pSubdocs;
     sal_uInt8* pExtendedAtrds;
 
     const WW8Fib* pWwFib;
 
-    sal_uInt16 WhereIdx(bool* pbStart=0, long* pPos=0) const;
+    sal_uInt16 WhereIdx(bool* pbStart=nullptr, long* pPos=nullptr) const;
     void AdjustEnds(WW8PLCFxDesc& rDesc);
     void GetNewSprms(WW8PLCFxDesc& rDesc);
     static void GetNewNoSprms(WW8PLCFxDesc& rDesc);
@@ -926,6 +957,7 @@ public:
     WW8PLCFx_SubDoc* GetAtn() const { return static_cast<WW8PLCFx_SubDoc*>(pAnd->pPLCFx); }
     WW8PLCFx_Book* GetBook() const { return static_cast<WW8PLCFx_Book*>(pBkm->pPLCFx); }
     WW8PLCFx_AtnBook* GetAtnBook() const { return static_cast<WW8PLCFx_AtnBook*>(pAtnBkm->pPLCFx); }
+    WW8PLCFx_FactoidBook* GetFactoidBook() const { return static_cast<WW8PLCFx_FactoidBook*>(pFactoidBkm->pPLCFx); }
     long GetCpOfs() const { return pChp->nCpOfs; }  // for Header/Footer...
 
     /* asks, if *current paragraph* has an Sprm of this type */
@@ -1001,6 +1033,8 @@ private:
     sal_uInt8*        pExtendedAtrds;   // Extended ATRDs
     WW8PLCFx_Book*    pBook;            // Bookmarks
     WW8PLCFx_AtnBook* pAtnBook;         // Annotationmarks
+    /// Smart tag bookmarks.
+    WW8PLCFx_FactoidBook* pFactoidBook;
 
     WW8PLCFpcd*         pPiecePLCF; // for FastSave ( Basis-PLCF without iterator )
     WW8PLCFpcd_Iter*    pPieceIter; // for FastSave ( iterator for previous )
@@ -1023,8 +1057,8 @@ public:
     //given that we never write fastsaved files you can use it, otherwise
     //I will beat you with a stick
     WW8_CP WW8Fc2Cp(WW8_FC nFcPos) const ;
-    WW8_FC WW8Cp2Fc(WW8_CP nCpPos, bool* pIsUnicode = 0,
-        WW8_CP* pNextPieceCp = 0, bool* pTestFlag = 0) const;
+    WW8_FC WW8Cp2Fc(WW8_CP nCpPos, bool* pIsUnicode = nullptr,
+        WW8_CP* pNextPieceCp = nullptr, bool* pTestFlag = nullptr) const;
 
     sal_Int32 WW8ReadString(SvStream& rStrm, OUString& rStr, WW8_CP nAktStartCp,
         long nTotalLen, rtl_TextEncoding eEnc ) const;
@@ -1418,7 +1452,37 @@ public:
     WW8_FC fcAtrdExtra;
     sal_uInt32 lcbAtrdExtra;
 
-    // 0x422 - 0x4D4 == ignore
+    // 0x422 - 0x429 == ignore
+
+    /// 0x42a smart-tag bookmark string table offset.
+    WW8_FC fcSttbfBkmkFactoid;
+    /// 0x42e smart-tag bookmark string table length.
+    sal_uInt32 lcbSttbfBkmkFactoid;
+    /// 0x432 smart-tag bookmark starts offset.
+    WW8_FC fcPlcfBkfFactoid;
+    /// 0x436 smart-tag bookmark ends length.
+    sal_uInt32 lcbPlcfBkfFactoid;
+
+    // 0x43a - 0x441 == ignore
+
+    /// 0x442 smart-tag bookmark ends offset.
+    WW8_FC fcPlcfBklFactoid;
+    /// 0x446 smart-tag bookmark ends length.
+    sal_uInt32 lcbPlcfBklFactoid;
+    /// 0x44a smart tag data offset.
+    WW8_FC fcFactoidData;
+    /// 0x44e smart tag data length.
+    sal_uInt32 lcbFactoidData;
+
+    // 0x452 - 0x4b9 == ignore
+
+    /// 0x4ba Plcffactoid offset.
+    WW8_FC fcPlcffactoid;
+    /// 0x4be Plcffactoid offset.
+    sal_uInt32 lcbPlcffactoid;
+
+    // 0x4bf - 0x4d4 == ignore
+
     WW8_FC fcHplxsdr;    //bizarrely, word xp seems to require this set to shows dates from AtrdExtra
     sal_uInt32 lcbHplxsdr;
 

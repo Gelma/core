@@ -20,7 +20,6 @@
 #ifndef INCLUDED_FRAMEWORK_INC_UIELEMENT_COMMANDINFO_HXX
 #define INCLUDED_FRAMEWORK_INC_UIELEMENT_COMMANDINFO_HXX
 
-#include <macros/generic.hxx>
 #include <stdtypes.h>
 
 namespace framework
@@ -29,17 +28,11 @@ namespace framework
 struct CommandInfo
 {
     CommandInfo() : nId( 0 ),
-                    nWidth( 0 ),
-                    nImageInfo( 0 ),
-                    bMirrored( false ),
-                    bRotated( false ) {}
+                    nImageInfo( 0 ) {}
 
     sal_uInt16                  nId;
-    sal_uInt16                  nWidth;
     ::std::vector< sal_uInt16 > aIds;
-    sal_Int16               nImageInfo;
-    bool                bMirrored : 1,
-                            bRotated  : 1;
+    sal_Int16                   nImageInfo;
 };
 
 typedef BaseHash< CommandInfo > CommandToInfoMap;

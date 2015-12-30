@@ -62,9 +62,9 @@ void BrowseBox::ConstructImpl( BrowserMode nMode )
 {
     OSL_TRACE( "BrowseBox: %p->ConstructImpl", this );
     bMultiSelection = false;
-    pColSel = 0;
-    pDataWin = 0;
-    pVScroll = 0;
+    pColSel = nullptr;
+    pDataWin = nullptr;
+    pVScroll = nullptr;
 
     pDataWin = VclPtr<BrowserDataWin>::Create( this ).get();
     pCols = new BrowserColumns;
@@ -249,7 +249,7 @@ void BrowseBox::InsertHandleColumn( sal_uLong nWidth )
     }
 #endif
 
-    pCols->insert( pCols->begin(), new BrowserColumn( 0, Image(), OUString(), nWidth, GetZoom() ) );
+    pCols->insert( pCols->begin(), new BrowserColumn( 0, OUString(), nWidth, GetZoom() ) );
     FreezeColumn( 0 );
 
     // adjust headerbar
@@ -285,11 +285,11 @@ void BrowseBox::InsertDataColumn( sal_uInt16 nItemId, const OUString& rText,
     {
         BrowserColumns::iterator it = pCols->begin();
         ::std::advance( it, nPos );
-        pCols->insert( it, new BrowserColumn( nItemId, Image(), rText, nWidth, GetZoom() ) );
+        pCols->insert( it, new BrowserColumn( nItemId, rText, nWidth, GetZoom() ) );
     }
     else
     {
-        pCols->push_back( new BrowserColumn( nItemId, Image(), rText, nWidth, GetZoom() ) );
+        pCols->push_back( new BrowserColumn( nItemId, rText, nWidth, GetZoom() ) );
     }
     if ( nCurColId == 0 )
         nCurColId = nItemId;
@@ -1579,7 +1579,7 @@ bool BrowseBox::GoToColumnId( sal_uInt16 nColId, bool bMakeVisible, bool bRowCol
     if ( nColId != nCurColId || (bMakeVisible && !IsFieldVisible(nCurRow, nColId, true)))
     {
         sal_uInt16 nNewPos = GetColumnPos(nColId);
-        BrowserColumn* pColumn = (nNewPos < pCols->size()) ? (*pCols)[ nNewPos ] : NULL;
+        BrowserColumn* pColumn = (nNewPos < pCols->size()) ? (*pCols)[ nNewPos ] : nullptr;
         DBG_ASSERT( pColumn, "no column object - invalid id?" );
         if ( !pColumn )
             return false;
@@ -2252,7 +2252,7 @@ void BrowseBox::SetMode( BrowserMode nMode )
             BrowserMode::NO_SCROLLBACK == ( nMode & BrowserMode::NO_SCROLLBACK);
 
     long nOldRowSel = bMultiSelection ? uRow.pSel->FirstSelected() : uRow.nSel;
-    MultiSelection *pOldRowSel = bMultiSelection ? uRow.pSel : 0;
+    MultiSelection *pOldRowSel = bMultiSelection ? uRow.pSel : nullptr;
     MultiSelection *pOldColSel = pColSel;
 
     pVScroll.disposeAndClear();
@@ -2317,7 +2317,7 @@ void BrowseBox::SetMode( BrowserMode nMode )
     else
     {
         delete pColSel;
-        pColSel = 0;
+        pColSel = nullptr;
     }
 
     if ( bMultiSelection )

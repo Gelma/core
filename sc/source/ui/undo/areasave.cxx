@@ -44,8 +44,6 @@ ScAreaLinkSaver::ScAreaLinkSaver( const ScAreaLinkSaver& rCopy ) :
 {
 }
 
-ScAreaLinkSaver::~ScAreaLinkSaver() {}
-
 bool ScAreaLinkSaver::IsEqualSource( const ScAreaLink& rCompare ) const
 {
     return ( aFileName.equals(rCompare.GetFile()) &&
@@ -106,8 +104,8 @@ bool ScAreaLinkSaveCollection::IsEqual( const ScDocument* pDoc ) const
         sal_uInt16 nLinkCount = rLinks.size();
         for (sal_uInt16 i=0; i<nLinkCount; i++)
         {
-            ::sfx2::SvBaseLink* pBase = *rLinks[i];
-            if (pBase->ISA(ScAreaLink))
+            ::sfx2::SvBaseLink* pBase = rLinks[i].get();
+            if (dynamic_cast<const ScAreaLink*>( pBase) !=  nullptr)
             {
                 if ( nPos >= size() || !(*this)[nPos].IsEqual( *static_cast<ScAreaLink*>(pBase) ) )
                     return false;
@@ -127,14 +125,14 @@ static ScAreaLink* lcl_FindLink( const ::sfx2::SvBaseLinks& rLinks, const ScArea
     sal_uInt16 nLinkCount = rLinks.size();
     for (sal_uInt16 i=0; i<nLinkCount; i++)
     {
-        ::sfx2::SvBaseLink* pBase = *rLinks[i];
-        if ( pBase->ISA(ScAreaLink) &&
+        ::sfx2::SvBaseLink* pBase = rLinks[i].get();
+        if ( dynamic_cast<const ScAreaLink*>( pBase) !=  nullptr &&
              rSaver.IsEqualSource( *static_cast<ScAreaLink*>(pBase) ) )
         {
             return static_cast<ScAreaLink*>(pBase);     // found
         }
     }
-    return NULL;    // not found
+    return nullptr;    // not found
 }
 
 void ScAreaLinkSaveCollection::Restore( ScDocument* pDoc )
@@ -163,7 +161,7 @@ void ScAreaLinkSaveCollection::Restore( ScDocument* pDoc )
 
 ScAreaLinkSaveCollection* ScAreaLinkSaveCollection::CreateFromDoc( const ScDocument* pDoc )
 {
-    ScAreaLinkSaveCollection* pColl = NULL;
+    ScAreaLinkSaveCollection* pColl = nullptr;
 
     sfx2::LinkManager* pLinkManager = const_cast<ScDocument*>(pDoc)->GetLinkManager();
     if (pLinkManager)
@@ -172,14 +170,13 @@ ScAreaLinkSaveCollection* ScAreaLinkSaveCollection::CreateFromDoc( const ScDocum
         sal_uInt16 nLinkCount = rLinks.size();
         for (sal_uInt16 i=0; i<nLinkCount; i++)
         {
-            ::sfx2::SvBaseLink* pBase = *rLinks[i];
-            if (pBase->ISA(ScAreaLink))
+            ::sfx2::SvBaseLink* pBase = rLinks[i].get();
+            if (dynamic_cast<const ScAreaLink*>( pBase) != nullptr)
             {
                 if (!pColl)
                     pColl = new ScAreaLinkSaveCollection;
 
-                ScAreaLinkSaver* pSaver = new ScAreaLinkSaver( *static_cast<ScAreaLink*>(pBase ));
-                pColl->push_back(pSaver);
+                pColl->push_back( ScAreaLinkSaver( *static_cast<ScAreaLink*>(pBase ) ) );
             }
         }
     }
@@ -202,7 +199,7 @@ size_t ScAreaLinkSaveCollection::size() const
     return maData.size();
 }
 
-void ScAreaLinkSaveCollection::push_back(ScAreaLinkSaver* p)
+void ScAreaLinkSaveCollection::push_back(const ScAreaLinkSaver& p)
 {
     maData.push_back(p);
 }

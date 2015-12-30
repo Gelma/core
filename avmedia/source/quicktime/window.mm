@@ -31,13 +31,13 @@ namespace avmedia { namespace quicktime {
 
 static ::osl::Mutex& ImplGetOwnStaticMutex()
 {
-    static ::osl::Mutex* pMutex = NULL;
+    static ::osl::Mutex* pMutex = nullptr;
 
-    if( pMutex == NULL )
+    if( pMutex == nullptr )
     {
         ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );
 
-        if( pMutex == NULL )
+        if( pMutex == nullptr )
         {
             static ::osl::Mutex aMutex;
             pMutex = &aMutex;
@@ -73,7 +73,7 @@ Window::Window( const uno::Reference< lang::XMultiServiceFactory >& i_rxMgr, Pla
         [mpParentView setAutoresizesSubviews: YES];
     }
 
-    OSL_TRACE ("Window::Window");
+    SAL_INFO ( "avmedia.quicktime", "Window::Window" );
 }
 
 Window::~Window()
@@ -144,7 +144,7 @@ awt::Rectangle SAL_CALL Window::getPosSize()
 void SAL_CALL Window::setVisible( sal_Bool )
     throw (uno::RuntimeException)
 {
-    OSL_TRACE ("Window::setVisible");
+    SAL_INFO ( "avmedia.quicktime", "Window::setVisible" );
 
 }
 
@@ -157,7 +157,7 @@ void SAL_CALL Window::setEnable( sal_Bool )
 void SAL_CALL Window::setFocus(  )
     throw (uno::RuntimeException)
 {
-    OSL_TRACE ("Window::setFocus");
+    SAL_INFO ( "avmedia.quicktime", "Window::setFocus" );
 }
 
 void SAL_CALL Window::addWindowListener( const uno::Reference< awt::XWindowListener >& xListener )
@@ -268,8 +268,7 @@ sal_Bool SAL_CALL Window::supportsService( const ::rtl::OUString& ServiceName )
 uno::Sequence< ::rtl::OUString > SAL_CALL Window::getSupportedServiceNames(  )
     throw (uno::RuntimeException)
 {
-    uno::Sequence< ::rtl::OUString > aRet(1);
-    aRet[0] = AVMEDIA_QUICKTIME_WINDOW_SERVICENAME;
+    uno::Sequence<OUString> aRet { AVMEDIA_QUICKTIME_WINDOW_SERVICENAME };
 
     return aRet;
 }

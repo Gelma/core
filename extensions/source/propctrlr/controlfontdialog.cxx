@@ -41,9 +41,9 @@ namespace pcr
 
     OControlFontDialog::OControlFontDialog(const Reference< XComponentContext >& _rxContext )
         :OGenericUnoDialog( _rxContext )
-        ,m_pFontItems(NULL)
-        ,m_pItemPool(NULL)
-        ,m_pItemPoolDefaults(NULL)
+        ,m_pFontItems(nullptr)
+        ,m_pItemPool(nullptr)
+        ,m_pItemPoolDefaults(nullptr)
     {
         registerProperty(PROPERTY_INTROSPECTEDOBJECT, OWN_PROPERTY_ID_INTROSPECTEDOBJECT,
             PropertyAttribute::BOUND | PropertyAttribute::TRANSIENT,
@@ -94,8 +94,7 @@ namespace pcr
 
     css::uno::Sequence<OUString> OControlFontDialog::getSupportedServiceNames_static() throw(RuntimeException)
     {
-        css::uno::Sequence<OUString> aSupported(1);
-        aSupported[0] = "com.sun.star.form.ControlFontDialog";
+        css::uno::Sequence<OUString> aSupported { "com.sun.star.form.ControlFontDialog" };
         return aSupported;
     }
 

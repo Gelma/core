@@ -80,8 +80,8 @@ SwParagraphNumTabPage::SwParagraphNumTabPage(vcl::Window* pParent, const SfxItem
     const SfxPoolItem* pItem;
     SfxObjectShell* pObjSh;
     if(SfxItemState::SET == rAttr.GetItemState(SID_HTML_MODE, false, &pItem) ||
-        ( 0 != ( pObjSh = SfxObjectShell::Current()) &&
-          0 != (pItem = pObjSh->GetItem(SID_HTML_MODE))))
+        ( nullptr != ( pObjSh = SfxObjectShell::Current()) &&
+          nullptr != (pItem = pObjSh->GetItem(SID_HTML_MODE))))
     {
         const sal_uInt16 nHtmlMode = static_cast<const SfxUInt16Item*>(pItem)->GetValue();
 
@@ -150,7 +150,7 @@ bool SwParagraphNumTabPage::FillItemSet( SfxItemSet* rSet )
         if(m_pNumberStyleLB->GetSelectEntryPos())
             aStyle = m_pNumberStyleLB->GetSelectEntry();
         const SfxStringItem* pOldRule = static_cast<const SfxStringItem*>(GetOldItem( *rSet, SID_ATTR_PARA_NUMRULE));
-        SfxStringItem* pRule = pOldRule ? static_cast<SfxStringItem*>(pOldRule->Clone()) : NULL;
+        SfxStringItem* pRule = pOldRule ? static_cast<SfxStringItem*>(pOldRule->Clone()) : nullptr;
         if (pRule)
         {
             pRule->SetValue(aStyle);
@@ -269,7 +269,7 @@ void    SwParagraphNumTabPage::Reset(const SfxItemSet* rSet)
     NewStartHdl_Impl(m_pNewStartCB);
     m_pNewStartNF->SaveValue();
     m_pNewStartNumberCB->SaveValue();
-    StyleHdl_Impl(m_pNumberStyleLB);
+    StyleHdl_Impl(*m_pNumberStyleLB.get());
     if( SfxItemState::DEFAULT <= rSet->GetItemState(RES_LINENUMBER))
     {
         const SwFormatLineNumber& rNum = static_cast<const SwFormatLineNumber&>(rSet->Get(RES_LINENUMBER));
@@ -327,21 +327,19 @@ IMPL_LINK_NOARG_TYPED(SwParagraphNumTabPage, LineCountHdl_Impl, Button*, void)
     m_pRestartBX->Enable(bEnableRestartValue);
 }
 
-IMPL_LINK_NOARG( SwParagraphNumTabPage, EditNumStyleSelectHdl_Impl )
+IMPL_LINK_NOARG_TYPED( SwParagraphNumTabPage, EditNumStyleSelectHdl_Impl, ListBox&, void )
 {
     sal_Int32 numSelectPos = m_pNumberStyleLB->GetSelectEntryPos();
     if ( numSelectPos == 0 )
         m_pEditNumStyleBtn->Disable();
     else
         m_pEditNumStyleBtn->Enable();
-
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(SwParagraphNumTabPage, EditNumStyleHdl_Impl, Button*, void)
 {
     OUString aTemplName(m_pNumberStyleLB->GetSelectEntry());
-    ExecuteEditNumStyle_Impl( SID_STYLE_EDIT, aTemplName, OUString(),SFX_STYLE_FAMILY_PSEUDO, 0 );
+    ExecuteEditNumStyle_Impl( SID_STYLE_EDIT, aTemplName, OUString(),SFX_STYLE_FAMILY_PSEUDO );
 }
 
 // Internal: Perform functions through the Dispatcher
@@ -366,7 +364,7 @@ bool SwParagraphNumTabPage::ExecuteEditNumStyle_Impl(
     if( !rRefStr.isEmpty() )
         pItems[ nCount++ ] = &aRefName;
 
-    pItems[ nCount++ ] = 0;
+    pItems[ nCount++ ] = nullptr;
 
     sal_uInt16 nModi = pModifier ? *pModifier : 0;
     const SfxPoolItem* mpItem = rDispatcher.Execute(
@@ -380,13 +378,11 @@ bool SwParagraphNumTabPage::ExecuteEditNumStyle_Impl(
 
 }
 
-IMPL_LINK( SwParagraphNumTabPage, StyleHdl_Impl, ListBox*, pBox )
+IMPL_LINK_TYPED( SwParagraphNumTabPage, StyleHdl_Impl, ListBox&, rBox, void )
 {
-    bool bEnable = bCurNumrule || pBox->GetSelectEntryPos() > 0;
+    bool bEnable = bCurNumrule || rBox.GetSelectEntryPos() > 0;
     m_pNewStartCB->Enable(bEnable);
     NewStartHdl_Impl(m_pNewStartCB);
-
-    return 0;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

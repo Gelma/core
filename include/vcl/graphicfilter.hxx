@@ -21,7 +21,6 @@
 #define INCLUDED_VCL_GRAPHICFILTER_HXX
 
 #include <tools/gen.hxx>
-#include <tools/stream.hxx>
 #include <tools/urlobj.hxx>
 #include <vcl/dllapi.h>
 #include <vcl/field.hxx>
@@ -32,6 +31,7 @@
 #include <com/sun/star/beans/PropertyValue.hpp>
 
 class FilterConfigCache;
+class SvStream;
 struct WMF_EXTERNALHEADER;
 struct ConvertData;
 
@@ -172,8 +172,8 @@ class VCL_DLLPUBLIC GraphicDescriptor
     bool            ImpDetectSGV( SvStream& rStm, bool bExtendedInfo );
     bool            ImpDetectEMF( SvStream& rStm, bool bExtendedInfo );
     bool            ImpDetectSVG( SvStream& rStm, bool bExtendedInfo );
-    GraphicDescriptor( const GraphicDescriptor& ) SAL_DELETED_FUNCTION;
-    GraphicDescriptor& operator=( const GraphicDescriptor& ) SAL_DELETED_FUNCTION;
+    GraphicDescriptor( const GraphicDescriptor& ) = delete;
+    GraphicDescriptor& operator=( const GraphicDescriptor& ) = delete;
 
 public:
 
@@ -190,7 +190,7 @@ public:
         As some formats (Mtf's) do not have a unique header, it makes sense
         to supply the file name (incl. ext.), so that the format can be
         derived from the extension */
-    GraphicDescriptor( SvStream& rInStream, const OUString* pPath = NULL );
+    GraphicDescriptor( SvStream& rInStream, const OUString* pPath = nullptr );
 
     virtual ~GraphicDescriptor();
 
@@ -212,9 +212,6 @@ public:
     /** @return bits/pixel or 0 **/
     sal_uInt16          GetBitsPerPixel() const { return nBitsPerPixel; }
 
-    /** return number of planes or 0 */
-    sal_uInt16          GetPlanes() const { return nPlanes; }
-
     /** @return filter number that is needed by the GraphFilter to read this format */
     static OUString GetImportFormatShortName( GraphicFileFormat nFormat );
 };
@@ -234,7 +231,7 @@ class VCL_DLLPUBLIC GraphicFilter
 private:
 
     void            ImplInit();
-    sal_uLong           ImplSetError( sal_uLong nError, const SvStream* pStm = NULL );
+    sal_uLong           ImplSetError( sal_uLong nError, const SvStream* pStm = nullptr );
     sal_uInt16      ImpTestOrFindFormat( const OUString& rPath, SvStream& rStream, sal_uInt16& rFormat );
 
                     DECL_LINK_TYPED( FilterCallback, ConvertData&, bool );
@@ -253,18 +250,16 @@ public:
                     GraphicFilter( bool bUseConfig = true );
                     ~GraphicFilter();
 
-    void            SetFilterPath( const OUString& rFilterPath ) { aFilterPath = rFilterPath; };
-
     sal_uInt16      GetImportFormatCount();
     sal_uInt16      GetImportFormatNumber( const OUString& rFormatName );
-    sal_uInt16      GetImportFormatNumberForMediaType( const OUString& rMediaType );
     sal_uInt16      GetImportFormatNumberForShortName( const OUString& rShortName );
     sal_uInt16      GetImportFormatNumberForTypeName( const OUString& rType );
     OUString        GetImportFormatName( sal_uInt16 nFormat );
     OUString        GetImportFormatTypeName( sal_uInt16 nFormat );
+#ifdef WNT
     OUString        GetImportFormatMediaType( sal_uInt16 nFormat );
+#endif
     OUString        GetImportFormatShortName( sal_uInt16 nFormat );
-    static OUString GetImportOSFileType( sal_uInt16 nFormat );
     OUString        GetImportWildcard( sal_uInt16 nFormat, sal_Int32 nEntry = 0 );
 
     sal_uInt16      GetExportFormatCount();
@@ -274,47 +269,42 @@ public:
     OUString        GetExportInternalFilterName( sal_uInt16 nFormat );
     sal_uInt16      GetExportFormatNumberForTypeName( const OUString& rType );
     OUString        GetExportFormatName( sal_uInt16 nFormat );
-    OUString        GetExportFormatTypeName( sal_uInt16 nFormat );
     OUString        GetExportFormatMediaType( sal_uInt16 nFormat );
     OUString        GetExportFormatShortName( sal_uInt16 nFormat );
-    static OUString GetExportOSFileType( sal_uInt16 nFormat );
     OUString        GetExportWildcard( sal_uInt16 nFormat, sal_Int32 nEntry = 0 );
     bool            IsExportPixelFormat( sal_uInt16 nFormat );
 
     sal_uInt16          ExportGraphic( const Graphic& rGraphic, const INetURLObject& rPath,
                                     sal_uInt16 nFormat = GRFILTER_FORMAT_DONTKNOW,
-                                        const css::uno::Sequence< css::beans::PropertyValue >* pFilterData = NULL );
+                                        const css::uno::Sequence< css::beans::PropertyValue >* pFilterData = nullptr );
     sal_uInt16          ExportGraphic( const Graphic& rGraphic, const OUString& rPath,
                                     SvStream& rOStm, sal_uInt16 nFormat = GRFILTER_FORMAT_DONTKNOW,
-                                        const css::uno::Sequence< css::beans::PropertyValue >* pFilterData = NULL );
-    long                GetExportGraphicHint() const { return nExpGraphHint; }
+                                        const css::uno::Sequence< css::beans::PropertyValue >* pFilterData = nullptr );
 
     sal_uInt16          CanImportGraphic( const INetURLObject& rPath,
                                       sal_uInt16 nFormat = GRFILTER_FORMAT_DONTKNOW,
-                                      sal_uInt16 * pDeterminedFormat = NULL);
+                                      sal_uInt16 * pDeterminedFormat = nullptr);
 
     sal_uInt16          ImportGraphic( Graphic& rGraphic, const INetURLObject& rPath,
                                    sal_uInt16 nFormat = GRFILTER_FORMAT_DONTKNOW,
-                                   sal_uInt16 * pDeterminedFormat = NULL, GraphicFilterImportFlags nImportFlags = GraphicFilterImportFlags::NONE );
+                                   sal_uInt16 * pDeterminedFormat = nullptr, GraphicFilterImportFlags nImportFlags = GraphicFilterImportFlags::NONE );
 
     sal_uInt16          CanImportGraphic( const OUString& rPath, SvStream& rStream,
                                       sal_uInt16 nFormat = GRFILTER_FORMAT_DONTKNOW,
-                                      sal_uInt16 * pDeterminedFormat = NULL);
+                                      sal_uInt16 * pDeterminedFormat = nullptr);
 
     sal_uInt16          ImportGraphic( Graphic& rGraphic, const OUString& rPath,
                                    SvStream& rStream,
                                    sal_uInt16 nFormat = GRFILTER_FORMAT_DONTKNOW,
-                                   sal_uInt16 * pDeterminedFormat = NULL, GraphicFilterImportFlags nImportFlags = GraphicFilterImportFlags::NONE,
-                                   WMF_EXTERNALHEADER *pExtHeader = NULL );
+                                   sal_uInt16 * pDeterminedFormat = nullptr, GraphicFilterImportFlags nImportFlags = GraphicFilterImportFlags::NONE,
+                                   WMF_EXTERNALHEADER *pExtHeader = nullptr );
 
     sal_uInt16          ImportGraphic( Graphic& rGraphic, const OUString& rPath,
                                    SvStream& rStream,
                                    sal_uInt16 nFormat,
                                    sal_uInt16 * pDeterminedFormat, GraphicFilterImportFlags nImportFlags,
-                                   com::sun::star::uno::Sequence< com::sun::star::beans::PropertyValue >* pFilterData,
-                                   WMF_EXTERNALHEADER *pExtHeader = NULL );
-
-    void                Abort() { bAbort = true; }
+                                   css::uno::Sequence< css::beans::PropertyValue >* pFilterData,
+                                   WMF_EXTERNALHEADER *pExtHeader = nullptr );
 
     const FilterErrorEx&    GetLastError() const { return *pErrorEx;}
     void                    ResetLastError();
@@ -323,8 +313,8 @@ public:
     static GraphicFilter& GetGraphicFilter();
     static int      LoadGraphic( const OUString& rPath, const OUString& rFilter,
                      Graphic& rGraphic,
-                     GraphicFilter* pFilter = NULL,
-                     sal_uInt16* pDeterminedFormat = NULL );
+                     GraphicFilter* pFilter = nullptr,
+                     sal_uInt16* pDeterminedFormat = nullptr );
 
     sal_uInt16 compressAsPNG(const Graphic& rGraphic, SvStream& rOutputStream, sal_uInt32 nCompression = 5);
 };

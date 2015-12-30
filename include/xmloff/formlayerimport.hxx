@@ -28,6 +28,7 @@
 #include <rtl/ref.hxx>
 #include <salhelper/simplereferenceobject.hxx>
 #include <xmloff/xmlimppr.hxx>
+#include <memory>
 
 class SvXMLImport;
 class SvXMLImportContext;
@@ -48,7 +49,7 @@ namespace xmloff
     class XMLOFF_DLLPUBLIC OFormLayerXMLImport
                 :public ::salhelper::SimpleReferenceObject
     {
-        OFormLayerXMLImport_Impl*   m_pImpl;
+        std::unique_ptr<OFormLayerXMLImport_Impl>   m_pImpl;
 
     public:
         OFormLayerXMLImport(SvXMLImport& _rImporter);
@@ -61,7 +62,7 @@ namespace xmloff
             @see endPage
         */
         void startPage(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XDrawPage >& _rxDrawPage);
+            const css::uno::Reference< css::drawing::XDrawPage >& _rxDrawPage);
 
         /** creates an import context for the office:forms element
         */
@@ -81,7 +82,7 @@ namespace xmloff
         SvXMLImportContext* createContext(
             const sal_uInt16 _nPrefix,
             const OUString& _rLocalName,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& _rxAttribs);
+            const css::uno::Reference< css::xml::sax::XAttributeList >& _rxAttribs);
 
         /** lookup a control given by id.
 
@@ -91,7 +92,7 @@ namespace xmloff
 
             @see startPage
         */
-        ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >
+        css::uno::Reference< css::beans::XPropertySet >
                 lookupControl(const OUString& _rId);
 
         /** end importing the forms of the current page
@@ -114,7 +115,7 @@ namespace xmloff
                 the style name for the control's number style
         */
         void applyControlNumberStyle(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& _rxControlModel,
+            const css::uno::Reference< css::beans::XPropertySet >& _rxControlModel,
             const OUString& _rControlNumerStyleName
         );
 

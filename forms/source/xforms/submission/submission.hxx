@@ -62,11 +62,11 @@ protected:
     css::uno::Reference< css::ucb::XProgressHandler >       m_aProgressHandler;
 
 public:
-    virtual css::uno::Reference< css::task::XInteractionHandler > SAL_CALL getInteractionHandler() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual css::uno::Reference< css::task::XInteractionHandler > SAL_CALL getInteractionHandler() throw (css::uno::RuntimeException, std::exception) override
     {
         return m_aInteractionHandler;
     }
-    virtual css::uno::Reference< css::ucb::XProgressHandler > SAL_CALL getProgressHandler() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual css::uno::Reference< css::ucb::XProgressHandler > SAL_CALL getProgressHandler() throw (css::uno::RuntimeException, std::exception) override
     {
         return m_aProgressHandler;
     }
@@ -85,16 +85,16 @@ public:
     CProgressHandlerHelper()
         : m_count(0)
     {}
-    virtual void SAL_CALL push( const com::sun::star::uno::Any& /*aStatus*/) throw(com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual void SAL_CALL push( const css::uno::Any& /*aStatus*/) throw(css::uno::RuntimeException, std::exception) override
     {
         m_mLock.acquire();
         m_count++;
         m_mLock.release();
     }
-    virtual void SAL_CALL update(const com::sun::star::uno::Any& /*aStatus*/) throw(com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual void SAL_CALL update(const css::uno::Any& /*aStatus*/) throw(css::uno::RuntimeException, std::exception) override
     {
     }
-    virtual void SAL_CALL pop() throw(com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual void SAL_CALL pop() throw(css::uno::RuntimeException, std::exception) override
     {
         m_mLock.acquire();
         m_count--;
@@ -109,14 +109,13 @@ class CSubmission
 
 protected:
     INetURLObject m_aURLObj;
-    css::uno::Reference< css::xml::xpath::XXPathObject >    m_aXPathObject;
     css::uno::Reference< css::xml::dom::XDocumentFragment > m_aFragment;
     css::uno::Reference< css::io::XInputStream >            m_aResultStream;
     css::uno::Reference< css::uno::XComponentContext >      m_xContext;
     OUString m_aEncoding;
 
-    ::std::unique_ptr< CSerialization > createSerialization(const ::com::sun::star::uno::Reference< ::com::sun::star::task::XInteractionHandler >& aHandler
-                                                  ,com::sun::star::uno::Reference<com::sun::star::ucb::XCommandEnvironment>& _rOutEnv);
+    ::std::unique_ptr< CSerialization > createSerialization(const css::uno::Reference< css::task::XInteractionHandler >& aHandler
+                                                  ,css::uno::Reference<css::ucb::XCommandEnvironment>& _rOutEnv);
 
 public:
     enum SubmissionResult {

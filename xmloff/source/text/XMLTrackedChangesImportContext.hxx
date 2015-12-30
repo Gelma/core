@@ -37,7 +37,6 @@ class XMLTrackedChangesImportContext : public SvXMLImportContext
 {
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLTrackedChangesImportContext(
         SvXMLImport& rImport,
@@ -47,14 +46,12 @@ public:
     virtual ~XMLTrackedChangesImportContext();
 
     virtual void StartElement(
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
 
     virtual SvXMLImportContext* CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference<
-                ::com::sun::star::xml::sax::XAttributeList> & xAttrList) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList) override;
 };
 
 #endif

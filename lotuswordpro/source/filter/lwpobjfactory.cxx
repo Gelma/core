@@ -661,14 +661,19 @@ rtl::Reference<LwpObject> LwpObjectFactory::CreateObject(sal_uInt32 type, LwpObj
         default:
         {
             //Unknown object type
-            newObj = NULL;
+            newObj = nullptr;
             break;
         }
     }
-    if(newObj.is())
+    if (newObj.is())
     {
         newObj->QuickRead();
-        m_IdToObjList.insert(LwpIdToObjMap::value_type(objHdr.GetID(), newObj));
+        auto result = m_IdToObjList.insert(LwpIdToObjMap::value_type(objHdr.GetID(), newObj));
+        if (!result.second)
+        {
+            SAL_WARN("lwp", "clearing duplicate object");
+            newObj.clear();
+        }
     }
 
     return newObj;
@@ -685,23 +690,28 @@ rtl::Reference<LwpObject> LwpObjectFactory::QueryObject(const LwpObjectID &objID
         //Read the object from file
         sal_uInt32 nStreamOffset = m_IndexMgr.GetObjOffset(objID);
         if(nStreamOffset == BAD_OFFSET) //does not find the offset in index manager
-            return NULL;
+            return nullptr;
 
         sal_Int64 nDesiredPos = nStreamOffset + LwpSvStream::LWP_STREAM_BASE;
         if (nDesiredPos != m_pSvStream->Seek(nDesiredPos))
-            return NULL;
+            return nullptr;
         LwpObjectHeader objHdr;
         if (!objHdr.Read(*m_pSvStream))
-            return NULL;
+            return nullptr;
 
         LwpObjectID& rId = objHdr.GetID();
         if (rId != objID)
         {
             OSL_FAIL("apparently incorrect objid, invalidating");
-            return NULL;
+            return nullptr;
         }
 
+        if (std::find(m_aObjsIDInCreation.begin(), m_aObjsIDInCreation.end(), objID) != m_aObjsIDInCreation.end())
+            throw std::runtime_error("recursion in object creation");
+
+        m_aObjsIDInCreation.push_back(objID);
         obj = CreateObject(objHdr.GetTag(), objHdr);
+        m_aObjsIDInCreation.pop_back();
     }
     return obj;
 }
@@ -717,7 +727,7 @@ rtl::Reference<LwpObject> LwpObjectFactory::FindObject(const LwpObjectID &objID)
     }
     else
     {
-        return NULL;
+        return nullptr;
     }
 }
 /**

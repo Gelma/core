@@ -219,7 +219,7 @@ void ScCellShell::Execute( SfxRequest& rReq )
         case FID_INPUTLINE_BLOCK:
         case FID_INPUTLINE_MATRIX:
             {
-                if( pReqArgs == 0 ) //XXX temporary HACK to avoid GPF
+                if( pReqArgs == nullptr ) //XXX temporary HACK to avoid GPF
                     break;
 
                 const ScInputStatusItem* pStatusItem
@@ -259,7 +259,7 @@ void ScCellShell::Execute( SfxRequest& rReq )
 
                             const SfxPoolItem* aArgs[2];
                             aArgs[0] = &aItem;
-                            aArgs[1] = NULL;
+                            aArgs[1] = nullptr;
                             rBindings.Execute( SID_ENTER_STRING, aArgs );
                         }
                         else
@@ -273,7 +273,7 @@ void ScCellShell::Execute( SfxRequest& rReq )
                     }
                     else if (nSlot == FID_INPUTLINE_BLOCK)
                     {
-                        pTabViewShell->EnterBlock( aString, NULL );
+                        pTabViewShell->EnterBlock( aString, nullptr );
                         rReq.Done();
                     }
                     else
@@ -316,7 +316,7 @@ void ScCellShell::Execute( SfxRequest& rReq )
 
         case FID_CELL_FORMAT:
             {
-                if ( pReqArgs != NULL )
+                if ( pReqArgs != nullptr )
                 {
 
                     // set cell attribute without dialog:
@@ -331,7 +331,7 @@ void ScCellShell::Execute( SfxRequest& rReq )
                                                         ATTR_PATTERN_START,
                                                         ATTR_PATTERN_END ));
 
-                    const SfxPoolItem*  pAttr = NULL;
+                    const SfxPoolItem*  pAttr = nullptr;
                     sal_uInt16              nWhich = 0;
 
                     for ( nWhich=ATTR_PATTERN_START; nWhich<=ATTR_PATTERN_END; nWhich++ )
@@ -345,7 +345,7 @@ void ScCellShell::Execute( SfxRequest& rReq )
 
                     rReq.Done();
                 }
-                else if ( pReqArgs == NULL )
+                else if ( pReqArgs == nullptr )
                 {
                     pTabViewShell->ExecuteCellFormatDlg( rReq );
                 }
@@ -466,7 +466,7 @@ void ScCellShell::Execute( SfxRequest& rReq )
                         }
                         while ( !bValid && i <= MAXTAB + 2 );
 
-                        if ( pReqArgs != NULL )
+                        if ( pReqArgs != nullptr )
                         {
                             OUString aArgName;
                             OUString aArgComment;
@@ -704,7 +704,7 @@ void ScCellShell::Execute( SfxRequest& rReq )
 
         case SID_CELL_FORMAT_RESET:
             {
-                pTabViewShell->DeleteContents( IDF_HARDATTR | IDF_EDITATTR );
+                pTabViewShell->DeleteContents( InsertDeleteFlags::HARDATTR | InsertDeleteFlags::EDITATTR );
                 rReq.Done();
             }
             break;
@@ -729,11 +729,9 @@ void ScCellShell::Execute( SfxRequest& rReq )
                     case FID_MERGE_TOGGLE:
                     {
                         bCenter = true;
-                        SfxPoolItem* pItem = 0;
+                        std::unique_ptr<SfxPoolItem> pItem;
                         if( rBindings.QueryState( nSlot, pItem ) >= SfxItemState::DEFAULT )
-                            bMerge = !static_cast< SfxBoolItem* >( pItem )->GetValue();
-
-                        delete pItem;
+                            bMerge = !static_cast< SfxBoolItem* >( pItem.get() )->GetValue();
                     }
                     break;
                 }
@@ -747,7 +745,7 @@ void ScCellShell::Execute( SfxRequest& rReq )
                     if ( pReqArgs &&
                         pReqArgs->GetItemState(nSlot, true, &pItem) == SfxItemState::SET )
                     {
-                        OSL_ENSURE(pItem && pItem->ISA(SfxBoolItem), "wrong item");
+                        OSL_ENSURE(pItem && dynamic_cast<const SfxBoolItem*>( pItem) !=  nullptr, "wrong item");
                         bMoveContents = static_cast<const SfxBoolItem*>(pItem)->GetValue();
                     }
 

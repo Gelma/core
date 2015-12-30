@@ -34,12 +34,14 @@ static OUString createEntryString(const ScRangeNameLine& rLine)
 
 ScRangeManagerTable::InitListener::~InitListener() {}
 
-ScRangeManagerTable::ScRangeManagerTable( SvSimpleTableContainer& rParent, boost::ptr_map<OUString, ScRangeName>& rRangeMap, const ScAddress& rPos ):
-    SvSimpleTable( rParent, WB_SORT | WB_HSCROLL | WB_CLIPCHILDREN | WB_TABSTOP ),
-    maGlobalString( ScGlobal::GetRscString(STR_GLOBAL_SCOPE)),
-    mrRangeMap( rRangeMap ),
-    maPos( rPos ),
-    mpInitListener(NULL)
+ScRangeManagerTable::ScRangeManagerTable(SvSimpleTableContainer& rParent,
+        std::map<OUString, std::unique_ptr<ScRangeName>>& rRangeMap,
+        const ScAddress& rPos)
+    : SvSimpleTable( rParent, WB_SORT | WB_HSCROLL | WB_CLIPCHILDREN | WB_TABSTOP )
+    , maGlobalString( ScGlobal::GetRscString(STR_GLOBAL_SCOPE))
+    , m_RangeMap(rRangeMap)
+    , maPos( rPos )
+    , mpInitListener(nullptr)
 {
     static long aStaticTabs[] = {3, 0, 0, 0 };
     SetTabs( &aStaticTabs[0], MAP_PIXEL );
@@ -60,7 +62,7 @@ ScRangeManagerTable::ScRangeManagerTable( SvSimpleTableContainer& rParent, boost
     ShowTable();
     SetSelectionMode(MULTIPLE_SELECTION);
     SetScrolledHdl( LINK( this, ScRangeManagerTable, ScrollHdl ) );
-    HeaderEndDragHdl(NULL);
+    HeaderEndDragHdl(nullptr);
 }
 
 void ScRangeManagerTable::Resize()
@@ -98,7 +100,7 @@ void ScRangeManagerTable::setColWidths()
     rHeaderBar.SetItemSize( ITEMID_SCOPE, nTabSize);
     static long aStaticTabs[] = {3, 0, nTabSize, 2*nTabSize };
     SetTabs( &aStaticTabs[0], MAP_PIXEL );
-    HeaderEndDragHdl(NULL);
+    HeaderEndDragHdl(nullptr);
 }
 
 ScRangeManagerTable::~ScRangeManagerTable()
@@ -119,7 +121,7 @@ void ScRangeManagerTable::setInitListener( InitListener* pListener )
 
 void ScRangeManagerTable::addEntry(const ScRangeNameLine& rLine, bool bSetCurEntry)
 {
-    SvTreeListEntry* pEntry = InsertEntryToColumn( createEntryString(rLine), TREELIST_APPEND, 0xffff);
+    SvTreeListEntry* pEntry = InsertEntryToColumn( createEntryString(rLine));
     if (bSetCurEntry)
         SetCurEntry(pEntry);
 }
@@ -141,15 +143,14 @@ void ScRangeManagerTable::Init()
 {
     SetUpdateMode(false);
     Clear();
-    for (boost::ptr_map<OUString, ScRangeName>::const_iterator itr = mrRangeMap.begin();
-            itr != mrRangeMap.end(); ++itr)
+    for (auto const& itr : m_RangeMap)
     {
-        const ScRangeName* pLocalRangeName = itr->second;
+        const ScRangeName *const pLocalRangeName = itr.second.get();
         ScRangeNameLine aLine;
-        if ( itr->first == STR_GLOBAL_RANGE_NAME )
+        if (itr.first == STR_GLOBAL_RANGE_NAME)
             aLine.aScope = maGlobalString;
         else
-            aLine.aScope = itr->first;
+            aLine.aScope = itr.first;
         for (ScRangeName::const_iterator it = pLocalRangeName->begin();
                 it != pLocalRangeName->end(); ++it)
         {
@@ -167,9 +168,9 @@ const ScRangeData* ScRangeManagerTable::findRangeData(const ScRangeNameLine& rLi
 {
     const ScRangeName* pRangeName;
     if (rLine.aScope == maGlobalString)
-        pRangeName = mrRangeMap.find(OUString(STR_GLOBAL_RANGE_NAME))->second;
+        pRangeName = m_RangeMap.find(OUString(STR_GLOBAL_RANGE_NAME))->second.get();
     else
-        pRangeName = mrRangeMap.find(rLine.aScope)->second;
+        pRangeName = m_RangeMap.find(rLine.aScope)->second.get();
 
     return pRangeName->findByUpperName(ScGlobal::pCharClass->uppercase(rLine.aName));
 }
@@ -293,10 +294,10 @@ IMPL_LINK_NOARG_TYPED(ScRangeManagerTable, HeaderEndDragHdl, HeaderBar*, void)
     rHeaderBar.SetItemSize(ITEMID_RANGE, nItemRangeSize);
     rHeaderBar.SetItemSize(ITEMID_SCOPE, nItemScopeSize);
 
-    SetTab(0, 0, MAP_APPFONT );
-    SetTab(1, PixelToLogic( aSz, MapMode(MAP_APPFONT) ).Width(), MAP_APPFONT );
+    SetTab(0, 0);
+    SetTab(1, PixelToLogic( aSz, MapMode(MAP_APPFONT) ).Width() );
     aSz.Width() += nItemRangeSize;
-    SetTab(2, PixelToLogic( aSz, MapMode(MAP_APPFONT) ).Width(), MAP_APPFONT );
+    SetTab(2, PixelToLogic( aSz, MapMode(MAP_APPFONT) ).Width() );
 }
 
 IMPL_LINK_NOARG_TYPED(ScRangeManagerTable, ScrollHdl, SvTreeListBox*, void)

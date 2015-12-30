@@ -56,7 +56,7 @@ const uno::Reference< uno::XComponentContext >& xContext, const OUString& sDocCt
     // some strange behavior
     mxContext = ::cppu::createComponentContext(
                         aHandlerContextInfo,
-                        ( sizeof ( aHandlerContextInfo ) / sizeof ( aHandlerContextInfo[0] ) ), NULL );
+                        ( sizeof ( aHandlerContextInfo ) / sizeof ( aHandlerContextInfo[0] ) ), nullptr );
     if ( aSrvMgr.is() )
     {
         try
@@ -150,8 +150,7 @@ VbaGlobalsBase::createInstanceWithArguments( const OUString& aServiceSpecifier, 
 uno::Sequence< OUString > SAL_CALL
 VbaGlobalsBase::getAvailableServiceNames(  ) throw (uno::RuntimeException, std::exception)
 {
-    uno::Sequence< OUString > serviceNames(1);
-    serviceNames[0] = "ooo.vba.msforms.UserForm";
+    uno::Sequence< OUString > serviceNames { "ooo.vba.msforms.UserForm" };
     return serviceNames;
 }
 

@@ -31,6 +31,7 @@
 #include "tools/debug.hxx"
 #include "tools/solar.h"
 #include "vcl/bitmapex.hxx"
+#include "vcl/idle.hxx"
 #include "vcl/dllapi.h"
 #include "vcl/keycod.hxx"
 #include "vcl/svapp.hxx"
@@ -74,7 +75,11 @@ class Image;
 class PopupMenu;
 class Application;
 class OutputDevice;
-namespace vcl { class Window; }
+namespace vcl
+{
+    class CommandInfoProvider;
+    class Window;
+}
 class SystemWindow;
 class WorkWindow;
 class Dialog;
@@ -99,15 +104,10 @@ namespace vcl { class DisplayConnection; class SettingsConfigItem; class DeleteO
 class LocaleConfigurationListener : public utl::ConfigurationListener
 {
 public:
-    virtual void ConfigurationChanged( utl::ConfigurationBroadcaster*, sal_uInt32 ) SAL_OVERRIDE;
+    virtual void ConfigurationChanged( utl::ConfigurationBroadcaster*, sal_uInt32 ) override;
 };
 
 typedef std::vector<Link<VclWindowEvent&,bool> > SVAppKeyListeners;
-
-struct SVAppPostYieldListeners : public vcl::DeletionNotifier
-{
-    std::vector<Link<LinkParamNone*,void>>   m_aListeners;
-};
 
 struct ImplSVAppData
 {
@@ -126,27 +126,22 @@ struct ImplSVAppData
     OUString*               mpAppName;                      // Application name
     OUString*               mpAppFileName;                  // Abs. Application FileName
     OUString*               mpDisplayName;                  // Application Display Name
-    OUString*               mpFontPath;                     // Additional Fontpath
     Help*                   mpHelp;                         // Application help
     PopupMenu*              mpActivePopupMenu;              // Actives Popup-Menu (in Execute)
     ImplIdleMgr*            mpIdleMgr;                      // Idle-Manager
     VclPtr<ImplWheelWindow> mpWheelWindow;                  // WheelWindow
     ImplHotKey*             mpFirstHotKey;                  // HotKey-Verwaltung
     ImplEventHook*          mpFirstEventHook;               // Event-Hooks
-    SVAppPostYieldListeners* mpPostYieldListeners;           // post yield listeners
     sal_uInt64              mnLastInputTime;                // GetLastInputTime()
     sal_uInt16              mnDispatchLevel;                // DispatchLevel
     sal_uInt16              mnModalMode;                    // ModalMode Count
     sal_uInt16              mnModalDialog;                  // ModalDialog Count
-    sal_uInt16              mnAccessCount;                  // AccessHdl Count
     SystemWindowFlags       mnSysWinMode;                   // Mode, when SystemWindows should be created
     short                   mnDialogScaleX;                 // Scale X-Positions and sizes in Dialogs
     bool                    mbInAppMain;                    // is Application::Main() on stack
     bool                    mbInAppExecute;                 // is Application::Execute() on stack
     bool                    mbAppQuit;                      // is Application::Quit() called
     bool                    mbSettingsInit;                 // true: Settings are initialized
-    bool                    mbNoYield;                      // Application::Yield will not wait for events if the queue is empty
-                                                            // essentially that makes it the same as Application::Reschedule
     Application::DialogCancelMode meDialogCancel;           // true: All Dialog::Execute() calls will be terminated immediately with return false
 
     /** Controls whether showing any IME status window is toggled on or off.
@@ -156,7 +151,16 @@ struct ImplSVAppData
      */
     ImeStatusWindowMode meShowImeStatusWindow;
 
-    DECL_STATIC_LINK_TYPED( ImplSVAppData, ImplQuitMsg, void*, void );
+    SvFileStream*       mpEventTestInput;
+    Idle*               mpEventTestingIdle;
+    int                 mnEventTestLimit;
+
+    DECL_STATIC_LINK_TYPED(ImplSVAppData, ImplQuitMsg, void*, void);
+    DECL_STATIC_LINK_TYPED(ImplSVAppData, ImplPrepareExitMsg, void*, void);
+    DECL_STATIC_LINK_TYPED(ImplSVAppData, ImplEndAllDialogsMsg, void*, void);
+    DECL_STATIC_LINK_TYPED(ImplSVAppData, ImplEndAllPopupsMsg, void*, void);
+    DECL_STATIC_LINK_TYPED(ImplSVAppData, ImplVclEventTestingHdl, void*, void);
+    DECL_LINK_TYPED(VclEventTestingHdl, Idle*, void);
 };
 
 struct ImplSVGDIData
@@ -228,7 +232,6 @@ struct ImplSVCtrlData
     sal_uInt16              mnRadioStyle;                   // Radio-Style for ImageList-Update
     sal_uLong               mnLastCheckFColor;              // Letzte FaceColor fuer CheckImage
     sal_uLong               mnLastCheckWColor;              // Letzte WindowColor fuer CheckImage
-    sal_uLong               mnLastCheckWTextColor;          // Letzte WindowTextColor fuer CheckImage
     sal_uLong               mnLastCheckLColor;              // Letzte LightColor fuer CheckImage
     sal_uLong               mnLastRadioFColor;              // Letzte FaceColor fuer RadioImage
     sal_uLong               mnLastRadioWColor;              // Letzte WindowColor fuer RadioImage
@@ -323,15 +326,12 @@ struct ImplSVData
     Application*            mpApp;                          // pApp
     VclPtr<WorkWindow>      mpDefaultWin;                   // Default-Window
     bool                    mbDeInit;                       // Is VCL deinitializing
-    sal_uLong               mnThreadCount;                  // is VCL MultiThread enabled
-    ImplConfigData*         mpFirstConfigData;              // pointer to the first config block
     ImplSchedulerData*      mpFirstSchedulerData;           // list of all running tasks
     SalTimer*               mpSalTimer;                     // interface to sal event loop/timers
     SalI18NImeStatus*       mpImeStatus;                    // interface to ime status window
     SalSystem*              mpSalSystem;                    // SalSystem interface
     ResMgr*                 mpResMgr;                       // SV-Resource-Manager
     sal_uInt64              mnTimerPeriod;                  // current timer period
-    sal_uInt32              mnUpdateStack;                  // Scheduler on stack
     ImplSVAppData           maAppData;                      // indepen data for class Application
     ImplSVGDIData           maGDIData;                      // indepen data for Output classes
     ImplSVWinData           maWinData;                      // indepen data for Windows classes
@@ -342,12 +342,12 @@ struct ImplSVData
     VclPtr<vcl::Window>     mpIntroWindow;                  // the splash screen
     DockingManager*         mpDockingManager;
     BlendFrameCache*        mpBlendFrameCache;
-    bool                    mbIsTestTool;
+    vcl::CommandInfoProvider* mpCommandInfoProvider;
 
     oslThreadIdentifier     mnMainThreadId;
     rtl::Reference< vcl::DisplayConnection > mxDisplayConnection;
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::lang::XComponent > mxAccessBridge;
+    css::uno::Reference< css::lang::XComponent > mxAccessBridge;
     vcl::SettingsConfigItem* mpSettingsConfigItem;
     std::list< vcl::DeleteOnDeinitBase* >* mpDeinitDeleteList;
     std::unordered_map< int, OUString >* mpPaperNames;
@@ -357,13 +357,12 @@ struct ImplSVData
 
 void        ImplDeInitSVData();
 VCL_PLUGIN_PUBLIC vcl::Window* ImplGetDefaultWindow();
+VCL_PLUGIN_PUBLIC vcl::Window* ImplGetDefaultContextWindow();
 VCL_PLUGIN_PUBLIC ResMgr*     ImplGetResMgr();
 VCL_PLUGIN_PUBLIC ResId VclResId( sal_Int32 nId ); // throws std::bad_alloc if no res mgr
 DockingManager*     ImplGetDockingManager();
 BlendFrameCache*    ImplGetBlendFrameCache();
 void        ImplWindowAutoMnemonic( vcl::Window* pWindow );
-
-void        ImplUpdateSystemProcessWindow();
 
 bool        ImplCallHotKey( const vcl::KeyCode& rKeyCode );
 void        ImplFreeHotKeyData();
@@ -374,7 +373,9 @@ bool        ImplCallPreNotify( NotifyEvent& rEvt );
 VCL_PLUGIN_PUBLIC ImplSVData* ImplGetSVData();
 VCL_PLUGIN_PUBLIC void ImplHideSplash();
 
+#ifdef _WIN32
 bool ImplInitAccessBridge();
+#endif
 
 FieldUnitStringList* ImplGetFieldUnits();
 FieldUnitStringList* ImplGetCleanedFieldUnits();
@@ -389,7 +390,7 @@ struct ImplDelData
     VclPtr<vcl::Window> mpWindow;
     bool                mbDel;
 
-                        ImplDelData( vcl::Window* pWindow = NULL );
+                        ImplDelData( vcl::Window* pWindow = nullptr );
     virtual             ~ImplDelData();
 
     bool                IsDead() const

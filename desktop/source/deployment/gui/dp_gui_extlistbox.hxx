@@ -102,7 +102,7 @@ public:
 
     // XEventListener
     virtual void SAL_CALL disposing(css::lang::EventObject const& evt)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 };
 
 
@@ -126,7 +126,7 @@ class ExtensionBox_Impl : public ::svt::IExtensionListBox
     Image m_aWarningImage;
     Image m_aDefaultImage;
 
-    Link<> m_aClickHdl;
+    Link<FixedHyperlink&,void> m_aClickHdl;
 
     VclPtr<ScrollBar>      m_pScrollBar;
 
@@ -165,22 +165,17 @@ class ExtensionBox_Impl : public ::svt::IExtensionListBox
 
     DECL_DLLPRIVATE_LINK_TYPED( ScrollHdl, ScrollBar*, void );
 
-    //Index starts with 1.
-    //Throws an css::lang::IllegalArgumentException, when the index is invalid.
-    void checkIndex(sal_Int32 pos) const;
-
-
     void Init();
 public:
     explicit ExtensionBox_Impl(vcl::Window* pParent);
     virtual ~ExtensionBox_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void Paint( vcl::RenderContext& rRenderContext, const Rectangle &rPaintRect ) SAL_OVERRIDE;
-    virtual void Resize() SAL_OVERRIDE;
-    virtual bool Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
-    virtual Size GetOptimalSize() const SAL_OVERRIDE;
+    virtual void MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void Paint( vcl::RenderContext& rRenderContext, const Rectangle &rPaintRect ) override;
+    virtual void Resize() override;
+    virtual bool Notify( NotifyEvent& rNEvt ) override;
+    virtual Size GetOptimalSize() const override;
 
     void            SetExtraSize( long nSize ) { m_nExtraHeight = nSize; }
     TEntry_Impl     GetEntryData( long nPos ) { return m_vEntries[ nPos ]; }
@@ -190,7 +185,7 @@ public:
     long            PointToPos( const Point& rPos );
     void            SetScrollHdl( const Link<ScrollBar*,void>& rLink );
     void            DoScroll( long nDelta );
-    void            SetHyperlinkHdl( const Link<>& rLink ){ m_aClickHdl = rLink; }
+    void            SetHyperlinkHdl( const Link<FixedHyperlink&,void>& rLink ){ m_aClickHdl = rLink; }
     virtual void    RecalcAll();
     void            RemoveUnlocked();
 
@@ -209,51 +204,12 @@ public:
     //These functions are used for automatic testing
 
     /** @return  The count of the entries in the list box. */
-    virtual sal_Int32 getItemCount() const SAL_OVERRIDE;
+    virtual sal_Int32 getItemCount() const override;
 
     /** @return  The index of the first selected entry in the list box.
         When nothing is selected, which is the case when getItemCount returns '0',
         then this function returns ENTRY_NOTFOUND */
-    virtual sal_Int32 getSelIndex() const SAL_OVERRIDE;
-
-    /** @return  The item name of the entry with the given index
-        The index starts with 0.
-        Throws an css::lang::IllegalArgumentException, when the position is invalid. */
-    virtual OUString getItemName( sal_Int32 index ) const SAL_OVERRIDE;
-
-    /** @return  The version string of the entry with the given index
-        The index starts with 0.
-        Throws an css::lang::IllegalArgumentException, when the position is invalid. */
-    virtual OUString getItemVersion( sal_Int32 index ) const SAL_OVERRIDE;
-
-    /** @return  The description string of the entry with the given index
-        The index starts with 0.
-        Throws an css::lang::IllegalArgumentException, when the position is invalid. */
-    virtual OUString getItemDescription( sal_Int32 index ) const SAL_OVERRIDE;
-
-    /** @return  The publisher string of the entry with the given index
-        The index starts with 0.
-        Throws an css::lang::IllegalArgumentException, when the position is invalid. */
-    virtual OUString getItemPublisher( sal_Int32 index ) const SAL_OVERRIDE;
-
-    /** @return  The link behind the publisher text of the entry with the given index
-        The index starts with 0.
-        Throws an css::lang::IllegalArgumentException, when the position is invalid. */
-    virtual OUString getItemPublisherLink( sal_Int32 index ) const SAL_OVERRIDE;
-
-    /** The entry at the given position will be selected
-        Index starts with 0.
-        Throws an css::lang::IllegalArgumentException, when the position is invalid. */
-    virtual void select( sal_Int32 pos ) SAL_OVERRIDE;
-
-    /** The first found entry with the given name will be selected
-        When there was no entry found with the name, the selection doesn't change.
-        Please note that there might be more than one entry with the same
-        name, because:
-            1. the name is not unique
-            2. one extension can be installed as user and shared extension.
-    */
-    virtual void select( const OUString & sName ) SAL_OVERRIDE;
+    virtual sal_Int32 getSelIndex() const override;
 };
 
 }

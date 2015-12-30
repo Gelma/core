@@ -104,7 +104,7 @@ OUString Databases::expandURL( const OUString& aURL, Reference< uno::XComponentC
         Reference< uri::XUriReference > uriRef;
         for (;;)
         {
-            uriRef = Reference< uri::XUriReference >( xFac->parse( aRetURL ), UNO_QUERY );
+            uriRef.set( xFac->parse( aRetURL ), UNO_QUERY );
             if ( uriRef.is() )
             {
                 Reference < uri::XVndSunStarExpandUrl > sxUri( uriRef, UNO_QUERY );
@@ -120,16 +120,15 @@ OUString Databases::expandURL( const OUString& aURL, Reference< uno::XComponentC
 
 Databases::Databases( bool showBasic,
                       const OUString& instPath,
-                      const com::sun::star::uno::Sequence< OUString >& imagesZipPaths,
                       const OUString& productName,
                       const OUString& productVersion,
                       const OUString& styleSheet,
                       Reference< uno::XComponentContext > xContext )
     : m_xContext( xContext ),
       m_bShowBasic(showBasic),
-      m_pErrorDoc( 0 ),
+      m_pErrorDoc( nullptr ),
       m_nCustomCSSDocLength( 0 ),
-      m_pCustomCSSDoc( 0 ),
+      m_pCustomCSSDoc( nullptr ),
       m_aCSS(styleSheet.toAsciiLowerCase()),
       newProdName( "$[officename]" ),
       newProdVersion( "$[officeversion]" ),
@@ -137,11 +136,9 @@ Databases::Databases( bool showBasic,
       prodVersion( "%PRODUCTVERSION" ),
       vendName( "%VENDORNAME" ),
       vendVersion( "%VENDORVERSION" ),
-      vendShort( "%VENDORSHORT" ),
-      m_aImagesZipPaths( imagesZipPaths ),
-      m_aSymbolsStyleName( "" )
+      vendShort( "%VENDORSHORT" )
 {
-    m_xSMgr = Reference< XMultiComponentFactory >( m_xContext->getServiceManager(), UNO_QUERY );
+    m_xSMgr.set( m_xContext->getServiceManager(), UNO_QUERY );
 
     m_vAdd[0] = 12;
     m_vAdd[1] = 15;
@@ -207,106 +204,33 @@ Databases::~Databases()
     }
 }
 
-static bool impl_getZipFile(
-        Sequence< OUString > & rImagesZipPaths,
-        const OUString & rZipName,
-        OUString & rFileName )
+OString Databases::getImageTheme()
 {
-    OUString aWorkingDir;
-    osl_getProcessWorkingDir( &aWorkingDir.pData );
-    const OUString *pPathArray = rImagesZipPaths.getArray();
-    for ( int i = 0; i < rImagesZipPaths.getLength(); ++i )
-    {
-        OUString aFileName = pPathArray[ i ];
-        if ( !aFileName.isEmpty() )
-        {
-            if ( !aFileName.endsWith("/") )
-            {
-                aFileName += "/";
-            }
-            aFileName += rZipName;
-            // the icons are not read when the URL is a symlink
-            osl::File::getAbsoluteFileURL( aWorkingDir, aFileName, rFileName );
+    uno::Reference< lang::XMultiServiceFactory > xConfigProvider =
+        configuration::theDefaultProvider::get(m_xContext);
 
-            // test existence
-            osl::DirectoryItem aDirItem;
-            if ( osl::DirectoryItem::get( rFileName, aDirItem ) == osl::FileBase::E_None )
-                return true;
-        }
-    }
-    return false;
-}
+    // set root path
+    uno::Sequence < uno::Any > lParams(1);
+    beans::PropertyValue                       aParam ;
+    aParam.Name    = "nodepath";
+    aParam.Value <<= OUString("org.openoffice.Office.Common");
+    lParams[0] = uno::makeAny(aParam);
 
-OString Databases::getImagesZipFileURL()
-{
+    // open it
+    uno::Reference< uno::XInterface > xCFG( xConfigProvider->createInstanceWithArguments(
+                "com.sun.star.configuration.ConfigurationAccess",
+                lParams) );
+
+    uno::Reference< container::XHierarchicalNameAccess > xAccess(xCFG, uno::UNO_QUERY_THROW);
+    uno::Any aResult = xAccess->getByHierarchicalName("Misc/SymbolStyle");
     OUString aSymbolsStyleName;
-    try
+    aResult >>= aSymbolsStyleName;
+
+    if ( aSymbolsStyleName.isEmpty() || aSymbolsStyleName == "auto" )
     {
-        uno::Reference< lang::XMultiServiceFactory > xConfigProvider =
-            configuration::theDefaultProvider::get(m_xContext);
-
-        // set root path
-        uno::Sequence < uno::Any > lParams(1);
-        beans::PropertyValue                       aParam ;
-        aParam.Name    = "nodepath";
-        aParam.Value <<= OUString("org.openoffice.Office.Common");
-        lParams[0] = uno::makeAny(aParam);
-
-        // open it
-        uno::Reference< uno::XInterface > xCFG( xConfigProvider->createInstanceWithArguments(
-                    OUString("com.sun.star.configuration.ConfigurationAccess"),
-                    lParams) );
-
-        bool bChanged = false;
-        uno::Reference< container::XHierarchicalNameAccess > xAccess(xCFG, uno::UNO_QUERY_THROW);
-        uno::Any aResult = xAccess->getByHierarchicalName(OUString("Misc/SymbolStyle"));
-        if ( (aResult >>= aSymbolsStyleName) && m_aSymbolsStyleName != aSymbolsStyleName )
-        {
-            m_aSymbolsStyleName = aSymbolsStyleName;
-            bChanged = true;
-        }
-
-        if ( m_aImagesZipFileURL.isEmpty() || bChanged )
-        {
-            OUString aImageZip;
-            bool bFound = false;
-
-            if ( !aSymbolsStyleName.isEmpty() )
-            {
-                if ( aSymbolsStyleName == "auto" )
-                {
-                    // with the layered images*.zip, tango is the most
-                    // complete theme, so show that one
-                    // FIXME instead of using a general vnd.sun.star.zip://
-                    // for imgrepos, we should have some vnd.sun.star.image://
-                    // so that we don't have to re-open the stream for every
-                    // image in the help
-                    aSymbolsStyleName = "tango";
-                }
-                OUString aZipName = "images_" + aSymbolsStyleName + ".zip";
-
-                bFound = impl_getZipFile( m_aImagesZipPaths, aZipName, aImageZip );
-            }
-
-            if ( ! bFound )
-                bFound = impl_getZipFile( m_aImagesZipPaths, OUString( "images.zip" ), aImageZip );
-
-            if ( ! bFound )
-                aImageZip.clear();
-
-            m_aImagesZipFileURL = OUStringToOString(
-                        rtl::Uri::encode(
-                            aImageZip,
-                            rtl_UriCharClassPchar,
-                            rtl_UriEncodeIgnoreEscapes,
-                            RTL_TEXTENCODING_UTF8 ), RTL_TEXTENCODING_UTF8 );
-        }
+        aSymbolsStyleName = "tango";
     }
-    catch ( NoSuchElementException const & )
-    {
-    }
-
-    return m_aImagesZipFileURL;
+    return aSymbolsStyleName.toUtf8();
 }
 
 void Databases::replaceName( OUString& oustring ) const
@@ -444,7 +368,7 @@ StaticModuleInformation* Databases::getStaticInformationForModule( const OUStrin
         osl::File cfgFile( getInstallPathAsURL() + key + ".cfg" );
 
         if( osl::FileBase::E_None != cfgFile.open( osl_File_OpenFlag_Read ) )
-            it->second = 0;
+            it->second = nullptr;
         else
         {
             sal_uInt32 pos = 0;
@@ -555,14 +479,14 @@ helpdatafileproxy::Hdf* Databases::getHelpDataFile( const OUString& Database,
                             const OUString* pExtensionPath )
 {
     if( Database.isEmpty() || Language.isEmpty() )
-        return 0;
+        return nullptr;
 
     osl::MutexGuard aGuard( m_aMutex );
 
     OUString aFileExt( helpText ? OUString(".ht") : OUString(".db") );
     OUString dbFileName = "/" + Database + aFileExt;
     OUString key;
-    if( pExtensionPath == NULL )
+    if( pExtensionPath == nullptr )
         key = processLang( Language ) + dbFileName;
     else
         key = *pExtensionPath + Language + dbFileName;      // make unique, don't change language
@@ -574,7 +498,7 @@ helpdatafileproxy::Hdf* Databases::getHelpDataFile( const OUString& Database,
 
     if( aPair.second && ! it->second )
     {
-        helpdatafileproxy::Hdf* pHdf = 0;
+        helpdatafileproxy::Hdf* pHdf = nullptr;
 
         OUString fileURL;
         if( pExtensionPath )
@@ -584,7 +508,7 @@ helpdatafileproxy::Hdf* Databases::getHelpDataFile( const OUString& Database,
 
         OUString fileNameHDFHelp( fileURL );
         //Extensions always use the new format
-        if( pExtensionPath != NULL )
+        if( pExtensionPath != nullptr )
             fileNameHDFHelp += "_";
         //SimpleFileAccess takes file URLs as arguments!!! Using filenames works accidentally but
         //fails for example when using long path names on Windows (starting with \\?\)
@@ -736,7 +660,7 @@ void KeywordInfo::KeywordElement::init( Databases *pDatabases,helpdatafileproxy:
         listAnchor[i] = anchor[i];
 
         helpdatafileproxy::HDFData aHDFData;
-        const sal_Char* pData = NULL;
+        const sal_Char* pData = nullptr;
 
         if( pHdf )
         {
@@ -849,7 +773,7 @@ KeywordInfo* Databases::getKeyword( const OUString& Database,
                 if( aHdf.startIteration() )
                 {
                     helpdatafileproxy::Hdf* pHdf = getHelpDataFile( Database,Language );
-                    if( pHdf != NULL )
+                    if( pHdf != nullptr )
                     {
                         bool bOptimizeForPerformance = true;
                         pHdf->releaseHashMap();
@@ -877,7 +801,7 @@ KeywordInfo* Databases::getKeyword( const OUString& Database,
                     }
                     aHdf.stopIteration();
 
-                    if( pHdf != NULL )
+                    if( pHdf != nullptr )
                         pHdf->releaseHashMap();
                 }
             }
@@ -900,14 +824,14 @@ Reference< XHierarchicalNameAccess > Databases::jarFile( const OUString& jar,
 {
     if( jar.isEmpty() || Language.isEmpty() )
     {
-        return Reference< XHierarchicalNameAccess >( 0 );
+        return Reference< XHierarchicalNameAccess >( nullptr );
     }
     OUString key = processLang(Language) + "/" + jar;
 
     osl::MutexGuard aGuard( m_aMutex );
 
     ZipFileTable::iterator it =
-        m_aZipFileTable.insert( ZipFileTable::value_type( key,Reference< XHierarchicalNameAccess >(0) ) ).first;
+        m_aZipFileTable.insert( ZipFileTable::value_type( key,Reference< XHierarchicalNameAccess >(nullptr) ) ).first;
 
     if( ! it->second.is() )
     {
@@ -951,13 +875,12 @@ Reference< XHierarchicalNameAccess > Databases::jarFile( const OUString& jar,
 
             Reference< XInterface > xIfc
                 = m_xSMgr->createInstanceWithArgumentsAndContext(
-                    OUString(
-                        "com.sun.star.packages.comp.ZipPackage" ),
+                    "com.sun.star.packages.comp.ZipPackage",
                     aArguments, m_xContext );
 
             if ( xIfc.is() )
             {
-                it->second = Reference< XHierarchicalNameAccess >( xIfc, UNO_QUERY );
+                it->second.set( xIfc, UNO_QUERY );
 
                 OSL_ENSURE( it->second.is(),
                             "ContentProvider::createPackage - "
@@ -1036,7 +959,7 @@ Reference< XHierarchicalNameAccess > Databases::findJarFileForPath
 void Databases::changeCSS(const OUString& newStyleSheet)
 {
     m_aCSS = newStyleSheet.toAsciiLowerCase();
-    delete[] m_pCustomCSSDoc, m_pCustomCSSDoc = 0,m_nCustomCSSDocLength = 0;
+    delete[] m_pCustomCSSDoc, m_pCustomCSSDoc = nullptr,m_nCustomCSSDocLength = 0;
 }
 
 void Databases::cascadingStylesheet( const OUString& Language,
@@ -1062,7 +985,7 @@ void Databases::cascadingStylesheet( const OUString& Language,
                 uno::Reference< awt::XVclWindowPeer > xVclWindowPeer( xTopWindow, uno::UNO_QUERY );
                 if ( xVclWindowPeer.is() )
                 {
-                    uno::Any aHCMode = xVclWindowPeer->getProperty( OUString( "HighContrastMode" ) );
+                    uno::Any aHCMode = xVclWindowPeer->getProperty( "HighContrastMode" );
                     if ( ( aHCMode >>= bHighContrastMode ) && bHighContrastMode )
                     {
                         aCSS = "highcontrastblack";
@@ -1166,13 +1089,13 @@ void Databases::setActiveText( const OUString& Module,
     helpdatafileproxy::HDFData aHDFData;
 
     int nSize = 0;
-    const sal_Char* pData = NULL;
+    const sal_Char* pData = nullptr;
 
     bool bSuccess = false;
     if( !bFoundAsEmpty )
     {
-        helpdatafileproxy::Hdf* pHdf = 0;
-        while( !bSuccess && (pHdf = aDbIt.nextHdf()) != NULL )
+        helpdatafileproxy::Hdf* pHdf = nullptr;
+        while( !bSuccess && (pHdf = aDbIt.nextHdf()) != nullptr )
         {
             bSuccess = pHdf->getValueForKey( id, aHDFData );
             nSize = aHDFData.getSize();
@@ -1335,7 +1258,7 @@ Reference< deployment::XPackage > ExtensionIteratorBase::implGetNextUserHelpPack
     {
         Reference< XExtensionManager > xExtensionManager = ExtensionManager::get(m_xContext);
         m_aUserPackagesSeq = xExtensionManager->getDeployedExtensions
-            ( OUString("user"), Reference< task::XAbortChannel >(), Reference< ucb::XCommandEnvironment >() );
+            ( "user", Reference< task::XAbortChannel >(), Reference< ucb::XCommandEnvironment >() );
         m_bUserPackagesLoaded = true;
     }
 
@@ -1363,7 +1286,7 @@ Reference< deployment::XPackage > ExtensionIteratorBase::implGetNextSharedHelpPa
     {
         Reference< XExtensionManager > xExtensionManager = ExtensionManager::get(m_xContext);
         m_aSharedPackagesSeq = xExtensionManager->getDeployedExtensions
-            ( OUString("shared"), Reference< task::XAbortChannel >(), Reference< ucb::XCommandEnvironment >() );
+            ( "shared", Reference< task::XAbortChannel >(), Reference< ucb::XCommandEnvironment >() );
         m_bSharedPackagesLoaded = true;
     }
 
@@ -1391,7 +1314,7 @@ Reference< deployment::XPackage > ExtensionIteratorBase::implGetNextBundledHelpP
     {
         Reference< XExtensionManager > xExtensionManager = ExtensionManager::get(m_xContext);
         m_aBundledPackagesSeq = xExtensionManager->getDeployedExtensions
-            ( OUString("bundled"), Reference< task::XAbortChannel >(), Reference< ucb::XCommandEnvironment >() );
+            ( "bundled", Reference< task::XAbortChannel >(), Reference< ucb::XCommandEnvironment >() );
         m_bBundledPackagesLoaded = true;
     }
 
@@ -1449,7 +1372,7 @@ inline bool isLetter( sal_Unicode c )
 }
 
 void ExtensionIteratorBase::implGetLanguageVectorFromPackage( ::std::vector< OUString > &rv,
-    com::sun::star::uno::Reference< com::sun::star::deployment::XPackage > xPackage )
+    css::uno::Reference< css::deployment::XPackage > xPackage )
 {
     rv.clear();
     OUString aExtensionPath = xPackage->getURL();
@@ -1484,7 +1407,7 @@ void ExtensionIteratorBase::implGetLanguageVectorFromPackage( ::std::vector< OUS
 
 helpdatafileproxy::Hdf* DataBaseIterator::nextHdf( OUString* o_pExtensionPath, OUString* o_pExtensionRegistryPath )
 {
-    helpdatafileproxy::Hdf* pRetHdf = NULL;
+    helpdatafileproxy::Hdf* pRetHdf = nullptr;
 
     while( !pRetHdf && m_eState != END_REACHED )
     {
@@ -1551,10 +1474,10 @@ helpdatafileproxy::Hdf* DataBaseIterator::implGetHdfFromPackage( Reference< depl
     }
     catch ( deployment::ExtensionRemovedException&)
     {
-        return NULL;
+        return nullptr;
     }
 
-    helpdatafileproxy::Hdf* pRetHdf = NULL;
+    helpdatafileproxy::Hdf* pRetHdf = nullptr;
     if (optRegData.IsPresent && !optRegData.Value.isEmpty())
     {
         OUString aRegDataUrl = optRegData.Value + "/";
@@ -1664,7 +1587,7 @@ OUString KeyDataBaseFileIterator::implGetDbFileFromPackage
     ( Reference< deployment::XPackage > xPackage )
 {
     OUString aExpandedURL =
-        implGetFileFromPackage( OUString( ".key" ), xPackage );
+        implGetFileFromPackage( ".key", xPackage );
 
     return aExpandedURL;
 }
@@ -1735,7 +1658,7 @@ Reference< XHierarchicalNameAccess > JarFileIterator::implGetJarFromPackage
     Reference< XHierarchicalNameAccess > xNA;
 
     OUString zipFile =
-        implGetFileFromPackage( OUString( ".jar" ), xPackage );
+        implGetFileFromPackage( ".jar", xPackage );
 
     try
     {
@@ -1751,13 +1674,12 @@ Reference< XHierarchicalNameAccess > JarFileIterator::implGetJarFromPackage
         Reference< XMultiComponentFactory >xSMgr( m_xContext->getServiceManager(), UNO_QUERY );
         Reference< XInterface > xIfc
             = xSMgr->createInstanceWithArgumentsAndContext(
-                OUString(
-                    "com.sun.star.packages.comp.ZipPackage" ),
+                "com.sun.star.packages.comp.ZipPackage",
                 aArguments, m_xContext );
 
         if ( xIfc.is() )
         {
-            xNA = Reference< XHierarchicalNameAccess >( xIfc, UNO_QUERY );
+            xNA.set( xIfc, UNO_QUERY );
 
             OSL_ENSURE( xNA.is(),
                 "JarFileIterator::implGetJarFromPackage() - "
@@ -1769,14 +1691,14 @@ Reference< XHierarchicalNameAccess > JarFileIterator::implGetJarFromPackage
     catch ( Exception & )
     {}
 
-    if( xNA.is() && o_pExtensionPath != NULL )
+    if( xNA.is() && o_pExtensionPath != nullptr )
     {
         // Extract path including language from file name
         sal_Int32 nLastSlash = zipFile.lastIndexOf( '/' );
         if( nLastSlash != -1 )
             *o_pExtensionPath = zipFile.copy( 0, nLastSlash );
 
-        if( o_pExtensionRegistryPath != NULL )
+        if( o_pExtensionRegistryPath != nullptr )
         {
             OUString& rPath = *o_pExtensionPath;
             sal_Int32 nLastSlashInPath = rPath.lastIndexOf( '/', rPath.getLength() - 1 );
@@ -1862,7 +1784,7 @@ OUString IndexFolderIterator::nextIndexFolder( bool& o_rbExtension, bool& o_rbTe
 OUString IndexFolderIterator::implGetIndexFolderFromPackage( bool& o_rbTemporary, Reference< deployment::XPackage > xPackage )
 {
     OUString aIndexFolder =
-        implGetFileFromPackage( OUString( ".idxl" ), xPackage );
+        implGetFileFromPackage( ".idxl", xPackage );
 
     o_rbTemporary = false;
     if( !m_xSFA->isFolder( aIndexFolder ) )
@@ -1904,7 +1826,7 @@ OUString IndexFolderIterator::implGetIndexFolderFromPackage( bool& o_rbTemporary
                 if( !bIsWriteAccess )
                 {
                     OUString aTempFileURL;
-                    ::osl::FileBase::RC eErr = ::osl::File::createTempFile( 0, 0, &aTempFileURL );
+                    ::osl::FileBase::RC eErr = ::osl::File::createTempFile( nullptr, nullptr, &aTempFileURL );
                     if( eErr == ::osl::FileBase::E_None )
                     {
                         OUString aTempDirURL = aTempFileURL;
@@ -1926,7 +1848,7 @@ OUString IndexFolderIterator::implGetIndexFolderFromPackage( bool& o_rbTemporary
         aIndexer.indexDocuments();
 
                 if( bIsWriteAccess )
-                    aIndexFolder = implGetFileFromPackage( OUString( ".idxl" ), xPackage );
+                    aIndexFolder = implGetFileFromPackage( ".idxl", xPackage );
                 else
                     aIndexFolder = aZipDir + "/help.idxl";
             }

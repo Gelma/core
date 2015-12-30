@@ -100,7 +100,7 @@ void SwViewShell::PrintProspect(
     OSL_ENSURE( rPagesToPrint.second == -1 || rPrintData.GetRenderData().GetValidPagesSet().count( rPagesToPrint.second ) == 1, "second Page not valid" );
 
     // create a new shell for the printer
-    SwViewShell aShell( *this, 0, pPrinter );
+    SwViewShell aShell( *this, nullptr, pPrinter );
 
     SET_CURR_SHELL( &aShell );
 
@@ -113,8 +113,8 @@ void SwViewShell::PrintProspect(
 
     SwTwips nMaxRowSz, nMaxColSz;
 
-    const SwPageFrm *pStPage    = 0;
-    const SwPageFrm *pNxtPage   = 0;
+    const SwPageFrame *pStPage    = nullptr;
+    const SwPageFrame *pNxtPage   = nullptr;
     if (rPagesToPrint.first > 0)
     {
         pStPage = sw_getPage(*aShell.GetLayout(), rPagesToPrint.first);
@@ -132,13 +132,13 @@ void SwViewShell::PrintProspect(
         if ( pStPage->IsEmptyPage() )
         {
             if ( pStPage->GetPhyPageNum() % 2 == 0 )
-                aSttPageSize = pStPage->GetPrev()->Frm().SSize();
+                aSttPageSize = pStPage->GetPrev()->Frame().SSize();
             else
-                aSttPageSize = pStPage->GetNext()->Frm().SSize();
+                aSttPageSize = pStPage->GetNext()->Frame().SSize();
         }
         else
         {
-            aSttPageSize = pStPage->Frm().SSize();
+            aSttPageSize = pStPage->Frame().SSize();
         }
     }
     Size aNxtPageSize;
@@ -147,13 +147,13 @@ void SwViewShell::PrintProspect(
         if ( pNxtPage->IsEmptyPage() )
         {
             if ( pNxtPage->GetPhyPageNum() % 2 == 0 )
-                aNxtPageSize = pNxtPage->GetPrev()->Frm().SSize();
+                aNxtPageSize = pNxtPage->GetPrev()->Frame().SSize();
             else
-                aNxtPageSize = pNxtPage->GetNext()->Frm().SSize();
+                aNxtPageSize = pNxtPage->GetNext()->Frame().SSize();
         }
         else
         {
-            aNxtPageSize = pNxtPage->Frm().SSize();
+            aNxtPageSize = pNxtPage->Frame().SSize();
         }
     }
 
@@ -206,13 +206,13 @@ void SwViewShell::PrintProspect(
         if( pStPage )
         {
             aShell.Imp()->SetFirstVisPageInvalid();
-            aShell.maVisArea = pStPage->Frm();
+            aShell.maVisArea = pStPage->Frame();
 
             Point aPos( aSttPt );
             aPos -= aShell.maVisArea.Pos();
             aMapMode.SetOrigin( aPos );
             pPrinter->SetMapMode( aMapMode );
-            pStPage->GetUpper()->Paint( *pOutDev, pStPage->Frm() );
+            pStPage->GetUpper()->Paint( *pOutDev, pStPage->Frame() );
         }
 
         pStPage = pNxtPage;

@@ -208,7 +208,7 @@ void Page::endElement()
     }
 
     ctx.importDefaults( 0, 0, _xAttributes ); // inherited from BulletinBoardElement
-    ctx.importStringProperty( OUString( "Title" ), OUString( "title" ), _xAttributes );
+    ctx.importStringProperty( "Title", "title", _xAttributes );
     ctx.importEvents( _events );
     // avoid ring-reference:
     // vector< event elements > holding event elements holding this (via _pParent)
@@ -677,6 +677,8 @@ void NumericFieldElement::endElement()
     }
 
     ctx.importDefaults( _nBasePosX, _nBasePosY, _xAttributes );
+    ctx.importAlignProperty( "Align", "align", _xAttributes );
+    ctx.importVerticalAlignProperty( "VerticalAlign", "valign", _xAttributes );
     ctx.importBooleanProperty( "Tabstop","tabstop",_xAttributes );
     ctx.importBooleanProperty( "ReadOnly", "readonly",_xAttributes );
     ctx.importBooleanProperty( "StrictFormat", "strict-format", _xAttributes );

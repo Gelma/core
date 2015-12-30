@@ -38,17 +38,17 @@ namespace svgio
         :   SvgNode(SVGTokenPattern, rDocument, pParent),
             aPrimitives(),
             maSvgStyleAttributes(*this),
-            mpViewBox(0),
+            mpViewBox(nullptr),
             maSvgAspectRatio(),
             maX(),
             maY(),
             maWidth(),
             maHeight(),
-            mpPatternUnits(0),
-            mpPatternContentUnits(0),
-            mpaPatternTransform(0),
+            mpPatternUnits(nullptr),
+            mpPatternContentUnits(nullptr),
+            mpaPatternTransform(nullptr),
             maXLink(),
-            mpXLink(0)
+            mpXLink(nullptr)
         {
         }
 
@@ -62,7 +62,7 @@ namespace svgio
 
         const SvgStyleAttributes* SvgPatternNode::getSvgStyleAttributes() const
         {
-            return checkForCssStyle(OUString("pattern"), maSvgStyleAttributes);
+            return checkForCssStyle("pattern", maSvgStyleAttributes);
         }
 
         void SvgPatternNode::parseAttribute(const OUString& rTokenName, SVGToken aSVGToken, const OUString& aContent)
@@ -264,14 +264,14 @@ namespace svgio
             }
         }
 
-        const drawinglayer::primitive2d::Primitive2DSequence& SvgPatternNode::getPatternPrimitives() const
+        const drawinglayer::primitive2d::Primitive2DContainer& SvgPatternNode::getPatternPrimitives() const
         {
-            if(!aPrimitives.hasElements() && Display_none != getDisplay())
+            if(aPrimitives.empty() && Display_none != getDisplay())
             {
                 decomposeSvgNode(const_cast< SvgPatternNode* >(this)->aPrimitives, true);
             }
 
-            if(!aPrimitives.hasElements() && !maXLink.isEmpty())
+            if(aPrimitives.empty() && !maXLink.isEmpty())
             {
                 const_cast< SvgPatternNode* >(this)->tryToFindLink();
 
@@ -310,7 +310,7 @@ namespace svgio
                 return mpXLink->getViewBox();
             }
 
-            return 0;
+            return nullptr;
         }
 
         const SvgAspectRatio& SvgPatternNode::getSvgAspectRatio() const
@@ -412,7 +412,7 @@ namespace svgio
                 return mpXLink->getPatternUnits();
             }
 
-            return 0;
+            return nullptr;
         }
 
         const SvgUnits* SvgPatternNode::getPatternContentUnits() const
@@ -429,7 +429,7 @@ namespace svgio
                 return mpXLink->getPatternContentUnits();
             }
 
-            return 0;
+            return nullptr;
         }
 
         const basegfx::B2DHomMatrix* SvgPatternNode::getPatternTransform() const
@@ -446,7 +446,7 @@ namespace svgio
                 return mpXLink->getPatternTransform();
             }
 
-            return 0;
+            return nullptr;
         }
 
     } // end of namespace svgreader

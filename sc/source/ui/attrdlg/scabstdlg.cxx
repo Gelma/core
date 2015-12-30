@@ -38,7 +38,7 @@ extern "C" ScAbstractDialogFactory* ScCreateDialogFactory();
 
 ScAbstractDialogFactory* ScAbstractDialogFactory::Create()
 {
-    ScFuncPtrCreateDialogFactory fp = 0;
+    ScFuncPtrCreateDialogFactory fp = nullptr;
 #if HAVE_FEATURE_DESKTOP
 #ifndef DISABLE_DYNLOADING
     static ::osl::Module aDialogLibrary;
@@ -49,14 +49,14 @@ ScAbstractDialogFactory* ScAbstractDialogFactory::Create()
     if ( aDialogLibrary.is() || aDialogLibrary.loadRelative( &thisModule, aStrBuf.makeStringAndClear(),
                                                              SAL_LOADMODULE_GLOBAL | SAL_LOADMODULE_LAZY ) )
         fp = reinterpret_cast<ScAbstractDialogFactory* (SAL_CALL*)()>(
-            aDialogLibrary.getFunctionSymbol( OUString("ScCreateDialogFactory") ));
+            aDialogLibrary.getFunctionSymbol( "ScCreateDialogFactory" ));
 #else
     fp = ScCreateDialogFactory();
 #endif
 #endif
     if ( fp )
         return fp();
-    return 0;
+    return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

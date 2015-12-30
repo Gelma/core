@@ -73,7 +73,7 @@ GalleryItem::~GalleryItem()
 
 bool GalleryItem::isValid() const
 {
-    return( mpTheme != NULL );
+    return( mpTheme != nullptr );
 }
 
 
@@ -138,10 +138,7 @@ OUString GalleryItem::getImplementationName_Static()
 uno::Sequence< OUString > GalleryItem::getSupportedServiceNames_Static()
     throw()
 {
-    uno::Sequence< OUString > aSeq( 1 );
-
-    aSeq.getArray()[ 0 ] = "com.sun.star.gallery.GalleryItem";
-
+    uno::Sequence< OUString > aSeq { "com.sun.star.gallery.GalleryItem" };
     return aSeq;
 }
 
@@ -269,7 +266,7 @@ void GalleryItem::_setPropertyValues( const comphelper::PropertyMapEntry** ppEnt
 
             if( *pValues >>= aNewTitle )
             {
-                ::GalleryTheme* pGalTheme = ( isValid() ? mpTheme->implGetTheme() : NULL );
+                ::GalleryTheme* pGalTheme = ( isValid() ? mpTheme->implGetTheme() : nullptr );
 
                 if( pGalTheme )
                 {
@@ -316,7 +313,7 @@ void GalleryItem::_getPropertyValues( const comphelper::PropertyMapEntry** ppEnt
 
             case( UNOGALLERY_URL ):
             {
-                ::GalleryTheme* pGalTheme = ( isValid() ? mpTheme->implGetTheme() : NULL );
+                ::GalleryTheme* pGalTheme = ( isValid() ? mpTheme->implGetTheme() : nullptr );
 
                 if( pGalTheme )
                     *pValue <<= OUString( implGetObject()->aURL.GetMainURL( INetURLObject::NO_DECODE ) );
@@ -325,7 +322,7 @@ void GalleryItem::_getPropertyValues( const comphelper::PropertyMapEntry** ppEnt
 
             case( UNOGALLERY_TITLE ):
             {
-                ::GalleryTheme* pGalTheme = ( isValid() ? mpTheme->implGetTheme() : NULL );
+                ::GalleryTheme* pGalTheme = ( isValid() ? mpTheme->implGetTheme() : nullptr );
 
                 if( pGalTheme )
                 {
@@ -342,7 +339,7 @@ void GalleryItem::_getPropertyValues( const comphelper::PropertyMapEntry** ppEnt
 
             case( UNOGALLERY_THUMBNAIL ):
             {
-                ::GalleryTheme* pGalTheme = ( isValid() ? mpTheme->implGetTheme() : NULL );
+                ::GalleryTheme* pGalTheme = ( isValid() ? mpTheme->implGetTheme() : nullptr );
 
                 if( pGalTheme )
                 {
@@ -366,7 +363,7 @@ void GalleryItem::_getPropertyValues( const comphelper::PropertyMapEntry** ppEnt
 
             case( UNOGALLERY_GRAPHIC ):
             {
-                ::GalleryTheme* pGalTheme = ( isValid() ? mpTheme->implGetTheme() : NULL );
+                ::GalleryTheme* pGalTheme = ( isValid() ? mpTheme->implGetTheme() : nullptr );
                 Graphic         aGraphic;
 
                 if( pGalTheme && pGalTheme->GetGraphic( pGalTheme->ImplGetGalleryObjectPos( implGetObject() ), aGraphic ) )
@@ -378,7 +375,7 @@ void GalleryItem::_getPropertyValues( const comphelper::PropertyMapEntry** ppEnt
             {
                 if( gallery::GalleryItemType::DRAWING == getType() )
                 {
-                    ::GalleryTheme* pGalTheme = ( isValid() ? mpTheme->implGetTheme() : NULL );
+                    ::GalleryTheme* pGalTheme = ( isValid() ? mpTheme->implGetTheme() : nullptr );
                     FmFormModel*    pModel = new FmFormModel;
 
                     pModel->GetItemPool().FreezeIdRanges();
@@ -411,8 +408,8 @@ void GalleryItem::implSetInvalid()
 {
     if( mpTheme )
     {
-        mpTheme = NULL;
-        mpGalleryObject = NULL;
+        mpTheme = nullptr;
+        mpGalleryObject = nullptr;
     }
 }
 

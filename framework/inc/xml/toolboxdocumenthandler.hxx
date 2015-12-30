@@ -35,7 +35,7 @@ namespace framework{
 // Hash code function for using in all hash maps of follow implementation.
 
 class FWE_DLLPUBLIC OReadToolBoxDocumentHandler :
-                                    public ::cppu::WeakImplHelper< ::com::sun::star::xml::sax::XDocumentHandler >
+                                    public ::cppu::WeakImplHelper< css::xml::sax::XDocumentHandler >
 {
     public:
         enum ToolBox_XML_Entry
@@ -46,16 +46,11 @@ class FWE_DLLPUBLIC OReadToolBoxDocumentHandler :
             TB_ELEMENT_TOOLBARBREAK,
             TB_ELEMENT_TOOLBARSEPARATOR,
             TB_ATTRIBUTE_TEXT,
-            TB_ATTRIBUTE_BITMAP,
             TB_ATTRIBUTE_URL,
-            TB_ATTRIBUTE_ITEMBITS,
             TB_ATTRIBUTE_VISIBLE,
-            TB_ATTRIBUTE_WIDTH,
-            TB_ATTRIBUTE_USER,
             TB_ATTRIBUTE_HELPID,
             TB_ATTRIBUTE_STYLE,
             TB_ATTRIBUTE_UINAME,
-            TB_ATTRIBUTE_TOOLTIP,
             TB_XML_ENTRY_COUNT
         };
 
@@ -66,45 +61,45 @@ class FWE_DLLPUBLIC OReadToolBoxDocumentHandler :
             TB_XML_NAMESPACES_COUNT
         };
 
-        OReadToolBoxDocumentHandler( const ::com::sun::star::uno::Reference< com::sun::star::container::XIndexContainer >& rItemContainer );
+        OReadToolBoxDocumentHandler( const css::uno::Reference< css::container::XIndexContainer >& rItemContainer );
         virtual ~OReadToolBoxDocumentHandler();
 
         // XDocumentHandler
         virtual void SAL_CALL startDocument()
-        throw ( ::com::sun::star::xml::sax::SAXException,
-                ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( css::xml::sax::SAXException,
+                css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL endDocument()
-        throw(  ::com::sun::star::xml::sax::SAXException,
-                ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw(  css::xml::sax::SAXException,
+                css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL startElement(
             const OUString& aName,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > &xAttribs)
-        throw(  ::com::sun::star::xml::sax::SAXException,
-                ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            const css::uno::Reference< css::xml::sax::XAttributeList > &xAttribs)
+        throw(  css::xml::sax::SAXException,
+                css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL endElement(const OUString& aName)
-        throw(  ::com::sun::star::xml::sax::SAXException,
-                ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw(  css::xml::sax::SAXException,
+                css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL characters(const OUString& aChars)
-        throw(  ::com::sun::star::xml::sax::SAXException,
-                ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw(  css::xml::sax::SAXException,
+                css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL ignorableWhitespace(const OUString& aWhitespaces)
-        throw(  ::com::sun::star::xml::sax::SAXException,
-                ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw(  css::xml::sax::SAXException,
+                css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL processingInstruction(const OUString& aTarget,
                                                     const OUString& aData)
-        throw(  ::com::sun::star::xml::sax::SAXException,
-                ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw(  css::xml::sax::SAXException,
+                css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL setDocumentLocator(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XLocator > &xLocator)
-        throw(  ::com::sun::star::xml::sax::SAXException,
-                ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            const css::uno::Reference< css::xml::sax::XLocator > &xLocator)
+        throw(  css::xml::sax::SAXException,
+                css::uno::RuntimeException, std::exception ) override;
 
     private:
         OUString getErrorLineString();
@@ -116,71 +111,70 @@ class FWE_DLLPUBLIC OReadToolBoxDocumentHandler :
         {
         };
 
-        bool                                                                        m_bToolBarStartFound : 1;
-        bool                                                                        m_bToolBarEndFound : 1;
-        bool                                                                        m_bToolBarItemStartFound : 1;
-        bool                                                                        m_bToolBarSpaceStartFound : 1;
-        bool                                                                        m_bToolBarBreakStartFound : 1;
-        bool                                                                        m_bToolBarSeparatorStartFound : 1;
-        ToolBoxHashMap                                                                  m_aToolBoxMap;
-        com::sun::star::uno::Reference< com::sun::star::container::XIndexContainer >    m_rItemContainer;
-        ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XLocator >        m_xLocator;
+        bool                                                      m_bToolBarStartFound : 1;
+        bool                                                      m_bToolBarEndFound : 1;
+        bool                                                      m_bToolBarItemStartFound : 1;
+        bool                                                      m_bToolBarSpaceStartFound : 1;
+        bool                                                      m_bToolBarBreakStartFound : 1;
+        bool                                                      m_bToolBarSeparatorStartFound : 1;
+        ToolBoxHashMap                                            m_aToolBoxMap;
+        css::uno::Reference< css::container::XIndexContainer >    m_rItemContainer;
+        css::uno::Reference< css::xml::sax::XLocator >            m_xLocator;
 
-        sal_Int32                                                                       m_nHashCode_Style_Radio;
-        sal_Int32                                                                       m_nHashCode_Style_Auto;
-        sal_Int32                                                                       m_nHashCode_Style_Left;
-        sal_Int32                                                                       m_nHashCode_Style_AutoSize;
-        sal_Int32                                                                       m_nHashCode_Style_DropDown;
-        sal_Int32                                                                       m_nHashCode_Style_Repeat;
-        sal_Int32                                                                       m_nHashCode_Style_DropDownOnly;
-        sal_Int32                                                                       m_nHashCode_Style_Text;
-        sal_Int32                                                                       m_nHashCode_Style_Image;
-        OUString                                                                   m_aType;
-        OUString                                                                   m_aLabel;
-        OUString                                                                   m_aStyle;
-        OUString                                                                   m_aHelpURL;
-        OUString                                                                   m_aTooltip;
-        OUString                                                                   m_aIsVisible;
-        OUString                                                                   m_aCommandURL;
+        sal_Int32                                                 m_nHashCode_Style_Radio;
+        sal_Int32                                                 m_nHashCode_Style_Auto;
+        sal_Int32                                                 m_nHashCode_Style_Left;
+        sal_Int32                                                 m_nHashCode_Style_AutoSize;
+        sal_Int32                                                 m_nHashCode_Style_DropDown;
+        sal_Int32                                                 m_nHashCode_Style_Repeat;
+        sal_Int32                                                 m_nHashCode_Style_DropDownOnly;
+        sal_Int32                                                 m_nHashCode_Style_Text;
+        sal_Int32                                                 m_nHashCode_Style_Image;
+        OUString                                                  m_aType;
+        OUString                                                  m_aLabel;
+        OUString                                                  m_aStyle;
+        OUString                                                  m_aHelpURL;
+        OUString                                                  m_aIsVisible;
+        OUString                                                  m_aCommandURL;
 };
 
 class FWE_DLLPUBLIC OWriteToolBoxDocumentHandler
 {
     public:
             OWriteToolBoxDocumentHandler(
-            const ::com::sun::star::uno::Reference< com::sun::star::container::XIndexAccess >& rItemAccess,
-            ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XDocumentHandler >& rDocumentHandler );
+            const css::uno::Reference< css::container::XIndexAccess >& rItemAccess,
+            css::uno::Reference< css::xml::sax::XDocumentHandler >& rDocumentHandler );
         virtual ~OWriteToolBoxDocumentHandler();
 
         void WriteToolBoxDocument() throw
-            ( ::com::sun::star::xml::sax::SAXException,
-              ::com::sun::star::uno::RuntimeException );
+            ( css::xml::sax::SAXException,
+              css::uno::RuntimeException );
 
     protected:
-        void WriteToolBoxItem( const OUString& aCommandURL, const OUString& aLabel, const OUString& aHelpURL, const OUString& aTooltip, sal_Int16 nStyle,
-                                       sal_Int16 nWidth, bool bVisible ) throw
-            ( ::com::sun::star::xml::sax::SAXException,
-              ::com::sun::star::uno::RuntimeException );
+        void WriteToolBoxItem( const OUString& aCommandURL, const OUString& aLabel, const OUString& aHelpURL,
+                               sal_Int16 nStyle, bool bVisible ) throw
+            ( css::xml::sax::SAXException,
+              css::uno::RuntimeException );
 
         void WriteToolBoxSpace() throw
-            ( ::com::sun::star::xml::sax::SAXException,
-              ::com::sun::star::uno::RuntimeException );
+            ( css::xml::sax::SAXException,
+              css::uno::RuntimeException );
 
         void WriteToolBoxBreak() throw
-            ( ::com::sun::star::xml::sax::SAXException,
-              ::com::sun::star::uno::RuntimeException );
+            ( css::xml::sax::SAXException,
+              css::uno::RuntimeException );
 
         void WriteToolBoxSeparator() throw
-            ( ::com::sun::star::xml::sax::SAXException,
-              ::com::sun::star::uno::RuntimeException );
+            ( css::xml::sax::SAXException,
+              css::uno::RuntimeException );
 
-        ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XDocumentHandler >    m_xWriteDocumentHandler;
-        ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >      m_xEmptyList;
-        com::sun::star::uno::Reference< com::sun::star::container::XIndexAccess >           m_rItemAccess;
-        OUString                                                                     m_aXMLToolbarNS;
-        OUString                                                                     m_aXMLXlinkNS;
-        OUString                                                                     m_aAttributeType;
-        OUString                                                                     m_aAttributeURL;
+        css::uno::Reference< css::xml::sax::XDocumentHandler > m_xWriteDocumentHandler;
+        css::uno::Reference< css::xml::sax::XAttributeList >   m_xEmptyList;
+        css::uno::Reference< css::container::XIndexAccess >    m_rItemAccess;
+        OUString                                               m_aXMLToolbarNS;
+        OUString                                               m_aXMLXlinkNS;
+        OUString                                               m_aAttributeType;
+        OUString                                               m_aAttributeURL;
 };
 
 } // namespace framework

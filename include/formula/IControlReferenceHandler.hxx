@@ -20,6 +20,7 @@
 #define INCLUDED_FORMULA_ICONTROLREFERENCEHANDLER_HXX
 
 #include <formula/formuladllapi.h>
+#include <rtl/ustring.hxx>
 
 namespace formula
 {
@@ -30,8 +31,8 @@ namespace formula
     public:
         virtual void ShowReference(const OUString& _sRef) = 0;
         virtual void HideReference( bool bDoneRefMode = true ) = 0;
-        virtual void ReleaseFocus( RefEdit* pEdit, RefButton* pButton = NULL ) = 0;
-        virtual void ToggleCollapsed( RefEdit* pEdit, RefButton* pButton = NULL ) = 0;
+        virtual void ReleaseFocus( RefEdit* pEdit, RefButton* pButton = nullptr ) = 0;
+        virtual void ToggleCollapsed( RefEdit* pEdit, RefButton* pButton = nullptr ) = 0;
 
     protected:
         ~IControlReferenceHandler() {}

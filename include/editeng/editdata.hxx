@@ -274,15 +274,12 @@ struct MoveParagraphsInfo
         { nStartPara = nS; nEndPara = nE; nDestPara = nD; }
 };
 
-enum class PasteOrDropInfosAction { PASTE=1, DROP=2 };
-
 struct PasteOrDropInfos
 {
-    PasteOrDropInfosAction nAction;
     sal_Int32              nStartPara;
     sal_Int32              nEndPara;
 
-    PasteOrDropInfos(PasteOrDropInfosAction _nAction) : nAction(_nAction), nStartPara(-1), nEndPara(-1)  {}
+    PasteOrDropInfos() : nStartPara(-1), nEndPara(-1)  {}
 };
 
 enum EENotifyType
@@ -340,7 +337,7 @@ struct EENotify
     sal_Int32       nParam2;
 
     EENotify( EENotifyType eType )
-        { eNotificationType = eType; pEditEngine = NULL; pEditView = NULL; nParagraph = EE_PARA_NOT_FOUND; nParam1 = 0; nParam2 = 0; }
+        { eNotificationType = eType; pEditEngine = nullptr; pEditView = nullptr; nParagraph = EE_PARA_NOT_FOUND; nParam1 = 0; nParam2 = 0; }
 };
 
 #endif // INCLUDED_EDITENG_EDITDATA_HXX

@@ -61,13 +61,10 @@
 #include "dragdata.hxx"
 #include "clipdata.hxx"
 
-// #108584#
 #include "scitems.hxx"
 
-// #108584#
 #include <editeng/eeitem.hxx>
 
-// #108584#
 #include <editeng/fhgtitem.hxx>
 #include <vcl/svapp.hxx>
 
@@ -81,11 +78,11 @@ ScDrawTransferObj::ScDrawTransferObj( SdrModel* pClipModel, ScDocShell* pContain
                                         const TransferableObjectDescriptor& rDesc ) :
     pModel( pClipModel ),
     aObjDesc( rDesc ),
-    pBookmark( NULL ),
+    pBookmark( nullptr ),
     bGraphic( false ),
     bGrIsBit( false ),
     bOleObj( false ),
-    pDragSourceView( NULL ),
+    pDragSourceView( nullptr ),
     nDragSourceFlags( 0 ),
     bDragWasInternal( false ),
     nSourceDocID( 0 ),
@@ -130,7 +127,7 @@ ScDrawTransferObj::ScDrawTransferObj( SdrModel* pClipModel, ScDocShell* pContain
 
             //  URL button
 
-            SdrUnoObj* pUnoCtrl = PTR_CAST(SdrUnoObj, pObject);
+            SdrUnoObj* pUnoCtrl = dynamic_cast<SdrUnoObj*>( pObject );
             if (pUnoCtrl && FmFormInventor == pUnoCtrl->GetObjInventor())
             {
                 uno::Reference<awt::XControlModel> xControlModel = pUnoCtrl->GetUnoControlModel();
@@ -160,7 +157,7 @@ ScDrawTransferObj::ScDrawTransferObj( SdrModel* pClipModel, ScDocShell* pContain
                                     OUString aUrl = sTmp;
                                     OUString aAbs;
                                     const SfxMedium* pMedium;
-                                    if (pContainerShell && (pMedium = pContainerShell->GetMedium()) != NULL)
+                                    if (pContainerShell && (pMedium = pContainerShell->GetMedium()) != nullptr)
                                     {
                                         bool bWasAbs = true;
                                         aAbs = pMedium->GetURLObject().smartRel2Abs( aUrl, bWasAbs ).
@@ -230,7 +227,7 @@ ScDrawTransferObj::~ScDrawTransferObj()
     if ( pScMod->GetClipData().pDrawClipboard == this )
     {
         OSL_FAIL("ScDrawTransferObj wasn't released");
-        pScMod->SetClipObject( NULL, NULL );
+        pScMod->SetClipObject( nullptr, nullptr );
     }
     if ( pScMod->GetDragData().pDrawTransfer == this )
     {
@@ -270,7 +267,7 @@ static bool lcl_HasOnlyControls( SdrModel* pModel )
                 bOnlyControls = true;   // only set if there are any objects at all
                 while ( pObj )
                 {
-                    if (!pObj->ISA(SdrUnoObj))
+                    if (dynamic_cast<const SdrUnoObj*>( pObj) ==  nullptr)
                     {
                         bOnlyControls = false;
                         break;
@@ -451,7 +448,7 @@ bool ScDrawTransferObj::GetData( const css::datatransfer::DataFlavor& rFlavor, c
 }
 
 bool ScDrawTransferObj::WriteObject( tools::SvRef<SotStorageStream>& rxOStm, void* pUserObject, SotClipboardFormatId nUserObjectId,
-                                        const ::com::sun::star::datatransfer::DataFlavor& /* rFlavor */ )
+                                        const css::datatransfer::DataFlavor& /* rFlavor */ )
 {
     // called from SetObject, put data into stream
 
@@ -463,7 +460,6 @@ bool ScDrawTransferObj::WriteObject( tools::SvRef<SotStorageStream>& rxOStm, voi
                 SdrModel* pDrawModel = static_cast<SdrModel*>(pUserObject);
                 rxOStm->SetBufferSize( 0xff00 );
 
-                // #108584#
                 // for the changed pool defaults from drawing layer pool set those
                 // attributes as hard attributes to preserve them for saving
                 const SfxItemPool& rItemPool = pModel->GetItemPool();
@@ -490,7 +486,7 @@ bool ScDrawTransferObj::WriteObject( tools::SvRef<SotStorageStream>& rxOStm, voi
                 }
 
                 {
-                    com::sun::star::uno::Reference<com::sun::star::io::XOutputStream> xDocOut( new utl::OOutputStreamWrapper( *rxOStm ) );
+                    css::uno::Reference<css::io::XOutputStream> xDocOut( new utl::OOutputStreamWrapper( *rxOStm ) );
                     if( SvxDrawingLayerExport( pDrawModel, xDocOut ) )
                         rxOStm->Commit();
                 }
@@ -578,7 +574,7 @@ bool ScDrawTransferObj::WriteObject( tools::SvRef<SotStorageStream>& rxOStm, voi
                     bRet = true;
 
                     xWorkStore->dispose();
-                    xWorkStore = uno::Reference < embed::XStorage >();
+                    xWorkStore.clear();
                     rxOStm->Commit();
                 }
                 catch ( uno::Exception& )
@@ -598,7 +594,7 @@ void ScDrawTransferObj::ObjectReleased()
 {
     ScModule* pScMod = SC_MOD();
     if ( pScMod->GetClipData().pDrawClipboard == this )
-        pScMod->SetClipObject( NULL, NULL );
+        pScMod->SetClipObject( nullptr, nullptr );
 
     TransferableHelper::ObjectReleased();
 }
@@ -694,7 +690,7 @@ SdrOle2Obj* ScDrawTransferObj::GetSingleObject()
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void ScDrawTransferObj::CreateOLEData()
@@ -726,7 +722,7 @@ void ScDrawTransferObj::InitDocShell()
         ScDocShell* pDocSh = new ScDocShell;
         aDocShellRef = pDocSh;      // ref must be there before InitNew
 
-        pDocSh->DoInitNew(NULL);
+        pDocSh->DoInitNew();
 
         ScDocument& rDestDoc = pDocSh->GetDocument();
         rDestDoc.InitDrawLayer( pDocSh );
@@ -739,7 +735,7 @@ void ScDrawTransferObj::InitDocShell()
         aDestView.Paste(
             *pModel,
             Point(aSrcSize.Width()/2, aSrcSize.Height()/2),
-            NULL, SdrInsertFlags::NONE, OUString(), OUString());
+            nullptr, SdrInsertFlags::NONE);
 
         // put objects to right layer (see ScViewFunc::PasteDataFormat for SotClipboardFormatId::DRAWING)
 
@@ -750,7 +746,7 @@ void ScDrawTransferObj::InitDocShell()
             SdrObject* pObject = aIter.Next();
             while (pObject)
             {
-                if ( pObject->ISA(SdrUnoObj) )
+                if ( dynamic_cast<const SdrUnoObj*>( pObject) !=  nullptr )
                     pObject->NbcSetLayer(SC_LAYER_CONTROLS);
                 else
                     pObject->NbcSetLayer(SC_LAYER_FRONT);
@@ -766,7 +762,7 @@ void ScDrawTransferObj::InitDocShell()
         aViewOpt.SetOption( VOPT_GRID, false );
         rDestDoc.SetViewOptions( aViewOpt );
 
-        ScViewData aViewData( pDocSh, NULL );
+        ScViewData aViewData( pDocSh, nullptr );
         aViewData.SetTabNo( 0 );
         aViewData.SetScreen( aDestArea );
         aViewData.SetCurX( 0 );
@@ -780,12 +776,12 @@ namespace
     class theScDrawTransferObjUnoTunnelId : public rtl::Static< UnoTunnelIdInit, theScDrawTransferObjUnoTunnelId > {};
 }
 
-const com::sun::star::uno::Sequence< sal_Int8 >& ScDrawTransferObj::getUnoTunnelId()
+const css::uno::Sequence< sal_Int8 >& ScDrawTransferObj::getUnoTunnelId()
 {
     return theScDrawTransferObjUnoTunnelId::get().getSeq();
 }
 
-sal_Int64 SAL_CALL ScDrawTransferObj::getSomething( const com::sun::star::uno::Sequence< sal_Int8 >& rId ) throw( com::sun::star::uno::RuntimeException, std::exception )
+sal_Int64 SAL_CALL ScDrawTransferObj::getSomething( const css::uno::Sequence< sal_Int8 >& rId ) throw( css::uno::RuntimeException, std::exception )
 {
     sal_Int64 nRet;
     if( ( rId.getLength() == 16 ) &&

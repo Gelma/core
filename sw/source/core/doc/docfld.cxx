@@ -198,14 +198,14 @@ void _SetGetExpField::GetPosOfContent( SwPosition& rPos ) const
     }
 }
 
-void _SetGetExpField::SetBodyPos( const SwContentFrm& rFrm )
+void _SetGetExpField::SetBodyPos( const SwContentFrame& rFrame )
 {
-    if( !rFrm.IsInDocBody() )
+    if( !rFrame.IsInDocBody() )
     {
-        SwNodeIndex aIdx( *rFrm.GetNode() );
+        SwNodeIndex aIdx( *rFrame.GetNode() );
         SwDoc& rDoc = *aIdx.GetNodes().GetDoc();
         SwPosition aPos( aIdx );
-        bool const bResult = ::GetBodyTextNode( rDoc, aPos, rFrm );
+        bool const bResult = ::GetBodyTextNode( rDoc, aPos, rFrame );
         OSL_ENSURE(bResult, "Where is the field?");
         (void) bResult; // unused in non-debug
         nNode = aPos.nNode.GetIndex();
@@ -247,7 +247,7 @@ bool _SetGetExpField::operator<( const _SetGetExpField& rField ) const
         else
             pFirstStt = pFirst->StartOfSectionNode();
 
-        if( 0 != ( pTableNd = pNext->FindTableNode() ) )
+        if( nullptr != ( pTableNd = pNext->FindTableNode() ) )
             pNextStt = pTableNd->StartOfSectionNode();
         else
             pNextStt = pNext->StartOfSectionNode();
@@ -273,7 +273,7 @@ bool _SetGetExpField::operator<( const _SetGetExpField& rField ) const
 
 const SwNode* _SetGetExpField::GetNodeFromContent() const
 {
-    const SwNode* pRet = 0;
+    const SwNode* pRet = nullptr;
     if( CNTNT.pTextField )
         switch( eSetGetExpFieldType )
         {
@@ -457,7 +457,7 @@ void SwDoc::GetAllUsedDB( std::vector<OUString>& rDBNameList,
     for (sal_uInt32 n = 0; n < nMaxItems; ++n)
     {
         const SfxPoolItem* pItem;
-        if( 0 == (pItem = GetAttrPool().GetItem2( RES_TXTATR_FIELD, n ) ))
+        if( nullptr == (pItem = GetAttrPool().GetItem2( RES_TXTATR_FIELD, n ) ))
             continue;
 
         const SwFormatField* pFormatField = static_cast<const SwFormatField*>(pItem);
@@ -511,10 +511,10 @@ void SwDoc::GetAllDBNames( std::vector<OUString>& rAllDBNames )
 #else
     SwDBManager* pMgr = GetDBManager();
 
-    const SwDSParamArr& rArr = pMgr->GetDSParamArray();
-    for(const auto &aParam : rArr)
+    const SwDSParams_t& rArr = pMgr->GetDSParamArray();
+    for (const auto& pParam : rArr)
     {
-        rAllDBNames.push_back(aParam.sDataSource + OUString(DB_DELIM) + aParam.sCommand);
+        rAllDBNames.push_back(pParam->sDataSource + OUString(DB_DELIM) + pParam->sCommand);
     }
 #endif
 }
@@ -841,14 +841,14 @@ void SwDocUpdateField::_MakeFieldList( SwDoc& rDoc, int eGetMode )
         std::vector<sal_uLong> aTmpArr;
         std::vector<sal_uLong>::size_type nArrStt = 0;
         SwSectionFormats& rArr = rDoc.GetSections();
-        SwSectionNode* pSectNd = 0;
+        SwSectionNode* pSectNd = nullptr;
         sal_uLong nSttContent = rDoc.GetNodes().GetEndOfExtras().GetIndex();
 
         for (SwSectionFormats::size_type n = rArr.size(); n; )
         {
             SwSection* pSect = rArr[ --n ]->GetSection();
             if( pSect && pSect->IsHidden() && !pSect->GetCondition().isEmpty() &&
-                0 != ( pSectNd = pSect->GetFormat()->GetSectionNode() ))
+                nullptr != ( pSectNd = pSect->GetFormat()->GetSectionNode() ))
             {
                 sal_uLong nIdx = pSectNd->GetIndex();
                 aTmpArr.push_back( nIdx );
@@ -884,7 +884,7 @@ void SwDocUpdateField::_MakeFieldList( SwDoc& rDoc, int eGetMode )
     const OUString sFalse("FALSE");
 
 #if HAVE_FEATURE_DBCONNECTIVITY
-    bool bIsDBManager = 0 != rDoc.GetDBManager();
+    bool bIsDBManager = nullptr != rDoc.GetDBManager();
 #endif
 
     const sal_uInt32 nMaxItems = rDoc.GetAttrPool().GetItemCount2( RES_TXTATR_FIELD );
@@ -936,7 +936,7 @@ void SwDocUpdateField::_MakeFieldList( SwDoc& rDoc, int eGetMode )
 
                     sFormula.clear();
                     // trigger formatting
-                    const_cast<SwFormatField*>(pFormatField)->ModifyNotification( 0, 0 );
+                    const_cast<SwFormatField*>(pFormatField)->ModifyNotification( nullptr, nullptr );
                 }
                 break;
 
@@ -956,7 +956,7 @@ void SwDocUpdateField::_MakeFieldList( SwDoc& rDoc, int eGetMode )
                     // evaluate field
                     const_cast<SwHiddenTextField*>(static_cast<const SwHiddenTextField*>(pField))->Evaluate(&rDoc);
                     // trigger formatting
-                    const_cast<SwFormatField*>(pFormatField)->ModifyNotification( 0, 0 );
+                    const_cast<SwFormatField*>(pFormatField)->ModifyNotification( nullptr, nullptr );
                 }
                 break;
 
@@ -1006,12 +1006,12 @@ void SwDocUpdateField::GetBodyNode( const SwTextField& rTField, sal_uInt16 nFiel
 
     // always the first! (in tab headline, header-/footer)
     Point aPt;
-    const SwContentFrm* pFrm = rTextNd.getLayoutFrm( rDoc.getIDocumentLayoutAccess().GetCurrentLayout(), &aPt, 0, false );
+    const SwContentFrame* pFrame = rTextNd.getLayoutFrame( rDoc.getIDocumentLayoutAccess().GetCurrentLayout(), &aPt, nullptr, false );
 
-    _SetGetExpField* pNew = NULL;
+    _SetGetExpField* pNew = nullptr;
     bool bIsInBody = false;
 
-    if( !pFrm || pFrm->IsInDocBody() )
+    if( !pFrame || pFrame->IsInDocBody() )
     {
         // create index to determine the TextNode
         SwNodeIndex aIdx( rTextNd );
@@ -1021,14 +1021,14 @@ void SwDocUpdateField::GetBodyNode( const SwTextField& rTField, sal_uInt16 nFiel
         // in frames whose anchor is in redline. However, we do want to update
         // fields in hidden sections. So: In order to be updated, a field 1)
         // must have a frame, or 2) it must be in the document body.
-        if( (pFrm != NULL) || bIsInBody )
+        if( (pFrame != nullptr) || bIsInBody )
             pNew = new _SetGetExpField( aIdx, &rTField );
     }
     else
     {
         // create index to determine the TextNode
         SwPosition aPos( rDoc.GetNodes().GetEndOfPostIts() );
-        bool const bResult = GetBodyTextNode( rDoc, aPos, *pFrm );
+        bool const bResult = GetBodyTextNode( rDoc, aPos, *pFrame );
         OSL_ENSURE(bResult, "where is the Field");
         (void) bResult; // unused in non-debug
         pNew = new _SetGetExpField( aPos.nNode, &rTField, &aPos.nContent );
@@ -1047,7 +1047,7 @@ void SwDocUpdateField::GetBodyNode( const SwTextField& rTField, sal_uInt16 nFiel
         pDBField->ChgBodyTextFlag( bIsInBody );
     }
 #endif
-    if( pNew != NULL )
+    if( pNew != nullptr )
         if( !pFieldSortLst->insert( pNew ).second )
             delete pNew;
 }
@@ -1055,7 +1055,7 @@ void SwDocUpdateField::GetBodyNode( const SwTextField& rTField, sal_uInt16 nFiel
 void SwDocUpdateField::GetBodyNode( const SwSectionNode& rSectNd )
 {
     const SwDoc& rDoc = *rSectNd.GetDoc();
-    _SetGetExpField* pNew = 0;
+    _SetGetExpField* pNew = nullptr;
 
     if( rSectNd.GetIndex() < rDoc.GetNodes().GetEndOfExtras().GetIndex() )
     {
@@ -1071,11 +1071,11 @@ void SwDocUpdateField::GetBodyNode( const SwSectionNode& rSectNd )
 
             // always the first! (in tab headline, header-/footer)
             Point aPt;
-            const SwContentFrm* pFrm = pCNd->getLayoutFrm( rDoc.getIDocumentLayoutAccess().GetCurrentLayout(), &aPt, 0, false );
-            if( !pFrm )
+            const SwContentFrame* pFrame = pCNd->getLayoutFrame( rDoc.getIDocumentLayoutAccess().GetCurrentLayout(), &aPt, nullptr, false );
+            if( !pFrame )
                 break;
 
-            bool const bResult = GetBodyTextNode( rDoc, aPos, *pFrm );
+            bool const bResult = GetBodyTextNode( rDoc, aPos, *pFrame );
             OSL_ENSURE(bResult, "where is the Field");
             (void) bResult; // unused in non-debug
             pNew = new _SetGetExpField( rSectNd, &aPos );
@@ -1155,14 +1155,14 @@ void SwDocUpdateField::RemoveFieldType( const SwFieldType& rType )
                     pPrev = pPrev->pNext;
                 pPrev->pNext = pFnd->pNext;
             }
-            pFnd->pNext = 0;
+            pFnd->pNext = nullptr;
             delete pFnd;
         }
     }
 }
 
 SwDocUpdateField::SwDocUpdateField(SwDoc* pDoc)
-    : pFieldSortLst(0)
+    : pFieldSortLst(nullptr)
     , nNodes(0)
     , nFieldLstGetMode(0)
     , pDocument(pDoc)

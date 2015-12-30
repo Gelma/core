@@ -202,7 +202,7 @@ namespace sdr
 
         SfxStyleSheet* GroupProperties::GetStyleSheet() const
         {
-            SfxStyleSheet* pRetval = 0L;
+            SfxStyleSheet* pRetval = nullptr;
 
             const SdrObjList* pSub = static_cast<const SdrObjGroup&>(GetSdrObject()).GetSubList();
             const size_t nCount(pSub->GetObjCount());
@@ -216,7 +216,7 @@ namespace sdr
                     if(pCandidate != pRetval)
                     {
                         // different StyleSheelts, return none
-                        return 0L;
+                        return nullptr;
                     }
                 }
                 else
@@ -259,14 +259,13 @@ namespace sdr
                 // also clear local ItemSet, it's only temporary for group objects anyways.
                 if(mpItemSet)
                 {
-                    // #121905#
                     // copy/paste is still using clone operators and MoveToItemPool functionality.
                     // Since SfxItemSet contains a pool pointer, ClearItem is not enough here.
                     // The ItemSet for merge is constructed on demand, so it's enough here to
                     // just delete it and set to 0L.
                     // mpItemSet->ClearItem();
                     delete mpItemSet;
-                    mpItemSet = 0L;
+                    mpItemSet = nullptr;
                 }
             }
         }

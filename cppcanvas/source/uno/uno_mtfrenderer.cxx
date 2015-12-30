@@ -38,7 +38,7 @@ void MtfRenderer::setFastPropertyValue( sal_Int32 nHandle, const uno::Any& aAny)
     }
 }
 
-MtfRenderer::MtfRenderer (uno::Sequence<uno::Any> const& aArgs, uno::Reference<uno::XComponentContext> const&) : MtfRendererBase (m_aMutex), mpMetafile (NULL)
+MtfRenderer::MtfRenderer (uno::Sequence<uno::Any> const& aArgs, uno::Reference<uno::XComponentContext> const&) : MtfRendererBase (m_aMutex), mpMetafile (nullptr)
 {
     if( aArgs.getLength() == 1 ) {
         aArgs[0] >>= mxCanvas;
@@ -56,7 +56,7 @@ extern "C"
 SAL_DLLPUBLIC_EXPORT void* SAL_CALL mtfrenderer_component_getFactory( sal_Char const* pImplName,
                                          void*, void* )
 {
-    return component_getFactoryHelper( pImplName, MtfRendererDecl );
+    return sdecl::component_getFactoryHelper( pImplName, {&MtfRendererDecl} );
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

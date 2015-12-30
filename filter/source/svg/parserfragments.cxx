@@ -15,7 +15,6 @@
 #include <com/sun/star/geometry/AffineMatrix2D.hpp>
 #include <osl/diagnose.h>
 
-#include <string.h>
 #include <limits.h>
 #include <boost/bind.hpp>
 #include <boost/spirit/include/classic.hpp>
@@ -127,7 +126,7 @@ namespace
         struct definition
         {
             ::boost::spirit::classic::rule< ScannerT > colorExpression;
-            definition( const ColorGrammar& self )
+            explicit definition( const ColorGrammar& self )
             {
                 using namespace ::boost::spirit::classic;
 
@@ -446,7 +445,7 @@ bool parseTransform( const char* sTransform, basegfx::B2DHomMatrix& rTransform )
                   >> '('
                   >> real_p[assign_a(fRotationAngle)]
                   >> !((',' | eps_p) >> real_p[assign_a(aCurrTransform.m02)]
-                       >> real_p[assign_a(aCurrTransform.m12)])
+                       >> (',' | eps_p) >>  real_p[assign_a(aCurrTransform.m12)])
                   >> ')')[boost::bind(&calcRotation,
                                       boost::ref(aTransforms),
                                       boost::ref(aCurrTransform),
@@ -556,9 +555,9 @@ bool parsePaintUri( std::pair<const char*,const char*>& o_rPaintUri,
     const bool bRes = parse(sPaintUri,
         //  Begin grammar
         (
-            str_p("url(") >> !( str_p("'") | str_p("\"") ) >> ("#") >>
-            (+alnum_p)[assign_a(o_rPaintUri)] >>
-            !( str_p("'") | str_p("\"") ) >> str_p(")") >>
+            str_p("url(") >> !( str_p("'") ) >> ("#") >>
+            (+(anychar_p - (str_p("'") | str_p(")"))))[assign_a(o_rPaintUri)] >>
+            !( str_p("'") ) >> str_p(")") >>
             *( str_p("none")[assign_a(io_rColor.second,false)] |
                str_p("currentColor")[assign_a(io_rColor.second,true)] |
                ColorGrammar(io_rColor.first)
@@ -573,22 +572,20 @@ bool parsePaintUri( std::pair<const char*,const char*>& o_rPaintUri,
 
 
 
-bool parseXlinkHref( const char* sXlinkHref, std::string& data )
+bool parseXlinkHref( const char* sXlinkHref, OUString& data )
 {
-    using namespace ::boost::spirit::classic;
+    OUString sLink(OUString::createFromAscii(sXlinkHref));
 
-    data.erase(data.begin(),data.end());
-
-    std::string sLink(sXlinkHref);
-
-    if (!sLink.compare(0,5,"data:"))
+    if (sLink.startsWith("data:"))
     {
+        sal_Int32 nIndex=0;
+        OUString aCurrToken = sLink.getToken(0,',',nIndex);
+
         // the inplace "data" uri
-        size_t position = sLink.rfind(',');
-        if (position > 0 && position < std::string::npos)
+        if ( !aCurrToken.isEmpty() )
         {
-            data = sLink.substr(position+1);
-            OSL_TRACE("%s", data.c_str());
+            data = sLink.copy(nIndex);
+            SAL_INFO("filter.svg", data);
             return true;
         }
     }

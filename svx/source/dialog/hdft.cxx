@@ -149,7 +149,7 @@ SvxFooterPage::SvxFooterPage( vcl::Window* pParent, const SfxItemSet& rAttr ) :
 SvxHFPage::SvxHFPage( vcl::Window* pParent, const SfxItemSet& rSet, sal_uInt16 nSetId ) :
     SfxTabPage(pParent, "HFFormatPage", "svx/ui/headfootformatpage.ui", &rSet),
     nId(nSetId),
-    pBBSet(NULL),
+    pBBSet(nullptr),
     // bitfield
     mbDisableQueryBox(false),
     mbEnableBackgroundSelector(true),
@@ -379,12 +379,12 @@ void SvxHFPage::Reset( const SfxItemSet* rSet )
     bool bIsCalc = false;
     const SfxPoolItem* pExt1 = GetItem(*rSet, SID_ATTR_PAGE_EXT1);
     const SfxPoolItem* pExt2 = GetItem(*rSet, SID_ATTR_PAGE_EXT2);
-    if (pExt1 && pExt1->ISA(SfxBoolItem) && pExt2 && pExt2->ISA(SfxBoolItem))
+    if (pExt1 && dynamic_cast<const SfxBoolItem*>(pExt1) != nullptr && pExt2 && dynamic_cast<const SfxBoolItem*>(pExt2) != nullptr )
         bIsCalc = true;
     m_pCntSharedFirstBox->Show(!bIsCalc);
 
     // Evaluate header-/footer- attributes
-    const SvxSetItem* pSetItem = 0;
+    const SvxSetItem* pSetItem = nullptr;
 
     if ( SfxItemState::SET == rSet->GetItemState( GetWhich(nId), false,
                                             reinterpret_cast<const SfxPoolItem**>(&pSetItem) ) )
@@ -401,7 +401,7 @@ void SvxHFPage::Reset( const SfxItemSet* rSet )
                 static_cast<const SfxBoolItem&>(rHeaderSet.Get( GetWhich( SID_ATTR_PAGE_DYNAMIC ) ));
             const SfxBoolItem& rShared =
                 static_cast<const SfxBoolItem&>(rHeaderSet.Get( GetWhich( SID_ATTR_PAGE_SHARED ) ));
-            const SfxBoolItem* pSharedFirst = 0;
+            const SfxBoolItem* pSharedFirst = nullptr;
             if (rHeaderSet.HasItem(GetWhich(SID_ATTR_PAGE_SHARED_FIRST)))
                 pSharedFirst = static_cast<const SfxBoolItem*>(&rHeaderSet.Get( GetWhich( SID_ATTR_PAGE_SHARED_FIRST ) ));
             const SvxSizeItem& rSize =
@@ -439,7 +439,7 @@ void SvxHFPage::Reset( const SfxItemSet* rSet )
                 m_pCntSharedFirstBox->Hide();
         }
         else
-            pSetItem = 0;
+            pSetItem = nullptr;
     }
     else
     {
@@ -457,7 +457,7 @@ void SvxHFPage::Reset( const SfxItemSet* rSet )
         m_pCntSharedFirstBox->Check();
     }
 
-    TurnOnHdl(0);
+    TurnOnHdl(nullptr);
 
     m_pTurnOnBox->SaveValue();
     m_pDistEdit->SaveValue();
@@ -466,13 +466,13 @@ void SvxHFPage::Reset( const SfxItemSet* rSet )
     m_pLMEdit->SaveValue();
     m_pRMEdit->SaveValue();
     m_pCntSharedBox->SaveValue();
-    RangeHdl( 0 );
+    RangeHdl();
 
-    const SfxPoolItem* pItem = 0;
+    const SfxPoolItem* pItem = nullptr;
     SfxObjectShell* pShell;
     if(SfxItemState::SET == rSet->GetItemState(SID_HTML_MODE, false, &pItem) ||
-        ( 0 != (pShell = SfxObjectShell::Current()) &&
-                    0 != (pItem = pShell->GetItem(SID_HTML_MODE))))
+        ( nullptr != (pShell = SfxObjectShell::Current()) &&
+                    nullptr != (pItem = pShell->GetItem(SID_HTML_MODE))))
     {
         sal_uInt16 nHtmlMode = 0;
         nHtmlMode = static_cast<const SfxUInt16Item*>(pItem)->GetValue();
@@ -566,23 +566,19 @@ IMPL_LINK_TYPED( SvxHFPage, TurnOnHdl, Button *, pButton, void )
     UpdateExample();
 }
 
-IMPL_LINK_NOARG(SvxHFPage, DistModify)
+IMPL_LINK_NOARG_TYPED(SvxHFPage, DistModify, Edit&, void)
 {
     UpdateExample();
-    return 0;
 }
 
-IMPL_LINK_NOARG(SvxHFPage, HeightModify)
+IMPL_LINK_NOARG_TYPED(SvxHFPage, HeightModify, Edit&, void)
 {
     UpdateExample();
-
-    return 0;
 }
 
-IMPL_LINK_NOARG(SvxHFPage, BorderModify)
+IMPL_LINK_NOARG_TYPED(SvxHFPage, BorderModify, Edit&, void)
 {
     UpdateExample();
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(SvxHFPage, BackgroundHdl, Button*, void)
@@ -953,7 +949,7 @@ void SvxHFPage::ActivatePage( const SfxItemSet& rSet )
     }
 
     // Evaluate Header attribute
-    const SvxSetItem* pSetItem = 0;
+    const SvxSetItem* pSetItem = nullptr;
 
     if ( SfxItemState::SET == rSet.GetItemState( GetWhich( SID_ATTR_PAGE_HEADERSET ),
                                             false,
@@ -980,7 +976,7 @@ void SvxHFPage::ActivatePage( const SfxItemSet& rSet )
             m_pBspWin->SetHeader( true );
         }
         else
-            pSetItem = 0;
+            pSetItem = nullptr;
     }
 
     if ( !pSetItem )
@@ -993,7 +989,7 @@ void SvxHFPage::ActivatePage( const SfxItemSet& rSet )
             m_pCntSharedFirstBox->Disable();
         }
     }
-    pSetItem = 0;
+    pSetItem = nullptr;
 
     if ( SfxItemState::SET == rSet.GetItemState( GetWhich( SID_ATTR_PAGE_FOOTERSET ),
                                             false,
@@ -1020,7 +1016,7 @@ void SvxHFPage::ActivatePage( const SfxItemSet& rSet )
             m_pBspWin->SetFooter( true );
         }
         else
-            pSetItem = 0;
+            pSetItem = nullptr;
     }
 
     if ( !pSetItem )
@@ -1036,7 +1032,7 @@ void SvxHFPage::ActivatePage( const SfxItemSet& rSet )
 
     pItem = GetItem( rSet, SID_ATTR_PAGE_EXT1 );
 
-    if ( pItem && pItem->ISA(SfxBoolItem) )
+    if ( pItem && dynamic_cast<const SfxBoolItem*>( pItem) !=  nullptr )
     {
         m_pBspWin->SetTable( true );
         m_pBspWin->SetHorz( static_cast<const SfxBoolItem*>(pItem)->GetValue() );
@@ -1044,13 +1040,13 @@ void SvxHFPage::ActivatePage( const SfxItemSet& rSet )
 
     pItem = GetItem( rSet, SID_ATTR_PAGE_EXT2 );
 
-    if ( pItem && pItem->ISA(SfxBoolItem) )
+    if ( pItem && dynamic_cast<const SfxBoolItem*>( pItem) !=  nullptr )
     {
         m_pBspWin->SetTable( true );
         m_pBspWin->SetVert( static_cast<const SfxBoolItem*>(pItem)->GetValue() );
     }
     ResetBackground_Impl( rSet );
-    RangeHdl( 0 );
+    RangeHdl();
 }
 
 SfxTabPage::sfxpg SvxHFPage::DeactivatePage( SfxItemSet* _pSet )
@@ -1060,11 +1056,6 @@ SfxTabPage::sfxpg SvxHFPage::DeactivatePage( SfxItemSet* _pSet )
     return LEAVE_PAGE;
 }
 
-IMPL_LINK_NOARG(SvxHFPage, RangeHdl)
-{
-    RangeHdl();
-    return 0;
-}
 IMPL_LINK_NOARG_TYPED(SvxHFPage, RangeFocusHdl, Control&, void)
 {
     RangeHdl();
@@ -1158,7 +1149,7 @@ void SvxHFPage::EnableDynamicSpacing()
         m_pHeightEdit,
         m_pHeightDynBtn,
         m_pBackgroundBtn,
-        0
+        nullptr
     };
     sal_Int32 nOffset = m_pTurnOnBox->GetPosPixel().Y() - m_pCntSharedBox->GetPosPixel().Y();
     sal_Int32 nIdx = 0;
@@ -1169,7 +1160,7 @@ void SvxHFPage::EnableDynamicSpacing()
 void SvxHFPage::PageCreated(const SfxAllItemSet &rSet)
 {
     //UUUU
-    SFX_ITEMSET_ARG (&rSet, pSupportDrawingLayerFillStyleItem, SfxBoolItem, SID_DRAWINGLAYER_FILLSTYLES, false);
+    const SfxBoolItem* pSupportDrawingLayerFillStyleItem = rSet.GetItem<SfxBoolItem>(SID_DRAWINGLAYER_FILLSTYLES, false);
 
     if(pSupportDrawingLayerFillStyleItem)
     {

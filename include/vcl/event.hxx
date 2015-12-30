@@ -132,7 +132,7 @@ public:
     const Point&    GetPosPixel() const     { return maPos; }
     MouseEventModifiers GetMode() const         { return mnMode; }
                     /** inits this vcl KeyEvent with all settings from the given awt event **/
-                    MouseEvent( const ::com::sun::star::awt::MouseEvent& rEvent );
+                    MouseEvent( const css::awt::MouseEvent& rEvent );
 
     sal_uInt16      GetClicks() const       { return mnClicks; }
 
@@ -407,10 +407,9 @@ private:
     long                    mnRetValue;
 
 public:
-                            NotifyEvent();
                             NotifyEvent( MouseNotifyEvent nEventType,
                                          vcl::Window* pWindow,
-                                         const void* pEvent = NULL,
+                                         const void* pEvent = nullptr,
                                          long nRet = 0 );
 
     MouseNotifyEvent        GetType() const { return mnEventType; }
@@ -426,7 +425,7 @@ inline const KeyEvent* NotifyEvent::GetKeyEvent() const
     if ( (mnEventType == MouseNotifyEvent::KEYINPUT) || (mnEventType == MouseNotifyEvent::KEYUP) )
         return static_cast<const KeyEvent*>(mpData);
     else
-        return NULL;
+        return nullptr;
 }
 
 inline const MouseEvent* NotifyEvent::GetMouseEvent() const
@@ -434,7 +433,7 @@ inline const MouseEvent* NotifyEvent::GetMouseEvent() const
     if ( (mnEventType >= MouseNotifyEvent::MOUSEBUTTONDOWN) && (mnEventType <= MouseNotifyEvent::MOUSEMOVE) )
         return static_cast<const MouseEvent*>(mpData);
     else
-        return NULL;
+        return nullptr;
 }
 
 inline const CommandEvent* NotifyEvent::GetCommandEvent() const
@@ -442,7 +441,7 @@ inline const CommandEvent* NotifyEvent::GetCommandEvent() const
     if ( mnEventType == MouseNotifyEvent::COMMAND )
         return static_cast<const CommandEvent*>(mpData);
     else
-        return NULL;
+        return nullptr;
 }
 
 
@@ -469,7 +468,7 @@ private:
 public:
     explicit                DataChangedEvent();
     explicit                DataChangedEvent( DataChangedEventType nType,
-                                              const void* pData = NULL,
+                                              const void* pData = nullptr,
                                               AllSettingsFlags nFlags = AllSettingsFlags::NONE );
 
     DataChangedEventType    GetType() const { return mnType; }
@@ -480,7 +479,7 @@ public:
 
 inline DataChangedEvent::DataChangedEvent()
 {
-    mpData  = NULL;
+    mpData  = nullptr;
     mnFlags = AllSettingsFlags::NONE;
     mnType  = DataChangedEventType::NONE;
 }
@@ -499,7 +498,7 @@ inline const AllSettings* DataChangedEvent::GetOldSettings() const
     if ( mnType == DataChangedEventType::SETTINGS )
         return static_cast<const AllSettings*>(mpData);
     else
-        return NULL;
+        return nullptr;
 }
 
 #endif // INCLUDED_VCL_EVENT_HXX

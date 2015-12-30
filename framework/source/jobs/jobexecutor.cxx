@@ -77,51 +77,50 @@ private:
     ConfigAccess m_aConfig;
 
     /** helper to allow us listen to the configuration without a cyclic dependency */
-    com::sun::star::uno::Reference<com::sun::star::container::XContainerListener> m_xConfigListener;
+    css::uno::Reference<css::container::XContainerListener> m_xConfigListener;
 
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
 public:
 
-             JobExecutor( const css::uno::Reference< css::uno::XComponentContext >& xContext );
+    explicit JobExecutor(const css::uno::Reference< css::uno::XComponentContext >& xContext);
     virtual ~JobExecutor();
 
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return OUString("com.sun.star.comp.framework.JobExecutor");
     }
 
     virtual sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return cppu::supportsService(this, ServiceName);
     }
 
     virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
-        css::uno::Sequence< OUString > aSeq(1);
-        aSeq[0] = "com.sun.star.task.JobExecutor";
+        css::uno::Sequence< OUString > aSeq { "com.sun.star.task.JobExecutor" };
         return aSeq;
     }
 
     // task.XJobExecutor
-    virtual void SAL_CALL trigger( const OUString& sEvent ) throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL trigger( const OUString& sEvent ) throw(css::uno::RuntimeException, std::exception) override;
 
     /// Initialization function after having acquire()'d.
     void initListeners();
 
     // document.XEventListener
-    virtual void SAL_CALL notifyEvent( const css::document::EventObject& aEvent ) throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL notifyEvent( const css::document::EventObject& aEvent ) throw(css::uno::RuntimeException, std::exception) override;
 
     // container.XContainerListener
-    virtual void SAL_CALL elementInserted( const css::container::ContainerEvent& aEvent ) throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL elementRemoved ( const css::container::ContainerEvent& aEvent ) throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL elementReplaced( const css::container::ContainerEvent& aEvent ) throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL elementInserted( const css::container::ContainerEvent& aEvent ) throw(css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL elementRemoved ( const css::container::ContainerEvent& aEvent ) throw(css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL elementReplaced( const css::container::ContainerEvent& aEvent ) throw(css::uno::RuntimeException, std::exception) override;
 
     // lang.XEventListener
-    virtual void SAL_CALL disposing( const css::lang::EventObject& aEvent ) throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing( const css::lang::EventObject& aEvent ) throw(css::uno::RuntimeException, std::exception) override;
 };
 
 /**
@@ -214,7 +213,7 @@ void SAL_CALL JobExecutor::trigger( const OUString& sEvent ) throw(css::uno::Run
     // Optimization!
     // Check if the given event name exist inside configuration and reject wrong requests.
     // This optimization suppress using of the cfg api for getting event and job descriptions ...
-    if (framework::find(m_lEvents, sEvent) == m_lEvents.end())
+    if (std::find(m_lEvents.begin(), m_lEvents.end(), sEvent) == m_lEvents.end())
         return;
 
     // get list of all enabled jobs
@@ -283,7 +282,7 @@ void SAL_CALL JobExecutor::notifyEvent( const css::document::EventObject& aEvent
         (aEvent.EventName == EVENT_ON_LOAD)
        )
     {
-        if (find(m_lEvents, EVENT_ON_DOCUMENT_OPENED) != m_lEvents.end())
+        if (std::find(m_lEvents.begin(), m_lEvents.end(), EVENT_ON_DOCUMENT_OPENED) != m_lEvents.end())
             JobData::appendEnabledJobsForEvent(m_xContext, EVENT_ON_DOCUMENT_OPENED, lJobs);
     }
 
@@ -293,12 +292,12 @@ void SAL_CALL JobExecutor::notifyEvent( const css::document::EventObject& aEvent
         (aEvent.EventName == EVENT_ON_LOAD_FINISHED)
        )
     {
-        if (find(m_lEvents, EVENT_ON_DOCUMENT_ADDED) != m_lEvents.end())
+        if (std::find(m_lEvents.begin(), m_lEvents.end(), EVENT_ON_DOCUMENT_ADDED) != m_lEvents.end())
             JobData::appendEnabledJobsForEvent(m_xContext, EVENT_ON_DOCUMENT_ADDED, lJobs);
     }
 
     // Add all jobs for "real" notified event too .-)
-    if (find(m_lEvents, aEvent.EventName) != m_lEvents.end())
+    if (std::find(m_lEvents.begin(), m_lEvents.end(), aEvent.EventName) != m_lEvents.end())
         JobData::appendEnabledJobsForEvent(m_xContext, aEvent.EventName, lJobs);
     } /* SAFE */
 
@@ -344,7 +343,7 @@ void SAL_CALL JobExecutor::elementInserted( const css::container::ContainerEvent
         OUString sEvent = ::utl::extractFirstFromConfigurationPath(sValue);
         if (!sEvent.isEmpty())
         {
-            OUStringList::iterator pEvent = find(m_lEvents, sEvent);
+            OUStringList::iterator pEvent = std::find(m_lEvents.begin(), m_lEvents.end(), sEvent);
             if (pEvent == m_lEvents.end())
                 m_lEvents.push_back(sEvent);
         }
@@ -359,7 +358,7 @@ void SAL_CALL JobExecutor::elementRemoved ( const css::container::ContainerEvent
         OUString sEvent = ::utl::extractFirstFromConfigurationPath(sValue);
         if (!sEvent.isEmpty())
         {
-            OUStringList::iterator pEvent = find(m_lEvents, sEvent);
+            OUStringList::iterator pEvent = std::find(m_lEvents.begin(), m_lEvents.end(), sEvent);
             if (pEvent != m_lEvents.end())
                 m_lEvents.erase(pEvent);
         }

@@ -98,14 +98,6 @@ namespace o3tl
     EditStatusFlags::CRSRLEFTPARA at the time cursor movement and the enter.
 */
 
-inline void SetFlags( EEControlBits& rBits, EEControlBits nMask, bool bOn )
-{
-    if ( bOn )
-        rBits |= nMask;
-    else
-        rBits &= ~nMask;
-}
-
 inline void SetFlags( EVControlBits& rBits, EVControlBits nMask, bool bOn )
 {
     if ( bOn )
@@ -136,11 +128,12 @@ public:
 
 enum class SpellCallbackCommand
 {
-    IGNOREWORD         = 0x0001,
-    STARTSPELLDLG      = 0x0002,
-    ADDTODICTIONARY    = 0x0003,
-    WORDLANGUAGE       = 0x0004,
-    PARALANGUAGE       = 0x0005,
+    IGNOREWORD          = 0x0001,
+    STARTSPELLDLG       = 0x0002,
+    ADDTODICTIONARY     = 0x0003,
+    WORDLANGUAGE        = 0x0004,
+    PARALANGUAGE        = 0x0005,
+    AUTOCORRECT_OPTIONS = 0x0006,
 };
 
 struct SpellCallbackInfo

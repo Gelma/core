@@ -70,7 +70,7 @@ namespace /* private */
 }
 
 xml_parser::xml_parser(const XML_Char* EncodingName) :
-    document_handler_(0),
+    document_handler_(nullptr),
     xml_parser_(XML_ParserCreate(EncodingName))
 {
     init();
@@ -89,7 +89,7 @@ extern "C"
 
 static void xml_start_element_handler(void* UserData, const XML_Char* name, const XML_Char** atts)
 {
-    assert(UserData != NULL);
+    assert(UserData != nullptr);
 
     xml_parser* pImpl  = get_parser_instance(UserData);
 
@@ -178,11 +178,7 @@ void xml_parser::parse(const char* XmlData, size_t Length, bool IsFinal)
             XML_Parse(xml_parser_, XmlData, static_cast<int>(Length), IsFinal))
     {
         throw xml_parser_exception(
-            XML_ErrorString(XML_GetErrorCode(xml_parser_)),
-            (int)XML_GetErrorCode(xml_parser_),
-            XML_GetCurrentLineNumber(xml_parser_),
-            XML_GetCurrentColumnNumber(xml_parser_),
-            XML_GetCurrentByteIndex(xml_parser_));
+            XML_ErrorString(XML_GetErrorCode(xml_parser_)));
     }
 }
 

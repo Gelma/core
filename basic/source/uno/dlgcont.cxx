@@ -85,7 +85,7 @@ SfxDialogLibraryContainer::SfxDialogLibraryContainer( const uno::Reference< embe
 // Methods to get library instances of the correct type
 SfxLibrary* SfxDialogLibraryContainer::implCreateLibrary( const OUString& aName )
 {
-    SfxLibrary* pRet = new SfxDialogLibrary( maModifiable, aName, mxContext, mxSFI, this );
+    SfxLibrary* pRet = new SfxDialogLibrary( maModifiable, aName, mxSFI, this );
     return pRet;
 }
 
@@ -94,7 +94,7 @@ SfxLibrary* SfxDialogLibraryContainer::implCreateLibraryLink
       const OUString& StorageURL, bool ReadOnly )
 {
     SfxLibrary* pRet = new SfxDialogLibrary
-            ( maModifiable, aName, mxContext, mxSFI, aLibInfoFileURL, StorageURL, ReadOnly, this );
+            ( maModifiable, aName, mxSFI, aLibInfoFileURL, StorageURL, ReadOnly, this );
     return pRet;
 }
 
@@ -131,7 +131,7 @@ bool writeOasis2OOoLibraryElement(
 
     Reference< xml::sax::XDocumentHandler > xHandler(
         xSMgr->createInstanceWithArgumentsAndContext(
-            OUString("com.sun.star.comp.Oasis2OOoTransformer" ) ,
+            "com.sun.star.comp.Oasis2OOoTransformer",
             aArgs, xContext ),
         UNO_QUERY );
 
@@ -384,7 +384,7 @@ Reference< css::resource::XStringResourcePersistence >
             return xRet;
         }
 
-        xRet = resource::StringResourceWithStorage::create(mxContext, xLibraryStor, bReadOnly, aLocale, OUString(aResourceFileNameBase), aComment);
+        xRet = resource::StringResourceWithStorage::create(mxContext, xLibraryStor, bReadOnly, aLocale, aResourceFileNameBase, aComment);
     }
     else
     {
@@ -392,7 +392,7 @@ Reference< css::resource::XStringResourcePersistence >
         // TODO: Real handler?
         Reference< task::XInteractionHandler > xDummyHandler;
 
-        xRet = resource::StringResourceWithLocation::create(mxContext, aLocation, bReadOnly, aLocale, OUString(aResourceFileNameBase), aComment, xDummyHandler);
+        xRet = resource::StringResourceWithLocation::create(mxContext, aLocation, bReadOnly, aLocale, aResourceFileNameBase, aComment, xDummyHandler);
     }
 
     return xRet;
@@ -467,10 +467,9 @@ Sequence< OUString > SAL_CALL SfxDialogLibraryContainer::getSupportedServiceName
 // Ctor
 SfxDialogLibrary::SfxDialogLibrary( ModifiableHelper& _rModifiable,
                                     const OUString& aName,
-                                    const Reference< XComponentContext >& xContext,
                                     const Reference< XSimpleFileAccess3 >& xSFI,
                                     SfxDialogLibraryContainer* pParent )
-    : SfxLibrary( _rModifiable, cppu::UnoType<XInputStreamProvider>::get(), xContext, xSFI )
+    : SfxLibrary( _rModifiable, cppu::UnoType<XInputStreamProvider>::get(), xSFI )
     , m_pParent( pParent )
     , m_aName( aName )
 {
@@ -478,14 +477,13 @@ SfxDialogLibrary::SfxDialogLibrary( ModifiableHelper& _rModifiable,
 
 SfxDialogLibrary::SfxDialogLibrary( ModifiableHelper& _rModifiable,
                                     const OUString& aName,
-                                    const Reference< XComponentContext >& xContext,
                                     const Reference< XSimpleFileAccess3 >& xSFI,
                                     const OUString& aLibInfoFileURL,
                                     const OUString& aStorageURL,
                                     bool ReadOnly,
                                     SfxDialogLibraryContainer* pParent )
     : SfxLibrary( _rModifiable, cppu::UnoType<XInputStreamProvider>::get(),
-                       xContext, xSFI, aLibInfoFileURL, aStorageURL, ReadOnly)
+                       xSFI, aLibInfoFileURL, aStorageURL, ReadOnly)
     , m_pParent( pParent )
     , m_aName( aName )
 {
@@ -539,7 +537,7 @@ void SfxDialogLibrary::storeResourcesToURL( const OUString& URL,
     if( m_xStringResourcePersistence.is() )
     {
         m_xStringResourcePersistence->storeToURL
-            ( URL, OUString(aResourceFileNameBase), aComment, xHandler );
+            ( URL, aResourceFileNameBase, aComment, xHandler );
     }
 }
 
@@ -551,7 +549,7 @@ void SfxDialogLibrary::storeResourcesToStorage( const css::uno::Reference< css::
     if( m_xStringResourcePersistence.is() )
     {
         m_xStringResourcePersistence->storeToStorage
-            ( xStorage, OUString(aResourceFileNameBase), aComment );
+            ( xStorage, aResourceFileNameBase, aComment );
     }
 }
 

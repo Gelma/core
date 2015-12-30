@@ -61,6 +61,8 @@
 
 #include <sot/exchange.hxx>
 #include <sot/formats.hxx>
+#include <o3tl/make_unique.hxx>
+#include <comphelper/lok.hxx>
 
 #include <unicode/ubidi.h>
 #include <algorithm>
@@ -103,20 +105,20 @@ ImpEditEngine::ImpEditEngine( EditEngine* pEE, SfxItemPool* pItemPool ) :
     mbLastTryMerge(false)
 {
     pEditEngine         = pEE;
-    pRefDev             = NULL;
-    pVirtDev            = NULL;
-    pEmptyItemSet       = NULL;
-    pActiveView         = NULL;
-    pSpellInfo          = NULL;
-    pConvInfo           = NULL;
-    pTextObjectPool     = NULL;
-    mpIMEInfos          = NULL;
-    pStylePool          = NULL;
-    pUndoManager        = NULL;
-    pUndoMarkSelection  = NULL;
-    pTextRanger         = NULL;
-    pColorConfig        = NULL;
-    pCTLOptions         = NULL;
+    pRefDev             = nullptr;
+    pVirtDev            = nullptr;
+    pEmptyItemSet       = nullptr;
+    pActiveView         = nullptr;
+    pSpellInfo          = nullptr;
+    pConvInfo           = nullptr;
+    pTextObjectPool     = nullptr;
+    mpIMEInfos          = nullptr;
+    pStylePool          = nullptr;
+    pUndoManager        = nullptr;
+    pUndoMarkSelection  = nullptr;
+    pTextRanger         = nullptr;
+    pColorConfig        = nullptr;
+    pCTLOptions         = nullptr;
 
     nCurTextHeight      = 0;
     nCurTextHeightNTP   = 0;
@@ -151,7 +153,7 @@ ImpEditEngine::ImpEditEngine( EditEngine* pEE, SfxItemPool* pItemPool ) :
     aOnlineSpellTimer.SetTimeoutHdl( LINK( this, ImpEditEngine, OnlineSpellHdl ) );
 
     // Access data already from here on!
-    SetRefDevice( NULL );
+    SetRefDevice( nullptr );
     InitDoc( false );
 
     bCallParaInsertedOrDeleted = true;
@@ -204,7 +206,7 @@ void ImpEditEngine::SetRefDevice( OutputDevice* pRef )
     if ( IsFormatted() )
     {
         FormatFullDoc();
-        UpdateViews( nullptr);
+        UpdateViews();
     }
 }
 
@@ -225,7 +227,7 @@ void ImpEditEngine::SetRefMapMode( const MapMode& rMapMode )
     if ( IsFormatted() )
     {
         FormatFullDoc();
-        UpdateViews( nullptr);
+        UpdateViews();
     }
 }
 
@@ -322,7 +324,7 @@ bool ImpEditEngine::MouseButtonDown( const MouseEvent& rMEvt, EditView* pView )
             pView->pImpEditView->DrawSelection();
             pView->pImpEditView->SetEditSelection( aNewSelection );
             pView->pImpEditView->DrawSelection();
-            pView->ShowCursor( true );
+            pView->ShowCursor();
         }
         else if ( rMEvt.GetClicks() == 3 )
         {
@@ -390,7 +392,7 @@ void ImpEditEngine::Command( const CommandEvent& rCEvt, EditView* pView )
             bool bWasCursorOverwrite = mpIMEInfos->bWasCursorOverwrite;
 
             delete mpIMEInfos;
-            mpIMEInfos = NULL;
+            mpIMEInfos = nullptr;
 
             FormatAndUpdate( pView );
 
@@ -569,7 +571,7 @@ bool ImpEditEngine::MouseButtonUp( const MouseEvent& rMEvt, EditView* pView )
     // FIXME I believe resetting bInSelection should not be here even in the
     // non-tiled-rendering case, but it has been here since 2000 (and before)
     // so who knows what corner case it was supposed to solve back then
-    if (!pView->pImpEditView->isTiledRendering())
+    if (!comphelper::LibreOfficeKit::isActive())
         bInSelection = false;
 
     // Special treatments
@@ -905,7 +907,7 @@ EditSelection ImpEditEngine::MoveCursor( const KeyEvent& rKeyEvent, EditView* pE
     if ( bKeyModifySelection )
     {
         // Then the selection is expanded ... or the whole selection is painted in case of tiled rendering.
-        EditSelection aTmpNewSel( pEditView->isTiledRendering() ? pEditView->pImpEditView->GetEditSelection().Min() : aOldEnd, aPaM );
+        EditSelection aTmpNewSel( comphelper::LibreOfficeKit::isActive() ? pEditView->pImpEditView->GetEditSelection().Min() : aOldEnd, aPaM );
         pEditView->pImpEditView->DrawSelection( aTmpNewSel );
     }
     else
@@ -937,7 +939,7 @@ EditPaM ImpEditEngine::CursorVisualStartEnd( EditView* pEditView, const EditPaM&
         UBiDi* pBidi = ubidi_openSized( aLine.getLength(), 0, &nError );
 
         const UBiDiLevel  nBidiLevel = IsRightToLeft( nPara ) ? 1 /*RTL*/ : 0 /*LTR*/;
-        ubidi_setPara( pBidi, reinterpret_cast<const UChar *>(pLineString), aLine.getLength(), nBidiLevel, NULL, &nError );   // UChar != sal_Unicode in MinGW
+        ubidi_setPara( pBidi, reinterpret_cast<const UChar *>(pLineString), aLine.getLength(), nBidiLevel, nullptr, &nError );   // UChar != sal_Unicode in MinGW
 
         sal_Int32 nVisPos = bStart ? 0 : aLine.getLength()-1;
         const sal_Int32 nLogPos = ubidi_getLogicalIndex( pBidi, nVisPos, &nError );
@@ -1057,7 +1059,7 @@ EditPaM ImpEditEngine::CursorVisualLeftRight( EditView* pEditView, const EditPaM
         UBiDi* pBidi = ubidi_openSized( aLine.getLength(), 0, &nError );
 
         const UBiDiLevel  nBidiLevel = IsRightToLeft( nPara ) ? 1 /*RTL*/ : 0 /*LTR*/;
-        ubidi_setPara( pBidi, reinterpret_cast<const UChar *>(pLineString), aLine.getLength(), nBidiLevel, NULL, &nError );   // UChar != sal_Unicode in MinGW
+        ubidi_setPara( pBidi, reinterpret_cast<const UChar *>(pLineString), aLine.getLength(), nBidiLevel, nullptr, &nError );   // UChar != sal_Unicode in MinGW
 
         if ( !pEditView->IsInsertMode() )
         {
@@ -1636,7 +1638,7 @@ void ImpEditEngine::InitScriptTypes( sal_Int32 nPara )
                 }
             }
             // #112831# Last Field might go from 0xffff to 0x0000
-            pField = pField->GetEnd() ? pNode->GetCharAttribs().FindNextAttrib( EE_FEATURE_FIELD, pField->GetEnd() ) : NULL;
+            pField = pField->GetEnd() ? pNode->GetCharAttribs().FindNextAttrib( EE_FEATURE_FIELD, pField->GetEnd() ) : nullptr;
         }
 
         OUString aOUText( aText );
@@ -1894,7 +1896,7 @@ void ImpEditEngine::InitWritingDirections( sal_Int32 nPara )
         UBiDi* pBidi = ubidi_openSized( aText.getLength(), 0, &nError );
         nError = U_ZERO_ERROR;
 
-        ubidi_setPara( pBidi, reinterpret_cast<const UChar *>(aText.getStr()), aText.getLength(), nBidiLevel, NULL, &nError ); // UChar != sal_Unicode in MinGW
+        ubidi_setPara( pBidi, reinterpret_cast<const UChar *>(aText.getStr()), aText.getLength(), nBidiLevel, nullptr, &nError ); // UChar != sal_Unicode in MinGW
         nError = U_ZERO_ERROR;
 
         int32_t nCount = ubidi_countRuns( pBidi, &nError );
@@ -1926,7 +1928,7 @@ void ImpEditEngine::InitWritingDirections( sal_Int32 nPara )
 bool ImpEditEngine::IsRightToLeft( sal_Int32 nPara ) const
 {
     bool bR2L = false;
-    const SvxFrameDirectionItem* pFrameDirItem = NULL;
+    const SvxFrameDirectionItem* pFrameDirItem = nullptr;
 
     if ( !IsVertical() )
     {
@@ -1937,7 +1939,7 @@ bool ImpEditEngine::IsRightToLeft( sal_Int32 nPara ) const
             // #103045# if DefaultHorizontalTextDirection is set, use that value, otherwise pool default.
             if ( GetDefaultHorizontalTextDirection() != EE_HTEXTDIR_DEFAULT )
             {
-                pFrameDirItem = NULL; // bR2L already set to default horizontal text direction
+                pFrameDirItem = nullptr; // bR2L already set to default horizontal text direction
             }
             else
             {
@@ -2048,7 +2050,7 @@ void ImpEditEngine::ImpRemoveChars( const EditPaM& rPaM, sal_Int32 nChars, EditU
         const CharAttribList::AttribsType& rAttribs = rPaM.GetNode()->GetCharAttribs().GetAttribs();
         for (size_t i = 0, n = rAttribs.size(); i < n; ++i)
         {
-            const EditCharAttrib& rAttr = rAttribs[i];
+            const EditCharAttrib& rAttr = *rAttribs[i].get();
             if (rAttr.GetEnd() >= nStart && rAttr.GetStart() < nEnd)
             {
                 EditSelection aSel( rPaM );
@@ -2088,10 +2090,10 @@ EditSelection ImpEditEngine::ImpMoveParagraphs( Range aOldPositions, sal_Int32 n
         nNewPos = nParaCount;
 
     // Height may change when moving first or last Paragraph
-    ParaPortion* pRecalc1 = NULL;
-    ParaPortion* pRecalc2 = NULL;
-    ParaPortion* pRecalc3 = NULL;
-    ParaPortion* pRecalc4 = NULL;
+    ParaPortion* pRecalc1 = nullptr;
+    ParaPortion* pRecalc2 = nullptr;
+    ParaPortion* pRecalc3 = nullptr;
+    ParaPortion* pRecalc4 = nullptr;
 
     if ( nNewPos == 0 ) // Move to Start
     {
@@ -2202,8 +2204,7 @@ EditPaM ImpEditEngine::ImpConnectParagraphs( ContentNode* pLeft, ContentNode* pR
     }
 
     sal_Int32 nParagraphTobeDeleted = aEditDoc.GetPos( pRight );
-    DeletedNodeInfo* pInf = new DeletedNodeInfo( pRight, nParagraphTobeDeleted );
-    aDeletedNodes.push_back(pInf);
+    aDeletedNodes.push_back(o3tl::make_unique<DeletedNodeInfo>( pRight, nParagraphTobeDeleted ));
 
     GetEditEnginePtr()->ParagraphConnected( aEditDoc.GetPos( pLeft ), aEditDoc.GetPos( pRight ) );
 
@@ -2441,8 +2442,7 @@ void ImpEditEngine::ImpRemoveParagraph( sal_Int32 nPara )
 
     OSL_ENSURE( pNode, "Blind Node in ImpRemoveParagraph" );
 
-    DeletedNodeInfo* pInf = new DeletedNodeInfo( pNode, nPara );
-    aDeletedNodes.push_back(pInf);
+    aDeletedNodes.push_back(o3tl::make_unique<DeletedNodeInfo>( pNode, nPara ));
 
     // The node is managed by the undo and possibly destroyed!
     aEditDoc.Release( nPara );
@@ -2928,7 +2928,7 @@ bool ImpEditEngine::UpdateFields()
         CharAttribList::AttribsType& rAttribs = pNode->GetCharAttribs().GetAttribs();
         for (size_t nAttr = 0; nAttr < rAttribs.size(); ++nAttr)
         {
-            EditCharAttrib& rAttr = rAttribs[nAttr];
+            EditCharAttrib& rAttr = *rAttribs[nAttr].get();
             if (rAttr.Which() == EE_FEATURE_FIELD)
             {
                 EditCharAttribField& rField = static_cast<EditCharAttribField&>(rAttr);
@@ -3144,7 +3144,7 @@ sal_uInt32 ImpEditEngine::CalcLineWidth( ParaPortion* pPortion, EditLine* pLine,
                     SeekCursor( pPortion->GetNode(), nPos+1, aTmpFont );
                     aTmpFont.SetPhysFont( GetRefDevice() );
                     ImplInitDigitMode(GetRefDevice(), aTmpFont.GetLanguage());
-                    nWidth += aTmpFont.QuickGetTextSize( GetRefDevice(), pPortion->GetNode()->GetString(), nPos, rTextPortion.GetLen(), NULL ).Width();
+                    nWidth += aTmpFont.QuickGetTextSize( GetRefDevice(), pPortion->GetNode()->GetString(), nPos, rTextPortion.GetLen() ).Width();
                 }
             }
             break;
@@ -3293,7 +3293,7 @@ void ImpEditEngine::UpdateSelections()
         bool bChanged = false;
         for (size_t i = 0, n = aDeletedNodes.size(); i < n; ++i)
         {
-            const DeletedNodeInfo& rInf = aDeletedNodes[i];
+            const DeletedNodeInfo& rInf = *aDeletedNodes[i].get();
             if ( ( aCurSel.Min().GetNode() == rInf.GetNode() ) ||
                  ( aCurSel.Max().GetNode() == rInf.GetNode() ) )
             {
@@ -3407,7 +3407,7 @@ void ImpEditEngine::SetActiveView( EditView* pView )
     if ( !pView && mpIMEInfos )
     {
         delete mpIMEInfos;
-        mpIMEInfos = NULL;
+        mpIMEInfos = nullptr;
     }
 }
 
@@ -3621,7 +3621,7 @@ EditPaM ImpEditEngine::GetPaM( ParaPortion* pPortion, Point aDocPos, bool bSmart
 
     OSL_ENSURE( pPortion->GetLines().Count(), "Empty ParaPortion in GetPaM!" );
 
-    const EditLine* pLine = NULL;
+    const EditLine* pLine = nullptr;
     for ( sal_Int32 nLine = 0; nLine < pPortion->GetLines().Count(); nLine++ )
     {
         const EditLine& rTmpLine = pPortion->GetLines()[nLine];
@@ -4136,7 +4136,7 @@ Rectangle ImpEditEngine::GetEditCursor( ParaPortion* pPortion, sal_Int32 nIndex,
     OSL_ENSURE( nLineCount, "Empty ParaPortion in GetEditCursor!" );
     if (nLineCount == 0)
         return Rectangle();
-    const EditLine* pLine = NULL;
+    const EditLine* pLine = nullptr;
     bool bEOL = ( nFlags & GETCRSR_ENDOFLINE ) != 0;
     for (sal_Int32 nLine = 0; nLine < nLineCount; ++nLine)
     {
@@ -4161,7 +4161,6 @@ Rectangle ImpEditEngine::GetEditCursor( ParaPortion* pPortion, sal_Int32 nIndex,
         nY -= pLine->GetHeight();
         if ( !aStatus.IsOutliner() )
             nY -= nSBL;
-        nCurIndex = nCurIndex - pLine->GetLen();
     }
 
     Rectangle aEditCursor;
@@ -4370,7 +4369,7 @@ void ImpEditEngine::LeaveBlockNotifications()
 
 IMPL_LINK_NOARG_TYPED(ImpEditEngine, DocModified, LinkParamNone*, void)
 {
-    aModifyHdl.Call( NULL /*GetEditEnginePtr()*/ ); // NULL, because also used for Outliner
+    aModifyHdl.Call( nullptr /*GetEditEnginePtr()*/ ); // NULL, because also used for Outliner
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

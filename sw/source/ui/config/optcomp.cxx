@@ -56,14 +56,13 @@ struct CompatibilityItem
     bool        m_bConsiderWrappingStyle;
     bool        m_bExpandWordSpace;
     bool        m_bIsDefault;
-    bool        m_bIsUser;
 
     CompatibilityItem( const OUString& _rName, const OUString& _rModule,
                        bool _bUsePrtMetrics, bool _bAddSpacing, bool _bAddSpacingAtPages,
                        bool _bUseOurTabStops, bool _bNoExtLeading, bool _bUseLineSpacing,
                        bool _bAddTableSpacing, bool _bUseObjPos, bool _bUseOurTextWrapping,
                        bool _bConsiderWrappingStyle, bool _bExpandWordSpace,
-                       bool _bIsDefault, bool _bIsUser ) :
+                       bool _bIsDefault ) :
 
         m_sName                 ( _rName ),
         m_sModule               ( _rModule ),
@@ -78,8 +77,7 @@ struct CompatibilityItem
         m_bUseOurTextWrapping   ( _bUseOurTextWrapping ),
         m_bConsiderWrappingStyle( _bConsiderWrappingStyle ),
         m_bExpandWordSpace      ( _bExpandWordSpace ),
-        m_bIsDefault            ( _bIsDefault ),
-        m_bIsUser               ( _bIsUser ) {}
+        m_bIsDefault            ( _bIsDefault ) {}
 };
 
 #include <vector>
@@ -94,7 +92,7 @@ struct SwCompatibilityOptPage_Impl
 SwCompatibilityOptPage::SwCompatibilityOptPage(vcl::Window* pParent, const SfxItemSet& rSet)
     : SfxTabPage(pParent, "OptCompatPage",
         "modules/swriter/ui/optcompatpage.ui", &rSet)
-    , m_pWrtShell(NULL)
+    , m_pWrtShell(nullptr)
     , m_pImpl(new SwCompatibilityOptPage_Impl)
     , m_nSavedOptions(0)
 {
@@ -199,8 +197,8 @@ void SwCompatibilityOptPage::InitControls( const SfxItemSet& rSet )
 {
     // init objectshell and detect document name
     OUString sDocTitle;
-    const SfxPoolItem* pItem = NULL;
-    SfxObjectShell* pObjShell = NULL;
+    const SfxPoolItem* pItem = nullptr;
+    SfxObjectShell* pObjShell = nullptr;
     if ( SfxItemState::SET == rSet.GetItemState( FN_PARAM_WRTSHELL, false, &pItem ) )
         m_pWrtShell = static_cast<SwWrtShell*>(static_cast<const SwPtrItem*>(pItem)->GetValue());
     if ( m_pWrtShell )
@@ -275,8 +273,7 @@ void SwCompatibilityOptPage::InitControls( const SfxItemSet& rSet )
             bAddSpacingAtPages, bUseOurTabStops, bNoExtLeading,
             bUseLineSpacing, bAddTableSpacing, bUseObjPos,
             bUseOurTextWrapping, bConsiderWrappingStyle, bExpandWordSpace,
-            bIsDefaultEntry,
-            bIsUserEntry );
+            bIsDefaultEntry );
         m_pImpl->m_aList.push_back( aItem );
 
         if ( aItem.m_bIsDefault )
@@ -308,13 +305,11 @@ void SwCompatibilityOptPage::InitControls( const SfxItemSet& rSet )
     m_pFormattingLB->SetDropDownLineCount( m_pFormattingLB->GetEntryCount() );
 }
 
-IMPL_LINK_NOARG(SwCompatibilityOptPage, SelectHdl)
+IMPL_LINK_NOARG_TYPED(SwCompatibilityOptPage, SelectHdl, ListBox&, void)
 {
     const sal_Int32 nPos = m_pFormattingLB->GetSelectEntryPos();
     sal_uLong nOptions = reinterpret_cast<sal_uLong>(m_pFormattingLB->GetEntryData( nPos ));
     SetCurrentOptions( nOptions );
-
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(SwCompatibilityOptPage, UseAsDefaultHdl, Button*, void)

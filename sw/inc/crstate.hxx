@@ -32,18 +32,18 @@ enum SwFillMode
     FILL_INDENT     ///< by left paragraph indention
 };
 
-struct SwFillCrsrPos
+struct SwFillCursorPos
 {
-    SwRect aCrsr;           ///< position and size of the ShadowCursor
+    SwRect aCursor;           ///< position and size of the ShadowCursor
     sal_uInt16 nParaCnt;        ///< number of paragraphs to insert
     sal_uInt16 nTabCnt;         ///< number of tabs respectively size of indentation
     sal_uInt16 nSpaceCnt;       ///< number of spaces to insert
     sal_uInt16 nColumnCnt;      ///< number of necessary column breaks
     sal_Int16  eOrient;      ///< paragraph alignment
     SwFillMode eMode;       ///< desired fill-up rule
-    SwFillCrsrPos( SwFillMode eMd = FILL_TAB ) :
+    SwFillCursorPos( SwFillMode eMd = FILL_TAB ) :
         nParaCnt( 0 ), nTabCnt( 0 ), nSpaceCnt( 0 ), nColumnCnt( 0 ),
-        eOrient( com::sun::star::text::HoriOrientation::NONE ), eMode( eMd )
+        eOrient( css::text::HoriOrientation::NONE ), eMode( eMd )
     {}
 };
 
@@ -68,7 +68,7 @@ struct Sw2LinesPos
 
 /**
  *  SwSpecialPos. This structure is used to pass some additional information
- *  during the call of SwTextFrm::GetCharRect(). An SwSpecialPos defines a position
+ *  during the call of SwTextFrame::GetCharRect(). An SwSpecialPos defines a position
  *  inside a portion which does not have a representation in the core string or
  *  which is only represented by one position,  e.g., field portions,
  *  number portions, ergo sum and quo vadis portions.
@@ -85,7 +85,7 @@ struct Sw2LinesPos
  *
  *      Get the position of the second character inside a number portion:
  *          nCharOfst = 2; nLineOfst = 0; nExtendRange = SP_EXTEND_RANGE_BEFORE;
- *          Call SwTextFrm:::GetCharRect with core string position 0.
+ *          Call SwTextFrame:::GetCharRect with core string position 0.
  *
  *  Example 2)
  *
@@ -94,7 +94,7 @@ struct Sw2LinesPos
  *      Get the position of the third character in follow field B, core position
  *      of field A is 33.
  *          nCharOfst = 7; nLineOfst = 0; nExtendRange = SP_EXTEND_RANGE_NONE;
- *          Call SwTextFrm:::GetCharRect with core string position 33.
+ *          Call SwTextFrame:::GetCharRect with core string position 33.
  */
 
 enum class SwSPExtendRange : sal_uInt8
@@ -114,11 +114,11 @@ struct SwSpecialPos
     {}
 };
 
-// CrsrTravelling-States (for GetCrsrOfst)
-enum CrsrMoveState
+// CursorTravelling-States (for GetCursorOfst)
+enum CursorMoveState
 {
     MV_NONE,            ///< default
-    MV_UPDOWN,          ///< Crsr Up/Down
+    MV_UPDOWN,          ///< Cursor Up/Down
     MV_RIGHTMARGIN,     ///< at right margin
     MV_LEFTMARGIN,      ///< at left margin
     MV_SETONLYTEXT,     ///< stay with the cursor inside text
@@ -126,85 +126,85 @@ enum CrsrMoveState
 };
 
 // struct for later extensions
-struct SwCrsrMoveState
+struct SwCursorMoveState
 {
-    SwFillCrsrPos   *pFill;     ///< for automatic filling with tabs etc
-    Sw2LinesPos     *p2Lines;   ///< for selections inside/around 2line portions
-    SwSpecialPos*   pSpecialPos; ///< for positions inside fields
-    Point aRealHeight;          ///< contains then the position/height of the cursor
-    CrsrMoveState eState;
-    sal_uInt8            nCursorBidiLevel;
-    bool bStop;
-    bool bRealHeight;           ///< should the real height be calculated?
-    bool bFieldInfo;            ///< should be fields recognized?
-    bool bPosCorr;              ///< Point had to be corrected
-    bool bFootnoteNoInfo;            ///< recognized footnote numbering
-    bool bExactOnly;            /**< let GetCrsrOfst look for exact matches only,
+    SwFillCursorPos   *m_pFill;     ///< for automatic filling with tabs etc
+    Sw2LinesPos     *m_p2Lines;   ///< for selections inside/around 2line portions
+    SwSpecialPos*   m_pSpecialPos; ///< for positions inside fields
+    Point m_aRealHeight;          ///< contains then the position/height of the cursor
+    CursorMoveState m_eState;
+    sal_uInt8            m_nCursorBidiLevel;
+    bool m_bStop;
+    bool m_bRealHeight;           ///< should the real height be calculated?
+    bool m_bFieldInfo;            ///< should be fields recognized?
+    bool m_bPosCorr;              ///< Point had to be corrected
+    bool m_bFootnoteNoInfo;            ///< recognized footnote numbering
+    bool m_bExactOnly;            /**< let GetCursorOfst look for exact matches only,
                                          i.e. never let it run into GetContentPos */
-    bool bFillRet;              ///< only used temporary in FillMode
-    bool bSetInReadOnly;        ///< ReadOnly areas may be entered
-    bool bRealWidth;            ///< Calculation of the width required
-    bool b2Lines;               ///< Check 2line portions and fill p2Lines
-    bool bNoScroll;             ///< No scrolling of undersized textframes
-    bool bPosMatchesBounds;         /**< GetCrsrOfst should not return the next
+    bool m_bFillRet;              ///< only used temporary in FillMode
+    bool m_bSetInReadOnly;        ///< ReadOnly areas may be entered
+    bool m_bRealWidth;            ///< Calculation of the width required
+    bool m_b2Lines;               ///< Check 2line portions and fill p2Lines
+    bool m_bNoScroll;             ///< No scrolling of undersized textframes
+    bool m_bPosMatchesBounds;         /**< GetCursorOfst should not return the next
                                        position if screen position is inside second
                                        have of bound rect */
 
-    bool bContentCheck;           // #i43742# Cursor position over content?
+    bool m_bContentCheck;           // #i43742# Cursor position over content?
 
     // #i27615#
     /**
        cursor in front of label
      */
-    bool bInFrontOfLabel;
-    bool bInNumPortion;         ///< point is in number portion #i23726#
-    int nInNumPostionOffset;        ///< distance from number portion's start
+    bool m_bInFrontOfLabel;
+    bool m_bInNumPortion;         ///< point is in number portion #i23726#
+    int m_nInNumPostionOffset;        ///< distance from number portion's start
 
-    SwCrsrMoveState( CrsrMoveState eSt = MV_NONE ) :
-        pFill( NULL ),
-        p2Lines( NULL ),
-        pSpecialPos( NULL ),
-        eState( eSt ),
-        nCursorBidiLevel( 0 ),
-        bStop( false ),
-        bRealHeight( false ),
-        bFieldInfo( false ),
-        bPosCorr( false ),
-        bFootnoteNoInfo( false ),
-        bExactOnly( false ),
-        bFillRet( false ),
-        bSetInReadOnly( false ),
-        bRealWidth( false ),
-        b2Lines( false ),
-        bNoScroll( false ),
-        bPosMatchesBounds( false ),
-        bContentCheck( false ), // #i43742#
-        bInFrontOfLabel( false ), // #i27615#
-        bInNumPortion(false), // #i26726#
-        nInNumPostionOffset(0) // #i26726#
+    SwCursorMoveState( CursorMoveState eSt = MV_NONE ) :
+        m_pFill( nullptr ),
+        m_p2Lines( nullptr ),
+        m_pSpecialPos( nullptr ),
+        m_eState( eSt ),
+        m_nCursorBidiLevel( 0 ),
+        m_bStop( false ),
+        m_bRealHeight( false ),
+        m_bFieldInfo( false ),
+        m_bPosCorr( false ),
+        m_bFootnoteNoInfo( false ),
+        m_bExactOnly( false ),
+        m_bFillRet( false ),
+        m_bSetInReadOnly( false ),
+        m_bRealWidth( false ),
+        m_b2Lines( false ),
+        m_bNoScroll( false ),
+        m_bPosMatchesBounds( false ),
+        m_bContentCheck( false ), // #i43742#
+        m_bInFrontOfLabel( false ), // #i27615#
+        m_bInNumPortion(false), // #i26726#
+        m_nInNumPostionOffset(0) // #i26726#
     {}
-    SwCrsrMoveState( SwFillCrsrPos *pInitFill ) :
-        pFill( pInitFill ),
-        p2Lines( NULL ),
-        pSpecialPos( NULL ),
-        eState( MV_SETONLYTEXT ),
-        nCursorBidiLevel( 0 ),
-        bStop( false ),
-        bRealHeight( false ),
-        bFieldInfo( false ),
-        bPosCorr( false ),
-        bFootnoteNoInfo( false ),
-        bExactOnly( false ),
-        bFillRet( false ),
-        bSetInReadOnly( false ),
-        bRealWidth( false ),
-        b2Lines( false ),
-        bNoScroll( false ),
-        bPosMatchesBounds( false ),
-        bContentCheck( false ), // #i43742#
-        bInFrontOfLabel( false ), // #i27615#
-        bInNumPortion(false), // #i23726#
-        nInNumPostionOffset(0) // #i23726#
+    SwCursorMoveState( SwFillCursorPos *pInitFill ) :
+        m_pFill( pInitFill ),
+        m_p2Lines( nullptr ),
+        m_pSpecialPos( nullptr ),
+        m_eState( MV_SETONLYTEXT ),
+        m_nCursorBidiLevel( 0 ),
+        m_bStop( false ),
+        m_bRealHeight( false ),
+        m_bFieldInfo( false ),
+        m_bPosCorr( false ),
+        m_bFootnoteNoInfo( false ),
+        m_bExactOnly( false ),
+        m_bFillRet( false ),
+        m_bSetInReadOnly( false ),
+        m_bRealWidth( false ),
+        m_b2Lines( false ),
+        m_bNoScroll( false ),
+        m_bPosMatchesBounds( false ),
+        m_bContentCheck( false ), // #i43742#
+        m_bInFrontOfLabel( false ), // #i27615#
+        m_bInNumPortion(false), // #i23726#
+        m_nInNumPostionOffset(0) // #i23726#
     {}
 };
 

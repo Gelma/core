@@ -69,12 +69,10 @@ using namespace ::com::sun::star;
 
 // Global data of the DrawingEngine
 SdrGlobalData::SdrGlobalData() :
-    pSysLocale(NULL),
-    pLocaleData(NULL),
-    pOutliner(NULL),
-    pDefaults(NULL),
-    pResMgr(NULL),
-    nExchangeFormat(0)
+    pSysLocale(nullptr),
+    pLocaleData(nullptr),
+    pDefaults(nullptr),
+    pResMgr(nullptr)
 {
     if (!utl::ConfigManager::IsAvoidConfig())
     {
@@ -397,8 +395,6 @@ bool GetDraftFillColor(const SfxItemSet& rSet, Color& rCol)
 }
 
 SdrEngineDefaults::SdrEngineDefaults():
-    aFontName( OutputDevice::GetDefaultFont( DefaultFontType::SERIF, LANGUAGE_SYSTEM, GetDefaultFontFlags::OnlyOne ).GetName() ),
-    eFontFamily(FAMILY_ROMAN),
     aFontColor(COL_AUTO),
     nFontHeight(847),             // 847/100mm = ca. 24 Point
     eMapUnit(MAP_100TH_MM),
@@ -409,7 +405,7 @@ SdrEngineDefaults::SdrEngineDefaults():
 SdrEngineDefaults& SdrEngineDefaults::GetDefaults()
 {
     SdrGlobalData& rGlobalData=GetSdrGlobalData();
-    if (rGlobalData.pDefaults==NULL) {
+    if (rGlobalData.pDefaults==nullptr) {
         rGlobalData.pDefaults=new SdrEngineDefaults;
     }
     return *rGlobalData.pDefaults;
@@ -471,7 +467,7 @@ bool SearchOutlinerItems(const SfxItemSet& rSet, bool bInklDefaults, bool* pbOnl
 {
     bool bHas=false;
     bool bOnly=true;
-    bool bLookOnly=pbOnlyEE!=NULL;
+    bool bLookOnly=pbOnlyEE!=nullptr;
     SfxWhichIter aIter(rSet);
     sal_uInt16 nWhich=aIter.FirstWhich();
     while (((bLookOnly && bOnly) || !bHas) && nWhich!=0) {
@@ -486,7 +482,7 @@ bool SearchOutlinerItems(const SfxItemSet& rSet, bool bInklDefaults, bool* pbOnl
         nWhich=aIter.NextWhich();
     }
     if (!bHas) bOnly=false;
-    if (pbOnlyEE!=NULL) *pbOnlyEE=bOnly;
+    if (pbOnlyEE!=nullptr) *pbOnlyEE=bOnly;
     return bHas;
 }
 
@@ -584,7 +580,7 @@ bool SvdProgressInfo::ReportActions( sal_uIntPtr nAnzActions )
     if(nCurAction > nActionCount)
         nCurAction = nActionCount;
 
-    return maLink.Call(NULL);
+    return maLink.Call(nullptr);
 }
 
 bool SvdProgressInfo::ReportInserts( sal_uIntPtr nAnzInserts )
@@ -592,13 +588,13 @@ bool SvdProgressInfo::ReportInserts( sal_uIntPtr nAnzInserts )
     nSumCurAction += nAnzInserts;
     nCurInsert += nAnzInserts;
 
-    return maLink.Call(NULL);
+    return maLink.Call(nullptr);
 }
 
 bool SvdProgressInfo::ReportRescales( sal_uIntPtr nAnzRescales )
 {
     nSumCurAction += nAnzRescales;
-    return maLink.Call(NULL);
+    return maLink.Call(nullptr);
 }
 
 void SvdProgressInfo::SetActionCount( sal_uIntPtr _nActionCount )

@@ -18,6 +18,7 @@
  */
 
 #include <stdlib.h>
+#include <limits>
 
 #include "editeng/fontitem.hxx"
 #include "svdibrow.hxx"
@@ -63,6 +64,8 @@ using namespace com::sun::star;
 #define ITEMBROWSER_NAMECOL_ID  4
 #define ITEMBROWSER_VALUECOL_ID 5
 
+#define ITEM_NOT_FOUND std::numeric_limits<std::size_t>::max()
+
 enum ItemType {
     ITEM_DONTKNOW, ITEM_BYTE, ITEM_INT16, ITEM_UINT16, ITEM_INT32, ITEM_UINT32,
     ITEM_ENUM, ITEM_BOOL, ITEM_FLAG, ITEM_STRING, ITEM_POINT, ITEM_RECT, ITEM_RANGE, ITEM_LRANGE,
@@ -82,7 +85,7 @@ public:
     SfxItemState                    eState;
     sal_uInt16                      nWhichId;
 
-    TypeId                          pType;
+    const std::type_info*           pType;
     ItemType                        eItemType;
 
     sal_Int32                       nVal;
@@ -97,7 +100,7 @@ public:
     ImpItemListRow()
     :   eState(SfxItemState::UNKNOWN),
         nWhichId(0),
-        pType(NULL),
+        pType(nullptr),
         eItemType(ITEM_DONTKNOW),
         nVal(0),
         nMin(0),
@@ -170,8 +173,8 @@ public:
         pBrowse(pBrowse_)
     {}
     virtual ~ImpItemEdit() { disposeOnce(); }
-    virtual void dispose() SAL_OVERRIDE { pBrowse.clear(); Edit::dispose(); }
-    virtual void KeyInput(const KeyEvent& rEvt) SAL_OVERRIDE;
+    virtual void dispose() override { pBrowse.clear(); Edit::dispose(); }
+    virtual void KeyInput(const KeyEvent& rEvt) override;
 };
 
 void ImpItemEdit::KeyInput(const KeyEvent& rKEvt)
@@ -187,7 +190,7 @@ void ImpItemEdit::KeyInput(const KeyEvent& rKEvt)
     }
     else if(nKeyCode == KEY_ESCAPE)
     {
-        pBrowseMerk->BrkChangeEntry();
+        pBrowseMerk->BreakChangeEntry();
         pBrowseMerk->GrabFocus();
     }
     else if(nKeyCode == KEY_UP || nKeyCode == KEY_DOWN)
@@ -228,8 +231,8 @@ void _SdrItemBrowserControl::dispose()
 
 void _SdrItemBrowserControl::ImpCtor()
 {
-    pEditControl = NULL;
-    pAktChangeEntry = NULL;
+    pEditControl = nullptr;
+    pAktChangeEntry = nullptr;
     nLastWhichOfs = 0;
     nLastWhich = 0;
     nLastWhichOben = 0;  // not implemented yet
@@ -244,25 +247,25 @@ void _SdrItemBrowserControl::ImpCtor()
 
     InsertDataColumn(
         ITEMBROWSER_WHICHCOL_ID,
-        OUString("Which"),
-        GetTextWidth(OUString(" Which ")) + 2);
+        "Which",
+        GetTextWidth(" Which ") + 2);
     InsertDataColumn(
         ITEMBROWSER_STATECOL_ID,
-        OUString("State"),
-        std::max(GetTextWidth(OUString(" State ")) + 2 ,
-            GetTextWidth(OUString("DontCare")) + 2));
+        "State",
+        std::max(GetTextWidth(" State ") + 2 ,
+            GetTextWidth("DontCare") + 2));
     InsertDataColumn(
         ITEMBROWSER_TYPECOL_ID ,
-        OUString("Type"),
-        GetTextWidth(OUString(" Type_ ")) + 2);
+        "Type",
+        GetTextWidth(" Type_ ") + 2);
     InsertDataColumn(
         ITEMBROWSER_NAMECOL_ID ,
-        OUString("Name"),
+        "Name",
         150);
     InsertDataColumn(
         ITEMBROWSER_VALUECOL_ID,
-        OUString("Value"),
-        GetTextWidth(OUString("12345678901234567890")));
+        "Value",
+        GetTextWidth("12345678901234567890"));
     SetDataRowHeight(
         GetTextHeight());
 
@@ -279,8 +282,8 @@ void _SdrItemBrowserControl::ImpCtor()
 
 void _SdrItemBrowserControl::Clear()
 {
-    sal_uIntPtr nCount=aList.size();
-    for (sal_uIntPtr nNum=0; nNum<nCount; nNum++) {
+    const std::size_t nCount=aList.size();
+    for (std::size_t nNum=0; nNum<nCount; ++nNum) {
         delete ImpGetEntry(nNum);
     }
     aList.clear();
@@ -342,7 +345,7 @@ OUString _SdrItemBrowserControl::GetCellText(long _nRow, sal_uInt16 _nColId) con
 
 void _SdrItemBrowserControl::PaintField(OutputDevice& rDev, const Rectangle& rRect, sal_uInt16 nColumnId) const
 {
-    if (nAktPaintRow<0 || (sal_uIntPtr)nAktPaintRow>=aList.size()) {
+    if (nAktPaintRow<0 || static_cast<std::size_t>(nAktPaintRow)>=aList.size()) {
         return;
     }
     Rectangle aR(rRect);
@@ -366,13 +369,13 @@ void _SdrItemBrowserControl::PaintField(OutputDevice& rDev, const Rectangle& rRe
     }
 }
 
-sal_uIntPtr _SdrItemBrowserControl::GetCurrentPos() const
+std::size_t _SdrItemBrowserControl::GetCurrentPos() const
 {
-    sal_uIntPtr nRet=CONTAINER_ENTRY_NOTFOUND;
+    std::size_t nRet=ITEM_NOT_FOUND;
     if (GetSelectRowCount()==1) {
         long nPos=static_cast<BrowseBox*>(const_cast<_SdrItemBrowserControl *>(this))->FirstSelectedRow();
-        if (nPos>=0 && (sal_uIntPtr)nPos<aList.size()) {
-            nRet=(sal_uIntPtr)nPos;
+        if (nPos>=0 && static_cast<std::size_t>(nPos)<aList.size()) {
+            nRet = static_cast<std::size_t>(nPos);
         }
     }
     return nRet;
@@ -381,8 +384,8 @@ sal_uIntPtr _SdrItemBrowserControl::GetCurrentPos() const
 sal_uInt16 _SdrItemBrowserControl::GetCurrentWhich() const
 {
     sal_uInt16 nRet=0;
-    sal_uIntPtr nPos=GetCurrentPos();
-    if (nPos!=CONTAINER_ENTRY_NOTFOUND) {
+    const std::size_t nPos=GetCurrentPos();
+    if (nPos!=ITEM_NOT_FOUND) {
         nRet=ImpGetEntry(nPos)->nWhichId;
     }
     return nRet;
@@ -390,9 +393,9 @@ sal_uInt16 _SdrItemBrowserControl::GetCurrentWhich() const
 
 void _SdrItemBrowserControl::DoubleClick(const BrowserMouseEvent&)
 {
-    sal_uIntPtr nPos=GetCurrentPos();
-    if (nPos!=CONTAINER_ENTRY_NOTFOUND) {
-        BegChangeEntry(nPos);
+    const std::size_t nPos=GetCurrentPos();
+    if (nPos!=ITEM_NOT_FOUND) {
+        BeginChangeEntry(nPos);
     }
 }
 
@@ -400,10 +403,10 @@ void _SdrItemBrowserControl::KeyInput(const KeyEvent& rKEvt)
 {
     sal_uInt16 nKeyCode=rKEvt.GetKeyCode().GetCode()+rKEvt.GetKeyCode().GetModifier();
     bool bAusgewertet = false;
-    sal_uIntPtr nPos=GetCurrentPos();
-    if (nPos!=CONTAINER_ENTRY_NOTFOUND) {
+    const std::size_t nPos=GetCurrentPos();
+    if (nPos!=ITEM_NOT_FOUND) {
         if (nKeyCode==KEY_RETURN) {
-            if (BegChangeEntry(nPos)) bAusgewertet = true;
+            if (BeginChangeEntry(nPos)) bAusgewertet = true;
         } else if (nKeyCode==KEY_ESCAPE) {
 
         } else if (rKEvt.GetKeyCode().GetModifier()==KEY_SHIFT+KEY_MOD1+KEY_MOD2) { // Ctrl
@@ -468,8 +471,8 @@ void _SdrItemBrowserControl::ImpRestoreWhich()
 {
     if (nLastWhich!=0) {
         bool bFnd = false;
-        sal_uIntPtr nCount=aList.size();
-        sal_uIntPtr nNum;
+        const std::size_t nCount=aList.size();
+        std::size_t nNum;
         for (nNum=0; nNum<nCount && !bFnd; nNum++) {
             ImpItemListRow* pEntry=ImpGetEntry(nNum);
             if (!pEntry->bComment) {
@@ -488,12 +491,12 @@ void _SdrItemBrowserControl::ImpRestoreWhich()
     }
 }
 
-bool _SdrItemBrowserControl::BegChangeEntry(sal_uIntPtr nPos)
+bool _SdrItemBrowserControl::BeginChangeEntry(std::size_t nPos)
 {
-    BrkChangeEntry();
+    BreakChangeEntry();
     bool bRet = false;
     ImpItemListRow* pEntry=ImpGetEntry(nPos);
-    if (pEntry!=NULL && !pEntry->bComment) {
+    if (pEntry!=nullptr && !pEntry->bComment) {
         SetMode(MYBROWSEMODE & BrowserMode(~BrowserMode::KEEPHIGHLIGHT));
         pEditControl=VclPtr<ImpItemEdit>::Create(&GetDataWindow(),this,0);
         Rectangle aRect(GetFieldRectPixel(nPos, ITEMBROWSER_VALUECOL_ID, false));
@@ -529,33 +532,27 @@ bool _SdrItemBrowserControl::BegChangeEntry(sal_uIntPtr nPos)
 
 bool _SdrItemBrowserControl::EndChangeEntry()
 {
-    bool bRet = false;
-    if (pEditControl!=nullptr) {
-        aEntryChangedHdl.Call(*this);
-        pEditControl.disposeAndClear();
-        delete pAktChangeEntry;
-        pAktChangeEntry=NULL;
-        vcl::Window* pParent=GetParent();
-        pParent->SetText(aWNamMerk);
-        SetMode(MYBROWSEMODE);
-        bRet = true;
-    }
-    return bRet;
+    if (!pEditControl)
+        return false;
+
+    aEntryChangedHdl.Call(*this);
+    BreakChangeEntry();
+    return true;
 }
 
-void _SdrItemBrowserControl::BrkChangeEntry()
+void _SdrItemBrowserControl::BreakChangeEntry()
 {
     if (pEditControl!=nullptr) {
         pEditControl.disposeAndClear();
         delete pAktChangeEntry;
-        pAktChangeEntry=NULL;
+        pAktChangeEntry=nullptr;
         vcl::Window* pParent=GetParent();
         pParent->SetText(aWNamMerk);
         SetMode(MYBROWSEMODE);
     }
 }
 
-void _SdrItemBrowserControl::ImpSetEntry(const ImpItemListRow& rEntry, sal_uIntPtr nEntryNum)
+void _SdrItemBrowserControl::ImpSetEntry(const ImpItemListRow& rEntry, std::size_t nEntryNum)
 {
     SAL_WARN_IF(nEntryNum > aList.size(), "svx", "trying to set item " << nEntryNum << "in a vector of size " << aList.size());
     if (nEntryNum >= aList.size()) {
@@ -592,14 +589,14 @@ bool ImpGetItem(const SfxItemSet& rSet, sal_uInt16 nWhich, const SfxPoolItem*& r
     if (eState==SfxItemState::DEFAULT) {
         rpItem=&rSet.Get(nWhich);
     }
-    return (eState==SfxItemState::DEFAULT || eState==SfxItemState::SET) && rpItem!=NULL;
+    return (eState==SfxItemState::DEFAULT || eState==SfxItemState::SET) && rpItem!=nullptr;
 }
 
 bool IsItemIneffective(sal_uInt16 nWhich, const SfxItemSet* pSet, sal_uInt16& rIndent)
 {
     rIndent=0;
-    if (pSet==NULL) return false;
-    const SfxPoolItem* pItem=NULL;
+    if (pSet==nullptr) return false;
+    const SfxPoolItem* pItem=nullptr;
     bool bRet = false;
     switch (nWhich) {
         case XATTR_LINEDASH         :
@@ -908,7 +905,7 @@ sal_uInt16 ImpSortWhich(sal_uInt16 nWhich)
 void _SdrItemBrowserControl::SetAttributes(const SfxItemSet* pSet, const SfxItemSet* p2ndSet)
 {
     SetMode(MYBROWSEMODE & BrowserMode(~BrowserMode::KEEPHIGHLIGHT));
-    if (pSet!=NULL) {
+    if (pSet!=nullptr) {
         sal_uInt16 nEntryNum=0;
         SfxWhichIter aIter(*pSet);
         const SfxItemPool* pPool=pSet->GetPool();
@@ -920,7 +917,7 @@ void _SdrItemBrowserControl::SetAttributes(const SfxItemSet* pSet, const SfxItem
             // at this position in the Set.
             if (!bDontSortItems) nWhich=ImpSortWhich(nWhich);
             SfxItemState eState=pSet->GetItemState(nWhich);
-            if (p2ndSet!=NULL) {
+            if (p2ndSet!=nullptr) {
                 SfxItemState e2ndState=p2ndSet->GetItemState(nWhich);
                 if (eState==SfxItemState::DEFAULT) eState=SfxItemState::DISABLED;
                 else if (e2ndState==SfxItemState::DEFAULT) eState=SfxItemState::DEFAULT;
@@ -928,7 +925,8 @@ void _SdrItemBrowserControl::SetAttributes(const SfxItemSet* pSet, const SfxItem
             if (eState!=SfxItemState::DISABLED) {
                 const SfxPoolItem& rItem=pSet->Get(nWhich);
                 sal_uInt16 nIndent=0;
-                if (!HAS_BASE(SfxVoidItem,&rItem) && !HAS_BASE(SfxSetItem,&rItem) && (!IsItemIneffective(nWhich,pSet,nIndent) || bDontHideIneffectiveItems)) {
+                if (dynamic_cast<const SfxVoidItem *>(&rItem) == nullptr && dynamic_cast<const SfxSetItem *>(&rItem) == nullptr
+                        && (!IsItemIneffective(nWhich,pSet,nIndent) || bDontHideIneffectiveItems)) {
                     OUString aCommentStr;
 
                     INSERTCOMMENT(XATTR_LINE_FIRST,XATTR_LINE_LAST,"L I N E");
@@ -970,29 +968,29 @@ void _SdrItemBrowserControl::SetAttributes(const SfxItemSet* pSet, const SfxItem
                     aEntry.eState=eState;
                     aEntry.nWhichId=nWhich;
                     if (!IsInvalidItem(&rItem)) {
-                        aEntry.pType=rItem.Type();
+                        aEntry.pType=&typeid(rItem);
                         aEntry.nMax=0x7FFFFFFF;
                         aEntry.nMin=-aEntry.nMax;
                         aEntry.nVal=-4711;
-                        if      (HAS_BASE(SfxByteItem     ,&rItem)) aEntry.eItemType=ITEM_BYTE;
-                        else if (HAS_BASE(SfxInt16Item    ,&rItem)) aEntry.eItemType=ITEM_INT16;
-                        else if (HAS_BASE(SfxUInt16Item   ,&rItem)) aEntry.eItemType=ITEM_UINT16;
-                        else if (HAS_BASE(SfxInt32Item    ,&rItem)) aEntry.eItemType=ITEM_INT32;
-                        else if (HAS_BASE(SfxUInt32Item   ,&rItem)) aEntry.eItemType=ITEM_UINT32;
-                        else if (HAS_BASE(SfxEnumItemInterface,&rItem)) aEntry.eItemType=ITEM_ENUM;
-                        else if (HAS_BASE(SfxBoolItem     ,&rItem)) aEntry.eItemType=ITEM_BOOL;
-                        else if (HAS_BASE(SfxFlagItem     ,&rItem)) aEntry.eItemType=ITEM_FLAG;
-                        else if (HAS_BASE(XColorItem      ,&rItem)) aEntry.eItemType=ITEM_XCOLOR;
-                        else if (HAS_BASE(SfxStringItem   ,&rItem)) aEntry.eItemType=ITEM_STRING;
-                        else if (HAS_BASE(SfxPointItem    ,&rItem)) aEntry.eItemType=ITEM_POINT;
-                        else if (HAS_BASE(SfxRectangleItem,&rItem)) aEntry.eItemType=ITEM_RECT;
-                        else if (HAS_BASE(SfxRangeItem    ,&rItem)) aEntry.eItemType=ITEM_RANGE;
-                        else if (HAS_BASE(SdrFractionItem ,&rItem)) aEntry.eItemType=ITEM_FRACTION;
-                        else if (HAS_BASE(SvxColorItem    ,&rItem)) aEntry.eItemType=ITEM_COLOR;
-                        else if (HAS_BASE(SvxFontItem     ,&rItem)) aEntry.eItemType=ITEM_FONT;
-                        else if (HAS_BASE(SvxFontHeightItem,&rItem))aEntry.eItemType=ITEM_FONTHEIGHT;
-                        else if (HAS_BASE(SvxCharScaleWidthItem,&rItem)) aEntry.eItemType=ITEM_FONTWIDTH;
-                        else if (HAS_BASE(SvxFieldItem    ,&rItem)) aEntry.eItemType=ITEM_FIELD;
+                        if      (dynamic_cast<const SfxByteItem *>(&rItem) != nullptr) aEntry.eItemType=ITEM_BYTE;
+                        else if (dynamic_cast<const SfxInt16Item *>(&rItem) != nullptr) aEntry.eItemType=ITEM_INT16;
+                        else if (dynamic_cast<const SfxUInt16Item *>(&rItem) != nullptr) aEntry.eItemType=ITEM_UINT16;
+                        else if (dynamic_cast<const SfxInt32Item *>(&rItem) != nullptr) aEntry.eItemType=ITEM_INT32;
+                        else if (dynamic_cast<const SfxUInt32Item *>(&rItem) != nullptr) aEntry.eItemType=ITEM_UINT32;
+                        else if (dynamic_cast<const SfxEnumItemInterface *>(&rItem) != nullptr) aEntry.eItemType=ITEM_ENUM;
+                        else if (dynamic_cast<const SfxBoolItem *>(&rItem) != nullptr) aEntry.eItemType=ITEM_BOOL;
+                        else if (dynamic_cast<const SfxFlagItem *>(&rItem) != nullptr) aEntry.eItemType=ITEM_FLAG;
+                        else if (dynamic_cast<const XColorItem *>(&rItem) != nullptr) aEntry.eItemType=ITEM_XCOLOR;
+                        else if (dynamic_cast<const SfxStringItem *>(&rItem) != nullptr) aEntry.eItemType=ITEM_STRING;
+                        else if (dynamic_cast<const SfxPointItem *>(&rItem) != nullptr) aEntry.eItemType=ITEM_POINT;
+                        else if (dynamic_cast<const SfxRectangleItem *>(&rItem) != nullptr) aEntry.eItemType=ITEM_RECT;
+                        else if (dynamic_cast<const SfxRangeItem *>(&rItem) != nullptr) aEntry.eItemType=ITEM_RANGE;
+                        else if (dynamic_cast<const SdrFractionItem *>(&rItem) != nullptr) aEntry.eItemType=ITEM_FRACTION;
+                        else if (dynamic_cast<const SvxColorItem *>(&rItem) != nullptr) aEntry.eItemType=ITEM_COLOR;
+                        else if (dynamic_cast<const SvxFontItem *>(&rItem) != nullptr) aEntry.eItemType=ITEM_FONT;
+                        else if (dynamic_cast<const SvxFontHeightItem *>(&rItem) != nullptr)aEntry.eItemType=ITEM_FONTHEIGHT;
+                        else if (dynamic_cast<const SvxCharScaleWidthItem *>(&rItem) != nullptr) aEntry.eItemType=ITEM_FONTWIDTH;
+                        else if (dynamic_cast<const SvxFieldItem *>(&rItem) != nullptr) aEntry.eItemType=ITEM_FIELD;
                         switch (aEntry.eItemType) {
                             case ITEM_BYTE      : aEntry.bIsNum = true;  aEntry.nVal=static_cast<const SfxByteItem  &>(rItem).GetValue(); aEntry.nMin=0;      aEntry.nMax=255;   break;
                             case ITEM_INT16     : aEntry.bIsNum = true;  aEntry.nVal=static_cast<const SfxInt16Item &>(rItem).GetValue(); aEntry.nMin=-32767; aEntry.nMax=32767; break;
@@ -1049,7 +1047,7 @@ _SdrItemBrowserWindow::_SdrItemBrowserWindow(vcl::Window* pParent, WinBits nBits
     aBrowse(VclPtr<_SdrItemBrowserControl>::Create(this))
 {
     SetOutputSizePixel(aBrowse->GetSizePixel());
-    SetText(OUString("Joe's ItemBrowser"));
+    SetText("Joe's ItemBrowser");
     aBrowse->Show();
 }
 
@@ -1101,13 +1099,13 @@ vcl::Window* SdrItemBrowser::ImpGetViewWin(SdrView& rView)
         }
     }
 
-    return 0L;
+    return nullptr;
 }
 
 void SdrItemBrowser::ForceParent()
 {
     vcl::Window* pWin=ImpGetViewWin(*pView);
-    if (pWin!=NULL) SetParent(pWin);
+    if (pWin!=nullptr) SetParent(pWin);
 }
 
 void SdrItemBrowser::SetDirty()
@@ -1148,7 +1146,7 @@ IMPL_LINK_NOARG_TYPED(SdrItemBrowser, IdleHdl, Idle *, void)
 IMPL_LINK_TYPED(SdrItemBrowser, ChangedHdl, _SdrItemBrowserControl&, rBrowse, void)
 {
     const ImpItemListRow* pEntry = rBrowse.GetAktChangeEntry();
-    if (pEntry!=NULL)
+    if (pEntry!=nullptr)
     {
         SfxItemSet aSet(pView->GetModel()->GetItemPool());
         pView->GetAttributes(aSet);
@@ -1164,7 +1162,7 @@ IMPL_LINK_TYPED(SdrItemBrowser, ChangedHdl, _SdrItemBrowserControl&, rBrowse, vo
 
         if (!bDel) {
             SfxPoolItem* pNewItem=aSet.Get(pEntry->nWhichId).Clone();
-            long nLongVal = aNewText.toInt32();
+            sal_Int32 nLongVal = aNewText.toInt32();
             if (pEntry->bCanNum) {
                 if (nLongVal>pEntry->nMax) nLongVal=pEntry->nMax;
                 if (nLongVal<pEntry->nMin) nLongVal=pEntry->nMin;
@@ -1190,13 +1188,13 @@ IMPL_LINK_TYPED(SdrItemBrowser, ChangedHdl, _SdrItemBrowserControl&, rBrowse, vo
                 case ITEM_INT16 : static_cast<SfxInt16Item *>(pNewItem)->SetValue((sal_Int16 )nLongVal); break;
                 case ITEM_UINT16: static_cast<SfxUInt16Item*>(pNewItem)->SetValue((sal_uInt16)nLongVal); break;
                 case ITEM_INT32: {
-                    if(HAS_BASE(SdrAngleItem, pNewItem))
+                    if(dynamic_cast<const SdrAngleItem *>(pNewItem) != nullptr)
                     {
                         aNewText = aNewText.replace(',', '.');
                         double nVal = aNewText.toFloat();
-                        nLongVal = (long)(nVal * 100 + 0.5);
+                        nLongVal = static_cast<sal_Int32>(nVal * 100.0 + 0.5);
                     }
-                    static_cast<SfxInt32Item *>(pNewItem)->SetValue((sal_Int32)nLongVal);
+                    static_cast<SfxInt32Item *>(pNewItem)->SetValue(nLongVal);
                 } break;
                 case ITEM_UINT32: static_cast<SfxUInt32Item*>(pNewItem)->SetValue(aNewText.toInt32()); break;
                 case ITEM_ENUM  : static_cast<SfxEnumItemInterface*>(pNewItem)->SetEnumValue((sal_uInt16)nLongVal); break;
@@ -1233,12 +1231,12 @@ IMPL_LINK_TYPED(SdrItemBrowser, ChangedHdl, _SdrItemBrowserControl&, rBrowse, vo
                     static_cast<SvxFontItem*>(pNewItem)->SetStyleName(OUString());
                 } break;
                 case ITEM_FONTHEIGHT: {
-                    sal_uIntPtr nHgt=0;
+                    sal_uInt32 nHgt=0;
                     sal_uInt16 nProp=100;
                     if (aNewText.indexOf('%') != -1) {
-                        nProp=(sal_uInt16)nLongVal;
+                        nProp=static_cast<sal_uInt16>(nLongVal);
                     } else {
-                        nHgt=nLongVal;
+                        nHgt=static_cast<sal_uInt32>(nLongVal);
                     }
                     static_cast<SvxFontHeightItem*>(pNewItem)->SetHeight(nHgt,nProp);
                 } break;

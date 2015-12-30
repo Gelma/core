@@ -43,22 +43,22 @@ namespace svt { namespace uno
     public:
         WizardShell(
             vcl::Window* _pParent,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::ui::dialogs::XWizardController >& i_rController,
-            const ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Sequence< sal_Int16 > >& i_rPaths
+            const css::uno::Reference< css::ui::dialogs::XWizardController >& i_rController,
+            const css::uno::Sequence< css::uno::Sequence< sal_Int16 > >& i_rPaths
         );
 
         // Dialog overridables
-        virtual short   Execute() SAL_OVERRIDE;
+        virtual short   Execute() override;
 
         // OWizardMachine overridables
-        virtual VclPtr<TabPage> createPage( WizardState i_nState ) SAL_OVERRIDE;
-        virtual void        enterState( WizardState i_nState ) SAL_OVERRIDE;
-        virtual bool        leaveState( WizardState i_nState ) SAL_OVERRIDE;
-        virtual OUString    getStateDisplayName( WizardState i_nState ) const SAL_OVERRIDE;
-        virtual bool        canAdvance() const SAL_OVERRIDE;
-        virtual bool        onFinish() SAL_OVERRIDE;
+        virtual VclPtr<TabPage> createPage( WizardState i_nState ) override;
+        virtual void        enterState( WizardState i_nState ) override;
+        virtual bool        leaveState( WizardState i_nState ) override;
+        virtual OUString    getStateDisplayName( WizardState i_nState ) const override;
+        virtual bool        canAdvance() const override;
+        virtual bool        onFinish() override;
         virtual IWizardPageController*
-                            getPageController( TabPage* _pCurrentPage ) const SAL_OVERRIDE;
+                            getPageController( TabPage* _pCurrentPage ) const override;
 
         static sal_Int16 convertCommitReasonToTravelType( const CommitPageReason i_eReason );
 
@@ -79,7 +79,7 @@ namespace svt { namespace uno
             WizardShell_Base::activatePath( PathId( i_nPathID ), i_bFinal );
         }
 
-        ::com::sun::star::uno::Reference< ::com::sun::star::ui::dialogs::XWizardPage >
+        css::uno::Reference< css::ui::dialogs::XWizardPage >
                     getCurrentWizardPage() const;
 
         sal_Int16   getCurrentPage() const
@@ -117,7 +117,7 @@ namespace svt { namespace uno
     private:
         typedef ::std::map< VclPtr<TabPage>, PWizardPageController > Page2ControllerMap;
 
-        const ::com::sun::star::uno::Reference< ::com::sun::star::ui::dialogs::XWizardController >  m_xController;
+        const css::uno::Reference< css::ui::dialogs::XWizardController >  m_xController;
         const sal_Int16                                                                             m_nFirstPageID;
         Page2ControllerMap                                                                          m_aPageControllers;
     };

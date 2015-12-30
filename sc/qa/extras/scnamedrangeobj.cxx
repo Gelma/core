@@ -29,11 +29,11 @@ class ScNamedRangeObj : public CalcUnoApiTest, apitest::XNamedRange, apitest::XN
 public:
     ScNamedRangeObj();
 
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
-    virtual uno::Reference< uno::XInterface > init() SAL_OVERRIDE;
-    virtual uno::Reference< sheet::XNamedRange > getNamedRange(const OUString& rRangeName) SAL_OVERRIDE;
+    virtual uno::Reference< uno::XInterface > init() override;
+    virtual uno::Reference< sheet::XNamedRange > getNamedRange(const OUString& rRangeName) override;
 
     CPPUNIT_TEST_SUITE(ScNamedRangeObj);
     CPPUNIT_TEST(testGetContent);
@@ -66,7 +66,7 @@ ScNamedRangeObj::ScNamedRangeObj():
 uno::Reference< sheet::XNamedRanges > ScNamedRangeObj::init_impl()
 {
     OUString aFileURL;
-    createFileURL(OUString("ScNamedRangeObj.ods"), aFileURL);
+    createFileURL("ScNamedRangeObj.ods", aFileURL);
     if(!mxComponent.is())
         mxComponent = loadFromDesktop(aFileURL, "com.sun.star.sheet.SpreadsheetDocument");
     CPPUNIT_ASSERT(mxComponent.is());
@@ -90,7 +90,7 @@ uno::Reference< sheet::XNamedRange> ScNamedRangeObj::getNamedRange(const OUStrin
 
 uno::Reference< uno::XInterface > ScNamedRangeObj::init()
 {
-    return getNamedRange(OUString("NamedRange"));
+    return getNamedRange("NamedRange");
 }
 
 void ScNamedRangeObj::setUp()

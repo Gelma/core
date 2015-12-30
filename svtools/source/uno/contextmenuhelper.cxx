@@ -55,7 +55,7 @@ namespace svt
 {
 
 // internal helper class to retrieve status updates
-class StateEventHelper : public ::com::sun::star::frame::XStatusListener,
+class StateEventHelper : public css::frame::XStatusListener,
                          public ::cppu::OWeakObject,
                          private boost::noncopyable
 {
@@ -68,15 +68,15 @@ class StateEventHelper : public ::com::sun::star::frame::XStatusListener,
         bool isCommandEnabled();
 
         // XInterface
-        virtual uno::Any SAL_CALL queryInterface( const uno::Type& aType ) throw ( uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL acquire() throw () SAL_OVERRIDE;
-        virtual void SAL_CALL release() throw () SAL_OVERRIDE;
+        virtual uno::Any SAL_CALL queryInterface( const uno::Type& aType ) throw ( uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL acquire() throw () override;
+        virtual void SAL_CALL release() throw () override;
 
         // XEventListener
-        virtual void SAL_CALL disposing(const lang::EventObject& Source) throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing(const lang::EventObject& Source) throw( uno::RuntimeException, std::exception ) override;
 
         // XStatusListener
-        virtual void SAL_CALL statusChanged(const frame::FeatureStateEvent& Event) throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual void SAL_CALL statusChanged(const frame::FeatureStateEvent& Event) throw( uno::RuntimeException, std::exception ) override;
 
     private:
         bool                                       m_bCurrentCommandEnabled;
@@ -225,18 +225,18 @@ static const PopupMenu* lcl_FindPopupFromItemId( const PopupMenu* pPopupMenu, sa
                 return pPopupMenu;
             else
             {
-                const PopupMenu* pResult( 0 );
+                const PopupMenu* pResult( nullptr );
 
                 const PopupMenu* pSubPopup = pPopupMenu->GetPopupMenu( i );
                 if ( pPopupMenu )
                     pResult = lcl_FindPopupFromItemId( pSubPopup, nItemId );
-                if ( pResult != 0 )
+                if ( pResult != nullptr )
                     return pResult;
             }
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 static OUString lcl_GetItemCommandRecursive( const PopupMenu* pPopupMenu, sal_uInt16 nItemId )
@@ -367,7 +367,7 @@ ContextMenuHelper::dispatchCommand(
         pExecuteInfo->aTargetURL   = aTargetURL;
         pExecuteInfo->aArgs        = m_aDefaultArgs;
 
-        Application::PostUserEvent( LINK(0, ContextMenuHelper , ExecuteHdl_Impl), pExecuteInfo );
+        Application::PostUserEvent( LINK(nullptr, ContextMenuHelper , ExecuteHdl_Impl), pExecuteInfo );
         return true;
     }
 
@@ -404,8 +404,7 @@ ContextMenuHelper::associateUIConfigurationManagers()
                 {
                     uno::Reference< ui::XUIConfigurationManager > xDocUICfgMgr(
                         xSupplier->getUIConfigurationManager(), uno::UNO_QUERY );
-                    m_xDocImageMgr = uno::Reference< ui::XImageManager >(
-                        xDocUICfgMgr->getImageManager(), uno::UNO_QUERY );
+                    m_xDocImageMgr.set( xDocUICfgMgr->getImageManager(), uno::UNO_QUERY );
                 }
             }
 
@@ -424,8 +423,7 @@ ContextMenuHelper::associateUIConfigurationManagers()
                 xModuleCfgMgrSupplier->getUIConfigurationManager( aModuleId ));
             if ( xUICfgMgr.is() )
             {
-                m_xModuleImageMgr = uno::Reference< ui::XImageManager >(
-                    xUICfgMgr->getImageManager(), uno::UNO_QUERY );
+                m_xModuleImageMgr.set( xUICfgMgr->getImageManager(), uno::UNO_QUERY );
             }
 
             uno::Reference< container::XNameAccess > xNameAccess(
@@ -464,8 +462,7 @@ ContextMenuHelper::getImageFromCommandURL( const OUString& aCmdURL ) const
                           ui::ImageType::SIZE_DEFAULT );
 
     uno::Sequence< uno::Reference< graphic::XGraphic > > aGraphicSeq;
-    uno::Sequence< OUString > aImageCmdSeq( 1 );
-    aImageCmdSeq[0] = aCmdURL;
+    uno::Sequence<OUString> aImageCmdSeq { aCmdURL };
 
     if ( m_xDocImageMgr.is() )
     {
@@ -492,7 +489,7 @@ ContextMenuHelper::getImageFromCommandURL( const OUString& aCmdURL ) const
         try
         {
             aGraphicSeq = m_xModuleImageMgr->getImages( nImageType, aImageCmdSeq );
-            uno::Reference< ::com::sun::star::graphic::XGraphic > xGraphic = aGraphicSeq[0];
+            uno::Reference< css::graphic::XGraphic > xGraphic = aGraphicSeq[0];
             aImage = Image( xGraphic );
 
             if ( !!aImage )

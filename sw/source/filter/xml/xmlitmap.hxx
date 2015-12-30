@@ -23,6 +23,7 @@
 #include <sal/types.h>
 #include <tools/ref.hxx>
 #include <xmloff/xmltoken.hxx>
+#include <memory>
 
 #define MID_SW_FLAG_MASK                    0x0000ffff
 
@@ -58,7 +59,7 @@ class SvXMLItemMapEntries_impl;
 class SvXMLItemMapEntries : public SvRefBase
 {
 protected:
-    SvXMLItemMapEntries_impl* mpImpl;
+    std::unique_ptr<SvXMLItemMapEntries_impl> mpImpl;
 
 public:
     explicit SvXMLItemMapEntries(SvXMLItemMapEntry* pEntrys);
@@ -66,7 +67,7 @@ public:
 
     SvXMLItemMapEntry* getByName( sal_uInt16 nNameSpace,
                                   const OUString& rString,
-                                  SvXMLItemMapEntry* pStartAt = NULL ) const;
+                                  SvXMLItemMapEntry* pStartAt = nullptr ) const;
     SvXMLItemMapEntry& getByIndex( sal_uInt16 nIndex ) const;
 
     sal_uInt16 getCount() const;

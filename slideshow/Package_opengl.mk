@@ -11,8 +11,21 @@ $(eval $(call gb_Package_Package,slideshow_opengl_shader,$(SRCDIR)/slideshow/ope
 
 $(eval $(call gb_Package_add_files,slideshow_opengl_shader,$(LIBO_ETC_FOLDER)/opengl,\
 		basicVertexShader.glsl \
+		basicFragmentShader.glsl \
 		dissolveFragmentShader.glsl \
+		fadeBlackFragmentShader.glsl \
+		fadeFragmentShader.glsl \
+		glitterVertexShader.glsl \
+		glitterFragmentShader.glsl \
+		honeycombVertexShader.glsl \
+		honeycombGeometryShader.glsl \
+		honeycombFragmentShader.glsl \
+		reflectionVertexShader.glsl \
+		reflectionFragmentShader.glsl \
 		staticFragmentShader.glsl \
+		vortexFragmentShader.glsl \
+		vortexVertexShader.glsl \
+		rippleFragmentShader.glsl \
 ))
 
 # vim: set noet sw=4 ts=4:

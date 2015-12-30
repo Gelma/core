@@ -45,8 +45,8 @@ OMySQLCatalog::OMySQLCatalog(const Reference< XConnection >& _xConnection) : OCa
 void OMySQLCatalog::refreshObjects(const Sequence< OUString >& _sKindOfObject,TStringVector& _rNames)
 {
     Reference< XResultSet > xResult = m_xMetaData->getTables(Any(),
-                                                            OUString("%"),
-                                                            OUString("%"),
+                                                            "%",
+                                                            "%",
                                                             _sKindOfObject);
     fillNames(xResult,_rNames);
 }
@@ -73,8 +73,7 @@ void OMySQLCatalog::refreshTables()
 
 void OMySQLCatalog::refreshViews()
 {
-    Sequence< OUString > aTypes(1);
-    aTypes[0] = "VIEW";
+    Sequence< OUString > aTypes { "VIEW" };
 
     // let's simply assume the server is new enough to support views. Current drivers
     // as of this writing might not return the proper information in getTableTypes, so
@@ -100,7 +99,7 @@ void OMySQLCatalog::refreshUsers()
 {
     TStringVector aVector;
     Reference< XStatement > xStmt = m_xConnection->createStatement(  );
-    Reference< XResultSet >  xResult = xStmt->executeQuery(OUString("SELECT grantee FROM information_schema.user_privileges GROUP BY grantee"));
+    Reference< XResultSet >  xResult = xStmt->executeQuery("SELECT grantee FROM information_schema.user_privileges GROUP BY grantee");
     if ( xResult.is() )
     {
         Reference< XRow > xRow(xResult,UNO_QUERY);

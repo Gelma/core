@@ -12,12 +12,13 @@
 #define INCLUDED_SC_SOURCE_UI_INC_PIVOTLAYOUTTREELISTLABEL_HXX
 
 #include "PivotLayoutTreeListBase.hxx"
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
+#include <memory>
 
 class ScPivotLayoutTreeListLabel : public ScPivotLayoutTreeListBase
 {
 private:
-    boost::ptr_vector<ScItemValue> maItemValues;
+    std::vector<std::unique_ptr<ScItemValue> > maItemValues;
     SCCOL maDataItem;
 
 public:
@@ -28,8 +29,8 @@ public:
     bool IsDataElement(SCCOL nColumn);
 
 protected:
-    virtual void InsertEntryForSourceTarget(SvTreeListEntry* pSource, SvTreeListEntry* pTarget) SAL_OVERRIDE;
-    virtual void KeyInput(const KeyEvent& rKeyEvent) SAL_OVERRIDE;
+    virtual void InsertEntryForSourceTarget(SvTreeListEntry* pSource, SvTreeListEntry* pTarget) override;
+    virtual void KeyInput(const KeyEvent& rKeyEvent) override;
 };
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

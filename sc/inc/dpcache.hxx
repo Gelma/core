@@ -25,7 +25,6 @@
 #include <tools/date.hxx>
 
 #include <boost/noncopyable.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <mdds/flat_segment_tree.hpp>
 
 #include <memory>
@@ -47,14 +46,13 @@ class SC_DLLPUBLIC ScDPCache : boost::noncopyable
     typedef std::unordered_set<OUString, OUStringHash> StringSetType;
 
 public:
-    typedef std::vector<ScDPItemData> ItemsType;
-    typedef std::set<ScDPObject*> ObjectSetType;
-    typedef std::vector<OUString> LabelsType;
+    typedef std::vector<ScDPItemData> ScDPItemDataVec;
+    typedef std::set<ScDPObject*> ScDPObjectSet;
     typedef std::vector<SCROW> IndexArrayType;
 
     struct GroupItems : boost::noncopyable
     {
-        ItemsType maItems;
+        ScDPItemDataVec maItems;
         ScDPNumGroupInfo maInfo;
         sal_Int32 mnGroupType;
 
@@ -72,7 +70,7 @@ public:
         /**
          * Unique values in the field, stored in ascending order.
          */
-        ItemsType maItems;
+        ScDPItemDataVec maItems;
 
         /**
          * Original source data represented as indices to the unique value
@@ -109,16 +107,16 @@ private:
     /**
      * All pivot table objects that references this cache.
      */
-    mutable ObjectSetType maRefObjects;
+    mutable ScDPObjectSet maRefObjects;
 
-    typedef boost::ptr_vector<Field> FieldsType;
-    typedef boost::ptr_vector<GroupItems> GroupFieldsType;
+    typedef std::vector< std::unique_ptr<Field> > FieldsType;
+    typedef std::vector< std::unique_ptr<GroupItems> > GroupFieldsType;
 
     FieldsType maFields;
     GroupFieldsType maGroupFields;
     mutable StringSetType maStringPool;
 
-    LabelsType maLabelNames; // Stores dimension names and the data layout dimension name at position 0.
+    std::vector<OUString> maLabelNames; // Stores dimension names and the data layout dimension name at position 0.
     mdds::flat_segment_tree<SCROW, bool> maEmptyRows;
     SCROW mnDataSize;
     SCROW mnRowCount;
@@ -129,7 +127,7 @@ public:
     const OUString* InternString(const OUString& rStr) const;
     void AddReference(ScDPObject* pObj) const;
     void RemoveReference(ScDPObject* pObj) const;
-    const ObjectSetType& GetAllReferences() const;
+    const ScDPObjectSet& GetAllReferences() const;
 
     SCROW GetIdByItemData(long nDim, const ScDPItemData& rItem) const;
     OUString GetFormattedString(long nDim, const ScDPItemData& rItem) const;
@@ -142,7 +140,7 @@ public:
 
     /**
      * Return a group type identifier.  The values correspond with
-     * com::sun::star::sheet::DataPilotFieldGroupBy constant values.
+     * css::sheet::DataPilotFieldGroupBy constant values.
      *
      * @param nDim 0-based dimension index.
      *
@@ -157,7 +155,7 @@ public:
     static SCROW GetOrder( long nDim, SCROW nIndex );
 
     const IndexArrayType* GetFieldIndexArray( size_t nDim ) const;
-    const ItemsType& GetDimMemberValues( SCCOL nDim ) const;
+    const ScDPItemDataVec& GetDimMemberValues( SCCOL nDim ) const;
     bool InitFromDoc(ScDocument* pDoc, const ScRange& rRange);
     bool InitFromDataBase(DBConnector& rDB);
 
@@ -174,7 +172,7 @@ public:
      */
     SCROW GetDataSize() const;
     SCROW GetItemDataId( sal_uInt16 nDim, SCROW nRow, bool bRepeatIfEmpty ) const;
-    OUString GetDimensionName(LabelsType::size_type nDim) const;
+    OUString GetDimensionName(std::vector<OUString>::size_type nDim) const;
     bool IsRowEmpty(SCROW nRow) const;
     bool ValidQuery(SCROW nRow, const ScQueryParam& rQueryParam) const;
 

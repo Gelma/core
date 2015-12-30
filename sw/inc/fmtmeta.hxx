@@ -109,8 +109,8 @@ public:
     virtual ~SwFormatMeta();
 
     /// SfxPoolItem
-    virtual bool             operator==( const SfxPoolItem & ) const SAL_OVERRIDE;
-    virtual SfxPoolItem *    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool             operator==( const SfxPoolItem & ) const override;
+    virtual SfxPoolItem *    Clone( SfxItemPool *pPool = nullptr ) const override;
 
     /// notify clients registered at m_pMeta that this meta is being (re-)moved
     void NotifyChangeTextNode(SwTextNode *const pTextNode);
@@ -128,8 +128,8 @@ protected:
     friend class ::SwFormatMeta; ///< SetFormatMeta, NotifyChangeTextNode
     friend class ::SwXMeta;   ///< GetTextNode, GetTextAttr, Get/SetXMeta
 
-    ::com::sun::star::uno::WeakReference<
-        ::com::sun::star::rdf::XMetadatable> m_wXMeta;
+    css::uno::WeakReference<
+        css::rdf::XMetadatable> m_wXMeta;
 
     SwFormatMeta * m_pFormat;
     SwTextNode * m_pTextNode;
@@ -143,27 +143,24 @@ protected:
     void NotifyChangeTextNodeImpl();
     void NotifyChangeTextNode(SwTextNode *const pTextNode);
 
-    ::com::sun::star::uno::WeakReference<
-        ::com::sun::star::rdf::XMetadatable> const& GetXMeta() const
+    css::uno::WeakReference<css::rdf::XMetadatable> const& GetXMeta() const
             { return m_wXMeta; }
-    void SetXMeta(::com::sun::star::uno::Reference<
-                    ::com::sun::star::rdf::XMetadatable> const& xMeta)
+    void SetXMeta(css::uno::Reference<css::rdf::XMetadatable> const& xMeta)
             { m_wXMeta = xMeta; }
 
     /// SwClient
-    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew ) SAL_OVERRIDE;
+    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew ) override;
 
 public:
-    explicit Meta(SwFormatMeta * const i_pFormat = 0);
+    explicit Meta(SwFormatMeta * const i_pFormat = nullptr);
     virtual ~Meta();
 
     /// sfx2::Metadatable
-    virtual ::sfx2::IXmlIdRegistry& GetRegistry() SAL_OVERRIDE;
-    virtual bool IsInClipboard() const SAL_OVERRIDE;
-    virtual bool IsInUndo() const SAL_OVERRIDE;
-    virtual bool IsInContent() const SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Reference<
-        ::com::sun::star::rdf::XMetadatable > MakeUnoObject() SAL_OVERRIDE;
+    virtual ::sfx2::IXmlIdRegistry& GetRegistry() override;
+    virtual bool IsInClipboard() const override;
+    virtual bool IsInUndo() const override;
+    virtual bool IsInContent() const override;
+    virtual css::uno::Reference< css::rdf::XMetadatable > MakeUnoObject() override;
 };
 
 class MetaField
@@ -182,7 +179,7 @@ private:
     bool IsFixedLanguage() const    { return m_bIsFixedLanguage; }
     void SetIsFixedLanguage(bool b) { m_bIsFixedLanguage = b; }
 
-    explicit MetaField(SwFormatMeta * const i_pFormat = 0,
+    explicit MetaField(SwFormatMeta * const i_pFormat = nullptr,
             const sal_uInt32 nNumberFormat = SAL_MAX_UINT32,
             const bool bIsFixedLanguage = false );
 
@@ -203,12 +200,11 @@ private:
 public:
     MetaFieldManager();
     std::shared_ptr<MetaField> makeMetaField(
-                SwFormatMeta * const i_pFormat = 0,
+                SwFormatMeta * const i_pFormat = nullptr,
                 const sal_uInt32 nNumberFormat = SAL_MAX_UINT32,
                 const bool bIsFixedLanguage = false );
     /// get all meta fields
-    ::std::vector< ::com::sun::star::uno::Reference<
-        ::com::sun::star::text::XTextField> > getMetaFields();
+    ::std::vector< css::uno::Reference<css::text::XTextField> > getMetaFields();
 };
 
 } // namespace sw

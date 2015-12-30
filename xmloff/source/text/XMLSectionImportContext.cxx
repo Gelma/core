@@ -47,7 +47,6 @@ using namespace ::com::sun::star::text;
 using namespace ::xmloff::token;
 
 
-TYPEINIT1( XMLSectionImportContext, SvXMLImportContext );
 
 const sal_Char sAPI_TextSection[] = "com.sun.star.text.TextSection";
 const sal_Char sAPI_IndexHeaderSection[] = "com.sun.star.text.IndexHeaderSection";
@@ -160,7 +159,7 @@ void XMLSectionImportContext::StartElement(
                     XMLPropStyleContext* pStyle = rHelper->
                         FindSectionStyle(sStyleName);
 
-                    if (pStyle != NULL)
+                    if (pStyle != nullptr)
                     {
                         pStyle->FillPropertySet( xPropSet );
                     }
@@ -356,7 +355,7 @@ SvXMLImportContext* XMLSectionImportContext::CreateChildContext(
     const OUString& rLocalName,
     const Reference<XAttributeList> & xAttrList )
 {
-    SvXMLImportContext* pContext = NULL;
+    SvXMLImportContext* pContext = nullptr;
 
     // section-source (-dde) elements
     if ( (XML_NAMESPACE_TEXT == nPrefix) &&
@@ -381,7 +380,7 @@ SvXMLImportContext* XMLSectionImportContext::CreateChildContext(
             XML_TEXT_TYPE_SECTION );
 
         // if that fails, default context
-        if (NULL == pContext)
+        if (nullptr == pContext)
         {
             pContext = new SvXMLImportContext( GetImport(),
                                                nPrefix, rLocalName );

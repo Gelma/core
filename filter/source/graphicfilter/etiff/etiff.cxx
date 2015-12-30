@@ -92,7 +92,7 @@ private:
     sal_uInt32              nOffset;
     sal_uInt32              dwShift;
 
-    com::sun::star::uno::Reference< com::sun::star::task::XStatusIndicator > xStatusIndicator;
+    css::uno::Reference< css::task::XStatusIndicator > xStatusIndicator;
 
     void                ImplCallback( sal_uInt32 nPercent );
     bool            ImplWriteHeader( bool bMultiPage );
@@ -107,7 +107,7 @@ private:
 
 public:
 
-    TIFFWriter(SvStream &rStream);
+    explicit TIFFWriter(SvStream &rStream);
     ~TIFFWriter();
 
     bool WriteTIFF( const Graphic& rGraphic, FilterConfigItem* pFilterConfigItem );
@@ -119,7 +119,7 @@ TIFFWriter::TIFFWriter(SvStream &rStream)
     : m_rOStm(rStream)
     , mnStreamOfs(0)
     , mbStatus(true)
-    , mpAcc(NULL)
+    , mpAcc(nullptr)
     , mnWidth(0)
     , mnHeight(0)
     , mnColors(0)
@@ -135,8 +135,8 @@ TIFFWriter::TIFFWriter(SvStream &rStream)
     , mnPalPos(0)
     , mnBitmapPos(0)
     , mnStripByteCountPos(0)
-    , pTable(NULL)
-    , pPrefix(NULL)
+    , pTable(nullptr)
+    , pPrefix(nullptr)
     , nDataSize(0)
     , nClearCode(0)
     , nEOICode(0)
@@ -527,11 +527,11 @@ void TIFFWriter::StartCompression()
 
     for ( i = 0; i < 4096; i++)
     {
-        pTable[ i ].pBrother = pTable[ i ].pFirstChild = NULL;
+        pTable[ i ].pBrother = pTable[ i ].pFirstChild = nullptr;
         pTable[ i ].nValue = (sal_uInt8)( pTable[ i ].nCode = i );
     }
 
-    pPrefix = NULL;
+    pPrefix = nullptr;
     WriteBits( nClearCode, nCodeSize );
 }
 
@@ -550,7 +550,7 @@ void TIFFWriter::Compress( sal_uInt8 nCompThis )
     else
     {
         nV = nCompThis;
-        for( p = pPrefix->pFirstChild; p != NULL; p = p->pBrother )
+        for( p = pPrefix->pFirstChild; p != nullptr; p = p->pBrother )
         {
             if ( p->nValue == nV )
                 break;
@@ -567,7 +567,7 @@ void TIFFWriter::Compress( sal_uInt8 nCompThis )
                 WriteBits( nClearCode, nCodeSize );
 
                 for ( i = 0; i < nClearCode; i++ )
-                    pTable[ i ].pFirstChild = NULL;
+                    pTable[ i ].pFirstChild = nullptr;
 
                 nCodeSize = nDataSize + 1;
                 nTableSize = nEOICode + 1;
@@ -581,7 +581,7 @@ void TIFFWriter::Compress( sal_uInt8 nCompThis )
                 p->pBrother = pPrefix->pFirstChild;
                 pPrefix->pFirstChild = p;
                 p->nValue = nV;
-                p->pFirstChild = NULL;
+                p->pFirstChild = nullptr;
             }
 
             pPrefix = pTable + nV;
@@ -602,15 +602,8 @@ void TIFFWriter::EndCompression()
 
 
 
-// this needs to be kept in sync with
-// ImpFilterLibCacheEntry::GetImportFunction() from
-// vcl/source/filter/graphicfilter.cxx
-#if defined(DISABLE_DYNLOADING)
-#define GraphicExport etiGraphicExport
-#endif
-
 extern "C" SAL_DLLPUBLIC_EXPORT bool SAL_CALL
-GraphicExport( SvStream& rStream, Graphic& rGraphic, FilterConfigItem* pFilterConfigItem )
+etiGraphicExport( SvStream& rStream, Graphic& rGraphic, FilterConfigItem* pFilterConfigItem )
 {
     TIFFWriter aWriter(rStream);
     return aWriter.WriteTIFF( rGraphic, pFilterConfigItem );

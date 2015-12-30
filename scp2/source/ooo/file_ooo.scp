@@ -48,7 +48,7 @@ File gid_File_Basic_User_Standard
     Name = "wizards_basicsrvstandard.filelist";
 End
 
-#if defined UNX
+#if defined UNX && !defined MACOSX
 
 File gid_File_Script_Gengal
     BIN_FILE_BODY;
@@ -61,13 +61,6 @@ End
 
 #if defined UNX && ! defined MACOSX && ! defined LIBO_HEADLESS
 
-File gid_File_Bin_Gnome_Open_Url
-    BIN_FILE_BODY;
-    Dir = FILELIST_DIR;
-    Name = "shell_scripts_gnome.filelist";
-    Styles = (FILELIST, PACKED);
-End
-
 File gid_File_shell_scripts
     BIN_FILE_BODY;
     Dir = FILELIST_DIR;
@@ -79,6 +72,13 @@ File gid_File_Bin_Kde_Open_Url
     BIN_FILE_BODY;
     Dir = FILELIST_DIR;
     Name = "shell_scripts_kde.filelist";
+    Styles = (FILELIST, PACKED);
+End
+
+File gid_File_Bin_Tde_Open_Url
+    BIN_FILE_BODY;
+    Dir = FILELIST_DIR;
+    Name = "shell_scripts_tde.filelist";
     Styles = (FILELIST, PACKED);
 End
 

@@ -21,19 +21,18 @@
 
 
 #include <xmloff/prhdlfac.hxx>
+#include <memory>
 
 class XMLTextPropertyHandlerFactory_Impl;
 
 class XMLTextPropertyHandlerFactory : public XMLPropertyHandlerFactory
 {
-    XMLTextPropertyHandlerFactory_Impl *pImpl;
-
 public:
 
     XMLTextPropertyHandlerFactory();
     virtual ~XMLTextPropertyHandlerFactory();
 
-    virtual const XMLPropertyHandler* GetPropertyHandler( sal_Int32 nType ) const SAL_OVERRIDE ;
+    virtual const XMLPropertyHandler* GetPropertyHandler( sal_Int32 nType ) const override ;
 };
 
 

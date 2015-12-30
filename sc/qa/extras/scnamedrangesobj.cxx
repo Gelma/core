@@ -24,10 +24,10 @@ namespace sc_apitest {
 class ScNamedRangesObj : public CalcUnoApiTest, apitest::XNamedRanges
 {
 public:
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
-    virtual uno::Reference< uno::XInterface > init(sal_Int32 nSheet) SAL_OVERRIDE;
+    virtual uno::Reference< uno::XInterface > init(sal_Int32 nSheet) override;
 
     ScNamedRangesObj();
 
@@ -54,7 +54,7 @@ ScNamedRangesObj::ScNamedRangesObj()
 uno::Reference< uno::XInterface > ScNamedRangesObj::init(sal_Int32 nSheet)
 {
     OUString aFileURL;
-    createFileURL(OUString("ScNamedRangeObj.ods"), aFileURL);
+    createFileURL("ScNamedRangeObj.ods", aFileURL);
     if(!mxComponent.is())
         mxComponent = loadFromDesktop(aFileURL, "com.sun.star.sheet.SpreadsheetDocument");
     CPPUNIT_ASSERT(mxComponent.is());
@@ -66,7 +66,7 @@ uno::Reference< uno::XInterface > ScNamedRangesObj::init(sal_Int32 nSheet)
     //set value from xnamedranges.hxx
     uno::Reference< sheet::XSpreadsheetDocument > xDoc(mxComponent, UNO_QUERY_THROW);
     uno::Reference< container::XIndexAccess > xIndexAccess(xDoc->getSheets(), UNO_QUERY_THROW);
-    xSheet = uno::Reference< sheet::XSpreadsheet >(xIndexAccess->getByIndex(nSheet),UNO_QUERY_THROW);
+    xSheet.set(xIndexAccess->getByIndex(nSheet),UNO_QUERY_THROW);
 
     return xNamedRanges;
 }

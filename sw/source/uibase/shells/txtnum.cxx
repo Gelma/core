@@ -50,7 +50,7 @@ void SwTextShell::ExecEnterNum(SfxRequest &rReq)
     case FN_NUM_NUMBERING_ON:
     {
         GetShell().StartAllAction();
-        SFX_REQUEST_ARG( rReq, pItem, SfxBoolItem, FN_PARAM_1 , false );
+        const SfxBoolItem* pItem = rReq.GetArg<SfxBoolItem>(FN_PARAM_1);
         bool bMode = !GetShell().SelectionHasNumber(); // #i29560#
         if ( pItem )
             bMode = pItem->GetValue();
@@ -79,7 +79,7 @@ void SwTextShell::ExecEnterNum(SfxRequest &rReq)
     case FN_NUM_BULLET_ON:
     {
         GetShell().StartAllAction();
-        SFX_REQUEST_ARG( rReq, pItem, SfxBoolItem, FN_PARAM_1 , false );
+        const SfxBoolItem* pItem = rReq.GetArg<SfxBoolItem>(FN_PARAM_1);
         bool bMode = !GetShell().SelectionHasBullet(); // #i29560#
         if ( pItem )
             bMode = pItem->GetValue();
@@ -114,9 +114,9 @@ void SwTextShell::ExecEnterNum(SfxRequest &rReq)
                          SID_ATTR_NUMBERING_RULE, SID_PARAM_CUR_NUM_LEVEL,
                          0 );
         SwDocShell* pDocSh = GetView().GetDocShell();
-        const bool bHtml = 0 != PTR_CAST( SwWebDocShell, pDocSh );
+        const bool bHtml = dynamic_cast<SwWebDocShell*>( pDocSh  ) !=  nullptr;
         const SwNumRule* pNumRuleAtCurrentSelection = GetShell().GetNumRuleAtCurrentSelection();
-        if ( pNumRuleAtCurrentSelection != NULL )
+        if ( pNumRuleAtCurrentSelection != nullptr )
         {
             SvxNumRule aRule = pNumRuleAtCurrentSelection->MakeSvxNumRule();
 
@@ -129,7 +129,7 @@ void SwTextShell::ExecEnterNum(SfxRequest &rReq)
                     const SvxBrushItem* pBrush = aFormat.GetBrush();
                     if(pBrush && !pBrush->GetGraphicLink().isEmpty())
                         aFormat.SetNumberingType(SvxExtNumType(SVX_NUM_BITMAP|LINK_TOKEN));
-                    aRule.SetLevel(i, aFormat, aRule.Get(i) != 0);
+                    aRule.SetLevel(i, aFormat, aRule.Get(i) != nullptr);
                 }
             }
             if(bHtml)
@@ -151,7 +151,7 @@ void SwTextShell::ExecEnterNum(SfxRequest &rReq)
                              // #i89178#
                              numfunc::GetDefaultPositionAndSpaceMode() );
             SvxNumRule aSvxRule = aRule.MakeSvxNumRule();
-            const bool bRightToLeft = GetShell().IsInRightToLeftText( 0 );
+            const bool bRightToLeft = GetShell().IsInRightToLeftText();
 
             if ( bHtml || bRightToLeft )
             {
@@ -186,7 +186,7 @@ void SwTextShell::ExecEnterNum(SfxRequest &rReq)
         std::unique_ptr<SfxAbstractTabDialog> pDlg(pFact->CreateSwTabDialog( DLG_SVXTEST_NUM_BULLET,
                                                         GetView().GetWindow(), &aSet, GetShell()));
         OSL_ENSURE(pDlg, "Dialog creation failed!");
-        SFX_REQUEST_ARG( rReq, pPageItem, SfxStringItem, FN_PARAM_1, false );
+        const SfxStringItem* pPageItem = rReq.GetArg<SfxStringItem>(FN_PARAM_1);
         if ( pPageItem )
             pDlg->SetCurPageId( OUStringToOString( pPageItem->GetValue(), RTL_TEXTENCODING_UTF8 ) );
         const short nRet = pDlg->Execute();
@@ -199,7 +199,7 @@ void SwTextShell::ExecEnterNum(SfxRequest &rReq)
                 rReq.Done();
                 SvxNumRule* pSetRule = static_cast<const SvxNumBulletItem*>( pItem )->GetNumRule();
                 pSetRule->UnLinkGraphics();
-                SwNumRule aSetRule( pNumRuleAtCurrentSelection != NULL
+                SwNumRule aSetRule( pNumRuleAtCurrentSelection != nullptr
                                     ? pNumRuleAtCurrentSelection->GetName()
                                     : GetShell().GetUniqueNumRuleName(),
                     numfunc::GetDefaultPositionAndSpaceMode() );
@@ -207,12 +207,12 @@ void SwTextShell::ExecEnterNum(SfxRequest &rReq)
                 aSetRule.SetAutoRule( true );
                 // No start of new list, if an existing list style is edited.
                 // Otherwise start a new list.
-                const bool bCreateList = ( pNumRuleAtCurrentSelection == NULL );
+                const bool bCreateList = ( pNumRuleAtCurrentSelection == nullptr );
                 GetShell().SetCurNumRule( aSetRule, bCreateList );
             }
             // If the Dialog was leaved with OK but nothing was chosen then the
             // numbering must be at least activated, if it is not already.
-            else if ( pNumRuleAtCurrentSelection == NULL
+            else if ( pNumRuleAtCurrentSelection == nullptr
                       && SfxItemState::SET == aSet.GetItemState( SID_ATTR_NUMBERING_RULE, false, &pItem ) )
             {
                 rReq.AppendItem( *pItem );
@@ -246,20 +246,25 @@ void SwTextShell::ExecSetNumber(SfxRequest &rReq)
     {
     case FN_SVX_SET_NUMBER:
     case FN_SVX_SET_BULLET:
+    case FN_SVX_SET_OUTLINE:
         {
-            SFX_REQUEST_ARG( rReq, pItem, SfxUInt16Item, nSlot, false );
-            if ( pItem != NULL )
+            const SfxUInt16Item* pItem = rReq.GetArg<SfxUInt16Item>(nSlot);
+            if ( pItem != nullptr )
             {
                 const sal_uInt16 nChoosenItemIdx = pItem->GetValue();
-                svx::sidebar::NBOTypeMgrBase* pNBOTypeMgr =
-                    nSlot == FN_SVX_SET_NUMBER
-                        ? svx::sidebar::NBOutlineTypeMgrFact::CreateInstance( svx::sidebar::eNBOType::NUMBERING )
-                        : svx::sidebar::NBOutlineTypeMgrFact::CreateInstance( svx::sidebar::eNBOType::BULLETS );
-                if ( pNBOTypeMgr != NULL )
+                sal_uInt16 nNBOType = svx::sidebar::eNBOType::BULLETS;
+                if ( nSlot == FN_SVX_SET_NUMBER )
+                    nNBOType = svx::sidebar::eNBOType::NUMBERING;
+                else if ( nSlot == FN_SVX_SET_OUTLINE )
+                    nNBOType = svx::sidebar::eNBOType::OUTLINE;
+
+                svx::sidebar::NBOTypeMgrBase* pNBOTypeMgr = svx::sidebar::NBOutlineTypeMgrFact::CreateInstance( nNBOType );
+
+                if ( pNBOTypeMgr != nullptr )
                 {
                     const SwNumRule* pNumRuleAtCurrentSelection = GetShell().GetNumRuleAtCurrentSelection();
                     sal_uInt16 nActNumLvl = USHRT_MAX;
-                    if ( pNumRuleAtCurrentSelection != NULL )
+                    if ( pNumRuleAtCurrentSelection != nullptr )
                     {
                         const sal_uInt16 nLevel = GetShell().GetNumLevel();
                         if ( nLevel < MAXLEVEL )
@@ -268,9 +273,9 @@ void SwTextShell::ExecSetNumber(SfxRequest &rReq)
                         }
                     }
                     SwNumRule aNewNumRule(
-                        pNumRuleAtCurrentSelection != NULL ? pNumRuleAtCurrentSelection->GetName() : GetShell().GetUniqueNumRuleName(),
+                        pNumRuleAtCurrentSelection != nullptr ? pNumRuleAtCurrentSelection->GetName() : GetShell().GetUniqueNumRuleName(),
                         numfunc::GetDefaultPositionAndSpaceMode() );
-                    SvxNumRule aNewSvxNumRule = pNumRuleAtCurrentSelection != NULL
+                    SvxNumRule aNewSvxNumRule = pNumRuleAtCurrentSelection != nullptr
                                                     ? pNumRuleAtCurrentSelection->MakeSvxNumRule()
                                                     : aNewNumRule.MakeSvxNumRule();
                     // set unit attribute to NB Manager
@@ -281,7 +286,7 @@ void SwTextShell::ExecSetNumber(SfxRequest &rReq)
 
                     aNewNumRule.SetSvxRule( aNewSvxNumRule, GetShell().GetDoc() );
                     aNewNumRule.SetAutoRule( true );
-                    const bool bCreateNewList = ( pNumRuleAtCurrentSelection == NULL );
+                    const bool bCreateNewList = ( pNumRuleAtCurrentSelection == nullptr );
                     GetShell().SetCurNumRule( aNewNumRule, bCreateNewList );
                 }
             }

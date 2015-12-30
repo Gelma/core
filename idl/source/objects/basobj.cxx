@@ -62,7 +62,6 @@ void SvMetaObject::Back2Delemitter( SvStream & rOutStm )
         rOutStm.Seek( nPos );
 }
 
-TYPEINIT1( SvMetaObject, SvRttiBase );
 SvMetaObject::SvMetaObject()
 {
 }
@@ -158,16 +157,14 @@ bool SvMetaObject::ReadSvIdl( SvIdlDataBase & rBase, SvTokenStream & rInStm )
     return bOk;
 }
 
-TYPEINIT1( SvMetaReference, SvMetaObject );
 
 SvMetaReference::SvMetaReference()
 {
 }
 
-TYPEINIT1( SvMetaExtern, SvMetaReference );
 
 SvMetaExtern::SvMetaExtern()
-    : pModule( NULL )
+    : pModule( nullptr )
     , bReadUUId( false )
     , bReadVersion( false )
 {
@@ -175,7 +172,7 @@ SvMetaExtern::SvMetaExtern()
 
 SvMetaModule * SvMetaExtern::GetModule() const
 {
-    DBG_ASSERT( pModule != NULL, "module not set" );
+    DBG_ASSERT( pModule != nullptr, "module not set" );
     return pModule;
 }
 
@@ -188,7 +185,7 @@ const SvGlobalName & SvMetaExtern::GetUUId() const
 
 void SvMetaExtern::SetModule( SvIdlDataBase & rBase )
 {
-    pModule = static_cast<SvMetaModule *>(rBase.GetStack().Get( TYPE( SvMetaModule ) ));
+    pModule = static_cast<SvMetaModule *>(rBase.GetStack().Get( checkSvMetaObject<SvMetaModule> ));
 }
 
 void SvMetaExtern::ReadAttributesSvIdl( SvIdlDataBase & rBase,

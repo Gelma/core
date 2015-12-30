@@ -75,14 +75,14 @@ ColumnSpanSet::~ColumnSpanSet()
 ColumnSpanSet::ColumnType& ColumnSpanSet::getColumn(SCTAB nTab, SCCOL nCol)
 {
     if (static_cast<size_t>(nTab) >= maDoc.size())
-        maDoc.resize(nTab+1, NULL);
+        maDoc.resize(nTab+1, nullptr);
 
     if (!maDoc[nTab])
         maDoc[nTab] = new TableType;
 
     TableType& rTab = *maDoc[nTab];
     if (static_cast<size_t>(nCol) >= rTab.size())
-        rTab.resize(nCol+1, NULL);
+        rTab.resize(nCol+1, nullptr);
 
     if (!rTab[nCol])
         rTab[nCol] = new ColumnType(0, MAXROW, mbInit);
@@ -276,7 +276,7 @@ class Scanner
 {
     SingleColumnSpanSet::ColumnSpansType& mrRanges;
 public:
-    Scanner(SingleColumnSpanSet::ColumnSpansType& rRanges) : mrRanges(rRanges) {}
+    explicit Scanner(SingleColumnSpanSet::ColumnSpansType& rRanges) : mrRanges(rRanges) {}
 
     void operator() (const sc::CellStoreType::value_type& node, size_t nOffset, size_t nDataSize)
     {

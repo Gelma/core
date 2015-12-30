@@ -66,10 +66,10 @@ public:
 
     virtual ~EmptyNodeList();
 
-    virtual ::sal_Int32 SAL_CALL getLength() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual ::sal_Int32 SAL_CALL getLength() throw (css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Reference< css::xml::dom::XNode > SAL_CALL
-    item(::sal_Int32 index) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    item(::sal_Int32 index) throw (css::uno::RuntimeException, std::exception) override;
 };
 
 EmptyNodeList::EmptyNodeList() {}
@@ -152,14 +152,14 @@ public:
     bool exist() { return m_bExist;}
     // XCommandEnvironment
     virtual css::uno::Reference<css::task::XInteractionHandler > SAL_CALL
-    getInteractionHandler() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    getInteractionHandler() throw (css::uno::RuntimeException, std::exception) override;
     virtual css::uno::Reference<css::ucb::XProgressHandler >
-    SAL_CALL getProgressHandler() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    SAL_CALL getProgressHandler() throw (css::uno::RuntimeException, std::exception) override;
 
     // XInteractionHandler
     virtual void SAL_CALL handle(
         css::uno::Reference<css::task::XInteractionRequest > const & xRequest )
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 };
 
 ExtensionDescription::ExtensionDescription(
@@ -194,7 +194,7 @@ ExtensionDescription::ExtensionDescription(
         {
             throw css::uno::Exception(
                 "Could not get XInputStream for description.xml of extension " +
-                sDescriptionUri, 0);
+                sDescriptionUri, nullptr);
         }
 
         //get root node of description.xml
@@ -204,13 +204,13 @@ ExtensionDescription::ExtensionDescription(
         if (!xDocBuilder->isNamespaceAware())
         {
             throw css::uno::Exception(
-                "Service com.sun.star.xml.dom.DocumentBuilder is not namespace aware.", 0);
+                "Service com.sun.star.xml.dom.DocumentBuilder is not namespace aware.", nullptr);
         }
 
         Reference<css::xml::dom::XDocument> xDoc = xDocBuilder->parse(xIn);
         if (!xDoc.is())
         {
-            throw css::uno::Exception(sDescriptionUri + " contains data which cannot be parsed. ", 0);
+            throw css::uno::Exception(sDescriptionUri + " contains data which cannot be parsed. ", nullptr);
         }
 
         //check for proper root element and namespace
@@ -218,23 +218,22 @@ ExtensionDescription::ExtensionDescription(
         if (!xRoot.is())
         {
             throw css::uno::Exception(
-                sDescriptionUri + " contains no root element.", 0);
+                sDescriptionUri + " contains no root element.", nullptr);
         }
 
         if ( ! (xRoot->getTagName() == "description"))
         {
             throw css::uno::Exception(
-                sDescriptionUri + " does not contain the root element <description>.", 0);
+                sDescriptionUri + " does not contain the root element <description>.", nullptr);
         }
 
-        m_xRoot = Reference<css::xml::dom::XNode>(
-            xRoot, css::uno::UNO_QUERY_THROW);
+        m_xRoot.set(xRoot, css::uno::UNO_QUERY_THROW);
         OUString nsDescription = xRoot->getNamespaceURI();
 
         //check if this namespace is supported
         if ( ! (nsDescription == "http://openoffice.org/extensions/description/2006"))
         {
-            throw css::uno::Exception(sDescriptionUri + " contains a root element with an unsupported namespace. ", 0);
+            throw css::uno::Exception(sDescriptionUri + " contains a root element with an unsupported namespace. ", nullptr);
         }
     } catch (const css::uno::RuntimeException &) {
         throw;
@@ -320,7 +319,7 @@ DescriptionInfoset getDescriptionInfoset(OUString const & sExtensionFolderURL)
     } catch (const NoDescriptionException &) {
     } catch (const css::deployment::DeploymentException & e) {
         throw css::uno::RuntimeException(
-             "com.sun.star.deployment.DeploymentException: " + e.Message, 0);
+             "com.sun.star.deployment.DeploymentException: " + e.Message, nullptr);
     }
     return DescriptionInfoset(context, root);
 }
@@ -620,7 +619,7 @@ css::uno::Sequence< OUString > DescriptionInfoset::getUrls(
 
 OUString DescriptionInfoset::getLocalizedReleaseNotesURL() const
 {
-    return getLocalizedHREFAttrFromChild("/desc:description/desc:release-notes", NULL);
+    return getLocalizedHREFAttrFromChild("/desc:description/desc:release-notes", nullptr);
 }
 
 OUString DescriptionInfoset::getLocalizedDisplayName() const
@@ -644,7 +643,7 @@ OUString DescriptionInfoset::getLocalizedDisplayName() const
 
 OUString DescriptionInfoset::getLocalizedLicenseURL() const
 {
-    return getLocalizedHREFAttrFromChild("/desc:description/desc:registration/desc:simple-license", NULL);
+    return getLocalizedHREFAttrFromChild("/desc:description/desc:registration/desc:simple-license", nullptr);
 
 }
 
@@ -685,7 +684,7 @@ DescriptionInfoset::getSimpleLicenseAttributes() const
 
 OUString DescriptionInfoset::getLocalizedDescriptionURL() const
 {
-    return getLocalizedHREFAttrFromChild("/desc:description/desc:extension-description", NULL);
+    return getLocalizedHREFAttrFromChild("/desc:description/desc:extension-description", nullptr);
 }
 
 css::uno::Reference< css::xml::dom::XNode >
@@ -786,7 +785,7 @@ DescriptionInfoset::getChildWithDefaultLocale(css::uno::Reference< css::xml::dom
         return m_xpath->selectSingleNode(xParent, exp2);
     } catch (const css::xml::xpath::XPathException &) {
         // ignore
-        return 0;
+        return nullptr;
     }
 }
 

@@ -25,6 +25,8 @@
 // later.
 #include <vector>
 
+#include <sal/types.h>
+
 namespace EEngineData
 {
     // spell checking wrong vector containing the redlining data
@@ -46,17 +48,6 @@ namespace EEngineData
         EndOfWord = 1,
         EndOfSentence = 2
     };
-
-    class TextMarkingClass
-    {
-    public:
-        TextMarkingType eType;
-        sal_Int32 nIndex;
-
-        TextMarkingClass(TextMarkingType eT, sal_Int32 nI) : eType(eT), nIndex(nI) {}
-    };
-
-    typedef std::vector< TextMarkingClass > TextMarkingVector;
 
 } // end of namespace EditEngine
 

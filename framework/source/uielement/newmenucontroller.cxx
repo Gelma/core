@@ -281,7 +281,7 @@ void NewMenuController::retrieveShortcutsFromConfiguration(
     {
         try
         {
-            com::sun::star::awt::KeyEvent aKeyEvent;
+            css::awt::KeyEvent aKeyEvent;
             Sequence< Any > aSeqKeyCode = rAccelCfg->getPreferredKeyEventsForCommandList( rCommands );
             for ( sal_Int32 i = 0; i < aSeqKeyCode.getLength(); i++ )
             {
@@ -295,7 +295,7 @@ void NewMenuController::retrieveShortcutsFromConfiguration(
     }
 }
 
-NewMenuController::NewMenuController( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& xContext ) :
+NewMenuController::NewMenuController( const css::uno::Reference< css::uno::XComponentContext >& xContext ) :
     svt::PopupMenuControllerBase( xContext ),
     m_bShowImages( true ),
     m_bNewMenu( false ),
@@ -314,7 +314,7 @@ NewMenuController::~NewMenuController()
 void NewMenuController::fillPopupMenu( Reference< css::awt::XPopupMenu >& rPopupMenu )
 {
     VCLXPopupMenu* pPopupMenu    = static_cast<VCLXPopupMenu *>(VCLXMenu::GetImplementation( rPopupMenu ));
-    PopupMenu*     pVCLPopupMenu = 0;
+    PopupMenu*     pVCLPopupMenu = nullptr;
 
     SolarMutexGuard aSolarMutexGuard;
 
@@ -391,7 +391,7 @@ void SAL_CALL NewMenuController::itemSelected( const css::awt::MenuEvent& rEvent
 
     osl::ClearableMutexGuard aLock( m_aMutex );
     xPopupMenu          = m_xPopupMenu;
-    xDispatchProvider   = Reference< XDispatchProvider >( m_xFrame, UNO_QUERY );
+    xDispatchProvider.set( m_xFrame, UNO_QUERY );
     xContext     = m_xContext;
     xURLTransformer     = m_xURLTransformer;
     aLock.clear();
@@ -434,7 +434,7 @@ void SAL_CALL NewMenuController::itemSelected( const css::awt::MenuEvent& rEvent
         pNewDocument->xDispatch  = xDispatch;
         pNewDocument->aTargetURL = aTargetURL;
         pNewDocument->aArgSeq    = aArgsList;
-        Application::PostUserEvent( LINK(0, NewMenuController, ExecuteHdl_Impl), pNewDocument );
+        Application::PostUserEvent( LINK(nullptr, NewMenuController, ExecuteHdl_Impl), pNewDocument );
     }
 }
 

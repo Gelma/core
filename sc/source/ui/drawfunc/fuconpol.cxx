@@ -238,11 +238,11 @@ SdrObject* FuConstPolygon::CreateDefaultObject(const sal_uInt16 nID, const Recta
 
     SdrObject* pObj = SdrObjFactory::MakeNewObject(
         pView->GetCurrentObjInventor(), pView->GetCurrentObjIdentifier(),
-        0L, pDrDoc);
+        nullptr, pDrDoc);
 
     if(pObj)
     {
-        if(pObj->ISA(SdrPathObj))
+        if(dynamic_cast<const SdrPathObj*>( pObj) !=  nullptr)
         {
             basegfx::B2DPolyPolygon aPoly;
 

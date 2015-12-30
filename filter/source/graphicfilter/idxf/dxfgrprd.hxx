@@ -20,17 +20,16 @@
 #ifndef INCLUDED_FILTER_SOURCE_GRAPHICFILTER_IDXF_DXFGRPRD_HXX
 #define INCLUDED_FILTER_SOURCE_GRAPHICFILTER_IDXF_DXFGRPRD_HXX
 
+#include <rtl/string.hxx>
 #include <sal/types.h>
+#include <tools/solar.h>
 
-#include <tools/stream.hxx>
-
+class SvStream;
 
 class DXFGroupReader
 {
-
 public:
-
-    DXFGroupReader( SvStream & rIStream );
+    explicit DXFGroupReader( SvStream & rIStream );
 
     bool GetStatus() const;
 

@@ -22,8 +22,7 @@
 
 #include <list>
 #include <memory>
-
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
 
 #include <com/sun/star/sheet/XDimensionsSupplier.hpp>
 #include <com/sun/star/sheet/DataPilotFieldOrientation.hpp>
@@ -82,7 +81,7 @@ public:
     SC_DLLPUBLIC const OUString*  GetLayoutName() const;
     void RemoveLayoutName();
 
-    void WriteToSource( const com::sun::star::uno::Reference<com::sun::star::uno::XInterface>& xMember,
+    void WriteToSource( const css::uno::Reference<css::uno::XInterface>& xMember,
                             sal_Int32 nPosition );
 
 #if DEBUG_PIVOT_TABLE
@@ -90,9 +89,9 @@ public:
 #endif
 };
 
-bool operator == (const ::com::sun::star::sheet::DataPilotFieldSortInfo &l, const ::com::sun::star::sheet::DataPilotFieldSortInfo &r );
-bool operator == (const ::com::sun::star::sheet::DataPilotFieldAutoShowInfo &l, const ::com::sun::star::sheet::DataPilotFieldAutoShowInfo &r );
-bool operator == (const ::com::sun::star::sheet::DataPilotFieldReference &l, const ::com::sun::star::sheet::DataPilotFieldReference &r );
+bool operator == (const css::sheet::DataPilotFieldSortInfo &l, const css::sheet::DataPilotFieldSortInfo &r );
+bool operator == (const css::sheet::DataPilotFieldAutoShowInfo &l, const css::sheet::DataPilotFieldAutoShowInfo &r );
+bool operator == (const css::sheet::DataPilotFieldReference &l, const css::sheet::DataPilotFieldReference &r );
 
 class SC_DLLPUBLIC ScDPSaveDimension
 {
@@ -110,10 +109,10 @@ private:
     bool bSubTotalDefault; //! at level
     long nSubTotalCount;
     sal_uInt16* pSubTotalFuncs; // enum GeneralFunction
-    ::com::sun::star::sheet::DataPilotFieldReference* pReferenceValue;
-    ::com::sun::star::sheet::DataPilotFieldSortInfo* pSortInfo; // (level)
-    ::com::sun::star::sheet::DataPilotFieldAutoShowInfo* pAutoShowInfo; // (level)
-    ::com::sun::star::sheet::DataPilotFieldLayoutInfo* pLayoutInfo; // (level)
+    css::sheet::DataPilotFieldReference* pReferenceValue;
+    css::sheet::DataPilotFieldSortInfo* pSortInfo; // (level)
+    css::sheet::DataPilotFieldAutoShowInfo* pAutoShowInfo; // (level)
+    css::sheet::DataPilotFieldLayoutInfo* pLayoutInfo; // (level)
 
 public:
     typedef std::unordered_set<OUString, OUStringHash> MemberSetType;
@@ -184,23 +183,23 @@ public:
 
     bool IsMemberNameInUse(const OUString& rName) const;
 
-    const ::com::sun::star::sheet::DataPilotFieldReference* GetReferenceValue() const
+    const css::sheet::DataPilotFieldReference* GetReferenceValue() const
         { return pReferenceValue; }
 
-    void SetReferenceValue(const ::com::sun::star::sheet::DataPilotFieldReference* pNew);
+    void SetReferenceValue(const css::sheet::DataPilotFieldReference* pNew);
 
-    const ::com::sun::star::sheet::DataPilotFieldSortInfo* GetSortInfo() const
+    const css::sheet::DataPilotFieldSortInfo* GetSortInfo() const
         { return pSortInfo; }
 
-    void SetSortInfo(const ::com::sun::star::sheet::DataPilotFieldSortInfo* pNew);
-    const ::com::sun::star::sheet::DataPilotFieldAutoShowInfo* GetAutoShowInfo() const
+    void SetSortInfo(const css::sheet::DataPilotFieldSortInfo* pNew);
+    const css::sheet::DataPilotFieldAutoShowInfo* GetAutoShowInfo() const
         { return pAutoShowInfo; }
 
-    void SetAutoShowInfo(const ::com::sun::star::sheet::DataPilotFieldAutoShowInfo* pNew);
-    const ::com::sun::star::sheet::DataPilotFieldLayoutInfo* GetLayoutInfo() const
+    void SetAutoShowInfo(const css::sheet::DataPilotFieldAutoShowInfo* pNew);
+    const css::sheet::DataPilotFieldLayoutInfo* GetLayoutInfo() const
         { return pLayoutInfo; }
 
-    void SetLayoutInfo(const ::com::sun::star::sheet::DataPilotFieldLayoutInfo* pNew);
+    void SetLayoutInfo(const css::sheet::DataPilotFieldLayoutInfo* pNew);
 
     void SetCurrentPage( const OUString* pPage ); // NULL = no selection (all)
     OUString GetCurrentPage() const; // only for ODF compatibility
@@ -223,7 +222,7 @@ public:
 
     void SetMemberPosition( const OUString& rName, sal_Int32 nNewPos );
 
-    void WriteToSource( const com::sun::star::uno::Reference<com::sun::star::uno::XInterface>& xDim );
+    void WriteToSource( const css::uno::Reference<css::uno::XInterface>& xDim );
 
     void UpdateMemberVisibility(const std::unordered_map< OUString, bool, OUStringHash>& rData);
 
@@ -241,10 +240,10 @@ class ScDPSaveData
     typedef std::unordered_map<OUString, size_t, OUStringHash> DupNameCountType;
 public:
     typedef std::unordered_map<OUString, size_t, OUStringHash> DimOrderType;
-    typedef boost::ptr_vector<ScDPSaveDimension> DimsType;
+    typedef std::vector<std::unique_ptr<ScDPSaveDimension>> DimsType;
 
 private:
-    DimsType aDimList;
+    DimsType m_DimList;
     DupNameCountType maDupNameCounts; /// keep track of number of duplicates in each name.
     ScDPDimensionSaveData* pDimensionData; // settings that create new dimensions
     sal_uInt16 nColumnGrandMode;
@@ -273,7 +272,7 @@ public:
     SC_DLLPUBLIC void SetGrandTotalName(const OUString& rName);
     SC_DLLPUBLIC const OUString* GetGrandTotalName() const;
 
-    const DimsType& GetDimensions() const { return aDimList;}
+    const DimsType& GetDimensions() const { return m_DimList; }
 
     /**
      * Get sort order map to sort row and column dimensions in order of
@@ -292,7 +291,7 @@ public:
      * @param rDims (out) list of dimensions for specified orientation
      */
     SC_DLLPUBLIC void GetAllDimensionsByOrientation(
-        com::sun::star::sheet::DataPilotFieldOrientation eOrientation,
+        css::sheet::DataPilotFieldOrientation eOrientation,
         std::vector<const ScDPSaveDimension*>& rDims) const;
 
     void AddDimension(ScDPSaveDimension* pDim);
@@ -320,7 +319,7 @@ public:
     void RemoveDimensionByName(const OUString& rName);
 
     ScDPSaveDimension* GetInnermostDimension(sal_uInt16 nOrientation);
-    ScDPSaveDimension* GetFirstDimension(::com::sun::star::sheet::DataPilotFieldOrientation eOrientation);
+    ScDPSaveDimension* GetFirstDimension(css::sheet::DataPilotFieldOrientation eOrientation);
     long GetDataDimensionCount() const;
 
     void SetPosition( ScDPSaveDimension* pDim, long nNew );
@@ -348,13 +347,13 @@ public:
     bool GetDrillDown() const
         { return bDrillDown; }
 
-    void WriteToSource( const com::sun::star::uno::Reference<com::sun::star::sheet::XDimensionsSupplier>& xSource );
+    void WriteToSource( const css::uno::Reference<css::sheet::XDimensionsSupplier>& xSource );
     bool IsEmpty() const;
 
     const ScDPDimensionSaveData* GetExistingDimensionData() const
         { return pDimensionData; }
 
-    void RemoveAllGroupDimensions( const OUString& rSrcDimName, std::vector<OUString>* pDeletedNames = NULL );
+    void RemoveAllGroupDimensions( const OUString& rSrcDimName, std::vector<OUString>* pDeletedNames = nullptr );
 
     SC_DLLPUBLIC ScDPDimensionSaveData* GetDimensionData(); // create if not there
     void SetDimensionData( const ScDPDimensionSaveData* pNew ); // copied

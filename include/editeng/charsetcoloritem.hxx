@@ -34,7 +34,7 @@ class EDITENG_DLLPUBLIC SvxCharSetColorItem : public SvxColorItem
 {
     rtl_TextEncoding eFrom;
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     explicit SvxCharSetColorItem( const sal_uInt16 nId  );
     SvxCharSetColorItem( const Color& aColor, const rtl_TextEncoding eFrom,
@@ -44,11 +44,11 @@ public:
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
-                                    OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    OUString &rText, const IntlWrapper * = nullptr ) const override;
 
-    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*     Create(SvStream &, sal_uInt16) const SAL_OVERRIDE;
-    virtual SvStream&        Store(SvStream &, sal_uInt16 nItemVersion) const SAL_OVERRIDE;
+    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual SfxPoolItem*     Create(SvStream &, sal_uInt16) const override;
+    virtual SvStream&        Store(SvStream &, sal_uInt16 nItemVersion) const override;
 
     inline rtl_TextEncoding     GetCharSet() const { return eFrom; }
 

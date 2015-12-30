@@ -14,6 +14,8 @@
 #include <svl/listener.hxx>
 
 #include <unordered_map>
+#include <vector>
+#include <memory>
 
 class ScRangeList;
 
@@ -50,10 +52,10 @@ private:
 class QueryRange : public SvtListener::QueryBase
 {
     struct Impl;
-    Impl* mpImpl;
+    std::unique_ptr<Impl> mpImpl;
 
-    QueryRange( const QueryRange& ) SAL_DELETED_FUNCTION;
-    QueryRange& operator= ( const QueryRange& ) SAL_DELETED_FUNCTION;
+    QueryRange( const QueryRange& ) = delete;
+    QueryRange& operator= ( const QueryRange& ) = delete;
 
 public:
     QueryRange();

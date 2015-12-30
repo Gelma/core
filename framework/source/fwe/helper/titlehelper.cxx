@@ -542,7 +542,7 @@ void TitleHelper::impl_appendModuleName (OUStringBuffer& sTitle)
 
         const OUString                 sID     = xModuleManager->identify(xOwner);
               ::comphelper::SequenceAsHashMap lProps  = xModuleManager->getByName (sID);
-        const OUString                 sUIName = lProps.getUnpackedValueOrDefault (OFFICEFACTORY_PROPNAME_UINAME, OUString());
+        const OUString                 sUIName = lProps.getUnpackedValueOrDefault (OFFICEFACTORY_PROPNAME_ASCII_UINAME, OUString());
 
         // An UIname property is an optional value !
         // So please add it to the title in case it does really exists only.
@@ -643,7 +643,7 @@ OUString TitleHelper::impl_convertURL2Title(const OUString& sURL)
     }
     else
     {
-        if (aURL.hasExtension(INetURLObject::LAST_SEGMENT))
+        if (aURL.hasExtension())
             sTitle = aURL.getName(INetURLObject::LAST_SEGMENT, true, INetURLObject::DECODE_WITH_CHARSET);
 
         if ( sTitle.isEmpty() )

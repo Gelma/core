@@ -59,7 +59,9 @@
 #include "zforauto.hxx"
 
 #include <boost/noncopyable.hpp>
-#include <boost/ptr_container/ptr_map.hpp>
+
+#include <memory>
+#include <map>
 
 /**
 A binary blob of writer-specific data. This data typically consists of types that are
@@ -75,7 +77,7 @@ struct AutoFormatSwBlob : ::boost::noncopyable
     sal_uInt8 *pData;
     sal_Size size;
 
-    AutoFormatSwBlob() : pData(0), size(0)
+    AutoFormatSwBlob() : pData(nullptr), size(0)
     {
     }
 
@@ -87,7 +89,7 @@ struct AutoFormatSwBlob : ::boost::noncopyable
     void Reset()
     {
         delete[] pData;
-        pData = 0;
+        pData = nullptr;
         size = 0;
     }
 };
@@ -307,10 +309,14 @@ public:
     bool                        Save( SvStream& rStream, sal_uInt16 fileVersion );
 };
 
+struct DefaultFirstEntry {
+    bool operator() (const OUString& left, const OUString& right) const;
+};
+
 class SC_DLLPUBLIC ScAutoFormat
 {
-    typedef boost::ptr_map<OUString, ScAutoFormatData> MapType;
-    MapType maData;
+    typedef std::map<OUString, std::unique_ptr<ScAutoFormatData>, DefaultFirstEntry> MapType;
+    MapType m_Data;
     bool mbSaveLater;
     ScAfVersions m_aVersions;
 

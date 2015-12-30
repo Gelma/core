@@ -68,11 +68,11 @@ sal_uLong SwReader::Read( const Reader& rOptions )
     po->pStrm = pStrm;
     po->pStg  = pStg;
     po->xStg  = xStg;
-    po->bInsertMode = 0 != pCrsr;
+    po->bInsertMode = nullptr != pCursor;
     po->bSkipImages = mbSkipImages;
 
     // if a Medium is selected, get its Stream
-    if( 0 != (po->pMedium = pMedium ) &&
+    if( nullptr != (po->pMedium = pMedium ) &&
         !po->SetStrmStgPtr() )
     {
         po->SetReadUTF8( false );
@@ -91,11 +91,11 @@ sal_uLong SwReader::Read( const Reader& rOptions )
     pDoc->SetOle2Link( Link<bool,void>() );
 
     pDoc->SetInReading( true );
-    pDoc->SetInXMLImport( 0 != dynamic_cast< XMLReader* >(po) );
+    pDoc->SetInXMLImport( dynamic_cast< XMLReader* >(po) !=  nullptr );
 
     SwPaM *pPam;
-    if( pCrsr )
-        pPam = pCrsr;
+    if( pCursor )
+        pPam = pCursor;
     else
     {
         // if the Reader was not called by a Shell, create a PaM ourselves
@@ -110,11 +110,11 @@ sal_uLong SwReader::Read( const Reader& rOptions )
 
     // Pams are connected like rings; stop when we return to the 1st element
     SwPaM *pEnd = pPam;
-    SwUndoInsDoc* pUndo = 0;
+    SwUndoInsDoc* pUndo = nullptr;
 
     bool bReadPageDescs = false;
     bool const bDocUndo = pDoc->GetIDocumentUndoRedo().DoesUndo();
-    bool bSaveUndo = bDocUndo && pCrsr;
+    bool bSaveUndo = bDocUndo && pCursor;
     if( bSaveUndo )
     {
         // the reading of the page template cannot be undone!
@@ -126,7 +126,7 @@ sal_uLong SwReader::Read( const Reader& rOptions )
         else
         {
             pDoc->GetIDocumentUndoRedo().ClearRedo();
-            pDoc->GetIDocumentUndoRedo().StartUndo( UNDO_INSDOKUMENT, NULL );
+            pDoc->GetIDocumentUndoRedo().StartUndo( UNDO_INSDOKUMENT, nullptr );
         }
     }
     pDoc->GetIDocumentUndoRedo().DoUndo(false);
@@ -137,7 +137,7 @@ sal_uLong SwReader::Read( const Reader& rOptions )
     RedlineMode_t ePostReadRedlineMode( nsRedlineMode_t::REDLINE_IGNORE );
 
     // Array of FlyFormats
-    SwFrameFormats aFlyFrmArr;
+    SwFrameFormats aFlyFrameArr;
     // only read templates? then ignore multi selection!
     bool bFormatsOnly = po->aOpt.IsFormatsOnly();
 
@@ -148,8 +148,8 @@ sal_uLong SwReader::Read( const Reader& rOptions )
 
         pDoc->getIDocumentRedlineAccess().SetRedlineMode_intern( nsRedlineMode_t::REDLINE_IGNORE );
 
-        SwPaM* pUndoPam = 0;
-        if( bDocUndo || pCrsr )
+        SwPaM* pUndoPam = nullptr;
+        if( bDocUndo || pCursor )
         {
             // set Pam to the previous node, so that it is not also moved
             const SwNodeIndex& rTmp = pPam->GetPoint()->nNode;
@@ -157,10 +157,10 @@ sal_uLong SwReader::Read( const Reader& rOptions )
         }
 
         // store for now all Fly's
-        if( pCrsr )
+        if( pCursor )
         {
             std::copy(pDoc->GetSpzFrameFormats()->begin(),
-                pDoc->GetSpzFrameFormats()->end(), std::back_inserter(aFlyFrmArr));
+                pDoc->GetSpzFrameFormats()->end(), std::back_inserter(aFlyFrameArr));
         }
 
         const sal_Int32 nSttContent = pPam->GetPoint()->nContent.GetIndex();
@@ -183,7 +183,7 @@ sal_uLong SwReader::Read( const Reader& rOptions )
         {
             --aEndPos;
             pCNd = aEndPos.GetNode().GetContentNode();
-            if( !pCNd && 0 == ( pCNd = SwNodes::GoPrevious( &aEndPos ) ))
+            if( !pCNd && nullptr == ( pCNd = SwNodes::GoPrevious( &aEndPos ) ))
                 pCNd = pDoc->GetNodes().GoNext( &aEndPos );
 
             pPam->GetPoint()->nNode = aEndPos;
@@ -205,7 +205,7 @@ sal_uLong SwReader::Read( const Reader& rOptions )
             }
         }
 
-        if( pCrsr )
+        if( pCursor )
         {
             *pUndoPam->GetMark() = *pPam->GetPoint();
             ++pUndoPam->GetPoint()->nNode;
@@ -214,7 +214,7 @@ sal_uLong SwReader::Read( const Reader& rOptions )
                 pUndoPam->GetPoint()->nContent.Assign(
                                     static_cast<SwContentNode*>(&rNd), nSttContent );
             else
-                pUndoPam->GetPoint()->nContent.Assign( 0, 0 );
+                pUndoPam->GetPoint()->nContent.Assign( nullptr, 0 );
 
             bool bChkHeaderFooter = rNd.FindHeaderStartNode() ||
                                    rNd.FindFooterStartNode();
@@ -224,7 +224,7 @@ sal_uLong SwReader::Read( const Reader& rOptions )
             {
                 SwFrameFormat* pFrameFormat = (*pDoc->GetSpzFrameFormats())[ n ];
                 const SwFormatAnchor& rAnchor = pFrameFormat->GetAnchor();
-                if( !aFlyFrmArr.Contains( pFrameFormat) )
+                if( !aFlyFrameArr.Contains( pFrameFormat) )
                 {
                     SwPosition const*const pFrameAnchor(
                             rAnchor.GetContentAnchor());
@@ -254,7 +254,7 @@ sal_uLong SwReader::Read( const Reader& rOptions )
                             RES_DRAWFRMFMT == pFrameFormat->Which() )
                         {
                             // DrawObjects are not allowed in Headers/Footers!
-                            pFrameFormat->DelFrms();
+                            pFrameFormat->DelFrames();
                             pDoc->DelFrameFormat( pFrameFormat );
                             --n;
                         }
@@ -273,28 +273,28 @@ sal_uLong SwReader::Read( const Reader& rOptions )
                             if( pFrameFormat->HasWriterListeners() )
                             {
                                 // Draw-Objects create a Frame when being inserted; thus delete them
-                                pFrameFormat->DelFrms();
+                                pFrameFormat->DelFrames();
                             }
 
                             if (FLY_AT_PAGE == rAnchor.GetAnchorId())
                             {
                                 if( !rAnchor.GetContentAnchor() )
                                 {
-                                    pFrameFormat->MakeFrms();
+                                    pFrameFormat->MakeFrames();
                                 }
-                                else if( pCrsr )
+                                else if( pCursor )
                                 {
                                     pDoc->SetContainsAtPageObjWithContentAnchor( true );
                                 }
                             }
                             else
-                                pFrameFormat->MakeFrms();
+                                pFrameFormat->MakeFrames();
                         }
                     }
                 }
             }
-            if( !aFlyFrmArr.empty() )
-                aFlyFrmArr.clear();
+            if( !aFlyFrameArr.empty() )
+                aFlyFrameArr.clear();
 
             pDoc->getIDocumentRedlineAccess().SetRedlineMode_intern( eOld );
             if( pDoc->getIDocumentRedlineAccess().IsRedlineOn() )
@@ -351,13 +351,13 @@ sal_uLong SwReader::Read( const Reader& rOptions )
         if( bSaveUndo )
         {
             pDoc->getIDocumentRedlineAccess().SetRedlineMode_intern( eOld );
-            pDoc->GetIDocumentUndoRedo().EndUndo( UNDO_INSDOKUMENT, NULL );
+            pDoc->GetIDocumentUndoRedo().EndUndo( UNDO_INSDOKUMENT, nullptr );
             pDoc->getIDocumentRedlineAccess().SetRedlineMode_intern( nsRedlineMode_t::REDLINE_IGNORE );
         }
     }
 
     // delete Pam if it was created only for reading
-    if( !pCrsr )
+    if( !pCursor )
     {
         delete pPam;          // open a new one
 
@@ -370,13 +370,13 @@ sal_uLong SwReader::Read( const Reader& rOptions )
         eOld = static_cast<RedlineMode_t>(
                 ePostReadRedlineMode & ~nsRedlineMode_t::REDLINE_IGNORE);
 
-        pDoc->getIDocumentFieldsAccess().SetFieldsDirty(false, NULL, 0);
+        pDoc->getIDocumentFieldsAccess().SetFieldsDirty(false, nullptr, 0);
     }
 
     pDoc->getIDocumentRedlineAccess().SetRedlineMode_intern( eOld );
     pDoc->SetOle2Link( aOLELink );
 
-    if( pCrsr )                 // das Doc ist jetzt modifiziert
+    if( pCursor )                 // das Doc ist jetzt modifiziert
         pDoc->getIDocumentState().SetModified();
     // #i38810# - If links have been updated, the document
     // have to be modified. During update of links the OLE link at the document
@@ -397,7 +397,7 @@ sal_uLong SwReader::Read( const Reader& rOptions )
 
 
 SwReader::SwReader(SfxMedium& rMedium, const OUString& rFileName, SwDoc *pDocument)
-    : SwDocFac(pDocument), pStrm(0), pMedium(&rMedium), pCrsr(0),
+    : SwDocFac(pDocument), pStrm(nullptr), pMedium(&rMedium), pCursor(nullptr),
     aFileName(rFileName), mbSkipImages(false)
 {
     SetBaseURL( rMedium.GetBaseURL() );
@@ -407,30 +407,30 @@ SwReader::SwReader(SfxMedium& rMedium, const OUString& rFileName, SwDoc *pDocume
 
 // Read into an existing document
 SwReader::SwReader(SvStream& rStrm, const OUString& rFileName, const OUString& rBaseURL, SwPaM& rPam)
-    : SwDocFac(rPam.GetDoc()), pStrm(&rStrm), pMedium(0), pCrsr(&rPam),
+    : SwDocFac(rPam.GetDoc()), pStrm(&rStrm), pMedium(nullptr), pCursor(&rPam),
     aFileName(rFileName), mbSkipImages(false)
 {
     SetBaseURL( rBaseURL );
 }
 
 SwReader::SwReader(SfxMedium& rMedium, const OUString& rFileName, SwPaM& rPam)
-    : SwDocFac(rPam.GetDoc()), pStrm(0), pMedium(&rMedium),
-    pCrsr(&rPam), aFileName(rFileName), mbSkipImages(false)
+    : SwDocFac(rPam.GetDoc()), pStrm(nullptr), pMedium(&rMedium),
+    pCursor(&rPam), aFileName(rFileName), mbSkipImages(false)
 {
     SetBaseURL( rMedium.GetBaseURL() );
 }
 
 SwReader::SwReader( const uno::Reference < embed::XStorage > &rStg, const OUString& rFilename, SwPaM &rPam )
-    : SwDocFac(rPam.GetDoc()), pStrm(0), xStg( rStg ), pMedium(0), pCrsr(&rPam), aFileName(rFilename), mbSkipImages(false)
+    : SwDocFac(rPam.GetDoc()), pStrm(nullptr), xStg( rStg ), pMedium(nullptr), pCursor(&rPam), aFileName(rFilename), mbSkipImages(false)
 {
 }
 
 Reader::Reader()
-    : pTemplate(0),
+    : pTemplate(nullptr),
     aDStamp( Date::EMPTY ),
     aTStamp( tools::Time::EMPTY ),
     aChkDateTime( DateTime::EMPTY ),
-    pStrm(0), pMedium(0), bInsertMode(false),
+    pStrm(nullptr), pMedium(nullptr), bInsertMode(false),
     bTmplBrowseMode(false), bReadUTF8(false), bBlockMode(false), bOrganizerMode(false),
     bHasAskTemplateName(false), bIgnoreHTMLComments(false), bSkipImages(false)
 {
@@ -500,7 +500,7 @@ SwDoc* Reader::GetTemplateDoc()
                     SwDocShell *pDocSh =
                         new SwDocShell ( SfxObjectCreateMode::INTERNAL );
                     SfxObjectShellLock xDocSh = pDocSh;
-                    if( pDocSh->DoInitNew( 0 ) )
+                    if( pDocSh->DoInitNew() )
                     {
                         pTemplate = pDocSh->GetDoc();
                         pTemplate->SetOle2Link( Link<bool,void>() );
@@ -536,7 +536,7 @@ bool Reader::SetTemplate( SwDoc& rDoc )
     {
         rDoc.RemoveAllFormatLanguageDependencies();
         rDoc.ReplaceStyles( *pTemplate );
-        rDoc.getIDocumentFieldsAccess().SetFixFields(false, NULL);
+        rDoc.getIDocumentFieldsAccess().SetFixFields(false, nullptr);
         bRet = true;
     }
 
@@ -549,7 +549,7 @@ void Reader::ClearTemplate()
     {
         if( 0 == pTemplate->release() )
             delete pTemplate;
-        pTemplate = 0;
+        pTemplate = nullptr;
     }
 }
 
@@ -594,11 +594,11 @@ bool Reader::SetStrmStgPtr()
         if ( pStrm && SotStorage::IsStorageFile(pStrm) && (SW_STORAGE_READER & GetReaderType()) )
         {
             pStg = new SotStorage( *pStrm );
-            pStrm = NULL;
+            pStrm = nullptr;
         }
         else if ( !(SW_STREAM_READER & GetReaderType()) )
         {
-            pStrm = NULL;
+            pStrm = nullptr;
             return false;
         }
 
@@ -616,11 +616,11 @@ void Reader::SetFltName( const OUString& )
 {
 }
 
-void Reader::ResetFrameFormatAttrs( SfxItemSet &rFrmSet )
+void Reader::ResetFrameFormatAttrs( SfxItemSet &rFrameSet )
 {
-    rFrmSet.Put( SvxLRSpaceItem(RES_LR_SPACE) );
-    rFrmSet.Put( SvxULSpaceItem(RES_UL_SPACE) );
-    rFrmSet.Put( SvxBoxItem(RES_BOX) );
+    rFrameSet.Put( SvxLRSpaceItem(RES_LR_SPACE) );
+    rFrameSet.Put( SvxULSpaceItem(RES_UL_SPACE) );
+    rFrameSet.Put( SvxBoxItem(RES_BOX) );
 }
 
 void Reader::ResetFrameFormats( SwDoc& rDoc )
@@ -655,7 +655,7 @@ bool SwReader::HasGlossaries( const Reader& rOptions )
 
     // if a Medium is selected, get its Stream
     bool bRet = false;
-    if( !( 0 != (po->pMedium = pMedium ) && !po->SetStrmStgPtr() ))
+    if( !( nullptr != (po->pMedium = pMedium ) && !po->SetStrmStgPtr() ))
         bRet = po->HasGlossaries();
     return bRet;
 }
@@ -671,7 +671,7 @@ bool SwReader::ReadGlossaries( const Reader& rOptions,
 
     // if a Medium is selected, get its Stream
     bool bRet = false;
-    if( !( 0 != (po->pMedium = pMedium ) && !po->SetStrmStgPtr() ))
+    if( !( nullptr != (po->pMedium = pMedium ) && !po->SetStrmStgPtr() ))
         bRet = po->ReadGlossaries( rBlocks, bSaveRelFiles );
     return bRet;
 }
@@ -699,37 +699,37 @@ int StgReader::GetReaderType()
  * Constructors, Destructors are inline (inc/shellio.hxx).
  */
 
-SwWriter::SwWriter(SvStream& rStrm, SwCrsrShell &rShell, bool bInWriteAll)
-    : pStrm(&rStrm), pMedium(0), pOutPam(0), pShell(&rShell),
+SwWriter::SwWriter(SvStream& rStrm, SwCursorShell &rShell, bool bInWriteAll)
+    : pStrm(&rStrm), pMedium(nullptr), pOutPam(nullptr), pShell(&rShell),
     rDoc(*rShell.GetDoc()), bWriteAll(bInWriteAll)
 {
 }
 
 SwWriter::SwWriter(SvStream& rStrm,SwDoc &rDocument)
-    : pStrm(&rStrm), pMedium(0), pOutPam(0), pShell(0), rDoc(rDocument),
+    : pStrm(&rStrm), pMedium(nullptr), pOutPam(nullptr), pShell(nullptr), rDoc(rDocument),
     bWriteAll(true)
 {
 }
 
 SwWriter::SwWriter(SvStream& rStrm, SwPaM& rPam, bool bInWriteAll)
-    : pStrm(&rStrm), pMedium(0), pOutPam(&rPam), pShell(0),
+    : pStrm(&rStrm), pMedium(nullptr), pOutPam(&rPam), pShell(nullptr),
     rDoc(*rPam.GetDoc()), bWriteAll(bInWriteAll)
 {
 }
 
 SwWriter::SwWriter( const uno::Reference < embed::XStorage >& rStg, SwDoc &rDocument)
-    : pStrm(0), xStg( rStg ), pMedium(0), pOutPam(0), pShell(0), rDoc(rDocument), bWriteAll(true)
+    : pStrm(nullptr), xStg( rStg ), pMedium(nullptr), pOutPam(nullptr), pShell(nullptr), rDoc(rDocument), bWriteAll(true)
 {
 }
 
-SwWriter::SwWriter(SfxMedium& rMedium, SwCrsrShell &rShell, bool bInWriteAll)
-    : pStrm(0), pMedium(&rMedium), pOutPam(0), pShell(&rShell),
+SwWriter::SwWriter(SfxMedium& rMedium, SwCursorShell &rShell, bool bInWriteAll)
+    : pStrm(nullptr), pMedium(&rMedium), pOutPam(nullptr), pShell(&rShell),
     rDoc(*rShell.GetDoc()), bWriteAll(bInWriteAll)
 {
 }
 
 SwWriter::SwWriter(SfxMedium& rMedium, SwDoc &rDocument)
-    : pStrm(0), pMedium(&rMedium), pOutPam(0), pShell(0), rDoc(rDocument),
+    : pStrm(nullptr), pMedium(&rMedium), pOutPam(nullptr), pShell(nullptr), rDoc(rDocument),
     bWriteAll(true)
 {
 }
@@ -742,7 +742,7 @@ sal_uLong SwWriter::Write( WriterRef& rxWriter, const OUString* pRealFileName )
     bool bHasMark = false;
     SwPaM * pPam;
 
-    SwDoc *pDoc = 0;
+    SwDoc *pDoc = nullptr;
 
     if ( pShell && !bWriteAll && pShell->IsTableMode() )
     {
@@ -768,7 +768,7 @@ sal_uLong SwWriter::Write( WriterRef& rxWriter, const OUString* pRealFileName )
     if( !bWriteAll && ( pShell || pOutPam ))
     {
         if( pShell )
-            pPam = pShell->GetCrsr();
+            pPam = pShell->GetCursor();
         else
             pPam = pOutPam;
 
@@ -832,13 +832,13 @@ sal_uLong SwWriter::Write( WriterRef& rxWriter, const OUString* pRealFileName )
     {
         const SwPageDesc& rPgDsc = pOutDoc->GetPageDesc( 0 );
         //const SwPageDesc& rPgDsc = *pOutDoc->GetPageDescFromPool( RES_POOLPAGE_STANDARD );
-        const SwFormatFrmSize& rSz = rPgDsc.GetMaster().GetFrmSize();
+        const SwFormatFrameSize& rSz = rPgDsc.GetMaster().GetFrameSize();
         // Clipboard-Document is always created w/o printer; thus the
         // default PageDesc is always aug LONG_MAX !! Set then to DIN A4
         if( LONG_MAX == rSz.GetHeight() || LONG_MAX == rSz.GetWidth() )
         {
             SwPageDesc aNew( rPgDsc );
-            SwFormatFrmSize aNewSz( rSz );
+            SwFormatFrameSize aNewSz( rSz );
             Size a4(SvxPaperInfo::GetPaperSize( PAPER_A4 ));
             aNewSz.SetHeight( a4.Width() );
             aNewSz.SetWidth( a4.Height() );

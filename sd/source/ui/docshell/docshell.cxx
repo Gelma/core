@@ -84,7 +84,6 @@ namespace sd {
 /**
  * slotmaps and definitions of SFX
  */
-TYPEINIT1( DrawDocShell, SfxObjectShell );
 
 SFX_IMPL_OBJECTFACTORY(
     DrawDocShell,
@@ -97,7 +96,7 @@ void DrawDocShell::Construct( bool bClipboard )
     mbInDestruction = false;
     SetSlotFilter();     // setzt Filter zurueck
 
-    mbOwnDocument = mpDoc == 0;
+    mbOwnDocument = mpDoc == nullptr;
     if( mbOwnDocument )
         mpDoc = new SdDrawDocument(meDocType, this);
 
@@ -118,13 +117,13 @@ DrawDocShell::DrawDocShell(SfxObjectCreateMode eMode,
                                bool bDataObject,
                                DocumentType eDocumentType) :
     SfxObjectShell( eMode == SfxObjectCreateMode::INTERNAL ?  SfxObjectCreateMode::EMBEDDED : eMode),
-    mpDoc(NULL),
-    mpUndoManager(NULL),
-    mpPrinter(NULL),
-    mpViewShell(NULL),
-    mpFontList(NULL),
+    mpDoc(nullptr),
+    mpUndoManager(nullptr),
+    mpPrinter(nullptr),
+    mpViewShell(nullptr),
+    mpFontList(nullptr),
     meDocType(eDocumentType),
-    mpFilterSIDs(0),
+    mpFilterSIDs(nullptr),
     mbSdDataObj(bDataObject),
     mbOwnPrinter(false),
     mbNewDocument( true )
@@ -134,13 +133,13 @@ DrawDocShell::DrawDocShell(SfxObjectCreateMode eMode,
 
 DrawDocShell::DrawDocShell( SfxModelFlags nModelCreationFlags, bool bDataObject, DocumentType eDocumentType ) :
     SfxObjectShell( nModelCreationFlags ),
-    mpDoc(NULL),
-    mpUndoManager(NULL),
-    mpPrinter(NULL),
-    mpViewShell(NULL),
-    mpFontList(NULL),
+    mpDoc(nullptr),
+    mpUndoManager(nullptr),
+    mpPrinter(nullptr),
+    mpViewShell(nullptr),
+    mpFontList(nullptr),
     meDocType(eDocumentType),
-    mpFilterSIDs(0),
+    mpFilterSIDs(nullptr),
     mbSdDataObj(bDataObject),
     mbOwnPrinter(false),
     mbNewDocument( true )
@@ -153,12 +152,12 @@ DrawDocShell::DrawDocShell(SdDrawDocument* pDoc, SfxObjectCreateMode eMode,
                                DocumentType eDocumentType) :
     SfxObjectShell(eMode == SfxObjectCreateMode::INTERNAL ?  SfxObjectCreateMode::EMBEDDED : eMode),
     mpDoc(pDoc),
-    mpUndoManager(NULL),
-    mpPrinter(NULL),
-    mpViewShell(NULL),
-    mpFontList(NULL),
+    mpUndoManager(nullptr),
+    mpPrinter(nullptr),
+    mpViewShell(nullptr),
+    mpFontList(nullptr),
     meDocType(eDocumentType),
-    mpFilterSIDs(0),
+    mpFilterSIDs(nullptr),
     mbSdDataObj(bDataObject),
     mbOwnPrinter(false),
     mbNewDocument( true )
@@ -176,12 +175,12 @@ DrawDocShell::~DrawDocShell()
 
     mbInDestruction = true;
 
-    SetDocShellFunction(0);
+    SetDocShellFunction(nullptr);
 
     delete mpFontList;
 
     if( mpDoc )
-        mpDoc->SetSdrUndoManager( 0 );
+        mpDoc->SetSdrUndoManager( nullptr );
     delete mpUndoManager;
 
     if (mbOwnPrinter)
@@ -300,8 +299,7 @@ void DrawDocShell::InPlaceActivate( bool bActive )
         {
             // determine the number of FrameViews
             SfxViewShell* pSfxViewSh = pSfxViewFrame->GetViewShell();
-            // FIXME this used to be a PTR_CAST, but when I updated the macro, I discovered that SfxViewShell is not statically castable to sd::ViewShell
-            ViewShell* pViewSh = (pSfxViewSh && pSfxViewSh->IsA( TYPE(ViewShell) )) ? dynamic_cast<ViewShell*>(pSfxViewSh) : 0;
+            ViewShell* pViewSh = dynamic_cast<ViewShell*>(pSfxViewSh);
 
             if ( pViewSh && pViewSh->GetFrameView() )
             {
@@ -321,8 +319,7 @@ void DrawDocShell::InPlaceActivate( bool bActive )
         {
             // determine the number of FrameViews
             SfxViewShell* pSfxViewSh = pSfxViewFrame->GetViewShell();
-            // FIXME this used to be a PTR_CAST, but when I updated the macro, I discovered that SfxViewShell is not statically castable to sd::ViewShell
-            ViewShell* pViewSh = (pSfxViewSh && pSfxViewSh->IsA( TYPE(ViewShell) )) ? dynamic_cast<ViewShell*>(pSfxViewSh) : 0;
+            ViewShell* pViewSh = dynamic_cast<ViewShell*>(pSfxViewSh);
 
             if ( pViewSh )
             {
@@ -368,7 +365,7 @@ void DrawDocShell::CancelSearching()
 {
     if( dynamic_cast<FuSearch*>( mxDocShellFunction.get() ) )
     {
-        SetDocShellFunction(0);
+        SetDocShellFunction(nullptr);
     }
 }
 
@@ -423,8 +420,8 @@ void DrawDocShell::SetModified( bool bSet /* = true */ )
 // to get hands on the outliner and the text object.
 IMPL_LINK_TYPED(DrawDocShell, OnlineSpellCallback, SpellCallbackInfo&, rInfo, void)
 {
-    SdrObject* pObj = NULL;
-    SdrOutliner* pOutl = NULL;
+    SdrObject* pObj = nullptr;
+    SdrOutliner* pOutl = nullptr;
 
     if(GetViewShell())
     {
@@ -472,15 +469,6 @@ void DrawDocShell::libreOfficeKitCallback(int nType, const char* pPayload) const
     if (mpDoc)
         mpDoc->libreOfficeKitCallback(nType, pPayload);
 }
-
-bool DrawDocShell::isTiledRendering() const
-{
-    if (!mpDoc)
-        return false;
-    return mpDoc->isTiledRendering();
-}
-
-
 
 } // end of namespace sd
 

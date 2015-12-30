@@ -23,14 +23,11 @@ class OOO_DLLPUBLIC_TEST Primitive2dXmlDump
 {
 private:
     std::vector<bool> maFilter;
-    void decomposeAndWrite(const drawinglayer::primitive2d::Primitive2DSequence& rPrimitive2DSequence, XmlWriter& rWriter);
+    void decomposeAndWrite(const drawinglayer::primitive2d::Primitive2DContainer& rPrimitive2DSequence, XmlWriter& rWriter);
 
 public:
     Primitive2dXmlDump();
     virtual ~Primitive2dXmlDump();
-
-    void filterActionType(const sal_uInt16 nActionType, bool bShouldFilter);
-    void filterAllActionTypes();
 
     /** The actual result that will be used for testing.
 
@@ -39,7 +36,7 @@ public:
         pTempStreamName - this is useful when creating the test, to dump the
         file for examination.
     */
-    xmlDocPtr dumpAndParse(const drawinglayer::primitive2d::Primitive2DSequence& aPrimitive2DSequence, const OUString& rTempStreamName = OUString());
+    xmlDocPtr dumpAndParse(const drawinglayer::primitive2d::Primitive2DContainer& aPrimitive2DSequence, const OUString& rTempStreamName = OUString());
 };
 
 #endif // INCLUDED_TEST_PRIMITIVE2DXMLDUMP_HXX

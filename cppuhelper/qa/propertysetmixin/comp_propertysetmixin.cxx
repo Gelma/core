@@ -168,8 +168,7 @@ css::uno::Any Empty2::queryInterface(css::uno::Type const & type)
 }
 
 css::uno::Sequence< rtl::OUString > sequenceThird() {
-    css::uno::Sequence< rtl::OUString > s(1);
-    s[0] = rtl::OUString("Third");
+    css::uno::Sequence<OUString> s { rtl::OUString("Third") };
     return s;
 }
 
@@ -385,10 +384,9 @@ rtl::OUString SAL_CALL getImplementationName() {
             "test.cppuhelper.propertysetmixin.comp.CppSupplier");
 }
 
-css::uno::Sequence< rtl::OUString > SAL_CALL getSupportedServiceNames() {
-    css::uno::Sequence< rtl::OUString > s(1);
-    s[0] = rtl::OUString(
-            "test.cppuhelper.propertysetmixin.CppSupplier");
+css::uno::Sequence< rtl::OUString > SAL_CALL getSupportedServiceNames()
+{
+    css::uno::Sequence< rtl::OUString > s { "test.cppuhelper.propertysetmixin.CppSupplier") };
     return s;
 }
 

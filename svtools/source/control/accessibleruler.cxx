@@ -289,7 +289,7 @@ void SAL_CALL SvtRulerAccessible::grabFocus() throw( RuntimeException, std::exce
 }
 
 sal_Int32 SvtRulerAccessible::getForeground(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard     aSolarGuard;
     ::osl::MutexGuard   aGuard( m_aMutex );
@@ -298,7 +298,7 @@ sal_Int32 SvtRulerAccessible::getForeground(  )
     return mpRepr->GetControlForeground().GetColor();
 }
 sal_Int32 SvtRulerAccessible::getBackground(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard     aSolarGuard;
     ::osl::MutexGuard   aGuard( m_aMutex );
@@ -336,7 +336,7 @@ void SAL_CALL SvtRulerAccessible::disposing()
     {
         {
             ::osl::MutexGuard   aGuard( m_aMutex );
-            mpRepr = NULL;      // object dies with representation
+            mpRepr = nullptr;      // object dies with representation
 
         }
 
@@ -349,7 +349,7 @@ void SAL_CALL SvtRulerAccessible::disposing()
                 comphelper::AccessibleEventNotifier::revokeClientNotifyDisposing( mnClientId, *this );
                 mnClientId =  0;
             }
-            mxParent = uno::Reference< XAccessible >();
+            mxParent.clear();
         }
     }
 }

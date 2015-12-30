@@ -92,7 +92,7 @@ public:
     ScVObjMode              GetObjMode( ScVObjType eObj ) const             { return aModeArr[eObj]; }
 
     void                    SetGridColor( const Color& rCol, const OUString& rName ) { aGridCol = rCol; aGridColName = rName;}
-    Color                   GetGridColor( OUString* pStrName = NULL ) const;
+    Color                   GetGridColor( OUString* pStrName = nullptr ) const;
 
     const ScGridOptions&    GetGridOptions() const                      { return aGridOpt; }
     void                    SetGridOptions( const ScGridOptions& rNew ) { aGridOpt = rNew; }
@@ -115,13 +115,13 @@ private:
 class SC_DLLPUBLIC ScTpViewItem : public SfxPoolItem
 {
 public:
-                TYPEINFO_OVERRIDE();
+                static SfxPoolItem* CreateDefault();
                 ScTpViewItem( sal_uInt16 nWhich, const ScViewOptions& rOpt );
                 ScTpViewItem( const ScTpViewItem&  rItem );
                 virtual ~ScTpViewItem();
 
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
 
     const ScViewOptions&    GetViewOptions() const { return theOptions; }
 
@@ -141,9 +141,9 @@ class ScViewCfg : public ScViewOptions
     DECL_LINK_TYPED( DisplayCommitHdl, ScLinkConfigItem&, void );
     DECL_LINK_TYPED( GridCommitHdl, ScLinkConfigItem&, void );
 
-    static com::sun::star::uno::Sequence<OUString> GetLayoutPropertyNames();
-    static com::sun::star::uno::Sequence<OUString> GetDisplayPropertyNames();
-    static com::sun::star::uno::Sequence<OUString> GetGridPropertyNames();
+    static css::uno::Sequence<OUString> GetLayoutPropertyNames();
+    static css::uno::Sequence<OUString> GetDisplayPropertyNames();
+    static css::uno::Sequence<OUString> GetGridPropertyNames();
 
 public:
             ScViewCfg();

@@ -113,7 +113,7 @@ static void _addFile( Reference< XInterface >& xRootFolder, Reference< XSingleSe
     }
 }
 
-void XMLFilterJarHelper::addFile( Reference< XInterface > xRootFolder, Reference< XSingleServiceFactory > xFactory, const OUString& rSourceFile ) throw( Exception )
+void XMLFilterJarHelper::addFile( Reference< XInterface > xRootFolder, Reference< XSingleServiceFactory > xFactory, const OUString& rSourceFile ) throw( Exception, std::exception )
 {
     if( !rSourceFile.isEmpty() &&
         !rSourceFile.startsWith("http:") &&
@@ -185,7 +185,7 @@ bool XMLFilterJarHelper::savePackage( const OUString& rPackageURL, const XMLFilt
                         if( !pFilter->maImportXSLT.isEmpty() )
                             addFile( xFilterRoot, xFactory, pFilter->maImportXSLT );
                     }
-                    catch(const com::sun::star::container::ElementExistException&)
+                    catch(const css::container::ElementExistException&)
                     {
                     // in case of same named import / export XSLT the latter
                     // is ignored
@@ -328,8 +328,8 @@ bool XMLFilterJarHelper::copyFile( Reference< XHierarchicalNameAccess > xIfc, OU
     {
         OUString szPackagePath( encodeZipUri( rURL.copy( sVndSunStarPackage.getLength() ) ) );
 
-        if ( ::comphelper::OStorageHelper::PathHasSegment( szPackagePath, OUString( ".." ) )
-          || ::comphelper::OStorageHelper::PathHasSegment( szPackagePath, OUString( "." ) ) )
+        if ( ::comphelper::OStorageHelper::PathHasSegment( szPackagePath, ".." )
+          || ::comphelper::OStorageHelper::PathHasSegment( szPackagePath, "." ) )
             throw lang::IllegalArgumentException();
 
         if( xIfc->hasByHierarchicalName( szPackagePath ) )

@@ -105,7 +105,6 @@ using namespace ::com::sun::star::uno;
 #define SmDocShell
 #include "smslots.hxx"
 
-TYPEINIT1( SmDocShell, SfxObjectShell );
 
 SFX_IMPL_SUPERCLASS_INTERFACE(SmDocShell, SfxObjectShell)
 
@@ -183,7 +182,7 @@ void SmDocShell::SetText(const OUString& rBuffer)
         SetModified(true);
 
         // launch accessible event if necessary
-        SmGraphicAccessible *pAcc = pViewSh ? pViewSh->GetGraphicWindow().GetAccessible_Impl() : 0;
+        SmGraphicAccessible *pAcc = pViewSh ? pViewSh->GetGraphicWindow().GetAccessible_Impl() : nullptr;
         if (pAcc)
         {
             Any aOldValue, aNewValue;
@@ -195,7 +194,7 @@ void SmDocShell::SetText(const OUString& rBuffer)
         }
 
         if ( GetCreateMode() == SfxObjectCreateMode::EMBEDDED )
-            OnDocumentPrinterChanged(0);
+            OnDocumentPrinterChanged(nullptr);
     }
 }
 
@@ -371,7 +370,7 @@ EditEngine& SmDocShell::GetEditEngine()
 
         pEditEngine->EnableUndo( true );
         pEditEngine->SetDefTab( sal_uInt16(
-            Application::GetDefaultDevice()->GetTextWidth(OUString("XXXX"))) );
+            Application::GetDefaultDevice()->GetTextWidth("XXXX")) );
 
         pEditEngine->SetControlWord(
                 (pEditEngine->GetControlWord() | EEControlBits::AUTOINDENTING) &
@@ -491,7 +490,7 @@ Size SmDocShell::GetSize()
 
 void SmDocShell::InvalidateCursor(){
     delete pCursor;
-    pCursor = NULL;
+    pCursor = nullptr;
 }
 
 SmCursor& SmDocShell::GetCursor(){
@@ -587,6 +586,7 @@ Printer* SmDocShell::GetPrt()
                                               SID_PRINTFRAME,      SID_PRINTFRAME,
                                               SID_NO_RIGHT_SPACES, SID_NO_RIGHT_SPACES,
                                               SID_SAVE_ONLY_USED_SYMBOLS, SID_SAVE_ONLY_USED_SYMBOLS,
+                                              SID_AUTO_CLOSE_BRACKETS,    SID_AUTO_CLOSE_BRACKETS,
                                               0);
         SmModule *pp = SM_MOD();
         pp->GetConfig()->ConfigToItemSet(*pOptions);
@@ -625,7 +625,7 @@ void SmDocShell::OnDocumentPrinterChanged( Printer *pPrt )
     Repaint();
     if( aOldSize != GetVisArea().GetSize() && !aText.isEmpty() )
         SetModified( true );
-    pTmpPrinter = 0;
+    pTmpPrinter = nullptr;
 }
 
 void SmDocShell::Repaint()
@@ -648,15 +648,15 @@ void SmDocShell::Repaint()
 
 SmDocShell::SmDocShell( SfxModelFlags i_nSfxCreationFlags )
     : SfxObjectShell(i_nSfxCreationFlags)
-    , pTree(0)
-    , pEditEngineItemPool(0)
-    , pEditEngine(0)
-    , pPrinter(0)
-    , pTmpPrinter(0)
+    , pTree(nullptr)
+    , pEditEngineItemPool(nullptr)
+    , pEditEngine(nullptr)
+    , pPrinter(nullptr)
+    , pTmpPrinter(nullptr)
     , nModifyCount(0)
     , bIsFormulaArranged(false)
 {
-    pCursor = NULL;
+    pCursor = nullptr;
 
     SetPool(&SfxGetpApp()->GetPool());
 
@@ -678,7 +678,7 @@ SmDocShell::~SmDocShell()
 
 
     delete pCursor;
-    pCursor = NULL;
+    pCursor = nullptr;
 
     delete pEditEngine;
     SfxItemPool::Free(pEditEngineItemPool);
@@ -698,10 +698,10 @@ bool SmDocShell::ConvertFrom(SfxMedium &rMedium)
         if (pTree)
         {
             delete pTree;
-            pTree = 0;
+            pTree = nullptr;
             InvalidateCursor();
         }
-        Reference<com::sun::star::frame::XModel> xModel(GetModel());
+        Reference<css::frame::XModel> xModel(GetModel());
         SmXMLImportWrapper aEquation(xModel);
         bSuccess = 0 == aEquation.Import(rMedium);
     }
@@ -713,7 +713,7 @@ bool SmDocShell::ConvertFrom(SfxMedium &rMedium)
             if ( SotStorage::IsStorageFile( pStream ) )
             {
                 tools::SvRef<SotStorage> aStorage = new SotStorage( pStream, false );
-                if ( aStorage->IsStream(OUString("Equation Native")) )
+                if ( aStorage->IsStream("Equation Native") )
                 {
                     // is this a MathType Storage?
                     MathType aEquation( aText );
@@ -730,7 +730,7 @@ bool SmDocShell::ConvertFrom(SfxMedium &rMedium)
         Repaint();
     }
 
-    FinishedLoading( SfxLoadedFlags::ALL );
+    FinishedLoading();
     return bSuccess;
 }
 
@@ -756,17 +756,17 @@ bool SmDocShell::Load( SfxMedium& rMedium )
         uno::Reference < container::XNameAccess > xAccess (xStorage, uno::UNO_QUERY);
         if (
             (
-             xAccess->hasByName( OUString("content.xml") ) &&
-             xStorage->isStreamElement( OUString("content.xml") )
+             xAccess->hasByName( "content.xml" ) &&
+             xStorage->isStreamElement( "content.xml" )
             ) ||
             (
-             xAccess->hasByName( OUString("Content.xml") ) &&
-             xStorage->isStreamElement( OUString("Content.xml") )
+             xAccess->hasByName( "Content.xml" ) &&
+             xStorage->isStreamElement( "Content.xml" )
             )
            )
         {
             // is this a fabulous math package ?
-            Reference<com::sun::star::frame::XModel> xModel(GetModel());
+            Reference<css::frame::XModel> xModel(GetModel());
             SmXMLImportWrapper aEquation(xModel);
             sal_uLong nError = aEquation.Import(rMedium);
             bRet = 0 == nError;
@@ -780,7 +780,7 @@ bool SmDocShell::Load( SfxMedium& rMedium )
         Repaint();
     }
 
-    FinishedLoading( SfxLoadedFlags::ALL );
+    FinishedLoading();
     return bRet;
 }
 
@@ -798,7 +798,7 @@ bool SmDocShell::Save()
         if( pTree && !IsFormulaArranged() )
             ArrangeFormula();
 
-        Reference<com::sun::star::frame::XModel> xModel(GetModel());
+        Reference<css::frame::XModel> xModel(GetModel());
         SmXMLExportWrapper aEquation(xModel);
         aEquation.SetFlat(false);
         return aEquation.Export(*GetMedium());
@@ -816,7 +816,7 @@ bool SmDocShell::ReplaceBadChars()
 
     if (pEditEngine)
     {
-        OUStringBuffer aBuf( pEditEngine->GetText( LINEEND_LF ) );
+        OUStringBuffer aBuf( pEditEngine->GetText() );
 
         for (sal_Int32 i = 0;  i < aBuf.getLength();  ++i)
         {
@@ -839,7 +839,7 @@ void SmDocShell::UpdateText()
 {
     if (pEditEngine && pEditEngine->IsModified())
     {
-        OUString aEngTxt( pEditEngine->GetText( LINEEND_LF ) );
+        OUString aEngTxt( pEditEngine->GetText() );
         if (GetText() != aEngTxt)
             SetText( aEngTxt );
     }
@@ -860,7 +860,7 @@ bool SmDocShell::SaveAs( SfxMedium& rMedium )
         if( pTree && !IsFormulaArranged() )
             ArrangeFormula();
 
-        Reference<com::sun::star::frame::XModel> xModel(GetModel());
+        Reference<css::frame::XModel> xModel(GetModel());
         SmXMLExportWrapper aEquation(xModel);
         aEquation.SetFlat(false);
         bRet = aEquation.Export(rMedium);
@@ -882,14 +882,14 @@ bool SmDocShell::ConvertTo( SfxMedium &rMedium )
         const OUString& rFltName = pFlt->GetFilterName();
         if(rFltName == STAROFFICE_XML)
         {
-            Reference<com::sun::star::frame::XModel> xModel(GetModel());
+            Reference<css::frame::XModel> xModel(GetModel());
             SmXMLExportWrapper aEquation(xModel);
             aEquation.SetFlat(false);
             bRet = aEquation.Export(rMedium);
         }
         else if(rFltName == MATHML_XML)
         {
-            Reference<com::sun::star::frame::XModel> xModel(GetModel());
+            Reference<css::frame::XModel> xModel(GetModel());
             SmXMLExportWrapper aEquation(xModel);
             aEquation.SetFlat(true);
             bRet = aEquation.Export(rMedium);
@@ -926,7 +926,7 @@ void SmDocShell::readFormulaOoxml( oox::formulaimport::XmlStream& stream )
     SetText( aEquation.ConvertToStarMath());
 }
 
-bool SmDocShell::SaveCompleted( const ::com::sun::star::uno::Reference< ::com::sun::star::embed::XStorage >& xStorage )
+bool SmDocShell::SaveCompleted( const css::uno::Reference< css::embed::XStorage >& xStorage )
 {
     if( SfxObjectShell::SaveCompleted( xStorage ))
         return true;
@@ -1188,7 +1188,7 @@ void SmDocShell::GetState(SfxItemSet &rSet)
             {
                 SfxViewFrame* pFrm = SfxViewFrame::GetFirst( this );
                 if( pFrm )
-                    pFrm->GetSlotState( nWh, NULL, &rSet );
+                    pFrm->GetSlotState( nWh, nullptr, &rSet );
                 else
                     rSet.DisableItem( nWh );
             }

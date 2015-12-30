@@ -35,10 +35,10 @@
 #include <vcl/svapp.hxx>
 
 using namespace ::comphelper;
-using namespace ::com::sun::star::uno;
-using namespace ::com::sun::star::lang;
-using namespace ::com::sun::star::beans;
-using namespace ::com::sun::star::ucb;
+using namespace css::uno;
+using namespace css::lang;
+using namespace css::beans;
+using namespace css::ucb;
 
 
 namespace svt
@@ -48,7 +48,7 @@ namespace svt
 
 OGenericUnoDialog::OGenericUnoDialog(const Reference< XComponentContext >& _rxContext)
         :OPropertyContainer(GetBroadcastHelper())
-        ,m_pDialog(NULL)
+        ,m_pDialog(nullptr)
         ,m_bExecuting(false)
         ,m_bCanceled(false)
         ,m_bTitleAmbiguous(true)
@@ -56,9 +56,9 @@ OGenericUnoDialog::OGenericUnoDialog(const Reference< XComponentContext >& _rxCo
         ,m_bNeedInitialization( false )
         ,m_aContext(_rxContext)
 {
-    registerProperty(OUString(UNODIALOG_PROPERTY_TITLE), UNODIALOG_PROPERTY_ID_TITLE, PropertyAttribute::TRANSIENT,
+    registerProperty(UNODIALOG_PROPERTY_TITLE, UNODIALOG_PROPERTY_ID_TITLE, PropertyAttribute::TRANSIENT,
         &m_sTitle, cppu::UnoType<decltype(m_sTitle)>::get());
-    registerProperty(OUString(UNODIALOG_PROPERTY_PARENT), UNODIALOG_PROPERTY_ID_PARENT, PropertyAttribute::TRANSIENT,
+    registerProperty(UNODIALOG_PROPERTY_PARENT, UNODIALOG_PROPERTY_ID_PARENT, PropertyAttribute::TRANSIENT,
         &m_xParent, cppu::UnoType<decltype(m_xParent)>::get());
 }
 
@@ -147,7 +147,7 @@ void SAL_CALL OGenericUnoDialog::setTitle( const OUString& _rTitle ) throw(Runti
 
     try
     {
-        setPropertyValue(OUString(UNODIALOG_PROPERTY_TITLE), makeAny(_rTitle));
+        setPropertyValue(UNODIALOG_PROPERTY_TITLE, makeAny(_rTitle));
     }
     catch(RuntimeException&)
     {
@@ -170,7 +170,7 @@ bool OGenericUnoDialog::impl_ensureDialog_lck()
     // get the parameters for the dialog from the current settings
 
     // the parent window
-    vcl::Window* pParent = NULL;
+    vcl::Window* pParent = nullptr;
     VCLXWindow* pImplementation = VCLXWindow::GetImplementation(m_xParent);
     if (pImplementation)
         pParent = pImplementation->GetWindow();
@@ -202,7 +202,7 @@ sal_Int16 SAL_CALL OGenericUnoDialog::execute(  ) throw(RuntimeException, std::e
     // both creation and execution of the dialog must be guarded with the SolarMutex, so be generous here
     SolarMutexGuard aSolarGuard;
 
-    Dialog* pDialogToExecute = NULL;
+    Dialog* pDialogToExecute = nullptr;
     // create the dialog, if necessary
     {
         UnoDialogEntryGuard aGuard( *this );
@@ -322,7 +322,7 @@ IMPL_LINK_TYPED( OGenericUnoDialog, OnDialogDying, VclWindowEvent&, _rEvent, voi
 {
     OSL_ENSURE( _rEvent.GetWindow() == m_pDialog, "OGenericUnoDialog::OnDialogDying: where does this come from?" );
     if ( _rEvent.GetId() == VCLEVENT_OBJECT_DYING )
-        m_pDialog = NULL;
+        m_pDialog = nullptr;
 }
 
 

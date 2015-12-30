@@ -20,33 +20,21 @@
 #include "ComponentDefinition.hxx"
 #include "apitools.hxx"
 #include "dbastrings.hrc"
-#include "module_dba.hxx"
-#include "services.hxx"
 
 #include <boost/noncopyable.hpp>
 #include <tools/debug.hxx>
 #include <osl/diagnose.h>
 #include <comphelper/sequence.hxx>
-#include <com/sun/star/lang/DisposedException.hpp>
 #include <com/sun/star/beans/PropertyAttribute.hpp>
 #include <comphelper/property.hxx>
 #include "definitioncolumn.hxx"
-#include <cppuhelper/implbase.hxx>
 
 using namespace ::com::sun::star::uno;
 using namespace ::com::sun::star::sdbc;
 using namespace ::com::sun::star::lang;
-
 using namespace ::com::sun::star::beans;
 using namespace ::com::sun::star::container;
-using namespace ::osl;
-using namespace ::comphelper;
 using namespace ::cppu;
-
-extern "C" void SAL_CALL createRegistryInfo_OComponentDefinition()
-{
-    static ::dba::OAutoRegistration< ::dbaccess::OComponentDefinition > aAutoRegistration;
-}
 
 namespace dbaccess
 {
@@ -62,16 +50,16 @@ protected:
 public:
     explicit OColumnPropertyListener(OComponentDefinition* _pComponent) : m_pComponent(_pComponent){}
     // XPropertyChangeListener
-    virtual void SAL_CALL propertyChange( const PropertyChangeEvent& /*_rEvent*/ ) throw (RuntimeException, std::exception) SAL_OVERRIDE
+    virtual void SAL_CALL propertyChange( const PropertyChangeEvent& /*_rEvent*/ ) throw (RuntimeException, std::exception) override
     {
         if ( m_pComponent )
             m_pComponent->notifyDataSourceModified();
     }
     // XEventListener
-    virtual void SAL_CALL disposing( const EventObject& /*_rSource*/ ) throw (RuntimeException, std::exception) SAL_OVERRIDE
+    virtual void SAL_CALL disposing( const EventObject& /*_rSource*/ ) throw (RuntimeException, std::exception) override
     {
     }
-    void clear() { m_pComponent = NULL; }
+    void clear() { m_pComponent = nullptr; }
 };
 
 OComponentDefinition_Impl::OComponentDefinition_Impl()
@@ -159,33 +147,14 @@ css::uno::Sequence<sal_Int8> OComponentDefinition::getImplementationId()
 IMPLEMENT_GETTYPES3(OComponentDefinition,ODataSettings,OContentHelper,OComponentDefinition_BASE);
 IMPLEMENT_FORWARD_XINTERFACE3( OComponentDefinition,OContentHelper,ODataSettings,OComponentDefinition_BASE)
 
-OUString OComponentDefinition::getImplementationName_static(  ) throw(RuntimeException)
+OUString SAL_CALL OComponentDefinition::getImplementationName() throw(RuntimeException, std::exception)
 {
     return OUString("com.sun.star.comp.dba.OComponentDefinition");
 }
 
-OUString SAL_CALL OComponentDefinition::getImplementationName(  ) throw(RuntimeException, std::exception)
+Sequence< OUString > SAL_CALL OComponentDefinition::getSupportedServiceNames() throw(RuntimeException, std::exception)
 {
-    return getImplementationName_static();
-}
-
-Sequence< OUString > OComponentDefinition::getSupportedServiceNames_static(  ) throw(RuntimeException)
-{
-    Sequence< OUString > aServices(2);
-    aServices[0] = "com.sun.star.sdb.TableDefinition";
-    aServices[1] = "com.sun.star.ucb.Content";
-
-    return aServices;
-}
-
-Sequence< OUString > SAL_CALL OComponentDefinition::getSupportedServiceNames(  ) throw(RuntimeException, std::exception)
-{
-    return getSupportedServiceNames_static();
-}
-
-Reference< XInterface > OComponentDefinition::Create( const Reference< XComponentContext >& _rxContext )
-{
-    return *(new OComponentDefinition( _rxContext, NULL, TContentPtr( new OComponentDefinition_Impl ) ) );
+    return { "com.sun.star.sdb.TableDefinition", "com.sun.star.ucb.Content" };
 }
 
 void SAL_CALL OComponentDefinition::disposing()
@@ -240,7 +209,7 @@ Reference< XNameAccess> OComponentDefinition::getColumns() throw (RuntimeExcepti
         for ( ; aIter != aEnd; ++aIter )
             aNames.push_back( aIter->first );
 
-        m_xColumns = new OColumns( *this, m_aMutex, true, aNames, this, NULL, true, false, false );
+        m_xColumns = new OColumns( *this, m_aMutex, true, aNames, this, nullptr, true, false, false );
         m_xColumns->setParent( *this );
     }
     return m_xColumns.get();
@@ -299,5 +268,13 @@ void OComponentDefinition::columnAppended( const Reference< XPropertySet >& _rxS
 }
 
 }   // namespace dbaccess
+
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_dba_OComponentDefinition(css::uno::XComponentContext* context,
+        css::uno::Sequence<css::uno::Any> const &)
+{
+    return cppu::acquire(new dbaccess::OComponentDefinition(
+            context, nullptr, dbaccess::TContentPtr(new dbaccess::OComponentDefinition_Impl)));
+}
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

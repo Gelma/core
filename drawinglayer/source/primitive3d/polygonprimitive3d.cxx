@@ -73,9 +73,9 @@ namespace drawinglayer
 {
     namespace primitive3d
     {
-        Primitive3DSequence PolygonStrokePrimitive3D::create3DDecomposition(const geometry::ViewInformation3D& /*rViewInformation*/) const
+        Primitive3DContainer PolygonStrokePrimitive3D::create3DDecomposition(const geometry::ViewInformation3D& /*rViewInformation*/) const
         {
-            Primitive3DSequence aRetval;
+            Primitive3DContainer aRetval;
 
             if(getB3DPolygon().count())
             {
@@ -88,11 +88,11 @@ namespace drawinglayer
                 else
                 {
                     // apply LineStyle
-                    basegfx::tools::applyLineDashing(getB3DPolygon(), getStrokeAttribute().getDotDashArray(), &aHairLinePolyPolygon, 0, getStrokeAttribute().getFullDotDashLen());
+                    basegfx::tools::applyLineDashing(getB3DPolygon(), getStrokeAttribute().getDotDashArray(), &aHairLinePolyPolygon, nullptr, getStrokeAttribute().getFullDotDashLen());
                 }
 
                 // prepare result
-                aRetval.realloc(aHairLinePolyPolygon.count());
+                aRetval.resize(aHairLinePolyPolygon.count());
 
                 if(getLineAttribute().getWidth())
                 {

@@ -17,29 +17,26 @@ namespace cmis
 {
     class AuthProvider : public libcmis::AuthProvider
     {
-        const com::sun::star::uno::Reference< com::sun::star::ucb::XCommandEnvironment>& m_xEnv;
-        static com::sun::star::uno::Reference< com::sun::star::ucb::XCommandEnvironment> sm_xEnv;
+        const css::uno::Reference< css::ucb::XCommandEnvironment>& m_xEnv;
+        static css::uno::Reference< css::ucb::XCommandEnvironment> sm_xEnv;
         OUString m_sUrl;
         OUString m_sBindingUrl;
 
         public:
-            AuthProvider ( const com::sun::star::uno::Reference<
-                                   com::sun::star::ucb::XCommandEnvironment>& xEnv,
+            AuthProvider ( const css::uno::Reference< css::ucb::XCommandEnvironment>& xEnv,
                            const OUString& sUrl,
                            const OUString& sBindingUrl ):
                 m_xEnv( xEnv ), m_sUrl( sUrl ), m_sBindingUrl( sBindingUrl ) { }
 
-            bool authenticationQuery( std::string& username, std::string& password ) SAL_OVERRIDE;
+            bool authenticationQuery( std::string& username, std::string& password ) override;
 
             static char* onedriveAuthCodeFallback( const char* url,
                     const char* /*username*/,
                     const char* /*password*/ );
 
-            static void setXEnv( const com::sun::star::uno::Reference<
-                    com::sun::star::ucb::XCommandEnvironment>& xEnv ) { sm_xEnv = xEnv; }
+            static void setXEnv( const css::uno::Reference< css::ucb::XCommandEnvironment>& xEnv ) { sm_xEnv = xEnv; }
 
-            static com::sun::star::uno::Reference< 
-                com::sun::star::ucb::XCommandEnvironment> getXEnv( ) { return sm_xEnv; }
+            static css::uno::Reference< css::ucb::XCommandEnvironment> getXEnv( ) { return sm_xEnv; }
     };
 }
 

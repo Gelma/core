@@ -62,7 +62,6 @@ class XMLFootnoteConfigHelper : public SvXMLImportContext
     bool bIsBegin;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     XMLFootnoteConfigHelper(
         SvXMLImport& rImport,
@@ -71,12 +70,11 @@ public:
         XMLFootnoteConfigurationImportContext& rConfigImport,
         bool bBegin);
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
-    virtual void Characters( const OUString& rChars ) SAL_OVERRIDE;
+    virtual void Characters( const OUString& rChars ) override;
 };
 
-TYPEINIT1( XMLFootnoteConfigHelper, SvXMLImportContext );
 
 XMLFootnoteConfigHelper::XMLFootnoteConfigHelper(
     SvXMLImport& rImport,
@@ -115,7 +113,6 @@ void XMLFootnoteConfigHelper::Characters( const OUString& rChars )
 
 
 
-TYPEINIT1( XMLFootnoteConfigurationImportContext, SvXMLStyleContext );
 
 XMLFootnoteConfigurationImportContext::XMLFootnoteConfigurationImportContext(
     SvXMLImport& rImport,
@@ -137,7 +134,7 @@ XMLFootnoteConfigurationImportContext::XMLFootnoteConfigurationImportContext(
 ,   sPropertyBeginNotice("BeginNotice")
 ,   sNumFormat("1")
 ,   sNumSync("false")
-,   pAttrTokenMap(NULL)
+,   pAttrTokenMap(nullptr)
 ,   nOffset(0)
 ,   nNumbering(FootnoteNumbering::PER_PAGE)
 ,   bPosition(false)
@@ -208,7 +205,7 @@ static const SvXMLTokenMapEntry aTextFieldAttrTokenMap[] =
 const SvXMLTokenMap&
     XMLFootnoteConfigurationImportContext::GetFtnConfigAttrTokenMap()
 {
-    if (NULL == pAttrTokenMap)
+    if (nullptr == pAttrTokenMap)
     {
         pAttrTokenMap = new SvXMLTokenMap(aTextFieldAttrTokenMap);
     }
@@ -294,7 +291,7 @@ SvXMLImportContext *XMLFootnoteConfigurationImportContext::CreateChildContext(
     const OUString& rLocalName,
     const Reference<XAttributeList> & xAttrList )
 {
-    SvXMLImportContext* pContext = NULL;
+    SvXMLImportContext* pContext = nullptr;
 
     if (!bIsEndnote)
     {
@@ -320,7 +317,7 @@ SvXMLImportContext *XMLFootnoteConfigurationImportContext::CreateChildContext(
     }
     // else: endnote -> default context
 
-    if (pContext == NULL)
+    if (pContext == nullptr)
     {
         // default: delegate to super class
         pContext = SvXMLStyleContext::CreateChildContext(nPrefix,

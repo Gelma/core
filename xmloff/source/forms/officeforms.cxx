@@ -40,7 +40,6 @@ namespace xmloff
     using ::com::sun::star::xml::sax::XAttributeList;
 
     //= OFormsRootImport
-    TYPEINIT1(OFormsRootImport, SvXMLImportContext);
     OFormsRootImport::OFormsRootImport( SvXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLocalName )
         :SvXMLImportContext(rImport, nPrfx, rLocalName)
     {
@@ -53,7 +52,7 @@ namespace xmloff
     SvXMLImportContext* OFormsRootImport::CreateChildContext( sal_uInt16 _nPrefix, const OUString& _rLocalName,
             const Reference< XAttributeList>& xAttrList )
     {
-        SvXMLImportContext* pRet = 0;
+        SvXMLImportContext* pRet = nullptr;
         try
         {
             pRet = GetImport().GetFormImport()->createContext( _nPrefix, _rLocalName, xAttrList );
@@ -118,7 +117,7 @@ namespace xmloff
 
     //= OFormsRootExport
     OFormsRootExport::OFormsRootExport( SvXMLExport& _rExp )
-        :m_pImplElement(NULL)
+        :m_pImplElement(nullptr)
     {
         addModelAttributes(_rExp);
 

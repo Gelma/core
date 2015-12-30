@@ -79,30 +79,30 @@ public:
     virtual                 ~EnhancedCustomShapeEngine();
 
     // XInterface
-    virtual void SAL_CALL   acquire() throw() SAL_OVERRIDE;
-    virtual void SAL_CALL   release() throw() SAL_OVERRIDE;
+    virtual void SAL_CALL   acquire() throw() override;
+    virtual void SAL_CALL   release() throw() override;
 
     // XInitialization
     virtual void SAL_CALL initialize( const css::uno::Sequence< css::uno::Any >& aArguments )
-        throw ( css::uno::Exception, css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( css::uno::Exception, css::uno::RuntimeException, std::exception ) override;
 
     // XServiceInfo
     virtual OUString SAL_CALL getImplementationName()
-        throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( css::uno::RuntimeException, std::exception ) override;
     virtual sal_Bool SAL_CALL supportsService( const OUString& rServiceName )
-        throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( css::uno::RuntimeException, std::exception ) override;
     virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-        throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( css::uno::RuntimeException, std::exception ) override;
 
     // XCustomShapeEngine
     virtual css::uno::Reference< css::drawing::XShape > SAL_CALL render()
-        throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( css::uno::RuntimeException, std::exception ) override;
     virtual css::awt::Rectangle SAL_CALL getTextBounds()
-        throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( css::uno::RuntimeException, std::exception ) override;
     virtual css::drawing::PolyPolygonBezierCoords SAL_CALL getLineGeometry()
-        throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( css::uno::RuntimeException, std::exception ) override;
     virtual css::uno::Sequence< css::uno::Reference< css::drawing::XCustomShapeHandle > > SAL_CALL getInteraction()
-        throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( css::uno::RuntimeException, std::exception ) override;
 };
 
 EnhancedCustomShapeEngine::EnhancedCustomShapeEngine() :
@@ -158,9 +158,7 @@ sal_Bool SAL_CALL EnhancedCustomShapeEngine::supportsService( const OUString& rS
 Sequence< OUString > SAL_CALL EnhancedCustomShapeEngine::getSupportedServiceNames()
     throw ( RuntimeException, std::exception )
 {
-    Sequence< OUString > aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.drawing.CustomShapeEngine";
+    Sequence<OUString> aRet { "com.sun.star.drawing.CustomShapeEngine" };
     return aRet;
 }
 
@@ -176,7 +174,7 @@ SdrObject* EnhancedCustomShapeEngine::ImplForceGroupWithText( const SdrObjCustom
         {
             if ( pRenderedShape )
             {
-                if ( !pRenderedShape->ISA( SdrObjGroup ) )
+                if ( dynamic_cast<const SdrObjGroup*>( pRenderedShape) ==  nullptr )
                 {
                     SdrObject* pTmp = pRenderedShape;
                     pRenderedShape = new SdrObjGroup();
@@ -193,7 +191,7 @@ SdrObject* EnhancedCustomShapeEngine::ImplForceGroupWithText( const SdrObjCustom
         {
             // #i37011# also create a text object and add at rPos + 1
             SdrObject* pTextObj = SdrObjFactory::MakeNewObject(
-                pCustoObj->GetObjInventor(), OBJ_TEXT, 0L, pCustoObj->GetModel());
+                pCustoObj->GetObjInventor(), OBJ_TEXT, nullptr, pCustoObj->GetModel());
 
             // Copy text content
             OutlinerParaObject* pParaObj = pCustoObj->GetOutlinerParaObject();
@@ -231,7 +229,7 @@ SdrObject* EnhancedCustomShapeEngine::ImplForceGroupWithText( const SdrObjCustom
 
             if ( pRenderedShape )
             {
-                if ( !pRenderedShape->ISA( SdrObjGroup ) )
+                if ( dynamic_cast<const SdrObjGroup*>( pRenderedShape) ==  nullptr )
                 {
                     SdrObject* pTmp = pRenderedShape;
                     pRenderedShape = new SdrObjGroup();
@@ -246,7 +244,7 @@ SdrObject* EnhancedCustomShapeEngine::ImplForceGroupWithText( const SdrObjCustom
         // force group
         if ( pRenderedShape )
         {
-            if ( !pRenderedShape->ISA( SdrObjGroup ) )
+            if ( dynamic_cast<const SdrObjGroup*>( pRenderedShape) ==  nullptr )
             {
                 SdrObject* pTmp = pRenderedShape;
                 pRenderedShape = new SdrObjGroup();
@@ -273,7 +271,7 @@ Reference< drawing::XShape > SAL_CALL EnhancedCustomShapeEngine::render()
     throw ( RuntimeException, std::exception )
 {
     Reference< drawing::XShape > xShape;
-    SdrObject* pSdrObjCustomShape( PTR_CAST( SdrObjCustomShape, GetSdrObjectFromXShape( mxShape ) ) );
+    SdrObject* pSdrObjCustomShape( dynamic_cast<SdrObjCustomShape*>( GetSdrObjectFromXShape( mxShape ) )  );
     if ( pSdrObjCustomShape )
     {
         // retrieving the TextPath property to check if feature is enabled
@@ -360,7 +358,7 @@ Reference< drawing::XShape > SAL_CALL EnhancedCustomShapeEngine::render()
         {
             aCustomShape2d.ApplyGluePoints( pRenderedShape );
             xShape = SvxDrawPage::CreateShapeByTypeAndInventor( pRenderedShape->GetObjIdentifier(),
-                pRenderedShape->GetObjInventor(), pRenderedShape, NULL );
+                pRenderedShape->GetObjInventor(), pRenderedShape );
         }
         SetTemporary( xShape );
     }
@@ -439,18 +437,18 @@ drawing::PolyPolygonBezierCoords SAL_CALL EnhancedCustomShapeEngine::getLineGeom
 
             while ( aIter.IsMore() )
             {
-                SdrObject* pNewObj = NULL;
+                SdrObject* pNewObj = nullptr;
                 basegfx::B2DPolyPolygon aPP;
                 const SdrObject* pNext = aIter.Next();
 
-                if ( pNext->ISA( SdrPathObj ) )
+                if ( dynamic_cast<const SdrPathObj*>( pNext) !=  nullptr )
                 {
                     aPP = static_cast<const SdrPathObj*>(pNext)->GetPathPoly();
                 }
                 else
                 {
                     pNewObj = pNext->ConvertToPolyObj( false, false );
-                    SdrPathObj* pPath = PTR_CAST( SdrPathObj, pNewObj );
+                    SdrPathObj* pPath = dynamic_cast<SdrPathObj*>( pNewObj  );
                     if ( pPath )
                         aPP = pPath->GetPathPoly();
                 }

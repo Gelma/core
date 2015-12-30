@@ -35,18 +35,18 @@
 class AccFrameEventListener: public AccEventListener
 {
 public:
-    AccFrameEventListener(com::sun::star::accessibility::XAccessible* pAcc, AccObjectManagerAgent* Agent);
+    AccFrameEventListener(css::accessibility::XAccessible* pAcc, AccObjectManagerAgent* Agent);
     virtual ~AccFrameEventListener();
 
     // XAccessibleEventListener
-    virtual void SAL_CALL notifyEvent( const ::com::sun::star::accessibility::AccessibleEventObject& aEvent ) throw (::com::sun::star::uno::RuntimeException);
+    virtual void SAL_CALL notifyEvent( const css::accessibility::AccessibleEventObject& aEvent ) throw (css::uno::RuntimeException) override;
 
     //for child changed event
     virtual void HandleChildChangedEvent(
             css::uno::Any oldValue, css::uno::Any newValue);
 
     //state changed
-    virtual void SetComponentState(short state, bool enable) SAL_OVERRIDE;
+    virtual void SetComponentState(short state, bool enable) override;
 
 };
 

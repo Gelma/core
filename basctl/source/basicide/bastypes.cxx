@@ -40,16 +40,14 @@ namespace basctl
 using namespace ::com::sun::star::uno;
 using namespace ::com::sun::star;
 
-TYPEINIT1( SbxItem, SfxPoolItem );
-
 BaseWindow::BaseWindow( vcl::Window* pParent, const ScriptDocument& rDocument, const OUString& aLibName, const OUString& aName )
     :Window( pParent, WinBits( WB_3DLOOK ) )
     ,m_aDocument( rDocument )
     ,m_aLibName( aLibName )
     ,m_aName( aName )
 {
-    pShellHScrollBar = 0;
-    pShellVScrollBar = 0;
+    pShellHScrollBar = nullptr;
+    pShellVScrollBar = nullptr;
     nStatus = 0;
 }
 
@@ -209,7 +207,7 @@ bool BaseWindow::IsPasteAllowed ()
 
 ::svl::IUndoManager* BaseWindow::GetUndoManager()
 {
-    return NULL;
+    return nullptr;
 }
 
 SearchOptionFlags BaseWindow::GetSearchOptions()
@@ -268,7 +266,7 @@ WinBits const DockingWindow::StyleBits =
 
 DockingWindow::DockingWindow (vcl::Window* pParent) :
     ::DockingWindow(pParent, StyleBits),
-    pLayout(0),
+    pLayout(nullptr),
     nShowCount(0)
 { }
 
@@ -653,7 +651,7 @@ void CutLines( OUString& rStr, sal_Int32 nStartLine, sal_Int32 nLines, bool bEra
         nLine++;
     }
 
-    DBG_ASSERTWARNING( nStartPos != -1, "CutLines: Startzeile nicht gefunden!" );
+    SAL_WARN_IF( nStartPos == -1, "basctl.basicide", "CutLines: Startzeile nicht gefunden!" );
 
     if ( nStartPos == -1 )
         return;
@@ -734,7 +732,7 @@ void LibInfos::InsertInfo (
 {
     Key aKey(rDocument, rLibName);
     m_aMap.erase(aKey);
-    m_aMap.insert(Map::value_type(aKey, Item(rDocument, rLibName, rCurrentName, eCurrentType)));
+    m_aMap.insert(Map::value_type(aKey, Item(rCurrentName, eCurrentType)));
 }
 
 void LibInfos::RemoveInfoFor (ScriptDocument const& rDocument)
@@ -752,7 +750,7 @@ LibInfos::Item const* LibInfos::GetInfo (
 )
 {
     Map::iterator it = m_aMap.find(Key(rDocument, rLibName));
-    return it != m_aMap.end() ? &it->second : 0;
+    return it != m_aMap.end() ? &it->second : nullptr;
 }
 
 LibInfos::Key::Key (ScriptDocument const& rDocument, OUString const& rLibName) :
@@ -773,13 +771,9 @@ size_t LibInfos::Key::Hash::operator () (Key const& rKey) const
 }
 
 LibInfos::Item::Item (
-    ScriptDocument const& rDocument,
-    OUString const& rLibName,
     OUString const& rCurrentName,
     ItemType eCurrentType
 ) :
-    m_aDocument(rDocument),
-    m_aLibName(rLibName),
     m_aCurrentName(rCurrentName),
     m_eCurrentType(eCurrentType)
 { }

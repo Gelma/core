@@ -191,9 +191,9 @@ void SfxVersionsTabListBox_Impl::setColSizes()
 }
 
 SfxVersionDialog::SfxVersionDialog ( SfxViewFrame* pVwFrame, bool bIsSaveVersionOnClose )
-    : SfxModalDialog(NULL, "VersionsOfDialog", "sfx/ui/versionsofdialog.ui")
+    : SfxModalDialog(nullptr, "VersionsOfDialog", "sfx/ui/versionsofdialog.ui")
     , pViewFrame(pVwFrame)
-    , m_pTable(NULL)
+    , m_pTable(nullptr)
     , m_bIsSaveVersionOnClose(bIsSaveVersionOnClose)
 {
     get(m_pSaveButton, "save");
@@ -377,13 +377,13 @@ IMPL_LINK_NOARG_TYPED(SfxVersionDialog, DClickHdl_Impl, SvTreeListBox*, bool)
 
 IMPL_LINK_NOARG_TYPED(SfxVersionDialog, SelectHdl_Impl, SvTreeListBox*, void)
 {
-    bool bEnable = ( m_pVersionBox->FirstSelected() != NULL );
+    bool bEnable = ( m_pVersionBox->FirstSelected() != nullptr );
     SfxObjectShell* pObjShell = pViewFrame->GetObjectShell();
     m_pDeleteButton->Enable(bEnable && !pObjShell->IsReadOnly());
     m_pOpenButton->Enable(bEnable);
     m_pViewButton->Enable(bEnable);
 
-    const SfxPoolItem *pDummy=NULL;
+    const SfxPoolItem *pDummy=nullptr;
     pViewFrame->GetDispatcher()->QueryState( SID_DOCUMENT_MERGE, pDummy );
     SfxItemState eState = pViewFrame->GetDispatcher()->QueryState( SID_DOCUMENT_COMPARE, pDummy );
     m_pCompareButton->Enable(bEnable && eState >= SfxItemState::DEFAULT);
@@ -410,8 +410,8 @@ IMPL_LINK_TYPED( SfxVersionDialog, ButtonHdl_Impl, Button*, pButton, void )
             pObjShell->SetModified();
             const SfxPoolItem* aItems[2];
             aItems[0] = &aComment;
-            aItems[1] = NULL;
-            pViewFrame->GetBindings().ExecuteSynchron( SID_SAVEDOC, aItems, 0 );
+            aItems[1] = nullptr;
+            pViewFrame->GetBindings().ExecuteSynchron( SID_SAVEDOC, aItems );
             m_pVersionBox->SetUpdateMode( false );
             m_pVersionBox->Clear();
             Init_Impl();
@@ -445,8 +445,8 @@ IMPL_LINK_TYPED( SfxVersionDialog, ButtonHdl_Impl, Button*, pButton, void )
         aSet.Put( SfxStringItem( SID_FILE_NAME, pObjShell->GetMedium()->GetName() ) );
 
         SfxItemSet* pSet = pObjShell->GetMedium()->GetItemSet();
-        SFX_ITEMSET_ARG( pSet, pFilterItem, SfxStringItem, SID_FILTER_NAME, false );
-        SFX_ITEMSET_ARG( pSet, pFilterOptItem, SfxStringItem, SID_FILE_FILTEROPTIONS, false );
+        const SfxStringItem* pFilterItem = SfxItemSet::GetItem<SfxStringItem>(pSet, SID_FILTER_NAME, false);
+        const SfxStringItem* pFilterOptItem = SfxItemSet::GetItem<SfxStringItem>(pSet, SID_FILE_FILTEROPTIONS, false);
         if ( pFilterItem )
             aSet.Put( *pFilterItem );
         if ( pFilterOptItem )
@@ -524,9 +524,9 @@ IMPL_LINK_TYPED(SfxViewVersionDialog_Impl, ButtonHdl, Button*, pButton, void)
 }
 
 SfxCmisVersionsDialog::SfxCmisVersionsDialog ( SfxViewFrame* pVwFrame )
-    : SfxModalDialog(NULL, "VersionsCmisDialog", "sfx/ui/versionscmis.ui")
+    : SfxModalDialog(nullptr, "VersionsCmisDialog", "sfx/ui/versionscmis.ui")
     , pViewFrame(pVwFrame)
-    , m_pTable(NULL)
+    , m_pTable(nullptr)
 {
     get(m_pOpenButton, "open");
     get(m_pViewButton, "show");

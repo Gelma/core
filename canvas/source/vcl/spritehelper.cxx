@@ -93,7 +93,7 @@ namespace vclcanvas
         }
 
         // log output pos in device pixel
-        SAL_INFO("canva.vcl", "SpriteHelper::redraw(): output pos is (" <<
+        SAL_INFO("canvas.vcl", "SpriteHelper::redraw(): output pos is (" <<
                  rPos.getX() << "," << rPos.getY() << ")");
 
         const double fAlpha( getAlpha() );
@@ -324,7 +324,7 @@ namespace vclcanvas
 
                     OUString text( ::rtl::math::doubleToUString( getPriority(),
                                                                         rtl_math_StringFormat_F,
-                                                                        2,'.',NULL,' ') );
+                                                                        2,'.',nullptr,' ') );
 
                     rTargetSurface.DrawText( aOutPos+Point(2,2), text );
                     SAL_INFO( "canvas.vcl",

@@ -117,7 +117,7 @@ namespace dbaui
         DECL_LINK_TYPED( OnScroll, ScrollBar*, void);
 
         DECL_LINK_TYPED( FormatClickHdl, Button *, void );
-        DECL_LINK( ChangeHdl, ListBox * );
+        DECL_LINK_TYPED( ChangeHdl, ListBox&, void );
 
         // used by ActivatePropertyField
         DECL_LINK_TYPED( OnControlFocusLost, Control&, void );
@@ -175,14 +175,13 @@ namespace dbaui
     public:
         OFieldDescControl( vcl::Window* pParent, OTableDesignHelpBar* pHelpBar);
         virtual ~OFieldDescControl();
-        virtual void        dispose() SAL_OVERRIDE;
+        virtual void        dispose() override;
 
         void                DisplayData(OFieldDescription* pFieldDescr );
 
         void                SaveData( OFieldDescription* pFieldDescr );
 
         void                SetControlText( sal_uInt16 nControlId, const OUString& rText );
-        OUString            GetControlText( sal_uInt16 nControlId );
         void                SetReadOnly( bool bReadOnly );
 
         // when resize is called
@@ -196,9 +195,9 @@ namespace dbaui
         void                paste();
 
         void                Init();
-        virtual void        GetFocus() SAL_OVERRIDE;
-        virtual void        LoseFocus() SAL_OVERRIDE;
-        virtual void        Resize() SAL_OVERRIDE;
+        virtual void        GetFocus() override;
+        virtual void        LoseFocus() override;
+        virtual void        Resize() override;
 
         virtual css::uno::Reference< css::sdbc::XDatabaseMetaData> getMetaData() = 0;
         virtual css::uno::Reference< css::sdbc::XConnection> getConnection() = 0;

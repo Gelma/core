@@ -14,12 +14,13 @@
 #include <vcl/svapp.hxx>
 #include <vcl/settings.hxx>
 #include "window.h"
+#include <boost/multi_array.hpp>
 
 VclContainer::VclContainer(vcl::Window *pParent, WinBits nStyle)
     : Window(WINDOW_CONTAINER)
     , m_bLayoutDirty(true)
 {
-    ImplInit(pParent, nStyle, NULL);
+    ImplInit(pParent, nStyle, nullptr);
     EnableChildTransparentMode();
     SetPaintTransparent(true);
     SetBackground();
@@ -27,7 +28,7 @@ VclContainer::VclContainer(vcl::Window *pParent, WinBits nStyle)
 
 sal_uInt16 VclContainer::getDefaultAccessibleRole() const
 {
-    return com::sun::star::accessibility::AccessibleRole::PANEL;
+    return css::accessibility::AccessibleRole::PANEL;
 }
 
 Size VclContainer::GetOptimalSize() const
@@ -326,9 +327,9 @@ sal_uInt16 VclBox::getDefaultAccessibleRole() const
 #if defined(WNT)
     //fdo#74284 call Boxes Panels, keep then as "Filler" under
     //at least Linux seeing as that's what Gtk does for GtkBoxes
-    return com::sun::star::accessibility::AccessibleRole::PANEL;
+    return css::accessibility::AccessibleRole::PANEL;
 #else
-    return com::sun::star::accessibility::AccessibleRole::FILLER;
+    return css::accessibility::AccessibleRole::FILLER;
 #endif
 }
 
@@ -673,6 +674,7 @@ static int getButtonPriority(const OString &rType)
     const OUString &rEnv = Application::GetDesktopEnvironment();
 
     if (rEnv.equalsIgnoreAsciiCase("windows") ||
+        rEnv.equalsIgnoreAsciiCase("kde5") ||
         rEnv.equalsIgnoreAsciiCase("kde4") ||
         rEnv.equalsIgnoreAsciiCase("tde") ||
         rEnv.equalsIgnoreAsciiCase("kde"))
@@ -748,11 +750,34 @@ void VclButtonBox::sort_native_button_order()
     VclBuilder::reorderWithinParent(aChilds, true);
 }
 
-VclGrid::array_type VclGrid::assembleGrid() const
+struct GridEntry
 {
-    ext_array_type A;
+    VclPtr<vcl::Window> pChild;
+    sal_Int32 nSpanWidth;
+    sal_Int32 nSpanHeight;
+    int x;
+    int y;
+    GridEntry()
+        : pChild(nullptr)
+        , nSpanWidth(0)
+        , nSpanHeight(0)
+        , x(-1)
+        , y(-1)
+    {
+    }
+};
 
-    for (vcl::Window* pChild = GetWindow(GetWindowType::FirstChild); pChild;
+typedef boost::multi_array<GridEntry, 2> array_type;
+
+static array_type assembleGrid(const VclGrid &rGrid);
+static bool isNullGrid(const array_type& A);
+static void calcMaxs(const array_type &A, std::vector<VclGrid::Value> &rWidths, std::vector<VclGrid::Value> &rHeights);
+
+array_type assembleGrid(const VclGrid &rGrid)
+{
+    array_type A;
+
+    for (vcl::Window* pChild = rGrid.GetWindow(GetWindowType::FirstChild); pChild;
         pChild = pChild->GetWindow(GetWindowType::Next))
     {
         sal_Int32 nLeftAttach = std::max<sal_Int32>(pChild->get_grid_left_attach(), 0);
@@ -772,7 +797,7 @@ VclGrid::array_type VclGrid::assembleGrid() const
             A.resize(boost::extents[nCurrentMaxXPos+1][nCurrentMaxYPos+1]);
         }
 
-        ExtendedGridEntry &rEntry = A[nLeftAttach][nTopAttach];
+        GridEntry &rEntry = A[nLeftAttach][nTopAttach];
         rEntry.pChild = pChild;
         rEntry.nSpanWidth = nWidth;
         rEntry.nSpanHeight = nHeight;
@@ -783,7 +808,7 @@ VclGrid::array_type VclGrid::assembleGrid() const
         {
             for (sal_Int32 nSpanY = 0; nSpanY < nHeight; ++nSpanY)
             {
-                ExtendedGridEntry &rSpan = A[nLeftAttach+nSpanX][nTopAttach+nSpanY];
+                GridEntry &rSpan = A[nLeftAttach+nSpanX][nTopAttach+nSpanY];
                 rSpan.x = nLeftAttach;
                 rSpan.y = nTopAttach;
             }
@@ -806,13 +831,13 @@ VclGrid::array_type VclGrid::assembleGrid() const
             if (pChild && pChild->IsVisible())
             {
                 aNonEmptyCols[x] = true;
-                if (get_column_homogeneous())
+                if (rGrid.get_column_homogeneous())
                 {
                     for (sal_Int32 nSpanX = 1; nSpanX < rEntry.nSpanWidth; ++nSpanX)
                         aNonEmptyCols[x+nSpanX] = true;
                 }
                 aNonEmptyRows[y] = true;
-                if (get_row_homogeneous())
+                if (rGrid.get_row_homogeneous())
                 {
                     for (sal_Int32 nSpanY = 1; nSpanY < rEntry.nSpanHeight; ++nSpanY)
                         aNonEmptyRows[y+nSpanY] = true;
@@ -821,17 +846,17 @@ VclGrid::array_type VclGrid::assembleGrid() const
         }
     }
 
-    if (!get_column_homogeneous())
+    if (!rGrid.get_column_homogeneous())
     {
         //reduce the spans of elements that span empty columns
         for (sal_Int32 x = 0; x < nMaxX; ++x)
         {
-            std::set<ExtendedGridEntry*> candidates;
+            std::set<GridEntry*> candidates;
             for (sal_Int32 y = 0; y < nMaxY; ++y)
             {
                 if (aNonEmptyCols[x])
                     continue;
-                ExtendedGridEntry &rSpan = A[x][y];
+                GridEntry &rSpan = A[x][y];
                 //cell x/y is spanned by the widget at cell rSpan.x/rSpan.y,
                 //just points back to itself if there's no cell spanning
                 if ((rSpan.x == -1) || (rSpan.y == -1))
@@ -840,29 +865,29 @@ VclGrid::array_type VclGrid::assembleGrid() const
                     //with no widget in it, or spanned by any other widget
                     continue;
                 }
-                ExtendedGridEntry &rEntry = A[rSpan.x][rSpan.y];
+                GridEntry &rEntry = A[rSpan.x][rSpan.y];
                 candidates.insert(&rEntry);
             }
-            for (std::set<ExtendedGridEntry*>::iterator aI = candidates.begin(), aEnd = candidates.end();
+            for (std::set<GridEntry*>::iterator aI = candidates.begin(), aEnd = candidates.end();
                 aI != aEnd; ++aI)
             {
-                ExtendedGridEntry *pEntry = *aI;
+                GridEntry *pEntry = *aI;
                 --pEntry->nSpanWidth;
             }
         }
     }
 
-    if (!get_row_homogeneous())
+    if (!rGrid.get_row_homogeneous())
     {
         //reduce the spans of elements that span empty rows
         for (sal_Int32 y = 0; y < nMaxY; ++y)
         {
-            std::set<ExtendedGridEntry*> candidates;
+            std::set<GridEntry*> candidates;
             for (sal_Int32 x = 0; x < nMaxX; ++x)
             {
                 if (aNonEmptyRows[y])
                     continue;
-                ExtendedGridEntry &rSpan = A[x][y];
+                GridEntry &rSpan = A[x][y];
                 //cell x/y is spanned by the widget at cell rSpan.x/rSpan.y,
                 //just points back to itself if there's no cell spanning
                 if ((rSpan.x == -1) || (rSpan.y == -1))
@@ -871,13 +896,13 @@ VclGrid::array_type VclGrid::assembleGrid() const
                     //with no widget in it, or spanned by any other widget
                     continue;
                 }
-                ExtendedGridEntry &rEntry = A[rSpan.x][rSpan.y];
+                GridEntry &rEntry = A[rSpan.x][rSpan.y];
                 candidates.insert(&rEntry);
             }
-            for (std::set<ExtendedGridEntry*>::iterator aI = candidates.begin(), aEnd = candidates.end();
+            for (std::set<GridEntry*>::iterator aI = candidates.begin(), aEnd = candidates.end();
                 aI != aEnd; ++aI)
             {
-                ExtendedGridEntry *pEntry = *aI;
+                GridEntry *pEntry = *aI;
                 --pEntry->nSpanHeight;
             }
         }
@@ -905,7 +930,7 @@ VclGrid::array_type VclGrid::assembleGrid() const
     return B;
 }
 
-bool VclGrid::isNullGrid(const array_type &A)
+static bool isNullGrid(const array_type &A)
 {
     sal_Int32 nMaxX = A.shape()[0];
     sal_Int32 nMaxY = A.shape()[1];
@@ -915,7 +940,7 @@ bool VclGrid::isNullGrid(const array_type &A)
     return false;
 }
 
-void VclGrid::calcMaxs(const array_type &A, std::vector<Value> &rWidths, std::vector<Value> &rHeights)
+static void calcMaxs(const array_type &A, std::vector<VclGrid::Value> &rWidths, std::vector<VclGrid::Value> &rHeights)
 {
     sal_Int32 nMaxX = A.shape()[0];
     sal_Int32 nMaxY = A.shape()[1];
@@ -944,7 +969,7 @@ void VclGrid::calcMaxs(const array_type &A, std::vector<Value> &rWidths, std::ve
 
             if (nWidth == 1 || nHeight == 1)
             {
-                Size aChildSize = getLayoutRequisition(*pChild);
+                Size aChildSize = VclContainer::getLayoutRequisition(*pChild);
                 if (nWidth == 1)
                     rWidths[x].m_nValue = std::max(rWidths[x].m_nValue, aChildSize.Width());
                 if (nHeight == 1)
@@ -970,7 +995,7 @@ void VclGrid::calcMaxs(const array_type &A, std::vector<Value> &rWidths, std::ve
             if (nWidth == 1 && nHeight == 1)
                 continue;
 
-            Size aChildSize = getLayoutRequisition(*pChild);
+            Size aChildSize = VclContainer::getLayoutRequisition(*pChild);
 
             if (nWidth > 1)
             {
@@ -1053,7 +1078,7 @@ Size VclGrid::calculateRequisition() const
 
 Size VclGrid::calculateRequisitionForSpacings(sal_Int32 nRowSpacing, sal_Int32 nColSpacing) const
 {
-    array_type A = assembleGrid();
+    array_type A = assembleGrid(*this);
 
     if (isNullGrid(A))
         return Size();
@@ -1093,7 +1118,7 @@ Size VclGrid::calculateRequisitionForSpacings(sal_Int32 nRowSpacing, sal_Int32 n
 
 void VclGrid::setAllocation(const Size& rAllocation)
 {
-    array_type A = assembleGrid();
+    array_type A = assembleGrid(*this);
 
     if (isNullGrid(A))
         return;
@@ -1251,14 +1276,6 @@ bool VclGrid::set_property(const OString &rKey, const OString &rValue)
     return true;
 }
 
-void setGridAttach(vcl::Window &rWidget, sal_Int32 nLeft, sal_Int32 nTop, sal_Int32 nWidth, sal_Int32 nHeight)
-{
-    rWidget.set_grid_left_attach(nLeft);
-    rWidget.set_grid_top_attach(nTop);
-    rWidget.set_grid_width(nWidth);
-    rWidget.set_grid_height(nHeight);
-}
-
 const vcl::Window *VclBin::get_child() const
 {
     const WindowImpl* pWindowImpl = ImplGetWindowImpl();
@@ -1354,7 +1371,7 @@ void VclFrame::setAllocation(const Size &rAllocation)
 IMPL_LINK_TYPED(VclFrame, WindowEventListener, VclWindowEvent&, rEvent, void)
 {
     if (rEvent.GetId() == VCLEVENT_OBJECT_DYING)
-        designate_label(NULL);
+        designate_label(nullptr);
 }
 
 void VclFrame::designate_label(vcl::Window *pWindow)
@@ -1375,7 +1392,7 @@ const vcl::Window *VclFrame::get_label_widget() const
     //The label widget is normally the first (of two) children
     const WindowImpl* pWindowImpl = ImplGetWindowImpl();
     if (pWindowImpl->mpFirstChild == pWindowImpl->mpLastChild) //no label exists
-        return NULL;
+        return nullptr;
     return pWindowImpl->mpFirstChild;
 }
 
@@ -1392,7 +1409,7 @@ const vcl::Window *VclFrame::get_child() const
     if (!m_pLabel)
         return pWindowImpl->mpLastChild;
     if (pWindowImpl->mpFirstChild == pWindowImpl->mpLastChild) //only label exists
-        return NULL;
+        return nullptr;
     return pWindowImpl->mpLastChild;
 }
 
@@ -1504,7 +1521,7 @@ Size VclExpander::calculateRequisition() const
     WindowImpl* pWindowImpl = ImplGetWindowImpl();
 
     const vcl::Window *pChild = get_child();
-    const vcl::Window *pLabel = pChild != pWindowImpl->mpLastChild ? pWindowImpl->mpLastChild.get() : NULL;
+    const vcl::Window *pLabel = pChild != pWindowImpl->mpLastChild ? pWindowImpl->mpLastChild.get() : nullptr;
 
     if (pChild && pChild->IsVisible() && m_pDisclosureButton->IsChecked())
         aRet = getLayoutRequisition(*pChild);
@@ -1541,7 +1558,7 @@ void VclExpander::setAllocation(const Size &rAllocation)
 
     //The label widget is the last (of two) children
     vcl::Window *pChild = get_child();
-    vcl::Window *pLabel = pChild != pWindowImpl->mpLastChild.get() ? pWindowImpl->mpLastChild.get() : NULL;
+    vcl::Window *pLabel = pChild != pWindowImpl->mpLastChild.get() ? pWindowImpl->mpLastChild.get() : nullptr;
 
     Size aButtonSize = getLayoutRequisition(*m_pDisclosureButton);
     Size aLabelSize;
@@ -1615,11 +1632,11 @@ IMPL_LINK_TYPED( VclExpander, ClickHdl, CheckBox&, rBtn, void )
     {
         pChild->Show(rBtn.IsChecked());
         queue_resize();
-        Dialog* pResizeDialog = m_bResizeTopLevel ? GetParentDialog() : NULL;
+        Dialog* pResizeDialog = m_bResizeTopLevel ? GetParentDialog() : nullptr;
         if (pResizeDialog)
             pResizeDialog->setOptimalLayoutSize();
     }
-    maExpandedHdl.Call(this);
+    maExpandedHdl.Call(*this);
 }
 
 VclScrolledWindow::VclScrolledWindow(vcl::Window *pParent, WinBits nStyle)
@@ -1983,12 +2000,12 @@ MessageDialog::MessageDialog(vcl::Window* pParent, WinBits nStyle)
     : Dialog(pParent, nStyle)
     , m_eButtonsType(VCL_BUTTONS_NONE)
     , m_eMessageType(VCL_MESSAGE_INFO)
-    , m_pOwnedContentArea(NULL)
-    , m_pOwnedActionArea(NULL)
-    , m_pGrid(NULL)
-    , m_pImage(NULL)
-    , m_pPrimaryMessage(NULL)
-    , m_pSecondaryMessage(NULL)
+    , m_pOwnedContentArea(nullptr)
+    , m_pOwnedActionArea(nullptr)
+    , m_pGrid(nullptr)
+    , m_pImage(nullptr)
+    , m_pPrimaryMessage(nullptr)
+    , m_pSecondaryMessage(nullptr)
 {
     SetType(WINDOW_MESSBOX);
 }
@@ -2001,10 +2018,10 @@ MessageDialog::MessageDialog(vcl::Window* pParent,
     : Dialog(pParent, nStyle)
     , m_eButtonsType(eButtonsType)
     , m_eMessageType(eMessageType)
-    , m_pGrid(NULL)
-    , m_pImage(NULL)
-    , m_pPrimaryMessage(NULL)
-    , m_pSecondaryMessage(NULL)
+    , m_pGrid(nullptr)
+    , m_pImage(nullptr)
+    , m_pPrimaryMessage(nullptr)
+    , m_pSecondaryMessage(nullptr)
     , m_sPrimaryString(rMessage)
 {
     SetType(WINDOW_MESSBOX);
@@ -2015,12 +2032,12 @@ MessageDialog::MessageDialog(vcl::Window* pParent, const OString& rID, const OUS
     : Dialog(pParent, OStringToOUString(rID, RTL_TEXTENCODING_UTF8), rUIXMLDescription, WINDOW_MESSBOX)
     , m_eButtonsType(VCL_BUTTONS_NONE)
     , m_eMessageType(VCL_MESSAGE_INFO)
-    , m_pOwnedContentArea(NULL)
-    , m_pOwnedActionArea(NULL)
-    , m_pGrid(NULL)
-    , m_pImage(NULL)
-    , m_pPrimaryMessage(NULL)
-    , m_pSecondaryMessage(NULL)
+    , m_pOwnedContentArea(nullptr)
+    , m_pOwnedActionArea(nullptr)
+    , m_pGrid(nullptr)
+    , m_pImage(nullptr)
+    , m_pPrimaryMessage(nullptr)
+    , m_pSecondaryMessage(nullptr)
 {
 }
 
@@ -2178,7 +2195,7 @@ short MessageDialog::Execute()
         m_pSecondaryMessage->SetText(m_sSecondaryString);
         m_pSecondaryMessage->Show(bHasSecondaryText);
 
-        MessageDialog::SetMessagesWidths(this, m_pPrimaryMessage, bHasSecondaryText ? m_pSecondaryMessage.get() : NULL);
+        MessageDialog::SetMessagesWidths(this, m_pPrimaryMessage, bHasSecondaryText ? m_pSecondaryMessage.get() : nullptr);
 
         VclButtonBox *pButtonBox = get_action_area();
         assert(pButtonBox);
@@ -2401,13 +2418,13 @@ bool isEnabledInLayout(const vcl::Window *pWindow)
 bool isLayoutEnabled(const vcl::Window *pWindow)
 {
     //Child is a container => we're layout enabled
-    const vcl::Window *pChild = pWindow ? pWindow->GetWindow(GetWindowType::FirstChild) : NULL;
+    const vcl::Window *pChild = pWindow ? pWindow->GetWindow(GetWindowType::FirstChild) : nullptr;
     return pChild && isContainerWindow(*pChild) && !pChild->GetWindow(GetWindowType::Next);
 }
 
 bool isInitialLayout(const vcl::Window *pWindow)
 {
-    Dialog *pParentDialog = pWindow ? pWindow->GetParentDialog() : NULL;
+    Dialog *pParentDialog = pWindow ? pWindow->GetParentDialog() : nullptr;
     return pParentDialog && pParentDialog->isCalculatingInitialLayoutSize();
 }
 

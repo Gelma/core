@@ -35,6 +35,7 @@
 #include <xmloff/table/XMLTableImport.hxx>
 #include <basegfx/vector/b3dvector.hxx>
 #include <vector>
+#include <memory>
 
 class SvXMLImport;
 class SvXMLImportContext;
@@ -189,7 +190,7 @@ public:
         SvXMLImport& rImport,
         sal_uInt16 nPrfx,
         const OUString& rLName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList);
+        const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList);
     virtual ~SdXML3DLightContext();
 
     sal_Int32 GetDiffuseColor() { return maDiffuseColor; }
@@ -209,14 +210,14 @@ protected:
                                 maList;
 
     // local parameters which need to be read
-    com::sun::star::drawing::HomogenMatrix mxHomMat;
+    css::drawing::HomogenMatrix mxHomMat;
     bool                        mbSetTransform;
 
-    com::sun::star::drawing::ProjectionMode mxPrjMode;
+    css::drawing::ProjectionMode mxPrjMode;
     sal_Int32                   mnDistance;
     sal_Int32                   mnFocalLength;
     sal_Int32                   mnShadowSlant;
-    com::sun::star::drawing::ShadeMode mxShadeMode;
+    css::drawing::ShadeMode     mxShadeMode;
     sal_Int32                   maAmbientColor;
     bool                        mbLightingMode;
 
@@ -232,13 +233,13 @@ public:
     ~SdXML3DSceneAttributesHelper();
 
     /** creates a 3d light context and adds it to the internal list for later processing */
-    SvXMLImportContext * create3DLightContext( sal_uInt16 nPrfx, const OUString& rLName, const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList);
+    SvXMLImportContext * create3DLightContext( sal_uInt16 nPrfx, const OUString& rLName, const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList);
 
     /** this should be called for each scene attribute */
     void processSceneAttribute( sal_uInt16 nPrefix, const OUString& rLocalName, const OUString& rValue );
 
     /** this sets the scene attributes at this propertyset */
-    void setSceneAttributes( const com::sun::star::uno::Reference< com::sun::star::beans::XPropertySet >& xPropSet );
+    void setSceneAttributes( const css::uno::Reference< css::beans::XPropertySet >& xPropSet );
 };
 
 
@@ -246,17 +247,16 @@ public:
 class SvXMLShapeContext : public SvXMLImportContext
 {
 protected:
-    com::sun::star::uno::Reference< com::sun::star::drawing::XShape >   mxShape;
-    bool                                                            mbTemporaryShape;
-    OUString                                                       msHyperlink;
+    css::uno::Reference< css::drawing::XShape >   mxShape;
+    bool                                          mbTemporaryShape;
+    OUString                                      msHyperlink;
 
 public:
     SvXMLShapeContext( SvXMLImport& rImp, sal_uInt16 nPrfx,
         const OUString& rLName, bool bTemporaryShape ) : SvXMLImportContext( rImp, nPrfx, rLName ), mbTemporaryShape(bTemporaryShape) {}
 
-    TYPEINFO_OVERRIDE();
 
-    const com::sun::star::uno::Reference< com::sun::star::drawing::XShape >& getShape() const { return mxShape; }
+    const css::uno::Reference< css::drawing::XShape >& getShape() const { return mxShape; }
 
     void setHyperlink( const OUString& rHyperlink );
 };
@@ -269,11 +269,9 @@ struct XMLShapeImportPageContextImpl;
 
 class XMLOFF_DLLPUBLIC XMLShapeImportHelper : public salhelper::SimpleReferenceObject
 {
-    XMLShapeImportHelperImpl*   mpImpl;
+    std::unique_ptr<XMLShapeImportHelperImpl> mpImpl;
 
     XMLShapeImportPageContextImpl*  mpPageContext;
-
-    com::sun::star::uno::Reference< com::sun::star::frame::XModel > mxModel;
 
     // PropertySetMappers and factory
     XMLSdPropHdlFactory*        mpSdPropHdlFactory;
@@ -309,30 +307,30 @@ protected:
 
 public:
     XMLShapeImportHelper( SvXMLImport& rImporter,
-        const com::sun::star::uno::Reference< com::sun::star::frame::XModel>& rModel,
-    SvXMLImportPropertyMapper *pExtMapper=0 );
+        const css::uno::Reference< css::frame::XModel>& rModel,
+    SvXMLImportPropertyMapper *pExtMapper=nullptr );
 
     virtual ~XMLShapeImportHelper();
 
     SvXMLShapeContext* CreateGroupChildContext(
         SvXMLImport& rImport, sal_uInt16 nPrefix, const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList,
-        com::sun::star::uno::Reference< com::sun::star::drawing::XShapes >& rShapes,
+        const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList,
+        css::uno::Reference< css::drawing::XShapes >& rShapes,
         bool bTemporaryShape = false);
 
     SvXMLShapeContext* CreateFrameChildContext(
         SvXMLImport& rImport, sal_uInt16 nPrefix, const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList,
-        com::sun::star::uno::Reference< com::sun::star::drawing::XShapes >& rShapes,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xFrameAttrList);
+        const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList,
+        css::uno::Reference< css::drawing::XShapes >& rShapes,
+        const css::uno::Reference< css::xml::sax::XAttributeList >& xFrameAttrList);
     static SvXMLImportContext* CreateFrameChildContext(
         SvXMLImportContext *pThisContext, sal_uInt16 nPrefix, const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList );
+        const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList );
 
     SvXMLShapeContext* Create3DSceneChildContext(
         SvXMLImport& rImport, sal_uInt16 nPrefix, const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList,
-        com::sun::star::uno::Reference< com::sun::star::drawing::XShapes >& rShapes);
+        const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList,
+        css::uno::Reference< css::drawing::XShapes >& rShapes);
 
     const SvXMLTokenMap& GetGroupShapeElemTokenMap();
     const SvXMLTokenMap& GetFrameShapeElemTokenMap();
@@ -356,62 +354,61 @@ public:
     // this function is called whenever the implementation classes like to add this new
     // shape to the given XShapes.
     virtual void addShape(
-        com::sun::star::uno::Reference< com::sun::star::drawing::XShape >& rShape,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList,
-        com::sun::star::uno::Reference< com::sun::star::drawing::XShapes >& rShapes);
+        css::uno::Reference< css::drawing::XShape >& rShape,
+        const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList,
+        css::uno::Reference< css::drawing::XShapes >& rShapes);
 
     // this function is called whenever the implementation classes have finished importing
     // a shape to the given XShapes. The shape is already inserted into its XShapes and
     // all properties and styles are set.
     virtual void finishShape(
-        com::sun::star::uno::Reference< com::sun::star::drawing::XShape >& rShape,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList,
-        com::sun::star::uno::Reference< com::sun::star::drawing::XShapes >& rShapes);
+        css::uno::Reference< css::drawing::XShape >& rShape,
+        const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList,
+        css::uno::Reference< css::drawing::XShapes >& rShapes);
 
     // helper functions for z-order sorting
-    void pushGroupForSorting( com::sun::star::uno::Reference< com::sun::star::drawing::XShapes >& rShapes );
+    void pushGroupForSorting( css::uno::Reference< css::drawing::XShapes >& rShapes );
     void popGroupAndSort();
 
-    void shapeWithZIndexAdded( com::sun::star::uno::Reference< com::sun::star::drawing::XShape >& rShape,
+    void shapeWithZIndexAdded( css::uno::Reference< css::drawing::XShape >& rShape,
                                sal_Int32 nZIndex );
 
-    void addShapeConnection( com::sun::star::uno::Reference< com::sun::star::drawing::XShape >& rConnectorShape,
+    void addShapeConnection( css::uno::Reference< css::drawing::XShape >& rConnectorShape,
                              bool bStart,
                              const OUString& rDestShapeId,
                              sal_Int32 nDestGlueId );
 
     /** adds a mapping for a glue point identifier from an xml file to the identifier created after inserting
         the new glue point into the core. The saved mappings can be retrieved by getGluePointId() */
-    void addGluePointMapping( com::sun::star::uno::Reference< com::sun::star::drawing::XShape >& xShape,
+    void addGluePointMapping( css::uno::Reference< css::drawing::XShape >& xShape,
                               sal_Int32 nSourceId, sal_Int32 nDestinnationId );
 
     /** find mapping for given DestinationID. This allows to extract the original draw:id imported with a draw:glue-point */
     sal_Int32 findGluePointMapping(
-        const com::sun::star::uno::Reference< com::sun::star::drawing::XShape >& xShape,
+        const css::uno::Reference< css::drawing::XShape >& xShape,
         sal_Int32 nDestinnationId ) const;
 
     /** moves all current DestinationId's for rXShape by n */
-    void moveGluePointMapping( const com::sun::star::uno::Reference< com::sun::star::drawing::XShape >& xShape, const sal_Int32 n );
+    void moveGluePointMapping( const css::uno::Reference< css::drawing::XShape >& xShape, const sal_Int32 n );
 
     /** retrieves a mapping for a glue point identifier from the current xml file to the identifier created after
         inserting the new glue point into the core. The mapping must be initialized first with addGluePointMapping() */
-    sal_Int32 getGluePointId( const com::sun::star::uno::Reference< com::sun::star::drawing::XShape >& xShape, sal_Int32 nSourceId );
+    sal_Int32 getGluePointId( const css::uno::Reference< css::drawing::XShape >& xShape, sal_Int32 nSourceId );
 
     /** this method must be calling before the first shape is imported for the given page.
         Calls to this method can be nested */
-    void startPage( com::sun::star::uno::Reference< com::sun::star::drawing::XShapes >& rShapes );
+    void startPage( css::uno::Reference< css::drawing::XShapes >& rShapes );
 
     /** this method must be calling after the last shape is imported for the given page
         Calls to this method can be nested */
-    void endPage( com::sun::star::uno::Reference< com::sun::star::drawing::XShapes >& rShapes );
+    void endPage( css::uno::Reference< css::drawing::XShapes >& rShapes );
 
     void restoreConnections();
 
     /** creates a property mapper for external chaining */
     static SvXMLImportPropertyMapper* CreateShapePropMapper(
-        const com::sun::star::uno::Reference< com::sun::star::frame::XModel>& rModel, SvXMLImport& rImport );
+        const css::uno::Reference< css::frame::XModel>& rModel, SvXMLImport& rImport );
 
-    // #88546#
     /** defines if the import should increment the progress bar or not */
     void enableHandleProgressBar( bool bEnable = true );
     bool IsHandleProgressBarEnabled() const;

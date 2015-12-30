@@ -65,7 +65,7 @@ namespace {
 
 void GetOrigin( const SdrCustomShapeGeometryItem& rItem, double& rOriginX, double& rOriginY )
 {
-    ::com::sun::star::drawing::EnhancedCustomShapeParameterPair aOriginParaPair;
+    css::drawing::EnhancedCustomShapeParameterPair aOriginParaPair;
     const Any* pAny = rItem.GetPropertyValueByName( "Extrusion", "Origin" );
     if ( ! ( pAny && ( *pAny >>= aOriginParaPair ) && ( aOriginParaPair.First.Value >>= rOriginX ) && ( aOriginParaPair.Second.Value >>= rOriginY ) ) )
     {
@@ -76,7 +76,7 @@ void GetOrigin( const SdrCustomShapeGeometryItem& rItem, double& rOriginX, doubl
 
 void GetRotateAngle( const SdrCustomShapeGeometryItem& rItem, double& rAngleX, double& rAngleY )
 {
-    ::com::sun::star::drawing::EnhancedCustomShapeParameterPair aRotateAngleParaPair;
+    css::drawing::EnhancedCustomShapeParameterPair aRotateAngleParaPair;
     const Any* pAny = rItem.GetPropertyValueByName( "Extrusion", "RotateAngle" );
     if ( ! ( pAny && ( *pAny >>= aRotateAngleParaPair ) && ( aRotateAngleParaPair.First.Value >>= rAngleX ) && ( aRotateAngleParaPair.Second.Value >>= rAngleY ) ) )
     {
@@ -89,7 +89,7 @@ void GetRotateAngle( const SdrCustomShapeGeometryItem& rItem, double& rAngleX, d
 
 void GetSkew( const SdrCustomShapeGeometryItem& rItem, double& rSkewAmount, double& rSkewAngle )
 {
-    ::com::sun::star::drawing::EnhancedCustomShapeParameterPair aSkewParaPair;
+    css::drawing::EnhancedCustomShapeParameterPair aSkewParaPair;
     const Any* pAny = rItem.GetPropertyValueByName( "Extrusion", "Skew" );
     if ( ! ( pAny && ( *pAny >>= aSkewParaPair ) && ( aSkewParaPair.First.Value >>= rSkewAmount ) && ( aSkewParaPair.Second.Value >>= rSkewAngle ) ) )
     {
@@ -101,7 +101,7 @@ void GetSkew( const SdrCustomShapeGeometryItem& rItem, double& rSkewAmount, doub
 
 void GetExtrusionDepth( const SdrCustomShapeGeometryItem& rItem, const double* pMap, double& rBackwardDepth, double& rForwardDepth )
 {
-    ::com::sun::star::drawing::EnhancedCustomShapeParameterPair aDepthParaPair;
+    css::drawing::EnhancedCustomShapeParameterPair aDepthParaPair;
     double fDepth = 0, fFraction = 0;
     const Any* pAny = rItem.GetPropertyValueByName( "Extrusion", "Depth" );
     if ( pAny && ( *pAny >>= aDepthParaPair ) && ( aDepthParaPair.First.Value >>= fDepth ) && ( aDepthParaPair.Second.Value >>= fFraction ) )
@@ -249,16 +249,16 @@ Point EnhancedCustomShape3d::Transformation2D::Transform2D( const basegfx::B3DPo
 
 bool EnhancedCustomShape3d::Transformation2D::IsParallel() const
 {
-    return eProjectionMode == com::sun::star::drawing::ProjectionMode_PARALLEL;
+    return eProjectionMode == css::drawing::ProjectionMode_PARALLEL;
 }
 
 SdrObject* EnhancedCustomShape3d::Create3DObject( const SdrObject* pShape2d, const SdrObject* pCustomShape )
 {
-    SdrObject*  pRet = NULL;
+    SdrObject*  pRet = nullptr;
     SdrModel*   pModel = pCustomShape->GetModel();
     const SdrCustomShapeGeometryItem& rGeometryItem = static_cast<const SdrCustomShapeGeometryItem&>(pCustomShape->GetMergedItem( SDRATTR_CUSTOMSHAPE_GEOMETRY ));
 
-    double      fMap, *pMap = NULL;
+    double      fMap, *pMap = nullptr;
     if ( pModel )
     {
         fMap = 1.0;
@@ -354,7 +354,6 @@ SdrObject* EnhancedCustomShape3d::Create3DObject( const SdrObject* pShape2d, con
             else if ( ( eFillStyle == drawing::FillStyle_BITMAP ) || ( eFillStyle == drawing::FillStyle_GRADIENT ) || bUseExtrusionColor )
                 bUseTwoFillStyles = true;
 
-            // #116336#
             // If shapes are mirrored once (mirroring two times correct geometry again)
             // double-sided at the object and two-sided-lighting at the scene need to be set.
 
@@ -381,7 +380,7 @@ SdrObject* EnhancedCustomShape3d::Create3DObject( const SdrObject* pShape2d, con
             SfxItemSet aLocalSet(aSet);
             drawing::FillStyle aLocalFillStyle(eFillStyle);
 
-            if ( pNext->ISA( SdrPathObj ) )
+            if ( dynamic_cast<const SdrPathObj*>( pNext) !=  nullptr )
             {
                 const SfxItemSet& rSet = pNext->GetMergedItemSet();
                 bool bNeedToConvertToContour(false);
@@ -463,7 +462,7 @@ SdrObject* EnhancedCustomShape3d::Create3DObject( const SdrObject* pShape2d, con
             else
             {
                 SdrObject* pNewObj = pNext->ConvertToPolyObj( false, false );
-                SdrPathObj* pPath = PTR_CAST( SdrPathObj, pNewObj );
+                SdrPathObj* pPath = dynamic_cast<SdrPathObj*>( pNewObj  );
                 if ( pPath )
                     aPolyPoly = pPath->GetPathPoly();
                 SdrObject::Free( pNewObj );
@@ -654,14 +653,14 @@ SdrObject* EnhancedCustomShape3d::Create3DObject( const SdrObject* pShape2d, con
 
             // light
 
-            double fAmbientIntensity = GetDouble( rGeometryItem, "Brightness", 22178.0 / 655.36, NULL ) / 100.0;
+            double fAmbientIntensity = GetDouble( rGeometryItem, "Brightness", 22178.0 / 655.36, nullptr ) / 100.0;
 
             drawing::Direction3D aFirstLightDirectionDefault( 50000, 0, 10000 );
             drawing::Direction3D aFirstLightDirection( GetDirection3D( rGeometryItem, "FirstLightDirection", aFirstLightDirectionDefault ) );
             if ( aFirstLightDirection.DirectionZ == 0.0 )
                 aFirstLightDirection.DirectionZ = 1.0;
 
-            double fLightIntensity = GetDouble( rGeometryItem, "FirstLightLevel", 43712.0 / 655.36, NULL ) / 100.0;
+            double fLightIntensity = GetDouble( rGeometryItem, "FirstLightLevel", 43712.0 / 655.36, nullptr ) / 100.0;
 
             /* sal_Bool bFirstLightHarsh = */ GetBool( rGeometryItem, "FirstLightHarsh", false );
 
@@ -670,7 +669,7 @@ SdrObject* EnhancedCustomShape3d::Create3DObject( const SdrObject* pShape2d, con
             if ( aSecondLightDirection.DirectionZ == 0.0 )
                 aSecondLightDirection.DirectionZ = -1;
 
-            double fLight2Intensity = GetDouble( rGeometryItem, "SecondLightLevel", 43712.0 / 655.36, NULL ) / 100.0;
+            double fLight2Intensity = GetDouble( rGeometryItem, "SecondLightLevel", 43712.0 / 655.36, nullptr ) / 100.0;
 
             /* sal_Bool bLight2Harsh = */ GetBool( rGeometryItem, "SecondLightHarsh", false );
             /* sal_Bool bLightFace = */ GetBool( rGeometryItem, "LightFace", false );
@@ -704,7 +703,7 @@ SdrObject* EnhancedCustomShape3d::Create3DObject( const SdrObject* pShape2d, con
                 pScene->GetProperties().SetObjectItem( makeSvx3DLightcolor3Item( aAmbientSpot3Color ) );
                 pScene->GetProperties().SetObjectItem( makeSvx3DLightDirection3Item( aSpotLight3 ) );
 
-            double fSpecular = GetDouble( rGeometryItem, "Specularity", 0, NULL ) / 100;
+            double fSpecular = GetDouble( rGeometryItem, "Specularity", 0, nullptr ) / 100;
             bool bMetal = GetBool( rGeometryItem, "Metal", false );
 
             Color aSpecularCol( 225,225,225 );

@@ -92,8 +92,8 @@ SwXTextView::SwXTextView(SwView* pSwView) :
     m_SelChangedListeners(m_aMutex),
     m_pView(pSwView),
     m_pPropSet( aSwMapProvider.GetPropertySet( PROPERTY_MAP_TEXT_VIEW ) ),
-    pxViewSettings(0),
-    pxTextViewCursor(0)
+    mxViewSettings(),
+    mxTextViewCursor()
 {
 
 }
@@ -105,17 +105,17 @@ SwXTextView::~SwXTextView()
 
 void SwXTextView::Invalidate()
 {
-    if(pxViewSettings)
+    if(mxViewSettings.is())
     {
-         HelperBaseNoState *pSettings = static_cast < HelperBaseNoState * > ( pxViewSettings->get() );
+        HelperBaseNoState *pSettings = static_cast < HelperBaseNoState * > ( mxViewSettings.get() );
         static_cast < SwXViewSettings* > ( pSettings )->Invalidate();
-        DELETEZ(pxViewSettings);
+        mxViewSettings.clear();
     }
-    if(pxTextViewCursor)
+    if(mxTextViewCursor.is())
     {
-        text::XTextViewCursor* pCrsr = pxTextViewCursor->get();
-        static_cast<SwXTextViewCursor*>(pCrsr)->Invalidate();
-        DELETEZ(pxTextViewCursor);
+        text::XTextViewCursor* pCursor = mxTextViewCursor.get();
+        static_cast<SwXTextViewCursor*>(pCursor)->Invalidate();
+        mxTextViewCursor.clear();
     }
 
     m_refCount++; //prevent second d'tor call
@@ -128,7 +128,7 @@ void SwXTextView::Invalidate()
     }
 
     m_refCount--;
-    m_pView = 0;
+    m_pView = nullptr;
 }
 
 Sequence< uno::Type > SAL_CALL SwXTextView::getTypes(  ) throw(uno::RuntimeException, std::exception)
@@ -248,11 +248,11 @@ sal_Bool SwXTextView::select(const uno::Any& aInterface)
     }
     else
     {
-        SwPaM * pPaM(0);
+        SwPaM * pPaM(nullptr);
         std::pair<OUString, FlyCntType> frame;
         OUString tableName;
-        SwUnoTableCrsr const* pTableCursor(0);
-        ::sw::mark::IMark const* pMark(0);
+        SwUnoTableCursor const* pTableCursor(nullptr);
+        ::sw::mark::IMark const* pMark(nullptr);
         SwUnoCursorHelper::GetSelectableFromAny(xInterface, *pDoc,
                 pPaM, frame, tableName, pTableCursor, pMark, sdrObjects);
         if (pPaM)
@@ -270,8 +270,8 @@ sal_Bool SwXTextView::select(const uno::Any& aInterface)
             bool const bSuccess(rSh.GotoFly(frame.first, frame.second));
             if (bSuccess)
             {
-                rSh.HideCrsr();
-                rSh.EnterSelFrmMode();
+                rSh.HideCursor();
+                rSh.EnterSelFrameMode();
             }
             return sal_True;
         }
@@ -336,12 +336,12 @@ uno::Any SwXTextView::getSelection()
         {
             case SHELL_MODE_TABLE_TEXT      :
             {
-                if(rSh.GetTableCrsr())
+                if(rSh.GetTableCursor())
                 {
                     OSL_ENSURE(rSh.GetTableFormat(), "not a table format?");
-                    uno::Reference< text::XTextTableCursor >  xCrsr = new SwXTextTableCursor(*rSh.GetTableFormat(),
-                                                    rSh.GetTableCrsr());
-                    aRef = uno::Reference< uno::XInterface >  (xCrsr, uno::UNO_QUERY);
+                    uno::Reference< text::XTextTableCursor >  xCursor = new SwXTextTableCursor(*rSh.GetTableFormat(),
+                                                    rSh.GetTableCursor());
+                    aRef.set(xCursor, uno::UNO_QUERY);
                     break;
                 }
 
@@ -352,8 +352,8 @@ uno::Any SwXTextView::getSelection()
             case SHELL_MODE_TABLE_LIST_TEXT:
             case SHELL_MODE_TEXT            :
             {
-                uno::Reference< container::XIndexAccess > xPos = SwXTextRanges::Create(rSh.GetCrsr());
-                aRef = uno::Reference< uno::XInterface >(xPos, uno::UNO_QUERY);
+                uno::Reference< container::XIndexAccess > xPos = SwXTextRanges::Create(rSh.GetCursor());
+                aRef.set(xPos, uno::UNO_QUERY);
             }
             break;
             case SHELL_MODE_FRAME           :
@@ -407,7 +407,7 @@ uno::Any SwXTextView::getSelection()
                     uno::Reference< drawing::XShape >  xShape(xInt, uno::UNO_QUERY);
                     xShCol->add(xShape);
                 }
-                aRef = uno::Reference< uno::XInterface >(xShCol, uno::UNO_QUERY);
+                aRef.set(xShCol, uno::UNO_QUERY);
             }
             break;
             default:;//prevent warning
@@ -438,13 +438,13 @@ SdrObject* SwXTextView::GetControl(
         uno::Reference< awt::XControl >& xToFill  )
 {
     SwView* pView2 = GetView();
-    FmFormShell* pFormShell = pView2 ? pView2->GetFormShell() : NULL;
-    SdrView* pDrawView = pView2 ? pView2->GetDrawView() : NULL;
-    vcl::Window* pWindow = pView2 ? pView2->GetWrtShell().GetWin() : NULL;
+    FmFormShell* pFormShell = pView2 ? pView2->GetFormShell() : nullptr;
+    SdrView* pDrawView = pView2 ? pView2->GetDrawView() : nullptr;
+    vcl::Window* pWindow = pView2 ? pView2->GetWrtShell().GetWin() : nullptr;
 
     OSL_ENSURE( pFormShell && pDrawView && pWindow, "SwXTextView::GetControl: how could I?" );
 
-    SdrObject* pControl = NULL;
+    SdrObject* pControl = nullptr;
     if ( pFormShell && pDrawView && pWindow )
         pControl = pFormShell->GetFormControl( xModel, *pDrawView, *pWindow, xToFill );
     return pControl;
@@ -464,9 +464,9 @@ uno::Reference< form::runtime::XFormController > SAL_CALL SwXTextView::getFormCo
     SolarMutexGuard aGuard;
 
     SwView* pView2 = GetView();
-    FmFormShell* pFormShell = pView2 ? pView2->GetFormShell() : NULL;
-    SdrView* pDrawView = pView2 ? pView2->GetDrawView() : NULL;
-    vcl::Window* pWindow = pView2 ? pView2->GetWrtShell().GetWin() : NULL;
+    FmFormShell* pFormShell = pView2 ? pView2->GetFormShell() : nullptr;
+    SdrView* pDrawView = pView2 ? pView2->GetDrawView() : nullptr;
+    vcl::Window* pWindow = pView2 ? pView2->GetWrtShell().GetWin() : nullptr;
     OSL_ENSURE( pFormShell && pDrawView && pWindow, "SwXTextView::getFormController: how could I?" );
 
     uno::Reference< form::runtime::XFormController > xController;
@@ -479,7 +479,7 @@ sal_Bool SAL_CALL SwXTextView::isFormDesignMode(  ) throw (uno::RuntimeException
 {
     SolarMutexGuard aGuard;
     SwView* pView2 = GetView();
-    FmFormShell* pFormShell = pView2 ? pView2->GetFormShell() : NULL;
+    FmFormShell* pFormShell = pView2 ? pView2->GetFormShell() : nullptr;
     return !pFormShell || pFormShell->IsDesignMode();
 }
 
@@ -487,7 +487,7 @@ void SAL_CALL SwXTextView::setFormDesignMode( sal_Bool _DesignMode ) throw (Runt
 {
     SolarMutexGuard aGuard;
     SwView* pView2 = GetView();
-    FmFormShell* pFormShell = pView2 ? pView2->GetFormShell() : NULL;
+    FmFormShell* pFormShell = pView2 ? pView2->GetFormShell() : nullptr;
     if ( pFormShell )
         pFormShell->SetDesignMode( _DesignMode );
 }
@@ -497,12 +497,11 @@ uno::Reference< text::XTextViewCursor >  SwXTextView::getViewCursor() throw( uno
     SolarMutexGuard aGuard;
     if(GetView())
     {
-        if(!pxTextViewCursor)
+        if(!mxTextViewCursor.is())
         {
-            static_cast<SwXTextView*>(this)->pxTextViewCursor = new uno::Reference< text::XTextViewCursor > ;
-            *pxTextViewCursor = new  SwXTextViewCursor(GetView());
+            mxTextViewCursor = new SwXTextViewCursor(GetView());
         }
-        return *pxTextViewCursor;
+        return mxTextViewCursor;
     }
     else
         throw uno::RuntimeException();
@@ -513,15 +512,14 @@ uno::Reference< beans::XPropertySet >  SwXTextView::getViewSettings() throw( uno
     SolarMutexGuard aGuard;
     if(m_pView)
     {
-        if(!pxViewSettings)
+        if(!mxViewSettings.is())
         {
-            static_cast<SwXTextView*>(this)->pxViewSettings = new uno::Reference< beans::XPropertySet > ;
-            *pxViewSettings = static_cast < HelperBaseNoState * > ( new SwXViewSettings( false, m_pView ) );
+            mxViewSettings = static_cast < HelperBaseNoState * > ( new SwXViewSettings( false, m_pView ) );
         }
     }
     else
         throw uno::RuntimeException();
-    return *pxViewSettings;
+    return mxViewSettings;
 }
 
 Sequence< Sequence< PropertyValue > > SwXTextView::getRubyList( sal_Bool /*bAutomatic*/ )
@@ -541,7 +539,7 @@ Sequence< Sequence< PropertyValue > > SwXTextView::getRubyList( sal_Bool /*bAuto
 
     SwRubyList aList;
 
-    const sal_uInt16 nCount = SwDoc::FillRubyList( *rSh.GetCrsr(), aList, 0 );
+    const sal_uInt16 nCount = SwDoc::FillRubyList( *rSh.GetCursor(), aList, 0 );
     Sequence< Sequence< PropertyValue > > aRet(nCount);
     Sequence< PropertyValue >* pRet = aRet.getArray();
     OUString aString;
@@ -636,7 +634,7 @@ void SAL_CALL SwXTextView::setRubyList(
         aList.insert(aList.begin() + nPos, std::move(pEntry));
     }
     SwDoc* pDoc = m_pView->GetDocShell()->GetDoc();
-    pDoc->SetRubyList( *rSh.GetCrsr(), aList, 0 );
+    pDoc->SetRubyList( *rSh.GetCursor(), aList, 0 );
 }
 
 SfxObjectShellLock SwXTextView::BuildTmpSelectionDoc()
@@ -645,7 +643,7 @@ SfxObjectShellLock SwXTextView::BuildTmpSelectionDoc()
     SfxPrinter *pPrt = rOldSh.getIDocumentDeviceAccess().getPrinter( false );
     SwDocShell* pDocSh;
     SfxObjectShellLock xDocSh( pDocSh = new SwDocShell( /*pPrtDoc, */SfxObjectCreateMode::STANDARD ) );
-    xDocSh->DoInitNew( 0 );
+    xDocSh->DoInitNew();
     SwDoc *const pTempDoc( pDocSh->GetDoc() );
     // #i103634#, #i112425#: do not expand numbering and fields on PDF export
     pTempDoc->SetClipBoard(true);
@@ -943,12 +941,12 @@ void SwXTextViewCursor::collapseToStart()
         SwWrtShell& rSh = m_pView->GetWrtShell();
         if(rSh.HasSelection())
         {
-            SwPaM* pShellCrsr = rSh.GetCrsr();
-            if(*pShellCrsr->GetPoint() > *pShellCrsr->GetMark())
-                pShellCrsr->Exchange();
-            pShellCrsr->DeleteMark();
+            SwPaM* pShellCursor = rSh.GetCursor();
+            if(*pShellCursor->GetPoint() > *pShellCursor->GetMark())
+                pShellCursor->Exchange();
+            pShellCursor->DeleteMark();
             rSh.EnterStdMode();
-            rSh.SetSelection(*pShellCrsr);
+            rSh.SetSelection(*pShellCursor);
         }
     }
     else
@@ -967,12 +965,12 @@ void SwXTextViewCursor::collapseToEnd()
         SwWrtShell& rSh = m_pView->GetWrtShell();
         if(rSh.HasSelection())
         {
-            SwPaM* pShellCrsr = rSh.GetCrsr();
-            if(*pShellCrsr->GetPoint() < *pShellCrsr->GetMark())
-                pShellCrsr->Exchange();
-            pShellCrsr->DeleteMark();
+            SwPaM* pShellCursor = rSh.GetCursor();
+            if(*pShellCursor->GetPoint() < *pShellCursor->GetMark())
+                pShellCursor->Exchange();
+            pShellCursor->DeleteMark();
             rSh.EnterStdMode();
-            rSh.SetSelection(*pShellCrsr);
+            rSh.SetSelection(*pShellCursor);
         }
     }
     else
@@ -1061,18 +1059,18 @@ void SwXTextViewCursor::gotoRange(
             eSelMode != SHELL_MODE_TABLE_LIST_TEXT &&
             eSelMode != SHELL_MODE_TEXT ))
                 rSh.EnterStdMode();
-        SwPaM* pShellCrsr = rSh.GetCrsr();
-        SwPaM aOwnPaM(*pShellCrsr->GetPoint());
-        if(pShellCrsr->HasMark())
+        SwPaM* pShellCursor = rSh.GetCursor();
+        SwPaM aOwnPaM(*pShellCursor->GetPoint());
+        if(pShellCursor->HasMark())
         {
             aOwnPaM.SetMark();
-            *aOwnPaM.GetMark() = *pShellCrsr->GetMark();
+            *aOwnPaM.GetMark() = *pShellCursor->GetMark();
         }
 
         uno::Reference<lang::XUnoTunnel> xRangeTunnel( xRange, uno::UNO_QUERY);
-        SwXTextRange* pRange = 0;
-        SwXParagraph* pPara = 0;
-        OTextCursorHelper* pCursor = 0;
+        SwXTextRange* pRange = nullptr;
+        SwXParagraph* pPara = nullptr;
+        OTextCursorHelper* pCursor = nullptr;
         if(xRangeTunnel.is())
         {
             pRange = reinterpret_cast<SwXTextRange*>(xRangeTunnel->getSomething(
@@ -1083,24 +1081,24 @@ void SwXTextViewCursor::gotoRange(
                                     SwXParagraph::getUnoTunnelId()));
         }
 
-        const FrmTypeFlags nFrmType = rSh.GetFrmType(0,true);
+        const FrameTypeFlags nFrameType = rSh.GetFrameType(nullptr,true);
 
         SwStartNodeType eSearchNodeType = SwNormalStartNode;
-        if(nFrmType & FrmTypeFlags::FLY_ANY)
+        if(nFrameType & FrameTypeFlags::FLY_ANY)
             eSearchNodeType = SwFlyStartNode;
-        else if(nFrmType &FrmTypeFlags::HEADER)
+        else if(nFrameType &FrameTypeFlags::HEADER)
             eSearchNodeType = SwHeaderStartNode;
-        else if(nFrmType & FrmTypeFlags::FOOTER)
+        else if(nFrameType & FrameTypeFlags::FOOTER)
             eSearchNodeType = SwFooterStartNode;
-        else if(nFrmType & FrmTypeFlags::TABLE)
+        else if(nFrameType & FrameTypeFlags::TABLE)
             eSearchNodeType = SwTableBoxStartNode;
-        else if(nFrmType & FrmTypeFlags::FOOTNOTE)
+        else if(nFrameType & FrameTypeFlags::FOOTNOTE)
             eSearchNodeType = SwFootnoteStartNode;
 
         const SwStartNode* pOwnStartNode = aOwnPaM.GetNode().
                                                 FindSttNodeByType(eSearchNodeType);
 
-        const SwNode* pSrcNode = 0;
+        const SwNode* pSrcNode = nullptr;
         if(pCursor && pCursor->GetPaM())
         {
             pSrcNode = &pCursor->GetPaM()->GetNode();
@@ -1117,7 +1115,7 @@ void SwXTextViewCursor::gotoRange(
         {
             pSrcNode = pPara->GetTextNode();
         }
-        const SwStartNode* pTmp = pSrcNode ? pSrcNode->FindSttNodeByType(eSearchNodeType) : 0;
+        const SwStartNode* pTmp = pSrcNode ? pSrcNode->FindSttNodeByType(eSearchNodeType) : nullptr;
 
         //Skip SectionNodes
         while(pTmp && pTmp->IsSectionNode())
@@ -1215,10 +1213,10 @@ sal_Bool SwXTextViewCursor::jumpToFirstPage()
     if(m_pView)
     {
         SwWrtShell& rSh = m_pView->GetWrtShell();
-        if (rSh.IsSelFrmMode())
+        if (rSh.IsSelFrameMode())
         {
-            rSh.UnSelectFrm();
-            rSh.LeaveSelFrmMode();
+            rSh.UnSelectFrame();
+            rSh.LeaveSelFrameMode();
         }
         rSh.EnterStdMode();
         bRet = rSh.SttEndDoc(true);
@@ -1236,10 +1234,10 @@ sal_Bool SwXTextViewCursor::jumpToLastPage()
     if(m_pView)
     {
         SwWrtShell& rSh = m_pView->GetWrtShell();
-        if (rSh.IsSelFrmMode())
+        if (rSh.IsSelFrameMode())
         {
-            rSh.UnSelectFrm();
-            rSh.LeaveSelFrmMode();
+            rSh.UnSelectFrame();
+            rSh.LeaveSelFrameMode();
         }
         rSh.EnterStdMode();
         bRet = rSh.SttEndDoc(false);
@@ -1313,8 +1311,8 @@ sal_Int16 SwXTextViewCursor::getPage()
     if(m_pView)
     {
         SwWrtShell& rSh = m_pView->GetWrtShell();
-        SwPaM* pShellCrsr = rSh.GetCrsr();
-        nRet = static_cast<sal_Int16>(pShellCrsr->GetPageNum( true, 0 ));
+        SwPaM* pShellCursor = rSh.GetCursor();
+        nRet = static_cast<sal_Int16>(pShellCursor->GetPageNum());
     }
     else
         throw uno::RuntimeException();
@@ -1366,9 +1364,9 @@ uno::Reference< text::XText >  SwXTextViewCursor::getText()
             throw  uno::RuntimeException("no text selection", static_cast < cppu::OWeakObject * > ( this ) );
 
         SwWrtShell& rSh = m_pView->GetWrtShell();
-        SwPaM* pShellCrsr = rSh.GetCrsr();
+        SwPaM* pShellCursor = rSh.GetCursor();
         SwDoc* pDoc = m_pView->GetDocShell()->GetDoc();
-        xRet = ::sw::CreateParentXText(*pDoc, *pShellCrsr->Start());
+        xRet = ::sw::CreateParentXText(*pDoc, *pShellCursor->Start());
     }
     else
         throw uno::RuntimeException();
@@ -1386,9 +1384,9 @@ uno::Reference< text::XTextRange >  SwXTextViewCursor::getStart()
             throw  uno::RuntimeException("no text selection", static_cast < cppu::OWeakObject * > ( this ) );
 
         SwWrtShell& rSh = m_pView->GetWrtShell();
-        SwPaM* pShellCrsr = rSh.GetCrsr();
+        SwPaM* pShellCursor = rSh.GetCursor();
         SwDoc* pDoc = m_pView->GetDocShell()->GetDoc();
-        xRet = SwXTextRange::CreateXTextRange(*pDoc, *pShellCrsr->Start(), 0);
+        xRet = SwXTextRange::CreateXTextRange(*pDoc, *pShellCursor->Start(), nullptr);
     }
     else
         throw uno::RuntimeException();
@@ -1406,9 +1404,9 @@ uno::Reference< text::XTextRange >  SwXTextViewCursor::getEnd()
             throw  uno::RuntimeException("no text selection", static_cast < cppu::OWeakObject * > ( this ) );
 
         SwWrtShell& rSh = m_pView->GetWrtShell();
-        SwPaM* pShellCrsr = rSh.GetCrsr();
+        SwPaM* pShellCursor = rSh.GetCursor();
         SwDoc* pDoc = m_pView->GetDocShell()->GetDoc();
-        xRet = SwXTextRange::CreateXTextRange(*pDoc, *pShellCrsr->End(), 0);
+        xRet = SwXTextRange::CreateXTextRange(*pDoc, *pShellCursor->End(), nullptr);
     }
     else
         throw uno::RuntimeException();
@@ -1438,8 +1436,8 @@ OUString SwXTextViewCursor::getString()
             case SHELL_MODE_TEXT            :
             {
                 SwWrtShell& rSh = m_pView->GetWrtShell();
-                SwPaM* pShellCrsr = rSh.GetCrsr();
-                SwUnoCursorHelper::GetTextFromPam(*pShellCrsr, uRet);
+                SwPaM* pShellCursor = rSh.GetCursor();
+                SwUnoCursorHelper::GetTextFromPam(*pShellCursor, uRet);
             }
             default:;//prevent warning
         }
@@ -1469,8 +1467,8 @@ void SwXTextViewCursor::setString(const OUString& aString)
             case SHELL_MODE_TEXT            :
             {
                 SwWrtShell& rSh = m_pView->GetWrtShell();
-                SwCursor* pShellCrsr = rSh.GetSwCrsr();
-                SwUnoCursorHelper::SetString(*pShellCrsr, aString);
+                SwCursor* pShellCursor = rSh.GetSwCursor();
+                SwUnoCursorHelper::SetString(*pShellCursor, aString);
             }
             default:;//prevent warning
         }
@@ -1492,12 +1490,12 @@ void  SwXTextViewCursor::setPropertyValue( const OUString& rPropertyName, const 
     if(m_pView)
     {
         SwWrtShell& rSh = m_pView->GetWrtShell();
-        SwPaM* pShellCrsr = rSh.GetCrsr();
-        SwNode& rNode = pShellCrsr->GetNode();
+        SwPaM* pShellCursor = rSh.GetCursor();
+        SwNode& rNode = pShellCursor->GetNode();
         if (rNode.IsTextNode())
         {
             SwUnoCursorHelper::SetPropertyValue(
-                *pShellCrsr, *m_pPropSet, rPropertyName, aValue );
+                *pShellCursor, *m_pPropSet, rPropertyName, aValue );
         }
         else
             throw RuntimeException();
@@ -1515,9 +1513,9 @@ Any  SwXTextViewCursor::getPropertyValue( const OUString& rPropertyName )
     if(m_pView)
     {
         SwWrtShell& rSh = m_pView->GetWrtShell();
-        SwPaM* pShellCrsr = rSh.GetCrsr();
+        SwPaM* pShellCursor = rSh.GetCursor();
         aRet = SwUnoCursorHelper::GetPropertyValue(
-                *pShellCrsr, *m_pPropSet, rPropertyName);
+                *pShellCursor, *m_pPropSet, rPropertyName);
     }
     else
         throw RuntimeException();
@@ -1556,9 +1554,9 @@ PropertyState  SwXTextViewCursor::getPropertyState( const OUString& rPropertyNam
     if(m_pView)
     {
         SwWrtShell& rSh = m_pView->GetWrtShell();
-        SwPaM* pShellCrsr = rSh.GetCrsr();
+        SwPaM* pShellCursor = rSh.GetCursor();
         eState = SwUnoCursorHelper::GetPropertyState(
-                *pShellCrsr, *m_pPropSet, rPropertyName);
+                *pShellCursor, *m_pPropSet, rPropertyName);
     }
     else
         throw RuntimeException();
@@ -1575,9 +1573,9 @@ Sequence< PropertyState >  SwXTextViewCursor::getPropertyStates(
     if(m_pView)
     {
         SwWrtShell& rSh = m_pView->GetWrtShell();
-        SwPaM* pShellCrsr = rSh.GetCrsr();
+        SwPaM* pShellCursor = rSh.GetCursor();
         aRet = SwUnoCursorHelper::GetPropertyStates(
-                *pShellCrsr, *m_pPropSet,  rPropertyNames);
+                *pShellCursor, *m_pPropSet,  rPropertyNames);
     }
     return aRet;
 }
@@ -1590,9 +1588,9 @@ void  SwXTextViewCursor::setPropertyToDefault( const OUString& rPropertyName )
     if(m_pView)
     {
         SwWrtShell& rSh = m_pView->GetWrtShell();
-        SwPaM* pShellCrsr = rSh.GetCrsr();
+        SwPaM* pShellCursor = rSh.GetCursor();
         SwUnoCursorHelper::SetPropertyToDefault(
-                *pShellCrsr, *m_pPropSet, rPropertyName);
+                *pShellCursor, *m_pPropSet, rPropertyName);
     }
 }
 
@@ -1605,9 +1603,9 @@ Any  SwXTextViewCursor::getPropertyDefault( const OUString& rPropertyName )
     if(m_pView)
     {
         SwWrtShell& rSh = m_pView->GetWrtShell();
-        SwPaM* pShellCrsr = rSh.GetCrsr();
+        SwPaM* pShellCursor = rSh.GetCursor();
         aRet = SwUnoCursorHelper::GetPropertyDefault(
-                *pShellCrsr, *m_pPropSet, rPropertyName);
+                *pShellCursor, *m_pPropSet, rPropertyName);
     }
     return aRet;
 }
@@ -1764,25 +1762,25 @@ IMPLEMENT_FORWARD_XINTERFACE2(SwXTextViewCursor,SwXTextViewCursor_Base,OTextCurs
 const SwDoc*        SwXTextViewCursor::GetDoc() const
 {
     SwWrtShell& rSh = m_pView->GetWrtShell();
-    return   rSh.GetCrsr() ? rSh.GetCrsr()->GetDoc() : 0;
+    return   rSh.GetCursor() ? rSh.GetCursor()->GetDoc() : nullptr;
 }
 
 SwDoc*  SwXTextViewCursor::GetDoc()
 {
     SwWrtShell& rSh = m_pView->GetWrtShell();
-    return   rSh.GetCrsr() ? rSh.GetCrsr()->GetDoc() : 0;
+    return   rSh.GetCursor() ? rSh.GetCursor()->GetDoc() : nullptr;
 }
 
 const SwPaM*    SwXTextViewCursor::GetPaM() const
 {
     SwWrtShell& rSh = m_pView->GetWrtShell();
-    return rSh.GetCrsr();
+    return rSh.GetCursor();
 }
 
 SwPaM*  SwXTextViewCursor::GetPaM()
 {
     SwWrtShell& rSh = m_pView->GetWrtShell();
-    return rSh.GetCrsr();
+    return rSh.GetCursor();
 }
 
 uno::Reference< datatransfer::XTransferable > SAL_CALL SwXTextView::getTransferable()
@@ -1829,8 +1827,8 @@ void SAL_CALL SwXTextView::insertTransferable( const uno::Reference< datatransfe
         if ( SwTransferable::IsPaste( rSh, aDataHelper ) )
         {
             SwTransferable::Paste( rSh, aDataHelper );
-            if( rSh.IsFrmSelected() || rSh.IsObjSelected() )
-                rSh.EnterSelFrmMode();
+            if( rSh.IsFrameSelected() || rSh.IsObjSelected() )
+                rSh.EnterSelFrameMode();
             GetView()->AttrChangedNotify( &rSh );
         }
     }

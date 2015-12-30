@@ -23,8 +23,8 @@
 class UIPreviewApp : public Application
 {
 public:
-    virtual void Init() SAL_OVERRIDE;
-    virtual int Main() SAL_OVERRIDE;
+    virtual void Init() override;
+    virtual int Main() override;
 };
 
 using namespace com::sun::star;
@@ -77,7 +77,7 @@ int UIPreviewApp::Main()
             if (!pRealDialog)
                 pRealDialog = pDialog;
 
-            pRealDialog->SetText(OUString("LibreOffice ui-previewer"));
+            pRealDialog->SetText("LibreOffice ui-previewer");
             pRealDialog->SetStyle(pDialog->GetStyle()|WB_CLOSEABLE);
             /*
                Force a new StateChangedType::InitShow for the edge case where pRoot

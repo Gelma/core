@@ -28,7 +28,6 @@
 #include <cassert>
 #include <vector>
 
-TYPEINIT0(SfxBroadcaster);
 
 typedef std::vector<SfxListener*> SfxListenerArr_Impl;
 
@@ -65,8 +64,6 @@ SfxBroadcaster::~SfxBroadcaster()
         if (pListener)
             pListener->RemoveBroadcaster_Impl(*this);
     }
-
-    delete mpImpl;
 }
 
 
@@ -104,7 +101,7 @@ void SfxBroadcaster::AddListener( SfxListener& rListener )
     {
         size_t targetPosition = mpImpl->m_RemovedPositions.back();
         mpImpl->m_RemovedPositions.pop_back();
-        assert(mpImpl->m_Listeners[targetPosition] == NULL);
+        assert(mpImpl->m_Listeners[targetPosition] == nullptr);
         mpImpl->m_Listeners[targetPosition] = &rListener;
     }
 }
@@ -133,7 +130,7 @@ void SfxBroadcaster::RemoveListener( SfxListener& rListener )
     assert(aIter != mpImpl->m_Listeners.end()); // "RemoveListener: Listener unknown"
     // DO NOT erase the listener, set the pointer to 0
     // because the current continuation may contain this->Broadcast
-    *aIter = 0;
+    *aIter = nullptr;
     size_t positionOfRemovedElement = std::distance(mpImpl->m_Listeners.begin(), aIter);
     mpImpl->m_RemovedPositions.push_back(positionOfRemovedElement);
 }

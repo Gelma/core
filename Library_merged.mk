@@ -16,16 +16,13 @@ $(eval $(call gb_Library_use_library_objects,merged,\
 ))
 
 $(eval $(call gb_Library_use_libraries,merged,\
-	comphelper \
 	cppu \
 	cppuhelper \
-	i18nlangtag \
 	$(if $(ENABLE_JAVA), \
 		jvmaccess \
 		jvmfwk) \
 	sal \
 	salhelper \
-	ucbhelper \
 	xmlreader \
 	$(gb_UWINAPI) \
 ))

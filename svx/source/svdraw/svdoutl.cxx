@@ -29,7 +29,7 @@
 SdrOutliner::SdrOutliner( SfxItemPool* pItemPool, sal_uInt16 nMode )
 :   Outliner( pItemPool, nMode ),
     //mpPaintInfoRec( NULL )
-    mpVisualizedPage(0)
+    mpVisualizedPage(nullptr)
 {
 }
 
@@ -49,7 +49,7 @@ void SdrOutliner::SetTextObj( const SdrTextObj* pObj )
             nOutlinerMode2 = OUTLINERMODE_TEXTOBJECT;
         Init( nOutlinerMode2 );
 
-        SetGlobalCharStretching(100);
+        SetGlobalCharStretching();
 
         EEControlBits nStat = GetControlWord();
         nStat &= ~EEControlBits( EEControlBits::STRETCHING | EEControlBits::AUTOPAGESIZE );
@@ -91,7 +91,7 @@ const SdrTextObj* SdrOutliner::GetTextObj() const
     if( mpTextObj.is() )
         return static_cast< SdrTextObj* >( mpTextObj.get() );
     else
-        return 0;
+        return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

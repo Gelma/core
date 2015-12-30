@@ -77,7 +77,7 @@ void SfxMenuControl::Bind(
 {
     aTitle = rTitle;
     pOwnMenu = pOwn;
-    pSubMenu = 0;
+    pSubMenu = nullptr;
     if ( pOwn )
         SfxControllerItem::Bind(nSlotId, &rBindings);
     else
@@ -112,8 +112,8 @@ void SfxMenuControl::Bind(
 // Constructor for explicit registration
 
 SfxMenuControl::SfxMenuControl( bool bShowStrings )
-:   pOwnMenu(0),
-    pSubMenu(0),
+:   pOwnMenu(nullptr),
+    pSubMenu(nullptr),
     b_ShowStrings(bShowStrings)
 {
 }
@@ -122,8 +122,8 @@ SfxMenuControl::SfxMenuControl( bool bShowStrings )
 
 // Constructor for array
 SfxMenuControl::SfxMenuControl():
-    pOwnMenu(0),
-    pSubMenu(0),
+    pOwnMenu(nullptr),
+    pSubMenu(nullptr),
     b_ShowStrings(false)
 {
 }
@@ -132,8 +132,8 @@ SfxMenuControl::SfxMenuControl():
 
 SfxMenuControl::SfxMenuControl(sal_uInt16 nSlotId, SfxBindings& rBindings):
     SfxControllerItem(nSlotId, rBindings),
-    pOwnMenu(0),
-    pSubMenu(0),
+    pOwnMenu(nullptr),
+    pSubMenu(nullptr),
     b_ShowStrings(false)
 {
     // This constructor should make it possible already during the design
@@ -164,7 +164,7 @@ void SfxMenuControl::StateChanged
 {
     (void)nSID;
     DBG_ASSERT( nSID == GetId(), "strange SID" );
-    DBG_ASSERT( pOwnMenu != 0, "setting state to dangling SfxMenuControl" );
+    DBG_ASSERT( pOwnMenu != nullptr, "setting state to dangling SfxMenuControl" );
 
     bool bIsObjMenu =
                 GetId() >= SID_OBJECTMENU0 && GetId() < SID_OBJECTMENU_LAST;
@@ -177,7 +177,7 @@ void SfxMenuControl::StateChanged
     else
 #endif
         pOwnMenu->EnableItem( GetId(), bIsObjMenu
-                ? 0 != pOwnMenu->GetSVMenu()->GetPopupMenu( GetId() )
+                ? nullptr != pOwnMenu->GetSVMenu()->GetPopupMenu( GetId() )
                 : eState != SfxItemState::DISABLED );
 
     if ( eState != SfxItemState::DEFAULT )
@@ -188,13 +188,13 @@ void SfxMenuControl::StateChanged
 
         if ( pOwnMenu->GetSVMenu()->GetItemText( GetId() ) != GetTitle() )
         {
-             DBG_WARNING("Title of menu item changed - please check if this needs correction!");
+             SAL_INFO("sfx", "Title of menu item changed - please check if this needs correction!");
         }
         return;
     }
 
     bool bCheck = false;
-    if ( pState->ISA(SfxBoolItem) )
+    if ( dynamic_cast< const SfxBoolItem *>( pState ) !=  nullptr )
     {
         // BoolItem for check
         DBG_ASSERT( GetId() < SID_OBJECTMENU0 || GetId() > SID_OBJECTMENU_LAST,
@@ -203,7 +203,7 @@ void SfxMenuControl::StateChanged
         Menu* pMenu = pOwnMenu->GetSVMenu();
         pMenu->SetItemBits( GetId() , pMenu->GetItemBits( GetId() ) | MenuItemBits::CHECKABLE);
     }
-    else if ( pState->ISA(SfxEnumItemInterface) &&
+    else if ( dynamic_cast< const SfxEnumItemInterface *>( pState ) !=  nullptr &&
               static_cast<const SfxEnumItemInterface *>(pState)->HasBoolValue() )
     {
         // Treat EnumItem as Bool
@@ -213,7 +213,7 @@ void SfxMenuControl::StateChanged
         Menu* pMenu = pOwnMenu->GetSVMenu();
         pMenu->SetItemBits( GetId() , pMenu->GetItemBits( GetId() ) | MenuItemBits::CHECKABLE);
     }
-    else if ( ( b_ShowStrings || bIsObjMenu ) && pState->ISA(SfxStringItem) )
+    else if ( ( b_ShowStrings || bIsObjMenu ) && dynamic_cast< const SfxStringItem *>( pState ) !=  nullptr )
     {
         // Get MenuText from SfxStringItem
         OUString aStr( static_cast<const SfxStringItem*>(pState)->GetValue() );
@@ -246,24 +246,24 @@ SfxMenuControl* SfxMenuControl::CreateImpl( sal_uInt16 /*nId*/, Menu& /*rMenu*/,
 
 void SfxMenuControl::RegisterControl( sal_uInt16 nSlotId, SfxModule *pMod )
 {
-    RegisterMenuControl( pMod, new SfxMenuCtrlFactory(
-                SfxMenuControl::CreateImpl, TYPE(SfxStringItem), nSlotId ) );
+    RegisterMenuControl( pMod, SfxMenuCtrlFactory(
+                SfxMenuControl::CreateImpl, typeid(SfxStringItem), nSlotId ) );
 }
 
 
-void SfxMenuControl::RegisterMenuControl(SfxModule* pMod, SfxMenuCtrlFactory* pFact)
+void SfxMenuControl::RegisterMenuControl(SfxModule* pMod, const SfxMenuCtrlFactory& rFact)
 {
-    SfxGetpApp()->RegisterMenuControl_Impl( pMod, pFact );
+    SfxGetpApp()->RegisterMenuControl_Impl( pMod, rFact );
 }
 
 SfxMenuControl* SfxMenuControl::CreateControl( sal_uInt16 nId, Menu &rMenu, SfxBindings &rBindings )
 {
-    TypeId aSlotType = SFX_SLOTPOOL().GetSlotType(nId);
+    const std::type_info* aSlotType = SFX_SLOTPOOL().GetSlotType(nId);
     if ( aSlotType )
     {
         SfxApplication *pApp = SfxGetpApp();
         SfxDispatcher *pDisp = rBindings.GetDispatcher_Impl();
-        SfxModule *pMod = pDisp ? SfxModule::GetActiveModule( pDisp->GetFrame() ) :0;
+        SfxModule *pMod = pDisp ? SfxModule::GetActiveModule( pDisp->GetFrame() ) :nullptr;
         if ( pMod )
         {
             SfxMenuCtrlFactArr_Impl *pFactories = pMod->GetMenuCtrlFactories_Impl();
@@ -271,7 +271,7 @@ SfxMenuControl* SfxMenuControl::CreateControl( sal_uInt16 nId, Menu &rMenu, SfxB
             {
                 SfxMenuCtrlFactArr_Impl &rFactories = *pFactories;
                 for ( size_t nFactory = 0; nFactory < rFactories.size(); ++nFactory )
-                    if ( rFactories[nFactory].nTypeId == aSlotType &&
+                    if ( rFactories[nFactory].nTypeId == *aSlotType &&
                          ( ( rFactories[nFactory].nSlotId == 0 ) ||
                            ( rFactories[nFactory].nSlotId == nId) ) )
                         return rFactories[nFactory].pCtor( nId, rMenu, rBindings );
@@ -281,12 +281,12 @@ SfxMenuControl* SfxMenuControl::CreateControl( sal_uInt16 nId, Menu &rMenu, SfxB
         SfxMenuCtrlFactArr_Impl &rFactories = pApp->GetMenuCtrlFactories_Impl();
 
         for ( size_t nFactory = 0; nFactory < rFactories.size(); ++nFactory )
-            if ( rFactories[nFactory].nTypeId == aSlotType &&
+            if ( rFactories[nFactory].nTypeId == *aSlotType &&
                  ( ( rFactories[nFactory].nSlotId == 0 ) ||
                    ( rFactories[nFactory].nSlotId == nId) ) )
                 return rFactories[nFactory].pCtor( nId, rMenu, rBindings );
     }
-    return 0;
+    return nullptr;
 }
 
 

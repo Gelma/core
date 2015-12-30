@@ -257,8 +257,7 @@ bool ScRangeToSequence::FillMixedArray( uno::Any& rAny, ScDocument* pDoc, const 
             uno::Any& rElement = pColAry[nCol];
 
             ScAddress aPos( (SCCOL)(nStartCol+nCol), (SCROW)(nStartRow+nRow), nTab );
-            ScRefCellValue aCell;
-            aCell.assign(*pDoc, aPos);
+            ScRefCellValue aCell(*pDoc, aPos);
 
             if (aCell.isEmpty())
             {
@@ -325,8 +324,8 @@ bool ScRangeToSequence::FillMixedArray( uno::Any& rAny, const ScMatrix* pMatrix,
 }
 
 bool ScApiTypeConversion::ConvertAnyToDouble( double & o_fVal,
-        com::sun::star::uno::TypeClass & o_eClass,
-        const com::sun::star::uno::Any & rAny )
+        css::uno::TypeClass & o_eClass,
+        const css::uno::Any & rAny )
 {
     bool bRet = false;
     o_eClass = rAny.getValueTypeClass();
@@ -354,7 +353,7 @@ bool ScApiTypeConversion::ConvertAnyToDouble( double & o_fVal,
     return bRet;
 }
 
-ScMatrixRef ScSequenceToMatrix::CreateMixedMatrix( const com::sun::star::uno::Any & rAny )
+ScMatrixRef ScSequenceToMatrix::CreateMixedMatrix( const css::uno::Any & rAny )
 {
     ScMatrixRef xMatrix;
     uno::Sequence< uno::Sequence< uno::Any > > aSequence;
@@ -373,7 +372,7 @@ ScMatrixRef ScSequenceToMatrix::CreateMixedMatrix( const com::sun::star::uno::An
         if ( nMaxColCount && nRowCount )
         {
             OUString aUStr;
-            xMatrix = new ScMatrix(
+            xMatrix = new ScFullMatrix(
                     static_cast<SCSIZE>(nMaxColCount),
                     static_cast<SCSIZE>(nRowCount), 0.0);
             SCSIZE nCols, nRows;
@@ -381,7 +380,7 @@ ScMatrixRef ScSequenceToMatrix::CreateMixedMatrix( const com::sun::star::uno::An
             if (nCols != static_cast<SCSIZE>(nMaxColCount) || nRows != static_cast<SCSIZE>(nRowCount))
             {
                 OSL_FAIL( "ScSequenceToMatrix::CreateMixedMatrix: matrix exceeded max size, returning NULL matrix");
-                return NULL;
+                return nullptr;
             }
             for (nRow=0; nRow<nRowCount; nRow++)
             {

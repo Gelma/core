@@ -23,9 +23,7 @@
 #include <vcl/seleng.hxx>
 #include <vcl/scrbar.hxx>
 #include <vcl/vclevent.hxx>
-// #102891# ----------------
 #include <unotools/intlwrapper.hxx>
-// #97680# -----------------
 #include <vector>
 #include "svtaccessiblefactory.hxx"
 
@@ -53,14 +51,14 @@ public:
     ImpLBSelEng( SvImpLBox* pImp, SelectionEngine* pSelEng,
                  SvTreeListBox* pView );
     virtual ~ImpLBSelEng();
-    void        BeginDrag() SAL_OVERRIDE;
-    void        CreateAnchor() SAL_OVERRIDE;
-    void        DestroyAnchor() SAL_OVERRIDE;
+    void        BeginDrag() override;
+    void        CreateAnchor() override;
+    void        DestroyAnchor() override;
     bool        SetCursorAtPoint( const Point& rPoint,
-                    bool bDontSelectAtCursor=false ) SAL_OVERRIDE;
-    bool        IsSelectionAtPoint( const Point& rPoint ) SAL_OVERRIDE;
-    void        DeselectAtPoint( const Point& rPoint ) SAL_OVERRIDE;
-    void        DeselectAll() SAL_OVERRIDE;
+                    bool bDontSelectAtCursor=false ) override;
+    bool        IsSelectionAtPoint( const Point& rPoint ) override;
+    void        DeselectAtPoint( const Point& rPoint ) override;
+    void        DeselectAll() override;
 };
 
 // Flags fuer nFlag
@@ -155,10 +153,8 @@ private:
     Point               aEditClickPos;
     Idle                aEditIdle;
 
-    // #102891# -------------------
     comphelper::string::NaturalStringSorter *m_pStringSorter;
 
-    // #97680# --------------------
     std::vector< short > aContextBmpWidthVector;
 
     DECL_LINK_TYPED(EditTimerCall, Idle *, void);
@@ -230,7 +226,6 @@ private:
 
     void UpdateStringSorter();
 
-    // #97680# --------------------
     short               UpdateContextBmpWidthVector( SvTreeListEntry* pEntry, short nWidth );
     void                UpdateContextBmpWidthMax( SvTreeListEntry* pEntry );
     void                UpdateContextBmpWidthVectorFromMovedEntry( SvTreeListEntry* pEntry );
@@ -315,7 +310,7 @@ public:
     void                Command( const CommandEvent& rCEvt );
 
     void                Invalidate();
-    void                DestroyAnchor() { pAnchor=0; aSelEng.Reset(); }
+    void                DestroyAnchor() { pAnchor=nullptr; aSelEng.Reset(); }
     void SelAllDestrAnch( bool bSelect, bool bDestroyAnchor = true, bool bSingleSelToo = false );
     void ShowCursor( bool bShow );
 
@@ -328,7 +323,7 @@ public:
     Rectangle           GetClipRegionRect() const;
     bool HasHorScrollBar() const { return aHorSBar->IsVisible(); }
     void                ShowFocusRect( const SvTreeListEntry* pEntry );
-    void                CallEventListeners( sal_uLong nEvent, void* pData = NULL );
+    void                CallEventListeners( sal_uLong nEvent, void* pData = nullptr );
 
     /** Enables, that one cell of a tablistbox entry can be focused */
     bool IsCellFocusEnabled() const { return bIsCellFocusEnabled; }

@@ -51,12 +51,12 @@
 #include <cntfrm.hxx>
 #include <htmltbl.hxx>
 #include <calbck.hxx>
+#include <memory>
 
 using namespace com::sun::star;
 
 static bool SetGrfFlySize( const Size& rGrfSz, SwGrfNode* pGrfNd, const Size &rOrigGrfSize );
 
-TYPEINIT1( SwBaseLink, ::sfx2::SvBaseLink );
 
 static void lcl_CallModify( SwGrfNode& rGrfNd, SfxPoolItem& rItem )
 {
@@ -68,11 +68,11 @@ static void lcl_CallModify( SwGrfNode& rGrfNd, SfxPoolItem& rItem )
     {
         SwIterator<SwClient,SwGrfNode> aIter(rGrfNd);
         for(SwClient* pLast = aIter.First(); pLast; pLast = aIter.Next())
-            if(!pLast->ISA(SwContentFrm))
+            if(dynamic_cast<const SwContentFrame*>( pLast) ==  nullptr)
                 pLast->ModifyNotification(&rItem, &rItem);
     }
     {
-        SwIterator<SwContentFrm,SwGrfNode> aIter(rGrfNd);
+        SwIterator<SwContentFrame,SwGrfNode> aIter(rGrfNd);
         for(SwClient* pLast = aIter.First(); pLast; pLast = aIter.Next())
             pLast->ModifyNotification(&rItem, &rItem);
     }
@@ -114,7 +114,7 @@ static void lcl_CallModify( SwGrfNode& rGrfNd, SfxPoolItem& rItem )
             }
 
             SwFrameFormat* pFormat;
-            if( nEvent && 0 != ( pFormat = pContentNode->GetFlyFormat() ))
+            if( nEvent && nullptr != ( pFormat = pContentNode->GetFlyFormat() ))
             {
                 SwCallMouseEvent aCallEvent;
                 aCallEvent.Set( EVENT_OBJECT_IMAGE, pFormat );
@@ -130,7 +130,7 @@ static void lcl_CallModify( SwGrfNode& rGrfNd, SfxPoolItem& rItem )
     bool bDontNotify = false;
     Size aGrfSz, aOldSz;
 
-    SwGrfNode* pSwGrfNode = NULL;
+    SwGrfNode* pSwGrfNode = nullptr;
 
     if (pContentNode->IsGrfNode())
     {
@@ -151,7 +151,7 @@ static void lcl_CallModify( SwGrfNode& rGrfNd, SfxPoolItem& rItem )
             ( GRAPHIC_DEFAULT != aGrf.GetType() ||
               GRAPHIC_DEFAULT != rGrfObj.GetType() ) )
         {
-            aGrfSz = ::GetGraphicSizeTwip( aGrf, 0 );
+            aGrfSz = ::GetGraphicSizeTwip( aGrf, nullptr );
 
             if( bGraphicPieceArrived && GRAPHIC_DEFAULT != aGrf.GetType() &&
                 ( !aOldSz.Width() || !aOldSz.Height() ) )
@@ -230,7 +230,7 @@ static void lcl_CallModify( SwGrfNode& rGrfNd, SfxPoolItem& rItem )
             {
                 ::sfx2::SvBaseLink* pLnk = &(*rLnks[ --n ]);
                 if( pLnk && OBJECT_CLIENT_GRF == pLnk->GetObjType() &&
-                    pLnk->ISA( SwBaseLink ) && pLnk->GetObj() == GetObj() )
+                    dynamic_cast<const SwBaseLink*>( pLnk) !=  nullptr && pLnk->GetObj() == GetObj() )
                 {
                     SwBaseLink* pBLink = static_cast<SwBaseLink*>(pLnk);
                     SwGrfNode* pGrfNd = static_cast<SwGrfNode*>(pBLink->pContentNode);
@@ -292,9 +292,9 @@ static bool SetGrfFlySize( const Size& rGrfSz, SwGrfNode* pGrfNd, const Size& rO
 {
     bool bRet = false;
     SwViewShell *pSh = pGrfNd->GetDoc()->getIDocumentLayoutAccess().GetCurrentViewShell();
-    CurrShell *pCurr = 0;
+    std::unique_ptr<CurrShell> pCurr;
     if ( pGrfNd->GetDoc()->GetEditShell() )
-        pCurr = new CurrShell( pSh );
+        pCurr.reset(new CurrShell( pSh ));
 
     Size aSz = rOrigGrfSize;
     if ( !(aSz.Width() && aSz.Height()) &&
@@ -302,7 +302,7 @@ static bool SetGrfFlySize( const Size& rGrfSz, SwGrfNode* pGrfNd, const Size& rO
     {
         SwFrameFormat* pFormat;
         if( pGrfNd->IsChgTwipSize() &&
-            0 != (pFormat = pGrfNd->GetFlyFormat()) )
+            nullptr != (pFormat = pGrfNd->GetFlyFormat()) )
         {
             Size aCalcSz( aSz );
             if ( !aSz.Height() && aSz.Width() )
@@ -322,10 +322,10 @@ static bool SetGrfFlySize( const Size& rGrfSz, SwGrfNode* pGrfNd, const Size& rO
                                rBox.CalcLineSpace(SvxBoxItemLine::RIGHT);
             aCalcSz.Height()+= rBox.CalcLineSpace(SvxBoxItemLine::TOP) +
                                rBox.CalcLineSpace(SvxBoxItemLine::BOTTOM);
-            const SwFormatFrmSize& rOldAttr = pFormat->GetFrmSize();
+            const SwFormatFrameSize& rOldAttr = pFormat->GetFrameSize();
             if( rOldAttr.GetSize() != aCalcSz )
             {
-                SwFormatFrmSize aAttr( rOldAttr  );
+                SwFormatFrameSize aAttr( rOldAttr  );
                 aAttr.SetSize( aCalcSz );
                 pFormat->SetFormatAttr( aAttr );
                 bRet = true;
@@ -340,8 +340,8 @@ static bool SetGrfFlySize( const Size& rGrfSz, SwGrfNode* pGrfNd, const Size& rO
                 SwNode *pANd;
                 SwTableNode *pTableNd;
                 if( pAPos &&
-                    0 != (pANd = & pAPos->nNode.GetNode()) &&
-                    0 != (pTableNd = pANd->FindTableNode()) )
+                    nullptr != (pANd = & pAPos->nNode.GetNode()) &&
+                    nullptr != (pTableNd = pANd->FindTableNode()) )
                 {
                     const bool bLastGrf = !pTableNd->GetTable().DecGrfsThatResize();
                     SwHTMLTableLayout *pLayout =
@@ -365,8 +365,6 @@ static bool SetGrfFlySize( const Size& rGrfSz, SwGrfNode* pGrfNd, const Size& rO
         // it requires the Frame Format
         pGrfNd->SetTwipSize( rGrfSz );
     }
-
-    delete pCurr;
 
     return bRet;
 }
@@ -457,12 +455,12 @@ const SwNode* SwBaseLink::GetAnchor() const
             {
                     return &pAPos->nNode.GetNode();
             }
-            return 0;
+            return nullptr;
         }
     }
 
     OSL_ENSURE( false, "GetAnchor is not shadowed" );
-    return 0;
+    return nullptr;
 }
 
 bool SwBaseLink::IsRecursion( const SwBaseLink* pChkLnk ) const

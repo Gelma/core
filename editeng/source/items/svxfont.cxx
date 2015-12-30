@@ -205,7 +205,6 @@ void SvxFont::DoOnCapitals(SvxDoCapitals &rDo) const
     sal_Int32 nPos = 0;
     sal_Int32 nOldPos = nPos;
 
-    // #108210#
     // Test if string length differ between original and CaseMapped
     bool bCaseMapLengthDiffers(aTxt.getLength() != rTxt.getLength());
 
@@ -238,7 +237,6 @@ void SvxFont::DoOnCapitals(SvxDoCapitals &rDo) const
         {
             if(bCaseMapLengthDiffers)
             {
-                // #108210#
                 // If strings differ work preparing the necessary snippet to address that
                 // potential difference
                 const OUString aSnippet = rTxt.copy(nIdx + nOldPos, nPos-nOldPos);
@@ -268,7 +266,6 @@ void SvxFont::DoOnCapitals(SvxDoCapitals &rDo) const
         {
             if(bCaseMapLengthDiffers)
             {
-                // #108210#
                 // If strings differ work preparing the necessary snippet to address that
                 // potential difference
                 const OUString aSnippet = rTxt.copy(nIdx + nOldPos, nPos - nOldPos);
@@ -293,7 +290,6 @@ void SvxFont::DoOnCapitals(SvxDoCapitals &rDo) const
 
             if(bCaseMapLengthDiffers)
             {
-                // #108210#
                 // If strings differ work preparing the necessary snippet to address that
                 // potential difference
                 const OUString aSnippet = rTxt.copy(nIdx + nOldPos, nPos - nOldPos);
@@ -355,7 +351,6 @@ Size SvxFont::GetPhysTxtSize( const OutputDevice *pOut, const OUString &rTxt,
         aTxtSize.setWidth( pOut->GetTextWidth( rTxt, nIdx, nLen ) );
     else
     {
-        // #108210#
         const OUString aNewText = CalcCaseMap(rTxt);
         bool bCaseMapLengthDiffers(aNewText.getLength() != rTxt.getLength());
         sal_Int32 nWidth(0L);
@@ -539,7 +534,6 @@ void SvxFont::DrawPrev( OutputDevice *pOut, Printer* pPrinter,
             pOut->DrawStretchText( aPos, aSize.Width(), rTxt, nIdx, nTmp );
         else
         {
-            // #108210#
             const OUString aNewText = CalcCaseMap(rTxt);
             bool bCaseMapLengthDiffers(aNewText.getLength() != rTxt.getLength());
 
@@ -597,7 +591,7 @@ public:
     virtual ~SvxDoGetCapitalSize() {}
 
     virtual void Do( const OUString &rTxt, const sal_Int32 nIdx,
-                     const sal_Int32 nLen, const bool bUpper ) SAL_OVERRIDE;
+                     const sal_Int32 nLen, const bool bUpper ) override;
 
     const Size &GetSize() const { return aTxtSize; };
 };
@@ -660,10 +654,10 @@ public:
           aSpacePos( rPos ),
           nKern( nKrn )
         { }
-    virtual void DoSpace( const bool bDraw ) SAL_OVERRIDE;
-    virtual void SetSpace() SAL_OVERRIDE;
+    virtual void DoSpace( const bool bDraw ) override;
+    virtual void SetSpace() override;
     virtual void Do( const OUString &rTxt, const sal_Int32 nIdx,
-                     const sal_Int32 nLen, const bool bUpper ) SAL_OVERRIDE;
+                     const sal_Int32 nLen, const bool bUpper ) override;
 };
 
 void SvxDoDrawCapital::DoSpace( const bool bDraw )

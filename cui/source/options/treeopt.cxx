@@ -116,13 +116,13 @@ using namespace ::com::sun::star::linguistic2;
 using namespace ::com::sun::star::uno;
 using namespace ::com::sun::star::util;
 
-LastPageSaver* OfaTreeOptionsDialog::pLastPageSaver = NULL;
+LastPageSaver* OfaTreeOptionsDialog::pLastPageSaver = nullptr;
 
 // some stuff for easier changes for SvtViewOptions
 static const sal_Char*      pViewOptDataName = "page data";
 #define VIEWOPT_DATANAME    OUString::createFromAscii( pViewOptDataName )
 
-static XOutdevItemPool* mpStaticXOutdevItemPool = 0L;
+static XOutdevItemPool* mpStaticXOutdevItemPool = nullptr;
 
 static inline void SetViewOptUserItem( SvtViewOptions& rOpt, const OUString& rData )
 {
@@ -145,7 +145,7 @@ struct ModuleToGroupNameMap_Impl
     sal_uInt16  m_nNodeId;
 };
 
-static OfaPageResource* pPageRes = NULL;
+static OfaPageResource* pPageRes = nullptr;
 
 static ModuleToGroupNameMap_Impl ModuleMap[] =
 {
@@ -162,7 +162,7 @@ static ModuleToGroupNameMap_Impl ModuleMap[] =
     { "Charts", OUString(), SID_SCH_EDITOPTIONS },
     { "Base", OUString(), SID_SB_STARBASEOPTIONS },
 
-    { NULL, OUString(), 0xFFFF }
+    { nullptr, OUString(), 0xFFFF }
 };
 
 static void setGroupName( const OUString& rModule, const OUString& rGroupName )
@@ -252,13 +252,13 @@ private:
     // variables
     bool bIsEmailSupported;
 
-    virtual void    ImplCommit() SAL_OVERRIDE;
+    virtual void    ImplCommit() override;
 
 public:
     MailMergeCfg_Impl();
     virtual ~MailMergeCfg_Impl();
 
-    virtual void Notify( const css::uno::Sequence< OUString >& _rPropertyNames) SAL_OVERRIDE;
+    virtual void Notify( const css::uno::Sequence< OUString >& _rPropertyNames) override;
 
     bool IsEmailSupported() const {return bIsEmailSupported;}
 
@@ -268,8 +268,7 @@ MailMergeCfg_Impl::MailMergeCfg_Impl() :
     utl::ConfigItem("Office.Writer/MailMergeWizard"),
     bIsEmailSupported(false)
 {
-    Sequence<OUString> aNames(1);
-    aNames.getArray()[0] = "EMailSupported";
+    Sequence<OUString> aNames { "EMailSupported" };
     const Sequence< Any > aValues = GetProperties(aNames);
     const Any* pValues = aValues.getConstArray();
     if(aValues.getLength() && pValues[0].hasValue())
@@ -291,7 +290,7 @@ void MailMergeCfg_Impl::Notify( const css::uno::Sequence< OUString >& )
 //typedef SfxTabPage* (*FNCreateTabPage)( vcl::Window *pParent, const SfxItemSet &rAttrSet );
 VclPtr<SfxTabPage> CreateGeneralTabPage( sal_uInt16 nId, vcl::Window* pParent, const SfxItemSet& rSet )
 {
-    CreateTabPage fnCreate = 0;
+    CreateTabPage fnCreate = nullptr;
     switch(nId)
     {
         case RID_SFXPAGE_SAVE:                      fnCreate = &SvxSaveTabPage::Create; break;
@@ -344,7 +343,7 @@ struct OptionsMapping_Impl
 static OptionsMapping_Impl const OptionsMap_Impl[] =
 {
 //    GROUP                 PAGE                    PAGE-ID
-    { "ProductName",        NULL,                   SID_GENERAL_OPTIONS },
+    { "ProductName",        nullptr,                   SID_GENERAL_OPTIONS },
     { "ProductName",        "UserData",             RID_SFXPAGE_GENERAL },
     { "ProductName",        "General",              OFA_TP_MISC },
     { "ProductName",        "Memory",               OFA_TP_MEMORY },
@@ -360,21 +359,21 @@ static OptionsMapping_Impl const OptionsMap_Impl[] =
     { "ProductName",        "Java",                 RID_SVXPAGE_OPTIONS_JAVA },
     { "ProductName",        "BasicIDEOptions",      RID_SVXPAGE_BASICIDE_OPTIONS },
     { "ProductName",        "OnlineUpdate",         RID_SVXPAGE_ONLINEUPDATE },
-    { "LanguageSettings",   NULL,                   SID_LANGUAGE_OPTIONS },
+    { "LanguageSettings",   nullptr,                   SID_LANGUAGE_OPTIONS },
     { "LanguageSettings",   "Languages",            OFA_TP_LANGUAGES  },
     { "LanguageSettings",   "WritingAids",          RID_SFXPAGE_LINGU },
     { "LanguageSettings",   "SearchingInJapanese",  RID_SVXPAGE_JSEARCH_OPTIONS },
     { "LanguageSettings",   "AsianLayout",          RID_SVXPAGE_ASIAN_LAYOUT },
     { "LanguageSettings",   "ComplexTextLayout",    RID_SVXPAGE_OPTIONS_CTL },
-    { "Internet",           NULL,                   SID_INET_DLG },
+    { "Internet",           nullptr,                   SID_INET_DLG },
     { "Internet",           "Proxy",                RID_SVXPAGE_INET_PROXY },
     { "Internet",           "Email",                RID_SVXPAGE_INET_MAIL },
-    { "LoadSave",           NULL,                   SID_FILTER_DLG },
+    { "LoadSave",           nullptr,                   SID_FILTER_DLG },
     { "LoadSave",           "General",              RID_SFXPAGE_SAVE },
     { "LoadSave",           "VBAProperties",        SID_OPTFILTER_MSOFFICE },
     { "LoadSave",           "MicrosoftOffice",      RID_OFAPAGE_MSFILTEROPT2 },
     { "LoadSave",           "HTMLCompatibility",    RID_OFAPAGE_HTMLOPT },
-    { "Writer",             NULL,                   SID_SW_EDITOPTIONS },
+    { "Writer",             nullptr,                   SID_SW_EDITOPTIONS },
     { "Writer",             "General",              RID_SW_TP_OPTLOAD_PAGE },
     { "Writer",             "View",                 RID_SW_TP_CONTENT_OPT },
     { "Writer",             "FormattingAids",       RID_SW_TP_OPTSHDWCRSR },
@@ -389,16 +388,16 @@ static OptionsMapping_Impl const OptionsMap_Impl[] =
     { "Writer",             "Compatibility",        RID_SW_TP_OPTCOMPATIBILITY_PAGE },
     { "Writer",             "AutoCaption",          RID_SW_TP_OPTCAPTION_PAGE },
     { "Writer",             "MailMerge",            RID_SW_TP_MAILCONFIG },
-    { "WriterWeb",          NULL,                   SID_SW_ONLINEOPTIONS },
+    { "WriterWeb",          nullptr,                   SID_SW_ONLINEOPTIONS },
     { "WriterWeb",          "View",                 RID_SW_TP_HTML_CONTENT_OPT },
     { "WriterWeb",          "FormattingAids",       RID_SW_TP_HTML_OPTSHDWCRSR },
     { "WriterWeb",          "Grid",                 RID_SW_TP_HTML_OPTGRID_PAGE },
     { "WriterWeb",          "Print",                RID_SW_TP_HTML_OPTPRINT_PAGE },
     { "WriterWeb",          "Table",                RID_SW_TP_HTML_OPTTABLE_PAGE },
     { "WriterWeb",          "Background",           RID_SW_TP_BACKGROUND },
-    { "Math",               NULL,                   SID_SM_EDITOPTIONS },
+    { "Math",               nullptr,                   SID_SM_EDITOPTIONS },
     { "Math",               "Settings",             SID_SM_TP_PRINTOPTIONS },
-    { "Calc",               NULL,                   SID_SC_EDITOPTIONS },
+    { "Calc",               nullptr,                   SID_SC_EDITOPTIONS },
     { "Calc",               "General",              SID_SC_TP_LAYOUT },
     { "Calc",               "View",                 SID_SC_TP_CONTENT },
     { "Calc",               "Calculate",            SID_SC_TP_CALC },
@@ -408,22 +407,22 @@ static OptionsMapping_Impl const OptionsMap_Impl[] =
     { "Calc",               "Compatibility",        SID_SC_TP_COMPATIBILITY },
     { "Calc",               "Grid",                 SID_SC_TP_GRID },
     { "Calc",               "Print",                RID_SC_TP_PRINT },
-    { "Impress",            NULL,                   SID_SD_EDITOPTIONS },
+    { "Impress",            nullptr,                   SID_SD_EDITOPTIONS },
     { "Impress",            "General",              SID_SI_TP_MISC },
     { "Impress",            "View",                 SID_SI_TP_CONTENTS },
     { "Impress",            "Grid",                 SID_SI_TP_SNAP },
     { "Impress",            "Print",                SID_SI_TP_PRINT },
-    { "Draw",               NULL,                   SID_SD_GRAPHIC_OPTIONS },
+    { "Draw",               nullptr,                   SID_SD_GRAPHIC_OPTIONS },
     { "Draw",               "General",              SID_SD_TP_MISC },
     { "Draw",               "View",                 SID_SD_TP_CONTENTS },
     { "Draw",               "Grid",                 SID_SD_TP_SNAP },
     { "Draw",               "Print",                SID_SD_TP_PRINT },
-    { "Charts",             NULL,                   SID_SCH_EDITOPTIONS },
+    { "Charts",             nullptr,                   SID_SCH_EDITOPTIONS },
     { "Charts",             "DefaultColors",        RID_OPTPAGE_CHART_DEFCOLORS },
-    { "Base",               NULL,                   SID_SB_STARBASEOPTIONS },
+    { "Base",               nullptr,                   SID_SB_STARBASEOPTIONS },
     { "Base",               "Connections",          SID_SB_CONNECTIONPOOLING },
     { "Base",               "Databases",            SID_SB_DBREGISTEROPTIONS },
-    { NULL,                 NULL,                   0 }
+    { nullptr,                 nullptr,                   0 }
 };
 
 static bool lcl_getStringFromID( sal_uInt16 _nPageId, OUString& _rGroupName, OUString& _rPageName )
@@ -431,13 +430,13 @@ static bool lcl_getStringFromID( sal_uInt16 _nPageId, OUString& _rGroupName, OUS
     bool bRet = false;
 
     sal_uInt16 nIdx = 0;
-    while ( OptionsMap_Impl[nIdx].m_pGroupName != NULL )
+    while ( OptionsMap_Impl[nIdx].m_pGroupName != nullptr )
     {
         if ( _nPageId == OptionsMap_Impl[nIdx].m_nPageId )
         {
             bRet = true;
             _rGroupName = OUString::createFromAscii( OptionsMap_Impl[nIdx].m_pGroupName );
-            if ( OptionsMap_Impl[nIdx].m_pPageName != NULL )
+            if ( OptionsMap_Impl[nIdx].m_pPageName != nullptr )
                 _rPageName = OUString::createFromAscii( OptionsMap_Impl[nIdx].m_pPageName );
             break;
         }
@@ -469,7 +468,7 @@ struct OptionsPageInfo
     OUString       m_sEventHdl;
     VclPtr<ExtensionsTabPage>  m_pExtPage;
 
-    explicit OptionsPageInfo( sal_uInt16 nId ) : m_pPage( NULL ), m_nPageId( nId ), m_pExtPage( NULL ) {}
+    explicit OptionsPageInfo( sal_uInt16 nId ) : m_pPage( nullptr ), m_nPageId( nId ), m_pExtPage( nullptr ) {}
 };
 
 struct OptionsGroupInfo
@@ -484,18 +483,18 @@ struct OptionsGroupInfo
     VclPtr<ExtensionsTabPage>  m_pExtPage;
 
     OptionsGroupInfo( SfxShell* pSh, SfxModule* pMod, sal_uInt16 nId ) :
-        m_pInItemSet( NULL ), m_pOutItemSet( NULL ), m_pShell( pSh ),
+        m_pInItemSet( nullptr ), m_pOutItemSet( nullptr ), m_pShell( pSh ),
         m_pModule( pMod ), m_nDialogId( nId ), m_bLoadError( false ),
-        m_sPageURL( OUString() ), m_pExtPage( NULL ) {}
+        m_sPageURL( OUString() ), m_pExtPage( nullptr ) {}
     ~OptionsGroupInfo() { delete m_pInItemSet; delete m_pOutItemSet; }
 };
 
 #define INI_LIST() \
-    pCurrentPageEntry   ( NULL ),\
+    pCurrentPageEntry   ( nullptr ),\
     sTitle              ( GetText() ),\
     sNotLoadedError     (       CUI_RES( RID_SVXSTR_LOAD_ERROR ) ),\
-    pColorPageItemSet   ( NULL ),\
-    mpColorPage         ( NULL ),\
+    pColorPageItemSet   ( nullptr ),\
+    mpColorPage         ( nullptr ),\
     bForgetSelection    ( false ),\
     bIsFromExtensionManager( false ), \
     bIsForSetDocumentLanguage( false )
@@ -555,8 +554,8 @@ OfaTreeOptionsDialog::~OfaTreeOptionsDialog()
 
 void OfaTreeOptionsDialog::dispose()
 {
-    pCurrentPageEntry = NULL;
-    SvTreeListEntry* pEntry = pTreeLB ? pTreeLB->First() : NULL;
+    pCurrentPageEntry = nullptr;
+    SvTreeListEntry* pEntry = pTreeLB ? pTreeLB->First() : nullptr;
     // first children
     while(pEntry)
     {
@@ -594,7 +593,7 @@ void OfaTreeOptionsDialog::dispose()
     }
 
     // and parents
-    pEntry = pTreeLB ? pTreeLB->First() : NULL;
+    pEntry = pTreeLB ? pTreeLB->First() : nullptr;
     while(pEntry)
     {
         if(!pTreeLB->GetParent(pEntry))
@@ -607,7 +606,7 @@ void OfaTreeOptionsDialog::dispose()
         pEntry = pTreeLB->Next(pEntry);
     }
     delete pColorPageItemSet;
-    pColorPageItemSet = NULL;
+    pColorPageItemSet = nullptr;
     deleteGroupNames();
     pOkPB.clear();
     pBackPB.clear();
@@ -621,7 +620,7 @@ OptionsPageInfo* OfaTreeOptionsDialog::AddTabPage(
     sal_uInt16 nId, const OUString& rPageName, sal_uInt16 nGroup )
 {
     OptionsPageInfo* pPageInfo = new OptionsPageInfo( nId );
-    SvTreeListEntry* pParent = pTreeLB->GetEntry( 0, nGroup );
+    SvTreeListEntry* pParent = pTreeLB->GetEntry( nullptr, nGroup );
     DBG_ASSERT( pParent, "OfaTreeOptionsDialog::AddTabPage(): no group found" );
     SvTreeListEntry* pEntry = pTreeLB->InsertEntry( rPageName, pParent );
     pEntry->SetUserData( pPageInfo );
@@ -826,7 +825,7 @@ void OfaTreeOptionsDialog::ActivatePage( const OUString& rPageURL )
 
 void OfaTreeOptionsDialog::ActivateLastSelection()
 {
-    SvTreeListEntry* pEntry = NULL;
+    SvTreeListEntry* pEntry = nullptr;
     if ( pLastPageSaver )
     {
         OUString sLastURL = bIsFromExtensionManager ? pLastPageSaver->m_sLastPageURL_ExtMgr
@@ -890,7 +889,7 @@ bool OfaTreeOptionsDialog::Notify( NotifyEvent& rNEvt )
                 aKeyCode.GetCode() == KEY_PAGEDOWN)
         {
             SvTreeListEntry* pCurEntry = pTreeLB->FirstSelected();
-            SvTreeListEntry*  pTemp = 0;
+            SvTreeListEntry*  pTemp = nullptr;
             if(aKeyCode.GetCode() == KEY_PAGEDOWN)
             {
                 pTemp =  pTreeLB->Next( pCurEntry ) ;
@@ -943,10 +942,10 @@ void OfaTreeOptionsDialog::SelectHdl_Impl()
 
     pBox->EndSelection();
 
-    TabPage* pOldPage = NULL;
-    TabPage* pNewPage = NULL;
+    TabPage* pOldPage = nullptr;
+    TabPage* pNewPage = nullptr;
     OptionsPageInfo* pOptPageInfo = ( pCurrentPageEntry && pTreeLB->GetParent( pCurrentPageEntry ) )
-        ? static_cast<OptionsPageInfo*>(pCurrentPageEntry->GetUserData()) : NULL;
+        ? static_cast<OptionsPageInfo*>(pCurrentPageEntry->GetUserData()) : nullptr;
 
     if ( pOptPageInfo && pOptPageInfo->m_pPage && pOptPageInfo->m_pPage->IsVisible() )
     {
@@ -1171,7 +1170,7 @@ OfaPageResource::OfaPageResource() :
 SfxItemSet* OfaTreeOptionsDialog::CreateItemSet( sal_uInt16 nId )
 {
     Reference< XLinguProperties >  xProp( SvxGetLinguPropertySet() );
-    SfxItemSet* pRet = 0;
+    SfxItemSet* pRet = nullptr;
     switch(nId)
     {
         case SID_GENERAL_OPTIONS:
@@ -1193,7 +1192,7 @@ SfxItemSet* OfaTreeOptionsDialog::CreateItemSet( sal_uInt16 nId )
             SfxViewFrame* pViewFrame = SfxViewFrame::Current();
             if ( pViewFrame )
             {
-                const SfxPoolItem* pItem = NULL;
+                const SfxPoolItem* pItem = nullptr;
                 SfxDispatcher* pDispatch = pViewFrame->GetDispatcher();
 
                 // miscellaneous - Year2000
@@ -1243,7 +1242,7 @@ SfxItemSet* OfaTreeOptionsDialog::CreateItemSet( sal_uInt16 nId )
             SfxViewFrame* pViewFrame = SfxViewFrame::Current();
             if ( pViewFrame )
             {
-                const SfxPoolItem* pItem = NULL;
+                const SfxPoolItem* pItem = nullptr;
                 SfxDispatcher* pDispatch = pViewFrame->GetDispatcher();
                 if(SfxItemState::DEFAULT <= pDispatch->QueryState(SID_ATTR_LANGUAGE, pItem))
                     pRet->Put(
@@ -1334,7 +1333,7 @@ void OfaTreeOptionsDialog::ApplyItemSet( sal_uInt16 nId, const SfxItemSet& rSet 
         case SID_GENERAL_OPTIONS:
         {
             utl::MiscCfg    aMisc;
-            const SfxPoolItem* pItem = NULL;
+            const SfxPoolItem* pItem = nullptr;
             SfxItemSet aOptSet(SfxGetpApp()->GetPool(), SID_ATTR_QUICKLAUNCHER, SID_ATTR_QUICKLAUNCHER );
             aOptSet.Put(rSet);
             if(aOptSet.Count())
@@ -1408,7 +1407,7 @@ void OfaTreeOptionsDialog::ApplyItemSet( sal_uInt16 nId, const SfxItemSet& rSet 
 void OfaTreeOptionsDialog::ApplyLanguageOptions(const SfxItemSet& rSet)
 {
     bool bSaveSpellCheck = false;
-    const SfxPoolItem* pItem = NULL;
+    const SfxPoolItem* pItem = nullptr;
 
     if ( SfxItemState::SET == rSet.GetItemState( SID_SPELL_MODIFIED, false, &pItem ) )
     {
@@ -1429,7 +1428,7 @@ void OfaTreeOptionsDialog::ApplyLanguageOptions(const SfxItemSet& rSet)
     if ( pViewFrame )
     {
         SfxDispatcher* pDispatch = pViewFrame->GetDispatcher();
-        pItem = NULL;
+        pItem = nullptr;
         if(SfxItemState::SET == rSet.GetItemState( SID_ATTR_LANGUAGE, false, &pItem ))
         {
             pDispatch->Execute(pItem->Which(),    SfxCallMode::ASYNCHRON, pItem, 0L);
@@ -1493,7 +1492,7 @@ OUString getCurrentFactory_Impl( const Reference< XFrame >& _xFrame )
         }
         catch ( css::frame::UnknownModuleException& )
         {
-            DBG_WARNING( "getActiveModule_Impl(): unknown module" );
+            SAL_INFO( "cui.options", "unknown module" );
         }
         catch ( Exception& )
         {
@@ -1517,7 +1516,7 @@ void OfaTreeOptionsDialog::Initialize( const Reference< XFrame >& _xFrame )
     {
         ResStringArray& rGeneralArray = aDlgResource.GetGeneralArray();
         setGroupName( "ProductName", rGeneralArray.GetString(0) );
-        nGroup = AddGroup( rGeneralArray.GetString(0), 0, 0, SID_GENERAL_OPTIONS );
+        nGroup = AddGroup( rGeneralArray.GetString(0), nullptr, nullptr, SID_GENERAL_OPTIONS );
         sal_uInt16 nEnd = static_cast< sal_uInt16 >( rGeneralArray.Count() );
 
         for ( i = 1; i < nEnd; ++i )
@@ -1550,7 +1549,7 @@ void OfaTreeOptionsDialog::Initialize( const Reference< XFrame >& _xFrame )
     {
         ResStringArray& rFilterArray = aDlgResource.GetFilterArray();
         setGroupName( "LoadSave", rFilterArray.GetString(0) );
-        nGroup = AddGroup( rFilterArray.GetString(0), 0, 0, SID_FILTER_DLG );
+        nGroup = AddGroup( rFilterArray.GetString(0), nullptr, nullptr, SID_FILTER_DLG );
         for ( i = 1; i < rFilterArray.Count(); ++i )
         {
             nPageId = (sal_uInt16)rFilterArray.GetValue(i);
@@ -1565,7 +1564,7 @@ void OfaTreeOptionsDialog::Initialize( const Reference< XFrame >& _xFrame )
     {
         ResStringArray& rLangArray = aDlgResource.GetLangArray();
         setGroupName( "LanguageSettings", rLangArray.GetString(0) );
-        nGroup = AddGroup( rLangArray.GetString(0), 0, 0, SID_LANGUAGE_OPTIONS );
+        nGroup = AddGroup( rLangArray.GetString(0), nullptr, nullptr, SID_LANGUAGE_OPTIONS );
         for ( i = 1; i < rLangArray.Count(); ++i )
         {
             nPageId = (sal_uInt16)rLangArray.GetValue(i);
@@ -1611,7 +1610,7 @@ void OfaTreeOptionsDialog::Initialize( const Reference< XFrame >& _xFrame )
                         AddTabPage( nPageId, rTextArray.GetString(i), nGroup );
                 }
 #ifdef DBG_UTIL
-                AddTabPage( RID_SW_TP_OPTTEST_PAGE, OUString("Internal Test"), nGroup );
+                AddTabPage( RID_SW_TP_OPTTEST_PAGE, "Internal Test", nGroup );
 #endif
             }
 
@@ -1627,7 +1626,7 @@ void OfaTreeOptionsDialog::Initialize( const Reference< XFrame >& _xFrame )
                         AddTabPage( nPageId, rHTMLArray.GetString(i), nGroup );
                 }
 #ifdef DBG_UTIL
-                AddTabPage( RID_SW_TP_OPTTEST_PAGE, OUString("Internal Test"), nGroup );
+                AddTabPage( RID_SW_TP_OPTTEST_PAGE, "Internal Test", nGroup );
 #endif
             }
         }
@@ -1734,7 +1733,7 @@ void OfaTreeOptionsDialog::Initialize( const Reference< XFrame >& _xFrame )
     {
         ResStringArray& rDSArray = aDlgResource.GetDatasourcesArray();
         setGroupName( "Base", rDSArray.GetString(0) );
-        nGroup = AddGroup( rDSArray.GetString(0), 0, NULL, SID_SB_STARBASEOPTIONS );
+        nGroup = AddGroup( rDSArray.GetString(0), nullptr, nullptr, SID_SB_STARBASEOPTIONS );
         for ( i = 1; i < rDSArray.Count(); ++i )
         {
             nPageId = (sal_uInt16)rDSArray.GetValue(i);
@@ -1748,7 +1747,7 @@ void OfaTreeOptionsDialog::Initialize( const Reference< XFrame >& _xFrame )
     {
         ResStringArray& rChartArray = aDlgResource.GetChartArray();
         setGroupName( "Charts", rChartArray.GetString(0) );
-        nGroup = AddGroup( rChartArray.GetString(0), 0, 0, SID_SCH_EDITOPTIONS );
+        nGroup = AddGroup( rChartArray.GetString(0), nullptr, nullptr, SID_SCH_EDITOPTIONS );
         for ( i = 1; i < rChartArray.Count(); ++i )
         {
             nPageId = (sal_uInt16)rChartArray.GetValue(i);
@@ -1762,7 +1761,7 @@ void OfaTreeOptionsDialog::Initialize( const Reference< XFrame >& _xFrame )
     {
         ResStringArray& rInetArray = aDlgResource.GetInetArray();
         setGroupName( "Internet", rInetArray.GetString(0) );
-        nGroup = AddGroup(rInetArray.GetString(0), 0, 0, SID_INET_DLG );
+        nGroup = AddGroup(rInetArray.GetString(0), nullptr, nullptr, SID_INET_DLG );
 
         for ( i = 1; i < rInetArray.Count(); ++i )
         {
@@ -1812,7 +1811,7 @@ bool isNodeActive( OptionsNode* pNode, Module* pModule )
 
 void OfaTreeOptionsDialog::LoadExtensionOptions( const OUString& rExtensionId )
 {
-    Module* pModule = NULL;
+    Module* pModule = nullptr;
 
     // when called by Tools - Options then load nodes of active module
     if ( rExtensionId.isEmpty() )
@@ -1847,7 +1846,7 @@ OUString OfaTreeOptionsDialog::GetModuleIdentifier( const Reference< XFrame >& r
         }
         catch ( css::frame::UnknownModuleException& )
         {
-            DBG_WARNING( "OfaTreeOptionsDialog::GetModuleIdentifier(): unknown module" );
+            SAL_INFO( "cui.options", "unknown module" );
         }
         catch ( Exception& )
         {
@@ -1860,7 +1859,7 @@ OUString OfaTreeOptionsDialog::GetModuleIdentifier( const Reference< XFrame >& r
 Module* OfaTreeOptionsDialog::LoadModule(
     const OUString& rModuleIdentifier )
 {
-    Module* pModule = NULL;
+    Module* pModule = nullptr;
     Reference< XNameAccess > xSet(
         officecfg::Office::OptionsDialog::Modules::get());
 
@@ -1871,7 +1870,7 @@ Module* OfaTreeOptionsDialog::LoadModule(
         if ( rModuleIdentifier == sModule )
         {
             // current active module found
-            pModule = new Module( sModule );
+            pModule = new Module;
             pModule->m_bActive = true;
 
             Reference< XNameAccess > xModAccess;
@@ -1956,7 +1955,7 @@ VectorOfNodes OfaTreeOptionsDialog::LoadNodes(
             if ( !sTemp.isEmpty() )
                 sLabel = sTemp;
             OptionsNode* pNode =
-                new OptionsNode( sNodeId, sLabel, sPageURL, bAllModules, sGroupId, nGroupIndex );
+                new OptionsNode( sNodeId, sLabel, sPageURL, bAllModules );
 
             if ( rExtensionId.isEmpty() && !isNodeActive( pNode, pModule ) )
             {
@@ -1989,7 +1988,7 @@ VectorOfNodes OfaTreeOptionsDialog::LoadNodes(
                         if ( rExtensionId.isEmpty() || sId == rExtensionId )
                         {
                             OptionsLeaf* pLeaf = new OptionsLeaf(
-                                sId, sLeafLabel, sLeafURL, sEventHdl, sLeafGrpId, nLeafGrpIdx );
+                                sLeafLabel, sLeafURL, sEventHdl, sLeafGrpId, nLeafGrpIdx );
 
                             if ( !sLeafGrpId.isEmpty() )
                             {
@@ -2092,10 +2091,10 @@ static void lcl_insertLeaf(
     if ( USHRT_MAX == nGrpId )
     {
         sal_uInt16 nNodeGrpId = getGroupNodeId( pNode->m_sId );
-        nGrpId = pDlg->AddGroup( pNode->m_sLabel, NULL, NULL, nNodeGrpId );
+        nGrpId = pDlg->AddGroup( pNode->m_sLabel, nullptr, nullptr, nNodeGrpId );
         if ( !pNode->m_sPageURL.isEmpty() )
         {
-            SvTreeListEntry* pGrpEntry = rTreeLB.GetEntry( 0, nGrpId );
+            SvTreeListEntry* pGrpEntry = rTreeLB.GetEntry( nullptr, nGrpId );
             DBG_ASSERT( pGrpEntry, "OfaTreeOptionsDialog::InsertNodes(): no group" );
             if ( pGrpEntry )
             {
@@ -2212,15 +2211,14 @@ void ExtensionsTabPage::CreateDialogWithHandler()
         if ( bWithHandler )
         {
             Reference < XMultiServiceFactory > xFactory( ::comphelper::getProcessServiceFactory() );
-            m_xEventHdl = Reference< awt::XContainerWindowEventHandler >(
-                xFactory->createInstance( m_sEventHdl ), UNO_QUERY );
+            m_xEventHdl.set( xFactory->createInstance( m_sEventHdl ), UNO_QUERY );
         }
 
         if ( !bWithHandler || m_xEventHdl.is() )
         {
             SetStyle( GetStyle() | WB_DIALOGCONTROL | WB_CHILDDLGCTRL );
             Reference< awt::XWindowPeer > xParent( VCLUnoHelper::GetInterface( this ), UNO_QUERY );
-            m_xPage = Reference < awt::XWindow >(
+            m_xPage.set(
                 m_xWinProvider->createContainerWindow(
                     m_sPageURL, OUString(), xParent, m_xEventHdl ), UNO_QUERY );
 

@@ -422,7 +422,7 @@ void SmModel::_setPropertyValues(const PropertyMapEntry** ppEntries, const Any* 
 
     SmDocShell *pDocSh = static_cast < SmDocShell * > (GetObjectShell());
 
-    if ( NULL == pDocSh )
+    if ( nullptr == pDocSh )
         throw UnknownPropertyException();
 
     SmFormat aFormat = pDocSh->GetFormat();
@@ -634,6 +634,7 @@ void SmModel::_setPropertyValues(const PropertyMapEntry** ppEntries, const Any* 
                         SID_PRINTFRAME,      SID_PRINTFRAME,
                         SID_NO_RIGHT_SPACES, SID_NO_RIGHT_SPACES,
                         SID_SAVE_ONLY_USED_SYMBOLS, SID_SAVE_ONLY_USED_SYMBOLS,
+                        SID_AUTO_CLOSE_BRACKETS,    SID_AUTO_CLOSE_BRACKETS,
                         0
                     };
                     SfxItemSet *pItemSet = new SfxItemSet( SmDocShell::GetPool(), nRange );
@@ -705,7 +706,7 @@ void SmModel::_getPropertyValues( const PropertyMapEntry **ppEntries, Any *pValu
 {
     SmDocShell *pDocSh = static_cast < SmDocShell * > (GetObjectShell());
 
-    if ( NULL == pDocSh )
+    if ( nullptr == pDocSh )
         throw UnknownPropertyException();
 
     const SmFormat & aFormat = pDocSh->GetFormat();
@@ -1033,11 +1034,10 @@ void SAL_CALL SmModel::render(
         {
             //!! when called via API we may not have an active view
             //!! thus we go and look for a view that can be used.
-            const TypeId aTypeId = TYPE( SmViewShell );
-            SfxViewShell* pViewSh = SfxViewShell::GetFirst( &aTypeId, false /* search non-visible views as well*/ );
+            SfxViewShell* pViewSh = SfxViewShell::GetFirst( false /* search non-visible views as well*/, checkSfxViewShell<SmViewShell> );
             while (pViewSh && pViewSh->GetObjectShell() != pDocSh)
-                pViewSh = SfxViewShell::GetNext( *pViewSh, &aTypeId, false /* search non-visible views as well*/ );
-            SmViewShell *pView = PTR_CAST( SmViewShell, pViewSh );
+                pViewSh = SfxViewShell::GetNext( *pViewSh, false /* search non-visible views as well*/, checkSfxViewShell<SmViewShell> );
+            SmViewShell *pView = dynamic_cast< SmViewShell *>( pViewSh );
             SAL_WARN_IF( !pView, "starmath", "SmModel::render : no SmViewShell found" );
 
             if (pView)

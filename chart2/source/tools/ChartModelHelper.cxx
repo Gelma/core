@@ -71,7 +71,7 @@ uno::Reference< chart2::data::XDataProvider > ChartModelHelper::createInternalDa
                 {
                     ::com::sun::star::chart::ChartDataRowSource aDataRowSource(::com::sun::star::chart::ChartDataRowSource_COLUMNS);
 
-                    xProp->getPropertyValue( OUString("DataRowSource") ) >>= aDataRowSource;
+                    xProp->getPropertyValue( "DataRowSource" ) >>= aDataRowSource;
 
                     bDefaultDataInColumns = (::com::sun::star::chart::ChartDataRowSource_COLUMNS == aDataRowSource);
                 }
@@ -87,7 +87,7 @@ uno::Reference< XDiagram > ChartModelHelper::findDiagram( const uno::Reference< 
     uno::Reference< XChartDocument > xChartDoc( xModel, uno::UNO_QUERY );
     if( xChartDoc.is())
         return ChartModelHelper::findDiagram( xChartDoc );
-    return NULL;
+    return nullptr;
 }
 
 uno::Reference< XDiagram > ChartModelHelper::findDiagram( const uno::Reference< chart2::XChartDocument >& xChartDoc )
@@ -101,7 +101,7 @@ uno::Reference< XDiagram > ChartModelHelper::findDiagram( const uno::Reference< 
     {
         ASSERT_EXCEPTION( ex );
     }
-    return NULL;
+    return nullptr;
 }
 
 uno::Reference< XCoordinateSystem > ChartModelHelper::getFirstCoordinateSystem( ChartModel& rModel )

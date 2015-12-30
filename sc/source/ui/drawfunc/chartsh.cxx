@@ -52,16 +52,15 @@ void ScChartShell::InitInterface_Impl()
     GetStaticInterface()->RegisterObjectBar(SFX_OBJECTBAR_OBJECT | SFX_VISIBILITY_STANDARD | SFX_VISIBILITY_SERVER,
                                             RID_DRAW_OBJECTBAR);
 
-    GetStaticInterface()->RegisterPopupMenu(ScResId(RID_POPUP_CHART));
+    GetStaticInterface()->RegisterPopupMenu("chart");
 }
 
-TYPEINIT1( ScChartShell, ScDrawShell );
 
 ScChartShell::ScChartShell(ScViewData* pData) :
     ScDrawShell(pData)
 {
     SetHelpId( HID_SCSHELL_CHARTSH );
-    SetName( OUString("ChartObject") );
+    SetName( "ChartObject" );
     SfxShell::SetContextName(sfx2::sidebar::EnumContext::GetContextName(sfx2::sidebar::EnumContext::Context_Chart));
 }
 
@@ -78,7 +77,7 @@ void ScChartShell::GetExportAsGraphicState( SfxItemSet& rSet )
     {
         SdrObject* pObj = rMarkList.GetMark( 0 )->GetMarkedSdrObj();
 
-        if( pObj && pObj->ISA( SdrOle2Obj ) )
+        if( pObj && dynamic_cast<const SdrOle2Obj*>( pObj) !=  nullptr )
             bEnable = true;
     }
 
@@ -95,9 +94,9 @@ void ScChartShell::ExecuteExportAsGraphic( SfxRequest& )
     {
         SdrObject* pObject = rMarkList.GetMark( 0 )->GetMarkedSdrObj();
 
-        if( pObject && pObject->ISA( SdrOle2Obj ) )
+        if( pObject && dynamic_cast<const SdrOle2Obj*>( pObject) !=  nullptr )
         {
-            Reference< drawing::XShape > xSourceDoc = Reference< drawing::XShape >( pObject->getUnoShape(), UNO_QUERY_THROW );
+            Reference< drawing::XShape > xSourceDoc( pObject->getUnoShape(), UNO_QUERY_THROW );
             GraphicHelper::SaveShapeAsGraphic( xSourceDoc );
         }
     }

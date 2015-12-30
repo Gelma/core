@@ -20,7 +20,6 @@
 #ifndef INCLUDED_AVMEDIA_MEDIAITEM_HXX
 #define INCLUDED_AVMEDIA_MEDIAITEM_HXX
 
-#include <tools/rtti.hxx>
 #include <svl/poolitem.hxx>
 #include <com/sun/star/media/ZoomLevel.hpp>
 #include <com/sun/star/frame/XModel.hpp>
@@ -64,22 +63,22 @@ enum class MediaState
 class AVMEDIA_DLLPUBLIC MediaItem : public SfxPoolItem
 {
 public:
-                            TYPEINFO_OVERRIDE();
+                            static SfxPoolItem* CreateDefault();
 
     explicit                MediaItem( sal_uInt16 i_nWhich = 0,
                                        AVMediaSetMask nMaskSet = AVMediaSetMask::NONE );
                             MediaItem( const MediaItem& rMediaItem );
     virtual                 ~MediaItem();
 
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = nullptr ) const override;
     virtual bool            GetPresentation( SfxItemPresentation ePres,
                                                  SfxMapUnit eCoreUnit,
                                                  SfxMapUnit ePresUnit,
                                                  OUString&  rText,
-                                                 const IntlWrapper *pIntl ) const SAL_OVERRIDE;
-    virtual bool            QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool            PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+                                                 const IntlWrapper *pIntl ) const override;
+    virtual bool            QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool            PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
     void                    merge( const MediaItem& rMediaItem );
 

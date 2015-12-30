@@ -20,13 +20,12 @@
 #ifndef INCLUDED_VCL_OSX_A11YROLEHELPER_H
 #define INCLUDED_VCL_OSX_A11YROLEHELPER_H
 
-#include "osx/salinst.h"
 #include <com/sun/star/accessibility/XAccessibleContext.hpp>
 
 @interface AquaA11yRoleHelper : NSObject
 {
 }
-+(id)getNativeRoleFrom: (::com::sun::star::accessibility::XAccessibleContext *) accessibleContext;
++(id)getNativeRoleFrom: (css::accessibility::XAccessibleContext *) accessibleContext;
 +(id)getNativeSubroleFrom: (sal_Int16) nRole;
 +(id)getRoleDescriptionFrom: (NSString *) role with: (NSString *) subRole;
 @end

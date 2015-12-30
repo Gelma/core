@@ -49,8 +49,8 @@ namespace psp
     {
         struct LocaleEqual
         {
-            bool operator()(const com::sun::star::lang::Locale& i_rLeft,
-                            const com::sun::star::lang::Locale& i_rRight) const
+            bool operator()(const css::lang::Locale& i_rLeft,
+                            const css::lang::Locale& i_rRight) const
             {
                 return i_rLeft.Language.equals( i_rRight.Language ) &&
                 i_rLeft.Country.equals( i_rRight.Country ) &&
@@ -60,7 +60,7 @@ namespace psp
 
         struct LocaleHash
         {
-            size_t operator()(const com::sun::star::lang::Locale& rLocale) const
+            size_t operator()(const css::lang::Locale& rLocale) const
             { return
                   (size_t)rLocale.Language.hashCode()
                 ^ (size_t)rLocale.Country.hashCode()
@@ -82,20 +82,20 @@ namespace psp
             const OUString& i_rOption,
             const OUString& i_rValue,
             const OUString& i_rTranslation,
-            const com::sun::star::lang::Locale& i_rLocale = com::sun::star::lang::Locale()
+            const css::lang::Locale& i_rLocale = css::lang::Locale()
             );
 
         void insertOption( const OUString& i_rKey,
                            const OUString& i_rOption,
                            const OUString& i_rTranslation,
-                           const com::sun::star::lang::Locale& i_rLocale = com::sun::star::lang::Locale() )
+                           const css::lang::Locale& i_rLocale = css::lang::Locale() )
         {
             insertValue( i_rKey, i_rOption, OUString(), i_rTranslation, i_rLocale );
         }
 
         void insertKey( const OUString& i_rKey,
                         const OUString& i_rTranslation,
-                        const com::sun::star::lang::Locale& i_rLocale = com::sun::star::lang::Locale() )
+                        const css::lang::Locale& i_rLocale = css::lang::Locale() )
         {
             insertValue( i_rKey, OUString(), OUString(), i_rTranslation, i_rLocale );
         }
@@ -104,29 +104,29 @@ namespace psp
             const OUString& i_rKey,
             const OUString& i_rOption,
             const OUString& i_rValue,
-            const com::sun::star::lang::Locale& i_rLocale = com::sun::star::lang::Locale()
+            const css::lang::Locale& i_rLocale = css::lang::Locale()
             ) const;
 
         OUString translateOption( const OUString& i_rKey,
                                        const OUString& i_rOption,
-                                       const com::sun::star::lang::Locale& i_rLocale = com::sun::star::lang::Locale() ) const
+                                       const css::lang::Locale& i_rLocale = css::lang::Locale() ) const
         {
             return translateValue( i_rKey, i_rOption, OUString(), i_rLocale );
         }
 
         OUString translateKey( const OUString& i_rKey,
-                                    const com::sun::star::lang::Locale& i_rLocale = com::sun::star::lang::Locale() ) const
+                                    const css::lang::Locale& i_rLocale = css::lang::Locale() ) const
         {
             return translateValue( i_rKey, OUString(), OUString(), i_rLocale );
         }
     };
 
-    static com::sun::star::lang::Locale normalizeInputLocale(
-        const com::sun::star::lang::Locale& i_rLocale,
+    static css::lang::Locale normalizeInputLocale(
+        const css::lang::Locale& i_rLocale,
         bool bInsertDefault = false
         )
     {
-        com::sun::star::lang::Locale aLoc( i_rLocale );
+        css::lang::Locale aLoc( i_rLocale );
         if( bInsertDefault && aLoc.Language.isEmpty() )
         {
             // empty locale requested, fill in application UI locale
@@ -160,7 +160,7 @@ namespace psp
         const OUString& i_rOption,
         const OUString& i_rValue,
         const OUString& i_rTranslation,
-        const com::sun::star::lang::Locale& i_rLocale
+        const css::lang::Locale& i_rLocale
         )
     {
         OUStringBuffer aKey( i_rKey.getLength() + i_rOption.getLength() + i_rValue.getLength() + 2 );
@@ -178,7 +178,7 @@ namespace psp
         if( !aKey.isEmpty() && !i_rTranslation.isEmpty() )
         {
             OUString aK( aKey.makeStringAndClear() );
-            com::sun::star::lang::Locale aLoc;
+            css::lang::Locale aLoc;
             /* FIXME-BCP47: using Variant, uppercase? */
             aLoc.Language = i_rLocale.Language.toAsciiLowerCase();
             aLoc.Country  = i_rLocale.Country.toAsciiUpperCase();
@@ -191,7 +191,7 @@ namespace psp
         const OUString& i_rKey,
         const OUString& i_rOption,
         const OUString& i_rValue,
-        const com::sun::star::lang::Locale& i_rLocale
+        const css::lang::Locale& i_rLocale
         ) const
     {
         OUString aResult;
@@ -216,7 +216,7 @@ namespace psp
             {
                 const translation_map& rMap( it->second );
 
-                com::sun::star::lang::Locale aLoc( normalizeInputLocale( i_rLocale, true ) );
+                css::lang::Locale aLoc( normalizeInputLocale( i_rLocale, true ) );
                 /* FIXME-BCP47: use LanguageTag::getFallbackStrings()? */
                 for( int nTry = 0; nTry < 4; nTry++ )
                 {
@@ -244,7 +244,7 @@ namespace psp
         std::list< PPDParser* > aAllParsers;
         std::unordered_map< OUString, OUString, OUStringHash >* pAllPPDFiles;
         PPDCache()
-            : pAllPPDFiles(NULL)
+            : pAllPPDFiles(nullptr)
         {}
         ~PPDCache()
         {
@@ -254,7 +254,7 @@ namespace psp
                 aAllParsers.pop_front();
             }
             delete pAllPPDFiles;
-            pAllPPDFiles = NULL;
+            pAllPPDFiles = nullptr;
         }
     };
 }
@@ -269,8 +269,8 @@ namespace
 class PPDDecompressStream
 {
 private:
-    PPDDecompressStream(const PPDDecompressStream&) SAL_DELETED_FUNCTION;
-    PPDDecompressStream& operator=(const PPDDecompressStream&) SAL_DELETED_FUNCTION;
+    PPDDecompressStream(const PPDDecompressStream&) = delete;
+    PPDDecompressStream& operator=(const PPDDecompressStream&) = delete;
 
     SvFileStream*       mpFileStream;
     SvMemoryStream*     mpMemStream;
@@ -289,8 +289,8 @@ public:
 };
 
 PPDDecompressStream::PPDDecompressStream( const OUString& i_rFile ) :
-    mpFileStream( NULL ),
-    mpMemStream( NULL )
+    mpFileStream( nullptr ),
+    mpMemStream( nullptr )
 {
     Open( i_rFile );
 }
@@ -330,13 +330,13 @@ void PPDDecompressStream::Open( const OUString& i_rFile )
         if( nComp < 0 )
         {
             // decompression failed, must be an uncompressed stream after all
-            delete mpMemStream, mpMemStream = NULL;
+            delete mpMemStream, mpMemStream = nullptr;
             mpFileStream->Seek( 0 );
         }
         else
         {
             // compression successful, can get rid of file stream
-            delete mpFileStream, mpFileStream = NULL;
+            delete mpFileStream, mpFileStream = nullptr;
             mpMemStream->Seek( 0 );
         }
     }
@@ -344,8 +344,8 @@ void PPDDecompressStream::Open( const OUString& i_rFile )
 
 void PPDDecompressStream::Close()
 {
-    delete mpMemStream, mpMemStream = NULL;
-    delete mpFileStream, mpFileStream = NULL;
+    delete mpMemStream, mpMemStream = nullptr;
+    delete mpFileStream, mpFileStream = nullptr;
 }
 
 bool PPDDecompressStream::IsOpen() const
@@ -509,7 +509,7 @@ OUString PPDParser::getPPDFile( const OUString& rFile )
             if( it == rPPDCache.pAllPPDFiles->end() && bRetry )
             {
                 // a new file ? rehash
-                delete rPPDCache.pAllPPDFiles; rPPDCache.pAllPPDFiles = NULL;
+                delete rPPDCache.pAllPPDFiles; rPPDCache.pAllPPDFiles = nullptr;
                 bRetry = false;
                 // note this is optimized for office start where
                 // no new files occur and initPPDFiles is called only once
@@ -553,7 +553,7 @@ const PPDParser* PPDParser::getParser( const OUString& rFile )
     {
         SAL_INFO("vcl.unx.print", "Could not get printer PPD file \""
                 << rFile << "\" !");
-        return NULL;
+        return nullptr;
     }
 
     PPDCache &rPPDCache = thePPDCache::get();
@@ -561,7 +561,7 @@ const PPDParser* PPDParser::getParser( const OUString& rFile )
         if( (*it)->m_aFile == aFile )
             return *it;
 
-    PPDParser* pNewParser = NULL;
+    PPDParser* pNewParser = nullptr;
     if( !aFile.startsWith( "CUPS:" ) )
         pNewParser = new PPDParser( aFile );
     else
@@ -589,17 +589,17 @@ PPDParser::PPDParser( const OUString& rFile ) :
         m_aFile( rFile ),
         m_bType42Capable( false ),
         m_aFileEncoding( RTL_TEXTENCODING_MS_1252 ),
-        m_pDefaultImageableArea( NULL ),
-        m_pImageableAreas( NULL ),
-        m_pDefaultPaperDimension( NULL ),
-        m_pPaperDimensions( NULL ),
-        m_pDefaultInputSlot( NULL ),
-        m_pInputSlots( NULL ),
-        m_pDefaultResolution( NULL ),
-        m_pResolutions( NULL ),
-        m_pDefaultDuplexType( NULL ),
-        m_pDuplexTypes( NULL ),
-        m_pFontList( NULL ),
+        m_pDefaultImageableArea( nullptr ),
+        m_pImageableAreas( nullptr ),
+        m_pDefaultPaperDimension( nullptr ),
+        m_pPaperDimensions( nullptr ),
+        m_pDefaultInputSlot( nullptr ),
+        m_pInputSlots( nullptr ),
+        m_pDefaultResolution( nullptr ),
+        m_pResolutions( nullptr ),
+        m_pDefaultDuplexType( nullptr ),
+        m_pDuplexTypes( nullptr ),
+        m_pFontList( nullptr ),
         m_pTranslator( new PPDTranslator() )
 {
     // read in the file
@@ -713,12 +713,12 @@ PPDParser::PPDParser( const OUString& rFile ) :
     m_pImageableAreas = getKey(  OUString( "ImageableArea" ) );
     if( m_pImageableAreas )
         m_pDefaultImageableArea = m_pImageableAreas->getDefaultValue();
-    if (m_pImageableAreas == 0) {
+    if (m_pImageableAreas == nullptr) {
         OSL_TRACE(
             "Warning: no ImageableArea in %s\n",
             OUStringToOString(m_aFile, RTL_TEXTENCODING_UTF8).getStr());
     }
-    if (m_pDefaultImageableArea == 0) {
+    if (m_pDefaultImageableArea == nullptr) {
         OSL_TRACE(
             "Warning: no DefaultImageableArea in %s\n",
             OUStringToOString(m_aFile, RTL_TEXTENCODING_UTF8).getStr());
@@ -727,12 +727,12 @@ PPDParser::PPDParser( const OUString& rFile ) :
     m_pPaperDimensions = getKey( OUString( "PaperDimension" ) );
     if( m_pPaperDimensions )
         m_pDefaultPaperDimension = m_pPaperDimensions->getDefaultValue();
-    if (m_pPaperDimensions == 0) {
+    if (m_pPaperDimensions == nullptr) {
         OSL_TRACE(
             "Warning: no PaperDimensions in %s\n",
             OUStringToOString(m_aFile, RTL_TEXTENCODING_UTF8).getStr());
     }
-    if (m_pDefaultPaperDimension == 0) {
+    if (m_pDefaultPaperDimension == nullptr) {
         OSL_TRACE(
             "Warning: no DefaultPaperDimensions in %s\n",
             OUStringToOString(m_aFile, RTL_TEXTENCODING_UTF8).getStr());
@@ -741,12 +741,12 @@ PPDParser::PPDParser( const OUString& rFile ) :
     m_pResolutions = getKey( OUString( "Resolution" ) );
     if( m_pResolutions )
         m_pDefaultResolution = m_pResolutions->getDefaultValue();
-    if (m_pResolutions == 0) {
+    if (m_pResolutions == nullptr) {
         OSL_TRACE(
             "Warning: no Resolution in %s\n",
             OUStringToOString(m_aFile, RTL_TEXTENCODING_UTF8).getStr());
     }
-    if (m_pDefaultResolution == 0) {
+    if (m_pDefaultResolution == nullptr) {
         OSL_TRACE(
             "Warning: no DefaultResolution in %s\n",
             OUStringToOString(m_aFile, RTL_TEXTENCODING_UTF8).getStr());
@@ -755,12 +755,12 @@ PPDParser::PPDParser( const OUString& rFile ) :
     m_pInputSlots = getKey( OUString( "InputSlot" ) );
     if( m_pInputSlots )
         m_pDefaultInputSlot = m_pInputSlots->getDefaultValue();
-    if (m_pInputSlots == 0) {
+    if (m_pInputSlots == nullptr) {
         OSL_TRACE(
             "Warning: no InputSlot in %s\n",
             OUStringToOString(m_aFile, RTL_TEXTENCODING_UTF8).getStr());
     }
-    if (m_pDefaultInputSlot == 0) {
+    if (m_pDefaultInputSlot == nullptr) {
         OSL_TRACE(
             "Warning: no DefaultInputSlot in %s\n",
             OUStringToOString(m_aFile, RTL_TEXTENCODING_UTF8).getStr());
@@ -771,7 +771,7 @@ PPDParser::PPDParser( const OUString& rFile ) :
         m_pDefaultDuplexType = m_pDuplexTypes->getDefaultValue();
 
     m_pFontList = getKey( OUString( "Font" ) );
-    if (m_pFontList == 0) {
+    if (m_pFontList == nullptr) {
         OSL_TRACE(
             "Warning: no Font in %s\n",
             OUStringToOString(m_aFile, RTL_TEXTENCODING_UTF8).getStr());
@@ -806,13 +806,13 @@ void PPDParser::insertKey( const OUString& rKey, PPDKey* pKey )
 
 const PPDKey* PPDParser::getKey( int n ) const
 {
-    return ((unsigned int)n < m_aOrderedKeys.size() && n >= 0) ? m_aOrderedKeys[n] : NULL;
+    return ((unsigned int)n < m_aOrderedKeys.size() && n >= 0) ? m_aOrderedKeys[n] : nullptr;
 }
 
 const PPDKey* PPDParser::getKey( const OUString& rKey ) const
 {
     PPDParser::hash_type::const_iterator it = m_aKeys.find( rKey );
-    return it != m_aKeys.end() ? it->second : NULL;
+    return it != m_aKeys.end() ? it->second : nullptr;
 }
 
 bool PPDParser::hasKey( const PPDKey* pKey ) const
@@ -874,8 +874,22 @@ namespace
 
 void PPDParser::parse( ::std::list< OString >& rLines )
 {
+    // Name for PPD group into which all options are put for which the PPD
+    // does not explicitly define a group.
+    // This is similar to how CUPS handles it,
+    // s. Sweet, Michael R. (2001): Common UNIX Printing System, p. 251:
+    // "Each option in turn is associated with a group stored in the
+    // ppd_group_t structure. Groups can be specified in the PPD file; if an
+    // option is not associated with a group, it is put in a "General" or
+    // "Extra" group depending on the option.
+    static const OString aDefaultPPDGroupName("General");
+
     std::list< OString >::iterator line = rLines.begin();
     PPDParser::hash_type::const_iterator keyit;
+
+    // name of the PPD group that is currently being processed
+    OString aCurrentGroup = aDefaultPPDGroupName;
+
     while( line != rLines.end() )
     {
         OString aCurrentLine( *line );
@@ -897,10 +911,26 @@ void PPDParser::parse( ::std::list< OString >& rLines )
         {
             continue;
         }
+
+        if (aKey == "CloseGroup")
+        {
+            aCurrentGroup = aDefaultPPDGroupName;
+            continue;
+        }
+        if (aKey == "OpenGroup")
+        {
+            OString aGroupName = aCurrentLine;
+            sal_Int32 nPosition = aGroupName.indexOf('/');
+            if (nPosition != -1)
+            {
+                aGroupName = aGroupName.copy(0, nPosition);
+            }
+
+            aCurrentGroup = GetCommandLineToken(1, aGroupName);
+            continue;
+        }
         if ((aKey == "CloseUI") ||
             (aKey == "JCLCloseUI") ||
-            (aKey == "OpenGroup") ||
-            (aKey == "CloseGroup") ||
             (aKey == "End") ||
             (aKey == "JCLEnd") ||
             (aKey == "OpenSubGroup") ||
@@ -911,7 +941,7 @@ void PPDParser::parse( ::std::list< OString >& rLines )
 
         if ((aKey == "OpenUI") || (aKey == "JCLOpenUI"))
         {
-            parseOpenUI( aCurrentLine );
+            parseOpenUI( aCurrentLine, aCurrentGroup);
             continue;
         }
         else if (aKey == "OrderDependency")
@@ -956,7 +986,7 @@ void PPDParser::parse( ::std::list< OString >& rLines )
         /* FIXME-BCP47: really only ISO 639-1 two character language codes?
          * goodnight.. */
         bool bIsGlobalizedLine = false;
-        com::sun::star::lang::Locale aTransLocale;
+        css::lang::Locale aTransLocale;
         if( ( aUniKey.getLength() > 3 && aUniKey[ 2 ] == '.' ) ||
             ( aUniKey.getLength() > 5 && aUniKey[ 2 ] == '_' && aUniKey[ 5 ] == '.' ) )
         {
@@ -1085,7 +1115,7 @@ void PPDParser::parse( ::std::list< OString >& rLines )
             continue;
         }
 
-        PPDKey* pKey = NULL;
+        PPDKey* pKey = nullptr;
         keyit = m_aKeys.find( aUniKey );
         if( keyit == m_aKeys.end() )
         {
@@ -1136,7 +1166,7 @@ void PPDParser::parse( ::std::list< OString >& rLines )
                 {
                     PPDKey* pKey = keyit->second;
                     const PPDValue* pDefValue = pKey->getValue( aOption );
-                    if( pKey->m_pDefaultValue == NULL )
+                    if( pKey->m_pDefaultValue == nullptr )
                         pKey->m_pDefaultValue = pDefValue;
                 }
                 else
@@ -1159,7 +1189,7 @@ void PPDParser::parse( ::std::list< OString >& rLines )
     }
 }
 
-void PPDParser::parseOpenUI(const OString& rLine)
+void PPDParser::parseOpenUI(const OString& rLine, const OString& rPPDGroup)
 {
     OUString aTranslation;
     OString aKey = rLine;
@@ -1198,6 +1228,8 @@ void PPDParser::parseOpenUI(const OString& rLine)
         pKey->m_eUIType = PPDKey::PickMany;
     else
         pKey->m_eUIType = PPDKey::PickOne;
+
+    pKey->m_aGroup = OStringToOUString(rPPDGroup, RTL_TEXTENCODING_MS_1252);
 }
 
 void PPDParser::parseOrderDependency(const OString& rLine)
@@ -1442,7 +1474,7 @@ void PPDParser::getDefaultResolution( int& rXRes, int& rYRes ) const
 }
 
 OUString PPDParser::translateKey( const OUString& i_rKey,
-                                       const com::sun::star::lang::Locale& i_rLocale ) const
+                                       const css::lang::Locale& i_rLocale ) const
 {
     OUString aResult( m_pTranslator->translateKey( i_rKey, i_rLocale ) );
     if( aResult.isEmpty() )
@@ -1452,7 +1484,7 @@ OUString PPDParser::translateKey( const OUString& i_rKey,
 
 OUString PPDParser::translateOption( const OUString& i_rKey,
                                           const OUString& i_rOption,
-                                          const com::sun::star::lang::Locale& i_rLocale ) const
+                                          const css::lang::Locale& i_rLocale ) const
 {
     OUString aResult( m_pTranslator->translateOption( i_rKey, i_rOption, i_rLocale ) );
     if( aResult.isEmpty() )
@@ -1466,7 +1498,7 @@ OUString PPDParser::translateOption( const OUString& i_rKey,
 
 PPDKey::PPDKey( const OUString& rKey ) :
         m_aKey( rKey ),
-        m_pDefaultValue( NULL ),
+        m_pDefaultValue( nullptr ),
         m_bQueryValue( false ),
         m_bUIOption( false ),
         m_eUIType( PickOne ),
@@ -1481,13 +1513,13 @@ PPDKey::~PPDKey()
 
 const PPDValue* PPDKey::getValue( int n ) const
 {
-    return ((unsigned int)n < m_aOrderedValues.size() && n >= 0) ? m_aOrderedValues[n] : NULL;
+    return ((unsigned int)n < m_aOrderedValues.size() && n >= 0) ? m_aOrderedValues[n] : nullptr;
 }
 
 const PPDValue* PPDKey::getValue( const OUString& rOption ) const
 {
     PPDKey::hash_type::const_iterator it = m_aValues.find( rOption );
-    return it != m_aValues.end() ? &it->second : NULL;
+    return it != m_aValues.end() ? &it->second : nullptr;
 }
 
 const PPDValue* PPDKey::getValueCaseInsensitive( const OUString& rOption ) const
@@ -1523,7 +1555,7 @@ void PPDKey::eraseValue( const OUString& rOption )
 PPDValue* PPDKey::insertValue(const OUString& rOption, PPDValueType eType, bool bCustomOption)
 {
     if( m_aValues.find( rOption ) != m_aValues.end() )
-        return NULL;
+        return nullptr;
 
     PPDValue aValue;
     aValue.m_aOption = rOption;
@@ -1560,7 +1592,7 @@ const PPDKey* PPDContext::getModifiedKey( int n ) const
     hash_type::const_iterator it;
     for( it = m_aCurrentValues.begin(); it != m_aCurrentValues.end() && n--; ++it )
         ;
-    return it != m_aCurrentValues.end() ? it->first : NULL;
+    return it != m_aCurrentValues.end() ? it->first : nullptr;
 }
 
 void PPDContext::setParser( const PPDParser* pParser )
@@ -1575,7 +1607,7 @@ void PPDContext::setParser( const PPDParser* pParser )
 const PPDValue* PPDContext::getValue( const PPDKey* pKey ) const
 {
     if( ! m_pParser )
-        return NULL;
+        return nullptr;
 
     hash_type::const_iterator it;
     it = m_aCurrentValues.find( pKey );
@@ -1583,7 +1615,7 @@ const PPDValue* PPDContext::getValue( const PPDKey* pKey ) const
         return it->second;
 
     if( ! m_pParser->hasKey( pKey ) )
-        return NULL;
+        return nullptr;
 
     const PPDValue* pValue = pKey->getDefaultValue();
     if( ! pValue )
@@ -1595,12 +1627,12 @@ const PPDValue* PPDContext::getValue( const PPDKey* pKey ) const
 const PPDValue* PPDContext::setValue( const PPDKey* pKey, const PPDValue* pValue, bool bDontCareForConstraints )
 {
     if( ! m_pParser || ! pKey )
-        return NULL;
+        return nullptr;
 
     // pValue can be NULL - it means ignore this option
 
     if( ! m_pParser->hasKey( pKey ) )
-        return NULL;
+        return nullptr;
 
     // check constraints
     if( pValue )
@@ -1635,7 +1667,7 @@ const PPDValue* PPDContext::setValue( const PPDKey* pKey, const PPDValue* pValue
         }
     }
     else
-        m_aCurrentValues[ pKey ] = NULL;
+        m_aCurrentValues[ pKey ] = nullptr;
 
     return pValue;
 }
@@ -1768,7 +1800,7 @@ char* PPDContext::getStreamableBuffer( sal_uLong& rBytes ) const
 {
     rBytes = 0;
     if( m_aCurrentValues.empty() )
-        return NULL;
+        return nullptr;
     hash_type::const_iterator it;
     for( it = m_aCurrentValues.begin(); it != m_aCurrentValues.end(); ++it )
     {
@@ -1825,7 +1857,7 @@ void PPDContext::rebuildFromStreamBuffer( char* pBuffer, sal_uLong nBytes )
             const PPDKey* pKey = m_pParser->getKey( OStringToOUString( aLine.copy( 0, nPos ), RTL_TEXTENCODING_MS_1252 ) );
             if( pKey )
             {
-                const PPDValue* pValue = NULL;
+                const PPDValue* pValue = nullptr;
                 OUString aOption(OStringToOUString(aLine.copy(nPos+1), RTL_TEXTENCODING_MS_1252));
                 if (aOption != "*nil")
                     pValue = pKey->getValue( aOption );

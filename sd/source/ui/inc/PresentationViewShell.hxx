@@ -30,7 +30,6 @@ namespace sd {
 class PresentationViewShell : public DrawViewShell
 {
 public:
-    TYPEINFO_OVERRIDE();
 
     SFX_DECL_INTERFACE( SD_IF_SDPRESVIEWSHELL )
 
@@ -39,7 +38,7 @@ private:
     static void InitInterface_Impl();
 
 public:
-    PresentationViewShell( SfxViewFrame* pFrame, ViewShellBase& rViewShellBase, vcl::Window* pParentWindow, FrameView* pFrameView = NULL);
+    PresentationViewShell( SfxViewFrame* pFrame, ViewShellBase& rViewShellBase, vcl::Window* pParentWindow, FrameView* pFrameView = nullptr);
     virtual ~PresentationViewShell();
 
     /** This method is used by a simple class that passes some
@@ -51,17 +50,17 @@ public:
     */
     void FinishInitialization( FrameView* pFrameView );
 
-    virtual void Resize() SAL_OVERRIDE;
+    virtual void Resize() override;
 
 protected:
-    virtual SvxRuler* CreateHRuler(::sd::Window* pWin, bool bIsFirst) SAL_OVERRIDE;
-    virtual SvxRuler* CreateVRuler(::sd::Window* pWin) SAL_OVERRIDE;
+    virtual SvxRuler* CreateHRuler(::sd::Window* pWin, bool bIsFirst) override;
+    virtual SvxRuler* CreateVRuler(::sd::Window* pWin) override;
 
 private:
     Rectangle       maOldVisArea;
 
-    virtual void Activate (bool bIsMDIActivate) SAL_OVERRIDE;
-    virtual void Paint (const Rectangle& rRect, ::sd::Window* pWin) SAL_OVERRIDE;
+    virtual void Activate (bool bIsMDIActivate) override;
+    virtual void Paint (const Rectangle& rRect, ::sd::Window* pWin) override;
 };
 
 } // end of namespace sd

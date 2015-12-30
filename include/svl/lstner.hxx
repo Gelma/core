@@ -20,7 +20,7 @@
 #define INCLUDED_SVL_LSTNER_HXX
 
 #include <svl/svldllapi.h>
-#include <tools/rtti.hxx>
+#include <memory>
 
 class SfxBroadcaster;
 class SfxHint;
@@ -28,13 +28,12 @@ class SfxHint;
 class SVL_DLLPUBLIC SfxListener
 {
     struct Impl;
-    Impl* mpImpl;
+    std::unique_ptr<Impl> mpImpl;
 
 private:
-    const SfxListener&  operator=(const SfxListener &) SAL_DELETED_FUNCTION;
+    const SfxListener&  operator=(const SfxListener &) = delete;
 
 public:
-    TYPEINFO();
 
                         SfxListener();
                         SfxListener( const SfxListener &rCopy );

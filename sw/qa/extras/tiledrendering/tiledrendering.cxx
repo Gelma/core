@@ -7,6 +7,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <string>
+#include <boost/property_tree/json_parser.hpp>
+
 #include <swmodeltestbase.hxx>
 #include <LibreOfficeKit/LibreOfficeKitEnums.h>
 #include <comphelper/dispatchcommand.hxx>
@@ -18,6 +21,7 @@
 #include <vcl/svapp.hxx>
 #include <editeng/editview.hxx>
 #include <editeng/outliner.hxx>
+#include <svl/srchitem.hxx>
 #include <crsskip.hxx>
 #include <drawdoc.hxx>
 #include <ndtxt.hxx>
@@ -42,6 +46,7 @@ public:
     void testSearchTextFrame();
     void testSearchTextFrameWrapAround();
     void testDocumentSizeChanged();
+    void testSearchAll();
 
     CPPUNIT_TEST_SUITE(SwTiledRenderingTest);
     CPPUNIT_TEST(testRegisterCallback);
@@ -56,6 +61,7 @@ public:
     CPPUNIT_TEST(testSearchTextFrame);
     CPPUNIT_TEST(testSearchTextFrameWrapAround);
     CPPUNIT_TEST(testDocumentSizeChanged);
+    CPPUNIT_TEST(testSearchAll);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -66,6 +72,8 @@ private:
     Size m_aDocumentSize;
     OString m_aTextSelection;
     bool m_bFound;
+    std::vector<OString> m_aSearchResultSelection;
+    std::vector<int> m_aSearchResultPart;
 };
 
 SwTiledRenderingTest::SwTiledRenderingTest()
@@ -79,7 +87,7 @@ SwXTextDocument* SwTiledRenderingTest::createDoc(const char* pName)
 
     SwXTextDocument* pTextDocument = dynamic_cast<SwXTextDocument*>(mxComponent.get());
     CPPUNIT_ASSERT(pTextDocument);
-    pTextDocument->initializeForTiledRendering();
+    pTextDocument->initializeForTiledRendering(uno::Sequence<beans::PropertyValue>());
     return pTextDocument;
 }
 
@@ -125,23 +133,25 @@ void SwTiledRenderingTest::callbackImpl(int nType, const char* pPayload)
         m_bFound = false;
     }
     break;
+    case LOK_CALLBACK_SEARCH_RESULT_SELECTION:
+    {
+        m_aSearchResultSelection.clear();
+        boost::property_tree::ptree aTree;
+        std::stringstream aStream(pPayload);
+        boost::property_tree::read_json(aStream, aTree);
+        for (boost::property_tree::ptree::value_type& rValue : aTree.get_child("searchResultSelection"))
+        {
+            m_aSearchResultSelection.push_back(rValue.second.get<std::string>("rectangles").c_str());
+            m_aSearchResultPart.push_back(std::atoi(rValue.second.get<std::string>("part").c_str()));
+        }
+    }
+    break;
     }
 }
 
 void SwTiledRenderingTest::testRegisterCallback()
 {
-#ifdef MACOSX
-    // For some reason this particular test requires window system access on OS X.
-
-    // Without window system access, we do get a number of "<<<WARNING>>>
-    // AquaSalGraphics::CheckContext() FAILED!!!!" [sic] and " <Warning>: CGSConnectionByID: 0 is
-    // not a valid connection ID" warnings while running the other tests, too, but they still
-    // succeed.
-
-    if (!vcl::IsWindowSystemAvailable())
-        return;
-#endif
-
+    comphelper::LibreOfficeKit::setActive();
     SwXTextDocument* pXTextDocument = createDoc("dummy.fodt");
     pXTextDocument->registerCallback(&SwTiledRenderingTest::callback, this);
     SwWrtShell* pWrtShell = pXTextDocument->GetDocShell()->GetWrtShell();
@@ -150,13 +160,9 @@ void SwTiledRenderingTest::testRegisterCallback()
 
     // Check that the top left 256x256px tile would be invalidated.
     CPPUNIT_ASSERT(!m_aInvalidation.IsEmpty());
-#if !defined(WNT) && !defined(MACOSX)
     Rectangle aTopLeft(0, 0, 256*15, 256*15); // 1 px = 15 twips, assuming 96 DPI.
-    // FIXME - fails on Windows since about cbd48230bb3a90c4c485fa33123c6653234e02e9
-    // [plus minus few commits maybe]
-    // Also on OS X. But is tiled rendering even supposed to work on Windows and OS X?
     CPPUNIT_ASSERT(m_aInvalidation.IsOver(aTopLeft));
-#endif
+    comphelper::LibreOfficeKit::setActive(false);
 }
 
 void SwTiledRenderingTest::testPostKeyEvent()
@@ -164,31 +170,33 @@ void SwTiledRenderingTest::testPostKeyEvent()
     SwXTextDocument* pXTextDocument = createDoc("dummy.fodt");
     SwWrtShell* pWrtShell = pXTextDocument->GetDocShell()->GetWrtShell();
     pWrtShell->Right(CRSR_SKIP_CHARS, /*bSelect=*/false, 1, /*bBasicCall=*/false);
-    SwShellCrsr* pShellCrsr = pWrtShell->getShellCrsr(false);
+    SwShellCursor* pShellCursor = pWrtShell->getShellCursor(false);
     // Did we manage to go after the first character?
-    CPPUNIT_ASSERT_EQUAL(static_cast<sal_Int32>(1), pShellCrsr->GetPoint()->nContent.GetIndex());
+    CPPUNIT_ASSERT_EQUAL(static_cast<sal_Int32>(1), pShellCursor->GetPoint()->nContent.GetIndex());
 
     pXTextDocument->postKeyEvent(LOK_KEYEVENT_KEYINPUT, 'x', 0);
     pXTextDocument->postKeyEvent(LOK_KEYEVENT_KEYUP, 'x', 0);
     // Did we manage to insert the character after the first one?
-    CPPUNIT_ASSERT_EQUAL(OUString("Axaa bbb."), pShellCrsr->GetPoint()->nNode.GetNode().GetTextNode()->GetText());
+    CPPUNIT_ASSERT_EQUAL(OUString("Axaa bbb."), pShellCursor->GetPoint()->nNode.GetNode().GetTextNode()->GetText());
 }
 
 void SwTiledRenderingTest::testPostMouseEvent()
 {
+    comphelper::LibreOfficeKit::setActive();
     SwXTextDocument* pXTextDocument = createDoc("dummy.fodt");
     SwWrtShell* pWrtShell = pXTextDocument->GetDocShell()->GetWrtShell();
     pWrtShell->Right(CRSR_SKIP_CHARS, /*bSelect=*/false, 1, /*bBasicCall=*/false);
-    SwShellCrsr* pShellCrsr = pWrtShell->getShellCrsr(false);
+    SwShellCursor* pShellCursor = pWrtShell->getShellCursor(false);
     // Did we manage to go after the first character?
-    CPPUNIT_ASSERT_EQUAL(static_cast<sal_Int32>(1), pShellCrsr->GetPoint()->nContent.GetIndex());
+    CPPUNIT_ASSERT_EQUAL(static_cast<sal_Int32>(1), pShellCursor->GetPoint()->nContent.GetIndex());
 
-    Point aStart = pShellCrsr->GetSttPos();
+    Point aStart = pShellCursor->GetSttPos();
     aStart.setX(aStart.getX() - 1000);
     pXTextDocument->postMouseEvent(LOK_MOUSEEVENT_MOUSEBUTTONDOWN, aStart.getX(), aStart.getY(), 1);
     pXTextDocument->postMouseEvent(LOK_MOUSEEVENT_MOUSEBUTTONUP, aStart.getX(), aStart.getY(), 1);
     // The new cursor position must be before the first word.
-    CPPUNIT_ASSERT_EQUAL(static_cast<sal_Int32>(0), pShellCrsr->GetPoint()->nContent.GetIndex());
+    CPPUNIT_ASSERT_EQUAL(static_cast<sal_Int32>(0), pShellCursor->GetPoint()->nContent.GetIndex());
+    comphelper::LibreOfficeKit::setActive(false);
 }
 
 void SwTiledRenderingTest::testSetTextSelection()
@@ -199,21 +207,21 @@ void SwTiledRenderingTest::testSetTextSelection()
     pWrtShell->Right(CRSR_SKIP_CHARS, /*bSelect=*/false, 5, /*bBasicCall=*/false);
     // Create a selection by on the word.
     pWrtShell->SelWrd();
-    SwShellCrsr* pShellCrsr = pWrtShell->getShellCrsr(false);
+    SwShellCursor* pShellCursor = pWrtShell->getShellCursor(false);
     // Did we indeed manage to select the second word?
-    CPPUNIT_ASSERT_EQUAL(OUString("bbb"), pShellCrsr->GetText());
+    CPPUNIT_ASSERT_EQUAL(OUString("bbb"), pShellCursor->GetText());
 
     // Now use setTextSelection() to move the start of the selection 1000 twips left.
-    Point aStart = pShellCrsr->GetSttPos();
+    Point aStart = pShellCursor->GetSttPos();
     aStart.setX(aStart.getX() - 1000);
     pXTextDocument->setTextSelection(LOK_SETTEXTSELECTION_START, aStart.getX(), aStart.getY());
     // The new selection must include the first word, too -- but not the ending dot.
-    CPPUNIT_ASSERT_EQUAL(OUString("Aaa bbb"), pShellCrsr->GetText());
+    CPPUNIT_ASSERT_EQUAL(OUString("Aaa bbb"), pShellCursor->GetText());
 
     // Next: test that LOK_SETTEXTSELECTION_RESET + LOK_SETTEXTSELECTION_END can be used to create a selection.
     pXTextDocument->setTextSelection(LOK_SETTEXTSELECTION_RESET, aStart.getX(), aStart.getY());
     pXTextDocument->setTextSelection(LOK_SETTEXTSELECTION_END, aStart.getX() + 1000, aStart.getY());
-    CPPUNIT_ASSERT_EQUAL(OUString("Aaa b"), pShellCrsr->GetText());
+    CPPUNIT_ASSERT_EQUAL(OUString("Aaa b"), pShellCursor->GetText());
 }
 
 void SwTiledRenderingTest::testGetTextSelection()
@@ -270,9 +278,7 @@ void SwTiledRenderingTest::testSetGraphicSelection()
     Rectangle aShapeAfter = pObject->GetSnapRect();
     // Check that a resize happened, but aspect ratio is not kept.
     CPPUNIT_ASSERT_EQUAL(aShapeBefore.getWidth(), aShapeAfter.getWidth());
-#if !defined(MACOSX) // FIXME
     CPPUNIT_ASSERT_EQUAL(aShapeBefore.getHeight() + 1000, aShapeAfter.getHeight());
-#endif
 }
 
 void SwTiledRenderingTest::testResetSelection()
@@ -281,28 +287,27 @@ void SwTiledRenderingTest::testResetSelection()
     SwWrtShell* pWrtShell = pXTextDocument->GetDocShell()->GetWrtShell();
     // Select one character.
     pWrtShell->Right(CRSR_SKIP_CHARS, /*bSelect=*/true, 1, /*bBasicCall=*/false);
-    SwShellCrsr* pShellCrsr = pWrtShell->getShellCrsr(false);
+    SwShellCursor* pShellCursor = pWrtShell->getShellCursor(false);
     // We have a text selection.
-    CPPUNIT_ASSERT(pShellCrsr->HasMark());
+    CPPUNIT_ASSERT(pShellCursor->HasMark());
 
     pXTextDocument->resetSelection();
     // We no longer have a text selection.
-    CPPUNIT_ASSERT(!pShellCrsr->HasMark());
+    CPPUNIT_ASSERT(!pShellCursor->HasMark());
 
     SdrPage* pPage = pWrtShell->GetDoc()->getIDocumentDrawModelAccess().GetDrawModel()->GetPage(0);
     SdrObject* pObject = pPage->GetObj(0);
     Point aPoint = pObject->GetSnapRect().Center();
     // Select the shape.
-    pWrtShell->EnterSelFrmMode(&aPoint);
+    pWrtShell->EnterSelFrameMode(&aPoint);
     // We have a graphic selection.
-    CPPUNIT_ASSERT(pWrtShell->IsSelFrmMode());
+    CPPUNIT_ASSERT(pWrtShell->IsSelFrameMode());
 
     pXTextDocument->resetSelection();
     // We no longer have a graphic selection.
-    CPPUNIT_ASSERT(!pWrtShell->IsSelFrmMode());
+    CPPUNIT_ASSERT(!pWrtShell->IsSelFrameMode());
 }
 
-#if !(defined WNT || defined MACOSX)
 void lcl_search(bool bBackward)
 {
     uno::Sequence<beans::PropertyValue> aPropertyValues(comphelper::InitPropertySequence(
@@ -312,20 +317,23 @@ void lcl_search(bool bBackward)
     }));
     comphelper::dispatchCommand(".uno:ExecuteSearch", aPropertyValues);
 }
-#endif
 
 void SwTiledRenderingTest::testSearch()
 {
-#if !defined(WNT) && !defined(MACOSX)
+    comphelper::LibreOfficeKit::setActive();
+
     SwXTextDocument* pXTextDocument = createDoc("search.odt");
+    pXTextDocument->registerCallback(&SwTiledRenderingTest::callback, this);
     SwWrtShell* pWrtShell = pXTextDocument->GetDocShell()->GetWrtShell();
-    size_t nNode = pWrtShell->getShellCrsr(false)->Start()->nNode.GetNode().GetIndex();
+    size_t nNode = pWrtShell->getShellCursor(false)->Start()->nNode.GetNode().GetIndex();
 
     // First hit, in the second paragraph, before the shape.
     lcl_search(false);
     CPPUNIT_ASSERT(!pWrtShell->GetDrawView()->GetTextEditObject());
-    size_t nActual = pWrtShell->getShellCrsr(false)->Start()->nNode.GetNode().GetIndex();
+    size_t nActual = pWrtShell->getShellCursor(false)->Start()->nNode.GetNode().GetIndex();
     CPPUNIT_ASSERT_EQUAL(nNode + 1, nActual);
+    /// Make sure we get search result selection for normal find as well, not only find all.
+    CPPUNIT_ASSERT(!m_aSearchResultSelection.empty());
 
     // Next hit, in the shape.
     lcl_search(false);
@@ -338,7 +346,7 @@ void SwTiledRenderingTest::testSearch()
     // Last hit, in the last paragraph, after the shape.
     lcl_search(false);
     CPPUNIT_ASSERT(!pWrtShell->GetDrawView()->GetTextEditObject());
-    nActual = pWrtShell->getShellCrsr(false)->Start()->nNode.GetNode().GetIndex();
+    nActual = pWrtShell->getShellCursor(false)->Start()->nNode.GetNode().GetIndex();
     CPPUNIT_ASSERT_EQUAL(nNode + 7, nActual);
 
     // Now change direction and make sure that the first 2 hits are in the shape, but not the 3rd one.
@@ -348,21 +356,21 @@ void SwTiledRenderingTest::testSearch()
     CPPUNIT_ASSERT(pWrtShell->GetDrawView()->GetTextEditObject());
     lcl_search(true);
     CPPUNIT_ASSERT(!pWrtShell->GetDrawView()->GetTextEditObject());
-    nActual = pWrtShell->getShellCrsr(false)->Start()->nNode.GetNode().GetIndex();
+    nActual = pWrtShell->getShellCursor(false)->Start()->nNode.GetNode().GetIndex();
     CPPUNIT_ASSERT_EQUAL(nNode + 1, nActual);
-#endif
+
+    comphelper::LibreOfficeKit::setActive(false);
 }
 
 void SwTiledRenderingTest::testSearchViewArea()
 {
-#if !defined(WNT) && !defined(MACOSX)
     SwXTextDocument* pXTextDocument = createDoc("search.odt");
     SwWrtShell* pWrtShell = pXTextDocument->GetDocShell()->GetWrtShell();
     // Go to the second page, 1-based.
     pWrtShell->GotoPage(2, false);
-    SwShellCrsr* pShellCrsr = pWrtShell->getShellCrsr(false);
+    SwShellCursor* pShellCursor = pWrtShell->getShellCursor(false);
     // Get the ~top left corner of the second page.
-    Point aPoint = pShellCrsr->GetSttPos();
+    Point aPoint = pShellCursor->GetSttPos();
 
     // Go back to the first page, search while the cursor is there, but the
     // visible area is the second page.
@@ -376,13 +384,11 @@ void SwTiledRenderingTest::testSearchViewArea()
     }));
     comphelper::dispatchCommand(".uno:ExecuteSearch", aPropertyValues);
     // This was just "Heading", i.e. SwView::SearchAndWrap() did not search from only the top of the second page.
-    CPPUNIT_ASSERT_EQUAL(OUString("Heading on second page"), pShellCrsr->GetPoint()->nNode.GetNode().GetTextNode()->GetText());
-#endif
+    CPPUNIT_ASSERT_EQUAL(OUString("Heading on second page"), pShellCursor->GetPoint()->nNode.GetNode().GetTextNode()->GetText());
 }
 
 void SwTiledRenderingTest::testSearchTextFrame()
 {
-#if !defined(WNT) && !defined(MACOSX)
     comphelper::LibreOfficeKit::setActive();
 
     SwXTextDocument* pXTextDocument = createDoc("search.odt");
@@ -397,12 +403,10 @@ void SwTiledRenderingTest::testSearchTextFrame()
     CPPUNIT_ASSERT(!m_aTextSelection.isEmpty());
 
     comphelper::LibreOfficeKit::setActive(false);
-#endif
 }
 
 void SwTiledRenderingTest::testSearchTextFrameWrapAround()
 {
-#if !defined(WNT) && !defined(MACOSX)
     SwXTextDocument* pXTextDocument = createDoc("search.odt");
     pXTextDocument->registerCallback(&SwTiledRenderingTest::callback, this);
     uno::Sequence<beans::PropertyValue> aPropertyValues(comphelper::InitPropertySequence(
@@ -415,17 +419,15 @@ void SwTiledRenderingTest::testSearchTextFrameWrapAround()
     comphelper::dispatchCommand(".uno:ExecuteSearch", aPropertyValues);
     // This failed, i.e. the second time 'not found' was reported, instead of wrapping around.
     CPPUNIT_ASSERT(m_bFound);
-#endif
 }
 
 void SwTiledRenderingTest::testDocumentSizeChanged()
 {
-#if !defined(WNT) && !defined(MACOSX)
+    comphelper::LibreOfficeKit::setActive();
     // Get the current document size.
     SwXTextDocument* pXTextDocument = createDoc("2-pages.odt");
     pXTextDocument->registerCallback(&SwTiledRenderingTest::callback, this);
     SwWrtShell* pWrtShell = pXTextDocument->GetDocShell()->GetWrtShell();
-    pXTextDocument->initializeForTiledRendering();
     Size aSize = pXTextDocument->getDocumentSize();
 
     // Delete the second page and see how the size changes.
@@ -435,7 +437,28 @@ void SwTiledRenderingTest::testDocumentSizeChanged()
     CPPUNIT_ASSERT_EQUAL(aSize.getWidth(), m_aDocumentSize.getWidth());
     // Document height should be smaller now.
     CPPUNIT_ASSERT(aSize.getHeight() > m_aDocumentSize.getHeight());
-#endif
+    comphelper::LibreOfficeKit::setActive(false);
+}
+
+void SwTiledRenderingTest::testSearchAll()
+{
+    comphelper::LibreOfficeKit::setActive();
+
+    SwXTextDocument* pXTextDocument = createDoc("search.odt");
+    pXTextDocument->registerCallback(&SwTiledRenderingTest::callback, this);
+    uno::Sequence<beans::PropertyValue> aPropertyValues(comphelper::InitPropertySequence(
+    {
+        {"SearchItem.SearchString", uno::makeAny(OUString("shape"))},
+        {"SearchItem.Backward", uno::makeAny(false)},
+        {"SearchItem.Command", uno::makeAny(static_cast<sal_uInt16>(SvxSearchCmd::FIND_ALL))},
+    }));
+    comphelper::dispatchCommand(".uno:ExecuteSearch", aPropertyValues);
+    // This was 0; should be 2 results in the body text.
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), m_aSearchResultSelection.size());
+    // Writer documents are always a single part.
+    CPPUNIT_ASSERT_EQUAL(0, m_aSearchResultPart[0]);
+
+    comphelper::LibreOfficeKit::setActive(false);
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SwTiledRenderingTest);

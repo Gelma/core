@@ -175,27 +175,27 @@ public:
 
     // XBridgeSupplier2 ---------------------------------------------------
 
-    virtual Any SAL_CALL createBridge(const Any& modelDepObject,
+    Any SAL_CALL createBridge(const Any& modelDepObject,
                                 const Sequence<sal_Int8>& ProcessId,
                                 sal_Int16 sourceModelType,
                                 sal_Int16 destModelType)
-            throw (IllegalArgumentException, RuntimeException);
+            throw (IllegalArgumentException, RuntimeException) override;
 
     // XInitialization
-    virtual void SAL_CALL initialize( const Sequence< Any >& aArguments ) throw(Exception, RuntimeException);
+    void SAL_CALL initialize( const Sequence< Any >& aArguments ) throw(Exception, RuntimeException) override;
 
     OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // Abstract struct UnoConversionUtilities
-    virtual Reference< XInterface > createUnoWrapperInstance();
-    virtual Reference< XInterface > createComWrapperInstance();
+    Reference< XInterface > createUnoWrapperInstance() override;
+    Reference< XInterface > createComWrapperInstance() override;
 protected:
 
 };
@@ -218,22 +218,22 @@ public:
     ~OleClient_Impl();
 
     // XMultiServiceFactory
-    virtual Reference<XInterface> SAL_CALL createInstance(const OUString& ServiceSpecifier) throw( Exception, RuntimeException);
-    virtual Reference<XInterface> SAL_CALL createInstanceWithArguments(const OUString& ServiceSpecifier, const Sequence< Any >& Arguments) throw (Exception, RuntimeException);
-    Sequence< OUString >    SAL_CALL getAvailableServiceNames() throw (RuntimeException);
+    Reference<XInterface> SAL_CALL createInstance(const OUString& ServiceSpecifier) throw( Exception, RuntimeException) override;
+    Reference<XInterface> SAL_CALL createInstanceWithArguments(const OUString& ServiceSpecifier, const Sequence< Any >& Arguments) throw (Exception, RuntimeException) override;
+    Sequence< OUString >    SAL_CALL getAvailableServiceNames() throw (RuntimeException) override;
 
     OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // Abstract struct UnoConversionUtilities
-    virtual Reference< XInterface > createUnoWrapperInstance();
-    virtual Reference< XInterface > createComWrapperInstance();
+    Reference< XInterface > createUnoWrapperInstance() override;
+    Reference< XInterface > createComWrapperInstance() override;
 
 protected:
     Reference<XBridgeSupplier2> m_bridgeSupplier;
@@ -257,13 +257,13 @@ public:
     ~OleServer_Impl();
 
     OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
 protected:
 

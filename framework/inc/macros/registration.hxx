@@ -57,16 +57,16 @@ ________________________________________________________________________________
                                                             void*     /*pRegistryKey*/      )                                           \
     {                                                                                                                                   \
         /* Set default return value for this operation - if it failed. */                                                               \
-        void* pReturn = NULL;                                                                                                          \
+        void* pReturn = nullptr;                                                                                                          \
         if  (                                                                                                                           \
-                ( pImplementationName   !=  NULL ) &&                                                                                   \
-                ( pServiceManager       !=  NULL )                                                                                      \
+                ( pImplementationName   !=  nullptr ) &&                                                                                   \
+                ( pServiceManager       !=  nullptr )                                                                                      \
             )                                                                                                                           \
         {                                                                                                                               \
             /* Define variables which are used in following macros. */                                                                  \
-            ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >   xFactory;                   \
-            ::com::sun::star::uno::Reference< ::com::sun::star::lang::XMultiServiceFactory >    xServiceManager;                   \
-            xServiceManager = static_cast< ::com::sun::star::lang::XMultiServiceFactory* >( pServiceManager );                   \
+            css::uno::Reference< css::uno::XInterface >             xFactory;                                                           \
+            css::uno::Reference< css::lang::XMultiServiceFactory >  xServiceManager;                                                    \
+            xServiceManager = static_cast< css::lang::XMultiServiceFactory* >( pServiceManager );                                       \
             /* These parameter will expand to      */                                                                                   \
             /* "IF_NAME_CREATECOMPONENTFACTORY(a)  */                                                                                   \
             /*  else                               */                                                                                   \

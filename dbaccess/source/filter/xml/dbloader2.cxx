@@ -100,9 +100,9 @@ public:
     explicit DBTypeDetection(const Reference< XComponentContext >&);
 
     // XServiceInfo
-    OUString                        SAL_CALL getImplementationName() throw(std::exception  ) SAL_OVERRIDE;
-    sal_Bool                        SAL_CALL supportsService(const OUString& ServiceName) throw(std::exception  ) SAL_OVERRIDE;
-    Sequence< OUString >            SAL_CALL getSupportedServiceNames() throw(std::exception  ) SAL_OVERRIDE;
+    OUString                        SAL_CALL getImplementationName() throw(std::exception  ) override;
+    sal_Bool                        SAL_CALL supportsService(const OUString& ServiceName) throw(std::exception  ) override;
+    Sequence< OUString >            SAL_CALL getSupportedServiceNames() throw(std::exception  ) override;
 
     // static methods
     static OUString                 getImplementationName_Static() throw(  )
@@ -113,7 +113,7 @@ public:
     static css::uno::Reference< css::uno::XInterface >
             SAL_CALL Create(const css::uno::Reference< css::lang::XMultiServiceFactory >&);
 
-    virtual OUString SAL_CALL detect( css::uno::Sequence< css::beans::PropertyValue >& Descriptor ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL detect( css::uno::Sequence< css::beans::PropertyValue >& Descriptor ) throw (css::uno::RuntimeException, std::exception) override;
 };
 
 DBTypeDetection::DBTypeDetection(const Reference< XComponentContext >& _rxContext)
@@ -208,8 +208,7 @@ Sequence< OUString > SAL_CALL DBTypeDetection::getSupportedServiceNames() throw(
 // ORegistryServiceManager_Static
 Sequence< OUString > DBTypeDetection::getSupportedServiceNames_Static() throw(  )
 {
-    Sequence< OUString > aSNS( 1 );
-    aSNS[0] = "com.sun.star.document.ExtendedTypeDetection";
+    Sequence<OUString> aSNS { "com.sun.star.document.ExtendedTypeDetection" };
     return aSNS;
 }
 
@@ -237,9 +236,9 @@ public:
     virtual ~DBContentLoader();
 
     // XServiceInfo
-    OUString                        SAL_CALL getImplementationName() throw(std::exception  ) SAL_OVERRIDE;
-    sal_Bool                        SAL_CALL supportsService(const OUString& ServiceName) throw(std::exception  ) SAL_OVERRIDE;
-    Sequence< OUString >            SAL_CALL getSupportedServiceNames() throw(std::exception  ) SAL_OVERRIDE;
+    OUString                        SAL_CALL getImplementationName() throw(std::exception  ) override;
+    sal_Bool                        SAL_CALL supportsService(const OUString& ServiceName) throw(std::exception  ) override;
+    Sequence< OUString >            SAL_CALL getSupportedServiceNames() throw(std::exception  ) override;
 
     // static methods
     static OUString                 getImplementationName_Static() throw(  )
@@ -253,8 +252,8 @@ public:
     // XLoader
     virtual void SAL_CALL load( const Reference< XFrame > & _rFrame, const OUString& _rURL,
                                 const Sequence< PropertyValue >& _rArgs,
-                                const Reference< XLoadEventListener > & _rListener) throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL cancel() throw(std::exception) SAL_OVERRIDE;
+                                const Reference< XLoadEventListener > & _rListener) throw(css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL cancel() throw(std::exception) override;
 
 private:
     bool impl_executeNewDatabaseWizard( Reference< XModel >& _rxModel, bool& _bShouldStartTableWizard );
@@ -263,7 +262,7 @@ private:
 
 DBContentLoader::DBContentLoader(const Reference< XComponentContext >& _rxFactory)
     :m_aContext( _rxFactory )
-    ,m_nStartWizard(0)
+    ,m_nStartWizard(nullptr)
 {
 
 }
@@ -299,8 +298,7 @@ Sequence< OUString > SAL_CALL DBContentLoader::getSupportedServiceNames() throw(
 // ORegistryServiceManager_Static
 Sequence< OUString > DBContentLoader::getSupportedServiceNames_Static() throw(  )
 {
-    Sequence< OUString > aSNS( 1 );
-    aSNS[0] = "com.sun.star.frame.FrameLoader";
+    Sequence<OUString> aSNS { "com.sun.star.frame.FrameLoader" };
     return aSNS;
 }
 
@@ -403,7 +401,7 @@ void SAL_CALL DBContentLoader::load(const Reference< XFrame > & rFrame, const OU
     // not touch it.
     if ( !aMediaDesc.has( "InteractionHandler" ) )
     {
-        Reference< XInteractionHandler2 > xHandler( InteractionHandler::createWithParent(m_aContext, 0) );
+        Reference< XInteractionHandler2 > xHandler( InteractionHandler::createWithParent(m_aContext, nullptr) );
        aMediaDesc.put( "InteractionHandler", xHandler );
     }
 
@@ -564,7 +562,7 @@ void DBContentLoader::cancel() throw(std::exception)
 
 IMPL_LINK_NOARG_TYPED( DBContentLoader, OnStartTableWizard, void*, void )
 {
-    m_nStartWizard = 0;
+    m_nStartWizard = nullptr;
     try
     {
         Sequence< Any > aWizArgs(1);
@@ -576,13 +574,13 @@ IMPL_LINK_NOARG_TYPED( DBContentLoader, OnStartTableWizard, void*, void )
         SolarMutexGuard aGuard;
         Reference< XJobExecutor > xTableWizard( m_aContext->getServiceManager()->createInstanceWithArgumentsAndContext("com.sun.star.wizards.table.CallTableWizard", aWizArgs, m_aContext), UNO_QUERY);
         if ( xTableWizard.is() )
-            xTableWizard->trigger(OUString("start"));
+            xTableWizard->trigger("start");
     }
     catch(const Exception&)
     {
         OSL_FAIL("caught an exception while starting the table wizard!");
     }
-    m_xMySelf = NULL;
+    m_xMySelf = nullptr;
 }
 
 }

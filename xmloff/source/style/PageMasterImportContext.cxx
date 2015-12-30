@@ -57,7 +57,6 @@ void PageStyleContext::SetAttribute( sal_uInt16 nPrefixKey,
     }
 }
 
-TYPEINIT1( PageStyleContext, XMLPropStyleContext );
 
 PageStyleContext::PageStyleContext( SvXMLImport& rImport,
         sal_uInt16 nPrfx, const OUString& rLName,
@@ -279,13 +278,12 @@ void PageStyleContext::FillPropertySet(const uno::Reference<beans::XPropertySet 
                                 rPropSet->setPropertyValue(rPropertyName,Any(sStyleName));
                             }
                         }
-                        catch(::com::sun::star::lang::IllegalArgumentException& e)
+                        catch(css::lang::IllegalArgumentException& e)
                         {
-                            Sequence< rtl::OUString > aSeq(1);
-                            aSeq[0] = sStyleName;
+                            Sequence<OUString> aSeq { sStyleName };
                             GetImport().SetError(
                                 XMLERROR_STYLE_PROP_VALUE | XMLERROR_FLAG_WARNING,
-                                aSeq,e.Message,NULL);
+                                aSeq,e.Message,nullptr);
                         }
                         break;
                     }
@@ -317,8 +315,7 @@ void PageStyleContext::SetDefaults( )
     Reference < XMultiServiceFactory > xFactory ( GetImport().GetModel(), UNO_QUERY);
     if (xFactory.is())
     {
-        Reference < XInterface > xInt = xFactory->createInstance (
-        OUString ( "com.sun.star.text.Defaults" ) );
+        Reference < XInterface > xInt = xFactory->createInstance( "com.sun.star.text.Defaults" );
         Reference < beans::XPropertySet > xProperties ( xInt, UNO_QUERY );
         if ( xProperties.is() )
             FillPropertySet ( xProperties );

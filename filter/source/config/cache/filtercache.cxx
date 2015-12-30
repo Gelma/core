@@ -490,21 +490,21 @@ void FilterCache::addStatePropsToItem(      EItemType        eType,
     ::osl::ResettableMutexGuard aLock(m_aLock);
 
     // Note: Opening of the configuration layer throws some exceptions
-    // if it failed. So we don't must check any reference here ...
+    // if it failed. So we mustn't check any reference here...
     css::uno::Reference< css::container::XNameAccess > xPackage;
     css::uno::Reference< css::container::XNameAccess > xSet;
     switch(eType)
     {
         case E_TYPE :
             {
-                xPackage = css::uno::Reference< css::container::XNameAccess >(impl_openConfig(E_PROVIDER_TYPES), css::uno::UNO_QUERY_THROW);
+                xPackage.set(impl_openConfig(E_PROVIDER_TYPES), css::uno::UNO_QUERY_THROW);
                 xPackage->getByName(CFGSET_TYPES) >>= xSet;
             }
             break;
 
         case E_FILTER :
             {
-                xPackage = css::uno::Reference< css::container::XNameAccess >(impl_openConfig(E_PROVIDER_FILTERS), css::uno::UNO_QUERY_THROW);
+                xPackage.set(impl_openConfig(E_PROVIDER_FILTERS), css::uno::UNO_QUERY_THROW);
                 xPackage->getByName(CFGSET_FILTERS) >>= xSet;
             }
             break;
@@ -532,14 +532,14 @@ void FilterCache::addStatePropsToItem(      EItemType        eType,
                 }
                 /* <-- HACK */
 
-                xPackage = css::uno::Reference< css::container::XNameAccess >(impl_openConfig(E_PROVIDER_OTHERS), css::uno::UNO_QUERY_THROW);
+                xPackage.set(impl_openConfig(E_PROVIDER_OTHERS), css::uno::UNO_QUERY_THROW);
                 xPackage->getByName(CFGSET_FRAMELOADERS) >>= xSet;
             }
             break;
 
         case E_CONTENTHANDLER :
             {
-                xPackage = css::uno::Reference< css::container::XNameAccess >(impl_openConfig(E_PROVIDER_OTHERS), css::uno::UNO_QUERY_THROW);
+                xPackage.set(impl_openConfig(E_PROVIDER_OTHERS), css::uno::UNO_QUERY_THROW);
                 xPackage->getByName(CFGSET_CONTENTHANDLERS) >>= xSet;
             }
             break;
@@ -636,9 +636,9 @@ void FilterCache::impl_flushByList(const css::uno::Reference< css::container::XN
                                    const OUStringList&                                       lItems)
     throw(css::uno::Exception)
 {
-    css::uno::Reference< css::container::XNameContainer >   xAddRemoveSet = css::uno::Reference< css::container::XNameContainer >  (xSet, css::uno::UNO_QUERY);
-    css::uno::Reference< css::container::XNameReplace >     xReplaceeSet  = css::uno::Reference< css::container::XNameReplace >    (xSet, css::uno::UNO_QUERY);
-    css::uno::Reference< css::lang::XSingleServiceFactory > xFactory      = css::uno::Reference< css::lang::XSingleServiceFactory >(xSet, css::uno::UNO_QUERY);
+    css::uno::Reference< css::container::XNameContainer >   xAddRemoveSet(xSet, css::uno::UNO_QUERY);
+    css::uno::Reference< css::container::XNameReplace >     xReplaceeSet(xSet, css::uno::UNO_QUERY);
+    css::uno::Reference< css::lang::XSingleServiceFactory > xFactory(xSet, css::uno::UNO_QUERY);
 
     for (OUStringList::const_iterator pIt  = lItems.begin();
                                       pIt != lItems.end()  ;
@@ -734,7 +734,7 @@ void FilterCache::detectFlatForURL(const css::util::URL& aURL      ,
 
 
     // ii) search types matching to the given extension.
-    //     Copy every maching type without changing its order!
+    //     Copy every matching type without changing its order!
     //     Because preferred types was added as first one during
     //     loading configuration.
     CacheItemRegistration::const_iterator pExtReg = m_lExtensions2Types.find(sExtension);
@@ -801,7 +801,7 @@ css::uno::Reference< css::uno::XInterface > FilterCache::impl_openConfig(EConfig
     ::osl::ResettableMutexGuard aLock(m_aLock);
 
     OUString                              sPath      ;
-    css::uno::Reference< css::uno::XInterface >* pConfig = 0;
+    css::uno::Reference< css::uno::XInterface >* pConfig = nullptr;
     css::uno::Reference< css::uno::XInterface >  xOld       ;
     OString                               sRtlLog    ;
 
@@ -847,7 +847,7 @@ css::uno::Reference< css::uno::XInterface > FilterCache::impl_openConfig(EConfig
         }
         break;
 
-        default : throw css::uno::RuntimeException("These configuration node is not supported here for open!", 0);
+        default : throw css::uno::RuntimeException("These configuration node is not supported here for open!", nullptr);
     }
 
     {
@@ -1264,7 +1264,7 @@ void FilterCache::impl_addItem2FlushList(      EItemType        eType,
                                          const OUString& sItem)
     throw(css::uno::Exception)
 {
-    OUStringList* pList = 0;
+    OUStringList* pList = nullptr;
     switch(eType)
     {
         case E_TYPE :
@@ -1283,7 +1283,7 @@ void FilterCache::impl_addItem2FlushList(      EItemType        eType,
                 pList = &m_lChangedContentHandlers;
                 break;
 
-        default : throw css::uno::RuntimeException("unsupported item type", 0);
+        default : throw css::uno::RuntimeException("unsupported item type", nullptr);
     }
 
     OUStringList::const_iterator pItem = ::std::find(pList->begin(), pList->end(), sItem);
@@ -1736,7 +1736,7 @@ CacheItemList::iterator FilterCache::impl_loadItemOnDemand(      EItemType      
                                                            const OUString& sItem)
     throw(css::uno::Exception)
 {
-    CacheItemList*                              pList   = 0;
+    CacheItemList*                              pList   = nullptr;
     css::uno::Reference< css::uno::XInterface > xConfig    ;
     OUString                             sSet       ;
 

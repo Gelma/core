@@ -19,6 +19,10 @@
 #ifndef INCLUDED_COM_SUN_STAR_UNO_GENFUNC_HXX
 #define INCLUDED_COM_SUN_STAR_UNO_GENFUNC_HXX
 
+#include <sal/config.h>
+
+#include <cstddef>
+
 #include <com/sun/star/uno/genfunc.h>
 #include <com/sun/star/uno/Any.hxx>
 #include <com/sun/star/uno/XInterface.hpp>
@@ -55,7 +59,7 @@ inline void * SAL_CALL cpp_queryInterface( void * pCppI, typelib_TypeDescription
             if (typelib_TypeClass_INTERFACE == aRet.pType->eTypeClass)
             {
                 XInterface * pRet = static_cast< XInterface * >( aRet.pReserved );
-                aRet.pReserved = 0;
+                aRet.pReserved = NULL;
                 return pRet;
             }
         }
@@ -63,7 +67,7 @@ inline void * SAL_CALL cpp_queryInterface( void * pCppI, typelib_TypeDescription
         {
         }
     }
-    return 0;
+    return NULL;
 }
 
 }

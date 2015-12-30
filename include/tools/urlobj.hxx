@@ -79,7 +79,7 @@ enum class INetProtocol
     LAST = Cmis
 };
 
-class TOOLS_DLLPUBLIC SAL_WARN_UNUSED INetURLObject
+class SAL_WARN_UNUSED TOOLS_DLLPUBLIC INetURLObject
 {
 public:
     // Get- and Set-Methods:
@@ -176,8 +176,8 @@ public:
         const;
 
     OUString
-    getAbbreviated(com::sun::star::uno::Reference<
-                           com::sun::star::util::XStringWidth > const &
+    getAbbreviated(css::uno::Reference<
+                           css::util::XStringWidth > const &
                        rStringWidth,
                    sal_Int32 nWidth,
                    DecodeMechanism eMechanism = DECODE_TO_IURI,
@@ -389,6 +389,17 @@ public:
     struct SchemeInfo;
 
     inline INetProtocol GetProtocol() const { return m_eScheme; }
+
+    bool isSchemeEqualTo(INetProtocol scheme) const { return scheme == m_eScheme; }
+
+    bool isSchemeEqualTo(OUString const & scheme) const;
+
+    /** Check if the scheme is one of the WebDAV scheme
+     *  we know about.
+     *
+     *  @return true is one othe scheme either public scheme or private scheme.
+     */
+    bool isAnyKnownWebDAVScheme() const;
 
     /** Return the URL 'prefix' for a given scheme.
 
@@ -824,7 +835,7 @@ public:
         specified notation, or if this is not a file URL at all, an empty
         string is returned.
      */
-    OUString getFSysPath(FSysStyle eStyle, sal_Unicode * pDelimiter = 0)
+    OUString getFSysPath(FSysStyle eStyle, sal_Unicode * pDelimiter = nullptr)
         const;
 
     // Data URLs:

@@ -37,6 +37,8 @@
 #include <editeng/flditem.hxx>
 #include <editeng/emphasismarkitem.hxx>
 #include <editeng/scriptspaceitem.hxx>
+#include <editeng/hngpnctitem.hxx>
+#include <editeng/forbiddenruleitem.hxx>
 #include <editeng/numdef.hxx>
 #include <svl/itempool.hxx>
 #include <svl/grabbagitem.hxx>
@@ -83,7 +85,7 @@ EditDLL& EditDLL::Get()
 
 GlobalEditData::GlobalEditData()
 {
-    ppDefItems = NULL;
+    ppDefItems = nullptr;
 }
 
 GlobalEditData::~GlobalEditData()
@@ -105,8 +107,8 @@ SfxPoolItem** GlobalEditData::GetDefItems()
 
         ppDefItems[0]  = new SvxFrameDirectionItem( FRMDIR_HORI_LEFT_TOP, EE_PARA_WRITINGDIR );
         ppDefItems[1]  = new SvXMLAttrContainerItem( EE_PARA_XMLATTRIBS );
-        ppDefItems[2]  = new SfxBoolItem( EE_PARA_HANGINGPUNCTUATION, false );
-        ppDefItems[3]  = new SfxBoolItem( EE_PARA_FORBIDDENRULES, true );
+        ppDefItems[2]  = new SvxHangingPunctuationItem(false, EE_PARA_HANGINGPUNCTUATION);
+        ppDefItems[3]  = new SvxForbiddenRuleItem(true, EE_PARA_FORBIDDENRULES);
         ppDefItems[4]  = new SvxScriptSpaceItem( true, EE_PARA_ASIANCJKSPACING );
         ppDefItems[5]  = new SvxNumBulletItem( aDefaultNumRule, EE_PARA_NUMBULLET );
         ppDefItems[6]  = new SfxBoolItem( EE_PARA_HYPHENATE, false );
@@ -206,7 +208,7 @@ EditDLL::~EditDLL()
     delete pGlobalData;
 }
 
-static ResMgr* pResMgr=0;
+static ResMgr* pResMgr=nullptr;
 
 ResMgr* EditDLL::GetResMgr()
 {

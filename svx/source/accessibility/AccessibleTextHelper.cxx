@@ -182,7 +182,7 @@ namespace accessibility
 
         void ParagraphsMoved( sal_Int32 nFirst, sal_Int32 nMiddle, sal_Int32 nLast );
 
-        virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+        virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
         int getNotifierClientId() const { return mnNotifierClientId; }
 
@@ -243,7 +243,7 @@ namespace accessibility
     };
 
     AccessibleTextHelper_Impl::AccessibleTextHelper_Impl() :
-        mxFrontEnd( NULL ),
+        mxFrontEnd( nullptr ),
         maLastSelection( EE_PARA_NOT_FOUND,EE_INDEX_NOT_FOUND,EE_PARA_NOT_FOUND,EE_INDEX_NOT_FOUND ),
         mnFirstVisibleChild( -1 ),
         mnLastVisibleChild( -2 ),
@@ -848,7 +848,7 @@ namespace accessibility
         ::accessibility::AccessibleParaManager::WeakChild >
     {
     public:
-        explicit AccessibleTextHelper_UpdateChildBounds( AccessibleTextHelper_Impl& rImpl ) : mrImpl(rImpl) {}
+        explicit AccessibleTextHelper_UpdateChildBounds() {}
         ::accessibility::AccessibleParaManager::WeakChild operator()( const ::accessibility::AccessibleParaManager::WeakChild& rChild )
         {
             // retrieve hard reference from weak one
@@ -875,15 +875,12 @@ namespace accessibility
             // identity transform
             return rChild;
         }
-
-    private:
-        AccessibleTextHelper_Impl&  mrImpl;
     };
 
     void AccessibleTextHelper_Impl::UpdateBoundRect()
     {
         // send BOUNDRECT_CHANGED to affected children
-        AccessibleTextHelper_UpdateChildBounds aFunctor( *this );
+        AccessibleTextHelper_UpdateChildBounds aFunctor;
         ::std::transform( maParaManager.begin(), maParaManager.end(), maParaManager.begin(), aFunctor );
     }
 
@@ -1136,7 +1133,7 @@ namespace accessibility
                 ::uno::Reference< XAccessible > xPara;
                 ::accessibility::AccessibleParaManager::WeakPara::HardRefType aHardRef( begin->first.get() );
                 if( aHardRef.is() )
-                    xPara = ::uno::Reference< XAccessible >( aHardRef.getRef(), ::uno::UNO_QUERY );
+                    xPara.set( aHardRef.getRef(), ::uno::UNO_QUERY );
 
                 // release everything from the remove position until the end
                 maParaManager.Release(aFunctor.GetParaIndex(), nCurrParas);
@@ -1395,7 +1392,6 @@ namespace accessibility
 
                         if( maEventOpenFrames == 0 )
                         {
-                            // #103483#
                             /* All information should have arrived
                              * now, process queue. As stated in the
                              * above bug, we can often avoid throwing
@@ -1515,7 +1511,7 @@ namespace accessibility
 
         // clear references
         maEditSource.SetEditSource( ::std::unique_ptr< SvxEditSource >() );
-        mxFrontEnd = NULL;
+        mxFrontEnd = nullptr;
     }
 
     void AccessibleTextHelper_Impl::FireEvent( const sal_Int16 nEventId, const uno::Any& rNewValue, const uno::Any& rOldValue ) const
@@ -1574,7 +1570,7 @@ namespace accessibility
         if( mxFrontEnd.is() )
             return maParaManager.CreateChild( i, mxFrontEnd, GetEditSource(), mnFirstVisibleChild + i ).first;
         else
-            return NULL;
+            return nullptr;
     }
 
     void SAL_CALL AccessibleTextHelper_Impl::addAccessibleEventListener( const uno::Reference< XAccessibleEventListener >& xListener )
@@ -1641,7 +1637,7 @@ namespace accessibility
         }
 
         // found none
-        return NULL;
+        return nullptr;
     }
 
 

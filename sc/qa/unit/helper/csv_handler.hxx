@@ -32,8 +32,7 @@ OUString getConditionalFormatString(ScDocument* pDoc, SCCOL nCol, SCROW nRow, SC
 {
     OUString aString;
     Color* pColor;
-    ScRefCellValue aCell;
-    aCell.assign(*pDoc, ScAddress(nCol, nRow, nTab));
+    ScRefCellValue aCell(*pDoc, ScAddress(nCol, nRow, nTab));
     if (aCell.isEmpty())
         return aString;
 
@@ -132,7 +131,7 @@ public:
         }
         else
         {
-            char* pRemainingChars = NULL;
+            char* pRemainingChars = nullptr;
             std::string aStr(p, n);
             double nValue = strtod(&aStr[0], &pRemainingChars);
             if (*pRemainingChars)

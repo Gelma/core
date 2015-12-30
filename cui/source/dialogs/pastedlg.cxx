@@ -69,17 +69,14 @@ void SvPasteObjectDialog::SelectObject()
     if (m_pLbInsertList->GetEntryCount())
     {
         m_pLbInsertList->SelectEntryPos(0);
-        SelectHdl(m_pLbInsertList);
+        SelectHdl(*m_pLbInsertList);
     }
 }
 
-IMPL_LINK( SvPasteObjectDialog, SelectHdl, ListBox *, pListBox )
+IMPL_LINK_NOARG_TYPED( SvPasteObjectDialog, SelectHdl, ListBox&, void )
 {
-    (void)pListBox;
-
     if ( !m_pOKButton->IsEnabled() )
         m_pOKButton->Enable();
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED( SvPasteObjectDialog, DoubleClickHdl, ListBox&, void )
@@ -120,7 +117,6 @@ SotClipboardFormatId SvPasteObjectDialog::GetFormat( const TransferableDataHelpe
                                  aEnd( ((DataFlavorExVector&)*pFormats).end() );
     while( aIter != aEnd )
     {
-        css::datatransfer::DataFlavor aFlavor( *aIter );
         SotClipboardFormatId nFormat = (*aIter++).mnSotId;
 
         ::std::map< SotClipboardFormatId, OUString >::iterator itName =
@@ -131,7 +127,7 @@ SotClipboardFormatId SvPasteObjectDialog::GetFormat( const TransferableDataHelpe
         // from an accompanied "Object Descriptor" format on the clipboard
         // Remember: these formats mostly appear together on the clipboard
         OUString aName;
-        const OUString* pName = NULL;
+        const OUString* pName = nullptr;
         if ( itName == aSupplementMap.end() )
         {
             SvPasteObjectHelper::GetEmbeddedName(rHelper,aName,aSourceName,nFormat);

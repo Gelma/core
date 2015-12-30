@@ -41,7 +41,14 @@ $(eval $(call gb_Library_set_include,vcl,\
     $$(INCLUDE) \
     -I$(SRCDIR)/vcl/inc \
 	$(if $(filter WNTGCC,$(OS)$(COM)),-I$(MINGW_SYSROOT)/include/gdiplus) \
+	$(if $(filter WNT,$(OS)),-I$(SRCDIR)/vcl/inc/glyphy/demo) \
 ))
+
+ifeq ($(ENABLE_DBUS),TRUE)
+$(eval $(call gb_Library_add_defs,vclplug_gen,\
+	-DENABLE_DBUS \
+))
+endif
 
 $(eval $(call gb_Library_add_defs,vcl,\
     -DVCL_DLLIMPLEMENTATION \
@@ -58,7 +65,7 @@ $(eval $(call gb_Library_use_custom_headers,vcl,\
 ))
 
 $(eval $(call gb_Library_use_externals,vcl,\
-	$(if $(filter LINUX MACOSX,$(OS)), \
+	$(if $(filter LINUX MACOSX %BSD SOLARIS,$(OS)), \
 		curl) \
 	jpeg \
 	$(if $(filter-out IOS WNT,$(OS)), \
@@ -99,10 +106,6 @@ $(eval $(call gb_Library_add_cxxflags,vcl,\
     $(gb_OBJCXXFLAGS) \
 ))
 
-$(eval $(call gb_Library_add_exception_objects,vcl,\
-    vcl/osx/OpenGLWrapper \
-))
-
 endif
 
 ifeq ($(ENABLE_JAVA),TRUE)
@@ -121,7 +124,6 @@ $(eval $(call gb_Library_use_externals,vcl,\
 	icuuc \
 	lcms2 \
 	mdds_headers \
-	mesa_headers \
 ))
 
 $(eval $(call gb_Library_add_exception_objects,vcl,\
@@ -179,6 +181,7 @@ $(eval $(call gb_Library_add_exception_objects,vcl,\
     vcl/source/window/mouse \
     vcl/source/window/mouseevent \
     vcl/source/window/msgbox \
+    vcl/source/window/notebookbarwindow \
     vcl/source/window/popupmenuwindow \
     vcl/source/window/printdlg \
     vcl/source/window/scrwnd \
@@ -276,14 +279,10 @@ $(eval $(call gb_Library_add_exception_objects,vcl,\
     vcl/source/gdi/graph \
     vcl/source/gdi/graphictools \
     vcl/source/gdi/hatch \
-    vcl/source/gdi/image \
-    vcl/source/gdi/imagerepository \
     vcl/source/gdi/impanmvw \
     vcl/source/gdi/impbmp \
     vcl/source/gdi/impfont \
     vcl/source/gdi/impgraph \
-    vcl/source/gdi/impimage \
-    vcl/source/gdi/impimagetree \
     vcl/source/gdi/impvect \
     vcl/source/gdi/jobset \
     vcl/source/gdi/lineinfo \
@@ -316,11 +315,23 @@ $(eval $(call gb_Library_add_exception_objects,vcl,\
     vcl/source/gdi/wall \
     vcl/source/bitmap/bitmapfilter \
     vcl/source/bitmap/bitmapscalesuper \
+    vcl/source/bitmap/BitmapScaleConvolution \
     vcl/source/bitmap/BitmapSymmetryCheck \
     vcl/source/bitmap/BitmapFilterStackBlur \
+    vcl/source/bitmap/BitmapProcessor \
+    vcl/source/bitmap/BitmapTools \
     vcl/source/bitmap/checksum \
+    vcl/source/bitmap/CommandImageResolver \
+    vcl/source/image/Image \
+    vcl/source/image/ImageArrayData \
+    vcl/source/image/ImageList \
+    vcl/source/image/ImageRepository \
+    vcl/source/image/ImplImage \
+    vcl/source/image/ImplImageList \
+    vcl/source/image/ImplImageTree \
     vcl/source/helper/canvasbitmap \
     vcl/source/helper/canvastools \
+    vcl/source/helper/commandinfoprovider \
     vcl/source/helper/evntpost \
     vcl/source/helper/lazydelete \
     vcl/source/helper/strhelper \
@@ -542,7 +553,6 @@ vcl_generic_code= \
     vcl/generic/fontmanager/fontsubst \
     vcl/generic/glyphs/gcach_ftyp \
     vcl/generic/glyphs/gcach_layout \
-    vcl/generic/glyphs/gcach_rbmp \
     vcl/generic/glyphs/glyphcache \
     vcl/generic/glyphs/scrptrun \
     vcl/generic/fontmanager/fontcache \
@@ -563,7 +573,9 @@ vcl_headless_code= \
 vcl_headless_freetype_code=\
     vcl/headless/svpprn \
     vcl/headless/svptext \
-    vcl/headless/svptextrender \
+    vcl/headless/svpglyphcache \
+    vcl/unx/generic/gdi/cairotextrender \
+    vcl/headless/svpcairotextrender \
 
 ifeq ($(USING_X11),TRUE)
 $(eval $(call gb_Library_add_exception_objects,vcl,\
@@ -571,8 +583,8 @@ $(eval $(call gb_Library_add_exception_objects,vcl,\
     vcl/unx/generic/plugadapt/salplug \
     vcl/unx/generic/printer/jobdata \
     vcl/unx/generic/printer/ppdparser \
-    vcl/unx/generic/gdi/cairotextrender \
     vcl/unx/generic/gdi/x11windowprovider \
+    vcl/unx/generic/window/screensaverinhibitor \
     $(if $(filter TRUE,$(ENABLE_CUPS)),\
         vcl/unx/generic/printer/cupsmgr \
         vcl/unx/generic/printer/printerinfomanager \
@@ -613,9 +625,14 @@ $(eval $(call gb_Library_use_libraries,vcl,\
 ))
 
 $(eval $(call gb_Library_use_externals,vcl,\
-	fontconfig \
+	cairo \
 	freetype \
 ))
+ifneq ($(OS),EMSCRIPTEN)
+	$(eval $(call gb_Library_use_externals,vcl,\
+		fontconfig \
+	))
+endif
 endif
 
 ifeq ($(OS),ANDROID)
@@ -639,6 +656,7 @@ $(eval $(call gb_Library_use_static_libraries,vcl,\
 ))
 
 $(eval $(call gb_Library_use_externals,vcl,\
+	cairo \
 	fontconfig \
 	freetype \
 	expat \
@@ -667,29 +685,30 @@ endif
 
 ifeq ($(OS),WNT)
 $(eval $(call gb_Library_add_exception_objects,vcl,\
+	vcl/glyphy/demo \
 	vcl/opengl/win/gdiimpl \
 	vcl/opengl/win/WinDeviceInfo \
 	vcl/opengl/win/blocklist_parser \
-    vcl/win/source/app/saldata \
-    vcl/win/source/app/salinfo \
-    vcl/win/source/app/salinst \
-    vcl/win/source/app/salshl \
-    vcl/win/source/app/saltimer \
-    vcl/win/source/gdi/gdiimpl \
-    vcl/win/source/gdi/salbmp \
-    vcl/win/source/gdi/salgdi \
-    vcl/win/source/gdi/salgdi2 \
-    vcl/win/source/gdi/salgdi3 \
-    vcl/win/source/gdi/salgdi_gdiplus \
-    vcl/win/source/gdi/salnativewidgets-luna \
-    vcl/win/source/gdi/salprn \
-    vcl/win/source/gdi/salvd \
-    vcl/win/source/gdi/winlayout \
-    vcl/win/source/gdi/wntgdi \
-    vcl/win/source/window/salframe \
-    vcl/win/source/window/keynames \
-    vcl/win/source/window/salmenu \
-    vcl/win/source/window/salobj \
+    vcl/win/app/saldata \
+    vcl/win/app/salinfo \
+    vcl/win/app/salinst \
+    vcl/win/app/salshl \
+    vcl/win/app/saltimer \
+    vcl/win/gdi/gdiimpl \
+    vcl/win/gdi/salbmp \
+    vcl/win/gdi/salgdi \
+    vcl/win/gdi/salgdi2 \
+    vcl/win/gdi/salgdi3 \
+    vcl/win/gdi/salgdi_gdiplus \
+    vcl/win/gdi/salnativewidgets-luna \
+    vcl/win/gdi/salprn \
+    vcl/win/gdi/salvd \
+    vcl/win/gdi/winlayout \
+    vcl/win/gdi/wntgdi \
+    vcl/win/window/salframe \
+    vcl/win/window/keynames \
+    vcl/win/window/salmenu \
+    vcl/win/window/salobj \
 ))
 
 $(eval $(call gb_Library_use_system_win32_libs,vcl,\
@@ -715,13 +734,19 @@ $(eval $(call gb_Library_use_system_win32_libs,vcl,\
 $(eval $(call gb_Library_add_nativeres,vcl,vcl/salsrc))
 endif
 
-ifeq ($(OS),LINUX)
+ifeq ($(OS), WNT)
+$(eval $(call gb_Library_use_externals,vcl,\
+	glyphy \
+))
+endif
+
+ifeq ($(OS), $(filter LINUX %BSD SOLARIS, $(OS)))
 $(eval $(call gb_Library_add_libs,vcl,\
-	-lm \
-	-ldl \
+	-lm $(DLOPEN_LIBS) \
 	-lpthread \
     -lGL \
     -lX11 \
+	-lXext \
 ))
 
 $(eval $(call gb_Library_add_exception_objects,vcl,\

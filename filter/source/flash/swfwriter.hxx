@@ -29,7 +29,6 @@
 #include <vcl/vclptr.hxx>
 #include <unotools/tempfile.hxx>
 #include <tools/color.hxx>
-#include <tools/poly.hxx>
 #include <tools/gen.hxx>
 #include <tools/stream.hxx>
 #include <basegfx/matrix/b2dhommatrix.hxx>
@@ -41,12 +40,16 @@
 
 class GDIMetaFile;
 class BitmapEx;
-namespace tools { class PolyPolygon; }
 class Gradient;
 class SvtGraphicFill;
 class SvtGraphicStroke;
 class LineInfo;
 namespace basegfx { class B2DPolygon; }
+namespace tools
+{
+    class Polygon;
+    class PolyPolygon;
+}
 
 inline sal_uInt16 _uInt16( sal_Int32 nValue )
 {
@@ -176,7 +179,7 @@ typedef std::vector<FlashFont*> FontMap;
 class Tag : public SvMemoryStream
 {
 public:
-    Tag( sal_uInt8 nTagId );
+    explicit Tag( sal_uInt8 nTagId );
 
     sal_uInt8 getTagId() const { return mnTagId; }
 
@@ -207,7 +210,7 @@ private:
 class Sprite
 {
 public:
-    Sprite( sal_uInt16 nId );
+    explicit Sprite( sal_uInt16 nId );
     ~Sprite();
 
     void write( SvStream& out );
@@ -228,7 +231,7 @@ public:
     enum FillStyleType { solid = 0x00, linear_gradient = 0x10, radial_gradient = 0x12, tiled_bitmap = 0x40, clipped_bitmap = 0x41 };
 
     /** this c'tor creates a solid fill style */
-    FillStyle( const Color& rSolidColor );
+    explicit FillStyle( const Color& rSolidColor );
 
     /** this c'tor creates a linear or radial gradient fill style */
     FillStyle( const Rectangle& rBoundRect, const Gradient& rGradient );
@@ -267,7 +270,7 @@ public:
     Writer( sal_Int32 nDocWidthInput, sal_Int32 nDocHeightInput, sal_Int32 nDocWidth, sal_Int32 nDocHeight, sal_Int32 nJPEGcompressMode = -1 );
     ~Writer();
 
-    void storeTo( com::sun::star::uno::Reference< com::sun::star::io::XOutputStream > &xOutStream );
+    void storeTo( css::uno::Reference< css::io::XOutputStream > &xOutStream );
 
     // geometry
     void setClipping( const tools::PolyPolygon* pClipPolyPolygon );
@@ -298,7 +301,7 @@ public:
     // control tags
 
     /** inserts a place shape tag into the movie stream or the current sprite */
-    void placeShape( sal_uInt16 nID, sal_uInt16 nDepth, sal_Int32 x, sal_Int32 y, sal_uInt16 nClipDepth = 0, const char* pName = NULL );
+    void placeShape( sal_uInt16 nID, sal_uInt16 nDepth, sal_Int32 x, sal_Int32 y, sal_uInt16 nClipDepth = 0, const char* pName = nullptr );
 
     /** inserts a remove shape tag into the movie stream or the current sprite */
     void removeShape( sal_uInt16 nDepth );
@@ -345,7 +348,7 @@ private:
     void Impl_writeText( const Point& rPos, const OUString& rText, const long* pDXArray, long nWidth );
     void Impl_writeText( const Point& rPos, const OUString& rText, const long* pDXArray, long nWidth, Color aTextColor );
     void Impl_writeGradientEx( const tools::PolyPolygon& rPolyPoly, const Gradient& rGradient );
-    void Impl_writeLine( const Point& rPt1, const Point& rPt2, const Color* pLineColor = NULL );
+    void Impl_writeLine( const Point& rPt1, const Point& rPt2, const Color* pLineColor = nullptr );
     void Impl_writeRect( const Rectangle& rRect, long nRadX, long nRadY );
     void Impl_writeEllipse( const Point& rCenter, long nRadX, long nRadY );
     bool Impl_writeFilling( SvtGraphicFill& rFilling );
@@ -375,10 +378,10 @@ private:
                                    const double P3x, const double P3y,
                                    const double P4x, const double P4y );
 
-    com::sun::star::uno::Reference < com::sun::star::i18n::XBreakIterator > Impl_GetBreakIterator();
+    css::uno::Reference < css::i18n::XBreakIterator > Impl_GetBreakIterator();
 
 private:
-    com::sun::star::uno::Reference< com::sun::star::i18n::XBreakIterator > mxBreakIterator;
+    css::uno::Reference< css::i18n::XBreakIterator > mxBreakIterator;
 
     FontMap                 maFonts;
 
@@ -409,9 +412,6 @@ private:
 
     sal_uInt16 mnNextId;
     sal_uInt32  mnFrames;
-
-//  com::sun::star::uno::Reference< com::sun::star::io::XOutputStream > mxOutStream;
-    oslFileHandle mxOutStream;
 
     utl::TempFile maMovieTempFile;
     utl::TempFile maFontsTempFile;

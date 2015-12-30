@@ -36,26 +36,6 @@ namespace comphelper
 
 
 
-    //= OInteractionSelect
-
-    /** base class for concrete XInteractionContinuation implementations.<p/>
-        Instances of the classes maintain a flag indicating if the handler was called.
-    */
-    class OInteractionSelect
-    {
-        bool    m_bSelected : 1;    /// indicates if the select event occurred
-
-    protected:
-        OInteractionSelect() : m_bSelected(false) { }
-
-    public:
-        /// determines whether or not this handler was selected
-        bool    wasSelected() const { return m_bSelected; }
-    protected:
-        void    implSelected() { m_bSelected = true; }
-    };
-
-
     //= OInteraction
 
     /** template for instantiating concret interaction handlers<p/>
@@ -63,47 +43,51 @@ namespace comphelper
     */
     template <class INTERACTION>
     class OInteraction
-            :public ::cppu::WeakImplHelper< INTERACTION >
-            ,public OInteractionSelect
+            : public ::cppu::WeakImplHelper< INTERACTION >
     {
     public:
-        OInteraction() { }
+        OInteraction() : m_bSelected(false) {}
 
-    // XInteractionContinuation
-        virtual void SAL_CALL select(  ) throw(::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
+        /// determines whether or not this handler was selected
+        bool    wasSelected() const { return m_bSelected; }
+
+        // XInteractionContinuation
+        virtual void SAL_CALL select() throw(css::uno::RuntimeException) override;
+    private:
+        bool    m_bSelected : 1;    /// indicates if the select event occurred
     };
 
 
     template <class INTERACTION>
-    void SAL_CALL OInteraction< INTERACTION >::select(  ) throw(::com::sun::star::uno::RuntimeException)
+    void SAL_CALL OInteraction< INTERACTION >::select(  ) throw(css::uno::RuntimeException)
     {
-        implSelected();
+        m_bSelected = true;
     }
 
 
     //= OInteractionApprove
 
-    typedef OInteraction< ::com::sun::star::task::XInteractionApprove > OInteractionApprove;
+    typedef OInteraction< css::task::XInteractionApprove > OInteractionApprove;
 
 
     //= OInteractionDispprove
 
-    typedef OInteraction< ::com::sun::star::task::XInteractionDisapprove >  OInteractionDisapprove;
+    typedef OInteraction< css::task::XInteractionDisapprove >  OInteractionDisapprove;
 
 
     //= OInteractionAbort
 
-    typedef OInteraction< ::com::sun::star::task::XInteractionAbort >   OInteractionAbort;
+    typedef OInteraction< css::task::XInteractionAbort >   OInteractionAbort;
 
 
     //= OInteractionRetry
 
-    typedef OInteraction< ::com::sun::star::task::XInteractionRetry >   OInteractionRetry;
+    typedef OInteraction< css::task::XInteractionRetry >   OInteractionRetry;
 
 
     //= OInteractionPassword
 
-    class COMPHELPER_DLLPUBLIC OInteractionPassword : public OInteraction< ::com::sun::star::task::XInteractionPassword >
+    class COMPHELPER_DLLPUBLIC OInteractionPassword : public OInteraction< css::task::XInteractionPassword >
     {
     public:
         OInteractionPassword()
@@ -116,8 +100,8 @@ namespace comphelper
         }
 
         // XInteractionPassword
-        virtual void SAL_CALL setPassword( const OUString& _Password ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual OUString SAL_CALL getPassword(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL setPassword( const OUString& _Password ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual OUString SAL_CALL getPassword(  ) throw (css::uno::RuntimeException, std::exception) override;
 
     private:
         OUString m_sPassword;
@@ -126,29 +110,29 @@ namespace comphelper
 
     //= OInteractionRequest
 
-    typedef ::cppu::WeakImplHelper <   ::com::sun::star::task::XInteractionRequest
+    typedef ::cppu::WeakImplHelper <   css::task::XInteractionRequest
                                    >   OInteractionRequest_Base;
     /** implements an interaction request (com.sun.star.task::XInteractionRequest)<p/>
         at run time, you can freely add any interaction continuation objects
     */
     class COMPHELPER_DLLPUBLIC OInteractionRequest : public OInteractionRequest_Base
     {
-        ::com::sun::star::uno::Any
+        css::uno::Any
                     m_aRequest;         /// the request we represent
-        ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Reference< ::com::sun::star::task::XInteractionContinuation > >
+        css::uno::Sequence< css::uno::Reference< css::task::XInteractionContinuation > >
                     m_aContinuations;   /// all registered continuations
 
     public:
-        OInteractionRequest(const ::com::sun::star::uno::Any& _rRequestDescription);
-        OInteractionRequest(const ::com::sun::star::uno::Any& rRequestDescription,
+        OInteractionRequest(const css::uno::Any& _rRequestDescription);
+        OInteractionRequest(const css::uno::Any& rRequestDescription,
             css::uno::Sequence<css::uno::Reference<css::task::XInteractionContinuation>> const& rContinuations);
 
         /// add a new continuation
-        void addContinuation(const ::com::sun::star::uno::Reference< ::com::sun::star::task::XInteractionContinuation >& _rxContinuation);
+        void addContinuation(const css::uno::Reference< css::task::XInteractionContinuation >& _rxContinuation);
 
     // XInteractionRequest
-        virtual ::com::sun::star::uno::Any SAL_CALL getRequest(  ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Reference< ::com::sun::star::task::XInteractionContinuation > > SAL_CALL getContinuations(  ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual css::uno::Any SAL_CALL getRequest(  ) throw(css::uno::RuntimeException, std::exception) override;
+        virtual css::uno::Sequence< css::uno::Reference< css::task::XInteractionContinuation > > SAL_CALL getContinuations(  ) throw(css::uno::RuntimeException, std::exception) override;
     };
 
 }   // namespace comphelper

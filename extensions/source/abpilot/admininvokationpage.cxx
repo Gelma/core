@@ -27,7 +27,6 @@ namespace abp
     AdminDialogInvokationPage::AdminDialogInvokationPage( OAddessBookSourcePilot* _pParent )
         : AddressBookSourcePage(_pParent, "InvokeAdminPage",
             "modules/sabpilot/ui/invokeadminpage.ui")
-        , m_bSuccessfullyExecutedDialog(false)
     {
         get(m_pInvokeAdminDialog, "settings");
         get(m_pErrorMessage, "warning");
@@ -82,10 +81,11 @@ namespace abp
         return AddressBookSourcePage::canAdvance() && getDialog()->getDataSource().isConnected();
     }
 
+    // davido: Do we need it?
     IMPL_LINK_NOARG_TYPED( AdminDialogInvokationPage, OnInvokeAdminDialog, Button*, void )
     {
         OAdminDialogInvokation aInvokation( getORB(), getDialog()->getDataSource().getDataSource(), getDialog() );
-        if ( aInvokation.invokeAdministration( AST_LDAP == getSettings().eType ) )
+        if ( aInvokation.invokeAdministration() )
         {
             // try to connect to this data source
             implTryConnect();

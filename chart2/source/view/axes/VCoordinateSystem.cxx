@@ -38,6 +38,7 @@
 #include <com/sun/star/chart2/AxisType.hpp>
 #include <com/sun/star/chart2/XChartTypeContainer.hpp>
 #include <com/sun/star/chart2/XDataSeriesContainer.hpp>
+#include <comphelper/sequence.hxx>
 
 #include <rtl/math.hxx>
 
@@ -52,12 +53,12 @@ VCoordinateSystem* VCoordinateSystem::createCoordinateSystem(
             const Reference< XCoordinateSystem >& xCooSysModel )
 {
     if( !xCooSysModel.is() )
-        return 0;
+        return nullptr;
 
     OUString aViewServiceName = xCooSysModel->getViewServiceName();
 
     //@todo: in future the coordinatesystems should be instantiated via service factory
-    VCoordinateSystem* pRet=NULL;
+    VCoordinateSystem* pRet=nullptr;
     if( aViewServiceName == CHART2_COOSYSTEM_CARTESIAN_VIEW_SERVICE_NAME )
         pRet = new VCartesianCoordinateSystem(xCooSysModel);
     else if( aViewServiceName == CHART2_COOSYSTEM_POLAR_VIEW_SERVICE_NAME )
@@ -69,10 +70,10 @@ VCoordinateSystem* VCoordinateSystem::createCoordinateSystem(
 
 VCoordinateSystem::VCoordinateSystem( const Reference< XCoordinateSystem >& xCooSys )
     : m_xCooSysModel(xCooSys)
-    , m_xLogicTargetForGrids(0)
-    , m_xLogicTargetForAxes(0)
-    , m_xFinalTarget(0)
-    , m_xShapeFactory(0)
+    , m_xLogicTargetForGrids(nullptr)
+    , m_xLogicTargetForAxes(nullptr)
+    , m_xFinalTarget(nullptr)
+    , m_xShapeFactory(nullptr)
     , m_aMatrixSceneToScreen()
     , m_eLeftWallPos(CuboidPlanePosition_Left)
     , m_eBackWallPos(CuboidPlanePosition_Back)
@@ -97,7 +98,7 @@ void VCoordinateSystem::initPlottingTargets(  const Reference< drawing::XShapes 
        , const Reference< drawing::XShapes >& xFinalTarget
        , const Reference< lang::XMultiServiceFactory >& xShapeFactory
        , Reference< drawing::XShapes >& xLogicTargetForSeriesBehindAxis )
-            throw (uno::RuntimeException)
+            throw (uno::RuntimeException, std::exception)
 {
     OSL_PRECOND(xLogicTarget.is()&&xFinalTarget.is()&&xShapeFactory.is(),"no proper initialization parameters");
     //is only allowed to be called once
@@ -204,7 +205,7 @@ Reference< XAxis > VCoordinateSystem::getAxisByDimension( sal_Int32 nDimensionIn
 {
     if( m_xCooSysModel.is() )
         return m_xCooSysModel->getAxisByDimension( nDimensionIndex, nAxisIndex );
-    return 0;
+    return nullptr;
 }
 
 Sequence< Reference< beans::XPropertySet > > VCoordinateSystem::getGridListFromAxis( const Reference< XAxis >& xAxis )
@@ -218,7 +219,7 @@ Sequence< Reference< beans::XPropertySet > > VCoordinateSystem::getGridListFromA
         aRet.insert( aRet.end(), aSubGrids.begin(), aSubGrids.end() );
     }
 
-    return ContainerHelper::ContainerToSequence( aRet );
+    return comphelper::containerToSequence( aRet );
 }
 
 void VCoordinateSystem::impl_adjustDimension( sal_Int32& rDimensionIndex )
@@ -410,7 +411,7 @@ void VCoordinateSystem::prepareAutomaticAxisScaling( ScaleAutomatism& rScaleAuto
 
 VAxisBase* VCoordinateSystem::getVAxis( sal_Int32 nDimensionIndex, sal_Int32 nAxisIndex )
 {
-    VAxisBase* pRet = 0;
+    VAxisBase* pRet = nullptr;
 
     tFullAxisIndex aFullAxisIndex( nDimensionIndex, nAxisIndex );
 

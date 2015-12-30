@@ -73,16 +73,15 @@ SvXMLEnumMapEntry const aXML_EventActions_EnumMap[] =
 class SdXMLEventContext : public SvXMLImportContext
 {
 private:
-    com::sun::star::uno::Reference< com::sun::star::drawing::XShape > mxShape;
+    css::uno::Reference< css::drawing::XShape > mxShape;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     SdXMLEventContext( SvXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLocalName, const Reference< XAttributeList>& xAttrList, const Reference< XShape >& rxShape );
     virtual ~SdXMLEventContext();
 
-    virtual SvXMLImportContext * CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName,    const Reference< XAttributeList>& xAttrList ) SAL_OVERRIDE;
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual SvXMLImportContext * CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName,    const Reference< XAttributeList>& xAttrList ) override;
+    virtual void EndElement() override;
 
     bool mbValid;
     bool mbScript;
@@ -104,13 +103,11 @@ class XMLEventSoundContext : public SvXMLImportContext
     SdXMLEventContext*  mpParent;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     XMLEventSoundContext( SvXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLocalName, const Reference< XAttributeList >& xAttrList, SdXMLEventContext* pParent );
     virtual ~XMLEventSoundContext();
 };
 
-TYPEINIT1( XMLEventSoundContext, SvXMLImportContext );
 
 XMLEventSoundContext::XMLEventSoundContext( SvXMLImport& rImp, sal_uInt16 nPrfx, const OUString& rLocalName, const Reference< XAttributeList >& xAttrList, SdXMLEventContext* pParent )
 : SvXMLImportContext( rImp, nPrfx, rLocalName ), mpParent( pParent )
@@ -147,7 +144,6 @@ XMLEventSoundContext::~XMLEventSoundContext()
 {
 }
 
-TYPEINIT1( SdXMLEventContext, SvXMLImportContext );
 
 SdXMLEventContext::SdXMLEventContext( SvXMLImport& rImp,  sal_uInt16 nPrfx, const OUString& rLocalName,  const Reference< XAttributeList >& xAttrList, const Reference< XShape >& rxShape )
     : SvXMLImportContext(rImp, nPrfx, rLocalName)
@@ -482,7 +478,6 @@ void SdXMLEventContext::EndElement()
     } while(false);
 }
 
-TYPEINIT1( SdXMLEventsContext, SvXMLImportContext );
 
 SdXMLEventsContext::SdXMLEventsContext( SvXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLocalName,
         const Reference< XAttributeList>&, const Reference< XShape >& rxShape)
@@ -495,7 +490,7 @@ SdXMLEventsContext::~SdXMLEventsContext()
 }
 
 SvXMLImportContext * SdXMLEventsContext::CreateChildContext( sal_uInt16 nPrfx, const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList )
+        const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList )
 {
     return new SdXMLEventContext( GetImport(), nPrfx, rLocalName,  xAttrList, mxShape );
 }

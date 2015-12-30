@@ -85,21 +85,21 @@ public:
 
     // XCommandEnvironment
     virtual uno::Reference<task::XInteractionHandler > SAL_CALL
-    getInteractionHandler() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    getInteractionHandler() throw (uno::RuntimeException, std::exception) override;
     virtual uno::Reference<ucb::XProgressHandler >
-    SAL_CALL getProgressHandler() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    SAL_CALL getProgressHandler() throw (uno::RuntimeException, std::exception) override;
 
     // XInteractionHandler
     virtual void SAL_CALL handle(
         uno::Reference<task::XInteractionRequest > const & xRequest )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
 
     // XProgressHandler
     virtual void SAL_CALL push( uno::Any const & Status )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL update( uno::Any const & Status )
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL pop() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL pop() throw (uno::RuntimeException, std::exception) override;
 };
 
 
@@ -146,7 +146,7 @@ void SilentCommandEnv::handle( Reference< task::XInteractionRequest> const & xRe
     {
         uno::Reference< ui::dialogs::XExecutableDialog > xDialog(
             deployment::ui::LicenseDialog::create(
-            mxContext, VCLUnoHelper::GetInterface( NULL ),
+            mxContext, VCLUnoHelper::GetInterface( nullptr ),
             licExc.ExtensionName, licExc.Text ) );
         sal_Int16 res = xDialog->execute();
         if ( res == ui::dialogs::ExecutableDialogResults::CANCEL )
@@ -331,8 +331,8 @@ static void impl_setNeedsCompatCheck()
         beans::NamedValue v( OUString("nodepath"),
                       makeAny( OUString("org.openoffice.Setup/Office") ) );
         theArgs[0] <<= v;
-        Reference< beans::XPropertySet > pset = Reference< beans::XPropertySet >(
-            theConfigProvider->createInstanceWithArguments( OUString(aAccessSrvc), theArgs ), UNO_QUERY_THROW );
+        Reference< beans::XPropertySet > pset(
+            theConfigProvider->createInstanceWithArguments( aAccessSrvc, theArgs ), UNO_QUERY_THROW );
 
         Any value = makeAny( OUString("never") );
 
@@ -362,8 +362,8 @@ static bool impl_needsCompatCheck()
         beans::NamedValue v( OUString("nodepath"),
                       makeAny( OUString("org.openoffice.Setup/Office") ) );
         theArgs[0] <<= v;
-        Reference< beans::XPropertySet > pset = Reference< beans::XPropertySet >(
-            theConfigProvider->createInstanceWithArguments( OUString(aAccessSrvc), theArgs ), UNO_QUERY_THROW );
+        Reference< beans::XPropertySet > pset(
+            theConfigProvider->createInstanceWithArguments( aAccessSrvc, theArgs ), UNO_QUERY_THROW );
 
         Any result = pset->getPropertyValue("LastCompatibilityCheckID");
 

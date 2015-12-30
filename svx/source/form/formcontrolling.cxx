@@ -194,14 +194,14 @@ namespace svx
 
     ControllerFeatures::ControllerFeatures( IControllerFeatureInvalidation* _pInvalidationCallback )
         :m_pInvalidationCallback( _pInvalidationCallback )
-        ,m_pImpl( NULL )
+        ,m_pImpl( nullptr )
     {
     }
 
 
     ControllerFeatures::ControllerFeatures( const Reference< XFormController >& _rxController, IControllerFeatureInvalidation* _pInvalidationCallback )
         :m_pInvalidationCallback( _pInvalidationCallback )
-        ,m_pImpl( NULL )
+        ,m_pImpl( nullptr )
     {
         assign( _rxController );
     }
@@ -227,7 +227,7 @@ namespace svx
         {
             m_pImpl->dispose();
             m_pImpl->release();
-            m_pImpl = NULL;
+            m_pImpl = nullptr;
         }
     }
 
@@ -309,10 +309,7 @@ namespace svx
 
     void FormControllerHelper::execute( sal_Int32 _nSlotId, const OUString& _rParamName, const Any& _rParamValue ) const
     {
-        Sequence< NamedValue > aArguments(1);
-        aArguments[0].Name = _rParamName;
-        aArguments[0].Value = _rParamValue;
-
+        Sequence< NamedValue > aArguments { { _rParamName, _rParamValue } };
         impl_operateForm_nothrow( EXECUTE_ARGS, FeatureSlotTranslation::getFormFeatureForSlotId( _nSlotId ), aArguments );
     }
 

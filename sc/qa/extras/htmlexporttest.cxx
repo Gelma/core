@@ -57,13 +57,13 @@ public:
     ScHTMLExportTest()
     {}
 
-    virtual void setUp() SAL_OVERRIDE
+    virtual void setUp() override
     {
         test::BootstrapFixture::setUp();
         mxDesktop.set(css::frame::Desktop::create(comphelper::getComponentContext(getMultiServiceFactory())));
     }
 
-    virtual void tearDown() SAL_OVERRIDE
+    virtual void tearDown() override
     {
         if (mxComponent.is())
             mxComponent->dispose();
@@ -74,7 +74,7 @@ public:
     void testHtmlSkipImage()
     {
         // need a temp dir, because there's an image exported too
-        TempFile aTempDir(0, true);
+        TempFile aTempDir(nullptr, true);
         OUString const url(aTempDir.GetURL());
         TempFile aTempFile(&url, false);
 

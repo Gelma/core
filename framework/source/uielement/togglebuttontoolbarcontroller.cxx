@@ -93,7 +93,7 @@ Sequence<PropertyValue> ToggleButtonToolbarController::getExecuteArgs(sal_Int16 
 }
 
 uno::Reference< awt::XWindow > SAL_CALL ToggleButtonToolbarController::createPopupWindow()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     uno::Reference< awt::XWindow > xWindow;
 
@@ -123,7 +123,7 @@ throw (::com::sun::star::uno::RuntimeException, std::exception)
     return xWindow;
 }
 
-void ToggleButtonToolbarController::executeControlCommand( const ::com::sun::star::frame::ControlCommand& rControlCommand )
+void ToggleButtonToolbarController::executeControlCommand( const css::frame::ControlCommand& rControlCommand )
 {
     SolarMutexGuard aSolarMutexGuard;
 
@@ -144,10 +144,8 @@ void ToggleButtonToolbarController::executeControlCommand( const ::com::sun::sta
                         m_aDropdownMenuList.push_back( aList[j] );
 
                     // send notification
-                    uno::Sequence< beans::NamedValue > aInfo( 1 );
-                    aInfo[0].Name  = "List";
-                    aInfo[0].Value <<= aList;
-                    addNotifyInfo( OUString( "ListChanged" ),
+                    uno::Sequence< beans::NamedValue > aInfo { { "List", css::uno::makeAny(aList) } };
+                    addNotifyInfo( "ListChanged",
                                 getDispatchFromCommand( m_aCommandURL ),
                                 aInfo );
 
@@ -171,10 +169,8 @@ void ToggleButtonToolbarController::executeControlCommand( const ::com::sun::sta
                         m_aCurrentSelection = m_aDropdownMenuList[nPos];
 
                         // send notification
-                        uno::Sequence< beans::NamedValue > aInfo( 1 );
-                        aInfo[0].Name  = "ItemChecked";
-                        aInfo[0].Value <<= nPos;
-                        addNotifyInfo( OUString( "Pos" ),
+                        uno::Sequence< beans::NamedValue > aInfo { { "ItemChecked", css::uno::makeAny(nPos) } };
+                        addNotifyInfo( "Pos",
                                     getDispatchFromCommand( m_aCommandURL ),
                                     aInfo );
                     }

@@ -206,7 +206,7 @@ namespace drawinglayer
                     aLocalPolygon,
                     rSource.getStrokeAttribute().getDotDashArray(),
                     &aHairLinePolyPolygon,
-                    0,
+                    nullptr,
                     rSource.getStrokeAttribute().getFullDotDashLen());
             }
 
@@ -867,9 +867,9 @@ namespace drawinglayer
                     // Detect if a single PolyPolygonColorPrimitive2D is contained; in that case,
                     // use the faster OutputDevice::DrawTransparent method
                     const primitive2d::UnifiedTransparencePrimitive2D& rUniTransparenceCandidate = static_cast< const primitive2d::UnifiedTransparencePrimitive2D& >(rCandidate);
-                    const primitive2d::Primitive2DSequence rContent = rUniTransparenceCandidate.getChildren();
+                    const primitive2d::Primitive2DContainer rContent = rUniTransparenceCandidate.getChildren();
 
-                    if(rContent.hasElements())
+                    if(!rContent.empty())
                     {
                         if(0.0 == rUniTransparenceCandidate.getTransparence())
                         {
@@ -884,7 +884,7 @@ namespace drawinglayer
                             // natively), so i am now enabling this shortcut
                             static bool bAllowUsingDrawTransparent(true);
 
-                            if(bAllowUsingDrawTransparent && 1 == rContent.getLength())
+                            if(bAllowUsingDrawTransparent && 1 == rContent.size())
                             {
                                 const primitive2d::Primitive2DReference xReference(rContent[0]);
                                 const primitive2d::BasePrimitive2D* pBasePrimitive = dynamic_cast< const primitive2d::BasePrimitive2D* >(xReference.get());
@@ -1146,7 +1146,7 @@ namespace drawinglayer
                         ::Hatch aVCLHatch(eHatchStyle, Color(rFillHatchAttributes.getColor()), nDistance, nAngle10);
 
                         // draw hatch using VCL
-                        mpOutputDevice->DrawHatch(tools::PolyPolygon(tools::Polygon(aHatchPolygon)), aVCLHatch);
+                        mpOutputDevice->DrawHatch(::tools::PolyPolygon(::tools::Polygon(aHatchPolygon)), aVCLHatch);
                     }
                     break;
                 }
@@ -1161,7 +1161,9 @@ namespace drawinglayer
 
                     // create color for fill
                     const basegfx::BColor aPolygonColor(maBColorModifierStack.getModifiedColor(rPrimitive.getBColor()));
-                    mpOutputDevice->SetFillColor(Color(aPolygonColor));
+                    Color aFillColor(aPolygonColor);
+                    aFillColor.SetTransparency(sal_uInt8((rPrimitive.getTransparency() * 255.0) + 0.5));
+                    mpOutputDevice->SetFillColor(aFillColor);
                     mpOutputDevice->SetLineColor();
 
                     // create rectangle for fill
@@ -1189,6 +1191,7 @@ namespace drawinglayer
                 case PRIMITIVE2D_ID_INVERTPRIMITIVE2D :
                 {
                     // invert primitive (currently only used for HighContrast fallback for selection in SW and SC).
+                    // (Not true, also used at least for the drawing of dragged column and row boundaries in SC.)
                     // Set OutDev to XOR and switch AA off (XOR does not work with AA)
                     mpOutputDevice->Push();
                     mpOutputDevice->SetRasterOp( ROP_XOR );

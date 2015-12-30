@@ -11,16 +11,20 @@
 #ifndef INCLUDED_VCL_ITILEDRENDERABLE_HXX
 #define INCLUDED_VCL_ITILEDRENDERABLE_HXX
 
-#define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitTypes.h>
 #include <tools/gen.hxx>
+#include <vcl/pointr.hxx>
 #include <vcl/virdev.hxx>
+#include <com/sun/star/datatransfer/clipboard/XClipboardEx.hpp>
 
 namespace vcl
 {
 
 class VCL_DLLPUBLIC ITiledRenderable
 {
+protected:
+    int nTilePixelWidth, nTilePixelHeight;
+    int nTileTwipWidth, nTileTwipHeight;
 public:
     virtual ~ITiledRenderable();
 
@@ -89,7 +93,7 @@ public:
      * Setup various document properties that are needed for the document to
      * be renderable via tiled rendering.
      */
-    virtual void initializeForTiledRendering() = 0;
+    virtual void initializeForTiledRendering(const css::uno::Sequence<css::beans::PropertyValue>& rArguments) = 0;
 
     /**
      * Registers a callback that will be invoked whenever the tiled renderer
@@ -112,7 +116,7 @@ public:
      *
      * @see lok::Document::postMouseEvent().
      */
-    virtual void postMouseEvent(int nType, int nX, int nY, int nCount) = 0;
+    virtual void postMouseEvent(int nType, int nX, int nY, int nCount, int nButtons, int nModifier) = 0;
 
     /**
      * Sets the start or end of a text selection.
@@ -146,6 +150,52 @@ public:
     virtual OUString getPartPageRectangles()
     {
         return OUString();
+    }
+
+    /**
+     * Get position and content of row/column headers of Calc documents.
+     *
+     * @param rRectangle - if not empty, then limit the output only to the area of this rectangle
+     * @return a JSON describing position/content of rows/columns
+     */
+    virtual OUString getRowColumnHeaders(const Rectangle& /*rRectangle*/)
+    {
+        return OUString();
+    }
+
+    /**
+     * Get position and size of cell cursor in Calc.
+     * (This could maybe also be used for tables in Writer/Impress in future?)
+     */
+    virtual OString getCellCursor(int /*nOutputWidth*/,
+                                  int /*nOutputHeight*/,
+                                  long /*nTileWidth*/,
+                                  long /*nTileHeight*/)
+    {
+        return OString();
+    }
+
+    virtual Pointer getPointer() = 0;
+
+    /// Sets the clipboard of the component.
+    virtual void setClipboard(const css::uno::Reference<css::datatransfer::clipboard::XClipboard>& xClipboard) = 0;
+
+    /// If the current contents of the clipboard is something we can paste.
+    virtual bool isMimeTypeSupported() = 0;
+
+    /**
+     * Save the client's view so that we can compute the right zoom level
+     * for the mouse events.
+     * @param nTilePixelWidth - tile width in pixels
+     * @param nTilePixelHeight - tile height in pixels
+     * @param nTileTwipWidth - tile width in twips
+     * @param nTileTwipHeight - tile height in twips
+     */
+    virtual void setClientZoom(int /*nTilePixelWidth*/,
+                               int /*nTilePixelHeight*/,
+                               int /*nTileTwipWidth*/,
+                               int /*nTileTwipHeight*/)
+    {
     }
 };
 

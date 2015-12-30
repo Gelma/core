@@ -65,7 +65,6 @@ OFormatProperties::OFormatProperties()
     ,nFontRelief(0)
     ,nTextColor(0)
     ,nTextLineColor(0)
-    ,nCharUnderlineColor(0xFFFFFFFF)
     ,nBackgroundColor(COL_TRANSPARENT)
     ,aVerticalAlignment( style::VerticalAlignment_TOP )
     ,nCharEscapement(0)
@@ -128,7 +127,7 @@ OReportComponentProperties::~OReportComponentProperties()
 {
     if ( m_xProxy.is() )
     {
-        m_xProxy->setDelegator( NULL );
+        m_xProxy->setDelegator( nullptr );
         m_xProxy.clear();
     }
 }

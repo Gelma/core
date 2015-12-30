@@ -19,6 +19,25 @@ $(eval $(call gb_UIConfig_add_menubarfiles,modules/scalc,\
 ))
 endif
 
+$(eval $(call gb_UIConfig_add_popupmenufiles,modules/scalc,\
+	sc/uiconfig/scalc/popupmenu/audit \
+	sc/uiconfig/scalc/popupmenu/cell \
+	sc/uiconfig/scalc/popupmenu/celledit \
+	sc/uiconfig/scalc/popupmenu/chart \
+	sc/uiconfig/scalc/popupmenu/colheader \
+	sc/uiconfig/scalc/popupmenu/draw \
+	sc/uiconfig/scalc/popupmenu/drawtext \
+	sc/uiconfig/scalc/popupmenu/form \
+	sc/uiconfig/scalc/popupmenu/graphic \
+	sc/uiconfig/scalc/popupmenu/media \
+	sc/uiconfig/scalc/popupmenu/oleobject \
+	sc/uiconfig/scalc/popupmenu/pagebreak \
+	sc/uiconfig/scalc/popupmenu/pivot \
+	sc/uiconfig/scalc/popupmenu/preview \
+	sc/uiconfig/scalc/popupmenu/rowheader \
+	sc/uiconfig/scalc/popupmenu/sheettab \
+))
+
 $(eval $(call gb_UIConfig_add_statusbarfiles,modules/scalc,\
 	sc/uiconfig/scalc/statusbar/statusbar \
 ))
@@ -138,6 +157,7 @@ $(eval $(call gb_UIConfig_add_uifiles,modules/scalc,\
 	sc/uiconfig/scalc/ui/protectsheetdlg \
 	sc/uiconfig/scalc/ui/queryrunstreamscriptdialog \
 	sc/uiconfig/scalc/ui/randomnumbergenerator \
+	sc/uiconfig/scalc/ui/regressiondialog \
 	sc/uiconfig/scalc/ui/retypepassdialog \
 	sc/uiconfig/scalc/ui/retypepassworddialog \
 	sc/uiconfig/scalc/ui/rightfooterdialog \

@@ -57,12 +57,12 @@ SvxBitmapTabPage::SvxBitmapTabPage(  vcl::Window* pParent, const SfxItemSet& rIn
                           rInAttrs ),
     m_rOutAttrs           ( rInAttrs ),
 
-    m_pnBitmapListState   ( 0 ),
-    m_pnColorListState    ( 0 ),
-    m_pPageType           ( 0 ),
+    m_pnBitmapListState   ( nullptr ),
+    m_pnColorListState    ( nullptr ),
+    m_pPageType           ( nullptr ),
     m_nDlgType            ( 0 ),
-    m_pPos                ( 0 ),
-    m_pbAreaTP            ( 0 ),
+    m_pPos                ( nullptr ),
+    m_pbAreaTP            ( nullptr ),
 
     m_bBmpChanged         ( false ),
 
@@ -95,7 +95,7 @@ SvxBitmapTabPage::SvxBitmapTabPage(  vcl::Window* pParent, const SfxItemSet& rIn
     m_pCtlPreview->set_width_request(aSize2.Width());
     m_pCtlPreview->set_height_request(aSize2.Height());
 
-    m_pBitmapCtl = new SvxBitmapCtl(this, aSize2);
+    m_pBitmapCtl = new SvxBitmapCtl;
 
     // this page needs ExchangeSupport
     SetExchangeSupport();
@@ -126,7 +126,7 @@ SvxBitmapTabPage::~SvxBitmapTabPage()
 void SvxBitmapTabPage::dispose()
 {
     delete m_pBitmapCtl;
-    m_pBitmapCtl = NULL;
+    m_pBitmapCtl = nullptr;
     m_pBxPixelEditor.clear();
     m_pCtlPixel.clear();
     m_pLbColor.clear();
@@ -195,8 +195,8 @@ void SvxBitmapTabPage::ActivatePage( const SfxItemSet&  )
                 else
                     m_pLbBackgroundColor->SelectEntryPos( nPos );
 
-                ChangePixelColorHdl_Impl( this );
-                ChangeBackgrndColorHdl_Impl( this );
+                ChangePixelColorHdl_Impl( *m_pLbColor );
+                ChangeBackgrndColorHdl_Impl( *m_pLbBackgroundColor );
             }
 
             // determining (possibly cutting) the name and
@@ -221,7 +221,7 @@ void SvxBitmapTabPage::ActivatePage( const SfxItemSet&  )
                 m_pLbBitmaps->SelectEntryPos( *m_pPos );
             }
             // colors could have been deleted
-            ChangeBitmapHdl_Impl( this );
+            ChangeBitmapHdl_Impl( *m_pLbBitmaps );
 
             *m_pPageType = PT_BITMAP;
             *m_pPos = LISTBOX_ENTRY_NOTFOUND;
@@ -288,7 +288,7 @@ void SvxBitmapTabPage::Reset( const SfxItemSet*  )
     m_pCtlPreview->SetAttributes( m_aXFillAttr.GetItemSet() );
     m_pCtlPreview->Invalidate();
 
-    ChangeBitmapHdl_Impl( this );
+    ChangeBitmapHdl_Impl( *m_pLbBitmaps );
 
     // determine button state
     if( m_pBitmapList.is() && m_pBitmapList->Count() )
@@ -316,7 +316,7 @@ VclPtr<SfxTabPage> SvxBitmapTabPage::Create( vcl::Window* pWindow,
 
 
 
-IMPL_LINK_NOARG(SvxBitmapTabPage, ChangeBitmapHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvxBitmapTabPage, ChangeBitmapHdl_Impl, ListBox&, void)
 {
     std::unique_ptr<GraphicObject> pGraphicObject;
     int nPos(m_pLbBitmaps->GetSelectEntryPos());
@@ -327,7 +327,7 @@ IMPL_LINK_NOARG(SvxBitmapTabPage, ChangeBitmapHdl_Impl)
     }
     else
     {
-        const SfxPoolItem* pPoolItem = 0;
+        const SfxPoolItem* pPoolItem = nullptr;
 
         if(SfxItemState::SET == m_rOutAttrs.GetItemState(GetWhich(XATTR_FILLSTYLE), true, &pPoolItem))
         {
@@ -429,8 +429,6 @@ IMPL_LINK_NOARG(SvxBitmapTabPage, ChangeBitmapHdl_Impl)
 
         m_bBmpChanged = false;
     }
-
-    return 0;
 }
 
 
@@ -458,13 +456,13 @@ long SvxBitmapTabPage::CheckChanges_Impl()
             {
                 case RET_BTN_1:
                 {
-                    ClickModifyHdl_Impl( NULL );
+                    ClickModifyHdl_Impl( nullptr );
                 }
                 break;
 
                 case RET_BTN_2:
                 {
-                    ClickAddHdl_Impl( NULL );
+                    ClickAddHdl_Impl( nullptr );
                 }
                 break;
 
@@ -542,7 +540,7 @@ IMPL_LINK_NOARG_TYPED(SvxBitmapTabPage, ClickAddHdl_Impl, Button*, void)
 
     if( !nError )
     {
-        XBitmapEntry* pEntry = 0;
+        XBitmapEntry* pEntry = nullptr;
         if( m_pCtlPixel->IsEnabled() )
         {
             const BitmapEx aBitmapEx(m_pBitmapCtl->GetBitmapEx());
@@ -551,7 +549,7 @@ IMPL_LINK_NOARG_TYPED(SvxBitmapTabPage, ClickAddHdl_Impl, Button*, void)
         }
         else // it must be a not existing imported bitmap
         {
-            const SfxPoolItem* pPoolItem = 0;
+            const SfxPoolItem* pPoolItem = nullptr;
 
             if(SfxItemState::SET == m_rOutAttrs.GetItemState(XATTR_FILLBITMAP, true, &pPoolItem))
             {
@@ -570,7 +568,7 @@ IMPL_LINK_NOARG_TYPED(SvxBitmapTabPage, ClickAddHdl_Impl, Button*, void)
 
             *m_pnBitmapListState |= ChangeType::MODIFIED;
 
-            ChangeBitmapHdl_Impl( this );
+            ChangeBitmapHdl_Impl( *m_pLbBitmaps );
         }
     }
 
@@ -659,7 +657,7 @@ IMPL_LINK_NOARG_TYPED(SvxBitmapTabPage, ClickImportHdl_Impl, Button*, void)
 
                 *m_pnBitmapListState |= ChangeType::MODIFIED;
 
-                ChangeBitmapHdl_Impl( this );
+                ChangeBitmapHdl_Impl( *m_pLbBitmaps );
             }
         }
         else
@@ -752,7 +750,7 @@ IMPL_LINK_NOARG_TYPED(SvxBitmapTabPage, ClickDeleteHdl_Impl, Button*, void)
             m_pCtlPreview->Invalidate();
             m_pCtlPixel->Invalidate();
 
-            ChangeBitmapHdl_Impl( this );
+            ChangeBitmapHdl_Impl( *m_pLbBitmaps );
 
             *m_pnBitmapListState |= ChangeType::MODIFIED;
         }
@@ -893,7 +891,7 @@ IMPL_LINK_NOARG_TYPED(SvxBitmapTabPage, ClickSaveHdl_Impl, Button*, void)
         aFile.Append( m_pBitmapList->GetName() );
 
         if( aFile.getExtension().isEmpty() )
-            aFile.SetExtension( OUString("sob") );
+            aFile.SetExtension( "sob" );
     }
 
     aDlg.SetDisplayDirectory( aFile.GetMainURL( INetURLObject::NO_DECODE ) );
@@ -937,7 +935,7 @@ IMPL_LINK_NOARG_TYPED(SvxBitmapTabPage, ClickSaveHdl_Impl, Button*, void)
 
 
 
-IMPL_LINK_NOARG(SvxBitmapTabPage, ChangePixelColorHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvxBitmapTabPage, ChangePixelColorHdl_Impl, ListBox&, void)
 {
     m_pCtlPixel->SetPixelColor( m_pLbColor->GetSelectEntryColor() );
     m_pCtlPixel->Invalidate();
@@ -950,13 +948,11 @@ IMPL_LINK_NOARG(SvxBitmapTabPage, ChangePixelColorHdl_Impl)
     m_pCtlPreview->Invalidate();
 
     m_bBmpChanged = true;
-
-    return 0L;
 }
 
 
 
-IMPL_LINK_NOARG(SvxBitmapTabPage, ChangeBackgrndColorHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvxBitmapTabPage, ChangeBackgrndColorHdl_Impl, ListBox&, void)
 {
     m_pCtlPixel->SetBackgroundColor( m_pLbBackgroundColor->GetSelectEntryColor() );
     m_pCtlPixel->Invalidate();
@@ -969,8 +965,6 @@ IMPL_LINK_NOARG(SvxBitmapTabPage, ChangeBackgrndColorHdl_Impl)
     m_pCtlPreview->Invalidate();
 
     m_bBmpChanged = true;
-
-    return 0L;
 }
 
 

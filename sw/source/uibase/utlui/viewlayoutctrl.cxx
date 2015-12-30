@@ -79,16 +79,15 @@ SwViewLayoutControl::SwViewLayoutControl( sal_uInt16 _nSlotId, sal_uInt16 _nId, 
 
 SwViewLayoutControl::~SwViewLayoutControl()
 {
-    delete mpImpl;
 }
 
 void SwViewLayoutControl::StateChanged( sal_uInt16 /*nSID*/, SfxItemState eState, const SfxPoolItem* pState )
 {
-    if ( SfxItemState::DEFAULT != eState || pState->ISA( SfxVoidItem ) )
+    if ( SfxItemState::DEFAULT != eState || dynamic_cast< const SfxVoidItem *>( pState ) !=  nullptr )
         GetStatusBar().SetItemText( GetId(), OUString() );
     else
     {
-        OSL_ENSURE( pState->ISA( SvxViewLayoutItem ), "invalid item type" );
+        OSL_ENSURE( dynamic_cast< const SvxViewLayoutItem *>( pState ) !=  nullptr, "invalid item type" );
         const sal_uInt16 nColumns  = static_cast<const SvxViewLayoutItem*>( pState )->GetValue();
         const bool   bBookMode = static_cast<const SvxViewLayoutItem*>( pState )->IsBookMode();
 
@@ -106,7 +105,7 @@ void SwViewLayoutControl::StateChanged( sal_uInt16 /*nSID*/, SfxItemState eState
     }
 
     if ( GetStatusBar().AreItemsVisible() )
-        GetStatusBar().SetItemData( GetId(), 0 );    // force repaint
+        GetStatusBar().SetItemData( GetId(), nullptr );    // force repaint
 }
 
 void SwViewLayoutControl::Paint( const UserDrawEvent& rUsrEvt )
@@ -178,10 +177,10 @@ bool SwViewLayoutControl::MouseButtonDown( const MouseEvent & rEvt )
     // commit state change
     SvxViewLayoutItem aViewLayout( nColumns, bBookMode );
 
-    ::com::sun::star::uno::Any a;
+    css::uno::Any a;
     aViewLayout.QueryValue( a );
 
-    ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue > aArgs( 1 );
+    css::uno::Sequence< css::beans::PropertyValue > aArgs( 1 );
     aArgs[0].Name = "ViewLayout";
     aArgs[0].Value = a;
 

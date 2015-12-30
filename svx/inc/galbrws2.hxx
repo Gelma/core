@@ -75,7 +75,7 @@ class GalleryToolBox : public ToolBox
 {
 private:
 
-    virtual void    KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
+    virtual void    KeyInput( const KeyEvent& rKEvt ) override;
 
 public:
 
@@ -115,13 +115,12 @@ private:
     VclPtr<GalleryToolBox> maViewBox;
     VclPtr<FixedLine>   maSeparator;
     VclPtr<FixedText>   maInfoBar;
-    Point               maDragStartPos;
     sal_uIntPtr         mnCurActionPos;
     GalleryBrowserMode  meMode;
     GalleryBrowserMode  meLastMode;
 
-    com::sun::star::uno::Reference< com::sun::star::uno::XComponentContext > m_xContext;
-    com::sun::star::uno::Reference< com::sun::star::util::XURLTransformer > m_xTransformer;
+    css::uno::Reference< css::uno::XComponentContext > m_xContext;
+    css::uno::Reference< css::util::XURLTransformer > m_xTransformer;
 
     void                InitSettings();
 
@@ -131,11 +130,11 @@ private:
     void                ImplSelectItemId( sal_uIntPtr nItemId );
 
     // Control
-    virtual void        Resize() SAL_OVERRIDE;
-    virtual void        DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual void        Resize() override;
+    virtual void        DataChanged( const DataChangedEvent& rDCEvt ) override;
 
     // SfxListener
-    virtual void        Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+    virtual void        Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
                         DECL_LINK_TYPED( SelectObjectHdl, GalleryListView*, void );
                         DECL_LINK_TYPED( SelectObjectValueSetHdl, ValueSet*, void );
@@ -154,7 +153,7 @@ public:
 
     GalleryBrowser2(vcl::Window* pParent, Gallery* pGallery);
     virtual ~GalleryBrowser2();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void                SelectTheme( const OUString& rThemeName );
 
@@ -170,18 +169,18 @@ public:
 
     sal_Int8            AcceptDrop( DropTargetHelper& rTarget, const AcceptDropEvent& rEvt );
     sal_Int8            ExecuteDrop( DropTargetHelper& rTarget, const ExecuteDropEvent& rEvt );
-    void                StartDrag( vcl::Window* pWindow, const Point* pDragPoint = NULL );
-    void                TogglePreview( vcl::Window* pWindow, const Point* pPreviewPoint = NULL );
-    void                ShowContextMenu( vcl::Window* pWindow, const Point* pContextPoint = NULL );
+    void                StartDrag( vcl::Window* pWindow, const Point* pDragPoint = nullptr );
+    void                TogglePreview( vcl::Window* pWindow, const Point* pPreviewPoint = nullptr );
+    void                ShowContextMenu( vcl::Window* pWindow, const Point* pContextPoint = nullptr );
     bool                KeyInput( const KeyEvent& rEvt, vcl::Window* pWindow );
 
-    static com::sun::star::uno::Reference< com::sun::star::frame::XFrame > GetFrame();
-    com::sun::star::uno::Reference< com::sun::star::util::XURLTransformer > GetURLTransformer() const { return m_xTransformer; }
+    static css::uno::Reference< css::frame::XFrame > GetFrame();
+    css::uno::Reference< css::util::XURLTransformer > GetURLTransformer() const { return m_xTransformer; }
 
     void Execute( sal_uInt16 nId );
     void Dispatch( sal_uInt16 nId,
-                   const com::sun::star::uno::Reference< com::sun::star::frame::XDispatch > &rxDispatch = com::sun::star::uno::Reference< com::sun::star::frame::XDispatch >(),
-                   const com::sun::star::util::URL &rURL = com::sun::star::util::URL() );
+                   const css::uno::Reference< css::frame::XDispatch > &rxDispatch = css::uno::Reference< css::frame::XDispatch >(),
+                   const css::util::URL &rURL = css::util::URL() );
 
     DECL_STATIC_LINK_TYPED( GalleryBrowser2, AsyncDispatch_Impl, void*, void );
 };

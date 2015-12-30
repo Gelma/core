@@ -83,50 +83,42 @@ char const sXML_styleStreamName[] = "styles.xml";
 char const sXML_contentStreamName[] = "content.xml";
 char const sXML_settingsStreamName[] = "settings.xml";
 
-char const sXML_export_impress_oasis_service[] = "com.sun.star.comp.Impress.XMLOasisExporter";
 char const sXML_export_impress_meta_oasis_service[] = "com.sun.star.comp.Impress.XMLOasisMetaExporter";
 char const sXML_export_impress_styles_oasis_service[] = "com.sun.star.comp.Impress.XMLOasisStylesExporter";
 char const sXML_export_impress_content_oasis_service[] = "com.sun.star.comp.Impress.XMLOasisContentExporter";
 char const sXML_export_impress_settings_oasis_service[] = "com.sun.star.comp.Impress.XMLOasisSettingsExporter";
 
-char const sXML_export_draw_oasis_service[] = "com.sun.star.comp.Draw.XMLOasisExporter";
 char const sXML_export_draw_meta_oasis_service[] = "com.sun.star.comp.Draw.XMLOasisMetaExporter";
 char const sXML_export_draw_styles_oasis_service[] = "com.sun.star.comp.Draw.XMLOasisStylesExporter";
 char const sXML_export_draw_content_oasis_service[] = "com.sun.star.comp.Draw.XMLOasisContentExporter";
 char const sXML_export_draw_settings_oasis_service[] = "com.sun.star.comp.Draw.XMLOasisSettingsExporter";
 
-char const sXML_import_impress_oasis_service[] = "com.sun.star.comp.Impress.XMLOasisImporter";
 char const sXML_import_impress_meta_oasis_service[] = "com.sun.star.comp.Impress.XMLOasisMetaImporter";
 char const sXML_import_impress_styles_oasis_service[] = "com.sun.star.comp.Impress.XMLOasisStylesImporter";
 char const sXML_import_impress_content_oasis_service[] = "com.sun.star.comp.Impress.XMLOasisContentImporter";
 char const sXML_import_impress_settings_oasis_service[] = "com.sun.star.comp.Impress.XMLOasisSettingsImporter";
 
-char const sXML_import_draw_oasis_service[] = "com.sun.star.comp.Draw.XMLOasisImporter";
 char const sXML_import_draw_meta_oasis_service[] = "com.sun.star.comp.Draw.XMLOasisMetaImporter";
 char const sXML_import_draw_styles_oasis_service[] = "com.sun.star.comp.Draw.XMLOasisStylesImporter";
 char const sXML_import_draw_content_oasis_service[] = "com.sun.star.comp.Draw.XMLOasisContentImporter";
 char const sXML_import_draw_settings_oasis_service[] = "com.sun.star.comp.Draw.XMLOasisSettingsImporter";
 
 // OOo
-char const sXML_export_impress_ooo_service[] = "com.sun.star.comp.Impress.XMLExporter";
 char const sXML_export_impress_meta_ooo_service[] = "com.sun.star.comp.Impress.XMLMetaExporter";
 char const sXML_export_impress_styles_ooo_service[] = "com.sun.star.comp.Impress.XMLStylesExporter";
 char const sXML_export_impress_content_ooo_service[] = "com.sun.star.comp.Impress.XMLContentExporter";
 char const sXML_export_impress_settings_ooo_service[] = "com.sun.star.comp.Impress.XMLSettingsExporter";
 
-char const sXML_export_draw_ooo_service[] = "com.sun.star.comp.Draw.XMLExporter";
 char const sXML_export_draw_meta_ooo_service[] = "com.sun.star.comp.Draw.XMLMetaExporter";
 char const sXML_export_draw_styles_ooo_service[] = "com.sun.star.comp.Draw.XMLStylesExporter";
 char const sXML_export_draw_content_ooo_service[] = "com.sun.star.comp.Draw.XMLContentExporter";
 char const sXML_export_draw_settings_ooo_service[] = "com.sun.star.comp.Draw.XMLSettingsExporter";
 
-char const sXML_import_impress_ooo_service[] = "com.sun.star.comp.Impress.XMLImporter";
 char const sXML_import_impress_meta_ooo_service[] = "com.sun.star.comp.Impress.XMLMetaImporter";
 char const sXML_import_impress_styles_ooo_service[] = "com.sun.star.comp.Impress.XMLStylesImporter";
 char const sXML_import_impress_content_ooo_service[] = "com.sun.star.comp.Impress.XMLContentImporter";
 char const sXML_import_impress_settings_ooo_service[] = "com.sun.star.comp.Impress.XMLSettingsImporter";
 
-char const sXML_import_draw_ooo_service[] = "com.sun.star.comp.Draw.XMLImporter";
 char const sXML_import_draw_meta_ooo_service[] = "com.sun.star.comp.Draw.XMLMetaImporter";
 char const sXML_import_draw_styles_ooo_service[] = "com.sun.star.comp.Draw.XMLStylesImporter";
 char const sXML_import_draw_content_ooo_service[] = "com.sun.star.comp.Draw.XMLContentImporter";
@@ -140,7 +132,6 @@ struct XML_SERVICEMAP
 
 struct XML_SERVICES
 {
-    const sal_Char* mpAll;
     const sal_Char* mpMeta;
     const sal_Char* mpStyles;
     const sal_Char* mpContent;
@@ -151,15 +142,15 @@ XML_SERVICES* getServices( bool bImport, bool bDraw, sal_uLong nStoreVer )
 {
     static XML_SERVICES gServices[] =
     {
-        { sXML_export_impress_oasis_service, sXML_export_impress_meta_oasis_service, sXML_export_impress_styles_oasis_service, sXML_export_impress_content_oasis_service, sXML_export_impress_settings_oasis_service },
-        { sXML_export_draw_oasis_service, sXML_export_draw_meta_oasis_service, sXML_export_draw_styles_oasis_service, sXML_export_draw_content_oasis_service, sXML_export_draw_settings_oasis_service },
-        { sXML_import_impress_oasis_service, sXML_import_impress_meta_oasis_service, sXML_import_impress_styles_oasis_service, sXML_import_impress_content_oasis_service, sXML_import_impress_settings_oasis_service },
-        { sXML_import_draw_oasis_service, sXML_import_draw_meta_oasis_service, sXML_import_draw_styles_oasis_service, sXML_import_draw_content_oasis_service, sXML_import_draw_settings_oasis_service },
+        { sXML_export_impress_meta_oasis_service, sXML_export_impress_styles_oasis_service, sXML_export_impress_content_oasis_service, sXML_export_impress_settings_oasis_service },
+        { sXML_export_draw_meta_oasis_service, sXML_export_draw_styles_oasis_service, sXML_export_draw_content_oasis_service, sXML_export_draw_settings_oasis_service },
+        { sXML_import_impress_meta_oasis_service, sXML_import_impress_styles_oasis_service, sXML_import_impress_content_oasis_service, sXML_import_impress_settings_oasis_service },
+        { sXML_import_draw_meta_oasis_service, sXML_import_draw_styles_oasis_service, sXML_import_draw_content_oasis_service, sXML_import_draw_settings_oasis_service },
 
-        { sXML_export_impress_ooo_service, sXML_export_impress_meta_ooo_service, sXML_export_impress_styles_ooo_service, sXML_export_impress_content_ooo_service, sXML_export_impress_settings_ooo_service },
-        { sXML_export_draw_ooo_service, sXML_export_draw_meta_ooo_service, sXML_export_draw_styles_ooo_service, sXML_export_draw_content_ooo_service, sXML_export_draw_settings_ooo_service },
-        { sXML_import_impress_ooo_service, sXML_import_impress_meta_ooo_service, sXML_import_impress_styles_ooo_service, sXML_import_impress_content_ooo_service, sXML_import_impress_settings_ooo_service },
-        { sXML_import_draw_ooo_service, sXML_import_draw_meta_ooo_service, sXML_import_draw_styles_ooo_service, sXML_import_draw_content_ooo_service, sXML_import_draw_settings_ooo_service },
+        { sXML_export_impress_meta_ooo_service, sXML_export_impress_styles_ooo_service, sXML_export_impress_content_ooo_service, sXML_export_impress_settings_ooo_service },
+        { sXML_export_draw_meta_ooo_service, sXML_export_draw_styles_ooo_service, sXML_export_draw_content_ooo_service, sXML_export_draw_settings_ooo_service },
+        { sXML_import_impress_meta_ooo_service, sXML_import_impress_styles_ooo_service, sXML_import_impress_content_ooo_service, sXML_import_impress_settings_ooo_service },
+        { sXML_import_draw_meta_ooo_service, sXML_import_draw_styles_ooo_service, sXML_import_draw_content_ooo_service, sXML_import_draw_settings_ooo_service },
     };
 
     return &gServices[ (bImport ? 2 : 0) + ((nStoreVer == SOFFICE_FILEFORMAT_60) ? 4 : 0) + (bDraw ? 1 : 0 ) ];
@@ -193,7 +184,7 @@ sal_Int32 ReadThroughComponent(
     DBG_ASSERT(xInputStream.is(), "input stream missing");
     DBG_ASSERT(xModelComponent.is(), "document missing");
     DBG_ASSERT(rxContext.is(), "factory missing");
-    DBG_ASSERT(NULL != pFilterName,"I need a service name for the component!");
+    DBG_ASSERT(nullptr != pFilterName,"I need a service name for the component!");
 
     SAL_INFO( "sd.filter", "ReadThroughComponent" );
 
@@ -332,7 +323,7 @@ sal_Int32 ReadThroughComponent(
     bool bMustBeSuccessfull )
 {
     DBG_ASSERT(xStorage.is(), "Need storage!");
-    DBG_ASSERT(NULL != pStreamName, "Please, please, give me a name!");
+    DBG_ASSERT(nullptr != pStreamName, "Please, please, give me a name!");
 
     // open stream (and set parser input)
     OUString sStreamName = OUString::createFromAscii(pStreamName);
@@ -351,7 +342,7 @@ sal_Int32 ReadThroughComponent(
         // if no stream can be opened, return immediately with OK signal
 
         // do we even have an alternative name?
-        if ( NULL == pCompatibilityStreamName )
+        if ( nullptr == pCompatibilityStreamName )
             return 0;
 
         // if so, does the stream exist?
@@ -375,8 +366,7 @@ sal_Int32 ReadThroughComponent(
     DBG_ASSERT( xInfoSet.is(), "missing property set" );
     if( xInfoSet.is() )
     {
-        OUString sPropName( "StreamName" );
-        xInfoSet->setPropertyValue( sPropName, makeAny( sStreamName ) );
+        xInfoSet->setPropertyValue( "StreamName", makeAny( sStreamName ) );
     }
 
     try
@@ -494,31 +484,18 @@ bool SdXMLFilter::Import( ErrCode& nError )
     PropertyMapEntry const aImportInfoMap[] =
     {
         // necessary properties for XML progress bar at load time
-        { OUString("ProgressRange"),   0, ::cppu::UnoType<sal_Int32>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-        { OUString("ProgressMax"),     0, ::cppu::UnoType<sal_Int32>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-        { OUString("ProgressCurrent"), 0, ::cppu::UnoType<sal_Int32>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-        { OUString("Preview"),         0, ::cppu::UnoType<sal_Bool>::get(),  ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-        { OUString("PageLayouts"), 0, cppu::UnoType<container::XNameAccess>::get(),  ::com::sun::star::beans::PropertyAttribute::MAYBEVOID,     0},
-        { OUString("PrivateData"), 0,
-              cppu::UnoType<XInterface>::get(),
-              ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("BaseURI"), 0,
-              ::cppu::UnoType<OUString>::get(),
-              ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("StreamRelPath"), 0,
-              ::cppu::UnoType<OUString>::get(),
-              ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("StreamName"), 0,
-              ::cppu::UnoType<OUString>::get(),
-              ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("BuildId"), 0,
-              ::cppu::UnoType<OUString>::get(),
-              ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("OrganizerMode"), 0,
-              cppu::UnoType<bool>::get(),
-              ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("SourceStorage"), 0, cppu::UnoType<embed::XStorage>::get(),
-          ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("ProgressRange"),   0, cppu::UnoType<sal_Int32>::get(),               css::beans::PropertyAttribute::MAYBEVOID, 0},
+        { OUString("ProgressMax"),     0, cppu::UnoType<sal_Int32>::get(),               css::beans::PropertyAttribute::MAYBEVOID, 0},
+        { OUString("ProgressCurrent"), 0, cppu::UnoType<sal_Int32>::get(),               css::beans::PropertyAttribute::MAYBEVOID, 0},
+        { OUString("Preview"),         0, cppu::UnoType<sal_Bool>::get(),                css::beans::PropertyAttribute::MAYBEVOID, 0},
+        { OUString("PageLayouts"),     0, cppu::UnoType<container::XNameAccess>::get(),  css::beans::PropertyAttribute::MAYBEVOID, 0},
+        { OUString("PrivateData"),     0, cppu::UnoType<XInterface>::get(),              css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("BaseURI"),         0, cppu::UnoType<OUString>::get(),                css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("StreamRelPath"),   0, cppu::UnoType<OUString>::get(),                css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("StreamName"),      0, cppu::UnoType<OUString>::get(),                css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("BuildId"),         0, cppu::UnoType<OUString>::get(),                css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("OrganizerMode"),   0, cppu::UnoType<bool>::get(),                    css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("SourceStorage"),   0, cppu::UnoType<embed::XStorage>::get(),         css::beans::PropertyAttribute::MAYBEVOID, 0 },
         { OUString(), 0, css::uno::Type(), 0, 0 }
     };
 
@@ -545,9 +522,9 @@ bool SdXMLFilter::Import( ErrCode& nError )
     Reference< io::XActiveDataSource > xSource;
     Reference< XInterface > xPipe;
     Reference< document::XGraphicObjectResolver > xGraphicResolver;
-    SvXMLGraphicHelper *pGraphicHelper = 0;
+    SvXMLGraphicHelper *pGraphicHelper = nullptr;
     Reference< document::XEmbeddedObjectResolver > xObjectResolver;
-    SvXMLEmbeddedObjectHelper *pObjectHelper = 0;
+    SvXMLEmbeddedObjectHelper *pObjectHelper = nullptr;
 
     Reference< lang::XComponent > xModelComp( mxModel, uno::UNO_QUERY );
 
@@ -610,7 +587,9 @@ bool SdXMLFilter::Import( ErrCode& nError )
     }
 
     // Set base URI
-    xInfoSet->setPropertyValue( "BaseURI" , makeAny( mrMedium.GetBaseURL() ) );
+    OUString const baseURI(mrMedium.GetBaseURL());
+    assert(!baseURI.isEmpty()); // needed for relative URLs
+    xInfoSet->setPropertyValue("BaseURI", makeAny(baseURI));
 
     if( 0 == nRet && SfxObjectCreateMode::EMBEDDED == mrDocShell.GetCreateMode() )
     {
@@ -664,13 +643,13 @@ bool SdXMLFilter::Import( ErrCode& nError )
         if( meFilterMode != SDXMLMODE_Organizer )
         {
             nWarn2 = ReadThroughComponent(
-                xStorage, xModelComp, "settings.xml", NULL, rxContext,
+                xStorage, xModelComp, "settings.xml", nullptr, rxContext,
                 pServices->mpSettings,
                 aFilterArgs, aName, false );
         }
 
         nRet = ReadThroughComponent(
-            xStorage, xModelComp, "styles.xml", NULL, rxContext,
+            xStorage, xModelComp, "styles.xml", nullptr, rxContext,
             pServices->mpStyles,
             aFilterArgs, aName, true );
 
@@ -691,10 +670,10 @@ bool SdXMLFilter::Import( ErrCode& nError )
 
     if( pGraphicHelper )
         SvXMLGraphicHelper::Destroy( pGraphicHelper );
-    xGraphicResolver = 0;
+    xGraphicResolver = nullptr;
     if( pObjectHelper )
         SvXMLEmbeddedObjectHelper::Destroy( pObjectHelper );
-    xObjectResolver = 0;
+    xObjectResolver = nullptr;
 
     if( mxStatusIndicator.is() )
         mxStatusIndicator->end();
@@ -831,8 +810,8 @@ bool SdXMLFilter::Import( ErrCode& nError )
 
 bool SdXMLFilter::Export()
 {
-    SvXMLEmbeddedObjectHelper*  pObjectHelper = NULL;
-    SvXMLGraphicHelper*         pGraphicHelper = NULL;
+    SvXMLEmbeddedObjectHelper*  pObjectHelper = nullptr;
+    SvXMLGraphicHelper*         pGraphicHelper = nullptr;
     bool                    bDocRet = false;
 
     if( !mxModel.is() )
@@ -862,29 +841,17 @@ bool SdXMLFilter::Export()
         /** property map for export info set */
         PropertyMapEntry const aExportInfoMap[] =
         {
-            { OUString("ProgressRange"),   0, ::cppu::UnoType<sal_Int32>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-            { OUString("ProgressMax"),     0, ::cppu::UnoType<sal_Int32>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-            { OUString("ProgressCurrent"), 0, ::cppu::UnoType<sal_Int32>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-            { OUString("UsePrettyPrinting"),0, cppu::UnoType<bool>::get(),             ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-
-            { OUString("PageLayoutNames"), 0, ::cppu::UnoType<OUString>::get(),  ::com::sun::star::beans::PropertyAttribute::MAYBEVOID,     0},
-            { OUString("BaseURI"), 0,
-                  ::cppu::UnoType<OUString>::get(),
-                  ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-            { OUString("StreamRelPath"), 0,
-                  ::cppu::UnoType<OUString>::get(),
-                  ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-            { OUString("StreamName"), 0,
-                  ::cppu::UnoType<OUString>::get(),
-                  ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-            { OUString("StyleNames"), 0,
-                  cppu::UnoType<Sequence<OUString>>::get(),
-                  ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-            { OUString("StyleFamilies"), 0,
-                  cppu::UnoType<Sequence<sal_Int32>>::get(),
-                  ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-            { OUString("TargetStorage"), 0, cppu::UnoType<embed::XStorage>::get(),
-                  ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
+            { OUString("ProgressRange"),    0, cppu::UnoType<sal_Int32>::get(),   css::beans::PropertyAttribute::MAYBEVOID, 0},
+            { OUString("ProgressMax"),      0, cppu::UnoType<sal_Int32>::get(),   css::beans::PropertyAttribute::MAYBEVOID, 0},
+            { OUString("ProgressCurrent"),  0, cppu::UnoType<sal_Int32>::get(),   css::beans::PropertyAttribute::MAYBEVOID, 0},
+            { OUString("UsePrettyPrinting"),0, cppu::UnoType<bool>::get(),        css::beans::PropertyAttribute::MAYBEVOID, 0},
+            { OUString("PageLayoutNames"),  0, cppu::UnoType<OUString>::get(),    css::beans::PropertyAttribute::MAYBEVOID, 0},
+            { OUString("BaseURI"),          0, cppu::UnoType<OUString>::get(),    css::beans::PropertyAttribute::MAYBEVOID, 0 },
+            { OUString("StreamRelPath"),    0, cppu::UnoType<OUString>::get(),    css::beans::PropertyAttribute::MAYBEVOID, 0 },
+            { OUString("StreamName"),       0, cppu::UnoType<OUString>::get(),    css::beans::PropertyAttribute::MAYBEVOID, 0 },
+            { OUString("StyleNames"),       0, cppu::UnoType<Sequence<OUString>>::get(),  css::beans::PropertyAttribute::MAYBEVOID, 0 },
+            { OUString("StyleFamilies"),    0, cppu::UnoType<Sequence<sal_Int32>>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
+            { OUString("TargetStorage"),    0, cppu::UnoType<embed::XStorage>::get(),     css::beans::PropertyAttribute::MAYBEVOID, 0 },
             { OUString(), 0, css::uno::Type(), 0, 0 }
         };
 
@@ -985,8 +952,8 @@ bool SdXMLFilter::Export()
                 aServices[i++].mpStream  = sXML_metaStreamName;
             };
 
-            aServices[i].mpService = NULL;
-            aServices[i].mpStream  = NULL;
+            aServices[i].mpService = nullptr;
+            aServices[i].mpStream  = nullptr;
 
             XML_SERVICEMAP* pServices = aServices;
 

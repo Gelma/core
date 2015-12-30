@@ -169,7 +169,7 @@ static SvtExtensionResIdMapping_Impl const ExtensionMap_Impl[] =
     { "pps",   false, STR_DESCRIPTION_POWERPOINT_SHOW,       IMG_IMPRESS },
     { "pptx",  false, STR_DESCRIPTION_POWERPOINT,            IMG_IMPRESS },
     { "oxt",   false, STR_DESCRIPTION_EXTENSION,             IMG_EXTENSION },
-    { 0, false, 0, 0 }
+    { nullptr, false, 0, 0 }
 };
 
 struct SvtFactory2ExtensionMapping_Impl
@@ -190,7 +190,7 @@ static SvtFactory2ExtensionMapping_Impl const Fac2ExtMap_Impl[] =
     { "sdraw",                  "odg" },
     { "smath",                  "odf" },
     { "sdatabase",              "odb" },
-    { NULL, NULL }
+    { nullptr, nullptr }
 };
 
 
@@ -222,24 +222,24 @@ static OUString GetImageExtensionByFactory_Impl( const OUString& rURL )
     try
     {
         // get the TypeDetection service to access all registered types
-        ::com::sun::star::uno::Reference < ::com::sun::star::uno::XComponentContext > xContext = ::comphelper::getProcessComponentContext();
-        ::com::sun::star::uno::Reference < ::com::sun::star::document::XTypeDetection > xTypeDetector(
+        css::uno::Reference < css::uno::XComponentContext > xContext = ::comphelper::getProcessComponentContext();
+        css::uno::Reference < css::document::XTypeDetection > xTypeDetector(
             xContext->getServiceManager()->createInstanceWithContext("com.sun.star.document.TypeDetection", xContext),
-            ::com::sun::star::uno::UNO_QUERY );
+            css::uno::UNO_QUERY );
 
         OUString aInternalType = xTypeDetector->queryTypeByURL( rURL );
-        ::com::sun::star::uno::Reference < ::com::sun::star::container::XNameAccess > xAccess( xTypeDetector, ::com::sun::star::uno::UNO_QUERY );
-        ::com::sun::star::uno::Sequence < ::com::sun::star::beans::PropertyValue > aTypeProps;
+        css::uno::Reference < css::container::XNameAccess > xAccess( xTypeDetector, css::uno::UNO_QUERY );
+        css::uno::Sequence < css::beans::PropertyValue > aTypeProps;
         if ( !aInternalType.isEmpty() && xAccess->hasByName( aInternalType ) )
         {
             xAccess->getByName( aInternalType ) >>= aTypeProps;
             sal_Int32 nProps = aTypeProps.getLength();
             for ( sal_Int32 i = 0; i < nProps; ++i )
             {
-                const ::com::sun::star::beans::PropertyValue& rProp = aTypeProps[i];
+                const css::beans::PropertyValue& rProp = aTypeProps[i];
                 if (rProp.Name == "Extensions")
                 {
-                    ::com::sun::star::uno::Sequence < OUString > aExtensions;
+                    css::uno::Sequence < OUString > aExtensions;
                     if ( ( rProp.Value >>= aExtensions ) && aExtensions.getLength() > 0 )
                     {
                         const OUString* pExtensions = aExtensions.getConstArray();
@@ -250,11 +250,11 @@ static OUString GetImageExtensionByFactory_Impl( const OUString& rURL )
             }
         }
     }
-    catch( const ::com::sun::star::uno::RuntimeException& )
+    catch( const css::uno::RuntimeException& )
     {
         throw; // don't hide it!
     }
-    catch( const ::com::sun::star::uno::Exception& )
+    catch( const css::uno::Exception& )
     {
         // type detection failed -> no extension
     }
@@ -309,11 +309,11 @@ static bool GetVolumeProperties_Impl( ::ucbhelper::Content& rContent, svtools::V
                  ( rContent.getPropertyValue( "IsFloppy" ) >>= rVolumeInfo.m_bIsFloppy ) &&
                  ( rContent.getPropertyValue( "IsCompactDisc" ) >>= rVolumeInfo.m_bIsCompactDisc ) );
     }
-    catch( const ::com::sun::star::uno::RuntimeException& )
+    catch( const css::uno::RuntimeException& )
     {
         throw; // don't hide it!
     }
-    catch( const ::com::sun::star::uno::Exception& )
+    catch( const css::uno::Exception& )
     {
         // type detection failed -> no extension
     }
@@ -327,7 +327,7 @@ static sal_uInt16 GetFolderImageId_Impl( const OUString& rURL )
     ::svtools::VolumeInfo aVolumeInfo;
     try
     {
-        ::ucbhelper::Content aCnt( rURL, ::com::sun::star::uno::Reference< ::com::sun::star::ucb::XCommandEnvironment >(), comphelper::getProcessComponentContext() );
+        ::ucbhelper::Content aCnt( rURL, css::uno::Reference< css::ucb::XCommandEnvironment >(), comphelper::getProcessComponentContext() );
         if ( GetVolumeProperties_Impl( aCnt, aVolumeInfo ) )
         {
             if ( aVolumeInfo.m_bIsRemote )
@@ -340,11 +340,11 @@ static sal_uInt16 GetFolderImageId_Impl( const OUString& rURL )
                 nRet = IMG_FIXEDDEV;
         }
     }
-    catch( const ::com::sun::star::uno::RuntimeException& )
+    catch( const css::uno::RuntimeException& )
     {
         throw; // don't hide it!
     }
-    catch( const ::com::sun::star::uno::Exception& )
+    catch( const css::uno::Exception& )
     {
 
     }
@@ -460,7 +460,7 @@ static sal_uInt16 GetFolderDescriptionId_Impl( const OUString& rURL )
     svtools::VolumeInfo aVolumeInfo;
     try
     {
-        ::ucbhelper::Content aCnt( rURL, ::com::sun::star::uno::Reference< ::com::sun::star::ucb::XCommandEnvironment >(), comphelper::getProcessComponentContext() );
+        ::ucbhelper::Content aCnt( rURL, css::uno::Reference< css::ucb::XCommandEnvironment >(), comphelper::getProcessComponentContext() );
         if ( GetVolumeProperties_Impl( aCnt, aVolumeInfo ) )
         {
             if ( aVolumeInfo.m_bIsRemote )
@@ -473,11 +473,11 @@ static sal_uInt16 GetFolderDescriptionId_Impl( const OUString& rURL )
                 nRet = STR_DESCRIPTION_LOCALE_VOLUME;
         }
     }
-    catch( const ::com::sun::star::uno::RuntimeException& )
+    catch( const css::uno::RuntimeException& )
     {
         throw; // don't hide it!
     }
-    catch( const ::com::sun::star::uno::Exception& )
+    catch( const css::uno::Exception& )
     {
 
     }
@@ -490,10 +490,10 @@ static Image GetImageFromList_Impl( sal_uInt16 nImageId, bool bBig )
         // return our new small folder image (256 colors)
         return Image( SvtResId( IMG_SVT_FOLDER ) );
 
-    ImageList* pList = NULL;
+    ImageList* pList = nullptr;
 
-    static vcl::DeleteOnDeinit< ImageList > xSmallImageList( NULL );
-    static vcl::DeleteOnDeinit< ImageList > xBigImageList( NULL );
+    static vcl::DeleteOnDeinit< ImageList > xSmallImageList( nullptr );
+    static vcl::DeleteOnDeinit< ImageList > xBigImageList( nullptr );
     static OUString style = Application::GetSettings().GetStyleSettings().DetermineIconTheme();
 
     // If the style has been changed, throw away our cache of the older images

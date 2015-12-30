@@ -45,7 +45,7 @@ sal_uInt32 ObjectContactOfObjListPainter::GetPaintObjectCount() const
     return maStartObjects.size();
 }
 
-ViewContact& ObjectContactOfObjListPainter::GetPaintObjectViewContact(sal_uInt32 nIndex) const
+ViewContact& ObjectContactOfObjListPainter::GetPaintObjectViewContact(sal_uInt32 nIndex)
 {
     const SdrObject* pObj = maStartObjects[nIndex];
     DBG_ASSERT(pObj, "ObjectContactOfObjListPainter: Corrupt SdrObjectVector (!)");
@@ -99,22 +99,21 @@ void ObjectContactOfObjListPainter::ProcessDisplay(DisplayInfo& rDisplayInfo)
                 aViewRange,
                 GetXDrawPageForSdrPage(const_cast< SdrPage* >(mpProcessedPage)),
                 0.0,
-                com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>());
+                css::uno::Sequence<css::beans::PropertyValue>());
             updateViewInformation2D(aNewViewInformation2D);
 
             // collect primitive data in a sequence; this will already use the updated ViewInformation2D
-            drawinglayer::primitive2d::Primitive2DSequence xPrimitiveSequence;
+            drawinglayer::primitive2d::Primitive2DContainer xPrimitiveSequence;
 
             for(sal_uInt32 a(0L); a < nCount; a++)
             {
                 const ViewObjectContact& rViewObjectContact = GetPaintObjectViewContact(a).GetViewObjectContact(*this);
 
-                drawinglayer::primitive2d::appendPrimitive2DSequenceToPrimitive2DSequence(xPrimitiveSequence,
-                    rViewObjectContact.getPrimitive2DSequenceHierarchy(rDisplayInfo));
+                xPrimitiveSequence.append(rViewObjectContact.getPrimitive2DSequenceHierarchy(rDisplayInfo));
             }
 
             // if there is something to show, use a vclProcessor to render it
-            if(xPrimitiveSequence.hasElements())
+            if(!xPrimitiveSequence.empty())
             {
                 std::unique_ptr<drawinglayer::processor2d::BaseProcessor2D> pProcessor2D(drawinglayer::processor2d::createProcessor2DFromOutputDevice(
                     *pTargetDevice,
@@ -145,7 +144,7 @@ bool ObjectContactOfObjListPainter::isOutputToRecordingMetaFile() const
 // pdf export?
 bool ObjectContactOfObjListPainter::isOutputToPDFFile() const
 {
-    return (0 != mrTargetOutputDevice.GetPDFWriter());
+    return (nullptr != mrTargetOutputDevice.GetPDFWriter());
 }
 
 OutputDevice* ObjectContactOfObjListPainter::TryToGetOutputDevice() const
@@ -158,7 +157,7 @@ sal_uInt32 ObjectContactOfPagePainter::GetPaintObjectCount() const
     return (GetStartPage() ? 1L : 0L);
 }
 
-ViewContact& ObjectContactOfPagePainter::GetPaintObjectViewContact(sal_uInt32 /*nIndex*/) const
+ViewContact& ObjectContactOfPagePainter::GetPaintObjectViewContact(sal_uInt32 /*nIndex*/)
 {
     DBG_ASSERT(GetStartPage(), "ObjectContactOfPagePainter::GetPaintObjectViewContact: no StartPage set (!)");
     return GetStartPage()->GetViewContact();

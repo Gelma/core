@@ -86,7 +86,6 @@ public:
     inline  Visual         *GetVisual() const { return visual; }
     inline  int             GetClass() const { return c_class; }
     inline  int             GetDepth() const { return depth; }
-    inline  SalRGB          GetMode() const { return eRGBMode_; }
 
             Pixel           GetTCPixel( SalColor nColor ) const;
             SalColor        GetTCColor( Pixel nPixel ) const;
@@ -122,7 +121,6 @@ public:
     inline  Pixel               GetWhitePixel() const { return m_nWhitePixel; }
     inline  Pixel               GetBlackPixel() const { return m_nBlackPixel; }
     inline  Pixel               GetUsed() const { return m_nUsed; }
-    inline  int                 GetClass() const { return m_aVisual.GetClass(); }
 
     bool            GetXPixels( XColor  &rColor,
                                     int      r,
@@ -155,7 +153,7 @@ public:
     virtual         ~SalXLib();
     virtual void    Init();
 
-    virtual void    Yield( bool bWait, bool bHandleAllCurrentEvents );
+    virtual SalYieldResult Yield( bool bWait, bool bHandleAllCurrentEvents );
     virtual void    Wakeup();
     virtual void    PostUserEvent();
 
@@ -302,12 +300,11 @@ public:
                                int            *pLen,
                                KeySym         *pUnmodifiedKeySym,
                                Status         *pStatus,
-                               XIC = NULL ) const;
+                               XIC = nullptr ) const;
 
     Cursor                GetPointer( PointerStyle ePointerStyle );
     virtual int           CaptureMouse( SalFrame *pCapture );
 
-    void                  Remove( XEvent   *pEvent );
     virtual ScreenData   *initScreen( SalX11Screen nXScreen ) const;
     const ScreenData&     getDataForScreen( SalX11Screen nXScreen ) const
     {
@@ -325,13 +322,7 @@ public:
     srv_vendor_t    GetServerVendor() const { return meServerVendor; }
     void            SetServerVendor() { meServerVendor = sal_GetServerVendor(pDisp_); }
     bool            IsDisplay() const { return !!pXLib_; }
-    GC              GetMonoGC( SalX11Screen nXScreen ) const { return getDataForScreen(nXScreen).m_aMonoGC; }
     GC              GetCopyGC( SalX11Screen nXScreen ) const { return getDataForScreen(nXScreen).m_aCopyGC; }
-    GC              GetAndInvertedGC( SalX11Screen nXScreen ) const { return getDataForScreen(nXScreen).m_aAndInvertedGC; }
-    GC              GetAndGC( SalX11Screen nXScreen ) const { return getDataForScreen(nXScreen).m_aAndGC; }
-    GC              GetOrGC( SalX11Screen nXScreen ) const { return getDataForScreen(nXScreen).m_aOrGC; }
-    GC              GetStippleGC( SalX11Screen nXScreen ) const { return getDataForScreen(nXScreen).m_aStippleGC; }
-    GC              GetGC( sal_uInt16 nDepth, SalX11Screen nXScreen ) const;
     Pixmap          GetInvert50( SalX11Screen nXScreen ) const { return getDataForScreen(nXScreen).m_hInvert50; }
     const SalColormap&    GetColormap( SalX11Screen nXScreen ) const { return getDataForScreen(nXScreen).m_aColormap; }
     const SalVisual&      GetVisual( SalX11Screen nXScreen ) const { return getDataForScreen(nXScreen).m_aVisual; }
@@ -354,7 +345,6 @@ public:
     const std::vector< Rectangle >& GetXineramaScreens() const { return m_aXineramaScreens; }
     ::Window        GetRootWindow( SalX11Screen nXScreen ) const
             { return getDataForScreen( nXScreen ).m_aRoot; }
-    const std::vector< ScreenData >& GetScreenData() { return m_aScreens; }
     unsigned int GetXScreenCount() const { return m_aScreens.size(); }
 
     const std::list< SalFrame* >& getFrames() const { return m_aFrames; }
@@ -362,15 +352,8 @@ public:
 
     std::list< SalObject* >& getSalObjects() { return m_aSalObjects; }
 
-    virtual void    PostUserEvent() SAL_OVERRIDE = 0;
+    virtual void    PostUserEvent() override = 0;
 };
-
-inline GC SalDisplay::GetGC( sal_uInt16 nDepth, SalX11Screen nXScreen ) const
-{ return 1 == nDepth
-         ? GetMonoGC( nXScreen )
-         : getDataForScreen(nXScreen).m_aVisual.GetDepth() == nDepth
-           ? GetCopyGC( nXScreen )
-           : None; }
 
 inline  Display *SalColormap::GetXDisplay() const
 { return m_pDisplay->GetDisplay(); }
@@ -381,9 +364,9 @@ public:
              SalX11Display( Display* pDisp );
     virtual ~SalX11Display();
 
-    virtual bool        Dispatch( XEvent *pEvent ) SAL_OVERRIDE;
-    virtual void        Yield();
-    virtual void        PostUserEvent() SAL_OVERRIDE;
+    virtual bool        Dispatch( XEvent *pEvent ) override;
+    virtual bool        Yield();
+    virtual void        PostUserEvent() override;
 
     bool                IsEvent();
     void                SetupInput( SalI18N_InputMethod *pInputMethod );

@@ -100,9 +100,8 @@ void FwkTabPage::CreateDialog()
       xHandler = m_xEventHdl;
 
         uno::Reference< awt::XWindowPeer > xParent( VCLUnoHelper::GetInterface( this ), uno::UNO_QUERY );
-        m_xPage = uno::Reference < awt::XWindow >(
-            m_xWinProvider->createContainerWindow(
-                m_sPageURL, OUString(), xParent, xHandler ), uno::UNO_QUERY );
+        m_xPage.set( m_xWinProvider->createContainerWindow( m_sPageURL, OUString(), xParent, xHandler ),
+                     uno::UNO_QUERY );
 
         uno::Reference< awt::XControl > xPageControl( m_xPage, uno::UNO_QUERY );
         if ( xPageControl.is() )
@@ -116,7 +115,7 @@ void FwkTabPage::CreateDialog()
             }
         }
 
-        CallMethod( OUString(INITIALIZE_METHOD) );
+        CallMethod( INITIALIZE_METHOD );
     }
     catch ( const lang::IllegalArgumentException& )
     {
@@ -135,7 +134,7 @@ bool FwkTabPage::CallMethod( const OUString& rMethod )
     {
         try
         {
-            bRet = m_xEventHdl->callHandlerMethod( m_xPage, uno::makeAny( rMethod ), OUString(EXTERNAL_EVENT) );
+            bRet = m_xEventHdl->callHandlerMethod( m_xPage, uno::makeAny( rMethod ), EXTERNAL_EVENT );
         }
         catch ( const uno::Exception& )
         {
@@ -239,7 +238,7 @@ bool FwkTabWindow::RemoveEntry( sal_Int32 nIndex )
 
 TabEntry* FwkTabWindow::FindEntry( sal_Int32 nIndex ) const
 {
-    TabEntry* pEntry = NULL;
+    TabEntry* pEntry = nullptr;
 
     TabEntryList::const_iterator pIt;
     for (  pIt  = m_TabList.begin();

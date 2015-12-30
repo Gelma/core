@@ -46,16 +46,16 @@ class PresentationFactoryProvider
       public PresentationFactoryProviderInterfaceBase
 {
 public:
-    PresentationFactoryProvider (const Reference<XComponentContext>& rxContext);
+    explicit PresentationFactoryProvider (const Reference<XComponentContext>& rxContext);
     virtual ~PresentationFactoryProvider();
 
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
     // XInitialization
 
     virtual void SAL_CALL initialize(
-        const ::com::sun::star::uno::Sequence<com::sun::star::uno::Any>& aArguments)
-        throw (::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        const css::uno::Sequence<css::uno::Any>& aArguments)
+        throw (css::uno::Exception, css::uno::RuntimeException, std::exception) override;
 };
 
 typedef ::cppu::WeakComponentImplHelper <XView> PresentationViewInterfaceBase;
@@ -69,16 +69,16 @@ class PresentationView
       public PresentationViewInterfaceBase
 {
 public:
-    PresentationView (const Reference<XResourceId>& rxViewId)
+    explicit PresentationView (const Reference<XResourceId>& rxViewId)
         : PresentationViewInterfaceBase(maMutex),mxResourceId(rxViewId) {};
     virtual ~PresentationView() {};
 
     // XView
 
-    virtual Reference<XResourceId> SAL_CALL getResourceId() throw (RuntimeException, std::exception) SAL_OVERRIDE
+    virtual Reference<XResourceId> SAL_CALL getResourceId() throw (RuntimeException, std::exception) override
     { return mxResourceId; };
 
-    virtual sal_Bool SAL_CALL isAnchorOnly() throw (RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL isAnchorOnly() throw (RuntimeException, std::exception) override
     { return false; }
 
 private:
@@ -144,10 +144,10 @@ void SAL_CALL PresentationFactory::releaseResource (
     {
         ::sd::DrawController* pController = reinterpret_cast<sd::DrawController*>(
             xTunnel->getSomething(sd::DrawController::getUnoTunnelId()));
-        if (pController != NULL)
+        if (pController != nullptr)
         {
             ViewShellBase* pBase = pController->GetViewShellBase();
-            if (pBase != NULL)
+            if (pBase != nullptr)
                 SlideShow::Stop( *pBase );
         }
     }
@@ -231,9 +231,9 @@ void SAL_CALL PresentationFactoryProvider::initialize(
 } } // end of namespace sd::framework
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_Draw_framework_PresentationFactoryProvider_get_implementation(::com::sun::star::uno::XComponentContext* context,
-                                                                    ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_Draw_framework_PresentationFactoryProvider_get_implementation(css::uno::XComponentContext* context,
+                                                                    css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new sd::framework::PresentationFactoryProvider(context));
 }

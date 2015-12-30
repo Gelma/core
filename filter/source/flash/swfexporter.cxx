@@ -62,15 +62,9 @@ using com::sun::star::lang::XServiceInfo;
 
 
 PageInfo::PageInfo()
-        : meFadeEffect( FadeEffect_NONE )
-        , meFadeSpeed( AnimationSpeed_MEDIUM )
-        , mnDuration( 0 )
-        , mnChange( 0 )
-        , mnBackgroundID( 0 )
+        : mnBackgroundID( 0 )
         , mnObjectsID( 0)
         , mnForegroundID( 0)
-        , mbBackgroundVisible( false )
-        , mbBackgroundObjectsVisible( false )
 {
 }
 
@@ -102,7 +96,7 @@ FlashExporter::FlashExporter(
     , mxSelectedDrawPage(rxSelectedDrawPage)
     , mbExportSelection(false)
 
-    , mpWriter(NULL)
+    , mpWriter(nullptr)
     , mnDocWidth(0)
     , mnDocHeight(0)
     , mnJPEGcompressMode(nJPEGCompressMode)
@@ -127,7 +121,7 @@ FlashExporter::~FlashExporter()
 void FlashExporter::Flush()
 {
     delete mpWriter;
-    mpWriter = NULL;
+    mpWriter = nullptr;
 
     maPagesMap.clear();
 }
@@ -290,7 +284,7 @@ bool FlashExporter::exportSlides( Reference< XDrawPage > xDrawPage, Reference< X
 
     try
     {
-        if( NULL == mpWriter )
+        if( nullptr == mpWriter )
         {
             xPropSet->getPropertyValue( "Width" ) >>= mnDocWidth;
             xPropSet->getPropertyValue( "Height" ) >>= mnDocHeight;
@@ -324,7 +318,7 @@ sal_uInt16 FlashExporter::exportBackgrounds( Reference< XDrawPage > xDrawPage, R
     if( !xDrawPage.is() || !xPropSet.is() )
         return 0;
 
-    if( NULL == mpWriter )
+    if( nullptr == mpWriter )
     {
         xPropSet->getPropertyValue( "Width" ) >>= mnDocWidth;
         xPropSet->getPropertyValue( "Height" ) >>= mnDocHeight;
@@ -591,7 +585,7 @@ void FlashExporter::exportShape( const Reference< XShape >& xShape, bool bMaster
 
     try
     {
-            com::sun::star::awt::Rectangle aBoundRect;
+            css::awt::Rectangle aBoundRect;
             xPropSet->getPropertyValue( "BoundRect" ) >>= aBoundRect;
 
             std::unique_ptr<ShapeInfo> pShapeInfo(new ShapeInfo());

@@ -32,6 +32,8 @@
 #include "gridmerg.hxx"
 #include "document.hxx"
 #include "markdata.hxx"
+#include "tabview.hxx"
+#include "viewdata.hxx"
 
 #define SC_DRAG_MIN     2
 
@@ -45,7 +47,7 @@
 #define SC_HDRPAINT_COUNT       7
 
 ScHeaderControl::ScHeaderControl( vcl::Window* pParent, SelectionEngine* pSelectionEngine,
-                                  SCCOLROW nNewSize, bool bNewVertical ) :
+                                  SCCOLROW nNewSize, bool bNewVertical, ScTabView* pTab ) :
             Window      ( pParent ),
             pSelEngine  ( pSelectionEngine ),
             bVertical   ( bNewVertical ),
@@ -58,7 +60,9 @@ ScHeaderControl::ScHeaderControl( vcl::Window* pParent, SelectionEngine* pSelect
             nDragStart  ( 0 ),
             nDragPos    ( 0 ),
             bDragMoved  ( false ),
-            bIgnoreMove ( false )
+            bIgnoreMove ( false ),
+            bDoneInitRef( false ),
+            pTabView    ( pTab )
 {
     // --- RTL --- no default mirroring for this window, the spreadsheet itself
     // is also not mirrored
@@ -76,14 +80,14 @@ ScHeaderControl::ScHeaderControl( vcl::Window* pParent, SelectionEngine* pSelect
     bBoldSet = true;
 
     Size aSize = LogicToPixel( Size(
-        GetTextWidth(OUString("8888")),
+        GetTextWidth("8888"),
         GetTextHeight() ) );
     aSize.Width()  += 4;    // place for highlight border
     aSize.Height() += 3;
     SetSizePixel( aSize );
 
     nWidth = nSmallWidth = aSize.Width();
-    nBigWidth = LogicToPixel( Size( GetTextWidth(OUString("8888888")), 0 ) ).Width() + 5;
+    nBigWidth = LogicToPixel( Size( GetTextWidth("8888888"), 0 ) ).Width() + 5;
 
     SetBackground();
 }
@@ -656,6 +660,26 @@ void ScHeaderControl::MouseButtonDown( const MouseEvent& rMEvt )
         return;
     if ( ! rMEvt.IsLeft() )
         return;
+    if ( SC_MOD()->IsFormulaMode() )
+    {
+        if( !pTabView )
+            return;
+        SCTAB nTab = pTabView->GetViewData().GetTabNo();
+        if( !rMEvt.IsShift() )
+            pTabView->DoneRefMode();
+        bDoneInitRef = true;
+        if( !bVertical )
+        {
+            pTabView->InitRefMode( nHitNo, 0, nTab, SC_REFTYPE_REF );
+            pTabView->UpdateRef( nHitNo, MAXROW, nTab );
+        }
+        else
+        {
+            pTabView->InitRefMode( 0, nHitNo, nTab, SC_REFTYPE_REF );
+            pTabView->UpdateRef( MAXCOL, nHitNo, nTab );
+        }
+        return;
+    }
     if ( bIsBorder && ResizeAllowed() )
     {
         nDragNo = nHitNo;
@@ -714,6 +738,13 @@ void ScHeaderControl::MouseButtonUp( const MouseEvent& rMEvt )
     if ( IsDisabled() )
         return;
 
+    if ( SC_MOD()->IsFormulaMode() )
+    {
+        SC_MOD()->EndReference();
+        bDoneInitRef = false;
+        return;
+    }
+
     SetMarking( false );
     bIgnoreMove = false;
 
@@ -764,6 +795,21 @@ void ScHeaderControl::MouseMove( const MouseEvent& rMEvt )
     if ( IsDisabled() )
     {
         SetPointer( Pointer( PointerStyle::Arrow ) );
+        return;
+    }
+
+    if ( bDoneInitRef && rMEvt.IsLeft() && SC_MOD()->IsFormulaMode() )
+    {
+        if( !pTabView )
+            return;
+        bool bTmp;
+        SCCOLROW nHitNo = GetMousePos( rMEvt, bTmp );
+        SCTAB nTab = pTabView->GetViewData().GetTabNo();
+        if( !bVertical )
+            pTabView->UpdateRef( nHitNo, MAXROW, nTab );
+        else
+            pTabView->UpdateRef( MAXCOL, nHitNo, nTab );
+
         return;
     }
 
@@ -818,8 +864,7 @@ void ScHeaderControl::Command( const CommandEvent& rCEvt )
 
         // execute popup menu
 
-        ScTabViewShell* pViewSh = PTR_CAST( ScTabViewShell,
-                                            SfxViewShell::Current() );
+        ScTabViewShell* pViewSh = dynamic_cast< ScTabViewShell *>( SfxViewShell::Current() );
         if ( pViewSh )
         {
             if ( rCEvt.IsMouseEvent() )
@@ -857,8 +902,7 @@ void ScHeaderControl::Command( const CommandEvent& rCEvt )
                     pViewSh->MarkRange( aNewRange );
             }
 
-            ScResId aResId( bVertical ? RID_POPUP_ROWHEADER : RID_POPUP_COLHEADER );
-            pViewSh->GetDispatcher()->ExecutePopup( aResId );
+            pViewSh->GetDispatcher()->ExecutePopup( bVertical ? OUString( "rowheader" ) : OUString( "colheader" ) );
         }
     }
     else if ( nCmd == CommandEventId::StartDrag )
@@ -880,8 +924,8 @@ void ScHeaderControl::StopMarking()
 
     //  don't call pSelEngine->Reset, so selection across the parts of
     //  a split/frozen view is possible
-
-    ReleaseMouse();
+    if (IsMouseCaptured())
+        ReleaseMouse();
 }
 
 void ScHeaderControl::ShowDragHelp()

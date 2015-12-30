@@ -33,7 +33,6 @@
 // class CntContentTypeItem Implementation.
 
 
-TYPEINIT1_AUTOFACTORY( CntContentTypeItem, CntUnencodedStringItem );
 
 #define CONTENT_TYPE_NOT_INIT ( (INetContentType)-1 )
 
@@ -172,14 +171,14 @@ void CntContentTypeItem::SetValue( const INetContentType eType )
 }
 
 // virtual
-bool CntContentTypeItem::QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8) const
+bool CntContentTypeItem::QueryValue( css::uno::Any& rVal, sal_uInt8) const
 {
     rVal <<= OUString(GetValue());
     return true;
 }
 
 // virtual
-bool CntContentTypeItem::PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8)
+bool CntContentTypeItem::PutValue( const css::uno::Any& rVal, sal_uInt8)
 {
     OUString aValue;
     if ( rVal >>= aValue )

@@ -47,6 +47,7 @@
 #include "cellvalue.hxx"
 #include "attrib.hxx"
 #include "dpshttab.hxx"
+#include "tabvwsh.hxx"
 #include <scopetools.hxx>
 #include <columnspanset.hxx>
 #include <tokenstringcontext.hxx>
@@ -62,6 +63,7 @@
 #include <com/sun/star/text/textfield/Type.hpp>
 #include <com/sun/star/chart2/XChartDocument.hpp>
 #include <com/sun/star/chart2/data/XDataReceiver.hpp>
+#include <com/sun/star/frame/Desktop.hpp>
 
 #include "helper/qahelper.hxx"
 #include "helper/shared_test_impl.hxx"
@@ -75,13 +77,14 @@ public:
 
     ScFiltersTest();
 
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
     void testTdf64229();
     void testTdf36933();
     void testTdf43700();
     void testTdf43534();
+    void testTdf91979();
     // void testTdf40110();
 
     CPPUNIT_TEST_SUITE(ScFiltersTest);
@@ -89,6 +92,7 @@ public:
     CPPUNIT_TEST(testTdf36933);
     CPPUNIT_TEST(testTdf43700);
     CPPUNIT_TEST(testTdf43534);
+    CPPUNIT_TEST(testTdf91979);
     // CPPUNIT_TEST(testTdf40110);
     CPPUNIT_TEST_SUITE_END();
 private:
@@ -97,7 +101,7 @@ private:
 
 void ScFiltersTest::testTdf64229()
 {
-    ScDocShellRef xDocSh = loadDoc("fdo64229b.", ODS);
+    ScDocShellRef xDocSh = loadDoc("fdo64229b.", FORMAT_ODS);
 
     xDocSh->DoHardRecalc(true);
 
@@ -107,7 +111,7 @@ void ScFiltersTest::testTdf64229()
 
     //test hard recalc: document has an incorrect cached formula result
     //hard recalc should have updated to the correct result
-    createCSVPath(OUString("fdo64229b."), aCSVFileName);
+    createCSVPath("fdo64229b.", aCSVFileName);
     testFile(aCSVFileName, rDoc, 0);
 
     xDocSh->DoClose();
@@ -115,7 +119,7 @@ void ScFiltersTest::testTdf64229()
 
 void ScFiltersTest::testTdf36933()
 {
-    ScDocShellRef xDocSh = loadDoc("fdo36933test.", ODS);
+    ScDocShellRef xDocSh = loadDoc("fdo36933test.", FORMAT_ODS);
 
     xDocSh->DoHardRecalc(true);
 
@@ -125,7 +129,7 @@ void ScFiltersTest::testTdf36933()
 
     //test hard recalc: document has an incorrect cached formula result
     //hard recalc should have updated to the correct result
-    createCSVPath(OUString("fdo36933test."), aCSVFileName);
+    createCSVPath("fdo36933test.", aCSVFileName);
     testFile(aCSVFileName, rDoc, 0);
 
     xDocSh->DoClose();
@@ -133,7 +137,7 @@ void ScFiltersTest::testTdf36933()
 
 void ScFiltersTest::testTdf43700()
 {
-    ScDocShellRef xDocSh = loadDoc("fdo43700test.", ODS);
+    ScDocShellRef xDocSh = loadDoc("fdo43700test.", FORMAT_ODS);
 
     xDocSh->DoHardRecalc(true);
 
@@ -143,7 +147,7 @@ void ScFiltersTest::testTdf43700()
 
     //test hard recalc: document has an incorrect cached formula result
     //hard recalc should have updated to the correct result
-    createCSVPath(OUString("fdo43700test."), aCSVFileName);
+    createCSVPath("fdo43700test.", aCSVFileName);
     testFile(aCSVFileName, rDoc, 0);
 
     xDocSh->DoClose();
@@ -151,7 +155,7 @@ void ScFiltersTest::testTdf43700()
 
 void ScFiltersTest::testTdf43534()
 {
-    ScDocShellRef xDocSh = loadDoc("fdo43534test.", ODS);
+    ScDocShellRef xDocSh = loadDoc("fdo43534test.", FORMAT_ODS);
 
     xDocSh->DoHardRecalc(true);
 
@@ -161,8 +165,47 @@ void ScFiltersTest::testTdf43534()
 
     //test hard recalc: document has an incorrect cached formula result
     //hard recalc should have updated to the correct result
-    createCSVPath(OUString("fdo43534test."), aCSVFileName);
+    createCSVPath("fdo43534test.", aCSVFileName);
     // testFile(aCSVFileName, rDoc, 0);
+
+    xDocSh->DoClose();
+}
+
+void ScFiltersTest::testTdf91979()
+{
+    uno::Reference< frame::XDesktop2 > xDesktop = frame::Desktop::create(::comphelper::getProcessComponentContext());
+    CPPUNIT_ASSERT(xDesktop.is());
+
+    Sequence < beans::PropertyValue > args(1);
+    args[0].Name = "Hidden";
+    args[0].Value <<= sal_True;
+
+    uno::Reference< lang::XComponent > xComponent = xDesktop->loadComponentFromURL(
+        "private:factory/scalc",
+        "_blank",
+        0,
+        args);
+    CPPUNIT_ASSERT(xComponent.is());
+
+    // Get the document model
+    SfxObjectShell* pFoundShell = SfxObjectShell::GetShellFromComponent(xComponent);
+    CPPUNIT_ASSERT_MESSAGE("Failed to access document shell", pFoundShell);
+
+    ScDocShellRef xDocSh = dynamic_cast<ScDocShell*>(pFoundShell);
+    CPPUNIT_ASSERT(xDocSh != nullptr);
+
+    // Get the document controller
+    ScTabViewShell* pViewShell = xDocSh->GetBestViewShell(false);
+    CPPUNIT_ASSERT(pViewShell != nullptr);
+    auto& aViewData = pViewShell->GetViewData();
+    auto* pDoc = aViewData.GetDocument();
+
+    // Check coordinates of a distant cell
+    Point aPos = aViewData.GetScrPos(MAXCOL - 1, 10000, SC_SPLIT_TOPLEFT, true);
+    int nColWidth = ScViewData::ToPixel(pDoc->GetColWidth(0, 0), aViewData.GetPPTX());
+    int nRowHeight = ScViewData::ToPixel(pDoc->GetRowHeight(0, 0), aViewData.GetPPTY());
+    CPPUNIT_ASSERT(aPos.getX() == (MAXCOL - 1) * nColWidth);
+    CPPUNIT_ASSERT(aPos.getY() == 10000 * nRowHeight);
 
     xDocSh->DoClose();
 }
@@ -170,7 +213,7 @@ void ScFiltersTest::testTdf43534()
 /*
 void ScFiltersTest::testTdf40110()
 {
-    ScDocShellRef xDocSh = loadDoc("fdo40110test.", ODS);
+    ScDocShellRef xDocSh = loadDoc("fdo40110test.", FORMAT_ODS);
 
     CPPUNIT_ASSERT_MESSAGE("Failed to load fdo40110test.*", xDocSh.Is());
     xDocSh->DoHardRecalc(true);

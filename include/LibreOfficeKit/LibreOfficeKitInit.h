@@ -17,7 +17,9 @@ extern "C"
 {
 #endif
 
-#if defined(__linux__) || defined (__FreeBSD_kernel__) || defined(_AIX) || defined(_WIN32) || defined(__APPLE__)
+#if defined(__linux__) || defined (__FreeBSD_kernel__) || defined(_AIX) ||\
+    defined(_WIN32) || defined(__APPLE__) || defined (__NetBSD__) ||\
+    defined (__sun)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,7 +76,8 @@ extern "C"
 
 #else
 
-    #include <windows.h>
+    #include "prewin.h"
+    #include "postwin.h"
     #define TARGET_LIB        "sofficeapp" ".dll"
     #define TARGET_MERGED_LIB "mergedlo" ".dll"
     #define SEPARATOR         '\\'
@@ -94,7 +97,7 @@ extern "C"
 
     void *lok_dlsym(void *Hnd, const char *pName)
     {
-        return GetProcAddress((HINSTANCE) Hnd, pName);
+        return reinterpret_cast<void *>(GetProcAddress((HINSTANCE) Hnd, pName));
     }
 
     int lok_dlclose(void *Hnd)
@@ -151,6 +154,13 @@ static void *lok_dlopen( const char *install_path, char ** _imp_lib )
 
     if (!install_path)
         return NULL;
+
+    struct stat dir_st;
+    if (stat(install_path, &dir_st) != 0)
+    {
+        fprintf(stderr, "installation path \"%s\" does not exist\n", install_path);
+        return NULL;
+    }
 
     // allocate large enough buffer
     partial_length = strlen(install_path);
@@ -217,6 +227,8 @@ static LibreOfficeKit *lok_init_2( const char *install_path,  const char *user_p
     LokHookFunction2 *pSym2;
 
     dlhandle = lok_dlopen(install_path, &imp_lib);
+    if (!dlhandle)
+        return NULL;
 
     pSym2 = (LokHookFunction2 *) lok_dlsym(dlhandle, "libreofficekit_hook_2");
     if (!pSym2)
@@ -250,7 +262,7 @@ static LibreOfficeKit *lok_init_2( const char *install_path,  const char *user_p
 }
 
 static
-#ifdef __GNUC__
+#if defined __GNUC__ || defined __clang__
 __attribute__((used))
 #endif
 LibreOfficeKit *lok_init( const char *install_path )

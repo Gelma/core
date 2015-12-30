@@ -24,7 +24,7 @@
 #include <vcl/bitmapex.hxx>
 #include <vcl/animate.hxx>
 #include <vcl/gdimtf.hxx>
-#include <vcl/graph.h>
+#include <vcl/graph.hxx>
 #include <vcl/svgdata.hxx>
 
 // - ImpSwapInfo -
@@ -114,8 +114,8 @@ private:
                                             const Point& rDestPt,
                                             const Size& rDestSize,
                                             long nExtraData = 0,
-                                            OutputDevice* pFirstFrameOutDev = NULL );
-    void                ImplStopAnimation( OutputDevice* pOutputDevice = NULL,
+                                            OutputDevice* pFirstFrameOutDev = nullptr );
+    void                ImplStopAnimation( OutputDevice* pOutputDevice = nullptr,
                                            long nExtraData = 0 );
 
     void                ImplSetAnimationNotifyHdl( const Link<Animation*,void>& rLink );

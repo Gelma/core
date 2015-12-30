@@ -53,7 +53,7 @@ CompressGraphicsDialog::CompressGraphicsDialog( vcl::Window* pParent, SdrGrafObj
 
 CompressGraphicsDialog::CompressGraphicsDialog( vcl::Window* pParent, Graphic& rGraphic, Size rViewSize100mm, Rectangle& rCropRectangle, SfxBindings& rBindings ) :
     ModalDialog       ( pParent, "CompressGraphicDialog", "svx/ui/compressgraphicdialog.ui" ),
-    m_pGraphicObj     ( NULL ),
+    m_pGraphicObj     ( nullptr ),
     m_aGraphic        ( rGraphic ),
     m_aViewSize100mm  ( rViewSize100mm ),
     m_aCropRectangle  ( rCropRectangle ),
@@ -108,7 +108,7 @@ void CompressGraphicsDialog::Initialize()
     get(m_pBtnCalculate,        "calculate");
     get(m_pInterpolationCombo,  "interpolation-method-combo");
 
-    m_pInterpolationCombo->SelectEntry( OUString("Lanczos") );
+    m_pInterpolationCombo->SelectEntry( "Lanczos" );
 
     m_pMFNewWidth->SetModifyHdl( LINK( this, CompressGraphicsDialog, NewWidthModifiedHdl ));
     m_pMFNewHeight->SetModifyHdl( LINK( this, CompressGraphicsDialog, NewHeightModifiedHdl ));
@@ -283,40 +283,34 @@ void CompressGraphicsDialog::Compress(SvStream& aStream)
     OUString aGraphicFormatName = m_pLosslessRB->IsChecked() ? OUString( "png" ) : OUString( "jpg" );
 
     sal_uInt16 nFilterFormat = rFilter.GetExportFormatNumberForShortName( aGraphicFormatName );
-    rFilter.ExportGraphic( aScaledGraphic, OUString( "none" ), aStream, nFilterFormat, &aFilterData );
+    rFilter.ExportGraphic( aScaledGraphic, "none", aStream, nFilterFormat, &aFilterData );
 }
 
-IMPL_LINK_NOARG( CompressGraphicsDialog, NewWidthModifiedHdl )
+IMPL_LINK_NOARG_TYPED( CompressGraphicsDialog, NewWidthModifiedHdl, Edit&, void )
 {
     m_dResolution =  m_pMFNewWidth->GetValue() / GetViewWidthInch();
 
     UpdateNewHeightMF();
     UpdateResolutionLB();
     Update();
-
-    return 0L;
 }
 
-IMPL_LINK_NOARG( CompressGraphicsDialog, NewHeightModifiedHdl )
+IMPL_LINK_NOARG_TYPED( CompressGraphicsDialog, NewHeightModifiedHdl, Edit&, void )
 {
     m_dResolution =  m_pMFNewHeight->GetValue() / GetViewHeightInch();
 
     UpdateNewWidthMF();
     UpdateResolutionLB();
     Update();
-
-    return 0L;
 }
 
-IMPL_LINK_NOARG( CompressGraphicsDialog, ResolutionModifiedHdl )
+IMPL_LINK_NOARG_TYPED( CompressGraphicsDialog, ResolutionModifiedHdl, Edit&, void )
 {
     m_dResolution = (double) m_pResolutionLB->GetText().toInt32();
 
     UpdateNewWidthMF();
     UpdateNewHeightMF();
     Update();
-
-    return 0L;
 }
 
 IMPL_LINK_NOARG_TYPED( CompressGraphicsDialog, ToggleCompressionRB, RadioButton&, void )
@@ -420,7 +414,7 @@ SdrGrafObj* CompressGraphicsDialog::GetCompressedSdrGrafObj()
 
         return pNewObject;
     }
-    return NULL;
+    return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

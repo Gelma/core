@@ -77,8 +77,8 @@ void SwView::ExecDraw(SfxRequest& rReq)
 {
     const SfxItemSet *pArgs = rReq.GetArgs();
     const SfxPoolItem* pItem;
-    const SfxAllEnumItem* pEItem = 0;
-    const SfxStringItem* pStringItem = 0;
+    const SfxAllEnumItem* pEItem = nullptr;
+    const SfxStringItem* pStringItem = nullptr;
     SdrView *pSdrView = m_pWrtShell->GetDrawView();
     bool bDeselect = false;
 
@@ -115,7 +115,7 @@ void SwView::ExecDraw(SfxRequest& rReq)
     }
     else if (nSlotId == SID_FM_CREATE_CONTROL)
     {
-        SFX_REQUEST_ARG( rReq, pIdentifierItem, SfxUInt16Item, SID_FM_CONTROL_IDENTIFIER, false );
+        const SfxUInt16Item* pIdentifierItem = rReq.GetArg<SfxUInt16Item>(SID_FM_CONTROL_IDENTIFIER);
         if( pIdentifierItem )
         {
             sal_uInt16 nNewId = pIdentifierItem->GetValue();
@@ -128,10 +128,10 @@ void SwView::ExecDraw(SfxRequest& rReq)
     }
     else if( nSlotId == SID_FM_CREATE_FIELDCONTROL)
     {
-        FmFormView* pFormView = PTR_CAST( FmFormView, pSdrView );
+        FmFormView* pFormView = dynamic_cast<FmFormView*>( pSdrView  );
         if ( pFormView )
         {
-            SFX_REQUEST_ARG( rReq, pDescriptorItem, SfxUnoAnyItem, SID_FM_DATACCESS_DESCRIPTOR, false );
+            const SfxUnoAnyItem* pDescriptorItem = rReq.GetArg<SfxUnoAnyItem>(SID_FM_DATACCESS_DESCRIPTOR);
             OSL_ENSURE( pDescriptorItem, "SwView::ExecDraw(SID_FM_CREATE_FIELDCONTROL): invalid request args!" );
             if( pDescriptorItem )
             {
@@ -176,7 +176,7 @@ void SwView::ExecDraw(SfxRequest& rReq)
         pSdrView = m_pWrtShell->GetDrawView();
         if ( pSdrView )
         {
-            SdrObject* pObj = NULL;
+            SdrObject* pObj = nullptr;
             ScopedVclPtrInstance< svx::FontWorkGalleryDialog > aDlg( pSdrView, pWin, nSlotId );
             aDlg->SetSdrObjectRef( &pObj, pSdrView->GetModel() );
             aDlg->Execute();
@@ -237,11 +237,11 @@ void SwView::ExecDraw(SfxRequest& rReq)
         if (GetDrawFuncPtr())
         {
             GetDrawFuncPtr()->Deactivate();
-            SetDrawFuncPtr(NULL);
+            SetDrawFuncPtr(nullptr);
         }
 
-        if (m_pWrtShell->IsObjSelected() && !m_pWrtShell->IsSelFrmMode())
-            m_pWrtShell->EnterSelFrmMode(NULL);
+        if (m_pWrtShell->IsObjSelected() && !m_pWrtShell->IsSelFrameMode())
+            m_pWrtShell->EnterSelFrameMode();
         LeaveDrawCreate();
 
         GetViewFrame()->GetBindings().Invalidate(SID_INSERT_DRAW);
@@ -252,10 +252,10 @@ void SwView::ExecDraw(SfxRequest& rReq)
 
     LeaveDrawCreate();
 
-    if (m_pWrtShell->IsFrmSelected())
+    if (m_pWrtShell->IsFrameSelected())
         m_pWrtShell->EnterStdMode();  // because bug #45639
 
-    SwDrawBase* pFuncPtr = NULL;
+    SwDrawBase* pFuncPtr = nullptr;
 
     switch (nSlotId)
     {
@@ -297,7 +297,7 @@ void SwView::ExecDraw(SfxRequest& rReq)
 
         case SID_FM_CREATE_CONTROL:
         {
-            SFX_REQUEST_ARG( rReq, pIdentifierItem, SfxUInt16Item, SID_FM_CONTROL_IDENTIFIER, false );
+            const SfxUInt16Item* pIdentifierItem = rReq.GetArg<SfxUInt16Item>(SID_FM_CONTROL_IDENTIFIER);
             if( pIdentifierItem )
                 nSlotId = pIdentifierItem->GetValue();
             pFuncPtr = new ConstFormControl(m_pWrtShell, m_pEditWin, this);
@@ -347,7 +347,7 @@ void SwView::ExecDraw(SfxRequest& rReq)
         if (GetDrawFuncPtr())
         {
             GetDrawFuncPtr()->Deactivate();
-            SetDrawFuncPtr(NULL);
+            SetDrawFuncPtr(nullptr);
         }
 
         SetDrawFuncPtr(pFuncPtr);
@@ -365,7 +365,7 @@ void SwView::ExecDraw(SfxRequest& rReq)
             {
                 pFuncPtr->CreateDefaultObject();
                 pFuncPtr->Deactivate();
-                SetDrawFuncPtr(NULL);
+                SetDrawFuncPtr(nullptr);
                 LeaveDrawCreate();
                 m_pWrtShell->EnterStdMode();
                 SdrView *pTmpSdrView = m_pWrtShell->GetDrawView();
@@ -383,8 +383,8 @@ void SwView::ExecDraw(SfxRequest& rReq)
     }
     else
     {
-        if (m_pWrtShell->IsObjSelected() && !m_pWrtShell->IsSelFrmMode())
-            m_pWrtShell->EnterSelFrmMode(NULL);
+        if (m_pWrtShell->IsObjSelected() && !m_pWrtShell->IsSelFrameMode())
+            m_pWrtShell->EnterSelFrameMode();
     }
 
     if(bEndTextEdit && pSdrView && pSdrView->IsTextEdit())
@@ -404,19 +404,19 @@ void SwView::ExitDraw()
         // the shell may be invalid at close/reload/SwitchToViewShell
         SfxDispatcher* pDispatch = GetViewFrame()->GetDispatcher();
         sal_uInt16 nIdx = 0;
-        SfxShell* pTest = 0;
+        SfxShell* pTest = nullptr;
         do
         {
             pTest = pDispatch->GetShell(nIdx++);
         }
         while( pTest && pTest != this && pTest != m_pShell);
         if(pTest == m_pShell &&
-            // don't call LeaveSelFrmMode() etc. for the below,
+            // don't call LeaveSelFrameMode() etc. for the below,
             // because objects may still be selected:
-            !m_pShell->ISA(SwDrawBaseShell) &&
-            !m_pShell->ISA(SwBezierShell) &&
-            !m_pShell->ISA(svx::ExtrusionBar) &&
-            !m_pShell->ISA(svx::FontworkBar))
+            dynamic_cast< const SwDrawBaseShell *>( m_pShell ) ==  nullptr &&
+            dynamic_cast< const SwBezierShell *>( m_pShell ) ==  nullptr &&
+            dynamic_cast< const svx::ExtrusionBar *>( m_pShell ) ==  nullptr &&
+            dynamic_cast< const svx::FontworkBar *>( m_pShell ) ==  nullptr)
         {
             SdrView *pSdrView = m_pWrtShell->GetDrawView();
 
@@ -429,11 +429,11 @@ void SwView::ExitDraw()
 
             if (GetDrawFuncPtr())
             {
-                if (m_pWrtShell->IsSelFrmMode())
-                    m_pWrtShell->LeaveSelFrmMode();
+                if (m_pWrtShell->IsSelFrameMode())
+                    m_pWrtShell->LeaveSelFrameMode();
                 GetDrawFuncPtr()->Deactivate();
 
-                SetDrawFuncPtr(NULL);
+                SetDrawFuncPtr(nullptr);
                 LeaveDrawCreate();
 
                 GetViewFrame()->GetBindings().Invalidate(SID_INSERT_DRAW);
@@ -487,15 +487,15 @@ bool SwView::EnterDrawTextMode(const Point& aDocPos)
         pSdrView->PickObj( aDocPos, pSdrView->getHitTolLog(), pObj, pPV, SdrSearchOptions::PICKTEXTEDIT ) &&
 
         // To allow SwDrawVirtObj text objects to be activated, allow their type, too.
-        ( pObj->ISA( SdrTextObj ) ||
-          ( pObj->ISA(SwDrawVirtObj) &&
-            static_cast<SwDrawVirtObj*>(pObj)->GetReferencedObj().ISA(SdrTextObj) ) ) &&
+        ( dynamic_cast< const SdrTextObj *>( pObj ) !=  nullptr ||
+          ( dynamic_cast< const SwDrawVirtObj *>( pObj ) !=  nullptr &&
+            dynamic_cast< const SdrTextObj *>(&static_cast<SwDrawVirtObj*>(pObj)->GetReferencedObj() ) != nullptr ) ) &&
 
         m_pWrtShell->IsSelObjProtected(FlyProtectFlags::Content) == FlyProtectFlags::NONE )
     {
         // Refuse to edit editeng text of the shape if it has textbox attached.
         if (!lcl_isTextBox(pObj))
-            bReturn = BeginTextEdit( pObj, pPV, m_pEditWin, false );
+            bReturn = BeginTextEdit( pObj, pPV, m_pEditWin );
     }
 
     pSdrView->SetHitTolerancePixel( nOld );
@@ -567,7 +567,7 @@ bool SwView::BeginTextEdit(SdrObject* pObj, SdrPageView* pPV, vcl::Window* pWin,
     // OutlinerView.
     Point aNewTextEditOffset(0, 0);
 
-    if(pObj->ISA(SwDrawVirtObj))
+    if(dynamic_cast< const SwDrawVirtObj *>( pObj ) !=  nullptr)
     {
         SwDrawVirtObj* pVirtObj = static_cast<SwDrawVirtObj*>(pObj);
         pToBeActivated = &const_cast<SdrObject&>(pVirtObj->GetReferencedObj());
@@ -577,7 +577,7 @@ bool SwView::BeginTextEdit(SdrObject* pObj, SdrPageView* pPV, vcl::Window* pWin,
     // set in each case, thus it will be correct for all objects
     static_cast<SdrTextObj*>(pToBeActivated)->SetTextEditOffset(aNewTextEditOffset);
 
-    bool bRet(pSdrView->SdrBeginTextEdit( pToBeActivated, pPV, pWin, true, pOutliner, 0, false, false, false ));
+    bool bRet(pSdrView->SdrBeginTextEdit( pToBeActivated, pPV, pWin, true, pOutliner, nullptr, false, false, false ));
 
     // #i7672#
     // Since SdrBeginTextEdit actually creates the OutlinerView and thus also
@@ -656,7 +656,7 @@ void SwView::SetSelDrawSlot()
 
 bool SwView::AreOnlyFormsSelected() const
 {
-    if ( GetWrtShell().IsFrmSelected() )
+    if ( GetWrtShell().IsFrameSelected() )
         return false;
 
     bool bForm = true;
@@ -729,6 +729,8 @@ IMPL_LINK_TYPED(SwView, OnlineSpellCallback, SpellCallbackInfo&, rInfo, void)
 {
     if (rInfo.nCommand == SpellCallbackCommand::STARTSPELLDLG)
         GetViewFrame()->GetDispatcher()->Execute( FN_SPELL_GRAMMAR_DIALOG, SfxCallMode::ASYNCHRON);
+    else if (rInfo.nCommand == SpellCallbackCommand::AUTOCORRECT_OPTIONS)
+        GetViewFrame()->GetDispatcher()->Execute( SID_AUTO_CORRECT_DLG, SfxCallMode::ASYNCHRON );
 }
 
 bool SwView::ExecDrwTextSpellPopup(const Point& rPt)

@@ -64,18 +64,18 @@ public:
         throw(
             css::container::NoSuchElementException,
             css::lang::IllegalArgumentException,
-            css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            css::uno::RuntimeException, std::exception ) override;
 
     OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return OUString("org.apache.openoffice.comp.sw.sidebar.SwPanelFactory"); }
 
     sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return cppu::supportsService(this, ServiceName); }
 
     css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return css::uno::Sequence<OUString>{"com.sun.star.ui.UIElementFactory"}; }
 };
 
@@ -105,18 +105,18 @@ Reference<ui::XUIElement> SAL_CALL SwPanelFactory::createUIElement (
     SfxBindings* pBindings = reinterpret_cast<SfxBindings*>(nBindingsValue);
 
     vcl::Window* pParentWindow = VCLUnoHelper::GetWindow(xParentWindow);
-    if ( ! xParentWindow.is() || pParentWindow==NULL)
+    if ( ! xParentWindow.is() || pParentWindow==nullptr)
         throw RuntimeException(
             "PanelFactory::createUIElement called without ParentWindow",
-            NULL);
+            nullptr);
     if ( ! xFrame.is())
         throw RuntimeException(
             "PanelFactory::createUIElement called without Frame",
-            NULL);
-    if (pBindings == NULL)
+            nullptr);
+    if (pBindings == nullptr)
         throw RuntimeException(
             "PanelFactory::createUIElement called without SfxBindings",
-            NULL);
+            nullptr);
 
     if (rsResourceURL.endsWith("/PagePropertyPanel"))
     {
@@ -156,13 +156,13 @@ Reference<ui::XUIElement> SAL_CALL SwPanelFactory::createUIElement (
     }
     else if (rsResourceURL.endsWith("/StylePresetsPanel"))
     {
-        VclPtr<vcl::Window> pPanel = sw::sidebar::StylePresetsPanel::Create(pParentWindow, xFrame, pBindings);
+        VclPtr<vcl::Window> pPanel = sw::sidebar::StylePresetsPanel::Create(pParentWindow, xFrame);
         xElement = sfx2::sidebar::SidebarPanelBase::Create(
                         rsResourceURL, xFrame, pPanel, ui::LayoutSize(-1,-1,-1));
     }
     else if (rsResourceURL.endsWith("/ThemePanel"))
     {
-        VclPtr<vcl::Window> pPanel = sw::sidebar::ThemePanel::Create(pParentWindow, xFrame, pBindings);
+        VclPtr<vcl::Window> pPanel = sw::sidebar::ThemePanel::Create(pParentWindow, xFrame);
         xElement = sfx2::sidebar::SidebarPanelBase::Create(
                         rsResourceURL, xFrame, pPanel, ui::LayoutSize(-1,-1,-1));
     }

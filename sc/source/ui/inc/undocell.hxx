@@ -45,19 +45,18 @@ class CellValues;
 class ScUndoCursorAttr: public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoCursorAttr( ScDocShell* pNewDocShell,
                             SCCOL nNewCol, SCROW nNewRow, SCTAB nNewTab,
                             const ScPatternAttr* pOldPat, const ScPatternAttr* pNewPat,
                             const ScPatternAttr* pApplyPat, bool bAutomatic );
     virtual         ~ScUndoCursorAttr();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
     /** once the objects are passed to this class, their life-cycle is
         managed by this class; the calling function must pass new'ed
@@ -81,7 +80,6 @@ private:
 class ScUndoEnterData: public ScSimpleUndo
 {
 public:
-    TYPEINFO_OVERRIDE();
 
     struct Value
     {
@@ -97,16 +95,16 @@ public:
 
     ScUndoEnterData(
         ScDocShell* pNewDocShell, const ScAddress& rPos,
-        ValuesType& rOldValues, const OUString& rNewStr, EditTextObject* pObj = NULL );
+        ValuesType& rOldValues, const OUString& rNewStr, EditTextObject* pObj = nullptr );
 
     virtual ~ScUndoEnterData();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     ValuesType maOldValues;
@@ -123,19 +121,18 @@ private:
 class ScUndoEnterValue: public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
     ScUndoEnterValue(
         ScDocShell* pNewDocShell, const ScAddress& rNewPos,
         const ScCellValue& rUndoCell, double nVal );
 
     virtual         ~ScUndoEnterValue();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     ScAddress       aPos;
@@ -149,16 +146,15 @@ private:
 class ScUndoSetCell : public ScSimpleUndo
 {
 public:
-    TYPEINFO_OVERRIDE();
     ScUndoSetCell( ScDocShell* pDocSh, const ScAddress& rPos, const ScCellValue& rOldVal, const ScCellValue& rNewVal );
 
     virtual ~ScUndoSetCell();
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
-    virtual void Repeat( SfxRepeatTarget& rTarget ) SAL_OVERRIDE;
-    virtual bool CanRepeat( SfxRepeatTarget& rTarget ) const SAL_OVERRIDE;
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
+    virtual void Repeat( SfxRepeatTarget& rTarget ) override;
+    virtual bool CanRepeat( SfxRepeatTarget& rTarget ) const override;
+    virtual OUString GetComment() const override;
 
 private:
     void SetChangeTrack();
@@ -174,18 +170,17 @@ private:
 class ScUndoPageBreak: public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoPageBreak( ScDocShell* pNewDocShell,
                             SCCOL nNewCol, SCROW nNewRow, SCTAB nNewTab,
                             bool bNewColumn, bool bNewInsert );
     virtual         ~ScUndoPageBreak();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     SCCOL           nCol;
@@ -200,17 +195,16 @@ private:
 class ScUndoPrintZoom: public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoPrintZoom( ScDocShell* pNewDocShell, SCTAB nT,
                                     sal_uInt16 nOS, sal_uInt16 nOP, sal_uInt16 nNS, sal_uInt16 nNP );
     virtual         ~ScUndoPrintZoom();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     SCTAB           nTab;
@@ -225,18 +219,17 @@ private:
 class ScUndoThesaurus: public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
     ScUndoThesaurus( ScDocShell* pNewDocShell,
                      SCCOL nNewCol, SCROW nNewRow, SCTAB nNewTab,
                      const ScCellValue& rOldText, const ScCellValue& rNewText );
     virtual         ~ScUndoThesaurus();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     SCCOL           nCol;
@@ -255,7 +248,6 @@ private:
 class ScUndoReplaceNote : public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
 
     /** Constructs an undo action for inserting or removing a cell note. */
                     ScUndoReplaceNote(
@@ -275,12 +267,12 @@ public:
 
     virtual         ~ScUndoReplaceNote();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat( SfxRepeatTarget& rTarget ) SAL_OVERRIDE;
-    virtual bool    CanRepeat( SfxRepeatTarget& rTarget ) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat( SfxRepeatTarget& rTarget ) override;
+    virtual bool    CanRepeat( SfxRepeatTarget& rTarget ) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     void            DoInsertNote( const ScNoteData& rNoteData );
@@ -297,16 +289,15 @@ private:
 class ScUndoShowHideNote : public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoShowHideNote( ScDocShell& rDocShell, const ScAddress& rPos, bool bShow );
     virtual         ~ScUndoShowHideNote();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat( SfxRepeatTarget& rTarget ) SAL_OVERRIDE;
-    virtual bool    CanRepeat( SfxRepeatTarget& rTarget ) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat( SfxRepeatTarget& rTarget ) override;
+    virtual bool    CanRepeat( SfxRepeatTarget& rTarget ) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     ScAddress       maPos;
@@ -316,18 +307,17 @@ private:
 class ScUndoDetective: public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScUndoDetective( ScDocShell* pNewDocShell,
                                     SdrUndoAction* pDraw, const ScDetOpData* pOperation,
-                                    ScDetOpList* pUndoList = NULL );
+                                    ScDetOpList* pUndoList = nullptr );
     virtual         ~ScUndoDetective();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     bool            bIsDelete;
@@ -340,18 +330,17 @@ private:
 class ScUndoRangeNames: public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     //use nTab = -1 for global range names
                     ScUndoRangeNames( ScDocShell* pNewDocShell,
                                         ScRangeName* pOld, ScRangeName* pNew , SCTAB nTab = -1);
     virtual         ~ScUndoRangeNames();
 
-    virtual void    Undo() SAL_OVERRIDE;
-    virtual void    Redo() SAL_OVERRIDE;
-    virtual void    Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
+    virtual void    Undo() override;
+    virtual void    Redo() override;
+    virtual void    Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool    CanRepeat(SfxRepeatTarget& rTarget) const override;
 
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual OUString GetComment() const override;
 
 private:
     ScRangeName*    pOldRanges;
@@ -375,11 +364,11 @@ public:
     UndoSetCells( ScDocShell* pDocSh, const ScAddress& rTopPos );
     virtual ~UndoSetCells();
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
-    virtual bool CanRepeat( SfxRepeatTarget& ) const SAL_OVERRIDE;
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual bool CanRepeat( SfxRepeatTarget& ) const override;
+    virtual OUString GetComment() const override;
 
     CellValues& GetOldValues() { return maOldValues;}
     void SetNewValues( const std::vector<double>& rVals );

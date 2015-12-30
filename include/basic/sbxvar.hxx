@@ -56,7 +56,6 @@ struct SbxValues
         sal_Int16*      pInteger;
         sal_uInt32*     pULong;
         sal_Int32*      pLong;
-        unsigned int*   pUInt;
         int*            pInt;
         sal_uInt64*     puInt64;
         sal_Int64*      pnInt64;
@@ -68,7 +67,7 @@ struct SbxValues
     };
     SbxDataType  eType;
 
-    SbxValues(): pData( NULL ), eType(SbxEMPTY) {}
+    SbxValues(): pData( nullptr ), eType(SbxEMPTY) {}
     SbxValues( SbxDataType e ): eType(e) {}
     SbxValues( char _nChar ): nChar( _nChar ), eType(SbxCHAR) {}
     SbxValues( sal_uInt8 _nByte ): nByte( _nByte ), eType(SbxBYTE) {}
@@ -99,17 +98,16 @@ protected:
 
     virtual void Broadcast( sal_uInt32 );      // Broadcast-Call
     virtual ~SbxValue();
-    virtual bool LoadData( SvStream&, sal_uInt16 ) SAL_OVERRIDE;
-    virtual bool StoreData( SvStream& ) const SAL_OVERRIDE;
+    virtual bool LoadData( SvStream&, sal_uInt16 ) override;
+    virtual bool StoreData( SvStream& ) const override;
 public:
     SBX_DECL_PERSIST_NODATA(SBXCR_SBX,SBXID_VALUE,1);
-    TYPEINFO_OVERRIDE();
     SbxValue();
-    SbxValue( SbxDataType, void* = NULL );
+    SbxValue( SbxDataType, void* = nullptr );
     SbxValue( const SbxValue& );
     SbxValue& operator=( const SbxValue& );
-    virtual void Clear() SAL_OVERRIDE;
-    virtual bool IsFixed() const SAL_OVERRIDE;
+    virtual void Clear() override;
+    virtual bool IsFixed() const override;
 
     bool IsInteger()    const { return GetType() == SbxINTEGER   ; }
     bool IsLong()       const { return GetType() == SbxLONG      ; }
@@ -125,8 +123,8 @@ public:
     bool IsNumericRTL() const;  // #41692 Interface for Basic
     bool ImpIsNumeric( bool bOnlyIntntl ) const;    // Implementation
 
-    virtual SbxClassType GetClass() const SAL_OVERRIDE;
-    virtual SbxDataType GetType() const SAL_OVERRIDE;
+    virtual SbxClassType GetClass() const override;
+    virtual SbxDataType GetType() const override;
     SbxDataType GetFullType() const { return aData.eType;}
     bool SetType( SbxDataType );
 
@@ -175,9 +173,9 @@ public:
     bool PutNull();
 
             // Special methods
-    bool PutDecimal( com::sun::star::bridge::oleautomation::Decimal& rAutomationDec );
+    bool PutDecimal( css::bridge::oleautomation::Decimal& rAutomationDec );
     bool PutDecimal( SbxDecimal* pDecimal ); // This function is needed for Windows build, don't remove
-    bool fillAutomationDecimal( com::sun::star::bridge::oleautomation::Decimal& rAutomationDec ) const;
+    bool fillAutomationDecimal( css::bridge::oleautomation::Decimal& rAutomationDec ) const;
     bool PutCurrency( const sal_Int64& );
             // Interface for CDbl in Basic
     static SbxError ScanNumIntnl( const OUString& rSrc, double& nVal, bool bSingle = false );
@@ -187,8 +185,8 @@ public:
     bool Convert( SbxDataType );
     bool Compute( SbxOperator, const SbxValue& );
     bool Compare( SbxOperator, const SbxValue& ) const;
-    bool Scan( const OUString&, sal_uInt16* = NULL );
-    void Format( OUString&, const OUString* = NULL ) const;
+    bool Scan( const OUString&, sal_uInt16* = nullptr );
+    void Format( OUString&, const OUString* = nullptr ) const;
 
     // The following operators are definied for easier handling.
     // TODO: Ensure error conditions (overflow, conversions)
@@ -288,13 +286,12 @@ protected:
     sal_uInt32 nUserData;           // User data for Call()
     SbxObject* pParent;             // Currently attached object
     virtual ~SbxVariable();
-    virtual bool LoadData( SvStream&, sal_uInt16 ) SAL_OVERRIDE;
-    virtual bool StoreData( SvStream& ) const SAL_OVERRIDE;
+    virtual bool LoadData( SvStream&, sal_uInt16 ) override;
+    virtual bool StoreData( SvStream& ) const override;
 public:
     SBX_DECL_PERSIST_NODATA(SBXCR_SBX,SBXID_VARIABLE,2);
-    TYPEINFO_OVERRIDE();
     SbxVariable();
-    SbxVariable( SbxDataType, void* = NULL );
+    SbxVariable( SbxDataType, void* = nullptr );
     SbxVariable( const SbxVariable& );
     SbxVariable& operator=( const SbxVariable& );
 
@@ -304,13 +301,13 @@ public:
     const OUString& GetName( SbxNameType = SbxNAME_NONE ) const;
     sal_uInt16 GetHashCode() const          { return nHash; }
 
-    virtual void SetModified( bool ) SAL_OVERRIDE;
+    virtual void SetModified( bool ) override;
 
     sal_uInt32 GetUserData() const { return nUserData; }
     void SetUserData( sal_uInt32 n ) { nUserData = n; }
 
-    virtual SbxDataType  GetType()  const SAL_OVERRIDE;
-    virtual SbxClassType GetClass() const SAL_OVERRIDE;
+    virtual SbxDataType  GetType()  const override;
+    virtual SbxClassType GetClass() const override;
 
     // Parameter-Interface
     virtual SbxInfo* GetInfo();
@@ -321,8 +318,8 @@ public:
     // Sfx-Broadcasting-Support:
     // Due to data reduction and better DLL-hierarchy currently via casting
     SfxBroadcaster& GetBroadcaster();
-    bool IsBroadcaster() const { return pCst != NULL; }
-    virtual void Broadcast( sal_uInt32 nHintId ) SAL_OVERRIDE;
+    bool IsBroadcaster() const { return pCst != nullptr; }
+    virtual void Broadcast( sal_uInt32 nHintId ) override;
 
     inline const SbxObject* GetParent() const { return pParent; }
     SbxObject* GetParent() { return pParent;}
@@ -330,7 +327,7 @@ public:
 
     const OUString& GetDeclareClassName();
     void SetDeclareClassName( const OUString& );
-    void SetComListener( ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > xComListener,
+    void SetComListener( css::uno::Reference< css::uno::XInterface > xComListener,
                          StarBASIC* pParentBasic );
     void ClearComListener();
 

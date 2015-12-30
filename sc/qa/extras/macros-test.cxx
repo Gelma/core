@@ -53,9 +53,6 @@ public:
 #endif
 
     CPPUNIT_TEST_SUITE_END();
-
-private:
-    uno::Reference<uno::XInterface> m_xCalcComponent;
 };
 
 #if !defined MACOSX
@@ -71,7 +68,7 @@ void ScMacrosTest::testMSP()
     const OUString aFileNameBase("MasterScriptProviderProblem.ods");
     OUString aFileName;
     createFileURL(aFileNameBase, aFileName);
-    uno::Reference< com::sun::star::lang::XComponent > xComponent = loadFromDesktop(aFileName, "com.sun.star.sheet.SpreadsheetDocument");
+    uno::Reference< css::lang::XComponent > xComponent = loadFromDesktop(aFileName, "com.sun.star.sheet.SpreadsheetDocument");
 
     CPPUNIT_ASSERT_MESSAGE("Failed to load MasterScriptProviderProblem.ods", xComponent.is());
 
@@ -84,7 +81,7 @@ void ScMacrosTest::testMSP()
 
     CPPUNIT_ASSERT_MESSAGE("Failed to access document shell", pFoundShell);
     ScDocShell* xDocSh = dynamic_cast<ScDocShell*>(pFoundShell);
-    CPPUNIT_ASSERT(xDocSh != NULL);
+    CPPUNIT_ASSERT(xDocSh != nullptr);
 
     SfxObjectShell::CallXScript(
         xComponent,
@@ -103,7 +100,7 @@ void ScMacrosTest::testPasswordProtectedStarBasic()
     const OUString aFileNameBase("testTypePassword.ods");
     OUString aFileName;
     createFileURL(aFileNameBase, aFileName);
-    uno::Reference< com::sun::star::lang::XComponent > xComponent = loadFromDesktop(aFileName, "com.sun.star.sheet.SpreadsheetDocument");
+    uno::Reference< css::lang::XComponent > xComponent = loadFromDesktop(aFileName, "com.sun.star.sheet.SpreadsheetDocument");
 
     CPPUNIT_ASSERT_MESSAGE("Failed to load testTypePassword.ods", xComponent.is());
 
@@ -118,13 +115,37 @@ void ScMacrosTest::testPasswordProtectedStarBasic()
     ScDocShell* xDocSh = static_cast<ScDocShell*>(pFoundShell);
     ScDocument& rDoc = xDocSh->GetDocument();
 
+
+    // User defined types
+
     SfxObjectShell::CallXScript(
         xComponent,
         "vnd.sun.Star.script:MyLibrary.Module1.Main?language=Basic&location=document",
         aParams, aRet, aOutParamIndex, aOutParam);
 
     OUString aValue = rDoc.GetString(0,0,0);
-    CPPUNIT_ASSERT_MESSAGE("script did not change the value of Sheet1.A1", aValue == "success");
+    CPPUNIT_ASSERT_MESSAGE("User defined types script did not change the value of Sheet1.A1", aValue == "success");
+
+    // Big Module
+
+    SfxObjectShell::CallXScript(
+        xComponent,
+        "vnd.sun.Star.script:MyLibrary.BigModule.bigMethod?language=Basic&location=document",
+        aParams, aRet, aOutParamIndex, aOutParam);
+
+    aValue = rDoc.GetString(1,0,0);
+    CPPUNIT_ASSERT_MESSAGE("Big module script did not change the value of Sheet1.B1", aValue == "success");
+
+    // far big method tdf#94617
+
+        SfxObjectShell::CallXScript(
+        xComponent,
+        "vnd.sun.Star.script:MyLibrary.BigModule.farBigMethod?language=Basic&location=document",
+        aParams, aRet, aOutParamIndex, aOutParam);
+
+    aValue = rDoc.GetString(2,0,0);
+    CPPUNIT_ASSERT_MESSAGE("Far Method script did not change the value of Sheet1.C1", aValue == "success");
+
 
     xDocSh->DoClose();
 }
@@ -134,7 +155,7 @@ void ScMacrosTest::testStarBasic()
     const OUString aFileNameBase("StarBasic.ods");
     OUString aFileName;
     createFileURL(aFileNameBase, aFileName);
-    uno::Reference< com::sun::star::lang::XComponent > xComponent = loadFromDesktop(aFileName, "com.sun.star.sheet.SpreadsheetDocument");
+    uno::Reference< css::lang::XComponent > xComponent = loadFromDesktop(aFileName, "com.sun.star.sheet.SpreadsheetDocument");
 
     CPPUNIT_ASSERT_MESSAGE("Failed to load StarBasic.ods", xComponent.is());
 
@@ -278,9 +299,14 @@ void ScMacrosTest::testVba()
     {
         OUString aFileName;
         createFileURL(testInfo[i].sFileBaseName + "xls", aFileName);
-        uno::Reference< com::sun::star::lang::XComponent > xComponent = loadFromDesktop(aFileName, "com.sun.star.sheet.SpreadsheetDocument");
+        uno::Reference< css::lang::XComponent > xComponent = loadFromDesktop(aFileName, "com.sun.star.sheet.SpreadsheetDocument");
         OUString sMsg( "Failed to load " + aFileName );
         CPPUNIT_ASSERT_MESSAGE( OUStringToOString( sMsg, RTL_TEXTENCODING_UTF8 ).getStr(), xComponent.is() );
+
+        // process all events such as OnLoad events etc.
+        // otherwise the tend to arrive later at a random
+        // time - while processing other StarBasic methods.
+        Application::Reschedule(true);
 
         Any aRet;
         Sequence< sal_Int16 > aOutParamIndex;
@@ -297,7 +323,7 @@ void ScMacrosTest::testVba()
         SfxObjectShell* pFoundShell = SfxObjectShell::GetShellFromComponent(xComponent);
 
         CPPUNIT_ASSERT_MESSAGE("Failed to access document shell", pFoundShell);
-        SAL_INFO("sc.qa", "about to invoke vba test in " << aFileName);
+        SAL_INFO("sc.qa", "about to invoke vba test in " << aFileName << " with url " << testInfo[i].sMacroUrl);
 
         SfxObjectShell::CallXScript(
             xComponent, testInfo[i].sMacroUrl, aParams, aRet, aOutParamIndex,

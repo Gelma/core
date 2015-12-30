@@ -288,8 +288,7 @@ awt::Size lcl_placeLegendEntries(
     const sal_Int32 nSymbolToTextDistance = static_cast< sal_Int32 >( std::max( 100.0, fViewFontSize * 0.22 ) );//minimum 1mm
     const sal_Int32 nSymbolPlusDistanceWidth = rMaxSymbolExtent.Width + nSymbolToTextDistance;
     sal_Int32 nMaxTextWidth = rAvailableSpace.Width - (2 * nXPadding) - nSymbolPlusDistanceWidth;
-    OUString aPropNameTextMaximumFrameWidth( "TextMaximumFrameWidth" );
-    uno::Any* pFrameWidthAny = PropertyMapper::getValuePointer( rTextProperties.second, rTextProperties.first, aPropNameTextMaximumFrameWidth);
+    uno::Any* pFrameWidthAny = PropertyMapper::getValuePointer( rTextProperties.second, rTextProperties.first, "TextMaximumFrameWidth");
     if(pFrameWidthAny)
     {
         if( eExpansion == ::com::sun::star::chart::ChartLegendExpansion_HIGH )
@@ -516,10 +515,7 @@ awt::Size lcl_placeLegendEntries(
         nTextLineHeight = lcl_getTextLineHeight( aRowHeights, nNumberOfRows, fViewFontSize );
     }
 
-    sal_Int32 nCurrentXPos = nXPadding;
-    sal_Int32 nCurrentYPos = nYPadding;
-    if( !bSymbolsLeftSide )
-        nCurrentXPos = -nXPadding;
+    sal_Int32 nCurrentXPos = bSymbolsLeftSide ? nXPadding : -nXPadding;
 
     // place entries into column and rows
     sal_Int32 nMaxYPos = 0;
@@ -527,7 +523,7 @@ awt::Size lcl_placeLegendEntries(
     sal_Int32 nColumn = 0;
     for( nColumn = 0; nColumn < nNumberOfColumns; ++nColumn )
     {
-        nCurrentYPos = nYPadding;
+        sal_Int32 nCurrentYPos = nYPadding;
         for( nRow = 0; nRow < nNumberOfRows; ++nRow )
         {
             sal_Int32 nEntry = (nColumn + nRow * nNumberOfColumns);

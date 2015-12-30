@@ -46,7 +46,7 @@ void WrappedNumberFormatProperty::setPropertyValue( const Any& rOuterValue, cons
 {
     sal_Int32 nFormat = 0;
     if( ! (rOuterValue >>= nFormat) )
-        throw lang::IllegalArgumentException( "Property 'NumberFormat' requires value of type sal_Int32", 0, 0 );
+        throw lang::IllegalArgumentException( "Property 'NumberFormat' requires value of type sal_Int32", nullptr, 0 );
 
     if(xInnerPropertySet.is())
         xInnerPropertySet->setPropertyValue(getInnerName(), this->convertOuterToInnerValue(rOuterValue));
@@ -83,9 +83,8 @@ Any WrappedNumberFormatProperty::getPropertyDefault( const Reference< beans::XPr
     return uno::makeAny( sal_Int32( 0 ) );
 }
 
-WrappedLinkNumberFormatProperty::WrappedLinkNumberFormatProperty( const std::shared_ptr<Chart2ModelContact>& pChart2ModelContact ) :
-    WrappedDirectStateProperty(CHART_UNONAME_LINK_TO_SRC_NUMFMT, CHART_UNONAME_LINK_TO_SRC_NUMFMT),
-    m_pChart2ModelContact(pChart2ModelContact)
+WrappedLinkNumberFormatProperty::WrappedLinkNumberFormatProperty() :
+    WrappedDirectStateProperty(CHART_UNONAME_LINK_TO_SRC_NUMFMT, CHART_UNONAME_LINK_TO_SRC_NUMFMT)
 {
 }
 
@@ -111,7 +110,7 @@ Any WrappedLinkNumberFormatProperty::getPropertyValue( const Reference< beans::X
     if( !xInnerPropertySet.is() )
     {
         OSL_FAIL("missing xInnerPropertySet in WrappedNumberFormatProperty::getPropertyValue");
-        return getPropertyDefault(0);
+        return getPropertyDefault(nullptr);
     }
 
     return xInnerPropertySet->getPropertyValue(getInnerName());

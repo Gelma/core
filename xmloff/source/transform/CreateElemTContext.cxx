@@ -17,11 +17,14 @@
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
 
+#include <sal/config.h>
+
+#include <vector>
+
 #include "CreateElemTContext.hxx"
 #include "MutableAttrList.hxx"
 #include "TransformerBase.hxx"
 #include "TransformerActions.hxx"
-#include "TContextVector.hxx"
 #include "FlatTContext.hxx"
 #include "AttrTransformerAction.hxx"
 #include <xmloff/nmspmap.hxx>
@@ -49,9 +52,9 @@ void XMLCreateElemTransformerContext::StartElement(
 {
     Reference< XAttributeList > xAttrList( rAttrList );
 
-    XMLTransformerContextVector aChildContexts;
+    std::vector<rtl::Reference<XMLTransformerContext>> aChildContexts;
 
-    XMLMutableAttributeList *pMutableAttrList = 0;
+    XMLMutableAttributeList *pMutableAttrList = nullptr;
     XMLTransformerActions *pActions =
         GetTransformer().GetUserDefinedActions( m_nActionMap );
     OSL_ENSURE( pActions, "go no actions" );
@@ -87,13 +90,11 @@ void XMLCreateElemTransformerContext::StartElement(
                                 (*aIter).second.GetQNamePrefixFromParam1(),
                                 ::xmloff::token::GetXMLToken(
                                 (*aIter).second.GetQNameTokenFromParam1()) ) );
-                        XMLTransformerContext *pContext =
+                        rtl::Reference<XMLTransformerContext> pContext(
                             new XMLPersTextContentTContext( GetTransformer(),
-                                                       aElemQName );
+                                                       aElemQName ));
                         pContext->Characters( rAttrValue );
-                        XMLTransformerContextVector::value_type aVal(
-                                pContext );
-                        aChildContexts.push_back( aVal );
+                        aChildContexts.push_back(pContext);
                         pMutableAttrList->RemoveAttributeByIndex( i );
                         --i;
                         --nAttrCount;
@@ -108,11 +109,9 @@ void XMLCreateElemTransformerContext::StartElement(
     }
     XMLTransformerContext::StartElement( xAttrList );
 
-    XMLTransformerContextVector::iterator aIter = aChildContexts.begin();
-
-    for( ; aIter != aChildContexts.end(); ++aIter )
+    for (auto const & i: aChildContexts)
     {
-        (*aIter)->Export();
+        i->Export();
     }
 }
 

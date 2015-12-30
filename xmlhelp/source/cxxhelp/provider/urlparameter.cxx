@@ -80,7 +80,7 @@ using namespace chelp;
 
 URLParameter::URLParameter( const OUString& aURL,
                             Databases* pDatabases )
-    throw( com::sun::star::ucb::IllegalIdentifierException )
+    throw( css::ucb::IllegalIdentifierException )
     : m_pDatabases( pDatabases ),
       m_aURL( aURL )
 {
@@ -277,7 +277,7 @@ void URLParameter::readHelpDataFile()
     DataBaseIterator aDbIt( *m_pDatabases, aModule, aLanguage, false );
     bool bSuccess = false;
 
-    const sal_Char* pData = NULL;
+    const sal_Char* pData = nullptr;
 
     helpdatafileproxy::HDFData aHDFData;
     OUString aExtensionPath;
@@ -331,42 +331,42 @@ public:
 
     virtual ~InputStreamTransformer();
 
-    virtual Any SAL_CALL queryInterface( const Type& rType ) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL acquire() throw() SAL_OVERRIDE;
-    virtual void SAL_CALL release() throw() SAL_OVERRIDE;
+    virtual Any SAL_CALL queryInterface( const Type& rType ) throw( RuntimeException, std::exception ) override;
+    virtual void SAL_CALL acquire() throw() override;
+    virtual void SAL_CALL release() throw() override;
 
     virtual sal_Int32 SAL_CALL readBytes( Sequence< sal_Int8 >& aData,sal_Int32 nBytesToRead )
         throw( NotConnectedException,
                BufferSizeExceededException,
                IOException,
-               RuntimeException, std::exception) SAL_OVERRIDE;
+               RuntimeException, std::exception) override;
 
     virtual sal_Int32 SAL_CALL readSomeBytes( Sequence< sal_Int8 >& aData,sal_Int32 nMaxBytesToRead )
         throw( NotConnectedException,
                BufferSizeExceededException,
                IOException,
-               RuntimeException, std::exception) SAL_OVERRIDE;
+               RuntimeException, std::exception) override;
 
     virtual void SAL_CALL skipBytes( sal_Int32 nBytesToSkip ) throw( NotConnectedException,
                                                                      BufferSizeExceededException,
                                                                      IOException,
-                                                                     RuntimeException, std::exception ) SAL_OVERRIDE;
+                                                                     RuntimeException, std::exception ) override;
 
     virtual sal_Int32 SAL_CALL available() throw( NotConnectedException,
                                                         IOException,
-                                                        RuntimeException, std::exception ) SAL_OVERRIDE;
+                                                        RuntimeException, std::exception ) override;
 
     virtual void SAL_CALL closeInput() throw( NotConnectedException,
                                                     IOException,
-                                                    RuntimeException, std::exception ) SAL_OVERRIDE;
+                                                    RuntimeException, std::exception ) override;
 
     virtual void SAL_CALL seek( sal_Int64 location ) throw( IllegalArgumentException,
                                                             IOException,
-                                                            RuntimeException, std::exception ) SAL_OVERRIDE;
+                                                            RuntimeException, std::exception ) override;
 
-    virtual sal_Int64 SAL_CALL getPosition() throw( IOException,RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual sal_Int64 SAL_CALL getPosition() throw( IOException,RuntimeException, std::exception ) override;
 
-    virtual sal_Int64 SAL_CALL getLength() throw( IOException,RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual sal_Int64 SAL_CALL getLength() throw( IOException,RuntimeException, std::exception ) override;
 
     void addToBuffer( const char* buffer,int len );
 
@@ -396,60 +396,16 @@ void URLParameter::open( const Command& aCommand,
     if( ! xDataSink.is() )
         return;
 
-    if( isPicture() )
+    // a standard document or else an active help text, plug in the new input stream
+    InputStreamTransformer* p = new InputStreamTransformer( this,m_pDatabases,isRoot() );
+    try
     {
-        Reference< XInputStream > xStream;
-        Reference< XHierarchicalNameAccess > xNA =
-            m_pDatabases->jarFile( OUString( "picture.jar" ),
-                                   get_language() );
-
-        OUString path = get_path();
-        if( xNA.is() )
-        {
-            try
-            {
-                Any aEntry = xNA->getByHierarchicalName( path );
-                Reference< XActiveDataSink > xSink;
-                if( ( aEntry >>= xSink ) && xSink.is() )
-                    xStream = xSink->getInputStream();
-            }
-            catch ( NoSuchElementException & )
-            {
-            }
-        }
-        if( xStream.is() )
-        {
-            sal_Int32 ret;
-            Sequence< sal_Int8 > aSeq( 4096 );
-            while( true )
-            {
-                try
-                {
-                    ret = xStream->readBytes( aSeq,4096 );
-                    xDataSink->writeBytes( aSeq );
-                    if( ret < 4096 )
-                        break;
-                }
-                catch( const Exception& )
-                {
-                    break;
-                }
-            }
-        }
+        xDataSink->writeBytes( Sequence< sal_Int8 >( p->getData(),p->getLen() ) );
     }
-    else
+    catch( const Exception& )
     {
-        // a standard document or else an active help text, plug in the new input stream
-        InputStreamTransformer* p = new InputStreamTransformer( this,m_pDatabases,isRoot() );
-        try
-        {
-            xDataSink->writeBytes( Sequence< sal_Int8 >( p->getData(),p->getLen() ) );
-        }
-        catch( const Exception& )
-        {
-        }
-        delete p;
     }
+    delete p;
     xDataSink->closeOutput();
 }
 
@@ -464,36 +420,12 @@ void URLParameter::open( const Command& aCommand,
     (void)CommandId;
     (void)Environment;
 
-    if( isPicture() )
-    {
-        Reference< XInputStream > xStream;
-        Reference< XHierarchicalNameAccess > xNA =
-            m_pDatabases->jarFile( OUString( "picture.jar" ),
-                                   get_language() );
-
-        OUString path = get_path();
-        if( xNA.is() )
-        {
-            try
-            {
-                Any aEntry = xNA->getByHierarchicalName( path );
-                Reference< XActiveDataSink > xSink;
-                if( ( aEntry >>= xSink ) && xSink.is() )
-                    xStream = xSink->getInputStream();
-            }
-            catch ( NoSuchElementException & )
-            {
-            }
-        }
-        xDataSink->setInputStream( turnToSeekable(xStream) );
-    }
-    else
-        // a standard document or else an active help text, plug in the new input stream
-        xDataSink->setInputStream( new InputStreamTransformer( this,m_pDatabases,isRoot() ) );
+    // a standard document or else an active help text, plug in the new input stream
+    xDataSink->setInputStream( new InputStreamTransformer( this,m_pDatabases,isRoot() ) );
 }
 
 
-void URLParameter::parse() throw( com::sun::star::ucb::IllegalIdentifierException )
+void URLParameter::parse() throw( css::ucb::IllegalIdentifierException )
 {
     m_aExpr = m_aURL;
 
@@ -506,7 +438,7 @@ void URLParameter::parse() throw( com::sun::star::ucb::IllegalIdentifierExceptio
         ! query() ||
         m_aLanguage.isEmpty() ||
         m_aSystem.isEmpty() )
-        throw com::sun::star::ucb::IllegalIdentifierException();
+        throw css::ucb::IllegalIdentifierException();
 }
 
 
@@ -661,41 +593,38 @@ bool URLParameter::query()
 
 struct UserData {
 
-    UserData( InputStreamTransformer* pTransformer,
-              URLParameter*           pInitial,
+    UserData( URLParameter*           pInitial,
               Databases*              pDatabases )
-        : m_pTransformer( pTransformer ),
-          m_pDatabases( pDatabases ),
+        : m_pDatabases( pDatabases ),
           m_pInitial( pInitial )
     {
     }
 
-    InputStreamTransformer*             m_pTransformer;
     Databases*                          m_pDatabases;
     URLParameter*                       m_pInitial;
 };
 
-UserData *ugblData = 0;
+UserData *ugblData = nullptr;
 
 extern "C" {
 
 static int
 fileMatch(const char * URI) {
-    if ((URI != NULL) && !strncmp(URI, "file:/", 6))
+    if ((URI != nullptr) && !strncmp(URI, "file:/", 6))
         return 1;
     return 0;
 }
 
 static int
 zipMatch(const char * URI) {
-    if ((URI != NULL) && !strncmp(URI, "vnd.sun.star.zip:/", 18))
+    if ((URI != nullptr) && !strncmp(URI, "vnd.sun.star.zip:/", 18))
         return 1;
     return 0;
 }
 
 static int
 helpMatch(const char * URI) {
-    if ((URI != NULL) && !strncmp(URI, "vnd.sun.star.help:/", 19))
+    if ((URI != nullptr) && !strncmp(URI, "vnd.sun.star.help:/", 19))
         return 1;
     return 0;
 }
@@ -743,7 +672,7 @@ zipOpen(SAL_UNUSED_PARAMETER const char *) {
     {
         return new Reference<XInputStream>(xInputStream);
     }
-    return 0;
+    return nullptr;
 }
 
 static void *
@@ -778,7 +707,7 @@ helpOpen(const char * URI) {
 
     if( xInputStream.is() )
         return new Reference<XInputStream>(xInputStream);
-    return 0;
+    return nullptr;
 }
 
 static int
@@ -855,7 +784,7 @@ InputStreamTransformer::InputStreamTransformer( URLParameter* urlParam,
     }
     else
     {
-        UserData userData( this,urlParam,pDatabases );
+        UserData userData( urlParam,pDatabases );
 
         // Uses the implementation detail, that OString::getStr returns a zero terminated character-array
 
@@ -890,8 +819,8 @@ InputStreamTransformer::InputStreamTransformer( URLParameter* urlParam,
                           pDatabases->getProductVersion().getLength(),
                           RTL_TEXTENCODING_UTF8 ) + OString('\'');
 
-        parString[last++] = "imgrepos";
-        parString[last++] = OString('\'') + pDatabases->getImagesZipFileURL() + OString('\'');
+        parString[last++] = "imgtheme";
+        parString[last++] = OString('\'') + pDatabases->getImageTheme() + OString('\'');
         parString[last++] = "hp";
         parString[last++] = OString('\'') + urlParam->getByName( "HelpPrefix" ) + OString('\'');
 
@@ -968,7 +897,7 @@ InputStreamTransformer::InputStreamTransformer( URLParameter* urlParam,
 
         for( int i = 0; i < last; ++i )
             parameter[i] = parString[i].getStr();
-        parameter[last] = 0;
+        parameter[last] = nullptr;
 
         OUString xslURL = pDatabases->getInstallPathAsURL();
 
@@ -993,7 +922,7 @@ InputStreamTransformer::InputStreamTransformer( URLParameter* urlParam,
         xmlDocPtr res = xsltApplyStylesheet(cur, doc, parameter);
         if (res)
         {
-            xmlChar *doc_txt_ptr=0;
+            xmlChar *doc_txt_ptr=nullptr;
             int doc_txt_len;
             xsltSaveResultToString(&doc_txt_ptr, &doc_txt_len, res, cur);
             addToBuffer(reinterpret_cast<char*>(doc_txt_ptr), doc_txt_len);

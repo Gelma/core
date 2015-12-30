@@ -52,8 +52,7 @@ void CustomToolBarImportHelper::applyIcons()
 {
     for ( std::vector< iconcontrolitem >::iterator it = iconcommands.begin(); it != iconcommands.end(); ++it )
     {
-        uno::Sequence< OUString > commands(1);
-        commands[ 0 ] = it->sCommand;
+        uno::Sequence<OUString> commands { it->sCommand };
         uno::Sequence< uno::Reference< graphic::XGraphic > > images(1);
         images[ 0 ] = it->image;
 
@@ -62,7 +61,7 @@ void CustomToolBarImportHelper::applyIcons()
         sal_uInt16 nColor = ui::ImageType::COLOR_NORMAL;
 
         vcl::Window* topwin = Application::GetActiveTopWindow();
-    if ( topwin != NULL && topwin->GetDisplayBackground().GetColor().IsDark() )
+    if ( topwin != nullptr && topwin->GetDisplayBackground().GetColor().IsDark() )
             nColor = css::ui::ImageType::COLOR_HIGHCONTRAST;
 
         ScaleImage( images[ 0 ], 16 );
@@ -161,7 +160,21 @@ CustomToolBarImportHelper::createMenu( const OUString& rName, const uno::Referen
     return bRes;
 }
 
+#if OSL_DEBUG_LEVEL > 1
+void
+TBBase::indent_printf( FILE* fp, const char* format, ... )
+{
+   va_list ap;
+   va_start ( ap, format );
 
+   // indent nIndent spaces
+   for ( int i=0; i<nIndent; ++i)
+      fprintf(fp," ");
+   // append the rest of the message
+   vfprintf( fp, format, ap );
+   va_end( ap );
+}
+#endif
 
 TBCHeader::TBCHeader()
     : bSignature(0x3)
@@ -300,8 +313,7 @@ bool TBCData::ImportToolBarControl( CustomToolBarImportHelper& helper, std::vect
                 OUString sBuiltInCmd = helper.MSOTCIDToOOCommand(  *pSpecificInfo->getBtnFace() );
                 if ( !sBuiltInCmd.isEmpty() )
                 {
-                    uno::Sequence< OUString> sCmds(1);
-                    sCmds[ 0 ] = sBuiltInCmd;
+                    uno::Sequence<OUString> sCmds { sBuiltInCmd };
                     uno::Reference< ui::XImageManager > xImageManager( helper.getAppCfgManager()->getImageManager(), uno::UNO_QUERY_THROW );
                     // 0 = default image size
                     uno::Sequence< uno::Reference< graphic::XGraphic > > sImages = xImageManager->getImages( 0, sCmds );
@@ -473,7 +485,7 @@ TBCGeneralInfo::ImportToolBarControlData( CustomToolBarImportHelper& helper, std
             if ( aMacroInf.mbFound )
                 aProp.Value = CustomToolBarImportHelper::createCommandFromMacro( aMacroInf.msResolvedMacro );
             else
-                aProp.Value <<= OUString( "UnResolvedMacro[" ).concat( extraInfo.getOnAction() ).concat( OUString( "]" ) );
+                aProp.Value <<= OUString( "UnResolvedMacro[" ).concat( extraInfo.getOnAction() ).concat( "]" );
             sControlData.push_back( aProp );
         }
 

@@ -323,7 +323,7 @@ void EditDbg::ShowEditEngineData( EditEngine* pEE, bool bInfoBox )
 #else
     FILE* fp = fopen( "d:\\debug.log", "w" );
 #endif
-    if ( fp == 0 )
+    if ( fp == nullptr )
     {
         OSL_FAIL( "Log file could not be created!" );
         return;
@@ -351,21 +351,21 @@ void EditDbg::ShowEditEngineData( EditEngine* pEE, bool bInfoBox )
         bool bZeroAttr = false;
         for ( sal_Int32 z = 0; z < pPPortion->GetNode()->GetCharAttribs().Count(); ++z )
         {
-            const EditCharAttrib& rAttr = pPPortion->GetNode()->GetCharAttribs().GetAttribs()[z];
+            const std::unique_ptr<EditCharAttrib>& rAttr = pPPortion->GetNode()->GetCharAttribs().GetAttribs()[z];
             OStringBuffer aCharAttribs;
             aCharAttribs.append("\nA");
             aCharAttribs.append(static_cast<sal_Int32>(nPortion));
             aCharAttribs.append(":  ");
-            aCharAttribs.append(static_cast<sal_Int32>(rAttr.GetItem()->Which()));
+            aCharAttribs.append(static_cast<sal_Int32>(rAttr->GetItem()->Which()));
             aCharAttribs.append('\t');
-            aCharAttribs.append(static_cast<sal_Int32>(rAttr.GetStart()));
+            aCharAttribs.append(static_cast<sal_Int32>(rAttr->GetStart()));
             aCharAttribs.append('\t');
-            aCharAttribs.append(static_cast<sal_Int32>(rAttr.GetEnd()));
-            if ( rAttr.IsEmpty() )
+            aCharAttribs.append(static_cast<sal_Int32>(rAttr->GetEnd()));
+            if ( rAttr->IsEmpty() )
                 bZeroAttr = true;
             fprintf(fp, "%s => ", aCharAttribs.getStr());
 
-            OString aDebStr = DbgOutItem( rPool, *rAttr.GetItem() );
+            OString aDebStr = DbgOutItem( rPool, *rAttr->GetItem() );
             fprintf( fp, "%s", aDebStr.getStr() );
         }
         if ( bZeroAttr )
@@ -427,11 +427,11 @@ void EditDbg::ShowEditEngineData( EditEngine* pEE, bool bInfoBox )
 
     if ( pEE->pImpEditEngine->GetStyleSheetPool() )
     {
-        sal_uLong nStyles = pEE->pImpEditEngine->GetStyleSheetPool() ? pEE->pImpEditEngine->GetStyleSheetPool()->Count() : 0;
+        sal_uInt16 nStyles = pEE->pImpEditEngine->GetStyleSheetPool() ? pEE->pImpEditEngine->GetStyleSheetPool()->Count() : 0;
         fprintf( fp, "\n\n================================================================================" );
         fprintf( fp, "\n==================   Stylesheets   =============================================" );
         fprintf( fp, "\n================================================================================" );
-        fprintf( fp, "\n#Template:   %lu\n", nStyles );
+        fprintf( fp, "\n#Template:   %" SAL_PRIuUINT32 "\n", sal_uInt32(nStyles) );
         SfxStyleSheetIterator aIter( pEE->pImpEditEngine->GetStyleSheetPool(), SFX_STYLE_FAMILY_ALL );
         SfxStyleSheetBase* pStyle = aIter.First();
         while ( pStyle )
@@ -501,10 +501,9 @@ bool ParaPortion::DbgCheckTextPortions(ParaPortion const& rPara)
 void CheckOrderedList(const CharAttribList::AttribsType& rAttribs, bool bStart)
 {
     sal_Int32 nPrev = 0;
-    for (size_t nAttr = 0; nAttr < rAttribs.size(); ++nAttr)
+    for (const std::unique_ptr<EditCharAttrib>& rAttr : rAttribs)
     {
-        const EditCharAttrib& rAttr = rAttribs[nAttr];
-        sal_Int32 const nCur = bStart ? rAttr.GetStart() : rAttr.GetEnd();
+        sal_Int32 const nCur = bStart ? rAttr->GetStart() : rAttr->GetEnd();
         assert(nCur >= nPrev);
         nPrev = nCur;
     }

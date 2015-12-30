@@ -54,52 +54,52 @@ class SwContentTree
     : public SvTreeListBox
     , public SfxListener
 {
-    ImageList           aEntryImages;
-    OUString            sSpace;
-    AutoTimer           aUpdTimer;
+    ImageList           m_aEntryImages;
+    OUString            m_sSpace;
+    AutoTimer           m_aUpdTimer;
 
-    o3tl::enumarray<ContentTypeId,SwContentType*>  aActiveContentArr;
-    o3tl::enumarray<ContentTypeId,SwContentType*>  aHiddenContentArr;
-    OUString            aContextStrings[CONTEXT_COUNT + 1];
-    OUString            sRemoveIdx;
-    OUString            sUpdateIdx;
-    OUString            sUnprotTable;
-    OUString            sRename;
-    OUString            sReadonlyIdx;
-    OUString            sInvisible;
-    OUString            sPostItShow;
-    OUString            sPostItHide;
-    OUString            sPostItDelete;
+    o3tl::enumarray<ContentTypeId,SwContentType*>  m_aActiveContentArr;
+    o3tl::enumarray<ContentTypeId,SwContentType*>  m_aHiddenContentArr;
+    OUString            m_aContextStrings[CONTEXT_COUNT + 1];
+    OUString            m_sRemoveIdx;
+    OUString            m_sUpdateIdx;
+    OUString            m_sUnprotTable;
+    OUString            m_sRename;
+    OUString            m_sReadonlyIdx;
+    OUString            m_sInvisible;
+    OUString            m_sPostItShow;
+    OUString            m_sPostItHide;
+    OUString            m_sPostItDelete;
 
-    SwWrtShell*         pHiddenShell;   // dropped Doc
-    SwWrtShell*         pActiveShell;   // the active or a const. open view
-    SwNavigationConfig* pConfig;
+    SwWrtShell*         m_pHiddenShell;   // dropped Doc
+    SwWrtShell*         m_pActiveShell;   // the active or a const. open view
+    SwNavigationConfig* m_pConfig;
 
     std::map< void*, bool > mOutLineNodeMap;
 
-    sal_Int32           nActiveBlock;
-    sal_Int32           nHiddenBlock;
-    ContentTypeId       nRootType;
-    ContentTypeId       nLastSelType;
-    sal_uInt8           nOutlineLevel;
+    sal_Int32           m_nActiveBlock;
+    sal_Int32           m_nHiddenBlock;
+    ContentTypeId       m_nRootType;
+    ContentTypeId       m_nLastSelType;
+    sal_uInt8           m_nOutlineLevel;
 
-    bool                bIsActive           :1;
-    bool                bIsConstant         :1;
-    bool                bIsHidden           :1;
-    bool                bDocChgdInDragging  :1;
-    bool                bIsInternalDrag     :1;
-    bool                bIsRoot             :1;
-    bool                bIsIdleClear        :1;
-    bool                bIsLastReadOnly     :1;
-    bool                bIsOutlineMoveable  :1;
-    bool                bViewHasChanged     :1;
-    bool                bIsImageListInitialized : 1;
+    bool                m_bIsActive           :1;
+    bool                m_bIsConstant         :1;
+    bool                m_bIsHidden           :1;
+    bool                m_bDocChgdInDragging  :1;
+    bool                m_bIsInternalDrag     :1;
+    bool                m_bIsRoot             :1;
+    bool                m_bIsIdleClear        :1;
+    bool                m_bIsLastReadOnly     :1;
+    bool                m_bIsOutlineMoveable  :1;
+    bool                m_bViewHasChanged     :1;
+    bool                m_bIsImageListInitialized : 1;
     bool                m_bActiveDocModified :1;
 
     static bool         bIsInDrag;
 
-    bool                bIsKeySpace;
-    Rectangle           oldRectangle;
+    bool                m_bIsKeySpace;
+    Rectangle           m_aOldRectangle;
 
     void                FindActiveTypeAndRemoveUserData();
 
@@ -107,52 +107,53 @@ class SwContentTree
     using SvTreeListBox::EditEntry;
 
 protected:
-    virtual void    RequestHelp( const HelpEvent& rHEvt ) SAL_OVERRIDE;
-    virtual void    InitEntry(SvTreeListEntry*, const OUString&, const Image&, const Image&, SvLBoxButtonKind) SAL_OVERRIDE;
-    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual void    RequestHelp( const HelpEvent& rHEvt ) override;
+    virtual void    InitEntry(SvTreeListEntry*, const OUString&, const Image&, const Image&, SvLBoxButtonKind) override;
+    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) override;
 
     SwNavigationPI* GetParentWindow();
 
-    virtual void    StartDrag( sal_Int8 nAction, const Point& rPosPixel ) SAL_OVERRIDE;
-    virtual void    DragFinished( sal_Int8 ) SAL_OVERRIDE;
-    virtual sal_Int8 AcceptDrop( const AcceptDropEvent& rEvt ) SAL_OVERRIDE;
+    virtual void    StartDrag( sal_Int8 nAction, const Point& rPosPixel ) override;
+    virtual void    DragFinished( sal_Int8 ) override;
+    virtual sal_Int8 AcceptDrop( const AcceptDropEvent& rEvt ) override;
 
-    virtual sal_Int8 ExecuteDrop( const ExecuteDropEvent& rEvt ) SAL_OVERRIDE;
+    virtual sal_Int8 ExecuteDrop( const ExecuteDropEvent& rEvt ) override;
 
     bool        FillTransferData( TransferDataContainer& rTransfer,
                                             sal_Int8& rDragMode );
     bool            HasContentChanged();
 
     virtual DragDropMode NotifyStartDrag( TransferDataContainer& rData,
-                                        SvTreeListEntry* ) SAL_OVERRIDE;
-    virtual bool    NotifyAcceptDrop( SvTreeListEntry* ) SAL_OVERRIDE;
+                                        SvTreeListEntry* ) override;
+    virtual bool    NotifyAcceptDrop( SvTreeListEntry* ) override;
 
     virtual TriState NotifyMoving(   SvTreeListEntry*  pTarget,
                                     SvTreeListEntry*  pEntry,
                                     SvTreeListEntry*& rpNewParent,
                                     sal_uLong&        rNewChildPos
-                                ) SAL_OVERRIDE;
+                                ) override;
     virtual TriState NotifyCopying(  SvTreeListEntry*  pTarget,
                                     SvTreeListEntry*  pEntry,
                                     SvTreeListEntry*& rpNewParent,
                                     sal_uLong&        rNewChildPos
-                                ) SAL_OVERRIDE;
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
+                                ) override;
+    virtual void    Paint( vcl::RenderContext& rRenderContext, const Rectangle& rRect ) override;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
 
     void            EditEntry( SvTreeListEntry* pEntry, EditEntryMode nMode );
 
     void            GotoContent(SwContent* pCnt);
     static void     SetInDrag(bool bSet) {bIsInDrag = bSet;}
 
-    virtual std::unique_ptr<PopupMenu> CreateContextMenu() SAL_OVERRIDE;
-    virtual void    ExcecuteContextMenuAction( sal_uInt16 nSelectedPopupEntry ) SAL_OVERRIDE;
+    virtual std::unique_ptr<PopupMenu> CreateContextMenu() override;
+    virtual void    ExcecuteContextMenuAction( sal_uInt16 nSelectedPopupEntry ) override;
 
 public:
     SwContentTree(vcl::Window* pParent, const ResId& rResId);
     virtual ~SwContentTree();
-    virtual void dispose() SAL_OVERRIDE;
-    OUString        GetEntryAltText( SvTreeListEntry* pEntry ) const SAL_OVERRIDE;
-    OUString        GetEntryLongDescription( SvTreeListEntry* pEntry ) const SAL_OVERRIDE;
+    virtual void dispose() override;
+    OUString        GetEntryAltText( SvTreeListEntry* pEntry ) const override;
+    OUString        GetEntryLongDescription( SvTreeListEntry* pEntry ) const override;
     SdrObject*      GetDrawingObjectsByContent(const SwContent *pCnt);
 
     bool            ToggleToRoot();
@@ -166,43 +167,43 @@ public:
     void            SetConstantShell(SwWrtShell* pSh);
 
     SwWrtShell*     GetWrtShell()
-                        {return bIsActive||bIsConstant ?
-                                    pActiveShell :
-                                        pHiddenShell;}
+                        {return m_bIsActive||m_bIsConstant ?
+                                    m_pActiveShell :
+                                        m_pHiddenShell;}
 
     static bool     IsInDrag() {return bIsInDrag;}
 
-    sal_uInt8       GetOutlineLevel()const {return nOutlineLevel;}
+    sal_uInt8       GetOutlineLevel()const {return m_nOutlineLevel;}
     void            SetOutlineLevel(sal_uInt8 nSet);
 
-    virtual bool    Expand( SvTreeListEntry* pParent ) SAL_OVERRIDE;
+    virtual bool    Expand( SvTreeListEntry* pParent ) override;
 
-    virtual bool    Collapse( SvTreeListEntry* pParent ) SAL_OVERRIDE;
+    virtual bool    Collapse( SvTreeListEntry* pParent ) override;
 
     void            ExecCommand(sal_uInt16 nCmd, bool bModifier);
 
     void            ShowTree();
     void            HideTree();
 
-    bool            IsConstantView() {return bIsConstant;}
-    bool            IsActiveView()   {return bIsActive;}
-    bool            IsHiddenView()   {return bIsHidden;}
+    bool            IsConstantView() {return m_bIsConstant;}
+    bool            IsActiveView()   {return m_bIsActive;}
+    bool            IsHiddenView()   {return m_bIsHidden;}
 
-    const SwWrtShell*   GetActiveWrtShell() {return pActiveShell;}
-    SwWrtShell*         GetHiddenWrtShell() {return pHiddenShell;}
+    const SwWrtShell*   GetActiveWrtShell() {return m_pActiveShell;}
+    SwWrtShell*         GetHiddenWrtShell() {return m_pHiddenShell;}
 
     DECL_LINK_TYPED( ContentDoubleClickHdl, SvTreeListBox*, bool );
     DECL_LINK_TYPED( TimerUpdate, Timer *, void );
 
-    virtual sal_IntPtr GetTabPos( SvTreeListEntry*, SvLBoxTab* ) SAL_OVERRIDE;
-    virtual void    RequestingChildren( SvTreeListEntry* pParent ) SAL_OVERRIDE;
-    virtual void    GetFocus() SAL_OVERRIDE;
-    virtual void    KeyInput(const KeyEvent& rKEvt) SAL_OVERRIDE;
+    virtual sal_IntPtr GetTabPos( SvTreeListEntry*, SvLBoxTab* ) override;
+    virtual void    RequestingChildren( SvTreeListEntry* pParent ) override;
+    virtual void    GetFocus() override;
+    virtual void    KeyInput(const KeyEvent& rKEvt) override;
 
-    virtual bool    Select( SvTreeListEntry* pEntry, bool bSelect=true ) SAL_OVERRIDE;
+    virtual bool    Select( SvTreeListEntry* pEntry, bool bSelect=true ) override;
 
     using Control::Notify; // FIXME why do we have 2 of these
-    virtual void Notify(SfxBroadcaster& rBC, SfxHint const& rHint) SAL_OVERRIDE;
+    virtual void Notify(SfxBroadcaster& rBC, SfxHint const& rHint) override;
 
 };
 
@@ -218,7 +219,7 @@ public:
     }
 
     virtual void Paint(const Point& rPos, SvTreeListBox& rDev, vcl::RenderContext& rRenderContext,
-                       const SvViewDataEntry* pView, const SvTreeListEntry& rEntry) SAL_OVERRIDE;
+                       const SvViewDataEntry* pView, const SvTreeListEntry& rEntry) override;
 };
 
 namespace sfx2 { class DocumentInserter; }
@@ -248,7 +249,7 @@ private:
     static const SfxObjectShell* pShowShell;
 
     void        InsertRegion( const SwGlblDocContent* _pContent,
-                              const com::sun::star::uno::Sequence< OUString >& _rFiles );
+                              const css::uno::Sequence< OUString >& _rFiles );
 
     DECL_LINK_TYPED(  DialogClosedHdl, sfx2::FileDialogHelper*, void );
 
@@ -258,38 +259,38 @@ private:
 
 protected:
 
-    virtual sal_Int8 AcceptDrop( const AcceptDropEvent& rEvt ) SAL_OVERRIDE;
+    virtual sal_Int8 AcceptDrop( const AcceptDropEvent& rEvt ) override;
 
-    virtual sal_Int8 ExecuteDrop( const ExecuteDropEvent& rEvt ) SAL_OVERRIDE;
+    virtual sal_Int8 ExecuteDrop( const ExecuteDropEvent& rEvt ) override;
 
-    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) override;
 
-    virtual void    RequestHelp( const HelpEvent& rHEvt ) SAL_OVERRIDE;
+    virtual void    RequestHelp( const HelpEvent& rHEvt ) override;
 
-    virtual sal_IntPtr GetTabPos( SvTreeListEntry*, SvLBoxTab* ) SAL_OVERRIDE;
+    virtual sal_IntPtr GetTabPos( SvTreeListEntry*, SvLBoxTab* ) override;
     virtual TriState NotifyMoving(   SvTreeListEntry*  pTarget,
                                     SvTreeListEntry*  pEntry,
                                     SvTreeListEntry*& rpNewParent,
                                     sal_uLong&        rNewChildPos
-                                ) SAL_OVERRIDE;
+                                ) override;
     virtual TriState NotifyCopying(  SvTreeListEntry*  pTarget,
                                     SvTreeListEntry*  pEntry,
                                     SvTreeListEntry*& rpNewParent,
                                     sal_uLong&        rNewChildPos
-                                ) SAL_OVERRIDE;
+                                ) override;
 
-    virtual void    StartDrag( sal_Int8 nAction, const Point& rPosPixel ) SAL_OVERRIDE;
-    virtual void    DragFinished( sal_Int8 ) SAL_OVERRIDE;
+    virtual void    StartDrag( sal_Int8 nAction, const Point& rPosPixel ) override;
+    virtual void    DragFinished( sal_Int8 ) override;
     virtual DragDropMode NotifyStartDrag( TransferDataContainer& rData,
-                                        SvTreeListEntry* ) SAL_OVERRIDE;
-    virtual bool    NotifyAcceptDrop( SvTreeListEntry* ) SAL_OVERRIDE;
+                                        SvTreeListEntry* ) override;
+    virtual bool    NotifyAcceptDrop( SvTreeListEntry* ) override;
 
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    KeyInput(const KeyEvent& rKEvt) SAL_OVERRIDE;
-    virtual void    GetFocus() SAL_OVERRIDE;
-    virtual void    SelectHdl() SAL_OVERRIDE;
-    virtual void    DeselectHdl() SAL_OVERRIDE;
-    virtual void    InitEntry(SvTreeListEntry*, const OUString&, const Image&, const Image&, SvLBoxButtonKind) SAL_OVERRIDE;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void    KeyInput(const KeyEvent& rKEvt) override;
+    virtual void    GetFocus() override;
+    virtual void    SelectHdl() override;
+    virtual void    DeselectHdl() override;
+    virtual void    InitEntry(SvTreeListEntry*, const OUString&, const Image&, const Image&, SvLBoxButtonKind) override;
 
     void            Clear();
 
@@ -307,17 +308,17 @@ protected:
     static void     SetShowShell(const SfxObjectShell*pSet) {pShowShell = pSet;}
     DECL_STATIC_LINK_TYPED(SwGlobalTree, ShowFrameHdl, void*, void);
 
-    virtual std::unique_ptr<PopupMenu> CreateContextMenu() SAL_OVERRIDE;
-    virtual void    ExcecuteContextMenuAction( sal_uInt16 nSelectedPopupEntry ) SAL_OVERRIDE;
+    virtual std::unique_ptr<PopupMenu> CreateContextMenu() override;
+    virtual void    ExcecuteContextMenuAction( sal_uInt16 nSelectedPopupEntry ) override;
 
 public:
     SwGlobalTree(vcl::Window* pParent, const ResId& rResId);
     virtual ~SwGlobalTree();
-    virtual void        dispose() SAL_OVERRIDE;
+    virtual void        dispose() override;
 
     void                TbxMenuHdl(sal_uInt16 nTbxId, ToolBox* pBox);
     void                InsertRegion( const SwGlblDocContent* pCont,
-                                        const OUString* pFileName = 0 );
+                                        const OUString* pFileName = nullptr );
     void                EditContent(const SwGlblDocContent* pCont );
 
     void                ShowTree();

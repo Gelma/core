@@ -39,7 +39,7 @@ using namespace ::com::sun::star::style;
 class SdTransformOOo2xDocument
 {
 public:
-    SdTransformOOo2xDocument( SdDrawDocument& rDocument );
+    explicit SdTransformOOo2xDocument( SdDrawDocument& rDocument );
 
     void transform();
 
@@ -223,7 +223,7 @@ void SdTransformOOo2xDocument::transformTextShape( SdrTextObj& rTextShape )
                             // now set all none hard attributes from the style
                             while(nWhich)
                             {
-                                if(SfxItemState::SET != aParaSet.GetItemState(nWhich, true))
+                                if(SfxItemState::SET != aParaSet.GetItemState(nWhich))
                                 {
                                     aParaSet.Put(rStyleSet.Get(nWhich));
                                     bItemChange = true;

@@ -60,7 +60,7 @@ const char UNO_SELECTWIDTH[] = ".uno:SelectWidth";
 namespace
 {
 
-void FillLineEndListBox(ListBox& rListBoxStart, ListBox& rListBoxEnd, const XLineEndList& rList)
+void FillLineEndListBox(ListBox& rListBoxStart, ListBox& rListBoxEnd, const XLineEndList& rList, const Bitmap& rBitmapZero)
 {
     const sal_uInt32 nCount(rList.Count());
     const OUString sNone(SVX_RESSTR(RID_SVXSTR_NONE));
@@ -70,10 +70,6 @@ void FillLineEndListBox(ListBox& rListBoxStart, ListBox& rListBoxEnd, const XLin
 
     rListBoxStart.Clear();
     rListBoxEnd.Clear();
-
-    // add 'none' entries
-    rListBoxStart.InsertEntry(sNone);
-    rListBoxEnd.InsertEntry(sNone);
 
     for(sal_uInt32 i(0); i < nCount; i++)
     {
@@ -104,6 +100,28 @@ void FillLineEndListBox(ListBox& rListBoxStart, ListBox& rListBoxEnd, const XLin
             rListBoxStart.InsertEntry(pEntry->GetName());
             rListBoxEnd.InsertEntry(pEntry->GetName());
         }
+    }
+
+    // add 'none' entries
+    if (!rBitmapZero.IsEmpty())
+    {
+        const Image aImg = rListBoxStart.GetEntryImage(0);
+        const Size aImgSize = aImg.GetSizePixel();
+
+        // take solid line bitmap and crop it to the size of
+        // line cap entries
+        Bitmap aCopyZero( rBitmapZero );
+        const Rectangle aCropZero( Point(), aImgSize );
+        aCopyZero.Crop( aCropZero );
+
+        // make it 1st item in list
+        rListBoxStart.InsertEntry( sNone, Image(aCopyZero), 0);
+        rListBoxEnd.InsertEntry( sNone, Image(aCopyZero), 0);
+    }
+    else
+    {
+       rListBoxStart.InsertEntry(sNone);
+       rListBoxEnd.InsertEntry(sNone);
     }
 
     rListBoxStart.SetUpdateMode(true);
@@ -148,7 +166,7 @@ namespace svx { namespace sidebar {
 
 LinePropertyPanelBase::LinePropertyPanelBase(
     vcl::Window* pParent,
-    const uno::Reference<frame::XFrame>& rxFrame)
+    const uno::Reference<css::frame::XFrame>& rxFrame)
 :   PanelLayout(pParent, "LinePropertyPanel", "svx/ui/sidebarline.ui", rxFrame),
     mpStyleItem(),
     mpDashItem(),
@@ -160,8 +178,8 @@ LinePropertyPanelBase::LinePropertyPanelBase(
     maLineWidthPopup(this, ::boost::bind(&LinePropertyPanelBase::CreateLineWidthPopupControl, this, _1)),
     maIMGNone(SVX_RES(IMG_NONE_ICON)),
     mpIMGWidthIcon(),
-    mxFrame(rxFrame),
-    mbWidthValuable(true)
+    mbWidthValuable(true),
+    mbArrowSupported(true)
 {
     get(mpFTWidth, "widthlabel");
     get(mpTBWidth, "width");
@@ -220,9 +238,8 @@ void LinePropertyPanelBase::Initialize()
 
     FillLineStyleList();
     SelectLineStyle();
-    Link<> aLink = LINK( this, LinePropertyPanelBase, ChangeLineStyleHdl );
-    mpLBStyle->SetSelectHdl( aLink );
-    mpLBStyle->SetAccessibleName(OUString( "Style"));
+    mpLBStyle->SetSelectHdl( LINK( this, LinePropertyPanelBase, ChangeLineStyleHdl ) );
+    mpLBStyle->SetAccessibleName("Style");
     mpLBStyle->AdaptDropDownLineCountToMaximum();
 
     const sal_uInt16 nIdWidth = mpTBWidth->GetItemId(UNO_SELECTWIDTH);
@@ -235,30 +252,25 @@ void LinePropertyPanelBase::Initialize()
     FillLineEndList();
     SelectEndStyle(true);
     SelectEndStyle(false);
-    aLink = LINK( this, LinePropertyPanelBase, ChangeStartHdl );
-    mpLBStart->SetSelectHdl( aLink );
-    mpLBStart->SetAccessibleName(OUString("Beginning Style")); //wj acc
+    mpLBStart->SetSelectHdl( LINK( this, LinePropertyPanelBase, ChangeStartHdl ) );
+    mpLBStart->SetAccessibleName("Beginning Style"); //wj acc
     mpLBStart->AdaptDropDownLineCountToMaximum();
-    aLink = LINK( this, LinePropertyPanelBase, ChangeEndHdl );
-    mpLBEnd->SetSelectHdl( aLink );
-    mpLBEnd->SetAccessibleName(OUString("Ending Style"));  //wj acc
+    mpLBEnd->SetSelectHdl( LINK( this, LinePropertyPanelBase, ChangeEndHdl ) );
+    mpLBEnd->SetAccessibleName("Ending Style");  //wj acc
     mpLBEnd->AdaptDropDownLineCountToMaximum();
 
-    aLink = LINK(this, LinePropertyPanelBase, ChangeTransparentHdl);
-    mpMFTransparent->SetModifyHdl(aLink);
-    mpMFTransparent->SetAccessibleName(OUString("Transparency"));  //wj acc
+    mpMFTransparent->SetModifyHdl(LINK(this, LinePropertyPanelBase, ChangeTransparentHdl));
+    mpMFTransparent->SetAccessibleName("Transparency");  //wj acc
 
     mpTBWidth->SetAccessibleRelationLabeledBy(mpFTWidth);
     mpMFTransparent->SetAccessibleRelationLabeledBy(mpFTTransparency);
     mpLBEnd->SetAccessibleRelationLabeledBy(mpLBEnd);
 
-    aLink = LINK( this, LinePropertyPanelBase, ChangeEdgeStyleHdl );
-    mpLBEdgeStyle->SetSelectHdl( aLink );
-    mpLBEdgeStyle->SetAccessibleName(OUString("Corner Style"));
+    mpLBEdgeStyle->SetSelectHdl( LINK( this, LinePropertyPanelBase, ChangeEdgeStyleHdl ) );
+    mpLBEdgeStyle->SetAccessibleName("Corner Style");
 
-    aLink = LINK( this, LinePropertyPanelBase, ChangeCapStyleHdl );
-    mpLBCapStyle->SetSelectHdl( aLink );
-    mpLBCapStyle->SetAccessibleName(OUString("Cap Style"));
+    mpLBCapStyle->SetSelectHdl( LINK( this, LinePropertyPanelBase, ChangeCapStyleHdl ) );
+    mpLBCapStyle->SetAccessibleName("Cap Style");
 }
 
 void LinePropertyPanelBase::DataChanged(const DataChangedEvent& /*rEvent*/)
@@ -285,7 +297,7 @@ void LinePropertyPanelBase::updateLineStyle(bool bDisabled, bool bSetOrDefault, 
     }
     else
     {
-        mpStyleItem.reset(0);
+        mpStyleItem.reset(nullptr);
     }
 
     SelectLineStyle();
@@ -383,7 +395,8 @@ void LinePropertyPanelBase::updateLineStart(bool bDisabled, bool bSetOrDefault,
     }
     else
     {
-        mpLBStart->Enable();
+        if (mbArrowSupported)
+            mpLBStart->Enable();
     }
 
     if(bSetOrDefault)
@@ -396,7 +409,7 @@ void LinePropertyPanelBase::updateLineStart(bool bDisabled, bool bSetOrDefault,
         }
     }
 
-    mpStartItem.reset(0);
+    mpStartItem.reset(nullptr);
     SelectEndStyle(true);
 }
 
@@ -409,7 +422,8 @@ void LinePropertyPanelBase::updateLineEnd(bool bDisabled, bool bSetOrDefault,
     }
     else
     {
-        mpLBEnd->Enable();
+        if (mbArrowSupported)
+            mpLBEnd->Enable();
     }
 
     if(bSetOrDefault)
@@ -422,7 +436,7 @@ void LinePropertyPanelBase::updateLineEnd(bool bDisabled, bool bSetOrDefault,
         }
     }
 
-    mpEndItem.reset(0);
+    mpEndItem.reset(nullptr);
     SelectEndStyle(false);
 }
 
@@ -538,7 +552,7 @@ void LinePropertyPanelBase::updateLineCap(bool bDisabled, bool bSetOrDefault,
     mpLBCapStyle->SetNoSelection();
 }
 
-IMPL_LINK_NOARG(LinePropertyPanelBase, ChangeLineStyleHdl)
+IMPL_LINK_NOARG_TYPED(LinePropertyPanelBase, ChangeLineStyleHdl, ListBox&, void)
 {
     const sal_Int32 nPos(mpLBStyle->GetSelectEntryPos());
 
@@ -574,10 +588,9 @@ IMPL_LINK_NOARG(LinePropertyPanelBase, ChangeLineStyleHdl)
     }
 
     ActivateControls();
-    return 0;
 }
 
-IMPL_LINK_NOARG(LinePropertyPanelBase, ChangeStartHdl)
+IMPL_LINK_NOARG_TYPED(LinePropertyPanelBase, ChangeStartHdl, ListBox&, void)
 {
     sal_Int32  nPos = mpLBStart->GetSelectEntryPos();
     if( nPos != LISTBOX_ENTRY_NOTFOUND && mpLBStart->IsValueChangedFromSaved() )
@@ -589,10 +602,9 @@ IMPL_LINK_NOARG(LinePropertyPanelBase, ChangeStartHdl)
             pItem.reset(new XLineStartItem( mpLBStart->GetSelectEntry(),mxLineEndList->GetLineEnd( nPos - 1 )->GetLineEnd() ));
         setLineStartStyle(pItem.get());
     }
-    return 0;
 }
 
-IMPL_LINK_NOARG(LinePropertyPanelBase, ChangeEndHdl)
+IMPL_LINK_NOARG_TYPED(LinePropertyPanelBase, ChangeEndHdl, ListBox&, void)
 {
     sal_Int32  nPos = mpLBEnd->GetSelectEntryPos();
     if( nPos != LISTBOX_ENTRY_NOTFOUND && mpLBEnd->IsValueChangedFromSaved() )
@@ -604,10 +616,9 @@ IMPL_LINK_NOARG(LinePropertyPanelBase, ChangeEndHdl)
             pItem.reset(new XLineEndItem( mpLBEnd->GetSelectEntry(), mxLineEndList->GetLineEnd( nPos - 1 )->GetLineEnd() ));
         setLineEndStyle(pItem.get());
     }
-    return 0;
 }
 
-IMPL_LINK_NOARG(LinePropertyPanelBase, ChangeEdgeStyleHdl)
+IMPL_LINK_NOARG_TYPED(LinePropertyPanelBase, ChangeEdgeStyleHdl, ListBox&, void)
 {
     const sal_Int32 nPos(mpLBEdgeStyle->GetSelectEntryPos());
 
@@ -641,10 +652,9 @@ IMPL_LINK_NOARG(LinePropertyPanelBase, ChangeEdgeStyleHdl)
 
         setLineJoint(pItem.get());
     }
-    return 0;
 }
 
-IMPL_LINK_NOARG(LinePropertyPanelBase, ChangeCapStyleHdl)
+IMPL_LINK_NOARG_TYPED(LinePropertyPanelBase, ChangeCapStyleHdl, ListBox&, void)
 {
     const sal_Int32 nPos(mpLBCapStyle->GetSelectEntryPos());
 
@@ -673,7 +683,6 @@ IMPL_LINK_NOARG(LinePropertyPanelBase, ChangeCapStyleHdl)
 
         setLineCap(pItem.get());
     }
-    return 0;
 }
 
 IMPL_LINK_TYPED(LinePropertyPanelBase, ToolboxWidthSelectHdl,ToolBox*, pToolBox, void)
@@ -685,13 +694,12 @@ IMPL_LINK_TYPED(LinePropertyPanelBase, ToolboxWidthSelectHdl,ToolBox*, pToolBox,
     }
 }
 
-IMPL_LINK_NOARG( LinePropertyPanelBase, ChangeTransparentHdl )
+IMPL_LINK_NOARG_TYPED( LinePropertyPanelBase, ChangeTransparentHdl, Edit&, void )
 {
     sal_uInt16 nVal = (sal_uInt16)mpMFTransparent->GetValue();
     XLineTransparenceItem aItem( nVal );
 
     setLineTransparency(aItem);
-    return 0L;
 }
 
 VclPtr<PopupControl> LinePropertyPanelBase::CreateLineWidthPopupControl (PopupContainer* pParent)
@@ -761,7 +769,12 @@ void  LinePropertyPanelBase::FillLineEndList()
 
         if (mxLineEndList.is())
         {
-            FillLineEndListBox(*mpLBStart, *mpLBEnd, *mxLineEndList);
+            Bitmap aZeroBitmap;
+
+            if (mxLineStyleList.is())
+                aZeroBitmap = mxLineStyleList->GetBitmapForUISolidLine();
+
+            FillLineEndListBox(*mpLBStart, *mpLBEnd, *mxLineEndList, aZeroBitmap);
         }
 
         mpLBStart->SelectEntryPos(0);
@@ -918,6 +931,13 @@ void LinePropertyPanelBase::ActivateControls()
 void LinePropertyPanelBase::setMapUnit(SfxMapUnit eMapUnit)
 {
     meMapUnit = eMapUnit;
+}
+
+void LinePropertyPanelBase::disableArrowHead()
+{
+    mbArrowSupported = false;
+    mpLBStart->Hide();
+    mpLBEnd->Hide();
 }
 
 }} // end of namespace svx::sidebar

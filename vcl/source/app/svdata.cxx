@@ -18,7 +18,6 @@
  */
 
 #include <string.h>
-#include <boost/ptr_container/ptr_vector.hpp>
 
 #include <comphelper/processfactory.hxx>
 #include <comphelper/string.hxx>
@@ -107,43 +106,44 @@ void ImplDeInitSVData()
         delete pSVData->mpDockingManager;
 
     if( pSVData->maCtrlData.mpFieldUnitStrings )
-        delete pSVData->maCtrlData.mpFieldUnitStrings, pSVData->maCtrlData.mpFieldUnitStrings = NULL;
+        delete pSVData->maCtrlData.mpFieldUnitStrings, pSVData->maCtrlData.mpFieldUnitStrings = nullptr;
     if( pSVData->maCtrlData.mpCleanUnitStrings )
-        delete pSVData->maCtrlData.mpCleanUnitStrings, pSVData->maCtrlData.mpCleanUnitStrings = NULL;
+        delete pSVData->maCtrlData.mpCleanUnitStrings, pSVData->maCtrlData.mpCleanUnitStrings = nullptr;
     if( pSVData->mpPaperNames )
-        delete pSVData->mpPaperNames, pSVData->mpPaperNames = NULL;
+        delete pSVData->mpPaperNames, pSVData->mpPaperNames = nullptr;
 }
 
+/// Returns either the application window, or the default GL context window
 vcl::Window* ImplGetDefaultWindow()
 {
     ImplSVData* pSVData = ImplGetSVData();
     if ( pSVData->maWinData.mpAppWin )
         return pSVData->maWinData.mpAppWin;
+    else
+        return ImplGetDefaultContextWindow();
+}
 
-    // First test if we already have a default window.
-    // Don't only place a single if..else inside solar mutex lockframe
-    // because then we might have to wait for the solar mutex what is not necessary
-    // if we already have a default window.
+/// returns the default window created to hold the persistent VCL GL context.
+vcl::Window *ImplGetDefaultContextWindow()
+{
+    ImplSVData* pSVData = ImplGetSVData();
 
+    // Double check locking on mpDefaultWin.
     if ( !pSVData->mpDefaultWin )
     {
-        Application::GetSolarMutex().acquire();
-
-        // Test again because the thread who released the solar mutex could have called
-        // the same method
+        SolarMutexGuard aGuard;
 
         if ( !pSVData->mpDefaultWin && !pSVData->mbDeInit )
         {
-            DBG_WARNING( "ImplGetDefaultWindow(): No AppWindow" );
+            SAL_INFO( "vcl", "ImplGetDefaultWindow(): No AppWindow" );
             pSVData->mpDefaultWin = VclPtr<WorkWindow>::Create( nullptr, WB_DEFAULTWIN );
-            pSVData->mpDefaultWin->SetText( OUString( "VCL ImplGetDefaultWindow"  ) );
+            pSVData->mpDefaultWin->SetText( "VCL ImplGetDefaultWindow" );
 
             // Add a reference to the default context so it never gets deleted
             rtl::Reference<OpenGLContext> pContext = pSVData->mpDefaultWin->GetGraphics()->GetOpenGLContext();
             if( pContext.is() )
                 pContext->acquire();
         }
-        Application::GetSolarMutex().release();
     }
 
     return pSVData->mpDefaultWin;
@@ -249,6 +249,7 @@ BlendFrameCache* ImplGetBlendFrameCache()
 bool HasAtHook();
 #endif
 
+#ifdef _WIN32
 bool ImplInitAccessBridge()
 {
     ImplSVData* pSVData = ImplGetSVData();
@@ -256,7 +257,6 @@ bool ImplInitAccessBridge()
     {
         css::uno::Reference< XComponentContext > xContext(comphelper::getProcessComponentContext());
 
-#ifdef _WIN32
         if (!HasAtHook() && !getenv("SAL_FORCE_IACCESSIBLE2"))
         {
             SAL_INFO("vcl", "Apparently no running AT -> "
@@ -276,31 +276,11 @@ bool ImplInitAccessBridge()
                  return false;
              }
         }
-#endif
     }
 
     return true;
 }
-
-vcl::Window* ImplFindWindow( const SalFrame* pFrame, ::Point& rSalFramePos )
-{
-    ImplSVData* pSVData = ImplGetSVData();
-    vcl::Window*     pFrameWindow = pSVData->maWinData.mpFirstFrame;
-    while ( pFrameWindow )
-    {
-        if ( pFrameWindow->ImplGetFrame() == pFrame )
-        {
-            vcl::Window* pWindow = pFrameWindow->ImplFindWindow( rSalFramePos );
-            if ( !pWindow )
-                pWindow = pFrameWindow->ImplGetWindow();
-            rSalFramePos = pWindow->ImplFrameToOutput( rSalFramePos );
-            return pWindow;
-        }
-        pFrameWindow = pFrameWindow->ImplGetFrameData()->mpNextFrame;
-    }
-
-    return NULL;
-}
+#endif
 
 void LocaleConfigurationListener::ConfigurationChanged( utl::ConfigurationBroadcaster*, sal_uInt32 nHint )
 {

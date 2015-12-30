@@ -40,7 +40,7 @@ public:
     sal_Int32                       mnLastAngle;
 
     E3dDragMethodUnit()
-    :   mp3DObj(0),
+    :   mp3DObj(nullptr),
         maWireframePoly(),
         maDisplayTransform(),
         maInvDisplayTransform(),
@@ -63,21 +63,20 @@ protected:
     bool                                mbMovedAtAll;
 
 public:
-    TYPEINFO_OVERRIDE();
     E3dDragMethod(
         SdrDragView &rView,
         const SdrMarkList& rMark,
         E3dDragConstraint eConstr = E3DDRAG_CONSTR_XYZ,
         bool bFull = false);
 
-    virtual void TakeSdrDragComment(OUString& rStr) const SAL_OVERRIDE;
-    virtual bool BeginSdrDrag() SAL_OVERRIDE;
-    virtual void MoveSdrDrag(const Point& rPnt) SAL_OVERRIDE;
-    virtual void CancelSdrDrag() SAL_OVERRIDE;
-    virtual bool EndSdrDrag(bool bCopy) SAL_OVERRIDE;
+    virtual void TakeSdrDragComment(OUString& rStr) const override;
+    virtual bool BeginSdrDrag() override;
+    virtual void MoveSdrDrag(const Point& rPnt) override;
+    virtual void CancelSdrDrag() override;
+    virtual bool EndSdrDrag(bool bCopy) override;
 
     // for migration from XOR to overlay
-    virtual void CreateOverlayGeometry(sdr::overlay::OverlayManager& rOverlayManager) SAL_OVERRIDE;
+    virtual void CreateOverlayGeometry(sdr::overlay::OverlayManager& rOverlayManager) override;
 };
 
 // Derivative of SdrDragMethod for spinning 3D objects
@@ -86,15 +85,14 @@ class E3dDragRotate : public E3dDragMethod
     basegfx::B3DPoint                   maGlobalCenter;
 
 public:
-    TYPEINFO_OVERRIDE();
     E3dDragRotate(
         SdrDragView &rView,
         const SdrMarkList& rMark,
         E3dDragConstraint eConstr = E3DDRAG_CONSTR_XYZ,
         bool bFull = false);
 
-    virtual void MoveSdrDrag(const Point& rPnt) SAL_OVERRIDE;
-    virtual Pointer GetSdrDragPointer() const SAL_OVERRIDE;
+    virtual void MoveSdrDrag(const Point& rPnt) override;
+    virtual Pointer GetSdrDragPointer() const override;
 };
 
 // Derivative of SdrDragMethod for moving 3D sub-objects
@@ -104,7 +102,6 @@ class E3dDragMove : public E3dDragMethod
     Point                   maScaleFixPos;
 
 public:
-    TYPEINFO_OVERRIDE();
     E3dDragMove(
         SdrDragView &rView,
         const SdrMarkList& rMark,
@@ -112,8 +109,8 @@ public:
         E3dDragConstraint eConstr = E3DDRAG_CONSTR_XYZ,
         bool bFull = false);
 
-    virtual void MoveSdrDrag(const Point& rPnt) SAL_OVERRIDE;
-    virtual Pointer GetSdrDragPointer() const SAL_OVERRIDE;
+    virtual void MoveSdrDrag(const Point& rPnt) override;
+    virtual Pointer GetSdrDragPointer() const override;
 };
 
 

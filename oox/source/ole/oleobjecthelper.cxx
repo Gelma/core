@@ -21,6 +21,7 @@
 
 #include <com/sun/star/awt/Rectangle.hpp>
 #include <com/sun/star/awt/Size.hpp>
+#include <com/sun/star/beans/XPropertySet.hpp>
 #include <com/sun/star/container/XNameAccess.hpp>
 #include <com/sun/star/document/XEmbeddedObjectResolver.hpp>
 #include <com/sun/star/embed/Aspects.hpp>
@@ -28,6 +29,7 @@
 #include <com/sun/star/lang/XComponent.hpp>
 #include <com/sun/star/lang/XMultiServiceFactory.hpp>
 #include <osl/diagnose.h>
+#include <comphelper/sequenceashashmap.hxx>
 #include "oox/helper/propertymap.hxx"
 
 namespace oox {
@@ -47,10 +49,14 @@ OleObjectInfo::OleObjectInfo() :
 {
 }
 
-OleObjectHelper::OleObjectHelper( const Reference< XMultiServiceFactory >& rxModelFactory ) :
-    maEmbeddedObjScheme( "vnd.sun.star.EmbeddedObject:" ),
-    mnObjectId( 100 )
+OleObjectHelper::OleObjectHelper(
+        const Reference< XMultiServiceFactory >& rxModelFactory,
+        uno::Reference<frame::XModel> const& xModel)
+    : m_xModel(xModel)
+    , maEmbeddedObjScheme("vnd.sun.star.EmbeddedObject:")
+    , mnObjectId( 100 )
 {
+    assert(m_xModel.is());
     if( rxModelFactory.is() ) try
     {
         mxResolver.set( rxModelFactory->createInstance( "com.sun.star.document.ImportEmbeddedObjectResolver" ), UNO_QUERY );
@@ -70,6 +76,48 @@ OleObjectHelper::~OleObjectHelper()
     catch(const Exception& )
     {
     }
+}
+
+// TODO: this is probably a sub-optimal approach: ideally the media type
+// of the stream from [Content_Types].xml should be stored somewhere for this
+// purpose, but currently the media type of all OLE streams in the storage is
+// just "application/vnd.sun.star.oleobject"
+void SaveInteropProperties(uno::Reference<frame::XModel> const& xModel,
+       OUString const& rObjectName, OUString const*const pOldObjectName,
+       OUString const& rProgId, OUString const& rDrawAspect)
+{
+    static const char sEmbeddingsPropName[] = "EmbeddedObjects";
+
+    // get interop grab bag from document
+    uno::Reference<beans::XPropertySet> const xDocProps(xModel, uno::UNO_QUERY);
+    comphelper::SequenceAsHashMap aGrabBag(xDocProps->getPropertyValue("InteropGrabBag"));
+
+    // get EmbeddedObjects property inside grab bag
+    comphelper::SequenceAsHashMap objectsList;
+    if (aGrabBag.find(sEmbeddingsPropName) != aGrabBag.end())
+        objectsList << aGrabBag[sEmbeddingsPropName];
+
+    uno::Sequence< beans::PropertyValue > aGrabBagAttribute(2);
+    aGrabBagAttribute[0].Name = "ProgID";
+    aGrabBagAttribute[0].Value <<= rProgId;
+    aGrabBagAttribute[1].Name = "DrawAspect";
+    aGrabBagAttribute[1].Value <<= rDrawAspect;
+
+    // If we got an "old name", erase that first.
+    if (pOldObjectName)
+    {
+        comphelper::SequenceAsHashMap::iterator it = objectsList.find(*pOldObjectName);
+        if (it != objectsList.end())
+            objectsList.erase(it);
+    }
+
+    objectsList[rObjectName] = uno::Any( aGrabBagAttribute );
+
+    // put objects list back into the grab bag
+    aGrabBag[sEmbeddingsPropName] = uno::Any(objectsList.getAsConstPropertyValueList());
+
+    // put grab bag back into the document
+    xDocProps->setPropertyValue("InteropGrabBag", uno::Any(aGrabBag.getAsConstPropertyValueList()));
 }
 
 bool OleObjectHelper::importOleObject( PropertyMap& rPropMap, const OleObjectInfo& rOleObject, const awt::Size& rObjSize )
@@ -96,6 +144,10 @@ bool OleObjectHelper::importOleObject( PropertyMap& rPropMap, const OleObjectInf
             Reference< XOutputStream > xOutStrm( xResolverNA->getByName( aObjectId ), UNO_QUERY_THROW );
             xOutStrm->writeBytes( rOleObject.maEmbeddedData );
             xOutStrm->closeOutput();
+
+            SaveInteropProperties(m_xModel, aObjectId, nullptr,
+                rOleObject.maProgId,
+                rOleObject.mbShowAsIcon ? OUString("Icon") : OUString("Content"));
 
             OUString aUrl = mxResolver->resolveEmbeddedObjectURL( aObjectId );
             OSL_ENSURE( aUrl.match( maEmbeddedObjScheme ), "OleObjectHelper::importOleObject - unexpected URL scheme" );

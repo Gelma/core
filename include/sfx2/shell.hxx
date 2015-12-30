@@ -26,7 +26,6 @@
 #include <sfx2/dllapi.h>
 #include <sfx2/sfxuno.hxx>
 #include <svl/SfxBroadcaster.hxx>
-#include <tools/rtti.hxx>
 
 class ResMgr;
 namespace vcl { class Window; }
@@ -142,8 +141,8 @@ class SFX2_DLLPUBLIC SfxShell: public SfxBroadcaster
     ::svl::IUndoManager*        pUndoMgr;
 
 private:
-                                SfxShell( const SfxShell & ) SAL_DELETED_FUNCTION;
-    SfxShell&                                   operator = ( const SfxShell & ) SAL_DELETED_FUNCTION;
+                                SfxShell( const SfxShell & ) = delete;
+    SfxShell&                                   operator = ( const SfxShell & ) = delete;
 
 protected:
     /**
@@ -165,7 +164,6 @@ protected:
     static void HandleOpenXmlFilterSettings(SfxRequest &);
 
 public:
-    TYPEINFO_OVERRIDE();
 
     /**
         The connection to a possible corresponding SbxObject is dissolved.
@@ -183,7 +181,7 @@ public:
         NULL-pointer is returned.
         */
     virtual SfxInterface*       GetInterface() const;
-    static SfxInterface*        GetStaticInterface() { return 0; }
+    static SfxInterface*        GetStaticInterface() { return nullptr; }
 
     /**
         Sets the name of the Shell object. With this name, the SfxShell instance
@@ -246,7 +244,7 @@ public:
 
         <SfxShell::ExecuteSlot(SfxRequest&)>
         */
-    const SfxPoolItem*          GetSlotState( sal_uInt16 nSlotId, const SfxInterface *pIF = 0, SfxItemSet *pStateSet = 0 );
+    const SfxPoolItem*          GetSlotState( sal_uInt16 nSlotId, const SfxInterface *pIF = nullptr, SfxItemSet *pStateSet = nullptr );
 
     /**
         This method allows you to forward a <SfxRequest> to the specified
@@ -278,7 +276,7 @@ public:
 
         <SfxShell::GetSlotState(sal_uInt16,const SfxInterface*,SfxItemSet*)>
         */
-    const SfxPoolItem*          ExecuteSlot( SfxRequest &rReq, const SfxInterface *pIF = 0 );
+    const SfxPoolItem*          ExecuteSlot( SfxRequest &rReq, const SfxInterface *pIF = nullptr );
 
     /**
         Asynchronous ExecuteSlot for the RELOAD
@@ -439,8 +437,8 @@ public:
     void                        PutItem( const SfxPoolItem& rItem );
 
     // TODO/CLEANUP: still needed?!
-    void SetVerbs(const com::sun::star::uno::Sequence < com::sun::star::embed::VerbDescriptor >& aVerbs);
-    const com::sun::star::uno::Sequence < com::sun::star::embed::VerbDescriptor >& GetVerbs() const;
+    void SetVerbs(const css::uno::Sequence < css::embed::VerbDescriptor >& aVerbs);
+    const css::uno::Sequence < css::embed::VerbDescriptor >& GetVerbs() const;
     void                        VerbExec (SfxRequest&);
     static void                 VerbState (SfxItemSet&);
     SAL_DLLPRIVATE const SfxSlot* GetVerbSlot_Impl(sal_uInt16 nId) const;
@@ -538,12 +536,12 @@ inline void SfxShell::SetPool
             static SfxInterface*                pInterface;                 \
             static SfxInterface*                GetStaticInterface();       \
             static SfxInterfaceId               GetInterfaceId() {return SfxInterfaceId(nId);} \
-            static void                         RegisterInterface(SfxModule* pMod=NULL); \
-            virtual SfxInterface*       GetInterface() const SAL_OVERRIDE;
+            static void                         RegisterInterface(SfxModule* pMod=nullptr); \
+            virtual SfxInterface*       GetInterface() const override;
 
 #define SFX_TMPL_INTERFACE(Class,SuperClass,Abstract)                       \
                                                                             \
-    SfxInterface* Class::pInterface = 0;                                    \
+    SfxInterface* Class::pInterface = nullptr;                                    \
     SfxInterface* Class::GetStaticInterface()                               \
     {                                                                       \
         if ( !pInterface )                                                  \

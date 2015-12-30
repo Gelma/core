@@ -105,6 +105,8 @@ class SbiExprNode {                  // operators (and operands)
     SbiToken     eTok;
     bool  bError;                   // true: error
     void  FoldConstants(SbiParser*);
+    void  FoldConstantsBinaryNode(SbiParser*);
+    void  FoldConstantsUnaryNode(SbiParser*);
     void  CollectBits();            // converting numbers to strings
     bool  IsOperand()
         { return eNodeType != SbxNODE && eNodeType != SbxTYPEOF && eNodeType != SbxNEW; }
@@ -120,7 +122,7 @@ public:
     SbiExprNode();
     SbiExprNode( double, SbxDataType );
     SbiExprNode( const OUString& );
-    SbiExprNode( const SbiSymDef&, SbxDataType, SbiExprList* = NULL );
+    SbiExprNode( const SbiSymDef&, SbxDataType, SbiExprList* = nullptr );
     SbiExprNode( SbiExprNode*, SbiToken, SbiExprNode* );
     SbiExprNode( SbiExprNode*, sal_uInt16 );    // #120061 TypeOf
     SbiExprNode( sal_uInt16 );                  // new <type>
@@ -131,6 +133,10 @@ public:
         { return eNodeType == SbxSTRVAL || eNodeType == SbxNUMVAL; }
     bool IsIntConst();
     bool IsVariable();
+    bool  IsUnary()
+        { return pLeft && !pRight; }
+    bool  IsBinary()
+        { return pLeft && pRight; }
 
     SbiExprNode* GetWithParent()            { return pWithParent; }
     void SetWithParent( SbiExprNode* p )    { pWithParent = p; }
@@ -167,7 +173,7 @@ protected:
     bool          bByVal;           // true: ByVal-Parameter
     bool          bBracket;         // true: Parameter list with brackets
     sal_uInt16        nParenLevel;
-    SbiExprNode* Term( const KeywordSymbolInfo* pKeywordSymbolInfo = NULL );
+    SbiExprNode* Term( const KeywordSymbolInfo* pKeywordSymbolInfo = nullptr );
     SbiExprNode* ObjTerm( SbiSymDef& );
     SbiExprNode* Operand( bool bUsedForTypeOf = false );
     SbiExprNode* Unary();
@@ -183,9 +189,9 @@ protected:
     SbiExprNode* Boolean();
 public:
     SbiExpression( SbiParser*, SbiExprType = SbSTDEXPR,
-        SbiExprMode eMode = EXPRMODE_STANDARD, const KeywordSymbolInfo* pKeywordSymbolInfo = NULL ); // parsing Ctor
+        SbiExprMode eMode = EXPRMODE_STANDARD, const KeywordSymbolInfo* pKeywordSymbolInfo = nullptr ); // parsing Ctor
     SbiExpression( SbiParser*, double, SbxDataType = SbxDOUBLE );
-    SbiExpression( SbiParser*, const SbiSymDef&, SbiExprList* = NULL );
+    SbiExpression( SbiParser*, const SbiSymDef&, SbiExprList* = nullptr );
    ~SbiExpression();
     OUString& GetName()             { return aArgName;            }
     void SetBased()                 { bBased = true;              }

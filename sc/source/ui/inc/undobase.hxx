@@ -36,16 +36,15 @@ class ScDBData;
 
 class ScSimpleUndo: public SfxUndoAction
 {
-    ScSimpleUndo(const ScSimpleUndo&) SAL_DELETED_FUNCTION;
+    ScSimpleUndo(const ScSimpleUndo&) = delete;
 
 public:
     typedef boost::ptr_map<SCTAB,sc::ColumnSpanSet> DataSpansType;
 
-                    TYPEINFO_OVERRIDE();
                     ScSimpleUndo( ScDocShell* pDocSh );
     virtual         ~ScSimpleUndo();
 
-    virtual bool    Merge( SfxUndoAction *pNextAction ) SAL_OVERRIDE;
+    virtual bool    Merge( SfxUndoAction *pNextAction ) override;
 
 protected:
     ScDocShell*     pDocShell;
@@ -79,7 +78,6 @@ enum ScBlockUndoMode { SC_UNDO_SIMPLE, SC_UNDO_MANUALHEIGHT, SC_UNDO_AUTOHEIGHT 
 class ScBlockUndo: public ScSimpleUndo
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScBlockUndo( ScDocShell* pDocSh, const ScRange& rRange,
                                  ScBlockUndoMode eBlockMode );
     virtual         ~ScBlockUndo();
@@ -101,7 +99,6 @@ protected:
 class ScMultiBlockUndo: public ScSimpleUndo
 {
 public:
-    TYPEINFO_OVERRIDE();
     ScMultiBlockUndo(ScDocShell* pDocSh, const ScRangeList& rRanges,
                      ScBlockUndoMode eBlockMode);
     virtual ~ScMultiBlockUndo();
@@ -130,8 +127,7 @@ protected:
     SdrUndoAction*  mpDrawUndo;
 
 public:
-                    TYPEINFO_OVERRIDE();
-                    ScDBFuncUndo( ScDocShell* pDocSh, const ScRange& rOriginal, SdrUndoAction* pDrawUndo = 0 );
+                    ScDBFuncUndo( ScDocShell* pDocSh, const ScRange& rOriginal, SdrUndoAction* pDrawUndo = nullptr );
     virtual         ~ScDBFuncUndo();
 
     void            BeginUndo();
@@ -145,7 +141,6 @@ enum ScMoveUndoMode { SC_UNDO_REFFIRST, SC_UNDO_REFLAST };
 class ScMoveUndo: public ScSimpleUndo               // mit Referenzen
 {
 public:
-                    TYPEINFO_OVERRIDE();
                     ScMoveUndo( ScDocShell* pDocSh,
                                 ScDocument* pRefDoc, ScRefUndoData* pRefData,
                                 ScMoveUndoMode eRefMode );
@@ -171,23 +166,22 @@ class ScUndoWrapper: public SfxUndoAction           // for manual merging of act
     SfxUndoAction*  pWrappedUndo;
 
 public:
-                            TYPEINFO_OVERRIDE();
                             ScUndoWrapper( SfxUndoAction* pUndo );
     virtual                 ~ScUndoWrapper();
 
     SfxUndoAction*          GetWrappedUndo()        { return pWrappedUndo; }
     void                    ForgetWrappedUndo();
 
-    virtual void SetLinkToSfxLinkUndoAction(SfxLinkUndoAction* pSfxLinkUndoAction) SAL_OVERRIDE;
+    virtual void SetLinkToSfxLinkUndoAction(SfxLinkUndoAction* pSfxLinkUndoAction) override;
 
-    virtual void            Undo() SAL_OVERRIDE;
-    virtual void            Redo() SAL_OVERRIDE;
-    virtual void            Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool            CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
-    virtual bool            Merge( SfxUndoAction *pNextAction ) SAL_OVERRIDE;
-    virtual OUString        GetComment() const SAL_OVERRIDE;
-    virtual OUString        GetRepeatComment(SfxRepeatTarget&) const SAL_OVERRIDE;
-    virtual sal_uInt16      GetId() const SAL_OVERRIDE;
+    virtual void            Undo() override;
+    virtual void            Redo() override;
+    virtual void            Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool            CanRepeat(SfxRepeatTarget& rTarget) const override;
+    virtual bool            Merge( SfxUndoAction *pNextAction ) override;
+    virtual OUString        GetComment() const override;
+    virtual OUString        GetRepeatComment(SfxRepeatTarget&) const override;
+    virtual sal_uInt16      GetId() const override;
 };
 
 #endif

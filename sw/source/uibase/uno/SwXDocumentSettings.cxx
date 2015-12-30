@@ -87,7 +87,7 @@ enum SwDocumentSettingsPropertyHandles
     HANDLE_IS_LABEL_DOC,
     HANDLE_IS_ADD_FLY_OFFSET,
     HANDLE_IS_ADD_EXTERNAL_LEADING,
-    HANDLE_OLD_NUMBERING, // #111955#
+    HANDLE_OLD_NUMBERING,
     HANDLE_OUTLINELEVEL_YIELDS_NUMBERING,
     /* Stampit It disable the print cancel button of the shown progress dialog. */
     HANDLE_ALLOW_PRINTJOB_CANCEL,
@@ -111,7 +111,6 @@ enum SwDocumentSettingsPropertyHandles
     HANDLE_TABS_RELATIVE_TO_INDENT,
     HANDLE_RSID,
     HANDLE_RSID_ROOT,
-    // #i89181#
     HANDLE_TAB_AT_LEFT_INDENT_FOR_PARA_IN_LIST,
     HANDLE_MODIFYPASSWORDINFO,
     HANDLE_MATH_BASELINE_ALIGNMENT,
@@ -137,74 +136,73 @@ static MasterPropertySetInfo * lcl_createSettingsInfo()
 {
     static PropertyInfo const aWriterSettingsInfoMap[] =
     {
-        { OUString("ForbiddenCharacters"),        HANDLE_FORBIDDEN_CHARS,                 cppu::UnoType<css::i18n::XForbiddenCharacters>::get(),      0,   0},
-        { OUString("LinkUpdateMode"),             HANDLE_LINK_UPDATE_MODE,                cppu::UnoType<sal_Int16>::get(),             0,   0},
-        { OUString("FieldAutoUpdate"),            HANDLE_FIELD_AUTO_UPDATE,               cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("ChartAutoUpdate"),            HANDLE_CHART_AUTO_UPDATE,               cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("AddParaTableSpacing"),        HANDLE_ADD_PARA_TABLE_SPACING,          cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("AddParaTableSpacingAtStart"), HANDLE_ADD_PARA_TABLE_SPACING_AT_START, cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("AlignTabStopPosition"),       HANDLE_ALIGN_TAB_STOP_POSITION,         cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("PrinterName"),                HANDLE_PRINTER_NAME,                    cppu::UnoType<OUString>::get(),          0,   0},
-        { OUString("PrinterSetup"),               HANDLE_PRINTER_SETUP,                   cppu::UnoType< cppu::UnoSequenceType<sal_Int8> >::get(),           0,   0},
-        { OUString("IsKernAsianPunctuation"),     HANDLE_IS_KERN_ASIAN_PUNCTUATION,       cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("CharacterCompressionType"),   HANDLE_CHARACTER_COMPRESSION_TYPE,      cppu::UnoType<sal_Int16>::get(),             0,   0},
-        { OUString("ApplyUserData"),              HANDLE_APPLY_USER_DATA,                 cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("SaveGlobalDocumentLinks"),    HANDLE_SAVE_GLOBAL_DOCUMENT_LINKS,      cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("CurrentDatabaseDataSource"),  HANDLE_CURRENT_DATABASE_DATA_SOURCE,    cppu::UnoType<OUString>::get(),          0,   0},
-        { OUString("CurrentDatabaseCommand"),     HANDLE_CURRENT_DATABASE_COMMAND,        cppu::UnoType<OUString>::get(),          0,   0},
-        { OUString("CurrentDatabaseCommandType"), HANDLE_CURRENT_DATABASE_COMMAND_TYPE,   cppu::UnoType<sal_Int32>::get(),             0,   0},
-        { OUString("EmbeddedDatabaseName"),       HANDLE_EMBEDDED_DATABASE_NAME,          cppu::UnoType<OUString>::get(),              0,   0},
-        { OUString("SaveVersionOnClose"),         HANDLE_SAVE_VERSION_ON_CLOSE,           cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("UpdateFromTemplate"),         HANDLE_UPDATE_FROM_TEMPLATE,            cppu::UnoType<bool>::get(),           0,   0},
+        { OUString("ForbiddenCharacters"),        HANDLE_FORBIDDEN_CHARS,                 cppu::UnoType<css::i18n::XForbiddenCharacters>::get(),      0},
+        { OUString("LinkUpdateMode"),             HANDLE_LINK_UPDATE_MODE,                cppu::UnoType<sal_Int16>::get(),             0},
+        { OUString("FieldAutoUpdate"),            HANDLE_FIELD_AUTO_UPDATE,               cppu::UnoType<bool>::get(),           0},
+        { OUString("ChartAutoUpdate"),            HANDLE_CHART_AUTO_UPDATE,               cppu::UnoType<bool>::get(),           0},
+        { OUString("AddParaTableSpacing"),        HANDLE_ADD_PARA_TABLE_SPACING,          cppu::UnoType<bool>::get(),           0},
+        { OUString("AddParaTableSpacingAtStart"), HANDLE_ADD_PARA_TABLE_SPACING_AT_START, cppu::UnoType<bool>::get(),           0},
+        { OUString("AlignTabStopPosition"),       HANDLE_ALIGN_TAB_STOP_POSITION,         cppu::UnoType<bool>::get(),           0},
+        { OUString("PrinterName"),                HANDLE_PRINTER_NAME,                    cppu::UnoType<OUString>::get(),          0},
+        { OUString("PrinterSetup"),               HANDLE_PRINTER_SETUP,                   cppu::UnoType< cppu::UnoSequenceType<sal_Int8> >::get(),           0},
+        { OUString("IsKernAsianPunctuation"),     HANDLE_IS_KERN_ASIAN_PUNCTUATION,       cppu::UnoType<bool>::get(),           0},
+        { OUString("CharacterCompressionType"),   HANDLE_CHARACTER_COMPRESSION_TYPE,      cppu::UnoType<sal_Int16>::get(),             0},
+        { OUString("ApplyUserData"),              HANDLE_APPLY_USER_DATA,                 cppu::UnoType<bool>::get(),           0},
+        { OUString("SaveGlobalDocumentLinks"),    HANDLE_SAVE_GLOBAL_DOCUMENT_LINKS,      cppu::UnoType<bool>::get(),           0},
+        { OUString("CurrentDatabaseDataSource"),  HANDLE_CURRENT_DATABASE_DATA_SOURCE,    cppu::UnoType<OUString>::get(),          0},
+        { OUString("CurrentDatabaseCommand"),     HANDLE_CURRENT_DATABASE_COMMAND,        cppu::UnoType<OUString>::get(),          0},
+        { OUString("CurrentDatabaseCommandType"), HANDLE_CURRENT_DATABASE_COMMAND_TYPE,   cppu::UnoType<sal_Int32>::get(),             0},
+        { OUString("EmbeddedDatabaseName"),       HANDLE_EMBEDDED_DATABASE_NAME,          cppu::UnoType<OUString>::get(),              0},
+        { OUString("SaveVersionOnClose"),         HANDLE_SAVE_VERSION_ON_CLOSE,           cppu::UnoType<bool>::get(),           0},
+        { OUString("UpdateFromTemplate"),         HANDLE_UPDATE_FROM_TEMPLATE,            cppu::UnoType<bool>::get(),           0},
 
-        { OUString("PrinterIndependentLayout"),   HANDLE_PRINTER_INDEPENDENT_LAYOUT,      cppu::UnoType<sal_Int16>::get(),             0,   0},
-        { OUString("IsLabelDocument"),            HANDLE_IS_LABEL_DOC,                    cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("AddFrameOffsets"),            HANDLE_IS_ADD_FLY_OFFSET,               cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("AddExternalLeading"),         HANDLE_IS_ADD_EXTERNAL_LEADING,         cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("UseOldNumbering"),            HANDLE_OLD_NUMBERING,                   cppu::UnoType<bool>::get(),           0,   0}, // #111955#
-        { OUString("OutlineLevelYieldsNumbering"), HANDLE_OUTLINELEVEL_YIELDS_NUMBERING, cppu::UnoType<bool>::get(),           0,   0},
+        { OUString("PrinterIndependentLayout"),   HANDLE_PRINTER_INDEPENDENT_LAYOUT,      cppu::UnoType<sal_Int16>::get(),             0},
+        { OUString("IsLabelDocument"),            HANDLE_IS_LABEL_DOC,                    cppu::UnoType<bool>::get(),           0},
+        { OUString("AddFrameOffsets"),            HANDLE_IS_ADD_FLY_OFFSET,               cppu::UnoType<bool>::get(),           0},
+        { OUString("AddExternalLeading"),         HANDLE_IS_ADD_EXTERNAL_LEADING,         cppu::UnoType<bool>::get(),           0},
+        { OUString("UseOldNumbering"),            HANDLE_OLD_NUMBERING,                   cppu::UnoType<bool>::get(),           0},
+        { OUString("OutlineLevelYieldsNumbering"), HANDLE_OUTLINELEVEL_YIELDS_NUMBERING, cppu::UnoType<bool>::get(),           0},
         /* Stampit It disable the print cancel button of the shown progress dialog. */
-        { OUString("AllowPrintJobCancel"),        HANDLE_ALLOW_PRINTJOB_CANCEL,           cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("UseFormerLineSpacing"),       HANDLE_USE_FORMER_LINE_SPACING,         cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("AddParaSpacingToTableCells"), HANDLE_ADD_PARA_SPACING_TO_TABLE_CELLS, cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("UseFormerObjectPositioning"), HANDLE_USE_FORMER_OBJECT_POSITIONING,   cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("UseFormerTextWrapping"),      HANDLE_USE_FORMER_TEXT_WRAPPING,        cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("RedlineProtectionKey"),       HANDLE_CHANGES_PASSWORD,                cppu::UnoType< cppu::UnoSequenceType<sal_Int8> >::get(),           0,   0},
-        { OUString("ConsiderTextWrapOnObjPos"),   HANDLE_CONSIDER_WRAP_ON_OBJPOS,         cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("IgnoreFirstLineIndentInNumbering"),   HANDLE_IGNORE_FIRST_LINE_INDENT_IN_NUMBERING,         cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("DoNotJustifyLinesWithManualBreak"),   HANDLE_DO_NOT_JUSTIFY_LINES_WITH_MANUAL_BREAK,         cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("DoNotResetParaAttrsForNumFont"),   HANDLE_DO_NOT_RESET_PARA_ATTRS_FOR_NUM_FONT,         cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("TableRowKeep"),               HANDLE_TABLE_ROW_KEEP,         cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("IgnoreTabsAndBlanksForLineCalculation"),   HANDLE_IGNORE_TABS_AND_BLANKS_FOR_LINE_CALCULATION,         cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("LoadReadonly"),               HANDLE_LOAD_READONLY,                   cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("DoNotCaptureDrawObjsOnPage"),   HANDLE_DO_NOT_CAPTURE_DRAW_OBJS_ON_PAGE, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("ClipAsCharacterAnchoredWriterFlyFrames"), HANDLE_CLIP_AS_CHARACTER_ANCHORED_WRITER_FLY_FRAMES, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("UnxForceZeroExtLeading"), HANDLE_UNIX_FORCE_ZERO_EXT_LEADING, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("UseOldPrinterMetrics"), HANDLE_USE_OLD_PRINTER_METRICS, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("TabsRelativeToIndent"), HANDLE_TABS_RELATIVE_TO_INDENT, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("Rsid"), HANDLE_RSID, cppu::UnoType<sal_Int32>::get(), 0, 0},
-        { OUString("RsidRoot"), HANDLE_RSID_ROOT, cppu::UnoType<sal_Int32>::get(), 0, 0},
-        { OUString("ProtectForm"), HANDLE_PROTECT_FORM, cppu::UnoType<bool>::get(), 0, 0},
-        // #i89181#
-        { OUString("TabAtLeftIndentForParagraphsInList"), HANDLE_TAB_AT_LEFT_INDENT_FOR_PARA_IN_LIST, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("ModifyPasswordInfo"), HANDLE_MODIFYPASSWORDINFO, cppu::UnoType< cppu::UnoSequenceType<css::beans::PropertyValue> >::get(), 0,   0},
-        { OUString("MathBaselineAlignment"), HANDLE_MATH_BASELINE_ALIGNMENT, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("InvertBorderSpacing"), HANDLE_INVERT_BORDER_SPACING, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("CollapseEmptyCellPara"), HANDLE_COLLAPSE_EMPTY_CELL_PARA, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("SmallCapsPercentage66"), HANDLE_SMALL_CAPS_PERCENTAGE_66, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("TabOverflow"), HANDLE_TAB_OVERFLOW, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("UnbreakableNumberings"), HANDLE_UNBREAKABLE_NUMBERINGS, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("StylesNoDefault"), HANDLE_STYLES_NODEFAULT, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("FloattableNomargins"), HANDLE_FLOATTABLE_NOMARGINS, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("ClippedPictures"), HANDLE_CLIPPED_PICTURES, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("BackgroundParaOverDrawings"), HANDLE_BACKGROUND_PARA_OVER_DRAWINGS, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("EmbedFonts"), HANDLE_EMBED_FONTS, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("EmbedSystemFonts"), HANDLE_EMBED_SYSTEM_FONTS, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("TabOverMargin"), HANDLE_TAB_OVER_MARGIN, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("SurroundTextWrapSmall"), HANDLE_SURROUND_TEXT_WRAP_SMALL, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("ApplyParagraphMarkFormatToNumbering"), HANDLE_APPLY_PARAGRAPH_MARK_FORMAT_TO_NUMBERING, cppu::UnoType<bool>::get(), 0, 0},
-        { OUString("PropLineSpacingShrinksFirstLine"),       HANDLE_PROP_LINE_SPACING_SHRINKS_FIRST_LINE,         cppu::UnoType<bool>::get(),           0,   0},
-        { OUString("SubtractFlysAnchoredAtFlys"),       HANDLE_SUBTRACT_FLYS,         cppu::UnoType<bool>::get(),           0,   0},
+        { OUString("AllowPrintJobCancel"),        HANDLE_ALLOW_PRINTJOB_CANCEL,           cppu::UnoType<bool>::get(),           0},
+        { OUString("UseFormerLineSpacing"),       HANDLE_USE_FORMER_LINE_SPACING,         cppu::UnoType<bool>::get(),           0},
+        { OUString("AddParaSpacingToTableCells"), HANDLE_ADD_PARA_SPACING_TO_TABLE_CELLS, cppu::UnoType<bool>::get(),           0},
+        { OUString("UseFormerObjectPositioning"), HANDLE_USE_FORMER_OBJECT_POSITIONING,   cppu::UnoType<bool>::get(),           0},
+        { OUString("UseFormerTextWrapping"),      HANDLE_USE_FORMER_TEXT_WRAPPING,        cppu::UnoType<bool>::get(),           0},
+        { OUString("RedlineProtectionKey"),       HANDLE_CHANGES_PASSWORD,                cppu::UnoType< cppu::UnoSequenceType<sal_Int8> >::get(),           0},
+        { OUString("ConsiderTextWrapOnObjPos"),   HANDLE_CONSIDER_WRAP_ON_OBJPOS,         cppu::UnoType<bool>::get(),           0},
+        { OUString("IgnoreFirstLineIndentInNumbering"),   HANDLE_IGNORE_FIRST_LINE_INDENT_IN_NUMBERING,         cppu::UnoType<bool>::get(),           0},
+        { OUString("DoNotJustifyLinesWithManualBreak"),   HANDLE_DO_NOT_JUSTIFY_LINES_WITH_MANUAL_BREAK,         cppu::UnoType<bool>::get(),           0},
+        { OUString("DoNotResetParaAttrsForNumFont"),   HANDLE_DO_NOT_RESET_PARA_ATTRS_FOR_NUM_FONT,         cppu::UnoType<bool>::get(),           0},
+        { OUString("TableRowKeep"),               HANDLE_TABLE_ROW_KEEP,         cppu::UnoType<bool>::get(),           0},
+        { OUString("IgnoreTabsAndBlanksForLineCalculation"),   HANDLE_IGNORE_TABS_AND_BLANKS_FOR_LINE_CALCULATION,         cppu::UnoType<bool>::get(),           0},
+        { OUString("LoadReadonly"),               HANDLE_LOAD_READONLY,                   cppu::UnoType<bool>::get(),           0},
+        { OUString("DoNotCaptureDrawObjsOnPage"),   HANDLE_DO_NOT_CAPTURE_DRAW_OBJS_ON_PAGE, cppu::UnoType<bool>::get(), 0},
+        { OUString("ClipAsCharacterAnchoredWriterFlyFrames"), HANDLE_CLIP_AS_CHARACTER_ANCHORED_WRITER_FLY_FRAMES, cppu::UnoType<bool>::get(), 0},
+        { OUString("UnxForceZeroExtLeading"), HANDLE_UNIX_FORCE_ZERO_EXT_LEADING, cppu::UnoType<bool>::get(), 0},
+        { OUString("UseOldPrinterMetrics"), HANDLE_USE_OLD_PRINTER_METRICS, cppu::UnoType<bool>::get(), 0},
+        { OUString("TabsRelativeToIndent"), HANDLE_TABS_RELATIVE_TO_INDENT, cppu::UnoType<bool>::get(), 0},
+        { OUString("Rsid"), HANDLE_RSID, cppu::UnoType<sal_Int32>::get(), 0},
+        { OUString("RsidRoot"), HANDLE_RSID_ROOT, cppu::UnoType<sal_Int32>::get(), 0},
+        { OUString("ProtectForm"), HANDLE_PROTECT_FORM, cppu::UnoType<bool>::get(), 0},
+        { OUString("TabAtLeftIndentForParagraphsInList"), HANDLE_TAB_AT_LEFT_INDENT_FOR_PARA_IN_LIST, cppu::UnoType<bool>::get(), 0},
+        { OUString("ModifyPasswordInfo"), HANDLE_MODIFYPASSWORDINFO, cppu::UnoType< cppu::UnoSequenceType<css::beans::PropertyValue> >::get(), 0},
+        { OUString("MathBaselineAlignment"), HANDLE_MATH_BASELINE_ALIGNMENT, cppu::UnoType<bool>::get(), 0},
+        { OUString("InvertBorderSpacing"), HANDLE_INVERT_BORDER_SPACING, cppu::UnoType<bool>::get(), 0},
+        { OUString("CollapseEmptyCellPara"), HANDLE_COLLAPSE_EMPTY_CELL_PARA, cppu::UnoType<bool>::get(), 0},
+        { OUString("SmallCapsPercentage66"), HANDLE_SMALL_CAPS_PERCENTAGE_66, cppu::UnoType<bool>::get(), 0},
+        { OUString("TabOverflow"), HANDLE_TAB_OVERFLOW, cppu::UnoType<bool>::get(), 0},
+        { OUString("UnbreakableNumberings"), HANDLE_UNBREAKABLE_NUMBERINGS, cppu::UnoType<bool>::get(), 0},
+        { OUString("StylesNoDefault"), HANDLE_STYLES_NODEFAULT, cppu::UnoType<bool>::get(), 0},
+        { OUString("FloattableNomargins"), HANDLE_FLOATTABLE_NOMARGINS, cppu::UnoType<bool>::get(), 0},
+        { OUString("ClippedPictures"), HANDLE_CLIPPED_PICTURES, cppu::UnoType<bool>::get(), 0},
+        { OUString("BackgroundParaOverDrawings"), HANDLE_BACKGROUND_PARA_OVER_DRAWINGS, cppu::UnoType<bool>::get(), 0},
+        { OUString("EmbedFonts"), HANDLE_EMBED_FONTS, cppu::UnoType<bool>::get(), 0},
+        { OUString("EmbedSystemFonts"), HANDLE_EMBED_SYSTEM_FONTS, cppu::UnoType<bool>::get(), 0},
+        { OUString("TabOverMargin"), HANDLE_TAB_OVER_MARGIN, cppu::UnoType<bool>::get(), 0},
+        { OUString("SurroundTextWrapSmall"), HANDLE_SURROUND_TEXT_WRAP_SMALL, cppu::UnoType<bool>::get(), 0},
+        { OUString("ApplyParagraphMarkFormatToNumbering"), HANDLE_APPLY_PARAGRAPH_MARK_FORMAT_TO_NUMBERING, cppu::UnoType<bool>::get(), 0},
+        { OUString("PropLineSpacingShrinksFirstLine"),       HANDLE_PROP_LINE_SPACING_SHRINKS_FIRST_LINE,         cppu::UnoType<bool>::get(),           0},
+        { OUString("SubtractFlysAnchoredAtFlys"),       HANDLE_SUBTRACT_FLYS,         cppu::UnoType<bool>::get(),           0},
 /*
  * As OS said, we don't have a view when we need to set this, so I have to
  * find another solution before adding them to this property set - MTG
@@ -229,7 +227,7 @@ static MasterPropertySetInfo * lcl_createSettingsInfo()
         { OUString("ShowSectionLimitGuide"),      HANDLE_SHOW_SECTION_LIMIT_GUIDE,        cppu::UnoType<bool>::get(),           0,   0},
         { OUString("ShowGuidesWhileMoving"),      HANDLE_SHOW_GUIDES_WHILE_MOVING,        cppu::UnoType<bool>::get(),           0,   0},
 */
-        { OUString(), 0, css::uno::Type(), 0, 0 }
+        { OUString(), 0, css::uno::Type(), 0}
     };
     return new MasterPropertySetInfo ( aWriterSettingsInfoMap );
 }
@@ -237,11 +235,10 @@ static MasterPropertySetInfo * lcl_createSettingsInfo()
 SwXDocumentSettings::SwXDocumentSettings ( SwXTextDocument * pModel )
 : MasterPropertySet ( lcl_createSettingsInfo (),
                       &Application::GetSolarMutex () )
-, mxModel ( pModel )
 , mpModel ( pModel )
-, mpDocSh ( NULL )
-, mpDoc ( NULL )
-, mpPrinter( NULL )
+, mpDocSh ( nullptr )
+, mpDoc ( nullptr )
+, mpPrinter( nullptr )
 {
     registerSlave ( new SwXPrintSettings ( PRINT_SETTINGS_DOCUMENT, mpModel->GetDocShell()->GetDoc() ) );
 }
@@ -305,11 +302,11 @@ void SwXDocumentSettings::_preSetValues ()
         throw(beans::UnknownPropertyException, beans::PropertyVetoException, lang::IllegalArgumentException, lang::WrappedTargetException )
 {
     mpDocSh = mpModel->GetDocShell();
-    if (NULL == mpDocSh)
+    if (nullptr == mpDocSh)
         throw UnknownPropertyException();
 
     mpDoc = mpDocSh->GetDoc();
-    if (NULL == mpDoc)
+    if (nullptr == mpDoc)
         throw UnknownPropertyException();
 }
 
@@ -317,7 +314,7 @@ void SwXDocumentSettings::_setSingleValue( const comphelper::PropertyInfo & rInf
         throw (beans::UnknownPropertyException, beans::PropertyVetoException, lang::IllegalArgumentException, lang::WrappedTargetException, uno::RuntimeException, std::exception)
 {
     if (rInfo.mnAttributes & PropertyAttribute::READONLY)
-        throw PropertyVetoException ("Property is read-only: " + rInfo.maName, static_cast < cppu::OWeakObject * > ( 0 ) );
+        throw PropertyVetoException ("Property is read-only: " + rInfo.maName, static_cast < cppu::OWeakObject * > ( nullptr ) );
 
     switch( rInfo.mnHandle )
     {
@@ -561,7 +558,7 @@ void SwXDocumentSettings::_setSingleValue( const comphelper::PropertyInfo & rInf
             mpDoc->getIDocumentSettingAccess().set(DocumentSettingId::ADD_EXT_LEADING, bTmp);
         }
         break;
-        case HANDLE_OLD_NUMBERING: // #111955#
+        case HANDLE_OLD_NUMBERING:
         {
             bool bTmp = *static_cast<sal_Bool const *>(rValue.getValue());
             mpDoc->getIDocumentSettingAccess().set(DocumentSettingId::OLD_NUMBERING, bTmp);
@@ -708,7 +705,6 @@ void SwXDocumentSettings::_setSingleValue( const comphelper::PropertyInfo & rInf
             mpDoc->getIDocumentSettingAccess().set(DocumentSettingId::PROTECT_FORM, bTmp);
         }
         break;
-        // #i89181#
         case HANDLE_TAB_AT_LEFT_INDENT_FOR_PARA_IN_LIST:
         {
             bool bTmp = *static_cast<sal_Bool const *>(rValue.getValue());
@@ -862,19 +858,19 @@ void SwXDocumentSettings::_postSetValues ()
         mpDoc->getIDocumentDeviceAccess().setPrinter( mpPrinter, true, true );
     }
 
-    mpPrinter = 0;
-    mpDocSh = 0;
-    mpDoc = 0;
+    mpPrinter = nullptr;
+    mpDocSh = nullptr;
+    mpDoc = nullptr;
 }
 
 void SwXDocumentSettings::_preGetValues ()
         throw(beans::UnknownPropertyException, beans::PropertyVetoException, lang::IllegalArgumentException, lang::WrappedTargetException )
 {
     mpDocSh = mpModel->GetDocShell();
-    if (NULL == mpDocSh)
+    if (nullptr == mpDocSh)
         throw UnknownPropertyException();
     mpDoc = mpDocSh->GetDoc();
-    if (NULL == mpDoc)
+    if (nullptr == mpDoc)
         throw UnknownPropertyException();
 }
 
@@ -1029,12 +1025,12 @@ void SwXDocumentSettings::_getSingleValue( const comphelper::PropertyInfo & rInf
             rValue <<= mpDoc->getIDocumentSettingAccess().get(DocumentSettingId::ADD_EXT_LEADING);
         }
         break;
-        case HANDLE_OLD_NUMBERING: // #111955#
+        case HANDLE_OLD_NUMBERING:
         {
             rValue <<= mpDoc->getIDocumentSettingAccess().get(DocumentSettingId::OLD_NUMBERING);
         }
         break;
-        case HANDLE_OUTLINELEVEL_YIELDS_NUMBERING: // #111955#
+        case HANDLE_OUTLINELEVEL_YIELDS_NUMBERING:
         {
             rValue <<= mpDoc->getIDocumentSettingAccess().get(DocumentSettingId::OUTLINE_LEVEL_YIELDS_OUTLINE_RULE);
         }
@@ -1144,7 +1140,6 @@ void SwXDocumentSettings::_getSingleValue( const comphelper::PropertyInfo & rInf
             rValue <<= mpDoc->getIDocumentSettingAccess().get(DocumentSettingId::PROTECT_FORM);
         }
         break;
-        // #i89181#
         case HANDLE_TAB_AT_LEFT_INDENT_FOR_PARA_IN_LIST:
         {
             rValue <<= mpDoc->getIDocumentSettingAccess().get(DocumentSettingId::TAB_AT_LEFT_INDENT_FOR_PARA_IN_LIST);
@@ -1248,8 +1243,8 @@ void SwXDocumentSettings::_getSingleValue( const comphelper::PropertyInfo & rInf
 void SwXDocumentSettings::_postGetValues ()
         throw(beans::UnknownPropertyException, beans::PropertyVetoException, lang::IllegalArgumentException, lang::WrappedTargetException )
 {
-    mpDocSh = 0;
-    mpDoc = 0;
+    mpDocSh = nullptr;
+    mpDoc = nullptr;
 }
 
 // XServiceInfo

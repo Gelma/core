@@ -47,10 +47,10 @@ namespace drawinglayer
                 this will not only be used by the renderers to provide the correct decompose
                 graphic attribute context, but also to completely create the page's sub-content.
              */
-            const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XDrawPage > mxDrawPage;
+            const css::uno::Reference< css::drawing::XDrawPage > mxDrawPage;
 
             /// the PageContent
-            Primitive2DSequence                         maPageContent;
+            Primitive2DContainer                           maPageContent;
 
             /// the own geometry
             basegfx::B2DHomMatrix                       maTransform;
@@ -65,31 +65,31 @@ namespace drawinglayer
 
         protected:
             /// local decomposition. Implementation will just return children
-            virtual Primitive2DSequence create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const SAL_OVERRIDE;
+            virtual Primitive2DContainer create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const override;
 
         public:
             /// constructor
             PagePreviewPrimitive2D(
-                const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XDrawPage >& rxDrawPage,
+                const css::uno::Reference< css::drawing::XDrawPage >& rxDrawPage,
                 const basegfx::B2DHomMatrix& rTransform,
                 double fContentWidth,
                 double fContentHeight,
-                const Primitive2DSequence& rPageContent,
+                const Primitive2DContainer& rPageContent,
                 bool bKeepAspectRatio);
 
             /// data read access
-            const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XDrawPage >& getXDrawPage() const { return mxDrawPage; }
-            const Primitive2DSequence& getPageContent() const { return maPageContent; }
+            const css::uno::Reference< css::drawing::XDrawPage >& getXDrawPage() const { return mxDrawPage; }
+            const Primitive2DContainer& getPageContent() const { return maPageContent; }
             const basegfx::B2DHomMatrix& getTransform() const { return maTransform; }
             double getContentWidth() const { return mfContentWidth; }
             double getContentHeight() const { return mfContentHeight; }
             bool getKeepAspectRatio() const { return mbKeepAspectRatio; }
 
             /// compare operator
-            virtual bool operator==(const BasePrimitive2D& rPrimitive) const SAL_OVERRIDE;
+            virtual bool operator==(const BasePrimitive2D& rPrimitive) const override;
 
             /// own getB2DRange
-            virtual basegfx::B2DRange getB2DRange(const geometry::ViewInformation2D& rViewInformation) const SAL_OVERRIDE;
+            virtual basegfx::B2DRange getB2DRange(const geometry::ViewInformation2D& rViewInformation) const override;
 
             /// provide unique ID
             DeclPrimitive2DIDBlock()

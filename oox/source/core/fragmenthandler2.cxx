@@ -60,15 +60,22 @@ bool FragmentHandler2::prepareMceContext( sal_Int32 nElement, const AttributeLis
 
         case MCE_TOKEN( Choice ):
             {
-                OUString aRequires = rAttribs.getString( ( XML_Requires ), OUString("none") );
-                if (!getFilter().hasNamespaceURL(aRequires))
-                    // Check to see if we have this namespace defined first,
-                    // because calling getNamespaceURL() would throw if the
-                    // namespace doesn't exist.
+                if (aMceState.empty() || aMceState.back() != MCE_STARTED)
                     return false;
 
-                aRequires = getFilter().getNamespaceURL( aRequires );
-                if( getFilter().getNamespaceId( aRequires ) > 0 && !aMceState.empty() && aMceState.back() == MCE_STARTED )
+                OUString aRequires = rAttribs.getString( (XML_Requires ), "none" );
+
+                // At this point we can't access namespaces as the correct xml filter
+                // is long gone. For now let's decide depending on a list of supported
+                // namespaces like we do in writerfilter
+
+                static std::vector<OUString> aSupportedNS =
+                {
+                    "p14",
+                    "p15",
+                };
+
+                if (std::find(aSupportedNS.begin(), aSupportedNS.end(), aRequires) != aSupportedNS.end())
                     aMceState.back() = MCE_FOUND_CHOICE;
                 else
                     return false;
@@ -84,7 +91,7 @@ bool FragmentHandler2::prepareMceContext( sal_Int32 nElement, const AttributeLis
                 OUString str = rAttribs.getString( MCE_TOKEN( Ignorable ), OUString() );
                 if( !str.isEmpty() )
                 {
-                    // Sequence< ::com::sun::star::xml::FastAttribute > attrs = rAttribs.getFastAttributeList()->getFastAttributes();
+                    // Sequence< css::xml::FastAttribute > attrs = rAttribs.getFastAttributeList()->getFastAttributes();
                     // printf("MCE: %s\n", OUStringToOString( str, RTL_TEXTENCODING_UTF8 ).getStr() );
                     // TODO: Check & Get the namespaces in "Ignorable"
                     // printf("NS: %d : %s\n", attrs.getLength(), OUStringToOString( str, RTL_TEXTENCODING_UTF8 ).getStr() );
@@ -104,7 +111,7 @@ Reference< XFastContextHandler > SAL_CALL FragmentHandler2::createFastChildConte
     {
         if( prepareMceContext( nElement, AttributeList( rxAttribs ) ) )
             return getFastContextHandler();
-        return NULL;
+        return nullptr;
     }
     return implCreateChildContext( nElement, rxAttribs );
 }
@@ -154,7 +161,7 @@ void FragmentHandler2::endRecord( sal_Int32 nRecId )
 
 ContextHandlerRef FragmentHandler2::onCreateContext( sal_Int32, const AttributeList& )
 {
-    return 0;
+    return nullptr;
 }
 
 void FragmentHandler2::onStartElement( const AttributeList& )
@@ -171,7 +178,7 @@ void FragmentHandler2::onEndElement()
 
 ContextHandlerRef FragmentHandler2::onCreateRecordContext( sal_Int32, SequenceInputStream& )
 {
-    return 0;
+    return nullptr;
 }
 
 void FragmentHandler2::onStartRecord( SequenceInputStream& )

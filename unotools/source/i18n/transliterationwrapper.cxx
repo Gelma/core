@@ -114,17 +114,17 @@ void TransliterationWrapper::loadModuleIfNeeded( sal_uInt16 nLang )
     if( static_cast< sal_Int32 >(nType) == TransliterationModulesExtra::SENTENCE_CASE )
     {
         if( bLoad )
-            loadModuleByImplName(OUString("SENTENCE_CASE"), nLang);
+            loadModuleByImplName("SENTENCE_CASE", nLang);
     }
     else if( static_cast< sal_Int32 >(nType) == TransliterationModulesExtra::TITLE_CASE )
     {
         if( bLoad )
-            loadModuleByImplName(OUString("TITLE_CASE"), nLang);
+            loadModuleByImplName("TITLE_CASE", nLang);
     }
     else if( static_cast< sal_Int32 >(nType) == TransliterationModulesExtra::TOGGLE_CASE )
     {
         if( bLoad )
-            loadModuleByImplName(OUString("TOGGLE_CASE"), nLang);
+            loadModuleByImplName("TOGGLE_CASE", nLang);
     }
     else
     {
@@ -163,7 +163,7 @@ void TransliterationWrapper::loadModuleByImplName(const OUString& rModuleName,
     try
     {
         setLanguageLocaleImpl( nLang );
-        com::sun::star::lang::Locale aLocale( aLanguageTag.getLocale());
+        css::lang::Locale aLocale( aLanguageTag.getLocale());
         // Reset LanguageTag, so the next call to loadModuleIfNeeded() forces
         // new settings.
         aLanguageTag.reset( LANGUAGE_DONTKNOW);

@@ -119,49 +119,49 @@ static ChainablePropertySetInfo * lcl_createViewSettingsInfo()
 {
     static PropertyInfo const aViewSettingsMap_Impl[] =
     {
-        { OUString( "HelpURL" ),             HANDLE_VIEWSET_HELP_URL             , cppu::UnoType<OUString>::get(),    PROPERTY_NONE,  0},
-        { OUString( "HorizontalRulerMetric"),HANDLE_VIEWSET_HORI_RULER_METRIC   , cppu::UnoType<sal_Int32>::get(), PROPERTY_NONE, 0},
-        { OUString( "IsRasterVisible"),      HANDLE_VIEWSET_IS_RASTER_VISIBLE,       cppu::UnoType<bool>::get(),   PROPERTY_NONE, 0},
-        { OUString( "IsSnapToRaster"),       HANDLE_VIEWSET_IS_SNAP_TO_RASTER,       cppu::UnoType<bool>::get(),   PROPERTY_NONE, 0},
-        { OUString( "IsVertRulerRightAligned"),HANDLE_VIEWSET_VRULER_RIGHT         , cppu::UnoType<bool>::get(), PROPERTY_NONE, 0},
-        { OUString( "ShowContentTips" ),     HANDLE_VIEWSET_SHOW_CONTENT_TIPS      , cppu::UnoType<bool>::get(), PROPERTY_NONE, 0},
-        { OUString( "RasterResolutionX"),    HANDLE_VIEWSET_RASTER_RESOLUTION_X,     cppu::UnoType<sal_Int32>::get(),     PROPERTY_NONE, 0},
-        { OUString( "RasterResolutionY"),    HANDLE_VIEWSET_RASTER_RESOLUTION_Y,     cppu::UnoType<sal_Int32>::get(),     PROPERTY_NONE, 0},
-        { OUString( "RasterSubdivisionX"),   HANDLE_VIEWSET_RASTER_SUBDIVISION_X,    cppu::UnoType<sal_Int32>::get(),     PROPERTY_NONE, 0},
-        { OUString( "RasterSubdivisionY"),   HANDLE_VIEWSET_RASTER_SUBDIVISION_Y,    cppu::UnoType<sal_Int32>::get(),     PROPERTY_NONE, 0},
-        { OUString( "ShowAnnotations" ),     HANDLE_VIEWSET_ANNOTATIONS          , cppu::UnoType<bool>::get(), PROPERTY_NONE, 0},
-        { OUString( "ShowBreaks"),           HANDLE_VIEWSET_BREAKS               , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowDrawings"),         HANDLE_VIEWSET_DRAWINGS             , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowFieldCommands"),    HANDLE_VIEWSET_FIELD_COMMANDS       , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowFootnoteBackground"),HANDLE_VIEWSET_FOOTNOTE_BACKGROUND , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowGraphics"),         HANDLE_VIEWSET_GRAPHICS             , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowHiddenCharacters"), HANDLE_VIEWSET_HIDDEN_CHARACTERS    , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "HideWhitespace"),       HANDLE_VIEWSET_HIDE_WHITESPACE      , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowHiddenParagraphs"), HANDLE_VIEWSET_HIDDEN_PARAGRAPHS    , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowHiddenText"),       HANDLE_VIEWSET_HIDDEN_TEXT          , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowHoriRuler"),        HANDLE_VIEWSET_HRULER               , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowHoriScrollBar"),    HANDLE_VIEWSET_HSCROLL              , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowIndexMarkBackground"),HANDLE_VIEWSET_INDEX_MARK_BACKGROUND, cppu::UnoType<bool>::get(),PROPERTY_NONE, 0},
-        { OUString( "ShowNonprintingCharacters"),HANDLE_VIEWSET_NONPRINTING_CHARACTERS, cppu::UnoType<bool>::get(),PROPERTY_NONE,  0},
-        { OUString( "ShowOnlineLayout"),     HANDLE_VIEWSET_ONLINE_LAYOUT        , cppu::UnoType<bool>::get(), PropertyAttribute::MAYBEVOID,   0},
-        { OUString( "ShowParaBreaks"),       HANDLE_VIEWSET_PARA_BREAKS          , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowProtectedSpaces"),  HANDLE_VIEWSET_PROTECTED_SPACES     , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowRulers"),           HANDLE_VIEWSET_SHOW_RULER           , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowScrollBarTips"),    HANDLE_VIEWSET_SCROLLBAR_TIPS       , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowSoftHyphens"),      HANDLE_VIEWSET_SOFT_HYPHENS         , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowSpaces"),           HANDLE_VIEWSET_SPACES               , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowTableBoundaries"),  HANDLE_VIEWSET_TABLE_BOUNDARIES     , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowTables"),           HANDLE_VIEWSET_TABLES               , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowTabstops"),         HANDLE_VIEWSET_TABSTOPS             , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowTextBoundaries"),   HANDLE_VIEWSET_TEXT_BOUNDARIES      , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowTextFieldBackground"),HANDLE_VIEWSET_TEXT_FIELD_BACKGROUND, cppu::UnoType<bool>::get(),PROPERTY_NONE, 0},
-        { OUString( "ShowVertRuler"),        HANDLE_VIEWSET_VRULER               , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "ShowVertScrollBar"),    HANDLE_VIEWSET_VSCROLL              , cppu::UnoType<bool>::get(), PROPERTY_NONE, 0},
-        { OUString( "SmoothScrolling"),      HANDLE_VIEWSET_SMOOTH_SCROLLING     , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "VerticalRulerMetric"),  HANDLE_VIEWSET_VERT_RULER_METRIC   , cppu::UnoType<sal_Int32>::get(), PROPERTY_NONE, 0},
-        { OUString( "ZoomType"),             HANDLE_VIEWSET_ZOOM_TYPE            , cppu::UnoType<sal_Int16>::get(),   PROPERTY_NONE, 0},
-        { OUString( "ZoomValue"),            HANDLE_VIEWSET_ZOOM                 , cppu::UnoType<sal_Int16>::get(),   PROPERTY_NONE, 0},
-        { OUString(), 0, css::uno::Type(), 0, 0 }
+        { OUString( "HelpURL" ),             HANDLE_VIEWSET_HELP_URL             , cppu::UnoType<OUString>::get(),    PROPERTY_NONE},
+        { OUString( "HorizontalRulerMetric"),HANDLE_VIEWSET_HORI_RULER_METRIC   , cppu::UnoType<sal_Int32>::get(), PROPERTY_NONE},
+        { OUString( "IsRasterVisible"),      HANDLE_VIEWSET_IS_RASTER_VISIBLE,       cppu::UnoType<bool>::get(),   PROPERTY_NONE},
+        { OUString( "IsSnapToRaster"),       HANDLE_VIEWSET_IS_SNAP_TO_RASTER,       cppu::UnoType<bool>::get(),   PROPERTY_NONE},
+        { OUString( "IsVertRulerRightAligned"),HANDLE_VIEWSET_VRULER_RIGHT         , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowContentTips" ),     HANDLE_VIEWSET_SHOW_CONTENT_TIPS      , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "RasterResolutionX"),    HANDLE_VIEWSET_RASTER_RESOLUTION_X,     cppu::UnoType<sal_Int32>::get(),     PROPERTY_NONE},
+        { OUString( "RasterResolutionY"),    HANDLE_VIEWSET_RASTER_RESOLUTION_Y,     cppu::UnoType<sal_Int32>::get(),     PROPERTY_NONE},
+        { OUString( "RasterSubdivisionX"),   HANDLE_VIEWSET_RASTER_SUBDIVISION_X,    cppu::UnoType<sal_Int32>::get(),     PROPERTY_NONE},
+        { OUString( "RasterSubdivisionY"),   HANDLE_VIEWSET_RASTER_SUBDIVISION_Y,    cppu::UnoType<sal_Int32>::get(),     PROPERTY_NONE},
+        { OUString( "ShowAnnotations" ),     HANDLE_VIEWSET_ANNOTATIONS          , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowBreaks"),           HANDLE_VIEWSET_BREAKS               , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowDrawings"),         HANDLE_VIEWSET_DRAWINGS             , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowFieldCommands"),    HANDLE_VIEWSET_FIELD_COMMANDS       , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowFootnoteBackground"),HANDLE_VIEWSET_FOOTNOTE_BACKGROUND , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowGraphics"),         HANDLE_VIEWSET_GRAPHICS             , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowHiddenCharacters"), HANDLE_VIEWSET_HIDDEN_CHARACTERS    , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "HideWhitespace"),       HANDLE_VIEWSET_HIDE_WHITESPACE      , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowHiddenParagraphs"), HANDLE_VIEWSET_HIDDEN_PARAGRAPHS    , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowHiddenText"),       HANDLE_VIEWSET_HIDDEN_TEXT          , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowHoriRuler"),        HANDLE_VIEWSET_HRULER               , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowHoriScrollBar"),    HANDLE_VIEWSET_HSCROLL              , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowIndexMarkBackground"),HANDLE_VIEWSET_INDEX_MARK_BACKGROUND, cppu::UnoType<bool>::get(),PROPERTY_NONE},
+        { OUString( "ShowNonprintingCharacters"),HANDLE_VIEWSET_NONPRINTING_CHARACTERS, cppu::UnoType<bool>::get(),PROPERTY_NONE},
+        { OUString( "ShowOnlineLayout"),     HANDLE_VIEWSET_ONLINE_LAYOUT        , cppu::UnoType<bool>::get(), PropertyAttribute::MAYBEVOID},
+        { OUString( "ShowParaBreaks"),       HANDLE_VIEWSET_PARA_BREAKS          , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowProtectedSpaces"),  HANDLE_VIEWSET_PROTECTED_SPACES     , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowRulers"),           HANDLE_VIEWSET_SHOW_RULER           , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowScrollBarTips"),    HANDLE_VIEWSET_SCROLLBAR_TIPS       , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowSoftHyphens"),      HANDLE_VIEWSET_SOFT_HYPHENS         , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowSpaces"),           HANDLE_VIEWSET_SPACES               , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowTableBoundaries"),  HANDLE_VIEWSET_TABLE_BOUNDARIES     , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowTables"),           HANDLE_VIEWSET_TABLES               , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowTabstops"),         HANDLE_VIEWSET_TABSTOPS             , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowTextBoundaries"),   HANDLE_VIEWSET_TEXT_BOUNDARIES      , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowTextFieldBackground"),HANDLE_VIEWSET_TEXT_FIELD_BACKGROUND, cppu::UnoType<bool>::get(),PROPERTY_NONE},
+        { OUString( "ShowVertRuler"),        HANDLE_VIEWSET_VRULER               , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "ShowVertScrollBar"),    HANDLE_VIEWSET_VSCROLL              , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "SmoothScrolling"),      HANDLE_VIEWSET_SMOOTH_SCROLLING     , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "VerticalRulerMetric"),  HANDLE_VIEWSET_VERT_RULER_METRIC   , cppu::UnoType<sal_Int32>::get(), PROPERTY_NONE},
+        { OUString( "ZoomType"),             HANDLE_VIEWSET_ZOOM_TYPE            , cppu::UnoType<sal_Int16>::get(),   PROPERTY_NONE},
+        { OUString( "ZoomValue"),            HANDLE_VIEWSET_ZOOM                 , cppu::UnoType<sal_Int16>::get(),   PROPERTY_NONE},
+        { OUString(), 0, css::uno::Type(), 0 }
     };
     return new ChainablePropertySetInfo ( aViewSettingsMap_Impl );
 }
@@ -170,63 +170,59 @@ static ChainablePropertySetInfo * lcl_createPrintSettingsInfo()
 {
     static PropertyInfo const aPrintSettingsMap_Impl[] =
     {
-        { OUString( "PrintAnnotationMode" ), HANDLE_PRINTSET_ANNOTATION_MODE , cppu::UnoType<sal_Int16>::get(),   PROPERTY_NONE,  0},
-        { OUString( "PrintBlackFonts" ),      HANDLE_PRINTSET_BLACK_FONTS        , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "PrintControls" ),        HANDLE_PRINTSET_CONTROLS           , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "PrintDrawings" ),        HANDLE_PRINTSET_DRAWINGS           , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "PrintGraphics" ),        HANDLE_PRINTSET_GRAPHICS           , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "PrintHiddenText"),       HANDLE_PRINTSET_HIDDEN_TEXT        , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "PrintLeftPages" ),       HANDLE_PRINTSET_LEFT_PAGES         , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "PrintPageBackground" ),  HANDLE_PRINTSET_PAGE_BACKGROUND    , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "PrintProspect" ),        HANDLE_PRINTSET_PROSPECT           , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "PrintProspectRTL" ),     HANDLE_PRINTSET_PROSPECT_RTL       , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "PrintReversed" ),        HANDLE_PRINTSET_REVERSED           , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "PrintRightPages" ),      HANDLE_PRINTSET_RIGHT_PAGES        , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "PrintFaxName" ),         HANDLE_PRINTSET_FAX_NAME           , cppu::UnoType<OUString>::get(), PROPERTY_NONE, 0},
-        { OUString( "PrintPaperFromSetup" ),  HANDLE_PRINTSET_PAPER_FROM_SETUP   , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "PrintTables" ),          HANDLE_PRINTSET_TABLES             , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "PrintTextPlaceholder"),  HANDLE_PRINTSET_PLACEHOLDER        , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "PrintSingleJobs" ),      HANDLE_PRINTSET_SINGLE_JOBS        , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString( "PrintEmptyPages" ),      HANDLE_PRINTSET_EMPTY_PAGES        , cppu::UnoType<bool>::get(), PROPERTY_NONE,  0},
-        { OUString(), 0, css::uno::Type(), 0, 0 }
+        { OUString( "PrintAnnotationMode" ), HANDLE_PRINTSET_ANNOTATION_MODE , cppu::UnoType<sal_Int16>::get(),   PROPERTY_NONE},
+        { OUString( "PrintBlackFonts" ),      HANDLE_PRINTSET_BLACK_FONTS        , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "PrintControls" ),        HANDLE_PRINTSET_CONTROLS           , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "PrintDrawings" ),        HANDLE_PRINTSET_DRAWINGS           , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "PrintGraphics" ),        HANDLE_PRINTSET_GRAPHICS           , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "PrintHiddenText"),       HANDLE_PRINTSET_HIDDEN_TEXT        , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "PrintLeftPages" ),       HANDLE_PRINTSET_LEFT_PAGES         , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "PrintPageBackground" ),  HANDLE_PRINTSET_PAGE_BACKGROUND    , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "PrintProspect" ),        HANDLE_PRINTSET_PROSPECT           , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "PrintProspectRTL" ),     HANDLE_PRINTSET_PROSPECT_RTL       , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "PrintReversed" ),        HANDLE_PRINTSET_REVERSED           , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "PrintRightPages" ),      HANDLE_PRINTSET_RIGHT_PAGES        , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "PrintFaxName" ),         HANDLE_PRINTSET_FAX_NAME           , cppu::UnoType<OUString>::get(), PROPERTY_NONE},
+        { OUString( "PrintPaperFromSetup" ),  HANDLE_PRINTSET_PAPER_FROM_SETUP   , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "PrintTables" ),          HANDLE_PRINTSET_TABLES             , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "PrintTextPlaceholder"),  HANDLE_PRINTSET_PLACEHOLDER        , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "PrintSingleJobs" ),      HANDLE_PRINTSET_SINGLE_JOBS        , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString( "PrintEmptyPages" ),      HANDLE_PRINTSET_EMPTY_PAGES        , cppu::UnoType<bool>::get(), PROPERTY_NONE},
+        { OUString(), 0, css::uno::Type(), 0}
     };
     return new ChainablePropertySetInfo ( aPrintSettingsMap_Impl );
 }
 
 SwXModule::SwXModule() :
-    pxViewSettings(0),
-    pxPrintSettings(0)
+    mxViewSettings(),
+    mxPrintSettings()
 {
 }
 
 SwXModule::~SwXModule()
 {
-    delete pxViewSettings;
-    delete pxPrintSettings;
 }
 
 Reference< XPropertySet >  SwXModule::getViewSettings() throw( uno::RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
-    if(!pxViewSettings)
+    if(!mxViewSettings.is())
     {
-        static_cast<SwXModule*>(this)->pxViewSettings = new Reference< XPropertySet > ;
         OSL_FAIL("Web or Text?");
-        *pxViewSettings = static_cast < HelperBaseNoState * > ( new SwXViewSettings( false, 0 ) );
+        mxViewSettings = static_cast < HelperBaseNoState * > ( new SwXViewSettings( false, nullptr ) );
     }
-    return *pxViewSettings;
+    return mxViewSettings;
 }
 
 Reference< XPropertySet >  SwXModule::getPrintSettings() throw( uno::RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
-    if(!pxPrintSettings)
+    if(!mxPrintSettings.is())
     {
-        static_cast<SwXModule*>(this)->pxPrintSettings = new Reference< XPropertySet > ;
         OSL_FAIL("Web or Text?");
-        *pxPrintSettings = static_cast < HelperBaseNoState * > ( new SwXPrintSettings ( PRINT_SETTINGS_MODULE ) );
+        mxPrintSettings = static_cast < HelperBaseNoState * > ( new SwXPrintSettings ( PRINT_SETTINGS_MODULE ) );
     }
-    return *pxPrintSettings;
+    return mxPrintSettings;
 }
 
 OUString SwXModule::getImplementationName() throw( RuntimeException, std::exception )
@@ -249,7 +245,7 @@ Sequence< OUString > SwXModule::getSupportedServiceNames() throw( RuntimeExcepti
 SwXPrintSettings::SwXPrintSettings(SwXPrintSettingsType eType, SwDoc* pDoc)
 : ChainableHelperNoState ( lcl_createPrintSettingsInfo (), &Application::GetSolarMutex() )
 , meType(eType)
-, mpPrtOpt ( NULL )
+, mpPrtOpt ( nullptr )
 , mpDoc ( pDoc )
 {
 }
@@ -419,7 +415,7 @@ void SwXPrintSettings::_postSetValues()
            IllegalArgumentException, WrappedTargetException,
            RuntimeException)
 {
-    mpPrtOpt = NULL;
+    mpPrtOpt = nullptr;
 }
 
 void SwXPrintSettings::_preGetValues()
@@ -522,7 +518,7 @@ void SwXPrintSettings::_getSingleValue( const comphelper::PropertyInfo & rInfo, 
 void SwXPrintSettings::_postGetValues ()
     throw(UnknownPropertyException, PropertyVetoException, IllegalArgumentException, WrappedTargetException )
 {
-    mpPrtOpt = NULL;
+    mpPrtOpt = nullptr;
 }
 
 OUString SwXPrintSettings::getImplementationName() throw( RuntimeException, std::exception )
@@ -537,17 +533,15 @@ sal_Bool SwXPrintSettings::supportsService(const OUString& rServiceName) throw( 
 
 Sequence< OUString > SwXPrintSettings::getSupportedServiceNames() throw( RuntimeException, std::exception )
 {
-    Sequence< OUString > aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.text.PrintSettings";
+    Sequence<OUString> aRet { "com.sun.star.text.PrintSettings" };
     return aRet;
 }
 
 SwXViewSettings::SwXViewSettings(bool bWebView, SwView* pVw)
     : ChainableHelperNoState( lcl_createViewSettingsInfo (), &Application::GetSolarMutex() )
     , pView(pVw)
-    , mpViewOption(NULL)
-    , mpConstViewOption(NULL)
+    , mpViewOption(nullptr)
+    , mpConstViewOption(nullptr)
     , bObjectValid(true)
     , bWeb(bWebView)
     , mbApplyZoom(false)
@@ -558,7 +552,7 @@ SwXViewSettings::SwXViewSettings(bool bWebView, SwView* pVw)
 {
     // This property only exists if we have a view (ie, not at the module )
     if ( !pView )
-        mpInfo->remove ( OUString ( "HelpURL"  ) );
+        mpInfo->remove ( "HelpURL" );
 
 }
 
@@ -573,7 +567,7 @@ void SwXViewSettings::_preSetValues ()
            IllegalArgumentException, WrappedTargetException,
            RuntimeException)
 {
-    const SwViewOption* pVOpt = 0;
+    const SwViewOption* pVOpt = nullptr;
     if(pView)
     {
         if(!IsValid())
@@ -699,7 +693,7 @@ void SwXViewSettings::_setSingleValue( const comphelper::PropertyInfo & rInfo, c
                 break;
                 default:
                     throw IllegalArgumentException(
-                        "SwXViewSettings: invalid zoom type", 0, 0);
+                        "SwXViewSettings: invalid zoom type", nullptr, 0);
             }
             mpViewOption->SetZoomType( eZoom );
             mbApplyZoom = true;
@@ -737,8 +731,6 @@ void SwXViewSettings::_setSingleValue( const comphelper::PropertyInfo & rInfo, c
                     // must be set in mpViewOption as this will overwrite settings in _post!
                     if(mpViewOption)
                         mpViewOption->SetHideWhitespaceMode(bVal);
-
-                    pView->GetDocShell()->ToggleLayoutMode(pView);
                 }
             }
         }
@@ -823,7 +815,7 @@ void SwXViewSettings::_postSetValues()
                                                           : VIEWOPT_DEST_TEXT );
 
     delete mpViewOption;
-    mpViewOption = NULL;
+    mpViewOption = nullptr;
 }
 
 void SwXViewSettings::_preGetValues ()
@@ -988,7 +980,7 @@ void SwXViewSettings::_getSingleValue( const comphelper::PropertyInfo & rInfo, u
 void SwXViewSettings::_postGetValues ()
     throw(UnknownPropertyException, PropertyVetoException, IllegalArgumentException, WrappedTargetException )
 {
-    mpConstViewOption = NULL;
+    mpConstViewOption = nullptr;
 }
 
 OUString SwXViewSettings::getImplementationName() throw( RuntimeException, std::exception )
@@ -1003,15 +995,13 @@ sal_Bool SwXViewSettings::supportsService(const OUString& rServiceName) throw( R
 
 Sequence< OUString > SwXViewSettings::getSupportedServiceNames() throw( RuntimeException, std::exception )
 {
-    Sequence< OUString > aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.text.ViewSettings";
+    Sequence<OUString> aRet { "com.sun.star.text.ViewSettings" };
     return aRet;
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-SwXModule_get_implementation(::com::sun::star::uno::XComponentContext*,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+SwXModule_get_implementation(css::uno::XComponentContext*,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new SwXModule());
 }

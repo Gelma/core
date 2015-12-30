@@ -70,18 +70,6 @@ XFStyleContainer::XFStyleContainer(const OUString& strStyleNamePrefix)
 {
 }
 
-XFStyleContainer::XFStyleContainer(const XFStyleContainer& other):
-    m_aStyles(other.m_aStyles), m_strStyleNamePrefix(other.m_strStyleNamePrefix)
-{
-}
-
-XFStyleContainer& XFStyleContainer::operator=(const XFStyleContainer& other)
-{
-    this->m_strStyleNamePrefix = other.m_strStyleNamePrefix;
-    this->m_aStyles = other.m_aStyles;
-    return *this;
-}
-
 XFStyleContainer::~XFStyleContainer()
 {
     std::vector<IXFStyle*>::iterator it;
@@ -108,7 +96,7 @@ IXFStyleRet XFStyleContainer::AddStyle(IXFStyle *pStyle)
 {
     IXFStyleRet aRet;
 
-    IXFStyle    *pConStyle = NULL;
+    IXFStyle    *pConStyle = nullptr;
     OUString   name;
 
     if( !pStyle )
@@ -162,7 +150,7 @@ IXFStyle*   XFStyleContainer::FindSameStyle(IXFStyle *pStyle)
             return pConStyle;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 IXFStyle*   XFStyleContainer::FindStyle(const OUString& name)
@@ -176,7 +164,7 @@ IXFStyle*   XFStyleContainer::FindStyle(const OUString& name)
             return pConStyle;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 const IXFStyle* XFStyleContainer::Item(size_t index) const
@@ -186,7 +174,7 @@ const IXFStyle* XFStyleContainer::Item(size_t index) const
     {
         return m_aStyles[index];
     }
-    return NULL;
+    return nullptr;
 }
 
 void    XFStyleContainer::ToXml(IXFStream *pStrm)

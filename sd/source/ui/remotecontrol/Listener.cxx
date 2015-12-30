@@ -24,7 +24,7 @@ Listener::Listener( const ::rtl::Reference<Communicator>& rCommunicator,
                     sd::Transmitter *aTransmitter  ):
       ::cppu::WeakComponentImplHelper< XSlideShowListener >( m_aMutex ),
       mCommunicator( rCommunicator ),
-      pTransmitter( NULL )
+      pTransmitter( nullptr )
 {
     pTransmitter = aTransmitter;
 }
@@ -37,7 +37,7 @@ void Listener::init( const css::uno::Reference< css::presentation::XSlideShowCon
 {
     if ( aController.is() )
     {
-        mController = css::uno::Reference< css::presentation::XSlideShowController >( aController );
+        mController.set( aController );
         aController->addSlideShowListener( this );
 
         sal_Int32 aSlides = aController->getSlideCount();
@@ -86,7 +86,7 @@ void SAL_CALL Listener::repeat( const css::uno::Reference<
 //----- XSlideShowListener ----------------------------------------------------
 
 void SAL_CALL Listener::paused()
-    throw (com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
 }
 
@@ -134,18 +134,18 @@ void SAL_CALL Listener::slideAnimationsEnded()
 
 void SAL_CALL Listener::disposing()
 {
-    pTransmitter = NULL;
+    pTransmitter = nullptr;
     if ( mController.is() )
     {
         mController->removeSlideShowListener( this );
-        mController = NULL;
+        mController = nullptr;
     }
     mCommunicator->informListenerDestroyed();
 }
 
 void SAL_CALL Listener::disposing (
     const css::lang::EventObject& rEvent)
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     (void) rEvent;
     dispose();

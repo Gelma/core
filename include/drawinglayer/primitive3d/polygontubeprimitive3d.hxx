@@ -49,25 +49,25 @@ namespace drawinglayer
         {
         private:
             /// hold the last decompositon since it's expensive
-            Primitive3DSequence                         maLast3DDecomposition;
+            Primitive3DContainer                         maLast3DDecomposition;
 
             /// visualisation parameters
             double                                      mfRadius;
             double                                      mfDegreeStepWidth;
             double                                      mfMiterMinimumAngle;
             basegfx::B2DLineJoin                        maLineJoin;
-            com::sun::star::drawing::LineCap            maLineCap;
+            css::drawing::LineCap                       maLineCap;
 
         protected:
             /** access methods to maLast3DDecomposition. The usage of this methods may allow
                 later thread-safe stuff to be added if needed. Only to be used by getDecomposition()
                 implementations for buffering the last decomposition.
              */
-            const Primitive3DSequence& getLast3DDecomposition() const { return maLast3DDecomposition; }
-            void setLast3DDecomposition(const Primitive3DSequence& rNew) { maLast3DDecomposition = rNew; }
+            const Primitive3DContainer& getLast3DDecomposition() const { return maLast3DDecomposition; }
+            void setLast3DDecomposition(const Primitive3DContainer& rNew) { maLast3DDecomposition = rNew; }
 
             /// local decomposition.
-            Primitive3DSequence impCreate3DDecomposition(const geometry::ViewInformation3D& rViewInformation) const;
+            Primitive3DContainer impCreate3DDecomposition(const geometry::ViewInformation3D& rViewInformation) const;
 
         public:
             /// constructor
@@ -76,7 +76,7 @@ namespace drawinglayer
                 const basegfx::BColor& rBColor,
                 double fRadius,
                 basegfx::B2DLineJoin aLineJoin,
-                com::sun::star::drawing::LineCap aLineCap,
+                css::drawing::LineCap aLineCap,
                 double fDegreeStepWidth = 10.0 * F_PI180,
                 double fMiterMinimumAngle = 15.0 * F_PI180);
 
@@ -85,15 +85,15 @@ namespace drawinglayer
             double getDegreeStepWidth() const { return mfDegreeStepWidth; }
             double getMiterMinimumAngle() const { return mfMiterMinimumAngle; }
             basegfx::B2DLineJoin getLineJoin() const { return maLineJoin; }
-            com::sun::star::drawing::LineCap getLineCap() const { return maLineCap; }
+            css::drawing::LineCap getLineCap() const { return maLineCap; }
 
             /// compare operator
-            virtual bool operator==(const BasePrimitive3D& rPrimitive) const SAL_OVERRIDE;
+            virtual bool operator==(const BasePrimitive3D& rPrimitive) const override;
 
             /** local decomposition. Use own buffering since we are not derived from
                 BufferedDecompositionPrimitive3D
              */
-            virtual Primitive3DSequence get3DDecomposition(const geometry::ViewInformation3D& rViewInformation) const SAL_OVERRIDE;
+            virtual Primitive3DContainer get3DDecomposition(const geometry::ViewInformation3D& rViewInformation) const override;
 
             /// provide unique ID
             DeclPrimitive3DIDBlock()

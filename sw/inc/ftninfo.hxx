@@ -38,7 +38,7 @@ class SW_DLLPUBLIC SwEndNoteInfo : public SwClient
     OUString sSuffix;
 protected:
     bool        m_bEndNote;
-   virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNew ) SAL_OVERRIDE;
+   virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNew ) override;
 
 public:
     SvxNumberType aFormat;
@@ -63,7 +63,7 @@ public:
     SwEndNoteInfo & operator=(const SwEndNoteInfo&);
     bool operator==( const SwEndNoteInfo &rInf ) const;
 
-    SwEndNoteInfo( SwTextFormatColl *pTextColl = 0);
+    SwEndNoteInfo( SwTextFormatColl *pTextColl = nullptr);
     SwEndNoteInfo(const SwEndNoteInfo&);
 
     const OUString& GetPrefix() const  { return sPrefix; }
@@ -100,7 +100,7 @@ public:
 
     bool operator==( const SwFootnoteInfo &rInf ) const;
 
-    SwFootnoteInfo(SwTextFormatColl* pTextColl = 0);
+    SwFootnoteInfo(SwTextFormatColl* pTextColl = nullptr);
     SwFootnoteInfo(const SwFootnoteInfo&);
 };
 

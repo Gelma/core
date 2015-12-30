@@ -54,6 +54,8 @@
  *
  ************************************************************************/
 
+#include <tools/stream.hxx>
+
 #include "lwpsdwgrouploaderv0102.hxx"
 #include "lwpdrawobj.hxx"
 #include "lwptools.hxx"
@@ -76,7 +78,7 @@
 LwpSdwGroupLoaderV0102::LwpSdwGroupLoaderV0102(SvStream* pStream, LwpGraphicObject* pGraphicObj)
     : m_pStream(pStream)
     , m_pGraphicObj(pGraphicObj)
-    , m_pDrawObjVector(NULL)
+    , m_pDrawObjVector(nullptr)
 {
 }
 
@@ -127,11 +129,11 @@ void LwpSdwGroupLoaderV0102::BeginDrawObjects(std::vector< rtl::Reference<XFFram
     m_pStream->SeekRel(2);
 
     //for calculating transformation params.
-    LwpFrameLayout* pMyFrameLayout = static_cast<LwpFrameLayout*>(m_pGraphicObj->GetLayout(NULL));
-    if (pMyFrameLayout)
+    rtl::Reference<LwpFrameLayout> xMyFrameLayout(dynamic_cast<LwpFrameLayout*>(m_pGraphicObj->GetLayout(nullptr).get()));
+    if (xMyFrameLayout.is())
     {
-        LwpLayoutScale* pMyScale = pMyFrameLayout->GetLayoutScale();
-        LwpLayoutGeometry* pFrameGeo = pMyFrameLayout->GetGeometry();
+        LwpLayoutScale* pMyScale = xMyFrameLayout->GetLayoutScale();
+        LwpLayoutGeometry* pFrameGeo = xMyFrameLayout->GetGeometry();
         if (pMyScale && pFrameGeo)
         {
             // original drawing size
@@ -141,10 +143,8 @@ void LwpSdwGroupLoaderV0102::BeginDrawObjects(std::vector< rtl::Reference<XFFram
             double fGrafOrgHeight = (double)nHeight/TWIPS_PER_CM;
 
             // get margin values
-            double fLeftMargin = pMyFrameLayout->GetMarginsValue(MARGIN_LEFT);
-//          double fRightMargin = pMyFrameLayout->GetMarginsValue(MARGIN_RIGHT);
-            double fTopMargin = pMyFrameLayout->GetMarginsValue(MARGIN_TOP);
-//          double fBottomMargin = pMyFrameLayout->GetMarginsValue(MARGIN_BOTTOM);
+            double fLeftMargin = xMyFrameLayout->GetMarginsValue(MARGIN_LEFT);
+            double fTopMargin = xMyFrameLayout->GetMarginsValue(MARGIN_TOP);
 
             // frame size
             double fFrameWidth = LwpTools::ConvertFromUnitsToMetric(pFrameGeo->GetWidth());
@@ -195,7 +195,7 @@ void LwpSdwGroupLoaderV0102::BeginDrawObjects(std::vector< rtl::Reference<XFFram
             }
 
             // placement: centered
-            if (pMyFrameLayout->GetScaleCenter())
+            if (xMyFrameLayout->GetScaleCenter())
             {
                 Rectangle aBoundRect(static_cast<long>(left*m_aTransformData.fScaleX + fLeftMargin),
                     static_cast<long>(top    * m_aTransformData.fScaleY + fTopMargin),
@@ -247,7 +247,7 @@ XFDrawGroup* LwpSdwGroupLoaderV0102::CreateDrawGroupObject()
     if (BinSignature[0] != 'S' || BinSignature[1] != 'M')
     {
         assert(false);
-        return NULL;
+        return nullptr;
     }
     //version
     unsigned short nVersion;
@@ -255,7 +255,7 @@ XFDrawGroup* LwpSdwGroupLoaderV0102::CreateDrawGroupObject()
     if (nVersion<0x0102)
     {
         assert(false);
-        return NULL;
+        return nullptr;
     }
     // topObj, botObj
     m_pStream->SeekRel(4);
@@ -306,8 +306,8 @@ XFFrame* LwpSdwGroupLoaderV0102::CreateDrawObject()
     unsigned char recType;
     m_pStream->Read(&recType,1);
 
-    LwpDrawObj* pDrawObj = NULL;
-    XFFrame* pRetObjct = NULL;
+    LwpDrawObj* pDrawObj = nullptr;
+    XFFrame* pRetObjct = nullptr;
 
     switch(recType)
     {
@@ -397,7 +397,7 @@ XFFrame* LwpSdwGroupLoaderV0102::CreateDrawObject()
     if (pDrawObj)
     {
         delete pDrawObj;
-        pDrawObj = NULL;
+        pDrawObj = nullptr;
     }
 
     return pRetObjct;

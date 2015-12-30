@@ -68,7 +68,7 @@ struct IsoLanguageCountryEntry
     OUString getTagString() const;
 
     /** Obtain a locale. */
-    ::com::sun::star::lang::Locale getLocale() const;
+    css::lang::Locale getLocale() const;
 };
 
 struct IsoLanguageScriptCountryEntry
@@ -82,7 +82,7 @@ struct IsoLanguageScriptCountryEntry
     OUString getTagString() const;
 
     /** Obtain a locale. */
-    ::com::sun::star::lang::Locale getLocale() const;
+    css::lang::Locale getLocale() const;
 
     /** If rStr starts with maLanguageScript ignoring case.
 
@@ -102,7 +102,7 @@ struct Bcp47CountryEntry
     OUString getTagString() const;
 
     /** Obtain a locale. */
-    ::com::sun::star::lang::Locale getLocale() const;
+    css::lang::Locale getLocale() const;
 };
 
 struct IsoLangEngEntry
@@ -766,7 +766,7 @@ OUString IsoLanguageCountryEntry::getTagString() const
         return OUString::createFromAscii( maLanguage);
 }
 
-::com::sun::star::lang::Locale IsoLanguageCountryEntry::getLocale() const
+css::lang::Locale IsoLanguageCountryEntry::getLocale() const
 {
     return lang::Locale( OUString::createFromAscii( maLanguage), OUString::createFromAscii( maCountry), OUString());
 }
@@ -779,7 +779,7 @@ OUString IsoLanguageScriptCountryEntry::getTagString() const
         return OUString::createFromAscii( maLanguageScript);
 }
 
-::com::sun::star::lang::Locale IsoLanguageScriptCountryEntry::getLocale() const
+css::lang::Locale IsoLanguageScriptCountryEntry::getLocale() const
 {
     return lang::Locale( I18NLANGTAG_QLT, OUString::createFromAscii( maCountry), getTagString());
 }
@@ -794,7 +794,7 @@ OUString Bcp47CountryEntry::getTagString() const
     return OUString::createFromAscii( mpBcp47);
 }
 
-::com::sun::star::lang::Locale Bcp47CountryEntry::getLocale() const
+css::lang::Locale Bcp47CountryEntry::getLocale() const
 {
     return lang::Locale( I18NLANGTAG_QLT, OUString::createFromAscii( maCountry), getTagString());
 }
@@ -904,7 +904,7 @@ static IsoLangOtherEntry const aImplOtherEntries[] =
     { LANGUAGE_KOREAN,                      "korean"         },
     { LANGUAGE_ENGLISH_US,                  "posix"          },
     { LANGUAGE_CHINESE_TRADITIONAL,         "tchinese"       },
-    { LANGUAGE_DONTKNOW,                    NULL             }  // marks end of table
+    { LANGUAGE_DONTKNOW,                    nullptr             }  // marks end of table
 };
 
 
@@ -915,17 +915,17 @@ static IsoLangOtherEntry const aImplPrivateUseEntries[] =
     { LANGUAGE_USER_PRIV_DEFAULT,           "x-default"      },
     { LANGUAGE_USER_PRIV_COMMENT,           "x-comment"      },
     { LANGUAGE_USER_PRIV_JOKER,             "*"              }, //! not BCP47 but transferable in configmgr
-    { LANGUAGE_DONTKNOW,                    NULL             }  // marks end of table
+    { LANGUAGE_DONTKNOW,                    nullptr             }  // marks end of table
 };
 
 
 
 // static
 void MsLangId::Conversion::convertLanguageToLocaleImpl( LanguageType nLang,
-        ::com::sun::star::lang::Locale & rLocale, bool bIgnoreOverride )
+        css::lang::Locale & rLocale, bool bIgnoreOverride )
 {
-    const IsoLanguageScriptCountryEntry* pScriptEntryOverride = NULL;
-    const IsoLanguageCountryEntry* pEntryOverride = NULL;
+    const IsoLanguageScriptCountryEntry* pScriptEntryOverride = nullptr;
+    const IsoLanguageCountryEntry* pEntryOverride = nullptr;
 
 Label_Override_Lang_Locale:
 
@@ -1005,7 +1005,7 @@ Label_Override_Lang_Locale:
 
 
 // static
-com::sun::star::lang::Locale MsLangId::Conversion::getLocale( const IsoLanguageCountryEntry * pEntry )
+css::lang::Locale MsLangId::Conversion::getLocale( const IsoLanguageCountryEntry * pEntry )
 {
     if (pEntry->mnOverride)
     {
@@ -1018,7 +1018,7 @@ com::sun::star::lang::Locale MsLangId::Conversion::getLocale( const IsoLanguageC
 }
 
 // static
-com::sun::star::lang::Locale MsLangId::Conversion::getLocale( const IsoLanguageScriptCountryEntry * pEntry )
+css::lang::Locale MsLangId::Conversion::getLocale( const IsoLanguageScriptCountryEntry * pEntry )
 {
     if (pEntry->mnOverride)
     {
@@ -1031,8 +1031,8 @@ com::sun::star::lang::Locale MsLangId::Conversion::getLocale( const IsoLanguageS
 }
 
 // static
-::com::sun::star::lang::Locale MsLangId::Conversion::lookupFallbackLocale(
-        const ::com::sun::star::lang::Locale & rLocale )
+css::lang::Locale MsLangId::Conversion::lookupFallbackLocale(
+        const css::lang::Locale & rLocale )
 {
     // language is lower case in table
     OUString aLowerLang = rLocale.Language.toAsciiLowerCase();
@@ -1053,7 +1053,7 @@ com::sun::star::lang::Locale MsLangId::Conversion::getLocale( const IsoLanguageS
         }
 
         // Search in ISO lll-Ssss-CC
-        const IsoLanguageScriptCountryEntry* pFirstScript = NULL;
+        const IsoLanguageScriptCountryEntry* pFirstScript = nullptr;
         for (const IsoLanguageScriptCountryEntry* pScriptEntry = aImplIsoLangScriptEntries;
                 pScriptEntry->mnLang != LANGUAGE_DONTKNOW; ++pScriptEntry)
         {
@@ -1097,7 +1097,7 @@ com::sun::star::lang::Locale MsLangId::Conversion::getLocale( const IsoLanguageS
     }
 
     // Search for locale and remember first lang-only.
-    const IsoLanguageCountryEntry* pFirstLang = NULL;
+    const IsoLanguageCountryEntry* pFirstLang = nullptr;
     const IsoLanguageCountryEntry* pEntry = aImplIsoLangEntries;
     for ( ; pEntry->mnLang != LANGUAGE_DONTKNOW; ++pEntry)
     {
@@ -1168,7 +1168,7 @@ LanguageType MsLangId::Conversion::convertPrivateUseToLanguage( const OUString& 
 
 // static
 LanguageType MsLangId::Conversion::convertLocaleToLanguageImpl(
-        const ::com::sun::star::lang::Locale& rLocale )
+        const css::lang::Locale& rLocale )
 {
     if (rLocale.Language == I18NLANGTAG_QLT)
     {
@@ -1215,7 +1215,7 @@ LanguageType MsLangId::Conversion::convertLocaleToLanguageImpl(
 
 
 // static
-::com::sun::star::lang::Locale MsLangId::Conversion::getOverride( const ::com::sun::star::lang::Locale& rLocale )
+css::lang::Locale MsLangId::Conversion::getOverride( const css::lang::Locale& rLocale )
 {
     if (rLocale.Language == I18NLANGTAG_QLT)
     {
@@ -1271,7 +1271,7 @@ LanguageType MsLangId::Conversion::convertIsoNamesToLanguage( const OUString& rL
     OUString aUpperCountry = rCountry.toAsciiUpperCase();
 
     //  first look for exact match
-    const IsoLanguageCountryEntry* pFirstLang = NULL;
+    const IsoLanguageCountryEntry* pFirstLang = nullptr;
     for (const IsoLanguageCountryEntry* pEntry = aImplIsoLangEntries;
             pEntry->mnLang != LANGUAGE_DONTKNOW; ++pEntry)
     {

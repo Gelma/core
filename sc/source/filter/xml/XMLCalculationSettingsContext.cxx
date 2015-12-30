@@ -35,8 +35,7 @@ using namespace xmloff::token;
 ScXMLCalculationSettingsContext::ScXMLCalculationSettingsContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList) :
+                                      const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     fIterationEpsilon(0.001),
     nIterationCount(100),
@@ -103,10 +102,9 @@ ScXMLCalculationSettingsContext::~ScXMLCalculationSettingsContext()
 
 SvXMLImportContext *ScXMLCalculationSettingsContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if (nPrefix == XML_NAMESPACE_TABLE)
     {
@@ -129,15 +127,15 @@ void ScXMLCalculationSettingsContext::EndElement()
         uno::Reference <beans::XPropertySet> xPropertySet (GetScImport().GetModel(), uno::UNO_QUERY);
         if (xPropertySet.is())
         {
-            xPropertySet->setPropertyValue(OUString(SC_UNO_CALCASSHOWN), uno::makeAny(bCalcAsShown) );
-            xPropertySet->setPropertyValue(OUString(SC_UNO_IGNORECASE), uno::makeAny(bIgnoreCase) );
-            xPropertySet->setPropertyValue(OUString(SC_UNO_LOOKUPLABELS), uno::makeAny(bLookUpLabels) );
-            xPropertySet->setPropertyValue(OUString(SC_UNO_MATCHWHOLE), uno::makeAny(bMatchWholeCell) );
-            xPropertySet->setPropertyValue(OUString(SC_UNO_REGEXENABLED), uno::makeAny(bUseRegularExpressions) );
-            xPropertySet->setPropertyValue(OUString(SC_UNO_ITERENABLED), uno::makeAny(bIsIterationEnabled) );
-            xPropertySet->setPropertyValue( OUString(SC_UNO_ITERCOUNT), uno::makeAny(nIterationCount) );
-            xPropertySet->setPropertyValue( OUString(SC_UNO_ITEREPSILON), uno::makeAny(fIterationEpsilon) );
-            xPropertySet->setPropertyValue( OUString(SC_UNO_NULLDATE), uno::makeAny(aNullDate) );
+            xPropertySet->setPropertyValue( SC_UNO_CALCASSHOWN, uno::makeAny(bCalcAsShown) );
+            xPropertySet->setPropertyValue( SC_UNO_IGNORECASE, uno::makeAny(bIgnoreCase) );
+            xPropertySet->setPropertyValue( SC_UNO_LOOKUPLABELS, uno::makeAny(bLookUpLabels) );
+            xPropertySet->setPropertyValue( SC_UNO_MATCHWHOLE, uno::makeAny(bMatchWholeCell) );
+            xPropertySet->setPropertyValue( SC_UNO_REGEXENABLED, uno::makeAny(bUseRegularExpressions) );
+            xPropertySet->setPropertyValue( SC_UNO_ITERENABLED, uno::makeAny(bIsIterationEnabled) );
+            xPropertySet->setPropertyValue( SC_UNO_ITERCOUNT, uno::makeAny(nIterationCount) );
+            xPropertySet->setPropertyValue( SC_UNO_ITEREPSILON, uno::makeAny(fIterationEpsilon) );
+            xPropertySet->setPropertyValue( SC_UNO_NULLDATE, uno::makeAny(aNullDate) );
             if (GetScImport().GetDocument())
             {
                 ScXMLImport::MutexGuard aGuard(GetScImport());
@@ -152,8 +150,7 @@ void ScXMLCalculationSettingsContext::EndElement()
 ScXMLNullDateContext::ScXMLNullDateContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
+                                      const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList,
                                       ScXMLCalculationSettingsContext* pCalcSet) :
     SvXMLImportContext( rImport, nPrfx, rLName )
 {
@@ -169,7 +166,7 @@ ScXMLNullDateContext::ScXMLNullDateContext( ScXMLImport& rImport,
         if (nPrefix == XML_NAMESPACE_TABLE && IsXMLToken(aLocalName, XML_DATE_VALUE))
         {
             util::DateTime aDateTime;
-            ::sax::Converter::parseDateTime(aDateTime, 0, sValue);
+            ::sax::Converter::parseDateTime(aDateTime, nullptr, sValue);
             util::Date aDate;
             aDate.Day = aDateTime.Day;
             aDate.Month = aDateTime.Month;
@@ -185,8 +182,7 @@ ScXMLNullDateContext::~ScXMLNullDateContext()
 
 SvXMLImportContext *ScXMLNullDateContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ )
+                                            const css::uno::Reference< css::xml::sax::XAttributeList>& /* xAttrList */ )
 {
     SvXMLImportContext *pContext = new SvXMLImportContext( GetImport(), nPrefix, rLName );
 
@@ -200,8 +196,7 @@ void ScXMLNullDateContext::EndElement()
 ScXMLIterationContext::ScXMLIterationContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
+                                      const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList,
                                       ScXMLCalculationSettingsContext* pCalcSet) :
     SvXMLImportContext( rImport, nPrfx, rLName )
 {
@@ -243,8 +238,7 @@ ScXMLIterationContext::~ScXMLIterationContext()
 
 SvXMLImportContext *ScXMLIterationContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ )
+                                            const css::uno::Reference< css::xml::sax::XAttributeList>& /* xAttrList */ )
 {
     SvXMLImportContext *pContext = new SvXMLImportContext( GetImport(), nPrefix, rLName );
 

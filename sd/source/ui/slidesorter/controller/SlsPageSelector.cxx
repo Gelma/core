@@ -55,7 +55,6 @@ PageSelector::PageSelector (SlideSorter& rSlideSorter)
       mbSelectionChangeBroadcastPending(false),
       mpMostRecentlySelectedPage(),
       mpSelectionAnchor(),
-      mpCurrentPage(),
       mnUpdateLockCount(0),
       mbIsUpdateCurrentPagePending(true)
 {
@@ -132,7 +131,7 @@ void PageSelector::SetCoreSelection()
 void PageSelector::SelectPage (int nPageIndex)
 {
     SharedPageDescriptor pDescriptor (mrModel.GetPageDescriptor(nPageIndex));
-    if (pDescriptor.get() != NULL)
+    if (pDescriptor.get() != nullptr)
         SelectPage(pDescriptor);
 }
 
@@ -140,13 +139,13 @@ void PageSelector::SelectPage (const SdPage* pPage)
 {
     const sal_Int32 nPageIndex (mrModel.GetIndex(pPage));
     SharedPageDescriptor pDescriptor (mrModel.GetPageDescriptor(nPageIndex));
-    if (pDescriptor.get()!=NULL && pDescriptor->GetPage()==pPage)
+    if (pDescriptor.get()!=nullptr && pDescriptor->GetPage()==pPage)
         SelectPage(pDescriptor);
 }
 
 void PageSelector::SelectPage (const SharedPageDescriptor& rpDescriptor)
 {
-    if (rpDescriptor.get()!=NULL
+    if (rpDescriptor.get()!=nullptr
         && mrSlideSorter.GetView().SetState(rpDescriptor, PageDescriptor::ST_Selected, true))
     {
         ++mnSelectedPageCount;
@@ -154,7 +153,7 @@ void PageSelector::SelectPage (const SharedPageDescriptor& rpDescriptor)
         mrSlideSorter.GetView().RequestRepaint(rpDescriptor);
 
         mpMostRecentlySelectedPage = rpDescriptor;
-        if (mpSelectionAnchor == 0)
+        if (mpSelectionAnchor == nullptr)
             mpSelectionAnchor = rpDescriptor;
 
         if (mnBroadcastDisableLevel > 0)
@@ -172,7 +171,7 @@ void PageSelector::DeselectPage (
     const bool bUpdateCurrentPage)
 {
     model::SharedPageDescriptor pDescriptor (mrModel.GetPageDescriptor(nPageIndex));
-    if (pDescriptor.get() != NULL)
+    if (pDescriptor.get() != nullptr)
         DeselectPage(pDescriptor, bUpdateCurrentPage);
 }
 
@@ -180,7 +179,7 @@ void PageSelector::DeselectPage (
     const SharedPageDescriptor& rpDescriptor,
     const bool bUpdateCurrentPage)
 {
-    if (rpDescriptor.get()!=NULL
+    if (rpDescriptor.get()!=nullptr
         && mrSlideSorter.GetView().SetState(rpDescriptor, PageDescriptor::ST_Selected, false))
     {
         --mnSelectedPageCount;
@@ -222,7 +221,7 @@ void PageSelector::CheckConsistency() const
 bool PageSelector::IsPageSelected (int nPageIndex)
 {
     SharedPageDescriptor pDescriptor (mrModel.GetPageDescriptor(nPageIndex));
-    if (pDescriptor.get() != NULL)
+    if (pDescriptor.get() != nullptr)
         return pDescriptor->HasState(PageDescriptor::ST_Selected);
     else
         return false;
@@ -270,7 +269,7 @@ std::shared_ptr<PageSelector::PageSelection> PageSelector::GetPageSelection() co
     for (int nIndex=0; nIndex<nPageCount; nIndex++)
     {
         SharedPageDescriptor pDescriptor (mrModel.GetPageDescriptor(nIndex));
-        if (pDescriptor.get()!=NULL && pDescriptor->HasState(PageDescriptor::ST_Selected))
+        if (pDescriptor.get()!=nullptr && pDescriptor->HasState(PageDescriptor::ST_Selected))
             pSelection->push_back(pDescriptor->GetPage());
     }
 
@@ -353,14 +352,14 @@ PageSelector::UpdateLock::~UpdateLock()
 
 void PageSelector::UpdateLock::Release()
 {
-    if (mpSelector != NULL)
+    if (mpSelector != nullptr)
     {
         --mpSelector->mnUpdateLockCount;
         OSL_ASSERT(mpSelector->mnUpdateLockCount >= 0);
         if (mpSelector->mnUpdateLockCount == 0)
             mpSelector->UpdateCurrentPage(true);
 
-        mpSelector = NULL;
+        mpSelector = nullptr;
     }
 }
 

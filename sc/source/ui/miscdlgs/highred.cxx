@@ -44,7 +44,6 @@ ScHighlightChgDlg::ScHighlightChgDlg( SfxBindings* pB, SfxChildWindow* pCW, vcl:
         "modules/scalc/ui/showchangesdialog.ui")
     , pViewData(ptrViewData)
     , pDoc(ptrViewData->GetDocument())
-    , aLocalRangeName(*(pDoc->GetRangeName()))
 {
     m_pFilterCtr = VclPtr<SvxTPFilter>::Create(get<VclContainer>("box"));
     get(m_pHighlightBox, "showchanges");
@@ -92,7 +91,7 @@ void ScHighlightChgDlg::Init()
     OSL_ENSURE( pViewData && pDoc, "ViewData oder Document nicht gefunden!" );
 
     ScChangeTrack* pChanges=pDoc->GetChangeTrack();
-    if(pChanges!=NULL)
+    if(pChanges!=nullptr)
     {
         aChangeViewSet.SetTheAuthorToShow(pChanges->GetUser());
         m_pFilterCtr->ClearAuthors();
@@ -104,7 +103,7 @@ void ScHighlightChgDlg::Init()
 
     ScChangeViewSettings* pViewSettings=pDoc->GetChangeViewSettings();
 
-    if(pViewSettings!=NULL)
+    if(pViewSettings!=nullptr)
         aChangeViewSet=*pViewSettings;
     m_pHighlightBox->Check(aChangeViewSet.ShowChanges());
     m_pFilterCtr->CheckDate(aChangeViewSet.HasDate());
@@ -138,7 +137,7 @@ void ScHighlightChgDlg::Init()
         OUString aRefStr(pRangeEntry->Format(ABS_DREF3D, pDoc));
         m_pFilterCtr->SetRange(aRefStr);
     }
-    m_pFilterCtr->Enable(true);
+    m_pFilterCtr->Enable();
     HighlightHandle(m_pHighlightBox);
 }
 
@@ -185,11 +184,11 @@ bool ScHighlightChgDlg::IsRefInputMode() const
 
 IMPL_LINK_TYPED( ScHighlightChgDlg, HighlightHandle, Button*, pCb, void )
 {
-    if(pCb!=NULL)
+    if(pCb!=nullptr)
     {
         if(m_pHighlightBox->IsChecked())
         {
-            m_pFilterCtr->Enable(true);
+            m_pFilterCtr->Enable();
             m_pCbAccept->Enable();
             m_pCbReject->Enable();
         }
@@ -204,7 +203,7 @@ IMPL_LINK_TYPED( ScHighlightChgDlg, HighlightHandle, Button*, pCb, void )
 
 IMPL_LINK_TYPED( ScHighlightChgDlg, RefHandle, SvxTPFilter*, pRef, void )
 {
-    if(pRef!=NULL)
+    if(pRef!=nullptr)
     {
         SetDispatcherLock( true );
         m_pEdAssign->Show();

@@ -60,8 +60,7 @@ CloseDispatcher::CloseDispatcher(const css::uno::Reference< css::uno::XComponent
     , m_aAsyncCallback(
         new vcl::EventPoster(LINK(this, CloseDispatcher, impl_asyncCallback)))
     , m_eOperation(E_CLOSE_DOC)
-    , m_lStatusListener(m_mutex)
-    , m_pSysWindow(NULL)
+    , m_pSysWindow(nullptr)
 {
     uno::Reference<frame::XFrame> xTarget = static_impl_searchRightTargetFrame(xFrame, sTarget);
     m_xCloseFrame = xTarget;
@@ -201,7 +200,7 @@ void SAL_CALL CloseDispatcher::dispatchWithNotification(const css::util::URL&   
     // They call us back by using our c++ interface.
 
     m_xResultListener = xListener;
-    m_xSelfHold       = css::uno::Reference< css::uno::XInterface >(static_cast< ::cppu::OWeakObject* >(this), css::uno::UNO_QUERY);
+    m_xSelfHold.set(static_cast< ::cppu::OWeakObject* >(this), css::uno::UNO_QUERY);
 
     aWriteLock.clear();
     // <- SAFE ----------------------------------
@@ -217,7 +216,7 @@ void SAL_CALL CloseDispatcher::dispatchWithNotification(const css::util::URL&   
     }
 
     if ( bIsSynchron )
-        impl_asyncCallback(0);
+        impl_asyncCallback(nullptr);
     else
     {
         SolarMutexGuard g;
@@ -492,7 +491,7 @@ bool CloseDispatcher::implts_closeFrame()
 
     {
         SolarMutexGuard g;
-        m_xCloseFrame = css::uno::WeakReference< css::frame::XFrame >();
+        m_xCloseFrame.clear();
     }
 
     return true;

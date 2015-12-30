@@ -66,6 +66,7 @@
 #include "CovarianceDialog.hxx"
 #include "ExponentialSmoothingDialog.hxx"
 #include "MovingAverageDialog.hxx"
+#include "RegressionDialog.hxx"
 #include "TTestDialog.hxx"
 #include "FTestDialog.hxx"
 #include "ZTestDialog.hxx"
@@ -89,7 +90,7 @@ void ScTabViewShell::SwitchBetweenRefDialogs(SfxModelessDialog* pDialog)
    if (nSlotId == FID_DEFINE_NAME)
    {
         mbInSwitch = true;
-        static_cast<ScNameDlg*>(pDialog)->GetRangeNames(maRangeMap);
+        static_cast<ScNameDlg*>(pDialog)->GetRangeNames(m_RangeMap);
         static_cast<ScNameDlg*>(pDialog)->Close();
         sal_uInt16 nId  = ScNameDefDlgWrapper::GetChildWindowId();
         SfxViewFrame* pViewFrm = GetViewFrame();
@@ -122,7 +123,7 @@ VclPtr<SfxModelessDialog> ScTabViewShell::CreateRefDialog(
     // so that it does not re appear for instance after a crash (#42341#).
 
     if ( SC_MOD()->GetCurRefDlgId() != nSlotId )
-        return NULL;
+        return nullptr;
 
     if ( nCurRefDlgId != nSlotId )
     {
@@ -130,7 +131,7 @@ VclPtr<SfxModelessDialog> ScTabViewShell::CreateRefDialog(
         //  -> lock the dispatcher for this view (modal mode)
 
         GetViewData().GetDispatcher().Lock( true );    // lock is reset when closing dialog
-        return NULL;
+        return nullptr;
     }
 
     VclPtr<SfxModelessDialog> pResult;
@@ -156,7 +157,7 @@ VclPtr<SfxModelessDialog> ScTabViewShell::CreateRefDialog(
                 pResult = VclPtr<ScNameDlg>::Create( pB, pCW, pParent, &GetViewData(),
                                      ScAddress( GetViewData().GetCurX(),
                                                 GetViewData().GetCurY(),
-                                                GetViewData().GetTabNo() ), &maRangeMap);
+                                                GetViewData().GetTabNo() ), &m_RangeMap);
                 static_cast<ScNameDlg*>(pResult.get())->SetEntry( maName, maScope);
                 mbInSwitch = false;
             }
@@ -177,10 +178,9 @@ VclPtr<SfxModelessDialog> ScTabViewShell::CreateRefDialog(
             else
             {
                 std::map<OUString, ScRangeName*> aRangeMap;
-                for (boost::ptr_map<OUString, ScRangeName>::iterator itr = maRangeMap.begin();
-                        itr != maRangeMap.end(); ++itr)
+                for (auto const& itr : m_RangeMap)
                 {
-                    aRangeMap.insert(std::pair<OUString, ScRangeName*>(itr->first, itr->second));
+                    aRangeMap.insert(std::pair<OUString, ScRangeName*>(itr.first, itr.second.get()));
                 }
                 pResult = VclPtr<ScNameDefDlg>::Create( pB, pCW, pParent, &GetViewData(), aRangeMap,
                                 ScAddress( GetViewData().GetCurX(),
@@ -372,6 +372,12 @@ VclPtr<SfxModelessDialog> ScTabViewShell::CreateRefDialog(
         }
         break;
 
+        case SID_REGRESSION_DIALOG:
+        {
+            pResult = VclPtr<ScRegressionDialog>::Create( pB, pCW, pParent, &GetViewData() );
+        }
+        break;
+
         case SID_TTEST_DIALOG:
         {
             pResult = VclPtr<ScTTestDialog>::Create( pB, pCW, pParent, &GetViewData() );
@@ -471,11 +477,11 @@ VclPtr<SfxModelessDialog> ScTabViewShell::CreateRefDialog(
             condformat::dialog::ScCondFormatDialogType aDialogType;
 
             // Get the pool item stored it by Conditional Format Manager Dialog.
-            const SfxPoolItem* pItem = NULL;
+            const SfxPoolItem* pItem = nullptr;
             sal_uInt32 nItems(GetPool().GetItemCount2( SCITEM_STRING ));
             for( sal_uInt32 nIter = 0; nIter < nItems; ++nIter )
             {
-                if( NULL != (pItem = GetPool().GetItem2( SCITEM_STRING, nIter ) ) )
+                if( nullptr != (pItem = GetPool().GetItem2( SCITEM_STRING, nIter ) ) )
                 {
                     if ( ScCondFormatDlg::ParseXmlString(
                             static_cast<const SfxStringItem*>(pItem)->GetValue(),

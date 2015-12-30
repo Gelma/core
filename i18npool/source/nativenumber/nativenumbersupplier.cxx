@@ -59,6 +59,8 @@ namespace com { namespace sun { namespace star { namespace i18n {
 
 OUString SAL_CALL getHebrewNativeNumberString(const OUString& aNumberString, bool useGeresh);
 
+OUString SAL_CALL getCyrillicNativeNumberString(const OUString& aNumberString);
+
 OUString SAL_CALL AsciiToNativeChar( const OUString& inStr, sal_Int32 startPos, sal_Int32 nCount,
         Sequence< sal_Int32 >& offset, bool useOffset, sal_Int16 number ) throw(RuntimeException)
 {
@@ -95,23 +97,23 @@ bool SAL_CALL AsciiToNative_numberMaker(const sal_Unicode *str, sal_Int32 begin,
     if ( len <= number->multiplierExponent[number->exponentCount-1] ) {
         if (number->multiplierExponent[number->exponentCount-1] > 1) {
             sal_Int16 i;
-            bool notZero = false;
+            bool bNotZero = false;
             for (i = 0; i < len; i++, begin++) {
-                if (notZero || str[begin] != NUMBER_ZERO) {
+                if (bNotZero || str[begin] != NUMBER_ZERO) {
                     dst[count] = numberChar[str[begin] - NUMBER_ZERO];
                     if (useOffset)
                         offset[count] = begin + startPos;
                     count++;
-                    notZero = true;
+                    bNotZero = true;
                 }
             }
-            if (notZero && multiChar > 0) {
+            if (bNotZero && multiChar > 0) {
                 dst[count] = multiChar;
                 if (useOffset)
                     offset[count] = begin + startPos;
                 count++;
             }
-            return notZero;
+            return bNotZero;
         } else if (str[begin] != NUMBER_ZERO) {
             if (!(number->numberFlag & (multiChar_index < 0 ? 0 : NUMBER_OMIT_ONE_CHECK(multiChar_index))) || str[begin] != NUMBER_ONE) {
                 dst[count] = numberChar[str[begin] - NUMBER_ZERO];
@@ -133,18 +135,18 @@ bool SAL_CALL AsciiToNative_numberMaker(const sal_Unicode *str, sal_Int32 begin,
         }
         return str[begin] != NUMBER_ZERO;
     } else {
-        bool printPower = false;
+        bool bPrintPower = false;
         // sal_Int16 last = 0;
         for (sal_Int16 i = 1; i <= number->exponentCount; i++) {
             sal_Int32 tmp = len - (i == number->exponentCount ? 0 : number->multiplierExponent[i]);
             if (tmp > 0) {
-                printPower |= AsciiToNative_numberMaker(str, begin, tmp, dst, count,
+                bPrintPower |= AsciiToNative_numberMaker(str, begin, tmp, dst, count,
                         (i == number->exponentCount ? -1 : i), offset, useOffset, startPos, number, numberChar);
                 begin += tmp;
                 len -= tmp;
             }
         }
-        if (printPower) {
+        if (bPrintPower) {
             if (count > 0 && number->multiplierExponent[number->exponentCount-1] == 1 &&
                     dst[count-1] == numberChar[0])
                 count--;
@@ -155,7 +157,7 @@ bool SAL_CALL AsciiToNative_numberMaker(const sal_Unicode *str, sal_Int32 begin,
                 count++;
             }
         }
-        return printPower;
+        return bPrintPower;
     }
 }
 
@@ -179,12 +181,12 @@ OUString SAL_CALL AsciiToNative( const OUString& inStr, sal_Int32 startPos, sal_
 
         if (useOffset)
             offset.realloc( nCount * 2 );
-        bool doDecimal = false;
+        bool bDoDecimal = false;
 
         for (i = 0; i <= nCount; i++)
         {
             if (i < nCount && isNumber(str[i])) {
-                if (doDecimal) {
+                if (bDoDecimal) {
                     newStr[count] = numberChar[str[i] - NUMBER_ZERO];
                     if (useOffset)
                         offset[count] = i + startPos;
@@ -196,17 +198,17 @@ OUString SAL_CALL AsciiToNative( const OUString& inStr, sal_Int32 startPos, sal_
                 if (len > 0) {
                     if (i < nCount-1 && isSeparator(str[i]) && isNumber(str[i+1]))
                         continue; // skip comma inside number string
-                    bool notZero = false;
+                    bool bNotZero = false;
                     for (sal_Int32 begin = 0, end = len % number->multiplierExponent[0];
                             end <= len; begin = end, end += number->multiplierExponent[0]) {
                         if (end == 0) continue;
                         sal_Int32 _count = count;
-                        notZero |= AsciiToNative_numberMaker(srcStr.get(), begin, end - begin, newStr.get(), count,
+                        bNotZero |= AsciiToNative_numberMaker(srcStr.get(), begin, end - begin, newStr.get(), count,
                                 end == len ? -1 : 0, offset, useOffset, i - len + startPos, number, numberChar);
                         if (count > 0 && number->multiplierExponent[number->exponentCount-1] == 1 &&
                                 newStr[count-1] == numberChar[0])
                             count--;
-                        if (notZero && _count == count) {
+                        if (bNotZero && _count == count) {
                             if (end != len) {
                                 newStr[count] = number->multiplierChar[0];
                                 if (useOffset)
@@ -215,7 +217,7 @@ OUString SAL_CALL AsciiToNative( const OUString& inStr, sal_Int32 startPos, sal_
                             }
                         }
                     }
-                    if (! notZero && ! (number->numberFlag & NUMBER_OMIT_ONLY_ZERO)) {
+                    if (! bNotZero && ! (number->numberFlag & NUMBER_OMIT_ONLY_ZERO)) {
                         newStr[count] = numberChar[0];
                         if (useOffset)
                             offset[count] = i - len + startPos;
@@ -224,8 +226,8 @@ OUString SAL_CALL AsciiToNative( const OUString& inStr, sal_Int32 startPos, sal_
                     len = 0;
                 }
                 if (i < nCount) {
-                    doDecimal = (!doDecimal && i < nCount-1 && isDecimal(str[i]) && isNumber(str[i+1]));
-                    if (doDecimal)
+                    bDoDecimal = (!bDoDecimal && i < nCount-1 && isDecimal(str[i]) && isNumber(str[i+1]));
+                    if (bDoDecimal)
                         newStr[count] = (DecimalChar[number->number] ? DecimalChar[number->number] : str[i]);
                     else if (i < nCount-1 && isMinus(str[i]) && isNumber(str[i+1]))
                         newStr[count] = (MinusChar[number->number] ? MinusChar[number->number] : str[i]);
@@ -318,7 +320,8 @@ static OUString SAL_CALL NativeToAscii(const OUString& inStr,
         multiplierChar = OUString(MultiplierChar_7_CJK[0], ExponentCount_7_CJK*Multiplier_Count);
         decimalChar = OUString(DecimalChar, NumberChar_Count);
         minusChar = OUString(MinusChar, NumberChar_Count);
-        separatorChar = OUString(SeparatorChar, NumberChar_Count);
+        separatorChar = OUString(
+            reinterpret_cast<sal_Unicode *>(SeparatorChar), NumberChar_Count);
 
         for ( i = 0; i < nCount; i++) {
             if ((index = multiplierChar.indexOf(str[i])) >= 0) {
@@ -457,7 +460,8 @@ static const sal_Char *natnum1Locales[] = {
     "mn",
     "ne",
     "dz",
-    "fa"
+    "fa",
+    "cu"
 };
 static sal_Int16 nbOfLocale = SAL_N_ELEMENTS(natnum1Locales);
 
@@ -488,7 +492,8 @@ static const sal_Int16 natnum1[] = {
     NumberChar_mn,
     NumberChar_ne,
     NumberChar_dz,
-    NumberChar_EastIndic_ar
+    NumberChar_EastIndic_ar,
+    NumberChar_cu
 };
 static const sal_Int16 sizeof_natnum1 = SAL_N_ELEMENTS(natnum1);
 
@@ -525,7 +530,7 @@ OUString SAL_CALL NativeNumberSupplierService::getNativeNumberString(const OUStr
     if (langnum == -1)
         return aNumberString;
 
-    const Number *number = 0;
+    const Number *number = nullptr;
     sal_Int16 num = -1;
 
     switch (nNativeNumberMode)
@@ -591,6 +596,8 @@ OUString SAL_CALL NativeNumberSupplierService::getNativeNumberString(const OUStr
         else if (num == NumberChar_he)
             return getHebrewNativeNumberString(aNumberString,
                     nNativeNumberMode == NativeNumberMode::NATNUM2);
+        else if (num == NumberChar_cu)
+            return getCyrillicNativeNumberString(aNumberString);
         else
             return AsciiToNativeChar(aNumberString, 0, aNumberString.getLength(), offset, useOffset, num);
     }
@@ -605,7 +612,7 @@ OUString SAL_CALL NativeNumberSupplierService::getNativeNumberString(const OUStr
     return getNativeNumberString(aNumberString, rLocale, nNativeNumberMode, offset);
 }
 
-sal_Unicode SAL_CALL NativeNumberSupplierService::getNativeNumberChar( const sal_Unicode inChar, const Locale& rLocale, sal_Int16 nNativeNumberMode ) throw(com::sun::star::uno::RuntimeException)
+sal_Unicode SAL_CALL NativeNumberSupplierService::getNativeNumberChar( const sal_Unicode inChar, const Locale& rLocale, sal_Int16 nNativeNumberMode ) throw(css::uno::RuntimeException)
 {
     if (nNativeNumberMode == NativeNumberMode::NATNUM0) { // Ascii
         for (sal_Int16 i = 0; i < NumberChar_Count; i++)
@@ -901,6 +908,127 @@ OUString SAL_CALL getHebrewNativeNumberString(const OUString& aNumberString, boo
         return aNumberString;
 }
 
+// Support for Cyrillic Numerals
+// See UTN 41 for implementation information
+// http://www.unicode.org/notes/tn41/
+
+static sal_Unicode cyrillicThousandsMark = 0x0482;
+static sal_Unicode cyrillicTitlo = 0x0483;
+static sal_Unicode cyrillicTen = 0x0456;
+
+struct CyrillicNumberChar {
+    sal_Unicode code;
+    sal_Int16 value;
+} CyrillicNumberCharArray[] = {
+    { 0x0446, 900 },
+    { 0x047f, 800 },
+    { 0x0471, 700 },
+    { 0x0445, 600 },
+    { 0x0444, 500 },
+    { 0x0443, 400 },
+    { 0x0442, 300 },
+    { 0x0441, 200 },
+    { 0x0440, 100 },
+    { 0x0447, 90 },
+    { 0x043f, 80 },
+    { 0x047b, 70 },
+    { 0x046f, 60 },
+    { 0x043d, 50 },
+    { 0x043c, 40 },
+    { 0x043b, 30 },
+    { 0x043a, 20 },
+    { 0x0456, 10 },
+    { 0x0473, 9 },
+    { 0x0438, 8 },
+    { 0x0437, 7 },
+    { 0x0455, 6 },
+    { 0x0454, 5 },
+    { 0x0434, 4 },
+    { 0x0433, 3 },
+    { 0x0432, 2 },
+    { 0x0430, 1 }
+};
+
+static sal_Int16 nbOfCyrillicNumberChar = sizeof(CyrillicNumberCharArray)/sizeof(CyrillicNumberChar);
+
+void makeCyrillicNumber(sal_Int64 value, OUStringBuffer& output, bool addTitlo)
+{
+    sal_Int16 num = sal::static_int_cast<sal_Int16>(value % 1000);
+    if (value >= 1000) {
+        output.append(cyrillicThousandsMark);
+        makeCyrillicNumber(value / 1000, output, false);
+        if (value >= 10000 && (value - 10000) % 1000 != 0) {
+            output.append(" ");
+        }
+        if (value % 1000 == 0)
+            addTitlo = false;
+    }
+
+    for (sal_Int32 j = 0; num > 0 && j < nbOfCyrillicNumberChar; j++) {
+        if (num < 20 && num > 10) {
+            num -= 10;
+            makeCyrillicNumber(num, output, false);
+            output.append(cyrillicTen);
+            break;
+        }
+
+        if (CyrillicNumberCharArray[j].value <= num) {
+            output.append(CyrillicNumberCharArray[j].code);
+            num = sal::static_int_cast<sal_Int16>( num - CyrillicNumberCharArray[j].value );
+        }
+    }
+
+    if (addTitlo) {
+        if (output.getLength() == 1) {
+            output.append(cyrillicTitlo);
+        } else if (output.getLength() == 2) {
+            if (value > 800 && value < 900) {
+                output.append(cyrillicTitlo);
+            } else {
+                output.insert(1, cyrillicTitlo);
+            }
+        } else if (output.getLength() > 2) {
+            if (output.indexOf(" ") == output.getLength() - 2) {
+                output.append(cyrillicTitlo);
+            } else {
+                output.insert(output.getLength() - 1, cyrillicTitlo);
+            }
+        }
+    }
+}
+
+OUString SAL_CALL getCyrillicNativeNumberString(const OUString& aNumberString)
+{
+    sal_Int64 value = 0;
+    sal_Int32 i, count = 0, len = aNumberString.getLength();
+    const sal_Unicode *src = aNumberString.getStr();
+
+    for (i = 0; i < len; i++) {
+        sal_Unicode ch = src[i];
+        if (isNumber(ch)) {
+            if (++count >= 8) // Number is too long, could not be handled.
+                return aNumberString;
+            value = value * 10 + (ch - NUMBER_ZERO);
+        }
+        else if (isSeparator(ch) && count > 0) continue;
+        else if (isMinus(ch) && count == 0) continue;
+        else break;
+    }
+
+    if (value > 0) {
+        OUStringBuffer output(count*2 + 2 + len - i);
+
+        makeCyrillicNumber(value, output, true);
+
+        if (i < len)
+            output.append(aNumberString.copy(i));
+
+        return output.makeStringAndClear();
+    }
+    else
+        return aNumberString;
+}
+
 static const sal_Char* implementationName = "com.sun.star.i18n.NativeNumberSupplier";
 
 OUString SAL_CALL NativeNumberSupplierService::getImplementationName() throw( RuntimeException, std::exception )
@@ -917,8 +1045,7 @@ NativeNumberSupplierService::supportsService(const OUString& rServiceName) throw
 Sequence< OUString > SAL_CALL
 NativeNumberSupplierService::getSupportedServiceNames() throw( RuntimeException, std::exception )
 {
-    Sequence< OUString > aRet(1);
-    aRet[0] = OUString::createFromAscii( implementationName );
+    Sequence< OUString > aRet { OUString::createFromAscii( implementationName ) };
     return aRet;
 }
 

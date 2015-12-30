@@ -62,8 +62,8 @@
 #include <vcl/settings.hxx>
 #include <tools/stream.hxx>
 #include <rtl/ustrbuf.hxx>
-#include "IApplicationController.hxx"
 #include "svtools/treelistentry.hxx"
+#include "AppController.hxx"
 
 #include <com/sun/star/document/XDocumentProperties.hpp>
 
@@ -93,7 +93,7 @@ namespace
 {
     SvTreeListEntry* lcl_findEntry_impl(DBTreeListBox& rTree,const OUString& _rName,SvTreeListEntry* _pFirst)
     {
-        SvTreeListEntry* pReturn = NULL;
+        SvTreeListEntry* pReturn = nullptr;
         sal_Int32 nIndex = 0;
         OUString sName( _rName.getToken(0,'/',nIndex) );
 
@@ -122,7 +122,7 @@ namespace
     {
         sal_Int32 nIndex = 0;
         OUString sErase = _rName.getToken(0,'/',nIndex); // we don't want to have the "private:forms" part
-        return (nIndex != -1 ? lcl_findEntry_impl(rTree,_rName.copy(sErase.getLength() + 1),_pFirst) : NULL);
+        return (nIndex != -1 ? lcl_findEntry_impl(rTree,_rName.copy(sErase.getLength() + 1),_pFirst) : nullptr);
     }
     // class OPreviewWindow
     class OTablePreviewWindow : public vcl::Window
@@ -130,10 +130,10 @@ namespace
         DECL_LINK_TYPED(OnDisableInput, void*, void);
         void ImplInitSettings( bool bFont, bool bForeground, bool bBackground );
     protected:
-        virtual void DataChanged(const DataChangedEvent& rDCEvt) SAL_OVERRIDE;
+        virtual void DataChanged(const DataChangedEvent& rDCEvt) override;
     public:
         OTablePreviewWindow( vcl::Window* pParent, WinBits nStyle = 0 );
-        virtual bool Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+        virtual bool Notify( NotifyEvent& rNEvt ) override;
     };
     OTablePreviewWindow::OTablePreviewWindow(vcl::Window* pParent, WinBits nStyle) : Window( pParent, nStyle)
     {
@@ -143,7 +143,7 @@ namespace
     {
         bool bRet = Window::Notify( rNEvt );
         if ( rNEvt.GetType() == MouseNotifyEvent::INPUTENABLE && IsInputEnabled() )
-            PostUserEvent( LINK( this, OTablePreviewWindow, OnDisableInput), NULL, true );
+            PostUserEvent( LINK( this, OTablePreviewWindow, OnDisableInput), nullptr, true );
         return bRet;
     }
     IMPL_LINK_NOARG_TYPED(OTablePreviewWindow, OnDisableInput, void*, void)
@@ -205,7 +205,7 @@ OAppDetailPageHelper::OAppDetailPageHelper(vcl::Window* _pParent,OAppBorderWindo
     m_aTBPreview->SetHelpId(HID_APP_VIEW_PREVIEW_CB);
     m_aTBPreview->SetDropdownClickHdl( LINK( this, OAppDetailPageHelper, OnDropdownClickHdl ) );
     m_aTBPreview->EnableMenuStrings();
-    m_aTBPreview->Enable(true);
+    m_aTBPreview->Enable();
 
     m_aBorder->SetUniqueId(UID_APP_VIEW_PREVIEW_1);
 
@@ -220,7 +220,7 @@ OAppDetailPageHelper::OAppDetailPageHelper(vcl::Window* _pParent,OAppBorderWindo
 
     SetUniqueId(UID_APP_DETAILPAGE_HELPER);
     for (int i=0; i < E_ELEMENT_TYPE_COUNT; ++i)
-        m_pLists[i] = NULL;
+        m_pLists[i] = nullptr;
     ImplInitSettings();
 }
 
@@ -368,7 +368,7 @@ void OAppDetailPageHelper::describeCurrentSelectionForControl( const Control& _r
 void OAppDetailPageHelper::describeCurrentSelectionForType( const ElementType _eType, Sequence< NamedDatabaseObject >& _out_rSelectedObjects )
 {
     OSL_ENSURE( _eType < E_ELEMENT_TYPE_COUNT, "OAppDetailPageHelper::describeCurrentSelectionForType: invalid type!" );
-    DBTreeListBox* pList = ( _eType < E_ELEMENT_TYPE_COUNT ) ? m_pLists[ _eType ].get() : NULL;
+    DBTreeListBox* pList = ( _eType < E_ELEMENT_TYPE_COUNT ) ? m_pLists[ _eType ].get() : nullptr;
     OSL_ENSURE( pList, "OAppDetailPageHelper::describeCurrentSelectionForType: "
                        "You really should ensure this type has already been viewed before!" );
     if ( !pList )
@@ -429,8 +429,7 @@ void OAppDetailPageHelper::describeCurrentSelectionForType( const ElementType _e
         pEntry = pList->NextSelected(pEntry);
     }
 
-    _out_rSelectedObjects.realloc( aSelected.size() );
-    ::std::copy( aSelected.begin(), aSelected.end(), _out_rSelectedObjects.getArray() );
+    _out_rSelectedObjects = comphelper::containerToSequence( aSelected );
 }
 
 void OAppDetailPageHelper::selectElements(const Sequence< OUString>& _aNames)
@@ -557,7 +556,7 @@ bool OAppDetailPageHelper::isALeafSelected() const
 
 SvTreeListEntry* OAppDetailPageHelper::getEntry( const Point& _aPosPixel) const
 {
-    SvTreeListEntry* pReturn = NULL;
+    SvTreeListEntry* pReturn = nullptr;
     int nPos = getVisibleControlIndex();
     if ( nPos < E_ELEMENT_TYPE_COUNT )
         pReturn = m_pLists[nPos]->GetEntry( _aPosPixel, true );
@@ -650,7 +649,7 @@ void OAppDetailPageHelper::createPage(ElementType _eType,const Reference< XNameA
     {
         if ( !m_pLists[_eType]->GetEntryCount() && _xContainer.is() )
         {
-            fillNames( _xContainer, _eType, nImageId, NULL );
+            fillNames( _xContainer, _eType, nImageId, nullptr );
 
             m_pLists[_eType]->SelectAll(false);
         }
@@ -665,11 +664,11 @@ void OAppDetailPageHelper::setDetailPage(vcl::Window* _pWindow)
     if ( pCurrent )
         pCurrent->Hide();
 
-    showPreview(NULL);
+    showPreview(nullptr);
     bool bHasFocus = false;
     m_aFL->Show();
     {
-        bHasFocus = pCurrent != 0 && pCurrent->HasChildPathFocus();
+        bHasFocus = pCurrent != nullptr && pCurrent->HasChildPathFocus();
     _pWindow->Show();
     }
     m_aTBPreview->Show();
@@ -715,7 +714,7 @@ void OAppDetailPageHelper::fillNames( const Reference< XNameAccess >& _xContaine
         const OUString* pEnd  = pIter + aSeq.getLength();
         for(;pIter != pEnd;++pIter)
         {
-            SvTreeListEntry* pEntry = NULL;
+            SvTreeListEntry* pEntry = nullptr;
             Reference<XNameAccess> xSubElements(_xContainer->getByName(*pIter),UNO_QUERY);
             if ( xSubElements.is() )
             {
@@ -727,7 +726,7 @@ void OAppDetailPageHelper::fillNames( const Reference< XNameAccess >& _xContaine
             {
                 pEntry = pList->InsertEntry( *pIter, _pParent );
 
-                Image aImage = Image( ModuleRes( _nImageId ) );
+                Image aImage{ ModuleRes( _nImageId ) };
                 pList->SetExpandedEntryBmp(  pEntry, aImage );
                 pList->SetCollapsedEntryBmp( pEntry, aImage );
             }
@@ -749,7 +748,7 @@ DBTreeListBox* OAppDetailPageHelper::createTree( DBTreeListBox* _pTreeView, cons
 
     _pTreeView->SetStyle(_pTreeView->GetStyle() | WB_HASLINES | WB_SORT | WB_HASBUTTONS | WB_HSCROLL |WB_HASBUTTONSATROOT | WB_TABSTOP);
     _pTreeView->GetModel()->SetSortMode(SortAscending);
-    _pTreeView->EnableCheckButton( NULL ); // do not show any buttons
+    _pTreeView->EnableCheckButton( nullptr ); // do not show any buttons
     _pTreeView->SetSelectionMode(MULTIPLE_SELECTION);
 
     _pTreeView->SetDefaultCollapsedEntryBmp( _rImage );
@@ -759,7 +758,6 @@ DBTreeListBox* OAppDetailPageHelper::createTree( DBTreeListBox* _pTreeView, cons
     _pTreeView->SetEnterKeyHdl(LINK(this, OAppDetailPageHelper, OnEntryEnterKey));
     _pTreeView->SetSelChangeHdl(LINK(this, OAppDetailPageHelper, OnEntrySelChange));
 
-    _pTreeView->setCutHandler(LINK(this, OAppDetailPageHelper, OnCutEntry));
     _pTreeView->setCopyHandler(LINK(this, OAppDetailPageHelper, OnCopyEntry));
     _pTreeView->setPasteHandler(LINK(this, OAppDetailPageHelper, OnPasteEntry));
     _pTreeView->setDeleteHandler(LINK(this, OAppDetailPageHelper, OnDeleteEntry));
@@ -772,7 +770,7 @@ DBTreeListBox* OAppDetailPageHelper::createTree( DBTreeListBox* _pTreeView, cons
 
 void OAppDetailPageHelper::clearPages()
 {
-    showPreview(NULL);
+    showPreview(nullptr);
     for (size_t i=0; i < E_ELEMENT_TYPE_COUNT; ++i)
     {
         if ( m_pLists[i] )
@@ -796,7 +794,7 @@ void OAppDetailPageHelper::elementReplaced(ElementType _eType
     if ( pTreeView )
     {
         OUString sNewName = _rNewName;
-        SvTreeListEntry* pEntry = NULL;
+        SvTreeListEntry* pEntry = nullptr;
         switch( _eType )
         {
             case E_TABLE:
@@ -824,7 +822,7 @@ void OAppDetailPageHelper::elementReplaced(ElementType _eType
 
 SvTreeListEntry* OAppDetailPageHelper::elementAdded(ElementType _eType,const OUString& _rName, const Any& _rObject )
 {
-    SvTreeListEntry* pRet = NULL;
+    SvTreeListEntry* pRet = nullptr;
     DBTreeListBox* pTreeView = m_pLists[_eType];
     if( _eType == E_TABLE && pTreeView )
     {
@@ -833,7 +831,7 @@ SvTreeListEntry* OAppDetailPageHelper::elementAdded(ElementType _eType,const OUS
     else if ( pTreeView )
     {
 
-        SvTreeListEntry* pEntry = NULL;
+        SvTreeListEntry* pEntry = nullptr;
         Reference<XChild> xChild(_rObject,UNO_QUERY);
         if ( xChild.is() && E_QUERY != _eType )
         {
@@ -858,7 +856,7 @@ SvTreeListEntry* OAppDetailPageHelper::elementAdded(ElementType _eType,const OUS
         {
             pRet = pTreeView->InsertEntry( _rName, pEntry );
 
-            Image aImage = Image( ModuleRes( nImageId ) );
+            Image aImage{ ModuleRes( nImageId ) };
             pTreeView->SetExpandedEntryBmp(  pRet, aImage );
             pTreeView->SetCollapsedEntryBmp( pRet, aImage );
         }
@@ -900,7 +898,7 @@ void OAppDetailPageHelper::elementRemoved( ElementType _eType,const OUString& _r
                 OSL_FAIL("Invalid element type");
         }
         if ( !pTreeView->GetEntryCount() )
-            showPreview(NULL);
+            showPreview(nullptr);
     }
 }
 
@@ -911,18 +909,13 @@ IMPL_LINK_TYPED(OAppDetailPageHelper, OnEntryEnterKey, DBTreeListBox*, _pTree, v
 IMPL_LINK_TYPED(OAppDetailPageHelper, OnEntryDoubleClick, SvTreeListBox*, _pTree, bool)
 {
     OSL_ENSURE( _pTree, "OAppDetailPageHelper, OnEntryDoubleClick: invalid callback!" );
-    bool bHandled = ( _pTree != NULL ) && getBorderWin().getView()->getAppController().onEntryDoubleClick( *_pTree );
+    bool bHandled = ( _pTree != nullptr ) && getBorderWin().getView()->getAppController().onEntryDoubleClick( *_pTree );
     return bHandled;
 }
 
 IMPL_LINK_NOARG_TYPED(OAppDetailPageHelper, OnEntrySelChange, LinkParamNone*, void)
 {
     getBorderWin().getView()->getAppController().onSelectionChanged();
-}
-
-IMPL_LINK_NOARG_TYPED( OAppDetailPageHelper, OnCutEntry, LinkParamNone*, void )
-{
-    getBorderWin().getView()->getAppController().onCutEntry();
 }
 
 IMPL_LINK_NOARG_TYPED( OAppDetailPageHelper, OnCopyEntry, LinkParamNone*, void )
@@ -1120,7 +1113,7 @@ void OAppDetailPageHelper::showPreview( const OUString& _sDataSourceName,
         Reference< XDatabaseDocumentUI > xApplication( getBorderWin().getView()->getAppController().getXController(), UNO_QUERY );
         std::unique_ptr< DatabaseObjectView > pDispatcher( new ResultSetBrowser(
             getBorderWin().getView()->getORB(),
-            xApplication, NULL, _bTable
+            xApplication, nullptr, _bTable
         ) );
         pDispatcher->setTargetFrame( Reference<XFrame>(m_xFrame,UNO_QUERY_THROW) );
 
@@ -1145,7 +1138,7 @@ void OAppDetailPageHelper::showPreview( const OUString& _sDataSourceName,
             }
         }
         if ( bClearPreview )
-            showPreview(NULL);
+            showPreview(nullptr);
     }
 }
 
@@ -1224,7 +1217,7 @@ void OAppDetailPageHelper::DataChanged( const DataChangedEvent& rDCEvt )
         if ( m_pLists[ E_TABLE ] )
         {
             OTableTreeListBox* pTableTree = dynamic_cast< OTableTreeListBox* >( m_pLists[ E_TABLE ].get() );
-            OSL_ENSURE( pTableTree != NULL, "OAppDetailPageHelper::DataChanged: a tree list for tables which is no TableTreeList?" );
+            OSL_ENSURE( pTableTree != nullptr, "OAppDetailPageHelper::DataChanged: a tree list for tables which is no TableTreeList?" );
             if ( pTableTree )
                 pTableTree->notifyHiContrastChanged();
         }

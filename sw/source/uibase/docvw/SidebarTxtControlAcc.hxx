@@ -32,8 +32,8 @@ class SidebarTextControlAccessible : public VCLXWindow
         explicit SidebarTextControlAccessible( SidebarTextControl& rSidebarTextControl );
         virtual ~SidebarTextControlAccessible();
 
-        virtual com::sun::star::uno::Reference< com::sun::star::accessibility::XAccessibleContext >
-                CreateAccessibleContext() SAL_OVERRIDE;
+        virtual css::uno::Reference< css::accessibility::XAccessibleContext >
+                CreateAccessibleContext() override;
 
     private:
         SidebarTextControl& mrSidebarTextControl;

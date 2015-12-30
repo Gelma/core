@@ -83,7 +83,9 @@ enum
     PROP_AXIS_MARK_POSITION,
 
     PROP_AXIS_DISPLAY_UNITS,
-    PROP_AXIS_BUILTINUNIT
+    PROP_AXIS_BUILTINUNIT,
+
+    PROP_AXIS_TRY_STAGGERING_FIRST
 };
 
 void lcl_AddPropertiesToVector(
@@ -210,6 +212,16 @@ void lcl_AddPropertiesToVector(
                   cppu::UnoType<OUString>::get(),
                   beans::PropertyAttribute::BOUND
                   | beans::PropertyAttribute::MAYBEDEFAULT ));
+
+    // Compatibility option: starting from LibreOffice 5.1 the rotated
+    // layout is preferred to staggering for axis labels.
+    rOutProperties.push_back(
+        Property( "TryStaggeringFirst",
+                  PROP_AXIS_TRY_STAGGERING_FIRST,
+                  cppu::UnoType<bool>::get(),
+                  beans::PropertyAttribute::BOUND
+                  | beans::PropertyAttribute::MAYBEDEFAULT ));
+
 }
 
 struct StaticAxisDefaults_Initializer
@@ -246,6 +258,7 @@ private:
         ::chart::PropertyHelper::setPropertyValueDefault< sal_Int32 >( rOutMap, PROP_AXIS_MINOR_TICKMARKS, 0 /* CHAXIS_MARK_NONE */ );
         ::chart::PropertyHelper::setPropertyValueDefault( rOutMap, PROP_AXIS_MARK_POSITION, ::com::sun::star::chart::ChartAxisMarkPosition_AT_LABELS_AND_AXIS );
         ::chart::PropertyHelper::setPropertyValueDefault( rOutMap, PROP_AXIS_DISPLAY_UNITS, false );
+        ::chart::PropertyHelper::setPropertyValueDefault( rOutMap, PROP_AXIS_TRY_STAGGERING_FIRST, false );
     }
 };
 
@@ -273,7 +286,7 @@ private:
         ::std::sort( aProperties.begin(), aProperties.end(),
                      ::chart::PropertyNameLess() );
 
-        return ::chart::ContainerHelper::ContainerToSequence( aProperties );
+        return comphelper::containerToSequence( aProperties );
     }
 };
 
@@ -393,7 +406,7 @@ Axis::~Axis()
         if( m_aScaleData.Categories.is())
         {
             ModifyListenerHelper::removeListener( m_aScaleData.Categories, m_xModifyEventForwarder );
-            m_aScaleData.Categories.set(0);
+            m_aScaleData.Categories.set(nullptr);
         }
     }
     catch( const uno::Exception & ex )
@@ -402,8 +415,8 @@ Axis::~Axis()
     }
 
     m_aSubGridProperties.realloc(0);
-    m_xGrid = 0;
-    m_xTitle = 0;
+    m_xGrid = nullptr;
+    m_xTitle = nullptr;
 }
 
 void Axis::AllocateSubGrids()
@@ -588,7 +601,7 @@ void SAL_CALL Axis::disposing( const lang::EventObject& Source )
     throw (uno::RuntimeException, std::exception)
 {
     if( Source.Source == m_aScaleData.Categories )
-        m_aScaleData.Categories = 0;
+        m_aScaleData.Categories = nullptr;
 }
 
 // ____ OPropertySet ____

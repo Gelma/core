@@ -122,6 +122,6 @@ void SwToolbarConfigItem::ImplCommit()
     PutProperties(aNames, aValues);
 }
 
-void SwToolbarConfigItem::Notify( const ::com::sun::star::uno::Sequence< OUString >& ) {}
+void SwToolbarConfigItem::Notify( const css::uno::Sequence< OUString >& ) {}
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

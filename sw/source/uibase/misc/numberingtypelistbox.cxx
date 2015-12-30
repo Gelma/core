@@ -43,7 +43,7 @@ SwNumberingTypeListBox::SwNumberingTypeListBox( vcl::Window* pWin, WinBits nStyl
     uno::Reference<uno::XComponentContext>          xContext( ::comphelper::getProcessComponentContext() );
     uno::Reference<text::XDefaultNumberingProvider> xDefNum = text::DefaultNumberingProvider::create(xContext);
 
-    pImpl->xInfo = uno::Reference<text::XNumberingTypeInfo>(xDefNum, uno::UNO_QUERY);
+    pImpl->xInfo.set(xDefNum, uno::UNO_QUERY);
 }
 
 bool SwNumberingTypeListBox::set_property(const OString &rKey, const OString &rValue)
@@ -78,7 +78,7 @@ void SwNumberingTypeListBox::Reload(sal_uInt16 nTypeFlags)
 {
     Clear();
     uno::Sequence<sal_Int16> aTypes;
-    const sal_Int16* pTypes = NULL;
+    const sal_Int16* pTypes = nullptr;
     if(0 != (nTypeFlags&INSERT_NUM_EXTENDED_TYPES) )
     {
         if(pImpl->xInfo.is())

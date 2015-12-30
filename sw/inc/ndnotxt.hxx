@@ -28,7 +28,7 @@ namespace tools { class PolyPolygon; }
 class SW_DLLPUBLIC SwNoTextNode : public SwContentNode
 {
     friend class SwNodes;
-    friend class SwNoTextFrm;
+    friend class SwNoTextFrame;
 
     tools::PolyPolygon *pContour;
     bool bAutomaticContour : 1; // automatic contour polygon, not manipulated
@@ -39,19 +39,19 @@ class SW_DLLPUBLIC SwNoTextNode : public SwContentNode
 
     // Creates for all derivations an AttrSet with ranges for frame- and
     // graphics-attributes (only called by SwContentNode).
-    virtual void NewAttrSet( SwAttrPool& ) SAL_OVERRIDE;
+    virtual void NewAttrSet( SwAttrPool& ) override;
 
-    SwNoTextNode( const SwNoTextNode& ) SAL_DELETED_FUNCTION;
-    SwNoTextNode &operator=( const SwNoTextNode& ) SAL_DELETED_FUNCTION;
+    SwNoTextNode( const SwNoTextNode& ) = delete;
+    SwNoTextNode &operator=( const SwNoTextNode& ) = delete;
 
 protected:
     SwNoTextNode( const SwNodeIndex &rWhere, const sal_uInt8 nNdType,
-                SwGrfFormatColl *pGrColl, SwAttrSet* pAutoAttr = 0 );
+                SwGrfFormatColl *pGrColl, SwAttrSet* pAutoAttr = nullptr );
 
 public:
     virtual ~SwNoTextNode();
 
-    virtual SwContentFrm *MakeFrm( SwFrm* ) SAL_OVERRIDE;
+    virtual SwContentFrame *MakeFrame( SwFrame* ) override;
 
     inline SwGrfFormatColl *GetGrfColl() const { return const_cast<SwGrfFormatColl*>(static_cast<const SwGrfFormatColl*>(GetRegisteredIn())); }
 
@@ -68,7 +68,7 @@ public:
     void               SetContour( const tools::PolyPolygon *pPoly,
                                    bool bAutomatic = false );
     const tools::PolyPolygon *HasContour() const;
-    bool               _HasContour() const { return pContour!=0; };
+    bool               _HasContour() const { return pContour!=nullptr; };
     void               GetContour( tools::PolyPolygon &rPoly ) const;
     void               CreateContour();
 
@@ -93,11 +93,11 @@ public:
 // Inline methods from Node.hxx - we know TextNode only here!!
 inline SwNoTextNode *SwNode::GetNoTextNode()
 {
-    return ND_NOTXTNODE & nNodeType ? static_cast<SwNoTextNode*>(this) : 0;
+    return ND_NOTXTNODE & m_nNodeType ? static_cast<SwNoTextNode*>(this) : nullptr;
 }
 inline const SwNoTextNode *SwNode::GetNoTextNode() const
 {
-    return ND_NOTXTNODE & nNodeType ? static_cast<const SwNoTextNode*>(this) : 0;
+    return ND_NOTXTNODE & m_nNodeType ? static_cast<const SwNoTextNode*>(this) : nullptr;
 }
 
 #endif // INCLUDED_SW_INC_NDNOTXT_HXX

@@ -42,7 +42,7 @@
 #define VECT_MAP( _def_pIn, _def_pOut, _def_nVal )  _def_pOut[_def_nVal]=(_def_pIn[_def_nVal]=((_def_nVal)*4L)+1L)+5L;
 #define BACK_MAP( _def_nVal )                       ((((_def_nVal)+2)>>2)-1)
 #define VECT_PROGRESS( _def_pProgress, _def_nVal ) \
-  if(_def_pProgress && _def_pProgress->IsSet())      \
+  if(_def_pProgress)      \
       (_def_pProgress->Call(_def_nVal));
 
 class ImplVectMap;
@@ -143,7 +143,7 @@ public:
 };
 
 ImplPointArray::ImplPointArray() :
-    mpArray     ( NULL ),
+    mpArray     ( nullptr ),
     mnSize      ( 0UL ),
     mnRealSize  ( 0UL )
 
@@ -853,7 +853,7 @@ void ImplLimitPolyPoly( tools::PolyPolygon& rPolyPoly )
 
 ImplVectMap* ImplExpand( BitmapReadAccess* pRAcc, const Color& rColor )
 {
-    ImplVectMap* pMap = NULL;
+    ImplVectMap* pMap = nullptr;
 
     if( pRAcc && pRAcc->Width() && pRAcc->Height() )
     {

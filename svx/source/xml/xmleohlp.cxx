@@ -78,16 +78,16 @@ public:
     virtual ~OutputStorageWrapper_Impl();
 
 // css::io::XOutputStream
-    virtual void SAL_CALL writeBytes(const Sequence< sal_Int8 >& aData) throw(NotConnectedException, BufferSizeExceededException, RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL flush() throw(NotConnectedException, BufferSizeExceededException, RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL closeOutput() throw(NotConnectedException, BufferSizeExceededException, RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL writeBytes(const Sequence< sal_Int8 >& aData) throw(NotConnectedException, BufferSizeExceededException, RuntimeException, std::exception) override;
+    virtual void SAL_CALL flush() throw(NotConnectedException, BufferSizeExceededException, RuntimeException, std::exception) override;
+    virtual void SAL_CALL closeOutput() throw(NotConnectedException, BufferSizeExceededException, RuntimeException, std::exception) override;
 
     SvStream*   GetStream();
 };
 
 OutputStorageWrapper_Impl::OutputStorageWrapper_Impl()
     : bStreamClosed( false )
-    , pStream(0)
+    , pStream(nullptr)
 {
     aTempFile.EnableKillingFile();
     pStream = aTempFile.GetStream( STREAM_READWRITE );
@@ -102,7 +102,7 @@ SvStream *OutputStorageWrapper_Impl::GetStream()
 {
     if( bStreamClosed )
         return pStream;
-    return NULL;
+    return nullptr;
 }
 
 void SAL_CALL OutputStorageWrapper_Impl::writeBytes(
@@ -140,9 +140,9 @@ SvXMLEmbeddedObjectHelper::SvXMLEmbeddedObjectHelper() :
     WeakComponentImplHelper2< XEmbeddedObjectResolver, XNameAccess >( maMutex ),
     maReplacementGraphicsContainerStorageName( XML_CONTAINERSTORAGE_NAME ),
     maReplacementGraphicsContainerStorageName60( XML_CONTAINERSTORAGE_NAME_60 ),
-    mpDocPersist( 0 ),
+    mpDocPersist( nullptr ),
     meCreateMode( EMBEDDEDOBJECTHELPER_MODE_READ ),
-    mpStreamMap( 0 )
+    mpStreamMap( nullptr )
 {
 }
 
@@ -150,11 +150,11 @@ SvXMLEmbeddedObjectHelper::SvXMLEmbeddedObjectHelper( ::comphelper::IEmbeddedHel
     WeakComponentImplHelper2< XEmbeddedObjectResolver, XNameAccess >( maMutex ),
     maReplacementGraphicsContainerStorageName( XML_CONTAINERSTORAGE_NAME ),
     maReplacementGraphicsContainerStorageName60( XML_CONTAINERSTORAGE_NAME_60 ),
-    mpDocPersist( 0 ),
+    mpDocPersist( nullptr ),
     meCreateMode( EMBEDDEDOBJECTHELPER_MODE_READ ),
-    mpStreamMap( 0 )
+    mpStreamMap( nullptr )
 {
-    Init( 0, rDocPersist, eCreateMode );
+    Init( nullptr, rDocPersist, eCreateMode );
 }
 
 SvXMLEmbeddedObjectHelper::~SvXMLEmbeddedObjectHelper()
@@ -168,7 +168,7 @@ SvXMLEmbeddedObjectHelper::~SvXMLEmbeddedObjectHelper()
             if( aIter->second )
             {
                 aIter->second->release();
-                aIter->second = 0;
+                aIter->second = nullptr;
             }
         }
         delete mpStreamMap;
@@ -413,7 +413,7 @@ bool SvXMLEmbeddedObjectHelper::ImplReadObject(
                 // This is an ole object
                 uno::Reference< beans::XPropertySet > xProps( xStm, uno::UNO_QUERY_THROW );
                 xProps->setPropertyValue(
-                    OUString( "MediaType" ),
+                    "MediaType",
                     uno::makeAny( OUString( "application/vnd.sun.star.oleobject" ) ) );
 
                 xStm->getOutputStream()->closeOutput();
@@ -445,7 +445,8 @@ bool SvXMLEmbeddedObjectHelper::ImplReadObject(
     //             server that was used to create the object. pClassId could be used to specify the server that should
     //             be used for the next opening, but this information seems to be out of the file format responsibility
     //             area.
-    rContainer.GetEmbeddedObject( aName );
+    OUString const baseURL(mpDocPersist->getDocumentBaseURL());
+    rContainer.GetEmbeddedObject(aName, &baseURL);
 
     return true;
 }
@@ -463,7 +464,7 @@ OUString SvXMLEmbeddedObjectHelper::ImplInsertEmbeddedObjectURL(
 
     if( EMBEDDEDOBJECTHELPER_MODE_READ == meCreateMode )
     {
-        OutputStorageWrapper_Impl *pOut = 0;
+        OutputStorageWrapper_Impl *pOut = nullptr;
         SvXMLEmbeddedObjectHelper_Impl::iterator aIter;
 
         if( mpStreamMap )
@@ -473,7 +474,7 @@ OUString SvXMLEmbeddedObjectHelper::ImplInsertEmbeddedObjectURL(
                 pOut = aIter->second;
         }
 
-        SvGlobalName aClassId, *pClassId = 0;
+        SvGlobalName aClassId, *pClassId = nullptr;
         sal_Int32 nPos = aObjectStorageName.lastIndexOf( '!' );
         if( -1 != nPos && aClassId.MakeId( aObjectStorageName.copy( nPos+1 ) ) )
         {
@@ -481,7 +482,7 @@ OUString SvXMLEmbeddedObjectHelper::ImplInsertEmbeddedObjectURL(
             pClassId = &aClassId;
         }
 
-        ImplReadObject( aContainerStorageName, aObjectStorageName, pClassId, pOut ? pOut->GetStream() : 0 );
+        ImplReadObject( aContainerStorageName, aObjectStorageName, pClassId, pOut ? pOut->GetStream() : nullptr );
         sRetURL = XML_EMBEDDEDOBJECT_URL_BASE;
         sRetURL += aObjectStorageName;
 
@@ -583,7 +584,7 @@ SvXMLEmbeddedObjectHelper* SvXMLEmbeddedObjectHelper::Create(
     SvXMLEmbeddedObjectHelper* pThis = new SvXMLEmbeddedObjectHelper;
 
     pThis->acquire();
-    pThis->Init( 0, rDocPersist, eCreateMode );
+    pThis->Init( nullptr, rDocPersist, eCreateMode );
 
     return pThis;
 }

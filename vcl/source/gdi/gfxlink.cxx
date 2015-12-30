@@ -18,6 +18,7 @@
  */
 
 #include <osl/file.h>
+#include <tools/stream.hxx>
 #include <tools/vcompat.hxx>
 #include <tools/debug.hxx>
 #include <unotools/ucbstreamhelper.hxx>
@@ -31,8 +32,8 @@
 
 GfxLink::GfxLink() :
     meType      ( GFX_LINK_TYPE_NONE ),
-    mpBuf       ( NULL ),
-    mpSwap      ( NULL ),
+    mpBuf       ( nullptr ),
+    mpSwap      ( nullptr ),
     mnBufSize   ( 0 ),
     mnUserId    ( 0UL ),
     mpImpData   ( new ImpGfxLink )
@@ -48,12 +49,12 @@ GfxLink::GfxLink( const GfxLink& rGfxLink ) :
 GfxLink::GfxLink( sal_uInt8* pBuf, sal_uInt32 nSize, GfxLinkType nType, bool bOwns ) :
     mpImpData( new ImpGfxLink )
 {
-    DBG_ASSERT( (pBuf != NULL && nSize) || (!bOwns && nSize == 0),
+    DBG_ASSERT( (pBuf != nullptr && nSize) || (!bOwns && nSize == 0),
                 "GfxLink::GfxLink(): empty/NULL buffer given" );
 
     meType = nType;
     mnBufSize = nSize;
-    mpSwap = NULL;
+    mpSwap = nullptr;
     mnUserId = 0UL;
 
     if( bOwns )
@@ -64,7 +65,7 @@ GfxLink::GfxLink( sal_uInt8* pBuf, sal_uInt32 nSize, GfxLinkType nType, bool bOw
         memcpy( mpBuf->mpBuffer, pBuf, nSize );
     }
     else
-        mpBuf = NULL;
+        mpBuf = nullptr;
 }
 
 GfxLink::~GfxLink()
@@ -108,7 +109,7 @@ bool GfxLink::IsEqual( const GfxLink& rGfxLink ) const
         {
             bIsEqual = memcmp( pSource, pDest, nSourceSize ) == 0;
         }
-        else if ( ( pSource == 0 ) && ( pDest == 0 ) )
+        else if ( ( pSource == nullptr ) && ( pDest == nullptr ) )
             bIsEqual = true;
     }
     return bIsEqual;
@@ -142,7 +143,7 @@ const sal_uInt8* GfxLink::GetData() const
     if( IsSwappedOut() )
         const_cast<GfxLink*>(this)->SwapIn();
 
-    return( mpBuf ? mpBuf->mpBuffer : NULL );
+    return( mpBuf ? mpBuf->mpBuffer : nullptr );
 }
 
 
@@ -211,14 +212,14 @@ void GfxLink::SwapOut()
         if( !mpSwap->IsSwapped() )
         {
             delete mpSwap;
-            mpSwap = NULL;
+            mpSwap = nullptr;
         }
         else
         {
             if( !( --mpBuf->mnRefCount ) )
                 delete mpBuf;
 
-            mpBuf = NULL;
+            mpBuf = nullptr;
         }
     }
 }
@@ -232,7 +233,7 @@ void GfxLink::SwapIn()
         if( !( --mpSwap->mnRefCount ) )
             delete mpSwap;
 
-        mpSwap = NULL;
+        mpSwap = nullptr;
     }
 }
 
@@ -251,7 +252,7 @@ bool GfxLink::ExportNative( SvStream& rOStream ) const
 
 SvStream& WriteGfxLink( SvStream& rOStream, const GfxLink& rGfxLink )
 {
-    VersionCompat* pCompat = new VersionCompat( rOStream, StreamMode::WRITE, 2 );
+    std::unique_ptr<VersionCompat> pCompat(new VersionCompat( rOStream, StreamMode::WRITE, 2 ));
 
     // Version 1
     rOStream.WriteUInt16( rGfxLink.GetType() ).WriteUInt32( rGfxLink.GetDataSize() ).WriteUInt32( rGfxLink.GetUserId() );
@@ -259,8 +260,6 @@ SvStream& WriteGfxLink( SvStream& rOStream, const GfxLink& rGfxLink )
     // Version 2
     WritePair( rOStream, rGfxLink.GetPrefSize() );
     WriteMapMode( rOStream, rGfxLink.GetPrefMapMode() );
-
-    delete pCompat;
 
     if( rGfxLink.GetDataSize() )
     {
@@ -282,7 +281,7 @@ SvStream& ReadGfxLink( SvStream& rIStream, GfxLink& rGfxLink)
     sal_uInt16          nType;
     sal_uInt8*          pBuf;
     bool            bMapAndSizeValid( false );
-    VersionCompat*  pCompat = new VersionCompat( rIStream, StreamMode::READ );
+    std::unique_ptr<VersionCompat>  pCompat(new VersionCompat( rIStream, StreamMode::READ ));
 
     // Version 1
     rIStream.ReadUInt16( nType ).ReadUInt32( nSize ).ReadUInt32( nUserId );
@@ -293,8 +292,6 @@ SvStream& ReadGfxLink( SvStream& rIStream, GfxLink& rGfxLink)
         ReadMapMode( rIStream, aMapMode );
         bMapAndSizeValid = true;
     }
-
-    delete pCompat;
 
     pBuf = new sal_uInt8[ nSize ];
     rIStream.Read( pBuf, nSize );
@@ -365,13 +362,13 @@ sal_uInt8* ImpSwap::GetData() const
             xIStm.reset();
 
             if( bError )
-                delete[] pData, pData = NULL;
+                delete[] pData, pData = nullptr;
         }
         else
-            pData = NULL;
+            pData = nullptr;
     }
     else
-        pData = NULL;
+        pData = nullptr;
 
     return pData;
 }

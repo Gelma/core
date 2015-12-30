@@ -48,24 +48,24 @@ inline DbgRect::DbgRect( OutputDevice *pOutDev, const Rectangle &rRect,
 #endif
 
 /* The SWLayVout class manages the virtual output devices.
- * RootFrm has a static member of this class which is created in _FrmInit
- * and destroyed in _FrmFinit.
+ * RootFrame has a static member of this class which is created in _FrameInit
+ * and destroyed in _FrameFinit.
  * */
 
-bool SwRootFrm::FlushVout()
+bool SwRootFrame::FlushVout()
 {
-    if( SwRootFrm::mpVout->IsFlushable() )
+    if (SwRootFrame::s_pVout->IsFlushable())
     {
-        SwRootFrm::mpVout->_Flush();
+        SwRootFrame::s_pVout->_Flush();
         return true;
     }
     return false;
 }
 
-bool SwRootFrm::HasSameRect( const SwRect& rRect )
+bool SwRootFrame::HasSameRect( const SwRect& rRect )
 {
-    if( SwRootFrm::mpVout->IsFlushable() )
-        return ( rRect == SwRootFrm::mpVout->GetOrgRect() );
+    if (SwRootFrame::s_pVout->IsFlushable())
+        return ( rRect == SwRootFrame::s_pVout->GetOrgRect() );
     return false;
 }
 
@@ -163,7 +163,7 @@ void SwLayVout::Enter(  SwViewShell *pShell, SwRect &rRect, bool bOn )
     if( bOn )
     {
         pSh = pShell;
-        pOut = NULL;
+        pOut = nullptr;
         OutputDevice *pO = pSh->GetOut();
 // We don't cheat on printers or virtual output devices...
         if( OUTDEV_WINDOW != pO->GetOutDevType() )
@@ -182,7 +182,7 @@ void SwLayVout::Enter(  SwViewShell *pShell, SwRect &rRect, bool bOn )
         // Does the rectangle fit in our buffer?
         if( !DoesFit( aTmpRect.GetSize() ) )
         {
-            pOut = NULL;
+            pOut = nullptr;
             return;
         }
 
@@ -212,7 +212,7 @@ void SwLayVout::_Flush()
     pOut->DrawOutDev( aRect.Pos(), aRect.SSize(),
                       aRect.Pos(), aRect.SSize(), *pVirDev );
     SetOutDev( pSh, pOut );
-    pOut = NULL;
+    pOut = nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

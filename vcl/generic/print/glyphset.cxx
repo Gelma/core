@@ -408,7 +408,7 @@ GlyphSet::PSDefineReencodedFont (osl::File* pOutFile, sal_Int32 nGlyphSetID)
     nSize += psp::appendStr (" psp_definefont\n",
                                   pEncodingVector + nSize);
 
-    psp::WritePS (pOutFile, pEncodingVector);
+    psp::WritePS (pOutFile, pEncodingVector, nSize);
 }
 
 OString
@@ -514,7 +514,7 @@ void GlyphSet::DrawGlyphs(
 
         rGfx.PSSetFont  (aGlyphSetName, GetGlyphSetEncoding(*aSet));
         rGfx.PSMoveTo   (aPoint);
-        rGfx.PSShowText (pGlyphSubset, nGlyphs, nGlyphs, nGlyphs > 1 ? pDeltaSubset : NULL);
+        rGfx.PSShowText (pGlyphSubset, nGlyphs, nGlyphs, nGlyphs > 1 ? pDeltaSubset : nullptr);
     }
 }
 
@@ -523,7 +523,7 @@ GlyphSet::DrawText (PrinterGfx &rGfx, const Point& rPoint,
                     const sal_Unicode* pStr, sal_Int16 nLen, const sal_Int32* pDeltaArray)
 {
     // dispatch to the impl method
-    if (pDeltaArray == NULL)
+    if (pDeltaArray == nullptr)
         ImplDrawText (rGfx, rPoint, pStr, nLen);
     else
         ImplDrawText (rGfx, rPoint, pStr, nLen, pDeltaArray);
@@ -589,7 +589,7 @@ GlyphSet::ImplDrawText (PrinterGfx &rGfx, const Point& rPoint,
         return;
     }
 
-    DrawGlyphs( rGfx, rPoint, NULL, pStr, nLen, pDeltaArray, false);
+    DrawGlyphs( rGfx, rPoint, nullptr, pStr, nLen, pDeltaArray, false);
 }
 
 bool
@@ -672,7 +672,7 @@ GlyphSet::PSUploadEncoding(osl::File* pOutFile, PrinterGfx &rGfx)
         }
 
         nSize += psp::appendStr ("] def\n", pEncodingVector + nSize);
-        psp::WritePS (pOutFile, pEncodingVector);
+        psp::WritePS (pOutFile, pEncodingVector, nSize);
 
         PSDefineReencodedFont (pOutFile, nGlyphSetID);
     }
@@ -724,7 +724,7 @@ static void CreatePSUploadableFont( TrueTypeFont* pSrcFont, FILE* pTmpFile,
     aInfo.LoadFont( pSrcFont );
 
     aInfo.CreateFontSubset( nTargetMask, pTmpFile, pGlyphSetName,
-        &aRequestedGlyphs[0], &aEncoding[0], nGlyphCount, NULL );
+        &aRequestedGlyphs[0], &aEncoding[0], nGlyphCount );
 }
 
 bool
@@ -745,11 +745,11 @@ GlyphSet::PSUploadFont (osl::File& rOutFile, PrinterGfx &rGfx, bool bAllowType42
     utl::TempFile aTmpFile;
     aTmpFile.EnableKillingFile();
     FILE* pTmpFile = fopen(OUStringToOString(aTmpFile.GetFileName(), osl_getThreadTextEncoding()).getStr(), "w+b");
-    if (pTmpFile == NULL)
+    if (pTmpFile == nullptr)
         return false;
 
     // array of unicode source characters
-    sal_Unicode pUChars[256];
+    sal_uInt16 pUChars[256];
 
     // encoding vector maps character encoding to the ordinal number
     // of the glyph in the output file

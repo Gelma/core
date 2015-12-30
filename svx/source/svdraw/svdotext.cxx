@@ -82,13 +82,12 @@ sdr::contact::ViewContact* SdrTextObj::CreateObjectSpecificViewContact()
 
 
 
-TYPEINIT1(SdrTextObj,SdrAttrObj);
 
 SdrTextObj::SdrTextObj()
 :   SdrAttrObj(),
-    mpText(NULL),
-    pEdtOutl(NULL),
-    pFormTextBoundRect(NULL),
+    mpText(nullptr),
+    pEdtOutl(nullptr),
+    pFormTextBoundRect(nullptr),
     eTextKind(OBJ_TEXT)
 {
     bTextSizeDirty=false;
@@ -115,9 +114,9 @@ SdrTextObj::SdrTextObj()
 SdrTextObj::SdrTextObj(const Rectangle& rNewRect)
 :   SdrAttrObj(),
     maRect(rNewRect),
-    mpText(NULL),
-    pEdtOutl(NULL),
-    pFormTextBoundRect(NULL),
+    mpText(nullptr),
+    pEdtOutl(nullptr),
+    pFormTextBoundRect(nullptr),
     eTextKind(OBJ_TEXT)
 {
     bTextSizeDirty=false;
@@ -144,9 +143,9 @@ SdrTextObj::SdrTextObj(const Rectangle& rNewRect)
 
 SdrTextObj::SdrTextObj(SdrObjKind eNewTextKind)
 :   SdrAttrObj(),
-    mpText(NULL),
-    pEdtOutl(NULL),
-    pFormTextBoundRect(NULL),
+    mpText(nullptr),
+    pEdtOutl(nullptr),
+    pFormTextBoundRect(nullptr),
     eTextKind(eNewTextKind)
 {
     bTextSizeDirty=false;
@@ -173,9 +172,9 @@ SdrTextObj::SdrTextObj(SdrObjKind eNewTextKind)
 SdrTextObj::SdrTextObj(SdrObjKind eNewTextKind, const Rectangle& rNewRect)
 :   SdrAttrObj(),
     maRect(rNewRect),
-    mpText(NULL),
-    pEdtOutl(NULL),
-    pFormTextBoundRect(NULL),
+    mpText(nullptr),
+    pEdtOutl(nullptr),
+    pFormTextBoundRect(nullptr),
     eTextKind(eNewTextKind)
 {
     bTextSizeDirty=false;
@@ -206,7 +205,7 @@ SdrTextObj::~SdrTextObj()
     {
         SdrOutliner& rOutl = pModel->GetHitTestOutliner();
         if( rOutl.GetTextObj() == this )
-            rOutl.SetTextObj( NULL );
+            rOutl.SetTextObj( nullptr );
     }
 
     delete mpText;
@@ -218,11 +217,11 @@ SdrTextObj::~SdrTextObj()
 
 void SdrTextObj::FitFrameToTextSize()
 {
-    DBG_ASSERT(pModel!=NULL,"SdrTextObj::FitFrameToTextSize(): pModel=NULL!");
+    DBG_ASSERT(pModel!=nullptr,"SdrTextObj::FitFrameToTextSize(): pModel=NULL!");
     ImpJustifyRect(maRect);
 
     SdrText* pText = getActiveText();
-    if( pText!=NULL && pText->GetOutlinerParaObject() && pModel!=NULL)
+    if( pText!=nullptr && pText->GetOutlinerParaObject() && pModel!=nullptr)
     {
         SdrOutliner& rOutliner=ImpGetDrawOutliner();
         rOutliner.SetPaperSize(Size(maRect.Right()-maRect.Left(),maRect.Bottom()-maRect.Top()));
@@ -258,7 +257,7 @@ void SdrTextObj::NbcSetText(const OUString& rStr)
 
 void SdrTextObj::SetText(const OUString& rStr)
 {
-    Rectangle aBoundRect0; if (pUserCall!=NULL) aBoundRect0=GetLastBoundRect();
+    Rectangle aBoundRect0; if (pUserCall!=nullptr) aBoundRect0=GetLastBoundRect();
     NbcSetText(rStr);
     SetChanged();
     BroadcastObjectChange();
@@ -281,7 +280,7 @@ void SdrTextObj::NbcSetText(SvStream& rInput, const OUString& rBaseURL, sal_uInt
 
 void SdrTextObj::SetText(SvStream& rInput, const OUString& rBaseURL, sal_uInt16 eFormat)
 {
-    Rectangle aBoundRect0; if (pUserCall!=NULL) aBoundRect0=GetLastBoundRect();
+    Rectangle aBoundRect0; if (pUserCall!=nullptr) aBoundRect0=GetLastBoundRect();
     NbcSetText(rInput,rBaseURL,eFormat);
     SetChanged();
     BroadcastObjectChange();
@@ -482,7 +481,7 @@ bool SdrTextObj::HasTextImpl( SdrOutliner* pOutliner )
     {
         Paragraph* p1stPara=pOutliner->GetParagraph( 0 );
         sal_Int32 nParaCount=pOutliner->GetParagraphCount();
-        if(p1stPara==NULL)
+        if(p1stPara==nullptr)
             nParaCount=0;
 
         if(nParaCount==1)
@@ -504,8 +503,8 @@ bool SdrTextObj::HasEditText() const
 
 void SdrTextObj::SetPage(SdrPage* pNewPage)
 {
-    bool bRemove=pNewPage==NULL && pPage!=NULL;
-    bool bInsert=pNewPage!=NULL && pPage==NULL;
+    bool bRemove=pNewPage==nullptr && pPage!=nullptr;
+    bool bInsert=pNewPage!=nullptr && pPage==nullptr;
     bool bLinked=IsLinkedText();
 
     if (bLinked && bRemove) {
@@ -534,7 +533,7 @@ void SdrTextObj::SetModel(SdrModel* pNewModel)
 
     if( bChg )
     {
-        if( pNewModel != 0 && pOldModel != 0 )
+        if( pNewModel != nullptr && pOldModel != nullptr )
             SetTextSizeDirty();
 
         sal_Int32 nCount = getTextCount();
@@ -619,7 +618,7 @@ void SdrTextObj::AdaptTextMinSize()
 void SdrTextObj::ImpSetContourPolygon( SdrOutliner& rOutliner, Rectangle& rAnchorRect, bool bLineWidth ) const
 {
     basegfx::B2DPolyPolygon aXorPolyPolygon(TakeXorPoly());
-    basegfx::B2DPolyPolygon* pContourPolyPolygon = 0L;
+    basegfx::B2DPolyPolygon* pContourPolyPolygon = nullptr;
     basegfx::B2DHomMatrix aMatrix(basegfx::tools::createTranslateB2DHomMatrix(
         -rAnchorRect.Left(), -rAnchorRect.Top()));
 
@@ -792,7 +791,7 @@ void SdrTextObj::TakeTextRect( SdrOutliner& rOutliner, Rectangle& rTextRect, boo
 
     // put text into the outliner, if available from the edit outliner
     SdrText* pText = getActiveText();
-    OutlinerParaObject* pOutlinerParaObject = pText ? pText->GetOutlinerParaObject() : 0;
+    OutlinerParaObject* pOutlinerParaObject = pText ? pText->GetOutlinerParaObject() : nullptr;
     OutlinerParaObject* pPara = (pEdtOutl && !bNoEditText) ? pEdtOutl->CreateParaObject() : pOutlinerParaObject;
 
     if (pPara)
@@ -817,7 +816,7 @@ void SdrTextObj::TakeTextRect( SdrOutliner& rOutliner, Rectangle& rTextRect, boo
     }
     else
     {
-        rOutliner.SetTextObj( NULL );
+        rOutliner.SetTextObj( nullptr );
     }
 
     if (pEdtOutl && !bNoEditText && pPara)
@@ -888,7 +887,7 @@ void SdrTextObj::TakeTextRect( SdrOutliner& rOutliner, Rectangle& rTextRect, boo
 
 OutlinerParaObject* SdrTextObj::GetEditOutlinerParaObject() const
 {
-    OutlinerParaObject* pPara=NULL;
+    OutlinerParaObject* pPara=nullptr;
     if( HasTextImpl( pEdtOutl ) )
     {
         sal_Int32 nParaCount = pEdtOutl->GetParagraphCount();
@@ -909,7 +908,7 @@ void SdrTextObj::ImpSetCharStretching(SdrOutliner& rOutliner, const Size& rTextS
         OUString aTestString(static_cast<sal_Unicode>('J'));
 
         if(pMtf && (!pMtf->IsRecord() || pMtf->IsPause()))
-            pMtf = NULL;
+            pMtf = nullptr;
 
         if(pMtf)
             pMtf->Pause(true);
@@ -1117,14 +1116,14 @@ SdrTextObj& SdrTextObj::operator=(const SdrTextObj& rObj)
     bNoMirror = rObj.bNoMirror;
     bDisableAutoWidthOnDragging = rObj.bDisableAutoWidthOnDragging;
 
-    OutlinerParaObject* pNewOutlinerParaObject = 0;
+    OutlinerParaObject* pNewOutlinerParaObject = nullptr;
 
     SdrText* pText = getActiveText();
 
     if( pText && rObj.HasText() )
     {
         const Outliner* pEO=rObj.pEdtOutl;
-        if (pEO!=NULL)
+        if (pEO!=nullptr)
         {
             pNewOutlinerParaObject = pEO->CreateParaObject();
         }
@@ -1244,7 +1243,7 @@ void SdrTextObj::ImpInitDrawOutliner( SdrOutliner& rOutl ) const
         nOutlinerMode = OUTLINERMODE_TEXTOBJECT;
     rOutl.Init( nOutlinerMode );
 
-    rOutl.SetGlobalCharStretching(100);
+    rOutl.SetGlobalCharStretching();
     EEControlBits nStat=rOutl.GetControlWord();
     nStat &= ~EEControlBits(EEControlBits::STRETCHING|EEControlBits::AUTOPAGESIZE);
     rOutl.SetControlWord(nStat);
@@ -1406,7 +1405,7 @@ OutlinerParaObject* SdrTextObj::GetOutlinerParaObject() const
     if( pText )
         return pText->GetOutlinerParaObject();
     else
-        return 0;
+        return nullptr;
 }
 
 void SdrTextObj::NbcSetOutlinerParaObject(OutlinerParaObject* pTextObject)
@@ -1422,8 +1421,8 @@ void SdrTextObj::NbcSetOutlinerParaObjectForText( OutlinerParaObject* pTextObjec
     if (pText && pText->GetOutlinerParaObject())
     {
         SvxWritingModeItem aWritingMode(pText->GetOutlinerParaObject()->IsVertical()
-            ? com::sun::star::text::WritingMode_TB_RL
-            : com::sun::star::text::WritingMode_LR_TB,
+            ? css::text::WritingMode_TB_RL
+            : css::text::WritingMode_LR_TB,
             SDRATTR_TEXTDIRECTION);
         GetProperties().SetObjectItemDirect(aWritingMode);
     }
@@ -1479,7 +1478,7 @@ void SdrTextObj::ReformatText()
     if(GetOutlinerParaObject())
     {
         Rectangle aBoundRect0;
-        if (pUserCall!=NULL)
+        if (pUserCall!=nullptr)
             aBoundRect0=GetLastBoundRect();
 
         NbcReformatText();
@@ -1529,7 +1528,7 @@ const Rectangle& SdrTextObj::GetGeoRect() const
 void SdrTextObj::ForceOutlinerParaObject()
 {
     SdrText* pText = getActiveText();
-    if( pText && (pText->GetOutlinerParaObject() == 0) )
+    if( pText && (pText->GetOutlinerParaObject() == nullptr) )
     {
         sal_uInt16 nOutlMode = OUTLINERMODE_TEXTOBJECT;
         if( IsTextFrame() && eTextKind == OBJ_OUTLINETEXT )
@@ -1543,11 +1542,6 @@ void SdrTextObj::ForceOutlinerParaObject()
 bool SdrTextObj::IsToBeChained() const
 {
     return mbToBeChained;
-}
-
-void SdrTextObj::SetToBeChained(bool bToBeChained)
-{
-    mbToBeChained = bToBeChained;
 }
 
 TextChain *SdrTextObj::GetTextChain() const
@@ -1728,6 +1722,9 @@ void SdrTextObj::TRSetBaseGeometry(const basegfx::B2DHomMatrix& rMatrix, const b
         aScale.setY(fabs(aScale.getY()));
         fRotate = fmod(fRotate + F_PI, F_2PI);
     }
+    // flip?
+    bool bFlipX = basegfx::fTools::less(aScale.getX(), 0.0),
+         bFlipY = basegfx::fTools::less(aScale.getY(), 0.0);
 
     // reset object shear and rotations
     aGeo.nRotationAngle = 0;
@@ -1774,6 +1771,16 @@ void SdrTextObj::TRSetBaseGeometry(const basegfx::B2DHomMatrix& rMatrix, const b
     Size aSize(FRound(aScale.getX()), FRound(aScale.getY()));
     Rectangle aBaseRect(aPoint, aSize);
     SetSnapRect(aBaseRect);
+
+    // flip?
+    if (bFlipX)
+    {
+        Mirror(Point(), Point(0, 1));
+    }
+    if (bFlipY)
+    {
+        Mirror(Point(), Point(1, 0));
+    }
 
     // shear?
     if(!basegfx::fTools::equalZero(fShearX))
@@ -1889,7 +1896,7 @@ SdrTextAniDirection SdrTextObj::GetTextAniDirection() const
 GDIMetaFile* SdrTextObj::GetTextScrollMetaFileAndRectangle(
     Rectangle& rScrollRectangle, Rectangle& rPaintRectangle)
 {
-    GDIMetaFile* pRetval = 0L;
+    GDIMetaFile* pRetval = nullptr;
     SdrOutliner& rOutliner = ImpGetDrawOutliner();
     Rectangle aTextRect;
     Rectangle aAnchorRect;
@@ -2001,7 +2008,7 @@ SdrObject *ImpGetObjByName(SdrObjList *pObjList, OUString const& aObjName)
         }
     }
     // not found
-    return NULL;
+    return nullptr;
 }
 
 // XXX: Make it a (private) method of SdrTextObj
@@ -2011,7 +2018,7 @@ void ImpUpdateChainLinks(SdrTextObj *pTextObj, OUString const& aNextLinkName)
 
     // No next link
     if (aNextLinkName.isEmpty()) {
-        pTextObj->SetNextLinkInChain(NULL);
+        pTextObj->SetNextLinkInChain(nullptr);
         return;
     }
 
@@ -2102,7 +2109,7 @@ void SdrTextObj::SetNextLinkInChain(SdrTextObj *pNextObj)
     mpNextInChain = pNextObj;
     // Deal with old next link's prev link
     if (pOldNextObj) {
-        pOldNextObj->mpPrevInChain = NULL;
+        pOldNextObj->mpPrevInChain = nullptr;
     }
 
     // Deal with new next link's prev link
@@ -2110,7 +2117,7 @@ void SdrTextObj::SetNextLinkInChain(SdrTextObj *pNextObj)
         // If there is a prev already at all and this is not already the current object
         if (mpNextInChain->mpPrevInChain &&
             mpNextInChain->mpPrevInChain != this)
-            mpNextInChain->mpPrevInChain->mpNextInChain = NULL;
+            mpNextInChain->mpPrevInChain->mpNextInChain = nullptr;
         mpNextInChain->mpPrevInChain = this;
     }
 
@@ -2145,7 +2152,7 @@ bool SdrTextObj::GetPreventChainable() const
  {
     SdrObject *pClone = SdrAttrObj::getFullDragClone();
     SdrTextObj *pTextObjClone = dynamic_cast<SdrTextObj *>(pClone);
-    if (pTextObjClone != NULL) {
+    if (pTextObjClone != nullptr) {
         // Avoid transferring of text for chainable object during dragging
         pTextObjClone->SetPreventChainable();
     }
@@ -2169,13 +2176,13 @@ SdrText* SdrTextObj::getText( sal_Int32 nIndex ) const
 {
     if( nIndex == 0 )
     {
-        if( mpText == 0 )
+        if( mpText == nullptr )
             const_cast< SdrTextObj* >(this)->mpText = new SdrText( *(const_cast< SdrTextObj* >(this)) );
         return mpText;
     }
     else
     {
-        return 0;
+        return nullptr;
     }
 }
 

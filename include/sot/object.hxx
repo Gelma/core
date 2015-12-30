@@ -30,7 +30,6 @@ class SOT_DLLPUBLIC SotObject : virtual public SvRefBase
 friend class SotFactory;
     sal_uInt16  nOwnerLockCount;
     bool        bOwner;
-    bool        bSVObject;        // is proxy, then TRUE if other side is SV
     bool        bInClose;         // TRUE, in DoClose
 
 protected:
@@ -55,8 +54,8 @@ public:
     bool                IsInClose() const { return bInClose; }
 
 private:
-    SotObject & operator = ( const SotObject & ) SAL_DELETED_FUNCTION;
-    SotObject( const SotObject & ) SAL_DELETED_FUNCTION;
+    SotObject & operator = ( const SotObject & ) = delete;
+    SotObject( const SotObject & ) = delete;
 };
 
 #endif // _IFACE_HXX

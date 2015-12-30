@@ -51,7 +51,7 @@
 SfxManageStyleSheetPage::SfxManageStyleSheetPage(vcl::Window* pParent, const SfxItemSet& rAttrSet)
     : SfxTabPage(pParent, "ManageStylePage", "sfx/ui/managestylepage.ui", &rAttrSet)
     , pStyle(&static_cast<SfxStyleDialog*>(GetParentDialog())->GetStyleSheet())
-    , pItem(0)
+    , pItem(nullptr)
     , bModified(false)
     , aName(pStyle->GetName())
     , aFollow(pStyle->GetFollow())
@@ -99,7 +99,7 @@ SfxManageStyleSheetPage::SfxManageStyleSheetPage(vcl::Window* pParent, const Sfx
     OSL_ENSURE( pResMgr, "No ResMgr in Module" );
     pFamilies = new SfxStyleFamilies( ResId( DLG_STYLE_DESIGNER, *pResMgr ) );
 
-    SfxStyleSheetBasePool* pPool = 0;
+    SfxStyleSheetBasePool* pPool = nullptr;
     SfxObjectShell* pDocShell = SfxObjectShell::Current();
 
     if ( pDocShell )
@@ -223,7 +223,7 @@ SfxManageStyleSheetPage::SfxManageStyleSheetPage(vcl::Window* pParent, const Sfx
 
     if ( !m_pFilterLb->GetEntryCount() || !pStyle->IsUserDefined() )
     {
-        pItem = 0;
+        pItem = nullptr;
         m_pFilterFt->Disable();
         m_pFilterLb->Disable();
     }
@@ -259,8 +259,8 @@ void SfxManageStyleSheetPage::dispose()
     m_pNameRw->SetGetFocusHdl( Link<Control&,void>() );
     m_pNameRw->SetLoseFocusHdl( Link<Control&,void>() );
     delete pFamilies;
-    pItem = 0;
-    pStyle = 0;
+    pItem = nullptr;
+    pStyle = nullptr;
     m_pNameRo.clear();
     m_pNameRw.clear();
     m_pAutoCB.clear();
@@ -342,7 +342,7 @@ void SfxManageStyleSheetPage::SetDescriptionText_Impl()
     m_pDescFt->SetText( pStyle->GetDescription( eUnit ) );
 }
 
-IMPL_LINK_NOARG( SfxManageStyleSheetPage, EditStyleSelectHdl_Impl )
+IMPL_LINK_NOARG_TYPED( SfxManageStyleSheetPage, EditStyleSelectHdl_Impl, ListBox&, void )
 {
     OUString aTemplName(m_pFollowLb->GetSelectEntry());
     OUString aEditTemplName(m_pNameRo->GetText());
@@ -350,32 +350,30 @@ IMPL_LINK_NOARG( SfxManageStyleSheetPage, EditStyleSelectHdl_Impl )
         m_pEditStyleBtn->Enable();
     else
         m_pEditStyleBtn->Disable();
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED( SfxManageStyleSheetPage, EditStyleHdl_Impl, Button*, void )
 {
     OUString aTemplName(m_pFollowLb->GetSelectEntry());
-    if (Execute_Impl( SID_STYLE_EDIT, aTemplName, OUString(),(sal_uInt16)pStyle->GetFamily(), 0 ))
+    if (Execute_Impl( SID_STYLE_EDIT, aTemplName, OUString(),(sal_uInt16)pStyle->GetFamily() ))
     {
     }
 }
 
-IMPL_LINK_NOARG( SfxManageStyleSheetPage, EditLinkStyleSelectHdl_Impl )
+IMPL_LINK_NOARG_TYPED( SfxManageStyleSheetPage, EditLinkStyleSelectHdl_Impl, ListBox&, void )
 {
     sal_Int32 linkSelectPos = m_pBaseLb->GetSelectEntryPos();
     if ( linkSelectPos == 0 )
         m_pEditLinkStyleBtn->Disable();
     else
         m_pEditLinkStyleBtn->Enable();
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED( SfxManageStyleSheetPage, EditLinkStyleHdl_Impl, Button*, void )
 {
     OUString aTemplName(m_pBaseLb->GetSelectEntry());
     if (aTemplName != SfxResId(STR_NONE))
-        Execute_Impl( SID_STYLE_EDIT, aTemplName, OUString(),(sal_uInt16)pStyle->GetFamily(), 0 );
+        Execute_Impl( SID_STYLE_EDIT, aTemplName, OUString(),(sal_uInt16)pStyle->GetFamily() );
 }
 
 // Internal: Perform functions through the Dispatcher
@@ -400,7 +398,7 @@ bool SfxManageStyleSheetPage::Execute_Impl(
     if ( !rRefStr.isEmpty() )
         pItems[ nCount++ ] = &aRefName;
 
-    pItems[ nCount++ ] = 0;
+    pItems[ nCount++ ] = nullptr;
 
     sal_uInt16 nModi = pModifier ? *pModifier : 0;
     const SfxPoolItem* mpItem = rDispatcher.Execute(

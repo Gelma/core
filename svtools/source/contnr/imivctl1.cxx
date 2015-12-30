@@ -78,9 +78,9 @@ public:
                         const Link<LinkParamNone*,void>& rNotifyEditEnd );
 
     virtual         ~IcnViewEdit_Impl();
-    virtual void    dispose() SAL_OVERRIDE;
-    virtual void    KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
-    virtual bool    PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual void    dispose() override;
+    virtual void    KeyInput( const KeyEvent& rKEvt ) override;
+    virtual bool    PreNotify( NotifyEvent& rNEvt ) override;
     bool            EditingCanceled() const { return bCanceled; }
     void            StopEditing( bool bCancel = false );
     bool            IsGrabFocus() const { return bGrabFocus; }
@@ -95,18 +95,18 @@ SvxIconChoiceCtrl_Impl::SvxIconChoiceCtrl_Impl(
     aHorSBar( VclPtr<ScrollBar>::Create(pCurView, WB_DRAG | WB_HSCROLL) ),
     aScrBarBox( VclPtr<ScrollBarBox>::Create(pCurView) ),
     aImageSize( 32, 32 ),
-    pColumns( 0 )
+    m_pColumns( nullptr )
 {
     bChooseWithCursor = false;
-    pEntryPaintDev = 0;
-    pCurEditedEntry = 0;
-    pCurHighlightFrame = 0;
-    pEdit = 0;
-    pAnchor = 0;
-    pPrevDropTarget = 0;
-    pHdlEntry = 0;
-    pHead = NULL;
-    pCursor = NULL;
+    pEntryPaintDev = nullptr;
+    pCurEditedEntry = nullptr;
+    pCurHighlightFrame = nullptr;
+    pEdit = nullptr;
+    pAnchor = nullptr;
+    pPrevDropTarget = nullptr;
+    pHdlEntry = nullptr;
+    pHead = nullptr;
+    pCursor = nullptr;
     bUpdateMode = true;
     bEntryEditingEnabled = false;
     bHighlightFramePressed = false;
@@ -116,14 +116,14 @@ SvxIconChoiceCtrl_Impl::SvxIconChoiceCtrl_Impl(
     ePositionMode = IcnViewPositionModeFree;
     SetStyle( nWinStyle );
     nFlags = 0;
-    nUserEventAdjustScrBars = 0;
-    nUserEventShowCursor = 0;
+    nUserEventAdjustScrBars = nullptr;
+    nUserEventShowCursor = nullptr;
     nMaxVirtWidth = DEFAULT_MAX_VIRT_WIDTH;
     nMaxVirtHeight = DEFAULT_MAX_VIRT_HEIGHT;
-    pDDRefEntry = 0;
-    pDDDev = 0;
-    pDDBufDev = 0;
-    pDDTempDev = 0;
+    pDDRefEntry = nullptr;
+    pDDDev = nullptr;
+    pDDBufDev = nullptr;
+    pDDTempDev = nullptr;
     eTextMode = IcnShowTextShort;
     pImpCursor = new IcnCursor_Impl( this );
     pGridMap = new IcnGridMap_Impl( this );
@@ -153,7 +153,7 @@ SvxIconChoiceCtrl_Impl::SvxIconChoiceCtrl_Impl(
 
 SvxIconChoiceCtrl_Impl::~SvxIconChoiceCtrl_Impl()
 {
-    pCurEditedEntry = 0;
+    pCurEditedEntry = nullptr;
     pEdit.disposeAndClear();
     Clear();
     StopEditTimer();
@@ -176,7 +176,7 @@ void SvxIconChoiceCtrl_Impl::Clear( bool bInCtor )
 {
     StopEntryEditing( true );
     nSelectionCount = 0;
-    pCurHighlightFrame = 0;
+    pCurHighlightFrame = nullptr;
     StopEditTimer();
     CancelUserEvents();
     ShowCursor( false );
@@ -184,7 +184,7 @@ void SvxIconChoiceCtrl_Impl::Clear( bool bInCtor )
     nMaxBoundHeight = 0;
 
     nFlags &= ~(F_PAINTED | F_MOVED_ENTRIES);
-    pCursor = 0;
+    pCursor = nullptr;
     if( !bInCtor )
     {
         pImpCursor->Clear();
@@ -227,7 +227,7 @@ void SvxIconChoiceCtrl_Impl::SetStyle( WinBits nWinStyle )
         nWinBits |= WB_ALIGN_LEFT;
     if( (nWinStyle & WB_DETAILS))
     {
-        if( !pColumns  )
+        if (!m_pColumns)
             SetColumn( 0, SvxIconChoiceCtrlColumnInfo( 0, 100, IcnViewAlignLeft ));
     }
 }
@@ -386,7 +386,7 @@ void SvxIconChoiceCtrl_Impl::SelectEntry( SvxIconChoiceCtrlEntry* pEntry, bool b
             pEntry->AssignFlags( nEntryFlags );
             nSelectionCount--;
             if( bCallHdl )
-                CallSelectHandler( 0 );
+                CallSelectHandler( nullptr );
         }
         EntrySelected( pEntry, bSelect, bSyncPaint );
     }
@@ -521,7 +521,7 @@ void SvxIconChoiceCtrl_Impl::InitPredecessors()
         pHead = aEntries[ 0 ];
     }
     else
-        pHead = 0;
+        pHead = nullptr;
     nFlags &= ~F_MOVED_ENTRIES;
 }
 
@@ -533,11 +533,11 @@ void SvxIconChoiceCtrl_Impl::ClearPredecessors()
         for( size_t nCur = 0; nCur < nCount; nCur++ )
         {
             SvxIconChoiceCtrlEntry* pCur = aEntries[ nCur ];
-            pCur->pflink = 0;
-            pCur->pblink = 0;
+            pCur->pflink = nullptr;
+            pCur->pblink = nullptr;
             pCur->ClearFlags( SvxIconViewFlags::PRED_SET );
         }
-        pHead = 0;
+        pHead = nullptr;
     }
 }
 
@@ -765,7 +765,7 @@ bool SvxIconChoiceCtrl_Impl::MouseButtonDown( const MouseEvent& rMEvt)
         else if( rMEvt.IsMod1() )
         {
             AddSelectedRect( aCurSelectionRect );
-            pAnchor = 0;
+            pAnchor = nullptr;
             aCurSelectionRect.SetPos( aDocPos );
         }
 
@@ -832,7 +832,7 @@ bool SvxIconChoiceCtrl_Impl::MouseButtonDown( const MouseEvent& rMEvt)
         {
             if( rMEvt.IsLeft() && (nWinBits & WB_HIGHLIGHTFRAME) )
             {
-                pCurHighlightFrame = 0; // force repaint of frame
+                pCurHighlightFrame = nullptr; // force repaint of frame
                 bHighlightFramePressed = true;
                 SetEntryHighlightFrame( pEntry, true );
             }
@@ -907,7 +907,7 @@ bool SvxIconChoiceCtrl_Impl::MouseButtonUp( const MouseEvent& rMEvt )
     {
         bHandled = true;
         SvxIconChoiceCtrlEntry* pEntry = pCurHighlightFrame;
-        pCurHighlightFrame = 0; // force repaint of frame
+        pCurHighlightFrame = nullptr; // force repaint of frame
         bHighlightFramePressed = false;
         SetEntryHighlightFrame( pEntry, true );
 
@@ -918,7 +918,7 @@ bool SvxIconChoiceCtrl_Impl::MouseButtonUp( const MouseEvent& rMEvt )
         SvxIconChoiceCtrlEntry* pOldCursor = pCursor;
         SetCursor_Impl( pOldCursor, pHdlEntry, false, false, true );
 
-        pHdlEntry = 0;
+        pHdlEntry = nullptr;
     }
     return bHandled;
 }
@@ -944,7 +944,7 @@ void SvxIconChoiceCtrl_Impl::SetCursor_Impl( SvxIconChoiceCtrlEntry* pOldCursor,
 {
     if( pNewCursor )
     {
-        SvxIconChoiceCtrlEntry* pFilterEntry = 0;
+        SvxIconChoiceCtrlEntry* pFilterEntry = nullptr;
         bool bDeselectAll = false;
         if( eSelectionMode != SINGLE_SELECTION )
         {
@@ -966,7 +966,7 @@ void SvxIconChoiceCtrl_Impl::SetCursor_Impl( SvxIconChoiceCtrlEntry* pOldCursor,
             if( pAnchor )
             {
                 AddSelectedRect( pAnchor, pOldCursor );
-                pAnchor = 0;
+                pAnchor = nullptr;
             }
         }
         else if( bShift )
@@ -1048,12 +1048,12 @@ bool SvxIconChoiceCtrl_Impl::KeyInput( const KeyEvent& rKEvt )
                     }
                 }
 
-                if ( bChooseWithCursor && pNewCursor != NULL )
+                if ( bChooseWithCursor && pNewCursor != nullptr )
                 {
                     pHdlEntry = pNewCursor;//GetCurEntry();
                     pCurHighlightFrame = pHdlEntry;
                     pView->ClickIcon();
-                    pCurHighlightFrame = NULL;
+                    pCurHighlightFrame = nullptr;
                 }
             }
             break;
@@ -1068,12 +1068,12 @@ bool SvxIconChoiceCtrl_Impl::KeyInput( const KeyEvent& rKEvt )
                     pNewCursor=pImpCursor->GoPageUpDown( pCursor,true );
                 SetCursor_Impl( pOldCursor, pNewCursor, bMod1, bShift, true );
 
-                if ( bChooseWithCursor && pNewCursor != NULL)
+                if ( bChooseWithCursor && pNewCursor != nullptr)
                 {
                     pHdlEntry = pNewCursor;//GetCurEntry();
                     pCurHighlightFrame = pHdlEntry;
                     pView->ClickIcon();
-                    pCurHighlightFrame = NULL;
+                    pCurHighlightFrame = nullptr;
                 }
             }
             break;
@@ -1107,7 +1107,7 @@ bool SvxIconChoiceCtrl_Impl::KeyInput( const KeyEvent& rKEvt )
 
         case KEY_F2:
             if( !bMod1 && !bShift )
-                EditTimeoutHdl( 0 );
+                EditTimeoutHdl( nullptr );
             else
                 bKeyUsed = false;
             break;
@@ -1137,7 +1137,7 @@ bool SvxIconChoiceCtrl_Impl::KeyInput( const KeyEvent& rKEvt )
                     SetEntryHighlightFrame( GetCurEntry(), true );
                     pView->ClickIcon();
                     pHdlEntry = pCurHighlightFrame;
-                    pCurHighlightFrame=0;
+                    pCurHighlightFrame=nullptr;
                 }
                 else
                     ToggleSelection( pCursor );
@@ -1163,7 +1163,7 @@ bool SvxIconChoiceCtrl_Impl::KeyInput( const KeyEvent& rKEvt )
         case KEY_DIVIDE :
         case KEY_A:
             if( bMod1 && (eSelectionMode != SINGLE_SELECTION))
-                SelectAll( true );
+                SelectAll();
             else
                 bKeyUsed = false;
             break;
@@ -1743,7 +1743,7 @@ void SvxIconChoiceCtrl_Impl::SetEntryPos( SvxIconChoiceCtrlEntry* pEntry, const 
                 // output size. The virtual size has to be adapted, because
                 // AdjustEntryAtGrid depends on it.
                 const Rectangle& rBoundRect = GetEntryBoundRect( pEntry );
-                Rectangle aCenterRect( CalcBmpRect( pEntry, 0 ));
+                Rectangle aCenterRect( CalcBmpRect( pEntry ));
                 Point aNewPos( AdjustAtGrid( aCenterRect, rBoundRect ) );
                 Rectangle aNewBoundRect( aNewPos, pEntry->aRect.GetSize());
                 AdjustVirtSize( aNewBoundRect );
@@ -1776,7 +1776,7 @@ void SvxIconChoiceCtrl_Impl::SetNoSelection()
     if( !(nFlags & F_CLEARING_SELECTION ))
     {
         nFlags |= F_CLEARING_SELECTION;
-        DeselectAllBut( 0, true );
+        DeselectAllBut( nullptr, true );
         nFlags &= ~F_CLEARING_SELECTION;
     }
 }
@@ -1809,7 +1809,7 @@ SvxIconChoiceCtrlEntry* SvxIconChoiceCtrl_Impl::GetEntry( const Point& rDocPos, 
                 return pEntry;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 void SvxIconChoiceCtrl_Impl::MakeEntryVisible( SvxIconChoiceCtrlEntry* pEntry, bool bBound )
@@ -2058,7 +2058,7 @@ void SvxIconChoiceCtrl_Impl::SetCursor( SvxIconChoiceCtrlEntry* pEntry, bool bSy
     {
         if( pCursor && eSelectionMode == SINGLE_SELECTION && bSyncSingleSelection &&
                 !pCursor->IsSelected() )
-            SelectEntry( pCursor, true, true );
+            SelectEntry( pCursor, true );
         return;
     }
     ShowCursor( false );
@@ -2068,14 +2068,14 @@ void SvxIconChoiceCtrl_Impl::SetCursor( SvxIconChoiceCtrlEntry* pEntry, bool bSy
     {
         pOldCursor->ClearFlags( SvxIconViewFlags::FOCUSED );
         if( eSelectionMode == SINGLE_SELECTION && bSyncSingleSelection )
-            SelectEntry( pOldCursor, false, true ); // deselect old cursor
+            SelectEntry( pOldCursor, false ); // deselect old cursor
     }
     if( pCursor )
     {
         ToTop( pCursor );
         pCursor->SetFlags( SvxIconViewFlags::FOCUSED );
         if( eSelectionMode == SINGLE_SELECTION && bSyncSingleSelection )
-            SelectEntry( pCursor, true, true );
+            SelectEntry( pCursor, true );
         if( !bShowFocusAsync )
             ShowCursor( true );
         else
@@ -2106,7 +2106,7 @@ void SvxIconChoiceCtrl_Impl::HideDDIcon()
     pView->Update();
     ImpHideDDIcon();
     pDDBufDev = pDDDev;
-    pDDDev = 0;
+    pDDDev = nullptr;
 }
 
 void SvxIconChoiceCtrl_Impl::ImpHideDDIcon()
@@ -2371,7 +2371,7 @@ void SvxIconChoiceCtrl_Impl::DeselectAllBut( SvxIconChoiceCtrlEntry* pThisEntryN
         if( pEntry != pThisEntryNot && pEntry->IsSelected() )
             SelectEntry( pEntry, false, true, true, bPaintSync );
     }
-    pAnchor = 0;
+    pAnchor = nullptr;
     nFlags &= (~F_ADD_MODE);
 }
 
@@ -2817,7 +2817,7 @@ void SvxIconChoiceCtrl_Impl::AdjustAtGrid( const SvxIconChoiceCtrlEntryPtrVec& r
         // Decisive (for our eye) is the bitmap, else, the entry might jump too
         // much within long texts.
         const Rectangle& rBoundRect = GetEntryBoundRect( pCur );
-        Rectangle aCenterRect( CalcBmpRect( pCur, 0 ));
+        Rectangle aCenterRect( CalcBmpRect( pCur ));
         if( bGo && !pCur->IsPosLocked() )
         {
             long nWidth = aCenterRect.GetSize().Width();
@@ -2963,12 +2963,12 @@ IMPL_LINK_TYPED(SvxIconChoiceCtrl_Impl, UserEventHdl, void*, nId, void )
 {
     if( nId == EVENTID_ADJUST_SCROLLBARS )
     {
-        nUserEventAdjustScrBars = 0;
+        nUserEventAdjustScrBars = nullptr;
         AdjustScrollBars();
     }
     else if( nId == EVENTID_SHOW_CURSOR )
     {
-        nUserEventShowCursor = 0;
+        nUserEventShowCursor = nullptr;
         ShowCursor( true );
     }
 }
@@ -2978,12 +2978,12 @@ void SvxIconChoiceCtrl_Impl::CancelUserEvents()
     if( nUserEventAdjustScrBars )
     {
         Application::RemoveUserEvent( nUserEventAdjustScrBars );
-        nUserEventAdjustScrBars = 0;
+        nUserEventAdjustScrBars = nullptr;
     }
     if( nUserEventShowCursor )
     {
         Application::RemoveUserEvent( nUserEventShowCursor );
-        nUserEventShowCursor = 0;
+        nUserEventShowCursor = nullptr;
     }
 }
 
@@ -3010,7 +3010,7 @@ void SvxIconChoiceCtrl_Impl::EditEntry( SvxIconChoiceCtrlEntry* pEntry )
 
     pCurEditedEntry = pEntry;
     OUString aEntryText( SvtIconChoiceCtrl::GetEntryText( pEntry, true ) );
-    Rectangle aRect( CalcTextRect( pEntry, 0, true, &aEntryText ) );
+    Rectangle aRect( CalcTextRect( pEntry, nullptr, true, &aEntryText ) );
     MakeVisible( aRect );
     Point aPos( aRect.TopLeft() );
     aPos = pView->GetPixelPos( aPos );
@@ -3030,7 +3030,7 @@ IMPL_LINK_NOARG_TYPED(SvxIconChoiceCtrl_Impl, TextEditEndedHdl, LinkParamNone*, 
     DBG_ASSERT(pEdit,"TextEditEnded: pEdit not set");
     if( !pEdit )
     {
-        pCurEditedEntry = 0;
+        pCurEditedEntry = nullptr;
         return;
     }
     DBG_ASSERT(pCurEditedEntry,"TextEditEnded: pCurEditedEntry not set");
@@ -3058,7 +3058,7 @@ IMPL_LINK_NOARG_TYPED(SvxIconChoiceCtrl_Impl, TextEditEndedHdl, LinkParamNone*, 
         pView->GrabFocus();
     // The edit can not be deleted here, because it is not within a handler. It
     // will be deleted in the dtor or in the next EditEntry.
-    pCurEditedEntry = 0;
+    pCurEditedEntry = nullptr;
 }
 
 void SvxIconChoiceCtrl_Impl::StopEntryEditing( bool bCancel )
@@ -3070,7 +3070,7 @@ void SvxIconChoiceCtrl_Impl::StopEntryEditing( bool bCancel )
 SvxIconChoiceCtrlEntry* SvxIconChoiceCtrl_Impl::GetFirstSelectedEntry() const
 {
     if( !GetSelectionCount() )
-        return 0;
+        return nullptr;
 
     if( (nWinBits & WB_HIGHLIGHTFRAME) && (eSelectionMode == NO_SELECTION) )
     {
@@ -3102,11 +3102,11 @@ SvxIconChoiceCtrlEntry* SvxIconChoiceCtrl_Impl::GetFirstSelectedEntry() const
             if( nCount && pEntry == pHead )
             {
                 OSL_FAIL("SvxIconChoiceCtrl_Impl::GetFirstSelectedEntry > infinite loop!");
-                return 0;
+                return nullptr;
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 void SvxIconChoiceCtrl_Impl::SelectAll( bool bSelect, bool bPaint )
@@ -3120,7 +3120,7 @@ void SvxIconChoiceCtrl_Impl::SelectAll( bool bSelect, bool bPaint )
         SelectEntry( pEntry, bSelect, true, true, bPaint );
     }
     nFlags &= (~F_ADD_MODE);
-    pAnchor = 0;
+    pAnchor = nullptr;
 }
 
 IcnViewEdit_Impl::IcnViewEdit_Impl( SvtIconChoiceCtrl* pParent, const Point& rPos,
@@ -3295,17 +3295,17 @@ void SvxIconChoiceCtrl_Impl::InitSettings()
 EntryList_Impl::EntryList_Impl( SvxIconChoiceCtrl_Impl* pOwner ) :
     _pOwner( pOwner )
 {
-    _pOwner->pHead = 0;
+    _pOwner->pHead = nullptr;
 }
 
 EntryList_Impl::~EntryList_Impl()
 {
-    _pOwner->pHead = 0;
+    _pOwner->pHead = nullptr;
 }
 
 void EntryList_Impl::clear()
 {
-    _pOwner->pHead = 0;
+    _pOwner->pHead = nullptr;
     maIconChoiceCtrlEntryList.clear();
 }
 
@@ -3353,7 +3353,7 @@ void SvxIconChoiceCtrl_Impl::SetPositionMode( SvxIconChoiceCtrlPositionMode eMod
     }
     else if( ePositionMode == IcnViewPositionModeAutoAdjust )
     {
-        AdjustEntryAtGrid( 0 );
+        AdjustEntryAtGrid();
     }
 }
 
@@ -3416,7 +3416,7 @@ SvxIconChoiceCtrlEntry* SvxIconChoiceCtrl_Impl::FindEntryPredecessor( SvxIconCho
     sal_uLong nGrid = GetPredecessorGrid( aNewPos );
     size_t nCount = aEntries.size();
     if( nGrid == ULONG_MAX )
-        return 0;
+        return nullptr;
     if( nGrid >= nCount )
         nGrid = nCount - 1;
     if( !pHead )
@@ -3469,7 +3469,7 @@ bool SvxIconChoiceCtrl_Impl::RequestHelp( const HelpEvent& rHEvt )
 
     OUString sQuickHelpText = pEntry->GetQuickHelpText();
     OUString aEntryText( SvtIconChoiceCtrl::GetEntryText( pEntry, false ) );
-    Rectangle aTextRect( CalcTextRect( pEntry, 0, false, &aEntryText ) );
+    Rectangle aTextRect( CalcTextRect( pEntry, nullptr, false, &aEntryText ) );
     if ( ( !aTextRect.IsInside( aPos ) || aEntryText.isEmpty() ) && sQuickHelpText.isEmpty() )
         return false;
 
@@ -3501,20 +3501,20 @@ bool SvxIconChoiceCtrl_Impl::RequestHelp( const HelpEvent& rHEvt )
 
 void SvxIconChoiceCtrl_Impl::ClearColumnList()
 {
-    if( !pColumns )
+    if (!m_pColumns)
         return;
 
-    pColumns->clear();
-    DELETEZ(pColumns);
+    m_pColumns->clear();
+    DELETEZ(m_pColumns);
 }
 
 void SvxIconChoiceCtrl_Impl::SetColumn( sal_uInt16 nIndex, const SvxIconChoiceCtrlColumnInfo& rInfo)
 {
-    if( !pColumns )
-        pColumns = new SvxIconChoiceCtrlColumnInfoMap;
+    if (!m_pColumns)
+        m_pColumns = new SvxIconChoiceCtrlColumnInfoMap;
 
     SvxIconChoiceCtrlColumnInfo* pInfo = new SvxIconChoiceCtrlColumnInfo( rInfo );
-    pColumns->insert( nIndex,  pInfo );
+    m_pColumns->insert(std::make_pair(nIndex, std::unique_ptr<SvxIconChoiceCtrlColumnInfo>(pInfo)));
 
     // HACK: Detail mode is not yet fully implemented, this workaround makes it
     // fly with a single column
@@ -3527,12 +3527,12 @@ void SvxIconChoiceCtrl_Impl::SetColumn( sal_uInt16 nIndex, const SvxIconChoiceCt
 
 const SvxIconChoiceCtrlColumnInfo* SvxIconChoiceCtrl_Impl::GetColumn( sal_uInt16 nIndex ) const
 {
-    if (!pColumns)
-        return 0;
-    SvxIconChoiceCtrlColumnInfoMap::const_iterator it = pColumns->find( nIndex );
-    if( it == pColumns->end() )
-        return 0;
-    return it->second;
+    if (!m_pColumns)
+        return nullptr;
+    auto const it = m_pColumns->find( nIndex );
+    if (it == m_pColumns->end())
+        return nullptr;
+    return it->second.get();
 }
 
 void SvxIconChoiceCtrl_Impl::DrawHighlightFrame(vcl::RenderContext& rRenderContext, const Rectangle& rBmpRect, bool bHide)
@@ -3598,7 +3598,7 @@ void SvxIconChoiceCtrl_Impl::CallSelectHandler( SvxIconChoiceCtrlEntry* )
     // WB_NOASYNCSELECTHDL.
     if( nWinBits & (WB_NOASYNCSELECTHDL | WB_HIGHLIGHTFRAME) )
     {
-        pHdlEntry = 0;
+        pHdlEntry = nullptr;
         pView->ClickIcon();
         //pView->Select();
     }
@@ -3608,7 +3608,7 @@ void SvxIconChoiceCtrl_Impl::CallSelectHandler( SvxIconChoiceCtrlEntry* )
 
 IMPL_LINK_NOARG_TYPED(SvxIconChoiceCtrl_Impl, CallSelectHdlHdl, Idle *, void)
 {
-    pHdlEntry = 0;
+    pHdlEntry = nullptr;
     pView->ClickIcon();
     //pView->Select();
 }

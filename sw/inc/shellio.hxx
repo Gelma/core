@@ -48,7 +48,7 @@ class SvStream;
 class SvxFontItem;
 class SvxMacroTableDtor;
 class SwContentNode;
-class SwCrsrShell;
+class SwCursorShell;
 class SwDoc;
 class SwPaM;
 class SwTextBlocks;
@@ -104,54 +104,46 @@ typedef Reader *SwRead;
 class SwgReaderOption
 {
     SwAsciiOptions aASCIIOpts;
-    union
-    {
-        bool bFormatsOnly;
-        struct
-        {
-            bool bFrameFormats: 1;
-            bool bPageDescs: 1;
-            bool bTextFormats: 1;
-            bool bNumRules: 1;
-            bool bMerge:1;
-        }  Formats;
-    } What;
-
+    bool m_bFrameFormats;
+    bool m_bPageDescs;
+    bool m_bTextFormats;
+    bool m_bNumRules;
+    bool m_bMerge;
 public:
-    void ResetAllFormatsOnly() { What.bFormatsOnly = false; }
-    bool IsFormatsOnly() const { return What.bFormatsOnly; }
+    void ResetAllFormatsOnly() { m_bFrameFormats = m_bPageDescs = m_bTextFormats = m_bNumRules = m_bMerge = false; }
+    bool IsFormatsOnly() const { return m_bFrameFormats || m_bPageDescs || m_bTextFormats || m_bNumRules || m_bMerge; }
 
-    bool IsFrameFormats() const { return What.Formats.bFrameFormats; }
-    void SetFrameFormats( const bool bNew) { What.Formats.bFrameFormats = bNew; }
+    bool IsFrameFormats() const { return m_bFrameFormats; }
+    void SetFrameFormats( const bool bNew) { m_bFrameFormats = bNew; }
 
-    bool IsPageDescs() const { return What.Formats.bPageDescs; }
-    void SetPageDescs( const bool bNew) { What.Formats.bPageDescs = bNew; }
+    bool IsPageDescs() const { return m_bPageDescs; }
+    void SetPageDescs( const bool bNew) { m_bPageDescs = bNew; }
 
-    bool IsTextFormats() const { return What.Formats.bTextFormats; }
-    void SetTextFormats( const bool bNew) { What.Formats.bTextFormats = bNew; }
+    bool IsTextFormats() const { return m_bTextFormats; }
+    void SetTextFormats( const bool bNew) { m_bTextFormats = bNew; }
 
-    bool IsNumRules() const { return What.Formats.bNumRules; }
-    void SetNumRules( const bool bNew) { What.Formats.bNumRules = bNew; }
+    bool IsNumRules() const { return m_bNumRules; }
+    void SetNumRules( const bool bNew) { m_bNumRules = bNew; }
 
-    bool IsMerge() const { return What.Formats.bMerge; }
-    void SetMerge( const bool bNew ) { What.Formats.bMerge = bNew; }
+    bool IsMerge() const { return m_bMerge; }
+    void SetMerge( const bool bNew ) { m_bMerge = bNew; }
 
     const SwAsciiOptions& GetASCIIOpts() const { return aASCIIOpts; }
     void SetASCIIOpts( const SwAsciiOptions& rOpts ) { aASCIIOpts = rOpts; }
     void ResetASCIIOpts() { aASCIIOpts.Reset(); }
 
     SwgReaderOption()
-    {   ResetAllFormatsOnly(); aASCIIOpts.Reset(); }
+        { ResetAllFormatsOnly(); aASCIIOpts.Reset(); }
 };
 
 class SW_DLLPUBLIC SwReader: public SwDocFac
 {
     SvStream* pStrm;
     tools::SvRef<SotStorage> pStg;
-    com::sun::star::uno::Reference < com::sun::star::embed::XStorage > xStg;
+    css::uno::Reference < css::embed::XStorage > xStg;
     SfxMedium* pMedium;     // Who wants to obtain a Medium (W4W).
 
-    SwPaM* pCrsr;
+    SwPaM* pCursor;
     OUString aFileName;
     OUString sBaseURL;
     bool mbSkipImages;
@@ -161,13 +153,13 @@ public:
     // Initial reading. Document is created only at Read(...)
     // or in case it is given, into that.
     // Special case for Load with Sw3Reader.
-    SwReader( SfxMedium&, const OUString& rFilename, SwDoc *pDoc = 0 );
+    SwReader( SfxMedium&, const OUString& rFilename, SwDoc *pDoc = nullptr );
 
     // Read into existing document.
     // Document and position in document are taken from SwPaM.
     SwReader( SvStream&, const OUString& rFilename, const OUString& rBaseURL, SwPaM& );
     SwReader( SfxMedium&, const OUString& rFilename, SwPaM& );
-    SwReader( const com::sun::star::uno::Reference < com::sun::star::embed::XStorage >&, const OUString& rFilename, SwPaM& );
+    SwReader( const css::uno::Reference < css::embed::XStorage >&, const OUString& rFilename, SwPaM& );
 
     // The only export interface is SwReader::Read(...)!!!
     sal_uLong Read( const Reader& );
@@ -203,7 +195,7 @@ class SW_DLLPUBLIC Reader
 protected:
     SvStream* pStrm;
     tools::SvRef<SotStorage> pStg;
-    com::sun::star::uno::Reference < com::sun::star::embed::XStorage > xStg;
+    css::uno::Reference < css::embed::XStorage > xStg;
     SfxMedium* pMedium;     // Who wants to obtain a Medium (W4W).
 
     SwgReaderOption aOpt;
@@ -227,8 +219,8 @@ public:
 
     virtual void SetFltName( const OUString& rFltNm );
 
-    // Adapt item-set of a Frm-Format to the old format.
-    static void ResetFrameFormatAttrs( SfxItemSet &rFrmSet );
+    // Adapt item-set of a Frame-Format to the old format.
+    static void ResetFrameFormatAttrs( SfxItemSet &rFrameSet );
 
     // Adapt Frame-/Graphics-/OLE- styles to the old format
     // (without borders etc.).
@@ -274,7 +266,7 @@ private:
 class AsciiReader: public Reader
 {
     friend class SwReader;
-    virtual sal_uLong Read( SwDoc &, const OUString& rBaseURL, SwPaM &, const OUString &) SAL_OVERRIDE;
+    virtual sal_uLong Read( SwDoc &, const OUString& rBaseURL, SwPaM &, const OUString &) override;
 public:
     AsciiReader(): Reader() {}
 };
@@ -284,9 +276,9 @@ class SW_DLLPUBLIC StgReader : public Reader
     OUString aFltName;
 
 public:
-    virtual int GetReaderType() SAL_OVERRIDE;
+    virtual int GetReaderType() override;
     OUString GetFltName() { return aFltName; }
-    virtual void SetFltName( const OUString& r ) SAL_OVERRIDE;
+    virtual void SetFltName( const OUString& r ) override;
 };
 
 // The given stream has to be created dynamically and must
@@ -412,10 +404,10 @@ public:
     Writer();
     virtual ~Writer();
 
-    virtual sal_uLong Write( SwPaM&, SfxMedium&, const OUString* = 0 );
-            sal_uLong Write( SwPaM&, SvStream&,  const OUString* = 0 );
-    virtual sal_uLong Write( SwPaM&, const com::sun::star::uno::Reference < com::sun::star::embed::XStorage >&, const OUString* = 0, SfxMedium* = 0 );
-    virtual sal_uLong Write( SwPaM&, SotStorage&, const OUString* = 0 );
+    virtual sal_uLong Write( SwPaM&, SfxMedium&, const OUString* = nullptr );
+            sal_uLong Write( SwPaM&, SvStream&,  const OUString* = nullptr );
+    virtual sal_uLong Write( SwPaM&, const css::uno::Reference < css::embed::XStorage >&, const OUString* = nullptr, SfxMedium* = nullptr );
+    virtual sal_uLong Write( SwPaM&, SotStorage&, const OUString* = nullptr );
 
     virtual void SetupFilterOptions(SfxMedium& rMedium);
 
@@ -460,12 +452,11 @@ typedef tools::SvRef<Writer> WriterRef;
 class SW_DLLPUBLIC StgWriter : public Writer
 {
 protected:
-    OUString aFltName;
     tools::SvRef<SotStorage> pStg;
-    com::sun::star::uno::Reference < com::sun::star::embed::XStorage > xStg;
+    css::uno::Reference < css::embed::XStorage > xStg;
 
     // Create error at call.
-    virtual sal_uLong WriteStream() SAL_OVERRIDE;
+    virtual sal_uLong WriteStream() override;
     virtual sal_uLong WriteStorage() = 0;
     virtual sal_uLong WriteMedium( SfxMedium& ) = 0;
 
@@ -474,10 +465,10 @@ protected:
 public:
     StgWriter() : Writer() {}
 
-    virtual bool IsStgWriter() const SAL_OVERRIDE;
+    virtual bool IsStgWriter() const override;
 
-    virtual sal_uLong Write( SwPaM&, const com::sun::star::uno::Reference < com::sun::star::embed::XStorage >&, const OUString* = 0, SfxMedium* = 0 ) SAL_OVERRIDE;
-    virtual sal_uLong Write( SwPaM&, SotStorage&, const OUString* = 0 ) SAL_OVERRIDE;
+    virtual sal_uLong Write( SwPaM&, const css::uno::Reference < css::embed::XStorage >&, const OUString* = nullptr, SfxMedium* = nullptr ) override;
+    virtual sal_uLong Write( SwPaM&, SotStorage&, const OUString* = nullptr ) override;
 
     SotStorage& GetStorage() const       { return *pStg; }
 };
@@ -488,25 +479,25 @@ class SW_DLLPUBLIC SwWriter
 {
     SvStream* pStrm;
     tools::SvRef<SotStorage> pStg;
-    com::sun::star::uno::Reference < com::sun::star::embed::XStorage > xStg;
+    css::uno::Reference < css::embed::XStorage > xStg;
     SfxMedium* pMedium;
 
     SwPaM* pOutPam;
-    SwCrsrShell *pShell;
+    SwCursorShell *pShell;
     SwDoc &rDoc;
 
     bool bWriteAll;
 
 public:
-    sal_uLong Write( WriterRef& rxWriter, const OUString* = 0);
+    sal_uLong Write( WriterRef& rxWriter, const OUString* = nullptr);
 
-    SwWriter( SvStream&, SwCrsrShell &, bool bWriteAll = false );
+    SwWriter( SvStream&, SwCursorShell &, bool bWriteAll = false );
     SwWriter( SvStream&, SwDoc & );
     SwWriter( SvStream&, SwPaM &, bool bWriteAll = false );
 
-    SwWriter( const com::sun::star::uno::Reference < com::sun::star::embed::XStorage >&, SwDoc& );
+    SwWriter( const css::uno::Reference < css::embed::XStorage >&, SwDoc& );
 
-    SwWriter( SfxMedium&, SwCrsrShell &, bool bWriteAll = false );
+    SwWriter( SfxMedium&, SwCursorShell &, bool bWriteAll = false );
     SwWriter( SfxMedium&, SwDoc & );
 };
 
@@ -523,7 +514,7 @@ struct SwReaderWriterEntry
     bool bDelReader;
 
     SwReaderWriterEntry( const FnGetReader fnReader, const FnGetWriter fnWriter, bool bDel )
-        : pReader( NULL ), fnGetReader( fnReader ), fnGetWriter( fnWriter ), bDelReader( bDel )
+        : pReader( nullptr ), fnGetReader( fnReader ), fnGetWriter( fnWriter ), bDelReader( bDel )
     {}
 
     /// Get access to the reader.

@@ -76,7 +76,6 @@ public class TestComponentMain
         boolean singleaccept = args[1].equals("singleaccept");
 
         int index = dcp.indexOf(':');
-        String url = dcp.substring(0, index).trim();
         dcp = dcp.substring(index + 1).trim();
 
         index = dcp.indexOf(';');
@@ -100,6 +99,7 @@ public class TestComponentMain
 
         XAcceptor xAcceptor = Acceptor.create(ctx);
 
+        // coverity[loop_top] - deliberate 'infinite' loop.
         while( true )
         {
             System.err.println("waiting for connect...");

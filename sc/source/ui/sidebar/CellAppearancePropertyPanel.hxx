@@ -56,16 +56,16 @@ public:
         SfxBindings* pBindings);
 
     virtual void DataChanged(
-        const DataChangedEvent& rEvent) SAL_OVERRIDE;
+        const DataChangedEvent& rEvent) override;
 
     virtual void HandleContextChange(
-        const ::sfx2::sidebar::EnumContext& rContext) SAL_OVERRIDE;
+        const ::sfx2::sidebar::EnumContext& rContext) override;
 
     virtual void NotifyItemUpdate(
         const sal_uInt16 nSId,
         const SfxItemState eState,
         const SfxPoolItem* pState,
-        const bool bIsEnabled) SAL_OVERRIDE;
+        const bool bIsEnabled) override;
 
     SfxBindings* GetBindings() { return mpBindings;}
 
@@ -75,7 +75,7 @@ public:
         const css::uno::Reference<css::frame::XFrame>& rxFrame,
         SfxBindings* pBindings);
     virtual ~CellAppearancePropertyPanel();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
 private:
     //ui controls
@@ -136,7 +136,6 @@ private:
     std::unique_ptr< CellLineStylePopup > mpCellLineStylePopup;
     std::unique_ptr< CellBorderStylePopup > mpCellBorderStylePopup;
 
-    css::uno::Reference<css::frame::XFrame>     mxFrame;
     ::sfx2::sidebar::EnumContext            maContext;
     SfxBindings*                            mpBindings;
 

@@ -67,7 +67,7 @@ class LayoutToolbarMenu : public svtools::ToolbarMenu
 public:
     LayoutToolbarMenu( SlideLayoutController& rController, const Reference< XFrame >& xFrame, vcl::Window* pParent, const bool bInsertPage );
     virtual ~LayoutToolbarMenu();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
 protected:
     DECL_LINK_TYPED( SelectToolbarMenuHdl, ToolbarMenu*, void );
@@ -85,52 +85,51 @@ struct snewfoil_value_info
 {
     sal_uInt16 mnBmpResId;
     sal_uInt16 mnStrResId;
-    WritingMode meWritingMode;
     AutoLayout maAutoLayout;
 };
 
 static const snewfoil_value_info notes[] =
 {
-    {BMP_FOILN_01, STR_AUTOLAYOUT_NOTES, WritingMode_LR_TB, AUTOLAYOUT_NOTES},
-    {0, 0, WritingMode_LR_TB, AUTOLAYOUT_NONE},
+    {BMP_FOILN_01, STR_AUTOLAYOUT_NOTES, AUTOLAYOUT_NOTES},
+    {0, 0, AUTOLAYOUT_NONE},
 };
 
 static const snewfoil_value_info handout[] =
 {
-    {BMP_FOILH_01, STR_AUTOLAYOUT_HANDOUT1, WritingMode_LR_TB, AUTOLAYOUT_HANDOUT1},
-    {BMP_FOILH_02, STR_AUTOLAYOUT_HANDOUT2, WritingMode_LR_TB, AUTOLAYOUT_HANDOUT2},
-    {BMP_FOILH_03, STR_AUTOLAYOUT_HANDOUT3, WritingMode_LR_TB, AUTOLAYOUT_HANDOUT3},
-    {BMP_FOILH_04, STR_AUTOLAYOUT_HANDOUT4, WritingMode_LR_TB, AUTOLAYOUT_HANDOUT4},
-    {BMP_FOILH_06, STR_AUTOLAYOUT_HANDOUT6, WritingMode_LR_TB, AUTOLAYOUT_HANDOUT6},
-    {BMP_FOILH_09, STR_AUTOLAYOUT_HANDOUT9, WritingMode_LR_TB, AUTOLAYOUT_HANDOUT9},
-    {0, 0, WritingMode_LR_TB, AUTOLAYOUT_NONE},
+    {BMP_FOILH_01, STR_AUTOLAYOUT_HANDOUT1, AUTOLAYOUT_HANDOUT1},
+    {BMP_FOILH_02, STR_AUTOLAYOUT_HANDOUT2, AUTOLAYOUT_HANDOUT2},
+    {BMP_FOILH_03, STR_AUTOLAYOUT_HANDOUT3, AUTOLAYOUT_HANDOUT3},
+    {BMP_FOILH_04, STR_AUTOLAYOUT_HANDOUT4, AUTOLAYOUT_HANDOUT4},
+    {BMP_FOILH_06, STR_AUTOLAYOUT_HANDOUT6, AUTOLAYOUT_HANDOUT6},
+    {BMP_FOILH_09, STR_AUTOLAYOUT_HANDOUT9, AUTOLAYOUT_HANDOUT9},
+    {0, 0, AUTOLAYOUT_NONE},
 };
 
 static const snewfoil_value_info standard[] =
 {
-    {BMP_LAYOUT_EMPTY,    STR_AUTOLAYOUT_NONE,                 WritingMode_LR_TB, AUTOLAYOUT_NONE         },
-    {BMP_LAYOUT_HEAD03,   STR_AUTOLAYOUT_TITLE,                WritingMode_LR_TB, AUTOLAYOUT_TITLE        },
-    {BMP_LAYOUT_HEAD02,   STR_AUTOLAYOUT_CONTENT,              WritingMode_LR_TB, AUTOLAYOUT_ENUM         },
-    {BMP_LAYOUT_HEAD02A,  STR_AUTOLAYOUT_2CONTENT,             WritingMode_LR_TB, AUTOLAYOUT_2TEXT        },
-    {BMP_LAYOUT_HEAD01,   STR_AUTOLAYOUT_ONLY_TITLE,           WritingMode_LR_TB, AUTOLAYOUT_ONLY_TITLE   },
-    {BMP_LAYOUT_TEXTONLY, STR_AUTOLAYOUT_ONLY_TEXT,            WritingMode_LR_TB, AUTOLAYOUT_ONLY_TEXT    },
-    {BMP_LAYOUT_HEAD03B,  STR_AUTOLAYOUT_2CONTENT_CONTENT,     WritingMode_LR_TB, AUTOLAYOUT_2OBJTEXT     },
-    {BMP_LAYOUT_HEAD03C,  STR_AUTOLAYOUT_CONTENT_2CONTENT,     WritingMode_LR_TB, AUTOLAYOUT_TEXT2OBJ     },
-    {BMP_LAYOUT_HEAD03A,  STR_AUTOLAYOUT_2CONTENT_OVER_CONTENT,WritingMode_LR_TB, AUTOLAYOUT_2OBJOVERTEXT },
-    {BMP_LAYOUT_HEAD02B,  STR_AUTOLAYOUT_CONTENT_OVER_CONTENT, WritingMode_LR_TB, AUTOLAYOUT_OBJOVERTEXT  },
-    {BMP_LAYOUT_HEAD04,   STR_AUTOLAYOUT_4CONTENT,             WritingMode_LR_TB, AUTOLAYOUT_4OBJ         },
-    {BMP_LAYOUT_HEAD06,   STR_AUTOLAYOUT_6CONTENT,             WritingMode_LR_TB, AUTOLAYOUT_6CLIPART     },
-    {0, 0, WritingMode_LR_TB, AUTOLAYOUT_NONE}
+    {BMP_LAYOUT_EMPTY,    STR_AUTOLAYOUT_NONE,                 AUTOLAYOUT_NONE         },
+    {BMP_LAYOUT_HEAD03,   STR_AUTOLAYOUT_TITLE,                AUTOLAYOUT_TITLE        },
+    {BMP_LAYOUT_HEAD02,   STR_AUTOLAYOUT_CONTENT,              AUTOLAYOUT_ENUM         },
+    {BMP_LAYOUT_HEAD02A,  STR_AUTOLAYOUT_2CONTENT,             AUTOLAYOUT_2TEXT        },
+    {BMP_LAYOUT_HEAD01,   STR_AUTOLAYOUT_ONLY_TITLE,           AUTOLAYOUT_ONLY_TITLE   },
+    {BMP_LAYOUT_TEXTONLY, STR_AUTOLAYOUT_ONLY_TEXT,            AUTOLAYOUT_ONLY_TEXT    },
+    {BMP_LAYOUT_HEAD03B,  STR_AUTOLAYOUT_2CONTENT_CONTENT,     AUTOLAYOUT_2OBJTEXT     },
+    {BMP_LAYOUT_HEAD03C,  STR_AUTOLAYOUT_CONTENT_2CONTENT,     AUTOLAYOUT_TEXT2OBJ     },
+    {BMP_LAYOUT_HEAD03A,  STR_AUTOLAYOUT_2CONTENT_OVER_CONTENT,AUTOLAYOUT_2OBJOVERTEXT },
+    {BMP_LAYOUT_HEAD02B,  STR_AUTOLAYOUT_CONTENT_OVER_CONTENT, AUTOLAYOUT_OBJOVERTEXT  },
+    {BMP_LAYOUT_HEAD04,   STR_AUTOLAYOUT_4CONTENT,             AUTOLAYOUT_4OBJ         },
+    {BMP_LAYOUT_HEAD06,   STR_AUTOLAYOUT_6CONTENT,             AUTOLAYOUT_6CLIPART     },
+    {0, 0, AUTOLAYOUT_NONE}
 };
 
 static const snewfoil_value_info v_standard[] =
 {
     // vertical
-    {BMP_LAYOUT_VERTICAL02, STR_AL_VERT_TITLE_TEXT_CHART,      WritingMode_TB_RL, AUTOLAYOUT_VERTICAL_TITLE_TEXT_CHART       },
-    {BMP_LAYOUT_VERTICAL01, STR_AL_VERT_TITLE_VERT_OUTLINE,    WritingMode_TB_RL, AUTOLAYOUT_VERTICAL_TITLE_VERTICAL_OUTLINE },
-    {BMP_LAYOUT_HEAD02,     STR_AL_TITLE_VERT_OUTLINE,         WritingMode_TB_RL, AUTOLAYOUT_TITLE_VERTICAL_OUTLINE          },
-    {BMP_LAYOUT_HEAD02A,    STR_AL_TITLE_VERT_OUTLINE_CLIPART, WritingMode_TB_RL, AUTOLAYOUT_TITLE_VERTICAL_OUTLINE_CLIPART  },
-    {0, 0, WritingMode_LR_TB, AUTOLAYOUT_NONE}
+    {BMP_LAYOUT_VERTICAL02, STR_AL_VERT_TITLE_TEXT_CHART,      AUTOLAYOUT_VERTICAL_TITLE_TEXT_CHART       },
+    {BMP_LAYOUT_VERTICAL01, STR_AL_VERT_TITLE_VERT_OUTLINE,    AUTOLAYOUT_VERTICAL_TITLE_VERTICAL_OUTLINE },
+    {BMP_LAYOUT_HEAD02,     STR_AL_TITLE_VERT_OUTLINE,         AUTOLAYOUT_TITLE_VERTICAL_OUTLINE          },
+    {BMP_LAYOUT_HEAD02A,    STR_AL_TITLE_VERT_OUTLINE_CLIPART, AUTOLAYOUT_TITLE_VERTICAL_OUTLINE_CLIPART  },
+    {0, 0, AUTOLAYOUT_NONE}
 };
 
 static void fillLayoutValueSet( ValueSet* pValue, const snewfoil_value_info* pInfo )
@@ -157,8 +156,8 @@ LayoutToolbarMenu::LayoutToolbarMenu( SlideLayoutController& rController, const 
 , mrController( rController )
 , mxFrame(xFrame)
 , mbInsertPage( bInsertPage )
-, mpLayoutSet1( 0 )
-, mpLayoutSet2( 0 )
+, mpLayoutSet1( nullptr )
+, mpLayoutSet2( nullptr )
 {
     DrawViewMode eMode = DrawViewMode_DRAW;
 
@@ -187,7 +186,7 @@ LayoutToolbarMenu::LayoutToolbarMenu( SlideLayoutController& rController, const 
     mpLayoutSet1 = createEmptyValueSetControl();
     mpLayoutSet1->SetSelectHdl( LINK( this, LayoutToolbarMenu, SelectValueSetHdl ) );
 
-    const snewfoil_value_info* pInfo = 0;
+    const snewfoil_value_info* pInfo = nullptr;
     sal_Int16 nColCount = 4;
     switch( eMode )
     {
@@ -318,8 +317,7 @@ OUString SlideLayoutController_getImplementationName() throw (css::uno::RuntimeE
 
 Sequence< OUString >  SlideLayoutController_getSupportedServiceNames() throw( RuntimeException )
 {
-    Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[0] = "com.sun.star.frame.ToolbarController";
+    Sequence<OUString> aSNS { "com.sun.star.frame.ToolbarController" };
     return aSNS;
 }
 
@@ -330,8 +328,7 @@ OUString InsertSlideController_getImplementationName() throw (css::uno::RuntimeE
 
 Sequence< OUString >  InsertSlideController_getSupportedServiceNames() throw( RuntimeException )
 {
-    Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[0] = "com.sun.star.frame.ToolbarController";
+    Sequence<OUString> aSNS { "com.sun.star.frame.ToolbarController" };
     return aSNS;
 }
 
@@ -348,7 +345,7 @@ void SAL_CALL SlideLayoutController::initialize( const css::uno::Sequence< css::
 {
     svt::PopupWindowController::initialize( aArguments );
 
-    ToolBox* pToolBox = 0;
+    ToolBox* pToolBox = nullptr;
     sal_uInt16 nId = 0;
     if ( getToolboxId( nId, &pToolBox ) )
     {
@@ -385,16 +382,16 @@ Sequence< OUString > SAL_CALL SlideLayoutController::getSupportedServiceNames(  
 }
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_sd_SlideLayoutController_get_implementation(::com::sun::star::uno::XComponentContext* context,
-                                                              ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_sd_SlideLayoutController_get_implementation(css::uno::XComponentContext* context,
+                                                              css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new sd::SlideLayoutController(context, ".uno:AssignLayout", false));
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_sd_InsertSlideController_get_implementation(::com::sun::star::uno::XComponentContext* context,
-                                                              ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_sd_InsertSlideController_get_implementation(css::uno::XComponentContext* context,
+                                                              css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new sd::SlideLayoutController(context, ".uno:InsertPage", true));
 }

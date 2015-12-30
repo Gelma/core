@@ -114,11 +114,9 @@ public class ParcelDescriptor {
     }
 
     public String getLanguage() {
-        if (language == null) {
-            if (document != null) {
-                Element e = document.getDocumentElement();
-                language = e.getAttribute("language");
-            }
+        if (language == null && document != null) {
+            Element e = document.getDocumentElement();
+            language = e.getAttribute("language");
         }
 
         return language;
@@ -151,17 +149,9 @@ public class ParcelDescriptor {
             String language, languagename, description = "";
             Map<String, String> langProps = new HashMap<String, String>();
             NodeList nl;
-            Element tmp;
 
             Element scriptElement = (Element)scriptNodes.item(i);
             language = scriptElement.getAttribute("language");
-
-            nl = scriptElement.getElementsByTagName("logicalname");
-
-            if (nl != null)
-            {
-                tmp = (Element)nl.item(0);
-            }
 
             // get the text of the description element
             nl = scriptElement.getElementsByTagName("locale");
@@ -185,7 +175,7 @@ public class ParcelDescriptor {
             if (nl == null) {
                 languagename = "";
             } else {
-                tmp = (Element)nl.item(0);
+                Element tmp = (Element)nl.item(0);
                 languagename = tmp.getAttribute("value");
             }
 
@@ -197,7 +187,7 @@ public class ParcelDescriptor {
 
                 if (props != null) {
                     for (int j = 0; j < props.getLength(); j++) {
-                        tmp = (Element)props.item(j);
+                        Element tmp = (Element)props.item(j);
                         String key = tmp.getAttribute("name");
                         String val = tmp.getAttribute("value");
                         langProps.put(key, val);

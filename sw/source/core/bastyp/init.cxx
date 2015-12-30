@@ -433,24 +433,24 @@ SfxItemInfo aSlotTab[] =
     { 0, SfxItemPoolFlags::POOLABLE }                            // RES_UNKNOWNATR_CONTAINER
 };
 
-sal_uInt16* SwAttrPool::pVersionMap1 = 0;
-sal_uInt16* SwAttrPool::pVersionMap2 = 0;
-sal_uInt16* SwAttrPool::pVersionMap3 = 0;
-sal_uInt16* SwAttrPool::pVersionMap4 = 0;
+sal_uInt16* SwAttrPool::pVersionMap1 = nullptr;
+sal_uInt16* SwAttrPool::pVersionMap2 = nullptr;
+sal_uInt16* SwAttrPool::pVersionMap3 = nullptr;
+sal_uInt16* SwAttrPool::pVersionMap4 = nullptr;
 // #i18732#
-sal_uInt16* SwAttrPool::pVersionMap5 = 0;
-sal_uInt16* SwAttrPool::pVersionMap6 = 0;
-sal_uInt16* SwAttrPool::pVersionMap7 = 0;
+sal_uInt16* SwAttrPool::pVersionMap5 = nullptr;
+sal_uInt16* SwAttrPool::pVersionMap6 = nullptr;
+sal_uInt16* SwAttrPool::pVersionMap7 = nullptr;
 
-std::vector<SvGlobalName*> *pGlobalOLEExcludeList = 0;
+std::vector<SvGlobalName*> *pGlobalOLEExcludeList = nullptr;
 
-SwAutoCompleteWord* SwDoc::mpACmpltWords = 0;
+SwAutoCompleteWord* SwDoc::mpACmpltWords = nullptr;
 
-SwCheckIt* pCheckIt = 0;
-CharClass* pAppCharClass = 0;
+SwCheckIt* pCheckIt = nullptr;
+CharClass* pAppCharClass = nullptr;
 
-CollatorWrapper* pCollator = 0,
-                *pCaseCollator = 0;
+CollatorWrapper* pCollator = nullptr,
+                *pCaseCollator = nullptr;
 
 salhelper::SingletonRef<SwCalendarWrapper>* s_getCalendarWrapper()
 {
@@ -525,13 +525,13 @@ void _InitCore()
     aAttrTab[ RES_TXTATR_METAFIELD - POOLATTR_BEGIN ] =     SwFormatMeta::CreatePoolDefault(RES_TXTATR_METAFIELD);
     aAttrTab[ RES_TXTATR_AUTOFMT- POOLATTR_BEGIN ] =        new SwFormatAutoFormat;
     aAttrTab[ RES_TXTATR_INETFMT - POOLATTR_BEGIN ] =       new SwFormatINetFormat( OUString(), OUString() );
-    aAttrTab[ RES_TXTATR_CHARFMT- POOLATTR_BEGIN ] =        new SwFormatCharFormat( 0 );
+    aAttrTab[ RES_TXTATR_CHARFMT- POOLATTR_BEGIN ] =        new SwFormatCharFormat( nullptr );
     aAttrTab[ RES_TXTATR_CJK_RUBY - POOLATTR_BEGIN ] =      new SwFormatRuby( OUString() );
     aAttrTab[ RES_TXTATR_UNKNOWN_CONTAINER - POOLATTR_BEGIN ] = new SvXMLAttrContainerItem( RES_TXTATR_UNKNOWN_CONTAINER );
     aAttrTab[ RES_TXTATR_INPUTFIELD - POOLATTR_BEGIN ] = new SwFormatField( RES_TXTATR_INPUTFIELD );
 
     aAttrTab[ RES_TXTATR_FIELD- POOLATTR_BEGIN ] =          new SwFormatField( RES_TXTATR_FIELD );
-    aAttrTab[ RES_TXTATR_FLYCNT - POOLATTR_BEGIN ] =        new SwFormatFlyCnt( 0 );
+    aAttrTab[ RES_TXTATR_FLYCNT - POOLATTR_BEGIN ] =        new SwFormatFlyCnt( nullptr );
     aAttrTab[ RES_TXTATR_FTN - POOLATTR_BEGIN ] =           new SwFormatFootnote;
     aAttrTab[ RES_TXTATR_ANNOTATION - POOLATTR_BEGIN ] = new SwFormatField( RES_TXTATR_ANNOTATION );
 
@@ -573,7 +573,7 @@ void _InitCore()
     aAttrTab[ RES_PARATR_LIST_ISCOUNTED - POOLATTR_BEGIN ] = new SfxBoolItem( RES_PARATR_LIST_ISCOUNTED, true );
 
     aAttrTab[ RES_FILL_ORDER- POOLATTR_BEGIN ] =            new SwFormatFillOrder;
-    aAttrTab[ RES_FRM_SIZE- POOLATTR_BEGIN ] =              new SwFormatFrmSize;
+    aAttrTab[ RES_FRM_SIZE- POOLATTR_BEGIN ] =              new SwFormatFrameSize;
     aAttrTab[ RES_PAPER_BIN- POOLATTR_BEGIN ] =             new SvxPaperBinItem( RES_PAPER_BIN );
     aAttrTab[ RES_LR_SPACE- POOLATTR_BEGIN ] =              new SvxLRSpaceItem( RES_LR_SPACE );
     aAttrTab[ RES_UL_SPACE- POOLATTR_BEGIN ] =              new SvxULSpaceItem( RES_UL_SPACE );
@@ -731,9 +731,9 @@ void _InitCore()
         SwAttrPool::pVersionMap7[ i-1 ] = i + 4;
 
     SwBreakIt::_Create( ::comphelper::getProcessComponentContext() );
-    pCheckIt = NULL;
+    pCheckIt = nullptr;
 
-    _FrmInit();
+    _FrameInit();
     _TextInit();
 
     SwSelPaintRects::s_pMapMode = new MapMode;
@@ -755,7 +755,7 @@ void _InitCore()
 
 void _FinitCore()
 {
-    _FrmFinit();
+    _FrameFinit();
     _TextFinit();
 
     sw::proofreadingiterator::dispose();
@@ -780,49 +780,49 @@ void _FinitCore()
 #endif
     delete SwDoc::mpACmpltWords;
 
-    delete SwStyleNameMapper::pTextUINameArray;
-    delete SwStyleNameMapper::pListsUINameArray;
-    delete SwStyleNameMapper::pExtraUINameArray;
-    delete SwStyleNameMapper::pRegisterUINameArray;
-    delete SwStyleNameMapper::pDocUINameArray;
-    delete SwStyleNameMapper::pHTMLUINameArray;
-    delete SwStyleNameMapper::pFrameFormatUINameArray;
-    delete SwStyleNameMapper::pChrFormatUINameArray;
-    delete SwStyleNameMapper::pHTMLChrFormatUINameArray;
-    delete SwStyleNameMapper::pPageDescUINameArray;
-    delete SwStyleNameMapper::pNumRuleUINameArray;
+    delete SwStyleNameMapper::m_pTextUINameArray;
+    delete SwStyleNameMapper::m_pListsUINameArray;
+    delete SwStyleNameMapper::m_pExtraUINameArray;
+    delete SwStyleNameMapper::m_pRegisterUINameArray;
+    delete SwStyleNameMapper::m_pDocUINameArray;
+    delete SwStyleNameMapper::m_pHTMLUINameArray;
+    delete SwStyleNameMapper::m_pFrameFormatUINameArray;
+    delete SwStyleNameMapper::m_pChrFormatUINameArray;
+    delete SwStyleNameMapper::m_pHTMLChrFormatUINameArray;
+    delete SwStyleNameMapper::m_pPageDescUINameArray;
+    delete SwStyleNameMapper::m_pNumRuleUINameArray;
 
     // Delete programmatic name arrays also
-    delete SwStyleNameMapper::pTextProgNameArray;
-    delete SwStyleNameMapper::pListsProgNameArray;
-    delete SwStyleNameMapper::pExtraProgNameArray;
-    delete SwStyleNameMapper::pRegisterProgNameArray;
-    delete SwStyleNameMapper::pDocProgNameArray;
-    delete SwStyleNameMapper::pHTMLProgNameArray;
-    delete SwStyleNameMapper::pFrameFormatProgNameArray;
-    delete SwStyleNameMapper::pChrFormatProgNameArray;
-    delete SwStyleNameMapper::pHTMLChrFormatProgNameArray;
-    delete SwStyleNameMapper::pPageDescProgNameArray;
-    delete SwStyleNameMapper::pNumRuleProgNameArray;
+    delete SwStyleNameMapper::m_pTextProgNameArray;
+    delete SwStyleNameMapper::m_pListsProgNameArray;
+    delete SwStyleNameMapper::m_pExtraProgNameArray;
+    delete SwStyleNameMapper::m_pRegisterProgNameArray;
+    delete SwStyleNameMapper::m_pDocProgNameArray;
+    delete SwStyleNameMapper::m_pHTMLProgNameArray;
+    delete SwStyleNameMapper::m_pFrameFormatProgNameArray;
+    delete SwStyleNameMapper::m_pChrFormatProgNameArray;
+    delete SwStyleNameMapper::m_pHTMLChrFormatProgNameArray;
+    delete SwStyleNameMapper::m_pPageDescProgNameArray;
+    delete SwStyleNameMapper::m_pNumRuleProgNameArray;
 
     // And finally, any hash tables that we used
-    delete SwStyleNameMapper::pParaUIMap;
-    delete SwStyleNameMapper::pCharUIMap;
-    delete SwStyleNameMapper::pPageUIMap;
-    delete SwStyleNameMapper::pFrameUIMap;
-    delete SwStyleNameMapper::pNumRuleUIMap;
+    delete SwStyleNameMapper::m_pParaUIMap;
+    delete SwStyleNameMapper::m_pCharUIMap;
+    delete SwStyleNameMapper::m_pPageUIMap;
+    delete SwStyleNameMapper::m_pFrameUIMap;
+    delete SwStyleNameMapper::m_pNumRuleUIMap;
 
-    delete SwStyleNameMapper::pParaProgMap;
-    delete SwStyleNameMapper::pCharProgMap;
-    delete SwStyleNameMapper::pPageProgMap;
-    delete SwStyleNameMapper::pFrameProgMap;
-    delete SwStyleNameMapper::pNumRuleProgMap;
+    delete SwStyleNameMapper::m_pParaProgMap;
+    delete SwStyleNameMapper::m_pCharProgMap;
+    delete SwStyleNameMapper::m_pPageProgMap;
+    delete SwStyleNameMapper::m_pFrameProgMap;
+    delete SwStyleNameMapper::m_pNumRuleProgMap;
 
     // delete all default attributes
     for( sal_uInt16 n = 0; n < POOLATTR_END - POOLATTR_BEGIN; n++ )
     {
         SfxPoolItem* pHt;
-        if( 0 != ( pHt = aAttrTab[n] ))
+        if( nullptr != ( pHt = aAttrTab[n] ))
             delete pHt;
     }
 

@@ -123,20 +123,18 @@ sal_Bool SAL_CALL SdUnoModule::supportsService( const OUString& sServiceName ) t
 
 uno::Sequence< OUString > SAL_CALL SdUnoModule::getSupportedServiceNames(  ) throw(uno::RuntimeException, std::exception)
 {
-    uno::Sequence< OUString > aSeq( 1 );
-    aSeq[0] = "com.sun.star.drawing.ModuleDispatcher";
+    uno::Sequence<OUString> aSeq { "com.sun.star.drawing.ModuleDispatcher" };
     return aSeq;
 }
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_Draw_DrawingModule_get_implementation(::com::sun::star::uno::XComponentContext* context,
-                                                        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_Draw_DrawingModule_get_implementation(css::uno::XComponentContext* ,
+                                                        css::uno::Sequence<css::uno::Any> const &)
 {
     SolarMutexGuard aGuard;
 
-    uno::Reference< lang::XMultiServiceFactory> xSM(context->getServiceManager(), uno::UNO_QUERY_THROW);
-    return cppu::acquire(new SdUnoModule(xSM));
+    return cppu::acquire(new SdUnoModule);
 }
 
 

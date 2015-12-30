@@ -41,7 +41,7 @@
 
 class DBSaveData;
 
-static DBSaveData* pSaveObj = NULL;
+static DBSaveData* pSaveObj = nullptr;
 
 #define ERRORBOX(s) ScopedVclPtrInstance<MessageDialog>::Create(this, s)->Execute()
 
@@ -217,7 +217,7 @@ void ScDbNameDlg::Init()
         SCTAB   nEndTab     = 0;
 
         ScDBCollection* pDBColl = pDoc->GetDBCollection();
-        ScDBData*       pDBData = NULL;
+        ScDBData*       pDBData = nullptr;
 
         pViewData->GetSimpleArea( nStartCol, nStartRow, nStartTab,
                                   nEndCol,   nEndRow,  nEndTab );
@@ -266,7 +266,7 @@ void ScDbNameDlg::Init()
     m_pEdName->GrabFocus();
     bSaved = true;
     pSaveObj->Save();
-    NameModifyHdl( 0 );
+    NameModifyHdl( *m_pEdName );
 }
 
 void ScDbNameDlg::SetInfoStrings( const ScDBData* pDBData )
@@ -396,7 +396,7 @@ bool ScDbNameDlg::IsRefInputMode() const
 
 IMPL_LINK_NOARG_TYPED(ScDbNameDlg, OkBtnHdl, Button*, void)
 {
-    AddBtnHdl( 0 );
+    AddBtnHdl( nullptr );
 
     // Der View die Aenderungen und die Remove-Liste uebergeben:
     // beide werden nur als Referenz uebergeben, so dass an dieser
@@ -477,11 +477,11 @@ IMPL_LINK_NOARG_TYPED(ScDbNameDlg, AddBtnHdl, Button*, void)
                 m_pBtnDoSize->Check( false );
                 m_pBtnKeepFmt->Check( false );
                 m_pBtnStripData->Check( false );
-                SetInfoStrings( NULL );     // leer
+                SetInfoStrings( nullptr );     // leer
                 theCurArea = ScRange();
                 bSaved = true;
                 pSaveObj->Save();
-                NameModifyHdl( 0 );
+                NameModifyHdl( *m_pEdName );
             }
             else
             {
@@ -505,7 +505,7 @@ class FindByName : public ::std::unary_function<std::unique_ptr<ScDBData>, bool>
 {
     const OUString& mrName;
 public:
-    FindByName(const OUString& rName) : mrName(rName) {}
+    explicit FindByName(const OUString& rName) : mrName(rName) {}
     bool operator() (std::unique_ptr<ScDBData> const& p) const
     {
         return p->GetName().equals(mrName);
@@ -557,15 +557,15 @@ IMPL_LINK_NOARG_TYPED(ScDbNameDlg, RemoveBtnHdl, Button*, void)
             m_pBtnDoSize->Check( false );
             m_pBtnKeepFmt->Check( false );
             m_pBtnStripData->Check( false );
-            SetInfoStrings( NULL );     // leer
+            SetInfoStrings( nullptr );     // leer
             bSaved=false;
             pSaveObj->Restore();
-            NameModifyHdl( 0 );
+            NameModifyHdl( *m_pEdName );
         }
     }
 }
 
-IMPL_LINK_NOARG(ScDbNameDlg, NameModifyHdl)
+IMPL_LINK_NOARG_TYPED(ScDbNameDlg, NameModifyHdl, Edit&, void)
 {
     OUString  theName     = m_pEdName->GetText();
     bool    bNameFound  = (COMBOBOX_ENTRY_NOTFOUND
@@ -626,10 +626,9 @@ IMPL_LINK_NOARG(ScDbNameDlg, NameModifyHdl)
         //SFX_APPWINDOW->Enable();
         bRefInputMode = true;
     }
-    return 0;
 }
 
-IMPL_LINK_NOARG(ScDbNameDlg, AssModifyHdl)
+IMPL_LINK_NOARG_TYPED(ScDbNameDlg, AssModifyHdl, Edit&, void)
 {
     //  hier parsen fuer Save() etc.
 
@@ -660,8 +659,6 @@ IMPL_LINK_NOARG(ScDbNameDlg, AssModifyHdl)
         m_pFTSource->Disable();
         m_pFTOperations->Disable();
     }
-
-    return 0;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

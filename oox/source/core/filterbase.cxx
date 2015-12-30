@@ -138,7 +138,6 @@ struct FilterBaseImpl
     VbaProjectRef       mxVbaProject;           /// VBA project manager.
 
     Reference< XComponentContext >      mxComponentContext;
-    Reference< XMultiComponentFactory > mxComponentFactory;
     Reference< XModel >                 mxModel;
     Reference< XMultiServiceFactory >   mxModelFactory;
     Reference< XFrame >                 mxTargetFrame;
@@ -161,7 +160,6 @@ FilterBaseImpl::FilterBaseImpl( const Reference< XComponentContext >& rxContext 
     meDirection( FILTERDIRECTION_UNKNOWN ),
     meVersion( ECMA_DIALECT ),
     mxComponentContext( rxContext, UNO_SET_THROW ),
-    mxComponentFactory( rxContext->getServiceManager(), UNO_SET_THROW ),
     mbExportVBA(false)
 {
 }
@@ -366,7 +364,7 @@ ModelObjectHelper& FilterBase::getModelObjectHelper() const
 OleObjectHelper& FilterBase::getOleObjectHelper() const
 {
     if( !mxImpl->mxOleObjHelper )
-        mxImpl->mxOleObjHelper.reset( new OleObjectHelper( mxImpl->mxModelFactory ) );
+        mxImpl->mxOleObjHelper.reset(new OleObjectHelper(mxImpl->mxModelFactory, mxImpl->mxModel));
     return *mxImpl->mxOleObjHelper;
 }
 

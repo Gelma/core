@@ -57,23 +57,6 @@ enum PolyFlags
     POLY_SYMMTR
 };
 
-class SAL_WARN_UNUSED PolyOptimizeData
-{
-private:
-
-    enum DataType   { DATA_NONE = 0, DATA_ABSOLUT = 1, DATA_PERCENT = 2 };
-    DataType        eType;
-    union           { sal_uIntPtr mnAbsolut; sal_uInt16 mnPercent; };
-
-public:
-                    PolyOptimizeData() : eType( DATA_NONE ) {}
-                    PolyOptimizeData( sal_uIntPtr nAbsolut ) : eType( DATA_ABSOLUT ), mnAbsolut( nAbsolut ) {}
-                    PolyOptimizeData( sal_uInt16 nPercent ) : eType( DATA_PERCENT ), mnPercent( nPercent ) {}
-
-    sal_uIntPtr     GetAbsValue() const { (void) eType; DBG_ASSERT( eType == DATA_ABSOLUT, "Wrong data type" ); return mnAbsolut; }
-    sal_uInt16      GetPercentValue() const { (void) eType; DBG_ASSERT( eType == DATA_PERCENT, "Wrong data type" ); return mnPercent; }
-};
-
 class SvStream;
 class ImplPolygon;
 class ImplPolyPolygon;
@@ -87,7 +70,7 @@ namespace basegfx
 
 namespace tools {
 
-class TOOLS_DLLPUBLIC SAL_WARN_UNUSED Polygon
+class SAL_WARN_UNUSED TOOLS_DLLPUBLIC Polygon
 {
 private:
     ImplPolygon*        mpImplPolygon;
@@ -103,10 +86,10 @@ public:
                         Polygon();
                         Polygon( sal_uInt16 nSize );
                         Polygon( sal_uInt16 nPoints, const Point* pPtAry,
-                                 const sal_uInt8* pFlagAry = NULL );
+                                 const sal_uInt8* pFlagAry = nullptr );
                         Polygon( const Rectangle& rRect );
                         Polygon( const Rectangle& rRect,
-                                 sal_uIntPtr nHorzRound, sal_uIntPtr nVertRound );
+                                 sal_uInt32 nHorzRound, sal_uInt32 nVertRound );
                         Polygon( const Point& rCenter,
                                  long nRadX, long nRadY,
                                  sal_uInt16 nPoints = 0 );
@@ -141,7 +124,7 @@ public:
     bool                IsRightOrientated() const;
     double              CalcDistance( sal_uInt16 nPt1, sal_uInt16 nPt2 );
     void                Clip( const Rectangle& rRect, bool bPolygon = true );
-    void                Optimize( PolyOptimizeFlags nOptimizeFlags, const PolyOptimizeData* pData = NULL );
+    void                Optimize( PolyOptimizeFlags nOptimizeFlags );
 
     /** Adaptive subdivision of polygons with curves
 
@@ -202,12 +185,18 @@ public:
 };
 
 
-class TOOLS_DLLPUBLIC SAL_WARN_UNUSED PolyPolygon
+class SAL_WARN_UNUSED TOOLS_DLLPUBLIC PolyPolygon
 {
 private:
     ImplPolyPolygon*    mpImplPolyPolygon;
 
-    TOOLS_DLLPRIVATE void  ImplDoOperation( const tools::PolyPolygon& rPolyPoly, tools::PolyPolygon& rResult, sal_uIntPtr nOperation ) const;
+    enum class PolyClipOp {
+        INTERSECT,
+        UNION,
+        DIFF,
+        XOR
+    };
+    TOOLS_DLLPRIVATE void  ImplDoOperation( const tools::PolyPolygon& rPolyPoly, tools::PolyPolygon& rResult, PolyClipOp nOperation ) const;
 
 public:
                         PolyPolygon( sal_uInt16 nInitSize = 16, sal_uInt16 nResize = 16 );
@@ -227,7 +216,7 @@ public:
     sal_uInt16          Count() const;
     Rectangle           GetBoundRect() const;
     void                Clip( const Rectangle& rRect );
-    void                Optimize( PolyOptimizeFlags nOptimizeFlags, const PolyOptimizeData* pData = NULL );
+    void                Optimize( PolyOptimizeFlags nOptimizeFlags );
 
     /** Adaptive subdivision of polygons with curves
 

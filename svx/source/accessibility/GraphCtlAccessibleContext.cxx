@@ -70,27 +70,27 @@ SvxGraphCtrlAccessibleContext::SvxGraphCtrlAccessibleContext(
     SvxGraphCtrlAccessibleContext_Base( m_aMutex ),
     mxParent( rxParent ),
     mpControl( &rRepr ),
-    mpModel (NULL),
-    mpPage (NULL),
-    mpView (NULL),
+    mpModel (nullptr),
+    mpPage (nullptr),
+    mpView (nullptr),
     mnClientId( 0 ),
     mbDisposed( false )
 {
     if (mpControl != nullptr)
     {
         mpModel = mpControl->GetSdrModel();
-        if (mpModel != NULL)
+        if (mpModel != nullptr)
             mpPage = mpModel->GetPage( 0 );
         mpView = mpControl->GetSdrView();
 
-        if( mpModel == NULL || mpPage == NULL || mpView == NULL )
+        if( mpModel == nullptr || mpPage == nullptr || mpView == nullptr )
         {
             mbDisposed = true;
             // Set all the pointers to NULL just in case they are used as
             // a disposed flag.
-            mpModel = NULL;
-            mpPage = NULL;
-            mpView = NULL;
+            mpModel = nullptr;
+            mpPage = nullptr;
+            mpView = nullptr;
         }
     }
 
@@ -145,7 +145,7 @@ Reference< XAccessible > SAL_CALL SvxGraphCtrlAccessibleContext::getAccessible( 
         if( iter != mxShapes.end() )
         {
             // if we already have one, return it
-            xAccessibleShape = (*iter).second;
+            xAccessibleShape = (*iter).second.get();
         }
         else
         {
@@ -154,14 +154,11 @@ Reference< XAccessible > SAL_CALL SvxGraphCtrlAccessibleContext::getAccessible( 
 
             AccessibleShapeInfo aShapeInfo (xShape,mxParent);
             // Create accessible object that corresponds to the descriptor's shape.
-            AccessibleShape* pAcc = ShapeTypeHandler::Instance().CreateAccessibleObject(
-                aShapeInfo, maTreeInfo);
-            xAccessibleShape = pAcc;
-            if (pAcc != NULL)
+            rtl::Reference<AccessibleShape> pAcc(ShapeTypeHandler::Instance().CreateAccessibleObject(
+                aShapeInfo, maTreeInfo));
+            xAccessibleShape = pAcc.get();
+            if (pAcc.is())
             {
-                pAcc->acquire();
-                // Now that we acquired the new accessible shape we can
-                // safely call its Init() method.
                 pAcc->Init ();
             }
             mxShapes[pObj] = pAcc;
@@ -204,11 +201,11 @@ Reference< XAccessible > SAL_CALL SvxGraphCtrlAccessibleContext::getAccessibleAt
         Point aPnt( rPoint.X, rPoint.Y );
         mpControl->PixelToLogic( aPnt );
 
-        SdrObject* pObj = 0;
+        SdrObject* pObj = nullptr;
 
         if(mpView && mpView->GetSdrPageView())
         {
-            pObj = SdrObjListPrimitiveHit(*mpPage, aPnt, 1, *mpView->GetSdrPageView(), 0, false);
+            pObj = SdrObjListPrimitiveHit(*mpPage, aPnt, 1, *mpView->GetSdrPageView(), nullptr, false);
         }
 
         if( pObj )
@@ -268,7 +265,7 @@ sal_Int32 SAL_CALL SvxGraphCtrlAccessibleContext::getAccessibleChildCount() thro
 {
     ::SolarMutexGuard aGuard;
 
-    if( NULL == mpPage )
+    if( nullptr == mpPage )
         throw DisposedException();
 
     return mpPage->GetObjCount();
@@ -282,7 +279,7 @@ SdrObject* SvxGraphCtrlAccessibleContext::getSdrObject( sal_Int32 nIndex )
 {
     ::SolarMutexGuard aGuard;
 
-    if( NULL == mpPage )
+    if( nullptr == mpPage )
         throw DisposedException();
 
     if( (nIndex < 0) || ( static_cast<size_t>(nIndex) >= mpPage->GetObjCount() ) )
@@ -485,7 +482,7 @@ void SAL_CALL SvxGraphCtrlAccessibleContext::grabFocus() throw( RuntimeException
 }
 
 sal_Int32 SAL_CALL SvxGraphCtrlAccessibleContext::getForeground()
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     svtools::ColorConfig aColorConfig;
     sal_uInt32 nColor = aColorConfig.GetColorValue( svtools::FONTCOLOR ).nColor;
@@ -493,7 +490,7 @@ sal_Int32 SAL_CALL SvxGraphCtrlAccessibleContext::getForeground()
 }
 
 sal_Int32 SAL_CALL SvxGraphCtrlAccessibleContext::getBackground()
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     sal_uInt32 nColor = Application::GetSettings().GetStyleSettings().GetWindowColor().GetColor();
     return static_cast<sal_Int32>(nColor);
@@ -538,7 +535,7 @@ void SAL_CALL SvxGraphCtrlAccessibleContext::selectAccessibleChild( sal_Int32 nI
 {
     ::SolarMutexGuard aGuard;
 
-    if( NULL == mpView )
+    if( nullptr == mpView )
         throw DisposedException();
 
     SdrObject* pObj = getSdrObject( nIndex );
@@ -553,7 +550,7 @@ sal_Bool SAL_CALL SvxGraphCtrlAccessibleContext::isAccessibleChildSelected( sal_
 {
     ::SolarMutexGuard aGuard;
 
-    if( NULL == mpView )
+    if( nullptr == mpView )
         throw DisposedException();
 
     return mpView->IsObjMarked( getSdrObject( nIndex ) );
@@ -565,7 +562,7 @@ void SAL_CALL SvxGraphCtrlAccessibleContext::clearAccessibleSelection() throw( R
 {
     ::SolarMutexGuard aGuard;
 
-    if( NULL == mpView )
+    if( nullptr == mpView )
         throw DisposedException();
 
     mpView->UnmarkAllObj();
@@ -577,7 +574,7 @@ void SAL_CALL SvxGraphCtrlAccessibleContext::selectAllAccessibleChildren() throw
 {
     ::SolarMutexGuard aGuard;
 
-    if( NULL == mpView )
+    if( nullptr == mpView )
         throw DisposedException();
 
     mpView->MarkAllObj();
@@ -589,7 +586,7 @@ sal_Int32 SAL_CALL SvxGraphCtrlAccessibleContext::getSelectedAccessibleChildCoun
 {
     ::SolarMutexGuard aGuard;
 
-    if( NULL == mpView )
+    if( nullptr == mpView )
         throw DisposedException();
 
     const SdrMarkList& rList = mpView->GetMarkedObjectList();
@@ -664,19 +661,19 @@ void SvxGraphCtrlAccessibleContext::setModelAndView (
     ::SolarMutexGuard aGuard;
 
     mpModel = pModel;
-    if (mpModel != NULL)
+    if (mpModel != nullptr)
         mpPage = mpModel->GetPage( 0 );
     mpView = pView;
 
-    if (mpModel == NULL || mpPage == NULL || mpView == NULL)
+    if (mpModel == nullptr || mpPage == nullptr || mpView == nullptr)
     {
         mbDisposed = true;
 
         // Set all the pointers to NULL just in case they are used as
         // a disposed flag.
-        mpModel = NULL;
-        mpPage = NULL;
-        mpView = NULL;
+        mpModel = nullptr;
+        mpPage = nullptr;
+        mpView = nullptr;
     }
 
     maTreeInfo.SetSdrView (mpView);
@@ -695,21 +692,19 @@ void SAL_CALL SvxGraphCtrlAccessibleContext::disposing()
 
     mbDisposed = true;
 
-    mpControl = NULL;       // object dies with representation
-    mpView = NULL;
-    mpPage = NULL;
+    mpControl = nullptr;       // object dies with representation
+    mpView = nullptr;
+    mpPage = nullptr;
 
     {
         ShapesMapType::iterator I;
 
         for (I=mxShapes.begin(); I!=mxShapes.end(); ++I)
         {
-            XAccessible* pAcc = (*I).second;
-            Reference< XComponent > xComp( pAcc, UNO_QUERY );
+            rtl::Reference<XAccessible> pAcc((*I).second.get());
+            Reference< XComponent > xComp( pAcc.get(), UNO_QUERY );
             if( xComp.is() )
                 xComp->dispose();
-
-            (*I).second->release();
         }
 
         mxShapes.clear();
@@ -751,13 +746,13 @@ Rectangle SvxGraphCtrlAccessibleContext::GetBoundingBox() throw( RuntimeExceptio
     Rectangle aBounds ( 0, 0, 0, 0 );
 
     vcl::Window* pWindow = mpControl;
-    if (pWindow != NULL)
+    if (pWindow != nullptr)
     {
-        aBounds = pWindow->GetWindowExtentsRelative (NULL);
+        aBounds = pWindow->GetWindowExtentsRelative (nullptr);
         vcl::Window* pParent = pWindow->GetAccessibleParentWindow();
-        if (pParent != NULL)
+        if (pParent != nullptr)
         {
-            Rectangle aParentRect = pParent->GetWindowExtentsRelative (NULL);
+            Rectangle aParentRect = pParent->GetWindowExtentsRelative (nullptr);
             aBounds -= aParentRect.TopLeft();
         }
     }
@@ -782,9 +777,9 @@ void SvxGraphCtrlAccessibleContext::Notify( SfxBroadcaster& /*rBC*/, const SfxHi
                     if( iter != mxShapes.end() )
                     {
                         // if we already have one, return it
-                        AccessibleShape* pShape = (*iter).second;
+                        rtl::Reference<AccessibleShape> pShape((*iter).second);
 
-                        if( NULL != pShape )
+                        if( pShape.is() )
                             pShape->CommitChange( AccessibleEventId::VISIBLE_DATA_CHANGED, uno::Any(), uno::Any() );
                     }
                 }
@@ -835,7 +830,7 @@ Point SvxGraphCtrlAccessibleContext::LogicToPixel (const Point& rPoint) const
 {
     if( mpControl )
     {
-        Rectangle aBBox(mpControl->GetWindowExtentsRelative(NULL));
+        Rectangle aBBox(mpControl->GetWindowExtentsRelative(nullptr));
         return mpControl->LogicToPixel (rPoint) + aBBox.TopLeft();
     }
     else

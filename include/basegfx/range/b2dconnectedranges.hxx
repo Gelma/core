@@ -83,15 +83,6 @@ namespace basegfx
         {
         }
 
-        /** Query total bounds of all added ranges.
-
-            @return the union bound rect over all added ranges.
-         */
-        B2DRange getBounds() const
-        {
-            return maTotalBounds;
-        }
-
         /** Add an additional range.
 
             This method integrates a new range into the connected
@@ -235,8 +226,8 @@ namespace basegfx
         }
 
     private:
-        B2DConnectedRanges(const B2DConnectedRanges&) SAL_DELETED_FUNCTION;
-        B2DConnectedRanges& operator=( const B2DConnectedRanges& ) SAL_DELETED_FUNCTION;
+        B2DConnectedRanges(const B2DConnectedRanges&) = delete;
+        B2DConnectedRanges& operator=( const B2DConnectedRanges& ) = delete;
 
         /** Current list of disjunct sets of connected components
 

@@ -43,7 +43,7 @@ namespace svgio
         :   SvgNode(SVGTokenRect, rDocument, pParent),
             maSvgStyleAttributes(*this),
             maSvgAspectRatio(),
-            mpaTransform(0),
+            mpaTransform(nullptr),
             maX(0),
             maY(0),
             maWidth(0),
@@ -62,7 +62,7 @@ namespace svgio
 
         const SvgStyleAttributes* SvgImageNode::getSvgStyleAttributes() const
         {
-            return checkForCssStyle(OUString("image"), maSvgStyleAttributes);
+            return checkForCssStyle("image", maSvgStyleAttributes);
         }
 
         void SvgImageNode::parseAttribute(const OUString& rTokenName, SVGToken aSVGToken, const OUString& aContent)
@@ -161,7 +161,7 @@ namespace svgio
 
         void extractFromGraphic(
             const Graphic& rGraphic,
-            drawinglayer::primitive2d::Primitive2DSequence& rEmbedded,
+            drawinglayer::primitive2d::Primitive2DContainer& rEmbedded,
             basegfx::B2DRange& rViewBox,
             BitmapEx& rBitmapEx)
         {
@@ -188,7 +188,7 @@ namespace svgio
             }
         }
 
-        void SvgImageNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DSequence& rTarget, bool /*bReferenced*/) const
+        void SvgImageNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DContainer& rTarget, bool /*bReferenced*/) const
         {
             // get size range and create path
             const SvgStyleAttributes* pStyle = getSvgStyleAttributes();
@@ -201,7 +201,7 @@ namespace svgio
                 if(fWidth > 0.0 && fHeight > 0.0)
                 {
                     BitmapEx aBitmapEx;
-                    drawinglayer::primitive2d::Primitive2DSequence aNewTarget;
+                    drawinglayer::primitive2d::Primitive2DContainer aNewTarget;
 
                     // prepare Target and ViewBox for evtl. AspectRatio mappings
                     const double fX(getX().isSet() ? getX().solve(*this, xcoordinate) : 0.0);
@@ -212,7 +212,7 @@ namespace svgio
                     if(!maMimeType.isEmpty() && !maData.isEmpty())
                     {
                         // use embedded base64 encoded data
-                        ::com::sun::star::uno::Sequence< sal_Int8 > aPass;
+                        css::uno::Sequence< sal_Int8 > aPass;
                         ::sax::Converter::decodeBase64(aPass, maData);
 
                         if(aPass.hasElements())
@@ -264,11 +264,9 @@ namespace svgio
                         {
                             mpXLink->decomposeSvgNode(aNewTarget, true);
 
-                            if(aNewTarget.hasElements())
+                            if(!aNewTarget.empty())
                             {
-                                aViewBox = drawinglayer::primitive2d::getB2DRangeFromPrimitive2DSequence(
-                                    aNewTarget,
-                                    drawinglayer::geometry::ViewInformation2D());
+                                aViewBox = aNewTarget.getB2DRange(drawinglayer::geometry::ViewInformation2D());
                             }
                         }
                     }
@@ -276,7 +274,7 @@ namespace svgio
                     if(!aBitmapEx.IsEmpty())
                     {
                         // create content from created bitmap
-                        aNewTarget.realloc(1);
+                        aNewTarget.resize(1);
                         aNewTarget[0] = new drawinglayer::primitive2d::BitmapPrimitive2D(
                             aBitmapEx,
                             basegfx::B2DHomMatrix());
@@ -285,12 +283,12 @@ namespace svgio
                         aViewBox = basegfx::B2DRange(0.0, 0.0, 1.0, 1.0);
                     }
 
-                    if(aNewTarget.hasElements())
+                    if(!aNewTarget.empty())
                     {
                         if(aTarget.equal(aViewBox))
                         {
                             // just add to rTarget
-                            drawinglayer::primitive2d::appendPrimitive2DSequenceToPrimitive2DSequence(rTarget, aNewTarget);
+                            rTarget.append(aNewTarget);
                         }
                         else
                         {
@@ -309,7 +307,7 @@ namespace svgio
                                             aEmbeddingTransform,
                                             aNewTarget));
 
-                                    aNewTarget = drawinglayer::primitive2d::Primitive2DSequence(&xRef, 1);
+                                    aNewTarget = drawinglayer::primitive2d::Primitive2DContainer { xRef };
                                 }
 
                                 if(!rRatio.isMeetOrSlice())
@@ -321,7 +319,7 @@ namespace svgio
                                                 basegfx::tools::createPolygonFromRect(aTarget)),
                                             aNewTarget));
 
-                                    aNewTarget = drawinglayer::primitive2d::Primitive2DSequence(&xMask, 1);
+                                    aNewTarget = drawinglayer::primitive2d::Primitive2DContainer { xMask };
                                 }
                             }
                             else
@@ -336,7 +334,7 @@ namespace svgio
                                             aEmbeddingTransform,
                                             aNewTarget));
 
-                                    aNewTarget = drawinglayer::primitive2d::Primitive2DSequence(&xRef, 1);
+                                    aNewTarget = drawinglayer::primitive2d::Primitive2DContainer { xRef };
                                 }
                             }
 

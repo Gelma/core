@@ -44,21 +44,20 @@
 #include <svx/xflgrit.hxx>
 
 // the dialog's carrier
-SwFrmDlg::SwFrmDlg( SfxViewFrame*       pViewFrame,
-                    vcl::Window*             pParent,
+SwFrameDlg::SwFrameDlg( SfxViewFrame*       pViewFrame,
+                    vcl::Window*        pParent,
                     const SfxItemSet&   rCoreSet,
-                    bool                bNewFrm,
-                    const OUString&      sResType,
+                    bool                bNewFrame,
+                    const OUString&     sResType,
                     bool                bFormat,
                     const OString&      sDefPage,
                     const OUString*     pStr)
 
-    : SfxTabDialog(pViewFrame, pParent, sResType,
-        "modules/swriter/ui/" +
-        sResType.toAsciiLowerCase() +
-        (".ui"), &rCoreSet, pStr != 0)
+    : SfxTabDialog(pParent, sResType,
+        "modules/swriter/ui/" + sResType.toAsciiLowerCase() + ".ui",
+        &rCoreSet, pStr != nullptr)
     , m_bFormat(bFormat)
-    , m_bNew(bNewFrm)
+    , m_bNew(bNewFrame)
     , m_rSet(rCoreSet)
     , m_sDlgType(sResType)
     , m_pWrtShell(static_cast<SwView*>(pViewFrame->GetViewShell())->GetWrtShellPtr())
@@ -85,18 +84,18 @@ SwFrmDlg::SwFrmDlg( SfxViewFrame*       pViewFrame,
         SetText(GetText() + SW_RESSTR(STR_COLL_HEADER) + *pStr + ")");
     }
 
-    m_nStdId = AddTabPage("type",  SwFrmPage::Create, 0);
-    m_nAddId = AddTabPage("options",  SwFrmAddPage::Create, 0);
-    m_nWrapId = AddTabPage("wrap", SwWrapTabPage::Create, 0);
-    m_nUrlId = AddTabPage("hyperlink",  SwFrmURLPage::Create, 0);
+    m_nStdId = AddTabPage("type",  SwFramePage::Create, nullptr);
+    m_nAddId = AddTabPage("options",  SwFrameAddPage::Create, nullptr);
+    m_nWrapId = AddTabPage("wrap", SwWrapTabPage::Create, nullptr);
+    m_nUrlId = AddTabPage("hyperlink",  SwFrameURLPage::Create, nullptr);
     if (m_sDlgType == "PictureDialog")
     {
-        m_nPictureId = AddTabPage("picture", SwGrfExtPage::Create, 0);
+        m_nPictureId = AddTabPage("picture", SwGrfExtPage::Create, nullptr);
         m_nCropId = AddTabPage("crop", RID_SVXPAGE_GRFCROP);
     }
     if (m_sDlgType == "FrameDialog")
     {
-        m_nColumnId = AddTabPage("columns", SwColumnPage::Create, 0);
+        m_nColumnId = AddTabPage("columns", SwColumnPage::Create, nullptr);
     }
     SfxAbstractDialogFactory* pFact = SfxAbstractDialogFactory::Create();
     OSL_ENSURE(pFact, "Dialog creation failed!");
@@ -108,8 +107,8 @@ SwFrmDlg::SwFrmDlg( SfxViewFrame*       pViewFrame,
     m_nAreaId = AddTabPage("area", pFact->GetTabPageCreatorFunc( RID_SVXPAGE_AREA ), pFact->GetTabPageRangesFunc( RID_SVXPAGE_AREA ));
     m_nTransparenceId = AddTabPage("transparence", pFact->GetTabPageCreatorFunc( RID_SVXPAGE_TRANSPARENCE ), pFact->GetTabPageRangesFunc( RID_SVXPAGE_TRANSPARENCE ) );
 
-    m_nMacroId = AddTabPage("macro", pFact->GetTabPageCreatorFunc(RID_SVXPAGE_MACROASSIGN), 0);
-    m_nBorderId = AddTabPage("borders", pFact->GetTabPageCreatorFunc( RID_SVXPAGE_BORDER ), 0);
+    m_nMacroId = AddTabPage("macro", pFact->GetTabPageCreatorFunc(RID_SVXPAGE_MACROASSIGN), nullptr);
+    m_nBorderId = AddTabPage("borders", pFact->GetTabPageCreatorFunc( RID_SVXPAGE_BORDER ), nullptr);
 
     if(m_bHTMLMode)
     {
@@ -137,25 +136,25 @@ SwFrmDlg::SwFrmDlg( SfxViewFrame*       pViewFrame,
         SetCurPageId(sDefPage);
 }
 
-SwFrmDlg::~SwFrmDlg()
+SwFrameDlg::~SwFrameDlg()
 {
 }
 
-void SwFrmDlg::PageCreated( sal_uInt16 nId, SfxTabPage &rPage )
+void SwFrameDlg::PageCreated( sal_uInt16 nId, SfxTabPage &rPage )
 {
     SfxAllItemSet aSet(*(GetInputSetImpl()->GetPool()));
     if (nId == m_nStdId)
     {
-        static_cast<SwFrmPage&>(rPage).SetNewFrame(m_bNew);
-        static_cast<SwFrmPage&>(rPage).SetFormatUsed(m_bFormat);
-        static_cast<SwFrmPage&>(rPage).SetFrmType(m_sDlgType);
+        static_cast<SwFramePage&>(rPage).SetNewFrame(m_bNew);
+        static_cast<SwFramePage&>(rPage).SetFormatUsed(m_bFormat);
+        static_cast<SwFramePage&>(rPage).SetFrameType(m_sDlgType);
     }
     else if (nId == m_nAddId)
     {
-        static_cast<SwFrmAddPage&>(rPage).SetFormatUsed(m_bFormat);
-        static_cast<SwFrmAddPage&>(rPage).SetFrmType(m_sDlgType);
-        static_cast<SwFrmAddPage&>(rPage).SetNewFrame(m_bNew);
-        static_cast<SwFrmAddPage&>(rPage).SetShell(m_pWrtShell);
+        static_cast<SwFrameAddPage&>(rPage).SetFormatUsed(m_bFormat);
+        static_cast<SwFrameAddPage&>(rPage).SetFrameType(m_sDlgType);
+        static_cast<SwFrameAddPage&>(rPage).SetNewFrame(m_bNew);
+        static_cast<SwFrameAddPage&>(rPage).SetShell(m_pWrtShell);
     }
     else if (nId == m_nWrapId)
     {
@@ -165,10 +164,10 @@ void SwFrmDlg::PageCreated( sal_uInt16 nId, SfxTabPage &rPage )
     }
     else if (nId == m_nColumnId)
     {
-        static_cast<SwColumnPage&>(rPage).SetFrmMode(true);
+        static_cast<SwColumnPage&>(rPage).SetFrameMode(true);
         static_cast<SwColumnPage&>(rPage).SetFormatUsed(m_bFormat);
 
-        const SwFormatFrmSize& rSize = static_cast<const SwFormatFrmSize&>(
+        const SwFormatFrameSize& rSize = static_cast<const SwFormatFrameSize&>(
                                             m_rSet.Get( RES_FRM_SIZE ));
         static_cast<SwColumnPage&>(rPage).SetPageWidth( rSize.GetWidth() );
     }

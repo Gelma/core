@@ -59,16 +59,16 @@ SwReadOnlyPopup::~SwReadOnlyPopup()
 
 void SwReadOnlyPopup::Check( sal_uInt16 nMID, sal_uInt16 nSID, SfxDispatcher &rDis )
 {
-    SfxPoolItem *_pItem = 0;
+    std::unique_ptr<SfxPoolItem> _pItem;
     SfxItemState eState = rDis.GetBindings()->QueryState( nSID, _pItem );
     if (eState >= SfxItemState::DEFAULT)
     {
         EnableItem( nMID );
         if (_pItem)
         {
-            CheckItem ( nMID, !_pItem->ISA(SfxVoidItem) &&
-                            _pItem->ISA(SfxBoolItem) &&
-                            static_cast<SfxBoolItem*>(_pItem)->GetValue());
+            CheckItem ( nMID, dynamic_cast< const SfxVoidItem *>( _pItem.get() ) ==  nullptr &&
+                            dynamic_cast< const SfxBoolItem *>( _pItem.get() ) !=  nullptr &&
+                            static_cast<SfxBoolItem*>(_pItem.get())->GetValue());
             //remove full screen entry when not in full screen mode
             if( SID_WIN_FULLSCREEN == nSID && !IsItemChecked(SID_WIN_FULLSCREEN) )
                 EnableItem(nMID, false);
@@ -76,8 +76,6 @@ void SwReadOnlyPopup::Check( sal_uInt16 nMID, sal_uInt16 nSID, SfxDispatcher &rD
     }
     else
         EnableItem( nMID, false );
-
-    delete _pItem;
 }
 
 SwReadOnlyPopup::SwReadOnlyPopup( const Point &rDPos, SwView &rV ) :
@@ -85,8 +83,8 @@ SwReadOnlyPopup::SwReadOnlyPopup( const Point &rDPos, SwView &rV ) :
     rView  ( rV ),
     aBrushItem(RES_BACKGROUND),
     rDocPos( rDPos ),
-    pImageMap( 0 ),
-    pTargetURL( 0 )
+    pImageMap( nullptr ),
+    pTargetURL( nullptr )
 {
     bGrfToGalleryAsLnk = SW_MOD()->GetModuleConfig()->IsGrfToGalleryAsLnk();
     SwWrtShell &rSh = rView.GetWrtShell();
@@ -94,7 +92,7 @@ SwReadOnlyPopup::SwReadOnlyPopup( const Point &rDPos, SwView &rV ) :
     if ( sURL.isEmpty() )
     {
         SwContentAtPos aContentAtPos( SwContentAtPos::SW_INETATTR );
-        if( rSh.GetContentAtPos( rDocPos, aContentAtPos, false))
+        if( rSh.GetContentAtPos( rDocPos, aContentAtPos))
         {
             const SwFormatINetFormat &rIItem = *static_cast<const SwFormatINetFormat*>(aContentAtPos.aFnd.pAttr);
             sURL = rIItem.GetValue();
@@ -105,7 +103,7 @@ SwReadOnlyPopup::SwReadOnlyPopup( const Point &rDPos, SwView &rV ) :
 
     bool bLink = false;
     const Graphic *pGrf;
-    if ( 0 == (pGrf = rSh.GetGrfAtPos( rDocPos, sGrfName, bLink )) )
+    if ( nullptr == (pGrf = rSh.GetGrfAtPos( rDocPos, sGrfName, bLink )) )
     {
         EnableItem( MN_READONLY_SAVEGRAPHIC, false );
         EnableItem( MN_READONLY_COPYGRAPHIC, false );
@@ -182,7 +180,7 @@ SwReadOnlyPopup::SwReadOnlyPopup( const Point &rDPos, SwView &rV ) :
     else
         EnableItem( MN_READONLY_LOADGRAPHIC, false );
 
-    bool bReloadFrame = 0 != rSh.GetView().GetViewFrame()->GetFrame().GetParentFrame();
+    bool bReloadFrame = nullptr != rSh.GetView().GetViewFrame()->GetFrame().GetParentFrame();
     EnableItem( MN_READONLY_RELOAD_FRAME,
             bReloadFrame );
     EnableItem( MN_READONLY_RELOAD, !bReloadFrame);
@@ -198,14 +196,12 @@ SwReadOnlyPopup::SwReadOnlyPopup( const Point &rDPos, SwView &rV ) :
     Check( MN_READONLY_OPENURL,         SID_OPENDOC,        rDis );
     Check( MN_READONLY_OPENURLNEW,      SID_OPENDOC,        rDis );
 
-    SfxPoolItem* pState = NULL;
+    std::unique_ptr<SfxPoolItem> pState;
 
     SfxItemState eState = pVFrame->GetBindings().QueryState( SID_COPY, pState );
     Check( MN_READONLY_COPY,            SID_COPY,           rDis );
     if(eState < SfxItemState::DEFAULT)
         EnableItem( MN_READONLY_COPY, false );
-    delete pState;
-    pState = NULL;
 
     eState = pVFrame->GetBindings().QueryState( SID_EDITDOC, pState );
     if (
@@ -215,7 +211,6 @@ SwReadOnlyPopup::SwReadOnlyPopup( const Point &rDPos, SwView &rV ) :
     {
         EnableItem( MN_READONLY_EDITDOC, false );
     }
-    delete pState;
 
     if ( sURL.isEmpty() )
     {
@@ -266,7 +261,7 @@ void SwReadOnlyPopup::Execute( vcl::Window* pWin, sal_uInt16 nId )
         return;
     }
 
-    TransferDataContainer* pClipCntnr = 0;
+    TransferDataContainer* pClipCntnr = nullptr;
 
     sal_uInt16 nExecId = USHRT_MAX;
     sal_uInt16 nFilter = USHRT_MAX;
@@ -339,7 +334,7 @@ void SwReadOnlyPopup::Execute( vcl::Window* pWin, sal_uInt16 nId )
 
     if( pClipCntnr )
     {
-        ::com::sun::star::uno::Reference< ::com::sun::star::datatransfer::XTransferable > xRef( pClipCntnr );
+        css::uno::Reference< css::datatransfer::XTransferable > xRef( pClipCntnr );
         if( pClipCntnr->HasAnyData() )
             pClipCntnr->CopyToClipboard( pWin );
     }

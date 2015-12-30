@@ -33,7 +33,7 @@ namespace {
 
 class TestThread: public osl::Thread, private boost::noncopyable {
 private:
-    virtual void SAL_CALL run() SAL_OVERRIDE;
+    virtual void SAL_CALL run() override;
 };
 
 void TestThread::run() {
@@ -46,7 +46,7 @@ void TestThread::run() {
     }
 #endif
     setName("TestThread");
-    if (std::getenv("URE_TEST_SETTHREADNAME") != 0) {
+    if (std::getenv("URE_TEST_SETTHREADNAME") != nullptr) {
         // On Linux, the thread name can now be observed with "ps -L"; on
         // Windows with the Microsoft compiler, the thread name can now be
         // observed in a debugger.

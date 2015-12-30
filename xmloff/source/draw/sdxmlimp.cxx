@@ -64,7 +64,7 @@ public:
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                 const OUString& rLocalName,
-                const uno::Reference< xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+                const uno::Reference< xml::sax::XAttributeList > & xAttrList ) override;
 };
 
 SdXMLBodyContext_Impl::SdXMLBodyContext_Impl( SdXMLImport& rImport,
@@ -101,11 +101,10 @@ public:
         const uno::Reference<xml::sax::XAttributeList>& xAttrList);
     virtual ~SdXMLDocContext_Impl();
 
-    TYPEINFO_OVERRIDE();
 
     virtual SvXMLImportContext *CreateChildContext(sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const uno::Reference<xml::sax::XAttributeList>& xAttrList) SAL_OVERRIDE;
+        const uno::Reference<xml::sax::XAttributeList>& xAttrList) override;
 };
 
 SdXMLDocContext_Impl::SdXMLDocContext_Impl(
@@ -121,14 +120,13 @@ SdXMLDocContext_Impl::~SdXMLDocContext_Impl()
 {
 }
 
-TYPEINIT1( SdXMLDocContext_Impl, SvXMLImportContext );
 
 SvXMLImportContext *SdXMLDocContext_Impl::CreateChildContext(
     sal_uInt16 nPrefix,
     const OUString& rLocalName,
     const uno::Reference<xml::sax::XAttributeList>& xAttrList)
 {
-    SvXMLImportContext* pContext = 0L;
+    SvXMLImportContext* pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetSdImport().GetDocElemTokenMap();
     switch(rTokenMap.Get(nPrefix, rLocalName))
@@ -220,7 +218,7 @@ public:
 
     virtual SvXMLImportContext *CreateChildContext(
         sal_uInt16 i_nPrefix, const OUString& i_rLocalName,
-        const uno::Reference<xml::sax::XAttributeList>& i_xAttrList) SAL_OVERRIDE;
+        const uno::Reference<xml::sax::XAttributeList>& i_xAttrList) override;
 };
 
 SdXMLFlatDocContext_Impl::SdXMLFlatDocContext_Impl( SdXMLImport& i_rImport,
@@ -254,13 +252,11 @@ SvXMLImportContext *SdXMLFlatDocContext_Impl::CreateChildContext(
 #define SERVICE(classname,servicename,implementationname,draw,flags)\
 uno::Sequence< OUString > SAL_CALL classname##_getSupportedServiceNames() throw()\
 {\
-    const OUString aServiceName(  servicename  );\
-    const uno::Sequence< OUString > aSeq( &aServiceName, 1 );\
-    return aSeq;\
+    return uno::Sequence< OUString > { servicename };\
 }\
 OUString SAL_CALL classname##_getImplementationName() throw()\
 {\
-    return OUString(  implementationname  );\
+    return OUString( implementationname );\
 }\
 uno::Reference< uno::XInterface > SAL_CALL classname##_createInstance(const uno::Reference< lang::XMultiServiceFactory > & rSMgr) throw( uno::Exception )\
 {\
@@ -282,23 +278,22 @@ SERVICE( XMLDrawMetaImportOasis, "com.sun.star.comp.Draw.XMLOasisMetaImporter", 
 SERVICE( XMLImpressSettingsImportOasis, "com.sun.star.comp.Impress.XMLOasisSettingsImporter", "XMLImpressSettingsImportOasis", false, SvXMLImportFlags::SETTINGS )
 SERVICE( XMLDrawSettingsImportOasis, "com.sun.star.comp.Draw.XMLOasisSettingsImporter", "XMLImpressSettingsImportOasis", true, SvXMLImportFlags::SETTINGS )
 
-// #110680#
 SdXMLImport::SdXMLImport(
-    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& xContext,
+    const css::uno::Reference< css::uno::XComponentContext >& xContext,
     OUString const & implementationName,
     bool bIsDraw, SvXMLImportFlags nImportFlags )
 :   SvXMLImport( xContext, implementationName, nImportFlags ),
-    mpMasterStylesContext(0L),
-    mpDocElemTokenMap(0L),
-    mpBodyElemTokenMap(0L),
-    mpStylesElemTokenMap(0L),
-    mpMasterPageElemTokenMap(0L),
-    mpMasterPageAttrTokenMap(0L),
-    mpPageMasterAttrTokenMap(0L),
-    mpPageMasterStyleAttrTokenMap(0L),
-    mpDrawPageAttrTokenMap(0L),
-    mpDrawPageElemTokenMap(0L),
-    mpPresentationPlaceholderAttrTokenMap(0L),
+    mpMasterStylesContext(nullptr),
+    mpDocElemTokenMap(nullptr),
+    mpBodyElemTokenMap(nullptr),
+    mpStylesElemTokenMap(nullptr),
+    mpMasterPageElemTokenMap(nullptr),
+    mpMasterPageAttrTokenMap(nullptr),
+    mpPageMasterAttrTokenMap(nullptr),
+    mpPageMasterStyleAttrTokenMap(nullptr),
+    mpDrawPageAttrTokenMap(nullptr),
+    mpDrawPageElemTokenMap(nullptr),
+    mpPresentationPlaceholderAttrTokenMap(nullptr),
     mnNewPageCount(0L),
     mnNewMasterPageCount(0L),
     mbIsDraw(bIsDraw),
@@ -640,7 +635,7 @@ SvXMLImportContext *SdXMLImport::CreateContext(sal_uInt16 nPrefix,
     const OUString& rLocalName,
     const uno::Reference<xml::sax::XAttributeList>& xAttrList)
 {
-    SvXMLImportContext* pContext = 0;
+    SvXMLImportContext* pContext = nullptr;
 
     if(XML_NAMESPACE_OFFICE == nPrefix &&
         ( IsXMLToken( rLocalName, XML_DOCUMENT_STYLES ) ||
@@ -668,14 +663,14 @@ SvXMLImportContext *SdXMLImport::CreateContext(sal_uInt16 nPrefix,
 SvXMLImportContext *SdXMLImport::CreateMetaContext(const OUString& rLocalName,
     const uno::Reference<xml::sax::XAttributeList>&)
 {
-    SvXMLImportContext* pContext = 0L;
+    SvXMLImportContext* pContext = nullptr;
 
     if (getImportFlags() & SvXMLImportFlags::META)
     {
         uno::Reference<document::XDocumentPropertiesSupplier> xDPS(
             GetModel(), uno::UNO_QUERY_THROW);
         uno::Reference<document::XDocumentProperties> const xDocProps(
-            (IsStylesOnlyMode()) ? 0 : xDPS->getDocumentProperties());
+            (IsStylesOnlyMode()) ? nullptr : xDPS->getDocumentProperties());
         pContext = new SvXMLMetaDocumentContext(*this,
                         XML_NAMESPACE_OFFICE, rLocalName,
                         xDocProps);
@@ -692,7 +687,7 @@ SvXMLImportContext *SdXMLImport::CreateMetaContext(const OUString& rLocalName,
 SvXMLImportContext *SdXMLImport::CreateBodyContext(const OUString& rLocalName,
     const uno::Reference<xml::sax::XAttributeList>&)
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
     pContext = new SdXMLBodyContext(*this, XML_NAMESPACE_OFFICE, rLocalName);
     return pContext;
 }
@@ -748,7 +743,7 @@ SvXMLImportContext *SdXMLImport::CreateFontDeclsContext(const OUString& rLocalNa
 SvXMLImportContext *SdXMLImport::CreateScriptContext(
                                        const OUString& rLocalName )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     pContext = new XMLScriptContext( *this,
                                     XML_NAMESPACE_OFFICE, rLocalName,
@@ -756,7 +751,7 @@ SvXMLImportContext *SdXMLImport::CreateScriptContext(
     return pContext;
 }
 
-void SdXMLImport::SetViewSettings(const com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>& aViewProps)
+void SdXMLImport::SetViewSettings(const css::uno::Sequence<css::beans::PropertyValue>& aViewProps)
 {
     uno::Reference< beans::XPropertySet > xPropSet( GetModel(), uno::UNO_QUERY );
     if( !xPropSet.is() )
@@ -796,7 +791,7 @@ void SdXMLImport::SetViewSettings(const com::sun::star::uno::Sequence<com::sun::
     {
         xPropSet->setPropertyValue("VisibleArea", uno::makeAny( aVisArea )  );
     }
-    catch(const com::sun::star::uno::Exception&)
+    catch(const css::uno::Exception&)
     {
 /* #i79978# since old documents may contain invalid view settings, this is nothing to worry the user about.
         uno::Sequence<OUString> aSeq(0);
@@ -805,7 +800,7 @@ void SdXMLImport::SetViewSettings(const com::sun::star::uno::Sequence<com::sun::
     }
 }
 
-void SdXMLImport::SetConfigurationSettings(const com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>& aConfigProps)
+void SdXMLImport::SetConfigurationSettings(const css::uno::Sequence<css::beans::PropertyValue>& aConfigProps)
 {
     uno::Reference< lang::XMultiServiceFactory > xFac( GetModel(), uno::UNO_QUERY );
     if( !xFac.is() )
@@ -856,13 +851,13 @@ void SdXMLImport::SetStatistics(
         const uno::Sequence<beans::NamedValue> & i_rStats)
 {
     static const char* s_stats[] =
-        { "ObjectCount", 0 };
+        { "ObjectCount", nullptr };
 
     SvXMLImport::SetStatistics(i_rStats);
 
     sal_uInt32 nCount(10);
     for (sal_Int32 i = 0; i < i_rStats.getLength(); ++i) {
-        for (const char** pStat = s_stats; *pStat != 0; ++pStat) {
+        for (const char** pStat = s_stats; *pStat != nullptr; ++pStat) {
             if (i_rStats[i].Name.equalsAscii(*pStat)) {
                 sal_Int32 val = 0;
                 if (i_rStats[i].Value >>= val) {

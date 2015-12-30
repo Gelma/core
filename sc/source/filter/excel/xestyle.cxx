@@ -51,7 +51,7 @@
 #include "conditio.hxx"
 
 #include <oox/token/tokens.hxx>
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <o3tl/make_unique.hxx>
 
 using namespace ::com::sun::star;
 using namespace oox;
@@ -218,9 +218,6 @@ struct XclNearest
     inline explicit     XclNearest() : mnPalIndex( 0 ), mnDist( 0 ) {}
 };
 
-typedef ::std::vector< XclRemap >   XclRemapVec;
-typedef ::std::vector< XclNearest > XclNearestVec;
-
 } // namespace
 
 class XclExpPaletteImpl
@@ -299,7 +296,7 @@ private:
                             const Color& rColor ) const;
 
 private:
-    typedef boost::ptr_vector< XclListColor >     XclListColorList;
+    typedef std::vector< std::unique_ptr<XclListColor> >     XclListColorList;
     typedef std::shared_ptr< XclListColorList > XclListColorListRef;
     typedef ::std::vector< XclColorIdData >       XclColorIdDataVec;
     typedef ::std::vector< XclPaletteColor >      XclPaletteColorVec;
@@ -355,7 +352,7 @@ void XclExpPaletteImpl::Finalize()
     maColorIdDataVec.resize( nCount );
     for( sal_uInt32 nIdx = 0; nIdx < nCount; ++nIdx )
     {
-        const XclListColor& listColor = mxColorList->at( nIdx );
+        const XclListColor& listColor = *mxColorList->at( nIdx ).get();
         maColorIdDataVec[ listColor.GetColorId() ].Set( listColor.GetColor(), nIdx );
     }
 
@@ -373,8 +370,8 @@ void XclExpPaletteImpl::Finalize()
 // --- use default palette and replace colors with nearest used colors ---
 
     nCount = mxColorList->size();
-    XclRemapVec aRemapVec( nCount );
-    XclNearestVec aNearestVec( nCount );
+    std::vector< XclRemap > aRemapVec( nCount );
+    std::vector< XclNearest > aNearestVec( nCount );
 
     // in each run: search the best fitting color and replace a default color with it
     for( sal_uInt32 nRun = 0; nRun < nCount; ++nRun )
@@ -383,7 +380,7 @@ void XclExpPaletteImpl::Finalize()
         // find nearest unused default color for each unprocessed list color
         for( nIndex = 0; nIndex < nCount; ++nIndex )
             aNearestVec[ nIndex ].mnDist = aRemapVec[ nIndex ].mbProcessed ? SAL_MAX_INT32 :
-                GetNearestPaletteColor( aNearestVec[ nIndex ].mnPalIndex, mxColorList->at( nIndex ).GetColor(), true );
+                GetNearestPaletteColor( aNearestVec[ nIndex ].mnPalIndex, mxColorList->at( nIndex )->GetColor(), true );
         // find the list color which is nearest to a default color
         sal_uInt32 nFound = 0;
         for( nIndex = 1; nIndex < nCount; ++nIndex )
@@ -392,7 +389,7 @@ void XclExpPaletteImpl::Finalize()
         // replace default color with list color
         sal_uInt32 nNearest = aNearestVec[ nFound ].mnPalIndex;
         OSL_ENSURE( nNearest < maPalette.size(), "XclExpPaletteImpl::Finalize - algorithm error" );
-        maPalette[ nNearest ].SetColor( mxColorList->at( nFound ).GetColor() );
+        maPalette[ nNearest ].SetColor( mxColorList->at( nFound )->GetColor() );
         aRemapVec[ nFound ].SetIndex( nNearest );
     }
 
@@ -513,14 +510,14 @@ XclListColor* XclExpPaletteImpl::SearchListEntry( const Color& rColor, sal_uInt3
     rnIndex = 0;
 
     if (mxColorList->empty())
-        return NULL;
+        return nullptr;
 
-    XclListColor* pEntry = NULL;
+    XclListColor* pEntry = nullptr;
 
     // search optimization for equal-colored objects occurring repeatedly
     if (mnLastIdx < mxColorList->size())
     {
-        pEntry = &(*mxColorList)[mnLastIdx];
+        pEntry = (*mxColorList)[mnLastIdx].get();
         if( pEntry->GetColor() == rColor )
         {
             rnIndex = mnLastIdx;
@@ -535,7 +532,7 @@ XclListColor* XclExpPaletteImpl::SearchListEntry( const Color& rColor, sal_uInt3
     while( !bFound && (nBegIdx < nEndIdx) )
     {
         rnIndex = (nBegIdx + nEndIdx) / 2;
-        pEntry = &(*mxColorList)[rnIndex];
+        pEntry = (*mxColorList)[rnIndex].get();
         bFound = pEntry->GetColor() == rColor;
         if( !bFound )
         {
@@ -557,9 +554,7 @@ XclListColor* XclExpPaletteImpl::SearchListEntry( const Color& rColor, sal_uInt3
 XclListColor* XclExpPaletteImpl::CreateListEntry( const Color& rColor, sal_uInt32 nIndex )
 {
     XclListColor* pEntry = new XclListColor( rColor, mxColorList->size() );
-    XclListColorList::iterator itr = mxColorList->begin();
-    ::std::advance(itr, nIndex);
-    mxColorList->insert(itr, pEntry);
+    mxColorList->insert(mxColorList->begin() + nIndex, std::unique_ptr<XclListColor>(pEntry));
     return pEntry;
 }
 
@@ -598,7 +593,7 @@ void XclExpPaletteImpl::RawReducePalette( sal_uInt32 nPass )
     for( sal_uInt32 nIdx = 0, nCount = xOldList->size(); nIdx < nCount; ++nIdx )
     {
         // get the old list entry
-        const XclListColor* pOldEntry = &(xOldList->at( nIdx ));
+        const XclListColor* pOldEntry = xOldList->at( nIdx ).get();
         nR = pOldEntry->GetColor().GetRed();
         nG = pOldEntry->GetColor().GetGreen();
         nB = pOldEntry->GetColor().GetBlue();
@@ -636,8 +631,8 @@ void XclExpPaletteImpl::ReduceLeastUsedColor()
     sal_uInt32 nKeep = GetNearestListColor( nRemove );
 
     // merge both colors to one color, remove one color from list
-    XclListColor* pKeepEntry = &mxColorList->at(nKeep);
-    XclListColor* pRemoveEntry = &mxColorList->at(nRemove);
+    XclListColor* pKeepEntry = mxColorList->at(nKeep).get();
+    XclListColor* pRemoveEntry = mxColorList->at(nRemove).get();
     if( pKeepEntry && pRemoveEntry )
     {
         // merge both colors (if pKeepEntry is a base color, it will not change)
@@ -666,7 +661,7 @@ sal_uInt32 XclExpPaletteImpl::GetLeastUsedListColor() const
 
     for( sal_uInt32 nIdx = 0, nCount = mxColorList->size(); nIdx < nCount; ++nIdx )
     {
-        XclListColor& pEntry = mxColorList->at( nIdx );
+        XclListColor& pEntry = *mxColorList->at( nIdx ).get();
         // ignore the base colors
         if( !pEntry.IsBaseColor() && (pEntry.GetWeighting() < nMinW) )
         {
@@ -686,7 +681,7 @@ sal_uInt32 XclExpPaletteImpl::GetNearestListColor( const Color& rColor, sal_uInt
     {
         if( nIdx != nIgnore )
         {
-            if( XclListColor* pEntry = &mxColorList->at(nIdx) )
+            if( XclListColor* pEntry = mxColorList->at(nIdx).get() )
             {
                 sal_Int32 nDist = lclGetColorDistance( rColor, pEntry->GetColor() );
                 if( nDist < nMinD )
@@ -704,7 +699,7 @@ sal_uInt32 XclExpPaletteImpl::GetNearestListColor( sal_uInt32 nIndex ) const
 {
     if (nIndex >= mxColorList->size())
         return 0;
-    XclListColor* pEntry = &mxColorList->at(nIndex);
+    XclListColor* pEntry = mxColorList->at(nIndex).get();
     return GetNearestListColor( pEntry->GetColor(), nIndex );
 }
 
@@ -843,9 +838,9 @@ sal_Int16 XclExpFontHelper::GetFirstUsedScript( const XclExpRoot& rRoot, const S
         item set, and which script type we should prefer according to the
         current language settings. */
 
-    static const WhichAndScript WAS_LATIN( ATTR_FONT, ::com::sun::star::i18n::ScriptType::LATIN );
-    static const WhichAndScript WAS_ASIAN( ATTR_CJK_FONT, ::com::sun::star::i18n::ScriptType::ASIAN );
-    static const WhichAndScript WAS_CMPLX( ATTR_CTL_FONT, ::com::sun::star::i18n::ScriptType::COMPLEX );
+    static const WhichAndScript WAS_LATIN( ATTR_FONT, css::i18n::ScriptType::LATIN );
+    static const WhichAndScript WAS_ASIAN( ATTR_CJK_FONT, css::i18n::ScriptType::ASIAN );
+    static const WhichAndScript WAS_CMPLX( ATTR_CTL_FONT, css::i18n::ScriptType::COMPLEX );
 
     /*  do not let a font from a parent style override an explicit
         cell font. */
@@ -897,7 +892,7 @@ vcl::Font XclExpFontHelper::GetFontFromItemSet( const XclExpRoot& rRoot, const S
 
     // fill the font object
     vcl::Font aFont;
-    ScPatternAttr::GetFont( aFont, rItemSet, SC_AUTOCOL_RAW, 0, 0, 0, nScScript );
+    ScPatternAttr::GetFont( aFont, rItemSet, SC_AUTOCOL_RAW, nullptr, nullptr, nullptr, nScScript );
     return aFont;
 }
 
@@ -925,7 +920,7 @@ bool XclExpFontHelper::CheckItems( const XclExpRoot& rRoot, const SfxItemSet& rI
     bool bUsed = ScfTools::CheckItems( rItemSet, pnCommonIds, bDeep );
     if( !bUsed )
     {
-        namespace ApiScriptType = ::com::sun::star::i18n::ScriptType;
+        namespace ApiScriptType = css::i18n::ScriptType;
         // if WEAK is passed, guess script type from existing items in the item set
         if( nScript == ApiScriptType::WEAK )
             nScript = GetFirstUsedScript( rRoot, rItemSet );
@@ -1371,21 +1366,14 @@ XclExpNumFmtBuffer::XclExpNumFmtBuffer( const XclExpRoot& rRoot ) :
         default:        mnXclOffset = 0; DBG_ERROR_BIFF();
     }
 
-    mxFormatter->FillKeywordTable( *mpKeywordTable, LANGUAGE_ENGLISH_US );
-    // remap codes unknown to Excel
-    (*mpKeywordTable)[ NF_KEY_NN ] = "DDD";
-    (*mpKeywordTable)[ NF_KEY_NNN ] = "DDDD";
-    // NNNN gets a separator appended in SvNumberformat::GetMappedFormatString()
-    (*mpKeywordTable)[ NF_KEY_NNNN ] = "DDDD";
-    // Export the Thai T NatNum modifier.
-    (*mpKeywordTable)[ NF_KEY_THAI_T ] = "T";
+    mxFormatter->FillKeywordTableForExcel( *mpKeywordTable );
 }
 
 XclExpNumFmtBuffer::~XclExpNumFmtBuffer()
 {
 }
 
-sal_uInt16 XclExpNumFmtBuffer::Insert( sal_uLong nScNumFmt )
+sal_uInt16 XclExpNumFmtBuffer::Insert( sal_uInt32 nScNumFmt )
 {
     XclExpNumFmtVec::const_iterator aIt =
         ::std::find_if( maFormatMap.begin(), maFormatMap.end(), XclExpNumFmtPred( nScNumFmt ) );
@@ -1445,53 +1433,14 @@ void XclExpNumFmtBuffer::WriteFormatRecord( XclExpStream& rStrm, const XclExpNum
 
 namespace {
 
-OUString GetNumberFormatCode(XclRoot& rRoot, const sal_uInt16 nScNumFmt, SvNumberFormatter* xFormatter, NfKeywordTable* pKeywordTable)
+OUString GetNumberFormatCode(XclRoot& rRoot, const sal_uInt32 nScNumFmt, SvNumberFormatter* pFormatter, NfKeywordTable* pKeywordTable)
 {
-    OUString aFormatStr;
-
-    if( const SvNumberformat* pEntry = rRoot.GetFormatter().GetEntry( nScNumFmt ) )
-    {
-        if( pEntry->GetType() == css::util::NumberFormat::LOGICAL )
-        {
-            // build Boolean number format
-            Color* pColor = 0;
-            OUString aTemp;
-            const_cast< SvNumberformat* >( pEntry )->GetOutputString( 1.0, aTemp, &pColor );
-            aFormatStr += "\"" + aTemp + "\";\"" + aTemp + "\";\"";
-            const_cast< SvNumberformat* >( pEntry )->GetOutputString( 0.0, aTemp, &pColor );
-            aFormatStr += aTemp + "\"";
-        }
-        else
-        {
-            LanguageType eLang = pEntry->GetLanguage();
-            if( eLang != LANGUAGE_ENGLISH_US )
-            {
-                sal_Int32 nCheckPos;
-                short nType = css::util::NumberFormat::DEFINED;
-                sal_uInt32 nKey;
-                OUString aTemp( pEntry->GetFormatstring() );
-                xFormatter->PutandConvertEntry( aTemp, nCheckPos, nType, nKey, eLang, LANGUAGE_ENGLISH_US );
-                OSL_ENSURE( nCheckPos == 0, "XclExpNumFmtBuffer::WriteFormatRecord - format code not convertible" );
-                pEntry = xFormatter->GetEntry( nKey );
-            }
-
-            aFormatStr = pEntry->GetMappedFormatstring( *pKeywordTable, *xFormatter->GetLocaleData() );
-            if( aFormatStr == "Standard" )
-                aFormatStr = "General";
-        }
-    }
-    else
-    {
-        OSL_FAIL( "XclExpNumFmtBuffer::WriteFormatRecord - format not found" );
-        aFormatStr = "General";
-    }
-
-    return aFormatStr;
+    return rRoot.GetFormatter().GetFormatStringForExcel( nScNumFmt, *pKeywordTable, *pFormatter);
 }
 
 }
 
-OUString XclExpNumFmtBuffer::GetFormatCode( sal_uInt16 nScNumFmt )
+OUString XclExpNumFmtBuffer::GetFormatCode( sal_uInt32 nScNumFmt )
 {
     return GetNumberFormatCode( *this, nScNumFmt, mxFormatter.get(), mpKeywordTable.get() );
 }
@@ -2084,7 +2033,7 @@ XclExpXF::XclExpXF( const XclExpRoot& rRoot, const SfxStyleSheetBase& rStyleShee
     mnParentXFId( XclExpXFBuffer::GetXFIdFromIndex( EXC_XF_STYLEPARENT ) )
 {
     bool bDefStyle = (rStyleSheet.GetName() == ScGlobal::GetRscString( STR_STYLENAME_STANDARD ));
-    sal_Int16 nScript = bDefStyle ? GetDefApiScript() : ::com::sun::star::i18n::ScriptType::WEAK;
+    sal_Int16 nScript = bDefStyle ? GetDefApiScript() : css::i18n::ScriptType::WEAK;
     Init( const_cast< SfxStyleSheetBase& >( rStyleSheet ).GetItemSet(), nScript,
         NUMBERFORMAT_ENTRY_NOT_FOUND, EXC_FONT_NOTFOUND, false, bDefStyle );
 }
@@ -2129,7 +2078,7 @@ bool XclExpXF::Equals( const XclExpXF& rCmpXF ) const
 void XclExpXF::InitDefault()
 {
     SetRecHeader( EXC_ID5_XF, (GetBiff() == EXC_BIFF8) ? 20 : 16 );
-    mpItemSet = 0;
+    mpItemSet = nullptr;
     mnScNumFmt = NUMBERFORMAT_ENTRY_NOT_FOUND;
     mnXclFont = mnXclNumFmt = 0;
     SetXmlIds(0, 0);
@@ -2247,7 +2196,7 @@ void XclExpXF::SaveXml( XclExpXmlStream& rStrm )
     sax_fastparser::FSHelperPtr& rStyleSheet = rStrm.GetCurrentStream();
 
     sal_Int32 nXfId = 0;
-    const XclExpXF* pStyleXF = NULL;
+    const XclExpXF* pStyleXF = nullptr;
     if( IsCellXF() )
     {
         sal_uInt16 nXFIndex = rStrm.GetRoot().GetXFBuffer().GetXFIndex( mnParentXFId );
@@ -2260,7 +2209,7 @@ void XclExpXF::SaveXml( XclExpXmlStream& rStrm )
             XML_fontId,             OString::number(  mnXclFont ).getStr(),
             XML_fillId,             OString::number(  mnFillId ).getStr(),
             XML_borderId,           OString::number(  mnBorderId ).getStr(),
-            XML_xfId,               IsStyleXF() ? NULL : OString::number( nXfId ).getStr(),
+            XML_xfId,               IsStyleXF() ? nullptr : OString::number( nXfId ).getStr(),
             // OOXTODO: XML_quotePrefix,
             // OOXTODO: XML_pivotButton,
             // OOXTODO: XML_applyNumberFormat,  ;
@@ -2971,7 +2920,7 @@ void XclExpXFBuffer::InsertDefaultRecords()
 
     /*  Insert the real default hard cell format -> 0 is document default pattern.
         Do it here (and not already above) to really have all built-in styles. */
-    Insert( 0, GetDefApiScript() );
+    Insert( nullptr, GetDefApiScript() );
 }
 
 void XclExpXFBuffer::AppendXFIndex( sal_uInt32 nXFId )
@@ -3002,14 +2951,7 @@ XclExpDxfs::XclExpDxfs( const XclExpRoot& rRoot )
     mxFormatter( new SvNumberFormatter( comphelper::getProcessComponentContext(), LANGUAGE_ENGLISH_US ) ),
     mpKeywordTable( new NfKeywordTable )
 {
-    mxFormatter->FillKeywordTable( *mpKeywordTable, LANGUAGE_ENGLISH_US );
-    // remap codes unknown to Excel
-    (*mpKeywordTable)[ NF_KEY_NN ] = "DDD";
-    (*mpKeywordTable)[ NF_KEY_NNN ] = "DDDD";
-    // NNNN gets a separator appended in SvNumberformat::GetMappedFormatString()
-    (*mpKeywordTable)[ NF_KEY_NNNN ] = "DDDD";
-    // Export the Thai T NatNum modifier.
-    (*mpKeywordTable)[ NF_KEY_THAI_T ] = "T";
+    mxFormatter->FillKeywordTableForExcel( *mpKeywordTable );
 
     SCTAB nTables = rRoot.GetDoc().GetTableCount();
     for(SCTAB nTab = 0; nTab < nTables; ++nTab)
@@ -3055,42 +2997,42 @@ XclExpDxfs::XclExpDxfs( const XclExpRoot& rRoot )
                         if (!pBorder->FillFromItemSet( rSet, GetPalette(), GetBiff()) )
                         {
                             delete pBorder;
-                            pBorder = NULL;
+                            pBorder = nullptr;
                         }
 
                         XclExpCellAlign* pAlign = new XclExpCellAlign;
                         if (!pAlign->FillFromItemSet( rSet, false, GetBiff()))
                         {
                             delete pAlign;
-                            pAlign = NULL;
+                            pAlign = nullptr;
                         }
 
                         XclExpCellProt* pCellProt = new XclExpCellProt;
                         if (!pCellProt->FillFromItemSet( rSet ))
                         {
                             delete pCellProt;
-                            pCellProt = NULL;
+                            pCellProt = nullptr;
                         }
 
                         XclExpColor* pColor = new XclExpColor();
                         if(!pColor->FillFromItemSet( rSet ))
                         {
                             delete pColor;
-                            pColor = NULL;
+                            pColor = nullptr;
                         }
 
                         XclExpDxfFont* pFont = new XclExpDxfFont(rRoot, rSet);
 
-                        XclExpNumFmt* pNumFormat = NULL;
-                        const SfxPoolItem *pPoolItem = NULL;
+                        XclExpNumFmt* pNumFormat = nullptr;
+                        const SfxPoolItem *pPoolItem = nullptr;
                         if( rSet.GetItemState( ATTR_VALUE_FORMAT, true, &pPoolItem ) == SfxItemState::SET )
                         {
-                            sal_uLong nScNumFmt = static_cast< const SfxUInt32Item* >(pPoolItem)->GetValue();
+                            sal_uInt32 nScNumFmt = static_cast< const SfxUInt32Item* >(pPoolItem)->GetValue();
                             sal_Int32 nXclNumFmt = GetRoot().GetNumFmtBuffer().Insert(nScNumFmt);
                             pNumFormat = new XclExpNumFmt( nScNumFmt, nXclNumFmt, GetNumberFormatCode( *this, nScNumFmt, mxFormatter.get(), mpKeywordTable.get() ));
                         }
 
-                        maDxf.push_back(new XclExpDxf( rRoot, pAlign, pBorder, pFont, pNumFormat, pCellProt, pColor ));
+                        maDxf.push_back(o3tl::make_unique<XclExpDxf>( rRoot, pAlign, pBorder, pFont, pNumFormat, pCellProt, pColor ));
                         ++nIndex;
                     }
 
@@ -3120,7 +3062,7 @@ void XclExpDxfs::SaveXml( XclExpXmlStream& rStrm )
 
     for ( DxfContainer::iterator itr = maDxf.begin(); itr != maDxf.end(); ++itr )
     {
-        itr->SaveXml( rStrm );
+        (*itr)->SaveXml( rStrm );
     }
 
     rStyleSheet->endElement( XML_dxfs );
@@ -3170,8 +3112,8 @@ XclExpXmlStyleSheet::XclExpXmlStyleSheet( const XclExpRoot& rRoot )
 void XclExpXmlStyleSheet::SaveXml( XclExpXmlStream& rStrm )
 {
     sax_fastparser::FSHelperPtr aStyleSheet = rStrm.CreateOutputStream(
-            OUString( "xl/styles.xml"),
-            OUString( "styles.xml" ),
+            "xl/styles.xml",
+            "styles.xml",
             rStrm.GetCurrentStream()->getOutputStream(),
             "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml",
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" );

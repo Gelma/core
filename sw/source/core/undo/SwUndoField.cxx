@@ -17,7 +17,6 @@
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
 
-#include <tools/rtti.hxx>
 
 #include <SwUndoField.hxx>
 #include <swundo.hxx>
@@ -79,7 +78,7 @@ SwUndoFieldFromDoc::~SwUndoFieldFromDoc()
 void SwUndoFieldFromDoc::UndoImpl(::sw::UndoRedoContext &)
 {
     SwTextField * pTextField = sw::DocumentFieldsManager::GetTextFieldAtPos(GetPosition());
-    const SwField * pField = pTextField ? pTextField->GetFormatField().GetField() : NULL;
+    const SwField * pField = pTextField ? pTextField->GetFormatField().GetField() : nullptr;
 
     if (pField)
     {
@@ -90,7 +89,7 @@ void SwUndoFieldFromDoc::UndoImpl(::sw::UndoRedoContext &)
 void SwUndoFieldFromDoc::DoImpl()
 {
     SwTextField * pTextField = sw::DocumentFieldsManager::GetTextFieldAtPos(GetPosition());
-    const SwField * pField = pTextField ? pTextField->GetFormatField().GetField() : NULL;
+    const SwField * pField = pTextField ? pTextField->GetFormatField().GetField() : nullptr;
 
     if (pField)
     {

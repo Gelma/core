@@ -74,7 +74,7 @@ public:
                           const OUString& rLocalName,
                           ::std::vector< OUString > & rAddresses );
     virtual ~SchXMLDomain2Context();
-    virtual void StartElement( const Reference< xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+    virtual void StartElement( const Reference< xml::sax::XAttributeList >& xAttrList ) override;
 };
 
 SchXMLDomain2Context::SchXMLDomain2Context(
@@ -172,7 +172,7 @@ void lcl_setSymbolSizeIfNeeded( const uno::Reference< beans::XPropertySet >& xSe
 void lcl_resetSymbolSizeForPointsIfNecessary( const uno::Reference< beans::XPropertySet >& xPointProp, const SvXMLImport& rImport
     , const XMLPropStyleContext * pPropStyleContext, const SvXMLStylesContext* pStylesCtxt )
 {
-    uno::Any aASymbolSize( SchXMLTools::getPropertyFromContext( OUString("SymbolSize"), pPropStyleContext, pStylesCtxt ) );
+    uno::Any aASymbolSize( SchXMLTools::getPropertyFromContext( "SymbolSize", pPropStyleContext, pStylesCtxt ) );
     if( !aASymbolSize.hasValue() )
         lcl_setSymbolSizeIfNeeded( xPointProp, rImport );
 }
@@ -229,7 +229,7 @@ Reference< chart2::data::XLabeledDataSequence2 > lcl_createAndAddSequenceToSerie
     Sequence< Reference< chart2::data::XLabeledDataSequence > > aOldSeq( xSeriesSource->getDataSequences());
     sal_Int32 nOldCount = aOldSeq.getLength();
     Sequence< Reference< chart2::data::XLabeledDataSequence > > aNewSeq( nOldCount + 1 );
-    aNewSeq[0] = Reference< chart2::data::XLabeledDataSequence >(xLabeledSeq, uno::UNO_QUERY_THROW);
+    aNewSeq[0].set(xLabeledSeq, uno::UNO_QUERY_THROW);
     for( sal_Int32 nN=0; nN<nOldCount; nN++ )
         aNewSeq[nN+1] = aOldSeq[nN];
     xSeriesSink->setData( aNewSeq );
@@ -270,12 +270,12 @@ SchXMLSeries2Context::SchXMLSeries2Context(
         mrAxes( rAxes ),
         mrStyleList( rStyleList ),
         mrRegressionStyleList( rRegressionStyleList ),
-        m_xSeries(0),
+        m_xSeries(nullptr),
         mnSeriesIndex( nSeriesIndex ),
         mnDataPointIndex( 0 ),
         m_bStockHasVolume( bStockHasVolume ),
         m_rGlobalSeriesImportInfo(rGlobalSeriesImportInfo),
-        mpAttachedAxis( NULL ),
+        mpAttachedAxis( nullptr ),
         mnAttachedAxis( 0 ),
         maGlobalChartTypeName( aGlobalChartTypeName ),
         maSeriesChartTypeName( aGlobalChartTypeName ),
@@ -481,7 +481,7 @@ void SchXMLSeries2Context::StartElement( const uno::Reference< xml::sax::XAttrib
 
                 const XMLPropStyleContext* pPropStyleContext = dynamic_cast< const XMLPropStyleContext * >( pStyle );
 
-                uno::Any aASymbolSize( SchXMLTools::getPropertyFromContext( OUString("SymbolSize")
+                uno::Any aASymbolSize( SchXMLTools::getPropertyFromContext( "SymbolSize"
                     , pPropStyleContext, pStylesCtxt ) );
                 mbSymbolSizeIsMissingInFile = !aASymbolSize.hasValue();
             }
@@ -639,7 +639,7 @@ SvXMLImportContext* SchXMLSeries2Context::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList >&  )
 {
-    SvXMLImportContext* pContext = 0;
+    SvXMLImportContext* pContext = nullptr;
     const SvXMLTokenMap& rTokenMap = mrImportHelper.GetSeriesElemTokenMap();
 
     switch( rTokenMap.Get( nPrefix, rLocalName ))
@@ -661,7 +661,7 @@ SvXMLImportContext* SchXMLSeries2Context::CreateChildContext(
                 nPrefix, rLocalName, msAutoStyleName,
                 mrStyleList, m_xSeries,
                 SchXMLStatisticsObjectContext::CONTEXT_TYPE_MEAN_VALUE_LINE,
-                maChartSize, mrLSequencesPerIndex );
+                mrLSequencesPerIndex );
             break;
         case XML_TOK_SERIES_REGRESSION_CURVE:
             pContext = new SchXMLRegressionCurveObjectContext(
@@ -675,7 +675,7 @@ SvXMLImportContext* SchXMLSeries2Context::CreateChildContext(
                 nPrefix, rLocalName, msAutoStyleName,
                 mrStyleList, m_xSeries,
                 SchXMLStatisticsObjectContext::CONTEXT_TYPE_ERROR_INDICATOR,
-                maChartSize, mrLSequencesPerIndex );
+                mrLSequencesPerIndex );
             break;
 
         case XML_TOK_SERIES_DATA_POINT:
@@ -879,7 +879,7 @@ void SchXMLSeries2Context::setStylesToRegressionCurves(
         try
         {
             OUString aServiceName;
-            XMLPropStyleContext* pPropStyleContext = NULL;
+            XMLPropStyleContext* pPropStyleContext = nullptr;
 
             if (!rCurrentStyleName.isEmpty())
             {
@@ -918,7 +918,7 @@ void SchXMLSeries2Context::setStylesToRegressionCurves(
                 if( xRegCurve.is())
                 {
                     Reference< beans::XPropertySet > xCurveProperties( xRegCurve, uno::UNO_QUERY );
-                    if( pPropStyleContext != NULL)
+                    if( pPropStyleContext != nullptr)
                         pPropStyleContext->FillPropertySet( xCurveProperties );
 
                     xRegCurve->setEquationProperties( iStyle->m_xEquationProperties );
@@ -985,12 +985,10 @@ void SchXMLSeries2Context::setStylesToStatisticsObjects( SeriesDefaultsAndStyles
                         switch( iStyle->meType )
                         {
                             case DataRowPointStyle::MEAN_VALUE:
-                                xSeriesProp->getPropertyValue(
-                                    OUString( "DataMeanValueProperties" )) >>= xStatPropSet;
+                                xSeriesProp->getPropertyValue("DataMeanValueProperties") >>= xStatPropSet;
                                 break;
                             case DataRowPointStyle::ERROR_INDICATOR:
-                                xSeriesProp->getPropertyValue(
-                                    OUString( "DataErrorProperties" ))  >>= xStatPropSet;
+                                xSeriesProp->getPropertyValue("DataErrorProperties")  >>= xStatPropSet;
                                 break;
                             default:
                                 break;

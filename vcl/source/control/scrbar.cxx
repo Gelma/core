@@ -76,7 +76,7 @@ struct ImplScrollBarData
 
 void ScrollBar::ImplInit( vcl::Window* pParent, WinBits nStyle )
 {
-    mpData              = NULL;
+    mpData              = nullptr;
     mnThumbPixRange     = 0;
     mnThumbPixPos       = 0;
     mnThumbPixSize      = 0;
@@ -102,7 +102,7 @@ void ScrollBar::ImplInit( vcl::Window* pParent, WinBits nStyle )
     }
 
     ImplInitStyle( nStyle );
-    Control::ImplInit( pParent, nStyle, NULL );
+    Control::ImplInit( pParent, nStyle, nullptr );
 
     long nScrollSize = GetSettings().GetStyleSettings().GetScrollBarSize();
     SetSizePixel( Size( nScrollSize, nScrollSize ) );
@@ -129,7 +129,7 @@ ScrollBar::~ScrollBar()
 
 void ScrollBar::dispose()
 {
-    delete mpData; mpData = NULL;
+    delete mpData; mpData = nullptr;
     Control::dispose();
 }
 
@@ -637,7 +637,7 @@ void ScrollBar::ImplDraw(vcl::RenderContext& rRenderContext, sal_uInt16 nDrawFla
         nStyle = DrawButtonFlags::NoLightBorder;
         if (mnStateFlags & SCRBAR_STATE_BTN1_DOWN)
             nStyle |= DrawButtonFlags::Pressed;
-        aTempRect = aDecoView.DrawButton( maBtn1Rect, nStyle );
+        aTempRect = aDecoView.DrawButton( PixelToLogic(maBtn1Rect), nStyle );
         ImplCalcSymbolRect( aTempRect );
         DrawSymbolFlags nSymbolStyle = DrawSymbolFlags::NONE;
         if ((mnStateFlags & SCRBAR_STATE_BTN1_DISABLE) || !bEnabled)
@@ -664,7 +664,7 @@ void ScrollBar::ImplDraw(vcl::RenderContext& rRenderContext, sal_uInt16 nDrawFla
         nStyle = DrawButtonFlags::NoLightBorder;
         if (mnStateFlags & SCRBAR_STATE_BTN2_DOWN)
             nStyle |= DrawButtonFlags::Pressed;
-        aTempRect = aDecoView.DrawButton(maBtn2Rect, nStyle);
+        aTempRect = aDecoView.DrawButton(PixelToLogic(maBtn2Rect), nStyle);
         ImplCalcSymbolRect(aTempRect);
         DrawSymbolFlags nSymbolStyle = DrawSymbolFlags::NONE;
         if ((mnStateFlags & SCRBAR_STATE_BTN2_DISABLE) || !bEnabled)
@@ -695,12 +695,12 @@ void ScrollBar::ImplDraw(vcl::RenderContext& rRenderContext, sal_uInt16 nDrawFla
             if (bEnabled)
             {
                 nStyle = DrawButtonFlags::NoLightBorder;
-                aTempRect = aDecoView.DrawButton(maThumbRect, nStyle);
+                aTempRect = aDecoView.DrawButton(PixelToLogic(maThumbRect), nStyle);
             }
             else
             {
                 rRenderContext.SetFillColor(rStyleSettings.GetCheckedColor());
-                rRenderContext.DrawRect(maThumbRect);
+                rRenderContext.DrawRect(PixelToLogic(maThumbRect));
             }
         }
     }
@@ -711,7 +711,7 @@ void ScrollBar::ImplDraw(vcl::RenderContext& rRenderContext, sal_uInt16 nDrawFla
             rRenderContext.SetFillColor(rStyleSettings.GetShadowColor());
         else
             rRenderContext.SetFillColor(rStyleSettings.GetCheckedColor());
-        rRenderContext.DrawRect(maPage1Rect);
+        rRenderContext.DrawRect(PixelToLogic(maPage1Rect));
     }
     if ((nDrawFlags & SCRBAR_DRAW_PAGE2) && (!ImplDrawNative(rRenderContext, SCRBAR_DRAW_PAGE2)))
     {
@@ -719,7 +719,7 @@ void ScrollBar::ImplDraw(vcl::RenderContext& rRenderContext, sal_uInt16 nDrawFla
             rRenderContext.SetFillColor(rStyleSettings.GetShadowColor());
         else
             rRenderContext.SetFillColor(rStyleSettings.GetCheckedColor());
-        rRenderContext.DrawRect(maPage2Rect);
+        rRenderContext.DrawRect(PixelToLogic(maPage2Rect));
     }
 }
 
@@ -879,7 +879,19 @@ void ScrollBar::MouseButtonDown( const MouseEvent& rMEvt )
 
     if (rMEvt.IsLeft() || rMEvt.IsMiddle() || rMEvt.IsRight())
     {
-        const Point&        rMousePos = rMEvt.GetPosPixel();
+        Point aPosPixel;
+        if (!IsMapModeEnabled() && GetMapMode().GetMapUnit() == MAP_TWIP)
+        {
+            // rMEvt coordinates are in twips.
+            Push(PushFlags::MAPMODE);
+            EnableMapMode();
+            MapMode aMapMode = GetMapMode();
+            aMapMode.SetOrigin(Point(0, 0));
+            SetMapMode(aMapMode);
+            aPosPixel = LogicToPixel(rMEvt.GetPosPixel());
+            Pop();
+        }
+        const Point&        rMousePos = (GetMapMode().GetMapUnit() != MAP_TWIP ? rMEvt.GetPosPixel() : aPosPixel);
         StartTrackingFlags  nTrackFlags = StartTrackingFlags::NONE;
         bool                bHorizontal = ( GetStyle() & WB_HORZ ) != 0;
         bool                bIsInside = false;
@@ -1046,7 +1058,19 @@ void ScrollBar::Tracking( const TrackingEvent& rTEvt )
     }
     else
     {
-        const Point rMousePos = rTEvt.GetMouseEvent().GetPosPixel();
+        Point aPosPixel;
+        if (!IsMapModeEnabled() && GetMapMode().GetMapUnit() == MAP_TWIP)
+        {
+            // rTEvt coordinates are in twips.
+            Push(PushFlags::MAPMODE);
+            EnableMapMode();
+            MapMode aMapMode = GetMapMode();
+            aMapMode.SetOrigin(Point(0, 0));
+            SetMapMode(aMapMode);
+            aPosPixel = LogicToPixel(rTEvt.GetMouseEvent().GetPosPixel());
+            Pop();
+        }
+        const Point rMousePos = (GetMapMode().GetMapUnit() != MAP_TWIP ? rTEvt.GetMouseEvent().GetPosPixel() : aPosPixel);
 
         // Dragging is treated in a special way
         if ( meScrollType == SCROLL_DRAG )
@@ -1258,14 +1282,14 @@ Rectangle* ScrollBar::ImplFindPartRect( const Point& rPt )
              maThumbRect.IsInside( rPt ) )
         return &maThumbRect;
     else
-        return NULL;
+        return nullptr;
 }
 
 bool ScrollBar::PreNotify( NotifyEvent& rNEvt )
 {
-    const MouseEvent* pMouseEvt = NULL;
+    const MouseEvent* pMouseEvt = nullptr;
 
-    if( (rNEvt.GetType() == MouseNotifyEvent::MOUSEMOVE) && (pMouseEvt = rNEvt.GetMouseEvent()) != NULL )
+    if( (rNEvt.GetType() == MouseNotifyEvent::MOUSEMOVE) && (pMouseEvt = rNEvt.GetMouseEvent()) != nullptr )
     {
         if( !pMouseEvt->GetButtons() && !pMouseEvt->IsSynthetic() && !pMouseEvt->IsModifierChanged() )
         {
@@ -1436,7 +1460,7 @@ Size ScrollBar::getCurrentCalcSize() const
 
 void ScrollBarBox::ImplInit(vcl::Window* pParent, WinBits nStyle)
 {
-    Window::ImplInit( pParent, nStyle, NULL );
+    Window::ImplInit( pParent, nStyle, nullptr );
 
     const StyleSettings& rStyleSettings = GetSettings().GetStyleSettings();
     long nScrollSize = rStyleSettings.GetScrollBarSize();

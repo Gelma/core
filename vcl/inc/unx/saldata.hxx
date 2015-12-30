@@ -64,29 +64,23 @@ public:
     virtual ~X11SalData();
 
     virtual void            Init();
-    virtual void            Dispose() SAL_OVERRIDE;
+    virtual void            Dispose() override;
 
     virtual void            initNWF();
     virtual void            deInitNWF();
 
-    SalDisplay*             GetX11Display() const
-    { return vcl_sal::getSalDisplay(this); }
     void                    DeleteDisplay(); // for shutdown
 
     inline  SalXLib*        GetLib() const { return pXLib_; }
 
-    void                    StartTimer( sal_uLong nMS );
-    inline  void            StopTimer();
     static void             Timeout( bool idle );
 
     // X errors
-    virtual void            ErrorTrapPush() SAL_OVERRIDE;
-    virtual bool            ErrorTrapPop( bool bIgnoreError ) SAL_OVERRIDE;
+    virtual void            ErrorTrapPush() override;
+    virtual bool            ErrorTrapPop( bool bIgnoreError ) override;
     void                    XError( Display *pDisp, XErrorEvent *pEvent );
     bool                    HasXErrorOccurred() const
                                 { return m_aXErrorHandlerStack.back().m_bWas; }
-    unsigned int            GetLastXErrorRequestCode() const
-                                { return m_aXErrorHandlerStack.back().m_nLastErrorRequest; }
     void                    ResetXErrorOccurred()
                                 { m_aXErrorHandlerStack.back().m_bWas = false; }
     void                    PushXErrorLevel( bool bIgnore );

@@ -261,7 +261,7 @@ OUString SAL_CALL ScFilterDetect::detect( uno::Sequence<beans::PropertyValue>& l
         // No stream, no detection.
         return OUString();
 
-    const char* pSearchFilterName = NULL;
+    const char* pSearchFilterName = nullptr;
     if (aTypeName == "calc_Lotus")
     {
         if (!detectThisFormat(*pStream, pLotus) && !detectThisFormat(*pStream, pLotusNew) && !detectThisFormat(*pStream, pLotus2))
@@ -322,17 +322,16 @@ sal_Bool ScFilterDetect::supportsService( const OUString& sServiceName )
     return cppu::supportsService(this, sServiceName);
 }
 
-com::sun::star::uno::Sequence<OUString> ScFilterDetect::getSupportedServiceNames()
+css::uno::Sequence<OUString> ScFilterDetect::getSupportedServiceNames()
     throw (uno::RuntimeException, std::exception)
 {
-    uno::Sequence<OUString> seqServiceNames(1);
-    seqServiceNames.getArray()[0] = "com.sun.star.frame.ExtendedTypeDetection";
+    uno::Sequence<OUString> seqServiceNames { "com.sun.star.frame.ExtendedTypeDetection" };
     return seqServiceNames;
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_calc_FormatDetector_get_implementation(::com::sun::star::uno::XComponentContext* context,
-                                                         ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_calc_FormatDetector_get_implementation(css::uno::XComponentContext* context,
+                                                         css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new ScFilterDetect(context));
 }

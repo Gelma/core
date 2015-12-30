@@ -60,9 +60,9 @@ public:
     }
     virtual ~SwServerObject();
 
-    virtual bool GetData( ::com::sun::star::uno::Any & rData,
+    virtual bool GetData( css::uno::Any & rData,
                             const OUString & rMimeType,
-                            bool bSynchron = false ) SAL_OVERRIDE;
+                            bool bSynchron = false ) override;
 
     void SendDataChanged( const SwPosition& rPos );
     void SendDataChanged( const SwPaM& rRange );

@@ -37,7 +37,7 @@ void AsynchronLink::Call( void* pObj, bool bAllowDoubles, bool bUseTimer )
 {
 #ifdef DBG_UTIL
     if ( bUseTimer || !_bInCall )
-        DBG_WARNING( "Recursives Call. Eher ueber Timer. TLX Fragen" );
+        SAL_INFO( "svtools", "Recursives Call. Eher ueber Timer. TLX Fragen" );
 #endif
     if( _aLink.IsSet() )
     {
@@ -60,7 +60,7 @@ void AsynchronLink::Call( void* pObj, bool bAllowDoubles, bool bUseTimer )
         else
         {
             if( _pMutex ) _pMutex->acquire();
-            _nEventId = Application::PostUserEvent( LINK( this, AsynchronLink, HandleCall_PostUserEvent), 0 );
+            _nEventId = Application::PostUserEvent( LINK( this, AsynchronLink, HandleCall_PostUserEvent) );
             if( _pMutex ) _pMutex->release();
         }
     }
@@ -80,7 +80,7 @@ AsynchronLink::~AsynchronLink()
 IMPL_LINK_NOARG_TYPED( AsynchronLink, HandleCall_Idle, Idle*, void )
 {
     if( _pMutex ) _pMutex->acquire();
-    _nEventId = 0;
+    _nEventId = nullptr;
     if( _pMutex ) _pMutex->release();
     Call_Impl( _pArg );
 }
@@ -96,7 +96,7 @@ void AsynchronLink::ClearPendingCall()
     if( _nEventId )
     {
         Application::RemoveUserEvent( _nEventId );
-        _nEventId = 0;
+        _nEventId = nullptr;
     }
     if( _pMutex ) _pMutex->release();
     if( _pIdle ) _pIdle->Stop();
@@ -111,7 +111,7 @@ void AsynchronLink::Call_Impl( void* pArg )
     if( !bDeleted )
     {
         _bInCall = false;
-        _pDeleted = 0;
+        _pDeleted = nullptr;
     }
 }
 

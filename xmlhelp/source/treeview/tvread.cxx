@@ -47,7 +47,7 @@ namespace treeview {
 
     public:
 
-        explicit TVDom( TVDom* arent = 0 )
+        explicit TVDom( TVDom* arent = nullptr )
             : kind( other ),
               parent( arent ),
               children( 0 )
@@ -425,7 +425,7 @@ TVChildTarget::TVChildTarget( const Reference< XComponentContext >& xContext )
         aFile.read( s,len,ret );
         aFile.close();
 
-        XML_Parser parser = XML_ParserCreate( 0 );
+        XML_Parser parser = XML_ParserCreate( nullptr );
         XML_SetElementHandler( parser,
                                start_handler,
                                end_handler );
@@ -496,7 +496,7 @@ bool TVChildTarget::SearchAndInsert(TVDom* p, TVDom* tvDom)
     for(i = tvDom->children.begin(); i!=tvDom->children.end(); ++i)
         if (!((*i)->isLeaf()) &&
             ((*i)->id.getLength() == p->id.getLength()) &&
-            (p->id.replaceAt((*i)->parent->id.getLength(), p->id.getLength()-(*i)->parent->id.getLength(), OUString("")) == (*i)->parent->id))      //prefix check
+            (p->id.replaceAt((*i)->parent->id.getLength(), p->id.getLength()-(*i)->parent->id.getLength(), "") == (*i)->parent->id))      //prefix check
         {
             h = true;
             c_int = (*i)->id.toInt32();
@@ -652,7 +652,7 @@ ConfigData TVChildTarget::init( const Reference< XComponentContext >& xContext )
 
         // open it
         uno::Reference< uno::XInterface > xCFG( xConfigProvider->createInstanceWithArguments(
-                    OUString("com.sun.star.configuration.ConfigurationAccess"),
+                    "com.sun.star.configuration.ConfigurationAccess",
                     lParams) );
 
         uno::Reference< container::XNameAccess > xDirectAccess(xCFG, uno::UNO_QUERY);
@@ -777,7 +777,7 @@ TVChildTarget::getConfiguration(const Reference< XComponentContext >& rxContext)
         {
             xProvider = theDefaultProvider::get( rxContext );
         }
-        catch( const com::sun::star::uno::Exception& )
+        catch( const css::uno::Exception& )
         {
             OSL_ENSURE( xProvider.is(),"can not instantiate configuration" );
         }
@@ -807,7 +807,7 @@ TVChildTarget::getHierAccess( const Reference< XMultiServiceFactory >& sProvider
                 ( sProvider->createInstanceWithArguments( sReaderService,seq ),
                   UNO_QUERY );
         }
-        catch( const com::sun::star::uno::Exception& )
+        catch( const css::uno::Exception& )
         {
         }
     }
@@ -828,7 +828,7 @@ TVChildTarget::getKey( const Reference< XHierarchicalNameAccess >& xHierAccess,
             aAny =
                 xHierAccess->getByHierarchicalName( OUString::createFromAscii( key ) );
         }
-        catch( const com::sun::star::container::NoSuchElementException& )
+        catch( const css::container::NoSuchElementException& )
         {
         }
         aAny >>= instPath;
@@ -851,7 +851,7 @@ TVChildTarget::getBooleanKey(const Reference<
             xHierAccess->getByHierarchicalName(
                                                OUString::createFromAscii(key));
         }
-      catch( const com::sun::star::container::NoSuchElementException& )
+      catch( const css::container::NoSuchElementException& )
         {
         }
       aAny >>= ret;
@@ -1042,7 +1042,7 @@ inline bool isLetter( sal_Unicode c )
 }
 
 void ExtensionIteratorBase::implGetLanguageVectorFromPackage( ::std::vector< OUString > &rv,
-    com::sun::star::uno::Reference< com::sun::star::deployment::XPackage > xPackage )
+    css::uno::Reference< css::deployment::XPackage > xPackage )
 {
     rv.clear();
     OUString aExtensionPath = xPackage->getURL();
@@ -1142,7 +1142,7 @@ OUString TreeFileIterator::expandURL( const OUString& aURL )
     Reference< uri::XUriReference > uriRef;
     for (;;)
     {
-        uriRef = Reference< uri::XUriReference >( xFac->parse( aRetURL ), UNO_QUERY );
+        uriRef.set( xFac->parse( aRetURL ), UNO_QUERY );
         if ( uriRef.is() )
         {
             Reference < uri::XVndSunStarExpandUrl > sxUri( uriRef, UNO_QUERY );

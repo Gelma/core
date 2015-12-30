@@ -101,7 +101,7 @@ class SvtSecurityOptions_Impl : public ConfigItem
 {
 
     private:
-        virtual void ImplCommit() SAL_OVERRIDE;
+        virtual void ImplCommit() override;
 
     //  public methods
 
@@ -125,7 +125,7 @@ class SvtSecurityOptions_Impl : public ConfigItem
             @param      "seqPropertyNames" is the list of properties which should be updated.
         *//*-*****************************************************************************************************/
 
-        virtual void Notify( const Sequence< OUString >& seqPropertyNames ) SAL_OVERRIDE;
+        virtual void Notify( const Sequence< OUString >& seqPropertyNames ) override;
 
         //  public interface
 
@@ -539,12 +539,12 @@ bool SvtSecurityOptions_Impl::GetOption( SvtSecurityOptions::EOption eOption, bo
             rpRO = &m_bROBlockUntrustedRefererLinks;
             break;
         default:
-            rpValue = NULL;
-            rpRO = NULL;
+            rpValue = nullptr;
+            rpRO = nullptr;
             break;
     }
 
-    return rpValue != NULL;
+    return rpValue != nullptr;
 }
 
 void SvtSecurityOptions_Impl::Notify( const Sequence< OUString >& seqPropertyNames )
@@ -681,7 +681,7 @@ void SvtSecurityOptions_Impl::ImplCommit()
                             OUString aPrefix(
                                 PROPERTYNAME_MACRO_TRUSTEDAUTHORS "/a"
                                 + OUString::number(i) + "/");
-                            Sequence< com::sun::star::beans::PropertyValue >    lPropertyValues( 3 );
+                            Sequence< css::beans::PropertyValue >    lPropertyValues( 3 );
                             lPropertyValues[ 0 ].Name = aPrefix + PROPERTYNAME_TRUSTEDAUTHOR_SUBJECTNAME;
                             lPropertyValues[ 0 ].Value <<= m_seqTrustedAuthors[ i ][0];
                             lPropertyValues[ 1 ].Name = aPrefix + PROPERTYNAME_TRUSTEDAUTHOR_SERIALNUMBER;
@@ -944,7 +944,7 @@ Sequence< OUString > SvtSecurityOptions_Impl::GetPropertyNames()
 //  DON'T DO IT IN YOUR HEADER!
 //  see definition for further information
 
-SvtSecurityOptions_Impl*    SvtSecurityOptions::m_pDataContainer    = NULL;
+SvtSecurityOptions_Impl*    SvtSecurityOptions::m_pDataContainer    = nullptr;
 sal_Int32                   SvtSecurityOptions::m_nRefCount         = 0;
 
 SvtSecurityOptions::SvtSecurityOptions()
@@ -954,7 +954,7 @@ SvtSecurityOptions::SvtSecurityOptions()
     // Increase our refcount ...
     ++m_nRefCount;
     // ... and initialize our data container only if it not already exist!
-    if( m_pDataContainer == NULL )
+    if( m_pDataContainer == nullptr )
     {
         m_pDataContainer = new SvtSecurityOptions_Impl;
 
@@ -973,7 +973,7 @@ SvtSecurityOptions::~SvtSecurityOptions()
     if( m_nRefCount <= 0 )
     {
         delete m_pDataContainer;
-        m_pDataContainer = NULL;
+        m_pDataContainer = nullptr;
     }
 }
 

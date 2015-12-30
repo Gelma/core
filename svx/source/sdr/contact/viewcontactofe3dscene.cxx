@@ -41,8 +41,8 @@ namespace {
 // pActiveVC is only true if ghosted is still activated and maybe needs to be switched off in this path
 void createSubPrimitive3DVector(
     const sdr::contact::ViewContact& rCandidate,
-    drawinglayer::primitive3d::Primitive3DSequence& o_rAllTarget,
-    drawinglayer::primitive3d::Primitive3DSequence* o_pVisibleTarget,
+    drawinglayer::primitive3d::Primitive3DContainer& o_rAllTarget,
+    drawinglayer::primitive3d::Primitive3DContainer* o_pVisibleTarget,
     const SetOfByte* pVisibleLayerSet,
     const bool bTestSelectedVisibility)
 {
@@ -55,8 +55,8 @@ void createSubPrimitive3DVector(
         if(nChildrenCount)
         {
             // provide new collection sequences
-            drawinglayer::primitive3d::Primitive3DSequence aNewAllTarget;
-            drawinglayer::primitive3d::Primitive3DSequence aNewVisibleTarget;
+            drawinglayer::primitive3d::Primitive3DContainer aNewAllTarget;
+            drawinglayer::primitive3d::Primitive3DContainer aNewVisibleTarget;
 
             // add children recursively
             for(sal_uInt32 a(0L); a < nChildrenCount; a++)
@@ -64,7 +64,7 @@ void createSubPrimitive3DVector(
                 createSubPrimitive3DVector(
                     rCandidate.GetViewContact(a),
                     aNewAllTarget,
-                    o_pVisibleTarget ? &aNewVisibleTarget : 0,
+                    o_pVisibleTarget ? &aNewVisibleTarget : nullptr,
                     pVisibleLayerSet,
                     bTestSelectedVisibility);
             }
@@ -75,12 +75,12 @@ void createSubPrimitive3DVector(
                 aNewAllTarget));
 
             // add created content to all target
-            drawinglayer::primitive3d::appendPrimitive3DReferenceToPrimitive3DSequence(o_rAllTarget, xReference);
+            o_rAllTarget.push_back(xReference);
 
             // add created content to visible target if exists
             if(o_pVisibleTarget)
             {
-                drawinglayer::primitive3d::appendPrimitive3DReferenceToPrimitive3DSequence(*o_pVisibleTarget, xReference);
+                o_pVisibleTarget->push_back(xReference);
             }
         }
     }
@@ -91,12 +91,12 @@ void createSubPrimitive3DVector(
 
         if(pViewContactOfE3d)
         {
-            drawinglayer::primitive3d::Primitive3DSequence xPrimitive3DSeq(pViewContactOfE3d->getViewIndependentPrimitive3DSequence());
+            drawinglayer::primitive3d::Primitive3DContainer xPrimitive3DSeq(pViewContactOfE3d->getViewIndependentPrimitive3DContainer());
 
-            if(xPrimitive3DSeq.hasElements())
+            if(!xPrimitive3DSeq.empty())
             {
                 // add to all target vector
-                drawinglayer::primitive3d::appendPrimitive3DSequenceToPrimitive3DSequence(o_rAllTarget, xPrimitive3DSeq);
+                o_rAllTarget.append(xPrimitive3DSeq);
 
                 if(o_pVisibleTarget)
                 {
@@ -123,7 +123,7 @@ void createSubPrimitive3DVector(
                     if(bVisible && o_pVisibleTarget)
                     {
                         // add to visible target vector
-                        drawinglayer::primitive3d::appendPrimitive3DSequenceToPrimitive3DSequence(*o_pVisibleTarget, xPrimitive3DSeq);
+                        o_pVisibleTarget->append(xPrimitive3DSeq);
                     }
                 }
             }
@@ -165,7 +165,7 @@ void ViewContactOfE3dScene::createViewInformation3D(const basegfx::B3DRange& rCo
     // For historical reasons, the outmost scene's transformation is handles as part of the
     // view transformation. This means that the BoundRect of the contained 3D Objects is
     // without that transformation and makes it necessary to NOT add the first scene to the
-    // Primitive3DSequence of contained objects.
+    // Primitive3DContainer of contained objects.
     {
         aTransformation = GetE3dScene().GetTransform();
     }
@@ -195,7 +195,7 @@ void ViewContactOfE3dScene::createViewInformation3D(const basegfx::B3DRange& rCo
         basegfx::B3DHomMatrix aWorldToDevice(aWorldToCamera);
         const drawinglayer::attribute::SdrSceneAttribute& rSdrSceneAttribute = getSdrSceneAttribute();
 
-        if(::com::sun::star::drawing::ProjectionMode_PERSPECTIVE == rSdrSceneAttribute.getProjectionMode())
+        if(css::drawing::ProjectionMode_PERSPECTIVE == rSdrSceneAttribute.getProjectionMode())
         {
             aWorldToDevice.frustum(-1.0, 1.0, -1.0, 1.0, fMinZ, fMaxZ);
         }
@@ -210,7 +210,7 @@ void ViewContactOfE3dScene::createViewInformation3D(const basegfx::B3DRange& rCo
         aDeviceRange.transform(aWorldToDevice);
 
         // set projection
-        if(::com::sun::star::drawing::ProjectionMode_PERSPECTIVE == rSdrSceneAttribute.getProjectionMode())
+        if(css::drawing::ProjectionMode_PERSPECTIVE == rSdrSceneAttribute.getProjectionMode())
         {
             aProjection.frustum(
                 aDeviceRange.getMinX(), aDeviceRange.getMaxX(),
@@ -268,18 +268,18 @@ void ViewContactOfE3dScene::createSdrLightingAttribute()
     maSdrLightingAttribute = drawinglayer::primitive2d::createNewSdrLightingAttribute(rItemSet);
 }
 
-drawinglayer::primitive2d::Primitive2DSequence ViewContactOfE3dScene::createScenePrimitive2DSequence(
+drawinglayer::primitive2d::Primitive2DContainer ViewContactOfE3dScene::createScenePrimitive2DSequence(
     const SetOfByte* pLayerVisibility) const
 {
-    drawinglayer::primitive2d::Primitive2DSequence xRetval;
+    drawinglayer::primitive2d::Primitive2DContainer xRetval;
     const sal_uInt32 nChildrenCount(GetObjectCount());
 
     if(nChildrenCount)
     {
         // create 3d scene primitive with visible content tested against rLayerVisibility
-        drawinglayer::primitive3d::Primitive3DSequence aAllSequence;
-        drawinglayer::primitive3d::Primitive3DSequence aVisibleSequence;
-        const bool bTestLayerVisibility(0 != pLayerVisibility);
+        drawinglayer::primitive3d::Primitive3DContainer aAllSequence;
+        drawinglayer::primitive3d::Primitive3DContainer aVisibleSequence;
+        const bool bTestLayerVisibility(nullptr != pLayerVisibility);
         const bool bTestSelectedVisibility(GetE3dScene().GetDrawOnlySelected());
         const bool bTestVisibility(bTestLayerVisibility || bTestSelectedVisibility);
 
@@ -292,25 +292,24 @@ drawinglayer::primitive2d::Primitive2DSequence ViewContactOfE3dScene::createScen
             createSubPrimitive3DVector(
                 GetViewContact(a),
                 aAllSequence,
-                bTestLayerVisibility ? &aVisibleSequence : 0,
-                bTestLayerVisibility ? pLayerVisibility : 0,
+                bTestLayerVisibility ? &aVisibleSequence : nullptr,
+                bTestLayerVisibility ? pLayerVisibility : nullptr,
                 bTestSelectedVisibility);
         }
 
-        const sal_uInt32 nAllSize(aAllSequence.hasElements() ? aAllSequence.getLength() : 0);
-        const sal_uInt32 nVisibleSize(aVisibleSequence.hasElements() ? aVisibleSequence.getLength() : 0);
+        const size_t nAllSize(!aAllSequence.empty() ? aAllSequence.size() : 0);
+        const size_t nVisibleSize(!aVisibleSequence.empty() ? aVisibleSequence.size() : 0);
 
         if((bTestVisibility && nVisibleSize) || nAllSize)
         {
-            // for getting the 3D range using getB3DRangeFromPrimitive3DSequence a ViewInformation3D
+            // for getting the 3D range using getB3DRangeFromPrimitive3DContainer a ViewInformation3D
             // needs to be given for evtl. decompositions. At the same time createViewInformation3D
             // currently is based on creating the target-ViewInformation3D using a given range. To
             // get the true range, use a neutral ViewInformation3D here. This leaves all matrices
             // on identity and the time on 0.0.
             const uno::Sequence< beans::PropertyValue > aEmptyProperties;
             const drawinglayer::geometry::ViewInformation3D aNeutralViewInformation3D(aEmptyProperties);
-            const basegfx::B3DRange aContentRange(
-                drawinglayer::primitive3d::getB3DRangeFromPrimitive3DSequence(aAllSequence, aNeutralViewInformation3D));
+            const basegfx::B3DRange aContentRange(aAllSequence.getB3DRange(aNeutralViewInformation3D));
 
             // create 2d primitive 3dscene with generated sub-list from collector
             const drawinglayer::primitive2d::Primitive2DReference xReference(
@@ -321,26 +320,26 @@ drawinglayer::primitive2d::Primitive2DSequence ViewContactOfE3dScene::createScen
                     getObjectTransformation(),
                     getViewInformation3D(aContentRange)));
 
-            xRetval = drawinglayer::primitive2d::Primitive2DSequence(&xReference, 1);
+            xRetval = drawinglayer::primitive2d::Primitive2DContainer{ xReference };
         }
     }
 
     // always append an invisible outline for the cases where no visible content exists
-    drawinglayer::primitive2d::appendPrimitive2DReferenceToPrimitive2DSequence(xRetval,
+    xRetval.push_back(
         drawinglayer::primitive2d::createHiddenGeometryPrimitives2D(
             false, getObjectTransformation()));
 
     return xRetval;
 }
 
-drawinglayer::primitive2d::Primitive2DSequence ViewContactOfE3dScene::createViewIndependentPrimitive2DSequence() const
+drawinglayer::primitive2d::Primitive2DContainer ViewContactOfE3dScene::createViewIndependentPrimitive2DSequence() const
 {
-    drawinglayer::primitive2d::Primitive2DSequence xRetval;
+    drawinglayer::primitive2d::Primitive2DContainer xRetval;
 
     if(GetObjectCount())
     {
         // create a default ScenePrimitive2D (without visibility test of members)
-        xRetval = createScenePrimitive2DSequence(0);
+        xRetval = createScenePrimitive2DSequence(nullptr);
     }
 
     return xRetval;
@@ -422,9 +421,9 @@ const drawinglayer::attribute::SdrLightingAttribute& ViewContactOfE3dScene::getS
     return maSdrLightingAttribute;
 }
 
-drawinglayer::primitive3d::Primitive3DSequence ViewContactOfE3dScene::getAllPrimitive3DSequence() const
+drawinglayer::primitive3d::Primitive3DContainer ViewContactOfE3dScene::getAllPrimitive3DContainer() const
 {
-    drawinglayer::primitive3d::Primitive3DSequence aAllPrimitive3DSequence;
+    drawinglayer::primitive3d::Primitive3DContainer aAllPrimitive3DContainer;
     const sal_uInt32 nChildrenCount(GetObjectCount());
 
     // add children recursively. Do NOT start with (*this), this would create
@@ -433,26 +432,26 @@ drawinglayer::primitive3d::Primitive3DSequence ViewContactOfE3dScene::getAllPrim
     // is seen as part of the ViewTransformation (see text in createViewInformation3D)
     for(sal_uInt32 a(0L); a < nChildrenCount; a++)
     {
-        createSubPrimitive3DVector(GetViewContact(a), aAllPrimitive3DSequence, 0, 0, false);
+        createSubPrimitive3DVector(GetViewContact(a), aAllPrimitive3DContainer, nullptr, nullptr, false);
     }
 
-    return aAllPrimitive3DSequence;
+    return aAllPrimitive3DContainer;
 }
 
 basegfx::B3DRange ViewContactOfE3dScene::getAllContentRange3D() const
 {
-    const drawinglayer::primitive3d::Primitive3DSequence xAllSequence(getAllPrimitive3DSequence());
+    const drawinglayer::primitive3d::Primitive3DContainer xAllSequence(getAllPrimitive3DContainer());
     basegfx::B3DRange aAllContentRange3D;
 
-    if(xAllSequence.hasElements())
+    if(!xAllSequence.empty())
     {
-        // for getting the 3D range using getB3DRangeFromPrimitive3DSequence a ViewInformation3D
+        // for getting the 3D range using getB3DRangeFromPrimitive3DContainer a ViewInformation3D
         // needs to be given for evtl. decompositions. Use a neutral ViewInformation3D here. This
         // leaves all matrices on identity and the time on 0.0.
         const uno::Sequence< beans::PropertyValue > aEmptyProperties;
         const drawinglayer::geometry::ViewInformation3D aNeutralViewInformation3D(aEmptyProperties);
 
-        aAllContentRange3D = drawinglayer::primitive3d::getB3DRangeFromPrimitive3DSequence(xAllSequence, aNeutralViewInformation3D);
+        aAllContentRange3D = xAllSequence.getB3DRange(aNeutralViewInformation3D);
     }
 
     return aAllContentRange3D;

@@ -126,13 +126,13 @@ css::uno::Sequence<OUString>  OButtonModel::getSupportedServiceNames() throw(std
 }
 
 
-OUString OButtonModel::getServiceName() throw ( ::com::sun::star::uno::RuntimeException, std::exception)
+OUString OButtonModel::getServiceName() throw ( css::uno::RuntimeException, std::exception)
 {
     return OUString(FRM_COMPONENT_COMMANDBUTTON); // old (non-sun) name for compatibility !
 }
 
 
-void OButtonModel::write(const Reference<XObjectOutputStream>& _rxOutStream) throw (::com::sun::star::io::IOException, ::com::sun::star::uno::RuntimeException, std::exception)
+void OButtonModel::write(const Reference<XObjectOutputStream>& _rxOutStream) throw (css::io::IOException, css::uno::RuntimeException, std::exception)
 {
     OClickableImageBaseModel::write(_rxOutStream);
 
@@ -153,7 +153,7 @@ void OButtonModel::write(const Reference<XObjectOutputStream>& _rxOutStream) thr
 }
 
 
-void OButtonModel::read(const Reference<XObjectInputStream>& _rxInStream) throw (::com::sun::star::io::IOException, ::com::sun::star::uno::RuntimeException, std::exception)
+void OButtonModel::read(const Reference<XObjectInputStream>& _rxInStream) throw (css::io::IOException, css::uno::RuntimeException, std::exception)
 {
     OClickableImageBaseModel::read(_rxInStream);
 
@@ -353,7 +353,7 @@ css::uno::Sequence<OUString>  OButtonControl::getSupportedServiceNames() throw(s
 OButtonControl::OButtonControl(const Reference<XComponentContext>& _rxFactory)
                  :OClickableImageBaseControl(_rxFactory, VCL_CONTROL_COMMANDBUTTON)
                  ,OFormNavigationHelper( _rxFactory )
-                 ,m_nClickEvent( 0 )
+                 ,m_nClickEvent( nullptr )
                  ,m_nTargetUrlFeatureId( -1 )
                  ,m_bEnabledByPropertyValue( false )
 {
@@ -412,7 +412,7 @@ void SAL_CALL OButtonControl::disposing( const EventObject& _rSource ) throw( Ru
 
 // ActionListener
 
-void OButtonControl::actionPerformed(const ActionEvent& /*rEvent*/) throw ( ::com::sun::star::uno::RuntimeException, std::exception)
+void OButtonControl::actionPerformed(const ActionEvent& /*rEvent*/) throw ( css::uno::RuntimeException, std::exception)
 {
     // Asynchronous for css::util::URL-Button
     ImplSVEvent * n = Application::PostUserEvent( LINK(this, OButtonControl, OnClick) );
@@ -426,7 +426,7 @@ void OButtonControl::actionPerformed(const ActionEvent& /*rEvent*/) throw ( ::co
 IMPL_LINK_NOARG_TYPED(OButtonControl, OnClick, void*, void)
 {
     ::osl::ClearableMutexGuard aGuard( m_aMutex );
-    m_nClickEvent = 0;
+    m_nClickEvent = nullptr;
 
     if (m_aApproveActionListeners.getLength())
     {
@@ -472,12 +472,12 @@ IMPL_LINK_NOARG_TYPED(OButtonControl, OnClick, void*, void)
             }
         }
         else
-            actionPerformed_Impl( false, ::com::sun::star::awt::MouseEvent() );
+            actionPerformed_Impl( false, css::awt::MouseEvent() );
     }
 }
 
 
-void OButtonControl::actionPerformed_Impl( bool _bNotifyListener, const ::com::sun::star::awt::MouseEvent& _rEvt )
+void OButtonControl::actionPerformed_Impl( bool _bNotifyListener, const css::awt::MouseEvent& _rEvt )
 {
     {
         sal_Int16 nFeatureId = -1;
@@ -748,16 +748,16 @@ void SAL_CALL OButtonControl::releaseDispatchProviderInterceptor( const Referenc
 
 }   // namespace frm
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_form_OButtonModel_get_implementation(::com::sun::star::uno::XComponentContext* component,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_form_OButtonModel_get_implementation(css::uno::XComponentContext* component,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new frm::OButtonModel(component));
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_form_OButtonControl_get_implementation(::com::sun::star::uno::XComponentContext* component,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_form_OButtonControl_get_implementation(css::uno::XComponentContext* component,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new frm::OButtonControl(component));
 }

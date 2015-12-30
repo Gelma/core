@@ -60,8 +60,8 @@ class SFX2_DLLPUBLIC SfxModalDialog: public ModalDialog
     SfxItemSet*             pOutputSet;
 
 private:
-    SfxModalDialog(SfxModalDialog &) SAL_DELETED_FUNCTION;
-    void operator =(SfxModalDialog &) SAL_DELETED_FUNCTION;
+    SfxModalDialog(SfxModalDialog &) = delete;
+    void operator =(SfxModalDialog &) = delete;
 
     SAL_DLLPRIVATE void SetDialogData_Impl();
     SAL_DLLPRIVATE void GetDialogData_Impl();
@@ -81,7 +81,7 @@ protected:
 
 public:
     virtual ~SfxModalDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
     const SfxItemSet*   GetOutputItemSet() const { return pOutputSet; }
     const SfxItemSet*   GetInputItemSet() const { return pInputSet; }
 };
@@ -94,8 +94,8 @@ class SFX2_DLLPUBLIC SfxModelessDialog: public ModelessDialog
     Size                    aSize;
     SfxModelessDialog_Impl* pImp;
 
-    SfxModelessDialog(SfxModelessDialog &) SAL_DELETED_FUNCTION;
-    void operator =(SfxModelessDialog &) SAL_DELETED_FUNCTION;
+    SfxModelessDialog(SfxModelessDialog &) = delete;
+    void operator =(SfxModelessDialog &) = delete;
 
     void Init(SfxBindings *pBindinx, SfxChildWindow *pCW);
 
@@ -103,16 +103,16 @@ protected:
     SfxModelessDialog( SfxBindings*, SfxChildWindow*,
         vcl::Window*, const OUString& rID, const OUString& rUIXMLDescription );
     virtual ~SfxModelessDialog();
-    virtual void dispose() SAL_OVERRIDE;
-    virtual bool            Close() SAL_OVERRIDE;
-    virtual void            Resize() SAL_OVERRIDE;
-    virtual void            Move() SAL_OVERRIDE;
-    virtual void            StateChanged( StateChangedType nStateChange ) SAL_OVERRIDE;
+    virtual void dispose() override;
+    virtual bool            Close() override;
+    virtual void            Resize() override;
+    virtual void            Move() override;
+    virtual void            StateChanged( StateChangedType nStateChange ) override;
 
 public:
     virtual void            FillInfo(SfxChildWinInfo&) const;
     void                    Initialize (SfxChildWinInfo* pInfo);
-    virtual bool            Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual bool            Notify( NotifyEvent& rNEvt ) override;
     SfxBindings&            GetBindings()
                             { return *pBindings; }
 
@@ -128,8 +128,8 @@ class SFX2_DLLPUBLIC SfxFloatingWindow: public FloatingWindow
     Size                    aSize;
     SfxFloatingWindow_Impl* pImp;
 
-    SfxFloatingWindow(SfxFloatingWindow &) SAL_DELETED_FUNCTION;
-    void operator =(SfxFloatingWindow &) SAL_DELETED_FUNCTION;
+    SfxFloatingWindow(SfxFloatingWindow &) = delete;
+    void operator =(SfxFloatingWindow &) = delete;
 
 protected:
                             SfxFloatingWindow( SfxBindings *pBindings,
@@ -142,13 +142,13 @@ protected:
                                               const OString& rID, const OUString& rUIXMLDescription,
                                               const css::uno::Reference<css::frame::XFrame> &rFrame = css::uno::Reference<css::frame::XFrame>());
                             virtual ~SfxFloatingWindow();
-    virtual void            dispose() SAL_OVERRIDE;
+    virtual void            dispose() override;
 
-    virtual void            StateChanged( StateChangedType nStateChange ) SAL_OVERRIDE;
-    virtual bool            Close() SAL_OVERRIDE;
-    virtual void            Resize() SAL_OVERRIDE;
-    virtual void            Move() SAL_OVERRIDE;
-    virtual bool            Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual void            StateChanged( StateChangedType nStateChange ) override;
+    virtual bool            Close() override;
+    virtual void            Resize() override;
+    virtual void            Move() override;
+    virtual bool            Notify( NotifyEvent& rNEvt ) override;
     SfxBindings&            GetBindings()
                             { return *pBindings; }
 
@@ -179,14 +179,14 @@ public:
         const OUString& rID = OUString("SingleTabDialog"),
         const OUString& rUIXMLDescription = OUString("sfx/ui/singletabdialog.ui"));
 
-    SfxSingleTabDialog(vcl::Window *pParent, const SfxItemSet* pInSet = 0,
+    SfxSingleTabDialog(vcl::Window *pParent, const SfxItemSet* pInSet = nullptr,
         const OUString& rID = OUString("SingleTabDialog"),
         const OUString& rUIXMLDescription = OUString("sfx/ui/singletabdialog.ui"));
 
     virtual             ~SfxSingleTabDialog();
-    virtual void        dispose() SAL_OVERRIDE;
+    virtual void        dispose() override;
 
-    void                SetTabPage(SfxTabPage* pTabPage, GetTabPageRanges pRangesFunc = 0, sal_uInt32 nSettingsId = 0);
+    void                SetTabPage(SfxTabPage* pTabPage, GetTabPageRanges pRangesFunc = nullptr, sal_uInt32 nSettingsId = 0);
     SfxTabPage*         GetTabPage() const { return pImpl->m_pSfxPage; }
 
     OKButton*           GetOKButton() const { return pOKBtn; }

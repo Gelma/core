@@ -60,7 +60,6 @@ public class FilterComponent
     private final String slblOperators;
     private final String slblValue;
     private WizardDialog CurUnoDialog;
-    private static final int BaseID = 2300;
     private final String sIncSuffix;
     private final ControlRow[] oControlRows;
     private final String sDuplicateCondition;
@@ -119,7 +118,7 @@ public class FilterComponent
                     String sControlNameSuffix = sIncSuffix + "_" + getIndexNumber(sControlName);
                     XListBox xCurFieldListBox = UnoRuntime.queryInterface(XListBox.class, CurUnoDialog.xDlgContainer.getControl(sControlName));
                     String CurDisplayFieldName = xCurFieldListBox.getSelectedItem();
-                    FieldColumn CurFieldColumn = new FieldColumn(oQueryMetaData, CurDisplayFieldName);
+                    FieldColumn CurFieldColumn = oQueryMetaData.getFieldColumnByDisplayName(CurDisplayFieldName);
 
                     String sControlNameTextValue = "txtValue" + sControlNameSuffix;
                     XControl xValueControl = CurUnoDialog.xDlgContainer.getControl(sControlNameTextValue);
@@ -303,7 +302,7 @@ public class FilterComponent
             String FieldName;
             if (_CurDBMetaData != null)
             {
-                FieldColumn CurDBFieldColumn = _CurDBMetaData.getFieldColumnByDisplayName(_filtercondition.Name);
+                FieldColumn CurDBFieldColumn = _CurDBMetaData.getFieldColumnByFieldName(_filtercondition.Name);
                 FieldName = CurDBFieldColumn.getFieldTitle();
             }
             else
@@ -334,7 +333,7 @@ public class FilterComponent
     {
         boolean bisany = true;
         int ifilterstate = SOI_MATCHALL;
-        bisany = (this.optMatchAny.getState());
+        bisany = this.optMatchAny.getState();
         if (bisany)
         {
             ifilterstate = SOI_MATCHANY;
@@ -373,14 +372,14 @@ public class FilterComponent
         boolean bEnabled;
         sIncSuffix = com.sun.star.wizards.common.Desktop.getIncrementSuffix(CurUnoDialog.getDlgNameAccess(), "optMatchAll");
 
-        String soptMatchAll = CurUnoDialog.m_oResource.getResText(BaseID + 9);
-        String soptMatchAny = CurUnoDialog.m_oResource.getResText(BaseID + 10);
-        slblFieldNames = CurUnoDialog.m_oResource.getResText(BaseID + 17);
-        slblOperators = CurUnoDialog.m_oResource.getResText(BaseID + 24);
-        slblValue = CurUnoDialog.m_oResource.getResText(BaseID + 25);
-        sLogicOperators = CurUnoDialog.m_oResource.getResArray(BaseID + 26, 10 /* 7 */); // =, <>, <, >, <=, >=, like, !like, is null, !is null
+        String soptMatchAll = CurUnoDialog.m_oResource.getResText(UIConsts.RID_QUERY + 9);
+        String soptMatchAny = CurUnoDialog.m_oResource.getResText(UIConsts.RID_QUERY + 10);
+        slblFieldNames = CurUnoDialog.m_oResource.getResText(UIConsts.RID_QUERY + 17);
+        slblOperators = CurUnoDialog.m_oResource.getResText(UIConsts.RID_QUERY + 24);
+        slblValue = CurUnoDialog.m_oResource.getResText(UIConsts.RID_QUERY + 25);
+        sLogicOperators = CurUnoDialog.m_oResource.getResArray(UIConsts.RID_QUERY + 26, 10 /* 7 */); // =, <>, <, >, <=, >=, like, !like, is null, !is null
 
-        sDuplicateCondition = CurUnoDialog.m_oResource.getResText(BaseID + 89);
+        sDuplicateCondition = CurUnoDialog.m_oResource.getResText(UIConsts.RID_QUERY + 89);
 
         // create Radiobuttons
         // * match all
@@ -722,8 +721,8 @@ public class FilterComponent
                         Object oValue = Helper.getUnoPropertyValue(UnoDialog.getModel(ControlElements[SOTXTVALUE]), "EffectiveValue");
                         if (!AnyConverter.isVoid(oValue))
                         {
-                            String sValue = (String.valueOf(oValue));
-                            return (!sValue.equals(PropertyNames.EMPTY_STRING));
+                            String sValue = String.valueOf(oValue);
+                            return !sValue.equals(PropertyNames.EMPTY_STRING);
                         }
                     }
                 }
@@ -916,7 +915,7 @@ public class FilterComponent
         // TODO make a difference between Text and Numbers
         private Object getValue()
         {
-            return (Helper.getUnoPropertyValue(UnoDialog.getModel(ControlElements[SOTXTVALUE]), "EffectiveValue"));
+            return Helper.getUnoPropertyValue(UnoDialog.getModel(ControlElements[SOTXTVALUE]), "EffectiveValue");
         }
 
 

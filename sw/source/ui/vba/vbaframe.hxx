@@ -21,10 +21,9 @@
 
 #include <ooo/vba/word/XFrame.hpp>
 #include <vbahelper/vbahelperinterface.hxx>
-#include <cppuhelper/implbase1.hxx>
 #include <com/sun/star/text/XTextFrame.hpp>
 
-typedef InheritedHelperInterfaceImpl1< ooo::vba::word::XFrame > SwVbaFrame_BASE;
+typedef InheritedHelperInterfaceWeakImpl< ooo::vba::word::XFrame > SwVbaFrame_BASE;
 
 class SwVbaFrame : public SwVbaFrame_BASE
 {
@@ -37,11 +36,11 @@ public:
     virtual ~SwVbaFrame();
 
    // Methods
-    virtual void SAL_CALL Select() throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL Select() throw ( css::uno::RuntimeException, std::exception ) override;
 
     // XHelperInterface
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 #endif // INCLUDED_SW_SOURCE_UI_VBA_VBAFRAME_HXX
 

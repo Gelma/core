@@ -42,7 +42,7 @@ using namespace com::sun::star;
 
 //  Resources from tools are used for translated strings
 
-ResMgr* SolverComponent::pSolverResMgr = NULL;
+ResMgr* SolverComponent::pSolverResMgr = nullptr;
 
 OUString SolverComponent::GetResourceString( sal_uInt32 nId )
 {
@@ -257,8 +257,7 @@ sal_Bool SAL_CALL SolverComponent::supportsService( const OUString& rServiceName
 
 uno::Sequence<OUString> SAL_CALL SolverComponent::getSupportedServiceNames() throw(uno::RuntimeException, std::exception)
 {
-    uno::Sequence< OUString > aServiceNames( 1 );
-    aServiceNames[ 0 ] = "com.sun.star.sheet.Solver";
+    uno::Sequence<OUString> aServiceNames { "com.sun.star.sheet.Solver" };
     return aServiceNames;
 }
 

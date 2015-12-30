@@ -113,7 +113,7 @@ sal_uInt16 OObjectBase::getObjectType(const uno::Reference< report::XReportCompo
 
 SdrObject* OObjectBase::createObject(const uno::Reference< report::XReportComponent>& _xComponent)
 {
-    SdrObject* pNewObj = NULL;
+    SdrObject* pNewObj = nullptr;
     sal_uInt16 nType = OObjectBase::getObjectType(_xComponent);
     switch( nType )
     {
@@ -180,7 +180,7 @@ namespace
     class ParaAdjust : public AnyConverter
     {
     public:
-        virtual ::com::sun::star::uno::Any operator() (const OUString& _sPropertyName,const ::com::sun::star::uno::Any& lhs) const SAL_OVERRIDE
+        virtual css::uno::Any operator() (const OUString& _sPropertyName,const css::uno::Any& lhs) const override
         {
             uno::Any aRet;
             if (_sPropertyName == PROPERTY_PARAADJUST)
@@ -459,7 +459,6 @@ uno::Reference< uno::XInterface > OObjectBase::getUnoShapeOf( SdrObject& _rSdrOb
 }
 
 
-TYPEINIT1(OCustomShape, SdrObjCustomShape);
 OCustomShape::OCustomShape(const uno::Reference< report::XReportComponent>& _xComponent
                            )
           :SdrObjCustomShape()
@@ -578,12 +577,11 @@ void OCustomShape::impl_setUnoShape( const uno::Reference< uno::XInterface >& rx
 
 
 
-TYPEINIT1(OUnoObject, SdrUnoObj);
 
 OUnoObject::OUnoObject(const OUString& _sComponentName
                        ,const OUString& rModelName
                        ,sal_uInt16   _nObjectType)
-          :SdrUnoObj(rModelName, true)
+          :SdrUnoObj(rModelName)
           ,OObjectBase(_sComponentName)
           ,m_nObjectType(_nObjectType)
 {
@@ -594,7 +592,7 @@ OUnoObject::OUnoObject(const OUString& _sComponentName
 OUnoObject::OUnoObject(const uno::Reference< report::XReportComponent>& _xComponent
                        ,const OUString& rModelName
                        ,sal_uInt16   _nObjectType)
-          :SdrUnoObj(rModelName, true)
+          :SdrUnoObj(rModelName)
           ,OObjectBase(_xComponent)
           ,m_nObjectType(_nObjectType)
 {
@@ -901,7 +899,6 @@ OUnoObject* OUnoObject::Clone() const
 
 // OOle2Obj
 
-TYPEINIT1(OOle2Obj, SdrOle2Obj);
 OOle2Obj::OOle2Obj(const uno::Reference< report::XReportComponent>& _xComponent,sal_uInt16 _nType)
           :SdrOle2Obj()
           ,OObjectBase(_xComponent)

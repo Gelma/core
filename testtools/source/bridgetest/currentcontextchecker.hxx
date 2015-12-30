@@ -41,20 +41,16 @@ public:
     virtual ~CurrentContextChecker();
 
     virtual sal_Bool SAL_CALL perform(
-        ::com::sun::star::uno::Reference<
-            ::test::testtools::bridgetest::XCurrentContextChecker > const &
-            other,
+        css::uno::Reference< ::test::testtools::bridgetest::XCurrentContextChecker > const & other,
         ::sal_Int32 setSteps, ::sal_Int32 checkSteps)
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
 private:
-    CurrentContextChecker(CurrentContextChecker &) SAL_DELETED_FUNCTION;
-    void operator =(CurrentContextChecker &) SAL_DELETED_FUNCTION;
+    CurrentContextChecker(CurrentContextChecker &) = delete;
+    void operator =(CurrentContextChecker &) = delete;
 
     bool performCheck(
-        ::com::sun::star::uno::Reference<
-            ::test::testtools::bridgetest::XCurrentContextChecker > const &
-            other,
+        css::uno::Reference< ::test::testtools::bridgetest::XCurrentContextChecker > const & other,
         ::sal_Int32 setSteps, ::sal_Int32 checkSteps);
 };
 

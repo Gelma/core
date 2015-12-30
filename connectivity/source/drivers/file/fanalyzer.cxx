@@ -86,7 +86,7 @@ void OSQLAnalyzer::start(OSQLParseNode* pSQLParseNode)
                 }
                 else if ( ( SQL_ISRULE(pColumnRef,general_set_fct) && pColumnRef->count() != 4 ) )
                 {
-                    m_pConnection->throwGenericSQLException(STR_QUERY_COMPLEX_COUNT,NULL);
+                    m_pConnection->throwGenericSQLException(STR_QUERY_COMPLEX_COUNT,nullptr);
                 }
                 else
                 {
@@ -197,7 +197,7 @@ void OSQLAnalyzer::dispose()
     }
 }
 
-void OSQLAnalyzer::setOrigColumns(const OFileColumns& rCols)
+void OSQLAnalyzer::setOrigColumns(const css::uno::Reference< css::container::XNameAccess>& rCols)
 {
     m_aCompiler->setOrigColumns(rCols);
     for ( ::std::vector< TPredicates >::iterator aIter = m_aSelectionEvaluations.begin(); aIter != m_aSelectionEvaluations.end();++aIter)

@@ -59,8 +59,7 @@ namespace // private
 {
     Sequence< OUString > SAL_CALL ShellExec_getSupportedServiceNames()
     {
-        Sequence< OUString > aRet(1);
-        aRet[0] = "com.sun.star.system.SystemShellExecute";
+        Sequence< OUString > aRet { "com.sun.star.system.SystemShellExecute" };
         return aRet;
     }
 }
@@ -90,8 +89,7 @@ ShellExec::ShellExec( const Reference< XComponentContext >& xContext ) :
 
         if (xCurrentContext.is())
         {
-            Any aValue = xCurrentContext->getValueByName(
-                OUString( "system.desktop-environment"  ) );
+            Any aValue = xCurrentContext->getValueByName( "system.desktop-environment" );
 
             OUString aDesktopEnvironment;
             if (aValue >>= aDesktopEnvironment)
@@ -122,9 +120,8 @@ void SAL_CALL ShellExec::execute( const OUString& aCommand, const OUString& aPar
         // We need to re-encode file urls because osl_getFileURLFromSystemPath converts
         // to UTF-8 before encoding non ascii characters, which is not what other apps
         // expect.
-        OUString aURL(
-            com::sun::star::uri::ExternalUriReferenceTranslator::create(
-                m_xContext)->translateToExternal(aCommand));
+        OUString aURL = css::uri::ExternalUriReferenceTranslator::create(
+                            m_xContext)->translateToExternal(aCommand);
         if ( aURL.isEmpty() && !aCommand.isEmpty() )
         {
             throw RuntimeException(
@@ -160,13 +157,11 @@ void SAL_CALL ShellExec::execute( const OUString& aCommand, const OUString& aPar
 #else
         // The url launchers are expected to be in the $BRAND_BASE_DIR/LIBO_LIBEXEC_FOLDER
         // directory:
-        com::sun::star::uno::Reference< com::sun::star::util::XMacroExpander >
-            exp = com::sun::star::util::theMacroExpander::get(m_xContext);
+        css::uno::Reference< css::util::XMacroExpander > exp = css::util::theMacroExpander::get(m_xContext);
         OUString aProgramURL;
         try {
-            aProgramURL = exp->expandMacros(
-                OUString( "$BRAND_BASE_DIR/" LIBO_LIBEXEC_FOLDER "/"));
-        } catch (com::sun::star::lang::IllegalArgumentException &)
+            aProgramURL = exp->expandMacros( "$BRAND_BASE_DIR/" LIBO_LIBEXEC_FOLDER "/");
+        } catch (css::lang::IllegalArgumentException &)
         {
             throw SystemShellExecuteException(
                 "Could not expand $BRAND_BASE_DIR path",
@@ -235,13 +230,13 @@ void SAL_CALL ShellExec::execute( const OUString& aCommand, const OUString& aPar
     if ( !aLaunchBuffer.isEmpty() )
     {
         FILE *pLaunch = popen( aLaunchBuffer.makeStringAndClear().getStr(), "w" );
-        if ( pLaunch != NULL )
+        if ( pLaunch != nullptr )
         {
             if ( 0 == pclose( pLaunch ) )
                 return;
         }
         // Failed, do not try DESKTOP_LAUNCH any more
-        pDesktopLaunch = NULL;
+        pDesktopLaunch = nullptr;
     }
 
     OString cmd =
@@ -252,7 +247,7 @@ void SAL_CALL ShellExec::execute( const OUString& aCommand, const OUString& aPar
         aBuffer.makeStringAndClear();
 #endif
     FILE *pLaunch = popen(cmd.getStr(), "w");
-    if ( pLaunch != NULL )
+    if ( pLaunch != nullptr )
     {
         if ( 0 == pclose( pLaunch ) )
             return;

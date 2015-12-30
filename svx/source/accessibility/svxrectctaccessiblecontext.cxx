@@ -140,7 +140,7 @@ SvxRectCtlAccessibleContext::SvxRectCtlAccessibleContext(
     SvxRectCtlAccessibleContext_Base( m_aMutex ),
     mxParent( rxParent ),
     mpRepr( &rRepr ),
-    mpChildren( NULL ),
+    mpChildren( nullptr ),
     mnClientId( 0 ),
     mnSelectedChild( NOCHILDSELECTED ),
     mbAngleMode( rRepr.GetNumOfChildren() == 8 )
@@ -166,7 +166,7 @@ SvxRectCtlAccessibleContext::SvxRectCtlAccessibleContext(
 
     SvxRectCtlChildAccessibleContext**  p = mpChildren;
     for( int i = MAX_NUM_OF_CHILDREN ; i ; --i, ++p )
-        *p = NULL;
+        *p = nullptr;
 }
 
 
@@ -354,15 +354,13 @@ Reference< XAccessibleRelationSet > SAL_CALL SvxRectCtlAccessibleContext::getAcc
         vcl::Window *pLabeledBy = pWindow->GetAccessibleRelationLabeledBy();
         if ( pLabeledBy && pLabeledBy != pWindow )
         {
-            uno::Sequence< uno::Reference< uno::XInterface > > aSequence(1);
-            aSequence[0] = pLabeledBy->GetAccessible();
+            uno::Sequence< uno::Reference< uno::XInterface > > aSequence { pLabeledBy->GetAccessible() };
             pRelationSetHelper->AddRelation( css::accessibility::AccessibleRelation( css::accessibility::AccessibleRelationType::LABELED_BY, aSequence ) );
         }
         vcl::Window* pMemberOf = pWindow->GetAccessibleRelationMemberOf();
         if ( pMemberOf && pMemberOf != pWindow )
         {
-            uno::Sequence< uno::Reference< uno::XInterface > > aSequence(1);
-            aSequence[0] = pMemberOf->GetAccessible();
+            uno::Sequence< uno::Reference< uno::XInterface > > aSequence { pMemberOf->GetAccessible() };
             pRelationSetHelper->AddRelation( css::accessibility::AccessibleRelation( css::accessibility::AccessibleRelationType::MEMBER_OF, aSequence ) );
         }
     }
@@ -450,7 +448,7 @@ void SAL_CALL SvxRectCtlAccessibleContext::grabFocus() throw( RuntimeException, 
 }
 
 sal_Int32 SvxRectCtlAccessibleContext::getForeground(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     ::SolarMutexGuard aSolarGuard;
     ::osl::MutexGuard   aGuard( m_aMutex );
@@ -459,7 +457,7 @@ sal_Int32 SvxRectCtlAccessibleContext::getForeground(  )
     return mpRepr->GetControlForeground().GetColor();
 }
 sal_Int32 SvxRectCtlAccessibleContext::getBackground(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     ::SolarMutexGuard aSolarGuard;
     ::osl::MutexGuard   aGuard( m_aMutex );
@@ -650,7 +648,7 @@ void SAL_CALL SvxRectCtlAccessibleContext::disposing()
     {
         {
             ::osl::MutexGuard   aGuard( m_aMutex );
-            mpRepr = NULL;      // object dies with representation
+            mpRepr = nullptr;      // object dies with representation
 
             SvxRectCtlChildAccessibleContext**  p = mpChildren;
             for( int i = MAX_NUM_OF_CHILDREN ; i ; --i, ++p )
@@ -660,12 +658,12 @@ void SAL_CALL SvxRectCtlAccessibleContext::disposing()
                 {
                     pChild->dispose();
                     pChild->release();
-                    *p = NULL;
+                    *p = nullptr;
                 }
             }
 
             delete[] mpChildren;
-            mpChildren = NULL;
+            mpChildren = nullptr;
         }
 
         {
@@ -792,7 +790,7 @@ void SAL_CALL SvxRectCtlChildAccessibleContext::grabFocus() throw( RuntimeExcept
 }
 
 sal_Int32 SvxRectCtlChildAccessibleContext::getForeground(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     ::SolarMutexGuard aSolarGuard;
     ::osl::MutexGuard   aGuard( maMutex );
@@ -800,7 +798,7 @@ sal_Int32 SvxRectCtlChildAccessibleContext::getForeground(  )
     return mrParentWindow.GetControlForeground().GetColor();
 }
 sal_Int32 SvxRectCtlChildAccessibleContext::getBackground(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     ::SolarMutexGuard aSolarGuard;
     ::osl::MutexGuard   aGuard( maMutex );
@@ -856,8 +854,7 @@ Reference<XAccessibleRelationSet> SAL_CALL SvxRectCtlChildAccessibleContext::get
     uno::Reference< css::accessibility::XAccessibleRelationSet > xSet = pRelationSetHelper;
     if( mxParent.is() )
       {
-        uno::Sequence< uno::Reference< uno::XInterface > > aSequence(1);
-        aSequence[0] = mxParent;
+        uno::Sequence< uno::Reference< uno::XInterface > > aSequence { mxParent };
         pRelationSetHelper->AddRelation( css::accessibility::AccessibleRelation( css::accessibility::AccessibleRelationType::MEMBER_OF, aSequence ) );
 
     }

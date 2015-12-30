@@ -32,8 +32,7 @@ using namespace xmloff::token;
 ScXMLContentContext::ScXMLContentContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */,
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */,
                                       OUStringBuffer& sTempValue) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     sOUText(),
@@ -47,10 +46,9 @@ ScXMLContentContext::~ScXMLContentContext()
 
 SvXMLImportContext *ScXMLContentContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if ((nPrefix == XML_NAMESPACE_TEXT) && IsXMLToken(rLName, XML_S))
     {

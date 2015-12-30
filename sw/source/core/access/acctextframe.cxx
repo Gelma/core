@@ -45,13 +45,13 @@ using ::com::sun::star::accessibility::XAccessibleContext;
 
 SwAccessibleTextFrame::SwAccessibleTextFrame(
         SwAccessibleMap* pInitMap,
-        const SwFlyFrm& rFlyFrm  ) :
-    SwAccessibleFrameBase( pInitMap, AccessibleRole::TEXT_FRAME, &rFlyFrm ),
+        const SwFlyFrame& rFlyFrame  ) :
+    SwAccessibleFrameBase( pInitMap, AccessibleRole::TEXT_FRAME, &rFlyFrame ),
     msTitle(),
     msDesc()
 {
     const SwFlyFrameFormat* pFlyFrameFormat =
-                    dynamic_cast<const SwFlyFrameFormat*>( rFlyFrm.GetFormat() );
+                    dynamic_cast<const SwFlyFrameFormat*>( rFlyFrame.GetFormat() );
     msTitle = pFlyFrameFormat->GetObjTitle();
 
     msDesc = pFlyFrameFormat->GetObjDescription();
@@ -77,7 +77,7 @@ void SwAccessibleTextFrame::Modify( const SfxPoolItem* pOld, const SfxPoolItem *
         SwAccessibleFrameBase::Modify( pOld, pNew );
     }
 
-    const SwFlyFrm *pFlyFrm = static_cast< const SwFlyFrm * >( GetFrm() );
+    const SwFlyFrame *pFlyFrame = static_cast< const SwFlyFrame * >( GetFrame() );
     switch( nWhich )
     {
         // #i73249#
@@ -102,7 +102,7 @@ void SwAccessibleTextFrame::Modify( const SfxPoolItem* pOld, const SfxPoolItem *
             FireAccessibleEvent( aEvent );
 
             const SwFlyFrameFormat* pFlyFrameFormat =
-                            dynamic_cast<const SwFlyFrameFormat*>( pFlyFrm->GetFormat() );
+                            dynamic_cast<const SwFlyFrameFormat*>( pFlyFrame->GetFormat() );
             if (!pFlyFrameFormat || !pFlyFrameFormat->GetObjDescription().isEmpty())
             {
                 break;
@@ -111,12 +111,12 @@ void SwAccessibleTextFrame::Modify( const SfxPoolItem* pOld, const SfxPoolItem *
         // intentionally no break here
         case RES_DESCRIPTION_CHANGED:
         {
-            if ( pFlyFrm )
+            if ( pFlyFrame )
             {
                 const OUString sOldDesc( msDesc );
 
                 const SwFlyFrameFormat* pFlyFrameFormat =
-                                dynamic_cast<const SwFlyFrameFormat*>( pFlyFrm->GetFormat() );
+                                dynamic_cast<const SwFlyFrameFormat*>( pFlyFrame->GetFormat() );
                 const OUString& rDesc = pFlyFrameFormat->GetObjDescription();
                 msDesc = rDesc;
                 if ( msDesc.isEmpty() &&
@@ -141,14 +141,14 @@ void SwAccessibleTextFrame::Modify( const SfxPoolItem* pOld, const SfxPoolItem *
 
 // XInterface
 
-com::sun::star::uno::Any SAL_CALL
-    SwAccessibleTextFrame::queryInterface (const com::sun::star::uno::Type & rType)
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+css::uno::Any SAL_CALL
+    SwAccessibleTextFrame::queryInterface (const css::uno::Type & rType)
+    throw (css::uno::RuntimeException, std::exception)
 {
-    ::com::sun::star::uno::Any aReturn = SwAccessibleContext::queryInterface (rType);
+    css::uno::Any aReturn = SwAccessibleContext::queryInterface (rType);
     if ( ! aReturn.hasValue())
         aReturn = ::cppu::queryInterface (rType,
-            static_cast< ::com::sun::star::accessibility::XAccessibleSelection* >(this)
+            static_cast< css::accessibility::XAccessibleSelection* >(this)
             );
     return aReturn;
 }
@@ -189,7 +189,7 @@ sal_Bool SAL_CALL SwAccessibleTextFrame::isAccessibleChildSelected( sal_Int32 nC
     {
         if( xContext->getAccessibleRole() == AccessibleRole::PARAGRAPH )
         {
-            uno::Reference< ::com::sun::star::accessibility::XAccessibleText >
+            uno::Reference< css::accessibility::XAccessibleText >
                 xText(xAcc, uno::UNO_QUERY);
             if( xText.is() )
             {
@@ -305,24 +305,23 @@ uno::Sequence< sal_Int8 > SAL_CALL SwAccessibleTextFrame::getImplementationId()
 
 // XAccessibleRelationSet
 
-SwFlyFrm* SwAccessibleTextFrame::getFlyFrm() const
+SwFlyFrame* SwAccessibleTextFrame::getFlyFrame() const
 {
-    SwFlyFrm* pFlyFrm = NULL;
+    SwFlyFrame* pFlyFrame = nullptr;
 
-    const SwFrm* pFrm = GetFrm();
-    assert(pFrm);
-    if( pFrm->IsFlyFrm() )
+    const SwFrame* pFrame = GetFrame();
+    assert(pFrame);
+    if( pFrame->IsFlyFrame() )
     {
-        pFlyFrm = static_cast<SwFlyFrm*>( const_cast<SwFrm*>( pFrm ) );
+        pFlyFrame = static_cast<SwFlyFrame*>( const_cast<SwFrame*>( pFrame ) );
     }
 
-    return pFlyFrm;
+    return pFlyFrame;
 }
 
-AccessibleRelation SwAccessibleTextFrame::makeRelation( sal_Int16 nType, const SwFlyFrm* pFrm )
+AccessibleRelation SwAccessibleTextFrame::makeRelation( sal_Int16 nType, const SwFlyFrame* pFrame )
 {
-    uno::Sequence<uno::Reference<XInterface> > aSequence(1);
-    aSequence[0] = GetMap()->GetContext( pFrm );
+    uno::Sequence<uno::Reference<XInterface> > aSequence { GetMap()->GetContext( pFrame ) };
     return AccessibleRelation( nType, aSequence );
 }
 
@@ -336,18 +335,18 @@ uno::Reference<XAccessibleRelationSet> SAL_CALL SwAccessibleTextFrame::getAccess
 
     AccessibleRelationSetHelper* pHelper = new AccessibleRelationSetHelper();
 
-    SwFlyFrm* pFlyFrm = getFlyFrm();
-    assert(pFlyFrm);
+    SwFlyFrame* pFlyFrame = getFlyFrame();
+    assert(pFlyFrame);
 
-    const SwFlyFrm* pPrevFrm = pFlyFrm->GetPrevLink();
-    if( pPrevFrm != NULL )
+    const SwFlyFrame* pPrevFrame = pFlyFrame->GetPrevLink();
+    if( pPrevFrame != nullptr )
         pHelper->AddRelation( makeRelation(
-            AccessibleRelationType::CONTENT_FLOWS_FROM, pPrevFrm ) );
+            AccessibleRelationType::CONTENT_FLOWS_FROM, pPrevFrame ) );
 
-    const SwFlyFrm* pNextFrm = pFlyFrm->GetNextLink();
-    if( pNextFrm != NULL )
+    const SwFlyFrame* pNextFrame = pFlyFrame->GetNextLink();
+    if( pNextFrame != nullptr )
         pHelper->AddRelation( makeRelation(
-            AccessibleRelationType::CONTENT_FLOWS_TO, pNextFrm ) );
+            AccessibleRelationType::CONTENT_FLOWS_TO, pNextFrame ) );
 
     return pHelper;
 }

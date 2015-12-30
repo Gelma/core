@@ -44,6 +44,7 @@
 #include <vcl/outdev.hxx>
 #include <vcl/pdfextoutdevdata.hxx>
 #include <vcl/settings.hxx>
+#include <o3tl/make_unique.hxx>
 
 #include "output.hxx"
 #include "document.hxx"
@@ -66,8 +67,8 @@
 #include <com/sun/star/i18n/DirectionProperty.hpp>
 #include <comphelper/string.hxx>
 
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <memory>
+#include <vector>
 
 #include <math.h>
 
@@ -79,8 +80,6 @@ using namespace com::sun::star;
 #define DRAWTEXT_MAX    32767
 
 const sal_uInt16 SC_SHRINKAGAIN_MAX = 7;
-
-// STATIC DATA -----------------------------------------------------------
 
 class ScDrawStringsVars
 {
@@ -120,8 +119,8 @@ class ScDrawStringsVars
 
     Color               aBackConfigColor;       // used for ScPatternAttr::GetFont calls
     Color               aTextConfigColor;
-    sal_Int32           nPos;
-    sal_Unicode         nChar;
+    sal_Int32           nRepeatPos;
+    sal_Unicode         nRepeatChar;
 
 public:
                 ScDrawStringsVars(ScOutputData* pData, bool bPTL);
@@ -162,7 +161,7 @@ public:
     bool    GetLineBreak() const                    { return bLineBreak; }
     bool    IsRepeat() const                        { return bRepeat; }
     bool    IsShrink() const                        { return bShrink; }
-    void        RepeatToFill( long colWidth );
+    void        RepeatToFill( long nColWidth );
 
     long    GetAscent() const   { return nAscentPixel; }
     bool    IsRotated() const   { return bRotated; }
@@ -170,7 +169,7 @@ public:
     void    SetShrinkScale( long nScale, SvtScriptType nScript );
 
     bool    HasCondHeight() const   { return pCondSet && SfxItemState::SET ==
-                                        pCondSet->GetItemState( ATTR_FONT_HEIGHT, true ); }
+                                        pCondSet->GetItemState( ATTR_FONT_HEIGHT ); }
 
     bool    HasEditCharacters() const;
 
@@ -184,15 +183,15 @@ private:
 
 ScDrawStringsVars::ScDrawStringsVars(ScOutputData* pData, bool bPTL) :
     pOutput     ( pData ),
-    pPattern    ( NULL ),
-    pCondSet    ( NULL ),
+    pPattern    ( nullptr ),
+    pCondSet    ( nullptr ),
     nAscentPixel(0),
     eAttrOrient ( SVX_ORIENTATION_STANDARD ),
     eAttrHorJust( SVX_HOR_JUSTIFY_STANDARD ),
     eAttrVerJust( SVX_VER_JUSTIFY_BOTTOM ),
     eAttrHorJustMethod( SVX_JUSTIFY_METHOD_AUTO ),
     eAttrVerJustMethod( SVX_JUSTIFY_METHOD_AUTO ),
-    pMargin     ( NULL ),
+    pMargin     ( nullptr ),
     nIndent     ( 0 ),
     bRotated    ( false ),
     nOriginalWidth( 0 ),
@@ -205,8 +204,8 @@ ScDrawStringsVars::ScDrawStringsVars(ScOutputData* pData, bool bPTL) :
     bRepeat     ( false ),
     bShrink     ( false ),
     bPixelToLogic( bPTL ),
-    nPos( -1 ),
-    nChar( 0x0 )
+    nRepeatPos( -1 ),
+    nRepeatChar( 0x0 )
 {
     ScModule* pScMod = SC_MOD();
     bCellContrast = pOutput->mbUseStyleColor &&
@@ -311,7 +310,7 @@ void ScDrawStringsVars::SetPattern(
         eColorMode = SC_AUTOCOL_PRINT;
 
     if ( bPixelToLogic )
-        pPattern->GetFont( aFont, eColorMode, pFmtDevice, NULL, pCondSet, nScript,
+        pPattern->GetFont( aFont, eColorMode, pFmtDevice, nullptr, pCondSet, nScript,
                             &aBackConfigColor, &aTextConfigColor );
     else
         pPattern->GetFont( aFont, eColorMode, pFmtDevice, &pOutput->aZoomY, pCondSet, nScript,
@@ -501,18 +500,26 @@ bool ScDrawStringsVars::SetText( ScRefCellValue& rCell )
                                      ftCheck, true );
             if ( nFormat )
             {
-                nPos = aString.indexOf( 0x1B );
-                if ( nPos != -1 )
+                nRepeatPos = aString.indexOf( 0x1B );
+                if ( nRepeatPos != -1 )
                 {
-                    nChar = aString[ nPos + 1 ];
-                    // delete placeholder and char to repeat
-                    aString = aString.replaceAt( nPos, 2, "" );
+                    if (nRepeatPos + 1 == aString.getLength())
+                        nRepeatPos = -1;
+                    else
+                    {
+                        nRepeatChar = aString[ nRepeatPos + 1 ];
+                        // delete placeholder and char to repeat
+                        aString = aString.replaceAt( nRepeatPos, 2, "" );
+                        // Do not cache/reuse a repeat-filled string, column
+                        // widths or fonts or sizes may differ.
+                        maLastCell.clear();
+                    }
                 }
             }
             else
             {
-                nPos = -1;
-                nChar = 0x0;
+                nRepeatPos = -1;
+                nRepeatChar = 0x0;
             }
             if (aString.getLength() > DRAWTEXT_MAX)
                 aString = aString.copy(0, DRAWTEXT_MAX);
@@ -543,28 +550,28 @@ bool ScDrawStringsVars::SetText( ScRefCellValue& rCell )
 
 void ScDrawStringsVars::SetHashText()
 {
-    SetAutoText(OUString("###"));
+    SetAutoText("###");
 }
 
-void ScDrawStringsVars::RepeatToFill( long colWidth )
+void ScDrawStringsVars::RepeatToFill( long nColWidth )
 {
-    if ( nPos == -1 || nPos > aString.getLength() )
+    if ( nRepeatPos == -1 || nRepeatPos > aString.getLength() )
         return;
 
-    long charWidth = pOutput->pFmtDevice->GetTextWidth(OUString(nChar));
-    if ( charWidth < 1) return;
+    long nCharWidth = pOutput->pFmtDevice->GetTextWidth(OUString(nRepeatChar));
+    if ( nCharWidth < 1) return;
     if (bPixelToLogic)
-        colWidth = pOutput->mpRefDevice->PixelToLogic(Size(colWidth,0)).Width();
+        nColWidth = pOutput->mpRefDevice->PixelToLogic(Size(nColWidth,0)).Width();
     // Are there restrictions on the cell type we should filter out here ?
-    long aSpaceToFill = ( colWidth - aTextSize.Width() );
+    long nSpaceToFill = ( nColWidth - aTextSize.Width() );
 
-    if ( aSpaceToFill <= charWidth )
+    if ( nSpaceToFill <= nCharWidth )
         return;
 
-    long nCharsToInsert = aSpaceToFill / charWidth;
+    long nCharsToInsert = nSpaceToFill / nCharWidth;
     OUStringBuffer aFill;
-    comphelper::string::padToLength(aFill, nCharsToInsert, nChar);
-    aString = aString.replaceAt( nPos, 0, aFill.makeStringAndClear() );
+    comphelper::string::padToLength(aFill, nCharsToInsert, nRepeatChar);
+    aString = aString.replaceAt( nRepeatPos, 0, aFill.makeStringAndClear() );
     TextChanged();
 }
 
@@ -821,7 +828,7 @@ double ScOutputData::GetStretch()
 
 static void lcl_DoHyperlinkResult( OutputDevice* pDev, const Rectangle& rRect, ScRefCellValue& rCell )
 {
-    vcl::PDFExtOutDevData* pPDFData = PTR_CAST( vcl::PDFExtOutDevData, pDev->GetExtOutDevData() );
+    vcl::PDFExtOutDevData* pPDFData = dynamic_cast< vcl::PDFExtOutDevData* >( pDev->GetExtOutDevData() );
 
     OUString aCellText;
     OUString aURL;
@@ -1067,8 +1074,7 @@ bool ScOutputData::IsEmptyCellText( RowInfo* pThisRowInfo, SCCOL nX, SCROW nY )
         bEmpty = pThisRowInfo->pCellInfo[nX+1].bEmptyCellText;
     else
     {
-        ScRefCellValue aCell;
-        aCell.assign(*mpDoc, ScAddress(nX, nY, nTab));
+        ScRefCellValue aCell(*mpDoc, ScAddress(nX, nY, nTab));
         bEmpty = aCell.isEmpty();
     }
 
@@ -1103,7 +1109,7 @@ bool ScOutputData::IsEmptyCellText( RowInfo* pThisRowInfo, SCCOL nX, SCROW nY )
 void ScOutputData::GetVisibleCell( SCCOL nCol, SCROW nRow, SCTAB nTabP, ScRefCellValue& rCell )
 {
     rCell.assign(*mpDoc, ScAddress(nCol, nRow, nTabP));
-    if (!rCell.isEmpty() && IsEmptyCellText(NULL, nCol, nRow))
+    if (!rCell.isEmpty() && IsEmptyCellText(nullptr, nCol, nRow))
         rCell.clear();
 }
 
@@ -1113,9 +1119,8 @@ bool ScOutputData::IsAvailable( SCCOL nX, SCROW nY )
     //  Stop at non-empty or merged or overlapped cell,
     //  where a note is empty as well as a cell that's hidden by protection settings
 
-    ScRefCellValue aCell;
-    aCell.assign(*mpDoc, ScAddress(nX, nY, nTab));
-    if (!aCell.isEmpty() && !IsEmptyCellText(NULL, nX, nY))
+    ScRefCellValue aCell(*mpDoc, ScAddress(nX, nY, nTab));
+    if (!aCell.isEmpty() && !IsEmptyCellText(nullptr, nX, nY))
         return false;
 
     const ScPatternAttr* pPattern = mpDoc->GetPattern( nX, nY, nTab );
@@ -1424,7 +1429,7 @@ static SvxCellHorJustify getAlignmentFromContext( SvxCellHorJustify eInHorJust,
 
 void ScOutputData::DrawStrings( bool bPixelToLogic )
 {
-    LayoutStrings(bPixelToLogic, true);
+    LayoutStrings(bPixelToLogic);
 }
 
 Rectangle ScOutputData::LayoutStrings(bool bPixelToLogic, bool bPaint, const ScAddress &rAddress)
@@ -1433,7 +1438,7 @@ Rectangle ScOutputData::LayoutStrings(bool bPixelToLogic, bool bPaint, const ScA
                 mpDev->GetMapMode().GetMapUnit() == mpRefDevice->GetMapMode().GetMapUnit(),
                 "LayoutStrings: different MapUnits ?!?!" );
 
-    vcl::PDFExtOutDevData* pPDFData = PTR_CAST( vcl::PDFExtOutDevData, mpDev->GetExtOutDevData() );
+    vcl::PDFExtOutDevData* pPDFData = dynamic_cast< vcl::PDFExtOutDevData* >(mpDev->GetExtOutDevData() );
 
     sc::IdleSwitch aIdleSwitch(*mpDoc, false);
     ScDrawStringsVars aVars( this, bPixelToLogic );
@@ -1457,15 +1462,15 @@ Rectangle ScOutputData::LayoutStrings(bool bPixelToLogic, bool bPaint, const ScA
     OutputAreaParam aAreaParam;
     bool bCellIsValue = false;
     long nNeededWidth = 0;
-    const ScPatternAttr* pPattern = NULL;
-    const SfxItemSet* pCondSet = NULL;
-    const ScPatternAttr* pOldPattern = NULL;
-    const SfxItemSet* pOldCondSet = NULL;
+    const ScPatternAttr* pPattern = nullptr;
+    const SfxItemSet* pCondSet = nullptr;
+    const ScPatternAttr* pOldPattern = nullptr;
+    const SfxItemSet* pOldCondSet = nullptr;
     SvtScriptType nOldScript = SvtScriptType::NONE;
 
     // alternative pattern instances in case we need to modify the pattern
     // before processing the cell value.
-    ::boost::ptr_vector<ScPatternAttr> aAltPatterns;
+    std::vector<std::unique_ptr<ScPatternAttr> > aAltPatterns;
 
     std::vector<long> aDX;
     long nPosY = nScrY;
@@ -1609,8 +1614,8 @@ Rectangle ScOutputData::LayoutStrings(bool bPixelToLogic, bool bPaint, const ScA
                     }
                     if ( mpDoc->GetPreviewFont() || mpDoc->GetPreviewCellStyle() )
                     {
-                        aAltPatterns.push_back(new ScPatternAttr(*pPattern));
-                        ScPatternAttr* pAltPattern = &aAltPatterns.back();
+                        aAltPatterns.push_back(o3tl::make_unique<ScPatternAttr>(*pPattern));
+                        ScPatternAttr* pAltPattern = aAltPatterns.back().get();
                         if (  ScStyleSheet* pPreviewStyle = mpDoc->GetPreviewCellStyle( nCellX, nCellY, nTab ) )
                         {
                             pAltPattern->SetStyleSheet(pPreviewStyle);
@@ -1633,8 +1638,8 @@ Rectangle ScOutputData::LayoutStrings(bool bPixelToLogic, bool bPaint, const ScA
                             pPattern->GetItem(ATTR_LINEBREAK, pCondSet)).GetValue())
                     {
                         // Disable line break when the cell content is numeric.
-                        aAltPatterns.push_back(new ScPatternAttr(*pPattern));
-                        ScPatternAttr* pAltPattern = &aAltPatterns.back();
+                        aAltPatterns.push_back(o3tl::make_unique<ScPatternAttr>(*pPattern));
+                        ScPatternAttr* pAltPattern = aAltPatterns.back().get();
                         SfxBoolItem aLineBreak(ATTR_LINEBREAK, false);
                         pAltPattern->GetItemSet().Put(aLineBreak);
                         pPattern = pAltPattern;
@@ -1673,7 +1678,7 @@ Rectangle ScOutputData::LayoutStrings(bool bPixelToLogic, bool bPaint, const ScA
                     if ( bFormulaCell )
                         lcl_CreateInterpretProgress(bProgress, mpDoc, aCell.mpFormula);
                     if ( aVars.SetText(aCell) )
-                        pOldPattern = NULL;
+                        pOldPattern = nullptr;
                     bNeedEdit = aVars.HasEditCharacters() || (bFormulaCell && aCell.mpFormula->IsMultilineResult());
                 }
                 long nTotalMargin = 0;
@@ -1752,7 +1757,7 @@ Rectangle ScOutputData::LayoutStrings(bool bPixelToLogic, bool bPaint, const ScA
                                     aAreaParam.mnLeftClipLength = aAreaParam.mnRightClipLength = 0;
                                 }
 
-                                pOldPattern = NULL;
+                                pOldPattern = nullptr;
                             }
                         }
                     }
@@ -2329,15 +2334,15 @@ ScOutputData::DrawEditParam::DrawEditParam(const ScPatternAttr* pPattern, const 
     mbAsianVertical(false),
     mbPixelToLogic(false),
     mbHyphenatorSet(false),
-    mpEngine(NULL),
+    mpEngine(nullptr),
     mpPattern(pPattern),
     mpCondSet(pCondSet),
-    mpPreviewFontSet(NULL),
-    mpOldPattern(NULL),
-    mpOldCondSet(NULL),
-    mpOldPreviewFontSet(NULL),
-    mpThisRowInfo(NULL),
-    mpMisspellRanges(NULL)
+    mpPreviewFontSet(nullptr),
+    mpOldPattern(nullptr),
+    mpOldCondSet(nullptr),
+    mpOldPreviewFontSet(nullptr),
+    mpThisRowInfo(nullptr),
+    mpMisspellRanges(nullptr)
 {}
 
 bool ScOutputData::DrawEditParam::readCellContent(
@@ -2440,7 +2445,7 @@ void ScOutputData::DrawEditParam::setPatternToEngine(bool bUseStyleColor)
     if ( !mbHyphenatorSet && static_cast<const SfxBoolItem&>(pSet->Get(EE_PARA_HYPHENATE)).GetValue() )
     {
         //  set hyphenator the first time it is needed
-        com::sun::star::uno::Reference<com::sun::star::linguistic2::XHyphenator> xXHyphenator( LinguMgr::GetHyphenator() );
+        css::uno::Reference<css::linguistic2::XHyphenator> xXHyphenator( LinguMgr::GetHyphenator() );
         mpEngine->SetHyphenator( xXHyphenator );
         mbHyphenatorSet = true;
     }
@@ -2711,7 +2716,7 @@ void ScOutputData::DrawEditParam::adjustForRTL()
 void ScOutputData::DrawEditParam::adjustForHyperlinkInPDF(Point aURLStart, OutputDevice* pDev)
 {
     // PDF: whole-cell hyperlink from formula?
-    vcl::PDFExtOutDevData* pPDFData = PTR_CAST( vcl::PDFExtOutDevData, pDev->GetExtOutDevData() );
+    vcl::PDFExtOutDevData* pPDFData = dynamic_cast<vcl::PDFExtOutDevData* >( pDev->GetExtOutDevData() );
     bool bHasURL = pPDFData && isHyperlinkCell();
     if (!bHasURL)
         return;
@@ -2795,7 +2800,7 @@ void ScOutputData::DrawEditStandard(DrawEditParam& rParam)
 
     //  Initial page size - large for normal text, cell size for automatic line breaks
 
-    Size aPaperSize = Size( 1000000, 1000000 );
+    Size aPaperSize( 1000000, 1000000 );
     if (rParam.mbBreak)
     {
         //  call GetOutputArea with nNeeded=0, to get only the cell width
@@ -3014,7 +3019,7 @@ void ScOutputData::DrawEditStandard(DrawEditParam& rParam)
         if ( eType != OUTTYPE_PRINTER ||
             ( mpDoc->GetRowFlags( rParam.mnCellY, nTab ) & CR_MANUALSIZE ) ||
             ( rParam.mpCondSet && SfxItemState::SET ==
-                rParam.mpCondSet->GetItemState(ATTR_FONT_HEIGHT, true) ) )
+                rParam.mpCondSet->GetItemState(ATTR_FONT_HEIGHT) ) )
             bClip = true;
         else
             bSimClip = true;
@@ -3029,7 +3034,7 @@ void ScOutputData::DrawEditStandard(DrawEditParam& rParam)
              rParam.mbBreak && bMarkClipped &&
              ( rParam.mpEngine->GetParagraphCount() > 1 || rParam.mpEngine->GetLineCount(0) > 1 ) )
         {
-            CellInfo* pClipMarkCell = NULL;
+            CellInfo* pClipMarkCell = nullptr;
             if ( bMerged )
             {
                 //  anywhere in the merged area...
@@ -3081,7 +3086,7 @@ void ScOutputData::DrawEditStandard(DrawEditParam& rParam)
         //  horizontal alignment
         if (rParam.adjustHorAlignment(rParam.mpEngine))
             // reset adjustment for the next cell
-            rParam.mpOldPattern = NULL;
+            rParam.mpOldPattern = nullptr;
     }
 
     if (rParam.meVerJust==SVX_VER_JUSTIFY_BOTTOM ||
@@ -3159,7 +3164,7 @@ void ScOutputData::ShowClipMarks( DrawEditParam& rParam, long nEngineHeight, con
             rParam.mbBreak && bMarkClipped &&
             ( rParam.mpEngine->GetParagraphCount() > 1 || rParam.mpEngine->GetLineCount(0) > 1 ) )
     {
-        CellInfo* pClipMarkCell = NULL;
+        CellInfo* pClipMarkCell = nullptr;
         if ( bMerged )
         {
             //  anywhere in the merged area...
@@ -3226,7 +3231,7 @@ bool ScOutputData::Clip( DrawEditParam& rParam, const Size& aCellSize,
         if ( eType != OUTTYPE_PRINTER ||
             ( mpDoc->GetRowFlags( rParam.mnCellY, nTab ) & CR_MANUALSIZE ) ||
             ( rParam.mpCondSet && SfxItemState::SET ==
-                rParam.mpCondSet->GetItemState(ATTR_FONT_HEIGHT, true) ) )
+                rParam.mpCondSet->GetItemState(ATTR_FONT_HEIGHT) ) )
             bClip = true;
         else
             bSimClip = true;
@@ -3290,7 +3295,7 @@ void ScOutputData::DrawEditBottomTop(DrawEditParam& rParam)
 
     //  Initial page size - large for normal text, cell size for automatic line breaks
 
-    Size aPaperSize = Size( 1000000, 1000000 );
+    Size aPaperSize( 1000000, 1000000 );
     if (rParam.mbBreak)
     {
         //  call GetOutputArea with nNeeded=0, to get only the cell width
@@ -3550,7 +3555,7 @@ void ScOutputData::DrawEditTopBottom(DrawEditParam& rParam)
 
     //  Initial page size - large for normal text, cell size for automatic line breaks
 
-    Size aPaperSize = Size( 1000000, 1000000 );
+    Size aPaperSize( 1000000, 1000000 );
     if (rParam.hasLineBreak())
     {
         //  call GetOutputArea with nNeeded=0, to get only the cell width
@@ -3817,7 +3822,7 @@ void ScOutputData::DrawEditStacked(DrawEditParam& rParam)
 
     //  Initial page size - large for normal text, cell size for automatic line breaks
 
-    Size aPaperSize = Size( 1000000, 1000000 );
+    Size aPaperSize( 1000000, 1000000 );
     //  call GetOutputArea with nNeeded=0, to get only the cell width
 
     //! handle nArrY == 0
@@ -3988,7 +3993,7 @@ void ScOutputData::DrawEditStacked(DrawEditParam& rParam)
         if ( eType != OUTTYPE_PRINTER ||
             ( mpDoc->GetRowFlags( rParam.mnCellY, nTab ) & CR_MANUALSIZE ) ||
             ( rParam.mpCondSet && SfxItemState::SET ==
-                rParam.mpCondSet->GetItemState(ATTR_FONT_HEIGHT, true) ) )
+                rParam.mpCondSet->GetItemState(ATTR_FONT_HEIGHT) ) )
             bClip = true;
         else
             bSimClip = true;
@@ -4003,7 +4008,7 @@ void ScOutputData::DrawEditStacked(DrawEditParam& rParam)
              rParam.mbBreak && bMarkClipped &&
              ( rParam.mpEngine->GetParagraphCount() > 1 || rParam.mpEngine->GetLineCount(0) > 1 ) )
         {
-            CellInfo* pClipMarkCell = NULL;
+            CellInfo* pClipMarkCell = nullptr;
             if ( bMerged )
             {
                 //  anywhere in the merged area...
@@ -4171,7 +4176,7 @@ void ScOutputData::DrawEditAsianVertical(DrawEditParam& rParam)
 
     //  Initial page size - large for normal text, cell size for automatic line breaks
 
-    Size aPaperSize = Size( 1000000, 1000000 );
+    Size aPaperSize( 1000000, 1000000 );
     //  call GetOutputArea with nNeeded=0, to get only the cell width
 
     //! handle nArrY == 0
@@ -4334,7 +4339,7 @@ void ScOutputData::DrawEditAsianVertical(DrawEditParam& rParam)
         if ( eType != OUTTYPE_PRINTER ||
             ( mpDoc->GetRowFlags( rParam.mnCellY, nTab ) & CR_MANUALSIZE ) ||
             ( rParam.mpCondSet && SfxItemState::SET ==
-                rParam.mpCondSet->GetItemState(ATTR_FONT_HEIGHT, true) ) )
+                rParam.mpCondSet->GetItemState(ATTR_FONT_HEIGHT) ) )
             bClip = true;
         else
             bSimClip = true;
@@ -4350,7 +4355,7 @@ void ScOutputData::DrawEditAsianVertical(DrawEditParam& rParam)
              !rParam.mbAsianVertical && bMarkClipped &&
              ( rParam.mpEngine->GetParagraphCount() > 1 || rParam.mpEngine->GetLineCount(0) > 1 ) )
         {
-            CellInfo* pClipMarkCell = NULL;
+            CellInfo* pClipMarkCell = nullptr;
             if ( bMerged )
             {
                 //  anywhere in the merged area...
@@ -4444,9 +4449,9 @@ void ScOutputData::DrawEdit(bool bPixelToLogic)
 {
     std::unique_ptr<ScFieldEditEngine> pEngine;
     bool bHyphenatorSet = false;
-    const ScPatternAttr* pOldPattern = NULL;
-    const SfxItemSet*    pOldCondSet = NULL;
-    const SfxItemSet*    pOldPreviewFontSet = NULL;
+    const ScPatternAttr* pOldPattern = nullptr;
+    const SfxItemSet*    pOldCondSet = nullptr;
+    const SfxItemSet*    pOldPreviewFontSet = nullptr;
     ScRefCellValue aCell;
 
     long nInitPosX = nScrX;
@@ -4524,8 +4529,8 @@ void ScOutputData::DrawEdit(bool bPixelToLogic)
                     if ( bDoCell && bEditMode && nCellX == nEditCol && nCellY == nEditRow )
                         bDoCell = false;
 
-                    const ScPatternAttr* pPattern = NULL;
-                    const SfxItemSet* pCondSet = NULL;
+                    const ScPatternAttr* pPattern = nullptr;
+                    const SfxItemSet* pCondSet = nullptr;
                     if (bDoCell)
                     {
                         if ( nCellY == nY && nCellX >= nX1 && nCellX <= nX2 &&
@@ -4648,8 +4653,8 @@ void ScOutputData::DrawRotated(bool bPixelToLogic)
     bool bHyphenatorSet = false;
     const ScPatternAttr* pPattern;
     const SfxItemSet*    pCondSet;
-    const ScPatternAttr* pOldPattern = NULL;
-    const SfxItemSet*    pOldCondSet = NULL;
+    const ScPatternAttr* pOldPattern = nullptr;
+    const SfxItemSet*    pOldCondSet = nullptr;
     ScRefCellValue aCell;
 
     long nInitPosX = nScrX;
@@ -4691,7 +4696,6 @@ void ScOutputData::DrawRotated(bool bPixelToLogic)
                             lcl_ClearEdit( *pEngine );      // also calls SetUpdateMode(sal_False)
 
                         long nPosY = nRowPosY;
-                        bool bVisChanged = false;
 
                         //! rest from merged cells further up do not work!
 
@@ -4795,7 +4799,7 @@ void ScOutputData::DrawRotated(bool bPixelToLogic)
                                 if ( !bHyphenatorSet && static_cast<const SfxBoolItem&>(pSet->Get(EE_PARA_HYPHENATE)).GetValue() )
                                 {
                                     //  set hyphenator the first time it is needed
-                                    com::sun::star::uno::Reference<com::sun::star::linguistic2::XHyphenator> xXHyphenator( LinguMgr::GetHyphenator() );
+                                    css::uno::Reference<css::linguistic2::XHyphenator> xXHyphenator( LinguMgr::GetHyphenator() );
                                     pEngine->SetHyphenator( xXHyphenator );
                                     bHyphenatorSet = true;
                                 }
@@ -4857,7 +4861,7 @@ void ScOutputData::DrawRotated(bool bPixelToLogic)
                                 }
                             }
 
-                            Size aPaperSize = Size( 1000000, 1000000 );
+                            Size aPaperSize( 1000000, 1000000 );
                             if (eOrient==SVX_ORIENTATION_STACKED)
                                 aPaperSize.Width() = nOutWidth;             // to center
                             else if (bBreak)
@@ -4993,7 +4997,7 @@ void ScOutputData::DrawRotated(bool bPixelToLogic)
                             if (!bHidden)
                             {
                                 bool bClip = false;
-                                Size aClipSize = Size( nScrX+nScrW-nStartX, nScrY+nScrH-nStartY );
+                                Size aClipSize( nScrX+nScrW-nStartX, nScrY+nScrH-nStartY );
 
                                 // go on writing
 
@@ -5076,7 +5080,7 @@ void ScOutputData::DrawRotated(bool bPixelToLogic)
                                 }
 
                                 long nClipStartY = nStartY;
-                                if (nArrY==0 || bVisChanged)
+                                if (nArrY==0)
                                 {
                                     if ( nClipStartY < nRowPosY )
                                     {

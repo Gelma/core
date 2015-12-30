@@ -57,8 +57,7 @@ using ::com::sun::star::xml::sax::XAttributeList;
 ScXMLDataPilotTablesContext::ScXMLDataPilotTablesContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ ) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ ) :
     SvXMLImportContext( rImport, nPrfx, rLName )
 {
     // has no Attributes
@@ -72,10 +71,9 @@ ScXMLDataPilotTablesContext::~ScXMLDataPilotTablesContext()
 
 SvXMLImportContext *ScXMLDataPilotTablesContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetScImport().GetDataPilotTablesElemTokenMap();
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -104,12 +102,11 @@ ScXMLDataPilotTableContext::GrandTotalItem::GrandTotalItem() :
 ScXMLDataPilotTableContext::ScXMLDataPilotTableContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDoc(GetScImport().GetDocument()),
-    pDPObject(NULL),
-    pDPDimSaveData(NULL),
+    pDPObject(nullptr),
+    pDPDimSaveData(nullptr),
     sDataPilotTableName(),
     sApplicationData(),
     nSourceType(SQL),
@@ -223,10 +220,9 @@ ScXMLDataPilotTableContext::~ScXMLDataPilotTableContext()
 
 SvXMLImportContext *ScXMLDataPilotTableContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetScImport().GetDataPilotTableElemTokenMap();
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -291,21 +287,21 @@ const ScDPSaveDimension* getDimension(
         case ScDPOutputGeometry::Column:
         {
             if (rColDims.size() <= nPos)
-                return NULL;
+                return nullptr;
 
             return rColDims[nPos];
         }
         case ScDPOutputGeometry::Row:
         {
             if (rRowDims.size() <= nPos)
-                return NULL;
+                return nullptr;
 
             return rRowDims[nPos];
         }
         case ScDPOutputGeometry::Page:
         {
             if (rPageDims.size() <= nPos)
-                return NULL;
+                return nullptr;
 
             return rPageDims[nPos];
         }
@@ -316,7 +312,7 @@ const ScDPSaveDimension* getDimension(
         default:
             break;
     }
-    return NULL;
+    return nullptr;
 }
 
 ScDPOutputGeometry::FieldType toFieldType(sal_uInt16 nOrient)
@@ -370,7 +366,7 @@ void ScXMLDataPilotTableContext::SetButtons()
                 const ScDPSaveDimension* pDim = getDimension(
                     aRowDims, aColDims, aPageDims, aBtnType.first, aBtnType.second);
 
-                bool bDimension = pDim != NULL;
+                bool bDimension = pDim != nullptr;
                 bool bDataLayout = pDim && pDim->IsDataLayout();
                 bool bHasHidden = pDim && pDim->HasInvisibleMember();
                 bool bPageDim = pDim && pDim->GetOrientation() == sheet::DataPilotFieldOrientation_PAGE;
@@ -594,9 +590,8 @@ void ScXMLDataPilotTableContext::SetGrandTotal(
 ScXMLDPSourceSQLContext::ScXMLDPSourceSQLContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDataPilotTableContext* pTempDataPilotTable) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDataPilotTableContext* pTempDataPilotTable) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDataPilotTable(pTempDataPilotTable)
 {
@@ -637,10 +632,9 @@ ScXMLDPSourceSQLContext::~ScXMLDPSourceSQLContext()
 
 SvXMLImportContext *ScXMLDPSourceSQLContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if( !pContext )
         pContext = new SvXMLImportContext( GetImport(), nPrefix, rLName );
@@ -655,9 +649,8 @@ void ScXMLDPSourceSQLContext::EndElement()
 ScXMLDPSourceTableContext::ScXMLDPSourceTableContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDataPilotTableContext* pTempDataPilotTable) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDataPilotTableContext* pTempDataPilotTable) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDataPilotTable(pTempDataPilotTable)
 {
@@ -693,10 +686,9 @@ ScXMLDPSourceTableContext::~ScXMLDPSourceTableContext()
 
 SvXMLImportContext *ScXMLDPSourceTableContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if( !pContext )
         pContext = new SvXMLImportContext( GetImport(), nPrefix, rLName );
@@ -711,9 +703,8 @@ void ScXMLDPSourceTableContext::EndElement()
 ScXMLDPSourceQueryContext::ScXMLDPSourceQueryContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDataPilotTableContext* pTempDataPilotTable) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDataPilotTableContext* pTempDataPilotTable) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDataPilotTable(pTempDataPilotTable)
 {
@@ -749,10 +740,9 @@ ScXMLDPSourceQueryContext::~ScXMLDPSourceQueryContext()
 
 SvXMLImportContext *ScXMLDPSourceQueryContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if( !pContext )
         pContext = new SvXMLImportContext( GetImport(), nPrefix, rLName );
@@ -767,9 +757,8 @@ void ScXMLDPSourceQueryContext::EndElement()
 ScXMLSourceServiceContext::ScXMLSourceServiceContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDataPilotTableContext* pTempDataPilotTable) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDataPilotTableContext* pTempDataPilotTable) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDataPilotTable(pTempDataPilotTable)
 {
@@ -820,10 +809,9 @@ ScXMLSourceServiceContext::~ScXMLSourceServiceContext()
 
 SvXMLImportContext *ScXMLSourceServiceContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if( !pContext )
         pContext = new SvXMLImportContext( GetImport(), nPrefix, rLName );
@@ -913,9 +901,8 @@ void ScXMLDataPilotGrandTotalContext::EndElement()
 ScXMLSourceCellRangeContext::ScXMLSourceCellRangeContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDataPilotTableContext* pTempDataPilotTable) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDataPilotTableContext* pTempDataPilotTable) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDataPilotTable(pTempDataPilotTable)
 {
@@ -952,10 +939,10 @@ ScXMLSourceCellRangeContext::~ScXMLSourceCellRangeContext()
 
 SvXMLImportContext *ScXMLSourceCellRangeContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<
+                                          css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetScImport().GetDataPilotTableSourceCellRangeElemTokenMap();
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -978,12 +965,11 @@ void ScXMLSourceCellRangeContext::EndElement()
 ScXMLDataPilotFieldContext::ScXMLDataPilotFieldContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDataPilotTableContext* pTempDataPilotTable) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDataPilotTableContext* pTempDataPilotTable) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDataPilotTable(pTempDataPilotTable),
-    pDim(NULL),
+    pDim(nullptr),
     fStart(0.0),
     fEnd(0.0),
     fStep(0.0),
@@ -1078,10 +1064,9 @@ ScXMLDataPilotFieldContext::~ScXMLDataPilotFieldContext()
 
 SvXMLImportContext *ScXMLDataPilotFieldContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetScImport().GetDataPilotFieldElemTokenMap();
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -1257,9 +1242,8 @@ ScXMLDataPilotFieldReferenceContext::~ScXMLDataPilotFieldReferenceContext()
 ScXMLDataPilotLevelContext::ScXMLDataPilotLevelContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDataPilotFieldContext* pTempDataPilotField) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDataPilotFieldContext* pTempDataPilotField) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDataPilotField(pTempDataPilotField)
 {
@@ -1295,10 +1279,9 @@ ScXMLDataPilotLevelContext::~ScXMLDataPilotLevelContext()
 
 SvXMLImportContext *ScXMLDataPilotLevelContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetScImport().GetDataPilotLevelElemTokenMap();
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -1332,8 +1315,7 @@ void ScXMLDataPilotLevelContext::EndElement()
 
 ScXMLDataPilotDisplayInfoContext::ScXMLDataPilotDisplayInfoContext( ScXMLImport& rImport, sal_uInt16 nPrfx,
                         const OUString& rLName,
-                        const ::com::sun::star::uno::Reference<
-                        ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
+                        const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
                         ScXMLDataPilotFieldContext* pDataPilotField) :
     SvXMLImportContext( rImport, nPrfx, rLName )
 {
@@ -1383,8 +1365,7 @@ ScXMLDataPilotDisplayInfoContext::~ScXMLDataPilotDisplayInfoContext()
 
 ScXMLDataPilotSortInfoContext::ScXMLDataPilotSortInfoContext( ScXMLImport& rImport, sal_uInt16 nPrfx,
                         const OUString& rLName,
-                        const ::com::sun::star::uno::Reference<
-                        ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
+                        const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
                         ScXMLDataPilotFieldContext* pDataPilotField) :
     SvXMLImportContext( rImport, nPrfx, rLName )
 {
@@ -1432,8 +1413,7 @@ ScXMLDataPilotSortInfoContext::~ScXMLDataPilotSortInfoContext()
 
 ScXMLDataPilotLayoutInfoContext::ScXMLDataPilotLayoutInfoContext( ScXMLImport& rImport, sal_uInt16 nPrfx,
                         const OUString& rLName,
-                        const ::com::sun::star::uno::Reference<
-                        ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
+                        const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
                         ScXMLDataPilotFieldContext* pDataPilotField) :
     SvXMLImportContext( rImport, nPrfx, rLName )
 {
@@ -1477,13 +1457,12 @@ ScXMLDataPilotLayoutInfoContext::~ScXMLDataPilotLayoutInfoContext()
 ScXMLDataPilotSubTotalsContext::ScXMLDataPilotSubTotalsContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */,
-                                        ScXMLDataPilotFieldContext* pTempDataPilotField) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */,
+                                      ScXMLDataPilotFieldContext* pTempDataPilotField) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDataPilotField(pTempDataPilotField),
     nFunctionCount(0),
-    pFunctions(NULL)
+    pFunctions(nullptr)
 {
 
     // has no attributes
@@ -1496,10 +1475,9 @@ ScXMLDataPilotSubTotalsContext::~ScXMLDataPilotSubTotalsContext()
 
 SvXMLImportContext *ScXMLDataPilotSubTotalsContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetScImport().GetDataPilotSubTotalsElemTokenMap();
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -1550,9 +1528,8 @@ void ScXMLDataPilotSubTotalsContext::SetDisplayName(const OUString& rName)
 ScXMLDataPilotSubTotalContext::ScXMLDataPilotSubTotalContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDataPilotSubTotalsContext* pTempDataPilotSubTotals) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDataPilotSubTotalsContext* pTempDataPilotSubTotals) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDataPilotSubTotals(pTempDataPilotSubTotals)
 {
@@ -1588,10 +1565,9 @@ ScXMLDataPilotSubTotalContext::~ScXMLDataPilotSubTotalContext()
 
 SvXMLImportContext *ScXMLDataPilotSubTotalContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if( !pContext )
         pContext = new SvXMLImportContext( GetImport(), nPrefix, rLName );
@@ -1606,9 +1582,8 @@ void ScXMLDataPilotSubTotalContext::EndElement()
 ScXMLDataPilotMembersContext::ScXMLDataPilotMembersContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */,
-                                        ScXMLDataPilotFieldContext* pTempDataPilotField) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */,
+                                      ScXMLDataPilotFieldContext* pTempDataPilotField) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDataPilotField(pTempDataPilotField)
 {
@@ -1621,10 +1596,10 @@ ScXMLDataPilotMembersContext::~ScXMLDataPilotMembersContext()
 
 SvXMLImportContext *ScXMLDataPilotMembersContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<
+                                          css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetScImport().GetDataPilotMembersElemTokenMap();
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -1647,9 +1622,8 @@ void ScXMLDataPilotMembersContext::EndElement()
 ScXMLDataPilotMemberContext::ScXMLDataPilotMemberContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDataPilotFieldContext* pTempDataPilotField) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDataPilotFieldContext* pTempDataPilotField) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDataPilotField(pTempDataPilotField),
     bDisplay( true ),
@@ -1700,10 +1674,9 @@ ScXMLDataPilotMemberContext::~ScXMLDataPilotMemberContext()
 
 SvXMLImportContext *ScXMLDataPilotMemberContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if( !pContext )
         pContext = new SvXMLImportContext( GetImport(), nPrefix, rLName );
@@ -1727,17 +1700,16 @@ void ScXMLDataPilotMemberContext::EndElement()
 ScXMLDataPilotGroupsContext::ScXMLDataPilotGroupsContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDataPilotFieldContext* pTempDataPilotField) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDataPilotFieldContext* pTempDataPilotField) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDataPilotField(pTempDataPilotField)
 {
-    OUString               sGroupSource;
-    double                      fStart(0.0);
-    double                      fEnd(0.0);
-    double                      fStep(0.0);
-    sal_Int32                   nGroupPart(0);
+    OUString                sGroupSource;
+    double                  fStart(0.0);
+    double                  fEnd(0.0);
+    double                  fStep(0.0);
+    sal_Int32               nGroupPart(0);
     bool                    bDateValue(false);
     bool                    bAutoStart(true);
     bool                    bAutoEnd(true);
@@ -1804,19 +1776,19 @@ ScXMLDataPilotGroupsContext::ScXMLDataPilotGroupsContext( ScXMLImport& rImport,
         else if (IsXMLToken(aLocalName, XML_GROUPED_BY))
         {
             if (IsXMLToken(sValue, XML_SECONDS))
-                nGroupPart = com::sun::star::sheet::DataPilotFieldGroupBy::SECONDS;
+                nGroupPart = css::sheet::DataPilotFieldGroupBy::SECONDS;
             else if (IsXMLToken(sValue, XML_MINUTES))
-                nGroupPart = com::sun::star::sheet::DataPilotFieldGroupBy::MINUTES;
+                nGroupPart = css::sheet::DataPilotFieldGroupBy::MINUTES;
             else if (IsXMLToken(sValue, XML_HOURS))
-                nGroupPart = com::sun::star::sheet::DataPilotFieldGroupBy::HOURS;
+                nGroupPart = css::sheet::DataPilotFieldGroupBy::HOURS;
             else if (IsXMLToken(sValue, XML_DAYS))
-                nGroupPart = com::sun::star::sheet::DataPilotFieldGroupBy::DAYS;
+                nGroupPart = css::sheet::DataPilotFieldGroupBy::DAYS;
             else if (IsXMLToken(sValue, XML_MONTHS))
-                nGroupPart = com::sun::star::sheet::DataPilotFieldGroupBy::MONTHS;
+                nGroupPart = css::sheet::DataPilotFieldGroupBy::MONTHS;
             else if (IsXMLToken(sValue, XML_QUARTERS))
-                nGroupPart = com::sun::star::sheet::DataPilotFieldGroupBy::QUARTERS;
+                nGroupPart = css::sheet::DataPilotFieldGroupBy::QUARTERS;
             else if (IsXMLToken(sValue, XML_YEARS))
-                nGroupPart = com::sun::star::sheet::DataPilotFieldGroupBy::YEARS;
+                nGroupPart = css::sheet::DataPilotFieldGroupBy::YEARS;
         }
     }
     pDataPilotField->SetGrouping(sGroupSource, fStart, fEnd, fStep, nGroupPart, bDateValue, bAutoStart, bAutoEnd);
@@ -1828,10 +1800,9 @@ ScXMLDataPilotGroupsContext::~ScXMLDataPilotGroupsContext()
 
 SvXMLImportContext *ScXMLDataPilotGroupsContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if (nPrefix == XML_NAMESPACE_TABLE)
     {
@@ -1852,9 +1823,8 @@ void ScXMLDataPilotGroupsContext::EndElement()
 ScXMLDataPilotGroupContext::ScXMLDataPilotGroupContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDataPilotFieldContext* pTempDataPilotField) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDataPilotFieldContext* pTempDataPilotField) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDataPilotField(pTempDataPilotField)
 {
@@ -1881,10 +1851,9 @@ ScXMLDataPilotGroupContext::~ScXMLDataPilotGroupContext()
 
 SvXMLImportContext *ScXMLDataPilotGroupContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if (nPrefix == XML_NAMESPACE_TABLE)
     {
@@ -1906,9 +1875,8 @@ void ScXMLDataPilotGroupContext::EndElement()
 ScXMLDataPilotGroupMemberContext::ScXMLDataPilotGroupMemberContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        ScXMLDataPilotGroupContext* pTempDataPilotGroup) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      ScXMLDataPilotGroupContext* pTempDataPilotGroup) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     pDataPilotGroup(pTempDataPilotGroup)
 {
@@ -1935,10 +1903,9 @@ ScXMLDataPilotGroupMemberContext::~ScXMLDataPilotGroupMemberContext()
 
 SvXMLImportContext *ScXMLDataPilotGroupMemberContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& /* xAttrList */ )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& /* xAttrList */ )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if( !pContext )
         pContext = new SvXMLImportContext( GetImport(), nPrefix, rLName );

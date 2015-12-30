@@ -22,6 +22,7 @@
 #include <svl/itempool.hxx>
 #include <svl/itemset.hxx>
 #include <svl/style.hxx>
+#include <comphelper/sequence.hxx>
 #include <cppuhelper/supportsservice.hxx>
 
 #include <svx/svdmodel.hxx>
@@ -37,7 +38,7 @@ using namespace ::cppu;
 
 SvxUnoNameItemTable::SvxUnoNameItemTable( SdrModel* pModel, sal_uInt16 nWhich, sal_uInt8 nMemberId ) throw()
 : mpModel( pModel ),
-  mpModelPool( pModel ? &pModel->GetItemPool() : NULL ),
+  mpModelPool( pModel ? &pModel->GetItemPool() : nullptr ),
   mnWhich( nWhich ), mnMemberId( nMemberId )
 {
     if( pModel )
@@ -247,18 +248,7 @@ uno::Sequence< OUString > SAL_CALL SvxUnoNameItemTable::getElementNames(  )
         aNameSet.insert(aApiName);
     }
 
-    uno::Sequence< OUString > aSeq( aNameSet.size() );
-    OUString* pNames = aSeq.getArray();
-
-    std::set< OUString >::iterator aIter( aNameSet.begin() );
-    const std::set< OUString >::iterator aEnd( aNameSet.end() );
-
-    while( aIter != aEnd )
-    {
-        *pNames++ = *aIter++;
-    }
-
-    return aSeq;
+    return comphelper::containerToSequence<OUString>(aNameSet);
 }
 
 sal_Bool SAL_CALL SvxUnoNameItemTable::hasByName( const OUString& aApiName )

@@ -370,15 +370,14 @@ void WMFReader::ReadRecordParams( sal_uInt16 nFunc )
 
         case W_META_POLYPOLYGON:
         {
-            bool bRecordOk = true;
             sal_uInt16 nPolyCount(0);
             // Number of polygons:
             pWMF->ReadUInt16( nPolyCount );
             if (nPolyCount && pWMF->good())
             {
+                bool bRecordOk = true;
                 if (nPolyCount > pWMF->remainingSize() / sizeof(sal_uInt16))
                 {
-                    bRecordOk = false;
                     break;
                 }
 
@@ -681,7 +680,7 @@ void WMFReader::ReadRecordParams( sal_uInt16 nFunc )
                         aBmp.Crop( aCropRect );
                     }
                     Rectangle aDestRect( aPoint, Size( nSxe, nSye ) );
-                    aBmpSaveList.push_back( new BSaveStruct( aBmp, aDestRect, nWinROP, pOut->GetFillStyle () ) );
+                    aBmpSaveList.push_back( new BSaveStruct( aBmp, aDestRect, nWinROP ) );
                 }
             }
         }
@@ -731,7 +730,7 @@ void WMFReader::ReadRecordParams( sal_uInt16 nFunc )
                         Rectangle aCropRect( Point( nSx, nSy ), Size( nSxe, nSye ) );
                         aBmp.Crop( aCropRect );
                     }
-                    aBmpSaveList.push_back( new BSaveStruct( aBmp, aDestRect, nWinROP, pOut->GetFillStyle () ) );
+                    aBmpSaveList.push_back( new BSaveStruct( aBmp, aDestRect, nWinROP ) );
                 }
             }
         }
@@ -856,14 +855,14 @@ void WMFReader::ReadRecordParams( sal_uInt16 nFunc )
             switch( nStyle & 0xF00 )
             {
                 case PS_ENDCAP_ROUND :
-                    aLineInfo.SetLineCap( com::sun::star::drawing::LineCap_ROUND );
+                    aLineInfo.SetLineCap( css::drawing::LineCap_ROUND );
                 break;
                 case PS_ENDCAP_SQUARE :
-                    aLineInfo.SetLineCap( com::sun::star::drawing::LineCap_SQUARE );
+                    aLineInfo.SetLineCap( css::drawing::LineCap_SQUARE );
                 break;
                 case PS_ENDCAP_FLAT :
                 default :
-                    aLineInfo.SetLineCap( com::sun::star::drawing::LineCap_BUTT );
+                    aLineInfo.SetLineCap( css::drawing::LineCap_BUTT );
             }
             switch( nStyle & 0xF000 )
             {
@@ -1108,7 +1107,7 @@ void WMFReader::ReadRecordParams( sal_uInt16 nFunc )
                                 // total records should be the same as in previous comments
                                 nEMFRecCount = 0xFFFFFFFF;
                                 delete pEMFStream;
-                                pEMFStream = NULL;
+                                pEMFStream = nullptr;
                             }
                             nEMFRec++;
 
@@ -1116,7 +1115,7 @@ void WMFReader::ReadRecordParams( sal_uInt16 nFunc )
                             {
                                 nEMFRecCount = 0xFFFFFFFF;
                                 delete pEMFStream;
-                                pEMFStream = NULL;
+                                pEMFStream = nullptr;
                             }
 
                             if( pEMFStream )
@@ -1212,7 +1211,7 @@ bool WMFReader::ReadHeader()
         nUnitsPerInch = 96;
 
 
-        if (   pExternalHeader != NULL
+        if (   pExternalHeader != nullptr
             && pExternalHeader->xExt > 0
             && pExternalHeader->yExt > 0
             && (pExternalHeader->mapMode == MM_ISOTROPIC || pExternalHeader->mapMode == MM_ANISOTROPIC))
@@ -1308,7 +1307,7 @@ void WMFReader::ReadWMF()
     nCurrentAction = 0;
     nUnicodeEscapeAction = 0;
 
-    pEMFStream      = NULL;
+    pEMFStream      = nullptr;
     nEMFRecCount    = 0;
     nEMFRec         = 0;
     nEMFSize        = 0;
@@ -1324,12 +1323,11 @@ void WMFReader::ReadWMF()
 
     if ( ReadHeader( ) )
     {
-        bool bEMFAvailable = false;
-
         nPos = pWMF->Tell();
 
         if( nEndPos - nStartPos )
         {
+           bool bEMFAvailable = false;
             while( true )
             {
                 nCurrentAction++;
@@ -1395,7 +1393,7 @@ void WMFReader::ReadWMF()
                             // something went wrong
                             // continue with WMF, don't try this again
                             delete pEMFStream;
-                            pEMFStream = NULL;
+                            pEMFStream = nullptr;
                         }
                     }
                 }
@@ -1698,7 +1696,7 @@ bool WMFReader::GetPlaceableBound( Rectangle& rPlaceableBound, SvStream* pStm )
                 case W_META_STRETCHDIB:
                 {
                     sal_Int32   nWinROP;
-                    sal_uInt16  nSx, nSy, nSxe, nSye, nUsage;
+                    sal_uInt16  nSx, nSy, nUsage;
                     pStm->ReadInt32( nWinROP );
 
                     if( nFunction == W_META_STRETCHDIB )
@@ -1706,9 +1704,10 @@ bool WMFReader::GetPlaceableBound( Rectangle& rPlaceableBound, SvStream* pStm )
 
                     // nSye and nSxe is the number of pixels that has to been used
                     if( nFunction == W_META_STRETCHDIB || nFunction == W_META_STRETCHBLT || nFunction == W_META_DIBSTRETCHBLT )
+                    {
+                        sal_uInt16 nSxe, nSye;
                         pStm->ReadUInt16( nSye ).ReadUInt16( nSxe );
-                    else
-                        nSye = nSxe = 0;    // set this to zero as indicator not to scale the bitmap later
+                    }
 
                     // nSy and nx is the offset of the first pixel
                     pStm->ReadUInt16( nSy ).ReadUInt16( nSx );
@@ -1804,7 +1803,7 @@ WMFReader::WMFReader(SvStream& rStreamWMF, GDIMetaFile& rGDIMetaFile,
     : WinMtf(new WinMtfOutput(rGDIMetaFile) , rStreamWMF, pConfigItem)
     , nUnitsPerInch(96)
     , nRecSize(0)
-    , pEMFStream(NULL)
+    , pEMFStream(nullptr)
     , nEMFRecCount(0)
     , nEMFRec(0)
     , nEMFSize(0)

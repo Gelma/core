@@ -66,12 +66,11 @@ void SwDrawFormShell::InitInterface_Impl()
     GetStaticInterface()->RegisterObjectBar(SFX_OBJECTBAR_OBJECT, RID_TEXT_TOOLBOX);
 }
 
-TYPEINIT1(SwDrawFormShell, SwDrawBaseShell)
 
 void SwDrawFormShell::Execute(SfxRequest &rReq)
 {
     SwWrtShell &rSh = GetShell();
-    const SfxPoolItem* pItem = 0;
+    const SfxPoolItem* pItem = nullptr;
     const SfxItemSet *pArgs = rReq.GetArgs();
 
     switch ( rReq.GetSlot() )
@@ -89,7 +88,7 @@ void SwDrawFormShell::Execute(SfxRequest &rReq)
             const SdrMarkList& rMarkList = pSdrView->GetMarkedObjectList();
             if (rMarkList.GetMark(0))
             {
-                SdrUnoObj* pUnoCtrl = PTR_CAST(SdrUnoObj, rMarkList.GetMark(0)->GetMarkedSdrObj());
+                SdrUnoObj* pUnoCtrl = dynamic_cast<SdrUnoObj*>( rMarkList.GetMark(0)->GetMarkedSdrObj() );
                 if (pUnoCtrl && FmFormInventor == pUnoCtrl->GetObjInventor())
                 {
                     if(bConvertToText)
@@ -177,7 +176,7 @@ void SwDrawFormShell::GetState(SfxItemSet& rSet)
                 SvxHyperlinkItem aHLinkItem;
                 if (rMarkList.GetMark(0))
                 {
-                    SdrUnoObj* pUnoCtrl = PTR_CAST(SdrUnoObj, rMarkList.GetMark(0)->GetMarkedSdrObj());
+                    SdrUnoObj* pUnoCtrl = dynamic_cast<SdrUnoObj*>( rMarkList.GetMark(0)->GetMarkedSdrObj() );
                     if (pUnoCtrl && FmFormInventor == pUnoCtrl->GetObjInventor())
                     {
                         uno::Reference< awt::XControlModel >  xControlModel = pUnoCtrl->GetUnoControlModel();
@@ -250,7 +249,7 @@ SwDrawFormShell::SwDrawFormShell(SwView &_rView) :
 {
     SetHelpId(SW_DRAWFORMSHELL);
     GetShell().NoEdit();
-    SetName(OUString("DrawForm"));
+    SetName("DrawForm");
     SfxShell::SetContextName(sfx2::sidebar::EnumContext::GetContextName(sfx2::sidebar::EnumContext::Context_Form));
 }
 

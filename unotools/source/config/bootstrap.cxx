@@ -64,7 +64,7 @@ namespace utl
         OUString makeImplName()
         {
             OUString uri;
-            rtl::Bootstrap::get( OUString("BRAND_BASE_DIR"), uri);
+            rtl::Bootstrap::get( "BRAND_BASE_DIR", uri);
             return uri + "/" LIBO_ETC_FOLDER "/" SAL_CONFIGFILE("bootstrap");
         }
     }
@@ -395,9 +395,7 @@ Bootstrap::PathStatus implGetBootstrapFile(rtl::Bootstrap& _rData, Bootstrap::Im
 static
 Bootstrap::PathStatus implGetVersionFile(rtl::Bootstrap& _rData, Bootstrap::Impl::PathData & _rVersionFile)
 {
-    OUString const csVersionFileItem(BOOTSTRAP_ITEM_VERSIONFILE);
-
-    _rData.getFrom(csVersionFileItem,_rVersionFile.path);
+    _rData.getFrom(BOOTSTRAP_ITEM_VERSIONFILE, _rVersionFile.path);
 
     return updateStatus(_rVersionFile);
 }
@@ -424,9 +422,9 @@ static void addMissingDirectoryError(OUStringBuffer& _rBuf, OUString const& _aPa
     _rBuf.append(IS_MISSING).append(PERIOD);
 }
 
-static void addUnexpectedError(OUStringBuffer& _rBuf, AsciiString _sExtraInfo = NULL)
+static void addUnexpectedError(OUStringBuffer& _rBuf, AsciiString _sExtraInfo = nullptr)
 {
-    if (NULL == _sExtraInfo)
+    if (nullptr == _sExtraInfo)
         _sExtraInfo = "An internal failure occurred";
 
     _rBuf.appendAscii(_sExtraInfo).append(PERIOD);
@@ -736,9 +734,9 @@ bool Bootstrap::Impl::getVersionValue(OUString const& _sName, OUString& _rValue,
 {
     // try to open version.ini (versionrc)
     OUString uri;
-    rtl::Bootstrap::get( OUString("BRAND_BASE_DIR"), uri);
+    rtl::Bootstrap::get( "BRAND_BASE_DIR", uri);
     rtl::Bootstrap aData( uri + "/" LIBO_ETC_FOLDER "/" SAL_CONFIGFILE("version") );
-    if ( aData.getHandle() == NULL )
+    if ( aData.getHandle() == nullptr )
         // version.ini (versionrc) doesn't exist
         return false;
 

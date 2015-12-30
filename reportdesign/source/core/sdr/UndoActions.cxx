@@ -82,7 +82,6 @@ namespace rptui
 }
 
 
-TYPEINIT1( OCommentUndoAction,          SdrUndoAction );
 
 OCommentUndoAction::OCommentUndoAction(SdrModel& _rMod,sal_uInt16 nCommentID)
     :SdrUndoAction(_rMod)
@@ -134,7 +133,7 @@ OUndoContainerAction::~OUndoContainerAction()
 
 #if OSL_DEBUG_LEVEL > 0
             SvxShape* pShape = SvxShape::getImplementation( xChild );
-            SdrObject* pObject = pShape ? pShape->GetSdrObject() : NULL;
+            SdrObject* pObject = pShape ? pShape->GetSdrObject() : nullptr;
             OSL_ENSURE( pObject == nullptr || (pShape->HasSdrObjectOwnership() && !pObject->IsInserted()),
                 "OUndoContainerAction::~OUndoContainerAction: inconsistency in the shape/object ownership!" );
 #endif
@@ -159,7 +158,7 @@ void OUndoContainerAction::implReInsert( )
         m_xContainer->insertByIndex( m_xContainer->getCount(),uno::makeAny(m_xElement) );
     }
     // we don't own the object anymore
-    m_xOwnElement = NULL;
+    m_xOwnElement = nullptr;
 }
 
 
@@ -252,7 +251,7 @@ OUndoGroupSectionAction::OUndoGroupSectionAction(SdrModel& _rMod
                                              ,const uno::Reference< report::XGroup >& _xGroup
                                              ,const Reference< XInterface > & xElem
                                              ,sal_uInt16 _nCommentId)
-:OUndoContainerAction(_rMod,_eAction,NULL,xElem,_nCommentId)
+:OUndoContainerAction(_rMod,_eAction,nullptr,xElem,_nCommentId)
 ,m_aGroupHelper(_xGroup)
 ,m_pMemberFunction(_pMemberFunction)
 {
@@ -271,7 +270,7 @@ void OUndoGroupSectionAction::implReInsert( )
     catch(uno::Exception&){}
 
     // we don't own the object anymore
-    m_xOwnElement = NULL;
+    m_xOwnElement = nullptr;
 }
 
 
@@ -298,7 +297,7 @@ OUndoReportSectionAction::OUndoReportSectionAction(SdrModel& _rMod
                                              ,const uno::Reference< report::XReportDefinition >& _xReport
                                              ,const Reference< XInterface > & xElem
                                              ,sal_uInt16 _nCommentId)
-:OUndoContainerAction(_rMod,_eAction,NULL,xElem,_nCommentId)
+:OUndoContainerAction(_rMod,_eAction,nullptr,xElem,_nCommentId)
 ,m_aReportHelper(_xReport)
 ,m_pMemberFunction(_pMemberFunction)
 {
@@ -323,7 +322,7 @@ void OUndoReportSectionAction::implReInsert( )
     }
     catch(uno::Exception&){}
     // we don't own the object anymore
-    m_xOwnElement = NULL;
+    m_xOwnElement = nullptr;
 }
 
 

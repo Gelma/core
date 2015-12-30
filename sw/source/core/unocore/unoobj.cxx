@@ -187,20 +187,20 @@ void SwUnoCursorHelper::GetTextFromPam(SwPaM & rPam, OUString & rBuffer)
         const bool bOldShowProgress = xWrt->bShowProgress;
         xWrt->bShowProgress = false;
 
-        long lLen;
-        if( !IsError( aWriter.Write( xWrt ) ) &&
-            0x7ffffff > (( lLen  = aStream.GetSize() )
-                                    / sizeof( sal_Unicode )) + 1 )
+        if( !IsError( aWriter.Write( xWrt ) ) )
         {
-            aStream.WriteUInt16( '\0' );
+            const sal_uInt64 lUniLen = aStream.GetSize()/sizeof( sal_Unicode );
+            if (lUniLen < static_cast<sal_uInt64>(SAL_MAX_INT32-1))
+            {
+                aStream.WriteUInt16( '\0' );
 
-            aStream.Seek( 0 );
-            aStream.ResetError();
+                aStream.Seek( 0 );
+                aStream.ResetError();
 
-            long lUniLen = (lLen / sizeof( sal_Unicode ));
-            rtl_uString *pStr = rtl_uString_alloc(lUniLen);
-            aStream.Read(pStr->buffer, lUniLen * sizeof(sal_Unicode));
-            rBuffer = OUString(pStr, SAL_NO_ACQUIRE);
+                rtl_uString *pStr = rtl_uString_alloc(lUniLen);
+                aStream.Read(pStr->buffer, lUniLen * sizeof(sal_Unicode));
+                rBuffer = OUString(pStr, SAL_NO_ACQUIRE);
+            }
         }
         xWrt->bShowProgress = bOldShowProgress;
     }
@@ -208,7 +208,7 @@ void SwUnoCursorHelper::GetTextFromPam(SwPaM & rPam, OUString & rBuffer)
 
 static void
 lcl_setCharStyle(SwDoc *const pDoc, const uno::Any & rValue, SfxItemSet & rSet)
-    throw (lang::IllegalArgumentException, std::exception)
+    throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception)
 {
     SwDocShell *const pDocSh = pDoc->GetDocShell();
     if(pDocSh)
@@ -281,13 +281,13 @@ throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception)
 
     SwTextFormatColl *const pLocal = pStyle->GetCollection();
     UnoActionContext aAction(pDoc);
-    pDoc->GetIDocumentUndoRedo().StartUndo( UNDO_START, NULL );
-    SwPaM *pTmpCrsr = &rPaM;
+    pDoc->GetIDocumentUndoRedo().StartUndo( UNDO_START, nullptr );
+    SwPaM *pTmpCursor = &rPaM;
     do {
-        pDoc->SetTextFormatColl(*pTmpCrsr, pLocal);
-        pTmpCrsr = static_cast<SwPaM*>(pTmpCrsr->GetNext());
-    } while ( pTmpCrsr != &rPaM );
-    pDoc->GetIDocumentUndoRedo().EndUndo( UNDO_END, NULL );
+        pDoc->SetTextFormatColl(*pTmpCursor, pLocal);
+        pTmpCursor = static_cast<SwPaM*>(pTmpCursor->GetNext());
+    } while ( pTmpCursor != &rPaM );
+    pDoc->GetIDocumentUndoRedo().EndUndo( UNDO_END, nullptr );
 }
 
 bool
@@ -341,31 +341,31 @@ SwUnoCursorHelper::SetPageDesc(
 }
 
 static void
-lcl_SetNodeNumStart(SwPaM & rCrsr, uno::Any const& rValue)
+lcl_SetNodeNumStart(SwPaM & rCursor, uno::Any const& rValue)
 {
     sal_Int16 nTmp = 1;
     rValue >>= nTmp;
     sal_uInt16 nStt = (nTmp < 0 ? USHRT_MAX : (sal_uInt16)nTmp);
-    SwDoc* pDoc = rCrsr.GetDoc();
+    SwDoc* pDoc = rCursor.GetDoc();
     UnoActionContext aAction(pDoc);
 
-    if( rCrsr.GetNext() != &rCrsr )         // MultiSelection?
+    if( rCursor.GetNext() != &rCursor )         // MultiSelection?
     {
-        pDoc->GetIDocumentUndoRedo().StartUndo( UNDO_START, NULL );
-        SwPamRanges aRangeArr( rCrsr );
-        SwPaM aPam( *rCrsr.GetPoint() );
-        for( SwPamRanges::size_type n = 0; n < aRangeArr.Count(); ++n )
+        pDoc->GetIDocumentUndoRedo().StartUndo( UNDO_START, nullptr );
+        SwPamRanges aRangeArr( rCursor );
+        SwPaM aPam( *rCursor.GetPoint() );
+        for( size_t n = 0; n < aRangeArr.Count(); ++n )
         {
           pDoc->SetNumRuleStart(*aRangeArr.SetPam( n, aPam ).GetPoint());
           pDoc->SetNodeNumStart(*aRangeArr.SetPam( n, aPam ).GetPoint(),
                     nStt );
         }
-        pDoc->GetIDocumentUndoRedo().EndUndo( UNDO_END, NULL );
+        pDoc->GetIDocumentUndoRedo().EndUndo( UNDO_END, nullptr );
     }
     else
     {
-        pDoc->SetNumRuleStart( *rCrsr.GetPoint());
-        pDoc->SetNodeNumStart( *rCrsr.GetPoint(), nStt );
+        pDoc->SetNumRuleStart( *rCursor.GetPoint());
+        pDoc->SetNodeNumStart( *rCursor.GetPoint(), nStt );
     }
 }
 
@@ -381,7 +381,7 @@ lcl_setCharFormatSequence(SwPaM & rPam, uno::Any const& rValue)
     for (sal_Int32 nStyle = 0; nStyle < aCharStyles.getLength(); nStyle++)
     {
         uno::Any aStyle;
-        rPam.GetDoc()->GetIDocumentUndoRedo().StartUndo(UNDO_START, NULL);
+        rPam.GetDoc()->GetIDocumentUndoRedo().StartUndo(UNDO_START, nullptr);
         aStyle <<= aCharStyles.getConstArray()[nStyle];
         // create a local set and apply each format directly
         SfxItemSet aSet(rPam.GetDoc()->GetAttrPool(),
@@ -389,10 +389,10 @@ lcl_setCharFormatSequence(SwPaM & rPam, uno::Any const& rValue)
         lcl_setCharStyle(rPam.GetDoc(), aStyle, aSet);
         // the first style should replace the current attributes,
         // all other have to be added
-        SwUnoCursorHelper::SetCrsrAttr(rPam, aSet, (nStyle)
+        SwUnoCursorHelper::SetCursorAttr(rPam, aSet, (nStyle)
                 ? SetAttrMode::DONTREPLACE
                 : SetAttrMode::DEFAULT);
-        rPam.GetDoc()->GetIDocumentUndoRedo().EndUndo(UNDO_START, NULL);
+        rPam.GetDoc()->GetIDocumentUndoRedo().EndUndo(UNDO_START, nullptr);
     }
     return true;
 }
@@ -421,7 +421,7 @@ lcl_setDropcapCharStyle(SwPaM & rPam, SfxItemSet & rItemSet,
         throw lang::IllegalArgumentException();
     }
     ::std::unique_ptr<SwFormatDrop> pDrop;
-    SfxPoolItem const* pItem(0);
+    SfxPoolItem const* pItem(nullptr);
     if (SfxItemState::SET ==
             rItemSet.GetItemState(RES_PARATR_DROP, true, &pItem))
     {
@@ -527,7 +527,7 @@ throw (lang::IllegalArgumentException, uno::RuntimeException,
                     if (nLevel < 0 || MAXLEVEL <= nLevel)
                     {
                         throw lang::IllegalArgumentException(
-                            "invalid NumberingLevel", 0, 0);
+                            "invalid NumberingLevel", nullptr, 0);
                     }
                     pTextNd->SetAttrListLevel(nLevel);
                 }
@@ -615,17 +615,17 @@ SwFormatColl *
 SwUnoCursorHelper::GetCurTextFormatColl(SwPaM & rPaM, const bool bConditional)
 {
     static const sal_uLong nMaxLookup = 1000;
-    SwFormatColl *pFormat = 0;
+    SwFormatColl *pFormat = nullptr;
     bool bError = false;
-    SwPaM *pTmpCrsr = &rPaM;
+    SwPaM *pTmpCursor = &rPaM;
     do
     {
-        const sal_uLong nSttNd = pTmpCrsr->Start()->nNode.GetIndex();
-        const sal_uLong nEndNd = pTmpCrsr->End()->nNode.GetIndex();
+        const sal_uLong nSttNd = pTmpCursor->Start()->nNode.GetIndex();
+        const sal_uLong nEndNd = pTmpCursor->End()->nNode.GetIndex();
 
         if( nEndNd - nSttNd >= nMaxLookup )
         {
-            pFormat = 0;
+            pFormat = nullptr;
             break;
         }
 
@@ -649,9 +649,9 @@ SwUnoCursorHelper::GetCurTextFormatColl(SwPaM & rPaM, const bool bConditional)
             }
         }
 
-        pTmpCrsr = static_cast<SwPaM*>(pTmpCrsr->GetNext());
-    } while ( pTmpCrsr != &rPaM );
-    return (bError) ? 0 : pFormat;
+        pTmpCursor = static_cast<SwPaM*>(pTmpCursor->GetNext());
+    } while ( pTmpCursor != &rPaM );
+    return (bError) ? nullptr : pFormat;
 }
 
 class SwXTextCursor::Impl
@@ -670,7 +670,7 @@ public:
         : m_rPropSet(*aSwMapProvider.GetPropertySet(PROPERTY_MAP_TEXT_CURSOR))
         , m_eType(eType)
         , m_xParentText(xParent)
-        , m_pUnoCursor(rDoc.CreateUnoCrsr(rPoint), true)
+        , m_pUnoCursor(rDoc.CreateUnoCursor(rPoint), true)
     {
         if (pMark)
         {
@@ -679,14 +679,14 @@ public:
         }
     }
 
-    SwUnoCrsr& GetCursorOrThrow() {
+    SwUnoCursor& GetCursorOrThrow() {
         if(!m_pUnoCursor)
-            throw uno::RuntimeException("SwXTextCursor: disposed or invalid", 0);
+            throw uno::RuntimeException("SwXTextCursor: disposed or invalid", nullptr);
         return *m_pUnoCursor;
     }
 };
 
-SwUnoCrsr& SwXTextCursor::GetCursor()
+SwUnoCursor& SwXTextCursor::GetCursor()
     { return *m_pImpl->m_pUnoCursor; }
 
 SwPaM const* SwXTextCursor::GetPaM() const
@@ -715,7 +715,7 @@ SwXTextCursor::SwXTextCursor(uno::Reference< text::XText > const& xParent,
         SwPaM const& rSourceCursor, const enum CursorType eType)
     : m_pImpl( new Impl(*rSourceCursor.GetDoc(), eType,
                 xParent, *rSourceCursor.GetPoint(),
-                rSourceCursor.HasMark() ? rSourceCursor.GetMark() : 0) )
+                rSourceCursor.HasMark() ? rSourceCursor.GetMark() : nullptr) )
 {
 }
 
@@ -726,15 +726,15 @@ SwXTextCursor::~SwXTextCursor()
 void SwXTextCursor::DeleteAndInsert(const OUString& rText,
         const bool bForceExpandHints)
 {
-    auto pUnoCrsr = static_cast<SwCursor*>(&(*m_pImpl->m_pUnoCursor));
-    if(pUnoCrsr)
+    auto pUnoCursor = static_cast<SwCursor*>(&(*m_pImpl->m_pUnoCursor));
+    if(pUnoCursor)
     {
         // Start/EndAction
-        SwDoc* pDoc = pUnoCrsr->GetDoc();
+        SwDoc* pDoc = pUnoCursor->GetDoc();
         UnoActionContext aAction(pDoc);
         const sal_Int32 nTextLen = rText.getLength();
-        pDoc->GetIDocumentUndoRedo().StartUndo(UNDO_INSERT, NULL);
-        auto pCurrent = static_cast<SwCursor*>(pUnoCrsr);
+        pDoc->GetIDocumentUndoRedo().StartUndo(UNDO_INSERT, nullptr);
+        auto pCurrent = static_cast<SwCursor*>(pUnoCursor);
         do
         {
             if (pCurrent->HasMark())
@@ -749,13 +749,13 @@ void SwXTextCursor::DeleteAndInsert(const OUString& rText,
                 OSL_ENSURE( bSuccess, "Doc->Insert(Str) failed." );
                 (void) bSuccess;
 
-                SwUnoCursorHelper::SelectPam(*pUnoCrsr, true);
+                SwUnoCursorHelper::SelectPam(*pUnoCursor, true);
                 pCurrent->Left(rText.getLength(),
                         CRSR_SKIP_CHARS, false, false);
             }
             pCurrent = static_cast<SwCursor*>(pCurrent->GetNext());
-        } while (pCurrent != pUnoCrsr);
-        pDoc->GetIDocumentUndoRedo().EndUndo(UNDO_INSERT, NULL);
+        } while (pCurrent != pUnoCursor);
+        pDoc->GetIDocumentUndoRedo().EndUndo(UNDO_INSERT, nullptr);
     }
 }
 
@@ -890,7 +890,7 @@ void SAL_CALL SwXTextCursor::collapseToStart() throw (uno::RuntimeException, std
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     if (rUnoCursor.HasMark())
     {
@@ -906,7 +906,7 @@ void SAL_CALL SwXTextCursor::collapseToEnd() throw (uno::RuntimeException, std::
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     if (rUnoCursor.HasMark())
     {
@@ -923,10 +923,10 @@ sal_Bool SAL_CALL SwXTextCursor::isCollapsed() throw (uno::RuntimeException, std
     SolarMutexGuard aGuard;
 
     bool bRet = true;
-    auto pUnoCrsr(m_pImpl->m_pUnoCursor);
-    if(pUnoCrsr && pUnoCrsr->GetMark())
+    auto pUnoCursor(m_pImpl->m_pUnoCursor);
+    if(pUnoCursor && pUnoCursor->GetMark())
     {
-        bRet = (*pUnoCrsr->GetPoint() == *pUnoCrsr->GetMark());
+        bRet = (*pUnoCursor->GetPoint() == *pUnoCursor->GetMark());
     }
     return bRet;
 }
@@ -937,7 +937,7 @@ throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     SwUnoCursorHelper::SelectPam(rUnoCursor, Expand);
     bool bRet = rUnoCursor.Left( nCount, CRSR_SKIP_CHARS, false, false);
@@ -956,7 +956,7 @@ throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     SwUnoCursorHelper::SelectPam(rUnoCursor, Expand);
     bool bRet = rUnoCursor.Right(nCount, CRSR_SKIP_CHARS, false, false);
@@ -974,7 +974,7 @@ SwXTextCursor::gotoStart(sal_Bool Expand) throw (uno::RuntimeException, std::exc
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     SwUnoCursorHelper::SelectPam(rUnoCursor, Expand);
     if (CURSOR_BODY == m_pImpl->m_eType)
@@ -982,12 +982,12 @@ SwXTextCursor::gotoStart(sal_Bool Expand) throw (uno::RuntimeException, std::exc
         rUnoCursor.Move( fnMoveBackward, fnGoDoc );
         //check, that the cursor is not in a table
         SwTableNode * pTableNode = rUnoCursor.GetNode().FindTableNode();
-        SwContentNode * pCNode = 0;
+        SwContentNode * pCNode = nullptr;
         while (pTableNode)
         {
             rUnoCursor.GetPoint()->nNode = *pTableNode->EndOfSectionNode();
             pCNode = GetDoc()->GetNodes().GoNext(&rUnoCursor.GetPoint()->nNode);
-            pTableNode = (pCNode) ? pCNode->FindTableNode() : 0;
+            pTableNode = (pCNode) ? pCNode->FindTableNode() : nullptr;
         }
         if (pCNode)
         {
@@ -1030,7 +1030,7 @@ SwXTextCursor::gotoEnd(sal_Bool Expand) throw (uno::RuntimeException, std::excep
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     SwUnoCursorHelper::SelectPam(rUnoCursor, Expand);
     if (CURSOR_BODY == m_pImpl->m_eType)
@@ -1064,11 +1064,11 @@ throw (uno::RuntimeException, std::exception)
         throw uno::RuntimeException();
     }
 
-    SwUnoCrsr & rOwnCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rOwnCursor( m_pImpl->GetCursorOrThrow() );
 
     uno::Reference<lang::XUnoTunnel> xRangeTunnel( xRange, uno::UNO_QUERY);
-    SwXTextRange* pRange = 0;
-    OTextCursorHelper* pCursor = 0;
+    SwXTextRange* pRange = nullptr;
+    OTextCursorHelper* pCursor = nullptr;
     if(xRangeTunnel.is())
     {
         pRange  = ::sw::UnoTunnelGetImplementation<SwXTextRange>(xRangeTunnel);
@@ -1082,7 +1082,7 @@ throw (uno::RuntimeException, std::exception)
     }
 
     SwPaM aPam(GetDoc()->GetNodes());
-    const SwPaM * pPam(0);
+    const SwPaM * pPam(nullptr);
     if (pCursor)
     {
         pPam = pCursor->GetPaM();
@@ -1116,7 +1116,7 @@ throw (uno::RuntimeException, std::exception)
         }
 
         const SwStartNode* pOwnStartNode = rOwnCursor.GetNode().FindSttNodeByType(eSearchNodeType);
-        while ( pOwnStartNode != NULL
+        while ( pOwnStartNode != nullptr
                 && pOwnStartNode->IsSectionNode())
         {
             pOwnStartNode = pOwnStartNode->StartOfSectionNode();
@@ -1124,7 +1124,7 @@ throw (uno::RuntimeException, std::exception)
 
         const SwStartNode* pTmp =
             pPam->GetNode().FindSttNodeByType(eSearchNodeType);
-        while ( pTmp != NULL
+        while ( pTmp != nullptr
                 && pTmp->IsSectionNode() )
         {
             pTmp = pTmp->StartOfSectionNode();
@@ -1202,7 +1202,7 @@ sal_Bool SAL_CALL SwXTextCursor::isStartOfWord() throw (uno::RuntimeException, s
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     const bool bRet =
         rUnoCursor.IsStartWordWT( i18n::WordType::DICTIONARY_WORD );
@@ -1213,7 +1213,7 @@ sal_Bool SAL_CALL SwXTextCursor::isEndOfWord() throw (uno::RuntimeException, std
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     const bool bRet =
         rUnoCursor.IsEndWordWT( i18n::WordType::DICTIONARY_WORD );
@@ -1225,7 +1225,7 @@ SwXTextCursor::gotoNextWord(sal_Bool Expand) throw (uno::RuntimeException, std::
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     // problems arise when a paragraph starts with something other than a word
     bool bRet = false;
@@ -1272,7 +1272,7 @@ SwXTextCursor::gotoPreviousWord(sal_Bool Expand) throw (uno::RuntimeException, s
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     // white spaces create problems on the paragraph start
     bool bRet = false;
@@ -1312,7 +1312,7 @@ SwXTextCursor::gotoEndOfWord(sal_Bool Expand) throw (uno::RuntimeException, std:
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     bool bRet = false;
     SwPosition  *const pPoint     = rUnoCursor.GetPoint();
@@ -1348,7 +1348,7 @@ SwXTextCursor::gotoStartOfWord(sal_Bool Expand) throw (uno::RuntimeException, st
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     bool bRet = false;
     SwPosition  *const pPoint     = rUnoCursor.GetPoint();
@@ -1384,7 +1384,7 @@ SwXTextCursor::isStartOfSentence() throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     // start of paragraph?
     bool bRet = rUnoCursor.GetPoint()->nContent == 0;
@@ -1394,10 +1394,10 @@ SwXTextCursor::isStartOfSentence() throw (uno::RuntimeException, std::exception)
     if (!bRet && (!rUnoCursor.HasMark() ||
                     *rUnoCursor.GetPoint() == *rUnoCursor.GetMark()))
     {
-        SwCursor aCrsr(*rUnoCursor.GetPoint(),0,false);
-        SwPosition aOrigPos = *aCrsr.GetPoint();
-        aCrsr.GoSentence(SwCursor::START_SENT );
-        bRet = aOrigPos == *aCrsr.GetPoint();
+        SwCursor aCursor(*rUnoCursor.GetPoint(),nullptr,false);
+        SwPosition aOrigPos = *aCursor.GetPoint();
+        aCursor.GoSentence(SwCursor::START_SENT );
+        bRet = aOrigPos == *aCursor.GetPoint();
     }
     return bRet;
 }
@@ -1407,7 +1407,7 @@ SwXTextCursor::isEndOfSentence() throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     // end of paragraph?
     bool bRet = rUnoCursor.GetContentNode() &&
@@ -1418,10 +1418,10 @@ SwXTextCursor::isEndOfSentence() throw (uno::RuntimeException, std::exception)
     if (!bRet && (!rUnoCursor.HasMark() ||
                     *rUnoCursor.GetPoint() == *rUnoCursor.GetMark()))
     {
-        SwCursor aCrsr(*rUnoCursor.GetPoint(), 0, false);
-        SwPosition aOrigPos = *aCrsr.GetPoint();
-        aCrsr.GoSentence(SwCursor::END_SENT);
-        bRet = aOrigPos == *aCrsr.GetPoint();
+        SwCursor aCursor(*rUnoCursor.GetPoint(), nullptr, false);
+        SwPosition aOrigPos = *aCursor.GetPoint();
+        aCursor.GoSentence(SwCursor::END_SENT);
+        bRet = aOrigPos == *aCursor.GetPoint();
     }
     return bRet;
 }
@@ -1431,7 +1431,7 @@ SwXTextCursor::gotoNextSentence(sal_Bool Expand) throw (uno::RuntimeException, s
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     const bool bWasEOS = isEndOfSentence();
     SwUnoCursorHelper::SelectPam(rUnoCursor, Expand);
@@ -1467,7 +1467,7 @@ throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     SwUnoCursorHelper::SelectPam(rUnoCursor, Expand);
     bool bRet = rUnoCursor.GoSentence(SwCursor::PREV_SENT);
@@ -1496,7 +1496,7 @@ throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     SwUnoCursorHelper::SelectPam(rUnoCursor, Expand);
     // if we're at the para start then we wont move
@@ -1519,7 +1519,7 @@ SwXTextCursor::gotoEndOfSentence(sal_Bool Expand) throw (uno::RuntimeException, 
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     SwUnoCursorHelper::SelectPam(rUnoCursor, Expand);
     // bRet is true if GoSentence() succeeded or if the
@@ -1543,7 +1543,7 @@ SwXTextCursor::isStartOfParagraph() throw (uno::RuntimeException, std::exception
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     const bool bRet = SwUnoCursorHelper::IsStartOfPara(rUnoCursor);
     return bRet;
@@ -1554,7 +1554,7 @@ SwXTextCursor::isEndOfParagraph() throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     const bool bRet = SwUnoCursorHelper::IsEndOfPara(rUnoCursor);
     return bRet;
@@ -1566,7 +1566,7 @@ throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     if (CURSOR_META == m_pImpl->m_eType)
     {
@@ -1591,7 +1591,7 @@ SwXTextCursor::gotoEndOfParagraph(sal_Bool Expand) throw (uno::RuntimeException,
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     if (CURSOR_META == m_pImpl->m_eType)
     {
@@ -1616,7 +1616,7 @@ SwXTextCursor::gotoNextParagraph(sal_Bool Expand) throw (uno::RuntimeException, 
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     if (CURSOR_META == m_pImpl->m_eType)
     {
@@ -1633,7 +1633,7 @@ throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     if (CURSOR_META == m_pImpl->m_eType)
     {
@@ -1657,7 +1657,7 @@ SwXTextCursor::getStart() throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     uno::Reference< text::XTextRange > xRet;
     SwPaM aPam(*rUnoCursor.Start());
@@ -1683,7 +1683,7 @@ SwXTextCursor::getEnd() throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     uno::Reference< text::XTextRange >  xRet;
     SwPaM aPam(*rUnoCursor.End());
@@ -1708,7 +1708,7 @@ OUString SAL_CALL SwXTextCursor::getString() throw (uno::RuntimeException, std::
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     OUString aText;
     SwUnoCursorHelper::GetTextFromPam(rUnoCursor, aText);
@@ -1720,7 +1720,7 @@ SwXTextCursor::setString(const OUString& aString) throw (uno::RuntimeException, 
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
     (void) rUnoCursor; // just to check if valid
 
     const bool bForceExpandHints( (CURSOR_META == m_pImpl->m_eType)
@@ -1743,11 +1743,11 @@ throw (beans::UnknownPropertyException, lang::WrappedTargetException,
     {
         throw beans::UnknownPropertyException(
             "Unknown property: " + rPropertyName,
-            static_cast<cppu::OWeakObject *>(0));
+            static_cast<cppu::OWeakObject *>(nullptr));
     }
 
     beans::PropertyState eTemp;
-    const bool bDone = SwUnoCursorHelper::getCrsrPropertyValue(
+    const bool bDone = SwUnoCursorHelper::getCursorPropertyValue(
             *pEntry, rPaM, &aAny, eTemp );
 
     if (!bDone)
@@ -1757,7 +1757,7 @@ throw (beans::UnknownPropertyException, lang::WrappedTargetException,
             RES_TXTATR_UNKNOWN_CONTAINER, RES_TXTATR_UNKNOWN_CONTAINER,
             RES_UNKNOWNATR_CONTAINER, RES_UNKNOWNATR_CONTAINER,
             0L);
-        SwUnoCursorHelper::GetCrsrAttr(rPaM, aSet);
+        SwUnoCursorHelper::GetCursorAttr(rPaM, aSet);
 
         rPropSet.getPropertyValue(*pEntry, aSet, aAny);
     }
@@ -1782,7 +1782,7 @@ throw (beans::UnknownPropertyException, beans::PropertyVetoException,
 
 // FN_UNO_PARA_STYLE is known to set attributes for nodes, inside
 // SwUnoCursorHelper::SetTextFormatColl, instead of extending item set.
-// We need to get them from nodes in next call to GetCrsrAttr.
+// We need to get them from nodes in next call to GetCursorAttr.
 // The rest could cause similar problems in theory, so we just list them here.
 inline bool propertyCausesSideEffectsInNodes(sal_uInt16 nWID)
 {
@@ -1851,7 +1851,7 @@ throw (beans::UnknownPropertyException, beans::PropertyVetoException,
 
             // we need to get up-to-date item set from nodes
             if (i == 0 || bPreviousPropertyCausesSideEffectsInNodes)
-                SwUnoCursorHelper::GetCrsrAttr(rPaM, aItemSet);
+                SwUnoCursorHelper::GetCursorAttr(rPaM, aItemSet);
 
             const uno::Any &rValue = rPropertyValues[i].Value;
             // this can set some attributes in nodes' mpAttrSet
@@ -1859,16 +1859,16 @@ throw (beans::UnknownPropertyException, beans::PropertyVetoException,
                 rPropSet.setPropertyValue(*pEntry, rValue, aItemSet);
 
             if (i + 1 == aEntries.size() || bPropertyCausesSideEffectsInNodes)
-                SwUnoCursorHelper::SetCrsrAttr(rPaM, aItemSet, nAttrMode, bTableMode);
+                SwUnoCursorHelper::SetCursorAttr(rPaM, aItemSet, nAttrMode, bTableMode);
 
             bPreviousPropertyCausesSideEffectsInNodes = bPropertyCausesSideEffectsInNodes;
         }
     }
 
     if (!aUnknownExMsg.isEmpty())
-        throw beans::UnknownPropertyException(aUnknownExMsg, static_cast<cppu::OWeakObject *>(0));
+        throw beans::UnknownPropertyException(aUnknownExMsg, static_cast<cppu::OWeakObject *>(nullptr));
     if (!aPropertyVetoExMsg.isEmpty())
-        throw beans::PropertyVetoException(aPropertyVetoExMsg, static_cast<cppu::OWeakObject *>(0));
+        throw beans::PropertyVetoException(aPropertyVetoExMsg, static_cast<cppu::OWeakObject *>(nullptr));
 }
 
 uno::Sequence< beans::PropertyState >
@@ -1908,7 +1908,7 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
             {
                 throw beans::UnknownPropertyException(
                     "Unknown property: " + pNames[i],
-                    static_cast<cppu::OWeakObject *>(0));
+                    static_cast<cppu::OWeakObject *>(nullptr));
             }
         }
         if (((SW_PROPERTY_STATE_CALLER_SWX_TEXT_PORTION == eCaller)  ||
@@ -1925,8 +1925,8 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
             if ( pEntry->nWID >= FN_UNO_RANGE_BEGIN &&
                  pEntry->nWID <= FN_UNO_RANGE_END )
             {
-                (void)SwUnoCursorHelper::getCrsrPropertyValue(
-                    *pEntry, rPaM, 0, pStates[i] );
+                (void)SwUnoCursorHelper::getCursorPropertyValue(
+                    *pEntry, rPaM, nullptr, pStates[i] );
             }
             else
             {
@@ -1954,7 +1954,7 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
                                 0L ));
                     }
                     // #i63870#
-                    SwUnoCursorHelper::GetCrsrAttr( rPaM, *pSet );
+                    SwUnoCursorHelper::GetCursorAttr( rPaM, *pSet );
                 }
 
                 pStates[i] = ( pSet->Count() )
@@ -1968,7 +1968,7 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
                     {
                         pSetParent.reset( pSet->Clone( false ) );
                         // #i63870#
-                        SwUnoCursorHelper::GetCrsrAttr(
+                        SwUnoCursorHelper::GetCursorAttr(
                                 rPaM, *pSetParent, true, false );
                     }
 
@@ -1987,8 +1987,7 @@ beans::PropertyState SwUnoCursorHelper::GetPropertyState(
     const OUString& rPropertyName)
 throw (beans::UnknownPropertyException, uno::RuntimeException)
 {
-    uno::Sequence< OUString > aStrings ( 1 );
-    aStrings[0] = rPropertyName;
+    uno::Sequence< OUString > aStrings { rPropertyName };
     uno::Sequence< beans::PropertyState > aSeq =
         GetPropertyStates(rPaM, rPropSet, aStrings,
                 SW_PROPERTY_STATE_CALLER_SINGLE_VALUE_ONLY );
@@ -2002,7 +2001,7 @@ lcl_SelectParaAndReset( SwPaM &rPaM, SwDoc & rDoc,
     // if we are reseting paragraph attributes, we need to select the full paragraph first
     SwPosition aStart = *rPaM.Start();
     SwPosition aEnd = *rPaM.End();
-    auto pTemp ( rDoc.CreateUnoCrsr(aStart) );
+    auto pTemp ( rDoc.CreateUnoCursor(aStart) );
     if(!SwUnoCursorHelper::IsStartOfPara(*pTemp))
     {
         pTemp->MovePara(fnParaCurr, fnParaStart);
@@ -2029,14 +2028,14 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
     {
         throw beans::UnknownPropertyException(
             "Unknown property: " + rPropertyName,
-            static_cast<cppu::OWeakObject *>(0));
+            static_cast<cppu::OWeakObject *>(nullptr));
     }
 
     if (pEntry->nFlags & beans::PropertyAttribute::READONLY)
     {
         throw uno::RuntimeException(
                 "setPropertyToDefault: property is read-only: "
-                + rPropertyName, 0);
+                + rPropertyName, nullptr);
     }
 
     if (pEntry->nWID < RES_FRMATR_END)
@@ -2054,7 +2053,7 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
     }
     else
     {
-        SwUnoCursorHelper::resetCrsrPropertyValue(*pEntry, rPaM);
+        SwUnoCursorHelper::resetCursorPropertyValue(*pEntry, rPaM);
     }
 }
 
@@ -2069,7 +2068,7 @@ throw (beans::UnknownPropertyException, lang::WrappedTargetException,
     if (!pEntry)
     {
         throw beans::UnknownPropertyException(
-            "Unknown property: " + rPropertyName, static_cast<cppu::OWeakObject *>(0));
+            "Unknown property: " + rPropertyName, static_cast<cppu::OWeakObject *>(nullptr));
     }
 
     uno::Any aRet;
@@ -2091,7 +2090,7 @@ SwXTextCursor::getPropertySetInfo() throw (uno::RuntimeException, std::exception
     static uno::Reference< beans::XPropertySetInfo >  xRef;
     if(!xRef.is())
     {
-        static SfxItemPropertyMapEntry const aCrsrExtMap_Impl[] =
+        static SfxItemPropertyMapEntry const aCursorExtMap_Impl[] =
         {
             { OUString(UNO_NAME_IS_SKIP_HIDDEN_TEXT), FN_SKIP_HIDDEN_TEXT, cppu::UnoType<bool>::get(), PROPERTY_NONE,     0},
             { OUString(UNO_NAME_IS_SKIP_PROTECTED_TEXT), FN_SKIP_PROTECTED_TEXT, cppu::UnoType<bool>::get(), PROPERTY_NONE,     0},
@@ -2102,7 +2101,7 @@ SwXTextCursor::getPropertySetInfo() throw (uno::RuntimeException, std::exception
         // extend PropertySetInfo!
         const uno::Sequence<beans::Property> aPropSeq = xInfo->getProperties();
         xRef = new SfxExtItemPropertySetInfo(
-            aCrsrExtMap_Impl,
+            aCursorExtMap_Impl,
             aPropSeq );
     }
     return xRef;
@@ -2117,7 +2116,7 @@ throw (beans::UnknownPropertyException, beans::PropertyVetoException,
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     if (rPropertyName == UNO_NAME_IS_SKIP_HIDDEN_TEXT)
     {
@@ -2151,7 +2150,7 @@ throw (beans::UnknownPropertyException, lang::WrappedTargetException,
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     uno::Any aAny;
     if (rPropertyName == UNO_NAME_IS_SKIP_HIDDEN_TEXT)
@@ -2218,7 +2217,7 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     const beans::PropertyState eRet = SwUnoCursorHelper::GetPropertyState(
             rUnoCursor, m_pImpl->m_rPropSet, rPropertyName);
@@ -2232,7 +2231,7 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     return SwUnoCursorHelper::GetPropertyStates(
             rUnoCursor, m_pImpl->m_rPropSet, rPropertyNames);
@@ -2272,7 +2271,7 @@ void SAL_CALL SwXTextCursor::setPropertyValues(
 
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     // a little lame to have to copy into this.
     uno::Sequence< beans::PropertyValue > aPropertyValues( aValues.getLength() );
@@ -2373,7 +2372,7 @@ throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     std::set<sal_uInt16> aParaWhichIds;
     std::set<sal_uInt16> aWhichIds;
@@ -2397,7 +2396,7 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     const sal_Int32 nCount = rPropertyNames.getLength();
     if ( nCount )
@@ -2441,7 +2440,7 @@ throw (beans::UnknownPropertyException, uno::RuntimeException, std::exception)
             }
             else if (pEntry->nWID == FN_UNO_NUM_START_VALUE)
             {
-                SwUnoCursorHelper::resetCrsrPropertyValue(*pEntry, rUnoCursor);
+                SwUnoCursorHelper::resetCursorPropertyValue(*pEntry, rUnoCursor);
             }
         }
 
@@ -2464,7 +2463,7 @@ throw (beans::UnknownPropertyException, lang::WrappedTargetException,
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     const sal_Int32 nCount = rPropertyNames.getLength();
     uno::Sequence< uno::Any > aRet(nCount);
@@ -2486,7 +2485,7 @@ throw (beans::UnknownPropertyException, lang::WrappedTargetException,
                 }
                 throw beans::UnknownPropertyException(
                     "Unknown property: " + pNames[i],
-                    static_cast<cppu::OWeakObject *>(0));
+                    static_cast<cppu::OWeakObject *>(nullptr));
             }
             if (pEntry->nWID < RES_FRMATR_END)
             {
@@ -2504,37 +2503,37 @@ throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     SwNode& node = rUnoCursor.GetNode();
 
     SwTextNode* txtNode = node.GetTextNode();
 
-    if (txtNode == 0) return;
+    if (txtNode == nullptr) return;
 
     if ( text::TextMarkupType::SPELLCHECK == nType )
     {
         txtNode->SetWrongDirty(SwTextNode::WrongState::TODO);
-        txtNode->SetWrong(0);
+        txtNode->SetWrong(nullptr);
     }
     else if( text::TextMarkupType::PROOFREADING == nType )
     {
         txtNode->SetGrammarCheckDirty(true);
-        txtNode->SetGrammarCheck(0);
+        txtNode->SetGrammarCheck(nullptr);
     }
     else if ( text::TextMarkupType::SMARTTAG == nType )
     {
         txtNode->SetSmartTagDirty(true);
-        txtNode->SetSmartTags(0);
+        txtNode->SetSmartTags(nullptr);
     }
     else return;
 
     SwFormatColl* fmtColl=txtNode->GetFormatColl();
 
-    if (fmtColl == 0) return;
+    if (fmtColl == nullptr) return;
 
     SwFormatChg aNew( fmtColl );
-    txtNode->NotifyClients( 0, &aNew );
+    txtNode->NotifyClients( nullptr, &aNew );
 }
 
 void SAL_CALL
@@ -2545,7 +2544,7 @@ throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     SwUnoCursorHelper::makeRedline(rUnoCursor, rRedlineType, rRedlineProperties);
 }
@@ -2557,7 +2556,7 @@ throw (lang::IllegalArgumentException, io::IOException,
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     SwUnoCursorHelper::InsertFile(&rUnoCursor, rURL, rOptions);
 }
@@ -2893,7 +2892,7 @@ SwXTextCursor::sort(const uno::Sequence< beans::PropertyValue >& rDescriptor)
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     if (rUnoCursor.HasMark())
     {
@@ -2938,7 +2937,7 @@ throw (uno::RuntimeException, std::exception)
     SolarMutexGuard g;
     if (rServiceName != "com.sun.star.text.TextContent")
         throw uno::RuntimeException();
-    SwUnoCrsr& rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor& rUnoCursor( m_pImpl->GetCursorOrThrow() );
     return SwXParaFrameEnumeration::Create(rUnoCursor, PARAFRAME_PORTION_TEXTRANGE);
 }
 
@@ -2947,11 +2946,11 @@ SwXTextCursor::createEnumeration() throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard g;
 
-    SwUnoCrsr & rUnoCursor( m_pImpl->GetCursorOrThrow() );
+    SwUnoCursor & rUnoCursor( m_pImpl->GetCursorOrThrow() );
 
     const uno::Reference<lang::XUnoTunnel> xTunnel(
             m_pImpl->m_xParentText, uno::UNO_QUERY);
-    SwXText* pParentText = 0;
+    SwXText* pParentText = nullptr;
     if (xTunnel.is())
     {
         pParentText = ::sw::UnoTunnelGetImplementation<SwXText>(xTunnel);
@@ -2962,20 +2961,20 @@ SwXTextCursor::createEnumeration() throw (uno::RuntimeException, std::exception)
         throw uno::RuntimeException();
     }
 
-    auto pNewCrsr(rUnoCursor.GetDoc()->CreateUnoCrsr(*rUnoCursor.GetPoint()) );
+    auto pNewCursor(rUnoCursor.GetDoc()->CreateUnoCursor(*rUnoCursor.GetPoint()) );
     if (rUnoCursor.HasMark())
     {
-        pNewCrsr->SetMark();
-        *pNewCrsr->GetMark() = *rUnoCursor.GetMark();
+        pNewCursor->SetMark();
+        *pNewCursor->GetMark() = *rUnoCursor.GetMark();
     }
     const CursorType eSetType = (CURSOR_TBLTEXT == m_pImpl->m_eType)
             ? CURSOR_SELECTION_IN_TABLE : CURSOR_SELECTION;
     SwTableNode const*const pStartNode( (CURSOR_TBLTEXT == m_pImpl->m_eType)
             ? rUnoCursor.GetPoint()->nNode.GetNode().FindTableNode()
-            : 0);
+            : nullptr);
     SwTable const*const pTable(
-            (pStartNode) ? & pStartNode->GetTable() : 0 );
-    return SwXParagraphEnumeration::Create(pParentText, pNewCrsr, eSetType, pStartNode, pTable);
+            (pStartNode) ? & pStartNode->GetTable() : nullptr );
+    return SwXParagraphEnumeration::Create(pParentText, pNewCursor, eSetType, pStartNode, pTable);
 }
 
 uno::Type SAL_CALL
@@ -2992,9 +2991,7 @@ sal_Bool SAL_CALL SwXTextCursor::hasElements() throw (uno::RuntimeException, std
 uno::Sequence< OUString > SAL_CALL
 SwXTextCursor::getAvailableServiceNames() throw (uno::RuntimeException, std::exception)
 {
-    uno::Sequence< OUString > aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.text.TextContent";
+    uno::Sequence<OUString> aRet { "com.sun.star.text.TextContent" };
     return aRet;
 }
 

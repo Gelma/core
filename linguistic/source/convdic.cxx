@@ -141,7 +141,7 @@ bool IsConvDic( const OUString &rFileURL, sal_Int16 &nLang, sal_Int16 &nConvType
     // first argument being 0 should stop the file from being parsed
     // up to the end (reading all entries) when the required
     // data (language, conversion type) is found.
-    ConvDicXMLImport *pImport = new ConvDicXMLImport( 0 );
+    ConvDicXMLImport *pImport = new ConvDicXMLImport( nullptr );
 
     //!! keep a first reference to ensure the lifetime of the object !!
     uno::Reference< XInterface > xRef( static_cast<document::XFilter *>(pImport), UNO_QUERY );
@@ -651,7 +651,6 @@ void SAL_CALL ConvDic::removeFlushListener(
 OUString SAL_CALL ConvDic::getImplementationName(  )
     throw (RuntimeException, std::exception)
 {
-    MutexGuard  aGuard( GetLinguMutex() );
     return getImplementationName_Static();
 }
 
@@ -664,7 +663,6 @@ sal_Bool SAL_CALL ConvDic::supportsService( const OUString& rServiceName )
 uno::Sequence< OUString > SAL_CALL ConvDic::getSupportedServiceNames(  )
     throw (RuntimeException, std::exception)
 {
-    MutexGuard  aGuard( GetLinguMutex() );
     return getSupportedServiceNames_Static();
 }
 
@@ -672,8 +670,7 @@ uno::Sequence< OUString > SAL_CALL ConvDic::getSupportedServiceNames(  )
 uno::Sequence< OUString > ConvDic::getSupportedServiceNames_Static()
     throw()
 {
-    uno::Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[0] = SN_CONV_DICTIONARY ;
+    uno::Sequence<OUString> aSNS { SN_CONV_DICTIONARY };
     return aSNS;
 }
 

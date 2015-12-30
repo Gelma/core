@@ -85,10 +85,10 @@ public:
 
     }
     // XEventListener
-    virtual void SAL_CALL disposing(const EventObject& ) throw( RuntimeException, std::exception ) SAL_OVERRIDE {}
+    virtual void SAL_CALL disposing(const EventObject& ) throw( RuntimeException, std::exception ) override {}
 
     // XScriptListener
-    virtual void SAL_CALL firing(const  ScriptEvent& evt) throw(RuntimeException, std::exception) SAL_OVERRIDE
+    virtual void SAL_CALL firing(const  ScriptEvent& evt) throw(RuntimeException, std::exception) override
     {
         attemptListenerCreation();
         if ( m_vbaListener.is() )
@@ -97,7 +97,7 @@ public:
         }
     }
 
-    virtual Any SAL_CALL approveFiring(const ScriptEvent& evt) throw( com::sun::star::reflection::InvocationTargetException, RuntimeException, std::exception) SAL_OVERRIDE
+    virtual Any SAL_CALL approveFiring(const ScriptEvent& evt) throw( css::reflection::InvocationTargetException, RuntimeException, std::exception) override
     {
         attemptListenerCreation();
         if ( m_vbaListener.is() )
@@ -170,7 +170,7 @@ OUString static_STR_UNDO_PROPERTY;
 
 FmXUndoEnvironment::FmXUndoEnvironment(FmFormModel& _rModel)
                    :rModel( _rModel )
-                   ,m_pPropertySetCache( NULL )
+                   ,m_pPropertySetCache( nullptr )
                    ,m_pScriptingEnv( ::svxform::createDefaultFormScriptingEnvironment( _rModel ) )
                    ,m_Locks( 0 )
                    ,bReadOnly( false )
@@ -208,7 +208,7 @@ void FmXUndoEnvironment::dispose()
     sal_uInt16 i;
     for (i = 0; i < nCount; i++)
     {
-        FmFormPage* pPage = PTR_CAST( FmFormPage, rModel.GetPage(i) );
+        FmFormPage* pPage = dynamic_cast<FmFormPage*>( rModel.GetPage(i)  );
         if ( pPage )
         {
             Reference< css::form::XForms > xForms = pPage->GetForms( false ).get();
@@ -220,7 +220,7 @@ void FmXUndoEnvironment::dispose()
     nCount = rModel.GetMasterPageCount();
     for (i = 0; i < nCount; i++)
     {
-        FmFormPage* pPage = PTR_CAST( FmFormPage, rModel.GetMasterPage(i) );
+        FmFormPage* pPage = dynamic_cast<FmFormPage*>( rModel.GetMasterPage(i)  );
         if ( pPage )
         {
             Reference< css::form::XForms > xForms = pPage->GetForms( false ).get();
@@ -258,7 +258,7 @@ void FmXUndoEnvironment::ModeChanged()
         sal_uInt16 i;
         for (i = 0; i < nCount; i++)
         {
-            FmFormPage* pPage = PTR_CAST( FmFormPage, rModel.GetPage(i) );
+            FmFormPage* pPage = dynamic_cast<FmFormPage*>( rModel.GetPage(i)  );
             if ( pPage )
             {
                 Reference< css::form::XForms > xForms = pPage->GetForms( false ).get();
@@ -270,7 +270,7 @@ void FmXUndoEnvironment::ModeChanged()
         nCount = rModel.GetMasterPageCount();
         for (i = 0; i < nCount; i++)
         {
-            FmFormPage* pPage = PTR_CAST( FmFormPage, rModel.GetMasterPage(i) );
+            FmFormPage* pPage = dynamic_cast<FmFormPage*>( rModel.GetMasterPage(i)  );
             if ( pPage )
             {
                 Reference< css::form::XForms > xForms = pPage->GetForms( false ).get();
@@ -315,7 +315,7 @@ void FmXUndoEnvironment::Notify( SfxBroadcaster& /*rBC*/, const SfxHint& rHint )
         {
             case SFX_HINT_DYING:
                 dispose();
-                rModel.SetObjectShell( NULL );
+                rModel.SetObjectShell( nullptr );
                 break;
             case SFX_HINT_MODECHANGED:
                 ModeChanged();
@@ -340,7 +340,7 @@ void FmXUndoEnvironment::Inserted(SdrObject* pObj)
 {
     if (pObj->GetObjInventor() == FmFormInventor)
     {
-        FmFormObj* pFormObj = PTR_CAST(FmFormObj, pObj);
+        FmFormObj* pFormObj = dynamic_cast<FmFormObj*>( pObj );
         Inserted( pFormObj );
     }
     else if (pObj->IsGroupObject())
@@ -454,7 +454,7 @@ void FmXUndoEnvironment::Removed(SdrObject* pObj)
 
     if (pObj->GetObjInventor() == FmFormInventor)
     {
-        FmFormObj* pFormObj = PTR_CAST(FmFormObj, pObj);
+        FmFormObj* pFormObj = dynamic_cast<FmFormObj*>( pObj );
         Removed(pFormObj);
     }
     else if (pObj->IsGroupObject())
@@ -530,7 +530,7 @@ void SAL_CALL FmXUndoEnvironment::disposing(const EventObject& e) throw( Runtime
 
 // XPropertyChangeListener
 
-void SAL_CALL FmXUndoEnvironment::propertyChange(const PropertyChangeEvent& evt) throw(::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL FmXUndoEnvironment::propertyChange(const PropertyChangeEvent& evt) throw(css::uno::RuntimeException, std::exception)
 {
     ::osl::ClearableMutexGuard aGuard( m_aMutex );
 
@@ -725,7 +725,7 @@ void SAL_CALL FmXUndoEnvironment::propertyChange(const PropertyChangeEvent& evt)
 
 // XContainerListener
 
-void SAL_CALL FmXUndoEnvironment::elementInserted(const ContainerEvent& evt) throw(::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL FmXUndoEnvironment::elementInserted(const ContainerEvent& evt) throw(css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aSolarGuard;
     ::osl::MutexGuard aGuard( m_aMutex );
@@ -749,7 +749,7 @@ void FmXUndoEnvironment::implSetModified()
 }
 
 
-void SAL_CALL FmXUndoEnvironment::elementReplaced(const ContainerEvent& evt) throw(::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL FmXUndoEnvironment::elementReplaced(const ContainerEvent& evt) throw(css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aSolarGuard;
     ::osl::MutexGuard aGuard( m_aMutex );
@@ -766,7 +766,7 @@ void SAL_CALL FmXUndoEnvironment::elementReplaced(const ContainerEvent& evt) thr
 }
 
 
-void SAL_CALL FmXUndoEnvironment::elementRemoved(const ContainerEvent& evt) throw(::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL FmXUndoEnvironment::elementRemoved(const ContainerEvent& evt) throw(css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aSolarGuard;
     ::osl::MutexGuard aGuard( m_aMutex );
@@ -1056,7 +1056,7 @@ FmUndoContainerAction::FmUndoContainerAction(FmFormModel& _rMod,
                     m_aEvents = xManager->getScriptEvents(m_nIndex);
             }
             else
-                m_xElement = NULL;
+                m_xElement = nullptr;
 
             // we now own the element
             m_xOwnElement = m_xElement;
@@ -1111,7 +1111,7 @@ void FmUndoContainerAction::implReInsert( )
             xManager->registerScriptEvents( m_nIndex, m_aEvents );
 
         // we don't own the object anymore
-        m_xOwnElement = NULL;
+        m_xOwnElement = nullptr;
     }
 }
 
@@ -1217,7 +1217,7 @@ FmUndoModelReplaceAction::~FmUndoModelReplaceAction()
 
 
 
-void FmUndoModelReplaceAction::DisposeElement( const ::com::sun::star::uno::Reference< ::com::sun::star::awt::XControlModel>& xReplaced )
+void FmUndoModelReplaceAction::DisposeElement( const css::uno::Reference< css::awt::XControlModel>& xReplaced )
 {
     Reference< XComponent >  xComp(xReplaced, UNO_QUERY);
     if (xComp.is())

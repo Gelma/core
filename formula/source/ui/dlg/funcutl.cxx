@@ -35,10 +35,10 @@ namespace formula
 
 // class ArgEdit
 ArgEdit::ArgEdit( vcl::Window* pParent, WinBits nBits )
-    :   RefEdit( pParent, NULL, nBits ),
-        pEdPrev ( NULL ),
-        pEdNext ( NULL ),
-        pSlider ( NULL ),
+    :   RefEdit( pParent, nullptr, nBits ),
+        pEdPrev ( nullptr ),
+        pEdNext ( nullptr ),
+        pSlider ( nullptr ),
         nArgs   ( 0 )
 {
 }
@@ -80,7 +80,7 @@ void ArgEdit::KeyInput( const KeyEvent& rKEvt )
     {
         if ( nArgs > 1 )
         {
-            ArgEdit* pEd = NULL;
+            ArgEdit* pEd = nullptr;
             long nThumb = pSlider->GetThumbPos();
             bool bDoScroll = false;
             bool bChangeFocus = false;
@@ -146,10 +146,10 @@ void ArgEdit::KeyInput( const KeyEvent& rKEvt )
 // class ArgInput
 ArgInput::ArgInput()
 {
-    pFtArg=NULL;
-    pBtnFx=NULL;
-    pEdArg=NULL;
-    pRefBtn=NULL;
+    pFtArg=nullptr;
+    pBtnFx=nullptr;
+    pEdArg=nullptr;
+    pRefBtn=nullptr;
 }
 
 void ArgInput::InitArgInput( FixedText* pftArg, PushButton* pbtnFx,
@@ -297,12 +297,10 @@ IMPL_LINK_TYPED( ArgInput, EdFocusHdl, Control&, rControl, void )
         EdFocus();
 }
 
-IMPL_LINK( ArgInput, EdModifyHdl,ArgEdit*, pEd )
+IMPL_LINK_TYPED( ArgInput, EdModifyHdl, Edit&, rEdit, void )
 {
-    if(pEd == pEdArg)
+    if(&rEdit == pEdArg)
         EdModify();
-
-    return 0;
 }
 
 // class EditBox
@@ -385,7 +383,7 @@ bool EditBox::PreNotify( NotifyEvent& rNEvt )
         else
         {
             bResult=Control::PreNotify(rNEvt);
-            Application::PostUserEvent( LINK( this, EditBox, ChangedHdl ), NULL, true );
+            Application::PostUserEvent( LINK( this, EditBox, ChangedHdl ), nullptr, true );
         }
 
     }
@@ -396,7 +394,7 @@ bool EditBox::PreNotify( NotifyEvent& rNEvt )
         if(nSwitch==MouseNotifyEvent::MOUSEBUTTONDOWN || nSwitch==MouseNotifyEvent::MOUSEBUTTONUP)
         {
             bMouseFlag=true;
-            Application::PostUserEvent( LINK( this, EditBox, ChangedHdl ), NULL, true );
+            Application::PostUserEvent( LINK( this, EditBox, ChangedHdl ), nullptr, true );
         }
     }
     return bResult;
@@ -431,7 +429,7 @@ void EditBox::UpdateOldSel()
 
 RefEdit::RefEdit( vcl::Window* _pParent, vcl::Window* pShrinkModeLabel, WinBits nStyle )
     : Edit( _pParent, nStyle )
-    , pAnyRefDlg( NULL )
+    , pAnyRefDlg( nullptr )
     , pLabelWidget(pShrinkModeLabel)
 {
     aIdle.SetIdleHdl( LINK( this, RefEdit, UpdateHdl ) );
@@ -484,8 +482,14 @@ void RefEdit::SetRefValid(bool bValid)
     }
     else
     {
+#if 0
+        // Setting background color has no effect here so we'd end up with
+        // white on white!
         SetControlForeground(COL_WHITE);
         SetControlBackground(0xff6563);
+#else
+        SetControlForeground( ::Color( RGB_COLORDATA( 0xf0, 0, 0)));
+#endif
     }
 }
 
@@ -559,8 +563,8 @@ RefButton::RefButton( vcl::Window* _pParent, WinBits nStyle ) :
     aImgRefDone( ModuleRes( RID_BMP_REFBTN2 ) ),
     aShrinkQuickHelp( ModuleRes( RID_STR_SHRINK ).toString() ),
     aExpandQuickHelp( ModuleRes( RID_STR_EXPAND ).toString() ),
-    pAnyRefDlg( NULL ),
-    pRefEdit( NULL )
+    pAnyRefDlg( nullptr ),
+    pRefEdit( nullptr )
 {
     SetStartImage();
 }

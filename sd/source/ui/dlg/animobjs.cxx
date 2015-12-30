@@ -167,7 +167,7 @@ AnimationWindow::AnimationWindow(SfxBindings* pInBindings, SfxChildWindow *pCW, 
     reverseUniqueHelpIdHack(*this);
 
     // create new document with page
-    pMyDoc = new SdDrawDocument(DOCUMENT_TYPE_IMPRESS, NULL);
+    pMyDoc = new SdDrawDocument(DOCUMENT_TYPE_IMPRESS, nullptr);
     SdPage* pPage = pMyDoc->AllocSdPage(false);
     pMyDoc->InsertPage(pPage);
 
@@ -290,14 +290,14 @@ IMPL_LINK_TYPED( AnimationWindow, ClickPlayHdl, Button *, p, void )
     }
 
     // StatusBarManager from 1 second
-    SfxProgress* pProgress = NULL;
+    SfxProgress* pProgress = nullptr;
     if( nFullTime >= 1000 )
     {
         bDisableCtrls = true;
         m_pBtnStop->Enable();
         m_pBtnStop->Update();
         OUString aStr("Animator:"); // here we should think about something smart
-        pProgress = new SfxProgress( NULL, aStr, nFullTime );
+        pProgress = new SfxProgress( nullptr, aStr, nFullTime );
     }
 
     sal_uLong nTmpTime = 0;
@@ -420,7 +420,8 @@ IMPL_LINK_TYPED( AnimationWindow, ClickRemoveBitmapHdl, Button*, pBtn, void )
     SdPage*     pPage = pMyDoc->GetSdPage(0, PK_STANDARD);
     SdrObject*  pObject;
 
-    if (pBtn == m_pBtnRemoveBitmap)
+    // tdf#95298 check m_nCurrentFrame for EMPTY_FRAMELIST to avoid out-of-bound array access
+    if (pBtn == m_pBtnRemoveBitmap && EMPTY_FRAMELIST  != m_nCurrentFrame)
     {
         delete m_FrameList[m_nCurrentFrame].first;
         delete m_FrameList[m_nCurrentFrame].second;
@@ -439,8 +440,8 @@ IMPL_LINK_TYPED( AnimationWindow, ClickRemoveBitmapHdl, Button*, pBtn, void )
 
         if (m_nCurrentFrame >= m_FrameList.size())
         {
-            assert(m_FrameList.empty());
-            m_nCurrentFrame = EMPTY_FRAMELIST;
+            // tdf#95298 last frame was deleted, try to use the one before it or go on empty state
+            m_nCurrentFrame = m_FrameList.empty() ? EMPTY_FRAMELIST : m_FrameList.size() - 1;
         }
     }
     else // delete everything
@@ -497,7 +498,7 @@ IMPL_LINK_NOARG_TYPED(AnimationWindow, ClickCreateGroupHdl, Button*, void)
         SID_ANIMATOR_CREATE, SfxCallMode::SLOT | SfxCallMode::RECORD, &aItem, 0L );
 }
 
-IMPL_LINK_NOARG(AnimationWindow, ModifyBitmapHdl)
+IMPL_LINK_NOARG_TYPED(AnimationWindow, ModifyBitmapHdl, Edit&, void)
 {
     sal_uLong nBmp = static_cast<sal_uLong>(m_pNumFldBitmap->GetValue());
 
@@ -509,24 +510,21 @@ IMPL_LINK_NOARG(AnimationWindow, ModifyBitmapHdl)
     m_nCurrentFrame = nBmp - 1;
 
     UpdateControl();
-
-    return 0L;
 }
 
-IMPL_LINK_NOARG(AnimationWindow, ModifyTimeHdl)
+IMPL_LINK_NOARG_TYPED(AnimationWindow, ModifyTimeHdl, Edit&, void)
 {
     sal_uLong nPos = static_cast<sal_uLong>(m_pNumFldBitmap->GetValue() - 1);
 
     tools::Time *const pTime = m_FrameList[nPos].second;
 
     *pTime = m_pTimeField->GetTime();
-
-    return 0L;
 }
 
 void AnimationWindow::UpdateControl(bool const bDisableCtrls)
 {
-    if (!m_FrameList.empty())
+    // tdf#95298 check m_nCurrentFrame for EMPTY_FRAMELIST to avoid out-of-bound array access
+    if (!m_FrameList.empty() && EMPTY_FRAMELIST != m_nCurrentFrame)
     {
         BitmapEx aBmp(*m_FrameList[m_nCurrentFrame].first);
 
@@ -558,7 +556,7 @@ void AnimationWindow::UpdateControl(bool const bDisableCtrls)
     }
     else
     {
-        m_pCtlDisplay->SetBitmapEx(0);
+        m_pCtlDisplay->SetBitmapEx(nullptr);
     }
     m_pCtlDisplay->Invalidate();
     m_pCtlDisplay->Update();
@@ -616,11 +614,11 @@ void AnimationWindow::UpdateControl(bool const bDisableCtrls)
 
         m_pRbtBitmap->Enable();
         m_pBtnCreateGroup->Enable(!m_FrameList.empty());
-        m_pFtAdjustment->Enable( true );
-        m_pLbAdjustment->Enable( true );
+        m_pFtAdjustment->Enable();
+        m_pLbAdjustment->Enable();
     }
 
-    ClickRbtHdl( NULL );
+    ClickRbtHdl( nullptr );
 }
 
 void AnimationWindow::ResetAttrs()
@@ -1022,7 +1020,7 @@ void AnimationWindow::CreateAnimObj (::sd::View& rView )
     {
         // calculate offset for the specified direction
         Size aOffset;
-        SdrObject * pClone = NULL;
+        SdrObject * pClone = nullptr;
         SdPage* pPage = pMyDoc->GetSdPage(0, PK_STANDARD);
 
         for (size_t i = 0; i < nCount; ++i)
@@ -1080,7 +1078,7 @@ void AnimationWindow::CreateAnimObj (::sd::View& rView )
 
         // #i42894# Caution(!) variable pPage looks right, but it is a page from the local
         // document the dialog is using (!), so get the target page from the target view
-        SdPage* pTargetSdPage = dynamic_cast< SdPage* >(rView.GetSdrPageView() ? rView.GetSdrPageView()->GetPage() : 0);
+        SdPage* pTargetSdPage = dynamic_cast< SdPage* >(rView.GetSdrPageView() ? rView.GetSdrPageView()->GetPage() : nullptr);
 
         if(pTargetSdPage)
         {
@@ -1117,7 +1115,7 @@ void AnimationWindow::CreateAnimObj (::sd::View& rView )
         }
     }
 
-    ClickFirstHdl( NULL );
+    ClickFirstHdl( nullptr );
 }
 
 void AnimationWindow::DataChanged( const DataChangedEvent& rDCEvt )
@@ -1147,7 +1145,7 @@ void AnimationControllerItem::StateChanged( sal_uInt16 nSId,
 {
     if( eState >= SfxItemState::DEFAULT && nSId == SID_ANIMATOR_STATE )
     {
-        const SfxUInt16Item* pStateItem = PTR_CAST( SfxUInt16Item, pItem );
+        const SfxUInt16Item* pStateItem = dynamic_cast< const SfxUInt16Item*>( pItem );
         assert(pStateItem); //SfxUInt16Item expected
         if (pStateItem)
         {

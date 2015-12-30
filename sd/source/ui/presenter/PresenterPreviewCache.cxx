@@ -51,13 +51,13 @@ public:
     // CacheContext
     virtual void NotifyPreviewCreation (
         CacheKey aKey,
-        const Bitmap& rPreview) SAL_OVERRIDE;
-    virtual bool IsIdle() SAL_OVERRIDE;
-    virtual bool IsVisible (CacheKey aKey) SAL_OVERRIDE;
-    virtual const SdrPage* GetPage (CacheKey aKey) SAL_OVERRIDE;
-    virtual std::shared_ptr<std::vector<CacheKey> > GetEntryList (bool bVisible) SAL_OVERRIDE;
-    virtual sal_Int32 GetPriority (CacheKey aKey) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Reference<com::sun::star::uno::XInterface> GetModel() SAL_OVERRIDE;
+        const Bitmap& rPreview) override;
+    virtual bool IsIdle() override;
+    virtual bool IsVisible (CacheKey aKey) override;
+    virtual const SdrPage* GetPage (CacheKey aKey) override;
+    virtual std::shared_ptr<std::vector<CacheKey> > GetEntryList (bool bVisible) override;
+    virtual sal_Int32 GetPriority (CacheKey aKey) override;
+    virtual css::uno::Reference<css::uno::XInterface> GetModel() override;
 
 private:
     Reference<container::XIndexAccess> mxSlides;
@@ -102,7 +102,7 @@ void SAL_CALL PresenterPreviewCache::setDocumentSlides (
     throw (RuntimeException, std::exception)
 {
     ThrowIfDisposed();
-    OSL_ASSERT(mpCacheContext.get()!=NULL);
+    OSL_ASSERT(mpCacheContext.get()!=nullptr);
 
     mpCacheContext->SetDocumentSlides(rxSlides, rxDocument);
 }
@@ -113,7 +113,7 @@ void SAL_CALL PresenterPreviewCache::setVisibleRange (
     throw (css::uno::RuntimeException, std::exception)
 {
     ThrowIfDisposed();
-    OSL_ASSERT(mpCacheContext.get()!=NULL);
+    OSL_ASSERT(mpCacheContext.get()!=nullptr);
 
     mpCacheContext->SetVisibleSlideRange (nFirstVisibleSlideIndex, nLastVisibleSlideIndex);
 }
@@ -123,7 +123,7 @@ void SAL_CALL PresenterPreviewCache::setPreviewSize (
     throw (css::uno::RuntimeException, std::exception)
 {
     ThrowIfDisposed();
-    OSL_ASSERT(mpCache.get()!=NULL);
+    OSL_ASSERT(mpCache.get()!=nullptr);
 
     maPreviewSize = Size(rSize.Width, rSize.Height);
     mpCache->ChangeSize(maPreviewSize, Bitmap::HasFastScale());
@@ -135,18 +135,18 @@ Reference<rendering::XBitmap> SAL_CALL PresenterPreviewCache::getSlidePreview (
     throw (css::uno::RuntimeException, std::exception)
 {
     ThrowIfDisposed();
-    OSL_ASSERT(mpCacheContext.get()!=NULL);
+    OSL_ASSERT(mpCacheContext.get()!=nullptr);
 
     cppcanvas::CanvasSharedPtr pCanvas (
         cppcanvas::VCLFactory::createCanvas(rxCanvas));
 
     const SdrPage* pPage = mpCacheContext->GetPage(nSlideIndex);
-    if (pPage == NULL)
+    if (pPage == nullptr)
         throw RuntimeException();
 
     const BitmapEx aPreview (mpCache->GetPreviewBitmap(pPage,true));
     if (aPreview.IsEmpty())
-        return NULL;
+        return nullptr;
     else
         return cppcanvas::VCLFactory::createBitmap(
             pCanvas,
@@ -175,7 +175,7 @@ void SAL_CALL PresenterPreviewCache::pause()
     throw (css::uno::RuntimeException, std::exception)
 {
     ThrowIfDisposed();
-    OSL_ASSERT(mpCache.get()!=NULL);
+    OSL_ASSERT(mpCache.get()!=nullptr);
     mpCache->Pause();
 }
 
@@ -183,12 +183,12 @@ void SAL_CALL PresenterPreviewCache::resume()
     throw (css::uno::RuntimeException, std::exception)
 {
     ThrowIfDisposed();
-    OSL_ASSERT(mpCache.get()!=NULL);
+    OSL_ASSERT(mpCache.get()!=nullptr);
     mpCache->Resume();
 }
 
 void PresenterPreviewCache::ThrowIfDisposed()
-    throw (::com::sun::star::lang::DisposedException)
+    throw (css::lang::DisposedException)
 {
     if (rBHelper.bDisposed || rBHelper.bInDispose)
     {
@@ -346,9 +346,9 @@ const SdrPage* PresenterPreviewCache::PresenterCacheContext::GetPage (
     const sal_Int32 nSlideIndex) const
 {
     if ( ! mxSlides.is())
-        return NULL;
+        return nullptr;
     if (nSlideIndex < 0 || nSlideIndex >= mxSlides->getCount())
-        return NULL;
+        return nullptr;
 
     Reference<drawing::XDrawPage> xSlide (mxSlides->getByIndex(nSlideIndex), UNO_QUERY);
     const SdPage* pPage = SdPage::getImplementation(xSlide);
@@ -376,9 +376,9 @@ void PresenterPreviewCache::PresenterCacheContext::CallListeners (
 } } // end of namespace ::sd::presenter
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_Draw_PresenterPreviewCache_get_implementation(::com::sun::star::uno::XComponentContext* context,
-                                                                ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_Draw_PresenterPreviewCache_get_implementation(css::uno::XComponentContext* context,
+                                                                css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new sd::presenter::PresenterPreviewCache(context));
 }

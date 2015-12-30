@@ -35,8 +35,8 @@ SdCustomShowDlg::SdCustomShowDlg( vcl::Window* pWindow,
                             SdDrawDocument& rDrawDoc ) :
     ModalDialog     ( pWindow, "CustomSlideShows", "modules/simpress/ui/customslideshows.ui" ),
     rDoc            ( rDrawDoc ),
-    pCustomShowList ( NULL ),
-    pCustomShow     ( NULL ),
+    pCustomShowList ( nullptr ),
+    pCustomShow     ( nullptr ),
     bModified       ( false )
 {
     get( m_pBtnNew, "new" );
@@ -58,7 +58,7 @@ SdCustomShowDlg::SdCustomShowDlg( vcl::Window* pWindow,
     m_pBtnRemove->SetClickHdl( aLink );
     m_pBtnCopy->SetClickHdl( aLink );
     m_pCbxUseCustomShow->SetClickHdl( aLink );
-    m_pLbCustomShows->SetSelectHdl( LINK( this, SdCustomShowDlg, SelectHdl ) );
+    m_pLbCustomShows->SetSelectHdl( LINK( this, SdCustomShowDlg, SelectListBoxHdl ) );
 
     m_pBtnStartShow->SetClickHdl( LINK( this, SdCustomShowDlg, StartShowHdl ) ); // for test
 
@@ -69,7 +69,7 @@ SdCustomShowDlg::SdCustomShowDlg( vcl::Window* pWindow,
         long nPosToSelect = pCustomShowList->GetCurPos();
         // fill ListBox with CustomShows
         for( pCustomShow = pCustomShowList->First();
-             pCustomShow != NULL;
+             pCustomShow != nullptr;
              pCustomShow = pCustomShowList->Next() )
         {
             m_pLbCustomShows->InsertEntry( pCustomShow->GetName() );
@@ -111,7 +111,7 @@ void SdCustomShowDlg::CheckState()
     m_pBtnRemove->Enable( bEnable );
     m_pBtnCopy->Enable( bEnable );
     m_pCbxUseCustomShow->Enable( bEnable );
-    m_pBtnStartShow->Enable( true );
+    m_pBtnStartShow->Enable();
 
     if (bEnable && pCustomShowList)
         pCustomShowList->Seek( nPos );
@@ -121,15 +121,17 @@ IMPL_LINK_TYPED( SdCustomShowDlg, ClickButtonHdl, Button *, p, void )
 {
     SelectHdl(p);
 }
-/**
- * ButtonHdl()
- */
-IMPL_LINK( SdCustomShowDlg, SelectHdl, void *, p )
+IMPL_LINK_TYPED( SdCustomShowDlg, SelectListBoxHdl, ListBox&, rListBox, void )
+{
+    SelectHdl(&rListBox);
+}
+
+void SdCustomShowDlg::SelectHdl(void *p)
 {
     // new CustomShow
     if( p == m_pBtnNew )
     {
-        pCustomShow = NULL;
+        pCustomShow = nullptr;
         ScopedVclPtrInstance< SdDefineCustomShowDlg > aDlg( this, rDoc, pCustomShow );
         if( aDlg->Execute() == RET_OK )
         {
@@ -219,7 +221,7 @@ IMPL_LINK( SdCustomShowDlg, SelectHdl, void *, p )
             {
                 bDifferent = true;
                 for( pCustomShow = pCustomShowList->First();
-                     pCustomShow != NULL && bDifferent;
+                     pCustomShow != nullptr && bDifferent;
                      pCustomShow = pCustomShowList->Next() )
                 {
                     if( aStr == pCustomShow->GetName() )
@@ -261,8 +263,6 @@ IMPL_LINK( SdCustomShowDlg, SelectHdl, void *, p )
     }
 
     CheckState();
-
-    return 0L;
 }
 
 // StartShow-Hdl
@@ -295,11 +295,10 @@ SdDefineCustomShowDlg::SdDefineCustomShowDlg( vcl::Window* pWindow,
     get( m_pBtnHelp, "help" );
 
     Link<Button*,void> aLink = LINK( this, SdDefineCustomShowDlg, ClickButtonHdl );
-    Link<> aLink2= LINK( this, SdDefineCustomShowDlg, ClickButtonHdl2 );
     m_pBtnAdd->SetClickHdl( aLink );
     m_pBtnRemove->SetClickHdl( aLink );
-    m_pEdtName->SetModifyHdl( aLink2 );
-    m_pLbPages->SetSelectHdl( aLink2 ); // because of status
+    m_pEdtName->SetModifyHdl( LINK( this, SdDefineCustomShowDlg, ClickButtonEditHdl ) );
+    m_pLbPages->SetSelectHdl( LINK( this, SdDefineCustomShowDlg, ClickButtonHdl4 ) ); // because of status
     m_pLbCustomPages->SetSelectHdl( LINK( this, SdDefineCustomShowDlg, ClickButtonHdl3 ) ); // because of status
 
     m_pBtnOK->SetClickHdl( LINK( this, SdDefineCustomShowDlg, OKHdl ) );
@@ -375,7 +374,7 @@ void SdDefineCustomShowDlg::CheckState()
 {
     bool bPages = m_pLbPages->GetSelectEntryPos() != LISTBOX_ENTRY_NOTFOUND;
     //sal_Bool bCSPages = aLbCustomPages.GetSelectEntryPos() != LISTBOX_ENTRY_NOTFOUND;
-    bool bCSPages = m_pLbCustomPages->FirstSelected() != NULL;
+    bool bCSPages = m_pLbCustomPages->FirstSelected() != nullptr;
     bool bCount = m_pLbCustomPages->GetEntryCount() > 0;
 
     m_pBtnOK->Enable( bCount );
@@ -391,8 +390,16 @@ IMPL_LINK_TYPED( SdDefineCustomShowDlg, ClickButtonHdl3, SvTreeListBox*, p, void
 {
     ClickButtonHdl2(p);
 }
+IMPL_LINK_TYPED( SdDefineCustomShowDlg, ClickButtonHdl4, ListBox&, rListBox, void )
+{
+    ClickButtonHdl2(&rListBox);
+}
+IMPL_LINK_TYPED( SdDefineCustomShowDlg, ClickButtonEditHdl, Edit&, rEdit, void )
+{
+    ClickButtonHdl2(&rEdit);
+}
 // ButtonHdl()
-IMPL_LINK( SdDefineCustomShowDlg, ClickButtonHdl2, void *, p )
+void SdDefineCustomShowDlg::ClickButtonHdl2(void* p)
 {
     if( p == m_pBtnAdd )
     {
@@ -408,7 +415,7 @@ IMPL_LINK( SdDefineCustomShowDlg, ClickButtonHdl2, void *, p )
             {
                 OUString aStr = m_pLbPages->GetSelectEntry( i );
                 pEntry = m_pLbCustomPages->InsertEntry( aStr,
-                                            0, false, nPosCP );
+                                            nullptr, false, nPosCP );
 
                 m_pLbCustomPages->Select( pEntry );
                 SdPage* pPage = rDoc.GetSdPage( (sal_uInt16) m_pLbPages->
@@ -438,8 +445,6 @@ IMPL_LINK( SdDefineCustomShowDlg, ClickButtonHdl2, void *, p )
     }
 
     CheckState();
-
-    return 0L;
 }
 
 /**
@@ -449,7 +454,7 @@ IMPL_LINK( SdDefineCustomShowDlg, ClickButtonHdl2, void *, p )
 void SdDefineCustomShowDlg::CheckCustomShow()
 {
     bool bDifferent = false;
-    SvTreeListEntry* pEntry = NULL;
+    SvTreeListEntry* pEntry = nullptr;
 
     // compare count
     if( rpCustomShow->PagesVector().size() != m_pLbCustomPages->GetEntryCount() )
@@ -463,7 +468,7 @@ void SdDefineCustomShowDlg::CheckCustomShow()
     {
         SdCustomShow::PageVec::iterator it1 = rpCustomShow->PagesVector().begin();
         pEntry = m_pLbCustomPages->First();
-        for( ; it1 != rpCustomShow->PagesVector().end() && pEntry != NULL && !bDifferent;
+        for( ; it1 != rpCustomShow->PagesVector().end() && pEntry != nullptr && !bDifferent;
              ++it1, pEntry = m_pLbCustomPages->Next( pEntry ) )
         {
             if( *it1 != pEntry->GetUserData() )
@@ -478,7 +483,7 @@ void SdDefineCustomShowDlg::CheckCustomShow()
     if( bDifferent )
     {
         for( pEntry = m_pLbCustomPages->First();
-             pEntry != NULL;
+             pEntry != nullptr;
              pEntry = m_pLbCustomPages->Next( pEntry ) )
         {
             SdPage* pPage = static_cast<SdPage*>(pEntry->GetUserData());
@@ -509,7 +514,7 @@ IMPL_LINK_NOARG_TYPED(SdDefineCustomShowDlg, OKHdl, Button*, void)
 
         long nPosToSelect = pCustomShowList->GetCurPos();
         for( pCustomShow = pCustomShowList->First();
-             pCustomShow != NULL;
+             pCustomShow != nullptr;
              pCustomShow = pCustomShowList->Next() )
         {
             if( aName == pCustomShow->GetName() && aName != aOldName )

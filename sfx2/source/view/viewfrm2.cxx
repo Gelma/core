@@ -98,7 +98,7 @@ void SfxViewFrame::UpdateTitle()
 
     void SwDocShell::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
     {
-        if ( rHint.IsA(TYPE(SfxSimpleHint)) )
+        if ( dynamic_cast<const SfxSimpleHint *>(&rHint) != nullptr )
         {
             switch( ( (SfxSimpleHint&) rHint ).GetId() )
             {
@@ -163,9 +163,9 @@ void SfxViewFrame::Exec_Impl(SfxRequest &rReq )
     {
         case SID_SHOWPOPUPS :
         {
-            SFX_REQUEST_ARG(rReq, pShowItem, SfxBoolItem, SID_SHOWPOPUPS, false);
+            const SfxBoolItem* pShowItem = rReq.GetArg<SfxBoolItem>(SID_SHOWPOPUPS);
             bool bShow = pShowItem == nullptr || pShowItem->GetValue();
-            SFX_REQUEST_ARG(rReq, pIdItem, SfxUInt16Item, SID_CONFIGITEMID, false);
+            const SfxUInt16Item* pIdItem = rReq.GetArg<SfxUInt16Item>(SID_CONFIGITEMID);
             sal_uInt16 nId = pIdItem ? pIdItem->GetValue() : 0;
 
             SfxWorkWindow *pWorkWin = GetFrame().GetWorkWindow_Impl();
@@ -206,7 +206,7 @@ void SfxViewFrame::Exec_Impl(SfxRequest &rReq )
 
         case SID_NEWDOCDIRECT :
         {
-            SFX_REQUEST_ARG( rReq, pFactoryItem, SfxStringItem, SID_NEWDOCDIRECT, false);
+            const SfxStringItem* pFactoryItem = rReq.GetArg<SfxStringItem>(SID_NEWDOCDIRECT);
             OUString aFactName;
             if ( pFactoryItem )
                 aFactName = pFactoryItem->GetValue();
@@ -225,7 +225,7 @@ void SfxViewFrame::Exec_Impl(SfxRequest &rReq )
             aReq.AppendItem( SfxFrameItem( SID_DOCFRAME, &GetFrame() ) );
             aReq.AppendItem( SfxStringItem( SID_TARGETNAME, OUString( "_blank" ) ) );
             SfxGetpApp()->ExecuteSlot( aReq );
-            const SfxViewFrameItem* pItem = PTR_CAST( SfxViewFrameItem, aReq.GetReturnValue() );
+            const SfxViewFrameItem* pItem = dynamic_cast<const SfxViewFrameItem*>( aReq.GetReturnValue()  );
             if ( pItem )
                 rReq.SetReturnValue( SfxFrameItem( 0, pItem->GetFrame() ) );
             break;
@@ -361,7 +361,7 @@ void SfxViewFrame::INetExecute_Impl( SfxRequest &rRequest )
                 SfxControllerItem* pCtrl = pCache->GetItemLink();
                 while( pCtrl )
                 {
-                    pCtrl->StateChanged( SID_FOCUSURLBOX, SfxItemState::UNKNOWN, 0 );
+                    pCtrl->StateChanged( SID_FOCUSURLBOX, SfxItemState::UNKNOWN, nullptr );
                     pCtrl = pCtrl->GetItemLink();
                 }
             }

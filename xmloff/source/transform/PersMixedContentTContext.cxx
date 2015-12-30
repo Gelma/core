@@ -34,16 +34,16 @@ public:
                            const OUString& rChars );
     virtual ~XMLPersTextTContext_Impl();
 
-    virtual XMLTransformerContext *CreateChildContext( sal_uInt16 nPrefix,
+    virtual rtl::Reference<XMLTransformerContext> CreateChildContext( sal_uInt16 nPrefix,
                                    const OUString& rLocalName,
                                    const OUString& rQName,
-                                   const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
-    virtual void StartElement( const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
-    virtual void EndElement() SAL_OVERRIDE;
-    virtual void Characters( const OUString& rChars ) SAL_OVERRIDE;
+                                   const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
+    virtual void StartElement( const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
+    virtual void EndElement() override;
+    virtual void Characters( const OUString& rChars ) override;
 
-    virtual bool IsPersistent() const SAL_OVERRIDE;
-    virtual void Export() SAL_OVERRIDE;
+    virtual bool IsPersistent() const override;
+    virtual void Export() override;
 };
 
 XMLPersTextTContext_Impl::XMLPersTextTContext_Impl(
@@ -58,14 +58,14 @@ XMLPersTextTContext_Impl::~XMLPersTextTContext_Impl()
 {
 }
 
-XMLTransformerContext *XMLPersTextTContext_Impl::CreateChildContext(
+rtl::Reference<XMLTransformerContext> XMLPersTextTContext_Impl::CreateChildContext(
         sal_uInt16,
         const OUString&,
         const OUString&,
         const Reference< XAttributeList >& )
 {
     OSL_ENSURE( false, "illegal call to CreateChildContext" );
-    return 0;
+    return {};
 }
 
 void XMLPersTextTContext_Impl::StartElement(

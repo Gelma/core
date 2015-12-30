@@ -48,6 +48,7 @@ struct FileFormat
 #define PPTX_FORMAT_TYPE ( SfxFilterFlags::IMPORT | SfxFilterFlags::EXPORT | SfxFilterFlags::ALIEN | SfxFilterFlags::STARONEFILTER | SfxFilterFlags::PREFERED )
 #define HTML_FORMAT_TYPE ( SfxFilterFlags::EXPORT | SfxFilterFlags::ALIEN )
 #define PDF_FORMAT_TYPE  ( SfxFilterFlags::STARONEFILTER | SfxFilterFlags::ALIEN | SfxFilterFlags::IMPORT | SfxFilterFlags::PREFERED )
+#define FODG_FORMAT_TYPE  (SfxFilterFlags::STARONEFILTER | SfxFilterFlags::OWN | SfxFilterFlags::IMPORT | SfxFilterFlags::EXPORT)
 
 /** List of file formats we support in Impress unit tests.
 
@@ -64,7 +65,8 @@ FileFormat aFileFormats[] =
     { "pptx", "Impress Office Open XML", "Office Open XML Presentation", "", PPTX_FORMAT_TYPE },
     { "html", "graphic_HTML", "graphic_HTML", "", HTML_FORMAT_TYPE },
     { "pdf",  "draw_pdf_import", "pdf_Portable_Document_Format", "", PDF_FORMAT_TYPE },
-    { 0, 0, 0, 0, SfxFilterFlags::NONE }
+    { "fodg",  "OpenDocument Drawing Flat XML", "Flat XML ODF Drawing", "", FODG_FORMAT_TYPE },
+    { nullptr, nullptr, nullptr, nullptr, SfxFilterFlags::NONE }
 };
 
 #define ODP  0
@@ -72,6 +74,7 @@ FileFormat aFileFormats[] =
 #define PPTX 2
 #define HTML 3
 #define PDF  4
+#define FODG 5
 
 /// Base class for filter tests loading or roundtriping a document, and asserting the document model.
 class SdModelTestBase : public test::BootstrapFixture, public unotest::MacrosTest
@@ -83,7 +86,7 @@ public:
     SdModelTestBase()
     {}
 
-    virtual void setUp() SAL_OVERRIDE
+    virtual void setUp() override
     {
         test::BootstrapFixture::setUp();
 
@@ -93,7 +96,7 @@ public:
         CPPUNIT_ASSERT_MESSAGE("no impress component!", mxDrawComponent.is());
     }
 
-    virtual void tearDown() SAL_OVERRIDE
+    virtual void tearDown() override
     {
         uno::Reference<lang::XComponent>(mxDrawComponent, uno::UNO_QUERY_THROW)->dispose();
         test::BootstrapFixture::tearDown();
@@ -101,10 +104,10 @@ public:
 
 protected:
     /// Load the document.
-    sd::DrawDocShellRef loadURL( const OUString &rURL, sal_Int32 nFormat, SfxAllItemSet *pParams = 0 )
+    sd::DrawDocShellRef loadURL( const OUString &rURL, sal_Int32 nFormat, SfxAllItemSet *pParams = nullptr )
     {
         FileFormat *pFmt = getFormat(nFormat);
-        CPPUNIT_ASSERT_MESSAGE( "missing filter info", pFmt->pName != NULL );
+        CPPUNIT_ASSERT_MESSAGE( "missing filter info", pFmt->pName != nullptr );
 
         SotClipboardFormatId nOptions = SotClipboardFormatId::NONE;
         if (pFmt->nFormatType != SfxFilterFlags::NONE)
@@ -243,6 +246,80 @@ protected:
             }
         }
         xDocShRef->DoClose();
+    }
+
+    uno::Reference< drawing::XDrawPagesSupplier > getDoc( sd::DrawDocShellRef xDocShRef )
+    {
+        uno::Reference< drawing::XDrawPagesSupplier > xDoc (
+            xDocShRef->GetDoc()->getUnoModel(), uno::UNO_QUERY_THROW );
+        CPPUNIT_ASSERT_MESSAGE( "no document", xDoc.is() );
+        return xDoc;
+    }
+
+    uno::Reference< drawing::XDrawPage > getPage( int nPage,  sd::DrawDocShellRef xDocShRef )
+    {
+        uno::Reference< drawing::XDrawPagesSupplier > xDoc( getDoc( xDocShRef ) );
+        uno::Reference< drawing::XDrawPage > xPage( xDoc->getDrawPages()->getByIndex( nPage ), uno::UNO_QUERY_THROW );
+        CPPUNIT_ASSERT_MESSAGE( "no page", xPage.is() );
+        return xPage;
+    }
+
+    // very confusing ... UNO index-based access to pages is 0-based. This one is 1-based
+    const SdrPage* GetPage( int nPage, sd::DrawDocShellRef xDocShRef )
+    {
+        SdDrawDocument* pDoc =  xDocShRef->GetDoc() ;
+        CPPUNIT_ASSERT_MESSAGE( "no document", pDoc != nullptr );
+
+        const SdrPage* pPage = pDoc->GetPage( nPage );
+        CPPUNIT_ASSERT_MESSAGE( "no page", pPage != nullptr );
+        return pPage;
+    }
+
+    uno::Reference< beans::XPropertySet > getShape( int nShape, uno::Reference< drawing::XDrawPage > xPage )
+    {
+        uno::Reference< beans::XPropertySet > xShape( xPage->getByIndex( nShape ), uno::UNO_QUERY );
+        CPPUNIT_ASSERT_MESSAGE( "Failed to load shape", xShape.is() );
+        return xShape;
+    }
+
+    // Nth shape on Mth page
+    uno::Reference< beans::XPropertySet > getShapeFromPage( int nShape, int nPage, sd::DrawDocShellRef xDocShRef )
+    {
+        uno::Reference< drawing::XDrawPage > xPage ( getPage( nPage, xDocShRef ) );
+        uno::Reference< beans::XPropertySet > xShape( getShape( nShape, xPage ) );
+        CPPUNIT_ASSERT_MESSAGE( "Failed to load shape", xShape.is() );
+
+        return xShape;
+    }
+
+    // Nth paragraph of text in given text shape
+    uno::Reference< text::XTextRange > getParagraphFromShape( int nPara, uno::Reference< beans::XPropertySet > xShape )
+    {
+        uno::Reference< text::XText > xText = uno::Reference< text::XTextRange>( xShape, uno::UNO_QUERY )->getText();
+        CPPUNIT_ASSERT_MESSAGE( "Not a text shape", xText.is() );
+
+        uno::Reference< container::XEnumerationAccess > paraEnumAccess( xText, uno::UNO_QUERY );
+        uno::Reference< container::XEnumeration > paraEnum( paraEnumAccess->createEnumeration() );
+
+        for ( int i = 0; i < nPara; ++i )
+            paraEnum->nextElement();
+
+        uno::Reference< text::XTextRange > xParagraph( paraEnum->nextElement(), uno::UNO_QUERY_THROW );
+
+        return xParagraph;
+    }
+
+    uno::Reference< text::XTextRange > getRunFromParagraph( int nRun, uno::Reference< text::XTextRange > xParagraph )
+    {
+        uno::Reference< container::XEnumerationAccess > runEnumAccess(xParagraph, uno::UNO_QUERY);
+        uno::Reference< container::XEnumeration > runEnum = runEnumAccess->createEnumeration();
+
+        for ( int i = 0; i < nRun; ++i )
+            runEnum->nextElement();
+
+        uno::Reference< text::XTextRange > xRun( runEnum->nextElement(), uno::UNO_QUERY);
+
+        return xRun;
     }
 };
 

@@ -81,7 +81,6 @@ static sal_uInt16 SidArray[] = {
                 SID_PARASPACE_DECREASE,
                 0 };
 
-TYPEINIT1( FuOutlineText, FuOutline );
 
 FuOutlineText::FuOutlineText(ViewShell* pViewShell, ::sd::Window* pWindow,
                              ::sd::View* pView, SdDrawDocument* pDoc,
@@ -144,7 +143,7 @@ bool FuOutlineText::MouseButtonUp(const MouseEvent& rMEvt)
         {
             const SvxFieldData* pField = pFieldItem->GetField();
 
-            if( pField && pField->ISA( SvxURLField ) )
+            if( pField && dynamic_cast< const SvxURLField *>( pField ) !=  nullptr )
             {
                 bReturn = true;
                 mpWindow->ReleaseMouse();

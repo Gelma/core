@@ -74,7 +74,7 @@ void VBATest::testMiscVBAFunctions()
             fprintf(stderr, "macro result for %s\n", macroSource[ i ] );
             fprintf(stderr, "macro returned:\n%s\n", OUStringToOString( pReturn->GetOUString(), RTL_TEXTENCODING_UTF8 ).getStr() );
         }
-        CPPUNIT_ASSERT_MESSAGE("No return variable huh?", pReturn != NULL );
+        CPPUNIT_ASSERT_MESSAGE("No return variable huh?", pReturn != nullptr );
         CPPUNIT_ASSERT_MESSAGE("Result not as expected", pReturn->GetOUString() == "OK" );
     }
 }
@@ -91,10 +91,8 @@ void VBATest::testMiscOLEStuff()
     if( xContext.is() )
     {
         uno::Reference<lang::XMultiComponentFactory> xSMgr = xContext->getServiceManager();
-        xOLEFactory = uno::Reference<lang::XMultiServiceFactory>(
-            xSMgr->createInstanceWithContext(
-                "com.sun.star.bridge.OleObjectFactory",
-                xContext ), uno::UNO_QUERY );
+        xOLEFactory.set( xSMgr->createInstanceWithContext( "com.sun.star.bridge.OleObjectFactory", xContext ),
+                         uno::UNO_QUERY );
     }
     bool bOk = false;
     if( xOLEFactory.is() )

@@ -26,9 +26,9 @@
 using namespace sd;
 
 UndoRemovePresObjectImpl::UndoRemovePresObjectImpl( SdrObject& rObject )
-: mpUndoUsercall(0)
-, mpUndoAnimation(0)
-, mpUndoPresObj(0)
+: mpUndoUsercall(nullptr)
+, mpUndoAnimation(nullptr)
+, mpUndoPresObj(nullptr)
 {
     SdPage* pPage = dynamic_cast< SdPage* >( rObject.GetPage() );
     if( pPage )
@@ -40,7 +40,7 @@ UndoRemovePresObjectImpl::UndoRemovePresObjectImpl( SdrObject& rObject )
 
         if( pPage->hasAnimationNode() )
         {
-            com::sun::star::uno::Reference< com::sun::star::drawing::XShape > xShape( rObject.getUnoShape(), com::sun::star::uno::UNO_QUERY );
+            css::uno::Reference< css::drawing::XShape > xShape( rObject.getUnoShape(), css::uno::UNO_QUERY );
             if( pPage->getMainSequence()->hasEffect( xShape ) )
             {
                 mpUndoAnimation = new UndoAnimation( static_cast< SdDrawDocument* >( pPage->GetModel() ), pPage );
@@ -158,14 +158,14 @@ void UndoReplaceObject::Redo()
 
 UndoObjectSetText::UndoObjectSetText( SdrObject& rObject, sal_Int32 nText )
 : SdrUndoObjSetText( rObject, nText )
-, mpUndoAnimation(0)
+, mpUndoAnimation(nullptr)
 , mbNewEmptyPresObj(false)
 , mxSdrObject( &rObject )
 {
     SdPage* pPage = dynamic_cast< SdPage* >( rObject.GetPage() );
     if( pPage && pPage->hasAnimationNode() )
     {
-        com::sun::star::uno::Reference< com::sun::star::drawing::XShape > xShape( rObject.getUnoShape(), com::sun::star::uno::UNO_QUERY );
+        css::uno::Reference< css::drawing::XShape > xShape( rObject.getUnoShape(), css::uno::UNO_QUERY );
         if( pPage->getMainSequence()->hasEffect( xShape ) )
         {
             mpUndoAnimation = new UndoAnimation( static_cast< SdDrawDocument* >( pPage->GetModel() ), pPage );
@@ -207,7 +207,7 @@ void UndoObjectSetText::Redo()
 UndoObjectUserCall::UndoObjectUserCall(SdrObject& rObject)
 :   SdrUndoObj(rObject)
 ,   mpOldUserCall(static_cast<SdPage*>(rObject.GetUserCall()))
-,   mpNewUserCall(0)
+,   mpNewUserCall(nullptr)
 ,   mxSdrObject( &rObject )
 {
 }
@@ -285,7 +285,7 @@ void UndoAutoLayoutPosAndSize::Redo()
 {
     SdPage* pPage = static_cast< SdPage* >( mxPage.get() );
     if( pPage )
-        pPage->SetAutoLayout( pPage->GetAutoLayout(), false );
+        pPage->SetAutoLayout( pPage->GetAutoLayout() );
 }
 
 UndoGeoObject::UndoGeoObject( SdrObject& rNewObj )

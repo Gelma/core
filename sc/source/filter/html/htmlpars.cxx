@@ -20,7 +20,6 @@
 #include <sal/config.h>
 
 #include <comphelper/string.hxx>
-#include <o3tl/ptr_container.hxx>
 
 #include "scitems.hxx"
 #include <editeng/eeitem.hxx>
@@ -66,6 +65,7 @@
 #include <com/sun/star/document/XDocumentProperties.hpp>
 #include <com/sun/star/document/XDocumentPropertiesSupplier.hpp>
 #include <utility>
+#include <o3tl/make_unique.hxx>
 
 using ::editeng::SvxBorderLine;
 using namespace ::com::sun::star;
@@ -82,19 +82,20 @@ void ScHTMLStyles::add(const char* pElemName, size_t nElemName, const char* pCla
         if (pClassName)
         {
             // Both element and class names given.
-            ElemsType::iterator itrElem = maElemProps.find(aElem);
-            if (itrElem == maElemProps.end())
+            ElemsType::iterator itrElem = m_ElemProps.find(aElem);
+            if (itrElem == m_ElemProps.end())
             {
                 // new element
                 std::unique_ptr<NamePropsType> p(new NamePropsType);
-                std::pair<ElemsType::iterator, bool> r = o3tl::ptr_container::insert(maElemProps, aElem, std::move(p));
+                std::pair<ElemsType::iterator, bool> r =
+                    m_ElemProps.insert(std::make_pair(aElem, std::move(p)));
                 if (!r.second)
                     // insertion failed.
                     return;
                 itrElem = r.first;
             }
 
-            NamePropsType* pClsProps = itrElem->second;
+            NamePropsType *const pClsProps = itrElem->second.get();
             OUString aClass(pClassName, nClassName, RTL_TEXTENCODING_UTF8);
             aClass = aClass.toAsciiLowerCase();
             insertProp(*pClsProps, aClass, aProp, aValue);
@@ -102,7 +103,7 @@ void ScHTMLStyles::add(const char* pElemName, size_t nElemName, const char* pCla
         else
         {
             // Element name only. Add it to the element global.
-            insertProp(maElemGlobalProps, aElem, aProp, aValue);
+            insertProp(m_ElemGlobalProps, aElem, aProp, aValue);
         }
     }
     else
@@ -112,7 +113,7 @@ void ScHTMLStyles::add(const char* pElemName, size_t nElemName, const char* pCla
             // Class name only. Add it to the global.
             OUString aClass(pClassName, nClassName, RTL_TEXTENCODING_UTF8);
             aClass = aClass.toAsciiLowerCase();
-            insertProp(maGlobalProps, aClass, aProp, aValue);
+            insertProp(m_GlobalProps, aClass, aProp, aValue);
         }
     }
 }
@@ -122,14 +123,14 @@ const OUString& ScHTMLStyles::getPropertyValue(
 {
     // First, look into the element-class storage.
     {
-        ElemsType::const_iterator itr = maElemProps.find(rElem);
-        if (itr != maElemProps.end())
+        auto const itr = m_ElemProps.find(rElem);
+        if (itr != m_ElemProps.end())
         {
-            const NamePropsType* pClasses = itr->second;
+            const NamePropsType *const pClasses = itr->second.get();
             NamePropsType::const_iterator itr2 = pClasses->find(rClass);
             if (itr2 != pClasses->end())
             {
-                const PropsType* pProps = itr2->second;
+                const PropsType *const pProps = itr2->second.get();
                 PropsType::const_iterator itr3 = pProps->find(rPropName);
                 if (itr3 != pProps->end())
                     return itr3->second;
@@ -138,10 +139,10 @@ const OUString& ScHTMLStyles::getPropertyValue(
     }
     // Next, look into the class global storage.
     {
-        NamePropsType::const_iterator itr = maGlobalProps.find(rClass);
-        if (itr != maGlobalProps.end())
+        auto const itr = m_GlobalProps.find(rClass);
+        if (itr != m_GlobalProps.end())
         {
-            const PropsType* pProps = itr->second;
+            const PropsType *const pProps = itr->second.get();
             PropsType::const_iterator itr2 = pProps->find(rPropName);
             if (itr2 != pProps->end())
                 return itr2->second;
@@ -149,10 +150,10 @@ const OUString& ScHTMLStyles::getPropertyValue(
     }
     // As the last resort, look into the element global storage.
     {
-        NamePropsType::const_iterator itr = maElemGlobalProps.find(rClass);
-        if (itr != maElemGlobalProps.end())
+        auto const itr = m_ElemGlobalProps.find(rClass);
+        if (itr != m_ElemGlobalProps.end())
         {
-            const PropsType* pProps = itr->second;
+            const PropsType *const pProps = itr->second.get();
             PropsType::const_iterator itr2 = pProps->find(rPropName);
             if (itr2 != pProps->end())
                 return itr2->second;
@@ -171,7 +172,8 @@ void ScHTMLStyles::insertProp(
     {
         // new element
         std::unique_ptr<PropsType> p(new PropsType);
-        std::pair<NamePropsType::iterator, bool> r = o3tl::ptr_container::insert(rStore, aName, std::move(p));
+        std::pair<NamePropsType::iterator, bool> r =
+            rStore.insert(std::make_pair(aName, std::move(p)));
         if (!r.second)
             // insertion failed.
             return;
@@ -179,7 +181,7 @@ void ScHTMLStyles::insertProp(
         itr = r.first;
     }
 
-    PropsType* pProps = itr->second;
+    PropsType *const pProps = itr->second.get();
     pProps->insert(PropsType::value_type(aProp, aValue));
 }
 
@@ -205,7 +207,7 @@ ScHTMLLayoutParser::ScHTMLLayoutParser(
         aPageSize( aPageSizeP ),
         aBaseURL( rBaseURL ),
         xLockedList( new ScRangeList ),
-        pTables( NULL ),
+        pTables( nullptr ),
         pColOffset( new ScHTMLColOffset ),
         pLocalColOffset( new ScHTMLColOffset ),
         nFirstTableCell(0),
@@ -268,7 +270,7 @@ sal_uLong ScHTMLLayoutParser::Read( SvStream& rStream, const OUString& rBaseURL 
     bool bLoading = pObjSh && pObjSh->IsLoading();
 
     SvKeyValueIteratorRef xValues;
-    SvKeyValueIterator* pAttributes = NULL;
+    SvKeyValueIterator* pAttributes = nullptr;
     if ( bLoading )
         pAttributes = pObjSh->GetHeaderAttributes();
     else
@@ -308,7 +310,7 @@ sal_uLong ScHTMLLayoutParser::Read( SvStream& rStream, const OUString& rBaseURL 
 
 const ScHTMLTable* ScHTMLLayoutParser::GetGlobalTable() const
 {
-    return 0;
+    return nullptr;
 }
 
 void ScHTMLLayoutParser::NewActEntry( ScEEParseEntry* pE )
@@ -489,13 +491,13 @@ void ScHTMLLayoutParser::Adjust()
     xLockedList->RemoveAll();
 
     std::stack< ScHTMLAdjustStackEntry* > aStack;
-    ScHTMLAdjustStackEntry* pS = NULL;
+    ScHTMLAdjustStackEntry* pS = nullptr;
     sal_uInt16 nTab = 0;
     SCCOL nLastCol = SCCOL_MAX;
     SCROW nNextRow = 0;
     SCROW nCurRow = 0;
     sal_uInt16 nPageWidth = (sal_uInt16) aPageSize.Width();
-    InnerMap* pTab = NULL;
+    InnerMap* pTab = nullptr;
     for ( size_t i = 0, nListSize = maList.size(); i < nListSize; ++i )
     {
         ScEEParseEntry* pE = maList[ i ];
@@ -511,7 +513,7 @@ void ScHTMLLayoutParser::Adjust()
                 nCurRow = pS->nCurRow;
             }
             delete pS;
-            pS = NULL;
+            pS = nullptr;
             nTab = pE->nTab;
             if (pTables)
             {
@@ -1069,7 +1071,7 @@ void ScHTMLLayoutParser::TableOn( ImportInfo* pInfo )
         Colonize( pActEntry );
         aTableStack.push( new ScHTMLTableStackEntry(
             pActEntry, xLockedList, pLocalColOffset, nFirstTableCell,
-            nColCnt, nRowCnt, nColCntStart, nMaxCol, nTable,
+            nRowCnt, nColCntStart, nMaxCol, nTable,
             nTableWidth, nColOffset, nColOffsetStart,
             bFirstRow ) );
         sal_uInt16 nLastWidth = nTableWidth;
@@ -1115,7 +1117,7 @@ void ScHTMLLayoutParser::TableOn( ImportInfo* pInfo )
             nColOffsetStart = nColOffset;
         }
 
-        ScEEParseEntry* pE = NULL;
+        ScEEParseEntry* pE = nullptr;
         if (maList.size())
             pE = maList.back();
         NewActEntry( pE ); // New free flying pActEntry
@@ -1131,7 +1133,7 @@ void ScHTMLLayoutParser::TableOn( ImportInfo* pInfo )
         }
         aTableStack.push( new ScHTMLTableStackEntry(
             pActEntry, xLockedList, pLocalColOffset, nFirstTableCell,
-            nColCnt, nRowCnt, nColCntStart, nMaxCol, nTable,
+            nRowCnt, nColCntStart, nMaxCol, nTable,
             nTableWidth, nColOffset, nColOffsetStart,
             bFirstRow ) );
         // As soon as we have multiple tables we need to be tolerant with the offsets.
@@ -1221,7 +1223,7 @@ void ScHTMLLayoutParser::TableOff( ImportInfo* pInfo )
                     nRowKGV = nRowsPerRow1 = nRows;
                     nRowsPerRow2 = 1;
                 }
-                InnerMap* pTab2 = NULL;
+                InnerMap* pTab2 = nullptr;
                 if ( nRowsPerRow2 > 1 )
                 {   // Height of the inner table
                     pTab2 = new InnerMap;
@@ -1331,8 +1333,8 @@ void ScHTMLLayoutParser::TableOff( ImportInfo* pInfo )
 
 void ScHTMLLayoutParser::Image( ImportInfo* pInfo )
 {
-    ScHTMLImage* pImage = new ScHTMLImage;
-    pActEntry->maImageList.push_back( pImage );
+    pActEntry->maImageList.push_back( o3tl::make_unique<ScHTMLImage>() );
+    ScHTMLImage* pImage = pActEntry->maImageList.back().get();
     const HTMLOptions& rOptions = static_cast<HTMLParser*>(pInfo->pParser)->GetOptions();
     for (size_t i = 0, n = rOptions.size(); i < n; ++i)
     {
@@ -1410,7 +1412,7 @@ void ScHTMLLayoutParser::Image( ImportInfo* pInfo )
         long nWidth = 0;
         for ( size_t i=0; i < pActEntry->maImageList.size(); ++i )
         {
-            ScHTMLImage* pI = &pActEntry->maImageList[ i ];
+            ScHTMLImage* pI = pActEntry->maImageList[ i ].get();
             if ( pI->nDir & nHorizontal )
                 nWidth += pI->aSize.Width() + 2 * pI->aSpace.X();
             else
@@ -1419,7 +1421,7 @@ void ScHTMLLayoutParser::Image( ImportInfo* pInfo )
         if ( pActEntry->nWidth
           && (nWidth + pImage->aSize.Width() + 2 * pImage->aSpace.X()
                 >= pActEntry->nWidth) )
-            pActEntry->maImageList.back().nDir = nVertical;
+            pActEntry->maImageList.back()->nDir = nVertical;
     }
 }
 
@@ -1628,7 +1630,7 @@ void ScHTMLLayoutParser::ProcToken( ImportInfo* pInfo )
         case HTML_PARABREAK_OFF:
         {   // We continue vertically after an image
             if ( pActEntry->maImageList.size() > 0 )
-                pActEntry->maImageList.back().nDir = nVertical;
+                pActEntry->maImageList.back()->nDir = nVertical;
         }
         break;
         case HTML_ANCHOR_ON:
@@ -1815,7 +1817,7 @@ private:
 
 ScHTMLTableMap::ScHTMLTableMap( ScHTMLTable& rParentTable ) :
     mrParentTable(rParentTable),
-    mpCurrTable(NULL)
+    mpCurrTable(nullptr)
 {
 }
 
@@ -1825,7 +1827,7 @@ ScHTMLTableMap::~ScHTMLTableMap()
 
 ScHTMLTable* ScHTMLTableMap::FindTable( ScHTMLTableId nTableId, bool bDeep ) const
 {
-    ScHTMLTable* pResult = 0;
+    ScHTMLTable* pResult = nullptr;
     if( mpCurrTable && (nTableId == mpCurrTable->GetTableId()) )
         pResult = mpCurrTable;              // cached table
     else
@@ -1898,7 +1900,7 @@ ScHTMLTable::ScHTMLTable( ScHTMLTable& rParentTable, const ImportInfo& rInfo, bo
     maTableItemSet( rParentTable.GetCurrItemSet() ),
     mrEditEngine( rParentTable.mrEditEngine ),
     mrEEParseList( rParentTable.mrEEParseList ),
-    mpCurrEntryList( 0 ),
+    mpCurrEntryList( nullptr ),
     maSize( 1, 1 ),
     mpParser(rParentTable.mpParser),
     mbBorderOn( false ),
@@ -1940,12 +1942,12 @@ ScHTMLTable::ScHTMLTable(
     std::vector< ScEEParseEntry* >& rEEParseList,
     ScHTMLTableId& rnUnusedId, ScHTMLParser* pParser
 ) :
-    mpParentTable( 0 ),
+    mpParentTable( nullptr ),
     maTableId( rnUnusedId ),
     maTableItemSet( rPool ),
     mrEditEngine( rEditEngine ),
     mrEEParseList( rEEParseList ),
-    mpCurrEntryList( 0 ),
+    mpCurrEntryList( nullptr ),
     maSize( 1, 1 ),
     mpParser(pParser),
     mbBorderOn( false ),
@@ -1973,9 +1975,9 @@ const SfxItemSet& ScHTMLTable::GetCurrItemSet() const
 ScHTMLSize ScHTMLTable::GetSpan( const ScHTMLPos& rCellPos ) const
 {
     ScHTMLSize aSpan( 1, 1 );
-    const ScRange* pRange = NULL;
-    if(  ( (pRange = maVMergedCells.Find( rCellPos.MakeAddr() ) ) != 0)
-      || ( (pRange = maHMergedCells.Find( rCellPos.MakeAddr() ) ) != 0)
+    const ScRange* pRange = nullptr;
+    if(  ( (pRange = maVMergedCells.Find( rCellPos.MakeAddr() ) ) != nullptr)
+      || ( (pRange = maHMergedCells.Find( rCellPos.MakeAddr() ) ) != nullptr)
       )
         aSpan.Set( pRange->aEnd.Col() - pRange->aStart.Col() + 1, pRange->aEnd.Row() - pRange->aStart.Row() + 1 );
     return aSpan;
@@ -1983,7 +1985,7 @@ ScHTMLSize ScHTMLTable::GetSpan( const ScHTMLPos& rCellPos ) const
 
 ScHTMLTable* ScHTMLTable::FindNestedTable( ScHTMLTableId nTableId ) const
 {
-    return mxNestedTables.get() ? mxNestedTables->FindTable( nTableId ) : 0;
+    return mxNestedTables.get() ? mxNestedTables->FindTable( nTableId ) : nullptr;
 }
 
 void ScHTMLTable::PutItem( const SfxPoolItem& rItem )
@@ -2295,7 +2297,12 @@ ScHTMLPos ScHTMLTable::GetDocPos( const ScHTMLPos& rCellPos ) const
 void ScHTMLTable::GetDocRange( ScRange& rRange ) const
 {
     rRange.aStart = rRange.aEnd = maDocBasePos.MakeAddr();
-    rRange.aEnd.Move( static_cast< SCsCOL >( GetDocSize( tdCol ) ) - 1, static_cast< SCsROW >( GetDocSize( tdRow ) ) - 1, 0 );
+    ScAddress aErrorPos( ScAddress::UNINITIALIZED );
+    if (!rRange.aEnd.Move( static_cast< SCsCOL >( GetDocSize( tdCol ) ) - 1,
+                static_cast< SCsROW >( GetDocSize( tdRow ) ) - 1, 0, aErrorPos))
+    {
+        assert(!"can't move");
+    }
 }
 
 void ScHTMLTable::ApplyCellBorders( ScDocument* pDoc, const ScAddress& rFirstPos ) const
@@ -2307,8 +2314,8 @@ void ScHTMLTable::ApplyCellBorders( ScDocument* pDoc, const ScAddress& rFirstPos
         const SCROW nLastRow = maSize.mnRows - 1;
         const long nOuterLine = DEF_LINE_WIDTH_2;
         const long nInnerLine = DEF_LINE_WIDTH_0;
-        SvxBorderLine aOuterLine(0, nOuterLine, table::BorderLineStyle::SOLID);
-        SvxBorderLine aInnerLine(0, nInnerLine, table::BorderLineStyle::SOLID);
+        SvxBorderLine aOuterLine(nullptr, nOuterLine, table::BorderLineStyle::SOLID);
+        SvxBorderLine aInnerLine(nullptr, nInnerLine, table::BorderLineStyle::SOLID);
         SvxBoxItem aBorderItem( ATTR_BORDER );
 
         for( SCCOL nCol = 0; nCol <= nLastCol; ++nCol )
@@ -2325,12 +2332,12 @@ void ScHTMLTable::ApplyCellBorders( ScDocument* pDoc, const ScAddress& rFirstPos
                 SCROW nCellRow2 = nCellRow1 + GetDocSize( tdRow, nRow ) - 1;
                 for( SCCOL nCellCol = nCellCol1; nCellCol <= nCellCol2; ++nCellCol )
                 {
-                    aBorderItem.SetLine( (nCellCol == nCellCol1) ? pLeftLine : 0, SvxBoxItemLine::LEFT );
-                    aBorderItem.SetLine( (nCellCol == nCellCol2) ? pRightLine : 0, SvxBoxItemLine::RIGHT );
+                    aBorderItem.SetLine( (nCellCol == nCellCol1) ? pLeftLine : nullptr, SvxBoxItemLine::LEFT );
+                    aBorderItem.SetLine( (nCellCol == nCellCol2) ? pRightLine : nullptr, SvxBoxItemLine::RIGHT );
                     for( SCROW nCellRow = nCellRow1; nCellRow <= nCellRow2; ++nCellRow )
                     {
-                        aBorderItem.SetLine( (nCellRow == nCellRow1) ? pTopLine : 0, SvxBoxItemLine::TOP );
-                        aBorderItem.SetLine( (nCellRow == nCellRow2) ? pBottomLine : 0, SvxBoxItemLine::BOTTOM );
+                        aBorderItem.SetLine( (nCellRow == nCellRow1) ? pTopLine : nullptr, SvxBoxItemLine::TOP );
+                        aBorderItem.SetLine( (nCellRow == nCellRow2) ? pBottomLine : nullptr, SvxBoxItemLine::BOTTOM );
                         pDoc->ApplyAttr( nCellCol, nCellRow, rFirstPos.Tab(), aBorderItem );
                     }
                 }
@@ -2444,7 +2451,7 @@ bool ScHTMLTable::PushTableEntry( ScHTMLTableId nTableId )
 ScHTMLTable* ScHTMLTable::GetExistingTable( ScHTMLTableId nTableId ) const
 {
     ScHTMLTable* pTable = ((nTableId != SC_HTML_GLOBAL_TABLE) && mxNestedTables.get()) ?
-        mxNestedTables->FindTable( nTableId, false ) : 0;
+        mxNestedTables->FindTable( nTableId, false ) : nullptr;
     OSL_ENSURE( pTable || (nTableId == SC_HTML_GLOBAL_TABLE), "ScHTMLTable::GetExistingTable - table not found" );
     return pTable;
 }
@@ -2464,7 +2471,7 @@ void ScHTMLTable::InsertNewCell( const ScHTMLSize& rSpanSize )
 
     /*  Find an unused cell by skipping all merged ranges that cover the
         current cell position stored in maCurrCell. */
-    while( ((pRange = maVMergedCells.Find( maCurrCell.MakeAddr() )) != 0) || ((pRange = maHMergedCells.Find( maCurrCell.MakeAddr() )) != 0) )
+    while( ((pRange = maVMergedCells.Find( maCurrCell.MakeAddr() )) != nullptr) || ((pRange = maHMergedCells.Find( maCurrCell.MakeAddr() )) != nullptr) )
         maCurrCell.mnCol = pRange->aEnd.Col() + 1;
     mpCurrEntryList = &maEntryMap[ maCurrCell ];
 
@@ -2473,12 +2480,16 @@ void ScHTMLTable::InsertNewCell( const ScHTMLSize& rSpanSize )
         vertically merged ranges (do not shrink the new cell). */
     SCCOL nColEnd = maCurrCell.mnCol + rSpanSize.mnCols;
     for( ScAddress aAddr( maCurrCell.MakeAddr() ); aAddr.Col() < nColEnd; aAddr.IncCol() )
-        if( (pRange = maVMergedCells.Find( aAddr )) != 0 )
+        if( (pRange = maVMergedCells.Find( aAddr )) != nullptr )
             pRange->aEnd.SetRow( maCurrCell.mnRow - 1 );
 
     // insert the new range into the cell lists
     ScRange aNewRange( maCurrCell.MakeAddr() );
-    aNewRange.aEnd.Move( rSpanSize.mnCols - 1, rSpanSize.mnRows - 1, 0 );
+    ScAddress aErrorPos( ScAddress::UNINITIALIZED );
+    if (!aNewRange.aEnd.Move( rSpanSize.mnCols - 1, rSpanSize.mnRows - 1, 0, aErrorPos))
+    {
+        assert(!"can't move");
+    }
     if( rSpanSize.mnRows > 1 )
     {
         maVMergedCells.Append( aNewRange );
@@ -2540,7 +2551,7 @@ void ScHTMLTable::ImplDataOff()
     {
         mxDataItemSet.reset();
         ++maCurrCell.mnCol;
-        mpCurrEntryList = 0;
+        mpCurrEntryList = nullptr;
         mbDataOn = false;
     }
 }
@@ -2742,7 +2753,7 @@ void ScHTMLTable::RecalcDocPos( const ScHTMLPos& rBasePos )
         ScHTMLPos aEntryDocPos( aCellDocPos );
 
         ScHTMLEntryList& rEntryList = aMapIter->second;
-        ScHTMLEntry* pEntry = 0;
+        ScHTMLEntry* pEntry = nullptr;
         ScHTMLEntryList::iterator aListIterEnd = rEntryList.end();
         for( ScHTMLEntryList::iterator aListIter = rEntryList.begin(); aListIter != aListIterEnd; ++aListIter )
         {
@@ -2847,7 +2858,7 @@ ScHTMLQueryParser::~ScHTMLQueryParser()
 sal_uLong ScHTMLQueryParser::Read( SvStream& rStrm, const OUString& rBaseURL  )
 {
     SvKeyValueIteratorRef xValues;
-    SvKeyValueIterator* pAttributes = 0;
+    SvKeyValueIterator* pAttributes = nullptr;
 
     SfxObjectShell* pObjSh = mpDoc->GetDocumentShell();
     if( pObjSh && pObjSh->IsLoading() )
@@ -3094,7 +3105,7 @@ class CSSHandler
         const char* mp;
         size_t      mn;
 
-        MemStr() : mp(NULL), mn(0) {}
+        MemStr() : mp(nullptr), mn(0) {}
         MemStr(const char* p, size_t n) : mp(p), mn(n) {}
         MemStr& operator=(const MemStr& r)
         {
@@ -3112,7 +3123,7 @@ class CSSHandler
 
     ScHTMLStyles& mrStyles;
 public:
-    CSSHandler(ScHTMLStyles& rStyles) : mrStyles(rStyles) {}
+    explicit CSSHandler(ScHTMLStyles& rStyles) : mrStyles(rStyles) {}
 
     static void at_rule_name(const char* /*p*/, size_t /*n*/)
     {

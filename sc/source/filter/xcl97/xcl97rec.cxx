@@ -99,7 +99,7 @@ XclExpObjList::XclExpObjList( const XclExpRoot& rRoot, XclEscherEx& rEscherEx ) 
     XclExpRoot( rRoot ),
     mnScTab( rRoot.GetCurrScTab() ),
     mrEscherEx( rEscherEx ),
-    pSolverContainer( 0 )
+    pSolverContainer( nullptr )
 {
     pMsodrawingPerSheet = new XclExpMsoDrawing( rEscherEx );
     // open the DGCONTAINER and the patriarch group shape
@@ -342,8 +342,8 @@ void XclExpObjList::ResetCounters()
 XclObj::XclObj( XclExpObjectManager& rObjMgr, sal_uInt16 nObjType, bool bOwnEscher ) :
     XclExpRecord( EXC_ID_OBJ, 26 ),
     mrEscherEx( rObjMgr.GetEscherEx() ),
-    pClientTextbox( NULL ),
-    pTxo( NULL ),
+    pClientTextbox( nullptr ),
+    pTxo( nullptr ),
     mnObjType( nObjType ),
     nObjId(0),
     nGrbit( 0x6011 ),   // AutoLine, AutoFill, Printable, Locked
@@ -512,7 +512,7 @@ static void lcl_FillProps( EscherPropertyContainer& rPropOpt, SdrObject* pCaptio
                 // If the Colour is the same as the 'ToolTip' System colour then
                 // use the default rather than the explicit colour value. This will
                 // be incorrect where user has chosen to use this colour explicity.
-                Color aColor = Color( (sal_uInt8)nValue, (sal_uInt8)( nValue >> 8 ), (sal_uInt8)( nValue >> 16 ) );
+                Color aColor( (sal_uInt8)nValue, (sal_uInt8)( nValue >> 8 ), (sal_uInt8)( nValue >> 16 ) );
                 const StyleSettings& rSett = Application::GetSettings().GetStyleSettings();
                 if( aColor == rSett.GetHelpColor().GetColor() )
                 {
@@ -584,11 +584,11 @@ class VmlCommentExporter : public VMLExport
 public:
                         VmlCommentExporter ( sax_fastparser::FSHelperPtr p, ScAddress aScPos, SdrCaptionObj* pCaption, bool bVisible, Rectangle &aFrom, Rectangle &aTo );
 protected:
-    virtual void        Commit( EscherPropertyContainer& rProps, const Rectangle& rRect ) SAL_OVERRIDE;
+    virtual void        Commit( EscherPropertyContainer& rProps, const Rectangle& rRect ) override;
     using VMLExport::StartShape;
-    virtual sal_Int32   StartShape() SAL_OVERRIDE;
+    virtual sal_Int32   StartShape() override;
     using VMLExport::EndShape;
-    virtual void        EndShape( sal_Int32 nShapeElement ) SAL_OVERRIDE;
+    virtual void        EndShape( sal_Int32 nShapeElement ) override;
 };
 
 VmlCommentExporter::VmlCommentExporter( sax_fastparser::FSHelperPtr p, ScAddress aScPos, SdrCaptionObj* pCaption,
@@ -799,7 +799,7 @@ XclTxo::XclTxo( const XclExpRoot& rRoot, const EditTextObject& rEditObj, SdrObje
         if( !aParaText.isEmpty() )
         {
             SfxItemSet aSet( rEditObj.GetParaAttribs( 0));
-            const SfxPoolItem* pItem = NULL;
+            const SfxPoolItem* pItem = nullptr;
             if( aSet.GetItemState( EE_PARA_JUST, true, &pItem ) == SfxItemState::SET )
             {
                 SvxAdjust eEEAlign = static_cast< const SvxAdjustItem& >( *pItem ).GetAdjust();
@@ -816,7 +816,7 @@ XclTxo::XclTxo( const XclExpRoot& rRoot, const EditTextObject& rEditObj, SdrObje
 
         // orientation alignment
         const SvxWritingModeItem& rItem = static_cast< const SvxWritingModeItem& >( rItemSet.Get( SDRATTR_TEXTDIRECTION ) );
-        if( rItem.GetValue() == com::sun::star::text::WritingMode_TB_RL )
+        if( rItem.GetValue() == css::text::WritingMode_TB_RL )
             mnRotation = EXC_OBJ_ORIENT_90CW;
     }
 }
@@ -892,8 +892,7 @@ void XclObjOle::WriteSubRecs( XclExpStream& rStrm )
     sal_uInt32          nPictureId = sal_uInt32(sal_uIntPtr(this) >> 2);
     sprintf( aBuf, "%08X", static_cast< unsigned int >( nPictureId ) );
     aStorageName += OUString::createFromAscii(aBuf);
-    tools::SvRef<SotStorage>    xOleStg = pRootStorage->OpenSotStorage( aStorageName,
-                            STREAM_READWRITE| StreamMode::SHARE_DENYALL );
+    tools::SvRef<SotStorage>    xOleStg = pRootStorage->OpenSotStorage( aStorageName );
     if( xOleStg.Is() )
     {
         uno::Reference < embed::XEmbeddedObject > xObj( static_cast<const SdrOle2Obj&>(rOleObj).GetObjRef() );
@@ -1132,19 +1131,19 @@ bool transformURL(const OUString& rOldURL, OUString& rNewURL, ScDocument* pDoc)
 class ScURLTransformer : public oox::drawingml::URLTransformer
 {
 public:
-    ScURLTransformer(ScDocument& rDoc):
-        mrDoc(rDoc)
+    explicit ScURLTransformer(ScDocument& rDoc)
+        : mrDoc(rDoc)
     {
     }
 
-    virtual OUString getTransformedString(const OUString& rURL) const SAL_OVERRIDE
+    virtual OUString getTransformedString(const OUString& rURL) const override
     {
         OUString aNewURL;
         transformURL(rURL, aNewURL, &mrDoc);
         return aNewURL;
     }
 
-    virtual bool isExternalURL(const OUString& rURL) const SAL_OVERRIDE
+    virtual bool isExternalURL(const OUString& rURL) const override
     {
         OUString aNewURL;
         return transformURL(rURL, aNewURL, &mrDoc);
@@ -1165,7 +1164,7 @@ void XclObjAny::SaveXml( XclExpXmlStream& rStrm )
 
     sax_fastparser::FSHelperPtr pDrawing = rStrm.GetCurrentStream();
 
-    ShapeExport aDML( XML_xdr, pDrawing, NULL, &rStrm, DrawingML::DOCUMENT_XLSX );
+    ShapeExport aDML( XML_xdr, pDrawing, nullptr, &rStrm, DrawingML::DOCUMENT_XLSX );
     std::shared_ptr<oox::drawingml::URLTransformer> pURLTransformer(new ScURLTransformer(*mpDoc));
     aDML.SetURLTranslator(pURLTransformer);
 
@@ -1251,7 +1250,7 @@ void ExcBundlesheet8::SaveXml( XclExpXmlStream& rStrm )
     OUString sId;
     rStrm.CreateOutputStream(
             XclXmlUtils::GetStreamName( "xl/", "worksheets/sheet", nTab+1),
-            XclXmlUtils::GetStreamName( NULL, "worksheets/sheet", nTab+1),
+            XclXmlUtils::GetStreamName( nullptr, "worksheets/sheet", nTab+1),
             rStrm.GetCurrentStream()->getOutputStream(),
             "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml",
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet",

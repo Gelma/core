@@ -56,12 +56,12 @@ namespace pcr
             {
                 SetText( "" );
                 if ( m_pHelper )
-                    m_pHelper->ModifiedHdl( this );
+                    m_pHelper->setModified();
                 return true;
             }
         }
 
-        return BaseClass::PreNotify( rNEvt );
+        return FormattedField::PreNotify( rNEvt );
     }
 
 
@@ -78,7 +78,7 @@ namespace pcr
         else
         {
             TreatAsNumber( false );
-            SetFormatter( NULL );
+            SetFormatter( nullptr );
             SetText( "" );
         }
     }
@@ -90,6 +90,7 @@ namespace pcr
     OFormatSampleControl::OFormatSampleControl( vcl::Window* pParent, WinBits nWinStyle )
         :OFormatSampleControl_Base( PropertyControlType::Unknown, pParent, nWinStyle )
     {
+        getTypedControlWindow()->setControlHelper(*this);
     }
 
 
@@ -123,7 +124,7 @@ namespace pcr
             case css::util::NumberFormat::DATE:
                 {
                     Date aCurrentDate( Date::SYSTEM );
-                    static ::com::sun::star::util::Date STANDARD_DB_DATE(30,12,1899);
+                    static css::util::Date STANDARD_DB_DATE(30,12,1899);
                     nValue = ::dbtools::DBTypeConversion::toDouble(::dbtools::DBTypeConversion::toDate(static_cast<sal_Int32>(aCurrentDate.GetDate())),STANDARD_DB_DATE);
                 }
                 break;
@@ -251,7 +252,7 @@ namespace pcr
         if ( bFallback )
         {
             getTypedControlWindow()->TreatAsNumber(false);
-            getTypedControlWindow()->SetFormatter(NULL);
+            getTypedControlWindow()->SetFormatter(nullptr);
             getTypedControlWindow()->SetText("");
             m_nLastDecimalDigits = 0;
         }
@@ -311,7 +312,7 @@ namespace pcr
         :ONumericControl( pParent, nWinStyle )
     {
         getTypedControlWindow()->SetUnit( FUNIT_CUSTOM );
-        getTypedControlWindow()->SetCustomUnitText(OUString(" ms"));
+        getTypedControlWindow()->SetCustomUnitText(" ms");
         getTypedControlWindow()->SetCustomConvertHdl( LINK( this, OTimeDurationControl, OnCustomConvert ) );
     }
 
@@ -321,7 +322,7 @@ namespace pcr
     }
 
 
-    ::sal_Int16 SAL_CALL OTimeDurationControl::getControlType() throw (::com::sun::star::uno::RuntimeException)
+    ::sal_Int16 SAL_CALL OTimeDurationControl::getControlType() throw (css::uno::RuntimeException)
     {
         // don't use the base class'es method, it would claim we're a standard control, which
         // we in fact aren't

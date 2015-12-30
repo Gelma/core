@@ -93,8 +93,6 @@
 
 using namespace com::sun::star;
 
-// STATIC DATA -----------------------------------------------------------
-
 namespace {
 
 inline sal_uInt16 getScaleValue(SfxStyleSheetBase& rStyle, sal_uInt16 nWhich)
@@ -127,7 +125,7 @@ SfxPrinter* ScDocument::GetPrinter(bool bCreateIfNotExist)
                             SID_PRINTER_CHANGESTODOC,   SID_PRINTER_CHANGESTODOC,
                             SID_PRINT_SELECTEDSHEET,    SID_PRINT_SELECTEDSHEET,
                             SID_SCPRINTOPTIONS,         SID_SCPRINTOPTIONS,
-                            NULL );
+                            nullptr );
 
         ::utl::MiscCfg aMisc;
         SfxPrinterChangeFlags nFlags = SfxPrinterChangeFlags::NONE;
@@ -163,7 +161,7 @@ void ScDocument::SetPrinter( SfxPrinter* pNewPrinter )
         UpdateDrawPrinter();
         pPrinter->SetDigitLanguage( SC_MOD()->GetOptDigitLanguage() );
     }
-    InvalidateTextWidth(NULL, NULL, false);     // in both cases
+    InvalidateTextWidth(nullptr, nullptr, false);     // in both cases
 }
 
 void ScDocument::SetPrintOptions()
@@ -193,9 +191,9 @@ VirtualDevice* ScDocument::GetVirtualDevice_100th_mm()
     if (!pVirtualDevice_100th_mm)
     {
 #ifdef IOS
-        pVirtualDevice_100th_mm = VclPtr<VirtualDevice>::Create( 8 );
+        pVirtualDevice_100th_mm = VclPtr<VirtualDevice>::Create(DeviceFormat::GRAYSCALE);
 #else
-        pVirtualDevice_100th_mm = VclPtr<VirtualDevice>::Create( 1 );
+        pVirtualDevice_100th_mm = VclPtr<VirtualDevice>::Create(DeviceFormat::BITMASK);
 #endif
         pVirtualDevice_100th_mm->SetReferenceDevice(VirtualDevice::REFDEV_MODE_MSO1);
         MapMode aMapMode( pVirtualDevice_100th_mm->GetMapMode() );
@@ -208,7 +206,7 @@ VirtualDevice* ScDocument::GetVirtualDevice_100th_mm()
 OutputDevice* ScDocument::GetRefDevice()
 {
     // Create printer like ref device, see Writer...
-    OutputDevice* pRefDevice = NULL;
+    OutputDevice* pRefDevice = nullptr;
     if ( SC_MOD()->GetInputOptions().GetTextWysiwyg() )
         pRefDevice = GetPrinter();
     else
@@ -236,7 +234,7 @@ void ScDocument::ModifyStyleSheet( SfxStyleSheetBase& rStyleSheet,
 
                 if( SvtLanguageOptions().IsCTLFontEnabled() )
                 {
-                    const SfxPoolItem *pItem = NULL;
+                    const SfxPoolItem *pItem = nullptr;
                     if( rChanges.GetItemState(ATTR_WRITINGDIR, true, &pItem ) == SfxItemState::SET )
                         ScChartHelper::DoUpdateAllCharts( this );
                 }
@@ -248,7 +246,7 @@ void ScDocument::ModifyStyleSheet( SfxStyleSheetBase& rStyleSheet,
                 bool bNumFormatChanged;
                 if ( ScGlobal::CheckWidthInvalidate( bNumFormatChanged,
                         rSet, rChanges ) )
-                    InvalidateTextWidth( NULL, NULL, bNumFormatChanged );
+                    InvalidateTextWidth( nullptr, nullptr, bNumFormatChanged );
 
                 for (SCTAB nTab=0; nTab<=MAXTAB; ++nTab)
                     if (maTabs[nTab] && maTabs[nTab]->IsStreamValid())
@@ -439,7 +437,7 @@ void ScDocument::InvalidateTextWidth( const ScAddress* pAdrFrom, const ScAddress
         const SCTAB nTab = pAdrFrom->Tab();
 
         if (nTab < static_cast<SCTAB>(maTabs.size()) && maTabs[nTab] )
-            maTabs[nTab]->InvalidateTextWidth( pAdrFrom, NULL, bNumFormatChanged, bBroadcast );
+            maTabs[nTab]->InvalidateTextWidth( pAdrFrom, nullptr, bNumFormatChanged, bBroadcast );
     }
     else
     {
@@ -534,7 +532,7 @@ public:
 bool ScDocument::IdleCalcTextWidth()            // true = try next again
 {
     // #i75610# if a printer hasn't been set or created yet, don't create one for this
-    if (!mbIdleEnabled || IsInLinkUpdate() || GetPrinter(false) == NULL)
+    if (!mbIdleEnabled || IsInLinkUpdate() || GetPrinter(false) == nullptr)
         return false;
 
     IdleCalcTextWidthScope aScope(*this, aCurTextWidthCalcPos);
@@ -573,7 +571,7 @@ bool ScDocument::IdleCalcTextWidth()            // true = try next again
     ScColumn* pCol  = &pTab->aCol[aScope.Col()];
     std::unique_ptr<ScColumnTextWidthIterator> pColIter(new ScColumnTextWidthIterator(*pCol, aScope.Row(), MAXROW));
 
-    OutputDevice* pDev = NULL;
+    OutputDevice* pDev = nullptr;
     sal_uInt16 nRestart = 0;
     sal_uInt16 nCount = 0;
     while ( (nZoom > 0) && (nCount < CALCMAX) && (nRestart < 2) )
@@ -725,9 +723,9 @@ void ScDocument::SaveDdeLinks(SvStream& rStream) const
     sal_uInt16 i;
     for (i=0; i<nCount; i++)
     {
-        ::sfx2::SvBaseLink* pBase = *rLinks[i];
-        if (pBase->ISA(ScDdeLink))
-            if ( !bExport40 || static_cast<ScDdeLink*>(pBase)->GetMode() == SC_DDE_DEFAULT )
+        ::sfx2::SvBaseLink* pBase = rLinks[i].get();
+        if (ScDdeLink* pLink = dynamic_cast<ScDdeLink*>(pBase))
+            if ( !bExport40 || pLink->GetMode() == SC_DDE_DEFAULT )
                 ++nDdeCount;
     }
 
@@ -740,10 +738,9 @@ void ScDocument::SaveDdeLinks(SvStream& rStream) const
 
     for (i=0; i<nCount; i++)
     {
-        ::sfx2::SvBaseLink* pBase = *rLinks[i];
-        if (pBase->ISA(ScDdeLink))
+        ::sfx2::SvBaseLink* pBase = rLinks[i].get();
+        if (ScDdeLink* pLink = dynamic_cast<ScDdeLink*>(pBase))
         {
-            ScDdeLink* pLink = static_cast<ScDdeLink*>(pBase);
             if ( !bExport40 || pLink->GetMode() == SC_DDE_DEFAULT )
                 pLink->Store( rStream, aHdr );
         }
@@ -810,7 +807,7 @@ void ScDocument::UpdateExternalRefLinks(vcl::Window* pWin)
     std::vector<ScExternalRefLink*> aRefLinks;
     for (sal_uInt16 i = 0; i < nCount; ++i)
     {
-        ::sfx2::SvBaseLink* pBase = *rLinks[i];
+        ::sfx2::SvBaseLink* pBase = rLinks[i].get();
         ScExternalRefLink* pRefLink = dynamic_cast<ScExternalRefLink*>(pBase);
         if (pRefLink)
             aRefLinks.push_back(pRefLink);
@@ -834,7 +831,7 @@ void ScDocument::UpdateExternalRefLinks(vcl::Window* pWin)
         // Update failed.  Notify the user.
 
         OUString aFile;
-        sfx2::LinkManager::GetDisplayNames(pRefLink, NULL, &aFile, NULL, NULL);
+        sfx2::LinkManager::GetDisplayNames(pRefLink, nullptr, &aFile);
         // Decode encoded URL for display friendliness.
         INetURLObject aUrl(aFile,INetURLObject::WAS_ENCODED);
         aFile = aUrl.GetMainURL(INetURLObject::DECODE_UNAMBIGUOUS);
@@ -892,10 +889,9 @@ void ScDocument::CopyDdeLinks( ScDocument* pDestDoc ) const
     const sfx2::SvBaseLinks& rLinks = pMgr->GetLinks();
     for (size_t i = 0, n = rLinks.size(); i < n; ++i)
     {
-        const sfx2::SvBaseLink* pBase = *rLinks[i];
-        if (pBase->ISA(ScDdeLink))
+        const sfx2::SvBaseLink* pBase = rLinks[i].get();
+        if (const ScDdeLink* p = dynamic_cast<const ScDdeLink*>(pBase))
         {
-            const ScDdeLink* p = static_cast<const ScDdeLink*>(pBase);
             ScDdeLink* pNew = new ScDdeLink(pDestDoc, *p);
             pDestMgr->InsertDDELink(
                 pNew, pNew->GetAppl(), pNew->GetTopic(), pNew->GetItem());
@@ -912,7 +908,7 @@ namespace {
 ScDdeLink* lclGetDdeLink(
         const sfx2::LinkManager* pLinkManager,
         const OUString& rAppl, const OUString& rTopic, const OUString& rItem, sal_uInt8 nMode,
-        size_t* pnDdePos = NULL )
+        size_t* pnDdePos = nullptr )
 {
     if( pLinkManager )
     {
@@ -921,8 +917,8 @@ ScDdeLink* lclGetDdeLink(
         if( pnDdePos ) *pnDdePos = 0;
         for( size_t nIndex = 0; nIndex < nCount; ++nIndex )
         {
-            ::sfx2::SvBaseLink* pLink = *rLinks[ nIndex ];
-            if( ScDdeLink* pDdeLink = PTR_CAST( ScDdeLink, pLink ) )
+            ::sfx2::SvBaseLink* pLink = rLinks[ nIndex ].get();
+            if( ScDdeLink* pDdeLink = dynamic_cast<ScDdeLink*>( pLink )  )
             {
                 if( (OUString(pDdeLink->GetAppl()) == rAppl) &&
                     (OUString(pDdeLink->GetTopic()) == rTopic) &&
@@ -933,7 +929,7 @@ ScDdeLink* lclGetDdeLink(
             }
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 /** Returns a pointer to the specified DDE link.
@@ -948,8 +944,8 @@ ScDdeLink* lclGetDdeLink( const sfx2::LinkManager* pLinkManager, size_t nDdePos 
         size_t nDdeIndex = 0;       // counts only the DDE links
         for( size_t nIndex = 0; nIndex < nCount; ++nIndex )
         {
-            ::sfx2::SvBaseLink* pLink = *rLinks[ nIndex ];
-            if( ScDdeLink* pDdeLink = PTR_CAST( ScDdeLink, pLink ) )
+            ::sfx2::SvBaseLink* pLink = rLinks[ nIndex ].get();
+            if( ScDdeLink* pDdeLink = dynamic_cast<ScDdeLink*>( pLink )  )
             {
                 if( nDdeIndex == nDdePos )
                     return pDdeLink;
@@ -957,7 +953,7 @@ ScDdeLink* lclGetDdeLink( const sfx2::LinkManager* pLinkManager, size_t nDdePos 
             }
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 } // namespace
@@ -965,7 +961,7 @@ ScDdeLink* lclGetDdeLink( const sfx2::LinkManager* pLinkManager, size_t nDdePos 
 bool ScDocument::FindDdeLink( const OUString& rAppl, const OUString& rTopic, const OUString& rItem,
         sal_uInt8 nMode, size_t& rnDdePos )
 {
-    return lclGetDdeLink( GetLinkManager(), rAppl, rTopic, rItem, nMode, &rnDdePos ) != NULL;
+    return lclGetDdeLink( GetLinkManager(), rAppl, rTopic, rItem, nMode, &rnDdePos ) != nullptr;
 }
 
 bool ScDocument::GetDdeLinkData( size_t nDdePos, OUString& rAppl, OUString& rTopic, OUString& rItem ) const
@@ -993,7 +989,7 @@ bool ScDocument::GetDdeLinkMode( size_t nDdePos, sal_uInt8& rnMode ) const
 const ScMatrix* ScDocument::GetDdeLinkResultMatrix( size_t nDdePos ) const
 {
     const ScDdeLink* pDdeLink = lclGetDdeLink( GetLinkManager(), nDdePos );
-    return pDdeLink ? pDdeLink->GetResult() : NULL;
+    return pDdeLink ? pDdeLink->GetResult() : nullptr;
 }
 
 bool ScDocument::CreateDdeLink( const OUString& rAppl, const OUString& rTopic, const OUString& rItem, sal_uInt8 nMode, ScMatrixRef pResults )
@@ -1046,7 +1042,7 @@ bool ScDocument::HasAreaLinks() const
     const ::sfx2::SvBaseLinks& rLinks = pMgr->GetLinks();
     sal_uInt16 nCount = rLinks.size();
     for (sal_uInt16 i=0; i<nCount; i++)
-        if ((*rLinks[i])->ISA(ScAreaLink))
+        if (nullptr != dynamic_cast<const ScAreaLink* >(rLinks[i].get()))
             return true;
 
     return false;
@@ -1061,8 +1057,8 @@ void ScDocument::UpdateAreaLinks()
     const ::sfx2::SvBaseLinks& rLinks = pMgr->GetLinks();
     for (size_t i=0; i<rLinks.size(); i++)
     {
-        ::sfx2::SvBaseLink* pBase = *rLinks[i];
-        if (pBase->ISA(ScAreaLink))
+        ::sfx2::SvBaseLink* pBase = rLinks[i].get();
+        if (dynamic_cast<const ScAreaLink*>( pBase) !=  nullptr)
             pBase->Update();
     }
 }
@@ -1077,9 +1073,9 @@ void ScDocument::DeleteAreaLinksOnTab( SCTAB nTab )
     sal_uInt16 nPos = 0;
     while ( nPos < rLinks.size() )
     {
-        const ::sfx2::SvBaseLink* pBase = *rLinks[nPos];
-        if ( pBase->ISA(ScAreaLink) &&
-             static_cast<const ScAreaLink*>(pBase)->GetDestArea().aStart.Tab() == nTab )
+        const ::sfx2::SvBaseLink* pBase = rLinks[nPos].get();
+        const ScAreaLink* pLink = dynamic_cast<const ScAreaLink*>(pBase);
+        if (pLink && pLink->GetDestArea().aStart.Tab() == nTab)
             pMgr->Remove(nPos);
         else
             ++nPos;
@@ -1099,10 +1095,9 @@ void ScDocument::UpdateRefAreaLinks( UpdateRefMode eUpdateRefMode,
     sal_uInt16 nCount = rLinks.size();
     for (sal_uInt16 i=0; i<nCount; i++)
     {
-        ::sfx2::SvBaseLink* pBase = *rLinks[i];
-        if (pBase->ISA(ScAreaLink))
+        ::sfx2::SvBaseLink* pBase = rLinks[i].get();
+        if (ScAreaLink* pLink = dynamic_cast<ScAreaLink*>(pBase))
         {
-            ScAreaLink* pLink = static_cast<ScAreaLink*>(pBase);
             ScRange aOutRange = pLink->GetDestArea();
 
             SCCOL nCol1 = aOutRange.aStart.Col();
@@ -1135,15 +1130,15 @@ void ScDocument::UpdateRefAreaLinks( UpdateRefMode eUpdateRefMode,
         while ( nFirstIndex < nCount )
         {
             bool bFound = false;
-            ::sfx2::SvBaseLink* pFirst = *rLinks[nFirstIndex];
-            if ( pFirst->ISA(ScAreaLink) )
+            ::sfx2::SvBaseLink* pFirst = rLinks[nFirstIndex].get();
+            if (ScAreaLink* pFirstLink = dynamic_cast<ScAreaLink*>(pFirst))
             {
-                ScAddress aFirstPos = static_cast<ScAreaLink*>(pFirst)->GetDestArea().aStart;
+                ScAddress aFirstPos = pFirstLink->GetDestArea().aStart;
                 for ( sal_uInt16 nSecondIndex = nFirstIndex + 1; nSecondIndex < nCount && !bFound; ++nSecondIndex )
                 {
-                    ::sfx2::SvBaseLink* pSecond = *rLinks[nSecondIndex];
-                    if ( pSecond->ISA(ScAreaLink) &&
-                         static_cast<ScAreaLink*>(pSecond)->GetDestArea().aStart == aFirstPos )
+                    ::sfx2::SvBaseLink* pSecond = rLinks[nSecondIndex].get();
+                    ScAreaLink* pSecondLink = dynamic_cast<ScAreaLink*>(pSecond);
+                    if (pSecondLink && pSecondLink->GetDestArea().aStart == aFirstPos)
                     {
                         // remove the first link, exit the inner loop, don't increment nFirstIndex
                         pMgr->Remove(pFirst);
@@ -1180,12 +1175,12 @@ SfxBindings* ScDocument::GetViewBindings()
     //  used to invalidate slots after changes to this document
 
     if ( !pShell )
-        return NULL;        // no ObjShell -> no view
+        return nullptr;        // no ObjShell -> no view
 
     //  first check current view
     SfxViewFrame* pViewFrame = SfxViewFrame::Current();
     if ( pViewFrame && pViewFrame->GetObjectShell() != pShell )     // wrong document?
-        pViewFrame = NULL;
+        pViewFrame = nullptr;
 
     //  otherwise use first view for this doc
     if ( !pViewFrame )
@@ -1194,7 +1189,7 @@ SfxBindings* ScDocument::GetViewBindings()
     if (pViewFrame)
         return &pViewFrame->GetBindings();
     else
-        return NULL;
+        return nullptr;
 }
 
 void ScDocument::TransliterateText( const ScMarkData& rMultiMark, sal_Int32 nType )
@@ -1222,8 +1217,7 @@ void ScDocument::TransliterateText( const ScMarkData& rMultiMark, sal_Int32 nTyp
 
             while (bFound)
             {
-                ScRefCellValue aCell;
-                aCell.assign(*this, ScAddress(nCol, nRow, nTab));
+                ScRefCellValue aCell(*this, ScAddress(nCol, nRow, nTab));
 
                 // fdo#32786 TITLE_CASE/SENTENCE_CASE need the extra handling in EditEngine (loop over words/sentences).
                 // Still use TransliterationWrapper directly for text cells with other transliteration types,

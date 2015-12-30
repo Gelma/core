@@ -128,7 +128,7 @@ namespace rptui
         uno::Any aFontDescriptor = _xVclWindowPeer->getProperty(PROPERTY_FONTDESCRIPTOR);
         awt::FontDescriptor aFontDescriptorStructure;
         aFontDescriptor >>= aFontDescriptorStructure;
-        aFontDescriptorStructure.Slant = ::com::sun::star::awt::FontSlant_ITALIC;
+        aFontDescriptorStructure.Slant = css::awt::FontSlant_ITALIC;
         _xVclWindowPeer->setProperty(PROPERTY_FONTDESCRIPTOR, uno::makeAny(aFontDescriptorStructure));
     }
 
@@ -173,12 +173,12 @@ namespace rptui
                 if ( pUnoObj ) // this doesn't need to be done for shapes
                 {
                     OSectionWindow* pSectionWindow = m_rReportController.getSectionWindow(xSection);
-                    if (pSectionWindow != 0)
+                    if (pSectionWindow != nullptr)
                     {
                         OReportSection& aOutputDevice = pSectionWindow->getReportSection(); // OutputDevice
                         OSectionView& aSdrView = aOutputDevice.getSectionView();            // SdrView
                         uno::Reference<awt::XControl> xControl = pUnoObj->GetUnoControl(aSdrView, aOutputDevice);
-                        xVclWindowPeer = uno::Reference<awt::XVclWindowPeer>( xControl->getPeer(), uno::UNO_QUERY);
+                        xVclWindowPeer.set( xControl->getPeer(), uno::UNO_QUERY);
                     }
                 }
             }

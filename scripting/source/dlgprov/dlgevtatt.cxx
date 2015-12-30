@@ -61,7 +61,7 @@ namespace dlgprov
     {
         protected:
         Reference< frame::XModel >  m_xModel;
-        virtual void firing_impl( const script::ScriptEvent& aScriptEvent, uno::Any* pRet ) SAL_OVERRIDE;
+        virtual void firing_impl( const script::ScriptEvent& aScriptEvent, uno::Any* pRet ) override;
         public:
         DialogSFScriptListenerImpl( const Reference< XComponentContext >& rxContext, const Reference< frame::XModel >& rxModel ) : DialogScriptListenerImpl( rxContext ), m_xModel( rxModel ) {}
     };
@@ -69,7 +69,7 @@ namespace dlgprov
   class DialogLegacyScriptListenerImpl : public DialogSFScriptListenerImpl
     {
         protected:
-        virtual void firing_impl( const script::ScriptEvent& aScriptEvent, uno::Any* pRet ) SAL_OVERRIDE;
+        virtual void firing_impl( const script::ScriptEvent& aScriptEvent, uno::Any* pRet ) override;
         public:
         DialogLegacyScriptListenerImpl( const Reference< XComponentContext >& rxContext, const Reference< frame::XModel >& rxModel ) : DialogSFScriptListenerImpl( rxContext, rxModel ){}
     };
@@ -81,7 +81,7 @@ namespace dlgprov
     Reference< beans::XIntrospectionAccess > m_xIntrospectionAccess;
     bool m_bDialogProviderMode;
 
-        virtual void firing_impl( const script::ScriptEvent& aScriptEvent, uno::Any* pRet ) SAL_OVERRIDE;
+        virtual void firing_impl( const script::ScriptEvent& aScriptEvent, uno::Any* pRet ) override;
 
     public:
         DialogUnoScriptListenerImpl( const Reference< XComponentContext >& rxContext,
@@ -99,7 +99,7 @@ namespace dlgprov
         OUString msDialogCodeName;
         OUString msDialogLibName;
         Reference<  script::XScriptListener > mxListener;
-        virtual void firing_impl( const script::ScriptEvent& aScriptEvent, uno::Any* pRet ) SAL_OVERRIDE;
+        virtual void firing_impl( const script::ScriptEvent& aScriptEvent, uno::Any* pRet ) override;
         public:
         DialogVBAScriptListenerImpl( const Reference< XComponentContext >& rxContext, const Reference< awt::XControl >& rxControl, const Reference< frame::XModel >& xModel, const OUString& sDialogLibName );
     };
@@ -111,7 +111,7 @@ namespace dlgprov
         if ( xSMgr.is() )
         {
             args[0] <<= xModel;
-            mxListener = Reference< XScriptListener >( xSMgr->createInstanceWithArgumentsAndContext( OUString( "ooo.vba.EventListener"  ), args, m_xContext ), UNO_QUERY );
+            mxListener.set( xSMgr->createInstanceWithArgumentsAndContext( "ooo.vba.EventListener", args, m_xContext ), UNO_QUERY );
         }
         if ( rxControl.is() )
         {
@@ -135,7 +135,7 @@ namespace dlgprov
         if ( aScriptEvent.ScriptType == "VBAInterop" && mxListener.is() )
         {
             ScriptEvent aScriptEventCopy( aScriptEvent );
-            aScriptEventCopy.ScriptCode = msDialogLibName.concat( OUString( "."  ) ).concat( msDialogCodeName );
+            aScriptEventCopy.ScriptCode = msDialogLibName.concat( "." ).concat( msDialogCodeName );
             try
             {
                 mxListener->firing( aScriptEventCopy );
@@ -315,7 +315,7 @@ namespace dlgprov
 
                 for ( sal_Int32 i2 = 0; i2 < nControlCount; ++i2 )
                 {
-                    pObjects2[i2] = Reference< XInterface >( pControls[i2], UNO_QUERY );
+                    pObjects2[i2].set( pControls[i2], UNO_QUERY );
                 }
                 nestedAttachEvents( aObjects, Helper, sDialogCodeName );
             }
@@ -327,7 +327,7 @@ namespace dlgprov
 
 
     void SAL_CALL DialogEventsAttacherImpl::attachEvents( const Sequence< Reference< XInterface > >& Objects,
-        const com::sun::star::uno::Reference<com::sun::star::script::XScriptListener>&,
+        const css::uno::Reference<css::script::XScriptListener>&,
         const Any& Helper )
         throw (IllegalArgumentException, IntrospectionException, CannotCreateAdapterException,
                ServiceNotRegisteredException, RuntimeException, std::exception)
@@ -341,8 +341,8 @@ namespace dlgprov
                 Reference< XMultiComponentFactory > xSMgr( m_xContext->getServiceManager() );
                 if ( xSMgr.is() )
                 {
-                    m_xEventAttacher = Reference< XEventAttacher >( xSMgr->createInstanceWithContext(
-                        OUString( "com.sun.star.script.EventAttacher"  ), m_xContext ), UNO_QUERY );
+                    m_xEventAttacher.set( xSMgr->createInstanceWithContext(
+                        "com.sun.star.script.EventAttacher", m_xContext ), UNO_QUERY );
 
                     if ( !m_xEventAttacher.is() )
                         throw ServiceNotRegisteredException();
@@ -427,7 +427,7 @@ namespace dlgprov
     {
         //::osl::MutexGuard aGuard( getMutex() );
 
-        firing_impl( Event, NULL );
+        firing_impl( Event, nullptr );
     }
 
 
@@ -448,10 +448,10 @@ namespace dlgprov
 
 
     DialogUnoScriptListenerImpl::DialogUnoScriptListenerImpl( const Reference< XComponentContext >& rxContext,
-            const Reference< ::com::sun::star::frame::XModel >& rxModel,
-            const Reference< ::com::sun::star::awt::XControl >& rxControl,
-            const Reference< ::com::sun::star::uno::XInterface >& rxHandler,
-            const Reference< ::com::sun::star::beans::XIntrospectionAccess >& rxIntrospectionAccess,
+            const Reference< css::frame::XModel >& rxModel,
+            const Reference< css::awt::XControl >& rxControl,
+            const Reference< css::uno::XInterface >& rxHandler,
+            const Reference< css::beans::XIntrospectionAccess >& rxIntrospectionAccess,
             bool bDialogProviderMode )
         : DialogSFScriptListenerImpl( rxContext, rxModel )
         ,m_xControl( rxControl )
@@ -667,7 +667,7 @@ namespace dlgprov
     {
         //::osl::MutexGuard aGuard( getMutex() );
 
-        firing_impl( aScriptEvent, NULL );
+        firing_impl( aScriptEvent, nullptr );
     }
 
 

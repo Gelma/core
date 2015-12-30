@@ -75,12 +75,14 @@ class VCLSession:
 
     virtual ~VCLSession() {}
 
-    virtual void SAL_CALL addSessionManagerListener( const css::uno::Reference< XSessionManagerListener >& xListener ) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL removeSessionManagerListener( const css::uno::Reference< XSessionManagerListener>& xListener ) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL queryInteraction( const css::uno::Reference< XSessionManagerListener >& xListener ) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL interactionDone( const css::uno::Reference< XSessionManagerListener >& xListener ) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL saveDone( const css::uno::Reference< XSessionManagerListener >& xListener ) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL cancelShutdown() throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL addSessionManagerListener( const css::uno::Reference< XSessionManagerListener >& xListener ) throw( RuntimeException, std::exception ) override;
+    virtual void SAL_CALL removeSessionManagerListener( const css::uno::Reference< XSessionManagerListener>& xListener ) throw( RuntimeException, std::exception ) override;
+    virtual void SAL_CALL queryInteraction( const css::uno::Reference< XSessionManagerListener >& xListener ) throw( RuntimeException, std::exception ) override;
+    virtual void SAL_CALL interactionDone( const css::uno::Reference< XSessionManagerListener >& xListener ) throw( RuntimeException, std::exception ) override;
+    virtual void SAL_CALL saveDone( const css::uno::Reference< XSessionManagerListener >& xListener ) throw( RuntimeException, std::exception ) override;
+    virtual sal_Bool SAL_CALL cancelShutdown() throw( RuntimeException, std::exception ) override;
+
+    void SAL_CALL disposing() override;
 
     void callSaveRequested( bool bShutdown, bool bCancelable );
     void callShutdownCancelled();
@@ -327,6 +329,22 @@ sal_Bool SAL_CALL VCLSession::cancelShutdown() throw( RuntimeException, std::exc
     return m_xSession && m_xSession->cancelShutdown();
 }
 
+void VCLSession::disposing() {
+    std::list<Listener> list;
+    {
+        osl::MutexGuard g(m_aMutex);
+        list.swap(m_aListeners);
+    }
+    css::lang::EventObject src(static_cast<OWeakObject *>(this));
+    for (auto const & i: list) {
+        try {
+            i.m_xListener->disposing(src);
+        } catch (css::uno::RuntimeException & e) {
+            SAL_WARN("vcl.app", "ignoring RuntimeException " << e.Message);
+        }
+    }
+}
+
 // service implementation
 
 OUString SAL_CALL vcl_session_getImplementationName()
@@ -336,8 +354,7 @@ OUString SAL_CALL vcl_session_getImplementationName()
 
 Sequence< OUString > SAL_CALL vcl_session_getSupportedServiceNames()
 {
-    Sequence< OUString > aRet(1);
-    aRet[0] = "com.sun.star.frame.SessionManagerClient";
+    Sequence< OUString > aRet { "com.sun.star.frame.SessionManagerClient" };
     return aRet;
 }
 

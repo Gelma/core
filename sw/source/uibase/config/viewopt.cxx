@@ -39,52 +39,53 @@
 #include <unotools/syslocale.hxx>
 
 #include <editeng/acorrcfg.hxx>
+#include <comphelper/lok.hxx>
 
 #ifdef DBG_UTIL
-bool SwViewOption::s_bTest9 = false;        //DrawingLayerNotLoading
+bool SwViewOption::m_bTest9 = false;        //DrawingLayerNotLoading
 #endif
-Color SwViewOption::aDocBoundColor(COL_LIGHTGRAY);
-Color SwViewOption::aObjectBoundColor(COL_LIGHTGRAY);
-Color SwViewOption::aDocColor(COL_LIGHTGRAY);
-Color SwViewOption::aAppBackgroundColor(COL_LIGHTGRAY);
-Color SwViewOption::aTableBoundColor(COL_LIGHTGRAY);
-Color SwViewOption::aIndexShadingsColor(COL_LIGHTGRAY);
-Color SwViewOption::aLinksColor(COL_BLUE);
-Color SwViewOption::aVisitedLinksColor(COL_RED);
-Color SwViewOption::aDirectCursorColor(COL_BLUE);
-Color SwViewOption::aTextGridColor(COL_LIGHTGRAY);
-Color SwViewOption::aSpellColor(COL_LIGHTRED);
-Color SwViewOption::aSmarttagColor(COL_LIGHTMAGENTA);
-Color SwViewOption::aFontColor(COL_BLACK);
-Color SwViewOption::aFieldShadingsColor(COL_LIGHTGRAY);
-Color SwViewOption::aSectionBoundColor(COL_LIGHTGRAY);
-Color SwViewOption::aPageBreakColor(COL_BLUE);
-Color SwViewOption::aScriptIndicatorColor(COL_GREEN);
-Color SwViewOption::aShadowColor(COL_GRAY);
-Color SwViewOption::aHeaderFooterMarkColor(COL_BLUE);
+Color SwViewOption::m_aDocBoundColor(COL_LIGHTGRAY);
+Color SwViewOption::m_aObjectBoundColor(COL_LIGHTGRAY);
+Color SwViewOption::m_aDocColor(COL_LIGHTGRAY);
+Color SwViewOption::m_aAppBackgroundColor(COL_LIGHTGRAY);
+Color SwViewOption::m_aTableBoundColor(COL_LIGHTGRAY);
+Color SwViewOption::m_aIndexShadingsColor(COL_LIGHTGRAY);
+Color SwViewOption::m_aLinksColor(COL_BLUE);
+Color SwViewOption::m_aVisitedLinksColor(COL_RED);
+Color SwViewOption::m_aDirectCursorColor(COL_BLUE);
+Color SwViewOption::m_aTextGridColor(COL_LIGHTGRAY);
+Color SwViewOption::m_aSpellColor(COL_LIGHTRED);
+Color SwViewOption::m_aSmarttagColor(COL_LIGHTMAGENTA);
+Color SwViewOption::m_aFontColor(COL_BLACK);
+Color SwViewOption::m_aFieldShadingsColor(COL_LIGHTGRAY);
+Color SwViewOption::m_aSectionBoundColor(COL_LIGHTGRAY);
+Color SwViewOption::m_aPageBreakColor(COL_BLUE);
+Color SwViewOption::m_aScriptIndicatorColor(COL_GREEN);
+Color SwViewOption::m_aShadowColor(COL_GRAY);
+Color SwViewOption::m_aHeaderFooterMarkColor(COL_BLUE);
 
-sal_Int32 SwViewOption::nAppearanceFlags = VIEWOPT_DOC_BOUNDARIES|VIEWOPT_OBJECT_BOUNDARIES;
-sal_uInt16 SwViewOption::nPixelTwips = 0;   // one pixel on the screen
+sal_Int32 SwViewOption::m_nAppearanceFlags = VIEWOPT_DOC_BOUNDARIES|VIEWOPT_OBJECT_BOUNDARIES;
+sal_uInt16 SwViewOption::m_nPixelTwips = 0;   // one pixel on the screen
 
 static const char aPostItStr[] = "  ";
 
 bool SwViewOption::IsEqualFlags( const SwViewOption &rOpt ) const
 {
-    return  nCoreOptions == rOpt.nCoreOptions
-            && nCore2Options == rOpt.nCore2Options
-            && aSnapSize    == rOpt.aSnapSize
+    return  m_nCoreOptions == rOpt.m_nCoreOptions
+            && m_nCore2Options == rOpt.m_nCore2Options
+            && m_aSnapSize    == rOpt.m_aSnapSize
             && mnViewLayoutColumns == rOpt.mnViewLayoutColumns
-            && nDivisionX   == rOpt.GetDivisionX()
-            && nDivisionY   == rOpt.GetDivisionY()
-            && nPagePrevRow == rOpt.GetPagePrevRow()
-            && nPagePrevCol == rOpt.GetPagePrevCol()
-            && aRetoucheColor == rOpt.GetRetoucheColor()
+            && m_nDivisionX   == rOpt.GetDivisionX()
+            && m_nDivisionY   == rOpt.GetDivisionY()
+            && m_nPagePreviewRow == rOpt.GetPagePrevRow()
+            && m_nPagePreviewCol == rOpt.GetPagePrevCol()
+            && m_aRetouchColor == rOpt.GetRetoucheColor()
             && mbFormView == rOpt.IsFormView()
             && mbBrowseMode == rOpt.getBrowseMode()
             && mbViewLayoutBookMode == rOpt.mbViewLayoutBookMode
             && mbHideWhitespaceMode == rOpt.mbHideWhitespaceMode
-            && bShowPlaceHolderFields == rOpt.bShowPlaceHolderFields
-            && bIdle == rOpt.bIdle
+            && m_bShowPlaceHolderFields == rOpt.m_bShowPlaceHolderFields
+            && m_bIdle == rOpt.m_bIdle
 #ifdef DBG_UTIL
             // correspond to the statements in ui/config/cfgvw.src
             && m_bTest1 == rOpt.IsTest1()
@@ -130,7 +131,7 @@ void SwViewOption::DrawRectPrinter( OutputDevice *pOut,
 sal_uInt16 SwViewOption::GetPostItsWidth( const OutputDevice *pOut )
 {
     assert(pOut && "no Outdev");
-    return sal_uInt16(pOut->GetTextWidth( OUString(aPostItStr )));
+    return sal_uInt16(pOut->GetTextWidth( aPostItStr));
 }
 
 void SwViewOption::PaintPostIts( OutputDevice *pOut, const SwRect &rRect, bool bIsScript )
@@ -146,35 +147,35 @@ void SwViewOption::PaintPostIts( OutputDevice *pOut, const SwRect &rRect, bool b
         const Point aTopLeft(  rRect.Left()  + nPix, rRect.Top()    + nPix );
         const Point aBotRight( rRect.Right() - nPix, rRect.Bottom() - nPix );
         const SwRect aRect( aTopLeft, aBotRight );
-        DrawRect( pOut, aRect, aScriptIndicatorColor.GetColor() );
+        DrawRect( pOut, aRect, m_aScriptIndicatorColor.GetColor() );
     pOut->SetLineColor( aOldLineColor );
     }
 }
 
 SwViewOption::SwViewOption() :
-    sSymbolFont( "symbol" ),
-    aRetoucheColor( COL_TRANSPARENT ),
+    m_sSymbolFont( "symbol" ),
+    m_aRetouchColor( COL_TRANSPARENT ),
     mnViewLayoutColumns( 0 ),
-    nPagePrevRow( 1 ),
-    nPagePrevCol( 2 ),
-    nShdwCrsrFillMode( FILL_TAB ),
-    bReadonly(false),
-    bStarOneSetting(false),
-    bIsPagePreview(false),
-    bSelectionInReadonly(false),
+    m_nPagePreviewRow( 1 ),
+    m_nPagePreviewCol( 2 ),
+    m_nShadowCursorFillMode( FILL_TAB ),
+    m_bReadonly(false),
+    m_bStarOneSetting(false),
+    m_bIsPagePreview(false),
+    m_bSelectionInReadonly(false),
     mbFormView(false),
     mbBrowseMode(false),
     mbBookView(false),
     mbViewLayoutBookMode(false),
     mbHideWhitespaceMode(false),
-    bShowPlaceHolderFields( true ),
-    nZoom( 100 ),
-    eZoom( SvxZoomType::PERCENT ),
-    nTableDest(TBL_DEST_CELL)
+    m_bShowPlaceHolderFields( true ),
+    m_nZoom( 100 ),
+    m_eZoom( SvxZoomType::PERCENT ),
+    m_nTableDestination(TBL_DEST_CELL)
 {
     // Initialisation is a little simpler now
     // all Bits to 0
-    nCoreOptions =
+    m_nCoreOptions =
         VIEWOPT_1_HARDBLANK |
         VIEWOPT_1_SOFTHYPH |
         VIEWOPT_1_REF |
@@ -185,61 +186,63 @@ SwViewOption::SwViewOption() :
         VIEWOPT_1_PAGEBACK |
         VIEWOPT_1_POSTITS;
 
-    nCore2Options =
+    m_nCore2Options =
         VIEWOPT_CORE2_BLACKFONT |
         VIEWOPT_CORE2_HIDDENPARA;
 
-    nUIOptions =
+    m_nUIOptions =
         VIEWOPT_2_MODIFIED |
         VIEWOPT_2_GRFKEEPZOOM |
         VIEWOPT_2_ANY_RULER;
 
     if (!utl::ConfigManager::IsAvoidConfig() && MEASURE_METRIC != SvtSysLocale().GetLocaleData().getMeasurementSystemEnum())
-        aSnapSize.Width() = aSnapSize.Height() = 720;   // 1/2"
+        m_aSnapSize.Width() = m_aSnapSize.Height() = 720;   // 1/2"
     else
-        aSnapSize.Width() = aSnapSize.Height() = 567;   // 1 cm
-    nDivisionX = nDivisionY = 1;
+        m_aSnapSize.Width() = m_aSnapSize.Height() = 567;   // 1 cm
+    m_nDivisionX = m_nDivisionY = 1;
 
-    bSelectionInReadonly = !utl::ConfigManager::IsAvoidConfig() && SW_MOD()->GetAccessibilityOptions().IsSelectionInReadonly();
+    m_bSelectionInReadonly = !utl::ConfigManager::IsAvoidConfig() && SW_MOD()->GetAccessibilityOptions().IsSelectionInReadonly();
 
-    bIdle = true;
+    m_bIdle = true;
 
 #ifdef DBG_UTIL
     // correspond to the statements in ui/config/cfgvw.src
     m_bTest1 = m_bTest2 = m_bTest3 = m_bTest4 =
              m_bTest5 = m_bTest6 = m_bTest7 = m_bTest8 = m_bTest10 = false;
 #endif
+    if (comphelper::LibreOfficeKit::isActive())
+        m_aAppBackgroundColor = COL_TRANSPARENT;
 }
 
 SwViewOption::SwViewOption(const SwViewOption& rVOpt)
 {
-    bReadonly = false;
-    bSelectionInReadonly = false;
+    m_bReadonly = false;
+    m_bSelectionInReadonly = false;
     // #114856# Formular view
     mbFormView       = rVOpt.mbFormView;
-    nZoom           = rVOpt.nZoom       ;
-    aSnapSize       = rVOpt.aSnapSize   ;
+    m_nZoom           = rVOpt.m_nZoom       ;
+    m_aSnapSize       = rVOpt.m_aSnapSize   ;
     mnViewLayoutColumns = rVOpt.mnViewLayoutColumns ;
-    nDivisionX      = rVOpt.nDivisionX  ;
-    nDivisionY      = rVOpt.nDivisionY  ;
-    nPagePrevRow    = rVOpt.nPagePrevRow;
-    nPagePrevCol    = rVOpt.nPagePrevCol;
-    bIsPagePreview  = rVOpt.bIsPagePreview;
-    eZoom           = rVOpt.eZoom       ;
-    nTableDest        = rVOpt.nTableDest    ;
-    nUIOptions      = rVOpt.nUIOptions  ;
-    nCoreOptions    = rVOpt.nCoreOptions  ;
-    nCore2Options   = rVOpt.nCore2Options  ;
-    aRetoucheColor  = rVOpt.GetRetoucheColor();
-    sSymbolFont     = rVOpt.sSymbolFont;
-    nShdwCrsrFillMode = rVOpt.nShdwCrsrFillMode;
-    bStarOneSetting = rVOpt.bStarOneSetting;
+    m_nDivisionX      = rVOpt.m_nDivisionX  ;
+    m_nDivisionY      = rVOpt.m_nDivisionY  ;
+    m_nPagePreviewRow    = rVOpt.m_nPagePreviewRow;
+    m_nPagePreviewCol    = rVOpt.m_nPagePreviewCol;
+    m_bIsPagePreview  = rVOpt.m_bIsPagePreview;
+    m_eZoom           = rVOpt.m_eZoom       ;
+    m_nTableDestination        = rVOpt.m_nTableDestination    ;
+    m_nUIOptions      = rVOpt.m_nUIOptions  ;
+    m_nCoreOptions    = rVOpt.m_nCoreOptions  ;
+    m_nCore2Options   = rVOpt.m_nCore2Options  ;
+    m_aRetouchColor  = rVOpt.GetRetoucheColor();
+    m_sSymbolFont     = rVOpt.m_sSymbolFont;
+    m_nShadowCursorFillMode = rVOpt.m_nShadowCursorFillMode;
+    m_bStarOneSetting = rVOpt.m_bStarOneSetting;
     mbBookView      = rVOpt.mbBookView;
     mbBrowseMode    = rVOpt.mbBrowseMode;
     mbViewLayoutBookMode = rVOpt.mbViewLayoutBookMode;
     mbHideWhitespaceMode = rVOpt.mbHideWhitespaceMode;
-    bShowPlaceHolderFields = rVOpt.bShowPlaceHolderFields;
-    bIdle           = rVOpt.bIdle;
+    m_bShowPlaceHolderFields = rVOpt.m_bShowPlaceHolderFields;
+    m_bIdle           = rVOpt.m_bIdle;
 
 #ifdef DBG_UTIL
     m_bTest1  = rVOpt.m_bTest1;
@@ -258,29 +261,29 @@ SwViewOption& SwViewOption::operator=( const SwViewOption &rVOpt )
 {
     // #114856# Formular view
     mbFormView       = rVOpt.mbFormView   ;
-    nZoom           = rVOpt.nZoom       ;
-    aSnapSize       = rVOpt.aSnapSize   ;
+    m_nZoom           = rVOpt.m_nZoom       ;
+    m_aSnapSize       = rVOpt.m_aSnapSize   ;
     mnViewLayoutColumns = rVOpt.mnViewLayoutColumns ;
-    nDivisionX      = rVOpt.nDivisionX  ;
-    nDivisionY      = rVOpt.nDivisionY  ;
-    nPagePrevRow    = rVOpt.nPagePrevRow;
-    nPagePrevCol    = rVOpt.nPagePrevCol;
-    bIsPagePreview  = rVOpt.bIsPagePreview;
-    eZoom           = rVOpt.eZoom       ;
-    nTableDest        = rVOpt.nTableDest    ;
-    nUIOptions      = rVOpt.nUIOptions  ;
-    nCoreOptions    = rVOpt.nCoreOptions;
-    nCore2Options   = rVOpt.nCore2Options;
-    aRetoucheColor  = rVOpt.GetRetoucheColor();
-    sSymbolFont     = rVOpt.sSymbolFont;
-    nShdwCrsrFillMode = rVOpt.nShdwCrsrFillMode;
-    bStarOneSetting = rVOpt.bStarOneSetting;
+    m_nDivisionX      = rVOpt.m_nDivisionX  ;
+    m_nDivisionY      = rVOpt.m_nDivisionY  ;
+    m_nPagePreviewRow    = rVOpt.m_nPagePreviewRow;
+    m_nPagePreviewCol    = rVOpt.m_nPagePreviewCol;
+    m_bIsPagePreview  = rVOpt.m_bIsPagePreview;
+    m_eZoom           = rVOpt.m_eZoom       ;
+    m_nTableDestination        = rVOpt.m_nTableDestination    ;
+    m_nUIOptions      = rVOpt.m_nUIOptions  ;
+    m_nCoreOptions    = rVOpt.m_nCoreOptions;
+    m_nCore2Options   = rVOpt.m_nCore2Options;
+    m_aRetouchColor  = rVOpt.GetRetoucheColor();
+    m_sSymbolFont     = rVOpt.m_sSymbolFont;
+    m_nShadowCursorFillMode = rVOpt.m_nShadowCursorFillMode;
+    m_bStarOneSetting = rVOpt.m_bStarOneSetting;
     mbBookView      = rVOpt.mbBookView;
     mbBrowseMode    = rVOpt.mbBrowseMode;
     mbViewLayoutBookMode = rVOpt.mbViewLayoutBookMode;
     mbHideWhitespaceMode = rVOpt.mbHideWhitespaceMode;
-    bShowPlaceHolderFields = rVOpt.bShowPlaceHolderFields;
-    bIdle           = rVOpt.bIdle;
+    m_bShowPlaceHolderFields = rVOpt.m_bShowPlaceHolderFields;
+    m_bIdle           = rVOpt.m_bIdle;
 
 #ifdef DBG_UTIL
     m_bTest1  = rVOpt.m_bTest1;
@@ -302,9 +305,9 @@ SwViewOption::~SwViewOption()
 
 void SwViewOption::Init( vcl::Window *pWin )
 {
-    if( !nPixelTwips && pWin )
+    if( !m_nPixelTwips && pWin )
     {
-        nPixelTwips = (sal_uInt16)pWin->PixelToLogic( Size(1,1) ).Height();
+        m_nPixelTwips = (sal_uInt16)pWin->PixelToLogic( Size(1,1) ).Height();
     }
 }
 
@@ -312,6 +315,14 @@ bool SwViewOption::IsAutoCompleteWords()
 {
     const SvxSwAutoFormatFlags& rFlags = SvxAutoCorrCfg::Get().GetAutoCorrect()->GetSwFlags();
     return rFlags.bAutoCmpltCollectWords;
+}
+
+void SwViewOption::SetOnlineSpell(bool b)
+{
+    if (comphelper::LibreOfficeKit::isActive())
+        return;
+
+    b ? (m_nCoreOptions |= VIEWOPT_1_ONLINESPELL ) : ( m_nCoreOptions &= ~VIEWOPT_1_ONLINESPELL);
 }
 
 AuthorCharAttr::AuthorCharAttr() :
@@ -324,7 +335,7 @@ AuthorCharAttr::AuthorCharAttr() :
 sal_uInt16      GetHtmlMode(const SwDocShell* pShell)
 {
     sal_uInt16 nRet = 0;
-    if(!pShell || PTR_CAST(SwWebDocShell, pShell))
+    if(!pShell || dynamic_cast<const SwWebDocShell*>( pShell) )
     {
         nRet = HTMLMODE_ON | HTMLMODE_SOME_STYLES;
         SvxHtmlOptions& rHtmlOpt = SvxHtmlOptions::Get();
@@ -346,171 +357,171 @@ sal_uInt16      GetHtmlMode(const SwDocShell* pShell)
 
 Color&   SwViewOption::GetDocColor()
 {
-    return aDocColor;
+    return m_aDocColor;
 }
 
 Color&   SwViewOption::GetDocBoundariesColor()
 {
-    return aDocBoundColor;
+    return m_aDocBoundColor;
 }
 
 Color&   SwViewOption::GetObjectBoundariesColor()
 {
-    return aObjectBoundColor;
+    return m_aObjectBoundColor;
 }
 
 Color& SwViewOption::GetAppBackgroundColor()
 {
-    return aAppBackgroundColor;
+    return m_aAppBackgroundColor;
 }
 
 Color&   SwViewOption::GetTableBoundariesColor()
 {
-    return aTableBoundColor;
+    return m_aTableBoundColor;
 }
 
 Color&   SwViewOption::GetIndexShadingsColor()
 {
-    return aIndexShadingsColor;
+    return m_aIndexShadingsColor;
 }
 
 Color&   SwViewOption::GetLinksColor()
 {
-    return aLinksColor;
+    return m_aLinksColor;
 }
 
 Color&   SwViewOption::GetVisitedLinksColor()
 {
-    return aVisitedLinksColor;
+    return m_aVisitedLinksColor;
 }
 
 Color&   SwViewOption::GetDirectCursorColor()
 {
-    return aDirectCursorColor;
+    return m_aDirectCursorColor;
 }
 
 Color&   SwViewOption::GetTextGridColor()
 {
-    return aTextGridColor;
+    return m_aTextGridColor;
 }
 
 Color&   SwViewOption::GetSpellColor()
 {
-    return aSpellColor;
+    return m_aSpellColor;
 }
 
 Color&   SwViewOption::GetSmarttagColor()
 {
-    return aSmarttagColor;
+    return m_aSmarttagColor;
 }
 
 Color&   SwViewOption::GetShadowColor()
 {
-    return aShadowColor;
+    return m_aShadowColor;
 }
 
 Color&   SwViewOption::GetFontColor()
 {
-    return aFontColor;
+    return m_aFontColor;
 }
 
 Color&   SwViewOption::GetFieldShadingsColor()
 {
-    return aFieldShadingsColor;
+    return m_aFieldShadingsColor;
 }
 
 Color&   SwViewOption::GetSectionBoundColor()
 {
-    return aSectionBoundColor;
+    return m_aSectionBoundColor;
 }
 
 Color& SwViewOption::GetPageBreakColor()
 {
-    return aPageBreakColor;
+    return m_aPageBreakColor;
 }
 
 Color& SwViewOption::GetHeaderFooterMarkColor()
 {
-    return aHeaderFooterMarkColor;
+    return m_aHeaderFooterMarkColor;
 }
 
 void SwViewOption::ApplyColorConfigValues(const svtools::ColorConfig& rConfig )
 {
-    aDocColor.SetColor(rConfig.GetColorValue(svtools::DOCCOLOR).nColor);
+    m_aDocColor.SetColor(rConfig.GetColorValue(svtools::DOCCOLOR).nColor);
 
     svtools::ColorConfigValue aValue = rConfig.GetColorValue(svtools::DOCBOUNDARIES);
-    aDocBoundColor.SetColor(aValue.nColor);
-    nAppearanceFlags = 0;
+    m_aDocBoundColor.SetColor(aValue.nColor);
+    m_nAppearanceFlags = 0;
     if(aValue.bIsVisible)
-        nAppearanceFlags |= VIEWOPT_DOC_BOUNDARIES;
+        m_nAppearanceFlags |= VIEWOPT_DOC_BOUNDARIES;
 
-    aAppBackgroundColor.SetColor(rConfig.GetColorValue(svtools::APPBACKGROUND).nColor);
+    m_aAppBackgroundColor.SetColor(rConfig.GetColorValue(svtools::APPBACKGROUND).nColor);
 
     aValue = rConfig.GetColorValue(svtools::OBJECTBOUNDARIES);
-    aObjectBoundColor.SetColor(aValue.nColor);
+    m_aObjectBoundColor.SetColor(aValue.nColor);
     if(aValue.bIsVisible)
-        nAppearanceFlags |= VIEWOPT_OBJECT_BOUNDARIES;
+        m_nAppearanceFlags |= VIEWOPT_OBJECT_BOUNDARIES;
 
     aValue = rConfig.GetColorValue(svtools::TABLEBOUNDARIES);
-    aTableBoundColor.SetColor(aValue.nColor);
+    m_aTableBoundColor.SetColor(aValue.nColor);
     if(aValue.bIsVisible)
-        nAppearanceFlags |= VIEWOPT_TABLE_BOUNDARIES;
+        m_nAppearanceFlags |= VIEWOPT_TABLE_BOUNDARIES;
 
     aValue = rConfig.GetColorValue(svtools::WRITERIDXSHADINGS);
-    aIndexShadingsColor.SetColor(aValue.nColor);
+    m_aIndexShadingsColor.SetColor(aValue.nColor);
     if(aValue.bIsVisible)
-        nAppearanceFlags |= VIEWOPT_INDEX_SHADINGS;
+        m_nAppearanceFlags |= VIEWOPT_INDEX_SHADINGS;
 
     aValue = rConfig.GetColorValue(svtools::LINKS);
-    aLinksColor.SetColor(aValue.nColor);
+    m_aLinksColor.SetColor(aValue.nColor);
     if(aValue.bIsVisible)
-        nAppearanceFlags |= VIEWOPT_LINKS;
+        m_nAppearanceFlags |= VIEWOPT_LINKS;
 
     aValue = rConfig.GetColorValue(svtools::LINKSVISITED);
-    aVisitedLinksColor.SetColor(aValue.nColor);
+    m_aVisitedLinksColor.SetColor(aValue.nColor);
     if(aValue.bIsVisible)
-        nAppearanceFlags |= VIEWOPT_VISITED_LINKS;
+        m_nAppearanceFlags |= VIEWOPT_VISITED_LINKS;
 
     aValue = rConfig.GetColorValue(svtools::SHADOWCOLOR);
-    aShadowColor.SetColor(aValue.nColor);
+    m_aShadowColor.SetColor(aValue.nColor);
     if(aValue.bIsVisible)
-        nAppearanceFlags |= VIEWOPT_SHADOW;
+        m_nAppearanceFlags |= VIEWOPT_SHADOW;
 
-    aDirectCursorColor.SetColor(rConfig.GetColorValue(svtools::WRITERDIRECTCURSOR).nColor);
+    m_aDirectCursorColor.SetColor(rConfig.GetColorValue(svtools::WRITERDIRECTCURSOR).nColor);
 
-    aTextGridColor.SetColor(rConfig.GetColorValue(svtools::WRITERTEXTGRID).nColor);
+    m_aTextGridColor.SetColor(rConfig.GetColorValue(svtools::WRITERTEXTGRID).nColor);
 
-    aSpellColor.SetColor(rConfig.GetColorValue(svtools::SPELL).nColor);
+    m_aSpellColor.SetColor(rConfig.GetColorValue(svtools::SPELL).nColor);
 
-    aSmarttagColor.SetColor(rConfig.GetColorValue(svtools::SMARTTAGS).nColor);
+    m_aSmarttagColor.SetColor(rConfig.GetColorValue(svtools::SMARTTAGS).nColor);
 
-    aFontColor.SetColor(rConfig.GetColorValue(svtools::FONTCOLOR).nColor);
+    m_aFontColor.SetColor(rConfig.GetColorValue(svtools::FONTCOLOR).nColor);
 
     aValue = rConfig.GetColorValue(svtools::WRITERFIELDSHADINGS);
-    aFieldShadingsColor.SetColor(aValue.nColor);
+    m_aFieldShadingsColor.SetColor(aValue.nColor);
     if(aValue.bIsVisible)
-        nAppearanceFlags |= VIEWOPT_FIELD_SHADINGS;
+        m_nAppearanceFlags |= VIEWOPT_FIELD_SHADINGS;
 
     aValue = rConfig.GetColorValue(svtools::WRITERSECTIONBOUNDARIES);
-    aSectionBoundColor.SetColor(aValue.nColor);
+    m_aSectionBoundColor.SetColor(aValue.nColor);
     if(aValue.bIsVisible)
-        nAppearanceFlags |= VIEWOPT_SECTION_BOUNDARIES;
+        m_nAppearanceFlags |= VIEWOPT_SECTION_BOUNDARIES;
 
     aValue = rConfig.GetColorValue(svtools::WRITERPAGEBREAKS);
-    aPageBreakColor.SetColor(aValue.nColor);
+    m_aPageBreakColor.SetColor(aValue.nColor);
 
     aValue = rConfig.GetColorValue(svtools::WRITERHEADERFOOTERMARK);
-    aHeaderFooterMarkColor.SetColor(aValue.nColor);
+    m_aHeaderFooterMarkColor.SetColor(aValue.nColor);
 
-    aScriptIndicatorColor.SetColor(rConfig.GetColorValue(svtools::WRITERSCRIPTINDICATOR).nColor);
+    m_aScriptIndicatorColor.SetColor(rConfig.GetColorValue(svtools::WRITERSCRIPTINDICATOR).nColor);
 }
 
 void SwViewOption::SetAppearanceFlag(sal_Int32 nFlag, bool bSet, bool bSaveInConfig )
 {
     if(bSet)
-        nAppearanceFlags |= nFlag;
+        m_nAppearanceFlags |= nFlag;
     else
-        nAppearanceFlags &= ~nFlag;
+        m_nAppearanceFlags &= ~nFlag;
     if(bSaveInConfig)
     {
         //create an editable svtools::ColorConfig and store the change
@@ -549,7 +560,7 @@ void SwViewOption::SetAppearanceFlag(sal_Int32 nFlag, bool bSet, bool bSaveInCon
 
 bool SwViewOption::IsAppearanceFlag(sal_Int32 nFlag)
 {
-    return 0 != (nAppearanceFlags & nFlag);
+    return 0 != (m_nAppearanceFlags & nFlag);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

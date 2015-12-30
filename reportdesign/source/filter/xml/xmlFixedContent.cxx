@@ -59,8 +59,8 @@ public:
             const uno::Reference< xml::sax::XAttributeList > & xAttrList,
             sal_Int16 nControl );
 
-    virtual void InsertControlCharacter(sal_Int16   _nControl) SAL_OVERRIDE;
-    virtual void InsertString(const OUString& _sString) SAL_OVERRIDE;
+    virtual void InsertControlCharacter(sal_Int16   _nControl) override;
+    virtual void InsertString(const OUString& _sString) override;
 };
 OXMLCharContent::OXMLCharContent(
         SvXMLImport& rImport,
@@ -92,7 +92,7 @@ void OXMLCharContent::InsertControlCharacter(sal_Int16   _nControl)
     switch( _nControl )
     {
         case ControlCharacter::LINE_BREAK:
-            m_pFixedContent->Characters(OUString("\n"));
+            m_pFixedContent->Characters("\n");
             break;
         default:
             OSL_FAIL("Not supported control character");
@@ -112,7 +112,7 @@ OXMLFixedContent::OXMLFixedContent( ORptFilter& rImport,
                 ,OXMLCell& _rCell
                 ,OXMLTable* _pContainer
                 ,OXMLFixedContent* _pInP) :
-    OXMLReportElementBase( rImport, nPrfx, rLName,NULL,_pContainer)
+    OXMLReportElementBase( rImport, nPrfx, rLName,nullptr,_pContainer)
 ,m_rCell(_rCell)
 ,m_pInP(_pInP)
 ,m_bFormattedField(false)

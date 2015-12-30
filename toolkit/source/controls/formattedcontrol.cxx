@@ -239,7 +239,7 @@ namespace toolkit
 
             if ( !m_xCachedFormatter.is() )
             {
-                m_xCachedFormatter = Reference< XNumberFormatter >(
+                m_xCachedFormatter.set(
                     NumberFormatter::create(::comphelper::getProcessComponentContext()),
                     UNO_QUERY_THROW
                 );
@@ -363,9 +363,9 @@ namespace toolkit
             }
 
             throw IllegalArgumentException(
-                        ( OUString("Unable to convert the given value for the property ")
-                    +=  GetPropertyName((sal_uInt16)nPropId) )
-                    += " (double, integer, or string expected).",
+                ("Unable to convert the given value for the property "
+                 + GetPropertyName((sal_uInt16)nPropId)
+                 + " (double, integer, or string expected)."),
                 static_cast< XPropertySet* >(this),
                 1);
         }
@@ -401,7 +401,7 @@ namespace toolkit
 
     ::cppu::IPropertyArrayHelper& UnoControlFormattedFieldModel::getInfoHelper()
     {
-        static UnoPropertyArrayHelper* pHelper = NULL;
+        static UnoPropertyArrayHelper* pHelper = nullptr;
         if ( !pHelper )
         {
             Sequence<sal_Int32> aIDs = ImplGetPropertyIds();

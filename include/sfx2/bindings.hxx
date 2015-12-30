@@ -20,6 +20,9 @@
 #define INCLUDED_SFX2_BINDINGS_HXX
 
 #include <sal/config.h>
+
+#include <memory>
+
 #include <sfx2/dllapi.h>
 #include <sal/types.h>
 #include <rtl/strbuf.hxx>
@@ -163,31 +166,31 @@ public:
     /**
      * @param rpState the caller has to delete the pointer
      */
-    SfxItemState     QueryState( sal_uInt16 nSID, SfxPoolItem* &rpState );
+    SfxItemState     QueryState( sal_uInt16 nSID, std::unique_ptr<SfxPoolItem> &rpState );
 
     const SfxPoolItem*  ExecuteSynchron( sal_uInt16 nSlot,
-                                 const SfxPoolItem **pArgs = 0,
+                                 const SfxPoolItem **pArgs = nullptr,
                                  sal_uInt16 nModi = 0,
-                                 const SfxPoolItem **pInternalArgs = 0);
+                                 const SfxPoolItem **pInternalArgs = nullptr);
     bool             Execute( sal_uInt16 nSlot,
-                                 const SfxPoolItem **pArgs = 0,
+                                 const SfxPoolItem **pArgs = nullptr,
                                  sal_uInt16 nModi = 0,
                                  SfxCallMode nCall = SfxCallMode::SLOT,
-                                 const SfxPoolItem **pInternalArgs = 0);
+                                 const SfxPoolItem **pInternalArgs = nullptr);
 
-    SAL_DLLPRIVATE void SetDispatchProvider_Impl( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatchProvider > & rFrame );
-    void             SetActiveFrame( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > & rFrame );
-    const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > GetActiveFrame() const;
+    SAL_DLLPRIVATE void SetDispatchProvider_Impl( const css::uno::Reference< css::frame::XDispatchProvider > & rFrame );
+    void             SetActiveFrame( const css::uno::Reference< css::frame::XFrame > & rFrame );
+    const css::uno::Reference< css::frame::XFrame > GetActiveFrame() const;
                      // Reconfig
-    sal_uInt16           EnterRegistrations(const char *pFile = 0, int nLine = 0);
-    void             LeaveRegistrations( sal_uInt16 nLevel = USHRT_MAX, const char *pFile = 0, int nLine = 0 );
+    sal_uInt16           EnterRegistrations(const char *pFile = nullptr, int nLine = 0);
+    void             LeaveRegistrations( sal_uInt16 nLevel = USHRT_MAX, const char *pFile = nullptr, int nLine = 0 );
     void             Register( SfxControllerItem& rBinding );
     void             Release( SfxControllerItem& rBinding );
     SfxDispatcher*   GetDispatcher() const
                      { return pDispatcher; }
-    com::sun::star::uno::Reference< com::sun::star::frame::XDispatchRecorder > GetRecorder() const;
-    com::sun::star::uno::Reference < com::sun::star::frame::XDispatch >
-                    GetDispatch( const SfxSlot*, const com::sun::star::util::URL& aURL, bool bMasterCommand );
+    css::uno::Reference< css::frame::XDispatchRecorder > GetRecorder() const;
+    css::uno::Reference < css::frame::XDispatch >
+                    GetDispatch( const SfxSlot*, const css::util::URL& aURL, bool bMasterCommand );
     SAL_DLLPRIVATE void ContextChanged_Impl();
     SAL_DLLPRIVATE void Execute_Impl( SfxRequest& rReq, const SfxSlot* pSlot, SfxShell* pShell );
     SAL_DLLPRIVATE void DeleteControllers_Impl();
@@ -202,7 +205,7 @@ public:
     SAL_DLLPRIVATE void RegisterUnoController_Impl( SfxUnoControllerItem* );
     SAL_DLLPRIVATE void ReleaseUnoController_Impl( SfxUnoControllerItem* );
     SAL_DLLPRIVATE bool ExecuteCommand_Impl( const OUString& rCommand );
-    SAL_DLLPRIVATE void SetRecorder_Impl( com::sun::star::uno::Reference< com::sun::star::frame::XDispatchRecorder >& );
+    SAL_DLLPRIVATE void SetRecorder_Impl( css::uno::Reference< css::frame::XDispatchRecorder >& );
     SAL_DLLPRIVATE void InvalidateSlotsInMap_Impl();
     SAL_DLLPRIVATE void AddSlotToInvalidateSlotsMap_Impl( sal_uInt16 nId );
 };

@@ -1396,8 +1396,7 @@ void OleComponent::OnViewChange_Impl( sal_uInt32 dwAspect )
     if ( xLockObject.is() )
     {
         uno::Reference < awt::XRequestCallback > xRequestCallback(
-            m_xFactory->createInstance(
-             OUString("com.sun.star.awt.AsyncCallback")),
+            m_xFactory->createInstance("com.sun.star.awt.AsyncCallback"),
              uno::UNO_QUERY );
         xRequestCallback->addCallback( new MainThreadNotificationRequest( xLockObject, OLECOMP_ONVIEWCHANGE, dwAspect ), uno::Any() );
     }
@@ -1417,8 +1416,7 @@ void OleComponent::OnClose_Impl()
     if ( xLockObject.is() )
     {
         uno::Reference < awt::XRequestCallback > xRequestCallback(
-            m_xFactory->createInstance(
-             OUString("com.sun.star.awt.AsyncCallback")),
+            m_xFactory->createInstance("com.sun.star.awt.AsyncCallback"),
              uno::UNO_QUERY );
         xRequestCallback->addCallback( new MainThreadNotificationRequest( xLockObject, OLECOMP_ONCLOSE ), uno::Any() );
     }
@@ -1596,7 +1594,7 @@ uno::Any SAL_CALL OleComponent::getTransferData( const datatransfer::DataFlavor&
             m_pUnoOleObject->StoreObjectToStream( xTempOutStream );
 
             xTempOutStream->closeOutput();
-            xTempOutStream = uno::Reference< io::XOutputStream >();
+            xTempOutStream.clear();
         }
         else
             throw io::IOException(); // TODO:
@@ -1649,7 +1647,7 @@ sal_Bool SAL_CALL OleComponent::isDataFlavorSupported( const datatransfer::DataF
     return sal_False;
 }
 
-void SAL_CALL OleComponent::dispose() throw (::com::sun::star::uno::RuntimeException)
+void SAL_CALL OleComponent::dispose() throw (css::uno::RuntimeException)
 {
     try
     {
@@ -1686,7 +1684,7 @@ void SAL_CALL OleComponent::removeEventListener( const uno::Reference< lang::XEv
                                                 xListener );
 }
 
-sal_Int64 SAL_CALL OleComponent::getSomething( const ::com::sun::star::uno::Sequence< sal_Int8 >& aIdentifier ) throw(::com::sun::star::uno::RuntimeException)
+sal_Int64 SAL_CALL OleComponent::getSomething( const css::uno::Sequence< sal_Int8 >& aIdentifier ) throw(css::uno::RuntimeException)
 {
     try
     {
@@ -1719,13 +1717,13 @@ sal_Int64 SAL_CALL OleComponent::getSomething( const ::com::sun::star::uno::Sequ
     return 0;
 }
 
-sal_Bool SAL_CALL OleComponent::isModified() throw (::com::sun::star::uno::RuntimeException)
+sal_Bool SAL_CALL OleComponent::isModified() throw (css::uno::RuntimeException)
 {
     return m_bModified;
 }
 
 void SAL_CALL OleComponent::setModified( sal_Bool bModified )
-        throw (::com::sun::star::beans::PropertyVetoException, ::com::sun::star::uno::RuntimeException)
+        throw (css::beans::PropertyVetoException, css::uno::RuntimeException)
 {
     m_bModified = bModified;
 
@@ -1752,7 +1750,7 @@ void SAL_CALL OleComponent::setModified( sal_Bool bModified )
     }
 }
 
-void SAL_CALL OleComponent::addModifyListener( const com::sun::star::uno::Reference < com::sun::star::util::XModifyListener >& xListener ) throw(::com::sun::star::uno::RuntimeException)
+void SAL_CALL OleComponent::addModifyListener( const css::uno::Reference < css::util::XModifyListener >& xListener ) throw(css::uno::RuntimeException)
 {
     ::osl::MutexGuard aGuard( m_aMutex );
     if ( m_bDisposed )
@@ -1764,7 +1762,7 @@ void SAL_CALL OleComponent::addModifyListener( const com::sun::star::uno::Refere
     m_pInterfaceContainer->addInterface( cppu::UnoType<util::XModifyListener>::get(), xListener );
 }
 
-void SAL_CALL OleComponent::removeModifyListener( const com::sun::star::uno::Reference < com::sun::star::util::XModifyListener >& xListener) throw(::com::sun::star::uno::RuntimeException)
+void SAL_CALL OleComponent::removeModifyListener( const css::uno::Reference < css::util::XModifyListener >& xListener) throw(css::uno::RuntimeException)
 {
     ::osl::MutexGuard aGuard( m_aMutex );
     if ( m_bDisposed )

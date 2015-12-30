@@ -85,7 +85,7 @@ SwFrameFormat *SwTableFormatCmp::FindNewFormat( std::vector<SwTableFormatCmp*> &
         if ( pCmp->pOld == pOld && pCmp->nType == nType )
             return pCmp->pNew;
     }
-    return 0;
+    return nullptr;
 }
 
 void SwTableFormatCmp::Delete( std::vector<SwTableFormatCmp*> &rArr )
@@ -94,38 +94,38 @@ void SwTableFormatCmp::Delete( std::vector<SwTableFormatCmp*> &rArr )
         delete pCmp;
 }
 
-static void lcl_GetStartEndCell( const SwCursor& rCrsr,
-                        SwLayoutFrm *&prStart, SwLayoutFrm *&prEnd )
+static void lcl_GetStartEndCell( const SwCursor& rCursor,
+                        SwLayoutFrame *&prStart, SwLayoutFrame *&prEnd )
 {
-    OSL_ENSURE( rCrsr.GetContentNode() && rCrsr.GetContentNode( false ),
+    OSL_ENSURE( rCursor.GetContentNode() && rCursor.GetContentNode( false ),
             "Tab selection not at ContentNode" );
 
     Point aPtPos, aMkPos;
-    const SwShellCrsr* pShCrsr = dynamic_cast<const SwShellCrsr*>(&rCrsr);
-    if( pShCrsr )
+    const SwShellCursor* pShCursor = dynamic_cast<const SwShellCursor*>(&rCursor);
+    if( pShCursor )
     {
-        aPtPos = pShCrsr->GetPtPos();
-        aMkPos = pShCrsr->GetMkPos();
+        aPtPos = pShCursor->GetPtPos();
+        aMkPos = pShCursor->GetMkPos();
     }
 
     // Robust:
-    SwContentNode* pPointNd = rCrsr.GetContentNode();
-    SwContentNode* pMarkNd  = rCrsr.GetContentNode(false);
+    SwContentNode* pPointNd = rCursor.GetContentNode();
+    SwContentNode* pMarkNd  = rCursor.GetContentNode(false);
 
-    SwFrm* pPointFrm = pPointNd ? pPointNd->getLayoutFrm( pPointNd->GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout(), &aPtPos ) : 0;
-    SwFrm* pMarkFrm  = pMarkNd  ? pMarkNd->getLayoutFrm( pMarkNd->GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout(), &aMkPos )  : 0;
+    SwFrame* pPointFrame = pPointNd ? pPointNd->getLayoutFrame( pPointNd->GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout(), &aPtPos ) : nullptr;
+    SwFrame* pMarkFrame  = pMarkNd  ? pMarkNd->getLayoutFrame( pMarkNd->GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout(), &aMkPos )  : nullptr;
 
-    prStart = pPointFrm ? pPointFrm->GetUpper() : 0;
-    prEnd   = pMarkFrm  ? pMarkFrm->GetUpper() : 0;
+    prStart = pPointFrame ? pPointFrame->GetUpper() : nullptr;
+    prEnd   = pMarkFrame  ? pMarkFrame->GetUpper() : nullptr;
 }
 
 static bool lcl_GetBoxSel( const SwCursor& rCursor, SwSelBoxes& rBoxes,
-                    bool bAllCrsr = false )
+                    bool bAllCursor = false )
 {
-    const SwTableCursor* pTableCrsr =
+    const SwTableCursor* pTableCursor =
         dynamic_cast<const SwTableCursor*>(&rCursor);
-    if( pTableCrsr )
-        ::GetTableSelCrs( *pTableCrsr, rBoxes );
+    if( pTableCursor )
+        ::GetTableSelCrs( *pTableCursor, rBoxes );
     else
     {
         const SwPaM *pCurPam = &rCursor, *pSttPam = pCurPam;
@@ -137,7 +137,7 @@ static bool lcl_GetBoxSel( const SwCursor& rCursor, SwSelBoxes& rBoxes,
                                             GetTableBox( pNd->GetIndex() ));
                 rBoxes.insert( pBox );
             }
-        } while( bAllCrsr &&
+        } while( bAllCursor &&
                 pSttPam != ( pCurPam = pCurPam->GetNext()) );
     }
     return !rBoxes.empty();
@@ -152,12 +152,12 @@ inline void InsertLine( std::vector<SwTableLine*>& rLineArr, SwTableLine* pLine 
 static bool lcl_IsAnLower( const SwTableLine *pLine, const SwTableLine *pAssumed )
 {
     const SwTableLine *pTmp = pAssumed->GetUpper() ?
-                                    pAssumed->GetUpper()->GetUpper() : 0;
+                                    pAssumed->GetUpper()->GetUpper() : nullptr;
     while ( pTmp )
     {
         if ( pTmp == pLine )
             return true;
-        pTmp = pTmp->GetUpper() ? pTmp->GetUpper()->GetUpper() : 0;
+        pTmp = pTmp->GetUpper() ? pTmp->GetUpper()->GetUpper() : nullptr;
     }
     return false;
 }
@@ -224,7 +224,7 @@ static void lcl_CollectLines( std::vector<SwTableLine*> &rArr, const SwCursor& r
     // Copy the selected structure
     const SwTable &rTable = aBoxes[0]->GetSttNd()->FindTableNode()->GetTable();
     LinesAndTable aPara( rArr, rTable );
-    _FndBox aFndBox( 0, 0 );
+    _FndBox aFndBox( nullptr, nullptr );
     {
         _FndPara aTmpPara( aBoxes, &aFndBox );
         ForEach_FndLineCopyCol( (SwTableLines&)rTable.GetTabLines(), &aTmpPara );
@@ -257,7 +257,7 @@ static void lcl_CollectLines( std::vector<SwTableLine*> &rArr, const SwCursor& r
 static void lcl_ProcessRowAttr( std::vector<SwTableFormatCmp*>& rFormatCmp, SwTableLine* pLine, const SfxPoolItem& rNew )
 {
     SwFrameFormat *pNewFormat;
-    if ( 0 != (pNewFormat = SwTableFormatCmp::FindNewFormat( rFormatCmp, pLine->GetFrameFormat(), 0 )))
+    if ( nullptr != (pNewFormat = SwTableFormatCmp::FindNewFormat( rFormatCmp, pLine->GetFrameFormat(), 0 )))
         pLine->ChgFrameFormat( static_cast<SwTableLineFormat*>(pNewFormat) );
     else
     {
@@ -268,9 +268,9 @@ static void lcl_ProcessRowAttr( std::vector<SwTableFormatCmp*>& rFormatCmp, SwTa
     }
 }
 
-static void lcl_ProcessBoxSize( std::vector<SwTableFormatCmp*> &rFormatCmp, SwTableBox *pBox, const SwFormatFrmSize &rNew );
+static void lcl_ProcessBoxSize( std::vector<SwTableFormatCmp*> &rFormatCmp, SwTableBox *pBox, const SwFormatFrameSize &rNew );
 
-static void lcl_ProcessRowSize( std::vector<SwTableFormatCmp*> &rFormatCmp, SwTableLine *pLine, const SwFormatFrmSize &rNew )
+static void lcl_ProcessRowSize( std::vector<SwTableFormatCmp*> &rFormatCmp, SwTableLine *pLine, const SwFormatFrameSize &rNew )
 {
     lcl_ProcessRowAttr( rFormatCmp, pLine, rNew );
     SwTableBoxes &rBoxes = pLine->GetTabBoxes();
@@ -278,12 +278,12 @@ static void lcl_ProcessRowSize( std::vector<SwTableFormatCmp*> &rFormatCmp, SwTa
         ::lcl_ProcessBoxSize( rFormatCmp, pBox, rNew );
 }
 
-static void lcl_ProcessBoxSize( std::vector<SwTableFormatCmp*> &rFormatCmp, SwTableBox *pBox, const SwFormatFrmSize &rNew )
+static void lcl_ProcessBoxSize( std::vector<SwTableFormatCmp*> &rFormatCmp, SwTableBox *pBox, const SwFormatFrameSize &rNew )
 {
     SwTableLines &rLines = pBox->GetTabLines();
     if ( !rLines.empty() )
     {
-        SwFormatFrmSize aSz( rNew );
+        SwFormatFrameSize aSz( rNew );
         aSz.SetHeight( rNew.GetHeight() ? rNew.GetHeight() / rLines.size() : 0 );
         for ( auto pLine : rLines )
             ::lcl_ProcessRowSize( rFormatCmp, pLine, aSz );
@@ -319,7 +319,7 @@ void SwDoc::SetRowSplit( const SwCursor& rCursor, const SwFormatRowSplit &rNew )
 
 void SwDoc::GetRowSplit( const SwCursor& rCursor, SwFormatRowSplit *& rpSz )
 {
-    rpSz = 0;
+    rpSz = nullptr;
 
     SwTableNode* pTableNd = rCursor.GetPoint()->nNode.GetNode().FindTableNode();
     if( pTableNd )
@@ -337,7 +337,7 @@ void SwDoc::GetRowSplit( const SwCursor& rCursor, SwFormatRowSplit *& rpSz )
                 {
                     if ( (*rpSz).GetValue() != pLn->GetFrameFormat()->GetRowSplit().GetValue() )
                     {
-                        rpSz = 0;
+                        rpSz = nullptr;
                         break;
                     }
                 }
@@ -363,7 +363,7 @@ void SwDoc::GetRowSplit( const SwCursor& rCursor, SwFormatRowSplit *& rpSz )
  * Of course we can only touch every Line once.
  */
 
-void SwDoc::SetRowHeight( const SwCursor& rCursor, const SwFormatFrmSize &rNew )
+void SwDoc::SetRowHeight( const SwCursor& rCursor, const SwFormatFrameSize &rNew )
 {
     SwTableNode* pTableNd = rCursor.GetPoint()->nNode.GetNode().FindTableNode();
     if( pTableNd )
@@ -389,9 +389,9 @@ void SwDoc::SetRowHeight( const SwCursor& rCursor, const SwFormatFrmSize &rNew )
     }
 }
 
-void SwDoc::GetRowHeight( const SwCursor& rCursor, SwFormatFrmSize *& rpSz )
+void SwDoc::GetRowHeight( const SwCursor& rCursor, SwFormatFrameSize *& rpSz )
 {
-    rpSz = 0;
+    rpSz = nullptr;
 
     SwTableNode* pTableNd = rCursor.GetPoint()->nNode.GetNode().FindTableNode();
     if( pTableNd )
@@ -401,21 +401,21 @@ void SwDoc::GetRowHeight( const SwCursor& rCursor, SwFormatFrmSize *& rpSz )
 
         if( !aRowArr.empty() )
         {
-            rpSz = &(SwFormatFrmSize&)aRowArr[0]->GetFrameFormat()->GetFrmSize();
+            rpSz = &(SwFormatFrameSize&)aRowArr[0]->GetFrameFormat()->GetFrameSize();
 
             if (rpSz)
             {
                 for ( auto pLn : aRowArr )
                 {
-                    if ( *rpSz != pLn->GetFrameFormat()->GetFrmSize() )
+                    if ( *rpSz != pLn->GetFrameFormat()->GetFrameSize() )
                     {
-                        rpSz = 0;
+                        rpSz = nullptr;
                         break;
                     }
                 }
             }
             if ( rpSz )
-                rpSz = new SwFormatFrmSize( *rpSz );
+                rpSz = new SwFormatFrameSize( *rpSz );
         }
     }
 }
@@ -437,15 +437,15 @@ bool SwDoc::BalanceRowHeight( const SwCursor& rCursor, bool bTstOnly )
 
                 for ( auto pLn : aRowArr )
                 {
-                    SwIterator<SwFrm,SwFormat> aIter( *pLn->GetFrameFormat() );
-                    SwFrm* pFrm = aIter.First();
-                    while ( pFrm )
+                    SwIterator<SwFrame,SwFormat> aIter( *pLn->GetFrameFormat() );
+                    SwFrame* pFrame = aIter.First();
+                    while ( pFrame )
                     {
-                        nHeight = std::max( nHeight, pFrm->Frm().Height() );
-                        pFrm = aIter.Next();
+                        nHeight = std::max( nHeight, pFrame->Frame().Height() );
+                        pFrame = aIter.Next();
                     }
                 }
-                SwFormatFrmSize aNew( ATT_MIN_SIZE, 0, nHeight );
+                SwFormatFrameSize aNew( ATT_MIN_SIZE, 0, nHeight );
 
                 if (GetIDocumentUndoRedo().DoesUndo())
                 {
@@ -519,28 +519,28 @@ bool SwDoc::GetRowBackground( const SwCursor& rCursor, SvxBrushItem &rToFill )
     return bRet;
 }
 
-inline void InsertCell( std::vector<SwCellFrm*>& rCellArr, SwCellFrm* pCellFrm )
+inline void InsertCell( std::vector<SwCellFrame*>& rCellArr, SwCellFrame* pCellFrame )
 {
-    if( rCellArr.end() == std::find( rCellArr.begin(), rCellArr.end(), pCellFrm ) )
-        rCellArr.push_back( pCellFrm );
+    if( rCellArr.end() == std::find( rCellArr.begin(), rCellArr.end(), pCellFrame ) )
+        rCellArr.push_back( pCellFrame );
 }
 
-static void lcl_CollectCells( std::vector<SwCellFrm*> &rArr, const SwRect &rUnion,
-                          SwTabFrm *pTab )
+static void lcl_CollectCells( std::vector<SwCellFrame*> &rArr, const SwRect &rUnion,
+                          SwTabFrame *pTab )
 {
-    SwLayoutFrm *pCell = pTab->FirstCell();
+    SwLayoutFrame *pCell = pTab->FirstCell();
     do
     {
         // If the Cell contains a CellFrame, we need to use it
         // in order to get to the Cell
-        while ( !pCell->IsCellFrm() )
+        while ( !pCell->IsCellFrame() )
             pCell = pCell->GetUpper();
         OSL_ENSURE( pCell, "Frame is not a Cell" );
-        if ( rUnion.IsOver( pCell->Frm() ) )
-            ::InsertCell( rArr, static_cast<SwCellFrm*>(pCell) );
+        if ( rUnion.IsOver( pCell->Frame() ) )
+            ::InsertCell( rArr, static_cast<SwCellFrame*>(pCell) );
 
         // Make sure the Cell is left (Areas)
-        SwLayoutFrm *pTmp = pCell;
+        SwLayoutFrame *pTmp = pCell;
         do
         {   pTmp = pTmp->GetNextLayoutLeaf();
         } while ( pCell->IsAnLower( pTmp ) );
@@ -551,11 +551,11 @@ static void lcl_CollectCells( std::vector<SwCellFrm*> &rArr, const SwRect &rUnio
 void SwDoc::SetTabBorders( const SwCursor& rCursor, const SfxItemSet& rSet )
 {
     SwContentNode* pCntNd = rCursor.GetPoint()->nNode.GetNode().GetContentNode();
-    SwTableNode* pTableNd = pCntNd ? pCntNd->FindTableNode() : 0;
+    SwTableNode* pTableNd = pCntNd ? pCntNd->FindTableNode() : nullptr;
     if( !pTableNd )
         return ;
 
-    SwLayoutFrm *pStart, *pEnd;
+    SwLayoutFrame *pStart, *pEnd;
     ::lcl_GetStartEndCell( rCursor, pStart, pEnd );
 
     SwSelUnions aUnions;
@@ -574,12 +574,12 @@ void SwDoc::SetTabBorders( const SwCursor& rCursor, const SfxItemSet& rSet )
         const SvxBoxItem* pSetBox;
         const SvxBoxInfoItem *pSetBoxInfo;
 
-        const SvxBorderLine* pLeft = 0;
-        const SvxBorderLine* pRight = 0;
-        const SvxBorderLine* pTop = 0;
-        const SvxBorderLine* pBottom = 0;
-        const SvxBorderLine* pHori = 0;
-        const SvxBorderLine* pVert = 0;
+        const SvxBorderLine* pLeft = nullptr;
+        const SvxBorderLine* pRight = nullptr;
+        const SvxBorderLine* pTop = nullptr;
+        const SvxBorderLine* pBottom = nullptr;
+        const SvxBorderLine* pHori = nullptr;
+        const SvxBorderLine* pVert = nullptr;
         bool bHoriValid = true, bVertValid = true,
              bTopValid = true, bBottomValid = true,
              bLeftValid = true, bRightValid = true;
@@ -613,18 +613,18 @@ void SwDoc::SetTabBorders( const SwCursor& rCursor, const SfxItemSet& rSet )
         {
             // Not set, thus not valid values
             bTopValid = bBottomValid = bLeftValid = bRightValid = false;
-            pSetBox = 0;
+            pSetBox = nullptr;
         }
 
         bool bFirst = true;
         for ( SwSelUnions::size_type i = 0; i < aUnions.size(); ++i )
         {
             SwSelUnion *pUnion = &aUnions[i];
-            SwTabFrm *pTab = pUnion->GetTable();
+            SwTabFrame *pTab = pUnion->GetTable();
             const SwRect &rUnion = pUnion->GetUnion();
             const bool bLast  = (i == aUnions.size() - 1);
 
-            std::vector<SwCellFrm*> aCellArr;
+            std::vector<SwCellFrame*> aCellArr;
             aCellArr.reserve( 255 );
             ::lcl_CollectCells( aCellArr, pUnion->GetUnion(), pTab );
 
@@ -643,17 +643,17 @@ void SwDoc::SetTabBorders( const SwCursor& rCursor, const SfxItemSet& rSet )
                 bool bTopOver, bLeftOver, bRightOver, bBottomOver;
                 if ( bVert )
                 {
-                    bTopOver = pCell->Frm().Right() >= rUnion.Right();
-                    bLeftOver = pCell->Frm().Top() <= rUnion.Top();
-                    bRightOver = pCell->Frm().Bottom() >= rUnion.Bottom();
-                    bBottomOver = pCell->Frm().Left() <= rUnion.Left();
+                    bTopOver = pCell->Frame().Right() >= rUnion.Right();
+                    bLeftOver = pCell->Frame().Top() <= rUnion.Top();
+                    bRightOver = pCell->Frame().Bottom() >= rUnion.Bottom();
+                    bBottomOver = pCell->Frame().Left() <= rUnion.Left();
                 }
                 else
                 {
-                    bTopOver = pCell->Frm().Top() <= rUnion.Top();
-                    bLeftOver = pCell->Frm().Left() <= rUnion.Left();
-                    bRightOver = pCell->Frm().Right() >= rUnion.Right();
-                    bBottomOver = pCell->Frm().Bottom() >= rUnion.Bottom();
+                    bTopOver = pCell->Frame().Top() <= rUnion.Top();
+                    bLeftOver = pCell->Frame().Left() <= rUnion.Left();
+                    bRightOver = pCell->Frame().Right() >= rUnion.Right();
+                    bBottomOver = pCell->Frame().Bottom() >= rUnion.Bottom();
                 }
 
                 if ( bRTL )
@@ -684,7 +684,7 @@ void SwDoc::SetTabBorders( const SwCursor& rCursor, const SfxItemSet& rSet )
                     }
                     else if ( bHoriValid )
                     {
-                        aBox.SetLine( 0, SvxBoxItemLine::TOP );
+                        aBox.SetLine( nullptr, SvxBoxItemLine::TOP );
                         nType |= 0x0002;
                     }
                 }
@@ -709,7 +709,7 @@ void SwDoc::SetTabBorders( const SwCursor& rCursor, const SfxItemSet& rSet )
                         {
                             if ( bLeftValid )
                             {
-                                aBox.SetLine( bRightOver ? pLeft : 0, SvxBoxItemLine::RIGHT );
+                                aBox.SetLine( bRightOver ? pLeft : nullptr, SvxBoxItemLine::RIGHT );
                                 bVertValid ? nType |= 0x0020 : nType |= 0x0010;
                             }
                             if ( bLeftOver )
@@ -754,7 +754,7 @@ void SwDoc::SetTabBorders( const SwCursor& rCursor, const SfxItemSet& rSet )
                         }
                         else if ( bVertValid )
                         {
-                            aBox.SetLine( 0, SvxBoxItemLine::RIGHT );
+                            aBox.SetLine( nullptr, SvxBoxItemLine::RIGHT );
                             nType |= 0x0020;
                         }
                     }
@@ -783,7 +783,7 @@ void SwDoc::SetTabBorders( const SwCursor& rCursor, const SfxItemSet& rSet )
 
                 SwTableBox *pBox = const_cast<SwTableBox*>(pCell->GetTabBox());
                 SwFrameFormat *pNewFormat;
-                if ( 0 != (pNewFormat = SwTableFormatCmp::FindNewFormat( aFormatCmp, pBox->GetFrameFormat(), nType )))
+                if ( nullptr != (pNewFormat = SwTableFormatCmp::FindNewFormat( aFormatCmp, pBox->GetFrameFormat(), nType )))
                     pBox->ChgFrameFormat( static_cast<SwTableBoxFormat*>(pNewFormat) );
                 else
                 {
@@ -800,11 +800,11 @@ void SwDoc::SetTabBorders( const SwCursor& rCursor, const SfxItemSet& rSet )
         SwHTMLTableLayout *pTableLayout = rTable.GetHTMLTableLayout();
         if( pTableLayout )
         {
-            SwContentFrm* pFrm = rCursor.GetContentNode()->getLayoutFrm( rCursor.GetContentNode()->GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout() );
-            SwTabFrm* pTabFrm = pFrm->ImplFindTabFrm();
+            SwContentFrame* pFrame = rCursor.GetContentNode()->getLayoutFrame( rCursor.GetContentNode()->GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout() );
+            SwTabFrame* pTabFrame = pFrame->ImplFindTabFrame();
 
             pTableLayout->BordersChanged(
-                pTableLayout->GetBrowseWidthByTabFrm( *pTabFrm ), true );
+                pTableLayout->GetBrowseWidthByTabFrame( *pTabFrame ), true );
         }
         SwTableFormatCmp::Delete( aFormatCmp );
         ::ClearFEShellTabCols();
@@ -835,11 +835,11 @@ void SwDoc::SetTabLineStyle( const SwCursor& rCursor,
                              const SvxBorderLine* pBorderLine )
 {
     SwContentNode* pCntNd = rCursor.GetPoint()->nNode.GetNode().GetContentNode();
-    SwTableNode* pTableNd = pCntNd ? pCntNd->FindTableNode() : 0;
+    SwTableNode* pTableNd = pCntNd ? pCntNd->FindTableNode() : nullptr;
     if( !pTableNd )
         return ;
 
-    SwLayoutFrm *pStart, *pEnd;
+    SwLayoutFrame *pStart, *pEnd;
     ::lcl_GetStartEndCell( rCursor, pStart, pEnd );
 
     SwSelUnions aUnions;
@@ -856,8 +856,8 @@ void SwDoc::SetTabLineStyle( const SwCursor& rCursor,
         for( auto &rU : aUnions )
         {
             SwSelUnion *pUnion = &rU;
-            SwTabFrm *pTab = pUnion->GetTable();
-            std::vector<SwCellFrm*> aCellArr;
+            SwTabFrame *pTab = pUnion->GetTable();
+            std::vector<SwCellFrame*> aCellArr;
             aCellArr.reserve( 255 );
             ::lcl_CollectCells( aCellArr, pUnion->GetUnion(), pTab );
 
@@ -895,11 +895,11 @@ void SwDoc::SetTabLineStyle( const SwCursor& rCursor,
         SwHTMLTableLayout *pTableLayout = rTable.GetHTMLTableLayout();
         if( pTableLayout )
         {
-            SwContentFrm* pFrm = rCursor.GetContentNode()->getLayoutFrm( rCursor.GetContentNode()->GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout() );
-            SwTabFrm* pTabFrm = pFrm->ImplFindTabFrm();
+            SwContentFrame* pFrame = rCursor.GetContentNode()->getLayoutFrame( rCursor.GetContentNode()->GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout() );
+            SwTabFrame* pTabFrame = pFrame->ImplFindTabFrame();
 
             pTableLayout->BordersChanged(
-                pTableLayout->GetBrowseWidthByTabFrm( *pTabFrm ), true );
+                pTableLayout->GetBrowseWidthByTabFrame( *pTabFrame ), true );
         }
         ::ClearFEShellTabCols();
         getIDocumentState().SetModified();
@@ -909,11 +909,11 @@ void SwDoc::SetTabLineStyle( const SwCursor& rCursor,
 void SwDoc::GetTabBorders( const SwCursor& rCursor, SfxItemSet& rSet )
 {
     SwContentNode* pCntNd = rCursor.GetPoint()->nNode.GetNode().GetContentNode();
-    SwTableNode* pTableNd = pCntNd ? pCntNd->FindTableNode() : 0;
+    SwTableNode* pTableNd = pCntNd ? pCntNd->FindTableNode() : nullptr;
     if( !pTableNd )
         return ;
 
-    SwLayoutFrm *pStart, *pEnd;
+    SwLayoutFrame *pStart, *pEnd;
     ::lcl_GetStartEndCell( rCursor, pStart, pEnd );
 
     SwSelUnions aUnions;
@@ -938,14 +938,14 @@ void SwDoc::GetTabBorders( const SwCursor& rCursor, SfxItemSet& rSet )
         for ( SwSelUnions::size_type i = 0; i < aUnions.size(); ++i )
         {
             SwSelUnion *pUnion = &aUnions[i];
-            const SwTabFrm *pTab = pUnion->GetTable();
+            const SwTabFrame *pTab = pUnion->GetTable();
             const SwRect &rUnion = pUnion->GetUnion();
             const bool bFirst = i == 0;
             const bool bLast  = (i == aUnions.size() - 1);
 
-            std::vector<SwCellFrm*> aCellArr;
+            std::vector<SwCellFrame*> aCellArr;
             aCellArr.reserve(255);
-            ::lcl_CollectCells( aCellArr, rUnion, const_cast<SwTabFrm*>(pTab) );
+            ::lcl_CollectCells( aCellArr, rUnion, const_cast<SwTabFrame*>(pTab) );
 
             for ( auto pCell : aCellArr )
             {
@@ -954,17 +954,17 @@ void SwDoc::GetTabBorders( const SwCursor& rCursor, SfxItemSet& rSet )
                 bool bTopOver, bLeftOver, bRightOver, bBottomOver;
                 if ( bVert )
                 {
-                    bTopOver = pCell->Frm().Right() >= rUnion.Right();
-                    bLeftOver = pCell->Frm().Top() <= rUnion.Top();
-                    bRightOver = pCell->Frm().Bottom() >= rUnion.Bottom();
-                    bBottomOver = pCell->Frm().Left() <= rUnion.Left();
+                    bTopOver = pCell->Frame().Right() >= rUnion.Right();
+                    bLeftOver = pCell->Frame().Top() <= rUnion.Top();
+                    bRightOver = pCell->Frame().Bottom() >= rUnion.Bottom();
+                    bBottomOver = pCell->Frame().Left() <= rUnion.Left();
                 }
                 else
                 {
-                    bTopOver = pCell->Frm().Top() <= rUnion.Top();
-                    bLeftOver = pCell->Frm().Left() <= rUnion.Left();
-                    bRightOver = pCell->Frm().Right() >= rUnion.Right();
-                    bBottomOver = pCell->Frm().Bottom() >= rUnion.Bottom();
+                    bTopOver = pCell->Frame().Top() <= rUnion.Top();
+                    bLeftOver = pCell->Frame().Left() <= rUnion.Left();
+                    bRightOver = pCell->Frame().Right() >= rUnion.Right();
+                    bBottomOver = pCell->Frame().Bottom() >= rUnion.Bottom();
                 }
 
                 if ( bRTL )
@@ -991,7 +991,7 @@ void SwDoc::GetTabBorders( const SwCursor& rCursor, SfxItemSet& rSet )
                                  ((!aSetBox.GetTop()) != (!rBox.GetTop()))) // != expression is true, if one and only one of the two pointers is !0
                         {
                             aSetBoxInfo.SetValid(SvxBoxInfoItemValidFlags::TOP, false );
-                            aSetBox.SetLine( 0, SvxBoxItemLine::TOP );
+                            aSetBox.SetLine( nullptr, SvxBoxItemLine::TOP );
                         }
                     }
                 }
@@ -1010,7 +1010,7 @@ void SwDoc::GetTabBorders( const SwCursor& rCursor, SfxItemSet& rSet )
                                  ((!aSetBox.GetLeft()) != (!rBox.GetLeft())))
                         {
                             aSetBoxInfo.SetValid(SvxBoxInfoItemValidFlags::LEFT, false );
-                            aSetBox.SetLine( 0, SvxBoxItemLine::LEFT );
+                            aSetBox.SetLine( nullptr, SvxBoxItemLine::LEFT );
                         }
                     }
                 }
@@ -1026,7 +1026,7 @@ void SwDoc::GetTabBorders( const SwCursor& rCursor, SfxItemSet& rSet )
                                  !(*aSetBoxInfo.GetVert() == *rBox.GetLeft())) ||
                                  ((!aSetBoxInfo.GetVert()) != (!rBox.GetLeft())))
                         {   aSetBoxInfo.SetValid( SvxBoxInfoItemValidFlags::VERT, false );
-                            aSetBoxInfo.SetLine( 0, SvxBoxInfoItemLine::VERT );
+                            aSetBoxInfo.SetLine( nullptr, SvxBoxInfoItemLine::VERT );
                         }
                     }
                 }
@@ -1042,7 +1042,7 @@ void SwDoc::GetTabBorders( const SwCursor& rCursor, SfxItemSet& rSet )
                              !(*aSetBox.GetRight() == *rBox.GetRight())) ||
                              (!aSetBox.GetRight() != !rBox.GetRight()))
                     {   aSetBoxInfo.SetValid( SvxBoxInfoItemValidFlags::RIGHT, false );
-                        aSetBox.SetLine( 0, SvxBoxItemLine::RIGHT );
+                        aSetBox.SetLine( nullptr, SvxBoxItemLine::RIGHT );
                     }
                 }
 
@@ -1059,7 +1059,7 @@ void SwDoc::GetTabBorders( const SwCursor& rCursor, SfxItemSet& rSet )
                                  !(*aSetBox.GetBottom() == *rBox.GetBottom())) ||
                                  (!aSetBox.GetBottom() != !rBox.GetBottom()))
                         {   aSetBoxInfo.SetValid( SvxBoxInfoItemValidFlags::BOTTOM, false );
-                            aSetBox.SetLine( 0, SvxBoxItemLine::BOTTOM );
+                            aSetBox.SetLine( nullptr, SvxBoxItemLine::BOTTOM );
                         }
                     }
                 }
@@ -1078,7 +1078,7 @@ void SwDoc::GetTabBorders( const SwCursor& rCursor, SfxItemSet& rSet )
                                  ((!aSetBoxInfo.GetHori()) != (!rBox.GetBottom())))
                         {
                             aSetBoxInfo.SetValid( SvxBoxInfoItemValidFlags::HORI, false );
-                            aSetBoxInfo.SetLine( 0, SvxBoxInfoItemLine::HORI );
+                            aSetBoxInfo.SetLine( nullptr, SvxBoxInfoItemLine::HORI );
                         }
                     }
                 }
@@ -1146,7 +1146,7 @@ void SwDoc::SetBoxAttr( const SwCursor& rCursor, const SfxPoolItem &rNew )
             SwTableBox *pBox = aBoxes[i];
 
             SwFrameFormat *pNewFormat;
-            if ( 0 != (pNewFormat = SwTableFormatCmp::FindNewFormat( aFormatCmp, pBox->GetFrameFormat(), 0 )))
+            if ( nullptr != (pNewFormat = SwTableFormatCmp::FindNewFormat( aFormatCmp, pBox->GetFrameFormat(), 0 )))
                 pBox->ChgFrameFormat( static_cast<SwTableBoxFormat*>(pNewFormat) );
             else
             {
@@ -1162,11 +1162,11 @@ void SwDoc::SetBoxAttr( const SwCursor& rCursor, const SfxPoolItem &rNew )
         SwHTMLTableLayout *pTableLayout = rTable.GetHTMLTableLayout();
         if( pTableLayout )
         {
-            SwContentFrm* pFrm = rCursor.GetContentNode()->getLayoutFrm( rCursor.GetContentNode()->GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout() );
-            SwTabFrm* pTabFrm = pFrm->ImplFindTabFrm();
+            SwContentFrame* pFrame = rCursor.GetContentNode()->getLayoutFrame( rCursor.GetContentNode()->GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout() );
+            SwTabFrame* pTabFrame = pFrame->ImplFindTabFrame();
 
             pTableLayout->Resize(
-                pTableLayout->GetBrowseWidthByTabFrm( *pTabFrm ), true );
+                pTableLayout->GetBrowseWidthByTabFrame( *pTabFrame ), true );
         }
         SwTableFormatCmp::Delete( aFormatCmp );
         getIDocumentState().SetModified();
@@ -1204,7 +1204,7 @@ bool SwDoc::GetBoxAttr( const SwCursor& rCursor, SfxPoolItem& rToFill )
                 case RES_FRAMEDIR:
                 {
                     const SvxFrameDirectionItem& rDir =
-                                    aBoxes[i]->GetFrameFormat()->GetFrmDir();
+                                    aBoxes[i]->GetFrameFormat()->GetFrameDir();
                     if( !bOneFound )
                     {
                         static_cast<SvxFrameDirectionItem&>(rToFill) = rDir;
@@ -1213,6 +1213,20 @@ bool SwDoc::GetBoxAttr( const SwCursor& rCursor, SfxPoolItem& rToFill )
                     else if( rToFill != rDir )
                         bRet = false;
                 }
+                break;
+                case RES_VERT_ORIENT:
+                {
+                    const SwFormatVertOrient& rOrient =
+                                    aBoxes[i]->GetFrameFormat()->GetVertOrient();
+                    if( !bOneFound )
+                    {
+                        static_cast<SwFormatVertOrient&>(rToFill) = rOrient;
+                        bOneFound = true;
+                    }
+                    else if( rToFill != rOrient )
+                        bRet = false;
+                }
+                break;
             }
 
             if ( !bRet )
@@ -1254,26 +1268,26 @@ sal_uInt16 SwDoc::GetBoxAlign( const SwCursor& rCursor )
     return nAlign;
 }
 
-static sal_uInt16 lcl_CalcCellFit( const SwLayoutFrm *pCell )
+static sal_uInt16 lcl_CalcCellFit( const SwLayoutFrame *pCell )
 {
     SwTwips nRet = 0;
-    const SwFrm *pFrm = pCell->Lower(); // The whole Line
+    const SwFrame *pFrame = pCell->Lower(); // The whole Line
     SWRECTFN( pCell )
-    while ( pFrm )
+    while ( pFrame )
     {
-        const SwTwips nAdd = (pFrm->Frm().*fnRect->fnGetWidth)() -
-                             (pFrm->Prt().*fnRect->fnGetWidth)();
+        const SwTwips nAdd = (pFrame->Frame().*fnRect->fnGetWidth)() -
+                             (pFrame->Prt().*fnRect->fnGetWidth)();
 
-        // pFrm does not necessarily have to be a SwTextFrm!
-        const SwTwips nCalcFitToContent = pFrm->IsTextFrm() ?
-                                          const_cast<SwTextFrm*>(static_cast<const SwTextFrm*>(pFrm))->CalcFitToContent() :
-                                          (pFrm->Prt().*fnRect->fnGetWidth)();
+        // pFrame does not necessarily have to be a SwTextFrame!
+        const SwTwips nCalcFitToContent = pFrame->IsTextFrame() ?
+                                          const_cast<SwTextFrame*>(static_cast<const SwTextFrame*>(pFrame))->CalcFitToContent() :
+                                          (pFrame->Prt().*fnRect->fnGetWidth)();
 
         nRet = std::max( nRet, nCalcFitToContent + nAdd );
-        pFrm = pFrm->GetNext();
+        pFrame = pFrame->GetNext();
     }
     // Surrounding border as well as left and Right Border also need to be respected
-    nRet += (pCell->Frm().*fnRect->fnGetWidth)() -
+    nRet += (pCell->Frame().*fnRect->fnGetWidth)() -
             (pCell->Prt().*fnRect->fnGetWidth)();
 
     // To compensate for the accuracy of calculation later on in SwTable::SetTabCols
@@ -1296,12 +1310,12 @@ static sal_uInt16 lcl_CalcCellFit( const SwLayoutFrm *pCell )
  * the desired one. It's overwritten if it's smaller.
  */
 static void lcl_CalcSubColValues( std::vector<sal_uInt16> &rToFill, const SwTabCols &rCols,
-                              const SwLayoutFrm *pCell, const SwLayoutFrm *pTab,
+                              const SwLayoutFrame *pCell, const SwLayoutFrame *pTab,
                               bool bWishValues )
 {
     const sal_uInt16 nWish = bWishValues ?
                     ::lcl_CalcCellFit( pCell ) :
-                    MINLAY + sal_uInt16(pCell->Frm().Width() - pCell->Prt().Width());
+                    MINLAY + sal_uInt16(pCell->Frame().Width() - pCell->Prt().Width());
 
     SWRECTFN( pTab )
 
@@ -1313,14 +1327,14 @@ static void lcl_CalcSubColValues( std::vector<sal_uInt16> &rToFill, const SwTabC
         nColRight += rCols.GetLeftMin();
 
         // Adapt values to the proportions of the Table (Follows)
-        if ( rCols.GetLeftMin() != (pTab->Frm().*fnRect->fnGetLeft)() )
+        if ( rCols.GetLeftMin() != (pTab->Frame().*fnRect->fnGetLeft)() )
         {
-            const long nDiff = (pTab->Frm().*fnRect->fnGetLeft)() - rCols.GetLeftMin();
+            const long nDiff = (pTab->Frame().*fnRect->fnGetLeft)() - rCols.GetLeftMin();
             nColLeft  += nDiff;
             nColRight += nDiff;
         }
-        const long nCellLeft  = (pCell->Frm().*fnRect->fnGetLeft)();
-        const long nCellRight = (pCell->Frm().*fnRect->fnGetRight)();
+        const long nCellLeft  = (pCell->Frame().*fnRect->fnGetLeft)();
+        const long nCellRight = (pCell->Frame().*fnRect->fnGetRight)();
 
         // Calculate overlapping value
         long nWidth = 0;
@@ -1330,9 +1344,9 @@ static void lcl_CalcSubColValues( std::vector<sal_uInt16> &rToFill, const SwTabC
             nWidth = nCellRight - nColLeft;
         else if ( nColLeft >= nCellLeft && nColRight <= nCellRight )
             nWidth = nColRight - nColLeft;
-        if ( nWidth && pCell->Frm().Width() )
+        if ( nWidth && pCell->Frame().Width() )
         {
-            long nTmp = nWidth * nWish / pCell->Frm().Width();
+            long nTmp = nWidth * nWish / pCell->Frame().Width();
             if ( sal_uInt16(nTmp) > rToFill[i] )
                 rToFill[i] = sal_uInt16(nTmp);
         }
@@ -1357,7 +1371,7 @@ static void lcl_CalcSubColValues( std::vector<sal_uInt16> &rToFill, const SwTabC
  *                                  Selection.
  */
 static void lcl_CalcColValues( std::vector<sal_uInt16> &rToFill, const SwTabCols &rCols,
-                           const SwLayoutFrm *pStart, const SwLayoutFrm *pEnd,
+                           const SwLayoutFrame *pStart, const SwLayoutFrame *pEnd,
                            bool bWishValues )
 {
     SwSelUnions aUnions;
@@ -1367,21 +1381,21 @@ static void lcl_CalcColValues( std::vector<sal_uInt16> &rToFill, const SwTabCols
     for ( auto &rU : aUnions )
     {
         SwSelUnion *pSelUnion = &rU;
-        const SwTabFrm *pTab = pSelUnion->GetTable();
+        const SwTabFrame *pTab = pSelUnion->GetTable();
         const SwRect &rUnion = pSelUnion->GetUnion();
 
         SWRECTFN( pTab )
         bool bRTL = pTab->IsRightToLeft();
 
-        const SwLayoutFrm *pCell = pTab->FirstCell();
+        const SwLayoutFrame *pCell = pTab->FirstCell();
         if (!pCell)
             continue;
         do
         {
-            if ( pCell->IsCellFrm() && pCell->FindTabFrm() == pTab && ::IsFrmInTableSel( rUnion, pCell ) )
+            if ( pCell->IsCellFrame() && pCell->FindTabFrame() == pTab && ::IsFrameInTableSel( rUnion, pCell ) )
             {
-                const long nCLeft  = (pCell->Frm().*fnRect->fnGetLeft)();
-                const long nCRight = (pCell->Frm().*fnRect->fnGetRight)();
+                const long nCLeft  = (pCell->Frame().*fnRect->fnGetLeft)();
+                const long nCRight = (pCell->Frame().*fnRect->fnGetRight)();
 
                 bool bNotInCols = true;
 
@@ -1404,9 +1418,9 @@ static void lcl_CalcColValues( std::vector<sal_uInt16> &rToFill, const SwTabCols
                     // Adapt values to the proportions of the Table (Follows)
                     long nLeftA  = nColLeft;
                     long nRightA = nColRight;
-                    if ( rCols.GetLeftMin() !=  sal_uInt16((pTab->Frm().*fnRect->fnGetLeft)()) )
+                    if ( rCols.GetLeftMin() !=  sal_uInt16((pTab->Frame().*fnRect->fnGetLeft)()) )
                     {
-                        const long nDiff = (pTab->Frm().*fnRect->fnGetLeft)() - rCols.GetLeftMin();
+                        const long nDiff = (pTab->Frame().*fnRect->fnGetLeft)() - rCols.GetLeftMin();
                         nLeftA  += nDiff;
                         nRightA += nDiff;
                     }
@@ -1422,7 +1436,7 @@ static void lcl_CalcColValues( std::vector<sal_uInt16> &rToFill, const SwTabCols
                                 nFit = nWish;
                         }
                         else
-                        {   const sal_uInt16 nMin = MINLAY + sal_uInt16(pCell->Frm().Width() -
+                        {   const sal_uInt16 nMin = MINLAY + sal_uInt16(pCell->Frame().Width() -
                                                                 pCell->Prt().Width());
                             if ( !nFit || nMin < nFit )
                                 nFit = nMin;
@@ -1436,32 +1450,32 @@ static void lcl_CalcColValues( std::vector<sal_uInt16> &rToFill, const SwTabCols
             }
             do {
                 pCell = pCell->GetNextLayoutLeaf();
-            } while( pCell && pCell->Frm().Width() == 0 );
+            } while( pCell && pCell->Frame().Width() == 0 );
         } while ( pCell && pTab->IsAnLower( pCell ) );
     }
 }
 
 void SwDoc::AdjustCellWidth( const SwCursor& rCursor, bool bBalance )
 {
-    // Check whether the current Crsr has it's Point/Mark in a Table
+    // Check whether the current Cursor has it's Point/Mark in a Table
     SwContentNode* pCntNd = rCursor.GetPoint()->nNode.GetNode().GetContentNode();
-    SwTableNode* pTableNd = pCntNd ? pCntNd->FindTableNode() : 0;
+    SwTableNode* pTableNd = pCntNd ? pCntNd->FindTableNode() : nullptr;
     if( !pTableNd )
         return ;
 
-    SwLayoutFrm *pStart, *pEnd;
+    SwLayoutFrame *pStart, *pEnd;
     ::lcl_GetStartEndCell( rCursor, pStart, pEnd );
 
     // Collect TabCols; we reset the Table with them
-    SwFrm* pBoxFrm = pStart;
-    while( pBoxFrm && !pBoxFrm->IsCellFrm() )
-        pBoxFrm = pBoxFrm->GetUpper();
+    SwFrame* pBoxFrame = pStart;
+    while( pBoxFrame && !pBoxFrame->IsCellFrame() )
+        pBoxFrame = pBoxFrame->GetUpper();
 
-    if ( !pBoxFrm )
+    if ( !pBoxFrame )
         return; // Robust
 
     SwTabCols aTabCols;
-    GetTabCols( aTabCols, 0, static_cast<SwCellFrm*>(pBoxFrm) );
+    GetTabCols( aTabCols, nullptr, static_cast<SwCellFrame*>(pBoxFrame) );
 
     if ( ! aTabCols.Count() )
         return;
@@ -1472,10 +1486,10 @@ void SwDoc::AdjustCellWidth( const SwCursor& rCursor, bool bBalance )
     ::lcl_CalcColValues( aWish, aTabCols, pStart, pEnd, true  );
 
     // It's more robust if we calculate the minimum values for the whole Table
-    const SwTabFrm *pTab = pStart->ImplFindTabFrm();
-    pStart = const_cast<SwLayoutFrm*>(static_cast<SwLayoutFrm const *>(pTab->FirstCell()));
-    pEnd   = const_cast<SwLayoutFrm*>(pTab->FindLastContent()->GetUpper());
-    while( !pEnd->IsCellFrm() )
+    const SwTabFrame *pTab = pStart->ImplFindTabFrame();
+    pStart = const_cast<SwLayoutFrame*>(static_cast<SwLayoutFrame const *>(pTab->FirstCell()));
+    pEnd   = const_cast<SwLayoutFrame*>(pTab->FindLastContent()->GetUpper());
+    while( !pEnd->IsCellFrame() )
         pEnd = pEnd->GetUpper();
     ::lcl_CalcColValues( aMins, aTabCols, pStart, pEnd, false );
 
@@ -1560,7 +1574,7 @@ void SwDoc::AdjustCellWidth( const SwCursor& rCursor, bool bBalance )
     const sal_Int16 nOriHori = pFormat->GetHoriOrient().GetHoriOrient();
 
     // We can leave the "real" work to the SwTable now
-    SetTabCols( aTabCols, false, 0, static_cast<SwCellFrm*>(pBoxFrm) );
+    SetTabCols( aTabCols, false, nullptr, static_cast<SwCellFrame*>(pBoxFrame) );
 
     // Alignment might have been changed in SetTabCols; restore old value
     const SwFormatHoriOrient &rHori = pFormat->GetHoriOrient();

@@ -73,10 +73,10 @@ public:
     void getColumnAndRow( sal_Int32 nChildIndex, sal_Int32& rnColumn, sal_Int32& rnRow ) throw (IndexOutOfBoundsException );
 
     // XModifyListener
-    virtual void SAL_CALL modified( const EventObject& aEvent ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL modified( const EventObject& aEvent ) throw (RuntimeException, std::exception) override;
 
     // XEventListener
-    virtual void SAL_CALL disposing( const EventObject& Source ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing( const EventObject& Source ) throw (RuntimeException, std::exception) override;
 
     AccessibleShapeTreeInfo& mrShapeTreeInfo;
     Reference< XTable > mxTable;
@@ -108,8 +108,8 @@ void AccessibleTableShapeImpl::init( const Reference< XAccessible>& xAccessible,
         Reference< XModifyListener > xListener( this );
         mxTable->addModifyListener( xListener );
         //register the listener with table model
-        Reference< ::com::sun::star::view::XSelectionSupplier > xSelSupplier(xTable, UNO_QUERY);
-        Reference< ::com::sun::star::view::XSelectionChangeListener > xSelListener( xAccessible, UNO_QUERY );
+        Reference< css::view::XSelectionSupplier > xSelSupplier(xTable, UNO_QUERY);
+        Reference< css::view::XSelectionChangeListener > xSelListener( xAccessible, UNO_QUERY );
         if (xSelSupplier.is())
             xSelSupplier->addSelectionChangeListener(xSelListener);
         mRowCount = mxTable->getRowCount();
@@ -342,7 +342,7 @@ SvxTableController* AccessibleTableShape::getTableController()
     if( pView )
         return dynamic_cast< SvxTableController* >( pView->getSelectionController().get() );
     else
-        return 0;
+        return nullptr;
 }
 
 
@@ -961,7 +961,7 @@ void  SAL_CALL AccessibleTableShape::selectionChanged (const EventObject& rEvent
 AccessibleCell* AccessibleTableShape::GetActiveAccessibleCell()
 {
     Reference< AccessibleCell > xAccCell;
-    AccessibleCell* pAccCell = NULL;
+    AccessibleCell* pAccCell = nullptr;
     SvxTableController* pController = getTableController();
     if (pController)
     {
@@ -990,7 +990,7 @@ bool AccessibleTableShape::SetState (sal_Int16 aState)
 {
     AccessibleCell* pActiveAccessibleCell = GetActiveAccessibleCell();
     bool bStateHasChanged = false;
-    if (aState == AccessibleStateType::FOCUSED && pActiveAccessibleCell != NULL)
+    if (aState == AccessibleStateType::FOCUSED && pActiveAccessibleCell != nullptr)
     {
         return pActiveAccessibleCell->SetState(aState);
     }
@@ -1004,7 +1004,7 @@ bool AccessibleTableShape::ResetState (sal_Int16 aState)
 {
     AccessibleCell* pActiveAccessibleCell = GetActiveAccessibleCell();
     bool bStateHasChanged = false;
-    if (aState == AccessibleStateType::FOCUSED && pActiveAccessibleCell != NULL)
+    if (aState == AccessibleStateType::FOCUSED && pActiveAccessibleCell != nullptr)
     {
         return pActiveAccessibleCell->ResetState(aState);
     }
@@ -1039,7 +1039,7 @@ AccessibleTableHeaderShape::AccessibleTableHeaderShape( AccessibleTableShape* pT
 
 AccessibleTableHeaderShape::~AccessibleTableHeaderShape()
 {
-    mpTable = NULL;
+    mpTable = nullptr;
 }
 
 // XAccessible
@@ -1101,32 +1101,32 @@ Locale SAL_CALL AccessibleTableHeaderShape::getLocale() throw (IllegalAccessible
 }
 
 //XAccessibleComponent
-sal_Bool SAL_CALL AccessibleTableHeaderShape::containsPoint ( const ::com::sun::star::awt::Point& aPoint ) throw (RuntimeException, std::exception)
+sal_Bool SAL_CALL AccessibleTableHeaderShape::containsPoint ( const css::awt::Point& aPoint ) throw (RuntimeException, std::exception)
 {
     return mpTable->containsPoint( aPoint );
 }
 
-Reference< XAccessible > SAL_CALL AccessibleTableHeaderShape::getAccessibleAtPoint ( const ::com::sun::star::awt::Point& aPoint) throw (RuntimeException, std::exception)
+Reference< XAccessible > SAL_CALL AccessibleTableHeaderShape::getAccessibleAtPoint ( const css::awt::Point& aPoint) throw (RuntimeException, std::exception)
 {
     return mpTable->getAccessibleAtPoint( aPoint );
 }
 
-::com::sun::star::awt::Rectangle SAL_CALL AccessibleTableHeaderShape::getBounds() throw (RuntimeException, std::exception)
+css::awt::Rectangle SAL_CALL AccessibleTableHeaderShape::getBounds() throw (RuntimeException, std::exception)
 {
     return mpTable->getBounds();
 }
 
-::com::sun::star::awt::Point SAL_CALL AccessibleTableHeaderShape::getLocation() throw (RuntimeException, std::exception)
+css::awt::Point SAL_CALL AccessibleTableHeaderShape::getLocation() throw (RuntimeException, std::exception)
 {
     return mpTable->getLocation();
 }
 
-::com::sun::star::awt::Point SAL_CALL AccessibleTableHeaderShape::getLocationOnScreen() throw (RuntimeException, std::exception)
+css::awt::Point SAL_CALL AccessibleTableHeaderShape::getLocationOnScreen() throw (RuntimeException, std::exception)
 {
     return mpTable->getLocationOnScreen();
 }
 
-::com::sun::star::awt::Size SAL_CALL AccessibleTableHeaderShape::getSize() throw (RuntimeException, std::exception)
+css::awt::Size SAL_CALL AccessibleTableHeaderShape::getSize() throw (RuntimeException, std::exception)
 {
     return mpTable->getSize();
 }

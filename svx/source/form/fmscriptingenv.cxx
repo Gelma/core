@@ -90,10 +90,10 @@ namespace svxform
         explicit FormScriptListener( FormScriptingEnvironment * pScriptExecutor );
 
         // XScriptListener
-        virtual void SAL_CALL firing( const ScriptEvent& aEvent ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Any SAL_CALL approveFiring( const ScriptEvent& aEvent ) throw (InvocationTargetException, RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL firing( const ScriptEvent& aEvent ) throw (RuntimeException, std::exception) override;
+        virtual Any SAL_CALL approveFiring( const ScriptEvent& aEvent ) throw (InvocationTargetException, RuntimeException, std::exception) override;
         // XEventListener
-        virtual void SAL_CALL disposing( const EventObject& Source ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing( const EventObject& Source ) throw (RuntimeException, std::exception) override;
 
         // lifetime control
         void SAL_CALL dispose();
@@ -159,9 +159,9 @@ namespace svxform
         void doFireScriptEvent( const ScriptEvent& _rEvent, Any* _pSynchronousResult );
 
         // IFormScriptingEnvironment
-        virtual void registerEventAttacherManager( const Reference< XEventAttacherManager >& _rxManager ) SAL_OVERRIDE;
-        virtual void revokeEventAttacherManager( const Reference< XEventAttacherManager >& _rxManager ) SAL_OVERRIDE;
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void registerEventAttacherManager( const Reference< XEventAttacherManager >& _rxManager ) override;
+        virtual void revokeEventAttacherManager( const Reference< XEventAttacherManager >& _rxManager ) override;
+        virtual void dispose() override;
 
     private:
         void impl_registerOrRevoke_throw( const Reference< XEventAttacherManager >& _rxManager, bool _bRegister );
@@ -736,7 +736,7 @@ namespace svxform
 
         if ( !impl_allowAsynchronousCall_nothrow( _rEvent.ListenerType.getTypeName(), _rEvent.MethodName ) )
         {
-            impl_doFireScriptEvent_nothrow( aGuard, _rEvent, NULL );
+            impl_doFireScriptEvent_nothrow( aGuard, _rEvent, nullptr );
             return;
         }
 
@@ -766,14 +766,14 @@ namespace svxform
     void SAL_CALL FormScriptListener::dispose()
     {
         ::osl::MutexGuard aGuard( m_aMutex );
-        m_pScriptExecutor = NULL;
+        m_pScriptExecutor = nullptr;
     }
 
 
     IMPL_LINK_TYPED( FormScriptListener, OnAsyncScriptEvent, void*, p, void )
     {
         ScriptEvent* _pEvent = static_cast<ScriptEvent*>(p);
-        OSL_PRECOND( _pEvent != NULL, "FormScriptListener::OnAsyncScriptEvent: invalid event!" );
+        OSL_PRECOND( _pEvent != nullptr, "FormScriptListener::OnAsyncScriptEvent: invalid event!" );
         if ( !_pEvent )
             return;
 
@@ -781,7 +781,7 @@ namespace svxform
             ::osl::ClearableMutexGuard aGuard( m_aMutex );
 
             if ( !impl_isDisposed_nothrow() )
-                impl_doFireScriptEvent_nothrow( aGuard, *_pEvent, NULL );
+                impl_doFireScriptEvent_nothrow( aGuard, *_pEvent, nullptr );
         }
 
         delete _pEvent;
@@ -790,7 +790,7 @@ namespace svxform
     }
 
     FormScriptingEnvironment::FormScriptingEnvironment( FmFormModel& _rModel )
-        :m_pScriptListener( NULL )
+        :m_pScriptListener( nullptr )
         ,m_rFormModel( _rModel )
         ,m_bDisposed( false )
     {
@@ -873,7 +873,7 @@ namespace svxform
             }
 
             // IScript
-            virtual void invoke( const Sequence< Any >& _rArguments, Any& _rSynchronousResult ) SAL_OVERRIDE;
+            virtual void invoke( const Sequence< Any >& _rArguments, Any& _rSynchronousResult ) override;
         };
 
 
@@ -893,7 +893,7 @@ namespace svxform
                 }
                 catch( Exception& ) {}
             }
-            m_rObjectShell.CallXScript( m_sScriptCode, _rArguments, _rSynchronousResult, aOutArgsIndex, aOutArgs, true, aCaller.hasValue() ? &aCaller : 0 );
+            m_rObjectShell.CallXScript( m_sScriptCode, _rArguments, _rSynchronousResult, aOutArgsIndex, aOutArgs, true, aCaller.hasValue() ? &aCaller : nullptr );
         }
     }
 
@@ -979,7 +979,7 @@ namespace svxform
         {
             // object shells are not thread safe, so guard the destruction
             SolarMutexGuard aSolarGuarsReset;
-            xObjectShell = NULL;
+            xObjectShell = nullptr;
         }
 #endif
     }

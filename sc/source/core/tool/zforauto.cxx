@@ -27,19 +27,19 @@
 
 ScNumFormatAbbrev::ScNumFormatAbbrev() :
     sFormatstring   ( "Standard" ),
-    eLnge           (LANGUAGE_SYSTEM),
-    eSysLnge        (LANGUAGE_GERMAN)       // sonst passt "Standard" nicht
+    eLanguage       (LANGUAGE_SYSTEM),
+    eSysLanguage    (LANGUAGE_GERMAN)       // otherwise "Standard" does not fit
 {
 }
 
 ScNumFormatAbbrev::ScNumFormatAbbrev(const ScNumFormatAbbrev& aFormat) :
     sFormatstring   (aFormat.sFormatstring),
-    eLnge           (aFormat.eLnge),
-    eSysLnge        (aFormat.eSysLnge)
+    eLanguage       (aFormat.eLanguage),
+    eSysLanguage    (aFormat.eSysLanguage)
 {
 }
 
-ScNumFormatAbbrev::ScNumFormatAbbrev(sal_uLong nFormat,
+ScNumFormatAbbrev::ScNumFormatAbbrev(sal_uInt32 nFormat,
                                      SvNumberFormatter& rFormatter)
 {
     PutFormatIndex(nFormat, rFormatter);
@@ -50,44 +50,44 @@ void ScNumFormatAbbrev::Load( SvStream& rStream, rtl_TextEncoding eByteStrSet )
     sal_uInt16 nSysLang, nLang;
     sFormatstring = rStream.ReadUniOrByteString( eByteStrSet );
     rStream.ReadUInt16( nSysLang ).ReadUInt16( nLang );
-    eLnge = (LanguageType) nLang;
-    eSysLnge = (LanguageType) nSysLang;
-    if ( eSysLnge == LANGUAGE_SYSTEM )          // old versions did write it
-        eSysLnge = Application::GetSettings().GetLanguageTag().getLanguageType();
+    eLanguage = (LanguageType) nLang;
+    eSysLanguage = (LanguageType) nSysLang;
+    if ( eSysLanguage == LANGUAGE_SYSTEM )          // old versions did write it
+        eSysLanguage = Application::GetSettings().GetLanguageTag().getLanguageType();
 }
 
 void ScNumFormatAbbrev::Save( SvStream& rStream, rtl_TextEncoding eByteStrSet ) const
 {
     rStream.WriteUniOrByteString( sFormatstring, eByteStrSet );
-    rStream.WriteUInt16( eSysLnge ).WriteUInt16( eLnge );
+    rStream.WriteUInt16( eSysLanguage ).WriteUInt16( eLanguage );
 }
 
-void ScNumFormatAbbrev::PutFormatIndex(sal_uLong nFormat,
+void ScNumFormatAbbrev::PutFormatIndex(sal_uInt32 nFormat,
                                        SvNumberFormatter& rFormatter)
 {
     const SvNumberformat* pFormat = rFormatter.GetEntry(nFormat);
     if (pFormat)
     {
-        eSysLnge = Application::GetSettings().GetLanguageTag().getLanguageType();
-        eLnge = pFormat->GetLanguage();
+        eSysLanguage = Application::GetSettings().GetLanguageTag().getLanguageType();
+        eLanguage = pFormat->GetLanguage();
         sFormatstring = pFormat->GetFormatstring();
     }
     else
     {
         OSL_FAIL("SCNumFormatAbbrev:: unknown number format");
-        eLnge = LANGUAGE_SYSTEM;
-        eSysLnge = LANGUAGE_GERMAN;     // sonst passt "Standard" nicht
+        eLanguage = LANGUAGE_SYSTEM;
+        eSysLanguage = LANGUAGE_GERMAN;     // otherwise "Standard" does not fit
         sFormatstring = "Standard";
     }
 }
 
-sal_uLong ScNumFormatAbbrev::GetFormatIndex( SvNumberFormatter& rFormatter)
+sal_uInt32 ScNumFormatAbbrev::GetFormatIndex( SvNumberFormatter& rFormatter)
 {
     short nType;
     bool bNewInserted;
     sal_Int32 nCheckPos;
-    return rFormatter.GetIndexPuttingAndConverting( sFormatstring, eLnge,
-                                                    eSysLnge, nType, bNewInserted, nCheckPos);
+    return rFormatter.GetIndexPuttingAndConverting( sFormatstring, eLanguage,
+                                                    eSysLanguage, nType, bNewInserted, nCheckPos);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

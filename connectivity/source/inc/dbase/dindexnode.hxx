@@ -23,11 +23,12 @@
 #include "file/FTable.hxx"
 #include <connectivity/FValue.hxx>
 #include <rtl/ref.hxx>
-#include <tools/stream.hxx>
 #include <vector>
 
 #define NODE_NOTFOUND 0xFFFF
 #define DINDEX_PAGE_SIZE 512
+
+class SvStream;
 
 namespace connectivity
 {
@@ -55,9 +56,9 @@ namespace connectivity
             inline ONDXKey(const ONDXKey& rKey);
 
             inline ONDXKey& operator= (const ONDXKey& rKey);
-            virtual void setValue(const ORowSetValue& _rVal) SAL_OVERRIDE;
+            virtual void setValue(const ORowSetValue& _rVal) override;
 
-            virtual const ORowSetValue& getValue() const SAL_OVERRIDE;
+            virtual const ORowSetValue& getValue() const override;
 
             sal_uInt32 GetRecord() const        { return nRecord;   }
             void setRecord(sal_uInt32 _nRec)    { nRecord = _nRec;  }
@@ -93,7 +94,7 @@ namespace connectivity
             sal_uInt32  nPagePos;       // Position in the index file
 
         public:
-            ONDXPagePtr(sal_uInt32 nPos = 0) : mpPage(0), nPagePos(nPos) {}
+            ONDXPagePtr(sal_uInt32 nPos = 0) : mpPage(nullptr), nPagePos(nPos) {}
             ONDXPagePtr(const ONDXPagePtr& rRef);
             ONDXPagePtr(ONDXPage* pRefPage);
             inline ~ONDXPagePtr();
@@ -102,8 +103,8 @@ namespace connectivity
             bool HasPage() const {return nPagePos != 0;}
 
             operator ONDXPage *() const { return mpPage; }
-            ONDXPage * operator ->() const { assert(mpPage != 0); return mpPage; }
-            bool Is() const { return mpPage != 0; }
+            ONDXPage * operator ->() const { assert(mpPage != nullptr); return mpPage; }
+            bool Is() const { return mpPage != nullptr; }
             inline void Clear();
             ONDXPagePtr& operator=(const ONDXPagePtr& rRef);
         };
@@ -158,7 +159,7 @@ namespace connectivity
             bool IsFull() const;
 
             sal_uInt32 GetPagePos() const {return nPagePos;}
-            ONDXPagePtr& GetChild(ODbaseIndex* pIndex = 0);
+            ONDXPagePtr& GetChild(ODbaseIndex* pIndex = nullptr);
 
             // Parent does not need to be reloaded
             ONDXPagePtr GetParent();
@@ -174,7 +175,7 @@ namespace connectivity
             void   SearchAndReplace(const ONDXKey& rSearch, ONDXKey& rReplace);
 
         protected:
-            ONDXPage(ODbaseIndex& rIndex, sal_uInt32 nPos, ONDXPage* = NULL);
+            ONDXPage(ODbaseIndex& rIndex, sal_uInt32 nPos, ONDXPage* = nullptr);
             ~ONDXPage();
 
             void ReleaseRef();
@@ -203,12 +204,12 @@ namespace connectivity
 #endif
         };
 
-        inline ONDXPagePtr::~ONDXPagePtr() { if (mpPage != 0) mpPage->ReleaseRef(); }
+        inline ONDXPagePtr::~ONDXPagePtr() { if (mpPage != nullptr) mpPage->ReleaseRef(); }
         inline void ONDXPagePtr::Clear()
             {
-                if (mpPage != 0) {
+                if (mpPage != nullptr) {
                     ONDXPage * pRefObj = mpPage;
-                    mpPage = 0;
+                    mpPage = nullptr;
                     pRefObj->ReleaseRef();
                 }
             }
@@ -257,13 +258,13 @@ namespace connectivity
             // Does the node point to a page?
             bool            HasChild() const {return aChild.HasPage();}
             // If an index is provided, we may be able to retrieve the page
-            ONDXPagePtr&    GetChild(ODbaseIndex* pIndex = NULL, ONDXPage* = NULL);
+            ONDXPagePtr&    GetChild(ODbaseIndex* pIndex = nullptr, ONDXPage* = nullptr);
 
             const ONDXKey& GetKey() const   { return aKey;}
             ONDXKey&       GetKey()         { return aKey;}
 
             // Setting the child, via reference to retain the PagePos
-            void            SetChild(ONDXPagePtr aCh = ONDXPagePtr(), ONDXPage* = NULL);
+            void            SetChild(ONDXPagePtr aCh = ONDXPagePtr(), ONDXPage* = nullptr);
 
             void Write(SvStream &rStream, const ONDXPage& rPage) const;
             void Read(SvStream &rStream, ODbaseIndex&);

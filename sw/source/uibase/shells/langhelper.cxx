@@ -111,7 +111,7 @@ namespace SwLangHelper
         // get the language
         OUString aNewLangText;
 
-        SFX_REQUEST_ARG( rReq, pItem, SfxStringItem, SID_LANGUAGE_STATUS , false );
+        const SfxStringItem* pItem = rReq.GetArg<SfxStringItem>(SID_LANGUAGE_STATUS);
         if (pItem)
             aNewLangText = pItem->GetValue();
 
@@ -138,8 +138,6 @@ namespace SwLangHelper
                 const OUString aSelectionLangPrefix("Current_");
                 const OUString aParagraphLangPrefix("Paragraph_");
                 const OUString aDocumentLangPrefix("Default_");
-                const OUString aStrNone("LANGUAGE_NONE");
-                const OUString aStrResetLangs("RESET_LANGUAGES");
 
                 sal_Int32 nPos = 0;
                 bool bForSelection = true;
@@ -181,9 +179,9 @@ namespace SwLangHelper
                     rSh.ExtendedSelectAll();
                 }
 
-                if (aNewLangText == aStrNone)
+                if (aNewLangText == "LANGUAGE_NONE")
                     SwLangHelper::SetLanguage_None( rSh, pOLV, aSelection, bForSelection, aEditAttr );
-                else if (aNewLangText == aStrResetLangs)
+                else if (aNewLangText == "RESET_LANGUAGES")
                     SwLangHelper::ResetLanguages( rSh, pOLV, aSelection, bForSelection );
                 else
                     SwLangHelper::SetLanguage( rSh, pOLV, aSelection, aNewLangText, bForSelection, aEditAttr );
@@ -228,7 +226,7 @@ namespace SwLangHelper
 
     void SetLanguage( SwWrtShell &rWrtSh, const OUString &rLangText, bool bIsForSelection, SfxItemSet &rCoreSet )
     {
-        SetLanguage( rWrtSh, 0 , ESelection(), rLangText, bIsForSelection, rCoreSet );
+        SetLanguage( rWrtSh, nullptr , ESelection(), rLangText, bIsForSelection, rCoreSet );
     }
 
     void SetLanguage( SwWrtShell &rWrtSh, OutlinerView* pOLV, const ESelection& rSelection, const OUString &rLangText, bool bIsForSelection, SfxItemSet &rCoreSet )
@@ -236,7 +234,7 @@ namespace SwLangHelper
         const LanguageType nLang = SvtLanguageTable::GetLanguageType( rLangText );
         if (nLang != LANGUAGE_DONTKNOW)
         {
-            EditEngine* pEditEngine = pOLV ? pOLV->GetEditView().GetEditEngine() : NULL;
+            EditEngine* pEditEngine = pOLV ? pOLV->GetEditView().GetEditEngine() : nullptr;
             OSL_ENSURE( !pOLV || pEditEngine, "OutlinerView without EditEngine???" );
 
             //get ScriptType
@@ -310,7 +308,7 @@ namespace SwLangHelper
 
     void SetLanguage_None( SwWrtShell &rWrtSh, bool bIsForSelection, SfxItemSet &rCoreSet )
     {
-        SetLanguage_None( rWrtSh,0,ESelection(),bIsForSelection,rCoreSet );
+        SetLanguage_None( rWrtSh,nullptr,ESelection(),bIsForSelection,rCoreSet );
     }
 
     void SetLanguage_None( SwWrtShell &rWrtSh, OutlinerView* pOLV, const ESelection& rSelection, bool bIsForSelection, SfxItemSet &rCoreSet )
@@ -337,7 +335,7 @@ namespace SwLangHelper
             // (for paragraph is handled by previosuly having set the selection to the
             // whole paragraph)
 
-            EditEngine* pEditEngine = pOLV ? pOLV->GetEditView().GetEditEngine() : NULL;
+            EditEngine* pEditEngine = pOLV ? pOLV->GetEditView().GetEditEngine() : nullptr;
             OSL_ENSURE( !pOLV || pEditEngine, "OutlinerView without EditEngine???" );
             if (pEditEngine)
             {
@@ -370,7 +368,7 @@ namespace SwLangHelper
 
     void ResetLanguages( SwWrtShell &rWrtSh, bool bIsForSelection )
     {
-        ResetLanguages( rWrtSh, 0 , ESelection(), bIsForSelection );
+        ResetLanguages( rWrtSh, nullptr , ESelection(), bIsForSelection );
     }
 
     void ResetLanguages( SwWrtShell &rWrtSh, OutlinerView* pOLV, const ESelection& rSelection, bool bIsForSelection )
@@ -418,7 +416,7 @@ namespace SwLangHelper
 
         LanguageType nLang = LANGUAGE_SYSTEM;
 
-        const SfxPoolItem *pItem = 0;
+        const SfxPoolItem *pItem = nullptr;
         SfxItemState nState = aSet.GetItemState( nLangWhichId, true, &pItem );
         if (nState > SfxItemState::DEFAULT && pItem)
         {
@@ -540,14 +538,14 @@ namespace SwLangHelper
     {
         // string for guessing language
         OUString aText;
-        SwPaM *pCrsr = rSh.GetCrsr();
-        SwTextNode *pNode = pCrsr->GetNode().GetTextNode();
+        SwPaM *pCursor = rSh.GetCursor();
+        SwTextNode *pNode = pCursor->GetNode().GetTextNode();
         if (pNode)
         {
             aText = pNode->GetText();
             if (!aText.isEmpty())
             {
-                sal_Int32 nEnd = pCrsr->GetPoint()->nContent.GetIndex();
+                sal_Int32 nEnd = pCursor->GetPoint()->nContent.GetIndex();
                 // at most 100 chars to the left...
                 const sal_Int32 nStt = nEnd > 100 ? nEnd - 100 : 0;
                 // ... and 100 to the right of the cursor position

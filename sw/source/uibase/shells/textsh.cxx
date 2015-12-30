@@ -51,7 +51,6 @@
 #include <editeng/scripttypeitem.hxx>
 #include <vcl/graphicfilter.hxx>
 #include <sfx2/htmlmode.hxx>
-#include <svx/pfiledlg.hxx>
 #include <svtools/htmlcfg.hxx>
 #include <com/sun/star/i18n/TransliterationModules.hpp>
 #include <com/sun/star/i18n/TransliterationModulesExtra.hpp>
@@ -133,17 +132,16 @@ void SwTextShell::InitInterface_Impl()
     GetStaticInterface()->RegisterChildWindow(FN_WORDCOUNT_DIALOG);
 }
 
-TYPEINIT1(SwTextShell,SwBaseShell)
 
 void SwTextShell::ExecInsert(SfxRequest &rReq)
 {
     SwWrtShell &rSh = GetShell();
 
-    OSL_ENSURE( !rSh.IsObjSelected() && !rSh.IsFrmSelected(),
+    OSL_ENSURE( !rSh.IsObjSelected() && !rSh.IsFrameSelected(),
             "wrong shell on dispatcher" );
 
     const SfxItemSet *pArgs = rReq.GetArgs();
-    const SfxPoolItem* pItem = 0;
+    const SfxPoolItem* pItem = nullptr;
     const sal_uInt16 nSlot = rReq.GetSlot();
     if(pArgs)
         pArgs->GetItemState(nSlot, false, &pItem );
@@ -156,8 +154,8 @@ void SwTextShell::ExecInsert(SfxRequest &rReq)
         break;
 
     case FN_INSERT_SOFT_HYPHEN:
-        if( CHAR_SOFTHYPHEN != rSh.SwCrsrShell::GetChar( true ) &&
-            CHAR_SOFTHYPHEN != rSh.SwCrsrShell::GetChar( true, -1 ))
+        if( CHAR_SOFTHYPHEN != rSh.SwCursorShell::GetChar() &&
+            CHAR_SOFTHYPHEN != rSh.SwCursorShell::GetChar( true, -1 ))
             rSh.Insert( OUString( CHAR_SOFTHYPHEN ) );
         break;
 
@@ -200,7 +198,7 @@ void SwTextShell::ExecInsert(SfxRequest &rReq)
 
     case FN_INSERT_BREAK:
         {
-            if( !rSh.CrsrInsideInputField() )
+            if( !rSh.CursorInsideInputField() )
             {
                 rSh.SplitNode();
             }
@@ -237,53 +235,12 @@ void SwTextShell::ExecInsert(SfxRequest &rReq)
     case SID_INSERT_AVMEDIA:
         rReq.SetReturnValue(SfxBoolItem(nSlot, InsertMediaDlg( rReq )));
         break;
-
-    case  SID_INSERT_SOUND:
-    case  SID_INSERT_VIDEO:
-    {
-        SvxPluginFileDlg aDlg( &GetView().GetViewFrame()->GetWindow(), nSlot );
-        aDlg.SetContext( nSlot == SID_INSERT_SOUND? sfx2::FileDialogHelper::SW_INSERT_SOUND : sfx2::FileDialogHelper::SW_INSERT_VIDEO );
-
-        if ( ERRCODE_NONE == aDlg.Execute() )
-        {
-            // Determine URL
-            OUString aStrURL( aDlg.GetPath() );
-            aStrURL = URIHelper::SmartRel2Abs(
-                INetURLObject(), aStrURL, URIHelper::GetMaybeFileHdl() );
-
-            INetURLObject url;
-            url.SetSmartProtocol( INetProtocol::File );
-
-            if ( url.SetURL( aStrURL, INetURLObject::WAS_ENCODED ) )
-            {
-                OUString aName;
-                comphelper::EmbeddedObjectContainer aCnt;
-                svt::EmbeddedObjectRef xObj( aCnt.CreateEmbeddedObject( SvGlobalName( SO3_PLUGIN_CLASSID ).GetByteSequence(), aName ), embed::Aspects::MSOLE_CONTENT );
-                if ( xObj.is() )
-                {
-                    svt::EmbeddedObjectRef::TryRunningState( xObj.GetObject() );
-
-                    // set properties from dialog
-                    uno::Reference < beans::XPropertySet > xSet( xObj->getComponent(), uno::UNO_QUERY );
-                    if ( xSet.is() )
-                    {
-                        xSet->setPropertyValue("PluginURL",
-                                uno::makeAny( OUString( url.GetMainURL( INetURLObject::NO_DECODE ) ) ) );
-                    }
-                }
-
-                rSh.InsertObject( xObj, 0, true, nSlot);
-            }
-        }
-    }
-    break;
 #endif
 
     case SID_INSERT_OBJECT:
-    case SID_INSERT_PLUGIN:
     {
-        SFX_REQUEST_ARG( rReq, pNameItem, SfxGlobalNameItem, SID_INSERT_OBJECT, false );
-        SvGlobalName *pName = NULL;
+        const SfxGlobalNameItem* pNameItem = rReq.GetArg<SfxGlobalNameItem>(SID_INSERT_OBJECT);
+        SvGlobalName *pName = nullptr;
         SvGlobalName aName;
         if ( pNameItem )
         {
@@ -291,73 +248,19 @@ void SwTextShell::ExecInsert(SfxRequest &rReq)
             pName = &aName;
         }
 
-        SFX_REQUEST_ARG( rReq, pClassLocationItem,  SfxStringItem, FN_PARAM_2, false );
-        SFX_REQUEST_ARG( rReq, pCommandsItem,       SfxStringItem, FN_PARAM_3, false );
-        //TODO/LATER: recording currently not working, need code for Commandlist
         svt::EmbeddedObjectRef xObj;
-        if( nSlot == SID_INSERT_PLUGIN && ( pClassLocationItem || pCommandsItem ) )
-        {
-            OUString sClassLocation;
-            if(pClassLocationItem)
-                sClassLocation = pClassLocationItem->GetValue();
-
-            SvCommandList aCommandList;
-            if(pCommandsItem)
-            {
-                sal_Int32 nTemp;
-                aCommandList.AppendCommands( pCommandsItem->GetValue(), &nTemp );
-            }
-
-            {
-                comphelper::EmbeddedObjectContainer aCnt;
-                OUString sName;
-                xObj.Assign( aCnt.CreateEmbeddedObject( SvGlobalName( SO3_PLUGIN_CLASSID ).GetByteSequence(), sName ),
-                            embed::Aspects::MSOLE_CONTENT );
-                svt::EmbeddedObjectRef::TryRunningState( xObj.GetObject() );
-                uno::Reference < beans::XPropertySet > xSet( xObj->getComponent(), uno::UNO_QUERY );
-                if ( xSet.is() )
-                {
-                    try
-                    {
-                        if ( !sClassLocation.isEmpty() )
-                            xSet->setPropertyValue("PluginURL",
-                                uno::makeAny(
-                                    OUString(
-                                        URIHelper::SmartRel2Abs(
-                                            INetURLObject(), sClassLocation,
-                                            URIHelper::GetMaybeFileHdl()) ) ) );
-                        uno::Sequence< beans::PropertyValue > aSeq;
-                        if ( aCommandList.size() )
-                        {
-                            aCommandList.FillSequence( aSeq );
-                            xSet->setPropertyValue("PluginCommands", uno::makeAny( aSeq ) );
-                        }
-                    }
-                    catch (const uno::Exception&)
-                    {
-                    }
-                }
-            }
-
-            if(xObj.is())
-                rSh.InsertOleObject( xObj );
-        }
-        else
-        {
-            OSL_ENSURE( !pNameItem || nSlot == SID_INSERT_OBJECT, "Superfluous argument!" );
-            rSh.InsertObject( xObj, pName, true, nSlot);
-            rReq.Done();
-        }
+        rSh.InsertObject( xObj, pName, true, nSlot);
+        rReq.Done();
         break;
     }
     case SID_INSERT_FLOATINGFRAME:
     {
         svt::EmbeddedObjectRef xObj;
-        SFX_REQUEST_ARG( rReq, pNameItem,   SfxStringItem, FN_PARAM_1, false );
-        SFX_REQUEST_ARG( rReq, pURLItem,    SfxStringItem, FN_PARAM_2, false );
-        SFX_REQUEST_ARG( rReq, pMarginItem, SvxSizeItem, FN_PARAM_3, false );
-        SFX_REQUEST_ARG( rReq, pScrollingItem, SfxByteItem, FN_PARAM_4, false );
-        SFX_REQUEST_ARG( rReq, pBorderItem, SfxBoolItem, FN_PARAM_5, false );
+        const SfxStringItem* pNameItem = rReq.GetArg<SfxStringItem>(FN_PARAM_1);
+        const SfxStringItem* pURLItem = rReq.GetArg<SfxStringItem>(FN_PARAM_2);
+        const SvxSizeItem* pMarginItem = rReq.GetArg<SvxSizeItem>(FN_PARAM_3);
+        const SfxByteItem* pScrollingItem = rReq.GetArg<SfxByteItem>(FN_PARAM_4);
+        const SfxBoolItem* pBorderItem = rReq.GetArg<SfxBoolItem>(FN_PARAM_5);
 
         if(pURLItem) // URL is a _must_
         {
@@ -413,7 +316,7 @@ void SwTextShell::ExecInsert(SfxRequest &rReq)
         }
         else
         {
-            rSh.InsertObject( xObj, 0, true, nSlot);
+            rSh.InsertObject( xObj, nullptr, true, nSlot);
             rReq.Done();
         }
     }
@@ -473,7 +376,7 @@ void SwTextShell::ExecInsert(SfxRequest &rReq)
             // the suggestion has to be removed before
             GetView().GetEditWin().StopQuickHelp();
             SvGlobalName aGlobalName( SO3_SM_CLASSID );
-            rSh.InsertObject( svt::EmbeddedObjectRef(), &aGlobalName, true );
+            rSh.InsertObject( svt::EmbeddedObjectRef(), &aGlobalName );
         }
         break;
 
@@ -505,20 +408,20 @@ void SwTextShell::ExecInsert(SfxRequest &rReq)
             Size aSize(16 * MM50, 8 * MM50);
             GetShell().LockPaint();
             GetShell().StartAllAction();
-            SwFlyFrmAttrMgr aMgr( true, GetShellPtr(), FRMMGR_TYPE_TEXT );
+            SwFlyFrameAttrMgr aMgr( true, GetShellPtr(), FRMMGR_TYPE_TEXT );
             if(nCols > 1)
             {
                 SwFormatCol aCol;
                 aCol.Init( nCols, aCol.GetGutterWidth(), aCol.GetWishWidth() );
                 aMgr.SetCol( aCol );
             }
-            aMgr.InsertFlyFrm(FLY_AT_PARA, aStartPos, aSize);
+            aMgr.InsertFlyFrame(FLY_AT_PARA, aStartPos, aSize);
             GetShell().EndAllAction();
             GetShell().UnlockPaint();
         }
         else
         {
-            GetView().InsFrmMode(nCols);
+            GetView().InsFrameMode(nCols);
         }
         rReq.Ignore();
     }
@@ -526,7 +429,7 @@ void SwTextShell::ExecInsert(SfxRequest &rReq)
     case FN_INSERT_FRAME:
     {
         bool bSingleCol = false;
-        if( 0!= dynamic_cast< SwWebDocShell*>( GetView().GetDocShell()) )
+        if( nullptr!= dynamic_cast< SwWebDocShell*>( GetView().GetDocShell()) )
         {
             SvxHtmlOptions& rHtmlOpt = SvxHtmlOptions::Get();
             if( HTML_CFG_MSIE == rHtmlOpt.GetExportMode() )
@@ -536,7 +439,7 @@ void SwTextShell::ExecInsert(SfxRequest &rReq)
 
         }
         // Create new border
-        SwFlyFrmAttrMgr aMgr( true, GetShellPtr(), FRMMGR_TYPE_TEXT );
+        SwFlyFrameAttrMgr aMgr( true, GetShellPtr(), FRMMGR_TYPE_TEXT );
         if(pArgs)
         {
             Size aSize(aMgr.GetSize());
@@ -564,7 +467,7 @@ void SwTextShell::ExecInsert(SfxRequest &rReq)
             GetShell().LockPaint();
             GetShell().StartAllAction();
 
-            aMgr.InsertFlyFrm(eAnchor, aPos, aSize);
+            aMgr.InsertFlyFrame(eAnchor, aPos, aSize);
 
             GetShell().EndAllAction();
             GetShell().UnlockPaint();
@@ -573,14 +476,14 @@ void SwTextShell::ExecInsert(SfxRequest &rReq)
         {
             SfxItemSet aSet = CreateInsertFrameItemSet(aMgr);
 
-            FieldUnit eMetric = ::GetDfltMetric(0 != PTR_CAST(SwWebDocShell, GetView().GetDocShell()));
+            FieldUnit eMetric = ::GetDfltMetric(dynamic_cast<SwWebDocShell*>( GetView().GetDocShell()) != nullptr );
             SW_MOD()->PutItem(SfxUInt16Item(SID_ATTR_METRIC, static_cast< sal_uInt16 >(eMetric)));
             SwAbstractDialogFactory* pFact = SwAbstractDialogFactory::Create();
             OSL_ENSURE(pFact, "Dialog creation failed!");
-            std::unique_ptr<SfxAbstractTabDialog> pDlg(pFact->CreateFrmTabDialog("FrameDialog",
+            std::unique_ptr<SfxAbstractTabDialog> pDlg(pFact->CreateFrameTabDialog("FrameDialog",
                                                   GetView().GetViewFrame(),
                                                   &GetView().GetViewFrame()->GetWindow(),
-                                                  aSet, true));
+                                                  aSet));
             OSL_ENSURE(pDlg, "Dialog creation failed!");
             if(pDlg->Execute() == RET_OK && pDlg->GetOutputItemSet())
             {
@@ -597,7 +500,7 @@ void SwTextShell::ExecInsert(SfxRequest &rReq)
                 if( rShell.IsInClickToEdit() )
                     rShell.DelRight();
 
-                aMgr.InsertFlyFrm();
+                aMgr.InsertFlyFrame();
 
                 uno::Reference< frame::XDispatchRecorder > xRecorder =
                         GetView().GetViewFrame()->GetBindings().GetRecorder();
@@ -660,21 +563,23 @@ void SwTextShell::StateInsert( SfxItemSet &rSet )
     SfxObjectCreateMode eCreateMode =
                         GetView().GetDocShell()->GetCreateMode();
 
-    rSh.Push();
-    const bool bCrsrInHidden = rSh.SelectHiddenRange();
-    rSh.Pop();
+    bool bCursorInHidden = false;
+    if( !rSh.HasMark() )
+    {
+        rSh.Push();
+        bCursorInHidden = rSh.SelectHiddenRange();
+        rSh.Pop();
+    }
 
     while ( nWhich )
     {
         switch ( nWhich )
         {
         case SID_INSERT_AVMEDIA:
-        case SID_INSERT_SOUND:
-        case SID_INSERT_VIDEO:
-            if ( GetShell().IsSelFrmMode()
-                 || GetShell().CrsrInsideInputField()
+            if ( GetShell().IsSelFrameMode()
+                 || GetShell().CursorInsideInputField()
                  || SfxObjectCreateMode::EMBEDDED == eCreateMode
-                 || bCrsrInHidden )
+                 || bCursorInHidden )
             {
                 rSet.DisableItem( nWhich );
             }
@@ -682,9 +587,9 @@ void SwTextShell::StateInsert( SfxItemSet &rSet )
 
         case SID_INSERT_DIAGRAM:
             if( !aMOpt.IsChart()
-                || GetShell().CrsrInsideInputField()
+                || GetShell().CursorInsideInputField()
                 || eCreateMode == SfxObjectCreateMode::EMBEDDED
-                || bCrsrInHidden )
+                || bCursorInHidden )
             {
                 rSet.DisableItem( nWhich );
             }
@@ -693,8 +598,8 @@ void SwTextShell::StateInsert( SfxItemSet &rSet )
             case FN_INSERT_SMA:
                 if( !aMOpt.IsMath()
                     || eCreateMode == SfxObjectCreateMode::EMBEDDED
-                    || bCrsrInHidden
-                    || rSh.CrsrInsideInputField() )
+                    || bCursorInHidden
+                    || rSh.CursorInsideInputField() )
                 {
                     rSet.DisableItem( nWhich );
                 }
@@ -702,14 +607,13 @@ void SwTextShell::StateInsert( SfxItemSet &rSet )
 
             case SID_INSERT_FLOATINGFRAME:
             case SID_INSERT_OBJECT:
-            case SID_INSERT_PLUGIN:
                 {
-                    if( eCreateMode == SfxObjectCreateMode::EMBEDDED || bCrsrInHidden )
+                    if( eCreateMode == SfxObjectCreateMode::EMBEDDED || bCursorInHidden )
                     {
                         rSet.DisableItem( nWhich );
                     }
-                    else if( GetShell().IsSelFrmMode()
-                             || GetShell().CrsrInsideInputField() )
+                    else if( GetShell().IsSelFrameMode()
+                             || GetShell().CursorInsideInputField() )
                     {
                         rSet.DisableItem( nWhich );
                     }
@@ -726,9 +630,10 @@ void SwTextShell::StateInsert( SfxItemSet &rSet )
             case FN_INSERT_FRAME_INTERACT_NOCOL :
             case FN_INSERT_FRAME_INTERACT:
                 {
-                    if( GetShell().IsSelFrmMode()
-                        || GetShell().CrsrInsideInputField()
-                        || bCrsrInHidden )
+                    if( GetShell().IsSelFrameMode()
+                        || rSh.IsTableMode()
+                        || GetShell().CursorInsideInputField()
+                        || bCursorInHidden )
                         rSet.DisableItem(nWhich);
                 }
                 break;
@@ -760,12 +665,12 @@ void SwTextShell::StateInsert( SfxItemSet &rSet )
 
                         // Get the text of the Link.
                         rSh.StartAction();
-                        rSh.CreateCrsr();
-                        rSh.SwCrsrShell::SelectTextAttr(RES_TXTATR_INETFMT,true);
+                        rSh.CreateCursor();
+                        rSh.SwCursorShell::SelectTextAttr(RES_TXTATR_INETFMT,true);
                         OUString sLinkName = rSh.GetSelText();
                         aHLinkItem.SetName(sLinkName);
                         aHLinkItem.SetInsertMode(HLINK_FIELD);
-                        rSh.DestroyCrsr();
+                        rSh.DestroyCursor();
                         rSh.EndAction();
                     }
                     else
@@ -785,13 +690,13 @@ void SwTextShell::StateInsert( SfxItemSet &rSet )
                 break;
 
             case FN_INSERT_FRAME:
-                if (rSh.IsSelFrmMode() )
+                if (rSh.IsSelFrameMode() )
                 {
                     const int nSel = rSh.GetSelectionType();
-                    if( ((nsSelectionType::SEL_GRF | nsSelectionType::SEL_OLE ) & nSel ) || bCrsrInHidden )
+                    if( ((nsSelectionType::SEL_GRF | nsSelectionType::SEL_OLE ) & nSel ) || bCursorInHidden )
                         rSet.DisableItem(nWhich);
                 }
-                else if ( rSh.CrsrInsideInputField() )
+                else if ( rSh.CursorInsideInputField() )
                 {
                     rSet.DisableItem(nWhich);
                 }
@@ -921,9 +826,9 @@ void SwTextShell::ExecRotateTransliteration( SfxRequest & rReq )
 }
 
 SwTextShell::SwTextShell(SwView &_rView) :
-    SwBaseShell(_rView), pPostItFieldMgr( 0 )
+    SwBaseShell(_rView)
 {
-    SetName(OUString("Text"));
+    SetName("Text");
     SetHelpId(SW_TEXTSHELL);
     SfxShell::SetContextName(sfx2::sidebar::EnumContext::GetContextName(sfx2::sidebar::EnumContext::Context_Text));
 }
@@ -932,9 +837,9 @@ SwTextShell::~SwTextShell()
 {
 }
 
-SfxItemSet SwTextShell::CreateInsertFrameItemSet(SwFlyFrmAttrMgr& rMgr)
+SfxItemSet SwTextShell::CreateInsertFrameItemSet(SwFlyFrameAttrMgr& rMgr)
 {
-    static const sal_uInt16 aFrmAttrRange[] =
+    static const sal_uInt16 aFrameAttrRange[] =
     {
         RES_FRMATR_BEGIN,       RES_FRMATR_END-1,
         SID_ATTR_BORDER_INNER,  SID_ATTR_BORDER_INNER,
@@ -946,19 +851,19 @@ SfxItemSet SwTextShell::CreateInsertFrameItemSet(SwFlyFrmAttrMgr& rMgr)
         0
     };
 
-    SfxItemSet aSet(GetPool(), aFrmAttrRange );
+    SfxItemSet aSet(GetPool(), aFrameAttrRange );
     aSet.Put(SfxUInt16Item(SID_HTML_MODE, ::GetHtmlMode(GetView().GetDocShell())));
 
     // For the Area tab page.
     GetShell().GetDoc()->getIDocumentDrawModelAccess().GetDrawModel()->PutAreaListItems(aSet);
 
     const SwRect &rPg = GetShell().GetAnyCurRect(RECT_PAGE);
-    SwFormatFrmSize aFrmSize(ATT_VAR_SIZE, rPg.Width(), rPg.Height());
-    aFrmSize.SetWhich(GetPool().GetWhich(SID_ATTR_PAGE_SIZE));
-    aSet.Put(aFrmSize);
+    SwFormatFrameSize aFrameSize(ATT_VAR_SIZE, rPg.Width(), rPg.Height());
+    aFrameSize.SetWhich(GetPool().GetWhich(SID_ATTR_PAGE_SIZE));
+    aSet.Put(aFrameSize);
 
     const SwRect &rPr = GetShell().GetAnyCurRect(RECT_PAGE_PRT);
-    SwFormatFrmSize aPrtSize(ATT_VAR_SIZE, rPr.Width(), rPr.Height());
+    SwFormatFrameSize aPrtSize(ATT_VAR_SIZE, rPr.Width(), rPr.Height());
     aPrtSize.SetWhich(GetPool().GetWhich(FN_GET_PRINT_AREA));
     aSet.Put(aPrtSize);
 
@@ -978,7 +883,7 @@ SfxItemSet SwTextShell::CreateInsertFrameItemSet(SwFlyFrmAttrMgr& rMgr)
 void SwTextShell::InsertSymbol( SfxRequest& rReq )
 {
     const SfxItemSet *pArgs = rReq.GetArgs();
-    const SfxPoolItem* pItem = 0;
+    const SfxPoolItem* pItem = nullptr;
     if( pArgs )
         pArgs->GetItemState(GetPool().GetWhich(SID_CHARMAP), false, &pItem);
 
@@ -986,9 +891,9 @@ void SwTextShell::InsertSymbol( SfxRequest& rReq )
     if ( pItem )
     {
         aChars = static_cast<const SfxStringItem*>(pItem)->GetValue();
-        const SfxPoolItem* pFtItem = NULL;
+        const SfxPoolItem* pFtItem = nullptr;
         pArgs->GetItemState( GetPool().GetWhich(SID_ATTR_SPECIALCHAR), false, &pFtItem);
-        const SfxStringItem* pFontItem = PTR_CAST( SfxStringItem, pFtItem );
+        const SfxStringItem* pFontItem = dynamic_cast<const SfxStringItem*>( pFtItem  );
         if ( pFontItem )
             aFontName = pFontItem->GetValue();
     }
@@ -1037,8 +942,8 @@ void SwTextShell::InsertSymbol( SfxRequest& rReq )
             GetView().GetViewFrame()->GetFrame().GetFrameInterface(), RID_SVXDLG_CHARMAP ));
         if( RET_OK == pDlg->Execute() )
         {
-            SFX_ITEMSET_ARG( pDlg->GetOutputItemSet(), pCItem, SfxStringItem, SID_CHARMAP, false );
-            SFX_ITEMSET_ARG( pDlg->GetOutputItemSet(), pFontItem, SvxFontItem, SID_ATTR_CHAR_FONT, false );
+            const SfxStringItem* pCItem = SfxItemSet::GetItem<SfxStringItem>(pDlg->GetOutputItemSet(), SID_CHARMAP, false);
+            const SvxFontItem* pFontItem = SfxItemSet::GetItem<SvxFontItem>(pDlg->GetOutputItemSet(), SID_ATTR_CHAR_FONT, false);
             if ( pFontItem )
             {
                 aNewFont.SetName( pFontItem->GetFamilyName() );
@@ -1118,7 +1023,7 @@ void SwTextShell::InsertSymbol( SfxRequest& rReq )
             rSh.SetMark();
             rSh.ExtendSelection( false, aChars.getLength() );
             rSh.SetAttrSet( aSet, SetAttrMode::DONTEXPAND | SetAttrMode::NOFORMATATTR );
-            if( !rSh.IsCrsrPtAtEnd() )
+            if( !rSh.IsCursorPtAtEnd() )
                 rSh.SwapPam();
 
             rSh.ClearMark();

@@ -65,7 +65,7 @@ public:
     static css::uno::Reference<css::uno::XInterface> Create(
         const css::uno::Reference<css::uno::XComponentContext>& rxContext);
 
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
     // XJob
 
@@ -73,7 +73,7 @@ public:
         const css::uno::Sequence<css::beans::NamedValue >& Arguments)
         throw (css::lang::IllegalArgumentException,
             css::uno::Exception,
-            css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            css::uno::RuntimeException, std::exception) override;
 
 private:
     PresenterScreenJob (const css::uno::Reference<css::uno::XComponentContext>& rxContext);
@@ -104,7 +104,7 @@ public:
         const css::uno::Reference<css::frame::XModel2>& rxModel);
     virtual ~PresenterScreen();
 
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
     static bool isPresenterScreenEnabled(
         const css::uno::Reference<css::uno::XComponentContext>& rxContext);
@@ -124,7 +124,7 @@ public:
 
     // XEventListener
 
-    virtual void SAL_CALL disposing ( const css::lang::EventObject& rEvent) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing ( const css::lang::EventObject& rEvent) throw (css::uno::RuntimeException, std::exception) override;
 
 private:
     css::uno::Reference<css::frame::XModel2 > mxModel;
@@ -134,7 +134,6 @@ private:
     css::uno::WeakReference<css::uno::XComponentContext> mxContextWeak;
     css::uno::WeakReference<css::presentation::XSlideShowController> mxSlideShowControllerWeak;
     ::rtl::Reference<PresenterController> mpPresenterController;
-    css::uno::Reference<css::drawing::framework::XResourceId> mxSlideShowViewId;
     css::uno::Reference<css::drawing::framework::XConfiguration> mxSavedConfiguration;
     ::rtl::Reference<PresenterPaneContainer> mpPaneContainer;
     sal_Int32 mnComponentIndex;

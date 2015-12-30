@@ -70,12 +70,12 @@ class SvtExtendedSecurityOptions_Impl : public ConfigItem
             @param      "seqPropertyNames" is the list of properties which should be updated.
         *//*-*****************************************************************************************************/
 
-        virtual void Notify( const Sequence< OUString >& seqPropertyNames ) SAL_OVERRIDE;
+        virtual void Notify( const Sequence< OUString >& seqPropertyNames ) override;
 
         SvtExtendedSecurityOptions::OpenHyperlinkMode   GetOpenHyperlinkMode() { return m_eOpenHyperlinkMode;}
 
     private:
-        virtual void ImplCommit() SAL_OVERRIDE;
+        virtual void ImplCommit() override;
 
         /*-****************************************************************************************************
             @short      return list of key names of our configuration management which represent oue module tree
@@ -146,8 +146,7 @@ SvtExtendedSecurityOptions_Impl::SvtExtendedSecurityOptions_Impl()
 
     // Enable notification mechanism of our baseclass.
     // We need it to get information about changes outside these class on our used configuration keys!
-    Sequence< OUString > seqNotifyNames( 1 );
-    seqNotifyNames[0] = m_aSecureExtensionsSetName;
+    Sequence<OUString> seqNotifyNames { m_aSecureExtensionsSetName };
     EnableNotification( seqNotifyNames );
 }
 
@@ -244,7 +243,7 @@ Sequence< OUString > SvtExtendedSecurityOptions_Impl::GetPropertyNames()
 //  DON'T DO IT IN YOUR HEADER!
 //  see definition for further information
 
-SvtExtendedSecurityOptions_Impl*    SvtExtendedSecurityOptions::m_pDataContainer    = NULL;
+SvtExtendedSecurityOptions_Impl*    SvtExtendedSecurityOptions::m_pDataContainer    = nullptr;
 sal_Int32                           SvtExtendedSecurityOptions::m_nRefCount         = 0;
 
 //  constructor
@@ -256,7 +255,7 @@ SvtExtendedSecurityOptions::SvtExtendedSecurityOptions()
     // Increase our refcount ...
     ++m_nRefCount;
     // ... and initialize our data container only if it not already exist!
-    if( m_pDataContainer == NULL )
+    if( m_pDataContainer == nullptr )
     {
        m_pDataContainer = new SvtExtendedSecurityOptions_Impl;
 
@@ -277,7 +276,7 @@ SvtExtendedSecurityOptions::~SvtExtendedSecurityOptions()
     if( m_nRefCount <= 0 )
     {
         delete m_pDataContainer;
-        m_pDataContainer = NULL;
+        m_pDataContainer = nullptr;
     }
 }
 

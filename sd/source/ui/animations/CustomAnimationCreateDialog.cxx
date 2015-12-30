@@ -66,10 +66,10 @@ const int MISCEFFECTS = 4;
 class CategoryListBox : public ListBox
 {
 public:
-    CategoryListBox( vcl::Window* pParent );
+    explicit CategoryListBox( vcl::Window* pParent );
     virtual ~CategoryListBox();
 
-    virtual void        MouseButtonUp( const MouseEvent& rMEvt ) SAL_OVERRIDE;
+    virtual void        MouseButtonUp( const MouseEvent& rMEvt ) override;
 
     sal_Int32           InsertCategory( const OUString& rStr, sal_Int32  nPos = LISTBOX_APPEND );
 
@@ -78,7 +78,7 @@ public:
     DECL_LINK_TYPED(implDoubleClickHdl, ListBox&, void);
 
 private:
-    virtual void    UserDraw( const UserDrawEvent& rUDEvt ) SAL_OVERRIDE;
+    virtual void    UserDraw( const UserDrawEvent& rUDEvt ) override;
 
     Link<CategoryListBox&,void> maDoubleClickHdl;
 };
@@ -147,8 +147,7 @@ void CategoryListBox::MouseButtonUp( const MouseEvent& rMEvt )
     ReleaseMouse();
     if( rMEvt.IsLeft() && (rMEvt.GetClicks() == 2) )
     {
-        if( maDoubleClickHdl.IsSet() )
-            maDoubleClickHdl.Call( *this );
+        maDoubleClickHdl.Call( *this );
     }
     else
     {
@@ -161,7 +160,7 @@ class CustomAnimationCreateTabPage : public TabPage
 public:
     CustomAnimationCreateTabPage( vcl::Window* pParent, CustomAnimationCreateDialog* pDialogParent, sal_uInt16 nTabId, const PresetCategoryList& rCategoryList, bool bHasText, bool bIsMotionPath = false );
     virtual ~CustomAnimationCreateTabPage();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     PathKind getCreatePathKind() const;
     CustomAnimationPresetPtr getSelectedPreset() const;
@@ -176,7 +175,7 @@ public:
     bool select( const OUString& rsPresetId );
 
 private:
-    DECL_LINK( implSelectHdl, Control* );
+    DECL_LINK_TYPED( implSelectHdl, ListBox&, void );
     DECL_LINK_TYPED( implDoubleClickHdl, CategoryListBox&, void );
 
     void onSelectEffect();
@@ -307,11 +306,10 @@ void CustomAnimationCreateTabPage::dispose()
     TabPage::dispose();
 }
 
-IMPL_LINK( CustomAnimationCreateTabPage, implSelectHdl, Control*, pControl )
+IMPL_LINK_TYPED( CustomAnimationCreateTabPage, implSelectHdl, ListBox&, rControl, void )
 {
-    if( pControl == mpLBEffects )
+    if( &rControl == mpLBEffects )
         onSelectEffect();
-    return 0;
 }
 
 IMPL_LINK_TYPED( CustomAnimationCreateTabPage, implDoubleClickHdl, CategoryListBox&, rControl, void )
@@ -486,7 +484,7 @@ bool CustomAnimationCreateTabPage::select( const OUString& rsPresetId )
     return false;
 }
 
-CustomAnimationCreateDialog::CustomAnimationCreateDialog( vcl::Window* pParent, CustomAnimationPane* pPane, const std::vector< ::com::sun::star::uno::Any >& rTargets, bool bHasText, const OUString& rsPresetId, double fDuration  )
+CustomAnimationCreateDialog::CustomAnimationCreateDialog( vcl::Window* pParent, CustomAnimationPane* pPane, const std::vector< css::uno::Any >& rTargets, bool bHasText, const OUString& rsPresetId, double fDuration  )
 :   TabDialog( pParent, "CustomAnimationCreate", "modules/simpress/ui/customanimationcreatedialog.ui" )
 ,   mpPane( pPane )
 ,   mrTargets( rTargets )
@@ -628,8 +626,8 @@ namespace
 {
 vcl::Window * lcl_GetTopmostParent( vcl::Window * pWindow )
 {
-    vcl::Window * pResult = 0;
-    vcl::Window * pCurrent = pWindow ? pWindow->GetParent() : 0;
+    vcl::Window * pResult = nullptr;
+    vcl::Window * pCurrent = pWindow ? pWindow->GetParent() : nullptr;
     while( pCurrent )
     {
         pResult = pCurrent;

@@ -64,7 +64,6 @@ class SlideSorterView
       public ::boost::noncopyable
 {
 public:
-    TYPEINFO_OVERRIDE();
 
     /** Create a new view for the slide sorter.
         @param rViewShell
@@ -102,7 +101,7 @@ public:
 
     view::Layouter& GetLayouter();
 
-    virtual void ModelHasChanged() SAL_OVERRIDE;
+    virtual void ModelHasChanged() override;
 
     /** This method is typically called before a model change takes place.
         All references to model data are released.  PostModelChange() has to
@@ -129,12 +128,12 @@ public:
     virtual void CompleteRedraw (
         OutputDevice* pDevice,
         const vcl::Region& rPaintArea,
-        sdr::contact::ViewObjectContactRedirector* pRedirector = NULL) SAL_OVERRIDE;
+        sdr::contact::ViewObjectContactRedirector* pRedirector = nullptr) override;
     void Paint (OutputDevice& rDevice, const Rectangle& rRepaintArea);
 
     virtual void ConfigurationChanged (
         utl::ConfigurationBroadcaster* pBroadcaster,
-        sal_uInt32 nHint) SAL_OVERRIDE;
+        sal_uInt32 nHint) override;
 
     void HandleDataChangeEvent();
 
@@ -207,10 +206,10 @@ public:
 
     ToolTip& GetToolTip() const;
 
-    virtual void DragFinished (sal_Int8 nDropAction) SAL_OVERRIDE;
+    virtual void DragFinished (sal_Int8 nDropAction) override;
 
 protected:
-    virtual void Notify (SfxBroadcaster& rBroadcaster, const SfxHint& rHint) SAL_OVERRIDE;
+    virtual void Notify (SfxBroadcaster& rBroadcaster, const SfxHint& rHint) override;
 
 private:
     SlideSorter& mrSlideSorter;
@@ -225,7 +224,6 @@ private:
     Size maPreviewSize;
     bool mbPreciousFlagUpdatePending;
     Layouter::Orientation meOrientation;
-    std::shared_ptr<controller::Properties> mpProperties;
     model::SharedPageDescriptor mpPageUnderMouse;
     std::shared_ptr<PageObjectPainter> mpPageObjectPainter;
     std::shared_ptr<SelectionPainter> mpSelectionPainter;

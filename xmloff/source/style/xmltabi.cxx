@@ -61,7 +61,6 @@ private:
      style::TabStop aTabStop;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     SvxXMLTabStopContext_Impl( SvXMLImport& rImport, sal_uInt16 nPrfx,
                                const OUString& rLName,
@@ -71,12 +70,11 @@ public:
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                    const OUString& rLocalName,
-                                   const uno::Reference< xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+                                   const uno::Reference< xml::sax::XAttributeList > & xAttrList ) override;
 
     const style::TabStop& getTabStop() const { return aTabStop; }
 };
 
-TYPEINIT1( SvxXMLTabStopContext_Impl, SvXMLImportContext );
 
 SvxXMLTabStopContext_Impl::SvxXMLTabStopContext_Impl(
                                SvXMLImport& rImport, sal_uInt16 nPrfx,
@@ -169,7 +167,6 @@ SvXMLImportContext *SvxXMLTabStopContext_Impl::CreateChildContext(
     return new SvXMLImportContext( GetImport(), nPrefix, rLocalName );
 }
 
-TYPEINIT1( SvxXMLTabStopImportContext, XMLElementPropertyContext );
 
 SvxXMLTabStopImportContext::SvxXMLTabStopImportContext(
                                 SvXMLImport& rImport, sal_uInt16 nPrfx,
@@ -177,7 +174,7 @@ SvxXMLTabStopImportContext::SvxXMLTabStopImportContext(
                                 const XMLPropertyState& rProp,
                                  ::std::vector< XMLPropertyState > &rProps )
 : XMLElementPropertyContext( rImport, nPrfx, rLName, rProp, rProps ),
-  mpTabStops( NULL )
+  mpTabStops( nullptr )
 {
 }
 
@@ -201,7 +198,7 @@ SvXMLImportContext *SvxXMLTabStopImportContext::CreateChildContext(
                                    const OUString& rLocalName,
                                    const uno::Reference< xml::sax::XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if( XML_NAMESPACE_STYLE == nPrefix && IsXMLToken( rLocalName, XML_TAB_STOP ) )
     {

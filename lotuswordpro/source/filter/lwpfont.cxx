@@ -94,7 +94,7 @@ void LwpFontAttrEntry::Override( rtl::Reference<XFFont> const & pFont )
     if (IsSuperOverridden())
     {
         if(Is(SUPERSCRIPT))
-            pFont->SetPosition(true);
+            pFont->SetPosition();
     }
 
     if (IsSubOverridden())
@@ -242,12 +242,12 @@ void LwpFontTableEntry::RegisterFontDecl()
 
 LwpFontTable::LwpFontTable()
     : m_nCount(0)
-    , m_pFontEntries(NULL)
+    , m_pFontEntries(nullptr)
 {}
 
 void LwpFontTable::Read(LwpObjectStream *pStrm)
 {
-    m_pFontEntries = NULL;
+    m_pFontEntries = nullptr;
     m_nCount = pStrm->QuickReaduInt16();
     if(m_nCount>0)
     {
@@ -262,7 +262,7 @@ void LwpFontTable::Read(LwpObjectStream *pStrm)
 
 OUString LwpFontTable::GetFaceName(sal_uInt16 index) //index: start from 1
 {
-    assert(index <= m_nCount && index > 0);
+    SAL_WARN_IF(index > m_nCount || index <= 0, "lwp", "bad font index");
     return (index <= m_nCount && index > 0) ? m_pFontEntries[index-1].GetFaceName() : OUString();
 }
 
@@ -271,7 +271,7 @@ LwpFontTable::~LwpFontTable()
     if(m_pFontEntries)
     {
         delete [] m_pFontEntries;
-        m_pFontEntries = NULL;
+        m_pFontEntries = nullptr;
     }
 }
 
@@ -360,7 +360,7 @@ bool LwpFontNameEntry::IsBackgroundColorOverridden()
 
 LwpFontNameManager::LwpFontNameManager()
     : m_nCount(0)
-    , m_pFontNames(NULL)
+    , m_pFontNames(nullptr)
 {}
 
 LwpFontNameManager::~LwpFontNameManager()
@@ -368,7 +368,7 @@ LwpFontNameManager::~LwpFontNameManager()
     if(m_pFontNames)
     {
         delete [] m_pFontNames;
-        m_pFontNames = NULL;
+        m_pFontNames = nullptr;
     }
 }
 
@@ -399,8 +399,13 @@ void    LwpFontNameManager::Override(sal_uInt16 index, rtl::Reference<XFFont> co
     if(m_pFontNames[index-1].IsAltFaceNameOverridden())
         pFont->SetFontNameAsia(m_FontTbl.GetFaceName(m_pFontNames[index-1].GetAltFaceID()));
 }
+
 OUString LwpFontNameManager::GetNameByIndex(sal_uInt16 index)
+    //index: start from 1
 {
+    if (index > m_nCount || index < 1)
+        return OUString();
+
     sal_uInt16 nameindex = m_pFontNames[index-1].GetFaceID();
     return (m_FontTbl.GetFaceName(nameindex));
 }

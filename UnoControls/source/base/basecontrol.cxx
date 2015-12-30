@@ -40,7 +40,7 @@ using namespace ::com::sun::star::awt;
 
 namespace unocontrols{
 
-#define DEFAULT_PMULTIPLEXER                NULL
+#define DEFAULT_PMULTIPLEXER                nullptr
 #define DEFAULT_X                           0
 #define DEFAULT_Y                           0
 #define DEFAULT_WIDTH                       100
@@ -119,15 +119,15 @@ Sequence< Type > SAL_CALL BaseControl::getTypes() throw( RuntimeException, std::
     // Optimize this method !
     // We initialize a static variable only one time. And we don't must use a mutex at every call!
     // For the first call; pTypeCollection is NULL - for the second call pTypeCollection is different from NULL!
-    static OTypeCollection* pTypeCollection = NULL;
+    static OTypeCollection* pTypeCollection = nullptr;
 
-    if ( pTypeCollection == NULL )
+    if ( pTypeCollection == nullptr )
     {
         // Ready for multithreading; get global mutex for first call of this method only! see before
         MutexGuard aGuard( Mutex::getGlobalMutex() );
 
         // Control these pointer again ... it can be, that another instance will be faster then these!
-        if ( pTypeCollection == NULL )
+        if ( pTypeCollection == nullptr )
         {
             // Create a static typecollection ...
             static OTypeCollection aTypeCollection( cppu::UnoType<XPaintListener>::get(),
@@ -220,7 +220,7 @@ void SAL_CALL BaseControl::dispose() throw( RuntimeException, std::exception )
     // Ready for multithreading
     MutexGuard aGuard( m_aMutex );
 
-    if ( m_pMultiplexer != NULL )
+    if ( m_pMultiplexer != nullptr )
     {
         // to all other paint, focus, etc.
         m_pMultiplexer->disposeAndClear();
@@ -282,17 +282,17 @@ void SAL_CALL BaseControl::createPeer(  const   Reference< XToolkit >&      xToo
         if ( !xLocalToolkit.is() )
         {
             // but first create well known toolkit, if it not exist
-            xLocalToolkit = Reference< XToolkit > ( Toolkit::create(m_xComponentContext), UNO_QUERY_THROW );
+            xLocalToolkit.set( Toolkit::create(m_xComponentContext), UNO_QUERY_THROW );
         }
         m_xPeer         = xLocalToolkit->createWindow( *pDescriptor );
-        m_xPeerWindow   = Reference< XWindow >( m_xPeer, UNO_QUERY );
+        m_xPeerWindow.set( m_xPeer, UNO_QUERY );
 
         // don't forget to release the memory!
         delete pDescriptor;
 
         if ( m_xPeerWindow.is() )
         {
-            if ( m_pMultiplexer != NULL )
+            if ( m_pMultiplexer != nullptr )
             {
                 m_pMultiplexer->setPeer( m_xPeerWindow );
             }
@@ -718,7 +718,7 @@ const OUString BaseControl::impl_getStaticImplementationName()
 
 WindowDescriptor* BaseControl::impl_getWindowDescriptor( const Reference< XWindowPeer >& xParentPeer )
 {
-    // - used from "createPeer()" to set the values of an ::com::sun::star::awt::WindowDescriptor !!!
+    // - used from "createPeer()" to set the values of an css::awt::WindowDescriptor !!!
     // - if you will change the descriptor-values, you must override this virtuell function
     // - the caller must release the memory for this dynamical descriptor !!!
 
@@ -773,7 +773,7 @@ void BaseControl::impl_releasePeer()
         m_xPeerWindow.clear();
         m_xPeer.clear();
 
-        if ( m_pMultiplexer != NULL )
+        if ( m_pMultiplexer != nullptr )
         {
             // take changes on multiplexer
             m_pMultiplexer->setPeer( Reference< XWindow >() );
@@ -785,10 +785,10 @@ void BaseControl::impl_releasePeer()
 
 OMRCListenerMultiplexerHelper* BaseControl::impl_getMultiplexer()
 {
-    if ( m_pMultiplexer == NULL )
+    if ( m_pMultiplexer == nullptr )
     {
         m_pMultiplexer = new OMRCListenerMultiplexerHelper( static_cast<XWindow*>(this), m_xPeerWindow );
-        m_xMultiplexer = Reference< XInterface >( static_cast<OWeakObject*>(m_pMultiplexer), UNO_QUERY );
+        m_xMultiplexer.set( static_cast<OWeakObject*>(m_pMultiplexer), UNO_QUERY );
     }
 
     return m_pMultiplexer;

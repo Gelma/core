@@ -61,7 +61,7 @@ protected:
     /**
      * Blacklist handling
      */
-    bool mustTestImportOf(const char* filename) const SAL_OVERRIDE {
+    bool mustTestImportOf(const char* filename) const override {
         const char* aBlacklist[] = {
             "math-escape.docx",
             "math-mso2k7.docx"
@@ -188,7 +188,7 @@ DECLARE_OOXMLEXPORT_TEST(testStyleInheritance, "style-inheritance.docx")
     // This was 0, as export of w:outlineLvl was missing.
     CPPUNIT_ASSERT_EQUAL(sal_Int32(1), getProperty<sal_Int32>(properties, "OutlineLevel"));
 
-    properties = uno::Reference< beans::XPropertySet >(paragraphStyles->getByName("Heading 11"), uno::UNO_QUERY);
+    properties.set(paragraphStyles->getByName("Heading 11"), uno::UNO_QUERY);
     CPPUNIT_ASSERT_EQUAL(OUString("Heading 1"), getProperty<OUString>(properties, "FollowStyle"));
 
     // Make sure style #2 is Heading 1.
@@ -393,7 +393,7 @@ DECLARE_OOXMLEXPORT_TEST(testSmartart, "smartart.docx")
     uno::Reference<text::XTextDocument> xTextDocument(mxComponent, uno::UNO_QUERY);
     uno::Reference<beans::XPropertySet> xTextDocumentPropertySet(xTextDocument, uno::UNO_QUERY);
     uno::Sequence<beans::PropertyValue> aGrabBag(0);
-    xTextDocumentPropertySet->getPropertyValue(OUString("InteropGrabBag")) >>= aGrabBag;
+    xTextDocumentPropertySet->getPropertyValue("InteropGrabBag") >>= aGrabBag;
     CPPUNIT_ASSERT(aGrabBag.hasElements()); // Grab Bag not empty
 
     bool bTheme = false;
@@ -417,7 +417,7 @@ DECLARE_OOXMLEXPORT_TEST(testSmartart, "smartart.docx")
     CPPUNIT_ASSERT_EQUAL(sal_Int32(1), xGroup->getCount()); // 1 rendered bitmap from the original shapes
 
     uno::Reference<beans::XPropertySet> xGroupPropertySet(getShape(1), uno::UNO_QUERY);
-    xGroupPropertySet->getPropertyValue(OUString("InteropGrabBag")) >>= aGrabBag;
+    xGroupPropertySet->getPropertyValue("InteropGrabBag") >>= aGrabBag;
     CPPUNIT_ASSERT(aGrabBag.hasElements()); // Grab Bag not empty
 
     bool bData = false, bLayout = false, bQStyle = false, bColor = false, bDrawing = false;
@@ -501,87 +501,87 @@ DECLARE_OOXMLEXPORT_TEST(testMultiColumnLineSeparator, "multi-column-line-separa
 
 DECLARE_OOXMLEXPORT_TEST(testCustomXmlGrabBag, "customxml.docx")
 {
-   // The problem was that item[n].xml and itemProps[n].xml and .rels files for item[n].xml
-   // files were missing from docx file after saving file.
-   // This test case tests whether customxml files grabbagged properly in correct object.
+    // The problem was that item[n].xml and itemProps[n].xml and .rels files for item[n].xml
+    // files were missing from docx file after saving file.
+    // This test case tests whether customxml files grabbagged properly in correct object.
 
-   uno::Reference<text::XTextDocument> xTextDocument(mxComponent, uno::UNO_QUERY);
-   uno::Reference<beans::XPropertySet> xTextDocumentPropertySet(xTextDocument, uno::UNO_QUERY);
-   uno::Sequence<beans::PropertyValue> aGrabBag(0);
-   xTextDocumentPropertySet->getPropertyValue(OUString("InteropGrabBag")) >>= aGrabBag;
-   CPPUNIT_ASSERT(aGrabBag.hasElements()); // Grab Bag not empty
-   bool CustomXml = false;
-   for(int i = 0; i < aGrabBag.getLength(); ++i)
-   {
-       if (aGrabBag[i].Name == "OOXCustomXml" || aGrabBag[i].Name == "OOXCustomXmlProps")
-       {
-           CustomXml = true;
-           uno::Reference<xml::dom::XDocument> aCustomXmlDom;
-           uno::Sequence<uno::Reference<xml::dom::XDocument> > aCustomXmlDomList;
-           CPPUNIT_ASSERT(aGrabBag[i].Value >>= aCustomXmlDomList); // PropertyValue of proper type
-           sal_Int32 length = aCustomXmlDomList.getLength();
-           CPPUNIT_ASSERT_EQUAL(sal_Int32(1), length);
-           aCustomXmlDom = aCustomXmlDomList[0];
-           CPPUNIT_ASSERT(aCustomXmlDom.get()); // Reference not empty
-       }
-   }
-   CPPUNIT_ASSERT(CustomXml); // Grab Bag has all the expected elements
+    uno::Reference<text::XTextDocument> xTextDocument(mxComponent, uno::UNO_QUERY);
+    uno::Reference<beans::XPropertySet> xTextDocumentPropertySet(xTextDocument, uno::UNO_QUERY);
+    uno::Sequence<beans::PropertyValue> aGrabBag(0);
+    xTextDocumentPropertySet->getPropertyValue("InteropGrabBag") >>= aGrabBag;
+    CPPUNIT_ASSERT(aGrabBag.hasElements()); // Grab Bag not empty
+    bool CustomXml = false;
+    for(int i = 0; i < aGrabBag.getLength(); ++i)
+    {
+        if (aGrabBag[i].Name == "OOXCustomXml" || aGrabBag[i].Name == "OOXCustomXmlProps")
+        {
+            CustomXml = true;
+            uno::Reference<xml::dom::XDocument> aCustomXmlDom;
+            uno::Sequence<uno::Reference<xml::dom::XDocument> > aCustomXmlDomList;
+            CPPUNIT_ASSERT(aGrabBag[i].Value >>= aCustomXmlDomList); // PropertyValue of proper type
+            sal_Int32 length = aCustomXmlDomList.getLength();
+            CPPUNIT_ASSERT_EQUAL(sal_Int32(1), length);
+            aCustomXmlDom = aCustomXmlDomList[0];
+            CPPUNIT_ASSERT(aCustomXmlDom.get()); // Reference not empty
+        }
+    }
+    CPPUNIT_ASSERT(CustomXml); // Grab Bag has all the expected elements
 }
 
 DECLARE_OOXMLEXPORT_TEST(testActiveXGrabBag, "activex.docx")
 {
-   // The problem was that activeX.xml files were missing from docx file after saving file.
-   // This test case tests whether activex files grabbagged properly in correct object.
+    // The problem was that activeX.xml files were missing from docx file after saving file.
+    // This test case tests whether activex files grabbagged properly in correct object.
 
-   uno::Reference<text::XTextDocument> xTextDocument(mxComponent, uno::UNO_QUERY);
-   uno::Reference<beans::XPropertySet> xTextDocumentPropertySet(xTextDocument, uno::UNO_QUERY);
-   uno::Sequence<beans::PropertyValue> aGrabBag(0);
-   xTextDocumentPropertySet->getPropertyValue(OUString("InteropGrabBag")) >>= aGrabBag;
-   CPPUNIT_ASSERT(aGrabBag.hasElements()); // Grab Bag not empty
-   bool bActiveX = false;
-   for(int i = 0; i < aGrabBag.getLength(); ++i)
-   {
-       if (aGrabBag[i].Name == "OOXActiveX")
-       {
-           bActiveX = true;
-           uno::Reference<xml::dom::XDocument> aActiveXDom;
-           uno::Sequence<uno::Reference<xml::dom::XDocument> > aActiveXDomList;
-           CPPUNIT_ASSERT(aGrabBag[i].Value >>= aActiveXDomList); // PropertyValue of proper type
-           sal_Int32 length = aActiveXDomList.getLength();
-           CPPUNIT_ASSERT_EQUAL(sal_Int32(5), length);
-           aActiveXDom = aActiveXDomList[0];
-           CPPUNIT_ASSERT(aActiveXDom.get()); // Reference not empty
-       }
-   }
-   CPPUNIT_ASSERT(bActiveX); // Grab Bag has all the expected elements
+    uno::Reference<text::XTextDocument> xTextDocument(mxComponent, uno::UNO_QUERY);
+    uno::Reference<beans::XPropertySet> xTextDocumentPropertySet(xTextDocument, uno::UNO_QUERY);
+    uno::Sequence<beans::PropertyValue> aGrabBag(0);
+    xTextDocumentPropertySet->getPropertyValue("InteropGrabBag") >>= aGrabBag;
+    CPPUNIT_ASSERT(aGrabBag.hasElements()); // Grab Bag not empty
+    bool bActiveX = false;
+    for(int i = 0; i < aGrabBag.getLength(); ++i)
+    {
+        if (aGrabBag[i].Name == "OOXActiveX")
+        {
+            bActiveX = true;
+            uno::Reference<xml::dom::XDocument> aActiveXDom;
+            uno::Sequence<uno::Reference<xml::dom::XDocument> > aActiveXDomList;
+            CPPUNIT_ASSERT(aGrabBag[i].Value >>= aActiveXDomList); // PropertyValue of proper type
+            sal_Int32 length = aActiveXDomList.getLength();
+            CPPUNIT_ASSERT_EQUAL(sal_Int32(5), length);
+            aActiveXDom = aActiveXDomList[0];
+            CPPUNIT_ASSERT(aActiveXDom.get()); // Reference not empty
+        }
+    }
+    CPPUNIT_ASSERT(bActiveX); // Grab Bag has all the expected elements
 }
 
 DECLARE_OOXMLEXPORT_TEST(testActiveXBinGrabBag, "activexbin.docx")
 {
-   // The problem was that activeX.bin files were missing from docx file after saving file.
-   // This test case tests whether activex bin files grabbagged properly in correct object.
+    // The problem was that activeX.bin files were missing from docx file after saving file.
+    // This test case tests whether activex bin files grabbagged properly in correct object.
 
-   uno::Reference<text::XTextDocument> xTextDocument(mxComponent, uno::UNO_QUERY);
-   uno::Reference<beans::XPropertySet> xTextDocumentPropertySet(xTextDocument, uno::UNO_QUERY);
-   uno::Sequence<beans::PropertyValue> aGrabBag(0);
-   xTextDocumentPropertySet->getPropertyValue(OUString("InteropGrabBag")) >>= aGrabBag;
-   CPPUNIT_ASSERT(aGrabBag.hasElements()); // Grab Bag not empty
-   bool bActiveX = false;
-   for(int i = 0; i < aGrabBag.getLength(); ++i)
-   {
-       if (aGrabBag[i].Name == "OOXActiveXBin")
-       {
-           bActiveX = true;
-           uno::Reference<io::XInputStream> aActiveXBin;
-           uno::Sequence<uno::Reference<io::XInputStream> > aActiveXBinList;
-           CPPUNIT_ASSERT(aGrabBag[i].Value >>= aActiveXBinList); // PropertyValue of proper type
-           sal_Int32 length = aActiveXBinList.getLength();
-           CPPUNIT_ASSERT_EQUAL(sal_Int32(5), length);
-           aActiveXBin = aActiveXBinList[0];
-           CPPUNIT_ASSERT(aActiveXBin.get()); // Reference not empty
-       }
-   }
-   CPPUNIT_ASSERT(bActiveX); // Grab Bag has all the expected elements
+    uno::Reference<text::XTextDocument> xTextDocument(mxComponent, uno::UNO_QUERY);
+    uno::Reference<beans::XPropertySet> xTextDocumentPropertySet(xTextDocument, uno::UNO_QUERY);
+    uno::Sequence<beans::PropertyValue> aGrabBag(0);
+    xTextDocumentPropertySet->getPropertyValue("InteropGrabBag") >>= aGrabBag;
+    CPPUNIT_ASSERT(aGrabBag.hasElements()); // Grab Bag not empty
+    bool bActiveX = false;
+    for(int i = 0; i < aGrabBag.getLength(); ++i)
+    {
+        if (aGrabBag[i].Name == "OOXActiveXBin")
+        {
+            bActiveX = true;
+            uno::Reference<io::XInputStream> aActiveXBin;
+            uno::Sequence<uno::Reference<io::XInputStream> > aActiveXBinList;
+            CPPUNIT_ASSERT(aGrabBag[i].Value >>= aActiveXBinList); // PropertyValue of proper type
+            sal_Int32 length = aActiveXBinList.getLength();
+            CPPUNIT_ASSERT_EQUAL(sal_Int32(5), length);
+            aActiveXBin = aActiveXBinList[0];
+            CPPUNIT_ASSERT(aActiveXBin.get()); // Reference not empty
+        }
+    }
+    CPPUNIT_ASSERT(bActiveX); // Grab Bag has all the expected elements
 }
 
 DECLARE_OOXMLEXPORT_TEST(testFdo69644, "fdo69644.docx")
@@ -613,7 +613,7 @@ DECLARE_OOXMLEXPORT_TEST(testImageCrop, "ImageCrop.docx")
 {
     uno::Reference<drawing::XShape> image = getShape(1);
     uno::Reference<beans::XPropertySet> imageProperties(image, uno::UNO_QUERY);
-    ::com::sun::star::text::GraphicCrop aGraphicCropStruct;
+    css::text::GraphicCrop aGraphicCropStruct;
 
     imageProperties->getPropertyValue( "GraphicCrop" ) >>= aGraphicCropStruct;
 
@@ -742,7 +742,7 @@ DECLARE_OOXMLEXPORT_TEST(testGIFImageCrop, "test_GIF_ImageCrop.docx")
 #if !defined(MACOSX)
     uno::Reference<drawing::XShape> image = getShape(1);
     uno::Reference<beans::XPropertySet> imageProperties(image, uno::UNO_QUERY);
-    ::com::sun::star::text::GraphicCrop aGraphicCropStruct;
+    css::text::GraphicCrop aGraphicCropStruct;
 
     imageProperties->getPropertyValue( "GraphicCrop" ) >>= aGraphicCropStruct;
 
@@ -763,7 +763,7 @@ DECLARE_OOXMLEXPORT_TEST(testPNGImageCrop, "test_PNG_ImageCrop.docx")
      */
     uno::Reference<drawing::XShape> image = getShape(1);
     uno::Reference<beans::XPropertySet> imageProperties(image, uno::UNO_QUERY);
-    ::com::sun::star::text::GraphicCrop aGraphicCropStruct;
+    css::text::GraphicCrop aGraphicCropStruct;
 
     imageProperties->getPropertyValue( "GraphicCrop" ) >>= aGraphicCropStruct;
 
@@ -984,6 +984,9 @@ DECLARE_OOXMLEXPORT_TEST(testFileOpenInputOutputError,"floatingtbl_with_formula.
      if (!pXmlDoc)
          return;
       assertXPath(pXmlDoc, "/w:document/w:body/w:p[1]/w:pPr/w:pStyle", "val", "Normal");
+
+    // let's also assert that the formula was exported properly
+    assertXPathContent(pXmlDoc, "//wps:txbx/w:txbxContent/w:tbl/w:tr/w:tc[2]/w:p/m:oMath/m:sSubSup/m:e/m:r/m:t", OUString::fromUtf8("\xcf\x83"));
 }
 
 #endif

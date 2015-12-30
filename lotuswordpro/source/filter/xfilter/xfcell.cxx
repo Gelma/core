@@ -58,14 +58,17 @@
  * Table cell.
  ************************************************************************/
 #include "xfcell.hxx"
+
+#include <stdexcept>
+
 #include "xfparagraph.hxx"
 #include "xftable.hxx"
 #include "xfrow.hxx"
 
 XFCell::XFCell()
 {
-    m_pSubTable = NULL;
-    m_pOwnerRow = NULL;
+    m_pSubTable = nullptr;
+    m_pOwnerRow = nullptr;
     m_nCol = 0;
     m_nColSpaned = 1;
     m_nRepeated = 0;
@@ -90,9 +93,13 @@ void    XFCell::Add(XFContent *pContent)
         assert(false);
         return;
     }
+    if (!pContent)
+    {
+        throw std::runtime_error("no content");
+    }
     if( pContent->GetContentType() == enumXFContentTable )
     {
-        XFTable *pTable = static_cast<XFTable*>(pContent);
+        XFTable *pTable = dynamic_cast<XFTable*>(pContent);
         if( !pTable )
             return;
         //the sub table will fill all the cell, there can't be other contents.

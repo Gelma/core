@@ -80,7 +80,9 @@ public:
     sal_uInt32              GetChildWindowId( sal_uInt16 nNo ) const;
     sal_uInt16              GetChildWindowCount() const;
     void                    RegisterPopupMenu( const ResId& );
+    void                    RegisterPopupMenu( const OUString& );
     const ResId&            GetPopupMenuResId() const;
+    const OUString&         GetPopupMenuName() const;
     const ResId&            GetStatusBarResId() const;
 
     void                    Register( SfxModule* );
@@ -104,7 +106,7 @@ inline sal_uInt16 SfxInterface::Count() const
 
 inline SfxSlot* SfxInterface::operator[]( sal_uInt16 nPos ) const
 {
-    return nPos < nCount? pSlots+nPos: 0;
+    return nPos < nCount? pSlots+nPos: nullptr;
 }
 
 #endif

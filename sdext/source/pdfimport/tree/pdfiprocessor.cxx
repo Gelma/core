@@ -53,14 +53,13 @@ namespace pdfi
 {
 
  PDFIProcessor::PDFIProcessor( const uno::Reference< task::XStatusIndicator >& xStat ,
-            com::sun::star::uno::Reference< com::sun::star::uno::XComponentContext >  xContext) :
+            css::uno::Reference< css::uno::XComponentContext >  xContext) :
 
     m_xContext(xContext),
     prevCharWidth(0),
-    m_pElFactory( new ElementFactory() ),
     m_pDocument( ElementFactory::createDocumentElement() ),
-    m_pCurPage(0),
-    m_pCurElement(0),
+    m_pCurPage(nullptr),
+    m_pCurElement(nullptr),
     m_nNextFontId( 1 ),
     m_aIdToFont(),
     m_aFontToId(),
@@ -528,7 +527,7 @@ void PDFIProcessor::startPage( const geometry::RealSize2D& rSize )
     if( m_xStatusIndicator.is() )
     {
         if( nNextPageNr == 1 )
-            startIndicator( OUString( " " ) );
+            startIndicator( " " );
         m_xStatusIndicator->setValue( nNextPageNr );
     }
     m_pCurPage = ElementFactory::createPageElement(m_pDocument.get(), nNextPageNr);
@@ -550,7 +549,7 @@ void PDFIProcessor::emit( XmlEmitter&               rEmitter,
     ElementTreeVisitorSharedPtr optimizingVisitor(
         rVisitorFactory.createOptimizingVisitor(*this));
     // FIXME: localization
-    startIndicator( OUString( " " ) );
+    startIndicator( " " );
     m_pDocument->visitedBy( *optimizingVisitor, std::list<Element*>::const_iterator());
 
 #if OSL_DEBUG_LEVEL > 1

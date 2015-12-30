@@ -73,8 +73,7 @@ namespace comp_DialogModelProvider
 
     uno::Sequence< OUString > SAL_CALL _getSupportedServiceNames()
     {
-        uno::Sequence< OUString > s(1);
-        s[0] = "com.sun.star.awt.UnoControlDialogModelProvider";
+        uno::Sequence< OUString > s { "com.sun.star.awt.UnoControlDialogModelProvider" };
         return s;
     }
 
@@ -97,7 +96,7 @@ static const char aResourceResolverPropName[] = "ResourceResolver";
         aInetObj.removeSegment();
         OUString aDlgLocation = aInetObj.GetMainURL( INetURLObject::NO_DECODE );
         bool bReadOnly = true;
-        ::com::sun::star::lang::Locale aLocale = Application::GetSettings().GetUILanguageTag().getLocale();
+        css::lang::Locale aLocale = Application::GetSettings().GetUILanguageTag().getLocale();
         OUString aComment;
 
         Sequence<Any> aArgs( 6 );
@@ -112,7 +111,7 @@ static const char aResourceResolverPropName[] = "ResourceResolver";
         Reference< XMultiComponentFactory > xSMgr_( i_xContext->getServiceManager(), UNO_QUERY_THROW );
         // TODO: Ctor
         Reference< resource::XStringResourceManager > xStringResourceManager( xSMgr_->createInstanceWithContext
-            ( OUString("com.sun.star.resource.StringResourceWithLocation"),
+            ( "com.sun.star.resource.StringResourceWithLocation",
                 i_xContext ), UNO_QUERY );
         if( xStringResourceManager.is() )
         {
@@ -136,9 +135,8 @@ static const char aResourceResolverPropName[] = "ResourceResolver";
     {
         Reference< container::XNameContainer > xDialogModel(  lcl_createControlModel(i_xContext) );
 
-        OUString aDlgSrcUrlPropName( "DialogSourceURL"  );
         Reference< beans::XPropertySet > xDlgPropSet( xDialogModel, UNO_QUERY );
-        xDlgPropSet->setPropertyValue( aDlgSrcUrlPropName, aDialogSourceURL );
+        xDlgPropSet->setPropertyValue( "DialogSourceURL", aDialogSourceURL );
 
         // #TODO we really need to detect the source of the Dialog, is it
         // the dialog. E.g. if the dialog was created from basic ( then we just
@@ -187,7 +185,7 @@ static const char aResourceResolverPropName[] = "ResourceResolver";
 
     ::osl::Mutex& getMutex()
     {
-        static ::osl::Mutex* s_pMutex = 0;
+        static ::osl::Mutex* s_pMutex = nullptr;
         if ( !s_pMutex )
         {
             ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );
@@ -207,7 +205,7 @@ static const char aResourceResolverPropName[] = "ResourceResolver";
 
     DialogProviderImpl::DialogProviderImpl( const Reference< XComponentContext >& rxContext )
         :m_xContext( rxContext )
-        ,m_xModel( 0 )
+        ,m_xModel( nullptr )
     {
     }
 
@@ -284,7 +282,7 @@ static const char aResourceResolverPropName[] = "ResourceResolver";
         Reference< uri::XUriReference > uriRef;
         for (;;)
         {
-            uriRef = Reference< uri::XUriReference >( xFac->parse( aURL ), UNO_QUERY );
+            uriRef.set( xFac->parse( aURL ), UNO_QUERY );
             if ( !uriRef.is() )
             {
                 OUString errorMsg("DialogProviderImpl::getDialogModel: failed to parse URI: ");
@@ -325,8 +323,7 @@ static const char aResourceResolverPropName[] = "ResourceResolver";
             if ( nIndex != -1 )
                 sDlgName = sDescription.getToken( 0, (sal_Unicode)'.', nIndex );
 
-            OUString sLocation = sfUri->getParameter(
-                OUString("location") );
+            OUString sLocation = sfUri->getParameter( "location" );
 
 
             // get dialog library container
@@ -335,7 +332,7 @@ static const char aResourceResolverPropName[] = "ResourceResolver";
 
             if ( sLocation == "application" )
             {
-                xLibContainer = Reference< XLibraryContainer >( SfxGetpApp()->GetDialogContainer(), UNO_QUERY );
+                xLibContainer.set( SfxGetpApp()->GetDialogContainer(), UNO_QUERY );
             }
             else if ( sLocation == "document" )
             {
@@ -448,7 +445,7 @@ static const char aResourceResolverPropName[] = "ResourceResolver";
 
             Reference< container::XNameContainer > xDialogModel( createDialogModel( xInput , xStringResourceManager, aDialogSourceURLAny  ), UNO_QUERY_THROW);
 
-            xCtrlModel = Reference< XControlModel >( xDialogModel, UNO_QUERY );
+            xCtrlModel.set( xDialogModel, UNO_QUERY );
         }
         return xCtrlModel;
     }
@@ -486,7 +483,7 @@ static const char aResourceResolverPropName[] = "ResourceResolver";
                 {
                     Reference< frame::XFrame > xFrame( xController->getFrame(), UNO_QUERY );
                     if ( xFrame.is() )
-                        xPeer = Reference< XWindowPeer>( xFrame->getContainerWindow(), UNO_QUERY );
+                        xPeer.set( xFrame->getContainerWindow(), UNO_QUERY );
                 }
             }
 
@@ -520,15 +517,15 @@ static const char aResourceResolverPropName[] = "ResourceResolver";
                 Reference< XInterface >* pObjects = aObjects.getArray();
                 for ( sal_Int32 i = 0; i < nControlCount; ++i )
                 {
-                    pObjects[i] = Reference<XInterface>( pControls[i], UNO_QUERY );
+                    pObjects[i].set( pControls[i], UNO_QUERY );
                 }
 
                 // also add the dialog control itself to the sequence
-                pObjects[nControlCount] = Reference<XInterface>( rxControl, UNO_QUERY );
+                pObjects[nControlCount].set( rxControl, UNO_QUERY );
 
                 Reference< XScriptEventsAttacher > xScriptEventsAttacher = new DialogEventsAttacherImpl
                     ( m_xContext, m_xModel, rxControl, rxHandler, rxIntrospectionAccess,
-                      bDialogProviderMode, ( m_BasicInfo.get() ? m_BasicInfo->mxBasicRTLListener : NULL ), msDialogLibName );
+                      bDialogProviderMode, ( m_BasicInfo.get() ? m_BasicInfo->mxBasicRTLListener : nullptr ), msDialogLibName );
 
                 Any aHelper;
                 xScriptEventsAttacher->attachEvents( aObjects, Reference< XScriptListener >(), aHelper );
@@ -685,10 +682,9 @@ static const char aResourceResolverPropName[] = "ResourceResolver";
                 }
             }
 
-            xCtrl = Reference< XControl >( createDialogControl( xCtrlMod, xParent ) );
+            xCtrl.set( createDialogControl( xCtrlMod, xParent ) );
             if ( xCtrl.is() )
             {
-                //xDialog = Reference< XDialog >( xCtrl, UNO_QUERY );
                 Reference< XIntrospectionAccess > xIntrospectionAccess = inspectHandler( xHandler );
                 attachControlEvents( xCtrl, xHandler, xIntrospectionAccess, bDialogProviderMode );
             }
@@ -780,9 +776,9 @@ static const char aResourceResolverPropName[] = "ResourceResolver";
 
     static struct ::cppu::ImplementationEntry s_component_entries [] =
     {
-        {create_DialogProviderImpl, getImplementationName_DialogProviderImpl,getSupportedServiceNames_DialogProviderImpl, ::cppu::createSingleComponentFactory,0, 0},
-        { &comp_DialogModelProvider::_create,&comp_DialogModelProvider::_getImplementationName,&comp_DialogModelProvider::_getSupportedServiceNames,&::cppu::createSingleComponentFactory, 0, 0 },
-        { 0, 0, 0, 0, 0, 0 }
+        {create_DialogProviderImpl, getImplementationName_DialogProviderImpl,getSupportedServiceNames_DialogProviderImpl, ::cppu::createSingleComponentFactory,nullptr, 0},
+        { &comp_DialogModelProvider::_create,&comp_DialogModelProvider::_getImplementationName,&comp_DialogModelProvider::_getSupportedServiceNames,&::cppu::createSingleComponentFactory, nullptr, 0 },
+        { nullptr, nullptr, nullptr, nullptr, nullptr, 0 }
     };
 
 

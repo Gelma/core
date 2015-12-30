@@ -68,16 +68,16 @@ using namespace com::sun::star::xml;
 using namespace com::sun::star::xml::sax;
 
 
-class GlobalEventListenerImpl : public ::cppu::WeakImplHelper< com::sun::star::document::XDocumentEventListener >
+class GlobalEventListenerImpl : public ::cppu::WeakImplHelper< css::document::XDocumentEventListener >
 {
 public:
-    GlobalEventListenerImpl( XMLFilterTestDialog* pDialog );
+    explicit GlobalEventListenerImpl( XMLFilterTestDialog* pDialog );
 
     // XDocumentEventListener
-    virtual void SAL_CALL documentEventOccured( const com::sun::star::document::DocumentEvent& Event ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL documentEventOccured( const css::document::DocumentEvent& Event ) throw (RuntimeException, std::exception) override;
 
     // lang::XEventListener
-    virtual void SAL_CALL disposing( const com::sun::star::lang::EventObject& Source ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing( const css::lang::EventObject& Source ) throw (RuntimeException, std::exception) override;
 private:
     VclPtr<XMLFilterTestDialog> mpDialog;
 };
@@ -87,7 +87,7 @@ GlobalEventListenerImpl::GlobalEventListenerImpl( XMLFilterTestDialog* pDialog )
 {
 }
 
-void SAL_CALL GlobalEventListenerImpl::documentEventOccured( const com::sun::star::document::DocumentEvent& Event ) throw (RuntimeException, std::exception)
+void SAL_CALL GlobalEventListenerImpl::documentEventOccured( const css::document::DocumentEvent& Event ) throw (RuntimeException, std::exception)
 {
     ::SolarMutexGuard aGuard;
     if( Event.EventName == "OnFocus" || Event.EventName == "OnUnload" )
@@ -97,7 +97,7 @@ void SAL_CALL GlobalEventListenerImpl::documentEventOccured( const com::sun::sta
     }
 }
 
-void SAL_CALL GlobalEventListenerImpl::disposing( const com::sun::star::lang::EventObject& /* Source */ ) throw (RuntimeException, std::exception)
+void SAL_CALL GlobalEventListenerImpl::disposing( const css::lang::EventObject& /* Source */ ) throw (RuntimeException, std::exception)
 {
 }
 
@@ -137,7 +137,7 @@ XMLFilterTestDialog::XMLFilterTestDialog(vcl::Window* pParent,
     const Reference<XComponentContext>& rxContext)
     : ModalDialog(pParent, "TestXMLFilterDialog", "filter/ui/testxmlfilter.ui")
     , mxContext(rxContext)
-    , m_pFilterInfo(NULL)
+    , m_pFilterInfo(nullptr)
 {
     get(m_pExport, "export");
     get(m_pFTExportXSLTFile, "exportxsltfile");
@@ -278,7 +278,7 @@ void XMLFilterTestDialog::updateCurrentDocumentButtonState( Reference< XComponen
 void XMLFilterTestDialog::initDialog()
 {
     DBG_ASSERT( m_pFilterInfo, "i need a filter I can test!" );
-    if( NULL == m_pFilterInfo )
+    if( nullptr == m_pFilterInfo )
         return;
 
     OUString aTitle( m_sDialogTitle );
@@ -312,7 +312,7 @@ void XMLFilterTestDialog::onExportBrowse()
     {
         // Open Fileopen-Dialog
            ::sfx2::FileDialogHelper aDlg(
-            com::sun::star::ui::dialogs::TemplateDescription::FILEOPEN_SIMPLE,
+            css::ui::dialogs::TemplateDescription::FILEOPEN_SIMPLE,
             0 );
 
         Reference< XNameAccess > xFilterContainer( mxContext->getServiceManager()->createInstanceWithContext( "com.sun.star.document.FilterFactory", mxContext ), UNO_QUERY );
@@ -417,7 +417,7 @@ void XMLFilterTestDialog::onExportBrowse()
             m_sExportRecentFile = aDlg.GetPath();
 
             Reference< XDesktop2 > xLoader = Desktop::create( mxContext );
-            Reference< XInteractionHandler2 > xInter = InteractionHandler::createWithParent(mxContext, 0);
+            Reference< XInteractionHandler2 > xInter = InteractionHandler::createWithParent(mxContext, nullptr);
             OUString aFrame( "_default" );
             Sequence< PropertyValue > aArguments(1);
             aArguments[0].Name = "InteractionHandler";
@@ -494,8 +494,8 @@ void XMLFilterTestDialog::doExport( Reference< XComponent > xComp )
                     {
                         try
                         {
-                            xGrfResolver = Reference< XGraphicObjectResolver >::query( xDocFac->createInstance("com.sun.star.document.ExportGraphicObjectResolver") );
-                            xObjectResolver = Reference< XEmbeddedObjectResolver >::query( xDocFac->createInstance("com.sun.star.document.ExportEmbeddedObjectResolver") );
+                            xGrfResolver.set( xDocFac->createInstance("com.sun.star.document.ExportGraphicObjectResolver"), UNO_QUERY );
+                            xObjectResolver.set( xDocFac->createInstance("com.sun.star.document.ExportEmbeddedObjectResolver"), UNO_QUERY );
                         }
                         catch( const Exception& )
                         {
@@ -547,7 +547,7 @@ void XMLFilterTestDialog::onImportBrowse()
 {
     // Open Fileopen-Dialog
        ::sfx2::FileDialogHelper aDlg(
-        com::sun::star::ui::dialogs::TemplateDescription::FILEOPEN_SIMPLE, 0 );
+        css::ui::dialogs::TemplateDescription::FILEOPEN_SIMPLE, 0 );
     OUString aFilterName( m_pFilterInfo->maInterfaceName );
     OUString aExtensions;
 
@@ -599,7 +599,7 @@ void XMLFilterTestDialog::import( const OUString& rURL )
     try
     {
         Reference< XDesktop2 > xLoader = Desktop::create( mxContext );
-        Reference< XInteractionHandler2 > xInter = InteractionHandler::createWithParent(mxContext, 0);
+        Reference< XInteractionHandler2 > xInter = InteractionHandler::createWithParent(mxContext, nullptr);
 
         OUString aFrame( "_default" );
         Sequence< PropertyValue > aArguments(2);

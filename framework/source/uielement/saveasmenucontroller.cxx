@@ -17,81 +17,52 @@
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
 
-#include <classes/resource.hrc>
-#include <classes/fwkresid.hxx>
-
 #include <cppuhelper/supportsservice.hxx>
-#include <osl/file.hxx>
-#include <osl/mutex.hxx>
-#include <rtl/ref.hxx>
 #include <svtools/popupmenucontrollerbase.hxx>
-#include <tools/urlobj.hxx>
-#include <unotools/historyoptions.hxx>
 #include <vcl/menu.hxx>
 #include <vcl/svapp.hxx>
 
 using namespace css;
 using namespace com::sun::star::uno;
-using namespace com::sun::star::lang;
 using namespace com::sun::star::frame;
-using namespace com::sun::star::beans;
-using namespace com::sun::star::util;
-using namespace framework;
 
 namespace {
 
-static const char CMD_SAVE_REMOTE[]  = ".uno:SaveAsRemote";
-
 class SaveAsMenuController :  public svt::PopupMenuControllerBase
 {
-    using svt::PopupMenuControllerBase::disposing;
-
 public:
-    SaveAsMenuController( const uno::Reference< uno::XComponentContext >& xContext );
+    explicit SaveAsMenuController( const uno::Reference< uno::XComponentContext >& xContext );
     virtual ~SaveAsMenuController();
 
     // XServiceInfo
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return OUString("com.sun.star.comp.framework.SaveAsMenuController");
     }
 
     virtual sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return cppu::supportsService(this, ServiceName);
     }
 
     virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
-        css::uno::Sequence< OUString > aSeq(1);
-        aSeq[0] = "com.sun.star.frame.PopupMenuController";
+        css::uno::Sequence< OUString > aSeq { "com.sun.star.frame.PopupMenuController" };
         return aSeq;
     }
 
     // XStatusListener
-    virtual void SAL_CALL statusChanged( const frame::FeatureStateEvent& Event ) throw ( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-
-    // XMenuListener
-    virtual void SAL_CALL itemSelected( const awt::MenuEvent& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL itemActivated( const awt::MenuEvent& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-
-    // XEventListener
-    virtual void SAL_CALL disposing( const com::sun::star::lang::EventObject& Source ) throw ( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL statusChanged( const frame::FeatureStateEvent& Event ) throw ( uno::RuntimeException, std::exception ) override;
 
 private:
-    virtual void impl_setPopupMenu() SAL_OVERRIDE;
-
-    void fillPopupMenu( com::sun::star::uno::Reference< com::sun::star::awt::XPopupMenu >& rPopupMenu );
-
-    bool                  m_bDisabled : 1;
+    virtual void impl_setPopupMenu() override;
 };
 
 SaveAsMenuController::SaveAsMenuController( const uno::Reference< uno::XComponentContext >& xContext ) :
-    svt::PopupMenuControllerBase( xContext ),
-    m_bDisabled( false )
+    svt::PopupMenuControllerBase( xContext )
 {
 }
 
@@ -99,83 +70,38 @@ SaveAsMenuController::~SaveAsMenuController()
 {
 }
 
-// private function
-void SaveAsMenuController::fillPopupMenu( Reference< css::awt::XPopupMenu >& rPopupMenu )
+void SaveAsMenuController::impl_setPopupMenu()
 {
-    VCLXPopupMenu* pPopupMenu    = static_cast<VCLXPopupMenu *>(VCLXMenu::GetImplementation( rPopupMenu ));
-    PopupMenu*     pVCLPopupMenu = 0;
+    VCLXMenu* pPopupMenu    = VCLXMenu::GetImplementation( m_xPopupMenu );
+    Menu*     pVCLPopupMenu = nullptr;
 
     SolarMutexGuard aSolarMutexGuard;
 
-    resetPopupMenu( rPopupMenu );
     if ( pPopupMenu )
-        pVCLPopupMenu = static_cast<PopupMenu *>(pPopupMenu->GetMenu());
+        pVCLPopupMenu = pPopupMenu->GetMenu();
 
     if ( pVCLPopupMenu )
     {
-        // Open remote menu entry
-        pVCLPopupMenu->InsertItem( sal_uInt16( 1 ),
-                                   FWK_RESSTR( STR_REMOTE_FILE ) );
-        pVCLPopupMenu->SetItemCommand( sal_uInt16( 1 ),
-                                       OUString( CMD_SAVE_REMOTE ) );
-    }
-}
+        pVCLPopupMenu->InsertItem( ".uno:SaveAs", m_xFrame );
 
-// XEventListener
-void SAL_CALL SaveAsMenuController::disposing( const EventObject& ) throw ( RuntimeException, std::exception )
-{
-    Reference< css::awt::XMenuListener > xHolder(static_cast<OWeakObject *>(this), UNO_QUERY );
-
-    osl::MutexGuard aLock( m_aMutex );
-    m_xFrame.clear();
-    m_xDispatch.clear();
-
-    if ( m_xPopupMenu.is() )
-        m_xPopupMenu->removeMenuListener( Reference< css::awt::XMenuListener >(static_cast<OWeakObject *>(this), UNO_QUERY ));
-    m_xPopupMenu.clear();
-}
-
-// XStatusListener
-void SAL_CALL SaveAsMenuController::statusChanged( const FeatureStateEvent& Event ) throw ( RuntimeException, std::exception )
-{
-    osl::MutexGuard aLock( m_aMutex );
-    m_bDisabled = !Event.IsEnabled;
-}
-
-void SAL_CALL SaveAsMenuController::itemSelected( const css::awt::MenuEvent& rEvent ) throw (RuntimeException, std::exception)
-{
-    Reference< css::awt::XPopupMenu > xPopupMenu;
-
-    osl::ClearableMutexGuard aLock( m_aMutex );
-    xPopupMenu = m_xPopupMenu;
-    aLock.clear();
-
-    if ( xPopupMenu.is() )
-    {
-        const OUString aCommand( xPopupMenu->getCommand( rEvent.MenuId ) );
-        OSL_TRACE( "SaveAsMenuController::itemSelected() - Command : %s",
-                   OUStringToOString( aCommand, RTL_TEXTENCODING_UTF8 ).getStr() );
-
-        if ( aCommand == CMD_SAVE_REMOTE )
+        // Add Save Remote File command only where it's supported.
+        css::uno::Reference< css::frame::XDispatchProvider > xDispatchProvider( m_xFrame, css::uno::UNO_QUERY );
+        if ( xDispatchProvider.is() )
         {
-            Sequence< PropertyValue > aArgsList( 0 );
+            css::util::URL aTargetURL;
+            aTargetURL.Complete = ".uno:SaveAsRemote";
+            m_xURLTransformer->parseStrict( aTargetURL );
 
-            dispatchCommand( CMD_SAVE_REMOTE, aArgsList );
+            css::uno::Reference< css::frame::XDispatch > xDispatch( xDispatchProvider->queryDispatch( aTargetURL, OUString(), 0 ) );
+            if ( xDispatch.is() )
+                pVCLPopupMenu->InsertItem( aTargetURL.Complete, m_xFrame );
         }
     }
 }
 
-void SAL_CALL SaveAsMenuController::itemActivated( const css::awt::MenuEvent& ) throw (RuntimeException, std::exception)
+// XStatusListener
+void SAL_CALL SaveAsMenuController::statusChanged( const FeatureStateEvent& /*Event*/ ) throw ( RuntimeException, std::exception )
 {
-    osl::MutexGuard aLock( m_aMutex );
-    impl_setPopupMenu();
-}
-
-// XPopupMenuController
-void SaveAsMenuController::impl_setPopupMenu()
-{
-    if ( m_xPopupMenu.is() )
-        fillPopupMenu( m_xPopupMenu );
 }
 
 }

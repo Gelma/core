@@ -38,8 +38,7 @@ using namespace ::xmloff::token;
 SchXMLCalculationSettingsContext::SchXMLCalculationSettingsContext( SvXMLImport& rImport,
                                     sal_uInt16 p_nPrefix,
                                     const OUString& rLocalName,
-                                     const ::com::sun::star::uno::Reference<
-                                         ::com::sun::star::xml::sax::XAttributeList >& xAttrList )
+                                    const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList )
 : SvXMLImportContext ( rImport, p_nPrefix, rLocalName )
 {
     const SvXMLNamespaceMap& rMap = GetImport().GetNamespaceMap();
@@ -53,14 +52,14 @@ SchXMLCalculationSettingsContext::SchXMLCalculationSettingsContext( SvXMLImport&
         {
             util::DateTime aNullDate;
             const OUString sValue = xAttrList->getValueByIndex( i );
-            ::sax::Converter::parseDateTime(aNullDate, 0, sValue);
+            ::sax::Converter::parseDateTime(aNullDate, nullptr, sValue);
             m_aNullDate <<= aNullDate;
         }
     }
 }
 SvXMLImportContext* SchXMLCalculationSettingsContext::CreateChildContext( sal_uInt16 nPrefix,
                                    const OUString& rLocalName,
-                                   const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList )
+                                   const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList )
 {
     return new SchXMLCalculationSettingsContext(GetImport(),nPrefix,rLocalName,xAttrList);
 }

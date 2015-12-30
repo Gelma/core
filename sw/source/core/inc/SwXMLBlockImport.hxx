@@ -41,11 +41,11 @@ protected:
     // This method is called after the namespace map has been updated, but
     // before a context for the current element has been pushed.
     virtual SvXMLImportContext* CreateFastContext( sal_Int32 Element,
-        const css::uno::Reference< css::xml::sax::XFastAttributeList > & xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference< css::xml::sax::XFastAttributeList > & xAttrList ) override;
 
 public:
     SwXMLBlockListImport(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rContext,
+        const css::uno::Reference< css::uno::XComponentContext >& rContext,
         SwXMLTextBlocks &rBlocks );
 
     SwXMLTextBlocks& getBlockList()
@@ -62,19 +62,19 @@ protected:
     // This method is called after the namespace map has been updated, but
     // before a context for the current element has been pushed.
     virtual SvXMLImportContext* CreateFastContext( sal_Int32 Element,
-        const css::uno::Reference< css::xml::sax::XFastAttributeList > & xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference< css::xml::sax::XFastAttributeList > & xAttrList ) override;
 
 public:
     bool bTextOnly;
     OUString &m_rText;
     SwXMLTextBlockImport(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rContext,
+        const css::uno::Reference< css::uno::XComponentContext >& rContext,
         OUString &rNewText, bool bNewTextOnly );
 
     virtual ~SwXMLTextBlockImport()
         throw();
     virtual void SAL_CALL endDocument()
-        throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception ) override;
 };
 
 enum SwXMLTextBlockToken : sal_Int32
@@ -96,12 +96,12 @@ public:
 
     //XFastTokenHandler
     sal_Int32 SAL_CALL getTokenFromUTF8( const css::uno::Sequence< sal_Int8 >& Identifier )
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     css::uno::Sequence< sal_Int8 > SAL_CALL getUTF8Identifier( sal_Int32 Token )
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     //Much fast direct C++ shortcut to the method that matters
-    virtual sal_Int32 getTokenDirect( const char *pTag, sal_Int32 nLength ) const SAL_OVERRIDE;
+    virtual sal_Int32 getTokenDirect( const char *pTag, sal_Int32 nLength ) const override;
 };
 
 enum SwXMLBlockListToken : sal_Int32
@@ -125,12 +125,12 @@ public:
 
     //XFastTokenHandler
     sal_Int32 SAL_CALL getTokenFromUTF8( const css::uno::Sequence< sal_Int8 >& Identifier )
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     css::uno::Sequence< sal_Int8 > SAL_CALL getUTF8Identifier( sal_Int32 Token )
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     //Much fast direct C++ shortcut to the method that matters
-    virtual sal_Int32 getTokenDirect( const char *pTag, sal_Int32 nLength ) const SAL_OVERRIDE;
+    virtual sal_Int32 getTokenDirect( const char *pTag, sal_Int32 nLength ) const override;
 };
 
 #endif

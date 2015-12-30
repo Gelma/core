@@ -98,30 +98,30 @@ class MyWin : public WorkWindow
 public:
                  MyWin( vcl::Window* pParent, WinBits nWinStyle );
 
-    virtual void MouseMove( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void MouseButtonUp( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
-    virtual void KeyUp( const KeyEvent& rKEvt ) SAL_OVERRIDE;
-    virtual void Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) SAL_OVERRIDE;
-    virtual void Resize() SAL_OVERRIDE;
+    virtual void MouseMove( const MouseEvent& rMEvt ) override;
+    virtual void MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void MouseButtonUp( const MouseEvent& rMEvt ) override;
+    virtual void KeyInput( const KeyEvent& rKEvt ) override;
+    virtual void KeyUp( const KeyEvent& rKEvt ) override;
+    virtual void Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) override;
+    virtual void Resize() override;
 
-    virtual bool Close() SAL_OVERRIDE;
+    virtual bool Close() override;
     virtual ~MyWin() { disposeOnce(); }
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void parseList( const OString& rList );
     static OString processCommand( const OString& rCommand );
 
     DECL_LINK_TYPED( ListHdl, Button*, void );
-    DECL_LINK( SelectHdl, ListBox* );
+    DECL_LINK_TYPED( SelectHdl, ListBox&, void );
     DECL_STATIC_LINK_TYPED( MyWin, QuitHdl, Button*, void );
 };
 
 void Main()
 {
     ScopedVclPtrInstance< MyWin > aMainWin( nullptr, WB_STDWORK );
-    aMainWin->SetText( OUString( "SvpClient" ) );
+    aMainWin->SetText( "SvpClient" );
     aMainWin->Show();
 
     Application::Execute();
@@ -135,7 +135,7 @@ MyWin::MyWin( vcl::Window* pParent, WinBits nWinStyle ) :
     m_aQuitButton(VclPtr<PushButton>::Create(this, 0))
 {
     m_aListButton->SetPosSizePixel( Point( 10, 10 ), Size( 120, 25 ) );
-    m_aListButton->SetText( OUString( "List Elements" ) );
+    m_aListButton->SetText( "List Elements" );
     m_aListButton->SetClickHdl( LINK( this, MyWin, ListHdl ) );
     m_aListButton->Show();
 
@@ -144,11 +144,11 @@ MyWin::MyWin( vcl::Window* pParent, WinBits nWinStyle ) :
     m_aSvpBitmaps->Show();
 
     m_aImage->SetPosSizePixel( Point( 170, 10 ), Size( 400, 400 ) );
-    m_aImage->SetScaleMode( com::sun::star::awt::ImageScaleMode::NONE );
+    m_aImage->SetScaleMode( css::awt::ImageScaleMode::NONE );
     m_aImage->Show();
 
     m_aQuitButton->SetPosSizePixel( Point( 10, 300 ), Size( 120,25 ) );
-    m_aQuitButton->SetText( OUString( "Quit SVP server" ) );
+    m_aQuitButton->SetText( "Quit SVP server" );
     m_aQuitButton->SetClickHdl( LINK( this, MyWin, QuitHdl ) );
     m_aQuitButton->Show();
 }
@@ -214,9 +214,8 @@ OString MyWin::processCommand( const OString& rCommand )
         else
         {
             ssize_t nBytes = 0;
-            nBytes = write( nSocket, rCommand.getStr(), rCommand.getLength() );
-            nBytes = write( nSocket, "\n", 1 );
-            nBytes = 0;
+            write( nSocket, rCommand.getStr(), rCommand.getLength() );
+            write( nSocket, "\n", 1 );
             char buf[256];
             do
             {
@@ -241,7 +240,7 @@ IMPL_STATIC_LINK_NOARG_TYPED( MyWin, QuitHdl, Button*, void)
     processCommand( "quit" );
 }
 
-IMPL_LINK( MyWin, SelectHdl, ListBox*, )
+IMPL_LINK_NOARG_TYPED( MyWin, SelectHdl, ListBox&, void)
 {
     OUString aEntry = m_aSvpBitmaps->GetSelectEntry();
     sal_Int32 nPos = aEntry.indexOf( ": " );
@@ -268,7 +267,6 @@ IMPL_LINK( MyWin, SelectHdl, ListBox*, )
         m_aImage->SetSizePixel( aFixedSize );
         m_aImage->SetImage( Image( BitmapEx( aBitmap ) ) );
     }
-    return 0;
 }
 
 void MyWin::MouseMove( const MouseEvent& rMEvt )

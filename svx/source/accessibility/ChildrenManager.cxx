@@ -29,18 +29,18 @@ namespace accessibility {
 
 // AccessibleChildrenManager
 ChildrenManager::ChildrenManager (
-    const ::com::sun::star::uno::Reference<XAccessible>& rxParent,
-    const ::com::sun::star::uno::Reference<drawing::XShapes>& rxShapeList,
+    const css::uno::Reference<XAccessible>& rxParent,
+    const css::uno::Reference<drawing::XShapes>& rxShapeList,
     const AccessibleShapeTreeInfo& rShapeTreeInfo,
     AccessibleContextBase& rContext)
-    : mpImpl (NULL)
+    : mpImpl (nullptr)
 {
     mpImpl = new ChildrenManagerImpl (rxParent, rxShapeList, rShapeTreeInfo, rContext);
-    if (mpImpl != NULL)
+    if (mpImpl != nullptr)
         mpImpl->Init ();
     else
         throw uno::RuntimeException(
-            "ChildrenManager::ChildrenManager can't create implementation object", NULL);
+            "ChildrenManager::ChildrenManager can't create implementation object", nullptr);
 }
 
 
@@ -48,7 +48,7 @@ ChildrenManager::ChildrenManager (
 
 ChildrenManager::~ChildrenManager()
 {
-    if (mpImpl != NULL)
+    if (mpImpl != nullptr)
         mpImpl->dispose();
 
     // emtpy
@@ -57,80 +57,78 @@ ChildrenManager::~ChildrenManager()
 
 long ChildrenManager::GetChildCount() const throw ()
 {
-    assert(mpImpl != NULL);
+    assert(mpImpl != nullptr);
     return mpImpl->GetChildCount();
 }
 
-::com::sun::star::uno::Reference<XAccessible> ChildrenManager::GetChild (long nIndex)
-    throw (::com::sun::star::uno::RuntimeException,
-           ::com::sun::star::lang::IndexOutOfBoundsException)
+css::uno::Reference<XAccessible> ChildrenManager::GetChild (long nIndex)
+    throw (css::uno::RuntimeException,
+           css::lang::IndexOutOfBoundsException)
 {
-    assert(mpImpl != NULL);
+    assert(mpImpl != nullptr);
     return mpImpl->GetChild (nIndex);
 }
 
 Reference<XAccessible> ChildrenManager::GetChild (const Reference<drawing::XShape>& xShape)
-    throw (::com::sun::star::uno::RuntimeException)
+    throw (css::uno::RuntimeException)
 {
-    assert(mpImpl != NULL);
+    assert(mpImpl != nullptr);
     return mpImpl->GetChild (xShape);
 }
 
-::com::sun::star::uno::Reference<
-        ::com::sun::star::drawing::XShape> ChildrenManager::GetChildShape(long nIndex)
-    throw (::com::sun::star::uno::RuntimeException,
-           ::com::sun::star::lang::IndexOutOfBoundsException)
+css::uno::Reference<css::drawing::XShape> ChildrenManager::GetChildShape(long nIndex)
+    throw (css::uno::RuntimeException,
+           css::lang::IndexOutOfBoundsException)
 {
-    assert(mpImpl != NULL);
+    assert(mpImpl != nullptr);
     return mpImpl->GetChildShape(nIndex);
 }
 
 void ChildrenManager::Update (bool bCreateNewObjectsOnDemand)
 {
-    assert(mpImpl != NULL);
+    assert(mpImpl != nullptr);
     mpImpl->Update (bCreateNewObjectsOnDemand);
 }
 
-void ChildrenManager::SetShapeList (const ::com::sun::star::uno::Reference<
-    ::com::sun::star::drawing::XShapes>& xShapeList)
+void ChildrenManager::SetShapeList (const css::uno::Reference<css::drawing::XShapes>& xShapeList)
 {
-    assert(mpImpl != NULL);
+    assert(mpImpl != nullptr);
     mpImpl->SetShapeList (xShapeList);
 }
 
 void ChildrenManager::AddAccessibleShape (css::uno::Reference<css::accessibility::XAccessible> const & shape)
 {
-    assert(mpImpl != NULL);
+    assert(mpImpl != nullptr);
     mpImpl->AddAccessibleShape (shape);
 }
 
 void ChildrenManager::ClearAccessibleShapeList()
 {
-    assert(mpImpl != NULL);
+    assert(mpImpl != nullptr);
     mpImpl->ClearAccessibleShapeList ();
 }
 
 void ChildrenManager::SetInfo (AccessibleShapeTreeInfo& rShapeTreeInfo)
 {
-    assert(mpImpl != NULL);
+    assert(mpImpl != nullptr);
     mpImpl->SetInfo (rShapeTreeInfo);
 }
 
 void ChildrenManager::UpdateSelection()
 {
-    assert(mpImpl != NULL);
+    assert(mpImpl != nullptr);
     mpImpl->UpdateSelection ();
 }
 
 bool ChildrenManager::HasFocus()
 {
-    assert(mpImpl != NULL);
+    assert(mpImpl != nullptr);
     return mpImpl->HasFocus ();
 }
 
 void ChildrenManager::RemoveFocus()
 {
-    assert(mpImpl != NULL);
+    assert(mpImpl != nullptr);
     mpImpl->RemoveFocus ();
 }
 
@@ -138,7 +136,7 @@ void ChildrenManager::RemoveFocus()
 void ChildrenManager::ViewForwarderChanged (ChangeType aChangeType,
         const IAccessibleViewForwarder* pViewForwarder)
 {
-    assert(mpImpl != NULL);
+    assert(mpImpl != nullptr);
     mpImpl->ViewForwarderChanged (aChangeType, pViewForwarder);
 }
 

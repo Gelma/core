@@ -55,7 +55,7 @@ SwMasterUsrPref::SwMasterUsrPref(bool bWeb) :
     aLayoutConfig(bWeb, *this),
     aGridConfig(bWeb, *this),
     aCursorConfig(*this),
-    pWebColorConfig(bWeb ? new SwWebColorConfig(*this) : 0),
+    pWebColorConfig(bWeb ? new SwWebColorConfig(*this) : nullptr),
     bApplyCharUnit(false)
 {
     if (utl::ConfigManager::IsAvoidConfig())
@@ -365,7 +365,7 @@ void SwLayoutViewConfig::Load()
     }
 }
 
-void SwLayoutViewConfig::Notify( const ::com::sun::star::uno::Sequence< OUString >& ) {}
+void SwLayoutViewConfig::Notify( const css::uno::Sequence< OUString >& ) {}
 
 Sequence<OUString> SwGridConfig::GetPropertyNames()
 {
@@ -456,7 +456,7 @@ void SwGridConfig::Load()
     }
 }
 
-void SwGridConfig::Notify( const ::com::sun::star::uno::Sequence< OUString >& ) {}
+void SwGridConfig::Notify( const css::uno::Sequence< OUString >& ) {}
 
 Sequence<OUString> SwCursorConfig::GetPropertyNames()
 {
@@ -498,7 +498,7 @@ void SwCursorConfig::ImplCommit()
         switch(nProp)
         {
             case  0: pValues[nProp] <<= rParent.IsShadowCursor(); break;//  "DirectCursor/UseDirectCursor",
-            case  1: pValues[nProp] <<= (sal_Int32)rParent.GetShdwCrsrFillMode();   break;//  "DirectCursor/Insert",
+            case  1: pValues[nProp] <<= (sal_Int32)rParent.GetShdwCursorFillMode();   break;//  "DirectCursor/Insert",
             case  2: pValues[nProp] <<= rParent.IsCursorInProtectedArea(); break;// "Option/ProtectedArea"
             case  3: pValues[nProp] <<= rParent.IsIgnoreProtectedArea(); break; // "Option/IgnoreProtectedArea"
         }
@@ -528,7 +528,7 @@ void SwCursorConfig::Load()
                 switch(nProp)
                 {
                     case  0: rParent.SetShadowCursor(bSet);         break;//  "DirectCursor/UseDirectCursor",
-                    case  1: rParent.SetShdwCrsrFillMode((sal_uInt8)nSet); break;//  "DirectCursor/Insert",
+                    case  1: rParent.SetShdwCursorFillMode((sal_uInt8)nSet); break;//  "DirectCursor/Insert",
                     case  2: rParent.SetCursorInProtectedArea(bSet); break;// "Option/ProtectedArea"
                     case  3: rParent.SetIgnoreProtectedArea(bSet); break; // "Option/IgnoreProtectedArea"
                 }
@@ -538,7 +538,7 @@ void SwCursorConfig::Load()
     }
 }
 
-void SwCursorConfig::Notify( const ::com::sun::star::uno::Sequence< OUString >& ) {}
+void SwCursorConfig::Notify( const css::uno::Sequence< OUString >& ) {}
 
 SwWebColorConfig::SwWebColorConfig(SwMasterUsrPref& rPar) :
     ConfigItem("Office.WriterWeb/Background",
@@ -567,7 +567,7 @@ void SwWebColorConfig::ImplCommit()
     PutProperties(aPropNames, aValues);
 }
 
-void SwWebColorConfig::Notify( const ::com::sun::star::uno::Sequence< OUString >& ) {}
+void SwWebColorConfig::Notify( const css::uno::Sequence< OUString >& ) {}
 
 void SwWebColorConfig::Load()
 {

@@ -58,10 +58,10 @@ struct SdrPageWindow::Impl
     uno::Reference<awt::XControlContainer> mxControlContainer;
 
     Impl( SdrPageView& rPageView, SdrPaintWindow& rPaintWindow ) :
-        mpObjectContact(NULL),
+        mpObjectContact(nullptr),
         mrPageView(rPageView),
         mpPaintWindow(&rPaintWindow),
-        mpOriginalPaintWindow(NULL)
+        mpOriginalPaintWindow(nullptr)
     {
     }
 
@@ -105,7 +105,7 @@ uno::Reference<awt::XControlContainer> SdrPageWindow::GetControlContainer( bool 
         {
             // Printer and VirtualDevice, or rather: no OutDev
             uno::Reference< lang::XMultiServiceFactory > xFactory( ::comphelper::getProcessServiceFactory() );
-            const_cast< SdrPageWindow* >( this )->mpImpl->mxControlContainer = uno::Reference< awt::XControlContainer >(xFactory->createInstance("com.sun.star.awt.UnoControlContainer"), uno::UNO_QUERY);
+            const_cast< SdrPageWindow* >( this )->mpImpl->mxControlContainer.set(xFactory->createInstance("com.sun.star.awt.UnoControlContainer"), uno::UNO_QUERY);
             uno::Reference< awt::XControlModel > xModel(xFactory->createInstance("com.sun.star.awt.UnoControlContainerModel"), uno::UNO_QUERY);
             uno::Reference< awt::XControl > xControl(mpImpl->mxControlContainer, uno::UNO_QUERY);
             if (xControl.is())
@@ -187,7 +187,7 @@ void SdrPageWindow::unpatchPaintWindow()
     if (mpImpl->mpOriginalPaintWindow)
     {
         mpImpl->mpPaintWindow = mpImpl->mpOriginalPaintWindow;
-        mpImpl->mpOriginalPaintWindow = NULL;
+        mpImpl->mpOriginalPaintWindow = nullptr;
     }
 }
 
@@ -262,7 +262,7 @@ namespace
             SdrPage* pPage = rPageView.GetPage();
             SdrObject* pObjA = pPage->GetObj(0L);
 
-            if(pObjA && pObjA->ISA(SdrPathObj))
+            if(pObjA && dynamic_cast<const SdrPathObj*>( pObjA) !=  nullptr)
             {
                 basegfx::B2DPolyPolygon aPolyA(pObjA->GetPathPoly());
                 aPolyA = basegfx::tools::correctOrientations(aPolyA);
@@ -273,7 +273,7 @@ namespace
                 {
                     SdrObject* pObjB = pPage->GetObj(a);
 
-                    if(pObjB && pObjB->ISA(SdrPathObj))
+                    if(pObjB && dynamic_cast<const SdrPathObj*>( pObjB) !=  nullptr)
                     {
                         basegfx::B2DPolyPolygon aCandidate(pObjB->GetPathPoly());
                         aCandidate = basegfx::tools::correctOrientations(aCandidate);
@@ -345,7 +345,7 @@ void SdrPageWindow::RedrawAll( sdr::contact::ViewObjectContactRedirector* pRedir
     }
 
     // reset redirector
-    GetObjectContact().SetViewObjectContactRedirector(0L);
+    GetObjectContact().SetViewObjectContactRedirector(nullptr);
 
     // LineClip test
 #ifdef CLIPPER_TEST
@@ -404,7 +404,7 @@ void SdrPageWindow::RedrawLayer( const SdrLayerID* pId, sdr::contact::ViewObject
     }
 
     // reset redirector
-    GetObjectContact().SetViewObjectContactRedirector(0L);
+    GetObjectContact().SetViewObjectContactRedirector(nullptr);
 }
 
 // Invalidate call, used from ObjectContact(OfPageView) in InvalidatePartOfView(...)
@@ -456,7 +456,7 @@ sdr::contact::ObjectContact& SdrPageWindow::GetObjectContact()
 
 bool SdrPageWindow::HasObjectContact() const
 {
-    return mpImpl->mpObjectContact != NULL;
+    return mpImpl->mpObjectContact != nullptr;
 }
 
 // #i26631#
@@ -465,7 +465,7 @@ void SdrPageWindow::ResetObjectContact()
     if (mpImpl->mpObjectContact)
     {
         delete mpImpl->mpObjectContact;
-        mpImpl->mpObjectContact = 0L;
+        mpImpl->mpObjectContact = nullptr;
     }
 }
 

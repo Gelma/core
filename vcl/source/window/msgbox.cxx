@@ -52,10 +52,10 @@ static void ImplInitMsgBoxImageList()
 
 void MessBox::ImplInitMessBoxData()
 {
-    mpVCLMultiLineEdit  = NULL;
-    mpFixedImage        = NULL;
+    mpVCLMultiLineEdit  = nullptr;
+    mpFixedImage        = nullptr;
     mbHelpBtn           = false;
-    mpCheckBox          = NULL;
+    mpCheckBox          = nullptr;
     mbCheck             = false;
 }
 
@@ -456,7 +456,7 @@ Image ErrorBox::GetStandardImage()
     {
         ImplInitMsgBoxImageList();
     }
-    catch (const ::com::sun::star::uno::Exception &)
+    catch (const css::uno::Exception &)
     {
         // During early bootstrap we can have no initialized
         // ucb and hence no ability to get this image, so nop.

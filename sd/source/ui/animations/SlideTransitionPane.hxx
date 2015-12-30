@@ -22,12 +22,14 @@
 #include "EventMultiplexer.hxx"
 
 #include "SlideSorterViewShell.hxx"
+#include "TransitionPreset.hxx"
 
 #include <vcl/ctrl.hxx>
 #include <vcl/lstbox.hxx>
 #include <vcl/fixed.hxx>
 #include <vcl/button.hxx>
 #include <vcl/field.hxx>
+#include <svtools/valueset.hxx>
 #include <svx/sidebar/PanelLayout.hxx>
 #include <sfx2/sidebar/ControlFactory.hxx>
 #include <com/sun/star/drawing/XDrawView.hpp>
@@ -57,10 +59,10 @@ public:
         SdDrawDocument* pDoc,
         const css::uno::Reference<css::frame::XFrame>& rxFrame );
     virtual ~SlideTransitionPane();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     // Window
-    virtual void DataChanged (const DataChangedEvent& rEvent) SAL_OVERRIDE;
+    virtual void DataChanged (const DataChangedEvent& rEvent) override;
 
     void onSelectionChanged();
     void onChangeCurrentPage();
@@ -68,6 +70,7 @@ public:
 private:
     void updateControls();
     void updateControlState();
+    void updateVariants(size_t nPresetOffset);
 
     void updateSoundList();
     void openSoundFileDialog();
@@ -89,19 +92,22 @@ private:
     DECL_LINK_TYPED( PlayButtonClicked, Button*, void );
     DECL_LINK_TYPED( AutoPreviewClicked, Button*, void );
 
-    DECL_LINK( TransitionSelected, void * );
+    DECL_LINK_TYPED( TransitionSelected, ValueSet *, void );
     DECL_LINK_TYPED( AdvanceSlideRadioButtonToggled, RadioButton&, void );
-    DECL_LINK( AdvanceTimeModified, void * );
-    DECL_LINK( SpeedListBoxSelected, void * );
-    DECL_LINK( SoundListBoxSelected, void * );
+    DECL_LINK_TYPED( AdvanceTimeModified, Edit&, void );
+    DECL_LINK_TYPED( VariantListBoxSelected, ListBox&, void );
+    DECL_LINK_TYPED( SpeedListBoxSelected, ListBox&, void );
+    DECL_LINK_TYPED( SoundListBoxSelected, ListBox&, void );
     DECL_LINK_TYPED( LoopSoundBoxChecked, Button*, void );
-    DECL_LINK_TYPED(EventMultiplexerListener, tools::EventMultiplexerEvent&, void);
+    DECL_LINK_TYPED( EventMultiplexerListener, tools::EventMultiplexerEvent&, void );
     DECL_LINK_TYPED(LateInitCallback, Timer *, void);
 
     ViewShellBase &   mrBase;
     SdDrawDocument *  mpDrawDoc;
 
-    VclPtr<ListBox>      mpLB_SLIDE_TRANSITIONS;
+    VclPtr<ValueSet>     mpVS_TRANSITION_ICONS;
+    VclPtr<FixedText>    mpFT_VARIANT;
+    VclPtr<ListBox>      mpLB_VARIANT;
     VclPtr<FixedText>    mpFT_SPEED;
     VclPtr<ListBox>      mpLB_SPEED;
     VclPtr<FixedText>    mpFT_SOUND;
@@ -114,8 +120,8 @@ private:
     VclPtr<PushButton>   mpPB_PLAY;
     VclPtr<CheckBox>     mpCB_AUTO_PREVIEW;
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XDrawView >             mxView;
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XModel >                  mxModel;
+    css::uno::Reference< css::drawing::XDrawView >             mxView;
+    css::uno::Reference< css::frame::XModel >                  mxModel;
 
     bool         mbHasSelection;
     bool         mbUpdatingControls;
@@ -125,8 +131,8 @@ private:
     tSoundListType  maSoundList;
     mutable OUString maCurrentSoundFile;
 
-    typedef ::std::map< sal_uInt16, sal_uInt16 > tPresetIndexesType;
-    tPresetIndexesType m_aPresetIndexes;
+    // How many variants each transition set has
+    std::map< OUString, int > m_aNumVariants;
 
     Timer maLateInitTimer;
 };

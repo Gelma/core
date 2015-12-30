@@ -45,7 +45,7 @@ class SettingsTable : public LoggedProperties, public LoggedTable
     std::unique_ptr<SettingsTable_Impl> m_pImpl;
 
  public:
-    SettingsTable(DomainMapper& rDMapper, const css::uno::Reference<css::lang::XMultiServiceFactory>& xTextFactory);
+    SettingsTable();
     virtual ~SettingsTable();
 
     //returns default TabStop in 1/100th mm
@@ -80,11 +80,11 @@ class SettingsTable : public LoggedProperties, public LoggedTable
 
  private:
     // Properties
-    virtual void lcl_attribute(Id Name, Value & val) SAL_OVERRIDE;
-    virtual void lcl_sprm(Sprm & sprm) SAL_OVERRIDE;
+    virtual void lcl_attribute(Id Name, Value & val) override;
+    virtual void lcl_sprm(Sprm & sprm) override;
 
     // Table
-    virtual void lcl_entry(int pos, writerfilter::Reference<Properties>::Pointer_t ref) SAL_OVERRIDE;
+    virtual void lcl_entry(int pos, writerfilter::Reference<Properties>::Pointer_t ref) override;
 
 };
 typedef std::shared_ptr< SettingsTable >          SettingsTablePtr;

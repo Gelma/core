@@ -32,11 +32,11 @@
 #include <memory>
 #include <vector>
 
-class SwContentFrm;
+class SwContentFrame;
 class SwContentNode;
 class SwDoc;
 class SwEndNode;
-class SwFrm;
+class SwFrame;
 class SwFrameFormat;
 class SwGrfNode;
 class SwNoTextNode;
@@ -48,8 +48,8 @@ class SwSectionFormat;
 class SwTOXBase;
 class SwSectionNode;
 class SwStartNode;
-class SwTabFrm;
-class SwRootFrm;
+class SwTabFrame;
+class SwRootFrame;
 class SwTable;
 class SwTableNode;
 class SwTableBox;
@@ -82,12 +82,12 @@ class SW_DLLPUBLIC SwNode
 {
     friend class SwNodes;
 
-    sal_uInt8 nNodeType;
+    sal_uInt8 m_nNodeType;
 
     /// For text nodes: level of auto format. Was put here because we had still free bits.
-    sal_uInt8 nAFormatNumLvl : 3;
-    bool bSetNumLSpace : 1;         ///< For numbering: TRUE: set indent.
-    bool bIgnoreDontExpand : 1;     ///< for Text Attributes - ignore the flag
+    sal_uInt8 m_nAFormatNumLvl : 3;
+    bool m_bSetNumLSpace : 1;         ///< For numbering: TRUE: set indent.
+    bool m_bIgnoreDontExpand : 1;     ///< for Text Attributes - ignore the flag
 
 #ifdef DBG_UTIL
     static long s_nSerial;
@@ -100,7 +100,7 @@ class SW_DLLPUBLIC SwNode
     std::unique_ptr<std::vector<SwFrameFormat*>> m_pAnchoredFlys;
 
 protected:
-    SwStartNode* pStartOfSection;
+    SwStartNode* m_pStartOfSection;
 
     SwNode( const SwNodeIndex &rWhere, const sal_uInt8 nNodeId );
 
@@ -119,22 +119,22 @@ public:
     sal_uInt16 GetSectionLevel() const;
 
     inline sal_uLong StartOfSectionIndex() const;
-    inline const SwStartNode* StartOfSectionNode() const { return pStartOfSection; }
-    inline       SwStartNode* StartOfSectionNode() { return pStartOfSection; }
+    inline const SwStartNode* StartOfSectionNode() const { return m_pStartOfSection; }
+    inline       SwStartNode* StartOfSectionNode() { return m_pStartOfSection; }
 
     inline sal_uLong EndOfSectionIndex() const;
     inline const SwEndNode* EndOfSectionNode() const;
     inline         SwEndNode* EndOfSectionNode();
 
-    inline sal_uInt8 GetAutoFormatLvl() const     { return nAFormatNumLvl; }
-    inline void SetAutoFormatLvl( sal_uInt8 nVal )      { nAFormatNumLvl = nVal; }
+    inline sal_uInt8 GetAutoFormatLvl() const     { return m_nAFormatNumLvl; }
+    inline void SetAutoFormatLvl( sal_uInt8 nVal )      { m_nAFormatNumLvl = nVal; }
 
-    inline void SetNumLSpace( bool bFlag )        { bSetNumLSpace = bFlag; }
+    inline void SetNumLSpace( bool bFlag )        { m_bSetNumLSpace = bFlag; }
 
-    inline bool IsIgnoreDontExpand() const  { return bIgnoreDontExpand; }
-    inline void SetIgnoreDontExpand( bool bNew )  { bIgnoreDontExpand = bNew; }
+    inline bool IsIgnoreDontExpand() const  { return m_bIgnoreDontExpand; }
+    inline void SetIgnoreDontExpand( bool bNew )  { m_bIgnoreDontExpand = bNew; }
 
-    sal_uInt8   GetNodeType() const { return nNodeType; }
+    sal_uInt8   GetNodeType() const { return m_nNodeType; }
 
     inline       SwStartNode *GetStartNode();
     inline const SwStartNode *GetStartNode() const;
@@ -257,7 +257,7 @@ public:
     IDocumentListItems& getIDocumentListItems();
 
     /// Is node in the visible area of the Shell?
-    bool IsInVisibleArea( SwViewShell const * pSh = 0 ) const;
+    bool IsInVisibleArea( SwViewShell const * pSh = nullptr ) const;
     /// Is node in an protected area?
     bool IsInProtectSect() const;
     /**  Is node in something that is protected (range, frame,
@@ -267,7 +267,7 @@ public:
     /** Search PageDesc with which this node is formatted. If layout is existent
        search over layout, else only the hard way is left: search over the nodes
        to the front!! */
-    const SwPageDesc* FindPageDesc( bool bCalcLay, size_t* pPgDescNdIdx = 0 ) const;
+    const SwPageDesc* FindPageDesc( bool bCalcLay, size_t* pPgDescNdIdx = nullptr ) const;
 
     /// If node is in a fly return the respective format.
     SwFrameFormat* GetFlyFormat() const;
@@ -292,8 +292,8 @@ public:
     virtual void dumpAsXml(struct _xmlTextWriter* pWriter) const;
 
 private:
-    SwNode( const SwNode & rNodes ) SAL_DELETED_FUNCTION;
-    SwNode & operator= ( const SwNode & rNodes ) SAL_DELETED_FUNCTION;
+    SwNode( const SwNode & rNodes ) = delete;
+    SwNode & operator= ( const SwNode & rNodes ) = delete;
 };
 
 /// Starts a section of nodes in the document model.
@@ -303,8 +303,8 @@ class SwStartNode: public SwNode
     friend class SwNodes;
     friend class SwEndNode;     ///< to set the theEndOfSection !!
 
-    SwEndNode* pEndOfSection;
-    SwStartNodeType eSttNdTyp;
+    SwEndNode* m_pEndOfSection;
+    SwStartNodeType m_eStartNodeType;
 
     /// for the initial StartNode
     SwStartNode( SwNodes& rNodes, sal_uLong nPos );
@@ -316,16 +316,16 @@ protected:
 public:
     DECL_FIXEDMEMPOOL_NEWDEL(SwStartNode)
 
-    SwStartNodeType GetStartNodeType() const        { return eSttNdTyp; }
+    SwStartNodeType GetStartNodeType() const        { return m_eStartNodeType; }
 
     /// Call ChkCondcoll to all ContentNodes of section.
     void CheckSectionCondColl() const;
 
-    virtual void dumpAsXml(struct _xmlTextWriter* pWriter) const SAL_OVERRIDE;
+    virtual void dumpAsXml(struct _xmlTextWriter* pWriter) const override;
 
 private:
-    SwStartNode( const SwStartNode & rNode ) SAL_DELETED_FUNCTION;
-    SwStartNode & operator= ( const SwStartNode & rNode ) SAL_DELETED_FUNCTION;
+    SwStartNode( const SwStartNode & rNode ) = delete;
+    SwStartNode & operator= ( const SwStartNode & rNode ) = delete;
 };
 
 /// Ends a section of nodes in the document model.
@@ -344,8 +344,8 @@ protected:
     DECL_FIXEDMEMPOOL_NEWDEL(SwEndNode)
 
 private:
-    SwEndNode( const SwEndNode & rNode ) SAL_DELETED_FUNCTION;
-    SwEndNode & operator= ( const SwEndNode & rNode ) SAL_DELETED_FUNCTION;
+    SwEndNode( const SwEndNode & rNode ) = delete;
+    SwEndNode & operator= ( const SwEndNode & rNode ) = delete;
 };
 
 // SwContentNode
@@ -354,7 +354,7 @@ class SW_DLLPUBLIC SwContentNode: public SwModify, public SwNode, public SwIndex
 {
 
 //FEATURE::CONDCOLL
-    SwDepend* pCondColl;
+    SwDepend* m_pCondColl;
 //FEATURE::CONDCOLL
     mutable bool mbSetModifyAtAttr;
 
@@ -376,14 +376,13 @@ protected:
        SwAttrSet (handle): */
     sal_uInt16 ClearItemsFromAttrSet( const std::vector<sal_uInt16>& rWhichIds );
 
-   virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew) SAL_OVERRIDE;
+   virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew) override;
 
 public:
-    TYPEINFO_OVERRIDE();     /// Already contained in base class Client.
 
-    /** MakeFrm will be called for a certain layout
-       pSib is another SwFrm of the same layout (e.g. the SwRootFrm itself, a sibling, the parent) */
-    virtual SwContentFrm *MakeFrm( SwFrm* pSib ) = 0;
+    /** MakeFrame will be called for a certain layout
+       pSib is another SwFrame of the same layout (e.g. the SwRootFrame itself, a sibling, the parent) */
+    virtual SwContentFrame *MakeFrame( SwFrame* pSib ) = 0;
 
     virtual SwContentNode *SplitContentNode(const SwPosition & ) = 0;
 
@@ -391,8 +390,8 @@ public:
     virtual SwContentNode *JoinPrev();
     /** Is it possible to join two nodes?
        In pIdx the second position can be returned. */
-    bool CanJoinNext( SwNodeIndex* pIdx =0 ) const;
-    bool CanJoinPrev( SwNodeIndex* pIdx =0 ) const;
+    bool CanJoinNext( SwNodeIndex* pIdx =nullptr ) const;
+    bool CanJoinPrev( SwNodeIndex* pIdx =nullptr ) const;
 
     void MakeStartIndex( SwIndex * pIdx )   { pIdx->Assign( this, 0 ); }
     void MakeEndIndex( SwIndex * pIdx )     { pIdx->Assign( this, Len() ); }
@@ -400,30 +399,30 @@ public:
     bool GoNext(SwIndex *, sal_uInt16 nMode ) const;
     bool GoPrevious(SwIndex *, sal_uInt16 nMode ) const;
 
-    /// Replacement for good old GetFrm(..):
-    SwContentFrm *getLayoutFrm( const SwRootFrm*,
-                        const Point* pDocPos = 0,
-                        const SwPosition *pPos = 0,
-                        const bool bCalcFrm = true ) const;
+    /// Replacement for good old GetFrame(..):
+    SwContentFrame *getLayoutFrame( const SwRootFrame*,
+                        const Point* pDocPos = nullptr,
+                        const SwPosition *pPos = nullptr,
+                        const bool bCalcFrame = true ) const;
     /** @return the real size of the frame or an empty rectangle if
        no layout exists. Needed for export filters. */
     SwRect FindLayoutRect( const bool bPrtArea = false,
-                            const Point* pPoint = 0,
-                            const bool bCalcFrm = false  ) const;
-    SwRect FindPageFrmRect( const bool bPrtArea = false,
-                            const Point* pPoint = 0,
-                            const bool bCalcFrm = false  ) const;
+                            const Point* pPoint = nullptr,
+                            const bool bCalcFrame = false  ) const;
+    SwRect FindPageFrameRect( const bool bPrtArea = false,
+                            const Point* pPoint = nullptr,
+                            const bool bCalcFrame = false  ) const;
 
     /** Method creates all views of document for given node. The content
        frames that are created are put in the respective layout. */
-    void MakeFrms( SwContentNode& rNode );
+    void MakeFrames( SwContentNode& rNode );
 
     /** Method deletes all views of document for the node. The content-
         frames are removed from the respective layout.
 
         Add an input param to identify if acc table should be disposed
     */
-    void DelFrms( bool bIsAccTableDispose = true );
+    void DelFrames( bool bIsAccTableDispose = true );
 
     /** @return count of elements of node content. Default is 1.
        There are differences between text node and formula node. */
@@ -432,7 +431,7 @@ public:
     virtual SwContentNode* MakeCopy( SwDoc*, const SwNodeIndex& ) const = 0;
 
     /// Get information from Client.
-    virtual bool GetInfo( SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual bool GetInfo( SfxPoolItem& ) const override;
 
     /// SS for PoolItems: hard attributation.
 
@@ -485,8 +484,8 @@ public:
     virtual drawinglayer::attribute::SdrAllFillAttributesHelperPtr getSdrAllFillAttributesHelper() const;
 
 private:
-    SwContentNode( const SwContentNode & rNode ) SAL_DELETED_FUNCTION;
-    SwContentNode & operator= ( const SwContentNode & rNode ) SAL_DELETED_FUNCTION;
+    SwContentNode( const SwContentNode & rNode ) = delete;
+    SwContentNode & operator= ( const SwContentNode & rNode ) = delete;
 };
 
 // SwTableNode
@@ -494,27 +493,27 @@ private:
 class SW_DLLPUBLIC SwTableNode : public SwStartNode, public SwModify
 {
     friend class SwNodes;
-    SwTable* pTable;
+    SwTable* m_pTable;
 protected:
     virtual ~SwTableNode();
 
 public:
     SwTableNode( const SwNodeIndex & );
 
-    const SwTable& GetTable() const { return *pTable; }
-    SwTable& GetTable() { return *pTable; }
-    SwTabFrm *MakeFrm( SwFrm* );
+    const SwTable& GetTable() const { return *m_pTable; }
+    SwTable& GetTable() { return *m_pTable; }
+    SwTabFrame *MakeFrame( SwFrame* );
 
-    /// Creates the frms for the table node (i.e. the TabFrms).
-    void MakeFrms( SwNodeIndex* pIdxBehind );
+    /// Creates the frms for the table node (i.e. the TabFrames).
+    void MakeFrames( SwNodeIndex* pIdxBehind );
 
     /** Method deletes all views of document for the node.
        The content frames are removed from the respective layout. */
-    void DelFrms();
+    void DelFrames();
 
     /** Method creates all views of the document for the previous node.
        The content frames that are created are put into the respective layout. */
-    void MakeFrms( const SwNodeIndex & rIdx );
+    void MakeFrames( const SwNodeIndex & rIdx );
 
     SwTableNode* MakeCopy( SwDoc*, const SwNodeIndex& ) const;
     void SetNewTable( SwTable* , bool bNewFrames=true );
@@ -523,8 +522,8 @@ public:
     void RemoveRedlines();
 
 private:
-    SwTableNode( const SwTableNode & rNode ) SAL_DELETED_FUNCTION;
-    SwTableNode & operator= ( const SwTableNode & rNode ) SAL_DELETED_FUNCTION;
+    SwTableNode( const SwTableNode & rNode ) = delete;
+    SwTableNode & operator= ( const SwTableNode & rNode ) = delete;
 };
 
 class SwSectionNode
@@ -533,8 +532,8 @@ class SwSectionNode
     friend class SwNodes;
 
 private:
-    SwSectionNode(const SwSectionNode&) SAL_DELETED_FUNCTION;
-    SwSectionNode& operator=(const SwSectionNode&) SAL_DELETED_FUNCTION;
+    SwSectionNode(const SwSectionNode&) = delete;
+    SwSectionNode& operator=(const SwSectionNode&) = delete;
 
     std::unique_ptr<SwSection> const m_pSection;
 
@@ -548,21 +547,21 @@ public:
     const SwSection& GetSection() const { return *m_pSection; }
           SwSection& GetSection()       { return *m_pSection; }
 
-    SwFrm *MakeFrm( SwFrm* );
+    SwFrame *MakeFrame( SwFrame* );
 
-    /** Creates the frms for the SectionNode (i.e. the SectionFrms).
+    /** Creates the frms for the SectionNode (i.e. the SectionFrames).
        On default the frames are created until the end of the range.
-       When another NodeIndex pEnd is passed a MakeFrms is called up to it.
+       When another NodeIndex pEnd is passed a MakeFrames is called up to it.
        Used by TableToText. */
-    void MakeFrms( SwNodeIndex* pIdxBehind, SwNodeIndex* pEnd = NULL );
+    void MakeFrames( SwNodeIndex* pIdxBehind, SwNodeIndex* pEnd = nullptr );
 
     /** Method deletes all views of document for the node. The
      content frames are removed from the respective layout. */
-    void DelFrms();
+    void DelFrames();
 
     /** Method creates all views of document for the previous node.
        The content frames created are put into the respective layout. */
-    void MakeFrms( const SwNodeIndex & rIdx );
+    void MakeFrames( const SwNodeIndex & rIdx );
 
     SwSectionNode* MakeCopy( SwDoc*, const SwNodeIndex& ) const;
 
@@ -589,80 +588,80 @@ private:
 
 inline       SwEndNode   *SwNode::GetEndNode()
 {
-     return ND_ENDNODE == nNodeType ? static_cast<SwEndNode*>(this) : 0;
+     return ND_ENDNODE == m_nNodeType ? static_cast<SwEndNode*>(this) : nullptr;
 }
 inline const SwEndNode   *SwNode::GetEndNode() const
 {
-     return ND_ENDNODE == nNodeType ? static_cast<const SwEndNode*>(this) : 0;
+     return ND_ENDNODE == m_nNodeType ? static_cast<const SwEndNode*>(this) : nullptr;
 }
 inline       SwStartNode *SwNode::GetStartNode()
 {
-     return ND_STARTNODE & nNodeType ? static_cast<SwStartNode*>(this) : 0;
+     return ND_STARTNODE & m_nNodeType ? static_cast<SwStartNode*>(this) : nullptr;
 }
 inline const SwStartNode *SwNode::GetStartNode() const
 {
-     return ND_STARTNODE & nNodeType ? static_cast<const SwStartNode*>(this) : 0;
+     return ND_STARTNODE & m_nNodeType ? static_cast<const SwStartNode*>(this) : nullptr;
 }
 inline       SwTableNode *SwNode::GetTableNode()
 {
-     return ND_TABLENODE == nNodeType ? static_cast<SwTableNode*>(this) : 0;
+     return ND_TABLENODE == m_nNodeType ? static_cast<SwTableNode*>(this) : nullptr;
 }
 inline const SwTableNode *SwNode::GetTableNode() const
 {
-     return ND_TABLENODE == nNodeType ? static_cast<const SwTableNode*>(this) : 0;
+     return ND_TABLENODE == m_nNodeType ? static_cast<const SwTableNode*>(this) : nullptr;
 }
 inline       SwSectionNode *SwNode::GetSectionNode()
 {
-     return ND_SECTIONNODE == nNodeType ? static_cast<SwSectionNode*>(this) : 0;
+     return ND_SECTIONNODE == m_nNodeType ? static_cast<SwSectionNode*>(this) : nullptr;
 }
 inline const SwSectionNode *SwNode::GetSectionNode() const
 {
-     return ND_SECTIONNODE == nNodeType ? static_cast<const SwSectionNode*>(this) : 0;
+     return ND_SECTIONNODE == m_nNodeType ? static_cast<const SwSectionNode*>(this) : nullptr;
 }
 inline       SwContentNode *SwNode::GetContentNode()
 {
-     return ND_CONTENTNODE & nNodeType ? static_cast<SwContentNode*>(this) : 0;
+     return ND_CONTENTNODE & m_nNodeType ? static_cast<SwContentNode*>(this) : nullptr;
 }
 inline const SwContentNode *SwNode::GetContentNode() const
 {
-     return ND_CONTENTNODE & nNodeType ? static_cast<const SwContentNode*>(this) : 0;
+     return ND_CONTENTNODE & m_nNodeType ? static_cast<const SwContentNode*>(this) : nullptr;
 }
 
 inline bool SwNode::IsStartNode() const
 {
-    return (ND_STARTNODE & nNodeType) != 0;
+    return (ND_STARTNODE & m_nNodeType) != 0;
 }
 inline bool SwNode::IsContentNode() const
 {
-    return (ND_CONTENTNODE & nNodeType) != 0;
+    return (ND_CONTENTNODE & m_nNodeType) != 0;
 }
 inline bool SwNode::IsEndNode() const
 {
-    return ND_ENDNODE == nNodeType;
+    return ND_ENDNODE == m_nNodeType;
 }
 inline bool SwNode::IsTextNode() const
 {
-    return ND_TEXTNODE == nNodeType;
+    return ND_TEXTNODE == m_nNodeType;
 }
 inline bool SwNode::IsTableNode() const
 {
-    return ND_TABLENODE == nNodeType;
+    return ND_TABLENODE == m_nNodeType;
 }
 inline bool SwNode::IsSectionNode() const
 {
-    return ND_SECTIONNODE == nNodeType;
+    return ND_SECTIONNODE == m_nNodeType;
 }
 inline bool SwNode::IsNoTextNode() const
 {
-    return (ND_NOTXTNODE & nNodeType) != 0;
+    return (ND_NOTXTNODE & m_nNodeType) != 0;
 }
 inline bool SwNode::IsOLENode() const
 {
-    return ND_OLENODE == nNodeType;
+    return ND_OLENODE == m_nNodeType;
 }
 inline bool SwNode::IsGrfNode() const
 {
-    return ND_GRFNODE == nNodeType;
+    return ND_GRFNODE == m_nNodeType;
 }
 
 inline const SwStartNode* SwNode::FindSttNodeByType( SwStartNodeType eTyp ) const
@@ -679,22 +678,22 @@ inline const SwSectionNode* SwNode::FindSectionNode() const
 }
 inline sal_uLong SwNode::StartOfSectionIndex() const
 {
-    return pStartOfSection->GetIndex();
+    return m_pStartOfSection->GetIndex();
 }
 inline sal_uLong SwNode::EndOfSectionIndex() const
 {
-    const SwStartNode* pStNd = IsStartNode() ? static_cast<const SwStartNode*>(this) : pStartOfSection;
-    return pStNd->pEndOfSection->GetIndex();
+    const SwStartNode* pStNd = IsStartNode() ? static_cast<const SwStartNode*>(this) : m_pStartOfSection;
+    return pStNd->m_pEndOfSection->GetIndex();
 }
 inline const SwEndNode* SwNode::EndOfSectionNode() const
 {
-    const SwStartNode* pStNd = IsStartNode() ? static_cast<const SwStartNode*>(this) : pStartOfSection;
-    return pStNd->pEndOfSection;
+    const SwStartNode* pStNd = IsStartNode() ? static_cast<const SwStartNode*>(this) : m_pStartOfSection;
+    return pStNd->m_pEndOfSection;
 }
 inline SwEndNode* SwNode::EndOfSectionNode()
 {
-    const SwStartNode* pStNd = IsStartNode() ? static_cast<const SwStartNode*>(this) : pStartOfSection;
-    return pStNd->pEndOfSection;
+    const SwStartNode* pStNd = IsStartNode() ? static_cast<const SwStartNode*>(this) : m_pStartOfSection;
+    return pStNd->m_pEndOfSection;
 }
 
 inline SwNodes& SwNode::GetNodes()
@@ -717,13 +716,13 @@ inline const SwDoc* SwNode::GetDoc() const
 
 inline SwFormatColl* SwContentNode::GetCondFormatColl() const
 {
-    return pCondColl ? static_cast<SwFormatColl*>(pCondColl->GetRegisteredIn()) : 0;
+    return m_pCondColl ? static_cast<SwFormatColl*>(m_pCondColl->GetRegisteredIn()) : nullptr;
 }
 
 inline SwFormatColl& SwContentNode::GetAnyFormatColl() const
 {
-    return pCondColl && pCondColl->GetRegisteredIn()
-                ? *static_cast<SwFormatColl*>(pCondColl->GetRegisteredIn())
+    return m_pCondColl && m_pCondColl->GetRegisteredIn()
+                ? *static_cast<SwFormatColl*>(m_pCondColl->GetRegisteredIn())
                 : *const_cast<SwFormatColl*>(static_cast<const SwFormatColl*>(GetRegisteredIn()));
 }
 

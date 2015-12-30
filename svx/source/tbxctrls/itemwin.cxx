@@ -57,7 +57,7 @@ SvxLineBox::SvxLineBox( vcl::Window* pParent, const Reference< XFrame >& rFrame,
     nCurPos     ( 0 ),
     aLogicalSize(40,140),
     bRelease    ( true ),
-    mpSh        ( NULL ),
+    mpSh        ( nullptr ),
     mxFrame     ( rFrame )
 {
     SetSizePixel( LogicToPixel( aLogicalSize, MAP_APPFONT ));
@@ -122,7 +122,7 @@ void SvxLineBox::Select()
                     aLineDashItem.QueryValue ( a );
                     aArgs[0].Value = a;
                     SfxToolBoxControl::Dispatch( Reference< XDispatchProvider >( mxFrame->getController(), UNO_QUERY ),
-                                                 OUString( ".uno:LineDash" ),
+                                                 ".uno:LineDash",
                                                  aArgs );
                 }
             }
@@ -136,7 +136,7 @@ void SvxLineBox::Select()
         aLineStyleItem.QueryValue ( a );
         aArgs[0].Value = a;
         SfxToolBoxControl::Dispatch( Reference< XDispatchProvider >( mxFrame->getController(), UNO_QUERY ),
-                                     OUString( ".uno:XLineStyle" ),
+                                     ".uno:XLineStyle",
                                      aArgs );
 
         nCurPos = GetSelectEntryPos();
@@ -253,7 +253,7 @@ SvxMetricField::SvxMetricField(
     , ePoolUnit(SFX_MAPUNIT_CM)
     , mxFrame(rFrame)
 {
-    Size aSize = Size(GetTextWidth( OUString("99,99mm") ),GetTextHeight());
+    Size aSize(GetTextWidth( "99,99mm" ),GetTextHeight());
     aSize.Width() += 20;
     aSize.Height() += 6;
     SetSizePixel( aSize );
@@ -297,7 +297,7 @@ void SvxMetricField::Modify()
     aLineWidthItem.QueryValue( a );
     aArgs[0].Value = a;
     SfxToolBoxControl::Dispatch( Reference< XDispatchProvider >( mxFrame->getController(), UNO_QUERY ),
-                                 OUString( ".uno:LineWidth" ),
+                                 ".uno:LineWidth",
                                  aArgs );
 }
 
@@ -419,16 +419,19 @@ bool SvxFillTypeBox::PreNotify( NotifyEvent& rNEvt )
 {
     MouseNotifyEvent nType = rNEvt.GetType();
 
-    if ( MouseNotifyEvent::MOUSEBUTTONDOWN == nType || MouseNotifyEvent::GETFOCUS == nType )
-        nCurPos = GetSelectEntryPos();
-    else if ( MouseNotifyEvent::LOSEFOCUS == nType
-        && Application::GetFocusWindow()
-        && !IsWindowOrChild( Application::GetFocusWindow(), true ) )
+    if (!isDisposed())
     {
-        if ( !bSelect )
-            SelectEntryPos( nCurPos );
-        else
-            bSelect = false;
+        if ( MouseNotifyEvent::MOUSEBUTTONDOWN == nType || MouseNotifyEvent::GETFOCUS == nType )
+            nCurPos = GetSelectEntryPos();
+        else if ( MouseNotifyEvent::LOSEFOCUS == nType
+                  && Application::GetFocusWindow()
+                  && !IsWindowOrChild( Application::GetFocusWindow(), true ) )
+        {
+            if ( !bSelect )
+                SelectEntryPos( nCurPos );
+            else
+                bSelect = false;
+        }
     }
 
     return FillTypeLB::PreNotify( rNEvt );
@@ -440,6 +443,9 @@ bool SvxFillTypeBox::Notify( NotifyEvent& rNEvt )
 {
     bool bHandled = FillTypeLB::Notify( rNEvt );
 
+    if (isDisposed())
+        return false;
+
     if ( rNEvt.GetType() == MouseNotifyEvent::KEYINPUT )
     {
         const KeyEvent* pKEvt = rNEvt.GetKeyEvent();
@@ -447,11 +453,11 @@ bool SvxFillTypeBox::Notify( NotifyEvent& rNEvt )
         {
             case KEY_RETURN:
                 bHandled = true;
-                ( (Link<>&)GetSelectHdl() ).Call( this );
+                GetSelectHdl().Call( *this );
             break;
             case KEY_TAB:
                 bRelease = false;
-                ( (Link<>&)GetSelectHdl() ).Call( this );
+                GetSelectHdl().Call( *this );
                 bRelease = true;
                 break;
 
@@ -514,12 +520,12 @@ bool SvxFillAttrBox::Notify( NotifyEvent& rNEvt )
         switch ( pKEvt->GetKeyCode().GetCode() )
         {
             case KEY_RETURN:
-                ( (Link<>&)GetSelectHdl() ).Call( this );
+                GetSelectHdl().Call( *this );
                 bHandled = true;
             break;
             case KEY_TAB:
                 bRelease = false;
-                GetSelectHdl().Call( this );
+                GetSelectHdl().Call( *this );
                 bRelease = true;
             break;
             case KEY_ESCAPE:

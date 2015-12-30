@@ -20,14 +20,16 @@
 #ifndef INCLUDED_FILTER_MSFILTER_SVXMSBAS_HXX
 #define INCLUDED_FILTER_MSFILTER_SVXMSBAS_HXX
 
-#include <tools/solar.h>
-#include <filter/msfilter/msfilterdllapi.h>
-
 #include <map>
 #include <unordered_map>
 
+#include <filter/msfilter/msfilterdllapi.h>
+#include <rtl/ustring.hxx>
+#include <sot/storage.hxx>
+#include <tools/solar.h>
+#include <tools/ref.hxx>
+
 class SfxObjectShell;
-class SotStorage;
 
 /* Construct with the root storage of the MS document, with bImportCode
  * set the visual basic code will be imported into the stardocument when Import
@@ -56,11 +58,11 @@ public:
     // form the ObjectShell
     // - returns a warning code if a modified basic exist, in all other
     //   cases return ERRCODE_NONE.
-    sal_uLong SaveOrDelMSVBAStorage( bool bSaveInto, const OUString& rStorageName );
+    ErrCode SaveOrDelMSVBAStorage( bool bSaveInto, const OUString& rStorageName );
 
     // check if the MS-VBA-Storage exist in the RootStorage of the DocShell.
     // If it exist, then return the WarningId for losing the information.
-    static sal_uLong GetSaveWarningOfMSVBAStorage( SfxObjectShell &rDocS );
+    static ErrCode GetSaveWarningOfMSVBAStorage( SfxObjectShell &rDocS );
 
     static OUString GetMSBasicStorageName();
 private:

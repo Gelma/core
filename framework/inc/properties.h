@@ -20,7 +20,6 @@
 #ifndef INCLUDED_FRAMEWORK_INC_PROPERTIES_H
 #define INCLUDED_FRAMEWORK_INC_PROPERTIES_H
 
-#include <macros/generic.hxx>
 #include "general.h"
 
 namespace framework{
@@ -33,12 +32,6 @@ namespace framework{
 #define FRAME_PROPNAME_ASCII_TITLE                      "Title"
 #define FRAME_PROPNAME_ASCII_INDICATORINTERCEPTION      "IndicatorInterception"
 
-#define FRAME_PROPNAME_DISPATCHRECORDERSUPPLIER         DECLARE_ASCII(FRAME_PROPNAME_ASCII_DISPATCHRECORDERSUPPLIER)
-#define FRAME_PROPNAME_ISHIDDEN                         DECLARE_ASCII(FRAME_PROPNAME_ASCII_ISHIDDEN                )
-#define FRAME_PROPNAME_LAYOUTMANAGER                    DECLARE_ASCII(FRAME_PROPNAME_ASCII_LAYOUTMANAGER           )
-#define FRAME_PROPNAME_TITLE                            DECLARE_ASCII(FRAME_PROPNAME_ASCII_TITLE                   )
-#define FRAME_PROPNAME_INDICATORINTERCEPTION            DECLARE_ASCII(FRAME_PROPNAME_ASCII_INDICATORINTERCEPTION   )
-
 // Please add new entries alphabetical sorted and correct all other handles!
 // Start counting with 0, so it can be used as direct index into an array too.
 // Don't forget updating of define FRAME_PROPCOUNT below!!!
@@ -49,31 +42,6 @@ namespace framework{
 #define FRAME_PROPHANDLE_INDICATORINTERCEPTION          4
 
 #define FRAME_PROPCOUNT                                 5
-
-/** properties for "Desktop" class */
-
-#define DESKTOP_PROPNAME_ASCII_ACTIVEFRAME              "ActiveFrame"
-#define DESKTOP_PROPNAME_ASCII_DISPATCHRECORDERSUPPLIER "DispatchRecorderSupplier"
-#define DESKTOP_PROPNAME_ASCII_ISPLUGGED                "IsPlugged"
-#define DESKTOP_PROPNAME_ASCII_SUSPENDQUICKSTARTVETO    "SuspendQuickstartVeto"
-#define DESKTOP_PROPNAME_ASCII_TITLE                    "Title"
-
-#define DESKTOP_PROPNAME_ACTIVEFRAME                    DECLARE_ASCII(DESKTOP_PROPNAME_ASCII_ACTIVEFRAME             )
-#define DESKTOP_PROPNAME_DISPATCHRECORDERSUPPLIER       DECLARE_ASCII(DESKTOP_PROPNAME_ASCII_DISPATCHRECORDERSUPPLIER)
-#define DESKTOP_PROPNAME_ISPLUGGED                      DECLARE_ASCII(DESKTOP_PROPNAME_ASCII_ISPLUGGED               )
-#define DESKTOP_PROPNAME_SUSPENDQUICKSTARTVETO          DECLARE_ASCII(DESKTOP_PROPNAME_ASCII_SUSPENDQUICKSTARTVETO   )
-#define DESKTOP_PROPNAME_TITLE                          DECLARE_ASCII(DESKTOP_PROPNAME_ASCII_TITLE                   )
-
-// Please add new entries alphabetical sorted and correct all other handles!
-// Start counting with 0, so it can be used as direct index into an array too.
-// Don't forget updating of define DESKTOP_PROPCOUNT below!!!
-#define DESKTOP_PROPHANDLE_ACTIVEFRAME                  0
-#define DESKTOP_PROPHANDLE_DISPATCHRECORDERSUPPLIER     1
-#define DESKTOP_PROPHANDLE_ISPLUGGED                    2
-#define DESKTOP_PROPHANDLE_SUSPENDQUICKSTARTVETO        3
-#define DESKTOP_PROPHANDLE_TITLE                        4
-
-#define DESKTOP_PROPCOUNT                               5
 
 /** properties for "PathSettings" class */
 
@@ -112,12 +80,7 @@ namespace framework{
 #define LAYOUTMANAGER_PROPNAME_ASCII_LOCKCOUNT              "LockCount"
 #define LAYOUTMANAGER_PROPNAME_ASCII_PRESERVE_CONTENT_SIZE  "PreserveContentSize"
 
-#define LAYOUTMANAGER_PROPNAME_MENUBARCLOSER            OUString( LAYOUTMANAGER_PROPNAME_ASCII_MENUBARCLOSER )
-#define LAYOUTMANAGER_PROPNAME_AUTOMATICTOOLBARS        OUString( LAYOUTMANAGER_PROPNAME_ASCII_AUTOMATICTOOLBARS )
-#define LAYOUTMANAGER_PROPNAME_REFRESHVISIBILITY        OUString( LAYOUTMANAGER_PROPNAME_ASCII_REFRESHVISIBILITY )
-#define LAYOUTMANAGER_PROPNAME_HIDECURRENTUI            OUString( LAYOUTMANAGER_PROPNAME_ASCII_HIDECURRENTUI )
-#define LAYOUTMANAGER_PROPNAME_LOCKCOUNT                OUString( LAYOUTMANAGER_PROPNAME_ASCII_LOCKCOUNT )
-#define LAYOUTMANAGER_PROPNAME_PRESERVE_CONTENT_SIZE    OUString( LAYOUTMANAGER_PROPNAME_ASCII_PRESERVE_CONTENT_SIZE )
+#define LAYOUTMANAGER_PROPNAME_MENUBARCLOSER            LAYOUTMANAGER_PROPNAME_ASCII_MENUBARCLOSER
 
 #define LAYOUTMANAGER_PROPHANDLE_MENUBARCLOSER          0
 #define LAYOUTMANAGER_PROPHANDLE_AUTOMATICTOOLBARS      1
@@ -154,17 +117,11 @@ namespace framework{
 
 #define FILTER_PROPNAME_ASCII_DOCUMENTSERVICE           "DocumentService"
 
-#define FILTER_PROPNAME_DOCUMENTSERVICE                 OUString( FILTER_PROPNAME_ASCII_DOCUMENTSERVICE )
-
 /** properties for office module config (Setup.xcu) */
 
 #define OFFICEFACTORY_PROPNAME_ASCII_WINDOWATTRIBUTES   "ooSetupFactoryWindowAttributes"
 #define OFFICEFACTORY_PROPNAME_ASCII_UINAME             "ooSetupFactoryUIName"
 #define OFFICEFACTORY_PROPNAME_ASCII_ICON               "ooSetupFactoryIcon"
-
-#define OFFICEFACTORY_PROPNAME_WINDOWATTRIBUTES         OUString( OFFICEFACTORY_PROPNAME_ASCII_WINDOWATTRIBUTES )
-#define OFFICEFACTORY_PROPNAME_UINAME                   OUString( OFFICEFACTORY_PROPNAME_ASCII_UINAME )
-#define OFFICEFACTORY_PROPNAME_ICON                     OUString( OFFICEFACTORY_PROPNAME_ASCII_ICON )
 
 /** properties for tab window (old) */
 #define TABWINDOW_PROPNAME_ASCII_PARENTWINDOW           "ParentWindow"

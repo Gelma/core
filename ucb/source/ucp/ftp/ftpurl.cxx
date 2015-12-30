@@ -35,7 +35,7 @@
 
 #include "ftpstrcont.hxx"
 #include "ftpurl.hxx"
-#include "ftphandleprovider.hxx"
+#include "ftpcontentprovider.hxx"
 #include "ftpcfunc.hxx"
 #include "ftpcontainer.hxx"
 #include <memory>
@@ -63,7 +63,7 @@ OUString decodePathSegment(OUString const & encoded) {
 MemoryContainer::MemoryContainer()
     : m_nLen(0),
       m_nWritePos(0),
-      m_pBuffer(0)
+      m_pBuffer(nullptr)
 {
 }
 
@@ -126,7 +126,7 @@ FTPURL::FTPURL(const FTPURL& r)
 
 
 FTPURL::FTPURL(const OUString& url,
-               FTPHandleProvider* pFCP)
+               FTPContentProvider* pFCP)
     throw(
         malformed_exception
     )
@@ -387,7 +387,7 @@ namespace ftp {
                      urlParAscii.getStr());
 
 oslFileHandle FTPURL::open()
-    throw(curl_exception)
+    throw(curl_exception, std::exception)
 {
     if(m_aPathSegmentVec.empty())
         throw curl_exception(CURLE_FTP_COULDNT_RETR_FILE);
@@ -398,8 +398,8 @@ oslFileHandle FTPURL::open()
     OUString url(ident(false,true));
     SET_URL(url);
 
-    oslFileHandle res( NULL );
-    if ( osl_createTempFile( NULL, &res, NULL ) == osl_File_E_None )
+    oslFileHandle res( nullptr );
+    if ( osl_createTempFile( nullptr, &res, nullptr ) == osl_File_E_None )
     {
         curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,file_write);
         curl_easy_setopt(curl,CURLOPT_WRITEDATA,res);
@@ -414,7 +414,7 @@ oslFileHandle FTPURL::open()
                     "osl_setFilePos failed");
         }
         else {
-            osl_closeFile(res),res = 0;
+            osl_closeFile(res),res = nullptr;
             throw curl_exception(err);
         }
     }
@@ -519,7 +519,7 @@ OUString FTPURL::net_title() const
 
     SET_CONTROL_CONTAINER;
     curl_easy_setopt(curl,CURLOPT_NOBODY,true);       // no data => no transfer
-    struct curl_slist *slist = 0;
+    struct curl_slist *slist = nullptr;
     // post request
     slist = curl_slist_append(slist,"PWD");
     curl_easy_setopt(curl,CURLOPT_POSTQUOTE,slist);
@@ -689,7 +689,7 @@ void FTPURL::mkdir(bool ReplaceExisting) const
     OString aDel("del "); aDel += title;
     OString mkd("mkd "); mkd += title;
 
-    struct curl_slist *slist = 0;
+    struct curl_slist *slist = nullptr;
 
     FTPDirentry aDirentry(direntry());
     if(!ReplaceExisting) {
@@ -740,7 +740,7 @@ OUString FTPURL::ren(const OUString& NewTitle)
                      NewTitle.getLength(),
                      RTL_TEXTENCODING_UTF8);
 
-    struct curl_slist *slist = 0;
+    struct curl_slist *slist = nullptr;
     slist = curl_slist_append(slist,renamefrom.getStr());
     slist = curl_slist_append(slist,renameto.getStr());
     curl_easy_setopt(curl,CURLOPT_POSTQUOTE,slist);
@@ -791,7 +791,7 @@ void FTPURL::del() const
 
     // post request
     CURL *curl = m_pFCP->handle();
-    struct curl_slist *slist = 0;
+    struct curl_slist *slist = nullptr;
     slist = curl_slist_append(slist,dele.getStr());
     curl_easy_setopt(curl,CURLOPT_POSTQUOTE,slist);
 

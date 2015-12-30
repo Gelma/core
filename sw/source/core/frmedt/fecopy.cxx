@@ -123,10 +123,10 @@ bool SwFEShell::Copy( SwDoc* pClpDoc, const OUString* pNewClpText )
     bool bRet;
 
     // do we want to copy a FlyFrame?
-    if( IsFrmSelected() )
+    if( IsFrameSelected() )
     {
         // get the FlyFormat
-        SwFlyFrm* pFly = GetSelectedFlyFrm();
+        SwFlyFrame* pFly = GetSelectedFlyFrame();
         SwFrameFormat* pFlyFormat = pFly->GetFormat();
         SwFormatAnchor aAnchor( pFlyFormat->GetAnchor() );
 
@@ -168,7 +168,7 @@ bool SwFEShell::Copy( SwDoc* pClpDoc, const OUString* pNewClpText )
                     rIdx.GetIndex(), RES_TXTATR_FLYCNT));
             if( pTextFly )
             {
-                const_cast<SwFormatFlyCnt&>(pTextFly->GetFlyCnt()).SetFlyFormat( 0 );
+                const_cast<SwFormatFlyCnt&>(pTextFly->GetFlyCnt()).SetFlyFormat();
                 pTextNd->EraseText( rIdx, 1 );
             }
         }
@@ -192,7 +192,7 @@ bool SwFEShell::Copy( SwDoc* pClpDoc, const OUString* pNewClpText )
                 aSet.Put( aAnchor );
 
                 SdrObject *const pNew =
-                    pClpDoc->CloneSdrObj( *pObj, false );
+                    pClpDoc->CloneSdrObj( *pObj );
 
                 SwPaM aTemp(aPos);
                 pClpDoc->getIDocumentContentOperations().InsertDrawObj(aTemp, *pNew, aSet );
@@ -216,40 +216,40 @@ bool SwFEShell::Copy( SwDoc* pClpDoc, const OUString* pNewClpText )
         bRet = true;
     }
     else
-        bRet = _CopySelToDoc( pClpDoc, 0 );     // copy the selections
+        bRet = _CopySelToDoc( pClpDoc );     // copy the selections
 
     pClpDoc->getIDocumentRedlineAccess().SetRedlineMode_intern((RedlineMode_t)0 );
     pClpDoc->getIDocumentFieldsAccess().UnlockExpFields();
     if( !pClpDoc->getIDocumentFieldsAccess().IsExpFieldsLocked() )
-        pClpDoc->getIDocumentFieldsAccess().UpdateExpFields(NULL, true);
+        pClpDoc->getIDocumentFieldsAccess().UpdateExpFields(nullptr, true);
 
     return bRet;
 }
 
-static const Point &lcl_FindBasePos( const SwFrm *pFrm, const Point &rPt )
+static const Point &lcl_FindBasePos( const SwFrame *pFrame, const Point &rPt )
 {
-    const SwFrm *pF = pFrm;
-    while ( pF && !pF->Frm().IsInside( rPt ) )
+    const SwFrame *pF = pFrame;
+    while ( pF && !pF->Frame().IsInside( rPt ) )
     {
-        if ( pF->IsContentFrm() )
-            pF = static_cast<const SwContentFrm*>(pF)->GetFollow();
+        if ( pF->IsContentFrame() )
+            pF = static_cast<const SwContentFrame*>(pF)->GetFollow();
         else
-            pF = 0;
+            pF = nullptr;
     }
     if ( pF )
-        return pF->Frm().Pos();
+        return pF->Frame().Pos();
     else
-        return pFrm->Frm().Pos();
+        return pFrame->Frame().Pos();
 }
 
-static bool lcl_SetAnchor( const SwPosition& rPos, const SwNode& rNd, SwFlyFrm* pFly,
+static bool lcl_SetAnchor( const SwPosition& rPos, const SwNode& rNd, SwFlyFrame* pFly,
                 const Point& rInsPt, SwFEShell& rDestShell, SwFormatAnchor& rAnchor,
                 Point& rNewPos, bool bCheckFlyRecur )
 {
     bool bRet = true;
     rAnchor.SetAnchor( &rPos );
-    SwContentFrm* pTmpFrm = rNd.GetContentNode()->getLayoutFrm( rDestShell.GetLayout(), &rInsPt, 0, false );
-    SwFlyFrm *pTmpFly = pTmpFrm->FindFlyFrm();
+    SwContentFrame* pTmpFrame = rNd.GetContentNode()->getLayoutFrame( rDestShell.GetLayout(), &rInsPt, nullptr, false );
+    SwFlyFrame *pTmpFly = pTmpFrame->FindFlyFrame();
     if( pTmpFly && bCheckFlyRecur && pFly->IsUpperOf( *pTmpFly ) )
     {
         bRet = false;
@@ -261,18 +261,18 @@ static bool lcl_SetAnchor( const SwPosition& rPos, const SwNode& rNd, SwFlyFrm* 
             const SwNodeIndex& rIdx = *pTmpFly->GetFormat()->GetContent().GetContentIdx();
             SwPosition aPos( rIdx );
             rAnchor.SetAnchor( &aPos );
-            rNewPos = pTmpFly->Frm().Pos();
+            rNewPos = pTmpFly->Frame().Pos();
         }
         else
         {
             rAnchor.SetType( FLY_AT_PAGE );
             rAnchor.SetPageNum( rDestShell.GetPageNumber( rInsPt ) );
-            const SwFrm *pPg = pTmpFrm->FindPageFrm();
-            rNewPos = pPg->Frm().Pos();
+            const SwFrame *pPg = pTmpFrame->FindPageFrame();
+            rNewPos = pPg->Frame().Pos();
         }
     }
     else
-        rNewPos = ::lcl_FindBasePos( pTmpFrm, rInsPt );
+        rNewPos = ::lcl_FindBasePos( pTmpFrame, rInsPt );
     return bRet;
 }
 
@@ -337,26 +337,26 @@ bool SwFEShell::CopyDrawSel( SwFEShell* pDestShell, const Point& rSttPt,
                 {
                     // same shell? Then request the position
                     // from the passed DocumentPosition
-                    SwPosition aPos( *GetCrsr()->GetPoint() );
+                    SwPosition aPos( *GetCursor()->GetPoint() );
                     Point aPt( rInsPt );
                     aPt -= rSttPt - pObj->GetSnapRect().TopLeft();
-                    SwCrsrMoveState aState( MV_SETONLYTEXT );
-                    GetLayout()->GetCrsrOfst( &aPos, aPt, &aState );
+                    SwCursorMoveState aState( MV_SETONLYTEXT );
+                    GetLayout()->GetCursorOfst( &aPos, aPt, &aState );
                     const SwNode *pNd;
                     if( (pNd = &aPos.nNode.GetNode())->IsNoTextNode() )
                         bRet = false;
                     else
-                        bRet = ::lcl_SetAnchor( aPos, *pNd, 0, rInsPt,
+                        bRet = ::lcl_SetAnchor( aPos, *pNd, nullptr, rInsPt,
                                 *pDestShell, aAnchor, aNewAnch, false );
                 }
                 else
                 {
-                    SwPaM *pCrsr = pDestShell->GetCrsr();
-                    if( pCrsr->GetNode().IsNoTextNode() )
+                    SwPaM *pCursor = pDestShell->GetCursor();
+                    if( pCursor->GetNode().IsNoTextNode() )
                         bRet = false;
                     else
-                        bRet = ::lcl_SetAnchor( *pCrsr->GetPoint(),
-                                                pCrsr->GetNode(), 0, rInsPt,
+                        bRet = ::lcl_SetAnchor( *pCursor->GetPoint(),
+                                                pCursor->GetNode(), nullptr, rInsPt,
                                                 *pDestShell, aAnchor,
                                                 aNewAnch, false );
                 }
@@ -364,10 +364,10 @@ bool SwFEShell::CopyDrawSel( SwFEShell* pDestShell, const Point& rSttPt,
             else if ( FLY_AT_PAGE == aAnchor.GetAnchorId() )
             {
                 aAnchor.SetPageNum( pDestShell->GetPageNumber( rInsPt ) );
-                const SwRootFrm* pTmpRoot = pDestShell->GetLayout();
-                const SwFrm* pPg = pTmpRoot->GetPageAtPos( rInsPt, 0, true );
+                const SwRootFrame* pTmpRoot = pDestShell->GetLayout();
+                const SwFrame* pPg = pTmpRoot->GetPageAtPos( rInsPt, nullptr, true );
                 if ( pPg )
-                    aNewAnch = pPg->Frm().Pos();
+                    aNewAnch = pPg->Frame().Pos();
             }
 
             if( bRet )
@@ -379,7 +379,7 @@ bool SwFEShell::CopyDrawSel( SwFEShell* pDestShell, const Point& rSttPt,
                     aSet.Put( aAnchor );
                     SdrObject* pNew = pDestDoc->CloneSdrObj( *pObj, bIsMove &&
                                                 GetDoc() == pDestDoc );
-                    pFormat = pDestDoc->getIDocumentContentOperations().InsertDrawObj( *pDestShell->GetCrsr(), *pNew, aSet );
+                    pFormat = pDestDoc->getIDocumentContentOperations().InsertDrawObj( *pDestShell->GetCursor(), *pNew, aSet );
                 }
                 else
                     pFormat = pDestDoc->getIDocumentLayoutAccess().CopyLayoutFormat( *pFormat, aAnchor, true, true );
@@ -399,7 +399,7 @@ bool SwFEShell::CopyDrawSel( SwFEShell* pDestShell, const Point& rSttPt,
                         pFormat->SetFormatAttr( SwFormatVertOrient( aPos.getY(), text::VertOrientation::NONE, text::RelOrientation::FRAME ) );
                         // #i47455# - notify draw frame format
                         // that position attributes are already set.
-                        if ( pFormat->ISA(SwDrawFrameFormat) )
+                        if ( dynamic_cast<const SwDrawFrameFormat*>( pFormat) !=  nullptr )
                         {
                             static_cast<SwDrawFrameFormat*>(pFormat)->PosAttrSet();
                         }
@@ -465,9 +465,9 @@ bool SwFEShell::Copy( SwFEShell* pDestShell, const Point& rSttPt,
     // (individual boxes in the area are retrieved via the layout)
      SwFieldType* pTableFieldTyp = pDestShell->GetDoc()->getIDocumentFieldsAccess().GetSysFieldType( RES_TABLEFLD );
 
-    if( IsFrmSelected() )
+    if( IsFrameSelected() )
     {
-        SwFlyFrm* pFly = GetSelectedFlyFrm();
+        SwFlyFrame* pFly = GetSelectedFlyFrame();
         SwFrameFormat* pFlyFormat = pFly->GetFormat();
         SwFormatAnchor aAnchor( pFlyFormat->GetAnchor() );
         bRet = true;
@@ -482,11 +482,11 @@ bool SwFEShell::Copy( SwFEShell* pDestShell, const Point& rSttPt,
             {
                 // same shell? Then request the position
                 // from the passed DocumentPosition
-                SwPosition aPos( *GetCrsr()->GetPoint() );
+                SwPosition aPos( *GetCursor()->GetPoint() );
                 Point aPt( rInsPt );
-                aPt -= rSttPt - pFly->Frm().Pos();
-                SwCrsrMoveState aState( MV_SETONLYTEXT );
-                GetLayout()->GetCrsrOfst( &aPos, aPt, &aState );
+                aPt -= rSttPt - pFly->Frame().Pos();
+                SwCursorMoveState aState( MV_SETONLYTEXT );
+                GetLayout()->GetCursorOfst( &aPos, aPt, &aState );
                 const SwNode *pNd;
                 if( (pNd = &aPos.nNode.GetNode())->IsNoTextNode() )
                     bRet = false;
@@ -506,11 +506,11 @@ bool SwFEShell::Copy( SwFEShell* pDestShell, const Point& rSttPt,
             }
             else
             {
-                const SwPaM *pCrsr = pDestShell->GetCrsr();
-                if( pCrsr->GetNode().IsNoTextNode() )
+                const SwPaM *pCursor = pDestShell->GetCursor();
+                if( pCursor->GetNode().IsNoTextNode() )
                     bRet = false;
                 else
-                    bRet = ::lcl_SetAnchor( *pCrsr->GetPoint(), pCrsr->GetNode(),
+                    bRet = ::lcl_SetAnchor( *pCursor->GetPoint(), pCursor->GetNode(),
                                             pFly, rInsPt, *pDestShell, aAnchor,
                                     aNewAnch, GetDoc() == pDestShell->GetDoc());
             }
@@ -518,10 +518,10 @@ bool SwFEShell::Copy( SwFEShell* pDestShell, const Point& rSttPt,
         else if ( FLY_AT_PAGE == aAnchor.GetAnchorId() )
         {
             aAnchor.SetPageNum( pDestShell->GetPageNumber( rInsPt ) );
-            const SwRootFrm* pTmpRoot = pDestShell->GetLayout();
-            const SwFrm* pPg = pTmpRoot->GetPageAtPos( rInsPt, 0, true );
+            const SwRootFrame* pTmpRoot = pDestShell->GetLayout();
+            const SwFrame* pPg = pTmpRoot->GetPageAtPos( rInsPt, nullptr, true );
             if ( pPg )
-                aNewAnch = pPg->Frm().Pos();
+                aNewAnch = pPg->Frame().Pos();
         }
         else {
             OSL_ENSURE( false, "what anchor is it?" );
@@ -536,12 +536,12 @@ bool SwFEShell::Copy( SwFEShell* pDestShell, const Point& rSttPt,
             {
                 Point aPos( rInsPt );
                 aPos -= aNewAnch;
-                aPos -= rSttPt - pFly->Frm().Pos();
+                aPos -= rSttPt - pFly->Frame().Pos();
                 pFlyFormat->SetFormatAttr( SwFormatHoriOrient( aPos.getX(),text::HoriOrientation::NONE, text::RelOrientation::FRAME ) );
                 pFlyFormat->SetFormatAttr( SwFormatVertOrient( aPos.getY(),text::VertOrientation::NONE, text::RelOrientation::FRAME ) );
             }
 
-            const Point aPt( pDestShell->GetCrsrDocPos() );
+            const Point aPt( pDestShell->GetCursorDocPos() );
 
             if( bIsMove )
                 GetDoc()->getIDocumentLayoutAccess().DelLayoutFormat( pOldFormat );
@@ -549,12 +549,12 @@ bool SwFEShell::Copy( SwFEShell* pDestShell, const Point& rSttPt,
             // only select if it can be shifted/copied in the same shell
             if( bSelectInsert )
             {
-                SwFlyFrm* pFlyFrm = static_cast<SwFlyFrameFormat*>(pFlyFormat)->GetFrm( &aPt );
-                if( pFlyFrm )
+                SwFlyFrame* pFlyFrame = static_cast<SwFlyFrameFormat*>(pFlyFormat)->GetFrame( &aPt );
+                if( pFlyFrame )
                 {
-                    //JP 12.05.98: should this be in SelectFlyFrm???
+                    //JP 12.05.98: should this be in SelectFlyFrame???
                     pDestShell->Imp()->GetDrawView()->UnmarkAll();
-                    pDestShell->SelectFlyFrm( *pFlyFrm, true );
+                    pDestShell->SelectFlyFrame( *pFlyFrame, true );
                 }
             }
 
@@ -575,47 +575,47 @@ bool SwFEShell::Copy( SwFEShell* pDestShell, const Point& rSttPt,
         SwSelBoxes aBoxes;
         GetTableSel( *this, aBoxes );
         if( !aBoxes.empty() &&
-            0 != (pTableNd = aBoxes[0]->GetSttNd()->FindTableNode()) )
+            nullptr != (pTableNd = aBoxes[0]->GetSttNd()->FindTableNode()) )
         {
-            SwPosition* pDstPos = 0;
+            SwPosition* pDstPos = nullptr;
             if( this == pDestShell )
             {
-                // same shell? Then create new Crsr at the
+                // same shell? Then create new Cursor at the
                 // DocumentPosition passed
-                pDstPos = new SwPosition( *GetCrsr()->GetPoint() );
+                pDstPos = new SwPosition( *GetCursor()->GetPoint() );
                 Point aPt( rInsPt );
-                GetLayout()->GetCrsrOfst( pDstPos, aPt );
+                GetLayout()->GetCursorOfst( pDstPos, aPt );
                 if( !pDstPos->nNode.GetNode().IsNoTextNode() )
                     bRet = true;
             }
-            else if( !pDestShell->GetCrsr()->GetNode().IsNoTextNode() )
+            else if( !pDestShell->GetCursor()->GetNode().IsNoTextNode() )
             {
-                pDstPos = new SwPosition( *pDestShell->GetCrsr()->GetPoint() );
+                pDstPos = new SwPosition( *pDestShell->GetCursor()->GetPoint() );
                 bRet = true;
             }
 
             if( bRet )
             {
                 if( GetDoc() == pDestShell->GetDoc() )
-                    ParkTableCrsr();
+                    ParkTableCursor();
 
-                bRet = pDestShell->GetDoc()->InsCopyOfTable( *pDstPos, aBoxes,0,
+                bRet = pDestShell->GetDoc()->InsCopyOfTable( *pDstPos, aBoxes,nullptr,
                                         bIsMove && this == pDestShell &&
                                         aBoxes.size() == pTableNd->GetTable().
                                         GetTabSortBoxes().size(),
                                         this != pDestShell );
 
                 if( this != pDestShell )
-                    *pDestShell->GetCrsr()->GetPoint() = *pDstPos;
+                    *pDestShell->GetCursor()->GetPoint() = *pDstPos;
 
-                // create all parked Crsr?
+                // create all parked Cursor?
                 if( GetDoc() == pDestShell->GetDoc() )
-                    GetCrsr();
+                    GetCursor();
 
                 // JP 16.04.99: Bug 64908 - Set InsPos, to assure the parked
                 //              Cursor is positioned at the insert position
                 if( this == pDestShell )
-                    GetCrsrDocPos() = rInsPt;
+                    GetCursorDocPos() = rInsPt;
             }
             delete pDstPos;
         }
@@ -627,12 +627,12 @@ bool SwFEShell::Copy( SwFEShell* pDestShell, const Point& rSttPt,
         {
             // same shell? then request the position
             // at the passed document position
-            SwPosition aPos( *GetCrsr()->GetPoint() );
+            SwPosition aPos( *GetCursor()->GetPoint() );
             Point aPt( rInsPt );
-            GetLayout()->GetCrsrOfst( &aPos, aPt );
+            GetLayout()->GetCursorOfst( &aPos, aPt );
             bRet = !aPos.nNode.GetNode().IsNoTextNode();
         }
-        else if( pDestShell->GetCrsr()->GetNode().IsNoTextNode() )
+        else if( pDestShell->GetCursor()->GetNode().IsNoTextNode() )
             bRet = false;
 
         if( bRet )
@@ -655,7 +655,7 @@ bool SwFEShell::Copy( SwFEShell* pDestShell, const Point& rSttPt,
             pDestShell->StartAllAction();
     }
     pDestShell->GetDoc()->getIDocumentFieldsAccess().UnlockExpFields();
-    pDestShell->GetDoc()->getIDocumentFieldsAccess().UpdateFields(NULL, false);
+    pDestShell->GetDoc()->getIDocumentFieldsAccess().UpdateFields(nullptr, false);
 
     pDestShell->EndAllAction();
     return bRet;
@@ -703,7 +703,7 @@ bool SwFEShell::Paste( SwDoc* pClpDoc, bool bIncludingPageFrames )
 
     bool bRet = true;
     StartAllAction();
-    GetDoc()->GetIDocumentUndoRedo().StartUndo( UNDO_INSGLOSSARY, NULL );
+    GetDoc()->GetIDocumentUndoRedo().StartUndo( UNDO_INSGLOSSARY, nullptr );
     GetDoc()->getIDocumentFieldsAccess().LockExpFields();
 
     // When the clipboard content has been created by a rectangular selection
@@ -722,18 +722,18 @@ bool SwFEShell::Paste( SwDoc* pClpDoc, bool bIncludingPageFrames )
                        - aCpyPam.GetMark()->nNode.GetIndex();
         sal_uInt32 nCount = nSelCount;
         SwNodeIndex aClpIdx( aIdx );
-        SwPaM* pStartCursor = GetCrsr();
-        SwPaM* pCurrCrsr = pStartCursor;
+        SwPaM* pStartCursor = GetCursor();
+        SwPaM* pCurrCursor = pStartCursor;
         sal_uInt32 nCursorCount = pStartCursor->GetRingContainer().size();
         // If the target selection is a multi-selection, often the last and first
         // cursor of the ring points to identical document positions. Then
         // we should avoid double insertion of text portions...
-        while( nCursorCount > 1 && *pCurrCrsr->GetPoint() ==
-            *(pCurrCrsr->GetPrev()->GetPoint()) )
+        while( nCursorCount > 1 && *pCurrCursor->GetPoint() ==
+            *(pCurrCursor->GetPrev()->GetPoint()) )
         {
             --nCursorCount;
-            pCurrCrsr = pCurrCrsr->GetNext();
-            pStartCursor = pCurrCrsr;
+            pCurrCursor = pCurrCursor->GetNext();
+            pStartCursor = pCurrCursor;
         }
         SwPosition aStartPos( *pStartCursor->GetPoint() );
         SwPosition aInsertPos( aStartPos ); // first insertion position
@@ -749,23 +749,23 @@ bool SwFEShell::Paste( SwDoc* pClpDoc, bool bIncludingPageFrames )
                     PositionPtr( new SwPosition( aInsertPos ) ) );
                 ++aIdx;
                 aInsertion.first->SetMark();
-                if( pStartCursor == pCurrCrsr->GetNext() )
+                if( pStartCursor == pCurrCursor->GetNext() )
                 {   // Now we have to look for insertion positions...
                     if( !nMove ) // Annotate the last given insert position
                         aStartPos = aInsertPos;
-                    SwCursor aCrsr( aStartPos, 0, false);
+                    SwCursor aCursor( aStartPos, nullptr, false);
                     // Check if we find another insert position by moving
                     // down the last given position
-                    if( aCrsr.UpDown( false, ++nMove, 0, 0 ) )
-                        aInsertPos = *aCrsr.GetPoint();
+                    if( aCursor.UpDown( false, ++nMove, nullptr, 0 ) )
+                        aInsertPos = *aCursor.GetPoint();
                     else // if there is no paragraph we have to create it
                         bCompletePara = nCount > 0;
                     nCursorCount = 0;
                 }
                 else // as long as we find more insert positions in the cursor ring
                 {    // we'll take them
-                    pCurrCrsr = pCurrCrsr->GetNext();
-                    aInsertPos = *pCurrCrsr->GetPoint();
+                    pCurrCursor = pCurrCursor->GetNext();
+                    aInsertPos = *pCurrCursor->GetPoint();
                     --nCursorCount;
                 }
                 // If there are no more paragraphs e.g. at the end of a document,
@@ -819,11 +819,11 @@ bool SwFEShell::Paste( SwDoc* pClpDoc, bool bIncludingPageFrames )
     {
         bool bDelTable = true;
 
-        for(SwPaM& rPaM : GetCrsr()->GetRingContainer())
+        for(SwPaM& rPaM : GetCursor()->GetRingContainer())
         {
 
             if( pSrcNd &&
-                0 != ( pDestNd = GetDoc()->IsIdxInTable( rPaM.GetPoint()->nNode )) &&
+                nullptr != ( pDestNd = GetDoc()->IsIdxInTable( rPaM.GetPoint()->nNode )) &&
                 // are we at the beginning of the cell? (if not, we will insert a nested table)
                 // first paragraph of the cell?
                 rPaM.GetNode().GetIndex() == rPaM.GetNode().FindTableBoxStartNode()->GetIndex()+1 &&
@@ -832,7 +832,7 @@ bool SwFEShell::Paste( SwDoc* pClpDoc, bool bIncludingPageFrames )
             {
                 SwPosition aDestPos( *rPaM.GetPoint() );
 
-                bool bParkTableCrsr = false;
+                bool bParkTableCursor = false;
                 const SwStartNode* pSttNd =  rPaM.GetNode().FindTableBoxStartNode();
 
                 // TABLE IN TABLE: copy table in table
@@ -841,8 +841,8 @@ bool SwFEShell::Paste( SwDoc* pClpDoc, bool bIncludingPageFrames )
                 if( IsTableMode() )     // table selection?
                 {
                     GetTableSel( *this, aBoxes );
-                    ParkTableCrsr();
-                    bParkTableCrsr = true;
+                    ParkTableCursor();
+                    bParkTableCursor = true;
                 }
                 else if( !PamHasSelection(rPaM) && rPaM.GetNext() == &rPaM &&
                      ( !pSrcNd->GetTable().IsTableComplex() ||
@@ -856,7 +856,7 @@ bool SwFEShell::Paste( SwDoc* pClpDoc, bool bIncludingPageFrames )
                 }
 
                 SwNodeIndex aNdIdx( *pDestNd->EndOfSectionNode());
-                if( !bParkTableCrsr )
+                if( !bParkTableCursor )
                 {
                     // exit first the complete table
                     // ???? what about only table in a frame ?????
@@ -867,11 +867,10 @@ bool SwFEShell::Paste( SwDoc* pClpDoc, bool bIncludingPageFrames )
                     ::PaMCorrAbs(tmpPaM, aPos);
                 }
 
-                bRet = GetDoc()->InsCopyOfTable( aDestPos, aBoxes, &pSrcNd->GetTable(),
-                                            false );
+                bRet = GetDoc()->InsCopyOfTable( aDestPos, aBoxes, &pSrcNd->GetTable() );
 
-                if( bParkTableCrsr )
-                    GetCrsr();
+                if( bParkTableCursor )
+                    GetCursor();
                 else
                 {
                     // return to the box
@@ -933,7 +932,7 @@ bool SwFEShell::Paste( SwDoc* pClpDoc, bool bIncludingPageFrames )
                                 SdrObject* pOwner = pList->GetOwnerObj();
                                 if ( pOwner )
                                 {
-                                    SdrObjGroup* pThisGroup = PTR_CAST(SdrObjGroup, pOwner);
+                                    SdrObjGroup* pThisGroup = dynamic_cast<SdrObjGroup*>( pOwner );
                                     aGrpAnchor = pThisGroup->GetAnchorPos();
                                 }
                             }
@@ -978,7 +977,7 @@ bool SwFEShell::Paste( SwDoc* pClpDoc, bool bIncludingPageFrames )
                         {
                             Point aPt;
                             (void)lcl_SetAnchor( *rPaM.GetPoint(), rPaM.GetNode(),
-                                        0, aPt, *this, aAnchor, aPt, false );
+                                        nullptr, aPt, *this, aAnchor, aPt, false );
                         }
 
                         SwFrameFormat * pNew = GetDoc()->getIDocumentLayoutAccess().CopyLayoutFormat( *pCpyFormat, aAnchor, true, true );
@@ -987,11 +986,11 @@ bool SwFEShell::Paste( SwDoc* pClpDoc, bool bIncludingPageFrames )
                         {
                             if( RES_FLYFRMFMT == pNew->Which() )
                             {
-                                const Point aPt( GetCrsrDocPos() );
-                                SwFlyFrm* pFlyFrm = static_cast<SwFlyFrameFormat*>(pNew)->
-                                                        GetFrm( &aPt );
-                                if( pFlyFrm )
-                                    SelectFlyFrm( *pFlyFrm, true );
+                                const Point aPt( GetCursorDocPos() );
+                                SwFlyFrame* pFlyFrame = static_cast<SwFlyFrameFormat*>(pNew)->
+                                                        GetFrame( &aPt );
+                                if( pFlyFrame )
+                                    SelectFlyFrame( *pFlyFrame, true );
                                 // always pick the first FlyFrame only; the others
                                 // were copied to the clipboard via Fly in Fly
                                 break;
@@ -1011,7 +1010,7 @@ bool SwFEShell::Paste( SwDoc* pClpDoc, bool bIncludingPageFrames )
                                 pDV->MarkObj( pObj, pDV->GetSdrPageView() );
                                 // #i47455# - notify draw frame format
                                 // that position attributes are already set.
-                                if ( pNew->ISA(SwDrawFrameFormat) )
+                                if ( dynamic_cast<const SwDrawFrameFormat*>( pNew) !=  nullptr )
                                 {
                                     static_cast<SwDrawFrameFormat*>(pNew)->PosAttrSet();
                                 }
@@ -1045,7 +1044,7 @@ bool SwFEShell::Paste( SwDoc* pClpDoc, bool bIncludingPageFrames )
                 // **
 
                 // find out if the clipboard document starts with a table
-                bool bStartWithTable = 0 != aCpyPam.Start()->nNode.GetNode().FindTableNode();
+                bool bStartWithTable = nullptr != aCpyPam.Start()->nNode.GetNode().FindTableNode();
                 SwPosition aInsertPosition( rInsPos );
 
                 {
@@ -1104,7 +1103,7 @@ bool SwFEShell::Paste( SwDoc* pClpDoc, bool bIncludingPageFrames )
         }
     }
 
-    GetDoc()->GetIDocumentUndoRedo().EndUndo( UNDO_INSGLOSSARY, NULL );
+    GetDoc()->GetIDocumentUndoRedo().EndUndo( UNDO_INSGLOSSARY, nullptr );
 
     // have new table formulas been inserted?
     if( pTableFieldTyp->HasWriterListeners() )
@@ -1119,7 +1118,7 @@ bool SwFEShell::Paste( SwDoc* pClpDoc, bool bIncludingPageFrames )
             StartAllAction();
     }
     GetDoc()->getIDocumentFieldsAccess().UnlockExpFields();
-    GetDoc()->getIDocumentFieldsAccess().UpdateFields(NULL, false);
+    GetDoc()->getIDocumentFieldsAccess().UpdateFields(nullptr, false);
     EndAllAction();
 
     return bRet;
@@ -1134,7 +1133,7 @@ bool SwFEShell::PastePages( SwFEShell& rToFill, sal_uInt16 nStartPage, sal_uInt1
         return false;
     }
     MovePage( fnPageCurr, fnPageStart );
-    SwPaM aCpyPam( *GetCrsr()->GetPoint() );
+    SwPaM aCpyPam( *GetCursor()->GetPoint() );
     OUString sStartingPageDesc = GetPageDesc( GetCurPageDesc()).GetName();
     SwPageDesc* pDesc = rToFill.FindPageDescByName( sStartingPageDesc, true );
     if( pDesc )
@@ -1163,7 +1162,7 @@ bool SwFEShell::PastePages( SwFEShell& rToFill, sal_uInt16 nStartPage, sal_uInt1
 
     MovePage( fnPageCurr, fnPageEnd );
     aCpyPam.SetMark();
-    *aCpyPam.GetMark() = *GetCrsr()->GetPoint();
+    *aCpyPam.GetMark() = *GetCursor()->GetPoint();
 
     SET_CURR_SHELL( this );
 
@@ -1204,7 +1203,7 @@ bool SwFEShell::PastePages( SwFEShell& rToFill, sal_uInt16 nStartPage, sal_uInt1
         }
     }
     GetDoc()->getIDocumentFieldsAccess().UnlockExpFields();
-    GetDoc()->getIDocumentFieldsAccess().UpdateFields(NULL, false);
+    GetDoc()->getIDocumentFieldsAccess().UpdateFields(nullptr, false);
     Pop(false);
     EndAllAction();
 
@@ -1219,7 +1218,7 @@ bool SwFEShell::GetDrawObjGraphic( SotClipboardFormatId nFormat, Graphic& rGrf )
     if( rMrkList.GetMarkCount() )
     {
         if( rMrkList.GetMarkCount() == 1 &&
-            rMrkList.GetMark( 0 )->GetMarkedSdrObj()->ISA(SwVirtFlyDrawObj) )
+            dynamic_cast< const SwVirtFlyDrawObj* >(rMrkList.GetMark( 0 )->GetMarkedSdrObj()) != nullptr )
         {
             // select frame
             if( CNT_GRF == GetCntType() )
@@ -1267,7 +1266,7 @@ bool SwFEShell::GetDrawObjGraphic( SotClipboardFormatId nFormat, Graphic& rGrf )
                         // Not the original size, but the current one.
                         // Otherwise it could happen that for vector graphics
                         // many MB's of memory are allocated.
-                        const Size aSz( GetSelectedFlyFrm()->Prt().SSize() );
+                        const Size aSz( GetSelectedFlyFrame()->Prt().SSize() );
                         ScopedVclPtrInstance< VirtualDevice > pVirtDev(*GetWin());
 
                         MapMode aTmp( MAP_TWIP );
@@ -1340,7 +1339,7 @@ void SwFEShell::Paste( SvStream& rStrm, SwPasteSdr nAction, const Point* pPt )
 
     SvtPathOptions aPathOpt;
     FmFormModel* pModel = new FmFormModel( aPathOpt.GetPalettePath(),
-                                            0, GetDoc()->GetDocShell() );
+                                            nullptr, GetDoc()->GetDocShell() );
     pModel->GetItemPool().FreezeIdRanges();
 
     rStrm.Seek(0);
@@ -1366,22 +1365,22 @@ void SwFEShell::Paste( SvStream& rStrm, SwPasteSdr nAction, const Point* pPt )
         SdrObject* pClpObj = pModel->GetPage(0)->GetObj(0);
         SdrObject* pOldObj = pView->GetMarkedObjectList().GetMark( 0 )->GetMarkedSdrObj();
 
-        if( SwPasteSdr::SetAttr == nAction && pOldObj->ISA(SwVirtFlyDrawObj) )
+        if( SwPasteSdr::SetAttr == nAction && dynamic_cast<const SwVirtFlyDrawObj*>( pOldObj) !=  nullptr )
             nAction = SwPasteSdr::Replace;
 
         switch( nAction )
         {
         case SwPasteSdr::Replace:
             {
-                const SwFrameFormat* pFormat(0);
-                const SwFrm* pAnchor(0);
-                if( pOldObj->ISA(SwVirtFlyDrawObj) )
+                const SwFrameFormat* pFormat(nullptr);
+                const SwFrame* pAnchor(nullptr);
+                if( dynamic_cast<const SwVirtFlyDrawObj*>( pOldObj) !=  nullptr )
                 {
                     pFormat = FindFrameFormat( pOldObj );
 
                     Point aNullPt;
-                    SwFlyFrm* pFlyFrm = static_cast<const SwFlyFrameFormat*>(pFormat)->GetFrm( &aNullPt );
-                    pAnchor = pFlyFrm ? pFlyFrm->GetAnchorFrm() : NULL;
+                    SwFlyFrame* pFlyFrame = static_cast<const SwFlyFrameFormat*>(pFormat)->GetFrame( &aNullPt );
+                    pAnchor = pFlyFrame ? pFlyFrame->GetAnchorFrame() : nullptr;
 
                     if (!pAnchor || pAnchor->FindFooterOrHeader())
                     {
@@ -1405,36 +1404,36 @@ void SwFEShell::Paste( SvStream& rStrm, SwPasteSdr nAction, const Point* pPt )
                 Point aVec = aOldObjRect.TopLeft() - aNewRect.TopLeft();
                 pNewObj->NbcMove(Size(aVec.getX(), aVec.getY()));
 
-                if( pNewObj->ISA( SdrUnoObj ) )
+                if( dynamic_cast<const SdrUnoObj*>( pNewObj) !=  nullptr )
                     pNewObj->SetLayer( GetDoc()->getIDocumentDrawModelAccess().GetControlsId() );
-                else if( pOldObj->ISA( SdrUnoObj ) )
+                else if( dynamic_cast<const SdrUnoObj*>( pOldObj) !=  nullptr )
                     pNewObj->SetLayer( GetDoc()->getIDocumentDrawModelAccess().GetHeavenId() );
                 else
                     pNewObj->SetLayer( pOldObj->GetLayer() );
 
-                if( pOldObj->ISA(SwVirtFlyDrawObj) )
+                if( dynamic_cast<const SwVirtFlyDrawObj*>( pOldObj) !=  nullptr )
                 {
                     // store attributes, then set SdrObject
-                    SfxItemSet aFrmSet( mpDoc->GetAttrPool(),
+                    SfxItemSet aFrameSet( mpDoc->GetAttrPool(),
                                             RES_SURROUND, RES_ANCHOR );
-                    aFrmSet.Set( pFormat->GetAttrSet() );
+                    aFrameSet.Set( pFormat->GetAttrSet() );
 
                     Point aNullPt;
-                    if( pAnchor->IsTextFrm() && static_cast<const SwTextFrm*>(pAnchor)->IsFollow() )
+                    if( pAnchor->IsTextFrame() && static_cast<const SwTextFrame*>(pAnchor)->IsFollow() )
                     {
-                        const SwTextFrm* pTmp = static_cast<const SwTextFrm*>(pAnchor);
+                        const SwTextFrame* pTmp = static_cast<const SwTextFrame*>(pAnchor);
                         do {
                             pTmp = pTmp->FindMaster();
                             OSL_ENSURE( pTmp, "Where's my Master?" );
                         } while( pTmp->IsFollow() );
                         pAnchor = pTmp;
                     }
-                    if( pOldObj->ISA( SdrCaptionObj ))
+                    if( dynamic_cast<const SdrCaptionObj*>( pOldObj) !=  nullptr)
                         aNullPt = static_cast<SdrCaptionObj*>(pOldObj)->GetTailPos();
                     else
                         aNullPt = aOldObjRect.TopLeft();
 
-                    Point aNewAnchor = pAnchor->GetFrmAnchorPos( ::HasWrap( pOldObj ) );
+                    Point aNewAnchor = pAnchor->GetFrameAnchorPos( ::HasWrap( pOldObj ) );
                     // OD 2004-04-05 #i26791# - direct positioning of Writer
                     // fly frame object for <SwDoc::Insert(..)>
                     pNewObj->NbcSetRelativePos( aNullPt - aNewAnchor );
@@ -1444,7 +1443,7 @@ void SwFEShell::Paste( SvStream& rStrm, SwPasteSdr nAction, const Point* pPt )
 
                     DelSelectedObj();
 
-                    GetDoc()->getIDocumentContentOperations().InsertDrawObj( *GetCrsr(), *pNewObj, aFrmSet );
+                    GetDoc()->getIDocumentContentOperations().InsertDrawObj( *GetCursor(), *pNewObj, aFrameSet );
                 }
                 else
                 {
@@ -1463,7 +1462,7 @@ void SwFEShell::Paste( SvStream& rStrm, SwPasteSdr nAction, const Point* pPt )
 
                 if(pSdrGrafObj)
                 {
-                    SdrObject* pTarget = 0;
+                    SdrObject* pTarget = nullptr;
 
                     if(0 != pView->GetMarkedObjectList().GetMarkCount())
                     {
@@ -1519,7 +1518,7 @@ void SwFEShell::Paste( SvStream& rStrm, SwPasteSdr nAction, const Point* pPt )
         // #i50824#
         // method <lcl_RemoveOleObjsFromSdrModel> replaced by <lcl_ConvertSdrOle2ObjsToSdrGrafObjs>
         lcl_ConvertSdrOle2ObjsToSdrGrafObjs( pModel );
-        pView->Paste(*pModel, aPos, NULL, SdrInsertFlags::NONE, OUString(), OUString());
+        pView->Paste(*pModel, aPos, nullptr, SdrInsertFlags::NONE);
 
         const size_t nCnt = pView->GetMarkedObjectList().GetMarkCount();
         if( nCnt )
@@ -1535,7 +1534,7 @@ void SwFEShell::Paste( SvStream& rStrm, SwPasteSdr nAction, const Point* pPt )
             if ( nCnt > 1 )
                 pView->GroupMarked();
             SdrObject *pObj = pView->GetMarkedObjectList().GetMark(0)->GetMarkedSdrObj();
-            if( pObj->ISA( SdrUnoObj ) )
+            if( dynamic_cast<const SdrUnoObj*>( pObj) !=  nullptr )
             {
                 pObj->SetLayer( GetDoc()->getIDocumentDrawModelAccess().GetControlsId() );
                 bDesignMode = true;
@@ -1558,12 +1557,12 @@ void SwFEShell::Paste( SvStream& rStrm, SwPasteSdr nAction, const Point* pPt )
 bool SwFEShell::Paste(const Graphic &rGrf, const OUString& rURL)
 {
     SET_CURR_SHELL( this );
-    SdrObject* pObj = 0;
+    SdrObject* pObj = nullptr;
     SdrView *pView = Imp()->GetDrawView();
 
     bool bRet = 1 == pView->GetMarkedObjectList().GetMarkCount() &&
         (pObj = pView->GetMarkedObjectList().GetMark( 0 )->GetMarkedSdrObj())->IsClosedObj() &&
-        !pObj->ISA( SdrOle2Obj );
+        dynamic_cast<const SdrOle2Obj*>( pObj) ==  nullptr;
 
     if( bRet && pObj )
     {

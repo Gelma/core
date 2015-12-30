@@ -44,7 +44,7 @@ namespace xforms
 
     //= OXSDDataType
 
-    typedef ::cppu::WeakImplHelper             <   ::com::sun::star::xsd::XDataType
+    typedef ::cppu::WeakImplHelper             <   css::xsd::XDataType
                                                 >   OXSDDataType_Base;
     typedef ::comphelper::OMutexAndBroadcastHelper  OXSDDataType_BBase;
     typedef ::comphelper::OPropertyContainer        OXSDDataType_PBase;
@@ -70,8 +70,8 @@ namespace xforms
         sal_Int16   getTypeClass() const    { return m_nTypeClass; }
 
     private:
-        OXSDDataType( const OXSDDataType& ) SAL_DELETED_FUNCTION;
-        OXSDDataType& operator=( const OXSDDataType& ) SAL_DELETED_FUNCTION;
+        OXSDDataType( const OXSDDataType& ) = delete;
+        OXSDDataType& operator=( const OXSDDataType& ) = delete;
 
     protected:
         // create basic data type
@@ -82,37 +82,37 @@ namespace xforms
         DECLARE_XINTERFACE()
         DECLARE_XTYPEPROVIDER()
 
-        virtual OUString SAL_CALL getName(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL setName( const OUString& aName ) throw (::com::sun::star::uno::RuntimeException, ::com::sun::star::util::VetoException, std::exception) SAL_OVERRIDE;
-        virtual OUString SAL_CALL getPattern() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL setPattern( const OUString& _pattern ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual sal_Int16 SAL_CALL getWhiteSpaceTreatment() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL setWhiteSpaceTreatment( sal_Int16 _whitespacetreatment ) throw (::com::sun::star::uno::RuntimeException, ::com::sun::star::lang::IllegalArgumentException, std::exception) SAL_OVERRIDE;
-        virtual sal_Bool SAL_CALL getIsBasic() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual sal_Int16 SAL_CALL getTypeClass() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual OUString SAL_CALL getName(  ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL setName( const OUString& aName ) throw (css::uno::RuntimeException, css::util::VetoException, std::exception) override;
+        virtual OUString SAL_CALL getPattern() throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL setPattern( const OUString& _pattern ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual sal_Int16 SAL_CALL getWhiteSpaceTreatment() throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL setWhiteSpaceTreatment( sal_Int16 _whitespacetreatment ) throw (css::uno::RuntimeException, css::lang::IllegalArgumentException, std::exception) override;
+        virtual sal_Bool SAL_CALL getIsBasic() throw (css::uno::RuntimeException, std::exception) override;
+        virtual sal_Int16 SAL_CALL getTypeClass() throw (css::uno::RuntimeException, std::exception) override;
 
-        virtual sal_Bool SAL_CALL validate( const OUString& value ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual OUString SAL_CALL explainInvalid( const OUString& value ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual sal_Bool SAL_CALL validate( const OUString& value ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual OUString SAL_CALL explainInvalid( const OUString& value ) throw (css::uno::RuntimeException, std::exception) override;
 
         // XPropertySet - is a base of XDataType and needs to be disambiguated
-        virtual void SAL_CALL setPropertyValue( const OUString& aPropertyName, const ::com::sun::star::uno::Any& aValue ) throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::beans::PropertyVetoException, ::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual ::com::sun::star::uno::Any SAL_CALL getPropertyValue( const OUString& PropertyName ) throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL addPropertyChangeListener( const OUString& aPropertyName, const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertyChangeListener >& xListener ) throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL removePropertyChangeListener( const OUString& aPropertyName, const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertyChangeListener >& aListener ) throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL addVetoableChangeListener( const OUString& PropertyName, const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XVetoableChangeListener >& aListener ) throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL removeVetoableChangeListener( const OUString& PropertyName, const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XVetoableChangeListener >& aListener ) throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL setPropertyValue( const OUString& aPropertyName, const css::uno::Any& aValue ) throw (css::beans::UnknownPropertyException, css::beans::PropertyVetoException, css::lang::IllegalArgumentException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
+        virtual css::uno::Any SAL_CALL getPropertyValue( const OUString& PropertyName ) throw (css::beans::UnknownPropertyException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL addPropertyChangeListener( const OUString& aPropertyName, const css::uno::Reference< css::beans::XPropertyChangeListener >& xListener ) throw (css::beans::UnknownPropertyException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL removePropertyChangeListener( const OUString& aPropertyName, const css::uno::Reference< css::beans::XPropertyChangeListener >& aListener ) throw (css::beans::UnknownPropertyException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL addVetoableChangeListener( const OUString& PropertyName, const css::uno::Reference< css::beans::XVetoableChangeListener >& aListener ) throw (css::beans::UnknownPropertyException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL removeVetoableChangeListener( const OUString& PropertyName, const css::uno::Reference< css::beans::XVetoableChangeListener >& aListener ) throw (css::beans::UnknownPropertyException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
 
     public:
         OXSDDataType* clone( const OUString& _rNewName ) const;
 
     protected:
         // XPropertySet and friends
-        virtual sal_Bool SAL_CALL   convertFastPropertyValue( ::com::sun::star::uno::Any& _rConvertedValue, ::com::sun::star::uno::Any& _rOldValue, sal_Int32 _nHandle, const ::com::sun::star::uno::Any& _rValue ) throw(::com::sun::star::lang::IllegalArgumentException) SAL_OVERRIDE;
+        virtual sal_Bool SAL_CALL   convertFastPropertyValue( css::uno::Any& _rConvertedValue, css::uno::Any& _rOldValue, sal_Int32 _nHandle, const css::uno::Any& _rValue ) throw(css::lang::IllegalArgumentException) override;
         virtual void SAL_CALL       setFastPropertyValue_NoBroadcast(
                                         sal_Int32 nHandle,
-                                        const ::com::sun::star::uno::Any& rValue
+                                        const css::uno::Any& rValue
                                     )
-                                    throw (::com::sun::star::uno::Exception, std::exception) SAL_OVERRIDE;
+                                    throw (css::uno::Exception, std::exception) override;
 
         // --- own overridables ---
         // helper for implementing cloning of data types
@@ -124,7 +124,7 @@ namespace xforms
         virtual OUString _explainInvalid( sal_uInt16 nReason );
 
         // helper method for checking properties values which are to be set
-        virtual bool        checkPropertySanity( sal_Int32 _nHandle, const ::com::sun::star::uno::Any& _rNewValue, OUString& _rErrorMessage );
+        virtual bool        checkPropertySanity( sal_Int32 _nHandle, const css::uno::Any& _rNewValue, OUString& _rErrorMessage );
 
         // register properties implemented by this instance - call the base class when overriding
         virtual void        registerProperties();
@@ -134,8 +134,8 @@ namespace xforms
     //= helper for deriving from OXSDDataType
 
 #define DECLARE_DEFAULT_CLONING( classname )        \
-    virtual OXSDDataType* createClone( const OUString& _rName ) const SAL_OVERRIDE;    \
-    virtual void       initializeClone( const OXSDDataType& _rCloneSource ) SAL_OVERRIDE;
+    virtual OXSDDataType* createClone( const OUString& _rName ) const override;    \
+    virtual void       initializeClone( const OXSDDataType& _rCloneSource ) override;
 
 #define IMPLEMENT_DEFAULT_TYPED_CLONING( classname, baseclass )   \
     OXSDDataType* classname::createClone( const OUString& _rName ) const              \
@@ -149,16 +149,16 @@ namespace xforms
     }
 
 #define REGISTER_VOID_PROP( prop, memberAny, type ) \
-    registerMayBeVoidProperty( PROPERTY_##prop, PROPERTY_ID_##prop, ::com::sun::star::beans::PropertyAttribute::BOUND | ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, \
+    registerMayBeVoidProperty( PROPERTY_##prop, PROPERTY_ID_##prop, css::beans::PropertyAttribute::BOUND | css::beans::PropertyAttribute::MAYBEVOID, \
         &memberAny, cppu::UnoType<type>::get() );
 
     class OValueLimitedType_Base : public OXSDDataType
     {
     protected:
-        ::com::sun::star::uno::Any m_aMaxInclusive;
-        ::com::sun::star::uno::Any m_aMaxExclusive;
-        ::com::sun::star::uno::Any m_aMinInclusive;
-        ::com::sun::star::uno::Any m_aMinExclusive;
+        css::uno::Any m_aMaxInclusive;
+        css::uno::Any m_aMaxExclusive;
+        css::uno::Any m_aMinInclusive;
+        css::uno::Any m_aMinExclusive;
 
         double  m_fCachedMaxInclusive;
         double  m_fCachedMaxExclusive;
@@ -168,27 +168,27 @@ namespace xforms
     protected:
         OValueLimitedType_Base( const OUString& _rName, sal_Int16 _nTypeClass );
 
-        virtual void       initializeClone( const OXSDDataType& _rCloneSource ) SAL_OVERRIDE;
+        virtual void       initializeClone( const OXSDDataType& _rCloneSource ) override;
                 void       initializeTypedClone( const OValueLimitedType_Base& _rCloneSource );
 
         // XPropertySet and friends
         virtual void SAL_CALL       setFastPropertyValue_NoBroadcast(
                                         sal_Int32 nHandle,
-                                        const ::com::sun::star::uno::Any& rValue
+                                        const css::uno::Any& rValue
                                     )
-                                    throw (::com::sun::star::uno::Exception, std::exception) SAL_OVERRIDE;
+                                    throw (css::uno::Exception, std::exception) override;
 
         // OXSDDataType overridables
         virtual bool            _getValue( const OUString& value, double& fValue );
-        virtual sal_uInt16      _validate( const OUString& value ) SAL_OVERRIDE;
-        virtual OUString _explainInvalid( sal_uInt16 nReason ) SAL_OVERRIDE;
+        virtual sal_uInt16      _validate( const OUString& value ) override;
+        virtual OUString _explainInvalid( sal_uInt16 nReason ) override;
 
         // own overridables
         /** translate a given value into a human-readable string
 
             The value is guaranteed to be not <NULL/>, and is of type <member>ValueType</member>
         */
-        virtual OUString typedValueAsHumanReadableString( const ::com::sun::star::uno::Any& _rValue ) const = 0;
+        virtual OUString typedValueAsHumanReadableString( const css::uno::Any& _rValue ) const = 0;
 
         /** translates a <member>ValueType</member> value into a double value
 
@@ -202,7 +202,7 @@ namespace xforms
             @param _rDoubleValue
                 output parameter to hold the resulting double value
         */
-        virtual void normalizeValue( const ::com::sun::star::uno::Any& _rValue, double& _rDoubleValue ) const = 0;
+        virtual void normalizeValue( const css::uno::Any& _rValue, double& _rDoubleValue ) const = 0;
     };
 
     template < typename VALUE_TYPE >
@@ -210,14 +210,14 @@ namespace xforms
     {
     protected:
         typedef     VALUE_TYPE  ValueType;
-        inline const ::com::sun::star::uno::Type&
+        inline const css::uno::Type&
             getCppuType() const { return cppu::UnoType<ValueType>::get(); }
 
     protected:
         OValueLimitedType( const OUString& _rName, sal_Int16 _nTypeClass );
 
         // OXSDDataType overridables
-        virtual void            registerProperties() SAL_OVERRIDE;
+        virtual void            registerProperties() override;
     };
 
     /** helper class for implementing interfaces derived from XDataType
@@ -234,11 +234,11 @@ namespace xforms
 
     protected:
         // OPropertyArrayUsageHelper
-        virtual ::cppu::IPropertyArrayHelper* createArrayHelper( ) const;
+        virtual ::cppu::IPropertyArrayHelper* createArrayHelper() const SAL_OVERRIDE;
 
         // XPropertySet
-        virtual com::sun::star::uno::Reference<com::sun::star::beans::XPropertySetInfo>  SAL_CALL getPropertySetInfo() throw(com::sun::star::uno::RuntimeException);
-        virtual ::cppu::IPropertyArrayHelper& SAL_CALL getInfoHelper();
+        virtual css::uno::Reference<css::beans::XPropertySetInfo> SAL_CALL getPropertySetInfo() throw(css::uno::RuntimeException) SAL_OVERRIDE;
+        virtual ::cppu::IPropertyArrayHelper& SAL_CALL getInfoHelper() SAL_OVERRIDE;
     };
 
     class OBooleanType;
@@ -246,14 +246,14 @@ namespace xforms
     class OBooleanType : public OBooleanType_Base
     {
     public:
-        OBooleanType( const OUString& _rName );
+        explicit OBooleanType( const OUString& _rName );
 
     protected:
         DECLARE_DEFAULT_CLONING( OBooleanType )
 
         // OXSDDataType overridables
-        virtual sal_uInt16      _validate( const OUString& value ) SAL_OVERRIDE;
-        virtual OUString _explainInvalid( sal_uInt16 nReason ) SAL_OVERRIDE;
+        virtual sal_uInt16      _validate( const OUString& value ) override;
+        virtual OUString _explainInvalid( sal_uInt16 nReason ) override;
     };
 
     class OStringType;
@@ -262,23 +262,23 @@ namespace xforms
     {
     protected:
         // <properties>
-        ::com::sun::star::uno::Any m_aLength;
-        ::com::sun::star::uno::Any m_aMinLength;
-        ::com::sun::star::uno::Any m_aMaxLength;
+        css::uno::Any m_aLength;
+        css::uno::Any m_aMinLength;
+        css::uno::Any m_aMaxLength;
         // </properties>
 
     public:
-        OStringType( const OUString& _rName, sal_Int16 _nTypeClass /* = ::com::sun::star::xsd::DataTypeClass::STRING */ );
+        OStringType( const OUString& _rName, sal_Int16 _nTypeClass /* = css::xsd::DataTypeClass::STRING */ );
 
     protected:
         DECLARE_DEFAULT_CLONING( OStringType )
         void       initializeTypedClone( const OStringType& _rCloneSource );
 
         // OXSDDataType overridables
-        virtual sal_uInt16      _validate( const OUString& value ) SAL_OVERRIDE;
-        virtual OUString _explainInvalid( sal_uInt16 nReason ) SAL_OVERRIDE;
-        virtual bool            checkPropertySanity( sal_Int32 _nHandle, const ::com::sun::star::uno::Any& _rNewValue, OUString& _rErrorMessage ) SAL_OVERRIDE;
-        virtual void            registerProperties() SAL_OVERRIDE;
+        virtual sal_uInt16      _validate( const OUString& value ) override;
+        virtual OUString _explainInvalid( sal_uInt16 nReason ) override;
+        virtual bool            checkPropertySanity( sal_Int32 _nHandle, const css::uno::Any& _rNewValue, OUString& _rErrorMessage ) override;
+        virtual void            registerProperties() override;
     };
 
     class ODecimalType;
@@ -286,24 +286,24 @@ namespace xforms
     class ODecimalType : public ODecimalType_Base
     {
     protected:
-        ::com::sun::star::uno::Any m_aTotalDigits;
-        ::com::sun::star::uno::Any m_aFractionDigits;
+        css::uno::Any m_aTotalDigits;
+        css::uno::Any m_aFractionDigits;
 
     public:
-        ODecimalType( const OUString& _rName, sal_Int16 _nTypeClass /* = ::com::sun::star::xsd::DataTypeClass::DECIMAL */ );
+        ODecimalType( const OUString& _rName, sal_Int16 _nTypeClass /* = css::xsd::DataTypeClass::DECIMAL */ );
 
     protected:
         DECLARE_DEFAULT_CLONING( ODecimalType )
         void       initializeTypedClone( const ODecimalType& _rCloneSource );
 
         // OXSDDataType overridables
-        virtual sal_uInt16      _validate( const OUString& value ) SAL_OVERRIDE;
-        virtual OUString _explainInvalid( sal_uInt16 nReason ) SAL_OVERRIDE;
-        virtual void            registerProperties() SAL_OVERRIDE;
+        virtual sal_uInt16      _validate( const OUString& value ) override;
+        virtual OUString _explainInvalid( sal_uInt16 nReason ) override;
+        virtual void            registerProperties() override;
 
         // OValueLimitedType overridables
-        virtual OUString typedValueAsHumanReadableString( const ::com::sun::star::uno::Any& _rValue ) const SAL_OVERRIDE;
-        virtual void normalizeValue( const ::com::sun::star::uno::Any& _rValue, double& _rDoubleValue ) const SAL_OVERRIDE;
+        virtual OUString typedValueAsHumanReadableString( const css::uno::Any& _rValue ) const override;
+        virtual void normalizeValue( const css::uno::Any& _rValue, double& _rDoubleValue ) const override;
 
     private:
         using ODecimalType_Base::initializeTypedClone;
@@ -318,18 +318,18 @@ namespace xforms
     class classname : public classname##_Base                   \
     {                                                           \
     public:                                                     \
-        classname( const OUString& _rName );             \
+        explicit classname( const OUString& _rName );           \
                                                                 \
     protected:                                                  \
         DECLARE_DEFAULT_CLONING( classname )                    \
                                                                 \
         /* OXSDDataType overridables */                         \
-        virtual sal_uInt16          _validate( const OUString& value ) SAL_OVERRIDE;  \
-        virtual bool                _getValue( const OUString& value, double& fValue ) SAL_OVERRIDE;  \
+        virtual sal_uInt16          _validate( const OUString& value ) override;  \
+        virtual bool                _getValue( const OUString& value, double& fValue ) override;  \
                                                                 \
         /* OValueLimitedType overridables */                    \
-        virtual OUString     typedValueAsHumanReadableString( const ::com::sun::star::uno::Any& _rValue ) const SAL_OVERRIDE;  \
-        virtual void normalizeValue( const ::com::sun::star::uno::Any& _rValue, double& _rDoubleValue ) const SAL_OVERRIDE; \
+        virtual OUString     typedValueAsHumanReadableString( const css::uno::Any& _rValue ) const override;  \
+        virtual void normalizeValue( const css::uno::Any& _rValue, double& _rDoubleValue ) const override; \
                                                                 \
     private:                                                    \
         using classname##_Base::initializeTypedClone;          \
@@ -338,17 +338,17 @@ namespace xforms
 
     //= ODateType
 
-    DEFAULT_DECLARE_SUBTYPE( ODateType, ::com::sun::star::util::Date )
+    DEFAULT_DECLARE_SUBTYPE( ODateType, css::util::Date )
 
 
     //= OTimeType
 
-    DEFAULT_DECLARE_SUBTYPE( OTimeType, ::com::sun::star::util::Time )
+    DEFAULT_DECLARE_SUBTYPE( OTimeType, css::util::Time )
 
 
     //= ODateTimeType
 
-    DEFAULT_DECLARE_SUBTYPE( ODateTimeType, ::com::sun::star::util::DateTime )
+    DEFAULT_DECLARE_SUBTYPE( ODateTimeType, css::util::DateTime )
 
     class OShortIntegerType;
     typedef ODerivedDataType< OShortIntegerType, OValueLimitedType< sal_Int16 > > OShortIntegerType_Base;
@@ -361,11 +361,11 @@ namespace xforms
         DECLARE_DEFAULT_CLONING( OShortIntegerType )
 
         // OXSDDataType overridables
-        virtual bool            _getValue( const OUString& value, double& fValue ) SAL_OVERRIDE;
+        virtual bool            _getValue( const OUString& value, double& fValue ) override;
 
         // OValueLimitedType overridables
-        virtual OUString typedValueAsHumanReadableString( const ::com::sun::star::uno::Any& _rValue ) const SAL_OVERRIDE;
-        virtual void normalizeValue( const ::com::sun::star::uno::Any& _rValue, double& _rDoubleValue ) const SAL_OVERRIDE;
+        virtual OUString typedValueAsHumanReadableString( const css::uno::Any& _rValue ) const override;
+        virtual void normalizeValue( const css::uno::Any& _rValue, double& _rDoubleValue ) const override;
 
     private:
         using OShortIntegerType_Base::initializeTypedClone;

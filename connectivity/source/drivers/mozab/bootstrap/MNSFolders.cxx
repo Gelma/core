@@ -26,12 +26,10 @@
 #endif // End UNIX
 
 #ifdef WNT
-#include "pre_include_windows.h"
 #include <windows.h>
 #include <stdlib.h>
 #include <shlobj.h>
 #include <objidl.h>
-#include "post_include_windows.h"
 #endif // End WNT
 #include <osl/security.hxx>
 #include <osl/file.hxx>
@@ -74,12 +72,12 @@ namespace
         { "Mozilla/Firefox/", NULL, NULL, NULL },
         { "Thunderbird/", "Mozilla/Thunderbird/", NULL, NULL }
     #elif defined(MACOSX)
-        { "../Mozilla/SeaMonkey/", NULL, NULL, NULL },
-        { "Firefox/", NULL, NULL, NULL },
-        { "../Thunderbird/", NULL, NULL, NULL }
+        { "../Mozilla/SeaMonkey/", nullptr, nullptr, nullptr },
+        { "Firefox/", nullptr, nullptr, nullptr },
+        { "../Thunderbird/", nullptr, nullptr, nullptr }
     #else
-        { ".mozilla/seamonkey/", NULL, NULL, NULL },
-        { ".mozilla/firefox/", NULL, NULL, NULL },
+        { ".mozilla/seamonkey/", nullptr, nullptr, nullptr },
+        { ".mozilla/firefox/", nullptr, nullptr, nullptr },
         { ".thunderbird/", ".mozilla-thunderbird/", ".mozilla/thunderbird/", ".icedove/" }
     #endif
     };
@@ -117,7 +115,7 @@ namespace
                 // check all possible candidates
                 for ( size_t i=0; i<NB_CANDIDATES; ++i )
                 {
-                    if ( NULL == DefaultProductDir[ productIndex ][ i ] )
+                    if ( nullptr == DefaultProductDir[ productIndex ][ i ] )
                         break;
 
                     sProductDirCandidate = lcl_getUserDataDirectory() +

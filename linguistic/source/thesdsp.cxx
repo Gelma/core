@@ -121,7 +121,7 @@ Sequence< Reference< XMeaning > > SAL_CALL
 
     // search for entry with that language
     ThesSvcByLangMap_t::iterator    aIt( aSvcMap.find( nLanguage ) );
-    LangSvcEntries_Thes     *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : NULL;
+    LangSvcEntries_Thes     *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : nullptr;
 
     if (pEntry)
     {
@@ -171,8 +171,7 @@ Sequence< Reference< XMeaning > > SAL_CALL
                 Reference< XThesaurus > xThes;
                 try
                 {
-                    xThes = Reference< XThesaurus >(
-                                xContext->getServiceManager()->createInstanceWithArgumentsAndContext(
+                    xThes.set(  xContext->getServiceManager()->createInstanceWithArgumentsAndContext(
                                     pImplNames[i], aArgs, xContext ),
                                 UNO_QUERY );
                 }
@@ -244,7 +243,7 @@ Sequence< OUString >
     // search for entry with that language and use data from that
     sal_Int16 nLanguage = LinguLocaleToLanguage( rLocale );
     const ThesSvcByLangMap_t::const_iterator  aIt( aSvcMap.find( nLanguage ) );
-    const LangSvcEntries_Thes       *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : NULL;
+    const LangSvcEntries_Thes       *pEntry = aIt != aSvcMap.end() ? aIt->second.get() : nullptr;
     if (pEntry)
         aRes = pEntry->aSvcImplNames;
 

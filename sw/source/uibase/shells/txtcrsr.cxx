@@ -104,10 +104,10 @@ void SwTextShell::ExecBasicMove(SfxRequest &rReq)
                 rSh.Right( CRSR_SKIP_CELLS, bSelect, 1, false, true );
                 break;
             case FN_LINE_UP:
-                rSh.Up( bSelect, 1 );
+                rSh.Up( bSelect );
                 break;
             case FN_LINE_DOWN:
-                rSh.Down( bSelect, 1 );
+                rSh.Down( bSelect );
                 break;
             default:
                 OSL_FAIL("wrong Dispatcher");
@@ -318,11 +318,11 @@ void SwTextShell::ExecMoveMisc(SfxRequest &rReq)
         case SID_FM_TOGGLECONTROLFOCUS:
             {
                 const SwDoc* pDoc = rSh.GetDoc();
-                const SwDocShell* pDocShell = pDoc ? pDoc->GetDocShell() : NULL;
-                const SwView* pView = pDocShell ? pDocShell->GetView() : NULL;
-                const FmFormShell* pFormShell = pView ? pView->GetFormShell() : NULL;
-                SdrView* pDrawView = pView ? pView->GetDrawView() : NULL;
-                vcl::Window* pWindow = pView ? pView->GetWrtShell().GetWin() : NULL;
+                const SwDocShell* pDocShell = pDoc ? pDoc->GetDocShell() : nullptr;
+                const SwView* pView = pDocShell ? pDocShell->GetView() : nullptr;
+                const FmFormShell* pFormShell = pView ? pView->GetFormShell() : nullptr;
+                SdrView* pDrawView = pView ? pView->GetDrawView() : nullptr;
+                vcl::Window* pWindow = pView ? pView->GetWrtShell().GetWin() : nullptr;
 
                 OSL_ENSURE( pFormShell && pDrawView && pWindow, "SwXTextView::ExecMoveMisc: no chance!" );
                 if ( !pFormShell || !pDrawView || !pWindow )
@@ -349,21 +349,21 @@ void SwTextShell::ExecMoveMisc(SfxRequest &rReq)
             bRet = rSh.GotoObj(true, GotoObjFlags::Any);
             if(bRet)
             {
-                rSh.HideCrsr();
-                rSh.EnterSelFrmMode();
+                rSh.HideCursor();
+                rSh.EnterSelFrameMode();
             }
         break;
         case FN_NEXT_FOOTNOTE:
-            rSh.MoveCrsr();
+            rSh.MoveCursor();
             bRet = rSh.GotoNextFootnoteAnchor();
             break;
         case FN_PREV_FOOTNOTE:
-            rSh.MoveCrsr();
+            rSh.MoveCursor();
             bRet = rSh.GotoPrevFootnoteAnchor();
             break;
         case FN_TO_HEADER:
-            rSh.MoveCrsr();
-            if ( FrmTypeFlags::HEADER & rSh.GetFrmType(0,false) )
+            rSh.MoveCursor();
+            if ( FrameTypeFlags::HEADER & rSh.GetFrameType(nullptr,false) )
                 rSh.SttPg();
             else
             {
@@ -374,8 +374,8 @@ void SwTextShell::ExecMoveMisc(SfxRequest &rReq)
             bSetRetVal = false;
             break;
         case FN_TO_FOOTER:
-            rSh.MoveCrsr();
-            if ( FrmTypeFlags::FOOTER & rSh.GetFrmType(0,false) )
+            rSh.MoveCursor();
+            if ( FrameTypeFlags::FOOTER & rSh.GetFrameType(nullptr,false) )
                 rSh.EndPg();
             else
             {
@@ -386,8 +386,8 @@ void SwTextShell::ExecMoveMisc(SfxRequest &rReq)
             bSetRetVal = false;
             break;
         case FN_FOOTNOTE_TO_ANCHOR:
-            rSh.MoveCrsr();
-            if ( FrmTypeFlags::FOOTNOTE & rSh.GetFrmType(0,false) )
+            rSh.MoveCursor();
+            if ( FrameTypeFlags::FOOTNOTE & rSh.GetFrameType(nullptr,false) )
                 rSh.GotoFootnoteAnchor();
             else
                 rSh.GotoFootnoteText();
@@ -415,7 +415,7 @@ void SwTextShell::ExecMoveMisc(SfxRequest &rReq)
             bRet = rSh.GotoNxtPrvTOXMark( false );
             break;
         case FN_NEXT_TBLFML:
-            bRet = rSh.GotoNxtPrvTableFormula( true );
+            bRet = rSh.GotoNxtPrvTableFormula();
             break;
         case FN_PREV_TBLFML:
             bRet = rSh.GotoNxtPrvTableFormula( false );

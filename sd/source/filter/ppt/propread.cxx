@@ -21,6 +21,7 @@
 #include "rtl/tencinfo.h"
 #include "rtl/textenc.h"
 #include <osl/diagnose.h>
+#include <o3tl/make_unique.hxx>
 
 PropEntry::PropEntry( sal_uInt32 nId, const sal_uInt8* pBuf, sal_uInt32 nBufSize, sal_uInt16 nTextEnc ) :
     mnId        ( nId ),
@@ -115,7 +116,7 @@ bool PropItem::Read( OUString& rString, sal_uInt32 nStringType, bool bAlign )
                         {
                             sal_Unicode* pWString = reinterpret_cast<sal_Unicode*>(pString);
                             for (sal_uInt32 i = 0; i < nItemSize; ++i)
-                                ReadUInt16( pWString[ i ] );
+                                ReadUtf16( pWString[ i ] );
                             rString = OUString(pWString, lcl_getMaxSafeStrLen(nItemSize));
                         }
                         else
@@ -164,7 +165,7 @@ bool PropItem::Read( OUString& rString, sal_uInt32 nStringType, bool bAlign )
                 {
                     sal_Unicode* pString = new sal_Unicode[ nItemSize ];
                     for (sal_uInt32 i = 0; i < nItemSize; ++i)
-                        ReadUInt16( pString[ i ] );
+                        ReadUtf16( pString[ i ] );
                     if ( pString[ nItemSize - 1 ] == 0 )
                     {
                         if ( (sal_uInt16)nItemSize > 1 )
@@ -207,11 +208,12 @@ PropItem& PropItem::operator=( PropItem& rPropItem )
 }
 
 Section::Section( const Section& rSection )
-    : mnTextEnc(rSection.mnTextEnc),
-    maEntries(rSection.maEntries.clone())
+    : mnTextEnc(rSection.mnTextEnc)
 {
     for ( int i = 0; i < 16; i++ )
         aFMTID[ i ] = rSection.aFMTID[ i ];
+    for(const std::unique_ptr<PropEntry>& rEntry : rSection.maEntries)
+        maEntries.push_back(o3tl::make_unique<PropEntry>(*rEntry.get()));
 }
 
 Section::Section( const sal_uInt8* pFMTID )
@@ -225,10 +227,10 @@ bool Section::GetProperty( sal_uInt32 nId, PropItem& rPropItem )
 {
     if ( nId )
     {
-        boost::ptr_vector<PropEntry>::const_iterator iter;
+        std::vector<std::unique_ptr<PropEntry> >::const_iterator iter;
         for (iter = maEntries.begin(); iter != maEntries.end(); ++iter)
         {
-            if (iter->mnId == nId)
+            if ((*iter)->mnId == nId)
                 break;
         }
 
@@ -236,7 +238,7 @@ bool Section::GetProperty( sal_uInt32 nId, PropItem& rPropItem )
         {
             rPropItem.Clear();
             rPropItem.SetTextEncoding( mnTextEnc );
-            rPropItem.Write( iter->mpBuf,iter->mnSize );
+            rPropItem.Write( (*iter)->mpBuf, (*iter)->mnSize );
             rPropItem.Seek( STREAM_SEEK_TO_BEGIN );
             return true;
         }
@@ -254,34 +256,34 @@ void Section::AddProperty( sal_uInt32 nId, const sal_uInt8* pBuf, sal_uInt32 nBu
         nId = 0;
 
     // do not allow same PropId's, sort
-    boost::ptr_vector<PropEntry>::iterator iter;
+    std::vector<std::unique_ptr<PropEntry> >::iterator iter;
     for ( iter = maEntries.begin(); iter != maEntries.end(); ++iter )
     {
-        if ( iter->mnId == nId )
-            maEntries.replace( iter, new PropEntry( nId, pBuf, nBufSize, mnTextEnc ));
-        else if ( iter->mnId > nId )
-            maEntries.insert( iter, new PropEntry( nId, pBuf, nBufSize, mnTextEnc ));
+        if ( (*iter)->mnId == nId )
+            (*iter).reset(new PropEntry( nId, pBuf, nBufSize, mnTextEnc ));
+        else if ( (*iter)->mnId > nId )
+            maEntries.insert( iter, o3tl::make_unique<PropEntry>( nId, pBuf, nBufSize, mnTextEnc ));
         else
             continue;
         return;
     }
 
-    maEntries.push_back( new PropEntry( nId, pBuf, nBufSize, mnTextEnc ) );
+    maEntries.push_back( o3tl::make_unique<PropEntry>( nId, pBuf, nBufSize, mnTextEnc ) );
 }
 
 void Section::GetDictionary(Dictionary& rDict)
 {
-    boost::ptr_vector<PropEntry>::iterator iter;
+    std::vector<std::unique_ptr<PropEntry> >::iterator iter;
     for (iter = maEntries.begin(); iter != maEntries.end(); ++iter)
     {
-        if ( iter->mnId == 0 )
+        if ( (*iter)->mnId == 0 )
             break;
     }
 
     if (iter == maEntries.end())
         return;
 
-    SvMemoryStream aStream( iter->mpBuf, iter->mnSize, StreamMode::READ );
+    SvMemoryStream aStream( (*iter)->mpBuf, (*iter)->mnSize, StreamMode::READ );
     aStream.Seek( STREAM_SEEK_TO_BEGIN );
     sal_uInt32 nDictCount(0);
     aStream.ReadUInt32( nDictCount );
@@ -302,7 +304,7 @@ void Section::GetDictionary(Dictionary& rDict)
             {
                 sal_Unicode* pWString = new sal_Unicode[nSize];
                 for (sal_uInt32 j = 0; j < nSize; ++j)
-                    aStream.ReadUInt16(pWString[j]);
+                    aStream.ReadUtf16(pWString[j]);
                 aString = OUString(pWString, lcl_getMaxSafeStrLen(nSize));
                 delete[] pWString;
             }
@@ -537,7 +539,8 @@ Section& Section::operator=( const Section& rSection )
     {
         memcpy( static_cast<void*>(aFMTID), static_cast<void const *>(rSection.aFMTID), 16 );
 
-        maEntries = rSection.maEntries.clone();
+        for(const std::unique_ptr<PropEntry>& rEntry : rSection.maEntries)
+            maEntries.push_back(o3tl::make_unique<PropEntry>(*rEntry.get()));
     }
     return *this;
 }
@@ -563,18 +566,18 @@ PropRead::PropRead( SotStorage& rStorage, const OUString& rName ) :
 
 void PropRead::AddSection( Section& rSection )
 {
-    maSections.push_back( new Section( rSection ) );
+    maSections.push_back( o3tl::make_unique<Section>( rSection ) );
 }
 
 const Section* PropRead::GetSection( const sal_uInt8* pFMTID )
 {
-    boost::ptr_vector<Section>::iterator it;
+    std::vector<std::unique_ptr<Section> >::iterator it;
     for ( it = maSections.begin(); it != maSections.end(); ++it)
     {
-        if ( memcmp( it->GetFMTID(), pFMTID, 16 ) == 0 )
-            return &(*it);
+        if ( memcmp( (*it)->GetFMTID(), pFMTID, 16 ) == 0 )
+            return it->get();
     }
-    return NULL;
+    return nullptr;
 }
 
 void PropRead::Read()
@@ -625,7 +628,8 @@ PropRead& PropRead::operator=( const PropRead& rPropRead )
         mnVersionHi = rPropRead.mnVersionHi;
         memcpy( mApplicationCLSID, rPropRead.mApplicationCLSID, 16 );
 
-        maSections = rPropRead.maSections.clone();
+        for(const std::unique_ptr<Section>& rSection : rPropRead.maSections)
+            maSections.push_back(o3tl::make_unique<Section>(*rSection.get()));
     }
     return *this;
 }

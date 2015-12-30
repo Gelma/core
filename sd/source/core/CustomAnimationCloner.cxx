@@ -61,7 +61,7 @@ namespace sd
     {
     public:
         CustomAnimationClonerImpl();
-        Reference< XAnimationNode > Clone( const Reference< XAnimationNode >& xSourceNode, const SdPage* pSource = 0, const SdPage* pTarget = 0 );
+        Reference< XAnimationNode > Clone( const Reference< XAnimationNode >& xSourceNode, const SdPage* pSource = nullptr, const SdPage* pTarget = nullptr );
 
     private:
         void transformNode( const Reference< XAnimationNode >& xNode );
@@ -90,7 +90,7 @@ namespace sd
         try
         {
             // clone animation hierarchy
-            Reference< ::com::sun::star::util::XCloneable > xClonable( xSourceNode, UNO_QUERY_THROW );
+            Reference< css::util::XCloneable > xClonable( xSourceNode, UNO_QUERY_THROW );
             Reference< XAnimationNode > xCloneNode( xClonable->createClone(), UNO_QUERY_THROW );
 
             // create a dictionary to map source to cloned shapes

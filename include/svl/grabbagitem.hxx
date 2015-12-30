@@ -12,7 +12,6 @@
 #include <map>
 
 #include <svl/svldllapi.h>
-#include <tools/rtti.hxx>
 #include <svl/poolitem.hxx>
 #include <com/sun/star/uno/Any.hxx>
 
@@ -23,10 +22,9 @@ private:
     std::map<OUString, css::uno::Any> m_aMap;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     SfxGrabBagItem();
-    SfxGrabBagItem(sal_uInt16 nWhich, const std::map<OUString, css::uno::Any>* pMap = 0);
+    SfxGrabBagItem(sal_uInt16 nWhich, const std::map<OUString, css::uno::Any>* pMap = nullptr);
     SfxGrabBagItem(const SfxGrabBagItem& rItem);
     virtual ~SfxGrabBagItem();
 
@@ -40,11 +38,11 @@ public:
         return m_aMap;
     }
 
-    virtual bool operator==(const SfxPoolItem&) const SAL_OVERRIDE;
-    virtual SfxPoolItem* Clone(SfxItemPool* pPool = 0) const SAL_OVERRIDE;
+    virtual bool operator==(const SfxPoolItem&) const override;
+    virtual SfxPoolItem* Clone(SfxItemPool* pPool = nullptr) const override;
 
-    virtual bool PutValue(const css::uno::Any& rVal, sal_uInt8 nMemberId) SAL_OVERRIDE;
-    virtual bool QueryValue(css::uno::Any& rVal, sal_uInt8 nMemberId = 0) const SAL_OVERRIDE;
+    virtual bool PutValue(const css::uno::Any& rVal, sal_uInt8 nMemberId) override;
+    virtual bool QueryValue(css::uno::Any& rVal, sal_uInt8 nMemberId = 0) const override;
 };
 #endif
 

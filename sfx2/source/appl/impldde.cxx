@@ -62,11 +62,11 @@ class SvDDELinkEditDialog : public ModalDialog
     VclPtr<Edit>            m_pEdDdeItem;
     VclPtr<OKButton>        m_pOKButton;
 
-    DECL_LINK( EditHdl_Impl, Edit* );
+    DECL_LINK_TYPED( EditHdl_Impl, Edit&, void );
 public:
     SvDDELinkEditDialog( vcl::Window* pParent, SvBaseLink* );
     virtual ~SvDDELinkEditDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
     OUString GetCmd() const;
 };
 
@@ -113,16 +113,15 @@ OUString SvDDELinkEditDialog::GetCmd() const
     return sRet;
 }
 
-IMPL_LINK( SvDDELinkEditDialog, EditHdl_Impl, Edit *, )
+IMPL_LINK_NOARG_TYPED( SvDDELinkEditDialog, EditHdl_Impl, Edit&, void)
 {
     m_pOKButton->Enable( !m_pEdDdeApp->GetText().isEmpty() &&
                          !m_pEdDdeTopic->GetText().isEmpty() &&
                          !m_pEdDdeItem->GetText().isEmpty() );
-    return 0;
 }
 
 SvDDEObject::SvDDEObject()
-    : pConnection( 0 ), pLink( 0 ), pRequest( 0 ), pGetData( 0 ), nError( 0 )
+    : pConnection( nullptr ), pLink( nullptr ), pRequest( nullptr ), pGetData( nullptr ), nError( 0 )
 {
     SetUpdateTimeout( 100 );
     bWaitForData = sal_False;
@@ -135,7 +134,7 @@ SvDDEObject::~SvDDEObject()
     delete pConnection;
 }
 
-bool SvDDEObject::GetData( ::com::sun::star::uno::Any & rData /*out param*/,
+bool SvDDEObject::GetData( css::uno::Any & rData /*out param*/,
                             const OUString & rMimeType,
                             bool bSynchron )
 {
@@ -345,7 +344,7 @@ IMPL_LINK_TYPED( SvDDEObject, ImplGetDDEData, const DdeData*, pData, void )
             if( pGetData )
             {
                 *pGetData <<= aSeq;  // Copy Data
-                pGetData = 0;        // reset the pointer here
+                pGetData = nullptr;        // reset the pointer here
             }
             else
             {
@@ -363,7 +362,7 @@ IMPL_LINK_TYPED( SvDDEObject, ImplDoneDDEData, bool, bValid, void )
 {
     if( !bValid && ( pRequest || pLink ))
     {
-        DdeTransaction* pReq = 0;
+        DdeTransaction* pReq = nullptr;
         if( !pLink || ( pLink && pLink->IsBusy() ))
             pReq = pRequest;  // only the one that is ready
         else if( pRequest && pRequest->IsBusy() )

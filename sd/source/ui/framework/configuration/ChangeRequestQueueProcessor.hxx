@@ -54,8 +54,7 @@ public:
         ConfigurationController so that its UpdateConfiguration() method can
         be called when the queue becomes empty.
     */
-    ChangeRequestQueueProcessor (
-        const ::rtl::Reference<ConfigurationController>& rxController,
+    explicit ChangeRequestQueueProcessor (
         const std::shared_ptr<ConfigurationUpdater>& rpUpdater);
     ~ChangeRequestQueueProcessor();
 
@@ -64,15 +63,13 @@ public:
         controller who owns the configuration.
     */
     void SetConfiguration (
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::drawing::framework::XConfiguration>& rxConfiguration);
+        const css::uno::Reference<css::drawing::framework::XConfiguration>& rxConfiguration);
 
     /** The given request is appended to the end of the queue and will
         eventually be processed when all other entries in front of it have
         been processed.
     */
-    void AddRequest (const ::com::sun::star::uno::Reference<
-        ::com::sun::star::drawing::framework::XConfigurationChangeRequest>& rxRequest);
+    void AddRequest (const css::uno::Reference<css::drawing::framework::XConfigurationChangeRequest>& rxRequest);
 
     /** Returns </sal_True> when the queue is empty.
     */
@@ -107,10 +104,7 @@ private:
     */
     ImplSVEvent * mnUserEventId;
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::drawing::framework::XConfiguration> mxConfiguration;
-
-    ::rtl::Reference<ConfigurationController> mpConfigurationController;
+    css::uno::Reference<css::drawing::framework::XConfiguration> mxConfiguration;
 
     std::shared_ptr<ConfigurationUpdater> mpConfigurationUpdater;
 

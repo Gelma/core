@@ -173,7 +173,6 @@ void FmEntryDataList::clear()
     maEntryDataList.clear();
 }
 
-TYPEINIT0( FmEntryData );
 
 FmEntryData::FmEntryData( FmEntryData* pParentData, const Reference< XInterface >& _rxIFace )
     :pParent( pParentData )
@@ -191,10 +190,10 @@ FmEntryData::~FmEntryData()
 }
 
 
-void FmEntryData::newObject( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >& _rxIFace )
+void FmEntryData::newObject( const css::uno::Reference< css::uno::XInterface >& _rxIFace )
 {
     // do not just copy, normalize it
-    m_xNormalizedIFace = Reference< XInterface >( _rxIFace, UNO_QUERY );
+    m_xNormalizedIFace.set( _rxIFace, UNO_QUERY );
     m_xProperties.set(m_xNormalizedIFace, css::uno::UNO_QUERY);
     m_xChild.set(m_xNormalizedIFace, css::uno::UNO_QUERY);
 }
@@ -254,7 +253,6 @@ bool FmEntryData::IsEqualWithoutChildren( FmEntryData* pEntryData )
     return true;
 }
 
-TYPEINIT1( FmFormData, FmEntryData );
 
 FmFormData::FmFormData(
     const Reference< XForm >& _rxForm,
@@ -307,7 +305,7 @@ bool FmFormData::IsEqualWithoutChildren( FmEntryData* pEntryData )
 {
     if(this == pEntryData)
         return true;
-    if( !pEntryData->ISA(FmFormData) )
+    if( dynamic_cast<const FmFormData*>( pEntryData) ==  nullptr )
         return false;
     FmFormData* pFormData = static_cast<FmFormData*>(pEntryData);
     if( m_xForm.get() != pFormData->GetFormIface().get() )
@@ -316,7 +314,6 @@ bool FmFormData::IsEqualWithoutChildren( FmEntryData* pEntryData )
     return FmEntryData::IsEqualWithoutChildren( pFormData );
 }
 
-TYPEINIT1( FmControlData, FmEntryData );
 
 FmControlData::FmControlData(
     const Reference< XFormComponent >& _rxComponent,
@@ -471,7 +468,7 @@ bool FmControlData::IsEqualWithoutChildren( FmEntryData* pEntryData )
     if(this == pEntryData)
         return true;
 
-    if( !pEntryData->ISA(FmControlData) )
+    if( dynamic_cast<const FmControlData*>( pEntryData) ==  nullptr )
         return false;
     FmControlData* pControlData = static_cast<FmControlData*>(pEntryData);
 
@@ -538,11 +535,11 @@ namespace svxform
 
         if( eState >= SfxItemState::DEFAULT )
         {
-            FmFormShell* pShell = PTR_CAST( FmFormShell, static_cast<const SfxObjectItem*>(pState)->GetShell() );
+            FmFormShell* pShell = dynamic_cast<FmFormShell*>( static_cast<const SfxObjectItem*>(pState)->GetShell()  );
             UpdateContent( pShell );
         }
         else
-            UpdateContent( NULL );
+            UpdateContent( nullptr );
     }
 
 
@@ -557,7 +554,7 @@ namespace svxform
 
     bool NavigatorFrame::Close()
     {
-        UpdateContent( NULL );
+        UpdateContent( nullptr );
         return SfxDockingWindow::Close();
     }
 

@@ -144,6 +144,8 @@ using namespace nsHdFtFlags;
 #include <comphelper/sequenceashashmap.hxx>
 #include <oox/ole/vbaproject.hxx>
 #include <oox/ole/olestorage.hxx>
+#include <comphelper/storagehelper.hxx>
+#include <sfx2/DocumentMetadataAccess.hxx>
 
 //#define VT_EMPTY            0
 //#define VT_I4               3
@@ -178,7 +180,7 @@ SwMacroInfo* GetMacroInfo( SdrObject* pObj, bool bCreate )             // static
         }
     }
 
-    return 0;
+    return nullptr;
 };
 
 void lclGetAbsPath(OUString& rPath, sal_uInt16 nLevel, SwDocShell* pDocShell)
@@ -302,9 +304,9 @@ void SwWW8ImplReader::ReadEmbeddedData( SvMemoryStream& rStrm, SwDocShell* pDocS
     // target frame
     if( ::get_flag( nFlags, WW8_HLINK_FRAME ) )
     {
-        OUString sFrmName;
-        lclAppendString32(sFrmName, rStrm, true);
-        hlStr.tarFrm = sFrmName;
+        OUString sFrameName;
+        lclAppendString32(sFrameName, rStrm, true);
+        hlStr.tarFrame = sFrameName;
     }
 
         // UNC path
@@ -454,9 +456,9 @@ struct SBBItem
 public:
     Sttb();
     virtual ~Sttb();
-    bool Read(SvStream &rS) SAL_OVERRIDE;
+    bool Read(SvStream &rS) override;
 #if OSL_DEBUG_LEVEL > 1
-    virtual void Print( FILE* fp ) SAL_OVERRIDE;
+    virtual void Print( FILE* fp ) override;
 #endif
     OUString getStringAtIndex( sal_uInt32 );
 };
@@ -528,8 +530,8 @@ Sttb::getStringAtIndex( sal_uInt32 index )
 
 SwMSDffManager::SwMSDffManager( SwWW8ImplReader& rRdr, bool bSkipImages )
     : SvxMSDffManager(*rRdr.m_pTableStream, rRdr.GetBaseURL(), rRdr.m_pWwFib->fcDggInfo,
-        rRdr.m_pDataStream, 0, 0, COL_WHITE, rRdr.m_pStrm, bSkipImages),
-    rReader(rRdr), pFallbackStream(0)
+        rRdr.m_pDataStream, nullptr, 0, COL_WHITE, rRdr.m_pStrm, bSkipImages),
+    rReader(rRdr), pFallbackStream(nullptr)
 {
     SetSvxMSDffSettings( GetSvxMSDffSettings() );
     nSvxMSDffOLEConvFlags = SwMSDffManager::GetFilterFlags();
@@ -568,19 +570,18 @@ SdrObject* SwMSDffManager::ImportOLE( long nOLEId,
     // if drawing OLE objects are allowed in Writer.
     if ( _nCalledByGroup > 0 )
     {
-        return 0L;
+        return nullptr;
     }
 
-    SdrObject* pRet = 0;
+    SdrObject* pRet = nullptr;
     OUString sStorageName;
     tools::SvRef<SotStorage> xSrcStg;
     uno::Reference < embed::XStorage > xDstStg;
     if( GetOLEStorageName( nOLEId, sStorageName, xSrcStg, xDstStg ))
     {
-        tools::SvRef<SotStorage> xSrc = xSrcStg->OpenSotStorage( sStorageName,
-            STREAM_READWRITE| StreamMode::SHARE_DENYALL );
+        tools::SvRef<SotStorage> xSrc = xSrcStg->OpenSotStorage( sStorageName );
         OSL_ENSURE(rReader.m_pFormImpl, "No Form Implementation!");
-        ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > xShape;
+        css::uno::Reference< css::drawing::XShape > xShape;
         if ( (!(rReader.m_bIsHeader || rReader.m_bIsFooter)) &&
             rReader.m_pFormImpl->ReadOCXStream(xSrc,&xShape,true))
         {
@@ -590,7 +591,8 @@ SdrObject* SwMSDffManager::ImportOLE( long nOLEId,
         {
             ErrCode nError = ERRCODE_NONE;
             pRet = CreateSdrOLEFromStorage( sStorageName, xSrcStg, xDstStg,
-                rGrf, rBoundRect, rVisArea, pStData, nError, nSvxMSDffOLEConvFlags, nAspect );
+                rGrf, rBoundRect, rVisArea, pStData, nError,
+                nSvxMSDffOLEConvFlags, nAspect, rReader.GetBaseURL());
         }
     }
     return pRet;
@@ -603,7 +605,7 @@ void SwMSDffManager::DisableFallbackStream()
     pFallbackStream = pStData2;
     aOldEscherBlipCache = aEscherBlipCache;
     aEscherBlipCache.clear();
-    pStData2 = 0;
+    pStData2 = nullptr;
 }
 
 void SwMSDffManager::EnableFallbackStream()
@@ -611,7 +613,7 @@ void SwMSDffManager::EnableFallbackStream()
     pStData2 = pFallbackStream;
     aEscherBlipCache = aOldEscherBlipCache;
     aOldEscherBlipCache.clear();
-    pFallbackStream = 0;
+    pFallbackStream = nullptr;
 }
 
 sal_uInt16 SwWW8ImplReader::GetToggleAttrFlags() const
@@ -949,7 +951,7 @@ SdrObject* SwMSDffManager::ProcessObj(SvStream& rSt,
             aSet.Put( SdrTextVertAdjustItem( eTVA ) );
             aSet.Put( SdrTextHorzAdjustItem( eTHA ) );
 
-            if (pObj != NULL)
+            if (pObj != nullptr)
             {
                 pObj->SetMergedItemSet(aSet);
                 pObj->SetModel(pSdrModel);
@@ -996,7 +998,7 @@ SdrObject* SwMSDffManager::ProcessObj(SvStream& rSt,
                             fExtraTextRotation /= 100.0;
                             SdrCustomShapeGeometryItem aGeometryItem( static_cast<const SdrCustomShapeGeometryItem&>(pCustomShape->GetMergedItem( SDRATTR_CUSTOMSHAPE_GEOMETRY )) );
                             const OUString sTextRotateAngle( "TextRotateAngle" );
-                            com::sun::star::beans::PropertyValue aPropVal;
+                            css::beans::PropertyValue aPropVal;
                             aPropVal.Name = sTextRotateAngle;
                             aPropVal.Value <<= fExtraTextRotation;
                             aGeometryItem.SetPropertyValue( aPropVal );
@@ -1023,7 +1025,7 @@ SdrObject* SwMSDffManager::ProcessObj(SvStream& rSt,
             SfxItemSet aSet( pSdrModel->GetItemPool() );
             ApplyAttributes( rSt, aSet, rObjData );
 
-            const SfxPoolItem* pPoolItem=NULL;
+            const SfxPoolItem* pPoolItem=nullptr;
             SfxItemState eState = aSet.GetItemState( XATTR_FILLCOLOR,
                                                      false, &pPoolItem );
             if( SfxItemState::DEFAULT == eState )
@@ -1060,7 +1062,7 @@ SdrObject* SwMSDffManager::ProcessObj(SvStream& rSt,
         if (SeekToContent(DFF_Prop_pWrapPolygonVertices, rSt))
         {
             delete pImpRec->pWrapPolygon;
-            pImpRec->pWrapPolygon = NULL;
+            pImpRec->pWrapPolygon = nullptr;
 
             sal_uInt16 nNumElemVert(0), nNumElemMemVert(0), nElemSizeVert(0);
             rSt.ReadUInt16( nNumElemVert ).ReadUInt16( nNumElemMemVert ).ReadUInt16( nElemSizeVert );
@@ -1175,8 +1177,8 @@ SdrObject* SwMSDffManager::ProcessObj(SvStream& rSt,
             {
                 pInfo->SetShapeId( rObjData.nShapeId );
                 pInfo->SetHlink( hlStr.hLinkAddr );
-                if (!hlStr.tarFrm.isEmpty())
-                    pInfo->SetTarFrm( hlStr.tarFrm );
+                if (!hlStr.tarFrame.isEmpty())
+                    pInfo->SetTarFrame( hlStr.tarFrame );
                 OUString aNameStr = GetPropertyString( DFF_Prop_wzName, rSt );
                 if (!aNameStr.isEmpty())
                     pInfo->SetName( aNameStr );
@@ -1236,7 +1238,7 @@ void SwWW8FltControlStack::NewAttr(const SwPosition& rPos,
 SwFltStackEntry* SwWW8FltControlStack::SetAttr(const SwPosition& rPos, sal_uInt16 nAttrId,
     bool bTstEnde, long nHand, bool )
 {
-    SwFltStackEntry *pRet = NULL;
+    SwFltStackEntry *pRet = nullptr;
     // Doing a textbox, and using the control stack only as a temporary
     // collection point for properties which will are not to be set into
     // the real document
@@ -1334,7 +1336,7 @@ void SyncIndentWithList( SvxLRSpaceItem &rLR,
 const SwNumFormat* SwWW8FltControlStack::GetNumFormatFromStack(const SwPosition &rPos,
     const SwTextNode &rTextNode)
 {
-    const SwNumFormat *pRet = 0;
+    const SwNumFormat *pRet = nullptr;
     const SfxPoolItem *pItem = GetStackAttr(rPos, RES_FLTR_NUMRULE);
     if (pItem && rTextNode.GetNumRule())
     {
@@ -1388,7 +1390,7 @@ void SwWW8ReferencedFltEndStack::SetAttrInDoc( const SwPosition& rTmpPos,
             bool bInsertBookmarkIntoDoc = true;
 
             SwFltBookmark* pFltBookmark = dynamic_cast<SwFltBookmark*>(rEntry.pAttr);
-            if ( pFltBookmark != 0 && pFltBookmark->IsTOCBookmark() )
+            if ( pFltBookmark != nullptr && pFltBookmark->IsTOCBookmark() )
             {
                 const OUString& rName = pFltBookmark->GetName();
                 ::std::set< OUString, SwWW8::ltstr >::const_iterator aResult = aReferencedTOCBookmarks.find(rName);
@@ -1442,7 +1444,7 @@ void SwWW8FltControlStack::SetAttrInDoc(const SwPosition& rTmpPos,
 
                         SwTextNode *pTextNode = static_cast<SwTextNode*>(pNode);
 
-                        const SwNumFormat *pNum = 0;
+                        const SwNumFormat *pNum = nullptr;
                         pNum = GetNumFormatFromStack( *aRegion.GetPoint(), *pTextNode );
                         if (!pNum)
                         {
@@ -1494,18 +1496,18 @@ void SwWW8FltControlStack::SetAttrInDoc(const SwPosition& rTmpPos,
                 SwPaM aRegion(rTmpPos);
                 if (rEntry.MakeRegion(pDoc, aRegion, false))
                 {
-                    SwFrameFormat *pFrm;
+                    SwFrameFormat *pFrame;
                     // If we have just one single inline graphic then
                     // don't insert a field for the single frame, set
                     // the frames hyperlink field attribute directly.
-                    if (0 != (pFrm = SwWW8ImplReader::ContainsSingleInlineGraphic(aRegion)))
+                    if (nullptr != (pFrame = SwWW8ImplReader::ContainsSingleInlineGraphic(aRegion)))
                     {
                         const SwFormatINetFormat *pAttr = static_cast<const SwFormatINetFormat *>(
                             rEntry.pAttr);
                         SwFormatURL aURL;
                         aURL.SetURL(pAttr->GetValue(), false);
                         aURL.SetTargetFrameName(pAttr->GetTargetFrame());
-                        pFrm->SetFormatAttr(aURL);
+                        pFrame->SetFormatAttr(aURL);
                     }
                     else
                     {
@@ -1593,7 +1595,7 @@ const SfxPoolItem* SwWW8FltControlStack::GetStackAttr(const SwPosition& rPos,
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 bool SwWW8FltRefStack::IsFootnoteEdnBkmField(
@@ -1718,19 +1720,19 @@ void SwWW8ImplReader::Read_Tab(sal_uInt16 , const sal_uInt8* pData, short nLen)
 
     SvxTabStopItem aAttr(0, 0, SVX_TAB_ADJUST_DEFAULT, RES_PARATR_TABSTOP);
 
-    const SwTextFormatColl* pSty = 0;
+    const SwTextFormatColl* pSty = nullptr;
     sal_uInt16 nTabBase;
     if (m_pAktColl && m_nAktColl < m_vColl.size()) // StyleDef
     {
-        nTabBase = m_vColl[m_nAktColl].nBase;
+        nTabBase = m_vColl[m_nAktColl].m_nBase;
         if (nTabBase < m_vColl.size())  // Based On
-            pSty = static_cast<const SwTextFormatColl*>(m_vColl[nTabBase].pFormat);
+            pSty = static_cast<const SwTextFormatColl*>(m_vColl[nTabBase].m_pFormat);
     }
     else
     { // Text
         nTabBase = m_nAktColl;
         if (m_nAktColl < m_vColl.size())
-            pSty = static_cast<const SwTextFormatColl*>(m_vColl[m_nAktColl].pFormat);
+            pSty = static_cast<const SwTextFormatColl*>(m_vColl[m_nAktColl].m_pFormat);
         //TODO: figure out else here
     }
 
@@ -1748,7 +1750,7 @@ void SwWW8ImplReader::Read_Tab(sal_uInt16 , const sal_uInt8* pData, short nLen)
             sal_uInt16 nOldTabBase = nTabBase;
             // If based on another
             if (nTabBase < m_vColl.size())
-                nTabBase = m_vColl[nTabBase].nBase;
+                nTabBase = m_vColl[nTabBase].m_nBase;
 
             if (
                     nTabBase < m_vColl.size() &&
@@ -1760,15 +1762,15 @@ void SwWW8ImplReader::Read_Tab(sal_uInt16 , const sal_uInt8* pData, short nLen)
                 // current one (prevent loop)
                 aLoopWatch.insert(reinterpret_cast<size_t>(pSty));
                 if (nTabBase < m_vColl.size())
-                    pSty = static_cast<const SwTextFormatColl*>(m_vColl[nTabBase].pFormat);
+                    pSty = static_cast<const SwTextFormatColl*>(m_vColl[nTabBase].m_pFormat);
                 //TODO figure out the else branch
 
                 if (aLoopWatch.find(reinterpret_cast<size_t>(pSty)) !=
                     aLoopWatch.end())
-                    pSty = 0;
+                    pSty = nullptr;
             }
             else
-                pSty = 0; // Give up on the search
+                pSty = nullptr; // Give up on the search
         }
     }
 
@@ -2066,11 +2068,11 @@ WW8ReaderSave::WW8ReaderSave(SwWW8ImplReader* pRdr ,WW8_CP nStartCp) :
         = pRdr->m_bHasBorder = false;
     pRdr->m_bFirstPara = true;
     pRdr->m_nInTable = 0;
-    pRdr->m_pWFlyPara = 0;
-    pRdr->m_pSFlyPara = 0;
-    pRdr->m_pPreviousNumPaM = 0;
-    pRdr->m_pPrevNumRule = 0;
-    pRdr->m_pTableDesc = 0;
+    pRdr->m_pWFlyPara = nullptr;
+    pRdr->m_pSFlyPara = nullptr;
+    pRdr->m_pPreviousNumPaM = nullptr;
+    pRdr->m_pPrevNumRule = nullptr;
+    pRdr->m_pTableDesc = nullptr;
     pRdr->m_nAktColl = 0;
 
     pRdr->m_pCtrlStck = new SwWW8FltControlStack(&pRdr->m_rDoc, pRdr->m_nFieldFlags,
@@ -2118,14 +2120,14 @@ void WW8ReaderSave::Restore( SwWW8ImplReader* pRdr )
     pRdr->m_bFirstPara = mbFirstPara;
 
     // Close all attributes as attributes could be created that extend the Fly
-    pRdr->DeleteCtrlStk();
+    pRdr->DeleteCtrlStack();
     pRdr->m_pCtrlStck = mpOldStck;
 
     pRdr->m_pRedlineStack->closeall(*pRdr->m_pPaM->GetPoint());
     delete pRdr->m_pRedlineStack;
     pRdr->m_pRedlineStack = mpOldRedlines;
 
-    pRdr->DeleteAnchorStk();
+    pRdr->DeleteAnchorStack();
     pRdr->m_pAnchorStck = mpOldAnchorStck;
 
     *pRdr->m_pPaM->GetPoint() = maTmpPos;
@@ -2213,7 +2215,7 @@ long SwWW8ImplReader::Read_And(WW8PLCFManResult* pRes)
     OutlinerParaObject *pOutliner = ImportAsOutliner( sText, pRes->nCp2OrIdx,
         pRes->nCp2OrIdx + pRes->nMemLen, MAN_AND );
 
-    m_pFormatOfJustInsertedApo = 0;
+    m_pFormatOfJustInsertedApo = nullptr;
     SwPostItField aPostIt(
         static_cast<SwPostItFieldType*>(m_rDoc.getIDocumentFieldsAccess().GetSysFieldType(RES_POSTITFLD)), sAuthor,
         sText, sInitials, OUString(), aDate );
@@ -2247,22 +2249,22 @@ void SwWW8ImplReader::Read_HdFtTextAsHackedFrame(WW8_CP nStart, WW8_CP nLen,
     SwFormatAnchor aAnch( pFrame->GetAnchor() );
     aAnch.SetType( FLY_AT_PARA );
     pFrame->SetFormatAttr( aAnch );
-    SwFormatFrmSize aSz(ATT_MIN_SIZE, nPageWidth, MINLAY);
-    SwFrmSize eFrmSize = ATT_MIN_SIZE;
-    if( eFrmSize != aSz.GetWidthSizeType() )
-        aSz.SetWidthSizeType( eFrmSize );
+    SwFormatFrameSize aSz(ATT_MIN_SIZE, nPageWidth, MINLAY);
+    SwFrameSize eFrameSize = ATT_MIN_SIZE;
+    if( eFrameSize != aSz.GetWidthSizeType() )
+        aSz.SetWidthSizeType( eFrameSize );
     pFrame->SetFormatAttr(aSz);
     pFrame->SetFormatAttr(SwFormatSurround(SURROUND_THROUGHT));
     pFrame->SetFormatAttr(SwFormatHoriOrient(0, text::HoriOrientation::LEFT)); //iFOO
 
     // #i43427# - send frame for header/footer into background.
     pFrame->SetFormatAttr( SvxOpaqueItem( RES_OPAQUE, false ) );
-    SdrObject* pFrmObj = CreateContactObject( pFrame );
-    OSL_ENSURE( pFrmObj,
+    SdrObject* pFrameObj = CreateContactObject( pFrame );
+    OSL_ENSURE( pFrameObj,
             "<SwWW8ImplReader::Read_HdFtTextAsHackedFrame(..)> - missing SdrObject instance" );
-    if ( pFrmObj )
+    if ( pFrameObj )
     {
-        pFrmObj->SetOrdNum( 0L );
+        pFrameObj->SetOrdNum( 0L );
     }
     MoveInsideFly(pFrame);
 
@@ -2435,7 +2437,7 @@ void wwSectionManager::SetHdFt(wwSection &rSection, int nSect,
     OSL_ENSURE(rSection.mpPage, "makes no sense to call with a main page");
     if (rSection.mpPage)
     {
-        mrReader.Read_HdFt(nSect, pPrevious ? pPrevious->mpPage : 0,
+        mrReader.Read_HdFt(nSect, pPrevious ? pPrevious->mpPage : nullptr,
                 rSection);
     }
 
@@ -2450,9 +2452,9 @@ void SwWW8ImplReader::AppendTextNode(SwPosition& rPos)
 {
     SwTextNode* pText = m_pPaM->GetNode().GetTextNode();
 
-    const SwNumRule* pRule = NULL;
+    const SwNumRule* pRule = nullptr;
 
-    if (pText != NULL)
+    if (pText != nullptr)
         pRule = sw::util::GetNumRuleFromTextNode(*pText);
 
     if (
@@ -2476,7 +2478,7 @@ void SwWW8ImplReader::AppendTextNode(SwPosition& rPos)
 
         // cache current paragraph
         if(m_pPreviousNumPaM)
-            delete m_pPreviousNumPaM, m_pPreviousNumPaM = 0;
+            delete m_pPreviousNumPaM, m_pPreviousNumPaM = nullptr;
 
         m_pPreviousNumPaM = new SwPaM(*m_pPaM, m_pPaM);
         m_pPrevNumRule = pRule;
@@ -2486,14 +2488,14 @@ void SwWW8ImplReader::AppendTextNode(SwPosition& rPos)
         // If the previous paragraph has numbering but the current one does not
         // we need to add a space after the previous paragraph
         SetLowerSpacing(*m_pPreviousNumPaM, GetParagraphAutoSpace(m_pWDop->fDontUseHTMLAutoSpacing));
-        delete m_pPreviousNumPaM, m_pPreviousNumPaM = 0;
-        m_pPrevNumRule = 0;
+        delete m_pPreviousNumPaM, m_pPreviousNumPaM = nullptr;
+        m_pPrevNumRule = nullptr;
     }
     else
     {
         // clear paragraph cache
         if(m_pPreviousNumPaM)
-            delete m_pPreviousNumPaM, m_pPreviousNumPaM = 0;
+            delete m_pPreviousNumPaM, m_pPreviousNumPaM = nullptr;
         m_pPrevNumRule = pRule;
     }
 
@@ -2518,7 +2520,7 @@ bool SwWW8ImplReader::SetSpacing(SwPaM &rMyPam, int nSpace, bool bIsUpper )
 
         const SvxULSpaceItem* pULSpaceItem = static_cast<const SvxULSpaceItem*>(m_pCtrlStck->GetFormatAttr(*pSpacingPos, RES_UL_SPACE));
 
-        if(pULSpaceItem != 0)
+        if(pULSpaceItem != nullptr)
         {
             SvxULSpaceItem aUL(*pULSpaceItem);
 
@@ -2586,7 +2588,7 @@ bool SwWW8ImplReader::ProcessSpecial(bool &rbReSync, WW8_CP nStartCp)
     OSL_ENSURE(m_nInTable >= 0,"nInTable < 0!");
 
     // TabRowEnd
-    bool bTableRowEnd = (m_pPlcxMan->HasParaSprm(m_bVer67 ? 25 : 0x2417) != 0 );
+    bool bTableRowEnd = (m_pPlcxMan->HasParaSprm(m_bVer67 ? 25 : 0x2417) != nullptr );
 
 // Unfortunately, for every paragraph we need to check first whether
 // they contain a sprm 29 (0x261B), which starts an APO.
@@ -2617,16 +2619,16 @@ bool SwWW8ImplReader::ProcessSpecial(bool &rbReSync, WW8_CP nStartCp)
     sal_uInt8 nCellLevel = 0;
 
     if (m_bVer67)
-        nCellLevel = int(0 != m_pPlcxMan->HasParaSprm(24));
+        nCellLevel = int(nullptr != m_pPlcxMan->HasParaSprm(24));
     else
     {
-        nCellLevel = int(0 != m_pPlcxMan->HasParaSprm(0x2416));
+        nCellLevel = int(nullptr != m_pPlcxMan->HasParaSprm(0x2416));
         if (!nCellLevel)
-            nCellLevel = int(0 != m_pPlcxMan->HasParaSprm(0x244B));
+            nCellLevel = int(nullptr != m_pPlcxMan->HasParaSprm(0x244B));
     }
     do
     {
-        WW8_TablePos *pTabPos=0;
+        WW8_TablePos *pTabPos=nullptr;
         WW8_TablePos aTabPos;
         if(nCellLevel && !m_bVer67)
         {
@@ -2756,7 +2758,7 @@ rtl_TextEncoding SwWW8ImplReader::GetCharSetFromLanguage()
     */
     const SvxLanguageItem *pLang = static_cast<const SvxLanguageItem*>(GetFormatAttr(RES_CHRATR_LANGUAGE));
     LanguageType eLang = pLang ? pLang->GetLanguage() : LANGUAGE_SYSTEM;
-    ::com::sun::star::lang::Locale aLocale(LanguageTag::convertToLocale(eLang));
+    css::lang::Locale aLocale(LanguageTag::convertToLocale(eLang));
     return msfilter::util::getBestTextEncodingFromLocale(aLocale);
 }
 
@@ -2774,7 +2776,7 @@ rtl_TextEncoding SwWW8ImplReader::GetCJKCharSetFromLanguage()
     */
     const SvxLanguageItem *pLang = static_cast<const SvxLanguageItem*>(GetFormatAttr(RES_CHRATR_CJK_LANGUAGE));
     LanguageType eLang = pLang ? pLang->GetLanguage() : LANGUAGE_SYSTEM;
-    ::com::sun::star::lang::Locale aLocale(LanguageTag::convertToLocale(eLang));
+    css::lang::Locale aLocale(LanguageTag::convertToLocale(eLang));
     return msfilter::util::getBestTextEncodingFromLocale(aLocale);
 }
 
@@ -2827,25 +2829,25 @@ rtl_TextEncoding SwWW8ImplReader::GetCurrentCJKCharSet()
 
 void SwWW8ImplReader::PostProcessAttrs()
 {
-    if (m_pPostProcessAttrsInfo != NULL)
+    if (m_pPostProcessAttrsInfo != nullptr)
     {
         SfxItemIter aIter(m_pPostProcessAttrsInfo->mItemSet);
 
         const SfxPoolItem * pItem = aIter.GetCurItem();
-        if (pItem != NULL)
+        if (pItem != nullptr)
         {
             do
             {
                 m_pCtrlStck->NewAttr(*m_pPostProcessAttrsInfo->mPaM.GetPoint(),
                                    *pItem);
                 m_pCtrlStck->SetAttr(*m_pPostProcessAttrsInfo->mPaM.GetMark(),
-                                   pItem->Which(), true);
+                                   pItem->Which());
             }
-            while (!aIter.IsAtEnd() && 0 != (pItem = aIter.NextItem()));
+            while (!aIter.IsAtEnd() && nullptr != (pItem = aIter.NextItem()));
         }
 
         delete m_pPostProcessAttrsInfo;
-        m_pPostProcessAttrsInfo = NULL;
+        m_pPostProcessAttrsInfo = nullptr;
     }
 }
 
@@ -2883,7 +2885,7 @@ sal_Size Custom8BitToUnicode(rtl_TextToUnicodeConverter hConverter,
         sal_uInt32 nInfo = 0;
         sal_Size nThisConverted=0;
 
-        nDestChars += rtl_convertTextToUnicode(hConverter, 0,
+        nDestChars += rtl_convertTextToUnicode(hConverter, nullptr,
             pIn+nConverted, nInLen-nConverted,
             pOut+nDestChars, nOutLen-nDestChars,
             nFlags, &nInfo, &nThisConverted);
@@ -2900,7 +2902,7 @@ sal_Size Custom8BitToUnicode(rtl_TextToUnicodeConverter hConverter,
             sal_Size nOtherConverted;
             rtl_TextToUnicodeConverter hCP1252Converter =
                 rtl_createTextToUnicodeConverter(RTL_TEXTENCODING_MS_1252);
-            nDestChars += rtl_convertTextToUnicode(hCP1252Converter, 0,
+            nDestChars += rtl_convertTextToUnicode(hCP1252Converter, nullptr,
                 pIn+nConverted, 1,
                 pOut+nDestChars, nOutLen-nDestChars,
                 nFlags2, &nInfo, &nOtherConverted);
@@ -3027,7 +3029,7 @@ bool SwWW8ImplReader::ReadPlainChars(WW8_CP& rPos, sal_Int32 nEnd, sal_Int32 nCp
         */
 
         const SfxPoolItem * pItem = GetFormatAttr(RES_CHRATR_CJK_LANGUAGE);
-        if (pItem != NULL && LANGUAGE_JAPANESE != static_cast<const SvxLanguageItem *>(pItem)->GetLanguage())
+        if (pItem != nullptr && LANGUAGE_JAPANESE != static_cast<const SvxLanguageItem *>(pItem)->GetLanguage())
         {
             SAL_WARN("sw.ww8", "discarding word95 RTL_TEXTENCODING_MS_932 encoding");
             eSrcCharSet = GetCharSetFromLanguage();
@@ -3041,9 +3043,9 @@ bool SwWW8ImplReader::ReadPlainChars(WW8_CP& rPos, sal_Int32 nEnd, sal_Int32 nCp
     sal_Unicode* pBuffer = pStr->buffer;
     sal_Unicode* pWork = pBuffer;
 
-    sal_Char* p8Bits = NULL;
+    sal_Char* p8Bits = nullptr;
 
-    rtl_TextToUnicodeConverter hConverter = 0;
+    rtl_TextToUnicodeConverter hConverter = nullptr;
     if (!m_bIsUnicode || m_bVer67)
         hConverter = rtl_createTextToUnicodeConverter(eSrcCharSet);
 
@@ -3056,7 +3058,7 @@ bool SwWW8ImplReader::ReadPlainChars(WW8_CP& rPos, sal_Int32 nEnd, sal_Int32 nCp
 
     sal_uInt16 nCTLLang = 0;
     const SfxPoolItem * pItem = GetFormatAttr(RES_CHRATR_CTL_LANGUAGE);
-    if (pItem != NULL)
+    if (pItem != nullptr)
         nCTLLang = static_cast<const SvxLanguageItem *>(pItem)->GetLanguage();
 
     sal_Int32 nL2;
@@ -3124,7 +3126,7 @@ bool SwWW8ImplReader::ReadPlainChars(WW8_CP& rPos, sal_Int32 nEnd, sal_Int32 nCp
         pStr->length = nEndUsed;
 
         emulateMSWordAddTextToParagraph(OUString(pStr, SAL_NO_ACQUIRE));
-        pStr = NULL;
+        pStr = nullptr;
         rPos += nL2;
         if (!m_aApos.back()) // a para end in apo doesn't count
             m_bWasParaEnd = false; // No CR
@@ -3248,7 +3250,7 @@ void SwWW8ImplReader::emulateMSWordAddTextToParagraph(const OUString& rAddString
 
     OUString sParagraphText;
     const SwContentNode *pCntNd = m_pPaM->GetContentNode();
-    const SwTextNode* pNd = pCntNd ? pCntNd->GetTextNode() : NULL;
+    const SwTextNode* pNd = pCntNd ? pCntNd->GetTextNode() : nullptr;
     if (pNd)
         sParagraphText = pNd->GetText();
     sal_Int32 nParaOffset = sParagraphText.getLength();
@@ -3263,7 +3265,7 @@ void SwWW8ImplReader::emulateMSWordAddTextToParagraph(const OUString& rAddString
 
         OUString sChunk(rAddString.copy(nPos, nEnd-nPos));
         const sal_uInt16 aIds[] = {RES_CHRATR_FONT, RES_CHRATR_CJK_FONT, RES_CHRATR_CTL_FONT};
-        const SvxFontItem *pOverriddenItems[] = {NULL, NULL, NULL};
+        const SvxFontItem *pOverriddenItems[] = {nullptr, nullptr, nullptr};
         bool aForced[] = {false, false, false};
 
         int nLclIdctHint = 0xFF;
@@ -3373,7 +3375,7 @@ void SwWW8ImplReader::simpleAddTextToParagraph(const OUString& rAddString)
 #endif
 
     const SwContentNode *pCntNd = m_pPaM->GetContentNode();
-    const SwTextNode* pNd = pCntNd ? pCntNd->GetTextNode() : NULL;
+    const SwTextNode* pNd = pCntNd ? pCntNd->GetTextNode() : nullptr;
 
     OSL_ENSURE(pNd, "What the hell, where's my text node");
 
@@ -3525,17 +3527,30 @@ bool SwWW8ImplReader::ReadChar(long nPosCp, long nCpOfs)
             {
                 // Always insert a txtnode for a column break, e.g. ##
                 SwContentNode *pCntNd=m_pPaM->GetContentNode();
-                if (pCntNd!=NULL && pCntNd->Len()>0) // if par is empty not break is needed
+                if (pCntNd!=nullptr && pCntNd->Len()>0) // if par is empty not break is needed
                     AppendTextNode(*m_pPaM->GetPoint());
                 m_rDoc.getIDocumentContentOperations().InsertPoolItem(*m_pPaM, SvxFormatBreakItem(SVX_BREAK_COLUMN_BEFORE, RES_BREAK));
             }
             break;
         case 0x7:
-            bNewParaEnd = true;
-            if (m_pPlcxMan->GetPapPLCF()->Where() == nCpOfs+nPosCp+1)
-                TabCellEnd();       // Table cell/row end
-            else
-                bParaMark = true;
+            {
+                bNewParaEnd = true;
+                WW8PLCFxDesc* pPap = m_pPlcxMan->GetPap();
+                //The last paragraph of each cell is terminated by a special
+                //paragraph mark called a cell mark. Following the cell mark
+                //that ends the last cell of a table row, the table row is
+                //terminated by a special paragraph mark called a row mark
+                //
+                //So the 0x7 should be right at the end of the previous
+                //range to be a real cell-end.
+                if (pPap->nOrigStartPos == nPosCp+1 ||
+                    pPap->nOrigStartPos == WW8_CP_MAX)
+                {
+                    TabCellEnd();       // Table cell/row end
+                }
+                else
+                    bParaMark = true;
+            }
             break;
         case 0xf:
             if( !m_bSpec )        // "Satellite"
@@ -3604,7 +3619,7 @@ bool SwWW8ImplReader::ReadChar(long nPosCp, long nCpOfs)
                 }
                 if( !bReadObj )
                 {
-                    SwFrameFormat *pResult = 0;
+                    SwFrameFormat *pResult = nullptr;
                     if (m_bObj)
                         pResult = ImportOle();
                     else if (m_bSpec)
@@ -3696,7 +3711,7 @@ void SwWW8ImplReader::ProcessAktCollChange(WW8PLCFManResult& rRes,
     m_nAktColl = m_pPlcxMan->GetColl();
 
     // Invalid Style-Id
-    if (m_nAktColl >= m_vColl.size() || !m_vColl[m_nAktColl].pFormat || !m_vColl[m_nAktColl].bColl)
+    if (m_nAktColl >= m_vColl.size() || !m_vColl[m_nAktColl].m_pFormat || !m_vColl[m_nAktColl].m_bColl)
     {
         m_nAktColl = 0;
         m_bParaAutoBefore = false;
@@ -3704,8 +3719,8 @@ void SwWW8ImplReader::ProcessAktCollChange(WW8PLCFManResult& rRes,
     }
     else
     {
-        m_bParaAutoBefore = m_vColl[m_nAktColl].bParaAutoBefore;
-        m_bParaAutoAfter = m_vColl[m_nAktColl].bParaAutoAfter;
+        m_bParaAutoBefore = m_vColl[m_nAktColl].m_bParaAutoBefore;
+        m_bParaAutoAfter = m_vColl[m_nAktColl].m_bParaAutoAfter;
     }
 
     if (nOldColl >= m_vColl.size())
@@ -3724,9 +3739,9 @@ void SwWW8ImplReader::ProcessAktCollChange(WW8PLCFManResult& rRes,
     if (!bTabRowEnd && StyleExists(m_nAktColl))
     {
         SetTextFormatCollAndListLevel( *m_pPaM, m_vColl[ m_nAktColl ]);
-        ChkToggleAttr(m_vColl[ nOldColl ].n81Flags, m_vColl[ m_nAktColl ].n81Flags);
-        ChkToggleBiDiAttr(m_vColl[nOldColl].n81BiDiFlags,
-            m_vColl[m_nAktColl].n81BiDiFlags);
+        ChkToggleAttr(m_vColl[ nOldColl ].m_n81Flags, m_vColl[ m_nAktColl ].m_n81Flags);
+        ChkToggleBiDiAttr(m_vColl[nOldColl].m_n81BiDiFlags,
+            m_vColl[m_nAktColl].m_n81BiDiFlags);
     }
 }
 
@@ -3839,7 +3854,7 @@ long SwWW8ImplReader::ReadTextAttr(WW8_CP& rTextPos, long nTextEnd, bool& rbStar
     {
         m_pCtrlStck->KillUnlockedAttrs( *m_pPaM->GetPoint() );
         if( nOldColl != m_pPlcxMan->GetColl() )
-            ProcessAktCollChange(aRes, 0, false);
+            ProcessAktCollChange(aRes, nullptr, false);
     }
 
     return nNext;
@@ -3935,7 +3950,7 @@ bool SwWW8ImplReader::ReadText(WW8_CP nStartCp, WW8_CP nTextLen, ManTypes nType)
 
     m_bWasParaEnd = false;
     m_nAktColl    =  0;
-    m_pAktItemSet =  0;
+    m_pAktItemSet =  nullptr;
     m_nCharFormat    = -1;
     m_bSpec = false;
     m_bPgSecBreak = false;
@@ -3944,10 +3959,10 @@ bool SwWW8ImplReader::ReadText(WW8_CP nStartCp, WW8_CP nTextLen, ManTypes nType)
     long nCpOfs = m_pPlcxMan->GetCpOfs(); // Offset for Header/Footer, Footnote
 
     WW8_CP nNext = m_pPlcxMan->Where();
-    SwTextNode* pPreviousNode = 0;
+    SwTextNode* pPreviousNode = nullptr;
     sal_uInt8 nDropLines = 0;
-    SwCharFormat* pNewSwCharFormat = 0;
-    const SwCharFormat* pFormat = 0;
+    SwCharFormat* pNewSwCharFormat = nullptr;
+    const SwCharFormat* pFormat = nullptr;
     m_pStrm->Seek( m_pSBase->WW8Cp2Fc( nStartCp + nCpOfs, &m_bIsUnicode ) );
 
     WW8_CP l = nStartCp;
@@ -3963,7 +3978,7 @@ bool SwWW8ImplReader::ReadText(WW8_CP nStartCp, WW8_CP nTextLen, ManTypes nType)
         ReadAttrs( l, nNext, nTextEnd, bStartLine );// Takes SectionBreaks into account, too
         OSL_ENSURE(m_pPaM->GetNode().GetTextNode(), "Missing txtnode");
 
-        if (m_pPostProcessAttrsInfo != NULL)
+        if (m_pPostProcessAttrsInfo != nullptr)
             PostProcessAttrs();
 
         if (l >= nTextEnd)
@@ -4027,7 +4042,7 @@ bool SwWW8ImplReader::ReadText(WW8_CP nStartCp, WW8_CP nTextLen, ManTypes nType)
             SwPosition aStart(*pEndNd);
             m_pCtrlStck->NewAttr(aStart, aDrop);
             m_pCtrlStck->SetAttr(*m_pPaM->GetPoint(), RES_PARATR_DROP);
-            pPreviousNode = 0;
+            pPreviousNode = nullptr;
         }
         else if (m_bDropCap)
         {
@@ -4044,14 +4059,14 @@ bool SwWW8ImplReader::ReadText(WW8_CP nStartCp, WW8_CP nTextLen, ManTypes nType)
             if (pDCS)
                 nDropLines = (*pDCS) >> 3;
             else    // There is no Drop Cap Specifier hence no dropcap
-                pPreviousNode = 0;
+                pPreviousNode = nullptr;
 
             if (const sal_uInt8 *pDistance = m_pPlcxMan->GetPapPLCF()->HasSprm(0x842F))
                 nDistance = SVBT16ToShort( pDistance );
             else
                 nDistance = 0;
 
-            const SwFormatCharFormat *pSwFormatCharFormat = 0;
+            const SwFormatCharFormat *pSwFormatCharFormat = nullptr;
 
             if(m_pAktItemSet)
                 pSwFormatCharFormat = &(ItemGet<SwFormatCharFormat>(*m_pAktItemSet, RES_TXTATR_CHARFMT));
@@ -4068,7 +4083,7 @@ bool SwWW8ImplReader::ReadText(WW8_CP nStartCp, WW8_CP nTextLen, ManTypes nType)
             }
 
             delete m_pAktItemSet;
-            m_pAktItemSet = 0;
+            m_pAktItemSet = nullptr;
             m_bDropCap=false;
         }
 
@@ -4121,7 +4136,7 @@ bool SwWW8ImplReader::ReadText(WW8_CP nStartCp, WW8_CP nTextLen, ManTypes nType)
 
     CloseAttrEnds();
 
-    delete m_pPlcxMan, m_pPlcxMan = 0;
+    delete m_pPlcxMan, m_pPlcxMan = nullptr;
     return bJoined;
 }
 
@@ -4130,55 +4145,55 @@ SwWW8ImplReader::SwWW8ImplReader(sal_uInt8 nVersionPara, SotStorage* pStorage,
     : m_pDocShell(rD.GetDocShell())
     , m_pStg(pStorage)
     , m_pStrm(pSt)
-    , m_pTableStream(0)
-    , m_pDataStream(0)
+    , m_pTableStream(nullptr)
+    , m_pDataStream(nullptr)
     , m_rDoc(rD)
-    , m_pPaM(0)
-    , m_pCtrlStck(0)
-    , m_pRedlineStack(0)
-    , m_pReffedStck(0)
-    , m_pReffingStck(0)
-    , m_pAnchorStck(0)
+    , m_pPaM(nullptr)
+    , m_pCtrlStck(nullptr)
+    , m_pRedlineStack(nullptr)
+    , m_pReffedStck(nullptr)
+    , m_pReffingStck(nullptr)
+    , m_pAnchorStck(nullptr)
     , m_aSectionManager(*this)
     , m_aExtraneousParas(rD)
     , m_aInsertedTables(rD)
     , m_aSectionNameGenerator(rD, OUString("WW"))
-    , m_pSprmParser(NULL)
+    , m_pSprmParser(nullptr)
     , m_aGrfNameGenerator(bNewDoc, OUString('G'))
     , m_aParaStyleMapper(rD)
     , m_aCharStyleMapper(rD)
-    , m_pFormImpl(0)
-    , m_pFlyFormatOfJustInsertedGraphic(0)
-    , m_pFormatOfJustInsertedApo(0)
-    , m_pPreviousNumPaM(0)
-    , m_pPrevNumRule(0)
-    , m_pPostProcessAttrsInfo(0)
-    , m_pWwFib(0)
-    , m_pFonts(0)
-    , m_pWDop(0)
-    , m_pLstManager(0)
-    , m_pSBase(0)
-    , m_pPlcxMan(0)
+    , m_pFormImpl(nullptr)
+    , m_pFlyFormatOfJustInsertedGraphic(nullptr)
+    , m_pFormatOfJustInsertedApo(nullptr)
+    , m_pPreviousNumPaM(nullptr)
+    , m_pPrevNumRule(nullptr)
+    , m_pPostProcessAttrsInfo(nullptr)
+    , m_pWwFib(nullptr)
+    , m_pFonts(nullptr)
+    , m_pWDop(nullptr)
+    , m_pLstManager(nullptr)
+    , m_pSBase(nullptr)
+    , m_pPlcxMan(nullptr)
     , m_aTextNodesHavingFirstLineOfstSet()
     , m_aTextNodesHavingLeftIndentSet()
-    , m_pStyles(0)
-    , m_pAktColl(0)
-    , m_pAktItemSet(0)
-    , m_pDfltTextFormatColl(0)
-    , m_pStandardFormatColl(0)
-    , m_pHdFt(0)
-    , m_pWFlyPara(0)
-    , m_pSFlyPara(0)
-    , m_pTableDesc(0)
-    , m_pNumOlst(0)
-    , m_pNode_FLY_AT_PARA(0)
-    , m_pDrawModel(0)
-    , m_pDrawPg(0)
-    , m_pDrawEditEngine(0)
-    , m_pWWZOrder(0)
-    , m_pNumFieldType(0)
-    , m_pMSDffManager(0)
-    , m_pAtnNames(0)
+    , m_pStyles(nullptr)
+    , m_pAktColl(nullptr)
+    , m_pAktItemSet(nullptr)
+    , m_pDfltTextFormatColl(nullptr)
+    , m_pStandardFormatColl(nullptr)
+    , m_pHdFt(nullptr)
+    , m_pWFlyPara(nullptr)
+    , m_pSFlyPara(nullptr)
+    , m_pTableDesc(nullptr)
+    , m_pNumOlst(nullptr)
+    , m_pNode_FLY_AT_PARA(nullptr)
+    , m_pDrawModel(nullptr)
+    , m_pDrawPg(nullptr)
+    , m_pDrawEditEngine(nullptr)
+    , m_pWWZOrder(nullptr)
+    , m_pNumFieldType(nullptr)
+    , m_pMSDffManager(nullptr)
+    , m_pAtnNames(nullptr)
     , m_sBaseURL(rBaseURL)
     , m_nIniFlags(0)
     , m_nIniFlags1(0)
@@ -4253,7 +4268,7 @@ SwWW8ImplReader::SwWW8ImplReader(sal_uInt8 nVersionPara, SotStorage* pStorage,
     , m_bLoadingTOXCache(false)
     , m_nEmbeddedTOXLevel(0)
     , m_bLoadingTOXHyperlink(false)
-    , m_pPosAfterTOC(0)
+    , m_pPosAfterTOC(nullptr)
     , m_bCareFirstParaEndInToc(false)
     , m_bCareLastParaEndInToc(false)
     , m_aTOXEndCps()
@@ -4263,10 +4278,10 @@ SwWW8ImplReader::SwWW8ImplReader(sal_uInt8 nVersionPara, SotStorage* pStorage,
     m_pStrm->SetEndian( SvStreamEndian::LITTLE );
     m_aApos.push_back(false);
 
-    mpCrsr = m_rDoc.CreateUnoCrsr(rPos);
+    mpCursor = m_rDoc.CreateUnoCursor(rPos);
 }
 
-void SwWW8ImplReader::DeleteStk(SwFltControlStack* pStck)
+void SwWW8ImplReader::DeleteStack(SwFltControlStack* pStck)
 {
     if( pStck )
     {
@@ -4296,7 +4311,7 @@ void wwSectionManager::SetSegmentToPageDesc(const wwSection &rSection,
     {
         Rectangle aRect(0, 0, 100, 100); // A dummy, we don't care about the size
         SvxMSDffImportData aData(aRect);
-        SdrObject* pObject = 0;
+        SdrObject* pObject = nullptr;
         if (mrReader.m_pMSDffManager->GetShape(0x401, pObject, aData))
         {
             // Only handle shape if it is a background shape
@@ -4313,6 +4328,8 @@ void wwSectionManager::SetSegmentToPageDesc(const wwSection &rSection,
     wwULSpaceData aULData;
     GetPageULData(rSection, aULData);
     SetPageULSpaceItems(rFormat, aULData, rSection);
+
+    rPage.SetVerticalAdjustment( rSection.mnVerticalAdjustment );
 
     SetPage(rPage, rFormat, rSection, bIgnoreCols);
 
@@ -4388,14 +4405,14 @@ SwFormatPageDesc wwSectionManager::SetSwFormatPageDesc(mySegIter &rIter,
     {
         rIter->mpPage = mrReader.m_rDoc.MakePageDesc(
             SwViewShell::GetShellRes()->GetPageDescName(mnDesc, ShellResource::NORMAL_PAGE),
-            0, false);
+            nullptr, false);
     }
     OSL_ENSURE(rIter->mpPage, "no page!");
     if (!rIter->mpPage)
         return SwFormatPageDesc();
 
     // Set page before hd/ft
-    const wwSection *pPrevious = 0;
+    const wwSection *pPrevious = nullptr;
     if (rIter != rStart)
         pPrevious = &(*(rIter-1));
     SetHdFt(*rIter, std::distance(rStart, rIter), pPrevious);
@@ -4518,7 +4535,7 @@ void wwSectionManager::InsertSegments()
             GiveNodePageDesc(aIter->maStart, aDesc, mrReader.m_rDoc);
         }
 
-        SwTextNode* pTextNd = 0;
+        SwTextNode* pTextNd = nullptr;
         if (bInsertSection)
         {
             // Start getting the bounds of this section
@@ -4535,7 +4552,7 @@ void wwSectionManager::InsertSegments()
 
             const SwPosition* pPos  = aSectPaM.GetPoint();
             SwTextNode const*const pSttNd = pPos->nNode.GetNode().GetTextNode();
-            const SwTableNode* pTableNd = pSttNd ? pSttNd->FindTableNode() : 0;
+            const SwTableNode* pTableNd = pSttNd ? pSttNd->FindTableNode() : nullptr;
             if (pTableNd)
             {
                 pTextNd =
@@ -4623,7 +4640,7 @@ void wwSectionManager::InsertSegments()
             SwNodeIndex aIdx(*pTextNd);
             SwPaM aTest(aIdx);
             mrReader.m_rDoc.getIDocumentContentOperations().DelFullPara(aTest);
-            pTextNd = 0;
+            pTextNd = nullptr;
         }
     }
 }
@@ -4655,7 +4672,7 @@ void SwWW8ImplReader::StoreMacroCmds()
         try
         {
             uno::Reference < io::XStream > xStream =
-                    xRoot->openStreamElement( OUString(SL::aMSMacroCmds), embed::ElementModes::READWRITE );
+                    xRoot->openStreamElement( SL::aMSMacroCmds, embed::ElementModes::READWRITE );
             std::unique_ptr<SvStream> xOutStream(::utl::UcbStreamHelper::CreateStream(xStream));
 
             sal_uInt32 lcbCmds = std::min<sal_uInt32>(m_pWwFib->lcbCmds, m_pTableStream->remainingSize());
@@ -4869,7 +4886,7 @@ bool SwWW8ImplReader::ReadGlobalTemplateSettings( const OUString& sCreatedFrom, 
         aBasicImporter.import( m_pDocShell->GetMedium()->GetInputStream() );
         lcl_createTemplateToProjectEntry( xPrjNameCache, aURL, aBasicImporter.getProjectName() );
         // Read toolbars & menus
-        tools::SvRef<SotStorageStream> refMainStream = rRoot->OpenSotStream( OUString( "WordDocument" ));
+        tools::SvRef<SotStorageStream> refMainStream = rRoot->OpenSotStream( "WordDocument");
         refMainStream->SetEndian(SvStreamEndian::LITTLE);
         WW8Fib aWwFib( *refMainStream, 8 );
         tools::SvRef<SotStorageStream> xTableStream = rRoot->OpenSotStream(OUString::createFromAscii( aWwFib.fWhichTableStm ? SL::a1Table : SL::a0Table), STREAM_STD_READ);
@@ -4890,7 +4907,23 @@ sal_uLong SwWW8ImplReader::CoreLoad(WW8Glossary *pGloss)
 
     m_rDoc.SetDocumentType( SwDoc::DOCTYPE_MSWORD );
     if (m_bNewDoc && m_pStg && !pGloss)
+    {
+        // Initialize RDF metadata, to be able to add statements during the import.
+        try
+        {
+            uno::Reference<rdf::XDocumentMetadataAccess> xDocumentMetadataAccess(m_rDoc.GetDocShell()->GetBaseModel(), uno::UNO_QUERY_THROW);
+            uno::Reference<uno::XComponentContext> xComponentContext(comphelper::getProcessComponentContext());
+            uno::Reference<embed::XStorage> xStorage = comphelper::OStorageHelper::GetTemporaryStorage();
+            const uno::Reference<rdf::XURI> xBaseURI(sfx2::createBaseURI(xComponentContext, xStorage, m_sBaseURL));
+            uno::Reference<task::XInteractionHandler> xHandler;
+            xDocumentMetadataAccess->loadMetadataFromStorage(xStorage, xBaseURI, xHandler);
+        }
+        catch (const uno::Exception& rException)
+        {
+            SAL_WARN("sw.ww8", "SwWW8ImplReader::CoreLoad: failed to initialize RDF metadata: " << rException.Message);
+        }
         ReadDocInfo();
+    }
 
     ::ww8::WW8FibData * pFibData = new ::ww8::WW8FibData();
 
@@ -4920,7 +4953,7 @@ sal_uLong SwWW8ImplReader::CoreLoad(WW8Glossary *pGloss)
             pDocShell->SetReadOnlyUI();
     }
 
-    m_pPaM = mpCrsr.get();
+    m_pPaM = mpCursor.get();
 
     m_pCtrlStck = new SwWW8FltControlStack( &m_rDoc, m_nFieldFlags, *this );
 
@@ -5201,8 +5234,8 @@ sal_uLong SwWW8ImplReader::CoreLoad(WW8Glossary *pGloss)
 
                 // Initialize FlyFrame Formats
                 SwFlyFrameFormat* pFlyFormat     = pOrder->pFly;
-                SwFlyFrameFormat* pNextFlyFormat = 0;
-                SwFlyFrameFormat* pPrevFlyFormat = 0;
+                SwFlyFrameFormat* pNextFlyFormat = nullptr;
+                SwFlyFrameFormat* pPrevFlyFormat = nullptr;
 
                 // Determine successor, if we can
                 SvxMSDffShapeTxBxSort::iterator tmpIter1 = it;
@@ -5244,7 +5277,7 @@ sal_uLong SwWW8ImplReader::CoreLoad(WW8Glossary *pGloss)
             eMode |= nsRedlineMode_t::REDLINE_SHOW_DELETE;
     }
 
-    m_aInsertedTables.DelAndMakeTableFrms();
+    m_aInsertedTables.DelAndMakeTableFrames();
     m_aSectionManager.InsertSegments();
 
     m_vColl.clear();
@@ -5263,14 +5296,14 @@ sal_uLong SwWW8ImplReader::CoreLoad(WW8Glossary *pGloss)
     delete m_pSprmParser;
     ::EndProgress(m_pDocShell);
 
-    m_pDataStream = 0;
-    m_pTableStream = 0;
+    m_pDataStream = nullptr;
+    m_pTableStream = nullptr;
 
-    DeleteCtrlStk();
+    DeleteCtrlStack();
     m_pRedlineStack->closeall(*m_pPaM->GetPoint());
     delete m_pRedlineStack;
-    DeleteAnchorStk();
-    DeleteRefStks();
+    DeleteAnchorStack();
+    DeleteRefStacks();
 
     // For i120928,achieve the graphics from the special bookmark with is for graphic bullet
     {
@@ -5300,12 +5333,12 @@ sal_uLong SwWW8ImplReader::CoreLoad(WW8Glossary *pGloss)
                             SwFrameFormat* pFrameFormat = pHt->GetFlyCnt().GetFrameFormat();
                             vecFrameFormat.push_back(pFrameFormat);
                             const SwNodeIndex* pNdIdx = pFrameFormat->GetContent().GetContentIdx();
-                            const SwNodes* pNodesArray = (pNdIdx != NULL)
+                            const SwNodes* pNodesArray = (pNdIdx != nullptr)
                                                          ? &(pNdIdx->GetNodes())
-                                                         : NULL;
-                            const SwGrfNode *pGrf = (pNodesArray != NULL)
+                                                         : nullptr;
+                            const SwGrfNode *pGrf = (pNodesArray != nullptr)
                                                     ? dynamic_cast<const SwGrfNode*>((*pNodesArray)[pNdIdx->GetIndex() + 1])
-                                                    : NULL;
+                                                    : nullptr;
                             vecBulletGrf.push_back(pGrf);
                         }
                     }
@@ -5321,7 +5354,7 @@ sal_uLong SwWW8ImplReader::CoreLoad(WW8Glossary *pGloss)
                             const sal_uInt16 nGrfBulletCP = aNumFormat.GetGrfBulletCP();
                             if ( nType == SVX_NUM_BITMAP
                                  && vecBulletGrf.size() > nGrfBulletCP
-                                 && vecBulletGrf[nGrfBulletCP] != NULL )
+                                 && vecBulletGrf[nGrfBulletCP] != nullptr )
                             {
                                 Graphic aGraphic = vecBulletGrf[nGrfBulletCP]->GetGrf();
                                 SvxBrushItem aBrush(aGraphic, GPOS_AREA, SID_ATTR_BRUSH);
@@ -5356,7 +5389,7 @@ sal_uLong SwWW8ImplReader::CoreLoad(WW8Glossary *pGloss)
 
     SAL_WARN_IF(m_pTableEndPaM, "sw.ww8", "document ended without table ending");
     m_pTableEndPaM.reset();  //ensure this is deleted before pPaM
-    mpCrsr.reset();
+    mpCursor.reset();
     m_pPaM = nullptr;
     m_pLastAnchorPos.reset();//ensure this is deleted before UpdatePageDescs
 
@@ -5513,7 +5546,7 @@ namespace
     uno::Sequence< beans::NamedValue > InitXorWord95Codec( ::msfilter::MSCodec_XorWord95& rCodec, SfxMedium& rMedium, WW8Fib* pWwFib )
     {
         uno::Sequence< beans::NamedValue > aEncryptionData;
-        SFX_ITEMSET_ARG( rMedium.GetItemSet(), pEncryptionData, SfxUnoAnyItem, SID_ENCRYPTIONDATA, false );
+        const SfxUnoAnyItem* pEncryptionData = SfxItemSet::GetItem<SfxUnoAnyItem>(rMedium.GetItemSet(), SID_ENCRYPTIONDATA, false);
         if ( pEncryptionData && ( pEncryptionData->GetValue() >>= aEncryptionData ) && !rCodec.InitCodec( aEncryptionData ) )
             aEncryptionData.realloc( 0 );
 
@@ -5572,7 +5605,7 @@ namespace
     uno::Sequence< beans::NamedValue > InitStd97Codec( ::msfilter::MSCodec_Std97& rCodec, sal_uInt8 pDocId[16], SfxMedium& rMedium )
     {
         uno::Sequence< beans::NamedValue > aEncryptionData;
-        SFX_ITEMSET_ARG( rMedium.GetItemSet(), pEncryptionData, SfxUnoAnyItem, SID_ENCRYPTIONDATA, false );
+        const SfxUnoAnyItem* pEncryptionData = SfxItemSet::GetItem<SfxUnoAnyItem>(rMedium.GetItemSet(), SID_ENCRYPTIONDATA, false);
         if ( pEncryptionData && ( pEncryptionData->GetValue() >>= aEncryptionData ) && !rCodec.InitCodec( aEncryptionData ) )
             aEncryptionData.realloc( 0 );
 
@@ -5583,7 +5616,7 @@ namespace
             sal_Int32 nLen = sUniPassword.getLength();
             if ( nLen <= 15 )
             {
-                sal_Unicode pPassword[16];
+                sal_uInt16 pPassword[16];
                 memset( pPassword, 0, sizeof( pPassword ) );
                 for( sal_Int32 nChar = 0; nChar < nLen; ++nChar )
                     pPassword[nChar] = sUniPassword[nChar];
@@ -5613,9 +5646,9 @@ sal_uLong SwWW8ImplReader::LoadThroughDecryption(WW8Glossary *pGloss)
     if (!nErrRet)
         nErrRet = SetSubStreams(xTableStream, xDataStream);
 
-    utl::TempFile *pTempMain = 0;
-    utl::TempFile *pTempTable = 0;
-    utl::TempFile *pTempData = 0;
+    utl::TempFile *pTempMain = nullptr;
+    utl::TempFile *pTempTable = nullptr;
+    utl::TempFile *pTempData = nullptr;
     SvFileStream aDecryptMain;
     SvFileStream aDecryptTable;
     SvFileStream aDecryptData;
@@ -5785,10 +5818,10 @@ void SwWW8ImplReader::SetOutlineStyles()
     sal_uInt16 nOutlineStyleListLevelWithAssignment = 0;
     if (!m_bNewDoc)
     {
-        sw::ParaStyles aOutLined(sw::util::GetParaStyles(m_rDoc));
+        ww8::ParaStyles aOutLined(sw::util::GetParaStyles(m_rDoc));
         sw::util::SortByAssignedOutlineStyleListLevel(aOutLined);
-        sw::ParaStyles::reverse_iterator aEnd = aOutLined.rend();
-        for ( sw::ParaStyles::reverse_iterator aIter = aOutLined.rbegin(); aIter < aEnd; ++aIter)
+        ww8::ParaStyles::reverse_iterator aEnd = aOutLined.rend();
+        for ( ww8::ParaStyles::reverse_iterator aIter = aOutLined.rbegin(); aIter < aEnd; ++aIter)
         {
             if ((*aIter)->IsAssignedToListLevelOfOutlineStyle())
                 nOutlineStyleListLevelWithAssignment |= 1 << (*aIter)->GetAssignedOutlineStyleLevel();
@@ -5803,7 +5836,7 @@ void SwWW8ImplReader::SetOutlineStyles()
     // - Populate temporary list of WW8 Built-In Heading Styles for further
     // iteration
     std::vector<SwWW8StyInf*> aWW8BuiltInHeadingStyles;
-    const SwNumRule* pChosenWW8ListStyle = NULL;
+    const SwNumRule* pChosenWW8ListStyle = nullptr;
     {
         std::map<const SwNumRule*, int> aWW8ListStyleCounts;
         for (size_t nI = 0; nI < m_vColl.size(); ++nI)
@@ -5818,7 +5851,7 @@ void SwWW8ImplReader::SetOutlineStyles()
             aWW8BuiltInHeadingStyles.push_back(&rSI);
 
             const SwNumRule* pWW8ListStyle = rSI.GetOutlineNumrule();
-            if (pWW8ListStyle != NULL)
+            if (pWW8ListStyle != nullptr)
             {
                 std::map<const SwNumRule*, int>::iterator aCountIter
                     = aWW8ListStyleCounts.find(pWW8ListStyle);
@@ -5868,7 +5901,7 @@ void SwWW8ImplReader::SetOutlineStyles()
     {
         SwWW8StyInf* pStyleInf = (*aStyleIter);
 
-        if (!pStyleInf->bColl) //Character Style
+        if (!pStyleInf->m_bColl) //Character Style
             continue;
 
         const sal_uInt16 nOutlineStyleListLevelOfWW8BuiltInHeadingStyle
@@ -5879,8 +5912,8 @@ void SwWW8ImplReader::SetOutlineStyles()
             continue;
         }
 
-        if (pChosenWW8ListStyle != NULL && pStyleInf->mnWW8OutlineLevel
-                                           == pStyleInf->nListLevel)
+        if (pChosenWW8ListStyle != nullptr && pStyleInf->mnWW8OutlineLevel
+                                           == pStyleInf->m_nListLevel)
         {
             const SwNumFormat& rRule
                 = pChosenWW8ListStyle->Get(pStyleInf->mnWW8OutlineLevel);
@@ -5892,10 +5925,10 @@ void SwWW8ImplReader::SetOutlineStyles()
         nOutlineStyleListLevelWithAssignment
             |= nOutlineStyleListLevelOfWW8BuiltInHeadingStyle;
 
-        SwTextFormatColl* pTextFormatColl = static_cast<SwTextFormatColl*>(pStyleInf->pFormat);
+        SwTextFormatColl* pTextFormatColl = static_cast<SwTextFormatColl*>(pStyleInf->m_pFormat);
         if (pStyleInf->GetOutlineNumrule() != pChosenWW8ListStyle
-            || (pStyleInf->nListLevel < WW8ListManager::nMaxLevel
-                && pStyleInf->mnWW8OutlineLevel != pStyleInf->nListLevel))
+            || (pStyleInf->m_nListLevel < WW8ListManager::nMaxLevel
+                && pStyleInf->mnWW8OutlineLevel != pStyleInf->m_nListLevel))
         {
             // WW8 Built-In Heading Style does not apply the chosen one.
             // --> delete assignment to OutlineStyle, but keep its current
@@ -5903,7 +5936,7 @@ void SwWW8ImplReader::SetOutlineStyles()
             pTextFormatColl->DeleteAssignmentToListLevelOfOutlineStyle(false);
             // Apply existing WW8 list style a normal list style at the
             // Paragraph Style
-            if (pStyleInf->GetOutlineNumrule() != NULL)
+            if (pStyleInf->GetOutlineNumrule() != nullptr)
             {
                 pTextFormatColl->SetFormatAttr(
                     SwNumRuleItem(pStyleInf->GetOutlineNumrule()->GetName()));
@@ -5958,10 +5991,53 @@ const OUString* SwWW8ImplReader::GetAnnotationAuthor(sal_uInt16 nIdx)
         rStrm.Seek( nOldPos );
     }
 
-    const OUString *pRet = 0;
+    const OUString *pRet = nullptr;
     if (m_pAtnNames && nIdx < m_pAtnNames->size())
         pRet = &((*m_pAtnNames)[nIdx]);
     return pRet;
+}
+
+void SwWW8ImplReader::GetSmartTagInfo(SwFltRDFMark& rMark)
+{
+    if (!m_pSmartTagData && m_pWwFib->lcbFactoidData)
+    {
+        m_pSmartTagData.reset(new WW8SmartTagData());
+        m_pSmartTagData->Read(*m_pTableStream, m_pWwFib->fcFactoidData, m_pWwFib->lcbFactoidData);
+    }
+
+    // Check if the handle is a valid smart tag bookmark index.
+    size_t nIndex = rMark.GetHandle();
+    if (nIndex >= m_pSmartTagData->m_aPropBags.size())
+        return;
+
+    // Check if the smart tag bookmark refers to a valid factoid type.
+    const MSOPropertyBag& rPropertyBag = m_pSmartTagData->m_aPropBags[rMark.GetHandle()];
+    auto itPropertyBag = m_pSmartTagData->m_aPropBagStore.m_aFactoidTypes.begin();
+    for (; itPropertyBag != m_pSmartTagData->m_aPropBagStore.m_aFactoidTypes.end(); ++itPropertyBag)
+        if (itPropertyBag->m_nId == rPropertyBag.m_nId)
+            break;
+    if (itPropertyBag == m_pSmartTagData->m_aPropBagStore.m_aFactoidTypes.end())
+        return;
+
+    // Check if the factoid is an RDF one.
+    const MSOFactoidType& rFactoidType = *itPropertyBag;
+    if (rFactoidType.m_aUri != "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+        return;
+
+    // Finally put the relevant attributes to the mark.
+    std::vector< std::pair<OUString, OUString> > aAttributes;
+    for (const MSOProperty& rProperty : rPropertyBag.m_aProperties)
+    {
+        OUString aKey;
+        OUString aValue;
+        if (rProperty.m_nKey < m_pSmartTagData->m_aPropBagStore.m_aStringTable.size())
+            aKey = m_pSmartTagData->m_aPropBagStore.m_aStringTable[rProperty.m_nKey];
+        if (rProperty.m_nValue < m_pSmartTagData->m_aPropBagStore.m_aStringTable.size())
+            aValue = m_pSmartTagData->m_aPropBagStore.m_aStringTable[rProperty.m_nValue];
+        if (!aKey.isEmpty() && !aValue.isEmpty())
+            aAttributes.push_back(std::make_pair(aKey, aValue));
+    }
+    rMark.SetAttributes(aAttributes);
 }
 
 sal_uLong SwWW8ImplReader::LoadDoc(WW8Glossary *pGloss)
@@ -6068,7 +6144,7 @@ extern "C" SAL_DLLPUBLIC_EXPORT bool SAL_CALL TestImportDOC(const OUString &rURL
     SwGlobals::ensure();
 
     SfxObjectShellLock xDocSh(new SwDocShell(SfxObjectCreateMode::INTERNAL));
-    xDocSh->DoInitNew(0);
+    xDocSh->DoInitNew();
     SwDoc *pD =  static_cast<SwDocShell*>((&xDocSh))->GetDoc();
 
     SwNodeIndex aIdx(
@@ -6088,7 +6164,7 @@ sal_uLong WW8Reader::OpenMainStream( tools::SvRef<SotStorageStream>& rRef, sal_u
 {
     sal_uLong nRet = ERR_SWG_READ_ERROR;
     OSL_ENSURE( pStg, "Where is my Storage?" );
-    rRef = pStg->OpenSotStream( OUString("WordDocument"), StreamMode::READ | StreamMode::SHARE_DENYALL);
+    rRef = pStg->OpenSotStream( "WordDocument", StreamMode::READ | StreamMode::SHARE_DENYALL);
 
     if( rRef.Is() )
     {
@@ -6155,8 +6231,8 @@ sal_uLong WW8Reader::Read(SwDoc &rDoc, const OUString& rBaseURL, SwPaM &rPaM, co
             // Remove Frame and offsets from Frame Template
             Reader::ResetFrameFormats( rDoc );
 
-            rPaM.GetBound().nContent.Assign(0, 0);
-            rPaM.GetBound(false).nContent.Assign(0, 0);
+            rPaM.GetBound().nContent.Assign(nullptr, 0);
+            rPaM.GetBound(false).nContent.Assign(nullptr, 0);
 
         }
         try

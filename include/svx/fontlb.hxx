@@ -41,25 +41,25 @@ public:
                                     sal_uInt16 nFlags,
                                     const OUString& rString,
                                     const vcl::Font& rFont,
-                                    const Color* pColor = NULL );
+                                    const Color* pColor = nullptr );
 
     virtual                     ~SvLBoxFontString();
 
     /** Creates a new empty list box item. */
-    virtual SvLBoxItem*         Create() const SAL_OVERRIDE;
+    virtual SvLBoxItem*         Create() const override;
 
-    void            InitViewData( SvTreeListBox*,SvTreeListEntry*,SvViewDataItem* ) SAL_OVERRIDE;
+    void            InitViewData( SvTreeListBox*,SvTreeListEntry*,SvViewDataItem* ) override;
 
     /** Paints this entry to the specified position, using the own font settings. */
     virtual void Paint(const Point& rPos, SvTreeListBox& rOutDev, vcl::RenderContext& rRenderContext,
-                       const SvViewDataEntry* pView, const SvTreeListEntry& rEntry) SAL_OVERRIDE;
+                       const SvViewDataEntry* pView, const SvTreeListEntry& rEntry) override;
 };
 
 
 
 
 /** A list box supporting formatted string entries. */
-class SVX_DLLPUBLIC SAL_WARN_UNUSED SvxFontListBox : public SvTabListBox
+class SAL_WARN_UNUSED SVX_DLLPUBLIC SvxFontListBox : public SvTabListBox
 {
 private:
     vcl::Font                   maStdFont;      /// Used for entries without specific font.
@@ -75,7 +75,7 @@ public:
     /** Inserts a list entry and sets the font used for this entry.
         @param pColor  The font color. NULL = use default listbox text color. */
     void                        InsertFontEntry(
-                                    const OUString& rString, const vcl::Font& rFont, const Color* pColor = NULL );
+                                    const OUString& rString, const vcl::Font& rFont, const Color* pColor = nullptr );
 
     /** Selects/deselects an entry specified by its position in the list box. */
     void                        SelectEntryPos( sal_uLong nPos, bool bSelect = true );
@@ -94,7 +94,7 @@ protected:
                                     const OUString& rEntryText,
                                     const Image& rCollImg,
                                     const Image& rExpImg,
-                                    SvLBoxButtonKind eButtonKind) SAL_OVERRIDE;
+                                    SvLBoxButtonKind eButtonKind) override;
 };
 
 #endif

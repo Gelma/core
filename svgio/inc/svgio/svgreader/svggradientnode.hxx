@@ -68,8 +68,8 @@ namespace svgio
                 SvgNode* pParent);
             virtual ~SvgGradientNode();
 
-            virtual const SvgStyleAttributes* getSvgStyleAttributes() const SAL_OVERRIDE;
-            virtual void parseAttribute(const OUString& rTokenName, SVGToken aSVGToken, const OUString& aContent) SAL_OVERRIDE;
+            virtual const SvgStyleAttributes* getSvgStyleAttributes() const override;
+            virtual void parseAttribute(const OUString& rTokenName, SVGToken aSVGToken, const OUString& aContent) override;
 
             /// collect gradient stop entries
             void collectGradientEntries(drawinglayer::primitive2d::SvgGradientEntryVector& aVector) const;
@@ -120,7 +120,7 @@ namespace svgio
 
             /// transform content, set if found in current context
             const basegfx::B2DHomMatrix* getGradientTransform() const;
-            void setGradientTransform(const basegfx::B2DHomMatrix* pMatrix = 0);
+            void setGradientTransform(const basegfx::B2DHomMatrix* pMatrix = nullptr);
         };
     } // end of namespace svgreader
 } // end of namespace svgio

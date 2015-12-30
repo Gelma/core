@@ -130,14 +130,11 @@ bool ParseURL(
     const OUString& rAttrValue,
     OUString* pName, OUString* pLocation )
 {
-    Reference< com::sun::star::uno::XComponentContext >
-        xContext = ::comphelper::getProcessComponentContext();
+    Reference< css::uno::XComponentContext > xContext = ::comphelper::getProcessComponentContext();
 
-    Reference< com::sun::star::uri::XUriReferenceFactory > xFactory =
-        com::sun::star::uri::UriReferenceFactory::create(xContext);
+    Reference< css::uri::XUriReferenceFactory > xFactory = css::uri::UriReferenceFactory::create(xContext);
 
-    Reference< com::sun::star::uri::XVndSunStarScriptUrl > xUrl (
-        xFactory->parse( rAttrValue ), UNO_QUERY );
+    Reference< css::uri::XVndSunStarScriptUrl > xUrl ( xFactory->parse( rAttrValue ), UNO_QUERY );
 
     if ( xUrl.is() )
     {
@@ -177,10 +174,10 @@ void XMLEventOASISTransformerContext::StartElement(
 
     XMLTransformerActions *pActions =
         GetTransformer().GetUserDefinedActions( OASIS_EVENT_ACTIONS );
-    SAL_WARN_IF( pActions == NULL, "xmloff.transform", "got no actions" );
+    SAL_WARN_IF( pActions == nullptr, "xmloff.transform", "got no actions" );
 
     Reference< XAttributeList > xAttrList( rAttrList );
-    XMLMutableAttributeList *pMutableAttrList = 0;
+    XMLMutableAttributeList *pMutableAttrList = nullptr;
     sal_Int16 nAttrCount = xAttrList.is() ? xAttrList->getLength() : 0;
     for( sal_Int16 i=0; i < nAttrCount; i++ )
     {
@@ -227,7 +224,7 @@ void XMLEventOASISTransformerContext::StartElement(
                             GetXMLToken( XML_LANGUAGE ) ) );
 
                         pMutableAttrList->SetValueByIndex( idx,
-                            OUString("StarBasic") );
+                            "StarBasic" );
 
                         OUString aLocQName(
                             GetTransformer().GetNamespaceMap().GetQNameByKey(
@@ -279,7 +276,7 @@ void XMLEventOASISTransformerContext::StartElement(
                     GetXMLToken( XML_LANGUAGE ) ) );
 
                     pMutableAttrList->SetValueByIndex( idx,
-                    OUString("StarBasic") );
+                    "StarBasic" );
 
                     OUString aLocQName(
                     GetTransformer().GetNamespaceMap().GetQNameByKey(

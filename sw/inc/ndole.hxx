@@ -41,7 +41,7 @@ class SW_DLLPUBLIC SwOLEObj
     svt::EmbeddedObjectRef xOLERef;
     OUString aName;
 
-    SwOLEObj( const SwOLEObj& rObj ) SAL_DELETED_FUNCTION;
+    SwOLEObj( const SwOLEObj& rObj ) = delete;
 
     void SetNode( SwOLENode* pNode );
 
@@ -51,13 +51,13 @@ public:
     ~SwOLEObj();
 
     bool UnloadObject();
-    static bool UnloadObject( ::com::sun::star::uno::Reference< ::com::sun::star::embed::XEmbeddedObject > xObj,
+    static bool UnloadObject( css::uno::Reference< css::embed::XEmbeddedObject > xObj,
                                 const SwDoc* pDoc,
                                 sal_Int64 nAspect );
 
     OUString GetDescription();
 
-    const com::sun::star::uno::Reference < com::sun::star::embed::XEmbeddedObject > GetOleRef();
+    const css::uno::Reference < css::embed::XEmbeddedObject > GetOleRef();
     svt::EmbeddedObjectRef& GetObject();
     OUString GetCurrentPersistName() const { return aName; }
     OUString GetStyleString();
@@ -80,15 +80,15 @@ class SW_DLLPUBLIC SwOLENode: public SwNoTextNode
     SwOLENode(  const SwNodeIndex &rWhere,
                 const svt::EmbeddedObjectRef&,
                 SwGrfFormatColl *pGrfColl,
-                SwAttrSet* pAutoAttr = 0 );
+                SwAttrSet* pAutoAttr = nullptr );
 
     SwOLENode(  const SwNodeIndex &rWhere,
                 const OUString &rName,
                 sal_Int64 nAspect,
                 SwGrfFormatColl *pGrfColl,
-                SwAttrSet* pAutoAttr = 0 );
+                SwAttrSet* pAutoAttr = nullptr );
 
-    SwOLENode( const SwOLENode & ) SAL_DELETED_FUNCTION;
+    SwOLENode( const SwOLENode & ) = delete;
 
     using SwNoTextNode::GetGraphic;
 
@@ -97,19 +97,19 @@ public:
           SwOLEObj& GetOLEObj()       { return aOLEObj; }
     virtual ~SwOLENode();
 
-    virtual SwContentNode *SplitContentNode( const SwPosition & ) SAL_OVERRIDE;
+    virtual SwContentNode *SplitContentNode( const SwPosition & ) override;
 
     /// Is in ndcopy.cxx.
-    virtual SwContentNode* MakeCopy( SwDoc*, const SwNodeIndex& ) const SAL_OVERRIDE;
+    virtual SwContentNode* MakeCopy( SwDoc*, const SwNodeIndex& ) const override;
 
-    virtual Size GetTwipSize() const SAL_OVERRIDE;
+    virtual Size GetTwipSize() const override;
 
     const Graphic* GetGraphic();
 
     void GetNewReplacement();
 
-    virtual bool SavePersistentData() SAL_OVERRIDE;
-    virtual bool RestorePersistentData() SAL_OVERRIDE;
+    virtual bool SavePersistentData() override;
+    virtual bool RestorePersistentData() override;
 
     bool IsInGlobalDocSection() const;
     bool IsOLEObjectDeleted() const;
@@ -140,12 +140,12 @@ public:
 /// Inline methods from Node.hxx
 inline SwOLENode *SwNode::GetOLENode()
 {
-     return ND_OLENODE == nNodeType ? static_cast<SwOLENode*>(this) : 0;
+     return ND_OLENODE == m_nNodeType ? static_cast<SwOLENode*>(this) : nullptr;
 }
 
 inline const SwOLENode *SwNode::GetOLENode() const
 {
-     return ND_OLENODE == nNodeType ? static_cast<const SwOLENode*>(this) : 0;
+     return ND_OLENODE == m_nNodeType ? static_cast<const SwOLENode*>(this) : nullptr;
 }
 
 #endif  // _ INCLUDED_SW_INC_NDOLE_HXX

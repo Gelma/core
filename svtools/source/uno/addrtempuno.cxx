@@ -33,11 +33,11 @@ namespace {
 #define UNODIALOG_PROPERTY_ID_ALIASES       100
 #define UNODIALOG_PROPERTY_ALIASES          "FieldMapping"
 
-    using namespace com::sun::star::uno;
-    using namespace com::sun::star::lang;
-    using namespace com::sun::star::util;
-    using namespace com::sun::star::beans;
-    using namespace com::sun::star::sdbc;
+    using namespace css::uno;
+    using namespace css::lang;
+    using namespace css::util;
+    using namespace css::beans;
+    using namespace css::sdbc;
 
     typedef OGenericUnoDialog OAddressBookSourceDialogUnoBase;
     class OAddressBookSourceDialogUno
@@ -54,35 +54,35 @@ namespace {
         explicit OAddressBookSourceDialogUno(const Reference< XComponentContext >& _rxORB);
 
         // XTypeProvider
-        virtual Sequence<sal_Int8> SAL_CALL getImplementationId(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual Sequence<sal_Int8> SAL_CALL getImplementationId(  ) throw(RuntimeException, std::exception) override;
 
         // XServiceInfo
-        virtual OUString SAL_CALL getImplementationName() throw(RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames() throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual OUString SAL_CALL getImplementationName() throw(RuntimeException, std::exception) override;
+        virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames() throw(RuntimeException, std::exception) override;
 
         // XPropertySet
-        virtual Reference< XPropertySetInfo>  SAL_CALL getPropertySetInfo() throw(RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual ::cppu::IPropertyArrayHelper& SAL_CALL getInfoHelper() SAL_OVERRIDE;
+        virtual Reference< XPropertySetInfo>  SAL_CALL getPropertySetInfo() throw(RuntimeException, std::exception) override;
+        virtual ::cppu::IPropertyArrayHelper& SAL_CALL getInfoHelper() override;
 
         // OPropertyArrayUsageHelper
-        virtual ::cppu::IPropertyArrayHelper* createArrayHelper( ) const SAL_OVERRIDE;
+        virtual ::cppu::IPropertyArrayHelper* createArrayHelper( ) const override;
 
-        virtual void SAL_CALL initialize(const Sequence< Any >& aArguments) throw(Exception, RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL initialize(const Sequence< Any >& aArguments) throw(Exception, RuntimeException, std::exception) override;
 
     protected:
     // OGenericUnoDialog overridables
-        virtual VclPtr<Dialog> createDialog(vcl::Window* _pParent) SAL_OVERRIDE;
+        virtual VclPtr<Dialog> createDialog(vcl::Window* _pParent) override;
 
-        virtual void implInitialize(const com::sun::star::uno::Any& _rValue) SAL_OVERRIDE;
+        virtual void implInitialize(const css::uno::Any& _rValue) override;
 
-        virtual void executedDialog(sal_Int16 _nExecutionResult) SAL_OVERRIDE;
+        virtual void executedDialog(sal_Int16 _nExecutionResult) override;
     };
 
 
     OAddressBookSourceDialogUno::OAddressBookSourceDialogUno(const Reference< XComponentContext >& _rxORB)
         :OGenericUnoDialog(_rxORB)
     {
-        registerProperty(OUString(UNODIALOG_PROPERTY_ALIASES), UNODIALOG_PROPERTY_ID_ALIASES, PropertyAttribute::READONLY,
+        registerProperty(UNODIALOG_PROPERTY_ALIASES, UNODIALOG_PROPERTY_ID_ALIASES, PropertyAttribute::READONLY,
             &m_aAliases, cppu::UnoType<decltype(m_aAliases)>::get());
     }
 
@@ -101,8 +101,7 @@ namespace {
 
     css::uno::Sequence<OUString> SAL_CALL OAddressBookSourceDialogUno::getSupportedServiceNames() throw(RuntimeException, std::exception)
     {
-        css::uno::Sequence<OUString> aSupported(1);
-        aSupported.getArray()[0] = "com.sun.star.ui.AddressBookSourceDialog";
+        css::uno::Sequence<OUString> aSupported { "com.sun.star.ui.AddressBookSourceDialog" };
         return aSupported;
     }
 
@@ -141,8 +140,8 @@ namespace {
     {
         if( rArguments.getLength() == 5 )
         {
-            Reference<com::sun::star::awt::XWindow> xParentWindow;
-            Reference<com::sun::star::beans::XPropertySet> xDataSource;
+            Reference<css::awt::XWindow> xParentWindow;
+            Reference<css::beans::XPropertySet> xDataSource;
             OUString sDataSourceName;
             OUString sCommand;
             OUString sTitle;
@@ -172,7 +171,7 @@ namespace {
         OGenericUnoDialog::initialize(rArguments);
     }
 
-    void OAddressBookSourceDialogUno::implInitialize(const com::sun::star::uno::Any& _rValue)
+    void OAddressBookSourceDialogUno::implInitialize(const css::uno::Any& _rValue)
     {
         PropertyValue aVal;
         if (_rValue >>= aVal)

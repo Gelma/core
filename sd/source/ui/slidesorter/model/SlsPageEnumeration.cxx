@@ -41,11 +41,11 @@ public:
     virtual ~PageEnumerationImpl();
     /** Create a copy of the called enumeration object.
     */
-    virtual ::std::unique_ptr<Enumeration<SharedPageDescriptor> > Clone() SAL_OVERRIDE;
+    virtual ::std::unique_ptr<Enumeration<SharedPageDescriptor> > Clone() override;
 
-    virtual bool HasMoreElements() const SAL_OVERRIDE;
-    virtual SharedPageDescriptor GetNextElement() SAL_OVERRIDE;
-    virtual void Rewind() SAL_OVERRIDE;
+    virtual bool HasMoreElements() const override;
+    virtual SharedPageDescriptor GetNextElement() override;
+    virtual void Rewind() override;
 
 private:
     const SlideSorterModel& mrModel;
@@ -203,7 +203,7 @@ void PageEnumerationImpl::AdvanceToNextValidElement()
         SharedPageDescriptor pDescriptor (mrModel.GetPageDescriptor(mnIndex));
 
         // Test for the predicate being fulfilled.
-        if (pDescriptor.get()!=NULL && maPredicate(pDescriptor))
+        if (pDescriptor.get()!=nullptr && maPredicate(pDescriptor))
         {
             // This predicate is valid.
             break;

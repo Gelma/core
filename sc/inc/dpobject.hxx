@@ -33,10 +33,7 @@
 #include <memory>
 #include <set>
 #include <vector>
-
-#include <boost/ptr_container/ptr_list.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
-#include <boost/ptr_container/ptr_map.hpp>
+#include <map>
 
 namespace com { namespace sun { namespace star {
 
@@ -94,7 +91,7 @@ private:
     ScDPServiceDesc*        pServDesc;      //  for external service
     std::shared_ptr<ScDPTableData>  mpTableData;
                                             // cached data
-    com::sun::star::uno::Reference<com::sun::star::sheet::XDimensionsSupplier> xSource;
+    css::uno::Reference<css::sheet::XDimensionsSupplier> xSource;
     ScDPOutput*             pOutput;
     sal_uInt16              mnAutoFormatIndex;
     long                    nHeaderRows;    // page fields plus filter button
@@ -108,8 +105,7 @@ private:
     SAL_DLLPRIVATE void              CreateOutput();
     SAL_DLLPRIVATE void ClearSource();
     SAL_DLLPRIVATE bool FillLabelDataForDimension(
-        const com::sun::star::uno::Reference<
-            com::sun::star::container::XIndexAccess>& xDims,
+        const css::uno::Reference< css::container::XIndexAccess>& xDims,
         sal_Int32 nDim, ScDPLabelData& rLabelData);
 
 public:
@@ -154,11 +150,11 @@ public:
     const ScImportSourceDesc* GetImportSourceDesc() const   { return pImpDesc; }
     const ScDPServiceDesc* GetDPServiceDesc() const { return pServDesc; }
 
-    com::sun::star::uno::Reference<com::sun::star::sheet::XDimensionsSupplier> GetSource();
+    css::uno::Reference<css::sheet::XDimensionsSupplier> GetSource();
 
     bool                IsSheetData() const;
-    bool                IsImportData() const { return(pImpDesc != NULL); }
-    bool                IsServiceData() const { return(pServDesc != NULL); }
+    bool                IsImportData() const { return(pImpDesc != nullptr); }
+    bool                IsServiceData() const { return(pServDesc != nullptr); }
 
     void SetName(const OUString& rNew);
     const OUString& GetName() const { return aTableName; }
@@ -173,10 +169,10 @@ public:
     bool                IsDataDescriptionCell(const ScAddress& rPos);
 
     bool                IsDimNameInUse(const OUString& rName) const;
-    OUString GetDimName( long nDim, bool& rIsDataLayout, sal_Int32* pFlags = NULL );
+    OUString GetDimName( long nDim, bool& rIsDataLayout, sal_Int32* pFlags = nullptr );
     bool                IsDuplicated( long nDim );
     long                GetDimCount();
-    void                GetHeaderPositionData(const ScAddress& rPos, ::com::sun::star::sheet::DataPilotTableHeaderData& rData);
+    void                GetHeaderPositionData(const ScAddress& rPos, css::sheet::DataPilotTableHeaderData& rData);
     long                GetHeaderDim( const ScAddress& rPos, sal_uInt16& rOrient );
     bool                GetHeaderDrag( const ScAddress& rPos, bool bMouseLeft, bool bMouseTop,
                                        long nDragDim,
@@ -185,31 +181,31 @@ public:
 
     double GetPivotData(
         const OUString& rDataFieldName,
-        std::vector<com::sun::star::sheet::DataPilotFieldFilter>& rFilters);
+        std::vector<css::sheet::DataPilotFieldFilter>& rFilters);
 
     bool ParseFilters(
         OUString& rDataFieldName,
-        std::vector<com::sun::star::sheet::DataPilotFieldFilter>& rFilters,
-        std::vector<com::sun::star::sheet::GeneralFunction>& rFilterFuncs,
+        std::vector<css::sheet::DataPilotFieldFilter>& rFilters,
+        std::vector<css::sheet::GeneralFunction>& rFilterFuncs,
         const OUString& rFilterList );
 
     void GetMemberResultNames(ScDPUniqueStringSet& rNames, long nDimension);
 
-    void                ToggleDetails(const ::com::sun::star::sheet::DataPilotTableHeaderData& rElemDesc, ScDPObject* pDestObj);
+    void                ToggleDetails(const css::sheet::DataPilotTableHeaderData& rElemDesc, ScDPObject* pDestObj);
 
     bool                FillOldParam(ScPivotParam& rParam) const;
     bool                FillLabelData(sal_Int32 nDim, ScDPLabelData& Labels);
     bool                FillLabelData(ScPivotParam& rParam);
 
-    bool                GetHierarchiesNA( sal_Int32 nDim, com::sun::star::uno::Reference< com::sun::star::container::XNameAccess >& xHiers );
-    bool                GetHierarchies( sal_Int32 nDim, com::sun::star::uno::Sequence< OUString >& rHiers );
+    bool                GetHierarchiesNA( sal_Int32 nDim, css::uno::Reference< css::container::XNameAccess >& xHiers );
+    bool                GetHierarchies( sal_Int32 nDim, css::uno::Sequence< OUString >& rHiers );
 
     sal_Int32           GetUsedHierarchy( sal_Int32 nDim );
 
-    bool                GetMembersNA( sal_Int32 nDim, com::sun::star::uno::Reference< com::sun::star::container::XNameAccess >& xMembers );
-    bool                GetMembersNA( sal_Int32 nDim, sal_Int32 nHier, com::sun::star::uno::Reference< com::sun::star::container::XNameAccess >& xMembers );
+    bool                GetMembersNA( sal_Int32 nDim, css::uno::Reference< css::container::XNameAccess >& xMembers );
+    bool                GetMembersNA( sal_Int32 nDim, sal_Int32 nHier, css::uno::Reference< css::container::XNameAccess >& xMembers );
 
-    bool                GetMemberNames( sal_Int32 nDim, ::com::sun::star::uno::Sequence< OUString >& rNames );
+    bool                GetMemberNames( sal_Int32 nDim, css::uno::Sequence< OUString >& rNames );
     bool                GetMembers( sal_Int32 nDim, sal_Int32 nHier, ::std::vector<ScDPLabelData::Member>& rMembers );
 
     void                UpdateReference( UpdateRefMode eUpdateRefMode,
@@ -217,16 +213,14 @@ public:
     bool                RefsEqual( const ScDPObject& r ) const;
     void                WriteRefsTo( ScDPObject& r ) const;
 
-    void                GetPositionData(const ScAddress& rPos, ::com::sun::star::sheet::DataPilotTablePositionData& rPosData);
+    void                GetPositionData(const ScAddress& rPos, css::sheet::DataPilotTablePositionData& rPosData);
 
     bool                GetDataFieldPositionData(const ScAddress& rPos,
-                                                 ::com::sun::star::uno::Sequence<
-                                                    ::com::sun::star::sheet::DataPilotFieldFilter >& rFilters);
+                                                 css::uno::Sequence<
+                                                    css::sheet::DataPilotFieldFilter >& rFilters);
 
     void                GetDrillDownData(const ScAddress& rPos,
-                                         ::com::sun::star::uno::Sequence<
-                                            ::com::sun::star::uno::Sequence<
-                                                ::com::sun::star::uno::Any > >& rTableData);
+                                         css::uno::Sequence< css::uno::Sequence< css::uno::Any > >& rTableData);
 
     // apply drop-down attribute, initialize nHeaderRows, without accessing the source
     // (button attribute must be present)
@@ -241,19 +235,18 @@ public:
     bool SyncAllDimensionMembers();
 
     static bool         HasRegisteredSources();
-    static com::sun::star::uno::Sequence<OUString> GetRegisteredSources();
-    static com::sun::star::uno::Reference<com::sun::star::sheet::XDimensionsSupplier>
+    static css::uno::Sequence<OUString> GetRegisteredSources();
+    static css::uno::Reference<css::sheet::XDimensionsSupplier>
                         CreateSource( const ScDPServiceDesc& rDesc );
 
     static void ConvertOrientation(
         ScDPSaveData& rSaveData,
         const ScPivotFieldVector& rFields, sal_uInt16 nOrient,
-        const com::sun::star::uno::Reference<
-            com::sun::star::sheet::XDimensionsSupplier>& xSource,
+        const css::uno::Reference< css::sheet::XDimensionsSupplier>& xSource,
         const ScDPLabelDataVector& rLabels,
-        const ScPivotFieldVector* pRefColFields = NULL,
-        const ScPivotFieldVector* pRefRowFields = NULL,
-        const ScPivotFieldVector* pRefPageFields = NULL );
+        const ScPivotFieldVector* pRefColFields = nullptr,
+        const ScPivotFieldVector* pRefRowFields = nullptr,
+        const ScPivotFieldVector* pRefPageFields = nullptr );
 
     static bool         IsOrientationAllowed( sal_uInt16 nOrient, sal_Int32 nDimFlags );
 
@@ -273,9 +266,9 @@ public:
     class SheetCaches
     {
         friend class ScDPCollection;
-        typedef boost::ptr_map<size_t, ScDPCache> CachesType;
+        typedef std::map<size_t, std::unique_ptr<ScDPCache>> CachesType;
         typedef std::vector<ScRange> RangeIndexType;
-        CachesType maCaches;
+        CachesType m_Caches;
         RangeIndexType maRanges;
         ScDocument* mpDoc;
     public:
@@ -302,8 +295,8 @@ public:
     class NameCaches
     {
         friend class ScDPCollection;
-        typedef ::boost::ptr_map<OUString, ScDPCache> CachesType;
-        CachesType maCaches;
+        typedef ::std::map<OUString, std::unique_ptr<ScDPCache>> CachesType;
+        CachesType m_Caches;
         ScDocument* mpDoc;
     public:
         NameCaches(ScDocument* pDoc);
@@ -342,8 +335,8 @@ public:
     class DBCaches
     {
         friend class ScDPCollection;
-        typedef ::boost::ptr_map<DBType, ScDPCache, DBType::less> CachesType;
-        CachesType maCaches;
+        typedef ::std::map<DBType, std::unique_ptr<ScDPCache>, DBType::less> CachesType;
+        CachesType m_Caches;
         ScDocument* mpDoc;
     public:
         DBCaches(ScDocument* pDoc);
@@ -356,7 +349,7 @@ public:
         ScDPCache* getExistingCache(
             sal_Int32 nSdbType, const OUString& rDBName, const OUString& rCommand);
 
-        static com::sun::star::uno::Reference<com::sun::star::sdbc::XRowSet> createRowSet(
+        static css::uno::Reference<css::sdbc::XRowSet> createRowSet(
             sal_Int32 nSdbType, const OUString& rDBName, const OUString& rCommand);
 
         void updateCache(
@@ -426,7 +419,7 @@ private:
         std::set<ScDPObject*>& rRefs) const;
 
 private:
-    typedef ::boost::ptr_vector<ScDPObject> TablesType;
+    typedef std::vector< std::unique_ptr<ScDPObject> > TablesType;
 
     ScDocument* mpDoc;
     TablesType maTables;

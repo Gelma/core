@@ -59,6 +59,7 @@
 #include <expfld.hxx>
 #include <SwStyleNameMapper.hxx>
 #include <crsskip.hxx>
+#include <fmtpdsc.hxx>
 
 #include <cmdid.h>
 #include <globals.hrc>
@@ -155,11 +156,11 @@ void SwModule::InsertEnv( SfxRequest& rReq )
 
     // Get current shell
     pMyDocSh = static_cast<SwDocShell*>( SfxObjectShell::Current());
-    pOldSh   = pMyDocSh ? pMyDocSh->GetWrtShell() : 0;
+    pOldSh   = pMyDocSh ? pMyDocSh->GetWrtShell() : nullptr;
 
     // Create new document (don't show!)
     SfxObjectShellLock xDocSh( new SwDocShell( SfxObjectCreateMode::STANDARD ) );
-    xDocSh->DoInitNew( 0 );
+    xDocSh->DoInitNew();
     pFrame = SfxViewFrame::LoadHiddenDocument( *xDocSh, 0 );
     pNewView = static_cast<SwView*>( pFrame->GetViewShell());
     pNewView->AttrChangedNotify( &pNewView->GetWrtShell() ); // so that SelectShell is being called
@@ -206,11 +207,11 @@ void SwModule::InsertEnv( SfxRequest& rReq )
 
     }
 
-    vcl::Window *pParent = pOldSh ? pOldSh->GetWin() : 0;
+    vcl::Window *pParent = pOldSh ? pOldSh->GetWin() : nullptr;
     std::unique_ptr<SfxAbstractTabDialog> pDlg;
     short nMode = ENV_INSERT;
 
-    SFX_REQUEST_ARG( rReq, pItem, SwEnvItem, FN_ENVELOP, false );
+    const SwEnvItem* pItem = rReq.GetArg<SwEnvItem>(FN_ENVELOP);
     if ( !pItem )
     {
         SwAbstractDialogFactory* pFact = SwAbstractDialogFactory::Create();
@@ -222,7 +223,7 @@ void SwModule::InsertEnv( SfxRequest& rReq )
     }
     else
     {
-        SFX_REQUEST_ARG( rReq, pBoolItem, SfxBoolItem, FN_PARAM_1, false );
+        const SfxBoolItem* pBoolItem = rReq.GetArg<SfxBoolItem>(FN_PARAM_1);
         if ( pBoolItem && pBoolItem->GetValue() )
             nMode = ENV_NEWDOC;
     }
@@ -249,7 +250,7 @@ void SwModule::InsertEnv( SfxRequest& rReq )
         }
 
         SwWrtShell *pTmp = nMode == ENV_INSERT ? pOldSh : pSh;
-        const SwPageDesc* pFollow = 0;
+        const SwPageDesc* pFollow = nullptr;
         SwTextFormatColl *pSend = pTmp->GetTextCollFromPool( RES_POOLCOLL_SENDADRESS ),
                      *pAddr = pTmp->GetTextCollFromPool( RES_POOLCOLL_JAKETADRESS);
         const OUString sSendMark = pSend->GetName();
@@ -267,7 +268,7 @@ void SwModule::InsertEnv( SfxRequest& rReq )
             //not be deleted on inserting envelopes
             pSh->EnterStdMode();
             // Here it goes (insert)
-            pSh->StartUndo(UNDO_UI_INSERT_ENVELOPE, NULL);
+            pSh->StartUndo(UNDO_UI_INSERT_ENVELOPE);
             pSh->StartAllAction();
             pSh->SttEndDoc(true);
 
@@ -283,12 +284,12 @@ void SwModule::InsertEnv( SfxRequest& rReq )
                 // Delete frame of the first page
                 if ( pSh->GotoFly(sSendMark) )
                 {
-                    pSh->EnterSelFrmMode();
+                    pSh->EnterSelFrameMode();
                     pSh->DelRight();
                 }
                 if ( pSh->GotoFly(sAddrMark) )
                 {
-                    pSh->EnterSelFrmMode();
+                    pSh->EnterSelFrameMode();
                     pSh->DelRight();
                 }
                 pSh->SttEndDoc(true);
@@ -298,16 +299,19 @@ void SwModule::InsertEnv( SfxRequest& rReq )
                 pFollow = &pSh->GetPageDesc(pSh->GetCurPageDesc());
 
             // Insert page break
-            if ( pSh->IsCrsrInTable() )
+            if ( pSh->IsCursorInTable() )
             {
                 pSh->SplitNode();
                 pSh->Right( CRSR_SKIP_CHARS, false, 1, false );
-                SfxItemSet aBreakSet( pSh->GetAttrPool(), RES_BREAK, RES_BREAK, 0 );
-                aBreakSet.Put( SvxFormatBreakItem(SVX_BREAK_PAGE_BEFORE, RES_BREAK) );
+                SfxItemSet aBreakSet( pSh->GetAttrPool(), RES_PAGEDESC, RES_PAGEDESC, 0 );
+                aBreakSet.Put( SwFormatPageDesc( pFollow ) );
                 pSh->SetTableAttr( aBreakSet );
             }
             else
-                pSh->InsertPageBreak(0, boost::none);
+            {
+                OUString sFollowName(pFollow->GetName());
+                pSh->InsertPageBreak(&sFollowName, boost::none);
+            }
             pSh->SttEndDoc(true);
         }
         else
@@ -386,7 +390,7 @@ void SwModule::InsertEnv( SfxRequest& rReq )
         pDesc->SetUseOn(nsUseOnPage::PD_ALL);
 
         // Page size
-        rFormat.SetFormatAttr(SwFormatFrmSize(ATT_FIX_SIZE,
+        rFormat.SetFormatAttr(SwFormatFrameSize(ATT_FIX_SIZE,
                                             nPageW + lLeft, nPageH + lUpper));
 
         // Set type of page numbering
@@ -413,7 +417,7 @@ void SwModule::InsertEnv( SfxRequest& rReq )
         pSh->ChgCurPageDesc(*pDesc);
 
         // Insert Frame
-        SwFlyFrmAttrMgr aMgr(false, pSh, FRMMGR_TYPE_ENVELP);
+        SwFlyFrameAttrMgr aMgr(false, pSh, FRMMGR_TYPE_ENVELP);
         SwFieldMgr aFieldMgr;
         aMgr.SetHeightSizeType(ATT_VAR_SIZE);
 
@@ -426,14 +430,14 @@ void SwModule::InsertEnv( SfxRequest& rReq )
         if (rItem.bSend)
         {
             pSh->SttEndDoc(true);
-            aMgr.InsertFlyFrm(FLY_AT_PAGE,
+            aMgr.InsertFlyFrame(FLY_AT_PAGE,
                 Point(rItem.lSendFromLeft + lLeft, rItem.lSendFromTop  + lUpper),
                 Size (rItem.lAddrFromLeft - rItem.lSendFromLeft, 0));
 
-            pSh->EnterSelFrmMode();
+            pSh->EnterSelFrameMode();
             pSh->SetFlyName(sSendMark);
-            pSh->UnSelectFrm();
-            pSh->LeaveSelFrmMode();
+            pSh->UnSelectFrame();
+            pSh->LeaveSelFrameMode();
             pSh->SetTextFormatColl( pSend );
             InsertLabEnvText( *pSh, aFieldMgr, rItem.aSendText );
             aMgr.UpdateAttrMgr();
@@ -442,13 +446,13 @@ void SwModule::InsertEnv( SfxRequest& rReq )
         // Addressee
         pSh->SttEndDoc(true);
 
-        aMgr.InsertFlyFrm(FLY_AT_PAGE,
+        aMgr.InsertFlyFrame(FLY_AT_PAGE,
             Point(rItem.lAddrFromLeft + lLeft, rItem.lAddrFromTop  + lUpper),
             Size (nPageW - rItem.lAddrFromLeft - 566, 0));
-        pSh->EnterSelFrmMode();
+        pSh->EnterSelFrameMode();
         pSh->SetFlyName(sAddrMark);
-        pSh->UnSelectFrm();
-        pSh->LeaveSelFrmMode();
+        pSh->UnSelectFrame();
+        pSh->LeaveSelFrameMode();
         pSh->SetTextFormatColl( pAddr );
         InsertLabEnvText(*pSh, aFieldMgr, rItem.aAddrText);
 

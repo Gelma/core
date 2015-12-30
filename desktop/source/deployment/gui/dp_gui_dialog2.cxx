@@ -93,7 +93,7 @@ struct StrAllFiles : public rtl::StaticWithInit< OUString, StrAllFiles >
     const OUString operator () () {
         const SolarMutexGuard guard;
         ::std::unique_ptr< ResMgr > const resmgr( ResMgr::CreateResMgr( "fps_office" ) );
-        OSL_ASSERT( resmgr.get() != 0 );
+        OSL_ASSERT( resmgr.get() != nullptr );
         return ResId(STR_FILTERNAME_ALL, *resmgr.get()).toString();
     }
 };
@@ -137,15 +137,15 @@ class ExtBoxWithBtns_Impl : public ExtensionBox_Impl
 public:
     explicit ExtBoxWithBtns_Impl(vcl::Window* pParent);
     virtual ~ExtBoxWithBtns_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void InitFromDialog(ExtMgrDialog *pParentDialog);
 
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual bool    Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual bool    Notify( NotifyEvent& rNEvt ) override;
 
-    virtual void    RecalcAll() SAL_OVERRIDE;
-    virtual void    selectEntry( const long nPos ) SAL_OVERRIDE;
+    virtual void    RecalcAll() override;
+    virtual void    selectEntry( const long nPos ) override;
 
     void            enableButtons( bool bEnable );
 };
@@ -153,10 +153,10 @@ public:
 ExtBoxWithBtns_Impl::ExtBoxWithBtns_Impl(vcl::Window* pParent)
     : ExtensionBox_Impl(pParent)
     , m_bInterfaceLocked(false)
-    , m_pOptionsBtn(NULL)
-    , m_pEnableBtn(NULL)
-    , m_pRemoveBtn(NULL)
-    , m_pParent(NULL)
+    , m_pOptionsBtn(nullptr)
+    , m_pEnableBtn(nullptr)
+    , m_pRemoveBtn(nullptr)
+    , m_pParent(nullptr)
 {
 }
 
@@ -316,7 +316,7 @@ bool ExtBoxWithBtns_Impl::HandleTabKey( bool bReverse )
     if ( nIndex == svt::IExtensionListBox::ENTRY_NOTFOUND )
         return false;
 
-    PushButton *pNext = NULL;
+    PushButton *pNext = nullptr;
 
     if ( m_pOptionsBtn->HasFocus() ) {
         if ( !bReverse && !GetEntryData( nIndex )->m_bLocked )
@@ -538,7 +538,7 @@ IMPL_LINK_NOARG_TYPED(ExtBoxWithBtns_Impl, HandleRemoveBtn, Button*, void)
 DialogHelper::DialogHelper( const uno::Reference< uno::XComponentContext > &xContext,
                             Dialog *pWindow ) :
     m_pVCLWindow( pWindow ),
-    m_nEventID(   0 ),
+    m_nEventID(   nullptr ),
     m_bIsBusy(    false )
 {
     m_xContext = xContext;
@@ -752,7 +752,7 @@ long ExtMgrDialog::addPackageToList( const uno::Reference< deployment::XPackage 
 {
 
     const SolarMutexGuard aGuard;
-    m_pUpdateBtn->Enable(true);
+    m_pUpdateBtn->Enable();
 
     m_pExtensionBox->removeEntry(xPackage);
 
@@ -936,7 +936,7 @@ uno::Sequence< OUString > ExtMgrDialog::raiseAddPicker()
         return uno::Sequence<OUString>(); // cancelled
 
     m_sLastFolderURL = xFilePicker->getDisplayDirectory();
-    uno::Sequence< OUString > files( xFilePicker->getFiles() );
+    uno::Sequence< OUString > files( xFilePicker->getSelectedFiles() );
     OSL_ASSERT( files.getLength() > 0 );
     return files;
 }
@@ -1072,11 +1072,9 @@ IMPL_LINK_NOARG_TYPED(ExtMgrDialog, HandleUpdateBtn, Button*, void)
 }
 
 
-IMPL_LINK( ExtMgrDialog, HandleHyperlink, FixedHyperlink*, pHyperlink )
+IMPL_LINK_TYPED( ExtMgrDialog, HandleHyperlink, FixedHyperlink&, rHyperlink, void )
 {
-    openWebBrowser( pHyperlink->GetURL(), GetText() );
-
-    return 1;
+    openWebBrowser( rHyperlink.GetURL(), GetText() );
 }
 
 
@@ -1231,7 +1229,7 @@ long UpdateRequiredDialog::addPackageToList( const uno::Reference< deployment::X
     {
         m_bHasLockedEntries |= m_pManager->isReadOnly( xPackage );
         const SolarMutexGuard aGuard;
-        m_pUpdateBtn->Enable( true );
+        m_pUpdateBtn->Enable();
         return m_pExtensionBox->addEntry( xPackage );
     }
     return 0;
@@ -1404,11 +1402,9 @@ IMPL_LINK_NOARG_TYPED(UpdateRequiredDialog, HandleCloseBtn, Button*, void)
 }
 
 
-IMPL_LINK( UpdateRequiredDialog, HandleHyperlink, FixedHyperlink*, pHyperlink )
+IMPL_LINK_TYPED( UpdateRequiredDialog, HandleHyperlink, FixedHyperlink&, rHyperlink, void )
 {
-    openWebBrowser( pHyperlink->GetURL(), GetText() );
-
-    return 1;
+    openWebBrowser( rHyperlink.GetURL(), GetText() );
 }
 
 
@@ -1623,8 +1619,6 @@ sal_Int16 UpdateRequiredDialogService::execute() throw ( uno::RuntimeException, 
     return nRet;
 }
 
-
-SelectedPackage::~SelectedPackage() {}
 
 } //namespace dp_gui
 

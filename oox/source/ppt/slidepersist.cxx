@@ -47,7 +47,7 @@ using namespace ::com::sun::star::animations;
 namespace oox { namespace ppt {
 
 SlidePersist::SlidePersist( XmlFilterBase& rFilter, bool bMaster, bool bNotes,
-    const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XDrawPage >& rxPage,
+    const css::uno::Reference< css::drawing::XDrawPage >& rxPage,
         oox::drawingml::ShapePtr pShapesPtr, const drawingml::TextListStylePtr & pDefaultTextStyle )
 : mpDrawingPtr( new oox::vml::Drawing( rFilter, rxPage, oox::vml::VMLDRAWING_POWERPOINT ) )
 , mxPage( rxPage )
@@ -67,7 +67,7 @@ SlidePersist::SlidePersist( XmlFilterBase& rFilter, bool bMaster, bool bNotes,
 }
 
 #if OSL_DEBUG_LEVEL > 0
-::com::sun::star::uno::WeakReference< ::com::sun::star::drawing::XDrawPage > SlidePersist::mxDebugPage;
+css::uno::WeakReference< css::drawing::XDrawPage > SlidePersist::mxDebugPage;
 #endif
 
 SlidePersist::~SlidePersist()
@@ -141,9 +141,9 @@ void SlidePersist::createXShapes( XmlFilterBase& rFilterBase )
             PPTShape* pPPTShape = dynamic_cast< PPTShape* >( (*aChildIter).get() );
             basegfx::B2DHomMatrix aTransformation;
             if ( pPPTShape )
-                pPPTShape->addShape( rFilterBase, *this, getTheme().get(), xShapes, aTransformation, 0, &getShapeMap() );
+                pPPTShape->addShape( rFilterBase, *this, getTheme().get(), xShapes, aTransformation, nullptr, &getShapeMap() );
             else
-                (*aChildIter)->addShape( rFilterBase, getTheme().get(), xShapes, aTransformation, maShapesPtr->getFillProperties(), 0, &getShapeMap() );
+                (*aChildIter)->addShape( rFilterBase, getTheme().get(), xShapes, aTransformation, maShapesPtr->getFillProperties(), nullptr, &getShapeMap() );
         }
     }
 
@@ -179,7 +179,7 @@ void setTextStyle( Reference< beans::XPropertySet >& rxPropSet, const XmlFilterB
     oox::drawingml::TextListStylePtr& pTextListStylePtr, int nLevel )
 {
     ::oox::drawingml::TextParagraphPropertiesPtr pTextParagraphPropertiesPtr( pTextListStylePtr->getListStyle()[ nLevel ] );
-    if( pTextParagraphPropertiesPtr == 0 )
+    if( pTextParagraphPropertiesPtr == nullptr )
     {
         // no properties. return
         return;
@@ -278,7 +278,7 @@ void SlidePersist::applyTextStyles( const XmlFilterBase& rFilterBase )
                                                 {
                                                     xFamilies->getByName( sOutlineStyle ) >>= aXStyle;
                                                     if( aXStyle.is() )
-                                                        xPropSet = Reference< beans::XPropertySet >( aXStyle, UNO_QUERY_THROW );
+                                                        xPropSet.set( aXStyle, UNO_QUERY_THROW );
                                                 }
                                             }
                                             setTextStyle( xPropSet, rFilterBase, maDefaultTextStylePtr, nLevel );

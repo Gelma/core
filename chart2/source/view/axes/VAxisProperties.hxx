@@ -57,7 +57,7 @@ enum AxisLabelStaggering
     , STAGGER_AUTO
 };
 
-struct AxisLabelProperties SAL_FINAL
+struct AxisLabelProperties final
 {
     AxisLabelProperties();
 
@@ -96,7 +96,7 @@ struct AxisLabelAlignment
     AxisLabelAlignment();
 };
 
-struct AxisProperties SAL_FINAL
+struct AxisProperties final
 {
     css::uno::Reference<css::chart2::XAxis> m_xAxisModel;
 
@@ -117,6 +117,11 @@ struct AxisProperties SAL_FINAL
     AxisLabelAlignment maLabelAlignment;
 
     bool            m_bDisplayLabels;
+
+    // Compatibility option: starting from LibreOffice 5.1 the rotated
+    // layout is preferred to staggering for axis labels.
+    // So the default value of this flag for new documents is `false`.
+    bool            m_bTryStaggeringFirst;
 
     sal_Int32       m_nNumberFormatKey;
 

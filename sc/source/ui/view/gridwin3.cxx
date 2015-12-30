@@ -53,7 +53,7 @@ bool ScGridWindow::DrawMouseButtonDown(const MouseEvent& rMEvt)
         Point aLogicPos = PixelToLogic(rMEvt.GetPosPixel());
         if ( pDraw->IsDetectiveHit( aLogicPos ) )
         {
-            // nothing on detectiv arrows (dobble click is evaluated on ButtonUp)
+            // nothing on detective arrows (double click is evaluated on ButtonUp)
             bRet = true;
         }
         else
@@ -186,7 +186,6 @@ bool ScGridWindow::DrawKeyInput(const KeyEvent& rKEvt)
 
 void ScGridWindow::DrawRedraw( ScOutputData& rOutputData, ScUpdateMode eMode, sal_uLong nLayer )
 {
-    // #109985#
     const ScViewOptions& rOpts = pViewData->GetOptions();
 
     // use new flags at SdrPaintView for hiding objects
@@ -326,7 +325,7 @@ SdrObject* ScGridWindow::GetEditObject()
             return pDrView->GetTextEditObject();
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void ScGridWindow::UpdateStatusPosSize()

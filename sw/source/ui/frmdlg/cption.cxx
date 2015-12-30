@@ -67,8 +67,8 @@ public:
     SwSequenceOptionDialog( vcl::Window *pParent, SwView &rV,
                             const OUString& rSeqFieldType );
     virtual ~SwSequenceOptionDialog();
-    virtual void dispose() SAL_OVERRIDE;
-    virtual void Apply() SAL_OVERRIDE;
+    virtual void dispose() override;
+    virtual void Apply() override;
 
     bool IsApplyBorderAndShadow() { return m_pApplyBorderAndShadowCB->IsChecked(); }
     void SetApplyBorderAndShadow( bool bSet )  { m_pApplyBorderAndShadowCB->Check(bSet); }
@@ -83,10 +83,10 @@ public:
 
 OUString SwCaptionDialog::our_aSepTextSave(": "); // Caption separator text
 
-//Resolves: fdo#47427 disallow typing *or* pasting content into the category box
+//Resolves: tdf#47427 disallow typing *or* pasting invalid content into the category box
 OUString TextFilterAutoConvert::filter(const OUString &rText)
 {
-    if (rText != m_sNone && !SwCalc::IsValidVarName(rText))
+    if (!rText.isEmpty() && rText != m_sNone && !SwCalc::IsValidVarName(rText))
         return m_sLastGoodText;
     m_sLastGoodText = rText;
     return rText;
@@ -130,15 +130,14 @@ SwCaptionDialog::SwCaptionDialog( vcl::Window *pParent, SwView &rV ) :
         xNameAccess = xObjs->getEmbeddedObjects();
     }
 
-    Link<> aLk = LINK( this, SwCaptionDialog, ModifyHdl );
+    Link<Edit&,void> aLk = LINK( this, SwCaptionDialog, ModifyHdl );
     m_pCategoryBox->SetModifyHdl( aLk );
     m_pTextEdit->SetModifyHdl( aLk );
     m_pNumberingSeparatorED->SetModifyHdl ( aLk );
     m_pSepEdit->SetModifyHdl( aLk );
 
-    aLk = LINK(this, SwCaptionDialog, SelectHdl);
-    m_pCategoryBox->SetSelectHdl( aLk );
-    m_pFormatBox->SetSelectHdl( aLk );
+    m_pCategoryBox->SetSelectHdl( LINK(this, SwCaptionDialog, SelectHdl) );
+    m_pFormatBox->SetSelectHdl( LINK(this, SwCaptionDialog, SelectListBoxHdl) );
     m_pOptionButton->SetClickHdl( LINK( this, SwCaptionDialog, OptionHdl ) );
     m_pAutoCaptionButton->SetClickHdl(LINK(this, SwCaptionDialog, CaptionHdl));
 
@@ -179,15 +178,15 @@ SwCaptionDialog::SwCaptionDialog( vcl::Window *pParent, SwView &rV ) :
     else if( eType & nsSelectionType::SEL_FRM )
     {
         nPoolId = RES_POOLCOLL_LABEL_FRAME;
-        sString = ::GetOldFrmCat();
-         uno::Reference< text::XTextFramesSupplier >  xFrms(xModel, uno::UNO_QUERY);
-        xNameAccess = xFrms->getTextFrames();
+        sString = ::GetOldFrameCat();
+         uno::Reference< text::XTextFramesSupplier >  xFrames(xModel, uno::UNO_QUERY);
+        xNameAccess = xFrames->getTextFrames();
         sObjectName = rSh.GetFlyName();
     }
     else if( eType == nsSelectionType::SEL_TXT )
     {
         nPoolId = RES_POOLCOLL_LABEL_FRAME;
-        sString = ::GetOldFrmCat();
+        sString = ::GetOldFrameCat();
     }
     else if( eType & nsSelectionType::SEL_DRW )
     {
@@ -247,7 +246,7 @@ SwCaptionDialog::SwCaptionDialog( vcl::Window *pParent, SwView &rV ) :
     }
     m_pPosBox->SelectEntryPos(1);
 
-    m_pCategoryBox->GetModifyHdl().Call(m_pCategoryBox);
+    m_pCategoryBox->GetModifyHdl().Call(*m_pCategoryBox);
 
     m_pSepEdit->SetText(our_aSepTextSave);
     m_pTextEdit->GrabFocus();
@@ -302,13 +301,16 @@ IMPL_LINK_TYPED( SwCaptionDialog, OptionHdl, Button*, pButton, void )
     DrawSample();
 }
 
-IMPL_LINK_NOARG(SwCaptionDialog, SelectHdl)
+IMPL_LINK_NOARG_TYPED(SwCaptionDialog, SelectListBoxHdl, ListBox&, void)
 {
     DrawSample();
-    return 0;
+}
+IMPL_LINK_NOARG_TYPED(SwCaptionDialog, SelectHdl, ComboBox&, void)
+{
+    DrawSample();
 }
 
-IMPL_LINK_NOARG(SwCaptionDialog, ModifyHdl)
+IMPL_LINK_NOARG_TYPED(SwCaptionDialog, ModifyHdl, Edit&, void)
 {
     SwWrtShell &rSh = rView.GetWrtShell();
     OUString sFieldTypeName = m_pCategoryBox->GetText();
@@ -316,7 +318,7 @@ IMPL_LINK_NOARG(SwCaptionDialog, ModifyHdl)
     bool bNone = sFieldTypeName == m_sNone;
     SwFieldType* pType = (bCorrectFieldName && !bNone)
                     ? rSh.GetFieldType( RES_SETEXPFLD, sFieldTypeName )
-                    : 0;
+                    : nullptr;
     m_pOKButton->Enable( bCorrectFieldName &&
                         (!pType ||
                             static_cast<SwSetExpFieldType*>(pType)->GetType() == nsSwGetSetExpType::GSE_SEQ) );
@@ -328,7 +330,6 @@ IMPL_LINK_NOARG(SwCaptionDialog, ModifyHdl)
     m_pSepText->Enable( !bNone );
     m_pSepEdit->Enable( !bNone );
     DrawSample();
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(SwCaptionDialog, CaptionHdl, Button*, void)

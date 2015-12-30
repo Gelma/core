@@ -463,15 +463,16 @@ public class _XSimpleFileAccess extends MultiMethodTest {
 
             com.sun.star.io.XOutputStream oStream =
                 oObj.openFileWrite(copiedFile);
-            tRes.tested("openFileWrite()", oStream != null);
 
             oStream.closeOutput();
             oObj.kill(copiedFile);
+
+            tRes.tested("openFileWrite()", true);
         }
         catch (com.sun.star.uno.Exception ex) {
             log.println("Exception occurred while testing 'openFileWrite()'");
             ex.printStackTrace(log);
-            tRes.tested("openFileWrite()",false);
+            tRes.tested("openFileWrite()", false);
         }
 
     } //EOF openFileWrite()
@@ -493,17 +494,18 @@ public class _XSimpleFileAccess extends MultiMethodTest {
 
             com.sun.star.io.XStream aStream =
                 oObj.openFileReadWrite(copiedFile);
-            tRes.tested("openFileReadWrite()", aStream != null);
 
             aStream.getInputStream().closeInput();
             aStream.getOutputStream().closeOutput();
 
             oObj.kill(copiedFile);
+
+            tRes.tested("openFileReadWrite()", true);
         }
         catch (com.sun.star.uno.Exception ex) {
             log.println("Exception occurred while testing 'openFileReadWrite()'");
             ex.printStackTrace(log);
-            tRes.tested("openFileReadWrite()",false);
+            tRes.tested("openFileReadWrite()", false);
         }
 
     } //EOF openFileReadWrite()

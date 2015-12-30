@@ -40,10 +40,10 @@ public:
     // Check for flow events in Outliner
     virtual void CheckForFlowEvents(SdrOutliner *);
 
-    virtual void ExecuteUnderflow(SdrOutliner *);
+    void ExecuteUnderflow(SdrOutliner *);
 
     // Uses two outliners: one for the non-overflow text and one for overflowing (might be the same)
-    virtual void ExecuteOverflow(SdrOutliner *, SdrOutliner *);
+    void ExecuteOverflow(SdrOutliner *, SdrOutliner *);
 
     bool IsOverflow() const;
     bool IsUnderflow() const;
@@ -65,7 +65,7 @@ protected:
     TextChain *GetTextChain() const;
 
     virtual void impLeaveOnlyNonOverflowingText(SdrOutliner *);
-    virtual void impMoveChainedTextToNextLink(SdrOutliner *);
+    void impMoveChainedTextToNextLink(SdrOutliner *);
 
     virtual void impSetFlowOutlinerParams(SdrOutliner *, SdrOutliner *);
 
@@ -94,16 +94,14 @@ class EditingTextChainFlow : public TextChainFlow
 {
 public:
     EditingTextChainFlow(SdrTextObj *);
-    virtual void CheckForFlowEvents(SdrOutliner *) SAL_OVERRIDE;
+    virtual void CheckForFlowEvents(SdrOutliner *) override;
 
-    //virtual void ExecuteOverflow(SdrOutliner *, SdrOutliner *) SAL_OVERRIDE;
+    //virtual void ExecuteOverflow(SdrOutliner *, SdrOutliner *) override;
 
 protected:
-    virtual void impLeaveOnlyNonOverflowingText(SdrOutliner *) SAL_OVERRIDE;
+    virtual void impLeaveOnlyNonOverflowingText(SdrOutliner *) override;
 
-    virtual void impSetTextForEditingOutliner(OutlinerParaObject *);
-
-    virtual void impSetFlowOutlinerParams(SdrOutliner *, SdrOutliner *) SAL_OVERRIDE;
+    virtual void impSetFlowOutlinerParams(SdrOutliner *, SdrOutliner *) override;
 
 private:
     void impBroadcastCursorInfo() const;

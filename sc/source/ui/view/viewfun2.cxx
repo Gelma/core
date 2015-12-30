@@ -85,17 +85,17 @@
 #include <columnspanset.hxx>
 #include <rowheightcontext.hxx>
 #include <LibreOfficeKit/LibreOfficeKitEnums.h>
+#include <comphelper/lok.hxx>
 
 #include <vector>
 #include <memory>
+#include <boost/property_tree/json_parser.hpp>
 
 using namespace com::sun::star;
 using ::editeng::SvxBorderLine;
 
 using ::std::vector;
 using ::std::unique_ptr;
-
-// STATIC DATA ---------------------------------------------------------------
 
 bool ScViewFunc::AdjustBlockHeight( bool bPaint, ScMarkData* pMarkData )
 {
@@ -205,8 +205,7 @@ enum ScAutoSum
 static ScAutoSum lcl_IsAutoSumData( ScDocument* pDoc, SCCOL nCol, SCROW nRow,
         SCTAB nTab, ScDirection eDir, SCCOLROW& nExtend )
 {
-    ScRefCellValue aCell;
-    aCell.assign(*pDoc, ScAddress(nCol, nRow, nTab));
+    ScRefCellValue aCell(*pDoc, ScAddress(nCol, nRow, nTab));
     if (aCell.hasNumeric())
     {
         if (aCell.meType == CELLTYPE_FORMULA)
@@ -482,7 +481,7 @@ bool ScViewFunc::GetAutoSumArea( ScRangeList& rRangeList )
 void ScViewFunc::EnterAutoSum(const ScRangeList& rRangeList, bool bSubTotal, const ScAddress& rAddr)
 {
     OUString aFormula = GetAutoSumFormula( rRangeList, bSubTotal, rAddr );
-    EnterBlock( aFormula, NULL );
+    EnterBlock( aFormula, nullptr );
 }
 
 bool ScViewFunc::AutoSum( const ScRange& rRange, bool bSubTotal, bool bSetCursor, bool bContinue )
@@ -763,7 +762,7 @@ void ScViewFunc::EnterBlock( const OUString& rString, const EditTextObject* pDat
         if (!aTester.NeedsObject())
         {
             aNewStr = aEngine.GetText();
-            pData = NULL;
+            pData = nullptr;
         }
     }
 
@@ -791,8 +790,8 @@ void ScViewFunc::EnterBlock( const OUString& rString, const EditTextObject* pDat
 
     pInsDoc->SetClipArea( ScRange(aPos) );
     // insert Block, with Undo etc.
-    if ( PasteFromClip( IDF_CONTENTS, pInsDoc.get(), ScPasteFunc::NONE, false, false,
-            false, INS_NONE, IDF_ATTRIB ) )
+    if ( PasteFromClip( InsertDeleteFlags::CONTENTS, pInsDoc.get(), ScPasteFunc::NONE, false, false,
+            false, INS_NONE, InsertDeleteFlags::ATTRIB ) )
     {
         const SfxUInt32Item* pItem = static_cast<const SfxUInt32Item*>( pInsDoc->GetAttr(
             nCol, nRow, nTab, ATTR_VALUE_FORMAT ) );
@@ -857,7 +856,7 @@ void ScViewFunc::RemoveManualBreaks()
     {
         ScDocument* pUndoDoc = new ScDocument( SCDOCMODE_UNDO );
         pUndoDoc->InitUndo( &rDoc, nTab, nTab, true, true );
-        rDoc.CopyToDocument( 0,0,nTab, MAXCOL,MAXROW,nTab, IDF_NONE, false, pUndoDoc );
+        rDoc.CopyToDocument( 0,0,nTab, MAXCOL,MAXROW,nTab, InsertDeleteFlags::NONE, false, pUndoDoc );
         pDocSh->GetUndoManager()->AddUndoAction(
                                 new ScUndoRemoveBreaks( pDocSh, nTab, pUndoDoc ) );
     }
@@ -955,7 +954,7 @@ void ScViewFunc::SetPrintRanges( bool bEntireSheet, const OUString* pPrint,
         if ( pRepCol )
         {
             if ( pRepCol->isEmpty() )
-                rDoc.SetRepeatColRange( nTab, NULL );
+                rDoc.SetRepeatColRange( nTab, nullptr );
             else
                 if ( aRange.ParseAny( *pRepCol, &rDoc, aDetails ) & SCA_VALID )
                     rDoc.SetRepeatColRange( nTab, &aRange );
@@ -966,7 +965,7 @@ void ScViewFunc::SetPrintRanges( bool bEntireSheet, const OUString* pPrint,
         if ( pRepRow )
         {
             if ( pRepRow->isEmpty() )
-                rDoc.SetRepeatRowRange( nTab, NULL );
+                rDoc.SetRepeatRowRange( nTab, nullptr );
             else
                 if ( aRange.ParseAny( *pRepRow, &rDoc, aDetails ) & SCA_VALID )
                     rDoc.SetRepeatRowRange( nTab, &aRange );
@@ -1444,7 +1443,7 @@ void ScViewFunc::FillTab( InsertDeleteFlags nFlags, ScPasteFunc nFunction, bool 
     else
         aMarkRange = ScRange( GetViewData().GetCurX(), GetViewData().GetCurY(), nTab );
 
-    ScDocument* pUndoDoc = NULL;
+    ScDocument* pUndoDoc = nullptr;
 
     if (bUndo)
     {
@@ -1459,7 +1458,7 @@ void ScViewFunc::FillTab( InsertDeleteFlags nFlags, ScPasteFunc nFunction, bool 
                 pUndoDoc->AddUndoTab( i, i );
                 aMarkRange.aStart.SetTab( i );
                 aMarkRange.aEnd.SetTab( i );
-                rDoc.CopyToDocument( aMarkRange, IDF_ALL, bMulti, pUndoDoc );
+                rDoc.CopyToDocument( aMarkRange, InsertDeleteFlags::ALL, bMulti, pUndoDoc );
             }
     }
 
@@ -1592,7 +1591,7 @@ void ScViewFunc::TransliterateText( sal_Int32 nType )
 
 ScAutoFormatData* ScViewFunc::CreateAutoFormatData()
 {
-    ScAutoFormatData* pData = NULL;
+    ScAutoFormatData* pData = nullptr;
     SCCOL nStartCol;
     SCROW nStartRow;
     SCTAB nStartTab;
@@ -1736,7 +1735,7 @@ bool ScViewFunc::SearchAndReplace( const SvxSearchItem* pSearchItem,
             if (nCommand == SvxSearchCmd::FIND_ALL || nCommand == SvxSearchCmd::REPLACE_ALL)
             {
                 SfxViewFrame* pViewFrm = SfxViewFrame::Current();
-                if (pViewFrm)
+                if (pViewFrm && !comphelper::LibreOfficeKit::isActive())
                 {
                     pViewFrm->ShowChildWindow(sc::SearchResultsDlgWrapper::GetChildWindowId());
                     SfxChildWindow* pWnd = pViewFrm->GetChildWindow(sc::SearchResultsDlgWrapper::GetChildWindowId());
@@ -1842,12 +1841,37 @@ bool ScViewFunc::SearchAndReplace( const SvxSearchItem* pSearchItem,
 
             // just update the cell selection
             ScGridWindow* pGridWindow = GetViewData().GetActiveWin();
-            if (pGridWindow)
+            // Don't move cell selection handles for find-all: selection of all but the first result would be lost.
+            if (pGridWindow && nCommand == SvxSearchCmd::FIND)
             {
                 // move the cell selection handles
                 pGridWindow->SetCellSelectionPixel(LOK_SETTEXTSELECTION_RESET, aCurPos.X(), aCurPos.Y());
                 pGridWindow->SetCellSelectionPixel(LOK_SETTEXTSELECTION_START, aCurPos.X(), aCurPos.Y());
                 pGridWindow->SetCellSelectionPixel(LOK_SETTEXTSELECTION_END, aCurPos.X(), aCurPos.Y());
+            }
+
+            if (pGridWindow)
+            {
+                std::vector<Rectangle> aLogicRects;
+                pGridWindow->GetCellSelection(aLogicRects);
+
+                boost::property_tree::ptree aTree;
+                aTree.put("searchString", pSearchItem->GetSearchString().toUtf8().getStr());
+
+                boost::property_tree::ptree aSelections;
+                for (const Rectangle& rLogicRect : aLogicRects)
+                {
+                    boost::property_tree::ptree aSelection;
+                    aSelection.put("part", OString::number(nTab).getStr());
+                    aSelection.put("rectangles", rLogicRect.toString().getStr());
+                    aSelections.push_back(std::make_pair("", aSelection));
+                }
+                aTree.add_child("searchResultSelection", aSelections);
+
+                std::stringstream aStream;
+                boost::property_tree::write_json(aStream, aTree);
+                OString aPayload = aStream.str().c_str();
+                rDoc.GetDrawLayer()->libreOfficeKitCallback(LOK_CALLBACK_SEARCH_RESULT_SELECTION, aPayload.getStr());
             }
         }
 
@@ -1868,7 +1892,7 @@ bool ScViewFunc::SearchAndReplace( const SvxSearchItem* pSearchItem,
 
                     ScRangeList aMatchedRanges;
                     ScTable::UpdateSearchItemAddressForReplace( aSearchItem, nCol, nRow );
-                    if ( rDoc.SearchAndReplace( aSearchItem, nCol, nRow, nTab, rMark, aMatchedRanges, aUndoStr, NULL ) &&
+                    if ( rDoc.SearchAndReplace( aSearchItem, nCol, nRow, nTab, rMark, aMatchedRanges, aUndoStr ) &&
                             ( nTab == nOldTab ) &&
                             ( nCol != nOldCol || nRow != nOldRow ) )
                     {
@@ -1907,7 +1931,7 @@ void ScViewFunc::Solve( const ScSolveParam& rParam )
         }
 
         OUString  aTargetValStr;
-        if ( rParam.pStrTargetVal != NULL )
+        if ( rParam.pStrTargetVal != nullptr )
             aTargetValStr = *(rParam.pStrTargetVal);
 
         OUString  aMsgStr;
@@ -2061,7 +2085,7 @@ bool ScViewFunc::InsertTables(std::vector<OUString>& aNames, SCTAB nTab,
     {
         rDoc.CreateValidTabNames(aNames, nCount);
     }
-    if (rDoc.InsertTabs(nTab, aNames, false))
+    if (rDoc.InsertTabs(nTab, aNames))
     {
         pDocSh->Broadcast( ScTablesHint( SC_TABS_INSERTED, nTab, nCount ) );
         bFlag = true;
@@ -2193,8 +2217,8 @@ bool ScViewFunc::DeleteTables(const vector<SCTAB> &TheTabs, bool bRecord )
         --nNewTab;
 
     bool bWasLinked = false;
-    ScDocument* pUndoDoc = NULL;
-    ScRefUndoData* pUndoData = NULL;
+    ScDocument* pUndoDoc = nullptr;
+    ScRefUndoData* pUndoData = nullptr;
     if (bRecord)
     {
         pUndoDoc = new ScDocument( SCDOCMODE_UNDO );
@@ -2209,7 +2233,7 @@ bool ScViewFunc::DeleteTables(const vector<SCTAB> &TheTabs, bool bRecord )
             else
                 pUndoDoc->AddUndoTab( nTab,nTab, true,true );       // incl. column/fow flags
 
-            rDoc.CopyToDocument(0,0,nTab, MAXCOL,MAXROW,nTab, IDF_ALL,false, pUndoDoc );
+            rDoc.CopyToDocument(0,0,nTab, MAXCOL,MAXROW,nTab, InsertDeleteFlags::ALL,false, pUndoDoc );
             rDoc.GetName( nTab, aOldName );
             pUndoDoc->RenameTab( nTab, aOldName, false );
             if (rDoc.IsLinked(nTab))
@@ -2512,9 +2536,9 @@ void ScViewFunc::MoveTable(
 {
     ScDocument* pDoc       = GetViewData().GetDocument();
     ScDocShell* pDocShell  = GetViewData().GetDocShell();
-    ScDocument* pDestDoc   = NULL;
-    ScDocShell* pDestShell = NULL;
-    ScTabViewShell* pDestViewSh = NULL;
+    ScDocument* pDestDoc   = nullptr;
+    ScDocShell* pDestShell = nullptr;
+    ScTabViewShell* pDestViewSh = nullptr;
     bool bUndo (pDoc->IsUndoEnabled());
     bool bRename = pNewTabName && !pNewTabName->isEmpty();
 
@@ -2533,13 +2557,13 @@ void ScViewFunc::MoveTable(
                     SID_OPENDOC, SfxCallMode::API|SfxCallMode::SYNCHRON, &aItem, &aTarget, 0L );
         if ( pRetItem )
         {
-            if ( pRetItem->ISA( SfxObjectItem ) )
-                pDestShell = PTR_CAST( ScDocShell, static_cast<const SfxObjectItem*>(pRetItem)->GetShell() );
-            else if ( pRetItem->ISA( SfxViewFrameItem ) )
+            if ( dynamic_cast<const SfxObjectItem*>( pRetItem) !=  nullptr )
+                pDestShell = dynamic_cast<ScDocShell*>( static_cast<const SfxObjectItem*>(pRetItem)->GetShell()  );
+            else if ( dynamic_cast<const SfxViewFrameItem*>( pRetItem) !=  nullptr )
             {
                 SfxViewFrame* pFrm = static_cast<const SfxViewFrameItem*>(pRetItem)->GetFrame();
                 if (pFrm)
-                    pDestShell = PTR_CAST( ScDocShell, pFrm->GetObjectShell() );
+                    pDestShell = dynamic_cast<ScDocShell*>( pFrm->GetObjectShell()  );
             }
             if (pDestShell)
                 pDestViewSh = pDestShell->GetBestViewShell();
@@ -2572,7 +2596,7 @@ void ScViewFunc::MoveTable(
         {
             while (pDestDoc->GetTableCount() > 1)
                 pDestDoc->DeleteTab(0);
-            pDestDoc->RenameTab( 0, OUString("______42_____"),
+            pDestDoc->RenameTab( 0, "______42_____",
                         false );
         }
 
@@ -3007,7 +3031,7 @@ void ScViewFunc::UpdateLineAttrs( SvxBorderLine&       rLine,
             aBoxItem.SetLine( &aLine, BOXLINE );                    \
         }                                                           \
         else                                                        \
-            aBoxItem.SetLine( NULL, BOXLINE );                      \
+            aBoxItem.SetLine( nullptr, BOXLINE );                      \
     }
 
 void ScViewFunc::SetSelectionFrameLines( const SvxBorderLine* pLine,
@@ -3028,13 +3052,13 @@ void ScViewFunc::SetSelectionFrameLines( const SvxBorderLine* pLine,
     const ScPatternAttr*    pSelAttrs = GetSelectionPattern();
     const SfxItemSet&       rSelItemSet = pSelAttrs->GetItemSet();
 
-    const SfxPoolItem*      pBorderAttr = NULL;
+    const SfxPoolItem*      pBorderAttr = nullptr;
     SfxItemState            eItemState = rSelItemSet.GetItemState( ATTR_BORDER, true, &pBorderAttr );
 
-    const SfxPoolItem*      pTLBRItem = 0;
+    const SfxPoolItem*      pTLBRItem = nullptr;
     SfxItemState            eTLBRState = rSelItemSet.GetItemState( ATTR_BORDER_TLBR, true, &pTLBRItem );
 
-    const SfxPoolItem*      pBLTRItem = 0;
+    const SfxPoolItem*      pBLTRItem = nullptr;
     SfxItemState            eBLTRState = rSelItemSet.GetItemState( ATTR_BORDER_BLTR, true, &pBLTRItem );
 
     // any of the lines visible?
@@ -3052,16 +3076,15 @@ void ScViewFunc::SetSelectionFrameLines( const SvxBorderLine* pLine,
                                             ATTR_PATTERN_START,
                                             ATTR_PATTERN_END ));
 
-            const SvxBorderLine*    pBoxLine = NULL;
             SvxBorderLine           aLine;
-
-            // here pBoxLine is used
 
             if( pBorderAttr )
             {
+                const SvxBorderLine*    pBoxLine = nullptr;
                 SvxBoxItem      aBoxItem( *static_cast<const SvxBoxItem*>(pBorderAttr) );
                 SvxBoxInfoItem  aBoxInfoItem( ATTR_BORDER_INNER );
 
+                // here pBoxLine is used
                 SET_LINE_ATTRIBUTES(Top,SvxBoxItemLine::TOP)
                 SET_LINE_ATTRIBUTES(Bottom,SvxBoxItemLine::BOTTOM)
                 SET_LINE_ATTRIBUTES(Left,SvxBoxItemLine::LEFT)

@@ -40,11 +40,9 @@ using namespace com::sun::star::sdbc;
 
 ResultSetI::ResultSetI(const Reference<XComponentContext>&  rxContext,
                        const Reference<XContentProvider>&  xProvider,
-                       sal_Int32 nOpenMode,
                        const Sequence<Property>& seqProp,
-                       const Sequence< NumberedSortingInfo >& seqSort,
                        const std::vector<FTPDirentry>&  dirvec)
-    : ResultSetBase(rxContext,xProvider,nOpenMode,seqProp,seqSort)
+    : ResultSetBase(rxContext,xProvider,seqProp)
 {
     for( size_t i = 0; i < dirvec.size(); ++i)
         m_aPath.push_back(dirvec[i].m_aURL);
@@ -90,7 +88,7 @@ ResultSetI::ResultSetI(const Reference<XComponentContext>&  rxContext,
             else
                 xRow->appendVoid(seqProp[i]);
         }
-        m_aItems[n] = Reference<XRow>(xRow.get());
+        m_aItems[n].set(xRow.get());
     }
 }
 

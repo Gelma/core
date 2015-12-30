@@ -351,7 +351,7 @@ void Writer::Impl_writeGradientEx( const tools::PolyPolygon& rPolyPoly, const Gr
                 Impl_writeActions( aTmpMtf );
             }
 
-            setClipping( NULL );
+            setClipping( nullptr );
         }
     }
 }
@@ -450,7 +450,7 @@ void Writer::Impl_writeText( const Point& rPos, const OUString& rText, const lon
                     nOff += 6;
 
                 Color aTextColor( mpVDev->GetTextColor() );
-                Color aShadowColor = Color( COL_BLACK );
+                Color aShadowColor( COL_BLACK );
 
                 if ( (aTextColor.GetColor() == COL_BLACK) || (aTextColor.GetLuminance() < 8) )
                     aShadowColor = Color( COL_LIGHTGRAY );
@@ -839,7 +839,7 @@ sal_uInt16 Writer::defineBitmap( const BitmapEx &bmpSource, sal_Int32 nJPEGQuali
     }
 
     // Figure out JPEG size
-    const sal_uInt8* pJpgData = NULL;;
+    const sal_uInt8* pJpgData = nullptr;;
     sal_uInt32 nJpgDataLength = 0xffffffff;
 
     Graphic aGraphic( bmpSource );
@@ -855,7 +855,7 @@ sal_uInt16 Writer::defineBitmap( const BitmapEx &bmpSource, sal_Int32 nJPEGQuali
     }
 
     if( aFilter.ExportGraphic( aGraphic, OUString(), aDstStm,
-                                aFilter.GetExportFormatNumberForShortName( OUString(JPG_SHORTNAME) ), &aFilterData ) == ERRCODE_NONE )
+                                aFilter.GetExportFormatNumberForShortName( JPG_SHORTNAME ), &aFilterData ) == ERRCODE_NONE )
     {
         pJpgData = static_cast<const sal_uInt8*>(aDstStm.GetData());
         nJpgDataLength = aDstStm.Seek( STREAM_SEEK_TO_END );
@@ -1624,7 +1624,7 @@ void Writer::Impl_writeActions( const GDIMetaFile& rMtf )
 
                 if( pA->GetComment().equalsIgnoreAsciiCase("XGRAD_SEQ_BEGIN") )
                 {
-                    const MetaGradientExAction* pGradAction = NULL;
+                    const MetaGradientExAction* pGradAction = nullptr;
                     bool                    bDone = false;
 
                     while( !bDone && ( ++i < nCount ) )
@@ -1764,14 +1764,14 @@ void Writer::Impl_writeActions( const GDIMetaFile& rMtf )
             case( MetaActionType::TEXT ):
             {
                 const MetaTextAction* pA = static_cast<const MetaTextAction*>(pAction);
-                Impl_writeText( pA->GetPoint(),  pA->GetText().copy( pA->GetIndex(), pA->GetLen() ), NULL, 0);
+                Impl_writeText( pA->GetPoint(),  pA->GetText().copy( pA->GetIndex(), pA->GetLen() ), nullptr, 0);
             }
             break;
 
             case( MetaActionType::TEXTRECT ):
             {
                 const MetaTextRectAction* pA = static_cast<const MetaTextRectAction*>(pAction);
-                Impl_writeText( pA->GetRect().TopLeft(), pA->GetText(), NULL, 0  );
+                Impl_writeText( pA->GetRect().TopLeft(), pA->GetText(), nullptr, 0  );
             }
             break;
 
@@ -1785,7 +1785,7 @@ void Writer::Impl_writeActions( const GDIMetaFile& rMtf )
             case( MetaActionType::STRETCHTEXT ):
             {
                 const MetaStretchTextAction* pA = static_cast<const MetaStretchTextAction*>(pAction);
-                Impl_writeText( pA->GetPoint(), pA->GetText().copy( pA->GetIndex(), pA->GetLen() ), NULL, pA->GetWidth() );
+                Impl_writeText( pA->GetPoint(), pA->GetText().copy( pA->GetIndex(), pA->GetLen() ), nullptr, pA->GetWidth() );
             }
             break;
 

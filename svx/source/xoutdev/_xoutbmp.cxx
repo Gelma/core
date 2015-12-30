@@ -38,7 +38,7 @@
 #define FORMAT_JPG  "jpg"
 #define FORMAT_PNG  "png"
 
-GraphicFilter* XOutBitmap::pGrfFilter = NULL;
+GraphicFilter* XOutBitmap::pGrfFilter = nullptr;
 
 Animation XOutBitmap::MirrorAnimation( const Animation& rAnimation, bool bHMirr, bool bVMirr )
 {
@@ -314,7 +314,7 @@ sal_uInt16 XOutBitmap::WriteGraphic( const Graphic& rGraphic, OUString& rFileNam
                     if( 0 == (nFlags & XOUTBMP_DONT_ADD_EXTENSION))
                         aURL.setExtension( aExt );
                     rFileName = aURL.GetMainURL( INetURLObject::NO_DECODE );
-                    nErr = ExportGraphic( aGraphic, aURL, rFilter, nFilter, NULL );
+                    nErr = ExportGraphic( aGraphic, aURL, rFilter, nFilter );
                 }
             }
         }
@@ -369,7 +369,7 @@ bool XOutBitmap::GraphicToBase64(const Graphic& rGraphic, OUString& rOUString)
 
 sal_uInt16 XOutBitmap::ExportGraphic( const Graphic& rGraphic, const INetURLObject& rURL,
                                   GraphicFilter& rFilter, const sal_uInt16 nFormat,
-                                  const com::sun::star::uno::Sequence< com::sun::star::beans::PropertyValue >* pFilterData )
+                                  const css::uno::Sequence< css::beans::PropertyValue >* pFilterData )
 {
     DBG_ASSERT( rURL.GetProtocol() != INetProtocol::NotValid, "XOutBitmap::ExportGraphic(...): invalid URL" );
 
@@ -383,7 +383,7 @@ sal_uInt16 XOutBitmap::ExportGraphic( const Graphic& rGraphic, const INetURLObje
 
         nRet = rFilter.ExportGraphic( rGraphic, rURL.GetMainURL( INetURLObject::NO_DECODE ), *pOStm, nFormat, pFilterData );
 
-        pGrfFilter = NULL;
+        pGrfFilter = nullptr;
         aMedium.Commit();
 
         if( aMedium.GetError() && ( GRFILTER_OK == nRet  ) )

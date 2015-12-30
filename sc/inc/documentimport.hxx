@@ -16,6 +16,7 @@
 #include <rtl/ustring.hxx>
 
 #include <boost/noncopyable.hpp>
+#include <memory>
 
 class EditTextObject;
 class ScDocument;
@@ -39,7 +40,7 @@ enum class SvtScriptType;
  */
 class SC_DLLPUBLIC ScDocumentImport : boost::noncopyable
 {
-    ScDocumentImportImpl* mpImpl;
+    std::unique_ptr<ScDocumentImportImpl> mpImpl;
 
     ScDocumentImport(); // disabled
     ScDocumentImport& operator=(const ScDocumentImport&); //disabled
@@ -82,7 +83,7 @@ public:
     void setOriginDate(sal_uInt16 nYear, sal_uInt16 nMonth, sal_uInt16 nDay);
 
     void setAutoInput(const ScAddress& rPos, const OUString& rStr,
-            ScSetStringParam* pStringParam = NULL);
+            ScSetStringParam* pStringParam = nullptr);
     void setNumericCell(const ScAddress& rPos, double fVal);
     void setStringCell(const ScAddress& rPos, const OUString& rStr);
     void setEditCell(const ScAddress& rPos, EditTextObject* pEditText);

@@ -49,11 +49,10 @@ struct TabDlg_Impl;
 class SFX2_DLLPUBLIC SfxTabDialogItem: public SfxSetItem
 {
 public:
-    TYPEINFO_OVERRIDE();
                             SfxTabDialogItem( sal_uInt16 nId, const SfxItemSet& rItemSet );
-                            SfxTabDialogItem(const SfxTabDialogItem& rAttr, SfxItemPool* pItemPool=NULL);
-    virtual SfxPoolItem*    Clone(SfxItemPool* pToPool) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Create(SvStream& rStream, sal_uInt16 nVersion) const SAL_OVERRIDE;
+                            SfxTabDialogItem(const SfxTabDialogItem& rAttr, SfxItemPool* pItemPool=nullptr);
+    virtual SfxPoolItem*    Clone(SfxItemPool* pToPool) const override;
+    virtual SfxPoolItem*    Create(SvStream& rStream, sal_uInt16 nVersion) const override;
 };
 
 class SFX2_DLLPUBLIC SfxTabDialog : public TabDialog
@@ -61,8 +60,6 @@ class SFX2_DLLPUBLIC SfxTabDialog : public TabDialog
 private:
 friend class SfxTabPage;
 friend class SfxTabDialogController;
-
-    SfxViewFrame*   pFrame;
 
     VclPtr<VclBox>     m_pBox;
     VclPtr<TabControl> m_pTabCtrl;
@@ -124,12 +121,9 @@ protected:
 public:
     SfxTabDialog(vcl::Window* pParent,
                  const OUString& rID, const OUString& rUIXMLDescription,
-                 const SfxItemSet * = 0, bool bEditFmt = false);
-    SfxTabDialog(SfxViewFrame *pViewFrame, vcl::Window* pParent,
-                 const OUString& rID, const OUString& rUIXMLDescription,
-                 const SfxItemSet * = 0, bool bEditFmt = false);
+                 const SfxItemSet * = nullptr, bool bEditFmt = false);
     virtual ~SfxTabDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     sal_uInt16          AddTabPage( const OString& rName,           // Name of the label for the page in the notebook .ui
                                     CreateTabPage pCreateFunc,      // != 0
@@ -194,8 +188,8 @@ public:
     void                RemoveResetButton();
     void                RemoveStandardButton();
 
-    short               Execute() SAL_OVERRIDE;
-    void                StartExecuteModal( const Link<>& rEndDialogHdl ) SAL_OVERRIDE;
+    short               Execute() override;
+    void                StartExecuteModal( const Link<Dialog&,void>& rEndDialogHdl ) override;
     void                Start( bool bShow = true );
 
     const SfxItemSet*   GetExampleSet() const { return pExampleSet; }
@@ -233,7 +227,7 @@ protected:
 
 public:
     virtual             ~SfxTabPage();
-    virtual void        dispose() SAL_OVERRIDE;
+    virtual void        dispose() override;
 
     const SfxItemSet&   GetItemSet() const { return *pSet; }
 
@@ -257,7 +251,7 @@ public:
         using TabPage::ActivatePage;
         using TabPage::DeactivatePage;
     virtual void            ActivatePage( const SfxItemSet& );
-    virtual sfxpg           DeactivatePage( SfxItemSet* pSet = 0 );
+    virtual sfxpg           DeactivatePage( SfxItemSet* pSet );
     void                    SetUserData(const OUString& rString)
                               { aUserString = rString; }
     OUString                GetUserData() { return aUserString; }
@@ -267,8 +261,8 @@ public:
     virtual void ChangesApplied();
     static const SfxPoolItem* GetItem( const SfxItemSet& rSet, sal_uInt16 nSlot, bool bDeep = true );
 
-    void SetFrame(const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& xFrame);
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > GetFrame();
+    void SetFrame(const css::uno::Reference< css::frame::XFrame >& xFrame);
+    css::uno::Reference< css::frame::XFrame > GetFrame();
 };
 
 #endif

@@ -42,7 +42,6 @@ using namespace com::sun::star;
 
 namespace sd {
 
-TYPEINIT1( FuSummaryPage, FuPoor );
 
 FuSummaryPage::FuSummaryPage (
     ViewShell* pViewSh,
@@ -63,8 +62,8 @@ rtl::Reference<FuPoor> FuSummaryPage::Create( ViewShell* pViewSh, ::sd::Window* 
 
 void FuSummaryPage::DoExecute( SfxRequest& )
 {
-    ::sd::Outliner* pOutl = NULL;
-    SdPage* pSummaryPage = NULL;
+    ::sd::Outliner* pOutl = nullptr;
+    SdPage* pSummaryPage = nullptr;
     sal_uInt16 i = 0;
     sal_uInt16 nFirstPage = SDRPAGE_NOTFOUND;
     sal_uInt16 nSelectedPages = 0;
@@ -92,7 +91,7 @@ void FuSummaryPage::DoExecute( SfxRequest& )
 
     bool bBegUndo = false;
 
-    SfxStyleSheet* pStyle = NULL;
+    SfxStyleSheet* pStyle = nullptr;
 
     for (i = nFirstPage; i < nCount; i++)
     {

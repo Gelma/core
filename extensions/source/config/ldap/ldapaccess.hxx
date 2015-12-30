@@ -79,7 +79,7 @@ class LdapConnection
 public:
 
     /** Default constructor */
-    LdapConnection() : mConnection(NULL),mLdapDefinition() {}
+    LdapConnection() : mConnection(nullptr),mLdapDefinition() {}
     /** Destructor, releases the connection */
     ~LdapConnection() ;
     /** Make connection to LDAP server */
@@ -93,7 +93,7 @@ public:
         @param aUserProfileMap  Map containing LDAP->00o mapping
        @param aUserProfile     struct for holding OOo values
 
-         @throws com::sun::star::ldap::LdapGenericException
+         @throws css::ldap::LdapGenericException
                   if an LDAP error occurs.
     */
     void getUserProfile(const OUString& aUser, LdapData * data)
@@ -118,7 +118,7 @@ private:
       Indicates whether the connection is in a valid state.
       @return   sal_True if connection is valid, sal_False otherwise
       */
-    bool isValid() const { return mConnection != NULL ; }
+    bool isValid() const { return mConnection != nullptr ; }
 
     void  connectSimple()
         throw (ldap::LdapConnectionException,

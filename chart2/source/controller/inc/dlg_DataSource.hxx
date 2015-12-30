@@ -50,20 +50,16 @@ public:
         const ::com::sun::star::uno::Reference<
             ::com::sun::star::uno::XComponentContext > & xContext );
     virtual ~DataSourceDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     // from Dialog (base of TabDialog)
-    virtual short Execute() SAL_OVERRIDE;
+    virtual short Execute() override;
 
     // TabPageNotifiable
-    virtual void setInvalidPage( TabPage * pTabPage ) SAL_OVERRIDE;
-    virtual void setValidPage( TabPage * pTabPage ) SAL_OVERRIDE;
+    virtual void setInvalidPage( TabPage * pTabPage ) override;
+    virtual void setValidPage( TabPage * pTabPage ) override;
 
 protected:
-    ::com::sun::star::uno::Reference< ::com::sun::star::chart2::XChartDocument >
-        m_xChartDocument;
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >
-        m_xContext;
     ::std::unique_ptr< ChartTypeTemplateProvider >  m_apDocTemplateProvider;
     ::std::unique_ptr< DialogModel >                m_apDialogModel;
 

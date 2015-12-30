@@ -56,6 +56,10 @@ core_factory_list = [
     ("libxstor.a", "xstor_component_getFactory"),
     ("libvclcanvaslo.a", "vclcanvas_component_getFactory"),
     ("libmtfrendererlo.a", "mtfrenderer_component_getFactory"),
+    ("libxmlfdlo.a", "xmlfd_component_getFactory"),
+    ("libxmlfalo.a", "xmlfa_component_getFactory"),
+    ("libodfflatxmllo.a", "odfflatxml_component_getFactory"),
+    ("libxmlscriptlo.a", "xmlscript_component_getFactory"),
     ]
 
 core_constructor_list = [
@@ -271,6 +275,7 @@ calc_constructor_list = [
 
 draw_factory_list = [
     ("libsdlo.a", "sd_component_getFactory"),
+    ("libsvgiolo.a", "svgio_component_getFactory"),
     ("libsvgfilterlo.a", "svgfilter_component_getFactory"),
     ("libdeployment.a", "deployment_component_getFactory"),
     ("libemboleobj.a", "emboleobj_component_getFactory"),

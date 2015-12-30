@@ -51,8 +51,8 @@ private:
     void                ImplReadHeader();
 
 public:
-                        PCXReader(SvStream &rStream);
-                        ~PCXReader();
+    explicit PCXReader(SvStream &rStream);
+    ~PCXReader();
     bool                ReadPCX(Graphic & rGraphic );
                         // Reads a PCX file from the stream and fills the GDIMetaFile
 };
@@ -100,7 +100,7 @@ bool PCXReader::ReadPCX(Graphic & rGraphic)
     {
         aBmp = Bitmap( Size( nWidth, nHeight ), nDestBitsPerPixel );
         Bitmap::ScopedWriteAccess pAcc(aBmp);
-        if ( pAcc == 0 )
+        if ( pAcc == nullptr )
             return false;
 
         if ( nDestBitsPerPixel <= 8 )
@@ -401,15 +401,8 @@ void PCXReader::ImplReadPalette( sal_uLong nCol )
 
 //================== GraphicImport - the exported function ================
 
-// this needs to be kept in sync with
-// ImpFilterLibCacheEntry::GetImportFunction() from
-// vcl/source/filter/graphicfilter.cxx
-#if defined(DISABLE_DYNLOADING)
-#define GraphicImport ipxGraphicImport
-#endif
-
 extern "C" SAL_DLLPUBLIC_EXPORT bool SAL_CALL
-GraphicImport( SvStream & rStream, Graphic & rGraphic, FilterConfigItem* )
+ipxGraphicImport( SvStream & rStream, Graphic & rGraphic, FilterConfigItem* )
 {
     PCXReader aPCXReader(rStream);
     bool bRetValue = aPCXReader.ReadPCX(rGraphic);

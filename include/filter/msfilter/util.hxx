@@ -25,7 +25,7 @@ namespace util {
 /// Returns the best-fit default 8bit encoding for a given locale
 /// i.e. useful when dealing with legacy formats which use legacy text encodings without recording
 /// what the encoding is, but you know or can guess the language
-MSFILTER_DLLPUBLIC rtl_TextEncoding getBestTextEncodingFromLocale(const ::com::sun::star::lang::Locale &rLocale);
+MSFILTER_DLLPUBLIC rtl_TextEncoding getBestTextEncodingFromLocale(const css::lang::Locale &rLocale);
 
 /// Convert a color in BGR format to RGB.
 MSFILTER_DLLPUBLIC sal_uInt32 BGRToRGB(sal_uInt32 nColour);
@@ -61,15 +61,6 @@ enum TextCategory
     sym         //Symbol
 };
 
-/** Categorize codepoints according to how MS seems to do it.
-
-  It's been bugging me for ages as to what codepoint MS considers in
-  what category. Tom Jebo has a post suggesting the criteria used here
-  and indicating its been submitting to the standards working group
-  as a proposed resolution.
-*/
-MSFILTER_DLLPUBLIC TextCategory categorizeCodePoint(sal_uInt32 codePoint, const OUString &rBcp47LanguageTag);
-
 #define OOXML_COLOR_AUTO 0x0a
 
 /**
@@ -91,7 +82,7 @@ struct MSFILTER_DLLPUBLIC ApiPaperSize
 class MSFILTER_DLLPUBLIC PaperSizeConv
 {
 public:
-    static sal_Int32 getMSPaperSizeIndex( const com::sun::star::awt::Size& rSize );
+    static sal_Int32 getMSPaperSizeIndex( const css::awt::Size& rSize );
     static const ApiPaperSize& getApiSizeForMSPaperSizeIndex( sal_Int32 nMSOPaperIndex );
 };
 

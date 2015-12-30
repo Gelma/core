@@ -47,7 +47,6 @@
 #define ScTabViewShell
 #include "scslots.hxx"
 
-TYPEINIT2(ScTabViewShell,SfxViewShell,SfxListener);
 
 SFX_IMPL_INTERFACE(ScTabViewShell, SfxViewShell)
 
@@ -96,6 +95,7 @@ void ScTabViewShell::InitInterface_Impl()
     GetStaticInterface()->RegisterChildWindow(ScCovarianceDialogWrapper::GetChildWindowId());
     GetStaticInterface()->RegisterChildWindow(ScExponentialSmoothingDialogWrapper::GetChildWindowId());
     GetStaticInterface()->RegisterChildWindow(ScMovingAverageDialogWrapper::GetChildWindowId());
+    GetStaticInterface()->RegisterChildWindow(ScRegressionDialogWrapper::GetChildWindowId());
     GetStaticInterface()->RegisterChildWindow(ScTTestDialogWrapper::GetChildWindowId());
     GetStaticInterface()->RegisterChildWindow(ScFTestDialogWrapper::GetChildWindowId());
     GetStaticInterface()->RegisterChildWindow(ScZTestDialogWrapper::GetChildWindowId());
@@ -112,8 +112,7 @@ OUString ScTabViewShell::GetFormula(ScAddress& rAddress)
 {
     OUString sFormula;
     ScDocument* pDoc = GetViewData().GetDocument();
-    ScRefCellValue aCell;
-    aCell.assign(*pDoc, rAddress);
+    ScRefCellValue aCell(*pDoc, rAddress);
     if (!aCell.isEmpty() && aCell.meType == CELLTYPE_FORMULA)
     {
         sFormula = aCell.mpString->getString();

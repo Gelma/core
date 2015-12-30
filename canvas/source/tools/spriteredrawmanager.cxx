@@ -197,10 +197,10 @@ namespace canvas
              */
             void operator()( const Sprite::Reference& rSprite )
             {
-                const SpriteTracer aSpriteTracer(
-                    ::std::for_each( mrChangeContainer.begin(),
-                                     mrChangeContainer.end(),
-                                     SpriteTracer( rSprite ) ) );
+                SpriteTracer aSpriteTracer( rSprite );
+
+                for (auto const& aChange : mrChangeContainer)
+                    aSpriteTracer( aChange );
 
                 aSpriteTracer.commit( mrUpdater );
             }
@@ -221,7 +221,7 @@ namespace canvas
         // call. Then, we store that state locally. This prolly goes
         // in line with the problem of having sprite state available
         // for the frame before the last frame; plus, it avoids
-        // frequent locks of the object mutex
+        // frequent locks of the object mutexes
         SpriteWeakOrder aSpriteComparator;
 
         // put all sprites that have changed content into update areas

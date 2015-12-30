@@ -64,7 +64,7 @@ namespace DOM
     {
     public:
         virtual InputSource SAL_CALL resolveEntity( const OUString& sPublicId, const OUString& sSystemId )
-            throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+            throw (css::uno::RuntimeException, std::exception) override
         {
             InputSource is;
             is.sPublicId = sPublicId;
@@ -87,10 +87,8 @@ namespace DOM
 
     };
 
-    CDocumentBuilder::CDocumentBuilder(
-            Reference< XMultiServiceFactory > const& xFactory)
-        : m_xFactory(xFactory)
-        , m_xEntityResolver(new CDefaultEntityResolver())
+    CDocumentBuilder::CDocumentBuilder()
+        : m_xEntityResolver(new CDefaultEntityResolver())
     {
         // init libxml. libxml will protect itself against multiple
         // initializations so there is no problem here if this gets
@@ -98,15 +96,15 @@ namespace DOM
         xmlInitParser();
     }
 
-    Reference< XInterface > CDocumentBuilder::_getInstance(const Reference< XMultiServiceFactory >& rSMgr)
+    Reference< XInterface > CDocumentBuilder::_getInstance(const Reference< XMultiServiceFactory >& )
     {
-        return static_cast< XDocumentBuilder* >(new CDocumentBuilder(rSMgr));
+        return static_cast< XDocumentBuilder* >(new CDocumentBuilder);
     }
 
     const char* CDocumentBuilder::aImplementationName = "com.sun.star.comp.xml.dom.DocumentBuilder";
     const char* CDocumentBuilder::aSupportedServiceNames[] = {
         "com.sun.star.xml.dom.DocumentBuilder",
-        NULL
+        nullptr
     };
 
     OUString CDocumentBuilder::_getImplementationName()
@@ -116,7 +114,7 @@ namespace DOM
     Sequence<OUString> CDocumentBuilder::_getSupportedServiceNames()
     {
         Sequence<OUString> aSequence;
-        for (int i=0; aSupportedServiceNames[i]!=NULL; i++) {
+        for (int i=0; aSupportedServiceNames[i]!=nullptr; i++) {
             aSequence.realloc(i+1);
             aSequence[i]=(OUString::createFromAscii(aSupportedServiceNames[i]));
         }
@@ -246,10 +244,10 @@ namespace DOM
         CDocumentBuilder *builder = static_cast< CDocumentBuilder* >(ctxt->_private);
         Reference< XEntityResolver > resolver = builder->getEntityResolver();
         OUString sysid;
-        if (systemId != 0)
+        if (systemId != nullptr)
             sysid = OUString(reinterpret_cast<char const *>(systemId), strlen(reinterpret_cast<char const *>(systemId)), RTL_TEXTENCODING_UTF8);
         OUString pubid;
-        if (publicId != 0)
+        if (publicId != nullptr)
             pubid = OUString(reinterpret_cast<char const *>(publicId), strlen(reinterpret_cast<char const *>(publicId)), RTL_TEXTENCODING_UTF8);
 
         // resolve the entity
@@ -336,9 +334,9 @@ namespace DOM
         c.close = false;
         c.freeOnClose = false;
         xmlDocPtr const pDoc = xmlCtxtReadIO(pContext.get(),
-                xmlIO_read_func, xmlIO_close_func, &c, 0, 0, 0);
+                xmlIO_read_func, xmlIO_close_func, &c, nullptr, nullptr, 0);
 
-        if (pDoc == 0) {
+        if (pDoc == nullptr) {
             throwEx(pContext.get());
         }
         Reference< XDocument > const xRet(
@@ -360,8 +358,8 @@ namespace DOM
         // xmlSetExternalEntityLoader(external_entity_loader);
         OString oUri = OUStringToOString(sUri, RTL_TEXTENCODING_UTF8);
         char *uri = const_cast<char*>(oUri.getStr());
-        xmlDocPtr pDoc = xmlCtxtReadFile(pContext.get(), uri, 0, 0);
-        if (pDoc == 0) {
+        xmlDocPtr pDoc = xmlCtxtReadFile(pContext.get(), uri, nullptr, 0);
+        if (pDoc == nullptr) {
             throwEx(pContext.get());
         }
         Reference< XDocument > const xRet(

@@ -28,8 +28,8 @@ class ScCopyPasteTest : public ScBootstrapFixture
 public:
     ScCopyPasteTest();
 
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
     void testCopyPasteXLS();
 
@@ -49,11 +49,11 @@ void ScCopyPasteTest::testCopyPasteXLS()
     CPPUNIT_ASSERT( xDesktop.is() );
 
     // create a frame
-    Reference< frame::XFrame > xTargetFrame = xDesktop->findFrame( OUString("_blank"), 0 );
+    Reference< frame::XFrame > xTargetFrame = xDesktop->findFrame( "_blank", 0 );
     CPPUNIT_ASSERT( xTargetFrame.is() );
 
     // 1. Open the document
-    ScDocShellRef xDocSh = loadDoc("chartx.", XLS);
+    ScDocShellRef xDocSh = loadDoc("chartx.", FORMAT_XLS);
     CPPUNIT_ASSERT_MESSAGE("Failed to load chartx.xls.", xDocSh.Is());
 
     uno::Reference< frame::XModel2 > xModel2 ( xDocSh->GetModel(), UNO_QUERY );
@@ -73,7 +73,7 @@ void ScCopyPasteTest::testCopyPasteXLS()
 
     // Get the document controller
     ScTabViewShell* pViewShell = xDocSh->GetBestViewShell(false);
-    CPPUNIT_ASSERT(pViewShell != NULL);
+    CPPUNIT_ASSERT(pViewShell != nullptr);
 
     // 2. Highlight B2:C5
     ScRange aSrcRange;
@@ -98,8 +98,8 @@ void ScCopyPasteTest::testCopyPasteXLS()
     args[0].Value <<= sal_True;
 
     uno::Reference< lang::XComponent > xComponent = xDesktop->loadComponentFromURL(
-            OUString("private:factory/scalc"),
-            OUString("_blank"),
+            "private:factory/scalc",
+            "_blank",
             0,
             args );
     CPPUNIT_ASSERT( xComponent.is() );
@@ -109,14 +109,14 @@ void ScCopyPasteTest::testCopyPasteXLS()
     CPPUNIT_ASSERT_MESSAGE("Failed to access document shell", pFoundShell);
 
     xDocSh = dynamic_cast<ScDocShell*>(pFoundShell);
-    CPPUNIT_ASSERT(xDocSh != NULL);
+    CPPUNIT_ASSERT(xDocSh != nullptr);
 
     // Get the document controller
     pViewShell = xDocSh->GetBestViewShell(false);
-    CPPUNIT_ASSERT(pViewShell != NULL);
+    CPPUNIT_ASSERT(pViewShell != nullptr);
 
     // 6. Paste
-    pViewShell->GetViewData().GetView()->PasteFromClip(IDF_ALL, &aClipDoc);
+    pViewShell->GetViewData().GetView()->PasteFromClip(InsertDeleteFlags::ALL, &aClipDoc);
 
     xDocSh->DoClose();
 }

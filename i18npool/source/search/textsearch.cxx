@@ -107,10 +107,10 @@ bool isSimpleRegexTrans( sal_Int32 n )
 
 TextSearch::TextSearch(const Reference < XComponentContext > & rxContext)
         : m_xContext( rxContext )
-        , pJumpTable( 0 )
-        , pJumpTable2( 0 )
-        , pRegexMatcher( NULL )
-        , pWLD( 0 )
+        , pJumpTable( nullptr )
+        , pJumpTable2( nullptr )
+        , pRegexMatcher( nullptr )
+        , pWLD( nullptr )
 {
     SearchOptions aOpt;
     aOpt.algorithmType = SearchAlgorithms_ABSOLUTE;
@@ -131,10 +131,10 @@ void TextSearch::setOptions( const SearchOptions& rOptions ) throw( RuntimeExcep
 {
     aSrchPara = rOptions;
 
-    delete pRegexMatcher, pRegexMatcher = NULL;
-    delete pWLD, pWLD = 0;
-    delete pJumpTable, pJumpTable = 0;
-    delete pJumpTable2, pJumpTable2 = 0;
+    delete pRegexMatcher, pRegexMatcher = nullptr;
+    delete pWLD, pWLD = nullptr;
+    delete pJumpTable, pJumpTable = nullptr;
+    delete pJumpTable2, pJumpTable2 = nullptr;
 
     // Create Transliteration class
     if( isSimpleTrans( aSrchPara.transliterateFlags) )
@@ -146,7 +146,7 @@ void TextSearch::setOptions( const SearchOptions& rOptions ) throw( RuntimeExcep
              aSrchPara.Locale);
     }
     else if( xTranslit.is() )
-        xTranslit = 0;
+        xTranslit = nullptr;
 
     // Create Transliteration for 2<->1, 2<->2 transliteration
     if ( isComplexTrans( aSrchPara.transliterateFlags) )
@@ -160,7 +160,7 @@ void TextSearch::setOptions( const SearchOptions& rOptions ) throw( RuntimeExcep
     }
 
     if ( !xBreak.is() )
-        xBreak = com::sun::star::i18n::BreakIterator::create( m_xContext );
+        xBreak = css::i18n::BreakIterator::create( m_xContext );
 
     sSrchStr = aSrchPara.searchString;
 
@@ -172,7 +172,7 @@ void TextSearch::setOptions( const SearchOptions& rOptions ) throw( RuntimeExcep
             if (maskSimpleRegexTrans( aSrchPara.transliterateFlags) !=
                     maskSimpleTrans( aSrchPara.transliterateFlags))
             {
-                com::sun::star::uno::Reference< XExtendedTransliteration > xTranslitPattern(
+                css::uno::Reference< XExtendedTransliteration > xTranslitPattern(
                          Transliteration::create( m_xContext ));
                 if (xTranslitPattern.is())
                 {
@@ -265,7 +265,7 @@ SearchResult TextSearch::searchForward( const OUString& searchStr, sal_Int32 sta
     if ( xTranslit.is() )
     {
         // apply normal transliteration (1<->1, 1<->0)
-        com::sun::star::uno::Sequence<sal_Int32> offset(endPos - startPos);
+        css::uno::Sequence<sal_Int32> offset(endPos - startPos);
         in_str = xTranslit->transliterate( searchStr, startPos, endPos - startPos, offset );
 
         // JP 20.6.2001: also the start and end positions must be corrected!
@@ -301,15 +301,22 @@ SearchResult TextSearch::searchForward( const OUString& searchStr, sal_Int32 sta
             for ( sal_Int32 k = 0; k < nGroups; k++ )
             {
                 const sal_Int32 nStart = sres.startOffset[k] - nExtraOffset;
-                if (startPos > 0 || nStart > 0)
+                // Result offsets are negative (-1) if a group expression was
+                // not matched.
+                if (nStart >= 0)
                     sres.startOffset[k] = (nStart < nOffsets ? offset[nStart] : (offset[nOffsets - 1] + 1));
                 // JP 20.6.2001: end is ever exclusive and then don't return
                 //               the position of the next character - return the
                 //               next position behind the last found character!
                 //               "a b c" find "b" must return 2,3 and not 2,4!!!
                 const sal_Int32 nStop = sres.endOffset[k] - nExtraOffset;
-                if (startPos > 0 || nStop > 0)
-                    sres.endOffset[k] = offset[(nStop <= nOffsets ? nStop : nOffsets) - 1] + 1;
+                if (nStop >= 0)
+                {
+                    if (nStop > 0)
+                        sres.endOffset[k] = offset[(nStop <= nOffsets ? nStop : nOffsets) - 1] + 1;
+                    else
+                        sres.endOffset[k] = offset[0];
+                }
             }
         }
     }
@@ -323,7 +330,7 @@ SearchResult TextSearch::searchForward( const OUString& searchStr, sal_Int32 sta
         SearchResult sres2;
 
         in_str = OUString(searchStr);
-        com::sun::star::uno::Sequence <sal_Int32> offset( in_str.getLength());
+        css::uno::Sequence <sal_Int32> offset( in_str.getLength());
 
         in_str = xTranslit2->transliterate( searchStr, 0, in_str.getLength(), offset );
 
@@ -335,28 +342,28 @@ SearchResult TextSearch::searchForward( const OUString& searchStr, sal_Int32 sta
         else
             endPos = in_str.getLength();
 
-    bUsePrimarySrchStr = false;
+        bUsePrimarySrchStr = false;
         sres2 = (this->*fnForward)( in_str, startPos, endPos );
 
         for ( int k = 0; k < sres2.startOffset.getLength(); k++ )
         {
             if (sres2.startOffset[k])
-          sres2.startOffset[k] = offset[sres2.startOffset[k]-1] + 1;
+                sres2.startOffset[k] = offset[sres2.startOffset[k]-1] + 1;
             if (sres2.endOffset[k])
-          sres2.endOffset[k] = offset[sres2.endOffset[k]-1] + 1;
+                sres2.endOffset[k] = offset[sres2.endOffset[k]-1] + 1;
         }
 
-    // pick first and long one
-    if ( sres.subRegExpressions == 0)
-        return sres2;
-    if ( sres2.subRegExpressions == 1)
-    {
-        if ( sres.startOffset[0] > sres2.startOffset[0])
+        // pick first and long one
+        if ( sres.subRegExpressions == 0)
             return sres2;
-        else if ( sres.startOffset[0] == sres2.startOffset[0] &&
-            sres.endOffset[0] < sres2.endOffset[0])
-            return sres2;
-    }
+        if ( sres2.subRegExpressions == 1)
+        {
+            if ( sres.startOffset[0] > sres2.startOffset[0])
+                return sres2;
+            else if ( sres.startOffset[0] == sres2.startOffset[0] &&
+                    sres.endOffset[0] < sres2.endOffset[0])
+                return sres2;
+        }
     }
 
     return sres;
@@ -374,8 +381,8 @@ SearchResult TextSearch::searchBackward( const OUString& searchStr, sal_Int32 st
     if ( xTranslit.is() )
     {
         // apply only simple 1<->1 transliteration here
-        com::sun::star::uno::Sequence<sal_Int32> offset(startPos - endPos);
-    in_str = xTranslit->transliterate( searchStr, endPos, startPos - endPos, offset );
+        css::uno::Sequence<sal_Int32> offset(startPos - endPos);
+        in_str = xTranslit->transliterate( searchStr, endPos, startPos - endPos, offset );
 
         // JP 20.6.2001: also the start and end positions must be corrected!
         sal_Int32 const newStartPos = (startPos < searchStr.getLength())
@@ -401,14 +408,21 @@ SearchResult TextSearch::searchBackward( const OUString& searchStr, sal_Int32 st
             for ( sal_Int32 k = 0; k < nGroups; k++ )
             {
                 const sal_Int32 nStart = sres.startOffset[k];
-                if (endPos > 0 || nStart > 0)
-                    sres.startOffset[k] = offset[(nStart <= nOffsets ? nStart : nOffsets) - 1] + 1;
+                // Result offsets are negative (-1) if a group expression was
+                // not matched.
+                if (nStart >= 0)
+                {
+                    if (nStart > 0)
+                        sres.startOffset[k] = offset[(nStart <= nOffsets ? nStart : nOffsets) - 1] + 1;
+                    else
+                        sres.startOffset[k] = offset[0];
+                }
                 // JP 20.6.2001: end is ever exclusive and then don't return
                 //               the position of the next character - return the
                 //               next position behind the last found character!
                 //               "a b c" find "b" must return 2,3 and not 2,4!!!
                 const sal_Int32 nStop = sres.endOffset[k];
-                if (endPos > 0 || nStop > 0)
+                if (nStop >= 0)
                     sres.endOffset[k] = (nStop < nOffsets ? offset[nStop] : (offset[nOffsets - 1] + 1));
             }
         }
@@ -420,10 +434,10 @@ SearchResult TextSearch::searchBackward( const OUString& searchStr, sal_Int32 st
 
     if ( xTranslit2.is() && aSrchPara.algorithmType != SearchAlgorithms_REGEXP )
     {
-    SearchResult sres2;
+        SearchResult sres2;
 
-    in_str = OUString(searchStr);
-        com::sun::star::uno::Sequence <sal_Int32> offset( in_str.getLength());
+        in_str = OUString(searchStr);
+        css::uno::Sequence <sal_Int32> offset( in_str.getLength());
 
         in_str = xTranslit2->transliterate(searchStr, 0, in_str.getLength(), offset);
 
@@ -435,8 +449,8 @@ SearchResult TextSearch::searchBackward( const OUString& searchStr, sal_Int32 st
         if( endPos )
             endPos = FindPosInSeq_Impl( offset, endPos );
 
-    bUsePrimarySrchStr = false;
-    sres2 = (this->*fnBackward)( in_str, startPos, endPos );
+        bUsePrimarySrchStr = false;
+        sres2 = (this->*fnBackward)( in_str, startPos, endPos );
 
         for( int k = 0; k < sres2.startOffset.getLength(); k++ )
         {
@@ -446,17 +460,17 @@ SearchResult TextSearch::searchBackward( const OUString& searchStr, sal_Int32 st
                 sres2.endOffset[k] = offset[sres2.endOffset[k]-1]+1;
         }
 
-    // pick last and long one
-    if ( sres.subRegExpressions == 0 )
-        return sres2;
-    if ( sres2.subRegExpressions == 1 )
-    {
-        if ( sres.startOffset[0] < sres2.startOffset[0] )
+        // pick last and long one
+        if ( sres.subRegExpressions == 0 )
             return sres2;
-        if ( sres.startOffset[0] == sres2.startOffset[0] &&
-        sres.endOffset[0] > sres2.endOffset[0] )
-            return sres2;
-    }
+        if ( sres2.subRegExpressions == 1 )
+        {
+            if ( sres.startOffset[0] < sres2.startOffset[0] )
+                return sres2;
+            if ( sres.startOffset[0] == sres2.startOffset[0] &&
+                    sres.endOffset[0] > sres2.endOffset[0] )
+                return sres2;
+        }
     }
 
     return sres;
@@ -501,7 +515,7 @@ void TextSearch::MakeForwardTab()
     {
         sal_Unicode cCh = sSrchStr[n];
         sal_Int32 nDiff = nLen - n - 1;
-    TextSearchJumpTable::value_type aEntry( cCh, nDiff );
+        TextSearchJumpTable::value_type aEntry( cCh, nDiff );
 
         ::std::pair< TextSearchJumpTable::iterator, bool > aPair =
             pJumpTable->insert( aEntry );
@@ -529,7 +543,7 @@ void TextSearch::MakeForwardTab2()
         sal_Unicode cCh = sSrchStr2[n];
         sal_Int32 nDiff = nLen - n - 1;
 
-    TextSearchJumpTable::value_type aEntry( cCh, nDiff );
+        TextSearchJumpTable::value_type aEntry( cCh, nDiff );
         ::std::pair< TextSearchJumpTable::iterator, bool > aPair =
             pJumpTable2->insert( aEntry );
         if ( !aPair.second )
@@ -593,11 +607,11 @@ sal_Int32 TextSearch::GetDiff( const sal_Unicode cChr ) const
     OUString sSearchKey;
 
     if ( bUsePrimarySrchStr ) {
-      pJump = pJumpTable;
-      sSearchKey = sSrchStr;
+        pJump = pJumpTable;
+        sSearchKey = sSrchStr;
     } else {
-      pJump = pJumpTable2;
-      sSearchKey = sSrchStr2;
+        pJump = pJumpTable2;
+        sSearchKey = sSrchStr2;
     }
 
     TextSearchJumpTable::const_iterator iLook = pJump->find( cChr );
@@ -694,9 +708,9 @@ SearchResult TextSearch::NSrchBkwrd( const OUString& searchStr, sal_Int32 startP
         return aRet;
 
     if (bUsePrimarySrchStr)
-      MakeBackwardTab();                      // create the jumptable
+        MakeBackwardTab();                  // create the jumptable
     else
-      MakeBackwardTab2();
+        MakeBackwardTab2();
 
     if( nEnde == nSuchIdx )                 // end position for the search
         nEnde = sSearchKey.getLength();
@@ -762,7 +776,7 @@ SearchResult TextSearch::NSrchBkwrd( const OUString& searchStr, sal_Int32 startP
     return aRet;
 }
 
-void TextSearch::RESrchPrepare( const ::com::sun::star::util::SearchOptions& rOptions)
+void TextSearch::RESrchPrepare( const css::util::SearchOptions& rOptions)
 {
     // select the transliterated pattern string
     const OUString& rPatternStr =
@@ -770,7 +784,7 @@ void TextSearch::RESrchPrepare( const ::com::sun::star::util::SearchOptions& rOp
         : (isComplexTrans( rOptions.transliterateFlags) ? sSrchStr2 : rOptions.searchString));
 
     sal_uInt32 nIcuSearchFlags = UREGEX_UWORD; // request UAX#29 unicode capability
-    // map com::sun::star::util::SearchFlags to ICU uregex.h flags
+    // map css::util::SearchFlags to ICU uregex.h flags
     // TODO: REG_EXTENDED, REG_NOT_BEGINOFLINE, REG_NOT_ENDOFLINE
     // REG_NEWLINE is neither properly defined nor used anywhere => not implemented
     // REG_NOSUB is not used anywhere => not implemented
@@ -778,7 +792,7 @@ void TextSearch::RESrchPrepare( const ::com::sun::star::util::SearchOptions& rOp
     // LEV_RELAXED is only used for SearchAlgorithm==Approximate
     // Note that the search flag ALL_IGNORE_CASE is deprecated in UNO
     // probably because the transliteration flag IGNORE_CASE handles it as well.
-    if( (rOptions.searchFlag & com::sun::star::util::SearchFlags::ALL_IGNORE_CASE) != 0
+    if( (rOptions.searchFlag & css::util::SearchFlags::ALL_IGNORE_CASE) != 0
     ||  (rOptions.transliterateFlags & TransliterationModules_IGNORE_CASE) != 0)
         nIcuSearchFlags |= UREGEX_CASE_INSENSITIVE;
     UErrorCode nIcuErr = U_ZERO_ERROR;
@@ -806,7 +820,7 @@ void TextSearch::RESrchPrepare( const ::com::sun::star::util::SearchOptions& rOp
     {
         SAL_INFO( "i18npool", "TextSearch::RESrchPrepare UErrorCode " << nIcuErr);
         delete pRegexMatcher;
-        pRegexMatcher = NULL;
+        pRegexMatcher = nullptr;
     }
     else
     {
@@ -1092,18 +1106,17 @@ sal_Bool SAL_CALL TextSearch::supportsService(const OUString& rServiceName)
 Sequence< OUString > SAL_CALL
 TextSearch::getSupportedServiceNames() throw( RuntimeException, std::exception )
 {
-    Sequence< OUString > aRet(1);
-    aRet[0] = getServiceName_Static();
+    Sequence< OUString > aRet { getServiceName_Static() };
     return aRet;
 }
 
-::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >
+css::uno::Reference< css::uno::XInterface >
 SAL_CALL TextSearch_CreateInstance(
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::lang::XMultiServiceFactory >& rxMSF )
+        const css::uno::Reference<
+        css::lang::XMultiServiceFactory >& rxMSF )
 {
-    return ::com::sun::star::uno::Reference<
-        ::com::sun::star::uno::XInterface >(
+    return css::uno::Reference<
+        css::uno::XInterface >(
                 static_cast<cppu::OWeakObject*>(new TextSearch(
                         comphelper::getComponentContext( rxMSF ) )) );
 }
@@ -1115,18 +1128,17 @@ i18nsearch_component_getFactory( const sal_Char* sImplementationName,
                                  void* _pServiceManager,
                                  SAL_UNUSED_PARAMETER void* )
 {
-    void* pRet = NULL;
+    void* pRet = nullptr;
 
-    ::com::sun::star::lang::XMultiServiceFactory* pServiceManager =
-        static_cast< ::com::sun::star::lang::XMultiServiceFactory* >
+    css::lang::XMultiServiceFactory* pServiceManager =
+        static_cast< css::lang::XMultiServiceFactory* >
             ( _pServiceManager );
-    ::com::sun::star::uno::Reference<
-            ::com::sun::star::lang::XSingleServiceFactory > xFactory;
+    css::uno::Reference<
+            css::lang::XSingleServiceFactory > xFactory;
 
     if ( 0 == rtl_str_compare( sImplementationName, cSearchImpl) )
     {
-        ::com::sun::star::uno::Sequence< OUString > aServiceNames(1);
-        aServiceNames[0] = getServiceName_Static();
+        css::uno::Sequence< OUString > aServiceNames { getServiceName_Static() };
         xFactory = ::cppu::createSingleFactory(
                 pServiceManager, getImplementationName_Static(),
                 &TextSearch_CreateInstance, aServiceNames );

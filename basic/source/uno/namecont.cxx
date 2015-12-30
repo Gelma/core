@@ -386,7 +386,7 @@ SfxLibraryContainer::SfxLibraryContainer()
     , maNameContainer( new NameContainer(cppu::UnoType<XNameAccess>::get()) )
     , mbOldInfoFormat( false )
     , mbOasis2OOoFormat( false )
-    , mpBasMgr( NULL )
+    , mpBasMgr( nullptr )
     , mbOwnBasMgr( false )
     , meInitMode(DEFAULT)
 {
@@ -667,7 +667,7 @@ void SfxLibraryContainer::init_Impl( const OUString& rInitialDocumentURL,
             meInitMode = LIBRARY_INIT_FILE;
             uno::Reference< embed::XStorage > xDummyStor;
             ::xmlscript::LibDescriptor aLibDesc;
-            implLoadLibraryIndexFile( NULL, aLibDesc, xDummyStor, aInitFileName );
+            implLoadLibraryIndexFile( nullptr, aLibDesc, xDummyStor, aInitFileName );
             return;
         }
         else
@@ -797,7 +797,7 @@ void SfxLibraryContainer::init_Impl( const OUString& rInitialDocumentURL,
                     pLibInfoInetObj.reset(new INetURLObject( maLibraryPath.getToken(1, (sal_Unicode)';') ));
                 }
                 pLibInfoInetObj->insertName( maInfoFileName, false, INetURLObject::LAST_SEGMENT, true, INetURLObject::ENCODE_ALL );
-                pLibInfoInetObj->setExtension( OUString("xlc") );
+                pLibInfoInetObj->setExtension( "xlc" );
                 aFileName = pLibInfoInetObj->GetMainURL( INetURLObject::NO_DECODE );
             }
 
@@ -816,7 +816,7 @@ void SfxLibraryContainer::init_Impl( const OUString& rInitialDocumentURL,
             {
                 INetURLObject aLibInfoInetObj( maLibraryPath.getToken(1, (sal_Unicode)';') );
                 aLibInfoInetObj.insertName( maOldInfoFileName, false, INetURLObject::LAST_SEGMENT, true, INetURLObject::ENCODE_ALL );
-                aLibInfoInetObj.setExtension( OUString( "xli") );
+                aLibInfoInetObj.setExtension( "xli" );
                 aFileName = aLibInfoInetObj.GetMainURL( INetURLObject::NO_DECODE );
 
                 try
@@ -1128,7 +1128,7 @@ void SfxLibraryContainer::init_Impl( const OUString& rInitialDocumentURL,
                 INetURLObject aPrevUserBasicLibInfoInetObj( aUserBasicInetObj );
                 aPrevUserBasicLibInfoInetObj.insertName( maInfoFileName, false, INetURLObject::LAST_SEGMENT,
                                                     true, INetURLObject::ENCODE_ALL );
-                aPrevUserBasicLibInfoInetObj.setExtension( OUString("xlc"));
+                aPrevUserBasicLibInfoInetObj.setExtension( "xlc");
                 OUString aLibInfoFileName = aPrevUserBasicLibInfoInetObj.GetMainURL( INetURLObject::NO_DECODE );
                 Sequence<Any> aInitSeq( 1 );
                 aInitSeq.getArray()[0] <<= aLibInfoFileName;
@@ -1334,7 +1334,7 @@ void SfxLibraryContainer::checkStorageURL( const OUString& aSourceURL,
         // URL to library folder
         aStorageURL = aExpandedSourceURL;
         aInetObj.insertName( maInfoFileName, false, INetURLObject::LAST_SEGMENT, true, INetURLObject::ENCODE_ALL );
-        aInetObj.setExtension( OUString("xlb") );
+        aInetObj.setExtension( "xlb" );
         aLibInfoFileURL = aInetObj.GetMainURL( INetURLObject::NO_DECODE );
     }
 }
@@ -1637,7 +1637,7 @@ void SfxLibraryContainer::implStoreLibraryIndexFile( SfxLibrary* pLib,
                 xSFI->createFolder( aLibDirPath );
             }
             aInetObj.insertName( maInfoFileName, false, INetURLObject::LAST_SEGMENT, true, INetURLObject::ENCODE_ALL );
-            aInetObj.setExtension( OUString( "xlb" ) );
+            aInetObj.setExtension( "xlb" );
             aLibInfoPath = aInetObj.GetMainURL( INetURLObject::NO_DECODE );
         }
         else
@@ -2131,7 +2131,7 @@ void SfxLibraryContainer::storeLibraries_Impl( const uno::Reference< embed::XSto
         // Create Output stream
         INetURLObject aLibInfoInetObj( maLibraryPath.getToken(1, (sal_Unicode)';') );
         aLibInfoInetObj.insertName( maInfoFileName, false, INetURLObject::LAST_SEGMENT, true, INetURLObject::ENCODE_ALL );
-        aLibInfoInetObj.setExtension( OUString("xlc") );
+        aLibInfoInetObj.setExtension( "xlc" );
         OUString aLibInfoPath( aLibInfoInetObj.GetMainURL( INetURLObject::NO_DECODE ) );
 
         try
@@ -2729,7 +2729,7 @@ void SAL_CALL SfxLibraryContainer::initialize( const Sequence< Any >& _rArgument
 
 void SAL_CALL SfxLibraryContainer::initializeFromDocumentURL( const OUString& _rInitialDocumentURL )
 {
-    init( _rInitialDocumentURL, NULL );
+    init( _rInitialDocumentURL, nullptr );
 }
 
 void SAL_CALL SfxLibraryContainer::initializeFromDocument( const Reference< XStorageBasedDocument >& _rxDocument )
@@ -2779,7 +2779,7 @@ void SAL_CALL SfxLibraryContainer::disposing()
     EventObject aEvent( xModel.get() );
     maVBAScriptListeners.disposing( aEvent );
     stopAllComponentListening();
-    mxOwnerDocument = WeakReference< XModel >();
+    mxOwnerDocument.clear();
 }
 
 // Methods XLibraryContainerPassword
@@ -3003,9 +3003,8 @@ sal_Bool SAL_CALL SfxLibraryContainer::supportsService( const OUString& _rServic
 
 // Ctor
 SfxLibrary::SfxLibrary( ModifiableHelper& _rModifiable, const Type& aType,
-    const Reference< XComponentContext >& xContext, const Reference< XSimpleFileAccess3 >& xSFI )
+    const Reference< XSimpleFileAccess3 >& xSFI )
         : OComponentHelper( m_aMutex )
-        , mxContext( xContext )
         , mxSFI( xSFI )
         , mrModifiable( _rModifiable )
         , maNameContainer( new NameContainer(aType) )
@@ -3025,10 +3024,9 @@ SfxLibrary::SfxLibrary( ModifiableHelper& _rModifiable, const Type& aType,
 }
 
 SfxLibrary::SfxLibrary( ModifiableHelper& _rModifiable, const Type& aType,
-    const Reference< XComponentContext >& xContext, const Reference< XSimpleFileAccess3 >& xSFI,
+    const Reference< XSimpleFileAccess3 >& xSFI,
     const OUString& aLibInfoFileURL, const OUString& aStorageURL, bool ReadOnly )
         : OComponentHelper( m_aMutex )
-        , mxContext( xContext )
         , mxSFI( xSFI )
         , mrModifiable( _rModifiable )
         , maNameContainer( new NameContainer(aType) )
@@ -3224,23 +3222,21 @@ void SfxLibrary::removeByName( const OUString& Name )
 Sequence< Type > SfxLibrary::getTypes()
     throw( RuntimeException, std::exception )
 {
-    static OTypeCollection * s_pTypes_NameContainer = 0;
+    static OTypeCollection * s_pTypes_NameContainer = nullptr;
+    if( !s_pTypes_NameContainer )
     {
+        MutexGuard aGuard( Mutex::getGlobalMutex() );
         if( !s_pTypes_NameContainer )
         {
-            MutexGuard aGuard( Mutex::getGlobalMutex() );
-            if( !s_pTypes_NameContainer )
-            {
-                static OTypeCollection s_aTypes_NameContainer(
-                    cppu::UnoType<XNameContainer>::get(),
-                    cppu::UnoType<XContainer>::get(),
-                    cppu::UnoType<XChangesNotifier>::get(),
-                    OComponentHelper::getTypes() );
-                s_pTypes_NameContainer = &s_aTypes_NameContainer;
-            }
+            static OTypeCollection s_aTypes_NameContainer(
+                cppu::UnoType<XNameContainer>::get(),
+                cppu::UnoType<XContainer>::get(),
+                cppu::UnoType<XChangesNotifier>::get(),
+                OComponentHelper::getTypes() );
+            s_pTypes_NameContainer = &s_aTypes_NameContainer;
         }
-        return s_pTypes_NameContainer->getTypes();
     }
+    return s_pTypes_NameContainer->getTypes();
 }
 
 
@@ -3293,7 +3289,7 @@ ScriptExtensionIterator::ScriptExtensionIterator()
     , m_iUserPackage( 0 )
     , m_iSharedPackage( 0 )
        , m_iBundledPackage( 0 )
-    , m_pScriptSubPackageIterator( NULL )
+    , m_pScriptSubPackageIterator( nullptr )
 {}
 
 OUString ScriptExtensionIterator::nextBasicOrDialogLibrary( bool& rbPureDialogLib )
@@ -3452,7 +3448,7 @@ Reference< deployment::XPackage > ScriptExtensionIterator::implGetNextUserScript
         try
         {
             Reference< XExtensionManager > xManager = ExtensionManager::get( m_xContext );
-            m_aUserPackagesSeq = xManager->getDeployedExtensions(OUString("user"),
+            m_aUserPackagesSeq = xManager->getDeployedExtensions("user",
                                                                  Reference< task::XAbortChannel >(),
                                                                  Reference< ucb::XCommandEnvironment >() );
         }
@@ -3472,7 +3468,7 @@ Reference< deployment::XPackage > ScriptExtensionIterator::implGetNextUserScript
     }
     else
     {
-        if( m_pScriptSubPackageIterator == NULL )
+        if( m_pScriptSubPackageIterator == nullptr )
         {
             const Reference< deployment::XPackage >* pUserPackages = m_aUserPackagesSeq.getConstArray();
             Reference< deployment::XPackage > xPackage = pUserPackages[ m_iUserPackage ];
@@ -3483,13 +3479,13 @@ Reference< deployment::XPackage > ScriptExtensionIterator::implGetNextUserScript
             m_pScriptSubPackageIterator = new ScriptSubPackageIterator( xPackage );
         }
 
-        if( m_pScriptSubPackageIterator != NULL )
+        if( m_pScriptSubPackageIterator != nullptr )
         {
             xScriptPackage = m_pScriptSubPackageIterator->getNextScriptSubPackage( rbPureDialogLib );
             if( !xScriptPackage.is() )
             {
                 delete m_pScriptSubPackageIterator;
-                m_pScriptSubPackageIterator = NULL;
+                m_pScriptSubPackageIterator = nullptr;
                 m_iUserPackage++;
             }
         }
@@ -3507,7 +3503,7 @@ Reference< deployment::XPackage > ScriptExtensionIterator::implGetNextSharedScri
         try
         {
             Reference< XExtensionManager > xSharedManager = ExtensionManager::get( m_xContext );
-            m_aSharedPackagesSeq = xSharedManager->getDeployedExtensions(OUString("shared"),
+            m_aSharedPackagesSeq = xSharedManager->getDeployedExtensions("shared",
                                                                          Reference< task::XAbortChannel >(),
                                                                          Reference< ucb::XCommandEnvironment >() );
         }
@@ -3526,7 +3522,7 @@ Reference< deployment::XPackage > ScriptExtensionIterator::implGetNextSharedScri
     }
     else
     {
-        if( m_pScriptSubPackageIterator == NULL )
+        if( m_pScriptSubPackageIterator == nullptr )
         {
             const Reference< deployment::XPackage >* pSharedPackages = m_aSharedPackagesSeq.getConstArray();
             Reference< deployment::XPackage > xPackage = pSharedPackages[ m_iSharedPackage ];
@@ -3537,13 +3533,13 @@ Reference< deployment::XPackage > ScriptExtensionIterator::implGetNextSharedScri
             m_pScriptSubPackageIterator = new ScriptSubPackageIterator( xPackage );
         }
 
-        if( m_pScriptSubPackageIterator != NULL )
+        if( m_pScriptSubPackageIterator != nullptr )
         {
             xScriptPackage = m_pScriptSubPackageIterator->getNextScriptSubPackage( rbPureDialogLib );
             if( !xScriptPackage.is() )
             {
                 delete m_pScriptSubPackageIterator;
-                m_pScriptSubPackageIterator = NULL;
+                m_pScriptSubPackageIterator = nullptr;
                 m_iSharedPackage++;
             }
         }
@@ -3561,7 +3557,7 @@ Reference< deployment::XPackage > ScriptExtensionIterator::implGetNextBundledScr
         try
         {
             Reference< XExtensionManager > xManager = ExtensionManager::get( m_xContext );
-            m_aBundledPackagesSeq = xManager->getDeployedExtensions(OUString("bundled"),
+            m_aBundledPackagesSeq = xManager->getDeployedExtensions("bundled",
                                                                     Reference< task::XAbortChannel >(),
                                                                     Reference< ucb::XCommandEnvironment >() );
         }
@@ -3580,7 +3576,7 @@ Reference< deployment::XPackage > ScriptExtensionIterator::implGetNextBundledScr
     }
     else
     {
-        if( m_pScriptSubPackageIterator == NULL )
+        if( m_pScriptSubPackageIterator == nullptr )
         {
             const Reference< deployment::XPackage >* pBundledPackages = m_aBundledPackagesSeq.getConstArray();
             Reference< deployment::XPackage > xPackage = pBundledPackages[ m_iBundledPackage ];
@@ -3591,13 +3587,13 @@ Reference< deployment::XPackage > ScriptExtensionIterator::implGetNextBundledScr
             m_pScriptSubPackageIterator = new ScriptSubPackageIterator( xPackage );
         }
 
-        if( m_pScriptSubPackageIterator != NULL )
+        if( m_pScriptSubPackageIterator != nullptr )
         {
             xScriptPackage = m_pScriptSubPackageIterator->getNextScriptSubPackage( rbPureDialogLib );
             if( !xScriptPackage.is() )
             {
                 delete m_pScriptSubPackageIterator;
-                m_pScriptSubPackageIterator = NULL;
+                m_pScriptSubPackageIterator = nullptr;
                 m_iBundledPackage++;
             }
         }

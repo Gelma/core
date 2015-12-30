@@ -73,9 +73,7 @@ StorageElementFactory::createTemporaryStorage()
 
     OSL_ENSURE( xStorageFac.is(), "Can't create storage factory!" );
     if ( xStorageFac.is() )
-        xStorage = uno::Reference< embed::XStorage >(
-                            xStorageFac->createInstance(),
-                            uno::UNO_QUERY );
+        xStorage.set( xStorageFac->createInstance(), uno::UNO_QUERY );
 
     if ( !xStorage.is() )
         throw uno::RuntimeException();
@@ -433,8 +431,7 @@ uno::Reference< embed::XStorage > StorageElementFactory::queryStorage(
                     "No XPropertySet interface!" );
         try
         {
-            uno::Any aPropValue = xPropSet->getPropertyValue(
-                OUString( "OpenMode" ) );
+            uno::Any aPropValue = xPropSet->getPropertyValue("OpenMode");
 
             sal_Int32 nOpenMode = 0;
             if ( aPropValue >>= nOpenMode )

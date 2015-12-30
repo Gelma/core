@@ -20,6 +20,10 @@
 #ifndef INCLUDED_OSL_CONDITN_HXX
 #define INCLUDED_OSL_CONDITN_HXX
 
+#include <sal/config.h>
+
+#include <cstddef>
+
 #include <osl/time.h>
 
 #include <osl/conditn.h>
@@ -75,7 +79,7 @@ namespace osl
 
         /** Blocks the calling thread until condition is set.
          */
-        Result wait(const TimeValue *pTimeout = 0)
+        Result wait(const TimeValue *pTimeout = NULL)
         {
             return (Result) osl_waitCondition(condition, pTimeout);
         }

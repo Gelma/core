@@ -20,7 +20,6 @@
 #ifndef INCLUDED_FRAMEWORK_INC_DISPATCH_DISPATCHINFORMATIONPROVIDER_HXX
 #define INCLUDED_FRAMEWORK_INC_DISPATCH_DISPATCHINFORMATIONPROVIDER_HXX
 
-#include <macros/generic.hxx>
 #include <macros/xinterface.hxx>
 #include <general.h>
 
@@ -56,10 +55,10 @@ class DispatchInformationProvider : public  ::cppu::WeakImplHelper< css::frame::
         virtual ~DispatchInformationProvider();
 
         virtual css::uno::Sequence< sal_Int16 > SAL_CALL getSupportedCommandGroups()
-            throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw (css::uno::RuntimeException, std::exception) override;
 
         virtual css::uno::Sequence< css::frame::DispatchInformation > SAL_CALL getConfigurableDispatchInformation(sal_Int16 nCommandGroup)
-            throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw (css::uno::RuntimeException, std::exception) override;
 
     // helper
     private:

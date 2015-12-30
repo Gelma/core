@@ -240,23 +240,19 @@ public class utils {
         String settingPath = null;
         try {
             Object settings = msf.createInstance("com.sun.star.comp.framework.PathSettings");
-            XPropertySet pthSettings = null;
             try {
-                pthSettings = (XPropertySet) AnyConverter.toObject(
+                XPropertySet pthSettings = (XPropertySet) AnyConverter.toObject(
                     new Type(XPropertySet.class), settings);
+                settingPath = (String) pthSettings.getPropertyValue(setting);
             } catch (com.sun.star.lang.IllegalArgumentException iae) {
                 System.out.println("### couldn't get Office Settings");
             }
-            settingPath = (String) pthSettings.getPropertyValue(setting);
-
         } catch (Exception e) {
             System.out.println("Couldn't get string value for " + setting);
             e.printStackTrace();
         }
         return settingPath;
     }
-
-
 
     /**
      * This method returns the temp dicrectory of the user.
@@ -541,7 +537,7 @@ public class utils {
     public static boolean isVoid(Object aObject) {
         if (aObject instanceof com.sun.star.uno.Any) {
             com.sun.star.uno.Any oAny = (com.sun.star.uno.Any) aObject;
-            return (oAny.getType().getTypeName().equals("void"));
+            return oAny.getType().getTypeName().equals("void");
         } else {
             return false;
         }
@@ -571,8 +567,13 @@ public class utils {
                 continue;
             }
             try {
-                new Socket("localhost", port);
+                Socket sock = new Socket("localhost", port);
                 System.out.println(" -> socket: occupied port: " + port);
+                try {
+                    sock.close();
+                } catch (IOException ex) {
+                    // ignore close exception
+                }
             } catch (IOException e) {
                 System.out.println(" -> free port");
                 return port;
@@ -684,18 +685,19 @@ public class utils {
         appExecCommand = appExecCommand.replace("\"", "");
         appExecCommand = appExecCommand.replace("'", "");
         StringTokenizer commandTokens = new StringTokenizer(appExecCommand, " \t");
-        String officeExecutable = "";
         String officeExecCommand = "soffice";
+        StringBuilder sb = new StringBuilder();
         // is there a 'soffice' in the command? 2do: eliminate case sensitivity on windows
         int index = -1;
         while (commandTokens.hasMoreTokens() && index == -1) {
-            officeExecutable += commandTokens.nextToken() + " ";
-            index = officeExecutable.indexOf(officeExecCommand);
+            sb.append(commandTokens.nextToken()).append(" ");
+            index = sb.indexOf(officeExecCommand);
         }
         if (index == -1) {
             errorMessage = "Error: Your 'AppExecutionCommand' parameter does not " +
                 "contain '" + officeExecCommand + "'.";
         } else {
+            String officeExecutable = sb.toString();
             // does the directory exist?
             officeExecutable = officeExecutable.trim();
             String officePath = officeExecutable.substring(0, index);
@@ -873,4 +875,14 @@ public class utils {
      * Default short wait time for the Office
      */
     public static final int DEFAULT_SHORT_WAIT_MS = 500;
+
+    /// see rtl/math.hxx
+    public static boolean approxEqual( double a, double b )
+    {
+        if( a == b )
+            return true;
+        double x = a - b;
+        return (x < 0.0 ? -x : x)
+            < ((a < 0.0 ? -a : a) * (1.0 / (16777216.0 * 16777216.0)));
+    }
 }

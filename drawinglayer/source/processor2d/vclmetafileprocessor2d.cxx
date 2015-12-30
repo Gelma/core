@@ -216,7 +216,7 @@ namespace
 
         @return converted tools PolyPolygon, w/o one-point fills
      */
-    tools::PolyPolygon getFillPolyPolygon( const ::basegfx::B2DPolyPolygon& rPoly )
+    ::tools::PolyPolygon getFillPolyPolygon( const ::basegfx::B2DPolyPolygon& rPoly )
     {
         // filter input rPoly
         basegfx::B2DPolyPolygon aPoly;
@@ -227,7 +227,7 @@ namespace
             if( !aCandidate.isClosed() || aCandidate.count() > 1 )
                 aPoly.append(aCandidate);
         }
-        return tools::PolyPolygon(aPoly);
+        return ::tools::PolyPolygon(aPoly);
     }
 
 } // end of anonymous namespace
@@ -237,13 +237,13 @@ namespace drawinglayer
     namespace processor2d
     {
         Rectangle VclMetafileProcessor2D::impDumpToMetaFile(
-            const primitive2d::Primitive2DSequence& rContent,
+            const primitive2d::Primitive2DContainer& rContent,
             GDIMetaFile& o_rContentMetafile)
         {
             // Prepare VDev, MetaFile and connections
             OutputDevice* pLastOutputDevice = mpOutputDevice;
             GDIMetaFile* pLastMetafile = mpMetaFile;
-            basegfx::B2DRange aPrimitiveRange(primitive2d::getB2DRangeFromPrimitive2DSequence(rContent, getViewInformation2D()));
+            basegfx::B2DRange aPrimitiveRange(rContent.getB2DRange(getViewInformation2D()));
 
             // transform primitive range with current transformation (e.g shadow offset)
             aPrimitiveRange.transform(maCurrentTransformation);
@@ -386,7 +386,7 @@ namespace drawinglayer
             const attribute::LineStartEndAttribute* pStart,
             const attribute::LineStartEndAttribute* pEnd)
         {
-            SvtGraphicStroke* pRetval = 0;
+            SvtGraphicStroke* pRetval = nullptr;
 
             if(rB2DPolygon.count() && !mnSvtGraphicStrokeCount)
             {
@@ -519,9 +519,9 @@ namespace drawinglayer
                 aEndArrow.transform(maCurrentTransformation);
 
                 pRetval = new SvtGraphicStroke(
-                        tools::Polygon(aLocalPolygon),
-                        tools::PolyPolygon(aStartArrow),
-                        tools::PolyPolygon(aEndArrow),
+                        ::tools::Polygon(aLocalPolygon),
+                        ::tools::PolyPolygon(aStartArrow),
+                        ::tools::PolyPolygon(aEndArrow),
                         mfCurrentUnifiedTransparence,
                         fLineWidth,
                         eCap,
@@ -1006,7 +1006,7 @@ namespace drawinglayer
                     }
 
                     // process recursively
-                    const primitive2d::Primitive2DSequence rContent = rFieldPrimitive.get2DDecomposition(getViewInformation2D());
+                    const primitive2d::Primitive2DContainer rContent = rFieldPrimitive.get2DDecomposition(getViewInformation2D());
                     process(rContent);
 
                     // for the end comment the type is not relevant yet, they are all the same. Just add.
@@ -1015,7 +1015,7 @@ namespace drawinglayer
                     if(mpPDFExtOutDevData && drawinglayer::primitive2d::FIELD_TYPE_URL == rFieldPrimitive.getType())
                     {
                         // emulate data handling from ImpEditEngine::Paint
-                        const basegfx::B2DRange aViewRange(primitive2d::getB2DRangeFromPrimitive2DSequence(rContent, getViewInformation2D()));
+                        const basegfx::B2DRange aViewRange(rContent.getB2DRange(getViewInformation2D()));
                         const Rectangle aRectLogic(
                             (sal_Int32)floor(aViewRange.getMinX()), (sal_Int32)floor(aViewRange.getMinY()),
                             (sal_Int32)ceil(aViewRange.getMaxX()), (sal_Int32)ceil(aViewRange.getMaxY()));
@@ -1176,7 +1176,7 @@ namespace drawinglayer
                         // direct draw of hairline; use default processing
                         // support SvtGraphicStroke MetaCommentAction
                         const basegfx::BColor aLineColor(maBColorModifierStack.getModifiedColor(rHairlinePrimitive.getBColor()));
-                        SvtGraphicStroke* pSvtGraphicStroke = 0;
+                        SvtGraphicStroke* pSvtGraphicStroke = nullptr;
 
                         // #i121267# Not needed, does not give better quality compared with
                         // the MetaActionType::POLYPOLYGON written by RenderPolygonHairlinePrimitive2D
@@ -1188,7 +1188,7 @@ namespace drawinglayer
                             pSvtGraphicStroke = impTryToCreateSvtGraphicStroke(
                                 rHairlinePrimitive.getB2DPolygon(),
                                 &aLineColor,
-                                0, 0, 0, 0);
+                                nullptr, nullptr, nullptr, nullptr);
 
                             impStartSvtGraphicStroke(pSvtGraphicStroke);
                         }
@@ -1225,10 +1225,10 @@ namespace drawinglayer
                     {
                         // support SvtGraphicStroke MetaCommentAction
                         SvtGraphicStroke* pSvtGraphicStroke = impTryToCreateSvtGraphicStroke(
-                            rBasePolygon, 0,
+                            rBasePolygon, nullptr,
                             &rStrokePrimitive.getLineAttribute(),
                             &rStrokePrimitive.getStrokeAttribute(),
-                            0, 0);
+                            nullptr, nullptr);
 
                         impStartSvtGraphicStroke(pSvtGraphicStroke);
                         const attribute::LineAttribute& rLine = rStrokePrimitive.getLineAttribute();
@@ -1247,7 +1247,7 @@ namespace drawinglayer
                             {
                                 basegfx::tools::applyLineDashing(
                                     rBasePolygon, rStroke.getDotDashArray(),
-                                    &aHairLinePolyPolygon, 0, rStroke.getFullDotDashLen());
+                                    &aHairLinePolyPolygon, nullptr, rStroke.getFullDotDashLen());
                             }
 
                             const basegfx::BColor aHairlineColor(maBColorModifierStack.getModifiedColor(rLine.getColor()));
@@ -1266,7 +1266,7 @@ namespace drawinglayer
 
                                 if(aCandidate.count() > 1)
                                 {
-                                    const tools::Polygon aToolsPolygon(aCandidate);
+                                    const ::tools::Polygon aToolsPolygon(aCandidate);
 
                                     mpMetaFile->AddAction(new MetaPolyLineAction(aToolsPolygon, aLineInfo));
                                 }
@@ -1314,7 +1314,7 @@ namespace drawinglayer
                     {
                         // support SvtGraphicStroke MetaCommentAction
                         SvtGraphicStroke* pSvtGraphicStroke = impTryToCreateSvtGraphicStroke(
-                            rBasePolygon, 0,
+                            rBasePolygon, nullptr,
                             &rStrokeArrowPrimitive.getLineAttribute(),
                             &rStrokeArrowPrimitive.getStrokeAttribute(),
                             &rStrokeArrowPrimitive.getStart(),
@@ -1380,7 +1380,7 @@ namespace drawinglayer
                     }
                     else
                     {
-                        SvtGraphicFill* pSvtGraphicFill = 0;
+                        SvtGraphicFill* pSvtGraphicFill = nullptr;
 
                         if(!mnSvtGraphicFillCount && aLocalPolyPolygon.count())
                         {
@@ -1476,10 +1476,10 @@ namespace drawinglayer
                                 aLocalPolyPolygon,
                                 rHatchCandidate.getBackgroundColor()));
 
-                        process(primitive2d::Primitive2DSequence(&xBackground, 1));
+                        process(primitive2d::Primitive2DContainer { xBackground });
                     }
 
-                    SvtGraphicFill* pSvtGraphicFill = 0;
+                    SvtGraphicFill* pSvtGraphicFill = nullptr;
                     aLocalPolyPolygon.transform(maCurrentTransformation);
 
                     if(!mnSvtGraphicFillCount && aLocalPolyPolygon.count())
@@ -1540,7 +1540,7 @@ namespace drawinglayer
 
                     // #i111954# do NOT use decomposition, but use direct VCL-command
                     // process(rCandidate.get2DDecomposition(getViewInformation2D()));
-                    const tools::PolyPolygon aToolsPolyPolygon(basegfx::tools::adaptiveSubdivideByAngle(aLocalPolyPolygon));
+                    const ::tools::PolyPolygon aToolsPolyPolygon(basegfx::tools::adaptiveSubdivideByAngle(aLocalPolyPolygon));
                     const HatchStyle aHatchStyle(
                         attribute::HATCHSTYLE_SINGLE == rFillHatchAttribute.getStyle() ? HATCH_SINGLE :
                         attribute::HATCHSTYLE_DOUBLE == rFillHatchAttribute.getStyle() ? HATCH_DOUBLE :
@@ -1615,13 +1615,13 @@ namespace drawinglayer
                         // necessary to again remove this subdivision since it decreases possible
                         // printing quality (not even resolution-dependent for now). THB will tell
                         // me when that task is fixed in the master
-                        const tools::PolyPolygon aToolsPolyPolygon(
+                        const ::tools::PolyPolygon aToolsPolyPolygon(
                             getFillPolyPolygon(
                                 basegfx::tools::adaptiveSubdivideByAngle(aLocalPolyPolygon)));
 
 
                         // XPATHFILL_SEQ_BEGIN/XPATHFILL_SEQ_END support
-                        SvtGraphicFill* pSvtGraphicFill = 0;
+                        SvtGraphicFill* pSvtGraphicFill = nullptr;
 
                         if(!mnSvtGraphicFillCount && aLocalPolyPolygon.count())
                         {
@@ -1682,7 +1682,7 @@ namespace drawinglayer
                     aLocalPolyPolygon.transform(maCurrentTransformation);
 
                     // XPATHFILL_SEQ_BEGIN/XPATHFILL_SEQ_END support
-                    SvtGraphicFill* pSvtGraphicFill = 0;
+                    SvtGraphicFill* pSvtGraphicFill = nullptr;
 
                     // #i121267# Not needed, does not give better quality compared with
                     // the MetaActionType::POLYPOLYGON written by the DrawPolyPolygon command
@@ -1752,7 +1752,7 @@ namespace drawinglayer
                     // mask group. Special handling for MetaFiles.
                     const primitive2d::MaskPrimitive2D& rMaskCandidate = static_cast< const primitive2d::MaskPrimitive2D& >(rCandidate);
 
-                    if(rMaskCandidate.getChildren().hasElements())
+                    if(!rMaskCandidate.getChildren().empty())
                     {
                         basegfx::B2DPolyPolygon aMask(rMaskCandidate.getMask());
 
@@ -1820,9 +1820,9 @@ namespace drawinglayer
                     // - uses DrawTransparent for single PolyPoylgons directly. Can be detected by
                     //   checking the content for single PolyPolygonColorPrimitive2D
                     const primitive2d::UnifiedTransparencePrimitive2D& rUniTransparenceCandidate = static_cast< const primitive2d::UnifiedTransparencePrimitive2D& >(rCandidate);
-                    const primitive2d::Primitive2DSequence rContent = rUniTransparenceCandidate.getChildren();
+                    const primitive2d::Primitive2DContainer rContent = rUniTransparenceCandidate.getChildren();
 
-                    if(rContent.hasElements())
+                    if(!rContent.empty())
                     {
                         if(0.0 == rUniTransparenceCandidate.getTransparence())
                         {
@@ -1833,10 +1833,10 @@ namespace drawinglayer
                         {
                             // try to identify a single PolyPolygonColorPrimitive2D in the
                             // content part of the transparence primitive
-                            const primitive2d::PolyPolygonColorPrimitive2D* pPoPoColor = 0;
+                            const primitive2d::PolyPolygonColorPrimitive2D* pPoPoColor = nullptr;
                             static bool bForceToMetafile(false);
 
-                            if(!bForceToMetafile && 1 == rContent.getLength())
+                            if(!bForceToMetafile && 1 == rContent.size())
                             {
                                 const primitive2d::Primitive2DReference xReference(rContent[0]);
                                 pPoPoColor = dynamic_cast< const primitive2d::PolyPolygonColorPrimitive2D* >(xReference.get());
@@ -1860,7 +1860,7 @@ namespace drawinglayer
                                 aLocalPolyPolygon.transform(maCurrentTransformation);
 
                                 // XPATHFILL_SEQ_BEGIN/XPATHFILL_SEQ_END support
-                                SvtGraphicFill* pSvtGraphicFill = 0;
+                                SvtGraphicFill* pSvtGraphicFill = nullptr;
 
                                 // #i121267# Not needed, does not give better quality compared with
                                 // the MetaActionType::POLYPOLYGON written by the DrawPolyPolygon command
@@ -1899,7 +1899,7 @@ namespace drawinglayer
                                 }
 
                                 mpOutputDevice->DrawTransparent(
-                                    tools::PolyPolygon(aLocalPolyPolygon),
+                                    ::tools::PolyPolygon(aLocalPolyPolygon),
                                     nTransPercentVcl);
 
                                 if(bSupportSvtGraphicFill)
@@ -1960,17 +1960,17 @@ namespace drawinglayer
                     // If that detection goes wrong, I have to create an transparence-blended bitmap. Eventually
                     // do that in stripes, else RenderTransparencePrimitive2D may just be used
                     const primitive2d::TransparencePrimitive2D& rTransparenceCandidate = static_cast< const primitive2d::TransparencePrimitive2D& >(rCandidate);
-                    const primitive2d::Primitive2DSequence rContent = rTransparenceCandidate.getChildren();
-                    const primitive2d::Primitive2DSequence rTransparence = rTransparenceCandidate.getTransparence();
+                    const primitive2d::Primitive2DContainer& rContent = rTransparenceCandidate.getChildren();
+                    const primitive2d::Primitive2DContainer& rTransparence = rTransparenceCandidate.getTransparence();
 
-                    if(rContent.hasElements() && rTransparence.hasElements())
+                    if(!rContent.empty() && !rTransparence.empty())
                     {
                         // try to identify a single FillGradientPrimitive2D in the
                         // transparence part of the primitive
-                        const primitive2d::FillGradientPrimitive2D* pFiGradient = 0;
+                        const primitive2d::FillGradientPrimitive2D* pFiGradient = nullptr;
                         static bool bForceToBigTransparentVDev(false);
 
-                        if(!bForceToBigTransparentVDev && 1 == rTransparence.getLength())
+                        if(!bForceToBigTransparentVDev && 1 == rTransparence.size())
                         {
                             const primitive2d::Primitive2DReference xReference(rTransparence[0]);
                             pFiGradient = dynamic_cast< const primitive2d::FillGradientPrimitive2D* >(xReference.get());
@@ -2007,7 +2007,7 @@ namespace drawinglayer
                             // transparence primitives with non-trivial transparence content) i will for now not
                             // refine to tiling here.
 
-                            basegfx::B2DRange aViewRange(primitive2d::getB2DRangeFromPrimitive2DSequence(rContent, getViewInformation2D()));
+                            basegfx::B2DRange aViewRange(rContent.getB2DRange(getViewInformation2D()));
                             aViewRange.transform(maCurrentTransformation);
                             const Rectangle aRectLogic(
                                 (sal_Int32)floor(aViewRange.getMinX()), (sal_Int32)floor(aViewRange.getMinY()),

@@ -181,21 +181,15 @@ struct UpdateDialog::Index
 {
     Kind          m_eKind;
     bool          m_bIgnored;
-    sal_uInt16        m_nID;
-    sal_uInt16        m_nIndex;
-    OUString m_aName;
+    sal_uInt16    m_nIndex;
+    OUString      m_aName;
 
-    Index( Kind theKind, sal_uInt16 nID, sal_uInt16 nIndex, const OUString &rName );
+    Index( Kind theKind, sal_uInt16 nIndex, const OUString &rName ) :
+        m_eKind( theKind ),
+        m_bIgnored( false ),
+        m_nIndex( nIndex ),
+        m_aName( rName ) {}
 };
-
-
-UpdateDialog::Index::Index( Kind theKind, sal_uInt16 nID, sal_uInt16 nIndex, const OUString &rName ):
-    m_eKind( theKind ),
-    m_bIgnored( false ),
-    m_nID( nID ),
-    m_nIndex( nIndex ),
-    m_aName( rName )
-{}
 
 
 
@@ -212,7 +206,7 @@ public:
 private:
     virtual ~Thread();
 
-    virtual void execute() SAL_OVERRIDE;
+    virtual void execute() override;
 
     void handleSpecificError(
         uno::Reference< deployment::XPackage > const & package,
@@ -256,7 +250,7 @@ UpdateDialog::Thread::Thread(
     if( m_context.is() )
     {
         m_xInteractionHdl.set(
-            task::InteractionHandler::createWithParent(m_context, 0),
+            task::InteractionHandler::createWithParent(m_context, nullptr),
             uno::UNO_QUERY );
         m_updateInformation->setInteractionHandler( m_xInteractionHdl );
     }
@@ -535,7 +529,7 @@ UpdateDialog::UpdateDialog(
     get(m_pOk, "INSTALL");
     get(m_pClose, "gtk-close");
     get(m_pHelp, "gtk-help");
-    OSL_ASSERT(updateData != NULL);
+    OSL_ASSERT(updateData != nullptr);
 
     m_xExtensionManager = deployment::ExtensionManager::get( context );
 
@@ -738,7 +732,7 @@ void UpdateDialog::addEnabledUpdate( OUString const & name,
                                      dp_gui::UpdateData & data )
 {
     sal_uInt16 nIndex = sal::static_int_cast< sal_uInt16 >( m_enabledUpdates.size() );
-    UpdateDialog::Index *pEntry = new UpdateDialog::Index( ENABLED_UPDATE, m_nLastID, nIndex, name );
+    UpdateDialog::Index *pEntry = new UpdateDialog::Index( ENABLED_UPDATE, nIndex, name );
 
     data.m_nID = m_nLastID;
     m_nLastID += 1;
@@ -764,7 +758,7 @@ void UpdateDialog::addEnabledUpdate( OUString const & name,
 void UpdateDialog::addDisabledUpdate( UpdateDialog::DisabledUpdate & data )
 {
     sal_uInt16 nIndex = sal::static_int_cast< sal_uInt16 >( m_disabledUpdates.size() );
-    UpdateDialog::Index *pEntry = new UpdateDialog::Index( DISABLED_UPDATE, m_nLastID, nIndex, data.name );
+    UpdateDialog::Index *pEntry = new UpdateDialog::Index( DISABLED_UPDATE, nIndex, data.name );
 
     data.m_nID = m_nLastID;
     m_nLastID += 1;
@@ -780,7 +774,7 @@ void UpdateDialog::addDisabledUpdate( UpdateDialog::DisabledUpdate & data )
 void UpdateDialog::addSpecificError( UpdateDialog::SpecificError & data )
 {
     sal_uInt16 nIndex = sal::static_int_cast< sal_uInt16 >( m_specificErrors.size() );
-    UpdateDialog::Index *pEntry = new UpdateDialog::Index( SPECIFIC_ERROR, m_nLastID, nIndex, data.name );
+    UpdateDialog::Index *pEntry = new UpdateDialog::Index( SPECIFIC_ERROR, nIndex, data.name );
 
     data.m_nID = m_nLastID;
     m_nLastID += 1;
@@ -922,7 +916,7 @@ void UpdateDialog::initDescription()
     m_pReleaseNotesLabel->Hide();
     m_pReleaseNotesLink->Hide();
 
-    Link<> aLink = LINK( this, UpdateDialog, hyperlink_clicked );
+    Link<FixedHyperlink&,void> aLink = LINK( this, UpdateDialog, hyperlink_clicked );
     m_pPublisherLink->SetClickHdl( aLink );
     m_pReleaseNotesLink->SetClickHdl( aLink );
 }
@@ -1155,7 +1149,7 @@ IMPL_LINK_NOARG_TYPED(UpdateDialog, selectionHandler, SvTreeListBox*, void)
         m_pUpdates->GetSelectEntryData());
     clearDescription();
 
-    if ( p != NULL )
+    if ( p != nullptr )
     {
         sal_uInt16 pos = p->m_nIndex;
 
@@ -1319,13 +1313,11 @@ IMPL_LINK_NOARG_TYPED(UpdateDialog, closeHandler, Button*, void)
     EndDialog();
 }
 
-IMPL_LINK( UpdateDialog, hyperlink_clicked, FixedHyperlink*, pHyperlink )
+IMPL_LINK_TYPED( UpdateDialog, hyperlink_clicked, FixedHyperlink&, rHyperlink, void )
 {
-    OUString sURL;
-    if ( pHyperlink )
-        sURL = OUString( pHyperlink->GetURL() );
+    OUString sURL = rHyperlink.GetURL();
     if ( sURL.isEmpty() )
-        return 0;
+        return;
 
     try
     {
@@ -1337,8 +1329,6 @@ IMPL_LINK( UpdateDialog, hyperlink_clicked, FixedHyperlink*, pHyperlink )
     catch ( const uno::Exception& )
     {
     }
-
-    return 1;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

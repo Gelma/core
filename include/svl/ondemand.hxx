@@ -54,7 +54,7 @@
 
 class OnDemandLocaleDataWrapper
 {
-        ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > m_xContext;
+            css::uno::Reference< css::uno::XComponentContext > m_xContext;
             SvtSysLocale        aSysLocale;
             LanguageType        eCurrentLanguage;
             LanguageType        eLastAnyLanguage;
@@ -67,20 +67,20 @@ class OnDemandLocaleDataWrapper
 public:
                                 OnDemandLocaleDataWrapper()
                                     : eLastAnyLanguage( LANGUAGE_DONTKNOW )
-                                    , pEnglish(0)
-                                    , pAny(0)
+                                    , pEnglish(nullptr)
+                                    , pAny(nullptr)
                                     , bInitialized(false)
                                     {
                                         pCurrent = pSystem = aSysLocale.GetLocaleDataPtr();
                                         eCurrentLanguage = LANGUAGE_SYSTEM;
                                     }
                                 OnDemandLocaleDataWrapper(
-                                    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext,
+                                    const css::uno::Reference< css::uno::XComponentContext >& rxContext,
                                     const LanguageTag& rLanguageTag
                                     )
-                                    : pEnglish(0)
-                                    , pAny(0)
-                                    , pCurrent(0)
+                                    : pEnglish(nullptr)
+                                    , pAny(nullptr)
+                                    , pCurrent(nullptr)
                                     , bInitialized(false)
                                     {
                                         pSystem = aSysLocale.GetLocaleDataPtr();
@@ -95,7 +95,7 @@ public:
             bool                isInitialized() const   { return bInitialized; }
 
             void                init(
-                                    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext,
+                                    const css::uno::Reference< css::uno::XComponentContext >& rxContext,
                                     const LanguageTag& rLanguageTag
                                     )
                                     {
@@ -148,21 +148,21 @@ public:
  */
 class OnDemandCalendarWrapper
 {
-            ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > m_xContext;
-            ::com::sun::star::lang::Locale  aLocale;
+            css::uno::Reference< css::uno::XComponentContext > m_xContext;
+            css::lang::Locale  aLocale;
     mutable CalendarWrapper*    pPtr;
     mutable bool                bValid;
             bool                bInitialized;
 
 public:
                                 OnDemandCalendarWrapper()
-                                    : pPtr(0)
+                                    : pPtr(nullptr)
                                     , bValid(false)
                                     , bInitialized(false)
                                     {}
                                 OnDemandCalendarWrapper(
-                                    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext,
-                                    ::com::sun::star::lang::Locale& rLocale
+                                    const css::uno::Reference< css::uno::XComponentContext >& rxContext,
+                                    css::lang::Locale& rLocale
                                     )
                                     : bValid(false)
                                     , bInitialized(false)
@@ -175,8 +175,8 @@ public:
                                     }
 
             void                init(
-                                    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext,
-                                    const ::com::sun::star::lang::Locale& rLocale
+                                    const css::uno::Reference< css::uno::XComponentContext >& rxContext,
+                                    const css::lang::Locale& rLocale
                                     )
                                     {
                                         m_xContext = rxContext;
@@ -184,12 +184,12 @@ public:
                                         if ( pPtr )
                                         {
                                             delete pPtr;
-                                            pPtr = NULL;
+                                            pPtr = nullptr;
                                         }
                                         bInitialized = true;
                                     }
 
-            void                changeLocale( const ::com::sun::star::lang::Locale& rLocale )
+            void                changeLocale( const css::lang::Locale& rLocale )
                                     {
                                         bValid = false;
                                         aLocale = rLocale;
@@ -218,9 +218,9 @@ public:
  */
 class OnDemandTransliterationWrapper
 {
-        ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > m_xContext;
+            css::uno::Reference< css::uno::XComponentContext > m_xContext;
             LanguageType        eLanguage;
-            ::com::sun::star::i18n::TransliterationModules  nType;
+            css::i18n::TransliterationModules  nType;
     mutable ::utl::TransliterationWrapper*  pPtr;
     mutable bool                bValid;
             bool                bInitialized;
@@ -228,15 +228,15 @@ class OnDemandTransliterationWrapper
 public:
                                 OnDemandTransliterationWrapper()
                                     : eLanguage( LANGUAGE_SYSTEM )
-                                    , nType(::com::sun::star::i18n::TransliterationModules_END_OF_MODULE)
-                                    , pPtr(0)
+                                    , nType(css::i18n::TransliterationModules_END_OF_MODULE)
+                                    , pPtr(nullptr)
                                     , bValid(false)
                                     , bInitialized(false)
                                     {}
                                 OnDemandTransliterationWrapper(
-                                    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext,
+                                    const css::uno::Reference< css::uno::XComponentContext >& rxContext,
                                     LanguageType eLang,
-                                    ::com::sun::star::i18n::TransliterationModules nTypeP
+                                    css::i18n::TransliterationModules nTypeP
                                     )
                                     : bValid(false)
                                     , bInitialized(false)
@@ -251,9 +251,9 @@ public:
             bool                isInitialized() const   { return bInitialized; }
 
             void                init(
-                                    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext,
+                                    const css::uno::Reference< css::uno::XComponentContext >& rxContext,
                                     LanguageType eLang,
-                                    ::com::sun::star::i18n::TransliterationModules nTypeP
+                                    css::i18n::TransliterationModules nTypeP
                                     )
                                     {
                                         m_xContext = rxContext;
@@ -262,7 +262,7 @@ public:
                                         if ( pPtr )
                                         {
                                             delete pPtr;
-                                            pPtr = NULL;
+                                            pPtr = nullptr;
                                         }
                                         bInitialized = true;
                                     }
@@ -298,19 +298,19 @@ public:
  */
 class OnDemandNativeNumberWrapper
 {
-        ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > m_xContext;
+            css::uno::Reference< css::uno::XComponentContext > m_xContext;
     mutable NativeNumberWrapper*    pPtr;
-            bool                bInitialized;
+            bool                    bInitialized;
 
 public:
                                 OnDemandNativeNumberWrapper()
-                                    : pPtr(0)
+                                    : pPtr(nullptr)
                                     , bInitialized(false)
                                     {}
                                 OnDemandNativeNumberWrapper(
-                                    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext
+                                    const css::uno::Reference< css::uno::XComponentContext >& rxContext
                                     )
-                                    : pPtr(0)
+                                    : pPtr(nullptr)
                                     , bInitialized(false)
                                     {
                                         init( rxContext );
@@ -321,14 +321,14 @@ public:
                                     }
 
             void                init(
-                                    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext
+                                    const css::uno::Reference< css::uno::XComponentContext >& rxContext
                                     )
                                     {
                                         m_xContext = rxContext;
                                         if ( pPtr )
                                         {
                                             delete pPtr;
-                                            pPtr = NULL;
+                                            pPtr = nullptr;
                                         }
                                         bInitialized = true;
                                     }

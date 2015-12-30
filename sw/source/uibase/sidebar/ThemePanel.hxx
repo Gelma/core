@@ -48,23 +48,19 @@ class ThemePanel : public PanelLayout,
     friend class VclPtr<ThemePanel>;
 public:
     static VclPtr<vcl::Window> Create(vcl::Window* pParent,
-                                  const css::uno::Reference<css::frame::XFrame>& rxFrame,
-                                  SfxBindings* pBindings);
+                                  const css::uno::Reference<css::frame::XFrame>& rxFrame);
 
     virtual void NotifyItemUpdate(const sal_uInt16 nSId,
                                   const SfxItemState eState,
                                   const SfxPoolItem* pState,
-                                  const bool bIsEnabled) SAL_OVERRIDE;
+                                  const bool bIsEnabled) override;
 
 private:
     ThemePanel(vcl::Window* pParent,
-                   const css::uno::Reference<css::frame::XFrame>& rxFrame,
-                   SfxBindings* pBindings);
+                   const css::uno::Reference<css::frame::XFrame>& rxFrame);
     virtual ~ThemePanel();
 
-    virtual void dispose() SAL_OVERRIDE;
-
-    SfxBindings* mpBindings;
+    virtual void dispose() override;
 
     VclPtr<ListBox> mpListBoxFonts;
     VclPtr<ValueSet> mpValueSetColors;

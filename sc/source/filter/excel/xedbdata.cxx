@@ -8,6 +8,7 @@
  */
 
 #include "xedbdata.hxx"
+#include "excrecds.hxx"
 #include "xltools.hxx"
 #include "dbdata.hxx"
 #include "document.hxx"
@@ -22,8 +23,8 @@ public:
     explicit            XclExpTablesImpl5( const XclExpRoot& rRoot );
     virtual             ~XclExpTablesImpl5();
 
-    virtual void        Save( XclExpStream& rStrm ) SAL_OVERRIDE;
-    virtual void        SaveXml( XclExpXmlStream& rStrm ) SAL_OVERRIDE;
+    virtual void        Save( XclExpStream& rStrm ) override;
+    virtual void        SaveXml( XclExpXmlStream& rStrm ) override;
 };
 
 /** Implementation of table export for OOXML, so far dummy for BIFF8. */
@@ -33,8 +34,8 @@ public:
     explicit            XclExpTablesImpl8( const XclExpRoot& rRoot );
     virtual             ~XclExpTablesImpl8();
 
-    virtual void        Save( XclExpStream& rStrm ) SAL_OVERRIDE;
-    virtual void        SaveXml( XclExpXmlStream& rStrm ) SAL_OVERRIDE;
+    virtual void        Save( XclExpStream& rStrm ) override;
+    virtual void        SaveXml( XclExpXmlStream& rStrm ) override;
 };
 
 
@@ -132,30 +133,35 @@ void XclExpTablesManager::Initialize()
         TablesMapType::iterator it = maTablesMap.find( nTab);
         if (it == maTablesMap.end())
         {
-            XclExpTables* pNew;
+            ::std::shared_ptr< XclExpTables > pNew;
             switch( GetBiff() )
             {
                 case EXC_BIFF5:
-                    pNew = new XclExpTablesImpl5( GetRoot());
+                    pNew.reset( new XclExpTablesImpl5( GetRoot()));
                     break;
                 case EXC_BIFF8:
-                    pNew = new XclExpTablesImpl8( GetRoot());
+                    pNew.reset( new XclExpTablesImpl8( GetRoot()));
                     break;
                 default:
                     assert(!"Unknown BIFF type!");
                     continue;   // for
             }
-            it = maTablesMap.insert( nTab, pNew).first;
+            ::std::pair< TablesMapType::iterator, bool > ins( maTablesMap.insert( ::std::make_pair( nTab, pNew)));
+            if (!ins.second)
+            {
+                assert(!"XclExpTablesManager::Initialize - XclExpTables insert failed");
+                continue;   // for
+            }
+            it = ins.first;
         }
-        XclExpTables* p = it->second;
-        p->AppendTable( pDBData, ++nTableId);
+        it->second->AppendTable( pDBData, ++nTableId);
     }
 }
 
-XclExpTables* XclExpTablesManager::GetTablesBySheet( SCTAB nTab )
+::std::shared_ptr< XclExpTables > XclExpTablesManager::GetTablesBySheet( SCTAB nTab )
 {
     TablesMapType::iterator it = maTablesMap.find(nTab);
-    return it == maTablesMap.end() ? NULL : it->second;
+    return it == maTablesMap.end() ? nullptr : it->second;
 }
 
 XclExpTables::Entry::Entry( const ScDBData* pData, sal_Int32 nTableId ) :
@@ -219,9 +225,8 @@ void XclExpTables::SaveTableXml( XclExpXmlStream& rStrm, const Entry& rEntry )
          * When not applied but buttons hidden, Excel writes, for example,
          * <filterColumn colId="0" hiddenButton="1"/> */
 
-        pTableStrm->singleElement( XML_autoFilter,
-                XML_ref, XclXmlUtils::ToOString(aRange),
-                FSEND);
+        ExcAutoFilterRecs aAutoFilter( rStrm.GetRoot(), aRange.aStart.Tab(), &rData);
+        aAutoFilter.SaveXml( rStrm);
     }
 
     const std::vector< OUString >& rColNames = rData.GetTableColumnNames();

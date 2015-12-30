@@ -97,7 +97,7 @@ struct MigrationItem
     css::uno::Reference< css::container::XIndexContainer > m_xPopupMenu;
 
     MigrationItem()
-        :m_xPopupMenu(0)
+        :m_xPopupMenu(nullptr)
     {
     }
 
@@ -137,20 +137,6 @@ struct MigrationItem
 typedef std::unordered_map< OUString, std::vector< MigrationItem >,
                             OUStringHash, std::equal_to< OUString > > MigrationHashMap;
 
-struct MigrationItemInfo
-{
-    OUString m_sResourceURL;
-    MigrationItem m_aMigrationItem;
-
-    MigrationItemInfo(){}
-
-    MigrationItemInfo(const OUString& sResourceURL, const MigrationItem& aMigrationItem)
-    : m_sResourceURL(sResourceURL), m_aMigrationItem(aMigrationItem)
-    {
-    }
-};
-
-
 /**
     information for the UI elements to be migrated for one module
 */
@@ -178,7 +164,7 @@ public:
 
 private:
 
-    css::uno::Sequence< css::beans::PropertyValue > m_lCfgManagerSeq;
+    std::vector< css::beans::PropertyValue > m_lCfgManagerSeq;
     css::uno::Sequence< css::beans::PropertyValue > m_lNewVersionMenubarSettingsSeq;
     css::uno::Sequence< css::beans::PropertyValue > m_lNewVersionToolbarSettingsSeq;
 };
@@ -187,8 +173,6 @@ class MigrationImpl
 {
 
 private:
-    strings_vr m_vrVersions;
-
     migrations_available m_vMigrationsAvailable; // list of all available migrations
     migrations_vr        m_vrMigrations;         // list of all migration specs from config
     install_info         m_aInfo;                // info about the version being migrated

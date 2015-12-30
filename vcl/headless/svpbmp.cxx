@@ -43,18 +43,15 @@ bool SvpSalBitmap::Create( const Size& rSize,
 {
     SAL_INFO( "vcl.headless", "SvpSalBitmap::Create(" << rSize.Width() << "," << rSize.Height() << "," << nBitCount << ")" );
 
-    SvpSalInstance* pInst = SvpSalInstance::s_pDefaultInstance;
-    assert( pInst );
-    basebmp::Format nFormat = pInst->getFormatForBitCount( nBitCount );
+    basebmp::Format nFormat = SvpSalInstance::getBaseBmpFormatForBitCount( nBitCount );
 
     B2IVector aSize( rSize.Width(), rSize.Height() );
     if( aSize.getX() == 0 )
         aSize.setX( 1 );
     if( aSize.getY() == 0 )
         aSize.setY( 1 );
-    sal_Int32 nStride = getBitmapDeviceStrideForWidth(nFormat, aSize.getX());
     if( nBitCount > 8 )
-        m_aBitmap = createBitmapDevice( aSize, false, nFormat, nStride );
+        m_aBitmap = createBitmapDevice( aSize, true, nFormat );
     else
     {
         // prepare palette
@@ -67,7 +64,7 @@ bool SvpSalBitmap::Create( const Size& rSize,
             const BitmapColor& rCol = rPalette[i];
             (*pPalette)[i] = basebmp::Color( rCol.GetRed(), rCol.GetGreen(), rCol.GetBlue() );
         }
-        m_aBitmap = createBitmapDevice( aSize, false, nFormat, nStride,
+        m_aBitmap = createBitmapDevice( aSize, true, nFormat,
                                         basebmp::RawMemorySharedArray(),
                                         basebmp::PaletteMemorySharedVector( pPalette )
                                         );
@@ -104,7 +101,7 @@ bool SvpSalBitmap::Create( const SalBitmap& /*rSalBmp*/,
     return false;
 }
 
-bool SvpSalBitmap::Create( const ::com::sun::star::uno::Reference< ::com::sun::star::rendering::XBitmapCanvas >& /*xBitmapCanvas*/, Size& /*rSize*/, bool /*bMask*/ )
+bool SvpSalBitmap::Create( const css::uno::Reference< css::rendering::XBitmapCanvas >& /*xBitmapCanvas*/, Size& /*rSize*/, bool /*bMask*/ )
 {
     return false;
 }
@@ -136,7 +133,7 @@ sal_uInt16 SvpSalBitmap::GetBitCount() const
 
 BitmapBuffer* SvpSalBitmap::AcquireBuffer( BitmapAccessMode )
 {
-    BitmapBuffer* pBuf = NULL;
+    BitmapBuffer* pBuf = nullptr;
     if( m_aBitmap.get() )
     {
         pBuf = new BitmapBuffer();
@@ -201,40 +198,14 @@ BitmapBuffer* SvpSalBitmap::AcquireBuffer( BitmapAccessMode )
                 nBitCount = 24;
                 pBuf->mnFormat = BMP_FORMAT_24BIT_TC_BGR;
                 break;
-            case Format::ThirtyTwoBitTcMaskBGRX:
-            {
-                nBitCount = 32;
-                pBuf->mnFormat = BMP_FORMAT_32BIT_TC_MASK;
-#ifdef OSL_BIGENDIAN
-                ColorMaskElement aRedMask(0x0000ff00);
-                ColorMaskElement aGreenMask(0x00ff0000);
-                ColorMaskElement aBlueMask(0xff000000);
-#else
-                ColorMaskElement aRedMask(0x00ff0000);
-                ColorMaskElement aGreenMask(0x0000ff00);
-                ColorMaskElement aBlueMask(0x000000ff);
-#endif
-                aBlueMask.CalcMaskShift();
-                aRedMask.CalcMaskShift();
-                aGreenMask.CalcMaskShift();
-                pBuf->maColorMask = ColorMask(aRedMask, aGreenMask, aBlueMask);
-                break;
-            }
             case Format::ThirtyTwoBitTcMaskBGRA:
             {
                 nBitCount = 32;
                 pBuf->mnFormat = BMP_FORMAT_32BIT_TC_MASK;
-#ifdef OSL_BIGENDIAN
-                ColorMaskElement aRedMask(0x0000ff00);
-                ColorMaskElement aGreenMask(0x00ff0000);
-                ColorMaskElement aBlueMask(0xff000000);
-                sal_uInt32 nAlphaChannel(0x000000ff);
-#else
                 ColorMaskElement aRedMask(0x00ff0000);
                 ColorMaskElement aGreenMask(0x0000ff00);
                 ColorMaskElement aBlueMask(0x000000ff);
                 sal_uInt32 nAlphaChannel(0xff000000);
-#endif
                 aBlueMask.CalcMaskShift();
                 aRedMask.CalcMaskShift();
                 aGreenMask.CalcMaskShift();
@@ -245,17 +216,10 @@ BitmapBuffer* SvpSalBitmap::AcquireBuffer( BitmapAccessMode )
             {
                 nBitCount = 32;
                 pBuf->mnFormat = BMP_FORMAT_32BIT_TC_MASK;
-#ifdef OSL_BIGENDIAN
-                ColorMaskElement aRedMask(0x00ff0000);
-                ColorMaskElement aGreenMask(0x0000ff00);
-                ColorMaskElement aBlueMask(0x000000ff);
-                sal_uInt32 nAlphaChannel(0xff000000);
-#else
                 ColorMaskElement aRedMask(0x0000ff00);
                 ColorMaskElement aGreenMask(0x00ff0000);
                 ColorMaskElement aBlueMask(0xff000000);
                 sal_uInt32 nAlphaChannel(0x000000ff);
-#endif
                 aBlueMask.CalcMaskShift();
                 aRedMask.CalcMaskShift();
                 aGreenMask.CalcMaskShift();
@@ -266,17 +230,10 @@ BitmapBuffer* SvpSalBitmap::AcquireBuffer( BitmapAccessMode )
             {
                 nBitCount = 32;
                 pBuf->mnFormat = BMP_FORMAT_32BIT_TC_MASK;
-#ifdef OSL_BIGENDIAN
-                ColorMaskElement aRedMask(0x000000ff);
-                ColorMaskElement aGreenMask(0x0000ff00);
-                ColorMaskElement aBlueMask(0x00ff0000);
-                sal_uInt32 nAlphaChannel(0xff000000);
-#else
                 ColorMaskElement aRedMask(0xff000000);
                 ColorMaskElement aGreenMask(0x00ff0000);
                 ColorMaskElement aBlueMask(0x0000ff00);
                 sal_uInt32 nAlphaChannel(0x000000ff);
-#endif
                 aBlueMask.CalcMaskShift();
                 aRedMask.CalcMaskShift();
                 aGreenMask.CalcMaskShift();
@@ -287,17 +244,10 @@ BitmapBuffer* SvpSalBitmap::AcquireBuffer( BitmapAccessMode )
             {
                 nBitCount = 32;
                 pBuf->mnFormat = BMP_FORMAT_32BIT_TC_MASK;
-#ifdef OSL_BIGENDIAN
-                ColorMaskElement aRedMask(0xff000000);
-                ColorMaskElement aGreenMask(0x00ff0000);
-                ColorMaskElement aBlueMask(0x0000ff00);
-                sal_uInt32 nAlphaChannel(0x000000ff);
-#else
                 ColorMaskElement aRedMask(0x000000ff);
                 ColorMaskElement aGreenMask(0x0000ff00);
                 ColorMaskElement aBlueMask(0x00ff0000);
                 sal_uInt32 nAlphaChannel(0xff000000);
-#endif
                 aBlueMask.CalcMaskShift();
                 aRedMask.CalcMaskShift();
                 aGreenMask.CalcMaskShift();
@@ -409,7 +359,6 @@ void SvpSalBitmap::ReleaseBuffer( BitmapBuffer* pBuffer, BitmapAccessMode nMode 
             m_aBitmap = basebmp::createBitmapDevice( m_aBitmap->getSize(),
                                                      m_aBitmap->isTopDown(),
                                                      m_aBitmap->getScanlineFormat(),
-                                                     m_aBitmap->getScanlineStride(),
                                                      m_aBitmap->getBuffer(),
                                                      pPal );
         }
@@ -461,7 +410,6 @@ sal_uInt32 SvpSalBitmap::getBitCountFromScanlineFormat( basebmp::Format nFormat 
         case Format::TwentyFourBitTcMask:
             nBitCount = 24;
             break;
-        case Format::ThirtyTwoBitTcMaskBGRX:
         case Format::ThirtyTwoBitTcMaskBGRA:
         case Format::ThirtyTwoBitTcMaskARGB:
         case Format::ThirtyTwoBitTcMaskABGR:

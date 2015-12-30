@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
-/*
+/**
  * Thread that communicates with LibreOffice through LibreOfficeKit JNI interface. The thread
  * consumes events from other threads (mainly the UI thread) and acts accordingly.
  */
@@ -174,7 +174,7 @@ public class LOKitThread extends Thread {
             mApplication = LibreOfficeMainActivity.mAppContext;
         }
 
-        mLayerClient = mApplication.getLayerClient();
+        mLayerClient = LibreOfficeMainActivity.getLayerClient();
 
         mInvalidationHandler = new InvalidationHandler(LibreOfficeMainActivity.mAppContext);
         mTileProvider = TileProviderFactory.create(mLayerClient, mInvalidationHandler, filename);
@@ -243,7 +243,7 @@ public class LOKitThread extends Thread {
                 mInvalidationHandler.changeStateTo(InvalidationHandler.OverlayState.NONE);
                 break;
             case LOEvent.UNO_COMMAND:
-                mTileProvider.postUnoCommand(event.mString);
+                mTileProvider.postUnoCommand(event.mString, event.mValue);
                 break;
         }
     }
@@ -299,17 +299,18 @@ public class LOKitThread extends Thread {
 
         // to handle hyperlinks, enable single tap even in the Viewer
         boolean editing = LOKitShell.isEditingEnabled();
+        float zoomFactor = mViewportMetrics.getZoomFactor();
 
         if (touchType.equals("LongPress") && editing) {
             mInvalidationHandler.changeStateTo(InvalidationHandler.OverlayState.TRANSITION);
-            mTileProvider.mouseButtonDown(documentCoordinate, 1);
-            mTileProvider.mouseButtonUp(documentCoordinate, 1);
-            mTileProvider.mouseButtonDown(documentCoordinate, 2);
-            mTileProvider.mouseButtonUp(documentCoordinate, 2);
+            mTileProvider.mouseButtonDown(documentCoordinate, 1, zoomFactor);
+            mTileProvider.mouseButtonUp(documentCoordinate, 1, zoomFactor);
+            mTileProvider.mouseButtonDown(documentCoordinate, 2, zoomFactor);
+            mTileProvider.mouseButtonUp(documentCoordinate, 2, zoomFactor);
         } else if (touchType.equals("SingleTap")) {
             mInvalidationHandler.changeStateTo(InvalidationHandler.OverlayState.TRANSITION);
-            mTileProvider.mouseButtonDown(documentCoordinate, 1);
-            mTileProvider.mouseButtonUp(documentCoordinate, 1);
+            mTileProvider.mouseButtonDown(documentCoordinate, 1, zoomFactor);
+            mTileProvider.mouseButtonUp(documentCoordinate, 1, zoomFactor);
         } else if (touchType.equals("GraphicSelectionStart") && editing) {
             mTileProvider.setGraphicSelectionStart(documentCoordinate);
         } else if (touchType.equals("GraphicSelectionEnd") && editing) {

@@ -42,12 +42,11 @@ public:
         vcl::Window* pParent,
         const css::uno::Reference<css::frame::XFrame>& rxFrame);
     virtual ~InsertPropertyPanel();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
 private:
     VclPtr<ToolBox>        mpStandardShapesToolBox;
     VclPtr<ToolBox>        mpCustomShapesToolBox;
-    const css::uno::Reference<css::frame::XFrame> mxFrame;
 
     DECL_LINK_TYPED(WindowEventListener, VclWindowEvent&, void);
 };

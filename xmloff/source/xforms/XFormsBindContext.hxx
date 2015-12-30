@@ -35,30 +35,30 @@ class SvXMLImportContext;
 /** import the xforms:binding element */
 class XFormsBindContext : public TokenContext
 {
-    const com::sun::star::uno::Reference<com::sun::star::xforms::XModel2> mxModel;
-    com::sun::star::uno::Reference<com::sun::star::beans::XPropertySet> mxBinding;
+    const css::uno::Reference<css::xforms::XModel2> mxModel;
+    css::uno::Reference<css::beans::XPropertySet> mxBinding;
 
 public:
     XFormsBindContext( SvXMLImport& rImport,
                        sal_uInt16 nPrefix,
                        const OUString& rLocalName,
-                       const com::sun::star::uno::Reference<com::sun::star::xforms::XModel2>& xModel );
+                       const css::uno::Reference<css::xforms::XModel2>& xModel );
     virtual ~XFormsBindContext();
 
     // implement SvXMLImportContext & TokenContext methods:
 
     virtual void StartElement(
-        const com::sun::star::uno::Reference<com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList ) override;
 
 protected:
     virtual void HandleAttribute( sal_uInt16 nToken,
-                                  const OUString& rValue ) SAL_OVERRIDE;
+                                  const OUString& rValue ) override;
 
     virtual SvXMLImportContext* HandleChild(
         sal_uInt16 nToken,
         sal_uInt16 nNamespace,
         const OUString& rLocalName,
-        const com::sun::star::uno::Reference<com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList ) override;
 
 };
 

@@ -138,7 +138,7 @@ namespace dbaccess
             const SubComponentType i_eType, const OUString& i_rName )
         {
             Reference< XController > xController( i_rAppUI, UNO_QUERY_THROW );
-            ENSURE_OR_RETURN( ( i_eType == FORM ) || ( i_eType == REPORT ), "lcl_getSubComponentDef_nothrow: illegal controller", NULL );
+            ENSURE_OR_RETURN( ( i_eType == FORM ) || ( i_eType == REPORT ), "lcl_getSubComponentDef_nothrow: illegal controller", nullptr );
 
             Reference< XCommandProcessor > xCommandProcessor;
             try
@@ -183,14 +183,14 @@ namespace dbaccess
         }
 
     public:
-        virtual void    AddAttribute( enum ::xmloff::token::XMLTokenEnum i_eName, const OUString& i_rValue ) SAL_OVERRIDE;
-        virtual void    AddAttribute( enum ::xmloff::token::XMLTokenEnum i_eName, enum ::xmloff::token::XMLTokenEnum i_eValue ) SAL_OVERRIDE;
-        virtual void    StartElement( enum ::xmloff::token::XMLTokenEnum i_eName, const bool i_bIgnoreWhitespace ) SAL_OVERRIDE;
-        virtual void    EndElement  ( const bool i_bIgnoreWhitespace ) SAL_OVERRIDE;
-        virtual void    Characters( const OUString& i_rCharacters ) SAL_OVERRIDE;
+        virtual void    AddAttribute( enum ::xmloff::token::XMLTokenEnum i_eName, const OUString& i_rValue ) override;
+        virtual void    AddAttribute( enum ::xmloff::token::XMLTokenEnum i_eName, enum ::xmloff::token::XMLTokenEnum i_eValue ) override;
+        virtual void    StartElement( enum ::xmloff::token::XMLTokenEnum i_eName, const bool i_bIgnoreWhitespace ) override;
+        virtual void    EndElement  ( const bool i_bIgnoreWhitespace ) override;
+        virtual void    Characters( const OUString& i_rCharacters ) override;
 
         virtual css::uno::Reference< css::uno::XComponentContext >
-                        GetComponentContext() const SAL_OVERRIDE;
+                        GetComponentContext() const override;
 
     private:
         OUString impl_prefix( const ::xmloff::token::XMLTokenEnum i_eToken )
@@ -256,14 +256,14 @@ namespace dbaccess
 
     public:
         // XDocumentHandler
-        virtual void SAL_CALL startDocument(  ) throw (SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL endDocument(  ) throw (SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL startElement( const OUString& aName, const Reference< XAttributeList >& xAttribs ) throw (SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL endElement( const OUString& aName ) throw (SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL characters( const OUString& aChars ) throw (SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL ignorableWhitespace( const OUString& aWhitespaces ) throw (SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL processingInstruction( const OUString& aTarget, const OUString& aData ) throw (SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL setDocumentLocator( const Reference< XLocator >& xLocator ) throw (SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL startDocument(  ) throw (SAXException, RuntimeException, std::exception) override;
+        virtual void SAL_CALL endDocument(  ) throw (SAXException, RuntimeException, std::exception) override;
+        virtual void SAL_CALL startElement( const OUString& aName, const Reference< XAttributeList >& xAttribs ) throw (SAXException, RuntimeException, std::exception) override;
+        virtual void SAL_CALL endElement( const OUString& aName ) throw (SAXException, RuntimeException, std::exception) override;
+        virtual void SAL_CALL characters( const OUString& aChars ) throw (SAXException, RuntimeException, std::exception) override;
+        virtual void SAL_CALL ignorableWhitespace( const OUString& aWhitespaces ) throw (SAXException, RuntimeException, std::exception) override;
+        virtual void SAL_CALL processingInstruction( const OUString& aTarget, const OUString& aData ) throw (SAXException, RuntimeException, std::exception) override;
+        virtual void SAL_CALL setDocumentLocator( const Reference< XLocator >& xLocator ) throw (SAXException, RuntimeException, std::exception) override;
 
         const ::comphelper::NamedValueCollection&   getSettings() const { return m_aSettings; }
 

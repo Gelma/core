@@ -24,14 +24,12 @@
 #include "flyfrm.hxx"
 
 // #i28701#
-class SwFlyAtCntFrm;
+class SwFlyAtContentFrame;
 
 // Base class for those Flys that can "move freely" or better that are not
 // bound in Content.
-class SwFlyFreeFrm : public SwFlyFrm
+class SwFlyFreeFrame : public SwFlyFrame
 {
-    SwPageFrm *pPage;   // page where the Fly is registered
-
     // #i34753# - flag for at-page anchored Writer fly frames
     // to prevent a positioning - call of method <MakeObjPos()> -, if Writer
     // fly frame is already clipped during its format by the object formatter.
@@ -40,9 +38,9 @@ class SwFlyFreeFrm : public SwFlyFrm
     // #i37068# - flag to prevent move in method <CheckClip(..)>
     bool mbNoMoveOnCheckClip;
 
-    SwRect maUnclippedFrm;
+    SwRect maUnclippedFrame;
 
-    void CheckClip( const SwFormatFrmSize &rSz );  //'Emergency' Clipping.
+    void CheckClip( const SwFormatFrameSize &rSz );  //'Emergency' Clipping.
 
     /** determines, if direct environment of fly frame has 'auto' size
 
@@ -60,18 +58,17 @@ protected:
     // #i28701# - new friend class <SwFlyNotify> for access to
     // method <NotifyBackground>
     friend class SwFlyNotify;
-    virtual void NotifyBackground( SwPageFrm *pPage,
-                                   const SwRect& rRect, PrepareHint eHint) SAL_OVERRIDE;
-    SwFlyFreeFrm( SwFlyFrameFormat*, SwFrm*, SwFrm *pAnchor );
+    virtual void NotifyBackground( SwPageFrame *pPage,
+                                   const SwRect& rRect, PrepareHint eHint) override;
+    SwFlyFreeFrame( SwFlyFrameFormat*, SwFrame*, SwFrame *pAnchor );
 
-    virtual void DestroyImpl() SAL_OVERRIDE;
-    virtual ~SwFlyFreeFrm();
+    virtual void DestroyImpl() override;
+    virtual ~SwFlyFreeFrame();
 
 public:
     // #i28701#
-    TYPEINFO_OVERRIDE();
 
-    virtual void MakeAll(vcl::RenderContext* pRenderContext) SAL_OVERRIDE;
+    virtual void MakeAll(vcl::RenderContext* pRenderContext) override;
 
     // #i37068# - accessors for member <mbNoMoveOnCheckClip>
     inline void SetNoMoveOnCheckClip( const bool _bNewNoMoveOnCheckClip )
@@ -85,14 +82,14 @@ public:
     // #i34753# - accessors for member <mbNoMakePos>
     inline void SetNoMakePos( const bool _bNoMakePos )
     {
-        if ( IsFlyLayFrm() )
+        if ( IsFlyLayFrame() )
         {
             mbNoMakePos = _bNoMakePos;
         }
     }
     inline bool IsNoMakePos() const
     {
-        if ( IsFlyLayFrm() )
+        if ( IsFlyLayFrame() )
         {
             return mbNoMakePos;
         }
@@ -102,100 +99,97 @@ public:
         }
     }
 
-    inline const SwRect& GetUnclippedFrm( ) const
+    inline const SwRect& GetUnclippedFrame( ) const
     {
-        if ( maUnclippedFrm.HasArea( ) )
-            return maUnclippedFrm;
+        if ( maUnclippedFrame.HasArea( ) )
+            return maUnclippedFrame;
         else
-            return Frm();
+            return Frame();
     }
 
     /** method to determine, if a format on the Writer fly frame is possible
 
         #i28701#
         refine 'IsFormatPossible'-conditions of method
-        <SwFlyFrm::IsFormatPossible()> by:
+        <SwFlyFrame::IsFormatPossible()> by:
         format isn't possible, if Writer fly frame isn't registered at a page frame
         and its anchor frame isn't inside another Writer fly frame.
     */
-    virtual bool IsFormatPossible() const SAL_OVERRIDE;
+    virtual bool IsFormatPossible() const override;
 };
 
-// Flys that are bound to LayoutFrms and not to Content
-class SwFlyLayFrm : public SwFlyFreeFrm
+// Flys that are bound to LayoutFrames and not to Content
+class SwFlyLayFrame : public SwFlyFreeFrame
 {
 public:
     // #i28701#
-    TYPEINFO_OVERRIDE();
 
-    SwFlyLayFrm( SwFlyFrameFormat*, SwFrm*, SwFrm *pAnchor );
+    SwFlyLayFrame( SwFlyFrameFormat*, SwFrame*, SwFrame *pAnchor );
 
 protected:
-    virtual void Modify( const SfxPoolItem*, const SfxPoolItem* ) SAL_OVERRIDE;
+    virtual void Modify( const SfxPoolItem*, const SfxPoolItem* ) override;
 };
 
 // Flys that are bound to Content but not in Content
-class SwFlyAtCntFrm : public SwFlyFreeFrm
+class SwFlyAtContentFrame : public SwFlyFreeFrame
 {
 protected:
-    virtual void MakeAll(vcl::RenderContext* pRenderContext) SAL_OVERRIDE;
+    virtual void MakeAll(vcl::RenderContext* pRenderContext) override;
 
     // #i28701#
-    virtual bool _InvalidationAllowed( const InvalidationType _nInvalid ) const SAL_OVERRIDE;
+    virtual bool _InvalidationAllowed( const InvalidationType _nInvalid ) const override;
 
     /** method to assure that anchored object is registered at the correct
         page frame
 
         #i28701#
     */
-    virtual void RegisterAtCorrectPage() SAL_OVERRIDE;
-    virtual void Modify( const SfxPoolItem*, const SfxPoolItem* ) SAL_OVERRIDE;
+    virtual void RegisterAtCorrectPage() override;
+    virtual void Modify( const SfxPoolItem*, const SfxPoolItem* ) override;
 
 public:
     // #i28701#
-    TYPEINFO_OVERRIDE();
 
-    SwFlyAtCntFrm( SwFlyFrameFormat*, SwFrm*, SwFrm *pAnchor );
+    SwFlyAtContentFrame( SwFlyFrameFormat*, SwFrame*, SwFrame *pAnchor );
 
     void SetAbsPos( const Point &rNew );
 
     // #i26791#
-    virtual void MakeObjPos() SAL_OVERRIDE;
+    virtual void MakeObjPos() override;
 
     /** method to determine, if a format on the Writer fly frame is possible
 
         #i28701#
         refine 'IsFormatPossible'-conditions of method
-        <SwFlyFreeFrm::IsFormatPossible()> by:
+        <SwFlyFreeFrame::IsFormatPossible()> by:
         format isn't possible, if method <MakeAll()> is already in progress.
     */
-    virtual bool IsFormatPossible() const SAL_OVERRIDE;
+    virtual bool IsFormatPossible() const override;
 };
 
 // Flys that are bound to a character in Content
-class SwFlyInCntFrm : public SwFlyFrm
+class SwFlyInContentFrame : public SwFlyFrame
 {
     Point aRef;  // relative to this point AbsPos is being calculated
 
     bool bInvalidLayout :1;
     bool bInvalidContent  :1;
 
-    virtual void DestroyImpl() SAL_OVERRIDE;
-    virtual ~SwFlyInCntFrm();
+    virtual void DestroyImpl() override;
+    virtual ~SwFlyInContentFrame();
 
 protected:
-    virtual void NotifyBackground( SwPageFrm *pPage,
-                                   const SwRect& rRect, PrepareHint eHint) SAL_OVERRIDE;
-    virtual void MakeAll(vcl::RenderContext* pRenderContext) SAL_OVERRIDE;
-    virtual void  Modify( const SfxPoolItem*, const SfxPoolItem* ) SAL_OVERRIDE;
+    virtual void NotifyBackground( SwPageFrame *pPage,
+                                   const SwRect& rRect, PrepareHint eHint) override;
+    virtual void MakeAll(vcl::RenderContext* pRenderContext) override;
+    virtual void  Modify( const SfxPoolItem*, const SfxPoolItem* ) override;
 
 public:
     // #i28701#
-    TYPEINFO_OVERRIDE();
 
-    SwFlyInCntFrm( SwFlyFrameFormat*, SwFrm*, SwFrm *pAnchor );
+    SwFlyInContentFrame( SwFlyFrameFormat*, SwFrame*, SwFrame *pAnchor );
 
-    virtual void  Format( vcl::RenderContext* pRenderContext, const SwBorderAttrs *pAttrs = 0 ) SAL_OVERRIDE;
+    virtual void  Format( vcl::RenderContext* pRenderContext, const SwBorderAttrs *pAttrs = nullptr ) override;
 
     void SetRefPoint( const Point& rPoint, const Point &rRelAttr,
         const Point &rRelPos );
@@ -217,20 +211,20 @@ public:
     void AddRefOfst( long nOfst ) { aRef.Y() += nOfst; }
 
     // #i26791#
-    virtual void MakeObjPos() SAL_OVERRIDE;
+    virtual void MakeObjPos() override;
 
     // invalidate anchor frame on invalidation of the position, because the
     // position is calculated during the format of the anchor frame
-    virtual void _ActionOnInvalidation( const InvalidationType _nInvalid ) SAL_OVERRIDE;
+    virtual void _ActionOnInvalidation( const InvalidationType _nInvalid ) override;
 };
 
-inline void SwFlyInCntFrm::InvalidateLayout() const
+inline void SwFlyInContentFrame::InvalidateLayout() const
 {
-    const_cast<SwFlyInCntFrm*>(this)->bInvalidLayout = true;
+    const_cast<SwFlyInContentFrame*>(this)->bInvalidLayout = true;
 }
-inline void SwFlyInCntFrm::InvalidateContent() const
+inline void SwFlyInContentFrame::InvalidateContent() const
 {
-    const_cast<SwFlyInCntFrm*>(this)->bInvalidContent = true;
+    const_cast<SwFlyInContentFrame*>(this)->bInvalidContent = true;
 }
 
 

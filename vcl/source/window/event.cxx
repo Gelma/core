@@ -30,6 +30,7 @@
 #include <com/sun/star/awt/MouseEvent.hpp>
 #include <com/sun/star/awt/KeyModifier.hpp>
 #include <com/sun/star/awt/MouseButton.hpp>
+#include <comphelper/scopeguard.hxx>
 
 namespace vcl {
 
@@ -238,16 +239,27 @@ void Window::CallEventListeners( sal_uLong nEvent, void* pData )
         if ( aDelData.IsDead() )
             return;
 
-        if (!mpWindowImpl->maEventListeners.empty())
+        auto& rWindowImpl = *pWindow->mpWindowImpl;
+        if (!rWindowImpl.maChildEventListeners.empty())
         {
             // Copy the list, because this can be destroyed when calling a Link...
-            std::vector<Link<VclWindowEvent&,void>> aCopy( mpWindowImpl->maChildEventListeners );
+            std::vector<Link<VclWindowEvent&,void>> aCopy( rWindowImpl.maChildEventListeners );
+            // we use an iterating counter/flag and a set of deleted Link's to avoid O(n^2) behaviour
+            rWindowImpl.mnChildEventListenersIteratingCount++;
+            comphelper::ScopeGuard aGuard(
+                [&rWindowImpl]()
+                {
+                    rWindowImpl.mnChildEventListenersIteratingCount--;
+                    if (rWindowImpl.mnChildEventListenersIteratingCount == 0)
+                        rWindowImpl.maChildEventListenersDeleted.clear();
+                }
+            );
             for ( Link<VclWindowEvent&,void>& rLink : aCopy )
             {
                 if (aDelData.IsDead())
                     return;
-                // check this hasn't been removed in some re-enterancy scenario fdo#47368
-                if( std::find(mpWindowImpl->maChildEventListeners.begin(), mpWindowImpl->maChildEventListeners.end(), rLink) != mpWindowImpl->maChildEventListeners.end() )
+                // Check this hasn't been removed in some re-enterancy scenario fdo#47368.
+                if( rWindowImpl.maChildEventListenersDeleted.find(rLink) == rWindowImpl.maChildEventListenersDeleted.end() )
                     rLink.Call( aEvent );
             }
         }
@@ -291,6 +303,8 @@ void Window::RemoveChildEventListener( const Link<VclWindowEvent&,void>& rEventL
     {
         auto& rListeners = mpWindowImpl->maChildEventListeners;
         rListeners.erase( std::remove(rListeners.begin(), rListeners.end(), rEventListener ), rListeners.end() );
+        if (mpWindowImpl->mnChildEventListenersIteratingCount)
+            mpWindowImpl->maChildEventListenersDeleted.insert(rEventListener);
     }
 }
 
@@ -315,7 +329,7 @@ ImplSVEvent * Window::PostUserEvent( const Link<void*,void>& rLink, void* pCalle
     {
         ImplRemoveDel( &(pSVEvent->maDelData) );
         delete pSVEvent;
-        pSVEvent = 0;
+        pSVEvent = nullptr;
     }
     return pSVEvent;
 }
@@ -330,7 +344,7 @@ void Window::RemoveUserEvent( ImplSVEvent * nUserEvent )
     if ( nUserEvent->mpWindow )
     {
         nUserEvent->mpWindow->ImplRemoveDel( &(nUserEvent->maDelData) );
-        nUserEvent->mpWindow = NULL;
+        nUserEvent->mpWindow = nullptr;
     }
 
     nUserEvent->mbCall = false;
@@ -506,7 +520,7 @@ void Window::ImplCallMove()
     if( mpWindowImpl->mbFrame )
     {
         // update frame position
-        SalFrame *pParentFrame = NULL;
+        SalFrame *pParentFrame = nullptr;
         vcl::Window *pParent = ImplGetParent();
         while( pParent )
         {
@@ -580,7 +594,7 @@ void Window::ImplCallFocusChangeActivate( vcl::Window* pNewOverlapWindow,
                     pLastRealWindow->Activate();
                 }
             }
-            pSVData->maWinData.mpLastDeacWin = NULL;
+            pSVData->maWinData.mpLastDeacWin = nullptr;
         }
     }
 
@@ -620,13 +634,6 @@ void Window::ImplCallFocusChangeActivate( vcl::Window* pNewOverlapWindow,
 
 } /* namespace vcl */
 
-NotifyEvent::NotifyEvent()
-{
-    mpWindow    = NULL;
-    mpData      = NULL;
-    mnEventType = MouseNotifyEvent::NONE;
-    mnRetValue  = 0;
-}
 
 NotifyEvent::NotifyEvent( MouseNotifyEvent nEventType, vcl::Window* pWindow,
                           const void* pEvent, long nRet )

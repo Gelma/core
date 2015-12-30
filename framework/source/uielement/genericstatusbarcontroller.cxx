@@ -75,7 +75,7 @@ throw ( RuntimeException, std::exception )
     svt::StatusbarController::dispose();
 
     SolarMutexGuard aGuard;
-    m_pItemData = NULL;
+    m_pItemData = nullptr;
     m_xGraphic.clear();
     m_xStatusbarItem.clear();
 
@@ -139,7 +139,7 @@ throw ( RuntimeException, std::exception )
     if ( xGraphicProps.is() && m_xGraphic->getType() != graphic::GraphicType::EMPTY )
     {
         awt::Size aGraphicSize;
-        xGraphicProps->getPropertyValue( OUString( "SizePixel" ) ) >>= aGraphicSize;
+        xGraphicProps->getPropertyValue( "SizePixel" ) >>= aGraphicSize;
         OSL_ENSURE( aGraphicSize.Height > 0 && aGraphicSize.Width > 0, "Empty status bar graphic!" );
 
         sal_Int32 nOffset = m_xStatusbarItem->getOffset( );

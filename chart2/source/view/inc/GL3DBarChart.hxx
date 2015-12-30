@@ -13,7 +13,6 @@
 #include <GL3DPlotterBase.hxx>
 
 #include <vector>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include "VDataSeries.hxx"
 
 #include <glm/glm.hpp>
@@ -71,23 +70,23 @@ public:
 
     virtual ~GL3DBarChart();
 
-    virtual void create3DShapes(const boost::ptr_vector<VDataSeries>& rDataSeries,
-        ExplicitCategoriesProvider& rCatProvider) SAL_OVERRIDE;
+    virtual void create3DShapes(const std::vector<std::unique_ptr<VDataSeries>>& rDataSeries,
+        ExplicitCategoriesProvider& rCatProvider) override;
 
-    virtual void render() SAL_OVERRIDE;
+    virtual void render() override;
 
     /// Render one frame of the 3D bar chart.
     void renderFrame();
 
-    virtual void update() SAL_OVERRIDE;
+    virtual void update() override;
 
     /// Draw to the framebuffer context, and provide the ID of the bar that the user has clicked.
     sal_uInt32 barIdAtPosition(const Point& rPos);
-    virtual void clickedAt(const Point& rPos, sal_uInt16 nButtons) SAL_OVERRIDE;
+    virtual void clickedAt(const Point& rPos, sal_uInt16 nButtons) override;
 
-    virtual void mouseDragMove(const Point& rStartPos, const Point& rEndPos, sal_uInt16 nButtons) SAL_OVERRIDE;
-    virtual void scroll(long nDelta) SAL_OVERRIDE;
-    virtual void contextDestroyed() SAL_OVERRIDE;
+    virtual void mouseDragMove(const Point& rStartPos, const Point& rEndPos, sal_uInt16 nButtons) override;
+    virtual void scroll(long nDelta) override;
+    virtual void contextDestroyed() override;
 
     void setOpenGLWindow(OpenGLWindow* pWindow);
 
@@ -120,7 +119,7 @@ private:
     void getNeighborBarID(sal_uInt32 nSelectBarId, sal_uInt32 *pNeighborBarId);
     void addMovementScreenText(sal_uInt32 nBarId);
     css::uno::Reference<css::chart2::XChartType> mxChartType;
-    boost::ptr_vector<opengl3D::Renderable3DObject> maShapes;
+    std::vector<std::unique_ptr<opengl3D::Renderable3DObject> > maShapes;
 
     std::unique_ptr<opengl3D::OpenGL3DRenderer> mpRenderer;
     VclPtr<OpenGLWindow> mpWindow;
@@ -136,7 +135,6 @@ private:
     glm::vec3 maDefaultCameraPosition;
     glm::vec3 maDefaultCameraDirection;
 
-    glm::vec3 maStepDirection;
     float mnMaxX;
     float mnMaxY;
     float mnDistance;
@@ -152,11 +150,8 @@ private:
     {
         glm::vec3 maPos;
         float mnVal;
-        sal_Int32 mnIndex;
-        sal_Int32 mnSeriesIndex;
 
-        BarInformation(const glm::vec3& rPos, float nVal,
-                sal_Int32 nIndex, sal_Int32 nSeriesIndex);
+        BarInformation(const glm::vec3& rPos, float nVal);
     };
 
     std::map<sal_uInt32, const BarInformation> maBarMap;
@@ -176,7 +171,7 @@ private:
     bool mbScrollFlg;
     Idle maIdle;
     bool mbScreenTextNewRender;
-    boost::ptr_vector<opengl3D::Renderable3DObject> maScreenTextShapes;
+    std::vector<std::unique_ptr<opengl3D::Renderable3DObject>> maScreenTextShapes;
     OUString maFPS;
     OUString maDataUpdateFPS;
     sal_uInt32 miFrameCount;

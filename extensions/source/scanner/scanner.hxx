@@ -20,7 +20,6 @@
 #ifndef INCLUDED_EXTENSIONS_SOURCE_SCANNER_SCANNER_HXX
 #define INCLUDED_EXTENSIONS_SOURCE_SCANNER_SCANNER_HXX
 
-#include <tools/stream.hxx>
 #include <osl/mutex.hxx>
 #include <rtl/ustring.hxx>
 #include <cppuhelper/implbase.hxx>
@@ -56,26 +55,26 @@ public:
     virtual                                 ~ScannerManager();
 
     // XScannerManager
-    virtual Sequence< ScannerContext > SAL_CALL  getAvailableScanners() throw(std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL               configureScanner( ScannerContext& scanner_context ) throw( ScannerException, std::exception ) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL               configureScannerAndScan( ScannerContext& scanner_context, const Reference< com::sun::star::lang::XEventListener >& rxListener ) throw (ScannerException, RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL                   startScan( const ScannerContext& scanner_context, const Reference< com::sun::star::lang::XEventListener >& rxListener ) throw( ScannerException, std::exception ) SAL_OVERRIDE;
-    virtual ScanError SAL_CALL              getError( const ScannerContext& scanner_context ) throw( ScannerException, std::exception ) SAL_OVERRIDE;
-    virtual Reference< css::awt::XBitmap > SAL_CALL    getBitmap( const ScannerContext& scanner_context ) throw( ScannerException, std::exception ) SAL_OVERRIDE;
+    virtual Sequence< ScannerContext > SAL_CALL  getAvailableScanners() throw(std::exception) override;
+    virtual sal_Bool SAL_CALL               configureScanner( ScannerContext& scanner_context ) throw( ScannerException, std::exception ) override;
+    virtual sal_Bool SAL_CALL               configureScannerAndScan( ScannerContext& scanner_context, const Reference< css::lang::XEventListener >& rxListener ) throw (ScannerException, RuntimeException, std::exception) override;
+    virtual void SAL_CALL                   startScan( const ScannerContext& scanner_context, const Reference< css::lang::XEventListener >& rxListener ) throw( ScannerException, std::exception ) override;
+    virtual ScanError SAL_CALL              getError( const ScannerContext& scanner_context ) throw( ScannerException, std::exception ) override;
+    virtual Reference< css::awt::XBitmap > SAL_CALL    getBitmap( const ScannerContext& scanner_context ) throw( ScannerException, std::exception ) override;
 
     // XBitmap
-    virtual css::awt::Size SAL_CALL              getSize() throw(std::exception) SAL_OVERRIDE;
-    virtual Sequence< sal_Int8 > SAL_CALL        getDIB() throw(std::exception) SAL_OVERRIDE;
-    virtual Sequence< sal_Int8 > SAL_CALL        getMaskDIB() throw(std::exception) SAL_OVERRIDE;
+    virtual css::awt::Size SAL_CALL              getSize() throw(std::exception) override;
+    virtual Sequence< sal_Int8 > SAL_CALL        getDIB() throw(std::exception) override;
+    virtual Sequence< sal_Int8 > SAL_CALL        getMaskDIB() throw(std::exception) override;
 
     OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // Misc
     static OUString                         getImplementationName_Static() throw();
@@ -87,7 +86,7 @@ public:
     void                                    SetData( void* pData ) { ReleaseData(); mpData = pData; }
  };
 
-Reference< XInterface > SAL_CALL ScannerManager_CreateInstance( const Reference< com::sun::star::lang::XMultiServiceFactory >& rxFactory ) throw( Exception );
+Reference< XInterface > SAL_CALL ScannerManager_CreateInstance( const Reference< css::lang::XMultiServiceFactory >& rxFactory ) throw( Exception );
 
 #endif
 

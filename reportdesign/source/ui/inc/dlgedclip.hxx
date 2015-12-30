@@ -37,7 +37,7 @@ namespace rptui
 class OReportExchange : public TransferableHelper
 {
 public:
-    typedef ::com::sun::star::uno::Sequence< ::com::sun::star::beans::NamedValue > TSectionElements;
+    typedef css::uno::Sequence< css::beans::NamedValue > TSectionElements;
 
     /** Constructs a new exchange object with section elements
     *
@@ -69,8 +69,8 @@ public:
 
 protected:
     // TransferableHelper overridables
-    virtual void        AddSupportedFormats() SAL_OVERRIDE;
-    virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) SAL_OVERRIDE;
+    virtual void        AddSupportedFormats() override;
+    virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) override;
 private:
     TSectionElements    m_aCopyElements;
 };

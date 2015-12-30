@@ -65,13 +65,13 @@ FileOpenDialog::FileOpenDialog( const Reference< XComponentContext >& rxContext 
         {
             xAccess->setValue( ExtendedFilePickerElementIds::CHECKBOX_AUTOEXTENSION, 0, Any( true ) );
         }
-        catch( com::sun::star::uno::Exception& )
+        catch( css::uno::Exception& )
         {}
     }
 
     // collecting a list of impress filters
     Reference< XNameAccess > xFilters( rxContext->getServiceManager()->createInstanceWithContext(
-        OUString( "com.sun.star.document.FilterFactory" ), rxContext ), UNO_QUERY_THROW );
+        "com.sun.star.document.FilterFactory", rxContext ), UNO_QUERY_THROW );
     Sequence< OUString > aFilterList( xFilters->getElementNames() );
     for ( int i = 0; i < aFilterList.getLength(); i++ )
     {
@@ -97,7 +97,7 @@ FileOpenDialog::FileOpenDialog( const Reference< XComponentContext >& rxContext 
                                 j = aFilterProperties.getLength();
                         }
                         break;
-                        case TK_Name :      rProperty.Value >>= aFilterEntry.maName; break;
+                        case TK_Name :      rProperty.Value >>= aFilterEntry.maFilterEntryName; break;
                         case TK_UIName :    rProperty.Value >>= aFilterEntry.maUIName; break;
                         case TK_Type :      rProperty.Value >>= aFilterEntry.maType; break;
                         case TK_Flags :     rProperty.Value >>= aFilterEntry.maFlags; break;
@@ -116,7 +116,7 @@ FileOpenDialog::FileOpenDialog( const Reference< XComponentContext >& rxContext 
     }
 
     Reference< XNameAccess > xTypes( rxContext->getServiceManager()->createInstanceWithContext(
-        OUString( "com.sun.star.document.TypeDetection" ), rxContext ), UNO_QUERY_THROW );
+        "com.sun.star.document.TypeDetection", rxContext ), UNO_QUERY_THROW );
 
     for( std::vector< FilterEntry >::const_iterator aIter(aFilterEntryList.begin()), aEnd(aFilterEntryList.end()); aIter != aEnd; ++aIter )
     {
@@ -165,7 +165,7 @@ void FileOpenDialog::setDefaultName( const OUString& rDefaultName )
 }
 OUString FileOpenDialog::getURL() const
 {
-    Sequence< OUString > aFileSeq( mxFilePicker->getFiles() );
+    Sequence< OUString > aFileSeq( mxFilePicker->getSelectedFiles() );
     return aFileSeq.getLength() ? aFileSeq[ 0 ] : OUString();
 };
 OUString FileOpenDialog::getFilterName() const
@@ -177,7 +177,7 @@ OUString FileOpenDialog::getFilterName() const
     {
         if ( aIter->maUIName == aUIName )
         {
-            aFilterName = aIter->maName;
+            aFilterName = aIter->maFilterEntryName;
             break;
         }
     }

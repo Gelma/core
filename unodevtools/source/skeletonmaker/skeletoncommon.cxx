@@ -132,21 +132,19 @@ void checkAttributes(rtl::Reference< TypeManager > const & manager,
                  i != ent2->getDirectAttributes().end(); ++i)
             {
                 if (!containsAttribute(attributes, i->name)) {
-                    attributes.push_back(
-                        unoidl::AccumulationBasedServiceEntity::Property(
-                            i->name,
-                            i->type,
-                            (unoidl::AccumulationBasedServiceEntity::Property::
-                             Attributes(
-                                 ((i->bound
-                                   ? (unoidl::AccumulationBasedServiceEntity::
-                                      Property::ATTRIBUTE_BOUND)
-                                   : 0)
-                                  | (i->readOnly
-                                     ? (unoidl::AccumulationBasedServiceEntity::
-                                        Property::ATTRIBUTE_READ_ONLY)
-                                     : 0)))),
-                            std::vector< OUString >()));
+                    attributes.emplace_back(
+                        i->name, i->type,
+                        (unoidl::AccumulationBasedServiceEntity::Property::
+                         Attributes(
+                             ((i->bound
+                               ? (unoidl::AccumulationBasedServiceEntity::
+                                  Property::ATTRIBUTE_BOUND)
+                               : 0)
+                              | (i->readOnly
+                                 ? (unoidl::AccumulationBasedServiceEntity::
+                                    Property::ATTRIBUTE_READ_ONLY)
+                                 : 0)))),
+                        std::vector< OUString >());
                 }
             }
             break;
@@ -459,7 +457,7 @@ bool checkAddinType(rtl::Reference< TypeManager > const & manager,
     assert(manager.is());
     sal_Int32 rank;
     codemaker::UnoType::Sort sort = manager->decompose(
-        type, true, 0, &rank, 0, 0);
+        type, true, nullptr, &rank, nullptr, nullptr);
 
     if ( sort == codemaker::UnoType::SORT_LONG ||
          sort == codemaker::UnoType::SORT_DOUBLE ||

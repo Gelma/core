@@ -65,20 +65,18 @@ static const sal_uInt16 nShowAllShapesFilter=2;
  */
 SdNavigatorWin::SdNavigatorWin(
     vcl::Window* pParent,
-    ::sd::NavigatorChildWindow* pChWinCtxt,
     const SdResId& rSdResId,
     SfxBindings* pInBindings)
     : vcl::Window( pParent, rSdResId )
     , maToolbox ( VclPtr<ToolBox>::Create( this, SdResId( 1 ) ) )
     , maTlbObjects( VclPtr<SdPageObjsTLB>::Create( this, SdResId( TLB_OBJECTS ) ) )
     , maLbDocs ( VclPtr<ListBox>::Create( this, SdResId( LB_DOCS ) ) )
-    , mpChildWinContext( pChWinCtxt )
     , mbDocImported ( false )
       // On changes of the DragType: adjust SelectionMode of TLB!
     , meDragType ( NAVIGATOR_DRAGTYPE_EMBEDDED )
     , mpBindings ( pInBindings )
-    , mpNavigatorCtrlItem( 0 )
-    , mpPageNameCtrlItem( 0 )
+    , mpNavigatorCtrlItem( nullptr )
+    , mpPageNameCtrlItem( nullptr )
     , maImageList ( SdResId( IL_NAVIGATR ) )
 {
     maTlbObjects->SetViewFrame( mpBindings->GetDispatcher()->GetFrame() );
@@ -141,7 +139,7 @@ SdNavigatorWin::SdNavigatorWin(
         maMinSize.Width() = nMinWidth;
     maMinSize.Height() -= 40;
     SfxDockingWindow* pDockingParent = dynamic_cast<SfxDockingWindow*>(GetParent());
-    if (pDockingParent != NULL)
+    if (pDockingParent != nullptr)
         pDockingParent->SetMinOutputSizePixel( maMinSize );
 
 }
@@ -149,7 +147,7 @@ SdNavigatorWin::SdNavigatorWin(
 void SdNavigatorWin::SetUpdateRequestFunctor(const UpdateRequestFunctor& rUpdateRequest)
 {
     mpNavigatorCtrlItem = new SdNavigatorControllerItem( SID_NAVIGATOR_STATE, this, mpBindings, rUpdateRequest);
-    mpPageNameCtrlItem = new SdPageNameControllerItem( SID_NAVIGATOR_PAGENAME, this, mpBindings, rUpdateRequest);
+    mpPageNameCtrlItem = new SdPageNameControllerItem( SID_NAVIGATOR_PAGENAME, this, mpBindings);
 
     // InitTlb; is initiated over Slot
     if (rUpdateRequest)
@@ -200,16 +198,16 @@ void SdNavigatorWin::InitTreeLB( const SdDrawDocument* pDoc )
 
     // Restore the 'ShowAllShapes' flag from the last time (in this session)
     // that the navigator was shown.
-    if (pViewShell != NULL)
+    if (pViewShell != nullptr)
     {
         ::sd::FrameView* pFrameView = pViewShell->GetFrameView();
-        if (pFrameView != NULL)
+        if (pFrameView != nullptr)
             maTlbObjects->SetShowAllShapes(pFrameView->IsNavigatorShowingAllShapes(), false);
     }
 
     // Disable the shape filter drop down menu when there is a running slide
     // show.
-    if (pViewShell!=NULL && sd::SlideShow::IsRunning( pViewShell->GetViewShellBase() ))
+    if (pViewShell!=nullptr && sd::SlideShow::IsRunning( pViewShell->GetViewShellBase() ))
         maToolbox->EnableItem(TBI_SHAPE_FILTER, false);
     else
         maToolbox->EnableItem(TBI_SHAPE_FILTER);
@@ -260,7 +258,7 @@ NavigatorDragType SdNavigatorWin::GetNavigatorDragType()
 sd::DrawDocShell* SdNavigatorWin::GetDrawDocShell( const SdDrawDocument* pDoc )
 {
     if( !pDoc )
-        return NULL; // const as const can...
+        return nullptr; // const as const can...
     sd::DrawDocShell* pDocShell = pDoc->GetDocSh();
     return pDocShell;
 }
@@ -330,7 +328,7 @@ IMPL_LINK_TYPED( SdNavigatorWin, DropdownClickToolBoxHdl, ToolBox*, pBox, void )
                  HID_SD_NAVIGATOR_MENU1,
                  HID_SD_NAVIGATOR_MENU2,
                  HID_SD_NAVIGATOR_MENU3,
-                 0
+                 nullptr
             };
 
             for( sal_uInt16 nID = NAVIGATOR_DRAGTYPE_URL;
@@ -425,12 +423,12 @@ IMPL_LINK_NOARG_TYPED(SdNavigatorWin, ClickObjectHdl, SvTreeListBox*, bool)
     return false;
 }
 
-IMPL_LINK_NOARG(SdNavigatorWin, SelectDocumentHdl)
+IMPL_LINK_NOARG_TYPED(SdNavigatorWin, SelectDocumentHdl, ListBox&, void)
 {
     OUString aStrLb = maLbDocs->GetSelectEntry();
     long   nPos = maLbDocs->GetSelectEntryPos();
     bool   bFound = false;
-    ::sd::DrawDocShell* pDocShell = NULL;
+    ::sd::DrawDocShell* pDocShell = nullptr;
     NavDocInfo* pInfo = GetDocInfo();
 
     // is it a dragged object?
@@ -465,8 +463,6 @@ IMPL_LINK_NOARG(SdNavigatorWin, SelectDocumentHdl)
         meDragType = NAVIGATOR_DRAGTYPE_EMBEDDED;
         SetDragImage();
     }
-
-    return 0L;
 }
 
 /**
@@ -506,7 +502,7 @@ IMPL_LINK_TYPED( SdNavigatorWin, MenuSelectHdl, Menu *, pMenu, bool )
 
 IMPL_LINK_TYPED( SdNavigatorWin, ShapeFilterCallback, Menu *, pMenu, bool )
 {
-    if (pMenu != NULL)
+    if (pMenu != nullptr)
     {
         bool bShowAllShapes (maTlbObjects->GetShowAllShapes());
         sal_uInt16 nMenuId (pMenu->GetCurItemId());
@@ -530,16 +526,16 @@ IMPL_LINK_TYPED( SdNavigatorWin, ShapeFilterCallback, Menu *, pMenu, bool )
 
         // Remember the selection in the FrameView.
         NavDocInfo* pInfo = GetDocInfo();
-        if (pInfo != NULL)
+        if (pInfo != nullptr)
         {
             ::sd::DrawDocShell* pDocShell = pInfo->mpDocShell;
-            if (pDocShell != NULL)
+            if (pDocShell != nullptr)
             {
                 ::sd::ViewShell* pViewShell = pDocShell->GetViewShell();
-                if (pViewShell != NULL)
+                if (pViewShell != nullptr)
                 {
                     ::sd::FrameView* pFrameView = pViewShell->GetFrameView();
-                    if (pFrameView != NULL)
+                    if (pFrameView != nullptr)
                     {
                         pFrameView->SetIsNavigatorShowingAllShapes(bShowAllShapes);
                     }
@@ -610,7 +606,7 @@ bool SdNavigatorWin::InsertFile(const OUString& rFileName)
     else
     {
         // show dragged-in document
-        const SfxFilter* pFilter = NULL;
+        const SfxFilter* pFilter = nullptr;
         ErrCode nErr = 0;
 
         if (aFileName != maDropFileName)
@@ -625,15 +621,15 @@ bool SdNavigatorWin::InsertFile(const OUString& rFileName)
         {
             // The medium may be opened with READ/WRITE. Therefore, we first
             // check if it contains a Storage.
-            SfxMedium* pMedium = new SfxMedium( aFileName,
-                                                StreamMode::READ | StreamMode::NOCREATE);
+            std::unique_ptr<SfxMedium> xMedium(new SfxMedium(aFileName,
+                                                StreamMode::READ | StreamMode::NOCREATE));
 
-            if (pMedium->IsStorage())
+            if (xMedium->IsStorage())
             {
                 // Now depending on mode:
                 // maTlbObjects->SetSelectionMode(MULTIPLE_SELECTION);
-                // handover of ownership of pMedium;
-                SdDrawDocument* pDropDoc = maTlbObjects->GetBookmarkDoc(pMedium);
+                // handover of ownership of xMedium;
+                SdDrawDocument* pDropDoc = maTlbObjects->GetBookmarkDoc(xMedium.release());
 
                 if (pDropDoc)
                 {
@@ -650,7 +646,6 @@ bool SdNavigatorWin::InsertFile(const OUString& rFileName)
             }
             else
             {
-                delete pMedium;
                 return false;
             }
         }
@@ -694,11 +689,11 @@ void SdNavigatorWin::RefreshDocumentLB( const OUString* pDocName )
             maLbDocs->InsertEntry( aStr, 0 );
 
         ::sd::DrawDocShell* pCurrentDocShell =
-              PTR_CAST(::sd::DrawDocShell, SfxObjectShell::Current() );
-        SfxObjectShell* pSfxDocShell = SfxObjectShell::GetFirst(0, false);
+              dynamic_cast< ::sd::DrawDocShell *>( SfxObjectShell::Current() );
+        SfxObjectShell* pSfxDocShell = SfxObjectShell::GetFirst([](const SfxObjectShell*){return true;}, false);
         while( pSfxDocShell )
         {
-            ::sd::DrawDocShell* pDocShell = PTR_CAST(::sd::DrawDocShell, pSfxDocShell );
+            ::sd::DrawDocShell* pDocShell = dynamic_cast< ::sd::DrawDocShell *>( pSfxDocShell );
             if( pDocShell  && !pDocShell->IsInDestruction() && ( pDocShell->GetCreateMode() != SfxObjectCreateMode::EMBEDDED ) )
             {
                 NavDocInfo aInfo ;
@@ -724,7 +719,7 @@ void SdNavigatorWin::RefreshDocumentLB( const OUString* pDocName )
 
                 maDocList.push_back( aInfo );
             }
-            pSfxDocShell = SfxObjectShell::GetNext( *pSfxDocShell, 0, false );
+            pSfxDocShell = SfxObjectShell::GetNext( *pSfxDocShell, [](const SfxObjectShell*){return true;}, false );
         }
     }
     maLbDocs->SelectEntryPos( nPos );
@@ -755,12 +750,12 @@ NavDocInfo* SdNavigatorWin::GetDocInfo()
     {
         if( nPos == 0 )
         {
-            return NULL;
+            return nullptr;
         }
         nPos--;
     }
 
-    return nPos < maDocList.size() ? &(maDocList[ nPos ]) : NULL;
+    return nPos < maDocList.size() ? &(maDocList[ nPos ]) : nullptr;
 }
 
 /**
@@ -873,9 +868,8 @@ void SdNavigatorControllerItem::StateChanged( sal_uInt16 nSId,
 {
     if( eState >= SfxItemState::DEFAULT && nSId == SID_NAVIGATOR_STATE )
     {
-        const SfxUInt32Item* pStateItem = PTR_CAST( SfxUInt32Item, pItem );
-        DBG_ASSERT( pStateItem, "SfxUInt16Item expected");
-        sal_uInt32 nState = pStateItem->GetValue();
+        const SfxUInt32Item& rStateItem = dynamic_cast<const SfxUInt32Item&>(*pItem);
+        sal_uInt32 nState = rStateItem.GetValue();
 
         // pen
         if( nState & NAVBTN_PEN_DISABLED &&
@@ -940,11 +934,9 @@ void SdNavigatorControllerItem::StateChanged( sal_uInt16 nSId,
 SdPageNameControllerItem::SdPageNameControllerItem(
     sal_uInt16 _nId,
     SdNavigatorWin* pNavWin,
-    SfxBindings*    _pBindings,
-    const SdNavigatorWin::UpdateRequestFunctor& rUpdateRequest)
+    SfxBindings*    _pBindings)
     : SfxControllerItem( _nId, *_pBindings ),
-      pNavigatorWin( pNavWin ),
-      maUpdateRequest(rUpdateRequest)
+      pNavigatorWin( pNavWin )
 {
 }
 
@@ -957,9 +949,8 @@ void SdPageNameControllerItem::StateChanged( sal_uInt16 nSId,
         NavDocInfo* pInfo = pNavigatorWin->GetDocInfo();
         if( pInfo && pInfo->IsActive() )
         {
-            const SfxStringItem* pStateItem = PTR_CAST( SfxStringItem, pItem );
-            DBG_ASSERT( pStateItem, "SfxStringItem expected");
-            OUString aPageName = pStateItem->GetValue();
+            const SfxStringItem& rStateItem = dynamic_cast<const SfxStringItem&>(*pItem);
+            OUString aPageName = rStateItem.GetValue();
 
             if( !pNavigatorWin->maTlbObjects->HasSelectedChildren( aPageName ) )
             {

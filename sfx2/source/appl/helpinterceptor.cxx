@@ -38,8 +38,8 @@ using namespace ::com::sun::star::lang;
 
 HelpInterceptor_Impl::HelpInterceptor_Impl() :
 
-    m_pHistory  ( NULL ),
-    m_pWindow  ( NULL ),
+    m_pHistory  ( nullptr ),
+    m_pWindow  ( nullptr ),
     m_nCurPos   ( 0 )
 
 {
@@ -91,11 +91,11 @@ void HelpInterceptor_Impl::addURL( const OUString& rURL )
 // TODO ?
     if ( m_xListener.is() )
     {
-        ::com::sun::star::frame::FeatureStateEvent aEvent;
+        css::frame::FeatureStateEvent aEvent;
         URL aURL;
         aURL.Complete = rURL;
         aEvent.FeatureURL = aURL;
-        aEvent.Source = static_cast<com::sun::star::frame::XDispatch*>(this);
+        aEvent.Source = static_cast<css::frame::XDispatch*>(this);
         m_xListener->statusChanged( aEvent );
     }
 
@@ -106,7 +106,7 @@ void HelpInterceptor_Impl::addURL( const OUString& rURL )
 
 void HelpInterceptor_Impl::setInterception( Reference< XFrame > xFrame )
 {
-    m_xIntercepted = Reference< XDispatchProviderInterception>( xFrame, UNO_QUERY );
+    m_xIntercepted.set( xFrame, UNO_QUERY );
 
     if ( m_xIntercepted.is() )
         m_xIntercepted->registerDispatchProviderInterceptor( static_cast<XDispatchProviderInterceptor*>(this) );
@@ -145,7 +145,7 @@ Reference< XDispatch > SAL_CALL HelpInterceptor_Impl::queryDispatch(
     {
         DBG_ASSERT( xResult.is(), "invalid dispatch" );
         HelpDispatch_Impl* pHelpDispatch = new HelpDispatch_Impl( *this, xResult );
-        xResult = Reference< XDispatch >( static_cast< ::cppu::OWeakObject* >(pHelpDispatch), UNO_QUERY );
+        xResult.set( static_cast< ::cppu::OWeakObject* >(pHelpDispatch), UNO_QUERY );
     }
 
     return xResult;
@@ -219,8 +219,7 @@ Sequence< OUString > SAL_CALL HelpInterceptor_Impl::getInterceptedURLs()
     throw( RuntimeException, std::exception )
 
 {
-    Sequence< OUString > aURLList( 1 );
-    aURLList[0] = "vnd.sun.star.help://*";
+    Sequence<OUString> aURLList { "vnd.sun.star.help://*" };
     return aURLList;
 }
 
@@ -228,7 +227,7 @@ Sequence< OUString > SAL_CALL HelpInterceptor_Impl::getInterceptedURLs()
 // XDispatch
 
 void SAL_CALL HelpInterceptor_Impl::dispatch(
-    const URL& aURL, const Sequence< ::com::sun::star::beans::PropertyValue >& ) throw( RuntimeException, std::exception )
+    const URL& aURL, const Sequence< css::beans::PropertyValue >& ) throw( RuntimeException, std::exception )
 {
     bool bBack = aURL.Complete == ".uno:Backward";
     if ( bBack || aURL.Complete == ".uno:Forward" )
@@ -278,7 +277,7 @@ void SAL_CALL HelpInterceptor_Impl::addStatusListener(
 void SAL_CALL HelpInterceptor_Impl::removeStatusListener(
     const Reference< XStatusListener >&, const URL&) throw( RuntimeException, std::exception )
 {
-    m_xListener = 0;
+    m_xListener = nullptr;
 }
 
 // HelpListener_Impl -----------------------------------------------------
@@ -286,13 +285,13 @@ void SAL_CALL HelpInterceptor_Impl::removeStatusListener(
 HelpListener_Impl::HelpListener_Impl( HelpInterceptor_Impl* pInter )
 {
     pInterceptor = pInter;
-    pInterceptor->addStatusListener( this, ::com::sun::star::util::URL() );
+    pInterceptor->addStatusListener( this, css::util::URL() );
 }
 
 
 
-void SAL_CALL HelpListener_Impl::statusChanged( const ::com::sun::star::frame::FeatureStateEvent& Event )
-    throw( ::com::sun::star::uno::RuntimeException, std::exception )
+void SAL_CALL HelpListener_Impl::statusChanged( const css::frame::FeatureStateEvent& Event )
+    throw( css::uno::RuntimeException, std::exception )
 {
     INetURLObject aObj( Event.FeatureURL.Complete );
     aFactory = aObj.GetHost();
@@ -301,11 +300,11 @@ void SAL_CALL HelpListener_Impl::statusChanged( const ::com::sun::star::frame::F
 
 
 
-void SAL_CALL HelpListener_Impl::disposing( const ::com::sun::star::lang::EventObject& )
-    throw( ::com::sun::star::uno::RuntimeException, std::exception )
+void SAL_CALL HelpListener_Impl::disposing( const css::lang::EventObject& )
+    throw( css::uno::RuntimeException, std::exception )
 {
-    pInterceptor->removeStatusListener( this, ::com::sun::star::util::URL() );
-    pInterceptor = NULL;
+    pInterceptor->removeStatusListener( this, css::util::URL() );
+    pInterceptor = nullptr;
 }
 
 HelpStatusListener_Impl::HelpStatusListener_Impl(
@@ -317,7 +316,7 @@ HelpStatusListener_Impl::HelpStatusListener_Impl(
 HelpStatusListener_Impl::~HelpStatusListener_Impl()
 {
     if(xDispatch.is())
-        xDispatch->removeStatusListener(this, com::sun::star::util::URL());
+        xDispatch->removeStatusListener(this, css::util::URL());
 }
 
 void HelpStatusListener_Impl::statusChanged(
@@ -328,8 +327,8 @@ void HelpStatusListener_Impl::statusChanged(
 
 void HelpStatusListener_Impl::disposing( const EventObject& ) throw( RuntimeException, std::exception )
 {
-    xDispatch->removeStatusListener(this, com::sun::star::util::URL());
-    xDispatch = 0;
+    xDispatch->removeStatusListener(this, css::util::URL());
+    xDispatch = nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

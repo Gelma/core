@@ -30,7 +30,7 @@
 #include <com/sun/star/sdb/XColumn.hpp>
 #include <com/sun/star/beans/XPropertySet.hpp>
 #include <com/sun/star/ui/dialogs/TemplateDescription.hpp>
-#include <com/sun/star/ui/dialogs/XFilePicker.hpp>
+#include <com/sun/star/ui/dialogs/XFilePicker2.hpp>
 #include <com/sun/star/mail/MailServiceProvider.hpp>
 #include <com/sun/star/mail/XSmtpService.hpp>
 #include <comphelper/processfactory.hxx>
@@ -64,8 +64,8 @@ OUString CallSaveAsDialog(OUString& rFilter)
     }
 
     rFilter = aDialog.GetRealFilter();
-    uno::Reference < ui::dialogs::XFilePicker > xFP = aDialog.GetFilePicker();
-    return xFP->getFiles().getConstArray()[0];
+    uno::Reference < ui::dialogs::XFilePicker2 > xFP = aDialog.GetFilePicker();
+    return xFP->getSelectedFiles().getConstArray()[0];
 }
 
 /*
@@ -97,10 +97,7 @@ uno::Reference< mail::XSmtpService > ConnectToSmtpServer(
     {
         uno::Reference< mail::XMailServiceProvider > xMailServiceProvider(
             mail::MailServiceProvider::create( xContext ) );
-        xSmtpServer = uno::Reference< mail::XSmtpService > (
-                        xMailServiceProvider->create(
-                        mail::MailServiceType_SMTP
-                        ), uno::UNO_QUERY);
+        xSmtpServer.set(xMailServiceProvider->create(mail::MailServiceType_SMTP), uno::UNO_QUERY);
 
         uno::Reference< mail::XConnectionListener> xConnectionListener(new SwConnectionListener());
 
@@ -155,7 +152,7 @@ uno::Reference< mail::XSmtpService > ConnectToSmtpServer(
                     rConfigItem.GetMailPort(),
                     rConfigItem.IsSecureConnection() ? OUString("Ssl") : OUString("Insecure") );
         xSmtpServer->connect(xConnectionContext, xAuthenticator);
-        rxInMailService = uno::Reference< mail::XMailService >( xSmtpServer, uno::UNO_QUERY );
+        rxInMailService.set( xSmtpServer, uno::UNO_QUERY );
     }
     catch (const uno::Exception&)
     {
@@ -379,7 +376,7 @@ void SwAddressPreview::MouseButtonDown( const MouseEvent& rMEvt )
                 pImpl->nSelectedAddress != (sal_uInt16)nSelect)
         {
             pImpl->nSelectedAddress = (sal_uInt16)nSelect;
-            m_aSelectHdl.Call(this);
+            m_aSelectHdl.Call(nullptr);
         }
         Invalidate();
     }
@@ -422,7 +419,7 @@ void  SwAddressPreview::KeyInput( const KeyEvent& rKEvt )
                 pImpl->nSelectedAddress != (sal_uInt16)nSelect)
         {
             pImpl->nSelectedAddress = (sal_uInt16)nSelect;
-            m_aSelectHdl.Call(this);
+            m_aSelectHdl.Call(nullptr);
             Invalidate();
         }
     }
@@ -469,7 +466,7 @@ OUString SwAddressPreview::FillData(
     //exchange the placeholder (like <Firstname>) with the database content
     //unassigned columns are expanded to <not assigned>
     Reference< XColumnsSupplier > xColsSupp( rConfigItem.GetResultSet(), UNO_QUERY);
-    Reference <XNameAccess> xColAccess = xColsSupp.is() ? xColsSupp->getColumns() : 0;
+    Reference <XNameAccess> xColAccess = xColsSupp.is() ? xColsSupp->getColumns() : nullptr;
     Sequence< OUString> aAssignment = pAssignments ?
                     *pAssignments :
                     rConfigItem.GetColumnAssignment(

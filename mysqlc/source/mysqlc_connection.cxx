@@ -63,12 +63,11 @@ using ::osl::MutexGuard;
 OConnection::OConnection(MysqlCDriver& _rDriver, sql::Driver * _cppDriver)
     :OMetaConnection_BASE(m_aMutex)
     ,OSubComponent<OConnection, OConnection_BASE>(static_cast<cppu::OWeakObject*>(&_rDriver), this)
-    ,m_xMetaData(NULL)
+    ,m_xMetaData(nullptr)
     ,m_rDriver(_rDriver)
     ,cppDriver(_cppDriver)
     ,m_bClosed(false)
     ,m_bUseCatalog(false)
-    ,m_bUseOldDateFormat(false)
 {
     OSL_TRACE("OConnection::OConnection");
     m_rDriver.acquire();
@@ -572,35 +571,6 @@ void OConnection::disposing()
     OConnection_BASE::disposing();
 }
 
-/* ToDo - upcast the connection to MySQL_Connection and use ::getSessionVariable() */
-
-rtl::OUString OConnection::getMysqlVariable(const char *varname)
-    throw(SQLException, RuntimeException)
-{
-    OSL_TRACE("OConnection::getMysqlVariable");
-    MutexGuard aGuard(m_aMutex);
-    checkDisposed(OConnection_BASE::rBHelper.bDisposed);
-
-    rtl::OUString ret;
-    rtl::OUStringBuffer aStatement;
-    aStatement.appendAscii( "SHOW SESSION VARIABLES LIKE '" );
-    aStatement.appendAscii( varname );
-    aStatement.append( '\'' );
-
-    try {
-        XStatement * stmt = new OStatement(this, m_settings.cppConnection->createStatement());
-        Reference< XResultSet > rs = stmt->executeQuery( aStatement.makeStringAndClear() );
-        if (rs.is() && rs->next()) {
-            Reference< XRow > xRow(rs, UNO_QUERY);
-            ret = xRow->getString(2);
-        }
-    } catch (const sql::SQLException & e) {
-        mysqlc_sdbc_driver::translateAndThrow(e, *this, getConnectionEncoding());
-    }
-
-    return ret;
-}
-
 sal_Int32 OConnection::getMysqlVersion()
     throw(SQLException, RuntimeException)
 {
@@ -644,7 +614,7 @@ rtl::OUString OConnection::transFormPreparedStatement(const rtl::OUString& _sSQL
             Reference< XConnection> xCon = this;
             aArgs[0] <<= NamedValue(rtl::OUString("ActiveConnection"), makeAny(xCon));
 
-            m_xParameterSubstitution.set(m_rDriver.getFactory()->createInstanceWithArguments(rtl::OUString("org.openoffice.comp.helper.ParameterSubstitution"),aArgs),UNO_QUERY);
+            m_xParameterSubstitution.set(m_rDriver.getFactory()->createInstanceWithArguments("org.openoffice.comp.helper.ParameterSubstitution",aArgs),UNO_QUERY);
         } catch(const Exception&) {}
     }
     if ( m_xParameterSubstitution.is() ) {

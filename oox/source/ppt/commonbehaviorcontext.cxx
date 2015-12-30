@@ -26,11 +26,11 @@
 #include <com/sun/star/animations/XAnimate.hpp>
 
 #include "oox/core/fragmenthandler.hxx"
+#include <oox/ppt/pptfilterhelpers.hxx>
 
 #include "commonbehaviorcontext.hxx"
 #include "commontimenodecontext.hxx"
 #include "timetargetelementcontext.hxx"
-#include "pptfilterhelpers.hxx"
 
 #include <string.h>
 
@@ -83,8 +83,8 @@ namespace oox { namespace ppt {
         case PPT_TOKEN( attrName ):
             if( mbIsInAttrName )
             {
-                const ImplAttributeNameConversion *attrConv = gImplConversionList;
-                while( attrConv->mpMSName != NULL )
+                const ImplAttributeNameConversion *attrConv = getAttributeConversionList();
+                while( attrConv->mpMSName != nullptr )
                 {
                     if(msCurrentAttribute.equalsAscii( attrConv->mpMSName ) )
                     {

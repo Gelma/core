@@ -57,7 +57,7 @@
 
 ScAutoFmtPreview::ScAutoFmtPreview(vcl::Window* pParent)
     : Window(pParent)
-    , pCurData(NULL)
+    , pCurData(nullptr)
     , aVD(*this)
     , bFitWidth(false)
     , mbRTL(false)
@@ -194,9 +194,9 @@ void ScAutoFmtPreview::DrawString(vcl::RenderContext& rRenderContext, size_t nCo
 
     OUString cellString;
     bool bNumFormat = pCurData->GetIncludeValueFormat();
-    sal_uLong nNum;
+    sal_uInt32 nNum;
     double nVal;
-    Color* pDummy = NULL;
+    Color* pDummy = nullptr;
     sal_uInt16 nIndex = static_cast<sal_uInt16>(maArray.GetCellIndex(nCol, nRow, mbRTL));
 
     switch (nIndex)

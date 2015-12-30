@@ -34,8 +34,8 @@ namespace ucbhelper {
   * supply a new name.
   */
 class InteractionSupplyName : public InteractionContinuation,
-                              public com::sun::star::lang::XTypeProvider,
-                              public com::sun::star::ucb::XInteractionSupplyName
+                              public css::lang::XTypeProvider,
+                              public css::ucb::XInteractionSupplyName
 {
     OUString m_aName;
 
@@ -44,29 +44,29 @@ public:
     : InteractionContinuation( pRequest ) {}
 
     // XInterface
-    virtual com::sun::star::uno::Any SAL_CALL
-    queryInterface( const com::sun::star::uno::Type & rType )
-        throw( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual css::uno::Any SAL_CALL
+    queryInterface( const css::uno::Type & rType )
+        throw( css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL acquire()
-        throw() SAL_OVERRIDE;
+        throw() override;
     virtual void SAL_CALL release()
-        throw() SAL_OVERRIDE;
+        throw() override;
 
     // XTypeProvider
-    virtual com::sun::star::uno::Sequence< com::sun::star::uno::Type > SAL_CALL
+    virtual css::uno::Sequence< css::uno::Type > SAL_CALL
     getTypes()
-        throw( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual com::sun::star::uno::Sequence< sal_Int8 > SAL_CALL
+        throw( css::uno::RuntimeException, std::exception ) override;
+    virtual css::uno::Sequence< sal_Int8 > SAL_CALL
     getImplementationId()
-        throw( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
 
     // XInteractionContinuation
     virtual void SAL_CALL select()
-        throw( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
 
     // XInteractionSupplyName
     virtual void SAL_CALL setName( const OUString& Name )
-        throw ( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( css::uno::RuntimeException, std::exception ) override;
 
     // Non-interface methods.
 
@@ -113,7 +113,7 @@ uno::Sequence< sal_Int8 > SAL_CALL InteractionSupplyName::getImplementationId()
 uno::Sequence< uno::Type > SAL_CALL InteractionSupplyName::getTypes()
     throw( uno::RuntimeException, std::exception )
 {
-    static cppu::OTypeCollection* pCollection = 0;
+    static cppu::OTypeCollection* pCollection = nullptr;
       if ( !pCollection )
       {
         osl::Guard< osl::Mutex > aGuard( osl::Mutex::getGlobalMutex() );

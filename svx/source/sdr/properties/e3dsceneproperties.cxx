@@ -80,7 +80,7 @@ namespace sdr
             {
                 SdrObject* pObj = pSub->GetObj(a);
 
-                if(pObj && pObj->ISA(E3dCompoundObject))
+                if(pObj && dynamic_cast<const E3dCompoundObject* >(pObj) !=  nullptr)
                 {
                     const SfxItemSet& rSet = pObj->GetMergedItemSet();
                     SfxWhichIter aIter(rSet);
@@ -121,7 +121,7 @@ namespace sdr
             {
                 // Generate filtered ItemSet which contains all but the SDRATTR_3DSCENE items.
                 // #i50808# Leak fix, Clone produces a new instance and we get ownership here
-                std::unique_ptr<SfxItemSet> pNewSet(rSet.Clone(true));
+                std::unique_ptr<SfxItemSet> pNewSet(rSet.Clone());
                 DBG_ASSERT(pNewSet, "E3dSceneProperties::SetMergedItemSet(): Could not clone ItemSet (!)");
 
                 for(sal_uInt16 b(SDRATTR_3DSCENE_FIRST); b <= SDRATTR_3DSCENE_LAST; b++)
@@ -135,7 +135,7 @@ namespace sdr
                     {
                         SdrObject* pObj = pSub->GetObj(a);
 
-                        if(pObj && pObj->ISA(E3dCompoundObject))
+                        if(pObj && dynamic_cast<const E3dCompoundObject* >(pObj) !=  nullptr)
                         {
                             // set merged ItemSet at contained 3d object.
                             pObj->SetMergedItemSet(*pNewSet, bClearAllItems);
@@ -247,7 +247,7 @@ namespace sdr
 
         SfxStyleSheet* E3dSceneProperties::GetStyleSheet() const
         {
-            SfxStyleSheet* pRetval = 0L;
+            SfxStyleSheet* pRetval = nullptr;
 
             const SdrObjList* pSub = static_cast<const E3dScene&>(GetSdrObject()).GetSubList();
             const size_t nCount(pSub->GetObjCount());
@@ -261,7 +261,7 @@ namespace sdr
                     if(pCandidate != pRetval)
                     {
                         // different StyleSheelts, return none
-                        return 0L;
+                        return nullptr;
                     }
                 }
                 else
@@ -291,7 +291,7 @@ namespace sdr
                     while(a3DIterator.IsMore())
                     {
                         E3dObject* pObj = static_cast<E3dObject*>(a3DIterator.Next());
-                        DBG_ASSERT(pObj->ISA(E3dObject), "In scenes there are only 3D objects allowed (!)");
+                        DBG_ASSERT(dynamic_cast<const E3dObject* >(pObj) !=  nullptr, "In scenes there are only 3D objects allowed (!)");
                         pObj->GetProperties().MoveToItemPool(pSrcPool, pDestPool, pNewModel);
                     }
                 }

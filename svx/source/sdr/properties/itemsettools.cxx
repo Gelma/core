@@ -36,7 +36,7 @@ namespace sdr
     {
         ItemChangeBroadcaster::ItemChangeBroadcaster(const SdrObject& rObj)
         {
-            if(rObj.ISA(SdrObjGroup))
+            if(dynamic_cast<const SdrObjGroup*>( &rObj ) !=  nullptr)
             {
                 SdrObjListIter aIter(static_cast<const SdrObjGroup&>(rObj), IM_DEEPNOGROUPS);
                 mpData = new RectangleVector;
@@ -107,7 +107,7 @@ namespace sdr
 
             SfxWhichIter aIter(rSet);
             sal_uInt16 nWhich(aIter.FirstWhich());
-            const SfxPoolItem *pItem = NULL;
+            const SfxPoolItem *pItem = nullptr;
 
             while(nWhich)
             {

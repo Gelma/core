@@ -63,7 +63,7 @@ void FuText::StopEditMode(bool /*bTextDirection*/)
     OSL_ENSURE( pDrawLayer && (pDrawLayer == pDrDoc), "FuText::StopEditMode - missing or different drawing layers" );
 
     ScAddress aNotePos;
-    ScPostIt* pNote = 0;
+    ScPostIt* pNote = nullptr;
     if( const ScDrawObjData* pCaptData = ScDrawLayer::GetNoteCaptionData( pObject, rViewData.GetTabNo() ) )
     {
         aNotePos = pCaptData->maStart;
@@ -72,7 +72,7 @@ void FuText::StopEditMode(bool /*bTextDirection*/)
     }
 
     ScDocShell* pDocShell = rViewData.GetDocShell();
-    ::svl::IUndoManager* pUndoMgr = rDoc.IsUndoEnabled() ? pDocShell->GetUndoManager() : 0;
+    ::svl::IUndoManager* pUndoMgr = rDoc.IsUndoEnabled() ? pDocShell->GetUndoManager() : nullptr;
     bool bNewNote = false;
     if( pNote && pUndoMgr )
     {
@@ -88,7 +88,7 @@ void FuText::StopEditMode(bool /*bTextDirection*/)
             /*  Note has been created before editing, if first undo action is
                 an insert action. Needed below to decide whether to drop the
                 undo if editing a new note has been cancelled. */
-            bNewNote = (pCalcUndo->GetActionCount() > 0) && pCalcUndo->GetAction( 0 )->ISA( SdrUndoNewObj );
+            bNewNote = (pCalcUndo->GetActionCount() > 0) && dynamic_cast< SdrUndoNewObj* >(pCalcUndo->GetAction( 0 ));
 
             // create a "insert note" undo action if needed
             if( bNewNote )
@@ -109,10 +109,10 @@ void FuText::StopEditMode(bool /*bTextDirection*/)
         deletion by passing sal_True to this function. The return value changes
         from SDRENDTEXTEDIT_DELETED to SDRENDTEXTEDIT_SHOULDBEDELETED in this
         case. */
-    /*SdrEndTextEditKind eResult =*/ pView->SdrEndTextEdit( pNote != 0 );
+    /*SdrEndTextEditKind eResult =*/ pView->SdrEndTextEdit( pNote != nullptr );
 
     // or ScEndTextEdit (with drawview.hxx)
-    pViewShell->SetDrawTextUndo( 0 );
+    pViewShell->SetDrawTextUndo( nullptr );
 
     vcl::Cursor* pCur = pWindow->GetCursor();
     if( pCur && pCur->IsVisible() )
@@ -148,7 +148,7 @@ void FuText::StopEditMode(bool /*bTextDirection*/)
                 rDoc.ReleaseNote(aNotePos);
             }
             // ScDocument::DeleteNote has deleted the note that pNote points to
-            pNote = 0;
+            pNote = nullptr;
         }
 
         // finalize the undo list action

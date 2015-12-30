@@ -24,7 +24,6 @@
 #include <vector>
 #include <tools/solar.h>
 #include <tools/gen.hxx>
-#include <tools/stream.hxx>
 #include <com/sun/star/uno/Reference.h>
 #include <svtools/grfmgr.hxx>
 #include <com/sun/star/awt/Size.hpp>
@@ -324,28 +323,6 @@ enum ESCHER_dzType
    ESCHER_dzTypeMax          = 11
 };
 
-// how to interpret the colors in a shaded fill.
-enum ESCHER_ShadeType
-{
-    ESCHER_ShadeNone  = 0,        // Interpolate without correction between RGBs
-    ESCHER_ShadeGamma = 1,        // Apply gamma correction to colors
-    ESCHER_ShadeSigma = 2,        // Apply a sigma transfer function to position
-    ESCHER_ShadeBand  = 4,        // Add a flat band at the start of the shade
-    ESCHER_ShadeOneColor = 8,     // This is a one color shade
-
-   /* A parameter for the band or sigma function can be stored in the top
-      16 bits of the value - this is a proportion of *each* band of the
-      shade to make flat (or the approximate equal value for a sigma
-      function).  NOTE: the parameter is not used for the sigma function,
-      instead a built in value is used.  This value should not be changed
-      from the default! */
-    ESCHER_ShadeParameterShift = 16,
-    ESCHER_ShadeParameterMask  = 0xffff0000,
-
-    ESCHER_ShadeDefault = (ESCHER_ShadeGamma|ESCHER_ShadeSigma|
-                     (16384<<ESCHER_ShadeParameterShift))
-};
-
 // compound line style
 enum ESCHER_LineStyle
 {
@@ -556,7 +533,8 @@ enum MSOPATHTYPE
 
 const sal_uInt32 DFF_DGG_CLUSTER_SIZE       = 0x00000400;   /// Shape IDs per cluster in DGG atom.
 
-
+class SvStream;
+class SvMemoryStream;
 
 namespace com { namespace sun { namespace star {
     namespace awt {
@@ -571,26 +549,26 @@ namespace com { namespace sun { namespace star {
 
 struct MSFILTER_DLLPUBLIC EscherConnectorListEntry
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >   mXConnector;
-    ::com::sun::star::awt::Point            maPointA;
-    ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >   mXConnectToA;
-    ::com::sun::star::awt::Point            maPointB;
-    ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >   mXConnectToB;
+    css::uno::Reference< css::drawing::XShape >   mXConnector;
+    css::awt::Point                               maPointA;
+    css::uno::Reference< css::drawing::XShape >   mXConnectToA;
+    css::awt::Point                               maPointB;
+    css::uno::Reference< css::drawing::XShape >   mXConnectToB;
 
     sal_uInt32      GetConnectorRule( bool bFirst );
 
-                    EscherConnectorListEntry( const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & rC,
-                                        const ::com::sun::star::awt::Point& rPA,
-                                        ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & rSA ,
-                                        const ::com::sun::star::awt::Point& rPB,
-                                        ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & rSB ) :
+                    EscherConnectorListEntry( const css::uno::Reference< css::drawing::XShape > & rC,
+                                        const css::awt::Point& rPA,
+                                        css::uno::Reference< css::drawing::XShape > & rSA ,
+                                        const css::awt::Point& rPB,
+                                        css::uno::Reference< css::drawing::XShape > & rSB ) :
                                             mXConnector ( rC ),
                                             maPointA    ( rPA ),
                                             mXConnectToA( rSA ),
                                             maPointB    ( rPB ),
                                             mXConnectToB( rSB ) {}
 
-                    static sal_uInt32 GetClosestPoint( const tools::Polygon& rPoly, const ::com::sun::star::awt::Point& rP );
+                    static sal_uInt32 GetClosestPoint( const tools::Polygon& rPoly, const css::awt::Point& rP );
 };
 
 struct MSFILTER_DLLPUBLIC EscherExContainer
@@ -614,14 +592,14 @@ struct MSFILTER_DLLPUBLIC EscherExAtom
 struct EscherPropertyValueHelper
 {
     static bool GetPropertyValue(
-        ::com::sun::star::uno::Any& rAny,
-        const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > &,
+        css::uno::Any& rAny,
+        const css::uno::Reference< css::beans::XPropertySet > &,
         const OUString& rPropertyName,
         bool bTestPropertyAvailability = false
     );
 
-    static ::com::sun::star::beans::PropertyState GetPropertyState(
-        const ::com::sun::star::uno::Reference < ::com::sun::star::beans::XPropertySet > &,
+    static css::beans::PropertyState GetPropertyState(
+        const css::uno::Reference < css::beans::XPropertySet > &,
         const OUString& rPropertyName
     );
 };
@@ -668,7 +646,7 @@ public:
                         sal_uInt32 nPictureOffset,
                         const GraphicObject& rObj,
                         const OString& rId,
-                        const GraphicAttr* pAttr = NULL
+                        const GraphicAttr* pAttr = nullptr
                     );
 
                     ~EscherBlibEntry();
@@ -692,7 +670,7 @@ class MSFILTER_DLLPUBLIC EscherGraphicProvider
     sal_uInt32              mnBlibBufSize;
     sal_uInt32              mnBlibEntrys;
 
-    OUString           maBaseURI;
+    OUString                maBaseURI;
 
 protected:
 
@@ -700,16 +678,16 @@ protected:
 
 public:
 
-    sal_uInt32  GetBlibStoreContainerSize( SvStream* pMergePicStreamBSE = NULL ) const;
-    void        WriteBlibStoreContainer( SvStream& rStrm, SvStream* pMergePicStreamBSE = NULL  );
+    sal_uInt32  GetBlibStoreContainerSize( SvStream* pMergePicStreamBSE = nullptr ) const;
+    void        WriteBlibStoreContainer( SvStream& rStrm, SvStream* pMergePicStreamBSE = nullptr  );
     bool        WriteBlibStoreEntry(SvStream& rStrm, sal_uInt32 nBlipId,
     bool        bWritePictureOffset, sal_uInt32 nResize = 0);
     sal_uInt32  GetBlibID(
                     SvStream& rPicOutStream,
                     const OString& rGraphicId,
                     const Rectangle& rBoundRect,
-                    const com::sun::star::awt::Rectangle* pVisArea = NULL,
-                    const GraphicAttr* pGrafikAttr = NULL,
+                    const css::awt::Rectangle* pVisArea = nullptr,
+                    const GraphicAttr* pGrafikAttr = nullptr,
                     const bool ooxmlExport = false
                 );
     bool        HasGraphics() const { return mnBlibEntrys != 0; };
@@ -735,20 +713,20 @@ class MSFILTER_DLLPUBLIC EscherSolverContainer
 public:
 
     sal_uInt32      GetShapeId(
-                        const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & rShape
+                        const css::uno::Reference< css::drawing::XShape > & rShape
                     ) const;
 
     void            AddShape(
-                        const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > &,
+                        const css::uno::Reference< css::drawing::XShape > &,
                         sal_uInt32 nId
                     );
 
     void            AddConnector(
-                        const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > &,
-                        const ::com::sun::star::awt::Point& rA,
-                        ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > &,
-                        const ::com::sun::star::awt::Point& rB,
-                        ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & rConB
+                        const css::uno::Reference< css::drawing::XShape > &,
+                        const css::awt::Point& rA,
+                        css::uno::Reference< css::drawing::XShape > &,
+                        const css::awt::Point& rB,
+                        css::uno::Reference< css::drawing::XShape > & rConB
                     );
 
     void            WriteSolver( SvStream& );
@@ -794,7 +772,7 @@ class MSFILTER_DLLPUBLIC EscherPropertyContainer
 
     static sal_uInt32 ImplGetColor( const sal_uInt32 rColor, bool bSwap = true );
     void        ImplCreateGraphicAttributes(
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > & rXPropSet,
+                    const css::uno::Reference< css::beans::XPropertySet > & rXPropSet,
                     sal_uInt32 nBlibId,
                     bool bCreateCroppingAttributes
                 );
@@ -841,27 +819,27 @@ public:
     void        Commit( SvStream& rSt, sal_uInt16 nVersion = 3, sal_uInt16 nRecType = ESCHER_OPT );
 
     bool        CreateShapeProperties(
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & rXShape
+                    const css::uno::Reference< css::drawing::XShape > & rXShape
                 );
     bool        CreateOLEGraphicProperties(
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & rXOleObject
+                    const css::uno::Reference< css::drawing::XShape > & rXOleObject
                 );
     bool        CreateGraphicProperties(
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & rXShape,
+                    const css::uno::Reference< css::drawing::XShape > & rXShape,
                     const GraphicObject& rGraphicObj
                 );
     bool        CreateMediaGraphicProperties(
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & rXMediaObject
+                    const css::uno::Reference< css::drawing::XShape > & rXMediaObject
                 );
 
     /** Creates a complex ESCHER_Prop_fillBlip containing the BLIP directly (for Excel charts). */
     bool        CreateEmbeddedBitmapProperties(
                     const OUString& rBitmapUrl,
-                    ::com::sun::star::drawing::BitmapMode eBitmapMode
+                    css::drawing::BitmapMode eBitmapMode
                 );
     /** Creates a complex ESCHER_Prop_fillBlip containing a hatch style (for Excel charts). */
     bool        CreateEmbeddedHatchProperties(
-                    const ::com::sun::star::drawing::Hatch& rHatch,
+                    const css::drawing::Hatch& rHatch,
                     const Color& rBackColor,
                     bool bFillBackground
                 );
@@ -870,7 +848,7 @@ public:
                     // DR: #99897# if no GraphicProvider is present, a complex ESCHER_Prop_fillBlip
                     //             will be created, containing the BLIP directly (e.g. for Excel charts).
     bool        CreateGraphicProperties(
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > & rXPropSet,
+                    const css::uno::Reference< css::beans::XPropertySet > & rXPropSet,
                     const OUString& rSource,
                     const bool bCreateFillBitmap,
                     const bool bCreateCroppingAttributes = false,
@@ -878,50 +856,50 @@ public:
                     const bool bOOxmlExport = false
                 );
 
-    bool        CreateBlipPropertiesforOLEControl( const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > & rXPropSet, const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & rXShape);
+    bool        CreateBlipPropertiesforOLEControl( const css::uno::Reference< css::beans::XPropertySet > & rXPropSet, const css::uno::Reference< css::drawing::XShape > & rXShape);
 
     bool        CreatePolygonProperties(
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > & rXPropSet,
+                    const css::uno::Reference< css::beans::XPropertySet > & rXPropSet,
                     sal_uInt32 nFlags,
                     bool bBezier,
-                    ::com::sun::star::awt::Rectangle& rGeoRect,
-                    tools::Polygon* pPolygon = NULL
+                    css::awt::Rectangle& rGeoRect,
+                    tools::Polygon* pPolygon = nullptr
                 );
 
     static sal_uInt32 GetGradientColor(
-                    const ::com::sun::star::awt::Gradient* pGradient,
+                    const css::awt::Gradient* pGradient,
                     sal_uInt32 nStartColor
                 );
 
-    void        CreateGradientProperties( const ::com::sun::star::awt::Gradient & rGradient );
+    void        CreateGradientProperties( const css::awt::Gradient & rGradient );
     void        CreateGradientProperties(
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > &,
+                    const css::uno::Reference< css::beans::XPropertySet > &,
                     bool bTransparentGradient = false
                 );
 
     void        CreateLineProperties(
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > &,
+                    const css::uno::Reference< css::beans::XPropertySet > &,
                     bool bEdge
                 );
     void        CreateFillProperties(
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > &,
+                    const css::uno::Reference< css::beans::XPropertySet > &,
                     bool bEdge,
                     bool bTransparentGradient = false );
     void        CreateFillProperties(
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > &,
+                    const css::uno::Reference< css::beans::XPropertySet > &,
                     bool bEdge,
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & rXShape );
+                    const css::uno::Reference< css::drawing::XShape > & rXShape );
     void        CreateTextProperties(
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > &,
+                    const css::uno::Reference< css::beans::XPropertySet > &,
                     sal_uInt32 nText,
                     const bool bIsCustomShape = false,
                     const bool bIsTextFrame = true
                 );
 
     bool        CreateConnectorProperties(
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & rXShape,
+                    const css::uno::Reference< css::drawing::XShape > & rXShape,
                     EscherSolverContainer& rSolver,
-                    ::com::sun::star::awt::Rectangle& rGeoRect,
+                    css::awt::Rectangle& rGeoRect,
                     sal_uInt16& rShapeType,
                     sal_uInt16& rShapeFlags
                 );
@@ -929,25 +907,25 @@ public:
                 // Because shadow properties depends to the line and fillstyle, the CreateShadowProperties method should be called at last.
                 // It activ only when at least a FillStyle or LineStyle is set.
     bool        CreateShadowProperties(
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > &
+                    const css::uno::Reference< css::beans::XPropertySet > &
                 );
 
-        sal_Int32   GetValueForEnhancedCustomShapeParameter( const ::com::sun::star::drawing::EnhancedCustomShapeParameter& rParameter,
+    sal_Int32   GetValueForEnhancedCustomShapeParameter( const css::drawing::EnhancedCustomShapeParameter& rParameter,
                             const std::vector< sal_Int32 >& rEquationOrder, bool bAdjustTrans = false );
         // creates all necessary CustomShape properties, this includes also Text-, Shadow-, Fill-, and LineProperties
     void        CreateCustomShapeProperties(
                     const MSO_SPT eShapeType,
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > &
+                    const css::uno::Reference< css::drawing::XShape > &
                 );
     bool        IsFontWork() const;
 
     // helper functions which are also used by the escher import
     static tools::PolyPolygon  GetPolyPolygon(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & rXShape
+                            const css::uno::Reference< css::drawing::XShape > & rXShape
                         );
-    static tools::PolyPolygon  GetPolyPolygon( const ::com::sun::star::uno::Any& rSource );
+    static tools::PolyPolygon  GetPolyPolygon( const css::uno::Any& rSource );
     static MSO_SPT      GetCustomShapeType(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & rXShape,
+                            const css::uno::Reference< css::drawing::XShape > & rXShape,
                             sal_uInt32& nMirrorFlags,
                             OUString& rShapeType,
                             bool bOOXML = false
@@ -956,7 +934,7 @@ public:
     // helper functions which are also used in ooxml export
     static bool         GetLineArrow(
                             const bool bLineStart,
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > & rXPropSet,
+                            const css::uno::Reference< css::beans::XPropertySet > & rXPropSet,
                             ESCHER_LineEnd& reLineEnd,
                             sal_Int32& rnArrowLength,
                             sal_Int32& rnArrowWidth
@@ -966,18 +944,16 @@ public:
                             const MSO_SPT eShapeType,
                             sal_Int32& nAdjustmentsWhichNeedsToBeConverted
                         );
-    static bool         GetAdjustmentValue( const com::sun::star::drawing::EnhancedCustomShapeAdjustmentValue & rkProp, sal_Int32 nIndex, sal_Int32 nAdjustmentsWhichNeedsToBeConverted, sal_Int32& nValue );
+    static bool         GetAdjustmentValue( const css::drawing::EnhancedCustomShapeAdjustmentValue & rkProp, sal_Int32 nIndex, sal_Int32 nAdjustmentsWhichNeedsToBeConverted, sal_Int32& nValue );
 };
 
 
-
-typedef ::std::vector< EscherPersistEntry* > EscherPersistTable_impl;
 
 class MSFILTER_DLLPUBLIC EscherPersistTable
 {
 
 public:
-    EscherPersistTable_impl maPersistTable;
+    ::std::vector< EscherPersistEntry* > maPersistTable;
 
     bool        PtIsID( sal_uInt32 nID );
     void        PtInsert( sal_uInt32 nID, sal_uInt32 nOfs );
@@ -1048,8 +1024,8 @@ private:
         bool                        bDontWriteShape;
 
 public:
-        EscherExHostAppData() : pClientAnchor(0), pClientData(0),
-                pClientTextbox(0), pInteractionInfo(0), bDontWriteShape(false)
+        EscherExHostAppData() : pClientAnchor(nullptr), pClientData(nullptr),
+                pClientTextbox(nullptr), pInteractionInfo(nullptr), bDontWriteShape(false)
         {}
 
         void SetInteractionInfo( InteractionInfo* p )
@@ -1169,10 +1145,8 @@ class ImplEscherExSdr;
 class MSFILTER_DLLPUBLIC EscherEx : public EscherPersistTable
 {
     protected:
-        typedef ::std::unique_ptr< ImplEscherExSdr > ImplEscherExSdrPtr;
-
         EscherExGlobalRef           mxGlobal;
-        ImplEscherExSdrPtr          mpImplEscherExSdr;
+        ::std::unique_ptr< ImplEscherExSdr > mpImplEscherExSdr;
         SvStream*                   mpOutStrm;
         bool                        mbOwnsStrm;
         sal_uInt32                  mnStrmStartOfs;
@@ -1187,7 +1161,6 @@ class MSFILTER_DLLPUBLIC EscherEx : public EscherPersistTable
 
         bool                        mbEscherSpgr;
         bool                        mbEscherDg;
-        bool                        mbOleEmf;                   // OLE is EMF instead of WMF
         bool                        mbOOXML;
         OUString                    mEditAs;
 
@@ -1217,7 +1190,7 @@ public:
                 /// If pPicStreamMergeBSE is known, the BLIPs from this stream are being
                 /// merged into the MsofbtBSE Records of the EscherStream like it's
                 /// required for Excel (and maybe Word?)
-        void Flush( SvStream* pPicStreamMergeBSE = NULL );
+        void Flush( SvStream* pPicStreamMergeBSE = nullptr );
 
     /** Inserts the passed number of bytes at the current position of the
         output stream.
@@ -1266,8 +1239,8 @@ public:
     void AddChildAnchor( const Rectangle& rRectangle );
     void AddClientAnchor( const Rectangle& rRectangle );
 
-    virtual sal_uInt32 EnterGroup( const OUString& rShapeName, const Rectangle* pBoundRect = 0 );
-    sal_uInt32  EnterGroup( const Rectangle* pBoundRect = NULL );
+    virtual sal_uInt32 EnterGroup( const OUString& rShapeName, const Rectangle* pBoundRect = nullptr );
+    sal_uInt32  EnterGroup( const Rectangle* pBoundRect = nullptr );
     sal_uInt32  GetGroupLevel() const { return mnGroupLevel; };
     bool SetGroupSnapRect( sal_uInt32 nGroupLevel, const Rectangle& rRect );
     bool SetGroupLogicRect( sal_uInt32 nGroupLevel, const Rectangle& rRect );
@@ -1284,7 +1257,7 @@ public:
                 // ...Sdr... implemented in eschesdo.cxx
 
     void    AddSdrPage( const SdrPage& rPage );
-    void    AddUnoShapes( const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShapes >& rxShapes );
+    void    AddUnoShapes( const css::uno::Reference< css::drawing::XShapes >& rxShapes );
 
                 /// returns the ShapeID
     sal_uInt32  AddSdrObject( const SdrObject& rObj, bool ooxmlExport = false );
@@ -1302,7 +1275,7 @@ public:
                 /// ClientRecords. May set AppData::bDontWriteShape so the
                 /// shape is ignored.
     virtual EscherExHostAppData* StartShape(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >& rShape,
+                            const css::uno::Reference< css::drawing::XShape >& rShape,
                             const Rectangle* pChildAnchor );
 
                 /// Called after a shape is written to inform the application
@@ -1328,18 +1301,18 @@ public:
     virtual EscherExHostAppData*    EnterAdditionalTextGroup();
 
                 /// Called if an ESCHER_Prop_lTxid shall be written
-    virtual sal_uInt32  QueryTextID( const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >&, sal_uInt32 nShapeId );
+    virtual sal_uInt32  QueryTextID( const css::uno::Reference< css::drawing::XShape >&, sal_uInt32 nShapeId );
             // add an dummy rectangle shape into the escher stream
         sal_uInt32  AddDummyShape();
 
-    static const SdrObject* GetSdrObject( const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >& rXShape );
+    static const SdrObject* GetSdrObject( const css::uno::Reference< css::drawing::XShape >& rXShape );
 
     void SetHellLayerId( sal_uInt16 nId )       { mnHellLayerId = nId; }
     sal_uInt16 GetHellLayerId() const           { return mnHellLayerId; }
 
 private:
-                        EscherEx( const EscherEx& ) SAL_DELETED_FUNCTION;
-    EscherEx&           operator=( const EscherEx& ) SAL_DELETED_FUNCTION;
+                        EscherEx( const EscherEx& ) = delete;
+    EscherEx&           operator=( const EscherEx& ) = delete;
 
     // prevent C-style cast to former base class EscherGraphicProvider
     operator EscherGraphicProvider&();

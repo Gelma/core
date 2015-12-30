@@ -61,7 +61,7 @@ class SvtFontOptions_Impl : public ConfigItem
             @param      "seqPropertyNames" is the list of properties which should be updated.
         *//*-*****************************************************************************************************/
 
-        virtual void Notify( const Sequence< OUString >& seqPropertyNames ) SAL_OVERRIDE;
+        virtual void Notify( const Sequence< OUString >& seqPropertyNames ) override;
 
         /*-****************************************************************************************************
             @short      access method to get internal values
@@ -70,14 +70,13 @@ class SvtFontOptions_Impl : public ConfigItem
         *//*-*****************************************************************************************************/
 
         bool    IsFontHistoryEnabled        (                   ) const { return m_bFontHistory;}
-        void        EnableFontHistory           ( bool bState   );
 
         bool    IsFontWYSIWYGEnabled        (                   ) const { return m_bFontWYSIWYG;}
         void        EnableFontWYSIWYG           ( bool bState   );
 
     private:
 
-        virtual void ImplCommit() SAL_OVERRIDE;
+        virtual void ImplCommit() override;
 
         /*-****************************************************************************************************
             @short      return list of key names of our configuration management which represent oue module tree
@@ -221,14 +220,6 @@ void SvtFontOptions_Impl::ImplCommit()
 
 //  public method
 
-void SvtFontOptions_Impl::EnableFontHistory( bool bState )
-{
-    m_bFontHistory = bState;
-    SetModified();
-}
-
-//  public method
-
 void SvtFontOptions_Impl::EnableFontWYSIWYG( bool bState )
 {
     m_bFontWYSIWYG = bState;
@@ -256,7 +247,7 @@ Sequence< OUString > SvtFontOptions_Impl::impl_GetPropertyNames()
 //  DON'T DO IT IN YOUR HEADER!
 //  see definition for further information
 
-SvtFontOptions_Impl*    SvtFontOptions::m_pDataContainer    = NULL;
+SvtFontOptions_Impl*    SvtFontOptions::m_pDataContainer    = nullptr;
 sal_Int32               SvtFontOptions::m_nRefCount         = 0;
 
 //  constructor
@@ -268,7 +259,7 @@ SvtFontOptions::SvtFontOptions()
     // Increase our refcount ...
     ++m_nRefCount;
     // ... and initialize our data container only if it not already exist!
-    if( m_pDataContainer == NULL )
+    if( m_pDataContainer == nullptr )
     {
         m_pDataContainer = new SvtFontOptions_Impl;
 
@@ -289,7 +280,7 @@ SvtFontOptions::~SvtFontOptions()
     if( m_nRefCount <= 0 )
     {
         delete m_pDataContainer;
-        m_pDataContainer = NULL;
+        m_pDataContainer = nullptr;
     }
 }
 
@@ -299,14 +290,6 @@ bool SvtFontOptions::IsFontHistoryEnabled() const
 {
     MutexGuard aGuard( impl_GetOwnStaticMutex() );
     return m_pDataContainer->IsFontHistoryEnabled();
-}
-
-//  public method
-
-void SvtFontOptions::EnableFontHistory( bool bState )
-{
-    MutexGuard aGuard( impl_GetOwnStaticMutex() );
-    m_pDataContainer->EnableFontHistory( bState );
 }
 
 //  public method

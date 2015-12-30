@@ -54,7 +54,6 @@ struct AddonToolbarItem
     OUString aTarget;
     OUString aContext;
     OUString aControlType;
-    sal_uInt16      nWidth;
 };
 
 typedef ::std::vector< AddonToolbarItem > AddonToolbarItemContainer;
@@ -80,23 +79,22 @@ class ToolBarMerger
                                                    OUString& rImageIdentifier,
                                                    OUString& rTarget,
                                                    OUString& rContext,
-                                                   OUString& rControlType,
-                                                   sal_uInt16&      rWidth );
+                                                   OUString& rControlType );
 
-        static ReferenceToolbarPathInfo FindReferencePoint( ToolBox*               pToolbar,
+        static ReferenceToolbarPathInfo FindReferencePoint( ToolBox* pToolbar,
                                                             const OUString& rReferencePoint );
 
-        static bool       ProcessMergeOperation( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& xFrame,
-                                                 ToolBox*                         pToolbar,
-                                                 sal_uInt16                       nPos,
-                                                 sal_uInt16&                      rItemId,
-                                                 CommandToInfoMap&                rCommandMap,
+        static bool       ProcessMergeOperation( const css::uno::Reference< css::frame::XFrame >& xFrame,
+                                                 ToolBox*                  pToolbar,
+                                                 sal_uInt16                nPos,
+                                                 sal_uInt16&               rItemId,
+                                                 CommandToInfoMap&         rCommandMap,
                                                  const OUString&           rModuleIdentifier,
                                                  const OUString&           rMergeCommand,
                                                  const OUString&           rMergeCommandParameter,
                                                  const AddonToolbarItemContainer& rItems );
 
-        static bool       ProcessMergeFallback( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& xFrame,
+        static bool       ProcessMergeFallback( const css::uno::Reference< css::frame::XFrame >& xFrame,
                                                 ToolBox*                         pToolbar,
                                                 sal_uInt16                       nPos,
                                                 sal_uInt16&                      rItemId,
@@ -106,45 +104,43 @@ class ToolBarMerger
                                                 const OUString&           rMergeFallback,
                                                 const AddonToolbarItemContainer& rItems );
 
-        static bool       MergeItems( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& xFrame,
+        static bool       MergeItems( const css::uno::Reference< css::frame::XFrame >& xFrame,
                                       ToolBox*                  pToolbar,
                                       sal_uInt16                nPos,
                                       sal_uInt16                nModIndex,
                                       sal_uInt16&               rItemId,
                                       CommandToInfoMap&         rCommandMap,
-                                      const OUString&    rModuleIdentifier,
+                                      const OUString&           rModuleIdentifier,
                                       const AddonToolbarItemContainer& rAddonToolbarItems );
 
-        static bool       ReplaceItem( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& xFrame,
+        static bool       ReplaceItem( const css::uno::Reference< css::frame::XFrame >& xFrame,
                                        ToolBox*                  pToolbar,
                                        sal_uInt16                nPos,
                                        sal_uInt16&               rItemId,
                                        CommandToInfoMap&         rCommandMap,
-                                       const OUString&    rModuleIdentifier,
+                                       const OUString&           rModuleIdentifier,
                                        const AddonToolbarItemContainer& rAddonToolbarItems );
 
-        static bool       RemoveItems( ToolBox*                  pToolbar,
-                                       sal_uInt16                nPos,
+        static bool       RemoveItems( ToolBox*           pToolbar,
+                                       sal_uInt16         nPos,
                                        const OUString&    rMergeCommandParameter );
 
         static ::cppu::OWeakObject* CreateController(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > & rxContext,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > & xFrame,
-            ToolBox*               pToolbar,
+            const css::uno::Reference< css::uno::XComponentContext > & rxContext,
+            const css::uno::Reference< css::frame::XFrame > & xFrame,
+            ToolBox*        pToolbar,
             const OUString& rCommandURL,
-            sal_uInt16             nId,
-            sal_uInt16             nWidth,
+            sal_uInt16      nId,
             const OUString& rControlType );
 
         static void CreateToolbarItem( ToolBox* pToolbox,
-                                       CommandToInfoMap& rCommandMap,
                                        sal_uInt16 nPos,
                                        sal_uInt16 nItemId,
                                        const AddonToolbarItem& rAddonToolbarItem );
 
     private:
-        ToolBarMerger( const ToolBarMerger& ) SAL_DELETED_FUNCTION;
-        ToolBarMerger& operator=( const ToolBarMerger& ) SAL_DELETED_FUNCTION;
+        ToolBarMerger( const ToolBarMerger& ) = delete;
+        ToolBarMerger& operator=( const ToolBarMerger& ) = delete;
 };
 
 } // namespace framework

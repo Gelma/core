@@ -154,7 +154,7 @@ Reference< xml::input::XElement > LibraryImport::startRootElement(
     }
     else if ( mpLibArray && rLocalName == "libraries" )
     {
-        return new LibrariesElement( rLocalName, xAttributes, 0, this );
+        return new LibrariesElement( rLocalName, xAttributes, nullptr, this );
     }
     else if ( mpLibDesc && rLocalName == "library" )
     {
@@ -166,7 +166,7 @@ Reference< xml::input::XElement > LibraryImport::startRootElement(
         getBoolAttr( &aDesc.bPasswordProtected, "passwordprotected", xAttributes, XMLNS_LIBRARY_UID );
         getBoolAttr( &aDesc.bPreload, "preload", xAttributes, XMLNS_LIBRARY_UID );
 
-        return new LibraryElement( rLocalName, xAttributes, 0, this );
+        return new LibraryElement( rLocalName, xAttributes, nullptr, this );
     }
     else
     {
@@ -265,14 +265,14 @@ void LibraryElement::endElement()
     pLib->aElementNames = aElementNames;
 }
 
-Reference< ::com::sun::star::xml::sax::XDocumentHandler >
+Reference< css::xml::sax::XDocumentHandler >
 SAL_CALL importLibraryContainer( LibDescriptorArray* pLibArray )
 {
     return ::xmlscript::createDocumentHandler(
         static_cast< xml::input::XRoot * >( new LibraryImport( pLibArray ) ) );
 }
 
-::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XDocumentHandler >
+css::uno::Reference< css::xml::sax::XDocumentHandler >
 SAL_CALL importLibrary( LibDescriptor& rLib )
 {
     return ::xmlscript::createDocumentHandler(

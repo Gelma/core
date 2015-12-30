@@ -25,6 +25,7 @@
 
 #include <scitems.hxx>
 #include <comphelper/processfactory.hxx>
+#include <comphelper/sequence.hxx>
 #include <unotools/fltrcfg.hxx>
 
 #include <vcl/wmf.hxx>
@@ -104,6 +105,7 @@
 #include <oox/ole/vbaproject.hxx>
 #include <oox/ole/olestorage.hxx>
 #include <unotools/streamwrap.hxx>
+#include <o3tl/make_unique.hxx>
 
 using namespace com::sun::star;
 using namespace ::comphelper;
@@ -119,39 +121,33 @@ private:
     ::osl::Mutex m_aMutex;
 public:
     // XElementAccess
-    virtual uno::Type SAL_CALL getElementType(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE { return  cppu::UnoType<container::XIndexContainer>::get(); }
-    virtual sal_Bool SAL_CALL hasElements(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Type SAL_CALL getElementType(  ) throw (uno::RuntimeException, std::exception) override { return  cppu::UnoType<container::XIndexContainer>::get(); }
+    virtual sal_Bool SAL_CALL hasElements(  ) throw (uno::RuntimeException, std::exception) override
     {
         ::osl::MutexGuard aGuard( m_aMutex );
         return ( !IdToOleNameHash.empty() );
     }
     // XNameAcess
-    virtual uno::Any SAL_CALL getByName( const OUString& aName ) throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Any SAL_CALL getByName( const OUString& aName ) throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) override
     {
         ::osl::MutexGuard aGuard( m_aMutex );
         if ( !hasByName(aName) )
             throw container::NoSuchElementException();
         return uno::makeAny( IdToOleNameHash[ aName ] );
     }
-    virtual uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw (uno::RuntimeException, std::exception) override
     {
         ::osl::MutexGuard aGuard( m_aMutex );
-        uno::Sequence< OUString > aResult( IdToOleNameHash.size() );
-        NamedIndexToOleName::iterator it = IdToOleNameHash.begin();
-        NamedIndexToOleName::iterator it_end = IdToOleNameHash.end();
-        OUString* pName = aResult.getArray();
-        for (; it != it_end; ++it, ++pName )
-            *pName = it->first;
-        return aResult;
+        return comphelper::mapKeysToSequence( IdToOleNameHash);
     }
-    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw (uno::RuntimeException, std::exception) override
     {
         ::osl::MutexGuard aGuard( m_aMutex );
         return ( IdToOleNameHash.find( aName ) != IdToOleNameHash.end() );
     }
 
     // XNameContainer
-    virtual void SAL_CALL insertByName( const OUString& aName, const uno::Any& aElement ) throw(lang::IllegalArgumentException, container::ElementExistException, lang::WrappedTargetException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual void SAL_CALL insertByName( const OUString& aName, const uno::Any& aElement ) throw(lang::IllegalArgumentException, container::ElementExistException, lang::WrappedTargetException, uno::RuntimeException, std::exception) override
     {
         ::osl::MutexGuard aGuard( m_aMutex );
         if ( hasByName( aName ) )
@@ -161,14 +157,14 @@ public:
             throw lang::IllegalArgumentException();
        IdToOleNameHash[ aName ] = xElement;
     }
-    virtual void SAL_CALL removeByName( const OUString& aName ) throw(container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual void SAL_CALL removeByName( const OUString& aName ) throw(container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) override
     {
         ::osl::MutexGuard aGuard( m_aMutex );
         if ( !hasByName( aName ) )
             throw container::NoSuchElementException();
         IdToOleNameHash.erase( IdToOleNameHash.find( aName ) );
     }
-    virtual void SAL_CALL replaceByName( const OUString& aName, const uno::Any& aElement ) throw(lang::IllegalArgumentException, container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual void SAL_CALL replaceByName( const OUString& aName, const uno::Any& aElement ) throw(lang::IllegalArgumentException, container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) override
     {
         ::osl::MutexGuard aGuard( m_aMutex );
         if ( !hasByName( aName ) )
@@ -279,7 +275,7 @@ void ImportExcel8::Scenman()
 
 void ImportExcel8::Scenario()
 {
-    maScenList.aEntries.push_back( new ExcScenario( aIn, *pExcRoot ) );
+    maScenList.aEntries.push_back( o3tl::make_unique<ExcScenario>( aIn, *pExcRoot ) );
 }
 
 void ImportExcel8::Labelsst()
@@ -381,7 +377,7 @@ void ImportExcel8::ReadBasic()
             rFilterOpt.IsLoadExcelBasicExecutable() )
         {
             // see if we have the XCB stream
-            tools::SvRef<SotStorageStream> xXCB = xRootStrg->OpenSotStream( OUString("XCB"), STREAM_STD_READ | StreamMode::NOCREATE  );
+            tools::SvRef<SotStorageStream> xXCB = xRootStrg->OpenSotStream( "XCB", STREAM_STD_READ | StreamMode::NOCREATE  );
             if ( xXCB.Is()|| SVSTREAM_OK == xXCB->GetError() )
             {
                 ScCTBWrapper wrapper;
@@ -500,7 +496,7 @@ void ImportExcel8::AutoFilterInfo()
     XclImpAutoFilterData* pData = pExcRoot->pAutoFilterBuffer->GetByTab( GetCurrScTab() );
     if( pData )
     {
-        pData->SetAdvancedRange( NULL );
+        pData->SetAdvancedRange( nullptr );
         pData->Activate();
     }
 }
@@ -516,7 +512,7 @@ void ImportExcel8::AutoFilter()
 
 XclImpAutoFilterData::XclImpAutoFilterData( RootData* pRoot, const ScRange& rRange ) :
         ExcRoot( pRoot ),
-        pCurrDBData(NULL),
+        pCurrDBData(nullptr),
         bActive( false ),
         bCriteria( false ),
         bAutoOrAdvanced(false)
@@ -637,8 +633,7 @@ void XclImpAutoFilterData::ReadAutoFilter(
 
     sal_uInt8   nType, nOper, nBoolErr, nVal;
     sal_Int32   nRK;
-    double  fVal;
-    bool bIgnore;
+    double      fVal;
 
     sal_uInt8 nStrLen[2] = { 0, 0 };
     ScQueryEntry aEntries[2];
@@ -647,7 +642,7 @@ void XclImpAutoFilterData::ReadAutoFilter(
     {
         ScQueryEntry& rEntry = aEntries[nE];
         ScQueryEntry::Item& rItem = rEntry.GetQueryItem();
-        bIgnore = false;
+        bool bIgnore = false;
 
         nType = rStrm.ReaduInt8();
         nOper = rStrm.ReaduInt8();
@@ -823,7 +818,7 @@ void XclImpAutoFilterData::CreateScDBData()
             pCurrDBData->SetAdvancedQuerySource(&aCriteriaRange);
         }
         else
-            pCurrDBData->SetAdvancedQuerySource(NULL);
+            pCurrDBData->SetAdvancedQuerySource(nullptr);
         rDoc.SetAnonymousDBData(Tab(), pCurrDBData);
     }
 
@@ -846,7 +841,7 @@ void XclImpAutoFilterData::EnableRemoveFilter()
 void XclImpAutoFilterBuffer::Insert( RootData* pRoot, const ScRange& rRange)
 {
     if( !GetByTab( rRange.aStart.Tab() ) )
-        maFilters.push_back( new XclImpAutoFilterData( pRoot, rRange) );
+        maFilters.push_back( XclImpAutoFilterSharePtr(new XclImpAutoFilterData( pRoot, rRange) ));
 }
 
 void XclImpAutoFilterBuffer::AddAdvancedRange( const ScRange& rRange )
@@ -865,19 +860,18 @@ void XclImpAutoFilterBuffer::AddExtractPos( const ScRange& rRange )
 
 void XclImpAutoFilterBuffer::Apply()
 {
-    std::for_each(maFilters.begin(),maFilters.end(),
-        boost::bind(&XclImpAutoFilterData::Apply,_1));
+    for( const auto& rFilterPtr : maFilters )
+        rFilterPtr->Apply();
 }
 
 XclImpAutoFilterData* XclImpAutoFilterBuffer::GetByTab( SCTAB nTab )
 {
-    boost::ptr_vector<XclImpAutoFilterData>::iterator it;
-    for( it = maFilters.begin(); it != maFilters.end(); ++it )
+    for( const auto& rFilterPtr : maFilters )
     {
-        if( it->Tab() == nTab )
-            return &(*it);
+        if( rFilterPtr->Tab() == nTab )
+            return rFilterPtr.get();
     }
-    return NULL;
+    return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

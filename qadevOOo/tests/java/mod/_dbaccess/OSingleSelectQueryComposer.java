@@ -135,11 +135,7 @@ import com.sun.star.uno.XInterface;
  */
 public class OSingleSelectQueryComposer extends TestCase {
 
-    String tableName = null;
-    DBTools.DataSourceInfo srcInf = null;
-    boolean isMySQLDB = false;
     protected static final String dbSourceName = "OSingleSelectQueryComposerDataSource";
-    public XConnection conn = null;
 
     /**
     * Creating a TestEnvironment for the interfaces to be tested.

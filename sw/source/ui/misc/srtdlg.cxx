@@ -83,11 +83,11 @@ static void lcl_ClearLstBoxAndDelUserData( ListBox& rLstBox )
 // determine lines and columns for table selection
 static bool lcl_GetSelTable( SwWrtShell &rSh, sal_uInt16& rX, sal_uInt16& rY )
 {
-    const SwTableNode* pTableNd = rSh.IsCrsrInTable();
+    const SwTableNode* pTableNd = rSh.IsCursorInTable();
     if( !pTableNd )
         return false;
 
-    _FndBox aFndBox( 0, 0 );
+    _FndBox aFndBox( nullptr, nullptr );
 
     // look for all boxes / lines
     {
@@ -112,7 +112,7 @@ SwSortDlg::SwSortDlg(vcl::Window* pParent, SwWrtShell &rShell)
     , aRowText(SW_RES(STR_ROW))
     , aNumericText(SW_RES(STR_NUMERIC))
     , rSh(rShell)
-    , pColRes(0)
+    , pColRes(nullptr)
     , nX(99)
     , nY(99)
 {
@@ -205,11 +205,11 @@ SwSortDlg::SwSortDlg(vcl::Window* pParent, SwWrtShell &rShell)
     if( LANGUAGE_NONE == nLang || LANGUAGE_DONTKNOW == nLang )
         nLang = (sal_uInt16)GetAppLanguage();
 
-    m_pLangLB->SetLanguageList( SvxLanguageListFlags::ALL | SvxLanguageListFlags::ONLY_KNOWN, true, false);
+    m_pLangLB->SetLanguageList( SvxLanguageListFlags::ALL | SvxLanguageListFlags::ONLY_KNOWN, true );
     m_pLangLB->SelectLanguage( nLang );
 
-    LanguageHdl( 0 );
-    m_pLangLB->SetSelectHdl( LINK( this, SwSortDlg, LanguageHdl ));
+    LanguageHdl( nullptr );
+    m_pLangLB->SetSelectHdl( LINK( this, SwSortDlg, LanguageListBoxHdl ));
 
     m_pSortUp1RB->Check(bAsc1);
     m_pSortDn1RB->Check(!bAsc1);
@@ -332,7 +332,7 @@ void SwSortDlg::Apply()
         OUString sEntry( m_pTypDLB1->GetSelectEntry() );
         if( sEntry == aNumericText )
             sEntry.clear();
-        else if( 0 != (pUserData = m_pTypDLB1->GetSelectEntryData()) )
+        else if( nullptr != (pUserData = m_pTypDLB1->GetSelectEntryData()) )
             sEntry = *static_cast<OUString*>(pUserData);
 
         SwSortKey *pKey = new SwSortKey( nCol1, sEntry,
@@ -345,7 +345,7 @@ void SwSortDlg::Apply()
         OUString sEntry( m_pTypDLB2->GetSelectEntry() );
         if( sEntry == aNumericText )
             sEntry.clear();
-        else if( 0 != (pUserData = m_pTypDLB2->GetSelectEntryData()) )
+        else if( nullptr != (pUserData = m_pTypDLB2->GetSelectEntryData()) )
             sEntry = *static_cast<OUString*>(pUserData);
 
         SwSortKey *pKey = new SwSortKey( nCol2, sEntry,
@@ -358,7 +358,7 @@ void SwSortDlg::Apply()
         OUString sEntry( m_pTypDLB3->GetSelectEntry() );
         if( sEntry == aNumericText )
             sEntry.clear();
-        else if( 0 != (pUserData = m_pTypDLB3->GetSelectEntryData()) )
+        else if( nullptr != (pUserData = m_pTypDLB3->GetSelectEntryData()) )
             sEntry = *static_cast<OUString*>(pUserData);
 
         SwSortKey *pKey = new SwSortKey( nCol3, sEntry,
@@ -403,7 +403,7 @@ IMPL_LINK_NOARG_TYPED(SwSortDlg, DelimCharHdl, Button*, void)
             rSh.GetView().GetViewFrame()->GetFrame().GetFrameInterface(), RID_SVXDLG_CHARMAP ));
         if( RET_OK == pMap->Execute() )
         {
-            SFX_ITEMSET_ARG( pMap->GetOutputItemSet(), pItem, SfxInt32Item, SID_ATTR_CHAR, false );
+            const SfxInt32Item* pItem = SfxItemSet::GetItem<SfxInt32Item>(pMap->GetOutputItemSet(), SID_ATTR_CHAR, false);
             if ( pItem )
                 m_pDelimEdt->SetText( OUString(sal_Unicode(pItem->GetValue())) );
         }
@@ -440,7 +440,12 @@ IMPL_LINK_TYPED( SwSortDlg, CheckHdl, Button*, pControl, void )
         static_cast<CheckBox *>(pControl)->Check();
 }
 
-IMPL_LINK( SwSortDlg, LanguageHdl, ListBox*, pLBox )
+IMPL_LINK_TYPED( SwSortDlg, LanguageListBoxHdl, ListBox&, rLBox, void )
+{
+    LanguageHdl(&rLBox);
+}
+
+void SwSortDlg::LanguageHdl(ListBox* pLBox)
 {
     Sequence < OUString > aSeq( GetAppCollator().listCollatorAlgorithms(
                 LanguageTag( m_pLangLB->GetSelectLanguage()).getLocale() ));
@@ -489,7 +494,6 @@ IMPL_LINK( SwSortDlg, LanguageHdl, ListBox*, pLBox )
         else if( LISTBOX_ENTRY_NOTFOUND == pL->GetSelectEntryPos() )
             pL->SelectEntryPos( 0 );
     }
-    return 0;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -31,32 +31,31 @@ class SdrCustomShapeAdjustmentValue
     friend class SdrCustomShapeAdjustmentItem;
 };
 
-class SdrCustomShapeAdjustmentItem : public SfxPoolItem
+class SVX_DLLPUBLIC SdrCustomShapeAdjustmentItem : public SfxPoolItem
 {
             std::vector<SdrCustomShapeAdjustmentValue>  aAdjustmentValueList;
 
     public:
 
-            TYPEINFO_OVERRIDE();
-            SVX_DLLPUBLIC SdrCustomShapeAdjustmentItem();
+            SdrCustomShapeAdjustmentItem();
             SdrCustomShapeAdjustmentItem( SvStream& rIn, sal_uInt16 nVersion );
-            SVX_DLLPUBLIC virtual ~SdrCustomShapeAdjustmentItem();
+            virtual ~SdrCustomShapeAdjustmentItem();
 
-            virtual bool                operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+            virtual bool                operator==( const SfxPoolItem& ) const override;
             virtual bool GetPresentation(SfxItemPresentation ePresentation,
                                             SfxMapUnit eCoreMetric, SfxMapUnit ePresentationMetric,
-                                            OUString &rText, const IntlWrapper * = 0) const SAL_OVERRIDE;
-            virtual SfxPoolItem*        Create( SvStream&, sal_uInt16 nItem ) const SAL_OVERRIDE;
-            virtual SvStream&           Store( SvStream&, sal_uInt16 nVersion ) const SAL_OVERRIDE;
-            virtual SfxPoolItem*        Clone( SfxItemPool* pPool = NULL ) const SAL_OVERRIDE;
-            virtual sal_uInt16          GetVersion( sal_uInt16 nFileFormatVersion ) const SAL_OVERRIDE;
+                                            OUString &rText, const IntlWrapper * = nullptr) const override;
+            virtual SfxPoolItem*        Create( SvStream&, sal_uInt16 nItem ) const override;
+            virtual SvStream&           Store( SvStream&, sal_uInt16 nVersion ) const override;
+            virtual SfxPoolItem*        Clone( SfxItemPool* pPool = nullptr ) const override;
+            virtual sal_uInt16          GetVersion( sal_uInt16 nFileFormatVersion ) const override;
 
-            virtual bool QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-            virtual bool PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+            virtual bool QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+            virtual bool PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
             sal_uInt32                          GetCount() const { return aAdjustmentValueList.size(); };
-            SVX_DLLPUBLIC const SdrCustomShapeAdjustmentValue&  GetValue( sal_uInt32 nIndex ) const;
-            SVX_DLLPUBLIC void                              SetValue( sal_uInt32 nIndex,
+            const SdrCustomShapeAdjustmentValue&  GetValue( sal_uInt32 nIndex ) const;
+            void                              SetValue( sal_uInt32 nIndex,
                                                         const SdrCustomShapeAdjustmentValue& rVal );
 };
 

@@ -35,7 +35,6 @@
 using namespace utl;
 using namespace com::sun::star::uno;
 
-TYPEINIT1(ScTpCalcItem, SfxPoolItem);
 
 using sc::HMMToTwips;
 using sc::TwipsToHMM;
@@ -71,7 +70,8 @@ ScDocOptions::ScDocOptions( const ScDocOptions& rCpy )
             bMatchWholeCell( rCpy.bMatchWholeCell ),
             bDoAutoSpell( rCpy.bDoAutoSpell ),
             bLookUpColRowNames( rCpy.bLookUpColRowNames ),
-            bFormulaRegexEnabled( rCpy.bFormulaRegexEnabled )
+            bFormulaRegexEnabled( rCpy.bFormulaRegexEnabled ),
+            bWriteCalcConfig( rCpy.bWriteCalcConfig )
 {
 }
 
@@ -96,6 +96,7 @@ void ScDocOptions::ResetDocOptions()
     bDoAutoSpell        = false;
     bLookUpColRowNames  = true;
     bFormulaRegexEnabled= true;
+    bWriteCalcConfig    = true;
 }
 
 //      ScTpCalcItem - Daten fuer die CalcOptions-TabPage
@@ -204,7 +205,7 @@ ScDocCfg::ScDocCfg() :
 
     Sequence<OUString> aNames;
     Sequence<Any> aValues;
-    const Any* pValues = NULL;
+    const Any* pValues = nullptr;
 
     sal_uInt16 nDateDay, nDateMonth, nDateYear;
     GetDate( nDateDay, nDateMonth, nDateYear );

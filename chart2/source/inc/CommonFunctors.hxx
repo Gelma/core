@@ -107,7 +107,7 @@ struct OOO_DLLPUBLIC_CHARTTOOLS OUStringToDouble : public ::std::unary_function<
     double operator() ( const OUString & rStr )
     {
         rtl_math_ConversionStatus eConversionStatus;
-        double fResult = ::rtl::math::stringToDouble( rStr, '.', ',', & eConversionStatus, NULL );
+        double fResult = ::rtl::math::stringToDouble( rStr, '.', ',', & eConversionStatus );
 
         if( eConversionStatus != rtl_math_ConversionStatus_Ok )
             ::rtl::math::setNan( & fResult );
@@ -173,21 +173,6 @@ public:
 private:
     Value m_aValueToCompareWith;
 };
-
-/** Searches for data in a given map, i.e. not for the key but for the data
-    pointed to by the keys.
-
-    To find a key (value) you can use rMap.find( rValue )
- */
-template< class MapType >
-    inline typename MapType::const_iterator
-    findValueInMap( const MapType & rMap, const typename MapType::mapped_type & rData )
-{
-    return ::std::find_if( rMap.begin(), rMap.end(),
-            [&rData]
-            ( const typename MapType::value_type& cp )
-            { return rData == cp.second; } );
-}
 
 } //  namespace CommonFunctors
 } //  namespace chart

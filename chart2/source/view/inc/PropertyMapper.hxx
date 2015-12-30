@@ -28,20 +28,11 @@
 namespace chart
 {
 
-/**
-*/
-
-typedef ::std::map< OUString, OUString >            tPropertyNameMap;
-typedef ::comphelper::MakeMap< OUString, OUString > tMakePropertyNameMap;
-
+typedef ::std::map< OUString, OUString >                              tPropertyNameMap;
+typedef ::comphelper::MakeMap< OUString, OUString >                   tMakePropertyNameMap;
 typedef ::std::map< OUString, ::com::sun::star::uno::Any >            tPropertyNameValueMap;
-typedef ::comphelper::MakeMap< OUString, ::com::sun::star::uno::Any > tMakePropertyNameValueMap;
-
-typedef ::com::sun::star::uno::Sequence< OUString > tNameSequence;
-typedef ::comphelper::MakeSequence< OUString >      tMakeNameSequence;
-
+typedef ::com::sun::star::uno::Sequence< OUString >                   tNameSequence;
 typedef ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any > tAnySequence;
-typedef ::comphelper::MakeSequence< ::com::sun::star::uno::Any >      tMakeAnySequence;
 
 /**
  * PropertyMapper provides easy mapping of the property names of various
@@ -58,7 +49,7 @@ public:
         , const ::com::sun::star::uno::Reference<
                 ::com::sun::star::beans::XPropertySet >& xSource
         , const tPropertyNameMap& rMap
-        , tPropertyNameValueMap* pOverwriteMap=0 );
+        , tPropertyNameValueMap* pOverwriteMap=nullptr );
 
     /**
      * Fetch property values from the source object and map it to the

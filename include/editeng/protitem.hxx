@@ -39,23 +39,23 @@ class EDITENG_DLLPUBLIC SvxProtectItem : public SfxPoolItem
     bool bPos   :1;     // Position protected
 
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     explicit inline SvxProtectItem( const sal_uInt16 nId  );
     inline SvxProtectItem &operator=( const SvxProtectItem &rCpy );
 
     // "pure virtual Methods" from SfxPoolItem
-    virtual bool             operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual bool             operator==( const SfxPoolItem& ) const override;
 
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
-                                    OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    OUString &rText, const IntlWrapper * = nullptr ) const override;
 
 
-    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*     Create(SvStream &, sal_uInt16) const SAL_OVERRIDE;
-    virtual SvStream&        Store(SvStream &, sal_uInt16 nItemVersion ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual SfxPoolItem*     Create(SvStream &, sal_uInt16) const override;
+    virtual SvStream&        Store(SvStream &, sal_uInt16 nItemVersion ) const override;
 
     bool IsContentProtected() const { return bCntnt; }
     bool IsSizeProtected()  const { return bSize;  }
@@ -64,9 +64,9 @@ public:
     void SetSizeProtect ( bool bNew ) { bSize  = bNew; }
     void SetPosProtect  ( bool bNew ) { bPos   = bNew; }
 
-    virtual bool            QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool            PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
-    void dumpAsXml(struct _xmlTextWriter* pWriter) const SAL_OVERRIDE;
+    virtual bool            QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool            PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
+    void dumpAsXml(struct _xmlTextWriter* pWriter) const override;
 };
 
 inline SvxProtectItem::SvxProtectItem( const sal_uInt16 nId )

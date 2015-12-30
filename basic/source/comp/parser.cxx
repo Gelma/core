@@ -106,7 +106,7 @@ static const SbiStatement StmntTable [] = {
 { WITH,     &SbiParser::With,       N, Y, }, // WITH
 { WRITE,    &SbiParser::Write,      N, Y, }, // WRITE
 
-{ NIL, NULL, N, N }
+{ NIL, nullptr, N, N }
 };
 
 
@@ -119,9 +119,9 @@ SbiParser::SbiParser( StarBASIC* pb, SbModule* pm )
 {
     eCurExpr = SbSYMBOL;
     eEndTok  = NIL;
-    pProc    = NULL;
-    pStack   = NULL;
-    pWithVar = NULL;
+    pProc    = nullptr;
+    pStack   = nullptr;
+    pWithVar = nullptr;
     nBase    = 0;
     bText    =
     bGblDefs =
@@ -156,10 +156,9 @@ SbiSymDef* SbiParser::CheckRTLForSym(const OUString& rSym, SbxDataType eType)
     if (!pVar)
         return nullptr;
 
-    if (pVar->IsA(TYPE(SbxMethod)))
+    if (SbxMethod* pMethod = dynamic_cast<SbxMethod*>(pVar))
     {
         SbiProcDef* pProc_ = aRtlSyms.AddProc( rSym );
-        SbxMethod* pMethod = static_cast<SbxMethod*>(pVar);
         if (pMethod->IsRuntimeFunction())
         {
             pProc_->SetType( pMethod->GetRuntimeFunctionReturnType() );
@@ -480,7 +479,7 @@ SbiExprNode* SbiParser::GetWithVar()
             return p->pWithVar;
         p = p->pNext;
     }
-    return NULL;
+    return nullptr;
 }
 
 

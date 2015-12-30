@@ -48,36 +48,30 @@ class StylePresetsPanel : public PanelLayout,
     friend class VclPtr<StylePresetsPanel>;
 public:
     static VclPtr<vcl::Window> Create(vcl::Window* pParent,
-                                  const css::uno::Reference<css::frame::XFrame>& rxFrame,
-                                  SfxBindings* pBindings);
+                                  const css::uno::Reference<css::frame::XFrame>& rxFrame);
 
     virtual void NotifyItemUpdate(const sal_uInt16 nSId,
                                   const SfxItemState eState,
                                   const SfxPoolItem* pState,
-                                  const bool bIsEnabled) SAL_OVERRIDE;
+                                  const bool bIsEnabled) override;
 
 private:
     struct TemplateEntry
     {
-        TemplateEntry(OUString& rName, OUString& rURL)
-            : maName(rName)
-            , maURL(rURL)
+        explicit TemplateEntry(const OUString& rURL)
+            : maURL(rURL)
         {}
 
-        OUString maName;
         OUString maURL;
     };
 
     void RefreshList();
 
     StylePresetsPanel(vcl::Window* pParent,
-                   const css::uno::Reference<css::frame::XFrame>& rxFrame,
-                   SfxBindings* pBindings);
+                   const css::uno::Reference<css::frame::XFrame>& rxFrame);
 
     virtual ~StylePresetsPanel();
-    virtual void dispose() SAL_OVERRIDE;
-
-    SfxBindings* mpBindings;
+    virtual void dispose() override;
 
     VclPtr<ValueSet> mpValueSet;
 

@@ -102,7 +102,7 @@ private:
 public:
     explicit ScVbaControlListener( ScVbaControl *pTmpControl );
     virtual ~ScVbaControlListener();
-    virtual void SAL_CALL disposing( const lang::EventObject& rEventObject ) throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing( const lang::EventObject& rEventObject ) throw( uno::RuntimeException, std::exception ) override;
 };
 
 ScVbaControlListener::ScVbaControlListener( ScVbaControl *pTmpControl ): pControl( pTmpControl )
@@ -119,7 +119,7 @@ ScVbaControlListener::disposing( const lang::EventObject& ) throw( uno::RuntimeE
     if( pControl )
     {
         pControl->removeResource();
-        pControl = NULL;
+        pControl = nullptr;
     }
 }
 
@@ -170,8 +170,8 @@ void ScVbaControl::removeResource() throw( uno::RuntimeException )
 {
     uno::Reference< lang::XComponent > xComponent( m_xControl, uno::UNO_QUERY_THROW );
     xComponent->removeEventListener( m_xEventListener );
-    m_xControl= NULL;
-    m_xProps = NULL;
+    m_xControl= nullptr;
+    m_xProps = nullptr;
 }
 
 //In design model has different behavior
@@ -427,7 +427,7 @@ void SAL_CALL ScVbaControl::setTag( const OUString& aTag )
     m_aControlTag = aTag;
 }
 
-::sal_Int32 SAL_CALL ScVbaControl::getForeColor() throw (::com::sun::star::uno::RuntimeException)
+::sal_Int32 SAL_CALL ScVbaControl::getForeColor() throw (css::uno::RuntimeException)
 {
     sal_Int32 nForeColor = -1;
     m_xProps->getPropertyValue( "TextColor" ) >>= nForeColor;
@@ -491,7 +491,7 @@ static Pointer lcl_msoPointerToLOPointer( long msoPointerStyle )
 }
 
 ::sal_Int32 SAL_CALL
-ScVbaControl::getMousePointer() throw (::com::sun::star::uno::RuntimeException, std::exception)
+ScVbaControl::getMousePointer() throw (css::uno::RuntimeException, std::exception)
 {
     PointerStyle eType = PointerStyle::Arrow; // default ?
     vcl::Window* pWindow = VCLUnoHelper::GetWindow( getWindowPeer() );
@@ -503,7 +503,7 @@ ScVbaControl::getMousePointer() throw (::com::sun::star::uno::RuntimeException, 
 }
 
 void SAL_CALL
-ScVbaControl::setMousePointer( ::sal_Int32 _mousepointer ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+ScVbaControl::setMousePointer( ::sal_Int32 _mousepointer ) throw (css::uno::RuntimeException, std::exception)
 {
     vcl::Window* pWindow = VCLUnoHelper::GetWindow( getWindowPeer() );
     if ( pWindow )
@@ -771,7 +771,7 @@ class ControlProviderImpl : public cppu::WeakImplHelper< XControlProvider >
     uno::Reference< uno::XComponentContext > m_xCtx;
 public:
     explicit ControlProviderImpl( const uno::Reference< uno::XComponentContext >& xCtx ) : m_xCtx( xCtx ) {}
-    virtual uno::Reference< msforms::XControl > SAL_CALL createControl( const uno::Reference< drawing::XControlShape >& xControl, const uno::Reference< frame::XModel >& xDocOwner ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual uno::Reference< msforms::XControl > SAL_CALL createControl( const uno::Reference< drawing::XControlShape >& xControl, const uno::Reference< frame::XModel >& xDocOwner ) throw (uno::RuntimeException, std::exception) override;
 };
 
 uno::Reference< msforms::XControl > SAL_CALL

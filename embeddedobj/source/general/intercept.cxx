@@ -43,13 +43,13 @@ public:
 void Interceptor::DisconnectDocHolder()
 {
     osl::MutexGuard aGuard( m_aMutex );
-    m_pDocHolder = NULL;
+    m_pDocHolder = nullptr;
 }
 
 Interceptor::Interceptor( DocumentHolder* pDocHolder )
     : m_pDocHolder( pDocHolder ),
-      m_pDisposeEventListeners(0),
-      m_pStatCL(0)
+      m_pDisposeEventListeners(nullptr),
+      m_pStatCL(nullptr)
 {
     m_aInterceptedURL[0] = ".uno:Save";
     m_aInterceptedURL[1] = ".uno:SaveAll";
@@ -113,7 +113,7 @@ Interceptor::dispatch(
             }
 
             uno::Reference< frame::XDispatch > xDispatch = m_xSlaveDispatchProvider->queryDispatch(
-                URL, OUString( "_self" ), 0 );
+                URL, "_self", 0 );
             if ( xDispatch.is() )
                 xDispatch->dispatch( URL, aNewArgs );
         }
@@ -263,7 +263,7 @@ Interceptor::queryDispatch(
             return m_xSlaveDispatchProvider->queryDispatch(
                 URL,TargetFrameName,SearchFlags);
         else
-            return uno::Reference<frame::XDispatch>(0);
+            return uno::Reference<frame::XDispatch>(nullptr);
     }
 }
 

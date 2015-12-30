@@ -87,8 +87,7 @@ static void apply_table_style( SdrTableObj* pObj, SdrModel* pModel, const OUStri
         Reference< XNameAccess > xPool( dynamic_cast< XNameAccess* >( pModel->GetStyleSheetPool() ) );
         if( xPool.is() ) try
         {
-            const OUString sFamilyName("table" );
-            Reference< XNameContainer > xTableFamily( xPool->getByName( sFamilyName ), UNO_QUERY_THROW );
+            Reference< XNameContainer > xTableFamily( xPool->getByName( "table" ), UNO_QUERY_THROW );
             OUString aStdName( "default" );
             if( !sTableStyle.isEmpty() )
                 aStdName = sTableStyle;
@@ -112,9 +111,9 @@ void DrawViewShell::FuTable(SfxRequest& rReq)
         sal_Int32 nRows = 0;
         OUString sTableStyle;
 
-        SFX_REQUEST_ARG( rReq, pCols, SfxUInt16Item, SID_ATTR_TABLE_COLUMN, false );
-        SFX_REQUEST_ARG( rReq, pRows, SfxUInt16Item, SID_ATTR_TABLE_ROW, false );
-        SFX_REQUEST_ARG( rReq, pStyle, SfxStringItem, SID_TABLE_STYLE, false );
+        const SfxUInt16Item* pCols = rReq.GetArg<SfxUInt16Item>(SID_ATTR_TABLE_COLUMN);
+        const SfxUInt16Item* pRows = rReq.GetArg<SfxUInt16Item>(SID_ATTR_TABLE_ROW);
+        const SfxStringItem* pStyle = rReq.GetArg<SfxStringItem>(SID_TABLE_STYLE);
 
         if( pCols )
             nColumns = pCols->GetValue();
@@ -128,7 +127,7 @@ void DrawViewShell::FuTable(SfxRequest& rReq)
         if( (nColumns == 0) || (nRows == 0) )
         {
             SvxAbstractDialogFactory* pFact = SvxAbstractDialogFactory::Create();
-            std::unique_ptr<SvxAbstractNewTableDialog> pDlg( pFact ? pFact->CreateSvxNewTableDialog( NULL ) : 0);
+            std::unique_ptr<SvxAbstractNewTableDialog> pDlg( pFact ? pFact->CreateSvxNewTableDialog( nullptr ) : nullptr);
 
             if( !pDlg.get() || (pDlg->Execute() != RET_OK) )
                 break;
@@ -191,7 +190,7 @@ void DrawViewShell::FuTable(SfxRequest& rReq)
 
         rReq.Ignore();
         SfxViewShell* pViewShell = GetViewShell();
-        OSL_ASSERT (pViewShell!=NULL);
+        OSL_ASSERT (pViewShell!=nullptr);
         SfxBindings& rBindings = pViewShell->GetViewFrame()->GetBindings();
         rBindings.Invalidate( SID_INSERT_TABLE, true );
         break;
@@ -208,7 +207,7 @@ void DrawViewShell::FuTable(SfxRequest& rReq)
             // First make sure that the sidebar is visible
             GetViewFrame()->ShowChildWindow(SID_SIDEBAR);
             ::sfx2::sidebar::Sidebar::ShowPanel(
-                OUString("ImpressTableDesignPanel"),
+                "SdTableDesignPanel",
                 GetViewFrame()->GetFrame().GetFrameInterface());
         }
 
@@ -222,23 +221,15 @@ void DrawViewShell::FuTable(SfxRequest& rReq)
 
 void DrawViewShell::GetTableMenuState( SfxItemSet &rSet )
 {
-    bool bIsUIActive = GetDocSh()->IsUIActive();
-    if( bIsUIActive )
+    OUString aActiveLayer = mpDrawView->GetActiveLayer();
+    SdrPageView* pPV = mpDrawView->GetSdrPageView();
+
+    if(
+        ( !aActiveLayer.isEmpty() && pPV && ( pPV->IsLayerLocked(aActiveLayer) ||
+        !pPV->IsLayerVisible(aActiveLayer) ) ) ||
+        SD_MOD()->GetWaterCan() )
     {
         rSet.DisableItem( SID_INSERT_TABLE );
-    }
-    else
-    {
-        OUString aActiveLayer = mpDrawView->GetActiveLayer();
-        SdrPageView* pPV = mpDrawView->GetSdrPageView();
-
-        if( bIsUIActive ||
-            ( !aActiveLayer.isEmpty() && pPV && ( pPV->IsLayerLocked(aActiveLayer) ||
-            !pPV->IsLayerVisible(aActiveLayer) ) ) ||
-            SD_MOD()->GetWaterCan() )
-        {
-            rSet.DisableItem( SID_INSERT_TABLE );
-        }
     }
 }
 

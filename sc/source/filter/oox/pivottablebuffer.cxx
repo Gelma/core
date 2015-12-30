@@ -687,7 +687,7 @@ Reference< XDataPilotField > PivotTableField::convertRowColPageField( sal_Int32 
             else
             {
                 const PivotCacheField* pCacheField = (maModel.mnSortRefField == OOX_PT_DATALAYOUTFIELD) ?
-                    mrPivotTable.getCacheFieldOfDataField( maModel.mnSortRefItem ) : 0;
+                    mrPivotTable.getCacheFieldOfDataField( maModel.mnSortRefItem ) : nullptr;
                 if( pCacheField )
                 {
                     aSortInfo.Mode = DataPilotFieldSortMode::DATA;
@@ -862,8 +862,6 @@ PTDefinitionModel::PTDefinitionModel() :
     mnPageWrap( 0 ),
     mnIndent( 1 ),
     mnChartFormat( 0 ),
-    mnRowFields( 0 ),
-    mnColFields( 0 ),
     mbDataOnRows( false ),
     mbShowError( false ),
     mbShowMissing( true ),
@@ -902,9 +900,9 @@ PTLocationModel::PTLocationModel() :
 
 PivotTable::PivotTable( const WorkbookHelper& rHelper ) :
     WorkbookHelper( rHelper ),
-    mpDPObject(NULL),
+    mpDPObject(nullptr),
     maDataField( *this, OOX_PT_DATALAYOUTFIELD ),
-    mpPivotCache( 0 )
+    mpPivotCache( nullptr )
 {
 }
 
@@ -1303,13 +1301,13 @@ Reference< XDataPilotField > PivotTable::getDataLayoutField() const
 
 const PivotCacheField* PivotTable::getCacheField( sal_Int32 nFieldIdx ) const
 {
-    return mpPivotCache ? mpPivotCache->getCacheField( nFieldIdx ) : 0;
+    return mpPivotCache ? mpPivotCache->getCacheField( nFieldIdx ) : nullptr;
 }
 
 const PivotCacheField* PivotTable::getCacheFieldOfDataField( sal_Int32 nDataItemIdx ) const
 {
     const PTDataFieldModel* pDataField = ContainerHelper::getVectorElement( maDataFields, nDataItemIdx );
-    return pDataField ? getCacheField( pDataField->mnField ) : 0;
+    return pDataField ? getCacheField( pDataField->mnField ) : nullptr;
 }
 
 sal_Int32 PivotTable::getCacheDatabaseIndex( sal_Int32 nFieldIdx ) const

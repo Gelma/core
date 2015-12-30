@@ -26,6 +26,7 @@
 namespace com { namespace sun { namespace star {
     namespace awt { struct Size; }
     namespace document { class XEmbeddedObjectResolver; }
+    namespace frame { class XModel; }
     namespace lang { class XMultiServiceFactory; }
 } } }
 
@@ -56,20 +57,27 @@ class OleObjectHelper
 {
 public:
     explicit            OleObjectHelper(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XMultiServiceFactory >& rxModelFactory );
+                            const css::uno::Reference<css::lang::XMultiServiceFactory>& rxModelFactory,
+                            const css::uno::Reference<css::frame::XModel>& xModel);
                         ~OleObjectHelper();
 
     bool                importOleObject(
                             PropertyMap& rPropMap,
                             const OleObjectInfo& rOleObject,
-                            const ::com::sun::star::awt::Size& rObjSize );
+                            const css::awt::Size& rObjSize );
 
 private:
-    ::com::sun::star::uno::Reference< ::com::sun::star::document::XEmbeddedObjectResolver > mxResolver;
-    const OUString maEmbeddedObjScheme;
-    sal_Int32           mnObjectId;
+    css::uno::Reference<css::frame::XModel> m_xModel;
+    css::uno::Reference< css::document::XEmbeddedObjectResolver > mxResolver;
+    const OUString                                                maEmbeddedObjScheme;
+    sal_Int32                                                     mnObjectId;
 };
 
+
+OOX_DLLPUBLIC void SaveInteropProperties(
+       css::uno::Reference<css::frame::XModel> const& xModel,
+       OUString const& rObjectName, OUString const* pOldObjectName,
+       OUString const& rProgId, OUString const& rDrawAspect);
 
 
 } // namespace ole

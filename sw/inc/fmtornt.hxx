@@ -36,24 +36,23 @@ class SW_DLLPUBLIC SwFormatVertOrient: public SfxPoolItem
     sal_Int16       m_eOrient;
     sal_Int16       m_eRelation;
 public:
-    TYPEINFO_OVERRIDE();
-    SwFormatVertOrient( SwTwips nY = 0, sal_Int16 eVert = com::sun::star::text::VertOrientation::NONE,
-                     sal_Int16 eRel = com::sun::star::text::RelOrientation::PRINT_AREA );
+    SwFormatVertOrient( SwTwips nY = 0, sal_Int16 eVert = css::text::VertOrientation::NONE,
+                     sal_Int16 eRel = css::text::RelOrientation::PRINT_AREA );
     inline SwFormatVertOrient &operator=( const SwFormatVertOrient &rCpy );
 
     /// "Pure virtual methods" of SfxPoolItem.
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = nullptr ) const override;
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
                                     OUString &rText,
-                                    const IntlWrapper*    pIntl = 0 ) const SAL_OVERRIDE;
-    virtual bool QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+                                    const IntlWrapper*    pIntl = nullptr ) const override;
+    virtual bool QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
-    SvStream& Store(SvStream &rStream, sal_uInt16 itemVersion) const SAL_OVERRIDE;
-    SfxPoolItem* Create(SvStream &rStream, sal_uInt16 itemVersion) const SAL_OVERRIDE;
+    SvStream& Store(SvStream &rStream, sal_uInt16 itemVersion) const override;
+    SfxPoolItem* Create(SvStream &rStream, sal_uInt16 itemVersion) const override;
 
     sal_Int16 GetVertOrient() const { return m_eOrient; }
     sal_Int16 GetRelationOrient() const { return m_eRelation; }
@@ -63,7 +62,7 @@ public:
     SwTwips GetPos() const { return m_nYPos; }
     void    SetPos( SwTwips nNew ) { m_nYPos = nNew; }
 
-    void dumpAsXml(struct _xmlTextWriter* pWriter) const SAL_OVERRIDE;
+    void dumpAsXml(struct _xmlTextWriter* pWriter) const override;
 };
 
 class SW_DLLPUBLIC SwFormatHoriOrient: public SfxPoolItem
@@ -73,21 +72,20 @@ class SW_DLLPUBLIC SwFormatHoriOrient: public SfxPoolItem
     sal_Int16       m_eRelation;
     bool            m_bPosToggle : 1; ///< Flip position on even pages.
 public:
-    TYPEINFO_OVERRIDE();
-    SwFormatHoriOrient( SwTwips nX = 0, sal_Int16 eHori = com::sun::star::text::HoriOrientation::NONE,
-        sal_Int16 eRel = com::sun::star::text::RelOrientation::PRINT_AREA, bool bPos = false );
+    SwFormatHoriOrient( SwTwips nX = 0, sal_Int16 eHori = css::text::HoriOrientation::NONE,
+        sal_Int16 eRel = css::text::RelOrientation::PRINT_AREA, bool bPos = false );
     inline SwFormatHoriOrient &operator=( const SwFormatHoriOrient &rCpy );
 
     /// "Pure virtual methods" of SfxPoolItem.
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = nullptr ) const override;
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
                                     OUString &rText,
-                                    const IntlWrapper*    pIntl = 0 ) const SAL_OVERRIDE;
-    virtual bool QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+                                    const IntlWrapper*    pIntl = nullptr ) const override;
+    virtual bool QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
     sal_Int16 GetHoriOrient() const { return m_eOrient; }
     sal_Int16 GetRelationOrient() const { return m_eRelation; }
@@ -100,7 +98,7 @@ public:
     bool IsPosToggle() const { return m_bPosToggle; }
     void SetPosToggle( bool bNew ) { m_bPosToggle = bNew; }
 
-    void dumpAsXml(struct _xmlTextWriter* pWriter) const SAL_OVERRIDE;
+    void dumpAsXml(struct _xmlTextWriter* pWriter) const override;
 };
 
 inline SwFormatVertOrient &SwFormatVertOrient::operator=( const SwFormatVertOrient &rCpy )

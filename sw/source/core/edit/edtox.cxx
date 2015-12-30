@@ -60,7 +60,7 @@ void SwEditShell::Insert(const SwTOXMark& rMark)
 {
     bool bInsAtPos = rMark.IsAlternativeText();
     StartAllAction();
-    for(SwPaM& rPaM : GetCrsr()->GetRingContainer())
+    for(SwPaM& rPaM : GetCursor()->GetRingContainer())
     {
         const SwPosition *pStt = rPaM.Start(),
                          *pEnd = rPaM.End();
@@ -92,26 +92,26 @@ void SwEditShell::DeleteTOXMark( SwTOXMark* pMark )
 /// Collect all listing markers
 sal_uInt16 SwEditShell::GetCurTOXMarks(SwTOXMarks& rMarks) const
 {
-    return SwDoc::GetCurTOXMark( *GetCrsr()->Start(), rMarks );
+    return SwDoc::GetCurTOXMark( *GetCursor()->Start(), rMarks );
 }
 
 bool SwEditShell::IsTOXBaseReadonly(const SwTOXBase& rTOXBase)
 {
-    OSL_ENSURE( rTOXBase.ISA( SwTOXBaseSection ), "no TOXBaseSection!" );
+    OSL_ENSURE( dynamic_cast<const SwTOXBaseSection*>( &rTOXBase) !=  nullptr, "no TOXBaseSection!" );
     const SwTOXBaseSection& rTOXSect = static_cast<const SwTOXBaseSection&>(rTOXBase);
     return  rTOXSect.IsProtect();
 }
 
 void SwEditShell::SetTOXBaseReadonly(const SwTOXBase& rTOXBase, bool bReadonly)
 {
-    OSL_ENSURE( rTOXBase.ISA( SwTOXBaseSection ), "no TOXBaseSection!" );
+    OSL_ENSURE( dynamic_cast<const SwTOXBaseSection*>( &rTOXBase) !=  nullptr, "no TOXBaseSection!" );
     const SwTOXBaseSection& rTOXSect = static_cast<const SwTOXBaseSection&>(rTOXBase);
     const_cast<SwTOXBase&>(rTOXBase).SetProtected(bReadonly);
     OSL_ENSURE( rTOXSect.SwSection::GetType() == TOX_CONTENT_SECTION, "not a TOXContentSection" );
 
     SwSectionData aSectionData(rTOXSect);
     aSectionData.SetProtectFlag(bReadonly);
-    UpdateSection( GetSectionFormatPos( *rTOXSect.GetFormat()  ), aSectionData, 0 );
+    UpdateSection( GetSectionFormatPos( *rTOXSect.GetFormat()  ), aSectionData );
 }
 
 const SwTOXBase*    SwEditShell::GetDefaultTOXBase( TOXTypes eTyp, bool bCreate )
@@ -136,7 +136,7 @@ void SwEditShell::InsertTableOf( const SwTOXBase& rTOX, const SfxItemSet* pSet )
 
     // Insert listing
     const SwTOXBaseSection* pTOX = mpDoc->InsertTableOf(
-                                        *GetCrsr()->GetPoint(), rTOX, pSet, true );
+                                        *GetCursor()->GetPoint(), rTOX, pSet, true );
     OSL_ENSURE(pTOX, "No current TOx");
 
     // start formatting
@@ -145,7 +145,7 @@ void SwEditShell::InsertTableOf( const SwTOXBase& rTOX, const SfxItemSet* pSet )
     // insert page numbering
     const_cast<SwTOXBaseSection*>(pTOX)->UpdatePageNum();
 
-    pTOX->SetPosAtStartEnd( *GetCrsr()->GetPoint() );
+    pTOX->SetPosAtStartEnd( *GetCursor()->GetPoint() );
 
     // Fix for empty listing
     InvalidateWindows( maVisArea );
@@ -158,10 +158,10 @@ bool SwEditShell::UpdateTableOf( const SwTOXBase& rTOX, const SfxItemSet* pSet )
 {
     bool bRet = false;
 
-    OSL_ENSURE( rTOX.ISA( SwTOXBaseSection ),  "no TOXBaseSection!" );
+    OSL_ENSURE( dynamic_cast<const SwTOXBaseSection*>( &rTOX) !=  nullptr,  "no TOXBaseSection!" );
     SwTOXBaseSection* pTOX = const_cast<SwTOXBaseSection*>(static_cast<const SwTOXBaseSection*>(&rTOX));
     OSL_ENSURE(pTOX, "no current listing");
-    if( pTOX && 0 != pTOX->GetFormat()->GetSectionNode() )
+    if( pTOX && nullptr != pTOX->GetFormat()->GetSectionNode() )
     {
         SwDoc* pMyDoc = GetDoc();
         SwDocShell* pDocSh = pMyDoc->GetDocShell();
@@ -173,14 +173,14 @@ bool SwEditShell::UpdateTableOf( const SwTOXBase& rTOX, const SfxItemSet* pSet )
         ::StartProgress( STR_STATSTR_TOX_UPDATE, 0, 0, pDocSh );
         ::SetProgressText( STR_STATSTR_TOX_UPDATE, pDocSh );
 
-        pMyDoc->GetIDocumentUndoRedo().StartUndo(UNDO_TOXCHANGE, NULL);
+        pMyDoc->GetIDocumentUndoRedo().StartUndo(UNDO_TOXCHANGE, nullptr);
 
         // create listing stub
         pTOX->Update(pSet);
 
         // correct Cursor
         if( bInIndex )
-            pTOX->SetPosAtStartEnd( *GetCrsr()->GetPoint() );
+            pTOX->SetPosAtStartEnd( *GetCursor()->GetPoint() );
 
         // start formatting
         CalcLayout();
@@ -188,7 +188,7 @@ bool SwEditShell::UpdateTableOf( const SwTOXBase& rTOX, const SfxItemSet* pSet )
         // insert page numbering
         pTOX->UpdatePageNum();
 
-        pMyDoc->GetIDocumentUndoRedo().EndUndo(UNDO_TOXCHANGE, NULL);
+        pMyDoc->GetIDocumentUndoRedo().EndUndo(UNDO_TOXCHANGE, nullptr);
 
         ::EndProgress( pDocSh );
         EndAllAction();
@@ -199,7 +199,7 @@ bool SwEditShell::UpdateTableOf( const SwTOXBase& rTOX, const SfxItemSet* pSet )
 /// Get current listing before or at the Cursor
 const SwTOXBase* SwEditShell::GetCurTOX() const
 {
-    return SwDoc::GetCurTOX( *GetCrsr()->GetPoint() );
+    return SwDoc::GetCurTOX( *GetCursor()->GetPoint() );
 }
 
 bool SwEditShell::DeleteTOX( const SwTOXBase& rTOXBase, bool bDelNodes )
@@ -246,11 +246,11 @@ const SwTOXBase* SwEditShell::GetTOX( sal_uInt16 nPos ) const
             pSect->GetFormat()->GetSectionNode() &&
             nCnt++ == nPos )
         {
-            OSL_ENSURE( pSect->ISA( SwTOXBaseSection ), "no TOXBaseSection!" );
+            OSL_ENSURE( dynamic_cast<const SwTOXBaseSection*>( pSect) !=  nullptr, "no TOXBaseSection!" );
             return static_cast<const SwTOXBaseSection*>(pSect);
         }
     }
-    return 0;
+    return nullptr;
 }
 
 /** Update of all listings after reading-in a file */

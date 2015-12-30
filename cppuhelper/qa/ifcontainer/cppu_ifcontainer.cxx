@@ -50,7 +50,7 @@ public:
         : m_pStats(pStats) { m_pStats->m_nAlive++; }
     virtual ~ContainerListener() { m_pStats->m_nAlive--; }
     virtual void SAL_CALL disposing( const EventObject& )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE
+        throw (RuntimeException, std::exception) override
     {
         m_pStats->m_nDisposed++;
     }
@@ -156,7 +156,7 @@ namespace cppu_ifcontainer
 
                 pHelper = pContainer->getContainer(pTypes[i]);
 
-                CPPUNIT_ASSERT_MESSAGE("no helper", pHelper != NULL);
+                CPPUNIT_ASSERT_MESSAGE("no helper", pHelper != nullptr);
                 Sequence<Reference< XInterface > > aSeq = pHelper->getElements();
                 CPPUNIT_ASSERT_MESSAGE("wrong num elements", aSeq.getLength() == 2);
                 CPPUNIT_ASSERT_MESSAGE("match", aSeq[0] == xRefs[i*2]);
@@ -174,7 +174,7 @@ namespace cppu_ifcontainer
 
                 pHelper = pContainer->getContainer(pTypes[i]);
 
-                CPPUNIT_ASSERT_MESSAGE("no helper", pHelper != NULL);
+                CPPUNIT_ASSERT_MESSAGE("no helper", pHelper != nullptr);
                 Sequence<Reference< XInterface > > aSeq = pHelper->getElements();
                 CPPUNIT_ASSERT_MESSAGE("wrong num elements", aSeq.getLength() == 1);
                 CPPUNIT_ASSERT_MESSAGE("match", aSeq[0] == xRefs[i*2]);
@@ -190,7 +190,7 @@ namespace cppu_ifcontainer
                 cppu::OInterfaceContainerHelper *pHelper;
 
                 pHelper = pContainer->getContainer(pTypes[i]);
-                CPPUNIT_ASSERT_MESSAGE("no helper", pHelper != NULL);
+                CPPUNIT_ASSERT_MESSAGE("no helper", pHelper != nullptr);
                 Sequence<Reference< XInterface > > aSeq = pHelper->getElements();
                 CPPUNIT_ASSERT_MESSAGE("wrong num elements", aSeq.getLength() == 0);
             }

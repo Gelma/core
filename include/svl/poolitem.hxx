@@ -28,7 +28,7 @@
 #include <svl/hint.hxx>
 #include <svl/svldllapi.h>
 #include <tools/debug.hxx>
-#include <tools/rtti.hxx>
+#include <tools/solar.h>
 
 class IntlWrapper;
 class SvStream;
@@ -47,7 +47,7 @@ enum SfxItemKind {
 #define CONVERT_TWIPS                       0x80    // Uno conversion for measurement (for MemberId)
 
 // warning, if there is no boolean inside the any this will always return the value false
-inline bool Any2Bool( const ::com::sun::star::uno::Any&rValue )
+inline bool Any2Bool( const css::uno::Any&rValue )
 {
     bool bValue = false;
     if( rValue.hasValue() )
@@ -99,7 +99,7 @@ enum SfxItemPresentation
 
 /**
  * These values have to match the values in the
- * com::sun::star::frame::status::ItemState IDL
+ * css::frame::status::ItemState IDL
  * to be found at offapi/com/sun/star/frame/status/ItemState.idl
 */
 enum class SfxItemState {
@@ -161,7 +161,6 @@ protected:
                              SfxPoolItem( const SfxPoolItem& );
 
 public:
-                             TYPEINFO();
     virtual                  ~SfxPoolItem();
 
     void                     SetWhich( sal_uInt16 nId ) { m_nWhich = nId; }
@@ -175,25 +174,25 @@ public:
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresentationMetric,
                                     OUString &rText,
-                                    const IntlWrapper * pIntlWrapper = 0 ) const;
+                                    const IntlWrapper * pIntlWrapper = nullptr ) const;
 
     virtual sal_uInt16       GetVersion( sal_uInt16 nFileFormatVersion ) const;
     virtual bool             ScaleMetrics( long lMult, long lDiv );
     virtual bool             HasMetrics() const;
 
-    virtual bool             QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const;
-    virtual bool             PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId );
+    virtual bool             QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const;
+    virtual bool             PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId );
 
     virtual SfxPoolItem*     Create( SvStream &, sal_uInt16 nItemVersion ) const;
     virtual SvStream&        Store( SvStream &, sal_uInt16 nItemVersion ) const;
-    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = 0 ) const = 0;
+    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = nullptr ) const = 0;
 
     sal_uLong                GetRefCount() const { return m_nRefCount; }
     inline SfxItemKind       GetKind() const { return m_nKind; }
     virtual void dumpAsXml(struct _xmlTextWriter* pWriter) const;
 
 private:
-    SfxPoolItem&             operator=( const SfxPoolItem& ) SAL_DELETED_FUNCTION;
+    SfxPoolItem&             operator=( const SfxPoolItem& ) = delete;
 };
 
 inline void SfxPoolItem::SetRefCount( sal_uLong n )
@@ -250,51 +249,50 @@ inline bool IsInvalidItem(const SfxPoolItem *pItem)
 
 class SVL_DLLPUBLIC SfxVoidItem: public SfxPoolItem
 {
-    SfxVoidItem & operator=( const SfxVoidItem& ) SAL_DELETED_FUNCTION;
+    SfxVoidItem & operator=( const SfxVoidItem& ) = delete;
 public:
-                            TYPEINFO_OVERRIDE();
+                            static SfxPoolItem* CreateDefault();
                             explicit SfxVoidItem( sal_uInt16 nWhich );
                             SfxVoidItem( sal_uInt16 nWhich, SvStream & );
                             SfxVoidItem( const SfxVoidItem& );
                             virtual ~SfxVoidItem();
 
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
 
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
                                     OUString &rText,
-                                    const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    const IntlWrapper * = nullptr ) const override;
 
     // create a copy of itself
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
 };
 
 class SVL_DLLPUBLIC SfxSetItem: public SfxPoolItem
 {
     SfxItemSet              *pSet;
 
-    SfxSetItem & operator=( const SfxSetItem& ) SAL_DELETED_FUNCTION;
+    SfxSetItem & operator=( const SfxSetItem& ) = delete;
 
 public:
-                            TYPEINFO_OVERRIDE();
                             SfxSetItem( sal_uInt16 nWhich, SfxItemSet *pSet );
                             SfxSetItem( sal_uInt16 nWhich, const SfxItemSet &rSet );
-                            SfxSetItem( const SfxSetItem&, SfxItemPool *pPool = 0 );
+                            SfxSetItem( const SfxSetItem&, SfxItemPool *pPool = nullptr );
                             virtual ~SfxSetItem();
 
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
 
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
                                     OUString &rText,
-                                    const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    const IntlWrapper * = nullptr ) const override;
 
     // create a copy of itself
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE = 0;
-    virtual SfxPoolItem*    Create(SvStream &, sal_uInt16 nVersion) const SAL_OVERRIDE = 0;
-    virtual SvStream&       Store(SvStream &, sal_uInt16 nVer) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override = 0;
+    virtual SfxPoolItem*    Create(SvStream &, sal_uInt16 nVersion) const override = 0;
+    virtual SvStream&       Store(SvStream &, sal_uInt16 nVer) const override;
 
     const SfxItemSet&       GetItemSet() const
                             { return *pSet; }

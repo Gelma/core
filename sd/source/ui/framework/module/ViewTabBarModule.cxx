@@ -68,7 +68,7 @@ ViewTabBarModule::ViewTabBarModule (
                 FrameworkHelper::msResourceDeactivationRequestEvent,
                 makeAny(ResourceDeactivationRequestEvent));
 
-            UpdateViewTabBar(NULL);
+            UpdateViewTabBar(nullptr);
             mxConfigurationController->addConfigurationChangeListener(
                 this,
                 FrameworkHelper::msResourceActivationEvent,
@@ -86,7 +86,7 @@ void SAL_CALL ViewTabBarModule::disposing()
     if (mxConfigurationController.is())
         mxConfigurationController->removeConfigurationChangeListener(this);
 
-    mxConfigurationController = NULL;
+    mxConfigurationController = nullptr;
 }
 
 void SAL_CALL ViewTabBarModule::notifyConfigurationChange (
@@ -132,7 +132,7 @@ void SAL_CALL ViewTabBarModule::disposing (
         && rEvent.Source == mxConfigurationController)
     {
         // Without the configuration controller this class can do nothing.
-        mxConfigurationController = NULL;
+        mxConfigurationController = nullptr;
         disposing();
     }
 }
@@ -143,8 +143,7 @@ void ViewTabBarModule::UpdateViewTabBar (const Reference<XTabBar>& rxTabBar)
     {
         Reference<XTabBar> xBar (rxTabBar);
         if ( ! xBar.is())
-            xBar = Reference<XTabBar>(
-                mxConfigurationController->getResource(mxViewTabBarId), UNO_QUERY);
+            xBar.set( mxConfigurationController->getResource(mxViewTabBarId), UNO_QUERY);
 
         if (xBar.is())
         {
@@ -156,7 +155,7 @@ void ViewTabBarModule::UpdateViewTabBar (const Reference<XTabBar>& rxTabBar)
             aImpressViewButton.ResourceId = FrameworkHelper::CreateResourceId(
                 FrameworkHelper::msImpressViewURL,
                 xAnchor);
-            aImpressViewButton.ButtonLabel = SD_RESSTR(STR_DRAW_MODE);
+            aImpressViewButton.ButtonLabel = SD_RESSTR(STR_NORMAL_MODE);
             if ( ! xBar->hasTabBarButton(aImpressViewButton))
                 xBar->addTabBarButtonAfter(aImpressViewButton, aEmptyButton);
 
@@ -180,7 +179,7 @@ void ViewTabBarModule::UpdateViewTabBar (const Reference<XTabBar>& rxTabBar)
             aHandoutViewButton.ResourceId = FrameworkHelper::CreateResourceId(
                 FrameworkHelper::msHandoutViewURL,
                 xAnchor);
-            aHandoutViewButton.ButtonLabel = SD_RESSTR(STR_HANDOUT_MODE);
+            aHandoutViewButton.ButtonLabel = SD_RESSTR(STR_HANDOUT_MASTER_MODE);
             if ( ! xBar->hasTabBarButton(aHandoutViewButton))
                 xBar->addTabBarButtonAfter(aHandoutViewButton, aNotesViewButton);
         }

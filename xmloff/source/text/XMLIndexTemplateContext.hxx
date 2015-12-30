@@ -66,7 +66,7 @@ extern const sal_Bool aAllowedTokenTypesTable[];
 class XMLIndexTemplateContext : public SvXMLImportContext
 {
     // pick up PropertyValues to be turned into a sequence.
-    ::std::vector< ::com::sun::star::beans::PropertyValues > aValueVector;
+    ::std::vector< css::beans::PropertyValues > aValueVector;
 
     OUString sStyleName;
 
@@ -81,8 +81,7 @@ class XMLIndexTemplateContext : public SvXMLImportContext
     bool bTOC;
 
     // PropertySet of current index
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::beans::XPropertySet> & rPropertySet;
+    css::uno::Reference<css::beans::XPropertySet> & rPropertySet;
 
 public:
 
@@ -109,15 +108,12 @@ public:
     const OUString sChapterLevel;//i53420
 
     const OUString sLevelFormat;
-    const OUString sParaStyleLevel;
 
 
-    TYPEINFO_OVERRIDE();
 
     XMLIndexTemplateContext(
         SvXMLImport& rImport,
-        ::com::sun::star::uno::Reference<
-            ::com::sun::star::beans::XPropertySet> & rPropSet,
+        css::uno::Reference<css::beans::XPropertySet> & rPropSet,
         sal_uInt16 nPrfx,
         const OUString& rLocalName,
         const SvXMLEnumMapEntry* aLevelNameMap,
@@ -130,21 +126,19 @@ public:
 
     /** add template; to be called by child template entry contexts */
     void addTemplateEntry(
-        const ::com::sun::star::beans::PropertyValues& aValues);
+        const css::beans::PropertyValues& aValues);
 
 protected:
 
     virtual void StartElement(
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList> & xAttrList) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
     virtual SvXMLImportContext *CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList> & xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList ) override;
 };
 
 #endif

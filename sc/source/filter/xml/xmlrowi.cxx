@@ -48,8 +48,7 @@ using namespace xmloff::token;
 ScXMLTableRowContext::ScXMLTableRowContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList ) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList ) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     sVisibility(GetXMLToken(XML_VISIBLE)),
     nRepeatedRows(1),
@@ -106,10 +105,9 @@ ScXMLTableRowContext::~ScXMLTableRowContext()
 
 SvXMLImportContext *ScXMLTableRowContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext(0);
+    SvXMLImportContext *pContext(nullptr);
 
     const SvXMLTokenMap& rTokenMap(GetScImport().GetTableRowElemTokenMap());
     switch( rTokenMap.Get( nPrefix, rLName ) )
@@ -202,9 +200,9 @@ void ScXMLTableRowContext::EndElement()
                         bFiltered = true;
                     }
                     if (!bVisible)
-                        xRowProperties->setPropertyValue(OUString(SC_ISVISIBLE), uno::makeAny(bVisible));
+                        xRowProperties->setPropertyValue(SC_ISVISIBLE, uno::makeAny(bVisible));
                     if (bFiltered)
-                        xRowProperties->setPropertyValue(OUString(SC_ISFILTERED), uno::makeAny(bFiltered));
+                        xRowProperties->setPropertyValue(SC_ISFILTERED, uno::makeAny(bFiltered));
                 }
             }
         }
@@ -214,9 +212,9 @@ void ScXMLTableRowContext::EndElement()
 ScXMLTableRowsContext::ScXMLTableRowsContext( ScXMLImport& rImport,
                                       sal_uInt16 nPrfx,
                                       const OUString& rLName,
-                                      const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                      const bool bTempHeader, const bool bTempGroup ) :
+                                      const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                                      const bool bTempHeader,
+                                      const bool bTempGroup ) :
     SvXMLImportContext( rImport, nPrfx, rLName ),
     nHeaderStartRow(0),
     nGroupStartRow(0),
@@ -256,10 +254,9 @@ ScXMLTableRowsContext::~ScXMLTableRowsContext()
 
 SvXMLImportContext *ScXMLTableRowsContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext(0);
+    SvXMLImportContext *pContext(nullptr);
 
     const SvXMLTokenMap& rTokenMap(GetScImport().GetTableRowsElemTokenMap());
     switch( rTokenMap.Get( nPrefix, rLName ) )

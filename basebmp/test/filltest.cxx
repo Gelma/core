@@ -149,7 +149,7 @@ private:
         OUString aSvg( "m 0 0l7 7h-1z" );
 
         basegfx::B2DPolyPolygon aPoly;
-        basegfx::tools::importFromSvgD( aPoly, aSvg, false, NULL );
+        basegfx::tools::importFromSvgD( aPoly, aSvg, false, nullptr );
         rDevice->fillPolyPolygon(
             aPoly,
             aCol,
@@ -206,17 +206,15 @@ private:
     }
 
 public:
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         const basegfx::B2ISize aSize(11,11);
         mpDevice1bpp = createBitmapDevice( aSize,
                                            true,
-                                           Format::OneBitMsbPal,
-                                           basebmp::getBitmapDeviceStrideForWidth(Format::OneBitMsbPal, aSize.getX()));
+                                           Format::OneBitMsbPal );
         mpDevice32bpp = createBitmapDevice( aSize,
                                            true,
-                                           Format::ThirtyTwoBitTcMaskBGRA,
-                                           basebmp::getBitmapDeviceStrideForWidth(Format::ThirtyTwoBitTcMaskBGRA, aSize.getX()));
+                                           Format::ThirtyTwoBitTcMaskBGRA );
     }
 
     void testRectFill()

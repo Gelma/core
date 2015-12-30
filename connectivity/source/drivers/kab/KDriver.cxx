@@ -280,7 +280,7 @@ bool KabImplModule::impl_doAllowNewKDEVersion()
                                 makeAny( KabDriver::impl_getConfigurationSettingsPath() ),
                                 PropertyState_DIRECT_VALUE );
         Reference< XPropertySet > xSettings( xConfigProvider->createInstanceWithArguments(
-                OUString(  "com.sun.star.configuration.ConfigurationAccess"  ),
+                "com.sun.star.configuration.ConfigurationAccess",
                 aCreationArgs ),
             UNO_QUERY_THROW );
 
@@ -369,8 +369,7 @@ Sequence< OUString > KabDriver::getSupportedServiceNames_Static(  ) throw (Runti
 {
     // which service is supported
     // for more information @see com.sun.star.sdbc.Driver
-    Sequence< OUString > aSNS( 1 );
-    aSNS[0] = "com.sun.star.sdbc.Driver";
+    Sequence<OUString> aSNS { "com.sun.star.sdbc.Driver" };
 
     return aSNS;
 }

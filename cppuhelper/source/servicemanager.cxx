@@ -59,7 +59,7 @@ void insertImplementationMap(
     cppuhelper::ServiceManager::Data::ImplementationMap * destination,
     cppuhelper::ServiceManager::Data::ImplementationMap const & source)
 {
-    assert(destination != 0);
+    assert(destination != nullptr);
     for (cppuhelper::ServiceManager::Data::ImplementationMap::const_iterator i(
              source.begin());
          i != source.end(); ++i)
@@ -80,7 +80,7 @@ void removeFromImplementationMap(
 {
     // The underlying data structures make this function somewhat inefficient,
     // but the assumption is that it is rarely called:
-    assert(map != 0);
+    assert(map != nullptr);
     for (std::vector< rtl::OUString >::const_iterator i(elements.begin());
          i != elements.end(); ++i)
     {
@@ -137,7 +137,7 @@ Parser::Parser(
     cppuhelper::ServiceManager::Data * data):
     reader_(uri), alienContext_(alienContext), data_(data)
 {
-    assert(data != 0);
+    assert(data != nullptr);
     int ucNsId = reader_.registerNamespaceIri(
         xmlreader::Span(
             RTL_CONSTASCII_STRINGPARAM(
@@ -446,12 +446,12 @@ private:
     virtual ~ContentEnumeration() {}
 
     virtual sal_Bool SAL_CALL hasMoreElements()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Any SAL_CALL nextElement()
         throw (
             css::container::NoSuchElementException,
-            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
 
     osl::Mutex mutex_;
     std::vector< css::uno::Any > factories_;
@@ -497,7 +497,7 @@ public:
             cppuhelper::ServiceManager::Data::Implementation > const &
             implementation):
         manager_(manager), implementation_(implementation)
-    { assert(manager.is()); assert(implementation.get() != 0); }
+    { assert(manager.is()); assert(implementation.get() != nullptr); }
 
 private:
     virtual ~SingletonFactory() {}
@@ -505,13 +505,13 @@ private:
     virtual css::uno::Reference< css::uno::XInterface > SAL_CALL
     createInstanceWithContext(
         css::uno::Reference< css::uno::XComponentContext > const & Context)
-        throw (css::uno::Exception, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::Exception, css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Reference< css::uno::XInterface > SAL_CALL
     createInstanceWithArgumentsAndContext(
         css::uno::Sequence< css::uno::Any > const & Arguments,
         css::uno::Reference< css::uno::XComponentContext > const & Context)
-        throw (css::uno::Exception, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::Exception, css::uno::RuntimeException, std::exception) override;
 
     rtl::Reference< cppuhelper::ServiceManager > manager_;
     std::shared_ptr< cppuhelper::ServiceManager::Data::Implementation >
@@ -551,7 +551,7 @@ public:
             cppuhelper::ServiceManager::Data::Implementation > const &
             implementation):
         manager_(manager), implementation_(implementation)
-    { assert(manager.is()); assert(implementation.get() != 0); }
+    { assert(manager.is()); assert(implementation.get() != nullptr); }
 
 private:
     virtual ~ImplementationWrapper() {}
@@ -559,30 +559,30 @@ private:
     virtual css::uno::Reference< css::uno::XInterface > SAL_CALL
     createInstanceWithContext(
         css::uno::Reference< css::uno::XComponentContext > const & Context)
-        throw (css::uno::Exception, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::Exception, css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Reference< css::uno::XInterface > SAL_CALL
     createInstanceWithArgumentsAndContext(
         css::uno::Sequence< css::uno::Any > const & Arguments,
         css::uno::Reference< css::uno::XComponentContext > const & Context)
-        throw (css::uno::Exception, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::Exception, css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Reference< css::uno::XInterface > SAL_CALL
-    createInstance() throw (css::uno::Exception, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    createInstance() throw (css::uno::Exception, css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Reference< css::uno::XInterface > SAL_CALL
     createInstanceWithArguments(
         css::uno::Sequence< css::uno::Any > const & Arguments)
-        throw (css::uno::Exception, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::Exception, css::uno::RuntimeException, std::exception) override;
 
     virtual rtl::OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual sal_Bool SAL_CALL supportsService(rtl::OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Sequence< rtl::OUString > SAL_CALL
-    getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) override;
 
     rtl::Reference< cppuhelper::ServiceManager > manager_;
     std::weak_ptr< cppuhelper::ServiceManager::Data::Implementation >
@@ -677,7 +677,7 @@ cppuhelper::ServiceManager::Data::Implementation::createInstance(
     bool singletonRequest)
 {
     css::uno::Reference<css::uno::XInterface> inst;
-    if (constructor != 0) {
+    if (constructor != nullptr) {
         inst.set(
             (*constructor)(context.get(), css::uno::Sequence<css::uno::Any>()),
             SAL_NO_ACQUIRE);
@@ -697,7 +697,7 @@ cppuhelper::ServiceManager::Data::Implementation::createInstanceWithArguments(
     bool singletonRequest, css::uno::Sequence<css::uno::Any> const & arguments)
 {
     css::uno::Reference<css::uno::XInterface> inst;
-    if (constructor != 0) {
+    if (constructor != nullptr) {
         inst.set((*constructor)(context.get(), arguments), SAL_NO_ACQUIRE);
         //HACK: The constructor will either observe arguments and return inst
         // that does not implement XInitialization (or null), or ignore
@@ -749,12 +749,12 @@ void cppuhelper::ServiceManager::Data::Implementation::updateDisposeSingleton(
 void cppuhelper::ServiceManager::addSingletonContextEntries(
     std::vector< cppu::ContextEntry_Init > * entries)
 {
-    assert(entries != 0);
+    assert(entries != nullptr);
     for (Data::ImplementationMap::const_iterator i(data_.singletons.begin());
          i != data_.singletons.end(); ++i)
     {
         assert(!i->second.empty());
-        assert(i->second[0].get() != 0);
+        assert(i->second[0].get() != nullptr);
         SAL_INFO_IF(
             i->second.size() > 1, "cppuhelper",
             "Arbitrarily chosing " << i->second[0]->info->name
@@ -773,7 +773,7 @@ void cppuhelper::ServiceManager::loadImplementation(
         css::uno::Reference< css::uno::XComponentContext > const & context,
         std::shared_ptr< Data::Implementation > & implementation)
 {
-    assert(implementation.get() != 0);
+    assert(implementation.get() != nullptr);
     {
         osl::MutexGuard g(rBHelper.rMutex);
         if (implementation->status == Data::Implementation::STATUS_LOADED) {
@@ -788,7 +788,7 @@ void cppuhelper::ServiceManager::loadImplementation(
             "Cannot expand URI" + implementation->info->uri + ": " + e.Message,
             static_cast< cppu::OWeakObject * >(this));
     }
-    cppuhelper::ImplementationConstructorFn * ctor = 0;
+    cppuhelper::ImplementationConstructorFn * ctor = nullptr;
     css::uno::Reference< css::uno::XInterface > f0;
     // Special handling of SharedLibrary loader, with support for environment,
     // constructor, and prefix arguments:
@@ -799,7 +799,7 @@ void cppuhelper::ServiceManager::loadImplementation(
             uri, implementation->info->environment,
             implementation->info->prefix, implementation->info->name,
             implementation->info->constructor, this, &ctor, &f0);
-        if (ctor != 0) {
+        if (ctor != nullptr) {
             assert(!implementation->info->environment.isEmpty());
             css::uno::Environment curEnv(css::uno::Environment::getCurrent());
             css::uno::Environment env(
@@ -834,8 +834,7 @@ void cppuhelper::ServiceManager::loadImplementation(
         css::uno::Reference< css::lang::XMultiComponentFactory > smgr;
         if (implementation->info->alienContext.is()) {
             ctxt = implementation->info->alienContext;
-            smgr = css::uno::Reference< css::lang::XMultiComponentFactory >(
-                ctxt->getServiceManager(), css::uno::UNO_SET_THROW);
+            smgr.set(ctxt->getServiceManager(), css::uno::UNO_SET_THROW);
         } else {
             assert(context.is());
             ctxt = context;
@@ -850,7 +849,7 @@ void cppuhelper::ServiceManager::loadImplementation(
     }
     css::uno::Reference<css::lang::XSingleComponentFactory> f1;
     css::uno::Reference<css::lang::XSingleServiceFactory> f2;
-    if (ctor == 0) {
+    if (ctor == nullptr) {
         f1.set(f0, css::uno::UNO_QUERY);
         if (!f1.is()) {
             f2.set(f0, css::uno::UNO_QUERY);
@@ -886,7 +885,7 @@ void cppuhelper::ServiceManager::disposing() {
                  data_.namedImplementations.begin());
              i != data_.namedImplementations.end(); ++i)
         {
-            assert(i->second.get() != 0);
+            assert(i->second.get() != nullptr);
             if (!i->second->info->singletons.empty()) {
                 osl::MutexGuard g2(i->second->mutex);
                 if (i->second->disposeSingleton.is()) {
@@ -898,7 +897,7 @@ void cppuhelper::ServiceManager::disposing() {
                  data_.dynamicImplementations.begin());
              i != data_.dynamicImplementations.end(); ++i)
         {
-            assert(i->second.get() != 0);
+            assert(i->second.get() != nullptr);
             if (!i->second->info->singletons.empty()) {
                 osl::MutexGuard g2(i->second->mutex);
                 if (i->second->disposeSingleton.is()) {
@@ -1014,7 +1013,7 @@ cppuhelper::ServiceManager::createInstanceWithContext(
 {
     std::shared_ptr< Data::Implementation > impl(
         findServiceImplementation(Context, aServiceSpecifier));
-    return impl.get() == 0
+    return impl.get() == nullptr
         ? css::uno::Reference< css::uno::XInterface >()
         : impl->createInstance(Context, false);
 }
@@ -1028,7 +1027,7 @@ cppuhelper::ServiceManager::createInstanceWithArgumentsAndContext(
 {
     std::shared_ptr< Data::Implementation > impl(
         findServiceImplementation(Context, ServiceSpecifier));
-    return impl.get() == 0
+    return impl.get() == nullptr
         ? css::uno::Reference< css::uno::XInterface >()
         : impl->createInstanceWithArguments(Context, false, Arguments);
 }
@@ -1197,7 +1196,7 @@ cppuhelper::ServiceManager::createContentEnumeration(
          i != impls.end(); ++i)
     {
         Data::Implementation * impl = i->get();
-        assert(impl != 0);
+        assert(impl != nullptr);
         {
             osl::MutexGuard g(rBHelper.rMutex);
             if (isDisposed()) {
@@ -1353,6 +1352,8 @@ sal_Bool cppuhelper::ServiceManager::hasPropertyByName(
 {
     return Name == "DefaultContext";
 }
+
+cppuhelper::ServiceManager::~ServiceManager() {}
 
 void cppuhelper::ServiceManager::disposing(
     css::lang::EventObject const & Source)
@@ -1563,7 +1564,7 @@ void cppuhelper::ServiceManager::readLegacyRdbStrings(
     rtl::OUString const & uri, RegistryKey & key, rtl::OUString const & path,
     std::vector< rtl::OUString > * strings)
 {
-    assert(strings != 0);
+    assert(strings != nullptr);
     RegistryKey subkey;
     switch (key.openKey(path, subkey)) {
     case RegError::NO_ERROR:
@@ -1620,8 +1621,7 @@ void cppuhelper::ServiceManager::insertLegacyFactory(
         factoryInfo, css::uno::UNO_QUERY);
     css::uno::Reference< css::lang::XSingleServiceFactory > f2;
     if (!f1.is()) {
-        f2 = css::uno::Reference< css::lang::XSingleServiceFactory >(
-            factoryInfo, css::uno::UNO_QUERY);
+        f2.set(factoryInfo, css::uno::UNO_QUERY);
         if (!f2.is()) {
             throw css::lang::IllegalArgumentException(
                 ("Bad XServiceInfo argument implements neither"
@@ -1707,7 +1707,7 @@ bool cppuhelper::ServiceManager::insertExtraData(Data const & extra) {
                 cont->removeByName(name + "/arguments");
             } catch (const css::container::NoSuchElementException &) {}
             assert(!i->second.empty());
-            assert(i->second[0].get() != 0);
+            assert(i->second[0].get() != nullptr);
             SAL_INFO_IF(
                 i->second.size() > 1, "cppuhelper",
                 "Arbitrarily chosing " << i->second[0]->info->name
@@ -1747,7 +1747,7 @@ void cppuhelper::ServiceManager::removeRdbFiles(
                      data_.namedImplementations.begin());
                  j != data_.namedImplementations.end();)
             {
-                assert(j->second.get() != 0);
+                assert(j->second.get() != nullptr);
                 if (j->second->info->rdbFile == *i) {
                     clear.push_back(j->second);
                     //TODO: The below leaves data_ in an inconsistent state upon
@@ -1781,7 +1781,7 @@ bool cppuhelper::ServiceManager::removeLegacyFactory(
         if (i == data_.dynamicImplementations.end()) {
             return isDisposed();
         }
-        assert(i->second.get() != 0);
+        assert(i->second.get() != nullptr);
         clear = i->second;
         if (removeListener) {
             comp = i->second->component;
@@ -1818,7 +1818,7 @@ void cppuhelper::ServiceManager::removeImplementation(const rtl::OUString & name
                 "Remove non-inserted implementation " + name,
                 static_cast< cppu::OWeakObject * >(this));
         }
-        assert(i->second.get() != 0);
+        assert(i->second.get() != nullptr);
         clear = i->second;
         //TODO: The below leaves data_ in an inconsistent state upon exceptions:
         removeFromImplementationMap(
@@ -1865,7 +1865,7 @@ cppuhelper::ServiceManager::findServiceImplementation(
                     << " among multiple implementations for " << i->first);
             impl = i->second[0];
         }
-        assert(impl.get() != 0);
+        assert(impl.get() != nullptr);
         loaded = impl->status == Data::Implementation::STATUS_LOADED;
     }
     if (!loaded) {

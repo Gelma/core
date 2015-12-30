@@ -85,7 +85,7 @@ struct SvXMLUnitConverter::Impl
 void SvXMLUnitConverter::Impl::createNumTypeInfo() const
 {
     Reference<XDefaultNumberingProvider> xDefNum = DefaultNumberingProvider::create(m_xContext);
-    m_xNumTypeInfo = Reference<XNumberingTypeInfo>(xDefNum, uno::UNO_QUERY);
+    m_xNumTypeInfo.set(xDefNum, uno::UNO_QUERY);
 }
 
 const uno::Reference< text::XNumberingTypeInfo >&
@@ -295,13 +295,13 @@ bool SvXMLUnitConverter::convertDouble(double& rValue,
 }
 
 /** get the Null Date of the XModel and set it to the UnitConverter */
-bool SvXMLUnitConverter::setNullDate(const com::sun::star::uno::Reference <com::sun::star::frame::XModel>& xModel)
+bool SvXMLUnitConverter::setNullDate(const css::uno::Reference <css::frame::XModel>& xModel)
 {
-    com::sun::star::uno::Reference <com::sun::star::util::XNumberFormatsSupplier> xNumberFormatsSupplier (xModel, com::sun::star::uno::UNO_QUERY);
+    css::uno::Reference <css::util::XNumberFormatsSupplier> xNumberFormatsSupplier (xModel, css::uno::UNO_QUERY);
     if (xNumberFormatsSupplier.is())
     {
-        const com::sun::star::uno::Reference <com::sun::star::beans::XPropertySet> xPropertySet = xNumberFormatsSupplier->getNumberFormatSettings();
-        return xPropertySet.is() && (xPropertySet->getPropertyValue(OUString(XML_NULLDATE)) >>= m_pImpl->m_aNullDate);
+        const css::uno::Reference <css::beans::XPropertySet> xPropertySet = xNumberFormatsSupplier->getNumberFormatSettings();
+        return xPropertySet.is() && (xPropertySet->getPropertyValue(XML_NULLDATE) >>= m_pImpl->m_aNullDate);
     }
     return false;
 }
@@ -323,7 +323,7 @@ bool SvXMLUnitConverter::convertDateTime(double& fDateTime,
 /** convert double to ISO Date Time String */
 void SvXMLUnitConverter::convertDateTime( OUStringBuffer& rBuffer,
         const double& fDateTime,
-        const com::sun::star::util::Date& aTempNullDate,
+        const css::util::Date& aTempNullDate,
         bool bAddTimeIf0AM )
 {
     double fValue = fDateTime;
@@ -430,10 +430,10 @@ void SvXMLUnitConverter::convertDateTime( OUStringBuffer& rBuffer,
 
 /** convert ISO Date Time String to double */
 bool SvXMLUnitConverter::convertDateTime( double& fDateTime,
-                            const OUString& rString, const com::sun::star::util::Date& aTempNullDate)
+                            const OUString& rString, const css::util::Date& aTempNullDate)
 {
-    com::sun::star::util::DateTime aDateTime;
-    bool bSuccess = ::sax::Converter::parseDateTime(aDateTime, 0, rString);
+    css::util::DateTime aDateTime;
+    bool bSuccess = ::sax::Converter::parseDateTime(aDateTime, nullptr, rString);
 
     if (bSuccess)
     {
@@ -527,19 +527,19 @@ bool SvXMLUnitConverter::convertB3DVector( ::basegfx::B3DVector& rVector, const 
     rtl_math_ConversionStatus eStatus;
 
     rVector.setX(::rtl::math::stringToDouble(aContentX, '.',
-            ',', &eStatus, NULL));
+            ',', &eStatus));
 
     if( eStatus != rtl_math_ConversionStatus_Ok )
         return false;
 
     rVector.setY(::rtl::math::stringToDouble(aContentY, '.',
-            ',', &eStatus, NULL));
+            ',', &eStatus));
 
     if( eStatus != rtl_math_ConversionStatus_Ok )
         return false;
 
     rVector.setZ(::rtl::math::stringToDouble(aContentZ, '.',
-            ',', &eStatus, NULL));
+            ',', &eStatus));
 
 
     return ( eStatus == rtl_math_ConversionStatus_Ok );

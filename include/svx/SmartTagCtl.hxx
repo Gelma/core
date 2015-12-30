@@ -25,6 +25,7 @@
 #include <svx/svxdllapi.h>
 #include <com/sun/star/uno/Reference.hxx>
 
+#include <memory>
 #include <vector>
 
 class SfxBindings;
@@ -44,17 +45,18 @@ namespace com { namespace sun { namespace star { namespace container {
 class SVX_DLLPUBLIC SvxSmartTagsControl : public SfxMenuControl
 {
 private:
-    PopupMenu*                  mpMenu;
+    std::unique_ptr< PopupMenu > mpMenu;
+    std::vector< std::unique_ptr< PopupMenu > > maSubMenus;
     Menu&                       mrParent;
-    const SvxSmartTagItem*      mpSmartTagItem;
+    std::unique_ptr< const SvxSmartTagItem >    mpSmartTagItem;
 
     struct InvokeAction
     {
-        com::sun::star::uno::Reference< com::sun::star::smarttags::XSmartTagAction > mxAction;
-        com::sun::star::uno::Reference< com::sun::star::container::XStringKeyMap > mxSmartTagProperties;
+        css::uno::Reference< css::smarttags::XSmartTagAction > mxAction;
+        css::uno::Reference< css::container::XStringKeyMap > mxSmartTagProperties;
         sal_uInt32 mnActionID;
-        InvokeAction( com::sun::star::uno::Reference< com::sun::star::smarttags::XSmartTagAction > xAction,
-                      com::sun::star::uno::Reference< com::sun::star::container::XStringKeyMap > xSmartTagProperties,
+        InvokeAction( css::uno::Reference< css::smarttags::XSmartTagAction > xAction,
+                      css::uno::Reference< css::container::XStringKeyMap > xSmartTagProperties,
                       sal_uInt32 nActionID ) : mxAction( xAction ), mxSmartTagProperties( xSmartTagProperties ), mnActionID( nActionID ) {}
     };
 
@@ -63,7 +65,7 @@ private:
     void            FillMenu();
     DECL_LINK_TYPED( MenuSelect, Menu *, bool);
     virtual void    StateChanged( sal_uInt16 nSID, SfxItemState eState,
-                                  const SfxPoolItem* pState ) SAL_OVERRIDE;
+                                  const SfxPoolItem* pState ) override;
 
 public:
     SvxSmartTagsControl( sal_uInt16 nId, Menu&, SfxBindings& );

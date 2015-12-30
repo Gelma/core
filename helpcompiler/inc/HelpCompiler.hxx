@@ -175,8 +175,8 @@ public:
     xmlDocPtr default_doc;
 
     StreamTable() :
-        appl_hidlist(NULL), appl_keywords(NULL), appl_helptexts(NULL), appl_doc(NULL),
-        default_hidlist(NULL), default_keywords(NULL), default_helptexts(NULL), default_doc(NULL)
+        appl_hidlist(nullptr), appl_keywords(nullptr), appl_helptexts(nullptr), appl_doc(nullptr),
+        default_hidlist(nullptr), default_keywords(nullptr), default_helptexts(nullptr), default_doc(nullptr)
     {}
     void dropdefault()
     {
@@ -231,7 +231,7 @@ public:
                 const std::string &in_module,
                 const std::string &in_lang,
                 bool in_bExtensionMode);
-    bool compile() throw (HelpProcessingException, BasicCodeTagger::TaggerException);
+    bool compile() throw (HelpProcessingException, BasicCodeTagger::TaggerException, std::exception);
 private:
     xmlDocPtr getSourceDocument(const fs::path &filePath);
     static void tagBasicCodeExamples(xmlDocPtr doc);

@@ -13,6 +13,7 @@
 #include "helper/qahelper.hxx"
 #include "document.hxx"
 #include <stringutil.hxx>
+#include <memory>
 
 struct TestImpl;
 class ScUndoPaste;
@@ -95,8 +96,8 @@ public:
 
     ScDocShell& getDocShell();
 
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
     /**
      * Basic performance regression test. Pick some actions that *should* take
@@ -187,14 +188,17 @@ public:
     void testFuncFTEST();
     void testFuncFTESTBug();
     void testFuncCHITEST();
+    void testFuncTTEST();
     void testFuncSUMX2PY2();
     void testFuncSUMX2MY2();
     void testFuncGCD();
     void testFuncLCM();
     void testFuncSUMSQ();
+    void testFuncMDETERM();
 
     void testExternalRef();
     void testExternalRefFunctions();
+    void testExternalRangeName();
 
     void testCopyToDocument();
 
@@ -232,6 +236,7 @@ public:
     void testCSV();
     void testMatrix();
     void testMatrixComparisonWithErrors();
+    void testMatrixConditionalBooleanResult();
     void testEnterMixedMatrix();
     void testMatrixEditable();
 
@@ -451,6 +456,7 @@ public:
     // tdf#80137
     void testCopyPasteMatrixFormula();
     void testUndoDataAnchor();
+    void testFormulaErrorPropagation();
 
     CPPUNIT_TEST_SUITE(Test);
 #if CALC_TEST_PERF
@@ -525,12 +531,15 @@ public:
     CPPUNIT_TEST(testFuncFTEST);
     CPPUNIT_TEST_FAIL(testFuncFTESTBug);
     CPPUNIT_TEST(testFuncCHITEST);
+    CPPUNIT_TEST(testFuncTTEST);
     CPPUNIT_TEST(testFuncSUMX2PY2);
     CPPUNIT_TEST(testFuncSUMX2MY2);
     CPPUNIT_TEST(testFuncGCD);
     CPPUNIT_TEST(testFuncLCM);
     CPPUNIT_TEST(testFuncSUMSQ);
+    CPPUNIT_TEST(testFuncMDETERM);
     CPPUNIT_TEST(testExternalRef);
+    CPPUNIT_TEST(testExternalRangeName);
     CPPUNIT_TEST(testExternalRefFunctions);
     CPPUNIT_TEST(testCopyToDocument);
     CPPUNIT_TEST(testFuncSHEET);
@@ -551,6 +560,7 @@ public:
     CPPUNIT_TEST(testCSV);
     CPPUNIT_TEST(testMatrix);
     CPPUNIT_TEST(testMatrixComparisonWithErrors);
+    CPPUNIT_TEST(testMatrixConditionalBooleanResult);
     CPPUNIT_TEST(testEnterMixedMatrix);
     CPPUNIT_TEST(testMatrixEditable);
     CPPUNIT_TEST(testPivotTable);
@@ -677,10 +687,11 @@ public:
     CPPUNIT_TEST(testSetStringAndNote);
     CPPUNIT_TEST(testCopyPasteMatrixFormula);
     CPPUNIT_TEST(testUndoDataAnchor);
+    CPPUNIT_TEST(testFormulaErrorPropagation);
     CPPUNIT_TEST_SUITE_END();
 
 private:
-    TestImpl* m_pImpl;
+    std::unique_ptr<TestImpl> m_pImpl;
     ScDocument *m_pDoc;
 };
 

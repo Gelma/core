@@ -26,6 +26,7 @@
 #include <rtl/ustring.hxx>
 
 #include <salhelper/simplereferenceobject.hxx>
+#include <memory>
 
 class SvXMLUnitConverter;
 class XMLPropertyHandler;
@@ -37,10 +38,10 @@ class XMLOFF_DLLPUBLIC XMLPropertySetMapper : public salhelper::SimpleReferenceO
 {
     struct Impl;
 
-    Impl* mpImpl;
+    std::unique_ptr<Impl> mpImpl;
 
-    XMLPropertySetMapper( const XMLPropertySetMapper& ) SAL_DELETED_FUNCTION;
-    XMLPropertySetMapper& operator= ( const XMLPropertySetMapper& ) SAL_DELETED_FUNCTION;
+    XMLPropertySetMapper( const XMLPropertySetMapper& ) = delete;
+    XMLPropertySetMapper& operator= ( const XMLPropertySetMapper& ) = delete;
 
 public:
     /** The last element of the XMLPropertyMapEntry-array must contain NULL-values.

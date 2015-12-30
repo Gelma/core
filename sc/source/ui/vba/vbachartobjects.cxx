@@ -30,6 +30,7 @@
 #include "cellsuno.hxx"
 #include <vector>
 #include <basic/sberrors.hxx>
+#include <comphelper/sequence.hxx>
 
 using namespace ::com::sun::star;
 using namespace ::ooo::vba;
@@ -41,7 +42,7 @@ class ChartObjectEnumerationImpl : public EnumerationHelperImpl
 public:
 
     ChartObjectEnumerationImpl( const uno::Reference< uno::XComponentContext >& xContext, const uno::Reference< container::XEnumeration >& xEnumeration, const uno::Reference< drawing::XDrawPageSupplier >& _xDrawPageSupplier, const uno::Reference< XHelperInterface >& _xParent ) throw ( uno::RuntimeException ) : EnumerationHelperImpl( _xParent, xContext, xEnumeration ), xDrawPageSupplier( _xDrawPageSupplier ) {}
-    virtual uno::Any SAL_CALL nextElement(  ) throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Any SAL_CALL nextElement(  ) throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception) override
     {
         uno::Any ret;
 
@@ -94,7 +95,7 @@ ScVbaChartObjects::getChartObjectNames() throw( css::script::BasicErrorException
         // c++ hackery
         uno::Reference< uno::XInterface > xIf( xDrawPageSupplier, uno::UNO_QUERY_THROW );
         ScCellRangesBase* pUno= dynamic_cast< ScCellRangesBase* >( xIf.get() );
-        ScDocShell* pDocShell = NULL;
+        ScDocShell* pDocShell = nullptr;
         if ( !pUno )
             throw uno::RuntimeException("Failed to obtain the impl class from the drawpage" );
         pDocShell = pUno->GetDocShell();
@@ -115,11 +116,7 @@ ScVbaChartObjects::getChartObjectNames() throw( css::script::BasicErrorException
             for (sal_Int32 n = 0; n < nChartNames; n++ )
                 aChartNamesVector.push_back(scurchartnames[n]);
         }
-        sChartNames.realloc( aChartNamesVector.size() );
-        std::vector< OUString > ::const_iterator it = aChartNamesVector.begin();
-        std::vector< OUString > ::const_iterator it_end = aChartNamesVector.end();
-        for ( sal_Int32 index = 0 ; it != it_end; ++it, ++index )
-            sChartNames[index] = *it;
+        sChartNames = comphelper::containerToSequence( aChartNamesVector );
     }
     catch (uno::Exception& )
     {
@@ -141,7 +138,7 @@ ScVbaChartObjects::Add( double _nX, double _nY, double _nWidth, double _nHeight 
         aRectangle.Width = Millimeter::getInHundredthsOfOneMillimeter(_nWidth);
         aRectangle.Height = Millimeter::getInHundredthsOfOneMillimeter(_nHeight);
         // Note the space at the end of the stem ("Chart "). In ChartSheets only "Chart" is the stem
-        OUString sPersistChartName = ContainerUtilities::getUniqueName( getChartObjectNames(), OUString( "Chart " ) , OUString(), 1);
+        OUString sPersistChartName = ContainerUtilities::getUniqueName( getChartObjectNames(), "Chart " , OUString(), 1);
         xTableCharts->addNewByName(sPersistChartName, aRectangle, aCellRangeAddress, true, false );
         uno::Reference< excel::XChartObject > xChartObject( getItemByStringIndex( sPersistChartName ), uno::UNO_QUERY_THROW );
         xChartObject->getChart()->setChartType(excel::XlChartType::xlColumnClustered);

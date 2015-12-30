@@ -162,24 +162,8 @@ void SwFieldTypes::dumpAsXml(xmlTextWriterPtr pWriter) const
     {
         const SwFieldType *pCurType = (*this)[nType];
         SwIterator<SwFormatField, SwFieldType> aIter(*pCurType);
-        for (const SwFormatField* pCurFieldFormat = aIter.First(); pCurFieldFormat; pCurFieldFormat = aIter.Next())
-        {
-            xmlTextWriterStartElement(pWriter, BAD_CAST("swFormatField"));
-            xmlTextWriterWriteFormatAttribute(pWriter, BAD_CAST("ptr"), "%p", pCurFieldFormat);
-            xmlTextWriterWriteFormatAttribute(pWriter, BAD_CAST("txtField"), "%p", pCurFieldFormat->GetTextField());
-
-            xmlTextWriterStartElement(pWriter, BAD_CAST("swField"));
-            xmlTextWriterWriteFormatAttribute(pWriter, BAD_CAST("symbol"), "%s", BAD_CAST(typeid(*pCurFieldFormat->GetField()).name()));
-            xmlTextWriterWriteFormatAttribute(pWriter, BAD_CAST("ptr"), "%p", pCurFieldFormat->GetField());
-            if (pCurFieldFormat->GetField()->GetTyp()->Which() == RES_POSTITFLD)
-            {
-                const SwPostItField* pField = static_cast<const SwPostItField*>(pCurFieldFormat->GetField());
-                xmlTextWriterWriteAttribute(pWriter, BAD_CAST("name"), BAD_CAST(pField->GetName().toUtf8().getStr()));
-            }
-            xmlTextWriterEndElement(pWriter);
-
-            xmlTextWriterEndElement(pWriter);
-        }
+        for (const SwFormatField* pFormatField = aIter.First(); pFormatField; pFormatField = aIter.Next())
+            pFormatField->dumpAsXml(pWriter);
     }
     xmlTextWriterEndElement(pWriter);
 }
@@ -482,7 +466,7 @@ OUString SwValueFieldType::ExpandValue( const double& rVal,
 
     OUString sExpand;
     SvNumberFormatter* pFormatter = m_pDoc->GetNumberFormatter();
-    Color* pCol = 0;
+    Color* pCol = nullptr;
 
     // Bug #60010
     sal_uInt16 nFormatLng = ::lcl_GetLanguageOfFormat( nLng, nFormat, *pFormatter );
@@ -735,7 +719,7 @@ OUString SwFormulaField::GetExpandedFormula() const
     if (nFormat && nFormat != SAL_MAX_UINT32 && static_cast<SwValueFieldType *>(GetTyp())->UseFormat())
     {
         OUString sFormattedValue;
-        Color* pCol = 0;
+        Color* pCol = nullptr;
 
         SvNumberFormatter* pFormatter = GetDoc()->GetNumberFormatter();
 
@@ -772,6 +756,15 @@ bool SwField::IsClickable() const
         return true;
     }
     return false;
+}
+
+void SwField::dumpAsXml(xmlTextWriterPtr pWriter) const
+{
+    xmlTextWriterStartElement(pWriter, BAD_CAST("swField"));
+    xmlTextWriterWriteFormatAttribute(pWriter, BAD_CAST("symbol"), "%s", BAD_CAST(typeid(*this).name()));
+    xmlTextWriterWriteFormatAttribute(pWriter, BAD_CAST("ptr"), "%p", this);
+
+    xmlTextWriterEndElement(pWriter);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

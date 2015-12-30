@@ -34,13 +34,12 @@
 #define ScPageBreakShell
 #include "scslots.hxx"
 
-TYPEINIT1( ScPageBreakShell, SfxShell );
 
 SFX_IMPL_INTERFACE(ScPageBreakShell, SfxShell)
 
 void ScPageBreakShell::InitInterface_Impl()
 {
-    GetStaticInterface()->RegisterPopupMenu(ScResId(RID_POPUP_PAGEBREAK));
+    GetStaticInterface()->RegisterPopupMenu("pagebreak");
 }
 
 ScPageBreakShell::ScPageBreakShell( ScTabViewShell* pViewSh ) :
@@ -55,7 +54,7 @@ ScPageBreakShell::ScPageBreakShell( ScTabViewShell* pViewSh ) :
         pMgr->SetMaxUndoActionCount( 0 );
     }
     SetHelpId( HID_SCSHELL_PAGEBREAK );
-    SetName(OUString("PageBreak"));
+    SetName("PageBreak");
 }
 
 ScPageBreakShell::~ScPageBreakShell()

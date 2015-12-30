@@ -73,18 +73,17 @@ sal_Bool SAL_CALL SfxMacroLoader::supportsService(OUString const & ServiceName)
 css::uno::Sequence<OUString> SAL_CALL SfxMacroLoader::getSupportedServiceNames()
     throw (css::uno::RuntimeException, std::exception)
 {
-    css::uno::Sequence< OUString > aSeq(1);
-    aSeq[0] = "com.sun.star.frame.ProtocolHandler";
+    css::uno::Sequence< OUString > aSeq { "com.sun.star.frame.ProtocolHandler" };
     return aSeq;
 }
 
 SfxObjectShell* SfxMacroLoader::GetObjectShell_Impl()
 {
-    SfxObjectShell* pDocShell = NULL;
+    SfxObjectShell* pDocShell = nullptr;
     Reference < XFrame > xFrame( m_xFrame.get(), UNO_QUERY );
     if ( xFrame.is() )
     {
-        SfxFrame* pFrame=0;
+        SfxFrame* pFrame=nullptr;
         for ( pFrame = SfxFrame::GetFirst(); pFrame; pFrame = SfxFrame::GetNext( *pFrame ) )
         {
             if ( pFrame->GetFrameInterface() == xFrame )
@@ -188,7 +187,7 @@ void SAL_CALL SfxMacroLoader::removeStatusListener(
 {
 }
 
-ErrCode SfxMacroLoader::loadMacro( const OUString& rURL, com::sun::star::uno::Any& rRetval, SfxObjectShell* pSh )
+ErrCode SfxMacroLoader::loadMacro( const OUString& rURL, css::uno::Any& rRetval, SfxObjectShell* pSh )
     throw ( ucb::ContentCreationException, uno::RuntimeException, std::exception )
 {
 #if !HAVE_FEATURE_SCRIPTING
@@ -209,14 +208,14 @@ ErrCode SfxMacroLoader::loadMacro( const OUString& rURL, com::sun::star::uno::An
     sal_Int32 nHashPos = aMacro.indexOf( '/', 8 );
     sal_Int32 nArgsPos = aMacro.indexOf( '(' );
     BasicManager *pAppMgr = SfxApplication::GetBasicManager();
-    BasicManager *pBasMgr = 0;
+    BasicManager *pBasMgr = nullptr;
     ErrCode nErr = ERRCODE_NONE;
 
     // should a macro function be executed ( no direct API call)?
     if ( -1 != nHashPos && ( -1 == nArgsPos || nHashPos < nArgsPos ) )
     {
         // find BasicManager
-        SfxObjectShell* pDoc = NULL;
+        SfxObjectShell* pDoc = nullptr;
         OUString aBasMgrName( INetURLObject::decode(aMacro.copy( 8, nHashPos-8 ), INetURLObject::DECODE_WITH_CHARSET) );
         if ( aBasMgrName.isEmpty() )
             pBasMgr = pAppMgr;
@@ -266,8 +265,8 @@ ErrCode SfxMacroLoader::loadMacro( const OUString& rURL, com::sun::star::uno::An
             if ( pBasMgr->HasMacro( aQualifiedMethod ) )
             {
                 Any aOldThisComponent;
-                const bool bSetDocMacroMode = ( pDoc != NULL ) && bIsDocBasic;
-                const bool bSetGlobalThisComponent = ( pDoc != NULL ) && bIsAppBasic;
+                const bool bSetDocMacroMode = ( pDoc != nullptr ) && bIsDocBasic;
+                const bool bSetGlobalThisComponent = ( pDoc != nullptr ) && bIsAppBasic;
                 if ( bSetDocMacroMode )
                 {
                     // mark document: it executes an own macro, so it's in a modal mode

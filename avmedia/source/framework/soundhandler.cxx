@@ -82,13 +82,13 @@ css::uno::Sequence< css::uno::Type > SAL_CALL SoundHandler::getTypes() throw( cs
     /* And we don't must use a mutex at every call!                 */
     /* For the first call; pTypeCollection is NULL -                */
     /* for the second call pTypeCollection is different from NULL!  */
-    static ::cppu::OTypeCollection* pTypeCollection = NULL ;
-    if ( pTypeCollection == NULL )
+    static ::cppu::OTypeCollection* pTypeCollection = nullptr ;
+    if ( pTypeCollection == nullptr )
     {
         /* Ready for multithreading; get global mutex for first call of this method only! see before   */
         ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );
         /* Control these pointer again ... it can be, that another instance will be faster then these! */
-        if ( pTypeCollection == NULL )
+        if ( pTypeCollection == nullptr )
         {
             /* Create a static typecollection ...           */
             static ::cppu::OTypeCollection aTypeCollection
@@ -125,8 +125,7 @@ sal_Bool SAL_CALL SoundHandler::supportsService( const OUString& sServiceName ) 
 // XServiceInfo
 css::uno::Sequence< OUString > SAL_CALL SoundHandler::getSupportedServiceNames() throw( css::uno::RuntimeException, std::exception )
 {
-    css::uno::Sequence< OUString > seqServiceNames( 1 );
-    seqServiceNames.getArray() [0] = "com.sun.star.frame.ContentHandler";
+    css::uno::Sequence<OUString> seqServiceNames { "com.sun.star.frame.ContentHandler" };
     return seqServiceNames;
 }
 
@@ -160,7 +159,7 @@ SoundHandler::~SoundHandler()
         css::frame::DispatchResultEvent aEvent;
         aEvent.State = css::frame::DispatchResultState::FAILURE;
         m_xListener->dispatchFinished(aEvent);
-        m_xListener = css::uno::Reference< css::frame::XDispatchResultListener >();
+        m_xListener.clear();
     }
 }
 
@@ -220,7 +219,7 @@ void SAL_CALL SoundHandler::dispatchWithNotification(const css::util::URL&      
         m_xPlayer.set( avmedia::MediaWindow::createPlayer( aURL.Complete, aDescriptor.getUnpackedValueOrDefault(utl::MediaDescriptor::PROP_REFERRER(), OUString()) ), css::uno::UNO_QUERY_THROW );
         // OK- we can start async playing ...
         // Count this request and initialize self-holder against dying by uno ref count ...
-        m_xSelfHold = css::uno::Reference< css::uno::XInterface >(static_cast< ::cppu::OWeakObject* >(this), css::uno::UNO_QUERY);
+        m_xSelfHold.set(static_cast< ::cppu::OWeakObject* >(this), css::uno::UNO_QUERY);
         m_xPlayer->start();
         m_aUpdateIdle.SetPriority( SchedulerPriority::LOWER );
         m_aUpdateIdle.Start();
@@ -314,7 +313,7 @@ IMPL_LINK_NOARG_TYPED(SoundHandler, implts_PlayerNotify, Idle *, void)
     // We use m_xSelfHold to let us die ... but we must live till real finishing of this method too!!!
     // So we SHOULD use another "self-holder" temp. to provide that ...
     css::uno::Reference< css::uno::XInterface > xOperationHold = m_xSelfHold;
-    m_xSelfHold = css::uno::Reference< css::uno::XInterface >();
+    m_xSelfHold.clear();
 
     // notify might existing listener
     // And forget this listener!
@@ -327,7 +326,7 @@ IMPL_LINK_NOARG_TYPED(SoundHandler, implts_PlayerNotify, Idle *, void)
         else
             aEvent.State = css::frame::DispatchResultState::FAILURE;
         m_xListener->dispatchFinished(aEvent);
-        m_xListener = css::uno::Reference< css::frame::XDispatchResultListener >();
+        m_xListener.clear();
     }
 
     // } SAFE

@@ -157,10 +157,10 @@ void PageSettings::importPageSetup( const Relations& rRelations, const Attribute
     maModel.mnPaperSize     = rAttribs.getInteger( XML_paperSize, 1 );
     aStr                    = rAttribs.getString ( XML_paperWidth, OUString() );
     ::sax::Converter::convertMeasure(
-            maModel.mnPaperWidth, aStr, util::MeasureUnit::MM_100TH);
+            maModel.mnPaperWidth, aStr);
     aStr                    = rAttribs.getString ( XML_paperHeight, OUString() );
     ::sax::Converter::convertMeasure(
-            maModel.mnPaperHeight, aStr, util::MeasureUnit::MM_100TH );
+            maModel.mnPaperHeight, aStr );
     maModel.mnCopies        = rAttribs.getInteger( XML_copies, 1 );
     maModel.mnScale         = rAttribs.getInteger( XML_scale, 100 );
     maModel.mnFirstPage     = rAttribs.getInteger( XML_firstPageNumber, 1 );
@@ -185,10 +185,10 @@ void PageSettings::importChartPageSetup( const Relations& rRelations, const Attr
     maModel.mnPaperSize     = rAttribs.getInteger( XML_paperSize, 1 );
     aStr                    = rAttribs.getString ( XML_paperWidth, OUString() );
     ::sax::Converter::convertMeasure(
-            maModel.mnPaperWidth, aStr, util::MeasureUnit::MM_100TH );
+            maModel.mnPaperWidth, aStr );
     aStr                    = rAttribs.getString ( XML_paperHeight, OUString() );
     ::sax::Converter::convertMeasure(
-            maModel.mnPaperHeight, aStr, util::MeasureUnit::MM_100TH );
+            maModel.mnPaperHeight, aStr );
     maModel.mnCopies        = rAttribs.getInteger( XML_copies, 1 );
     maModel.mnFirstPage     = rAttribs.getInteger( XML_firstPageNumber, 1 );
     maModel.mnHorPrintRes   = rAttribs.getInteger( XML_horizontalDpi, 600 );
@@ -558,7 +558,7 @@ double HeaderFooterParser::parse( const Reference<sheet::XHeaderFooterContent>& 
                     {
                         Reference<text::XTextContent> xContent = createField( maFileNameService );
                         PropertySet aPropSet( xContent );
-                        aPropSet.setProperty( PROP_FileFormat, ::com::sun::star::text::FilenameDisplayFormat::NAME_AND_EXT );
+                        aPropSet.setProperty( PROP_FileFormat, css::text::FilenameDisplayFormat::NAME_AND_EXT );
                         appendField( xContent );
                     }
                     break;
@@ -568,7 +568,7 @@ double HeaderFooterParser::parse( const Reference<sheet::XHeaderFooterContent>& 
                             Reference<text::XTextContent> xContent = createField( maFileNameService );
                             PropertySet aPropSet( xContent );
                             // FilenameDisplayFormat::PATH not supported by Calc
-                            aPropSet.setProperty( PROP_FileFormat, ::com::sun::star::text::FilenameDisplayFormat::FULL );
+                            aPropSet.setProperty( PROP_FileFormat, css::text::FilenameDisplayFormat::FULL );
                             appendField( xContent );
                             /*  path only is not supported -- if we find a '&Z&F'
                                 combination for path/name, skip the '&F' part */
@@ -988,7 +988,7 @@ void PageSettingsConverter::writePageSettingsProperties(
     if( !rModel.maGraphicUrl.isEmpty() )
     {
         aPropMap.setProperty( PROP_BackGraphicURL, rModel.maGraphicUrl);
-        aPropMap.setProperty( PROP_BackGraphicLocation, ::com::sun::star::style::GraphicLocation_TILED);
+        aPropMap.setProperty( PROP_BackGraphicLocation, css::style::GraphicLocation_TILED);
     }
 
     rPropSet.setProperties( aPropMap );

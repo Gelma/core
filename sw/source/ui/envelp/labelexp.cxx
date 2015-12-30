@@ -107,7 +107,7 @@ IMPL_LINK_NOARG_TYPED(SwVisitingCardPage, FrameControlInitializedHdl, SwOneExamp
     OUString sEntry;
     if( pSel )
         sEntry = *static_cast<OUString*>(pSel->GetUserData());
-    uno::Reference< text::XTextCursor > & xCrsr = pExampleFrame->GetTextCursor();
+    uno::Reference< text::XTextCursor > & xCursor = pExampleFrame->GetTextCursor();
     OUString uEntry(sEntry);
 
     if(LISTBOX_ENTRY_NOTFOUND != m_pAutoTextGroupLB->GetSelectEntryPos())
@@ -124,7 +124,7 @@ IMPL_LINK_NOARG_TYPED(SwVisitingCardPage, FrameControlInitializedHdl, SwOneExamp
             aEntry >>= xEntry;
             if(xEntry.is())
             {
-                uno::Reference< text::XTextRange >  xRange(xCrsr, uno::UNO_QUERY);
+                uno::Reference< text::XTextRange >  xRange(xCursor, uno::UNO_QUERY);
                 xEntry->applyTo(xRange);
             }
             UpdateFields();
@@ -132,15 +132,16 @@ IMPL_LINK_NOARG_TYPED(SwVisitingCardPage, FrameControlInitializedHdl, SwOneExamp
     }
 }
 
-IMPL_LINK_TYPED( SwVisitingCardPage, AutoTextSelectTreeListBoxHdl, SvTreeListBox*, pBox, void )
+IMPL_LINK_NOARG_TYPED( SwVisitingCardPage, AutoTextSelectTreeListBoxHdl, SvTreeListBox*, void )
 {
-    AutoTextSelectHdl(pBox);
+    if(m_xAutoText.is() && pExampleFrame->IsInitialized())
+        pExampleFrame->ClearDocument( true );
 }
-IMPL_LINK( SwVisitingCardPage, AutoTextSelectHdl, void*, pBox )
+IMPL_LINK_TYPED( SwVisitingCardPage, AutoTextSelectHdl, ListBox&, rBox, void )
 {
     if(m_xAutoText.is())
     {
-        if (m_pAutoTextGroupLB == pBox)
+        if (m_pAutoTextGroupLB == &rBox)
         {
             const OUString *pGroup( static_cast<const OUString*>(m_pAutoTextGroupLB->GetSelectEntryData()));
             uno::Any aGroup = m_xAutoText->getByName(*pGroup);
@@ -158,7 +159,6 @@ IMPL_LINK( SwVisitingCardPage, AutoTextSelectHdl, void*, pBox )
         if(pExampleFrame->IsInitialized())
             pExampleFrame->ClearDocument( true );
     }
-    return 0;
 }
 
 void SwVisitingCardPage::UpdateFields()
@@ -179,39 +179,39 @@ void SwLabDlg::UpdateFieldInformation(uno::Reference< frame::XModel > & xModel, 
         const char* pName;
         OUString SwLabItem:: *pValue;
     }  aArr[] = {
-        { "BC_PRIV_FIRSTNAME"  , &SwLabItem::aPrivFirstName },
-        { "BC_PRIV_NAME"       , &SwLabItem::aPrivName },
-        { "BC_PRIV_INITIALS"   , &SwLabItem::aPrivShortCut },
-        { "BC_PRIV_FIRSTNAME_2", &SwLabItem::aPrivFirstName2 },
-        { "BC_PRIV_NAME_2"     , &SwLabItem::aPrivName2 },
-        { "BC_PRIV_INITIALS_2" , &SwLabItem::aPrivShortCut2 },
-        { "BC_PRIV_STREET"     , &SwLabItem::aPrivStreet },
-        { "BC_PRIV_ZIP"        , &SwLabItem::aPrivZip },
-        { "BC_PRIV_CITY"       , &SwLabItem::aPrivCity },
-        { "BC_PRIV_COUNTRY"    , &SwLabItem::aPrivCountry },
-        { "BC_PRIV_STATE"      , &SwLabItem::aPrivState },
-        { "BC_PRIV_TITLE"      , &SwLabItem::aPrivTitle },
-        { "BC_PRIV_PROFESSION" , &SwLabItem::aPrivProfession },
-        { "BC_PRIV_PHONE"      , &SwLabItem::aPrivPhone },
-        { "BC_PRIV_MOBILE"     , &SwLabItem::aPrivMobile },
-        { "BC_PRIV_FAX"        , &SwLabItem::aPrivFax },
-        { "BC_PRIV_WWW"        , &SwLabItem::aPrivWWW },
-        { "BC_PRIV_MAIL"       , &SwLabItem::aPrivMail },
-        { "BC_COMP_COMPANY"    , &SwLabItem::aCompCompany },
-        { "BC_COMP_COMPANYEXT" , &SwLabItem::aCompCompanyExt },
-        { "BC_COMP_SLOGAN"     , &SwLabItem::aCompSlogan },
-        { "BC_COMP_STREET"     , &SwLabItem::aCompStreet },
-        { "BC_COMP_ZIP"        , &SwLabItem::aCompZip },
-        { "BC_COMP_CITY"       , &SwLabItem::aCompCity },
-        { "BC_COMP_COUNTRY"    , &SwLabItem::aCompCountry },
-        { "BC_COMP_STATE"      , &SwLabItem::aCompState },
-        { "BC_COMP_POSITION"   , &SwLabItem::aCompPosition },
-        { "BC_COMP_PHONE"      , &SwLabItem::aCompPhone },
-        { "BC_COMP_MOBILE"     , &SwLabItem::aCompMobile },
-        { "BC_COMP_FAX"        , &SwLabItem::aCompFax },
-        { "BC_COMP_WWW"        , &SwLabItem::aCompWWW },
-        { "BC_COMP_MAIL"       , &SwLabItem::aCompMail },
-        { 0, 0 }
+        { "BC_PRIV_FIRSTNAME"  , &SwLabItem::m_aPrivFirstName },
+        { "BC_PRIV_NAME"       , &SwLabItem::m_aPrivName },
+        { "BC_PRIV_INITIALS"   , &SwLabItem::m_aPrivShortCut },
+        { "BC_PRIV_FIRSTNAME_2", &SwLabItem::m_aPrivFirstName2 },
+        { "BC_PRIV_NAME_2"     , &SwLabItem::m_aPrivName2 },
+        { "BC_PRIV_INITIALS_2" , &SwLabItem::m_aPrivShortCut2 },
+        { "BC_PRIV_STREET"     , &SwLabItem::m_aPrivStreet },
+        { "BC_PRIV_ZIP"        , &SwLabItem::m_aPrivZip },
+        { "BC_PRIV_CITY"       , &SwLabItem::m_aPrivCity },
+        { "BC_PRIV_COUNTRY"    , &SwLabItem::m_aPrivCountry },
+        { "BC_PRIV_STATE"      , &SwLabItem::m_aPrivState },
+        { "BC_PRIV_TITLE"      , &SwLabItem::m_aPrivTitle },
+        { "BC_PRIV_PROFESSION" , &SwLabItem::m_aPrivProfession },
+        { "BC_PRIV_PHONE"      , &SwLabItem::m_aPrivPhone },
+        { "BC_PRIV_MOBILE"     , &SwLabItem::m_aPrivMobile },
+        { "BC_PRIV_FAX"        , &SwLabItem::m_aPrivFax },
+        { "BC_PRIV_WWW"        , &SwLabItem::m_aPrivWWW },
+        { "BC_PRIV_MAIL"       , &SwLabItem::m_aPrivMail },
+        { "BC_COMP_COMPANY"    , &SwLabItem::m_aCompCompany },
+        { "BC_COMP_COMPANYEXT" , &SwLabItem::m_aCompCompanyExt },
+        { "BC_COMP_SLOGAN"     , &SwLabItem::m_aCompSlogan },
+        { "BC_COMP_STREET"     , &SwLabItem::m_aCompStreet },
+        { "BC_COMP_ZIP"        , &SwLabItem::m_aCompZip },
+        { "BC_COMP_CITY"       , &SwLabItem::m_aCompCity },
+        { "BC_COMP_COUNTRY"    , &SwLabItem::m_aCompCountry },
+        { "BC_COMP_STATE"      , &SwLabItem::m_aCompState },
+        { "BC_COMP_POSITION"   , &SwLabItem::m_aCompPosition },
+        { "BC_COMP_PHONE"      , &SwLabItem::m_aCompPhone },
+        { "BC_COMP_MOBILE"     , &SwLabItem::m_aCompMobile },
+        { "BC_COMP_FAX"        , &SwLabItem::m_aCompFax },
+        { "BC_COMP_WWW"        , &SwLabItem::m_aCompWWW },
+        { "BC_COMP_MAIL"       , &SwLabItem::m_aCompMail },
+        { nullptr, nullptr }
     };
 
     try

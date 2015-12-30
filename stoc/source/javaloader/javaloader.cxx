@@ -106,21 +106,21 @@ public:
 
 public:
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName() throw(RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName() throw(RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL supportsService(const OUString& ServiceName)
-        throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(RuntimeException, std::exception) override;
     virtual Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(RuntimeException, std::exception) override;
 
     // XImplementationLoader
     virtual css::uno::Reference<XInterface> SAL_CALL activate(
         const OUString& implementationName, const OUString& implementationLoaderUrl,
         const OUString& locationUrl, const css::uno::Reference<XRegistryKey>& xKey)
-        throw(CannotActivateFactoryException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(CannotActivateFactoryException, RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL writeRegistryInfo(
         const css::uno::Reference<XRegistryKey>& xKey,
         const OUString& implementationLoaderUrl, const OUString& locationUrl)
-        throw(CannotRegisterImplementationException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(CannotRegisterImplementationException, RuntimeException, std::exception) override;
 };
 
 const css::uno::Reference<XImplementationLoader> & JavaComponentLoader::getJavaLoader()
@@ -130,17 +130,16 @@ const css::uno::Reference<XImplementationLoader> & JavaComponentLoader::getJavaL
     if (m_javaLoader.is())
         return m_javaLoader;
 
-    uno_Environment * pJava_environment = NULL;
-    uno_Environment * pUno_environment = NULL;
-    typelib_InterfaceTypeDescription * pType_XImplementationLoader = 0;
+    uno_Environment * pJava_environment = nullptr;
+    uno_Environment * pUno_environment = nullptr;
+    typelib_InterfaceTypeDescription * pType_XImplementationLoader = nullptr;
 
     try {
         // get a java vm, where we can create a loader
         css::uno::Reference<XJavaVM> javaVM_xJavaVM(
             m_xComponentContext->getValueByName(
-                OUString(
-                             "/singletons/"
-                             "com.sun.star.java.theJavaVirtualMachine")),
+                             ("/singletons/"
+                              "com.sun.star.java.theJavaVirtualMachine")),
             UNO_QUERY_THROW);
 
         // Use the special protocol of XJavaVM.getJavaVM:  If the passed in
@@ -159,7 +158,7 @@ const css::uno::Reference<XImplementationLoader> & JavaComponentLoader::getJavaL
         static_assert(sizeof (sal_Int64)
                         >= sizeof (jvmaccess::UnoVirtualMachine *), "must be at least the same size");
         sal_Int64 nPointer = reinterpret_cast< sal_Int64 >(
-            static_cast< jvmaccess::UnoVirtualMachine * >(0));
+            static_cast< jvmaccess::UnoVirtualMachine * >(nullptr));
         javaVM_xJavaVM->getJavaVM(processID) >>= nPointer;
         rtl::Reference< jvmaccess::UnoVirtualMachine > xVirtualMachine(
             reinterpret_cast< jvmaccess::UnoVirtualMachine * >(nPointer));
@@ -224,7 +223,7 @@ const css::uno::Reference<XImplementationLoader> & JavaComponentLoader::getJavaL
 
             // why is there no convenient constructor?
             OUString sCppu_current_lb_name(CPPU_CURRENT_LANGUAGE_BINDING_NAME);
-            uno_getEnvironment(&pUno_environment, sCppu_current_lb_name.pData, NULL);
+            uno_getEnvironment(&pUno_environment, sCppu_current_lb_name.pData, nullptr);
             if(!pUno_environment)
                 throw RuntimeException(
                     "javaloader error - no C++ environment available");
@@ -236,11 +235,11 @@ const css::uno::Reference<XImplementationLoader> & JavaComponentLoader::getJavaL
 
             // release java environment
             pJava_environment->release(pJava_environment);
-            pJava_environment = NULL;
+            pJava_environment = nullptr;
 
             // release uno environment
             pUno_environment->release(pUno_environment);
-            pUno_environment = NULL;
+            pUno_environment = nullptr;
 
             cppu::UnoType<XImplementationLoader>::get().
                 getDescription(reinterpret_cast<typelib_TypeDescription **>(&pType_XImplementationLoader));
@@ -248,15 +247,14 @@ const css::uno::Reference<XImplementationLoader> & JavaComponentLoader::getJavaL
                 throw RuntimeException(
                     "javaloader error - no type information for XImplementationLoader");
 
-            m_javaLoader = css::uno::Reference<XImplementationLoader>(static_cast<XImplementationLoader *>(
-                            java_curr.mapInterface(joJavaLoader, pType_XImplementationLoader)));
+            m_javaLoader.set(static_cast<XImplementationLoader *>(java_curr.mapInterface(joJavaLoader, pType_XImplementationLoader)));
             pJNIEnv->DeleteLocalRef( joJavaLoader );
             if(!m_javaLoader.is())
                 throw RuntimeException(
                     "javaloader error - mapping of java XImplementationLoader to c++ failed");
 
             typelib_typedescription_release(reinterpret_cast<typelib_TypeDescription *>(pType_XImplementationLoader));
-            pType_XImplementationLoader = NULL;
+            pType_XImplementationLoader = nullptr;
         }
         catch (jvmaccess::VirtualMachine::AttachGuard::CreationException &)
         {
@@ -351,7 +349,7 @@ css::uno::Reference<XInterface> SAL_CALL JavaComponentLoader::activate(
 
 static Mutex & getInitMutex()
 {
-    static Mutex * pMutex = 0;
+    static Mutex * pMutex = nullptr;
     if( ! pMutex )
     {
         MutexGuard guard( Mutex::getGlobalMutex() );
@@ -372,15 +370,15 @@ css::uno::Reference<XInterface> SAL_CALL JavaComponentLoader_CreateInstance(cons
         MutexGuard guard( getInitMutex() );
         // The javaloader is never destroyed and there can be only one!
         // Note that the first context wins ....
-        static css::uno::Reference< XInterface > *pStaticRef = 0;
-        if( pStaticRef )
+        static css::uno::Reference< XInterface > xStaticRef;
+        if( xStaticRef.is() )
         {
-            xRet = *pStaticRef;
+            xRet = xStaticRef;
         }
         else
         {
             xRet = *new JavaComponentLoader(xCtx);
-            pStaticRef = new css::uno::Reference< XInterface > ( xRet );
+            xStaticRef = xRet;
         }
     }
     catch(const RuntimeException & runtimeException) {
@@ -403,9 +401,9 @@ static const struct ImplementationEntry g_entries[] =
     {
         JavaComponentLoader_CreateInstance, loader_getImplementationName,
         loader_getSupportedServiceNames, createSingleComponentFactory,
-        0 , 0
+        nullptr , 0
     },
-    { 0, 0, 0, 0, 0, 0 }
+    { nullptr, nullptr, nullptr, nullptr, nullptr, 0 }
 };
 
 extern "C"

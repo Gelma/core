@@ -75,13 +75,10 @@ void Receiver::executeCommand( const std::vector<OString> &aCommand )
         uno::Reference< frame::XDesktop2 > xFramesSupplier = frame::Desktop::create( ::comphelper::getProcessComponentContext() );
         uno::Reference< frame::XFrame > xFrame ( xFramesSupplier->getActiveFrame(), uno::UNO_QUERY_THROW );
         uno::Reference<presentation::XPresentationSupplier> xPS ( xFrame->getController()->getModel(), uno::UNO_QUERY_THROW);
-        xPresentation = uno::Reference<presentation::XPresentation2>(
-            xPS->getPresentation(), uno::UNO_QUERY_THROW);
+        xPresentation.set( xPS->getPresentation(), uno::UNO_QUERY_THROW);
         // Throws an exception if now slideshow running
-        xSlideShowController =  uno::Reference<presentation::XSlideShowController>(
-           xPresentation->getController(), uno::UNO_QUERY_THROW );
-        xSlideShow = uno::Reference<presentation::XSlideShow>(
-            xSlideShowController->getSlideShow(), uno::UNO_QUERY_THROW );
+        xSlideShowController.set( xPresentation->getController(), uno::UNO_QUERY_THROW );
+        xSlideShow.set( xSlideShowController->getSlideShow(), uno::UNO_QUERY_THROW );
     }
     catch (uno::RuntimeException &)
     {
@@ -137,7 +134,7 @@ void Receiver::executeCommand( const std::vector<OString> &aCommand )
         float y = aCommand[2].toFloat();
         SolarMutexGuard aSolarGuard;
 
-        const ::com::sun::star::geometry::RealPoint2D pos(x,y);
+        const css::geometry::RealPoint2D pos(x,y);
         // std::cerr << "Pointer at ("<<pos.X<<","<<pos.Y<<")" << std::endl;
 
         if (xSlideShow.is()) try
@@ -196,7 +193,7 @@ void Receiver::executeCommand( const std::vector<OString> &aCommand )
         float y = aCommand[2].toFloat();
 
         SAL_INFO( "sdremote", "Pointer at ("<<x<<","<<y<<")" );
-        const ::com::sun::star::geometry::RealPoint2D pos(x,y);
+        const css::geometry::RealPoint2D pos(x,y);
 
         SolarMutexGuard aSolarGuard;
         if (xSlideShow.is()) try

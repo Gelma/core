@@ -140,7 +140,7 @@ SvtScriptType ScDocument::GetScriptType( SCCOL nCol, SCROW nRow, SCTAB nTab )
 
     const ScPatternAttr* pPattern = GetPattern( nCol, nRow, nTab );
     if (!pPattern) return SvtScriptType::NONE;
-    const SfxItemSet* pCondSet = NULL;
+    const SfxItemSet* pCondSet = nullptr;
     if ( !static_cast<const ScCondFormatItem&>(pPattern->GetItem(ATTR_CONDITIONAL)).GetCondFormatData().empty() )
         pCondSet = GetCondResult( nCol, nRow, nTab );
 
@@ -158,14 +158,14 @@ class ScriptTypeAggregator : public sc::ColumnSpanSet::Action
     SvtScriptType mnScriptType;
 
 public:
-    ScriptTypeAggregator(ScDocument& rDoc) : mrDoc(rDoc), mnScriptType(SvtScriptType::NONE) {}
+    explicit ScriptTypeAggregator(ScDocument& rDoc) : mrDoc(rDoc), mnScriptType(SvtScriptType::NONE) {}
 
-    virtual void startColumn(SCTAB nTab, SCCOL nCol) SAL_OVERRIDE
+    virtual void startColumn(SCTAB nTab, SCCOL nCol) override
     {
         mrDoc.InitColumnBlockPosition(maBlockPos, nTab, nCol);
     }
 
-    virtual void execute(const ScAddress& rPos, SCROW nLength, bool bVal) SAL_OVERRIDE
+    virtual void execute(const ScAddress& rPos, SCROW nLength, bool bVal) override
     {
         if (!bVal)
             return;

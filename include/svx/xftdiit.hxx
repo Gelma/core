@@ -32,11 +32,11 @@
 class SVX_DLLPUBLIC XFormTextDistanceItem : public SfxMetricItem
 {
 public:
-                            TYPEINFO_OVERRIDE();
+                            static SfxPoolItem* CreateDefault();
                             XFormTextDistanceItem(long nDist = 0);
                             XFormTextDistanceItem(SvStream& rIn);
-    virtual SfxPoolItem*    Clone(SfxItemPool* pPool = 0) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Create(SvStream& rIn, sal_uInt16 nVer) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone(SfxItemPool* pPool = nullptr) const override;
+    virtual SfxPoolItem*    Create(SvStream& rIn, sal_uInt16 nVer) const override;
 };
 
 #endif

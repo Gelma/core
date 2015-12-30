@@ -77,6 +77,7 @@ struct SfxInterface_Impl
 {
     SfxObjectUIArr_Impl     aObjectBars;    // registered ObjectBars
     SfxObjectUIArr_Impl     aChildWindows;  // registered ChildWindows
+    OUString                aPopupName;     // registered xml-based PopupMenu
     ResId                   aPopupRes;      // registered PopupMenu
     ResId                   aStatBarRes;    // registered StatusBar
     SfxModule*              pModule;
@@ -85,7 +86,7 @@ struct SfxInterface_Impl
     SfxInterface_Impl() :
         aPopupRes(nullptr, *SfxApplication::GetSfxResManager()),
         aStatBarRes(nullptr, *SfxApplication::GetSfxResManager())
-    , pModule(NULL)
+    , pModule(nullptr)
     , bRegistered(false)
     {
     }
@@ -112,7 +113,7 @@ SfxInterface::SfxInterface( const char *pClassName,
     pGenoType(pParent),
     nClassId(nId),
     bSuperClass(bUsableSuperClass),
-    pImpData(0)
+    pImpData(nullptr)
 {
     pImpData = new SfxInterface_Impl;
     SetSlotMap( rSlotMap, nSlotCount );
@@ -159,7 +160,7 @@ void SfxInterface::SetSlotMap( SfxSlot& rSlotMap, sal_uInt16 nSlotCount )
                 if ( !pIter->pLinkedSlot->pLinkedSlot )
                     const_cast<SfxSlot*>(pIter->pLinkedSlot)->pLinkedSlot = pIter;
 
-                if ( 0 == pIter->GetNextSlot() )
+                if ( nullptr == pIter->GetNextSlot() )
                 {
                     SfxSlot *pLastSlot = pIter;
                     for ( sal_uInt16 n = nIter; n < Count(); ++n )
@@ -174,7 +175,7 @@ void SfxInterface::SetSlotMap( SfxSlot& rSlotMap, sal_uInt16 nSlotCount )
                     pLastSlot->pNextSlot = pIter;
                 }
             }
-            else if ( 0 == pIter->GetNextSlot() )
+            else if ( nullptr == pIter->GetNextSlot() )
             {
                 // Slots referring in circle to the next with the same
                 // Status method.
@@ -306,7 +307,7 @@ const SfxSlot* SfxInterface::GetSlot( sal_uInt16 nFuncId ) const
     if ( !p && pGenoType )
         return pGenoType->GetSlot( nFuncId );
 
-    return p ? static_cast<const SfxSlot*>(p) : 0;
+    return p ? static_cast<const SfxSlot*>(p) : nullptr;
 }
 
 const SfxSlot* SfxInterface::GetSlot( const OUString& rCommand ) const
@@ -324,7 +325,7 @@ const SfxSlot* SfxInterface::GetSlot( const OUString& rCommand ) const
             return pSlots+n;
     }
 
-    return pGenoType ? pGenoType->GetSlot( aCommand ) : NULL;
+    return pGenoType ? pGenoType->GetSlot( aCommand ) : nullptr;
 }
 
 
@@ -340,7 +341,7 @@ const SfxSlot* SfxInterface::GetRealSlot( const SfxSlot *pSlot ) const
         if(pGenoType)
             return pGenoType->GetRealSlot(pSlot);
         SAL_WARN( "sfx.control", "unknown Slot" );
-        return 0;
+        return nullptr;
     }
 
     return pSlot->pLinkedSlot;
@@ -360,7 +361,7 @@ const SfxSlot* SfxInterface::GetRealSlot( sal_uInt16 nSlotId ) const
         if(pGenoType)
             return pGenoType->GetRealSlot(nSlotId);
         SAL_WARN( "sfx.control", "unknown Slot" );
-        return 0;
+        return nullptr;
     }
 
     return pSlot->pLinkedSlot;
@@ -370,6 +371,11 @@ void SfxInterface::RegisterPopupMenu( const ResId& rResId )
 {
 
     pImpData->aPopupRes = rResId;
+}
+
+void SfxInterface::RegisterPopupMenu( const OUString& rResourceName )
+{
+    pImpData->aPopupName = rResourceName;
 }
 
 void SfxInterface::RegisterObjectBar(sal_uInt16 nPos, sal_uInt32 nResId)
@@ -394,7 +400,7 @@ SfxObjectUI_Impl* CreateObjectBarUI_Impl(sal_uInt16 nPos, sal_uInt32 nResId, sal
 
 sal_uInt32 SfxInterface::GetObjectBarId(sal_uInt16 nNo) const
 {
-    bool bGenoType = (pGenoType != 0 && pGenoType->UseAsSuperClass());
+    bool bGenoType = (pGenoType != nullptr && pGenoType->UseAsSuperClass());
     if ( bGenoType )
     {
         // Are there toolbars in the super class?
@@ -413,7 +419,7 @@ sal_uInt32 SfxInterface::GetObjectBarId(sal_uInt16 nNo) const
 
 sal_uInt16 SfxInterface::GetObjectBarPos( sal_uInt16 nNo ) const
 {
-    bool bGenoType = (pGenoType != 0 && pGenoType->UseAsSuperClass());
+    bool bGenoType = (pGenoType != nullptr && pGenoType->UseAsSuperClass());
     if ( bGenoType )
     {
         // Are there toolbars in the super class?
@@ -510,6 +516,11 @@ const ResId& SfxInterface::GetPopupMenuResId() const
     return pImpData->aPopupRes;
 }
 
+const OUString& SfxInterface::GetPopupMenuName() const
+{
+    return pImpData->aPopupName;
+}
+
 const ResId& SfxInterface::GetStatusBarResId() const
 {
     if (pImpData->aStatBarRes.GetId() == 0 && pGenoType)
@@ -520,7 +531,7 @@ const ResId& SfxInterface::GetStatusBarResId() const
 
 sal_uInt32 SfxInterface::GetObjectBarFeature ( sal_uInt16 nNo ) const
 {
-    bool bGenoType = (pGenoType != 0 && pGenoType->UseAsSuperClass());
+    bool bGenoType = (pGenoType != nullptr && pGenoType->UseAsSuperClass());
     if ( bGenoType )
     {
         // Are there toolbars in the super class?
@@ -539,7 +550,7 @@ sal_uInt32 SfxInterface::GetObjectBarFeature ( sal_uInt16 nNo ) const
 
 bool SfxInterface::IsObjectBarVisible(sal_uInt16 nNo) const
 {
-    bool bGenoType = (pGenoType != 0 && pGenoType->UseAsSuperClass());
+    bool bGenoType = (pGenoType != nullptr && pGenoType->UseAsSuperClass());
     if ( bGenoType )
     {
         // Are there toolbars in the super class?

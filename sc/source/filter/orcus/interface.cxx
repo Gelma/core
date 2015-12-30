@@ -34,6 +34,7 @@
 #include <formula/token.hxx>
 #include <tools/datetime.hxx>
 #include <svl/sharedstringpool.hxx>
+#include <o3tl/make_unique.hxx>
 
 #include <com/sun/star/task/XStatusIndicator.hpp>
 
@@ -71,21 +72,21 @@ orcus::spreadsheet::iface::import_sheet* ScOrcusFactory::append_sheet(const char
 {
     OUString aTabName(sheet_name, sheet_name_length, RTL_TEXTENCODING_UTF8);
     if (!maDoc.appendSheet(aTabName))
-        return NULL;
+        return nullptr;
 
     SCTAB nTab = maDoc.getSheetCount() - 1;
-    maSheets.push_back(new ScOrcusSheet(maDoc, nTab, *this));
-    return &maSheets.back();
+    maSheets.push_back(o3tl::make_unique<ScOrcusSheet>(maDoc, nTab, *this));
+    return maSheets.back().get();
 }
 
-class FindSheetByIndex : std::unary_function<ScOrcusSheet, bool>
+class FindSheetByIndex : std::unary_function< std::unique_ptr<ScOrcusSheet>, bool>
 {
     SCTAB mnTab;
 public:
-    FindSheetByIndex(SCTAB nTab) : mnTab(nTab) {}
-    bool operator() (const ScOrcusSheet& rSheet) const
+    explicit FindSheetByIndex(SCTAB nTab) : mnTab(nTab) {}
+    bool operator() (const std::unique_ptr<ScOrcusSheet>& rSheet) const
     {
-        return rSheet.getIndex() == mnTab;
+        return rSheet->getIndex() == mnTab;
     }
 };
 
@@ -95,36 +96,35 @@ orcus::spreadsheet::iface::import_sheet* ScOrcusFactory::get_sheet(const char* s
     SCTAB nTab = maDoc.getSheetIndex(aTabName);
     if (nTab < 0)
         // Sheet by that name not found.
-        return NULL;
+        return nullptr;
 
     // See if we already have an orcus sheet instance by that index.
-    boost::ptr_vector<ScOrcusSheet>::iterator it =
+    std::vector< std::unique_ptr<ScOrcusSheet> >::iterator it =
         std::find_if(maSheets.begin(), maSheets.end(), FindSheetByIndex(nTab));
 
     if (it != maSheets.end())
         // We already have one. Return it.
-        return &(*it);
+        return it->get();
 
     // Create a new orcus sheet instance for this.
-    maSheets.push_back(new ScOrcusSheet(maDoc, nTab, *this));
-    return &maSheets.back();
+    maSheets.push_back(o3tl::make_unique<ScOrcusSheet>(maDoc, nTab, *this));
+    return maSheets.back().get();
 }
 
 orcus::spreadsheet::iface::import_sheet* ScOrcusFactory::get_sheet(orcus::spreadsheet::sheet_t sheet_index)
 {
     SCTAB nTab = static_cast<SCTAB>(sheet_index);
     // See if we already have an orcus sheet instance by that index.
-    boost::ptr_vector<ScOrcusSheet>::iterator it =
+    std::vector< std::unique_ptr<ScOrcusSheet> >::iterator it =
         std::find_if(maSheets.begin(), maSheets.end(), FindSheetByIndex(nTab));
 
     if (it != maSheets.end())
         // We already have one. Return it.
-        return &(*it);
+        return it->get();
 
     // Create a new orcus sheet instance for this.
-    maSheets.push_back(new ScOrcusSheet(maDoc, nTab, *this));
-    return &maSheets.back();
-
+    maSheets.push_back(o3tl::make_unique<ScOrcusSheet>(maDoc, nTab, *this));
+    return maSheets.back().get();
 }
 
 orcus::spreadsheet::iface::import_global_settings* ScOrcusFactory::get_global_settings()
@@ -244,7 +244,7 @@ double translateToInternal(double nVal, orcus::length_unit_t unit)
             return nVal * 20.0 * 72.0 / 2.54;
             break;
         case orcus::length_unit_unknown:
-            SAL_WARN("sc,orcus", "unknown unit");
+            SAL_WARN("sc.orcus", "unknown unit");
             break;
         default:
             break;
@@ -461,7 +461,7 @@ void ScOrcusSheet::cellInserted()
 
 os::iface::import_table* ScOrcusSheet::get_table()
 {
-    return NULL;
+    return nullptr;
 }
 
 os::iface::import_sheet_properties* ScOrcusSheet::get_sheet_properties()

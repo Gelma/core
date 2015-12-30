@@ -47,8 +47,8 @@ using namespace x11;
 
 X11Clipboard::X11Clipboard( SelectionManager& rManager, Atom aSelection ) :
         ::cppu::WeakComponentImplHelper<
-    ::com::sun::star::datatransfer::clipboard::XSystemClipboard,
-    ::com::sun::star::lang::XServiceInfo
+    css::datatransfer::clipboard::XSystemClipboard,
+    css::lang::XServiceInfo
     >( rManager.getMutex() ),
 
         m_rSelectionManager( rManager ),
@@ -71,7 +71,7 @@ X11Clipboard::create( SelectionManager& rManager, Atom aSelection )
     else
     {
         rManager.registerHandler( XA_PRIMARY, *cb.get() );
-        rManager.registerHandler( rManager.getAtom( OUString("CLIPBOARD") ), *cb.get() );
+        rManager.registerHandler( rManager.getAtom( "CLIPBOARD" ), *cb.get() );
     }
     return cb.get();
 }
@@ -88,7 +88,7 @@ X11Clipboard::~X11Clipboard()
     else
     {
         m_rSelectionManager.deregisterHandler( XA_PRIMARY );
-        m_rSelectionManager.deregisterHandler( m_rSelectionManager.getAtom( OUString("CLIPBOARD") ) );
+        m_rSelectionManager.deregisterHandler( m_rSelectionManager.getAtom( "CLIPBOARD" ) );
     }
 }
 
@@ -164,7 +164,7 @@ void SAL_CALL X11Clipboard::setContents(
     else
     {
         m_rSelectionManager.requestOwnership( XA_PRIMARY );
-        m_rSelectionManager.requestOwnership( m_rSelectionManager.getAtom( OUString("CLIPBOARD") ) );
+        m_rSelectionManager.requestOwnership( m_rSelectionManager.getAtom( "CLIPBOARD" ) );
     }
 
     // notify old owner on loss of ownership

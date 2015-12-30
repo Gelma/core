@@ -20,11 +20,9 @@ public:
     FormulaGroupInterpreterOpenCL();
     virtual ~FormulaGroupInterpreterOpenCL();
 
-    virtual ScMatrixRef inverseMatrix( const ScMatrix& rMat ) SAL_OVERRIDE;
-    virtual CompiledFormula* createCompiledFormula(
-        ScFormulaCellGroup& rGroup, ScTokenArray& rCode ) SAL_OVERRIDE;
+    virtual ScMatrixRef inverseMatrix( const ScMatrix& rMat ) override;
     virtual bool interpret( ScDocument& rDoc, const ScAddress& rTopPos,
-        ScFormulaCellGroupRef& xGroup, ScTokenArray& rCode ) SAL_OVERRIDE;
+        ScFormulaCellGroupRef& xGroup, ScTokenArray& rCode ) override;
 };
 
 }} // namespace sc::opencl

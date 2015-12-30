@@ -22,6 +22,7 @@ package ifc.awt;
 import lib.MultiMethodTest;
 
 import com.sun.star.awt.XNumericField;
+import util.utils;
 
 /**
 * Testing <code>com.sun.star.awt.XNumericField</code>
@@ -70,9 +71,10 @@ public class _XNumericField extends MultiMethodTest {
     public void _setValue() {
         requiredMethod("getValue()");
 
-        oObj.setValue(val + 1.1) ;
+        double value = val + 1.1;
+        oObj.setValue(value) ;
 
-        tRes.tested("setValue()", oObj.getValue() == val + 1.1) ;
+        tRes.tested("setValue()", utils.approxEqual(oObj.getValue(), value));
     }
 
     /**
@@ -96,9 +98,12 @@ public class _XNumericField extends MultiMethodTest {
     public void _setMin() {
         requiredMethod("getMin()") ;
 
-        oObj.setMin(min + 1.1) ;
+        double value = min + 1.1;
+        oObj.setMin(value);
+        double ret = oObj.getMin();
+        boolean result = utils.approxEqual(ret, value);
 
-        tRes.tested("setMin()", oObj.getMin() == min + 1.1) ;
+        tRes.tested("setMin()", result);
     }
 
     /**
@@ -124,9 +129,10 @@ public class _XNumericField extends MultiMethodTest {
     public void _setMax() {
         requiredMethod("getMax()") ;
 
-        boolean result = true ;
-        oObj.setMax(max + 1.1) ;
-        result = oObj.getMax() == max + 1.1 ;
+        double value = max + 1.1;
+        oObj.setMax(value);
+        double ret = oObj.getMax();
+        boolean result = utils.approxEqual(ret, value);
 
         tRes.tested("setMax()", result) ;
     }
@@ -154,10 +160,10 @@ public class _XNumericField extends MultiMethodTest {
     public void _setFirst() {
         requiredMethod("getFirst()") ;
 
-        boolean result = true ;
-        oObj.setFirst(first + 1.1) ;
-        double ret = oObj.getFirst() ;
-        result = ret == first + 1.1 ;
+        double value = first + 1.1;
+        oObj.setFirst(value);
+        double ret = oObj.getFirst();
+        boolean result = utils.approxEqual(ret, value);
 
         tRes.tested("setFirst()", result) ;
     }
@@ -185,11 +191,10 @@ public class _XNumericField extends MultiMethodTest {
     public void _setLast() {
         requiredMethod("getLast()") ;
 
-        boolean result = true ;
-        oObj.setLast(last + 1.1) ;
-        double ret = oObj.getLast() ;
-
-        result = ret == last + 1.1 ;
+        double value = last + 1.1;
+        oObj.setLast(value);
+        double ret = oObj.getLast();
+        boolean result = utils.approxEqual(ret, value);
 
         tRes.tested("setLast()", result) ;
     }
@@ -218,8 +223,9 @@ public class _XNumericField extends MultiMethodTest {
         requiredMethod("getSpinSize()") ;
 
         boolean result = true ;
-        oObj.setSpinSize(spin + 1.1) ;
-        result = oObj.getSpinSize() == spin + 1.1 ;
+        double value = spin + 1.1;
+        oObj.setSpinSize(value) ;
+        result = utils.approxEqual(oObj.getSpinSize(), value);
 
         tRes.tested("setSpinSize()", result) ;
     }

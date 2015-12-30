@@ -32,6 +32,10 @@
 using namespace ::com::sun::star::uno;
 using namespace ::com::sun::star::xml::sax;
 
+#ifdef XMLNS_XLINK
+#undef XMLNS_XLINK
+#endif
+
 #define ELEMENT_IMAGECONTAINER      "imagescontainer"
 #define ELEMENT_IMAGES              "images"
 #define ELEMENT_ENTRY               "entry"
@@ -100,11 +104,11 @@ ImageXMLEntryProperty ImagesEntries[OReadImagesDocumentHandler::IMG_XML_ENTRY_CO
 
 OReadImagesDocumentHandler::OReadImagesDocumentHandler( ImageListsDescriptor& aItems ) :
     m_aImageList( aItems ),
-    m_pImages( 0 ),
-    m_pExternalImages( 0 )
+    m_pImages( nullptr ),
+    m_pExternalImages( nullptr )
 {
-    m_aImageList.pImageList         = NULL;
-    m_aImageList.pExternalImageList = NULL;
+    m_aImageList.pImageList         = nullptr;
+    m_aImageList.pExternalImageList = nullptr;
 
     m_nHashMaskModeBitmap   = OUString( ATTRIBUTE_MASKMODE_BITMAP ).hashCode();
     m_nHashMaskModeColor    = OUString( ATTRIBUTE_MASKMODE_COLOR ).hashCode();
@@ -251,7 +255,7 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                                 else
                                 {
                                     delete m_pImages;
-                                    m_pImages = NULL;
+                                    m_pImages = nullptr;
 
                                     OUString aErrorMessage = getErrorLineString();
                                     aErrorMessage += "Attribute image:maskmode must be 'maskcolor' or 'maskbitmap'!";
@@ -281,7 +285,7 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                 if ( m_pImages->aURL.isEmpty() )
                 {
                     delete m_pImages;
-                    m_pImages = NULL;
+                    m_pImages = nullptr;
 
                     OUString aErrorMessage = getErrorLineString();
                     aErrorMessage += "Required attribute xlink:href must have a value!";
@@ -296,7 +300,7 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                 if ( !m_bImagesStartFound )
                 {
                     delete m_pImages;
-                    m_pImages = NULL;
+                    m_pImages = nullptr;
 
                     OUString aErrorMessage = getErrorLineString();
                     aErrorMessage += "Element 'image:entry' must be embedded into element 'image:images'!";
@@ -309,7 +313,7 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                 m_bImageStartFound = true;
 
                 // Create new image item descriptor
-                ImageItemDescriptor* pItem = new ImageItemDescriptor;
+                std::unique_ptr<ImageItemDescriptor> pItem(new ImageItemDescriptor);
                 pItem->nIndex = -1;
 
                 // Read attributes for this image definition
@@ -341,9 +345,8 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                 // Check required attribute "bitmap-index"
                 if ( pItem->nIndex < 0 )
                 {
-                    delete pItem;
                     delete m_pImages;
-                    m_pImages = NULL;
+                    m_pImages = nullptr;
 
                     OUString aErrorMessage = getErrorLineString();
                     aErrorMessage += "Required attribute 'image:bitmap-index' must have a value >= 0!";
@@ -353,16 +356,15 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                 // Check required attribute "command"
                 if ( pItem->aCommandURL.isEmpty() )
                 {
-                    delete pItem;
                     delete m_pImages;
-                    m_pImages = NULL;
+                    m_pImages = nullptr;
 
                     OUString aErrorMessage = getErrorLineString();
                     aErrorMessage += "Required attribute 'image:command' must have a value!";
                     throw SAXException( aErrorMessage, Reference< XInterface >(), Any() );
                 }
 
-                m_pImages->pImageItemList->push_back( pItem );
+                m_pImages->pImageItemList->push_back( std::move(pItem) );
             }
             break;
 
@@ -372,7 +374,7 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                 if ( !m_bImageContainerStartFound )
                 {
                     delete m_pImages;
-                    m_pImages = NULL;
+                    m_pImages = nullptr;
 
                     OUString aErrorMessage = getErrorLineString();
                     aErrorMessage += "Element 'image:externalimages' must be embedded into element 'image:imagecontainer'!";
@@ -383,7 +385,7 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                 if ( m_bExternalImagesStartFound )
                 {
                     delete m_pImages;
-                    m_pImages = NULL;
+                    m_pImages = nullptr;
 
                     OUString aErrorMessage = getErrorLineString();
                     aErrorMessage += "Element 'image:externalimages' cannot be embedded into 'image:externalimages'!";
@@ -402,8 +404,8 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                 {
                     delete m_pImages;
                     delete m_pExternalImages;
-                    m_pImages = NULL;
-                    m_pExternalImages = NULL;
+                    m_pImages = nullptr;
+                    m_pExternalImages = nullptr;
 
                     OUString aErrorMessage = getErrorLineString();
                     aErrorMessage += "Element 'image:externalentry' must be embedded into 'image:externalimages'!";
@@ -414,8 +416,8 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                 {
                     delete m_pImages;
                     delete m_pExternalImages;
-                    m_pImages = NULL;
-                    m_pExternalImages = NULL;
+                    m_pImages = nullptr;
+                    m_pExternalImages = nullptr;
 
                     OUString aErrorMessage = getErrorLineString();
                     aErrorMessage += "Element 'image:externalentry' cannot be embedded into 'image:externalentry'!";
@@ -424,7 +426,7 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
 
                 m_bExternalImageStartFound = true;
 
-                ExternalImageItemDescriptor* pItem = new ExternalImageItemDescriptor;
+                std::unique_ptr<ExternalImageItemDescriptor> pItem(new ExternalImageItemDescriptor);
 
                 // Read attributes for this external image definition
                 for ( sal_Int16 n = 0; n < xAttribs->getLength(); n++ )
@@ -446,8 +448,8 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                             }
                             break;
 
-                                          default:
-                                              break;
+                            default:
+                            break;
                         }
                     }
                 }
@@ -455,11 +457,10 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                 // Check required attribute "command"
                 if ( pItem->aCommandURL.isEmpty() )
                 {
-                    delete pItem;
                     delete m_pImages;
                     delete m_pExternalImages;
-                    m_pImages = NULL;
-                    m_pExternalImages = NULL;
+                    m_pImages = nullptr;
+                    m_pExternalImages = nullptr;
 
                     OUString aErrorMessage = getErrorLineString();
                     aErrorMessage += "Required attribute 'image:command' must have a value!";
@@ -469,11 +470,10 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                 // Check required attribute "href"
                 if ( pItem->aURL.isEmpty() )
                 {
-                    delete pItem;
                     delete m_pImages;
                     delete m_pExternalImages;
-                    m_pImages = NULL;
-                    m_pExternalImages = NULL;
+                    m_pImages = nullptr;
+                    m_pExternalImages = nullptr;
 
                     OUString aErrorMessage = getErrorLineString();
                     aErrorMessage += "Required attribute 'xlink:href' must have a value!";
@@ -481,14 +481,12 @@ void SAL_CALL OReadImagesDocumentHandler::startElement(
                 }
 
                 if ( m_pExternalImages )
-                    m_pExternalImages->push_back( pItem );
-                else
-                    delete pItem;
+                    m_pExternalImages->push_back( std::move(pItem) );
             }
             break;
 
-                  default:
-                      break;
+            default:
+            break;
         }
     }
 }
@@ -516,8 +514,8 @@ void SAL_CALL OReadImagesDocumentHandler::endElement(const OUString& aName)
                 if ( m_pImages )
                 {
                     if ( m_aImageList.pImageList )
-                        m_aImageList.pImageList->push_back( m_pImages );
-                    m_pImages = NULL;
+                        m_aImageList.pImageList->push_back( std::unique_ptr<ImageListItemDescriptor>(m_pImages) );
+                    m_pImages = nullptr;
                 }
                 m_bImagesStartFound = false;
             }
@@ -538,7 +536,7 @@ void SAL_CALL OReadImagesDocumentHandler::endElement(const OUString& aName)
                 }
 
                 m_bExternalImagesStartFound = false;
-                m_pExternalImages = NULL;
+                m_pExternalImages = nullptr;
             }
             break;
 
@@ -601,7 +599,7 @@ OWriteImagesDocumentHandler::OWriteImagesDocumentHandler(
     m_xWriteDocumentHandler( rWriteDocumentHandler )
 {
     ::comphelper::AttributeList* pList = new ::comphelper::AttributeList;
-    m_xEmptyList            = Reference< XAttributeList >( static_cast<XAttributeList *>(pList), UNO_QUERY );
+    m_xEmptyList.set( static_cast<XAttributeList *>(pList), UNO_QUERY );
     m_aAttributeType        = ATTRIBUTE_TYPE_CDATA;
     m_aXMLImageNS           = XMLNS_IMAGE_PREFIX;
     m_aXMLXlinkNS           = XMLNS_XLINK_PREFIX;
@@ -624,22 +622,22 @@ void OWriteImagesDocumentHandler::WriteImagesDocument() throw
     Reference< XExtendedDocumentHandler > xExtendedDocHandler( m_xWriteDocumentHandler, UNO_QUERY );
     if ( xExtendedDocHandler.is() )
     {
-        xExtendedDocHandler->unknown( OUString( IMAGES_DOCTYPE ) );
+        xExtendedDocHandler->unknown( IMAGES_DOCTYPE );
         m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
     }
 
     ::comphelper::AttributeList* pList = new ::comphelper::AttributeList;
     Reference< XAttributeList > xList( static_cast<XAttributeList *>(pList) , UNO_QUERY );
 
-    pList->AddAttribute( OUString( ATTRIBUTE_XMLNS_IMAGE),
+    pList->AddAttribute( ATTRIBUTE_XMLNS_IMAGE,
                          m_aAttributeType,
-                         OUString( XMLNS_IMAGE ) );
+                         XMLNS_IMAGE );
 
-    pList->AddAttribute( OUString( ATTRIBUTE_XMLNS_XLINK ),
+    pList->AddAttribute( ATTRIBUTE_XMLNS_XLINK,
                          m_aAttributeType,
-                         OUString( XMLNS_XLINK ) );
+                         XMLNS_XLINK );
 
-    m_xWriteDocumentHandler->startElement( OUString( ELEMENT_NS_IMAGESCONTAINER ), pList );
+    m_xWriteDocumentHandler->startElement( ELEMENT_NS_IMAGESCONTAINER, pList );
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
 
     if ( m_aImageListsItems.pImageList )
@@ -648,7 +646,7 @@ void OWriteImagesDocumentHandler::WriteImagesDocument() throw
 
         for ( size_t i = 0; i < m_aImageListsItems.pImageList->size(); i++ )
         {
-            const ImageListItemDescriptor* pImageItems = &(*pImageList)[i];
+            const ImageListItemDescriptor* pImageItems = (*pImageList)[i].get();
             WriteImageList( pImageItems );
         }
     }
@@ -659,7 +657,7 @@ void OWriteImagesDocumentHandler::WriteImagesDocument() throw
     }
 
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
-    m_xWriteDocumentHandler->endElement( OUString( ELEMENT_NS_IMAGESCONTAINER ) );
+    m_xWriteDocumentHandler->endElement( ELEMENT_NS_IMAGESCONTAINER );
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
     m_xWriteDocumentHandler->endDocument();
 }
@@ -685,7 +683,7 @@ void OWriteImagesDocumentHandler::WriteImageList( const ImageListItemDescriptor*
     {
         pList->AddAttribute( m_aXMLImageNS + ATTRIBUTE_MASKMODE,
                              m_aAttributeType,
-                             OUString( ATTRIBUTE_MASKMODE_BITMAP ) );
+                             ATTRIBUTE_MASKMODE_BITMAP );
 
         pList->AddAttribute( m_aXMLImageNS + ATTRIBUTE_MASKURL,
                              m_aAttributeType,
@@ -712,7 +710,7 @@ void OWriteImagesDocumentHandler::WriteImageList( const ImageListItemDescriptor*
 
         pList->AddAttribute( m_aXMLImageNS + ATTRIBUTE_MASKMODE,
                              m_aAttributeType,
-                             OUString( ATTRIBUTE_MASKMODE_COLOR ) );
+                             ATTRIBUTE_MASKMODE_COLOR );
     }
 
     if ( !pImageList->aHighContrastURL.isEmpty() )
@@ -722,17 +720,17 @@ void OWriteImagesDocumentHandler::WriteImageList( const ImageListItemDescriptor*
                              pImageList->aHighContrastURL );
     }
 
-    m_xWriteDocumentHandler->startElement( OUString( ELEMENT_NS_IMAGES ), xList );
+    m_xWriteDocumentHandler->startElement( ELEMENT_NS_IMAGES, xList );
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
 
     ImageItemListDescriptor* pImageItemList = pImageList->pImageItemList;
     if ( pImageItemList )
     {
         for ( size_t i = 0; i < pImageItemList->size(); i++ )
-            WriteImage( &(*pImageItemList)[i] );
+            WriteImage( (*pImageItemList)[i].get() );
     }
 
-    m_xWriteDocumentHandler->endElement( OUString( ELEMENT_NS_IMAGES ) );
+    m_xWriteDocumentHandler->endElement( ELEMENT_NS_IMAGES );
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
 }
 
@@ -750,27 +748,27 @@ void OWriteImagesDocumentHandler::WriteImage( const ImageItemDescriptor* pImage 
                          m_aAttributeType,
                          pImage->aCommandURL );
 
-    m_xWriteDocumentHandler->startElement( OUString( ELEMENT_NS_ENTRY ), xList );
+    m_xWriteDocumentHandler->startElement( ELEMENT_NS_ENTRY, xList );
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
 
-    m_xWriteDocumentHandler->endElement( OUString( ELEMENT_NS_ENTRY ) );
+    m_xWriteDocumentHandler->endElement( ELEMENT_NS_ENTRY );
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
 }
 
 void OWriteImagesDocumentHandler::WriteExternalImageList( const ExternalImageItemListDescriptor* pExternalImageList ) throw
 ( SAXException, RuntimeException )
 {
-    m_xWriteDocumentHandler->startElement( OUString( ELEMENT_NS_EXTERNALIMAGES ), m_xEmptyList );
+    m_xWriteDocumentHandler->startElement( ELEMENT_NS_EXTERNALIMAGES, m_xEmptyList );
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
 
     for ( size_t i = 0; i < pExternalImageList->size(); i++ )
     {
-        const ExternalImageItemDescriptor* pItem = &(*pExternalImageList)[i];
+        const ExternalImageItemDescriptor* pItem = (*pExternalImageList)[i].get();
         WriteExternalImage( pItem );
     }
 
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
-    m_xWriteDocumentHandler->endElement( OUString( ELEMENT_NS_EXTERNALIMAGES ) );
+    m_xWriteDocumentHandler->endElement( ELEMENT_NS_EXTERNALIMAGES );
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
 }
 
@@ -799,10 +797,10 @@ void OWriteImagesDocumentHandler::WriteExternalImage( const ExternalImageItemDes
                              pExternalImage->aCommandURL );
     }
 
-    m_xWriteDocumentHandler->startElement( OUString( ELEMENT_NS_EXTERNALENTRY ), xList );
+    m_xWriteDocumentHandler->startElement( ELEMENT_NS_EXTERNALENTRY, xList );
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
 
-    m_xWriteDocumentHandler->endElement( OUString( ELEMENT_NS_EXTERNALENTRY ) );
+    m_xWriteDocumentHandler->endElement( ELEMENT_NS_EXTERNALENTRY );
     m_xWriteDocumentHandler->ignorableWhitespace( OUString() );
 }
 

@@ -86,13 +86,10 @@ namespace ucb { namespace ucp { namespace ext
         ResultList                                  m_aResults;
         ::rtl::Reference< Content >                 m_xContent;
         Reference< XComponentContext >              m_xContext;
-        sal_Int32                                   m_nOpenMode;
 
-        DataSupplier_Impl( const Reference< XComponentContext >& rxContext, const ::rtl::Reference< Content >& i_rContent,
-                           const sal_Int32 i_nOpenMode )
+        DataSupplier_Impl( const Reference< XComponentContext >& rxContext, const ::rtl::Reference< Content >& i_rContent )
             :m_xContent( i_rContent )
             ,m_xContext( rxContext )
-            ,m_nOpenMode( i_nOpenMode )
         {
         }
         ~DataSupplier_Impl();
@@ -126,9 +123,8 @@ namespace ucb { namespace ucp { namespace ext
 
 
     DataSupplier::DataSupplier( const Reference< XComponentContext >& rxContext,
-                                const ::rtl::Reference< Content >& i_rContent,
-                                const sal_Int32 i_nOpenMode )
-        :m_pImpl( new DataSupplier_Impl( rxContext, i_rContent, i_nOpenMode ) )
+                                const ::rtl::Reference< Content >& i_rContent )
+        :m_pImpl( new DataSupplier_Impl( rxContext, i_rContent ) )
     {
     }
 
@@ -171,8 +167,7 @@ namespace ucb { namespace ucp { namespace ext
                 ::ucbhelper::Content aWrappedContent( sPackageLocation, getResultSet()->getEnvironment(), m_pImpl->m_xContext );
 
                 // obtain the properties which our result set is set up for from the wrapped content
-                Sequence< OUString > aPropertyNames(1);
-                aPropertyNames[0] = "Title";
+                Sequence< OUString > aPropertyNames { "Title" };
 
                 const Reference< XResultSet > xFolderContent( aWrappedContent.createCursor( aPropertyNames ), UNO_SET_THROW );
                 const Reference< XRow > xContentRow( xFolderContent, UNO_QUERY_THROW );
@@ -243,7 +238,7 @@ namespace ucb { namespace ucp { namespace ext
     Reference< XContent > DataSupplier::queryContent( sal_uInt32 i_nIndex )
     {
         ::osl::Guard< ::osl::Mutex > aGuard( m_pImpl->m_aMutex );
-        ENSURE_OR_RETURN( i_nIndex < m_pImpl->m_aResults.size(), "illegal index!", NULL );
+        ENSURE_OR_RETURN( i_nIndex < m_pImpl->m_aResults.size(), "illegal index!", nullptr );
 
 
         ::rtl::Reference< Content > pContent( m_pImpl->m_aResults[ i_nIndex ].pContent );
@@ -306,13 +301,13 @@ namespace ucb { namespace ucp { namespace ext
     Reference< XRow > DataSupplier::queryPropertyValues( sal_uInt32 i_nIndex  )
     {
         ::osl::MutexGuard aGuard( m_pImpl->m_aMutex );
-        ENSURE_OR_RETURN( i_nIndex < m_pImpl->m_aResults.size(), "DataSupplier::queryPropertyValues: illegal index!", NULL );
+        ENSURE_OR_RETURN( i_nIndex < m_pImpl->m_aResults.size(), "DataSupplier::queryPropertyValues: illegal index!", nullptr );
 
         Reference< XRow > xRow = m_pImpl->m_aResults[ i_nIndex ].xRow;
         if ( xRow.is() )
             return xRow;
 
-        ENSURE_OR_RETURN( queryContent( i_nIndex ).is(), "could not retrieve the content", NULL );
+        ENSURE_OR_RETURN( queryContent( i_nIndex ).is(), "could not retrieve the content", nullptr );
 
         switch ( m_pImpl->m_xContent->getExtensionContentType() )
         {

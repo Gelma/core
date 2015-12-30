@@ -32,37 +32,29 @@ namespace com { namespace sun { namespace star { namespace style {
 
 class SwXMLTextParagraphExport : public XMLTextParagraphExport
 {
-    const OUString sTextTable;
     const OUString sEmbeddedObjectProtocol;
     const OUString sGraphicObjectProtocol;
 
     const SvGlobalName aAppletClassId;
     const SvGlobalName aPluginClassId;
     const SvGlobalName aIFrameClassId;
-    const SvGlobalName aOutplaceClassId;
 
     static SwNoTextNode *GetNoTextNode(
-        const ::com::sun::star::uno::Reference <
-                ::com::sun::star::beans::XPropertySet >& rPropSet );
+        const css::uno::Reference < css::beans::XPropertySet >& rPropSet );
 
 protected:
     virtual void exportStyleContent(
-            const ::com::sun::star::uno::Reference<
-                ::com::sun::star::style::XStyle > & rStyle ) SAL_OVERRIDE;
+            const css::uno::Reference< css::style::XStyle > & rStyle ) override;
 
     virtual void _collectTextEmbeddedAutoStyles(
-        const ::com::sun::star::uno::Reference <
-            ::com::sun::star::beans::XPropertySet > & rPropSet ) SAL_OVERRIDE;
+        const css::uno::Reference< css::beans::XPropertySet > & rPropSet ) override;
     virtual void _exportTextEmbedded(
-        const ::com::sun::star::uno::Reference <
-            ::com::sun::star::beans::XPropertySet > & rPropSet,
-        const ::com::sun::star::uno::Reference <
-            ::com::sun::star::beans::XPropertySetInfo > & rPropSetInfo ) SAL_OVERRIDE;
+        const css::uno::Reference< css::beans::XPropertySet > & rPropSet,
+        const css::uno::Reference< css::beans::XPropertySetInfo > & rPropSetInfo ) override;
 
     virtual void exportTable(
-        const ::com::sun::star::uno::Reference <
-            ::com::sun::star::text::XTextContent > & rTextContent,
-        bool bAutoStyles, bool bProgress ) SAL_OVERRIDE;
+        const css::uno::Reference< css::text::XTextContent > & rTextContent,
+        bool bAutoStyles, bool bProgress ) override;
 
 public:
     SwXMLTextParagraphExport(

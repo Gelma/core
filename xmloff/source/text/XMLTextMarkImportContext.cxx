@@ -64,7 +64,7 @@ XMLFieldParamImportContext::XMLFieldParamImportContext(
 }
 
 
-void XMLFieldParamImportContext::StartElement(const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList> & xAttrList)
+void XMLFieldParamImportContext::StartElement(const css::uno::Reference< css::xml::sax::XAttributeList> & xAttrList)
 {
     SvXMLImport& rImport = GetImport();
     OUString sName;
@@ -95,7 +95,6 @@ void XMLFieldParamImportContext::StartElement(const ::com::sun::star::uno::Refer
 }
 
 
-TYPEINIT1( XMLTextMarkImportContext, SvXMLImportContext);
 
 XMLTextMarkImportContext::XMLTextMarkImportContext(
     SvXMLImport& rImport,
@@ -141,7 +140,7 @@ static const char *lcl_getFormFieldmarkName(OUString &name)
         name == "ecma.office-open-xml.field.FORMDROPDOWN")
         return sFormDropDown;
     else
-        return NULL;
+        return nullptr;
 }
 
 static OUString lcl_getFieldmarkName(OUString const& name)
@@ -207,7 +206,7 @@ void XMLTextMarkImportContext::EndElement()
                 case TypeBookmark:
                     {
                         const char *formFieldmarkName=lcl_getFormFieldmarkName(m_sFieldName);
-                        bool bImportAsField=((lcl_MarkType)nTmp==TypeFieldmark && formFieldmarkName!=NULL); //@TODO handle abbreviation cases..
+                        bool bImportAsField=((lcl_MarkType)nTmp==TypeFieldmark && formFieldmarkName!=nullptr); //@TODO handle abbreviation cases..
                         // export point bookmark
                         const Reference<XInterface> xContent(
                             CreateAndInsertMark(GetImport(),
@@ -218,7 +217,7 @@ void XMLTextMarkImportContext::EndElement()
                         if ((lcl_MarkType)nTmp==TypeFieldmark) {
                             if (xContent.is() && bImportAsField) {
                                 // setup fieldmark...
-                                Reference< ::com::sun::star::text::XFormField> xFormField(xContent, UNO_QUERY);
+                                Reference< css::text::XFormField> xFormField(xContent, UNO_QUERY);
                                 xFormField->setFieldType(OUString::createFromAscii(formFieldmarkName));
                                 if (xFormField.is() && m_rHelper.hasCurrentFieldCtx()) {
                                     m_rHelper.setCurrentFieldParamsTo(xFormField);
@@ -325,7 +324,7 @@ void XMLTextMarkImportContext::EndElement()
                             if ((lcl_MarkType)nTmp==TypeFieldmarkEnd) {
                                 if (xContent.is() && bImportAsField) {
                                     // setup fieldmark...
-                                    Reference< ::com::sun::star::text::XFormField> xFormField(xContent, UNO_QUERY);
+                                    Reference< css::text::XFormField> xFormField(xContent, UNO_QUERY);
                                     if (xFormField.is() && m_rHelper.hasCurrentFieldCtx()) {
 
                                         xFormField->setFieldType(fieldmarkTypeName);
@@ -356,7 +355,7 @@ void XMLTextMarkImportContext::EndElement()
 
 SvXMLImportContext *XMLTextMarkImportContext::CreateChildContext( sal_uInt16 nPrefix,
                                         const OUString& rLocalName,
-                                        const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >&  )
+                                        const css::uno::Reference< css::xml::sax::XAttributeList >&  )
 {
     return new XMLFieldParamImportContext(GetImport(), m_rHelper,
                 nPrefix, rLocalName);
@@ -382,7 +381,7 @@ Reference<XTextContent> XMLTextMarkImportContext::CreateAndInsertMark(
         if (!xIfc.is())
         {
             OSL_FAIL("CreateAndInsertMark: cannot create service?");
-            return 0;
+            return nullptr;
         }
 
         // set name (unless there is no name (text:meta))
@@ -396,7 +395,7 @@ Reference<XTextContent> XMLTextMarkImportContext::CreateAndInsertMark(
             if (!sMarkName.isEmpty())
             {
                 OSL_FAIL("name given, but XNamed not supported?");
-                return 0;
+                return nullptr;
             }
         }
 
@@ -416,14 +415,14 @@ Reference<XTextContent> XMLTextMarkImportContext::CreateAndInsertMark(
 
                 return xTextContent;
             }
-            catch (com::sun::star::lang::IllegalArgumentException &)
+            catch (css::lang::IllegalArgumentException &)
             {
                 OSL_FAIL("CreateAndInsertMark: cannot insert?");
-                return 0;
+                return nullptr;
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 bool XMLTextMarkImportContext::FindName(

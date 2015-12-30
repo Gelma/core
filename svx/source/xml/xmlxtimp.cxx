@@ -86,7 +86,7 @@ public:
         bool bOOoFormat );
     virtual ~SvxXMLTableImportContext();
 
-    virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName, const uno::Reference< XAttributeList >& xAttrList ) SAL_OVERRIDE;
+    virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName, const uno::Reference< XAttributeList >& xAttrList ) override;
 
 protected:
     void importColor( sal_uInt16 nPrfx, const OUString& rLocalName, const uno::Reference< XAttributeList >& xAttrList, Any& rAny, OUString& rName );
@@ -323,9 +323,8 @@ void SvxXMLTableImportContext::importBitmap( sal_uInt16 nPrfx, const OUString& r
 
 
 
-// #110680#
 SvxXMLXTableImport::SvxXMLXTableImport(
-    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rContext,
+    const css::uno::Reference< css::uno::XComponentContext >& rContext,
     const uno::Reference< XNameContainer > & rTable,
     uno::Reference< XGraphicObjectResolver >& xGrfResolver )
 :   SvXMLImport(rContext, "", SvXMLImportFlags::NONE),
@@ -333,16 +332,16 @@ SvxXMLXTableImport::SvxXMLXTableImport(
 {
     SetGraphicResolver( xGrfResolver );
 
-    GetNamespaceMap().Add( OUString( sXML_np__ooo ), GetXMLToken(XML_N_OOO), XML_NAMESPACE_OOO );
-    GetNamespaceMap().Add( OUString( sXML_np__office ), GetXMLToken(XML_N_OFFICE), XML_NAMESPACE_OFFICE );
-    GetNamespaceMap().Add( OUString( sXML_np__draw ), GetXMLToken(XML_N_DRAW), XML_NAMESPACE_DRAW );
-    GetNamespaceMap().Add( OUString( sXML_np__xlink ), GetXMLToken(XML_N_XLINK), XML_NAMESPACE_XLINK );
+    GetNamespaceMap().Add( sXML_np__ooo, GetXMLToken(XML_N_OOO), XML_NAMESPACE_OOO );
+    GetNamespaceMap().Add( sXML_np__office, GetXMLToken(XML_N_OFFICE), XML_NAMESPACE_OFFICE );
+    GetNamespaceMap().Add( sXML_np__draw, GetXMLToken(XML_N_DRAW), XML_NAMESPACE_DRAW );
+    GetNamespaceMap().Add( sXML_np__xlink, GetXMLToken(XML_N_XLINK), XML_NAMESPACE_XLINK );
 
     // OOo namespaces for reading OOo 1.1 files
-    GetNamespaceMap().Add( OUString( sXML_np__office_ooo ),
+    GetNamespaceMap().Add( sXML_np__office_ooo,
                         GetXMLToken(XML_N_OFFICE_OOO),
                         XML_NAMESPACE_OFFICE );
-    GetNamespaceMap().Add( OUString( sXML_np__draw_ooo ),
+    GetNamespaceMap().Add( sXML_np__draw_ooo,
                         GetXMLToken(XML_N_DRAW_OOO),
                         XML_NAMESPACE_DRAW );
 }
@@ -372,7 +371,7 @@ bool SvxXMLXTableImport::load( const OUString &rPath, const OUString &rReferer,
                                bool *bOptLoadedFromStorage ) throw()
 {
     bool bRet = true;
-    SvXMLGraphicHelper* pGraphicHelper = 0;
+    SvXMLGraphicHelper* pGraphicHelper = nullptr;
 
     INetURLObject aURLObj( rPath );
     bool bUseStorage = aURLObj.GetProtocol() == INetProtocol::NotValid; // a relative path
@@ -414,7 +413,7 @@ bool SvxXMLXTableImport::load( const OUString &rPath, const OUString &rReferer,
                 openStorageStream( &aParserInput, &pGraphicHelper, xSubStorage );
             else
             {
-                ::com::sun::star::uno::Reference< ::com::sun::star::io::XStream > xStream;
+                css::uno::Reference< css::io::XStream > xStream;
                 xStream = comphelper::OStorageHelper::GetStreamAtPath(
                         xStorage, rPath, embed::ElementModes::READ, aNasty );
                 if( !xStream.is() )

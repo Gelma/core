@@ -35,7 +35,6 @@
 #include <memory>
 #include <vector>
 
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/noncopyable.hpp>
 
 class ImpEditEngine;
@@ -113,7 +112,7 @@ typedef std::deque< WritingDirectionInfo > WritingDirectionInfos;
 class ContentAttribsInfo
 {
 private:
-    typedef boost::ptr_vector<EditCharAttrib> CharAttribsType;
+    typedef std::vector<std::unique_ptr<EditCharAttrib> > CharAttribsType;
 
     SfxItemSet          aPrevParaAttribs;
     CharAttribsType     aPrevCharAttribs;
@@ -184,7 +183,7 @@ public:
 class CharAttribList
 {
 public:
-    typedef boost::ptr_vector<EditCharAttrib> AttribsType;
+    typedef std::vector<std::unique_ptr<EditCharAttrib> > AttribsType;
 
 private:
     AttribsType     aAttribs;
@@ -387,7 +386,7 @@ private:
 
 
                 TextPortion()
-                : pExtraInfos( NULL )
+                : pExtraInfos( nullptr )
                 , nLen( 0 )
                 , aOutSz()
                 , nKind( PortionKind::TEXT )
@@ -398,7 +397,7 @@ private:
 
 public:
                 TextPortion( sal_Int32 nL )
-                : pExtraInfos( NULL )
+                : pExtraInfos( nullptr )
                 , nLen( nL )
                 , aOutSz( -1, -1 )
                 , nKind( PortionKind::TEXT )
@@ -408,7 +407,7 @@ public:
                 }
 
                 TextPortion( const TextPortion& r )
-                : pExtraInfos( NULL )
+                : pExtraInfos( nullptr )
                 , nLen( r.nLen )
                 , aOutSz( r.aOutSz )
                 , nKind( r.nKind )
@@ -445,7 +444,7 @@ public:
 
 class TextPortionList
 {
-    typedef boost::ptr_vector<TextPortion> PortionsType;
+    typedef std::vector<std::unique_ptr<TextPortion> > PortionsType;
     PortionsType maPortions;
 
 public:
@@ -552,7 +551,6 @@ public:
 
     EditLine&   operator = ( const EditLine& rLine );
     friend bool operator == ( const EditLine& r1,  const EditLine& r2  );
-    friend bool operator != ( const EditLine& r1,  const EditLine& r2  );
 };
 
 
@@ -561,7 +559,7 @@ public:
 
 class EditLineList
 {
-    typedef boost::ptr_vector<EditLine> LinesType;
+    typedef std::vector<std::unique_ptr<EditLine> > LinesType;
     LinesType maLines;
 
 public:
@@ -604,7 +602,7 @@ private:
     bool                bVisible            : 1;    // Belongs to the node!
     bool                bForceRepaint       : 1;
 
-                        ParaPortion( const ParaPortion& ) SAL_DELETED_FUNCTION;
+                        ParaPortion( const ParaPortion& ) = delete;
 
 public:
                         ParaPortion( ContentNode* pNode );
@@ -656,7 +654,7 @@ public:
 class ParaPortionList
 {
     mutable sal_Int32 nLastCache;
-    boost::ptr_vector<ParaPortion> maPortions;
+    std::vector<std::unique_ptr<ParaPortion>> maPortions;
 public:
                     ParaPortionList();
                     ~ParaPortionList();
@@ -744,7 +742,7 @@ class EditDoc
 {
 private:
     mutable sal_Int32 nLastCache;
-    boost::ptr_vector<ContentNode> maContents;
+    std::vector<std::unique_ptr<ContentNode> > maContents;
 
     SfxItemPool*    pItemPool;
     Link<LinkParamNone*,void>      aModifyHdl;
@@ -829,7 +827,7 @@ public:
 
 inline EditCharAttrib* GetAttrib(CharAttribList::AttribsType& rAttribs, sal_Int32 nAttr)
 {
-    return (nAttr < (sal_Int32)rAttribs.size()) ? &rAttribs[nAttr] : NULL;
+    return (nAttr < (sal_Int32)rAttribs.size()) ? rAttribs[nAttr].get() : nullptr;
 }
 
 void CheckOrderedList(const CharAttribList::AttribsType& rAttribs, bool bStart);
@@ -845,7 +843,7 @@ protected:
                         virtual ~EditEngineItemPool();
 public:
 
-    virtual SvStream&   Store( SvStream& rStream ) const SAL_OVERRIDE;
+    virtual SvStream&   Store( SvStream& rStream ) const override;
 };
 
 #endif // INCLUDED_EDITENG_SOURCE_EDITENG_EDITDOC_HXX

@@ -20,6 +20,7 @@
 #include <drawinglayer/primitive3d/baseprimitive3d.hxx>
 #include <drawinglayer/geometry/viewinformation3d.hxx>
 #include <basegfx/tools/canvastools.hxx>
+#include <comphelper/sequence.hxx>
 
 
 
@@ -47,18 +48,18 @@ namespace drawinglayer
 
         basegfx::B3DRange BasePrimitive3D::getB3DRange(const geometry::ViewInformation3D& rViewInformation) const
         {
-            return getB3DRangeFromPrimitive3DSequence(get3DDecomposition(rViewInformation), rViewInformation);
+            return get3DDecomposition(rViewInformation).getB3DRange(rViewInformation);
         }
 
-        Primitive3DSequence BasePrimitive3D::get3DDecomposition(const geometry::ViewInformation3D& /*rViewInformation*/) const
+        Primitive3DContainer BasePrimitive3D::get3DDecomposition(const geometry::ViewInformation3D& /*rViewInformation*/) const
         {
-            return Primitive3DSequence();
+            return Primitive3DContainer();
         }
 
         Primitive3DSequence SAL_CALL BasePrimitive3D::getDecomposition( const uno::Sequence< beans::PropertyValue >& rViewParameters ) throw ( uno::RuntimeException, std::exception )
         {
             const geometry::ViewInformation3D aViewInformation(rViewParameters);
-            return get3DDecomposition(aViewInformation);
+            return comphelper::containerToSequence(get3DDecomposition(aViewInformation));
         }
 
         css::geometry::RealRectangle3D SAL_CALL BasePrimitive3D::getRange( const uno::Sequence< beans::PropertyValue >& rViewParameters ) throw ( uno::RuntimeException, std::exception )
@@ -75,9 +76,9 @@ namespace drawinglayer
 {
     namespace primitive3d
     {
-        Primitive3DSequence BufferedDecompositionPrimitive3D::create3DDecomposition(const geometry::ViewInformation3D& /*rViewInformation*/) const
+        Primitive3DContainer BufferedDecompositionPrimitive3D::create3DDecomposition(const geometry::ViewInformation3D& /*rViewInformation*/) const
         {
-            return Primitive3DSequence();
+            return Primitive3DContainer();
         }
 
         BufferedDecompositionPrimitive3D::BufferedDecompositionPrimitive3D()
@@ -86,13 +87,13 @@ namespace drawinglayer
         {
         }
 
-        Primitive3DSequence BufferedDecompositionPrimitive3D::get3DDecomposition(const geometry::ViewInformation3D& rViewInformation) const
+        Primitive3DContainer BufferedDecompositionPrimitive3D::get3DDecomposition(const geometry::ViewInformation3D& rViewInformation) const
         {
             ::osl::MutexGuard aGuard( m_aMutex );
 
-            if(!getBuffered3DDecomposition().hasElements())
+            if(getBuffered3DDecomposition().empty())
             {
-                const Primitive3DSequence aNewSequence(create3DDecomposition(rViewInformation));
+                const Primitive3DContainer aNewSequence(create3DDecomposition(rViewInformation));
                 const_cast< BufferedDecompositionPrimitive3D* >(this)->setBuffered3DDecomposition(aNewSequence);
             }
 
@@ -134,18 +135,18 @@ namespace drawinglayer
             return aRetval;
         }
 
-        // get range3D from a given Primitive3DSequence
-        basegfx::B3DRange getB3DRangeFromPrimitive3DSequence(const Primitive3DSequence& rCandidate, const geometry::ViewInformation3D& aViewInformation)
+        // get range3D from a given Primitive3DContainer
+        basegfx::B3DRange Primitive3DContainer::getB3DRange(const geometry::ViewInformation3D& aViewInformation) const
         {
             basegfx::B3DRange aRetval;
 
-            if(rCandidate.hasElements())
+            if(!empty())
             {
-                const sal_Int32 nCount(rCandidate.getLength());
+                const size_t nCount(size());
 
-                for(sal_Int32 a(0L); a < nCount; a++)
+                for(size_t a(0L); a < nCount; a++)
                 {
-                    aRetval.expand(getB3DRangeFromPrimitive3DReference(rCandidate[a], aViewInformation));
+                    aRetval.expand(getB3DRangeFromPrimitive3DReference((*this)[a], aViewInformation));
                 }
             }
 
@@ -168,9 +169,9 @@ namespace drawinglayer
 
             const BasePrimitive3D* pA(dynamic_cast< const BasePrimitive3D* >(rxA.get()));
             const BasePrimitive3D* pB(dynamic_cast< const BasePrimitive3D* >(rxB.get()));
-            const bool bAEqualZero(pA == 0L);
+            const bool bAEqualZero(pA == nullptr);
 
-            if(bAEqualZero != (pB == 0L))
+            if(bAEqualZero != (pB == nullptr))
             {
                 return false;
             }
@@ -183,11 +184,11 @@ namespace drawinglayer
             return (pA->operator==(*pB));
         }
 
-        bool arePrimitive3DSequencesEqual(const Primitive3DSequence& rA, const Primitive3DSequence& rB)
+        bool Primitive3DContainer::operator==(const Primitive3DContainer& rB) const
         {
-            const bool bAHasElements(rA.hasElements());
+            const bool bAHasElements(!empty());
 
-            if(bAHasElements != rB.hasElements())
+            if(bAHasElements != !rB.empty())
             {
                 return false;
             }
@@ -197,16 +198,16 @@ namespace drawinglayer
                 return true;
             }
 
-            const sal_Int32 nCount(rA.getLength());
+            const size_t nCount(size());
 
-            if(nCount != rB.getLength())
+            if(nCount != rB.size())
             {
                 return false;
             }
 
-            for(sal_Int32 a(0L); a < nCount; a++)
+            for(size_t a(0L); a < nCount; a++)
             {
-                if(!arePrimitive3DReferencesEqual(rA[a], rB[a]))
+                if(!arePrimitive3DReferencesEqual((*this)[a], rB[a]))
                 {
                     return false;
                 }
@@ -215,48 +216,18 @@ namespace drawinglayer
             return true;
         }
 
-        // concatenate sequence
-        void appendPrimitive3DSequenceToPrimitive3DSequence(Primitive3DSequence& rDest, const Primitive3DSequence& rSource)
+        void Primitive3DContainer::append(const Primitive3DContainer& rSource)
         {
-            if(rSource.hasElements())
-            {
-                if(rDest.hasElements())
-                {
-                    const sal_Int32 nSourceCount(rSource.getLength());
-                    const sal_Int32 nDestCount(rDest.getLength());
-                    const sal_Int32 nTargetCount(nSourceCount + nDestCount);
-                    sal_Int32 nInsertPos(nDestCount);
-
-                    rDest.realloc(nTargetCount);
-
-                    for(sal_Int32 a(0L); a < nSourceCount; a++)
-                    {
-                        if(rSource[a].is())
-                        {
-                            rDest[nInsertPos++] = rSource[a];
-                        }
-                    }
-
-                    if(nInsertPos != nTargetCount)
-                    {
-                        rDest.realloc(nInsertPos);
-                    }
-                }
-                else
-                {
-                    rDest = rSource;
-                }
-            }
+            insert(end(), rSource.begin(), rSource.end());
         }
 
-        // concatenate single Primitive3D
-        void appendPrimitive3DReferenceToPrimitive3DSequence(Primitive3DSequence& rDest, const Primitive3DReference& rSource)
+        void Primitive3DContainer::append(Primitive3DContainer&& rSource)
         {
-            if(rSource.is())
+            size_t n = size();
+            resize(n + rSource.size());
+            for (size_t i = 0; i<rSource.size(); ++i)
             {
-                const sal_Int32 nDestCount(rDest.getLength());
-                rDest.realloc(nDestCount + 1L);
-                rDest[nDestCount] = rSource;
+                (*this)[n + i] = std::move( rSource[i] );
             }
         }
 

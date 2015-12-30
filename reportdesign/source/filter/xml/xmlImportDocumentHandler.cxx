@@ -57,7 +57,7 @@ ImportDocumentHandler::~ImportDocumentHandler()
 {
     if ( m_xProxy.is() )
     {
-        m_xProxy->setDelegator( NULL );
+        m_xProxy->setDelegator( nullptr );
         m_xProxy.clear();
     }
 }
@@ -89,8 +89,7 @@ OUString ImportDocumentHandler::getImplementationName_Static(  ) throw(uno::Runt
 
 uno::Sequence< OUString > ImportDocumentHandler::getSupportedServiceNames_static(  ) throw(uno::RuntimeException)
 {
-    uno::Sequence< OUString > aSupported(1);
-    aSupported[0] = "com.sun.star.report.ImportDocumentHandler";
+    uno::Sequence< OUString > aSupported { "com.sun.star.report.ImportDocumentHandler" };
     return aSupported;
 }
 
@@ -203,7 +202,7 @@ void SAL_CALL ImportDocumentHandler::startElement(const OUString & _sName, const
         catch(uno::Exception&)
         {
         }
-        m_xDelegatee->startElement(lcl_createAttribute(XML_NP_OFFICE,XML_CHART),NULL);
+        m_xDelegatee->startElement(lcl_createAttribute(XML_NP_OFFICE,XML_CHART),nullptr);
         bExport = false;
         m_bImportedChart = true;
     }
@@ -287,7 +286,7 @@ void SAL_CALL ImportDocumentHandler::startElement(const OUString & _sName, const
         SvXMLAttributeList* pList = new SvXMLAttributeList();
         xNewAttribs = pList;
         pList->AppendAttributeList(_xAttrList);
-        pList->AddAttribute(OUString("table:cell-range-address"),OUString("local-table.$A$1:.$Z$65536"));
+        pList->AddAttribute("table:cell-range-address","local-table.$A$1:.$Z$65536");
 
     }
 
@@ -367,7 +366,7 @@ void SAL_CALL ImportDocumentHandler::initialize( const uno::Sequence< uno::Any >
         xReceiver->attachDataProvider(m_xDatabaseDataProvider.get());
     }
 
-    m_aArguments = m_xDatabaseDataProvider->detectArguments(NULL);
+    m_aArguments = m_xDatabaseDataProvider->detectArguments(nullptr);
 
     uno::Reference< reflection::XProxyFactory > xProxyFactory = reflection::ProxyFactory::create( m_xContext );
     m_xProxy = xProxyFactory->createProxy(m_xDelegatee.get());

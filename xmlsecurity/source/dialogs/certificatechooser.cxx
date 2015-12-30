@@ -76,7 +76,7 @@ CertificateChooser::CertificateChooser( vcl::Window* _pParent, uno::Reference< u
     mbInitialized = false;
 
     // disable buttons
-    CertificateHighlightHdl( NULL );
+    CertificateHighlightHdl( nullptr );
 }
 
 CertificateChooser::~CertificateChooser()
@@ -115,11 +115,10 @@ short CertificateChooser::Execute()
     pMe->Update();
     ImplInitialize();
     if ( pParent )
-        pParent->EnableInput( true );
+        pParent->EnableInput();
     return ModalDialog::Execute();
 }
 
-// IMPL_LINK_NOARG(CertificateChooser, Initialize)
 void CertificateChooser::ImplInitialize()
 {
     if ( !mbInitialized )
@@ -185,7 +184,7 @@ void CertificateChooser::ImplInitialize()
         }
 
         // enable/disable buttons
-        CertificateHighlightHdl( NULL );
+        CertificateHighlightHdl( nullptr );
         mbInitialized = true;
     }
 }

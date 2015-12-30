@@ -57,11 +57,7 @@ public:
 };
 
 RTTI::RTTI()
-#if defined(FREEBSD) && __FreeBSD_version < 702104
-    : m_hApp( dlopen( 0, RTLD_NOW | RTLD_GLOBAL ) )
-#else
-    : m_hApp( dlopen( 0, RTLD_LAZY ) )
-#endif
+    : m_hApp( dlopen( nullptr, RTLD_LAZY ) )
 {
 }
 
@@ -95,11 +91,7 @@ std::type_info * RTTI::getRTTI(typelib_TypeDescription const & pTypeDescr)
         buf.append( 'E' );
 
         OString symName( buf.makeStringAndClear() );
-#if defined(FREEBSD) && __FreeBSD_version < 702104 /* #i22253# */
-        rtti = (std::type_info *)dlsym( RTLD_DEFAULT, symName.getStr() );
-#else
         rtti = static_cast<std::type_info *>(dlsym( m_hApp, symName.getStr() ));
-#endif
 
         if (rtti)
         {
@@ -195,7 +187,7 @@ std::type_info * RTTI::getRTTI(typelib_TypeDescription const & pTypeDescr)
                 default:
                     assert(false); // cannot happen
                 }
-                if (rtti != 0) {
+                if (rtti != nullptr) {
                     std::pair< t_rtti_map::iterator, bool > insertion (
                         m_generatedRttis.insert( t_rtti_map::value_type( unoName, rtti ) ) );
                     SAL_WARN_IF( !insertion.second, "bridges", "key " << unoName << " already in generated rtti map" );

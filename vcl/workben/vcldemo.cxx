@@ -106,11 +106,11 @@ class DemoRenderer
         // repeating count for profiling (to exceed the poor time resolution on Windows)
         virtual sal_uInt16 getTestRepeatCount() = 0;
 #define RENDER_DETAILS(name,key,repeat) \
-        virtual OUString getName() SAL_OVERRIDE \
+        virtual OUString getName() override \
             { return OUString(SAL_STRINGIFY(name)); } \
-        virtual sal_uInt16 getAccelerator() SAL_OVERRIDE \
+        virtual sal_uInt16 getAccelerator() override \
             { return key; } \
-        virtual sal_uInt16 getTestRepeatCount() SAL_OVERRIDE \
+        virtual sal_uInt16 getTestRepeatCount() override \
             { return repeat; }
 
         double sumTime;
@@ -142,11 +142,11 @@ public:
         maIntroBW.Filter(BMP_FILTER_EMBOSS_GREY);
 
         InitRenderers();
-        mnSegmentsX = rtl::math::round(sqrt(maRenderers.size()), 0,
+        mnSegmentsX = rtl::math::round(std::sqrt(maRenderers.size()), 0,
                                        rtl_math_RoundingMode_Up);
-        mnSegmentsY = rtl::math::round(sqrt(maRenderers.size()), 0,
+        mnSegmentsY = rtl::math::round(std::sqrt(maRenderers.size()), 0,
                                        rtl_math_RoundingMode_Down);
-        mnSegmentsY = floor(sqrt(maRenderers.size()));
+        mnSegmentsY = floor(std::sqrt(maRenderers.size()));
     }
 
     OUString getRendererList();
@@ -169,7 +169,7 @@ public:
     FloatingWindow *mpButtonWin;
     AutoTimer       maBounce;
     int             mnBounceX, mnBounceY;
-    DECL_LINK(BounceTimerCb, void *);
+    DECL_LINK_TYPED(BounceTimerCb, Timer*, void);
 #endif
 
     bool MouseButtonDown(const MouseEvent& rMEvt);
@@ -234,7 +234,7 @@ public:
     {
         RENDER_DETAILS(lines,KEY_L,100)
         virtual void RenderRegion(OutputDevice &rDev, Rectangle r,
-                                  const RenderContext &rCtx) SAL_OVERRIDE
+                                  const RenderContext &rCtx) override
         {
             if (rCtx.meStyle == RENDER_EXPANDED)
             {
@@ -258,7 +258,7 @@ public:
                     drawing::LineCap_BUTT, drawing::LineCap_ROUND, drawing::LineCap_SQUARE, drawing::LineCap_BUTT,
                     drawing::LineCap_BUTT, drawing::LineCap_ROUND, drawing::LineCap_SQUARE, drawing::LineCap_BUTT
                 };
-                ::basegfx::B2DLineJoin eJoins[] = {
+                basegfx::B2DLineJoin eJoins[] = {
                     basegfx::B2DLineJoin::NONE,  basegfx::B2DLineJoin::Middle, basegfx::B2DLineJoin::Bevel,  basegfx::B2DLineJoin::Miter,
                     basegfx::B2DLineJoin::Round, basegfx::B2DLineJoin::NONE,   basegfx::B2DLineJoin::Middle, basegfx::B2DLineJoin::Bevel,
                     basegfx::B2DLineJoin::Miter, basegfx::B2DLineJoin::Round,  basegfx::B2DLineJoin::NONE,   basegfx::B2DLineJoin::Middle,
@@ -322,7 +322,7 @@ public:
         RENDER_DETAILS(text,KEY_T,1)
 
         virtual void RenderRegion(OutputDevice &rDev, Rectangle r,
-                                  const RenderContext &rCtx) SAL_OVERRIDE
+                                  const RenderContext &rCtx) override
         {
             if (rCtx.meStyle == RENDER_EXPANDED)
             {
@@ -479,7 +479,7 @@ public:
     {
         RENDER_DETAILS(checks,KEY_C,20)
         virtual void RenderRegion(OutputDevice &rDev, Rectangle r,
-                                  const RenderContext &rCtx) SAL_OVERRIDE
+                                  const RenderContext &rCtx) override
         {
             if (rCtx.meStyle == RENDER_EXPANDED)
             {
@@ -541,7 +541,7 @@ public:
         RENDER_DETAILS(poly,KEY_P,20)
         DrawCheckered maCheckered;
         virtual void RenderRegion(OutputDevice &rDev, Rectangle r,
-                                  const RenderContext &rCtx) SAL_OVERRIDE
+                                  const RenderContext &rCtx) override
         {
             maCheckered.RenderRegion(rDev, r, rCtx);
 
@@ -564,7 +564,7 @@ public:
     {
         RENDER_DETAILS(ellipse,KEY_E,5000)
         virtual void RenderRegion(OutputDevice &rDev, Rectangle r,
-                                  const RenderContext &) SAL_OVERRIDE
+                                  const RenderContext &) override
         {
             rDev.SetLineColor(Color(COL_RED));
             rDev.SetFillColor(Color(COL_GREEN));
@@ -576,7 +576,7 @@ public:
     {
         RENDER_DETAILS(gradient,KEY_G,50)
         virtual void RenderRegion(OutputDevice &rDev, Rectangle r,
-                                  const RenderContext &rCtx) SAL_OVERRIDE
+                                  const RenderContext &rCtx) override
         {
             if (rCtx.meStyle == RENDER_EXPANDED)
             {
@@ -650,7 +650,7 @@ public:
         // be done with a shader / gradient
         static void SimulateBorderStretch(OutputDevice &rDev, const Rectangle& r)
         {
-            static BitmapEx aPageShadowMask("sw/res/page-shadow-mask.png");
+            BitmapEx aPageShadowMask("sw/res/page-shadow-mask.png");
 
             BitmapEx aRight(aPageShadowMask);
             sal_Int32 nSlice = (aPageShadowMask.GetSizePixel().Width() - 3) / 4;
@@ -692,7 +692,7 @@ public:
         }
 
         virtual void RenderRegion(OutputDevice &rDev, Rectangle r,
-                                  const RenderContext &rCtx) SAL_OVERRIDE
+                                  const RenderContext &rCtx) override
         {
             Bitmap aBitmap(rCtx.mpDemoRenderer->maIntroBW);
             aBitmap.Scale(r.GetSize(), BmpScaleFlag::BestQuality);
@@ -707,7 +707,7 @@ public:
         RENDER_DETAILS(bitmapex,KEY_X,2)
         DrawCheckered maCheckered;
         virtual void RenderRegion(OutputDevice &rDev, Rectangle r,
-                                  const RenderContext &rCtx) SAL_OVERRIDE
+                                  const RenderContext &rCtx) override
         {
             maCheckered.RenderRegion(rDev, r, rCtx);
 
@@ -724,7 +724,7 @@ public:
     {
         RENDER_DETAILS(polypoly,KEY_N,100)
         virtual void RenderRegion(OutputDevice &rDev, Rectangle r,
-                                  const RenderContext &) SAL_OVERRIDE
+                                  const RenderContext &) override
         {
             struct {
                 double nX, nY;
@@ -789,7 +789,7 @@ public:
             if ((int)eType < RENDER_AS_BITMAPEX)
                 pNested = VclPtr<VirtualDevice>::Create(rDev).get();
             else
-                pNested = VclPtr<VirtualDevice>::Create(rDev,0,0).get();
+                pNested = VclPtr<VirtualDevice>::Create(rDev,DeviceFormat::DEFAULT,DeviceFormat::DEFAULT).get();
 
             pNested->SetOutputSizePixel(r.GetSize());
             Rectangle aWhole(Point(0,0), r.GetSize());
@@ -816,7 +816,7 @@ public:
             }
         }
         virtual void RenderRegion(OutputDevice &rDev, Rectangle r,
-                                  const RenderContext &rCtx) SAL_OVERRIDE
+                                  const RenderContext &rCtx) override
         {
             // avoid infinite recursion
             if (rCtx.mbVDev)
@@ -887,6 +887,8 @@ public:
             css::uno::Sequence< OUString > aAllIcons = ImageTree_getAllImageNames();
             for (sal_Int32 i = 0; i < aAllIcons.getLength(); i++)
             {
+                if (aAllIcons[i].endsWithIgnoreAsciiCase("svg"))
+                    continue; // too slow to load.
                 maIconNames.push_back(aAllIcons[i]);
                 maIcons.push_back(BitmapEx(aAllIcons[i]));
             }
@@ -1028,7 +1030,7 @@ public:
         }
 
         virtual void RenderRegion(OutputDevice &rDev, Rectangle r,
-                                  const RenderContext &rCtx) SAL_OVERRIDE
+                                  const RenderContext &rCtx) override
         {
             if (rCtx.meStyle == RENDER_EXPANDED)
             {
@@ -1076,7 +1078,7 @@ public:
     {
         RENDER_DETAILS(fetchdraw,KEY_F,50)
         virtual void RenderRegion(OutputDevice &rDev, Rectangle r,
-                                  const RenderContext &) SAL_OVERRIDE
+                                  const RenderContext &) override
         {
             Bitmap aBitmap(rDev.GetBitmap(Point(0,0),rDev.GetOutputSizePixel()));
             aBitmap.Scale(r.GetSize(), BmpScaleFlag::BestQuality);
@@ -1164,7 +1166,7 @@ public:
 };
 
 #if FIXME_BOUNCE_BUTTON
-IMPL_LINK_NOARG(DemoRenderer,BounceTimerCb)
+IMPL_LINK_NOARG_TYPED(DemoRenderer,BounceTimerCb,Timer*,void)
 {
     mpButton->Check(mnBounceX>0);
     mpButton->SetPressed(mnBounceY>0);
@@ -1182,7 +1184,6 @@ IMPL_LINK_NOARG(DemoRenderer,BounceTimerCb)
     // All smoke and mirrors to test sub-region invalidation underneath
     Rectangle aRect(aCur, mpButtonWin->GetSizePixel());
     Invalidate(aRect);
-    return 0;
 }
 #endif
 
@@ -1372,7 +1373,7 @@ class DemoWin : public WorkWindow
         {
             join();
         }
-        virtual void execute() SAL_OVERRIDE
+        virtual void execute() override
         {
             osl_waitThread(&maDelay);
 
@@ -1385,7 +1386,7 @@ class DemoWin : public WorkWindow
 
 public:
     DemoWin(DemoRenderer &rRenderer, bool bThreads) :
-        WorkWindow(NULL, WB_APP | WB_STDWORK),
+        WorkWindow(nullptr, WB_APP | WB_STDWORK),
         mrRenderer(rRenderer),
         testThreads(bThreads)
     {
@@ -1396,13 +1397,13 @@ public:
     {
         disposeOnce();
     }
-    virtual void dispose() SAL_OVERRIDE
+    virtual void dispose() override
     {
         mxThread.clear();
         mrRenderer.removeInvalidate(this);
         WorkWindow::dispose();
     }
-    virtual void MouseButtonDown(const MouseEvent& rMEvt) SAL_OVERRIDE
+    virtual void MouseButtonDown(const MouseEvent& rMEvt) override
     {
         mrRenderer.SetSizePixel(GetSizePixel());
         if (!mrRenderer.MouseButtonDown(rMEvt))
@@ -1422,12 +1423,12 @@ public:
             }
         }
     }
-    virtual void KeyInput(const KeyEvent& rKEvt) SAL_OVERRIDE
+    virtual void KeyInput(const KeyEvent& rKEvt) override
     {
         mrRenderer.SetSizePixel(GetSizePixel());
         mrRenderer.KeyInput(rKEvt);
     }
-    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) SAL_OVERRIDE
+    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) override
     {
         mrRenderer.SetSizePixel(GetSizePixel());
         fprintf(stderr, "DemoWin::Paint(%ld,%ld,%ld,%ld)\n", rRect.getX(), rRect.getY(), rRect.getWidth(), rRect.getHeight());
@@ -1479,7 +1480,7 @@ class DemoWidgets : public WorkWindow
 
 public:
     DemoWidgets() :
-        WorkWindow(NULL, WB_APP | WB_STDWORK),
+        WorkWindow(nullptr, WB_APP | WB_STDWORK),
         mpBox(VclPtrInstance<VclVBox>(this, false, 3)),
         mpToolbox(VclPtrInstance<ToolBox>(mpBox.get())),
         mpButton(VclPtrInstance<PushButton>(mpBox.get())),
@@ -1529,7 +1530,7 @@ public:
         Show();
     }
     virtual ~DemoWidgets() { disposeOnce(); }
-    virtual void dispose() SAL_OVERRIDE
+    virtual void dispose() override
     {
         mpGLButton.disposeAndClear();
         mpGLCombo.disposeAndClear();
@@ -1542,7 +1543,7 @@ public:
         delete mpBar;
         WorkWindow::dispose();
     }
-    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle&) SAL_OVERRIDE
+    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle&) override
     {
         Rectangle aWholeSize(Point(0, 0),GetOutputSizePixel());
         vcl::Region aClip(aWholeSize);
@@ -1610,7 +1611,7 @@ IMPL_LINK_NOARG_TYPED(DemoWidgets, GLTestClick, Button*, void)
 class DemoPopup : public FloatingWindow
 {
  public:
-    DemoPopup() : FloatingWindow( NULL, WB_SYSTEMWINDOW|WB_TOOLTIPWIN)
+    DemoPopup() : FloatingWindow( nullptr, WB_SYSTEMWINDOW|WB_TOOLTIPWIN)
     {
         SetType( WINDOW_HELPTEXTWINDOW );
 
@@ -1621,7 +1622,7 @@ class DemoPopup : public FloatingWindow
         Update();
     }
 
-    virtual void Paint(vcl::RenderContext& /*rRenderContext*/, const Rectangle&) SAL_OVERRIDE
+    virtual void Paint(vcl::RenderContext& /*rRenderContext*/, const Rectangle&) override
     {
         // Interestingly in GL mode on Windows, this doesn't render.
 
@@ -1645,7 +1646,7 @@ class DemoPopup : public FloatingWindow
         SetLineColor( aColor );
     }
 
-    virtual void MouseButtonDown( const MouseEvent & ) SAL_OVERRIDE
+    virtual void MouseButtonDown( const MouseEvent & ) override
     {
         Application::Quit();
     }
@@ -1703,7 +1704,7 @@ public:
         }
         assert (pBuffer->IsFree()); (void)pBuffer;
         mpB->makeCurrent();
-        assert (mpA->mpCurrentFramebuffer == NULL);
+        assert (mpA->mpCurrentFramebuffer == nullptr);
     }
 
     void testVirtualDevice()
@@ -1777,7 +1778,7 @@ class DemoApp : public Application
 public:
     DemoApp() {}
 
-    virtual int Main() SAL_OVERRIDE
+    virtual int Main() override
     {
         try
         {
@@ -1859,14 +1860,13 @@ public:
 
 protected:
     uno::Reference<lang::XMultiServiceFactory> xMSF;
-    void Init() SAL_OVERRIDE
+    void Init() override
     {
         try
         {
             uno::Reference<uno::XComponentContext> xComponentContext
                 = ::cppu::defaultBootstrap_InitialComponentContext();
-            xMSF = uno::Reference<lang::XMultiServiceFactory>
-                (xComponentContext->getServiceManager(), uno::UNO_QUERY);
+            xMSF.set(xComponentContext->getServiceManager(), uno::UNO_QUERY);
             if(!xMSF.is())
                 Application::Abort("Bootstrap failure - no service manager");
 
@@ -1877,12 +1877,12 @@ protected:
             Application::Abort("Bootstrap exception " + e.Message);
         }
     }
-    void DeInit() SAL_OVERRIDE
+    void DeInit() override
     {
         uno::Reference< lang::XComponent >(
             comphelper::getProcessComponentContext(),
         uno::UNO_QUERY_THROW)-> dispose();
-        ::comphelper::setProcessServiceFactory(NULL);
+        ::comphelper::setProcessServiceFactory(nullptr);
     }
 };
 

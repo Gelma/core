@@ -27,7 +27,6 @@ class SwDDETable : public SwTable
 {
     SwDepend aDepend;
 public:
-    TYPEINFO_OVERRIDE();
 
     // Ctor moves all lines/boxes from SwTable to it.
     // After that SwTable is empty and has to be deleted.
@@ -41,8 +40,8 @@ public:
     SwDDEFieldType* GetDDEFieldType();
     inline const SwDDEFieldType* GetDDEFieldType() const;
 protected:
-    virtual void Modify( const SfxPoolItem*, const SfxPoolItem* ) SAL_OVERRIDE;
-    virtual void SwClientNotify( const SwModify&, const SfxHint& ) SAL_OVERRIDE;
+    virtual void Modify( const SfxPoolItem*, const SfxPoolItem* ) override;
+    virtual void SwClientNotify( const SwModify&, const SfxHint& ) override;
 };
 
 inline const SwDDEFieldType* SwDDETable::GetDDEFieldType() const

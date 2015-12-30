@@ -48,22 +48,20 @@ using namespace ::com::sun::star::frame;
 
 //  Namespace
 
-struct ModuleToCommands
-{
-    const char* pModuleId;
-    const char* pCommands;
-};
-
 static const char CONFIGURATION_ROOT_ACCESS[]           = "/org.openoffice.Office.UI.";
 static const char CONFIGURATION_CMD_ELEMENT_ACCESS[]    = "/UserInterface/Commands";
 static const char CONFIGURATION_POP_ELEMENT_ACCESS[]    = "/UserInterface/Popups";
 static const char CONFIGURATION_PROPERTY_LABEL[]        = "Label";
 static const char CONFIGURATION_PROPERTY_CONTEXT_LABEL[] = "ContextLabel";
+static const char CONFIGURATION_PROPERTY_POPUP_LABEL[]   = "PopupLabel";
+static const char CONFIGURATION_PROPERTY_TOOLTIP_LABEL[] = "TooltipLabel";
 
 // Property names of the resulting Property Set
 static const char PROPSET_LABEL[]                       = "Label";
 static const char PROPSET_NAME[]                        = "Name";
 static const char PROPSET_POPUP[]                       = "Popup";
+static const char PROPSET_POPUPLABEL[]                  = "PopupLabel";
+static const char PROPSET_TOOLTIPLABEL[]                = "TooltipLabel";
 static const char PROPSET_PROPERTIES[]                  = "Properties";
 
 // Special resource URLs to retrieve additional information
@@ -87,32 +85,32 @@ class ConfigurationAccess_UICommand : // Order is necessary for right initializa
         virtual                   ~ConfigurationAccess_UICommand();
 
         // XNameAccess
-        virtual ::com::sun::star::uno::Any SAL_CALL getByName( const OUString& aName )
-            throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual css::uno::Any SAL_CALL getByName( const OUString& aName )
+            throw (css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
 
-        virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getElementNames()
-            throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual css::uno::Sequence< OUString > SAL_CALL getElementNames()
+            throw (css::uno::RuntimeException, std::exception) override;
 
         virtual sal_Bool SAL_CALL hasByName( const OUString& aName )
-            throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw (css::uno::RuntimeException, std::exception) override;
 
         // XElementAccess
-        virtual ::com::sun::star::uno::Type SAL_CALL getElementType()
-            throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual css::uno::Type SAL_CALL getElementType()
+            throw (css::uno::RuntimeException, std::exception) override;
 
         virtual sal_Bool SAL_CALL hasElements()
-            throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw (css::uno::RuntimeException, std::exception) override;
 
         // container.XContainerListener
-        virtual void SAL_CALL     elementInserted( const ContainerEvent& aEvent ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL     elementRemoved ( const ContainerEvent& aEvent ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL     elementReplaced( const ContainerEvent& aEvent ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL     elementInserted( const ContainerEvent& aEvent ) throw(RuntimeException, std::exception) override;
+        virtual void SAL_CALL     elementRemoved ( const ContainerEvent& aEvent ) throw(RuntimeException, std::exception) override;
+        virtual void SAL_CALL     elementReplaced( const ContainerEvent& aEvent ) throw(RuntimeException, std::exception) override;
 
         // lang.XEventListener
-        virtual void SAL_CALL disposing( const EventObject& aEvent ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing( const EventObject& aEvent ) throw(RuntimeException, std::exception) override;
 
     protected:
-        ::com::sun::star::uno::Any SAL_CALL getByNameImpl( const OUString& aName );
+        css::uno::Any SAL_CALL getByNameImpl( const OUString& aName );
 
         struct CmdToInfoMap
         {
@@ -120,9 +118,11 @@ class ConfigurationAccess_UICommand : // Order is necessary for right initializa
                              bCommandNameCreated( false ),
                              nProperties( 0 ) {}
 
-            OUString       aLabel;
-            OUString       aContextLabel;
-            OUString       aCommandName;
+            OUString            aLabel;
+            OUString            aContextLabel;
+            OUString            aCommandName;
+            OUString            aPopupLabel;
+            OUString            aTooltipLabel;
             bool                bPopup : 1,
                                 bCommandNameCreated : 1;
             sal_Int32           nProperties;
@@ -151,9 +151,13 @@ class ConfigurationAccess_UICommand : // Order is necessary for right initializa
         OUString                     m_aConfigPopupAccess;
         OUString                     m_aPropUILabel;
         OUString                     m_aPropUIContextLabel;
+        OUString                     m_aPropUIPopupLabel;
+        OUString                     m_aPropUITooltipLabel;
         OUString                     m_aPropLabel;
         OUString                     m_aPropName;
         OUString                     m_aPropPopup;
+        OUString                     m_aPropPopupLabel;
+        OUString                     m_aPropTooltipLabel;
         OUString                     m_aPropProperties;
         OUString                     m_aPrivateResourceURL;
         Reference< XNameAccess >          m_xGenericUICommands;
@@ -178,9 +182,13 @@ ConfigurationAccess_UICommand::ConfigurationAccess_UICommand( const OUString& aM
     m_aConfigPopupAccess( CONFIGURATION_ROOT_ACCESS ),
     m_aPropUILabel( CONFIGURATION_PROPERTY_LABEL ),
     m_aPropUIContextLabel( CONFIGURATION_PROPERTY_CONTEXT_LABEL ),
+    m_aPropUIPopupLabel( CONFIGURATION_PROPERTY_POPUP_LABEL ),
+    m_aPropUITooltipLabel( CONFIGURATION_PROPERTY_TOOLTIP_LABEL ),
     m_aPropLabel( PROPSET_LABEL ),
     m_aPropName( PROPSET_NAME ),
     m_aPropPopup( PROPSET_POPUP ),
+    m_aPropPopupLabel( PROPSET_POPUPLABEL ),
+    m_aPropTooltipLabel( PROPSET_TOOLTIPLABEL ),
     m_aPropProperties( PROPSET_PROPERTIES ),
     m_aPrivateResourceURL( PRIVATE_RESOURCE_URL ),
     m_xGenericUICommands( rGenericUICommands ),
@@ -205,7 +213,7 @@ ConfigurationAccess_UICommand::~ConfigurationAccess_UICommand()
     Reference< XContainer > xContainer( m_xConfigAccess, UNO_QUERY );
     if ( xContainer.is() )
         xContainer->removeContainerListener(m_xConfigListener);
-    xContainer = Reference< XContainer >( m_xConfigAccessPopups, UNO_QUERY );
+    xContainer.set( m_xConfigAccessPopups, UNO_QUERY );
     if ( xContainer.is() )
         xContainer->removeContainerListener(m_xConfigAccessListener);
 }
@@ -263,7 +271,7 @@ throw ( RuntimeException, std::exception )
 }
 
 sal_Bool SAL_CALL ConfigurationAccess_UICommand::hasByName( const OUString& rCommandURL )
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     return getByNameImpl( rCommandURL ).hasValue();
 }
@@ -299,7 +307,7 @@ Any ConfigurationAccess_UICommand::getSequenceFromCache( const OUString& aComman
         if ( !pIter->second.bCommandNameCreated )
             fillInfoFromResult( pIter->second, pIter->second.aLabel );
 
-        Sequence< PropertyValue > aPropSeq( 4 );
+        Sequence< PropertyValue > aPropSeq( 6 );
         aPropSeq[0].Name  = m_aPropLabel;
         aPropSeq[0].Value = !pIter->second.aContextLabel.isEmpty() ?
                 makeAny( pIter->second.aContextLabel ): makeAny( pIter->second.aLabel );
@@ -309,6 +317,10 @@ Any ConfigurationAccess_UICommand::getSequenceFromCache( const OUString& aComman
         aPropSeq[2].Value <<= pIter->second.bPopup;
         aPropSeq[3].Name  = m_aPropProperties;
         aPropSeq[3].Value <<= pIter->second.nProperties;
+        aPropSeq[4].Name  = m_aPropPopupLabel;
+        aPropSeq[4].Value <<= pIter->second.aPopupLabel;
+        aPropSeq[5].Name  = m_aPropTooltipLabel;
+        aPropSeq[5].Value <<= pIter->second.aTooltipLabel;
         return makeAny( aPropSeq );
     }
 
@@ -335,6 +347,8 @@ void ConfigurationAccess_UICommand::impl_fill(const Reference< XNameAccess >& _x
                     aCmdToInfo.bPopup = _bPopup;
                     xNameAccess->getByName( m_aPropUILabel )        >>= aCmdToInfo.aLabel;
                     xNameAccess->getByName( m_aPropUIContextLabel ) >>= aCmdToInfo.aContextLabel;
+                    xNameAccess->getByName( m_aPropUIPopupLabel )   >>= aCmdToInfo.aPopupLabel;
+                    xNameAccess->getByName( m_aPropUITooltipLabel )   >>= aCmdToInfo.aTooltipLabel;
                     xNameAccess->getByName( m_aPropProperties )     >>= aCmdToInfo.nProperties;
 
                     m_aCmdInfoCache.insert( CommandToInfoCache::value_type( aNameSeq[i], aCmdToInfo ));
@@ -347,10 +361,10 @@ void ConfigurationAccess_UICommand::impl_fill(const Reference< XNameAccess >& _x
                         aImageMirrorVector.push_back( aNameSeq[i] );
                 }
             }
-            catch (const com::sun::star::lang::WrappedTargetException&)
+            catch (const css::lang::WrappedTargetException&)
             {
             }
-            catch (const com::sun::star::container::NoSuchElementException&)
+            catch (const css::container::NoSuchElementException&)
             {
             }
         }
@@ -386,7 +400,7 @@ bool ConfigurationAccess_UICommand::addGenericInfoToCache()
         try
         {
             if ( m_xGenericUICommands->getByName(
-                    OUString( UICOMMANDDESCRIPTION_NAMEACCESS_COMMANDROTATEIMAGELIST )) >>= aCommandNameSeq )
+                    UICOMMANDDESCRIPTION_NAMEACCESS_COMMANDROTATEIMAGELIST ) >>= aCommandNameSeq )
                 m_aCommandRotateImageList = comphelper::concatSequences< OUString >( m_aCommandRotateImageList, aCommandNameSeq );
         }
         catch (const RuntimeException&)
@@ -400,7 +414,7 @@ bool ConfigurationAccess_UICommand::addGenericInfoToCache()
         try
         {
             if ( m_xGenericUICommands->getByName(
-                    OUString( UICOMMANDDESCRIPTION_NAMEACCESS_COMMANDMIRRORIMAGELIST )) >>= aCommandNameSeq )
+                    UICOMMANDDESCRIPTION_NAMEACCESS_COMMANDMIRRORIMAGELIST ) >>= aCommandNameSeq )
                 m_aCommandMirrorImageList = comphelper::concatSequences< OUString >( m_aCommandMirrorImageList, aCommandNameSeq );
         }
         catch (const RuntimeException&)
@@ -434,19 +448,19 @@ Any ConfigurationAccess_UICommand::getInfoFromCommand( const OUString& rCommandU
                 {
                     return m_xGenericUICommands->getByName( rCommandURL );
                 }
-                catch (const com::sun::star::lang::WrappedTargetException&)
+                catch (const css::lang::WrappedTargetException&)
                 {
                 }
-                catch (const com::sun::star::container::NoSuchElementException&)
+                catch (const css::container::NoSuchElementException&)
                 {
                 }
             }
         }
     }
-    catch (const com::sun::star::container::NoSuchElementException&)
+    catch (const css::container::NoSuchElementException&)
     {
     }
-    catch (const com::sun::star::lang::WrappedTargetException&)
+    catch (const css::lang::WrappedTargetException&)
     {
     }
 
@@ -489,10 +503,10 @@ Sequence< OUString > ConfigurationAccess_UICommand::getAllCommands()
 
             return aNameSeq;
         }
-        catch (const com::sun::star::container::NoSuchElementException&)
+        catch (const css::container::NoSuchElementException&)
         {
         }
-        catch (const com::sun::star::lang::WrappedTargetException&)
+        catch (const css::lang::WrappedTargetException&)
         {
         }
     }
@@ -511,7 +525,7 @@ bool ConfigurationAccess_UICommand::initializeConfigAccess()
         aPropValue.Value <<= m_aConfigCmdAccess;
         aArgs[0] <<= aPropValue;
 
-        m_xConfigAccess = Reference< XNameAccess >( m_xConfigProvider->createInstanceWithArguments(
+        m_xConfigAccess.set( m_xConfigProvider->createInstanceWithArguments(
                     "com.sun.star.configuration.ConfigurationAccess", aArgs ),UNO_QUERY );
         if ( m_xConfigAccess.is() )
         {
@@ -526,7 +540,7 @@ bool ConfigurationAccess_UICommand::initializeConfigAccess()
 
         aPropValue.Value <<= m_aConfigPopupAccess;
         aArgs[0] <<= aPropValue;
-        m_xConfigAccessPopups = Reference< XNameAccess >( m_xConfigProvider->createInstanceWithArguments(
+        m_xConfigAccessPopups.set( m_xConfigProvider->createInstanceWithArguments(
                     "com.sun.star.configuration.ConfigurationAccess", aArgs ),UNO_QUERY );
         if ( m_xConfigAccessPopups.is() )
         {
@@ -586,7 +600,7 @@ void SAL_CALL ConfigurationAccess_UICommand::disposing( const EventObject& aEven
         m_xConfigAccess.clear();
     else
     {
-        xIfac2 = Reference< XInterface >( m_xConfigAccessPopups, UNO_QUERY );
+        xIfac1.set( m_xConfigAccessPopups, UNO_QUERY );
         if ( xIfac1 == xIfac2 )
             m_xConfigAccessPopups.clear();
     }
@@ -594,7 +608,6 @@ void SAL_CALL ConfigurationAccess_UICommand::disposing( const EventObject& aEven
 
 UICommandDescription::UICommandDescription(const Reference< XComponentContext >& rxContext)
     : UICommandDescription_BASE(m_aMutex)
-    , m_bConfigRead(false)
     , m_aPrivateResourceURL(PRIVATE_RESOURCE_URL)
     , m_xContext(rxContext)
 {
@@ -612,7 +625,6 @@ UICommandDescription::UICommandDescription(const Reference< XComponentContext >&
 
 UICommandDescription::UICommandDescription(const Reference< XComponentContext >& rxContext, bool)
     : UICommandDescription_BASE(m_aMutex)
-    , m_bConfigRead(false)
     , m_xContext(rxContext)
 {
 }
@@ -658,7 +670,7 @@ void UICommandDescription::impl_fillElements(const sal_Char* _pName)
 }
 
 Any SAL_CALL UICommandDescription::getByName( const OUString& aName )
-throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception)
 {
     Any a;
 
@@ -679,7 +691,7 @@ throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::la
                 ConfigurationAccess_UICommand* pUICommands = new ConfigurationAccess_UICommand( aCommandFile,
                                                                                                m_xGenericUICommands,
                                                                                                m_xContext );
-                xUICommands = Reference< XNameAccess >( static_cast< cppu::OWeakObject* >( pUICommands ),UNO_QUERY );
+                xUICommands.set( static_cast< cppu::OWeakObject* >( pUICommands ),UNO_QUERY );
                 pIter->second = xUICommands;
                 a <<= xUICommands;
             }
@@ -699,25 +711,15 @@ throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::la
 }
 
 Sequence< OUString > SAL_CALL UICommandDescription::getElementNames()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     osl::MutexGuard g(rBHelper.rMutex);
 
-    Sequence< OUString > aSeq( m_aModuleToCommandFileMap.size() );
-
-    sal_Int32 n = 0;
-    ModuleToCommandFileMap::const_iterator pIter = m_aModuleToCommandFileMap.begin();
-    while ( pIter != m_aModuleToCommandFileMap.end() )
-    {
-        aSeq[n++] = pIter->first;
-        ++pIter;
-    }
-
-    return aSeq;
+    return comphelper::mapKeysToSequence( m_aModuleToCommandFileMap );
 }
 
 sal_Bool SAL_CALL UICommandDescription::hasByName( const OUString& aName )
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     osl::MutexGuard g(rBHelper.rMutex);
 
@@ -727,13 +729,13 @@ throw (::com::sun::star::uno::RuntimeException, std::exception)
 
 // XElementAccess
 Type SAL_CALL UICommandDescription::getElementType()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     return( cppu::UnoType<XNameAccess>::get());
 }
 
 sal_Bool SAL_CALL UICommandDescription::hasElements()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     // generic UI commands are always available!
     return sal_True;

@@ -239,7 +239,7 @@ Reference< XDataSource> getDataSource_allowException(
             const OUString& _rsTitleOrPath,
             const Reference< XComponentContext >& _rxContext )
 {
-    ENSURE_OR_RETURN( !_rsTitleOrPath.isEmpty(), "getDataSource_allowException: invalid arg !", NULL );
+    ENSURE_OR_RETURN( !_rsTitleOrPath.isEmpty(), "getDataSource_allowException: invalid arg !", nullptr );
 
     Reference< XDatabaseContext> xDatabaseContext = DatabaseContext::create(_rxContext);
 
@@ -295,7 +295,7 @@ Reference< XConnection > getConnection_allowException(
                 if (xConnectionCompletion.is())
                 {   // instantiate the default SDB interaction handler
                     Reference< XInteractionHandler > xHandler(
-                        InteractionHandler::createWithParent(_rxContext, 0), UNO_QUERY );
+                        InteractionHandler::createWithParent(_rxContext, nullptr), UNO_QUERY );
                     xConnection = xConnectionCompletion->connectWithCompletion(xHandler);
                 }
             }
@@ -439,7 +439,7 @@ SharedConnection lcl_connectRowSet(const Reference< XRowSet>& _rxRowSet, const R
                 }
                 else
                     xRowSetProps->setPropertyValue(
-                        OUString( "ActiveConnection" ),
+                        "ActiveConnection",
                         makeAny( xConnection.getTyped() )
                     );
             }
@@ -655,7 +655,7 @@ Reference< XNameAccess > getFieldsByCommandDescriptor( const Reference< XConnect
 
                                 // Now set the filter to a dummy restriction which will result in an empty
                                 // result set.
-                                xComposer->setFilter( OUString( "0=1" ) );
+                                xComposer->setFilter( "0=1" );
                                 sStatementToExecute = xComposer->getQuery( );
                             }
                         }
@@ -678,10 +678,7 @@ Reference< XNameAccess > getFieldsByCommandDescriptor( const Reference< XConnect
                     try
                     {
                         if ( xStatementProps.is() )
-                            xStatementProps->setPropertyValue(
-                                OUString( "MaxRows" ),
-                                makeAny( sal_Int32( 0 ) )
-                            );
+                            xStatementProps->setPropertyValue( "MaxRows",  makeAny( sal_Int32( 0 ) ) );
                     }
                     catch( const Exception& )
                     {
@@ -946,8 +943,6 @@ try
     Property* pOldProps = aOldProperties.getArray();
     Property* pNewProps = aNewProperties.getArray();
 
-    OUString sPropDefaultControl("DefaultControl");
-    OUString sPropLabelControl("LabelControl");
     OUString sPropFormatsSupplier("FormatsSupplier");
     OUString sPropCurrencySymbol("CurrencySymbol");
     OUString sPropDecimals("Decimals");
@@ -965,9 +960,7 @@ try
 
     for (sal_Int32 i=0; i<aOldProperties.getLength(); ++i)
     {
-        if  (   (!pOldProps[i].Name.equals(sPropDefaultControl))
-            &&  (!pOldProps[i].Name.equals(sPropLabelControl))
-            )
+        if ( pOldProps[i].Name != "DefaultControl" && pOldProps[i].Name != "LabelControl" )
         {
             // binary search
             Property* pResult = ::std::lower_bound(
@@ -998,7 +991,7 @@ try
     // for formatted fields (either old or new) we have some special treatments
     Reference< XServiceInfo > xSI( xOldProps, UNO_QUERY );
     bool bOldIsFormatted = xSI.is() && xSI->supportsService( sFormattedServiceName );
-    xSI = Reference< XServiceInfo >( xNewProps, UNO_QUERY );
+    xSI.set( xNewProps, UNO_QUERY );
     bool bNewIsFormatted = xSI.is() && xSI->supportsService( sFormattedServiceName );
 
     if (!bOldIsFormatted && !bNewIsFormatted)
@@ -1301,8 +1294,8 @@ OUString composeTableName( const Reference< XDatabaseMetaData >& _rxMetaData,
 OUString composeTableNameForSelect( const Reference< XConnection >& _rxConnection,
     const OUString& _rCatalog, const OUString& _rSchema, const OUString& _rName )
 {
-    bool bUseCatalogInSelect = isDataSourcePropertyEnabled( _rxConnection, OUString( "UseCatalogInSelect" ), true );
-    bool bUseSchemaInSelect = isDataSourcePropertyEnabled( _rxConnection, OUString( "UseSchemaInSelect" ), true );
+    bool bUseCatalogInSelect = isDataSourcePropertyEnabled( _rxConnection, "UseCatalogInSelect", true );
+    bool bUseSchemaInSelect = isDataSourcePropertyEnabled( _rxConnection, "UseSchemaInSelect", true );
 
     return impl_doComposeTableName(
         _rxConnection->getMetaData(),
@@ -1648,24 +1641,24 @@ namespace
         OParameterWrapper(const ::std::vector<bool, std::allocator<bool> >& _aSet,const Reference<XIndexAccess>& _xSource) : m_aSet(_aSet),m_xSource(_xSource){}
     private:
         // ::com::sun::star::container::XElementAccess
-        virtual Type SAL_CALL getElementType() throw(RuntimeException, std::exception) SAL_OVERRIDE
+        virtual Type SAL_CALL getElementType() throw(RuntimeException, std::exception) override
         {
             return m_xSource->getElementType();
         }
-        virtual sal_Bool SAL_CALL hasElements(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE
+        virtual sal_Bool SAL_CALL hasElements(  ) throw(RuntimeException, std::exception) override
         {
             if ( m_aSet.empty() )
                 return m_xSource->hasElements();
             return ::std::count(m_aSet.begin(),m_aSet.end(),false) != 0;
         }
         // ::com::sun::star::container::XIndexAccess
-        virtual sal_Int32 SAL_CALL getCount(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE
+        virtual sal_Int32 SAL_CALL getCount(  ) throw(RuntimeException, std::exception) override
         {
             if ( m_aSet.empty() )
                 return m_xSource->getCount();
             return ::std::count(m_aSet.begin(),m_aSet.end(),false);
         }
-        virtual Any SAL_CALL getByIndex( sal_Int32 Index ) throw(IndexOutOfBoundsException, WrappedTargetException, RuntimeException, std::exception) SAL_OVERRIDE
+        virtual Any SAL_CALL getByIndex( sal_Int32 Index ) throw(IndexOutOfBoundsException, WrappedTargetException, RuntimeException, std::exception) override
         {
             if ( m_aSet.empty() )
                 return m_xSource->getByIndex(Index);
@@ -1701,7 +1694,7 @@ void askForParameters(const Reference< XSingleSelectQueryComposer >& _xComposer,
     OSL_ENSURE(_rxHandler.is(),"dbtools::askForParameters XInteractionHandler is null!");
 
     // we have to set this here again because getCurrentSettingsComposer can force a setpropertyvalue
-    Reference<XParametersSupplier>  xParameters = Reference<XParametersSupplier> (_xComposer, UNO_QUERY);
+    Reference<XParametersSupplier>  xParameters(_xComposer, UNO_QUERY);
 
     Reference<XIndexAccess>  xParamsAsIndicies = xParameters.is() ? xParameters->getParameters() : Reference<XIndexAccess>();
     sal_Int32 nParamCount = xParamsAsIndicies.is() ? xParamsAsIndicies->getCount() : 0;
@@ -1917,7 +1910,7 @@ void setObjectWithInfo(const Reference<XParameters>& _xParams,
                             STR_UNKNOWN_PARA_TYPE,
                             "$position$", OUString::number(parameterIndex)
                          ) );
-                    ::dbtools::throwGenericSQLException(sError,NULL);
+                    ::dbtools::throwGenericSQLException(sError,nullptr);
                 }
         }
     }
@@ -1986,7 +1979,7 @@ void release(oslInterlockedCount& _refCount,
             {
                 ::osl::MutexGuard aGuard( rBHelper.rMutex );
                 xParent = _xInterface;
-                _xInterface = NULL;
+                _xInterface = nullptr;
             }
 
             // First dispose

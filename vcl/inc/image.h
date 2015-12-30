@@ -24,40 +24,6 @@
 
 #include <unordered_map>
 
-// - ImplImageBmp -
-
-class ImplImageBmp
-{
-public:
-
-                ImplImageBmp();
-                ~ImplImageBmp();
-
-    void        Create( const BitmapEx& rBmpEx, long nItemWidth, long nItemHeight,sal_uInt16 nInitSize );
-    void        ColorTransform();
-    void        Draw( OutputDevice* pDev, const Point& rPos, DrawImageFlags nStyle, const Size* pSize = NULL );
-
-private:
-
-    BitmapEx    maBmpEx;
-    BitmapEx    maDisabledBmpEx;
-    BitmapEx*   mpDisplayBmp;
-    Size        maSize;
-    sal_uInt8*      mpInfoAry;
-    sal_uInt16      mnSize;
-
-    void        ImplUpdateDisplayBmp( OutputDevice* pOutDev );
-    void        ImplUpdateDisabledBmpEx();
-
-private:
-    ImplImageBmp( const ImplImageBmp& ) SAL_DELETED_FUNCTION;
-    void operator=( const ImplImageBmp& ) SAL_DELETED_FUNCTION;
-};
-
-// - ImageTypes -
-
-enum ImageType { IMAGETYPE_BITMAP, IMAGETYPE_IMAGE };
-
 // - ImplImageList -
 
 struct ImageAryData
@@ -99,45 +65,23 @@ struct ImplImageList
     void RemoveImage( sal_uInt16 nPos );
 };
 
-// - ImplImageRefData -
-
-struct ImplImageRefData
-{
-    ImplImageList*  mpImplData;
-    sal_uInt16          mnIndex;
-
-                    ImplImageRefData() {}    // Um Warning zu umgehen
-                    ~ImplImageRefData();
-};
-
-// - ImpImageData -
-
-struct ImplImageData
-{
-    ImplImageBmp*   mpImageBitmap;
-    BitmapEx        maBmpEx;
-
-                    ImplImageData( const BitmapEx& rBmpEx );
-                    ~ImplImageData();
-
-    bool            IsEqual( const ImplImageData& rData );
-};
-
 // - ImplImage -
 
 struct ImplImage
 {
-    sal_uIntPtr         mnRefCount;
-    // TODO: use inheritance to get rid of meType+mpData
-    void*           mpData;
-    ImageType       meType;
+    sal_uIntPtr mnRefCount;
 
-                    ImplImage();
-                    ~ImplImage();
+    BitmapChecksum maBitmapChecksum;
+
+    std::unique_ptr<BitmapEx> mpBitmapEx;
+    BitmapEx maDisabledBitmapEx;
+
+    ImplImage();
+    ~ImplImage();
 
 private:
-            ImplImage( const ImplImage&) SAL_DELETED_FUNCTION;
-    void    operator=( const ImplImage&) SAL_DELETED_FUNCTION;
+    ImplImage(const ImplImage&) = delete;
+    void operator=(const ImplImage&) = delete;
 };
 
 #endif // INCLUDED_VCL_INC_IMAGE_H

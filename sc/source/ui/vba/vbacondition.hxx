@@ -23,10 +23,10 @@
 #include <vbahelper/vbahelperinterface.hxx>
 #include <com/sun/star/sheet/ConditionOperator.hpp>
 
-template< typename Ifc1 >
-class ScVbaCondition : public InheritedHelperInterfaceImpl1< Ifc1 >
+template< typename... Ifc >
+class ScVbaCondition : public InheritedHelperInterfaceWeakImpl< Ifc... >
 {
-typedef InheritedHelperInterfaceImpl1< Ifc1 > ScVbaCondition_BASE;
+typedef InheritedHelperInterfaceWeakImpl< Ifc... > ScVbaCondition_BASE;
 protected:
     css::uno::Reference< css::sheet::XCellRangeAddressable > mxAddressable;
     css::uno::Reference< css::sheet::XSheetCondition > mxSheetCondition;
@@ -35,12 +35,11 @@ public:
 
     static css::sheet::ConditionOperator retrieveAPIOperator( const css::uno::Any& _aOperator) throw ( css::script::BasicErrorException );
 
-    virtual OUString SAL_CALL Formula1( ) throw ( css::script::BasicErrorException, css::uno::RuntimeException );
-    virtual OUString SAL_CALL Formula2( ) throw ( css::script::BasicErrorException, css::uno::RuntimeException );
+    virtual OUString SAL_CALL Formula1( ) throw ( css::script::BasicErrorException, css::uno::RuntimeException ) SAL_OVERRIDE;
+    virtual OUString SAL_CALL Formula2( ) throw ( css::script::BasicErrorException, css::uno::RuntimeException ) SAL_OVERRIDE;
     virtual void setFormula1( const css::uno::Any& _aFormula1) throw ( css::script::BasicErrorException );
-    virtual void setFormula2( const css::uno::Any& _aFormula2) throw ( css::script::BasicErrorException );
     virtual sal_Int32 Operator(bool _bIncludeFormulaValue) throw ( css::script::BasicErrorException );
-    virtual sal_Int32 SAL_CALL Operator() throw ( css::script::BasicErrorException, css::uno::RuntimeException ) = 0;
+    virtual sal_Int32 SAL_CALL Operator() throw ( css::script::BasicErrorException, css::uno::RuntimeException ) SAL_OVERRIDE = 0;
 
 };
 #endif

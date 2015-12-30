@@ -43,7 +43,7 @@ namespace drawinglayer
 
             // as tooling, the process() implementation takes over API handling and calls this
             // virtual render method when the primitive implementation is BasePrimitive3D-based.
-            virtual void processBasePrimitive3D(const primitive3d::BasePrimitive3D& rCandidate) SAL_OVERRIDE;
+            virtual void processBasePrimitive3D(const primitive3d::BasePrimitive3D& rCandidate) override;
 
         public:
             explicit MinimalDephInViewExtractor(const geometry::ViewInformation3D& rViewInformation)
@@ -139,7 +139,7 @@ namespace drawinglayer
 } // end of namespace drawinglayer
 
 
-// changed to create values using VCs, Primitive3DSequence and ViewInformation3D to allow
+// changed to create values using VCs, Primitive3DContainer and ViewInformation3D to allow
 // removal of old 3D bucket geometry. There is one slight difference in the result, it's
 // in [0.0 .. 1.0] for Z-Depth since the scaling of the scene as 2D object is no longer
 // part of the 3D transformations. This could be added since the ViewContactOfE3dScene is
@@ -151,10 +151,10 @@ double getMinimalDepthInViewCoordinates(const E3dCompoundObject& rObject)
     // this is a E3dCompoundObject, so it cannot be a scene (which is a E3dObject).
     // Get primitive sequence using VC
     const sdr::contact::ViewContactOfE3d& rVCObject = static_cast< sdr::contact::ViewContactOfE3d& >(rObject.GetViewContact());
-    const drawinglayer::primitive3d::Primitive3DSequence aPrimitives = rVCObject.getViewIndependentPrimitive3DSequence();
+    const drawinglayer::primitive3d::Primitive3DContainer aPrimitives = rVCObject.getViewIndependentPrimitive3DContainer();
     double fRetval(DBL_MAX);
 
-    if(aPrimitives.hasElements())
+    if(!aPrimitives.empty())
     {
         const E3dScene* pScene = rObject.GetScene();
 

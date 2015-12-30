@@ -17,6 +17,12 @@
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
 
+#include <sal/config.h>
+
+#include <algorithm>
+#include <map>
+#include <vector>
+
 #include <vclhelperbufferdevice.hxx>
 #include <basegfx/range/b2drange.hxx>
 #include <vcl/bitmapex.hxx>
@@ -43,15 +49,20 @@ namespace
         // allocated/used buffers (remembered to allow deleting them in destructor)
         aBuffers            maUsedBuffers;
 
+        // remember what outputdevice was the template passed to VirtualDevice::Create
+        // so we can test if that OutputDevice was disposed before reusing a
+        // virtualdevice because that isn't safe to do at least for Gtk2
+        std::map< VclPtr<VirtualDevice>, VclPtr<OutputDevice> > maDeviceTemplates;
+
     public:
         VDevBuffer();
         virtual ~VDevBuffer();
 
-        VirtualDevice* alloc(OutputDevice& rOutDev, const Size& rSizePixel, bool bClear, sal_Int32 nBits);
+        VirtualDevice* alloc(OutputDevice& rOutDev, const Size& rSizePixel, bool bClear, bool bMonoChrome);
         void free(VirtualDevice& rDevice);
 
         // Timer virtuals
-        virtual void Invoke() SAL_OVERRIDE;
+        virtual void Invoke() override;
     };
 
     VDevBuffer::VDevBuffer()
@@ -80,24 +91,23 @@ namespace
         }
     }
 
-    VirtualDevice* VDevBuffer::alloc(OutputDevice& rOutDev, const Size& rSizePixel, bool bClear, sal_Int32 nBits)
+    VirtualDevice* VDevBuffer::alloc(OutputDevice& rOutDev, const Size& rSizePixel, bool bClear, bool bMonoChrome)
     {
         ::osl::MutexGuard aGuard(m_aMutex);
-        VirtualDevice* pRetval = 0;
+        VirtualDevice* pRetval = nullptr;
 
-        if (nBits == 0)
-            nBits = rOutDev.GetBitCount();
+        sal_Int32 nBits = bMonoChrome ? 1 : rOutDev.GetBitCount();
 
+        bool bOkay(false);
         if(!maFreeBuffers.empty())
         {
-            bool bOkay(false);
             aBuffers::iterator aFound(maFreeBuffers.end());
 
             for(aBuffers::iterator a(maFreeBuffers.begin()); a != maFreeBuffers.end(); ++a)
             {
-                OSL_ENSURE(*a, "Empty pointer in VDevBuffer (!)");
+                assert(*a && "Empty pointer in VDevBuffer (!)");
 
-                if(nBits == (*a)->GetBitCount())
+                if (nBits == (*a)->GetBitCount())
                 {
                     // candidate is valid due to bit depth
                     if(aFound != maFreeBuffers.end())
@@ -145,10 +155,25 @@ namespace
             {
                 pRetval = *aFound;
                 maFreeBuffers.erase(aFound);
+            }
+        }
 
-                if(bOkay)
+        if (pRetval)
+        {
+            // found a suitable cached virtual device, but the
+            // outputdevice it was based on has been disposed,
+            // drop it and create a new one instead as reusing
+            // such devices is unsafe under at least Gtk2
+            if (maDeviceTemplates[pRetval]->isDisposed())
+            {
+                maDeviceTemplates.erase(pRetval);
+                pRetval = nullptr;
+            }
+            else
+            {
+                if (bOkay)
                 {
-                    if(bClear)
+                    if (bClear)
                     {
                         pRetval->Erase(Rectangle(0, 0, rSizePixel.getWidth(), rSizePixel.getHeight()));
                     }
@@ -163,7 +188,8 @@ namespace
         // no success yet, create new buffer
         if(!pRetval)
         {
-            pRetval = VclPtr<VirtualDevice>::Create(rOutDev, nBits);
+            pRetval = VclPtr<VirtualDevice>::Create(rOutDev, bMonoChrome ? DeviceFormat::BITMASK : DeviceFormat::DEFAULT);
+            maDeviceTemplates[pRetval] = &rOutDev;
             pRetval->SetOutputSizePixel(rSizePixel, bClear);
         }
         else
@@ -197,7 +223,9 @@ namespace
 
         while(!maFreeBuffers.empty())
         {
-            (*(maFreeBuffers.end() - 1)).disposeAndClear();
+            aBuffers::iterator aLastOne(maFreeBuffers.end() - 1);
+            maDeviceTemplates.erase(*aLastOne);
+            aLastOne->disposeAndClear();
             maFreeBuffers.pop_back();
         }
     }
@@ -223,9 +251,9 @@ namespace drawinglayer
         const basegfx::B2DRange& rRange,
         bool bAddOffsetToMapping)
     :   mrOutDev(rOutDev),
-        mpContent(0),
-        mpMask(0),
-        mpAlpha(0)
+        mpContent(nullptr),
+        mpMask(nullptr),
+        mpAlpha(nullptr)
     {
         basegfx::B2DRange aRangePixel(rRange);
         aRangePixel.transform(mrOutDev.GetViewTransformation());
@@ -243,9 +271,9 @@ namespace drawinglayer
             // rendering, especially shadows, is broken on iOS unless
             // we pass 'true' here. Are virtual devices always de
             // facto cleared when created on other platforms?
-            mpContent = getVDevBuffer().alloc(mrOutDev, maDestPixel.GetSize(), true, 0);
+            mpContent = getVDevBuffer().alloc(mrOutDev, maDestPixel.GetSize(), true, false);
 #else
-            mpContent = getVDevBuffer().alloc(mrOutDev, maDestPixel.GetSize(), false, 0);
+            mpContent = getVDevBuffer().alloc(mrOutDev, maDestPixel.GetSize(), false, false);
 #endif
 
             // #i93485# assert when copying from window to VDev is used
@@ -361,7 +389,7 @@ namespace drawinglayer
         assert(mpContent && "impBufferDevice: No content, check isVisible() before accessing (!)");
         if (!mpMask)
         {
-            mpMask = getVDevBuffer().alloc(mrOutDev, maDestPixel.GetSize(), true, 1);
+            mpMask = getVDevBuffer().alloc(mrOutDev, maDestPixel.GetSize(), true, true);
             mpMask->SetMapMode(mpContent->GetMapMode());
 
             // do NOT copy AA flag for mask!
@@ -375,7 +403,7 @@ namespace drawinglayer
         OSL_ENSURE(mpContent, "impBufferDevice: No content, check isVisible() before accessing (!)");
         if(!mpAlpha)
         {
-            mpAlpha = getVDevBuffer().alloc(mrOutDev, maDestPixel.GetSize(), true, 0);
+            mpAlpha = getVDevBuffer().alloc(mrOutDev, maDestPixel.GetSize(), true, false);
             mpAlpha->SetMapMode(mpContent->GetMapMode());
 
             // copy AA flag for new target; masking needs to be smooth

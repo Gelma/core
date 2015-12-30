@@ -82,7 +82,7 @@ static bool SwWw8ReadScaling(long& rX, long& rY, tools::SvRef<SotStorage>& rSrc1
     //      0x2c, 0x30 scaling x,y in per thousand
     //      0x34, 0x38, 0x3c, 0x40 Crop Left, Top, Right, Bot in tw
 
-    tools::SvRef<SotStorageStream> xSrc3 = rSrc1->OpenSotStream( OUString("\3PIC"),
+    tools::SvRef<SotStorageStream> xSrc3 = rSrc1->OpenSotStream( "\3PIC",
         STREAM_STD_READ | StreamMode::NOCREATE);
     SotStorageStream* pS = xSrc3;
     pS->SetEndian( SvStreamEndian::LITTLE );
@@ -127,7 +127,7 @@ static bool SwWw8ReadScaling(long& rX, long& rY, tools::SvRef<SotStorage>& rSrc1
 static bool SwWw6ReadMetaStream(GDIMetaFile& rWMF, OLE_MFP* pMfp,
     tools::SvRef<SotStorage>& rSrc1)
 {
-    tools::SvRef<SotStorageStream> xSrc2 = rSrc1->OpenSotStream( OUString("\3META"),
+    tools::SvRef<SotStorageStream> xSrc2 = rSrc1->OpenSotStream( "\3META",
         STREAM_STD_READ | StreamMode::NOCREATE);
     SotStorageStream* pSt = xSrc2;
     pSt->SetEndian( SvStreamEndian::LITTLE );
@@ -156,7 +156,7 @@ static bool SwWw6ReadMetaStream(GDIMetaFile& rWMF, OLE_MFP* pMfp,
         OSL_ENSURE( !pSt, "+OLE: size of 0?" );
         return false;
     }
-    bool bOk = ReadWindowMetafile( *pSt, rWMF, NULL );   // read WMF
+    bool bOk = ReadWindowMetafile( *pSt, rWMF );   // read WMF
                     // *pSt >> aWMF  doesn't work without the placable header
     if (!bOk || pSt->GetError() || rWMF.GetActionSize() == 0)
     {
@@ -181,7 +181,7 @@ static bool SwWw6ReadMetaStream(GDIMetaFile& rWMF, OLE_MFP* pMfp,
 static bool SwWw6ReadMacPICTStream(Graphic& rGraph, tools::SvRef<SotStorage>& rSrc1)
 {
     // 03-META-stream does not exist. Maybe a 03-PICT?
-    tools::SvRef<SotStorageStream> xSrc4 = rSrc1->OpenSotStream(OUString("\3PICT"));
+    tools::SvRef<SotStorageStream> xSrc4 = rSrc1->OpenSotStream("\3PICT");
     SotStorageStream* pStp = xSrc4;
     pStp->SetEndian( SvStreamEndian::LITTLE );
     sal_uInt8 aTestA[10];        // Does the 01Ole-stream even exist?
@@ -202,11 +202,11 @@ SwFlyFrameFormat* SwWW8ImplReader::InsertOle(SdrOle2Obj &rObject,
     SfxObjectShell *pPersist = m_rDoc.GetPersist();
     OSL_ENSURE(pPersist, "No persist, cannot insert objects correctly");
     if (!pPersist)
-        return 0;
+        return nullptr;
 
-    SwFlyFrameFormat *pRet = 0;
+    SwFlyFrameFormat *pRet = nullptr;
 
-    SfxItemSet *pMathFlySet = 0;
+    SfxItemSet *pMathFlySet = nullptr;
     uno::Reference < embed::XClassifiedObject > xClass( rObject.GetObjRef(), uno::UNO_QUERY );
     if( xClass.is() )
     {
@@ -235,7 +235,7 @@ SwFlyFrameFormat* SwWW8ImplReader::InsertOle(SdrOle2Obj &rObject,
     if (bSuccess)
     {
         const SfxItemSet *pFlySet = pMathFlySet ? pMathFlySet : &rFlySet;
-        pRet = m_rDoc.getIDocumentContentOperations().InsertOLE(*m_pPaM, sNewName, rObject.GetAspect(), pFlySet, rGrfSet, 0);
+        pRet = m_rDoc.getIDocumentContentOperations().InsertOLE(*m_pPaM, sNewName, rObject.GetAspect(), pFlySet, rGrfSet, nullptr);
     }
     delete pMathFlySet;
     return pRet;
@@ -245,7 +245,7 @@ SwFrameFormat* SwWW8ImplReader::ImportOle(const Graphic* pGrf,
     const SfxItemSet* pFlySet, const SfxItemSet *pGrfSet, const Rectangle& aVisArea )
 {
     ::SetProgressState(m_nProgress, m_pDocShell);     // Update
-    SwFrameFormat* pFormat = 0;
+    SwFrameFormat* pFormat = nullptr;
 
     GrafikCtor();
 
@@ -253,7 +253,7 @@ SwFrameFormat* SwWW8ImplReader::ImportOle(const Graphic* pGrf,
     SdrObject* pRet = ImportOleBase(aGraph, pGrf, pFlySet, aVisArea );
 
     // create flyset
-    SfxItemSet* pTempSet = 0;
+    SfxItemSet* pTempSet = nullptr;
     if( !pFlySet )
     {
         pTempSet = new SfxItemSet( m_rDoc.GetAttrPool(), RES_FRMATR_BEGIN,
@@ -272,7 +272,7 @@ SwFrameFormat* SwWW8ImplReader::ImportOle(const Graphic* pGrf,
         const Size aSizeTwip = OutputDevice::LogicToLogic(
             aGraph.GetPrefSize(), aGraph.GetPrefMapMode(), MAP_TWIP );
 
-        pTempSet->Put( SwFormatFrmSize( ATT_FIX_SIZE, aSizeTwip.Width(),
+        pTempSet->Put( SwFormatFrameSize( ATT_FIX_SIZE, aSizeTwip.Width(),
             aSizeTwip.Height() ) );
         pTempSet->Put( SwFormatVertOrient( 0, text::VertOrientation::TOP, text::RelOrientation::FRAME ));
 
@@ -286,7 +286,7 @@ SwFrameFormat* SwWW8ImplReader::ImportOle(const Graphic* pGrf,
 
     if (pRet)       // OLE object was inserted
     {
-        if (pRet->ISA(SdrOle2Obj))
+        if (dynamic_cast< const SdrOle2Obj *>( pRet ) !=  nullptr)
         {
             pFormat = InsertOle(*static_cast<SdrOle2Obj*>(pRet), *pFlySet, pGrfSet);
             SdrObject::Free( pRet );        // we don't need this anymore
@@ -300,7 +300,7 @@ SwFrameFormat* SwWW8ImplReader::ImportOle(const Graphic* pGrf,
             )
     {
         pFormat = m_rDoc.getIDocumentContentOperations().Insert(*m_pPaM, OUString(), OUString(), &aGraph, pFlySet,
-            pGrfSet, NULL);
+            pGrfSet, nullptr);
     }
     delete pTempSet;
     return pFormat;
@@ -348,8 +348,7 @@ SdrObject* SwWW8ImplReader::ImportOleBase( Graphic& rGraph,
     aSrcStgName += OUString::number( m_nObjLocFc );
 
     tools::SvRef<SotStorage> xSrc0 = m_pStg->OpenSotStorage(OUString(SL::aObjectPool));
-    tools::SvRef<SotStorage> xSrc1 = xSrc0->OpenSotStorage( aSrcStgName,
-            STREAM_READWRITE| StreamMode::SHARE_DENYALL );
+    tools::SvRef<SotStorage> xSrc1 = xSrc0->OpenSotStorage( aSrcStgName );
 
     if (pGrf)
     {
@@ -381,14 +380,14 @@ SdrObject* SwWW8ImplReader::ImportOleBase( Graphic& rGraph,
 
     if (pFlySet)
     {
-        if (const SwFormatFrmSize* pSize =
-            static_cast<const SwFormatFrmSize*>(pFlySet->GetItem(RES_FRM_SIZE, false)))
+        if (const SwFormatFrameSize* pSize =
+            static_cast<const SwFormatFrameSize*>(pFlySet->GetItem(RES_FRM_SIZE, false)))
         {
             aRect.SetSize(pSize->GetSize());
         }
     }
 
-    SdrObject* pRet = 0;
+    SdrObject* pRet = nullptr;
 
     if (!(m_bIsHeader || m_bIsFooter))
     {
@@ -414,7 +413,7 @@ SdrObject* SwWW8ImplReader::ImportOleBase( Graphic& rGraph,
         {
             sal_uLong nOldPos = m_pDataStream->Tell();
             m_pDataStream->Seek(STREAM_SEEK_TO_END);
-            SvStream *pTmpData = 0;
+            SvStream *pTmpData = nullptr;
             if (m_nObjLocFc < m_pDataStream->Tell())
             {
                 pTmpData = m_pDataStream;
@@ -424,7 +423,7 @@ SdrObject* SwWW8ImplReader::ImportOleBase( Graphic& rGraph,
             sal_Int64 nAspect = embed::Aspects::MSOLE_CONTENT;
 
             {
-                tools::SvRef<SotStorageStream> xObjInfoSrc = xSrc1->OpenSotStream(OUString("\3ObjInfo"),
+                tools::SvRef<SotStorageStream> xObjInfoSrc = xSrc1->OpenSotStream("\3ObjInfo",
                     STREAM_STD_READ | StreamMode::NOCREATE );
                 if ( xObjInfoSrc.Is() && !xObjInfoSrc->GetError() )
                 {
@@ -438,7 +437,7 @@ SdrObject* SwWW8ImplReader::ImportOleBase( Graphic& rGraph,
             ErrCode nError = ERRCODE_NONE;
             pRet = SvxMSDffManager::CreateSdrOLEFromStorage(
                 aSrcStgName, xSrc0, m_pDocShell->GetStorage(), rGraph, aRect, aVisArea, pTmpData, nError,
-                SwMSDffManager::GetFilterFlags(), nAspect );
+                SwMSDffManager::GetFilterFlags(), nAspect, GetBaseURL());
             m_pDataStream->Seek( nOldPos );
         }
     }
@@ -491,18 +490,18 @@ void SwWW8ImplReader::Read_CRevisionMark(RedlineType_t eType,
         if( m_bVer67 )
         {
             m_pPlcxMan->HasCharSprm(69, aResult);
-            pSprmCIbstRMark = aResult.empty() ? 0 : aResult.back();
+            pSprmCIbstRMark = aResult.empty() ? nullptr : aResult.back();
             aResult.clear();
             m_pPlcxMan->HasCharSprm(70, aResult);
-            pSprmCDttmRMark = aResult.empty() ? 0 : aResult.back();
+            pSprmCDttmRMark = aResult.empty() ? nullptr : aResult.back();
         }
         else
         {
             m_pPlcxMan->HasCharSprm( bIns ? 0x4804 : 0x4863, aResult);
-            pSprmCIbstRMark = aResult.empty() ? 0 : aResult.back();
+            pSprmCIbstRMark = aResult.empty() ? nullptr : aResult.back();
             aResult.clear();
             m_pPlcxMan->HasCharSprm( bIns ? 0x6805 : NS_sprm::LN_CDttmRMarkDel, aResult);
-            pSprmCDttmRMark = aResult.empty() ? 0 : aResult.back();
+            pSprmCDttmRMark = aResult.empty() ? nullptr : aResult.back();
         }
     }
 

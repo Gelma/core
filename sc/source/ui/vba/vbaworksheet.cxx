@@ -161,9 +161,9 @@ openNewDoc(const OUString& aSheetName )
         uno::Reference <frame::XDesktop2 > xComponentLoader = frame::Desktop::create(xContext);
 
         uno::Reference<lang::XComponent > xComponent( xComponentLoader->loadComponentFromURL(
-                OUString( "private:factory/scalc" ),
-                OUString( "_blank" ), 0,
-                uno::Sequence < ::com::sun::star::beans::PropertyValue >() ) );
+                "private:factory/scalc",
+                "_blank", 0,
+                uno::Sequence < css::beans::PropertyValue >() ) );
         uno::Reference <sheet::XSpreadsheetDocument> xSpreadDoc( xComponent, uno::UNO_QUERY_THROW );
         if ( xSpreadDoc.is() )
         {

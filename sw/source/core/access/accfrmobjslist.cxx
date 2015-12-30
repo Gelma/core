@@ -31,24 +31,24 @@ SwAccessibleChildSList_const_iterator::SwAccessibleChildSList_const_iterator(
     const SwAccessibleChildSList& rLst,
     SwAccessibleMap& rAccMap )
     : rList( rLst ),
-      aCurr( rList.GetFrm().GetLower() ),
+      aCurr( rList.GetFrame().GetLower() ),
       nNextObj( 0 )
 {
-    if( !aCurr.GetSwFrm() )
+    if( !aCurr.GetSwFrame() )
     {
-        const SwFrm& rFrm = rList.GetFrm();
-        if( rFrm.IsPageFrm() )
+        const SwFrame& rFrame = rList.GetFrame();
+        if( rFrame.IsPageFrame() )
         {
-            const SwPageFrm& rPgFrm = static_cast< const SwPageFrm& >( rFrm );
-            const SwSortedObjs *pObjs = rPgFrm.GetSortedObjs();
+            const SwPageFrame& rPgFrame = static_cast< const SwPageFrame& >( rFrame );
+            const SwSortedObjs *pObjs = rPgFrame.GetSortedObjs();
             if( pObjs && pObjs->size() )
             {
                 aCurr = (*pObjs)[nNextObj++]->GetDrawObj();
             }
         }
-        else if( rFrm.IsTextFrm() )
+        else if( rFrame.IsTextFrame() )
         {
-            const SwSortedObjs *pObjs = rFrm.GetDrawObjs();
+            const SwSortedObjs *pObjs = rFrame.GetDrawObjs();
             if ( pObjs && pObjs->size() )
             {
                 aCurr = (*pObjs)[nNextObj++]->GetDrawObj();
@@ -56,13 +56,13 @@ SwAccessibleChildSList_const_iterator::SwAccessibleChildSList_const_iterator(
                 {
                     aCurr = (nNextObj < pObjs->size())
                             ? (*pObjs)[nNextObj++]->GetDrawObj()
-                            : static_cast< const SdrObject *>( 0 );
+                            : static_cast< const SdrObject *>( nullptr );
                 }
             }
             if ( !aCurr.IsValid() )
             {
                 ::rtl::Reference < SwAccessibleContext > xAccImpl =
-                                    rAccMap.GetContextImpl( &rFrm, false );
+                                    rAccMap.GetContextImpl( &rFrame, false );
                 if( xAccImpl.is() )
                 {
                     SwAccessibleContext* pAccImpl = xAccImpl.get();
@@ -92,10 +92,10 @@ SwAccessibleChildSList_const_iterator& SwAccessibleChildSList_const_iterator::ne
     {
         bNextTaken = false;
     }
-    else if( aCurr.GetSwFrm() )
+    else if( aCurr.GetSwFrame() )
     {
-        aCurr = aCurr.GetSwFrm()->GetNext();
-        if( !aCurr.GetSwFrm() )
+        aCurr = aCurr.GetSwFrame()->GetNext();
+        if( !aCurr.GetSwFrame() )
         {
             bNextTaken = false;
         }
@@ -103,32 +103,32 @@ SwAccessibleChildSList_const_iterator& SwAccessibleChildSList_const_iterator::ne
 
     if( !bNextTaken )
     {
-        const SwFrm& rFrm = rList.GetFrm();
-        if( rFrm.IsPageFrm() )
+        const SwFrame& rFrame = rList.GetFrame();
+        if( rFrame.IsPageFrame() )
         {
-            const SwPageFrm& rPgFrm = static_cast< const SwPageFrm& >( rFrm );
-            const SwSortedObjs *pObjs = rPgFrm.GetSortedObjs();
+            const SwPageFrame& rPgFrame = static_cast< const SwPageFrame& >( rFrame );
+            const SwSortedObjs *pObjs = rPgFrame.GetSortedObjs();
             aCurr = ( pObjs && nNextObj < pObjs->size() )
                     ? (*pObjs)[nNextObj++]->GetDrawObj()
-                    : static_cast< const SdrObject *>( 0 );
+                    : static_cast< const SdrObject *>( nullptr );
         }
-        else if( rFrm.IsTextFrm() )
+        else if( rFrame.IsTextFrame() )
         {
-            const SwSortedObjs* pObjs = rFrm.GetDrawObjs();
+            const SwSortedObjs* pObjs = rFrame.GetDrawObjs();
             const size_t nObjsCount = pObjs ? pObjs->size() : 0;
             aCurr = ( pObjs && nNextObj < nObjsCount )
                     ? (*pObjs)[nNextObj++]->GetDrawObj()
-                    : static_cast< const SdrObject *>( 0 );
+                    : static_cast< const SdrObject *>( nullptr );
             while( aCurr.IsValid() && !aCurr.IsBoundAsChar() )
             {
                 aCurr = ( nNextObj < nObjsCount )
                         ? (*pObjs)[nNextObj++]->GetDrawObj()
-                        : static_cast< const SdrObject *>( 0 );
+                        : static_cast< const SdrObject *>( nullptr );
             }
             if ( !aCurr.IsValid() )
             {
                 ::rtl::Reference < SwAccessibleContext > xAccImpl =
-                                    rList.GetAccMap().GetContextImpl( &rFrm, false );
+                                    rList.GetAccMap().GetContextImpl( &rFrame, false );
                 if( xAccImpl.is() )
                 {
                     SwAccessibleContext* pAccImpl = xAccImpl.get();

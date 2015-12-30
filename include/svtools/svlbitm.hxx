@@ -62,14 +62,14 @@ private:
     Link<SvLBoxButtonData*,void> aLink;
     long                    nWidth;
     long                    nHeight;
-    SvLBoxButtonData_Impl*  pImpl;
+    std::unique_ptr<SvLBoxButtonData_Impl> pImpl;
     bool                    bDataOk;
     SvButtonState           eState;
     std::vector<Image>      aBmps;  // indices s. constants BMP_ ....
 
     SVT_DLLPRIVATE void     SetWidthAndHeight();
     SVT_DLLPRIVATE void     InitData( bool bImagesFromDefault,
-                                      bool _bRadioBtn, const Control* pControlForSettings = NULL );
+                                      bool _bRadioBtn, const Control* pControlForSettings = nullptr );
 public:
                             // include creating default images (CheckBox or RadioButton)
                             SvLBoxButtonData( const Control* pControlForSettings );
@@ -93,7 +93,7 @@ public:
     void                    SetImage(SvBmp nIndex, const Image& aImage) { aBmps[(int)nIndex] = aImage; }
     Image&                  GetImage(SvBmp nIndex) { return aBmps[(int)nIndex]; }
 
-    void                    SetDefaultImages( const Control* pControlForSettings = NULL );
+    void                    SetDefaultImages( const Control* pControlForSettings = nullptr );
                                 // set images according to the color scheme of the Control
                                 // pControlForSettings == NULL: settings are taken from Application
     bool                    HasDefaultImages() const;
@@ -111,10 +111,10 @@ public:
     SvLBoxString();
     virtual ~SvLBoxString();
 
-    virtual sal_uInt16 GetType() const SAL_OVERRIDE;
+    virtual sal_uInt16 GetType() const override;
     virtual void InitViewData(SvTreeListBox* pView,
                               SvTreeListEntry* pEntry,
-                              SvViewDataItem* pViewData) SAL_OVERRIDE;
+                              SvViewDataItem* pViewData) override;
 
     OUString GetText() const
     {
@@ -128,10 +128,10 @@ public:
     virtual void Paint(const Point& rPos, SvTreeListBox& rOutDev,
                        vcl::RenderContext& rRenderContext,
                        const SvViewDataEntry* pView,
-                       const SvTreeListEntry& rEntry) SAL_OVERRIDE;
+                       const SvTreeListEntry& rEntry) override;
 
-    virtual SvLBoxItem* Create() const SAL_OVERRIDE;
-    virtual void Clone(SvLBoxItem* pSource) SAL_OVERRIDE;
+    virtual SvLBoxItem* Create() const override;
+    virtual void Clone(SvLBoxItem* pSource) override;
 };
 
 class SvLBoxBmp : public SvLBoxItem
@@ -140,12 +140,12 @@ class SvLBoxBmp : public SvLBoxItem
 public:
     SvLBoxBmp();
     virtual ~SvLBoxBmp();
-    virtual sal_uInt16 GetType() const SAL_OVERRIDE;
-    virtual void InitViewData( SvTreeListBox*,SvTreeListEntry*,SvViewDataItem* ) SAL_OVERRIDE;
+    virtual sal_uInt16 GetType() const override;
+    virtual void InitViewData( SvTreeListBox*,SvTreeListEntry*,SvViewDataItem* ) override;
     virtual void Paint(const Point& rPos, SvTreeListBox& rOutDev,  vcl::RenderContext& rRenderContext,
-                       const SvViewDataEntry* pView, const SvTreeListEntry& rEntry) SAL_OVERRIDE;
-    virtual SvLBoxItem* Create() const SAL_OVERRIDE;
-    virtual void Clone( SvLBoxItem* pSource ) SAL_OVERRIDE;
+                       const SvViewDataEntry* pView, const SvTreeListEntry& rEntry) override;
+    virtual SvLBoxItem* Create() const override;
+    virtual void Clone( SvLBoxItem* pSource ) override;
 };
 
 
@@ -170,20 +170,20 @@ public:
     virtual ~SvLBoxButton();
     virtual void InitViewData(SvTreeListBox* pView,
                               SvTreeListEntry* pEntry,
-                              SvViewDataItem* pViewData) SAL_OVERRIDE;
+                              SvViewDataItem* pViewData) override;
 
-    virtual sal_uInt16 GetType() const SAL_OVERRIDE;
+    virtual sal_uInt16 GetType() const override;
     bool ClickHdl(SvTreeListBox* pView, SvTreeListEntry* );
 
     virtual void Paint(const Point& rPos,
                        SvTreeListBox& rOutDev,
                        vcl::RenderContext& rRenderContext,
                        const SvViewDataEntry* pView,
-                       const SvTreeListEntry& rEntry) SAL_OVERRIDE;
+                       const SvTreeListEntry& rEntry) override;
 
-    virtual SvLBoxItem* Create() const SAL_OVERRIDE;
+    virtual SvLBoxItem* Create() const override;
 
-    virtual void Clone(SvLBoxItem* pSource) SAL_OVERRIDE;
+    virtual void Clone(SvLBoxItem* pSource) override;
     SvItemStateFlags GetButtonFlags() const
     {
         return nItemFlags;
@@ -254,18 +254,18 @@ public:
     SvLBoxContextBmp();
     virtual ~SvLBoxContextBmp();
 
-    virtual sal_uInt16 GetType() const SAL_OVERRIDE;
+    virtual sal_uInt16 GetType() const override;
     virtual void InitViewData(SvTreeListBox* pView,
                               SvTreeListEntry* pEntry,
-                              SvViewDataItem* pViewData) SAL_OVERRIDE;
+                              SvViewDataItem* pViewData) override;
     virtual void Paint(const Point& rPos,
                        SvTreeListBox& rOutDev,
                        vcl::RenderContext& rRenderContext,
                        const SvViewDataEntry* pView,
-                       const SvTreeListEntry& rEntry) SAL_OVERRIDE;
+                       const SvTreeListEntry& rEntry) override;
 
-    virtual SvLBoxItem* Create() const SAL_OVERRIDE;
-    virtual void Clone(SvLBoxItem* pSource) SAL_OVERRIDE;
+    virtual SvLBoxItem* Create() const override;
+    virtual void Clone(SvLBoxItem* pSource) override;
 
 
     bool SetModeImages(const Image& rBitmap1, const Image& rBitmap2);

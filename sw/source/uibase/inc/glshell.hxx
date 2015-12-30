@@ -27,10 +27,9 @@ class SwGlosDocShell : public SwDocShell
     OUString          aGroupName;
 
 protected:
-    virtual bool Save() SAL_OVERRIDE;
+    virtual bool Save() override;
 
 public:
-    TYPEINFO_OVERRIDE();
     SFX_DECL_INTERFACE(SW_GLOSDOCSHELL)
 
 private:
@@ -58,10 +57,9 @@ class SwWebGlosDocShell : public SwWebDocShell
     OUString          aGroupName;
 
 protected:
-    virtual bool Save() SAL_OVERRIDE;
+    virtual bool Save() override;
 
 public:
-    TYPEINFO_OVERRIDE();
     SFX_DECL_INTERFACE(SW_WEBGLOSDOCSHELL)
 
 private:

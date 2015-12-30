@@ -22,6 +22,7 @@
 #include <svx/svdobj.hxx>
 #include "sdpage.hxx"
 #include <tools/debug.hxx>
+#include <tools/stream.hxx>
 #include <svx/unoapi.hxx>
 #include "EffectMigration.hxx"
 #include <CustomAnimationPreset.hxx>
@@ -198,7 +199,7 @@ void Ppt97Animation::SetAnimateAssociatedShape( bool bAnimate )
         {
             //this case is not 100% correct -> feel free to complete
             //i consider this case as seldom and not that problematic and a simple correct fix is not in sight
-            DBG_WARNING("you tried to deselect the animation of the form for random animation-> this has been refused");
+            SAL_INFO("sd", "you tried to deselect the animation of the form for random animation-> this has been refused");
             return;
         }
 
@@ -212,7 +213,7 @@ void Ppt97Animation::SetAnimateAssociatedShape( bool bAnimate )
     }
 }
 
-sal_Int16 Ppt97Animation::GetEffectNodeType() const //see com::sun::star::presentation::EffectNodeType
+sal_Int16 Ppt97Animation::GetEffectNodeType() const //see css::presentation::EffectNodeType
 {
     sal_Int16 nRet = presentation::EffectNodeType::ON_CLICK;
     if( m_aAtom.nFlags & 0x04 )

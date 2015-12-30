@@ -162,8 +162,8 @@ public:
     virtual void        SetControlDontKnow( bool bSet ) = 0;
 
 private:
-                        ControlWrapperBase( const ControlWrapperBase& ) SAL_DELETED_FUNCTION;
-    ControlWrapperBase& operator=( const ControlWrapperBase& ) SAL_DELETED_FUNCTION;
+                        ControlWrapperBase( const ControlWrapperBase& ) = delete;
+    ControlWrapperBase& operator=( const ControlWrapperBase& ) = delete;
 };
 
 
@@ -200,7 +200,7 @@ public:
 
     /** Enables, disables, shows, or hides the control.
         @descr  Does nothing, if the corresponding parameter is TRISTATE_INDET. */
-    virtual void        ModifyControl( TriState eEnable, TriState eShow ) SAL_OVERRIDE;
+    virtual void        ModifyControl( TriState eEnable, TriState eShow ) override;
 
     /** Derived classes return the value the control contains. */
     virtual ValueT      GetControlValue() const = 0;
@@ -225,11 +225,11 @@ class SFX2_DLLPUBLIC DummyWindowWrapper:
 public:
     explicit            DummyWindowWrapper( vcl::Window& rWindow );
 
-    virtual bool        IsControlDontKnow() const SAL_OVERRIDE;
-    virtual void        SetControlDontKnow( bool ) SAL_OVERRIDE;
+    virtual bool        IsControlDontKnow() const override;
+    virtual void        SetControlDontKnow( bool ) override;
 
-    virtual void*       GetControlValue() const SAL_OVERRIDE;
-    virtual void        SetControlValue( void* ) SAL_OVERRIDE;
+    virtual void*       GetControlValue() const override;
+    virtual void        SetControlValue( void* ) override;
 };
 
 
@@ -241,11 +241,11 @@ class SFX2_DLLPUBLIC CheckBoxWrapper:
 public:
     explicit            CheckBoxWrapper( CheckBox& rCheckBox );
 
-    virtual bool        IsControlDontKnow() const SAL_OVERRIDE;
-    virtual void        SetControlDontKnow( bool bSet ) SAL_OVERRIDE;
+    virtual bool        IsControlDontKnow() const override;
+    virtual void        SetControlDontKnow( bool bSet ) override;
 
-    virtual bool        GetControlValue() const SAL_OVERRIDE;
-    virtual void        SetControlValue( bool bValue ) SAL_OVERRIDE;
+    virtual bool        GetControlValue() const override;
+    virtual void        SetControlValue( bool bValue ) override;
 };
 
 
@@ -262,11 +262,11 @@ public:
 
     virtual ~ColorListBoxWrapper();
 
-    virtual bool        IsControlDontKnow() const SAL_OVERRIDE;
-    virtual void        SetControlDontKnow( bool bSet ) SAL_OVERRIDE;
+    virtual bool        IsControlDontKnow() const override;
+    virtual void        SetControlDontKnow( bool bSet ) override;
 
-    virtual Color       GetControlValue() const SAL_OVERRIDE;
-    virtual void        SetControlValue( Color aColor ) SAL_OVERRIDE;
+    virtual Color       GetControlValue() const override;
+    virtual void        SetControlValue( Color aColor ) override;
 };
 
 
@@ -279,20 +279,16 @@ public:
     inline explicit     NumericFieldWrapper( NumericField& rField ) :
                             SingleControlWrapper< NumericField, ValueT >( rField ) {}
 
-    virtual bool        IsControlDontKnow() const;
-    virtual void        SetControlDontKnow( bool bSet );
+    virtual bool        IsControlDontKnow() const SAL_OVERRIDE;
+    virtual void        SetControlDontKnow( bool bSet ) SAL_OVERRIDE;
 
-    virtual ValueT      GetControlValue() const;
-    virtual void        SetControlValue( ValueT nValue );
+    virtual ValueT      GetControlValue() const SAL_OVERRIDE;
+    virtual void        SetControlValue( ValueT nValue ) SAL_OVERRIDE;
 };
 
 
 
-typedef NumericFieldWrapper< sal_uInt16 > UInt16NumericFieldWrapper;
-typedef NumericFieldWrapper< sal_uInt32 > UInt32NumericFieldWrapper;
 
-typedef NumericFieldWrapper< sal_uInt16 > UShortNumericFieldWrapper;
-typedef NumericFieldWrapper< sal_uIntPtr >  ULongNumericFieldWrapper;
 
 
 
@@ -309,24 +305,16 @@ public:
     inline explicit     MetricFieldWrapper( MetricField& rField, FieldUnit eUnit = FUNIT_NONE ) :
                             SingleControlWrapper< MetricField, ValueT >( rField ), meUnit( eUnit ) {}
 
-    virtual bool        IsControlDontKnow() const;
-    virtual void        SetControlDontKnow( bool bSet );
+    virtual bool        IsControlDontKnow() const SAL_OVERRIDE;
+    virtual void        SetControlDontKnow( bool bSet ) SAL_OVERRIDE;
 
-    virtual ValueT      GetControlValue() const;
-    virtual void        SetControlValue( ValueT nValue );
+    virtual ValueT      GetControlValue() const SAL_OVERRIDE;
+    virtual void        SetControlValue( ValueT nValue ) SAL_OVERRIDE;
 
 private:
     FieldUnit           meUnit;
 };
 
-
-
-typedef MetricFieldWrapper< sal_Int16 >  Int16MetricFieldWrapper;
-typedef MetricFieldWrapper< sal_uInt16 > UInt16MetricFieldWrapper;
-typedef MetricFieldWrapper< sal_uInt32 > UInt32MetricFieldWrapper;
-
-typedef MetricFieldWrapper< sal_uInt16 > UShortMetricFieldWrapper;
-typedef MetricFieldWrapper< sal_uIntPtr >  ULongMetricFieldWrapper;
 
 
 
@@ -353,22 +341,18 @@ public:
     inline explicit     ListBoxWrapper( ListBox& rListBox, const MapEntryType* pMap = 0 ) :
                             SingleControlWrapper< ListBox, ValueT >( rListBox ), MapperType( WRAPPER_LISTBOX_ENTRY_NOTFOUND, pMap ) {}
 
-    virtual bool        IsControlDontKnow() const
+    virtual bool        IsControlDontKnow() const SAL_OVERRIDE
                             { return this->GetControl().GetSelectEntryCount() == 0; }
-    virtual void        SetControlDontKnow( bool bSet )
+    virtual void        SetControlDontKnow( bool bSet ) SAL_OVERRIDE
                             { if( bSet ) this->GetControl().SetNoSelection(); }
 
-    virtual ValueT      GetControlValue() const;
-    virtual void        SetControlValue( ValueT nValue );
+    virtual ValueT      GetControlValue() const SAL_OVERRIDE;
+    virtual void        SetControlValue( ValueT nValue ) SAL_OVERRIDE;
 };
 
 
 
-typedef ListBoxWrapper< sal_uInt16 > UInt16ListBoxWrapper;
-typedef ListBoxWrapper< sal_uInt32 > UInt32ListBoxWrapper;
 
-typedef ListBoxWrapper< sal_uInt16 > UShortListBoxWrapper;
-typedef ListBoxWrapper< sal_uIntPtr >  ULongListBoxWrapper;
 
 
 
@@ -395,22 +379,18 @@ public:
     inline explicit     ValueSetWrapper( ValueSet& rValueSet, const MapEntryType* pMap = 0 ) :
                             SingleControlWrapper< ValueSet, ValueT >( rValueSet ), MapperType( WRAPPER_VALUESET_ITEM_NOTFOUND, pMap ) {}
 
-    virtual bool        IsControlDontKnow() const
+    virtual bool        IsControlDontKnow() const SAL_OVERRIDE
                             { return this->GetControl().IsNoSelection(); }
-    virtual void        SetControlDontKnow( bool bSet )
+    virtual void        SetControlDontKnow( bool bSet ) SAL_OVERRIDE
                             { if( bSet ) this->GetControl().SetNoSelection(); }
 
-    virtual ValueT      GetControlValue() const;
-    virtual void        SetControlValue( ValueT nValue );
+    virtual ValueT      GetControlValue() const SAL_OVERRIDE;
+    virtual void        SetControlValue( ValueT nValue ) SAL_OVERRIDE;
 };
 
 
 
-typedef ValueSetWrapper< sal_uInt16 > UInt16ValueSetWrapper;
-typedef ValueSetWrapper< sal_uInt32 > UInt32ValueSetWrapper;
 
-typedef ValueSetWrapper< sal_uInt16 > UShortValueSetWrapper;
-typedef ValueSetWrapper< sal_uIntPtr >  ULongValueSetWrapper;
 
 
 // Multi control wrappers
@@ -436,12 +416,12 @@ public:
     void                RegisterControlWrapper( ControlWrapperBase& rWrapper );
 
     /** Enables, disables, shows, or hides the registered controls. */
-    virtual void        ModifyControl( TriState eEnable, TriState eShow ) SAL_OVERRIDE;
+    virtual void        ModifyControl( TriState eEnable, TriState eShow ) override;
 
     /** Returns true if all registered controls are in "don't know" state. */
-    virtual bool        IsControlDontKnow() const SAL_OVERRIDE;
+    virtual bool        IsControlDontKnow() const override;
     /** Sets all registered controls to "don't know" state. */
-    virtual void        SetControlDontKnow( bool bSet ) SAL_OVERRIDE;
+    virtual void        SetControlDontKnow( bool bSet ) override;
 
 private:
     std::unique_ptr< MultiControlWrapperHelper_Impl > mxImpl;

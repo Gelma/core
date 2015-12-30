@@ -33,6 +33,7 @@
 
 #include <comphelper/string.hxx>
 #include <comphelper/stl_types.hxx>
+#include <comphelper/sequence.hxx>
 
 #include <com/sun/star/i18n/BreakIterator.hpp>
 #include <com/sun/star/i18n/CharType.hpp>
@@ -265,11 +266,20 @@ uno::Sequence< OUString >
           vec.push_back(kw);
       }
     } while (idx >= 0);
-    uno::Sequence< OUString > kws(vec.size());
-    std::copy(vec.begin(), vec.end(), kws.begin());
-    return kws;
+    return comphelper::containerToSequence(vec);
 }
 
+OString join(const OString& rSeparator, const std::vector<OString>& rSequence)
+{
+    OStringBuffer aBuffer;
+    for (size_t i = 0; i < rSequence.size(); ++i)
+    {
+        if (i != 0)
+            aBuffer.append(rSeparator);
+        aBuffer.append(rSequence[i]);
+    }
+    return aBuffer.makeStringAndClear();
+}
 
 sal_Int32 compareNatural( const OUString & rLHS, const OUString & rRHS,
     const uno::Reference< i18n::XCollator > &rCollator,

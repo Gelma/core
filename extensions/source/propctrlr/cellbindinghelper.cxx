@@ -66,7 +66,7 @@ namespace pcr
             OUString m_sReference;
 
         public:
-            StringCompare( const OUString& _rReference ) : m_sReference( _rReference ) { }
+            explicit StringCompare( const OUString& _rReference ) : m_sReference( _rReference ) { }
 
             inline bool operator()( const OUString& _rCompare )
             {
@@ -306,7 +306,6 @@ namespace pcr
             OSL_ENSURE( xBindingProps.is() || !_rxBinding.is(), "CellBindingHelper::getAddressFromCellBinding: no property set for the binding!" );
             if ( xBindingProps.is() )
             {
-                CellAddress aAddress;
                 bReturn = (bool)( xBindingProps->getPropertyValue( PROPERTY_BOUND_CELL ) >>= _rAddress );
             }
         }

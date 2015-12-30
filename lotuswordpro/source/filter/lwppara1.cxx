@@ -180,7 +180,7 @@ LwpPara* LwpPara::GetParent()
             pPara = dynamic_cast<LwpPara*>(pPara->GetPrevious().obj().get());
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 /**
@@ -197,7 +197,7 @@ void LwpPara::GetParaNumber(sal_uInt16 nPosition, ParaNumbering* pParaNumbering)
     }
     sal_uInt16 nCurrentPos = 0;
 
-    LwpFrib* pPreFrib = NULL;
+    LwpFrib* pPreFrib = nullptr;
     LwpFrib* pFrib = m_Fribs.GetFribs();
     if (!pFrib)
     {
@@ -220,7 +220,7 @@ void LwpPara::GetParaNumber(sal_uInt16 nPosition, ParaNumbering* pParaNumbering)
                     if (pPreFrib)
                     {
                         if ((pPreFrib->GetType() == FRIB_TAG_TEXT) &&
-                            (pPreFrib->GetModifiers()->aTxtAttrOverride.GetHideLevels() == nHideLevels))
+                            (pPreFrib->GetModifiers() && pPreFrib->GetModifiers()->aTxtAttrOverride.GetHideLevels() == nHideLevels))
                         {
                             pParaNumbering->pPrefix = static_cast<LwpFribText*>(pPreFrib);
                         }
@@ -237,7 +237,7 @@ void LwpPara::GetParaNumber(sal_uInt16 nPosition, ParaNumbering* pParaNumbering)
                         {
                             if (
                                  (pFrib->GetNext() && pFrib->GetNext()->GetType() == FRIB_TAG_TEXT) ||
-                                 (pFrib->GetModifiers()->aTxtAttrOverride.GetHideLevels() == nHideLevels)
+                                 (pFrib->GetModifiers() && pFrib->GetModifiers()->aTxtAttrOverride.GetHideLevels() == nHideLevels)
                                )
                             {
                                 pParaNumbering->pSuffix = static_cast<LwpFribText*>(pFrib);
@@ -577,7 +577,7 @@ LwpParaProperty* LwpPara::GetProperty(sal_uInt32 nPropType)
         pProps = pProps->GetNext();
 
     }
-    return NULL;
+    return nullptr;
 }
 
 /**************************************************************************
@@ -590,7 +590,7 @@ LwpTabOverride* LwpPara::GetLocalTabOverride()
     {
         return static_cast<LwpParaTabRackProperty*>(pProp)->GetTab();
     }
-    return NULL;
+    return nullptr;
 }
 
 /**
@@ -618,8 +618,10 @@ bool LwpPara::ComparePagePosition(LwpVirtualLayout * pPreLayout, LwpVirtualLayou
 bool LwpPara::IsInCell()
 {
     LwpStory *pStory = GetStory();
-    LwpVirtualLayout* pLayout = pStory ? pStory->GetLayout(NULL) : NULL;
-    if(pLayout && pLayout->IsCell())
+    if (!pStory)
+        return false;
+    rtl::Reference<LwpVirtualLayout> xLayout(pStory->GetLayout(nullptr));
+    if (xLayout.is() && xLayout->IsCell())
         return true;
     return false;
 }

@@ -76,7 +76,7 @@ public final class CharacterBaseParagraphMerge implements NodeMergeAlgorithm {
 
             int extraChar = 0;
             int orgDiffCount = diffCount;
-            TextNodeEntry orgTextNode = (orgNodeList.get(i));
+            TextNodeEntry orgTextNode = orgNodeList.get(i);
 
             Debug.log(Debug.INFO, "checking node " + (i + 1) + " of " + numNode);
 
@@ -230,8 +230,6 @@ public final class CharacterBaseParagraphMerge implements NodeMergeAlgorithm {
                         newTextPosition += cacheLength;
 
                         // reset the markers
-                        lastDiffPosition = -1;
-                        lastDiffOperation = Difference.UNCHANGE;
                         cacheLength = 0;
                     }
                 }

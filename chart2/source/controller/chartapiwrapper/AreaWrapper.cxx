@@ -62,7 +62,7 @@ private:
         ::std::sort( aProperties.begin(), aProperties.end(),
                      ::chart::PropertyNameLess() );
 
-        return ::chart::ContainerHelper::ContainerToSequence( aProperties );
+        return comphelper::containerToSequence( aProperties );
     }
 };
 
@@ -151,7 +151,7 @@ Reference< beans::XPropertySet > AreaWrapper::getInnerPropertySet()
     if( xChartDoc.is() )
         return xChartDoc->getPageBackground();
     OSL_FAIL("AreaWrapper::getInnerPropertySet() is NULL");
-    return 0;
+    return nullptr;
 }
 
 const Sequence< beans::Property >& AreaWrapper::getPropertySequence()

@@ -348,9 +348,9 @@
 
 #define SID_INSERT_OBJECT                   (SID_SFX_START + 561)
 #define SID_INSERT_FLOATINGFRAME            (SID_SFX_START + 563)
-#define SID_INSERT_PLUGIN                   (SID_SFX_START + 672)
-#define SID_INSERT_SOUND                    (SID_SFX_START + 676)
-#define SID_INSERT_VIDEO                    (SID_SFX_START + 677)
+// FREE                                     (SID_SFX_START + 672)
+// FREE                                     (SID_SFX_START + 676)
+// FREE                                     (SID_SFX_START + 677)
 
 #define SID_HYPERLINK_DIALOG                (SID_SFX_START + 678)
 
@@ -574,7 +574,6 @@
 #define SID_HYPERLINK_SETLINK               (SID_SVX_START + 362)
 #define SID_INFOBAR                         (SID_SVX_START + 365)
 #define SID_NAVIGATOR                       (SID_SVX_START + 366)
-#define SID_TASKPANE                        (SID_SVX_START + 370)
 #define SID_ZOOM_NEXT                       (SID_SVX_START + 402)
 #define SID_ZOOM_PREV                       (SID_SVX_START + 403)
 #define SID_INET_DLG                        (SID_SVX_START + 416)
@@ -586,6 +585,7 @@
 #define SID_ATTR_CHAR_COLOR2                (SID_SVX_START + 537)
 #define SID_COMP_BIBLIOGRAPHY               (SID_SVX_START + 880)
 #define SID_ADDRESS_DATA_SOURCE             (SID_SVX_START + 934)
+#define SID_OPEN_SMARTTAGOPTIONS            (SID_SVX_START + 1062)
 
 #define FID_SVX_START                       (SID_LIB_START + 500)
 #define FID_SEARCH_NOW                      (FID_SVX_START + 2)

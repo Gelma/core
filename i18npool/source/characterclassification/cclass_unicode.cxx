@@ -37,9 +37,9 @@ namespace com { namespace sun { namespace star { namespace i18n {
 //  ----------------------------------------------------;
 
 cclass_Unicode::cclass_Unicode( const uno::Reference < XComponentContext >& rxContext ) : m_xContext( rxContext ),
-        pTable( NULL ),
-        pStart( NULL ),
-        pCont( NULL ),
+        pTable( nullptr ),
+        pStart( nullptr ),
+        pCont( nullptr ),
         nStartTypes( 0 ),
         nContTypes( 0 ),
         eState( ssGetChar ),
@@ -288,8 +288,7 @@ sal_Bool SAL_CALL cclass_Unicode::supportsService(const OUString& rServiceName) 
 
 Sequence< OUString > SAL_CALL cclass_Unicode::getSupportedServiceNames() throw( RuntimeException, std::exception )
 {
-    Sequence< OUString > aRet(1);
-    aRet[0] = "com.sun.star.i18n.CharacterClassification_Unicode";
+    Sequence< OUString > aRet { "com.sun.star.i18n.CharacterClassification_Unicode" };
     return aRet;
 }
 

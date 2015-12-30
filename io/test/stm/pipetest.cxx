@@ -94,7 +94,7 @@ private:
 class OPipeTest : public WeakImplHelper < XSimpleTest >
 {
 public:
-    OPipeTest( const Reference< XMultiServiceFactory >  & rFactory );
+    explicit OPipeTest( const Reference< XMultiServiceFactory >  & rFactory );
     ~OPipeTest();
 
 public: // implementation names
@@ -411,8 +411,7 @@ Reference < XInterface > SAL_CALL OPipeTest_CreateInstance( const Reference< XMu
 
 Sequence<OUString> OPipeTest_getSupportedServiceNames() throw()
 {
-      Sequence<OUString> aRet(1);
-    aRet.getArray()[0] = OPipeTest_getServiceName();
+      Sequence<OUString> aRet { OPipeTest_getServiceName() };
 
       return aRet;
 }

@@ -22,9 +22,11 @@
 
 #include <com/sun/star/xml/sax/XAttributeList.hpp>
 #include <salhelper/simplereferenceobject.hxx>
+#include <rtl/ref.hxx>
 #include <rtl/ustring.hxx>
-#include <tools/rtti.hxx>
+#include <xmloff/nmspmap.hxx>
 #include <xmloff/xmltoken.hxx>
+#include <memory>
 
 class SvXMLNamespaceMap;
 class XMLTransformerBase;
@@ -37,10 +39,10 @@ class XMLTransformerContext : public ::salhelper::SimpleReferenceObject
 
     OUString m_aQName;
 
-    SvXMLNamespaceMap   *m_pRewindMap;
+    std::unique_ptr<SvXMLNamespaceMap>   m_xRewindMap;
 
-    SvXMLNamespaceMap  *GetRewindMap() const { return m_pRewindMap; }
-    void SetRewindMap( SvXMLNamespaceMap *p ) { m_pRewindMap = p; }
+    SvXMLNamespaceMap  *TakeRewindMap() { return m_xRewindMap.release(); }
+    void PutRewindMap( SvXMLNamespaceMap *p ) { m_xRewindMap.reset(p); }
 
 protected:
 
@@ -70,15 +72,15 @@ public:
 
     // Create a children element context. By default, the import's
     // CreateContext method is called to create a new default context.
-    virtual XMLTransformerContext *CreateChildContext( sal_uInt16 nPrefix,
+    virtual rtl::Reference<XMLTransformerContext> CreateChildContext( sal_uInt16 nPrefix,
                                    const OUString& rLocalName,
                                    const OUString& rQName,
-                                   const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList );
+                                   const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList );
 
     // StartElement is called after a context has been constructed and
     // before a elements context is parsed. It may be used for actions that
     // require virtual methods. The default is to do nothing.
-    virtual void StartElement( const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList );
+    virtual void StartElement( const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList );
 
     // EndElement is called before a context will be destructed, but
     // after a elements context has been parsed. It may be used for actions

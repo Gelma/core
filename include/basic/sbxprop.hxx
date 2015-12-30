@@ -27,13 +27,12 @@ class BASIC_DLLPUBLIC SbxProperty : public SbxVariable
 {
 public:
     SBX_DECL_PERSIST_NODATA(SBXCR_SBX,SBXID_PROPERTY,1);
-    TYPEINFO_OVERRIDE();
     SbxProperty( const OUString& r, SbxDataType t );
     SbxProperty( const SbxProperty& r ) : SvRefBase( r ), SbxVariable( r ) {}
     virtual ~SbxProperty();
     SbxProperty& operator=( const SbxProperty& r )
         { SbxVariable::operator=( r ); return *this; }
-    virtual SbxClassType GetClass() const SAL_OVERRIDE;
+    virtual SbxClassType GetClass() const override;
 };
 
 

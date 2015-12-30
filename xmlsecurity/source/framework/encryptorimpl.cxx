@@ -160,7 +160,7 @@ void EncryptorImpl::startEngine( const Reference<
         Reference < cssxw::XXMLElementWrapper > xResultEncryption
             = xResultTemplate->getTemplate();
         m_xSAXEventKeeper->setElement(m_nIdOfTemplateEC, xResultEncryption);
-        m_xSAXEventKeeper->setElement(m_nReferenceId, NULL);
+        m_xSAXEventKeeper->setElement(m_nReferenceId, nullptr);
     }
 }
 
@@ -221,9 +221,7 @@ OUString EncryptorImpl_getImplementationName ()
 Sequence< OUString > SAL_CALL EncryptorImpl_getSupportedServiceNames(  )
     throw (RuntimeException)
 {
-    Sequence < OUString > aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.xml.crypto.sax.Encryptor";
+    Sequence<OUString> aRet { "com.sun.star.xml.crypto.sax.Encryptor" };
     return aRet;
 }
 

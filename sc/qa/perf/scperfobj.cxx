@@ -33,6 +33,9 @@
 #include <com/sun/star/table/CellRangeAddress.hpp>
 #include <com/sun/star/sheet/Border.hpp>
 #include <com/sun/star/sheet/NamedRangeFlag.hpp>
+#include <com/sun/star/sheet/XSubTotalCalculatable.hpp>
+#include <com/sun/star/sheet/SubTotalColumn.hpp>
+#include <com/sun/star/sheet/GeneralFunction.hpp>
 
 #include <test/callgrind.hxx>
 
@@ -49,8 +52,8 @@ public:
 
     ScPerfObj();
 
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
     uno::Reference< uno::XInterface > init(const OUString& aFileName);
 
@@ -61,6 +64,14 @@ public:
     CPPUNIT_TEST(testSum);
     CPPUNIT_TEST(testFTest);
     CPPUNIT_TEST(testChiTest);
+    CPPUNIT_TEST(testSumX2PY2Test);
+    CPPUNIT_TEST(testTTest);
+    CPPUNIT_TEST(testLcm);
+    CPPUNIT_TEST(testGcd);
+    CPPUNIT_TEST(testPearson);
+    CPPUNIT_TEST(testSubTotalWithFormulas);
+    CPPUNIT_TEST(testSubTotalWithoutFormulas);
+    CPPUNIT_TEST(testLoadingFileWithSingleBigSheet);
     CPPUNIT_TEST_SUITE_END();
 
 private:
@@ -75,7 +86,14 @@ private:
     void testSum();
     void testFTest();
     void testChiTest();
-
+    void testSumX2PY2Test();
+    void testTTest();
+    void testLcm();
+    void testGcd();
+    void testPearson();
+    void testSubTotalWithFormulas();
+    void testSubTotalWithoutFormulas();
+    void testLoadingFileWithSingleBigSheet();
 };
 
 sal_Int32 ScPerfObj::nTest = 0;
@@ -138,7 +156,7 @@ void ScPerfObj::testSheetFindAll()
     uno::Reference< util::XSearchDescriptor> xSearchDescr = xSearchable->createSearchDescriptor();
 
     // search for a value
-    xSearchDescr->setSearchString(OUString("value_1"));
+    xSearchDescr->setSearchString("value_1");
 
     callgrindStart();
 
@@ -158,9 +176,9 @@ void ScPerfObj::testSheetFindAll()
     xSearchDescr = xSearchableStyle->createSearchDescriptor();
 
     uno::Reference< beans::XPropertySet > xSearchProp(xSearchDescr,UNO_QUERY_THROW);
-    xSearchProp->setPropertyValue(OUString("SearchStyles"), makeAny(true));
+    xSearchProp->setPropertyValue("SearchStyles", makeAny(true));
 
-    xSearchDescr->setSearchString(OUString("aCellStyle"));
+    xSearchDescr->setSearchString("aCellStyle");
 
     callgrindStart();
 
@@ -264,7 +282,7 @@ void ScPerfObj::testSum()
     // get getSheets
     uno::Reference< sheet::XSpreadsheets > xSheets (xDoc->getSheets(), UNO_QUERY_THROW);
 
-    uno::Any rSheet = xSheets->getByName(OUString::createFromAscii("SumSheet"));
+    uno::Any rSheet = xSheets->getByName("SumSheet");
 
     // query for the XSpreadsheet interface
     uno::Reference< sheet::XSpreadsheet > xSheet (rSheet, UNO_QUERY);
@@ -272,7 +290,7 @@ void ScPerfObj::testSum()
 
 
     callgrindStart();
-    xCell->setFormula(OUString::createFromAscii("=SUM(A1:A10000)"));
+    xCell->setFormula("=SUM(A1:A10000)");
     xCalculatable->calculate();
     callgrindDump("sc:sum_numbers_column");
 
@@ -281,7 +299,7 @@ void ScPerfObj::testSum()
     // query for the XCellRange interface
     uno::Reference< table::XCellRange > rCellRange(rSheet, UNO_QUERY);
     // query the cell range
-    uno::Reference< table::XCellRange > xCellRange = rCellRange->getCellRangeByName(OUString::createFromAscii("B1"));
+    uno::Reference< table::XCellRange > xCellRange = rCellRange->getCellRangeByName("B1");
 
     uno::Reference< sheet::XArrayFormulaRange > xArrayFormulaRange(xCellRange, UNO_QUERY_THROW);
 
@@ -303,14 +321,14 @@ void ScPerfObj::testFTest()
     // get getSheets
     uno::Reference< sheet::XSpreadsheets > xSheets (xDoc->getSheets(), UNO_QUERY_THROW);
 
-    uno::Any rSheet = xSheets->getByName(OUString::createFromAscii("FTestSheet"));
+    uno::Any rSheet = xSheets->getByName("FTestSheet");
 
     // query for the XSpreadsheet interface
     uno::Reference< sheet::XSpreadsheet > xSheet (rSheet, UNO_QUERY);
     uno::Reference< table::XCell > xCell = xSheet->getCellByPosition(0, 0);
 
     callgrindStart();
-    xCell->setFormula(OUString::createFromAscii("=FTEST(B1:K10;L1:U10)"));
+    xCell->setFormula("=FTEST(B1:K10;L1:U10)");
     xCalculatable->calculate();
     callgrindDump("sc:ftest");
 
@@ -327,18 +345,221 @@ void ScPerfObj::testChiTest()
     // get getSheets
     uno::Reference< sheet::XSpreadsheets > xSheets (xDoc->getSheets(), UNO_QUERY_THROW);
 
-    uno::Any rSheet = xSheets->getByName(OUString::createFromAscii("ChiTestSheet"));
+    uno::Any rSheet = xSheets->getByName("ChiTestSheet");
 
     // query for the XSpreadsheet interface
     uno::Reference< sheet::XSpreadsheet > xSheet (rSheet, UNO_QUERY);
     uno::Reference< table::XCell > xCell = xSheet->getCellByPosition(0, 0);
 
     callgrindStart();
-    xCell->setFormula(OUString::createFromAscii("=CHITEST(B1:CV100;CW1:GQ100)"));
+    xCell->setFormula("=CHITEST(B1:CV100;CW1:GQ100)");
     xCalculatable->calculate();
     callgrindDump("sc:chitest");
 
     CPPUNIT_ASSERT_DOUBLES_EQUAL_MESSAGE("Wrong ChiTest result" , 0.0, xCell->getValue(), 10e-4);
+}
+
+void ScPerfObj::testSumX2PY2Test()
+{
+    uno::Reference< sheet::XSpreadsheetDocument > xDoc(init("scMathFunctions2.ods"), UNO_QUERY_THROW);
+
+    CPPUNIT_ASSERT_MESSAGE("Problem in document loading" , xDoc.is());
+    uno::Reference< sheet::XCalculatable > xCalculatable(xDoc, UNO_QUERY_THROW);
+
+    // get getSheets
+    uno::Reference< sheet::XSpreadsheets > xSheets (xDoc->getSheets(), UNO_QUERY_THROW);
+
+    uno::Any rSheet = xSheets->getByName("SumX2PY2Sheet");
+
+    // query for the XSpreadsheet interface
+    uno::Reference< sheet::XSpreadsheet > xSheet (rSheet, UNO_QUERY);
+    uno::Reference< table::XCell > xCell = xSheet->getCellByPosition(2, 0);
+
+    callgrindStart();
+    xCell->setFormula("=SUMX2PY2(A1:A10000;B1:B10000)");
+    xCalculatable->calculate();
+    callgrindDump("sc:sumx2py2");
+
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Wrong SumX2PY2 result" , 574539.0, xCell->getValue());
+}
+
+void ScPerfObj::testTTest()
+{
+    uno::Reference< sheet::XSpreadsheetDocument > xDoc(init("scMathFunctions2.ods"), UNO_QUERY_THROW);
+
+    CPPUNIT_ASSERT_MESSAGE("Problem in document loading" , xDoc.is());
+    uno::Reference< sheet::XCalculatable > xCalculatable(xDoc, UNO_QUERY_THROW);
+
+    // get getSheets
+    uno::Reference< sheet::XSpreadsheets > xSheets (xDoc->getSheets(), UNO_QUERY_THROW);
+
+    uno::Any rSheet = xSheets->getByName("TTestSheet");
+
+    // query for the XSpreadsheet interface
+    uno::Reference< sheet::XSpreadsheet > xSheet (rSheet, UNO_QUERY);
+    uno::Reference< table::XCell > xCell = xSheet->getCellByPosition(0, 0);
+
+    callgrindStart();
+    xCell->setFormula("=T.TEST(B1:CV100;CW1:GQ100;2;1)");
+    xCalculatable->calculate();
+    callgrindDump("sc:ttest");
+
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Wrong TTest result" , 0.0, xCell->getValue());
+}
+
+void ScPerfObj::testLcm()
+{
+    uno::Reference< sheet::XSpreadsheetDocument > xDoc(init("scMathFunctions2.ods"), UNO_QUERY_THROW);
+
+    CPPUNIT_ASSERT_MESSAGE("Problem in document loading" , xDoc.is());
+    uno::Reference< sheet::XCalculatable > xCalculatable(xDoc, UNO_QUERY_THROW);
+
+    // get getSheets
+    uno::Reference< sheet::XSpreadsheets > xSheets (xDoc->getSheets(), UNO_QUERY_THROW);
+
+    uno::Any rSheet = xSheets->getByName("LCMSheet");
+
+    // query for the XSpreadsheet interface
+    uno::Reference< sheet::XSpreadsheet > xSheet (rSheet, UNO_QUERY);
+    uno::Reference< table::XCell > xCell = xSheet->getCellByPosition(1, 0);
+
+    callgrindStart();
+    xCell->setFormula("=LCM(A1:A10000)");
+    xCalculatable->calculate();
+    callgrindDump("sc:lcm");
+
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Wrong LCM" , 2520.0, xCell->getValue());
+}
+
+void ScPerfObj::testGcd()
+{
+    uno::Reference< sheet::XSpreadsheetDocument > xDoc(init("scMathFunctions2.ods"), UNO_QUERY_THROW);
+
+    CPPUNIT_ASSERT_MESSAGE("Problem in document loading" , xDoc.is());
+    uno::Reference< sheet::XCalculatable > xCalculatable(xDoc, UNO_QUERY_THROW);
+
+    // get getSheets
+    uno::Reference< sheet::XSpreadsheets > xSheets (xDoc->getSheets(), UNO_QUERY_THROW);
+
+    uno::Any rSheet = xSheets->getByName("GCDSheet");
+
+    // query for the XSpreadsheet interface
+    uno::Reference< sheet::XSpreadsheet > xSheet (rSheet, UNO_QUERY);
+    uno::Reference< table::XCell > xCell = xSheet->getCellByPosition(1, 0);
+
+    callgrindStart();
+    xCell->setFormula("=GCD(A1:A10000)");
+    xCalculatable->calculate();
+    callgrindDump("sc:gcd");
+
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Wrong GCD", 3.0, xCell->getValue());
+}
+
+void ScPerfObj::testPearson()
+{
+    uno::Reference< sheet::XSpreadsheetDocument > xDoc(init("scMathFunctions2.ods"), UNO_QUERY_THROW);
+
+    CPPUNIT_ASSERT_MESSAGE("Problem in document loading" , xDoc.is());
+    uno::Reference< sheet::XCalculatable > xCalculatable(xDoc, UNO_QUERY_THROW);
+
+    // get getSheets
+    uno::Reference< sheet::XSpreadsheets > xSheets (xDoc->getSheets(), UNO_QUERY_THROW);
+
+    uno::Any rSheet = xSheets->getByName("PearsonSheet");
+
+    // query for the XSpreadsheet interface
+    uno::Reference< sheet::XSpreadsheet > xSheet (rSheet, UNO_QUERY);
+    uno::Reference< table::XCell > xCell = xSheet->getCellByPosition(0, 0);
+
+    callgrindStart();
+    xCell->setFormula("=PEARSON(B1:CV100;CW1:GQ100)");
+    xCalculatable->calculate();
+    callgrindDump("sc:pearson");
+
+    CPPUNIT_ASSERT_DOUBLES_EQUAL_MESSAGE("Wrong Pearson result" , 0.01255, xCell->getValue(), 10e-4);
+}
+
+void ScPerfObj::testSubTotalWithFormulas()
+{
+    uno::Reference< sheet::XSpreadsheetDocument > xDoc(init("scBigSingleSheet200.ods"), UNO_QUERY_THROW);
+
+    CPPUNIT_ASSERT_MESSAGE("Problem in document loading" , xDoc.is());
+    uno::Reference< sheet::XCalculatable > xCalculatable(xDoc, UNO_QUERY_THROW);
+
+    // get getSheets
+    uno::Reference< sheet::XSpreadsheets > xSheets (xDoc->getSheets(), UNO_QUERY_THROW);
+    uno::Any rSheet = xSheets->getByName("scBigSingleSheet");
+
+    // query for the XCellRange interface
+    uno::Reference< table::XCellRange > rCellRange(rSheet, UNO_QUERY);
+
+    // query the cell range
+    uno::Reference< table::XCellRange > xCellRange = rCellRange->getCellRangeByPosition(0,0,1023,1000000);
+
+    // Create the subtotal interface
+    uno::Reference< sheet::XSubTotalCalculatable > xSub(xCellRange, UNO_QUERY_THROW);
+    uno::Reference< sheet::XSubTotalDescriptor > xSubDesc = xSub->createSubTotalDescriptor(true);
+
+    // Create the column used for subtotal
+    uno::Sequence < sheet::SubTotalColumn > xSubTotalColumns;
+    xSubTotalColumns.realloc(1);
+
+    // Add the column to the descriptor
+    xSubTotalColumns[0].Column   = 1;
+    xSubTotalColumns[0].Function = sheet::GeneralFunction_SUM;
+
+    xSubDesc->addNew(xSubTotalColumns, 0);
+
+    // Run the subtotal function
+    callgrindStart();
+    xSub->applySubTotals(xSubDesc, true);
+    callgrindDump("sc:doSubTotal_on_large_sheet_with_formulas");
+}
+
+void ScPerfObj::testSubTotalWithoutFormulas()
+{
+    uno::Reference< sheet::XSpreadsheetDocument > xDoc(init("scBigSingleSheet200.ods"), UNO_QUERY_THROW);
+
+    CPPUNIT_ASSERT_MESSAGE("Problem in document loading" , xDoc.is());
+    uno::Reference< sheet::XCalculatable > xCalculatable(xDoc, UNO_QUERY_THROW);
+
+    // get getSheets
+    uno::Reference< sheet::XSpreadsheets > xSheets (xDoc->getSheets(), UNO_QUERY_THROW);
+    uno::Any rSheet = xSheets->getByName("scBigSingleSheet");
+
+    // query for the XCellRange interface
+    uno::Reference< table::XCellRange > rCellRange(rSheet, UNO_QUERY);
+
+    // query the cell range
+    uno::Reference< table::XCellRange > xCellRange = rCellRange->getCellRangeByPosition(0,0,10,1000000);
+
+    // Create the subtotal interface
+    uno::Reference< sheet::XSubTotalCalculatable > xSub(xCellRange, UNO_QUERY_THROW);
+    uno::Reference< sheet::XSubTotalDescriptor > xSubDesc = xSub->createSubTotalDescriptor(true);
+
+    // Create the column used for subtotal
+    uno::Sequence < sheet::SubTotalColumn> xSubTotalColumns;
+    xSubTotalColumns.realloc(1);
+
+    // Add the column to the descriptor
+    xSubTotalColumns[0].Column   = 1;
+    xSubTotalColumns[0].Function = sheet::GeneralFunction_SUM;
+
+    xSubDesc->addNew(xSubTotalColumns, 0);
+
+    // Run the subtotal function
+    callgrindStart();
+    xSub->applySubTotals(xSubDesc, true);
+    callgrindDump("sc:doSubTotal_on_large_sheet_without_formulas");
+}
+
+void ScPerfObj::testLoadingFileWithSingleBigSheet()
+{
+    callgrindStart();
+    uno::Reference< sheet::XSpreadsheetDocument > xDoc1(init("scBigSingleSheet2000.ods"), UNO_QUERY_THROW);
+    CPPUNIT_ASSERT_MESSAGE("Problem in document loading" , xDoc1.is());
+    uno::Reference< sheet::XCalculatable > xCalculatable1(xDoc1, UNO_QUERY_THROW);
+    callgrindDump("sc:loadingFileWithSingleBigSheetdoSubTotal_2000lines");
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ScPerfObj);

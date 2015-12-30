@@ -66,17 +66,16 @@ public:
         const Reference< XAllListener >& AllListener, const Any& Helper );
 
     // XInvocation
-    virtual Reference< XIntrospectionAccess > SAL_CALL getIntrospection() throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual Reference< XIntrospectionAccess > SAL_CALL getIntrospection() throw( RuntimeException, std::exception ) override;
     virtual Any SAL_CALL invoke(const OUString& FunctionName, const Sequence< Any >& Params, Sequence< sal_Int16 >& OutParamIndex, Sequence< Any >& OutParam)
-        throw( IllegalArgumentException, CannotConvertException, InvocationTargetException, RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( IllegalArgumentException, CannotConvertException, InvocationTargetException, RuntimeException, std::exception ) override;
     virtual void SAL_CALL setValue(const OUString& PropertyName, const Any& Value)
-        throw( UnknownPropertyException, CannotConvertException, InvocationTargetException, RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual Any SAL_CALL getValue(const OUString& PropertyName) throw( UnknownPropertyException, RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL hasMethod(const OUString& Name) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL hasProperty(const OUString& Name) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( UnknownPropertyException, CannotConvertException, InvocationTargetException, RuntimeException, std::exception ) override;
+    virtual Any SAL_CALL getValue(const OUString& PropertyName) throw( UnknownPropertyException, RuntimeException, std::exception ) override;
+    virtual sal_Bool SAL_CALL hasMethod(const OUString& Name) throw( RuntimeException, std::exception ) override;
+    virtual sal_Bool SAL_CALL hasProperty(const OUString& Name) throw( RuntimeException, std::exception ) override;
 
 private:
-    Reference< XIdlReflection >  m_xCoreReflection;
     Reference< XAllListener >    m_xAllListener;
     Reference< XIdlClass >       m_xListenerType;
     Any                          m_Helper;
@@ -211,38 +210,38 @@ sal_Bool SAL_CALL InvocationToAllListenerMapper::hasProperty(const OUString& Nam
 class EventAttacherImpl : public WeakImplHelper < XEventAttacher2, XInitialization, XServiceInfo >
 {
 public:
-    EventAttacherImpl( const Reference< XComponentContext >& );
+    explicit EventAttacherImpl( const Reference< XComponentContext >& );
     virtual ~EventAttacherImpl();
 
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName(  ) throw(RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw(RuntimeException, std::exception) override;
+    virtual Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw(RuntimeException, std::exception) override;
     static Sequence< OUString > SAL_CALL getSupportedServiceNames_Static(  );
 
     // XInitialization
     virtual void SAL_CALL initialize( const Sequence< Any >& aArguments )
-        throw( Exception, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw( Exception, RuntimeException, std::exception) override;
 
     // Methoden von XEventAttacher
     virtual Reference< XEventListener > SAL_CALL attachListener(const Reference< XInterface >& xObject,
             const Reference< XAllListener >& AllListener, const Any& Helper,
             const OUString& ListenerType, const OUString& AddListenerParam)
-        throw( IllegalArgumentException, ServiceNotRegisteredException, CannotCreateAdapterException, IntrospectionException, RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( IllegalArgumentException, ServiceNotRegisteredException, CannotCreateAdapterException, IntrospectionException, RuntimeException, std::exception ) override;
     virtual Reference< XEventListener > SAL_CALL attachSingleEventListener(const Reference< XInterface >& xObject,
             const Reference< XAllListener >& AllListener, const Any& Helper,
             const OUString& ListenerType, const OUString& AddListenerParam,
             const OUString& EventMethod)
-        throw( IllegalArgumentException, ServiceNotRegisteredException, CannotCreateAdapterException, IntrospectionException, RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( IllegalArgumentException, ServiceNotRegisteredException, CannotCreateAdapterException, IntrospectionException, RuntimeException, std::exception ) override;
     virtual void SAL_CALL removeListener(const Reference< XInterface >& xObject,
             const OUString& ListenerType, const OUString& AddListenerParam,
             const Reference< XEventListener >& aToRemoveListener)
-        throw( IllegalArgumentException, IntrospectionException, RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( IllegalArgumentException, IntrospectionException, RuntimeException, std::exception ) override;
 
     // XEventAttacher2
     virtual Sequence< Reference<XEventListener> > SAL_CALL attachMultipleEventListeners(
-        const Reference<XInterface>& xObject, const Sequence<com::sun::star::script::EventListener>& aListeners )
-            throw( IllegalArgumentException, ServiceNotRegisteredException, CannotCreateAdapterException, IntrospectionException, RuntimeException, std::exception ) SAL_OVERRIDE;
+        const Reference<XInterface>& xObject, const Sequence<css::script::EventListener>& aListeners )
+            throw( IllegalArgumentException, ServiceNotRegisteredException, CannotCreateAdapterException, IntrospectionException, RuntimeException, std::exception ) override;
 
     // used by FilterAllListener_Impl
     Reference< XTypeConverter > getConverter() throw( Exception );
@@ -262,7 +261,7 @@ private:
     Sequence< Reference<XEventListener> > attachListeners(
         const Reference<XInterface>& xObject,
         const Sequence< Reference<XAllListener> >& AllListeners,
-        const Sequence<com::sun::star::script::EventListener>& aListeners );
+        const Sequence<css::script::EventListener>& aListeners );
 
 private:
     Mutex                               m_aMutex;
@@ -297,7 +296,7 @@ Reference< XInterface > SAL_CALL EventAttacherImpl_CreateInstance( const Referen
 {
     XEventAttacher *pEventAttacher = static_cast<XEventAttacher*>(new EventAttacherImpl( comphelper::getComponentContext(rSMgr) ));
 
-    Reference< XInterface > xRet = Reference<XInterface>::query(pEventAttacher);
+    Reference< XInterface > xRet(pEventAttacher, UNO_QUERY);
 
     return xRet;
 }
@@ -437,11 +436,11 @@ public:
                            const Reference< XAllListener >& AllListener_ );
 
     // XAllListener
-    virtual void SAL_CALL firing(const AllEventObject& Event) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual Any SAL_CALL approveFiring(const AllEventObject& Event) throw( InvocationTargetException, RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL firing(const AllEventObject& Event) throw( RuntimeException, std::exception ) override;
+    virtual Any SAL_CALL approveFiring(const AllEventObject& Event) throw( InvocationTargetException, RuntimeException, std::exception ) override;
 
     // XEventListener
-    virtual void SAL_CALL disposing(const EventObject& Source) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing(const EventObject& Source) throw( RuntimeException, std::exception ) override;
 
 private:
     // convert
@@ -449,7 +448,6 @@ private:
             throw (CannotConvertException, RuntimeException);
 
     EventAttacherImpl *         m_pEA;
-    Reference< XInterface >     m_xEAHold;
     OUString                    m_EventMethod;
     Reference< XAllListener >   m_AllListener;
 };
@@ -458,7 +456,6 @@ private:
 FilterAllListenerImpl::FilterAllListenerImpl( EventAttacherImpl * pEA_, const OUString& EventMethod_,
                                               const Reference< XAllListener >& AllListener_ )
         : m_pEA( pEA_ )
-        , m_xEAHold( *pEA_ )
         , m_EventMethod( EventMethod_ )
         , m_AllListener( AllListener_ )
 {
@@ -606,7 +603,7 @@ Reference<XEventListener> EventAttacherImpl::attachListenerForTarget(
     const OUString& aListenerType,
     const OUString& aAddListenerParam)
 {
-    Reference< XEventListener > xRet = NULL;
+    Reference< XEventListener > xRet = nullptr;
 
     // Construct the name of the addListener-Method.
     sal_Int32 nIndex = aListenerType.lastIndexOf('.');
@@ -648,7 +645,7 @@ Reference<XEventListener> EventAttacherImpl::attachListenerForTarget(
 
         if( !xAdapter.is() )
             throw CannotCreateAdapterException();
-        xRet = Reference< XEventListener >( xAdapter, UNO_QUERY );
+        xRet.set( xAdapter, UNO_QUERY );
 
         // Just the Listener as parameter?
         if( nParamCount == 1 )
@@ -702,7 +699,7 @@ Reference<XEventListener> EventAttacherImpl::attachListenerForTarget(
 Sequence< Reference<XEventListener> > EventAttacherImpl::attachListeners(
     const Reference<XInterface>& xObject,
     const Sequence< Reference<XAllListener> >& AllListeners,
-    const Sequence<com::sun::star::script::EventListener>& aListeners )
+    const Sequence<css::script::EventListener>& aListeners )
 {
     sal_Int32 nCount = aListeners.getLength();
     if (nCount != AllListeners.getLength())
@@ -872,7 +869,7 @@ void EventAttacherImpl::removeListener
 }
 
 Sequence< Reference<XEventListener> > EventAttacherImpl::attachMultipleEventListeners(
-    const Reference<XInterface>& xObject, const Sequence<com::sun::star::script::EventListener>& aListeners )
+    const Reference<XInterface>& xObject, const Sequence<css::script::EventListener>& aListeners )
         throw( IllegalArgumentException, ServiceNotRegisteredException, CannotCreateAdapterException, IntrospectionException, RuntimeException, std::exception )
 {
     sal_Int32 nCount = aListeners.getLength();
@@ -893,13 +890,13 @@ extern "C"
 SAL_DLLPUBLIC_EXPORT void * SAL_CALL evtatt_component_getFactory(
     const sal_Char * pImplName, void * pServiceManager, void * )
 {
-    void * pRet = 0;
+    void * pRet = nullptr;
 
     if (pServiceManager && rtl_str_compare( pImplName, IMPLNAME ) == 0)
     {
         Reference< XSingleServiceFactory > xFactory( createOneInstanceFactory(
             static_cast< XMultiServiceFactory * >( pServiceManager ),
-            OUString(  IMPLNAME  ),
+            IMPLNAME,
             ::comp_EventAttacher::EventAttacherImpl_CreateInstance,
             ::comp_EventAttacher::EventAttacherImpl::getSupportedServiceNames_Static() ) );
 

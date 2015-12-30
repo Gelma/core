@@ -60,7 +60,7 @@ FmFormObjFactory::FmFormObjFactory()
         SdrObjFactory::InsertMakeObjectHdl(LINK(this, FmFormObjFactory, MakeObject));
 
 
-        // Konfigurations-::com::sun::star::frame::Controller und NavigationBar registrieren
+        // Konfigurations-css::frame::Controller und NavigationBar registrieren
         SvxFmTbxCtlAbsRec::RegisterControl( SID_FM_RECORD_ABSOLUTE );
         SvxFmTbxCtlRecText::RegisterControl( SID_FM_RECORD_TEXT );
         SvxFmTbxCtlRecFromText::RegisterControl( SID_FM_RECORD_FROM_TEXT );
@@ -79,7 +79,7 @@ FmFormObjFactory::FmFormObjFactory()
 #endif
 
         // Interface fuer die Formshell registrieren
-        FmFormShell::RegisterInterface(0);
+        FmFormShell::RegisterInterface();
 
         ImplSmartRegisterUnoServices();
         bInit = true;
@@ -90,7 +90,7 @@ FmFormObjFactory::~FmFormObjFactory()
 {
 }
 
-// ::com::sun::star::form::Form-Objekte erzeugen
+// css::form::Form-Objekte erzeugen
 namespace
 {
     void    lcl_initProperty( FmFormObj* _pObject, const OUString& _rPropName, const Any& _rValue )

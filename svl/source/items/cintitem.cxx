@@ -22,12 +22,11 @@
 #include <tools/stream.hxx>
 #include <svl/cintitem.hxx>
 
-TYPEINIT1_AUTOFACTORY(CntByteItem, SfxPoolItem);
 
 // virtual
 bool CntByteItem::operator ==(const SfxPoolItem & rItem) const
 {
-    DBG_ASSERT(rItem.ISA(CntByteItem),
+    DBG_ASSERT(dynamic_cast<const CntByteItem*>( &rItem ) !=  nullptr,
                "CntByteItem::operator ==(): Bad type");
     return m_nValue == (static_cast< const CntByteItem * >(&rItem))->m_nValue;
 }
@@ -43,7 +42,7 @@ bool CntByteItem::GetPresentation(SfxItemPresentation,
 }
 
 // virtual
-bool CntByteItem::QueryValue(com::sun::star::uno::Any& rVal, sal_uInt8) const
+bool CntByteItem::QueryValue(css::uno::Any& rVal, sal_uInt8) const
 {
     sal_Int8 nValue = m_nValue;
     rVal <<= nValue;
@@ -51,7 +50,7 @@ bool CntByteItem::QueryValue(com::sun::star::uno::Any& rVal, sal_uInt8) const
 }
 
 // virtual
-bool CntByteItem::PutValue(const com::sun::star::uno::Any& rVal, sal_uInt8)
+bool CntByteItem::PutValue(const css::uno::Any& rVal, sal_uInt8)
 {
     sal_Int8 nValue = sal_Int8();
     if (rVal >>= nValue)
@@ -85,7 +84,6 @@ SfxPoolItem * CntByteItem::Clone(SfxItemPool *) const
     return new CntByteItem(*this);
 }
 
-TYPEINIT1_AUTOFACTORY(CntUInt16Item, SfxPoolItem);
 
 CntUInt16Item::CntUInt16Item(sal_uInt16 which, SvStream & rStream) :
     SfxPoolItem(which)
@@ -98,7 +96,7 @@ CntUInt16Item::CntUInt16Item(sal_uInt16 which, SvStream & rStream) :
 // virtual
 bool CntUInt16Item::operator ==(const SfxPoolItem & rItem) const
 {
-    DBG_ASSERT(rItem.ISA(CntUInt16Item),
+    DBG_ASSERT(dynamic_cast< const CntUInt16Item* >(&rItem) !=  nullptr,
                "CntUInt16Item::operator ==(): Bad type");
     return m_nValue == (static_cast< const CntUInt16Item * >(&rItem))->
                         m_nValue;
@@ -116,7 +114,7 @@ bool CntUInt16Item::GetPresentation(SfxItemPresentation,
 }
 
 // virtual
-bool CntUInt16Item::QueryValue(com::sun::star::uno::Any& rVal, sal_uInt8) const
+bool CntUInt16Item::QueryValue(css::uno::Any& rVal, sal_uInt8) const
 {
     sal_Int32 nValue = m_nValue;
     rVal <<= nValue;
@@ -124,7 +122,7 @@ bool CntUInt16Item::QueryValue(com::sun::star::uno::Any& rVal, sal_uInt8) const
 }
 
 // virtual
-bool CntUInt16Item::PutValue(const com::sun::star::uno::Any& rVal, sal_uInt8)
+bool CntUInt16Item::PutValue(const css::uno::Any& rVal, sal_uInt8)
 {
     sal_Int32 nValue = 0;
     if (rVal >>= nValue)
@@ -157,7 +155,6 @@ SfxPoolItem * CntUInt16Item::Clone(SfxItemPool *) const
     return new CntUInt16Item(*this);
 }
 
-TYPEINIT1_AUTOFACTORY(CntInt32Item, SfxPoolItem);
 
 CntInt32Item::CntInt32Item(sal_uInt16 which, SvStream & rStream)
     : SfxPoolItem(which)
@@ -169,7 +166,7 @@ CntInt32Item::CntInt32Item(sal_uInt16 which, SvStream & rStream)
 // virtual
 bool CntInt32Item::operator ==(const SfxPoolItem & rItem) const
 {
-    DBG_ASSERT(rItem.ISA(CntInt32Item),
+    DBG_ASSERT(dynamic_cast< const CntInt32Item*>(&rItem) !=  nullptr,
                "CntInt32Item::operator ==(): Bad type");
     return m_nValue == (static_cast< const CntInt32Item * >(&rItem))->
                         m_nValue;
@@ -186,7 +183,7 @@ bool CntInt32Item::GetPresentation(SfxItemPresentation,
 }
 
 // virtual
-bool CntInt32Item::QueryValue(com::sun::star::uno::Any& rVal, sal_uInt8) const
+bool CntInt32Item::QueryValue(css::uno::Any& rVal, sal_uInt8) const
 {
     sal_Int32 nValue = m_nValue;
     rVal <<= nValue;
@@ -194,7 +191,7 @@ bool CntInt32Item::QueryValue(com::sun::star::uno::Any& rVal, sal_uInt8) const
 }
 
 // virtual
-bool CntInt32Item::PutValue(const com::sun::star::uno::Any& rVal, sal_uInt8)
+bool CntInt32Item::PutValue(const css::uno::Any& rVal, sal_uInt8)
 {
     sal_Int32 nValue = 0;
     if (rVal >>= nValue)
@@ -226,7 +223,6 @@ SfxPoolItem * CntInt32Item::Clone(SfxItemPool *) const
     return new CntInt32Item(*this);
 }
 
-TYPEINIT1_AUTOFACTORY(CntUInt32Item, SfxPoolItem);
 
 CntUInt32Item::CntUInt32Item(sal_uInt16 which, SvStream & rStream) :
     SfxPoolItem(which)
@@ -239,7 +235,7 @@ CntUInt32Item::CntUInt32Item(sal_uInt16 which, SvStream & rStream) :
 // virtual
 bool CntUInt32Item::operator ==(const SfxPoolItem & rItem) const
 {
-    DBG_ASSERT(rItem.ISA(CntUInt32Item),
+    DBG_ASSERT(dynamic_cast< const CntUInt32Item* >(&rItem) !=  nullptr,
                "CntUInt32Item::operator ==(): Bad type");
     return m_nValue == (static_cast< const CntUInt32Item * >(&rItem))->
                         m_nValue;
@@ -257,7 +253,7 @@ bool CntUInt32Item::GetPresentation(SfxItemPresentation,
 }
 
 // virtual
-bool CntUInt32Item::QueryValue(com::sun::star::uno::Any& rVal, sal_uInt8) const
+bool CntUInt32Item::QueryValue(css::uno::Any& rVal, sal_uInt8) const
 {
     sal_Int32 nValue = m_nValue;
     DBG_ASSERT( nValue>=0, "Overflow in UInt32 value!");
@@ -266,7 +262,7 @@ bool CntUInt32Item::QueryValue(com::sun::star::uno::Any& rVal, sal_uInt8) const
 }
 
 // virtual
-bool CntUInt32Item::PutValue(const com::sun::star::uno::Any& rVal, sal_uInt8)
+bool CntUInt32Item::PutValue(const css::uno::Any& rVal, sal_uInt8)
 {
     sal_Int32 nValue = 0;
     if (rVal >>= nValue)

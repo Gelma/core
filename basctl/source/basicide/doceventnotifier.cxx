@@ -71,17 +71,17 @@ namespace basctl
         virtual ~Impl ();
 
         // XDocumentEventListener
-        virtual void SAL_CALL documentEventOccured( const DocumentEvent& Event ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL documentEventOccured( const DocumentEvent& Event ) throw (RuntimeException, std::exception) override;
 
         // XEventListener
-        virtual void SAL_CALL disposing( const csslang::EventObject& Event ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing( const csslang::EventObject& Event ) throw (RuntimeException, std::exception) override;
 
         // ComponentHelper
-        virtual void SAL_CALL disposing() SAL_OVERRIDE;
+        virtual void SAL_CALL disposing() override;
 
     private:
         /// determines whether the instance is already disposed
-        bool    impl_isDisposed_nothrow() const { return m_pListener == NULL; }
+        bool    impl_isDisposed_nothrow() const { return m_pListener == nullptr; }
 
         /// disposes the instance
         void    impl_dispose_nothrow();
@@ -183,7 +183,7 @@ namespace basctl
 
     void DocumentEventNotifier::Impl::impl_dispose_nothrow()
     {
-        m_pListener = NULL;
+        m_pListener = nullptr;
         m_xModel.clear();
     }
 

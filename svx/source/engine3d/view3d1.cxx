@@ -44,13 +44,13 @@
 
 void E3dView::ConvertMarkedToPolyObj(bool bLineToArea)
 {
-    SdrObject* pNewObj = NULL;
+    SdrObject* pNewObj = nullptr;
 
     if (GetMarkedObjectCount() == 1)
     {
         SdrObject* pObj = GetMarkedObjectByIndex(0);
 
-        if (pObj && pObj->ISA(E3dPolyScene))
+        if (pObj && dynamic_cast< const E3dPolyScene* >(pObj) !=  nullptr)
         {
             bool bBezier = false;
             pNewObj = static_cast<E3dPolyScene*>(pObj)->ConvertToPolyObj(bBezier, bLineToArea);
@@ -72,19 +72,19 @@ void E3dView::ConvertMarkedToPolyObj(bool bLineToArea)
 
 void Imp_E3dView_InorderRun3DObjects(const SdrObject* pObj, sal_uInt32& rMask)
 {
-    if(pObj->ISA(E3dLatheObj))
+    if(dynamic_cast< const E3dLatheObj* >(pObj) !=  nullptr)
     {
         rMask |= 0x0001;
     }
-    else if(pObj->ISA(E3dExtrudeObj))
+    else if(dynamic_cast< const E3dExtrudeObj* >(pObj) !=  nullptr)
     {
         rMask |= 0x0002;
     }
-    else if(pObj->ISA(E3dSphereObj))
+    else if(dynamic_cast< const E3dSphereObj* >(pObj) !=  nullptr)
     {
         rMask |= 0x0004;
     }
-    else if(pObj->ISA(E3dCubeObj))
+    else if(dynamic_cast< const E3dCubeObj* >(pObj) !=  nullptr)
     {
         rMask |= 0x0008;
     }
@@ -140,7 +140,7 @@ SfxItemSet E3dView::Get3DAttributes(E3dScene* pInScene, bool /*bOnly3DAttr*/) co
         aSet.Put(aDefaultSet);
 
         // ... but no lines for 3D
-        aSet.Put(XLineStyleItem (com::sun::star::drawing::LineStyle_NONE));
+        aSet.Put(XLineStyleItem (css::drawing::LineStyle_NONE));
 
         // new defaults for distance and focal length
         aSet.Put(makeSvx3DDistanceItem(100));

@@ -29,6 +29,7 @@
 #include <tools/solar.h>
 #include <boost/optional.hpp>
 
+#include <com/sun/star/drawing/TextVerticalAdjust.hpp>
 #include <swtypes.hxx>
 #include <wrtswtbl.hxx>
 #include <fldbas.hxx>
@@ -89,7 +90,7 @@ class SfxPoolItem;
 class SfxItemSet;
 class SvxParaVertAlignItem;
 class SvxParaGridItem;
-class SwFormatFrmSize;
+class SwFormatFrameSize;
 class SvxPaperBinItem;
 class SvxLRSpaceItem;
 class SvxULSpaceItem;
@@ -128,7 +129,7 @@ namespace rtl { class OUString; }
 
 class MSWordExportBase;
 
-namespace sw { class Frame; }
+namespace ww8 { class Frame; }
 
 namespace msword {
     const sal_uInt8 ColumnBreak = 0xE;
@@ -291,7 +292,10 @@ public:
 
     /// Write a section break
     /// msword::ColumnBreak or msword::PageBreak
-    virtual void SectionBreak( sal_uInt8 nC, const WW8_SepInfo* pSectionInfo = NULL ) = 0;
+    virtual void SectionBreak( sal_uInt8 nC, const WW8_SepInfo* pSectionInfo = nullptr ) = 0;
+
+    // preserve page vertical alignment
+    virtual void TextVerticalAdjustment( const css::drawing::TextVerticalAdjust) {};
 
     /// Start of the section properties.
     virtual void StartSection() = 0;
@@ -354,14 +358,14 @@ public:
         sal_Int16 nFirstLineIndex,
         sal_Int16 nListTabPos,
         const OUString &rNumberingString,
-        const SvxBrushItem* pBrush = 0) = 0; // #i120928 export graphic of bullet
+        const SvxBrushItem* pBrush = nullptr) = 0; // #i120928 export graphic of bullet
 
 protected:
 
     static void GetNumberPara( OUString& rStr, const SwField& rField );
 
     /// Output frames - the implementation.
-    virtual void OutputFlyFrame_Impl( const sw::Frame& rFormat, const Point& rNdTopLeft ) = 0;
+    virtual void OutputFlyFrame_Impl( const ww8::Frame& rFormat, const Point& rNdTopLeft ) = 0;
 
     /// Sfx item Sfx item RES_CHRATR_CASEMAP
     virtual void CharCaseMap( const SvxCaseMapItem& ) = 0;
@@ -537,7 +541,7 @@ protected:
     virtual void ParaSnapToGrid( const SvxParaGridItem& ) = 0;
 
     /// Sfx item RES_FRM_SIZE
-    virtual void FormatFrameSize( const SwFormatFrmSize& ) = 0;
+    virtual void FormatFrameSize( const SwFormatFrameSize& ) = 0;
 
     /// Sfx item RES_PAPER_BIN
     virtual void FormatPaperBin( const SvxPaperBinItem& ) = 0;
@@ -639,7 +643,7 @@ public:
     void OutputStyleItemSet( const SfxItemSet& rSet, bool bDeep, bool bTestForDefault );
 
     /// Output frames.
-    void OutputFlyFrame( const sw::Frame& rFormat );
+    void OutputFlyFrame( const ww8::Frame& rFormat );
 
     void GetTablePageSize
     ( ww8::WW8TableNodeInfoInner * pTableTextNodeInfoInner,

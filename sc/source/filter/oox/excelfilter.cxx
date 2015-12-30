@@ -44,7 +44,7 @@ using ::oox::drawingml::table::TableStyleListPtr;
 
 ExcelFilter::ExcelFilter( const Reference< XComponentContext >& rxContext ) throw( RuntimeException ) :
     XmlFilterBase( rxContext ),
-    mpBookGlob( 0 )
+    mpBookGlob( nullptr )
 {
 }
 
@@ -66,7 +66,7 @@ WorkbookGlobals& ExcelFilter::getWorkbookGlobals() const
 
 void ExcelFilter::unregisterWorkbookGlobals()
 {
-    mpBookGlob = 0;
+    mpBookGlob = nullptr;
 }
 
 bool ExcelFilter::importDocument()
@@ -123,7 +123,7 @@ const ::oox::drawingml::Theme* ExcelFilter::getCurrentTheme() const
 
 ::oox::vml::Drawing* ExcelFilter::getVmlDrawing()
 {
-    return 0;
+    return nullptr;
 }
 
 const TableStyleListPtr ExcelFilter::getTableStyles()
@@ -151,7 +151,7 @@ GraphicHelper* ExcelFilter::implCreateGraphicHelper() const
     return new ExcelVbaProject( getComponentContext(), Reference< XSpreadsheetDocument >( getModel(), UNO_QUERY ) );
 }
 
-sal_Bool SAL_CALL ExcelFilter::filter( const ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue >& rDescriptor ) throw( ::com::sun::star::uno::RuntimeException, std::exception )
+sal_Bool SAL_CALL ExcelFilter::filter( const css::uno::Sequence< css::beans::PropertyValue >& rDescriptor ) throw( css::uno::RuntimeException, std::exception )
 {
     if ( XmlFilterBase::filter( rDescriptor ) )
         return true;
@@ -185,9 +185,9 @@ OUString ExcelFilter::getImplementationName() throw (css::uno::RuntimeException,
 } // namespace oox
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_oox_xls_ExcelFilter_get_implementation(::com::sun::star::uno::XComponentContext* context,
-                                                         ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_oox_xls_ExcelFilter_get_implementation(css::uno::XComponentContext* context,
+                                                         css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new oox::xls::ExcelFilter(context));
 }

@@ -47,8 +47,6 @@
 using namespace ::com::sun::star::uno;
 using namespace ::com::sun::star::lang;
 
-// STATIC DATA
-
 /**
  *  Description:
  *     nFormatType: Display the formats of this Type
@@ -61,8 +59,8 @@ NumFormatListBox::NumFormatListBox(vcl::Window* pWin, WinBits nStyle) :
     nStdEntry           (0),
     bOneArea            (false),
     nDefFormat          (0),
-    pVw                 (0),
-    pOwnFormatter       (0),
+    pVw                 (nullptr),
+    pOwnFormatter       (nullptr),
     bShowLanguageControl(false),
     bUseAutomaticLanguage(true)
 {
@@ -214,21 +212,20 @@ void NumFormatListBox::SetFormatType(const short nFormatType)
 
         const SvNumberformat* pFormat;
         sal_Int32 i = 0;
-        sal_uLong  nFormat;
         Color* pCol;
         double fVal = GetDefValue( nFormatType );
         OUString sValue;
 
-        sal_uLong nSysNumFormat = pFormatter->GetFormatIndex(
+        const sal_uInt32 nSysNumFormat = pFormatter->GetFormatIndex(
                                         NF_NUMBER_SYSTEM, eCurLanguage );
-        sal_uLong nSysShortDateFormat = pFormatter->GetFormatIndex(
+        const sal_uInt32 nSysShortDateFormat = pFormatter->GetFormatIndex(
                                         NF_DATE_SYSTEM_SHORT, eCurLanguage );
-        sal_uLong nSysLongDateFormat = pFormatter->GetFormatIndex(
+        const sal_uInt32 nSysLongDateFormat = pFormatter->GetFormatIndex(
                                         NF_DATE_SYSTEM_LONG, eCurLanguage );
 
         for( long nIndex = eOffsetStart; nIndex <= eOffsetEnd; ++nIndex )
         {
-            nFormat = pFormatter->GetFormatIndex(
+            const sal_uInt32 nFormat = pFormatter->GetFormatIndex(
                             (NfIndexTableOffset)nIndex, eCurLanguage );
             pFormat = pFormatter->GetEntry( nFormat );
 
@@ -261,7 +258,7 @@ void NumFormatListBox::SetFormatType(const short nFormatType)
         if (!pOwnFormatter)
         {
             const sal_Int32 nPos = InsertEntry(SW_RESSTR( STR_DEFINE_NUMBERFORMAT ));
-            SetEntryData( nPos, NULL );
+            SetEntryData( nPos, nullptr );
         }
 
         SelectEntryPos( nStdEntry );
@@ -311,7 +308,7 @@ void NumFormatListBox::SetDefFormat(const sal_uLong nDefaultFormat)
     // No entry found:
     double fValue = GetDefValue(nType);
     OUString sValue;
-    Color* pCol = 0;
+    Color* pCol = nullptr;
 
     if (nType == css::util::NumberFormat::TEXT)
     {
@@ -326,15 +323,15 @@ void NumFormatListBox::SetDefFormat(const sal_uLong nDefaultFormat)
     while (reinterpret_cast<sal_uLong>(GetEntryData(nPos)) == ULONG_MAX)
         nPos++;
 
-    sal_uLong nSysNumFormat = pFormatter->GetFormatIndex( NF_NUMBER_SYSTEM, eCurLanguage);
-    sal_uLong nSysShortDateFormat = pFormatter->GetFormatIndex( NF_DATE_SYSTEM_SHORT, eCurLanguage);
-    sal_uLong nSysLongDateFormat = pFormatter->GetFormatIndex( NF_DATE_SYSTEM_LONG, eCurLanguage);
+    const sal_uInt32 nSysNumFormat = pFormatter->GetFormatIndex( NF_NUMBER_SYSTEM, eCurLanguage);
+    const sal_uInt32 nSysShortDateFormat = pFormatter->GetFormatIndex( NF_DATE_SYSTEM_SHORT, eCurLanguage);
+    const sal_uInt32 nSysLongDateFormat = pFormatter->GetFormatIndex( NF_DATE_SYSTEM_LONG, eCurLanguage);
     bool bSysLang = false;
     if( eCurLanguage == GetAppLanguage() )
         bSysLang = true;
-    sal_uLong nNumFormatForLanguage = pFormatter->GetFormatForLanguageIfBuiltIn(nSysNumFormat, LANGUAGE_SYSTEM );
-    sal_uLong nShortDateFormatForLanguage = pFormatter->GetFormatForLanguageIfBuiltIn(nSysShortDateFormat, LANGUAGE_SYSTEM );
-    sal_uLong nLongDateFormatForLanguage = pFormatter->GetFormatForLanguageIfBuiltIn(nSysLongDateFormat, LANGUAGE_SYSTEM );
+    const sal_uInt32 nNumFormatForLanguage = pFormatter->GetFormatForLanguageIfBuiltIn(nSysNumFormat, LANGUAGE_SYSTEM );
+    const sal_uInt32 nShortDateFormatForLanguage = pFormatter->GetFormatForLanguageIfBuiltIn(nSysShortDateFormat, LANGUAGE_SYSTEM );
+    const sal_uInt32 nLongDateFormatForLanguage = pFormatter->GetFormatForLanguageIfBuiltIn(nSysLongDateFormat, LANGUAGE_SYSTEM );
 
     if (
          nDefaultFormat == nSysNumFormat ||
@@ -366,14 +363,14 @@ sal_uLong NumFormatListBox::GetFormat() const
     return reinterpret_cast<sal_uLong>(GetEntryData(nPos));
 }
 
-IMPL_LINK( NumFormatListBox, SelectHdl, ListBox *, pBox )
+IMPL_LINK_TYPED( NumFormatListBox, SelectHdl, ListBox&, rBox, void )
 {
-    const sal_Int32 nPos = pBox->GetSelectEntryPos();
+    const sal_Int32 nPos = rBox.GetSelectEntryPos();
     OUString sDefine(SW_RES( STR_DEFINE_NUMBERFORMAT ));
     SwView *pView = GetView();
 
-    if( pView && nPos == pBox->GetEntryCount() - 1 &&
-        pBox->GetEntry( nPos ) == sDefine )
+    if( pView && nPos == rBox.GetEntryCount() - 1 &&
+        rBox.GetEntry( nPos ) == sDefine )
     {
         SwWrtShell &rSh = pView->GetWrtShell();
         SvNumberFormatter* pFormatter = rSh.GetNumberFormatter();
@@ -442,7 +439,6 @@ IMPL_LINK( NumFormatListBox, SelectHdl, ListBox *, pBox )
         else
             SetDefFormat(nFormat);
     }
-    return 0;
 }
 
 double NumFormatListBox::GetDefValue(const short nFormatType) const

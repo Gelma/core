@@ -64,7 +64,7 @@ public class BuildEnvTools {
             msg += PropertyName.OPERATING_SYSTEM + "\nFill this parameter with an operating system like unxsols," +
                 " unxsoli, unxlngi, unxmacxi or wntmsci.  \n\n";
         }
-        if(
+        if (mPlatform != null &&
             (!mPlatform.equalsIgnoreCase(PropertyName.UNXSOLS)) &&
             (!mPlatform.equalsIgnoreCase(PropertyName.UNXSOLI)) &&
             (!mPlatform.equalsIgnoreCase(PropertyName.UNXLNGI)) &&
@@ -83,7 +83,7 @@ public class BuildEnvTools {
             error = true;
         }
 
-        mCygwin = (param.getBool(PropertyName.CYGWIN));
+        mCygwin = param.getBool(PropertyName.CYGWIN);
 
         if (error) {
             throw new ParameterNotFoundException(msg);
@@ -150,13 +150,15 @@ public class BuildEnvTools {
             separator = ";";
         }
 
-        String command = "";
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < commands.length; i++) {
             if (i != 0) {
-                command += separator;
+                sb.append(separator);
             }
-            command += commands[i];
+            sb.append(commands[i]);
         }
+
+        String command = sb.toString();
 
         if (mPlatform.equals(PropertyName.WNTMSCI)){
             if (mCygwin){

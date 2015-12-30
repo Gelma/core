@@ -43,7 +43,7 @@ namespace sdr
             virtual ~AsynchGraphicLoadingEvent();
 
             // the called method if the event is triggered
-            virtual void ExecuteEvent() SAL_OVERRIDE;
+            virtual void ExecuteEvent() override;
         };
 
         AsynchGraphicLoadingEvent::AsynchGraphicLoadingEvent(
@@ -218,7 +218,7 @@ namespace sdr
             // #i103720# forget event to avoid possible deletion by the following ActionChanged call
             // which may use createPrimitive2DSequence/impPrepareGraphicWithAsynchroniousLoading again.
             // Deletion is actually done by the scheduler who leaded to coming here
-            mpAsynchLoadEvent = 0;
+            mpAsynchLoadEvent = nullptr;
 
             // Invalidate all paint areas and check existing animation (which may have changed).
             GetViewContact().ActionChanged();
@@ -237,7 +237,7 @@ namespace sdr
                     "ViewObjectContactOfGraphic::forgetAsynchGraphicLoadingEvent: Forced to forget another event then I have scheduled (?)");
 
                 // forget event
-                mpAsynchLoadEvent = 0;
+                mpAsynchLoadEvent = nullptr;
             }
         }
 
@@ -251,7 +251,7 @@ namespace sdr
             return static_cast<ViewContactOfGraphic& >(GetViewContact()).GetGrafObject();
         }
 
-        drawinglayer::primitive2d::Primitive2DSequence ViewObjectContactOfGraphic::createPrimitive2DSequence(const DisplayInfo& rDisplayInfo) const
+        drawinglayer::primitive2d::Primitive2DContainer ViewObjectContactOfGraphic::createPrimitive2DSequence(const DisplayInfo& rDisplayInfo) const
         {
             // prepare primitive generation with evtl. loading the graphic when it's swapped out
             SdrGrafObj& rGrafObj = const_cast< ViewObjectContactOfGraphic* >(this)->getSdrGrafObj();
@@ -283,9 +283,9 @@ namespace sdr
             }
 
             // get return value by calling parent
-            drawinglayer::primitive2d::Primitive2DSequence xRetval = ViewObjectContactOfSdrObj::createPrimitive2DSequence(rDisplayInfo);
+            drawinglayer::primitive2d::Primitive2DContainer xRetval = ViewObjectContactOfSdrObj::createPrimitive2DSequence(rDisplayInfo);
 
-            if(xRetval.hasElements())
+            if(!xRetval.empty())
             {
                 // #i103255# suppress when graphic needs draft visualisation and output
                 // is for PDF export/Printer
@@ -297,7 +297,7 @@ namespace sdr
 
                     if(rObjectContact.isOutputToPDFFile() || rObjectContact.isOutputToPrinter())
                     {
-                        xRetval = drawinglayer::primitive2d::Primitive2DSequence();
+                        xRetval = drawinglayer::primitive2d::Primitive2DContainer();
                     }
                 }
             }
@@ -307,7 +307,7 @@ namespace sdr
 
         ViewObjectContactOfGraphic::ViewObjectContactOfGraphic(ObjectContact& rObjectContact, ViewContact& rViewContact)
         :   ViewObjectContactOfSdrObj(rObjectContact, rViewContact),
-            mpAsynchLoadEvent(0)
+            mpAsynchLoadEvent(nullptr)
         {
         }
 

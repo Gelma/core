@@ -24,9 +24,8 @@
 #include <rtl/textenc.h>
 #include "parcss1.hxx"
 
-#include <boost/ptr_container/ptr_vector.hpp>
-
 #include <memory>
+#include <vector>
 #include <map>
 
 class SfxItemPool;
@@ -73,7 +72,6 @@ enum SvxCSS1PageBreak
     SVX_CSS1_PBREAK_END
 };
 
-// /Feature: PrintExt
 
 #define CSS1_SCRIPT_WESTERN 0x01
 #define CSS1_SCRIPT_CJK     0x02
@@ -128,12 +126,10 @@ public:
     SvxCSS1LengthType eLeftType, eTopType;
     SvxCSS1LengthType eWidthType, eHeightType;
 
-// Feature: PrintExt
     SvxCSS1SizeType eSizeType;
 
     SvxCSS1PageBreak ePageBreakBefore;
     SvxCSS1PageBreak ePageBreakAfter;
-// /Feature: PrintExt
 
     SvxCSS1PropertyInfo();
     SvxCSS1PropertyInfo( const SvxCSS1PropertyInfo& rProp );
@@ -148,23 +144,21 @@ public:
     void CopyBorderInfo( sal_uInt16 nCount, sal_uInt16 nWhat );
 
     void SetBoxItem( SfxItemSet& rItemSet, sal_uInt16 nMinBorderDist,
-                     const SvxBoxItem* pDflt=0, bool bTable = false );
+                     const SvxBoxItem* pDflt=nullptr, bool bTable = false );
 
 };
 
 class SvxCSS1MapEntry
 {
-    OUString aKey;
     SfxItemSet aItemSet;
     SvxCSS1PropertyInfo aPropInfo;
 
 public:
-
     SvxCSS1MapEntry( SfxItemPool& rPool, const sal_uInt16 *pWhichMap ) :
         aItemSet( rPool, pWhichMap )
     {}
 
-    SvxCSS1MapEntry( const OUString& rKey, const SfxItemSet& rItemSet,
+    SvxCSS1MapEntry( const SfxItemSet& rItemSet,
                      const SvxCSS1PropertyInfo& rProp );
 
     const SfxItemSet& GetItemSet() const { return aItemSet; }
@@ -172,22 +166,7 @@ public:
 
     const SvxCSS1PropertyInfo& GetPropertyInfo() const { return aPropInfo; }
     SvxCSS1PropertyInfo& GetPropertyInfo() { return aPropInfo; }
-
-    friend bool operator==( const SvxCSS1MapEntry& rE1,
-                            const SvxCSS1MapEntry& rE2 );
-    friend bool operator<( const SvxCSS1MapEntry& rE1,
-                            const SvxCSS1MapEntry& rE2 );
 };
-
-inline bool operator==( const SvxCSS1MapEntry& rE1, const SvxCSS1MapEntry& rE2 )
-{
-    return  rE1.aKey==rE2.aKey;
-}
-
-inline bool operator<( const SvxCSS1MapEntry& rE1,  const SvxCSS1MapEntry& rE2 )
-{
-    return  rE1.aKey<rE2.aKey;
-}
 
 // Diese Klasse bereitet den Output des CSS1-Parsers auf,
 // indem die CSS1-Properties in SvxItem(Set)s umgewandelt werden.
@@ -198,9 +177,9 @@ inline bool operator<( const SvxCSS1MapEntry& rE1,  const SvxCSS1MapEntry& rE2 )
 
 class SvxCSS1Parser : public CSS1Parser
 {
-    typedef ::boost::ptr_vector<CSS1Selector> CSS1Selectors;
+    typedef ::std::vector<std::unique_ptr<CSS1Selector>> CSS1Selectors;
     typedef ::std::map<OUString, std::unique_ptr<SvxCSS1MapEntry>> CSS1Map;
-    CSS1Selectors aSelectors;   // Liste der "offenen" Selectoren
+    CSS1Selectors m_Selectors;   // List of "open" Selectors
 
     CSS1Map m_Ids;
     CSS1Map m_Classes;
@@ -249,20 +228,20 @@ protected:
     /// the content of the aItemSet will be copied into all recently
     /// created Styles.
     /// Derived classes should not override this method!
-    virtual bool SelectorParsed( CSS1Selector *pSelector, bool bFirst ) SAL_OVERRIDE;
+    virtual bool SelectorParsed( CSS1Selector *pSelector, bool bFirst ) override;
 
     /// Will be called for every parsed Property.  Adds the item to the
     /// pItemSet.
     /// Derived classes should not override this method!
     virtual bool DeclarationParsed( const OUString& rProperty,
-                                    const CSS1Expression *pExpr ) SAL_OVERRIDE;
+                                    const CSS1Expression *pExpr ) override;
 
 public:
 
     SvxCSS1Parser( SfxItemPool& rPool,
                     const OUString& rBaseURL,
                    sal_uInt16 nMinFixLineSp,
-                   sal_uInt16 *pWhichIds=0, sal_uInt16 nWhichIds=0 );
+                   sal_uInt16 *pWhichIds=nullptr, sal_uInt16 nWhichIds=0 );
     virtual ~SvxCSS1Parser();
 
     bool IsIgnoreFontFamily() const { return bIgnoreFontFamily; }

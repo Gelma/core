@@ -154,7 +154,7 @@ protected:
     int _GetNextRawToken();
 
     // scan next token
-    virtual int _GetNextToken() SAL_OVERRIDE;
+    virtual int _GetNextToken() override;
 
     virtual ~HTMLParser();
 
@@ -163,7 +163,7 @@ protected:
 public:
     HTMLParser( SvStream& rIn, bool bReadNewDoc = true );
 
-    virtual SvParserState CallParser() SAL_OVERRIDE;
+    virtual SvParserState CallParser() override;
 
     bool IsNewDoc() const       { return bNewDoc; }
     bool IsInHeader() const     { return bIsInHeader; }
@@ -205,10 +205,10 @@ public:
     // Determine the options. pNoConvertToken is the optional token
     // of an option, for which the CR/LFs are not deleted from the value
     // of the option.
-    const HTMLOptions& GetOptions( sal_uInt16 *pNoConvertToken=0 );
+    const HTMLOptions& GetOptions( sal_uInt16 *pNoConvertToken=nullptr );
 
     // for asynchronous reading from the SvStream
-    virtual void Continue( int nToken ) SAL_OVERRIDE;
+    virtual void Continue( int nToken ) override;
 
 
 protected:
@@ -220,16 +220,14 @@ protected:
 
 private:
     /// parse meta options into XDocumentProperties and encoding
-    bool ParseMetaOptionsImpl( const ::com::sun::star::uno::Reference<
-                ::com::sun::star::document::XDocumentProperties>&,
+    bool ParseMetaOptionsImpl( const css::uno::Reference< css::document::XDocumentProperties>&,
             SvKeyValueIterator*,
             const HTMLOptions&,
             rtl_TextEncoding& rEnc );
 
 public:
     /// overriding method must call this implementation!
-    virtual bool ParseMetaOptions( const ::com::sun::star::uno::Reference<
-                ::com::sun::star::document::XDocumentProperties>&,
+    virtual bool ParseMetaOptions( const css::uno::Reference< css::document::XDocumentProperties>&,
             SvKeyValueIterator* );
 
     bool ParseScriptOptions( OUString& rLangString, const OUString&, HTMLScriptLanguage& rLang,

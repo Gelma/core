@@ -34,56 +34,56 @@ class create : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 
     void create_001()
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmBF, rtl_Cipher_ModeECB);
-            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != NULL);
+            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != nullptr);
             rtl_cipher_destroy(aCipher);
         }
     void create_002()
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmInvalid, rtl_Cipher_ModeECB);
-            CPPUNIT_ASSERT_MESSAGE("create provide wrong object.", aCipher == NULL);
+            CPPUNIT_ASSERT_MESSAGE("create provide wrong object.", aCipher == nullptr);
         }
     void create_003()
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmBF, rtl_Cipher_ModeCBC);
-            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != NULL);
+            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != nullptr);
             rtl_cipher_destroy(aCipher);
         }
     void create_004()
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmInvalid, rtl_Cipher_ModeCBC);
-            CPPUNIT_ASSERT_MESSAGE("create provide wrong object.", aCipher == NULL);
+            CPPUNIT_ASSERT_MESSAGE("create provide wrong object.", aCipher == nullptr);
         }
     void create_005()
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmBF, rtl_Cipher_ModeStream);
-            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != NULL);
+            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != nullptr);
             rtl_cipher_destroy(aCipher);
         }
     void create_006()
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmInvalid, rtl_Cipher_ModeStream);
-            CPPUNIT_ASSERT_MESSAGE("create provide wrong object.", aCipher == NULL);
+            CPPUNIT_ASSERT_MESSAGE("create provide wrong object.", aCipher == nullptr);
         }
     void create_007()
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmBF, rtl_Cipher_ModeInvalid);
-            CPPUNIT_ASSERT_MESSAGE("create provide wrong object.", aCipher == NULL);
+            CPPUNIT_ASSERT_MESSAGE("create provide wrong object.", aCipher == nullptr);
         }
     void create_008()
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmInvalid, rtl_Cipher_ModeInvalid);
-            CPPUNIT_ASSERT_MESSAGE("create provide wrong object.", aCipher == NULL);
+            CPPUNIT_ASSERT_MESSAGE("create provide wrong object.", aCipher == nullptr);
         }
 
     // Change the following lines only, if you add, remove or rename
@@ -106,36 +106,36 @@ class createBF : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 
     void createBF_001()
         {
             rtlCipher aCipher = rtl_cipher_createBF(rtl_Cipher_ModeECB);
-            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != NULL);
+            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != nullptr);
             rtl_cipher_destroy(aCipher);
         }
     void createBF_002()
         {
             rtlCipher aCipher = rtl_cipher_createBF(rtl_Cipher_ModeCBC);
-            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != NULL);
+            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != nullptr);
             rtl_cipher_destroy(aCipher);
         }
     void createBF_003()
         {
             rtlCipher aCipher = rtl_cipher_createBF(rtl_Cipher_ModeStream);
-            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != NULL);
+            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != nullptr);
             rtl_cipher_destroy(aCipher);
         }
     void createBF_004()
         {
             rtlCipher aCipher = rtl_cipher_createBF(rtl_Cipher_ModeInvalid);
-            CPPUNIT_ASSERT_MESSAGE("create provide wrong object.", aCipher == NULL);
+            CPPUNIT_ASSERT_MESSAGE("create provide wrong object.", aCipher == nullptr);
             // rtl_cipher_destroy(aCipher);
         }
     // Change the following lines only, if you add, remove or rename
@@ -154,18 +154,18 @@ class decode : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 
     void test_encode(sal_uInt8 _nKeyValue, sal_uInt8 _nArgValue, rtl::OString const& _sPlainTextStr)
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmBF, rtl_Cipher_ModeECB);
-            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != NULL);
+            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != nullptr);
 
             sal_uInt32     nKeyLen = 16;
             sal_uInt8     *pKeyBuffer = new sal_uInt8[ nKeyLen ];
@@ -213,7 +213,7 @@ public:
     void test_encode_and_decode(sal_uInt8 _nKeyValue, sal_uInt8 _nArgValue, rtl::OString const& _sPlainTextStr)
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmBF, rtl_Cipher_ModeECB);
-            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != NULL);
+            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != nullptr);
 
             sal_uInt32     nKeyLen = 16;
             sal_uInt8     *pKeyBuffer = new sal_uInt8[ nKeyLen ];
@@ -291,11 +291,11 @@ class decodeBF : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 
@@ -315,18 +315,18 @@ class destroy : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 
     void destroy_001()
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmBF, rtl_Cipher_ModeCBC);
-            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != NULL);
+            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != nullptr);
             rtl_cipher_destroy(aCipher);
         }
     // Change the following lines only, if you add, remove or rename
@@ -342,18 +342,18 @@ class destroyBF : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 
     void destroyBF_001()
         {
             rtlCipher aCipher = rtl_cipher_createBF(rtl_Cipher_ModeECB);
-            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != NULL);
+            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != nullptr);
             rtl_cipher_destroyBF(aCipher);
             // more proforma
             // should not GPF
@@ -371,18 +371,18 @@ class encode : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 
     void test_encode(sal_uInt8 _nKeyValue, sal_uInt8 _nArgValue, sal_uInt8 _nDataValue)
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmBF, rtl_Cipher_ModeECB);
-            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != NULL);
+            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != nullptr);
 
             sal_uInt32     nKeyLen = 16;
             sal_uInt8     *pKeyBuffer = new sal_uInt8[ nKeyLen ];
@@ -444,11 +444,11 @@ class encodeBF : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 
@@ -468,18 +468,18 @@ class init : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 
     void init_001()
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmBF, rtl_Cipher_ModeECB);
-            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != NULL);
+            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != nullptr);
 
             sal_uInt32     nKeyLen = 16;
             sal_uInt8     *pKeyBuffer = new sal_uInt8[ nKeyLen ];
@@ -501,7 +501,7 @@ public:
     void init_002()
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmBF, rtl_Cipher_ModeECB);
-            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != NULL);
+            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != nullptr);
 
             sal_uInt32     nKeyLen = 16;
             sal_uInt8     *pKeyBuffer = new sal_uInt8[ nKeyLen ];
@@ -523,7 +523,7 @@ public:
     void init_003()
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmBF, rtl_Cipher_ModeECB);
-            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != NULL);
+            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != nullptr);
 
             sal_uInt32     nKeyLen = 16;
             sal_uInt8     *pKeyBuffer = new sal_uInt8[ nKeyLen ];
@@ -545,7 +545,7 @@ public:
     void init_004()
         {
             rtlCipher aCipher = rtl_cipher_create(rtl_Cipher_AlgorithmBF, rtl_Cipher_ModeECB);
-            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != NULL);
+            CPPUNIT_ASSERT_MESSAGE("create failed.", aCipher != nullptr);
 
             sal_uInt32     nKeyLen = 16;
             sal_uInt8     *pKeyBuffer = new sal_uInt8[ nKeyLen ];
@@ -581,11 +581,11 @@ class initBF : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 

@@ -31,11 +31,11 @@ class RtfTest
 {
 public:
 
-    virtual void setUp() SAL_OVERRIDE;
+    virtual void setUp() override;
 
     virtual bool load(const OUString&,
                       const OUString& rURL, const OUString&,
-                      SfxFilterFlags, SotClipboardFormatId, unsigned int) SAL_OVERRIDE;
+                      SfxFilterFlags, SotClipboardFormatId, unsigned int) override;
 
     void test();
 
@@ -50,7 +50,7 @@ void RtfTest::setUp()
 {
     test::BootstrapFixture::setUp();
 
-    m_xFilter = uno::Reference< document::XFilter >(m_xSFactory->createInstance("com.sun.star.comp.Writer.RtfFilter"), uno::UNO_QUERY_THROW);
+    m_xFilter.set(m_xSFactory->createInstance("com.sun.star.comp.Writer.RtfFilter"), uno::UNO_QUERY_THROW);
 }
 
 bool RtfTest::load(const OUString&,

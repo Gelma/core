@@ -17,11 +17,6 @@
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
 
-#define POLY_CLIP_INT   0
-#define POLY_CLIP_UNION 1
-#define POLY_CLIP_DIFF  2
-#define POLY_CLIP_XOR   3
-
 #include <rtl/math.hxx>
 #include <sal/log.hxx>
 #include <osl/diagnose.h>
@@ -58,7 +53,7 @@ ImplPolyPolygon::ImplPolyPolygon( const ImplPolyPolygon& rImplPolyPoly )
             mpPolyAry[i] = new tools::Polygon( *rImplPolyPoly.mpPolyAry[i] );
     }
     else
-        mpPolyAry = NULL;
+        mpPolyAry = nullptr;
 }
 
 ImplPolyPolygon::~ImplPolyPolygon()
@@ -99,7 +94,7 @@ PolyPolygon::PolyPolygon( const tools::Polygon& rPoly )
 
 PolyPolygon::PolyPolygon( const tools::PolyPolygon& rPolyPoly )
 {
-    DBG_ASSERT( rPolyPoly.mpImplPolyPolygon->mnRefCount < 0xFFFFFFFE, "PolyPolygon: RefCount overflow" );
+    DBG_ASSERT( rPolyPoly.mpImplPolyPolygon->mnRefCount < (SAL_MAX_UINT32-1), "PolyPolygon: RefCount overflow" );
 
     mpImplPolyPolygon = rPolyPoly.mpImplPolyPolygon;
     mpImplPolyPolygon->mnRefCount++;
@@ -217,14 +212,14 @@ void PolyPolygon::Clear()
             for ( sal_uInt16 i = 0; i < mpImplPolyPolygon->mnCount; i++ )
                 delete mpImplPolyPolygon->mpPolyAry[i];
             delete[] mpImplPolyPolygon->mpPolyAry;
-            mpImplPolyPolygon->mpPolyAry = NULL;
+            mpImplPolyPolygon->mpPolyAry = nullptr;
             mpImplPolyPolygon->mnCount   = 0;
             mpImplPolyPolygon->mnSize    = mpImplPolyPolygon->mnResize;
         }
     }
 }
 
-void PolyPolygon::Optimize( PolyOptimizeFlags nOptimizeFlags, const PolyOptimizeData* pData )
+void PolyPolygon::Optimize( PolyOptimizeFlags nOptimizeFlags )
 {
     if(bool(nOptimizeFlags) && Count())
     {
@@ -245,7 +240,7 @@ void PolyPolygon::Optimize( PolyOptimizeFlags nOptimizeFlags, const PolyOptimize
             tools::PolyPolygon aPolyPoly;
 
             AdaptiveSubdivide(aPolyPoly);
-            aPolyPoly.Optimize(nOptimizeFlags, pData);
+            aPolyPoly.Optimize(nOptimizeFlags);
             *this = aPolyPoly;
         }
         else
@@ -259,7 +254,7 @@ void PolyPolygon::Optimize( PolyOptimizeFlags nOptimizeFlags, const PolyOptimize
                 const Rectangle aBound( GetBoundRect() );
 
                 fArea = ( aBound.GetWidth() + aBound.GetHeight() ) * 0.5;
-                nPercent = pData ? pData->GetPercentValue() : 50;
+                nPercent = 50;
                 nOptimizeFlags &= ~PolyOptimizeFlags::EDGES;
             }
 
@@ -280,7 +275,7 @@ void PolyPolygon::Optimize( PolyOptimizeFlags nOptimizeFlags, const PolyOptimize
                 }
 
                 if( bool(nOptimizeFlags) )
-                    mpImplPolyPolygon->mpPolyAry[ i ]->Optimize( nOptimizeFlags, pData );
+                    mpImplPolyPolygon->mpPolyAry[ i ]->Optimize( nOptimizeFlags );
             }
         }
     }
@@ -312,15 +307,15 @@ tools::PolyPolygon PolyPolygon::SubdivideBezier( const tools::PolyPolygon& rPoly
 
 void PolyPolygon::GetIntersection( const tools::PolyPolygon& rPolyPoly, tools::PolyPolygon& rResult ) const
 {
-    ImplDoOperation( rPolyPoly, rResult, POLY_CLIP_INT );
+    ImplDoOperation( rPolyPoly, rResult, PolyClipOp::INTERSECT );
 }
 
 void PolyPolygon::GetUnion( const tools::PolyPolygon& rPolyPoly, tools::PolyPolygon& rResult ) const
 {
-    ImplDoOperation( rPolyPoly, rResult, POLY_CLIP_UNION );
+    ImplDoOperation( rPolyPoly, rResult, PolyClipOp::UNION );
 }
 
-void PolyPolygon::ImplDoOperation( const tools::PolyPolygon& rPolyPoly, tools::PolyPolygon& rResult, sal_uIntPtr nOperation ) const
+void PolyPolygon::ImplDoOperation( const tools::PolyPolygon& rPolyPoly, tools::PolyPolygon& rResult, PolyClipOp nOperation ) const
 {
     // Convert to B2DPolyPolygon, temporarily. It might be
     // advantageous in the future, to have a tools::PolyPolygon adaptor that
@@ -337,21 +332,21 @@ void PolyPolygon::ImplDoOperation( const tools::PolyPolygon& rPolyPoly, tools::P
     {
         // All code extracted from svx/source/svdraw/svedtv2.cxx
 
-        case POLY_CLIP_UNION:
+        case PolyClipOp::UNION:
         {
             // merge A and B (OR)
             aMergePolyPolygonA = basegfx::tools::solvePolygonOperationOr(aMergePolyPolygonA, aMergePolyPolygonB);
             break;
         }
 
-        case POLY_CLIP_DIFF:
+        case PolyClipOp::DIFF:
         {
             // subtract B from A (DIFF)
             aMergePolyPolygonA = basegfx::tools::solvePolygonOperationDiff(aMergePolyPolygonA, aMergePolyPolygonB);
             break;
         }
 
-        case POLY_CLIP_XOR:
+        case PolyClipOp::XOR:
         {
             // compute XOR between poly A and B
             aMergePolyPolygonA = basegfx::tools::solvePolygonOperationXor(aMergePolyPolygonA, aMergePolyPolygonB);
@@ -359,7 +354,7 @@ void PolyPolygon::ImplDoOperation( const tools::PolyPolygon& rPolyPoly, tools::P
         }
 
         default:
-        case POLY_CLIP_INT:
+        case PolyClipOp::INTERSECT:
         {
             // cut poly 1 against polys 2..n (AND)
             aMergePolyPolygonA = basegfx::tools::solvePolygonOperationAnd(aMergePolyPolygonA, aMergePolyPolygonB);
@@ -528,7 +523,7 @@ PolyPolygon& PolyPolygon::operator=( const tools::PolyPolygon& rPolyPoly )
     if (this == &rPolyPoly)
         return *this;
 
-    DBG_ASSERT( rPolyPoly.mpImplPolyPolygon->mnRefCount < 0xFFFFFFFE, "PolyPolygon: RefCount overflow" );
+    DBG_ASSERT( rPolyPoly.mpImplPolyPolygon->mnRefCount < (SAL_MAX_UINT32-1), "PolyPolygon: RefCount overflow" );
 
     rPolyPoly.mpImplPolyPolygon->mnRefCount++;
 
@@ -551,7 +546,7 @@ bool PolyPolygon::operator==( const tools::PolyPolygon& rPolyPoly ) const
 
 SvStream& ReadPolyPolygon( SvStream& rIStream, tools::PolyPolygon& rPolyPoly )
 {
-    DBG_ASSERTWARNING( rIStream.GetVersion(), "PolyPolygon::>> - Solar-Version not set on rIStream" );
+    SAL_WARN_IF( !rIStream.GetVersion(), "tools", "PolyPolygon::>> - Solar-Version not set on rIStream" );
 
     tools::Polygon* pPoly;
     sal_uInt16 nPolyCount(0);
@@ -592,7 +587,7 @@ SvStream& ReadPolyPolygon( SvStream& rIStream, tools::PolyPolygon& rPolyPoly )
 
 SvStream& WritePolyPolygon( SvStream& rOStream, const tools::PolyPolygon& rPolyPoly )
 {
-    DBG_ASSERTWARNING( rOStream.GetVersion(), "PolyPolygon::<< - Solar-Version not set on rOStream" );
+    SAL_WARN_IF( !rOStream.GetVersion(), "tools", "PolyPolygon::<< - Solar-Version not set on rOStream" );
 
     // Write number of polygons
     sal_uInt16 nPolyCount = rPolyPoly.mpImplPolyPolygon->mnCount;
@@ -609,7 +604,7 @@ void PolyPolygon::Read( SvStream& rIStream )
 {
     VersionCompat aCompat( rIStream, StreamMode::READ );
 
-    DBG_ASSERTWARNING( rIStream.GetVersion(), "PolyPolygon::>> - Solar-Version not set on rIStream" );
+    SAL_WARN_IF( !rIStream.GetVersion(), "tools","PolyPolygon::>> - Solar-Version not set on rIStream" );
 
     tools::Polygon* pPoly;
     sal_uInt16 nPolyCount(0);
@@ -649,8 +644,6 @@ void PolyPolygon::Read( SvStream& rIStream )
 void PolyPolygon::Write( SvStream& rOStream ) const
 {
     VersionCompat aCompat( rOStream, StreamMode::WRITE, 1 );
-
-    DBG_ASSERTWARNING( rOStream.GetVersion(), "PolyPolygon::<< - Solar-Version not set on rOStream" );
 
     // Write number of polygons
     sal_uInt16 nPolyCount = mpImplPolyPolygon->mnCount;

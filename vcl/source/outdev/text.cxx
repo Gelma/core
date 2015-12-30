@@ -236,7 +236,7 @@ bool OutputDevice::ImplDrawRotateText( SalLayout& rSalLayout )
 
     // cache virtual device for rotation
     if (!mpOutDevData->mpRotateDev)
-        mpOutDevData->mpRotateDev = VclPtr<VirtualDevice>::Create( *this, 1 );
+        mpOutDevData->mpRotateDev = VclPtr<VirtualDevice>::Create(*this, DeviceFormat::BITMASK);
     VirtualDevice* pVDev = mpOutDevData->mpRotateDev;
 
     // size it accordingly
@@ -275,7 +275,7 @@ bool OutputDevice::ImplDrawRotateText( SalLayout& rSalLayout )
 
     mnOutOffX   = 0L;
     mnOutOffY   = 0L;
-    mpMetaFile  = NULL;
+    mpMetaFile  = nullptr;
     EnableMapMode( false );
 
     DrawMask( aPoint, aBmp, GetTextColor() );
@@ -496,7 +496,7 @@ long OutputDevice::ImplGetTextLines( ImplMultiTextLineInfo& rLineInfo,
                                      long nWidth, const OUString& rStr,
                                      DrawTextFlags nStyle, const vcl::ITextLayout& _rLayout )
 {
-    DBG_ASSERTWARNING( nWidth >= 0, "ImplGetTextLines: nWidth <= 0!" );
+    SAL_WARN_IF( nWidth <= 0, "vcl", "ImplGetTextLines: nWidth <= 0!" );
 
     if ( nWidth <= 0 )
         nWidth = 1;
@@ -914,7 +914,7 @@ void OutputDevice::DrawText( const Point& rStartPt, const OUString& rStr,
     if ( !IsDeviceOutputNecessary() || pVector )
         return;
 
-    SalLayout* pSalLayout = ImplLayout(rStr, nIndex, nLen, rStartPt, 0, NULL);
+    SalLayout* pSalLayout = ImplLayout(rStr, nIndex, nLen, rStartPt);
     if( pSalLayout )
     {
         ImplDrawText( *pSalLayout );
@@ -929,7 +929,7 @@ long OutputDevice::GetTextWidth( const OUString& rStr, sal_Int32 nIndex, sal_Int
      vcl::TextLayoutCache const*const pLayoutCache) const
 {
 
-    long nWidth = GetTextArray( rStr, NULL, nIndex, nLen, pLayoutCache );
+    long nWidth = GetTextArray( rStr, nullptr, nIndex, nLen, pLayoutCache );
 
     return nWidth;
 }
@@ -1006,7 +1006,7 @@ long OutputDevice::GetTextArray( const OUString& rStr, long* pDXAry,
     }
 
     if( nIndex >= rStr.getLength() )
-        return 0;
+        return 0; // TODO: this looks like a buggy caller?
 
     if( nLen < 0 || nIndex + nLen >= rStr.getLength() )
     {
@@ -1016,7 +1016,19 @@ long OutputDevice::GetTextArray( const OUString& rStr, long* pDXAry,
     SalLayout *const pSalLayout = ImplLayout(rStr, nIndex, nLen,
             Point(0,0), 0, nullptr, SalLayoutFlags::NONE, pLayoutCache);
     if( !pSalLayout )
+    {
+        // The caller expects this to init the elements of pDXAry.
+        // Adapting all the callers to check that GetTextArray succeeded seems
+        // too much work.
+        // Init here to 0 only in the (rare) error case, so that any missing
+        // element init in the happy case will still be found by tools,
+        // and hope that is sufficient.
+        if (pDXAry)
+        {
+            memset(pDXAry, 0, nLen * sizeof(*pDXAry));
+        }
         return 0;
+    }
 #if VCL_FLOAT_DEVICE_PIXEL
     std::unique_ptr<DeviceCoordinate[]> pDXPixelArray;
     if(pDXAry)
@@ -1184,7 +1196,7 @@ void OutputDevice::DrawStretchText( const Point& rStartPt, sal_uLong nWidth,
     if ( !IsDeviceOutputNecessary() )
         return;
 
-    SalLayout* pSalLayout = ImplLayout(rStr, nIndex, nLen, rStartPt, nWidth, NULL);
+    SalLayout* pSalLayout = ImplLayout(rStr, nIndex, nLen, rStartPt, nWidth);
     if( pSalLayout )
     {
         ImplDrawText( *pSalLayout );
@@ -1298,7 +1310,7 @@ ImplLayoutArgs OutputDevice::ImplPrepareLayoutArgs( OUString& rStr,
         nLayoutFlags |= SalLayoutFlags::RightAlign;
 
     // set layout options
-    ImplLayoutArgs aLayoutArgs( rStr.getStr(), rStr.getLength(), nMinIndex, nEndIndex, nLayoutFlags, maFont.GetLanguageTag(), pLayoutCache );
+    ImplLayoutArgs aLayoutArgs(rStr, nMinIndex, nEndIndex, nLayoutFlags, maFont.GetLanguageTag(), pLayoutCache);
 
     int nOrientation = mpFontEntry ? mpFontEntry->mnOrientation : 0;
     aLayoutArgs.SetOrientation( nOrientation );
@@ -1318,12 +1330,12 @@ SalLayout* OutputDevice::ImplLayout(const OUString& rOrigStr,
     // we need a graphics
     if( !mpGraphics )
         if( !AcquireGraphics() )
-            return NULL;
+            return nullptr;
 
     // initialize font if needed
     if( mbNewFont )
         if( !ImplNewFont() )
-            return NULL;
+            return nullptr;
     if( mbInitFont )
         InitFont();
 
@@ -1332,7 +1344,7 @@ SalLayout* OutputDevice::ImplLayout(const OUString& rOrigStr,
     {
         const sal_Int32 nNewLen = rOrigStr.getLength() - nMinIndex;
         if( nNewLen <= 0 )
-            return NULL;
+            return nullptr;
         nLen = nNewLen;
     }
 
@@ -1391,11 +1403,11 @@ SalLayout* OutputDevice::ImplLayout(const OUString& rOrigStr,
     if( pSalLayout && !pSalLayout->LayoutText( aLayoutArgs ) )
     {
         pSalLayout->Release();
-        pSalLayout = NULL;
+        pSalLayout = nullptr;
     }
 
     if( !pSalLayout )
-        return NULL;
+        return nullptr;
 
     // do glyph fallback if needed
     // #105768# avoid fallback for very small font sizes
@@ -1428,7 +1440,7 @@ std::shared_ptr<vcl::TextLayoutCache> OutputDevice::CreateTextLayoutCache(
         return nullptr;
     OUString copyBecausePrepareModifiesIt(rString);
     ImplLayoutArgs aLayoutArgs = ImplPrepareLayoutArgs(copyBecausePrepareModifiesIt,
-            0, rString.getLength(), 0, nullptr, SalLayoutFlags::NONE, nullptr);
+            0, rString.getLength(), 0, nullptr);
 
     SalLayout *const pSalLayout = mpGraphics->GetTextLayout( aLayoutArgs, 0 );
     if (!pSalLayout)
@@ -1442,7 +1454,7 @@ std::shared_ptr<vcl::TextLayoutCache> OutputDevice::CreateTextLayoutCache(
 bool OutputDevice::GetTextIsRTL( const OUString& rString, sal_Int32 nIndex, sal_Int32 nLen ) const
 {
     OUString aStr( rString );
-    ImplLayoutArgs aArgs = ImplPrepareLayoutArgs( aStr, nIndex, nLen, 0, NULL );
+    ImplLayoutArgs aArgs = ImplPrepareLayoutArgs( aStr, nIndex, nLen, 0, nullptr );
     bool bRTL = false;
     int nCharPos = -1;
     if (!aArgs.GetNextPos(&nCharPos, &bRTL))
@@ -1832,7 +1844,7 @@ void OutputDevice::AddTextRectActions( const Rectangle& rRect,
     // #i47157# Factored out to ImplDrawTextRect(), to be shared
     // between us and DrawText()
     vcl::DefaultTextLayout aLayout( *this );
-    ImplDrawText( *this, rRect, rOrigStr, nStyle, NULL, NULL, aLayout );
+    ImplDrawText( *this, rRect, rOrigStr, nStyle, nullptr, nullptr, aLayout );
 
     // and restore again
     EnableOutput( bOutputEnabled );
@@ -1851,7 +1863,7 @@ void OutputDevice::DrawText( const Rectangle& rRect, const OUString& rOrigStr, D
         pDisplayText = &mpOutDevData->mpRecordLayout->m_aDisplayText;
     }
 
-    bool bDecomposeTextRectAction = ( _pTextLayout != NULL ) && _pTextLayout->DecomposeTextRectAction();
+    bool bDecomposeTextRectAction = ( _pTextLayout != nullptr ) && _pTextLayout->DecomposeTextRectAction();
     if ( mpMetaFile && !bDecomposeTextRectAction )
         mpMetaFile->AddAction( new MetaTextRectAction( rRect, rOrigStr, nStyle ) );
 
@@ -1870,7 +1882,7 @@ void OutputDevice::DrawText( const Rectangle& rRect, const OUString& rOrigStr, D
     // create MetaActionType::TEXTs otherwise)
     GDIMetaFile* pMtf = mpMetaFile;
     if ( !bDecomposeTextRectAction )
-        mpMetaFile = NULL;
+        mpMetaFile = nullptr;
 
     // #i47157# Factored out to ImplDrawText(), to be used also
     // from AddTextRectActions()
@@ -2063,7 +2075,7 @@ OUString OutputDevice::ImplGetEllipsisString( const OutputDevice& rTargetDevice,
         {
             OUString aPath( rOrigStr );
             OUString aAbbreviatedPath;
-            osl_abbreviateSystemPath( aPath.pData, &aAbbreviatedPath.pData, nIndex, NULL );
+            osl_abbreviateSystemPath( aPath.pData, &aAbbreviatedPath.pData, nIndex, nullptr );
             aStr = aAbbreviatedPath;
         }
         else if ( nStyle & DrawTextFlags::NewsEllipsis )
@@ -2207,7 +2219,6 @@ void OutputDevice::DrawCtrlText( const Point& rPos, const OUString& rStr,
 
             if( nMnemonicPos >= nLen )
             {
-                // #106952#
                 // may occur in BiDi-Strings: the '~' is sometimes found behind the last char
                 // due to some strange BiDi text editors
                 // -> place the underline behind the string to indicate a failure
@@ -2450,7 +2461,7 @@ bool OutputDevice::GetTextBoundRect( Rectangle& rRect,
     bool bRet = false;
     rRect.SetEmpty();
 
-    SalLayout* pSalLayout = NULL;
+    SalLayout* pSalLayout = nullptr;
     const Point aPoint;
     // calculate offset when nBase!=nIndex
     long nXOffset = 0;
@@ -2509,7 +2520,7 @@ bool OutputDevice::GetTextBoundRect( Rectangle& rRect,
 
     // fall back to bitmap method to get the bounding rectangle,
     // so we need a monochrome virtual device with matching font
-    ScopedVclPtrInstance< VirtualDevice > aVDev(  1  );
+    ScopedVclPtrInstance< VirtualDevice > aVDev(DeviceFormat::BITMASK);
     vcl::Font aFont( GetFont() );
     aFont.SetShadow( false );
     aFont.SetOutline( false );
@@ -2619,7 +2630,7 @@ bool OutputDevice::GetTextBoundRect( Rectangle& rRect,
     return false;
 }
 
-bool OutputDevice::GetTextOutlines( ::basegfx::B2DPolyPolygonVector& rVector,
+bool OutputDevice::GetTextOutlines( basegfx::B2DPolyPolygonVector& rVector,
                                         const OUString& rStr, sal_Int32 nBase,
                                         sal_Int32 nIndex, sal_Int32 nLen,
                                         bool bOptimize, sal_uLong nLayoutWidth, const long* pDXArray ) const
@@ -2654,7 +2665,7 @@ bool OutputDevice::GetTextOutlines( ::basegfx::B2DPolyPolygonVector& rVector,
         const_cast<OutputDevice&>(*this).mbNewFont = true;
     }
 
-    SalLayout* pSalLayout = NULL;
+    SalLayout* pSalLayout = nullptr;
 
     // calculate offset when nBase!=nIndex
     long nXOffset = 0;
@@ -2680,7 +2691,7 @@ bool OutputDevice::GetTextOutlines( ::basegfx::B2DPolyPolygonVector& rVector,
         if( bRet )
         {
             // transform polygon to pixel units
-            ::basegfx::B2DHomMatrix aMatrix;
+            basegfx::B2DHomMatrix aMatrix;
 
             int nWidthFactor = pSalLayout->GetUnitsPerPixel();
             if( nXOffset | mnTextOffX | mnTextOffY )
@@ -2698,7 +2709,7 @@ bool OutputDevice::GetTextOutlines( ::basegfx::B2DPolyPolygonVector& rVector,
 
             if( !aMatrix.isIdentity() )
             {
-                ::basegfx::B2DPolyPolygonVector::iterator aIt = rVector.begin();
+                basegfx::B2DPolyPolygonVector::iterator aIt = rVector.begin();
                 for(; aIt != rVector.end(); ++aIt )
                     (*aIt).transform( aMatrix );
             }
@@ -2726,14 +2737,14 @@ bool OutputDevice::GetTextOutlines( ::basegfx::B2DPolyPolygonVector& rVector,
     // fall back to bitmap method to get the bounding rectangle,
     // so we need a monochrome virtual device with matching font
     pSalLayout = ImplLayout( rStr, nIndex, nLen, Point(0,0), nLayoutWidth, pDXArray );
-    if (pSalLayout == 0)
+    if (pSalLayout == nullptr)
         return false;
     long nOrgWidth = pSalLayout->GetTextWidth();
     long nOrgHeight = mpFontEntry->mnLineHeight + mnEmphasisAscent
         + mnEmphasisDescent;
     pSalLayout->Release();
 
-    ScopedVclPtrInstance< VirtualDevice > aVDev( 1 );
+    ScopedVclPtrInstance< VirtualDevice > aVDev(DeviceFormat::BITMASK);
 
     vcl::Font aFont(GetFont());
     aFont.SetShadow(false);
@@ -2751,7 +2762,7 @@ bool OutputDevice::GetTextOutlines( ::basegfx::B2DPolyPolygonVector& rVector,
     aVDev->SetTextFillColor();
 
     pSalLayout = aVDev->ImplLayout( rStr, nIndex, nLen, Point(0,0), nLayoutWidth, pDXArray );
-    if (pSalLayout == 0)
+    if (pSalLayout == nullptr)
         return false;
     long nWidth = pSalLayout->GetTextWidth();
     long nHeight = aVDev->mpFontEntry->mnLineHeight + aVDev->mnEmphasisAscent +
@@ -2785,14 +2796,14 @@ bool OutputDevice::GetTextOutlines( ::basegfx::B2DPolyPolygonVector& rVector,
     OUString aStr( rStr ); // prepare for e.g. localized digits
     sal_Int32 nIndex2 = nIndex; // only needed until nIndex is sal_Int32
     sal_Int32 nLen2 = nLen; // only needed until nLen is sal_Int32
-    ImplLayoutArgs aLayoutArgs = ImplPrepareLayoutArgs( aStr, nIndex2, nLen2, 0, NULL );
+    ImplLayoutArgs aLayoutArgs = ImplPrepareLayoutArgs( aStr, nIndex2, nLen2, 0, nullptr );
     for( int nCharPos = -1; aLayoutArgs.GetNextPos( &nCharPos, &bRTL);)
     {
         bool bSuccess = false;
 
         // draw character into virtual device
         pSalLayout = aVDev->ImplLayout( rStr, nCharPos, 1, Point(0,0), nLayoutWidth, pDXArray );
-        if (pSalLayout == 0)
+        if (pSalLayout == nullptr)
             return false;
         long nCharWidth = pSalLayout->GetTextWidth();
 
@@ -2837,8 +2848,8 @@ bool OutputDevice::GetTextOutlines( ::basegfx::B2DPolyPolygonVector& rVector,
                 {
                     // convert  to B2DPolyPolygon
                     // TODO: get rid of intermediate tool's PolyPolygon
-                    ::basegfx::B2DPolyPolygon aB2DPolyPoly = aPolyPoly.getB2DPolyPolygon();
-                    ::basegfx::B2DHomMatrix aMatrix;
+                    basegfx::B2DPolyPolygon aB2DPolyPoly = aPolyPoly.getB2DPolyPolygon();
+                    basegfx::B2DHomMatrix aMatrix;
                     aMatrix.scale( fScaleX, fScaleY );
                     int nAngle = GetFont().GetOrientation();
                     if( nAngle )
@@ -2870,14 +2881,14 @@ bool OutputDevice::GetTextOutlines( PolyPolyVector& rResultVector,
     rResultVector.clear();
 
     // get the basegfx polypolygon vector
-    ::basegfx::B2DPolyPolygonVector aB2DPolyPolyVector;
+    basegfx::B2DPolyPolygonVector aB2DPolyPolyVector;
     if( !GetTextOutlines( aB2DPolyPolyVector, rStr, nBase, nIndex, nLen,
                          bOptimize, nTWidth, pDXArray ) )
         return false;
 
     // convert to a tool polypolygon vector
     rResultVector.reserve( aB2DPolyPolyVector.size() );
-    ::basegfx::B2DPolyPolygonVector::const_iterator aIt = aB2DPolyPolyVector.begin();
+    basegfx::B2DPolyPolygonVector::const_iterator aIt = aB2DPolyPolyVector.begin();
     for(; aIt != aB2DPolyPolyVector.end(); ++aIt )
         rResultVector.push_back(tools::PolyPolygon(*aIt)); // #i76339#
 
@@ -2896,13 +2907,13 @@ bool OutputDevice::GetTextOutline( tools::PolyPolygon& rPolyPoly, const OUString
     rPolyPoly.Clear();
 
     // get the basegfx polypolygon vector
-    ::basegfx::B2DPolyPolygonVector aB2DPolyPolyVector;
+    basegfx::B2DPolyPolygonVector aB2DPolyPolyVector;
     if( !GetTextOutlines( aB2DPolyPolyVector, rStr, nBase, nIndex, nLen,
                          bOptimize, nTWidth, pDXArray ) )
         return false;
 
     // convert and merge into a tool polypolygon
-    ::basegfx::B2DPolyPolygonVector::const_iterator aIt = aB2DPolyPolyVector.begin();
+    basegfx::B2DPolyPolygonVector::const_iterator aIt = aB2DPolyPolyVector.begin();
     for(; aIt != aB2DPolyPolyVector.end(); ++aIt )
         for( unsigned int i = 0; i < aIt->count(); ++i )
             rPolyPoly.Insert(tools::Polygon((*aIt).getB2DPolygon( i ))); // #i76339#

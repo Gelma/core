@@ -24,6 +24,7 @@
 #include <unotools/configitem.hxx>
 #include <sal/macros.h>
 #include <cppuhelper/supportsservice.hxx>
+#include <comphelper/sequence.hxx>
 
 #include <set>
 
@@ -52,29 +53,25 @@ namespace impl
 class ChartConfigItem : public ::utl::ConfigItem
 {
 public:
-    explicit ChartConfigItem( ConfigItemListener & rListener );
-    virtual ~ChartConfigItem();
+    explicit ChartConfigItem( ConfigColorScheme & rListener );
+    virtual ~ChartConfigItem() {}
 
     void addPropertyNotification( const OUString & rPropertyName );
-
     uno::Any getProperty( const OUString & aPropertyName );
 
 protected:
     // ____ ::utl::ConfigItem ____
-    virtual void                    ImplCommit() SAL_OVERRIDE;
-    virtual void Notify( const Sequence< OUString > & aPropertyNames ) SAL_OVERRIDE;
+    virtual void ImplCommit() override;
+    virtual void Notify( const Sequence< OUString > & aPropertyNames ) override;
 
 private:
-    ConfigItemListener & m_rListener;
-    ::std::set< OUString >        m_aPropertiesToNotify;
+    ConfigColorScheme &      m_rListener;
+    ::std::set< OUString >   m_aPropertiesToNotify;
 };
 
-ChartConfigItem::ChartConfigItem( ConfigItemListener & rListener ) :
+ChartConfigItem::ChartConfigItem( ConfigColorScheme & rListener ) :
         ::utl::ConfigItem( "Office.Chart/DefaultColor" ),
     m_rListener( rListener )
-{}
-
-ChartConfigItem::~ChartConfigItem()
 {}
 
 void ChartConfigItem::Notify( const Sequence< OUString > & aPropertyNames )
@@ -92,7 +89,7 @@ void ChartConfigItem::ImplCommit()
 void ChartConfigItem::addPropertyNotification( const OUString & rPropertyName )
 {
     m_aPropertiesToNotify.insert( rPropertyName );
-    EnableNotification( ContainerHelper::ContainerToSequence( m_aPropertiesToNotify ));
+    EnableNotification( comphelper::containerToSequence<OUString>( m_aPropertiesToNotify ));
 }
 
 uno::Any ChartConfigItem::getProperty( const OUString & aPropertyName )
@@ -172,8 +169,7 @@ void ConfigColorScheme::notify( const OUString & rPropertyName )
 
 Sequence< OUString > ConfigColorScheme::getSupportedServiceNames_Static()
 {
-    Sequence< OUString > aServices( 1 );
-    aServices[ 0 ] = "com.sun.star.chart2.ColorScheme";
+    Sequence<OUString> aServices { "com.sun.star.chart2.ColorScheme" };
     return aServices;
 }
 

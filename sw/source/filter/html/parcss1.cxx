@@ -161,13 +161,11 @@ CSS1Token CSS1Parser::GetNextToken()
                         if( aToken.equalsIgnoreAsciiCase( "import" ) )
                             nRet = CSS1_IMPORT_SYM;
                         break;
-// /Feature: PrintExt
                     case 'p':
                     case 'P':
                         if( aToken.equalsIgnoreAsciiCase( "page" ) )
                             nRet = CSS1_PAGE_SYM;
                         break;
-// /Feature: PrintExt
                     }
 
                     // Fehlerbehandlung: '@ident' und alles bis
@@ -394,7 +392,7 @@ CSS1Token CSS1Parser::GetNextToken()
                         aIdent += sTmpBuffer2.makeStringAndClear();
 
                         // Ist es eine Einheit?
-                        const sal_Char *pCmp1 = 0, *pCmp2 = 0, *pCmp3 = 0;
+                        const sal_Char *pCmp1 = nullptr, *pCmp2 = nullptr, *pCmp3 = nullptr;
                         double nScale1 = 1., nScale2 = 1.;
                         CSS1Token nToken1 = CSS1_LENGTH,
                                   nToken2 = CSS1_LENGTH,
@@ -691,9 +689,7 @@ void CSS1Parser::ParseStyleSheet()
         case CSS1_IDENT:            // Look-Aheads
         case CSS1_DOT_W_WS:
         case CSS1_HASH:
-// /Feature: PrintExt
         case CSS1_PAGE_SYM:
-// /Feature: PrintExt
             // rule
             bDone = true;
             break;
@@ -718,9 +714,7 @@ void CSS1Parser::ParseStyleSheet()
         case CSS1_IDENT:        // Look-Aheads
         case CSS1_DOT_W_WS:
         case CSS1_HASH:
-// /Feature: PrintExt
         case CSS1_PAGE_SYM:
-// /Feature: PrintExt
             // rule
             ParseRule();
             break;
@@ -832,10 +826,10 @@ void CSS1Parser::ParseRule()
 
 CSS1Selector *CSS1Parser::ParseSelector()
 {
-    CSS1Selector *pRoot = 0, *pLast = 0;
+    CSS1Selector *pRoot = nullptr, *pLast = nullptr;
 
     bool bDone = false;
-    CSS1Selector *pNew = 0;
+    CSS1Selector *pNew = nullptr;
 
     LOOP_CHECK_DECL
 
@@ -917,14 +911,12 @@ CSS1Selector *CSS1Parser::ParseSelector()
             }
             break;
 
-// /Feature: PrintExt
         case CSS1_PAGE_SYM:
             {
                 //  @page
                 pNew = new CSS1Selector( CSS1_SELTYPE_PAGE, aToken );
             }
             break;
-// /Feature: PrintExt
 
         default:
             // wir wissen nicht was kommt, also aufhoehren
@@ -935,7 +927,7 @@ CSS1Selector *CSS1Parser::ParseSelector()
         // falls ein Selektor angelegt wurd, ihn speichern
         if( pNew )
         {
-            OSL_ENSURE( (pRoot!=0) == (pLast!=0),
+            OSL_ENSURE( (pRoot!=nullptr) == (pLast!=nullptr),
                     "Root-Selektor, aber kein Last" );
             if( pLast )
                 pLast->SetNext( pNew );
@@ -943,7 +935,7 @@ CSS1Selector *CSS1Parser::ParseSelector()
                 pRoot = pNew;
 
             pLast = pNew;
-            pNew = 0;
+            pNew = nullptr;
         }
 
         if( bNextToken && !bDone )
@@ -1001,7 +993,7 @@ CSS1Selector *CSS1Parser::ParseSelector()
 // beruecksichtigt und wird auf nValue angewendet!
 CSS1Expression *CSS1Parser::ParseDeclaration( OUString& rProperty )
 {
-    CSS1Expression *pRoot = 0, *pLast = 0;
+    CSS1Expression *pRoot = nullptr, *pLast = nullptr;
 
     // property
     if( CSS1_IDENT != nToken )
@@ -1026,7 +1018,7 @@ CSS1Expression *CSS1Parser::ParseDeclaration( OUString& rProperty )
     // Problem sein
     bool bDone = false;
     sal_Unicode cSign = 0, cOp = 0;
-    CSS1Expression *pNew = 0;
+    CSS1Expression *pNew = nullptr;
 
     LOOP_CHECK_DECL
 
@@ -1082,7 +1074,7 @@ CSS1Expression *CSS1Parser::ParseDeclaration( OUString& rProperty )
         // falls ein Expression angelegt wurde, diesen speichern
         if( pNew )
         {
-            OSL_ENSURE( (pRoot!=0) == (pLast!=0),
+            OSL_ENSURE( (pRoot!=nullptr) == (pLast!=nullptr),
                     "Root-Selektor, aber kein Last" );
             if( pLast )
                 pLast->SetNext( pNew );
@@ -1090,7 +1082,7 @@ CSS1Expression *CSS1Parser::ParseDeclaration( OUString& rProperty )
                 pRoot = pNew;
 
             pLast = pNew;
-            pNew = 0;
+            pNew = nullptr;
         }
 
         if( !bDone )
@@ -1247,7 +1239,17 @@ bool CSS1Expression::GetURL( OUString& rURL  ) const
     if( aValue.getLength() > 5 )
     {
         rURL = aValue.copy( 4, aValue.getLength() - 5 );
-        rURL = comphelper::string::strip(rURL, ' ');
+
+        // tdf#94088 original stripped only spaces, but there may also be
+        // double quotes in CSS style URLs, so be prepared to spaces followed
+        // by a single quote followed by spaces
+        const sal_Unicode aSpace(' ');
+        const sal_Unicode aSingleQuote('\'');
+
+        rURL = comphelper::string::strip(rURL, aSpace);
+        rURL = comphelper::string::strip(rURL, aSingleQuote);
+        rURL = comphelper::string::strip(rURL, aSpace);
+
         bRet = true;
     }
 

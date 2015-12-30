@@ -78,8 +78,7 @@ void FmSearchThread::run()
 
 void FmSearchThread::onTerminated()
 {
-    if (m_aTerminationHdl.IsSet())
-        m_aTerminationHdl.Call(this);
+    m_aTerminationHdl.Call(this);
     delete this;
 }
 
@@ -89,21 +88,21 @@ void FmSearchThread::onTerminated()
 //  SMART_UNO_IMPLEMENTATION(FmRecordCountListener, UsrObject);
 
 
-FmRecordCountListener::FmRecordCountListener(const Reference< ::com::sun::star::sdbc::XResultSet > & dbcCursor)
+FmRecordCountListener::FmRecordCountListener(const Reference< css::sdbc::XResultSet > & dbcCursor)
 {
 
-    m_xListening = Reference< ::com::sun::star::beans::XPropertySet > (dbcCursor, UNO_QUERY);
+    m_xListening.set(dbcCursor, UNO_QUERY);
     if (!m_xListening.is())
         return;
 
     if (::comphelper::getBOOL(m_xListening->getPropertyValue(FM_PROP_ROWCOUNTFINAL)))
     {
-        m_xListening = NULL;
+        m_xListening = nullptr;
         // there's nothing to do as the record count is already known
         return;
     }
 
-    m_xListening->addPropertyChangeListener(FM_PROP_ROWCOUNT, static_cast<com::sun::star::beans::XPropertyChangeListener*>(this));
+    m_xListening->addPropertyChangeListener(FM_PROP_ROWCOUNT, static_cast<css::beans::XPropertyChangeListener*>(this));
 }
 
 
@@ -128,12 +127,12 @@ FmRecordCountListener::~FmRecordCountListener()
 void FmRecordCountListener::DisConnect()
 {
     if(m_xListening.is())
-        m_xListening->removePropertyChangeListener(FM_PROP_ROWCOUNT, static_cast<com::sun::star::beans::XPropertyChangeListener*>(this));
-    m_xListening = NULL;
+        m_xListening->removePropertyChangeListener(FM_PROP_ROWCOUNT, static_cast<css::beans::XPropertyChangeListener*>(this));
+    m_xListening = nullptr;
 }
 
 
-void SAL_CALL FmRecordCountListener::disposing(const ::com::sun::star::lang::EventObject& /*Source*/) throw( RuntimeException, std::exception )
+void SAL_CALL FmRecordCountListener::disposing(const css::lang::EventObject& /*Source*/) throw( RuntimeException, std::exception )
 {
     DBG_ASSERT(m_xListening.is(), "FmRecordCountListener::disposing should never have been called without a propset !");
     DisConnect();
@@ -151,7 +150,7 @@ void FmRecordCountListener::NotifyCurrentCount()
 }
 
 
-void FmRecordCountListener::propertyChange(const  ::com::sun::star::beans::PropertyChangeEvent& /*evt*/) throw(::com::sun::star::uno::RuntimeException, std::exception)
+void FmRecordCountListener::propertyChange(const  css::beans::PropertyChangeEvent& /*evt*/) throw(css::uno::RuntimeException, std::exception)
 {
     NotifyCurrentCount();
 }
@@ -159,7 +158,7 @@ void FmRecordCountListener::propertyChange(const  ::com::sun::star::beans::Prope
 
 // FmSearchEngine - local classes
 
-SimpleTextWrapper::SimpleTextWrapper(const Reference< ::com::sun::star::awt::XTextComponent > & _xText)
+SimpleTextWrapper::SimpleTextWrapper(const Reference< css::awt::XTextComponent > & _xText)
     :ControlTextWrapper(_xText.get())
     ,m_xText(_xText)
 {
@@ -173,7 +172,7 @@ OUString SimpleTextWrapper::getCurrentText() const
 }
 
 
-ListBoxWrapper::ListBoxWrapper(const Reference< ::com::sun::star::awt::XListBox > & _xBox)
+ListBoxWrapper::ListBoxWrapper(const Reference< css::awt::XListBox > & _xBox)
     :ControlTextWrapper(_xBox.get())
     ,m_xBox(_xBox)
 {
@@ -187,7 +186,7 @@ OUString ListBoxWrapper::getCurrentText() const
 }
 
 
-CheckBoxWrapper::CheckBoxWrapper(const Reference< ::com::sun::star::awt::XCheckBox > & _xBox)
+CheckBoxWrapper::CheckBoxWrapper(const Reference< css::awt::XCheckBox > & _xBox)
     :ControlTextWrapper(_xBox.get())
     ,m_xBox(_xBox)
 {
@@ -234,7 +233,7 @@ bool FmSearchEngine::MoveCursor()
             else
                 m_xSearchCursor.previous();
     }
-    catch(::com::sun::star::sdbc::SQLException const& e)
+    catch(css::sdbc::SQLException const& e)
     {
 #if OSL_DEBUG_LEVEL > 0
         OStringBuffer sDebugMessage("FmSearchEngine::MoveCursor : catched a DatabaseException (");
@@ -296,7 +295,7 @@ bool FmSearchEngine::MoveField(sal_Int32& nPos, FieldCollection::iterator& iter,
 }
 
 
-void FmSearchEngine::BuildAndInsertFieldInfo(const Reference< ::com::sun::star::container::XIndexAccess > & xAllFields, sal_Int32 nField)
+void FmSearchEngine::BuildAndInsertFieldInfo(const Reference< css::container::XIndexAccess > & xAllFields, sal_Int32 nField)
 {
     DBG_ASSERT( xAllFields.is() && ( nField >= 0 ) && ( nField < xAllFields->getCount() ),
         "FmSearchEngine::BuildAndInsertFieldInfo: invalid field descriptor!" );
@@ -307,19 +306,19 @@ void FmSearchEngine::BuildAndInsertFieldInfo(const Reference< ::com::sun::star::
 
     // von dem weiss ich jetzt, dass es den DatabaseRecord-Service unterstuetzt (hoffe ich)
     // fuer den FormatKey und den Typ brauche ich das PropertySet
-    Reference< ::com::sun::star::beans::XPropertySet >  xProperties(xCurrentField, UNO_QUERY);
+    Reference< css::beans::XPropertySet >  xProperties(xCurrentField, UNO_QUERY);
 
     // die FieldInfo dazu aufbauen
     FieldInfo fiCurrent;
-    fiCurrent.xContents = Reference< ::com::sun::star::sdb::XColumn > (xCurrentField, UNO_QUERY);
+    fiCurrent.xContents.set(xCurrentField, UNO_QUERY);
     fiCurrent.nFormatKey = ::comphelper::getINT32(xProperties->getPropertyValue(FM_PROP_FORMATKEY));
     fiCurrent.bDoubleHandling = false;
     if (m_xFormatSupplier.is())
     {
-        Reference< ::com::sun::star::util::XNumberFormats >  xNumberFormats(m_xFormatSupplier->getNumberFormats());
+        Reference< css::util::XNumberFormats >  xNumberFormats(m_xFormatSupplier->getNumberFormats());
 
-        sal_Int16 nFormatType = ::comphelper::getNumberFormatType(xNumberFormats, fiCurrent.nFormatKey) & ~((sal_Int16)::com::sun::star::util::NumberFormat::DEFINED);
-        fiCurrent.bDoubleHandling = (nFormatType != ::com::sun::star::util::NumberFormat::TEXT);
+        sal_Int16 nFormatType = ::comphelper::getNumberFormatType(xNumberFormats, fiCurrent.nFormatKey) & ~((sal_Int16)css::util::NumberFormat::DEFINED);
+        fiCurrent.bDoubleHandling = (nFormatType != css::util::NumberFormat::TEXT);
     }
 
     // und merken
@@ -365,7 +364,7 @@ OUString FmSearchEngine::FormatField(sal_Int32 nWhich)
     if (m_bUsingTextComponents)
     {
         DBG_ASSERT((sal_uInt32)nWhich < m_aControlTexts.size(), "FmSearchEngine::FormatField(sal_Int32) : invalid position !");
-        DBG_ASSERT(m_aControlTexts[nWhich] != NULL, "FmSearchEngine::FormatField(sal_Int32) : invalid object in array !");
+        DBG_ASSERT(m_aControlTexts[nWhich] != nullptr, "FmSearchEngine::FormatField(sal_Int32) : invalid object in array !");
         DBG_ASSERT(m_aControlTexts[nWhich]->getControl().is(), "FmSearchEngine::FormatField : invalid control !");
 
         if (m_nCurrentFieldIndex != -1)
@@ -384,7 +383,7 @@ OUString FmSearchEngine::FormatField(sal_Int32 nWhich)
         if (m_nCurrentFieldIndex != -1)
         {
             DBG_ASSERT((nWhich == 0) || (nWhich == m_nCurrentFieldIndex), "FmSearchEngine::FormatField : Parameter nWhich ist ungueltig");
-            // ich bin im single-field-modus, da ist auch die richtige Feld-Nummer erlaubt, obwohl dann der richtige ::com::sun::star::sdbcx::Index
+            // ich bin im single-field-modus, da ist auch die richtige Feld-Nummer erlaubt, obwohl dann der richtige css::sdbcx::Index
             // fuer meinen Array-Zugriff natuerlich 0 ist
             nWhich = 0;
         }
@@ -694,9 +693,8 @@ FmSearchEngine::FmSearchEngine(const Reference< XComponentContext >& _rxContext,
     ,m_nTransliterationFlags(0)
 {
 
-    m_xFormatter = Reference< ::com::sun::star::util::XNumberFormatter >(
-                    ::com::sun::star::util::NumberFormatter::create( ::comphelper::getProcessComponentContext() ),
-                    UNO_QUERY_THROW);
+    m_xFormatter.set( css::util::NumberFormatter::create( ::comphelper::getProcessComponentContext() ),
+                      UNO_QUERY_THROW);
     m_xFormatter->attachNumberFormatsSupplier(m_xFormatSupplier);
 
     Init(sVisibleFields);
@@ -796,21 +794,21 @@ void FmSearchEngine::fillControlTexts(const InterfaceArray& arrFields)
         xCurrent = arrFields.at(i);
         DBG_ASSERT(xCurrent.is(), "FmSearchEngine::fillControlTexts : invalid field interface !");
         // check which type of control this is
-        Reference< ::com::sun::star::awt::XTextComponent >  xAsText(xCurrent, UNO_QUERY);
+        Reference< css::awt::XTextComponent >  xAsText(xCurrent, UNO_QUERY);
         if (xAsText.is())
         {
             m_aControlTexts.insert(m_aControlTexts.end(), new SimpleTextWrapper(xAsText));
             continue;
         }
 
-        Reference< ::com::sun::star::awt::XListBox >  xAsListBox(xCurrent, UNO_QUERY);
+        Reference< css::awt::XListBox >  xAsListBox(xCurrent, UNO_QUERY);
         if (xAsListBox.is())
         {
             m_aControlTexts.insert(m_aControlTexts.end(), new ListBoxWrapper(xAsListBox));
             continue;
         }
 
-        Reference< ::com::sun::star::awt::XCheckBox >  xAsCheckBox(xCurrent, UNO_QUERY);
+        Reference< css::awt::XCheckBox >  xAsCheckBox(xCurrent, UNO_QUERY);
         DBG_ASSERT(xAsCheckBox.is(), "FmSearchEngine::fillControlTexts : invalid field interface (no supported type) !");
             // we don't have any more options ...
         m_aControlTexts.insert(m_aControlTexts.end(), new CheckBoxWrapper(xAsCheckBox));
@@ -855,14 +853,14 @@ void FmSearchEngine::Init(const OUString& sVisibleFields)
 
     // now that we have this information, we need a collator which is able to case (in)sentively compare strings
     m_aStringCompare.loadDefaultCollator( SvtSysLocale().GetLanguageTag().getLocale(),
-        bCaseSensitiveIdentifiers ? 0 : ::com::sun::star::i18n::CollatorOptions::CollatorOptions_IGNORE_CASE );
+        bCaseSensitiveIdentifiers ? 0 : css::i18n::CollatorOptions::CollatorOptions_IGNORE_CASE );
 
     try
     {
         // der Cursor kann mir einen Record (als PropertySet) liefern, dieser unterstuetzt den DatabaseRecord-Service
-        Reference< ::com::sun::star::sdbcx::XColumnsSupplier >  xSupplyCols(IFACECAST(m_xSearchCursor), UNO_QUERY);
+        Reference< css::sdbcx::XColumnsSupplier >  xSupplyCols(IFACECAST(m_xSearchCursor), UNO_QUERY);
         DBG_ASSERT(xSupplyCols.is(), "FmSearchEngine::Init : invalid cursor (no columns supplier) !");
-        Reference< ::com::sun::star::container::XNameAccess >       xAllFieldNames = xSupplyCols->getColumns();
+        Reference< css::container::XNameAccess >       xAllFieldNames = xSupplyCols->getColumns();
         Sequence< OUString > seqFieldNames = xAllFieldNames->getElementNames();
         OUString*            pFieldNames = seqFieldNames.getArray();
 
@@ -1133,7 +1131,7 @@ void FmSearchEngine::CancelSearch()
 }
 
 
-bool FmSearchEngine::SwitchToContext(const Reference< ::com::sun::star::sdbc::XResultSet > & xCursor, const OUString& sVisibleFields, const InterfaceArray& arrFields,
+bool FmSearchEngine::SwitchToContext(const Reference< css::sdbc::XResultSet > & xCursor, const OUString& sVisibleFields, const InterfaceArray& arrFields,
     sal_Int32 nFieldIndex)
 {
     DBG_ASSERT(!m_bSearchingCurrently, "FmSearchEngine::SwitchToContext : please do not call while I'm searching !");
@@ -1172,7 +1170,7 @@ void FmSearchEngine::ImplStartNextSearch()
     else
     {
         SearchNextImpl();
-        LINK(this, FmSearchEngine, OnSearchTerminated).Call(NULL);
+        LINK(this, FmSearchEngine, OnSearchTerminated).Call(nullptr);
     }
 }
 
@@ -1234,7 +1232,7 @@ void FmSearchEngine::StartOverSpecial(bool _bSearchForNull)
 
 void FmSearchEngine::InvalidatePreviousLoc()
 {
-    m_aPreviousLocBookmark.setValue(0,cppu::UnoType<void>::get());
+    m_aPreviousLocBookmark.setValue(nullptr,cppu::UnoType<void>::get());
     m_iterPreviousLocField = m_arrUsedFields.end();
 }
 
@@ -1243,7 +1241,7 @@ void FmSearchEngine::RebuildUsedFields(sal_Int32 nFieldIndex, bool bForce)
 {
     if (!bForce && (nFieldIndex == m_nCurrentFieldIndex))
         return;
-    // (da ich keinen Wechsel des Iterators von aussen zulasse, heisst selber ::com::sun::star::sdbcx::Index auch immer selbe Spalte, also habe ich nix zu tun)
+    // (da ich keinen Wechsel des Iterators von aussen zulasse, heisst selber css::sdbcx::Index auch immer selbe Spalte, also habe ich nix zu tun)
 
     DBG_ASSERT((nFieldIndex == -1) ||
                ((nFieldIndex >= 0) &&
@@ -1253,21 +1251,21 @@ void FmSearchEngine::RebuildUsedFields(sal_Int32 nFieldIndex, bool bForce)
     m_arrUsedFields.clear();
     if (nFieldIndex == -1)
     {
-        Reference< ::com::sun::star::container::XIndexAccess >  xFields;
+        Reference< css::container::XIndexAccess >  xFields;
         for (size_t i=0; i<m_arrFieldMapping.size(); ++i)
         {
-            Reference< ::com::sun::star::sdbcx::XColumnsSupplier >  xSupplyCols(IFACECAST(m_xSearchCursor), UNO_QUERY);
+            Reference< css::sdbcx::XColumnsSupplier >  xSupplyCols(IFACECAST(m_xSearchCursor), UNO_QUERY);
             DBG_ASSERT(xSupplyCols.is(), "FmSearchEngine::RebuildUsedFields : invalid cursor (no columns supplier) !");
-            xFields = Reference< ::com::sun::star::container::XIndexAccess > (xSupplyCols->getColumns(), UNO_QUERY);
+            xFields.set(xSupplyCols->getColumns(), UNO_QUERY);
             BuildAndInsertFieldInfo(xFields, m_arrFieldMapping[i]);
         }
     }
     else
     {
-        Reference< ::com::sun::star::container::XIndexAccess >  xFields;
-        Reference< ::com::sun::star::sdbcx::XColumnsSupplier >  xSupplyCols(IFACECAST(m_xSearchCursor), UNO_QUERY);
+        Reference< css::container::XIndexAccess >  xFields;
+        Reference< css::sdbcx::XColumnsSupplier >  xSupplyCols(IFACECAST(m_xSearchCursor), UNO_QUERY);
         DBG_ASSERT(xSupplyCols.is(), "FmSearchEngine::RebuildUsedFields : invalid cursor (no columns supplier) !");
-        xFields = Reference< ::com::sun::star::container::XIndexAccess > (xSupplyCols->getColumns(), UNO_QUERY);
+        xFields.set (xSupplyCols->getColumns(), UNO_QUERY);
         BuildAndInsertFieldInfo(xFields, m_arrFieldMapping[static_cast< size_t >(nFieldIndex)]);
     }
 

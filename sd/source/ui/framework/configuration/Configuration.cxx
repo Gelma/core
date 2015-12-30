@@ -84,7 +84,7 @@ void SAL_CALL Configuration::disposing()
 {
     ::osl::MutexGuard aGuard (maMutex);
     mpResourceContainer->clear();
-    mxBroadcaster = NULL;
+    mxBroadcaster = nullptr;
 }
 
 //----- XConfiguration --------------------------------------------------------
@@ -95,7 +95,7 @@ void SAL_CALL Configuration::addResource (const Reference<XResourceId>& rxResour
     ThrowIfDisposed();
 
     if ( ! rxResourceId.is() || rxResourceId->getResourceURL().isEmpty())
-        throw ::com::sun::star::lang::IllegalArgumentException();
+        throw css::lang::IllegalArgumentException();
 
     if (mpResourceContainer->find(rxResourceId) == mpResourceContainer->end())
     {
@@ -113,7 +113,7 @@ void SAL_CALL Configuration::removeResource (const Reference<XResourceId>& rxRes
     ThrowIfDisposed();
 
     if ( ! rxResourceId.is() || rxResourceId->getResourceURL().isEmpty())
-        throw ::com::sun::star::lang::IllegalArgumentException();
+        throw css::lang::IllegalArgumentException();
 
     ResourceContainer::iterator iResource (mpResourceContainer->find(rxResourceId));
     if (iResource != mpResourceContainer->end())
@@ -130,7 +130,7 @@ Sequence<Reference<XResourceId> > SAL_CALL Configuration::getResources (
     const Reference<XResourceId>& rxAnchorId,
     const OUString& rsResourceURLPrefix,
     AnchorBindingMode eMode)
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     ::osl::MutexGuard aGuard (maMutex);
     ThrowIfDisposed();
@@ -168,12 +168,7 @@ Sequence<Reference<XResourceId> > SAL_CALL Configuration::getResources (
         aResources.push_back(*iResource);
     }
 
-    // Copy the resources from the vector into a new sequence.
-    Sequence<Reference<XResourceId> > aResult (aResources.size());
-    for (size_t nIndex=0; nIndex<aResources.size(); ++nIndex)
-        aResult[nIndex] = aResources[nIndex];
-
-    return aResult;
+    return comphelper::containerToSequence(aResources);
 }
 
 sal_Bool SAL_CALL Configuration::hasResource (const Reference<XResourceId>& rxResourceId)
@@ -281,7 +276,7 @@ void Configuration::PostEvent (
 }
 
 void Configuration::ThrowIfDisposed() const
-    throw (::com::sun::star::lang::DisposedException)
+    throw (css::lang::DisposedException)
 {
     if (rBHelper.bDisposed || rBHelper.bInDispose)
     {
@@ -302,10 +297,10 @@ bool AreConfigurationsEquivalent (
     // Get the lists of resources from the two given configurations.
     const Sequence<Reference<XResourceId> > aResources1(
         rxConfiguration1->getResources(
-            NULL, OUString(), AnchorBindingMode_INDIRECT));
+            nullptr, OUString(), AnchorBindingMode_INDIRECT));
     const Sequence<Reference<XResourceId> > aResources2(
         rxConfiguration2->getResources(
-            NULL, OUString(), AnchorBindingMode_INDIRECT));
+            nullptr, OUString(), AnchorBindingMode_INDIRECT));
 
     // When the number of resources differ then the configurations can not
     // be equivalent.
@@ -337,12 +332,12 @@ bool AreConfigurationsEquivalent (
 } } // end of namespace sd::framework
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
 com_sun_star_comp_Draw_framework_configuration_Configuration_get_implementation(
-        ::com::sun::star::uno::XComponentContext*,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+        css::uno::XComponentContext*,
+        css::uno::Sequence<css::uno::Any> const &)
 {
-    return cppu::acquire(new sd::framework::Configuration(NULL, false));
+    return cppu::acquire(new sd::framework::Configuration(nullptr, false));
 }
 
 

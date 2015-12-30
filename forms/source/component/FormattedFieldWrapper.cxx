@@ -48,7 +48,7 @@ OFormattedFieldWrapper::OFormattedFieldWrapper(const Reference<XComponentContext
 {
 }
 
-css::uno::Reference<css::uno::XInterface> OFormattedFieldWrapper::createFormattedFieldWrapper(const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext>& _rxFactory, bool bActAsFormatted)
+css::uno::Reference<css::uno::XInterface> OFormattedFieldWrapper::createFormattedFieldWrapper(const css::uno::Reference< css::uno::XComponentContext>& _rxFactory, bool bActAsFormatted)
 {
     OFormattedFieldWrapper *pRef = new OFormattedFieldWrapper(_rxFactory);
 
@@ -61,12 +61,12 @@ css::uno::Reference<css::uno::XInterface> OFormattedFieldWrapper::createFormatte
         css::uno::Reference<css::uno::XInterface> xFormattedModel(
             static_cast<XWeak*>(pModel), css::uno::UNO_QUERY);
 
-        pRef->m_xAggregate = Reference<XAggregation> (xFormattedModel, UNO_QUERY);
+        pRef->m_xAggregate.set(xFormattedModel, UNO_QUERY);
         OSL_ENSURE(pRef->m_xAggregate.is(), "the OFormattedModel didn't have an XAggregation interface !");
 
         // _before_ setting the delegator, give it to the member references
         pRef->m_xFormattedPart.set(xFormattedModel, css::uno::UNO_QUERY);
-        pRef->m_pEditPart = rtl::Reference< OEditModel >(new OEditModel(pRef->m_xContext));
+        pRef->m_pEditPart.set(new OEditModel(pRef->m_xContext));
     }
 
     osl_atomic_increment(&pRef->m_refCount);
@@ -95,7 +95,7 @@ Reference< XCloneable > SAL_CALL OFormattedFieldWrapper::createClone() throw (Ru
     if ( xCloneAccess.is() )
     {
         Reference< XCloneable > xClone = xCloneAccess->createClone();
-        xRef->m_xAggregate = Reference< XAggregation >(xClone, UNO_QUERY);
+        xRef->m_xAggregate.set(xClone, UNO_QUERY);
         OSL_ENSURE(xRef->m_xAggregate.is(), "invalid aggregate cloned !");
 
         xRef->m_xFormattedPart.set(
@@ -103,7 +103,7 @@ Reference< XCloneable > SAL_CALL OFormattedFieldWrapper::createClone() throw (Ru
 
         if ( m_pEditPart.is() )
         {
-            xRef->m_pEditPart = rtl::Reference< OEditModel >( new OEditModel(m_pEditPart.get(), m_xContext));
+            xRef->m_pEditPart.set( new OEditModel(m_pEditPart.get(), m_xContext) );
         }
     }
     else
@@ -284,15 +284,15 @@ void SAL_CALL OFormattedFieldWrapper::read(const Reference<XObjectInputStream>& 
         if (!pBasicReader->lastReadWasFormattedFake())
         {
             // yes -> all fine
-            m_xAggregate = Reference< XAggregation >( pBasicReader.get() );
+            m_xAggregate.set( pBasicReader.get() );
         }
         else
         {   // no -> substitute it with a formatted model
             // let the formmatted model do the reading
-            m_xFormattedPart = Reference< XPersistObject >(new OFormattedModel(m_xContext));
+            m_xFormattedPart.set(new OFormattedModel(m_xContext));
             m_xFormattedPart->read(_rxInStream);
             m_pEditPart = pBasicReader;
-            m_xAggregate = Reference< XAggregation >( m_xFormattedPart, UNO_QUERY );
+            m_xAggregate.set( m_xFormattedPart, UNO_QUERY );
         }
     }
 
@@ -321,7 +321,7 @@ void OFormattedFieldWrapper::ensureAggregate()
             xEditModel.set(static_cast<XWeak*>(pModel), css::uno::UNO_QUERY);
         }
 
-        m_xAggregate = Reference<XAggregation> (xEditModel, UNO_QUERY);
+        m_xAggregate.set(xEditModel, UNO_QUERY);
         DBG_ASSERT(m_xAggregate.is(), "OFormattedFieldWrapper::ensureAggregate : the OEditModel didn't have an XAggregation interface !");
 
         {
@@ -342,9 +342,9 @@ void OFormattedFieldWrapper::ensureAggregate()
     osl_atomic_decrement(&m_refCount);
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_form_OFormattedFieldWrapper_get_implementation(::com::sun::star::uno::XComponentContext* component,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_form_OFormattedFieldWrapper_get_implementation(css::uno::XComponentContext* component,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     css::uno::Reference<css::uno::XInterface> inst(
         OFormattedFieldWrapper::createFormattedFieldWrapper(component, false));
@@ -352,9 +352,9 @@ com_sun_star_form_OFormattedFieldWrapper_get_implementation(::com::sun::star::un
     return inst.get();
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_forms_OFormattedFieldWrapper_ForcedFormatted_get_implementation(::com::sun::star::uno::XComponentContext* component,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_forms_OFormattedFieldWrapper_ForcedFormatted_get_implementation(css::uno::XComponentContext* component,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     css::uno::Reference<css::uno::XInterface> inst(
         OFormattedFieldWrapper::createFormattedFieldWrapper(component, true));

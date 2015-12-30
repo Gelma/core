@@ -33,7 +33,7 @@ using namespace ::com::sun::star::beans;
 
 PPPOptimizerDialog::PPPOptimizerDialog( const Reference< XComponentContext > &xContext ) :
     mxContext( xContext ),
-    mpOptimizerDialog( NULL )
+    mpOptimizerDialog( nullptr )
 {
 }
 
@@ -70,7 +70,7 @@ Sequence< OUString > SAL_CALL PPPOptimizerDialog::getSupportedServiceNames()
     return PPPOptimizerDialog_getSupportedServiceNames();
 }
 
-Reference< com::sun::star::frame::XDispatch > SAL_CALL PPPOptimizerDialog::queryDispatch(
+Reference< css::frame::XDispatch > SAL_CALL PPPOptimizerDialog::queryDispatch(
     const URL& aURL, const OUString& /* aTargetFrameName */, sal_Int32 /* nSearchFlags */ ) throw( RuntimeException, std::exception )
 {
     Reference < XDispatch > xRet;
@@ -80,12 +80,12 @@ Reference< com::sun::star::frame::XDispatch > SAL_CALL PPPOptimizerDialog::query
     return xRet;
 }
 
-Sequence< Reference< com::sun::star::frame::XDispatch > > SAL_CALL PPPOptimizerDialog::queryDispatches(
-    const Sequence< com::sun::star::frame::DispatchDescriptor >& aDescripts ) throw( RuntimeException, std::exception )
+Sequence< Reference< css::frame::XDispatch > > SAL_CALL PPPOptimizerDialog::queryDispatches(
+    const Sequence< css::frame::DispatchDescriptor >& aDescripts ) throw( RuntimeException, std::exception )
 {
-    Sequence< Reference< com::sun::star::frame::XDispatch> > aReturn( aDescripts.getLength() );
-    Reference< com::sun::star::frame::XDispatch>* pReturn = aReturn.getArray();
-    const com::sun::star::frame::DispatchDescriptor* pDescripts = aDescripts.getConstArray();
+    Sequence< Reference< css::frame::XDispatch> > aReturn( aDescripts.getLength() );
+    Reference< css::frame::XDispatch>* pReturn = aReturn.getArray();
+    const css::frame::DispatchDescriptor* pDescripts = aDescripts.getConstArray();
     for (sal_Int32 i = 0; i < aDescripts.getLength(); ++i, ++pReturn, ++pDescripts )
     {
         *pReturn = queryDispatch( pDescripts->FeatureURL, pDescripts->FrameName, pDescripts->SearchFlags );
@@ -126,7 +126,7 @@ void SAL_CALL PPPOptimizerDialog::dispatch( const URL& rURL,
                     OUString sResult( sBuf.makeStringAndClear() );
                     SAL_INFO("sdext.minimizer", sResult );
                 }
-                delete mpOptimizerDialog, mpOptimizerDialog = NULL;
+                delete mpOptimizerDialog, mpOptimizerDialog = nullptr;
             }
             catch( ... )
             {
@@ -162,9 +162,7 @@ OUString PPPOptimizerDialog_getImplementationName()
 
 Sequence< OUString > PPPOptimizerDialog_getSupportedServiceNames()
 {
-    Sequence < OUString > aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = SERVICE_NAME;
+    Sequence<OUString> aRet { SERVICE_NAME };
     return aRet;
 }
 

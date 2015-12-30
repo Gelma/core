@@ -47,14 +47,14 @@ namespace drawinglayer
         public:
             /// constructor
             ModifiedColorPrimitive3D(
-                const Primitive3DSequence& rChildren,
+                const Primitive3DContainer& rChildren,
                 const basegfx::BColorModifierSharedPtr& rColorModifier);
 
             /// data read access
             const basegfx::BColorModifierSharedPtr& getColorModifier() const { return maColorModifier; }
 
             /// compare operator
-            virtual bool operator==(const BasePrimitive3D& rPrimitive) const SAL_OVERRIDE;
+            virtual bool operator==(const BasePrimitive3D& rPrimitive) const override;
 
             /// provide unique ID
             DeclPrimitive3DIDBlock()

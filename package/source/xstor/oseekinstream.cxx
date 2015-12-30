@@ -33,7 +33,7 @@ OInputSeekStream::OInputSeekStream( OWriteStream_Impl& pImpl,
                                     sal_Int32 nStorageType )
 : OInputCompStream( pImpl, xStream, aProps, nStorageType )
 {
-    m_xSeekable = uno::Reference< io::XSeekable >( m_xStream, uno::UNO_QUERY );
+    m_xSeekable.set( m_xStream, uno::UNO_QUERY );
     OSL_ENSURE( m_xSeekable.is(), "No seeking support!\n" );
 }
 
@@ -42,7 +42,7 @@ OInputSeekStream::OInputSeekStream( uno::Reference < io::XInputStream > xStream,
                                     sal_Int32 nStorageType )
 : OInputCompStream( xStream, aProps, nStorageType )
 {
-    m_xSeekable = uno::Reference< io::XSeekable >( m_xStream, uno::UNO_QUERY );
+    m_xSeekable.set( m_xStream, uno::UNO_QUERY );
     OSL_ENSURE( m_xSeekable.is(), "No seeking support!\n" );
 }
 
@@ -53,13 +53,13 @@ OInputSeekStream::~OInputSeekStream()
 uno::Sequence< uno::Type > SAL_CALL OInputSeekStream::getTypes()
         throw ( uno::RuntimeException, std::exception )
 {
-    static ::cppu::OTypeCollection* pTypeCollection = NULL ;
+    static ::cppu::OTypeCollection* pTypeCollection = nullptr ;
 
-    if ( pTypeCollection == NULL )
+    if ( pTypeCollection == nullptr )
     {
         ::osl::MutexGuard aGuard( m_rMutexRef->GetMutex() ) ;
 
-        if ( pTypeCollection == NULL )
+        if ( pTypeCollection == nullptr )
         {
             static ::cppu::OTypeCollection aTypeCollection(
                     cppu::UnoType<io::XSeekable>::get(),

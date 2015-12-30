@@ -131,20 +131,19 @@ class NavigatorTree :   public ::cppu::BaseMutex
 
     protected:
         // OPropertyChangeListener
-        virtual void _propertyChanged(const beans::PropertyChangeEvent& _rEvent) throw( uno::RuntimeException) SAL_OVERRIDE;
+        virtual void _propertyChanged(const beans::PropertyChangeEvent& _rEvent) throw( uno::RuntimeException) override;
 
         // OContainerListener
-        virtual void _elementInserted( const container::ContainerEvent& _rEvent ) throw(uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void _elementInserted( const container::ContainerEvent& _rEvent ) throw(uno::RuntimeException, std::exception) override;
         virtual void _elementRemoved( const container::ContainerEvent& _Event )
-            throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void _elementReplaced( const container::ContainerEvent& _rEvent ) throw(uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw (uno::RuntimeException, std::exception) override;
+        virtual void _elementReplaced( const container::ContainerEvent& _rEvent ) throw(uno::RuntimeException, std::exception) override;
         virtual void _disposing(const lang::EventObject& _rSource)
-            throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw (uno::RuntimeException, std::exception) override;
     };
 
     enum DROP_ACTION        { DA_SCROLLUP, DA_SCROLLDOWN, DA_EXPANDNODE };
     AutoTimer                                                                   m_aDropActionTimer;
-    Timer                                                                       m_aSynchronizeTimer;
     ImageList                                                                   m_aNavigatorImages;
     Point                                                                       m_aTimerTriggered;      // position at which the DropTimer started
     DROP_ACTION                                                                 m_aDropActionType;
@@ -160,19 +159,19 @@ class NavigatorTree :   public ::cppu::BaseMutex
     void traverseFunctions(const uno::Reference< report::XFunctions>& _xFunctions,SvTreeListEntry* _pParent);
 
 protected:
-    virtual void        Command( const CommandEvent& rEvt ) SAL_OVERRIDE;
+    virtual void        Command( const CommandEvent& rEvt ) override;
     // DragSourceHelper overridables
-    virtual void        StartDrag( sal_Int8 nAction, const Point& rPosPixel ) SAL_OVERRIDE;
+    virtual void        StartDrag( sal_Int8 nAction, const Point& rPosPixel ) override;
     // DropTargetHelper overridables
-    virtual sal_Int8    AcceptDrop( const AcceptDropEvent& _rEvt ) SAL_OVERRIDE;
-    virtual sal_Int8    ExecuteDrop( const ExecuteDropEvent& _rEvt ) SAL_OVERRIDE;
+    virtual sal_Int8    AcceptDrop( const AcceptDropEvent& _rEvt ) override;
+    virtual sal_Int8    ExecuteDrop( const ExecuteDropEvent& _rEvt ) override;
 
     // OSelectionChangeListener
     virtual void _disposing(const lang::EventObject& _rSource)
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
 
     // OPropertyChangeListener
-    virtual void _propertyChanged(const beans::PropertyChangeEvent& _rEvent) throw( uno::RuntimeException) SAL_OVERRIDE;
+    virtual void _propertyChanged(const beans::PropertyChangeEvent& _rEvent) throw( uno::RuntimeException) override;
 
     // OContainerListener Helper
     void _elementInserted( const container::ContainerEvent& _rEvent );
@@ -182,33 +181,33 @@ protected:
 public:
     NavigatorTree(vcl::Window* pParent,OReportController& _rController );
     virtual ~NavigatorTree();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     DECL_LINK_TYPED(OnEntrySelDesel, SvTreeListBox*, void);
     DECL_LINK_TYPED( OnDropActionTimer, Timer*, void );
 
-    virtual void _selectionChanged( const lang::EventObject& aEvent ) throw (uno::RuntimeException) SAL_OVERRIDE;
+    virtual void _selectionChanged( const lang::EventObject& aEvent ) throw (uno::RuntimeException) override;
 
     // ITraverseReport
-    virtual void traverseReport(const uno::Reference< report::XReportDefinition>& _xReport) SAL_OVERRIDE;
-    virtual void traverseReportFunctions(const uno::Reference< report::XFunctions>& _xFunctions) SAL_OVERRIDE;
-    virtual void traverseReportHeader(const uno::Reference< report::XSection>& _xSection) SAL_OVERRIDE;
-    virtual void traverseReportFooter(const uno::Reference< report::XSection>& _xSection) SAL_OVERRIDE;
-    virtual void traversePageHeader(const uno::Reference< report::XSection>& _xSection) SAL_OVERRIDE;
-    virtual void traversePageFooter(const uno::Reference< report::XSection>& _xSection) SAL_OVERRIDE;
+    virtual void traverseReport(const uno::Reference< report::XReportDefinition>& _xReport) override;
+    virtual void traverseReportFunctions(const uno::Reference< report::XFunctions>& _xFunctions) override;
+    virtual void traverseReportHeader(const uno::Reference< report::XSection>& _xSection) override;
+    virtual void traverseReportFooter(const uno::Reference< report::XSection>& _xSection) override;
+    virtual void traversePageHeader(const uno::Reference< report::XSection>& _xSection) override;
+    virtual void traversePageFooter(const uno::Reference< report::XSection>& _xSection) override;
 
-    virtual void traverseGroups(const uno::Reference< report::XGroups>& _xGroups) SAL_OVERRIDE;
-    virtual void traverseGroup(const uno::Reference< report::XGroup>& _xGroup) SAL_OVERRIDE;
-    virtual void traverseGroupFunctions(const uno::Reference< report::XFunctions>& _xFunctions) SAL_OVERRIDE;
-    virtual void traverseGroupHeader(const uno::Reference< report::XSection>& _xSection) SAL_OVERRIDE;
-    virtual void traverseGroupFooter(const uno::Reference< report::XSection>& _xSection) SAL_OVERRIDE;
+    virtual void traverseGroups(const uno::Reference< report::XGroups>& _xGroups) override;
+    virtual void traverseGroup(const uno::Reference< report::XGroup>& _xGroup) override;
+    virtual void traverseGroupFunctions(const uno::Reference< report::XFunctions>& _xFunctions) override;
+    virtual void traverseGroupHeader(const uno::Reference< report::XSection>& _xSection) override;
+    virtual void traverseGroupFooter(const uno::Reference< report::XSection>& _xSection) override;
 
-    virtual void traverseDetail(const uno::Reference< report::XSection>& _xSection) SAL_OVERRIDE;
+    virtual void traverseDetail(const uno::Reference< report::XSection>& _xSection) override;
 
     SvTreeListEntry* find(const uno::Reference< uno::XInterface >& _xContent);
     void removeEntry(SvTreeListEntry* _pEntry,bool _bRemove = true);
 
-    virtual Size GetOptimalSize() const SAL_OVERRIDE;
+    virtual Size GetOptimalSize() const override;
 private:
     using SvTreeListBox::ExecuteDrop;
 };
@@ -220,8 +219,8 @@ NavigatorTree::NavigatorTree( vcl::Window* pParent,OReportController& _rControll
         ,m_aTimerTriggered(-1,-1)
         ,m_aDropActionType( DA_SCROLLUP )
         ,m_rController(_rController)
-        ,m_pMasterReport(NULL)
-        ,m_pDragedEntry(NULL)
+        ,m_pMasterReport(nullptr)
+        ,m_pDragedEntry(nullptr)
         ,m_nTimerCounter( DROP_ACTION_TIMER_INITIAL_TICKS )
 {
     set_hexpand(true);
@@ -280,13 +279,13 @@ void NavigatorTree::Command( const CommandEvent& rEvt )
     case CommandEventId::ContextMenu:
         {
             // the point that was clicked on
-            SvTreeListEntry* ptClickedOn = NULL;
+            SvTreeListEntry* ptClickedOn = nullptr;
             ::Point aWhere;
             if (rEvt.IsMouseEvent())
             {
                 aWhere = rEvt.GetMousePosPixel();
                 ptClickedOn = GetEntry(aWhere);
-                if (ptClickedOn == NULL)
+                if (ptClickedOn == nullptr)
                     break;
                 if ( !IsSelected(ptClickedOn) )
                 {
@@ -507,7 +506,7 @@ void NavigatorTree::_selectionChanged( const lang::EventObject& aEvent ) throw (
 
 SvTreeListEntry* NavigatorTree::insertEntry(const OUString& _sName,SvTreeListEntry* _pParent,sal_uInt16 _nImageId,sal_uLong _nPosition,UserData* _pData)
 {
-    SvTreeListEntry* pEntry = NULL;
+    SvTreeListEntry* pEntry = nullptr;
     if ( _nImageId )
     {
         const Image aImage( m_aNavigatorImages.GetImage( _nImageId ) );
@@ -550,7 +549,7 @@ void NavigatorTree::traverseFunctions(const uno::Reference< report::XFunctions>&
 
 SvTreeListEntry* NavigatorTree::find(const uno::Reference< uno::XInterface >& _xContent)
 {
-    SvTreeListEntry* pRet = NULL;
+    SvTreeListEntry* pRet = nullptr;
     if ( _xContent.is() )
     {
         SvTreeListEntry* pCurrent = First();
@@ -910,6 +909,12 @@ void ONavigator::GetFocus()
     Window::GetFocus();
     if ( m_pImpl->m_pNavigatorTree.get() )
         m_pImpl->m_pNavigatorTree->GrabFocus();
+}
+
+void ONavigator::dispose()
+{
+    m_pImpl->m_pNavigatorTree.disposeAndClear();
+    FloatingWindow::dispose();
 }
 
 } // rptui

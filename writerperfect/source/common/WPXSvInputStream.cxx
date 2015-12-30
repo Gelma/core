@@ -61,9 +61,11 @@ PositionHolder::PositionHolder(const Reference<XSeekable> &rxSeekable)
 
 PositionHolder::~PositionHolder()
 {
-    try {
+    try
+    {
         mxSeekable->seek(mnPosition);
-    } catch (...) {}
+    }
+    catch (...) {}
 }
 
 } // anonymous namespace
@@ -252,7 +254,7 @@ tools::SvRef<SotStorageStream> OLEStorageImpl::createStream(const rtl::OUString 
     const OLEStorageMap_t::const_iterator aIt = maStorageMap.find(aDir);
 
     if (maStorageMap.end() == aIt)
-        return 0;
+        return nullptr;
 
     return aIt->second.ref->OpenSotStream(aName, STREAM_STD_READ);
 }
@@ -398,8 +400,8 @@ Reference<XInputStream> ZipStorageImpl::createStream(const rtl::OUString &rPath)
 class WPXSvInputStreamImpl
 {
 public:
-    explicit WPXSvInputStreamImpl(::com::sun::star::uno::Reference<
-                                  ::com::sun::star::io::XInputStream > xStream);
+    explicit WPXSvInputStreamImpl(css::uno::Reference<
+                                  css::io::XInputStream > xStream);
     ~WPXSvInputStreamImpl();
 
     bool isStructured();
@@ -427,9 +429,9 @@ private:
     static librevenge::RVNGInputStream *createWPXStream(const Reference<XInputStream> &rxStream);
 
 private:
-    ::com::sun::star::uno::Reference< ::com::sun::star::io::XInputStream > mxStream;
-    ::com::sun::star::uno::Reference< ::com::sun::star::io::XSeekable > mxSeekable;
-    ::com::sun::star::uno::Sequence< sal_Int8 > maData;
+    css::uno::Reference< css::io::XInputStream > mxStream;
+    css::uno::Reference< css::io::XSeekable > mxSeekable;
+    css::uno::Sequence< sal_Int8 > maData;
     std::unique_ptr< OLEStorageImpl > mpOLEStorage;
     std::unique_ptr< ZipStorageImpl > mpZipStorage;
     bool mbCheckedOLE;
@@ -450,7 +452,7 @@ WPXSvInputStreamImpl::WPXSvInputStreamImpl(Reference< XInputStream > xStream) :
     mbCheckedOLE(false),
     mbCheckedZip(false),
     mnLength(0),
-    mpReadBuffer(0),
+    mpReadBuffer(nullptr),
     mnReadBufferLength(0),
     mnReadBufferPos(0)
 {
@@ -486,11 +488,11 @@ const unsigned char *WPXSvInputStreamImpl::read(unsigned long numBytes, unsigned
     numBytesRead = 0;
 
     if (numBytes == 0 || isEnd())
-        return 0;
+        return nullptr;
 
     numBytesRead = mxStream->readSomeBytes(maData, numBytes);
     if (numBytesRead == 0)
-        return 0;
+        return nullptr;
 
     return reinterpret_cast<const unsigned char *>(maData.getConstArray());
 }
@@ -582,7 +584,7 @@ unsigned WPXSvInputStreamImpl::subStreamCount()
 const char *WPXSvInputStreamImpl::subStreamName(const unsigned id)
 {
     if ((mnLength == 0) || !mxStream.is() || !mxSeekable.is())
-        return 0;
+        return nullptr;
 
     PositionHolder pos(mxSeekable);
     mxSeekable->seek(0);
@@ -592,7 +594,7 @@ const char *WPXSvInputStreamImpl::subStreamName(const unsigned id)
         ensureOLEIsInitialized();
 
         if (mpOLEStorage->maStreams.size() <= id)
-            return 0;
+            return nullptr;
 
         return mpOLEStorage->maStreams[id].name.getStr();
     }
@@ -604,12 +606,12 @@ const char *WPXSvInputStreamImpl::subStreamName(const unsigned id)
         ensureZipIsInitialized();
 
         if (mpZipStorage->maStreams.size() <= id)
-            return 0;
+            return nullptr;
 
         return mpZipStorage->maStreams[id].aName.getStr();
     }
 
-    return 0;
+    return nullptr;
 }
 
 bool WPXSvInputStreamImpl::existsSubStream(const char *const name)
@@ -645,10 +647,10 @@ bool WPXSvInputStreamImpl::existsSubStream(const char *const name)
 librevenge::RVNGInputStream *WPXSvInputStreamImpl::getSubStreamByName(const char *const name)
 {
     if (!name)
-        return 0;
+        return nullptr;
 
     if ((mnLength == 0) || !mxStream.is() || !mxSeekable.is())
-        return 0;
+        return nullptr;
 
     PositionHolder pos(mxSeekable);
     mxSeekable->seek(0);
@@ -677,13 +679,13 @@ librevenge::RVNGInputStream *WPXSvInputStreamImpl::getSubStreamByName(const char
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 librevenge::RVNGInputStream *WPXSvInputStreamImpl::getSubStreamById(const unsigned id)
 {
     if ((mnLength == 0) || !mxStream.is() || !mxSeekable.is())
-        return 0;
+        return nullptr;
 
     PositionHolder pos(mxSeekable);
     mxSeekable->seek(0);
@@ -693,7 +695,7 @@ librevenge::RVNGInputStream *WPXSvInputStreamImpl::getSubStreamById(const unsign
         ensureOLEIsInitialized();
 
         if (mpOLEStorage->maStreams.size() <= id)
-            return 0;
+            return nullptr;
 
         return createWPXStream(mpOLEStorage->getStream(id));
     }
@@ -705,7 +707,7 @@ librevenge::RVNGInputStream *WPXSvInputStreamImpl::getSubStreamById(const unsign
         ensureZipIsInitialized();
 
         if (mpZipStorage->maStreams.size() <= id)
-            return 0;
+            return nullptr;
 
         try
         {
@@ -716,7 +718,7 @@ librevenge::RVNGInputStream *WPXSvInputStreamImpl::getSubStreamById(const unsign
             // nothing needed
         }
     }
-    return 0;
+    return nullptr;
 }
 
 void WPXSvInputStreamImpl::invalidateReadBuffer()
@@ -724,7 +726,7 @@ void WPXSvInputStreamImpl::invalidateReadBuffer()
     if (mpReadBuffer)
     {
         seek((long) tell() + (long)mnReadBufferPos - (long)mnReadBufferLength);
-        mpReadBuffer = 0;
+        mpReadBuffer = nullptr;
         mnReadBufferPos = 0;
         mnReadBufferLength = 0;
     }
@@ -737,7 +739,7 @@ librevenge::RVNGInputStream *WPXSvInputStreamImpl::createWPXStream(const tools::
         Reference < XInputStream > xContents(new utl::OSeekableInputStreamWrapper(rxStorage));
         return new WPXSvInputStream(xContents);
     }
-    return 0;
+    return nullptr;
 }
 
 librevenge::RVNGInputStream *WPXSvInputStreamImpl::createWPXStream(const Reference<XInputStream> &rxStream)
@@ -745,7 +747,7 @@ librevenge::RVNGInputStream *WPXSvInputStreamImpl::createWPXStream(const Referen
     if (rxStream.is())
         return new WPXSvInputStream(rxStream);
     else
-        return 0;
+        return nullptr;
 }
 
 bool WPXSvInputStreamImpl::isOLE()
@@ -815,7 +817,6 @@ WPXSvInputStream::WPXSvInputStream(Reference< XInputStream > xStream) :
 
 WPXSvInputStream::~WPXSvInputStream()
 {
-    delete mpImpl;
 }
 
 #define BUFFER_MAX 65536
@@ -825,7 +826,7 @@ const unsigned char *WPXSvInputStream::read(unsigned long numBytes, unsigned lon
     numBytesRead = 0;
 
     if (numBytes == 0 || numBytes > (std::numeric_limits<unsigned long>::max)()/2)
-        return 0;
+        return nullptr;
 
     if (mpImpl->mpReadBuffer)
     {
@@ -842,7 +843,7 @@ const unsigned char *WPXSvInputStream::read(unsigned long numBytes, unsigned lon
 
     unsigned long curpos = (unsigned long) mpImpl->tell();
     if (curpos == (unsigned long)-1)  // returned ERROR
-        return 0;
+        return nullptr;
 
     if ((curpos + numBytes < curpos) /*overflow*/ ||
             (curpos + numBytes >= (sal_uInt64)mpImpl->mnLength))  /*reading more than available*/
@@ -867,7 +868,7 @@ const unsigned char *WPXSvInputStream::read(unsigned long numBytes, unsigned lon
 
     mpImpl->mnReadBufferPos = 0;
     if (!mpImpl->mnReadBufferLength)
-        return 0;
+        return nullptr;
 
     numBytesRead = numBytes;
 

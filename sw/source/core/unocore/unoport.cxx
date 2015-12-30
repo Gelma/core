@@ -47,23 +47,13 @@
 #include <com/sun/star/lang/WrappedTargetRuntimeException.hpp>
 #include <comphelper/servicehelper.hxx>
 #include <cppuhelper/supportsservice.hxx>
+#include <comphelper/sequence.hxx>
 
 using namespace ::com::sun::star;
 
-class SwXTextPortion::Impl
+void SwXTextPortion::init(const SwUnoCursor* pPortionCursor)
 {
-private:
-    ::osl::Mutex m_Mutex; // just for OInterfaceContainerHelper
-
-public:
-    ::cppu::OInterfaceContainerHelper m_EventListeners;
-
-    Impl() : m_EventListeners(m_Mutex) { }
-};
-
-void SwXTextPortion::init(const SwUnoCrsr* pPortionCursor)
-{
-    m_pUnoCursor = pPortionCursor->GetDoc()->CreateUnoCrsr(*pPortionCursor->GetPoint());
+    m_pUnoCursor = pPortionCursor->GetDoc()->CreateUnoCursor(*pPortionCursor->GetPoint());
     if (pPortionCursor->HasMark())
     {
         m_pUnoCursor->SetMark();
@@ -72,30 +62,28 @@ void SwXTextPortion::init(const SwUnoCrsr* pPortionCursor)
 }
 
 SwXTextPortion::SwXTextPortion(
-    const SwUnoCrsr* pPortionCrsr,
+    const SwUnoCursor* pPortionCursor,
         uno::Reference< text::XText > const& rParent,
         SwTextPortionType eType)
-    : m_pImpl(new Impl)
-    , m_pPropSet(aSwMapProvider.GetPropertySet(
+    : m_pPropSet(aSwMapProvider.GetPropertySet(
         (PORTION_REDLINE_START == eType ||
          PORTION_REDLINE_END   == eType)
             ?  PROPERTY_MAP_REDLINE_PORTION
             :  PROPERTY_MAP_TEXTPORTION_EXTENSIONS))
     , m_xParentText(rParent)
-    , m_FrameDepend(this, 0)
-    , m_pFrameFormat(0)
+    , m_FrameDepend(this, nullptr)
+    , m_pFrameFormat(nullptr)
     , m_ePortionType(eType)
     , m_bIsCollapsed(false)
 {
-    init( pPortionCrsr);
+    init( pPortionCursor);
 }
 
 SwXTextPortion::SwXTextPortion(
-    const SwUnoCrsr* pPortionCrsr,
+    const SwUnoCursor* pPortionCursor,
     uno::Reference< text::XText > const& rParent,
     SwFrameFormat& rFormat )
-    : m_pImpl(new Impl)
-    , m_pPropSet(aSwMapProvider.GetPropertySet(
+    : m_pPropSet(aSwMapProvider.GetPropertySet(
                     PROPERTY_MAP_TEXTPORTION_EXTENSIONS))
     , m_xParentText(rParent)
     , m_FrameDepend(this, &rFormat)
@@ -103,28 +91,27 @@ SwXTextPortion::SwXTextPortion(
     , m_ePortionType(PORTION_FRAME)
     , m_bIsCollapsed(false)
 {
-    init( pPortionCrsr);
+    init( pPortionCursor);
 }
 
 SwXTextPortion::SwXTextPortion(
-    const SwUnoCrsr* pPortionCrsr,
+    const SwUnoCursor* pPortionCursor,
     SwTextRuby const& rAttr,
     uno::Reference< text::XText > const& xParent,
     bool bIsEnd )
-    : m_pImpl(new Impl)
-    , m_pPropSet(aSwMapProvider.GetPropertySet(
+    : m_pPropSet(aSwMapProvider.GetPropertySet(
                     PROPERTY_MAP_TEXTPORTION_EXTENSIONS))
     , m_xParentText(xParent)
-    , m_pRubyText   ( bIsEnd ? 0 : new uno::Any )
-    , m_pRubyStyle  ( bIsEnd ? 0 : new uno::Any )
-    , m_pRubyAdjust ( bIsEnd ? 0 : new uno::Any )
-    , m_pRubyIsAbove( bIsEnd ? 0 : new uno::Any )
-    , m_FrameDepend(this, 0)
-    , m_pFrameFormat(0)
+    , m_pRubyText   ( bIsEnd ? nullptr : new uno::Any )
+    , m_pRubyStyle  ( bIsEnd ? nullptr : new uno::Any )
+    , m_pRubyAdjust ( bIsEnd ? nullptr : new uno::Any )
+    , m_pRubyIsAbove( bIsEnd ? nullptr : new uno::Any )
+    , m_FrameDepend(this, nullptr)
+    , m_pFrameFormat(nullptr)
     , m_ePortionType( bIsEnd ? PORTION_RUBY_END : PORTION_RUBY_START )
     , m_bIsCollapsed(false)
 {
-    init( pPortionCrsr);
+    init( pPortionCursor);
 
     if (!bIsEnd)
     {
@@ -137,7 +124,15 @@ SwXTextPortion::SwXTextPortion(
 }
 
 SwXTextPortion::~SwXTextPortion()
-{ }
+{
+    SolarMutexGuard aGuard;
+    m_pUnoCursor.reset(nullptr);
+    if(m_FrameDepend.GetRegisteredIn())
+    {
+        auto pFrameDepend(const_cast<SwDepend*>(&m_FrameDepend));
+        pFrameDepend->GetRegisteredIn()->Remove(pFrameDepend);
+    }
+}
 
 uno::Reference< text::XText >  SwXTextPortion::getText()
 throw( uno::RuntimeException, std::exception )
@@ -150,9 +145,9 @@ throw( uno::RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
     uno::Reference< text::XTextRange >  xRet;
-    SwUnoCrsr& rUnoCrsr = GetCursor();
+    SwUnoCursor& rUnoCursor = GetCursor();
 
-    SwPaM aPam(*rUnoCrsr.Start());
+    SwPaM aPam(*rUnoCursor.Start());
     uno::Reference< text::XText > xParent = getText();
     xRet = new SwXTextRange(aPam, xParent);
     return xRet;
@@ -163,9 +158,9 @@ throw( uno::RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
     uno::Reference< text::XTextRange >  xRet;
-    SwUnoCrsr& rUnoCrsr = GetCursor();
+    SwUnoCursor& rUnoCursor = GetCursor();
 
-    SwPaM aPam(*rUnoCrsr.End());
+    SwPaM aPam(*rUnoCursor.End());
     uno::Reference< text::XText > xParent = getText();
     xRet = new SwXTextRange(aPam, xParent);
     return xRet;
@@ -176,15 +171,15 @@ throw( uno::RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
     OUString aText;
-    SwUnoCrsr& rUnoCrsr = GetCursor();
+    SwUnoCursor& rUnoCursor = GetCursor();
 
     // TextPortions are always within a paragraph
-    SwTextNode* pTextNd = rUnoCrsr.GetNode().GetTextNode();
+    SwTextNode* pTextNd = rUnoCursor.GetNode().GetTextNode();
     if ( pTextNd )
     {
-        const sal_Int32 nStt = rUnoCrsr.Start()->nContent.GetIndex();
+        const sal_Int32 nStt = rUnoCursor.Start()->nContent.GetIndex();
         aText = pTextNd->GetExpandText( nStt,
-                rUnoCrsr.End()->nContent.GetIndex() - nStt );
+                rUnoCursor.End()->nContent.GetIndex() - nStt );
     }
     return aText;
 }
@@ -192,9 +187,9 @@ throw( uno::RuntimeException, std::exception )
 void SwXTextPortion::setString(const OUString& aString) throw( uno::RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
-    SwUnoCrsr& rUnoCrsr = GetCursor();
+    SwUnoCursor& rUnoCursor = GetCursor();
 
-    SwUnoCursorHelper::SetString(rUnoCrsr, aString);
+    SwUnoCursorHelper::SetString(rUnoCursor, aString);
 }
 
 uno::Reference< beans::XPropertySetInfo >  SwXTextPortion::getPropertySetInfo()
@@ -220,22 +215,22 @@ void SwXTextPortion::setPropertyValue(const OUString& rPropertyName,
         beans::PropertyVetoException, lang::IllegalArgumentException, lang::WrappedTargetException, uno::RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
-    SwUnoCrsr& rUnoCrsr = GetCursor();
+    SwUnoCursor& rUnoCursor = GetCursor();
 
-    SwUnoCursorHelper::SetPropertyValue(rUnoCrsr, *m_pPropSet,
+    SwUnoCursorHelper::SetPropertyValue(rUnoCursor, *m_pPropSet,
             rPropertyName, aValue);
 }
 
 void SwXTextPortion::GetPropertyValue(
         uno::Any &rVal,
         const SfxItemPropertySimpleEntry& rEntry,
-        SwUnoCrsr *pUnoCrsr,
+        SwUnoCursor *pUnoCursor,
         SfxItemSet *&pSet )
 {
-    OSL_ENSURE( pUnoCrsr, "UNO cursor missing" );
-    if (!pUnoCrsr)
+    OSL_ENSURE( pUnoCursor, "UNO cursor missing" );
+    if (!pUnoCursor)
         return;
-    if(pUnoCrsr)
+    if(pUnoCursor)
     {
         switch(rEntry.nWID)
         {
@@ -270,7 +265,7 @@ void SwXTextPortion::GetPropertyValue(
                     pRet = "AnnotationEnd";
                     break;
                 default:
-                    pRet = 0;
+                    pRet = nullptr;
                 }
 
                 OUString sRet;
@@ -352,7 +347,7 @@ void SwXTextPortion::GetPropertyValue(
             break;
             case RES_TXTATR_CJK_RUBY:
             {
-                const uno::Any* pToSet = 0;
+                const uno::Any* pToSet = nullptr;
                 switch(rEntry.nMemberId)
                 {
                     case MID_RUBY_TEXT :    pToSet = m_pRubyText.get();   break;
@@ -366,18 +361,18 @@ void SwXTextPortion::GetPropertyValue(
             break;
             default:
                 beans::PropertyState eTemp;
-                bool bDone = SwUnoCursorHelper::getCrsrPropertyValue(
-                                    rEntry, *pUnoCrsr, &(rVal), eTemp );
+                bool bDone = SwUnoCursorHelper::getCursorPropertyValue(
+                                    rEntry, *pUnoCursor, &(rVal), eTemp );
                 if(!bDone)
                 {
                     if(!pSet)
                     {
-                        pSet = new SfxItemSet(pUnoCrsr->GetDoc()->GetAttrPool(),
+                        pSet = new SfxItemSet(pUnoCursor->GetDoc()->GetAttrPool(),
                             RES_CHRATR_BEGIN, RES_FRMATR_END - 1,
                             RES_UNKNOWNATR_CONTAINER, RES_UNKNOWNATR_CONTAINER,
                             RES_TXTATR_UNKNOWN_CONTAINER, RES_TXTATR_UNKNOWN_CONTAINER,
                             0L);
-                        SwUnoCursorHelper::GetCrsrAttr(*pUnoCrsr, *pSet);
+                        SwUnoCursorHelper::GetCursorAttr(*pUnoCursor, *pSet);
                     }
                     m_pPropSet->getPropertyValue(rEntry, *pSet, rVal);
                 }
@@ -393,10 +388,10 @@ uno::Sequence< uno::Any > SAL_CALL SwXTextPortion::GetPropertyValues_Impl(
     const OUString *pPropertyNames = rPropertyNames.getConstArray();
     uno::Sequence< uno::Any > aValues(rPropertyNames.getLength());
     uno::Any *pValues = aValues.getArray();
-    SwUnoCrsr& rUnoCrsr = GetCursor();
+    SwUnoCursor& rUnoCursor = GetCursor();
 
     {
-        SfxItemSet *pSet = 0;
+        SfxItemSet *pSet = nullptr;
         // get starting point for the look-up, either the provided one or else
         // from the beginning of the map
         const SfxItemPropertyMap& rMap = m_pPropSet->getPropertyMap();
@@ -405,7 +400,7 @@ uno::Sequence< uno::Any > SAL_CALL SwXTextPortion::GetPropertyValues_Impl(
             const SfxItemPropertySimpleEntry* pEntry = rMap.getByName(pPropertyNames[nProp]);
             if(pEntry)
             {
-                GetPropertyValue( pValues[nProp], *pEntry, &rUnoCrsr, pSet );
+                GetPropertyValue( pValues[nProp], *pEntry, &rUnoCursor, pSet );
             }
             else
                 throw beans::UnknownPropertyException( "Unknown property: " + pPropertyNames[nProp], static_cast < cppu::OWeakObject * > ( this ) );
@@ -420,8 +415,7 @@ uno::Any SwXTextPortion::getPropertyValue(
         throw( beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
-    uno::Sequence< OUString > aPropertyNames(1);
-    aPropertyNames.getArray()[0] = rPropertyName;
+    uno::Sequence< OUString > aPropertyNames { rPropertyName };
     return GetPropertyValues_Impl(aPropertyNames).getConstArray()[0];
 }
 
@@ -431,7 +425,7 @@ void SAL_CALL SwXTextPortion::SetPropertyValues_Impl(
     throw( beans::UnknownPropertyException, beans::PropertyVetoException, lang::IllegalArgumentException,
             lang::WrappedTargetException, uno::RuntimeException)
 {
-    SwUnoCrsr& rUnoCrsr = GetCursor();
+    SwUnoCursor& rUnoCursor = GetCursor();
 
     {
         const OUString* pPropertyNames = rPropertyNames.getConstArray();
@@ -449,7 +443,7 @@ void SAL_CALL SwXTextPortion::SetPropertyValues_Impl(
             aValues[nProp].Name = pPropertyNames[nProp];
             aValues[nProp].Value = pValues[nProp];
         }
-        SwUnoCursorHelper::SetPropertyValues( rUnoCrsr, *m_pPropSet, aValues );
+        SwUnoCursorHelper::SetPropertyValues( rUnoCursor, *m_pPropSet, aValues );
     }
 }
 
@@ -510,7 +504,7 @@ uno::Sequence< beans::SetPropertyTolerantFailed > SAL_CALL SwXTextPortion::setPr
 
     if (rPropertyNames.getLength() != rValues.getLength())
         throw lang::IllegalArgumentException();
-    SwUnoCrsr& rUnoCrsr = this->GetCursor();
+    SwUnoCursor& rUnoCursor = this->GetCursor();
 
     sal_Int32 nProps = rPropertyNames.getLength();
     const OUString *pProp = rPropertyNames.getConstArray();
@@ -542,7 +536,7 @@ uno::Sequence< beans::SetPropertyTolerantFailed > SAL_CALL SwXTextPortion::setPr
                 else
                 {
                     SwUnoCursorHelper::SetPropertyValue(
-                                rUnoCrsr, *m_pPropSet, pProp[i], pValue[i] );
+                                rUnoCursor, *m_pPropSet, pProp[i], pValue[i] );
                 }
             }
         }
@@ -604,7 +598,7 @@ uno::Sequence< beans::GetDirectPropertyTolerantResult > SAL_CALL SwXTextPortion:
 {
     SolarMutexGuard aGuard;
 
-    SwUnoCrsr& rUnoCrsr = this->GetCursor();
+    SwUnoCursor& rUnoCursor = this->GetCursor();
 
     std::vector< beans::GetDirectPropertyTolerantResult > aResultVector;
 
@@ -613,14 +607,14 @@ uno::Sequence< beans::GetDirectPropertyTolerantResult > SAL_CALL SwXTextPortion:
         sal_Int32 nProps = rPropertyNames.getLength();
         const OUString *pProp = rPropertyNames.getConstArray();
 
-        SfxItemSet *pSet = 0;
+        SfxItemSet *pSet = nullptr;
 
         const SfxItemPropertyMap& rPropMap = m_pPropSet->getPropertyMap();
 
 
         uno::Sequence< beans::PropertyState > aPropertyStates =
             SwUnoCursorHelper::GetPropertyStates(
-                rUnoCrsr, *m_pPropSet,
+                rUnoCursor, *m_pPropSet,
                 rPropertyNames,
                 SW_PROPERTY_STATE_CALLER_SWX_TEXT_PORTION_TOLERANT );
         const beans::PropertyState* pPropertyStates = aPropertyStates.getConstArray();
@@ -656,7 +650,7 @@ uno::Sequence< beans::GetDirectPropertyTolerantResult > SAL_CALL SwXTextPortion:
                     {
                         // get property value
                         // (compare to SwXTextPortion::getPropertyValue(s))
-                        GetPropertyValue( aResult.Value, *pEntry, &rUnoCrsr, pSet );
+                        GetPropertyValue( aResult.Value, *pEntry, &rUnoCursor, pSet );
                         aResult.Result = beans::TolerantPropertySetResultType::SUCCESS;
                         aResultVector.push_back( aResult );
                     }
@@ -695,16 +689,7 @@ uno::Sequence< beans::GetDirectPropertyTolerantResult > SAL_CALL SwXTextPortion:
             css::uno::Reference<css::uno::XInterface>(), a);
     }
 
-    uno::Sequence< beans::GetDirectPropertyTolerantResult > aResult( aResultVector.size() );
-    std::vector< beans::GetDirectPropertyTolerantResult >::const_iterator aIt = aResultVector.begin();
-    beans::GetDirectPropertyTolerantResult *pResult = aResult.getArray();
-    for( sal_Int32 nResult = 0; nResult < aResult.getLength(); ++nResult )
-    {
-        pResult[nResult] = *aIt;
-        ++aIt;
-    }
-
-    return aResult;
+    return comphelper::containerToSequence(aResultVector);
 }
 
 void SwXTextPortion::addPropertiesChangeListener(
@@ -752,7 +737,7 @@ beans::PropertyState SwXTextPortion::getPropertyState(const OUString& rPropertyN
 {
     SolarMutexGuard aGuard;
     beans::PropertyState eRet = beans::PropertyState_DEFAULT_VALUE;
-    SwUnoCrsr& rUnoCrsr = GetCursor();
+    SwUnoCursor& rUnoCursor = GetCursor();
 
     if (GetTextPortionType() == PORTION_RUBY_START &&
         rPropertyName.startsWith("Ruby"))
@@ -761,7 +746,7 @@ beans::PropertyState SwXTextPortion::getPropertyState(const OUString& rPropertyN
     }
     else
     {
-        eRet = SwUnoCursorHelper::GetPropertyState(rUnoCrsr, *m_pPropSet,
+        eRet = SwUnoCursorHelper::GetPropertyState(rUnoCursor, *m_pPropSet,
                 rPropertyName);
     }
     return eRet;
@@ -772,10 +757,10 @@ uno::Sequence< beans::PropertyState > SwXTextPortion::getPropertyStates(
         throw( beans::UnknownPropertyException, uno::RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
-    SwUnoCrsr& rUnoCrsr = GetCursor();
+    SwUnoCursor& rUnoCursor = GetCursor();
 
     uno::Sequence< beans::PropertyState > aRet =
-        SwUnoCursorHelper::GetPropertyStates(rUnoCrsr, *m_pPropSet,
+        SwUnoCursorHelper::GetPropertyStates(rUnoCursor, *m_pPropSet,
                 rPropertyNames, SW_PROPERTY_STATE_CALLER_SWX_TEXT_PORTION);
 
     if(GetTextPortionType() == PORTION_RUBY_START)
@@ -795,10 +780,10 @@ void SwXTextPortion::setPropertyToDefault(const OUString& rPropertyName)
                 throw( beans::UnknownPropertyException, uno::RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
-    SwUnoCrsr& rUnoCrsr = GetCursor();
+    SwUnoCursor& rUnoCursor = GetCursor();
 
     SwUnoCursorHelper::SetPropertyToDefault(
-            rUnoCrsr, *m_pPropSet, rPropertyName);
+            rUnoCursor, *m_pPropSet, rPropertyName);
 }
 
 uno::Any SwXTextPortion::getPropertyDefault(const OUString& rPropertyName)
@@ -806,9 +791,9 @@ uno::Any SwXTextPortion::getPropertyDefault(const OUString& rPropertyName)
 {
     SolarMutexGuard aGuard;
     uno::Any aRet;
-    SwUnoCrsr& rUnoCrsr = GetCursor();
+    SwUnoCursor& rUnoCursor = GetCursor();
 
-    aRet = SwUnoCursorHelper::GetPropertyDefault(rUnoCrsr, *m_pPropSet,
+    aRet = SwUnoCursorHelper::GetPropertyDefault(rUnoCursor, *m_pPropSet,
                 rPropertyName);
     return aRet;
 }
@@ -817,9 +802,9 @@ uno::Reference< container::XEnumeration >  SwXTextPortion::createContentEnumerat
         throw( uno::RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
-    SwUnoCrsr& rUnoCrsr = GetCursor();
+    SwUnoCursor& rUnoCursor = GetCursor();
 
-    return SwXParaFrameEnumeration::Create(rUnoCrsr, PARAFRAME_PORTION_CHAR, m_pFrameFormat);
+    return SwXParaFrameEnumeration::Create(rUnoCursor, PARAFRAME_PORTION_CHAR, m_pFrameFormat);
 }
 
 namespace
@@ -848,9 +833,7 @@ uno::Sequence< OUString > SwXTextPortion::getAvailableServiceNames()
 throw( uno::RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
-    uno::Sequence< OUString > aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.text.TextContent";
+    uno::Sequence<OUString> aRet { "com.sun.star.text.TextContent" };
     return aRet;
 }
 

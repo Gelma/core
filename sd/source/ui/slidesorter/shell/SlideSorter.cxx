@@ -53,13 +53,13 @@ public:
     ContentWindow(vcl::Window& rParent, SlideSorter& rSlideSorter);
     virtual ~ContentWindow();
     void SetCurrentFunction (const rtl::Reference<FuPoor>& rpFunction);
-    virtual void Paint(vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect) SAL_OVERRIDE;
-    virtual void KeyInput (const KeyEvent& rEvent) SAL_OVERRIDE;
-    virtual void MouseMove (const MouseEvent& rEvent) SAL_OVERRIDE;
-    virtual void MouseButtonUp (const MouseEvent& rEvent) SAL_OVERRIDE;
-    virtual void MouseButtonDown (const MouseEvent& rEvent) SAL_OVERRIDE;
-    virtual void Command (const CommandEvent& rEvent) SAL_OVERRIDE;
-    virtual bool Notify (NotifyEvent& rEvent) SAL_OVERRIDE;
+    virtual void Paint(vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect) override;
+    virtual void KeyInput (const KeyEvent& rEvent) override;
+    virtual void MouseMove (const MouseEvent& rEvent) override;
+    virtual void MouseButtonUp (const MouseEvent& rEvent) override;
+    virtual void MouseButtonDown (const MouseEvent& rEvent) override;
+    virtual void Command (const CommandEvent& rEvent) override;
+    virtual bool Notify (NotifyEvent& rEvent) override;
 
 private:
     SlideSorter& mrSlideSorter;
@@ -115,7 +115,6 @@ SlideSorter::SlideSorter (
       mpViewShell(&rViewShell),
       mpViewShellBase(&rViewShell.GetViewShellBase()),
       mpContentWindow(pContentWindow),
-      mbOwnesContentWindow(false),
       mpHorizontalScrollBar(pHorizontalScrollBar),
       mpVerticalScrollBar(pVerticalScrollBar),
       mpScrollBarBox(pScrollBarBox),
@@ -137,7 +136,6 @@ SlideSorter::SlideSorter (
       mpViewShell(pViewShell),
       mpViewShellBase(&rBase),
       mpContentWindow(VclPtr<ContentWindow>::Create(rParentWindow,*this )),
-      mbOwnesContentWindow(true),
       mpHorizontalScrollBar(VclPtr<ScrollBar>::Create(&rParentWindow,WinBits(WB_HSCROLL | WB_DRAG))),
       mpVerticalScrollBar(VclPtr<ScrollBar>::Create(&rParentWindow,WinBits(WB_VSCROLL | WB_DRAG))),
       mpScrollBarBox(VclPtr<ScrollBarBox>::Create(&rParentWindow)),
@@ -149,7 +147,7 @@ SlideSorter::SlideSorter (
 
 void SlideSorter::Init()
 {
-    if (mpViewShellBase != NULL)
+    if (mpViewShellBase != nullptr)
         mxControllerWeak = mpViewShellBase->GetController();
 
     // Reinitialize colors in Properties with window specific values.
@@ -174,7 +172,7 @@ void SlideSorter::Init()
     if (pContentWindow)
     {
         vcl::Window* pParentWindow = pContentWindow->GetParent();
-        if (pParentWindow != NULL)
+        if (pParentWindow != nullptr)
             pParentWindow->SetBackground(Wallpaper());
         pContentWindow->SetBackground(Wallpaper());
         pContentWindow->SetViewOrigin (Point(0,0));
@@ -215,19 +213,19 @@ SlideSorter::~SlideSorter()
 
 model::SlideSorterModel& SlideSorter::GetModel() const
 {
-    OSL_ASSERT(mpSlideSorterModel.get()!=NULL);
+    OSL_ASSERT(mpSlideSorterModel.get()!=nullptr);
     return *mpSlideSorterModel;
 }
 
 view::SlideSorterView& SlideSorter::GetView() const
 {
-    OSL_ASSERT(mpSlideSorterView.get()!=NULL);
+    OSL_ASSERT(mpSlideSorterView.get()!=nullptr);
     return *mpSlideSorterView;
 }
 
 controller::SlideSorterController& SlideSorter::GetController() const
 {
-    OSL_ASSERT(mpSlideSorterController.get()!=NULL);
+    OSL_ASSERT(mpSlideSorterController.get()!=nullptr);
     return *mpSlideSorterController;
 }
 
@@ -255,7 +253,7 @@ void SlideSorter::SetupListeners()
     if (pWindow)
     {
         vcl::Window* pParentWindow = pWindow->GetParent();
-        if (pParentWindow != NULL)
+        if (pParentWindow != nullptr)
             pParentWindow->AddEventListener(
                 LINK(
                     mpSlideSorterController.get(),
@@ -289,7 +287,7 @@ void SlideSorter::ReleaseListeners()
                 WindowEventHandler));
 
         vcl::Window* pParentWindow = pWindow->GetParent();
-        if (pParentWindow != NULL)
+        if (pParentWindow != nullptr)
             pParentWindow->RemoveEventListener(
                 LINK(mpSlideSorterController.get(),
                     controller::SlideSorterController,
@@ -304,15 +302,15 @@ void SlideSorter::ReleaseListeners()
 void SlideSorter::CreateModelViewController()
 {
     mpSlideSorterModel.reset(CreateModel());
-    DBG_ASSERT (mpSlideSorterModel.get()!=NULL,
+    DBG_ASSERT (mpSlideSorterModel.get()!=nullptr,
         "Can not create model for slide browser");
 
     mpSlideSorterView.reset(CreateView());
-    DBG_ASSERT (mpSlideSorterView.get()!=NULL,
+    DBG_ASSERT (mpSlideSorterView.get()!=nullptr,
         "Can not create view for slide browser");
 
     mpSlideSorterController.reset(CreateController());
-    DBG_ASSERT (mpSlideSorterController.get()!=NULL,
+    DBG_ASSERT (mpSlideSorterController.get()!=nullptr,
         "Can not create controller for slide browser");
 
     // Now that model, view, and controller are constructed, do the
@@ -325,14 +323,14 @@ model::SlideSorterModel* SlideSorter::CreateModel()
 {
     // Get pointers to the document.
     ViewShellBase* pViewShellBase = GetViewShellBase();
-    if (pViewShellBase != NULL)
+    if (pViewShellBase != nullptr)
     {
-        OSL_ASSERT (pViewShellBase->GetDocument() != NULL);
+        OSL_ASSERT (pViewShellBase->GetDocument() != nullptr);
 
         return new model::SlideSorterModel(*this);
     }
     else
-        return NULL;
+        return nullptr;
 }
 
 view::SlideSorterView* SlideSorter::CreateView()
@@ -378,14 +376,14 @@ bool SlideSorter::RelocateToWindow (vcl::Window* pParentWindow)
 
     ReleaseListeners();
 
-    vcl::Window *pNewWindow = NULL;
+    vcl::Window *pNewWindow = nullptr;
     if (mpViewShell)
     {
         mpViewShell->ViewShell::RelocateToParentWindow(pParentWindow);
         pNewWindow = mpViewShell->GetParentWindow();
     }
     else
-        pNewWindow = NULL;
+        pNewWindow = nullptr;
 
     SetupControls(pNewWindow);
     SetupListeners();
@@ -395,7 +393,7 @@ bool SlideSorter::RelocateToWindow (vcl::Window* pParentWindow)
     // view shell.  (One is created earlier while the construtor of the base
     // class is executed.  But because at that time the correct
     // accessibility object can not be constructed we do that now.)
-    if (mpContentWindow.get() !=NULL)
+    if (mpContentWindow.get() !=nullptr)
     {
         mpContentWindow->Hide();
         mpContentWindow->Show();
@@ -406,7 +404,7 @@ bool SlideSorter::RelocateToWindow (vcl::Window* pParentWindow)
 
 void SlideSorter::SetCurrentFunction (const rtl::Reference<FuPoor>& rpFunction)
 {
-    if (GetViewShell() != NULL)
+    if (GetViewShell() != nullptr)
     {
         GetViewShell()->SetCurrentFunction(rpFunction);
         GetViewShell()->SetOldFunction(rpFunction);
@@ -414,7 +412,7 @@ void SlideSorter::SetCurrentFunction (const rtl::Reference<FuPoor>& rpFunction)
     else
     {
         ContentWindow* pWindow = dynamic_cast<ContentWindow*>(GetContentWindow().get());
-        if (pWindow != NULL)
+        if (pWindow != nullptr)
             pWindow->SetCurrentFunction(rpFunction);
     }
 }

@@ -48,73 +48,69 @@ class FontHeightToolBoxControl : public svt::ToolboxController,
 {
     public:
         explicit FontHeightToolBoxControl(
-            const com::sun::star::uno::Reference< com::sun::star::uno::XComponentContext >& rServiceManager );
+            const css::uno::Reference< css::uno::XComponentContext >& rServiceManager );
         virtual ~FontHeightToolBoxControl();
 
         // XInterface
-        virtual ::com::sun::star::uno::Any SAL_CALL queryInterface( const ::com::sun::star::uno::Type& aType ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL acquire() throw () SAL_OVERRIDE;
-        virtual void SAL_CALL release() throw () SAL_OVERRIDE;
+        virtual css::uno::Any SAL_CALL queryInterface( const css::uno::Type& aType ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL acquire() throw () override;
+        virtual void SAL_CALL release() throw () override;
 
         // XServiceInfo
-        virtual OUString SAL_CALL getImplementationName() throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-        virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-        virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual OUString SAL_CALL getImplementationName() throw( css::uno::RuntimeException, std::exception ) override;
+        virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw( css::uno::RuntimeException, std::exception ) override;
+        virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw( css::uno::RuntimeException, std::exception ) override;
 
         // XComponent
-        virtual void SAL_CALL dispose() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL dispose() throw (css::uno::RuntimeException, std::exception) override;
 
         // XStatusListener
-        virtual void SAL_CALL statusChanged( const ::com::sun::star::frame::FeatureStateEvent& Event ) throw ( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual void SAL_CALL statusChanged( const css::frame::FeatureStateEvent& Event ) throw ( css::uno::RuntimeException, std::exception ) override;
 
         // XToolbarController
-        virtual void SAL_CALL execute( sal_Int16 KeyModifier ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL click() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL doubleClick() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindow > SAL_CALL createPopupWindow() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindow > SAL_CALL createItemWindow( const ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindow >& Parent ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL execute( sal_Int16 KeyModifier ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL click() throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL doubleClick() throw (css::uno::RuntimeException, std::exception) override;
+        virtual css::uno::Reference< css::awt::XWindow > SAL_CALL createPopupWindow() throw (css::uno::RuntimeException, std::exception) override;
+        virtual css::uno::Reference< css::awt::XWindow > SAL_CALL createItemWindow( const css::uno::Reference< css::awt::XWindow >& Parent ) throw (css::uno::RuntimeException, std::exception) override;
 
-        void dispatchCommand( const ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue >& rArgs );
+        void dispatchCommand( const css::uno::Sequence< css::beans::PropertyValue >& rArgs );
         using svt::ToolboxController::dispatchCommand;
 
     private:
         VclPtr<SvxFontSizeBox_Impl>           m_pBox;
-        ::com::sun::star::awt::FontDescriptor m_aCurrentFont;
+        css::awt::FontDescriptor m_aCurrentFont;
 };
 
 class SvxFontSizeBox_Impl : public FontSizeBox
 {
 public:
                         SvxFontSizeBox_Impl( vcl::Window* pParent,
-                                             const uno::Reference< frame::XDispatchProvider >& rDispatchProvider,
                                              const uno::Reference< frame::XFrame >& _xFrame,
                                              FontHeightToolBoxControl& rCtrl );
 
     void                statusChanged_Impl( long nHeight, bool bErase = false );
-    void                UpdateFont( const ::com::sun::star::awt::FontDescriptor& rCurrentFont );
+    void                UpdateFont( const css::awt::FontDescriptor& rCurrentFont );
     void                SetOptimalSize();
 
-    virtual bool        Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual bool        Notify( NotifyEvent& rNEvt ) override;
 
 protected:
-    virtual void        Select() SAL_OVERRIDE;
-    virtual void        DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual void        Select() override;
+    virtual void        DataChanged( const DataChangedEvent& rDCEvt ) override;
 
 private:
     FontHeightToolBoxControl*                  m_pCtrl;
     OUString                                   m_aCurText;
     Size                                       m_aLogicalSize;
     bool                                       m_bRelease;
-    uno::Reference< frame::XDispatchProvider > m_xDispatchProvider;
     uno::Reference< frame::XFrame >            m_xFrame;
-    uno::Reference< awt::XWindow >             m_xOldFocusWindow;
 
     void                ReleaseFocus_Impl();
 };
 
 SvxFontSizeBox_Impl::SvxFontSizeBox_Impl(
-    vcl::Window*                                           _pParent,
-    const uno::Reference< frame::XDispatchProvider >& _rDispatchProvider,
+    vcl::Window*                                      _pParent,
     const uno::Reference< frame::XFrame >&            _xFrame,
     FontHeightToolBoxControl&                         _rCtrl ) :
 
@@ -123,7 +119,6 @@ SvxFontSizeBox_Impl::SvxFontSizeBox_Impl(
     m_pCtrl             ( &_rCtrl ),
     m_aLogicalSize      ( 0,100 ),
     m_bRelease          ( true ),
-    m_xDispatchProvider ( _rDispatchProvider ),
     m_xFrame            ( _xFrame )
 {
     SetValue( 0 );
@@ -190,11 +185,11 @@ void SvxFontSizeBox_Impl::statusChanged_Impl( long nPoint, bool bErase )
 
 
 
-void SvxFontSizeBox_Impl::UpdateFont( const ::com::sun::star::awt::FontDescriptor& rCurrentFont )
+void SvxFontSizeBox_Impl::UpdateFont( const css::awt::FontDescriptor& rCurrentFont )
 {
     // Sizes-Liste auff"ullen
     sal_Int64 nOldVal = GetValue(); // alten Wert merken
-    const FontList* _pFontList = NULL;
+    const FontList* _pFontList = nullptr;
     std::unique_ptr<FontList> aHold( new FontList( this ));
     _pFontList = aHold.get();
 
@@ -208,7 +203,7 @@ void SvxFontSizeBox_Impl::UpdateFont( const ::com::sun::star::awt::FontDescripto
     }
     else
     {
-        Fill( NULL, _pFontList );
+        Fill( nullptr, _pFontList );
     }
     SetValue( nOldVal ); // alten Wert wiederherstellen
     m_aCurText = GetText(); // zum R"ucksetzen bei ESC merken
@@ -276,9 +271,9 @@ FontHeightToolBoxControl::FontHeightToolBoxControl( const uno::Reference< uno::X
  : svt::ToolboxController( rxContext,
                            uno::Reference< frame::XFrame >(),
                            OUString( ".uno:FontHeight" ) ),
-   m_pBox( NULL )
+   m_pBox( nullptr )
 {
-    addStatusListener( OUString( ".uno:CharFontName" ));
+    addStatusListener( ".uno:CharFontName");
 }
 
 FontHeightToolBoxControl::~FontHeightToolBoxControl()
@@ -286,8 +281,8 @@ FontHeightToolBoxControl::~FontHeightToolBoxControl()
 }
 
 // XInterface
-::com::sun::star::uno::Any SAL_CALL FontHeightToolBoxControl::queryInterface( const ::com::sun::star::uno::Type& aType )
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+css::uno::Any SAL_CALL FontHeightToolBoxControl::queryInterface( const css::uno::Type& aType )
+throw (css::uno::RuntimeException, std::exception)
 {
     uno::Any a = ToolboxController::queryInterface( aType );
     if ( a.hasValue() )
@@ -322,8 +317,7 @@ throw( uno::RuntimeException, std::exception )
 uno::Sequence< OUString > SAL_CALL FontHeightToolBoxControl::getSupportedServiceNames(  )
 throw( uno::RuntimeException, std::exception )
 {
-    uno::Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[0] = "com.sun.star.frame.ToolbarController";
+    uno::Sequence<OUString> aSNS { "com.sun.star.frame.ToolbarController" };
     return aSNS;
 }
 
@@ -369,29 +363,29 @@ throw ( uno::RuntimeException, std::exception )
 
 // XToolbarController
 void SAL_CALL FontHeightToolBoxControl::execute( sal_Int16 /*KeyModifier*/ )
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
 }
 
 void SAL_CALL FontHeightToolBoxControl::click()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
 }
 
 void SAL_CALL FontHeightToolBoxControl::doubleClick()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
 }
 
 uno::Reference< awt::XWindow > SAL_CALL FontHeightToolBoxControl::createPopupWindow()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     return uno::Reference< awt::XWindow >();
 }
 
 uno::Reference< awt::XWindow > SAL_CALL FontHeightToolBoxControl::createItemWindow(
     const uno::Reference< awt::XWindow >& Parent )
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     uno::Reference< awt::XWindow > xItemWindow;
     uno::Reference< awt::XWindow > xParent( Parent );
@@ -400,12 +394,7 @@ uno::Reference< awt::XWindow > SAL_CALL FontHeightToolBoxControl::createItemWind
     if ( pParent )
     {
         SolarMutexGuard aSolarMutexGuard;
-        m_pBox = VclPtr<SvxFontSizeBox_Impl>::Create(
-
-                        pParent,
-                        uno::Reference< frame::XDispatchProvider >( m_xFrame, uno::UNO_QUERY ),
-                        m_xFrame,
-                        *this );
+        m_pBox = VclPtr<SvxFontSizeBox_Impl>::Create( pParent, m_xFrame, *this );
         //Get the box to fill itself with all its sizes
         m_pBox->UpdateFont(m_aCurrentFont);
         //Make it size itself to its optimal size re above sizes

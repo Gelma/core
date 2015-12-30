@@ -24,6 +24,7 @@
 #include <unotools/configmgr.hxx>
 #include <svl/urihelper.hxx>
 #include <tools/datetime.hxx>
+#include <tools/stream.hxx>
 
 #include <sfx2/frmhtmlw.hxx>
 #include <sfx2/evntconf.hxx>
@@ -163,7 +164,7 @@ void SfxFrameHTMLWriter::Out_DocInfo( SvStream& rStrm, const OUString& rBaseURL,
         // created
         ::util::DateTime uDT = i_xDocProps->getCreationDate();
         OUStringBuffer aBuffer;
-        ::sax::Converter::convertTimeOrDateTime(aBuffer, uDT, 0);
+        ::sax::Converter::convertTimeOrDateTime(aBuffer, uDT, nullptr);
 
         OutMeta( rStrm, pIndent, OOO_STRING_SVTOOLS_HTML_META_created, aBuffer.makeStringAndClear(), false,
                  eDestEnc, pNonConvertableChars );
@@ -176,7 +177,7 @@ void SfxFrameHTMLWriter::Out_DocInfo( SvStream& rStrm, const OUString& rBaseURL,
 
         // changed
         uDT = i_xDocProps->getModificationDate();
-        ::sax::Converter::convertTimeOrDateTime(aBuffer, uDT, 0);
+        ::sax::Converter::convertTimeOrDateTime(aBuffer, uDT, nullptr);
 
         OutMeta( rStrm, pIndent, OOO_STRING_SVTOOLS_HTML_META_changed, aBuffer.makeStringAndClear(), false,
                  eDestEnc, pNonConvertableChars );
@@ -226,7 +227,7 @@ void SfxFrameHTMLWriter::Out_DocInfo( SvStream& rStrm, const OUString& rBaseURL,
             catch (const uno::Exception&)
             {
                 // may happen with concurrent modification...
-                DBG_WARNING("SfxFrameHTMLWriter::Out_DocInfo: exception");
+                SAL_INFO("sfx", "SfxFrameHTMLWriter::Out_DocInfo: exception");
             }
         }
     }

@@ -1,8 +1,19 @@
+--- Include/objimpl.h
++++ Include/objimpl.h
+@@ -250,7 +250,7 @@
+         union _gc_head *gc_prev;
+         Py_ssize_t gc_refs;
+     } gc;
+-    double dummy;  /* force worst-case alignment */
++    long double dummy;  /* force worst-case alignment */
+ } PyGC_Head;
+ 
+ extern PyGC_Head *_PyGC_generation0;
 --- Objects/obmalloc.c
 +++ Objects/obmalloc.c
-@@ -9,8 +9,8 @@
-  #endif
- #endif
+@@ -413,8 +413,8 @@
+ 
+ #ifdef WITH_PYMALLOC
  
 +#define WITH_VALGRIND
  #ifdef WITH_VALGRIND
@@ -10,7 +21,7 @@
  
  /* If we're using GCC, use __builtin_expect() to reduce overhead of
     the valgrind checks */
-@@ -771,7 +771,7 @@
+@@ -1181,7 +1181,7 @@
  
  #ifdef WITH_VALGRIND
      if (UNLIKELY(running_on_valgrind == -1))

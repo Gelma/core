@@ -63,7 +63,7 @@ ScAccessibleEditObject::ScAccessibleEditObject(
         const OUString& rDescription, EditObjectType eObjectType)
     :
     ScAccessibleContextBase(rxParent, AccessibleRole::TEXT_FRAME),
-    mpTextHelper(NULL),
+    mpTextHelper(nullptr),
     mpEditView(pEditView),
     mpWindow(pWin),
     meObjectType(eObjectType),
@@ -82,11 +82,11 @@ ScAccessibleEditObject::ScAccessibleEditObject(
         }
         else
         {
-            m_pScDoc=NULL;
+            m_pScDoc=nullptr;
         }
     }
     else
-        m_pScDoc=NULL;
+        m_pScDoc=nullptr;
 }
 
 ScAccessibleEditObject::~ScAccessibleEditObject()
@@ -127,14 +127,14 @@ void ScAccessibleEditObject::GotFocus()
 
 //=====  XInterface  ==========================================================
 
-com::sun::star::uno::Any SAL_CALL
-    ScAccessibleEditObject::queryInterface (const com::sun::star::uno::Type & rType)
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+css::uno::Any SAL_CALL
+    ScAccessibleEditObject::queryInterface (const css::uno::Type & rType)
+    throw (css::uno::RuntimeException, std::exception)
 {
-    ::com::sun::star::uno::Any aReturn = ScAccessibleContextBase::queryInterface (rType);
+    css::uno::Any aReturn = ScAccessibleContextBase::queryInterface (rType);
     if ( ! aReturn.hasValue())
         aReturn = ::cppu::queryInterface (rType,
-            static_cast< ::com::sun::star::accessibility::XAccessibleSelection* >(this)
+            static_cast< css::accessibility::XAccessibleSelection* >(this)
             );
     return aReturn;
 }
@@ -185,7 +185,7 @@ Rectangle ScAccessibleEditObject::GetBoundingBoxOnScreen() const
                 MapMode aMapMode( mpEditView->GetEditEngine()->GetRefMapMode() );
                 aScreenBounds = mpWindow->LogicToPixel( mpEditView->GetOutputArea(), aMapMode );
                 Point aCellLoc = aScreenBounds.TopLeft();
-                Rectangle aWindowRect = mpWindow->GetWindowExtentsRelative( NULL );
+                Rectangle aWindowRect = mpWindow->GetWindowExtentsRelative( nullptr );
                 Point aWindowLoc = aWindowRect.TopLeft();
                 Point aPos( aCellLoc.getX() + aWindowLoc.getX(), aCellLoc.getY() + aWindowLoc.getY() );
                 aScreenBounds.SetPos( aPos );
@@ -193,7 +193,7 @@ Rectangle ScAccessibleEditObject::GetBoundingBoxOnScreen() const
         }
         else
         {
-            aScreenBounds = mpWindow->GetWindowExtentsRelative( NULL );
+            aScreenBounds = mpWindow->GetWindowExtentsRelative( nullptr );
         }
     }
 
@@ -366,7 +366,7 @@ void ScAccessibleEditObject::CreateTextHelper()
         else
         {
             pAccessibleTextData.reset
-                (new ScAccessibleEditLineTextData(NULL, mpWindow));
+                (new ScAccessibleEditLineTextData(nullptr, mpWindow));
         }
 
         ::std::unique_ptr< SvxEditSource > pEditSource (new ScAccessibilityEditSource(std::move(pAccessibleTextData)));
@@ -397,15 +397,15 @@ void ScAccessibleEditObject::CreateTextHelper()
 }
 
 sal_Int32 SAL_CALL ScAccessibleEditObject::getForeground(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
-    return GetFgBgColor(OUString(SC_UNONAME_CCOLOR));
+    return GetFgBgColor(SC_UNONAME_CCOLOR);
 }
 
 sal_Int32 SAL_CALL ScAccessibleEditObject::getBackground(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
-    return GetFgBgColor(OUString(SC_UNONAME_CELLBACK));
+    return GetFgBgColor(SC_UNONAME_CELLBACK);
 }
 
 sal_Int32 ScAccessibleEditObject::GetFgBgColor( const OUString &strPropColor)
@@ -464,7 +464,7 @@ throw ( IndexOutOfBoundsException,
     {
         if( xContext->getAccessibleRole() == AccessibleRole::PARAGRAPH )
         {
-            uno::Reference< ::com::sun::star::accessibility::XAccessibleText >
+            uno::Reference< css::accessibility::XAccessibleText >
                 xText(xAcc, uno::UNO_QUERY);
             if( xText.is() )
             {
@@ -530,15 +530,13 @@ uno::Reference< XAccessibleRelationSet > ScAccessibleEditObject::getAccessibleRe
         vcl::Window *pLabeledBy = pWindow->GetAccessibleRelationLabeledBy();
         if ( pLabeledBy && pLabeledBy != pWindow )
         {
-            uno::Sequence< uno::Reference< uno::XInterface > > aSequence(1);
-            aSequence[0] = pLabeledBy->GetAccessible();
+            uno::Sequence< uno::Reference< uno::XInterface > > aSequence { pLabeledBy->GetAccessible() };
             rRelationSet->AddRelation( AccessibleRelation( AccessibleRelationType::LABELED_BY, aSequence ) );
         }
         vcl::Window* pMemberOf = pWindow->GetAccessibleRelationMemberOf();
         if ( pMemberOf && pMemberOf != pWindow )
         {
-            uno::Sequence< uno::Reference< uno::XInterface > > aSequence(1);
-            aSequence[0] = pMemberOf->GetAccessible();
+            uno::Sequence< uno::Reference< uno::XInterface > > aSequence { pMemberOf->GetAccessible() };
             rRelationSet->AddRelation( AccessibleRelation( AccessibleRelationType::MEMBER_OF, aSequence ) );
         }
         return rSet;

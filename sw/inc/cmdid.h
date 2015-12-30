@@ -600,7 +600,7 @@
 #define FN_NAVIGATION_BACK                  (FN_EXTRA2 + 115)
 #define FN_NAVIGATION_FORWARD               (FN_EXTRA2 + 116)
 
-// #i972: bool items to be passed to SwFrmPage for evaluation
+// #i972: bool items to be passed to SwFramePage for evaluation
 #define FN_OLE_IS_MATH                      (FN_EXTRA2 + 114)
 #define FN_MATH_BASELINE_ALIGNMENT          (FN_EXTRA2 + 115)
 
@@ -700,6 +700,7 @@
 #define FN_READONLY_SELECTION_MODE  (FN_SELECTION + 89)   /* switches text selection mode in readonly documents*/
 #define FN_SELECTION_MODE_DEFAULT   (FN_SELECTION + 90)   /* use default selection mode - not block mode */
 #define FN_SELECTION_MODE_BLOCK     (FN_SELECTION + 91)   /* switch on block selection */
+#define SID_JUMP_TO_SPECIFIC_PAGE    (FN_SELECTION + 92)
 
 // QUERY-Block
 #define FN_TXTATR_INET              (FN_QUERY +29)      /* INet-Attribut */

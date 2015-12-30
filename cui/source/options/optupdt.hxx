@@ -39,27 +39,31 @@ private:
     VclPtr<FixedText>          m_pDestPath;
     VclPtr<PushButton>         m_pChangePathButton;
     VclPtr<FixedText>          m_pLastChecked;
+    VclPtr<CheckBox>           m_pExtrasCheckBox;
+    VclPtr<FixedText>          m_pUserAgentLabel;
     OUString       m_aNeverChecked;
     OUString       m_aLastCheckedTemplate;
 
     DECL_LINK_TYPED(FileDialogHdl_Impl, Button*, void);
     DECL_LINK_TYPED(CheckNowHdl_Impl, Button*, void);
     DECL_LINK_TYPED(AutoCheckHdl_Impl, Button*, void);
+    DECL_LINK_TYPED(ExtrasCheckHdl_Impl, Button*, void);
 
     css::uno::Reference< css::container::XNameReplace > m_xUpdateAccess;
 
     void                    UpdateLastCheckedText();
+    void                    UpdateUserAgent();
 
 public:
     SvxOnlineUpdateTabPage( vcl::Window* pParent, const SfxItemSet& rSet );
     virtual ~SvxOnlineUpdateTabPage();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     static VclPtr<SfxTabPage>      Create( vcl::Window* pParent, const SfxItemSet* rSet );
 
-    virtual bool            FillItemSet( SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void            Reset( const SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void            FillUserData() SAL_OVERRIDE;
+    virtual bool            FillItemSet( SfxItemSet* rSet ) override;
+    virtual void            Reset( const SfxItemSet* rSet ) override;
+    virtual void            FillUserData() override;
 };
 
 

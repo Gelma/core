@@ -49,7 +49,7 @@ ScXMLAnnotationContext::ScXMLAnnotationContext( ScXMLImport& rImport,
     SvXMLImportContext( rImport, nPrfx, rLName ),
     mrAnnotationData( rAnnotationData ),
     pCellContext(pTempCellContext),
-    pShapeContext(NULL)
+    pShapeContext(nullptr)
 {
     uno::Reference<drawing::XShapes> xLocalShapes (GetScImport().GetTables().GetCurrentXShapes());
     if (xLocalShapes.is())
@@ -111,7 +111,7 @@ ScXMLAnnotationContext::~ScXMLAnnotationContext()
 {
 }
 
-void ScXMLAnnotationContext::StartElement(const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList)
+void ScXMLAnnotationContext::StartElement(const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList)
 {
     if (pShapeContext)
         pShapeContext->StartElement(xAttrList);
@@ -119,10 +119,9 @@ void ScXMLAnnotationContext::StartElement(const com::sun::star::uno::Reference< 
 
 SvXMLImportContext *ScXMLAnnotationContext::CreateChildContext( sal_uInt16 nPrefix,
                                             const OUString& rLName,
-                                            const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList )
+                                            const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if( XML_NAMESPACE_DC == nPrefix )
     {
@@ -160,7 +159,7 @@ void ScXMLAnnotationContext::EndElement()
     {
         pShapeContext->EndElement();
         delete pShapeContext;
-        pShapeContext = NULL;
+        pShapeContext = nullptr;
     }
 
     mrAnnotationData.maAuthor = maAuthorBuffer.makeStringAndClear();
@@ -170,7 +169,7 @@ void ScXMLAnnotationContext::EndElement()
     mrAnnotationData.maSimpleText = maTextBuffer.makeStringAndClear();
 
     XMLTableShapeImportHelper* pTableShapeImport = static_cast<XMLTableShapeImportHelper*>(GetScImport().GetShapeImport().get());
-    pTableShapeImport->SetAnnotation(NULL);
+    pTableShapeImport->SetAnnotation(nullptr);
 }
 
 void ScXMLAnnotationContext::SetShape( const uno::Reference< drawing::XShape >& rxShape, const uno::Reference< drawing::XShapes >& rxShapes,

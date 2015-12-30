@@ -34,8 +34,8 @@ public:
                              OfaPtrItem( sal_uInt16 nWhich, void *pPtr );
                              OfaPtrItem( const OfaPtrItem& );
 
-    virtual bool             operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool             operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = nullptr ) const override;
 
     void*                    GetValue() const { return pPtr; }
 };
@@ -54,21 +54,17 @@ public:
     OfaRefItem( const OfaRefItem& rItem )
         : SfxPoolItem( rItem.Which() ), mxRef( rItem.mxRef )
     {}
-    virtual bool operator==( const SfxPoolItem& rItem ) const SAL_OVERRIDE
+    virtual bool operator==( const SfxPoolItem& rItem ) const override
     {
         return mxRef == static_cast<OfaRefItem<reference_type> const &>(rItem).mxRef;
     }
-    virtual SfxPoolItem*Clone( SfxItemPool* /*pPool = 0*/ ) const SAL_OVERRIDE
+    virtual SfxPoolItem*Clone( SfxItemPool* /*pPool = 0*/ ) const override
     {
         return new OfaRefItem( *this );
     }
     inline rtl::Reference<reference_type> GetValue() const
     {
         return mxRef;
-    }
-    inline void SetValue( const rtl::Reference<reference_type> &xRef )
-    {
-        mxRef = xRef;
     }
 };
 

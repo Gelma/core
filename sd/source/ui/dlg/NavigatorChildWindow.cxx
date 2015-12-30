@@ -33,8 +33,8 @@ SFX_IMPL_CHILDWINDOWCONTEXT(NavigatorChildWindow, SID_NAVIGATOR)
 
 void RequestNavigatorUpdate (SfxBindings* pBindings)
 {
-    if (pBindings != NULL
-        && pBindings->GetDispatcher() != NULL)
+    if (pBindings != nullptr
+        && pBindings->GetDispatcher() != nullptr)
     {
         SfxBoolItem aItem (SID_NAVIGATOR_INIT, true);
         pBindings->GetDispatcher()->Execute(
@@ -53,9 +53,7 @@ NavigatorChildWindow::NavigatorChildWindow (
     : SfxChildWindowContext( nId )
 {
     VclPtr<SdNavigatorWin> pNavWin = VclPtr<SdNavigatorWin>::Create(
-
         pParent,
-        this,
         SdResId( FLT_NAVIGATOR ),
         pBindings);
 

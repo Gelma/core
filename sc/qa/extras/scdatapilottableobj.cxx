@@ -32,11 +32,11 @@ class ScDataPilotTableObj : public CalcUnoApiTest, apitest::XDataPilotDescriptor
 public:
     ScDataPilotTableObj();
 
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
-    virtual uno::Reference< uno::XInterface > init() SAL_OVERRIDE;
-    virtual uno::Reference< uno::XInterface > initDP2() SAL_OVERRIDE;
-    virtual uno::Reference< uno::XInterface > getSheets() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
+    virtual uno::Reference< uno::XInterface > init() override;
+    virtual uno::Reference< uno::XInterface > initDP2() override;
+    virtual uno::Reference< uno::XInterface > getSheets() override;
 
     CPPUNIT_TEST_SUITE(ScDataPilotTableObj);
     CPPUNIT_TEST(testRefresh);
@@ -112,7 +112,7 @@ uno::Reference< uno::XInterface > ScDataPilotTableObj::getSheets()
 uno::Reference< uno::XInterface > ScDataPilotTableObj::initDP2()
 {
     OUString aFileURL;
-    createFileURL(OUString("ScDataPilotTableObj.ods"), aFileURL);
+    createFileURL("ScDataPilotTableObj.ods", aFileURL);
     if(!mxComponent.is())
         mxComponent = loadFromDesktop(aFileURL, "com.sun.star.sheet.SpreadsheetDocument");
     CPPUNIT_ASSERT(mxComponent.is());

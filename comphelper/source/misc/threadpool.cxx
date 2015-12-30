@@ -30,7 +30,7 @@ public:
     {
     }
 
-    virtual void execute() SAL_OVERRIDE
+    virtual void execute() override
     {
         ThreadTask *pTask;
         while ( ( pTask = waitForWork() ) )
@@ -42,7 +42,7 @@ public:
 
     ThreadTask *waitForWork()
     {
-        ThreadTask *pRet = NULL;
+        ThreadTask *pRet = nullptr;
 
         osl::ResettableMutexGuard aGuard( mpPool->maGuard );
 
@@ -168,7 +168,7 @@ ThreadTask *ThreadPool::popWork()
         return pTask;
     }
     else
-        return NULL;
+        return nullptr;
 }
 
 void ThreadPool::startWork()

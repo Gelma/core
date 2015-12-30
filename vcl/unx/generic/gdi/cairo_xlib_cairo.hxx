@@ -21,10 +21,9 @@
 #define INCLUDED_CANVAS_SOURCE_CAIRO_CAIRO_XLIB_CAIRO_HXX
 
 #include <sal/config.h>
-
 #include <sal/types.h>
-
 #include <vcl/cairo.hxx>
+#include <vcl/salgtype.hxx>
 
 struct BitmapSystemData;
 struct SystemEnvData;
@@ -43,8 +42,6 @@ namespace cairo {
         long    hDrawable;      // a drawable
         void*   pVisual;        // the visual in use
         int nScreen;        // the current screen of the drawable
-        int     nDepth;         // depth of said visual
-        long    aColormap;      // the colormap being used
         void*   pRenderFormat;  // render format for drawable
     };
 
@@ -60,8 +57,6 @@ namespace cairo {
         {}
 
         ~X11Pixmap();
-
-        void clear() { mpDisplay=NULL; mhDrawable=0; }
     };
 
     typedef std::shared_ptr<X11Pixmap>       X11PixmapSharedPtr;
@@ -83,17 +78,18 @@ namespace cairo {
         X11Surface( const X11SysData& rSysData, const BitmapSystemData& rBmpData );
 
         // Surface interface
-        virtual CairoSharedPtr getCairo() const SAL_OVERRIDE;
-        virtual CairoSurfaceSharedPtr getCairoSurface() const SAL_OVERRIDE { return mpSurface; }
-        virtual SurfaceSharedPtr getSimilar(int cairo_content_type, int width, int height) const SAL_OVERRIDE;
+        virtual CairoSharedPtr getCairo() const override;
+        virtual CairoSurfaceSharedPtr getCairoSurface() const override { return mpSurface; }
+        virtual SurfaceSharedPtr getSimilar(int cairo_content_type, int width, int height) const override;
 
-        virtual VclPtr<VirtualDevice> createVirtualDevice() const SAL_OVERRIDE;
+        virtual VclPtr<VirtualDevice> createVirtualDevice() const override;
 
-        virtual bool Resize( int width, int height ) SAL_OVERRIDE;
+        virtual bool Resize( int width, int height ) override;
 
-        virtual void flush() const SAL_OVERRIDE;
+        virtual void flush() const override;
 
         int getDepth() const;
+        DeviceFormat getFormat() const;
         X11PixmapSharedPtr getPixmap() const { return mpPixmap; }
         void* getRenderFormat() const { return maSysData.pRenderFormat; }
         long getDrawable() const { return mpPixmap ? mpPixmap->mhDrawable : maSysData.hDrawable; }

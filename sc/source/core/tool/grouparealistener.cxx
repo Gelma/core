@@ -26,7 +26,7 @@ class Notifier : std::unary_function<ScFormulaCell*, void>
 {
     const SfxHint& mrHint;
 public:
-    Notifier( const SfxHint& rHint ) : mrHint(rHint) {}
+    explicit Notifier( const SfxHint& rHint ) : mrHint(rHint) {}
 
     void operator() ( ScFormulaCell* pCell )
     {
@@ -41,16 +41,16 @@ class CollectCellAction : public sc::ColumnSpanSet::ColumnAction
     std::vector<ScFormulaCell*> maCells;
 
 public:
-    CollectCellAction( const FormulaGroupAreaListener& rAreaListener ) :
+    explicit CollectCellAction( const FormulaGroupAreaListener& rAreaListener ) :
         mrAreaListener(rAreaListener) {}
 
-    virtual void startColumn( ScColumn* pCol ) SAL_OVERRIDE
+    virtual void startColumn( ScColumn* pCol ) override
     {
         maPos.SetTab(pCol->GetTab());
         maPos.SetCol(pCol->GetCol());
     }
 
-    virtual void execute( SCROW nRow1, SCROW nRow2, bool bVal ) SAL_OVERRIDE
+    virtual void execute( SCROW nRow1, SCROW nRow2, bool bVal ) override
     {
         if (!bVal)
             return;
@@ -74,7 +74,7 @@ public:
 FormulaGroupAreaListener::FormulaGroupAreaListener( const ScRange& rRange, const ScDocument& rDocument,
         const ScAddress& rTopCellPos, SCROW nGroupLen, bool bStartFixed, bool bEndFixed ) :
     maRange(rRange),
-    mpColumn(NULL),
+    mpColumn(nullptr),
     mnTopCellRow(rTopCellPos.Row()),
     mnGroupLen(nGroupLen),
     mbStartFixed(bStartFixed),
@@ -330,7 +330,7 @@ const ScFormulaCell* FormulaGroupAreaListener::getTopCell() const
     size_t nBlockSize = 0;
     const ScFormulaCell* const * pp = mpColumn->GetFormulaCellBlockAddress( mnTopCellRow, nBlockSize);
     SAL_WARN_IF(!pp, "sc", "GetFormulaCellBlockAddress not found");
-    return pp ? *pp : NULL;
+    return pp ? *pp : nullptr;
 }
 
 void FormulaGroupAreaListener::notifyCellChange( const SfxHint& rHint, const ScAddress& rPos )

@@ -68,7 +68,7 @@ void SwInsFootNoteDlg::Apply()
                                eCharSet, RES_CHRATR_FONT );
             aSet.Put( aFont );
             rSh.SetAttrSet( aSet, SetAttrMode::DONTEXPAND );
-            rSh.ResetSelect(0, false);
+            rSh.ResetSelect(nullptr, false);
             rSh.Left(CRSR_SKIP_CHARS, false, 1, false );
         }
         rSh.EndUndo( UNDO_END );
@@ -88,17 +88,15 @@ IMPL_LINK_NOARG_TYPED(SwInsFootNoteDlg, NumberCharHdl, Button*, void)
     m_pOkBtn->Enable( !m_pNumberCharEdit->GetText().isEmpty() || bExtCharAvailable );
 }
 
-IMPL_LINK_NOARG(SwInsFootNoteDlg, NumberEditHdl)
+IMPL_LINK_NOARG_TYPED(SwInsFootNoteDlg, NumberEditHdl, Edit&, void)
 {
     m_pNumberCharBtn->Check();
     m_pOkBtn->Enable( !m_pNumberCharEdit->GetText().isEmpty() );
-
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(SwInsFootNoteDlg, NumberAutoBtnHdl, Button*, void)
 {
-    m_pOkBtn->Enable( true );
+    m_pOkBtn->Enable();
 }
 
 IMPL_LINK_NOARG_TYPED(SwInsFootNoteDlg, NumberExtCharHdl, Button*, void)
@@ -118,8 +116,8 @@ IMPL_LINK_NOARG_TYPED(SwInsFootNoteDlg, NumberExtCharHdl, Button*, void)
         rSh.GetView().GetViewFrame()->GetFrame().GetFrameInterface(), RID_SVXDLG_CHARMAP ));
     if (RET_OK == pDlg->Execute())
     {
-        SFX_ITEMSET_ARG( pDlg->GetOutputItemSet(), pItem, SfxStringItem, SID_CHARMAP, false );
-        SFX_ITEMSET_ARG( pDlg->GetOutputItemSet(), pFontItem, SvxFontItem, SID_ATTR_CHAR_FONT, false );
+        const SfxStringItem* pItem = SfxItemSet::GetItem<SfxStringItem>(pDlg->GetOutputItemSet(), SID_CHARMAP, false);
+        const SvxFontItem* pFontItem = SfxItemSet::GetItem<SvxFontItem>(pDlg->GetOutputItemSet(), SID_ATTR_CHAR_FONT, false);
         if ( pItem )
         {
             m_pNumberCharEdit->SetText( pItem->GetValue() );
@@ -145,7 +143,7 @@ IMPL_LINK_TYPED( SwInsFootNoteDlg, NextPrevHdl, Button *, pBtn, void )
     Apply();
 
     // go to the next foot/endnote here
-    rSh.ResetSelect(0, false);
+    rSh.ResetSelect(nullptr, false);
     if (pBtn == m_pNextBT)
         rSh.GotoNextFootnoteAnchor();
     else
@@ -200,10 +198,10 @@ SwInsFootNoteDlg::~SwInsFootNoteDlg()
 
 void SwInsFootNoteDlg::dispose()
 {
-    SwViewShell::SetCareWin(0);
+    SwViewShell::SetCareWin(nullptr);
 
     if (bEdit)
-        rSh.ResetSelect(0, false);
+        rSh.ResetSelect(nullptr, false);
 
     m_pNumberFrame.clear();
     m_pNumberAutoBtn.clear();

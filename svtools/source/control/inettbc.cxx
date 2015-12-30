@@ -109,7 +109,7 @@ class SvtMatchContext_Impl: public salhelper::Thread
     DECL_LINK_TYPED(                Select_Impl, void*, void );
 
     virtual                         ~SvtMatchContext_Impl();
-    virtual void                    execute() SAL_OVERRIDE;
+    virtual void                    execute() override;
     void                            doExecute();
     void                            Insert( const OUString& rCompletion, const OUString& rURL, bool bForce = false);
     void                            ReadFolder( const OUString& rURL, const OUString& rMatch, bool bSmart );
@@ -386,7 +386,7 @@ void SvtMatchContext_Impl::ReadFolder( const OUString& rURL,
                 xResultSet = xDynamicResultSet->getStaticResultSet();
             }
         }
-        catch( ::com::sun::star::uno::Exception& ) {}
+        catch( css::uno::Exception& ) {}
 
         if ( xResultSet.is() )
         {
@@ -448,12 +448,12 @@ void SvtMatchContext_Impl::ReadFolder( const OUString& rURL,
                     }
                 }
             }
-            catch( ::com::sun::star::uno::Exception& )
+            catch( css::uno::Exception& )
             {
             }
         }
     }
-    catch( ::com::sun::star::uno::Exception& )
+    catch( css::uno::Exception& )
     {
     }
 }
@@ -1038,7 +1038,7 @@ bool SvtURLBox::ProcessKey( const vcl::KeyCode& rKey )
         else if ( GetSelectHdl().IsSet() )
         {
             bHandled = true;
-            GetSelectHdl().Call(this);
+            GetSelectHdl().Call(*this);
         }
 
         bCtrlClick = false;
@@ -1307,7 +1307,7 @@ bool SvtURLBox_Impl::TildeParsing(
             sal_Int32 nNameEnd = aText.indexOf( '/' );
             OUString aUserName = aText.copy( 1, ( nNameEnd != -1 ) ? nNameEnd : ( aText.getLength() - 1 ) );
 
-            struct passwd* pPasswd = NULL;
+            struct passwd* pPasswd = nullptr;
 #ifdef SOLARIS
             Sequence< sal_Int8 > sBuf( 1024 );
             struct passwd aTmp;

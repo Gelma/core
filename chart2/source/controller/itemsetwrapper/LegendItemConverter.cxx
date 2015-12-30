@@ -32,8 +32,7 @@
 
 #include <functional>
 #include <algorithm>
-
-#include <boost/checked_delete.hpp>
+#include <memory>
 
 using namespace ::com::sun::star;
 
@@ -61,13 +60,13 @@ LegendItemConverter::LegendItemConverter(
 
 LegendItemConverter::~LegendItemConverter()
 {
-    ::std::for_each( m_aConverters.begin(), m_aConverters.end(), boost::checked_deleter<ItemConverter>());
+    ::std::for_each( m_aConverters.begin(), m_aConverters.end(), std::default_delete<ItemConverter>());
 }
 
 void LegendItemConverter::FillItemSet( SfxItemSet & rOutItemSet ) const
 {
-    ::std::for_each( m_aConverters.begin(), m_aConverters.end(),
-                     FillItemSetFunc( rOutItemSet ));
+    for( const auto& pConv : m_aConverters )
+        pConv->FillItemSet( rOutItemSet );
 
     // own items
     ItemConverter::FillItemSet( rOutItemSet );
@@ -77,8 +76,8 @@ bool LegendItemConverter::ApplyItemSet( const SfxItemSet & rItemSet )
 {
     bool bResult = false;
 
-    ::std::for_each( m_aConverters.begin(), m_aConverters.end(),
-                     ApplyItemSetFunc( rItemSet, bResult ));
+    for( const auto& pConv : m_aConverters )
+        bResult = pConv->ApplyItemSet( rItemSet ) || bResult;
 
     // own items
     return ItemConverter::ApplyItemSet( rItemSet ) || bResult;
@@ -105,7 +104,7 @@ bool LegendItemConverter::ApplySpecialItem( sal_uInt16 nWhichId, const SfxItemSe
     {
         case SCHATTR_LEGEND_SHOW:
         {
-            const SfxPoolItem* pPoolItem = NULL;
+            const SfxPoolItem* pPoolItem = nullptr;
             if( rInItemSet.GetItemState( SCHATTR_LEGEND_SHOW, true, &pPoolItem ) == SfxItemState::SET )
             {
                 bool bShow = static_cast< const SfxBoolItem * >( pPoolItem )->GetValue();
@@ -122,7 +121,7 @@ bool LegendItemConverter::ApplySpecialItem( sal_uInt16 nWhichId, const SfxItemSe
         break;
         case SCHATTR_LEGEND_POS:
         {
-            const SfxPoolItem* pPoolItem = NULL;
+            const SfxPoolItem* pPoolItem = nullptr;
             if( rInItemSet.GetItemState( SCHATTR_LEGEND_POS, true, &pPoolItem ) == SfxItemState::SET )
             {
                 chart2::LegendPosition eNewPos = static_cast<chart2::LegendPosition>(static_cast<const SfxInt32Item*>(pPoolItem)->GetValue());

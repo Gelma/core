@@ -45,7 +45,7 @@ extern "C" void offacc_workerfunc (void * acc)
 }
 
 Acceptor::Acceptor( const Reference< XComponentContext >& rxContext )
-    : m_thread(NULL)
+    : m_thread(nullptr)
     , m_rContext(rxContext)
     , m_bInit(false)
     , m_bDying(false)
@@ -67,6 +67,7 @@ Acceptor::~Acceptor()
     m_bDying = true;
     m_cEnable.set();
     osl_joinWithThread(t);
+    osl_destroyThread(t);
     {
         // Make the final state of m_bridges visible to this thread (since
         // m_thread is joined, the code that follows is the only one left
@@ -190,8 +191,7 @@ OUString Acceptor::getImplementationName()
 }
 Sequence<OUString> Acceptor::impl_getSupportedServiceNames()
 {
-    Sequence<OUString> aSequence(1);
-    aSequence[0] = "com.sun.star.office.Acceptor";
+    Sequence<OUString> aSequence { "com.sun.star.office.Acceptor" };
     return aSequence;
 }
 Sequence<OUString> Acceptor::getSupportedServiceNames()
@@ -236,7 +236,7 @@ Reference<XInterface> AccInstanceProvider::getInstance (const OUString& aName )
 
     if ( aName == "StarOffice.ServiceManager" )
     {
-        rInstance = Reference< XInterface >( m_rContext->getServiceManager() );
+        rInstance.set( m_rContext->getServiceManager() );
     }
     else if ( aName == "StarOffice.ComponentContext" )
     {
@@ -249,10 +249,8 @@ Reference<XInterface> AccInstanceProvider::getInstance (const OUString& aName )
             UNO_QUERY );
         if ( rNamingService.is() )
         {
-            rNamingService->registerObject(
-                OUString("StarOffice.ServiceManager" ), m_rContext->getServiceManager() );
-            rNamingService->registerObject(
-                OUString("StarOffice.ComponentContext" ), m_rContext );
+            rNamingService->registerObject( "StarOffice.ServiceManager", m_rContext->getServiceManager() );
+            rNamingService->registerObject( "StarOffice.ComponentContext", m_rContext );
             rInstance = rNamingService;
         }
     }
@@ -269,7 +267,7 @@ using namespace desktop;
 
 SAL_DLLPUBLIC_EXPORT void * SAL_CALL offacc_component_getFactory(char const *pImplementationName, void *pServiceManager, void *)
 {
-    void* pReturn = NULL ;
+    void* pReturn = nullptr ;
     if  ( pImplementationName && pServiceManager )
     {
         // Define variables which are used in following macros.
@@ -279,7 +277,7 @@ SAL_DLLPUBLIC_EXPORT void * SAL_CALL offacc_component_getFactory(char const *pIm
 
         if (desktop::Acceptor::impl_getImplementationName().equalsAscii( pImplementationName ) )
         {
-            xFactory = Reference< XSingleServiceFactory >( cppu::createSingleFactory(
+            xFactory.set( cppu::createSingleFactory(
                 xServiceManager, desktop::Acceptor::impl_getImplementationName(),
                 desktop::Acceptor::impl_getInstance, desktop::Acceptor::impl_getSupportedServiceNames()) );
         }

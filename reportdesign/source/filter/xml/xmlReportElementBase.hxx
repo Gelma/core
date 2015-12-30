@@ -39,30 +39,30 @@ namespace rptxml
 
     class OXMLReportElementBase : public SvXMLImportContext
     {
-        OXMLReportElementBase(const OXMLReportElementBase&) SAL_DELETED_FUNCTION;
-        void operator =(const OXMLReportElementBase&) SAL_DELETED_FUNCTION;
+        OXMLReportElementBase(const OXMLReportElementBase&) = delete;
+        void operator =(const OXMLReportElementBase&) = delete;
     protected:
         ORptFilter&   m_rImport;
         OXMLTable*    m_pContainer;
-        ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportComponent >      m_xComponent;
+        css::uno::Reference< css::report::XReportComponent >      m_xComponent;
 
         virtual SvXMLImportContext* _CreateChildContext( sal_uInt16 nPrefix,
                     const OUString& rLocalName,
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList );
+                    const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList );
     public:
 
         OXMLReportElementBase( ORptFilter& rImport
                     ,sal_uInt16 nPrfx
                     ,const OUString& rLName
-                    ,const ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportComponent >& _xComponent
+                    ,const css::uno::Reference< css::report::XReportComponent >& _xComponent
                     ,OXMLTable* _pContainer);
         virtual ~OXMLReportElementBase();
 
         virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                     const OUString& rLocalName,
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+                    const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
 
-        virtual void EndElement() SAL_OVERRIDE;
+        virtual void EndElement() override;
     };
 
 } // namespace rptxml

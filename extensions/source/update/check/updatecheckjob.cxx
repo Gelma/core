@@ -50,7 +50,7 @@ public:
                               const uno::Sequence< beans::NamedValue > &xParameters,
                               bool bShowDialog );
 
-    virtual void SAL_CALL run() SAL_OVERRIDE;
+    virtual void SAL_CALL run() override;
 
     void    setTerminating();
 
@@ -80,25 +80,25 @@ public:
 
     // XJob
     virtual uno::Any SAL_CALL execute(const uno::Sequence<beans::NamedValue>&)
-        throw (lang::IllegalArgumentException, uno::Exception, std::exception) SAL_OVERRIDE;
+        throw (lang::IllegalArgumentException, uno::Exception, std::exception) override;
 
     // XServiceInfo
     virtual OUString SAL_CALL getImplementationName()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL supportsService(OUString const & serviceName)
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
 
     // XEventListener
-    virtual void SAL_CALL disposing( ::com::sun::star::lang::EventObject const & evt )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing( css::lang::EventObject const & evt )
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // XTerminateListener
     virtual void SAL_CALL queryTermination( lang::EventObject const & evt )
-        throw ( frame::TerminationVetoException, uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( frame::TerminationVetoException, uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL notifyTermination( lang::EventObject const & evt )
-        throw ( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( uno::RuntimeException, std::exception ) override;
 
 private:
     uno::Reference<uno::XComponentContext>  m_xContext;
@@ -162,8 +162,7 @@ UpdateCheckJob::~UpdateCheckJob()
 uno::Sequence< OUString >
 UpdateCheckJob::getServiceNames()
 {
-    uno::Sequence< OUString > aServiceList(1);
-    aServiceList[0] = "com.sun.star.setup.UpdateCheck";
+    uno::Sequence< OUString > aServiceList { "com.sun.star.setup.UpdateCheck" };
     return aServiceList;
 };
 
@@ -306,7 +305,7 @@ void SAL_CALL UpdateCheckJob::queryTermination( lang::EventObject const & )
 void SAL_CALL UpdateCheckJob::notifyTermination( lang::EventObject const & )
     throw ( uno::RuntimeException, std::exception )
 {
-    if ( m_pInitThread.get() != 0 )
+    if ( m_pInitThread.get() != nullptr )
     {
         m_pInitThread->setTerminating();
         m_pInitThread->join();
@@ -344,7 +343,7 @@ static const cppu::ImplementationEntry kImplementations_entries[] =
         UpdateCheckJob::getImplName,
         UpdateCheckJob::getServiceNames,
         cppu::createSingleComponentFactory,
-        NULL,
+        nullptr,
         0
     },
     {
@@ -352,10 +351,10 @@ static const cppu::ImplementationEntry kImplementations_entries[] =
         UpdateCheckConfig::getImplName,
         UpdateCheckConfig::getServiceNames,
         cppu::createSingleComponentFactory,
-        NULL,
+        nullptr,
         0
     },
-    { NULL, NULL, NULL, NULL, NULL, 0 }
+    { nullptr, nullptr, nullptr, nullptr, nullptr, 0 }
 } ;
 
 

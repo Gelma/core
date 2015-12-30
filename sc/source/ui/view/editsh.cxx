@@ -82,25 +82,24 @@
 
 using namespace ::com::sun::star;
 
-TYPEINIT1( ScEditShell, SfxShell );
 
 SFX_IMPL_INTERFACE(ScEditShell, SfxShell)
 
 void ScEditShell::InitInterface_Impl()
 {
-    GetStaticInterface()->RegisterPopupMenu(ScResId(RID_POPUP_EDIT));
+    GetStaticInterface()->RegisterPopupMenu("celledit");
 }
 
 ScEditShell::ScEditShell(EditView* pView, ScViewData* pData) :
     pEditView       (pView),
     pViewData       (pData),
-    pClipEvtLstnr   (NULL),
+    pClipEvtLstnr   (nullptr),
     bPastePossible  (false),
     bIsInsertMode   (true)
 {
     SetPool( pEditView->GetEditEngine()->GetEmptyItemSet().GetPool() );
     SetUndoManager( &pEditView->GetEditEngine()->GetUndoManager() );
-    SetName(OUString("EditCell"));
+    SetName("EditCell");
     SfxShell::SetContextName(sfx2::sidebar::EnumContext::GetContextName(sfx2::sidebar::EnumContext::Context_EditCell));
 }
 
@@ -210,7 +209,7 @@ void ScEditShell::Execute( SfxRequest& rReq )
         case SID_THES:
             {
                 OUString aReplaceText;
-                SFX_REQUEST_ARG( rReq, pItem2, SfxStringItem, SID_THES , false );
+                const SfxStringItem* pItem2 = rReq.GetArg<SfxStringItem>(SID_THES);
                 if (pItem2)
                     aReplaceText = pItem2->GetValue();
                 if (!aReplaceText.isEmpty())
@@ -253,7 +252,7 @@ void ScEditShell::Execute( SfxRequest& rReq )
                 const SfxPoolItem* pItem;
                 if ( pReqArgs &&
                      pReqArgs->GetItemState(nSlot, true, &pItem) == SfxItemState::SET &&
-                     pItem->ISA(SfxUInt32Item) )
+                     dynamic_cast<const SfxUInt32Item*>( pItem) !=  nullptr )
                 {
                     nFormat = static_cast<SotClipboardFormatId>(static_cast<const SfxUInt32Item*>(pItem)->GetValue());
                 }
@@ -386,16 +385,16 @@ void ScEditShell::Execute( SfxRequest& rReq )
                 SvxFontItem aNewItem( EE_CHAR_FONTINFO );
 
                 const SfxItemSet *pArgs = rReq.GetArgs();
-                const SfxPoolItem* pItem = 0;
+                const SfxPoolItem* pItem = nullptr;
                 if( pArgs )
                     pArgs->GetItemState(GetPool().GetWhich(SID_CHARMAP), false, &pItem);
 
                 if ( pItem )
                 {
                     aString = static_cast<const SfxStringItem*>(pItem)->GetValue();
-                    const SfxPoolItem* pFtItem = NULL;
+                    const SfxPoolItem* pFtItem = nullptr;
                     pArgs->GetItemState( GetPool().GetWhich(SID_ATTR_SPECIALCHAR), false, &pFtItem);
-                    const SfxStringItem* pFontItem = PTR_CAST( SfxStringItem, pFtItem );
+                    const SfxStringItem* pFontItem = dynamic_cast<const SfxStringItem*>( pFtItem  );
                     if ( pFontItem )
                     {
                         OUString aFontName(pFontItem->GetValue());
@@ -791,12 +790,12 @@ const SvxURLField* ScEditShell::GetURLField()
         if (pFieldItem)
         {
             const SvxFieldData* pField = pFieldItem->GetField();
-            if ( pField && pField->ISA(SvxURLField) )
+            if ( pField && dynamic_cast<const SvxURLField*>( pField) !=  nullptr )
                 return static_cast<const SvxURLField*>(pField);
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 IMPL_LINK_TYPED( ScEditShell, ClipboardChanged, TransferableDataHelper*, pDataHelper, void )
@@ -1095,7 +1094,7 @@ void ScEditShell::ExecuteAttr(SfxRequest& rReq)
 
 void ScEditShell::GetAttrState(SfxItemSet &rSet)
 {
-    if ( !pViewData->HasEditView( pViewData->GetActivePart() ) )    // #125326#
+    if ( !pViewData->HasEditView( pViewData->GetActivePart() ) )
     {
         lcl_DisableAll( rSet );
         return;
@@ -1130,7 +1129,7 @@ void ScEditShell::GetAttrState(SfxItemSet &rSet)
 
     // underline
 
-    SfxItemState eState = aAttribs.GetItemState( EE_CHAR_UNDERLINE, true );
+    SfxItemState eState = aAttribs.GetItemState( EE_CHAR_UNDERLINE );
     if ( eState == SfxItemState::DONTCARE )
     {
         rSet.InvalidateItem( SID_ULINE_VAL_NONE );
@@ -1172,7 +1171,7 @@ void ScEditShell::GetAttrState(SfxItemSet &rSet)
     pViewData->GetBindings().Invalidate( SID_SET_SUPER_SCRIPT );
     pViewData->GetBindings().Invalidate( SID_SET_SUB_SCRIPT );
 
-    eState = aAttribs.GetItemState( EE_CHAR_KERNING, true );
+    eState = aAttribs.GetItemState( EE_CHAR_KERNING );
     pViewData->GetBindings().Invalidate( SID_ATTR_CHAR_KERNING );
     if ( eState == SfxItemState::DONTCARE )
     {
@@ -1184,7 +1183,7 @@ OUString ScEditShell::GetSelectionText( bool bWholeWord )
 {
     OUString aStrSelection;
 
-    if ( pViewData->HasEditView( pViewData->GetActivePart() ) )    // #125326#
+    if ( pViewData->HasEditView( pViewData->GetActivePart() ) )
     {
         if ( bWholeWord )
         {
@@ -1265,7 +1264,7 @@ void ScEditShell::GetUndoState(SfxItemSet &rSet)
         sal_uInt16 nWhich = aIter.FirstWhich();
         while( nWhich )
         {
-            pViewFrm->GetSlotState( nWhich, NULL, &rSet );
+            pViewFrm->GetSlotState( nWhich, nullptr, &rSet );
             nWhich = aIter.NextWhich();
         }
     }

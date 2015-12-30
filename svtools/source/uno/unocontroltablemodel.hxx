@@ -35,6 +35,7 @@
 #include <rtl/ref.hxx>
 
 #include <boost/noncopyable.hpp>
+#include <memory>
 
 
 namespace svt { namespace table
@@ -49,7 +50,7 @@ namespace svt { namespace table
     class UnoControlTableModel : public ITableModel, public ITableDataSort
     {
     private:
-        UnoControlTableModel_Impl*     m_pImpl;
+        std::unique_ptr<UnoControlTableModel_Impl>  m_pImpl;
 
     public:
         UnoControlTableModel();
@@ -57,46 +58,46 @@ namespace svt { namespace table
 
     public:
         // ITableModel overridables
-        virtual TableSize                       getColumnCount() const SAL_OVERRIDE;
-        virtual TableSize                       getRowCount() const SAL_OVERRIDE;
-        virtual bool                            hasColumnHeaders() const SAL_OVERRIDE;
-        virtual bool                            hasRowHeaders() const SAL_OVERRIDE;
-        virtual PColumnModel                    getColumnModel( ColPos column ) SAL_OVERRIDE;
-        virtual PTableRenderer                  getRenderer() const SAL_OVERRIDE;
-        virtual PTableInputHandler              getInputHandler() const SAL_OVERRIDE;
-        virtual TableMetrics                    getRowHeight() const SAL_OVERRIDE;
-        virtual TableMetrics                    getColumnHeaderHeight() const SAL_OVERRIDE;
-        virtual TableMetrics                    getRowHeaderWidth() const SAL_OVERRIDE;
-        virtual ScrollbarVisibility             getVerticalScrollbarVisibility() const SAL_OVERRIDE;
-        virtual ScrollbarVisibility             getHorizontalScrollbarVisibility() const SAL_OVERRIDE;
-        virtual void                            addTableModelListener( const PTableModelListener& i_listener ) SAL_OVERRIDE;
-        virtual void                            removeTableModelListener( const PTableModelListener& i_listener ) SAL_OVERRIDE;
-        virtual void                            getCellContent( ColPos const i_col, RowPos const i_row, ::com::sun::star::uno::Any& o_cellContent ) SAL_OVERRIDE;
-        virtual void                            getCellToolTip( ColPos const i_col, RowPos const i_row, ::com::sun::star::uno::Any & o_cellToolTip ) SAL_OVERRIDE;
-        virtual ::com::sun::star::uno::Any      getRowHeading( RowPos const i_rowPos ) const SAL_OVERRIDE;
-        virtual ::boost::optional< ::Color >    getLineColor() const SAL_OVERRIDE;
-        virtual ::boost::optional< ::Color >    getHeaderBackgroundColor() const SAL_OVERRIDE;
-        virtual ::boost::optional< ::Color >    getHeaderTextColor() const SAL_OVERRIDE;
-        virtual ::boost::optional< ::Color >    getActiveSelectionBackColor() const SAL_OVERRIDE;
-        virtual ::boost::optional< ::Color >    getInactiveSelectionBackColor() const SAL_OVERRIDE;
-        virtual ::boost::optional< ::Color >    getActiveSelectionTextColor() const SAL_OVERRIDE;
-        virtual ::boost::optional< ::Color >    getInactiveSelectionTextColor() const SAL_OVERRIDE;
-        virtual ::boost::optional< ::Color >    getTextColor() const SAL_OVERRIDE;
-        virtual ::boost::optional< ::Color >    getTextLineColor() const SAL_OVERRIDE;
+        virtual TableSize                       getColumnCount() const override;
+        virtual TableSize                       getRowCount() const override;
+        virtual bool                            hasColumnHeaders() const override;
+        virtual bool                            hasRowHeaders() const override;
+        virtual PColumnModel                    getColumnModel( ColPos column ) override;
+        virtual PTableRenderer                  getRenderer() const override;
+        virtual PTableInputHandler              getInputHandler() const override;
+        virtual TableMetrics                    getRowHeight() const override;
+        virtual TableMetrics                    getColumnHeaderHeight() const override;
+        virtual TableMetrics                    getRowHeaderWidth() const override;
+        virtual ScrollbarVisibility             getVerticalScrollbarVisibility() const override;
+        virtual ScrollbarVisibility             getHorizontalScrollbarVisibility() const override;
+        virtual void                            addTableModelListener( const PTableModelListener& i_listener ) override;
+        virtual void                            removeTableModelListener( const PTableModelListener& i_listener ) override;
+        virtual void                            getCellContent( ColPos const i_col, RowPos const i_row, css::uno::Any& o_cellContent ) override;
+        virtual void                            getCellToolTip( ColPos const i_col, RowPos const i_row, css::uno::Any & o_cellToolTip ) override;
+        virtual css::uno::Any      getRowHeading( RowPos const i_rowPos ) const override;
+        virtual ::boost::optional< ::Color >    getLineColor() const override;
+        virtual ::boost::optional< ::Color >    getHeaderBackgroundColor() const override;
+        virtual ::boost::optional< ::Color >    getHeaderTextColor() const override;
+        virtual ::boost::optional< ::Color >    getActiveSelectionBackColor() const override;
+        virtual ::boost::optional< ::Color >    getInactiveSelectionBackColor() const override;
+        virtual ::boost::optional< ::Color >    getActiveSelectionTextColor() const override;
+        virtual ::boost::optional< ::Color >    getInactiveSelectionTextColor() const override;
+        virtual ::boost::optional< ::Color >    getTextColor() const override;
+        virtual ::boost::optional< ::Color >    getTextLineColor() const override;
         virtual ::boost::optional< ::std::vector< ::Color > >
-                                                getRowBackgroundColors() const SAL_OVERRIDE;
-        virtual ::com::sun::star::style::VerticalAlignment
-                                                getVerticalAlign() const SAL_OVERRIDE;
-        virtual ITableDataSort*                 getSortAdapter() SAL_OVERRIDE;
-        virtual bool                            isEnabled() const SAL_OVERRIDE;
+                                                getRowBackgroundColors() const override;
+        virtual css::style::VerticalAlignment
+                                                getVerticalAlign() const override;
+        virtual ITableDataSort*                 getSortAdapter() override;
+        virtual bool                            isEnabled() const override;
 
         // ITableDataSort overridables
-        virtual void        sortByColumn( ColPos const i_column, ColumnSortDirection const i_sortDirection ) SAL_OVERRIDE;
-        virtual ColumnSort  getCurrentSortOrder() const SAL_OVERRIDE;
+        virtual void        sortByColumn( ColPos const i_column, ColumnSortDirection const i_sortDirection ) override;
+        virtual ColumnSort  getCurrentSortOrder() const override;
 
         // column write access
-        void    appendColumn( ::com::sun::star::uno::Reference< ::com::sun::star::awt::grid::XGridColumn > const & i_column );
-        void    insertColumn( ColPos const i_position, ::com::sun::star::uno::Reference< ::com::sun::star::awt::grid::XGridColumn > const & i_column );
+        void    appendColumn( css::uno::Reference< css::awt::grid::XGridColumn > const & i_column );
+        void    insertColumn( ColPos const i_position, css::uno::Reference< css::awt::grid::XGridColumn > const & i_column );
         void    removeColumn( ColPos const i_position );
         void    removeAllColumns();
 
@@ -104,13 +105,13 @@ namespace svt { namespace table
         void    setVerticalScrollbarVisibility( ScrollbarVisibility const i_visibility ) const;
         void    setHorizontalScrollbarVisibility( ScrollbarVisibility const i_visibility ) const;
 
-        void    setDataModel( ::com::sun::star::uno::Reference< ::com::sun::star::awt::grid::XGridDataModel > const & i_gridDataModel );
+        void    setDataModel( css::uno::Reference< css::awt::grid::XGridDataModel > const & i_gridDataModel );
         bool    hasDataModel() const;
-        ::com::sun::star::uno::Reference< ::com::sun::star::awt::grid::XGridDataModel >
+        css::uno::Reference< css::awt::grid::XGridDataModel >
                 getDataModel() const;
-        void    setColumnModel( ::com::sun::star::uno::Reference< ::com::sun::star::awt::grid::XGridColumnModel > const & i_gridColumnModel );
+        void    setColumnModel( css::uno::Reference< css::awt::grid::XGridColumnModel > const & i_gridColumnModel );
         bool    hasColumnModel() const;
-        ::com::sun::star::uno::Reference< ::com::sun::star::awt::grid::XGridColumnModel >
+        css::uno::Reference< css::awt::grid::XGridColumnModel >
                 getColumnModel() const;
 
         void    setRowHeaders(bool _bRowHeaders);
@@ -120,24 +121,24 @@ namespace svt { namespace table
         void    setRowHeaderWidth( TableMetrics _nWidth );
         void    setColumnHeaderHeight( TableMetrics _nHeight );
 
-        void    setLineColor( ::com::sun::star::uno::Any const & i_color );
-        void    setHeaderBackgroundColor( ::com::sun::star::uno::Any const & i_color );
-        void    setHeaderTextColor( ::com::sun::star::uno::Any const & i_color );
-        void    setActiveSelectionBackColor( ::com::sun::star::uno::Any const & i_color );
-        void    setInactiveSelectionBackColor( ::com::sun::star::uno::Any const & i_color );
-        void    setActiveSelectionTextColor( ::com::sun::star::uno::Any const & i_color );
-        void    setInactiveSelectionTextColor( ::com::sun::star::uno::Any const & i_color );
-        void    setTextColor( ::com::sun::star::uno::Any const & i_color );
-        void    setTextLineColor( ::com::sun::star::uno::Any const & i_color );
-        void    setRowBackgroundColors( ::com::sun::star::uno::Any const & i_APIValue );
+        void    setLineColor( css::uno::Any const & i_color );
+        void    setHeaderBackgroundColor( css::uno::Any const & i_color );
+        void    setHeaderTextColor( css::uno::Any const & i_color );
+        void    setActiveSelectionBackColor( css::uno::Any const & i_color );
+        void    setInactiveSelectionBackColor( css::uno::Any const & i_color );
+        void    setActiveSelectionTextColor( css::uno::Any const & i_color );
+        void    setInactiveSelectionTextColor( css::uno::Any const & i_color );
+        void    setTextColor( css::uno::Any const & i_color );
+        void    setTextLineColor( css::uno::Any const & i_color );
+        void    setRowBackgroundColors( css::uno::Any const & i_APIValue );
 
-        void    setVerticalAlign(::com::sun::star::style::VerticalAlignment _rAlign);
+        void    setVerticalAlign(css::style::VerticalAlignment _rAlign);
         void    setEnabled( bool _bEnabled );
 
         // multiplexing of XGridDataListener events
-        void    notifyRowsInserted( ::com::sun::star::awt::grid::GridDataEvent const & i_event ) const;
-        void    notifyRowsRemoved( ::com::sun::star::awt::grid::GridDataEvent const & i_event ) const;
-        void    notifyDataChanged( ::com::sun::star::awt::grid::GridDataEvent const & i_event ) const;
+        void    notifyRowsInserted( css::awt::grid::GridDataEvent const & i_event ) const;
+        void    notifyRowsRemoved( css::awt::grid::GridDataEvent const & i_event ) const;
+        void    notifyDataChanged( css::awt::grid::GridDataEvent const & i_event ) const;
 
         /// retrieves the index of a column within the model
         ColPos getColumnPos( UnoGridColumnFacade const & i_column ) const;

@@ -23,7 +23,7 @@
 #include "acccontext.hxx"
 
 /**
- * accessibility implementation for the page (SwPageFrm)
+ * accessibility implementation for the page (SwPageFrame)
  * The page is _only_ visible in the page preview. For the regular
  * document view, it doesn't make sense to add this additional element
  * into the hierarchy. For the page preview, however, the page is the
@@ -41,38 +41,38 @@ protected:
     // Set states for getAccessibleStateSet.
     // This derived class additionally sets
     // FOCUSABLE(1) and FOCUSED(+)
-    virtual void GetStates( ::utl::AccessibleStateSetHelper& rStateSet ) SAL_OVERRIDE;
+    virtual void GetStates( ::utl::AccessibleStateSetHelper& rStateSet ) override;
 
-    virtual void _InvalidateCursorPos() SAL_OVERRIDE;
-    virtual void _InvalidateFocus() SAL_OVERRIDE;
+    virtual void _InvalidateCursorPos() override;
+    virtual void _InvalidateFocus() override;
 
     virtual ~SwAccessiblePage();
 
 public:
     // convenience constructor to avoid typecast;
-    // may only be called with SwPageFrm argument
-    SwAccessiblePage( SwAccessibleMap* pInitMap, const SwFrm* pFrame );
+    // may only be called with SwPageFrame argument
+    SwAccessiblePage( SwAccessibleMap* pInitMap, const SwFrame* pFrame );
 
     // XAccessibleContext methods that need to be overridden
 
     virtual OUString SAL_CALL getAccessibleDescription()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // XServiceInfo
 
     virtual OUString SAL_CALL getImplementationName()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL supportsService (
         const OUString& sServiceName)
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Sequence< OUString> SAL_CALL
+        throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< OUString> SAL_CALL
         getSupportedServiceNames()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // XTypeProvider
-    virtual ::com::sun::star::uno::Sequence< sal_Int8 > SAL_CALL getImplementationId(  ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Sequence< sal_Int8 > SAL_CALL getImplementationId(  ) throw(css::uno::RuntimeException, std::exception) override;
 
-    virtual bool HasCursor() SAL_OVERRIDE;   // required by map to remember that object
+    virtual bool HasCursor() override;   // required by map to remember that object
 };
 
 #endif

@@ -30,7 +30,7 @@ namespace com { namespace sun { namespace star { namespace i18n {
 CharacterClassificationImpl::CharacterClassificationImpl(
         const Reference < uno::XComponentContext >& rxContext ) : m_xContext( rxContext )
 {
-    if (createLocaleSpecificCharacterClassification(OUString("Unicode"), Locale()))
+    if (createLocaleSpecificCharacterClassification("Unicode", Locale()))
         xUCI = cachedItem->xCI;
 }
 
@@ -208,8 +208,7 @@ CharacterClassificationImpl::supportsService(const OUString& rServiceName)
 Sequence< OUString > SAL_CALL
 CharacterClassificationImpl::getSupportedServiceNames() throw( RuntimeException, std::exception )
 {
-    Sequence< OUString > aRet(1);
-    aRet[0] = "com.sun.star.i18n.CharacterClassification";
+    Sequence< OUString > aRet { "com.sun.star.i18n.CharacterClassification" };
     return aRet;
 }
 

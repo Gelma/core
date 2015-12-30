@@ -97,20 +97,20 @@ const sal_Int32 nPropertyTypeScale = 21;
 class PropertySubControl
 {
 public:
-    PropertySubControl( sal_Int32 nType ) : mnType( nType ) {}
+    explicit PropertySubControl( sal_Int32 nType ) : mnType( nType ) {}
     virtual ~PropertySubControl();
 
-    virtual             ::com::sun::star::uno::Any getValue() = 0;
-    virtual             void setValue( const ::com::sun::star::uno::Any& rValue, const OUString& rPresetId ) = 0;
+    virtual             css::uno::Any getValue() = 0;
+    virtual             void setValue( const css::uno::Any& rValue, const OUString& rPresetId ) = 0;
 
     virtual Control*    getControl() = 0;
 
     static PropertySubControl*
                         create( sal_Int32 nType,
                                 vcl::Window* pParent,
-                                const ::com::sun::star::uno::Any& rValue,
+                                const css::uno::Any& rValue,
                                 const OUString& rPresetId,
-                                const Link<>& rModifyHdl );
+                                const Link<LinkParamNone*,void>& rModifyHdl );
 
     sal_Int32 getControlType() const { return mnType; }
 
@@ -121,14 +121,14 @@ protected:
 class PropertyControl : public ListBox
 {
 public:
-    PropertyControl( vcl::Window* pParent );
+    explicit PropertyControl( vcl::Window* pParent );
     virtual ~PropertyControl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void setSubControl( PropertySubControl* pSubControl );
     PropertySubControl* getSubControl() const { return mpSubControl; }
 
-    virtual void Resize() SAL_OVERRIDE;
+    virtual void Resize() override;
 
 private:
     PropertySubControl* mpSubControl;
@@ -144,7 +144,7 @@ class CustomAnimationDialog : public TabDialog
 public:
     CustomAnimationDialog(vcl::Window* pParent, STLPropertySet* pSet, const OString& Page = OString());
     virtual ~CustomAnimationDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     STLPropertySet* getResultSet();
 
@@ -154,7 +154,6 @@ private:
     STLPropertySet* mpSet;
     STLPropertySet* mpResultSet;
 
-    CustomAnimationEffectPtr mpEffect;
     VclPtr<TabControl> mpTabControl;
 
     VclPtr<CustomAnimationDurationTabPage> mpDurationTabPage;

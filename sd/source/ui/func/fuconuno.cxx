@@ -41,7 +41,6 @@
 
 namespace sd {
 
-TYPEINIT1( FuConstructUnoControl, FuConstruct );
 
 FuConstructUnoControl::FuConstructUnoControl (
     ViewShell*  pViewSh,
@@ -68,8 +67,8 @@ void FuConstructUnoControl::DoExecute( SfxRequest& rReq )
 {
     FuConstruct::DoExecute( rReq );
 
-    SFX_REQUEST_ARG( rReq, pInventorItem, SfxUInt32Item, SID_FM_CONTROL_INVENTOR, false );
-    SFX_REQUEST_ARG( rReq, pIdentifierItem, SfxUInt16Item, SID_FM_CONTROL_IDENTIFIER, false );
+    const SfxUInt32Item* pInventorItem = rReq.GetArg<SfxUInt32Item>(SID_FM_CONTROL_INVENTOR);
+    const SfxUInt16Item* pIdentifierItem = rReq.GetArg<SfxUInt16Item>(SID_FM_CONTROL_IDENTIFIER);
     if( pInventorItem )
         nInventor = pInventorItem->GetValue();
     if( pIdentifierItem )
@@ -154,7 +153,7 @@ SdrObject* FuConstructUnoControl::CreateDefaultObject(const sal_uInt16, const Re
 
     SdrObject* pObj = SdrObjFactory::MakeNewObject(
         mpView->GetCurrentObjInventor(), mpView->GetCurrentObjIdentifier(),
-        0L, mpDoc);
+        nullptr, mpDoc);
 
     if(pObj)
     {

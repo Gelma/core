@@ -60,7 +60,6 @@
 #include <com/sun/star/frame/XFrame.hpp>
 #include <memory>
 
-TYPEINIT1( ScDrawShell, SfxShell );
 
 SFX_IMPL_INTERFACE(ScDrawShell, SfxShell)
 
@@ -69,7 +68,7 @@ void ScDrawShell::InitInterface_Impl()
     GetStaticInterface()->RegisterObjectBar(SFX_OBJECTBAR_OBJECT|SFX_VISIBILITY_STANDARD|SFX_VISIBILITY_SERVER,
                                             RID_DRAW_OBJECTBAR);
 
-    GetStaticInterface()->RegisterPopupMenu(ScResId(RID_POPUP_DRAW));
+    GetStaticInterface()->RegisterPopupMenu("draw");
 
     GetStaticInterface()->RegisterChildWindow(SvxFontWorkChildWindow::GetChildWindowId());
 }
@@ -92,7 +91,7 @@ static void lcl_setModified( SfxObjectShell*  pShell )
 {
     if ( pShell )
     {
-        com::sun::star::uno::Reference< com::sun::star::util::XModifiable > xModif( pShell->GetModel(), com::sun::star::uno::UNO_QUERY );
+        css::uno::Reference< css::util::XModifiable > xModif( pShell->GetModel(), css::uno::UNO_QUERY );
         if ( xModif.is() )
             xModif->setModified( sal_True );
     }
@@ -107,7 +106,7 @@ void ScDrawShell::ExecDrawAttr( SfxRequest& rReq )
 
     const SdrMarkList& rMarkList = pView->GetMarkedObjectList();
     const size_t nMarkCount = rMarkList.GetMarkCount();
-    SdrObject* pSingleSelectedObj = NULL;
+    SdrObject* pSingleSelectedObj = nullptr;
     if ( nMarkCount > 0 )
         pSingleSelectedObj = rMarkList.GetMark( 0 )->GetMarkedSdrObj();
 
@@ -228,8 +227,8 @@ void ScDrawShell::ExecDrawAttr( SfxRequest& rReq )
                 SdrObject* pObj = rMarkList.GetMark( 0 )->GetMarkedSdrObj();
                 if ( pObj->IsGroupObject() )
                 {
-                    SdrPageView* pPV = 0;
-                    SdrObject* pHit = 0;
+                    SdrPageView* pPV = nullptr;
+                    SdrObject* pHit = nullptr;
                     if ( pView->PickObj( pWin->PixelToLogic( pViewData->GetMousePosPixel() ), pView->getHitTolLog(), pHit, pPV, SdrSearchOptions::DEEP ) )
                         pObj = pHit;
                 }
@@ -249,7 +248,7 @@ void ScDrawShell::ExecDrawAttr( SfxRequest& rReq )
 
                     if( !pArgs )
                     {
-                        if( rMarkList.GetMark(0) != 0 )
+                        if( rMarkList.GetMark(0) != nullptr )
                         {
                             SdrObject* pObj = rMarkList.GetMark(0)->GetMarkedSdrObj();
                             if( pObj->GetObjIdentifier() == OBJ_CAPTION )
@@ -341,7 +340,7 @@ void ScDrawShell::ExecuteMacroAssign( SdrObject* pObj, vcl::Window* pWin )
     aNamesItem.AddEvent( ScResId(RID_SCSTR_ONCLICK), OUString(), SFX_EVENT_MOUSECLICK_OBJECT );
     pItemSet->Put( aNamesItem, SID_EVENTCONFIG );
 
-    com::sun::star::uno::Reference < com::sun::star::frame::XFrame > xFrame;
+    css::uno::Reference < css::frame::XFrame > xFrame;
     if (GetViewShell())
         xFrame = GetViewShell()->GetViewFrame()->GetFrame().GetFrameInterface();
 
@@ -379,7 +378,7 @@ void ScDrawShell::ExecuteLineDlg( SfxRequest& rReq, sal_uInt16 nTabPage )
 {
     ScDrawView*         pView       = pViewData->GetScDrawView();
     bool                bHasMarked  = pView->AreObjectsMarked();
-    const SdrObject*    pObj        = NULL;
+    const SdrObject*    pObj        = nullptr;
     const SdrMarkList&  rMarkList   = pView->GetMarkedObjectList();
 
     if( rMarkList.GetMarkCount() == 1 )

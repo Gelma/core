@@ -60,7 +60,7 @@ private:
     bool                bSaveVBA;
 
 protected:
-    virtual void            ImplCommit() SAL_OVERRIDE;
+    virtual void            ImplCommit() override;
 
 public:
     explicit SvtAppFilterOptions_Impl(const OUString& rRoot) :
@@ -68,7 +68,7 @@ public:
         bLoadVBA(false),
         bSaveVBA(false)  {}
     virtual ~SvtAppFilterOptions_Impl();
-    virtual void            Notify( const com::sun::star::uno::Sequence<OUString>& aPropertyNames) SAL_OVERRIDE;
+    virtual void            Notify( const css::uno::Sequence<OUString>& aPropertyNames) override;
     void                    Load();
 
     bool                IsLoad() const {return bLoadVBA;}
@@ -134,7 +134,7 @@ class SvtWriterFilterOptions_Impl : public SvtAppFilterOptions_Impl
 private:
     bool                bLoadExecutable;
 
-    virtual void            ImplCommit() SAL_OVERRIDE;
+    virtual void            ImplCommit() override;
 
 public:
     explicit SvtWriterFilterOptions_Impl(const OUString& rRoot) :
@@ -156,8 +156,7 @@ void SvtWriterFilterOptions_Impl::ImplCommit()
 {
     SvtAppFilterOptions_Impl::ImplCommit();
 
-    Sequence<OUString> aNames(1);
-    aNames[0] = "Executable";
+    Sequence<OUString> aNames { "Executable" };
     Sequence<Any> aValues(1);
     aValues[0] <<= bLoadExecutable;
 
@@ -168,8 +167,7 @@ void SvtWriterFilterOptions_Impl::Load()
 {
     SvtAppFilterOptions_Impl::Load();
 
-    Sequence<OUString> aNames(1);
-    aNames[0] = "Executable";
+    Sequence<OUString> aNames { "Executable" };
 
     Sequence<Any> aValues = GetProperties(aNames);
     const Any* pValues = aValues.getConstArray();
@@ -182,7 +180,7 @@ class SvtCalcFilterOptions_Impl : public SvtAppFilterOptions_Impl
 private:
     bool                bLoadExecutable;
 
-    virtual void            ImplCommit() SAL_OVERRIDE;
+    virtual void            ImplCommit() override;
 
 public:
     explicit SvtCalcFilterOptions_Impl(const OUString& rRoot) :
@@ -204,8 +202,7 @@ void SvtCalcFilterOptions_Impl::ImplCommit()
 {
     SvtAppFilterOptions_Impl::ImplCommit();
 
-    Sequence<OUString> aNames(1);
-    aNames[0] = "Executable";
+    Sequence<OUString> aNames { "Executable" };
     Sequence<Any> aValues(1);
     aValues[0] <<= bLoadExecutable;
 
@@ -216,8 +213,7 @@ void SvtCalcFilterOptions_Impl::Load()
 {
     SvtAppFilterOptions_Impl::Load();
 
-    Sequence<OUString> aNames(1);
-    aNames[0] = "Executable";
+    Sequence<OUString> aNames { "Executable" };
 
     Sequence<Any> aValues = GetProperties(aNames);
     const Any* pValues = aValues.getConstArray();

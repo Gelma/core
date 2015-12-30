@@ -44,6 +44,7 @@
 #include <comphelper/numbers.hxx>
 #include <comphelper/processfactory.hxx>
 #include <comphelper/listenernotification.hxx>
+#include <comphelper/sequence.hxx>
 #include <connectivity/dbtools.hxx>
 #include <connectivity/formattedcolumnvalue.hxx>
 #include <connectivity/dbconversion.hxx>
@@ -96,7 +97,7 @@ namespace frm
 
         struct AppendRowSetValueString : public ::std::unary_function< OUString, void >
         {
-            AppendRowSetValueString( OUString& _string )
+            explicit AppendRowSetValueString( OUString& _string )
                 :m_string( _string )
             {
             }
@@ -290,7 +291,7 @@ namespace frm
     }
 
 
-    void OListBoxModel::setFastPropertyValue_NoBroadcast(sal_Int32 _nHandle, const Any& _rValue) throw (com::sun::star::uno::Exception, std::exception)
+    void OListBoxModel::setFastPropertyValue_NoBroadcast(sal_Int32 _nHandle, const Any& _rValue) throw (css::uno::Exception, std::exception)
     {
         switch (_nHandle)
         {
@@ -436,7 +437,7 @@ namespace frm
     {
         // if both SelectedItems and StringItemList are set, care for this
         // #i27024#
-        const Any* pSelectSequenceValue = NULL;
+        const Any* pSelectSequenceValue = nullptr;
 
         const OUString* pStartPos = _rPropertyNames.getConstArray();
         const OUString* pEndPos   = _rPropertyNames.getConstArray() + _rPropertyNames.getLength();
@@ -735,7 +736,7 @@ namespace frm
                     Reference<XIndexAccess> xFieldsByIndex(xFieldsByName, UNO_QUERY);
 
                     // do we have a bound column if yes we have to select it
-                    // and the displayed column is the first column otherwhise we act as a combobox
+                    // and the displayed column is the first column otherwise we act as a combobox
                     OUString aFieldName;
                     OUString aBoundFieldName;
 
@@ -868,7 +869,7 @@ namespace frm
                     Reference<XIndexAccess> xColumns;
                     if (xSupplyCols.is())
                     {
-                        xColumns = Reference<XIndexAccess>(xSupplyCols->getColumns(), UNO_QUERY);
+                        xColumns.set(xSupplyCols->getColumns(), UNO_QUERY);
                         DBG_ASSERT(xColumns.is(), "OListBoxModel::loadData : no columns supplied by the row set !");
                     }
 
@@ -1402,12 +1403,7 @@ namespace frm
             }
 
             // copy the indexes to the sequence
-            aSelectIndexes.realloc( aSelectionSet.size() );
-            ::std::copy(
-                aSelectionSet.begin(),
-                aSelectionSet.end(),
-                aSelectIndexes.getArray()
-            );
+            aSelectIndexes = comphelper::containerToSequence<sal_Int16>( aSelectionSet );
         }
         break;
 
@@ -1434,7 +1430,7 @@ namespace frm
             const Sequence< OUString >&  m_rList;
 
         public:
-            ExtractStringFromSequence_Safe( const Sequence< OUString >& _rList ) : m_rList( _rList ) { }
+            explicit ExtractStringFromSequence_Safe( const Sequence< OUString >& _rList ) : m_rList( _rList ) { }
 
             OUString operator ()( sal_Int16 _nIndex )
             {
@@ -1485,7 +1481,7 @@ namespace frm
             const ValueList&  m_rList;
 
         public:
-            ExtractAnyFromValueList_Safe( const ValueList& _rList ) : m_rList( _rList ) { }
+            explicit ExtractAnyFromValueList_Safe( const ValueList& _rList ) : m_rList( _rList ) { }
 
             Any operator ()( sal_Int16 _nIndex )
             {
@@ -1630,7 +1626,7 @@ namespace frm
     Any OListBoxModel::getCurrentFormComponentValue() const
     {
         {
-            Reference< com::sun::star::form::validation::XValidator > vtor (const_cast<OListBoxModel*>(this)->getValidator());
+            Reference< css::form::validation::XValidator > vtor (const_cast<OListBoxModel*>(this)->getValidator());
             Reference< XValueBinding > extBinding (const_cast<OListBoxModel*>(this)->getValueBinding());
             if ( vtor.is() && vtor == extBinding )
                 return translateControlValueToExternalValue();
@@ -1948,7 +1944,7 @@ namespace frm
                 t = m_pItemBroadcaster;
                 m_pItemBroadcaster->removeEventsForProcessor( this );
                 m_pItemBroadcaster->terminate();
-                m_pItemBroadcaster = NULL;
+                m_pItemBroadcaster = nullptr;
             }
         }
         if (t.is()) {
@@ -2140,16 +2136,16 @@ namespace frm
 
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_form_OListBoxModel_get_implementation(::com::sun::star::uno::XComponentContext* component,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_form_OListBoxModel_get_implementation(css::uno::XComponentContext* component,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new frm::OListBoxModel(component));
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_form_OListBoxControl_get_implementation(::com::sun::star::uno::XComponentContext* component,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_form_OListBoxControl_get_implementation(css::uno::XComponentContext* component,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new frm::OListBoxControl(component));
 }

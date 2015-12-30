@@ -63,7 +63,7 @@ static void mywait()
 class OPumpTest : public WeakImplHelper < XSimpleTest >
 {
 public:
-    OPumpTest( const Reference< XMultiServiceFactory >  & rFactory );
+    explicit OPumpTest( const Reference< XMultiServiceFactory >  & rFactory );
     ~OPumpTest();
 
 public: // implementation names
@@ -241,29 +241,29 @@ public:
                      m_bDisposed( sal_False )
     {}
 
-    virtual void SAL_CALL disposing( const EventObject &obj  ) throw (::com::sun::star::uno::RuntimeException)
+    virtual void SAL_CALL disposing( const EventObject &obj  ) throw (css::uno::RuntimeException)
     {
         m_bDisposed = sal_True;
 //         printf( "disposing called\n");
     }
 
-    virtual void SAL_CALL started(  ) throw (::com::sun::star::uno::RuntimeException)
+    virtual void SAL_CALL started(  ) throw (css::uno::RuntimeException)
     {
         m_bStarted = sal_True;
 //         printf( "started called\n");
     }
-    virtual void SAL_CALL closed(  ) throw (::com::sun::star::uno::RuntimeException)
+    virtual void SAL_CALL closed(  ) throw (css::uno::RuntimeException)
     {
         m_bClosed = sal_True;
 //         printf( "closed called\n");
     }
-    virtual void SAL_CALL terminated(  ) throw (::com::sun::star::uno::RuntimeException)
+    virtual void SAL_CALL terminated(  ) throw (css::uno::RuntimeException)
     {
         m_bTerminated = sal_True;
 //         printf( "terminated called\n");
     }
-    virtual void SAL_CALL error( const ::com::sun::star::uno::Any& aException )
-        throw (::com::sun::star::uno::RuntimeException)
+    virtual void SAL_CALL error( const css::uno::Any& aException )
+        throw (css::uno::RuntimeException)
     {
         m_bError = sal_True;
         Exception e;
@@ -278,16 +278,16 @@ public:
     TestCase( const Reference< XMultiServiceFactory > & rSMgr,
               const Reference< XInterface > &r ) : m_rSmgr( rSMgr ), m_pTestListener( 0 )
     {
-        m_rControl = Reference<XActiveDataControl>( r, UNO_QUERY );
+        m_rControl.set( r, UNO_QUERY );
 
         Reference< XActiveDataSource > rSource ( r, UNO_QUERY );
         Reference< XActiveDataSink > rSink( r , UNO_QUERY );
 
-        m_rOutSource = Reference< XOutputStream > ( createPipe() );
+        m_rOutSource.set( createPipe() );
         rSink->setInputStream(Reference< XInputStream> (m_rOutSource,UNO_QUERY));
 
         Reference< XOutputStream > rOutSink( createPipe() );
-        m_rInSink = Reference< XInputStream > ( rOutSink, UNO_QUERY );
+        m_rInSink.set( rOutSink, UNO_QUERY );
         rSource->setOutputStream( rOutSink );
 
         m_pTestListener = new TestListener();
@@ -311,7 +311,7 @@ private:
     Reference< XOutputStream > createPipe()
     {
         Reference< XOutputStream > rOut( m_rSmgr->createInstance(
-             OUString("com.sun.star.io.Pipe")),UNO_QUERY);
+             "com.sun.star.io.Pipe"),UNO_QUERY);
         return rOut;
     }
 };
@@ -403,9 +403,9 @@ void OPumpTest::testWrongUsage( const Reference< XInterface > &r )
     Reference< XActiveDataControl > rControl( r, UNO_QUERY );
 
     Reference< XInputStream > rIn( m_rSmgr->createInstance(
-        OUString("com.sun.star.io.DataInputStream")),UNO_QUERY);
+        "com.sun.star.io.DataInputStream"),UNO_QUERY);
     Reference< XOutputStream > rOut( m_rSmgr->createInstance(
-        OUString("com.sun.star.io.DataOutputStream")),UNO_QUERY);
+        "com.sun.star.io.DataOutputStream"),UNO_QUERY);
 
     rSink->setInputStream( rIn );
     rSource->setOutputStream( rOut );

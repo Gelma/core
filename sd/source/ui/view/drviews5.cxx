@@ -116,7 +116,7 @@ void DrawViewShell::ArrangeGUIElements()
 
     maTabControl->Hide();
 
-    OSL_ASSERT (GetViewShell()!=NULL);
+    OSL_ASSERT (GetViewShell()!=nullptr);
     Client* pIPClient = static_cast<Client*>(GetViewShell()->GetIPClient());
     bool bClientActive = false;
     if ( pIPClient && pIPClient->IsObjectInPlaceActive() )
@@ -277,7 +277,7 @@ void DrawViewShell::ReadFrameViewData(FrameView* pView)
         nSelectedPage = pView->GetSelectedPage();
     }
 
-    EditMode eNewEditMode = pView->GetViewShEditMode(mePageKind);
+    EditMode eNewEditMode = pView->GetViewShEditMode(/*mePageKind*/);
     bool bNewLayerMode = pView->IsLayerMode();
 
     if(IsLayerModeActive() && bNewLayerMode)
@@ -355,7 +355,7 @@ void DrawViewShell::WriteFrameViewData()
         mpFrameView->SetSelectedPage( maTabControl->GetCurPageId() - 1 );
     }
 
-    mpFrameView->SetViewShEditMode(meEditMode, mePageKind);
+    mpFrameView->SetViewShEditMode(meEditMode);
     mpFrameView->SetLayerMode(IsLayerModeActive());
 
     SdrPageView* pPageView = mpDrawView->GetSdrPageView();
@@ -409,7 +409,7 @@ void DrawViewShell::Paint(const Rectangle& rRect, ::sd::Window* pWin)
     /* This is done before each text edit, so why not do it before every paint.
                 The default language is only used if the outliner only contains one
                 character in a symbol font */
-    GetDoc()->GetDrawOutliner( NULL ).SetDefaultLanguage( GetDoc()->GetLanguage( EE_CHAR_LANGUAGE ) );
+    GetDoc()->GetDrawOutliner().SetDefaultLanguage( GetDoc()->GetLanguage( EE_CHAR_LANGUAGE ) );
 
     // Set Application Background color for usage in SdrPaintView(s)
     mpDrawView->SetApplicationBackgroundColor(GetAppBackgroundColor());
@@ -417,7 +417,7 @@ void DrawViewShell::Paint(const Rectangle& rRect, ::sd::Window* pWin)
     /* This is done before each text edit, so why not do it before every paint.
                 The default language is only used if the outliner only contains one
                 character in a symbol font */
-    GetDoc()->GetDrawOutliner( NULL ).SetDefaultLanguage( Application::GetSettings().GetLanguageTag().getLanguageType() );
+    GetDoc()->GetDrawOutliner().SetDefaultLanguage( Application::GetSettings().GetLanguageTag().getLanguageType() );
 
     mpDrawView->CompleteRedraw( pWin, vcl::Region( rRect ) );
 }
@@ -436,11 +436,11 @@ void DrawViewShell::SetZoomFactor(const Fraction& rZoomX, const Fraction& rZoomY
 void DrawViewShell::HidePage()
 {
     FmFormShell* pFormShell = GetViewShellBase().GetFormShellManager()->GetFormShell();
-    if (pFormShell != NULL)
+    if (pFormShell != nullptr)
         pFormShell->PrepareClose(false);
 }
 
-void DrawViewShell::WriteUserDataSequence ( ::com::sun::star::uno::Sequence < ::com::sun::star::beans::PropertyValue >& rSequence, bool bBrowse )
+void DrawViewShell::WriteUserDataSequence ( css::uno::Sequence < css::beans::PropertyValue >& rSequence, bool bBrowse )
 {
     WriteFrameViewData();
 
@@ -452,14 +452,14 @@ void DrawViewShell::WriteUserDataSequence ( ::com::sun::star::uno::Sequence < ::
     rSequence[nIndex].Value <<= mbZoomOnPage;
 }
 
-void DrawViewShell::ReadUserDataSequence ( const ::com::sun::star::uno::Sequence < ::com::sun::star::beans::PropertyValue >& rSequence, bool bBrowse )
+void DrawViewShell::ReadUserDataSequence ( const css::uno::Sequence < css::beans::PropertyValue >& rSequence, bool bBrowse )
 {
     WriteFrameViewData();
 
     ViewShell::ReadUserDataSequence( rSequence, bBrowse );
 
     const sal_Int32 nLength = rSequence.getLength();
-    const com::sun::star::beans::PropertyValue *pValue = rSequence.getConstArray();
+    const css::beans::PropertyValue *pValue = rSequence.getConstArray();
     for (sal_Int32 i = 0 ; i < nLength; i++, pValue++ )
     {
         if ( pValue->Name == sUNO_View_ZoomOnPage )
@@ -478,15 +478,15 @@ void DrawViewShell::ReadUserDataSequence ( const ::com::sun::star::uno::Sequence
 
         if (mePageKind == PK_NOTES)
         {
-            SetHelpId( SID_NOTESMODE );
-            GetActiveWindow()->SetHelpId( CMD_SID_NOTESMODE );
-            GetActiveWindow()->SetUniqueId( CMD_SID_NOTESMODE );
+            SetHelpId( SID_NOTES_MODE );
+            GetActiveWindow()->SetHelpId( CMD_SID_NOTES_MODE );
+            GetActiveWindow()->SetUniqueId( CMD_SID_NOTES_MODE );
         }
         else if (mePageKind == PK_HANDOUT)
         {
-            SetHelpId( SID_HANDOUTMODE );
-            GetActiveWindow()->SetHelpId( CMD_SID_HANDOUTMODE );
-            GetActiveWindow()->SetUniqueId( CMD_SID_HANDOUTMODE );
+            SetHelpId( SID_HANDOUT_MASTER_MODE );
+            GetActiveWindow()->SetHelpId( CMD_SID_HANDOUT_MASTER_MODE );
+            GetActiveWindow()->SetUniqueId( CMD_SID_HANDOUT_MASTER_MODE );
         }
         else
         {
@@ -518,7 +518,6 @@ void DrawViewShell::ReadUserDataSequence ( const ::com::sun::star::uno::Sequence
 
         SetZoomRect(aVisArea);
     }
-
     ChangeEditMode (meEditMode, ! IsLayerModeActive());
     ResetActualLayer();
 }
@@ -535,11 +534,10 @@ void DrawViewShell::VisAreaChanged(const Rectangle& rRect)
     <type>AccessibleDrawDocumentView</type>.  Otherwise return an empty
     reference.
 */
-::com::sun::star::uno::Reference<
-    ::com::sun::star::accessibility::XAccessible>
+css::uno::Reference<css::accessibility::XAccessible>
     DrawViewShell::CreateAccessibleDocumentView (::sd::Window* pWindow)
 {
-    if (GetViewShellBase().GetController() != NULL)
+    if (GetViewShellBase().GetController() != nullptr)
     {
         accessibility::AccessibleDrawDocumentView* pDocumentView =
             new accessibility::AccessibleDrawDocumentView (
@@ -548,21 +546,20 @@ void DrawViewShell::VisAreaChanged(const Rectangle& rRect)
                 GetViewShellBase().GetController(),
                 pWindow->GetAccessibleParentWindow()->GetAccessible());
         pDocumentView->Init();
-        return ::com::sun::star::uno::Reference<
-            ::com::sun::star::accessibility::XAccessible>
-            (static_cast< ::com::sun::star::uno::XWeak*>(pDocumentView),
-                ::com::sun::star::uno::UNO_QUERY);
+        return css::uno::Reference<css::accessibility::XAccessible>
+            (static_cast< css::uno::XWeak*>(pDocumentView),
+                css::uno::UNO_QUERY);
     }
 
     OSL_TRACE ("DrawViewShell::CreateAccessibleDocumentView: no controller");
-    return ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible>();
+    return css::uno::Reference< css::accessibility::XAccessible>();
 }
 
 int DrawViewShell::GetActiveTabLayerIndex() const
 {
     const LayerTabBar* pBar
         = const_cast<DrawViewShell*>(this)->GetLayerTabControl ();
-    if (pBar != NULL)
+    if (pBar != nullptr)
         return pBar->GetPagePos (pBar->GetCurPageId());
     else
         return -1;
@@ -571,7 +568,7 @@ int DrawViewShell::GetActiveTabLayerIndex() const
 void DrawViewShell::SetActiveTabLayerIndex (int nIndex)
 {
     LayerTabBar* pBar = GetLayerTabControl ();
-    if (pBar != NULL)
+    if (pBar != nullptr)
     {
         // Ignore invalid indices silently.
         if (nIndex>=0 && nIndex<pBar->GetPageCount())
@@ -582,7 +579,7 @@ void DrawViewShell::SetActiveTabLayerIndex (int nIndex)
             css::uno::Reference<SdUnoDrawView> pUnoDrawView(new SdUnoDrawView (
                 *this,
                 *GetView()));
-            ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XLayer> rLayer = pUnoDrawView->getActiveLayer();
+            css::uno::Reference< css::drawing::XLayer> rLayer = pUnoDrawView->getActiveLayer();
             GetViewShellBase().GetDrawController().fireChangeLayer( &rLayer );
         }
     }
@@ -597,7 +594,7 @@ int DrawViewShell::GetTabLayerCount() const
 {
     const LayerTabBar* pBar
         = const_cast<DrawViewShell*>(this)->GetLayerTabControl ();
-    if (pBar != NULL)
+    if (pBar != nullptr)
         return pBar->GetPageCount();
     else
         return 0;

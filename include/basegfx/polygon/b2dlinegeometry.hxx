@@ -77,7 +77,7 @@ namespace basegfx
             double fWidth,
             double fCandidateLength = 0.0, // 0.0 -> calculate self
             double fDockingPosition = 0.5, // 0->top, 1->bottom
-            double* pConsumedLength = 0L,
+            double* pConsumedLength = nullptr,
             double fShift = 0.0);
 
         /** create filled polygon geometry for lines with a line width
@@ -134,7 +134,7 @@ namespace basegfx
             const B2DPolygon& rCandidate,
             double fHalfLineWidth,
             B2DLineJoin eJoin = B2DLineJoin::Round,
-            com::sun::star::drawing::LineCap eCap = com::sun::star::drawing::LineCap_BUTT,
+            css::drawing::LineCap eCap = css::drawing::LineCap_BUTT,
             double fMaxAllowedAngle = (12.5 * F_PI180),
             double fMaxPartOfEdge = 0.4,
             double fMiterMinimumAngle = (15.0 * F_PI180));

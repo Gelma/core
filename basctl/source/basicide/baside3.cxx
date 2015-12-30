@@ -97,6 +97,12 @@ DialogWindow::DialogWindow(DialogWindowLayout* pParent, ScriptDocument const& rD
         SetReadOnly(true);
 }
 
+void DialogWindow::dispose()
+{
+    pEditor.reset();
+    BaseWindow::dispose();
+}
+
 void DialogWindow::LoseFocus()
 {
     if ( IsModified() )
@@ -336,12 +342,7 @@ void DialogWindow::GetState( SfxItemSet& rSet )
                             case OBJ_DLG_TREECONTROL:       nObj = SVX_SNAP_TREECONTROL; break;
                             default:                        nObj = 0;
                         }
-#ifdef DBG_UTIL
-                        if( !nObj )
-                        {
-                            DBG_WARNING( "SID_CHOOSE_CONTROLS: Unbekannt!" );
-                        }
-#endif
+                        SAL_INFO_IF( !nObj, "basctl.basicide", "SID_CHOOSE_CONTROLS: Unbekannt!" );
                         aItem.SetValue( nObj );
                     }
 
@@ -353,7 +354,7 @@ void DialogWindow::GetState( SfxItemSet& rSet )
             case SID_SHOW_PROPERTYBROWSER:
             {
                 Shell* pShell = GetShell();
-                SfxViewFrame* pViewFrame = pShell ? pShell->GetViewFrame() : NULL;
+                SfxViewFrame* pViewFrame = pShell ? pShell->GetViewFrame() : nullptr;
                 if ( pViewFrame && !pViewFrame->HasChildWindow( SID_SHOW_PROPERTYBROWSER ) && !pEditor->GetView().AreObjectsMarked() )
                     rSet.DisableItem( nWh );
 
@@ -453,7 +454,7 @@ void DialogWindow::ExecuteCommand( SfxRequest& rReq )
         case SID_CHOOSE_CONTROLS:
         {
             const SfxItemSet* pArgs = rReq.GetArgs();
-            DBG_ASSERT( pArgs, "Nix Args" );
+            assert(pArgs && "Nix Args");
 
             const SfxAllEnumItem& rItem = static_cast<const SfxAllEnumItem&>(pArgs->Get( SID_CHOOSE_CONTROLS ));
             switch( rItem.GetValue() )
@@ -690,16 +691,16 @@ bool DialogWindow::SaveDialog()
     if ( !aCurPath.isEmpty() )
         xFP->setDisplayDirectory ( aCurPath );
 
-    xFP->setDefaultName( OUString( GetName() ) );
+    xFP->setDefaultName( GetName() );
 
     OUString aDialogStr(IDE_RESSTR(RID_STR_STDDIALOGNAME));
-    xFP->appendFilter( aDialogStr, OUString( "*.xdl" ) );
-    xFP->appendFilter( IDE_RESSTR(RID_STR_FILTER_ALLFILES), OUString( FilterMask_All ) );
+    xFP->appendFilter( aDialogStr, "*.xdl" );
+    xFP->appendFilter( IDE_RESSTR(RID_STR_FILTER_ALLFILES), FilterMask_All );
     xFP->setCurrentFilter( aDialogStr );
 
     if( xFP->execute() == RET_OK )
     {
-        Sequence< OUString > aPaths = xFP->getFiles();
+        Sequence< OUString > aPaths = xFP->getSelectedFiles();
         aCurPath = aPaths[0];
 
         // export dialog model to xml
@@ -938,13 +939,13 @@ bool implImportDialog( vcl::Window* pWin, const OUString& rCurPath, const Script
         xFP->setDisplayDirectory ( aCurPath );
 
     OUString aDialogStr(IDE_RESSTR(RID_STR_STDDIALOGNAME));
-    xFP->appendFilter( aDialogStr, OUString( "*.xdl" ) );
-    xFP->appendFilter( IDE_RESSTR(RID_STR_FILTER_ALLFILES), OUString( FilterMask_All ) );
+    xFP->appendFilter( aDialogStr, "*.xdl" );
+    xFP->appendFilter( IDE_RESSTR(RID_STR_FILTER_ALLFILES), FilterMask_All );
     xFP->setCurrentFilter( aDialogStr );
 
     if( xFP->execute() == RET_OK )
     {
-        Sequence< OUString > aPaths = xFP->getFiles();
+        Sequence< OUString > aPaths = xFP->getSelectedFiles();
         aCurPath = aPaths[0];
 
         OUString aBasePath;
@@ -1153,7 +1154,7 @@ bool implImportDialog( vcl::Window* pWin, const OUString& rCurPath, const Script
                 if (basctl::RemoveDialog( rDocument, aLibName, aNewDlgName ) )
                 {
                     BaseWindow* pDlgWin = pShell->FindDlgWin( rDocument, aLibName, aNewDlgName, false, true );
-                    if( pDlgWin != NULL )
+                    if( pDlgWin != nullptr )
                         pShell->RemoveWindow( pDlgWin, true );
                     MarkDocumentModified( rDocument );
                 }
@@ -1288,7 +1289,7 @@ void DialogWindow::StoreData()
                     Reference< XComponentContext > xContext(
                         comphelper::getProcessComponentContext() );
                     Reference< XInputStreamProvider > xISP = ::xmlscript::exportDialogModel( xDialogModel, xContext, GetDocument().isDocument() ? GetDocument().getDocument() : Reference< frame::XModel >() );
-                    xLib->replaceByName( OUString( GetName() ), makeAny( xISP ) );
+                    xLib->replaceByName( GetName(), makeAny( xISP ) );
                 }
             }
         }
@@ -1379,9 +1380,9 @@ ItemType DialogWindow::GetType () const
 
 DialogWindowLayout::DialogWindowLayout (vcl::Window* pParent, ObjectCatalog& rObjectCatalog_) :
     Layout(pParent),
-    pChild(0),
+    pChild(nullptr),
     rObjectCatalog(rObjectCatalog_),
-    pPropertyBrowser(0)
+    pPropertyBrowser(nullptr)
 {
     ShowPropertyBrowser();
 }
@@ -1426,7 +1427,7 @@ void DialogWindowLayout::ShowPropertyBrowser ()
 void DialogWindowLayout::DisablePropertyBrowser ()
 {
     if (pPropertyBrowser)
-        pPropertyBrowser->Update(0);
+        pPropertyBrowser->Update(nullptr);
 }
 
 // updates the property browser
@@ -1454,7 +1455,7 @@ void DialogWindowLayout::Deactivating ()
     rObjectCatalog.Hide();
     if (pPropertyBrowser)
         pPropertyBrowser->Hide();
-    pChild = 0;
+    pChild = nullptr;
 }
 
 void DialogWindowLayout::ExecuteGlobal (SfxRequest& rReq)

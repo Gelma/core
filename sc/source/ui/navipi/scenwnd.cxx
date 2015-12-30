@@ -161,7 +161,7 @@ bool ScScenarioListBox::Notify( NotifyEvent& rNEvt )
 const ScScenarioListBox::ScenarioEntry* ScScenarioListBox::GetSelectedEntry() const
 {
     size_t nPos = GetSelectEntryPos();
-    return (nPos < maEntries.size()) ? &maEntries[ nPos ] : 0;
+    return (nPos < maEntries.size()) ? &maEntries[ nPos ] : nullptr;
 }
 
 void ScScenarioListBox::ExecuteScenarioSlot( sal_uInt16 nSlotId )
@@ -252,7 +252,7 @@ void ScScenarioWindow::NotifyState( const SfxPoolItem* pState )
     {
         aLbScenario->Enable();
 
-        if ( pState->ISA(SfxStringItem) )
+        if ( dynamic_cast<const SfxStringItem*>( pState) !=  nullptr )
         {
             OUString aNewEntry( static_cast<const SfxStringItem*>(pState)->GetValue() );
 
@@ -261,7 +261,7 @@ void ScScenarioWindow::NotifyState( const SfxPoolItem* pState )
             else
                 aLbScenario->SetNoSelection();
         }
-        else if ( pState->ISA(SfxStringListItem) )
+        else if ( dynamic_cast<const SfxStringListItem*>( pState) !=  nullptr )
         {
             aLbScenario->UpdateEntries( static_cast<const SfxStringListItem*>(pState)->GetList() );
         }

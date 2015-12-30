@@ -24,7 +24,7 @@
 #include <ooo/vba/excel/XPivotCache.hpp>
 #include <vbahelper/vbahelperinterface.hxx>
 
-typedef InheritedHelperInterfaceImpl1<ov::excel::XPivotCache > PivotCacheImpl_BASE;
+typedef InheritedHelperInterfaceWeakImpl<ov::excel::XPivotCache > PivotCacheImpl_BASE;
 
 class ScVbaPivotCache : public PivotCacheImpl_BASE
 {
@@ -32,10 +32,10 @@ class ScVbaPivotCache : public PivotCacheImpl_BASE
 public:
     ScVbaPivotCache( const css::uno::Reference< ov::XHelperInterface >& xParent, const css::uno::Reference< css::uno::XComponentContext >& xContext, const css::uno::Reference< css::sheet::XDataPilotTable >& xTable );
 
-    virtual void SAL_CALL Refresh() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL Refresh() throw (css::uno::RuntimeException, std::exception) override;
     // XHelperInterface
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 
 #endif // INCLUDED_SC_SOURCE_UI_VBA_VBAPIVOTCACHE_HXX

@@ -38,7 +38,8 @@ TextToPronounce_zh::getPronounce(const sal_Unicode ch)
     if (idx) {
         sal_uInt16 address = idx[0][ch>>8];
         if (address != 0xFFFF)
-            return &idx[2][idx[1][address + (ch & 0xFF)]];
+            return reinterpret_cast<sal_Unicode *>(
+                &idx[2][idx[1][address + (ch & 0xFF)]]);
     }
     return emptyString;
 }
@@ -161,7 +162,7 @@ TextToPronounce_zh::TextToPronounce_zh(const sal_Char* func_name)
 #endif
     hModule = osl_loadModuleRelative(
         &thisModule, lib.pData, SAL_LOADMODULE_DEFAULT );
-    idx=NULL;
+    idx=nullptr;
     if (hModule) {
         sal_uInt16** (*function)() = reinterpret_cast<sal_uInt16** (*)()>(osl_getFunctionSymbol(hModule, OUString::createFromAscii(func_name).pData));
         if (function)

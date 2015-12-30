@@ -87,8 +87,8 @@ SwIndexMarkPane::SwIndexMarkPane(Dialog &rDialog, bool bNewDlg,
     , bPhoneticED2_ChangedByUser(false)
     , nLangForPhoneticReading(LANGUAGE_CHINESE_SIMPLIFIED)
     , bIsPhoneticReadingEnabled(false)
-    , xExtendedIndexEntrySupplier(NULL)
-    , pTOXMgr(0)
+    , xExtendedIndexEntrySupplier(nullptr)
+    , pTOXMgr(nullptr)
     , pSh(&rWrtShell)
 {
     rDialog.get(m_pFrame, "frame");
@@ -141,11 +141,11 @@ SwIndexMarkPane::SwIndexMarkPane(Dialog &rDialog, bool bNewDlg,
     m_pPrevSameBT->SetClickHdl(LINK(this,SwIndexMarkPane,   PrevSameHdl));
     m_pNextBT->SetClickHdl(LINK(this,SwIndexMarkPane,       NextHdl));
     m_pNextSameBT->SetClickHdl(LINK(this,SwIndexMarkPane,   NextSameHdl));
-    m_pTypeDCB->SetSelectHdl(LINK(this,SwIndexMarkPane,     ModifyHdl));
+    m_pTypeDCB->SetSelectHdl(LINK(this,SwIndexMarkPane,     ModifyListBoxHdl));
     m_pKey1DCB->SetModifyHdl(LINK(this,SwIndexMarkPane,      KeyDCBModifyHdl));
     m_pKey2DCB->SetModifyHdl(LINK(this,SwIndexMarkPane,     KeyDCBModifyHdl));
-    m_pCloseBT->SetClickHdl(LINK(this,SwIndexMarkPane,     CloseHdl));
-    m_pEntryED->SetModifyHdl(LINK(this,SwIndexMarkPane,     ModifyHdl));
+    m_pCloseBT->SetClickHdl(LINK(this,SwIndexMarkPane,      CloseHdl));
+    m_pEntryED->SetModifyHdl(LINK(this,SwIndexMarkPane,     ModifyEditHdl));
     m_pNewBT->SetClickHdl(LINK(this, SwIndexMarkPane,       NewUserIdxHdl));
     m_pApplyToAllCB->SetClickHdl(LINK(this, SwIndexMarkPane, SearchTypeHdl));
     m_pPhoneticED0->SetModifyHdl(LINK(this,SwIndexMarkPane, PhoneticEDModifyHdl));
@@ -214,7 +214,7 @@ void SwIndexMarkPane::InitControls()
 
         // only if there are more than one
         // if equal it lands at the same entry
-        pSh->SttCrsrMove();
+        pSh->SttCursorMove();
 
         const SwTOXMark* pMoveMark;
         bool bShow = false;
@@ -247,7 +247,7 @@ void SwIndexMarkPane::InitControls()
             m_pNextSameBT->Show();
             m_pPrevSameBT->Show();
         }
-        pSh->EndCrsrMove();
+        pSh->EndCursorMove();
 
         m_pTypeFT->Show();
 
@@ -258,7 +258,7 @@ void SwIndexMarkPane::InitControls()
     }
     else
     {   // display current selection (first element) ????
-        if (pSh->GetCrsrCnt() < 2)
+        if (pSh->GetCursorCnt() < 2)
         {
             bSelected = !pSh->HasSelection();
             aOrgStr = pSh->GetView().GetSelectionTextParam(true, false);
@@ -266,12 +266,12 @@ void SwIndexMarkPane::InitControls()
 
             //to include all equal entries may only be allowed in the body and even there
             //only when a simple selection exists
-            const FrmTypeFlags nFrmType = pSh->GetFrmType(0,true);
+            const FrameTypeFlags nFrameType = pSh->GetFrameType(nullptr,true);
             m_pApplyToAllCB->Show();
             m_pSearchCaseSensitiveCB->Show();
             m_pSearchCaseWordOnlyCB->Show();
             m_pApplyToAllCB->Enable(!aOrgStr.isEmpty() &&
-                !(nFrmType & ( FrmTypeFlags::HEADER | FrmTypeFlags::FOOTER | FrmTypeFlags::FLY_ANY )));
+                !(nFrameType & ( FrameTypeFlags::HEADER | FrameTypeFlags::FOOTER | FrameTypeFlags::FLY_ANY )));
             SearchTypeHdl(m_pApplyToAllCB);
         }
 
@@ -346,7 +346,7 @@ void    SwIndexMarkPane::Activate()
     // display current selection (first element) ????
     if(bNewMark)
     {
-        if (pSh->GetCrsrCnt() < 2)
+        if (pSh->GetCursorCnt() < 2)
         {
             bSelected = !pSh->HasSelection();
             aOrgStr = pSh->GetView().GetSelectionTextParam(true, false);
@@ -354,12 +354,12 @@ void    SwIndexMarkPane::Activate()
 
             //to include all equal entries may only be allowed in the body and even there
             //only when a simple selection exists
-            const FrmTypeFlags nFrmType = pSh->GetFrmType(0,true);
+            const FrameTypeFlags nFrameType = pSh->GetFrameType(nullptr,true);
             m_pApplyToAllCB->Show();
             m_pSearchCaseSensitiveCB->Show();
             m_pSearchCaseWordOnlyCB->Show();
             m_pApplyToAllCB->Enable(!aOrgStr.isEmpty() &&
-                !(nFrmType & ( FrmTypeFlags::HEADER | FrmTypeFlags::FOOTER | FrmTypeFlags::FLY_ANY )));
+                !(nFrameType & ( FrameTypeFlags::HEADER | FrameTypeFlags::FOOTER | FrameTypeFlags::FLY_ANY )));
             SearchTypeHdl(m_pApplyToAllCB);
         }
         ModifyHdl(m_pTypeDCB);
@@ -371,7 +371,7 @@ void SwIndexMarkPane::Apply()
 {
     InsertUpdate();
     if(bSelected)
-        pSh->ResetSelect(0, false);
+        pSh->ResetSelect(nullptr, false);
 }
 
 // apply changes
@@ -488,7 +488,7 @@ void SwIndexMarkPane::InsertMark()
 void SwIndexMarkPane::UpdateMark()
 {
     OUString  aAltText(m_pEntryED->GetText());
-    OUString* pAltText = aOrgStr != m_pEntryED->GetText() ? &aAltText : 0;
+    OUString* pAltText = aOrgStr != m_pEntryED->GetText() ? &aAltText : nullptr;
     //empty alternative texts are not allowed
     if(pAltText && pAltText->isEmpty())
         return;
@@ -550,7 +550,7 @@ class SwNewUserIdxDlg : public ModalDialog
 
     SwIndexMarkPane* m_pDlg;
 
-    DECL_LINK( ModifyHdl, Edit*);
+    DECL_LINK_TYPED( ModifyHdl, Edit&, void);
 
     public:
         explicit SwNewUserIdxDlg(SwIndexMarkPane* pPane)
@@ -565,7 +565,7 @@ class SwNewUserIdxDlg : public ModalDialog
                 m_pNameED->GrabFocus();
             }
     virtual ~SwNewUserIdxDlg() { disposeOnce(); }
-    virtual void dispose() SAL_OVERRIDE
+    virtual void dispose() override
     {
         m_pOKPB.clear();
         m_pNameED.clear();
@@ -575,10 +575,9 @@ class SwNewUserIdxDlg : public ModalDialog
     OUString  GetName(){return m_pNameED->GetText();}
 };
 
-IMPL_LINK( SwNewUserIdxDlg, ModifyHdl, Edit*, pEdit)
+IMPL_LINK_TYPED( SwNewUserIdxDlg, ModifyHdl, Edit&, rEdit, void)
 {
-    m_pOKPB->Enable(!pEdit->GetText().isEmpty() && !m_pDlg->IsTOXType(pEdit->GetText()));
-    return 0;
+    m_pOKPB->Enable(!rEdit.GetText().isEmpty() && !m_pDlg->IsTOXType(rEdit.GetText()));
 }
 
 IMPL_LINK_NOARG_TYPED(SwIndexMarkPane, NewUserIdxHdl, Button*, void)
@@ -617,13 +616,20 @@ IMPL_LINK_NOARG_TYPED(SwIndexMarkPane, CloseHdl, Button*, void)
     }
     else
     {
-        SwViewShell::SetCareWin( 0 );
         m_rDialog.EndDialog();
     }
 }
 
 // select index type only when inserting
-IMPL_LINK( SwIndexMarkPane, ModifyHdl, ListBox *, pBox )
+IMPL_LINK_TYPED( SwIndexMarkPane, ModifyListBoxHdl, ListBox&, rBox, void )
+{
+    ModifyHdl(&rBox);
+}
+IMPL_LINK_TYPED( SwIndexMarkPane, ModifyEditHdl, Edit&, rEdit, void )
+{
+    ModifyHdl(&rEdit);
+}
+void SwIndexMarkPane::ModifyHdl(Control* pBox)
 {
     if (m_pTypeDCB == pBox)
     {
@@ -694,8 +700,7 @@ IMPL_LINK( SwIndexMarkPane, ModifyHdl, ListBox *, pBox )
         m_pPhoneticED0->Enable(bHasText&&bIsPhoneticReadingEnabled);
     }
     m_pOKBT->Enable(!pSh->HasReadonlySel() &&
-        (!m_pEntryED->GetText().isEmpty() || pSh->GetCrsrCnt(false)));
-    return 0;
+        (!m_pEntryED->GetText().isEmpty() || pSh->GetCursorCnt(false)));
 }
 
 IMPL_LINK_NOARG_TYPED(SwIndexMarkPane, NextHdl, Button*, void)
@@ -803,7 +808,7 @@ void SwIndexMarkPane::UpdateDialog()
     m_pTypeDCB->SelectEntry(pMark->GetTOXType()->GetTypeName());
 
     // set Next - Prev - Buttons
-    pSh->SttCrsrMove();
+    pSh->SttCursorMove();
     if( m_pPrevBT->IsVisible() )
     {
         const SwTOXMark* pMoveMark = &pSh->GotoTOXMark( *pMark, TOX_PRV );
@@ -840,30 +845,30 @@ void SwIndexMarkPane::UpdateDialog()
     // we need the point at the start of the attribute
     pSh->SwapPam();
 
-    pSh->EndCrsrMove();
+    pSh->EndCursorMove();
 }
 
 // Remind whether the edit boxes for Phonetic reading are changed manually
-IMPL_LINK( SwIndexMarkPane, PhoneticEDModifyHdl, Edit *, pEdit )
+IMPL_LINK_TYPED( SwIndexMarkPane, PhoneticEDModifyHdl, Edit&, rEdit, void )
 {
-    if (m_pPhoneticED0 == pEdit)
+    if (m_pPhoneticED0 == &rEdit)
     {
-        bPhoneticED0_ChangedByUser = !pEdit->GetText().isEmpty();
+        bPhoneticED0_ChangedByUser = !rEdit.GetText().isEmpty();
     }
-    else if (m_pPhoneticED1 == pEdit)
+    else if (m_pPhoneticED1 == &rEdit)
     {
-        bPhoneticED1_ChangedByUser = !pEdit->GetText().isEmpty();
+        bPhoneticED1_ChangedByUser = !rEdit.GetText().isEmpty();
     }
-    else if (m_pPhoneticED2 == pEdit)
+    else if (m_pPhoneticED2 == &rEdit)
     {
-        bPhoneticED2_ChangedByUser = !pEdit->GetText().isEmpty();
+        bPhoneticED2_ChangedByUser = !rEdit.GetText().isEmpty();
     }
-    return 0;
 }
 
 // Enable Disable of the 2nd key
-IMPL_LINK( SwIndexMarkPane, KeyDCBModifyHdl, ComboBox *, pBox )
+IMPL_LINK_TYPED( SwIndexMarkPane, KeyDCBModifyHdl, Edit&, rEdit, void )
 {
+    ComboBox* pBox = static_cast<ComboBox*>(&rEdit);
     if (m_pKey1DCB == pBox)
     {
         bool bEnable = !pBox->GetText().isEmpty();
@@ -913,8 +918,6 @@ IMPL_LINK( SwIndexMarkPane, KeyDCBModifyHdl, ComboBox *, pBox )
     m_pPhoneticED1->Enable(bKey1HasText && bIsPhoneticReadingEnabled);
     m_pPhoneticFT2->Enable(bKey2HasText && bIsPhoneticReadingEnabled);
     m_pPhoneticED2->Enable(bKey2HasText && bIsPhoneticReadingEnabled);
-
-    return 0;
 }
 
 SwIndexMarkPane::~SwIndexMarkPane()
@@ -972,6 +975,12 @@ void SwIndexMarkModalDlg::Apply()
     m_aContent.Apply();
 }
 
+void SwIndexMarkModalDlg::dispose()
+{
+    SwViewShell::SetCareWin(nullptr);
+    SvxStandardDialog::dispose();
+}
+
 class SwCreateAuthEntryDlg_Impl : public ModalDialog
 {
     VclPtr<FixedText>      pFixedTexts[AUTH_FIELD_END];
@@ -988,9 +997,9 @@ class SwCreateAuthEntryDlg_Impl : public ModalDialog
     bool            m_bNewEntryMode;
     bool            m_bNameAllowed;
 
-    DECL_LINK(IdentifierHdl, ComboBox*);
-    DECL_LINK(ShortNameHdl, Edit*);
-    DECL_LINK(EnableHdl, ListBox*);
+    DECL_LINK_TYPED(IdentifierHdl, ComboBox&, void);
+    DECL_LINK_TYPED(ShortNameHdl, Edit&, void);
+    DECL_LINK_TYPED(EnableHdl, ListBox&, void);
 
 public:
     SwCreateAuthEntryDlg_Impl(vcl::Window* pParent,
@@ -999,7 +1008,7 @@ public:
                             bool bNewEntry,
                             bool bCreate);
     virtual ~SwCreateAuthEntryDlg_Impl();
-    virtual void    dispose() SAL_OVERRIDE;
+    virtual void    dispose() override;
 
     OUString        GetEntryText(ToxAuthorityField eField) const;
 
@@ -1054,7 +1063,7 @@ SwAuthorMarkPane::SwAuthorMarkPane(Dialog &rDialog, bool bNewDlg)
     : m_rDialog(rDialog)
     , bNewEntry(bNewDlg)
     , bBibAccessInitialized(false)
-    , pSh(0)
+    , pSh(nullptr)
 {
     m_rDialog.get(m_pFromComponentRB, "frombibliography");
     m_rDialog.get(m_pFromDocContentRB, "fromdocument");
@@ -1064,7 +1073,7 @@ SwAuthorMarkPane::SwAuthorMarkPane(Dialog &rDialog, bool bNewDlg)
     m_rDialog.get(m_pEntryLB, "entrylb");
     m_rDialog.get(m_pActionBT,
         bNewEntry ? OString("insert") : OString("modify"));
-    m_pActionBT->Show(true);
+    m_pActionBT->Show();
     m_rDialog.get(m_pCloseBT, "close");
     m_rDialog.get(m_pCreateEntryPB, "new");
     m_rDialog.get(m_pEditEntryPB, "edit");
@@ -1127,9 +1136,9 @@ static OUString lcl_FindColumnEntry(const beans::PropertyValue* pFields, sal_Int
     return OUString();
 }
 
-IMPL_LINK( SwAuthorMarkPane, CompEntryHdl, ListBox*, pBox)
+IMPL_LINK_TYPED( SwAuthorMarkPane, CompEntryHdl, ListBox&, rBox, void)
 {
-    const OUString sEntry(pBox->GetSelectEntry());
+    const OUString sEntry(rBox.GetSelectEntry());
     if(bIsFromComponent)
     {
         if(xBibAccess.is() && !sEntry.isEmpty())
@@ -1156,20 +1165,19 @@ IMPL_LINK( SwAuthorMarkPane, CompEntryHdl, ListBox*, pBox)
         {
             const SwAuthorityFieldType* pFType = static_cast<const SwAuthorityFieldType*>(
                                         pSh->GetFieldType(RES_AUTHORITY, OUString()));
-            const SwAuthEntry*  pEntry = pFType ? pFType->GetEntryByIdentifier(sEntry) : 0;
+            const SwAuthEntry*  pEntry = pFType ? pFType->GetEntryByIdentifier(sEntry) : nullptr;
             for(int i = 0; i < AUTH_FIELD_END; i++)
                 m_sFields[i] = pEntry ?
                             pEntry->GetAuthorField((ToxAuthorityField)i) : OUString();
         }
     }
-    if (pBox->GetSelectEntry().isEmpty())
+    if (rBox.GetSelectEntry().isEmpty())
     {
         for(int i = 0; i < AUTH_FIELD_END; i++)
             m_sFields[i].clear();
     }
     m_pAuthorFI->SetText(m_sFields[AUTH_FIELD_AUTHOR]);
     m_pTitleFI->SetText(m_sFields[AUTH_FIELD_TITLE]);
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(SwAuthorMarkPane, InsertHdl, Button*, void)
@@ -1185,7 +1193,7 @@ IMPL_LINK_NOARG_TYPED(SwAuthorMarkPane, InsertHdl, Button*, void)
                                         pSh->GetFieldType(RES_AUTHORITY, OUString()));
         const SwAuthEntry*  pEntry = pFType ?
                 pFType->GetEntryByIdentifier( m_sFields[AUTH_FIELD_IDENTIFIER])
-                : 0;
+                : nullptr;
         if(pEntry)
         {
             for(int i = 0; i < AUTH_FIELD_END && !bDifferent; i++)
@@ -1222,7 +1230,7 @@ IMPL_LINK_NOARG_TYPED(SwAuthorMarkPane, InsertHdl, Button*, void)
         }
     }
     if(!bNewEntry)
-        CloseHdl(0);
+        CloseHdl(nullptr);
 }
 
 IMPL_LINK_TYPED(SwAuthorMarkPane, CreateEntryHdl, Button*, pButton, void)
@@ -1327,21 +1335,20 @@ IMPL_LINK_TYPED(SwAuthorMarkPane, ChangeSourceHdl, Button*, pButton, void)
             m_pEntryLB->InsertEntry(m_sCreatedEntry[AUTH_FIELD_IDENTIFIER]);
     }
     m_pEntryLB->SelectEntryPos(0);
-    CompEntryHdl(m_pEntryLB);
+    CompEntryHdl(*m_pEntryLB);
 }
 
-IMPL_LINK(SwAuthorMarkPane, EditModifyHdl, Edit*, pEdit)
+IMPL_LINK_TYPED(SwAuthorMarkPane, EditModifyHdl, Edit&, rEdit, void)
 {
     Link<Edit*,bool> aAllowed = LINK(this, SwAuthorMarkPane, IsEntryAllowedHdl);
-    bool bResult = aAllowed.Call(pEdit);
+    bool bResult = aAllowed.Call(&rEdit);
     m_pActionBT->Enable(bResult);
     if(bResult)
     {
-        OUString sEntry(pEdit->GetText());
+        OUString sEntry(rEdit.GetText());
         m_sFields[AUTH_FIELD_IDENTIFIER] = sEntry;
         m_sCreatedEntry[AUTH_FIELD_IDENTIFIER] = sEntry;
     }
-    return 0;
 };
 
 IMPL_LINK_TYPED(SwAuthorMarkPane, IsEntryAllowedHdl, Edit*, pEdit, bool)
@@ -1410,8 +1417,8 @@ SwCreateAuthEntryDlg_Impl::SwCreateAuthEntryDlg_Impl(vcl::Window* pParent,
 
     ,
 
-    pTypeListBox(0),
-    pIdentifierBox(0),
+    pTypeListBox(nullptr),
+    pIdentifierBox(nullptr),
     rWrtSh(rSh),
     m_bNewEntryMode(bNewEntry),
     m_bNameAllowed(true)
@@ -1433,7 +1440,7 @@ SwCreateAuthEntryDlg_Impl::SwCreateAuthEntryDlg_Impl(vcl::Window* pParent,
         pFixedTexts[nIndex]->set_grid_top_attach(bLeft ? nLeftRow : nRightRow);
         pFixedTexts[nIndex]->SetText(SW_RES(STR_AUTH_FIELD_START + aCurInfo.nToxField));
         pFixedTexts[nIndex]->Show();
-        pEdits[nIndex] = 0;
+        pEdits[nIndex] = nullptr;
         if( AUTH_FIELD_AUTHORITY_TYPE == aCurInfo.nToxField )
         {
             pTypeListBox = VclPtr<ListBox>::Create(bLeft ? pLeft : pRight, WB_DROPDOWN|WB_BORDER|WB_VCENTER);
@@ -1503,7 +1510,7 @@ SwCreateAuthEntryDlg_Impl::SwCreateAuthEntryDlg_Impl(vcl::Window* pParent,
             ++nRightRow;
         bLeft = !bLeft;
     }
-    EnableHdl(pTypeListBox);
+    EnableHdl(*pTypeListBox);
 }
 
 SwCreateAuthEntryDlg_Impl::~SwCreateAuthEntryDlg_Impl()
@@ -1550,14 +1557,14 @@ OUString  SwCreateAuthEntryDlg_Impl::GetEntryText(ToxAuthorityField eField) cons
     return OUString();
 }
 
-IMPL_LINK(SwCreateAuthEntryDlg_Impl, IdentifierHdl, ComboBox*, pBox)
+IMPL_LINK_TYPED(SwCreateAuthEntryDlg_Impl, IdentifierHdl, ComboBox&, rBox, void)
 {
     const SwAuthorityFieldType* pFType = static_cast<const SwAuthorityFieldType*>(
                                 rWrtSh.GetFieldType(RES_AUTHORITY, OUString()));
     if(pFType)
     {
         const SwAuthEntry* pEntry = pFType->GetEntryByIdentifier(
-                                                        pBox->GetText());
+                                                        rBox.GetText());
         if(pEntry)
         {
             for(int i = 0; i < AUTH_FIELD_END; i++)
@@ -1574,24 +1581,21 @@ IMPL_LINK(SwCreateAuthEntryDlg_Impl, IdentifierHdl, ComboBox*, pBox)
             }
         }
     }
-    return 0;
 }
 
-IMPL_LINK(SwCreateAuthEntryDlg_Impl, ShortNameHdl, Edit*, pEdit)
+IMPL_LINK_TYPED(SwCreateAuthEntryDlg_Impl, ShortNameHdl, Edit&, rEdit, void)
 {
     if(aShortNameCheckLink.IsSet())
     {
-        bool bEnable = aShortNameCheckLink.Call(pEdit);
+        bool bEnable = aShortNameCheckLink.Call(&rEdit);
         m_bNameAllowed |= bEnable;
         m_pOKBT->Enable(pTypeListBox->GetSelectEntryCount() && bEnable);
     }
-    return 0;
 }
 
-IMPL_LINK(SwCreateAuthEntryDlg_Impl, EnableHdl, ListBox*, pBox)
+IMPL_LINK_TYPED(SwCreateAuthEntryDlg_Impl, EnableHdl, ListBox&, rBox, void)
 {
-    m_pOKBT->Enable(m_bNameAllowed && pBox->GetSelectEntryCount());
-    return 0;
+    m_pOKBT->Enable(m_bNameAllowed && rBox.GetSelectEntryCount());
 };
 
 SwAuthMarkFloatDlg::SwAuthMarkFloatDlg(SfxBindings* _pBindings,
@@ -1630,7 +1634,7 @@ SwAuthMarkModalDlg::SwAuthMarkModalDlg(vcl::Window *pParent, SwWrtShell& rSh)
 
 void SwAuthMarkModalDlg::Apply()
 {
-    m_aContent.InsertHdl(0);
+    m_aContent.InsertHdl(nullptr);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

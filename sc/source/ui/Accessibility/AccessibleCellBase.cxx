@@ -118,7 +118,7 @@ sal_Int32 SAL_CALL ScAccessibleCellBase::getForeground()
                             uno::Reference<beans::XPropertySet> xCellProps(xCell, uno::UNO_QUERY);
                             if (xCellProps.is())
                             {
-                                uno::Any aAny = xCellProps->getPropertyValue(OUString(SC_UNONAME_CCOLOR));
+                                uno::Any aAny = xCellProps->getPropertyValue(SC_UNONAME_CCOLOR);
                                 aAny >>= nColor;
                             }
                         }
@@ -159,7 +159,7 @@ sal_Int32 SAL_CALL ScAccessibleCellBase::getBackground()
                             uno::Reference<beans::XPropertySet> xCellProps(xCell, uno::UNO_QUERY);
                             if (xCellProps.is())
                             {
-                                uno::Any aAny = xCellProps->getPropertyValue(OUString(SC_UNONAME_CELLBACK));
+                                uno::Any aAny = xCellProps->getPropertyValue(SC_UNONAME_CELLBACK);
                                 aAny >>= nColor;
                             }
                         }
@@ -219,7 +219,7 @@ OUString SAL_CALL
 {
     // Document not needed, because only the cell address, but not the tablename is needed
     // always us OOO notation
-    return maCellAddress.Format(SCA_VALID, NULL);
+    return maCellAddress.Format(SCA_VALID);
 }
 
     //=====  XAccessibleValue  ================================================
@@ -316,7 +316,7 @@ bool ScAccessibleCellBase::IsEditable(
 }
 
 OUString SAL_CALL ScAccessibleCellBase::GetNote()
-                                throw (::com::sun::star::uno::RuntimeException)
+                                throw (css::uno::RuntimeException)
 {
     SolarMutexGuard aGuard;
     IsObjectValid();
@@ -365,7 +365,7 @@ OUString SAL_CALL ScAccessibleCellBase::GetNote()
 #include <com/sun/star/table/ShadowFormat.hpp>
 
 OUString SAL_CALL ScAccessibleCellBase::getShadowAttrs()
-                                        throw (::com::sun::star::uno::RuntimeException, std::exception)
+                                        throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
     IsObjectValid();
@@ -392,7 +392,7 @@ OUString SAL_CALL ScAccessibleCellBase::getShadowAttrs()
                             uno::Reference<beans::XPropertySet> xCellProps(xCell, uno::UNO_QUERY);
                             if (xCellProps.is())
                             {
-                                uno::Any aAny = xCellProps->getPropertyValue(OUString(SC_UNONAME_SHADOW));
+                                uno::Any aAny = xCellProps->getPropertyValue(SC_UNONAME_SHADOW);
                                 aAny >>= aShadowFmt;
                             }
                         }
@@ -448,7 +448,7 @@ OUString SAL_CALL ScAccessibleCellBase::getShadowAttrs()
 #include <com/sun/star/table/BorderLine.hpp>
 
 OUString SAL_CALL ScAccessibleCellBase::getBorderAttrs()
-                                        throw (::com::sun::star::uno::RuntimeException, std::exception)
+                                        throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
     IsObjectValid();
@@ -478,13 +478,13 @@ OUString SAL_CALL ScAccessibleCellBase::getBorderAttrs()
                             uno::Reference<beans::XPropertySet> xCellProps(xCell, uno::UNO_QUERY);
                             if (xCellProps.is())
                             {
-                                uno::Any aAny = xCellProps->getPropertyValue(OUString(SC_UNONAME_TOPBORDER));
+                                uno::Any aAny = xCellProps->getPropertyValue(SC_UNONAME_TOPBORDER);
                                 aAny >>= aTopBorder;
-                                aAny = xCellProps->getPropertyValue(OUString(SC_UNONAME_BOTTBORDER));
+                                aAny = xCellProps->getPropertyValue(SC_UNONAME_BOTTBORDER);
                                 aAny >>= aBottomBorder;
-                                aAny = xCellProps->getPropertyValue(OUString(SC_UNONAME_LEFTBORDER));
+                                aAny = xCellProps->getPropertyValue(SC_UNONAME_LEFTBORDER);
                                 aAny >>= aLeftBorder;
-                                aAny = xCellProps->getPropertyValue(OUString(SC_UNONAME_RIGHTBORDER));
+                                aAny = xCellProps->getPropertyValue(SC_UNONAME_RIGHTBORDER);
                                 aAny >>= aRightBorder;
                             }
                         }
@@ -598,7 +598,7 @@ OUString SAL_CALL ScAccessibleCellBase::getBorderAttrs()
 //end of cell attributes
 
 OUString SAL_CALL ScAccessibleCellBase::GetAllDisplayNote()
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     OUString strNote;
     OUString strTrackText;

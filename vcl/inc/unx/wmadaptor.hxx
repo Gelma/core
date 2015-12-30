@@ -186,12 +186,6 @@ public:
     { return m_aWMName; }
 
     /*
-     *  gets the number of workareas (virtual desktops)
-     */
-    int getWorkAreaCount() const
-    { return m_aWMWorkAreas.size(); }
-
-    /*
      * gets the current work area/desktop number: [0,m_nDesktops[ or -1 if unknown
      */
     int getCurrentWorkArea() const;
@@ -249,15 +243,6 @@ public:
     bool isLegacyPartialFullscreen() const
     { return m_bLegacyPartialFullscreen; }
     /*
-     * set window struts
-     */
-    virtual void setFrameStruts( X11SalFrame*pFrame,
-                                 int left, int right, int top, int bottom,
-                                 int left_start_y, int left_end_y,
-                                 int right_start_y, int right_end_y,
-                                 int top_start_x, int top_end_x,
-                                 int bottom_start_x, int bottom_end_x ) const;
-    /*
      * set _NET_WM_USER_TIME property, if NetWM
      */
     virtual void setUserTime( X11SalFrame* i_pFrame, long i_nUserTime ) const;
@@ -276,7 +261,7 @@ public:
      *  set hints what decoration is needed;
      *  must be called before showing the frame
      */
-    virtual void setFrameTypeAndDecoration( X11SalFrame* pFrame, WMWindowType eType, int nDecorationFlags, X11SalFrame* pTransientFrame = NULL ) const;
+    virtual void setFrameTypeAndDecoration( X11SalFrame* pFrame, WMWindowType eType, int nDecorationFlags, X11SalFrame* pTransientFrame = nullptr ) const;
 
     /*
      *  tells whether there is WM support for splash screens

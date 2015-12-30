@@ -57,8 +57,7 @@ using namespace ::com::sun::star::linguistic2;
 
 static Sequence< OUString > getSupportedServiceNames_LangGuess_Impl()
 {
-    Sequence<OUString> names(1);
-    names[0] = SERVICENAME;
+    Sequence<OUString> names { SERVICENAME };
     return names;
 }
 
@@ -81,35 +80,33 @@ class LangGuess_Impl :
 {
     SimpleGuesser   m_aGuesser;
     bool            m_bInitialized;
-    css::uno::Reference< css::uno::XComponentContext >  m_xContext;
 
     virtual ~LangGuess_Impl() {}
     void    EnsureInitialized();
 
 public:
-    explicit LangGuess_Impl(css::uno::Reference< css::uno::XComponentContext > const & rxContext);
+    LangGuess_Impl();
 
     // XServiceInfo implementation
-    virtual OUString SAL_CALL getImplementationName(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName(  ) throw(RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw(RuntimeException, std::exception) override;
+    virtual Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw(RuntimeException, std::exception) override;
     static Sequence< OUString > SAL_CALL getSupportedServiceNames_Static(  );
 
     // XLanguageGuessing implementation
-    virtual ::com::sun::star::lang::Locale SAL_CALL guessPrimaryLanguage( const OUString& aText, ::sal_Int32 nStartPos, ::sal_Int32 nLen ) throw (::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL disableLanguages( const ::com::sun::star::uno::Sequence< ::com::sun::star::lang::Locale >& aLanguages ) throw (::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL enableLanguages( const ::com::sun::star::uno::Sequence< ::com::sun::star::lang::Locale >& aLanguages ) throw (::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Sequence< ::com::sun::star::lang::Locale > SAL_CALL getAvailableLanguages(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Sequence< ::com::sun::star::lang::Locale > SAL_CALL getEnabledLanguages(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Sequence< ::com::sun::star::lang::Locale > SAL_CALL getDisabledLanguages(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::lang::Locale SAL_CALL guessPrimaryLanguage( const OUString& aText, ::sal_Int32 nStartPos, ::sal_Int32 nLen ) throw (css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL disableLanguages( const css::uno::Sequence< css::lang::Locale >& aLanguages ) throw (css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL enableLanguages( const css::uno::Sequence< css::lang::Locale >& aLanguages ) throw (css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< css::lang::Locale > SAL_CALL getAvailableLanguages(  ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< css::lang::Locale > SAL_CALL getEnabledLanguages(  ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< css::lang::Locale > SAL_CALL getDisabledLanguages(  ) throw (css::uno::RuntimeException, std::exception) override;
 
     // implementation specific
     void SetFingerPrintsDB( const OUString &fileName ) throw (RuntimeException);
 };
 
-LangGuess_Impl::LangGuess_Impl(css::uno::Reference< css::uno::XComponentContext > const & rxContext) :
-    m_bInitialized( false ),
-    m_xContext( rxContext )
+LangGuess_Impl::LangGuess_Impl() :
+    m_bInitialized( false )
 {
 }
 
@@ -211,14 +208,14 @@ uno::Sequence< Locale > SAL_CALL LangGuess_Impl::getAvailableLanguages(  )
 
     EnsureInitialized();
 
-    Sequence< com::sun::star::lang::Locale > aRes;
+    Sequence< css::lang::Locale > aRes;
     vector<Guess> gs = m_aGuesser.GetAllManagedLanguages();
     aRes.realloc(gs.size());
 
-    com::sun::star::lang::Locale *pRes = aRes.getArray();
+    css::lang::Locale *pRes = aRes.getArray();
 
     for(size_t i = 0; i < gs.size() ; i++ ){
-        com::sun::star::lang::Locale current_aRes;
+        css::lang::Locale current_aRes;
         current_aRes.Language   = OUString::createFromAscii( gs[i].GetLanguage().c_str() );
         current_aRes.Country    = OUString::createFromAscii( gs[i].GetCountry().c_str() );
         pRes[i] = current_aRes;
@@ -234,14 +231,14 @@ uno::Sequence< Locale > SAL_CALL LangGuess_Impl::getEnabledLanguages(  )
 
     EnsureInitialized();
 
-    Sequence< com::sun::star::lang::Locale > aRes;
+    Sequence< css::lang::Locale > aRes;
     vector<Guess> gs = m_aGuesser.GetAvailableLanguages();
     aRes.realloc(gs.size());
 
-    com::sun::star::lang::Locale *pRes = aRes.getArray();
+    css::lang::Locale *pRes = aRes.getArray();
 
     for(size_t i = 0; i < gs.size() ; i++ ){
-        com::sun::star::lang::Locale current_aRes;
+        css::lang::Locale current_aRes;
         current_aRes.Language   = OUString::createFromAscii( gs[i].GetLanguage().c_str() );
         current_aRes.Country    = OUString::createFromAscii( gs[i].GetCountry().c_str() );
         pRes[i] = current_aRes;
@@ -257,14 +254,14 @@ uno::Sequence< Locale > SAL_CALL LangGuess_Impl::getDisabledLanguages(  )
 
     EnsureInitialized();
 
-    Sequence< com::sun::star::lang::Locale > aRes;
+    Sequence< css::lang::Locale > aRes;
     vector<Guess> gs = m_aGuesser.GetUnavailableLanguages();
     aRes.realloc(gs.size());
 
-    com::sun::star::lang::Locale *pRes = aRes.getArray();
+    css::lang::Locale *pRes = aRes.getArray();
 
     for(size_t i = 0; i < gs.size() ; i++ ){
-        com::sun::star::lang::Locale current_aRes;
+        css::lang::Locale current_aRes;
         current_aRes.Language   = OUString::createFromAscii( gs[i].GetLanguage().c_str() );
         current_aRes.Country    = OUString::createFromAscii( gs[i].GetCountry().c_str() );
         pRes[i] = current_aRes;
@@ -326,7 +323,6 @@ void SAL_CALL LangGuess_Impl::enableLanguages(
 OUString SAL_CALL LangGuess_Impl::getImplementationName(  )
     throw(RuntimeException, std::exception)
 {
-    osl::MutexGuard aGuard( GetLangGuessMutex() );
     return OUString( IMPLNAME );
 }
 
@@ -339,7 +335,6 @@ sal_Bool SAL_CALL LangGuess_Impl::supportsService( const OUString& ServiceName )
 Sequence<OUString> SAL_CALL LangGuess_Impl::getSupportedServiceNames(  )
     throw(RuntimeException, std::exception)
 {
-    osl::MutexGuard aGuard( GetLangGuessMutex() );
     return getSupportedServiceNames_Static();
 }
 
@@ -354,9 +349,9 @@ Sequence<OUString> SAL_CALL LangGuess_Impl::getSupportedServiceNames_Static(  )
  * @param xMgr service manager to if the components needs other component instances
  */
 Reference< XInterface > SAL_CALL LangGuess_Impl_create(
-    Reference< XComponentContext > const & xContext )
+    Reference< XComponentContext > const & )
 {
-    return static_cast< ::cppu::OWeakObject * >( new LangGuess_Impl(xContext) );
+    return static_cast< ::cppu::OWeakObject * >( new LangGuess_Impl );
 }
 
 //#### EXPORTED ### functions to allow for registration and creation of the UNO component
@@ -366,9 +361,9 @@ static const struct ::cppu::ImplementationEntry s_component_entries [] =
         LangGuess_Impl_create, getImplementationName_LangGuess_Impl,
         getSupportedServiceNames_LangGuess_Impl,
         ::cppu::createSingleComponentFactory,
-        0, 0
+        nullptr, 0
     },
-    { 0, 0, 0, 0, 0, 0 }
+    { nullptr, nullptr, nullptr, nullptr, nullptr, 0 }
 };
 
 extern "C"

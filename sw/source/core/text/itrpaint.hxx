@@ -31,7 +31,7 @@ class SwTextPainter : public SwTextCursor
     void CheckSpecialUnderline( const SwLinePortion* pPor,
                                 long nAdjustBaseLine = 0 );
 protected:
-    void CtorInitTextPainter( SwTextFrm *pFrm, SwTextPaintInfo *pInf );
+    void CtorInitTextPainter( SwTextFrame *pFrame, SwTextPaintInfo *pInf );
     explicit SwTextPainter(SwTextNode* pTextNode)
         : SwTextCursor(pTextNode)
         , bPaintDrop(false)
@@ -39,10 +39,10 @@ protected:
     }
 
 public:
-    SwTextPainter(SwTextFrm *pTextFrm, SwTextPaintInfo *pTextPaintInf)
-        : SwTextCursor(pTextFrm->GetTextNode())
+    SwTextPainter(SwTextFrame *pTextFrame, SwTextPaintInfo *pTextPaintInf)
+        : SwTextCursor(pTextFrame->GetTextNode())
     {
-        CtorInitTextPainter( pTextFrm, pTextPaintInf );
+        CtorInitTextPainter( pTextFrame, pTextPaintInf );
     }
     void DrawTextLine( const SwRect &rPaint, SwSaveClip &rClip,
                        const bool bUnderSz );
@@ -50,7 +50,7 @@ public:
     // if PaintMultiPortion is called recursively, we have to pass the
     // surrounding SwBidiPortion
     void PaintMultiPortion( const SwRect &rPaint, SwMultiPortion& rMulti,
-                            const SwMultiPortion* pEnvPor = 0 );
+                            const SwMultiPortion* pEnvPor = nullptr );
     inline void SetPaintDrop( const bool bNew ) { bPaintDrop = bNew; }
     inline bool IsPaintDrop() const { return bPaintDrop; }
     inline SwTextPaintInfo &GetInfo()

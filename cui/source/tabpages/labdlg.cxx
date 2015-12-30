@@ -83,7 +83,7 @@ SvxCaptionTabPage::SvxCaptionTabPage(vcl::Window* pParent, const SfxItemSet& rIn
     , nAnsatzRelPos(0)
     , nAnsatzTypePos(0)
     , rOutAttrs(rInAttrs)
-    , pView(NULL)
+    , pView(nullptr)
 {
     get(m_pCT_CAPTTYPE, "valueset");
 
@@ -422,22 +422,20 @@ void SvxCaptionTabPage::SetupAnsatz_Impl( sal_uInt16 nType )
 
 
 
-IMPL_LINK( SvxCaptionTabPage, AnsatzSelectHdl_Impl, ListBox *, pListBox )
+IMPL_LINK_TYPED( SvxCaptionTabPage, AnsatzSelectHdl_Impl, ListBox&, rListBox, void )
 {
-    if (pListBox == m_pLB_ANSATZ)
+    if (&rListBox == m_pLB_ANSATZ)
     {
         SetupAnsatz_Impl( m_pLB_ANSATZ->GetSelectEntryPos() );
     }
-    return 0;
 }
 
-IMPL_LINK( SvxCaptionTabPage, AnsatzRelSelectHdl_Impl, ListBox *, pListBox )
+IMPL_LINK_TYPED( SvxCaptionTabPage, AnsatzRelSelectHdl_Impl, ListBox&, rListBox, void )
 {
-    if (pListBox == m_pLB_ANSATZ_REL)
+    if (&rListBox == m_pLB_ANSATZ_REL)
     {
         nAnsatzRelPos = m_pLB_ANSATZ_REL->GetSelectEntryPos();
     }
-    return 0;
 }
 
 IMPL_LINK_TYPED( SvxCaptionTabPage, LineOptHdl_Impl, Button *, pButton, void )

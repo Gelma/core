@@ -107,71 +107,71 @@ public:
     {}
 
     virtual OUString SAL_CALL getUriReference()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return m_base.getUriReference(); }
 
     virtual sal_Bool SAL_CALL isAbsolute()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return m_base.isAbsolute(); }
 
     virtual OUString SAL_CALL getScheme()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return m_base.getScheme(); }
 
     virtual OUString SAL_CALL getSchemeSpecificPart()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return m_base.getSchemeSpecificPart(); }
 
     virtual sal_Bool SAL_CALL isHierarchical()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return m_base.isHierarchical(); }
 
     virtual sal_Bool SAL_CALL hasAuthority()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return m_base.hasAuthority(); }
 
     virtual OUString SAL_CALL getAuthority()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return m_base.getAuthority(); }
 
     virtual OUString SAL_CALL getPath()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return m_base.getPath(); }
 
     virtual sal_Bool SAL_CALL hasRelativePath()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return m_base.hasRelativePath(); }
 
     virtual sal_Int32 SAL_CALL getPathSegmentCount()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return m_base.getPathSegmentCount(); }
 
     virtual OUString SAL_CALL getPathSegment(sal_Int32 index)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return m_base.getPathSegment(index); }
 
     virtual sal_Bool SAL_CALL hasQuery()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return m_base.hasQuery(); }
 
     virtual OUString SAL_CALL getQuery()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return m_base.getQuery(); }
 
     virtual sal_Bool SAL_CALL hasFragment()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return m_base.hasFragment(); }
 
     virtual OUString SAL_CALL getFragment()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return m_base.getFragment(); }
 
     virtual void SAL_CALL setFragment(OUString const & fragment)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { m_base.setFragment(fragment); }
 
     virtual void SAL_CALL clearFragment()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { m_base.clearFragment(); }
 
 private:
@@ -218,7 +218,7 @@ css::uno::Reference< css::uri::XUriReference > parseGeneric(
     } else {
         if (schemeSpecificPart.isEmpty()) {
             // The scheme-specific part of an opaque URI must not be empty:
-            return 0;
+            return nullptr;
         }
         path = schemeSpecificPart;
     }
@@ -267,17 +267,17 @@ public:
         m_context(context) {}
 
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual sal_Bool SAL_CALL supportsService(OUString const & serviceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Sequence< OUString > SAL_CALL
-    getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Reference< css::uri::XUriReference > SAL_CALL
     parse(OUString const & uriReference)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Reference< css::uri::XUriReference > SAL_CALL
     makeAbsolute(
@@ -285,7 +285,7 @@ public:
         css::uno::Reference< css::uri::XUriReference > const & uriReference,
         sal_Bool processSpecialBaseSegments,
         css::uri::RelativeUriExcessParentSegments excessParentSegments)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Reference< css::uri::XUriReference > SAL_CALL
     makeRelative(
@@ -294,7 +294,7 @@ public:
         sal_Bool preferAuthorityOverRelativePath,
         sal_Bool preferAbsoluteOverRelativePath,
         sal_Bool encodeRetainedSpecialSegments)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
 private:
     virtual ~Factory() {}
@@ -321,8 +321,7 @@ sal_Bool Factory::supportsService(OUString const & serviceName)
 css::uno::Sequence< OUString > Factory::getSupportedServiceNames()
     throw (css::uno::RuntimeException, std::exception)
 {
-    css::uno::Sequence< OUString > s(1);
-    s[0] = "com.sun.star.uri.UriReferenceFactory";
+    css::uno::Sequence< OUString > s { "com.sun.star.uri.UriReferenceFactory" };
     return s;
 }
 
@@ -381,8 +380,7 @@ css::uno::Reference< css::uri::XUriReference > Factory::parse(
                     css::uno::makeAny(e)); //TODO: preserve type of e
             }
             if (service.is()) {
-                parser = css::uno::Reference< css::uri::XUriSchemeParser >(
-                    service, css::uno::UNO_QUERY_THROW);
+                parser.set( service, css::uno::UNO_QUERY_THROW);
             }
         }
     }
@@ -405,7 +403,7 @@ css::uno::Reference< css::uri::XUriReference > Factory::makeAbsolute(
 {
     if (!baseUriReference.is() || !baseUriReference->isAbsolute()
         || !baseUriReference->isHierarchical() || !uriReference.is()) {
-        return 0;
+        return nullptr;
     } else if (uriReference->isAbsolute()) {
         return clone(uriReference);
     } else if (!uriReference->hasAuthority()
@@ -474,7 +472,7 @@ css::uno::Reference< css::uri::XUriReference > Factory::makeAbsolute(
                 } else {
                     switch (excessParentSegments) {
                     case css::uri::RelativeUriExcessParentSegments_ERROR:
-                        return 0;
+                        return nullptr;
 
                     case css::uri::RelativeUriExcessParentSegments_RETAIN:
                         if (!slash) {
@@ -521,7 +519,7 @@ css::uno::Reference< css::uri::XUriReference > Factory::makeRelative(
 {
     if (!baseUriReference.is() || !baseUriReference->isAbsolute()
         || !baseUriReference->isHierarchical() || !uriReference.is()) {
-        return 0;
+        return nullptr;
     } else if (!uriReference->isAbsolute() || !uriReference->isHierarchical()
                || !baseUriReference->getScheme().equalsIgnoreAsciiCase(
                    uriReference->getScheme())) {
@@ -632,9 +630,9 @@ css::uno::Reference< css::uri::XUriReference > Factory::makeRelative(
 
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_uri_UriReferenceFactory_get_implementation(::com::sun::star::uno::XComponentContext* rxContext,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_uri_UriReferenceFactory_get_implementation(css::uno::XComponentContext* rxContext,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     return ::cppu::acquire(new Factory(rxContext));
 }

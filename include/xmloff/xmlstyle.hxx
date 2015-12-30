@@ -25,9 +25,9 @@
 #include <xmloff/dllapi.h>
 #include <sal/types.h>
 #include <rsc/rscsfx.hxx>
-#include <tools/rtti.hxx>
 #include <xmloff/xmltkmap.hxx>
 #include <xmloff/xmlictxt.hxx>
+#include <memory>
 
 class SvXMLStylesContext_Impl;
 class SvXMLUnitConverter;
@@ -90,12 +90,10 @@ protected:
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     SvXMLStyleContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
         const OUString& rLName,
-        const ::com::sun::star::uno::Reference<
-              ::com::sun::star::xml::sax::XAttributeList >& xAttrList,
+        const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList,
               sal_uInt16 nFamily=0,
               bool bDefaultStyle = false );
 
@@ -103,12 +101,10 @@ public:
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
 
     virtual void StartElement(
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
 
     const OUString&  GetName() const { return maName; }
     const OUString&  GetDisplayName() const { return maDisplayName.getLength() ? maDisplayName : maName; }
@@ -159,21 +155,17 @@ class XMLOFF_DLLPUBLIC SvXMLStylesContext : public SvXMLImportContext
     const OUString msParaStyleServiceName;
     const OUString msTextStyleServiceName;
 
-    SvXMLStylesContext_Impl *mpImpl;
+    std::unique_ptr<SvXMLStylesContext_Impl> mpImpl;
     SvXMLTokenMap           *mpStyleStylesElemTokenMap;
 
 
-    ::com::sun::star::uno::Reference <
-                    ::com::sun::star::container::XNameContainer > mxParaStyles;
+    css::uno::Reference< css::container::XNameContainer > mxParaStyles;
 
-    ::com::sun::star::uno::Reference <
-                    ::com::sun::star::container::XNameContainer > mxTextStyles;
+    css::uno::Reference< css::container::XNameContainer > mxTextStyles;
 
-    ::com::sun::star::uno::Reference <
-                    ::com::sun::star::style::XAutoStyleFamily > mxParaAutoStyles;
+    css::uno::Reference< css::style::XAutoStyleFamily > mxParaAutoStyles;
 
-    ::com::sun::star::uno::Reference <
-                    ::com::sun::star::style::XAutoStyleFamily > mxTextAutoStyles;
+    css::uno::Reference< css::style::XAutoStyleFamily > mxTextAutoStyles;
 
     rtl::Reference < SvXMLImportPropertyMapper > mxParaImpPropMapper;
     rtl::Reference < SvXMLImportPropertyMapper > mxTextImpPropMapper;
@@ -183,8 +175,8 @@ class XMLOFF_DLLPUBLIC SvXMLStylesContext : public SvXMLImportContext
 
     SAL_DLLPRIVATE const SvXMLTokenMap& GetStyleStylesElemTokenMap();
 
-    SvXMLStylesContext(SvXMLStylesContext &) SAL_DELETED_FUNCTION;
-    void operator =(SvXMLStylesContext &) SAL_DELETED_FUNCTION;
+    SvXMLStylesContext(SvXMLStylesContext &) = delete;
+    void operator =(SvXMLStylesContext &) = delete;
 
 protected:
 
@@ -194,29 +186,24 @@ protected:
 
     virtual SvXMLStyleContext *CreateStyleChildContext( sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList > & xAttrList );
+        const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList );
 
     virtual SvXMLStyleContext *CreateStyleStyleChildContext( sal_uInt16 nFamily,
         sal_uInt16 nPrefix, const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList > & xAttrList );
+        const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList );
 
     virtual SvXMLStyleContext *CreateDefaultStyleStyleChildContext(
         sal_uInt16 nFamily, sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList > & xAttrList );
+        const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList );
 
     virtual bool InsertStyleFamily( sal_uInt16 nFamily ) const;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     SvXMLStylesContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
         const OUString& rLName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList > & xAttrList,
+        const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList,
         bool bAutomatic = false );
 
     virtual ~SvXMLStylesContext();
@@ -224,11 +211,10 @@ public:
     // Create child element.
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
 
     // Override this method to insert styles into the document.
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
     // This allows to add an SvXMLStyleContext to this context from extern
     void AddStyle(SvXMLStyleContext& rNew);
@@ -241,12 +227,11 @@ public:
     virtual rtl::Reference < SvXMLImportPropertyMapper > GetImportPropertyMapper(
                         sal_uInt16 nFamily ) const;
 
-    virtual ::com::sun::star::uno::Reference <
-                    ::com::sun::star::container::XNameContainer >
+    virtual css::uno::Reference< css::container::XNameContainer >
         GetStylesContainer( sal_uInt16 nFamily ) const;
     virtual OUString GetServiceName( sal_uInt16 nFamily ) const;
 
-       ::com::sun::star::uno::Reference < ::com::sun::star::style::XAutoStyleFamily >
+    css::uno::Reference< css::style::XAutoStyleFamily >
         GetAutoStyles( sal_uInt16 nFamily ) const;
     void CopyAutoStylesToDoc();
     void CopyStylesToDoc( bool bOverwrite, bool bFinish = true );

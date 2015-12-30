@@ -121,7 +121,7 @@ void SwEditWin::RequestHelp(const HelpEvent &rEvt)
         if( pSdrView )
         {
             SdrPageView* pPV = pSdrView->GetSdrPageView();
-            SwDPage* pPage = pPV ? static_cast<SwDPage*>(pPV->GetPage()) : 0;
+            SwDPage* pPage = pPV ? static_cast<SwDPage*>(pPV->GetPage()) : nullptr;
             bContinue = pPage && pPage->RequestHelp(this, pSdrView, rEvt);
         }
     }
@@ -364,18 +364,19 @@ void SwEditWin::RequestHelp(const HelpEvent &rEvt)
             }
             if (!sText.isEmpty())
             {
+                Rectangle aRect( aFieldRect.SVRect() );
+                Point aPt( OutputToScreenPixel( LogicToPixel( aRect.TopLeft() )));
+                aRect.Left()   = aPt.X();
+                aRect.Top()    = aPt.Y();
+                aPt = OutputToScreenPixel( LogicToPixel( aRect.BottomRight() ));
+                aRect.Right()  = aPt.X();
+                aRect.Bottom() = aPt.Y();
+
                 if( bBalloon )
-                    Help::ShowBalloon( this, rEvt.GetMousePosPixel(), sText );
+                    Help::ShowBalloon( this, rEvt.GetMousePosPixel(), aRect, sText );
                 else
                 {
                     // the show the help
-                    Rectangle aRect( aFieldRect.SVRect() );
-                    Point aPt( OutputToScreenPixel( LogicToPixel( aRect.TopLeft() )));
-                    aRect.Left()   = aPt.X();
-                    aRect.Top()    = aPt.Y();
-                    aPt = OutputToScreenPixel( LogicToPixel( aRect.BottomRight() ));
-                    aRect.Right()  = aPt.X();
-                    aRect.Bottom() = aPt.Y();
                     OUString sDisplayText(ClipLongToolTip(sText));
                     Help::ShowQuickHelp(this, aRect, sDisplayText, nStyle);
                 }
@@ -445,20 +446,20 @@ void SwEditWin::Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect
     SwWrtShell* pWrtShell = GetView().GetWrtShellPtr();
     if(!pWrtShell)
         return;
-    bool bPaintShadowCrsr = false;
-    if( m_pShadCrsr )
+    bool bPaintShadowCursor = false;
+    if( m_pShadCursor )
     {
-        Rectangle aRect( m_pShadCrsr->GetRect());
+        Rectangle aRect( m_pShadCursor->GetRect());
         // fully resides inside?
         if( rRect.IsInside( aRect ) )
             // dann aufheben
-            delete m_pShadCrsr, m_pShadCrsr = 0;
+            delete m_pShadCursor, m_pShadCursor = nullptr;
         else if( rRect.IsOver( aRect ))
         {
             // resides somewhat above, then everything is clipped outside
             // and we have to make the "inner part" at the end of the
             // Paint visible again. Otherwise Paint errors occur!
-            bPaintShadowCrsr = true;
+            bPaintShadowCursor = true;
         }
     }
 
@@ -472,8 +473,8 @@ void SwEditWin::Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect
         pWrtShell->setOutputToWindow(false);
     }
 
-    if( bPaintShadowCrsr )
-        m_pShadCrsr->Paint();
+    if( bPaintShadowCursor )
+        m_pShadCursor->Paint();
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

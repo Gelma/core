@@ -72,7 +72,7 @@ SwTbxAutoTextCtrl::SwTbxAutoTextCtrl(
     sal_uInt16 nId,
     ToolBox& rTbx ) :
     SfxToolBoxControl( nSlotId, nId, rTbx ),
-    pPopup(0)
+    pPopup(nullptr)
 {
     rTbx.SetItemBits( nId, ToolBoxItemBits::DROPDOWN | rTbx.GetItemBits( nId ) );
 }
@@ -128,7 +128,7 @@ VclPtr<SfxPopupWindow> SwTbxAutoTextCtrl::CreatePopupWindow()
     }
     GetToolBox().EndSelection();
     DelPopup();
-    return 0;
+    return nullptr;
 
 }
 
@@ -172,7 +172,7 @@ void SwTbxAutoTextCtrl::DelPopup()
             delete pSubPopup;
         }
         delete pPopup;
-        pPopup = 0;
+        pPopup = nullptr;
     }
 }
 
@@ -221,7 +221,7 @@ VclPtr<SfxPopupWindow> SwTbxFieldCtrl::CreatePopupWindow()
 
     GetToolBox().EndSelection();
 
-    return 0;
+    return nullptr;
 }
 
 void SwTbxFieldCtrl::StateChanged( sal_uInt16,
@@ -446,18 +446,16 @@ class SwZoomBox_Impl : public ComboBox
 {
     sal_uInt16          nSlotId;
     bool            bRelease;
-    uno::Reference< frame::XDispatchProvider > m_xDispatchProvider;
 
 public:
     SwZoomBox_Impl(
         vcl::Window* pParent,
-        sal_uInt16 nSlot,
-        const Reference< XDispatchProvider >& rDispatchProvider );
+        sal_uInt16 nSlot );
     virtual ~SwZoomBox_Impl();
 
 protected:
-    virtual void    Select() SAL_OVERRIDE;
-    virtual bool    Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual void    Select() override;
+    virtual bool    Notify( NotifyEvent& rNEvt ) override;
 
     void ReleaseFocus();
 
@@ -465,12 +463,10 @@ protected:
 
 SwZoomBox_Impl::SwZoomBox_Impl(
     vcl::Window* pParent,
-    sal_uInt16 nSlot,
-    const Reference< XDispatchProvider >& rDispatchProvider ):
+    sal_uInt16 nSlot ):
     ComboBox( pParent, SW_RES(RID_PVIEW_ZOOM_LB)),
     nSlotId(nSlot),
-    bRelease(true),
-    m_xDispatchProvider( rDispatchProvider )
+    bRelease(true)
 {
     EnableAutocomplete( false );
     sal_uInt16 aZoomValues[] =
@@ -608,7 +604,66 @@ void SwPreviewZoomControl::StateChanged( sal_uInt16 /*nSID*/,
 
 VclPtr<vcl::Window> SwPreviewZoomControl::CreateItemWindow( vcl::Window *pParent )
 {
-    VclPtrInstance<SwZoomBox_Impl> pRet( pParent, GetSlotId(), Reference< XDispatchProvider >( m_xFrame->getController(), UNO_QUERY ));
+    VclPtrInstance<SwZoomBox_Impl> pRet( pParent, GetSlotId() );
+    return pRet.get();
+}
+
+class SwJumpToSpecificBox_Impl : public NumericField
+{
+    sal_uInt16          nSlotId;
+
+public:
+    SwJumpToSpecificBox_Impl(
+        vcl::Window* pParent,
+        sal_uInt16 nSlot );
+    virtual ~SwJumpToSpecificBox_Impl();
+
+protected:
+    void            Select();
+    virtual bool    Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+};
+
+SwJumpToSpecificBox_Impl::SwJumpToSpecificBox_Impl(
+    vcl::Window* pParent,
+    sal_uInt16 nSlot ):
+    NumericField( pParent, SW_RES(RID_JUMP_TO_SPEC_PAGE)),
+    nSlotId(nSlot)
+{}
+
+SwJumpToSpecificBox_Impl::~SwJumpToSpecificBox_Impl()
+{}
+
+void SwJumpToSpecificBox_Impl::Select()
+{
+    OUString sEntry(GetText());
+    SfxUInt16Item aPageNum(nSlotId);
+    aPageNum.SetValue((sal_uInt16)sEntry.toInt32());
+    SfxObjectShell* pCurrentShell = SfxObjectShell::Current();
+    pCurrentShell->GetDispatcher()->Execute(nSlotId, SfxCallMode::ASYNCHRON, &aPageNum, 0L);
+}
+
+bool SwJumpToSpecificBox_Impl::Notify( NotifyEvent& rNEvt )
+{
+    if ( rNEvt.GetType() == MouseNotifyEvent::KEYINPUT )
+        Select();
+    return NumericField::Notify( rNEvt );
+}
+
+SFX_IMPL_TOOLBOX_CONTROL( SwJumpToSpecificPageControl, SfxUInt16Item);
+
+SwJumpToSpecificPageControl::SwJumpToSpecificPageControl(
+    sal_uInt16 nSlotId,
+    sal_uInt16 nId,
+    ToolBox& rTbx) :
+    SfxToolBoxControl( nSlotId, nId, rTbx )
+{}
+
+SwJumpToSpecificPageControl::~SwJumpToSpecificPageControl()
+{}
+
+VclPtr<vcl::Window> SwJumpToSpecificPageControl::CreateItemWindow( vcl::Window *pParent )
+{
+    VclPtrInstance<SwJumpToSpecificBox_Impl> pRet( pParent, GetSlotId() );
     return pRet.get();
 }
 

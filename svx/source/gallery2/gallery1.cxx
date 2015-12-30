@@ -166,8 +166,7 @@ public:
 // - Gallery -
 
 Gallery::Gallery( const OUString& rMultiPath )
-:       nReadTextEncoding   ( osl_getThreadTextEncoding() )
-,       bMultiPath          ( false )
+:       bMultiPath          ( false )
 {
     ImplLoad( rMultiPath );
 }
@@ -182,18 +181,18 @@ Gallery::~Gallery()
 
 Gallery* Gallery::GetGalleryInstance()
 {
-    static Gallery* pGallery = NULL;
+    static Gallery* s_pGallery = nullptr;
 
-    if( !pGallery )
+    if (!s_pGallery)
     {
         ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );
-        if( !pGallery )
+        if (!s_pGallery)
         {
-            pGallery = new Gallery( SvtPathOptions().GetGalleryPath() );
+            s_pGallery = new Gallery( SvtPathOptions().GetGalleryPath() );
         }
     }
 
-    return pGallery;
+    return s_pGallery;
 }
 
 void Gallery::ImplLoad( const OUString& rMultiPath )
@@ -239,8 +238,7 @@ void Gallery::ImplLoadSubDirs( const INetURLObject& rBaseURL, bool& rbDirIsReadO
         uno::Reference< ucb::XCommandEnvironment > xEnv;
         ::ucbhelper::Content                       aCnt( rBaseURL.GetMainURL( INetURLObject::NO_DECODE ), xEnv, comphelper::getProcessComponentContext() );
 
-        uno::Sequence< OUString > aProps( 1 );
-        aProps.getArray()[ 0 ] = "Url";
+        uno::Sequence<OUString> aProps { "Url" };
 
         uno::Reference< sdbc::XResultSet > xResultSet( aCnt.createCursor( aProps, ::ucbhelper::INCLUDE_DOCUMENTS_ONLY ) );
 
@@ -344,10 +342,10 @@ void Gallery::ImplLoadSubDirs( const INetURLObject& rBaseURL, bool& rbDirIsReadO
                                     {
                                         aSdgCnt.getPropertyValue( s_sTitle ) >>= aTitle;
                                     }
-                                    catch( const ::com::sun::star::uno::RuntimeException& )
+                                    catch( const css::uno::RuntimeException& )
                                     {
                                     }
-                                    catch( const ::com::sun::star::uno::Exception& )
+                                    catch( const css::uno::Exception& )
                                     {
                                     }
 
@@ -372,10 +370,10 @@ void Gallery::ImplLoadSubDirs( const INetURLObject& rBaseURL, bool& rbDirIsReadO
                                     {
                                         aSdvCnt.getPropertyValue( s_sTitle ) >>= aTitle;
                                     }
-                                    catch( const ::com::sun::star::uno::RuntimeException& )
+                                    catch( const css::uno::RuntimeException& )
                                     {
                                     }
-                                    catch( const ::com::sun::star::uno::Exception& )
+                                    catch( const css::uno::Exception& )
                                     {
                                     }
 
@@ -427,7 +425,7 @@ void Gallery::ImplLoadSubDirs( const INetURLObject& rBaseURL, bool& rbDirIsReadO
 
 GalleryThemeEntry* Gallery::ImplGetThemeEntry( const OUString& rThemeName )
 {
-    GalleryThemeEntry* pFound = NULL;
+    GalleryThemeEntry* pFound = nullptr;
 
     if( !rThemeName.isEmpty() )
     {
@@ -441,7 +439,7 @@ GalleryThemeEntry* Gallery::ImplGetThemeEntry( const OUString& rThemeName )
 
 OUString Gallery::GetThemeName( sal_uIntPtr nThemeId ) const
 {
-    GalleryThemeEntry* pFound = NULL;
+    GalleryThemeEntry* pFound = nullptr;
 
     for ( size_t i = 0, n = aThemeList.size(); i < n && !pFound; ++i )
     {
@@ -502,7 +500,7 @@ OUString Gallery::GetThemeName( sal_uIntPtr nThemeId ) const
 
 bool Gallery::HasTheme( const OUString& rThemeName )
 {
-    return( ImplGetThemeEntry( rThemeName ) != NULL );
+    return( ImplGetThemeEntry( rThemeName ) != nullptr );
 }
 
 bool Gallery::CreateTheme( const OUString& rThemeName )
@@ -599,7 +597,7 @@ bool Gallery::RemoveTheme( const OUString& rThemeName )
 
 GalleryTheme* Gallery::ImplGetCachedTheme(const GalleryThemeEntry* pThemeEntry)
 {
-    GalleryTheme* pTheme = NULL;
+    GalleryTheme* pTheme = nullptr;
 
     if( pThemeEntry )
     {
@@ -631,7 +629,7 @@ GalleryTheme* Gallery::ImplGetCachedTheme(const GalleryThemeEntry* pThemeEntry)
 
                         if( pIStm->GetError() )
                         {
-                            delete pTheme, pTheme = NULL;
+                            delete pTheme, pTheme = nullptr;
                         }
                     }
                     catch (const css::ucb::ContentCreationException&)
@@ -663,10 +661,10 @@ void Gallery::ImplDeleteCachedTheme( GalleryTheme* pTheme )
 
 GalleryTheme* Gallery::AcquireTheme( const OUString& rThemeName, SfxListener& rListener )
 {
-    GalleryTheme*           pTheme = NULL;
+    GalleryTheme*           pTheme = nullptr;
     GalleryThemeEntry*      pThemeEntry = ImplGetThemeEntry( rThemeName );
 
-    if( pThemeEntry && ( ( pTheme = ImplGetCachedTheme( pThemeEntry ) ) != NULL ) )
+    if( pThemeEntry && ( ( pTheme = ImplGetCachedTheme( pThemeEntry ) ) != nullptr ) )
         rListener.StartListening( *pTheme );
 
     return pTheme;

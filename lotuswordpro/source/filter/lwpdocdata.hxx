@@ -99,13 +99,6 @@ struct LwpDocControl
     LwpAtomHolder cDocControlOnlyEditor;
     sal_uInt16 nEditorVerification;
 };
-struct lcolor
-{
-        sal_uInt16 cred;        // When extra is AGLRGB_INDEX, cred holds the
-        sal_uInt16 cgreen;      // hi 16 bits and cgreen holds the lo 16 bits of
-        sal_uInt16 cblue;       // the 32-bit LUT index.
-        sal_uInt16 cextra;
-};
 struct LwpFontDescriptionOverrideBase
 {
     sal_uInt8 cOverrideBits;
@@ -180,8 +173,8 @@ private:
     static OUString TimeToOUString(LtTm& dt);
 
 public:
-    void Read() SAL_OVERRIDE;
-    void Parse(IXFStream *pOutputStream) SAL_OVERRIDE;
+    void Read() override;
+    void Parse(IXFStream *pOutputStream) override;
 };
 #endif
 

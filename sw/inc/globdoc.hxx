@@ -26,7 +26,6 @@ class SwGlobalDocShell : public SwDocShell
 public:
 
     SFX_DECL_OBJECTFACTORY();
-    TYPEINFO_OVERRIDE();
 
     SwGlobalDocShell(SfxObjectCreateMode eMode = SfxObjectCreateMode::EMBEDDED);
     virtual ~SwGlobalDocShell();
@@ -37,7 +36,7 @@ public:
                                    OUString * pLongUserName,
                                    OUString * pUserName,
                                    sal_Int32 nFileFormat,
-                                   bool bTemplate = false ) const SAL_OVERRIDE;
+                                   bool bTemplate = false ) const override;
 };
 
 #endif

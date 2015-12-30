@@ -84,6 +84,9 @@ static bool handleEmbeddedWPGImage(const librevenge::RVNGBinaryData &input, libr
     if (!libwpg::WPGraphics::parse(input.getDataStream(), &aSVGGenerator, fileFormat))
         return false;
 
+    if (svgOutput.empty())
+        return false;
+
     assert(1 == svgOutput.size());
 
     output.clear();
@@ -91,7 +94,7 @@ static bool handleEmbeddedWPGImage(const librevenge::RVNGBinaryData &input, libr
     return true;
 }
 
-bool SAL_CALL WordPerfectImportFilter::importImpl(const Sequence< ::com::sun::star::beans::PropertyValue > &aDescriptor)
+bool SAL_CALL WordPerfectImportFilter::importImpl(const Sequence< css::beans::PropertyValue > &aDescriptor)
 throw (RuntimeException, std::exception)
 {
     sal_Int32 nLength = aDescriptor.getLength();
@@ -152,12 +155,12 @@ throw (RuntimeException, std::exception)
     collector.addDocumentHandler(&xHandler, ODF_FLAT_XML);
     collector.registerEmbeddedObjectHandler("image/x-wpg", &handleEmbeddedWPGObject);
     collector.registerEmbeddedImageHandler("image/x-wpg", &handleEmbeddedWPGImage);
-    if (libwpd::WPD_OK == libwpd::WPDocument::parse(&input, &collector, aUtf8Passwd.isEmpty() ? 0 : aUtf8Passwd.getStr()))
+    if (libwpd::WPD_OK == libwpd::WPDocument::parse(&input, &collector, aUtf8Passwd.isEmpty() ? nullptr : aUtf8Passwd.getStr()))
         return true;
     return false;
 }
 
-sal_Bool SAL_CALL WordPerfectImportFilter::filter(const Sequence< ::com::sun::star::beans::PropertyValue > &aDescriptor)
+sal_Bool SAL_CALL WordPerfectImportFilter::filter(const Sequence< css::beans::PropertyValue > &aDescriptor)
 throw (RuntimeException, std::exception)
 {
     return importImpl(aDescriptor);
@@ -168,8 +171,8 @@ throw (RuntimeException, std::exception)
 }
 
 // XImporter
-void SAL_CALL WordPerfectImportFilter::setTargetDocument(const Reference< ::com::sun::star::lang::XComponent > &xDoc)
-throw (::com::sun::star::lang::IllegalArgumentException, RuntimeException, std::exception)
+void SAL_CALL WordPerfectImportFilter::setTargetDocument(const Reference< css::lang::XComponent > &xDoc)
+throw (css::lang::IllegalArgumentException, RuntimeException, std::exception)
 {
     mxDoc = xDoc;
 }
@@ -277,8 +280,8 @@ throw (RuntimeException, std::exception)
 }
 
 
-WordPerfectImportFilterDialog::WordPerfectImportFilterDialog(const Reference< XComponentContext > &rContext) :
-    mxContext(rContext) {}
+WordPerfectImportFilterDialog::WordPerfectImportFilterDialog()
+{}
 
 WordPerfectImportFilterDialog::~WordPerfectImportFilterDialog()
 {
@@ -306,7 +309,7 @@ throw (RuntimeException, std::exception)
             ScopedVclPtrInstance< SfxPasswordDialog > aPasswdDlg(nullptr);
             aPasswdDlg->SetMinLen(0);
             if (!aPasswdDlg->Execute())
-                return com::sun::star::ui::dialogs::ExecutableDialogResults::CANCEL;
+                return css::ui::dialogs::ExecutableDialogResults::CANCEL;
             msPassword = aPasswdDlg->GetPassword().getStr();
             aUtf8Passwd = OUStringToOString(msPassword, RTL_TEXTENCODING_UTF8);
             if (libwpd::WPD_PASSWORD_MATCH_OK == libwpd::WPDocument::verifyPassword(&input, aUtf8Passwd.getStr()))
@@ -314,10 +317,10 @@ throw (RuntimeException, std::exception)
             else
                 unsuccessfulAttempts++;
             if (unsuccessfulAttempts == 3) // timeout after 3 password atempts
-                return com::sun::star::ui::dialogs::ExecutableDialogResults::CANCEL;
+                return css::ui::dialogs::ExecutableDialogResults::CANCEL;
         }
     }
-    return com::sun::star::ui::dialogs::ExecutableDialogResults::OK;
+    return css::ui::dialogs::ExecutableDialogResults::OK;
 }
 
 Sequence<PropertyValue> SAL_CALL WordPerfectImportFilterDialog::getPropertyValues() throw(RuntimeException, std::exception)
@@ -332,8 +335,8 @@ Sequence<PropertyValue> SAL_CALL WordPerfectImportFilterDialog::getPropertyValue
 }
 
 void SAL_CALL WordPerfectImportFilterDialog::setPropertyValues(const Sequence<PropertyValue> &aProps)
-throw(com::sun::star::beans::UnknownPropertyException, com::sun::star::beans::PropertyVetoException,
-      com::sun::star::lang::IllegalArgumentException, com::sun::star::lang::WrappedTargetException, RuntimeException, std::exception)
+throw(css::beans::UnknownPropertyException, css::beans::PropertyVetoException,
+      css::lang::IllegalArgumentException, css::lang::WrappedTargetException, RuntimeException, std::exception)
 {
     const PropertyValue *pPropArray = aProps.getConstArray();
     long nPropCount = aProps.getLength();
@@ -378,16 +381,14 @@ throw (RuntimeException)
 Sequence< OUString > SAL_CALL WordPerfectImportFilterDialog_getSupportedServiceNames()
 throw (RuntimeException)
 {
-    Sequence < OUString > aRet(1);
-    OUString *pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.ui.dialogs.FilterOptionsDialog";
+    Sequence < OUString > aRet { "com.sun.star.ui.dialogs.FilterOptionsDialog" };
     return aRet;
 }
 
-Reference< XInterface > SAL_CALL WordPerfectImportFilterDialog_createInstance(const Reference< XComponentContext > &rContext)
+Reference< XInterface > SAL_CALL WordPerfectImportFilterDialog_createInstance(const Reference< XComponentContext > &)
 throw(Exception)
 {
-    return static_cast<cppu::OWeakObject *>(new WordPerfectImportFilterDialog(rContext));
+    return static_cast<cppu::OWeakObject *>(new WordPerfectImportFilterDialog);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

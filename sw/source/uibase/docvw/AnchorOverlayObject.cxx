@@ -52,8 +52,8 @@ private:
     bool                            mbLineSolid : 1;
 
 protected:
-    virtual drawinglayer::primitive2d::Primitive2DSequence create2DDecomposition(
-        const drawinglayer::geometry::ViewInformation2D& rViewInformation) const SAL_OVERRIDE;
+    virtual drawinglayer::primitive2d::Primitive2DContainer create2DDecomposition(
+        const drawinglayer::geometry::ViewInformation2D& rViewInformation) const override;
 
 public:
     AnchorPrimitive( const basegfx::B2DPolygon& rTriangle,
@@ -85,15 +85,15 @@ public:
     bool getShadow() const { return mbShadow; }
     bool getLineSolid() const { return mbLineSolid; }
 
-    virtual bool operator==( const drawinglayer::primitive2d::BasePrimitive2D& rPrimitive ) const SAL_OVERRIDE;
+    virtual bool operator==( const drawinglayer::primitive2d::BasePrimitive2D& rPrimitive ) const override;
 
     DeclPrimitive2DIDBlock()
 };
 
-drawinglayer::primitive2d::Primitive2DSequence AnchorPrimitive::create2DDecomposition(
+drawinglayer::primitive2d::Primitive2DContainer AnchorPrimitive::create2DDecomposition(
     const drawinglayer::geometry::ViewInformation2D& /*rViewInformation*/) const
 {
-    drawinglayer::primitive2d::Primitive2DSequence aRetval;
+    drawinglayer::primitive2d::Primitive2DContainer aRetval;
 
     if ( AS_TRI == maAnchorState ||
          AS_ALL == maAnchorState ||
@@ -105,7 +105,7 @@ drawinglayer::primitive2d::Primitive2DSequence AnchorPrimitive::create2DDecompos
                 basegfx::B2DPolyPolygon(getTriangle()),
                 getColor()));
 
-        drawinglayer::primitive2d::appendPrimitive2DReferenceToPrimitive2DSequence(aRetval, aTriangle);
+        aRetval.push_back(aTriangle);
     }
 
     // prepare view-independent LineWidth and color
@@ -124,7 +124,7 @@ drawinglayer::primitive2d::Primitive2DSequence AnchorPrimitive::create2DDecompos
                     getLine(),
                     aLineAttribute));
 
-            drawinglayer::primitive2d::appendPrimitive2DReferenceToPrimitive2DSequence(aRetval, aSolidLine);
+            aRetval.push_back(aSolidLine);
         }
         else
         {
@@ -145,11 +145,11 @@ drawinglayer::primitive2d::Primitive2DSequence AnchorPrimitive::create2DDecompos
                     aLineAttribute,
                     aStrokeAttribute));
 
-            drawinglayer::primitive2d::appendPrimitive2DReferenceToPrimitive2DSequence(aRetval, aStrokedLine);
+            aRetval.push_back(aStrokedLine);
         }
     }
 
-    if(aRetval.hasElements() && getShadow())
+    if(!aRetval.empty() && getShadow())
     {
         // shadow is only for triangle and line start, and in upper left
         // and lower right direction, in different colors
@@ -162,7 +162,7 @@ drawinglayer::primitive2d::Primitive2DSequence AnchorPrimitive::create2DDecompos
         aDarkerColor.clamp();
 
         // create shadow sequence
-        drawinglayer::primitive2d::Primitive2DSequence aShadows(2);
+        drawinglayer::primitive2d::Primitive2DContainer aShadows(2);
         basegfx::B2DHomMatrix aTransform;
 
         aTransform.set(0, 2, -getDiscreteUnit());
@@ -184,10 +184,10 @@ drawinglayer::primitive2d::Primitive2DSequence AnchorPrimitive::create2DDecompos
                 aRetval));
 
         // add shadow before geometry to make it be proccessed first
-        const drawinglayer::primitive2d::Primitive2DSequence aTemporary(aRetval);
+        const drawinglayer::primitive2d::Primitive2DContainer aTemporary(aRetval);
 
         aRetval = aShadows;
-        drawinglayer::primitive2d::appendPrimitive2DSequenceToPrimitive2DSequence(aRetval, aTemporary);
+        aRetval.append(aTemporary);
     }
 
     if ( AS_ALL == maAnchorState ||
@@ -200,7 +200,7 @@ drawinglayer::primitive2d::Primitive2DSequence AnchorPrimitive::create2DDecompos
                 getLineTop(),
                 aLineAttribute));
 
-        drawinglayer::primitive2d::appendPrimitive2DReferenceToPrimitive2DSequence(aRetval, aLineTop);
+        aRetval.push_back(aLineTop);
     }
 
     return aRetval;
@@ -235,7 +235,7 @@ ImplPrimitive2DIDBlock(AnchorPrimitive, PRIMITIVE2D_ID_SWSIDEBARANCHORPRIMITIVE)
                                                        const Point& aLineEnd,
                                                        const Color& aColorAnchor )
 {
-    AnchorOverlayObject* pAnchorOverlayObject( 0 );
+    AnchorOverlayObject* pAnchorOverlayObject( nullptr );
     if ( rDocView.GetDrawView() )
     {
         SdrPaintWindow* pPaintWindow = rDocView.GetDrawView()->GetPaintWindow(0);
@@ -339,7 +339,7 @@ void AnchorOverlayObject::implResetGeometry()
     maLineTop.clear();
 }
 
-drawinglayer::primitive2d::Primitive2DSequence AnchorOverlayObject::createOverlayObjectPrimitive2DSequence()
+drawinglayer::primitive2d::Primitive2DContainer AnchorOverlayObject::createOverlayObjectPrimitive2DSequence()
 {
     implEnsureGeometry();
 
@@ -354,7 +354,7 @@ drawinglayer::primitive2d::Primitive2DSequence AnchorOverlayObject::createOverla
                              getShadowedEffect(),
                              getLineSolid()) );
 
-    return drawinglayer::primitive2d::Primitive2DSequence(&aReference, 1);
+    return drawinglayer::primitive2d::Primitive2DContainer { aReference };
 }
 
 void AnchorOverlayObject::SetAllPosition( const basegfx::B2DPoint& rPoint1,

@@ -74,7 +74,7 @@ void ScDBDocFunc::ShowInBeamer( const ScImportParam& rParam, SfxViewFrame* pFram
     uno::Reference<frame::XDispatchProvider> xDP(xFrame, uno::UNO_QUERY);
 
     uno::Reference<frame::XFrame> xBeamerFrame = xFrame->findFrame(
-                                        OUString("_beamer"),
+                                        "_beamer",
                                         frame::FrameSearchFlag::CHILDREN);
     if (xBeamerFrame.is())
     {
@@ -119,13 +119,13 @@ bool ScDBDocFunc::DoImport( SCTAB nTab, const ScImportParam& rParam,
         const svx::ODataAccessDescriptor* pDescriptor, bool bRecord, bool bAddrInsert )
 {
     ScDocument& rDoc = rDocShell.GetDocument();
-    ScChangeTrack *pChangeTrack = NULL;
+    ScChangeTrack *pChangeTrack = nullptr;
     ScRange aChangedRange;
 
     if (bRecord && !rDoc.IsUndoEnabled())
         bRecord = false;
 
-    ScDBData* pDBData = NULL;
+    ScDBData* pDBData = nullptr;
     if ( !bAddrInsert )
     {
         pDBData = rDoc.GetDBAtArea( nTab, rParam.nCol1, rParam.nRow1,
@@ -195,16 +195,14 @@ bool ScDBDocFunc::DoImport( SCTAB nTab, const ScImportParam& rParam,
         //  only text (title is still needed, for the cancel button)
         ScProgress aProgress( &rDocShell, ScGlobal::GetRscString(STR_UNDO_IMPORTDATA), 0 );
 
-        uno::Reference<sdbc::XRowSet> xRowSet = uno::Reference<sdbc::XRowSet>(
-                xResultSet, uno::UNO_QUERY );
+        uno::Reference<sdbc::XRowSet> xRowSet( xResultSet, uno::UNO_QUERY );
         bool bDispose = false;
         if ( !xRowSet.is() )
         {
             bDispose = true;
-            xRowSet = uno::Reference<sdbc::XRowSet>(
-                    comphelper::getProcessServiceFactory()->createInstance(
-                        OUString( SC_SERVICE_ROWSET ) ),
-                    uno::UNO_QUERY);
+            xRowSet.set(comphelper::getProcessServiceFactory()->createInstance(
+                            SC_SERVICE_ROWSET ),
+                        uno::UNO_QUERY);
             uno::Reference<beans::XPropertySet> xRowProp( xRowSet, uno::UNO_QUERY );
             OSL_ENSURE( xRowProp.is(), "can't get RowSet" );
             if ( xRowProp.is() )
@@ -218,22 +216,19 @@ bool ScDBDocFunc::DoImport( SCTAB nTab, const ScImportParam& rParam,
                 uno::Any aAny;
 
                 aAny <<= rParam.aDBName;
-                xRowProp->setPropertyValue(
-                            OUString(SC_DBPROP_DATASOURCENAME), aAny );
+                xRowProp->setPropertyValue( SC_DBPROP_DATASOURCENAME, aAny );
 
                 aAny <<= rParam.aStatement;
-                xRowProp->setPropertyValue(
-                            OUString(SC_DBPROP_COMMAND), aAny );
+                xRowProp->setPropertyValue( SC_DBPROP_COMMAND, aAny );
 
                 aAny <<= nType;
-                xRowProp->setPropertyValue(
-                            OUString(SC_DBPROP_COMMANDTYPE), aAny );
+                xRowProp->setPropertyValue( SC_DBPROP_COMMANDTYPE, aAny );
 
                 uno::Reference<sdb::XCompletedExecution> xExecute( xRowSet, uno::UNO_QUERY );
                 if ( xExecute.is() )
                 {
                     uno::Reference<task::XInteractionHandler> xHandler(
-                        task::InteractionHandler::createWithParent(comphelper::getProcessComponentContext(), 0),
+                        task::InteractionHandler::createWithParent(comphelper::getProcessComponentContext(), nullptr),
                         uno::UNO_QUERY_THROW);
                     xExecute->executeWithCompletion( xHandler );
                 }
@@ -420,7 +415,7 @@ bool ScDBDocFunc::DoImport( SCTAB nTab, const ScImportParam& rParam,
             nErrStringId = aTester.GetMessageId();
             bSuccess = false;
         }
-        else if ( (pChangeTrack = rDoc.GetChangeTrack()) != NULL )
+        else if ( (pChangeTrack = rDoc.GetChangeTrack()) != nullptr )
             aChangedRange = ScRange(rParam.nCol1, rParam.nRow1, nTab,
                         nEndCol+nFormulaCols, nEndRow, nTab );
     }
@@ -449,10 +444,10 @@ bool ScDBDocFunc::DoImport( SCTAB nTab, const ScImportParam& rParam,
 
             SCCOL nMinEndCol = std::min( rParam.nCol2, nEndCol );    // not too much
             nMinEndCol = sal::static_int_cast<SCCOL>( nMinEndCol + nFormulaCols );  // only if column count unchanged
-            pImportDoc->DeleteAreaTab( 0,0, MAXCOL,MAXROW, nTab, IDF_ATTRIB );
+            pImportDoc->DeleteAreaTab( 0,0, MAXCOL,MAXROW, nTab, InsertDeleteFlags::ATTRIB );
             rDoc.CopyToDocument( rParam.nCol1, rParam.nRow1, nTab,
                                     nMinEndCol, rParam.nRow1, nTab,
-                                    IDF_ATTRIB, false, pImportDoc );
+                                    InsertDeleteFlags::ATTRIB, false, pImportDoc );
 
             SCROW nDataStartRow = rParam.nRow1+1;
             for (SCCOL nCopyCol=rParam.nCol1; nCopyCol<=nMinEndCol; nCopyCol++)
@@ -481,8 +476,8 @@ bool ScDBDocFunc::DoImport( SCTAB nTab, const ScImportParam& rParam,
         SCCOL nUndoEndCol = std::max( nEndCol, rParam.nCol2 );       // rParam = old end
         SCROW nUndoEndRow = std::max( nEndRow, rParam.nRow2 );
 
-        ScDocument* pUndoDoc = NULL;
-        ScDBData* pUndoDBData = NULL;
+        ScDocument* pUndoDoc = nullptr;
+        ScDBData* pUndoDBData = nullptr;
         if ( bRecord )
         {
             pUndoDoc = new ScDocument( SCDOCMODE_UNDO );
@@ -498,7 +493,7 @@ bool ScDBDocFunc::DoImport( SCTAB nTab, const ScImportParam& rParam,
         if (bRecord)
         {
             // do not touch notes (ScUndoImportData does not support drawing undo)
-            InsertDeleteFlags nCopyFlags = IDF_ALL & ~IDF_NOTE;
+            InsertDeleteFlags nCopyFlags = InsertDeleteFlags::ALL & ~InsertDeleteFlags::NOTE;
 
             //  nFormulaCols is set only if column count is unchanged
             rDoc.CopyToDocument( rParam.nCol1, rParam.nRow1, nTab,
@@ -523,7 +518,7 @@ bool ScDBDocFunc::DoImport( SCTAB nTab, const ScImportParam& rParam,
 
             ScRange aDelRange( rParam.nCol1, rParam.nRow1, nTab,
                                 rParam.nCol2, rParam.nRow2, nTab );
-            rDoc.DeleteAreaTab( aDelRange, IDF_ALL & ~IDF_NOTE );  // ohne die Formeln
+            rDoc.DeleteAreaTab( aDelRange, InsertDeleteFlags::ALL & ~InsertDeleteFlags::NOTE );  // ohne die Formeln
 
             ScRange aOld( rParam.nCol1, rParam.nRow1, nTab,
                             rParam.nCol2+nFormulaCols, rParam.nRow2, nTab );
@@ -533,10 +528,10 @@ bool ScDBDocFunc::DoImport( SCTAB nTab, const ScImportParam& rParam,
         }
         else if ( nEndCol < rParam.nCol2 )      // DeleteArea calls PutInOrder
             rDoc.DeleteArea( nEndCol+1, rParam.nRow1, rParam.nCol2, rParam.nRow2,
-                                aNewMark, IDF_CONTENTS & ~IDF_NOTE );
+                                aNewMark, InsertDeleteFlags::CONTENTS & ~InsertDeleteFlags::NOTE );
 
         //  CopyToDocument doesn't remove contents
-        rDoc.DeleteAreaTab( rParam.nCol1, rParam.nRow1, nEndCol, nEndRow, nTab, IDF_CONTENTS & ~IDF_NOTE );
+        rDoc.DeleteAreaTab( rParam.nCol1, rParam.nRow1, nEndCol, nEndRow, nTab, InsertDeleteFlags::CONTENTS & ~InsertDeleteFlags::NOTE );
 
         //  remove each column from ImportDoc after copying to reduce memory usage
         bool bOldAutoCalc = rDoc.GetAutoCalc();
@@ -544,8 +539,8 @@ bool ScDBDocFunc::DoImport( SCTAB nTab, const ScImportParam& rParam,
         for (SCCOL nCopyCol = rParam.nCol1; nCopyCol <= nEndCol; nCopyCol++)
         {
             pImportDoc->CopyToDocument( nCopyCol, rParam.nRow1, nTab, nCopyCol, nEndRow, nTab,
-                                        IDF_ALL, false, &rDoc );
-            pImportDoc->DeleteAreaTab( nCopyCol, rParam.nRow1, nCopyCol, nEndRow, nTab, IDF_CONTENTS );
+                                        InsertDeleteFlags::ALL, false, &rDoc );
+            pImportDoc->DeleteAreaTab( nCopyCol, rParam.nRow1, nCopyCol, nEndRow, nTab, InsertDeleteFlags::CONTENTS );
         }
         rDoc.SetAutoCalc( bOldAutoCalc );
 
@@ -554,7 +549,7 @@ bool ScDBDocFunc::DoImport( SCTAB nTab, const ScImportParam& rParam,
             if (bKeepFormat)            // formats for formulas
                 pImportDoc->CopyToDocument( nEndCol+1, rParam.nRow1, nTab,
                                             nEndCol+nFormulaCols, nEndRow, nTab,
-                                            IDF_ATTRIB, false, &rDoc );
+                                            InsertDeleteFlags::ATTRIB, false, &rDoc );
             // fill formulas
             ScMarkData aMark;
             aMark.SelectOneTable(nTab);
@@ -574,10 +569,10 @@ bool ScDBDocFunc::DoImport( SCTAB nTab, const ScImportParam& rParam,
         {
             if ( rParam.nCol2 > nEndCol )
                 rDoc.DeleteArea( nEndCol+1, rParam.nRow1, rParam.nCol2, rParam.nRow2,
-                                    aNewMark, IDF_CONTENTS );
+                                    aNewMark, InsertDeleteFlags::CONTENTS );
             if ( rParam.nRow2 > nEndRow )
                 rDoc.DeleteArea( rParam.nCol1, nEndRow+1, rParam.nCol2, rParam.nRow2,
-                                    aNewMark, IDF_CONTENTS );
+                                    aNewMark, InsertDeleteFlags::CONTENTS );
         }
 
         if( !bAddrInsert )      // update database range
@@ -593,14 +588,14 @@ bool ScDBDocFunc::DoImport( SCTAB nTab, const ScImportParam& rParam,
         if (bRecord)
         {
             ScDocument* pRedoDoc = pImportDoc;
-            pImportDoc = NULL;
+            pImportDoc = nullptr;
 
             if (nFormulaCols > 0)                   // include filled formulas for redo
                 rDoc.CopyToDocument( rParam.nCol1, rParam.nRow1, nTab,
                                         nEndCol+nFormulaCols, nEndRow, nTab,
-                                        IDF_ALL & ~IDF_NOTE, false, pRedoDoc );
+                                        InsertDeleteFlags::ALL & ~InsertDeleteFlags::NOTE, false, pRedoDoc );
 
-            ScDBData* pRedoDBData = pDBData ? new ScDBData( *pDBData ) : NULL;
+            ScDBData* pRedoDBData = pDBData ? new ScDBData( *pDBData ) : nullptr;
 
             rDocShell.GetUndoManager()->AddUndoAction(
                 new ScUndoImportData( &rDocShell, nTab,

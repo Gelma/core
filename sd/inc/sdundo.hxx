@@ -28,14 +28,13 @@ class SdDrawDocument;
 class SD_DLLPUBLIC SdUndoAction : public SfxUndoAction
 {
 public:
-    TYPEINFO_OVERRIDE();
                             SdUndoAction(SdDrawDocument* pSdDrawDocument)
                                 : mpDoc(pSdDrawDocument)  {}
     virtual                 ~SdUndoAction() {}
 
     void                    SetComment(const OUString& rStr) { maComment = rStr; }
-    virtual OUString        GetComment() const SAL_OVERRIDE { return maComment; }
-    virtual SdUndoAction*   Clone() const { return NULL; }
+    virtual OUString        GetComment() const override { return maComment; }
+    virtual SdUndoAction*   Clone() const { return nullptr; }
 
 protected:
     SdDrawDocument* mpDoc;

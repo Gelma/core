@@ -22,6 +22,7 @@
 
 #include <basebmp/bitmapdevice.hxx>
 #include <vcl/dllapi.h>
+#include <vcl/salgtype.hxx>
 #include <vcl/outdev.hxx>
 
 class SalVirtualDevice;
@@ -39,19 +40,18 @@ private:
     VclPtr<VirtualDevice>  mpNext;
     sal_uInt16          mnBitCount;
     bool                mbScreenComp;
-    sal_Int8            mnAlphaDepth;
+    DeviceFormat        meFormat;
+    DeviceFormat        meAlphaFormat;
     sal_uInt8           meRefDevMode;
 
-    SAL_DLLPRIVATE void ImplInitVirDev( const OutputDevice* pOutDev, long nDX, long nDY, sal_uInt16 nBitCount, const SystemGraphicsData *pData = NULL );
+    SAL_DLLPRIVATE void ImplInitVirDev( const OutputDevice* pOutDev, long nDX, long nDY, DeviceFormat eFormat, const SystemGraphicsData *pData = nullptr );
     SAL_DLLPRIVATE bool InnerImplSetOutputSizePixel( const Size& rNewSize, bool bErase,
-                                                     const basebmp::RawMemorySharedArray &pBuffer,
-                                                     const bool bTopDown );
+                                                     const basebmp::RawMemorySharedArray &pBuffer );
     SAL_DLLPRIVATE bool ImplSetOutputSizePixel( const Size& rNewSize, bool bErase,
-                                                const basebmp::RawMemorySharedArray &pBuffer,
-                                                const bool bTopDown );
+                                                const basebmp::RawMemorySharedArray &pBuffer );
 
-    VirtualDevice (const VirtualDevice &) SAL_DELETED_FUNCTION;
-    VirtualDevice & operator= (const VirtualDevice &) SAL_DELETED_FUNCTION;
+    VirtualDevice (const VirtualDevice &) = delete;
+    VirtualDevice & operator= (const VirtualDevice &) = delete;
 
     /** Used for alpha VDev, to set areas to opaque
 
@@ -65,68 +65,69 @@ private:
         { return ((meRefDevMode & REFDEV_FORCE_ZERO_EXTLEAD) != 0); }
 
 protected:
-    virtual bool AcquireGraphics() const SAL_OVERRIDE;
-    virtual void ReleaseGraphics( bool bRelease = true ) SAL_OVERRIDE;
+    virtual bool AcquireGraphics() const override;
+    virtual void ReleaseGraphics( bool bRelease = true ) override;
 
 public:
 
     /** Create a virtual device of size 1x1
 
         @param nBitCount
-        Bit depth of the generated virtual device. Use 0 here, to
-        indicate: take default screen depth. Only 0, 1 and 8
-        are allowed here, with 1 denoting binary mask and 8 a graylevel mask.
+        Device format of the generated virtual device. Use DeviceFormat::DEFAULT here, to
+        indicate: take default screen depth. Only DeviceFormat::BITMASK
+        is the other possibility to denote a binary mask.
      */
-    explicit            VirtualDevice( sal_uInt16 nBitCount = 0 );
+    explicit            VirtualDevice(DeviceFormat eFormat = DeviceFormat::DEFAULT);
 
     /** Create a virtual device of size 1x1
 
         @param rCompDev
         The generated vdev will be compatible to this device.
 
-        @param nBitCount
-        Bit depth of the generated virtual device. Use 0 here, to
-        indicate: take default screen depth.
+        @param eFormat
+        Device format of the generated virtual device. Use DeviceFormat::DEFAULT here, to
+        indicate: take default screen depth. Only DeviceFormat::BITMASK
+        is the other possibility to denote a binary mask.
      */
-     explicit           VirtualDevice( const OutputDevice& rCompDev,
-                                       sal_uInt16 nBitCount = 0 );
+     explicit           VirtualDevice(const OutputDevice& rCompDev,
+                                      DeviceFormat eFormat = DeviceFormat::DEFAULT);
 
     /** Create a virtual device  of size 1x1 with alpha channel
 
         @param rCompDev
         The generated vdev will be compatible to this device.
 
-        @param nBitCount
-        Bit depth of the generated virtual device. Use 0 here, to
-        indicate: take default screen depth. Only 0 and 1
-        are allowed here, with 1 denoting binary mask.
+        @param eFormat
+        Device format of the generated virtual device. Use DeviceFormat::DEFAULT here, to
+        indicate: take default screen depth. Only DeviceFormat::BITMASK
+        is the other possibility to denote a binary mask.
 
-        @param nAlphaBitCount
-        Bit depth of the generated virtual device. Use 0 here, to
-        indicate: take default screen depth. Only 0 and 1
-        are allowed here, with 1 denoting binary mask.
+        @param eAlphaFormat
+        Device format of the generated virtual device. Use DeviceFormat::DEFAULT here, to
+        indicate: take default screen depth. Only DeviceFormat::BITMASK
+        is the other possibility to denote a binary mask.
      */
      explicit           VirtualDevice( const OutputDevice& rCompDev,
-                                       sal_uInt16 nBitCount, sal_uInt16 nAlphaBitCount );
+                                       DeviceFormat eFormat, DeviceFormat eAlphaFormat);
 
     /** Create a virtual device using an existing system dependent device or graphics context
         Any rendering will happen directly on the context and not on any intermediate bitmap.
         Note: This might not be supported on all platforms !
     */
     explicit            VirtualDevice(const SystemGraphicsData *pData, const Size &rSize,
-                                      sal_uInt16 nBitCount);
+                                      DeviceFormat eFormat);
 
     virtual             ~VirtualDevice();
-    virtual void        dispose() SAL_OVERRIDE;
+    virtual void        dispose() override;
 
-    virtual void        EnableRTL( bool bEnable = true ) SAL_OVERRIDE;
+    virtual void        EnableRTL( bool bEnable = true ) override;
 
     bool                SetOutputSizePixel( const Size& rNewSize, bool bErase = true );
     bool                SetOutputSizePixelScaleOffsetAndBuffer( const Size& rNewSize,
                                                                 const Fraction& rScale,
                                                                 const Point& rNewOffset,
-                                                                const basebmp::RawMemorySharedArray &pBuffer,
-                                                                const bool bTopDown = false );
+                                                                const basebmp::RawMemorySharedArray &pBuffer );
+
     bool                SetOutputSize( const Size& rNewSize, bool bErase = true )
                             { return SetOutputSizePixel( LogicToPixel( rNewSize ), bErase ); }
 
@@ -144,15 +145,15 @@ public:
 
     void                SetReferenceDevice( sal_Int32 i_nDPIX, sal_Int32 i_nDPIY );
 
-    virtual sal_uInt16  GetBitCount() const SAL_OVERRIDE;
+    virtual sal_uInt16  GetBitCount() const override;
 
 private:
     SAL_DLLPRIVATE void ImplSetReferenceDevice( RefDevMode, sal_Int32 i_nDPIX, sal_Int32 i_nDPIY );
 
 protected:
-    virtual bool        UsePolyPolygonForComplexGradient() SAL_OVERRIDE;
+    virtual bool        UsePolyPolygonForComplexGradient() override;
 
-    virtual long        GetFontExtLeading() const SAL_OVERRIDE;
+    virtual long        GetFontExtLeading() const override;
 
 };
 

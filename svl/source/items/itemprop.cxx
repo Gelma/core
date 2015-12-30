@@ -71,20 +71,19 @@ SfxItemPropertyMap::SfxItemPropertyMap( const SfxItemPropertyMapEntry* pEntries 
 }
 
 SfxItemPropertyMap::SfxItemPropertyMap( const SfxItemPropertyMap& rSource ) :
-    m_pImpl( new SfxItemPropertyMap_Impl( rSource.m_pImpl ) )
+    m_pImpl( new SfxItemPropertyMap_Impl( rSource.m_pImpl.get() ) )
 {
 }
 
 SfxItemPropertyMap::~SfxItemPropertyMap()
 {
-    delete m_pImpl;
 }
 
 const SfxItemPropertySimpleEntry* SfxItemPropertyMap::getByName( const OUString &rName ) const
 {
     SfxItemPropertyHashMap_t::const_iterator aIter = m_pImpl->find(rName);
     if( aIter == m_pImpl->end() )
-        return 0;
+        return nullptr;
     return &aIter->second;
 }
 
@@ -178,7 +177,7 @@ void SfxItemPropertySet::getPropertyValue( const SfxItemPropertySimpleEntry& rEn
                         throw(RuntimeException)
 {
     // get the SfxPoolItem
-    const SfxPoolItem* pItem = 0;
+    const SfxPoolItem* pItem = nullptr;
     SfxItemState eState = rSet.GetItemState( rEntry.nWID, true, &pItem );
     if(SfxItemState::SET != eState && SFX_WHICH_MAX > rEntry.nWID )
         pItem = &rSet.GetPool()->GetDefaultItem(rEntry.nWID);
@@ -192,7 +191,7 @@ void SfxItemPropertySet::getPropertyValue( const SfxItemPropertySimpleEntry& rEn
         SfxItemSet aSet(*rSet.GetPool(), rEntry.nWID, rEntry.nWID);
         if(0 == (rEntry.nFlags & PropertyAttribute::MAYBEVOID))
             throw RuntimeException(
-                    "Property not found in ItemSet but not MAYBEVOID?", 0);
+                    "Property not found in ItemSet but not MAYBEVOID?", nullptr);
     }
 
 
@@ -232,7 +231,7 @@ void SfxItemPropertySet::setPropertyValue( const SfxItemPropertySimpleEntry& rEn
           IllegalArgumentException)
 {
     // get the SfxPoolItem
-    const SfxPoolItem* pItem = 0;
+    const SfxPoolItem* pItem = nullptr;
     std::unique_ptr<SfxPoolItem> pNewItem;
     SfxItemState eState = rSet.GetItemState( rEntry.nWID, true, &pItem );
     if(SfxItemState::SET != eState && SFX_WHICH_MAX > rEntry.nWID )
@@ -344,7 +343,6 @@ Sequence< Property > SAL_CALL SfxItemPropertySetInfo::getProperties(  )
 SfxItemPropertySetInfo::~SfxItemPropertySetInfo()
 {
     delete m_pImpl->m_pOwnMap;
-    delete m_pImpl;
 }
 
 Property SAL_CALL SfxItemPropertySetInfo::getPropertyByName( const OUString& rName )

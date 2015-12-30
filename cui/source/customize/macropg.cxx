@@ -52,10 +52,10 @@ static const char aVndSunStarUNO[] = "vnd.sun.star.UNO:";
 static const char aVndSunStarScript[] = "vnd.sun.star.script:";
 
 _SvxMacroTabPage_Impl::_SvxMacroTabPage_Impl( const SfxItemSet& rAttrSet )
-    : pAssignPB(NULL)
-    , pAssignComponentPB(NULL)
-    , pDeletePB(NULL)
-    , pEventLB(NULL)
+    : pAssignPB(nullptr)
+    , pAssignComponentPB(nullptr)
+    , pDeletePB(nullptr)
+    , pEventLB(nullptr)
     , bReadOnly(false)
     , bIDEDialogMode(false)
 {
@@ -108,7 +108,7 @@ IMPL_LINK_TYPED( MacroEventListBox, HeaderEndDrag_Impl, HeaderBar*, pBar, void )
                 long _nWidth = maHeaderBar->GetItemSize( i );
                 aSz.Width() =  _nWidth + nTmpSz;
                 nTmpSz += _nWidth;
-                maListBox->SetTab( i, PixelToLogic( aSz, MapMode( MAP_APPFONT ) ).Width(), MAP_APPFONT );
+                maListBox->SetTab( i, PixelToLogic( aSz, MapMode( MAP_APPFONT ) ).Width() );
             }
         }
     }
@@ -225,8 +225,8 @@ void _SvxMacroTabPage::EnableButtons()
 _SvxMacroTabPage::_SvxMacroTabPage(vcl::Window* pParent, const OString& rID,
     const OUString& rUIXMLDescription, const SfxItemSet& rAttrSet)
     : SfxTabPage( pParent, rID, rUIXMLDescription, &rAttrSet ),
-    m_xAppEvents(0),
-    m_xDocEvents(0),
+    m_xAppEvents(nullptr),
+    m_xDocEvents(nullptr),
     bReadOnly(false),
     bDocModified(false),
     bAppEvents(false),
@@ -324,7 +324,7 @@ void _SvxMacroTabPage::InitResources()
     aDisplayNames.push_back( EventDisplayName( "approveCursorMove",     RID_SVXSTR_EVENT_POSITIONING ) );
     aDisplayNames.push_back( EventDisplayName( "cursorMoved",           RID_SVXSTR_EVENT_POSITIONED ) );
     aDisplayNames.push_back( EventDisplayName( "approveParameter",      RID_SVXSTR_EVENT_APPROVEPARAMETER ) );
-    aDisplayNames.push_back( EventDisplayName( "errorOccurred",          RID_SVXSTR_EVENT_ERROROCCURRED ) );
+    aDisplayNames.push_back( EventDisplayName( "errorOccured",          RID_SVXSTR_EVENT_ERROROCCURRED ) );
     aDisplayNames.push_back( EventDisplayName( "adjustmentValueChanged",   RID_SVXSTR_EVENT_ADJUSTMENTVALUECHANGED ) );
 }
 
@@ -448,7 +448,7 @@ public:
     IconLBoxString( SvTreeListEntry* pEntry, sal_uInt16 nFlags, const OUString& sText,
         Image* pMacroImg, Image* pComponentImg );
     virtual void Paint(const Point& rPos, SvTreeListBox& rOutDev, vcl::RenderContext& rRenderContext,
-                       const SvViewDataEntry* pView, const SvTreeListEntry& rEntry) SAL_OVERRIDE;
+                       const SvViewDataEntry* pView, const SvTreeListEntry& rEntry) override;
 };
 
 
@@ -594,7 +594,7 @@ IMPL_LINK_TYPED( _SvxMacroTabPage, AssignDeleteHdl_Impl, Button*, pBtn, void )
 
 IMPL_LINK_NOARG_TYPED( _SvxMacroTabPage, DoubleClickHdl_Impl, SvTreeListBox*, bool)
 {
-    return GenericHandler_Impl( this, NULL );
+    return GenericHandler_Impl( this, nullptr );
 }
 
 // handler for double click on the listbox, and for the assign/delete buttons
@@ -636,7 +636,7 @@ long _SvxMacroTabPage::GenericHandler_Impl( _SvxMacroTabPage* pThis, PushButton*
         }
     }
 
-    bool bDoubleClick = (pBtn == NULL);
+    bool bDoubleClick = (pBtn == nullptr);
     bool bUNOAssigned = sEventURL.startsWith( aVndSunStarUNO );
     if( pBtn == pImpl->pDeletePB )
     {
@@ -646,7 +646,7 @@ long _SvxMacroTabPage::GenericHandler_Impl( _SvxMacroTabPage* pThis, PushButton*
         if(!pThis->bAppEvents)
             pThis->bDocModified = true;
     }
-    else if (   (   ( pBtn != NULL )
+    else if (   (   ( pBtn != nullptr )
                 &&  ( pBtn == pImpl->pAssignComponentPB )
                 )
             ||  (   bDoubleClick
@@ -654,7 +654,7 @@ long _SvxMacroTabPage::GenericHandler_Impl( _SvxMacroTabPage* pThis, PushButton*
                 )
             )
     {
-        VclPtrInstance< AssignComponentDialog > pAssignDlg( pThis, sEventURL );
+        ScopedVclPtrInstance< AssignComponentDialog > pAssignDlg( pThis, sEventURL );
 
         short ret = pAssignDlg->Execute();
         if( ret )
@@ -668,7 +668,7 @@ long _SvxMacroTabPage::GenericHandler_Impl( _SvxMacroTabPage* pThis, PushButton*
     else if( bAssEnabled )
     {
         // assign pressed
-        VclPtrInstance< SvxScriptSelectorDialog > pDlg( pThis, false, pThis->GetFrame() );
+        ScopedVclPtrInstance< SvxScriptSelectorDialog > pDlg( pThis, false, pThis->GetFrame() );
         if( pDlg )
         {
             short ret = pDlg->Execute();
@@ -730,7 +730,7 @@ void _SvxMacroTabPage::InitAndSetHandler( Reference< container::XNameReplace> xA
     rListBox.SetSelectHdl( LINK( this, _SvxMacroTabPage, SelectEvent_Impl ));
 
     rListBox.SetSelectionMode( SINGLE_SELECTION );
-    rListBox.SetTabs( &nTabs[0], MAP_APPFONT );
+    rListBox.SetTabs( &nTabs[0] );
     Size aSize( nTabs[ 2 ], 0 );
     rHeaderBar.InsertItem( ITEMID_EVENT, mpImpl->sStrEvent, LogicToPixel( aSize, MapMode( MAP_APPFONT ) ).Width() );
     aSize.Width() = 1764;        // don't know what, so 42^2 is best to use...
@@ -745,7 +745,7 @@ void _SvxMacroTabPage::InitAndSetHandler( Reference< container::XNameReplace> xA
         mpImpl->pEventLB->GetListBox().SetEntryHeight(
             sal::static_int_cast< short >(nMinLineHeight) );
 
-    mpImpl->pEventLB->Enable( true );
+    mpImpl->pEventLB->Enable();
 
     if(!m_xAppEvents.is())
     {
@@ -839,7 +839,7 @@ SvxMacroTabPage::SvxMacroTabPage(vcl::Window* pParent,
 
     InitResources();
 
-    InitAndSetHandler( xNameReplace, Reference< container::XNameReplace>(0), Reference< util::XModifiable >(0));
+    InitAndSetHandler( xNameReplace, Reference< container::XNameReplace>(nullptr), Reference< util::XModifiable >(nullptr));
     DisplayAppEvents(true);
     SvHeaderTabListBox& rListBox = mpImpl->pEventLB->GetListBox();
     SvTreeListEntry* pE = rListBox.GetEntry( (sal_uLong)nSelectedIndex );
@@ -898,7 +898,7 @@ void AssignComponentDialog::dispose()
 
 IMPL_LINK_NOARG_TYPED( SvxMacroAssignSingleTabDialog, OKHdl_Impl, Button *, void )
 {
-    GetTabPage()->FillItemSet( 0 );
+    GetTabPage()->FillItemSet( nullptr );
     EndDialog( RET_OK );
 }
 

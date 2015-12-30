@@ -41,7 +41,7 @@ class SwEditWin;
 class SwView;
 class Edit;
 class MenuButton;
-class SwFrm;
+class SwFrame;
 
 namespace sw { namespace overlay {
     class OverlayRanges;
@@ -66,7 +66,7 @@ class SwSidebarWin : public vcl::Window
                       SwPostItBits aBits,
                       SwSidebarItem& rSidebarItem );
         virtual ~SwSidebarWin();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
         void SetSize( const Size& rNewSize );
         void SetPosSizePixelRect( long nX,
@@ -174,18 +174,27 @@ class SwSidebarWin : public vcl::Window
         void SetLanguage(const SvxLanguageItem& rNewItem);
 
         void ChangeSidebarItem( SwSidebarItem& rSidebarItem );
-        virtual ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > CreateAccessible() SAL_OVERRIDE;
+        virtual css::uno::Reference< css::accessibility::XAccessible > CreateAccessible() override;
 
-        virtual void    Draw(OutputDevice* pDev, const Point&, const Size&, DrawFlags) SAL_OVERRIDE;
+        virtual void    Draw(OutputDevice* pDev, const Point&, const Size&, DrawFlags) override;
+        virtual void KeyInput(const KeyEvent& rKeyEvt) override;
+        virtual void MouseButtonDown(const MouseEvent& rMouseEvent) override;
+        virtual void MouseButtonUp(const MouseEvent& rMouseEvent) override;
+        virtual void MouseMove(const MouseEvent& rMouseEvent) override;
+        void PaintTile(vcl::RenderContext& rRenderContext, const Rectangle& rRect);
+        /// Is there a matching sub-widget inside this sidebar widget for rPointLogic?
+        bool IsHitWindow(const Point& rPointLogic);
+        /// Allows adjusting the point or mark of the selection to a document coordinate.
+        void SetCursorLogicPosition(const Point& rPosition, bool bPoint, bool bClearMark);
 
     protected:
-        virtual void    DataChanged( const DataChangedEvent& aEvent) SAL_OVERRIDE;
-        virtual void    LoseFocus() SAL_OVERRIDE;
-        virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) SAL_OVERRIDE;
-        virtual void    GetFocus() SAL_OVERRIDE;
+        virtual void    DataChanged( const DataChangedEvent& aEvent) override;
+        virtual void    LoseFocus() override;
+        virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) override;
+        virtual void    GetFocus() override;
         virtual VclPtr<MenuButton> CreateMenuButton() = 0;
 
-        void        SetSizePixel( const Size& rNewSize ) SAL_OVERRIDE;
+        void        SetSizePixel( const Size& rNewSize ) override;
         SfxItemSet  DefaultItem();
 
         DECL_LINK_TYPED(ModifyHdl, LinkParamNone*, void);
@@ -238,7 +247,7 @@ class SwSidebarWin : public vcl::Window
         bool            mbIsFollow;
 
         SwSidebarItem& mrSidebarItem;
-        const SwFrm* mpAnchorFrm;
+        const SwFrame* mpAnchorFrame;
 };
 
 } } // eof namespace sw::sidebarwindows

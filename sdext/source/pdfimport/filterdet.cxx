@@ -59,10 +59,10 @@ public:
                      const pdfparse::PDFContainer*                   pTop );
     virtual ~FileEmitContext();
 
-    virtual bool         write( const void* pBuf, unsigned int nLen ) SAL_OVERRIDE;
-    virtual unsigned int getCurPos() SAL_OVERRIDE;
-    virtual bool         copyOrigBytes( unsigned int nOrigOffset, unsigned int nLen ) SAL_OVERRIDE;
-    virtual unsigned int readOrigBytes( unsigned int nOrigOffset, unsigned int nLen, void* pBuf ) SAL_OVERRIDE;
+    virtual bool         write( const void* pBuf, unsigned int nLen ) override;
+    virtual unsigned int getCurPos() override;
+    virtual bool         copyOrigBytes( unsigned int nOrigOffset, unsigned int nLen ) override;
+    virtual unsigned int readOrigBytes( unsigned int nOrigOffset, unsigned int nLen, void* pBuf ) override;
 
     const uno::Reference< io::XStream >& getContextStream() const { return m_xContextStream; }
 };
@@ -71,16 +71,15 @@ FileEmitContext::FileEmitContext( const OUString&                            rOr
                                   const uno::Reference< uno::XComponentContext >& xContext,
                                   const pdfparse::PDFContainer*                   pTop ) :
     pdfparse::EmitContext( pTop ),
-    m_aReadHandle(NULL),
+    m_aReadHandle(nullptr),
     m_nReadLen(0),
     m_xContextStream(),
     m_xSeek(),
     m_xOut()
 {
-    m_xContextStream = uno::Reference< io::XStream >(
-        io::TempFile::create(xContext), uno::UNO_QUERY_THROW );
+    m_xContextStream.set( io::TempFile::create(xContext), uno::UNO_QUERY_THROW );
     m_xOut = m_xContextStream->getOutputStream();
-    m_xSeek = uno::Reference<io::XSeekable>(m_xOut, uno::UNO_QUERY_THROW );
+    m_xSeek.set(m_xOut, uno::UNO_QUERY_THROW );
 
     oslFileError aErr = osl_File_E_None;
     if( (aErr=osl_openFile( rOrigFile.pData,
@@ -101,7 +100,7 @@ FileEmitContext::FileEmitContext( const OUString&                            rOr
         if( aErr != osl_File_E_None )
         {
             osl_closeFile( m_aReadHandle );
-            m_aReadHandle = NULL;
+            m_aReadHandle = nullptr;
         }
     }
     m_bDeflate = true;
@@ -229,7 +228,7 @@ OUString SAL_CALL PDFDetector::detect( uno::Sequence< beans::PropertyValue >& rF
     }
     if( xInput.is() )
     {
-        oslFileHandle aFile = NULL;
+        oslFileHandle aFile = nullptr;
         try {
             uno::Reference< io::XSeekable > xSeek( xInput, uno::UNO_QUERY );
             if( xSeek.is() )
@@ -262,7 +261,7 @@ OUString SAL_CALL PDFDetector::detect( uno::Sequence< beans::PropertyValue >& rF
             )
             {
                 sal_uInt64 nWritten = 0;
-                if( osl_createTempFile( NULL, &aFile, &aURL.pData ) != osl_File_E_None )
+                if( osl_createTempFile( nullptr, &aFile, &aURL.pData ) != osl_File_E_None )
                 {
                     bSuccess = false;
                 }
@@ -449,7 +448,7 @@ bool checkDocChecksum( const OUString& rInPDFFileURL,
     sal_uInt8 nActualChecksum[ RTL_DIGEST_LENGTH_MD5 ];
     memset( nActualChecksum, 0, sizeof(nActualChecksum) );
     rtlDigest aActualDigest = rtl_digest_createMD5();
-    oslFileHandle aRead = NULL;
+    oslFileHandle aRead = nullptr;
     oslFileError aErr = osl_File_E_None;
     if( (aErr = osl_openFile(rInPDFFileURL.pData,
                              &aRead,
@@ -528,7 +527,7 @@ uno::Reference< io::XStream > getAdditionalStream( const OUString&              
                         continue;
                     }
                     pdfparse::PDFName* pChkSumName = dynamic_cast<pdfparse::PDFName*>(chk->second);
-                    if( pChkSumName == NULL )
+                    if( pChkSumName == nullptr )
                     {
                         OSL_TRACE( "no name for DocChecksum entry" );
                         continue;

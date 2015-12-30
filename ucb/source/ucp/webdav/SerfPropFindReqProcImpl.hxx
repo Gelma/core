@@ -49,14 +49,14 @@ public:
     virtual ~SerfPropFindReqProcImpl();
 
     virtual
-    serf_bucket_t * createSerfRequestBucket( serf_request_t * inSerfRequest ) SAL_OVERRIDE;
+    serf_bucket_t * createSerfRequestBucket( serf_request_t * inSerfRequest ) override;
 
 protected:
     virtual
-    void processChunkOfResponseData( const char* data, apr_size_t len ) SAL_OVERRIDE;
+    void processChunkOfResponseData( const char* data, apr_size_t len ) override;
 
     virtual
-    void handleEndOfResponseData( serf_bucket_t * inSerfResponseBucket ) SAL_OVERRIDE;
+    void handleEndOfResponseData( serf_bucket_t * inSerfResponseBucket ) override;
 
 private:
     void init( const Depth inDepth );
@@ -67,7 +67,7 @@ private:
     std::vector< DAVResourceInfo > * mpResInfo;
 
     const bool mbOnlyPropertyNames;
-    com::sun::star::uno::Reference< SerfInputStream > xInputStream;
+    css::uno::Reference< SerfInputStream > xInputStream;
 };
 
 } // namespace http_dav_ucp

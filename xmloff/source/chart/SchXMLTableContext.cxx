@@ -30,6 +30,7 @@
 #include <xmloff/xmlnmspe.hxx>
 #include <xmloff/xmltoken.hxx>
 #include <xmloff/nmspmap.hxx>
+#include <comphelper/sequence.hxx>
 #include <com/sun/star/frame/XModel.hpp>
 #include <com/sun/star/chart2/XAnyDescriptionAccess.hpp>
 #include <com/sun/star/chart2/XDataSeriesContainer.hpp>
@@ -237,7 +238,7 @@ SvXMLImportContext *SchXMLTableContext::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList >& )
 {
-    SvXMLImportContext* pContext = 0;
+    SvXMLImportContext* pContext = nullptr;
     const SvXMLTokenMap& rTokenMap = mrImportHelper.GetTableElemTokenMap();
 
     switch( rTokenMap.Get( nPrefix, rLocalName ))
@@ -426,7 +427,7 @@ SvXMLImportContext* SchXMLTableColumnsContext::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList >& )
 {
-    SvXMLImportContext* pContext = 0;
+    SvXMLImportContext* pContext = nullptr;
 
     if( nPrefix == XML_NAMESPACE_TABLE &&
         IsXMLToken( rLocalName, XML_TABLE_COLUMN ) )
@@ -520,7 +521,7 @@ SvXMLImportContext* SchXMLTableRowsContext::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList >& )
 {
-    SvXMLImportContext* pContext = 0;
+    SvXMLImportContext* pContext = nullptr;
 
     if( nPrefix == XML_NAMESPACE_TABLE &&
         IsXMLToken( rLocalName, XML_TABLE_ROW ) )
@@ -563,7 +564,7 @@ SvXMLImportContext* SchXMLTableRowContext::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList >& )
 {
-    SvXMLImportContext* pContext = 0;
+    SvXMLImportContext* pContext = nullptr;
 
     // <table:table-cell> element
     if( nPrefix == XML_NAMESPACE_TABLE &&
@@ -600,8 +601,8 @@ public:
     virtual SvXMLImportContext* CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
-    virtual void EndElement() SAL_OVERRIDE;
+        const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
+    virtual void EndElement() override;
 };
 
 // classes for cells and their content
@@ -676,7 +677,7 @@ SvXMLImportContext* SchXMLTableCellContext::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList >& )
 {
-    SvXMLImportContext* pContext = 0;
+    SvXMLImportContext* pContext = nullptr;
 
     // <text:list> element
     if( nPrefix == XML_NAMESPACE_TEXT && IsXMLToken( rLocalName, XML_LIST ) && mbReadText )
@@ -895,8 +896,7 @@ void SchXMLTableHelper::switchRangesFromOuterToInternalIfNecessary(
                         {
                             Reference< beans::XPropertySet > xOldSequenceProp( aLSeqIt->second->getValues(), uno::UNO_QUERY );
                             Reference< chart2::data::XDataSequence > xNewSequence(
-                                xDataProv->createDataSequenceByRangeRepresentation(
-                                    OUString("categories")));
+                                xDataProv->createDataSequenceByRangeRepresentation("categories"));
                             SchXMLTools::copyProperties(
                                 xOldSequenceProp, Reference< beans::XPropertySet >( xNewSequence, uno::UNO_QUERY ));
                             aLSeqIt->second->setValues( xNewSequence );
@@ -955,7 +955,7 @@ void SchXMLTableHelper::switchRangesFromOuterToInternalIfNecessary(
     if( ! bCategoriesApplied )
     {
         SchXMLTools::CreateCategories(
-            xDataProv, xChartDoc, OUString("categories"),
+            xDataProv, xChartDoc, "categories",
             0 /* nCooSysIndex */, 0 /* nDimension */ );
     }
 
@@ -1021,9 +1021,7 @@ void SchXMLTableHelper::switchRangesFromOuterToInternalIfNecessary(
                     if( static_cast<sal_Int32>(aRemainingSeries.size()) != aSeriesSeq.getLength() )
                     {
                         //remove the series that have only hidden data
-                        Sequence< Reference< chart2::XDataSeries > > aRemainingSeriesSeq( aRemainingSeries.size());
-                        ::std::copy( aRemainingSeries.begin(), aRemainingSeries.end(), aRemainingSeriesSeq.getArray());
-                        xSeriesContainer->setDataSeries( aRemainingSeriesSeq );
+                        xSeriesContainer->setDataSeries( comphelper::containerToSequence(aRemainingSeries) );
 
                         //remove unused sequences
                         Reference< chart2::data::XDataSource > xDataSource( xChartDoc, uno::UNO_QUERY );

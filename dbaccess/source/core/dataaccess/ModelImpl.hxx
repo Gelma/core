@@ -79,8 +79,7 @@ namespace comphelper
 namespace dbaccess
 {
 
-typedef css::uno::WeakReference< css::sdbc::XConnection > OWeakConnection;
-typedef std::vector< OWeakConnection > OWeakConnectionArray;
+typedef std::vector< css::uno::WeakReference< css::sdbc::XConnection > > OWeakConnectionArray;
 
 struct AsciiPropertyValue
 {
@@ -93,7 +92,7 @@ struct AsciiPropertyValue
 
     AsciiPropertyValue()
         :DefaultValue( )
-        ,AsciiName( NULL )
+        ,AsciiName( nullptr )
         ,ValueType( ::cppu::UnoType<void>::get() )
     {
     }
@@ -130,9 +129,9 @@ public:
     */
     explicit VosMutexFacade( ::osl::Mutex& _rMutex );
 
-    virtual void acquire() SAL_OVERRIDE;
-    virtual void release() SAL_OVERRIDE;
-    virtual bool tryToAcquire() SAL_OVERRIDE;
+    virtual void acquire() override;
+    virtual void release() override;
+    virtual bool tryToAcquire() override;
 
 private:
     ::osl::Mutex&   m_rMutex;
@@ -331,7 +330,7 @@ public:
 
             css::uno::Reference< css::embed::XStorage > getOrCreateRootStorage();
     inline  css::uno::Reference< css::embed::XStorage > getRootStorage() const { return m_xDocumentStorage.getTyped(); }
-    inline  void resetRootStorage() { impl_switchToStorage_throw( NULL ); }
+    inline  void resetRootStorage() { impl_switchToStorage_throw( nullptr ); }
 
     /** returns the data source. If it doesn't exist it will be created
     */
@@ -467,17 +466,17 @@ public:
 
 public:
     // IMacroDocumentAccess overridables
-    virtual sal_Int16 getCurrentMacroExecMode() const SAL_OVERRIDE;
-    virtual bool setCurrentMacroExecMode( sal_uInt16 ) SAL_OVERRIDE;
-    virtual OUString getDocumentLocation() const SAL_OVERRIDE;
-    virtual bool documentStorageHasMacros() const SAL_OVERRIDE;
-    virtual css::uno::Reference< css::document::XEmbeddedScripts > getEmbeddedDocumentScripts() const SAL_OVERRIDE;
-    virtual SignatureState getScriptingSignatureState() SAL_OVERRIDE;
-    virtual bool hasTrustedScriptingSignature( bool bAllowUIToAddAuthor ) SAL_OVERRIDE;
-    virtual void showBrokenSignatureWarning( const css::uno::Reference< css::task::XInteractionHandler >& _rxInteraction ) const SAL_OVERRIDE;
+    virtual sal_Int16 getCurrentMacroExecMode() const override;
+    virtual bool setCurrentMacroExecMode( sal_uInt16 ) override;
+    virtual OUString getDocumentLocation() const override;
+    virtual bool documentStorageHasMacros() const override;
+    virtual css::uno::Reference< css::document::XEmbeddedScripts > getEmbeddedDocumentScripts() const override;
+    virtual SignatureState getScriptingSignatureState() override;
+    virtual bool hasTrustedScriptingSignature( bool bAllowUIToAddAuthor ) override;
+    virtual void showBrokenSignatureWarning( const css::uno::Reference< css::task::XInteractionHandler >& _rxInteraction ) const override;
 
     // IModifiableDocument
-    virtual void storageIsModified() SAL_OVERRIDE;
+    virtual void storageIsModified() override;
 
     // don't use directly, use the ModifyLock class instead
     void    lockModify()              { m_bModificationLock = true; }

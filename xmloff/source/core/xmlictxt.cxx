@@ -23,26 +23,22 @@
 #include <com/sun/star/xml/sax/XDocumentHandler.hpp>
 #include <com/sun/star/xml/sax/XAttributeList.hpp>
 #include <com/sun/star/xml/sax/XLocator.hpp>
-#include <xmloff/nmspmap.hxx>
 #include <xmloff/xmlimp.hxx>
 #include <xmloff/xmlictxt.hxx>
 
 using namespace ::com::sun::star;
 
-TYPEINIT0( SvXMLImportContext );
 SvXMLImportContext::SvXMLImportContext( SvXMLImport& rImp, sal_uInt16 nPrfx,
-                              const OUString& rLName ) :
-    mrImport( rImp ),
-    mnPrefix( nPrfx ),
-    maLocalName( rLName ),
-    mpRewindMap( 0 )
+                              const OUString& rLName )
+    : mrImport(rImp)
+    , mnPrefix(nPrfx)
+    , maLocalName(rLName)
 {
 }
 
-SvXMLImportContext::SvXMLImportContext( SvXMLImport& rImp ) :
-    mrImport( rImp ),
-    mnPrefix ( 0 ),
-    mpRewindMap( 0 )
+SvXMLImportContext::SvXMLImportContext( SvXMLImport& rImp )
+    : mrImport(rImp)
+    , mnPrefix(0)
 {
 }
 
@@ -69,7 +65,7 @@ void SvXMLImportContext::Characters( const OUString& )
 {
 }
 
-// ::com::sun::star::xml::sax::XFastContextHandler:
+// css::xml::sax::XFastContextHandler:
 void SAL_CALL SvXMLImportContext::startFastElement(sal_Int32, const uno::Reference< xml::sax::XFastAttributeList > &)
     throw (uno::RuntimeException, xml::sax::SAXException, std::exception)
 {
@@ -102,7 +98,7 @@ uno::Reference< xml::sax::XFastContextHandler > SAL_CALL SvXMLImportContext::cre
     (const OUString &, const OUString &, const uno::Reference< xml::sax::XFastAttributeList > &)
     throw (uno::RuntimeException, xml::sax::SAXException, std::exception)
 {
-    return 0;
+    return nullptr;
 }
 
 void SAL_CALL SvXMLImportContext::characters(const OUString &)

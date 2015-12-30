@@ -31,9 +31,7 @@
 #endif
 
 #if defined( _WIN32 )
-#include <GL/glext.h>
 #include <GL/wglew.h>
-#include <GL/wglext.h>
 #elif defined( MACOSX )
 #include <OpenGL/OpenGL.h>
 #ifdef __OBJC__
@@ -45,10 +43,6 @@ class NSOpenGLView;
 #elif defined( ANDROID )
 #elif defined( LIBO_HEADLESS )
 #elif defined( UNX )
-#include <GL/glext.h>
-#define GLX_GLXEXT_PROTOTYPES 1
-#include <GL/glx.h>
-#include <GL/glxext.h>
 #endif
 
 #include <vcl/dllapi.h>
@@ -72,43 +66,6 @@ class OpenGLTests;
 /// Holds the information of our new child window
 struct GLWindow
 {
-    // Copy of gluCheckExtension(), from the Apache-licensed
-    // https://code.google.com/p/glues/source/browse/trunk/glues/source/glues_registry.c
-    static GLboolean checkExtension(const GLubyte* extName, const GLubyte* extString)
-    {
-      GLboolean flag=GL_FALSE;
-      char* word;
-      char* lookHere;
-      char* deleteThis;
-
-      if (extString==NULL)
-      {
-         return GL_FALSE;
-      }
-
-      deleteThis=lookHere=static_cast<char*>(malloc(strlen(reinterpret_cast<const char*>(extString))+1));
-      if (lookHere==NULL)
-      {
-         return GL_FALSE;
-      }
-
-      /* strtok() will modify string, so copy it somewhere */
-      strcpy(lookHere, reinterpret_cast<const char*>(extString));
-
-      while ((word=strtok(lookHere, " "))!=NULL)
-      {
-         if (strcmp(word, reinterpret_cast<const char*>(extName))==0)
-         {
-            flag=GL_TRUE;
-            break;
-         }
-         lookHere=NULL; /* get next token */
-      }
-      free(static_cast<void*>(deleteThis));
-
-      return flag;
-    }
-
 #if defined( _WIN32 )
     HWND                    hWnd;
     HDC                     hDC;
@@ -121,18 +78,15 @@ struct GLWindow
     Display*            dpy;
     int                 screen;
     Window              win;
-    Pixmap              pix;
 #if defined( GLX_EXT_texture_from_pixmap )
     GLXFBConfig        fbc;
 #endif
     XVisualInfo*       vi;
     GLXContext         ctx;
-    GLXPixmap           glPix;
 
-    bool HasGLXExtension( const char* name ) { return checkExtension( reinterpret_cast<const GLubyte*>(name), reinterpret_cast<const GLubyte*>(GLXExtensions) ); }
+    bool HasGLXExtension( const char* name ) const;
     const char*             GLXExtensions;
 #endif
-    unsigned int            bpp;
     unsigned int            Width;
     unsigned int            Height;
     const GLubyte*          GLExtensions;
@@ -141,27 +95,27 @@ struct GLWindow
     GLWindow()
         :
 #if defined( _WIN32 )
+        hWnd(NULL),
+        hDC(NULL),
+        hRC(NULL),
 #elif defined( MACOSX )
 #elif defined( IOS )
 #elif defined( ANDROID )
 #elif defined( LIBO_HEADLESS )
 #elif defined( UNX )
-        dpy(NULL),
+        dpy(nullptr),
         screen(0),
         win(0),
-        pix(0),
 #if defined( GLX_EXT_texture_from_pixmap )
-        fbc(0),
+        fbc(nullptr),
 #endif
-        vi(NULL),
-        ctx(0),
-        glPix(0),
-        GLXExtensions(NULL),
+        vi(nullptr),
+        ctx(nullptr),
+        GLXExtensions(nullptr),
 #endif
-        bpp(0),
         Width(0),
         Height(0),
-        GLExtensions(NULL),
+        GLExtensions(nullptr),
         bMultiSampleSupported(false)
     {
     }
@@ -183,7 +137,7 @@ public:
     void requestLegacyContext();
     void requestSingleBufferedRendering();
 
-    bool init(vcl::Window* pParent = 0);
+    bool init(vcl::Window* pParent = nullptr);
     bool init(SystemChildWindow* pChildWindow);
 
 // these methods are for the deep platform layer, don't use them in normal code
@@ -209,6 +163,7 @@ public:
     // retrieve a program from the cache or compile/link it
     OpenGLProgram*      GetProgram( const OUString& rVertexShader, const OUString& rFragmentShader, const OString& preamble = "" );
     OpenGLProgram*      UseProgram( const OUString& rVertexShader, const OUString& rFragmentShader, const OString& preamble = "" );
+    void                UseNoProgram();
 
     /// Is this GL context the current context ?
     bool isCurrent();
@@ -240,10 +195,9 @@ public:
         return mbInitialized;
     }
 
-    bool requestedLegacy()
-    {
-        return mbRequestLegacyContext;
-    }
+    /// VCL promiscuously re-uses its own contexts:
+    void setVCLOnly() { mbVCLOnly = true; }
+    bool isVCLOnly() { return mbVCLOnly; }
 
     bool supportMultiSampling() const;
 
@@ -270,9 +224,7 @@ private:
     int  mnRefCount;
     bool mbRequestLegacyContext;
     bool mbUseDoubleBufferedRendering;
-#if defined( UNX ) && !defined MACOSX && !defined IOS && !defined ANDROID && !defined(LIBO_HEADLESS)
-    bool mbPixmap; // is a pixmap instead of a window
-#endif
+    bool mbVCLOnly;
 
     int mnFramebufferCount;
     OpenGLFramebuffer* mpCurrentFramebuffer;
@@ -290,9 +242,6 @@ private:
     typedef std::unordered_map< rtl::OString, std::shared_ptr<OpenGLProgram>, ProgramHash > ProgramCollection;
     ProgramCollection maPrograms;
     OpenGLProgram* mpCurrentProgram;
-#ifdef DBG_UTIL
-    std::set<SalGraphicsImpl*> maParents;
-#endif
 
 public:
     vcl::Region maClipRegion;

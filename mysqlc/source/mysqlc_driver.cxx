@@ -45,12 +45,12 @@ MysqlCDriver::MysqlCDriver(const Reference< XMultiServiceFactory >& _rxFactory)
     : ODriver_BASE(m_aMutex)
     ,m_xFactory(_rxFactory)
 #ifndef SYSTEM_MYSQL_CPPCONN
-    ,m_hCppConnModule( NULL )
+    ,m_hCppConnModule( nullptr )
     ,m_bAttemptedLoadCppConn( false )
 #endif
 {
     OSL_TRACE("MysqlCDriver::MysqlCDriver");
-    cppDriver = NULL;
+    cppDriver = nullptr;
 }
 
 void MysqlCDriver::disposing()
@@ -110,7 +110,9 @@ Sequence< rtl::OUString > SAL_CALL MysqlCDriver::getSupportedServiceNames()
     return getSupportedServiceNames_Static();
 }
 
+#ifndef SYSTEM_MYSQL_CPPCONN
 extern "C" { static void SAL_CALL thisModule() {} }
+#endif
 
 void MysqlCDriver::impl_initCppConn_lck_throw()
 {
@@ -196,7 +198,7 @@ Reference< XConnection > SAL_CALL MysqlCDriver::connect(const rtl::OUString& url
 
     OSL_TRACE("MysqlCDriver::connect");
     if (!acceptsURL(url)) {
-        return NULL;
+        return nullptr;
     }
 
     if ( !cppDriver )
@@ -276,7 +278,7 @@ namespace mysqlc
 {
 
 Reference< XInterface >  SAL_CALL MysqlCDriver_CreateInstance(const Reference< XMultiServiceFactory >& _rxFactory)
-    throw(::com::sun::star::uno::Exception)
+    throw(css::uno::Exception)
 {
     return(*(new MysqlCDriver(_rxFactory)));
 }
@@ -284,7 +286,7 @@ Reference< XInterface >  SAL_CALL MysqlCDriver_CreateInstance(const Reference< X
 void release(oslInterlockedCount& _refCount,
              ::cppu::OBroadcastHelper& rBHelper,
              Reference< XInterface >& _xInterface,
-             ::com::sun::star::lang::XComponent* _pObject)
+             css::lang::XComponent* _pObject)
 {
     if (osl_atomic_decrement(&_refCount) == 0) {
         osl_atomic_increment(&_refCount);
@@ -295,7 +297,7 @@ void release(oslInterlockedCount& _refCount,
             {
                 ::osl::MutexGuard aGuard(rBHelper.rMutex);
                 xParent = _xInterface;
-                _xInterface = NULL;
+                _xInterface = nullptr;
             }
 
             // First dispose

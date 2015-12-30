@@ -53,7 +53,7 @@ uno::Reference< media::XPlayer > SAL_CALL Manager::createPlayer( const ::rtl::OU
     OSL_TRACE( "avmediamacavf: Manager::createPlayer" );
 
     if( !pPlayer->create( aURL.GetMainURL( INetURLObject::DECODE_UNAMBIGUOUS ) )  )
-        xRet = uno::Reference< media::XPlayer >();
+        xRet.clear();
 
     return xRet;
 }
@@ -79,8 +79,7 @@ sal_Bool SAL_CALL Manager::supportsService( const ::rtl::OUString& ServiceName )
 uno::Sequence< ::rtl::OUString > SAL_CALL Manager::getSupportedServiceNames(  )
     throw (uno::RuntimeException)
 {
-    uno::Sequence< ::rtl::OUString > aRet(1);
-    aRet[0] = ::rtl::OUString( RTL_CONSTASCII_USTRINGPARAM ( AVMEDIA_MACAVF_MANAGER_SERVICENAME ) );
+    uno::Sequence< ::rtl::OUString > aRet { AVMEDIA_MACAVF_MANAGER_SERVICENAME };
 
     return aRet;
 }

@@ -168,13 +168,13 @@ SwAsciiFilterDlg::SwAsciiFilterDlg( vcl::Window* pParent, SwDocShell& rDocSh,
                 }
             }
 
-            m_pLanguageLB->SetLanguageList( SvxLanguageListFlags::ALL, true, false );
+            m_pLanguageLB->SetLanguageList( SvxLanguageListFlags::ALL, true );
             m_pLanguageLB->SelectLanguage( aOpt.GetLanguage() );
         }
 
         {
             bool bDelPrinter = false;
-            VclPtr<SfxPrinter> pPrt = pDoc ? pDoc->getIDocumentDeviceAccess().getPrinter(false) : 0;
+            VclPtr<SfxPrinter> pPrt = pDoc ? pDoc->getIDocumentDeviceAccess().getPrinter(false) : nullptr;
             if( !pPrt )
             {
                 SfxItemSet* pSet = new SfxItemSet( rDocSh.GetPool(),
@@ -225,7 +225,7 @@ SwAsciiFilterDlg::SwAsciiFilterDlg( vcl::Window* pParent, SwDocShell& rDocSh,
     }
 
     // initialize character set
-    m_pCharSetLB->FillFromTextEncodingTable( pStream != NULL );
+    m_pCharSetLB->FillFromTextEncodingTable( pStream != nullptr );
     m_pCharSetLB->SelectTextEncoding( aOpt.GetCharSet()  );
 
     m_pCharSetLB->SetSelectHdl( LINK( this, SwAsciiFilterDlg, CharSetSelHdl ));
@@ -318,8 +318,9 @@ LineEnd SwAsciiFilterDlg::GetCRLF() const
     return eEnd;
 }
 
-IMPL_LINK( SwAsciiFilterDlg, CharSetSelHdl, SvxTextEncodingBox*, pBox )
+IMPL_LINK_TYPED( SwAsciiFilterDlg, CharSetSelHdl, ListBox&, rListBox, void )
 {
+    SvxTextEncodingBox* pBox = static_cast<SvxTextEncodingBox*>(&rListBox);
     LineEnd eOldEnd = GetCRLF(), eEnd = (LineEnd)-1;
     LanguageType nLng = m_pFontLB->IsVisible()
                     ? m_pLanguageLB->GetSelectLanguage()
@@ -390,8 +391,6 @@ IMPL_LINK( SwAsciiFilterDlg, CharSetSelHdl, SvxTextEncodingBox*, pBox )
 
     if( nOldLng != nLng && m_pFontLB->IsVisible() )
         m_pLanguageLB->SelectLanguage( nLng );
-
-    return 0;
 }
 
 IMPL_LINK_TYPED( SwAsciiFilterDlg, LineEndHdl, RadioButton&, rBtn, void )

@@ -43,12 +43,12 @@ namespace frm
 
     RichTextControlImpl::RichTextControlImpl( Control* _pAntiImpl, RichTextEngine* _pEngine, ITextAttributeListener* _pTextAttrListener, ITextSelectionListener* _pSelectionListener )
         :m_pAntiImpl            ( _pAntiImpl          )
-        ,m_pViewport            ( NULL                )
-        ,m_pHScroll             ( NULL                )
-        ,m_pVScroll             ( NULL                )
-        ,m_pScrollCorner        ( NULL                )
+        ,m_pViewport            ( nullptr                )
+        ,m_pHScroll             ( nullptr                )
+        ,m_pVScroll             ( nullptr                )
+        ,m_pScrollCorner        ( nullptr                )
         ,m_pEngine              ( _pEngine            )
-        ,m_pView                ( NULL                )
+        ,m_pView                ( nullptr                )
         ,m_pTextAttrListener    ( _pTextAttrListener  )
         ,m_pSelectionListener   ( _pSelectionListener )
         ,m_bHasEverBeenShown    ( false               )
@@ -185,7 +185,7 @@ namespace frm
         AttributeHandlerPool::const_iterator aHandlerPos = m_aAttributeHandlers.find( _nAttributeId  );
         if ( aHandlerPos == m_aAttributeHandlers.end() )
         {
-            ::rtl::Reference< IAttributeHandler > aHandler = AttributeHandlerFactory::getHandlerFor( _nAttributeId, *m_pEngine->GetEmptyItemSet().GetPool() );
+            ::rtl::Reference< AttributeHandler > aHandler = AttributeHandlerFactory::getHandlerFor( _nAttributeId, *m_pEngine->GetEmptyItemSet().GetPool() );
             OSL_ENSURE( aHandler.is(), "RichTextControlImpl::enableAttributeNotification: no handler available for this attribute!" );
             if ( !aHandler.is() )
                 return;

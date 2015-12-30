@@ -149,7 +149,7 @@ sal_Int32 SAL_CALL SvNumberFormatterServiceObj::detectNumberFormat( sal_Int32 nK
     ::osl::MutexGuard aGuard( m_aMutex );
 
     sal_Int32 nRet = 0;
-    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : NULL;
+    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : nullptr;
     if (pFormatter)
     {
         sal_uInt32 nUKey = nKey;
@@ -171,7 +171,7 @@ double SAL_CALL SvNumberFormatterServiceObj::convertStringToNumber( sal_Int32 nK
     ::osl::MutexGuard aGuard( m_aMutex );
 
     double fRet = 0.0;
-    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : NULL;
+    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : nullptr;
     if (pFormatter)
     {
         sal_uInt32 nUKey = nKey;
@@ -193,10 +193,10 @@ OUString SAL_CALL SvNumberFormatterServiceObj::convertNumberToString( sal_Int32 
     ::osl::MutexGuard aGuard( m_aMutex );
 
     OUString aRet;
-    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : NULL;
+    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : nullptr;
     if (pFormatter)
     {
-        Color* pColor = NULL;
+        Color* pColor = nullptr;
         pFormatter->GetOutputString(fValue, nKey, aRet, &pColor);
     }
     else
@@ -213,11 +213,11 @@ util::Color SAL_CALL SvNumberFormatterServiceObj::queryColorForNumber( sal_Int32
     ::osl::MutexGuard aGuard( m_aMutex );
 
     util::Color nRet = aDefaultColor; // color = sal_Int32
-    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : NULL;
+    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : nullptr;
     if (pFormatter)
     {
         OUString aStr;
-        Color* pColor = NULL;
+        Color* pColor = nullptr;
         pFormatter->GetOutputString(fValue, nKey, aStr, &pColor);
         if (pColor)
             nRet = pColor->GetColor();
@@ -236,10 +236,10 @@ OUString SAL_CALL SvNumberFormatterServiceObj::formatString( sal_Int32 nKey,
     ::osl::MutexGuard aGuard( m_aMutex );
 
     OUString aRet;
-    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : NULL;
+    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : nullptr;
     if (pFormatter)
     {
-        Color* pColor = NULL;
+        Color* pColor = nullptr;
         pFormatter->GetOutputString(aString, nKey, aRet, &pColor);
     }
     else
@@ -257,11 +257,11 @@ util::Color SAL_CALL SvNumberFormatterServiceObj::queryColorForString( sal_Int32
     ::osl::MutexGuard aGuard( m_aMutex );
 
     util::Color nRet = aDefaultColor; // color = sal_Int32
-    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : NULL;
+    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : nullptr;
     if (pFormatter)
     {
         OUString aStr;
-        Color* pColor = NULL;
+        Color* pColor = nullptr;
         pFormatter->GetOutputString(aString, nKey, aStr, &pColor);
         if (pColor)
         {
@@ -283,7 +283,7 @@ OUString SAL_CALL SvNumberFormatterServiceObj::getInputString( sal_Int32 nKey, d
     ::osl::MutexGuard aGuard( m_aMutex );
 
     OUString aRet;
-    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : NULL;
+    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : nullptr;
     if (pFormatter)
         pFormatter->GetInputLineString(fValue, nKey, aRet);
     else
@@ -303,11 +303,11 @@ OUString SAL_CALL SvNumberFormatterServiceObj::convertNumberToPreviewString( con
     ::osl::MutexGuard aGuard( m_aMutex );
 
     OUString aRet;
-    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : NULL;
+    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : nullptr;
     if (pFormatter)
     {
         LanguageType eLang = lcl_GetLanguage( nLocale );
-        Color* pColor = NULL;
+        Color* pColor = nullptr;
 
         bool bOk;
         if ( bAllowEnglish )
@@ -334,12 +334,12 @@ util::Color SAL_CALL SvNumberFormatterServiceObj::queryPreviewColorForNumber( co
     ::osl::MutexGuard aGuard( m_aMutex );
 
     util::Color nRet = aDefaultColor; // color = sal_Int32
-    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : NULL;
+    SvNumberFormatter* pFormatter = xSupplier.is() ? xSupplier->GetNumberFormatter() : nullptr;
     if (pFormatter)
     {
         OUString aOutString;
         LanguageType eLang = lcl_GetLanguage( nLocale );
-        Color* pColor = NULL;
+        Color* pColor = nullptr;
 
         bool bOk;
         if ( bAllowEnglish )
@@ -379,9 +379,7 @@ sal_Bool SAL_CALL SvNumberFormatterServiceObj::supportsService( const OUString& 
 uno::Sequence<OUString> SAL_CALL SvNumberFormatterServiceObj::getSupportedServiceNames()
     throw(uno::RuntimeException, std::exception)
 {
-    uno::Sequence<OUString> aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.util.NumberFormatter";
+    uno::Sequence<OUString> aRet { "com.sun.star.util.NumberFormatter" };
     return aRet;
 }
 
@@ -405,7 +403,7 @@ uno::Reference<beans::XPropertySet> SAL_CALL SvNumberFormatsObj::getByKey( sal_I
     ::osl::MutexGuard aGuard( m_aMutex );
 
     SvNumberFormatter* pFormatter = rSupplier.GetNumberFormatter();
-    const SvNumberformat* pFormat = pFormatter ? pFormatter->GetEntry(nKey) : NULL;
+    const SvNumberformat* pFormat = pFormatter ? pFormatter->GetEntry(nKey) : nullptr;
     if (pFormat)
         return new SvNumberFormatObj( rSupplier, nKey, m_aMutex );
     else
@@ -670,9 +668,7 @@ sal_Bool SAL_CALL SvNumberFormatsObj::supportsService( const OUString& ServiceNa
 uno::Sequence<OUString> SAL_CALL SvNumberFormatsObj::getSupportedServiceNames()
     throw(uno::RuntimeException, std::exception)
 {
-    uno::Sequence<OUString> aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.util.NumberFormats";
+    uno::Sequence<OUString> aRet { "com.sun.star.util.NumberFormats" };
     return aRet;
 }
 
@@ -717,7 +713,7 @@ uno::Any SAL_CALL SvNumberFormatObj::getPropertyValue( const OUString& aProperty
 
     uno::Any aRet;
     SvNumberFormatter* pFormatter = rSupplier.GetNumberFormatter();
-    const SvNumberformat* pFormat = pFormatter ? pFormatter->GetEntry(nKey) : NULL;
+    const SvNumberformat* pFormat = pFormatter ? pFormatter->GetEntry(nKey) : nullptr;
     if (pFormat)
     {
         bool bThousand, bRed;
@@ -844,7 +840,7 @@ uno::Sequence<beans::PropertyValue> SAL_CALL SvNumberFormatObj::getPropertyValue
     ::osl::MutexGuard aGuard( m_aMutex );
 
     SvNumberFormatter* pFormatter = rSupplier.GetNumberFormatter();
-    const SvNumberformat* pFormat = pFormatter ? pFormatter->GetEntry(nKey) : NULL;
+    const SvNumberformat* pFormat = pFormatter ? pFormatter->GetEntry(nKey) : nullptr;
     if (pFormat)
     {
         OUString aSymbol, aExt;
@@ -927,9 +923,7 @@ sal_Bool SAL_CALL SvNumberFormatObj::supportsService( const OUString& ServiceNam
 uno::Sequence<OUString> SAL_CALL SvNumberFormatObj::getSupportedServiceNames()
     throw(uno::RuntimeException, std::exception)
 {
-    uno::Sequence<OUString> aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.util.NumberFormatProperties";
+    uno::Sequence<OUString> aRet { "com.sun.star.util.NumberFormatProperties" };
     return aRet;
 }
 
@@ -1083,16 +1077,14 @@ sal_Bool SAL_CALL SvNumberFormatSettingsObj::supportsService( const OUString& Se
 uno::Sequence<OUString> SAL_CALL SvNumberFormatSettingsObj::getSupportedServiceNames()
     throw(uno::RuntimeException, std::exception)
 {
-    uno::Sequence<OUString> aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.util.NumberFormatSettings";
+    uno::Sequence<OUString> aRet { "com.sun.star.util.NumberFormatSettings" };
     return aRet;
 }
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_uno_util_numbers_SvNumberFormatterServiceObject_get_implementation(::com::sun::star::uno::XComponentContext*,
-                                                                                ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_uno_util_numbers_SvNumberFormatterServiceObject_get_implementation(css::uno::XComponentContext*,
+                                                                                css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new SvNumberFormatterServiceObj());
 }

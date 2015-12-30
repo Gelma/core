@@ -55,7 +55,7 @@ using namespace ::com::sun::star;
 
 ResMgr* GetGalleryResMgr()
 {
-    static ResMgr* pGalleryResMgr = NULL;
+    static ResMgr* pGalleryResMgr = nullptr;
 
     if( !pGalleryResMgr )
     {
@@ -96,7 +96,7 @@ GalleryGraphicImportRet GalleryGraphicImport( const INetURLObject& rURL, Graphic
     if( pIStm )
     {
         GraphicFilter& rGraphicFilter = GraphicFilter::GetGraphicFilter();
-        std::unique_ptr<GalleryProgress> pProgress(bShowProgress ? new GalleryProgress( &rGraphicFilter ) : NULL);
+        std::unique_ptr<GalleryProgress> pProgress(bShowProgress ? new GalleryProgress( &rGraphicFilter ) : nullptr);
         sal_uInt16              nFormat;
 
         if( !rGraphicFilter.ImportGraphic( rGraphic, rURL.GetMainURL( INetURLObject::NO_DECODE ), *pIStm, GRFILTER_FORMAT_DONTKNOW, &nFormat ) )
@@ -162,7 +162,7 @@ bool CreateIMapGraphic( const FmFormModel& rModel, Graphic& rGraphic, ImageMap& 
         const SdrPage*      pPage = rModel.GetPage( 0 );
         const SdrObject*    pObj = pPage->GetObj( 0 );
 
-        if ( pPage->GetObjCount() == 1 && pObj->ISA( SdrGrafObj ) )
+        if ( pPage->GetObjCount() == 1 && dynamic_cast<const SdrGrafObj*>( pObj) !=  nullptr )
         {
             const sal_uInt16 nCount = pObj->GetUserDataCount();
 
@@ -283,7 +283,7 @@ bool CreateDir( const INetURLObject& rURL )
             aValues[0] = uno::makeAny( OUString( aNewFolderURL.GetName() ) );
 
         ::ucbhelper::Content aContent( aNewFolderURL.GetMainURL( INetURLObject::NO_DECODE ), aCmdEnv, comphelper::getProcessComponentContext() );
-        bRet = aParent.insertNewContent( OUString("application/vnd.sun.staroffice.fsys-folder"), aProps, aValues, aContent );
+        bRet = aParent.insertNewContent( "application/vnd.sun.staroffice.fsys-folder", aProps, aValues, aContent );
         }
         catch( const ucb::ContentCreationException& )
         {
@@ -307,7 +307,7 @@ bool CopyFile(  const INetURLObject& rSrcURL, const INetURLObject& rDstURL )
     {
         ::ucbhelper::Content aDestPath( rDstURL.GetMainURL( INetURLObject::NO_DECODE ), uno::Reference< ucb::XCommandEnvironment >(), comphelper::getProcessComponentContext() );
 
-        aDestPath.executeCommand( OUString("transfer"),
+        aDestPath.executeCommand( "transfer",
                                   uno::makeAny( ucb::TransferInfo( sal_False, rSrcURL.GetMainURL( INetURLObject::NO_DECODE ),
                                                 rDstURL.GetName(), ucb::NameClash::OVERWRITE ) ) );
         bRet = true;
@@ -334,7 +334,7 @@ bool KillFile( const INetURLObject& rURL )
         try
         {
             ::ucbhelper::Content aCnt( rURL.GetMainURL( INetURLObject::NO_DECODE ), uno::Reference< ucb::XCommandEnvironment >(), comphelper::getProcessComponentContext() );
-            aCnt.executeCommand( OUString("delete"), uno::makeAny( true ) );
+            aCnt.executeCommand( "delete", uno::makeAny( true ) );
         }
         catch( const ucb::ContentCreationException& )
         {
@@ -360,13 +360,12 @@ GalleryProgress::GalleryProgress( GraphicFilter* pFilter ) :
 
     uno::Reference< lang::XMultiServiceFactory > xMgr( ::comphelper::getProcessServiceFactory() );
 
-    uno::Reference< awt::XProgressMonitor > xMonitor( xMgr->createInstance(
-                                                      OUString("com.sun.star.awt.XProgressMonitor") ),
+    uno::Reference< awt::XProgressMonitor > xMonitor( xMgr->createInstance( "com.sun.star.awt.XProgressMonitor" ),
                                                       uno::UNO_QUERY );
 
     if ( xMonitor.is() )
     {
-        mxProgressBar = uno::Reference< awt::XProgressBar >( xMonitor, uno::UNO_QUERY );
+        mxProgressBar.set( xMonitor, uno::UNO_QUERY );
 
         if( mxProgressBar.is() )
         {
@@ -403,9 +402,9 @@ GalleryTransferable::GalleryTransferable( GalleryTheme* pTheme, sal_uIntPtr nObj
     mpTheme( pTheme ),
     meObjectKind( mpTheme->GetObjectKind( nObjectPos ) ),
     mnObjectPos( nObjectPos ),
-    mpGraphicObject( NULL ),
-    mpImageMap( NULL ),
-    mpURL( NULL )
+    mpGraphicObject( nullptr ),
+    mpImageMap( nullptr ),
+    mpURL( nullptr )
 {
 
     InitData( bLazy );
@@ -455,7 +454,7 @@ void GalleryTransferable::InitData( bool bLazy )
                 mpURL = new INetURLObject;
 
                 if( !mpTheme->GetURL( mnObjectPos, *mpURL ) )
-                    delete mpURL, mpURL = NULL;
+                    delete mpURL, mpURL = nullptr;
             }
 
             if( ( SGA_OBJ_SOUND != meObjectKind ) && !mpGraphicObject )
@@ -571,9 +570,9 @@ void GalleryTransferable::DragFinished( sal_Int8 nDropAction )
 void GalleryTransferable::ObjectReleased()
 {
     mxModelStream.Clear();
-    delete mpGraphicObject, mpGraphicObject = NULL;
-    delete mpImageMap, mpImageMap = NULL;
-    delete mpURL, mpURL = NULL;
+    delete mpGraphicObject, mpGraphicObject = nullptr;
+    delete mpImageMap, mpImageMap = nullptr;
+    delete mpURL, mpURL = nullptr;
 }
 
 void GalleryTransferable::CopyToClipboard( vcl::Window* pWindow )

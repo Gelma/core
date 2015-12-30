@@ -62,7 +62,7 @@ namespace filter {
 
         public:
 
-            OdfFlatXml(const Reference<XComponentContext> &r) :
+            explicit OdfFlatXml(const Reference<XComponentContext> &r) :
                 m_xContext(r)
             {
             }
@@ -72,7 +72,7 @@ namespace filter {
             importer(const Sequence< PropertyValue >& sourceData,
                      const Reference< XDocumentHandler >& docHandler,
                      const Sequence< OUString >& userData)
-                throw (IllegalArgumentException, RuntimeException, std::exception) SAL_OVERRIDE;
+                throw (IllegalArgumentException, RuntimeException, std::exception) override;
 
             // XExportFilter
             virtual sal_Bool SAL_CALL
@@ -80,18 +80,18 @@ namespace filter {
                      const Sequence< PropertyValue >& sourceData,
                      const Sequence< OUString >& userData)
                 throw (IllegalArgumentException,
-                       RuntimeException, std::exception) SAL_OVERRIDE;
+                       RuntimeException, std::exception) override;
 
             OUString SAL_CALL getImplementationName()
-                throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (css::uno::RuntimeException, std::exception) override
             { return OUString("com.sun.star.comp.filter.OdfFlatXml"); }
 
             sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-                throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (css::uno::RuntimeException, std::exception) override
             { return cppu::supportsService(this, ServiceName); }
 
             css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-                throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (css::uno::RuntimeException, std::exception) override
             {
                 return css::uno::Sequence<OUString>{
                     "com.sun.star.document.ImportFilter",
@@ -147,6 +147,10 @@ OdfFlatXml::importer(
     saxParser->setDocumentHandler(docHandler);
     try
         {
+            css::uno::Reference< css::io::XSeekable > xSeekable( inputStream, css::uno::UNO_QUERY );
+            if ( xSeekable.is() )
+                xSeekable->seek( 0 );
+
             saxParser->parseStream(inputSource);
         }
     catch (const Exception &exc)
@@ -223,11 +227,11 @@ odfflatxml_component_getFactory( const sal_Char* pImplementationName,
                       void* /* pRegistryKey */ )
 {
     if ((!pImplementationName) || (!pServiceManager))
-        return NULL;
+        return nullptr;
 
-    com::sun::star::uno::Reference< com::sun::star::lang::XMultiServiceFactory >
-        xSMGR = static_cast< com::sun::star::lang::XMultiServiceFactory* >(pServiceManager);
-    com::sun::star::uno::Reference< com::sun::star::lang::XSingleServiceFactory > xFactory;
+    css::uno::Reference< css::lang::XMultiServiceFactory >
+        xSMGR = static_cast< css::lang::XMultiServiceFactory* >(pServiceManager);
+    css::uno::Reference< css::lang::XSingleServiceFactory > xFactory;
     OUString sImplName = OUString::createFromAscii(pImplementationName);
 
     if (OdfFlatXml::impl_getImplementationName() == sImplName)
@@ -242,7 +246,7 @@ odfflatxml_component_getFactory( const sal_Char* pImplementationName,
         return xFactory.get();
     }
 
-    return NULL;
+    return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

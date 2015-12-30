@@ -91,6 +91,7 @@ namespace formula
 
         // parameter
         virtual sal_uInt32 getParameterCount() const = 0;
+        virtual sal_uInt32 getVarArgsStart() const = 0;
         virtual OUString getParameterName(sal_uInt32 _nPos) const = 0;
         virtual OUString getParameterDescription(sal_uInt32 _nPos) const = 0;
         virtual bool isParameterOptional(sal_uInt32 _nPos) const = 0;
@@ -109,19 +110,6 @@ namespace formula
         ~IFormulaToken() {}
     };
 
-    class SAL_NO_VTABLE IStructHelper
-    {
-    public:
-        IStructHelper(){}
-        virtual SvTreeListEntry*    InsertEntry(const OUString& rText, SvTreeListEntry* pParent,
-                                sal_uInt16 nFlag,sal_uLong nPos=0,IFormulaToken* pScToken=NULL) = 0;
-
-        virtual OUString        GetEntryText(SvTreeListEntry* pEntry) const = 0;
-
-    protected:
-        ~IStructHelper() {}
-    };
-
     class SAL_NO_VTABLE IFormulaEditorHelper
     {
     public:
@@ -136,7 +124,7 @@ namespace formula
         virtual void setSelection(sal_Int32 _nStart, sal_Int32 _nEnd) = 0;
 
         virtual FormEditData* getFormEditData() const = 0;
-        virtual bool calculateValue(const OUString& _sExpression, OUString& _rResult) = 0;
+        virtual bool calculateValue(const OUString& _sExpression, OUString& _rResult, bool bMatrixFormula) = 0;
 
         virtual void switchBack() = 0;
 
@@ -145,11 +133,11 @@ namespace formula
         virtual void setReferenceInput(const FormEditData* _pData) = 0;
 
         virtual IFunctionManager*   getFunctionManager() = 0;
-        virtual ::std::unique_ptr<FormulaTokenArray> convertToTokenArray(const ::com::sun::star::uno::Sequence< ::com::sun::star::sheet::FormulaToken >& _aTokenList) = 0;
+        virtual ::std::unique_ptr<FormulaTokenArray> convertToTokenArray(const css::uno::Sequence< css::sheet::FormulaToken >& _aTokenList) = 0;
 
-        virtual ::com::sun::star::uno::Reference< ::com::sun::star::sheet::XFormulaParser> getFormulaParser() const = 0;
-        virtual ::com::sun::star::uno::Reference< ::com::sun::star::sheet::XFormulaOpCodeMapper> getFormulaOpCodeMapper() const = 0;
-        virtual ::com::sun::star::table::CellAddress getReferencePosition() const = 0;
+        virtual css::uno::Reference< css::sheet::XFormulaParser> getFormulaParser() const = 0;
+        virtual css::uno::Reference< css::sheet::XFormulaOpCodeMapper> getFormulaOpCodeMapper() const = 0;
+        virtual css::table::CellAddress getReferencePosition() const = 0;
 
         virtual void setDispatcherLock( bool bLock ) = 0;
         virtual void dispatch(bool _bOK, bool _bMatrixChecked) = 0;

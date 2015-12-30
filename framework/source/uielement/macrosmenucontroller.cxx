@@ -32,6 +32,7 @@
 #include <comphelper/processfactory.hxx>
 #include <vcl/svapp.hxx>
 #include <vcl/i18nhelp.hxx>
+#include <vcl/commandinfoprovider.hxx>
 #include <rtl/ustrbuf.hxx>
 #include "helper/mischelper.hxx"
 #include "helpid.hrc"
@@ -57,7 +58,7 @@ DEFINE_XSERVICEINFO_MULTISERVICE_2      (   MacrosMenuController                
 
 DEFINE_INIT_SERVICE                     (   MacrosMenuController, {} )
 
-MacrosMenuController::MacrosMenuController( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& xContext ) :
+MacrosMenuController::MacrosMenuController( const css::uno::Reference< css::uno::XComponentContext >& xContext ) :
     svt::PopupMenuControllerBase( xContext ),
     m_xContext( xContext)
 {
@@ -72,7 +73,7 @@ MacrosMenuController::~MacrosMenuController()
 void MacrosMenuController::fillPopupMenu( Reference< css::awt::XPopupMenu >& rPopupMenu )
 {
     VCLXPopupMenu* pVCLPopupMenu = static_cast<VCLXPopupMenu *>(VCLXMenu::GetImplementation( rPopupMenu ));
-    PopupMenu*     pPopupMenu    = 0;
+    PopupMenu*     pPopupMenu    = nullptr;
 
     SolarMutexGuard aSolarMutexGuard;
 
@@ -85,7 +86,7 @@ void MacrosMenuController::fillPopupMenu( Reference< css::awt::XPopupMenu >& rPo
 
     // insert basic
     OUString aCommand(".uno:MacroDialog");
-    OUString aDisplayName = RetrieveLabelFromCommand( aCommand );
+    OUString aDisplayName = vcl::CommandInfoProvider::Instance().GetMenuLabelForCommand(aCommand, m_xFrame);
     pPopupMenu->InsertItem( 2, aDisplayName );
     pPopupMenu->SetItemCommand( 2, aCommand );
 
@@ -122,12 +123,6 @@ void SAL_CALL MacrosMenuController::statusChanged( const FeatureStateEvent& ) th
     }
 }
 
-OUString MacrosMenuController::RetrieveLabelFromCommand(const OUString& rCmdURL)
-{
-    bool bModuleIdentified = !m_aModuleIdentifier.isEmpty();
-    return framework::RetrieveLabelFromCommand(rCmdURL, m_xContext, m_xUICommandLabels, m_xFrame, m_aModuleIdentifier, bModuleIdentified, "Label");
-}
-
 void MacrosMenuController::addScriptItems( PopupMenu* pPopupMenu, sal_uInt16 startItemId )
 {
     const OUString aCmdBase(".uno:ScriptOrganizer?ScriptOrganizer.Language:string=");
@@ -135,7 +130,7 @@ void MacrosMenuController::addScriptItems( PopupMenu* pPopupMenu, sal_uInt16 sta
     const OUString providerKey("com.sun.star.script.provider.ScriptProviderFor");
     const OUString languageProviderName("com.sun.star.script.provider.LanguageScriptProvider");
     sal_uInt16 itemId = startItemId;
-    Reference< XContentEnumerationAccess > xEnumAccess = Reference< XContentEnumerationAccess >( m_xContext->getServiceManager(), UNO_QUERY_THROW );
+    Reference< XContentEnumerationAccess > xEnumAccess( m_xContext->getServiceManager(), UNO_QUERY_THROW );
     Reference< XEnumeration > xEnum = xEnumAccess->createContentEnumeration ( languageProviderName );
 
     while ( xEnum->hasMoreElements() )

@@ -209,12 +209,7 @@ sal_uInt32 ScXMLImportWrapper::ImportFromComponent(const uno::Reference<uno::XCo
             nReturn = ERRCODE_SFX_WRONGPASSWORD;
         else
         {
-
-#if OSL_DEBUG_LEVEL > 0
-            OStringBuffer aError("SAX parse exception caught while importing:\n");
-            aError.append(OUStringToOString(r.Message, RTL_TEXTENCODING_ASCII_US));
-            OSL_FAIL(aError.getStr());
-#endif
+            SAL_WARN("sc.filter", "SAX parse exception caught while importing: " << r.Message);
 
             OUString sErr = OUString::number( r.LineNumber ) +
                           "," +
@@ -245,51 +240,26 @@ sal_uInt32 ScXMLImportWrapper::ImportFromComponent(const uno::Reference<uno::XCo
             nReturn = ERRCODE_SFX_WRONGPASSWORD;
         else
         {
-
-#if OSL_DEBUG_LEVEL > 0
-            OStringBuffer aError("SAX exception caught while importing:\n");
-            aError.append(OUStringToOString(r.Message,
-                RTL_TEXTENCODING_ASCII_US));
-            OSL_FAIL(aError.getStr());
-#endif
-            (void)r;    // avoid warning in product version
+            SAL_WARN("sc.filter", "SAX exception caught while importing: " << r.Message);
 
             nReturn = SCERR_IMPORT_FORMAT;
         }
     }
     catch( const packages::zip::ZipIOException& r )
     {
-#if OSL_DEBUG_LEVEL > 0
-        OStringBuffer aError("Zip exception caught while importing:\n");
-        aError.append(OUStringToOString(r.Message,
-            RTL_TEXTENCODING_ASCII_US));
-        OSL_FAIL( aError.getStr() );
-#endif
-        (void)r;    // avoid warning in product version
+        SAL_WARN("sc.filter", "Zip exception caught while importing: " << r.Message);
 
         nReturn = ERRCODE_IO_BROKENPACKAGE;
     }
     catch( const io::IOException& r )
     {
-#if OSL_DEBUG_LEVEL > 0
-        OStringBuffer aError("IO exception caught while importing:\n");
-        aError.append(OUStringToOString(r.Message,
-            RTL_TEXTENCODING_ASCII_US));
-        OSL_FAIL(aError.getStr());
-#endif
-        (void)r;    // avoid warning in product version
+        SAL_WARN("sc.filter", "IO exception caught while importing: " << r.Message);
 
         nReturn = SCERR_IMPORT_OPEN;
     }
     catch( const uno::Exception& r )
     {
-#if OSL_DEBUG_LEVEL > 0
-        OStringBuffer aError("uno exception caught while importing:\n");
-        aError.append(OUStringToOString(r.Message,
-            RTL_TEXTENCODING_ASCII_US));
-        OSL_FAIL(aError.getStr());
-#endif
-        (void)r;    // avoid warning in product version
+        SAL_WARN("sc.filter", "uno exception caught while importing: " << r.Message);
 
         nReturn = SCERR_IMPORT_UNKNOWN;
     }
@@ -303,7 +273,7 @@ sal_uInt32 ScXMLImportWrapper::ImportFromComponent(const uno::Reference<uno::XCo
         nReturn = rDoc.GetRangeOverflowType();
 
     // free the component
-    xParser->setDocumentHandler( NULL );
+    xParser->setDocumentHandler( nullptr );
 
     // success!
     return nReturn;
@@ -329,20 +299,19 @@ bool ScXMLImportWrapper::Import( sal_uInt8 nMode, ErrCode& rError )
     /** property map for export info set */
     comphelper::PropertyMapEntry const aImportInfoMap[] =
     {
-        { OUString("ProgressRange"), 0, ::cppu::UnoType<sal_Int32>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-        { OUString("ProgressMax"), 0, ::cppu::UnoType<sal_Int32>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-        { OUString("ProgressCurrent"), 0, ::cppu::UnoType<sal_Int32>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-        { OUString("NumberStyles"), 0, cppu::UnoType<container::XNameAccess>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-        { OUString("PrivateData"), 0, cppu::UnoType<uno::XInterface>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("BaseURI"), 0, ::cppu::UnoType<OUString>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("StreamRelPath"), 0, ::cppu::UnoType<OUString>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("StreamName"), 0, ::cppu::UnoType<OUString>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("BuildId"), 0, ::cppu::UnoType<OUString>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("VBACompatibilityMode"), 0, cppu::UnoType<bool>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("ScriptConfiguration"), 0, cppu::UnoType<container::XNameAccess>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-        { OUString("OrganizerMode"), 0, cppu::UnoType<bool>::get(),
-            ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("SourceStorage"), 0, cppu::UnoType<embed::XStorage>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("ProgressRange"), 0, ::cppu::UnoType<sal_Int32>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0},
+        { OUString("ProgressMax"), 0, ::cppu::UnoType<sal_Int32>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0},
+        { OUString("ProgressCurrent"), 0, ::cppu::UnoType<sal_Int32>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0},
+        { OUString("NumberStyles"), 0, cppu::UnoType<container::XNameAccess>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0},
+        { OUString("PrivateData"), 0, cppu::UnoType<uno::XInterface>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("BaseURI"), 0, ::cppu::UnoType<OUString>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("StreamRelPath"), 0, ::cppu::UnoType<OUString>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("StreamName"), 0, ::cppu::UnoType<OUString>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("BuildId"), 0, ::cppu::UnoType<OUString>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("VBACompatibilityMode"), 0, cppu::UnoType<bool>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("ScriptConfiguration"), 0, cppu::UnoType<container::XNameAccess>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0},
+        { OUString("OrganizerMode"), 0, cppu::UnoType<bool>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("SourceStorage"), 0, cppu::UnoType<embed::XStorage>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
         { OUString(SC_UNO_ODS_LOCK_SOLAR_MUTEX), 0, cppu::UnoType<bool>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
         { OUString(SC_UNO_ODS_IMPORT_STYLES), 0, cppu::UnoType<bool>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
         { OUString(), 0, css::uno::Type(), 0, 0 }
@@ -380,6 +349,7 @@ bool ScXMLImportWrapper::Import( sal_uInt8 nMode, ErrCode& rError )
     // Set base URI
     OSL_ENSURE( pMedium, "There is no medium to get MediaDescriptor from!\n" );
     OUString aBaseURL = pMedium ? pMedium->GetBaseURL() : OUString();
+    assert(!aBaseURL.isEmpty()); // needed for relative URLs
     OUString sPropName("BaseURI");
     xInfoSet->setPropertyValue( sPropName, uno::makeAny( aBaseURL ) );
 
@@ -461,11 +431,11 @@ bool ScXMLImportWrapper::Import( sal_uInt8 nMode, ErrCode& rError )
         SAL_INFO( "sc.filter", "meta import end" );
     }
 
-    SvXMLGraphicHelper* pGraphicHelper = NULL;
+    SvXMLGraphicHelper* pGraphicHelper = nullptr;
     uno::Reference< document::XGraphicObjectResolver > xGrfContainer;
 
     uno::Reference< document::XEmbeddedObjectResolver > xObjectResolver;
-    SvXMLEmbeddedObjectHelper *pObjectHelper = NULL;
+    SvXMLEmbeddedObjectHelper *pObjectHelper = nullptr;
 
     if( xStorage.is() )
     {
@@ -511,7 +481,7 @@ bool ScXMLImportWrapper::Import( sal_uInt8 nMode, ErrCode& rError )
         nStylesRetval = ImportFromComponent(xContext, xModel, xXMLParser, aParserInput,
             bOasis ? OUString("com.sun.star.comp.Calc.XMLOasisStylesImporter")
                    : OUString("com.sun.star.comp.Calc.XMLStylesImporter"),
-            OUString("styles.xml"),
+            "styles.xml",
             "", aStylesArgs, true);
 
         SAL_INFO( "sc.filter", "styles import end" );
@@ -536,8 +506,8 @@ bool ScXMLImportWrapper::Import( sal_uInt8 nMode, ErrCode& rError )
         nDocRetval = ImportFromComponent(xContext, xModel, xXMLParser, aParserInput,
             bOasis ? OUString("com.sun.star.comp.Calc.XMLOasisContentImporter")
                    : OUString("com.sun.star.comp.Calc.XMLContentImporter"),
-            OUString("content.xml"),
-            OUString("Content.xml"), aDocArgs,
+            "content.xml",
+            "Content.xml", aDocArgs,
             true);
 
         SAL_INFO( "sc.filter", "content import end" );
@@ -600,7 +570,7 @@ bool ScXMLImportWrapper::Import( sal_uInt8 nMode, ErrCode& rError )
             if ( xModelSet.is() ) try
             {
                 uno::Reference< script::vba::XVBACompatibility > xVBACompat( xModelSet->getPropertyValue(
-                    OUString( "BasicLibraries" ) ), uno::UNO_QUERY_THROW );
+                    "BasicLibraries" ), uno::UNO_QUERY_THROW );
                 xVBACompat->setVBACompatibilityMode( sal_True );
             }
             catch( const uno::Exception& )
@@ -770,17 +740,17 @@ bool ScXMLImportWrapper::Export(bool bStylesOnly)
     /** property map for export info set */
     comphelper::PropertyMapEntry const aExportInfoMap[] =
     {
-        { OUString("ProgressRange"), 0, ::cppu::UnoType<sal_Int32>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-        { OUString("ProgressMax"), 0, ::cppu::UnoType<sal_Int32>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-        { OUString("ProgressCurrent"), 0, ::cppu::UnoType<sal_Int32>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-        { OUString("WrittenNumberStyles"), 0, cppu::UnoType<uno::Sequence<sal_Int32>>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-        { OUString("UsePrettyPrinting"), 0, ::cppu::UnoType<sal_Bool>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},
-        { OUString("BaseURI"), 0, ::cppu::UnoType<OUString>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("StreamRelPath"), 0, ::cppu::UnoType<OUString>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("StreamName"), 0, ::cppu::UnoType<OUString>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("StyleNames"), 0, cppu::UnoType<uno::Sequence<OUString>>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("StyleFamilies"), 0, cppu::UnoType<uno::Sequence<sal_Int32>>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
-        { OUString("TargetStorage"), 0, cppu::UnoType<embed::XStorage>::get(), ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("ProgressRange"), 0, ::cppu::UnoType<sal_Int32>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0},
+        { OUString("ProgressMax"), 0, ::cppu::UnoType<sal_Int32>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0},
+        { OUString("ProgressCurrent"), 0, ::cppu::UnoType<sal_Int32>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0},
+        { OUString("WrittenNumberStyles"), 0, cppu::UnoType<uno::Sequence<sal_Int32>>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0},
+        { OUString("UsePrettyPrinting"), 0, ::cppu::UnoType<sal_Bool>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0},
+        { OUString("BaseURI"), 0, ::cppu::UnoType<OUString>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("StreamRelPath"), 0, ::cppu::UnoType<OUString>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("StreamName"), 0, ::cppu::UnoType<OUString>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("StyleNames"), 0, cppu::UnoType<uno::Sequence<OUString>>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("StyleFamilies"), 0, cppu::UnoType<uno::Sequence<sal_Int32>>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
+        { OUString("TargetStorage"), 0, cppu::UnoType<embed::XStorage>::get(), css::beans::PropertyAttribute::MAYBEVOID, 0 },
         { OUString(), 0, css::uno::Type(), 0, 0 }
     };
     uno::Reference< beans::XPropertySet > xInfoSet( comphelper::GenericPropertySet_CreateInstance( new comphelper::PropertySetInfo( aExportInfoMap ) ) );
@@ -829,7 +799,7 @@ bool ScXMLImportWrapper::Export(bool bStylesOnly)
         bool bStylesRet (false);
         bool bDocRet(false);
         bool bSettingsRet(false);
-        ScMySharedData* pSharedData = NULL;
+        ScMySharedData* pSharedData = nullptr;
 
         bool bOasis = ( SotStorage::GetVersion( xStorage ) > SOFFICE_FILEFORMAT_60 );
 
@@ -840,8 +810,7 @@ bool ScXMLImportWrapper::Export(bool bStylesOnly)
             try
             {
                 OUString aVersion;
-                if (( xPropSet->getPropertyValue(
-                    OUString("Version")) >>= aVersion )
+                if (( xPropSet->getPropertyValue("Version") >>= aVersion )
                     && aVersion != ODFVER_010_TEXT
                     && aVersion != ODFVER_011_TEXT )
                 {
@@ -870,7 +839,7 @@ bool ScXMLImportWrapper::Export(bool bStylesOnly)
             SAL_INFO( "sc.filter", "meta export start" );
 
             bMetaRet = ExportToComponent(xContext, xModel, xWriter, aDescriptor,
-                OUString("meta.xml"),
+                "meta.xml",
                 sTextMediaType,
                 bOasis ? OUString("com.sun.star.comp.Calc.XMLOasisMetaExporter")
                        : OUString("com.sun.star.comp.Calc.XMLMetaExporter"),
@@ -880,10 +849,10 @@ bool ScXMLImportWrapper::Export(bool bStylesOnly)
         }
 
         uno::Reference< document::XEmbeddedObjectResolver > xObjectResolver;
-        SvXMLEmbeddedObjectHelper *pObjectHelper = 0;
+        SvXMLEmbeddedObjectHelper *pObjectHelper = nullptr;
 
         uno::Reference< document::XGraphicObjectResolver > xGrfContainer;
-        SvXMLGraphicHelper* pGraphicHelper = 0;
+        SvXMLGraphicHelper* pGraphicHelper = nullptr;
 
         if( xStorage.is() )
         {
@@ -911,7 +880,7 @@ bool ScXMLImportWrapper::Export(bool bStylesOnly)
             SAL_INFO( "sc.filter", "styles export start" );
 
             bStylesRet = ExportToComponent(xContext, xModel, xWriter, aDescriptor,
-                OUString("styles.xml"),
+                "styles.xml",
                 sTextMediaType,
                 bOasis ? OUString("com.sun.star.comp.Calc.XMLOasisStylesExporter")
                        : OUString("com.sun.star.comp.Calc.XMLStylesExporter"),
@@ -935,7 +904,7 @@ bool ScXMLImportWrapper::Export(bool bStylesOnly)
             SAL_INFO( "sc.filter", "content export start" );
 
             bDocRet = ExportToComponent(xContext, xModel, xWriter, aDescriptor,
-                OUString("content.xml"),
+                "content.xml",
                 sTextMediaType,
                 bOasis ? OUString("com.sun.star.comp.Calc.XMLOasisContentExporter")
                        : OUString("com.sun.star.comp.Calc.XMLContentExporter"),
@@ -963,7 +932,7 @@ bool ScXMLImportWrapper::Export(bool bStylesOnly)
             SAL_INFO( "sc.filter", "settings export start" );
 
             bSettingsRet = ExportToComponent(xContext, xModel, xWriter, aDescriptor,
-                OUString("settings.xml"),
+                "settings.xml",
                 sTextMediaType,
                 bOasis ? OUString("com.sun.star.comp.Calc.XMLOasisSettingsExporter")
                        : OUString("com.sun.star.comp.Calc.XMLSettingsExporter"),

@@ -63,6 +63,8 @@
 
 #include <sal/config.h>
 
+#include <stdexcept>
+
 #include <salhelper/simplereferenceobject.hxx>
 
 #include "lwpheader.hxx"
@@ -88,12 +90,35 @@ protected:
     LwpObjectStream* m_pObjStrm;
     LwpFoundry* m_pFoundry;
     LwpSvStream* m_pStrm;
+    bool m_bRegisteringStyle;
+    bool m_bParsingStyle;
 protected:
     virtual void Read();
-public:
-    void QuickRead();
     virtual void RegisterStyle();
     virtual void Parse(IXFStream* pOutputStream);
+public:
+    void QuickRead();
+    //calls RegisterStyle but bails if DoRegisterStyle is called
+    //on the same object recursively
+    void DoRegisterStyle()
+    {
+        if (m_bRegisteringStyle)
+            throw std::runtime_error("recursion in styles");
+        m_bRegisteringStyle = true;
+        RegisterStyle();
+        m_bRegisteringStyle = false;
+    }
+    //calls Parse but bails if DoParse is called
+    //on the same object recursively
+    void DoParse(IXFStream* pOutputStream)
+    {
+        if (m_bParsingStyle)
+            throw std::runtime_error("recursion in parsing");
+        m_bParsingStyle = true;
+        Parse(pOutputStream);
+        m_bParsingStyle = false;
+    }
+
     virtual void XFConvert(XFContentContainer* pCont);
 
     LwpFoundry* GetFoundry(){return m_pFoundry;}

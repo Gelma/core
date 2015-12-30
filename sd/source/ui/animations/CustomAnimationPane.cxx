@@ -146,14 +146,11 @@ void fillRepeatComboBox( ListBox* pBox )
 }
 
 CustomAnimationPane::CustomAnimationPane( Window* pParent, ViewShellBase& rBase,
-                                          const css::uno::Reference<css::frame::XFrame>& rxFrame,
-                                          const Size& rMinSize )
+                                          const css::uno::Reference<css::frame::XFrame>& rxFrame )
 :   PanelLayout( pParent, "CustomAnimationsPanel", "modules/simpress/ui/customanimationspanel.ui", rxFrame ),
     mrBase( rBase ),
-    mpCustomAnimationPresets(NULL),
+    mpCustomAnimationPresets(nullptr),
     mnPropertyType( nPropertyTypeNone ),
-    maMinSize( rMinSize ),
-    mxModel( rBase.GetDocShell()->GetDoc()->getUnoModel(), UNO_QUERY ),
     maLateInitTimer()
 {
     // load resources
@@ -190,8 +187,8 @@ CustomAnimationPane::CustomAnimationPane( Window* pParent, ViewShellBase& rBase,
     mpPBAddEffect->SetClickHdl( LINK( this, CustomAnimationPane, implClickHdl ) );
     mpPBChangeEffect->SetClickHdl( LINK( this, CustomAnimationPane, implClickHdl ) );
     mpPBRemoveEffect->SetClickHdl( LINK( this, CustomAnimationPane, implClickHdl ) );
-    mpLBStart->SetSelectHdl( LINK( this, CustomAnimationPane, implControlHdl ) );
-    mpCBSpeed->SetSelectHdl( LINK( this, CustomAnimationPane, implControlHdl ) );
+    mpLBStart->SetSelectHdl( LINK( this, CustomAnimationPane, implControlListBoxHdl ) );
+    mpCBSpeed->SetSelectHdl( LINK( this, CustomAnimationPane, implControlListBoxHdl ) );
     mpPBPropertyMore->SetClickHdl( LINK( this, CustomAnimationPane, implClickHdl ) );
     mpPBMoveUp->SetClickHdl( LINK( this, CustomAnimationPane, implClickHdl ) );
     mpPBMoveDown->SetClickHdl( LINK( this, CustomAnimationPane, implClickHdl ) );
@@ -203,7 +200,7 @@ CustomAnimationPane::CustomAnimationPane( Window* pParent, ViewShellBase& rBase,
     // get current controller and initialize listeners
     try
     {
-        mxView = Reference< XDrawView >::query(mrBase.GetController());
+        mxView.set(mrBase.GetController(), UNO_QUERY);
         addListener();
     }
     catch( Exception& )
@@ -321,11 +318,11 @@ IMPL_LINK_TYPED(CustomAnimationPane,EventMultiplexerListener,
             // At this moment the controller may not yet been set at model
             // or ViewShellBase.  Take it from the view shell passed with
             // the event.
-            if (mrBase.GetMainViewShell() != 0)
+            if (mrBase.GetMainViewShell() != nullptr)
             {
                 if( mrBase.GetMainViewShell()->GetShellType() == ViewShell::ST_IMPRESS )
                 {
-                    mxView = Reference<XDrawView>::query(mrBase.GetDrawController());
+                    mxView.set(mrBase.GetDrawController(), UNO_QUERY);
                     onSelectionChanged();
                     onChangeCurrentPage();
                     break;
@@ -333,8 +330,8 @@ IMPL_LINK_TYPED(CustomAnimationPane,EventMultiplexerListener,
             }
         // fall through intended
         case tools::EventMultiplexerEvent::EID_MAIN_VIEW_REMOVED:
-            mxView = 0;
-            mxCurrentPage = 0;
+            mxView = nullptr;
+            mxCurrentPage = nullptr;
             updateControls();
             break;
 
@@ -526,7 +523,7 @@ void CustomAnimationPane::updateControls()
         CustomAnimationPresetPtr pDescriptor = getPresets().getEffectDescriptor( pEffect->getPresetId() );
         if( pDescriptor.get() )
         {
-            PropertySubControl* pSubControl = NULL;
+            PropertySubControl* pSubControl = nullptr;
 
             Any aValue;
 
@@ -555,16 +552,16 @@ void CustomAnimationPane::updateControls()
             }
             else
             {
-                mpLBProperty->setSubControl( 0 );
+                mpLBProperty->setSubControl( nullptr );
             }
 
-            bool bEnable = (pSubControl != 0) && (pSubControl->getControl()->IsEnabled());
+            bool bEnable = (pSubControl != nullptr) && (pSubControl->getControl()->IsEnabled());
             mpLBProperty->Enable( bEnable );
             mpFTProperty->Enable( bEnable );
         }
         else
         {
-            mpLBProperty->setSubControl( 0 );
+            mpLBProperty->setSubControl( nullptr );
             mpFTProperty->Enable( false );
             mpLBProperty->Enable( false );
             mpPBPropertyMore->Enable( false );
@@ -606,11 +603,11 @@ void CustomAnimationPane::updateControls()
             mpCBSpeed->SelectEntryPos( nPos );
         }
 
-        mpPBPropertyMore->Enable( true );
+        mpPBPropertyMore->Enable();
     }
     else
     {
-        mpLBProperty->setSubControl( 0 );
+        mpLBProperty->setSubControl( nullptr );
         mpFTProperty->Enable( false );
         mpLBProperty->Enable( false );
         mpPBPropertyMore->Enable( false );
@@ -654,7 +651,7 @@ void CustomAnimationPane::updateControls()
         {
             MainSequenceRebuildGuard aGuard( mpMainSequence );
 
-            EffectSequenceHelper* pSequence = 0;
+            EffectSequenceHelper* pSequence = nullptr;
             EffectSequence::iterator aRebuildIter( maListSelection.begin() );
             const EffectSequence::iterator aRebuildEnd( maListSelection.end() );
             while( aRebuildIter != aRebuildEnd )
@@ -663,7 +660,7 @@ void CustomAnimationPane::updateControls()
 
                 if( pEffect.get() )
                 {
-                    if( pSequence == 0 )
+                    if( pSequence == nullptr )
                     {
                         pSequence = pEffect->getEffectSequence();
                     }
@@ -696,7 +693,7 @@ static bool updateMotionPathImpl( CustomAnimationPane& rPane, ::sd::View& rView,
     while( aIter != aEnd )
     {
         CustomAnimationEffectPtr pEffect( (*aIter++) );
-        if( pEffect.get() && pEffect->getPresetClass() == ::com::sun::star::presentation::EffectPresetClass::MOTIONPATH )
+        if( pEffect.get() && pEffect->getPresetClass() == css::presentation::EffectPresetClass::MOTIONPATH )
         {
             rtl::Reference< MotionPathTag > xMotionPathTag;
             // first try to find if there is already a tag for this
@@ -737,7 +734,7 @@ void CustomAnimationPane::updateMotionPathTags()
     MotionPathTagVector aTags;
     aTags.swap( maMotionPathTags );
 
-    ::sd::View* pView = 0;
+    ::sd::View* pView = nullptr;
 
     if( mxView.is() )
     {
@@ -867,7 +864,6 @@ static sal_Int32 calcMaxParaDepth( Reference< XShape > xTargetShape )
         if( xText.is() )
         {
             Reference< XPropertySet > xParaSet;
-            const OUString strNumberingLevel( "NumberingLevel" );
 
             Reference< XEnumeration > xEnumeration( xText->createEnumeration(), UNO_QUERY_THROW );
             while( xEnumeration->hasMoreElements() )
@@ -876,7 +872,7 @@ static sal_Int32 calcMaxParaDepth( Reference< XShape > xTargetShape )
                 if( xParaSet.is() )
                 {
                     sal_Int32 nParaDepth = 0;
-                    xParaSet->getPropertyValue( strNumberingLevel ) >>= nParaDepth;
+                    xParaSet->getPropertyValue( "NumberingLevel" ) >>= nParaDepth;
 
                     if( nParaDepth > nMaxParaDepth )
                         nMaxParaDepth = nParaDepth;
@@ -1027,17 +1023,15 @@ static bool hasVisibleShape( const Reference< XShape >& xShape )
         if( sShapeType == "com.sun.star.presentation.TitleTextShape" || sShapeType == "com.sun.star.presentation.OutlinerShape" ||
             sShapeType == "com.sun.star.presentation.SubtitleShape" || sShapeType == "com.sun.star.drawing.TextShape" )
         {
-            const OUString sFillStyle( "FillStyle" );
-            const OUString sLineStyle( "LineStyle" );
             Reference< XPropertySet > xSet( xShape, UNO_QUERY_THROW );
 
             FillStyle eFillStyle;
-            xSet->getPropertyValue( sFillStyle ) >>= eFillStyle;
+            xSet->getPropertyValue( "FillStyle" ) >>= eFillStyle;
 
-            ::com::sun::star::drawing::LineStyle eLineStyle;
-            xSet->getPropertyValue( sLineStyle ) >>= eLineStyle;
+            css::drawing::LineStyle eLineStyle;
+            xSet->getPropertyValue( "LineStyle" ) >>= eLineStyle;
 
-            return eFillStyle != FillStyle_NONE || eLineStyle != ::com::sun::star::drawing::LineStyle_NONE;
+            return eFillStyle != FillStyle_NONE || eLineStyle != css::drawing::LineStyle_NONE;
         }
     }
     catch( Exception& )
@@ -2010,19 +2004,22 @@ void CustomAnimationPane::onChangeSpeed()
 }
 
 /// this link is called when the property box is modified by the user
-IMPL_LINK_NOARG(CustomAnimationPane, implPropertyHdl)
+IMPL_LINK_NOARG_TYPED(CustomAnimationPane, implPropertyHdl, LinkParamNone*, void)
 {
     onChangeProperty();
-    return 0;
 }
 
 IMPL_LINK_TYPED( CustomAnimationPane, implClickHdl, Button*, pBtn, void )
 {
     implControlHdl(pBtn);
 }
+IMPL_LINK_TYPED( CustomAnimationPane, implControlListBoxHdl, ListBox&, rListBox, void )
+{
+    implControlHdl(&rListBox);
+}
 
 /// this link is called when one of the controls is modified
-IMPL_LINK( CustomAnimationPane, implControlHdl, Control*, pControl )
+void CustomAnimationPane::implControlHdl(Control* pControl )
 {
     if( pControl == mpPBAddEffect )
         onChange(true);
@@ -2049,8 +2046,6 @@ IMPL_LINK( CustomAnimationPane, implControlHdl, Control*, pControl )
     }
 
     updateControls();
-
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(CustomAnimationPane, lateInitCallback, Timer *, void)
@@ -2069,7 +2064,7 @@ void CustomAnimationPane::moveSelection( bool bUp )
         return;
 
     EffectSequenceHelper* pSequence = maListSelection.front()->getEffectSequence();
-    if( pSequence == 0 )
+    if( pSequence == nullptr )
         return;
 
     addUndo();
@@ -2201,9 +2196,8 @@ void CustomAnimationPane::onPreview( bool bForcePreview )
 void CustomAnimationPane::preview( const Reference< XAnimationNode >& xAnimationNode )
 {
     Reference< XParallelTimeContainer > xRoot = ParallelTimeContainer::create( ::comphelper::getProcessComponentContext() );
-    Sequence< ::com::sun::star::beans::NamedValue > aUserData( 1 );
-    aUserData[0].Name = "node-type";
-    aUserData[0].Value <<= ::com::sun::star::presentation::EffectNodeType::TIMING_ROOT;
+    Sequence< css::beans::NamedValue > aUserData
+        { { "node-type", css::uno::makeAny(css::presentation::EffectNodeType::TIMING_ROOT) } };
     xRoot->setUserData( aUserData );
     xRoot->appendChild( xAnimationNode );
 
@@ -2220,7 +2214,7 @@ void CustomAnimationPane::onSelect()
 
 const CustomAnimationPresets& CustomAnimationPane::getPresets()
 {
-    if (mpCustomAnimationPresets == NULL)
+    if (mpCustomAnimationPresets == nullptr)
         mpCustomAnimationPresets = &CustomAnimationPresets::getCustomAnimationPresets();
     return *mpCustomAnimationPresets;
 }
@@ -2232,7 +2226,7 @@ void CustomAnimationPane::markShapesFromSelectedEffects()
         ScopeLockGuard aGuard( maSelectionLock );
         DrawViewShell* pViewShell = dynamic_cast< DrawViewShell* >(
             FrameworkHelper::Instance(mrBase)->GetViewShell(FrameworkHelper::msCenterPaneURL).get());
-        DrawView* pView = pViewShell ? pViewShell->GetDrawView() : NULL;
+        DrawView* pView = pViewShell ? pViewShell->GetDrawView() : nullptr;
 
         if( pView )
         {
@@ -2246,7 +2240,7 @@ void CustomAnimationPane::markShapesFromSelectedEffects()
                 Reference< XShape > xShape( pEffect->getTargetShape() );
                 SdrObject* pObj = GetSdrObjectFromXShape( xShape );
                 if( pObj )
-                    pView->MarkObj(pObj, pView->GetSdrPageView(), false);
+                    pView->MarkObj(pObj, pView->GetSdrPageView());
             }
         }
     }
@@ -2259,7 +2253,7 @@ void CustomAnimationPane::updatePathFromMotionPathTag( const rtl::Reference< Mot
     {
         SdrPathObj* pPathObj = xTag->getPathObj();
         CustomAnimationEffectPtr pEffect = xTag->getEffect();
-        if( (pPathObj != 0) && pEffect.get() != 0 )
+        if( (pPathObj != nullptr) && pEffect.get() != nullptr )
         {
             ::svl::IUndoManager* pManager = mrBase.GetDocShell()->GetUndoManager();
             if( pManager )
@@ -2276,13 +2270,12 @@ void CustomAnimationPane::updatePathFromMotionPathTag( const rtl::Reference< Mot
 
 vcl::Window * createCustomAnimationPanel( vcl::Window* pParent, ViewShellBase& rBase, const css::uno::Reference<css::frame::XFrame>& rxFrame )
 {
-    vcl::Window* pWindow = 0;
+    vcl::Window* pWindow = nullptr;
 
     DrawDocShell* pDocSh = rBase.GetDocShell();
     if( pDocSh )
     {
-        const Size aMinSize( pParent->LogicToPixel( Size( 80, 256 ), MAP_APPFONT ) );
-        pWindow = VclPtr<CustomAnimationPane>::Create( pParent, rBase, rxFrame, aMinSize );
+        pWindow = VclPtr<CustomAnimationPane>::Create( pParent, rBase, rxFrame );
     }
 
     return pWindow;

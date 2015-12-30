@@ -37,7 +37,6 @@
 #include <svx/xtable.hxx>
 #include <svx/pageitem.hxx>
 #include <vcl/field.hxx>
-#define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitTypes.h>
 
 class OutputDevice;
@@ -125,7 +124,6 @@ public:
     Rectangle                               maRectangle;
     const SdrPage*                          mpPage;
     const SdrObject*                        mpObj;
-    const SdrObjList*                       mpObjList;
     SdrHintKind                             meHint;
 
 public:
@@ -153,7 +151,6 @@ struct SdrModelImpl;
 class SVX_DLLPUBLIC SdrModel : public SfxBroadcaster, public tools::WeakBase< SdrModel >
 {
 protected:
-    DateTime              aReadDate;  // date of the incoming stream
     std::vector<SdrPage*> maMaPag;     // master pages
     std::vector<SdrPage*> maPages;
     Link<SdrUndoAction*,void>  aUndoLink;  // link to a NotifyUndo-Handler
@@ -257,29 +254,28 @@ public:
 
 protected:
 
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > createUnoModel();
+    virtual css::uno::Reference< css::uno::XInterface > createUnoModel();
 
 private:
-    SdrModel(const SdrModel& rSrcModel) SAL_DELETED_FUNCTION;
-    void operator=(const SdrModel& rSrcModel) SAL_DELETED_FUNCTION;
-    bool operator==(const SdrModel& rCmpModel) const SAL_DELETED_FUNCTION;
+    SdrModel(const SdrModel& rSrcModel) = delete;
+    void operator=(const SdrModel& rSrcModel) = delete;
+    bool operator==(const SdrModel& rCmpModel) const = delete;
     SVX_DLLPRIVATE void ImpPostUndoAction(SdrUndoAction* pUndo);
     SVX_DLLPRIVATE void ImpSetUIUnit();
     SVX_DLLPRIVATE void ImpSetOutlinerDefaults( SdrOutliner* pOutliner, bool bInit = false );
     SVX_DLLPRIVATE void ImpReformatAllTextObjects();
-    SVX_DLLPRIVATE void ImpReformatAllEdgeObjects();    // #103122#
+    SVX_DLLPRIVATE void ImpReformatAllEdgeObjects();
     SVX_DLLPRIVATE void ImpCreateTables();
     SVX_DLLPRIVATE void ImpCtor(SfxItemPool* pPool, ::comphelper::IEmbeddedHelper* pPers, bool bUseExtColorTable,
         bool bLoadRefCounts = true);
 
 
     // this is a weak reference to a possible living api wrapper for this model
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > mxUnoModel;
+    css::uno::Reference< css::uno::XInterface > mxUnoModel;
 
 public:
     bool     IsPasteResize() const        { return bPasteResize; }
     void     SetPasteResize(bool bOn) { bPasteResize=bOn; }
-    TYPEINFO_OVERRIDE();
     // If a custom Pool is put here, the class will call methods
     // on it (Put(), Remove()). On disposal of SdrModel the pool
     // will be deleted with   delete.
@@ -302,10 +298,10 @@ public:
     // swapping.
     // The stream from which the model was loaded or in which is was saved last
     // needs to be delivered
-    virtual ::com::sun::star::uno::Reference<
-                ::com::sun::star::embed::XStorage> GetDocumentStorage() const;
-    ::com::sun::star::uno::Reference<
-            ::com::sun::star::io::XInputStream >
+    virtual css::uno::Reference<
+                css::embed::XStorage> GetDocumentStorage() const;
+    css::uno::Reference<
+            css::io::XInputStream >
         GetDocumentStream(OUString const& rURL,
                 ::comphelper::LifecycleProxy & rProxy) const;
     // Change the template attributes of the symbol objects to hard attributes
@@ -322,7 +318,7 @@ public:
     const SfxItemPool&   GetItemPool() const                    { return *pItemPool; }
     SfxItemPool&         GetItemPool()                          { return *pItemPool; }
 
-    SdrOutliner&         GetDrawOutliner(const SdrTextObj* pObj=NULL) const;
+    SdrOutliner&         GetDrawOutliner(const SdrTextObj* pObj=nullptr) const;
 
     SdrOutliner&         GetHitTestOutliner() const { return *pHitTestOutliner; }
     const SdrTextObj*    GetFormattingTextObj() const;
@@ -330,9 +326,8 @@ public:
     void                 SetTextDefaults() const;
     static void          SetTextDefaults( SfxItemPool* pItemPool, sal_uIntPtr nDefTextHgt );
 
-    SdrOutliner&         GetChainingOutliner(const SdrTextObj* pObj=NULL) const;
-    TextChain *GetTextChain() const;
-    static void SetNextLinkInTextChain(SdrTextObj *pPrev, SdrTextObj *pNext);
+    SdrOutliner&         GetChainingOutliner(const SdrTextObj* pObj=nullptr) const;
+    TextChain *          GetTextChain() const;
 
     // ReferenceDevice for the EditEngine
     void                 SetRefDevice(OutputDevice* pDev);
@@ -424,7 +419,6 @@ public:
     const SdrPage*   GetPage(sal_uInt16 nPgNum) const;
     SdrPage*         GetPage(sal_uInt16 nPgNum);
     sal_uInt16       GetPageCount() const;
-    // #109538#
     virtual void     PageListChanged();
 
     // Masterpages
@@ -436,7 +430,6 @@ public:
     const SdrPage*   GetMasterPage(sal_uInt16 nPgNum) const;
     SdrPage*         GetMasterPage(sal_uInt16 nPgNum);
     sal_uInt16       GetMasterPageCount() const;
-    // #109538#
     virtual void     MasterPageListChanged();
 
     // modified flag. Is set automatically when something changes on the Pages
@@ -571,8 +564,8 @@ public:
     bool GetDisableTextEditUsesCommonUndoManager() const { return mbDisableTextEditUsesCommonUndoManager; }
     void SetDisableTextEditUsesCommonUndoManager(bool bNew) { mbDisableTextEditUsesCommonUndoManager = bNew; }
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > getUnoModel();
-    void setUnoModel( ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > xModel );
+    css::uno::Reference< css::uno::XInterface > getUnoModel();
+    void setUnoModel( css::uno::Reference< css::uno::XInterface > xModel );
 
     // these functions are used by the api to disable repaints during a
     // set of api calls.
@@ -607,9 +600,9 @@ public:
 
     bool IsInDestruction() const { return mbInDestruction;}
 
-    static const ::com::sun::star::uno::Sequence< sal_Int8 >& getUnoTunnelImplementationId();
+    static const css::uno::Sequence< sal_Int8 >& getUnoTunnelImplementationId();
 
-    virtual ImageMap* GetImageMapForObject(SdrObject*){return NULL;};
+    virtual ImageMap* GetImageMapForObject(SdrObject*){return nullptr;};
 
     /** enables (true) or disables (false) recording of undo actions
         If undo actions are added while undo is disabled, they are deleted.

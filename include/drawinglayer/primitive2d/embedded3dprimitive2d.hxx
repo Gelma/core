@@ -48,7 +48,7 @@ namespace drawinglayer
         {
         private:
             /// the sequence of 3d primitives
-            primitive3d::Primitive3DSequence                    mxChildren3D;
+            primitive3d::Primitive3DContainer                    mxChildren3D;
 
             /// the 2D scene object transformation
             basegfx::B2DHomMatrix                               maObjectTransformation;
@@ -67,7 +67,7 @@ namespace drawinglayer
             basegfx::B3DRange                                   maScene3DRange;
 
             /// the primitiveSequence for on-demand created shadow primitives (see mbShadow3DChecked)
-            Primitive2DSequence                                 maShadowPrimitives;
+            Primitive2DContainer                                   maShadowPrimitives;
 
             /// #i96669# add simple range buffering for this primitive
             basegfx::B2DRange                                   maB2DRange;
@@ -83,12 +83,12 @@ namespace drawinglayer
 
         protected:
             /// local decomposition.
-            virtual Primitive2DSequence create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const SAL_OVERRIDE;
+            virtual Primitive2DContainer create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const override;
 
         public:
             /// constructor
             Embedded3DPrimitive2D(
-                const primitive3d::Primitive3DSequence& rxChildren3D,
+                const primitive3d::Primitive3DContainer& rxChildren3D,
                 const basegfx::B2DHomMatrix& rObjectTransformation,
                 const geometry::ViewInformation3D& rViewInformation3D,
                 const basegfx::B3DVector& rLightNormal,
@@ -96,7 +96,7 @@ namespace drawinglayer
                 const basegfx::B3DRange& rScene3DRange);
 
             /// data read access
-            const primitive3d::Primitive3DSequence& getChildren3D() const { return mxChildren3D; }
+            const primitive3d::Primitive3DContainer& getChildren3D() const { return mxChildren3D; }
             const basegfx::B2DHomMatrix& getObjectTransformation() const { return maObjectTransformation; }
             const geometry::ViewInformation3D& getViewInformation3D() const { return maViewInformation3D; }
             const basegfx::B3DVector& getLightNormal() const { return maLightNormal; }
@@ -104,10 +104,10 @@ namespace drawinglayer
             const basegfx::B3DRange& getScene3DRange() const { return maScene3DRange; }
 
             /// compare operator
-            virtual bool operator==(const BasePrimitive2D& rPrimitive) const SAL_OVERRIDE;
+            virtual bool operator==(const BasePrimitive2D& rPrimitive) const override;
 
             /// get range
-            virtual basegfx::B2DRange getB2DRange(const geometry::ViewInformation2D& rViewInformation) const SAL_OVERRIDE;
+            virtual basegfx::B2DRange getB2DRange(const geometry::ViewInformation2D& rViewInformation) const override;
 
             /// provide unique ID
             DeclPrimitive2DIDBlock()

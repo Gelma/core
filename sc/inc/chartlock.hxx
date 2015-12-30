@@ -37,14 +37,12 @@ public:
                     ScChartLockGuard( ScDocument* pDoc );
     virtual         ~ScChartLockGuard();
 
-    void            AlsoLockThisChart( const ::com::sun::star::uno::Reference<
-                        ::com::sun::star::frame::XModel >& xModel );
+    void            AlsoLockThisChart( const css::uno::Reference< css::frame::XModel >& xModel );
 
 private:
-    std::vector< ::com::sun::star::uno::WeakReference<
-        ::com::sun::star::frame::XModel > > maChartModels;
+    std::vector< css::uno::WeakReference< css::frame::XModel > > maChartModels;
 
-    ScChartLockGuard( const ScChartLockGuard& ) SAL_DELETED_FUNCTION;
+    ScChartLockGuard( const ScChartLockGuard& ) = delete;
 };
 
 /** Use this to lock all charts in the calc for a little time.
@@ -58,8 +56,7 @@ public:
 
     void            StartOrContinueLocking();
     void            StopLocking();
-    void            AlsoLockThisChart( const ::com::sun::star::uno::Reference<
-                        ::com::sun::star::frame::XModel >& xModel );
+    void            AlsoLockThisChart( const css::uno::Reference< css::frame::XModel >& xModel );
 
 private:
     ScDocument*                         mpDoc;
@@ -68,7 +65,7 @@ private:
 
     DECL_LINK_TYPED(TimeoutHdl, Timer *, void);
 
-    ScTemporaryChartLock( const ScTemporaryChartLock& ) SAL_DELETED_FUNCTION;
+    ScTemporaryChartLock( const ScTemporaryChartLock& ) = delete;
 };
 
 #endif

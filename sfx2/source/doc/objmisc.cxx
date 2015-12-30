@@ -151,9 +151,9 @@ public:
         xIter( pSh->GetMedium()->GetHeaderAttributes_Impl() ),
         bAlert( false ) {}
 
-    virtual bool GetFirst( SvKeyValue& rKV ) SAL_OVERRIDE { return xIter->GetFirst( rKV ); }
-    virtual bool GetNext( SvKeyValue& rKV ) SAL_OVERRIDE { return xIter->GetNext( rKV ); }
-    virtual void Append( const SvKeyValue& rKV ) SAL_OVERRIDE;
+    virtual bool GetFirst( SvKeyValue& rKV ) override { return xIter->GetFirst( rKV ); }
+    virtual bool GetNext( SvKeyValue& rKV ) override { return xIter->GetNext( rKV ); }
+    virtual void Append( const SvKeyValue& rKV ) override;
 
     void ClearForSourceView() { xIter = new SvKeyValueIterator; bAlert = false; }
     void SetAttributes();
@@ -257,7 +257,7 @@ sal_uInt32 SfxObjectShell::GetErrorCode() const
 void SfxObjectShell::ResetError()
 {
     if( pImp->lErr != ERRCODE_NONE )
-        AddLog( OUString( OSL_LOG_PREFIX "Resetting Error."  ) );
+        AddLog( OSL_LOG_PREFIX "Resetting Error." );
 
     pImp->lErr=0;
     SfxMedium * pMed = GetMedium();
@@ -278,7 +278,7 @@ void SfxObjectShell::EnableSetModified( bool bEnable )
 {
 #ifdef DBG_UTIL
     if ( bEnable == pImp->m_bEnableSetModified )
-        DBG_WARNING( "SFX_PERSIST: EnableSetModified 2x called with the same value" );
+        SAL_INFO( "sfx", "SFX_PERSIST: EnableSetModified 2x called with the same value" );
 #endif
     pImp->m_bEnableSetModified = bEnable;
 }
@@ -339,7 +339,7 @@ void SfxObjectShell::SetModified( bool bModifiedP )
 {
 #ifdef DBG_UTIL
     if ( !bModifiedP && !IsEnableSetModified() )
-        DBG_WARNING( "SFX_PERSIST: SetModified( sal_False ), although IsEnableSetModified() == sal_False" );
+        SAL_INFO( "sfx", "SFX_PERSIST: SetModified( sal_False ), although IsEnableSetModified() == sal_False" );
 #endif
 
     if( !IsEnableSetModified() )
@@ -403,7 +403,7 @@ bool SfxObjectShell::IsReadOnlyMedium() const
 
 bool SfxObjectShell::IsOriginallyReadOnlyMedium() const
 {
-    return pMedium == 0 || pMedium->IsOriginallyReadOnly();
+    return pMedium == nullptr || pMedium->IsOriginallyReadOnly();
 }
 
 
@@ -454,7 +454,7 @@ void SfxObjectShell::SetReadOnly()
 
 bool SfxObjectShell::IsReadOnly() const
 {
-    return pImp->bReadOnlyUI || pMedium == 0;
+    return pImp->bReadOnlyUI || pMedium == nullptr;
 }
 
 
@@ -523,7 +523,7 @@ bool SfxObjectShell::SwitchToShared( bool bShared, bool bSave )
             {
                 // TODO/LATER: currently the application guards against the reentrance problem
                 const SfxPoolItem* pItem = pViewFrame->GetBindings().ExecuteSynchron( HasName() ? SID_SAVEDOC : SID_SAVEASDOC );
-                const SfxBoolItem* pResult = PTR_CAST( SfxBoolItem, pItem );
+                const SfxBoolItem* pResult = dynamic_cast<const SfxBoolItem*>( pItem  );
                 bResult = ( pResult && pResult->GetValue() );
                 if ( bResult )
                     aOrigURL = GetMedium()->GetURLObject().GetMainURL( INetURLObject::NO_DECODE );
@@ -557,7 +557,7 @@ bool SfxObjectShell::SwitchToShared( bool bShared, bool bSave )
                 // TODO/LATER: currently the application guards against the reentrance problem
                 SetModified(); // the modified flag has to be set to let the document be stored with the shared flag
                 const SfxPoolItem* pItem = pViewFrame->GetBindings().ExecuteSynchron( HasName() ? SID_SAVEDOC : SID_SAVEASDOC );
-                const SfxBoolItem* pResult = PTR_CAST( SfxBoolItem, pItem );
+                const SfxBoolItem* pResult = dynamic_cast<const SfxBoolItem*>( pItem  );
                 bResult = ( pResult && pResult->GetValue() );
             }
         }
@@ -803,7 +803,7 @@ OUString SfxObjectShell::GetTitle
                                 10 bis USHRT_MAX
                                 provides the 'nMaxLength' of the logical
                                 file name including the path
-                                (remote => ::com::sun::star::util::URL)
+                                (remote => css::util::URL)
                                 */
 ) const
 
@@ -835,7 +835,7 @@ OUString SfxObjectShell::GetTitle
 
         if ( pMed )
         {
-            SFX_ITEMSET_ARG( pMed->GetItemSet(), pNameItem, SfxStringItem, SID_DOCINFO_TITLE, false );
+            const SfxStringItem* pNameItem = SfxItemSet::GetItem<SfxStringItem>(pMed->GetItemSet(), SID_DOCINFO_TITLE, false);
             if ( pNameItem )
                 aTitle = pNameItem->GetValue();
         }
@@ -862,7 +862,7 @@ OUString SfxObjectShell::GetTitle
         // If a specific title was given at open:
         // important for URLs: use INetProtocol::File for which the set title is not
         // considered. (See below, analysis of aTitleMap_Impl)
-        SFX_ITEMSET_ARG( pMed->GetItemSet(), pNameItem, SfxStringItem, SID_DOCINFO_TITLE, false );
+        const SfxStringItem* pNameItem = SfxItemSet::GetItem<SfxStringItem>(pMed->GetItemSet(), SID_DOCINFO_TITLE, false);
         if ( pNameItem )
             return X( pNameItem->GetValue() );
     }
@@ -1024,7 +1024,7 @@ void SfxObjectShell::PostActivateEvent_Impl( SfxViewFrame* pFrame )
     SfxApplication* pSfxApp = SfxGetpApp();
     if ( !pSfxApp->IsDowning() && !IsLoading() && pFrame && !pFrame->GetFrame().IsClosing_Impl() )
     {
-        SFX_ITEMSET_ARG( pMedium->GetItemSet(), pHiddenItem, SfxBoolItem, SID_HIDDEN, false );
+        const SfxBoolItem* pHiddenItem = SfxItemSet::GetItem<SfxBoolItem>(pMedium->GetItemSet(), SID_HIDDEN, false);
         if ( !pHiddenItem || !pHiddenItem->GetValue() )
         {
             sal_uInt16 nId = pImp->nEventId;
@@ -1111,7 +1111,7 @@ void SfxObjectShell::CheckEncryption_Impl( const uno::Reference< task::XInteract
             if ( !pImp->m_bIncomplEncrWarnShown )
             {
                 // this is an encrypted document with nonencrypted streams inside, show the warning
-                ::com::sun::star::task::ErrorCodeRequest aErrorCode;
+                css::task::ErrorCodeRequest aErrorCode;
                 aErrorCode.ErrCode = ERRCODE_SFX_INCOMPLETE_ENCRYPTION;
 
                 SfxMedium::CallApproveHandler( xHandler, uno::makeAny( aErrorCode ), false );
@@ -1162,7 +1162,7 @@ void SfxObjectShell::InitOwnModel_Impl()
 {
     if ( !pImp->bModelInitialized )
     {
-        SFX_ITEMSET_ARG( pMedium->GetItemSet(), pSalvageItem, SfxStringItem, SID_DOC_SALVAGE, false);
+        const SfxStringItem* pSalvageItem = SfxItemSet::GetItem<SfxStringItem>(pMedium->GetItemSet(), SID_DOC_SALVAGE, false);
         if ( pSalvageItem )
         {
             pImp->aTempName = pMedium->GetPhysicalName();
@@ -1197,7 +1197,7 @@ void SfxObjectShell::InitOwnModel_Impl()
 void SfxObjectShell::FinishedLoading( SfxLoadedFlags nFlags )
 {
     bool bSetModifiedTRUE = false;
-    SFX_ITEMSET_ARG( pMedium->GetItemSet(), pSalvageItem, SfxStringItem, SID_DOC_SALVAGE, false );
+    const SfxStringItem* pSalvageItem = SfxItemSet::GetItem<SfxStringItem>(pMedium->GetItemSet(), SID_DOC_SALVAGE, false);
     if( ( nFlags & SfxLoadedFlags::MAINDOCUMENT ) && !(pImp->nLoadedFlags & SfxLoadedFlags::MAINDOCUMENT )
         && !(pImp->nFlagsInProgress & SfxLoadedFlags::MAINDOCUMENT ))
     {
@@ -1258,7 +1258,7 @@ void SfxObjectShell::FinishedLoading( SfxLoadedFlags nFlags )
 
         if ( (pImp->nLoadedFlags & SfxLoadedFlags::MAINDOCUMENT ) && (pImp->nLoadedFlags & SfxLoadedFlags::IMAGES ) )
         {
-            SFX_ITEMSET_ARG( pMedium->GetItemSet(), pTemplateItem, SfxBoolItem, SID_TEMPLATE, false);
+            const SfxBoolItem* pTemplateItem = SfxItemSet::GetItem<SfxBoolItem>(pMedium->GetItemSet(), SID_TEMPLATE, false);
             bool bTemplate = pTemplateItem && pTemplateItem->GetValue();
 
             // closing the streams on loading should be under control of SFX!
@@ -1296,7 +1296,7 @@ void SfxObjectShell::TemplateDisconnectionAfterLoad()
     if ( pTmpMedium )
     {
         OUString aName( pTmpMedium->GetName() );
-        SFX_ITEMSET_ARG( pTmpMedium->GetItemSet(), pTemplNamItem, SfxStringItem, SID_TEMPLATE_NAME, false);
+        const SfxStringItem* pTemplNamItem = SfxItemSet::GetItem<SfxStringItem>(pTmpMedium->GetItemSet(), SID_TEMPLATE_NAME, false);
         OUString aTemplateName;
         if ( pTemplNamItem )
             aTemplateName = pTemplNamItem->GetValue();
@@ -1337,12 +1337,12 @@ void SfxObjectShell::TemplateDisconnectionAfterLoad()
             // setting the new storage the medium will be based on
             pTmpMedium->SetStorage_Impl( xTmpStor );
 
-            pMedium = 0;
+            pMedium = nullptr;
             bool ok = DoSaveCompleted( pTmpMedium );
-            assert(pMedium != 0);
+            assert(pMedium != nullptr);
             if( ok )
             {
-                SFX_ITEMSET_ARG( pMedium->GetItemSet(), pSalvageItem, SfxStringItem, SID_DOC_SALVAGE, false );
+                const SfxStringItem* pSalvageItem = SfxItemSet::GetItem<SfxStringItem>(pMedium->GetItemSet(), SID_DOC_SALVAGE, false);
                 bool bSalvage = pSalvageItem != nullptr;
 
                 if ( !bSalvage )
@@ -1356,7 +1356,7 @@ void SfxObjectShell::TemplateDisconnectionAfterLoad()
             }
             else
             {
-                SetError( ERRCODE_IO_GENERAL, OUString( OSL_LOG_PREFIX  ) );
+                SetError( ERRCODE_IO_GENERAL, OSL_LOG_PREFIX );
             }
         }
         else
@@ -1456,13 +1456,13 @@ void AutoReloadTimer_Impl::Invoke()
                 SfxStringItem(SID_REFERER, pObjSh->GetMedium()->GetName()));
         }
         SfxRequest aReq( SID_RELOAD, SfxCallMode::SLOT, aSet );
-        pObjSh->Get_Impl()->pReloadTimer = 0;
+        pObjSh->Get_Impl()->pReloadTimer = nullptr;
         delete this;
         pFrame->ExecReload_Impl( aReq );
         return;
     }
 
-    pObjSh->Get_Impl()->pReloadTimer = 0;
+    pObjSh->Get_Impl()->pReloadTimer = nullptr;
     delete this;
 }
 
@@ -1513,7 +1513,7 @@ namespace
 }
 
 ErrCode SfxObjectShell::CallXScript( const Reference< XInterface >& _rxScriptContext, const OUString& _rScriptURL,
-    const Sequence< Any >& aParams, Any& aRet, Sequence< sal_Int16 >& aOutParamIndex, Sequence< Any >& aOutParam, bool bRaiseError, const ::com::sun::star::uno::Any* pCaller )
+    const Sequence< Any >& aParams, Any& aRet, Sequence< sal_Int16 >& aOutParamIndex, Sequence< Any >& aOutParam, bool bRaiseError, const css::uno::Any* pCaller )
 {
     OSL_TRACE( "in CallXScript" );
     ErrCode nErr = ERRCODE_NONE;
@@ -1570,7 +1570,7 @@ ErrCode SfxObjectShell::CallXScript( const Reference< XInterface >& _rxScriptCon
         std::unique_ptr< VclAbstractDialog > pScriptErrDlg;
         SfxAbstractDialogFactory* pFact = SfxAbstractDialogFactory::Create();
         if ( pFact )
-            pScriptErrDlg.reset( pFact->CreateScriptErrorDialog( NULL, aException ) );
+            pScriptErrDlg.reset( pFact->CreateScriptErrorDialog( nullptr, aException ) );
         OSL_ENSURE( pScriptErrDlg.get(), "SfxObjectShell::CallXScript: no script error dialog!" );
 
         if ( pScriptErrDlg.get() )
@@ -1685,7 +1685,7 @@ bool SfxObjectShell::IsPreview() const
         return false;
 
     bool bPreview = false;
-    SFX_ITEMSET_ARG( pMedium->GetItemSet(), pFlags, SfxStringItem, SID_OPTIONS, false);
+    const SfxStringItem* pFlags = SfxItemSet::GetItem<SfxStringItem>(pMedium->GetItemSet(), SID_OPTIONS, false);
     if ( pFlags )
     {
         // Distributed values among individual items
@@ -1697,7 +1697,7 @@ bool SfxObjectShell::IsPreview() const
 
     if ( !bPreview )
     {
-        SFX_ITEMSET_ARG( pMedium->GetItemSet(), pItem, SfxBoolItem, SID_PREVIEW, false);
+        const SfxBoolItem* pItem = SfxItemSet::GetItem<SfxBoolItem>(pMedium->GetItemSet(), SID_PREVIEW, false);
         if ( pItem )
             bPreview = pItem->GetValue();
     }
@@ -1748,9 +1748,9 @@ bool SfxObjectShell::AdjustMacroMode( const OUString& /*rScriptType*/, bool bSup
 
 vcl::Window* SfxObjectShell::GetDialogParent( SfxMedium* pLoadingMedium )
 {
-    vcl::Window* pWindow = 0;
+    vcl::Window* pWindow = nullptr;
     SfxItemSet* pSet = pLoadingMedium ? pLoadingMedium->GetItemSet() : GetMedium()->GetItemSet();
-    SFX_ITEMSET_ARG( pSet, pUnoItem, SfxUnoFrameItem, SID_FILLFRAME, false );
+    const SfxUnoFrameItem* pUnoItem = SfxItemSet::GetItem<SfxUnoFrameItem>(pSet, SID_FILLFRAME, false);
     if ( pUnoItem )
     {
         uno::Reference < frame::XFrame > xFrame( pUnoItem->GetFrame() );
@@ -1759,8 +1759,8 @@ vcl::Window* SfxObjectShell::GetDialogParent( SfxMedium* pLoadingMedium )
 
     if ( !pWindow )
     {
-        SfxFrame* pFrame = 0;
-        SFX_ITEMSET_ARG( pSet, pFrameItem, SfxFrameItem, SID_DOCFRAME, false );
+        SfxFrame* pFrame = nullptr;
+        const SfxFrameItem* pFrameItem = SfxItemSet::GetItem<SfxFrameItem>(pSet, SID_DOCFRAME, false);
         if( pFrameItem && pFrameItem->GetFrame() )
             // get target frame from ItemSet
             pFrame = pFrameItem->GetFrame();
@@ -1783,7 +1783,7 @@ vcl::Window* SfxObjectShell::GetDialogParent( SfxMedium* pLoadingMedium )
     if ( pWindow )
     {
         // this frame may be invisible, show it if it is allowed
-        SFX_ITEMSET_ARG( pSet, pHiddenItem, SfxBoolItem, SID_HIDDEN, false );
+        const SfxBoolItem* pHiddenItem = SfxItemSet::GetItem<SfxBoolItem>(pSet, SID_HIDDEN, false);
         if ( !pHiddenItem || !pHiddenItem->GetValue() )
         {
             pWindow->Show();
@@ -1835,10 +1835,8 @@ bool SfxObjectShell::UseInteractionToHandleError(
             uno::Sequence< uno::Reference< task::XInteractionContinuation > > lContinuations(2);
             ::comphelper::OInteractionAbort* pAbort = new ::comphelper::OInteractionAbort();
             ::comphelper::OInteractionApprove* pApprove = new ::comphelper::OInteractionApprove();
-            lContinuations[0] = uno::Reference< task::XInteractionContinuation >(
-                                 static_cast< task::XInteractionContinuation* >( pAbort ), uno::UNO_QUERY );
-            lContinuations[1] = uno::Reference< task::XInteractionContinuation >(
-                                 static_cast< task::XInteractionContinuation* >( pApprove ), uno::UNO_QUERY );
+            lContinuations[0].set( static_cast< task::XInteractionContinuation* >( pAbort ), uno::UNO_QUERY );
+            lContinuations[1].set( static_cast< task::XInteractionContinuation* >( pApprove ), uno::UNO_QUERY );
 
             task::ErrorCodeRequest aErrorCode;
             aErrorCode.ErrCode = nError;
@@ -1861,7 +1859,7 @@ sal_Int16 SfxObjectShell_Impl::getCurrentMacroExecMode() const
     OSL_PRECOND( pMedium, "SfxObjectShell_Impl::getCurrentMacroExecMode: no medium!" );
     if ( pMedium )
     {
-        SFX_ITEMSET_ARG( pMedium->GetItemSet(), pMacroModeItem, SfxUInt16Item, SID_MACROEXECMODE, false);
+        const SfxUInt16Item* pMacroModeItem = SfxItemSet::GetItem<SfxUInt16Item>(pMedium->GetItemSet(), SID_MACROEXECMODE, false);
         if ( pMacroModeItem )
             nImposedExecMode = pMacroModeItem->GetValue();
     }

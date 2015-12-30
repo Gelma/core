@@ -131,11 +131,11 @@ namespace cmis
 #ifndef SYSTEM_CURL
         // Initialize NSS library to make sure libcmis (and curl) can access CACERTs using NSS
         // when using internal libcurl.
-        uno::Reference< com::sun::star::xml::crypto::XNSSInitializer >
-            xNSSInitializer = com::sun::star::xml::crypto::NSSInitializer::create( m_xContext );
+        uno::Reference< css::xml::crypto::XNSSInitializer >
+            xNSSInitializer = css::xml::crypto::NSSInitializer::create( m_xContext );
 
-        uno::Reference< com::sun::star::xml::crypto::XDigestContext > xDigestContext(
-                xNSSInitializer->getDigestContext( com::sun::star::xml::crypto::DigestID::SHA256,
+        uno::Reference< css::xml::crypto::XDigestContext > xDigestContext(
+                xNSSInitializer->getDigestContext( css::xml::crypto::DigestID::SHA256,
                                                           uno::Sequence< beans::NamedValue >() ),
                                                           uno::UNO_SET_THROW );
 #endif
@@ -216,7 +216,7 @@ namespace cmis
                                     ucb::IOErrorCode_ABORT,
                                     uno::Sequence< uno::Any >( 0 ),
                                     xEnv,
-                                    OUString( "Authentication cancelled" ) );
+                                    "Authentication cancelled" );
             }
         }
     }
@@ -231,7 +231,7 @@ namespace cmis
         if ( !m_sRepositoryId.isEmpty() )
         {
             for ( vector< libcmis::RepositoryPtr >::iterator it = m_aRepositories.begin( );
-                    it != m_aRepositories.end( ) && NULL == repo.get( ); ++it )
+                    it != m_aRepositories.end( ) && nullptr == repo.get( ); ++it )
             {
                 if ( STD_TO_OUSTR( ( *it )->getId( ) ) == m_sRepositoryId )
                     repo = *it;
@@ -330,8 +330,7 @@ namespace cmis
     uno::Sequence< OUString > SAL_CALL RepoContent::getSupportedServiceNames()
            throw( uno::RuntimeException, std::exception )
     {
-       uno::Sequence< OUString > aSNS( 1 );
-       aSNS.getArray()[ 0 ] = "com.sun.star.ucb.Content";
+       uno::Sequence<OUString> aSNS { "com.sun.star.ucb.Content" };
        return aSNS;
     }
 

@@ -51,15 +51,15 @@ public:
     virtual ~SwGrammarContact() { aTimer.Stop(); delete mpProxyList; }
 
     // (pure) virtual functions of IGrammarContact
-    virtual void updateCursorPosition( const SwPosition& rNewPos ) SAL_OVERRIDE;
-    virtual SwGrammarMarkUp* getGrammarCheck( SwTextNode& rTextNode, bool bCreate ) SAL_OVERRIDE;
-    virtual void finishGrammarCheck( SwTextNode& rTextNode ) SAL_OVERRIDE;
+    virtual void updateCursorPosition( const SwPosition& rNewPos ) override;
+    virtual SwGrammarMarkUp* getGrammarCheck( SwTextNode& rTextNode, bool bCreate ) override;
+    virtual void finishGrammarCheck( SwTextNode& rTextNode ) override;
 protected:
     // virtual function of SwClient
-    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew) SAL_OVERRIDE;
+    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew) override;
 };
 
-SwGrammarContact::SwGrammarContact() : mpProxyList(0), mbFinished( false )
+SwGrammarContact::SwGrammarContact() : mpProxyList(nullptr), mbFinished( false )
 {
     aTimer.SetTimeout( 2000 );  // Repaint of grammar check after 'setChecked'
     aTimer.SetTimeoutHdl( LINK(this, SwGrammarContact, TimerRepaint) );
@@ -73,8 +73,8 @@ IMPL_LINK_TYPED( SwGrammarContact, TimerRepaint, Timer *, pTimer, void )
         if( GetRegisteredIn() )
         {   //Replace the old wrong list by the proxy list and repaint all frames
             getMyTextNode()->SetGrammarCheck( mpProxyList );
-            mpProxyList = 0;
-            SwTextFrm::repaintTextFrames( *getMyTextNode() );
+            mpProxyList = nullptr;
+            SwTextFrame::repaintTextFrames( *getMyTextNode() );
         }
     }
 }
@@ -91,10 +91,10 @@ void SwGrammarContact::updateCursorPosition( const SwPosition& rNewPos )
             if( mpProxyList )
             {   // replace old list by the proxy list and repaint
                 getMyTextNode()->SetGrammarCheck( mpProxyList );
-                SwTextFrm::repaintTextFrames( *getMyTextNode() );
+                SwTextFrame::repaintTextFrames( *getMyTextNode() );
             }
             GetRegisteredInNonConst()->Remove( this ); // good bye old paragraph
-            mpProxyList = 0;
+            mpProxyList = nullptr;
         }
         if( pTextNode )
             pTextNode->Add( this ); // welcome new paragraph
@@ -104,7 +104,7 @@ void SwGrammarContact::updateCursorPosition( const SwPosition& rNewPos )
 /* deliver a grammar check list for the given text node */
 SwGrammarMarkUp* SwGrammarContact::getGrammarCheck( SwTextNode& rTextNode, bool bCreate )
 {
-    SwGrammarMarkUp *pRet = 0;
+    SwGrammarMarkUp *pRet = nullptr;
     if( GetRegisteredIn() == &rTextNode ) // hey, that's my current paragraph!
     {   // so you will get a proxy list...
         if( bCreate )
@@ -112,7 +112,7 @@ SwGrammarMarkUp* SwGrammarContact::getGrammarCheck( SwTextNode& rTextNode, bool 
             if( mbFinished )
             {
                 delete mpProxyList;
-                mpProxyList = 0;
+                mpProxyList = nullptr;
             }
             if( !mpProxyList )
             {
@@ -153,14 +153,14 @@ void SwGrammarContact::Modify( const SfxPoolItem* pOld, const SfxPoolItem * )
         aTimer.Stop();
         GetRegisteredInNonConst()->Remove( this );
         delete mpProxyList;
-        mpProxyList = 0;
+        mpProxyList = nullptr;
     }
 }
 
 void SwGrammarContact::finishGrammarCheck( SwTextNode& rTextNode )
 {
     if( &rTextNode != GetRegisteredIn() ) // not my paragraph
-        SwTextFrm::repaintTextFrames( rTextNode ); // can be repainted directly
+        SwTextFrame::repaintTextFrames( rTextNode ); // can be repainted directly
     else
     {
         if( mpProxyList )
@@ -170,8 +170,8 @@ void SwGrammarContact::finishGrammarCheck( SwTextNode& rTextNode )
         }
         else if( getMyTextNode()->GetGrammarCheck() )
         {   // all grammar problems seems to be gone, no delay needed
-            getMyTextNode()->SetGrammarCheck( 0 );
-            SwTextFrm::repaintTextFrames( *getMyTextNode() );
+            getMyTextNode()->SetGrammarCheck( nullptr );
+            SwTextFrame::repaintTextFrames( *getMyTextNode() );
         }
     }
 }

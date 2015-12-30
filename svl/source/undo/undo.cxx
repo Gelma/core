@@ -34,10 +34,6 @@
 
 using ::com::sun::star::uno::Exception;
 
-TYPEINIT0(SfxUndoAction);
-TYPEINIT0(SfxListUndoAction);
-TYPEINIT0(SfxLinkUndoAction);
-TYPEINIT0(SfxRepeatTarget);
 
 
 SfxRepeatTarget::~SfxRepeatTarget()
@@ -61,13 +57,13 @@ SfxUndoAction::~SfxUndoAction()
     if(mpSfxLinkUndoAction)
     {
         mpSfxLinkUndoAction->LinkedSfxUndoActionDestructed(*this);
-        mpSfxLinkUndoAction = 0;
+        mpSfxLinkUndoAction = nullptr;
     }
 }
 
 
 SfxUndoAction::SfxUndoAction()
-:   mpSfxLinkUndoAction(0)
+:   mpSfxLinkUndoAction(nullptr)
 {
 }
 
@@ -173,7 +169,6 @@ SfxUndoActions::SfxUndoActions( const SfxUndoActions& r ) :
 
 SfxUndoActions::~SfxUndoActions()
 {
-    delete mpImpl;
 }
 
 bool SfxUndoActions::empty() const
@@ -242,8 +237,8 @@ struct SVL_DLLPRIVATE SfxUndoManager_Data
 
     explicit SfxUndoManager_Data( size_t i_nMaxUndoActionCount )
         :pUndoArray( new SfxUndoArray( i_nMaxUndoActionCount ) )
-        ,pActUndoArray( NULL )
-        ,pFatherUndoArray( NULL )
+        ,pActUndoArray( nullptr )
+        ,pFatherUndoArray( nullptr )
         ,mnMarks( 0 )
         ,mnEmptyMark(MARK_INVALID)
         ,mbUndoEnabled( true )
@@ -259,8 +254,8 @@ struct SVL_DLLPRIVATE SfxUndoManager_Data
     }
 
     // Copy assignment is forbidden and not implemented.
-    SfxUndoManager_Data (const SfxUndoManager_Data &) SAL_DELETED_FUNCTION;
-    SfxUndoManager_Data & operator= (const SfxUndoManager_Data &) SAL_DELETED_FUNCTION;
+    SfxUndoManager_Data (const SfxUndoManager_Data &) = delete;
+    SfxUndoManager_Data & operator= (const SfxUndoManager_Data &) = delete;
 };
 
 namespace svl { namespace undo { namespace impl
@@ -290,13 +285,13 @@ namespace svl { namespace undo { namespace impl
     {
         explicit NotifyUndoListener( UndoListenerVoidMethod i_notificationMethod )
             :m_notificationMethod( i_notificationMethod )
-            ,m_altNotificationMethod( NULL )
+            ,m_altNotificationMethod( nullptr )
             ,m_sActionComment()
         {
         }
 
         NotifyUndoListener( UndoListenerStringMethod i_notificationMethod, const OUString& i_actionComment )
-            :m_notificationMethod( NULL )
+            :m_notificationMethod( nullptr )
             ,m_altNotificationMethod( i_notificationMethod )
             ,m_sActionComment( i_actionComment )
         {
@@ -304,13 +299,13 @@ namespace svl { namespace undo { namespace impl
 
         bool is() const
         {
-            return ( m_notificationMethod != 0 ) || ( m_altNotificationMethod != 0 );
+            return ( m_notificationMethod != nullptr ) || ( m_altNotificationMethod != nullptr );
         }
 
         void operator()( SfxUndoListener* i_listener ) const
         {
             assert( is() && "NotifyUndoListener: this will crash!" );
-            if ( m_altNotificationMethod != 0 )
+            if ( m_altNotificationMethod != nullptr )
             {
                 ( i_listener->*m_altNotificationMethod )( m_sActionComment );
             }
@@ -646,7 +641,7 @@ bool SfxUndoManager::ImplAddUndoAction_NoNotify( SfxUndoAction *pAction, bool bT
 
     // merge, if required
     SfxUndoAction* pMergeWithAction = m_xData->pActUndoArray->nCurUndoAction ?
-        m_xData->pActUndoArray->aUndoActions[m_xData->pActUndoArray->nCurUndoAction-1].pAction : NULL;
+        m_xData->pActUndoArray->aUndoActions[m_xData->pActUndoArray->nCurUndoAction-1].pAction : nullptr;
     if ( bTryMerge && pMergeWithAction )
     {
         bool bMerged = pMergeWithAction->Merge( pAction );
@@ -738,7 +733,7 @@ SfxUndoAction* SfxUndoManager::GetUndoAction( size_t nNo ) const
 
     assert(nNo < m_xData->pActUndoArray->nCurUndoAction);
     if( nNo >= m_xData->pActUndoArray->nCurUndoAction )
-        return NULL;
+        return nullptr;
     return m_xData->pActUndoArray->aUndoActions[m_xData->pActUndoArray->nCurUndoAction-1-nNo].pAction;
 }
 
@@ -773,7 +768,7 @@ bool SfxUndoManager::IsDoing() const
 
 bool SfxUndoManager::Undo()
 {
-    return ImplUndo( NULL );
+    return ImplUndo( nullptr );
 }
 
 
@@ -810,7 +805,7 @@ bool SfxUndoManager::ImplUndo( SfxUndoContext* i_contextOrNull )
         // clear the guard/mutex before calling into the SfxUndoAction - this can be an extension-implemented UNO component
         // nowadays ...
         aGuard.clear();
-        if ( i_contextOrNull != NULL )
+        if ( i_contextOrNull != nullptr )
             pAction->UndoWithContext( *i_contextOrNull );
         else
             pAction->Undo();
@@ -864,7 +859,7 @@ SfxUndoAction* SfxUndoManager::GetRedoAction( size_t nNo, bool const i_currentLe
     const SfxUndoArray* pUndoArray = i_currentLevel ? m_xData->pActUndoArray : m_xData->pUndoArray;
     if ( (pUndoArray->nCurUndoAction + nNo) > pUndoArray->aUndoActions.size() )
     {
-        return NULL;
+        return nullptr;
     }
     return pUndoArray->aUndoActions[ pUndoArray->nCurUndoAction + nNo ].pAction;
 }
@@ -885,7 +880,7 @@ OUString SfxUndoManager::GetRedoActionComment( size_t nNo, bool const i_currentL
 
 bool SfxUndoManager::Redo()
 {
-    return ImplRedo( NULL );
+    return ImplRedo( nullptr );
 }
 
 
@@ -922,7 +917,7 @@ bool SfxUndoManager::ImplRedo( SfxUndoContext* i_contextOrNull )
         // clear the guard/mutex before calling into the SfxUndoAction - this can be a extension-implemented UNO component
         // nowadays ...
         aGuard.clear();
-        if ( i_contextOrNull != NULL )
+        if ( i_contextOrNull != nullptr )
             pAction->RedoWithContext( *i_contextOrNull );
         else
             pAction->Redo();
@@ -1339,7 +1334,6 @@ SfxListUndoAction::SfxListUndoAction(
 
 SfxListUndoAction::~SfxListUndoAction()
 {
-    delete mpImpl;
 }
 
 void SfxListUndoAction::Undo()
@@ -1418,7 +1412,7 @@ SfxLinkUndoAction::SfxLinkUndoAction(::svl::IUndoManager *pManager)
 {
     pUndoManager = pManager;
     SfxUndoManager* pUndoManagerImplementation = dynamic_cast< SfxUndoManager* >( pManager );
-    ENSURE_OR_THROW( pUndoManagerImplementation != NULL, "unsupported undo manager implementation!" );
+    ENSURE_OR_THROW( pUndoManagerImplementation != nullptr, "unsupported undo manager implementation!" );
 
     // yes, this cast is dirty. But reaching into the SfxUndoManager's implementation,
     // directly accessing its internal stack, and tampering with an action on that stack
@@ -1430,7 +1424,7 @@ SfxLinkUndoAction::SfxLinkUndoAction(::svl::IUndoManager *pManager)
         pAction->SetLinkToSfxLinkUndoAction(this);
     }
     else
-        pAction = 0;
+        pAction = nullptr;
 }
 
 
@@ -1485,16 +1479,16 @@ OUString SfxLinkUndoAction::GetRepeatComment(SfxRepeatTarget&r) const
 SfxLinkUndoAction::~SfxLinkUndoAction()
 {
     if( pAction )
-        pAction->SetLinkToSfxLinkUndoAction(0);
+        pAction->SetLinkToSfxLinkUndoAction(nullptr);
 }
 
 
 void SfxLinkUndoAction::LinkedSfxUndoActionDestructed(const SfxUndoAction& rCandidate)
 {
-    assert(0 != pAction);
+    assert(nullptr != pAction);
     assert(pAction == &rCandidate && "Oops, the destroyed and linked UndoActions differ (!)");
     (void)rCandidate;
-    pAction = 0;
+    pAction = nullptr;
 }
 
 

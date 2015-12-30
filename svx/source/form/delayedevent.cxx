@@ -25,21 +25,21 @@ namespace svxform
     void DelayedEvent::Call()
     {
         CancelPendingCall();
-        SAL_WARN_IF( m_nEventId != 0, "svx.form", "DelayedEvent::Call: CancelPendingCall did not work!" );
+        SAL_WARN_IF( m_nEventId != nullptr, "svx.form", "DelayedEvent::Call: CancelPendingCall did not work!" );
 
-        m_nEventId = Application::PostUserEvent( LINK( this, DelayedEvent, OnCall ), nullptr );
+        m_nEventId = Application::PostUserEvent( LINK( this, DelayedEvent, OnCall ) );
     }
 
     void DelayedEvent::CancelPendingCall()
     {
         if ( m_nEventId )
             Application::RemoveUserEvent( m_nEventId );
-        m_nEventId = 0;
+        m_nEventId = nullptr;
     }
 
     IMPL_LINK_TYPED( DelayedEvent, OnCall, void*, _pArg, void )
     {
-        m_nEventId = 0;
+        m_nEventId = nullptr;
         m_aHandler.Call( _pArg );
     }
 }

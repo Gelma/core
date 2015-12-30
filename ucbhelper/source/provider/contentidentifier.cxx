@@ -49,7 +49,6 @@ struct ContentIdentifier_Impl
 {
     OUString                          m_aContentId;
     OUString                          m_aProviderScheme;
-    osl::Mutex                        m_aMutex;
 
     explicit ContentIdentifier_Impl( const OUString& rURL );
 };
@@ -82,15 +81,14 @@ ContentIdentifier_Impl::ContentIdentifier_Impl(const OUString& rURL )
 
 
 ContentIdentifier::ContentIdentifier( const OUString& rURL )
+    : m_pImpl( new ContentIdentifier_Impl( rURL ) )
 {
-    m_pImpl = new ContentIdentifier_Impl( rURL );
 }
 
 
 // virtual
 ContentIdentifier::~ContentIdentifier()
 {
-    delete m_pImpl;
 }
 
 
@@ -142,11 +140,11 @@ ContentIdentifier::getImplementationId()
 
 
 // virtual
-Sequence< com::sun::star::uno::Type > SAL_CALL
+Sequence< css::uno::Type > SAL_CALL
 ContentIdentifier::getTypes()
     throw( RuntimeException, std::exception )
 {
-    static cppu::OTypeCollection* pCollection = NULL;
+    static cppu::OTypeCollection* pCollection = nullptr;
       if ( !pCollection )
       {
         osl::Guard< osl::Mutex > aGuard( osl::Mutex::getGlobalMutex() );

@@ -39,16 +39,16 @@ public:
     SwPageFootnoteInfoItem(const SwPageFootnoteInfoItem& rItem );
     virtual ~SwPageFootnoteInfoItem();
 
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
                                     OUString &rText,
-                                    const IntlWrapper*    pIntl = 0 ) const SAL_OVERRIDE;
+                                    const IntlWrapper*    pIntl = nullptr ) const override;
 
-    virtual bool             QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool             PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual bool             QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool             PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
     SwPageFootnoteInfo& GetPageFootnoteInfo()             { return aFootnoteInfo; }
     const SwPageFootnoteInfo& GetPageFootnoteInfo() const { return aFootnoteInfo; }
@@ -59,11 +59,11 @@ class SW_DLLPUBLIC SwPtrItem : public SfxPoolItem
     void* pMisc;
 
 public:
-    SwPtrItem( const sal_uInt16 nId = FN_PARAM_GRF_DIALOG, void* pPtr = 0);
+    SwPtrItem( const sal_uInt16 nId = FN_PARAM_GRF_DIALOG, void* pPtr = nullptr);
     SwPtrItem( const SwPtrItem& rItem );
 
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
 
     void*   GetValue() const        { return pMisc; }
 };
@@ -77,11 +77,11 @@ public:
     SwUINumRuleItem( const SwUINumRuleItem& rItem );
     virtual ~SwUINumRuleItem();
 
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
 
-    virtual bool             QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool             PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual bool             QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool             PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
     const SwNumRule* GetNumRule() const         { return pRule; }
           SwNumRule* GetNumRule()               { return pRule; }
@@ -92,7 +92,7 @@ class SwBackgroundDestinationItem : public SfxUInt16Item
 public:
     SwBackgroundDestinationItem(sal_uInt16  nWhich, sal_uInt16 nValue);
 
-    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = nullptr ) const override;
 };
 
 class SW_DLLPUBLIC SwPaMItem : public SfxPoolItem
@@ -100,11 +100,11 @@ class SW_DLLPUBLIC SwPaMItem : public SfxPoolItem
     SwPaM* m_pPaM;
 
 public:
-    SwPaMItem( const sal_uInt16 nId = FN_PARAM_PAM, SwPaM* pPaM = NULL);
+    SwPaMItem( const sal_uInt16 nId = FN_PARAM_PAM, SwPaM* pPaM = nullptr);
     SwPaMItem( const SwPaMItem& rItem );
 
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
 
     SwPaM*   GetValue() const        { return m_pPaM; }
 };

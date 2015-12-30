@@ -29,26 +29,24 @@ class XMLShapePropertySetContext : public SvXMLPropertySetContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLShapePropertySetContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
                 const OUString& rLName,
-                 const ::com::sun::star::uno::Reference<
-                         ::com::sun::star::xml::sax::XAttributeList >& xAttrList,
+                 const css::uno::Reference<css::xml::sax::XAttributeList >& xAttrList,
                  sal_uInt32 nFam,
                  ::std::vector< XMLPropertyState > &rProps,
                  const rtl::Reference < SvXMLImportPropertyMapper > &rMap );
 
     virtual ~XMLShapePropertySetContext();
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
     using SvXMLPropertySetContext::CreateChildContext;
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                    const OUString& rLocalName,
-                                   const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList,
+                                   const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList,
                                    ::std::vector< XMLPropertyState > &rProperties,
-                                   const XMLPropertyState& rProp) SAL_OVERRIDE;
+                                   const XMLPropertyState& rProp) override;
 };
 
 #endif

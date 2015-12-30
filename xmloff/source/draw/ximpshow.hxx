@@ -22,6 +22,7 @@
 
 #include <xmloff/xmlictxt.hxx>
 #include "sdxmlimp_impl.hxx"
+#include <memory>
 
 class ShowsImpImpl;
 
@@ -29,19 +30,18 @@ class ShowsImpImpl;
 
 class SdXMLShowsContext : public SvXMLImportContext
 {
-    ShowsImpImpl*   mpImpl;
+    std::unique_ptr<ShowsImpImpl>   mpImpl;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     SdXMLShowsContext( SdXMLImport& rImport,
         sal_uInt16 nPrfx,
         const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList);
+        const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList);
     virtual ~SdXMLShowsContext();
 
     virtual SvXMLImportContext * CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList ) override;
 };
 
 #endif // INCLUDED_XMLOFF_SOURCE_DRAW_XIMPSHOW_HXX

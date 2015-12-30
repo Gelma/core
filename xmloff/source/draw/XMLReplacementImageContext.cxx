@@ -32,7 +32,6 @@ using ::com::sun::star::uno::makeAny;
 using namespace ::com::sun::star::xml::sax;
 using namespace ::com::sun::star::beans;
 
-TYPEINIT1( XMLReplacementImageContext, SvXMLImportContext );
 
 XMLReplacementImageContext::XMLReplacementImageContext(
         SvXMLImport& rImport,
@@ -89,7 +88,7 @@ void XMLReplacementImageContext::EndElement()
     else if( m_xBase64Stream.is() )
     {
         sHRef = GetImport().ResolveGraphicObjectURLFromBase64( m_xBase64Stream );
-        m_xBase64Stream = 0;
+        m_xBase64Stream = nullptr;
     }
 
     Reference < XPropertySetInfo > xPropSetInfo =
@@ -103,7 +102,7 @@ SvXMLImportContext *XMLReplacementImageContext::CreateChildContext(
         const OUString& rLocalName,
         const Reference< XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if( XML_NAMESPACE_OFFICE == nPrefix &&
         IsXMLToken( rLocalName, ::xmloff::token::XML_BINARY_DATA ) &&

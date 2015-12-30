@@ -23,19 +23,19 @@
 #include <tools/mempool.hxx>
 #include "ftnboss.hxx"
 
-class SwColumnFrm: public SwFootnoteBossFrm
+class SwColumnFrame: public SwFootnoteBossFrame
 {
 private:
-    virtual void DestroyImpl() SAL_OVERRIDE;
-    virtual ~SwColumnFrm();
+    virtual void DestroyImpl() override;
+    virtual ~SwColumnFrame();
 
 public:
-    SwColumnFrm( SwFrameFormat*, SwFrm* );
+    SwColumnFrame( SwFrameFormat*, SwFrame* );
 
-    virtual void PaintBreak() const SAL_OVERRIDE;
-    virtual void PaintSubsidiaryLines( const SwPageFrm*, const SwRect& ) const SAL_OVERRIDE;
+    virtual void PaintBreak() const override;
+    virtual void PaintSubsidiaryLines( const SwPageFrame*, const SwRect& ) const override;
 
-    DECL_FIXEDMEMPOOL_NEWDEL(SwColumnFrm)
+    DECL_FIXEDMEMPOOL_NEWDEL(SwColumnFrame)
 };
 
 #endif // INCLUDED_SW_SOURCE_CORE_INC_COLFRM_HXX

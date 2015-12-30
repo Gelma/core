@@ -23,11 +23,10 @@
 #include <ooo/vba/word/XAutoTextEntries.hpp>
 #include <ooo/vba/word/XAutoTextEntry.hpp>
 #include <vbahelper/vbahelperinterface.hxx>
-#include <cppuhelper/implbase1.hxx>
 #include <ooo/vba/word/XRange.hpp>
 #include <com/sun/star/text/XAutoTextEntry.hpp>
 
-typedef InheritedHelperInterfaceImpl1< ooo::vba::word::XAutoTextEntry > SwVbaAutoTextEntry_BASE;
+typedef InheritedHelperInterfaceWeakImpl< ooo::vba::word::XAutoTextEntry > SwVbaAutoTextEntry_BASE;
 
 class SwVbaAutoTextEntry : public SwVbaAutoTextEntry_BASE
 {
@@ -39,32 +38,29 @@ public:
     virtual ~SwVbaAutoTextEntry();
 
     // XAutoTextEntry
-    virtual css::uno::Reference< ooo::vba::word::XRange > SAL_CALL Insert( const css::uno::Reference< ooo::vba::word::XRange >& _where, const css::uno::Any& _richtext ) throw ( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual css::uno::Reference< ooo::vba::word::XRange > SAL_CALL Insert( const css::uno::Reference< ooo::vba::word::XRange >& _where, const css::uno::Any& _richtext ) throw ( css::uno::RuntimeException, std::exception ) override;
 
     // XHelperInterface
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 
 typedef CollTestImplHelper< ooo::vba::word::XAutoTextEntries > SwVbaAutoTextEntries_BASE;
 
 class SwVbaAutoTextEntries : public SwVbaAutoTextEntries_BASE
 {
-private:
-    css::uno::Reference< css::container::XIndexAccess > mxAutoTextEntryAccess;
-
 public:
     SwVbaAutoTextEntries( const css::uno::Reference< ov::XHelperInterface >& xParent, const css::uno::Reference< css::uno::XComponentContext > & xContext, const css::uno::Reference< css::container::XIndexAccess >& xIndexAccess ) throw (css::uno::RuntimeException);
     virtual ~SwVbaAutoTextEntries() {}
 
     // XEnumerationAccess
-    virtual css::uno::Type SAL_CALL getElementType() throw (css::uno::RuntimeException) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::container::XEnumeration > SAL_CALL createEnumeration() throw (css::uno::RuntimeException) SAL_OVERRIDE;
+    virtual css::uno::Type SAL_CALL getElementType() throw (css::uno::RuntimeException) override;
+    virtual css::uno::Reference< css::container::XEnumeration > SAL_CALL createEnumeration() throw (css::uno::RuntimeException) override;
 
     // SwVbaAutoTextEntries_BASE
-    virtual css::uno::Any createCollectionObject( const css::uno::Any& aSource ) SAL_OVERRIDE;
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual css::uno::Any createCollectionObject( const css::uno::Any& aSource ) override;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 
 #endif // INCLUDED_SW_SOURCE_UI_VBA_VBAAUTOTEXTENTRY_HXX

@@ -20,6 +20,10 @@
 #ifndef INCLUDED_SALHELPER_SINGLETONREF_HXX
 #define INCLUDED_SALHELPER_SINGLETONREF_HXX
 
+#include <sal/config.h>
+
+#include <cstddef>
+
 #include <osl/mutex.hxx>
 #include <rtl/instance.hxx>
 #include <osl/diagnose.h>
@@ -124,7 +128,7 @@ class SingletonRef
             if (m_nRef == 0)
             {
                 delete m_pInstance;
-                m_pInstance = 0;
+                m_pInstance = NULL;
             }
             // <- GLOBAL SAFE
         }
@@ -185,7 +189,7 @@ class SingletonRef
 };
 
 template< class SingletonClass >
-SingletonClass* SingletonRef< SingletonClass >::m_pInstance = 0;
+SingletonClass* SingletonRef< SingletonClass >::m_pInstance = NULL;
 
 template< class SingletonClass >
 sal_Int32 SingletonRef< SingletonClass >::m_nRef = 0;

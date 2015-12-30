@@ -44,11 +44,11 @@ void RscTop::SetCallPar(const OString& rPar1, const OString& rPar2,
 RSCINST RscTop::GetDefault()
 {
     if( !aDfltInst.IsInst() )
-        aDfltInst = this->Create( NULL, RSCINST() );
+        aDfltInst = this->Create( nullptr, RSCINST() );
     return aDfltInst;
 }
 
-void RscTop :: Pre_dtor()
+void RscTop::Pre_dtor()
 {
     if( aDfltInst.IsInst() )
     {
@@ -63,10 +63,10 @@ RscTop * RscTop::GetTypeClass() const
     if( pSuperClass )
         return pSuperClass->GetTypeClass();
     else
-        return NULL;
+        return nullptr;
 }
 
-sal_uInt32 RscTop :: Size()
+sal_uInt32 RscTop::Size()
 {
     if( pSuperClass )
         return pSuperClass->Size();
@@ -74,7 +74,7 @@ sal_uInt32 RscTop :: Size()
         return 0;
 }
 
-ERRTYPE RscTop :: GetRef( const RSCINST & rInst, RscId * pRscId )
+ERRTYPE RscTop::GetRef( const RSCINST & rInst, RscId * pRscId )
 {
     if( pSuperClass )
         return pSuperClass->GetRef( rInst, pRscId );

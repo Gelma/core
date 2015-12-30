@@ -37,6 +37,7 @@ import com.sun.star.uno.UnoRuntime;
 import lib.MultiMethodTest;
 import lib.Status;
 import lib.StatusException;
+import util.utils;
 
 /**
  * Testing <code>com.sun.star.sheet.XDataPilotTable2</code>
@@ -68,7 +69,7 @@ public class _XDataPilotTable2 extends MultiMethodTest
      * exception to be thrown when obtaining a result data for a cell fails
      * (probably because the cell is not a result cell).
      */
-    private class ResultCellFailure extends com.sun.star.uno.Exception {}
+    private static class ResultCellFailure extends com.sun.star.uno.Exception {}
 
     @Override
     protected void before()
@@ -121,7 +122,7 @@ public class _XDataPilotTable2 extends MultiMethodTest
             }
             log.println(formatCell(addr) + ": " + data.length + " rows (" + (data.length-1) + " records)");
 
-            if (val != sum)
+            if (!utils.approxEqual(val, sum))
                 testResult = false;
         }
         tRes.tested("getDrillDownData()", testResult);

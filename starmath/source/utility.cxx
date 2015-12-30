@@ -42,7 +42,7 @@
 SmViewShell * SmGetActiveView()
 {
     SfxViewShell *pView = SfxViewShell::Current();
-    return PTR_CAST(SmViewShell, pView);
+    return  dynamic_cast<SmViewShell*>( pView);
 }
 
 
@@ -157,7 +157,7 @@ SmFontPickListBox::SmFontPickListBox (vcl::Window* pParent, WinBits nBits) :
     SetSelectHdl(LINK(this, SmFontPickListBox, SelectHdl));
 }
 
-IMPL_LINK( SmFontPickListBox, SelectHdl, ListBox *, /*pListBox*/ )
+IMPL_LINK_NOARG_TYPED( SmFontPickListBox, SelectHdl, ListBox&, void )
 {
     OUString aString;
 
@@ -172,8 +172,6 @@ IMPL_LINK( SmFontPickListBox, SelectHdl, ListBox *, /*pListBox*/ )
     }
 
     SelectEntryPos(0);
-
-    return 0;
 }
 
 SmFontPickListBox& SmFontPickListBox::operator=(const SmFontPickList& rList)

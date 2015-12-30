@@ -88,7 +88,6 @@ namespace sdr
     class ObjectUser;
 }
 
-// #110094#
 namespace sdr
 {
     namespace contact
@@ -160,7 +159,6 @@ enum SdrUserCallType {SDRUSERCALL_MOVEONLY,         // only moved, size unchange
 class SVX_DLLPUBLIC SdrObjUserCall
 {
 public:
-    TYPEINFO();
     virtual ~SdrObjUserCall();
     virtual void Changed(const SdrObject& rObj, SdrUserCallType eType, const Rectangle& rOldBoundRect);
 };
@@ -192,9 +190,9 @@ protected:
     sal_uInt16                      nVersion;
 
 private:
-    void operator=(const SdrObjUserData& rData) SAL_DELETED_FUNCTION;
-    bool operator==(const SdrObjUserData& rData) const SAL_DELETED_FUNCTION;
-    bool operator!=(const SdrObjUserData& rData) const SAL_DELETED_FUNCTION;
+    void operator=(const SdrObjUserData& rData) = delete;
+    bool operator==(const SdrObjUserData& rData) const = delete;
+    bool operator!=(const SdrObjUserData& rData) const = delete;
 
 public:
     SdrObjUserData(sal_uInt32 nInv, sal_uInt16 nId, sal_uInt16 nVer);
@@ -266,7 +264,7 @@ private:
     struct Impl;
     Impl* mpImpl;
 
-    SdrObject( const SdrObject& ) SAL_DELETED_FUNCTION;
+    SdrObject( const SdrObject& ) = delete;
 
 public:
     void AddObjectUser(sdr::ObjectUser& rNewUser);
@@ -409,7 +407,6 @@ protected:
     virtual ~SdrObject();
 
 public:
-    TYPEINFO_OVERRIDE();
     SdrObject();
 
     // frees the SdrObject pointed to by the argument
@@ -483,9 +480,9 @@ public:
     void SetOrdNum(sal_uInt32 nNum);
 
     // GrabBagItem for interim interop purposes
-    void GetGrabBagItem(com::sun::star::uno::Any& rVal) const;
+    void GetGrabBagItem(css::uno::Any& rVal) const;
 
-    void SetGrabBagItem(const com::sun::star::uno::Any& rVal);
+    void SetGrabBagItem(const css::uno::Any& rVal);
 
     // Return the position in the navigation order for the called object.
     // Note that this method may update the navigation position of the
@@ -504,14 +501,12 @@ public:
     // Use SdrObjList::SetObjectNavigationPosition() instead.
     void SetNavigationPosition (const sal_uInt32 nPosition);
 
-    // #111111#
     // To make clearer that this method may trigger RecalcBoundRect and thus may be
     // expensive and sometimes problematic (inside a bigger object change You will get
     // non-useful BoundRects sometimes) i rename that method from GetBoundRect() to
     // GetCurrentBoundRect().
     virtual const Rectangle& GetCurrentBoundRect() const;
 
-    // #111111#
     // To have a possibility to get the last calculated BoundRect e.g for producing
     // the first rectangle for repaints (old and new need to be used) without forcing
     // a RecalcBoundRect (which may be problematical and expensive sometimes) i add here
@@ -534,8 +529,6 @@ public:
     // it should be sufficient to do "virtual Foo* Clone() const { return CloneHelper< Foo >(); }".
     // Note that this function uses operator= internally.
     virtual SdrObject* Clone() const;
-
-    virtual SdrObject* CloneWithShellIDs( const OUString& rSrcShellID, const OUString& rDestShellID ) const;
 
     // implemented mainly for the purposes of Clone()
     SdrObject& operator=(const SdrObject& rObj);
@@ -879,13 +872,13 @@ public:
     void DeleteUserData(sal_uInt16 nNum);
 
     // switch ItemPool for this object
-    void MigrateItemPool(SfxItemPool* pSrcPool, SfxItemPool* pDestPool, SdrModel* pNewModel = 0L);
+    void MigrateItemPool(SfxItemPool* pSrcPool, SfxItemPool* pDestPool, SdrModel* pNewModel = nullptr);
 
     // access to the UNO representation of the shape
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > getUnoShape();
-    ::com::sun::star::uno::WeakReference< ::com::sun::star::uno::XInterface > getWeakUnoShape() const { return maWeakUnoShape; }
+    virtual css::uno::Reference< css::uno::XInterface > getUnoShape();
+    css::uno::WeakReference< css::uno::XInterface > getWeakUnoShape() const { return maWeakUnoShape; }
 
-    static SdrObject* getSdrObjectFromXShape( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >& xInt );
+    static SdrObject* getSdrObjectFromXShape( const css::uno::Reference< css::uno::XInterface >& xInt );
 
     // sets a new UNO representation of the shape
     // This is only a public interface function. The actual work is
@@ -893,15 +886,15 @@ public:
     // Calling this function is only allowed for the UNO representation
     // itself!
     void setUnoShape(
-            const com::sun::star::uno::Reference<
-                com::sun::star::uno::XInterface>& _rxUnoShape);
+            const css::uno::Reference<
+                css::uno::XInterface>& _rxUnoShape);
 
     // retrieves the instance responsible for notifying changes in the properties of the shape associated with
     // the SdrObject
     //
     // @precond
     //     There already exists an SvxShape instance associated with the SdrObject
-    // @throws ::com::sun::star::uno::RuntimeException
+    // @throws css::uno::RuntimeException
     //     if there does nt yet exists an SvxShape instance associated with the SdrObject.
     svx::PropertyChangeNotifier& getShapePropertyChangeNotifier();
 
@@ -926,7 +919,6 @@ public:
     // to use (0,0) as upper left and will be scaled to the given size in the matrix.
     virtual void TRSetBaseGeometry(const basegfx::B2DHomMatrix& rMatrix, const basegfx::B2DPolyPolygon& rPolyPolygon);
 
-    // #116168#
     // give info if object is in destruction
     bool IsInDestruction() const;
 
@@ -963,7 +955,7 @@ protected:
     ///
     /// The implementation _must_ call the same method of its parent
     /// class (preferably as the first step)!
-    virtual void impl_setUnoShape( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >& _rxUnoShape );
+    virtual void impl_setUnoShape( const css::uno::Reference< css::uno::XInterface >& _rxUnoShape );
 
     // helper function for reimplementing Clone().
     template< typename T > T* CloneHelper() const;
@@ -974,7 +966,7 @@ private:
 
     // do not use directly, always use getSvxShape() if you have to!
     SvxShape*   mpSvxShape;
-    ::com::sun::star::uno::WeakReference< ::com::sun::star::uno::XInterface >
+    css::uno::WeakReference< css::uno::XInterface >
                 maWeakUnoShape;
     // HACK: Do not automatically insert newly created object into a page.
     // The user needs to do it manually later.
@@ -1012,7 +1004,7 @@ private:
     SVX_DLLPRIVATE SdrObjFactory(sal_uInt32 nInvent, sal_uInt16 nIdent, SdrPage* pNewPage, SdrModel* pNewModel);
 
 public:
-    static SdrObject* MakeNewObject(sal_uInt32 nInvent, sal_uInt16 nIdent, SdrPage* pPage, SdrModel* pModel=NULL);
+    static SdrObject* MakeNewObject(sal_uInt32 nInvent, sal_uInt16 nIdent, SdrPage* pPage, SdrModel* pModel=nullptr);
     static SdrObject* MakeNewObject( sal_uInt32 nInventor, sal_uInt16 nIdentifier, const Rectangle& rSnapRect, SdrPage* pPage );
     static void InsertMakeObjectHdl(const Link<SdrObjFactory*,void>& rLink);
     static void RemoveMakeObjectHdl(const Link<SdrObjFactory*,void>& rLink);
@@ -1025,8 +1017,8 @@ typedef tools::WeakReference< SdrObject > SdrObjectWeakRef;
 template< typename T > T* SdrObject::CloneHelper() const
 {
     OSL_ASSERT( typeid( T ) == typeid( *this ));
-    T* pObj = dynamic_cast< T* >( SdrObjFactory::MakeNewObject(GetObjInventor(),GetObjIdentifier(),NULL));
-    if (pObj!=NULL)
+    T* pObj = dynamic_cast< T* >( SdrObjFactory::MakeNewObject(GetObjInventor(),GetObjIdentifier(),nullptr));
+    if (pObj!=nullptr)
         *pObj=*static_cast< const T* >( this );
     return pObj;
 }

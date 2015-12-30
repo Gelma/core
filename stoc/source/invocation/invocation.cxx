@@ -69,8 +69,7 @@ namespace stoc_inv
 {
 static Sequence< OUString > inv_getSupportedServiceNames()
 {
-    Sequence< OUString > seqNames(1);
-    seqNames.getArray()[0] = SERVICENAME;
+    Sequence< OUString > seqNames { SERVICENAME };
     return seqNames;
 }
 
@@ -104,100 +103,100 @@ public:
     virtual ~Invocation_Impl();
 
     // XInterface
-    virtual Any         SAL_CALL queryInterface( const Type & aType) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void        SAL_CALL acquire() throw() SAL_OVERRIDE { OWeakObject::acquire(); }
-    virtual void        SAL_CALL release() throw() SAL_OVERRIDE { OWeakObject::release(); }
+    virtual Any         SAL_CALL queryInterface( const Type & aType) throw( RuntimeException, std::exception ) override;
+    virtual void        SAL_CALL acquire() throw() override { OWeakObject::acquire(); }
+    virtual void        SAL_CALL release() throw() override { OWeakObject::release(); }
 
 
     // XTypeProvider
     virtual Sequence< css::uno::Type > SAL_CALL getTypes(  )
-       throw(RuntimeException, std::exception) SAL_OVERRIDE;
+       throw(RuntimeException, std::exception) override;
     virtual Sequence< sal_Int8 > SAL_CALL getImplementationId(  )
-       throw( RuntimeException, std::exception) SAL_OVERRIDE;
+       throw( RuntimeException, std::exception) override;
 
     // XMaterialHolder
-    virtual Any         SAL_CALL getMaterial() throw(RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual Any         SAL_CALL getMaterial() throw(RuntimeException, std::exception) override;
 
     // XInvocation
-    virtual Reference<XIntrospectionAccess> SAL_CALL getIntrospection() throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual Reference<XIntrospectionAccess> SAL_CALL getIntrospection() throw( RuntimeException, std::exception ) override;
     virtual Any SAL_CALL invoke(const OUString& FunctionName, const Sequence< Any >& Params, Sequence< sal_Int16 >& OutParamIndex, Sequence< Any >& OutParam)
-        throw( IllegalArgumentException, CannotConvertException, InvocationTargetException, RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( IllegalArgumentException, CannotConvertException, InvocationTargetException, RuntimeException, std::exception ) override;
     virtual void SAL_CALL setValue(const OUString& PropertyName, const Any& Value)
-        throw( UnknownPropertyException, CannotConvertException, InvocationTargetException, RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( UnknownPropertyException, CannotConvertException, InvocationTargetException, RuntimeException, std::exception ) override;
     virtual Any SAL_CALL getValue(const OUString& PropertyName)
-        throw( UnknownPropertyException, RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL hasMethod(const OUString& Name) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL hasProperty(const OUString& Name) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( UnknownPropertyException, RuntimeException, std::exception ) override;
+    virtual sal_Bool SAL_CALL hasMethod(const OUString& Name) throw( RuntimeException, std::exception ) override;
+    virtual sal_Bool SAL_CALL hasProperty(const OUString& Name) throw( RuntimeException, std::exception ) override;
 
     // XInvocation2
     virtual Sequence< OUString > SAL_CALL getMemberNames(  )
-        throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception ) override;
     virtual Sequence< InvocationInfo > SAL_CALL getInfo(  )
-        throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception ) override;
     virtual InvocationInfo SAL_CALL getInfoForName( const OUString& aName, sal_Bool bExact )
-        throw( IllegalArgumentException, RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( IllegalArgumentException, RuntimeException, std::exception ) override;
 
     // All Access and Container methods are not thread safe
     // XElementAccess
-    virtual Type SAL_CALL getElementType() throw( RuntimeException, std::exception ) SAL_OVERRIDE
+    virtual Type SAL_CALL getElementType() throw( RuntimeException, std::exception ) override
         { return _xElementAccess->getElementType(); }
 
-    virtual sal_Bool SAL_CALL hasElements() throw( RuntimeException, std::exception ) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasElements() throw( RuntimeException, std::exception ) override
         { return _xElementAccess->hasElements(); }
 
     // XNameContainer
     virtual void SAL_CALL insertByName( const OUString& Name, const Any& Element )
-        throw( IllegalArgumentException, ElementExistException, WrappedTargetException, RuntimeException, std::exception ) SAL_OVERRIDE
+        throw( IllegalArgumentException, ElementExistException, WrappedTargetException, RuntimeException, std::exception ) override
         { _xNameContainer->insertByName( Name, Element ); }
 
     virtual void SAL_CALL removeByName( const OUString& Name )
-        throw( NoSuchElementException, WrappedTargetException, RuntimeException, std::exception ) SAL_OVERRIDE
+        throw( NoSuchElementException, WrappedTargetException, RuntimeException, std::exception ) override
         { _xNameContainer->removeByName( Name ); }
 
     // XNameReplace
     virtual void SAL_CALL replaceByName( const OUString& Name, const Any& Element )
-        throw( IllegalArgumentException, NoSuchElementException, WrappedTargetException, RuntimeException, std::exception ) SAL_OVERRIDE
+        throw( IllegalArgumentException, NoSuchElementException, WrappedTargetException, RuntimeException, std::exception ) override
         { _xNameReplace->replaceByName( Name, Element ); }
 
     // XNameAccess
     virtual Any SAL_CALL getByName( const OUString& Name )
-        throw( NoSuchElementException, WrappedTargetException, RuntimeException, std::exception ) SAL_OVERRIDE
+        throw( NoSuchElementException, WrappedTargetException, RuntimeException, std::exception ) override
         { return _xNameAccess->getByName( Name ); }
 
-    virtual Sequence<OUString> SAL_CALL getElementNames() throw( RuntimeException, std::exception ) SAL_OVERRIDE
+    virtual Sequence<OUString> SAL_CALL getElementNames() throw( RuntimeException, std::exception ) override
         { return _xNameAccess->getElementNames(); }
 
-    virtual sal_Bool SAL_CALL hasByName( const OUString& Name ) throw( RuntimeException, std::exception ) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasByName( const OUString& Name ) throw( RuntimeException, std::exception ) override
         { return _xNameAccess->hasByName( Name ); }
 
     // XIndexContainer
     virtual void SAL_CALL insertByIndex( sal_Int32 Index, const Any& Element )
-        throw( IllegalArgumentException, IndexOutOfBoundsException, WrappedTargetException, RuntimeException, std::exception ) SAL_OVERRIDE
+        throw( IllegalArgumentException, IndexOutOfBoundsException, WrappedTargetException, RuntimeException, std::exception ) override
         { _xIndexContainer->insertByIndex( Index, Element ); }
 
     virtual void SAL_CALL removeByIndex( sal_Int32 Index )
-        throw( IndexOutOfBoundsException, WrappedTargetException, RuntimeException, std::exception ) SAL_OVERRIDE
+        throw( IndexOutOfBoundsException, WrappedTargetException, RuntimeException, std::exception ) override
         { _xIndexContainer->removeByIndex( Index ); }
 
     // XIndexReplace
     virtual void SAL_CALL replaceByIndex( sal_Int32 Index, const Any& Element )
-        throw( IllegalArgumentException, IndexOutOfBoundsException, WrappedTargetException, RuntimeException, std::exception ) SAL_OVERRIDE
+        throw( IllegalArgumentException, IndexOutOfBoundsException, WrappedTargetException, RuntimeException, std::exception ) override
         { _xIndexReplace->replaceByIndex( Index, Element ); }
 
     // XIndexAccess
-    virtual sal_Int32 SAL_CALL getCount() throw( RuntimeException, std::exception ) SAL_OVERRIDE
+    virtual sal_Int32 SAL_CALL getCount() throw( RuntimeException, std::exception ) override
         { return _xIndexAccess->getCount(); }
 
     virtual Any SAL_CALL getByIndex( sal_Int32 Index )
-        throw( IndexOutOfBoundsException, WrappedTargetException, RuntimeException, std::exception ) SAL_OVERRIDE
+        throw( IndexOutOfBoundsException, WrappedTargetException, RuntimeException, std::exception ) override
         { return _xIndexAccess->getByIndex( Index ); }
 
     // XEnumerationAccess
-    virtual Reference<XEnumeration> SAL_CALL createEnumeration() throw( RuntimeException, std::exception ) SAL_OVERRIDE
+    virtual Reference<XEnumeration> SAL_CALL createEnumeration() throw( RuntimeException, std::exception ) override
         { return _xEnumerationAccess->createEnumeration(); }
 
     // XExactName
-    virtual OUString SAL_CALL getExactName( const OUString& rApproximateName ) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getExactName( const OUString& rApproximateName ) throw( RuntimeException, std::exception ) override;
 
 
 
@@ -351,12 +350,12 @@ Any Invocation_Impl::getMaterial() throw(RuntimeException, std::exception)
     Reference<XMaterialHolder> xMaterialHolder;
     if( _xDirect.is() )
     {
-        xMaterialHolder = Reference<XMaterialHolder>::query( _xDirect );
+        xMaterialHolder.set( _xDirect, UNO_QUERY );
         //_xDirect->queryInterface( XMaterialHolder::getSmartUik(), xMaterialHolder );
     }
     else if( _xIntrospectionAccess.is() )
     {
-        xMaterialHolder = Reference<XMaterialHolder>::query( _xIntrospectionAccess );
+        xMaterialHolder.set( _xIntrospectionAccess, UNO_QUERY );
         //_xIntrospectionAccess->queryInterface( XMaterialHolder::getSmartUik(), xMaterialHolder );
     }
     if( xMaterialHolder.is() )
@@ -377,21 +376,21 @@ void Invocation_Impl::setMaterial( const Any& rMaterial )
     _aMaterial = rMaterial;
 
     // First do this outside the guard
-    _xDirect = Reference<XInvocation>::query( xObj );
+    _xDirect.set( xObj, UNO_QUERY );
 
     if( _xDirect.is() )
     {
         // Consult object directly
-        _xElementAccess     = Reference<XElementAccess>::query( _xDirect );
-        _xEnumerationAccess = Reference<XEnumerationAccess>::query( _xDirect );
-        _xIndexAccess       = Reference<XIndexAccess>::query( _xDirect );
-        _xIndexReplace      = Reference<XIndexReplace>::query( _xDirect );
-        _xIndexContainer    = Reference<XIndexContainer>::query( _xDirect );
-        _xNameAccess        = Reference<XNameAccess>::query( _xDirect );
-        _xNameReplace       = Reference<XNameReplace>::query( _xDirect );
-        _xNameContainer     = Reference<XNameContainer>::query( _xDirect );
-        _xENDirect          = Reference<XExactName>::query( _xDirect );
-        _xDirect2           = Reference<XInvocation2>::query( _xDirect );
+        _xElementAccess.set( _xDirect, UNO_QUERY );
+        _xEnumerationAccess.set( _xDirect, UNO_QUERY );
+        _xIndexAccess.set( _xDirect, UNO_QUERY );
+        _xIndexReplace.set( _xDirect, UNO_QUERY );
+        _xIndexContainer.set( _xDirect, UNO_QUERY );
+        _xNameAccess.set( _xDirect, UNO_QUERY );
+        _xNameReplace.set( _xDirect, UNO_QUERY );
+        _xNameContainer.set( _xDirect, UNO_QUERY );
+        _xENDirect.set( _xDirect, UNO_QUERY );
+        _xDirect2.set( _xDirect, UNO_QUERY );
 
         // only once!!!
         //_xIntrospectionAccess = XIntrospectionAccessRef();
@@ -405,52 +404,51 @@ void Invocation_Impl::setMaterial( const Any& rMaterial )
             _xIntrospectionAccess = xIntrospection->inspect( _aMaterial );
             if( _xIntrospectionAccess.is() )
             {
-                _xElementAccess = Reference<XElementAccess>::query(
+                _xElementAccess.set(
                       _xIntrospectionAccess->queryAdapter(
-                                 cppu::UnoType<XElementAccess>::get()) );
+                                 cppu::UnoType<XElementAccess>::get()), UNO_QUERY );
 
                 if( _xElementAccess.is() )
                 {
-                    _xEnumerationAccess = Reference<XEnumerationAccess>::query(
+                    _xEnumerationAccess.set(
                                _xIntrospectionAccess->queryAdapter(
-                                    cppu::UnoType<XEnumerationAccess>::get()) );
+                                    cppu::UnoType<XEnumerationAccess>::get()), UNO_QUERY );
 
-                    _xIndexAccess = Reference<XIndexAccess>::query(
+                    _xIndexAccess.set(
                            _xIntrospectionAccess->queryAdapter(
-                                    cppu::UnoType<XIndexAccess>::get()) );
+                                    cppu::UnoType<XIndexAccess>::get()), UNO_QUERY );
 
                     if( _xIndexAccess.is() )
                     {
-                        _xIndexReplace = Reference<XIndexReplace>::query(
+                        _xIndexReplace.set(
                              _xIntrospectionAccess->queryAdapter(
-                                        cppu::UnoType<XIndexReplace>::get()) );
+                                        cppu::UnoType<XIndexReplace>::get()), UNO_QUERY );
 
-                        _xIndexContainer = Reference<XIndexContainer>::query(
+                        _xIndexContainer.set(
                              _xIntrospectionAccess->queryAdapter(
-                                        cppu::UnoType<XIndexContainer>::get()) );
+                                        cppu::UnoType<XIndexContainer>::get()), UNO_QUERY );
                     }
 
-                    _xNameAccess = Reference<XNameAccess>::query(
+                    _xNameAccess.set(
                          _xIntrospectionAccess->queryAdapter(
-                                    cppu::UnoType<XNameAccess>::get()) );
+                                    cppu::UnoType<XNameAccess>::get()), UNO_QUERY );
 
                     if( _xNameAccess.is() )
                     {
-                        _xNameReplace = Reference<XNameReplace>::query(
+                        _xNameReplace.set(
                                    _xIntrospectionAccess->queryAdapter(
-                                       cppu::UnoType<XNameReplace>::get()) );
+                                       cppu::UnoType<XNameReplace>::get()), UNO_QUERY );
 
-                        _xNameContainer = Reference<XNameContainer>::query(
+                        _xNameContainer.set(
                                    _xIntrospectionAccess->queryAdapter(
-                                       cppu::UnoType<XNameContainer>::get()) );
+                                       cppu::UnoType<XNameContainer>::get()), UNO_QUERY );
                     }
                 }
 
-                _xPropertySet = Reference<XPropertySet>::query(
-                           _xIntrospectionAccess->queryAdapter(
-                               cppu::UnoType<XPropertySet>::get()) );
+                _xPropertySet.set( _xIntrospectionAccess->queryAdapter( cppu::UnoType<XPropertySet>::get()),
+                                   UNO_QUERY );
 
-                _xENIntrospection = Reference<XExactName>::query( _xIntrospectionAccess );
+                _xENIntrospection.set( _xIntrospectionAccess, UNO_QUERY );
             }
         }
         /* only once !!!
@@ -824,14 +822,14 @@ void Invocation_Impl::getInfoSequenceImpl
     }
 
     // Setting up result sequences
-    OUString* pRetStrings = NULL;
+    OUString* pRetStrings = nullptr;
     if( pStringSeq )
     {
         pStringSeq->realloc( nTotalCount );
         pRetStrings = pStringSeq->getArray();
     }
 
-    InvocationInfo* pRetInfos = NULL;
+    InvocationInfo* pRetInfos = nullptr;
     if( pInfoSeq )
     {
         pInfoSeq->realloc( nTotalCount );
@@ -874,7 +872,7 @@ Sequence< OUString > SAL_CALL Invocation_Impl::getMemberNames(  )
         return _xDirect2->getMemberNames();
     }
     Sequence< OUString > aRetSeq;
-    getInfoSequenceImpl( &aRetSeq, NULL );
+    getInfoSequenceImpl( &aRetSeq, nullptr );
     return aRetSeq;
 }
 
@@ -886,7 +884,7 @@ Sequence< InvocationInfo > SAL_CALL Invocation_Impl::getInfo(  )
         return _xDirect2->getInfo();
     }
     Sequence< InvocationInfo > aRetSeq;
-    getInfoSequenceImpl( NULL, &aRetSeq );
+    getInfoSequenceImpl( nullptr, &aRetSeq );
     return aRetSeq;
 }
 
@@ -1005,7 +1003,7 @@ void Invocation_Impl::fillInfoForMethod
 // XTypeProvider
 Sequence< Type > SAL_CALL Invocation_Impl::getTypes() throw( RuntimeException, std::exception )
 {
-    static Sequence< Type > const * s_pTypes = 0;
+    static Sequence< Type > const * s_pTypes = nullptr;
     if (! s_pTypes)
     {
         Sequence< Type > types( 4 +8 );
@@ -1093,14 +1091,14 @@ public:
     virtual ~InvocationService();
 
     // XServiceInfo
-    OUString                    SAL_CALL getImplementationName() throw( RuntimeException, std::exception ) SAL_OVERRIDE;
-    sal_Bool                        SAL_CALL supportsService(const OUString& ServiceName) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
-    Sequence< OUString >        SAL_CALL getSupportedServiceNames() throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+    OUString                    SAL_CALL getImplementationName() throw( RuntimeException, std::exception ) override;
+    sal_Bool                        SAL_CALL supportsService(const OUString& ServiceName) throw( RuntimeException, std::exception ) override;
+    Sequence< OUString >        SAL_CALL getSupportedServiceNames() throw( RuntimeException, std::exception ) override;
 
     // XSingleServiceFactory
-    Reference<XInterface>       SAL_CALL createInstance() throw( Exception, RuntimeException, std::exception ) SAL_OVERRIDE;
+    Reference<XInterface>       SAL_CALL createInstance() throw( Exception, RuntimeException, std::exception ) override;
     Reference<XInterface>       SAL_CALL createInstanceWithArguments(
-        const Sequence<Any>& rArguments ) throw( Exception, RuntimeException, std::exception ) SAL_OVERRIDE;
+        const Sequence<Any>& rArguments ) throw( Exception, RuntimeException, std::exception ) override;
 private:
     Reference<XComponentContext> mxCtx;
     Reference<XMultiComponentFactory> mxSMgr;
@@ -1114,10 +1112,8 @@ InvocationService::InvocationService( const Reference<XComponentContext> & xCtx 
     , mxSMgr( xCtx->getServiceManager() )
     , xCoreReflection( css::reflection::theCoreReflection::get(mxCtx) )
 {
-    xTypeConverter = Reference<XTypeConverter>(
-        mxSMgr->createInstanceWithContext(
-            OUString("com.sun.star.script.Converter"),
-            xCtx ),
+    xTypeConverter.set(
+        mxSMgr->createInstanceWithContext( "com.sun.star.script.Converter", xCtx ),
         UNO_QUERY );
     xIntrospection = theIntrospection::get(xCtx);
 }
@@ -1171,7 +1167,7 @@ Reference<XInterface> InvocationService::createInstanceWithArguments(
 Reference<XInterface> SAL_CALL InvocationService_CreateInstance( const Reference<XComponentContext> & xCtx )
     throw( RuntimeException )
 {
-    Reference<XInterface> xService = Reference< XInterface > ( *new InvocationService( xCtx ) );
+    Reference<XInterface> xService( *new InvocationService( xCtx ) );
     return xService;
 }
 
@@ -1183,9 +1179,9 @@ static const struct ImplementationEntry g_entries[] =
     {
         InvocationService_CreateInstance, inv_getImplementationName,
         inv_getSupportedServiceNames, createSingleComponentFactory,
-        0, 0
+        nullptr, 0
     },
-    { 0, 0, 0, 0, 0, 0 }
+    { nullptr, nullptr, nullptr, nullptr, nullptr, 0 }
 };
 
 extern "C" SAL_DLLPUBLIC_EXPORT void * SAL_CALL invocation_component_getFactory(

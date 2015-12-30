@@ -129,7 +129,7 @@ void ScRandomNumberGeneratorDialog::Init()
     mpEnableSeed->SetToggleHdl( LINK( this, ScRandomNumberGeneratorDialog, CheckChanged ));
     mpEnableRounding->SetToggleHdl( LINK( this, ScRandomNumberGeneratorDialog, CheckChanged ));
 
-    DistributionChanged(NULL);
+    DistributionChanged(*mpDistributionCombo.get());
     CheckChanged(*mpEnableSeed);
 }
 
@@ -328,8 +328,8 @@ void ScRandomNumberGeneratorDialog::GenerateNumbers(RNG& randomGenerator, const 
 
 IMPL_LINK_NOARG_TYPED( ScRandomNumberGeneratorDialog, OkClicked, Button*, void )
 {
-    ApplyClicked(NULL);
-    CloseClicked(NULL);
+    ApplyClicked(nullptr);
+    CloseClicked(nullptr);
 }
 
 IMPL_LINK_NOARG_TYPED( ScRandomNumberGeneratorDialog, ApplyClicked, Button*, void )
@@ -344,7 +344,7 @@ IMPL_LINK_NOARG_TYPED( ScRandomNumberGeneratorDialog, CloseClicked, Button*, voi
 
 IMPL_LINK_TYPED( ScRandomNumberGeneratorDialog, GetFocusHandler, Control&, rCtrl, void )
 {
-    Edit* pEdit = NULL;
+    Edit* pEdit = nullptr;
 
     if( (&rCtrl == static_cast<Control*>(mpInputRangeEdit)) || (&rCtrl == static_cast<Control*>(mpInputRangeButton)) )
         pEdit = mpInputRangeEdit;
@@ -358,7 +358,7 @@ IMPL_LINK_NOARG_TYPED(ScRandomNumberGeneratorDialog, LoseFocusHandler, Control&,
     mbDialogLostFocus = !IsActive();
 }
 
-IMPL_LINK_NOARG(ScRandomNumberGeneratorDialog, InputRangeModified)
+IMPL_LINK_NOARG_TYPED(ScRandomNumberGeneratorDialog, InputRangeModified, Edit&, void)
 {
     ScRangeList aRangeList;
     bool bValid = ParseWithNames( aRangeList, mpInputRangeEdit->GetText(), mpDoc);
@@ -377,10 +377,9 @@ IMPL_LINK_NOARG(ScRandomNumberGeneratorDialog, InputRangeModified)
         mpButtonApply->Disable();
         mpButtonOk->Disable();
     }
-    return 0;
 }
 
-IMPL_LINK_NOARG(ScRandomNumberGeneratorDialog, Parameter1ValueModified)
+IMPL_LINK_NOARG_TYPED(ScRandomNumberGeneratorDialog, Parameter1ValueModified, Edit&, void)
 {
     sal_Int16 aSelectedIndex = mpDistributionCombo-> GetSelectEntryPos();
     sal_Int64 aSelectedId = reinterpret_cast<sal_Int64>( mpDistributionCombo->GetEntryData(aSelectedIndex) );
@@ -394,10 +393,9 @@ IMPL_LINK_NOARG(ScRandomNumberGeneratorDialog, Parameter1ValueModified)
             mpParameter2Value->SetValue(min);
         }
     }
-    return 0;
 }
 
-IMPL_LINK_NOARG(ScRandomNumberGeneratorDialog, Parameter2ValueModified)
+IMPL_LINK_NOARG_TYPED(ScRandomNumberGeneratorDialog, Parameter2ValueModified, Edit&, void)
 {
     sal_Int16 aSelectedIndex = mpDistributionCombo-> GetSelectEntryPos();
     sal_Int64 aSelectedId = reinterpret_cast<sal_Int64>( mpDistributionCombo->GetEntryData(aSelectedIndex) );
@@ -411,7 +409,6 @@ IMPL_LINK_NOARG(ScRandomNumberGeneratorDialog, Parameter2ValueModified)
             mpParameter1Value->SetValue(max);
         }
     }
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(ScRandomNumberGeneratorDialog, CheckChanged, CheckBox&, void)
@@ -420,7 +417,7 @@ IMPL_LINK_NOARG_TYPED(ScRandomNumberGeneratorDialog, CheckChanged, CheckBox&, vo
     mpDecimalPlaces->Enable(mpEnableRounding->IsChecked());
 }
 
-IMPL_LINK_NOARG(ScRandomNumberGeneratorDialog, DistributionChanged)
+IMPL_LINK_NOARG_TYPED(ScRandomNumberGeneratorDialog, DistributionChanged, ListBox&, void)
 {
     sal_Int16 aSelectedIndex = mpDistributionCombo-> GetSelectEntryPos();
     sal_Int64 aSelectedId = reinterpret_cast<sal_Int64>( mpDistributionCombo->GetEntryData(aSelectedIndex) );
@@ -514,7 +511,6 @@ IMPL_LINK_NOARG(ScRandomNumberGeneratorDialog, DistributionChanged)
             break;
         }
     }
-    return 0;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

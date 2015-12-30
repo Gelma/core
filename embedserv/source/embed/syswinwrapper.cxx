@@ -41,10 +41,6 @@ using namespace winwrap;
 #define HWN_BORDERDOUBLECLICKED         1
 #define CBHATCHWNDEXTRA                 (sizeof(LONG))
 #define SZCLASSHATCHWIN                 TEXT("hatchwin")
-#define SendCommand(hWnd, wID, wCode, hControl)                     \
-            SendMessage(hWnd, WM_COMMAND, MAKEWPARAM(wID, wCode)    \
-                        , (LPARAM)hControl)
-
 
 typedef CHatchWin *PCHatchWin;
 
@@ -101,16 +97,6 @@ HINSTANCE winwrap::CWindow::Instance()
 {
     return m_hInst;
 }
-
-
-
-
-
-//Hatch pattern brush bits
-static WORD g_wHatchBmp[]={0x11, 0x22, 0x44, 0x88, 0x11, 0x22, 0x44, 0x88};
-
-// void DrawShading(LPRECT, HDC, UINT);
-
 
 /*
  * HatchWindowRegister
@@ -200,7 +186,7 @@ CHatchWin::~CHatchWin()
  *
  * Parameters:
  *  hWndParent      HWND of the parent of this window
- *  uID             UINT identifier for this window (send in
+ *  uID             WORD identifier for this window (send in
  *                  notifications to associate window).
  *  hWndAssoc       HWND of the initial associate.
  *
@@ -208,14 +194,14 @@ CHatchWin::~CHatchWin()
  *  BOOL            TRUE if the function succeeded, FALSE otherwise.
  */
 
-BOOL CHatchWin::Init(HWND hWndParent, UINT uID, HWND hWndAssoc)
+BOOL CHatchWin::Init(HWND hWndParent, WORD uID, HWND hWndAssoc)
 {
     m_hWndParent = hWndParent;
     m_hWnd=CreateWindowEx(
         WS_EX_NOPARENTNOTIFY, SZCLASSHATCHWIN
         , SZCLASSHATCHWIN, WS_CHILD | WS_CLIPSIBLINGS
-        | WS_CLIPCHILDREN, 0, 0, 100, 100, hWndParent, (HMENU)uID
-        , m_hInst, this);
+        | WS_CLIPCHILDREN, 0, 0, 100, 100, hWndParent
+        , reinterpret_cast<HMENU>(UINT_PTR(uID)), m_hInst, this);
 
     m_uID=uID;
     m_hWndAssociate=hWndAssoc;
@@ -397,14 +383,14 @@ LRESULT APIENTRY winwrap::HatchWndProc(
     HDC         hDC;
     PAINTSTRUCT ps;
 
-    phw=(PCHatchWin)GetWindowLong(hWnd, HWWL_STRUCTURE);
+    phw=(PCHatchWin)GetWindowLongPtr(hWnd, HWWL_STRUCTURE);
     POINT ptMouse;
 
     switch (iMsg)
     {
         case WM_CREATE:
             phw=(PCHatchWin)((LPCREATESTRUCT)lParam)->lpCreateParams;
-            SetWindowLong(hWnd, HWWL_STRUCTURE, (LONG)phw);
+            SetWindowLongPtr(hWnd, HWWL_STRUCTURE, (LONG_PTR)phw);
             break;
         case WM_PAINT:
             hDC=BeginPaint(hWnd,&ps);
@@ -448,8 +434,10 @@ LRESULT APIENTRY winwrap::HatchWndProc(
              */
             if (NULL!=phw->m_hWndAssociate)
             {
-                SendCommand(phw->m_hWndAssociate, phw->m_uID
-                            , HWN_BORDERDOUBLECLICKED, hWnd);
+                SendMessage(
+                    phw->m_hWndAssociate, WM_COMMAND,
+                    MAKEWPARAM(phw->m_uID, HWN_BORDERDOUBLECLICKED),
+                    (LPARAM) hWnd);
             }
 
             break;

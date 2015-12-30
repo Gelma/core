@@ -148,8 +148,6 @@ public:
 
     ScDocument& getScDocument() { return *mpDoc; }
 
-    ScDocShell& getDocShell() { return *mpDocShell; }
-
     ScDocumentImport& getDocImport();
 
     /** Returns a reference to the source/target spreadsheet document model. */
@@ -238,8 +236,6 @@ private:
     /** Finalizes the filter process (sets some needed document properties). */
     void                finalize();
 
-    void recalcFormulaCells();
-
 private:
     typedef ::std::unique_ptr< ScEditEngineDefaulter >    EditEngineDefaulterPtr;
     typedef ::std::unique_ptr< FormulaBuffer >          FormulaBufferPtr;
@@ -321,8 +317,8 @@ WorkbookGlobals::WorkbookGlobals( ExcelFilter& rFilter ) :
     meFilterType( FILTER_OOXML ),
     mpOoxFilter( &rFilter ),
     meBiff( BIFF_UNKNOWN ),
-    mpDoc(NULL),
-    mpDocShell(NULL)
+    mpDoc(nullptr),
+    mpDocShell(nullptr)
 {
     // register at the filter, needed for virtual callbacks (even during construction)
     mrExcelFilter.registerWorkbookGlobals( *this );
@@ -410,7 +406,7 @@ ScRangeData* WorkbookGlobals::createNamedRangeObject(
     OUString& orName, const Sequence< FormulaToken>& rTokens, sal_Int32 nIndex, sal_Int32 nNameFlags )
 {
     // create the name and insert it into the Calc document
-    ScRangeData* pScRangeData = NULL;
+    ScRangeData* pScRangeData = nullptr;
     if( !orName.isEmpty() )
     {
         ScDocument& rDoc =  getScDocument();
@@ -427,7 +423,7 @@ ScRangeData* WorkbookGlobals::createLocalNamedRangeObject(
     OUString& orName, const Sequence< FormulaToken >&  rTokens, sal_Int32 nIndex, sal_Int32 nNameFlags, sal_Int32 nTab )
 {
     // create the name and insert it into the Calc document
-    ScRangeData* pScRangeData = NULL;
+    ScRangeData* pScRangeData = nullptr;
     if( !orName.isEmpty() )
     {
         ScDocument& rDoc =  getScDocument();
@@ -479,7 +475,7 @@ Reference< XDatabaseRange > WorkbookGlobals::createUnnamedDatabaseRangeObject( c
     {
         ScDocument& rDoc =  getScDocument();
         if( rDoc.GetTableCount() <= aDestRange.Sheet )
-            throw ::com::sun::star::lang::IndexOutOfBoundsException();
+            throw css::lang::IndexOutOfBoundsException();
         ScRange aScRange;
         ScUnoConversion::FillScRange(aScRange, aDestRange);
         ScDBData* pNewDBData = new ScDBData( STR_DB_LOCAL_NONAME, aScRange.aStart.Tab(),
@@ -660,60 +656,9 @@ void WorkbookGlobals::finalize()
         if (pModel)
             pModel->SetOpenInDesignMode(false);
 
-        //stop preventing establishment of listeners as is done in
-        //ScDocShell::AfterXMLLoading() for ods
-        mpDoc->SetInsertingFromOtherDoc(false);
-        getDocImport().finalize();
-
-        recalcFormulaCells();
     }
 }
 
-void WorkbookGlobals::recalcFormulaCells()
-{
-    // Recalculate formula cells.
-    ScDocument& rDoc = getScDocument();
-    ScDocShell& rDocSh = getDocShell();
-    Reference< XComponentContext > xContext = comphelper::getProcessComponentContext();
-    ScRecalcOptions nRecalcMode =
-        static_cast<ScRecalcOptions>(officecfg::Office::Calc::Formula::Load::OOXMLRecalcMode::get(xContext));
-    bool bHardRecalc = false;
-    if (nRecalcMode == RECALC_ASK)
-    {
-        if (rDoc.IsUserInteractionEnabled())
-        {
-            // Ask the user if full re-calculation is desired.
-            ScopedVclPtrInstance<QueryBox> aBox(
-                ScDocShell::GetActiveDialogParent(), WinBits(WB_YES_NO | WB_DEF_YES),
-                ScGlobal::GetRscString(STR_QUERY_FORMULA_RECALC_ONLOAD_XLS));
-            aBox->SetCheckBoxText(ScGlobal::GetRscString(STR_ALWAYS_PERFORM_SELECTED));
-
-            sal_Int32 nRet = aBox->Execute();
-            bHardRecalc = nRet == RET_YES;
-
-            if (aBox->GetCheckBoxState())
-            {
-                // Always perform selected action in the future.
-                std::shared_ptr<comphelper::ConfigurationChanges> batch(comphelper::ConfigurationChanges::create());
-                officecfg::Office::Calc::Formula::Load::OOXMLRecalcMode::set(sal_Int32(0), batch);
-                ScFormulaOptions aOpt = SC_MOD()->GetFormulaOptions();
-                aOpt.SetOOXMLRecalcOptions(bHardRecalc ? RECALC_ALWAYS : RECALC_NEVER);
-                /* XXX  is this really supposed to set the ScModule options?
-                 *      Not the ScDocShell options? */
-                SC_MOD()->SetFormulaOptions(aOpt);
-
-                batch->commit();
-            }
-        }
-    }
-    else if (nRecalcMode == RECALC_ALWAYS)
-        bHardRecalc = true;
-
-    if (bHardRecalc)
-        rDocSh.DoHardRecalc(false);
-    else
-        rDoc.CalcFormulaTree(false, true, false);
-}
 
 WorkbookHelper::~WorkbookHelper()
 {
@@ -796,6 +741,16 @@ void WorkbookHelper::finalizeWorkbookImport()
         sheets. Automatic numbering is set by passing the value 0. */
     PropertySet aDefPageStyle( getStyleObject( "Default", true ) );
     aDefPageStyle.setProperty< sal_Int16 >( PROP_FirstPageNumber, 0 );
+
+    // Has any string ref syntax been imported?
+    // If not, we need to take action
+    ScCalcConfig aCalcConfig = getScDocument().GetCalcConfig();
+
+    if ( !aCalcConfig.mbHasStringRefSyntax )
+    {
+        aCalcConfig.meStringRefAddressSyntax = formula::FormulaGrammar::CONV_A1_XL_A1;
+        getScDocument().SetCalcConfig(aCalcConfig);
+    }
 }
 
 // document model -------------------------------------------------------------

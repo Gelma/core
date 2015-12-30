@@ -33,7 +33,6 @@ class GraphicObjectBar
     : public SfxShell
 {
 public:
-    TYPEINFO_OVERRIDE();
     SFX_DECL_INTERFACE( SD_IF_SDDRAWGRAFOBJECTBAR )
 
 private:
@@ -53,7 +52,6 @@ public:
 protected:
     ::sd::View* mpView;
     ViewShell*  mpViewSh;
-    sal_uInt16          nMappedSlotFilter;
 };
 
 } // end of namespace sd

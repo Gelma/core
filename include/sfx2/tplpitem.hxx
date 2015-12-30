@@ -24,13 +24,12 @@
 #include <sfx2/dllapi.h>
 #include <svl/flagitem.hxx>
 #include <svl/style.hrc>
-#include <tools/rtti.hxx>
 
 class SFX2_DLLPUBLIC SfxTemplateItem: public SfxFlagItem
 {
     OUString aStyle;
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
     SfxTemplateItem();
     SfxTemplateItem( sal_uInt16 nWhich,
                      const OUString &rStyle,
@@ -39,11 +38,11 @@ public:
 
     const OUString&         GetStyleName() const { return aStyle; }
 
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual sal_uInt8           GetFlagCount() const SAL_OVERRIDE;
-    virtual bool            QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool            PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual sal_uInt8       GetFlagCount() const override;
+    virtual bool            QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool            PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 };
 
 #endif

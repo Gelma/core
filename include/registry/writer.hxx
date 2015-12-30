@@ -81,7 +81,7 @@ public:
                 published, typeName.pData, superTypeCount, fieldCount,
                 methodCount, referenceCount))
     {
-        if (m_handle == 0) {
+        if (m_handle == nullptr) {
             throw std::bad_alloc();
         }
     }
@@ -271,15 +271,15 @@ public:
      */
     void const * getBlob(sal_uInt32 * size) {
         void const * p = typereg_writer_getBlob(m_handle, size);
-        if (p == 0) {
+        if (p == nullptr) {
             throw std::bad_alloc();
         }
         return p;
     }
 
 private:
-    Writer(Writer &) SAL_DELETED_FUNCTION;
-    void operator =(Writer) SAL_DELETED_FUNCTION;
+    Writer(Writer &) = delete;
+    void operator =(Writer) = delete;
 
     void * m_handle;
 };

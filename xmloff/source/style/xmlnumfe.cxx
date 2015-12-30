@@ -46,7 +46,7 @@
 #include <xmloff/xmlexp.hxx>
 
 #include <set>
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
 
 using namespace ::com::sun::star;
 using namespace ::xmloff::token;
@@ -62,16 +62,26 @@ struct LessuInt32
 
 typedef std::set< sal_uInt32, LessuInt32 >  SvXMLuInt32Set;
 
+struct SvXMLEmbeddedTextEntry
+{
+    sal_uInt16      nSourcePos;     // position in NumberFormat (to skip later)
+    sal_Int32       nFormatPos;     // resulting position in embedded-text element
+    OUString   aText;
+
+    SvXMLEmbeddedTextEntry( sal_uInt16 nSP, sal_Int32 nFP, const OUString& rT ) :
+        nSourcePos(nSP), nFormatPos(nFP), aText(rT) {}
+};
+
 class SvXMLEmbeddedTextEntryArr
 {
-    typedef boost::ptr_vector<SvXMLEmbeddedTextEntry> DataType;
+    typedef std::vector<SvXMLEmbeddedTextEntry> DataType;
     DataType maData;
 
 public:
 
-    void push_back( SvXMLEmbeddedTextEntry* p )
+    void push_back( SvXMLEmbeddedTextEntry const& r )
     {
-        maData.push_back(p);
+        maData.push_back(r);
     }
 
     const SvXMLEmbeddedTextEntry& operator[] ( size_t i ) const
@@ -107,16 +117,6 @@ public:
 
     void GetWasUsed(uno::Sequence<sal_Int32>& rWasUsed);
     void SetWasUsed(const uno::Sequence<sal_Int32>& rWasUsed);
-};
-
-struct SvXMLEmbeddedTextEntry
-{
-    sal_uInt16      nSourcePos;     // position in NumberFormat (to skip later)
-    sal_Int32       nFormatPos;     // resulting position in embedded-text element
-    OUString   aText;
-
-    SvXMLEmbeddedTextEntry( sal_uInt16 nSP, sal_Int32 nFP, const OUString& rT ) :
-        nSourcePos(nSP), nFormatPos(nFP), aText(rT) {}
 };
 
 //! SvXMLNumUsedList_Impl should be optimized!
@@ -229,9 +229,9 @@ SvXMLNumFmtExport::SvXMLNumFmtExport(
             const uno::Reference< util::XNumberFormatsSupplier >& rSupp ) :
     rExport( rExp ),
     sPrefix( OUString("N") ),
-    pFormatter( NULL ),
-    pCharClass( NULL ),
-    pLocaleData( NULL )
+    pFormatter( nullptr ),
+    pCharClass( nullptr ),
+    pLocaleData( nullptr )
 {
     //  supplier must be SvNumberFormatsSupplierObj
     SvNumberFormatsSupplierObj* pObj =
@@ -259,14 +259,13 @@ SvXMLNumFmtExport::SvXMLNumFmtExport(
 
 SvXMLNumFmtExport::SvXMLNumFmtExport(
                        SvXMLExport& rExp,
-                       const ::com::sun::star::uno::Reference<
-                        ::com::sun::star::util::XNumberFormatsSupplier >& rSupp,
+                       const css::uno::Reference< css::util::XNumberFormatsSupplier >& rSupp,
                        const OUString& rPrefix ) :
     rExport( rExp ),
     sPrefix( rPrefix ),
-    pFormatter( NULL ),
-    pCharClass( NULL ),
-    pLocaleData( NULL )
+    pFormatter( nullptr ),
+    pCharClass( nullptr ),
+    pLocaleData( nullptr )
 {
     //  supplier must be SvNumberFormatsSupplierObj
     SvNumberFormatsSupplierObj* pObj =
@@ -614,7 +613,7 @@ void SvXMLNumFmtExport::WriteNumberElement_Impl(
     sal_uInt16 nEntryCount = rEmbeddedEntries.size();
     for (sal_uInt16 nEntry=0; nEntry<nEntryCount; nEntry++)
     {
-        const SvXMLEmbeddedTextEntry* pObj = &rEmbeddedEntries[nEntry];
+        const SvXMLEmbeddedTextEntry *const pObj = &rEmbeddedEntries[nEntry];
 
         //  position attribute
         rExport.AddAttribute( XML_NAMESPACE_NUMBER, XML_POSITION,
@@ -827,7 +826,7 @@ sal_Int32 lcl_FindSymbol( const OUString& sUpperStr, const OUString& sCurString 
 }
 
 bool SvXMLNumFmtExport::WriteTextWithCurrency_Impl( const OUString& rString,
-                            const ::com::sun::star::lang::Locale& rLocale )
+                            const css::lang::Locale& rLocale )
 {
     //  returns true if currency element was written
 
@@ -1122,7 +1121,7 @@ void SvXMLNumFmtExport::ExportPart_Impl( const SvNumberformat& rFormat, sal_uInt
     }
 
     // Native number transliteration
-    ::com::sun::star::i18n::NativeNumberXmlAttributes aAttr;
+    css::i18n::NativeNumberXmlAttributes aAttr;
     rFormat.GetNatNumXml( aAttr, nPart );
     if ( !aAttr.Format.isEmpty() )
     {
@@ -1201,7 +1200,10 @@ void SvXMLNumFmtExport::ExportPart_Impl( const SvNumberformat& rFormat, sal_uInt
                     if ( bExpFound && pElemStr )
                         nExpDigits += pElemStr->getLength();
                     else if ( !bDecDashes && pElemStr && (*pElemStr)[0] == '-' )
+                    {
                         bDecDashes = true;
+                        nMinDecimals = 0;
+                    }
                     else if ( !bInInteger && pElemStr )
                     {
                         for ( sal_Int32 i = pElemStr->getLength()-1; i >= 0 && (*pElemStr)[i] == '#'; i-- )
@@ -1289,8 +1291,8 @@ void SvXMLNumFmtExport::ExportPart_Impl( const SvNumberformat& rFormat, sal_uInt
                             }
                             sal_Int32 nEmbedPos = nIntegerSymbols - nDigitsPassed;
 
-                            SvXMLEmbeddedTextEntry* pObj = new SvXMLEmbeddedTextEntry( nPos, nEmbedPos, aEmbeddedStr );
-                            aEmbeddedEntries.push_back( pObj );
+                            aEmbeddedEntries.push_back(
+                                SvXMLEmbeddedTextEntry(nPos, nEmbedPos, aEmbeddedStr));
                         }
                         break;
                 }
@@ -1740,7 +1742,7 @@ void SvXMLNumFmtExport::Export( bool bIsAutoStyle )
         return;                         // no formatter -> no entries
 
     sal_uInt32 nKey;
-    const SvNumberformat* pFormat = NULL;
+    const SvNumberformat* pFormat = nullptr;
     bool bNext(pUsedList->GetFirstUsed(nKey));
     while(bNext)
     {
@@ -1794,7 +1796,7 @@ OUString SvXMLNumFmtExport::GetStyleName( sal_uInt32 nKey )
 
 void SvXMLNumFmtExport::SetUsed( sal_uInt32 nKey )
 {
-    DBG_ASSERT( pFormatter != NULL, "missing formatter" );
+    DBG_ASSERT( pFormatter != nullptr, "missing formatter" );
     if( !pFormatter )
         return;
 
@@ -1820,7 +1822,7 @@ void SvXMLNumFmtExport::SetWasUsed(const uno::Sequence<sal_Int32>& rWasUsed)
 static const SvNumberformat* lcl_GetFormat( SvNumberFormatter* pFormatter,
                            sal_uInt32 nKey )
 {
-    return ( pFormatter != NULL ) ? pFormatter->GetEntry( nKey ) : NULL;
+    return ( pFormatter != nullptr ) ? pFormatter->GetEntry( nKey ) : nullptr;
 }
 
 sal_uInt32 SvXMLNumFmtExport::ForceSystemLanguage( sal_uInt32 nKey )
@@ -1828,9 +1830,9 @@ sal_uInt32 SvXMLNumFmtExport::ForceSystemLanguage( sal_uInt32 nKey )
     sal_uInt32 nRet = nKey;
 
     const SvNumberformat* pFormat = lcl_GetFormat( pFormatter, nKey );
-    if( pFormat != NULL )
+    if( pFormat != nullptr )
     {
-        DBG_ASSERT( pFormatter != NULL, "format without formatter?" );
+        DBG_ASSERT( pFormatter != nullptr, "format without formatter?" );
 
         sal_Int32 nErrorPos;
         short nType = pFormat->GetType();

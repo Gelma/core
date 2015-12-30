@@ -186,7 +186,7 @@ bool FuDraw::MouseButtonUp(const MouseEvent& rMEvt)
 static bool lcl_KeyEditMode( SdrObject* pObj, ScTabViewShell* pViewShell, const KeyEvent* pInitialKey )
 {
     bool bReturn = false;
-    if ( pObj && pObj->ISA(SdrTextObj) && !pObj->ISA(SdrUnoObj) )
+    if ( pObj && dynamic_cast<const SdrTextObj*>( pObj) != nullptr && dynamic_cast<const SdrUnoObj*>( pObj) ==  nullptr )
     {
         // start text edit - like FuSelection::MouseButtonUp,
         // but with bCursorToEnd instead of mouse position
@@ -208,7 +208,7 @@ static bool lcl_KeyEditMode( SdrObject* pObj, ScTabViewShell* pViewShell, const 
         if ( pPoor && pPoor->GetSlotID() == nTextSlotId )    // no RTTI
         {
             FuText* pText = static_cast<FuText*>(pPoor);
-            pText->SetInEditMode( pObj, NULL, true, pInitialKey );
+            pText->SetInEditMode( pObj, nullptr, true, pInitialKey );
             //! set cursor to end of text
         }
         bReturn = true;
@@ -269,14 +269,14 @@ bool FuDraw::KeyInput(const KeyEvent& rKEvt)
                 {
                     bool bOle = pViewShell->GetViewFrame()->GetFrame().IsInPlace();
                     SdrObject* pObj = rMarkList.GetMark( 0 )->GetMarkedSdrObj();
-                    if( pObj && pObj->ISA( SdrOle2Obj ) && !bOle )
+                    if( pObj && dynamic_cast<const SdrOle2Obj*>( pObj) !=  nullptr && !bOle )
                     {
                         pViewShell->ActivateObject( static_cast< SdrOle2Obj* >( pObj ), 0 );
 
                         // consumed
                         bReturn = true;
                     }
-                    else if ( lcl_KeyEditMode( pObj, pViewShell, NULL ) )       // start text edit for suitable object
+                    else if ( lcl_KeyEditMode( pObj, pViewShell, nullptr ) )       // start text edit for suitable object
                         bReturn = true;
                 }
             }
@@ -293,14 +293,13 @@ bool FuDraw::KeyInput(const KeyEvent& rKEvt)
                 if( !pView->IsTextEdit() && 1 == rMarkList.GetMarkCount() )
                 {
                     SdrObject* pObj = rMarkList.GetMark( 0 )->GetMarkedSdrObj();
-                    if ( lcl_KeyEditMode( pObj, pViewShell, NULL ) )            // start text edit for suitable object
+                    if ( lcl_KeyEditMode( pObj, pViewShell, nullptr ) )            // start text edit for suitable object
                         bReturn = true;
                 }
             }
         }
         break;
 
-        // #97016#
         case KEY_TAB:
         {
             // in calc do NOT start draw object selection using TAB/SHIFT-TAB when
@@ -357,7 +356,6 @@ bool FuDraw::KeyInput(const KeyEvent& rKEvt)
         }
         break;
 
-        // #97016#
         case KEY_END:
         {
             // in calc do NOT select the last draw object when
@@ -382,7 +380,6 @@ bool FuDraw::KeyInput(const KeyEvent& rKEvt)
         }
         break;
 
-        // #97016#
         case KEY_HOME:
         {
             // in calc do NOT select the first draw object when
@@ -407,7 +404,6 @@ bool FuDraw::KeyInput(const KeyEvent& rKEvt)
         }
         break;
 
-        // #97016#
         case KEY_UP:
         case KEY_DOWN:
         case KEY_LEFT:
@@ -487,7 +483,7 @@ bool FuDraw::KeyInput(const KeyEvent& rKEvt)
                         const SdrHdlList& rHdlList = pView->GetHdlList();
                         SdrHdl* pHdl = rHdlList.GetFocusHdl();
 
-                        if(0L == pHdl)
+                        if(nullptr == pHdl)
                         {
                             // only take action when move is allowed
                             if(pView->IsMoveAllowed())
@@ -544,7 +540,7 @@ bool FuDraw::KeyInput(const KeyEvent& rKEvt)
                                 const SdrDragStat& rDragStat = pView->GetDragStat();
 
                                 // start dragging
-                                pView->BegDragObj(aStartPoint, 0, pHdl, 0);
+                                pView->BegDragObj(aStartPoint, nullptr, pHdl, 0);
 
                                 if(pView->IsDragObj())
                                 {
@@ -580,7 +576,6 @@ bool FuDraw::KeyInput(const KeyEvent& rKEvt)
         }
         break;
 
-        // #97016#
         case KEY_SPACE:
         {
             // in calc do only something when draw objects are selected
@@ -614,10 +609,10 @@ bool FuDraw::KeyInput(const KeyEvent& rKEvt)
                             pView->MarkPoint(*pHdl);
                         }
 
-                        if(0L == rHdlList.GetFocusHdl())
+                        if(nullptr == rHdlList.GetFocusHdl())
                         {
                             // restore point with focus
-                            SdrHdl* pNewOne = 0L;
+                            SdrHdl* pNewOne = nullptr;
 
                             for(size_t a = 0; !pNewOne && a < rHdlList.GetHdlCount(); ++a)
                             {
@@ -703,7 +698,7 @@ static bool lcl_UrlHit( SdrView* pView, const Point& rPosPixel, vcl::Window* pWi
     MouseEvent aMEvt( rPosPixel, 1, MouseEventModifiers::NONE, MOUSE_LEFT );
     SdrHitKind eHit = pView->PickAnything( aMEvt, SdrMouseEventKind::BUTTONDOWN, aVEvt );
 
-    if ( eHit != SDRHIT_NONE && aVEvt.pObj != NULL )
+    if ( eHit != SDRHIT_NONE && aVEvt.pObj != nullptr )
     {
         if ( ScDrawLayer::GetIMapInfo( aVEvt.pObj ) && ScDrawLayer::GetHitIMapObject(
                                 aVEvt.pObj, pWindow->PixelToLogic(rPosPixel), *pWindow ) )
@@ -727,12 +722,12 @@ void FuDraw::ForcePointer(const MouseEvent* pMEvt)
         SdrObject* pObj;
         SdrPageView* pPV;
 
-        ScMacroInfo* pInfo = 0;
+        ScMacroInfo* pInfo = nullptr;
         if ( pView->PickObj(aPnt, pView->getHitTolLog(), pObj, pPV, SdrSearchOptions::ALSOONMASTER) )
         {
             if ( pObj->IsGroupObject() )
             {
-                SdrObject* pHit = 0;
+                SdrObject* pHit = nullptr;
                 if ( pView->PickObj(aMDPos, pView->getHitTolLog(), pHit, pPV, SdrSearchOptions::DEEP ) )
                     pObj = pHit;
             }

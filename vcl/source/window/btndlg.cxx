@@ -29,7 +29,6 @@ struct ImplBtnDlgItem
 {
     sal_uInt16              mnId;
     bool                    mbOwnButton;
-    bool                    mbDummyAlign;
     long                    mnSepSize;
     VclPtr<PushButton>      mpPushButton;
 };
@@ -101,7 +100,7 @@ ImplBtnDlgItem* ButtonDialog::ImplGetItem( sal_uInt16 nId ) const
             return &(*it);
     }
 
-    return NULL;
+    return nullptr;
 }
 
 long ButtonDialog::ImplGetButtonSize()
@@ -206,7 +205,8 @@ void ButtonDialog::ImplPosControls()
             nY += maCtrlSize.Height()+IMPL_SEP_BUTTON_Y;
     }
 
-    SetOutputSizePixel( aDlgSize );
+    SetOutputSizePixel(aDlgSize);
+    SetMinOutputSizePixel(aDlgSize);
 
     mbFormat = false;
 }
@@ -236,7 +236,7 @@ void ButtonDialog::StateChanged( StateChangedType nType )
         for (auto & it : m_ItemList)
         {
             if ( it->mpPushButton && it->mbOwnButton )
-                it->mpPushButton->SetZOrder(0, ZOrderFlags::Last);
+                it->mpPushButton->SetZOrder(nullptr, ZOrderFlags::Last);
         }
 
         // Set focus on default button.
@@ -366,7 +366,7 @@ PushButton* ButtonDialog::GetPushButton( sal_uInt16 nId ) const
     if ( pItem )
         return pItem->mpPushButton;
     else
-        return NULL;
+        return nullptr;
 }
 
 void ButtonDialog::SetButtonText( sal_uInt16 nId, const OUString& rText )

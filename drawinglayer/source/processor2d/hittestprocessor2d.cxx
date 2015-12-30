@@ -183,14 +183,13 @@ namespace drawinglayer
 
                     if(!aFront.equal(aBack))
                     {
-                        const primitive3d::Primitive3DSequence& rPrimitives = rCandidate.getChildren3D();
+                        const primitive3d::Primitive3DContainer& rPrimitives = rCandidate.getChildren3D();
 
-                        if(rPrimitives.hasElements())
+                        if(!rPrimitives.empty())
                         {
                             // make BoundVolume empty and overlapping test for speedup
                             const basegfx::B3DRange aObjectRange(
-                                drawinglayer::primitive3d::getB3DRangeFromPrimitive3DSequence(
-                                    rPrimitives, rObjectViewInformation3D));
+                                    rPrimitives.getB3DRange(rObjectViewInformation3D));
 
                             if(!aObjectRange.isEmpty())
                             {
@@ -213,21 +212,6 @@ namespace drawinglayer
                     }
                 }
 
-                // This is needed to check hit with 3D shadows, too. HitTest is without shadow
-                // to keep compatible with previous versions. Keeping here as reference
-                //
-                // if(!getHit())
-                // {
-                //     // if scene has shadow, check hit with shadow, too
-                //     const primitive2d::Primitive2DSequence xExtracted2DSceneShadow(rCandidate.getShadow2D(getViewInformation2D()));
-                //
-                //     if(xExtracted2DSceneShadow.hasElements())
-                //     {
-                //         // process extracted 2D content
-                //         process(xExtracted2DSceneShadow);
-                //     }
-                // }
-
                 if(!getHit())
                 {
                     // empty 3D scene; Check for border hit
@@ -236,32 +220,6 @@ namespace drawinglayer
 
                     mbHit = checkHairlineHitWithTolerance(aOutline, getDiscreteHitTolerance());
                 }
-
-                // This is what the previous version did. Keeping it here for reference
-                //
-                // // 2D Scene primitive containing 3D stuff; extract 2D contour in world coordinates
-                // // This may be refined later to an own 3D HitTest renderer which processes the 3D
-                // // geometry directly
-                // const primitive2d::ScenePrimitive2D& rScenePrimitive2DCandidate(static_cast< const primitive2d::ScenePrimitive2D& >(rCandidate));
-                // const primitive2d::Primitive2DSequence xExtracted2DSceneGeometry(rScenePrimitive2DCandidate.getGeometry2D());
-                // const primitive2d::Primitive2DSequence xExtracted2DSceneShadow(rScenePrimitive2DCandidate.getShadow2D(getViewInformation2D()));
-                //
-                // if(xExtracted2DSceneGeometry.hasElements() || xExtracted2DSceneShadow.hasElements())
-                // {
-                //     // process extracted 2D content
-                //     process(xExtracted2DSceneGeometry);
-                //     process(xExtracted2DSceneShadow);
-                // }
-                // else
-                // {
-                //     // empty 3D scene; Check for border hit
-                //     const basegfx::B2DRange aRange(rCandidate.getB2DRange(getViewInformation2D()));
-                //     if(!aRange.isEmpty())
-                //     {
-                //          const basegfx::B2DPolygon aOutline(basegfx::tools::createPolygonFromRect(aRange));
-                //          mbHit = checkHairlineHitWithTolerance(aOutline, getDiscreteHitTolerance());
-                //     }
-                // }
             }
         }
 
@@ -547,9 +505,9 @@ namespace drawinglayer
                     // so force this primitive to process its children directly if the switch is set
                     // (which is the default). Else, ignore invisible content
                     const primitive2d::HiddenGeometryPrimitive2D& rHiddenGeometry(static_cast< const primitive2d::HiddenGeometryPrimitive2D& >(rCandidate));
-                       const primitive2d::Primitive2DSequence& rChildren = rHiddenGeometry.getChildren();
+                    const primitive2d::Primitive2DContainer& rChildren = rHiddenGeometry.getChildren();
 
-                    if(rChildren.hasElements())
+                    if(!rChildren.empty())
                     {
                         if(getUseInvisiblePrimitiveContent())
                         {

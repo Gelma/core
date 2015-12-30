@@ -55,7 +55,7 @@ namespace
         : public rtl::Static< ::osl::Mutex, ColorMutex_Impl > {};
 }
 
-ExtendedColorConfig_Impl*    ExtendedColorConfig::m_pImpl = NULL;
+ExtendedColorConfig_Impl*    ExtendedColorConfig::m_pImpl = nullptr;
 
 class ExtendedColorConfig_Impl : public utl::ConfigItem, public SfxBroadcaster
 {
@@ -77,7 +77,7 @@ class ExtendedColorConfig_Impl : public utl::ConfigItem, public SfxBroadcaster
     uno::Sequence< OUString> GetPropertyNames(const OUString& rScheme);
     void FillComponentColors(uno::Sequence < OUString >& _rComponents,const TDisplayNames& _rDisplayNames);
 
-    virtual void                    ImplCommit() SAL_OVERRIDE;
+    virtual void                    ImplCommit() override;
 
 public:
     explicit ExtendedColorConfig_Impl(bool bEditMode = false);
@@ -88,7 +88,7 @@ public:
     //changes the name of the current scheme but doesn't load it!
     void                            SetCurrentSchemeName(const OUString& rSchemeName) {m_sLoadedScheme = rSchemeName;}
     bool                            ExistsScheme(const OUString& _sSchemeName);
-    virtual void                    Notify( const uno::Sequence<OUString>& aPropertyNames) SAL_OVERRIDE;
+    virtual void                    Notify( const uno::Sequence<OUString>& aPropertyNames) override;
 
     sal_Int32                       GetComponentCount() const;
     OUString                 GetComponentName(sal_uInt32 _nPos) const;
@@ -131,7 +131,6 @@ public:
     static void                     LockBroadcast();
     static void                     UnlockBroadcast();
 
-    // #100822#
     DECL_LINK_TYPED( DataChangedEventListener, VclSimpleEvent&, void );
 };
 
@@ -209,14 +208,12 @@ ExtendedColorConfig_Impl::ExtendedColorConfig_Impl(bool bEditMode) :
     }
     Load(OUString());
 
-    // #100822#
     ::Application::AddEventListener( LINK(this, ExtendedColorConfig_Impl, DataChangedEventListener) );
 
 }
 
 ExtendedColorConfig_Impl::~ExtendedColorConfig_Impl()
 {
-    // #100822#
     ::Application::RemoveEventListener( LINK(this, ExtendedColorConfig_Impl, DataChangedEventListener) );
 }
 
@@ -297,8 +294,7 @@ void ExtendedColorConfig_Impl::Load(const OUString& rScheme)
     if(sScheme.isEmpty())
     {
         //detect current scheme name
-        uno::Sequence < OUString > aCurrent(1);
-        aCurrent.getArray()[0] = "ExtendedColorScheme/CurrentColorScheme";
+        uno::Sequence < OUString > aCurrent { "ExtendedColorScheme/CurrentColorScheme" };
         uno::Sequence< uno::Any > aCurrentVal = GetProperties( aCurrent );
         aCurrentVal.getConstArray()[0] >>= sScheme;
     } // if(!sScheme.getLength())
@@ -463,8 +459,7 @@ void ExtendedColorConfig_Impl::ImplCommit()
 void ExtendedColorConfig_Impl::CommitCurrentSchemeName()
 {
     //save current scheme name
-    uno::Sequence < OUString > aCurrent(1);
-    aCurrent.getArray()[0] = "ExtendedColorScheme/CurrentColorScheme";
+    uno::Sequence < OUString > aCurrent { "ExtendedColorScheme/CurrentColorScheme" };
     uno::Sequence< uno::Any > aCurrentVal(1);
     aCurrentVal.getArray()[0] <<= m_sLoadedScheme;
     PutProperties(aCurrent, aCurrentVal);
@@ -497,7 +492,7 @@ void ExtendedColorConfig_Impl::SetColorConfigValue(const OUString& _sName, const
 
 bool ExtendedColorConfig_Impl::AddScheme(const OUString& rScheme)
 {
-    if(ConfigItem::AddNode(OUString("ExtendedColorScheme/ColorSchemes"), rScheme))
+    if(ConfigItem::AddNode("ExtendedColorScheme/ColorSchemes", rScheme))
     {
         m_sLoadedScheme = rScheme;
         Commit();
@@ -508,9 +503,8 @@ bool ExtendedColorConfig_Impl::AddScheme(const OUString& rScheme)
 
 bool ExtendedColorConfig_Impl::RemoveScheme(const OUString& rScheme)
 {
-    uno::Sequence< OUString > aElements(1);
-    aElements.getArray()[0] = rScheme;
-    return ClearNodeElements(OUString("ExtendedColorScheme/ColorSchemes"), aElements);
+    uno::Sequence< OUString > aElements { rScheme };
+    return ClearNodeElements("ExtendedColorScheme/ColorSchemes", aElements);
 }
 
 void ExtendedColorConfig_Impl::SettingsChanged()
@@ -529,7 +523,7 @@ void ExtendedColorConfig_Impl::UnlockBroadcast()
 {
     if ( m_bBroadcastWhenUnlocked )
     {
-        m_bBroadcastWhenUnlocked = ExtendedColorConfig::m_pImpl != NULL;
+        m_bBroadcastWhenUnlocked = ExtendedColorConfig::m_pImpl != nullptr;
         if ( m_bBroadcastWhenUnlocked )
         {
             if ( ExtendedColorConfig_Impl::IsEnableBroadcast() )
@@ -575,7 +569,7 @@ ExtendedColorConfig::~ExtendedColorConfig()
     if(!--nExtendedColorRefCount_Impl)
     {
         delete m_pImpl;
-        m_pImpl = 0;
+        m_pImpl = nullptr;
     }
 }
 
@@ -630,7 +624,6 @@ EditableExtendedColorConfig::~EditableExtendedColorConfig()
         m_pImpl->SetModified();
     if(m_pImpl->IsModified())
         m_pImpl->Commit();
-    delete m_pImpl;
 }
 
 void EditableExtendedColorConfig::DeleteScheme(const OUString& rScheme )

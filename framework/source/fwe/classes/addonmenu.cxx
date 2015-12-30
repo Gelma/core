@@ -47,7 +47,7 @@ const sal_uInt16 SID_HELPMENU            = (SID_SFX_START + 410);
 namespace framework
 {
 
-AddonMenu::AddonMenu( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& rFrame ) :
+AddonMenu::AddonMenu( const css::uno::Reference< css::frame::XFrame >& rFrame ) :
     m_xFrame( rFrame )
 {
 }
@@ -70,7 +70,7 @@ bool AddonPopupMenu::IsCommandURLPrefix( const OUString& aCmdURL )
     return aCmdURL.startsWith( ADDONSPOPUPMENU_URL_PREFIX_STR );
 }
 
-AddonPopupMenu::AddonPopupMenu( const com::sun::star::uno::Reference< com::sun::star::frame::XFrame >& rFrame ) :
+AddonPopupMenu::AddonPopupMenu( const css::uno::Reference< css::frame::XFrame >& rFrame ) :
     AddonMenu( rFrame )
 {
 }
@@ -109,7 +109,7 @@ PopupMenu* AddonMenuManager::CreatePopupMenuType( MenuType eMenuType, const Refe
     else if ( eMenuType == ADDON_POPUPMENU )
         return new AddonPopupMenu( rFrame );
     else
-        return NULL;
+        return nullptr;
 }
 
 // Create the Add-Ons menu
@@ -117,7 +117,7 @@ AddonMenu* AddonMenuManager::CreateAddonMenu( const Reference< XFrame >& rFrame,
                                               const Reference< XComponentContext >& rContext )
 {
     AddonsOptions aOptions;
-    AddonMenu*  pAddonMenu      = NULL;
+    AddonMenu*  pAddonMenu      = nullptr;
     sal_uInt16      nUniqueMenuId   = ADDONMENU_ITEMID_START;
 
     const Sequence< Sequence< PropertyValue > >& rAddonMenuEntries = aOptions.GetAddonsMenu();
@@ -131,7 +131,7 @@ AddonMenu* AddonMenuManager::CreateAddonMenu( const Reference< XFrame >& rFrame,
         if ( pAddonMenu->GetItemCount() == 0 )
         {
             delete pAddonMenu;
-            pAddonMenu = NULL;
+            pAddonMenu = nullptr;
         }
     }
 
@@ -169,7 +169,7 @@ void AddonMenuManager::MergeAddonHelpMenu( const Reference< XFrame >& rFrame,
         PopupMenu* pHelpMenu = pMergeMenuBar->GetPopupMenu( SID_HELPMENU );
         if ( !pHelpMenu )
         {
-            sal_uInt16 nId = FindMenuId(pMergeMenuBar, OUString(".uno:HelpMenu"));
+            sal_uInt16 nId = FindMenuId(pMergeMenuBar, ".uno:HelpMenu");
             if ( nId != USHRT_MAX )
                 pHelpMenu = pMergeMenuBar->GetPopupMenu( nId );
         }
@@ -183,7 +183,7 @@ void AddonMenuManager::MergeAddonHelpMenu( const Reference< XFrame >& rFrame,
             AddonsOptions aOptions;
 
             // try to detect the about menu item with the command URL
-            sal_uInt16 nId = FindMenuId(pHelpMenu, OUString(".uno:About"));
+            sal_uInt16 nId = FindMenuId(pHelpMenu, ".uno:About");
             sal_uInt16 nInsPos = pHelpMenu->GetItemPos( nId );
 
             const Sequence< Sequence< PropertyValue > >& rAddonHelpMenuEntries = aOptions.GetAddonsHelpMenu();
@@ -297,7 +297,7 @@ void AddonMenuManager::BuildMenu( PopupMenu*                            pCurrent
             bInsertSeparator = true;
         else
         {
-            PopupMenu* pSubMenu = NULL;
+            PopupMenu* pSubMenu = nullptr;
             if ( aAddonSubMenu.getLength() > 0 )
             {
                 pSubMenu = AddonMenuManager::CreatePopupMenuType( nSubMenuType, rFrame );
@@ -307,7 +307,7 @@ void AddonMenuManager::BuildMenu( PopupMenu*                            pCurrent
                 if ( pSubMenu->GetItemCount() == 0 )
                 {
                     delete pSubMenu;
-                    pSubMenu =  NULL;
+                    pSubMenu =  nullptr;
                     continue;
                 }
             }

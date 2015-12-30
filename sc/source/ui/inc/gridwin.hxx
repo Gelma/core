@@ -29,7 +29,6 @@
 #include <basegfx/matrix/b2dhommatrix.hxx>
 
 #include <boost/ptr_container/ptr_map.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <vector>
 
 namespace editeng {
@@ -95,7 +94,6 @@ class ScGridWindow : public vcl::Window, public DropTargetHelper, public DragSou
         RIGHT_DOWN
     };
 
-    // #114409#
     std::unique_ptr<sdr::overlay::OverlayObjectList> mpOOCursors;
     std::unique_ptr<sdr::overlay::OverlayObjectList> mpOOSelection;
     std::unique_ptr<sdr::overlay::OverlayObjectList> mpOOSelectionBorder;
@@ -162,9 +160,6 @@ class ScGridWindow : public vcl::Window, public DropTargetHelper, public DragSou
     ScRange                 aPagebreakDrag;
 
     SvtScriptType           nPageScript;
-
-    long                    nLastClickX;
-    long                    nLastClickY;
 
     SCCOL                   nDragStartX;
     SCROW                   nDragStartY;
@@ -268,15 +263,15 @@ class ScGridWindow : public vcl::Window, public DropTargetHelper, public DragSou
     void            DrawPagePreview( SCCOL nX1, SCROW nY1, SCCOL nX2, SCROW nY2, vcl::RenderContext& rRenderContext);
 
     bool            GetEditUrl( const Point& rPos,
-                                OUString* pName=0, OUString* pUrl=0, OUString* pTarget=0 );
+                                OUString* pName=nullptr, OUString* pUrl=nullptr, OUString* pTarget=nullptr );
 
     bool IsSpellErrorAtPos( const Point& rPos, SCCOL nCol1, SCROW nRow );
 
-    bool            HitRangeFinder( const Point& rMouse, RfCorner& rCorner, sal_uInt16* pIndex = NULL,
-                                    SCsCOL* pAddX = NULL, SCsROW* pAddY = NULL );
+    bool            HitRangeFinder( const Point& rMouse, RfCorner& rCorner, sal_uInt16* pIndex = nullptr,
+                                    SCsCOL* pAddX = nullptr, SCsROW* pAddY = nullptr );
 
-    sal_uInt16          HitPageBreak( const Point& rMouse, ScRange* pSource = NULL,
-                                    SCCOLROW* pBreak = NULL, SCCOLROW* pPrev = NULL );
+    sal_uInt16          HitPageBreak( const Point& rMouse, ScRange* pSource = nullptr,
+                                    SCCOLROW* pBreak = nullptr, SCCOLROW* pPrev = nullptr );
 
     /** The cell may be covered by text that overflows from a previous cell.
 
@@ -292,38 +287,40 @@ class ScGridWindow : public vcl::Window, public DropTargetHelper, public DragSou
 
     void            GetSelectionRects( ::std::vector< Rectangle >& rPixelRects );
 
+
+    void            updateLibreOfficeKitCellCursor();
 protected:
-    virtual void    PrePaint(vcl::RenderContext& rRenderContext) SAL_OVERRIDE;
-    virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) SAL_OVERRIDE;
-    virtual void    GetFocus() SAL_OVERRIDE;
-    virtual void    LoseFocus() SAL_OVERRIDE;
+    virtual void    PrePaint(vcl::RenderContext& rRenderContext) override;
+    virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) override;
+    virtual void    GetFocus() override;
+    virtual void    LoseFocus() override;
 
-    virtual void    RequestHelp( const HelpEvent& rEvt ) SAL_OVERRIDE;
-    virtual void    Command( const CommandEvent& rCEvt ) SAL_OVERRIDE;
+    virtual void    RequestHelp( const HelpEvent& rEvt ) override;
+    virtual void    Command( const CommandEvent& rCEvt ) override;
 
-    virtual sal_Int8 AcceptDrop( const AcceptDropEvent& rEvt ) SAL_OVERRIDE;
-    virtual sal_Int8 ExecuteDrop( const ExecuteDropEvent& rEvt ) SAL_OVERRIDE;
-    virtual void    StartDrag( sal_Int8 nAction, const Point& rPosPixel ) SAL_OVERRIDE;
+    virtual sal_Int8 AcceptDrop( const AcceptDropEvent& rEvt ) override;
+    virtual sal_Int8 ExecuteDrop( const ExecuteDropEvent& rEvt ) override;
+    virtual void    StartDrag( sal_Int8 nAction, const Point& rPosPixel ) override;
 
 public:
     enum AutoFilterMode { Normal, Top10, Custom, Empty, NonEmpty, SortAscending, SortDescending };
 
     ScGridWindow( vcl::Window* pParent, ScViewData* pData, ScSplitPos eWhichPos );
     virtual ~ScGridWindow();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    virtual void    KeyInput(const KeyEvent& rKEvt) SAL_OVERRIDE;
+    virtual void    KeyInput(const KeyEvent& rKEvt) override;
     // #i70788# flush and get overlay
     rtl::Reference<sdr::overlay::OverlayManager> getOverlayManager();
     void flushOverlayManager();
 
-    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) override;
 
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    MouseButtonUp( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    MouseMove( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual bool    PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
-    virtual void    Tracking( const TrackingEvent& rTEvt ) SAL_OVERRIDE;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void    MouseButtonUp( const MouseEvent& rMEvt ) override;
+    virtual void    MouseMove( const MouseEvent& rMEvt ) override;
+    virtual bool    PreNotify( NotifyEvent& rNEvt ) override;
+    virtual void    Tracking( const TrackingEvent& rTEvt ) override;
 
     void            PaintTile( VirtualDevice& rDevice,
                                int nOutputWidth, int nOutputHeight,
@@ -331,14 +328,16 @@ public:
                                long nTileWidth, long nTileHeight );
 
     /// @see OutputDevice::LogicInvalidate().
-    void LogicInvalidate(const Rectangle* pRectangle) SAL_OVERRIDE;
+    void LogicInvalidate(const Rectangle* pRectangle) override;
 
     /// Update the cell selection according to what handles have been dragged.
     /// @see vcl::ITiledRenderable::setTextSelection() for the values of nType.
     /// Coordinates are in pixels.
     void SetCellSelectionPixel(int nType, int nPixelX, int nPixelY);
+    /// Get the cell selection, coordinates are in logic units.
+    void GetCellSelection(std::vector<Rectangle>& rLogicRects);
 
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > CreateAccessible() SAL_OVERRIDE;
+    virtual css::uno::Reference< css::accessibility::XAccessible > CreateAccessible() override;
 
     void            FakeButtonUp();
 
@@ -366,7 +365,7 @@ public:
     void            LaunchPageFieldMenu( SCCOL nCol, SCROW nRow );
     void            LaunchDPFieldMenu( SCCOL nCol, SCROW nRow );
 
-    ::com::sun::star::sheet::DataPilotFieldOrientation GetDPFieldOrientation( SCCOL nCol, SCROW nRow ) const;
+    css::sheet::DataPilotFieldOrientation GetDPFieldOrientation( SCCOL nCol, SCROW nRow ) const;
 
     void DrawButtons(SCCOL nX1, SCCOL nX2, const ScTableInfo& rTabInfo, OutputDevice* pContentDev);
 
@@ -403,7 +402,6 @@ public:
     void            UpdateDPFromFieldPopupMenu();
     bool            UpdateVisibleRange();
 
-    // #114409#
     void CursorChanged();
     void DrawLayerCreated();
     bool ContinueOnlineSpelling();
@@ -429,8 +427,15 @@ public:
     void            UpdateShrinkOverlay();
     void            UpdateAllOverlays();
 
+    /// @see ScModelObj::getCellCursor().
+    OString         getCellCursor(const Fraction& rZoomX,
+                                  const Fraction& rZoomY);
+    OString         getCellCursor(int nOutputWidth,
+                                  int nOutputHeight,
+                                  long nTileWidth,
+                                  long nTileHeight);
+
 protected:
-    // #114409#
     void ImpCreateOverlayObjects();
     void ImpDestroyOverlayObjects();
 

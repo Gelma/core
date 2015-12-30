@@ -166,11 +166,11 @@ struct FrameClientSortListLess
 
 namespace
 {
-    void lcl_CollectFrameAtNodeWithLayout(SwDoc* pDoc, const SwContentFrm* pCFrm,
+    void lcl_CollectFrameAtNodeWithLayout(SwDoc* pDoc, const SwContentFrame* pCFrame,
             FrameClientSortList_t& rFrames,
             const sal_uInt16 nAnchorType)
     {
-        auto pObjs = pCFrm->GetDrawObjs();
+        auto pObjs = pCFrame->GetDrawObjs();
         if(!pObjs)
             return;
         const auto aTextBoxes = SwTextBoxHelper::findTextBoxes(pDoc);
@@ -206,13 +206,13 @@ void CollectFrameAtNode( const SwNodeIndex& rIdx,
 
     const auto nChkType = static_cast< sal_uInt16 >((bAtCharAnchoredObjs)
             ? FLY_AT_CHAR : FLY_AT_PARA);
-    const SwContentFrm* pCFrm;
+    const SwContentFrame* pCFrame;
     const SwContentNode* pCNd;
     if( pDoc->getIDocumentLayoutAccess().GetCurrentViewShell() &&
-        0 != (pCNd = rIdx.GetNode().GetContentNode()) &&
-        0 != (pCFrm = pCNd->getLayoutFrm( pDoc->getIDocumentLayoutAccess().GetCurrentLayout())) )
+        nullptr != (pCNd = rIdx.GetNode().GetContentNode()) &&
+        nullptr != (pCFrame = pCNd->getLayoutFrame( pDoc->getIDocumentLayoutAccess().GetCurrentLayout())) )
     {
-        lcl_CollectFrameAtNodeWithLayout(pDoc, pCFrm, rFrames, nChkType);
+        lcl_CollectFrameAtNodeWithLayout(pDoc, pCFrame, rFrames, nChkType);
     }
     else
     {
@@ -224,7 +224,7 @@ void CollectFrameAtNode( const SwNodeIndex& rIdx,
             const SwFormatAnchor& rAnchor = pFormat->GetAnchor();
             const SwPosition* pAnchorPos;
             if( rAnchor.GetAnchorId() == nChkType &&
-                0 != (pAnchorPos = rAnchor.GetContentAnchor()) &&
+                nullptr != (pAnchorPos = rAnchor.GetContentAnchor()) &&
                     pAnchorPos->nNode == rIdx )
             {
 
@@ -244,10 +244,10 @@ void CollectFrameAtNode( const SwNodeIndex& rIdx,
 UnoActionContext::UnoActionContext(SwDoc *const pDoc)
     : m_pDoc(pDoc)
 {
-    SwRootFrm *const pRootFrm = m_pDoc->getIDocumentLayoutAccess().GetCurrentLayout();
-    if (pRootFrm)
+    SwRootFrame *const pRootFrame = m_pDoc->getIDocumentLayoutAccess().GetCurrentLayout();
+    if (pRootFrame)
     {
-        pRootFrm->StartAllAction();
+        pRootFrame->StartAllAction();
     }
 }
 
@@ -256,10 +256,10 @@ UnoActionContext::~UnoActionContext()
     // Doc may already have been removed here
     if (m_pDoc)
     {
-        SwRootFrm *const pRootFrm = m_pDoc->getIDocumentLayoutAccess().GetCurrentLayout();
-        if (pRootFrm)
+        SwRootFrame *const pRootFrame = m_pDoc->getIDocumentLayoutAccess().GetCurrentLayout();
+        if (pRootFrame)
         {
-            pRootFrm->EndAllAction();
+            pRootFrame->EndAllAction();
         }
     }
 }
@@ -267,10 +267,10 @@ UnoActionContext::~UnoActionContext()
 static void lcl_RemoveImpl(SwDoc *const pDoc)
 {
     assert(pDoc);
-    SwRootFrm *const pRootFrm = pDoc->getIDocumentLayoutAccess().GetCurrentLayout();
-    if (pRootFrm)
+    SwRootFrame *const pRootFrame = pDoc->getIDocumentLayoutAccess().GetCurrentLayout();
+    if (pRootFrame)
     {
-        pRootFrm->UnoRemoveAllActions();
+        pRootFrame->UnoRemoveAllActions();
     }
 }
 
@@ -280,7 +280,7 @@ UnoActionRemoveContext::UnoActionRemoveContext(SwDoc *const pDoc)
     lcl_RemoveImpl(m_pDoc);
 }
 
-static SwDoc * lcl_IsNewStyleTable(SwUnoTableCrsr const& rCursor)
+static SwDoc * lcl_IsNewStyleTable(SwUnoTableCursor const& rCursor)
 {
     SwTableNode *const pTableNode = rCursor.GetNode().FindTableNode();
     return (pTableNode && !pTableNode->GetTable().IsNewModel())
@@ -288,11 +288,11 @@ static SwDoc * lcl_IsNewStyleTable(SwUnoTableCrsr const& rCursor)
         : nullptr;
 }
 
-UnoActionRemoveContext::UnoActionRemoveContext(SwUnoTableCrsr const& rCursor)
+UnoActionRemoveContext::UnoActionRemoveContext(SwUnoTableCursor const& rCursor)
     : m_pDoc(lcl_IsNewStyleTable(rCursor))
 {
     // this insanity is only necessary for old-style tables
-    // because SwRootFrm::MakeTableCrsrs() creates the table cursor for these
+    // because SwRootFrame::MakeTableCursors() creates the table cursor for these
     if (m_pDoc)
     {
         lcl_RemoveImpl(m_pDoc);
@@ -303,10 +303,10 @@ UnoActionRemoveContext::~UnoActionRemoveContext()
 {
     if (m_pDoc)
     {
-        SwRootFrm *const pRootFrm = m_pDoc->getIDocumentLayoutAccess().GetCurrentLayout();
-        if (pRootFrm)
+        SwRootFrame *const pRootFrame = m_pDoc->getIDocumentLayoutAccess().GetCurrentLayout();
+        if (pRootFrame)
         {
-            pRootFrm->UnoRestoreAllActions();
+            pRootFrame->UnoRestoreAllActions();
         }
     }
 }
@@ -330,7 +330,7 @@ void ClientModify(SwClient* pClient, const SfxPoolItem *pOld, const SfxPoolItem 
     }
 }
 
-void SwUnoCursorHelper::SetCrsrAttr(SwPaM & rPam,
+void SwUnoCursorHelper::SetCursorAttr(SwPaM & rPam,
         const SfxItemSet& rSet,
         const SetAttrMode nAttrMode, const bool bTableMode)
 {
@@ -340,7 +340,7 @@ void SwUnoCursorHelper::SetCrsrAttr(SwPaM & rPam,
     UnoActionContext aAction(pDoc);
     if (rPam.GetNext() != &rPam)    // Ring of Cursors
     {
-        pDoc->GetIDocumentUndoRedo().StartUndo(UNDO_INSATTR, NULL);
+        pDoc->GetIDocumentUndoRedo().StartUndo(UNDO_INSATTR, nullptr);
 
         for(SwPaM& rCurrent : rPam.GetRingContainer())
         {
@@ -352,7 +352,7 @@ void SwUnoCursorHelper::SetCrsrAttr(SwPaM & rPam,
             }
         }
 
-        pDoc->GetIDocumentUndoRedo().EndUndo(UNDO_INSATTR, NULL);
+        pDoc->GetIDocumentUndoRedo().EndUndo(UNDO_INSATTR, nullptr);
     }
     else
     {
@@ -372,7 +372,7 @@ void SwUnoCursorHelper::SetCrsrAttr(SwPaM & rPam,
 // #i63870#
 // split third parameter <bCurrentAttrOnly> into new parameters <bOnlyTextAttr>
 // and <bGetFromChrFormat> to get better control about resulting <SfxItemSet>
-void SwUnoCursorHelper::GetCrsrAttr(SwPaM & rPam,
+void SwUnoCursorHelper::GetCursorAttr(SwPaM & rPam,
         SfxItemSet & rSet, const bool bOnlyTextAttr, const bool bGetFromChrFormat)
 {
     static const sal_uLong nMaxLookup = 1000;
@@ -436,7 +436,7 @@ void SwUnoCursorHelper::GetCrsrAttr(SwPaM & rPam,
     }
 }
 
-struct SwXParagraphEnumerationImpl SAL_FINAL : public SwXParagraphEnumeration
+struct SwXParagraphEnumerationImpl final : public SwXParagraphEnumeration
 {
     uno::Reference< text::XText > const m_xParentText;
     const CursorType m_eCursorType;
@@ -450,11 +450,11 @@ struct SwXParagraphEnumerationImpl SAL_FINAL : public SwXParagraphEnumeration
     sal_Int32 m_nLastParaEnd;
     bool m_bFirstParagraph;
     uno::Reference< text::XTextContent > m_xNextPara;
-    sw::UnoCursorPointer m_pCrsr;
+    sw::UnoCursorPointer m_pCursor;
 
     SwXParagraphEnumerationImpl(
             uno::Reference< text::XText > const& xParent,
-            ::std::shared_ptr<SwUnoCrsr> pCursor,
+            ::std::shared_ptr<SwUnoCursor> pCursor,
             const CursorType eType,
             SwStartNode const*const pStartNode, SwTable const*const pTable)
         : m_xParentText( xParent )
@@ -469,7 +469,7 @@ struct SwXParagraphEnumerationImpl SAL_FINAL : public SwXParagraphEnumeration
         , m_nFirstParaStart( -1 )
         , m_nLastParaEnd( -1 )
         , m_bFirstParagraph( true )
-        , m_pCrsr(pCursor)
+        , m_pCursor(pCursor)
     {
         OSL_ENSURE(m_xParentText.is(), "SwXParagraphEnumeration: no parent?");
         OSL_ENSURE(   !((CURSOR_SELECTION_IN_TABLE == eType) ||
@@ -480,7 +480,7 @@ struct SwXParagraphEnumerationImpl SAL_FINAL : public SwXParagraphEnumeration
         if ((CURSOR_SELECTION == m_eCursorType) ||
             (CURSOR_SELECTION_IN_TABLE == m_eCursorType))
         {
-            SwUnoCrsr & rCursor = GetCursor();
+            SwUnoCursor & rCursor = GetCursor();
             rCursor.Normalize();
             m_nFirstParaStart = rCursor.GetPoint()->nContent.GetIndex();
             m_nLastParaEnd = rCursor.GetMark()->nContent.GetIndex();
@@ -489,34 +489,34 @@ struct SwXParagraphEnumerationImpl SAL_FINAL : public SwXParagraphEnumeration
     }
 
     virtual ~SwXParagraphEnumerationImpl()
-        { m_pCrsr.reset(nullptr); }
-    virtual void SAL_CALL release() throw () SAL_OVERRIDE
+        { m_pCursor.reset(nullptr); }
+    virtual void SAL_CALL release() throw () override
     {
         SolarMutexGuard g;
         OWeakObject::release();
     }
 
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual OUString SAL_CALL getImplementationName() throw (css::uno::RuntimeException, std::exception) override
         { return OUString("SwXParagraphEnumeration"); }
-    virtual sal_Bool SAL_CALL supportsService( const OUString& rServiceName) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL supportsService( const OUString& rServiceName) throw (css::uno::RuntimeException, std::exception) override
         { return cppu::supportsService(this, rServiceName); };
-    virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) override
         { return {"com.sun.star.text.ParagraphEnumeration"}; };
 
     // XEnumeration
-    virtual sal_Bool SAL_CALL hasMoreElements() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Any SAL_CALL nextElement() throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual sal_Bool SAL_CALL hasMoreElements() throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Any SAL_CALL nextElement() throw (css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
 
-    SwUnoCrsr& GetCursor()
-        { return *m_pCrsr; }
+    SwUnoCursor& GetCursor()
+        { return *m_pCursor; }
     uno::Reference< text::XTextContent > NextElement_Impl()
         throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException);
 };
 
 SwXParagraphEnumeration* SwXParagraphEnumeration::Create(
     uno::Reference< text::XText > const& xParent,
-    ::std::shared_ptr<SwUnoCrsr> pCursor,
+    ::std::shared_ptr<SwUnoCursor> pCursor,
     const CursorType eType,
     SwStartNode const*const pStartNode,
     SwTable const*const pTable)
@@ -531,7 +531,7 @@ SwXParagraphEnumerationImpl::hasMoreElements() throw (uno::RuntimeException, std
     return m_bFirstParagraph || m_xNextPara.is();
 }
 
-//!! compare to SwShellTableCrsr::FillRects() in viscrs.cxx
+//!! compare to SwShellTableCursor::FillRects() in viscrs.cxx
 static SwTableNode *
 lcl_FindTopLevelTable(
         SwTableNode *const pTableNode, SwTable const*const pOwnTable)
@@ -540,7 +540,7 @@ lcl_FindTopLevelTable(
 
     SwTableNode * pLast = pTableNode;
     for (SwTableNode* pTmp = pLast;
-         pTmp != NULL  &&  &pTmp->GetTable() != pOwnTable;  /* we must not go up higher than the own table! */
+         pTmp != nullptr  &&  &pTmp->GetTable() != pOwnTable;  /* we must not go up higher than the own table! */
          pTmp = pTmp->StartOfSectionNode()->FindTableNode() )
     {
         pLast = pTmp;
@@ -550,17 +550,17 @@ lcl_FindTopLevelTable(
 
 static bool
 lcl_CursorIsInSection(
-        SwUnoCrsr const*const pUnoCrsr, SwStartNode const*const pOwnStartNode)
+        SwUnoCursor const*const pUnoCursor, SwStartNode const*const pOwnStartNode)
 {
     // returns true if the cursor is in the section (or in a sub section!)
     // represented by pOwnStartNode
 
     bool bRes = true;
-    if (pUnoCrsr && pOwnStartNode)
+    if (pUnoCursor && pOwnStartNode)
     {
         const SwEndNode * pOwnEndNode = pOwnStartNode->EndOfSectionNode();
-        bRes = pOwnStartNode->GetIndex() <= pUnoCrsr->Start()->nNode.GetIndex() &&
-               pUnoCrsr->End()->nNode.GetIndex() <= pOwnEndNode->GetIndex();
+        bRes = pOwnStartNode->GetIndex() <= pUnoCursor->Start()->nNode.GetIndex() &&
+               pUnoCursor->End()->nNode.GetIndex() <= pOwnEndNode->GetIndex();
     }
     return bRes;
 }
@@ -568,55 +568,55 @@ lcl_CursorIsInSection(
 uno::Reference< text::XTextContent >
 SwXParagraphEnumerationImpl::NextElement_Impl() throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException)
 {
-    SwUnoCrsr& rUnoCrsr = GetCursor();
+    SwUnoCursor& rUnoCursor = GetCursor();
 
     // check for exceeding selections
     if (!m_bFirstParagraph &&
         ((CURSOR_SELECTION == m_eCursorType) ||
          (CURSOR_SELECTION_IN_TABLE == m_eCursorType)))
     {
-        SwPosition* pStart = rUnoCrsr.Start();
-        auto aNewCrsr(rUnoCrsr.GetDoc()->CreateUnoCrsr(*pStart));
+        SwPosition* pStart = rUnoCursor.Start();
+        auto aNewCursor(rUnoCursor.GetDoc()->CreateUnoCursor(*pStart));
         // one may also go into tables here
         if ((CURSOR_TBLTEXT != m_eCursorType) &&
             (CURSOR_SELECTION_IN_TABLE != m_eCursorType))
         {
-            aNewCrsr->SetRemainInSection( false );
+            aNewCursor->SetRemainInSection( false );
         }
 
         // os 2005-01-14: This part is only necessary to detect movements out
         // of a selection; if there is no selection we don't have to care
-        SwTableNode *const pTableNode = aNewCrsr->GetNode().FindTableNode();
+        SwTableNode *const pTableNode = aNewCursor->GetNode().FindTableNode();
         if (((CURSOR_TBLTEXT != m_eCursorType) &&
             (CURSOR_SELECTION_IN_TABLE != m_eCursorType)) && pTableNode)
         {
-            aNewCrsr->GetPoint()->nNode = pTableNode->EndOfSectionIndex();
-            aNewCrsr->Move(fnMoveForward, fnGoNode);
+            aNewCursor->GetPoint()->nNode = pTableNode->EndOfSectionIndex();
+            aNewCursor->Move(fnMoveForward, fnGoNode);
         }
         else
         {
-            aNewCrsr->MovePara(fnParaNext, fnParaStart);
+            aNewCursor->MovePara(fnParaNext, fnParaStart);
         }
-        if (m_nEndIndex < aNewCrsr->Start()->nNode.GetIndex())
+        if (m_nEndIndex < aNewCursor->Start()->nNode.GetIndex())
         {
-            return 0;
+            return nullptr;
         }
     }
 
     bool bInTable = false;
     if (!m_bFirstParagraph)
     {
-        rUnoCrsr.SetRemainInSection( false );
+        rUnoCursor.SetRemainInSection( false );
         // what to do if already in a table?
-        SwTableNode * pTableNode = rUnoCrsr.GetNode().FindTableNode();
+        SwTableNode * pTableNode = rUnoCursor.GetNode().FindTableNode();
         pTableNode = lcl_FindTopLevelTable( pTableNode, m_pOwnTable );
         if (pTableNode && (&pTableNode->GetTable() != m_pOwnTable))
         {
             // this is a foreign table: go to end
-            rUnoCrsr.GetPoint()->nNode = pTableNode->EndOfSectionIndex();
-            if (!rUnoCrsr.Move(fnMoveForward, fnGoNode))
+            rUnoCursor.GetPoint()->nNode = pTableNode->EndOfSectionIndex();
+            if (!rUnoCursor.Move(fnMoveForward, fnGoNode))
             {
-                return 0;
+                return nullptr;
             }
             bInTable = true;
         }
@@ -625,19 +625,19 @@ SwXParagraphEnumerationImpl::NextElement_Impl() throw (container::NoSuchElementE
     uno::Reference< text::XTextContent >  xRef;
     // the cursor must remain in the current section or a subsection
     // before AND after the movement...
-    if (lcl_CursorIsInSection( &rUnoCrsr, m_pOwnStartNode ) &&
+    if (lcl_CursorIsInSection( &rUnoCursor, m_pOwnStartNode ) &&
         (m_bFirstParagraph || bInTable ||
-        (rUnoCrsr.MovePara(fnParaNext, fnParaStart) &&
-            lcl_CursorIsInSection( &rUnoCrsr, m_pOwnStartNode ))))
+        (rUnoCursor.MovePara(fnParaNext, fnParaStart) &&
+            lcl_CursorIsInSection( &rUnoCursor, m_pOwnStartNode ))))
     {
-        SwPosition* pStart = rUnoCrsr.Start();
+        SwPosition* pStart = rUnoCursor.Start();
         const sal_Int32 nFirstContent =
             (m_bFirstParagraph) ? m_nFirstParaStart : -1;
         const sal_Int32 nLastContent =
             (m_nEndIndex == pStart->nNode.GetIndex()) ? m_nLastParaEnd : -1;
 
         // position in a table, or in a simple paragraph?
-        SwTableNode * pTableNode = rUnoCrsr.GetNode().FindTableNode();
+        SwTableNode * pTableNode = rUnoCursor.GetNode().FindTableNode();
         pTableNode = lcl_FindTopLevelTable( pTableNode, m_pOwnTable );
         if (/*CURSOR_TBLTEXT != eCursorType && CURSOR_SELECTION_IN_TABLE != eCursorType && */
             pTableNode && (&pTableNode->GetTable() != m_pOwnTable))
@@ -650,7 +650,7 @@ SwXParagraphEnumerationImpl::NextElement_Impl() throw (container::NoSuchElementE
         else
         {
             text::XText *const pText = m_xParentText.get();
-            xRef = SwXParagraph::CreateXParagraph(*rUnoCrsr.GetDoc(),
+            xRef = SwXParagraph::CreateXParagraph(*rUnoCursor.GetDoc(),
                 pStart->nNode.GetNode().GetTextNode(),
                 static_cast<SwXText*>(pText), nFirstContent, nLastContent);
         }
@@ -691,15 +691,15 @@ public:
     ::sw::mark::IMark * m_pMark;
 
     Impl(   SwDoc & rDoc, const enum RangePosition eRange,
-            SwFrameFormat *const pTableFormat = 0,
-            const uno::Reference< text::XText > & xParent = 0)
+            SwFrameFormat *const pTableFormat = nullptr,
+            const uno::Reference< text::XText > & xParent = nullptr)
         : SwClient()
         , m_rPropSet(*aSwMapProvider.GetPropertySet(PROPERTY_MAP_TEXT_CURSOR))
         , m_eRangePosition(eRange)
         , m_rDoc(rDoc)
         , m_xParentText(xParent)
         , m_ObjectDepend(this, pTableFormat)
-        , m_pMark(0)
+        , m_pMark(nullptr)
     {
     }
 
@@ -714,7 +714,7 @@ public:
         if (m_pMark)
         {
             m_rDoc.getIDocumentMarkAccess()->deleteMark(m_pMark);
-            m_pMark = 0;
+            m_pMark = nullptr;
         }
     }
 
@@ -722,12 +722,12 @@ public:
 
 protected:
     // SwClient
-    virtual void    Modify(const SfxPoolItem *pOld, const SfxPoolItem *pNew) SAL_OVERRIDE;
+    virtual void    Modify(const SfxPoolItem *pOld, const SfxPoolItem *pNew) override;
 };
 
 void SwXTextRange::Impl::Modify(const SfxPoolItem *pOld, const SfxPoolItem *pNew)
 {
-    const bool bAlreadyRegistered = 0 != GetRegisteredIn();
+    const bool bAlreadyRegistered = nullptr != GetRegisteredIn();
     ClientModify(this, pOld, pNew);
     if (m_ObjectDepend.GetRegisteredIn())
     {
@@ -748,14 +748,14 @@ void SwXTextRange::Impl::Modify(const SfxPoolItem *pOld, const SfxPoolItem *pNew
     }
     if (!GetRegisteredIn())
     {
-        m_pMark = 0;
+        m_pMark = nullptr;
     }
 }
 
 SwXTextRange::SwXTextRange(SwPaM& rPam,
         const uno::Reference< text::XText > & xParent,
         const enum RangePosition eRange)
-    : m_pImpl( new SwXTextRange::Impl(*rPam.GetDoc(), eRange, 0, xParent) )
+    : m_pImpl( new SwXTextRange::Impl(*rPam.GetDoc(), eRange, nullptr, xParent) )
 {
     SetPositions(rPam);
 }
@@ -811,11 +811,11 @@ throw (uno::RuntimeException)
     }
 
     const SwPosition aPos(GetDoc().GetNodes().GetEndOfContent());
-    SwCursor aCursor(aPos, 0, false);
+    SwCursor aCursor(aPos, nullptr, false);
     if (GetPositions(aCursor))
     {
         UnoActionContext aAction(& m_pImpl->m_rDoc);
-        m_pImpl->m_rDoc.GetIDocumentUndoRedo().StartUndo(UNDO_INSERT, NULL);
+        m_pImpl->m_rDoc.GetIDocumentUndoRedo().StartUndo(UNDO_INSERT, nullptr);
         if (aCursor.HasMark())
         {
             m_pImpl->m_rDoc.getIDocumentContentOperations().DeleteAndJoin(aCursor);
@@ -830,7 +830,7 @@ throw (uno::RuntimeException)
             aCursor.Left(rText.getLength(), CRSR_SKIP_CHARS, false, false);
         }
         SetPositions(aCursor);
-        m_pImpl->m_rDoc.GetIDocumentUndoRedo().EndUndo(UNDO_INSERT, NULL);
+        m_pImpl->m_rDoc.GetIDocumentUndoRedo().EndUndo(UNDO_INSERT, nullptr);
     }
 }
 
@@ -1015,11 +1015,11 @@ bool XTextRangeToSwPaM( SwUnoInternalPaM & rToFill,
     bool bRet = false;
 
     uno::Reference<lang::XUnoTunnel> xRangeTunnel( xTextRange, uno::UNO_QUERY);
-    SwXTextRange* pRange = 0;
-    OTextCursorHelper* pCursor = 0;
-    SwXTextPortion* pPortion = 0;
-    SwXText* pText = 0;
-    SwXParagraph* pPara = 0;
+    SwXTextRange* pRange = nullptr;
+    OTextCursorHelper* pCursor = nullptr;
+    SwXTextPortion* pPortion = nullptr;
+    SwXText* pText = nullptr;
+    SwXParagraph* pPara = nullptr;
     if(xRangeTunnel.is())
     {
         pRange  = ::sw::UnoTunnelGetImplementation<SwXTextRange>(xRangeTunnel);
@@ -1039,10 +1039,10 @@ bool XTextRangeToSwPaM( SwUnoInternalPaM & rToFill,
     {
         xTextCursor.set( pText->CreateCursor() );
         xTextCursor->gotoEnd(sal_True);
-        const uno::Reference<lang::XUnoTunnel> xCrsrTunnel(
+        const uno::Reference<lang::XUnoTunnel> xCursorTunnel(
                 xTextCursor, uno::UNO_QUERY);
         pCursor =
-            ::sw::UnoTunnelGetImplementation<OTextCursorHelper>(xCrsrTunnel);
+            ::sw::UnoTunnelGetImplementation<OTextCursorHelper>(xCursorTunnel);
     }
     if(pRange && &pRange->GetDoc() == rToFill.GetDoc())
     {
@@ -1057,19 +1057,19 @@ bool XTextRangeToSwPaM( SwUnoInternalPaM & rToFill,
         else
         {
             SwDoc* const pDoc = (pCursor) ? pCursor->GetDoc()
-                : ((pPortion) ? pPortion->GetCursor().GetDoc() : 0);
-            const SwPaM* const pUnoCrsr = (pCursor) ? pCursor->GetPaM()
-                : ((pPortion) ? &pPortion->GetCursor() : 0);
-            if (pUnoCrsr && pDoc == rToFill.GetDoc())
+                : ((pPortion) ? pPortion->GetCursor().GetDoc() : nullptr);
+            const SwPaM* const pUnoCursor = (pCursor) ? pCursor->GetPaM()
+                : ((pPortion) ? &pPortion->GetCursor() : nullptr);
+            if (pUnoCursor && pDoc == rToFill.GetDoc())
             {
-                OSL_ENSURE(!pUnoCrsr->IsMultiSelection(),
+                OSL_ENSURE(!pUnoCursor->IsMultiSelection(),
                         "what to do about rings?");
                 bRet = true;
-                *rToFill.GetPoint() = *pUnoCrsr->GetPoint();
-                if (pUnoCrsr->HasMark())
+                *rToFill.GetPoint() = *pUnoCursor->GetPoint();
+                if (pUnoCursor->HasMark())
                 {
                     rToFill.SetMark();
-                    *rToFill.GetMark() = *pUnoCrsr->GetMark();
+                    *rToFill.GetMark() = *pUnoCursor->GetMark();
                 }
                 else
                     rToFill.DeleteMark();
@@ -1118,15 +1118,15 @@ SwXTextRange::CreateXTextRange(
 {
     const uno::Reference<text::XText> xParentText(
             ::sw::CreateParentXText(rDoc, rPos));
-    const auto pNewCrsr(rDoc.CreateUnoCrsr(rPos));
+    const auto pNewCursor(rDoc.CreateUnoCursor(rPos));
     if(pMark)
     {
-        pNewCrsr->SetMark();
-        *pNewCrsr->GetMark() = *pMark;
+        pNewCursor->SetMark();
+        *pNewCursor->GetMark() = *pMark;
     }
     const bool isCell( dynamic_cast<SwXCell*>(xParentText.get()) );
     const uno::Reference< text::XTextRange > xRet(
-        new SwXTextRange(*pNewCrsr, xParentText,
+        new SwXTextRange(*pNewCursor, xParentText,
             isCell ? RANGE_IN_CELL : RANGE_IN_TEXT) );
     return xRet;
 }
@@ -1160,7 +1160,7 @@ CreateParentXText(SwDoc & rDoc, const SwPosition& rPos)
         case SwFlyStartNode:
         {
             SwFrameFormat *const pFormat = pSttNode->GetFlyFormat();
-            if (0 != pFormat)
+            if (nullptr != pFormat)
             {
                 xParentText.set(SwXTextFrame::CreateXTextFrame(rDoc, pFormat),
                         uno::UNO_QUERY);
@@ -1178,7 +1178,7 @@ CreateParentXText(SwDoc & rDoc, const SwPosition& rPos)
                 const SwFrameFormat* pFrameFormatMaster = &rDesc.GetMaster();
                 const SwFrameFormat* pFrameFormatLeft = &rDesc.GetLeft();
 
-                SwFrameFormat* pHeadFootFormat = 0;
+                SwFrameFormat* pHeadFootFormat = nullptr;
                 if (!lcl_IsStartNodeInFormat(bHeader, pSttNode, pFrameFormatMaster,
                             pHeadFootFormat))
                 {
@@ -1252,13 +1252,13 @@ throw (uno::RuntimeException, std::exception)
         throw uno::RuntimeException();
     }
     const SwPosition aPos(GetDoc().GetNodes().GetEndOfContent());
-    const auto pNewCrsr(m_pImpl->m_rDoc.CreateUnoCrsr(aPos));
-    if (!GetPositions(*pNewCrsr))
+    const auto pNewCursor(m_pImpl->m_rDoc.CreateUnoCursor(aPos));
+    if (!GetPositions(*pNewCursor))
     {
         throw uno::RuntimeException();
     }
 
-    return SwXParaFrameEnumeration::Create(*pNewCrsr, PARAFRAME_PORTION_TEXTRANGE);
+    return SwXParaFrameEnumeration::Create(*pNewCursor, PARAFRAME_PORTION_TEXTRANGE);
 }
 
 uno::Reference< container::XEnumeration > SAL_CALL
@@ -1271,8 +1271,8 @@ SwXTextRange::createEnumeration() throw (uno::RuntimeException, std::exception)
         throw uno::RuntimeException();
     }
     const SwPosition aPos(GetDoc().GetNodes().GetEndOfContent());
-    auto pNewCrsr(m_pImpl->m_rDoc.CreateUnoCrsr(aPos));
-    if (!GetPositions(*pNewCrsr))
+    auto pNewCursor(m_pImpl->m_rDoc.CreateUnoCursor(aPos));
+    if (!GetPositions(*pNewCursor))
     {
         throw uno::RuntimeException();
     }
@@ -1283,7 +1283,7 @@ SwXTextRange::createEnumeration() throw (uno::RuntimeException, std::exception)
 
     const CursorType eSetType = (RANGE_IN_CELL == m_pImpl->m_eRangePosition)
             ? CURSOR_SELECTION_IN_TABLE : CURSOR_SELECTION;
-    return SwXParagraphEnumeration::Create(m_pImpl->m_xParentText, pNewCrsr, eSetType);
+    return SwXParagraphEnumeration::Create(m_pImpl->m_xParentText, pNewCursor, eSetType);
 }
 
 uno::Type SAL_CALL SwXTextRange::getElementType() throw (uno::RuntimeException, std::exception)
@@ -1299,9 +1299,7 @@ sal_Bool SAL_CALL SwXTextRange::hasElements() throw (uno::RuntimeException, std:
 uno::Sequence< OUString > SAL_CALL
 SwXTextRange::getAvailableServiceNames() throw (uno::RuntimeException, std::exception)
 {
-    uno::Sequence< OUString > aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.text.TextContent";
+    uno::Sequence<OUString> aRet { "com.sun.star.text.TextContent" };
     return aRet;
 }
 
@@ -1472,44 +1470,44 @@ throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception)
     SwUnoCursorHelper::makeRedline( aPaM, rRedlineType, rRedlineProperties );
 }
 
-struct SwXTextRangesImpl SAL_FINAL : public SwXTextRanges
+struct SwXTextRangesImpl final : public SwXTextRanges
 {
 
     // XUnoTunnel
-    virtual sal_Int64 SAL_CALL getSomething( const ::com::sun::star::uno::Sequence< sal_Int8 >& rIdentifier) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual sal_Int64 SAL_CALL getSomething( const css::uno::Sequence< sal_Int8 >& rIdentifier) throw (css::uno::RuntimeException, std::exception) override;
 
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual OUString SAL_CALL getImplementationName() throw (css::uno::RuntimeException, std::exception) override
         { return OUString("SwXTextRanges"); };
-    virtual sal_Bool SAL_CALL supportsService( const OUString& rServiceName) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL supportsService( const OUString& rServiceName) throw (css::uno::RuntimeException, std::exception) override
         { return cppu::supportsService(this, rServiceName); };
-    virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) override
         { return { "com.sun.star.text.TextRanges" }; };
 
     // XElementAccess
-    virtual ::com::sun::star::uno::Type SAL_CALL getElementType() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual css::uno::Type SAL_CALL getElementType() throw (css::uno::RuntimeException, std::exception) override
         { return cppu::UnoType<text::XTextRange>::get(); };
-    virtual sal_Bool SAL_CALL hasElements() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasElements() throw (css::uno::RuntimeException, std::exception) override
         { return getCount() > 0; };
     // XIndexAccess
-    virtual sal_Int32 SAL_CALL getCount() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Any SAL_CALL getByIndex(sal_Int32 nIndex) throw (::com::sun::star::lang::IndexOutOfBoundsException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual sal_Int32 SAL_CALL getCount() throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Any SAL_CALL getByIndex(sal_Int32 nIndex) throw (css::lang::IndexOutOfBoundsException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
 
     explicit SwXTextRangesImpl(SwPaM *const pPaM)
     {
         if (pPaM)
         {
-            m_pUnoCursor.reset(pPaM->GetDoc()->CreateUnoCrsr(*pPaM->GetPoint()));
+            m_pUnoCursor.reset(pPaM->GetDoc()->CreateUnoCursor(*pPaM->GetPoint()));
             ::sw::DeepCopyPaM(*pPaM, *GetCursor());
         }
         MakeRanges();
     }
-    virtual void SAL_CALL release() throw () SAL_OVERRIDE
+    virtual void SAL_CALL release() throw () override
     {
         SolarMutexGuard g;
         OWeakObject::release();
     }
-    virtual SwUnoCrsr* GetCursor() SAL_OVERRIDE
+    virtual SwUnoCursor* GetCursor() override
         { return &(*m_pUnoCursor); };
     void MakeRanges();
     ::std::vector< uno::Reference< text::XTextRange > > m_Ranges;
@@ -1580,7 +1578,7 @@ void SwUnoCursorHelper::SetString(SwCursor & rCursor, const OUString& rString)
     // Start/EndAction
     SwDoc *const pDoc = rCursor.GetDoc();
     UnoActionContext aAction(pDoc);
-    pDoc->GetIDocumentUndoRedo().StartUndo(UNDO_INSERT, NULL);
+    pDoc->GetIDocumentUndoRedo().StartUndo(UNDO_INSERT, nullptr);
     if (rCursor.HasMark())
     {
         pDoc->getIDocumentContentOperations().DeleteAndJoin(rCursor);
@@ -1594,30 +1592,30 @@ void SwUnoCursorHelper::SetString(SwCursor & rCursor, const OUString& rString)
         SwUnoCursorHelper::SelectPam(rCursor, true);
         rCursor.Left(rString.getLength(), CRSR_SKIP_CHARS, false, false);
     }
-    pDoc->GetIDocumentUndoRedo().EndUndo(UNDO_INSERT, NULL);
+    pDoc->GetIDocumentUndoRedo().EndUndo(UNDO_INSERT, nullptr);
 }
 
-struct SwXParaFrameEnumerationImpl SAL_FINAL : public SwXParaFrameEnumeration
+struct SwXParaFrameEnumerationImpl final : public SwXParaFrameEnumeration
 {
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual OUString SAL_CALL getImplementationName() throw (css::uno::RuntimeException, std::exception) override
         { return OUString("SwXParaFrameEnumeration"); };
-    virtual sal_Bool SAL_CALL supportsService(const OUString& rServiceName) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL supportsService(const OUString& rServiceName) throw (css::uno::RuntimeException, std::exception) override
         { return cppu::supportsService(this, rServiceName); };
-    virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) override
         { return {"com.sun.star.util.ContentEnumeration"}; };
 
     // XEnumeration
-    virtual sal_Bool SAL_CALL hasMoreElements() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Any SAL_CALL nextElement() throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual sal_Bool SAL_CALL hasMoreElements() throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Any SAL_CALL nextElement() throw (css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
 
     SwXParaFrameEnumerationImpl(const SwPaM& rPaM, const enum ParaFrameMode eParaFrameMode, SwFrameFormat* const pFormat = nullptr);
-    virtual void SAL_CALL release() throw () SAL_OVERRIDE
+    virtual void SAL_CALL release() throw () override
     {
         SolarMutexGuard g;
         OWeakObject::release();
     }
-    SwUnoCrsr& GetCursor()
+    SwUnoCursor& GetCursor()
         { return *m_pUnoCursor; }
     void PurgeFrameClients()
     {
@@ -1649,7 +1647,7 @@ SwXParaFrameEnumeration* SwXParaFrameEnumeration::Create(const SwPaM& rPaM, cons
 SwXParaFrameEnumerationImpl::SwXParaFrameEnumerationImpl(
         const SwPaM& rPaM, const enum ParaFrameMode eParaFrameMode,
         SwFrameFormat* const pFormat)
-    : m_pUnoCursor(rPaM.GetDoc()->CreateUnoCrsr(*rPaM.GetPoint()))
+    : m_pUnoCursor(rPaM.GetDoc()->CreateUnoCursor(*rPaM.GetPoint()))
 {
     if (rPaM.HasMark())
     {
@@ -1674,9 +1672,9 @@ SwXParaFrameEnumerationImpl::SwXParaFrameEnumerationImpl(
         if (PARAFRAME_PORTION_TEXTRANGE == eParaFrameMode)
         {
             //get all frames that are bound at paragraph or at character
-            for(const auto& pFlyFrm : rPaM.GetDoc()->GetAllFlyFormats(&GetCursor(), false, true))
+            for(const auto& pFlyFrame : rPaM.GetDoc()->GetAllFlyFormats(&GetCursor(), false, true))
             {
-                const auto pFrameFormat = const_cast<SwFrameFormat*>(&pFlyFrm->GetFormat());
+                const auto pFrameFormat = const_cast<SwFrameFormat*>(&pFlyFrame->GetFormat());
                 m_vFrames.push_back(std::shared_ptr<sw::FrameClient>(new sw::FrameClient(pFrameFormat)));
             }
         }

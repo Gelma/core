@@ -35,7 +35,7 @@ class LimitBoxImpl: public LimitBox
     public:
         LimitBoxImpl( vcl::Window* pParent, LimitBoxController* pCtrl );
 
-        virtual bool Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+        virtual bool Notify( NotifyEvent& rNEvt ) override;
 
     private:
         LimitBoxController* m_pControl;
@@ -91,7 +91,7 @@ LimitBoxController::LimitBoxController(
     svt::ToolboxController( rxContext,
                             uno::Reference< frame::XFrame >(),
                             OUString( ".uno:DBLimit" ) ),
-    m_pLimitBox( NULL )
+    m_pLimitBox( nullptr )
 {
 }
 

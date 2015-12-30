@@ -110,7 +110,7 @@ XMLPersAttrListTContext::~XMLPersAttrListTContext()
 {
 }
 
-XMLTransformerContext *XMLPersAttrListTContext::CreateChildContext(
+rtl::Reference<XMLTransformerContext> XMLPersAttrListTContext::CreateChildContext(
         sal_uInt16 /*nPrefix*/,
         const OUString& /*rLocalName*/,
         const OUString& rQName,
@@ -124,7 +124,7 @@ XMLTransformerContext *XMLPersAttrListTContext::CreateChildContext(
 void XMLPersAttrListTContext::StartElement(
     const Reference< XAttributeList >& rAttrList )
 {
-    XMLMutableAttributeList *pMutableAttrList = 0;
+    XMLMutableAttributeList *pMutableAttrList = nullptr;
 
     Reference< XAttributeList > xAttrList( rAttrList );
     if( m_nActionMap != INVALID_ACTIONS )

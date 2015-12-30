@@ -89,7 +89,7 @@ using namespace ::com::sun::star::linguistic2;
 static bool bDebugPaint = false;
 #endif
 
-static SfxItemPool* pGlobalPool=0;
+static SfxItemPool* pGlobalPool=nullptr;
 
 EditEngine::EditEngine( SfxItemPool* pItemPool )
 {
@@ -320,7 +320,7 @@ EditView* EditEngine::RemoveView( EditView* pView )
 {
 
     pView->HideCursor();
-    EditView* pRemoved = NULL;
+    EditView* pRemoved = nullptr;
     ImpEditEngine::ViewsType& rViews = pImpEditEngine->GetEditViews();
     ImpEditEngine::ViewsType::iterator it = std::find(rViews.begin(), rViews.end(), pView);
 
@@ -331,8 +331,8 @@ EditView* EditEngine::RemoveView( EditView* pView )
         rViews.erase(it);
         if ( pImpEditEngine->GetActiveView() == pView )
         {
-            pImpEditEngine->SetActiveView( 0 );
-            pImpEditEngine->GetSelEngine().SetCurView( 0 );
+            pImpEditEngine->SetActiveView( nullptr );
+            pImpEditEngine->GetSelEngine().SetCurView( nullptr );
         }
         pView->pImpEditView->RemoveDragAndDropListeners();
 
@@ -344,12 +344,12 @@ EditView* EditEngine::RemoveView(size_t nIndex)
 {
     ImpEditEngine::ViewsType& rViews = pImpEditEngine->GetEditViews();
     if (nIndex >= rViews.size())
-        return NULL;
+        return nullptr;
 
     EditView* pView = rViews[nIndex];
     if ( pView )
         return RemoveView( pView );
-    return NULL;
+    return nullptr;
 }
 
 EditView* EditEngine::GetView(size_t nIndex) const
@@ -384,7 +384,7 @@ void EditEngine::SetDefTab( sal_uInt16 nDefTab )
     if ( pImpEditEngine->IsFormatted() )
     {
         pImpEditEngine->FormatFullDoc();
-        pImpEditEngine->UpdateViews( nullptr );
+        pImpEditEngine->UpdateViews();
     }
 }
 
@@ -501,7 +501,7 @@ void EditEngine::SetAddExtLeading( bool b )
 
 void EditEngine::SetPolygon( const basegfx::B2DPolyPolygon& rPolyPolygon )
 {
-    SetPolygon( rPolyPolygon, 0L );
+    SetPolygon( rPolyPolygon, nullptr );
 }
 
 void EditEngine::SetPolygon(const basegfx::B2DPolyPolygon& rPolyPolygon, const basegfx::B2DPolyPolygon* pLinePolyPolygon)
@@ -524,7 +524,7 @@ void EditEngine::SetPolygon(const basegfx::B2DPolyPolygon& rPolyPolygon, const b
 
 void EditEngine::ClearPolygon()
 {
-    pImpEditEngine->SetTextRanger( 0 );
+    pImpEditEngine->SetTextRanger( nullptr );
 }
 
 const Size& EditEngine::GetMinAutoPaperSize() const
@@ -684,7 +684,7 @@ bool EditEngine::IsCallParaInsertedOrDeleted() const
 
 void EditEngine::AppendDeletedNodeInfo(DeletedNodeInfo* pInfo)
 {
-    pImpEditEngine->aDeletedNodes.push_back(pInfo);
+    pImpEditEngine->aDeletedNodes.push_back(std::unique_ptr<DeletedNodeInfo>(pInfo));
 }
 
 void EditEngine::UpdateSelections()
@@ -1572,7 +1572,7 @@ EditTextObject* EditEngine::CreateTextObject( sal_Int32 nPara, sal_Int32 nParas 
         aTmpSel.Max() = EditPaM( pEndNode, pEndNode->Len() );
         return pImpEditEngine->CreateTextObject( aTmpSel );
     }
-    return 0;
+    return nullptr;
 }
 
 void EditEngine::RemoveParagraph( sal_Int32 nPara )
@@ -1647,7 +1647,7 @@ void EditEngine::InsertParagraph( sal_Int32 nPara, const EditTextObject& rTxtObj
 {
     if ( nPara > GetParagraphCount() )
     {
-        DBG_ASSERTWARNING( nPara == EE_PARA_APPEND, "Paragraph number too large, but not EE_PARA_APPEND!" );
+        SAL_WARN_IF( nPara != EE_PARA_APPEND, "editeng", "Paragraph number too large, but not EE_PARA_APPEND!" );
         nPara = GetParagraphCount();
     }
 
@@ -1669,7 +1669,7 @@ void EditEngine::InsertParagraph(sal_Int32 nPara, const OUString& rTxt)
 {
     if ( nPara > GetParagraphCount() )
     {
-        DBG_ASSERTWARNING( nPara == EE_PARA_APPEND, "Paragraph number too large, but not EE_PARA_APPEND!" );
+        SAL_WARN_IF( nPara != EE_PARA_APPEND, "editeng", "Paragraph number too large, but not EE_PARA_APPEND!" );
         nPara = GetParagraphCount();
     }
 
@@ -1853,7 +1853,7 @@ void EditEngine::SetControlWord( EEControlBits nWord )
                     ContentNode* pNode = pImpEditEngine->GetEditDoc().GetObject( n );
                     const ParaPortion* pPortion = pImpEditEngine->GetParaPortions()[n];
                     bool bWrongs = false;
-                    if (pNode->GetWrongList() != NULL)
+                    if (pNode->GetWrongList() != nullptr)
                         bWrongs = !pNode->GetWrongList()->empty();
                     pNode->DestroyWrongList();
                     if ( bWrongs )
@@ -1943,7 +1943,7 @@ const SvxNumberFormat* EditEngine::GetNumberFormat( sal_Int32 nPara ) const
     // derived objects may override this function to give access to
     // bullet information (see Outliner)
     (void) nPara;
-    return 0;
+    return nullptr;
 }
 
 bool EditEngine::IsRightToLeft( sal_Int32 nPara ) const
@@ -2064,7 +2064,7 @@ void EditEngine::QuickFormatDoc( bool bFull )
         pImpEditEngine->FormatDoc();
 
     // Don't pass active view, maybe selection is not updated yet...
-    pImpEditEngine->UpdateViews( NULL );
+    pImpEditEngine->UpdateViews();
 }
 
 void EditEngine::SetStyleSheet(const EditSelection& aSel, SfxStyleSheet* pStyle)
@@ -2234,7 +2234,7 @@ sal_uInt16 EditEngine::GetFieldCount( sal_Int32 nPara ) const
         CharAttribList::AttribsType::const_iterator it = rAttrs.begin(), itEnd = rAttrs.end();
         for (; it != itEnd; ++it)
         {
-            if (it->Which() == EE_FEATURE_FIELD)
+            if ((*it)->Which() == EE_FEATURE_FIELD)
                 ++nFields;
         }
     }
@@ -2252,7 +2252,7 @@ EFieldInfo EditEngine::GetFieldInfo( sal_Int32 nPara, sal_uInt16 nField ) const
         CharAttribList::AttribsType::const_iterator it = rAttrs.begin(), itEnd = rAttrs.end();
         for (; it != itEnd; ++it)
         {
-            const EditCharAttrib& rAttr = *it;
+            const EditCharAttrib& rAttr = *it->get();
             if (rAttr.Which() == EE_FEATURE_FIELD)
             {
                 if ( nCurrentField == nField )
@@ -2284,7 +2284,7 @@ bool EditEngine::UpdateFieldsOnly()
     return pImpEditEngine->UpdateFields();
 }
 
-void EditEngine::RemoveFields( bool bKeepFieldText, TypeId aType )
+void EditEngine::RemoveFields( bool bKeepFieldText, std::function<bool ( const SvxFieldData* )> isFieldData )
 {
 
     if ( bKeepFieldText )
@@ -2297,11 +2297,11 @@ void EditEngine::RemoveFields( bool bKeepFieldText, TypeId aType )
         const CharAttribList::AttribsType& rAttrs = pNode->GetCharAttribs().GetAttribs();
         for (size_t nAttr = rAttrs.size(); nAttr; )
         {
-            const EditCharAttrib& rAttr = rAttrs[--nAttr];
+            const EditCharAttrib& rAttr = *rAttrs[--nAttr].get();
             if (rAttr.Which() == EE_FEATURE_FIELD)
             {
                 const SvxFieldData* pFldData = static_cast<const SvxFieldItem*>(rAttr.GetItem())->GetField();
-                if ( pFldData && ( !aType || ( pFldData->IsA( aType ) ) ) )
+                if ( pFldData && ( isFieldData( pFldData )  ) )
                 {
                     DBG_ASSERT( dynamic_cast<const SvxFieldItem*>(rAttr.GetItem()), "no field item..." );
                     EditSelection aSel( EditPaM(pNode, rAttr.GetStart()), EditPaM(pNode, rAttr.GetEnd()) );
@@ -2333,7 +2333,7 @@ void EditEngine::CompleteOnlineSpelling()
             pImpEditEngine->FormatAndUpdate();
 
         pImpEditEngine->StopOnlineSpellTimer();
-        pImpEditEngine->DoOnlineSpelling( 0, true, false );
+        pImpEditEngine->DoOnlineSpelling( nullptr, true, false );
     }
 }
 
@@ -2384,7 +2384,7 @@ ParagraphInfos EditEngine::GetParagraphInfos( sal_Int32 nPara )
     {
         const ParaPortion* pParaPortion = pImpEditEngine->GetParaPortions()[nPara];
         const EditLine* pLine = (pParaPortion && pParaPortion->GetLines().Count()) ?
-                &pParaPortion->GetLines()[0] : NULL;
+                &pParaPortion->GetLines()[0] : nullptr;
         DBG_ASSERT( pParaPortion && pLine, "GetParagraphInfos - Paragraph out of range" );
         if ( pParaPortion && pLine )
         {
@@ -2764,7 +2764,7 @@ bool EditEngine::IsPageOverflow() {
 
 EFieldInfo::EFieldInfo()
 {
-    pFieldItem = NULL;
+    pFieldItem = nullptr;
 }
 
 
@@ -2779,7 +2779,7 @@ EFieldInfo::~EFieldInfo()
 }
 
 EFieldInfo::EFieldInfo( const EFieldInfo& rFldInfo )
-    : pFieldItem(0)
+    : pFieldItem(nullptr)
 {
     *this = rFldInfo;
 }
@@ -2789,7 +2789,7 @@ EFieldInfo& EFieldInfo::operator= ( const EFieldInfo& rFldInfo )
     if( this == &rFldInfo )
         return *this;
 
-    pFieldItem = rFldInfo.pFieldItem ? new SvxFieldItem( *rFldInfo.pFieldItem ) : 0;
+    pFieldItem = rFldInfo.pFieldItem ? new SvxFieldItem( *rFldInfo.pFieldItem ) : nullptr;
     aCurrentText = rFldInfo.aCurrentText;
     aPosition = rFldInfo.aPosition;
 

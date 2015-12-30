@@ -49,7 +49,7 @@ struct SvtLoadSaveOptions_Impl
     SvtLoadOptions_Impl* pLoadOpt;
 };
 
-static SvtLoadSaveOptions_Impl* pOptions = NULL;
+static SvtLoadSaveOptions_Impl* pOptions = nullptr;
 static sal_Int32           nRefCount = 0;
 
 class SvtSaveOptions_Impl : public utl::ConfigItem
@@ -93,13 +93,13 @@ class SvtSaveOptions_Impl : public utl::ConfigItem
                                         bROUseSHA1InODF12,
                                         bROUseBlowfishInODF12;
 
-    virtual void            ImplCommit() SAL_OVERRIDE;
+    virtual void            ImplCommit() override;
 
 public:
                             SvtSaveOptions_Impl();
                             virtual ~SvtSaveOptions_Impl();
 
-    virtual void            Notify( const com::sun::star::uno::Sequence< OUString >& aPropertyNames ) SAL_OVERRIDE;
+    virtual void            Notify( const css::uno::Sequence< OUString >& aPropertyNames ) override;
 
     sal_Int32               GetAutoSaveTime() const             { return nAutoSaveTime; }
     bool                    IsUseUserData() const               { return bUseUserData; }
@@ -766,13 +766,13 @@ class SvtLoadOptions_Impl : public utl::ConfigItem
 private:
     bool                            bLoadUserDefinedSettings;
 
-    virtual void            ImplCommit() SAL_OVERRIDE;
+    virtual void            ImplCommit() override;
 
 public:
                             SvtLoadOptions_Impl();
                             virtual ~SvtLoadOptions_Impl();
 
-    virtual void            Notify( const com::sun::star::uno::Sequence< OUString >& aPropertyNames ) SAL_OVERRIDE;
+    virtual void            Notify( const css::uno::Sequence< OUString >& aPropertyNames ) override;
 
     void                    SetLoadUserSettings(bool b){bLoadUserDefinedSettings = b; SetModified();}
     bool                IsLoadUserSettings() const {return bLoadUserDefinedSettings;}
@@ -784,13 +784,12 @@ SvtLoadOptions_Impl::SvtLoadOptions_Impl()
     : ConfigItem( OUString("Office.Common/Load") )
     , bLoadUserDefinedSettings( false )
 {
-    Sequence< OUString > aNames(1);
-    aNames[0] = cUserDefinedSettings;
+    Sequence< OUString > aNames { cUserDefinedSettings };
     Sequence< Any > aValues = GetProperties( aNames );
     EnableNotification( aNames );
     const Any* pValues = aValues.getConstArray();
     DBG_ASSERT( aValues.getLength() == aNames.getLength(), "GetProperties failed" );
-    if (pValues[0].getValueTypeClass() == ::com::sun::star::uno::TypeClass_BOOLEAN)
+    if (pValues[0].getValueTypeClass() == css::uno::TypeClass_BOOLEAN)
          bLoadUserDefinedSettings = *static_cast<sal_Bool const *>(pValues[0].getValue());
 }
 
@@ -800,8 +799,7 @@ SvtLoadOptions_Impl::~SvtLoadOptions_Impl()
 
 void SvtLoadOptions_Impl::ImplCommit()
 {
-    Sequence< OUString > aNames(1);
-    aNames[0] = cUserDefinedSettings;
+    Sequence< OUString > aNames { cUserDefinedSettings };
     Sequence< Any > aValues( 1 );
     aValues[0].setValue(&bLoadUserDefinedSettings, cppu::UnoType<bool>::get());
     PutProperties( aNames, aValues );

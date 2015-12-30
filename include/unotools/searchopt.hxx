@@ -21,15 +21,16 @@
 #define INCLUDED_UNOTOOLS_SEARCHOPT_HXX
 
 #include <unotools/unotoolsdllapi.h>
+#include <memory>
 
 class SvtSearchOptions_Impl;
 
 class UNOTOOLS_DLLPUBLIC SvtSearchOptions
 {
-    SvtSearchOptions_Impl   *pImpl;
+    std::unique_ptr<SvtSearchOptions_Impl>  pImpl;
 
-    SvtSearchOptions( const SvtSearchOptions & ) SAL_DELETED_FUNCTION;
-    SvtSearchOptions & operator = ( const SvtSearchOptions & ) SAL_DELETED_FUNCTION;
+    SvtSearchOptions( const SvtSearchOptions & ) = delete;
+    SvtSearchOptions & operator = ( const SvtSearchOptions & ) = delete;
 
 public:
     SvtSearchOptions();
@@ -47,6 +48,7 @@ public:
     bool    IsSimilaritySearch() const;
     bool    IsUseAsianOptions() const;
     bool    IsMatchCase() const;            // also Japanese search option
+    bool    IsSearchFormatted() const;
     bool    IsNotes() const;
 
     void    SetWholeWordsOnly( bool bVal );
@@ -56,6 +58,7 @@ public:
     void    SetSimilaritySearch( bool bVal );
     void    SetUseAsianOptions( bool bVal );
     void    SetMatchCase( bool bVal );      // also Japanese search option
+    void    SetSearchFormatted( bool bVal );
     void    SetNotes( bool bVal);
 
     // Japanese search options

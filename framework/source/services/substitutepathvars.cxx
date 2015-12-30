@@ -92,7 +92,7 @@ struct SubstituteRule
 
     SubstituteRule( const OUString& aVarName,
                     const OUString& aValue,
-                    const com::sun::star::uno::Any& aVal,
+                    const css::uno::Any& aVal,
                     EnvironmentType aType )
         : aSubstVariable(aVarName)
         , aSubstValue(aValue)
@@ -102,8 +102,8 @@ struct SubstituteRule
 
     OUString            aSubstVariable;
     OUString            aSubstValue;
-    com::sun::star::uno::Any aEnvValue;
-    EnvironmentType          aEnvType;
+    css::uno::Any       aEnvValue;
+    EnvironmentType     aEnvType;
 };
 
 typedef std::unordered_map<OUString, SubstituteRule, OUStringHash>
@@ -123,11 +123,11 @@ class SubstitutePathVariables_Impl : public utl::ConfigItem
 
         /** is called from the ConfigManager before application ends or from the
             PropertyChangeListener if the sub tree broadcasts changes. */
-        virtual void Notify( const com::sun::star::uno::Sequence< OUString >& aPropertyNames ) SAL_OVERRIDE;
+        virtual void Notify( const css::uno::Sequence< OUString >& aPropertyNames ) override;
 
     private:
 
-        virtual void ImplCommit() SAL_OVERRIDE;
+        virtual void ImplCommit() override;
 
         // Wrapper methods for low-level functions
         const OUString&    GetYPDomainName();
@@ -137,7 +137,7 @@ class SubstitutePathVariables_Impl : public utl::ConfigItem
 
         bool  FilterRuleSet(const SubstituteRuleVector& aRuleSet, SubstituteRule& aActiveRule);
 
-        void  ReadSharePointsFromConfiguration(com::sun::star::uno::Sequence< OUString >& aSharePointsSeq);
+        void  ReadSharePointsFromConfiguration(css::uno::Sequence< OUString >& aSharePointsSeq);
         void  ReadSharePointRuleSetFromConfiguration(const OUString& aSharePointName,
                   const OUString& aSharePointNodeName,
                   SubstituteRuleVector& aRuleSet);
@@ -227,36 +227,35 @@ class SubstitutePathVariables : private cppu::BaseMutex,
 friend class SubstitutePathVariables_Impl;
 
 public:
-    SubstitutePathVariables( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& xContext );
+    explicit SubstitutePathVariables(const css::uno::Reference< css::uno::XComponentContext >& xContext);
     virtual ~SubstitutePathVariables();
 
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return OUString("com.sun.star.comp.framework.PathSubstitution");
     }
 
     virtual sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return cppu::supportsService(this, ServiceName);
     }
 
     virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
-        css::uno::Sequence< OUString > aSeq(1);
-        aSeq[0] = "com.sun.star.util.PathSubstitution";
+        css::uno::Sequence< OUString > aSeq { "com.sun.star.util.PathSubstitution" };
         return aSeq;
     }
 
     // XStringSubstitution
     virtual OUString SAL_CALL substituteVariables( const OUString& aText, sal_Bool bSubstRequired )
-        throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::container::NoSuchElementException, css::uno::RuntimeException, std::exception) override;
     virtual OUString SAL_CALL reSubstituteVariables( const OUString& aText )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual OUString SAL_CALL getSubstituteVariableValue( const OUString& variable )
-        throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::container::NoSuchElementException, css::uno::RuntimeException, std::exception) override;
 
 protected:
     void            SetPredefinedPathVariables();
@@ -271,11 +270,11 @@ protected:
 
     // XStringSubstitution implementation methods
     OUString impl_substituteVariable( const OUString& aText, bool bSustRequired )
-        throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::uno::RuntimeException);
+        throw (css::container::NoSuchElementException, css::uno::RuntimeException);
     OUString impl_reSubstituteVariables( const OUString& aText )
-        throw (::com::sun::star::uno::RuntimeException);
+        throw (css::uno::RuntimeException);
     OUString impl_getSubstituteVariableValue( const OUString& variable )
-        throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::uno::RuntimeException);
+        throw (css::container::NoSuchElementException, css::uno::RuntimeException);
 
 private:
     typedef std::unordered_map<OUString, PreDefVariable, OUStringHash>
@@ -293,7 +292,6 @@ private:
 struct FixedVariable
 {
     const char*     pVarName;
-    sal_Int32       nStrLen;
     PreDefVariable  nEnumValue;
     bool            bAbsPath;
 };
@@ -345,25 +343,25 @@ static const sal_Int16 aEnvPrioTable[ET_COUNT] =
 // Table with all fixed/predefined variables supported.
 static const FixedVariable aFixedVarTable[] =
 {
-    { RTL_CONSTASCII_STRINGPARAM("$(inst)"),        PREDEFVAR_INST,         true  },
-    { RTL_CONSTASCII_STRINGPARAM("$(prog)"),        PREDEFVAR_PROG,         true  },
-    { RTL_CONSTASCII_STRINGPARAM("$(user)"),        PREDEFVAR_USER,         true  },
-    { RTL_CONSTASCII_STRINGPARAM("$(work)"),        PREDEFVAR_WORK,         true  },      // Special variable (transient)!
-    { RTL_CONSTASCII_STRINGPARAM("$(home)"),        PREDEFVAR_HOME,         true  },
-    { RTL_CONSTASCII_STRINGPARAM("$(temp)"),        PREDEFVAR_TEMP,         true  },
-    { RTL_CONSTASCII_STRINGPARAM("$(path)"),        PREDEFVAR_PATH,         true  },
-    { RTL_CONSTASCII_STRINGPARAM("$(langid)"),      PREDEFVAR_LANGID,       false },
-    { RTL_CONSTASCII_STRINGPARAM("$(vlang)"),       PREDEFVAR_VLANG,        false },
-    { RTL_CONSTASCII_STRINGPARAM("$(instpath)"),    PREDEFVAR_INSTPATH,     true  },
-    { RTL_CONSTASCII_STRINGPARAM("$(progpath)"),    PREDEFVAR_PROGPATH,     true  },
-    { RTL_CONSTASCII_STRINGPARAM("$(userpath)"),    PREDEFVAR_USERPATH,     true  },
-    { RTL_CONSTASCII_STRINGPARAM("$(insturl)"),     PREDEFVAR_INSTURL,      true  },
-    { RTL_CONSTASCII_STRINGPARAM("$(progurl)"),     PREDEFVAR_PROGURL,      true  },
-    { RTL_CONSTASCII_STRINGPARAM("$(userurl)"),     PREDEFVAR_USERURL,      true  },
-    { RTL_CONSTASCII_STRINGPARAM("$(workdirurl)"),  PREDEFVAR_WORKDIRURL,   true  },  // Special variable (transient) and don't use for resubstitution!
-    { RTL_CONSTASCII_STRINGPARAM("$(baseinsturl)"), PREDEFVAR_BASEINSTURL,  true  },
-    { RTL_CONSTASCII_STRINGPARAM("$(userdataurl)"), PREDEFVAR_USERDATAURL,  true  },
-    { RTL_CONSTASCII_STRINGPARAM("$(brandbaseurl)"),PREDEFVAR_BRANDBASEURL, true  }
+    { "$(inst)",        PREDEFVAR_INST,         true  },
+    { "$(prog)",        PREDEFVAR_PROG,         true  },
+    { "$(user)",        PREDEFVAR_USER,         true  },
+    { "$(work)",        PREDEFVAR_WORK,         true  },      // Special variable (transient)!
+    { "$(home)",        PREDEFVAR_HOME,         true  },
+    { "$(temp)",        PREDEFVAR_TEMP,         true  },
+    { "$(path)",        PREDEFVAR_PATH,         true  },
+    { "$(langid)",      PREDEFVAR_LANGID,       false },
+    { "$(vlang)",       PREDEFVAR_VLANG,        false },
+    { "$(instpath)",    PREDEFVAR_INSTPATH,     true  },
+    { "$(progpath)",    PREDEFVAR_PROGPATH,     true  },
+    { "$(userpath)",    PREDEFVAR_USERPATH,     true  },
+    { "$(insturl)",     PREDEFVAR_INSTURL,      true  },
+    { "$(progurl)",     PREDEFVAR_PROGURL,      true  },
+    { "$(userurl)",     PREDEFVAR_USERURL,      true  },
+    { "$(workdirurl)",  PREDEFVAR_WORKDIRURL,   true  },  // Special variable (transient) and don't use for resubstitution!
+    { "$(baseinsturl)", PREDEFVAR_BASEINSTURL,  true  },
+    { "$(userdataurl)", PREDEFVAR_USERDATAURL,  true  },
+    { "$(brandbaseurl)",PREDEFVAR_BRANDBASEURL, true  }
 };
 
 //      Implementation helper classes
@@ -403,8 +401,7 @@ SubstitutePathVariables_Impl::SubstitutePathVariables_Impl() :
 {
     // Enable notification mechanism
     // We need it to get information about changes outside these class on our configuration branch
-    Sequence< OUString > aNotifySeq( 1 );
-    aNotifySeq[0] = "SharePoints";
+    Sequence<OUString> aNotifySeq { "SharePoints" };
     EnableNotification( aNotifySeq, true );
 }
 
@@ -448,7 +445,7 @@ void SubstitutePathVariables_Impl::GetSharePointsRules( SubstituteVariables& aSu
     }
 }
 
-void SubstitutePathVariables_Impl::Notify( const com::sun::star::uno::Sequence< OUString >& /*aPropertyNames*/ )
+void SubstitutePathVariables_Impl::Notify( const css::uno::Sequence< OUString >& /*aPropertyNames*/ )
 {
     // NOT implemented yet!
 }
@@ -657,8 +654,7 @@ void SubstitutePathVariables_Impl::ReadSharePointRuleSetFromConfiguration(
         aDirProperty += m_aDirPropertyName;
 
         // Read only the directory property
-        Sequence< OUString > aDirPropertySeq( 1 );
-        aDirPropertySeq[0] = aDirProperty;
+        Sequence<OUString> aDirPropertySeq { aDirProperty };
 
         Sequence< Any > aValueSeq = GetProperties( aDirPropertySeq );
         if ( aValueSeq.getLength() == 1 )
@@ -1236,7 +1232,7 @@ void SubstitutePathVariables::SetPredefinedPathVariables()
     // Set $(prog), $(progpath), $(progurl)
     INetURLObject aProgObj(
         m_aPreDefVars.m_FixedVar[PREDEFVAR_BRANDBASEURL] );
-    if ( !aProgObj.HasError() && aProgObj.insertName( OUString(LIBO_BIN_FOLDER) ) )
+    if ( !aProgObj.HasError() && aProgObj.insertName( LIBO_BIN_FOLDER ) )
     {
         m_aPreDefVars.m_FixedVar[ PREDEFVAR_PROGPATH ] = aProgObj.GetMainURL(INetURLObject::NO_DECODE);
         m_aPreDefVars.m_FixedVar[ PREDEFVAR_PROGURL ]  = m_aPreDefVars.m_FixedVar[ PREDEFVAR_PROGPATH ];

@@ -32,6 +32,8 @@
 #   pragma pack(push, 2)
 #endif
 
+class WW8Export;
+
 inline void Set_UInt8( sal_uInt8 *& p, sal_uInt8 n )
 {
     *p = n;
@@ -311,7 +313,7 @@ struct WW8_BRC  // BoRder Code (WW8 version)
     explicit WW8_BRC(const WW8_BRCVer6& brcVer6);
 
     // Returns LO border width in twips=1/20pt, taking into account brcType
-    short DetermineBorderProperties(short *pSpace=0) const;
+    short DetermineBorderProperties(short *pSpace=nullptr) const;
 };
 
 typedef WW8_BRC WW8_BRC5[5];        // 5 * Border Code
@@ -363,7 +365,7 @@ struct WW8_BRCVer9  // BoRder Code (WW9 version)
     explicit WW8_BRCVer9(const WW8_BRC& brcVer8);
 
     // Returns LO border width in twips=1/20pt, taking into account brcType
-    short DetermineBorderProperties(short *pSpace=0) const;
+    short DetermineBorderProperties(short *pSpace=nullptr) const;
 };
 
 typedef WW8_BRCVer9 WW8_BRCVer9_5[5];        // 5 * Border Code
@@ -1087,6 +1089,68 @@ namespace wwUtility
 {
     inline sal_uInt32 RGBToBGR(sal_uInt32 nColour) { return msfilter::util::BGRToRGB(nColour); }
 }
+
+/// [MS-OSHARED] FactoidType: one smart tag type.
+class MSOFactoidType
+{
+public:
+    MSOFactoidType();
+    void Read(SvStream& rStream);
+    void Write(WW8Export& rExport);
+
+    sal_uInt32 m_nId;
+    OUString m_aUri;
+    OUString m_aTag;
+};
+
+/// [MS-OSHARED] PropertyBagStore: smart tag types and string store.
+class MSOPropertyBagStore
+{
+public:
+    void Read(SvStream& rStream);
+    void Write(WW8Export& rExport);
+
+    std::vector<MSOFactoidType> m_aFactoidTypes;
+    std::vector<OUString> m_aStringTable;
+};
+
+/// [MS-OSHARED] Property: stores information about one smart-tag key/value.
+class MSOProperty
+{
+public:
+    MSOProperty();
+    void Read(SvStream& rStream);
+    void Write(SvStream& rStream);
+
+    /// Index into MSOPropertyBagStore::m_aStringTable.
+    sal_uInt32 m_nKey;
+    /// Index into MSOPropertyBagStore::m_aStringTable.
+    sal_uInt32 m_nValue;
+};
+
+/// [MS-OSHARED] PropertyBag: stores information about one smart tag.
+class MSOPropertyBag
+{
+public:
+    MSOPropertyBag();
+    void Read(SvStream& rStream);
+    void Write(WW8Export& rExport);
+
+    /// Matches MSOFactoidType::m_nId in MSOPropertyBagStore::m_aFactoidTypes.
+    sal_uInt16 m_nId;
+    std::vector<MSOProperty> m_aProperties;
+};
+
+/// [MS-DOC] SmartTagData: stores information about all smart tags in the document.
+class WW8SmartTagData
+{
+public:
+    void Read(SvStream& rStream, WW8_FC fcFactoidData, sal_uInt32 lcbFactoidData);
+    void Write(WW8Export& rExport);
+
+    MSOPropertyBagStore m_aPropBagStore;
+    std::vector<MSOPropertyBag> m_aPropBags;
+};
 
 #endif
 

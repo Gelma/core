@@ -39,63 +39,63 @@ public:
     DocumentContentOperationsManager( SwDoc& i_rSwdoc );
 
     //Interface methods:
-    bool CopyRange(SwPaM&, SwPosition&, const bool bCopyAll, bool bCheckPos ) const SAL_OVERRIDE;
+    bool CopyRange(SwPaM&, SwPosition&, const bool bCopyAll, bool bCheckPos ) const override;
 
-    void DeleteSection(SwNode* pNode) SAL_OVERRIDE;
+    void DeleteSection(SwNode* pNode) override;
 
-    bool DeleteRange(SwPaM&) SAL_OVERRIDE;
+    bool DeleteRange(SwPaM&) override;
 
-    bool DelFullPara(SwPaM&) SAL_OVERRIDE;
+    bool DelFullPara(SwPaM&) override;
 
     // Add optional parameter <bForceJoinNext>, default value <false>
     // Needed for hiding of deletion redlines
     bool DeleteAndJoin( SwPaM&,
-        const bool bForceJoinNext = false ) SAL_OVERRIDE;
+        const bool bForceJoinNext = false ) override;
 
-    bool MoveRange(SwPaM&, SwPosition&, SwMoveFlags) SAL_OVERRIDE;
+    bool MoveRange(SwPaM&, SwPosition&, SwMoveFlags) override;
 
-    bool MoveNodeRange(SwNodeRange&, SwNodeIndex&, SwMoveFlags) SAL_OVERRIDE;
+    bool MoveNodeRange(SwNodeRange&, SwNodeIndex&, SwMoveFlags) override;
 
-    bool MoveAndJoin(SwPaM&, SwPosition&, SwMoveFlags) SAL_OVERRIDE;
+    bool MoveAndJoin(SwPaM&, SwPosition&, SwMoveFlags) override;
 
-    bool Overwrite(const SwPaM &rRg, const OUString& rStr) SAL_OVERRIDE;
+    bool Overwrite(const SwPaM &rRg, const OUString& rStr) override;
 
     bool InsertString(const SwPaM &rRg, const OUString&,
-              const SwInsertFlags nInsertMode = SwInsertFlags::EMPTYEXPAND ) SAL_OVERRIDE;
+              const SwInsertFlags nInsertMode = SwInsertFlags::EMPTYEXPAND ) override;
 
-    void TransliterateText(const SwPaM& rPaM, utl::TransliterationWrapper&) SAL_OVERRIDE;
+    void TransliterateText(const SwPaM& rPaM, utl::TransliterationWrapper&) override;
 
     SwFlyFrameFormat* Insert(const SwPaM &rRg, const OUString& rGrfName, const OUString& rFltName, const Graphic* pGraphic,
-                        const SfxItemSet* pFlyAttrSet, const SfxItemSet* pGrfAttrSet, SwFrameFormat*) SAL_OVERRIDE;
+                        const SfxItemSet* pFlyAttrSet, const SfxItemSet* pGrfAttrSet, SwFrameFormat*) override;
 
     SwFlyFrameFormat* Insert(const SwPaM& rRg, const GraphicObject& rGrfObj, const SfxItemSet* pFlyAttrSet,
-        const SfxItemSet* pGrfAttrSet, SwFrameFormat*) SAL_OVERRIDE;
+        const SfxItemSet* pGrfAttrSet, SwFrameFormat*) override;
 
-    void ReRead(SwPaM&, const OUString& rGrfName, const OUString& rFltName, const Graphic* pGraphic, const GraphicObject* pGrfObj) SAL_OVERRIDE;
+    void ReRead(SwPaM&, const OUString& rGrfName, const OUString& rFltName, const Graphic* pGraphic, const GraphicObject* pGrfObj) override;
 
-    SwDrawFrameFormat* InsertDrawObj( const SwPaM &rRg, SdrObject& rDrawObj, const SfxItemSet& rFlyAttrSet ) SAL_OVERRIDE;
+    SwDrawFrameFormat* InsertDrawObj( const SwPaM &rRg, SdrObject& rDrawObj, const SfxItemSet& rFlyAttrSet ) override;
 
     SwFlyFrameFormat* Insert(const SwPaM &rRg, const svt::EmbeddedObjectRef& xObj, const SfxItemSet* pFlyAttrSet,
-        const SfxItemSet* pGrfAttrSet, SwFrameFormat*) SAL_OVERRIDE;
+        const SfxItemSet* pGrfAttrSet, SwFrameFormat*) override;
 
     SwFlyFrameFormat* InsertOLE(const SwPaM &rRg, const OUString& rObjName, sal_Int64 nAspect, const SfxItemSet* pFlyAttrSet,
-                           const SfxItemSet* pGrfAttrSet, SwFrameFormat*) SAL_OVERRIDE;
+                           const SfxItemSet* pGrfAttrSet, SwFrameFormat*) override;
 
-    bool SplitNode(const SwPosition &rPos, bool bChkTableStart) SAL_OVERRIDE;
+    bool SplitNode(const SwPosition &rPos, bool bChkTableStart) override;
 
-    bool AppendTextNode(SwPosition& rPos) SAL_OVERRIDE;
+    bool AppendTextNode(SwPosition& rPos) override;
 
     bool ReplaceRange(SwPaM& rPam, const OUString& rNewStr,
-                              const bool bRegExReplace) SAL_OVERRIDE;
+                              const bool bRegExReplace) override;
 
     // Add a para for the char attribute exp...
     bool InsertPoolItem(const SwPaM &rRg, const SfxPoolItem&,
-                                const SetAttrMode nFlags = SetAttrMode::DEFAULT, bool bExpandCharToPara=false) SAL_OVERRIDE;
+                                const SetAttrMode nFlags = SetAttrMode::DEFAULT, bool bExpandCharToPara=false) override;
 
     bool InsertItemSet (const SwPaM &rRg, const SfxItemSet&,
-        const SetAttrMode nFlags = SetAttrMode::DEFAULT) SAL_OVERRIDE;
+        const SetAttrMode nFlags = SetAttrMode::DEFAULT) override;
 
-    void RemoveLeadingWhiteSpace(const SwPosition & rPos ) SAL_OVERRIDE;
+    void RemoveLeadingWhiteSpace(const SwPosition & rPos ) override;
 
 
     //Non-Interface methods
@@ -103,8 +103,8 @@ public:
     void CopyWithFlyInFly( const SwNodeRange& rRg,
                             const sal_Int32 nEndContentIndex,
                             const SwNodeIndex& rInsPos,
-                            const SwPaM* pCopiedPaM = NULL,
-                            bool bMakeNewFrms = true,
+                            const std::pair<const SwPaM&, const SwPosition&> * pCopiedPaM = nullptr,
+                            bool bMakeNewFrames = true,
                             bool bDelRedlines = true,
                             bool bCopyFlyAtFly = false ) const;
     void CopyFlyInFlyImpl(  const SwNodeRange& rRg,
@@ -129,8 +129,8 @@ public:
         bool bExactRange;
 
         ParaRstFormat(const SwPosition* pStt, const SwPosition* pEnd,
-                   SwHistory* pHst, sal_uInt16 nWhch = 0, const SfxItemSet* pSet = 0)
-            : pFormatColl(0)
+                   SwHistory* pHst, sal_uInt16 nWhch = 0, const SfxItemSet* pSet = nullptr)
+            : pFormatColl(nullptr)
             , pHistory(pHst)
             , pSttNd(pStt)
             , pEndNd(pEnd)
@@ -160,10 +160,10 @@ private:
     SwFlyFrameFormat* _InsNoTextNode( const SwPosition&rPos, SwNoTextNode*,
                                 const SfxItemSet* pFlyAttrSet,
                                 const SfxItemSet* pGrfAttrSet,
-                                SwFrameFormat* = 0 );
+                                SwFrameFormat* = nullptr );
     /* Copy a range within the same or to another document.
      Position may not lie within range! */
-    bool CopyImpl( SwPaM&, SwPosition&, const bool MakeNewFrms /*= true */,
+    bool CopyImpl( SwPaM&, SwPosition&, const bool MakeNewFrames /*= true */,
             const bool bCopyAll, SwPaM *const pCpyRng /*= 0*/ ) const;
 };
 

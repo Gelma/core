@@ -30,8 +30,8 @@
 #include <swtypes.hxx>
 
 class SwViewShell;
-class SwRootFrm;
-class SwPageFrm;
+class SwRootFrame;
+class SwPageFrame;
 class Fraction;
 struct PreviewPage;
 
@@ -51,7 +51,7 @@ private:
     /// view shell the print preview is generated for.
     SwViewShell& mrParentViewShell;
     /// top layout frame of the layout for accessing the pages
-    const SwRootFrm& mrLayoutRootFrm;
+    const SwRootFrame& mrLayoutRootFrame;
 
     /** boolean indicating, if the layout information (number of columns and rows)
        are valid. */
@@ -183,7 +183,7 @@ private:
 
         @return boolean, indicating, if calculation was successful.
     */
-    bool _CalcPreviewDataForPage( const SwPageFrm& _rPage,
+    bool _CalcPreviewDataForPage( const SwPageFrame& _rPage,
                                   const Point& _rPreviewOffset,
                                   PreviewPage* _opPreviewPage );
 
@@ -230,13 +230,13 @@ public:
         (2) Change of the zoom at the view options.
         (3) Preparations for paint of the page preview.
 
-        @param _rLayoutRootFrm
+        @param _rLayoutRootFrame
         input parameter - constant reference to the root frame of the layout.
-        Reference will be hold as member <mrLayoutRootFrm> in order to get
+        Reference will be hold as member <mrLayoutRootFrame> in order to get
         access to the page frames.
     */
     SwPagePreviewLayout( SwViewShell& _rParentViewShell,
-                         const SwRootFrm&    _rLayoutRootFrm );
+                         const SwRootFrame&    _rLayoutRootFrame );
 
     /** destructor of <SwPagePreviewLayout>
 
@@ -530,7 +530,7 @@ public:
         @author OD
 
         @param _nPageNum
-        input parameter - pysical page number of preview page, for which the
+        input parameter - physical page number of preview page, for which the
         page size has to be returned.
 
         @return an object of class <Size>
@@ -542,7 +542,7 @@ public:
         @author OD
 
         @param _nPageNum
-        input parameter - pysical page number of preview page, for which the
+        input parameter - physical page number of preview page, for which the
         virtual page number has to be determined.
 
         @return virtual page number of page given by its physical page number,

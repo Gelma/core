@@ -27,9 +27,7 @@
 #include "RowSet.hxx"
 #include "dbastrings.hrc"
 #include "sdbcoretools.hxx"
-#include "services.hxx"
 #include "SingleSelectQueryComposer.hxx"
-#include "module_dba.hxx"
 #include "CRowSetColumn.hxx"
 #include "CRowSetDataColumn.hxx"
 #include "RowSetCache.hxx"
@@ -76,6 +74,7 @@
 #include <unotools/syslocale.hxx>
 #include <tools/debug.hxx>
 #include <tools/diagnose_ex.h>
+#include <tools/solar.h>
 #include <unotools/configmgr.hxx>
 
 using namespace utl;
@@ -133,13 +132,13 @@ namespace dbaccess
 ORowSet::ORowSet( const Reference< css::uno::XComponentContext >& _rxContext )
     :ORowSet_BASE1(m_aMutex)
     ,ORowSetBase( _rxContext, ORowSet_BASE1::rBHelper, &m_aMutex )
-    ,m_pParameters( NULL )
+    ,m_pParameters( nullptr )
     ,m_aPrematureParamValues(new ORowSetValueVector)
     ,m_aParameterValueForCache(new ORowSetValueVector)
     ,m_aRowsetListeners(*m_pMutex)
     ,m_aApproveListeners(*m_pMutex)
     ,m_aRowsChangeListener(*m_pMutex)
-    ,m_pTables(NULL)
+    ,m_pTables(nullptr)
     ,m_nFetchDirection(FetchDirection::FORWARD)
     ,m_nFetchSize(50)
     ,m_nMaxFieldSize(0)
@@ -461,7 +460,7 @@ sal_Int64 SAL_CALL ORowSet::getSomething( const Sequence< sal_Int8 >& rId ) thro
 
 Sequence< sal_Int8 > ORowSet::getUnoTunnelImplementationId()
 {
-    static ::cppu::OImplementationId * pId = 0;
+    static ::cppu::OImplementationId * pId = nullptr;
     if (! pId)
     {
         ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );
@@ -483,15 +482,10 @@ Any SAL_CALL ORowSet::queryAggregation( const Type& rType ) throw(RuntimeExcepti
     return aRet;
 }
 
-OUString ORowSet::getImplementationName_static(  ) throw(RuntimeException)
+// css::XServiceInfo
+OUString SAL_CALL ORowSet::getImplementationName() throw(RuntimeException, std::exception)
 {
     return OUString("com.sun.star.comp.dba.ORowSet");
-}
-
-// css::XServiceInfo
-OUString SAL_CALL ORowSet::getImplementationName(  ) throw(RuntimeException, std::exception)
-{
-    return getImplementationName_static();
 }
 
 sal_Bool SAL_CALL ORowSet::supportsService( const OUString& _rServiceName ) throw(RuntimeException, std::exception)
@@ -499,7 +493,7 @@ sal_Bool SAL_CALL ORowSet::supportsService( const OUString& _rServiceName ) thro
     return cppu::supportsService(this, _rServiceName);
 }
 
-Sequence< OUString > ORowSet::getSupportedServiceNames_static(  ) throw (RuntimeException)
+Sequence< OUString > SAL_CALL ORowSet::getSupportedServiceNames() throw(RuntimeException, std::exception)
 {
     Sequence< OUString > aSNS( 5 );
     aSNS[0] = SERVICE_SDBC_RESULTSET;
@@ -508,11 +502,6 @@ Sequence< OUString > ORowSet::getSupportedServiceNames_static(  ) throw (Runtime
     aSNS[3] = SERVICE_SDB_RESULTSET;
     aSNS[4] = SERVICE_SDB_ROWSET;
     return aSNS;
-}
-
-Sequence< OUString > SAL_CALL ORowSet::getSupportedServiceNames(  ) throw(RuntimeException, std::exception)
-{
-    return getSupportedServiceNames_static();
 }
 
 // OComponentHelper
@@ -541,7 +530,7 @@ void SAL_CALL ORowSet::disposing()
     m_aActiveConnection = Any(); // the any conatains a reference too
     if(m_bOwnConnection)
         ::comphelper::disposeComponent(m_xActiveConnection);
-    m_xActiveConnection = NULL;
+    m_xActiveConnection = nullptr;
 
 
     ORowSetBase::disposing();
@@ -579,7 +568,7 @@ void ORowSet::freeResources( bool _bComplete )
         TDataColumns().swap(m_aDataColumns);// clear and resize capacity
         ::std::vector<bool>().swap(m_aReadOnlyDataColumns);
 
-        m_xColumns      = NULL;
+        m_xColumns      = nullptr;
         if ( m_pColumns )
             m_pColumns->disposing();
         // dispose the composer to avoid that everbody knows that the querycomposer is eol
@@ -587,18 +576,18 @@ void ORowSet::freeResources( bool _bComplete )
         catch(Exception&)
         {
             DBG_UNHANDLED_EXCEPTION();
-            m_xComposer = NULL;
+            m_xComposer = nullptr;
         }
 
         // let our warnings container forget the reference to the (possibly disposed) old result set
-        m_aWarnings.setExternalWarnings( NULL );
+        m_aWarnings.setExternalWarnings( nullptr );
 
         DELETEZ(m_pCache);
 
         impl_resetTables_nothrow();
 
-        m_xStatement    = NULL;
-        m_xTypeMap      = NULL;
+        m_xStatement    = nullptr;
+        m_xTypeMap      = nullptr;
 
         if ( m_aOldRow.is() )
             m_aOldRow->clearRow();
@@ -1566,7 +1555,7 @@ void SAL_CALL ORowSet::execute(  ) throw(SQLException, RuntimeException, std::ex
         setActiveConnection( xXConnection );
     }
 
-    calcConnection(NULL);
+    calcConnection(nullptr);
     m_bRebuildConnOnExecute = false;
 
     // do the real execute
@@ -1808,18 +1797,18 @@ void ORowSet::execute_NoApprove_NoNewConn(ResettableMutexGuard& _rClearForNotifi
 {
     // now we can dispose our old connection
     ::comphelper::disposeComponent(m_xOldConnection);
-    m_xOldConnection = NULL;
+    m_xOldConnection = nullptr;
 
     // do we need a new statement
     if ( m_bCommandFacetsDirty )
     {
-        m_xStatement    = NULL;
-        m_xComposer     = NULL;
+        m_xStatement    = nullptr;
+        m_xComposer     = nullptr;
 
         Reference< XResultSet > xResultSet( impl_prepareAndExecute_throw() );
 
         // let our warnings container forget the reference to the (possibly disposed) old result set
-        m_aWarnings.setExternalWarnings( NULL );
+        m_aWarnings.setExternalWarnings( nullptr );
         // clear all current warnings
         m_aWarnings.clearWarnings();
         // let the warnings container know about the new "external warnings"
@@ -1934,7 +1923,7 @@ void ORowSet::execute_NoApprove_NoNewConn(ResettableMutexGuard& _rClearForNotifi
                     // check if column already in the list we need another
                     if ( aAllColumns.find( xColumn ) != aAllColumns.end() )
                     {
-                        xColumn = NULL;
+                        xColumn = nullptr;
                         bReFetchName = true;
                         sColumnLabel.clear();
                     }
@@ -2022,7 +2011,7 @@ void ORowSet::execute_NoApprove_NoNewConn(ResettableMutexGuard& _rClearForNotifi
             m_pCache->reset(xResultSet);
         }
         // let our warnings container forget the reference to the (possibly disposed) old result set
-        m_aWarnings.setExternalWarnings( NULL );
+        m_aWarnings.setExternalWarnings( nullptr );
         // clear all current warnings
         m_aWarnings.clearWarnings();
         // let the warnings container know about the new "external warnings"
@@ -2254,10 +2243,9 @@ Reference< XNameAccess > ORowSet::impl_getTables_throw()
             DBG_UNHANDLED_EXCEPTION();
         }
 
-        m_pTables = new OTableContainer(*this,m_aMutex,m_xActiveConnection,bCase,NULL,NULL,NULL,m_nInAppend);
+        m_pTables = new OTableContainer(*this,m_aMutex,m_xActiveConnection,bCase,nullptr,nullptr,nullptr,m_nInAppend);
         xTables = m_pTables;
-        Sequence< OUString> aTableFilter(1);
-        aTableFilter[0] = "%";
+        Sequence<OUString> aTableFilter { "%" };
         m_pTables->construct(aTableFilter,Sequence< OUString>());
     }
 
@@ -2289,7 +2277,7 @@ bool ORowSet::impl_initComposer_throw( OUString& _out_rCommandToExecute )
         return bUseEscapeProcessing;
 
     if (m_bCommandFacetsDirty)
-        m_xComposer = NULL;
+        m_xComposer = nullptr;
 
     Reference< XMultiServiceFactory > xFactory( m_xActiveConnection, UNO_QUERY );
     if ( !m_xComposer.is() && xFactory.is() )
@@ -2298,7 +2286,7 @@ bool ORowSet::impl_initComposer_throw( OUString& _out_rCommandToExecute )
         {
             m_xComposer.set( xFactory->createInstance( SERVICE_NAME_SINGLESELECTQUERYCOMPOSER ), UNO_QUERY_THROW );
         }
-        catch (const Exception& ) { m_xComposer = NULL; }
+        catch (const Exception& ) { m_xComposer = nullptr; }
     }
     if ( !m_xComposer.is() )
         m_xComposer = new OSingleSelectQueryComposer( impl_getTables_throw(), m_xActiveConnection, m_aContext );
@@ -2314,7 +2302,7 @@ bool ORowSet::impl_initComposer_throw( OUString& _out_rCommandToExecute )
         // don't simply overwrite an existent filter, this would lead to problems if this existent
         // filter contains parameters (since a keyset may add parameters itself)
         m_xComposer->setElementaryQuery( m_xComposer->getQuery( ) );
-        m_xComposer->setFilter( OUString("0 = 1"  ) );
+        m_xComposer->setFilter( "0 = 1" );
     }
 
     m_xComposer->setOrder( m_aOrder );
@@ -2455,7 +2443,7 @@ void ORowSet::impl_disposeParametersContainer_nothrow()
     }
 
     m_pParameters->dispose();
-    m_pParameters = NULL;
+    m_pParameters = nullptr;
 }
 
 ORowSetValue& ORowSet::getParameterStorage(sal_Int32 parameterIndex)
@@ -2900,7 +2888,7 @@ void ORowSetClone::disposing()
     MutexGuard aGuard( m_aMutex );
     ORowSetBase::disposing();
 
-    m_pParent   = NULL;
+    m_pParent   = nullptr;
     m_pMutex    = &m_aMutex; // this must be done here because someone could hold a ref to us and try to do something
     OSubComponent::disposing();
 }
@@ -2933,7 +2921,7 @@ void ORowSetClone::close() throw( SQLException, RuntimeException, std::exception
 
 Sequence< sal_Int8 > ORowSetClone::getUnoTunnelImplementationId()
 {
-    static ::cppu::OImplementationId * pId = 0;
+    static ::cppu::OImplementationId * pId = nullptr;
     if (! pId)
     {
         ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );

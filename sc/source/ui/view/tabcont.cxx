@@ -35,10 +35,8 @@
 #include "markdata.hxx"
 #include <gridwin.hxx>
 
-// STATIC DATA -----------------------------------------------------------
-
 ScTabControl::ScTabControl( vcl::Window* pParent, ScViewData* pData )
-    : TabBar(pParent, WB_3DLOOK | WB_MINSCROLL | WB_RANGESELECT | WB_MULTISELECT | WB_DRAG)
+    : TabBar(pParent, WB_3DLOOK | WB_MINSCROLL | WB_SCROLL | WB_RANGESELECT | WB_MULTISELECT | WB_DRAG)
     , DropTargetHelper(this)
     , DragSourceHelper(this)
     , pViewData(pData)
@@ -79,7 +77,7 @@ ScTabControl::ScTabControl( vcl::Window* pParent, ScViewData* pData )
     EnableEditMode();
     UpdateInputContext();
 
-    SetScrollAlwaysEnabled(true);
+    SetScrollAlwaysEnabled(false);
 
     SetScrollAreaContextHdl( LINK( this, ScTabControl, ShowPageList ) );
 }
@@ -432,7 +430,7 @@ void ScTabControl::Command( const CommandEvent& rCEvt )
 
         //  Popup-Menu:
         //  get Dispatcher from ViewData (ViewFrame) instead of Shell (Frame), so it can't be null
-        pViewData->GetDispatcher().ExecutePopup( ScResId(RID_POPUP_TAB) );
+        pViewData->GetDispatcher().ExecutePopup( "sheettab" );
     }
 }
 
@@ -463,7 +461,7 @@ void ScTabControl::DoDrag( const vcl::Region& /* rRegion */ )
 
     ScDocument* pClipDoc = new ScDocument( SCDOCMODE_CLIP );
     ScClipParam aClipParam(aTabRange, false);
-    rDoc.CopyToClip(aClipParam, pClipDoc, &aTabMark, false);
+    rDoc.CopyToClip(aClipParam, pClipDoc, &aTabMark);
 
     TransferableObjectDescriptor aObjDesc;
     pDocSh->FillTransferableObjectDescriptor( aObjDesc );
@@ -471,14 +469,14 @@ void ScTabControl::DoDrag( const vcl::Region& /* rRegion */ )
     // maSize is set in ScTransferObj ctor
 
     ScTransferObj* pTransferObj = new ScTransferObj( pClipDoc, aObjDesc );
-    com::sun::star::uno::Reference<com::sun::star::datatransfer::XTransferable> xTransferable( pTransferObj );
+    css::uno::Reference<css::datatransfer::XTransferable> xTransferable( pTransferObj );
 
     pTransferObj->SetDragSourceFlags( SC_DROP_TABLE );
 
     pTransferObj->SetDragSource( pDocSh, aTabMark );
 
     vcl::Window* pWindow = pViewData->GetActiveWin();
-    SC_MOD()->SetDragObject( pTransferObj, NULL );      // for internal D&D
+    SC_MOD()->SetDragObject( pTransferObj, nullptr );      // for internal D&D
     pTransferObj->StartDrag( pWindow, DND_ACTION_COPYMOVE | DND_ACTION_LINK );
 }
 
@@ -488,7 +486,7 @@ static sal_uInt16 lcl_DocShellNr( ScDocument* pDoc )
     SfxObjectShell* pShell = SfxObjectShell::GetFirst();
     while ( pShell )
     {
-        if ( pShell->Type() == TYPE(ScDocShell) )
+        if ( dynamic_cast<const ScDocShell *>(pShell) != nullptr )
         {
             if ( &static_cast<ScDocShell*>(pShell)->GetDocument() == pDoc )
                 return nShellCnt;

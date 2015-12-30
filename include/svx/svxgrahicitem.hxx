@@ -30,14 +30,13 @@ class SVX_DLLPUBLIC SvxGraphicItem: public SfxPoolItem
     Graphic         aGraphic;
 
 public:
-                            TYPEINFO_OVERRIDE();
                             SvxGraphicItem();
                             SvxGraphicItem( sal_uInt16 nWhich ,const Graphic& rGraphic);
                             SvxGraphicItem( const SvxGraphicItem& );
 
 
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
 
     Graphic             GetGraphic() const { return aGraphic; }
 

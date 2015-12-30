@@ -75,7 +75,7 @@ class SwHTMLWrtTable : public SwWriteTable
                         const SvxBrushItem *pBrushItem ) const;
 
     virtual bool ShouldExpandSub( const SwTableBox *pBox,
-                            bool bExpandedBefore, sal_uInt16 nDepth ) const SAL_OVERRIDE;
+                            bool bExpandedBefore, sal_uInt16 nDepth ) const override;
 
     static bool HasTabBackground( const SwTableLine& rLine,
                         bool bTop, bool bBottom, bool bLeft, bool bRight );
@@ -89,8 +89,8 @@ public:
     explicit SwHTMLWrtTable( const SwHTMLTableLayout *pLayoutInfo );
 
     void Write( SwHTMLWriter& rWrt, sal_Int16 eAlign=text::HoriOrientation::NONE,
-                bool bTHead=false, const SwFrameFormat *pFrameFormat=0,
-                const OUString *pCaption=0, bool bTopCaption=false,
+                bool bTHead=false, const SwFrameFormat *pFrameFormat=nullptr,
+                const OUString *pCaption=nullptr, bool bTopCaption=false,
                 sal_uInt16 nHSpace=0, sal_uInt16 nVSpace=0 ) const;
 };
 
@@ -98,13 +98,13 @@ SwHTMLWrtTable::SwHTMLWrtTable( const SwTableLines& rLines, long nWidth,
                                 sal_uInt32 nBWidth, bool bRel,
                                 sal_uInt16 nLSub, sal_uInt16 nRSub,
                                 sal_uInt16 nNumOfRowsToRepeat )
-    : SwWriteTable(NULL, rLines, nWidth, nBWidth, bRel, MAX_DEPTH, nLSub, nRSub, nNumOfRowsToRepeat)
+    : SwWriteTable(nullptr, rLines, nWidth, nBWidth, bRel, MAX_DEPTH, nLSub, nRSub, nNumOfRowsToRepeat)
 {
     PixelizeBorders();
 }
 
 SwHTMLWrtTable::SwHTMLWrtTable( const SwHTMLTableLayout *pLayoutInfo )
-    : SwWriteTable(NULL, pLayoutInfo)
+    : SwWriteTable(nullptr, pLayoutInfo)
 {
     // Einige Twip-Werte an Pixel-Grenzen anpassen
     if( bCollectBorderWidth )
@@ -412,9 +412,9 @@ void SwHTMLWrtTable::OutTableCell( SwHTMLWriter& rWrt,
 
     rWrt.Strm().WriteCharPtr( sOut.makeStringAndClear().getStr() );
 
-    rWrt.bTextAttr = false;
-    rWrt.bOutOpts = true;
-    const SvxBrushItem *pBrushItem = 0;
+    rWrt.m_bTextAttr = false;
+    rWrt.m_bOutOpts = true;
+    const SvxBrushItem *pBrushItem = nullptr;
     if( SfxItemState::SET==rItemSet.GetItemState( RES_BACKGROUND, false, &pItem ) )
     {
         pBrushItem = static_cast<const SvxBrushItem *>(pItem);
@@ -427,7 +427,7 @@ void SwHTMLWrtTable::OutTableCell( SwHTMLWriter& rWrt,
         // Hintergrund ausgeben
         rWrt.OutBackground( pBrushItem, false );
 
-        if( rWrt.bCfgOutStyles )
+        if( rWrt.m_bCfgOutStyles )
             OutCSS1_TableBGStyleOpt( rWrt, *pBrushItem );
     }
 
@@ -452,12 +452,12 @@ void SwHTMLWrtTable::OutTableCell( SwHTMLWriter& rWrt,
     if( bNumFormat || bValue )
     {
         sOut.append(HTMLOutFuncs::CreateTableDataOptionsValNum(bValue, nValue,
-            nNumFormat, *rWrt.pDoc->GetNumberFormatter(), rWrt.eDestEnc,
-            &rWrt.aNonConvertableCharacters));
+            nNumFormat, *rWrt.pDoc->GetNumberFormatter(), rWrt.m_eDestEnc,
+            &rWrt.m_aNonConvertableCharacters));
     }
     sOut.append('>');
     rWrt.Strm().WriteCharPtr( sOut.makeStringAndClear().getStr() );
-    rWrt.bLFPossible = true;
+    rWrt.m_bLFPossible = true;
 
     rWrt.IncIndentLevel();  // den Inhalt von <TD>...</TD> einruecken
 
@@ -494,12 +494,12 @@ void SwHTMLWrtTable::OutTableCell( SwHTMLWriter& rWrt,
 
     rWrt.DecIndentLevel();  // den Inhalt von <TD>...</TD> einruecken
 
-    if( rWrt.bLFPossible )
+    if( rWrt.m_bLFPossible )
         rWrt.OutNewLine();
     HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), bHead ? OOO_STRING_SVTOOLS_HTML_tableheader
                                                      : OOO_STRING_SVTOOLS_HTML_tabledata,
                                 false );
-    rWrt.bLFPossible = true;
+    rWrt.m_bLFPossible = true;
 }
 
 // Eine Line als Zeilen ausgeben
@@ -513,9 +513,9 @@ void SwHTMLWrtTable::OutTableCells( SwHTMLWriter& rWrt,
     sal_Int16 eRowVertOri = text::VertOrientation::NONE;
     if( rCells.size() > 1 )
     {
-        for( SwWriteTableCells::size_type nCell = 0; nCell<rCells.size(); ++nCell )
+        for (SwWriteTableCells::size_type nCell = 0; nCell < rCells.size(); ++nCell)
         {
-            sal_Int16 eCellVertOri = rCells[nCell].GetVertOri();
+            sal_Int16 eCellVertOri = rCells[nCell]->GetVertOri();
             if( 0==nCell )
             {
                 eRowVertOri = eCellVertOri;
@@ -534,9 +534,9 @@ void SwHTMLWrtTable::OutTableCells( SwHTMLWriter& rWrt,
     {
         rWrt.OutBackground( pBrushItem, false );
 
-        rWrt.bTextAttr = false;
-        rWrt.bOutOpts = true;
-        if( rWrt.bCfgOutStyles )
+        rWrt.m_bTextAttr = false;
+        rWrt.m_bOutOpts = true;
+        if( rWrt.m_bCfgOutStyles )
             OutCSS1_TableBGStyleOpt( rWrt, *pBrushItem );
     }
 
@@ -553,8 +553,10 @@ void SwHTMLWrtTable::OutTableCells( SwHTMLWriter& rWrt,
 
     rWrt.IncIndentLevel(); // Inhalt von <TR>...</TR> einruecken
 
-    for( const auto &rCell : rCells )
-        OutTableCell( rWrt, &rCell, text::VertOrientation::NONE==eRowVertOri );
+    for (const auto &rpCell : rCells)
+    {
+        OutTableCell(rWrt, rpCell.get(), text::VertOrientation::NONE == eRowVertOri);
+    }
 
     rWrt.DecIndentLevel(); // Inhalt von <TR>...</TR> einruecken
 
@@ -619,18 +621,18 @@ void SwHTMLWrtTable::Write( SwHTMLWriter& rWrt, sal_Int16 eAlign,
     // vorhergende Aufzaehlung etc. beenden
     rWrt.ChangeParaToken( 0 );
 
-    if( rWrt.bLFPossible )
+    if( rWrt.m_bLFPossible )
         rWrt.OutNewLine();  // <TABLE> in neue Zeile
     OStringBuffer sOut;
     sOut.append('<').append(OOO_STRING_SVTOOLS_HTML_table);
 
-    const sal_uInt16 nOldDirection = rWrt.nDirection;
+    const sal_uInt16 nOldDirection = rWrt.m_nDirection;
     if( pFrameFormat )
-        rWrt.nDirection = rWrt.GetHTMLDirection( pFrameFormat->GetAttrSet() );
-    if( rWrt.bOutFlyFrame || nOldDirection != rWrt.nDirection )
+        rWrt.m_nDirection = rWrt.GetHTMLDirection( pFrameFormat->GetAttrSet() );
+    if( rWrt.m_bOutFlyFrame || nOldDirection != rWrt.m_nDirection )
     {
         rWrt.Strm().WriteCharPtr( sOut.makeStringAndClear().getStr() );
-        rWrt.OutDirection( rWrt.nDirection );
+        rWrt.OutDirection( rWrt.m_nDirection );
     }
 
     // ALIGN= ausgeben
@@ -712,7 +714,7 @@ void SwHTMLWrtTable::Write( SwHTMLWriter& rWrt, sal_Int16 eAlign,
     {
         rWrt.OutBackground( pFrameFormat->GetAttrSet(), false );
 
-        if( rWrt.bCfgOutStyles && pFrameFormat )
+        if( rWrt.m_bCfgOutStyles && pFrameFormat )
             rWrt.OutCSS1_TableFrameFormatOptions( *pFrameFormat );
     }
 
@@ -729,8 +731,8 @@ void SwHTMLWrtTable::Write( SwHTMLWriter& rWrt, sal_Int16 eAlign,
         sOutStr.append(' ').append(OOO_STRING_SVTOOLS_HTML_O_align).append("=\"")
                .append(bTopCaption ? OOO_STRING_SVTOOLS_HTML_VA_top : OOO_STRING_SVTOOLS_HTML_VA_bottom)
                .append("\"");
-        HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), sOutStr.getStr(), true );
-        HTMLOutFuncs::Out_String( rWrt.Strm(), *pCaption, rWrt.eDestEnc, &rWrt.aNonConvertableCharacters );
+        HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), sOutStr.getStr() );
+        HTMLOutFuncs::Out_String( rWrt.Strm(), *pCaption, rWrt.m_eDestEnc, &rWrt.m_aNonConvertableCharacters );
         HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), OOO_STRING_SVTOOLS_HTML_caption, false );
     }
 
@@ -744,7 +746,7 @@ void SwHTMLWrtTable::Write( SwHTMLWriter& rWrt, sal_Int16 eAlign,
         if( bColGroups )
         {
             rWrt.OutNewLine(); // <COLGRP> in neue Zeile
-            HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), OOO_STRING_SVTOOLS_HTML_colgroup, true );
+            HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), OOO_STRING_SVTOOLS_HTML_colgroup );
 
             rWrt.IncIndentLevel(); // Inhalt von <COLGRP> einruecken
         }
@@ -787,8 +789,7 @@ void SwHTMLWrtTable::Write( SwHTMLWriter& rWrt, sal_Int16 eAlign,
                 HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), OOO_STRING_SVTOOLS_HTML_colgroup,
                                             false );
                 rWrt.OutNewLine(); // <COLGRP> in neue Zeile
-                HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), OOO_STRING_SVTOOLS_HTML_colgroup,
-                                            true );
+                HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), OOO_STRING_SVTOOLS_HTML_colgroup );
                 rWrt.IncIndentLevel(); // Inhalt von <COLGRP> einruecken
             }
         }
@@ -822,7 +823,7 @@ void SwHTMLWrtTable::Write( SwHTMLWriter& rWrt, sal_Int16 eAlign,
     {
         rWrt.OutNewLine(); // <THEAD>/<TDATA> in neue Zeile
         HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(),
-                            bTHead ? OOO_STRING_SVTOOLS_HTML_thead : OOO_STRING_SVTOOLS_HTML_tbody, true );
+                            bTHead ? OOO_STRING_SVTOOLS_HTML_thead : OOO_STRING_SVTOOLS_HTML_tbody );
 
         rWrt.IncIndentLevel(); // Inhalt von <THEAD>/<TDATA> einr.
     }
@@ -838,8 +839,7 @@ void SwHTMLWrtTable::Write( SwHTMLWriter& rWrt, sal_Int16 eAlign,
             for( auto nCnt = (pRow2->nBottomBorder / DEF_LINE_WIDTH_1) - 1; nCnt; --nCnt )
             {
                 rWrt.OutNewLine();
-                HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), OOO_STRING_SVTOOLS_HTML_tablerow,
-                                            true );
+                HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), OOO_STRING_SVTOOLS_HTML_tablerow );
                 HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), OOO_STRING_SVTOOLS_HTML_tablerow,
                                             false );
             }
@@ -858,7 +858,7 @@ void SwHTMLWrtTable::Write( SwHTMLWriter& rWrt, sal_Int16 eAlign,
                 bTHead = false;
 
             HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(),
-                            bTHead ? OOO_STRING_SVTOOLS_HTML_thead : OOO_STRING_SVTOOLS_HTML_tbody, true );
+                            bTHead ? OOO_STRING_SVTOOLS_HTML_thead : OOO_STRING_SVTOOLS_HTML_tbody );
             rWrt.IncIndentLevel(); // Inhalt von <THEAD>/<TDATA> einr.
         }
     }
@@ -877,7 +877,7 @@ void SwHTMLWrtTable::Write( SwHTMLWriter& rWrt, sal_Int16 eAlign,
     rWrt.OutNewLine(); // </TABLE> in neue Zeile
     HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), OOO_STRING_SVTOOLS_HTML_table, false );
 
-    rWrt.nDirection = nOldDirection;
+    rWrt.m_nDirection = nOldDirection;
 }
 
 Writer& OutHTML_SwTableNode( Writer& rWrt, SwTableNode & rNode,
@@ -888,7 +888,7 @@ Writer& OutHTML_SwTableNode( Writer& rWrt, SwTableNode & rNode,
     SwTable& rTable = rNode.GetTable();
 
     SwHTMLWriter & rHTMLWrt = static_cast<SwHTMLWriter&>(rWrt);
-    rHTMLWrt.bOutTable = true;
+    rHTMLWrt.m_bOutTable = true;
 
     // die horizontale Ausrichtung des Rahmens hat (falls vorhanden)
     // Prioritaet. NONE bedeutet, dass keine horizontale
@@ -902,9 +902,9 @@ Writer& OutHTML_SwTableNode( Writer& rWrt, SwTableNode & rNode,
     if( pFlyFrameFormat )
     {
         eSurround = pFlyFrameFormat->GetSurround().GetSurround();
-        const SwFormatFrmSize& rFrmSize = pFlyFrameFormat->GetFrmSize();
-        nFlyPrcWidth = rFrmSize.GetWidthPercent();
-        nFlyWidth = rFrmSize.GetSize().Width();
+        const SwFormatFrameSize& rFrameSize = pFlyFrameFormat->GetFrameSize();
+        nFlyPrcWidth = rFrameSize.GetWidthPercent();
+        nFlyWidth = rFrameSize.GetSize().Width();
 
         eFlyHoriOri = pFlyFrameFormat->GetHoriOrient().GetHoriOrient();
         if( text::HoriOrientation::NONE == eFlyHoriOri )
@@ -919,18 +919,18 @@ Writer& OutHTML_SwTableNode( Writer& rWrt, SwTableNode & rNode,
 
     // ggf. eine FORM oeffnen
     bool bPreserveForm = false;
-    if( !rHTMLWrt.bPreserveForm )
+    if( !rHTMLWrt.m_bPreserveForm )
     {
         rHTMLWrt.OutForm( true, &rNode );
-        bPreserveForm = (rHTMLWrt.pxFormComps && rHTMLWrt.pxFormComps->is() );
-        rHTMLWrt.bPreserveForm = bPreserveForm;
+        bPreserveForm = rHTMLWrt.mxFormComps.is();
+        rHTMLWrt.m_bPreserveForm = bPreserveForm;
     }
 
     SwFrameFormat *pFormat = rTable.GetFrameFormat();
 
-    const SwFormatFrmSize& rFrmSize = pFormat->GetFrmSize();
-    long nWidth = rFrmSize.GetSize().Width();
-    sal_uInt8 nPrcWidth = rFrmSize.GetWidthPercent();
+    const SwFormatFrameSize& rFrameSize = pFormat->GetFrameSize();
+    long nWidth = rFrameSize.GetSize().Width();
+    sal_uInt8 nPrcWidth = rFrameSize.GetWidthPercent();
     sal_uInt16 nBaseWidth = (sal_uInt16)nWidth;
 
     sal_Int16 eTabHoriOri = pFormat->GetHoriOrient().GetHoriOrient();
@@ -1005,7 +1005,7 @@ Writer& OutHTML_SwTableNode( Writer& rWrt, SwTableNode & rNode,
                 rHTMLWrt.GetNextNumInfo(),
                 "NumInfo fuer naechsten Absatz fehlt!" );
         const SvxLRSpaceItem& aLRItem = pFormat->GetLRSpace();
-        if( aLRItem.GetLeft() > 0 && rHTMLWrt.nDefListMargin > 0 &&
+        if( aLRItem.GetLeft() > 0 && rHTMLWrt.m_nDefListMargin > 0 &&
             ( !rHTMLWrt.GetNumInfo().GetNumRule() ||
               ( rHTMLWrt.GetNextNumInfo() &&
                 (rHTMLWrt.GetNextNumInfo()->IsRestart() ||
@@ -1018,17 +1018,17 @@ Writer& OutHTML_SwTableNode( Writer& rWrt, SwTableNode & rNode,
             // die Einrueckung ueber eine DL regeln. Sonst behalten wir
             // die Einrueckung der Numerierung bei.
             nNewDefListLvl = static_cast< sal_uInt16 >(
-                (aLRItem.GetLeft() + (rHTMLWrt.nDefListMargin/2)) /
-                rHTMLWrt.nDefListMargin );
+                (aLRItem.GetLeft() + (rHTMLWrt.m_nDefListMargin/2)) /
+                rHTMLWrt.m_nDefListMargin );
         }
     }
 
-    if( !pFlyFrameFormat && nNewDefListLvl != rHTMLWrt.nDefListLvl )
+    if( !pFlyFrameFormat && nNewDefListLvl != rHTMLWrt.m_nDefListLvl )
         rHTMLWrt.OutAndSetDefList( nNewDefListLvl );
 
     if( nNewDefListLvl )
     {
-        if( rHTMLWrt.bLFPossible )
+        if( rHTMLWrt.m_bLFPossible )
             rHTMLWrt.OutNewLine();
         HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), OOO_STRING_SVTOOLS_HTML_dd );
     }
@@ -1085,24 +1085,24 @@ Writer& OutHTML_SwTableNode( Writer& rWrt, SwTableNode & rNode,
 
     if( text::HoriOrientation::NONE!=eDivHoriOri )
     {
-        if( rHTMLWrt.bLFPossible )
+        if( rHTMLWrt.m_bLFPossible )
             rHTMLWrt.OutNewLine();  // <CENTER> in neuer Zeile
         if( text::HoriOrientation::CENTER==eDivHoriOri )
-            HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), OOO_STRING_SVTOOLS_HTML_center, true );
+            HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), OOO_STRING_SVTOOLS_HTML_center );
         else
         {
             OStringBuffer sOut(OOO_STRING_SVTOOLS_HTML_division);
             sOut.append(' ').append(OOO_STRING_SVTOOLS_HTML_O_align).append("=\"")
                 .append(OOO_STRING_SVTOOLS_HTML_AL_right).append("\"");
-            HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), sOut.getStr(), true );
+            HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), sOut.getStr() );
         }
         rHTMLWrt.IncIndentLevel();  // Inhalt von <CENTER> einruecken
-        rHTMLWrt.bLFPossible = true;
+        rHTMLWrt.m_bLFPossible = true;
     }
 
     // Wenn die Tabelle in keinem Rahmen ist kann man immer ein LF ausgeben.
     if( text::HoriOrientation::NONE==eTabHoriOri )
-        rHTMLWrt.bLFPossible = true;
+        rHTMLWrt.m_bLFPossible = true;
 
     const SwHTMLTableLayout *pLayout = rTable.GetHTMLTableLayout();
 
@@ -1110,7 +1110,7 @@ Writer& OutHTML_SwTableNode( Writer& rWrt, SwTableNode & rNode,
     {
     SwViewShell *pSh = rWrt.pDoc->getIDocumentLayoutAccess().GetCurrentViewShell();
     if ( pSh && pSh->GetViewOptions()->IsTest1() )
-        pLayout = 0;
+        pLayout = nullptr;
     }
 #endif
 
@@ -1132,7 +1132,7 @@ Writer& OutHTML_SwTableNode( Writer& rWrt, SwTableNode & rNode,
 
     // Wenn die Tabelle in keinem Rahmen war kann man immer ein LF ausgeben.
     if( text::HoriOrientation::NONE==eTabHoriOri )
-        rHTMLWrt.bLFPossible = true;
+        rHTMLWrt.m_bLFPossible = true;
 
     if( text::HoriOrientation::NONE!=eDivHoriOri )
     {
@@ -1141,7 +1141,7 @@ Writer& OutHTML_SwTableNode( Writer& rWrt, SwTableNode & rNode,
         HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(),
                                text::HoriOrientation::CENTER==eDivHoriOri ? OOO_STRING_SVTOOLS_HTML_center
                                                         : OOO_STRING_SVTOOLS_HTML_division, false );
-        rHTMLWrt.bLFPossible = true;
+        rHTMLWrt.m_bLFPossible = true;
     }
 
     // Pam hinter die Tabelle verschieben
@@ -1149,11 +1149,11 @@ Writer& OutHTML_SwTableNode( Writer& rWrt, SwTableNode & rNode,
 
     if( bPreserveForm )
     {
-        rHTMLWrt.bPreserveForm = false;
+        rHTMLWrt.m_bPreserveForm = false;
         rHTMLWrt.OutForm( false );
     }
 
-    rHTMLWrt.bOutTable = false;
+    rHTMLWrt.m_bOutTable = false;
 
     if( rHTMLWrt.GetNextNumInfo() &&
         !rHTMLWrt.GetNextNumInfo()->IsRestart() &&

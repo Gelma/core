@@ -52,37 +52,37 @@ namespace framework
 //  Configuration access class for WindowState supplier implementation
 
 class GlobalSettings_Access : public ::cppu::WeakImplHelper<
-                                  ::com::sun::star::lang::XComponent,
-                                  ::com::sun::star::lang::XEventListener>
+                                  css::lang::XComponent,
+                                  css::lang::XEventListener>
 {
     public:
-        GlobalSettings_Access( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext );
+        explicit GlobalSettings_Access( const css::uno::Reference< css::uno::XComponentContext >& rxContext );
         virtual ~GlobalSettings_Access();
 
         // XComponent
-        virtual void SAL_CALL dispose() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL addEventListener( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >& xListener ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL removeEventListener( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >& aListener ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL dispose() throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL addEventListener( const css::uno::Reference< css::lang::XEventListener >& xListener ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL removeEventListener( const css::uno::Reference< css::lang::XEventListener >& aListener ) throw (css::uno::RuntimeException, std::exception) override;
 
         // XEventListener
-        virtual void SAL_CALL disposing( const ::com::sun::star::lang::EventObject& Source ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing( const css::lang::EventObject& Source ) throw (css::uno::RuntimeException, std::exception) override;
 
         // settings access
         bool HasStatesInfo( GlobalSettings::UIElementType eElementType );
-        bool GetStateInfo( GlobalSettings::UIElementType eElementType, GlobalSettings::StateInfo eStateInfo, ::com::sun::star::uno::Any& aValue );
+        bool GetStateInfo( GlobalSettings::UIElementType eElementType, GlobalSettings::StateInfo eStateInfo, css::uno::Any& aValue );
 
     private:
         bool impl_initConfigAccess();
 
-        osl::Mutex m_mutex;
-        bool                                                                            m_bDisposed   : 1,
-                                                                                            m_bConfigRead : 1;
-        OUString                                                                       m_aNodeRefStates;
-        OUString                                                                       m_aPropStatesEnabled;
-        OUString                                                                       m_aPropLocked;
-        OUString                                                                       m_aPropDocked;
-        ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameAccess >        m_xConfigAccess;
-        ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext>         m_xContext;
+        osl::Mutex                                                m_mutex;
+        bool                                                      m_bDisposed   : 1,
+                                                                  m_bConfigRead : 1;
+        OUString                                                  m_aNodeRefStates;
+        OUString                                                  m_aPropStatesEnabled;
+        OUString                                                  m_aPropLocked;
+        OUString                                                  m_aPropDocked;
+        css::uno::Reference< css::container::XNameAccess >        m_xConfigAccess;
+        css::uno::Reference< css::uno::XComponentContext>         m_xContext;
 };
 
 GlobalSettings_Access::GlobalSettings_Access( const css::uno::Reference< css::uno::XComponentContext >& rxContext ) :
@@ -166,7 +166,7 @@ bool GlobalSettings_Access::HasStatesInfo( GlobalSettings::UIElementType eElemen
     return false;
 }
 
-bool GlobalSettings_Access::GetStateInfo( GlobalSettings::UIElementType eElementType, GlobalSettings::StateInfo eStateInfo, ::com::sun::star::uno::Any& aValue )
+bool GlobalSettings_Access::GetStateInfo( GlobalSettings::UIElementType eElementType, GlobalSettings::StateInfo eStateInfo, css::uno::Any& aValue )
 {
     osl::MutexGuard g(m_mutex);
     if ( eElementType == GlobalSettings::UIELEMENT_TYPE_DOCKWINDOW )
@@ -231,8 +231,7 @@ bool GlobalSettings_Access::impl_initConfigAccess()
             aPropValue.Value = css::uno::makeAny( sal_True );
             aArgs[1] = css::uno::makeAny( aPropValue );
 
-            m_xConfigAccess = css::uno::Reference< css::container::XNameAccess >(
-                                xConfigProvider->createInstanceWithArguments(
+            m_xConfigAccess.set(xConfigProvider->createInstanceWithArguments(
                                     SERVICENAME_CFGREADACCESS, aArgs ),
                                 css::uno::UNO_QUERY );
 
@@ -258,9 +257,9 @@ bool GlobalSettings_Access::impl_initConfigAccess()
 //  global class
 
 struct mutexGlobalSettings : public rtl::Static< osl::Mutex, mutexGlobalSettings > {};
-static GlobalSettings_Access* pStaticSettings = 0;
+static GlobalSettings_Access* pStaticSettings = nullptr;
 
-static GlobalSettings_Access* GetGlobalSettings( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext )
+static GlobalSettings_Access* GetGlobalSettings( const css::uno::Reference< css::uno::XComponentContext >& rxContext )
 {
     osl::MutexGuard aGuard(mutexGlobalSettings::get());
     if ( !pStaticSettings )
@@ -268,7 +267,7 @@ static GlobalSettings_Access* GetGlobalSettings( const ::com::sun::star::uno::Re
     return pStaticSettings;
 }
 
-GlobalSettings::GlobalSettings( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext ) :
+GlobalSettings::GlobalSettings( const css::uno::Reference< css::uno::XComponentContext >& rxContext ) :
     m_xContext( rxContext )
 {
 }
@@ -288,7 +287,7 @@ bool GlobalSettings::HasStatesInfo( UIElementType eElementType )
         return false;
 }
 
-bool GlobalSettings::GetStateInfo( UIElementType eElementType, StateInfo eStateInfo, ::com::sun::star::uno::Any& aValue )
+bool GlobalSettings::GetStateInfo( UIElementType eElementType, StateInfo eStateInfo, css::uno::Any& aValue )
 {
     GlobalSettings_Access* pSettings( GetGlobalSettings( m_xContext ));
 

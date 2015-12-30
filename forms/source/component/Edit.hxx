@@ -43,7 +43,7 @@ public:
     DECLARE_DEFAULT_LEAF_XTOR( OEditModel );
 
 protected:
-    virtual ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Type> _getTypes() SAL_OVERRIDE;
+    virtual css::uno::Sequence< css::uno::Type> _getTypes() override;
 
     void enableFormattedWriteFake() { m_bWritingFormattedFake = true; }
     void disableFormattedWriteFake() { m_bWritingFormattedFake = false; }
@@ -53,64 +53,62 @@ protected:
     friend class OFormattedModel;   // temporary
 
 public:
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
     // XPropertySet
-    virtual void SAL_CALL getFastPropertyValue(::com::sun::star::uno::Any& rValue, sal_Int32 nHandle ) const SAL_OVERRIDE;
+    virtual void SAL_CALL getFastPropertyValue(css::uno::Any& rValue, sal_Int32 nHandle ) const override;
 
     // XPersistObject
-    virtual void SAL_CALL write(const ::com::sun::star::uno::Reference< ::com::sun::star::io::XObjectOutputStream>& _rxOutStream) throw ( ::com::sun::star::io::IOException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL read(const ::com::sun::star::uno::Reference< ::com::sun::star::io::XObjectInputStream>& _rxInStream) throw ( ::com::sun::star::io::IOException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual OUString SAL_CALL getServiceName() throw ( ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL write(const css::uno::Reference< css::io::XObjectOutputStream>& _rxOutStream) throw ( css::io::IOException, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL read(const css::uno::Reference< css::io::XObjectInputStream>& _rxInStream) throw ( css::io::IOException, css::uno::RuntimeException, std::exception) override;
+    virtual OUString SAL_CALL getServiceName() throw ( css::uno::RuntimeException, std::exception) override;
 
     // XPropertySet
     using OBoundControlModel::getFastPropertyValue;
 
     // XReset
-    virtual void SAL_CALL reset(  ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL reset(  ) throw(css::uno::RuntimeException, std::exception) override;
 
     // XServiceInfo
     OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return OUString("com.sun.star.form.OEditModel"); }
 
-    virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames() throw(std::exception) SAL_OVERRIDE;
+    virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames() throw(std::exception) override;
 
     // OControlModel's property handling
     virtual void describeFixedProperties(
-        ::com::sun::star::uno::Sequence< ::com::sun::star::beans::Property >& /* [out] */ _rProps
-    ) const SAL_OVERRIDE;
+        css::uno::Sequence< css::beans::Property >& /* [out] */ _rProps
+    ) const override;
     virtual void describeAggregateProperties(
-        ::com::sun::star::uno::Sequence< ::com::sun::star::beans::Property >& /* [out] */ _rAggregateProps
-    ) const SAL_OVERRIDE;
+        css::uno::Sequence< css::beans::Property >& /* [out] */ _rAggregateProps
+    ) const override;
 
     // XEventListener
     using OBoundControlModel::disposing;
 
 protected:
     // OControlModel overridables
-    virtual void writeAggregate( const ::com::sun::star::uno::Reference< ::com::sun::star::io::XObjectOutputStream >& _rxOutStream ) const SAL_OVERRIDE;
-    virtual void readAggregate( const ::com::sun::star::uno::Reference< ::com::sun::star::io::XObjectInputStream >& _rxInStream ) SAL_OVERRIDE;
+    virtual void writeAggregate( const css::uno::Reference< css::io::XObjectOutputStream >& _rxOutStream ) const override;
+    virtual void readAggregate( const css::uno::Reference< css::io::XObjectInputStream >& _rxInStream ) override;
 
     // OBoundControlModel overridables
-    virtual ::com::sun::star::uno::Any
-                            translateDbColumnToControlValue( ) SAL_OVERRIDE;
-    virtual bool            commitControlValueToDbColumn( bool _bPostReset ) SAL_OVERRIDE;
+    virtual css::uno::Any   translateDbColumnToControlValue( ) override;
+    virtual bool            commitControlValueToDbColumn( bool _bPostReset ) override;
 
-    virtual ::com::sun::star::uno::Any
-                            getDefaultForReset() const SAL_OVERRIDE;
+    virtual css::uno::Any   getDefaultForReset() const override;
 
-    virtual void            onConnectedDbColumn( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >& _rxForm ) SAL_OVERRIDE;
-    virtual void            onDisconnectedDbColumn() SAL_OVERRIDE;
+    virtual void            onConnectedDbColumn( const css::uno::Reference< css::uno::XInterface >& _rxForm ) override;
+    virtual void            onDisconnectedDbColumn() override;
 
-    virtual bool            approveDbColumnType( sal_Int32 _nColumnType ) SAL_OVERRIDE;
+    virtual bool            approveDbColumnType( sal_Int32 _nColumnType ) override;
 
-    virtual void            resetNoBroadcast() SAL_OVERRIDE;
+    virtual void            resetNoBroadcast() override;
 
 protected:
-    virtual sal_uInt16 getPersistenceFlags() const SAL_OVERRIDE;
+    virtual sal_uInt16 getPersistenceFlags() const override;
 
-    virtual css::uno::Reference< css::util::XCloneable > SAL_CALL createClone(  ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Reference< css::util::XCloneable > SAL_CALL createClone(  ) throw (css::uno::RuntimeException, std::exception) override;
 
 private:
     bool    implActsAsRichText( ) const;
@@ -119,9 +117,9 @@ private:
 
 //= OEditControl
 
-typedef ::cppu::ImplHelper3<    ::com::sun::star::awt::XFocusListener,
-                                ::com::sun::star::awt::XKeyListener,
-                                ::com::sun::star::form::XChangeBroadcaster > OEditControl_BASE;
+typedef ::cppu::ImplHelper3<    css::awt::XFocusListener,
+                                css::awt::XKeyListener,
+                                css::form::XChangeBroadcaster > OEditControl_BASE;
 
 class OEditControl : public OBoundControl
                       ,public OEditControl_BASE
@@ -133,41 +131,41 @@ class OEditControl : public OBoundControl
     ImplSVEvent *    m_nKeyEvent;
 
 public:
-    OEditControl(const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext>& _rxContext);
+    explicit OEditControl(const css::uno::Reference< css::uno::XComponentContext>& _rxContext);
     virtual ~OEditControl();
 
     DECLARE_UNO3_AGG_DEFAULTS(OEditControl, OBoundControl)
-    virtual ::com::sun::star::uno::Any SAL_CALL queryAggregation(const ::com::sun::star::uno::Type& _rType) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Any SAL_CALL queryAggregation(const css::uno::Type& _rType) throw(css::uno::RuntimeException, std::exception) override;
 
-    virtual ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Type> _getTypes() SAL_OVERRIDE;
+    virtual css::uno::Sequence< css::uno::Type> _getTypes() override;
 
 // OComponentHelper
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
-// ::com::sun::star::lang::XEventListener
-    virtual void SAL_CALL disposing(const ::com::sun::star::lang::EventObject& _rSource) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+// css::lang::XEventListener
+    virtual void SAL_CALL disposing(const css::lang::EventObject& _rSource) throw(css::uno::RuntimeException, std::exception) override;
 
-// ::com::sun::star::lang::XServiceInfo
+// css::lang::XServiceInfo
     OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return OUString("com.sun.star.form.OEditControl"); }
 
-    virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames() throw(std::exception) SAL_OVERRIDE;
+    virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames() throw(std::exception) override;
 
-// ::com::sun::star::form::XChangeBroadcaster
-    virtual void SAL_CALL addChangeListener(const ::com::sun::star::uno::Reference< ::com::sun::star::form::XChangeListener>& _rxListener) throw ( ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL removeChangeListener(const ::com::sun::star::uno::Reference< ::com::sun::star::form::XChangeListener>& _rxListener) throw ( ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+// css::form::XChangeBroadcaster
+    virtual void SAL_CALL addChangeListener(const css::uno::Reference< css::form::XChangeListener>& _rxListener) throw ( css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL removeChangeListener(const css::uno::Reference< css::form::XChangeListener>& _rxListener) throw ( css::uno::RuntimeException, std::exception) override;
 
-// ::com::sun::star::awt::XFocusListener
-    virtual void SAL_CALL focusGained( const ::com::sun::star::awt::FocusEvent& e ) throw ( ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL focusLost( const ::com::sun::star::awt::FocusEvent& e ) throw ( ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+// css::awt::XFocusListener
+    virtual void SAL_CALL focusGained( const css::awt::FocusEvent& e ) throw ( css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL focusLost( const css::awt::FocusEvent& e ) throw ( css::uno::RuntimeException, std::exception) override;
 
-// ::com::sun::star::awt::XKeyListener
-    virtual void SAL_CALL keyPressed(const ::com::sun::star::awt::KeyEvent& e) throw ( ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL keyReleased(const ::com::sun::star::awt::KeyEvent& e) throw ( ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+// css::awt::XKeyListener
+    virtual void SAL_CALL keyPressed(const css::awt::KeyEvent& e) throw ( css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL keyReleased(const css::awt::KeyEvent& e) throw ( css::uno::RuntimeException, std::exception) override;
 
     // XControl
-    virtual void SAL_CALL createPeer( const ::com::sun::star::uno::Reference< ::com::sun::star::awt::XToolkit >& _rxToolkit, const ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindowPeer >& _rxParent ) throw ( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL createPeer( const css::uno::Reference< css::awt::XToolkit >& _rxToolkit, const css::uno::Reference< css::awt::XWindowPeer >& _rxParent ) throw ( css::uno::RuntimeException, std::exception ) override;
 
 private:
     DECL_LINK_TYPED( OnKeyPressed, void*, void );

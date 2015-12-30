@@ -25,7 +25,6 @@
 #include <basegfx/polygon/b2dpolypolygon.hxx>
 #include <basegfx/polygon/b2dpolypolygontools.hxx>
 #include <basegfx/polygon/b2dpolypolygoncutter.hxx>
-#include <boost/noncopyable.hpp>
 
 #include "layer.hxx"
 
@@ -35,23 +34,20 @@ namespace slideshow
 {
     namespace internal
     {
-        Layer::Layer( const basegfx::B2DRange& rMaxLayerBounds,
-                      Dummy                     ) :
+        Layer::Layer( Dummy                     ) :
             maViewEntries(),
             maBounds(),
             maNewBounds(),
-            maMaxBounds( rMaxLayerBounds ),
             mbBoundsDirty(false),
             mbBackgroundLayer(true),
             mbClipSet(false)
         {
         }
 
-        Layer::Layer( const basegfx::B2DRange& rMaxLayerBounds ) :
+        Layer::Layer() :
             maViewEntries(),
             maBounds(),
             maNewBounds(),
-            maMaxBounds( rMaxLayerBounds ),
             mbBoundsDirty(false),
             mbBackgroundLayer(false),
             mbClipSet(false)
@@ -67,7 +63,7 @@ namespace slideshow
             if( (aIter=std::find_if( maViewEntries.begin(),
                                      aEnd,
                                      [&rNewView]( const ViewEntry& rViewEntry )
-                                     { return rNewView == rViewEntry.getView(); } ) ) != aEnd )
+                                     { return rViewEntry.getView() == rNewView; } ) ) != aEnd )
             {
                 // already added - just return existing layer
                 return aIter->mpViewLayer;
@@ -98,7 +94,7 @@ namespace slideshow
             if( (aIter=std::find_if( maViewEntries.begin(),
                                        aEnd,
                                        [&rView]( const ViewEntry& rViewEntry )
-                                       { return rView == rViewEntry.getView(); } ) ) == aEnd )
+                                       { return rViewEntry.getView() == rView; } ) ) == aEnd )
             {
                 // View was not added/is already removed
                 return ViewLayerSharedPtr();
@@ -107,7 +103,7 @@ namespace slideshow
             OSL_ENSURE( std::count_if( maViewEntries.begin(),
                                        aEnd,
                                        [&rView]( const ViewEntry& rViewEntry )
-                                       { return rView == rViewEntry.getView(); } ) == 1,
+                                       { return rViewEntry.getView() == rView; } ) == 1,
                         "Layer::removeView(): view added multiple times" );
 
             ViewLayerSharedPtr pRet( aIter->mpViewLayer );
@@ -165,10 +161,9 @@ namespace slideshow
                 return false;
 
             maBounds = maNewBounds;
-
             if( std::count_if( maViewEntries.begin(),
                                maViewEntries.end(),
-                               [this](const ViewEntry& rViewEntry)
+                               [this]( const ViewEntry& rViewEntry )
                                { return rViewEntry.getViewLayer()->resize( this->maBounds ); }
                                ) == 0 )
             {
@@ -198,9 +193,11 @@ namespace slideshow
             clearUpdateRanges();
         }
 
-        class LayerEndUpdate : private boost::noncopyable
+        class LayerEndUpdate
         {
         public:
+            LayerEndUpdate( const LayerEndUpdate& ) = delete;
+            LayerEndUpdate& operator=( const LayerEndUpdate& ) = delete;
             explicit LayerEndUpdate( LayerSharedPtr const& rLayer ) :
                 mpLayer( rLayer )
             {}
@@ -227,13 +224,14 @@ namespace slideshow
                 // resulting clip polygon will be empty.
                 if( aClip.count() )
                 {
-                    for( const auto& rViewEntry : maViewEntries ) {
+                    for( const auto& rViewEntry : maViewEntries )
+                    {
                         ViewLayerSharedPtr pViewLayer = rViewEntry.getViewLayer();
 
-                        // set clip to all view layers
+                        // set clip to all view layers and
                         pViewLayer->setClip( aClip );
 
-                        // clear update area of view layer
+                        // clear update area on all view layers
                         pViewLayer->clear();
                     }
 
@@ -263,15 +261,14 @@ namespace slideshow
             return maUpdateAreas.overlaps( rShape->getUpdateArea() );
         }
 
-        LayerSharedPtr Layer::createBackgroundLayer( const basegfx::B2DRange& rMaxLayerBounds )
+        LayerSharedPtr Layer::createBackgroundLayer()
         {
-            return LayerSharedPtr(new Layer( rMaxLayerBounds,
-                                             BackgroundLayer ));
+            return LayerSharedPtr(new Layer( BackgroundLayer ));
         }
 
-        LayerSharedPtr Layer::createLayer( const basegfx::B2DRange& rMaxLayerBounds )
+        LayerSharedPtr Layer::createLayer( )
         {
-            return LayerSharedPtr( new Layer( rMaxLayerBounds ) );
+            return LayerSharedPtr( new Layer );
         }
 
     }

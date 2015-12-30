@@ -51,7 +51,7 @@ namespace
 BaseContainer::BaseContainer()
     : BaseLock     (       )
     , m_rCache     (       )
-    , m_pFlushCache(NULL   )
+    , m_pFlushCache(nullptr   )
     , m_eType()
     , m_lListener  (m_aLock)
 {
@@ -152,10 +152,7 @@ FilterCache* BaseContainer::impl_getWorkingCache() const
 OUString SAL_CALL BaseContainer::getImplementationName()
     throw (css::uno::RuntimeException, std::exception)
 {
-    // SAFE ->
-    ::osl::ResettableMutexGuard aLock(m_aLock);
     return m_sImplementationName;
-    // <- SAFE
 }
 
 
@@ -169,10 +166,7 @@ sal_Bool SAL_CALL BaseContainer::supportsService(const OUString& sServiceName)
 css::uno::Sequence< OUString > SAL_CALL BaseContainer::getSupportedServiceNames()
     throw (css::uno::RuntimeException, std::exception)
 {
-    // SAFE ->
-    ::osl::ResettableMutexGuard aLock(m_aLock);
     return m_lServiceNames;
-    // <- SAFE
 }
 
 
@@ -512,7 +506,7 @@ void SAL_CALL BaseContainer::flush()
     }
 
     delete m_pFlushCache;
-    m_pFlushCache = NULL;
+    m_pFlushCache = nullptr;
 
     css::uno::Reference< css::util::XRefreshable > xRefreshBroadcaster = m_xRefreshBroadcaster;
 

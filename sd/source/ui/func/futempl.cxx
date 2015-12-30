@@ -75,7 +75,6 @@ using namespace com::sun::star::style;
 namespace sd
 {
 
-TYPEINIT1( FuTemplate, FuPoor );
 
 FuTemplate::FuTemplate (
     ViewShell* pViewSh,
@@ -101,7 +100,7 @@ void FuTemplate::DoExecute( SfxRequest& rReq )
 
     // get StyleSheet parameter
     SfxStyleSheetBasePool* pSSPool = mpDoc->GetDocSh()->GetStyleSheetPool();
-    SfxStyleSheetBase* pStyleSheet = NULL;
+    SfxStyleSheetBase* pStyleSheet = nullptr;
 
     const SfxPoolItem* pItem;
     sal_uInt16 nFamily = USHRT_MAX;
@@ -133,8 +132,8 @@ void FuTemplate::DoExecute( SfxRequest& rReq )
         case SID_STYLE_FAMILY:
         case SID_STYLE_NEW_BY_EXAMPLE:
         {
-            SFX_REQUEST_ARG( rReq, pNameItem, SfxStringItem, SID_APPLY_STYLE, false );
-            SFX_REQUEST_ARG( rReq, pFamilyItem, SfxStringItem, SID_STYLE_FAMILYNAME, false );
+            const SfxStringItem* pNameItem = rReq.GetArg<SfxStringItem>(SID_APPLY_STYLE);
+            const SfxStringItem* pFamilyItem = rReq.GetArg<SfxStringItem>(SID_STYLE_FAMILYNAME);
             if ( pFamilyItem && pNameItem )
             {
                 try
@@ -167,7 +166,7 @@ void FuTemplate::DoExecute( SfxRequest& rReq )
             if(p)
             {
                 pSSPool->Remove(p);
-                p = 0;
+                p = nullptr;
             }
             pStyleSheet = &pSSPool->Make( aStyleName, (SfxStyleFamily) nFamily, SFXSTYLEBIT_USERDEF );
 
@@ -190,7 +189,7 @@ void FuTemplate::DoExecute( SfxRequest& rReq )
             if(p)
             {
                 pSSPool->Remove(p);
-                p = 0;
+                p = nullptr;
             }
             pStyleSheet = &pSSPool->Make( aStyleName, (SfxStyleFamily) nFamily, SFXSTYLEBIT_USERDEF );
             pStyleSheet->SetParent(SD_RESSTR(STR_STANDARD_STYLESHEET_NAME));
@@ -306,7 +305,7 @@ void FuTemplate::DoExecute( SfxRequest& rReq )
 
                 if (eFamily == SD_STYLE_FAMILY_GRAPHICS)
                 {
-                    pStdDlg.reset(pFact ? pFact->CreateSdTabTemplateDlg( 0, mpDoc->GetDocSh(), *pStyleSheet, mpDoc, mpView ) : 0);
+                    pStdDlg.reset(pFact ? pFact->CreateSdTabTemplateDlg( nullptr, mpDoc->GetDocSh(), *pStyleSheet, mpDoc, mpView ) : nullptr);
                 }
                 else if (eFamily == SD_STYLE_FAMILY_PSEUDO)
                 {
@@ -370,7 +369,7 @@ void FuTemplate::DoExecute( SfxRequest& rReq )
 
                     if( !bOldDocInOtherLanguage )
                     {
-                        pPresDlg.reset(pFact ? pFact->CreateSdPresLayoutTemplateDlg( mpDocSh, NULL, SdResId(nDlgId), *pStyleSheet, ePO, pSSPool ) : 0);
+                        pPresDlg.reset(pFact ? pFact->CreateSdPresLayoutTemplateDlg( mpDocSh, nullptr, SdResId(nDlgId), *pStyleSheet, ePO, pSSPool ) : nullptr);
                     }
                 }
                 else if (eFamily == SD_STYLE_FAMILY_CELL)
@@ -378,7 +377,7 @@ void FuTemplate::DoExecute( SfxRequest& rReq )
                 }
 
                 sal_uInt16 nResult = RET_CANCEL;
-                const SfxItemSet* pOutSet = NULL;
+                const SfxItemSet* pOutSet = nullptr;
                 if (pStdDlg)
                 {
                     nResult = pStdDlg->Execute();
@@ -529,7 +528,7 @@ void FuTemplate::DoExecute( SfxRequest& rReq )
                                     while( aIter.IsMore() )
                                     {
                                         SdrObject* pObj = aIter.Next();
-                                        if( pObj->ISA(SdrPageObj) )
+                                        if( dynamic_cast< const SdrPageObj *>( pObj ) !=  nullptr )
                                         {
                                             // repaint only
                                             pObj->ActionChanged();
@@ -609,7 +608,7 @@ void FuTemplate::DoExecute( SfxRequest& rReq )
         case SID_STYLE_UPDATE_BY_EXAMPLE:
         {
             if ((mpView->AreObjectsMarked() && mpView->GetMarkedObjectList().GetMarkCount() == 1) ||
-                 mpView->ISA(OutlineView))
+                 dynamic_cast< const OutlineView *>( mpView ) !=  nullptr)
             {
                 pStyleSheet = mpView->GetStyleSheet();
 

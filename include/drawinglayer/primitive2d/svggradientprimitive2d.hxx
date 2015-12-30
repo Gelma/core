@@ -121,24 +121,24 @@ namespace drawinglayer
 
         protected:
             /// local helpers
-            Primitive2DSequence createSingleGradientEntryFill() const;
+            Primitive2DContainer createSingleGradientEntryFill() const;
             virtual void createAtom(
-                Primitive2DVector& rTargetColor,
-                Primitive2DVector& rTargetOpacity,
+                Primitive2DContainer& rTargetColor,
+                Primitive2DContainer& rTargetOpacity,
                 const SvgGradientEntry& rFrom,
                 const SvgGradientEntry& rTo,
                 sal_Int32 nOffset) const = 0;
             double createRun(
-                Primitive2DVector& rTargetColor,
-                Primitive2DVector& rTargetOpacity,
+                Primitive2DContainer& rTargetColor,
+                Primitive2DContainer& rTargetOpacity,
                 double fPos,
                 double fMax,
                 const SvgGradientEntryVector& rEntries,
                 sal_Int32 nOffset) const;
             virtual void checkPreconditions();
-            Primitive2DSequence createResult(
-                const Primitive2DVector& rTargetColor,
-                const Primitive2DVector& rTargetOpacity,
+            Primitive2DContainer createResult(
+                const Primitive2DContainer& rTargetColor,
+                const Primitive2DContainer& rTargetOpacity,
                 const basegfx::B2DHomMatrix& rUnitGradientToObject,
                 bool bInvert = false) const;
             bool getCreatesContent() const { return mbCreatesContent; }
@@ -189,15 +189,15 @@ namespace drawinglayer
         protected:
             /// local helpers
             virtual void createAtom(
-                Primitive2DVector& rTargetColor,
-                Primitive2DVector& rTargetOpacity,
+                Primitive2DContainer& rTargetColor,
+                Primitive2DContainer& rTargetOpacity,
                 const SvgGradientEntry& rFrom,
                 const SvgGradientEntry& rTo,
-                sal_Int32 nOffset) const SAL_OVERRIDE;
-            virtual void checkPreconditions() SAL_OVERRIDE;
+                sal_Int32 nOffset) const override;
+            virtual void checkPreconditions() override;
 
             /// local decomposition.
-            virtual Primitive2DSequence create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const SAL_OVERRIDE;
+            virtual Primitive2DContainer create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const override;
 
         public:
             /// constructor
@@ -215,10 +215,10 @@ namespace drawinglayer
             const basegfx::B2DPoint& getEnd() const { return maEnd; }
 
             /// compare operator
-            virtual bool operator==(const BasePrimitive2D& rPrimitive) const SAL_OVERRIDE;
+            virtual bool operator==(const BasePrimitive2D& rPrimitive) const override;
 
             /// get range
-            virtual basegfx::B2DRange getB2DRange(const geometry::ViewInformation2D& rViewInformation) const SAL_OVERRIDE;
+            virtual basegfx::B2DRange getB2DRange(const geometry::ViewInformation2D& rViewInformation) const override;
 
             /// provide unique ID
             DeclPrimitive2DIDBlock()
@@ -258,15 +258,15 @@ namespace drawinglayer
         protected:
             /// local helpers
             virtual void createAtom(
-                Primitive2DVector& rTargetColor,
-                Primitive2DVector& rTargetOpacity,
+                Primitive2DContainer& rTargetColor,
+                Primitive2DContainer& rTargetOpacity,
                 const SvgGradientEntry& rFrom,
                 const SvgGradientEntry& rTo,
-                sal_Int32 nOffset) const SAL_OVERRIDE;
-            virtual void checkPreconditions() SAL_OVERRIDE;
+                sal_Int32 nOffset) const override;
+            virtual void checkPreconditions() override;
 
             /// local decomposition.
-            virtual Primitive2DSequence create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const SAL_OVERRIDE;
+            virtual Primitive2DContainer create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const override;
 
         public:
             /// constructor
@@ -278,7 +278,7 @@ namespace drawinglayer
                 double fRadius,
                 bool bUseUnitCoordinates,
                 SpreadMethod aSpreadMethod = Spread_pad,
-                const basegfx::B2DPoint* pFocal = 0);
+                const basegfx::B2DPoint* pFocal = nullptr);
             virtual ~SvgRadialGradientPrimitive2D();
 
             /// data read access
@@ -287,10 +287,10 @@ namespace drawinglayer
             bool isFocalSet() const { return mbFocalSet; }
 
             /// compare operator
-            virtual bool operator==(const BasePrimitive2D& rPrimitive) const SAL_OVERRIDE;
+            virtual bool operator==(const BasePrimitive2D& rPrimitive) const override;
 
             /// get range
-            virtual basegfx::B2DRange getB2DRange(const geometry::ViewInformation2D& rViewInformation) const SAL_OVERRIDE;
+            virtual basegfx::B2DRange getB2DRange(const geometry::ViewInformation2D& rViewInformation) const override;
 
             /// provide unique ID
             DeclPrimitive2DIDBlock()
@@ -321,7 +321,7 @@ namespace drawinglayer
         protected:
 
             /// local decomposition.
-            virtual Primitive2DSequence create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const SAL_OVERRIDE;
+            virtual Primitive2DContainer create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const override;
 
         public:
             /// constructor
@@ -336,7 +336,7 @@ namespace drawinglayer
             double getOffsetB() const { return mfOffsetB; }
 
             /// compare operator
-            virtual bool operator==(const BasePrimitive2D& rPrimitive) const SAL_OVERRIDE;
+            virtual bool operator==(const BasePrimitive2D& rPrimitive) const override;
 
             /// provide unique ID
             DeclPrimitive2DIDBlock()
@@ -383,7 +383,7 @@ namespace drawinglayer
         protected:
 
             /// local decomposition.
-            virtual Primitive2DSequence create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const SAL_OVERRIDE;
+            virtual Primitive2DContainer create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const override;
 
         public:
             /// constructor
@@ -400,12 +400,12 @@ namespace drawinglayer
             const basegfx::BColor& getColorB() const { return maColorB; }
             double getScaleA() const { return mfScaleA; }
             double getScaleB() const { return mfScaleB; }
-            bool isTranslateSet() const { return (0 != mpTranslate); }
+            bool isTranslateSet() const { return (nullptr != mpTranslate); }
             basegfx::B2DVector getTranslateA() const { if(mpTranslate) return mpTranslate->maTranslateA; return basegfx::B2DVector(); }
             basegfx::B2DVector getTranslateB() const { if(mpTranslate) return mpTranslate->maTranslateB; return basegfx::B2DVector(); }
 
             /// compare operator
-            virtual bool operator==(const BasePrimitive2D& rPrimitive) const SAL_OVERRIDE;
+            virtual bool operator==(const BasePrimitive2D& rPrimitive) const override;
 
             /// provide unique ID
             DeclPrimitive2DIDBlock()

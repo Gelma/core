@@ -86,17 +86,15 @@ TVFactory::createInstance(
 
 Reference< XInterface > SAL_CALL
 TVFactory::createInstanceWithArguments(
-    const OUString& ServiceSpecifier,
+    const OUString& /*ServiceSpecifier*/,
     const Sequence< Any >& Arguments )
     throw( Exception,
            RuntimeException, std::exception )
 {
-    (void)ServiceSpecifier;
-
     if( ! m_xHDS.is() )
     {
         cppu::OWeakObject* p = new TVChildTarget( m_xContext );
-        m_xHDS = Reference< XInterface >( p );
+        m_xHDS.set( p );
     }
 
     Reference< XInterface > ret = m_xHDS;
@@ -133,8 +131,7 @@ Sequence< OUString > SAL_CALL
 TVFactory::getAvailableServiceNames( )
     throw( RuntimeException, std::exception )
 {
-    Sequence< OUString > seq( 1 );
-    seq[0] = "com.sun.star.ucb.HierarchyDataReadAccess";
+    Sequence<OUString> seq { "com.sun.star.ucb.HierarchyDataReadAccess" };
     return seq;
 }
 

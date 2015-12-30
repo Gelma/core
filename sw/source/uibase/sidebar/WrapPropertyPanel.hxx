@@ -36,7 +36,7 @@ namespace sw { namespace sidebar {
     public:
         static VclPtr<vcl::Window> Create(
             vcl::Window* pParent,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame>& rxFrame,
+            const css::uno::Reference< css::frame::XFrame>& rxFrame,
             SfxBindings* pBindings );
 
         // interface of ::sfx2::sidebar::ControllerItem::ItemUpdateReceiverInterface
@@ -44,17 +44,17 @@ namespace sw { namespace sidebar {
             const sal_uInt16 nSId,
             const SfxItemState eState,
             const SfxPoolItem* pState,
-            const bool bIsEnabled) SAL_OVERRIDE;
+            const bool bIsEnabled) override;
 
         virtual ~WrapPropertyPanel();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
         WrapPropertyPanel(
             vcl::Window* pParent,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& rxFrame,
+            const css::uno::Reference< css::frame::XFrame >& rxFrame,
             SfxBindings* pBindings );
     private:
-        ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > mxFrame;
+        css::uno::Reference< css::frame::XFrame > mxFrame;
         SfxBindings* mpBindings;
 
         VclPtr<RadioButton> mpRBNoWrap;
@@ -98,7 +98,7 @@ namespace sw { namespace sidebar {
         DECL_LINK_TYPED(WrapTypeHdl, Button*, void);
         DECL_LINK_TYPED(EnableContourHdl, Button*, void);
         DECL_LINK_TYPED(EditContourHdl, Button*, void);
-        DECL_LINK(SpacingLBHdl, ListBox*);
+        DECL_LINK_TYPED(SpacingLBHdl, ListBox&, void);
     };
 
 } } // end of namespace ::sw::sidebar

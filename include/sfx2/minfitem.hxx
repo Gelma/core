@@ -35,7 +35,7 @@ class SFX2_DLLPUBLIC SfxMacroInfoItem: public SfxPoolItem
     OUString                aCommentText;
 
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
     SfxMacroInfoItem( sal_uInt16 nWhich,
                     const BasicManager* pMgr,
                     const OUString &rLibName,
@@ -45,8 +45,8 @@ public:
 
     SfxMacroInfoItem( const SfxMacroInfoItem& );
 
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
     OUString                GetMethod() const
                                 { return aMethodName; }
     void                    SetMethod( const OUString& r )

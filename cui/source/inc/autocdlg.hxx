@@ -49,12 +49,12 @@ class OfaAutoCorrDlg : public SfxTabDialog
     sal_uInt16 m_nReplacePageId;
     sal_uInt16 m_nExceptionsPageId;
 
-    DECL_LINK(SelectLanguageHdl, ListBox*);
+    DECL_LINK_TYPED(SelectLanguageHdl, ListBox&, void);
 public:
 
     OfaAutoCorrDlg(vcl::Window* pParent, const SfxItemSet *pSet);
     virtual ~OfaAutoCorrDlg();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void EnableLanguage(bool bEnable);
 };
@@ -68,9 +68,9 @@ class OfaACorrCheckListBox : public SvSimpleTable
     using SvTreeListBox::SetCheckButtonState;
 
     protected:
-        virtual void    SetTabs() SAL_OVERRIDE;
-        virtual void    HBarClick() SAL_OVERRIDE;
-        virtual void    KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
+        virtual void    SetTabs() override;
+        virtual void    HBarClick() override;
+        virtual void    KeyInput( const KeyEvent& rKEvt ) override;
 
     public:
         OfaACorrCheckListBox(SvSimpleTableContainer& rParent, WinBits nBits = WB_BORDER)
@@ -110,14 +110,14 @@ private:
 public:
     OfaAutocorrOptionsPage(vcl::Window* pParent, const SfxItemSet& rSet);
     virtual ~OfaAutocorrOptionsPage();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     static VclPtr<SfxTabPage>  Create( vcl::Window* pParent,
                                 const SfxItemSet* rAttrSet);
 
-    virtual bool        FillItemSet( SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void        Reset( const SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void        ActivatePage( const SfxItemSet& ) SAL_OVERRIDE;
+    virtual bool        FillItemSet( SfxItemSet* rSet ) override;
+    virtual void        Reset( const SfxItemSet* rSet ) override;
+    virtual void        ActivatePage( const SfxItemSet& ) override;
 
 };
 
@@ -169,14 +169,14 @@ class OfaSwAutoFmtOptionsPage : public SfxTabPage
         OfaSwAutoFmtOptionsPage( vcl::Window* pParent,
                             const SfxItemSet& rSet );
         virtual ~OfaSwAutoFmtOptionsPage();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
 public:
         static VclPtr<SfxTabPage>  Create( vcl::Window* pParent,
                                 const SfxItemSet* rAttrSet);
-        virtual bool        FillItemSet( SfxItemSet* rSet ) SAL_OVERRIDE;
-        virtual void        Reset( const SfxItemSet* rSet ) SAL_OVERRIDE;
-        virtual void        ActivatePage( const SfxItemSet& ) SAL_OVERRIDE;
+        virtual bool        FillItemSet( SfxItemSet* rSet ) override;
+        virtual void        Reset( const SfxItemSet* rSet ) override;
+        virtual void        ActivatePage( const SfxItemSet& ) override;
 };
 
 // class AutoCorrEdit ----------------------------------------------------
@@ -184,21 +184,39 @@ public:
 class AutoCorrEdit : public Edit
 {
     Link<AutoCorrEdit&,bool>  aActionLink;
-    bool    bSpaces;
+    VclPtr<SvTabListBox> m_xReplaceTLB;
+    sal_Int32 m_nCol;
+    bool bSpaces;
 
-    public:
-                    AutoCorrEdit(vcl::Window* pParent, const ResId& rResId) :
-                        Edit(pParent, rResId), bSpaces(false){}
-                    AutoCorrEdit(vcl::Window* pParent) :
-                        Edit(pParent), bSpaces(false){}
+    void dispose() override;
+
+public:
+    AutoCorrEdit(vcl::Window* pParent, const ResId& rResId)
+        : Edit(pParent, rResId)
+        , m_nCol(0)
+        , bSpaces(false)
+    {
+    }
+
+    AutoCorrEdit(vcl::Window* pParent)
+        : Edit(pParent)
+        , m_nCol(0)
+        , bSpaces(false)
+    {
+    }
+
+    virtual ~AutoCorrEdit();
 
     void            SetActionHdl( const Link<AutoCorrEdit&,bool>& rLink )
                                 { aActionLink = rLink;}
 
+    void            ConnectColumn(const VclPtr<SvTabListBox>& rTable, sal_Int32 nCol);
+
     void            SetSpaces(bool bSet)
                                 {bSpaces = bSet;}
 
-    virtual void    KeyInput( const KeyEvent& rKEvent ) SAL_OVERRIDE;
+    virtual void    KeyInput( const KeyEvent& rKEvent ) override;
+    virtual void    Resize() override;
 };
 
 // class OfaAutocorrReplacePage ------------------------------------------
@@ -255,27 +273,24 @@ private:
         DECL_LINK_TYPED(SelectHdl, SvTreeListBox*, void);
         DECL_LINK_TYPED(NewDelButtonHdl, Button*, void);
         DECL_LINK_TYPED(NewDelActionHdl, AutoCorrEdit&, bool);
-        DECL_LINK(ModifyHdl, Edit*);
+        DECL_LINK_TYPED(ModifyHdl, Edit&, void);
         bool NewDelHdl(void*);
 
         void RefillReplaceBox(  bool bFromReset,
                                 LanguageType eOldLanguage,
                                 LanguageType eNewLanguage);
 
-        void setTabs();
 public:
                         OfaAutocorrReplacePage( vcl::Window* pParent, const SfxItemSet& rSet );
                         virtual ~OfaAutocorrReplacePage();
-    virtual void        dispose() SAL_OVERRIDE;
+    virtual void        dispose() override;
 
     static VclPtr<SfxTabPage>  Create( vcl::Window* pParent, const SfxItemSet* rAttrSet);
 
-    virtual bool        FillItemSet( SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void        Reset( const SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void        ActivatePage( const SfxItemSet& ) SAL_OVERRIDE;
-    virtual sfxpg       DeactivatePage( SfxItemSet* pSet = 0 ) SAL_OVERRIDE;
-    virtual void        Resize() SAL_OVERRIDE;
-    virtual void        StateChanged(StateChangedType nStateChange) SAL_OVERRIDE;
+    virtual bool        FillItemSet( SfxItemSet* rSet ) override;
+    virtual void        Reset( const SfxItemSet* rSet ) override;
+    virtual void        ActivatePage( const SfxItemSet& ) override;
+    virtual sfxpg       DeactivatePage( SfxItemSet* pSet = nullptr ) override;
 
     void    SetLanguage(LanguageType eSet);
     void    DeleteEntry(const OUString& sShort, const OUString& sLong);
@@ -317,8 +332,8 @@ private:
 
     DECL_LINK_TYPED(NewDelButtonHdl, Button*, void);
     DECL_LINK_TYPED(NewDelActionHdl, AutoCorrEdit&, bool);
-    DECL_LINK(SelectHdl, ListBox*);
-    DECL_LINK(ModifyHdl, Edit*);
+    DECL_LINK_TYPED(SelectHdl, ListBox&, void);
+    DECL_LINK_TYPED(ModifyHdl, Edit&, void);
     bool NewDelHdl(void*);
                     /// Box filled with new language
     void            RefillReplaceBoxes(bool bFromReset,
@@ -327,15 +342,15 @@ private:
 public:
                         OfaAutocorrExceptPage( vcl::Window* pParent, const SfxItemSet& rSet );
                         virtual ~OfaAutocorrExceptPage();
-    virtual void        dispose() SAL_OVERRIDE;
+    virtual void        dispose() override;
 
     static VclPtr<SfxTabPage>  Create( vcl::Window* pParent,
                                 const SfxItemSet* rAttrSet);
 
-    virtual bool        FillItemSet( SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void        Reset( const SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void        ActivatePage( const SfxItemSet& ) SAL_OVERRIDE;
-    virtual sfxpg       DeactivatePage( SfxItemSet* pSet = 0 ) SAL_OVERRIDE;
+    virtual bool        FillItemSet( SfxItemSet* rSet ) override;
+    virtual void        Reset( const SfxItemSet* rSet ) override;
+    virtual void        ActivatePage( const SfxItemSet& ) override;
+    virtual sfxpg       DeactivatePage( SfxItemSet* pSet = nullptr ) override;
     void                SetLanguage(LanguageType eSet);
 
 };
@@ -395,14 +410,14 @@ private:
                         OfaQuoteTabPage( vcl::Window* pParent, const SfxItemSet& rSet );
 public:
                         virtual ~OfaQuoteTabPage();
-    virtual void        dispose() SAL_OVERRIDE;
+    virtual void        dispose() override;
 
     static VclPtr<SfxTabPage>  Create( vcl::Window* pParent,
                                 const SfxItemSet* rAttrSet);
 
-    virtual bool        FillItemSet( SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void        Reset( const SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void        ActivatePage( const SfxItemSet& ) SAL_OVERRIDE;
+    virtual bool        FillItemSet( SfxItemSet* rSet ) override;
+    virtual void        Reset( const SfxItemSet* rSet ) override;
+    virtual void        ActivatePage( const SfxItemSet& ) override;
 };
 
 // class OfaAutoCompleteTabPage ---------------------------------------------
@@ -417,13 +432,13 @@ public:
     public:
         AutoCompleteMultiListBox(vcl::Window *pParent, WinBits nBits)
             : MultiListBox(pParent, nBits)
-            , m_pPage(NULL)
+            , m_pPage(nullptr)
         {
         }
         virtual ~AutoCompleteMultiListBox();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
         void SetPage(OfaAutoCompleteTabPage *pPage) { m_pPage = pPage; }
-        virtual bool PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+        virtual bool PreNotify( NotifyEvent& rNEvt ) override;
     };
 
 private:
@@ -449,13 +464,13 @@ private:
                                                 const SfxItemSet& rSet );
 public:
     virtual ~OfaAutoCompleteTabPage();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
     static VclPtr<SfxTabPage>  Create( vcl::Window* pParent,
                                 const SfxItemSet* rAttrSet);
 
-    virtual bool        FillItemSet( SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void        Reset( const SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void        ActivatePage( const SfxItemSet& ) SAL_OVERRIDE;
+    virtual bool        FillItemSet( SfxItemSet* rSet ) override;
+    virtual void        Reset( const SfxItemSet* rSet ) override;
+    virtual void        ActivatePage( const SfxItemSet& ) override;
 
     void CopyToClipboard() const;
     DECL_LINK_TYPED(DeleteHdl, Button*, void);
@@ -514,13 +529,13 @@ public:
     /// construction via Create()
     OfaSmartTagOptionsTabPage( vcl::Window* pParent, const SfxItemSet& rSet );
     virtual ~OfaSmartTagOptionsTabPage();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     static VclPtr<SfxTabPage>  Create( vcl::Window* pParent, const SfxItemSet* rAttrSet);
 
-    virtual bool        FillItemSet( SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void        Reset( const SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void        ActivatePage( const SfxItemSet& ) SAL_OVERRIDE;
+    virtual bool        FillItemSet( SfxItemSet* rSet ) override;
+    virtual void        Reset( const SfxItemSet* rSet ) override;
+    virtual void        ActivatePage( const SfxItemSet& ) override;
 };
 
 #endif

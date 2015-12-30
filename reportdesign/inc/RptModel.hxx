@@ -47,22 +47,21 @@ private:
     ::dbaui::DBSubComponentController*  m_pController;
     ::reportdesign::OReportDefinition*  m_pReportDefinition;
 
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > createUnoModel() SAL_OVERRIDE;
+    virtual css::uno::Reference< css::uno::XInterface > createUnoModel() override;
 
-    OReportModel( const OReportModel& ) SAL_DELETED_FUNCTION;
-    void operator=(const OReportModel& rSrcModel) SAL_DELETED_FUNCTION;
+    OReportModel( const OReportModel& ) = delete;
+    void operator=(const OReportModel& rSrcModel) = delete;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     OReportModel(::reportdesign::OReportDefinition* _pReportDefinition);
     virtual ~OReportModel();
 
-    virtual void        SetChanged(bool bFlg = true) SAL_OVERRIDE;
-    virtual SdrPage*    AllocPage(bool bMasterPage) SAL_OVERRIDE;
-    virtual SdrPage*    RemovePage(sal_uInt16 nPgNum) SAL_OVERRIDE;
+    virtual void        SetChanged(bool bFlg = true) override;
+    virtual SdrPage*    AllocPage(bool bMasterPage) override;
+    virtual SdrPage*    RemovePage(sal_uInt16 nPgNum) override;
     /** @returns the numbering type that is used to format page fields in drawing shapes */
-    virtual SvxNumType  GetPageNumType() const SAL_OVERRIDE;
+    virtual SvxNumType  GetPageNumType() const override;
 
     OXUndoEnvironment&  GetUndoEnv() { return *m_pUndoEnv;}
     void                SetModified(bool _bModified);
@@ -71,20 +70,20 @@ public:
     inline void attachController( dbaui::DBSubComponentController& _rController ) { m_pController = &_rController; }
     void detachController();
 
-    OReportPage* createNewPage(const ::com::sun::star::uno::Reference< ::com::sun::star::report::XSection >& _xSection);
+    OReportPage* createNewPage(const css::uno::Reference< css::report::XSection >& _xSection);
 
     /** returns the page which belongs to a section
     *
     * @param _xSection
     * @return The page or <NULL/> when no page could be found.
     */
-    OReportPage* getPage(const ::com::sun::star::uno::Reference< ::com::sun::star::report::XSection >& _xSection);
+    OReportPage* getPage(const css::uno::Reference< css::report::XSection >& _xSection);
 
     /// returns the XReportDefinition which the OReportModel belongs to
-    ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportDefinition >
+    css::uno::Reference< css::report::XReportDefinition >
                 getReportDefinition() const;
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > createShape(const OUString& aServiceSpecifier,::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >& _rShape,sal_Int32 nOrientation = -1);
+    css::uno::Reference< css::uno::XInterface > createShape(const OUString& aServiceSpecifier,css::uno::Reference< css::drawing::XShape >& _rShape,sal_Int32 nOrientation = -1);
 };
 }
 

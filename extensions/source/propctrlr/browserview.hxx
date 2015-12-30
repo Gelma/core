@@ -39,15 +39,15 @@ namespace pcr
         Link<LinkParamNone*,void>   m_aPageActivationHandler;
 
     protected:
-        virtual void Resize() SAL_OVERRIDE;
-        virtual void GetFocus() SAL_OVERRIDE;
-        virtual bool Notify( NotifyEvent& _rNEvt ) SAL_OVERRIDE;
+        virtual void Resize() override;
+        virtual void GetFocus() override;
+        virtual bool Notify( NotifyEvent& _rNEvt ) override;
 
     public:
         OPropertyBrowserView( vcl::Window* pParent, WinBits nBits = 0);
 
         virtual ~OPropertyBrowserView();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
         OPropertyEditor&    getPropertyBox() { return *m_pPropBox; }
 
@@ -57,7 +57,7 @@ namespace pcr
 
         void    setPageActivationHandler(const Link<LinkParamNone*,void>& _rHdl) { m_aPageActivationHandler = _rHdl; }
 
-        ::com::sun::star::awt::Size getMinimumSize();
+        css::awt::Size getMinimumSize();
 
     protected:
         DECL_LINK_TYPED(OnPageActivation, LinkParamNone*, void);

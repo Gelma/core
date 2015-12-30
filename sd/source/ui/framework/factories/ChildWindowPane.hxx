@@ -34,7 +34,7 @@ namespace {
 
 typedef ::cppu::ImplInheritanceHelper <
     ::sd::framework::Pane,
-    ::com::sun::star::lang::XEventListener
+    css::lang::XEventListener
     > ChildWindowPaneInterfaceBase;
 
 } // end of anonymous namespace.
@@ -52,8 +52,7 @@ class ChildWindowPane
 {
 public:
     ChildWindowPane (
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::drawing::framework::XResourceId>& rxPaneId,
+        const css::uno::Reference<css::drawing::framework::XResourceId>& rxPaneId,
         sal_uInt16 nChildWindowId,
         ViewShellBase& rViewShellBase,
         ::std::unique_ptr<SfxShell> && pShell);
@@ -63,7 +62,7 @@ public:
     */
     void Hide();
 
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
     /** This returns the content window when the child window is already
         visible.  Otherwise <NULL/> is returned.  In that case a later call
@@ -72,14 +71,14 @@ public:
         Note that GetWindow() may return different Window pointers when
         Hide() is called in between.
     */
-    virtual vcl::Window* GetWindow() SAL_OVERRIDE;
+    virtual vcl::Window* GetWindow() override;
 
     /** The local getWindow() first calls GetWindow() to provide a valid
         window pointer before forwarding the call to the base class.
     */
-    virtual ::com::sun::star::uno::Reference<com::sun::star::awt::XWindow>
+    virtual css::uno::Reference<css::awt::XWindow>
         SAL_CALL getWindow()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     DECLARE_XINTERFACE()
     DECLARE_XTYPEPROVIDER()
@@ -87,11 +86,10 @@ public:
     // XEventListener
 
     virtual void SAL_CALL disposing(
-        const com::sun::star::lang::EventObject& rEvent)
-        throw (com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        const css::lang::EventObject& rEvent)
+        throw (css::uno::RuntimeException, std::exception) override;
 
 private:
-    ::com::sun::star::uno::Reference<com::sun::star::drawing::framework::XResourceId> mxPaneId;
     sal_uInt16 mnChildWindowId;
     ViewShellBase& mrViewShellBase;
     ::std::unique_ptr<SfxShell> mpShell;

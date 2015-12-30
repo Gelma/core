@@ -44,8 +44,8 @@ public:
     X11ImeStatus() {}
     virtual ~X11ImeStatus();
 
-    virtual bool canToggle() SAL_OVERRIDE;
-    virtual void toggle() SAL_OVERRIDE;
+    virtual bool canToggle() override;
+    virtual void toggle() override;
 };
 
 class I18NStatus
@@ -65,8 +65,6 @@ private:
     I18NStatus();
     ~I18NStatus();
 
-    static I18NStatus* pInstance;
-
     static bool getStatusWindowMode();
 
 public:
@@ -84,9 +82,6 @@ public:
     void show( bool bShow, ShowReason eReason );
 
     const ::std::vector< ChoiceData >& getChoices() const { return m_aChoices; }
-
-    // for SwitchIMCallback
-    void changeIM( const OUString& );
 
     // External Control:
 

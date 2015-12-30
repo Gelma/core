@@ -23,6 +23,7 @@
 #include <rtl/ref.hxx>
 #include <com/sun/star/ucb/OpenMode.hpp>
 #include <ucbhelper/resultset.hxx>
+#include <memory>
 
 namespace tdoc_ucp {
 
@@ -31,7 +32,7 @@ class Content;
 
 class ResultSetDataSupplier : public ::ucbhelper::ResultSetDataSupplier
 {
-    DataSupplier_Impl*  m_pImpl;
+    std::unique_ptr<DataSupplier_Impl>  m_pImpl;
 
 private:
     bool queryNamesOfChildren();
@@ -39,33 +40,30 @@ private:
 
 public:
     ResultSetDataSupplier(
-        const com::sun::star::uno::Reference<
-            com::sun::star::uno::XComponentContext >& rxContext,
-        const rtl::Reference< Content >& rContent,
-            sal_Int32 nOpenMode = com::sun::star::ucb::OpenMode::ALL );
+        const css::uno::Reference< css::uno::XComponentContext >& rxContext,
+        const rtl::Reference< Content >& rContent );
     virtual ~ResultSetDataSupplier();
 
-    virtual OUString queryContentIdentifierString( sal_uInt32 nIndex ) SAL_OVERRIDE;
-    virtual com::sun::star::uno::Reference<
-                com::sun::star::ucb::XContentIdentifier >
-    queryContentIdentifier( sal_uInt32 nIndex ) SAL_OVERRIDE;
-    virtual com::sun::star::uno::Reference< com::sun::star::ucb::XContent >
-    queryContent( sal_uInt32 nIndex ) SAL_OVERRIDE;
+    virtual OUString queryContentIdentifierString( sal_uInt32 nIndex ) override;
+    virtual css::uno::Reference< css::ucb::XContentIdentifier >
+    queryContentIdentifier( sal_uInt32 nIndex ) override;
+    virtual css::uno::Reference< css::ucb::XContent >
+    queryContent( sal_uInt32 nIndex ) override;
 
-    virtual bool getResult( sal_uInt32 nIndex ) SAL_OVERRIDE;
+    virtual bool getResult( sal_uInt32 nIndex ) override;
 
-    virtual sal_uInt32 totalCount() SAL_OVERRIDE;
-    virtual sal_uInt32 currentCount() SAL_OVERRIDE;
-    virtual bool   isCountFinal() SAL_OVERRIDE;
+    virtual sal_uInt32 totalCount() override;
+    virtual sal_uInt32 currentCount() override;
+    virtual bool   isCountFinal() override;
 
-    virtual com::sun::star::uno::Reference< com::sun::star::sdbc::XRow >
-    queryPropertyValues( sal_uInt32 nIndex  ) SAL_OVERRIDE;
-    virtual void releasePropertyValues( sal_uInt32 nIndex ) SAL_OVERRIDE;
+    virtual css::uno::Reference< css::sdbc::XRow >
+    queryPropertyValues( sal_uInt32 nIndex  ) override;
+    virtual void releasePropertyValues( sal_uInt32 nIndex ) override;
 
-    virtual void close() SAL_OVERRIDE;
+    virtual void close() override;
 
     virtual void validate()
-        throw( com::sun::star::ucb::ResultSetException ) SAL_OVERRIDE;
+        throw( css::ucb::ResultSetException ) override;
 };
 
 } // namespace tdoc_ucp

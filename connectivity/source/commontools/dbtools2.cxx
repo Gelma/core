@@ -296,8 +296,8 @@ OUString createStandardKeyStatement(const Reference< XPropertySet >& descriptor,
                         ::dbtools::throwFunctionSequenceException(_xConnection);
 
                     bPKey = true;
-                    xColumnSup = Reference<XColumnsSupplier>(xColProp,UNO_QUERY);
-                    xColumns = Reference<XIndexAccess>(xColumnSup->getColumns(),UNO_QUERY);
+                    xColumnSup.set(xColProp,UNO_QUERY);
+                    xColumns.set(xColumnSup->getColumns(),UNO_QUERY);
                     if(!xColumns.is() || !xColumns->getCount())
                         ::dbtools::throwFunctionSequenceException(_xConnection);
 
@@ -306,8 +306,8 @@ OUString createStandardKeyStatement(const Reference< XPropertySet >& descriptor,
                 }
                 else if(nKeyType == KeyType::UNIQUE)
                 {
-                    xColumnSup = Reference<XColumnsSupplier>(xColProp,UNO_QUERY);
-                    xColumns = Reference<XIndexAccess>(xColumnSup->getColumns(),UNO_QUERY);
+                    xColumnSup.set(xColProp,UNO_QUERY);
+                    xColumns.set(xColumnSup->getColumns(),UNO_QUERY);
                     if(!xColumns.is() || !xColumns->getCount())
                         ::dbtools::throwFunctionSequenceException(_xConnection);
 
@@ -318,8 +318,8 @@ OUString createStandardKeyStatement(const Reference< XPropertySet >& descriptor,
                 {
                     sal_Int32 nDeleteRule   = getINT32(xColProp->getPropertyValue(rPropMap.getNameByIndex(PROPERTY_ID_DELETERULE)));
 
-                    xColumnSup = Reference<XColumnsSupplier>(xColProp,UNO_QUERY);
-                    xColumns = Reference<XIndexAccess>(xColumnSup->getColumns(),UNO_QUERY);
+                    xColumnSup.set(xColProp,UNO_QUERY);
+                    xColumns.set(xColumnSup->getColumns(),UNO_QUERY);
                     if(!xColumns.is() || !xColumns->getCount())
                         ::dbtools::throwFunctionSequenceException(_xConnection);
 
@@ -552,7 +552,7 @@ Reference<XPropertySet> createSDBCXColumn(const Reference<XPropertySet>& _xTable
     xProp = lcl_createSDBCXColumn(xPrimaryKeyColumns,_xConnection,aCatalog, aSchema, aTable, _rName,_rName,_bCase,_bQueryForInfo,_bIsAutoIncrement,_bIsCurrency,_nDataType);
     if ( !xProp.is() )
     {
-        xProp = lcl_createSDBCXColumn(xPrimaryKeyColumns,_xConnection,aCatalog, aSchema, aTable, OUString("%"),_rName,_bCase,_bQueryForInfo,_bIsAutoIncrement,_bIsCurrency,_nDataType);
+        xProp = lcl_createSDBCXColumn(xPrimaryKeyColumns,_xConnection,aCatalog, aSchema, aTable, "%",_rName,_bCase,_bQueryForInfo,_bIsAutoIncrement,_bIsCurrency,_nDataType);
         if ( !xProp.is() )
             xProp = new connectivity::sdbcx::OColumn(_rName,
                                                 OUString(),OUString(),OUString(),
@@ -751,7 +751,7 @@ sal_Int32 getTablePrivileges(const Reference< XDatabaseMetaData>& _xMetaData,
         // Some drivers put a table privilege as soon as any column has the privilege,
         // some drivers only if all columns have the privilege.
         // To unify the situation, collect column privileges here, too.
-        Reference< XResultSet > xColumnPrivileges = _xMetaData->getColumnPrivileges(aVal, _sSchema, _sTable, OUString("%"));
+        Reference< XResultSet > xColumnPrivileges = _xMetaData->getColumnPrivileges(aVal, _sSchema, _sTable, "%");
         Reference< XRow > xColumnCurrentRow(xColumnPrivileges, UNO_QUERY);
         if ( xColumnCurrentRow.is() )
         {
@@ -927,7 +927,7 @@ sal_Int32 DBTypeConversion::convertUnicodeString( const OUString& _rSource, OStr
 
         throw SQLException(
             sMessage,
-            NULL,
+            nullptr,
             OUString( "22018" ),
             22018,
             Any()
@@ -953,7 +953,7 @@ sal_Int32 DBTypeConversion::convertUnicodeStringToLength( const OUString& _rSour
 
         throw SQLException(
             sMessage,
-            NULL,
+            nullptr,
             OUString( "22001" ),
             22001,
             Any()

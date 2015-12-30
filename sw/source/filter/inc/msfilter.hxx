@@ -23,6 +23,7 @@
 #include <set>
 #include <map>
 #include <vector>
+#include <memory>
 #include <swtypes.hxx>
 #include "wwstyles.hxx"
 #include <rtl/textenc.h>
@@ -180,7 +181,7 @@ namespace sw
         {
         private:
             //I hate these things stupid pImpl things, but its warranted here
-             ::myImplHelpers::StyleMapperImpl<SwTextFormatColl> *mpImpl;
+             std::unique_ptr<::myImplHelpers::StyleMapperImpl<SwTextFormatColl> > mpImpl;
         public:
             explicit ParaStyleMapper(SwDoc &rDoc);
             ~ParaStyleMapper();
@@ -309,7 +310,7 @@ namespace sw
             their layout frms deleted and recalculated. This TableManager
             detects the necessity to do this, and all tables inserted into
             a document should be registered with this manager with
-            InsertTable, and before finialization DelAndMakeTableFrms should
+            InsertTable, and before finialization DelAndMakeTableFrames should
             be called.
 
             @author
@@ -322,7 +323,7 @@ namespace sw
         public:
             typedef std::map<InsertedTableClient *, SwNodeIndex *> TableMap;
             typedef TableMap::iterator TableMapIter;
-            void DelAndMakeTableFrms();
+            void DelAndMakeTableFrames();
             void InsertTable(SwTableNode &rTableNode, SwPaM &rPaM);
             explicit InsertedTablesManager(const SwDoc &rDoc);
         private:
@@ -362,7 +363,7 @@ namespace sw
             explicit SetInDocAndDelete(SwDoc &rDoc) : mrDoc(rDoc) {}
             void operator()(SwFltStackEntry *pEntry);
         private:
-            SetInDocAndDelete& operator=(const SetInDocAndDelete&) SAL_DELETED_FUNCTION;
+            SetInDocAndDelete& operator=(const SetInDocAndDelete&) = delete;
         };
 
         /**
@@ -381,7 +382,7 @@ namespace sw
                     pEntry->SetEndPos(mrPos);
             }
         private:
-            SetEndIfOpen& operator=(const SetEndIfOpen&) SAL_DELETED_FUNCTION;
+            SetEndIfOpen& operator=(const SetEndIfOpen&) = delete;
         };
 
         /**

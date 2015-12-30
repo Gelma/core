@@ -182,7 +182,7 @@ void SAL_CALL SdLayer::setPropertyValue( const OUString& aPropertyName, const un
 {
     SolarMutexGuard aGuard;
 
-    if(pLayer == NULL || pLayerManager == NULL)
+    if(pLayer == nullptr || pLayerManager == nullptr)
         throw lang::DisposedException();
 
     const SfxItemPropertySimpleEntry* pEntry = pPropSet->getPropertyMapEntry(aPropertyName);
@@ -248,7 +248,7 @@ uno::Any SAL_CALL SdLayer::getPropertyValue( const OUString& PropertyName )
 {
     SolarMutexGuard aGuard;
 
-    if(pLayer == NULL || pLayerManager == NULL)
+    if(pLayer == nullptr || pLayerManager == nullptr)
         throw lang::DisposedException();
 
     const SfxItemPropertySimpleEntry* pEntry = pPropSet->getPropertyMapEntry(PropertyName);
@@ -296,7 +296,7 @@ bool SdLayer::get( LayerAttribute what ) throw()
     {
         // Try 1. is an arbitrary page open?
         ::sd::View *pView = pLayerManager->GetView();
-        SdrPageView* pSdrPageView = NULL;
+        SdrPageView* pSdrPageView = nullptr;
         if(pView)
             pSdrPageView = pView->GetSdrPageView();
 
@@ -333,7 +333,7 @@ void SdLayer::set( LayerAttribute what, bool flag ) throw()
     {
         // Try 1. is an arbitrary page open?
         ::sd::View *pView = pLayerManager->GetView();
-        SdrPageView* pSdrPageView = NULL;
+        SdrPageView* pSdrPageView = nullptr;
         if(pView)
             pSdrPageView = pView->GetSdrPageView();
 
@@ -387,21 +387,21 @@ void SdLayer::set( LayerAttribute what, bool flag ) throw()
     //TODO: uno::Exception?
 }
 
-// ::com::sun::star::container::XChild
+// css::container::XChild
 uno::Reference<uno::XInterface> SAL_CALL SdLayer::getParent()
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    if( pLayerManager == NULL )
+    if( pLayerManager == nullptr )
         throw lang::DisposedException();
 
     return uno::Reference<uno::XInterface> (mxLayerManager, uno::UNO_QUERY);
 }
 
 void SAL_CALL SdLayer::setParent (const uno::Reference<uno::XInterface >& )
-    throw (::com::sun::star::lang::NoSupportException,
-        ::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::lang::NoSupportException,
+        css::uno::RuntimeException, std::exception)
 {
     throw lang::NoSupportException ();
 }
@@ -409,9 +409,9 @@ void SAL_CALL SdLayer::setParent (const uno::Reference<uno::XInterface >& )
 // XComponent
 void SAL_CALL SdLayer::dispose(  ) throw (uno::RuntimeException, std::exception)
 {
-    pLayerManager = 0;
-    mxLayerManager = 0;
-    pLayer = 0;
+    pLayerManager = nullptr;
+    mxLayerManager = nullptr;
+    pLayer = nullptr;
 }
 
 void SAL_CALL SdLayer::addEventListener( const uno::Reference< lang::XEventListener >& ) throw (uno::RuntimeException, std::exception)
@@ -442,13 +442,13 @@ UNO3_GETIMPLEMENTATION_IMPL( SdLayerManager );
 // XComponent
 void SAL_CALL SdLayerManager::dispose(  ) throw (uno::RuntimeException, std::exception)
 {
-    mpModel = 0;
+    mpModel = nullptr;
     if( mpLayers )
     {
         mpLayers->dispose();
 
         delete mpLayers;
-        mpLayers = 0;
+        mpLayers = nullptr;
     }
 }
 
@@ -478,8 +478,7 @@ sal_Bool SAL_CALL SdLayerManager::supportsService( const OUString& ServiceName )
 uno::Sequence< OUString > SAL_CALL SdLayerManager::getSupportedServiceNames()
     throw(uno::RuntimeException, std::exception)
 {
-    OUString aServiceName(UNO_PREFIX "drawing.LayerManager");
-    uno::Sequence< OUString > aSeq( &aServiceName, 1 );
+    uno::Sequence< OUString > aSeq { UNO_PREFIX "drawing.LayerManager" };
     return aSeq;
 }
 
@@ -489,7 +488,7 @@ uno::Reference< drawing::XLayer > SAL_CALL SdLayerManager::insertNewByIndex( sal
 {
     SolarMutexGuard aGuard;
 
-    if( mpModel == 0 )
+    if( mpModel == nullptr )
         throw lang::DisposedException();
 
     uno::Reference< drawing::XLayer > xLayer;
@@ -523,7 +522,7 @@ void SAL_CALL SdLayerManager::remove( const uno::Reference< drawing::XLayer >& x
 {
     SolarMutexGuard aGuard;
 
-    if( mpModel == 0 )
+    if( mpModel == nullptr )
         throw lang::DisposedException();
 
     SdLayer* pSdLayer = SdLayer::getImplementation(xLayer);
@@ -544,16 +543,16 @@ void SAL_CALL SdLayerManager::attachShapeToLayer( const uno::Reference< drawing:
 {
     SolarMutexGuard aGuard;
 
-    if( mpModel == 0 )
+    if( mpModel == nullptr )
         throw lang::DisposedException();
 
     SdLayer* pSdLayer = SdLayer::getImplementation(xLayer);
-    SdrLayer* pSdrLayer = pSdLayer?pSdLayer->GetSdrLayer():NULL;
-    if(pSdrLayer==NULL)
+    SdrLayer* pSdrLayer = pSdLayer?pSdLayer->GetSdrLayer():nullptr;
+    if(pSdrLayer==nullptr)
         return;
 
     SvxShape* pShape = SvxShape::getImplementation( xShape );
-    SdrObject* pSdrObject = pShape?pShape->GetSdrObject():NULL;
+    SdrObject* pSdrObject = pShape?pShape->GetSdrObject():nullptr;
 
     if(pSdrObject && pSdrLayer )
         pSdrObject->SetLayer(pSdrLayer->GetID());
@@ -565,7 +564,7 @@ uno::Reference< drawing::XLayer > SAL_CALL SdLayerManager::getLayerForShape( con
 {
     SolarMutexGuard aGuard;
 
-    if( mpModel == 0 )
+    if( mpModel == nullptr )
         throw lang::DisposedException();
 
     uno::Reference< drawing::XLayer >  xLayer;
@@ -573,7 +572,7 @@ uno::Reference< drawing::XLayer > SAL_CALL SdLayerManager::getLayerForShape( con
     if(mpModel->mpDoc)
     {
         SvxShape* pShape = SvxShape::getImplementation( xShape );
-        SdrObject* pObj = pShape?pShape->GetSdrObject():NULL;
+        SdrObject* pObj = pShape?pShape->GetSdrObject():nullptr;
         if(pObj)
         {
             SdrLayerID aId = pObj->GetLayer();
@@ -590,7 +589,7 @@ sal_Int32 SAL_CALL SdLayerManager::getCount()
 {
     SolarMutexGuard aGuard;
 
-    if( mpModel == 0 )
+    if( mpModel == nullptr )
         throw lang::DisposedException();
 
     if( mpModel->mpDoc )
@@ -607,7 +606,7 @@ uno::Any SAL_CALL SdLayerManager::getByIndex( sal_Int32 nLayer )
 {
     SolarMutexGuard aGuard;
 
-    if( mpModel == 0 )
+    if( mpModel == nullptr )
         throw lang::DisposedException();
 
     if( nLayer >= getCount() || nLayer < 0 )
@@ -630,12 +629,12 @@ uno::Any SAL_CALL SdLayerManager::getByName( const OUString& aName )
 {
     SolarMutexGuard aGuard;
 
-    if( (mpModel == 0) || (mpModel->mpDoc == 0 ) )
+    if( (mpModel == nullptr) || (mpModel->mpDoc == nullptr ) )
         throw lang::DisposedException();
 
     SdrLayerAdmin& rLayerAdmin = mpModel->mpDoc->GetLayerAdmin();
     SdrLayer* pLayer = rLayerAdmin.GetLayer( SdLayer::convertToInternalName( aName ), false );
-    if( pLayer == NULL )
+    if( pLayer == nullptr )
         throw container::NoSuchElementException();
 
     return uno::Any( GetLayer (pLayer) );
@@ -646,7 +645,7 @@ uno::Sequence< OUString > SAL_CALL SdLayerManager::getElementNames()
 {
     SolarMutexGuard aGuard;
 
-    if( mpModel == 0 )
+    if( mpModel == nullptr )
         throw lang::DisposedException();
 
     SdrLayerAdmin& rLayerAdmin = mpModel->mpDoc->GetLayerAdmin();
@@ -670,12 +669,12 @@ sal_Bool SAL_CALL SdLayerManager::hasByName( const OUString& aName ) throw(uno::
 {
     SolarMutexGuard aGuard;
 
-    if( mpModel == 0 )
+    if( mpModel == nullptr )
         throw lang::DisposedException();
 
     SdrLayerAdmin& rLayerAdmin = mpModel->mpDoc->GetLayerAdmin();
 
-    return NULL != rLayerAdmin.GetLayer( SdLayer::convertToInternalName( aName ), false );
+    return nullptr != rLayerAdmin.GetLayer( SdLayer::convertToInternalName( aName ), false );
 }
 
 // XElementAccess
@@ -698,8 +697,7 @@ void SdLayerManager::UpdateLayerView( bool modify ) const throw()
 {
     if(mpModel->mpDocShell)
     {
-        ::sd::DrawViewShell* pDrViewSh =
-            PTR_CAST(::sd::DrawViewShell, mpModel->mpDocShell->GetViewShell());
+        ::sd::DrawViewShell* pDrViewSh = dynamic_cast< ::sd::DrawViewShell* >( mpModel->mpDocShell->GetViewShell());
 
         if(pDrViewSh)
         {
@@ -722,7 +720,7 @@ void SdLayerManager::UpdateLayerView( bool modify ) const throw()
         if(pViewSh)
             return pViewSh->GetView();
     }
-    return NULL;
+    return nullptr;
 }
 
 namespace
@@ -743,7 +741,7 @@ bool compare_layers (uno::WeakReference<uno::XInterface> xRef, void* pSearchData
     if (xLayer.is())
     {
         SdLayer* pSdLayer = SdLayer::getImplementation (xRef);
-        if (pSdLayer != NULL)
+        if (pSdLayer != nullptr)
         {
             SdrLayer* pSdrLayer = pSdLayer->GetSdrLayer ();
             if (pSdrLayer == static_cast<SdrLayer*>(pSearchData))
@@ -765,7 +763,7 @@ uno::Reference<drawing::XLayer> SdLayerManager::GetLayer (SdrLayer* pLayer)
 
     // Search existing xLayer for the given pLayer.
     if (mpLayers->findRef (xRef, static_cast<void*>(pLayer), compare_layers))
-        xLayer = uno::Reference<drawing::XLayer> (xRef, uno::UNO_QUERY);
+        xLayer.set(xRef, uno::UNO_QUERY);
 
     // Create the xLayer if necessary.
     if ( ! xLayer.is())

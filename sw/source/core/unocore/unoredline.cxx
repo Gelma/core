@@ -119,15 +119,15 @@ uno::Reference<text::XTextCursor> SwXRedlineText::createTextCursor()
 
     // skip all tables at the beginning
     SwTableNode* pTableNode = rUnoCursor.GetNode().FindTableNode();
-    SwContentNode* pContentNode = NULL;
-    bool bTable = pTableNode != NULL;
-    while( pTableNode != NULL )
+    SwContentNode* pContentNode = nullptr;
+    bool bTable = pTableNode != nullptr;
+    while( pTableNode != nullptr )
     {
         rUnoCursor.GetPoint()->nNode = *(pTableNode->EndOfSectionNode());
         pContentNode = GetDoc()->GetNodes().GoNext(&rUnoCursor.GetPoint()->nNode);
         pTableNode = pContentNode->FindTableNode();
     }
-    if( pContentNode != NULL )
+    if( pContentNode != nullptr )
         rUnoCursor.GetPoint()->nContent.Assign( pContentNode, 0 );
     if( bTable && rUnoCursor.GetNode().FindSttNodeByType( SwNormalStartNode )
                                                             != GetStartNode() )
@@ -161,7 +161,7 @@ uno::Reference<container::XEnumeration> SwXRedlineText::createEnumeration()
     SolarMutexGuard aGuard;
     SwPaM aPam(aNodeIndex);
     aPam.Move(fnMoveForward, fnGoNode);
-    auto pUnoCursor(GetDoc()->CreateUnoCrsr(*aPam.Start()));
+    auto pUnoCursor(GetDoc()->CreateUnoCursor(*aPam.Start()));
     return SwXParagraphEnumeration::Create(this, pUnoCursor, CURSOR_REDLINE);
 }
 
@@ -176,9 +176,9 @@ sal_Bool SwXRedlineText::hasElements(  ) throw(uno::RuntimeException, std::excep
 }
 
 SwXRedlinePortion::SwXRedlinePortion(SwRangeRedline const& rRedline,
-        SwUnoCrsr const*const pPortionCrsr,
+        SwUnoCursor const*const pPortionCursor,
         uno::Reference< text::XText > const& xParent, bool const bStart)
-    : SwXTextPortion(pPortionCrsr, xParent,
+    : SwXTextPortion(pPortionCursor, xParent,
             (bStart) ? PORTION_REDLINE_START : PORTION_REDLINE_END)
     , m_rRedline(rRedline)
 {
@@ -239,8 +239,8 @@ uno::Any SwXRedlinePortion::getPropertyValue( const OUString& rPropertyName )
         {
             if ( 1 < ( pNodeIdx->GetNode().EndOfSectionIndex() - pNodeIdx->GetNode().GetIndex() ) )
             {
-                SwUnoCrsr& rUnoCrsr = GetCursor();
-                uno::Reference<text::XText> xRet = new SwXRedlineText(rUnoCrsr.GetDoc(), *pNodeIdx);
+                SwUnoCursor& rUnoCursor = GetCursor();
+                uno::Reference<text::XText> xRet = new SwXRedlineText(rUnoCursor.GetDoc(), *pNodeIdx);
                 aRet <<= xRet;
             }
             else {
@@ -260,9 +260,9 @@ uno::Any SwXRedlinePortion::getPropertyValue( const OUString& rPropertyName )
 
 void SwXRedlinePortion::Validate() throw( uno::RuntimeException )
 {
-    SwUnoCrsr& rUnoCrsr = GetCursor();
+    SwUnoCursor& rUnoCursor = GetCursor();
     //search for the redline
-    SwDoc* pDoc = rUnoCrsr.GetDoc();
+    SwDoc* pDoc = rUnoCursor.GetDoc();
     const SwRedlineTable& rRedTable = pDoc->getIDocumentRedlineAccess().GetRedlineTable();
     bool bFound = false;
     for(size_t nRed = 0; nRed < rRedTable.size() && !bFound; nRed++)
@@ -362,7 +362,6 @@ uno::Sequence< beans::PropertyValue > SwXRedlinePortion::CreateRedlineProperties
     return aRet;
 }
 
-TYPEINIT1(SwXRedline, SwClient);
 SwXRedline::SwXRedline(SwRangeRedline& rRedline, SwDoc& rDoc) :
     SwXText(&rDoc, CURSOR_REDLINE),
     pDoc(&rDoc),
@@ -454,13 +453,13 @@ uno::Any SwXRedline::getPropertyValue( const OUString& rPropertyName )
             break;
             case ND_TEXTNODE :
             {
-                SwPosition* pPoint = 0;
+                SwPosition* pPoint = nullptr;
                 if(bStart || !pRedline->HasMark())
                     pPoint = pRedline->GetPoint();
                 else
                     pPoint = pRedline->GetMark();
                 const uno::Reference<text::XTextRange> xRange =
-                    SwXTextRange::CreateXTextRange(*pDoc, *pPoint, 0);
+                    SwXTextRange::CreateXTextRange(*pDoc, *pPoint, nullptr);
                 xRet = xRange.get();
             }
             break;
@@ -519,8 +518,8 @@ void SwXRedline::Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew)
     ClientModify(this, pOld, pNew);
     if(!GetRegisteredIn())
       {
-        pDoc = 0;
-        pRedline = 0;
+        pDoc = nullptr;
+        pRedline = nullptr;
     }
 }
 
@@ -536,7 +535,7 @@ uno::Reference< container::XEnumeration >  SwXRedline::createEnumeration() throw
         return nullptr;
     SwPaM aPam(*pNodeIndex);
     aPam.Move(fnMoveForward, fnGoNode);
-    auto pUnoCursor(GetDoc()->CreateUnoCrsr(*aPam.Start()));
+    auto pUnoCursor(GetDoc()->CreateUnoCursor(*aPam.Start()));
     return SwXParagraphEnumeration::Create(this, pUnoCursor, CURSOR_REDLINE);
 }
 
@@ -549,7 +548,7 @@ sal_Bool SwXRedline::hasElements(  ) throw(uno::RuntimeException, std::exception
 {
     if(!pDoc)
         throw uno::RuntimeException();
-    return 0 != pRedline->GetContentIdx();
+    return nullptr != pRedline->GetContentIdx();
 }
 
 uno::Reference< text::XTextCursor >  SwXRedline::createTextCursor() throw( uno::RuntimeException, std::exception )
@@ -565,20 +564,20 @@ uno::Reference< text::XTextCursor >  SwXRedline::createTextCursor() throw( uno::
         SwPosition aPos(*pNodeIndex);
         SwXTextCursor *const pXCursor =
             new SwXTextCursor(*pDoc, this, CURSOR_REDLINE, aPos);
-        auto& rUnoCrsr(pXCursor->GetCursor());
-        rUnoCrsr.Move(fnMoveForward, fnGoNode);
+        auto& rUnoCursor(pXCursor->GetCursor());
+        rUnoCursor.Move(fnMoveForward, fnGoNode);
 
         // is here a table?
-        SwTableNode* pTableNode = rUnoCrsr.GetNode().FindTableNode();
-        SwContentNode* pCont = 0;
+        SwTableNode* pTableNode = rUnoCursor.GetNode().FindTableNode();
+        SwContentNode* pCont = nullptr;
         while( pTableNode )
         {
-            rUnoCrsr.GetPoint()->nNode = *pTableNode->EndOfSectionNode();
-            pCont = GetDoc()->GetNodes().GoNext(&rUnoCrsr.GetPoint()->nNode);
+            rUnoCursor.GetPoint()->nNode = *pTableNode->EndOfSectionNode();
+            pCont = GetDoc()->GetNodes().GoNext(&rUnoCursor.GetPoint()->nNode);
             pTableNode = pCont->FindTableNode();
         }
         if(pCont)
-            rUnoCrsr.GetPoint()->nContent.Assign(pCont, 0);
+            rUnoCursor.GetPoint()->nContent.Assign(pCont, 0);
         xRet = static_cast<text::XWordCursor*>(pXCursor);
     }
     else

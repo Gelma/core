@@ -96,7 +96,7 @@ Reference< XConnection > getConnection(const OUString& _rURL)
         DBG_ASSERT(xNamingContext.is(), "::getDataSource : no NamingService interface on the sdb::DatabaseAccessContext !");
         try
         {
-            xDataSource = Reference< XDataSource > (xNamingContext->getRegisteredObject(_rURL), UNO_QUERY);
+            xDataSource.set(xNamingContext->getRegisteredObject(_rURL), UNO_QUERY);
         }
         catch (const Exception&)
         {
@@ -112,7 +112,7 @@ Reference< XConnection > getConnection(const OUString& _rURL)
         Reference< XCompletedConnection > xComplConn(xDataSource, UNO_QUERY);
         try
         {
-            Reference<task::XInteractionHandler> xIHdl( task::InteractionHandler::createWithParent(xContext, 0), UNO_QUERY_THROW);
+            Reference<task::XInteractionHandler> xIHdl( task::InteractionHandler::createWithParent(xContext, nullptr), UNO_QUERY_THROW);
             xConn = xComplConn->connectWithCompletion(xIHdl);
         }
         catch (const SQLException&)
@@ -135,10 +135,10 @@ Reference< XConnection >    getConnection(const Reference< XInterface > & xRowSe
         if (!xFormProps.is())
             return xConn;
 
-        xConn = Reference< XConnection > (*static_cast<Reference< XInterface > const *>(xFormProps->getPropertyValue("ActiveConnection").getValue()), UNO_QUERY);
+        xConn.set(*static_cast<Reference< XInterface > const *>(xFormProps->getPropertyValue("ActiveConnection").getValue()), UNO_QUERY);
         if (!xConn.is())
         {
-            DBG_WARNING("no active connection");
+            SAL_INFO("extensions.biblio", "no active connection");
         }
     }
     catch (const Exception&)
@@ -159,7 +159,7 @@ Reference< XNameAccess >  getColumns(const Reference< XForm > & _rxForm)
 
     if (!xReturn.is() || (xReturn->getElementNames().getLength() == 0))
     {   // no ....
-        xReturn = NULL;
+        xReturn = nullptr;
         // -> get the table the form is bound to and ask it for their columns
         Reference< XTablesSupplier >  xSupplyTables( getConnection( _rxForm ), UNO_QUERY );
         Reference< XPropertySet >  xFormProps( _rxForm, UNO_QUERY );
@@ -173,7 +173,7 @@ Reference< XNameAccess >  getColumns(const Reference< XForm > & _rxForm)
                 xFormProps->getPropertyValue("Command") >>= sTable;
                 Reference< XNameAccess >  xTables = xSupplyTables->getTables();
                 if (xTables.is() && xTables->hasByName(sTable))
-                    xSupplyCols = Reference< XColumnsSupplier > (
+                    xSupplyCols.set(
                         *static_cast<Reference< XInterface > const *>(xTables->getByName(sTable).getValue()), UNO_QUERY);
                 if (xSupplyCols.is())
                     xReturn = xSupplyCols->getColumns();
@@ -237,12 +237,12 @@ class MappingDialog_Impl : public ModalDialog
 
 
     DECL_LINK_TYPED(OkHdl, Button*, void);
-    DECL_LINK(ListBoxSelectHdl, ListBox*);
+    DECL_LINK_TYPED(ListBoxSelectHdl, ListBox&, void);
 
 public:
     MappingDialog_Impl(vcl::Window* pParent, BibDataManager* pDatMan);
     virtual ~MappingDialog_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void    SetModified() {bModified = true;}
 
@@ -348,7 +348,7 @@ MappingDialog_Impl::MappingDialog_Impl(vcl::Window* pParent, BibDataManager* pMa
             aListBoxes[0]->InsertEntry(pNames[nField]);
     }
 
-    Link<> aLnk = LINK(this, MappingDialog_Impl, ListBoxSelectHdl);
+    Link<ListBox&,void> aLnk = LINK(this, MappingDialog_Impl, ListBoxSelectHdl);
 
     aListBoxes[0]->SelectEntryPos(0);
     aListBoxes[0]->SetSelectHdl(aLnk);
@@ -422,19 +422,18 @@ void MappingDialog_Impl::dispose()
     ModalDialog::dispose();
 }
 
-IMPL_LINK(MappingDialog_Impl, ListBoxSelectHdl, ListBox*, pListBox)
+IMPL_LINK_TYPED(MappingDialog_Impl, ListBoxSelectHdl, ListBox&, rListBox, void)
 {
-    const sal_Int32 nEntryPos = pListBox->GetSelectEntryPos();
+    const sal_Int32 nEntryPos = rListBox.GetSelectEntryPos();
     if(0 < nEntryPos)
     {
         for(sal_uInt16 i = 0; i < COLUMN_COUNT; i++)
         {
-            if(pListBox != aListBoxes[i] && aListBoxes[i]->GetSelectEntryPos() == nEntryPos)
+            if(&rListBox != aListBoxes[i] && aListBoxes[i]->GetSelectEntryPos() == nEntryPos)
                 aListBoxes[i]->SelectEntryPos(0);
         }
     }
     SetModified();
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(MappingDialog_Impl, OkHdl, Button*, void)
@@ -478,7 +477,7 @@ class DBChangeDialog_Impl : public ModalDialog
 public:
     DBChangeDialog_Impl(vcl::Window* pParent, BibDataManager* pMan );
     virtual ~DBChangeDialog_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     OUString     GetCurrentURL()const;
 };
@@ -535,7 +534,7 @@ OUString  DBChangeDialog_Impl::GetCurrentURL()const
 }
 
 // XDispatchProvider
-BibInterceptorHelper::BibInterceptorHelper( ::bib::BibBeamer* pBibBeamer, ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatch > xDispatch)
+BibInterceptorHelper::BibInterceptorHelper( ::bib::BibBeamer* pBibBeamer, css::uno::Reference< css::frame::XDispatch > xDispatch)
 {
     if( pBibBeamer )
     {
@@ -558,8 +557,8 @@ void BibInterceptorHelper::ReleaseInterceptor()
     xInterception.clear();
 }
 
-::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatch > SAL_CALL
-    BibInterceptorHelper::queryDispatch( const ::com::sun::star::util::URL& aURL, const OUString& aTargetFrameName, sal_Int32 nSearchFlags ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+css::uno::Reference< css::frame::XDispatch > SAL_CALL
+    BibInterceptorHelper::queryDispatch( const css::util::URL& aURL, const OUString& aTargetFrameName, sal_Int32 nSearchFlags ) throw (css::uno::RuntimeException, std::exception)
 {
     Reference< XDispatch > xReturn;
 
@@ -573,8 +572,8 @@ void BibInterceptorHelper::ReleaseInterceptor()
     return xReturn;
 }
 
-::com::sun::star::uno::Sequence< ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatch > > SAL_CALL
-    BibInterceptorHelper::queryDispatches( const ::com::sun::star::uno::Sequence< ::com::sun::star::frame::DispatchDescriptor >& aDescripts ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+css::uno::Sequence< css::uno::Reference< css::frame::XDispatch > > SAL_CALL
+    BibInterceptorHelper::queryDispatches( const css::uno::Sequence< css::frame::DispatchDescriptor >& aDescripts ) throw (css::uno::RuntimeException, std::exception)
 {
     Sequence< Reference< XDispatch> > aReturn( aDescripts.getLength() );
     Reference< XDispatch >* pReturn = aReturn.getArray();
@@ -587,24 +586,24 @@ void BibInterceptorHelper::ReleaseInterceptor()
 }
 
 // XDispatchProviderInterceptor
-::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatchProvider > SAL_CALL
-    BibInterceptorHelper::getSlaveDispatchProvider(  ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+css::uno::Reference< css::frame::XDispatchProvider > SAL_CALL
+    BibInterceptorHelper::getSlaveDispatchProvider(  ) throw (css::uno::RuntimeException, std::exception)
 {
     return xSlaveDispatchProvider;
 }
 
-void SAL_CALL BibInterceptorHelper::setSlaveDispatchProvider( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatchProvider >& xNewSlaveDispatchProvider ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL BibInterceptorHelper::setSlaveDispatchProvider( const css::uno::Reference< css::frame::XDispatchProvider >& xNewSlaveDispatchProvider ) throw (css::uno::RuntimeException, std::exception)
 {
     xSlaveDispatchProvider = xNewSlaveDispatchProvider;
 }
 
-::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatchProvider > SAL_CALL
-    BibInterceptorHelper::getMasterDispatchProvider(  ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+css::uno::Reference< css::frame::XDispatchProvider > SAL_CALL
+    BibInterceptorHelper::getMasterDispatchProvider(  ) throw (css::uno::RuntimeException, std::exception)
 {
     return xMasterDispatchProvider;
 }
 
-void SAL_CALL BibInterceptorHelper::setMasterDispatchProvider( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatchProvider >& xNewMasterDispatchProvider ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL BibInterceptorHelper::setMasterDispatchProvider( const css::uno::Reference< css::frame::XDispatchProvider >& xNewMasterDispatchProvider ) throw (css::uno::RuntimeException, std::exception)
 {
     xMasterDispatchProvider = xNewMasterDispatchProvider;
 }
@@ -619,10 +618,10 @@ OUString gViewSize("theViewSize");
 
 BibDataManager::BibDataManager()
     :BibDataManager_Base( GetMutex() )
-    ,m_pInterceptorHelper( NULL )
+    ,m_pInterceptorHelper( nullptr )
     ,m_aLoadListeners(m_aMutex)
-    ,pBibView( NULL )
-    ,pToolbar(0)
+    ,pBibView( nullptr )
+    ,pToolbar(nullptr)
 {
 }
 
@@ -643,13 +642,13 @@ BibDataManager::~BibDataManager()
             xComp->dispose();
         if(xConnection.is())
             xConnection->dispose();
-        m_xForm = NULL;
+        m_xForm = nullptr;
     }
     if( m_pInterceptorHelper )
     {
         m_pInterceptorHelper->ReleaseInterceptor();
         m_pInterceptorHelper->release();
-        m_pInterceptorHelper = NULL;
+        m_pInterceptorHelper = nullptr;
     }
 }
 
@@ -779,7 +778,7 @@ Reference< XForm >  BibDataManager::createDatabaseForm(BibDBDescriptor& rDesc)
     try
     {
         Reference< XMultiServiceFactory >  xMgr = comphelper::getProcessServiceFactory();
-        m_xForm = Reference< XForm > ( xMgr->createInstance( "com.sun.star.form.component.Form" ), UNO_QUERY );
+        m_xForm.set( xMgr->createInstance( "com.sun.star.form.component.Form" ), UNO_QUERY );
 
         Reference< XPropertySet >  aPropertySet( m_xForm, UNO_QUERY );
 
@@ -1211,7 +1210,7 @@ Reference< awt::XControlModel > BibDataManager::createGridModel(const OUString& 
         // create the control model
         Reference< XMultiServiceFactory >  xMgr = ::comphelper::getProcessServiceFactory();
         Reference< XInterface >  xObject = xMgr->createInstance("com.sun.star.form.component.GridControl");
-        xModel=Reference< awt::XControlModel > ( xObject, UNO_QUERY );
+        xModel.set( xObject, UNO_QUERY );
 
         // set the
         Reference< XPropertySet > xPropSet( xModel, UNO_QUERY );
@@ -1313,7 +1312,7 @@ Reference< awt::XControlModel > BibDataManager::loadControlModel(
 
             Reference< XComponentContext >  xContext = comphelper::getProcessComponentContext();
             Reference< XInterface >  xObject = xContext->getServiceManager()->createInstanceWithContext(aInstanceName, xContext);
-            xModel=Reference< awt::XControlModel > ( xObject, UNO_QUERY );
+            xModel.set( xObject, UNO_QUERY );
             Reference< XPropertySet >  xPropSet( xModel, UNO_QUERY );
             Any aFieldName; aFieldName <<= aName;
 
@@ -1419,7 +1418,7 @@ void SAL_CALL BibDataManager::disposing()
 }
 
 
-void BibDataManager::disposing( const EventObject& /*Source*/ ) throw( ::com::sun::star::uno::RuntimeException, std::exception )
+void BibDataManager::disposing( const EventObject& /*Source*/ ) throw( css::uno::RuntimeException, std::exception )
 {
     // not interested in
 }
@@ -1608,7 +1607,7 @@ uno::Reference< form::runtime::XFormController > BibDataManager::GetFormControll
         Reference< uno::XComponentContext > xContext = comphelper::getProcessComponentContext();
         m_xFormCtrl = form::runtime::FormController::create(xContext);
         m_xFormCtrl->setModel(uno::Reference< awt::XTabControllerModel > (getForm(), UNO_QUERY));
-        m_xFormDispatch = uno::Reference< frame::XDispatch > ( m_xFormCtrl, UNO_QUERY);
+        m_xFormDispatch.set( m_xFormCtrl, UNO_QUERY);
     }
     return m_xFormCtrl;
 }
@@ -1623,19 +1622,6 @@ void BibDataManager::RegisterInterceptor( ::bib::BibBeamer* pBibBeamer)
         m_pInterceptorHelper->acquire();
 }
 
-
-bool BibDataManager::HasActiveConnection()const
-{
-    bool bRet = false;
-    Reference< XPropertySet >   xPrSet( m_xForm, UNO_QUERY );
-    if( xPrSet.is() )
-    {
-        Reference< XComponent >  xConnection;
-        xPrSet->getPropertyValue("ActiveConnection") >>= xConnection;
-        bRet = xConnection.is();
-    }
-    return bRet;
-}
 
 bool BibDataManager::HasActiveConnection()
 {

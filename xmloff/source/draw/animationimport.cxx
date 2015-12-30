@@ -90,9 +90,7 @@ using ::com::sun::star::lang::XInitialization;
 
 Sequence< OUString > SAL_CALL AnimationsImport_getSupportedServiceNames() throw()
 {
-    const OUString aServiceName( "com.sun.star.comp.Xmloff.AnimationsImport" );
-    const Sequence< OUString > aSeq( &aServiceName, 1 );
-    return aSeq;
+    return Sequence< OUString > { "com.sun.star.comp.Xmloff.AnimationsImport" };
 }
 
 OUString SAL_CALL AnimationsImport_getImplementationName() throw()
@@ -126,15 +124,12 @@ public:
     Any convertTiming( const OUString& rValue );
     static Sequence< double > convertKeyTimes( const OUString& rValue );
     static Sequence< TimeFilterPair > convertTimeFilter( const OUString& rValue );
-
-    const OUString mastrHSL;
 };
 
 AnimationsImportHelperImpl::AnimationsImportHelperImpl( SvXMLImport& rImport )
 :   mrImport( rImport ),
-    mpAnimationNodeTokenMap( NULL ),
-    mpAnimationNodeAttributeTokenMap( NULL ),
-    mastrHSL( "hsl" )
+    mpAnimationNodeTokenMap( nullptr ),
+    mpAnimationNodeAttributeTokenMap( nullptr )
 {
 }
 
@@ -146,7 +141,7 @@ AnimationsImportHelperImpl::~AnimationsImportHelperImpl()
 
 const SvXMLTokenMap& AnimationsImportHelperImpl::getAnimationNodeTokenMap()
 {
-    if( mpAnimationNodeTokenMap == NULL )
+    if( mpAnimationNodeTokenMap == nullptr )
     {
         static const SvXMLTokenMapEntry aAnimationNodeTokenMap[] =
         {
@@ -225,7 +220,7 @@ enum AnimationNodeAttributes
 
 const SvXMLTokenMap& AnimationsImportHelperImpl::getAnimationNodeAttributeTokenMap()
 {
-    if( mpAnimationNodeAttributeTokenMap == NULL )
+    if( mpAnimationNodeAttributeTokenMap == nullptr )
     {
         static const SvXMLTokenMapEntry aAnimationNodeAttributeTokenMap[] =
         {
@@ -625,16 +620,15 @@ Any AnimationsImportHelperImpl::convertPath( const OUString& rValue )
     return makeAny( rValue );
 }
 
-TYPEINIT1( AnimationNodeContext, SvXMLImportContext );
 
 AnimationNodeContext::AnimationNodeContext(
         const Reference< XAnimationNode >& xParentNode,
         SvXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList,
+        const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList,
         AnimationsImportHelperImpl* pHelper /* = NULL */ )
 :   SvXMLImportContext(rImport, nPrfx, rLocalName),
     mpHelper( pHelper ),
-    mbRootContext( pHelper == NULL )
+    mbRootContext( pHelper == nullptr )
 {
     try
     {
@@ -647,7 +641,7 @@ AnimationNodeContext::AnimationNodeContext(
         {
             sal_Int16 nPresetClass = EffectPresetClass::CUSTOM;
 
-            const sal_Char* pServiceName = 0;
+            const sal_Char* pServiceName = nullptr;
 
             sal_Int16 nNodeType = (sal_Int16)mpHelper->getAnimationNodeTokenMap().Get( nPrfx, rLocalName );
             switch( nNodeType )
@@ -694,14 +688,14 @@ AnimationNodeContext::AnimationNodeContext(
                 }
                 break;
             default:
-                pServiceName = 0;
+                pServiceName = nullptr;
             }
 
             if( pServiceName )
             {
                 Reference< XComponentContext > xContext( ::comphelper::getProcessComponentContext() );
 
-                mxNode = Reference< XAnimationNode >(
+                mxNode.set(
                     xContext->getServiceManager()->createInstanceWithContext(OUString::createFromAscii(pServiceName), xContext),
                     UNO_QUERY_THROW );
 
@@ -732,7 +726,7 @@ AnimationNodeContext::~AnimationNodeContext()
         delete mpHelper;
 }
 
-void AnimationNodeContext::StartElement( const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& )
+void AnimationNodeContext::StartElement( const css::uno::Reference< css::xml::sax::XAttributeList >& )
 {
     // code of StartElement is moved to init_node that is now called
     // in c'tor before appending this node to its parent.
@@ -740,7 +734,7 @@ void AnimationNodeContext::StartElement( const ::com::sun::star::uno::Reference<
     // set when child nodes are appended.
 }
 
-void AnimationNodeContext::init_node(  const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList )
+void AnimationNodeContext::init_node(  const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList )
 {
     if( mxNode.is() ) try
     {
@@ -1158,7 +1152,7 @@ void AnimationNodeContext::init_node(  const ::com::sun::star::uno::Reference< :
                     double fInterval = 0.0;
                     if( rValue.match("P") )
                     {
-                        ::com::sun::star::util::Duration aDuration;
+                        css::util::Duration aDuration;
                         if (::sax::Converter::convertDuration(aDuration, rValue))
                         {
                             fInterval = ((((aDuration.Hours * 60)
@@ -1246,7 +1240,7 @@ void AnimationNodeContext::init_node(  const ::com::sun::star::uno::Reference< :
 }
 
 SvXMLImportContext * AnimationNodeContext::CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList )
+        const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList )
 {
     if( mxNode.is())
         return new AnimationNodeContext( mxNode, GetImport(), nPrefix, rLocalName, xAttrList, mpHelper );
@@ -1260,15 +1254,15 @@ public:
     explicit AnimationsImport( const Reference< XComponentContext > & rxContext );
     virtual ~AnimationsImport() throw ();
 
-    SvXMLImportContext* CreateContext(sal_uInt16 nPrefix, const OUString& rLocalName,   const Reference<XAttributeList>& xAttrList) SAL_OVERRIDE;
+    SvXMLImportContext* CreateContext(sal_uInt16 nPrefix, const OUString& rLocalName,   const Reference<XAttributeList>& xAttrList) override;
 
     // XInterface
-    virtual Any SAL_CALL queryInterface( const Type& aType ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL acquire() throw () SAL_OVERRIDE;
-    virtual void SAL_CALL release() throw () SAL_OVERRIDE;
+    virtual Any SAL_CALL queryInterface( const Type& aType ) throw (RuntimeException, std::exception) override;
+    virtual void SAL_CALL acquire() throw () override;
+    virtual void SAL_CALL release() throw () override;
 
     // XAnimationNodeSupplier
-    Reference< XAnimationNode > SAL_CALL getAnimationNode() throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    Reference< XAnimationNode > SAL_CALL getAnimationNode() throw (RuntimeException, std::exception) override;
 
 private:
     Reference< XAnimationNode > mxRootNode;
@@ -1296,7 +1290,7 @@ AnimationsImport::AnimationsImport( const Reference< XComponentContext > & rxCon
         GetXMLToken(XML_N_ANIMATION),
         XML_NAMESPACE_ANIMATION);
 
-    mxRootNode = Reference<XAnimationNode>( SequenceTimeContainer::create(rxContext), UNO_QUERY_THROW );
+    mxRootNode.set( SequenceTimeContainer::create(rxContext), UNO_QUERY_THROW );
 }
 
 AnimationsImport::~AnimationsImport() throw ()
@@ -1328,7 +1322,7 @@ void SAL_CALL AnimationsImport::release() throw ()
 
 SvXMLImportContext *AnimationsImport::CreateContext(sal_uInt16 nPrefix, const OUString& rLocalName, const Reference<XAttributeList>& xAttrList)
 {
-    SvXMLImportContext* pContext = 0;
+    SvXMLImportContext* pContext = nullptr;
 
     if( (XML_NAMESPACE_ANIMATION == nPrefix) && IsXMLToken( rLocalName, XML_SEQ ) )
     {

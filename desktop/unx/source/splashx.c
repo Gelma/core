@@ -90,7 +90,7 @@ static int splash_load_bmp( struct splash* splash, const char *filename )
     if ( !(file = fopen( filename, "r" ) ) )
         return 0;
 
-    splash->png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING, 0, 0, 0 );
+    splash->png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING, NULL, NULL, NULL );
     splash->info_ptr = png_create_info_struct(splash->png_ptr);
     png_init_io( splash->png_ptr, file );
 
@@ -481,13 +481,17 @@ static int splash_create_window( struct splash* splash, int argc, char** argv )
     splash->gc = XCreateGC( splash->display, splash->win, value_mask, &values );
 
     size_hints.flags = PPosition | PSize | PMinSize | PMaxSize;
+    size_hints.x = display_x_pos;
+    size_hints.y = display_y_pos;
+    size_hints.width = splash->width;
+    size_hints.height = splash->height;
     size_hints.min_width = splash->width;
     size_hints.max_width = splash->width;
     size_hints.min_height = splash->height;
     size_hints.max_height = splash->height;
 
     XSetStandardProperties( splash->display, splash->win, name, icon, None,
-            0, 0, &size_hints );
+            NULL, 0, &size_hints );
 
     // the actual work
     suppress_decorations(splash);

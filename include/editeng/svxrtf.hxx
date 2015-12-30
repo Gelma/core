@@ -54,27 +54,42 @@ namespace com { namespace sun { namespace star {
 //        Swg - NodePosition is a SwIndex, which is used internally
 // EditEngine - ULONG to list of paragraphs
 
-
-class SvxNodeIdx
+class EditEngine;
+class ContentNode;
+class EditNodeIdx
 {
 public:
-    virtual ~SvxNodeIdx() {}
-    virtual sal_Int32   GetIdx() const = 0;
-    virtual SvxNodeIdx* Clone() const = 0;  // Cloning itself
+    EditNodeIdx(EditEngine* pEE, ContentNode* pNd = nullptr);
+    ~EditNodeIdx() {}
+    sal_Int32   GetIdx() const;
+    EditNodeIdx* Clone() const;  // Cloning itself
+    ContentNode* GetNode() { return mpNode; }
+private:
+    EditEngine*   mpEditEngine;
+    ContentNode*  mpNode;
 };
 
-class SvxPosition
+class EditSelection;
+class EditPosition
 {
+private:
+    EditEngine*     mpEditEngine;
+    EditSelection*  mpCurSel;
+
 public:
-    virtual ~SvxPosition() {}
+    EditPosition(EditEngine* pIEE, EditSelection* pSel);
 
-    virtual sal_Int32   GetNodeIdx() const = 0;
-    virtual sal_Int32   GetCntIdx() const = 0;
+    sal_Int32   GetNodeIdx() const;
+    sal_Int32   GetCntIdx() const;
 
-    virtual SvxPosition* Clone() const = 0; // Cloning itself
-    virtual SvxNodeIdx* MakeNodeIdx() const = 0; // Cloning NodeIndex
+    // clone
+    EditPosition* Clone() const;
+
+    // clone NodeIndex
+    EditNodeIdx* MakeNodeIdx() const;
 };
 
+#define ACTION_INSERTTEXT       1
 
 typedef std::map<short, std::unique_ptr<vcl::Font>> SvxRTFFontTbl;
 typedef std::map<sal_uInt16, std::unique_ptr<SvxRTFStyleType>> SvxRTFStyleTbl;
@@ -169,7 +184,6 @@ struct RTFPardAttrMapIds
 
 class EDITENG_DLLPUBLIC SvxRTFParser : public SvRTFParser
 {
-    SvStream &            rStrm;
     std::deque< Color* >  aColorTbl;
     SvxRTFFontTbl         m_FontTable;
     SvxRTFStyleTbl        m_StyleTable;
@@ -181,12 +195,11 @@ class EDITENG_DLLPUBLIC SvxRTFParser : public SvRTFParser
     std::vector<sal_uInt16> aWhichMap;
     OUString  sBaseURL;
 
-    SvxPosition* pInsPos;
+    EditPosition* pInsPos;
     SfxItemPool* pAttrPool;
     Color*  pDfltColor;
     vcl::Font*   pDfltFont;
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::document::XDocumentProperties> m_xDocProps;
+    css::uno::Reference< css::document::XDocumentProperties> m_xDocProps;
     SfxItemSet *pRTFDefaults;
 
     long    nVersionNo;
@@ -241,10 +254,10 @@ protected:
     static OUString& DelCharAtEnd( OUString& rStr, const sal_Unicode cDel );
 
     // is called for each token that is recognized in CallParser
-    virtual void NextToken( int nToken ) SAL_OVERRIDE;
+    virtual void NextToken( int nToken ) override;
 
-    virtual void ReadBitmapData() SAL_OVERRIDE;
-    virtual void ReadOLEData() SAL_OVERRIDE;
+    virtual void ReadBitmapData() override;
+    virtual void ReadOLEData() override;
 
     void ReadStyleTable();
     void ReadColorTable();
@@ -253,9 +266,9 @@ protected:
     void ReadTabAttr( int nToken, SfxItemSet& rSet );
 
     // Read Document-Info
-    ::com::sun::star::util::DateTime GetDateTimeStamp( );
+    css::util::DateTime GetDateTimeStamp( );
     OUString& GetTextToEndGroup( OUString& rStr );
-    void ReadInfo( const sal_Char* pChkForVerNo = 0 );
+    void ReadInfo( const sal_Char* pChkForVerNo = nullptr );
 
     inline SfxItemSet& GetAttrSet();
     // no text yet inserted? (SttPos from the top stack entry!)
@@ -266,7 +279,7 @@ protected:
 
     virtual void InsertText() = 0;
     virtual void MovePos( bool bForward = true ) = 0;
-    virtual void SetEndPrevPara( SvxNodeIdx*& rpNodePos,
+    virtual void SetEndPrevPara( EditNodeIdx*& rpNodePos,
                                  sal_Int32& rCntPos )=0;
     virtual void SetAttrInDoc( SvxRTFItemStackType &rSet );
     // for Tokens, which are not evaluated in ReadAttr
@@ -277,8 +290,7 @@ protected:
 
     SvxRTFParser( SfxItemPool& rAttrPool,
                     SvStream& rIn,
-                    ::com::sun::star::uno::Reference<
-                        ::com::sun::star::document::XDocumentProperties> i_xDocProps,
+                    css::uno::Reference< css::document::XDocumentProperties> i_xDocProps,
                     bool bReadNewDoc = true );
     virtual ~SvxRTFParser();
 
@@ -289,17 +301,17 @@ protected:
     void SetCalcValue( bool bFlag )     { bCalcValue = bFlag; }
 
     // Query/Set the current insert position
-    void SetInsPos( const SvxPosition& rNew );
+    void SetInsPos( const EditPosition& rNew );
     SvxRTFStyleTbl& GetStyleTbl()               { return m_StyleTable; }
 
 public:
 
-    virtual SvParserState CallParser() SAL_OVERRIDE;
+    virtual SvParserState CallParser() override;
 
     inline const Color& GetColor( size_t nId ) const;
     const vcl::Font& GetFont( sal_uInt16 nId );      // Changes the default Font
 
-    virtual bool IsEndPara( SvxNodeIdx* pNd, sal_Int32 nCnt ) const = 0;
+    virtual bool IsEndPara( EditNodeIdx* pNd, sal_Int32 nCnt ) const = 0;
 
     // to set a different attribute pool. May only be done prior to CallParser!
     // The maps are not generated anew!
@@ -311,7 +323,7 @@ public:
     void ReadBackgroundAttr( int nToken, SfxItemSet& rSet, bool bTableDef=false  );
 
     // for asynchronous read from the SvStream
-    virtual void Continue( int nToken ) SAL_OVERRIDE;
+    virtual void Continue( int nToken ) override;
 
     // get RTF default ItemSets. Must be used by pard/plain tokens or in
     // reset of Style-Items
@@ -324,38 +336,38 @@ class EDITENG_DLLPUBLIC SvxRTFItemStackType
 {
     friend class SvxRTFParser;
 
-    SfxItemSet  aAttrSet;
-    SvxNodeIdx  *pSttNd, *pEndNd;
-    sal_Int32 nSttCnt, nEndCnt;
+    SfxItemSet   aAttrSet;
+    EditNodeIdx  *pSttNd, *pEndNd;
+    sal_Int32    nSttCnt, nEndCnt;
     SvxRTFItemStackList* m_pChildList;
-    sal_uInt16 nStyleNo;
+    sal_uInt16   nStyleNo;
 
     SvxRTFItemStackType(SvxRTFItemStackType const&) = delete;
     void operator=(SvxRTFItemStackType const&) = delete;
 
     SvxRTFItemStackType( SfxItemPool&, const sal_uInt16* pWhichRange,
-                            const SvxPosition& );
+                            const EditPosition& );
 
     void Add(std::unique_ptr<SvxRTFItemStackType>);
     void Compress( const SvxRTFParser& );
 
 public:
-    SvxRTFItemStackType( const SvxRTFItemStackType&, const SvxPosition&,
+    SvxRTFItemStackType( const SvxRTFItemStackType&, const EditPosition&,
                         bool bCopyAttr = false );
     ~SvxRTFItemStackType();
     //cmc, I'm very suspicios about SetStartPos, it doesn't change
     //its children's starting position, and the implementation looks
     //bad, consider this deprecated.
-    void SetStartPos( const SvxPosition& rPos );
+    void SetStartPos( const EditPosition& rPos );
 
-    void MoveFullNode(const SvxNodeIdx &rOldNode,
-        const SvxNodeIdx &rNewNode);
+    void MoveFullNode(const EditNodeIdx &rOldNode,
+        const EditNodeIdx &rNewNode);
 
     sal_Int32 GetSttNodeIdx() const { return pSttNd->GetIdx(); }
     sal_Int32 GetEndNodeIdx() const { return pEndNd->GetIdx(); }
 
-    const SvxNodeIdx& GetSttNode() const { return *pSttNd; }
-    const SvxNodeIdx& GetEndNode() const { return *pEndNd; }
+    const EditNodeIdx& GetSttNode() const { return *pSttNd; }
+    const EditNodeIdx& GetEndNode() const { return *pEndNd; }
 
     sal_Int32 GetSttCnt() const { return nSttCnt; }
     sal_Int32 GetEndCnt() const { return nEndCnt; }
@@ -382,7 +394,7 @@ inline const Color& SvxRTFParser::GetColor( size_t nId ) const
 inline SfxItemSet& SvxRTFParser::GetAttrSet()
 {
     SvxRTFItemStackType* pTmp;
-    if( bNewGroup || 0 == ( pTmp = aAttrStack.empty() ? 0 : aAttrStack.back()) )
+    if( bNewGroup || nullptr == ( pTmp = aAttrStack.empty() ? nullptr : aAttrStack.back()) )
         pTmp = _GetAttrSet();
     return pTmp->aAttrSet;
 }

@@ -24,8 +24,8 @@
 
 #include <tools/link.hxx>
 #include <tools/ref.hxx>
-#include <tools/rtti.hxx>
 #include <com/sun/star/io/XInputStream.hpp>
+#include <memory>
 
 namespace com { namespace sun { namespace star { namespace uno
 {
@@ -53,15 +53,14 @@ struct SvLinkSource_Impl;
 class SFX2_DLLPUBLIC SvLinkSource : public SvRefBase
 {
 private:
-    SvLinkSource_Impl*  pImpl; // compatible area
+    std::unique_ptr<SvLinkSource_Impl>  pImpl; // compatible area
 
 public:
-                        TYPEINFO();
 
                         SvLinkSource();
     virtual             ~SvLinkSource();
 
-    bool                HasDataLinks( const SvBaseLink* = 0 ) const;
+    bool                HasDataLinks( const SvBaseLink* = nullptr ) const;
 
     void                Closed();
 
@@ -70,12 +69,12 @@ public:
                         // notify the sink, the mime type is not
                         // a selection criterion
     void                DataChanged( const rtl::OUString & rMimeType,
-                                    const ::com::sun::star::uno::Any & rVal );
+                                    const css::uno::Any & rVal );
     void                SendDataChanged();
     void                NotifyDataChanged();
 
     virtual bool        Connect( SvBaseLink* );
-    virtual bool        GetData( ::com::sun::star::uno::Any & rData /*out param*/,
+    virtual bool        GetData( css::uno::Any & rData /*out param*/,
                                 const rtl::OUString & rMimeType,
                                 bool bSynchron = false );
 
@@ -84,7 +83,6 @@ public:
                         // sal_True => data complete loaded
     virtual bool        IsDataComplete() const;
 
-    // Link impl: DECL_LINK( MyEndEditHdl, sfx2::FileDialogHelper* ); <= param is the dialog
     virtual void        Edit( vcl::Window *, SvBaseLink *, const Link<const OUString&, void>& rEndEditHdl );
 
 
@@ -97,19 +95,19 @@ public:
 
     struct StreamToLoadFrom{
         StreamToLoadFrom(
-            const com::sun::star::uno::Reference<com::sun::star::io::XInputStream>& xInputStream, bool bIsReadOnly )
+            const css::uno::Reference<css::io::XInputStream>& xInputStream, bool bIsReadOnly )
             :m_xInputStreamToLoadFrom(xInputStream),
              m_bIsReadOnly(bIsReadOnly)
         {
         }
 
-        com::sun::star::uno::Reference<com::sun::star::io::XInputStream>
+        css::uno::Reference<css::io::XInputStream>
              m_xInputStreamToLoadFrom;
         bool m_bIsReadOnly;
     };
 
     StreamToLoadFrom getStreamToLoadFrom();
-    void setStreamToLoadFrom(const com::sun::star::uno::Reference<com::sun::star::io::XInputStream>& xInputStream, bool bIsReadOnly );
+    void setStreamToLoadFrom(const css::uno::Reference<css::io::XInputStream>& xInputStream, bool bIsReadOnly );
     void clearStreamToLoadFrom();
 };
 

@@ -42,7 +42,7 @@ struct EventDisplayName
 {
     const sal_Char* pAsciiEventName;
     sal_uInt16          nEventResourceID;
-    EventDisplayName() : pAsciiEventName( NULL ), nEventResourceID(0) { }
+    EventDisplayName() : pAsciiEventName( nullptr ), nEventResourceID(0) { }
     EventDisplayName( const sal_Char* _pAsciiName, const sal_uInt16 _nResId )
         : pAsciiEventName( _pAsciiName )
         , nEventResourceID( _nResId )
@@ -84,17 +84,17 @@ protected:
 public:
 
     virtual                     ~_SvxMacroTabPage();
-    virtual void                dispose() SAL_OVERRIDE;
+    virtual void                dispose() override;
     void                        InitResources();
 
     void                        InitAndSetHandler( css::uno::Reference< css::container::XNameReplace > xAppEvents, css::uno::Reference< css::container::XNameReplace > xDocEvents, css::uno::Reference< css::util::XModifiable > xModifiable );
-    virtual bool                FillItemSet( SfxItemSet* rSet ) SAL_OVERRIDE;
+    virtual bool                FillItemSet( SfxItemSet* rSet ) override;
 
-    virtual void                Reset( const SfxItemSet* ) SAL_OVERRIDE;
+    virtual void                Reset( const SfxItemSet* ) override;
 
     void                        DisplayAppEvents( bool appEvents);
     void                        SetReadOnly( bool bSet );
-    bool                        IsReadOnly() const SAL_OVERRIDE;
+    bool                        IsReadOnly() const override;
 };
 
 class SvxMacroTabPage : public _SvxMacroTabPage

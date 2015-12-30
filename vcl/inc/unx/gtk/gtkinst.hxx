@@ -60,49 +60,45 @@ public:
             GtkInstance( SalYieldMutex* pMutex );
     virtual ~GtkInstance();
     void    EnsureInit();
-    virtual void AfterAppInit() SAL_OVERRIDE;
+    virtual void AfterAppInit() override;
 
-    virtual SalFrame*           CreateFrame( SalFrame* pParent, sal_uLong nStyle ) SAL_OVERRIDE;
-    virtual SalFrame*           CreateChildFrame( SystemParentData* pParent, sal_uLong nStyle ) SAL_OVERRIDE;
-    virtual SalObject*          CreateObject( SalFrame* pParent, SystemWindowData* pWindowData, bool bShow = true ) SAL_OVERRIDE;
-    virtual SalSystem*          CreateSalSystem() SAL_OVERRIDE;
-    virtual SalInfoPrinter*     CreateInfoPrinter(SalPrinterQueueInfo* pPrinterQueueInfo, ImplJobSetup* pJobSetup) SAL_OVERRIDE;
-    virtual SalPrinter*         CreatePrinter( SalInfoPrinter* pInfoPrinter ) SAL_OVERRIDE;
-    virtual SalMenu*            CreateMenu( bool, Menu* ) SAL_OVERRIDE;
-    virtual void                DestroyMenu( SalMenu* pMenu ) SAL_OVERRIDE;
-    virtual SalMenuItem*        CreateMenuItem( const SalItemParams* ) SAL_OVERRIDE;
-    virtual void                DestroyMenuItem( SalMenuItem* pItem ) SAL_OVERRIDE;
-    virtual SalTimer*           CreateSalTimer() SAL_OVERRIDE;
-    virtual void                AddToRecentDocumentList(const OUString& rFileUrl, const OUString& rMimeType, const OUString& rDocumentService) SAL_OVERRIDE;
+    virtual SalFrame*           CreateFrame( SalFrame* pParent, SalFrameStyleFlags nStyle ) override;
+    virtual SalFrame*           CreateChildFrame( SystemParentData* pParent, SalFrameStyleFlags nStyle ) override;
+    virtual SalObject*          CreateObject( SalFrame* pParent, SystemWindowData* pWindowData, bool bShow = true ) override;
+    virtual SalSystem*          CreateSalSystem() override;
+    virtual SalInfoPrinter*     CreateInfoPrinter(SalPrinterQueueInfo* pPrinterQueueInfo, ImplJobSetup* pJobSetup) override;
+    virtual SalPrinter*         CreatePrinter( SalInfoPrinter* pInfoPrinter ) override;
+    virtual SalMenu*            CreateMenu( bool, Menu* ) override;
+    virtual void                DestroyMenu( SalMenu* pMenu ) override;
+    virtual SalMenuItem*        CreateMenuItem( const SalItemParams* ) override;
+    virtual void                DestroyMenuItem( SalMenuItem* pItem ) override;
+    virtual SalTimer*           CreateSalTimer() override;
+    virtual void                AddToRecentDocumentList(const OUString& rFileUrl, const OUString& rMimeType, const OUString& rDocumentService) override;
     virtual SalVirtualDevice*   CreateVirtualDevice( SalGraphics*,
                                                      long &nDX, long &nDY,
-                                                     sal_uInt16 nBitCount,
-                                                     const SystemGraphicsData* ) SAL_OVERRIDE;
-    virtual SalBitmap*          CreateSalBitmap() SAL_OVERRIDE;
+                                                     DeviceFormat eFormat,
+                                                     const SystemGraphicsData* ) override;
+    virtual SalBitmap*          CreateSalBitmap() override;
 
-    virtual void                DoYield(bool bWait, bool bHandleAllCurrentEvents, sal_uLong nReleased) SAL_OVERRIDE;
-    virtual bool                AnyInput( VclInputFlags nType ) SAL_OVERRIDE;
+    virtual SalYieldResult      DoYield(bool bWait, bool bHandleAllCurrentEvents, sal_uLong nReleased) override;
+    virtual bool                AnyInput( VclInputFlags nType ) override;
 
-    virtual GenPspGraphics     *CreatePrintGraphics() SAL_OVERRIDE;
+    virtual GenPspGraphics     *CreatePrintGraphics() override;
 
-    virtual bool hasNativeFileSelection() const SAL_OVERRIDE { return true; }
+    virtual bool hasNativeFileSelection() const override { return true; }
 
-    virtual com::sun::star::uno::Reference< com::sun::star::ui::dialogs::XFilePicker2 >
-        createFilePicker( const com::sun::star::uno::Reference<
-                              com::sun::star::uno::XComponentContext >& ) SAL_OVERRIDE;
-    virtual com::sun::star::uno::Reference< com::sun::star::ui::dialogs::XFolderPicker2 >
-        createFolderPicker( const com::sun::star::uno::Reference<
-                                com::sun::star::uno::XComponentContext >& ) SAL_OVERRIDE;
+    virtual css::uno::Reference< css::ui::dialogs::XFilePicker2 >
+        createFilePicker( const css::uno::Reference< css::uno::XComponentContext >& ) override;
+    virtual css::uno::Reference< css::ui::dialogs::XFolderPicker2 >
+        createFolderPicker( const css::uno::Reference< css::uno::XComponentContext >& ) override;
 
 #if GTK_CHECK_VERSION(3,0,0)
-    virtual css::uno::Reference< css::uno::XInterface > CreateClipboard( const css::uno::Sequence< css::uno::Any >& i_rArguments ) SAL_OVERRIDE;
+    virtual css::uno::Reference< css::uno::XInterface > CreateClipboard( const css::uno::Sequence< css::uno::Any >& i_rArguments ) override;
 #endif
 
-    void                        RemoveTimer (SalTimer *pTimer);
+    virtual const cairo_font_options_t* GetCairoFontOptions() override;
 
-    // for managing a mirror of the in-flight un-dispatched gdk event queue
-    void                        addEvent( sal_uInt16 nMask );
-    void                        subtractEvent( sal_uInt16 nMask );
+    void                        RemoveTimer (SalTimer *pTimer);
 
     std::shared_ptr<vcl::unx::GtkPrintWrapper> getPrintWrapper() const;
 

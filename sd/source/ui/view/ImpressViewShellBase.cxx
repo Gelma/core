@@ -32,7 +32,6 @@
 
 namespace sd {
 
-TYPEINIT1(ImpressViewShellBase, ViewShellBase);
 
 // We have to expand the SFX_IMPL_VIEWFACTORY macro to call LateInit() after a
 // new ImpressViewShellBase object has been constructed.
@@ -88,7 +87,7 @@ void ImpressViewShellBase::Execute (SfxRequest& rRequest)
 
 void ImpressViewShellBase::InitializeFramework()
 {
-    ::com::sun::star::uno::Reference<com::sun::star::frame::XController>
+    css::uno::Reference<css::frame::XController>
         xController (GetController());
     sd::framework::ImpressModule::Initialize(xController);
 }

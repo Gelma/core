@@ -19,13 +19,11 @@
 
 #include <cppuhelper/factory.hxx>
 #include <cppuhelper/implementationentry.hxx>
-#include "module_dba.hxx"
 #include <osl/diagnose.h>
 #include "DatabaseDataProvider.hxx"
 #include "dbadllapi.hxx"
 
 #include <../dataaccess/databasecontext.hxx>
-#include <services.hxx>
 
 using namespace ::com::sun::star::uno;
 using namespace ::com::sun::star::lang;
@@ -37,34 +35,18 @@ namespace dba{
             &::dbaccess::DatabaseDataProvider::Create,
             &::dbaccess::DatabaseDataProvider::getImplementationName_Static,
             &::dbaccess::DatabaseDataProvider::getSupportedServiceNames_Static,
-            &cppu::createSingleComponentFactory, 0, 0
+            &cppu::createSingleComponentFactory, nullptr, 0
         },
 
         {
             &dbaccess::ODatabaseContext::Create,
             &dbaccess::ODatabaseContext::getImplementationName_static,
             &dbaccess::ODatabaseContext::getSupportedServiceNames_static,
-            &cppu::createOneInstanceComponentFactory, 0, 0
+            &cppu::createOneInstanceComponentFactory, nullptr, 0
         },
 
-        { 0, 0, 0, 0, 0, 0 }
+        { nullptr, nullptr, nullptr, nullptr, nullptr, 0 }
     };
-}
-
-// The prescribed C api must be complied with
-// It consists of three functions which must be exported by the module.
-extern "C" void SAL_CALL createRegistryInfo_DBA()
-{
-    static bool bInit = false;
-    if (!bInit)
-    {
-        createRegistryInfo_OCommandDefinition();
-        createRegistryInfo_OComponentDefinition();
-        createRegistryInfo_ODatabaseDocument();
-        createRegistryInfo_ODatabaseSource();
-        createRegistryInfo_DataAccessDescriptorFactory();
-        bInit = true;
-    }
 }
 
 extern "C" SAL_DLLPUBLIC_EXPORT void* SAL_CALL dba_component_getFactory(
@@ -72,17 +54,8 @@ extern "C" SAL_DLLPUBLIC_EXPORT void* SAL_CALL dba_component_getFactory(
                     void* pServiceManager,
                     void* pRegistryKey)
 {
-    createRegistryInfo_DBA();
-
-    Reference<XInterface> xRet(::dba::DbaModule::getInstance().getComponentFactory(
-        OUString::createFromAscii(pImplementationName)));
-
-    if (xRet.is())
-        xRet->acquire();
-    else
-        return cppu::component_getFactoryHelper(
+    return cppu::component_getFactoryHelper(
             pImplementationName, pServiceManager, pRegistryKey, dba::entries);
-    return xRet.get();
 };
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

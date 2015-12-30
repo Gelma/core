@@ -48,7 +48,6 @@
 #include <svx/dialmgr.hxx>
 #include <editeng/bulletitem.hxx>
 #include <svx/xtable.hxx>
-#include <svx/sxmsuitm.hxx>
 #include <editeng/borderline.hxx>
 #include <editeng/boxitem.hxx>
 #include <svx/xit.hxx>
@@ -85,6 +84,7 @@
 #include <svx/xlnclit.hxx>
 #include <svx/svditer.hxx>
 #include <svx/svdogrp.hxx>
+#include <svx/svdlayer.hxx>
 #include <tools/shl.hxx>
 #include <editeng/numitem.hxx>
 #include <editeng/editeng.hxx>
@@ -127,7 +127,7 @@ using namespace ::sd;
 void SdDrawDocument::CreateLayoutTemplates()
 {
     SdStyleSheetPool*       pSSPool = static_cast<SdStyleSheetPool*>(GetStyleSheetPool());
-    SfxStyleSheetBase*      pSheet = NULL;
+    SfxStyleSheetBase*      pSheet = nullptr;
     OUString                aHelpFile;
     OUString                aStdName(SD_RESSTR(STR_STANDARD_STYLESHEET_NAME));
 
@@ -253,7 +253,7 @@ void SdDrawDocument::CreateLayoutTemplates()
     // New BulletItem
     SdStyleSheetPool::PutNumBulletItem( pSheet, aBulletFont );
 
-    SfxItemSet* pISet = NULL;
+    SfxItemSet* pISet = nullptr;
 
     // Object with arrowhead
     aName = SD_RESSTR(STR_POOLSHEET_OBJWITHARROW);
@@ -489,7 +489,7 @@ void SdDrawDocument::CreateLayoutTemplates()
     pISet->Put(XLineEndItem(SVX_RESSTR(RID_SVXSTR_ARROW),::basegfx::B2DPolyPolygon(aArrow)));
     pISet->Put(XLineEndWidthItem(200));
     pISet->Put(XLineStyleItem(drawing::LineStyle_SOLID));
-    pISet->Put(makeSdrMeasureShowUnitItem(true));
+    pISet->Put(SdrYesNoItem(SDRATTR_MEASURESHOWUNIT, true));
 
     // Generate presentation templates for default layout.
     OUString aPrefix = SD_RESSTR(STR_LAYOUT_DEFAULT_NAME);
@@ -511,11 +511,11 @@ static void implCreateTableTemplate( const Reference< XNameContainer >& xTableFa
 {
     if( xTableFamily.is() ) try
     {
-        if( !xTableFamily->hasByName( OUString( rName ) ) )
+        if( !xTableFamily->hasByName( rName ) )
         {
             Reference< XSingleServiceFactory > xFactory( xTableFamily, UNO_QUERY_THROW );
             Reference< XNameReplace > xDefaultTableStyle( xFactory->createInstance(), UNO_QUERY_THROW );
-            xTableFamily->insertByName( OUString( rName ), Any( xDefaultTableStyle ) );
+            xTableFamily->insertByName( rName, Any( xDefaultTableStyle ) );
 
             xDefaultTableStyle->replaceByName( "body", rBody  );
             xDefaultTableStyle->replaceByName( "odd-rows" , rBanding );
@@ -535,7 +535,7 @@ static void implCreateTableTemplate( const Reference< XNameContainer >& xTableFa
 void SdDrawDocument::CreateDefaultCellStyles()
 {
     SdStyleSheetPool*       pSSPool = static_cast< SdStyleSheetPool* >(GetStyleSheetPool());
-    SfxStyleSheetBase*      pSheet = NULL;
+    SfxStyleSheetBase*      pSheet = nullptr;
     OUString                aHelpFile;
 
     Reference< XNameContainer > xTableFamily( pSSPool->getByName( "table" ), UNO_QUERY );
@@ -552,7 +552,6 @@ void SdDrawDocument::CreateDefaultCellStyles()
 
     Color    aNullCol(RGB_Color(COL_BLACK));
 
-    XDash     aNullDash;
     XGradient aNullGrad(aNullCol,RGB_Color(COL_WHITE));
               aNullGrad.SetStartIntens( 100 );
               aNullGrad.SetEndIntens( 100 );
@@ -731,10 +730,10 @@ void SdDrawDocument::StopOnlineSpelling()
     }
 
     delete mpOnlineSpellingIdle;
-    mpOnlineSpellingIdle = NULL;
+    mpOnlineSpellingIdle = nullptr;
 
     delete mpOnlineSpellingList;
-    mpOnlineSpellingList = NULL;
+    mpOnlineSpellingList = nullptr;
 }
 
 // Start OnlineSpelling in the background
@@ -825,7 +824,7 @@ void SdDrawDocument::FillOnlineSpellingList(SdPage* pPage)
 // OnlineSpelling in the background
 IMPL_LINK_NOARG_TYPED(SdDrawDocument, OnlineSpellingHdl, Idle *, void)
 {
-    if (mpOnlineSpellingList!=NULL
+    if (mpOnlineSpellingList!=nullptr
         && ( !mbOnlineSpell || mpOnlineSpellingList->hasMore()))
     {
         // Spell next object
@@ -833,7 +832,7 @@ IMPL_LINK_NOARG_TYPED(SdDrawDocument, OnlineSpellingHdl, Idle *, void)
 
         if (pObj)
         {
-            if (pObj->GetOutlinerParaObject() && pObj->ISA(SdrTextObj))
+            if (pObj->GetOutlinerParaObject() && dynamic_cast< const SdrTextObj *>( pObj ) !=  nullptr)
             {
                 // Spell text object
                 SpellObject(static_cast<SdrTextObj*>(pObj));
@@ -849,7 +848,7 @@ IMPL_LINK_NOARG_TYPED(SdDrawDocument, OnlineSpellingHdl, Idle *, void)
                 {
                     SdrObject* pSubObj = aGroupIter.Next();
 
-                    if (pSubObj->GetOutlinerParaObject() && pSubObj->ISA(SdrTextObj))
+                    if (pSubObj->GetOutlinerParaObject() && dynamic_cast< SdrTextObj *>( pSubObj ) !=  nullptr)
                     {
                         // Found a text object in a group object
                         SpellObject(static_cast<SdrTextObj*>(pSubObj));
@@ -870,7 +869,7 @@ IMPL_LINK_NOARG_TYPED(SdDrawDocument, OnlineSpellingHdl, Idle *, void)
         StopOnlineSpelling();
 
         delete mpOnlineSearchItem;
-        mpOnlineSearchItem = NULL;
+        mpOnlineSearchItem = nullptr;
     }
 }
 
@@ -967,7 +966,7 @@ IMPL_LINK_TYPED(SdDrawDocument, OnlineSpellEventHdl, EditStatus&, rEditStat, voi
 void SdDrawDocument::ImpOnlineSpellCallback(SpellCallbackInfo* pInfo, SdrObject* pObj, SdrOutliner* pOutl)
 {
     delete mpOnlineSearchItem;
-    mpOnlineSearchItem = NULL;
+    mpOnlineSearchItem = nullptr;
 
     SpellCallbackCommand nCommand = pInfo->nCommand;
 
@@ -975,7 +974,7 @@ void SdDrawDocument::ImpOnlineSpellCallback(SpellCallbackInfo* pInfo, SdrObject*
         // restart when add to dictionary takes place, too.
         || nCommand == SpellCallbackCommand::ADDTODICTIONARY)
     {
-        if(pObj && pOutl && pObj->ISA(SdrTextObj))
+        if(pObj && pOutl && dynamic_cast< const SdrTextObj *>( pObj ) !=  nullptr)
         {
             bool bModified(IsChanged());
             static_cast<SdrTextObj*>(pObj)->SetOutlinerParaObject(pOutl->CreateParaObject());
@@ -988,10 +987,9 @@ void SdDrawDocument::ImpOnlineSpellCallback(SpellCallbackInfo* pInfo, SdrObject*
         StartOnlineSpelling();
     }
     else if (nCommand == SpellCallbackCommand::STARTSPELLDLG)
-    {
-        SfxViewFrame::Current()->GetDispatcher()->Execute( SID_SPELL_DIALOG,
-            SfxCallMode::ASYNCHRON );
-    }
+        SfxViewFrame::Current()->GetDispatcher()->Execute( SID_SPELL_DIALOG, SfxCallMode::ASYNCHRON );
+    else if (nCommand == SpellCallbackCommand::AUTOCORRECT_OPTIONS)
+        SfxViewFrame::Current()->GetDispatcher()->Execute( SID_AUTO_CORRECT_DLG, SfxCallMode::ASYNCHRON );
 }
 
 // Replace the unambiguous names of the default layers by their names in the
@@ -1235,18 +1233,18 @@ void SdDrawDocument::SetTextDefaults() const
     pItemPool->SetPoolDefaultItem( aNumBulletItem );
 }
 
-::com::sun::star::text::WritingMode SdDrawDocument::GetDefaultWritingMode() const
+css::text::WritingMode SdDrawDocument::GetDefaultWritingMode() const
 {
-    const SfxPoolItem*                  pItem = ( pItemPool ? pItemPool->GetPoolDefaultItem( EE_PARA_WRITINGDIR ) : NULL );
-    ::com::sun::star::text::WritingMode eRet = ::com::sun::star::text::WritingMode_LR_TB;
+    const SfxPoolItem*                  pItem = ( pItemPool ? pItemPool->GetPoolDefaultItem( EE_PARA_WRITINGDIR ) : nullptr );
+    css::text::WritingMode eRet = css::text::WritingMode_LR_TB;
 
     if( pItem )
     {
         switch( static_cast<const SvxFrameDirectionItem&>( *pItem ).GetValue() )
         {
-            case( FRMDIR_HORI_LEFT_TOP ): eRet = ::com::sun::star::text::WritingMode_LR_TB; break;
-            case( FRMDIR_HORI_RIGHT_TOP ): eRet = ::com::sun::star::text::WritingMode_RL_TB; break;
-            case( FRMDIR_VERT_TOP_RIGHT ): eRet = ::com::sun::star::text::WritingMode_TB_RL; break;
+            case( FRMDIR_HORI_LEFT_TOP ): eRet = css::text::WritingMode_LR_TB; break;
+            case( FRMDIR_HORI_RIGHT_TOP ): eRet = css::text::WritingMode_RL_TB; break;
+            case( FRMDIR_VERT_TOP_RIGHT ): eRet = css::text::WritingMode_TB_RL; break;
 
             default:
                 OSL_FAIL( "Frame direction not supported yet" );
@@ -1257,16 +1255,16 @@ void SdDrawDocument::SetTextDefaults() const
     return eRet;
 }
 
-void SdDrawDocument::SetDefaultWritingMode(::com::sun::star::text::WritingMode eMode )
+void SdDrawDocument::SetDefaultWritingMode(css::text::WritingMode eMode )
 {
     if( pItemPool )
     {
         SvxFrameDirection nVal;
         switch( eMode )
         {
-        case ::com::sun::star::text::WritingMode_LR_TB: nVal = FRMDIR_HORI_LEFT_TOP; break;
-        case ::com::sun::star::text::WritingMode_RL_TB: nVal = FRMDIR_HORI_RIGHT_TOP; break;
-        case ::com::sun::star::text::WritingMode_TB_RL: nVal = FRMDIR_VERT_TOP_RIGHT; break;
+        case css::text::WritingMode_LR_TB: nVal = FRMDIR_HORI_LEFT_TOP; break;
+        case css::text::WritingMode_RL_TB: nVal = FRMDIR_HORI_RIGHT_TOP; break;
+        case css::text::WritingMode_TB_RL: nVal = FRMDIR_VERT_TOP_RIGHT; break;
         default:
             OSL_FAIL( "Frame direction not supported yet" );
             return;
@@ -1277,7 +1275,7 @@ void SdDrawDocument::SetDefaultWritingMode(::com::sun::star::text::WritingMode e
 
         SvxAdjustItem aAdjust( SVX_ADJUST_LEFT, EE_PARA_JUST );
 
-        if( eMode == ::com::sun::star::text::WritingMode_RL_TB )
+        if( eMode == css::text::WritingMode_RL_TB )
             aAdjust.SetEnumValue( SVX_ADJUST_RIGHT );
 
         pItemPool->SetPoolDefaultItem( aAdjust );
@@ -1323,7 +1321,7 @@ SdStyleSheetPool* SdDrawDocument::GetSdStyleSheetPool() const
 }
 
 ModifyGuard::ModifyGuard( SdDrawDocument* pDoc )
-: mpDocShell( 0 ), mpDoc( pDoc )
+: mpDocShell( nullptr ), mpDoc( pDoc )
 {
     init();
 }

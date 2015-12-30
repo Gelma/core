@@ -37,20 +37,44 @@
 
 #include <vector>
 
+#include <stdlib.h>
+
+class OpenGLFlushIdle : public Idle
+{
+    OpenGLSalGraphicsImpl *m_pImpl;
+public:
+    explicit OpenGLFlushIdle( OpenGLSalGraphicsImpl *pImpl )
+        : Idle( "gl idle swap" )
+        , m_pImpl( pImpl )
+    {
+        SetPriority( SchedulerPriority::HIGHEST );
+    }
+    virtual ~OpenGLFlushIdle()
+    {
+    }
+    virtual void Invoke() override
+    {
+        m_pImpl->doFlush();
+        Stop();
+    }
+};
+
 OpenGLSalGraphicsImpl::OpenGLSalGraphicsImpl(SalGraphics& rParent, SalGeometryProvider *pProvider)
-    : mpContext(0)
+    : mpContext(nullptr)
     , mrParent(rParent)
     , mpProvider(pProvider)
-    , mpFramebuffer(NULL)
-    , mpProgram(NULL)
+    , mpFramebuffer(nullptr)
+    , mpProgram(nullptr)
+    , mpFlush(new OpenGLFlushIdle(this))
     , mbUseScissor(false)
     , mbUseStencil(false)
-    , mbOffscreen(false)
     , mnLineColor(SALCOLOR_NONE)
     , mnFillColor(SALCOLOR_NONE)
 #ifdef DBG_UTIL
     , mProgramIsSolidColor(false)
 #endif
+    , mnDrawCount(0)
+    , mnDrawCountAtFlush(0)
     , mProgramSolidColor(SALCOLOR_NONE)
     , mProgramSolidTransparency(0.0)
 {
@@ -58,13 +82,18 @@ OpenGLSalGraphicsImpl::OpenGLSalGraphicsImpl(SalGraphics& rParent, SalGeometryPr
 
 OpenGLSalGraphicsImpl::~OpenGLSalGraphicsImpl()
 {
+    if( !IsOffscreen() && mnDrawCountAtFlush != mnDrawCount )
+        VCL_GL_INFO( "Destroying un-flushed on-screen graphics" );
+
+    delete mpFlush;
+
     ReleaseContext();
 }
 
 rtl::Reference<OpenGLContext> OpenGLSalGraphicsImpl::GetOpenGLContext()
 {
-    if( !AcquireContext() )
-        return NULL;
+    if( !AcquireContext(true) )
+        return nullptr;
     return mpContext;
 }
 
@@ -73,16 +102,15 @@ rtl::Reference<OpenGLContext> OpenGLSalGraphicsImpl::GetDefaultContext()
     return ImplGetDefaultWindow()->GetGraphics()->GetOpenGLContext();
 }
 
-bool OpenGLSalGraphicsImpl::AcquireContext( )
+bool OpenGLSalGraphicsImpl::AcquireContext( bool bForceCreate )
 {
     ImplSVData* pSVData = ImplGetSVData();
 
     // We always prefer to bind our VirtualDevice / offscreen graphics
     // to the current OpenGLContext - to avoid switching contexts.
-    if (mpContext.is() && mbOffscreen)
+    if (mpContext.is() && OpenGLContext::hasCurrent() && !mpContext->isCurrent())
     {
-        if (OpenGLContext::hasCurrent() && !mpContext->isCurrent())
-            mpContext.clear();
+        mpContext.clear();
     }
 
     if( mpContext.is() )
@@ -93,19 +121,28 @@ bool OpenGLSalGraphicsImpl::AcquireContext( )
         mpContext.clear();
     }
 
+    // We don't care what context we have - but not switching context
+    // is rather useful from a performance perspective.
     OpenGLContext *pContext = pSVData->maGDIData.mpLastContext;
     while( pContext )
     {
         // check if this context can be used by this SalGraphicsImpl instance
-        if( UseContext( pContext )  )
+        if( UseContext( pContext ) )
             break;
         pContext = pContext->mpPrevContext;
     }
 
-    if( pContext )
+    if( mpContext.is() )
         mpContext = pContext;
-    else
-        mpContext = mbOffscreen ? GetDefaultContext() : CreateWinContext();
+    else if( mpWindowContext.is() )
+        mpContext = mpWindowContext;
+    else if( bForceCreate && !IsOffscreen() )
+    {
+        mpWindowContext = CreateWinContext();
+        mpContext = mpWindowContext;
+    }
+    if( !mpContext.is() )
+        mpContext = GetDefaultContext();
 
     return mpContext.is();
 }
@@ -119,19 +156,20 @@ bool OpenGLSalGraphicsImpl::ReleaseContext()
 
 void OpenGLSalGraphicsImpl::Init()
 {
-    mbOffscreen = IsOffscreen();
+    // Our init phase is strange ::Init is called twice for vdevs.
+    // the first time around with a NULL geometry provider.
+    if( !mpProvider )
+        return;
 
     // check if we can simply re-use the same context
     if( mpContext.is() )
     {
-        if( !mpContext->isInitialized() ||
-            !UseContext( mpContext ) )
+        if( !UseContext( mpContext ) )
             ReleaseContext();
     }
 
-    // reset the offscreen texture
-    if( !mbOffscreen ||
-        maOffscreenTex.GetWidth()  != GetWidth() ||
+    // Always create the offscreen texture
+    if( maOffscreenTex.GetWidth()  != GetWidth() ||
         maOffscreenTex.GetHeight() != GetHeight() )
     {
         if( maOffscreenTex && // don't work to release empty textures
@@ -141,6 +179,13 @@ void OpenGLSalGraphicsImpl::Init()
             mpContext->ReleaseFramebuffer( maOffscreenTex );
         }
         maOffscreenTex = OpenGLTexture();
+        VCL_GL_INFO("::Init - re-size offscreen texture");
+    }
+
+    if( mpWindowContext.is() )
+    {
+        mpWindowContext->reset();
+        mpWindowContext.clear();
     }
 }
 
@@ -153,13 +198,19 @@ void OpenGLSalGraphicsImpl::DeInit()
     // let it know. Other eg. VirtualDevice contexts which have
     // references on and rely on this context continuing to work will
     // get a shiny new context in AcquireContext:: next PreDraw.
-    if( mpContext.is() && !IsOffscreen() )
-        mpContext->reset();
+    if( mpWindowContext.is() )
+    {
+        mpWindowContext->reset();
+        mpWindowContext.clear();
+    }
+    mpContext.clear();
 }
 
 void OpenGLSalGraphicsImpl::PreDraw()
 {
     OpenGLZone::enter();
+
+    mnDrawCount++;
 
     if( !AcquireContext() )
     {
@@ -170,13 +221,11 @@ void OpenGLSalGraphicsImpl::PreDraw()
     mpContext->makeCurrent();
     CHECK_GL_ERROR();
 
-    if( !mbOffscreen )
-        mpContext->AcquireDefaultFramebuffer();
-    else
-        CheckOffscreenTexture();
+    CheckOffscreenTexture();
     CHECK_GL_ERROR();
 
     glViewport( 0, 0, GetWidth(), GetHeight() );
+    CHECK_GL_ERROR();
     ImplInitClipRegion();
 
     CHECK_GL_ERROR();
@@ -184,22 +233,31 @@ void OpenGLSalGraphicsImpl::PreDraw()
 
 void OpenGLSalGraphicsImpl::PostDraw()
 {
-    if( !mbOffscreen && mpContext->mnPainting == 0 )
-        glFlush();
     if( mbUseScissor )
+    {
         glDisable( GL_SCISSOR_TEST );
+        CHECK_GL_ERROR();
+    }
     if( mbUseStencil )
+    {
         glDisable( GL_STENCIL_TEST );
+        CHECK_GL_ERROR();
+    }
     if( mpProgram )
     {
         mpProgram->Clean();
-        mpProgram = NULL;
+        mpProgram = nullptr;
 #ifdef DBG_UTIL
         mProgramIsSolidColor = false;
 #endif
     }
 
-    CHECK_GL_ERROR();
+    assert (maOffscreenTex);
+
+    // Always queue the flush.
+    if( !IsOffscreen() )
+        flush();
+
     OpenGLZone::leave();
 }
 
@@ -211,8 +269,9 @@ void OpenGLSalGraphicsImpl::ApplyProgramMatrices(float fPixelOffset)
 void OpenGLSalGraphicsImpl::freeResources()
 {
     // TODO Delete shaders, programs and textures if not shared
-    if( mbOffscreen && mpContext.is() && mpContext->isInitialized() )
+    if( mpContext.is() && mpContext->isInitialized() )
     {
+        VCL_GL_INFO( "freeResources" );
         mpContext->makeCurrent();
         mpContext->ReleaseFramebuffer( maOffscreenTex );
     }
@@ -222,12 +281,32 @@ void OpenGLSalGraphicsImpl::freeResources()
 void OpenGLSalGraphicsImpl::ImplSetClipBit( const vcl::Region& rClip, GLuint nMask )
 {
     glEnable( GL_STENCIL_TEST );
+
+    VCL_GL_INFO( "Adding complex clip / stencil" );
+    GLuint nStencil = maOffscreenTex.StencilId();
+    if( nStencil == 0 )
+    {
+        nStencil = maOffscreenTex.AddStencil();
+        glFramebufferRenderbuffer(
+            GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+            GL_RENDERBUFFER, nStencil );
+        CHECK_GL_ERROR();
+    }
+    // else - we associated the stencil in
+    //        AcquireFrameBuffer / AttachTexture
+
+    CHECK_GL_ERROR();
     glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );
+    CHECK_GL_ERROR();
     glStencilMask( nMask );
+    CHECK_GL_ERROR();
     glStencilFunc( GL_NEVER, nMask, 0xFF );
+    CHECK_GL_ERROR();
     glStencilOp( GL_REPLACE, GL_KEEP, GL_KEEP );
+    CHECK_GL_ERROR();
 
     glClear( GL_STENCIL_BUFFER_BIT );
+    CHECK_GL_ERROR();
     if( UseSolid( MAKE_SALCOLOR( 0xFF, 0xFF, 0xFF ) ) )
     {
         if( rClip.getRegionBand() )
@@ -237,9 +316,10 @@ void OpenGLSalGraphicsImpl::ImplSetClipBit( const vcl::Region& rClip, GLuint nMa
     }
 
     glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
+    CHECK_GL_ERROR();
     glStencilMask( 0x00 );
+    CHECK_GL_ERROR();
     glDisable( GL_STENCIL_TEST );
-
     CHECK_GL_ERROR();
 }
 
@@ -249,10 +329,11 @@ void OpenGLSalGraphicsImpl::ImplInitClipRegion()
     if( maClipRegion != mpContext->maClipRegion )
     {
         mpContext->maClipRegion = maClipRegion;
-        if( maClipRegion.IsRectangle() )
+        if( mbUseScissor )
         {
             Rectangle aRect( maClipRegion.GetBoundRect() );
             glScissor( aRect.Left(), GetHeight() - aRect.Bottom() - 1, aRect.GetWidth() + 1, aRect.GetHeight() + 1 );
+            CHECK_GL_ERROR();
         }
         else if( !maClipRegion.IsEmpty() )
         {
@@ -261,14 +342,17 @@ void OpenGLSalGraphicsImpl::ImplInitClipRegion()
     }
 
     if( mbUseScissor )
+    {
         glEnable( GL_SCISSOR_TEST );
+        CHECK_GL_ERROR();
+    }
     if( mbUseStencil )
     {
         glStencilFunc( GL_EQUAL, 1, 0x1 );
+        CHECK_GL_ERROR();
         glEnable( GL_STENCIL_TEST );
+        CHECK_GL_ERROR();
     }
-
-    CHECK_GL_ERROR();
 }
 
 const vcl::Region& OpenGLSalGraphicsImpl::getClipRegion() const
@@ -278,7 +362,7 @@ const vcl::Region& OpenGLSalGraphicsImpl::getClipRegion() const
 
 bool OpenGLSalGraphicsImpl::setClipRegion( const vcl::Region& rClip )
 {
-    VCL_GL_INFO( "vcl.opengl", "::setClipRegion " << rClip );
+    VCL_GL_INFO( "::setClipRegion " << rClip );
     maClipRegion = rClip;
 
     mbUseStencil = false;
@@ -294,7 +378,7 @@ bool OpenGLSalGraphicsImpl::setClipRegion( const vcl::Region& rClip )
 // set the clip region to empty
 void OpenGLSalGraphicsImpl::ResetClipRegion()
 {
-    VCL_GL_INFO( "vcl.opengl", "::ResetClipRegion" );
+    VCL_GL_INFO( "::ResetClipRegion" );
     maClipRegion.SetEmpty();
     mbUseScissor = false;
     mbUseStencil = false;
@@ -366,8 +450,29 @@ void OpenGLSalGraphicsImpl::SetROPFillColor( SalROPColor /*nROPColor*/ )
 
 bool OpenGLSalGraphicsImpl::CheckOffscreenTexture()
 {
+    bool bClearTexture = false;
+
+    VCL_GL_INFO( "Check Offscreen texture" );
+
+    // Always create the offscreen texture
+    if( maOffscreenTex )
+    {
+        if( maOffscreenTex.GetWidth()  != GetWidth() ||
+            maOffscreenTex.GetHeight() != GetHeight() )
+        {
+            mpContext->ReleaseFramebuffer( maOffscreenTex );
+            maOffscreenTex = OpenGLTexture();
+            VCL_GL_INFO( "re-size offscreen texture" );
+        }
+    }
+
     if( !maOffscreenTex )
+    {
+        VCL_GL_INFO( "create texture of size "
+                     << GetWidth() << " x " << GetHeight() );
         maOffscreenTex = OpenGLTexture( GetWidth(), GetHeight() );
+        bClearTexture = true;
+    }
 
     if( !maOffscreenTex.IsUnique() )
     {
@@ -384,7 +489,22 @@ bool OpenGLSalGraphicsImpl::CheckOffscreenTexture()
     else
     {
         mpFramebuffer = mpContext->AcquireFramebuffer( maOffscreenTex );
+        CHECK_GL_ERROR();
+
+        if( bClearTexture )
+        {
+            glDrawBuffer( GL_COLOR_ATTACHMENT0 );
+#if OSL_DEBUG_LEVEL > 0 // lets have some red debugging background.
+            GLfloat clearColor[4] = { 1.0, 0, 0, 0 };
+#else
+            GLfloat clearColor[4] = { 1.0, 1.0, 1.0, 0 };
+#endif
+            glClearBufferfv( GL_COLOR, 0, clearColor );
+            // FIXME: use glClearTexImage if we have it ?
+        }
     }
+
+    assert( maOffscreenTex );
 
     CHECK_GL_ERROR();
     return true;
@@ -392,13 +512,13 @@ bool OpenGLSalGraphicsImpl::CheckOffscreenTexture()
 
 bool OpenGLSalGraphicsImpl::UseProgram( const OUString& rVertexShader, const OUString& rFragmentShader, const OString& preamble )
 {
-    if( mpProgram != NULL )
+    if( mpProgram != nullptr )
         mpProgram->Clean();
     mpProgram = mpContext->UseProgram( rVertexShader, rFragmentShader, preamble );
 #ifdef DBG_UTIL
     mProgramIsSolidColor = false; // UseSolid() will set to true if needed
 #endif
-    return ( mpProgram != NULL );
+    return ( mpProgram != nullptr );
 }
 
 bool OpenGLSalGraphicsImpl::UseSolid( SalColor nColor, sal_uInt8 nTransparency )
@@ -477,7 +597,6 @@ void OpenGLSalGraphicsImpl::DrawPoint( long nX, long nY )
     ApplyProgramMatrices(0.5f);
     mpProgram->SetVertices( pPoint );
     glDrawArrays( GL_POINTS, 0, 1 );
-
     CHECK_GL_ERROR();
 }
 
@@ -495,7 +614,6 @@ void OpenGLSalGraphicsImpl::DrawLine( double nX1, double nY1, double nX2, double
     ApplyProgramMatrices(0.5f);
     mpProgram->SetVertices( pPoints );
     glDrawArrays( GL_LINES, 0, 2 );
-
     CHECK_GL_ERROR();
 }
 
@@ -517,8 +635,6 @@ void OpenGLSalGraphicsImpl::DrawLineAA( double nX1, double nY1, double nX2, doub
         return;
     }
     ImplDrawLineAA( nX1, nY1, nX2, nY2 );
-
-    CHECK_GL_ERROR();
 }
 
 void OpenGLSalGraphicsImpl::ImplDrawLineAA( double nX1, double nY1, double nX2, double nY2, bool edge )
@@ -655,7 +771,6 @@ void OpenGLSalGraphicsImpl::ImplDrawLineAA( double nX1, double nY1, double nX2, 
     mpProgram->SetTextureCoord( aTexCoord );
     mpProgram->SetVertices( vertices );
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-
     CHECK_GL_ERROR();
 }
 
@@ -692,6 +807,7 @@ void OpenGLSalGraphicsImpl::DrawConvexPolygon( sal_uInt32 nPoints, const SalPoin
     ApplyProgramMatrices();
     mpProgram->SetVertices( &aVertices[0] );
     glDrawArrays( GL_TRIANGLE_FAN, 0, nPoints );
+    CHECK_GL_ERROR();
 
     if( !blockAA && mrParent.getAntiAliasB2DDraw())
     {
@@ -715,8 +831,6 @@ void OpenGLSalGraphicsImpl::DrawConvexPolygon( sal_uInt32 nPoints, const SalPoin
             UseSolid( lastSolidColor, lastSolidTransparency );
         }
     }
-
-    CHECK_GL_ERROR();
 }
 
 void OpenGLSalGraphicsImpl::DrawConvexPolygon( const tools::Polygon& rPolygon, bool blockAA )
@@ -737,6 +851,7 @@ void OpenGLSalGraphicsImpl::DrawConvexPolygon( const tools::Polygon& rPolygon, b
     ApplyProgramMatrices();
     mpProgram->SetVertices( &aVertices[0] );
     glDrawArrays( GL_TRIANGLE_FAN, 0, nPoints );
+    CHECK_GL_ERROR();
 
     if( !blockAA && mrParent.getAntiAliasB2DDraw())
     {
@@ -760,8 +875,6 @@ void OpenGLSalGraphicsImpl::DrawConvexPolygon( const tools::Polygon& rPolygon, b
             UseSolid( lastSolidColor, lastSolidTransparency );
         }
     }
-
-    CHECK_GL_ERROR();
 }
 
 void OpenGLSalGraphicsImpl::DrawTrapezoid( const basegfx::B2DTrapezoid& trapezoid, bool blockAA )
@@ -789,6 +902,7 @@ void OpenGLSalGraphicsImpl::DrawTrapezoid( const basegfx::B2DTrapezoid& trapezoi
     ApplyProgramMatrices();
     mpProgram->SetVertices( &aVertices[0] );
     glDrawArrays( GL_TRIANGLE_FAN, 0, nPoints );
+    CHECK_GL_ERROR();
 
     if( !blockAA && mrParent.getAntiAliasB2DDraw())
     {
@@ -812,8 +926,6 @@ void OpenGLSalGraphicsImpl::DrawTrapezoid( const basegfx::B2DTrapezoid& trapezoi
             UseSolid( lastSolidColor, lastSolidTransparency );
         }
     }
-
-    CHECK_GL_ERROR();
 }
 
 void OpenGLSalGraphicsImpl::DrawRect( long nX, long nY, long nWidth, long nHeight )
@@ -842,27 +954,27 @@ void OpenGLSalGraphicsImpl::DrawRect( const Rectangle& rRect )
 
 void OpenGLSalGraphicsImpl::DrawPolygon( sal_uInt32 nPoints, const SalPoint* pPtAry )
 {
-    ::basegfx::B2DPolygon aPolygon;
+    basegfx::B2DPolygon aPolygon;
 
     for( sal_uInt32 i = 0; i < nPoints; i++ )
-        aPolygon.append( ::basegfx::B2DPoint( pPtAry[i].mnX, pPtAry[i].mnY ) );
+        aPolygon.append( basegfx::B2DPoint( pPtAry[i].mnX, pPtAry[i].mnY ) );
     aPolygon.setClosed( true );
 
-    if( ::basegfx::tools::isConvex( aPolygon ) )
+    if( basegfx::tools::isConvex( aPolygon ) )
     {
         if( nPoints > 2L )
             DrawConvexPolygon( nPoints, pPtAry );
     }
     else
     {
-        const ::basegfx::B2DPolyPolygon aPolyPolygon( aPolygon );
+        const basegfx::B2DPolyPolygon aPolyPolygon( aPolygon );
         DrawPolyPolygon( aPolyPolygon );
     }
 }
 
 void OpenGLSalGraphicsImpl::DrawPolyPolygon( const basegfx::B2DPolyPolygon& rPolyPolygon, bool blockAA )
 {
-    const ::basegfx::B2DPolyPolygon& aSimplePolyPolygon = ::basegfx::tools::solveCrossovers( rPolyPolygon );
+    const basegfx::B2DPolyPolygon& aSimplePolyPolygon = ::basegfx::tools::solveCrossovers( rPolyPolygon );
     basegfx::B2DTrapezoidVector aB2DTrapVector;
     basegfx::tools::trapezoidSubdivide( aB2DTrapVector, aSimplePolyPolygon );
     // draw tesselation result
@@ -904,7 +1016,6 @@ void OpenGLSalGraphicsImpl::DrawRegionBand( const RegionBand& rRegion )
     ApplyProgramMatrices();
     mpProgram->SetVertices( &aVertices[0] );
     glDrawArrays( GL_TRIANGLES, 0, aVertices.size() / 2 );
-
     CHECK_GL_ERROR();
 }
 
@@ -1026,9 +1137,8 @@ void OpenGLSalGraphicsImpl::DrawTransformedTexture(
     mpProgram->SetTextureCoord( aTexCoord );
     mpProgram->SetVertices( &aVertices[0] );
     glDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
-    mpProgram->Clean();
-
     CHECK_GL_ERROR();
+    mpProgram->Clean();
 }
 
 void OpenGLSalGraphicsImpl::DrawAlphaTexture( OpenGLTexture& rTexture, const SalTwoRect& rPosAry, bool bInverted, bool bPremultiplied )
@@ -1230,7 +1340,7 @@ void OpenGLSalGraphicsImpl::DrawRadialGradient( const Gradient& rGradient, const
 // draw --> LineColor and FillColor and RasterOp and ClipRegion
 void OpenGLSalGraphicsImpl::drawPixel( long nX, long nY )
 {
-    VCL_GL_INFO( "vcl.opengl", "::drawPixel" );
+    VCL_GL_INFO( "::drawPixel" );
     if( mnLineColor != SALCOLOR_NONE )
     {
         PreDraw();
@@ -1242,7 +1352,7 @@ void OpenGLSalGraphicsImpl::drawPixel( long nX, long nY )
 
 void OpenGLSalGraphicsImpl::drawPixel( long nX, long nY, SalColor nSalColor )
 {
-    VCL_GL_INFO( "vcl.opengl", "::drawPixel" );
+    VCL_GL_INFO( "::drawPixel" );
     if( nSalColor != SALCOLOR_NONE )
     {
         PreDraw();
@@ -1254,7 +1364,7 @@ void OpenGLSalGraphicsImpl::drawPixel( long nX, long nY, SalColor nSalColor )
 
 void OpenGLSalGraphicsImpl::drawLine( long nX1, long nY1, long nX2, long nY2 )
 {
-    VCL_GL_INFO( "vcl.opengl", "::drawLine" );
+    VCL_GL_INFO( "::drawLine" );
     if( mnLineColor != SALCOLOR_NONE )
     {
         PreDraw();
@@ -1266,7 +1376,7 @@ void OpenGLSalGraphicsImpl::drawLine( long nX1, long nY1, long nX2, long nY2 )
 
 void OpenGLSalGraphicsImpl::drawRect( long nX, long nY, long nWidth, long nHeight )
 {
-    VCL_GL_INFO( "vcl.opengl", "::drawRect" );
+    VCL_GL_INFO( "::drawRect" );
     PreDraw();
 
     if( UseSolid( mnFillColor ) )
@@ -1293,6 +1403,7 @@ void OpenGLSalGraphicsImpl::drawRect( long nX, long nY, long nWidth, long nHeigh
         ApplyProgramMatrices(0.5f);
         mpProgram->SetVertices(pPoints);
         glDrawArrays(GL_LINE_LOOP, 0, 4);
+        CHECK_GL_ERROR();
     }
 
     PostDraw();
@@ -1300,7 +1411,7 @@ void OpenGLSalGraphicsImpl::drawRect( long nX, long nY, long nWidth, long nHeigh
 
 void OpenGLSalGraphicsImpl::drawPolyLine( sal_uInt32 nPoints, const SalPoint* pPtAry )
 {
-    VCL_GL_INFO( "vcl.opengl", "::drawPolyLine" );
+    VCL_GL_INFO( "::drawPolyLine" );
 
     if( mnLineColor != SALCOLOR_NONE && nPoints > 1 )
     {
@@ -1313,7 +1424,7 @@ void OpenGLSalGraphicsImpl::drawPolyLine( sal_uInt32 nPoints, const SalPoint* pP
 
 void OpenGLSalGraphicsImpl::drawPolygon( sal_uInt32 nPoints, const SalPoint* pPtAry )
 {
-    VCL_GL_INFO( "vcl.opengl", "::drawPolygon" );
+    VCL_GL_INFO( "::drawPolygon" );
     if( nPoints == 0 )
         return;
     if( nPoints == 1 )
@@ -1341,7 +1452,7 @@ void OpenGLSalGraphicsImpl::drawPolygon( sal_uInt32 nPoints, const SalPoint* pPt
 
 void OpenGLSalGraphicsImpl::drawPolyPolygon( sal_uInt32 nPoly, const sal_uInt32* pPoints, PCONSTSALPOINT* pPtAry )
 {
-    VCL_GL_INFO( "vcl.opengl", "::drawPolyPolygon" );
+    VCL_GL_INFO( "::drawPolyPolygon" );
     if( nPoly <= 0 )
         return;
 
@@ -1376,9 +1487,9 @@ void OpenGLSalGraphicsImpl::drawPolyPolygon( sal_uInt32 nPoly, const sal_uInt32*
     PostDraw();
 }
 
-bool OpenGLSalGraphicsImpl::drawPolyPolygon( const ::basegfx::B2DPolyPolygon& rPolyPolygon, double fTransparency )
+bool OpenGLSalGraphicsImpl::drawPolyPolygon( const basegfx::B2DPolyPolygon& rPolyPolygon, double fTransparency )
 {
-    VCL_GL_INFO( "vcl.opengl", "::drawPolyPolygon trans " << fTransparency );
+    VCL_GL_INFO( "::drawPolyPolygon trans " << fTransparency );
     if( rPolyPolygon.count() <= 0 )
         return true;
 
@@ -1401,13 +1512,13 @@ bool OpenGLSalGraphicsImpl::drawPolyPolygon( const ::basegfx::B2DPolyPolygon& rP
 }
 
 bool OpenGLSalGraphicsImpl::drawPolyLine(
-            const ::basegfx::B2DPolygon& rPolygon,
+            const basegfx::B2DPolygon& rPolygon,
             double fTransparency,
-            const ::basegfx::B2DVector& rLineWidth,
+            const basegfx::B2DVector& rLineWidth,
             basegfx::B2DLineJoin eLineJoin,
-            com::sun::star::drawing::LineCap eLineCap)
+            css::drawing::LineCap eLineCap)
 {
-    VCL_GL_INFO( "vcl.opengl", "::drawPolyLine trans " << fTransparency );
+    VCL_GL_INFO( "::drawPolyLine trans " << fTransparency );
     if( mnLineColor == SALCOLOR_NONE )
         return true;
 
@@ -1461,7 +1572,7 @@ bool OpenGLSalGraphicsImpl::drawPolyLine(
     {
         for( sal_uInt32 i = 0; i < aAreaPolyPoly.count(); i++ )
         {
-            const ::basegfx::B2DPolyPolygon aOnePoly( aAreaPolyPoly.getB2DPolygon( i ) );
+            const basegfx::B2DPolyPolygon aOnePoly( aAreaPolyPoly.getB2DPolygon( i ) );
             DrawPolyPolygon( aOnePoly );
         }
     }
@@ -1502,7 +1613,7 @@ void OpenGLSalGraphicsImpl::copyArea(
             long nSrcWidth, long nSrcHeight,
             sal_uInt16 /*nFlags*/ )
 {
-    VCL_GL_INFO( "vcl.opengl", "::copyArea " << nSrcX << "," << nSrcY << " >> " << nDestX << "," << nDestY << " (" << nSrcWidth << "," << nSrcHeight << ")" );
+    VCL_GL_INFO( "::copyArea " << nSrcX << "," << nSrcY << " >> " << nDestX << "," << nDestY << " (" << nSrcWidth << "," << nSrcHeight << ")" );
     OpenGLTexture aTexture;
     SalTwoRect aPosAry(0, 0, nSrcWidth, nSrcHeight, nDestX, nDestY, nSrcWidth, nSrcHeight);
 
@@ -1518,7 +1629,7 @@ void OpenGLSalGraphicsImpl::copyArea(
 // CopyBits() --> pSrcGraphics == NULL, then CopyBits on same Graphics
 void OpenGLSalGraphicsImpl::DoCopyBits( const SalTwoRect& rPosAry, OpenGLSalGraphicsImpl& rImpl )
 {
-    VCL_GL_INFO( "vcl.opengl", "::copyBits" );
+    VCL_GL_INFO( "::copyBits" );
 
     if( &rImpl == this &&
         (rPosAry.mnSrcWidth == rPosAry.mnDestWidth) &&
@@ -1534,17 +1645,9 @@ void OpenGLSalGraphicsImpl::DoCopyBits( const SalTwoRect& rPosAry, OpenGLSalGrap
         return;
     }
 
-    if( rImpl.mbOffscreen )
-    {
-        PreDraw();
-        DrawTexture( rImpl.maOffscreenTex, rPosAry );
-        PostDraw();
-        return;
-    }
-
-    SAL_WARN( "vcl.opengl", "*** NOT IMPLEMENTED *** copyBits" );
-    // TODO: Copy from one FBO to the other (glBlitFramebuffer)
-    //       ie. copying from one visible window to another visible window
+    PreDraw();
+    DrawTexture( rImpl.maOffscreenTex, rPosAry );
+    PostDraw();
 }
 
 void OpenGLSalGraphicsImpl::drawBitmap( const SalTwoRect& rPosAry, const SalBitmap& rSalBitmap )
@@ -1552,10 +1655,12 @@ void OpenGLSalGraphicsImpl::drawBitmap( const SalTwoRect& rPosAry, const SalBitm
     // check that carefully only in the debug mode
     assert(dynamic_cast<const OpenGLSalBitmap*>(&rSalBitmap));
 
+    OpenGLZone aZone;
+
     const OpenGLSalBitmap& rBitmap = static_cast<const OpenGLSalBitmap&>(rSalBitmap);
     OpenGLTexture& rTexture = rBitmap.GetTexture();
 
-    VCL_GL_INFO( "vcl.opengl", "::drawBitmap" );
+    VCL_GL_INFO( "::drawBitmap" );
     PreDraw();
     DrawTexture( rTexture, rPosAry );
     PostDraw();
@@ -1566,12 +1671,17 @@ void OpenGLSalGraphicsImpl::drawBitmap(
             const SalBitmap& rSalBitmap,
             const SalBitmap& rMaskBitmap )
 {
+    assert(dynamic_cast<const OpenGLSalBitmap*>(&rSalBitmap));
+    assert(dynamic_cast<const OpenGLSalBitmap*>(&rMaskBitmap));
+
+    OpenGLZone aZone;
+
     const OpenGLSalBitmap& rBitmap = static_cast<const OpenGLSalBitmap&>(rSalBitmap);
     const OpenGLSalBitmap& rMask = static_cast<const OpenGLSalBitmap&>(rMaskBitmap);
     OpenGLTexture& rTexture( rBitmap.GetTexture() );
     OpenGLTexture& rMaskTex( rMask.GetTexture() );
 
-    VCL_GL_INFO( "vcl.opengl", "::drawBitmap with MASK" );
+    VCL_GL_INFO( "::drawBitmap with MASK" );
     PreDraw();
     DrawTextureWithMask( rTexture, rMaskTex, rPosAry );
     PostDraw();
@@ -1582,10 +1692,14 @@ void OpenGLSalGraphicsImpl::drawMask(
             const SalBitmap& rSalBitmap,
             SalColor nMaskColor )
 {
+    assert(dynamic_cast<const OpenGLSalBitmap*>(&rSalBitmap));
+
+    OpenGLZone aZone;
+
     const OpenGLSalBitmap& rBitmap = static_cast<const OpenGLSalBitmap&>(rSalBitmap);
     OpenGLTexture& rTexture( rBitmap.GetTexture() );
 
-    VCL_GL_INFO( "vcl.opengl", "::drawMask" );
+    VCL_GL_INFO( "::drawMask" );
     PreDraw();
     DrawMask( rTexture, nMaskColor, rPosAry );
     PostDraw();
@@ -1593,15 +1707,17 @@ void OpenGLSalGraphicsImpl::drawMask(
 
 SalBitmap* OpenGLSalGraphicsImpl::getBitmap( long nX, long nY, long nWidth, long nHeight )
 {
+    OpenGLZone aZone;
+
     OpenGLSalBitmap* pBitmap = new OpenGLSalBitmap;
-    VCL_GL_INFO( "vcl.opengl", "::getBitmap " << nX << "," << nY <<
+    VCL_GL_INFO( "::getBitmap " << nX << "," << nY <<
               " " << nWidth << "x" << nHeight );
     //TODO really needed?
     PreDraw();
     if( !pBitmap->Create( maOffscreenTex, nX, nY, nWidth, nHeight ) )
     {
         delete pBitmap;
-        pBitmap = NULL;
+        pBitmap = nullptr;
     }
     PostDraw();
     return pBitmap;
@@ -1614,9 +1730,9 @@ SalColor OpenGLSalGraphicsImpl::getPixel( long nX, long nY )
     PreDraw();
     nY = GetHeight() - nY - 1;
     glReadPixels( nX, nY, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
+    CHECK_GL_ERROR();
     PostDraw();
 
-    CHECK_GL_ERROR();
     return MAKE_SALCOLOR( pixel[0], pixel[1], pixel[2] );
 }
 
@@ -1683,15 +1799,22 @@ bool OpenGLSalGraphicsImpl::blendBitmap(
             const SalTwoRect& rPosAry,
             const SalBitmap& rSalBitmap )
 {
+    assert(dynamic_cast<const OpenGLSalBitmap*>(&rSalBitmap));
+
+    OpenGLZone aZone;
+
     const OpenGLSalBitmap& rBitmap = static_cast<const OpenGLSalBitmap&>(rSalBitmap);
     OpenGLTexture& rTexture( rBitmap.GetTexture() );
 
-    VCL_GL_INFO( "vcl.opengl", "::blendBitmap" );
+    VCL_GL_INFO( "::blendBitmap" );
     PreDraw();
     glEnable( GL_BLEND );
+    CHECK_GL_ERROR();
     glBlendFunc( GL_ZERO, GL_SRC_COLOR );
+    CHECK_GL_ERROR();
     DrawTexture( rTexture, rPosAry );
     glDisable( GL_BLEND );
+    CHECK_GL_ERROR();
     PostDraw();
     return true;
 }
@@ -1702,6 +1825,12 @@ bool OpenGLSalGraphicsImpl::blendAlphaBitmap(
             const SalBitmap& rSalMaskBitmap,
             const SalBitmap& rSalAlphaBitmap )
 {
+    assert(dynamic_cast<const OpenGLSalBitmap*>(&rSalSrcBitmap));
+    assert(dynamic_cast<const OpenGLSalBitmap*>(&rSalMaskBitmap));
+    assert(dynamic_cast<const OpenGLSalBitmap*>(&rSalAlphaBitmap));
+
+    OpenGLZone aZone;
+
     const OpenGLSalBitmap& rSrcBitmap = static_cast<const OpenGLSalBitmap&>(rSalSrcBitmap);
     const OpenGLSalBitmap& rMaskBitmap = static_cast<const OpenGLSalBitmap&>(rSalMaskBitmap);
     const OpenGLSalBitmap& rAlphaBitmap = static_cast<const OpenGLSalBitmap&>(rSalAlphaBitmap);
@@ -1709,7 +1838,7 @@ bool OpenGLSalGraphicsImpl::blendAlphaBitmap(
     OpenGLTexture& rMask( rMaskBitmap.GetTexture() );
     OpenGLTexture& rAlpha( rAlphaBitmap.GetTexture() );
 
-    VCL_GL_INFO( "vcl.opengl", "::blendAlphaBitmap" );
+    VCL_GL_INFO( "::blendAlphaBitmap" );
     PreDraw();
     DrawBlendedTexture( rTexture, rMask, rAlpha, rPosAry );
     PostDraw();
@@ -1733,12 +1862,17 @@ bool OpenGLSalGraphicsImpl::drawAlphaBitmap(
             const SalBitmap& rSalBitmap,
             const SalBitmap& rAlphaBitmap )
 {
+    assert(dynamic_cast<const OpenGLSalBitmap*>(&rSalBitmap));
+    assert(dynamic_cast<const OpenGLSalBitmap*>(&rAlphaBitmap));
+
+    OpenGLZone aZone;
+
     const OpenGLSalBitmap& rBitmap = static_cast<const OpenGLSalBitmap&>(rSalBitmap);
     const OpenGLSalBitmap& rAlpha = static_cast<const OpenGLSalBitmap&>(rAlphaBitmap);
     OpenGLTexture& rTexture( rBitmap.GetTexture() );
     OpenGLTexture& rAlphaTex( rAlpha.GetTexture() );
 
-    VCL_GL_INFO( "vcl.opengl", "::drawAlphaBitmap" );
+    VCL_GL_INFO( "::drawAlphaBitmap" );
     PreDraw();
     DrawTextureWithMask( rTexture, rAlphaTex, rPosAry );
     PostDraw();
@@ -1753,15 +1887,20 @@ bool OpenGLSalGraphicsImpl::drawTransformedBitmap(
             const SalBitmap& rSrcBitmap,
             const SalBitmap* pAlphaBitmap)
 {
+    assert(dynamic_cast<const OpenGLSalBitmap*>(&rSrcBitmap));
+    assert(dynamic_cast<const OpenGLSalBitmap*>(pAlphaBitmap));
+
+    OpenGLZone aZone;
+
     const OpenGLSalBitmap& rBitmap = static_cast<const OpenGLSalBitmap&>(rSrcBitmap);
     const OpenGLSalBitmap* pMaskBitmap = static_cast<const OpenGLSalBitmap*>(pAlphaBitmap);
     OpenGLTexture& rTexture( rBitmap.GetTexture() );
     OpenGLTexture aMask; // no texture
 
-    if( pMaskBitmap != NULL )
+    if( pMaskBitmap != nullptr )
         aMask = pMaskBitmap->GetTexture();
 
-    VCL_GL_INFO( "vcl.opengl", "::drawTransformedBitmap" );
+    VCL_GL_INFO( "::drawTransformedBitmap" );
     PreDraw();
     DrawTransformedTexture( rTexture, aMask, rNull, rX, rY );
     PostDraw();
@@ -1780,7 +1919,7 @@ bool OpenGLSalGraphicsImpl::drawAlphaRect(
                 long nWidth, long nHeight,
                 sal_uInt8 nTransparency )
 {
-    VCL_GL_INFO( "vcl.opengl", "::drawAlphaRect" );
+    VCL_GL_INFO( "::drawAlphaRect" );
     if( mnFillColor != SALCOLOR_NONE && nTransparency < 100 )
     {
         PreDraw();
@@ -1797,7 +1936,7 @@ bool OpenGLSalGraphicsImpl::drawGradient(const tools::PolyPolygon& rPolyPoly,
 {
     Rectangle aBoundRect( rPolyPoly.GetBoundRect() );
 
-    VCL_GL_INFO( "vcl.opengl", "::drawGradient" );
+    VCL_GL_INFO( "::drawGradient" );
 
     if( aBoundRect.IsEmpty() )
         return true;
@@ -1820,12 +1959,16 @@ bool OpenGLSalGraphicsImpl::drawGradient(const tools::PolyPolygon& rPolyPoly,
     if( mbUseStencil )
     {
         glEnable( GL_STENCIL_TEST );
+        CHECK_GL_ERROR();
         glStencilFunc( GL_EQUAL, 3, 0xFF );
+        CHECK_GL_ERROR();
     }
     else
     {
         glEnable( GL_STENCIL_TEST );
+        CHECK_GL_ERROR();
         glStencilFunc( GL_EQUAL, 2, 0xFF );
+        CHECK_GL_ERROR();
     }
 #endif
 
@@ -1854,27 +1997,142 @@ bool OpenGLSalGraphicsImpl::drawGradient(const tools::PolyPolygon& rPolyPoly,
 
 #if FIXME_BROKEN_STENCIL_FOR_GRADIENTS
     if( !mbUseStencil )
+    {
         glDisable( GL_STENCIL_TEST );
+        CHECK_GL_ERROR();
+    }
 #endif
     PostDraw();
 
-    CHECK_GL_ERROR();
     return true;
 }
 
-OpenGLContext *OpenGLSalGraphicsImpl::beginPaint()
+void OpenGLSalGraphicsImpl::flush()
 {
-    if( mbOffscreen || !AcquireContext() )
-        return NULL;
+    if( IsOffscreen() )
+        return;
+
+    if( !Application::IsInExecute() )
+    {
+        // otherwise nothing would trigger idle rendering
+        doFlush();
+    }
+    else if( !mpFlush->IsActive() )
+        mpFlush->Start();
+}
+
+void OpenGLSalGraphicsImpl::doFlush()
+{
+    if( IsOffscreen() )
+        return;
+
+    if( !maOffscreenTex )
+    {
+        VCL_GL_INFO( "flushAndSwap - odd no texture !" );
+        return;
+    }
+
+    if( mnDrawCountAtFlush == mnDrawCount )
+    {
+        VCL_GL_INFO( "eliding redundant flushAndSwap, no drawing since last!" );
+        return;
+    }
+
+    mnDrawCountAtFlush = mnDrawCount;
+
+    OpenGLZone aZone;
+
+    VCL_GL_INFO( "flushAndSwap" );
+
+    if( !mpWindowContext.is() )
+    {
+        VCL_GL_INFO( "late creation of window context" );
+        mpWindowContext = CreateWinContext();
+    }
+
+    assert( mpWindowContext.is() );
+
+    // Interesting ! -> this destroys a context [ somehow ] ...
+    mpWindowContext->makeCurrent();
+    CHECK_GL_ERROR();
+
+    VCL_GL_INFO( "flushAndSwap - acquire default frame buffer" );
+
+    mpWindowContext->AcquireDefaultFramebuffer();
+    glBindFramebuffer( GL_FRAMEBUFFER, 0 ); // FIXME: paranoid double check.
+    CHECK_GL_ERROR();
+
+    VCL_GL_INFO( "flushAndSwap - acquired default frame buffer" );
+
+    glDisable( GL_SCISSOR_TEST ); // FIXME: paranoia ...
+    CHECK_GL_ERROR();
+    glDisable( GL_STENCIL_TEST ); // FIXME: paranoia ...
+    CHECK_GL_ERROR();
+
+    glViewport( 0, 0, GetWidth(), GetHeight() );
+    CHECK_GL_ERROR();
+
+#if OSL_DEBUG_LEVEL > 0 // random background glClear
+    glClearColor((float)rand()/RAND_MAX, (float)rand()/RAND_MAX,
+                 (float)rand()/RAND_MAX, 1.0);
+#else
+    glClearColor(1.0, 1.0, 1.0, 1.0);
+#endif
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+    CHECK_GL_ERROR();
+
+    SalTwoRect aPosAry( 0, 0, maOffscreenTex.GetWidth(), maOffscreenTex.GetHeight(),
+                        0, 0, maOffscreenTex.GetWidth(), maOffscreenTex.GetHeight() );
+    VCL_GL_INFO( "Texture height " << maOffscreenTex.GetHeight() << " vs. window height " << GetHeight() );
+
+    OpenGLProgram *pProgram =
+        mpWindowContext->UseProgram( "textureVertexShader", "textureFragmentShader", "" );
+    if( !pProgram )
+        VCL_GL_INFO( "Can't compile simple copying shader !" );
     else
-        return mpContext.get();
-}
+    {
+        pProgram->Use(); // FIXME: paranoia ...
+        VCL_GL_INFO( "done paranoid re-use." );
+        pProgram->SetTexture( "sampler", maOffscreenTex );
+        maOffscreenTex.Bind(); // FIXME: paranoia ...
 
-bool OpenGLSalGraphicsImpl::IsForeignContext(const rtl::Reference<OpenGLContext> &xContext)
-{
-    // so far a blunt heuristic: vcl uses shiny new contexts.
-    return xContext->requestedLegacy();
-}
+        VCL_GL_INFO( "bound bits etc." );
 
+        GLfloat aTexCoord[8];
+        maOffscreenTex.GetCoord( aTexCoord, aPosAry );
+        pProgram->SetTextureCoord( aTexCoord );
+
+        long nX1( aPosAry.mnDestX );
+        long nY1( aPosAry.mnDestY );
+        long nX2( nX1 + aPosAry.mnDestWidth );
+        long nY2( nY1 + aPosAry.mnDestHeight );
+        const SalPoint aPoints[] = { { nX1, nY2 }, { nX1, nY1 },
+                                     { nX2, nY1 }, { nX2, nY2 }};
+
+        sal_uInt32 nPoints = 4;
+        std::vector<GLfloat> aVertices(nPoints * 2);
+        sal_uInt32 i, j;
+
+        for( i = 0, j = 0; i < nPoints; i++, j += 2 )
+        {
+            aVertices[j]   = GLfloat(aPoints[i].mnX);
+            aVertices[j+1] = GLfloat(aPoints[i].mnY);
+        }
+
+        pProgram->ApplyMatrix(GetWidth(), GetHeight(), 0.0);
+        pProgram->SetVertices( &aVertices[0] );
+        glDrawArrays( GL_TRIANGLE_FAN, 0, nPoints );
+
+        pProgram->Clean();
+
+        glBindTexture( GL_TEXTURE_2D, 0 );
+
+        static bool bNoSwap = getenv("SAL_GL_NO_SWAP");
+        if (!bNoSwap)
+            mpWindowContext->swapBuffers();
+    }
+
+    VCL_GL_INFO( "flushAndSwap - end." );
+}
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

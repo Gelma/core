@@ -18,7 +18,6 @@
  */
 
 
-#define COMPHELPER_SERVICEDECL_COMPONENT_HELPER_MAX_ARGS 12
 #include <comphelper/servicedecl.hxx>
 
 using namespace com::sun::star;
@@ -74,18 +73,18 @@ extern "C" {
 SAL_DLLPUBLIC_EXPORT void * SAL_CALL deployment_component_getFactory(
     sal_Char const * pImplName, void *, void *)
 {
-    return component_getFactoryHelper(
+    return sdecl::component_getFactoryHelper(
         pImplName,
-        dp_registry::backend::configuration::serviceDecl,
-        dp_registry::backend::component::serviceDecl,
-        dp_registry::backend::help::serviceDecl,
-        dp_registry::backend::script::serviceDecl,
-        dp_registry::backend::sfwk::serviceDecl,
-        dp_registry::backend::executable::serviceDecl,
-        dp_manager::factory::serviceDecl,
-        dp_log::serviceDecl,
-        dp_info::serviceDecl,
-        dp_manager::serviceDecl);
+        {&dp_registry::backend::configuration::serviceDecl,
+         &dp_registry::backend::component::serviceDecl,
+         &dp_registry::backend::help::serviceDecl,
+         &dp_registry::backend::script::serviceDecl,
+         &dp_registry::backend::sfwk::serviceDecl,
+         &dp_registry::backend::executable::serviceDecl,
+         &dp_manager::factory::serviceDecl,
+         &dp_log::serviceDecl,
+         &dp_info::serviceDecl,
+         &dp_manager::serviceDecl});
 }
 
 } // extern "C"

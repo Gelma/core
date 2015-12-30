@@ -20,10 +20,11 @@
 #include "svx/EnhancedCustomShapeTypeNames.hxx"
 #include <osl/mutex.hxx>
 #include <unordered_map>
+#include <memory>
 
 typedef std::unordered_map< const char*, MSO_SPT, rtl::CStringHash, rtl::CStringEqual> TypeNameHashMap;
 
-static TypeNameHashMap* pHashMap = NULL;
+static TypeNameHashMap* pHashMap = nullptr;
 static ::osl::Mutex& getHashMapMutex()
 {
     static osl::Mutex s_aHashMapProtection;
@@ -288,12 +289,11 @@ MSO_SPT EnhancedCustomShapeTypeNames::Get( const OUString& rShapeType )
     }
     MSO_SPT eRetValue = mso_sptNil;
     int i, nLen = rShapeType.getLength();
-    char* pBuf = new char[ nLen + 1 ];
+    std::unique_ptr<char[]> pBuf(new char[ nLen + 1 ]);
     for ( i = 0; i < nLen; i++ )
         pBuf[ i ] = (char)rShapeType[ i ];
     pBuf[ i ] = 0;
-    TypeNameHashMap::iterator aHashIter( pHashMap->find( pBuf ) );
-    delete[] pBuf;
+    TypeNameHashMap::iterator aHashIter( pHashMap->find( pBuf.get() ) );
     if ( aHashIter != pHashMap->end() )
         eRetValue = (*aHashIter).second;
     return eRetValue;
@@ -308,7 +308,7 @@ OUString EnhancedCustomShapeTypeNames::Get( const MSO_SPT eShapeType )
 
 typedef std::unordered_map< const char*, const char*, rtl::CStringHash, rtl::CStringEqual> TypeACCNameHashMap;
 
-static TypeACCNameHashMap* pACCHashMap = NULL;
+static TypeACCNameHashMap* pACCHashMap = nullptr;
 struct ACCNameTypeTable
 {
     const char* pS;
@@ -544,12 +544,11 @@ OUString EnhancedCustomShapeTypeNames::GetAccName( const OUString& rShapeType )
     }
     OUString sRetValue;
     int i, nLen = rShapeType.getLength();
-    char* pBuf = new char[ nLen + 1 ];
+    std::unique_ptr<char[]> pBuf(new char[ nLen + 1 ]);
     for ( i = 0; i < nLen; i++ )
         pBuf[ i ] = (char)rShapeType[ i ];
     pBuf[ i ] = 0;
-    TypeACCNameHashMap::iterator aHashIter( pACCHashMap->find( pBuf ) );
-    delete[] pBuf;
+    TypeACCNameHashMap::iterator aHashIter( pACCHashMap->find( pBuf.get() ) );
     if ( aHashIter != pACCHashMap->end() )
         sRetValue = OUString::createFromAscii( (*aHashIter).second );
     return sRetValue;

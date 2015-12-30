@@ -26,6 +26,7 @@
 #include <PostItMgr.hxx>
 
 #include <SidebarTxtControl.hxx>
+#include <SidebarScrollBar.hxx>
 #include <AnchorOverlayObject.hxx>
 #include <ShadowOverlayObject.hxx>
 #include <OverlayRanges.hxx>
@@ -80,6 +81,70 @@
 #include <drawinglayer/processor2d/processorfromoutputdevice.hxx>
 #include <drawinglayer/primitive2d/shadowprimitive2d.hxx>
 #include <memory>
+#include <comphelper/lok.hxx>
+#include <IDocumentDrawModelAccess.hxx>
+#include <drawdoc.hxx>
+
+namespace
+{
+
+/// Translate absolute <-> relative twips: LOK wants absolute coordinates as output and gives absolute coordinates as input.
+void lcl_translateTwips(vcl::Window& rParent, vcl::Window& rChild, MouseEvent* pMouseEvent)
+{
+    // Set map mode, so that callback payloads will contain absolute coordinates instead of relative ones.
+    Point aOffset(rChild.GetOutOffXPixel() - rParent.GetOutOffXPixel(), rChild.GetOutOffYPixel() - rParent.GetOutOffYPixel());
+    if (!rChild.IsMapModeEnabled())
+    {
+        MapMode aMapMode(rChild.GetMapMode());
+        aMapMode.SetMapUnit(MAP_TWIP);
+        aMapMode.SetScaleX(rParent.GetMapMode().GetScaleX());
+        aMapMode.SetScaleY(rParent.GetMapMode().GetScaleY());
+        rChild.SetMapMode(aMapMode);
+        rChild.EnableMapMode();
+    }
+    aOffset = rChild.PixelToLogic(aOffset);
+    MapMode aMapMode(rChild.GetMapMode());
+    aMapMode.SetOrigin(aOffset);
+    aMapMode.SetMapUnit(rParent.GetMapMode().GetMapUnit());
+    rChild.SetMapMode(aMapMode);
+    rChild.EnableMapMode(false);
+
+    if (pMouseEvent)
+    {
+        // Set event coordinates, so they contain relative coordinates instead of absolute ones.
+        Point aPos = pMouseEvent->GetPosPixel();
+        aPos.Move(-aOffset.getX(), -aOffset.getY());
+        MouseEvent aMouseEvent(aPos, pMouseEvent->GetClicks(), pMouseEvent->GetMode(), pMouseEvent->GetButtons(), pMouseEvent->GetModifier());
+        *pMouseEvent = aMouseEvent;
+    }
+}
+
+/// Decide which one from the children of rParent should get rMouseEvent.
+vcl::Window* lcl_getHitWindow(sw::sidebarwindows::SwSidebarWin& rParent, const MouseEvent& rMouseEvent)
+{
+    vcl::Window* pRet = nullptr;
+
+    rParent.EditWin().Push(PushFlags::MAPMODE);
+    rParent.EditWin().EnableMapMode();
+    for (sal_Int16 i = rParent.GetChildCount() - 1; i >= 0; --i)
+    {
+        vcl::Window* pChild = rParent.GetChild(i);
+
+        Point aPosition(rParent.GetPosPixel());
+        aPosition.Move(pChild->GetPosPixel().getX(), pChild->GetPosPixel().getY());
+        Size aSize(rParent.GetSizePixel());
+        Rectangle aRectangleLogic(rParent.EditWin().PixelToLogic(aPosition), rParent.EditWin().PixelToLogic(aSize));
+        if (aRectangleLogic.IsInside(rMouseEvent.GetPosPixel()))
+        {
+            pRet = pChild;
+            break;
+        }
+    }
+    rParent.EditWin().Pop();
+    return pRet;
+}
+
+}
 
 namespace sw { namespace sidebarwindows {
 
@@ -98,17 +163,17 @@ SwSidebarWin::SwSidebarWin(SwEditWin& rEditWin,
     , mrMgr(aMgr)
     , mrView(rEditWin.GetView())
     , nFlags(aBits)
-    , mnEventId(0)
-    , mpOutlinerView(0)
-    , mpOutliner(0)
-    , mpSidebarTextControl(0)
-    , mpVScrollbar(0)
-    , mpMetadataAuthor(0)
-    , mpMetadataDate(0)
-    , mpMenuButton(0)
-    , mpAnchor(NULL)
-    , mpShadow(NULL)
-    , mpTextRangeOverlay(NULL)
+    , mnEventId(nullptr)
+    , mpOutlinerView(nullptr)
+    , mpOutliner(nullptr)
+    , mpSidebarTextControl(nullptr)
+    , mpVScrollbar(nullptr)
+    , mpMetadataAuthor(nullptr)
+    , mpMetadataDate(nullptr)
+    , mpMenuButton(nullptr)
+    , mpAnchor(nullptr)
+    , mpShadow(nullptr)
+    , mpTextRangeOverlay(nullptr)
     , mColorAnchor()
     , mColorDark()
     , mColorLight()
@@ -122,7 +187,7 @@ SwSidebarWin::SwSidebarWin(SwEditWin& rEditWin,
     , mbReadonly(false)
     , mbIsFollow(false)
     , mrSidebarItem(rSidebarItem)
-    , mpAnchorFrm(rSidebarItem.maLayoutInfo.mpAnchorFrm)
+    , mpAnchorFrame(rSidebarItem.maLayoutInfo.mpAnchorFrame)
 {
     mpShadow = ShadowOverlayObject::CreateShadowOverlayObject( mrView );
     if ( mpShadow )
@@ -130,7 +195,7 @@ SwSidebarWin::SwSidebarWin(SwEditWin& rEditWin,
         mpShadow->setVisible(false);
     }
 
-    mrMgr.ConnectSidebarWinToFrm( *(mrSidebarItem.maLayoutInfo.mpAnchorFrm),
+    mrMgr.ConnectSidebarWinToFrame( *(mrSidebarItem.maLayoutInfo.mpAnchorFrame),
                                   mrSidebarItem.GetFormatField(),
                                   *this );
 }
@@ -145,7 +210,7 @@ void SwSidebarWin::dispose()
     if (IsDisposed())
         return;
 
-    mrMgr.DisconnectSidebarWinFromFrm( *(mrSidebarItem.maLayoutInfo.mpAnchorFrm),
+    mrMgr.DisconnectSidebarWinFromFrame( *(mrSidebarItem.maLayoutInfo.mpAnchorFrame),
                                        *this );
 
     Disable();
@@ -154,7 +219,7 @@ void SwSidebarWin::dispose()
     {
         if ( mpOutlinerView )
         {
-            mpOutlinerView->SetWindow( 0 );
+            mpOutlinerView->SetWindow( nullptr );
         }
     }
     mpSidebarTextControl.disposeAndClear();
@@ -162,13 +227,13 @@ void SwSidebarWin::dispose()
     if ( mpOutlinerView )
     {
         delete mpOutlinerView;
-        mpOutlinerView = 0;
+        mpOutlinerView = nullptr;
     }
 
     if (mpOutliner)
     {
         delete mpOutliner;
-        mpOutliner = 0;
+        mpOutliner = nullptr;
     }
 
     if (mpMetadataAuthor)
@@ -192,13 +257,13 @@ void SwSidebarWin::dispose()
     RemoveEventListener( LINK( this, SwSidebarWin, WindowEventListener ) );
 
     AnchorOverlayObject::DestroyAnchorOverlayObject( mpAnchor );
-    mpAnchor = NULL;
+    mpAnchor = nullptr;
 
     ShadowOverlayObject::DestroyShadowOverlayObject( mpShadow );
-    mpShadow = NULL;
+    mpShadow = nullptr;
 
     delete mpTextRangeOverlay;
-    mpTextRangeOverlay = NULL;
+    mpTextRangeOverlay = nullptr;
 
     mpMenuButton.disposeAndClear();
 
@@ -230,8 +295,89 @@ void SwSidebarWin::Paint(vcl::RenderContext& rRenderContext, const Rectangle& rR
                              Size(GetMetaButtonAreaWidth(),
                                   mpMetadataAuthor->GetSizePixel().Height() + mpMetadataDate->GetSizePixel().Height()));
 
-        rRenderContext.DrawRect(PixelToLogic(aRectangle));
+        if (comphelper::LibreOfficeKit::isActive())
+            aRectangle = rRect;
+        else
+            aRectangle = PixelToLogic(aRectangle);
+        rRenderContext.DrawRect(aRectangle);
     }
+}
+
+void SwSidebarWin::PaintTile(vcl::RenderContext& rRenderContext, const Rectangle& rRect)
+{
+    Paint(rRenderContext, rRect);
+
+    for (sal_uInt16 i = 0; i < GetChildCount(); ++i)
+    {
+        vcl::Window* pChild = GetChild(i);
+
+        // No point in showing this button till click on it are not handled.
+        if (pChild == mpMenuButton.get())
+            continue;
+
+        if (!pChild->IsVisible())
+            continue;
+
+        rRenderContext.Push(PushFlags::MAPMODE);
+        Point aOffset(PixelToLogic(pChild->GetPosPixel()));
+        MapMode aMapMode(rRenderContext.GetMapMode());
+        aMapMode.SetOrigin(aMapMode.GetOrigin() + aOffset);
+        rRenderContext.SetMapMode(aMapMode);
+
+        bool bPopChild = false;
+        if (pChild->GetMapMode().GetMapUnit() != rRenderContext.GetMapMode().GetMapUnit())
+        {
+            // This is needed for the scrollbar that has its map unit in pixels.
+            pChild->Push(PushFlags::MAPMODE);
+            bPopChild = true;
+            pChild->EnableMapMode();
+            aMapMode = pChild->GetMapMode();
+            aMapMode.SetMapUnit(rRenderContext.GetMapMode().GetMapUnit());
+            aMapMode.SetScaleX(rRenderContext.GetMapMode().GetScaleX());
+            aMapMode.SetScaleY(rRenderContext.GetMapMode().GetScaleY());
+            pChild->SetMapMode(aMapMode);
+        }
+
+        pChild->Paint(rRenderContext, rRect);
+
+        if (bPopChild)
+            pChild->Pop();
+        rRenderContext.Pop();
+    }
+
+    const drawinglayer::geometry::ViewInformation2D aViewInformation;
+    std::unique_ptr<drawinglayer::processor2d::BaseProcessor2D> pProcessor(drawinglayer::processor2d::createBaseProcessor2DFromOutputDevice(rRenderContext, aViewInformation));
+
+    // drawinglayer sets the map mode to pixels, not needed here.
+    rRenderContext.Pop();
+    // Work in document-global twips.
+    rRenderContext.Pop();
+    if (mpAnchor)
+        pProcessor->process(mpAnchor->getOverlayObjectPrimitive2DSequence());
+    if (mpTextRangeOverlay)
+        pProcessor->process(mpTextRangeOverlay->getOverlayObjectPrimitive2DSequence());
+    rRenderContext.Push(PushFlags::NONE);
+    pProcessor.reset();
+    rRenderContext.Push(PushFlags::NONE);
+}
+
+bool SwSidebarWin::IsHitWindow(const Point& rPointLogic)
+{
+    Rectangle aRectangleLogic(EditWin().PixelToLogic(GetPosPixel()), EditWin().PixelToLogic(GetSizePixel()));
+    return aRectangleLogic.IsInside(rPointLogic);
+}
+
+void SwSidebarWin::SetCursorLogicPosition(const Point& rPosition, bool bPoint, bool bClearMark)
+{
+    mpSidebarTextControl->Push(PushFlags::MAPMODE);
+    MouseEvent aMouseEvent(rPosition);
+    lcl_translateTwips(EditWin(), *mpSidebarTextControl, &aMouseEvent);
+    Point aPosition(aMouseEvent.GetPosPixel());
+
+    EditView& rEditView = GetOutlinerView()->GetEditView();
+    rEditView.SetCursorLogicPosition(aPosition, bPoint, bClearMark);
+
+    mpSidebarTextControl->Pop();
 }
 
 void SwSidebarWin::Draw(OutputDevice* pDev, const Point& rPt, const Size& rSz, DrawFlags nInFlags)
@@ -299,6 +445,61 @@ void SwSidebarWin::Draw(OutputDevice* pDev, const Point& rPt, const Size& rSz, D
         mpMetadataDate->SetText(sOrigText);
         mpMetadataDate->SetControlFont( aOrigFont );
         mpMetadataDate->SetControlBackground( aOrigBg );
+    }
+}
+
+void SwSidebarWin::KeyInput(const KeyEvent& rKeyEvent)
+{
+    if (mpSidebarTextControl)
+    {
+        mpSidebarTextControl->Push(PushFlags::MAPMODE);
+        lcl_translateTwips(EditWin(), *mpSidebarTextControl, nullptr);
+
+        mpSidebarTextControl->KeyInput(rKeyEvent);
+
+        mpSidebarTextControl->Pop();
+    }
+}
+
+void SwSidebarWin::MouseMove(const MouseEvent& rMouseEvent)
+{
+    if (vcl::Window* pHit = lcl_getHitWindow(*this, rMouseEvent))
+    {
+        pHit->Push(PushFlags::MAPMODE);
+        MouseEvent aMouseEvent(rMouseEvent);
+        lcl_translateTwips(EditWin(), *pHit, &aMouseEvent);
+
+        pHit->MouseMove(aMouseEvent);
+
+        pHit->Pop();
+    }
+}
+
+void SwSidebarWin::MouseButtonDown(const MouseEvent& rMouseEvent)
+{
+    if (vcl::Window* pHit = lcl_getHitWindow(*this, rMouseEvent))
+    {
+        pHit->Push(PushFlags::MAPMODE);
+        MouseEvent aMouseEvent(rMouseEvent);
+        lcl_translateTwips(EditWin(), *pHit, &aMouseEvent);
+
+        pHit->MouseButtonDown(aMouseEvent);
+
+        pHit->Pop();
+    }
+}
+
+void SwSidebarWin::MouseButtonUp(const MouseEvent& rMouseEvent)
+{
+    if (vcl::Window* pHit = lcl_getHitWindow(*this, rMouseEvent))
+    {
+        pHit->Push(PushFlags::MAPMODE);
+        MouseEvent aMouseEvent(rMouseEvent);
+        lcl_translateTwips(EditWin(), *pHit, &aMouseEvent);
+
+        pHit->MouseButtonUp(aMouseEvent);
+
+        pHit->Pop();
     }
 }
 
@@ -410,8 +611,19 @@ void SwSidebarWin::InitControls()
 
     mpOutlinerView->SetAttribs(DefaultItem());
 
+    if (comphelper::LibreOfficeKit::isActive())
+    {
+        // If there is a callback already registered, inform the new outliner view about it.
+        SwDrawModel* pDrawModel = mrView.GetWrtShellPtr()->getIDocumentDrawModelAccess().GetDrawModel();
+        LibreOfficeKitCallback pCallback = nullptr;
+        void* pData = nullptr;
+        pDrawModel->getLibreOfficeKitCallback(pCallback, pData);
+        mpOutlinerView->setTiledRendering(comphelper::LibreOfficeKit::isActive());
+        mpOutlinerView->registerLibreOfficeKitCallback(pCallback, pData);
+    }
+
     //create Scrollbars
-    mpVScrollbar = VclPtr<ScrollBar>::Create(this, WB_3DLOOK |WB_VSCROLL|WB_DRAG);
+    mpVScrollbar = VclPtr<SidebarScrollBar>::Create(*this, WB_3DLOOK |WB_VSCROLL|WB_DRAG, mrView);
     mpVScrollbar->EnableNativeWidget(false);
     mpVScrollbar->EnableRTL( false );
     mpVScrollbar->SetScrollHdl(LINK(this, SwSidebarWin, ScrollHdl));
@@ -505,11 +717,12 @@ void SwSidebarWin::Rescale()
     mpOutliner->SetRefMapMode( aMode );
     SetMapMode( aMode );
     mpSidebarTextControl->SetMapMode( aMode );
+    const Fraction& rFraction = mrView.GetWrtShellPtr()->GetOut()->GetMapMode().GetScaleY();
     if ( mpMetadataAuthor )
     {
         vcl::Font aFont( mpMetadataAuthor->GetSettings().GetStyleSettings().GetFieldFont() );
         sal_Int32 nHeight = aFont.GetHeight();
-        nHeight = nHeight * aMode.GetScaleY().GetNumerator() / aMode.GetScaleY().GetDenominator();
+        nHeight = nHeight * rFraction.GetNumerator() / rFraction.GetDenominator();
         aFont.SetHeight( nHeight );
         mpMetadataAuthor->SetControlFont( aFont );
     }
@@ -517,7 +730,7 @@ void SwSidebarWin::Rescale()
     {
         vcl::Font aFont( mpMetadataDate->GetSettings().GetStyleSettings().GetFieldFont() );
         sal_Int32 nHeight = aFont.GetHeight();
-        nHeight = nHeight * aMode.GetScaleY().GetNumerator() / aMode.GetScaleY().GetDenominator();
+        nHeight = nHeight * rFraction.GetNumerator() / rFraction.GetDenominator();
         aFont.SetHeight( nHeight );
         mpMetadataDate->SetControlFont( aFont );
     }
@@ -531,7 +744,24 @@ void SwSidebarWin::SetPosAndSize()
     {
         bChange = true;
         SetSizePixel(mPosSize.GetSize());
+
+        if (comphelper::LibreOfficeKit::isActive())
+        {
+            // Position is not yet set at VCL level, but the map mode should
+            // contain the right origin to emit the correct cursor position.
+            mpSidebarTextControl->Push(PushFlags::MAPMODE);
+            Point aOffset(mPosSize.Left(), mPosSize.Top());
+            aOffset = PixelToLogic(aOffset);
+            MapMode aMapMode(mpSidebarTextControl->GetMapMode());
+            aMapMode.SetOrigin(aOffset);
+            mpSidebarTextControl->SetMapMode(aMapMode);
+            mpSidebarTextControl->EnableMapMode(false);
+        }
+
         DoResize();
+
+        if (comphelper::LibreOfficeKit::isActive())
+            mpSidebarTextControl->Pop();
     }
 
     if (GetPosPixel().X() != mPosSize.TopLeft().X() || (std::abs(GetPosPixel().Y() - mPosSize.TopLeft().Y()) > 5) )
@@ -558,6 +788,18 @@ void SwSidebarWin::SetPosAndSize()
             default:
                 OSL_FAIL( "<SwSidebarWin::SetPosAndSize()> - unexpected position of sidebar" );
             break;
+        }
+
+        // LOK has map mode disabled, and we still want to perform pixel ->
+        // twips conversion for the size of the line above the note.
+        if (comphelper::LibreOfficeKit::isActive() && !EditWin().IsMapModeEnabled())
+        {
+            EditWin().EnableMapMode();
+            Size aSize(aLineEnd.getX() - aLineStart.getX(), aLineEnd.getY() - aLineStart.getY());
+            aSize = EditWin().PixelToLogic(aSize);
+            aLineEnd = aLineStart;
+            aLineEnd.Move(aSize.getWidth(), aSize.getHeight());
+            EditWin().EnableMapMode(false);
         }
 
         if (!IsPreview())
@@ -649,36 +891,36 @@ void SwSidebarWin::SetPosAndSize()
         {
             const SwTextAnnotationField* pTextAnnotationField =
                 dynamic_cast< const SwTextAnnotationField* >( mrSidebarItem.GetFormatField().GetTextField() );
-            if ( pTextAnnotationField != NULL
-                 && pTextAnnotationField->GetpTextNode() != NULL )
+            if ( pTextAnnotationField != nullptr
+                 && pTextAnnotationField->GetpTextNode() != nullptr )
             {
                 SwTextNode* pTextNode = pTextAnnotationField->GetpTextNode();
                 SwNodes& rNds = pTextNode->GetDoc()->GetNodes();
                 SwContentNode* const pContentNd = rNds[mrSidebarItem.maLayoutInfo.mnStartNodeIdx]->GetContentNode();
                 SwPosition aStartPos( *pContentNd, mrSidebarItem.maLayoutInfo.mnStartContent );
-                SwShellCrsr* pTmpCrsr = NULL;
-                const bool bTableCrsrNeeded = pTextNode->FindTableBoxStartNode() != pContentNd->FindTableBoxStartNode();
-                if ( bTableCrsrNeeded )
+                SwShellCursor* pTmpCursor = nullptr;
+                const bool bTableCursorNeeded = pTextNode->FindTableBoxStartNode() != pContentNd->FindTableBoxStartNode();
+                if ( bTableCursorNeeded )
                 {
-                    SwShellTableCrsr* pTableCrsr = new SwShellTableCrsr( DocView().GetWrtShell(), aStartPos );
-                    pTableCrsr->SetMark();
-                    pTableCrsr->GetMark()->nNode = *pTextNode;
-                    pTableCrsr->GetMark()->nContent.Assign( pTextNode, pTextAnnotationField->GetStart()+1 );
-                    pTableCrsr->NewTableSelection();
-                    pTmpCrsr = pTableCrsr;
+                    SwShellTableCursor* pTableCursor = new SwShellTableCursor( DocView().GetWrtShell(), aStartPos );
+                    pTableCursor->SetMark();
+                    pTableCursor->GetMark()->nNode = *pTextNode;
+                    pTableCursor->GetMark()->nContent.Assign( pTextNode, pTextAnnotationField->GetStart()+1 );
+                    pTableCursor->NewTableSelection();
+                    pTmpCursor = pTableCursor;
                 }
                 else
                 {
-                    SwShellCrsr* pCrsr = new SwShellCrsr( DocView().GetWrtShell(), aStartPos );
-                    pCrsr->SetMark();
-                    pCrsr->GetMark()->nNode = *pTextNode;
-                    pCrsr->GetMark()->nContent.Assign( pTextNode, pTextAnnotationField->GetStart()+1 );
-                    pTmpCrsr = pCrsr;
+                    SwShellCursor* pCursor = new SwShellCursor( DocView().GetWrtShell(), aStartPos );
+                    pCursor->SetMark();
+                    pCursor->GetMark()->nNode = *pTextNode;
+                    pCursor->GetMark()->nContent.Assign( pTextNode, pTextAnnotationField->GetStart()+1 );
+                    pTmpCursor = pCursor;
                 }
-                std::unique_ptr<SwShellCrsr> pTmpCrsrForAnnotationTextRange( pTmpCrsr );
+                std::unique_ptr<SwShellCursor> pTmpCursorForAnnotationTextRange( pTmpCursor );
 
-                pTmpCrsrForAnnotationTextRange->FillRects();
-                SwRects* pRects(pTmpCrsrForAnnotationTextRange.get());
+                pTmpCursorForAnnotationTextRange->FillRects();
+                SwRects* pRects(pTmpCursorForAnnotationTextRange.get());
                 for( size_t a(0); a < pRects->size(); ++a )
                 {
                     const SwRect aNextRect((*pRects)[a]);
@@ -691,10 +933,10 @@ void SwSidebarWin::SetPosAndSize()
             }
         }
 
-        if ( mpTextRangeOverlay != NULL )
+        if ( mpTextRangeOverlay != nullptr )
         {
             mpTextRangeOverlay->setRanges( aAnnotationTextRanges );
-            if ( mpAnchor != NULL && mpAnchor->getLineSolid() )
+            if ( mpAnchor != nullptr && mpAnchor->getLineSolid() )
             {
                 mpTextRangeOverlay->ShowSolidBorder();
             }
@@ -717,7 +959,7 @@ void SwSidebarWin::SetPosAndSize()
     else
     {
         delete mpTextRangeOverlay;
-        mpTextRangeOverlay = NULL;
+        mpTextRangeOverlay = nullptr;
     }
 }
 
@@ -1028,7 +1270,7 @@ void SwSidebarWin::DeactivatePostIt()
 
     if ( !IsProtected() && Engine()->GetEditEngine().GetText().isEmpty() )
     {
-        mnEventId = Application::PostUserEvent( LINK( this, SwSidebarWin, DeleteHdl), 0, true );
+        mnEventId = Application::PostUserEvent( LINK( this, SwSidebarWin, DeleteHdl), nullptr, true );
     }
 }
 
@@ -1064,7 +1306,7 @@ void SwSidebarWin::ExecuteCommand(sal_uInt16 nSlot)
                 mrMgr.RegisterAnswer(pPara);
             }
             if (mrMgr.HasActiveSidebarWin())
-                mrMgr.SetActiveSidebarWin(0);
+                mrMgr.SetActiveSidebarWin(nullptr);
             SwitchToFieldPos();
             mrView.GetViewFrame()->GetDispatcher()->Execute(FN_POSTIT);
             break;
@@ -1072,13 +1314,13 @@ void SwSidebarWin::ExecuteCommand(sal_uInt16 nSlot)
         case FN_DELETE_COMMENT:
 
                 //Delete(); // do not kill the parent of our open popup menu
-                mnEventId = Application::PostUserEvent( LINK( this, SwSidebarWin, DeleteHdl), 0, true );
+                mnEventId = Application::PostUserEvent( LINK( this, SwSidebarWin, DeleteHdl), nullptr, true );
             break;
         case FN_FORMAT_ALL_NOTES:
         case FN_DELETE_ALL_NOTES:
         case FN_HIDE_ALL_NOTES:
             // not possible as slot as this would require that "this" is the active postit
-            mrView.GetViewFrame()->GetBindings().Execute( nSlot, 0, 0, SfxCallMode::ASYNCHRON );
+            mrView.GetViewFrame()->GetBindings().Execute( nSlot, nullptr, 0, SfxCallMode::ASYNCHRON );
             break;
         case FN_DELETE_NOTE_AUTHOR:
         case FN_HIDE_NOTE_AUTHOR:
@@ -1087,7 +1329,7 @@ void SwSidebarWin::ExecuteCommand(sal_uInt16 nSlot)
             SfxStringItem aItem( nSlot, GetAuthor() );
             const SfxPoolItem* aItems[2];
             aItems[0] = &aItem;
-            aItems[1] = 0;
+            aItems[1] = nullptr;
             mrView.GetViewFrame()->GetBindings().Execute( nSlot, aItems, 0, SfxCallMode::ASYNCHRON );
         }
             break;
@@ -1161,12 +1403,12 @@ void SwSidebarWin::Delete()
 {
     if ( mrMgr.GetActiveSidebarWin() == this)
     {
-        mrMgr.SetActiveSidebarWin(0);
+        mrMgr.SetActiveSidebarWin(nullptr);
         // if the note is empty, the previous line will send a delete event, but we are already there
         if (mnEventId)
         {
             Application::RemoveUserEvent( mnEventId );
-            mnEventId = 0;
+            mnEventId = nullptr;
         }
     }
 }
@@ -1184,7 +1426,7 @@ IMPL_LINK_NOARG_TYPED(SwSidebarWin, ModifyHdl, LinkParamNone*, void)
 
 IMPL_LINK_NOARG_TYPED(SwSidebarWin, DeleteHdl, void*, void)
 {
-    mnEventId = 0;
+    mnEventId = nullptr;
     Delete();
 }
 
@@ -1211,7 +1453,7 @@ sal_Int32 SwSidebarWin::GetMetaButtonAreaWidth()
 
 sal_Int32 SwSidebarWin::GetMetaHeight()
 {
-    const Fraction& f( GetMapMode().GetScaleY() );
+    const Fraction& f(mrView.GetWrtShellPtr()->GetOut()->GetMapMode().GetScaleY());
     return POSTIT_META_HEIGHT * f.GetNumerator() / f.GetDenominator();
 }
 
@@ -1222,7 +1464,7 @@ sal_Int32 SwSidebarWin::GetMinimumSizeWithMeta()
 
 sal_Int32 SwSidebarWin::GetMinimumSizeWithoutMeta()
 {
-    const Fraction& f( GetMapMode().GetScaleY() );
+    const Fraction& f(mrView.GetWrtShellPtr()->GetOut()->GetMapMode().GetScaleY());
     return POSTIT_MINIMUMSIZE_WITHOUT_META * f.GetNumerator() / f.GetDenominator();
 }
 
@@ -1256,7 +1498,7 @@ void SwSidebarWin::SetViewState(ViewState bViewState)
                     pWin->Anchor()->SetAnchorState(AS_END);
                 }
                 mpAnchor->setLineSolid(true);
-                if ( mpTextRangeOverlay != NULL )
+                if ( mpTextRangeOverlay != nullptr )
                 {
                     mpTextRangeOverlay->ShowSolidBorder();
                 }
@@ -1270,7 +1512,7 @@ void SwSidebarWin::SetViewState(ViewState bViewState)
             if (mpAnchor)
             {
                 mpAnchor->setLineSolid(true);
-                if ( mpTextRangeOverlay != NULL )
+                if ( mpTextRangeOverlay != nullptr )
                 {
                     mpTextRangeOverlay->ShowSolidBorder();
                 }
@@ -1291,7 +1533,7 @@ void SwSidebarWin::SetViewState(ViewState bViewState)
                     SwSidebarWin* pTopWinSelf = GetTopReplyNote();
                     SwSidebarWin* pTopWinActive = mrMgr.HasActiveSidebarWin()
                                                   ? mrMgr.GetActiveSidebarWin()->GetTopReplyNote()
-                                                  : 0;
+                                                  : nullptr;
                     // #i111964#
                     if ( pTopWinSelf && ( pTopWinSelf != pTopWinActive ) &&
                          pTopWinSelf->Anchor() )
@@ -1299,7 +1541,7 @@ void SwSidebarWin::SetViewState(ViewState bViewState)
                         if ( pTopWinSelf != mrMgr.GetActiveSidebarWin() )
                         {
                             pTopWinSelf->Anchor()->setLineSolid(false);
-                            if ( pTopWinSelf->TextRange() != NULL )
+                            if ( pTopWinSelf->TextRange() != nullptr )
                             {
                                 pTopWinSelf->TextRange()->HideSolidBorder();
                             }
@@ -1308,7 +1550,7 @@ void SwSidebarWin::SetViewState(ViewState bViewState)
                     }
                 }
                 mpAnchor->setLineSolid(false);
-                if ( mpTextRangeOverlay != NULL )
+                if ( mpTextRangeOverlay != nullptr )
                 {
                     mpTextRangeOverlay->HideSolidBorder();
                 }
@@ -1324,12 +1566,12 @@ void SwSidebarWin::SetViewState(ViewState bViewState)
 
 SwSidebarWin* SwSidebarWin::GetTopReplyNote()
 {
-    SwSidebarWin* pTopNote = 0;
-    SwSidebarWin* pSidebarWin = IsFollow() ? mrMgr.GetNextPostIt(KEY_PAGEUP, this) : 0;
+    SwSidebarWin* pTopNote = nullptr;
+    SwSidebarWin* pSidebarWin = IsFollow() ? mrMgr.GetNextPostIt(KEY_PAGEUP, this) : nullptr;
     while (pSidebarWin)
     {
         pTopNote = pSidebarWin;
-        pSidebarWin = pSidebarWin->IsFollow() ? mrMgr.GetNextPostIt(KEY_PAGEUP, pSidebarWin) : 0;
+        pSidebarWin = pSidebarWin->IsFollow() ? mrMgr.GetNextPostIt(KEY_PAGEUP, pSidebarWin) : nullptr;
     }
     return pTopNote;
 }
@@ -1337,11 +1579,11 @@ SwSidebarWin* SwSidebarWin::GetTopReplyNote()
 void SwSidebarWin::SwitchToFieldPos()
 {
     if ( mrMgr.GetActiveSidebarWin() == this )
-            mrMgr.SetActiveSidebarWin(0);
+            mrMgr.SetActiveSidebarWin(nullptr);
     GotoPos();
     sal_uInt32 aCount = MoveCaret();
     if (aCount)
-        mrView.GetDocShell()->GetWrtShell()->SwCrsrShell::Right(aCount, 0);
+        mrView.GetDocShell()->GetWrtShell()->SwCursorShell::Right(aCount, 0);
     GrabFocusToDocument();
 }
 
@@ -1374,14 +1616,14 @@ bool SwSidebarWin::IsScrollbarVisible() const
 
 void SwSidebarWin::ChangeSidebarItem( SwSidebarItem& rSidebarItem )
 {
-    const bool bAnchorChanged = mpAnchorFrm != rSidebarItem.maLayoutInfo.mpAnchorFrm;
+    const bool bAnchorChanged = mpAnchorFrame != rSidebarItem.maLayoutInfo.mpAnchorFrame;
     if ( bAnchorChanged )
     {
-        mrMgr.DisconnectSidebarWinFromFrm( *(mpAnchorFrm), *this );
+        mrMgr.DisconnectSidebarWinFromFrame( *(mpAnchorFrame), *this );
     }
 
     mrSidebarItem = rSidebarItem;
-    mpAnchorFrm = mrSidebarItem.maLayoutInfo.mpAnchorFrm;
+    mpAnchorFrame = mrSidebarItem.maLayoutInfo.mpAnchorFrame;
 
     if ( GetWindowPeer() )
     {
@@ -1394,7 +1636,7 @@ void SwSidebarWin::ChangeSidebarItem( SwSidebarItem& rSidebarItem )
 
     if ( bAnchorChanged )
     {
-        mrMgr.ConnectSidebarWinToFrm( *(mrSidebarItem.maLayoutInfo.mpAnchorFrm),
+        mrMgr.ConnectSidebarWinToFrame( *(mrSidebarItem.maLayoutInfo.mpAnchorFrame),
                                       mrSidebarItem.GetFormatField(),
                                       *this );
     }

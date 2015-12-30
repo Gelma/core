@@ -29,22 +29,21 @@
 class JPEGWriter
 {
     SvStream&           mrStream;
-    Bitmap              maBitmap;
     BitmapReadAccess*   mpReadAccess;
     sal_uInt8*          mpBuffer;
     bool                mbNative;
-    bool            mbGreys;
+    bool                mbGreys;
     sal_Int32           mnQuality;
     sal_Int32           maChromaSubsampling;
 
     bool*               mpExpWasGrey;
 
-    com::sun::star::uno::Reference< com::sun::star::task::XStatusIndicator > mxStatusIndicator;
+    css::uno::Reference< css::task::XStatusIndicator > mxStatusIndicator;
 
 public:
     JPEGWriter( SvStream& rStream,
-                const ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue >* pFilterData,
-                bool* pExportWasGrey = NULL );
+                const css::uno::Sequence< css::beans::PropertyValue >* pFilterData,
+                bool* pExportWasGrey = nullptr );
 
     virtual ~JPEGWriter() {};
 

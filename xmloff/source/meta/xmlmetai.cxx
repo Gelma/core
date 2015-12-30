@@ -37,30 +37,25 @@ using namespace ::xmloff::token;
 class XMLDocumentBuilderContext : public SvXMLImportContext
 {
 private:
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::xml::dom::XSAXDocumentBuilder2> mxDocBuilder;
+    css::uno::Reference< css::xml::dom::XSAXDocumentBuilder2> mxDocBuilder;
 
 public:
     XMLDocumentBuilderContext(SvXMLImport& rImport, sal_uInt16 nPrfx,
         const OUString& rLName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::dom::XSAXDocumentBuilder2>& rDocBuilder);
+        const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList,
+        const css::uno::Reference< css::xml::dom::XSAXDocumentBuilder2>& rDocBuilder);
 
     virtual ~XMLDocumentBuilderContext();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList ) override;
 
-    virtual void StartElement( const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+    virtual void StartElement( const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
 
-    virtual void Characters( const OUString& rChars ) SAL_OVERRIDE;
+    virtual void Characters( const OUString& rChars ) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 };
 
 XMLDocumentBuilderContext::XMLDocumentBuilderContext(SvXMLImport& rImport,
@@ -146,17 +141,16 @@ lcl_initGenerator(SvXMLImport & rImport,
         xPath->registerNS(GetXMLToken(XML_NP_OFFICE),GetXMLToken(XML_N_OFFICE));
         xPath->registerNS(GetXMLToken(XML_NP_META), GetXMLToken(XML_N_META));
 
-        OUString const expr( "string(/office:document-meta/office:meta/meta:generator)");
         uno::Reference< xml::xpath::XXPathObject > const xObj(
-            xPath->eval(xDoc.get(), expr), uno::UNO_SET_THROW);
+            xPath->eval(xDoc.get(), "string(/office:document-meta/office:meta/meta:generator)"),
+            uno::UNO_SET_THROW);
         OUString const value(xObj->getString());
         SvXMLMetaDocumentContext::setBuildId(value, rImport.getImportInfo());
     } catch (const uno::RuntimeException&) {
         throw;
     } catch (const uno::Exception& e) {
         throw lang::WrappedTargetRuntimeException(
-            OUString(
-                                "SvXMLMetaDocumentContext::initGenerator: exception"),
+            "SvXMLMetaDocumentContext::initGenerator: exception",
             rImport, makeAny(e));
     }
 }

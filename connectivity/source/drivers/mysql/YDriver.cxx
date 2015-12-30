@@ -293,7 +293,7 @@ namespace connectivity
                 xConnection = xDriver->connect( sCuttedUrl, aConvertedProperties );
                 if ( xConnection.is() )
                 {
-                    OMetaConnection* pMetaConnection = NULL;
+                    OMetaConnection* pMetaConnection = nullptr;
                     // now we have to set the URL to get the correct answer for metadata()->getURL()
                     Reference< XUnoTunnel> xTunnel(xConnection,UNO_QUERY);
                     if ( xTunnel.is() )
@@ -410,7 +410,7 @@ namespace connectivity
                 {
                     if ( i->second.second == pConnection )
                     {
-                        xTab = Reference< XTablesSupplier >(i->second.first.get().get(),UNO_QUERY);
+                        xTab.set(i->second.first.get().get(),UNO_QUERY);
                         if ( !xTab.is() )
                         {
                             xTab = new OMySQLCatalog(connection);
@@ -429,7 +429,7 @@ namespace connectivity
                 Reference< XConnection > xTemp(i->first.get(),UNO_QUERY);
                 if ( xTemp == connection )
                 {
-                    xTab = Reference< XTablesSupplier >(i->second.first.get().get(),UNO_QUERY);
+                    xTab.set(i->second.first.get().get(),UNO_QUERY);
                     if ( !xTab.is() )
                     {
                         xTab = new OMySQLCatalog(connection);

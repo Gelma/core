@@ -24,14 +24,14 @@
 
 namespace sw
 {
-    struct SW_DLLPUBLIC DocDisposingHint SAL_FINAL : public SfxHint
+    struct SW_DLLPUBLIC DocDisposingHint final : public SfxHint
     {
         DocDisposingHint() {}
         virtual ~DocDisposingHint();
     };
 }
 
-class SwUnoCrsr : public virtual SwCursor, public SwModify
+class SwUnoCursor : public virtual SwCursor, public SwModify
 {
 private:
     bool m_bRemainInSection : 1;
@@ -39,14 +39,14 @@ private:
     bool m_bSkipOverProtectSections : 1;
 
 public:
-    SwUnoCrsr( const SwPosition &rPos, SwPaM* pRing = 0 );
-    virtual ~SwUnoCrsr();
+    SwUnoCursor( const SwPosition &rPos, SwPaM* pRing = nullptr );
+    virtual ~SwUnoCursor();
 
 protected:
 
-    virtual const SwContentFrm* DoSetBidiLevelLeftRight(
-        bool & io_rbLeft, bool bVisualAllowed, bool bInsertCrsr) SAL_OVERRIDE;
-    virtual void DoSetBidiLevelUpDown() SAL_OVERRIDE;
+    virtual const SwContentFrame* DoSetBidiLevelLeftRight(
+        bool & io_rbLeft, bool bVisualAllowed, bool bInsertCursor) override;
+    virtual void DoSetBidiLevelUpDown() override;
 
 public:
 
@@ -55,27 +55,27 @@ public:
     virtual bool IsSelOvr( int eFlags =
                                 ( nsSwCursorSelOverFlags::SELOVER_CHECKNODESSECTION |
                                   nsSwCursorSelOverFlags::SELOVER_TOGGLE |
-                                  nsSwCursorSelOverFlags::SELOVER_CHANGEPOS )) SAL_OVERRIDE;
+                                  nsSwCursorSelOverFlags::SELOVER_CHANGEPOS )) override;
 
-    virtual bool IsReadOnlyAvailable() const SAL_OVERRIDE;
+    virtual bool IsReadOnlyAvailable() const override;
 
     bool IsRemainInSection() const          { return m_bRemainInSection; }
     void SetRemainInSection( bool bFlag )   { m_bRemainInSection = bFlag; }
 
-    virtual bool IsSkipOverProtectSections() const SAL_OVERRIDE
+    virtual bool IsSkipOverProtectSections() const override
                                     { return m_bSkipOverProtectSections; }
     void SetSkipOverProtectSections( bool bFlag )
                                     { m_bSkipOverProtectSections = bFlag; }
 
-    virtual bool IsSkipOverHiddenSections() const SAL_OVERRIDE
+    virtual bool IsSkipOverHiddenSections() const override
                                     { return m_bSkipOverHiddenSections; }
     void SetSkipOverHiddenSections( bool bFlag )
                                     { m_bSkipOverHiddenSections = bFlag; }
 
-    DECL_FIXEDMEMPOOL_NEWDEL( SwUnoCrsr )
+    DECL_FIXEDMEMPOOL_NEWDEL( SwUnoCursor )
 };
 
-class SwUnoTableCrsr : public virtual SwUnoCrsr, public virtual SwTableCursor
+class SwUnoTableCursor : public virtual SwUnoCursor, public virtual SwTableCursor
 {
     // The selection has the same order as the table boxes, i.e.
     // if something is deleted from the one array at a certain position
@@ -85,15 +85,15 @@ class SwUnoTableCrsr : public virtual SwUnoCrsr, public virtual SwTableCursor
     using SwTableCursor::MakeBoxSels;
 
 public:
-    SwUnoTableCrsr( const SwPosition& rPos );
-    virtual ~SwUnoTableCrsr();
+    SwUnoTableCursor( const SwPosition& rPos );
+    virtual ~SwUnoTableCursor();
 
     // Does a selection of content exist in table?
     // Return value indicates if the cursor remains at its old position.
     virtual bool IsSelOvr( int eFlags =
                                 ( nsSwCursorSelOverFlags::SELOVER_CHECKNODESSECTION |
                                   nsSwCursorSelOverFlags::SELOVER_TOGGLE |
-                                  nsSwCursorSelOverFlags::SELOVER_CHANGEPOS )) SAL_OVERRIDE;
+                                  nsSwCursorSelOverFlags::SELOVER_CHANGEPOS )) override;
 
     void MakeBoxSels();
 
@@ -109,7 +109,7 @@ namespace sw
             UnoCursorPointer()
                 : m_pCursor(nullptr), m_bSectionRestricted(false)
             {}
-            UnoCursorPointer(std::shared_ptr<SwUnoCrsr> pCursor, bool bSectionRestricted=false)
+            UnoCursorPointer(std::shared_ptr<SwUnoCursor> pCursor, bool bSectionRestricted=false)
                 : m_pCursor(pCursor), m_bSectionRestricted(bSectionRestricted)
             {
                 m_pCursor->Add(this);
@@ -122,12 +122,12 @@ namespace sw
                 if(m_pCursor)
                     m_pCursor->Add(this);
             }
-            virtual ~UnoCursorPointer() SAL_OVERRIDE
+            virtual ~UnoCursorPointer() override
             {
                 if(m_pCursor)
                     m_pCursor->Remove(this);
             }
-            virtual void SwClientNotify(const SwModify& rModify, const SfxHint& rHint) SAL_OVERRIDE
+            virtual void SwClientNotify(const SwModify& rModify, const SfxHint& rHint) override
             {
                 SwClient::SwClientNotify(rModify, rHint);
                 if(m_pCursor)
@@ -144,9 +144,9 @@ namespace sw
                 if(!GetRegisteredIn())
                     m_pCursor.reset();
             };
-            SwUnoCrsr& operator*() const
+            SwUnoCursor& operator*() const
                 { return *m_pCursor.get(); }
-            SwUnoCrsr* operator->() const
+            SwUnoCursor* operator->() const
                 { return m_pCursor.get(); }
             UnoCursorPointer& operator=(UnoCursorPointer aOther)
             {
@@ -157,7 +157,7 @@ namespace sw
             }
             explicit operator bool() const
                 { return static_cast<bool>(m_pCursor); }
-            void reset(std::shared_ptr<SwUnoCrsr> pNew)
+            void reset(std::shared_ptr<SwUnoCursor> pNew)
             {
                 if(pNew)
                     pNew->Add(this);
@@ -166,7 +166,7 @@ namespace sw
                 m_pCursor = pNew;
             }
         private:
-            std::shared_ptr<SwUnoCrsr> m_pCursor;
+            std::shared_ptr<SwUnoCursor> m_pCursor;
             const bool m_bSectionRestricted;
     };
 }

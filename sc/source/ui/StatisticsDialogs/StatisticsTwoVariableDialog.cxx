@@ -36,7 +36,7 @@ ScStatisticsTwoVariableDialog::ScStatisticsTwoVariableDialog(
     mAddressDetails ( mDocument->GetAddressConvention(), 0, 0 ),
     mOutputAddress  ( ScAddress::INITIALIZE_INVALID ),
     mGroupedBy      ( BY_COLUMN ),
-    mpActiveEdit    ( NULL ),
+    mpActiveEdit    ( nullptr ),
     mCurrentAddress ( pViewData->GetCurX(), pViewData->GetCurY(), pViewData->GetTabNo() ),
     mDialogLostFocus( false )
 {
@@ -111,7 +111,7 @@ void ScStatisticsTwoVariableDialog::Init()
     mpOutputRangeEdit->SetLoseFocusHdl( aLink );
     mpOutputRangeButton->SetLoseFocusHdl( aLink );
 
-    Link<> aLink2 = LINK( this, ScStatisticsTwoVariableDialog, RefInputModifyHandler);
+    Link<Edit&,void> aLink2 = LINK( this, ScStatisticsTwoVariableDialog, RefInputModifyHandler);
     mpVariable1RangeEdit->SetModifyHdl( aLink2);
     mpVariable2RangeEdit->SetModifyHdl( aLink2);
     mpOutputRangeEdit->SetModifyHdl( aLink2);
@@ -213,7 +213,7 @@ IMPL_LINK_NOARG_TYPED( ScStatisticsTwoVariableDialog, OkClicked, Button*, void )
 
 IMPL_LINK_TYPED( ScStatisticsTwoVariableDialog, GetFocusHandler, Control&, rCtrl, void )
 {
-    mpActiveEdit = NULL;
+    mpActiveEdit = nullptr;
     if(      &rCtrl == mpVariable1RangeEdit
           || &rCtrl == mpVariable1RangeButton )
     {
@@ -247,7 +247,7 @@ IMPL_LINK_NOARG_TYPED( ScStatisticsTwoVariableDialog, GroupByChanged, RadioButto
         mGroupedBy = BY_ROW;
 }
 
-IMPL_LINK_NOARG( ScStatisticsTwoVariableDialog, RefInputModifyHandler )
+IMPL_LINK_NOARG_TYPED( ScStatisticsTwoVariableDialog, RefInputModifyHandler, Edit&, void )
 {
     if ( mpActiveEdit )
     {
@@ -315,8 +315,6 @@ IMPL_LINK_NOARG( ScStatisticsTwoVariableDialog, RefInputModifyHandler )
         mpButtonOk->Enable();
     else
         mpButtonOk->Disable();
-
-    return 0;
 }
 
 void ScStatisticsTwoVariableDialog::CalculateInputAndWriteToOutput()

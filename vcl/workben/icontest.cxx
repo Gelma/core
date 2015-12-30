@@ -75,17 +75,17 @@ public:
 
     MyWorkWindow( vcl::Window* pParent, WinBits nWinStyle );
     virtual ~MyWorkWindow() { disposeOnce(); }
-    virtual void dispose() SAL_OVERRIDE { mpFixedBitmap.clear(); WorkWindow::dispose(); }
+    virtual void dispose() override { mpFixedBitmap.clear(); WorkWindow::dispose(); }
     void LoadGraphic( const OUString& sImageFile );
 
-    virtual void Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) SAL_OVERRIDE;
-    virtual void Resize() SAL_OVERRIDE;
+    virtual void Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) override;
+    virtual void Resize() override;
 };
 
 MyWorkWindow::MyWorkWindow( vcl::Window* pParent, WinBits nWinStyle )
     : WorkWindow(pParent, nWinStyle)
-    , mpBitmap(NULL)
-    , mpFixedBitmap(NULL)
+    , mpBitmap(nullptr)
+    , mpFixedBitmap(nullptr)
 {
     mnPaintCount = 0;
     mnStartTime = getTimeNow();
@@ -140,8 +140,8 @@ void MyWorkWindow::Resize()
 class IconTestApp : public Application
 {
 public:
-    virtual void Init() SAL_OVERRIDE;
-    virtual int Main() SAL_OVERRIDE;
+    virtual void Init() override;
+    virtual int Main() override;
 
     IconTestApp() : nRet(EXIT_SUCCESS) {};
 
@@ -188,7 +188,7 @@ void IconTestApp::DoItWithVcl( const OUString& sImageFile)
     {
         VclPtrInstance<MyWorkWindow> pWindow( nullptr, WB_APP | WB_STDWORK | WB_SIZEABLE | WB_CLOSEABLE | WB_CLIPCHILDREN );
 
-        pWindow->SetText(OUString("VCL Image Test"));
+        pWindow->SetText("VCL Image Test");
 
         pWindow->LoadGraphic( sImageFile );
         pWindow->mpFixedBitmap = VclPtr<FixedBitmap>::Create( pWindow );

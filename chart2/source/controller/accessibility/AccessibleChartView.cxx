@@ -49,16 +49,14 @@ using osl::MutexGuard;
 namespace chart
 {
 
-AccessibleChartView::AccessibleChartView(
-    const Reference< uno::XComponentContext >& xContext, SdrView* pView ) :
+AccessibleChartView::AccessibleChartView(SdrView* pView ) :
         impl::AccessibleChartView_Base(
             AccessibleElementInfo(), // empty for now
             true, // has children
             true  // always transparent
             ),
-        m_xContext( xContext ),
         m_pSdrView( pView ),
-        m_pViewForwarder( NULL )
+        m_pViewForwarder( nullptr )
 {
     AddState( AccessibleStateType::OPAQUE );
 }
@@ -213,7 +211,7 @@ void SAL_CALL AccessibleChartView::initialize( const Sequence< Any >& rArguments
     else if( xChartModel.is() )
     {
         bChanged = true;
-        xChartModel = 0;
+        xChartModel = nullptr;
     }
 
     if( rArguments.getLength() > 2 )
@@ -229,7 +227,7 @@ void SAL_CALL AccessibleChartView::initialize( const Sequence< Any >& rArguments
     else if( xChartView.is() )
     {
         bChanged = true;
-        xChartView = 0;
+        xChartView = nullptr;
     }
 
     if( rArguments.getLength() > 3 )
@@ -272,14 +270,14 @@ void SAL_CALL AccessibleChartView::initialize( const Sequence< Any >& rArguments
     {
         bChanged = true;
         xSelectionSupplier->removeSelectionChangeListener(this);
-        xSelectionSupplier = 0;
+        xSelectionSupplier = nullptr;
     }
 
     if( !xSelectionSupplier.is() || !xChartModel.is() || !xChartView.is() )
     {
         if(xSelectionSupplier.is())
             xSelectionSupplier->removeSelectionChangeListener(this);
-        xSelectionSupplier = 0;
+        xSelectionSupplier = nullptr;
         xChartModel.clear();
         xChartView.clear();
         xParent.clear();
@@ -321,7 +319,7 @@ void SAL_CALL AccessibleChartView::initialize( const Sequence< Any >& rArguments
             aAccInfo.m_xSelectionSupplier = m_xSelectionSupplier;
             aAccInfo.m_xView = m_xChartView;
             aAccInfo.m_xWindow = m_xWindow;
-            aAccInfo.m_pParent = 0;
+            aAccInfo.m_pParent = nullptr;
             aAccInfo.m_spObjectHierarchy = m_spObjectHierarchy;
             aAccInfo.m_pSdrView = m_pSdrView;
             vcl::Window* pWindow = VCLUnoHelper::GetWindow( m_xWindow );
@@ -350,7 +348,7 @@ void SAL_CALL AccessibleChartView::selectionChanged( const lang::EventObject& /*
     Reference< view::XSelectionSupplier > xSelectionSupplier;
     {
         MutexGuard aGuard( GetMutex());
-        xSelectionSupplier = Reference< view::XSelectionSupplier >(m_xSelectionSupplier);
+        xSelectionSupplier.set(m_xSelectionSupplier);
     }
 
     if( xSelectionSupplier.is() )

@@ -28,13 +28,13 @@ public:
     {
         ScTabViewShell* pViewShell = getTabViewShell( pBindings );
         if (!pViewShell)
-            pViewShell = PTR_CAST( ScTabViewShell, SfxViewShell::Current() );
+            pViewShell = dynamic_cast< ScTabViewShell *>( SfxViewShell::Current() );
         OSL_ENSURE(pViewShell, "Missing view shell!");
 
         if (pViewShell)
             SetWindow( pViewShell->CreateRefDialog( pBindings, this, pInfo, pParentP, WindowID ) );
         else
-            SetWindow( NULL );
+            SetWindow( nullptr );
 
         if (pViewShell && !GetWindow())
             pViewShell->GetViewFrame()->SetChildWindow( nId, false );
@@ -50,7 +50,7 @@ public:
 
     static void RegisterChildWindow (
                     bool   bVisible = false,
-                    SfxModule* pModule  = NULL,
+                    SfxModule* pModule  = nullptr,
                     SfxChildWindowFlags nFlags = SfxChildWindowFlags::NONE)
     {
         SfxChildWinFactory* pFactory = new SfxChildWinFactory(ChildWindowWrapper::CreateImpl, WindowID, CHILDWIN_NOPOS );
@@ -59,7 +59,7 @@ public:
         SfxChildWindow::RegisterChildWindow(pModule, pFactory);
     }
 
-    virtual SfxChildWinInfo GetInfo() const SAL_OVERRIDE
+    virtual SfxChildWinInfo GetInfo() const override
     {
         SfxChildWinInfo aInfo = SfxChildWindow::GetInfo();
         static_cast<SfxModelessDialog*>(GetWindow())->FillInfo( aInfo );
@@ -75,16 +75,16 @@ private:
     static ScTabViewShell* getTabViewShell( SfxBindings *pBindings )
     {
         if( !pBindings )
-            return NULL;
+            return nullptr;
         SfxDispatcher* pDispacher = pBindings ->GetDispatcher();
         if( !pDispacher )
-            return NULL;
+            return nullptr;
         SfxViewFrame* pFrame = pDispacher->GetFrame();
         if( !pFrame )
-            return NULL;
+            return nullptr;
         SfxViewShell* pViewShell = pFrame->GetViewShell();
         if( !pViewShell )
-            return NULL;
+            return nullptr;
         return dynamic_cast<ScTabViewShell*>( pViewShell );
     }
 };

@@ -65,7 +65,7 @@ VCLXAccessibleStatusBarItem::VCLXAccessibleStatusBarItem( StatusBar* pStatusBar,
 VCLXAccessibleStatusBarItem::~VCLXAccessibleStatusBarItem()
 {
     delete m_pExternalLock;
-    m_pExternalLock = NULL;
+    m_pExternalLock = nullptr;
 }
 
 
@@ -220,7 +220,7 @@ void VCLXAccessibleStatusBarItem::disposing()
 {
     AccessibleTextHelper_BASE::disposing();
 
-    m_pStatusBar = NULL;
+    m_pStatusBar = nullptr;
     m_sItemName.clear();
     m_sItemText.clear();
 }
@@ -245,8 +245,7 @@ sal_Bool VCLXAccessibleStatusBarItem::supportsService( const OUString& rServiceN
 
 Sequence< OUString > VCLXAccessibleStatusBarItem::getSupportedServiceNames() throw (RuntimeException, std::exception)
 {
-    Sequence< OUString > aNames(1);
-    aNames[0] = "com.sun.star.awt.AccessibleStatusBarItem";
+    Sequence< OUString > aNames { "com.sun.star.awt.AccessibleStatusBarItem" };
     return aNames;
 }
 
@@ -594,7 +593,7 @@ sal_Bool VCLXAccessibleStatusBarItem::copyText( sal_Int32 nStartIndex, sal_Int32
             vcl::unohelper::TextDataObject* pDataObj = new vcl::unohelper::TextDataObject( sText );
 
             SolarMutexReleaser aReleaser;
-            xClipboard->setContents( pDataObj, NULL );
+            xClipboard->setContents( pDataObj, nullptr );
 
             Reference< datatransfer::clipboard::XFlushableClipboard > xFlushableClipboard( xClipboard, uno::UNO_QUERY );
             if( xFlushableClipboard.is() )

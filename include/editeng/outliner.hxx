@@ -38,8 +38,6 @@
 
 #include <svtools/grfmgr.hxx>
 
-#include <tools/rtti.hxx>
-#define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitTypes.h>
 #include <vector>
 
@@ -137,7 +135,7 @@ private:
     friend class OutlinerUndoCheckPara;
     friend class OutlinerUndoChangeParaFlags;
 
-    Paragraph& operator=(const Paragraph& rPara ) SAL_DELETED_FUNCTION;
+    Paragraph& operator=(const Paragraph& rPara ) = delete;
 
     ParaFlag            nFlags;
     OUString            aBulText;
@@ -151,7 +149,7 @@ private:
     const OUString& GetText() const { return aBulText; }
 
                         Paragraph( sal_Int16 nDepth );
-                        Paragraph( const Paragraph& ) SAL_DELETED_FUNCTION;
+                        Paragraph( const Paragraph& ) = delete;
                         Paragraph( const ParagraphData& );
                         ~Paragraph();
 
@@ -225,8 +223,8 @@ public:
 
     void        Scroll( long nHorzScroll, long nVertScroll );
 
-    void        Paint( const Rectangle& rRect, OutputDevice* pTargetDevice = 0 );
-    bool        PostKeyEvent( const KeyEvent& rKEvt, vcl::Window* pFrameWin = NULL );
+    void        Paint( const Rectangle& rRect, OutputDevice* pTargetDevice = nullptr );
+    bool        PostKeyEvent( const KeyEvent& rKEvt, vcl::Window* pFrameWin = nullptr );
     bool        MouseButtonDown( const MouseEvent& );
     bool        MouseButtonUp( const MouseEvent& );
     void        ReleaseMouse();
@@ -263,7 +261,7 @@ public:
 
     bool        AdjustHeight( long nDY );
 
-    sal_uLong   Read( SvStream& rInput, const OUString& rBaseURL, EETextFormat eFormat, bool bSelect = false, SvKeyValueIterator* pHTTPHeaderAttrs = NULL );
+    sal_uLong   Read( SvStream& rInput, const OUString& rBaseURL, EETextFormat eFormat, bool bSelect = false, SvKeyValueIterator* pHTTPHeaderAttrs = nullptr );
 
     void        InsertText( const OUString& rNew, bool bSelect = false );
     void        InsertText( const OutlinerParaObject& rParaObj );
@@ -314,6 +312,7 @@ public:
 
     void        SetVisArea( const Rectangle& rRect );
     void        SetSelection( const ESelection& );
+    void GetSelectionRectangles(std::vector<Rectangle>& rLogicRects) const;
 
     void        RemoveAttribs( bool bRemoveParaAttribs = false, sal_uInt16 nWhich = 0, bool bKeepLanguages = false );
     void        RemoveAttribsKeepLanguages( bool bRemoveParaAttribs );
@@ -331,7 +330,7 @@ public:
     void ToggleBulletsNumbering(
         const bool bToggle,
         const bool bHandleBullets,
-        const SvxNumRule* pNumRule = NULL );
+        const SvxNumRule* pNumRule = nullptr );
 
     /** apply bullets/numbering for paragraphs
 
@@ -368,7 +367,7 @@ public:
 
     bool        IsCursorAtWrongSpelledWord( bool bMarkIfWrong = false );
     bool        IsWrongSpelledWordAtPos( const Point& rPosPixel, bool bMarkIfWrong = false );
-    void        ExecuteSpellPopup( const Point& rPosPixel, Link<SpellCallbackInfo&,void>* pCallBack = 0 );
+    void        ExecuteSpellPopup( const Point& rPosPixel, Link<SpellCallbackInfo&,void>* pCallBack = nullptr );
 
     void        SetInvalidateMore( sal_uInt16 nPixel );
     sal_uInt16  GetInvalidateMore() const;
@@ -394,17 +393,16 @@ public:
     sal_Int32           mnTextStart;
     sal_Int32           mnTextLen;
     sal_Int32           mnPara;
-    sal_Int32           mnIndex;
     const SvxFont&      mrFont;
     const long*         mpDXArray;
 
     const EEngineData::WrongSpellVector*  mpWrongSpellVector;
     const SvxFieldData* mpFieldData;
-    const ::com::sun::star::lang::Locale* mpLocale;
-    const Color maOverlineColor;
-    const Color maTextLineColor;
+    const css::lang::Locale* mpLocale;
+    const Color         maOverlineColor;
+    const Color         maTextLineColor;
 
-    sal_uInt8               mnBiDiLevel;
+    sal_uInt8           mnBiDiLevel;
 
     bool                mbFilled;
     long                mnWidthToFill;
@@ -423,11 +421,10 @@ public:
         sal_Int32 nTxtLen,
         const SvxFont& rFnt,
         sal_Int32 nPar,
-        sal_Int32 nIdx,
         const long* pDXArr,
         const EEngineData::WrongSpellVector* pWrongSpellVector,
         const SvxFieldData* pFieldData,
-        const ::com::sun::star::lang::Locale* pLocale,
+        const css::lang::Locale* pLocale,
         const Color& rOverlineColor,
         const Color& rTextLineColor,
         sal_uInt8 nBiDiLevel,
@@ -441,7 +438,6 @@ public:
         mnTextStart(nTxtStart),
         mnTextLen(nTxtLen),
         mnPara(nPar),
-        mnIndex(nIdx),
         mrFont(rFnt),
         mpDXArray(pDXArr),
         mpWrongSpellVector(pWrongSpellVector),
@@ -479,13 +475,10 @@ struct EDITENG_DLLPUBLIC PaintFirstLineInfo
 {
     sal_Int32 mnPara;
     const Point& mrStartPos;
-    long mnBaseLineY;
-    const Point& mrOrigin;
-    short mnOrientation;
     VclPtr<OutputDevice> mpOutDev;
 
-    PaintFirstLineInfo( sal_Int32 nPara, const Point& rStartPos, long nBaseLineY, const Point& rOrigin, short nOrientation, OutputDevice* pOutDev )
-        : mnPara( nPara ), mrStartPos( rStartPos ), mnBaseLineY( nBaseLineY ), mrOrigin( rOrigin ), mnOrientation( nOrientation ), mpOutDev( pOutDev )
+    PaintFirstLineInfo( sal_Int32 nPara, const Point& rStartPos, OutputDevice* pOutDev )
+        : mnPara( nPara ), mrStartPos( rStartPos ), mpOutDev( pOutDev )
     {}
 };
 
@@ -506,7 +499,7 @@ private:
     sal_Int32           nPos;
     bool                bSimpleClick;
 
-                        EditFieldInfo( const EditFieldInfo& ) SAL_DELETED_FUNCTION;
+                        EditFieldInfo( const EditFieldInfo& ) = delete;
 
     SdrPage*            mpSdrPage;
 
@@ -516,8 +509,8 @@ public:
                     {
                         pOutliner = pOutl;
                         nPara = nPa; nPos = nPo;
-                        pTxtColor = 0; pFldColor = 0; bSimpleClick = false;
-                        mpSdrPage = 0;
+                        pTxtColor = nullptr; pFldColor = nullptr; bSimpleClick = false;
+                        mpSdrPage = nullptr;
                     }
                     ~EditFieldInfo()
                     {
@@ -537,7 +530,7 @@ public:
     void            SetFieldColor( const Color& rColor )
                         { delete pFldColor; pFldColor = new Color( rColor ); }
     void            ClearFieldColor()
-                        { delete pFldColor; pFldColor = 0; }
+                        { delete pFldColor; pFldColor = nullptr; }
 
     sal_Int32       GetPara() const { return nPara; }
     sal_Int32       GetPos() const { return nPos; }
@@ -624,8 +617,6 @@ class EDITENG_DLLPUBLIC Outliner : public SfxBroadcaster
     bool                bStrippingPortions;
     bool                bPasting;
 
-    sal_uLong           nDummy;
-
     DECL_LINK_TYPED(    ParaVisibleStateChangedHdl, Paragraph&, void );
     DECL_LINK_TYPED(    BeginMovingParagraphsHdl, MoveParagraphsInfo&, void );
     DECL_LINK_TYPED(    EndMovingParagraphsHdl, MoveParagraphsInfo&, void );
@@ -640,12 +631,12 @@ class EDITENG_DLLPUBLIC Outliner : public SfxBroadcaster
     OUString            ImplGetBulletText( sal_Int32 nPara );
     void                ImplCheckNumBulletItem( sal_Int32 nPara );
     void                ImplInitDepth( sal_Int32 nPara, sal_Int16 nDepth, bool bCreateUndo, bool bUndoAction = false );
-    void                ImplSetLevelDependendStyleSheet( sal_Int32 nPara, SfxStyleSheet* pLevelStyle = NULL );
+    void                ImplSetLevelDependendStyleSheet( sal_Int32 nPara, SfxStyleSheet* pLevelStyle = nullptr );
 
     void                ImplBlockInsertionCallbacks( bool b );
 
     void        ImpFilterIndents( sal_Int32 nFirstPara, sal_Int32 nLastPara );
-    bool        ImpConvertEdtToOut( sal_Int32 nPara, EditView* pView = 0 );
+    bool        ImpConvertEdtToOut( sal_Int32 nPara, EditView* pView = nullptr );
 
     void        ImpTextPasted( sal_Int32 nStartPara, sal_Int32 nCount );
     vcl::Font   ImpCalcBulletFont( sal_Int32 nPara ) const;
@@ -841,18 +832,18 @@ public:
     void DrawingText( const Point& rStartPos, const OUString& rText,
                               sal_Int32 nTextStart, sal_Int32 nTextLen,
                               const long* pDXArray, const SvxFont& rFont,
-                              sal_Int32 nPara, sal_Int32 nIndex, sal_uInt8 nRightToLeft,
+                              sal_Int32 nPara, sal_uInt8 nRightToLeft,
                               const EEngineData::WrongSpellVector* pWrongSpellVector,
                               const SvxFieldData* pFieldData,
                               bool bEndOfLine,
                               bool bEndOfParagraph,
                               bool bEndOfBullet,
-                              const ::com::sun::star::lang::Locale* pLocale,
+                              const css::lang::Locale* pLocale,
                               const Color& rOverlineColor,
                               const Color& rTextLineColor);
 
     void DrawingTab( const Point& rStartPos, long nWidth, const OUString& rChar,
-                             const SvxFont& rFont, sal_Int32 nPara, sal_Int32 nIndex, sal_uInt8 nRightToLeft,
+                             const SvxFont& rFont, sal_Int32 nPara, sal_uInt8 nRightToLeft,
                              bool bEndOfLine,
                              bool bEndOfParagraph,
                              const Color& rOverlineColor,
@@ -892,7 +883,7 @@ public:
     sal_Int32           GetLineLen( sal_Int32 nParagraph, sal_Int32 nLine ) const;
     sal_uLong           GetLineHeight( sal_Int32 nParagraph, sal_Int32 nLine = 0 );
 
-    sal_uLong           Read( SvStream& rInput, const OUString& rBaseURL, sal_uInt16, SvKeyValueIterator* pHTTPHeaderAttrs = NULL );
+    sal_uLong           Read( SvStream& rInput, const OUString& rBaseURL, sal_uInt16, SvKeyValueIterator* pHTTPHeaderAttrs = nullptr );
 
     ::svl::IUndoManager& GetUndoManager();
     ::svl::IUndoManager* SetUndoManager(::svl::IUndoManager* pNew);
@@ -908,18 +899,15 @@ public:
     void            QuickFormatDoc( bool bFull = false );
 
     bool            UpdateFields();
-    void            RemoveFields( bool bKeepFieldText, TypeId aType = NULL );
+    void            RemoveFields( bool bKeepFieldText, std::function<bool ( const SvxFieldData* )> isFieldData = [] (const SvxFieldData* ){return true;} );
 
     void            FieldClicked( const SvxFieldItem& rField, sal_Int32 nPara, sal_Int32 nPos );
     virtual OUString CalcFieldValue( const SvxFieldItem& rField, sal_Int32 nPara, sal_Int32 nPos, Color*& rTxtColor, Color*& rFldColor );
 
-    void            SetSpeller( ::com::sun::star::uno::Reference<
-                            ::com::sun::star::linguistic2::XSpellChecker1 > &xSpeller );
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::linguistic2::XSpellChecker1 >
+    void            SetSpeller( css::uno::Reference< css::linguistic2::XSpellChecker1 > &xSpeller );
+    css::uno::Reference< css::linguistic2::XSpellChecker1 >
                     GetSpeller();
-    void            SetHyphenator( ::com::sun::star::uno::Reference<
-                        ::com::sun::star::linguistic2::XHyphenator >& xHyph );
+    void            SetHyphenator( css::uno::Reference< css::linguistic2::XHyphenator >& xHyph );
 
     static void     SetForbiddenCharsTable( rtl::Reference<SvxForbiddenCharactersTable> xForbiddenChars );
 
@@ -934,7 +922,7 @@ public:
     virtual bool    SpellNextDocument();
 
     // for text conversion
-    bool        HasConvertibleTextPortion( LanguageType nLang );
+    bool            HasConvertibleTextPortion( LanguageType nLang );
     virtual bool    ConvertNextDocument();
 
     void            SetEditTextObjectPool( SfxItemPool* pPool );

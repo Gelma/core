@@ -66,14 +66,12 @@ class XMLIndexAlphabeticalSourceContext : public XMLIndexSourceBaseContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     XMLIndexAlphabeticalSourceContext(
         SvXMLImport& rImport,
         sal_uInt16 nPrfx,
         const OUString& rLocalName,
-        ::com::sun::star::uno::Reference<
-            ::com::sun::star::beans::XPropertySet> & rPropSet);
+        css::uno::Reference<css::beans::XPropertySet> & rPropSet);
 
     virtual ~XMLIndexAlphabeticalSourceContext();
 
@@ -81,15 +79,14 @@ protected:
 
     virtual void ProcessAttribute(
         enum IndexSourceParamEnum eParam,
-        const OUString& rValue) SAL_OVERRIDE;
+        const OUString& rValue) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
     virtual SvXMLImportContext* CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList> & xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList> & xAttrList ) override;
 };
 
 #endif

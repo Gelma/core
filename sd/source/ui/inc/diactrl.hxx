@@ -35,13 +35,13 @@
 class SdPagesField : public SvxMetricField
 {
 private:
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > m_xFrame;
+    css::uno::Reference< css::frame::XFrame > m_xFrame;
 protected:
-    virtual void    Modify() SAL_OVERRIDE;
+    virtual void    Modify() override;
 
 public:
                     SdPagesField( vcl::Window* pParent,
-                                  const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& rFrame,
+                                  const css::uno::Reference< css::frame::XFrame >& rFrame,
                                   WinBits nBits = WB_BORDER | WB_SPIN | WB_REPEAT );
                     virtual ~SdPagesField();
 
@@ -54,8 +54,8 @@ class SdTbxCtlDiaPages : public SfxToolBoxControl
 {
 public:
     virtual void        StateChanged( sal_uInt16 nSID, SfxItemState eState,
-                                      const SfxPoolItem* pState ) SAL_OVERRIDE;
-    virtual VclPtr<vcl::Window> CreateItemWindow( vcl::Window *pParent ) SAL_OVERRIDE;
+                                      const SfxPoolItem* pState ) override;
+    virtual VclPtr<vcl::Window> CreateItemWindow( vcl::Window *pParent ) override;
 
     SFX_DECL_TOOLBOX_CONTROL();
 

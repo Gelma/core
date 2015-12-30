@@ -30,7 +30,6 @@
 
 #include <rtl/ustring.h>
 #include <com/sun/star/uno/Any.hxx>
-#include <framework/eventsconfiguration.hxx>
 #include <comphelper/processfactory.hxx>
 #include <sfx2/evntconf.hxx>
 
@@ -49,7 +48,6 @@
 #include <com/sun/star/uno/Reference.hxx>
 
 
-TYPEINIT1(SfxEventNamesItem, SfxPoolItem);
 
 using namespace com::sun::star;
 
@@ -159,18 +157,14 @@ uno::Any CreateEventData_Impl( const SvxMacro *pMacro )
             uno::Sequence < beans::PropertyValue > aProperties(3);
             beans::PropertyValue *pValues = aProperties.getArray();
 
-            OUString aType(STAR_BASIC );
-            OUString aLib  = pMacro->GetLibName();
-            OUString aMacro = pMacro->GetMacName();
-
             pValues[ 0 ].Name = PROP_EVENT_TYPE;
-            pValues[ 0 ].Value <<= aType;
+            pValues[ 0 ].Value <<= OUString("STAR_BASIC");
 
             pValues[ 1 ].Name = PROP_LIBRARY;
-            pValues[ 1 ].Value <<= aLib;
+            pValues[ 1 ].Value <<= pMacro->GetLibName();
 
             pValues[ 2 ].Name = PROP_MACRO_NAME;
-            pValues[ 2 ].Value <<= aMacro;
+            pValues[ 2 ].Value <<= pMacro->GetMacName();
 
             aEventData <<= aProperties;
         }
@@ -179,14 +173,11 @@ uno::Any CreateEventData_Impl( const SvxMacro *pMacro )
             uno::Sequence < beans::PropertyValue > aProperties(2);
             beans::PropertyValue *pValues = aProperties.getArray();
 
-            OUString aLib   = pMacro->GetLibName();
-            OUString aMacro = pMacro->GetMacName();
-
             pValues[ 0 ].Name = PROP_EVENT_TYPE;
-            pValues[ 0 ].Value <<= aLib;
+            pValues[ 0 ].Value <<= pMacro->GetLibName();
 
             pValues[ 1 ].Name = PROP_SCRIPT;
-            pValues[ 1 ].Value <<= aMacro;
+            pValues[ 1 ].Value <<= pMacro->GetMacName();
 
             aEventData <<= aProperties;
         }
@@ -195,13 +186,11 @@ uno::Any CreateEventData_Impl( const SvxMacro *pMacro )
             uno::Sequence < beans::PropertyValue > aProperties(2);
             beans::PropertyValue *pValues = aProperties.getArray();
 
-            OUString aMacro  = pMacro->GetMacName();
-
             pValues[ 0 ].Name = PROP_EVENT_TYPE;
             pValues[ 0 ].Value <<= OUString(SVX_MACRO_LANGUAGE_JAVASCRIPT);
 
             pValues[ 1 ].Name = PROP_MACRO_NAME;
-            pValues[ 1 ].Value <<= aMacro;
+            pValues[ 1 ].Value <<= pMacro->GetMacName();
 
             aEventData <<= aProperties;
         }
@@ -225,13 +214,12 @@ void PropagateEvent_Impl( SfxObjectShell *pDoc, const OUString& aEventName, cons
     uno::Reference < document::XEventsSupplier > xSupplier;
     if ( pDoc )
     {
-        xSupplier = uno::Reference < document::XEventsSupplier >( pDoc->GetModel(), uno::UNO_QUERY );
+        xSupplier.set( pDoc->GetModel(), uno::UNO_QUERY );
     }
     else
     {
-        xSupplier = uno::Reference < document::XEventsSupplier >
-                ( frame::theGlobalEventBroadcaster::get(::comphelper::getProcessComponentContext()),
-                  uno::UNO_QUERY );
+        xSupplier.set( frame::theGlobalEventBroadcaster::get(::comphelper::getProcessComponentContext()),
+                       uno::UNO_QUERY );
     }
 
     if ( xSupplier.is() )
@@ -245,17 +233,17 @@ void PropagateEvent_Impl( SfxObjectShell *pDoc, const OUString& aEventName, cons
             {
                 xEvents->replaceByName( aEventName, aEventData );
             }
-            catch( const ::com::sun::star::lang::IllegalArgumentException& )
+            catch( const css::lang::IllegalArgumentException& )
             {
                 SAL_WARN( "sfx.config", "PropagateEvents_Impl: caught IllegalArgumentException" );
             }
-            catch( const ::com::sun::star::container::NoSuchElementException& )
+            catch( const css::container::NoSuchElementException& )
             {
                 SAL_WARN( "sfx.config", "PropagateEvents_Impl: caught NoSuchElementException" );
             }
         }
         else {
-            DBG_WARNING( "PropagateEvents_Impl: Got unknown event" );
+            SAL_INFO( "sfx.config", "PropagateEvents_Impl: Got unknown event" );
         }
     }
 }
@@ -266,11 +254,11 @@ void SfxEventConfiguration::ConfigureEvent( const OUString& aName, const SvxMacr
     std::unique_ptr<SvxMacro> pMacro;
     if ( rMacro.HasMacro() )
         pMacro.reset( new SvxMacro( rMacro.GetMacName(), rMacro.GetLibName(), rMacro.GetScriptType() ) );
-    PropagateEvent_Impl( pDoc ? pDoc : 0, aName, pMacro.get() );
+    PropagateEvent_Impl( pDoc ? pDoc : nullptr, aName, pMacro.get() );
 }
 
 
-SvxMacro* SfxEventConfiguration::ConvertToMacro( const com::sun::star::uno::Any& rElement, SfxObjectShell* pDoc, bool bBlowUp )
+SvxMacro* SfxEventConfiguration::ConvertToMacro( const css::uno::Any& rElement, SfxObjectShell* pDoc, bool bBlowUp )
 {
     return SfxEvents_Impl::ConvertToMacro( rElement, pDoc, bBlowUp );
 }

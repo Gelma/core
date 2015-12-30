@@ -145,13 +145,13 @@ public:
 
     virtual ~Parser() {}
 
-    virtual boost::optional< OUString > getCwdUrl() SAL_OVERRIDE { return m_cwdUrl; }
+    virtual boost::optional< OUString > getCwdUrl() override { return m_cwdUrl; }
 
-    virtual bool next(OUString * argument) SAL_OVERRIDE { return next(argument, true); }
+    virtual bool next(OUString * argument) override { return next(argument, true); }
 
 private:
     bool next(OUString * argument, bool prefix) {
-        OSL_ASSERT(argument != NULL);
+        OSL_ASSERT(argument != nullptr);
         if (m_index < m_input.getLength()) {
             if (prefix) {
                 if (m_input[m_index] != ',') {
@@ -306,12 +306,12 @@ IMPL_STATIC_LINK_TYPED( ProcessEventsClass_Impl, ProcessDocumentsEvent, void*, p
 
 void ImplPostForeignAppEvent( ApplicationEvent* pEvent )
 {
-    Application::PostUserEvent( LINK( NULL, ProcessEventsClass_Impl, CallEvent ), pEvent );
+    Application::PostUserEvent( LINK( nullptr, ProcessEventsClass_Impl, CallEvent ), pEvent );
 }
 
 void ImplPostProcessDocumentsEvent( ProcessDocumentsRequest* pEvent )
 {
-    Application::PostUserEvent( LINK( NULL, ProcessEventsClass_Impl, ProcessDocumentsEvent ), pEvent );
+    Application::PostUserEvent( LINK( nullptr, ProcessEventsClass_Impl, ProcessDocumentsEvent ), pEvent );
 }
 
 oslSignalAction SAL_CALL SalMainPipeExchangeSignal_impl(void* /*pData*/, oslSignalInfo* pInfo)
@@ -512,7 +512,7 @@ OfficeIPCThread::Status OfficeIPCThread::EnableOfficeIPCThread()
         OUString aDefault( "0" );
         OUString aPreloadData;
 
-        aPerfTuneIniFile.getFrom( OUString( "FastPipeCommunication" ), aPreloadData, aDefault );
+        aPerfTuneIniFile.getFrom( "FastPipeCommunication", aPreloadData, aDefault );
 
 
         OUString aUserInstallPathHashCode;
@@ -658,7 +658,7 @@ OfficeIPCThread::OfficeIPCThread() :
     mbDowning( false ),
     mbRequestsEnabled( false ),
     mnPendingRequests( 0 ),
-    mpDispatchWatcher( 0 )
+    mpDispatchWatcher( nullptr )
 {
 }
 
@@ -941,7 +941,7 @@ void OfficeIPCThread::execute()
                 {
                     // delete not used request again
                     delete pRequest;
-                    pRequest = NULL;
+                    pRequest = nullptr;
                 }
                 if (aArguments.equalsL(RTL_CONSTASCII_STRINGPARAM("-tofront")) ||
                     aCmdLineArgs->IsEmpty())
@@ -1097,7 +1097,7 @@ bool OfficeIPCThread::ExecuteCmdLineRequests( ProcessDocumentsRequest& aRequest 
         bShutdown = pGlobalOfficeIPCThread->mpDispatchWatcher->executeDispatchRequests( aTempList, s_bInEnableRequests );
 
         // set processed flag
-        if (aRequest.pcProcessed != NULL)
+        if (aRequest.pcProcessed != nullptr)
             aRequest.pcProcessed->set();
     }
 

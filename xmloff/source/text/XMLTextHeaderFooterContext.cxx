@@ -35,7 +35,6 @@ using namespace ::com::sun::star::text;
 using namespace ::com::sun::star::beans;
 
 
-TYPEINIT1( XMLTextHeaderFooterContext, SvXMLImportContext );
 
 XMLTextHeaderFooterContext::XMLTextHeaderFooterContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
                        const OUString& rLName,
@@ -112,7 +111,7 @@ SvXMLImportContext *XMLTextHeaderFooterContext::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
     if( bInsertContent )
     {
         if( !xOldTextCursor.is() )

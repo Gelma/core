@@ -56,16 +56,16 @@ class EDITENG_DLLPUBLIC SvxBulletItem : public SfxPoolItem
     void    SetDefaults_Impl();
 
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     explicit SvxBulletItem( sal_uInt16 nWhich = 0 );
     explicit SvxBulletItem( SvStream& rStrm, sal_uInt16 nWhich = 0 );
     SvxBulletItem( const SvxBulletItem& );
     virtual ~SvxBulletItem();
 
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Create( SvStream&, sal_uInt16 nVersion ) const SAL_OVERRIDE;
-    virtual SvStream&       Store( SvStream & , sal_uInt16 nItemVersion ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual SfxPoolItem*    Create( SvStream&, sal_uInt16 nVersion ) const override;
+    virtual SvStream&       Store( SvStream & , sal_uInt16 nItemVersion ) const override;
 
     OUString            GetFullText() const;
     sal_Unicode         GetSymbol() const { return cSymbol; }
@@ -91,12 +91,12 @@ public:
     void                SetFont( const vcl::Font& rNew) { aFont = rNew; }
     void                SetScale( sal_uInt16 nNew ) { nScale = nNew; }
 
-    virtual sal_uInt16  GetVersion(sal_uInt16 nFileVersion) const SAL_OVERRIDE;
-    virtual bool        operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual sal_uInt16  GetVersion(sal_uInt16 nFileVersion) const override;
+    virtual bool        operator==( const SfxPoolItem& ) const override;
     virtual bool        GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
-                                    OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    OUString &rText, const IntlWrapper * = nullptr ) const override;
 
     static void         StoreFont( SvStream&, const vcl::Font& );
     static vcl::Font    CreateFont( SvStream&, sal_uInt16 nVer );

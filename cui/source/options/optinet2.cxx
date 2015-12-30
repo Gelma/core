@@ -204,7 +204,7 @@ SvxProxyTabPage::SvxProxyTabPage(vcl::Window* pParent, const SfxItemSet& rSet)
     aArgumentList[0] = makeAny( aProperty );
 
     m_xConfigurationUpdateAccess = xConfigurationProvider->createInstanceWithArguments(
-        OUString( "com.sun.star.configuration.ConfigurationUpdateAccess" ),
+        "com.sun.star.configuration.ConfigurationUpdateAccess",
         aArgumentList );
 }
 
@@ -525,9 +525,9 @@ void SvxProxyTabPage::EnableControls_Impl(bool bEnable)
 
 
 
-IMPL_LINK( SvxProxyTabPage, ProxyHdl_Impl, ListBox *, pBox )
+IMPL_LINK_TYPED( SvxProxyTabPage, ProxyHdl_Impl, ListBox&, rBox, void )
 {
-    sal_Int32 nPos = pBox->GetSelectEntryPos();
+    sal_Int32 nPos = rBox.GetSelectEntryPos();
 
     // Restore original system values
     if( nPos == 1 )
@@ -536,7 +536,6 @@ IMPL_LINK( SvxProxyTabPage, ProxyHdl_Impl, ListBox *, pBox )
     }
 
     EnableControls_Impl(nPos == 2);
-    return 0;
 }
 
 
@@ -552,7 +551,6 @@ IMPL_STATIC_LINK_TYPED( SvxProxyTabPage, LoseFocusHdl_Impl, Control&, rControl, 
 
 
 
-//#98647#----------------------------------------------
 void SvxScriptExecListBox::RequestHelp( const HelpEvent& rHEvt )
 {   // try to show tips just like as on toolbars
     sal_Int32 nPos=LISTBOX_ENTRY_NOTFOUND;
@@ -597,8 +595,8 @@ void SvxScriptExecListBox::RequestHelp( const HelpEvent& rHEvt )
 SvxSecurityTabPage::SvxSecurityTabPage(vcl::Window* pParent, const SfxItemSet& rSet)
     : SfxTabPage(pParent, "OptSecurityPage", "cui/ui/optsecuritypage.ui", &rSet)
     , mpSecOptions(new SvtSecurityOptions)
-    , mpSecOptDlg(NULL)
-    , mpCertPathDlg(NULL)
+    , mpSecOptDlg(nullptr)
+    , mpCertPathDlg(nullptr)
 {
     get(m_pSecurityOptionsPB, "options");
     get(m_pSavePasswordsCB, "savepassword");
@@ -647,7 +645,7 @@ SvxSecurityTabPage::~SvxSecurityTabPage()
 void SvxSecurityTabPage::dispose()
 {
     delete mpSecOptions;
-    mpSecOptions = NULL;
+    mpSecOptions = nullptr;
     mpCertPathDlg.disposeAndClear();
     mpSecOptDlg.clear();
     m_pSecurityOptionsPB.clear();
@@ -686,11 +684,11 @@ IMPL_LINK_NOARG_TYPED(SvxSecurityTabPage, SavePasswordHdl, Button*, void)
             xMasterPasswd->removeMasterPassword();
             if ( xMasterPasswd->changeMasterPassword( Reference< task::XInteractionHandler >() ) )
             {
-                m_pMasterPasswordPB->Enable( true );
+                m_pMasterPasswordPB->Enable();
                 m_pMasterPasswordCB->Check();
-                m_pMasterPasswordCB->Enable( true );
-                m_pMasterPasswordFT->Enable( true );
-                m_pShowConnectionsPB->Enable( true );
+                m_pMasterPasswordCB->Enable();
+                m_pMasterPasswordFT->Enable();
+                m_pShowConnectionsPB->Enable();
             }
             else
             {
@@ -715,8 +713,8 @@ IMPL_LINK_NOARG_TYPED(SvxSecurityTabPage, SavePasswordHdl, Button*, void)
             else
             {
                 m_pSavePasswordsCB->Check();
-                m_pMasterPasswordPB->Enable( true );
-                m_pShowConnectionsPB->Enable( true );
+                m_pMasterPasswordPB->Enable();
+                m_pShowConnectionsPB->Enable();
             }
         }
     }
@@ -751,14 +749,14 @@ IMPL_LINK_NOARG_TYPED(SvxSecurityTabPage, MasterPasswordCBHdl, Button*, void)
         {
             if ( xMasterPasswd->isPersistentStoringAllowed() && xMasterPasswd->changeMasterPassword( Reference< task::XInteractionHandler >() ) )
             {
-                m_pMasterPasswordPB->Enable( true );
-                m_pMasterPasswordFT->Enable( true );
+                m_pMasterPasswordPB->Enable();
+                m_pMasterPasswordFT->Enable();
             }
             else
             {
                 m_pMasterPasswordCB->Check( false );
-                m_pMasterPasswordPB->Enable( true );
-                m_pMasterPasswordFT->Enable( true );
+                m_pMasterPasswordPB->Enable();
+                m_pMasterPasswordFT->Enable();
             }
         }
         else
@@ -771,8 +769,8 @@ IMPL_LINK_NOARG_TYPED(SvxSecurityTabPage, MasterPasswordCBHdl, Button*, void)
             else
             {
                 m_pMasterPasswordCB->Check();
-                m_pMasterPasswordPB->Enable( true );
-                m_pShowConnectionsPB->Enable( true );
+                m_pMasterPasswordPB->Enable();
+                m_pShowConnectionsPB->Enable();
             }
         }
     }
@@ -874,17 +872,17 @@ void SvxSecurityTabPage::InitControls()
 
         if ( xMasterPasswd->isPersistentStoringAllowed() )
         {
-            m_pMasterPasswordCB->Enable( true );
-            m_pShowConnectionsPB->Enable( true );
+            m_pMasterPasswordCB->Enable();
+            m_pShowConnectionsPB->Enable();
             m_pSavePasswordsCB->Check();
 
             if ( xMasterPasswd->isDefaultMasterPasswordUsed() )
                 m_pMasterPasswordCB->Check( false );
             else
             {
-                m_pMasterPasswordPB->Enable( true );
+                m_pMasterPasswordPB->Enable();
                 m_pMasterPasswordCB->Check();
-                m_pMasterPasswordFT->Enable( true );
+                m_pMasterPasswordFT->Enable();
             }
         }
     }
@@ -997,7 +995,7 @@ SvxEMailTabPage::~SvxEMailTabPage()
 void SvxEMailTabPage::dispose()
 {
     delete pImpl;
-    pImpl = NULL;
+    pImpl = nullptr;
     m_pMailContainer.clear();
     m_pMailerURLFI.clear();
     m_pMailerURLED.clear();
@@ -1042,8 +1040,8 @@ bool SvxEMailTabPage::FillItemSet( SfxItemSet* )
 
 void SvxEMailTabPage::Reset( const SfxItemSet* )
 {
-    m_pMailerURLED->Enable(true );
-    m_pMailerURLPB->Enable(true );
+    m_pMailerURLED->Enable();
+    m_pMailerURLPB->Enable();
 
     if (pImpl->bROProgram)
         m_pMailerURLFI->Show();
@@ -1077,7 +1075,7 @@ IMPL_LINK_TYPED(  SvxEMailTabPage, FileDialogHdl_Impl, Button*, pButton, void )
         OUString sUrl;
         osl::FileBase::getFileURLFromSystemPath(sPath, sUrl);
         aHelper.SetDisplayDirectory(sUrl);
-        aHelper.AddFilter( m_sDefaultFilterName, OUString("*"));
+        aHelper.AddFilter( m_sDefaultFilterName, "*");
 
         if ( ERRCODE_NONE == aHelper.Execute() )
         {

@@ -73,7 +73,7 @@ namespace slideshow
                                         const uno::Reference< drawing::XShape >&        rxShape,
                                         const uno::Reference< uno::XComponentContext >& rxContext ) :
             mpViewLayer( rViewLayer ),
-            mpEventHandlerParent(0),
+            mpEventHandlerParent(nullptr),
             maWindowOffset( 0, 0 ),
             maBounds(),
             mxShape( rxShape ),
@@ -247,7 +247,7 @@ namespace slideshow
             if( xPropSet.is() &&
                 getPropertyValue( xParentWindow,
                                   xPropSet,
-                                  OUString("Window" )) )
+                                  "Window") )
             {
                 const awt::Rectangle aRect( xParentWindow->getPosSize() );
 
@@ -321,14 +321,12 @@ namespace slideshow
                         {
                             OUString aURL;
                             xPropSet->getPropertyValue("MediaMimeType") >>= sMimeType;
-                            if ((xPropSet->getPropertyValue(
-                                  OUString( "PrivateTempFileURL")) >>= aURL)
+                            if ((xPropSet->getPropertyValue("PrivateTempFileURL") >>= aURL)
                                 && !aURL.isEmpty())
                             {
                                 implInitializeMediaPlayer( aURL, sMimeType );
                             }
-                            else if (xPropSet->getPropertyValue(
-                                  OUString( "MediaURL")) >>= aURL)
+                            else if (xPropSet->getPropertyValue("MediaURL") >>= aURL)
                             {
                                 implInitializeMediaPlayer( aURL, sMimeType );
                             }
@@ -374,19 +372,19 @@ namespace slideshow
                     bool bLoop( false );
                     getPropertyValue( bLoop,
                                       rxProps,
-                                      OUString( "Loop" ));
+                                      "Loop");
                     mxPlayer->setPlaybackLoop( bLoop );
 
                     bool bMute( false );
                     getPropertyValue( bMute,
                                       rxProps,
-                                      OUString( "Mute" ));
+                                      "Mute");
                     mxPlayer->setMute( bMute || !mbIsSoundEnabled);
 
                     sal_Int16 nVolumeDB(0);
                     getPropertyValue( nVolumeDB,
                                       rxProps,
-                                      OUString( "VolumeDB" ));
+                                      "VolumeDB");
                     mxPlayer->setVolumeDB( nVolumeDB );
 
                     if( mxPlayerWindow.is() )
@@ -394,7 +392,7 @@ namespace slideshow
                         media::ZoomLevel eZoom(media::ZoomLevel_FIT_TO_WINDOW);
                         getPropertyValue( eZoom,
                                           rxProps,
-                                          OUString( "Zoom" ));
+                                          "Zoom");
                         mxPlayerWindow->setZoomLevel( eZoom );
                     }
                 }

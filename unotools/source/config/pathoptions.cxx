@@ -161,7 +161,7 @@ class SvtPathOptions_Impl
 
 // global ----------------------------------------------------------------
 
-static SvtPathOptions_Impl* pOptions = NULL;
+static SvtPathOptions_Impl* pOptions = nullptr;
 static sal_Int32 nRefCount = 0;
 
 // functions -------------------------------------------------------------
@@ -404,7 +404,7 @@ SvtPathOptions_Impl::SvtPathOptions_Impl() :
     NameToHandleMap aTempHashMap;
     for ( sal_Int32 n = 0; n < aPathPropSeq.getLength(); n++ )
     {
-        const com::sun::star::beans::Property& aProperty = aPathPropSeq[n];
+        const css::beans::Property& aProperty = aPathPropSeq[n];
         aTempHashMap.insert( NameToHandleMap::value_type( aProperty.Name, aProperty.Handle ));
     }
 

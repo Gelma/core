@@ -48,20 +48,20 @@ namespace drawinglayer
         public:
             /// constructor
             UnifiedTransparencePrimitive2D(
-                const Primitive2DSequence& rChildren,
+                const Primitive2DContainer& rChildren,
                 double fTransparence);
 
             /// data read access
             double getTransparence() const { return mfTransparence; }
 
             /// compare operator
-            virtual bool operator==(const BasePrimitive2D& rPrimitive) const SAL_OVERRIDE;
+            virtual bool operator==(const BasePrimitive2D& rPrimitive) const override;
 
             /// own getB2DRange implementation to include transparent geometries to BoundRect calculations
-            virtual basegfx::B2DRange getB2DRange(const geometry::ViewInformation2D& rViewInformation) const SAL_OVERRIDE;
+            virtual basegfx::B2DRange getB2DRange(const geometry::ViewInformation2D& rViewInformation) const override;
 
             /// create decomposition
-            virtual Primitive2DSequence get2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const SAL_OVERRIDE;
+            virtual Primitive2DContainer get2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const override;
 
             /// provide unique ID
             DeclPrimitive2DIDBlock()

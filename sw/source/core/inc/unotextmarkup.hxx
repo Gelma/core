@@ -45,8 +45,8 @@ class SfxPoolItem;
  */
 class SwXTextMarkup
     : public ::cppu::WeakImplHelper
-        <   ::com::sun::star::text::XTextMarkup
-        ,   ::com::sun::star::text::XMultiTextMarkup
+        <   css::text::XTextMarkup
+        ,   css::text::XMultiTextMarkup
         >
 {
 public:
@@ -54,21 +54,21 @@ public:
             const ModelToViewHelper& rConversionMap);
     virtual ~SwXTextMarkup();
 
-    // ::com::sun::star::text::XTextMarkup:
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::container::XStringKeyMap > SAL_CALL getMarkupInfoContainer() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    // css::text::XTextMarkup:
+    virtual css::uno::Reference< css::container::XStringKeyMap > SAL_CALL getMarkupInfoContainer() throw (css::uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL commitStringMarkup(::sal_Int32 nType, const OUString & aIdentifier, ::sal_Int32 nStart, ::sal_Int32 nLength,
-                                           const ::com::sun::star::uno::Reference< ::com::sun::star::container::XStringKeyMap > & xMarkupInfoContainer) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+                                           const css::uno::Reference< css::container::XStringKeyMap > & xMarkupInfoContainer) throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual void SAL_CALL commitTextRangeMarkup(::sal_Int32 nType, const OUString & aIdentifier, const ::com::sun::star::uno::Reference< ::com::sun::star::text::XTextRange> & xRange,
-                                                const ::com::sun::star::uno::Reference< ::com::sun::star::container::XStringKeyMap > & xMarkupInfoContainer) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL commitTextRangeMarkup(::sal_Int32 nType, const OUString & aIdentifier, const css::uno::Reference< css::text::XTextRange> & xRange,
+                                                const css::uno::Reference< css::container::XStringKeyMap > & xMarkupInfoContainer) throw (css::uno::RuntimeException, std::exception) override;
 
-    // ::com::sun::star::text::XMultiTextMarkup:
-    virtual void SAL_CALL commitMultiTextMarkup( const ::com::sun::star::uno::Sequence< ::com::sun::star::text::TextMarkupDescriptor >& aMarkups ) throw (::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    // css::text::XMultiTextMarkup:
+    virtual void SAL_CALL commitMultiTextMarkup( const css::uno::Sequence< css::text::TextMarkupDescriptor >& aMarkups ) throw (css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) override;
 
 private:
-    SwXTextMarkup( const SwXTextMarkup & ) SAL_DELETED_FUNCTION;
-    SwXTextMarkup & operator =( const SwXTextMarkup & ) SAL_DELETED_FUNCTION;
+    SwXTextMarkup( const SwXTextMarkup & ) = delete;
+    SwXTextMarkup & operator =( const SwXTextMarkup & ) = delete;
 
     struct Impl;
     ::sw::UnoImplPtr<Impl> m_pImpl;
@@ -79,30 +79,30 @@ protected:
     const ModelToViewHelper& GetConversionMap();
 };
 
-/** Implementation of the ::com::sun::star::container::XStringKeyMap interface
+/** Implementation of the css::container::XStringKeyMap interface
  */
 class SwXStringKeyMap:
     public ::cppu::WeakImplHelper<
-        ::com::sun::star::container::XStringKeyMap>
+        css::container::XStringKeyMap>
 {
 public:
     SwXStringKeyMap();
 
-    // ::com::sun::star::container::XStringKeyMap:
-    virtual ::com::sun::star::uno::Any SAL_CALL getValue(const OUString & aKey) throw (::com::sun::star::uno::RuntimeException, ::com::sun::star::container::NoSuchElementException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL hasValue(const OUString & aKey) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL insertValue(const OUString & aKey, const ::com::sun::star::uno::Any & aValue) throw (::com::sun::star::uno::RuntimeException, ::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::container::ElementExistException, std::exception) SAL_OVERRIDE;
-    virtual ::sal_Int32 SAL_CALL getCount() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual OUString SAL_CALL getKeyByIndex(::sal_Int32 nIndex) throw (::com::sun::star::uno::RuntimeException, ::com::sun::star::lang::IndexOutOfBoundsException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Any SAL_CALL getValueByIndex(::sal_Int32 nIndex) throw (::com::sun::star::uno::RuntimeException, ::com::sun::star::lang::IndexOutOfBoundsException, std::exception) SAL_OVERRIDE;
+    // css::container::XStringKeyMap:
+    virtual css::uno::Any SAL_CALL getValue(const OUString & aKey) throw (css::uno::RuntimeException, css::container::NoSuchElementException, std::exception) override;
+    virtual sal_Bool SAL_CALL hasValue(const OUString & aKey) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL insertValue(const OUString & aKey, const css::uno::Any & aValue) throw (css::uno::RuntimeException, css::lang::IllegalArgumentException, css::container::ElementExistException, std::exception) override;
+    virtual ::sal_Int32 SAL_CALL getCount() throw (css::uno::RuntimeException, std::exception) override;
+    virtual OUString SAL_CALL getKeyByIndex(::sal_Int32 nIndex) throw (css::uno::RuntimeException, css::lang::IndexOutOfBoundsException, std::exception) override;
+    virtual css::uno::Any SAL_CALL getValueByIndex(::sal_Int32 nIndex) throw (css::uno::RuntimeException, css::lang::IndexOutOfBoundsException, std::exception) override;
 
 private:
-    SwXStringKeyMap(SwXStringKeyMap &) SAL_DELETED_FUNCTION;
-    void operator =(SwXStringKeyMap &) SAL_DELETED_FUNCTION;
+    SwXStringKeyMap(SwXStringKeyMap &) = delete;
+    void operator =(SwXStringKeyMap &) = delete;
 
     virtual ~SwXStringKeyMap() {}
 
-    std::map< OUString, ::com::sun::star::uno::Any > maMap;
+    std::map< OUString, css::uno::Any > maMap;
 };
 
 #endif

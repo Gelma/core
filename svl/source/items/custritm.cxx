@@ -24,12 +24,11 @@
 #include <tools/stream.hxx>
 #include <svl/custritm.hxx>
 
-TYPEINIT1_AUTOFACTORY(CntUnencodedStringItem, SfxPoolItem)
 
 // virtual
 bool CntUnencodedStringItem::operator ==(const SfxPoolItem & rItem) const
 {
-    DBG_ASSERT(rItem.ISA(CntUnencodedStringItem),
+    DBG_ASSERT(dynamic_cast<const CntUnencodedStringItem*>( &rItem ) !=  nullptr,
                "CntUnencodedStringItem::operator ==(): Bad type");
     return m_aValue
             == (static_cast< const CntUnencodedStringItem * >(&rItem))->
@@ -46,7 +45,7 @@ bool CntUnencodedStringItem::GetPresentation(SfxItemPresentation, SfxMapUnit,
 }
 
 // virtual
-bool CntUnencodedStringItem::QueryValue(com::sun::star::uno::Any& rVal, sal_uInt8)
+bool CntUnencodedStringItem::QueryValue(css::uno::Any& rVal, sal_uInt8)
     const
 {
     rVal <<= OUString(m_aValue);
@@ -54,7 +53,7 @@ bool CntUnencodedStringItem::QueryValue(com::sun::star::uno::Any& rVal, sal_uInt
 }
 
 // virtual
-bool CntUnencodedStringItem::PutValue(const com::sun::star::uno::Any& rVal,
+bool CntUnencodedStringItem::PutValue(const css::uno::Any& rVal,
                                          sal_uInt8)
 {
     OUString aTheValue;

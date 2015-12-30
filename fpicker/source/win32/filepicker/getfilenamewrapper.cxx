@@ -157,7 +157,7 @@ namespace /* private */
 
 
     // executes GetOpenFileName/GetSaveFileName in
-    // a separated thread
+    // a separate thread
 
 
     bool ThreadExecGetFileName(LPOPENFILENAME lpofn, bool bOpen, /*out*/ int& ExtErr)

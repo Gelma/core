@@ -416,14 +416,17 @@ public class TextStyle extends Style implements Cloneable {
      * Dump this {@code Style} as a Comma Separated Value (CSV) line.
      */
     public void dumpCSV() {
-        String attributes = "";
+        StringBuilder attributes = new StringBuilder();
         for (int bitVal = 0x01; bitVal <= 0x20; bitVal = bitVal << 1) {
             if ((bitVal & mask) != 0) {
-                attributes += toCSV(((bitVal & values) != 0) ? "yes" : "no");
-            } else attributes += toCSV(null);  // unspecified
+                attributes.append(toCSV(((bitVal & values) != 0) ? "yes" : "no"));
+            }
+            else {
+                attributes.append(toCSV(null));  // unspecified
+            }
         }
         System.out.println(toCSV(name) + toCSV(family) + toCSV(parent)
-        + toCSV(fontName) + toCSV("" + sizeInPoints) + attributes + toLastCSV(null));
+        + toCSV(fontName) + toCSV("" + sizeInPoints) + attributes.toString() + toLastCSV(null));
     }
 
     /**
@@ -461,10 +464,8 @@ public class TextStyle extends Style implements Cloneable {
         if (tStyle.values != values)
                 return false;
 
-        if (tStyle.sizeInPoints != 0) {
-            if (sizeInPoints != tStyle.sizeInPoints)
-                return false;
-        }
+        if (tStyle.sizeInPoints != 0 && sizeInPoints != tStyle.sizeInPoints)
+            return false;
 
         if (tStyle.fontName != null) {
             if (fontName == null)
@@ -498,29 +499,23 @@ public class TextStyle extends Style implements Cloneable {
      */
     private void writeAttributes(Element node) {
 
-        if ((mask & BOLD) != 0)
-            if ((values & BOLD) != 0)
-                node.setAttribute("fo:font-weight", "bold");
+        if ((mask & BOLD) != 0 && (values & BOLD) != 0)
+            node.setAttribute("fo:font-weight", "bold");
 
-        if ((mask & ITALIC) != 0)
-            if ((values & ITALIC) != 0)
-                node.setAttribute("fo:font-style", "italic");
+        if ((mask & ITALIC) != 0 && (values & ITALIC) != 0)
+            node.setAttribute("fo:font-style", "italic");
 
-        if ((mask & UNDERLINE) != 0)
-            if ((values & UNDERLINE) != 0)
-                node.setAttribute("style:text-underline", "single");
+        if ((mask & UNDERLINE) != 0 && (values & UNDERLINE) != 0)
+            node.setAttribute("style:text-underline", "single");
 
-        if ((mask & STRIKETHRU) != 0)
-            if ((values & STRIKETHRU) != 0)
-                node.setAttribute("style:text-crossing-out", "single-line");
+        if ((mask & STRIKETHRU) != 0 && (values & STRIKETHRU) != 0)
+            node.setAttribute("style:text-crossing-out", "single-line");
 
-        if ((mask & SUPERSCRIPT) != 0)
-            if ((values & SUPERSCRIPT) != 0)
-                node.setAttribute("style:text-position", "super 58%");
+        if ((mask & SUPERSCRIPT) != 0 && (values & SUPERSCRIPT) != 0)
+            node.setAttribute("style:text-position", "super 58%");
 
-        if ((mask & SUBSCRIPT) != 0)
-            if ((values & SUBSCRIPT) != 0)
-                node.setAttribute("style:text-position", "sub 58%");
+        if ((mask & SUBSCRIPT) != 0 && (values & SUBSCRIPT) != 0)
+            node.setAttribute("style:text-position", "sub 58%");
 
         if (sizeInPoints != 0) {
             node.setAttribute("fo:font-size", Integer.toString(sizeInPoints) + "pt");

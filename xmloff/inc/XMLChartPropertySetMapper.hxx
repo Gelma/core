@@ -32,7 +32,7 @@ class XMLChartPropHdlFactory : public XMLPropertyHandlerFactory
 {
 public:
     virtual ~XMLChartPropHdlFactory();
-    virtual const XMLPropertyHandler* GetPropertyHandler( sal_Int32 nType ) const SAL_OVERRIDE;
+    virtual const XMLPropertyHandler* GetPropertyHandler( sal_Int32 nType ) const override;
 };
 
 class XMLChartPropertySetMapper : public XMLPropertySetMapper
@@ -46,37 +46,35 @@ class XMLChartExportPropertyMapper : public SvXMLExportPropertyMapper
 {
 private:
     SvXMLExport& mrExport;
-    com::sun::star::uno::Reference< com::sun::star::chart2::XChartDocument > mxChartDoc;
+    css::uno::Reference< css::chart2::XChartDocument > mxChartDoc;
 
 protected:
     virtual void ContextFilter(
         bool bEnableFoFontFamily,
         ::std::vector< XMLPropertyState >& rProperties,
-        ::com::sun::star::uno::Reference<
-            ::com::sun::star::beans::XPropertySet > rPropSet ) const SAL_OVERRIDE;
+        css::uno::Reference<css::beans::XPropertySet > rPropSet ) const override;
 
 private:
     /// this method is called for every item that has the MID_FLAG_ELEMENT_EXPORT flag set
     virtual void handleElementItem(
         SvXMLExport& rExport,
         const XMLPropertyState& rProperty, SvXmlExportFlags nFlags,
-        const ::std::vector< XMLPropertyState > *pProperties = 0,
-        sal_uInt32 nIdx = 0  ) const SAL_OVERRIDE;
+        const ::std::vector< XMLPropertyState > *pProperties = nullptr,
+        sal_uInt32 nIdx = 0  ) const override;
 
     /// this method is called for every item that has the MID_FLAG_SPECIAL_ITEM_EXPORT flag set
     virtual void handleSpecialItem(
         SvXMLAttributeList& rAttrList, const XMLPropertyState& rProperty,
         const SvXMLUnitConverter& rUnitConverter, const SvXMLNamespaceMap& rNamespaceMap,
-        const ::std::vector< XMLPropertyState > *pProperties = 0,
-        sal_uInt32 nIdx = 0  ) const SAL_OVERRIDE;
+        const ::std::vector< XMLPropertyState > *pProperties = nullptr,
+        sal_uInt32 nIdx = 0  ) const override;
 
 public:
     XMLChartExportPropertyMapper( const rtl::Reference< XMLPropertySetMapper >& rMapper,
                                   SvXMLExport& rExport );
     virtual ~XMLChartExportPropertyMapper();
 
-    void setChartDoc( com::sun::star::uno::Reference<
-            com::sun::star::chart2::XChartDocument > xChartDoc );
+    void setChartDoc( css::uno::Reference< css::chart2::XChartDocument > xChartDoc );
 };
 
 class XMLChartImportPropertyMapper : public SvXMLImportPropertyMapper
@@ -94,11 +92,11 @@ public:
         ::std::vector< XMLPropertyState >& rProperties,
         const OUString& rValue,
         const SvXMLUnitConverter& rUnitConverter,
-        const SvXMLNamespaceMap& rNamespaceMap ) const SAL_OVERRIDE;
+        const SvXMLNamespaceMap& rNamespaceMap ) const override;
 
     virtual void finished(
         ::std::vector< XMLPropertyState >& rProperties,
-        sal_Int32 nStartIndex, sal_Int32 nEndIndex ) const SAL_OVERRIDE;
+        sal_Int32 nStartIndex, sal_Int32 nEndIndex ) const override;
 };
 
 #endif // INCLUDED_XMLOFF_INC_XMLCHARTPROPERTYSETMAPPER_HXX

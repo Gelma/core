@@ -60,7 +60,6 @@ const sal_Char sAPI_SortAlgorithm[] = "SortAlgorithm";
 const sal_Char sAPI_Locale[] = "Locale";
 
 
-TYPEINIT1( XMLIndexAlphabeticalSourceContext, XMLIndexSourceBaseContext );
 
 XMLIndexAlphabeticalSourceContext::XMLIndexAlphabeticalSourceContext(
     SvXMLImport& rImport,
@@ -108,7 +107,7 @@ void XMLIndexAlphabeticalSourceContext::ProcessAttribute(
                 sMainEntryStyleName = rValue;
                 OUString sDisplayStyleName = GetImport().GetStyleDisplayName(
                     XML_STYLE_FAMILY_TEXT_TEXT, sMainEntryStyleName );
-                const Reference < ::com::sun::star::container::XNameContainer >&
+                const Reference < css::container::XNameContainer >&
                     rStyles = GetImport().GetTextImport()->GetTextStyles();
                 bMainEntryStyleNameOK = rStyles.is() && rStyles->hasByName( sDisplayStyleName );
             }

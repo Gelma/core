@@ -19,6 +19,10 @@
 #ifndef INCLUDED_UNO_CURRENT_CONTEXT_HXX
 #define INCLUDED_UNO_CURRENT_CONTEXT_HXX
 
+#include <sal/config.h>
+
+#include <cstddef>
+
 #include <uno/current_context.h>
 #include <uno/lbnames.h>
 
@@ -45,7 +49,7 @@ inline Reference< XCurrentContext > SAL_CALL getCurrentContext()
 {
     Reference< XCurrentContext > xRet;
     ::rtl::OUString aEnvTypeName( CPPU_CURRENT_LANGUAGE_BINDING_NAME );
-    ::uno_getCurrentContext( reinterpret_cast<void **>(&xRet), aEnvTypeName.pData, 0 );
+    ::uno_getCurrentContext( reinterpret_cast<void **>(&xRet), aEnvTypeName.pData, NULL );
     return xRet;
 }
 /** Setting the current context.
@@ -57,7 +61,7 @@ inline bool SAL_CALL setCurrentContext(
     Reference< XCurrentContext > const & xContext )
 {
     ::rtl::OUString aEnvTypeName( CPPU_CURRENT_LANGUAGE_BINDING_NAME );
-    return (::uno_setCurrentContext( xContext.get(), aEnvTypeName.pData, 0 ) != sal_False);
+    return (::uno_setCurrentContext( xContext.get(), aEnvTypeName.pData, NULL ) != sal_False);
 }
 
 /** Objects of this class are used for applying a current context until they are destructed, i.e.
@@ -95,13 +99,13 @@ public:
 inline ContextLayer::ContextLayer( Reference< XCurrentContext > const & xNewContext )
     : m_aEnvTypeName( CPPU_CURRENT_LANGUAGE_BINDING_NAME )
 {
-    ::uno_getCurrentContext( reinterpret_cast<void **>(&m_xPreviousContext), m_aEnvTypeName.pData, 0 );
-    ::uno_setCurrentContext( xNewContext.get(), m_aEnvTypeName.pData, 0 );
+    ::uno_getCurrentContext( reinterpret_cast<void **>(&m_xPreviousContext), m_aEnvTypeName.pData, NULL );
+    ::uno_setCurrentContext( xNewContext.get(), m_aEnvTypeName.pData, NULL );
 }
 
 inline ContextLayer::~ContextLayer()
 {
-    ::uno_setCurrentContext( m_xPreviousContext.get(), m_aEnvTypeName.pData, 0 );
+    ::uno_setCurrentContext( m_xPreviousContext.get(), m_aEnvTypeName.pData, NULL );
 }
 
 }

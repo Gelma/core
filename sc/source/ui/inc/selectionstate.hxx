@@ -46,8 +46,6 @@ public:
 
     /** Returns the position of the cell cursor. */
     inline const ScAddress& GetCellCursor() const { return maCursor; }
-    /** Returns a range list containing all selected cell ranges. */
-    inline const ScRangeList& GetSheetSelection() const { return maSheetSel; }
     /** Returns the edit engine selection. */
     inline const ESelection& GetEditSelection() const { return maEditSel; }
 
@@ -57,9 +55,6 @@ private:
     ScRangeList         maSheetSel;         /// Sheet selection.
     ESelection          maEditSel;          /// Selection in edit mode.
 };
-
-bool operator==( const ScSelectionState& rL, const ScSelectionState& rR );
-inline bool operator!=( const ScSelectionState& rL, const ScSelectionState& rR ) { return !(rL == rR); }
 
 #endif
 

@@ -30,23 +30,14 @@ $(eval $(call gb_Module_add_l10n_targets,svl,\
 ))
 
 $(eval $(call gb_Module_add_check_targets,svl,\
-	CppunitTest_svl_lngmisc \
-	CppunitTest_svl_qa_cppunit \
 	CppunitTest_svl_inetcontenttype \
-	CppunitTest_svl_items \
 	CppunitTest_svl_itempool \
+	CppunitTest_svl_items \
+	CppunitTest_svl_lngmisc \
 	CppunitTest_svl_notify \
-))
-
-#TODO: CppunitTest_svl_urihelper depends on ucb, can only be added once svl is
-# in tail build
-#FIXME: fails on MSVC
-
-ifneq ($(OS),WNT)
-$(eval $(call gb_Module_add_subsequentcheck_targets,svl,\
+	CppunitTest_svl_qa_cppunit \
 	CppunitTest_svl_urihelper \
 ))
-endif
 
 ifneq ($(OOO_JUNIT_JAR),)
 $(eval $(call gb_Module_add_subsequentcheck_targets,svl,\

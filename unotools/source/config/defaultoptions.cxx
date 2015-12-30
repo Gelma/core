@@ -93,15 +93,15 @@ public:
                     SvtDefaultOptions_Impl();
 
     OUString         GetDefaultPath( sal_uInt16 nId ) const;
-    virtual void    Notify( const com::sun::star::uno::Sequence<OUString>& aPropertyNames) SAL_OVERRIDE;
+    virtual void    Notify( const css::uno::Sequence<OUString>& aPropertyNames) override;
 
 private:
-    virtual void    ImplCommit() SAL_OVERRIDE;
+    virtual void    ImplCommit() override;
 };
 
 // global ----------------------------------------------------------------
 
-static SvtDefaultOptions_Impl*  pOptions = NULL;
+static SvtDefaultOptions_Impl*  pOptions = nullptr;
 static sal_Int32                nRefCount = 0;
 
 typedef OUString SvtDefaultOptions_Impl:: *PathStrPtr;
@@ -234,7 +234,7 @@ SvtDefaultOptions_Impl::SvtDefaultOptions_Impl() : ConfigItem( "Office.Common/Pa
             {
                 switch ( pValues[nProp].getValueTypeClass() )
                 {
-                    case ::com::sun::star::uno::TypeClass_STRING :
+                    case css::uno::TypeClass_STRING :
                     {
                         // multi paths
                         if ( pValues[nProp] >>= aTempStr )
@@ -246,7 +246,7 @@ SvtDefaultOptions_Impl::SvtDefaultOptions_Impl() : ConfigItem( "Office.Common/Pa
                         break;
                     }
 
-                    case ::com::sun::star::uno::TypeClass_SEQUENCE :
+                    case css::uno::TypeClass_SEQUENCE :
                     {
                         // single paths
                         aFullPath.clear();

@@ -27,10 +27,10 @@
 
 class SvStream;
 
-class SVX_DLLPUBLIC SAL_WARN_UNUSED SvxOrientationItem: public SfxEnumItem
+class SAL_WARN_UNUSED SVX_DLLPUBLIC SvxOrientationItem: public SfxEnumItem
 {
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     SvxOrientationItem(
         const SvxCellOrientation eOrientation /*= SVX_ORIENTATION_STANDARD*/,
@@ -43,15 +43,15 @@ public:
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
-                                    OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    OUString &rText, const IntlWrapper * = nullptr ) const override;
 
-    virtual bool            QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool            PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual bool            QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool            PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
-    virtual sal_uInt16      GetValueCount() const SAL_OVERRIDE;
+    virtual sal_uInt16      GetValueCount() const override;
     static OUString         GetValueText( sal_uInt16 nVal );
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Create( SvStream& rStream, sal_uInt16 nVer ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual SfxPoolItem*    Create( SvStream& rStream, sal_uInt16 nVer ) const override;
 
     inline  SvxOrientationItem& operator=(const SvxOrientationItem& rOrientation)
             {
@@ -67,14 +67,14 @@ public:
     void                    SetFromRotation( sal_Int32 nRotation, bool bStacked );
 };
 
-class SVX_DLLPUBLIC SAL_WARN_UNUSED SvxMarginItem: public SfxPoolItem
+class SAL_WARN_UNUSED SVX_DLLPUBLIC SvxMarginItem: public SfxPoolItem
 {
     sal_Int16       nLeftMargin;
     sal_Int16       nTopMargin;
     sal_Int16       nRightMargin;
     sal_Int16       nBottomMargin;
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
     SvxMarginItem( const sal_uInt16 nId  );
     SvxMarginItem( sal_Int16 nLeft, sal_Int16 nTop /*= 0*/,
                    sal_Int16 nRight /*= 0*/, sal_Int16 nBottom /*= 0*/,
@@ -84,15 +84,15 @@ public:
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
-                                    OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    OUString &rText, const IntlWrapper * = nullptr ) const override;
 
-    virtual bool             operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*     Create( SvStream& rStream, sal_uInt16 nVer ) const SAL_OVERRIDE;
-    virtual SvStream&        Store( SvStream&, sal_uInt16 nItemVersion ) const SAL_OVERRIDE;
+    virtual bool             operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual SfxPoolItem*     Create( SvStream& rStream, sal_uInt16 nVer ) const override;
+    virtual SvStream&        Store( SvStream&, sal_uInt16 nItemVersion ) const override;
 
-    virtual bool            QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool            PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual bool            QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool            PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
             sal_Int16       GetLeftMargin() const {return nLeftMargin; }
             void            SetLeftMargin(sal_Int16 nLeft);

@@ -31,12 +31,12 @@
 #include "headless/svpdummies.hxx"
 #include "headless/svpvd.hxx"
 #ifdef IOS
-#include "headless/svpgdi.hxx"
 #include "quartz/salbmp.h"
 #include "quartz/salgdi.h"
 #include "quartz/salvd.h"
 #endif
 #include "headless/svpbmp.hxx"
+#include "headless/svpgdi.hxx"
 
 #include <salframe.hxx>
 #include <svdata.hxx>
@@ -60,7 +60,7 @@ bool SvpSalInstance::isFrameAlive( const SalFrame* pFrame ) const
     return false;
 }
 
-SvpSalInstance* SvpSalInstance::s_pDefaultInstance = NULL;
+SvpSalInstance* SvpSalInstance::s_pDefaultInstance = nullptr;
 
 SvpSalInstance::SvpSalInstance( SalYieldMutex *pMutex ) :
     SalGenericInstance( pMutex )
@@ -100,14 +100,14 @@ SvpSalInstance::SvpSalInstance( SalYieldMutex *pMutex ) :
         }
     }
     m_aEventGuard = osl_createMutex();
-    if( s_pDefaultInstance == NULL )
+    if( s_pDefaultInstance == nullptr )
         s_pDefaultInstance = this;
 }
 
 SvpSalInstance::~SvpSalInstance()
 {
     if( s_pDefaultInstance == this )
-        s_pDefaultInstance = NULL;
+        s_pDefaultInstance = nullptr;
 
     // close 'wakeup' pipe.
     close (m_pTimeoutFDS[0]);
@@ -125,6 +125,7 @@ void SvpSalInstance::PostEvent(const SalFrame* pFrame, ImplSVEvent* pData, sal_u
     Wakeup();
 }
 
+#ifdef ANDROID
 bool SvpSalInstance::PostedEventsInQueue()
 {
     bool result = false;
@@ -135,6 +136,7 @@ bool SvpSalInstance::PostedEventsInQueue()
     }
     return result;
 }
+#endif
 
 void SvpSalInstance::deregisterFrame( SalFrame* pFrame )
 {
@@ -171,7 +173,7 @@ bool SvpSalInstance::CheckTimeout( bool bExecuteTimers )
     if( m_aTimeout.tv_sec ) // timer is started
     {
         timeval aTimeOfDay;
-        gettimeofday( &aTimeOfDay, 0 );
+        gettimeofday( &aTimeOfDay, nullptr );
         if( aTimeOfDay >= m_aTimeout )
         {
             bRet = true;
@@ -196,14 +198,14 @@ bool SvpSalInstance::CheckTimeout( bool bExecuteTimers )
     return bRet;
 }
 
-SalFrame* SvpSalInstance::CreateChildFrame( SystemParentData* pParent, sal_uLong nStyle )
+SalFrame* SvpSalInstance::CreateChildFrame( SystemParentData* pParent, SalFrameStyleFlags nStyle )
 {
-    return new SvpSalFrame( this, NULL, nStyle, false, SVP_DEFAULT_BITMAP_FORMAT, pParent );
+    return new SvpSalFrame( this, nullptr, nStyle, SVP_CAIRO_FORMAT, pParent );
 }
 
-SalFrame* SvpSalInstance::CreateFrame( SalFrame* pParent, sal_uLong nStyle )
+SalFrame* SvpSalInstance::CreateFrame( SalFrame* pParent, SalFrameStyleFlags nStyle )
 {
-    return new SvpSalFrame( this, pParent, nStyle, false, SVP_DEFAULT_BITMAP_FORMAT );
+    return new SvpSalFrame( this, pParent, nStyle, SVP_CAIRO_FORMAT );
 }
 
 void SvpSalInstance::DestroyFrame( SalFrame* pFrame )
@@ -225,10 +227,10 @@ void SvpSalInstance::DestroyObject( SalObject* pObject )
 
 SalVirtualDevice* SvpSalInstance::CreateVirtualDevice( SalGraphics* /* pGraphics */,
                                                        long &nDX, long &nDY,
-                                                       sal_uInt16 nBitCount,
+                                                       DeviceFormat eFormat,
                                                        const SystemGraphicsData* /* pData */ )
 {
-    SvpSalVirtualDevice* pNew = new SvpSalVirtualDevice( nBitCount );
+    SvpSalVirtualDevice* pNew = new SvpSalVirtualDevice(eFormat);
     pNew->SetSize( nDX, nDY );
     return pNew;
 }
@@ -259,7 +261,7 @@ SalBitmap* SvpSalInstance::CreateSalBitmap()
 #endif
 }
 
-void SvpSalInstance::DoYield(bool bWait, bool bHandleAllCurrentEvents, sal_uLong const nReleased)
+SalYieldResult SvpSalInstance::DoYield(bool bWait, bool bHandleAllCurrentEvents, sal_uLong const nReleased)
 {
     (void) nReleased;
     assert(nReleased == 0); // not implemented
@@ -315,7 +317,7 @@ void SvpSalInstance::DoYield(bool bWait, bool bHandleAllCurrentEvents, sal_uLong
         {
             timeval Timeout;
             // determine remaining timeout.
-            gettimeofday (&Timeout, 0);
+            gettimeofday (&Timeout, nullptr);
             nTimeoutMS = (m_aTimeout.tv_sec - Timeout.tv_sec) * 1000
                          + m_aTimeout.tv_usec/1000 - Timeout.tv_usec/1000;
             if( nTimeoutMS < 0 )
@@ -326,6 +328,9 @@ void SvpSalInstance::DoYield(bool bWait, bool bHandleAllCurrentEvents, sal_uLong
 
         DoReleaseYield(nTimeoutMS);
     }
+
+    return bEvent ? SalYieldResult::EVENT :
+                    SalYieldResult::TIMEOUT;
 }
 
 void SvpSalInstance::DoReleaseYield( int nTimeoutMS )
@@ -362,7 +367,7 @@ bool SvpSalInstance::AnyInput( VclInputFlags nType )
 
 SalSession* SvpSalInstance::CreateSalSession()
 {
-    return NULL;
+    return nullptr;
 }
 
 void* SvpSalInstance::GetConnectionIdentifier( ConnectionIdentifierType& rReturnedType, int& rReturnedBytes )
@@ -382,7 +387,7 @@ void SvpSalInstance::StopTimer()
 void SvpSalInstance::StartTimer( sal_uLong nMS )
 {
     timeval aPrevTimeout (m_aTimeout);
-    gettimeofday (&m_aTimeout, 0);
+    gettimeofday (&m_aTimeout, nullptr);
 
     m_nTimeoutMS  = nMS;
     m_aTimeout    += m_nTimeoutMS;
@@ -412,20 +417,8 @@ void SvpSalTimer::Start( sal_uLong nMS )
     m_pInstance->StartTimer( nMS );
 }
 
-void SvpSalInstance::setBitCountFormatMapping( sal_uInt16 nBitCount,
-                                            Format aFormat )
+Format SvpSalInstance::getBaseBmpFormatForBitCount( sal_uInt16 nBitCount )
 {
-    m_aBitCountFormatMap[nBitCount] = aFormat;
-}
-
-Format SvpSalInstance::getFormatForBitCount( sal_uInt16 nBitCount )
-{
-    BitCountFormatMap::iterator aIt;
-    if ( (aIt = m_aBitCountFormatMap.find( nBitCount )) != m_aBitCountFormatMap.end() )
-    {
-        return aIt->second;
-    }
-
     switch( nBitCount )
     {
         case 1:
@@ -440,19 +433,23 @@ Format SvpSalInstance::getFormatForBitCount( sal_uInt16 nBitCount )
 #else
             return Format::SixteenBitLsbTcMask;
 #endif
-        case 24:
-            return Format::ThirtyTwoBitTcMaskBGRX;
         case 32:
             return Format::ThirtyTwoBitTcMaskBGRA;
-        case 0:
-#ifdef ANDROID
-            return Format::ThirtyTwoBitTcMaskRGBA;
-#else
-            return Format::ThirtyTwoBitTcMaskBGRX;
-#endif
         default:
-            return SVP_DEFAULT_BITMAP_FORMAT;
+            return SVP_CAIRO_FORMAT;
      }
 
 }
+
+Format SvpSalInstance::getBaseBmpFormatForDeviceFormat(DeviceFormat eFormat)
+{
+    switch (eFormat)
+    {
+        case DeviceFormat::BITMASK:
+            return Format::OneBitMsbPal;
+        default:
+            return SVP_CAIRO_FORMAT;
+    }
+}
+
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

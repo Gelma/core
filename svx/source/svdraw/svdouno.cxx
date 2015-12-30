@@ -65,7 +65,7 @@ using namespace sdr::contact;
 #include <cppuhelper/implbase.hxx>
 
 
-class SdrControlEventListenerImpl : public ::cppu::WeakImplHelper< ::com::sun::star::lang::XEventListener >
+class SdrControlEventListenerImpl : public ::cppu::WeakImplHelper< css::lang::XEventListener >
 {
 protected:
     SdrUnoObj*                  pObj;
@@ -76,19 +76,19 @@ public:
     {}
 
     // XEventListener
-    virtual void SAL_CALL disposing( const ::com::sun::star::lang::EventObject& Source ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing( const css::lang::EventObject& Source ) throw(css::uno::RuntimeException, std::exception) override;
 
     void StopListening(const uno::Reference< lang::XComponent >& xComp);
     void StartListening(const uno::Reference< lang::XComponent >& xComp);
 };
 
 // XEventListener
-void SAL_CALL SdrControlEventListenerImpl::disposing( const ::com::sun::star::lang::EventObject& /*Source*/)
-    throw(::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL SdrControlEventListenerImpl::disposing( const css::lang::EventObject& /*Source*/)
+    throw(css::uno::RuntimeException, std::exception)
 {
     if (pObj)
     {
-        pObj->xUnoControlModel = NULL;
+        pObj->xUnoControlModel = nullptr;
     }
 }
 
@@ -118,7 +118,7 @@ namespace
     {
         OSL_PRECOND( _pObject, "lcl_ensureControlVisibility: no object -> no survival!" );
 
-        SdrPageView* pPageView = _pView ? _pView->GetSdrPageView() : NULL;
+        SdrPageView* pPageView = _pView ? _pView->GetSdrPageView() : nullptr;
         DBG_ASSERT( pPageView, "lcl_ensureControlVisibility: no view found!" );
         if ( !pPageView )
             return;
@@ -147,11 +147,9 @@ namespace
     }
 }
 
-TYPEINIT1(SdrUnoObj, SdrRectObj);
 
-SdrUnoObj::SdrUnoObj(const OUString& rModelName, bool _bOwnUnoControlModel)
-:   m_pImpl( new SdrUnoObjDataHolder ),
-    bOwnUnoControlModel( _bOwnUnoControlModel )
+SdrUnoObj::SdrUnoObj(const OUString& rModelName)
+:   m_pImpl( new SdrUnoObjDataHolder )
 {
     bIsUnoObj = true;
 
@@ -163,10 +161,8 @@ SdrUnoObj::SdrUnoObj(const OUString& rModelName, bool _bOwnUnoControlModel)
 }
 
 SdrUnoObj::SdrUnoObj(const OUString& rModelName,
-                     const uno::Reference< lang::XMultiServiceFactory >& rxSFac,
-                     bool _bOwnUnoControlModel)
-:   m_pImpl( new SdrUnoObjDataHolder ),
-    bOwnUnoControlModel( _bOwnUnoControlModel )
+                     const uno::Reference< lang::XMultiServiceFactory >& rxSFac)
+:   m_pImpl( new SdrUnoObjDataHolder )
 {
     bIsUnoObj = true;
 
@@ -239,10 +235,7 @@ void SdrUnoObj::SetContextWritingMode( const sal_Int16 _nContextWritingMode )
     try
     {
         uno::Reference< beans::XPropertySet > xModelProperties( GetUnoControlModel(), uno::UNO_QUERY_THROW );
-        xModelProperties->setPropertyValue(
-            OUString(  "ContextWritingMode"  ),
-            uno::makeAny( _nContextWritingMode )
-        );
+        xModelProperties->setPropertyValue( "ContextWritingMode", uno::makeAny( _nContextWritingMode ) );
     }
     catch( const uno::Exception& )
     {
@@ -283,7 +276,7 @@ SdrUnoObj& SdrUnoObj::operator= (const SdrUnoObj& rObj)
     SdrRectObj::operator= (rObj);
 
     // release the reference to the current control model
-    SetUnoControlModel( NULL );
+    SetUnoControlModel( nullptr );
 
     aUnoControlModelTypeName = rObj.aUnoControlModelTypeName;
     aUnoControlTypeName = rObj.aUnoControlTypeName;
@@ -362,7 +355,7 @@ bool SdrUnoObj::supportsFullDrag() const
 
 SdrObject* SdrUnoObj::getFullDragClone() const
 {
-    SdrObject* pRetval = 0;
+    SdrObject* pRetval = nullptr;
     static bool bHandleSpecial(false);
 
     if(bHandleSpecial)
@@ -461,7 +454,7 @@ void SdrUnoObj::CreateUnoControlModel(const OUString& rModelName)
     uno::Reference< uno::XComponentContext > xContext( ::comphelper::getProcessComponentContext() );
     if (!aUnoControlModelTypeName.isEmpty() )
     {
-        xModel = uno::Reference< awt::XControlModel >(xContext->getServiceManager()->createInstanceWithContext(
+        xModel.set(xContext->getServiceManager()->createInstanceWithContext(
             aUnoControlModelTypeName, xContext), uno::UNO_QUERY);
 
         if (xModel.is())
@@ -481,8 +474,7 @@ void SdrUnoObj::CreateUnoControlModel(const OUString& rModelName,
     uno::Reference< awt::XControlModel >   xModel;
     if (!aUnoControlModelTypeName.isEmpty() && rxSFac.is() )
     {
-        xModel = uno::Reference< awt::XControlModel >(rxSFac->createInstance(
-            aUnoControlModelTypeName), uno::UNO_QUERY);
+        xModel.set(rxSFac->createInstance(aUnoControlModelTypeName), uno::UNO_QUERY);
 
         if (xModel.is())
             SetChanged();
@@ -520,7 +512,7 @@ void SdrUnoObj::SetUnoControlModel( const uno::Reference< awt::XControlModel >& 
     }
 
     // invalidate all ViewObject contacts
-    ViewContactOfUnoControl* pVC = NULL;
+    ViewContactOfUnoControl* pVC = nullptr;
     if ( impl_getViewContact( pVC ) )
     {
         // flushViewObjectContacts() removes all existing VOCs for the local DrawHierarchy. This
@@ -537,12 +529,12 @@ uno::Reference< awt::XControl > SdrUnoObj::GetUnoControl(const SdrView& _rView, 
     SdrPageView* pPageView = _rView.GetSdrPageView();
     OSL_ENSURE( pPageView && GetPage() == pPageView->GetPage(), "SdrUnoObj::GetUnoControl: This object is not displayed in that particular view!" );
     if ( !pPageView || GetPage() != pPageView->GetPage() )
-        return NULL;
+        return nullptr;
 
     SdrPageWindow* pPageWindow = pPageView->FindPageWindow( _rOut );
     OSL_ENSURE( pPageWindow, "SdrUnoObj::GetUnoControl: did not find my SdrPageWindow!" );
     if ( !pPageWindow )
-        return NULL;
+        return nullptr;
 
     ViewObjectContact& rViewObjectContact( GetViewContact().GetViewObjectContact( pPageWindow->GetObjectContact() ) );
     ViewObjectContactOfUnoControl* pUnoContact = dynamic_cast< ViewObjectContactOfUnoControl* >( &rViewObjectContact );
@@ -559,7 +551,7 @@ uno::Reference< awt::XControl > SdrUnoObj::GetTemporaryControlForWindow(
 {
     uno::Reference< awt::XControl > xControl;
 
-    ViewContactOfUnoControl* pVC = NULL;
+    ViewContactOfUnoControl* pVC = nullptr;
     if ( impl_getViewContact( pVC ) )
         xControl = pVC->getTemporaryControlForWindow( _rWindow, _inout_ControlContainer );
 
@@ -572,7 +564,7 @@ bool SdrUnoObj::impl_getViewContact( ViewContactOfUnoControl*& _out_rpContact ) 
     ViewContact& rViewContact( GetViewContact() );
     _out_rpContact = dynamic_cast< ViewContactOfUnoControl* >( &rViewContact );
     DBG_ASSERT( _out_rpContact, "SdrUnoObj::impl_getViewContact: could not find my ViewContact!" );
-    return ( _out_rpContact != NULL );
+    return ( _out_rpContact != nullptr );
 }
 
 

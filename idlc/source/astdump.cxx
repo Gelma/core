@@ -250,7 +250,7 @@ bool AstService::dump(RegistryKey& rKey)
             break;
 
         case NT_property:
-            static_cast<AstAttribute *>(*i)->dumpBlob(writer, propertyIndex++, 0);
+            static_cast<AstAttribute *>(*i)->dumpBlob(writer, propertyIndex++, nullptr);
             break;
 
         case NT_interface_member:
@@ -303,7 +303,7 @@ bool AstService::dump(RegistryKey& rKey)
     if (m_defaultConstructor) {
         writer.setMethodData(
             constructorIndex++, emptyStr, RTMethodMode::TWOWAY,
-            emptyStr, OUString("void"),
+            emptyStr, "void",
             0, 0);
     }
     sal_uInt32 size;
@@ -388,14 +388,14 @@ void AstAttribute::dumpExceptions(
     DeclList const & exceptions, RTMethodMode flags, sal_uInt16 * methodIndex)
 {
     if (!exceptions.empty()) {
-        OSL_ASSERT(methodIndex != 0);
+        OSL_ASSERT(methodIndex != nullptr);
         sal_uInt16 idx = (*methodIndex)++;
         // exceptions.size() <= SAL_MAX_UINT16 already checked in
         // AstInterface::dump:
         writer.setMethodData(
             idx, documentation, flags,
             OStringToOUString(getLocalName(), RTL_TEXTENCODING_UTF8),
-            OUString("void"), 0,
+            "void", 0,
             static_cast< sal_uInt16 >(exceptions.size()));
         sal_uInt16 exceptionIndex = 0;
         for (DeclList::const_iterator i(exceptions.begin());

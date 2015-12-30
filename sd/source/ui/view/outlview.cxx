@@ -77,16 +77,6 @@ namespace sd {
 // PROCESS_WITH_PROGRESS_THRESHOLD pages are concerned
 #define PROCESS_WITH_PROGRESS_THRESHOLD  5
 
-struct SdParaAndPos
-{
-    Paragraph* pPara;
-    sal_uInt16     nPos;
-};
-
-// - OutlineView -
-
-TYPEINIT1( OutlineView, ::sd::View );
-
 OutlineView::OutlineView( DrawDocShell& rDocSh, vcl::Window* pWindow, OutlineViewShell& rOutlineViewShell)
 : ::sd::View(*rDocSh.GetDoc(), pWindow, &rOutlineViewShell)
 , mrOutlineViewShell(rOutlineViewShell)
@@ -94,7 +84,7 @@ OutlineView::OutlineView( DrawDocShell& rDocSh, vcl::Window* pWindow, OutlineVie
 , mnPagesToProcess(0)
 , mnPagesProcessed(0)
 , mbFirstPaint(true)
-, mpProgress(NULL)
+, mpProgress(nullptr)
 , maDocColor( COL_WHITE )
 , maLRSpaceItem( 0, 0, 2000, 0, EE_PARA_OUTLLRSPACE )
 {
@@ -114,7 +104,7 @@ OutlineView::OutlineView( DrawDocShell& rDocSh, vcl::Window* pWindow, OutlineVie
     // insert View into Outliner
     for (sal_uInt16 nView = 0; nView < MAX_OUTLINERVIEWS; nView++)
     {
-        mpOutlinerView[nView] = NULL;
+        mpOutlinerView[nView] = nullptr;
     }
 
     mpOutlinerView[0] = new OutlinerView(&mrOutliner, pWindow);
@@ -144,7 +134,7 @@ OutlineView::OutlineView( DrawDocShell& rDocSh, vcl::Window* pWindow, OutlineVie
     maBulletFont.SetColor( COL_AUTO );
     maBulletFont.SetHeight( 1000 );
     maBulletFont.SetCharSet(RTL_TEXTENCODING_MS_1252);   // and replacing other values by standard
-    maBulletFont.SetName( OUString( "StarSymbol" ) );
+    maBulletFont.SetName( "StarSymbol" );
     maBulletFont.SetWeight(WEIGHT_NORMAL);
     maBulletFont.SetUnderline(UNDERLINE_NONE);
     maBulletFont.SetStrikeout(STRIKEOUT_NONE);
@@ -160,7 +150,7 @@ OutlineView::OutlineView( DrawDocShell& rDocSh, vcl::Window* pWindow, OutlineVie
     // Tell undo manager of the document about the undo manager of the
     // outliner, so that the former can synchronize with the later.
     sd::UndoManager* pDocUndoMgr = dynamic_cast<sd::UndoManager*>(mpDocSh->GetUndoManager());
-    if (pDocUndoMgr != NULL)
+    if (pDocUndoMgr != nullptr)
         pDocUndoMgr->SetLinkedUndoManager(&mrOutliner.GetUndoManager());
 }
 
@@ -169,7 +159,7 @@ OutlineView::OutlineView( DrawDocShell& rDocSh, vcl::Window* pWindow, OutlineVie
  */
 OutlineView::~OutlineView()
 {
-    DBG_ASSERT(maDragAndDropModelGuard.get() == 0, "sd::OutlineView::~OutlineView(), prior drag operation not finished correctly!" );
+    DBG_ASSERT(maDragAndDropModelGuard.get() == nullptr, "sd::OutlineView::~OutlineView(), prior drag operation not finished correctly!" );
 
     Link<tools::EventMultiplexerEvent&,void> aLink( LINK(this,OutlineView,EventMultiplexerListener) );
     mrOutlineViewShell.GetViewShellBase().GetEventMultiplexer()->RemoveEventListener( aLink );
@@ -180,11 +170,11 @@ OutlineView::~OutlineView()
     // unregister OutlinerViews and destroy them
     for (sal_uInt16 nView = 0; nView < MAX_OUTLINERVIEWS; nView++)
     {
-        if (mpOutlinerView[nView] != NULL)
+        if (mpOutlinerView[nView] != nullptr)
         {
             mrOutliner.RemoveView( mpOutlinerView[nView] );
             delete mpOutlinerView[nView];
-            mpOutlinerView[nView] = NULL;
+            mpOutlinerView[nView] = nullptr;
         }
     }
 
@@ -245,7 +235,7 @@ void OutlineView::AddWindowToPaintView(OutputDevice* pWin, vcl::Window* pWindow)
 
     while (nView < MAX_OUTLINERVIEWS && !bAdded)
     {
-        if (mpOutlinerView[nView] == NULL)
+        if (mpOutlinerView[nView] == nullptr)
         {
             mpOutlinerView[nView] = new OutlinerView(&mrOutliner, dynamic_cast< ::sd::Window* >(pWin));
             mpOutlinerView[nView]->SetBackgroundColor( aWhiteColor );
@@ -280,7 +270,7 @@ void OutlineView::DeleteWindowFromPaintView(OutputDevice* pWin)
 
     while (nView < MAX_OUTLINERVIEWS && !bRemoved)
     {
-        if (mpOutlinerView[nView] != NULL)
+        if (mpOutlinerView[nView] != nullptr)
         {
             pWindow = mpOutlinerView[nView]->GetWindow();
 
@@ -288,7 +278,7 @@ void OutlineView::DeleteWindowFromPaintView(OutputDevice* pWin)
             {
                 mrOutliner.RemoveView( mpOutlinerView[nView] );
                 delete mpOutlinerView[nView];
-                mpOutlinerView[nView] = NULL;
+                mpOutlinerView[nView] = nullptr;
                 bRemoved = true;
             }
         }
@@ -304,10 +294,10 @@ void OutlineView::DeleteWindowFromPaintView(OutputDevice* pWin)
  */
 OutlinerView* OutlineView::GetViewByWindow (vcl::Window* pWin) const
 {
-    OutlinerView* pOlView = NULL;
+    OutlinerView* pOlView = nullptr;
     for (sal_uInt16 nView = 0; nView < MAX_OUTLINERVIEWS; nView++)
     {
-        if (mpOutlinerView[nView] != NULL)
+        if (mpOutlinerView[nView] != nullptr)
         {
             if ( pWin == mpOutlinerView[nView]->GetWindow() )
             {
@@ -337,7 +327,7 @@ Paragraph* OutlineView::GetPrevTitle(const Paragraph* pPara)
         }
 
     }
-    return NULL;
+    return nullptr;
 }
 
 /**
@@ -357,7 +347,7 @@ Paragraph* OutlineView::GetNextTitle(const Paragraph* pPara)
     }
     while( pResult );
 
-    return NULL;
+    return nullptr;
 }
 
 /**
@@ -367,7 +357,7 @@ IMPL_LINK_TYPED( OutlineView, ParagraphInsertedHdl, ::Outliner *, pOutliner, voi
 {
     // we get calls to this handler during binary insert of drag and drop contents but
     // we ignore it here and handle it later in OnEndPasteOrDrop()
-    if( maDragAndDropModelGuard.get() == 0 )
+    if( maDragAndDropModelGuard.get() == nullptr )
     {
         OutlineViewPageChangesGuard aGuard(this);
 
@@ -546,7 +536,7 @@ IMPL_LINK_TYPED( OutlineView, ParagraphRemovingHdl, ::Outliner *, pOutliner, voi
                 if(mpProgress)
                 {
                     delete mpProgress;
-                    mpProgress = NULL;
+                    mpProgress = nullptr;
                 }
                 mnPagesToProcess = 0;
                 mnPagesProcessed = 0;
@@ -583,7 +573,7 @@ IMPL_LINK_TYPED( OutlineView, DepthChangedHdl, ::Outliner *, pOutliner, void )
             std::vector<Paragraph*> aSelList;
             pOlView->CreateSelectionList(aSelList);
 
-            Paragraph *pParagraph = NULL;
+            Paragraph *pParagraph = nullptr;
             for (std::vector<Paragraph*>::const_iterator iter = aSelList.begin(); iter != aSelList.end(); ++iter)
             {
                 pParagraph = *iter;
@@ -625,7 +615,7 @@ IMPL_LINK_TYPED( OutlineView, DepthChangedHdl, ::Outliner *, pOutliner, void )
             if (mnPagesToProcess > PROCESS_WITH_PROGRESS_THRESHOLD && mpProgress)
             {
                 delete mpProgress;
-                mpProgress = NULL;
+                mpProgress = nullptr;
             }
             else
                 mpDocSh->SetWaitCursor( false );
@@ -678,7 +668,7 @@ IMPL_LINK_TYPED( OutlineView, DepthChangedHdl, ::Outliner *, pOutliner, void )
                 if(mpProgress)
                 {
                     delete mpProgress;
-                    mpProgress = NULL;
+                    mpProgress = nullptr;
                 }
                 mnPagesToProcess = 0;
                 mnPagesProcessed = 0;
@@ -725,10 +715,10 @@ IMPL_LINK_TYPED( OutlineView, DepthChangedHdl, ::Outliner *, pOutliner, void )
 
         if( pPage )
         {
-            SfxStyleSheet* pStyleSheet = NULL;
+            SfxStyleSheet* pStyleSheet = nullptr;
             sal_Int32 nPara = pOutliner->GetAbsPos( pPara );
             sal_Int16 nDepth = pOutliner->GetDepth( nPara );
-            bool bSubTitle = pPage->GetPresObj(PRESOBJ_TEXT) != NULL;
+            bool bSubTitle = pPage->GetPresObj(PRESOBJ_TEXT) != nullptr;
 
             if( ::Outliner::HasParaFlag(pPara, ParaFlag::ISPAGE) )
             {
@@ -798,14 +788,14 @@ IMPL_LINK_NOARG_TYPED(OutlineView, StatusEventHdl, EditStatus&, void)
 
 IMPL_LINK_NOARG_TYPED(OutlineView, BeginDropHdl, EditView*, void)
 {
-    DBG_ASSERT(maDragAndDropModelGuard.get() == 0, "sd::OutlineView::BeginDropHdl(), prior drag operation not finished correctly!" );
+    DBG_ASSERT(maDragAndDropModelGuard.get() == nullptr, "sd::OutlineView::BeginDropHdl(), prior drag operation not finished correctly!" );
 
     maDragAndDropModelGuard.reset( new OutlineViewModelChangeGuard( *this ) );
 }
 
 IMPL_LINK_NOARG_TYPED(OutlineView, EndDropHdl, EditView*, void)
 {
-    maDragAndDropModelGuard.reset(0);
+    maDragAndDropModelGuard.reset(nullptr);
 }
 
 /**
@@ -859,13 +849,13 @@ IMPL_LINK_TYPED( OutlineView, EndMovingHdl, ::Outliner *, pOutliner, void )
     DBG_ASSERT( isRecordingUndo(), "sd::OutlineView::EndMovingHdl(), model change without undo?!" );
 
     // look for insertion position via the first paragraph
-    Paragraph* pSearchIt = maSelectedParas.empty() ? NULL : *(maSelectedParas.begin());
+    Paragraph* pSearchIt = maSelectedParas.empty() ? nullptr : *(maSelectedParas.begin());
 
     // look for the first of the selected paragraphs in the new ordering
     sal_uInt16 nPosNewOrder = 0;
     sal_Int32 nParaPos = 0;
     Paragraph*  pPara = pOutliner->GetParagraph( 0 );
-    Paragraph*  pPrev = NULL;
+    Paragraph*  pPrev = nullptr;
     while (pPara && pPara != pSearchIt)
     {
         if( ::Outliner::HasParaFlag(pPara, ParaFlag::ISPAGE) )
@@ -920,7 +910,7 @@ IMPL_LINK_TYPED( OutlineView, EndMovingHdl, ::Outliner *, pOutliner, void )
 SdrTextObj* OutlineView::GetTitleTextObject(SdrPage* pPage)
 {
     const size_t nObjectCount = pPage->GetObjCount();
-    SdrTextObj*     pResult      = NULL;
+    SdrTextObj*     pResult      = nullptr;
 
     for (size_t nObject = 0; nObject < nObjectCount; ++nObject)
     {
@@ -941,7 +931,7 @@ SdrTextObj* OutlineView::GetTitleTextObject(SdrPage* pPage)
 SdrTextObj* OutlineView::GetOutlineTextObject(SdrPage* pPage)
 {
     const size_t nObjectCount = pPage->GetObjCount();
-    SdrTextObj*     pResult      = NULL;
+    SdrTextObj*     pResult      = nullptr;
 
     for (size_t nObject = 0; nObject < nObjectCount; ++nObject)
     {
@@ -958,7 +948,7 @@ SdrTextObj* OutlineView::GetOutlineTextObject(SdrPage* pPage)
 
 SdrTextObj* OutlineView::CreateTitleTextObject(SdPage* pPage)
 {
-    DBG_ASSERT( GetTitleTextObject(pPage) == 0, "sd::OutlineView::CreateTitleTextObject(), there is already a title text object!" );
+    DBG_ASSERT( GetTitleTextObject(pPage) == nullptr, "sd::OutlineView::CreateTitleTextObject(), there is already a title text object!" );
 
     if( pPage->GetAutoLayout() == AUTOLAYOUT_NONE )
     {
@@ -969,7 +959,7 @@ SdrTextObj* OutlineView::CreateTitleTextObject(SdPage* pPage)
     {
         // we already have a layout with a title but the title
         // object was deleted, create a new one
-        pPage->InsertAutoLayoutShape( 0, PRESOBJ_TITLE, false, pPage->GetTitleRect(), true );
+        pPage->InsertAutoLayoutShape( nullptr, PRESOBJ_TITLE, false, pPage->GetTitleRect(), true );
     }
 
     return GetTitleTextObject(pPage);
@@ -977,7 +967,7 @@ SdrTextObj* OutlineView::CreateTitleTextObject(SdPage* pPage)
 
 SdrTextObj* OutlineView::CreateOutlineTextObject(SdPage* pPage)
 {
-    DBG_ASSERT( GetOutlineTextObject(pPage) == 0, "sd::OutlineView::CreateOutlineTextObject(), there is already a layout text object!" );
+    DBG_ASSERT( GetOutlineTextObject(pPage) == nullptr, "sd::OutlineView::CreateOutlineTextObject(), there is already a layout text object!" );
 
     AutoLayout eNewLayout = pPage->GetAutoLayout();
     switch( eNewLayout )
@@ -1003,7 +993,7 @@ SdrTextObj* OutlineView::CreateOutlineTextObject(SdPage* pPage)
     {
         // we already have a layout with a text but the text
         // object was deleted, create a new one
-        pPage->InsertAutoLayoutShape( 0,
+        pPage->InsertAutoLayoutShape( nullptr,
                                       PRESOBJ_OUTLINE,
                                       false, pPage->GetLayoutRect(), true );
     }
@@ -1015,8 +1005,8 @@ SdrTextObj* OutlineView::CreateOutlineTextObject(SdPage* pPage)
 bool OutlineView::PrepareClose(bool)
 {
     ::sd::UndoManager* pDocUndoMgr = dynamic_cast<sd::UndoManager*>(mpDocSh->GetUndoManager());
-    if (pDocUndoMgr != NULL)
-        pDocUndoMgr->SetLinkedUndoManager(NULL);
+    if (pDocUndoMgr != nullptr)
+        pDocUndoMgr->SetLinkedUndoManager(nullptr);
 
     mrOutliner.GetUndoManager().Clear();
 
@@ -1068,14 +1058,14 @@ void OutlineView::FillOutliner()
     ResetLinks();
     mrOutliner.SetUpdateMode(false);
 
-    Paragraph* pTitleToSelect = NULL;
+    Paragraph* pTitleToSelect = nullptr;
     sal_uInt16 nPageCount = mrDoc.GetSdPageCount(PK_STANDARD);
 
     // fill outliner with paragraphs from slides title & (outlines|subtitles)
     for (sal_uInt16 nPage = 0; nPage < nPageCount; nPage++)
     {
         SdPage*     pPage = mrDoc.GetSdPage(nPage, PK_STANDARD);
-        Paragraph * pPara = NULL;
+        Paragraph * pPara = nullptr;
 
         // take text from title shape
         SdrTextObj* pTO = GetTitleTextObject(pPage);
@@ -1092,7 +1082,7 @@ void OutlineView::FillOutliner()
             }
         }
 
-        if( pPara == 0 ) // no title, insert an empty paragraph
+        if( pPara == nullptr ) // no title, insert an empty paragraph
         {
             pPara = mrOutliner.Insert(OUString());
             mrOutliner.SetDepth(pPara, -1);
@@ -1116,7 +1106,7 @@ void OutlineView::FillOutliner()
 
         // take text from subtitle or outline
         pTO = static_cast<SdrTextObj*>(pPage->GetPresObj(PRESOBJ_TEXT));
-        const bool bSubTitle = pTO != 0;
+        const bool bSubTitle = pTO != nullptr;
 
         if (!pTO) // if no subtile found, try outline
             pTO = GetOutlineTextObject(pPage);
@@ -1205,7 +1195,7 @@ SdPage* OutlineView::GetActualPage()
     std::vector<Paragraph*> aSelList;
     pActiveView->CreateSelectionList(aSelList);
 
-    Paragraph *pPar = aSelList.empty() ? NULL : *(aSelList.begin());
+    Paragraph *pPar = aSelList.empty() ? nullptr : *(aSelList.begin());
     SdPage* pCurrent = GetPageForParagraph(pPar);
 
     DBG_ASSERT( pCurrent ||
@@ -1235,7 +1225,7 @@ SdPage* OutlineView::GetPageForParagraph( Paragraph* pPara )
     if( nPageToSelect < (sal_uInt32)mrDoc.GetSdPageCount( PK_STANDARD ) )
         return static_cast< SdPage* >( mrDoc.GetSdPage( (sal_uInt16)nPageToSelect, PK_STANDARD) );
 
-    return 0;
+    return nullptr;
 }
 
 Paragraph* OutlineView::GetParagraphForPage( ::Outliner& rOutl, SdPage* pPage )
@@ -1317,7 +1307,7 @@ void OutlineView::SetSelectedPages()
         if( ::Outliner::HasParaFlag(pPara, ParaFlag::ISPAGE) )                     // one page
         {
             SdPage* pPage = mrDoc.GetSdPage(nPos, PK_STANDARD);
-            DBG_ASSERT(pPage!=NULL,
+            DBG_ASSERT(pPage!=nullptr,
                 "Trying to select non-existing page OutlineView::SetSelectedPages()");
 
             if (pPage)
@@ -1377,7 +1367,7 @@ sal_Int8 OutlineView::AcceptDrop( const AcceptDropEvent&, DropTargetHelper&, ::s
     return DND_ACTION_NONE;
 }
 
-sal_Int8 OutlineView::ExecuteDrop( const ExecuteDropEvent&, DropTargetHelper&, ::sd::Window*, sal_uInt16, sal_uInt16)
+sal_Int8 OutlineView::ExecuteDrop( const ExecuteDropEvent&, ::sd::Window*, sal_uInt16, sal_uInt16)
 {
     return DND_ACTION_NONE;
 }
@@ -1406,7 +1396,7 @@ void OutlineView::onUpdateStyleSettings( bool bForceUpdate /* = false */ )
         sal_uInt16 nView;
         for( nView = 0; nView < MAX_OUTLINERVIEWS; nView++ )
         {
-            if (mpOutlinerView[nView] != NULL)
+            if (mpOutlinerView[nView] != nullptr)
             {
                 mpOutlinerView[nView]->SetBackgroundColor( aDocColor );
 
@@ -1445,7 +1435,7 @@ IMPL_LINK_TYPED(OutlineView, EventMultiplexerListener, ::sd::tools::EventMultipl
                     mrOutliner.Clear();
                     FillOutliner();
                     ::sd::Window* pWindow = mrOutlineViewShell.GetActiveWindow();
-                    if (pWindow != NULL)
+                    if (pWindow != nullptr)
                         pWindow->Invalidate();
                 }
             }
@@ -1512,7 +1502,7 @@ void OutlineView::UpdateDocument()
             pPara = GetNextTitle(pPara);
     }
 
-    DBG_ASSERT( pPara == 0, "sd::OutlineView::UpdateDocument(), slides are out of sync, creating missing ones" );
+    DBG_ASSERT( pPara == nullptr, "sd::OutlineView::UpdateDocument(), slides are out of sync, creating missing ones" );
     while( pPara )
     {
         SdPage* pPage = InsertSlideForParagraph( pPara );
@@ -1538,7 +1528,7 @@ void OutlineView::TryToMergeUndoActions()
         {
             // find the top EditUndo action in the top undo action list
             size_t nAction = pListAction->aUndoActions.size();
-            EditUndo* pEditUndo = 0;
+            EditUndo* pEditUndo = nullptr;
             while( !pEditUndo && nAction )
             {
                 pEditUndo = dynamic_cast< EditUndo* >(pListAction->aUndoActions.GetUndoAction(--nAction));
@@ -1550,7 +1540,7 @@ void OutlineView::TryToMergeUndoActions()
             while( pEditUndo && nAction )
             {
                 if( dynamic_cast< EditUndo* >(pListAction->aUndoActions.GetUndoAction(--nAction)) )
-                    pEditUndo = 0;
+                    pEditUndo = nullptr;
             }
 
             // do we have one and only one EditUndo action in the top undo list?
@@ -1559,7 +1549,7 @@ void OutlineView::TryToMergeUndoActions()
                 // yes, see if we can merge it with the prev undo list
 
                 nAction = pPrevListAction->aUndoActions.size();
-                EditUndo* pPrevEditUndo = 0;
+                EditUndo* pPrevEditUndo = nullptr;
                 while( !pPrevEditUndo && nAction )
                     pPrevEditUndo = dynamic_cast< EditUndo* >(pPrevListAction->aUndoActions.GetUndoAction(--nAction));
 
@@ -1579,7 +1569,7 @@ void OutlineView::TryToMergeUndoActions()
                     if( pDocUndoManager && ( pListAction->aUndoActions.size() == 1 ))
                     {
                         SfxLinkUndoAction* pLinkAction = dynamic_cast< SfxLinkUndoAction* >( pListAction->aUndoActions.GetUndoAction(0) );
-                        SfxLinkUndoAction* pPrevLinkAction = 0;
+                        SfxLinkUndoAction* pPrevLinkAction = nullptr;
 
                         if( pLinkAction )
                         {
@@ -1742,7 +1732,7 @@ void OutlineView::OnBeginPasteOrDrop( PasteOrDropInfos* /*pInfos*/ )
     get the correct style sheet and new slides are inserted. */
 void OutlineView::OnEndPasteOrDrop( PasteOrDropInfos* pInfos )
 {
-    SdPage* pPage = 0;
+    SdPage* pPage = nullptr;
     SfxStyleSheetBasePool* pStylePool = GetDoc().GetStyleSheetPool();
 
     for( sal_Int32 nPara = pInfos->nStartPara; nPara <= pInfos->nEndPara; nPara++ )

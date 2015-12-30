@@ -22,7 +22,8 @@
 #include <vector>
 #include <svtools/parrtf.hxx>
 #include "DExport.hxx"
-#include <tools/stream.hxx>
+
+class SvStream;
 
 namespace dbaui
 {
@@ -31,10 +32,10 @@ namespace dbaui
         ::std::vector<sal_Int32>    m_vecColor;
 
     protected:
-        virtual bool            CreateTable(int nToken) SAL_OVERRIDE;
-        virtual void            NextToken( int nToken ) SAL_OVERRIDE; // base class
+        virtual bool            CreateTable(int nToken) override;
+        virtual void            NextToken( int nToken ) override; // base class
         virtual TypeSelectionPageFactory
-                                getTypeSelectionPageFactory() SAL_OVERRIDE;
+                                getTypeSelectionPageFactory() override;
 
         virtual ~ORTFReader();
 
@@ -43,8 +44,8 @@ namespace dbaui
                     const SharedConnection& _rxConnection,
                     const css::uno::Reference< css::util::XNumberFormatter >& _rxNumberF,
                     const css::uno::Reference< css::uno::XComponentContext >& _rxContext,
-                    const TColumnVector* rList = 0,
-                    const OTypeInfoMap* _pInfoMap = 0);
+                    const TColumnVector* rList = nullptr,
+                    const OTypeInfoMap* _pInfoMap = nullptr);
         // required for automatic type recognition
         ORTFReader( SvStream& rIn,
                     sal_Int32 nRows,
@@ -55,10 +56,10 @@ namespace dbaui
                     const OTypeInfoMap* _pInfoMap,
                     bool _bAutoIncrementEnabled);
 
-        virtual SvParserState   CallParser() SAL_OVERRIDE;// base class
+        virtual SvParserState   CallParser() override;// base class
         /// @note Only recovers correct data if 2. CTOR has been used.
         ///       Otherwise, the SbaColumnList will be returned without changes
-        virtual void            release() SAL_OVERRIDE;
+        virtual void            release() override;
     };
 
     typedef tools::SvRef<ORTFReader> ORTFReaderRef;

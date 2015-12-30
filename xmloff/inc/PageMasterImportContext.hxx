@@ -35,15 +35,14 @@ protected:
 
     virtual void SetAttribute( sal_uInt16 nPrefixKey,
                                const OUString& rLocalName,
-                               const OUString& rValue ) SAL_OVERRIDE;
+                               const OUString& rValue ) override;
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     PageStyleContext( SvXMLImport& rImport, sal_uInt16 nPrfx,
             const OUString& rLName,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList,
+            const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList,
             SvXMLStylesContext& rStyles,
             bool bDefaultStyle=false);
     virtual ~PageStyleContext();
@@ -51,14 +50,13 @@ public:
     virtual SvXMLImportContext *CreateChildContext(
             sal_uInt16 nPrefix,
             const OUString& rLocalName,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+            const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
 
     virtual void FillPropertySet(
-            const ::com::sun::star::uno::Reference<
-                ::com::sun::star::beans::XPropertySet > & rPropSet ) SAL_OVERRIDE;
+            const css::uno::Reference< css::beans::XPropertySet > & rPropSet ) override;
 
     //text grid enhancement
-    virtual void SetDefaults() SAL_OVERRIDE;
+    virtual void SetDefaults() override;
 };
 
 #endif

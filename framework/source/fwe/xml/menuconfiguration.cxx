@@ -44,7 +44,7 @@ namespace framework
 {
 
 MenuConfiguration::MenuConfiguration(
-    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext )
+    const css::uno::Reference< css::uno::XComponentContext >& rxContext )
 :   m_xContext( rxContext )
 {
 }
@@ -94,7 +94,7 @@ Reference< XIndexAccess > MenuConfiguration::CreateMenuBarConfigurationFromXML(
         else
             throw WrappedTargetException( aWrappedSAXException.Message, Reference< XInterface >(), Any() );
     }
-    catch( const ::com::sun::star::io::IOException& e )
+    catch( const css::io::IOException& e )
     {
         throw WrappedTargetException( e.Message, Reference< XInterface >(), Any() );
     }
@@ -109,12 +109,12 @@ PopupMenu* MenuConfiguration::CreateBookmarkMenu(css::uno::Reference<css::frame:
     else if ( aURL == BOOKMARK_WIZARDMENU )
         return new BmkMenu( rFrame, BmkMenu::BMK_WIZARDMENU );
     else
-        return NULL;
+        return nullptr;
 }
 
 void MenuConfiguration::StoreMenuBarConfigurationToXML(
     Reference< XIndexAccess >& rMenuBarConfiguration,
-    Reference< XOutputStream >& rOutputStream )
+    Reference< XOutputStream >& rOutputStream, bool bIsMenuBar )
     throw (WrappedTargetException, RuntimeException)
 {
     Reference< XWriter > xWriter = Writer::create(m_xContext);
@@ -122,7 +122,7 @@ void MenuConfiguration::StoreMenuBarConfigurationToXML(
 
     try
     {
-        OWriteMenuDocumentHandler aWriteMenuDocumentHandler( rMenuBarConfiguration, xWriter );
+        OWriteMenuDocumentHandler aWriteMenuDocumentHandler( rMenuBarConfiguration, xWriter, bIsMenuBar );
         aWriteMenuDocumentHandler.WriteMenuDocument();
     }
     catch ( const RuntimeException& e )
@@ -133,7 +133,7 @@ void MenuConfiguration::StoreMenuBarConfigurationToXML(
     {
         throw WrappedTargetException( e.Message, Reference< XInterface >(), Any() );
     }
-    catch ( const ::com::sun::star::io::IOException& e )
+    catch ( const css::io::IOException& e )
     {
         throw WrappedTargetException( e.Message, Reference< XInterface >(), Any() );
     }

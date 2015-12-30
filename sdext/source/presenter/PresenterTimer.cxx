@@ -107,8 +107,8 @@ private:
     class Deleter {public: void operator () (TimerScheduler* pScheduler) { delete pScheduler; } };
     friend class Deleter;
 
-    virtual void SAL_CALL run() SAL_OVERRIDE;
-    virtual void SAL_CALL onTerminated() SAL_OVERRIDE { mpLateDestroy.reset(); }
+    virtual void SAL_CALL run() override;
+    virtual void SAL_CALL onTerminated() override { mpLateDestroy.reset(); }
 };
 
 } // end of anonymous namespace
@@ -149,7 +149,7 @@ sal_Int32 TimerScheduler::mnTaskId = PresenterTimer::NotAValidTaskId;
 std::shared_ptr<TimerScheduler> TimerScheduler::Instance()
 {
     ::osl::MutexGuard aGuard (maInstanceMutex);
-    if (mpInstance.get() == NULL)
+    if (mpInstance.get() == nullptr)
     {
         mpInstance.reset(new TimerScheduler(), TimerScheduler::Deleter());
         mpInstance->create();
@@ -179,7 +179,7 @@ SharedTimerTask TimerScheduler::CreateTimerTask (
 
 void TimerScheduler::ScheduleTask (const SharedTimerTask& rpTask)
 {
-    if (rpTask.get() == NULL)
+    if (rpTask.get() == nullptr)
         return;
     if (rpTask->mbIsCanceled)
         return;
@@ -214,7 +214,7 @@ void TimerScheduler::CancelTask (const sal_Int32 nTaskId)
     // from being scheduled again and b) tries to prevent its execution.
     {
         ::osl::MutexGuard aGuard (maCurrentTaskMutex);
-        if (mpCurrentTask.get() != NULL
+        if (mpCurrentTask.get() != nullptr
             && mpCurrentTask->mnTaskId == nTaskId)
             mpCurrentTask->mbIsCanceled = true;
     }
@@ -264,7 +264,7 @@ void SAL_CALL TimerScheduler::run()
             mpCurrentTask = pTask;
         }
 
-        if (pTask.get() == NULL)
+        if (pTask.get() == nullptr)
         {
             // Wait until the first task becomes due.
             TimeValue aTimeValue;
@@ -368,7 +368,7 @@ TimerTask::TimerTask (
     }
     if ( ! pTimer.is())
     {
-        pTimer = ::rtl::Reference<PresenterClockTimer>(new PresenterClockTimer(rxContext));
+        pTimer.set(new PresenterClockTimer(rxContext));
         mpInstance = pTimer;
     }
     return pTimer;
@@ -385,7 +385,7 @@ PresenterClockTimer::PresenterClockTimer (const Reference<XComponentContext>& rx
     Reference<lang::XMultiComponentFactory> xFactory (
         rxContext->getServiceManager(), UNO_QUERY);
     if (xFactory.is())
-        mxRequestCallback = Reference<awt::XRequestCallback>(
+        mxRequestCallback.set(
             xFactory->createInstanceWithContext(
                 "com.sun.star.awt.AsyncCallback",
                 rxContext),
@@ -403,7 +403,7 @@ PresenterClockTimer::~PresenterClockTimer()
     Reference<lang::XComponent> xComponent (mxRequestCallback, UNO_QUERY);
     if (xComponent.is())
         xComponent->dispose();
-    mxRequestCallback = NULL;
+    mxRequestCallback = nullptr;
 }
 
 void PresenterClockTimer::AddListener (const SharedListener& rListener)
@@ -440,7 +440,7 @@ void PresenterClockTimer::RemoveListener (const SharedListener& rListener)
             PresenterTimer::CancelTask(mnTimerTaskId);
             mnTimerTaskId = PresenterTimer::NotAValidTaskId;
         }
-        mpInstance = NULL;
+        mpInstance = nullptr;
     }
 }
 

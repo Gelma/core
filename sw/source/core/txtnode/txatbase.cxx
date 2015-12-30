@@ -48,7 +48,7 @@ SwTextAttr::~SwTextAttr( )
 
 sal_Int32* SwTextAttr::GetEnd()
 {
-    return 0;
+    return nullptr;
 }
 
 void SwTextAttr::Destroy( SwTextAttr * pToDestroy, SfxItemPool& rPool )
@@ -83,7 +83,7 @@ void SwTextAttr::dumpAsXml(xmlTextWriterPtr pWriter) const
     if (End())
         xmlTextWriterWriteAttribute(pWriter, BAD_CAST("end"), BAD_CAST(OString::number(*End()).getStr()));
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST("whichId"), BAD_CAST(OString::number(Which()).getStr()));
-    const char* pWhich = 0;
+    const char* pWhich = nullptr;
     boost::optional<OString> oValue;
     switch (Which())
     {
@@ -115,6 +115,11 @@ void SwTextAttr::dumpAsXml(xmlTextWriterPtr pWriter) const
             pWhich = "ruby";
             const SwFormatRuby& rFormat = GetRuby();
             oValue = "rubytext: " + rFormat.GetText().toUtf8();
+            break;
+        }
+    case RES_TXTATR_META:
+        {
+            pWhich = "meta";
             break;
         }
     default:

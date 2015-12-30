@@ -19,8 +19,10 @@
 #include <com/sun/star/ui/ItemType.hpp>
 #include <fstream>
 #include <comphelper/processfactory.hxx>
+#include <comphelper/sequence.hxx>
 #include <vcl/graph.hxx>
 #include <map>
+
 using namespace com::sun::star;
 
 typedef std::map< sal_Int16, OUString > IdToString;
@@ -31,8 +33,8 @@ class MSOExcelCommandConvertor : public MSOCommandConvertor
    IdToString tcidToOOcmd;
 public:
     MSOExcelCommandConvertor();
-    virtual OUString MSOCommandToOOCommand( sal_Int16 msoCmd ) SAL_OVERRIDE;
-    virtual OUString MSOTCIDToOOCommand( sal_Int16 key ) SAL_OVERRIDE;
+    virtual OUString MSOCommandToOOCommand( sal_Int16 msoCmd ) override;
+    virtual OUString MSOTCIDToOOCommand( sal_Int16 key ) override;
 };
 
 MSOExcelCommandConvertor::MSOExcelCommandConvertor()
@@ -301,13 +303,7 @@ bool ScTBC::ImportToolBarControl( ScCTBWrapper& rWrapper, const css::uno::Refere
             sProps[ 0 ].Value = uno::makeAny( ui::ItemType::SEPARATOR_LINE );
             toolbarcontainer->insertByIndex( toolbarcontainer->getCount(), uno::makeAny( sProps ) );
         }
-        uno::Sequence< beans::PropertyValue > sProps( props.size() );
-        beans::PropertyValue* pProp = sProps.getArray();
-
-        for ( std::vector< css::beans::PropertyValue >::iterator it = props.begin(); it != props.end(); ++it, ++pProp )
-            *pProp = *it;
-
-        toolbarcontainer->insertByIndex( toolbarcontainer->getCount(), uno::makeAny( sProps ) );
+        toolbarcontainer->insertByIndex( toolbarcontainer->getCount(), uno::makeAny( comphelper::containerToSequence(props) ) );
     }
     return true;
 }
@@ -394,7 +390,7 @@ ScCTBWrapper::Print( FILE* fp )
 
 ScCTB* ScCTBWrapper::GetCustomizationData( const OUString& sTBName )
 {
-    ScCTB* pCTB = NULL;
+    ScCTB* pCTB = nullptr;
     for ( std::vector< ScCTB >::iterator it = rCTB.begin(); it != rCTB.end(); ++it )
     {
         if ( it->GetName().equals( sTBName ) )
@@ -418,7 +414,7 @@ bool ScCTBWrapper::ImportCustomToolBar( SfxObjectShell& rDocSh )
     for ( std::vector<ScCTB>::iterator it = rCTB.begin(); it != it_end; ++it )
     {
         // for each customtoolbar
-        CustomToolBarImportHelper helper( rDocSh, xAppCfgSupp->getUIConfigurationManager( OUString("com.sun.star.sheet.SpreadsheetDocument" ) ) );
+        CustomToolBarImportHelper helper( rDocSh, xAppCfgSupp->getUIConfigurationManager( "com.sun.star.sheet.SpreadsheetDocument" ) );
         helper.setMSOCommandMap( new  MSOExcelCommandConvertor() );
         // Ignore menu toolbars, excel doesn't ( afaics ) store
         // menu customizations ( but you can have menus in a customtoolbar

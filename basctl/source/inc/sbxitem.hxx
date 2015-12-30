@@ -44,12 +44,12 @@ class SbxItem : public SfxPoolItem
     ItemType                m_eType;
 
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
     SbxItem(sal_uInt16 nWhich, const ScriptDocument& rDocument, const OUString& aLibName, const OUString& aName, ItemType);
     SbxItem(sal_uInt16 nWhich, const ScriptDocument& rDocument, const OUString& aLibName, const OUString& aName, const OUString& aMethodName, ItemType eType);
 
-    virtual SfxPoolItem* Clone(SfxItemPool *pPool = 0) const SAL_OVERRIDE;
-    virtual bool operator==(const SfxPoolItem&) const SAL_OVERRIDE;
+    virtual SfxPoolItem* Clone(SfxItemPool *pPool = nullptr) const override;
+    virtual bool operator==(const SfxPoolItem&) const override;
 
     ScriptDocument const& GetDocument () const { return m_aDocument; }
     OUString const& GetLibName () const { return m_aLibName; }

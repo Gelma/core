@@ -64,8 +64,7 @@ namespace // private
 {
     Sequence< OUString > SAL_CALL Component_getSupportedServiceNames()
     {
-        Sequence< OUString > aRet(1);
-        aRet[0] = "com.sun.star.system.SimpleCommandMail";
+        Sequence< OUString > aRet { "com.sun.star.system.SimpleCommandMail" };
         return aRet;
     }
 
@@ -94,7 +93,7 @@ Reference< XSimpleMailClient > SAL_CALL CmdMailSuppl::querySimpleMailClient(  )
 
 
 Reference< XSimpleMailMessage > SAL_CALL CmdMailSuppl::createSimpleMailMessage(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     return Reference< XSimpleMailMessage >( new CmdMailMsg(  ) );
 }
@@ -149,13 +148,13 @@ void SAL_CALL CmdMailSuppl::sendSimpleMailMessage( const Reference< XSimpleMailM
 {
     if ( ! xSimpleMailMessage.is() )
     {
-        throw ::com::sun::star::lang::IllegalArgumentException( "No message specified" ,
+        throw css::lang::IllegalArgumentException( "No message specified" ,
             static_cast < XSimpleMailClient * > (this), 1 );
     }
 
     if( ! m_xConfigurationProvider.is() )
     {
-        throw ::com::sun::star::uno::Exception( "Can not access configuration" ,
+        throw css::uno::Exception( "Can not access configuration" ,
             static_cast < XSimpleMailClient * > (this) );
     }
 
@@ -166,7 +165,7 @@ void SAL_CALL CmdMailSuppl::sendSimpleMailMessage( const Reference< XSimpleMailM
     OUString aProgram;
     if ( FileBase::E_None != FileBase::getSystemPathFromFileURL(aProgramURL, aProgram))
     {
-        throw ::com::sun::star::uno::Exception("Cound not convert executable path",
+        throw css::uno::Exception("Cound not convert executable path",
             static_cast < XSimpleMailClient * > (this));
     }
 
@@ -190,7 +189,7 @@ void SAL_CALL CmdMailSuppl::sendSimpleMailMessage( const Reference< XSimpleMailM
         Reference< XNameAccess > xNameAccess =
             Reference< XNameAccess > (
                 m_xConfigurationProvider->createInstanceWithArguments(
-                    OUString("com.sun.star.configuration.ConfigurationAccess"),
+                    "com.sun.star.configuration.ConfigurationAccess",
                     aArgumentList ),
                 UNO_QUERY );
 
@@ -296,9 +295,9 @@ void SAL_CALL CmdMailSuppl::sendSimpleMailMessage( const Reference< XSimpleMailM
 
     OString cmd = aBuffer.makeStringAndClear();
     FILE * f = popen(cmd.getStr(), "w");
-    if (f == 0 || pclose(f) != 0)
+    if (f == nullptr || pclose(f) != 0)
     {
-        throw ::com::sun::star::uno::Exception("No mail client configured",
+        throw css::uno::Exception("No mail client configured",
             static_cast < XSimpleMailClient * > (this) );
     }
 }

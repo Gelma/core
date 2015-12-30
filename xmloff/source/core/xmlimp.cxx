@@ -105,8 +105,7 @@ sal_Char const sXML_np__field[] = "_field";
 sal_Char const sXML_np__xhtml[] = "_xhtml";
 sal_Char const sXML_np__css3text[] = "_css3text";
 
-class SvXMLImportEventListener : public cppu::WeakImplHelper<
-                            com::sun::star::lang::XEventListener >
+class SvXMLImportEventListener : public cppu::WeakImplHelper< css::lang::XEventListener >
 {
 private:
     SvXMLImport*    pImport;
@@ -116,7 +115,7 @@ public:
     virtual                 ~SvXMLImportEventListener();
 
                             // XEventListener
-    virtual void SAL_CALL disposing(const lang::EventObject& rEventObject) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing(const lang::EventObject& rEventObject) throw(css::uno::RuntimeException, std::exception) override;
 };
 
 SvXMLImportEventListener::SvXMLImportEventListener(SvXMLImport* pTempImport)
@@ -135,7 +134,7 @@ void SAL_CALL SvXMLImportEventListener::disposing( const lang::EventObject& )
     if (pImport)
     {
         pImport->DisposingModel();
-        pImport = NULL;
+        pImport = nullptr;
     }
 }
 
@@ -190,23 +189,30 @@ getBuildIdsProperty(uno::Reference<beans::XPropertySet> const& xImportInfo)
                             {
                                 mnGeneratorVersion = SvXMLImport::LO_3x;
                             }
-                            else
+                            else if ('4' == loVersion[0])
                             {
-                                SAL_INFO_IF('4' != loVersion[0], "xmloff.core", "unknown LO version: " << loVersion);
-                                if ('4' == loVersion[0] && loVersion.getLength() > 1
+                                if (loVersion.getLength() > 1
                                     && (loVersion[1] == '0' || loVersion[1] == '1'))
                                 {
                                     mnGeneratorVersion = SvXMLImport::LO_41x; // 4.0/4.1
                                 }
-                                else if ('4' == loVersion[0]
-                                    && loVersion.getLength() > 1 && loVersion[1] == '2')
+                                else if (loVersion.getLength() > 1 && '2' == loVersion[1])
                                 {
                                     mnGeneratorVersion = SvXMLImport::LO_42x; // 4.2
                                 }
-                                else
+                                else if (loVersion.getLength() > 1 && '3' == loVersion[1])
                                 {
-                                    mnGeneratorVersion = SvXMLImport::LO_4x;
+                                    mnGeneratorVersion = SvXMLImport::LO_43x; // 4.3
                                 }
+                                else if (loVersion.getLength() > 1 && '4' == loVersion[1])
+                                {
+                                    mnGeneratorVersion = SvXMLImport::LO_44x; // 4.4
+                                }
+                            }
+                            else
+                            {
+                                SAL_INFO_IF('5' != loVersion[0], "xmloff.core", "unknown LO version: " << loVersion);
+                                mnGeneratorVersion = SvXMLImport::LO_5x;
                             }
                             return; // ignore buildIds
                         }
@@ -301,8 +307,8 @@ public:
 
     SvXMLImport_Impl( const uno::Reference< uno::XComponentContext >& rxContext,
                       OUString const & theImplementationName)
-        : hBatsFontConv( 0 )
-        , hMathFontConv( 0 )
+        : hBatsFontConv( nullptr )
+        , hMathFontConv( nullptr )
         , mbOwnGraphicResolver( false )
         , mbOwnEmbeddedResolver( false )
         , mbIsOOoXML(false)
@@ -358,38 +364,38 @@ void SvXMLImport::_InitCtor()
     {
         // implicit "xml" namespace prefix
         mpNamespaceMap->Add( GetXMLToken(XML_XML), GetXMLToken(XML_N_XML), XML_NAMESPACE_XML );
-        mpNamespaceMap->Add( OUString( sXML_np__office ), GetXMLToken(XML_N_OFFICE), XML_NAMESPACE_OFFICE );
-        mpNamespaceMap->Add( OUString( sXML_np__office_ext ), GetXMLToken(XML_N_OFFICE_EXT), XML_NAMESPACE_OFFICE_EXT );
-        mpNamespaceMap->Add( OUString( sXML_np__ooo ), GetXMLToken(XML_N_OOO), XML_NAMESPACE_OOO );
-        mpNamespaceMap->Add( OUString( sXML_np__style ), GetXMLToken(XML_N_STYLE), XML_NAMESPACE_STYLE );
-        mpNamespaceMap->Add( OUString( sXML_np__text ), GetXMLToken(XML_N_TEXT), XML_NAMESPACE_TEXT );
-        mpNamespaceMap->Add( OUString( sXML_np__table ), GetXMLToken(XML_N_TABLE), XML_NAMESPACE_TABLE );
-        mpNamespaceMap->Add( OUString( sXML_np__table_ext ), GetXMLToken(XML_N_TABLE_EXT), XML_NAMESPACE_TABLE_EXT );
-        mpNamespaceMap->Add( OUString( sXML_np__draw ), GetXMLToken(XML_N_DRAW), XML_NAMESPACE_DRAW );
-        mpNamespaceMap->Add( OUString( sXML_np__draw_ext ), GetXMLToken(XML_N_DRAW_EXT), XML_NAMESPACE_DRAW_EXT );
-        mpNamespaceMap->Add( OUString( sXML_np__dr3d ), GetXMLToken(XML_N_DR3D), XML_NAMESPACE_DR3D );
-        mpNamespaceMap->Add( OUString( sXML_np__fo ), GetXMLToken(XML_N_FO_COMPAT), XML_NAMESPACE_FO );
-        mpNamespaceMap->Add( OUString( sXML_np__xlink ), GetXMLToken(XML_N_XLINK), XML_NAMESPACE_XLINK );
-        mpNamespaceMap->Add( OUString( sXML_np__dc ), GetXMLToken(XML_N_DC), XML_NAMESPACE_DC );
-        mpNamespaceMap->Add( OUString( sXML_np__dom ), GetXMLToken(XML_N_DOM), XML_NAMESPACE_DOM );
-        mpNamespaceMap->Add( OUString( sXML_np__meta ), GetXMLToken(XML_N_META), XML_NAMESPACE_META );
-        mpNamespaceMap->Add( OUString( sXML_np__number ), GetXMLToken(XML_N_NUMBER), XML_NAMESPACE_NUMBER );
-        mpNamespaceMap->Add( OUString( sXML_np__svg ), GetXMLToken(XML_N_SVG_COMPAT), XML_NAMESPACE_SVG );
-        mpNamespaceMap->Add( OUString( sXML_np__chart ), GetXMLToken(XML_N_CHART), XML_NAMESPACE_CHART );
-        mpNamespaceMap->Add( OUString( sXML_np__math ), GetXMLToken(XML_N_MATH), XML_NAMESPACE_MATH );
-        mpNamespaceMap->Add(OUString( sXML_np__form ), GetXMLToken(XML_N_FORM), XML_NAMESPACE_FORM );
-        mpNamespaceMap->Add( OUString( sXML_np__script ), GetXMLToken(XML_N_SCRIPT), XML_NAMESPACE_SCRIPT );
-        mpNamespaceMap->Add( OUString( sXML_np__config ), GetXMLToken(XML_N_CONFIG), XML_NAMESPACE_CONFIG );
-        mpNamespaceMap->Add( OUString( sXML_np__xforms ), GetXMLToken(XML_N_XFORMS_1_0), XML_NAMESPACE_XFORMS );
-        mpNamespaceMap->Add( OUString( sXML_np__formx ), GetXMLToken( XML_N_FORMX ), XML_NAMESPACE_FORMX );
-        mpNamespaceMap->Add( OUString( sXML_np__xsd ), GetXMLToken(XML_N_XSD), XML_NAMESPACE_XSD );
-        mpNamespaceMap->Add( OUString( sXML_np__xsi ), GetXMLToken(XML_N_XSI), XML_NAMESPACE_XFORMS );
-        mpNamespaceMap->Add( OUString( sXML_np__ooow ), GetXMLToken(XML_N_OOOW), XML_NAMESPACE_OOOW );
-        mpNamespaceMap->Add( OUString( sXML_np__oooc ), GetXMLToken(XML_N_OOOC), XML_NAMESPACE_OOOC );
-        mpNamespaceMap->Add( OUString( sXML_np__field ), GetXMLToken(XML_N_FIELD), XML_NAMESPACE_FIELD );
-        mpNamespaceMap->Add( OUString( sXML_np__of ), GetXMLToken(XML_N_OF), XML_NAMESPACE_OF );
-        mpNamespaceMap->Add( OUString( sXML_np__xhtml ), GetXMLToken(XML_N_XHTML), XML_NAMESPACE_XHTML );
-        mpNamespaceMap->Add( OUString( sXML_np__css3text ), GetXMLToken(XML_N_CSS3TEXT), XML_NAMESPACE_CSS3TEXT );
+        mpNamespaceMap->Add( sXML_np__office, GetXMLToken(XML_N_OFFICE), XML_NAMESPACE_OFFICE );
+        mpNamespaceMap->Add( sXML_np__office_ext, GetXMLToken(XML_N_OFFICE_EXT), XML_NAMESPACE_OFFICE_EXT );
+        mpNamespaceMap->Add( sXML_np__ooo, GetXMLToken(XML_N_OOO), XML_NAMESPACE_OOO );
+        mpNamespaceMap->Add( sXML_np__style, GetXMLToken(XML_N_STYLE), XML_NAMESPACE_STYLE );
+        mpNamespaceMap->Add( sXML_np__text, GetXMLToken(XML_N_TEXT), XML_NAMESPACE_TEXT );
+        mpNamespaceMap->Add( sXML_np__table, GetXMLToken(XML_N_TABLE), XML_NAMESPACE_TABLE );
+        mpNamespaceMap->Add( sXML_np__table_ext, GetXMLToken(XML_N_TABLE_EXT), XML_NAMESPACE_TABLE_EXT );
+        mpNamespaceMap->Add( sXML_np__draw, GetXMLToken(XML_N_DRAW), XML_NAMESPACE_DRAW );
+        mpNamespaceMap->Add( sXML_np__draw_ext, GetXMLToken(XML_N_DRAW_EXT), XML_NAMESPACE_DRAW_EXT );
+        mpNamespaceMap->Add( sXML_np__dr3d, GetXMLToken(XML_N_DR3D), XML_NAMESPACE_DR3D );
+        mpNamespaceMap->Add( sXML_np__fo, GetXMLToken(XML_N_FO_COMPAT), XML_NAMESPACE_FO );
+        mpNamespaceMap->Add( sXML_np__xlink, GetXMLToken(XML_N_XLINK), XML_NAMESPACE_XLINK );
+        mpNamespaceMap->Add( sXML_np__dc, GetXMLToken(XML_N_DC), XML_NAMESPACE_DC );
+        mpNamespaceMap->Add( sXML_np__dom, GetXMLToken(XML_N_DOM), XML_NAMESPACE_DOM );
+        mpNamespaceMap->Add( sXML_np__meta, GetXMLToken(XML_N_META), XML_NAMESPACE_META );
+        mpNamespaceMap->Add( sXML_np__number, GetXMLToken(XML_N_NUMBER), XML_NAMESPACE_NUMBER );
+        mpNamespaceMap->Add( sXML_np__svg, GetXMLToken(XML_N_SVG_COMPAT), XML_NAMESPACE_SVG );
+        mpNamespaceMap->Add( sXML_np__chart, GetXMLToken(XML_N_CHART), XML_NAMESPACE_CHART );
+        mpNamespaceMap->Add( sXML_np__math, GetXMLToken(XML_N_MATH), XML_NAMESPACE_MATH );
+        mpNamespaceMap->Add(sXML_np__form, GetXMLToken(XML_N_FORM), XML_NAMESPACE_FORM );
+        mpNamespaceMap->Add( sXML_np__script, GetXMLToken(XML_N_SCRIPT), XML_NAMESPACE_SCRIPT );
+        mpNamespaceMap->Add( sXML_np__config, GetXMLToken(XML_N_CONFIG), XML_NAMESPACE_CONFIG );
+        mpNamespaceMap->Add( sXML_np__xforms, GetXMLToken(XML_N_XFORMS_1_0), XML_NAMESPACE_XFORMS );
+        mpNamespaceMap->Add( sXML_np__formx, GetXMLToken( XML_N_FORMX ), XML_NAMESPACE_FORMX );
+        mpNamespaceMap->Add( sXML_np__xsd, GetXMLToken(XML_N_XSD), XML_NAMESPACE_XSD );
+        mpNamespaceMap->Add( sXML_np__xsi, GetXMLToken(XML_N_XSI), XML_NAMESPACE_XFORMS );
+        mpNamespaceMap->Add( sXML_np__ooow, GetXMLToken(XML_N_OOOW), XML_NAMESPACE_OOOW );
+        mpNamespaceMap->Add( sXML_np__oooc, GetXMLToken(XML_N_OOOC), XML_NAMESPACE_OOOC );
+        mpNamespaceMap->Add( sXML_np__field, GetXMLToken(XML_N_FIELD), XML_NAMESPACE_FIELD );
+        mpNamespaceMap->Add( sXML_np__of, GetXMLToken(XML_N_OF), XML_NAMESPACE_OF );
+        mpNamespaceMap->Add( sXML_np__xhtml, GetXMLToken(XML_N_XHTML), XML_NAMESPACE_XHTML );
+        mpNamespaceMap->Add( sXML_np__css3text, GetXMLToken(XML_N_CSS3TEXT), XML_NAMESPACE_CSS3TEXT );
 
         mpNamespaceMap->Add( "_calc_libo", GetXMLToken(XML_N_CALC_EXT), XML_NAMESPACE_CALC_EXT);
         mpNamespaceMap->Add( "_office_libo",
@@ -412,7 +418,7 @@ void SvXMLImport::_InitCtor()
 }
 
 SvXMLImport::SvXMLImport(
-    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& xContext,
+    const css::uno::Reference< css::uno::XComponentContext >& xContext,
     OUString const & implementationName, SvXMLImportFlags nImportFlags ) throw ()
 :   mpImpl( new SvXMLImport_Impl(xContext, implementationName) ),
     mpNamespaceMap( new SvXMLNamespaceMap ),
@@ -422,11 +428,11 @@ SvXMLImport::SvXMLImport(
 
     mpContexts( new SvXMLImportContexts_Impl ),
     mpFastContexts( new FastSvXMLImportContexts_Impl ),
-    mpNumImport( NULL ),
-    mpProgressBarHelper( NULL ),
-    mpEventImportHelper( NULL ),
-    mpXMLErrors( NULL ),
-    mpStyleMap(0),
+    mpNumImport( nullptr ),
+    mpProgressBarHelper( nullptr ),
+    mpEventImportHelper( nullptr ),
+    mpXMLErrors( nullptr ),
+    mpStyleMap(nullptr),
     mnImportFlags( nImportFlags ),
     mnErrorFlags(SvXMLErrorFlags::NO),
     mbIsFormsSupported( true ),
@@ -463,8 +469,6 @@ SvXMLImport::~SvXMLImport() throw ()
     //  is created and deleted without actually importing.
     delete mpNumImport;
     delete mpProgressBarHelper;
-
-    delete mpImpl;
 
     if (mxEventListener.is() && mxModel.is())
         mxModel->removeEventListener(mxEventListener);
@@ -508,23 +512,23 @@ void SAL_CALL SvXMLImport::startDocument()
             {
                 if( !mxGraphicResolver.is() )
                 {
-                    mxGraphicResolver = Reference< XGraphicObjectResolver >::query(
-                        xFactory->createInstance(
-                                // #99870# Import... instead of Export...
-                                "com.sun.star.document.ImportGraphicObjectResolver"));
+                    // #99870# Import... instead of Export...
+                    mxGraphicResolver.set(
+                        xFactory->createInstance("com.sun.star.document.ImportGraphicObjectResolver"),
+                        UNO_QUERY);
                     mpImpl->mbOwnGraphicResolver = mxGraphicResolver.is();
                 }
 
                 if( !mxEmbeddedResolver.is() )
                 {
-                    mxEmbeddedResolver = Reference< XEmbeddedObjectResolver >::query(
-                        xFactory->createInstance(
-                                // #99870# Import... instead of Export...
-                                "com.sun.star.document.ImportEmbeddedObjectResolver"));
+                    // #99870# Import... instead of Export...
+                    mxEmbeddedResolver.set(
+                        xFactory->createInstance("com.sun.star.document.ImportEmbeddedObjectResolver"),
+                        UNO_QUERY);
                     mpImpl->mbOwnEmbeddedResolver = mxEmbeddedResolver.is();
                 }
             }
-            catch( com::sun::star::uno::Exception& )
+            catch( css::uno::Exception& )
             {
             }
         }
@@ -553,7 +557,7 @@ void SAL_CALL SvXMLImport::endDocument()
     if (mpNumImport)
     {
         delete mpNumImport;
-        mpNumImport = NULL;
+        mpNumImport = nullptr;
     }
     if (mxImportInfo.is())
     {
@@ -606,7 +610,7 @@ void SAL_CALL SvXMLImport::endDocument()
 
     //  The shape import helper does the z-order sorting in the dtor,
     //  so it must be deleted here, too.
-    mxShapeImport = NULL;
+    mxShapeImport = nullptr;
 
     if( mpImpl->mbOwnGraphicResolver )
     {
@@ -622,10 +626,10 @@ void SAL_CALL SvXMLImport::endDocument()
     if( mpStyleMap )
     {
         mpStyleMap->release();
-        mpStyleMap = 0;
+        mpStyleMap = nullptr;
     }
 
-    if ( mpXMLErrors != NULL )
+    if ( mpXMLErrors != nullptr )
     {
         mpXMLErrors->ThrowErrorAsSAXException( XMLERROR_FLAG_SEVERE );
     }
@@ -635,7 +639,7 @@ void SAL_CALL SvXMLImport::startElement( const OUString& rName,
                                          const uno::Reference< xml::sax::XAttributeList >& xAttrList )
     throw(xml::sax::SAXException, uno::RuntimeException, std::exception)
 {
-    SvXMLNamespaceMap *pRewindMap = 0;
+    SvXMLNamespaceMap *pRewindMap = nullptr;
     //    SAL_INFO("svg", "startElement " << rName);
     // Process namespace attributes. This must happen before creating the
     // context, because namespace decaration apply to the element name itself.
@@ -712,8 +716,7 @@ void SAL_CALL SvXMLImport::startElement( const OUString& rName,
         {
             OUString aMsg( "Root element unknown" );
             Reference<xml::sax::XLocator> xDummyLocator;
-            Sequence < OUString > aParams(1);
-            aParams.getArray()[0] = rName;
+            Sequence < OUString > aParams { rName };
 
             SetError( XMLERROR_FLAG_SEVERE|XMLERROR_UNKNOWN_ROOT,
                       aParams, aMsg, xDummyLocator );
@@ -728,7 +731,7 @@ void SAL_CALL SvXMLImport::startElement( const OUString& rName,
 
     // Remember old namespace map.
     if( pRewindMap )
-        pContext->SetRewindMap( pRewindMap );
+        pContext->PutRewindMap( pRewindMap );
 
     // Call a startElement at the new context.
     pContext->StartElement( xAttrList );
@@ -765,11 +768,11 @@ rName
         pContext->EndElement();
 
         // Get a namespace map to rewind.
-        SvXMLNamespaceMap *pRewindMap = pContext->GetRewindMap();
+        SvXMLNamespaceMap *pRewindMap = pContext->TakeRewindMap();
 
         // Delete the current context.
         pContext->ReleaseRef();
-        pContext = 0;
+        pContext = nullptr;
 
         // Rewind a namespace map.
         if( pRewindMap )
@@ -851,7 +854,7 @@ void SAL_CALL SvXMLImport::endFastElement (sal_Int32 Element)
         uno::Reference< XFastContextHandler > xContext = mpFastContexts->back();
         mpFastContexts->pop_back();
         xContext->endFastElement( Element );
-        xContext = 0;
+        xContext = nullptr;
     }
 }
 
@@ -910,7 +913,7 @@ void SvXMLImport::SetStatistics(const uno::Sequence< beans::NamedValue> &)
 void SAL_CALL SvXMLImport::setTargetDocument( const uno::Reference< lang::XComponent >& xDoc )
     throw(lang::IllegalArgumentException, uno::RuntimeException, std::exception)
 {
-    mxModel = uno::Reference< frame::XModel >::query( xDoc );
+    mxModel.set( xDoc, UNO_QUERY );
     if( !mxModel.is() )
         throw lang::IllegalArgumentException();
 
@@ -942,7 +945,7 @@ void SAL_CALL SvXMLImport::setTargetDocument( const uno::Reference< lang::XCompo
     if( mpNumImport )
     {
         delete mpNumImport;
-        mpNumImport = 0;
+        mpNumImport = nullptr;
     }
 }
 
@@ -960,7 +963,7 @@ void SAL_CALL SvXMLImport::cancel(  )
 
 // XInitialize
 void SAL_CALL SvXMLImport::initialize( const uno::Sequence< uno::Any >& aArguments )
-    throw(::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception)
+    throw(css::uno::Exception, css::uno::RuntimeException, std::exception)
 {
     const sal_Int32 nAnyCount = aArguments.getLength();
     const uno::Any* pAny = aArguments.getConstArray();
@@ -1073,7 +1076,7 @@ OUString SAL_CALL SvXMLImport::getImplementationName()
 }
 
 sal_Bool SAL_CALL SvXMLImport::supportsService( const OUString& rServiceName )
-    throw(::com::sun::star::uno::RuntimeException, std::exception)
+    throw(css::uno::RuntimeException, std::exception)
 {
     return cppu::supportsService(this, rServiceName);
 }
@@ -1122,7 +1125,7 @@ const Reference< container::XNameContainer > & SvXMLImport::GetGradientHelper()
             {
                 try
                 {
-                    mxGradientHelper =  Reference< container::XNameContainer >( xServiceFact->createInstance(
+                    mxGradientHelper.set( xServiceFact->createInstance(
                         "com.sun.star.drawing.GradientTable" ), UNO_QUERY);
                 }
                 catch( lang::ServiceNotRegisteredException& )
@@ -1145,7 +1148,7 @@ const Reference< container::XNameContainer > & SvXMLImport::GetHatchHelper()
             {
                 try
                 {
-                    mxHatchHelper =  Reference< container::XNameContainer >( xServiceFact->createInstance(
+                    mxHatchHelper.set( xServiceFact->createInstance(
                         "com.sun.star.drawing.HatchTable" ), UNO_QUERY);
                 }
                 catch( lang::ServiceNotRegisteredException& )
@@ -1168,7 +1171,7 @@ const Reference< container::XNameContainer > & SvXMLImport::GetBitmapHelper()
             {
                 try
                 {
-                    mxBitmapHelper =  Reference< container::XNameContainer >( xServiceFact->createInstance(
+                    mxBitmapHelper.set( xServiceFact->createInstance(
                         "com.sun.star.drawing.BitmapTable" ), UNO_QUERY);
                 }
                 catch( lang::ServiceNotRegisteredException& )
@@ -1191,7 +1194,7 @@ const Reference< container::XNameContainer > & SvXMLImport::GetTransGradientHelp
             {
                 try
                 {
-                    mxTransGradientHelper =  Reference< container::XNameContainer >( xServiceFact->createInstance(
+                    mxTransGradientHelper.set( xServiceFact->createInstance(
                         "com.sun.star.drawing.TransparencyGradientTable" ), UNO_QUERY);
                 }
                 catch( lang::ServiceNotRegisteredException& )
@@ -1214,8 +1217,7 @@ const Reference< container::XNameContainer > & SvXMLImport::GetMarkerHelper()
             {
                 try
                 {
-                    mxMarkerHelper =  Reference< container::XNameContainer >( xServiceFact->createInstance(
-                        "com.sun.star.drawing.MarkerTable" ), UNO_QUERY);
+                    mxMarkerHelper.set( xServiceFact->createInstance( "com.sun.star.drawing.MarkerTable" ), UNO_QUERY);
                 }
                 catch( lang::ServiceNotRegisteredException& )
                 {}
@@ -1237,8 +1239,7 @@ const Reference< container::XNameContainer > & SvXMLImport::GetDashHelper()
             {
                 try
                 {
-                    mxDashHelper =  Reference< container::XNameContainer >( xServiceFact->createInstance(
-                        "com.sun.star.drawing.DashTable" ), UNO_QUERY);
+                    mxDashHelper.set( xServiceFact->createInstance( "com.sun.star.drawing.DashTable" ), UNO_QUERY);
                 }
                 catch( lang::ServiceNotRegisteredException& )
                 {}
@@ -1453,11 +1454,11 @@ OUString SvXMLImport::GetStyleDisplayName( sal_uInt16 nFamily,
     return sName;
 }
 
-void SvXMLImport::SetViewSettings(const com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>&)
+void SvXMLImport::SetViewSettings(const css::uno::Sequence<css::beans::PropertyValue>&)
 {
 }
 
-void SvXMLImport::SetConfigurationSettings(const com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>&)
+void SvXMLImport::SetConfigurationSettings(const css::uno::Sequence<css::beans::PropertyValue>&)
 {
 }
 
@@ -1518,7 +1519,7 @@ ProgressBarHelper*  SvXMLImport::GetProgressBarHelper()
 void SvXMLImport::AddNumberStyle(sal_Int32 nKey, const OUString& rName)
 {
     if (!mxNumberStyles.is())
-        mxNumberStyles = uno::Reference< container::XNameContainer >( comphelper::NameContainer_createInstance( ::cppu::UnoType<sal_Int32>::get()) );
+        mxNumberStyles.set( comphelper::NameContainer_createInstance( ::cppu::UnoType<sal_Int32>::get()) );
     if (mxNumberStyles.is())
     {
         uno::Any aAny;
@@ -1725,7 +1726,7 @@ void SvXMLImport::_CreateNumberFormatsSupplier()
 
 void SvXMLImport::_CreateDataStylesImport()
 {
-    SAL_WARN_IF( mpNumImport != NULL, "xmloff.core", "data styles import already exists!" );
+    SAL_WARN_IF( mpNumImport != nullptr, "xmloff.core", "data styles import already exists!" );
     uno::Reference<util::XNumberFormatsSupplier> xNum =
         GetNumberFormatsSupplier();
     if ( xNum.is() )
@@ -1783,7 +1784,7 @@ void SvXMLImport::SetError(
         mnErrorFlags |= SvXMLErrorFlags::DO_NOTHING;
 
     // create error list on demand
-    if ( mpXMLErrors == NULL )
+    if ( mpXMLErrors == nullptr )
         mpXMLErrors = new XMLErrors();
 
     // save error information
@@ -1796,7 +1797,7 @@ void SvXMLImport::SetError(
     sal_Int32 nId,
     const Sequence<OUString>& rMsgParams)
 {
-    SetError( nId, rMsgParams, "", NULL );
+    SetError( nId, rMsgParams, "", nullptr );
 }
 
 void SvXMLImport::SetError(
@@ -1810,9 +1811,7 @@ void SvXMLImport::SetError(
     sal_Int32 nId,
     const OUString& rMsg1)
 {
-    Sequence<OUString> aSeq(1);
-    OUString* pSeq = aSeq.getArray();
-    pSeq[0] = rMsg1;
+    Sequence<OUString> aSeq { rMsg1 };
     SetError( nId, aSeq );
 }
 
@@ -1839,8 +1838,8 @@ void SvXMLImport::DisposingModel()
     if( mxMasterStyles.Is() )
         static_cast<SvXMLStylesContext *>(&mxMasterStyles)->Clear();
 
-    mxModel.set(0);
-    mxEventListener.set(NULL);
+    mxModel.set(nullptr);
+    mxEventListener.set(nullptr);
 }
 
 ::comphelper::UnoInterfaceToUniqueIdentifierMapper& SvXMLImport::getInterfaceToIdentifierMapper()

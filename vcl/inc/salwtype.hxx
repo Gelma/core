@@ -110,7 +110,7 @@ struct SalMenuEvent
     sal_uInt16      mnId;           // Menu item ID
     void*           mpMenu;         // pointer to VCL menu (class Menu)
 
-    SalMenuEvent() : mnId( 0 ), mpMenu( NULL ) {}
+    SalMenuEvent() : mnId( 0 ), mpMenu( nullptr ) {}
     SalMenuEvent( sal_uInt16 i_nId, void* i_pMenu )
     : mnId( i_nId ), mpMenu( i_pMenu ) {}
 };
@@ -159,13 +159,6 @@ struct SalWheelMouseEvent
     SalWheelMouseEvent()
     : mnTime( 0 ), mnX( 0 ), mnY( 0 ), mnDelta( 0 ), mnNotchDelta( 0 ), mnScrollLines( 0 ), mnCode( 0 ), mbHorz( false ), mbDeltaIsPixel( false )
     {}
-};
-
-// MOUSEACTIVATE
-struct SalMouseActivateEvent
-{
-    long            mnX;            // X-Position (Pixel, TopLeft-Output)
-    long            mnY;            // Y-Position (Pixel, TopLeft-Output)
 };
 
 // EXTTEXTINPUT

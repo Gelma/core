@@ -34,7 +34,7 @@ using namespace com::sun::star;
 namespace unographic {
 
 Graphic::Graphic() :
-    mpGraphic( NULL )
+    mpGraphic( nullptr )
 {
 }
 
@@ -79,7 +79,7 @@ uno::Any SAL_CALL Graphic::queryAggregation( const uno::Type& rType )
 uno::Any SAL_CALL Graphic::queryInterface( const uno::Type & rType )
     throw( uno::RuntimeException, std::exception )
 {
-    ::com::sun::star::uno::Any aReturn = ::unographic::GraphicDescriptor::queryInterface( rType );
+    css::uno::Any aReturn = ::unographic::GraphicDescriptor::queryInterface( rType );
     if ( !aReturn.hasValue() )
         aReturn = ::cppu::queryInterface ( rType, static_cast< graphic::XGraphicTransformer*>( this ) );
     return aReturn;
@@ -111,10 +111,7 @@ OUString Graphic::getImplementationName_Static()
 uno::Sequence< OUString > Graphic::getSupportedServiceNames_Static()
     throw()
 {
-    uno::Sequence< OUString > aSeq( 1 );
-
-    aSeq.getArray()[ 0 ] = "com.sun.star.graphic.Graphic";
-
+    uno::Sequence< OUString > aSeq { "com.sun.star.graphic.Graphic" };
     return aSeq;
 }
 
@@ -205,7 +202,7 @@ uno::Sequence< ::sal_Int8 > SAL_CALL Graphic::getDIB(  ) throw (uno::RuntimeExce
         SvMemoryStream aMem;
 
         WriteDIB(mpGraphic->GetBitmapEx().GetBitmap(), aMem, false, true);
-        return ::com::sun::star::uno::Sequence<sal_Int8>( static_cast<sal_Int8 const *>(aMem.GetData()), aMem.Tell() );
+        return css::uno::Sequence<sal_Int8>( static_cast<sal_Int8 const *>(aMem.GetData()), aMem.Tell() );
     }
     else
     {
@@ -224,7 +221,7 @@ uno::Sequence< ::sal_Int8 > SAL_CALL Graphic::getMaskDIB(  ) throw (uno::Runtime
         SvMemoryStream aMem;
 
         WriteDIB(mpGraphic->GetBitmapEx().GetMask(), aMem, false, true);
-        return ::com::sun::star::uno::Sequence<sal_Int8>( static_cast<sal_Int8 const *>(aMem.GetData()), aMem.Tell() );
+        return css::uno::Sequence<sal_Int8>( static_cast<sal_Int8 const *>(aMem.GetData()), aMem.Tell() );
     }
     else
     {
@@ -237,7 +234,7 @@ const ::Graphic* Graphic::getImplementation( const uno::Reference< uno::XInterfa
     throw()
 {
     uno::Reference< lang::XUnoTunnel > xTunnel( rxIFace, uno::UNO_QUERY );
-    return( xTunnel.is() ? reinterpret_cast< ::Graphic* >( xTunnel->getSomething( ::Graphic::getUnoTunnelId() ) ) : NULL );
+    return( xTunnel.is() ? reinterpret_cast< ::Graphic* >( xTunnel->getSomething( ::Graphic::getUnoTunnelId() ) ) : nullptr );
 }
 
 

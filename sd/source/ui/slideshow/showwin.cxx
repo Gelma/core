@@ -613,24 +613,23 @@ void ShowWindow::DeleteWindowFromPaintView()
 void ShowWindow::AddWindowToPaintView()
 {
     if( mpViewShell->GetView() )
-        mpViewShell->GetView()->AddWindowToPaintView( this, 0 );
+        mpViewShell->GetView()->AddWindowToPaintView( this, nullptr );
 
     sal_uInt16 nChild = GetChildCount();
     while( nChild-- )
-        GetChild( nChild )->Show( true );
+        GetChild( nChild )->Show();
 }
 
 // Override the sd::Window's CreateAccessible to create a different accessible object
-::com::sun::star::uno::Reference<
-    ::com::sun::star::accessibility::XAccessible>
+css::uno::Reference<css::accessibility::XAccessible>
     ShowWindow::CreateAccessible()
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > xAcc = GetAccessible(false);
+    css::uno::Reference< css::accessibility::XAccessible > xAcc = GetAccessible(false);
     if (xAcc.get())
     {
         return xAcc;
     }
-    if (mpViewShell != NULL)
+    if (mpViewShell != nullptr)
     {
         xAcc = mpViewShell->CreateAccessibleDocumentView (this);
         SetAccessible(xAcc);

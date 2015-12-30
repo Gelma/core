@@ -139,8 +139,8 @@ OUString getImageFromFileName(const OUString& aFile)
             aUnpackPath  += "unpack_update";
         }
 
-        oslFileHandle hOut = NULL;
-        oslProcess hProcess = NULL;
+        oslFileHandle hOut = nullptr;
+        oslProcess hProcess = nullptr;
 
         OUString aSystemPath;
         osl::File::getSystemPathFromFileURL(aFile, aSystemPath);
@@ -149,11 +149,11 @@ OUString getImageFromFileName(const OUString& aFile)
             aUnpackPath.pData,                                  // [in] Image name
             &aSystemPath.pData, 1,                              // [in] Arguments
             osl_Process_WAIT | osl_Process_NORMAL,              // [in] Options
-            NULL,                                               // [in] Security
-            NULL,                                               // [in] Working directory
-            NULL, 0,                                            // [in] Environment variables
+            nullptr,                                               // [in] Security
+            nullptr,                                               // [in] Working directory
+            nullptr, 0,                                            // [in] Environment variables
             &hProcess,                                          // [out] Process handle
-            NULL, &hOut, NULL                                   // [out] File handles for redirected I/O
+            nullptr, &hOut, nullptr                                   // [out] File handles for redirected I/O
         );
 
         if( osl_Process_E_None == rc )
@@ -238,15 +238,15 @@ public:
     UpdateCheckThread( osl::Condition& rCondition,
         const uno::Reference<uno::XComponentContext>& xContext );
 
-    virtual void SAL_CALL join() SAL_OVERRIDE;
-    virtual void SAL_CALL terminate() SAL_OVERRIDE;
-    virtual void cancel() SAL_OVERRIDE;
+    virtual void SAL_CALL join() override;
+    virtual void SAL_CALL terminate() override;
+    virtual void cancel() override;
 
 protected:
     virtual ~UpdateCheckThread();
 
-    virtual void SAL_CALL run() SAL_OVERRIDE;
-    virtual void SAL_CALL onTerminated() SAL_OVERRIDE;
+    virtual void SAL_CALL run() override;
+    virtual void SAL_CALL onTerminated() override;
 
     /* Wrapper around checkForUpdates */
     bool runCheck( bool & rbExtensionsChecked );
@@ -280,7 +280,6 @@ private:
         { osl::MutexGuard aGuard(m_aMutex); m_xProvider.clear(); };
 
     osl::Mutex      m_aMutex;
-    osl::Module     m_aModule;
 
 protected:
     osl::Condition& m_aCondition;
@@ -297,7 +296,7 @@ public:
     ManualUpdateCheckThread( osl::Condition& rCondition, const uno::Reference<uno::XComponentContext>& xContext ) :
         UpdateCheckThread(rCondition, xContext) {};
 
-    virtual void SAL_CALL run() SAL_OVERRIDE;
+    virtual void SAL_CALL run() override;
 };
 
 
@@ -308,7 +307,7 @@ public:
 
     // XJob
     virtual uno::Any SAL_CALL execute(const uno::Sequence<beans::NamedValue>&)
-        throw (lang::IllegalArgumentException, uno::Exception, std::exception) SAL_OVERRIDE;
+        throw (lang::IllegalArgumentException, uno::Exception, std::exception) override;
 
 private:
     rtl::Reference< UpdateCheck > m_aUpdateCheck;
@@ -323,10 +322,10 @@ public:
         const rtl::Reference< DownloadInteractionHandler >& rHandler,
         const OUString& rURL );
 
-    virtual void SAL_CALL run() SAL_OVERRIDE;
-    virtual void cancel() SAL_OVERRIDE;
-    virtual void SAL_CALL suspend() SAL_OVERRIDE;
-    virtual void SAL_CALL onTerminated() SAL_OVERRIDE;
+    virtual void SAL_CALL run() override;
+    virtual void cancel() override;
+    virtual void SAL_CALL suspend() override;
+    virtual void SAL_CALL onTerminated() override;
 
 protected:
     virtual ~DownloadThread();
@@ -344,8 +343,8 @@ class ShutdownThread :  public osl::Thread
 public:
     ShutdownThread( const uno::Reference<uno::XComponentContext>& xContext );
 
-    virtual void SAL_CALL run() SAL_OVERRIDE;
-    virtual void SAL_CALL onTerminated() SAL_OVERRIDE;
+    virtual void SAL_CALL run() override;
+    virtual void SAL_CALL onTerminated() override;
 
 protected:
     virtual ~ShutdownThread();
@@ -743,7 +742,7 @@ void SAL_CALL ShutdownThread::onTerminated()
 UpdateCheck::UpdateCheck()
     : m_eState(NOT_INITIALIZED)
     , m_eUpdateState(UPDATESTATES_COUNT)
-    , m_pThread(NULL)
+    , m_pThread(nullptr)
     , m_bHasExtensionUpdate(false)
     , m_bShowExtUpdDlg(false)
 {
@@ -861,7 +860,7 @@ UpdateCheck::cancel()
 
     aGuard.clear();
 
-    if( NULL != pThread )
+    if( nullptr != pThread )
         pThread->cancel();
 
     setUIState(eUIState);
@@ -947,7 +946,7 @@ UpdateCheck::pause()
 {
     osl::ClearableMutexGuard aGuard(m_aMutex);
 
-    if( NULL != m_pThread )
+    if( nullptr != m_pThread )
         m_pThread->suspend();
 
     rtl::Reference< UpdateCheckConfig > rModel = UpdateCheckConfig::get(m_xContext);
@@ -964,7 +963,7 @@ UpdateCheck::resume()
 {
     osl::ClearableMutexGuard aGuard(m_aMutex);
 
-    if( NULL != m_pThread )
+    if( nullptr != m_pThread )
         m_pThread->resume();
 
     rtl::Reference< UpdateCheckConfig > rModel = UpdateCheckConfig::get(m_xContext);
@@ -998,10 +997,10 @@ UpdateCheck::shutdownThread(bool join)
 
     // copy thread object pointer to stack
     osl::Thread *pThread = m_pThread;
-    m_pThread = NULL;
+    m_pThread = nullptr;
     aGuard.clear();
 
-    if( NULL != pThread )
+    if( nullptr != pThread )
     {
         pThread->terminate();
         if( join )
@@ -1029,7 +1028,7 @@ UpdateCheck::enableAutoCheck(bool enable)
 void
 UpdateCheck::enableDownload(bool enable, bool paused)
 {
-    OSL_ASSERT(NULL == m_pThread);
+    OSL_ASSERT(nullptr == m_pThread);
 
     State eState = DISABLED;
     if( enable )

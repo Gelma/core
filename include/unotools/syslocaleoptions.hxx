@@ -41,13 +41,13 @@ class SvtSysLocaleOptions_Impl;
 class SvtListener;
 namespace osl { class Mutex; }
 
-class UNOTOOLS_DLLPUBLIC SAL_WARN_UNUSED SvtSysLocaleOptions : public utl::detail::Options
+class SAL_WARN_UNUSED UNOTOOLS_DLLPUBLIC SvtSysLocaleOptions : public utl::detail::Options
 {
     static  SvtSysLocaleOptions_Impl*   pOptions;
     static  sal_Int32                   nRefCount;
 
     UNOTOOLS_DLLPRIVATE static  ::osl::Mutex&       GetMutex();
-    virtual void ConfigurationChanged( utl::ConfigurationBroadcaster* p, sal_uInt32 nHint ) SAL_OVERRIDE;
+    virtual void ConfigurationChanged( utl::ConfigurationBroadcaster* p, sal_uInt32 nHint ) override;
 
 public:
 
@@ -91,7 +91,7 @@ public:
         BlockBroadcasts(false) or otherwise pending hints would never be
         broadcasted again.
      */
-       virtual void             BlockBroadcasts( bool bBlock ) SAL_OVERRIDE;
+       virtual void             BlockBroadcasts( bool bBlock ) override;
 
     // config value access methods
 

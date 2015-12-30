@@ -70,21 +70,21 @@ namespace connectivity
 
         virtual ~OParseContext();
         // retrieves language specific error messages
-        virtual OUString getErrorMessage(ErrorCode _eCodes) const SAL_OVERRIDE;
+        virtual OUString getErrorMessage(ErrorCode _eCodes) const override;
 
         // retrieves language specific keyword strings (only ASCII allowed)
-        virtual OString getIntlKeywordAscii(InternationalKeyCode _eKey) const SAL_OVERRIDE;
+        virtual OString getIntlKeywordAscii(InternationalKeyCode _eKey) const override;
 
         // finds out, if we have an international keyword (only ASCII allowed)
-        virtual InternationalKeyCode getIntlKeyCode(const OString& rToken) const SAL_OVERRIDE;
+        virtual InternationalKeyCode getIntlKeyCode(const OString& rToken) const override;
 
         // determines the default international setting
-        static const ::com::sun::star::lang::Locale& getDefaultLocale();
+        static const css::lang::Locale& getDefaultLocale();
 
         /** get's a locale instance which should be used when parsing in the context specified by this instance
             <p>if this is not overridden by derived classes, it returns the static default locale.</p>
         */
-        virtual ::com::sun::star::lang::Locale getPreferredLocale( ) const SAL_OVERRIDE;
+        virtual css::lang::Locale getPreferredLocale( ) const override;
     };
 
     // OSQLParseNodesContainer
@@ -110,10 +110,10 @@ namespace connectivity
 
     struct OSQLParser_Data
     {
-        ::com::sun::star::lang::Locale  aLocale;
+        css::lang::Locale               aLocale;
         ::connectivity::SQLError        aErrors;
 
-        OSQLParser_Data( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& _rxContext )
+        OSQLParser_Data( const css::uno::Reference< css::uno::XComponentContext >& _rxContext )
             :aErrors( _rxContext )
         {
         }
@@ -146,16 +146,15 @@ namespace connectivity
         OUString                     m_sFieldName;   // current field name for a predicate
         OUString                     m_sErrorMessage;// current error msg
 
-        ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >
+        css::uno::Reference< css::beans::XPropertySet >
                                     m_xField;       // current field
-        ::com::sun::star::uno::Reference< ::com::sun::star::util::XNumberFormatter >
+        css::uno::Reference< css::util::XNumberFormatter >
                                     m_xFormatter;   // current number formatter
         sal_Int32                   m_nFormatKey;   // numberformat, which should be used
         sal_Int32                   m_nDateFormatKey;
-        ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >    m_xContext;
-        ::com::sun::star::uno::Reference< ::com::sun::star::i18n::XCharacterClassification> m_xCharClass;
-        static ::com::sun::star::uno::Reference< ::com::sun::star::i18n::XLocaleData4>       s_xLocaleData;
-        ::com::sun::star::uno::Reference< ::com::sun::star::i18n::XLocaleData>      xDummy; // can be deleted after 627
+        css::uno::Reference< css::uno::XComponentContext >    m_xContext;
+        css::uno::Reference< css::i18n::XCharacterClassification> m_xCharClass;
+        static css::uno::Reference< css::i18n::XLocaleData4>       s_xLocaleData;
 
         // convert a string into double trim it to scale of _nscale and than transform it back to string
         OUString stringToDouble(const OUString& _rValue,sal_Int16 _nScale);
@@ -172,7 +171,7 @@ namespace connectivity
     public:
         // if NULL, a default context will be used
         // the context must live as long as the parser
-        OSQLParser(const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rxContext, const IParseContext* _pContext = NULL);
+        OSQLParser(const css::uno::Reference< css::uno::XComponentContext >& rxContext, const IParseContext* _pContext = nullptr);
         ~OSQLParser();
 
         // Parsing an SQLStatement
@@ -184,8 +183,8 @@ namespace connectivity
         // set bUseRealName to false if you pass a xField that comes from where you got that field,
         // as opposed from to from yourself.
         OSQLParseNode* predicateTree(OUString& rErrorMessage, const OUString& rStatement,
-                       const ::com::sun::star::uno::Reference< ::com::sun::star::util::XNumberFormatter > & xFormatter,
-                       const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > & xField,
+                       const css::uno::Reference< css::util::XNumberFormatter > & xFormatter,
+                       const css::uno::Reference< css::beans::XPropertySet > & xField,
                        bool bUseRealName = true);
 
         // Access to the context
@@ -195,14 +194,14 @@ namespace connectivity
         const SQLError& getErrorHelper() const;
 
         // TokenIDToStr: token name belonging to a token number.
-        static OString TokenIDToStr(sal_uInt32 nTokenID, const IParseContext* pContext = NULL);
+        static OString TokenIDToStr(sal_uInt32 nTokenID, const IParseContext* pContext = nullptr);
 
 #if OSL_DEBUG_LEVEL > 1
         // (empty string if not found)
         static OUString RuleIDToStr(sal_uInt32 nRuleID);
 #endif
 
-        // StrToRuleID calculates the RuleID for a OUString (that is, ::com::sun::star::sdbcx::Index in yytname)
+        // StrToRuleID calculates the RuleID for a OUString (that is, css::sdbcx::Index in yytname)
         // (0 if not found). The search for an ID based on a String is
         // extremely inefficient (sequential search for OUString)!
         static sal_uInt32 StrToRuleID(const OString & rValue);
@@ -212,7 +211,7 @@ namespace connectivity
         // RuleId with enum, far more efficient
         static sal_uInt32 RuleID(OSQLParseNode::Rule eRule);
         // compares the _sFunctionName with all known function names and return the DataType of the return value
-        static sal_Int32 getFunctionReturnType(const OUString& _sFunctionName, const IParseContext* pContext = NULL);
+        static sal_Int32 getFunctionReturnType(const OUString& _sFunctionName, const IParseContext* pContext = nullptr);
 
         // returns the type for a parameter in a given function name
         static sal_Int32 getFunctionParameterType(sal_uInt32 _nTokenId,sal_uInt32 _nPos);
@@ -233,7 +232,7 @@ namespace connectivity
 
         sal_Int16 buildComparsionRule(OSQLParseNode*& pAppend,OSQLParseNode* pLiteral);
         // pCompre will be deleted if it is not used
-        sal_Int16 buildPredicateRule(OSQLParseNode*& pAppend,OSQLParseNode* const pLiteral,OSQLParseNode* pCompare,OSQLParseNode* pLiteral2 = NULL);
+        sal_Int16 buildPredicateRule(OSQLParseNode*& pAppend,OSQLParseNode* const pLiteral,OSQLParseNode* pCompare,OSQLParseNode* pLiteral2 = nullptr);
 
         sal_Int16 buildLikeRule(OSQLParseNode* pAppend, OSQLParseNode*& pLiteral, const OSQLParseNode* pEscape);
         sal_Int16 buildStringNodes(OSQLParseNode*& pLiteral);

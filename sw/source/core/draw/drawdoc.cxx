@@ -82,7 +82,7 @@ SwDrawModel::SwDrawModel(SwDoc *const pDoc)
             *pRangeArr; pRangeArr += 2 )
             for( sal_uInt16 nW = *pRangeArr, nEnd = *(pRangeArr+1);
                     nW < nEnd; ++nW )
-                if( 0 != (pItem = rDocPool.GetPoolDefaultItem( nW )) &&
+                if( nullptr != (pItem = rDocPool.GetPoolDefaultItem( nW )) &&
                     0 != (nSlotId = rDocPool.GetSlotId( nW ) ) &&
                     nSlotId != nW &&
                     0 != (nEdtWhich = pSdrPool->GetWhich( nSlotId )) &&
@@ -120,13 +120,19 @@ SwDrawModel::~SwDrawModel()
 SdrPage* SwDrawModel::AllocPage(bool bMasterPage)
 {
     SwDPage* pPage = new SwDPage(*this, bMasterPage);
-    pPage->SetName(OUString("Controls"));
+    pPage->SetName("Controls");
     return pPage;
 }
 
 uno::Reference<embed::XStorage> SwDrawModel::GetDocumentStorage() const
 {
     return m_pDoc->GetDocStorage();
+}
+
+void SwDrawModel::getLibreOfficeKitCallback(LibreOfficeKitCallback& rCallback, void*& rLibreOfficeKitData)
+{
+    rCallback = mpLibreOfficeKitCallback;
+    rLibreOfficeKitData = mpLibreOfficeKitData;
 }
 
 uno::Reference< uno::XInterface > SwDrawModel::createUnoModel()

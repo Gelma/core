@@ -20,11 +20,10 @@ using namespace com::sun::star;
 
 namespace cmis
 {
-uno::Reference< com::sun::star::ucb::XContent > SAL_CALL
+uno::Reference< css::ucb::XContent > SAL_CALL
 ContentProvider::queryContent(
-            const uno::Reference<
-                    com::sun::star::ucb::XContentIdentifier >& Identifier )
-    throw( com::sun::star::ucb::IllegalIdentifierException,
+            const uno::Reference< css::ucb::XContentIdentifier >& Identifier )
+    throw( css::ucb::IllegalIdentifierException,
            uno::RuntimeException, std::exception )
 {
     osl::MutexGuard aGuard( m_aMutex );
@@ -48,20 +47,20 @@ ContentProvider::queryContent(
             registerNewContent( xContent );
         }
     }
-    catch ( com::sun::star::ucb::ContentCreationException const & )
+    catch ( css::ucb::ContentCreationException const & )
     {
-        throw com::sun::star::ucb::IllegalIdentifierException();
+        throw css::ucb::IllegalIdentifierException();
     }
 
     if ( !xContent->getIdentifier().is() )
-        throw com::sun::star::ucb::IllegalIdentifierException();
+        throw css::ucb::IllegalIdentifierException();
 
     return xContent;
 }
 
 libcmis::Session* ContentProvider::getSession( const OUString& sBindingUrl, const OUString& sUsername )
 {
-    libcmis::Session* pSession = NULL;
+    libcmis::Session* pSession = nullptr;
     std::map< std::pair< OUString, OUString >, libcmis::Session* >::iterator it
             = m_aSessionCache.find( std::pair< OUString, OUString >( sBindingUrl, sUsername ) );
     if ( it != m_aSessionCache.end( ) )
@@ -117,7 +116,7 @@ css::uno::Any SAL_CALL ContentProvider::queryInterface( const css::uno::Type & r
 XTYPEPROVIDER_IMPL_3( ContentProvider,
                       lang::XTypeProvider,
                       lang::XServiceInfo,
-                      com::sun::star::ucb::XContentProvider );
+                      css::ucb::XContentProvider );
 
 XSERVICEINFO_IMPL_1_CTX( ContentProvider,
                      OUString("com.sun.star.comp.CmisContentProvider"),
@@ -130,7 +129,7 @@ ONE_INSTANCE_SERVICE_FACTORY_IMPL( ContentProvider );
 extern "C" SAL_DLLPUBLIC_EXPORT void * SAL_CALL ucpcmis1_component_getFactory( const sal_Char *pImplName,
     void *pServiceManager, void * )
 {
-    void * pRet = 0;
+    void * pRet = nullptr;
 
     uno::Reference< lang::XMultiServiceFactory > xSMgr
         (static_cast< lang::XMultiServiceFactory * >( pServiceManager ) );

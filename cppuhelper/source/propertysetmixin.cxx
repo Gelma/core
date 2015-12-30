@@ -163,23 +163,23 @@ void Data::initProperties(
                 if (attr->isBound()) {
                     attrAttribs |= css::beans::PropertyAttribute::BOUND;
                 }
-                bool setUnknown = false;
+                bool bSetUnknown = false;
                 if (attr->isReadOnly()) {
                     attrAttribs |= css::beans::PropertyAttribute::READONLY;
-                    setUnknown = true;
+                    bSetUnknown = true;
                 }
                 css::uno::Sequence<
                 css::uno::Reference<
                 css::reflection::XCompoundTypeDescription > > excs(
                     attr->getGetExceptions());
-                bool getUnknown = false;
+                bool bGetUnknown = false;
                 //XXX  Special interpretation of getter/setter exceptions only
                 // works if the specified exceptions are of the exact type, not
                 // of a supertype:
                 for (sal_Int32 j = 0; j < excs.getLength(); ++j) {
                     if ( excs[j]->getName() == "com.sun.star.beans.UnknownPropertyException" )
                     {
-                        getUnknown = true;
+                        bGetUnknown = true;
                         break;
                     }
                 }
@@ -187,14 +187,14 @@ void Data::initProperties(
                 for (sal_Int32 j = 0; j < excs.getLength(); ++j) {
                     if ( excs[j]->getName() == "com.sun.star.beans.UnknownPropertyException" )
                     {
-                        setUnknown = true;
+                        bSetUnknown = true;
                     } else if ( excs[j]->getName() == "com.sun.star.beans.PropertyVetoException" )
                     {
                         attrAttribs
                             |= css::beans::PropertyAttribute::CONSTRAINED;
                     }
                 }
-                if (getUnknown && setUnknown) {
+                if (bGetUnknown && bSetUnknown) {
                     attrAttribs |= css::beans::PropertyAttribute::OPTIONAL;
                 }
                 css::uno::Reference< css::reflection::XTypeDescription > t(
@@ -280,15 +280,15 @@ public:
     explicit Info(Data * data): m_data(data) {}
 
     virtual css::uno::Sequence< css::beans::Property > SAL_CALL getProperties()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual css::beans::Property SAL_CALL getPropertyByName(
         rtl::OUString const & name)
         throw (
-            css::beans::UnknownPropertyException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            css::beans::UnknownPropertyException, css::uno::RuntimeException, std::exception) override;
 
     virtual sal_Bool SAL_CALL hasPropertyByName(rtl::OUString const & name)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
 private:
     rtl::Reference< Data > m_data;
@@ -435,7 +435,7 @@ PropertySetMixinImpl::Impl::Impl(
     m_idlClass = getReflection(m_type.getTypeName());
     css::uno::Reference< css::reflection::XTypeDescription > ifc;
     try {
-        ifc = css::uno::Reference< css::reflection::XTypeDescription >(
+        ifc.set(
             css::uno::Reference< css::container::XHierarchicalNameAccess >(
                 m_context->getValueByName(
                     "/singletons/com.sun.star.reflection."
@@ -700,7 +700,7 @@ css::uno::Any PropertySetMixinImpl::Impl::getProperty(
                 "unexpected type of attribute " + name, object);
         }
     }
-    if (state != 0) {
+    if (state != nullptr) {
         //XXX  If isAmbiguous && isDefaulted, arbitrarily choose AMBIGUOUS_VALUE
         // over DEFAULT_VALUE:
         *state = isAmbiguous
@@ -878,7 +878,7 @@ void PropertySetMixinImpl::prepareSet(
              & css::beans::PropertyAttribute::BOUND)
             != 0)
         {
-            assert(boundListeners != 0);
+            assert(boundListeners != nullptr);
             Impl::BoundListenerMap::const_iterator i(
                 m_impl->boundListeners.find(propertyName));
             if (i != m_impl->boundListeners.end()) {
@@ -915,7 +915,7 @@ void PropertySetMixinImpl::prepareSet(
     if ((it->second.property.Attributes & css::beans::PropertyAttribute::BOUND)
         != 0)
     {
-        assert(boundListeners != 0);
+        assert(boundListeners != nullptr);
         boundListeners->m_impl->event = css::beans::PropertyChangeEvent(
             static_cast< css::beans::XPropertySet * >(this), propertyName,
             false, it->second.property.Handle, oldValue, newValue);
@@ -1005,7 +1005,7 @@ css::uno::Any PropertySetMixinImpl::getPropertyValue(
         css::uno::RuntimeException, std::exception)
 {
     return m_impl->getProperty(
-        static_cast< css::beans::XPropertySet * >(this), propertyName, 0);
+        static_cast< css::beans::XPropertySet * >(this), propertyName, nullptr);
 }
 
 void PropertySetMixinImpl::addPropertyChangeListener(
@@ -1120,7 +1120,7 @@ css::uno::Any PropertySetMixinImpl::getFastPropertyValue(sal_Int32 handle)
         static_cast< css::beans::XPropertySet * >(this),
         m_impl->translateHandle(
             static_cast< css::beans::XPropertySet * >(this), handle),
-        0);
+        nullptr);
 }
 
 css::uno::Sequence< css::beans::PropertyValue >

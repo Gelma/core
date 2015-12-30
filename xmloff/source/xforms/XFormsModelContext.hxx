@@ -35,7 +35,7 @@ class SvXMLImportContext;
 /** import the xforms:model element */
 class XFormsModelContext : public TokenContext
 {
-    com::sun::star::uno::Reference<com::sun::star::xforms::XModel2> mxModel;
+    css::uno::Reference<css::xforms::XModel2> mxModel;
 
 public:
     XFormsModelContext( SvXMLImport& rImport,
@@ -43,22 +43,22 @@ public:
                         const OUString& rLName );
     virtual ~XFormsModelContext();
 
-    com::sun::star::uno::Reference<com::sun::star::xforms::XModel2> getModel() { return mxModel;}
+    css::uno::Reference<css::xforms::XModel2> getModel() { return mxModel;}
 
     // implement SvXMLImportContext & TokenContext methods:
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
 protected:
     virtual void HandleAttribute(
         sal_uInt16 nToken,
-        const OUString& rValue ) SAL_OVERRIDE;
+        const OUString& rValue ) override;
 
     virtual SvXMLImportContext* HandleChild(
         sal_uInt16 nToken,
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const com::sun::star::uno::Reference<com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList ) override;
 };
 
 #endif

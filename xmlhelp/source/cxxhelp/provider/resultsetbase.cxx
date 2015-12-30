@@ -33,20 +33,16 @@ using namespace com::sun::star;
 
 ResultSetBase::ResultSetBase( const uno::Reference< uno::XComponentContext >&  rxContext,
                               const uno::Reference< ucb::XContentProvider >&  xProvider,
-                              sal_Int32 nOpenMode,
-                              const uno::Sequence< beans::Property >& seq,
-                              const uno::Sequence< ucb::NumberedSortingInfo >& seqSort )
+                              const uno::Sequence< beans::Property >& seq )
     : m_xContext( rxContext ),
       m_xProvider( xProvider ),
       m_nRow( -1 ),
       m_nWasNull( true ),
-      m_nOpenMode( nOpenMode ),
       m_bRowCountFinal( true ),
       m_sProperty( seq ),
-      m_sSortingInfo( seqSort ),
-      m_pDisposeEventListeners( 0 ),
-      m_pRowCountListeners( 0 ),
-      m_pIsFinalListeners( 0 )
+      m_pDisposeEventListeners( nullptr ),
+      m_pRowCountListeners( nullptr ),
+      m_pIsFinalListeners( nullptr )
 {
 }
 
@@ -366,7 +362,7 @@ ResultSetBase::getStatement(
     throw( sdbc::SQLException,
            uno::RuntimeException, std::exception )
 {
-    uno::Reference< uno::XInterface > test( 0 );
+    uno::Reference< uno::XInterface > test( nullptr );
     return test;
 }
 
@@ -403,8 +399,7 @@ ResultSetBase::queryContentIdentifier(
     {
         OUString url = queryContentIdentifierString();
         if( ! m_aIdents[m_nRow].is() && !url.isEmpty() )
-            m_aIdents[m_nRow] = uno::Reference< ucb::XContentIdentifier >(
-                new ::ucbhelper::ContentIdentifier( url ) );
+            m_aIdents[m_nRow].set( new ::ucbhelper::ContentIdentifier( url ) );
         return m_aIdents[m_nRow];
     }
 
@@ -437,20 +432,20 @@ public:
     }
 
     void SAL_CALL acquire()
-        throw() SAL_OVERRIDE
+        throw() override
     {
         OWeakObject::acquire();
     }
 
 
     void SAL_CALL release()
-        throw() SAL_OVERRIDE
+        throw() override
     {
         OWeakObject::release();
     }
 
     uno::Any SAL_CALL queryInterface( const uno::Type& rType )
-        throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE
+        throw( uno::RuntimeException, std::exception ) override
     {
         uno::Any aRet = cppu::queryInterface( rType,
                                               (static_cast< beans::XPropertySetInfo* >(this)) );
@@ -458,14 +453,14 @@ public:
     }
 
     uno::Sequence< beans::Property > SAL_CALL getProperties()
-        throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE
+        throw( uno::RuntimeException, std::exception ) override
     {
         return m_aSeq;
     }
 
     beans::Property SAL_CALL getPropertyByName( const OUString& aName )
         throw( beans::UnknownPropertyException,
-               uno::RuntimeException, std::exception) SAL_OVERRIDE
+               uno::RuntimeException, std::exception) override
     {
         for( int i = 0; i < m_aSeq.getLength(); ++i )
             if( aName == m_aSeq[i].Name )
@@ -474,7 +469,7 @@ public:
     }
 
     sal_Bool SAL_CALL hasPropertyByName( const OUString& Name )
-        throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE
+        throw( uno::RuntimeException, std::exception ) override
     {
         for( int i = 0; i < m_aSeq.getLength(); ++i )
             if( Name == m_aSeq[i].Name )

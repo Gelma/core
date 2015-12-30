@@ -71,9 +71,9 @@ static Reference< XNameAccess > getNodeAccess( const Reference< XMultiServiceFac
         aPropValue.Value <<= rNodePath;
         aArgs[0] <<= aPropValue;
 
-        xConfigAccess = Reference< XNameAccess >::query(
-            xConfigProvider->createInstanceWithArguments( "com.sun.star.configuration.ConfigurationAccess" ,
-                aArgs ));
+        xConfigAccess.set(
+            xConfigProvider->createInstanceWithArguments( "com.sun.star.configuration.ConfigurationAccess", aArgs ),
+            UNO_QUERY);
     }
     catch (const Exception&)
     {
@@ -90,7 +90,6 @@ void implImportLabels( const Reference< XMultiServiceFactory >& xConfigProvider,
         Reference< XNameAccess > xConfigAccess( getNodeAccess( xConfigProvider, rNodePath ) );
         if( xConfigAccess.is() )
         {
-            OUString aLabel( "Label" );
             Reference< XNameAccess > xNameAccess;
             Sequence< OUString > aNames( xConfigAccess->getElementNames() );
             const OUString* p = aNames.getConstArray();
@@ -101,7 +100,7 @@ void implImportLabels( const Reference< XMultiServiceFactory >& xConfigProvider,
                 if( xNameAccess.is() )
                 {
                     OUString aUIName;
-                    xNameAccess->getByName( aLabel ) >>= aUIName;
+                    xNameAccess->getByName( "Label" ) >>= aUIName;
                     if( !aUIName.isEmpty() )
                     {
                         rStringMap[ *p ] = aUIName;
@@ -431,8 +430,6 @@ void CustomAnimationPresets::importPresets( const Reference< XMultiServiceFactor
         if( xTypeAccess.is() )
         {
             Reference< XNameAccess > xCategoryAccess;
-            const OUString aEffectsName( "Effects" );
-            const OUString aLabelName( "Label" );
 
             Sequence< OUString > aNames( xTypeAccess->getElementNames() );
             const OUString* p = aNames.getConstArray();
@@ -441,13 +438,13 @@ void CustomAnimationPresets::importPresets( const Reference< XMultiServiceFactor
             {
                 xTypeAccess->getByName( *p ) >>= xCategoryAccess;
 
-                if( xCategoryAccess.is() && xCategoryAccess->hasByName( aLabelName ) && xCategoryAccess->hasByName( aEffectsName ) )
+                if( xCategoryAccess.is() && xCategoryAccess->hasByName( "Label" ) && xCategoryAccess->hasByName( "Effects" ) )
                 {
                     OUString aLabel;
-                    xCategoryAccess->getByName( aLabelName ) >>= aLabel;
+                    xCategoryAccess->getByName( "Label" ) >>= aLabel;
 
                     Sequence< OUString > aEffects;
-                    xCategoryAccess->getByName( aEffectsName ) >>= aEffects;
+                    xCategoryAccess->getByName( "Effects" ) >>= aEffects;
 
                     EffectDescriptorList aEffectsList;
 
@@ -544,7 +541,7 @@ void CustomAnimationPresets::changePresetSubType( CustomAnimationEffectPtr pEffe
     }
 }
 
-CustomAnimationPresets* CustomAnimationPresets::mpCustomAnimationPresets = 0;
+CustomAnimationPresets* CustomAnimationPresets::mpCustomAnimationPresets = nullptr;
 
 const CustomAnimationPresets& CustomAnimationPresets::getCustomAnimationPresets()
 {
@@ -566,7 +563,7 @@ Reference< XAnimationNode > CustomAnimationPresets::getRandomPreset( sal_Int16 n
 {
     Reference< XAnimationNode > xNode;
 
-    const PresetCategoryList* pCategoryList = 0;
+    const PresetCategoryList* pCategoryList = nullptr;
     switch( nPresetClass )
     {
     case EffectPresetClass::ENTRANCE:   pCategoryList = &maEntrancePresets; break;
@@ -574,7 +571,7 @@ Reference< XAnimationNode > CustomAnimationPresets::getRandomPreset( sal_Int16 n
     case EffectPresetClass::EMPHASIS:   pCategoryList = &maEmphasisPresets; break;
     case EffectPresetClass::MOTIONPATH: pCategoryList = &maMotionPathsPresets; break;
     default:
-        pCategoryList = 0;
+        pCategoryList = nullptr;
     }
 
     if( pCategoryList && pCategoryList->size() )

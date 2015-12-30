@@ -33,7 +33,7 @@ namespace objectpositioning
             // #i26791#
             // determine offset to frame anchor position according to the
             // positioning alignments
-            Point maOffsetToFrmAnchorPos;
+            Point maOffsetToFrameAnchorPos;
 
         public:
             SwToLayoutAnchoredObjectPosition( SdrObject& _rDrawObj );
@@ -41,7 +41,7 @@ namespace objectpositioning
 
             /** calculate position for object
             */
-            virtual void CalcPosition() SAL_OVERRIDE;
+            virtual void CalcPosition() override;
 
             /** calculated relative position for object
             */

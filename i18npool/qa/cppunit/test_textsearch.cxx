@@ -23,6 +23,7 @@
 #include <com/sun/star/util/SearchOptions.hpp>
 #include <com/sun/star/util/SearchAlgorithms.hpp>
 #include <com/sun/star/util/XTextSearch.hpp>
+#include <com/sun/star/i18n/Transliteration.hpp>
 #include <unotest/bootstrapfixturebase.hxx>
 
 #include <unicode/regex.h>
@@ -37,8 +38,8 @@ typedef U_ICU_NAMESPACE::UnicodeString IcuUniString;
 class TestTextSearch : public test::BootstrapFixtureBase
 {
 public:
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
     void testICU();
     void testSearches();
@@ -122,13 +123,22 @@ void TestTextSearch::testSearches()
     CPPUNIT_ASSERT( aRes.subRegExpressions > 0 );
     CPPUNIT_ASSERT( aRes.startOffset[0] == bStartRes );
     CPPUNIT_ASSERT( aRes.endOffset[0] == bEndRes );
+
+    aOptions.transliterateFlags = ::css::i18n::TransliterationModules::TransliterationModules_IGNORE_CASE
+                                | ::css::i18n::TransliterationModules::TransliterationModules_IGNORE_WIDTH;
+    aOptions.searchString = "([^ ]*)[ ]*([^ ]*)";
+    m_xSearch->setOptions(aOptions);
+    aRes = m_xSearch->searchForward("11 22 33", 2, 7);
+    CPPUNIT_ASSERT(aRes.subRegExpressions == 3);
+    CPPUNIT_ASSERT((aRes.startOffset[0] == 2) && (aRes.endOffset[0] == 5));
+    CPPUNIT_ASSERT((aRes.startOffset[1] == 2) && (aRes.endOffset[1] == 2));
+    CPPUNIT_ASSERT((aRes.startOffset[2] == 3) && (aRes.endOffset[2] == 5));
 }
 
 void TestTextSearch::setUp()
 {
     BootstrapFixtureBase::setUp();
-    m_xSearch = uno::Reference< util::XTextSearch >(m_xSFactory->createInstance(
-        "com.sun.star.util.TextSearch"), uno::UNO_QUERY_THROW);
+    m_xSearch.set(m_xSFactory->createInstance("com.sun.star.util.TextSearch"), uno::UNO_QUERY_THROW);
 }
 
 void TestTextSearch::tearDown()

@@ -1185,7 +1185,31 @@ Resource RID_SC_FUNCTION_DESCRIPTIONS1
         };
         String 5 // Description of Parameter 2
         {
-            Text [ en-US ] = "Indicates the first day of the week (1 = Sunday, other values = Monday)." ;
+            Text [ en-US ] = "Indicates the first day of the week and when week 1 starts." ;
+        };
+    };
+     // -=*# Resource for function ISOWEEKNUM #*=-
+    Resource SC_OPCODE_ISOWEEKNUM
+    {
+        String 1 // Description
+        {
+            Text [ en-US ] = "Calculates the ISO 8601 calendar week for the given date." ;
+        };
+        ExtraData =
+        {
+            0;
+            ID_FUNCTION_GRP_DATETIME;
+            U2S( HID_FUNC_ISOWEEKNUM );
+            1;  0;  0;
+            0;
+        };
+        String 2 // Name of Parameter 1
+        {
+            Text [ en-US ] = "Number" ;
+        };
+        String 3 // Description of Parameter 1
+        {
+            Text [ en-US ] = "The internal number of the date." ;
         };
     };
      // -=*# Resource for function EASTERSUNDAY #*=-
@@ -12350,6 +12374,45 @@ Resource RID_SC_FUNCTION_DESCRIPTIONS2
         String 3 // Description of Parameter 1
         {
             Text [ en-US ] = "The lower limit for integration";
+        };
+    };
+    Resource SC_OPCODE_RAWSUBTRACT
+    {
+        String 1 // Description
+        {
+            Text [ en-US ] = "Returns the subtraction of numbers. Like a-b-c but without eliminating small roundoff errors." ;
+        };
+        ExtraData =
+        {
+            0;
+            ID_FUNCTION_GRP_MATH;
+            U2S( HID_FUNC_RAWSUBTRACT );
+            VAR_ARGS+2; 0; 0; 1;
+            0;
+        };
+        String 2 // Name of Parameter 1
+        {
+            Text [ en-US ] = "minuend" ;
+        };
+        String 3 // Description of Parameter 1
+        {
+            Text [ en-US ] = "Number from which following arguments are subtracted." ;
+        };
+        String 4 // Name of Parameter 2
+        {
+            Text [ en-US ] = "subtrahend " ;
+        };
+        String 5 // Description of Parameter 2
+        {
+            Text [ en-US ] = "Subtrahend 1, subtrahend 2, ... are numerical arguments subtracted from the minuend." ;
+        };
+        String 6 // Name of Parameter 3, empty dummy to repeat Parameter 2, now optional
+        {
+            Text = "" ;
+        };
+        String 7 // Description of Parameter 3, empty dummy to repeat Parameter 2, now optional
+        {
+            Text = "" ;
         };
     };
 };

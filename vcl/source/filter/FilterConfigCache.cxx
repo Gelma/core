@@ -37,19 +37,19 @@ using namespace ::com::sun::star::configuration ;
 const char* FilterConfigCache::FilterConfigCacheEntry::InternalPixelFilterNameList[] =
 {
     IMP_BMP, IMP_GIF, IMP_PNG,IMP_JPEG, IMP_XBM, IMP_XPM,
-    EXP_BMP, EXP_JPEG, EXP_PNG, IMP_MOV, NULL
+    EXP_BMP, EXP_JPEG, EXP_PNG, IMP_MOV, nullptr
 };
 
 const char* FilterConfigCache::FilterConfigCacheEntry::InternalVectorFilterNameList[] =
 {
     IMP_SVMETAFILE, IMP_WMF, IMP_EMF, IMP_SVSGF, IMP_SVSGV, IMP_SVG,
-    EXP_SVMETAFILE, EXP_WMF, EXP_EMF, EXP_SVG, NULL
+    EXP_SVMETAFILE, EXP_WMF, EXP_EMF, EXP_SVG, nullptr
 };
 
 const char* FilterConfigCache::FilterConfigCacheEntry::ExternalPixelFilterNameList[] =
 {
     "egi", "icd", "ipd", "ipx", "ipb", "epb", "epg",
-    "epp", "ira", "era", "itg", "iti", "eti", "exp", NULL
+    "epp", "ira", "era", "itg", "iti", "eti", "exp", nullptr
 };
 
 bool FilterConfigCache::bInitialized = false;
@@ -87,8 +87,8 @@ bool FilterConfigCache::FilterConfigCacheEntry::CreateFilterName( const OUString
             if ( sFilterName.equalsIgnoreAsciiCase( OUString(*pPtr, strlen(*pPtr), RTL_TEXTENCODING_ASCII_US) ) )
                 bIsPixelFormat = true;
         }
-        OUString sTemp(SVLIBRARY("?"));
-        sFilterName = sTemp.replaceFirst("?", sFilterName);
+        sExternalFilterName = sFilterName;
+        sFilterName = SVLIBRARY("gie");
     }
     return ! sFilterName.isEmpty();
 }
@@ -140,8 +140,7 @@ Reference< XInterface > openConfig(const char* sPackage)
         lParams[0] = makeAny(aParam);
 
         // get access to file
-        xCfg = xConfigProvider->createInstanceWithArguments(
-            OUString( "com.sun.star.configuration.ConfigurationAccess" ), lParams);
+        xCfg = xConfigProvider->createInstanceWithArguments("com.sun.star.configuration.ConfigurationAccess", lParams);
     }
     catch(const RuntimeException&)
         { throw; }
@@ -248,11 +247,8 @@ const char* FilterConfigCache::InternalFilterListForSvxLight[] =
     "psd","1","ipd",
     "pcx","1","ipx",
     "pbm","1","ipb",
-    "pbm","2","epb",
     "pgm","1","ipb",
-    "pgm","2","epg",
     "ppm","1","ipb",
-    "ppm","2","epp",
     "ras","1","ira",
     "ras","2","era",
     "svm","1","SVMETAFILE",
@@ -269,7 +265,7 @@ const char* FilterConfigCache::InternalFilterListForSvxLight[] =
     "xpm","2","exp",
     "svg","1","SVISVG",
     "svg","2","SVESVG",
-    NULL
+    nullptr
 };
 
 void FilterConfigCache::ImplInitSmart()
@@ -346,17 +342,6 @@ sal_uInt16 FilterConfigCache::GetImportFormatNumberForExtension( const OUString&
     return GRFILTER_FORMAT_NOTFOUND;
 }
 
-sal_uInt16 FilterConfigCache::GetImportFormatNumberForMediaType( const OUString& rMediaType )
-{
-    CacheVector::const_iterator aIter, aEnd;
-    for (aIter = aImport.begin(), aEnd = aImport.end(); aIter != aEnd; ++aIter)
-    {
-        if ( aIter->sMediaType.equalsIgnoreAsciiCase( rMediaType ) )
-            return sal::static_int_cast< sal_uInt16 >(aIter - aImport.begin());
-    }
-    return GRFILTER_FORMAT_NOTFOUND;
-}
-
 sal_uInt16 FilterConfigCache::GetImportFormatNumberForShortName( const OUString& rShortName )
 {
     CacheVector::const_iterator aEnd;
@@ -422,7 +407,22 @@ OUString FilterConfigCache::GetImportFilterTypeName( sal_uInt16 nFormat )
     return OUString("");
 }
 
-OUString FilterConfigCache::GetImportWildcard( sal_uInt16 nFormat, sal_Int32 nEntry )
+OUString FilterConfigCache::GetExternalFilterName(sal_uInt16 nFormat, bool bExport)
+{
+    if (bExport)
+    {
+        if (nFormat < aExport.size())
+            return aExport[nFormat].sExternalFilterName;
+    }
+    else
+    {
+        if (nFormat < aImport.size())
+            return aImport[nFormat].sExternalFilterName;
+    }
+    return OUString("");
+}
+
+OUString FilterConfigCache::GetImportWildcard(sal_uInt16 nFormat, sal_Int32 nEntry)
 {
     OUString aWildcard( GetImportFormatExtension( nFormat, nEntry ) );
     if ( !aWildcard.isEmpty() )
@@ -442,7 +442,7 @@ OUString FilterConfigCache::GetExportFilterName( sal_uInt16 nFormat )
     return OUString("");
 }
 
-sal_uInt16 FilterConfigCache::GetExportFormatNumber( const OUString& rFormatName )
+sal_uInt16 FilterConfigCache::GetExportFormatNumber(const OUString& rFormatName)
 {
     CacheVector::const_iterator aIter, aEnd;
     for (aIter = aExport.begin(), aEnd = aExport.end(); aIter != aEnd; ++aIter)
@@ -512,13 +512,6 @@ OUString FilterConfigCache::GetExportFormatExtension( sal_uInt16 nFormat, sal_In
 {
     if ( (nFormat < aExport.size()) && (nEntry < aExport[ nFormat ].lExtensionList.getLength()) )
         return aExport[ nFormat ].lExtensionList[ nEntry ];
-    return OUString("");
-}
-
-OUString FilterConfigCache::GetExportFilterTypeName( sal_uInt16 nFormat )
-{
-    if( nFormat < aExport.size() )
-        return aExport[ nFormat ].sFilterType;
     return OUString("");
 }
 

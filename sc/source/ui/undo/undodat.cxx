@@ -44,22 +44,6 @@
 #include "refundo.hxx"
 #include "markdata.hxx"
 
-TYPEINIT1(ScUndoDoOutline,          ScSimpleUndo);
-TYPEINIT1(ScUndoMakeOutline,        ScSimpleUndo);
-TYPEINIT1(ScUndoOutlineLevel,       ScSimpleUndo);
-TYPEINIT1(ScUndoOutlineBlock,       ScSimpleUndo);
-TYPEINIT1(ScUndoRemoveAllOutlines,  ScSimpleUndo);
-TYPEINIT1(ScUndoAutoOutline,        ScSimpleUndo);
-TYPEINIT1(ScUndoSubTotals,          ScDBFuncUndo);
-TYPEINIT1(ScUndoQuery,              ScDBFuncUndo);
-TYPEINIT1(ScUndoAutoFilter,         ScDBFuncUndo);
-TYPEINIT1(ScUndoDBData,             ScSimpleUndo);
-TYPEINIT1(ScUndoImportData,         ScSimpleUndo);
-TYPEINIT1(ScUndoRepeatDB,           ScSimpleUndo);
-TYPEINIT1(ScUndoDataPilot,          ScSimpleUndo);
-TYPEINIT1(ScUndoConsolidate,        ScSimpleUndo);
-TYPEINIT1(ScUndoChartData,          ScSimpleUndo);
-TYPEINIT1(ScUndoDataForm,           SfxUndoAction);
 
 // Show or hide outline groups
 
@@ -114,9 +98,9 @@ void ScUndoDoOutline::Undo()
     //  Original column/row status
     if (bColumns)
         pUndoDoc->CopyToDocument( static_cast<SCCOL>(nStart), 0, nTab,
-                static_cast<SCCOL>(nEnd), MAXROW, nTab, IDF_NONE, false, &rDoc);
+                static_cast<SCCOL>(nEnd), MAXROW, nTab, InsertDeleteFlags::NONE, false, &rDoc);
     else
-        pUndoDoc->CopyToDocument( 0, nStart, nTab, MAXCOL, nEnd, nTab, IDF_NONE, false, &rDoc );
+        pUndoDoc->CopyToDocument( 0, nStart, nTab, MAXCOL, nEnd, nTab, InsertDeleteFlags::NONE, false, &rDoc );
 
     pViewShell->UpdateScrollBars();
 
@@ -221,7 +205,7 @@ void ScUndoMakeOutline::Redo()
 
 void ScUndoMakeOutline::Repeat(SfxRepeatTarget& rTarget)
 {
-    if (rTarget.ISA(ScTabViewTarget))
+    if (dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr)
     {
         ScTabViewShell& rViewShell = *static_cast<ScTabViewTarget&>(rTarget).GetViewShell();
 
@@ -234,7 +218,7 @@ void ScUndoMakeOutline::Repeat(SfxRepeatTarget& rTarget)
 
 bool ScUndoMakeOutline::CanRepeat(SfxRepeatTarget& rTarget) const
 {
-    return rTarget.ISA(ScTabViewTarget);
+    return dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr;
 }
 
 ScUndoOutlineLevel::ScUndoOutlineLevel( ScDocShell* pNewDocShell,
@@ -278,9 +262,9 @@ void ScUndoOutlineLevel::Undo()
 
     if (bColumns)
         pUndoDoc->CopyToDocument( static_cast<SCCOL>(nStart), 0, nTab,
-                static_cast<SCCOL>(nEnd), MAXROW, nTab, IDF_NONE, false, &rDoc);
+                static_cast<SCCOL>(nEnd), MAXROW, nTab, InsertDeleteFlags::NONE, false, &rDoc);
     else
-        pUndoDoc->CopyToDocument( 0, nStart, nTab, MAXCOL, nEnd, nTab, IDF_NONE, false, &rDoc );
+        pUndoDoc->CopyToDocument( 0, nStart, nTab, MAXCOL, nEnd, nTab, InsertDeleteFlags::NONE, false, &rDoc );
 
     rDoc.UpdatePageBreaks( nTab );
 
@@ -314,13 +298,13 @@ void ScUndoOutlineLevel::Redo()
 
 void ScUndoOutlineLevel::Repeat(SfxRepeatTarget& rTarget)
 {
-    if (rTarget.ISA(ScTabViewTarget))
-        static_cast<ScTabViewTarget&>(rTarget).GetViewShell()->SelectLevel( bColumns, nLevel, true );
+    if (dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr)
+        static_cast<ScTabViewTarget&>(rTarget).GetViewShell()->SelectLevel( bColumns, nLevel );
 }
 
 bool ScUndoOutlineLevel::CanRepeat(SfxRepeatTarget& rTarget) const
 {
-    return rTarget.ISA(ScTabViewTarget);
+    return dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr;
 }
 
 /** show/hide outline over block marks */
@@ -377,8 +361,8 @@ void ScUndoOutlineBlock::Undo()
     }
 
     pUndoDoc->CopyToDocument( static_cast<SCCOL>(nStartCol), 0, nTab,
-            static_cast<SCCOL>(nEndCol), MAXROW, nTab, IDF_NONE, false, &rDoc );
-    pUndoDoc->CopyToDocument( 0, nStartRow, nTab, MAXCOL, nEndRow, nTab, IDF_NONE, false, &rDoc );
+            static_cast<SCCOL>(nEndCol), MAXROW, nTab, InsertDeleteFlags::NONE, false, &rDoc );
+    pUndoDoc->CopyToDocument( 0, nStartRow, nTab, MAXCOL, nEndRow, nTab, InsertDeleteFlags::NONE, false, &rDoc );
 
     rDoc.UpdatePageBreaks( nTab );
 
@@ -410,7 +394,7 @@ void ScUndoOutlineBlock::Redo()
 
 void ScUndoOutlineBlock::Repeat(SfxRepeatTarget& rTarget)
 {
-    if (rTarget.ISA(ScTabViewTarget))
+    if (dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr)
     {
         ScTabViewShell& rViewShell = *static_cast<ScTabViewTarget&>(rTarget).GetViewShell();
 
@@ -423,7 +407,7 @@ void ScUndoOutlineBlock::Repeat(SfxRepeatTarget& rTarget)
 
 bool ScUndoOutlineBlock::CanRepeat(SfxRepeatTarget& rTarget) const
 {
-    return rTarget.ISA(ScTabViewTarget);
+    return dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr;
 }
 
 ScUndoRemoveAllOutlines::ScUndoRemoveAllOutlines( ScDocShell* pNewDocShell,
@@ -466,8 +450,8 @@ void ScUndoRemoveAllOutlines::Undo()
     SCROW   nStartRow = aBlockStart.Row();
     SCROW   nEndRow = aBlockEnd.Row();
 
-    pUndoDoc->CopyToDocument( nStartCol, 0, nTab, nEndCol, MAXROW, nTab, IDF_NONE, false, &rDoc );
-    pUndoDoc->CopyToDocument( 0, nStartRow, nTab, MAXCOL, nEndRow, nTab, IDF_NONE, false, &rDoc );
+    pUndoDoc->CopyToDocument( nStartCol, 0, nTab, nEndCol, MAXROW, nTab, InsertDeleteFlags::NONE, false, &rDoc );
+    pUndoDoc->CopyToDocument( 0, nStartRow, nTab, MAXCOL, nEndRow, nTab, InsertDeleteFlags::NONE, false, &rDoc );
 
     rDoc.UpdatePageBreaks( nTab );
 
@@ -502,13 +486,13 @@ void ScUndoRemoveAllOutlines::Redo()
 
 void ScUndoRemoveAllOutlines::Repeat(SfxRepeatTarget& rTarget)
 {
-    if (rTarget.ISA(ScTabViewTarget))
+    if (dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr)
         static_cast<ScTabViewTarget&>(rTarget).GetViewShell()->RemoveAllOutlines();
 }
 
 bool ScUndoRemoveAllOutlines::CanRepeat(SfxRepeatTarget& rTarget) const
 {
-    return rTarget.ISA(ScTabViewTarget);
+    return dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr;
 }
 
 ScUndoAutoOutline::ScUndoAutoOutline( ScDocShell* pNewDocShell,
@@ -556,9 +540,9 @@ void ScUndoAutoOutline::Undo()
         pUndoTable->GetRowArray().GetRange( nStartRow, nEndRow );
 
         pUndoDoc->CopyToDocument( static_cast<SCCOL>(nStartCol), 0, nTab,
-                static_cast<SCCOL>(nEndCol), MAXROW, nTab, IDF_NONE, false,
+                static_cast<SCCOL>(nEndCol), MAXROW, nTab, InsertDeleteFlags::NONE, false,
                 &rDoc);
-        pUndoDoc->CopyToDocument( 0, nStartRow, nTab, MAXCOL, nEndRow, nTab, IDF_NONE, false, &rDoc );
+        pUndoDoc->CopyToDocument( 0, nStartRow, nTab, MAXCOL, nEndRow, nTab, InsertDeleteFlags::NONE, false, &rDoc );
 
         pViewShell->UpdateScrollBars();
     }
@@ -605,13 +589,13 @@ void ScUndoAutoOutline::Redo()
 
 void ScUndoAutoOutline::Repeat(SfxRepeatTarget& rTarget)
 {
-    if (rTarget.ISA(ScTabViewTarget))
+    if (dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr)
         static_cast<ScTabViewTarget&>(rTarget).GetViewShell()->AutoOutline();
 }
 
 bool ScUndoAutoOutline::CanRepeat(SfxRepeatTarget& rTarget) const
 {
-    return rTarget.ISA(ScTabViewTarget);
+    return dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr;
 }
 
 ScUndoSubTotals::ScUndoSubTotals( ScDocShell* pNewDocShell, SCTAB nNewTab,
@@ -673,9 +657,9 @@ void ScUndoSubTotals::Undo()
         pUndoTable->GetRowArray().GetRange( nStartRow, nEndRow );
 
         pUndoDoc->CopyToDocument( static_cast<SCCOL>(nStartCol), 0, nTab,
-                static_cast<SCCOL>(nEndCol), MAXROW, nTab, IDF_NONE, false,
+                static_cast<SCCOL>(nEndCol), MAXROW, nTab, InsertDeleteFlags::NONE, false,
                 &rDoc);
-        pUndoDoc->CopyToDocument( 0, nStartRow, nTab, MAXCOL, nEndRow, nTab, IDF_NONE, false, &rDoc );
+        pUndoDoc->CopyToDocument( 0, nStartRow, nTab, MAXCOL, nEndRow, nTab, InsertDeleteFlags::NONE, false, &rDoc );
 
         pViewShell->UpdateScrollBars();
     }
@@ -685,12 +669,12 @@ void ScUndoSubTotals::Undo()
     ScUndoUtil::MarkSimpleBlock( pDocShell, 0, aParam.nRow1+1, nTab,
                                             MAXCOL, aParam.nRow2, nTab );
 
-    rDoc.DeleteAreaTab( 0,aParam.nRow1+1, MAXCOL,aParam.nRow2, nTab, IDF_ALL );
+    rDoc.DeleteAreaTab( 0,aParam.nRow1+1, MAXCOL,aParam.nRow2, nTab, InsertDeleteFlags::ALL );
 
     pUndoDoc->CopyToDocument( 0, aParam.nRow1+1, nTab, MAXCOL, aParam.nRow2, nTab,
-                                                            IDF_NONE, false, &rDoc );    // Flags
+                                                            InsertDeleteFlags::NONE, false, &rDoc );    // Flags
     pUndoDoc->UndoToDocument( 0, aParam.nRow1+1, nTab, MAXCOL, aParam.nRow2, nTab,
-                                                            IDF_ALL, false, &rDoc );
+                                                            InsertDeleteFlags::ALL, false, &rDoc );
 
     ScUndoUtil::MarkSimpleBlock( pDocShell, aParam.nCol1,aParam.nRow1,nTab,
                                             aParam.nCol2,aParam.nRow2,nTab );
@@ -741,7 +725,7 @@ ScUndoQuery::ScUndoQuery( ScDocShell* pNewDocShell, SCTAB nNewTab, const ScQuery
                             const ScRange* pOld, bool bSize, const ScRange* pAdvSrc ) :
     ScDBFuncUndo( pNewDocShell, ScRange( rParam.nCol1, rParam.nRow1, nNewTab,
                                          rParam.nCol2, rParam.nRow2, nNewTab ) ),
-    pDrawUndo( NULL ),
+    pDrawUndo( nullptr ),
     nTab( nNewTab ),
     aQueryParam( rParam ),
     pUndoDoc( pNewUndoDoc ),
@@ -814,25 +798,25 @@ void ScUndoQuery::Undo()
                                     aQueryParam.nDestCol, aQueryParam.nDestRow, aQueryParam.nDestTab,
                                     nDestEndCol, nDestEndRow, aQueryParam.nDestTab );
         rDoc.DeleteAreaTab( aQueryParam.nDestCol, aQueryParam.nDestRow,
-                            nDestEndCol, nDestEndRow, aQueryParam.nDestTab, IDF_ALL );
+                            nDestEndCol, nDestEndRow, aQueryParam.nDestTab, InsertDeleteFlags::ALL );
 
         pViewShell->DoneBlockMode();
 
         pUndoDoc->CopyToDocument( aQueryParam.nDestCol, aQueryParam.nDestRow, aQueryParam.nDestTab,
                                     nDestEndCol, nDestEndRow, aQueryParam.nDestTab,
-                                    IDF_ALL, false, &rDoc );
+                                    InsertDeleteFlags::ALL, false, &rDoc );
         //  Attributes are always copied (#49287#)
 
         // rest of the old range
         if ( bDestArea && !bDoSize )
         {
-            rDoc.DeleteAreaTab( aOldDest, IDF_ALL );
-            pUndoDoc->CopyToDocument( aOldDest, IDF_ALL, false, &rDoc );
+            rDoc.DeleteAreaTab( aOldDest, InsertDeleteFlags::ALL );
+            pUndoDoc->CopyToDocument( aOldDest, InsertDeleteFlags::ALL, false, &rDoc );
         }
     }
     else
         pUndoDoc->CopyToDocument( 0, aQueryParam.nRow1, nTab, MAXCOL, aQueryParam.nRow2, nTab,
-                                        IDF_NONE, false, &rDoc );
+                                        InsertDeleteFlags::NONE, false, &rDoc );
 
     if (pUndoDB)
         rDoc.SetDBCollection( new ScDBCollection( *pUndoDB ), true );
@@ -892,7 +876,7 @@ void ScUndoQuery::Redo()
     if ( bIsAdvanced )
         pViewShell->Query( aQueryParam, &aAdvSource, false );
     else
-        pViewShell->Query( aQueryParam, NULL, false );
+        pViewShell->Query( aQueryParam, nullptr, false );
 
     EndRedo();
 }
@@ -930,7 +914,7 @@ void ScUndoAutoFilter::DoChange( bool bUndo )
     bool bNewFilter = bUndo ? !bFilterSet : bFilterSet;
 
     ScDocument& rDoc = pDocShell->GetDocument();
-    ScDBData* pDBData=NULL;
+    ScDBData* pDBData=nullptr;
     if (aDBName == STR_DB_LOCAL_NONAME)
     {
         SCTAB nTab = aOriginalRange.aStart.Tab();
@@ -1096,7 +1080,7 @@ void ScUndoImportData::Undo()
     SCTAB nTable;
     SCCOL nCol1, nCol2;
     SCROW nRow1, nRow2;
-    ScDBData* pCurrentData = NULL;
+    ScDBData* pCurrentData = nullptr;
     if (pUndoDBData && pRedoDBData)
     {
         pRedoDBData->GetArea( nTable, nCol1, nRow1, nCol2, nRow2 );
@@ -1114,8 +1098,8 @@ void ScUndoImportData::Undo()
             for (SCCOL nCopyCol = nCol1; nCopyCol <= nCol2; nCopyCol++)
             {
                 rDoc.CopyToDocument( nCopyCol,nRow1,nTab, nCopyCol,nRow2,nTab,
-                                        IDF_CONTENTS & ~IDF_NOTE, false, pRedoDoc );
-                rDoc.DeleteAreaTab( nCopyCol,nRow1, nCopyCol,nRow2, nTab, IDF_CONTENTS & ~IDF_NOTE );
+                                        InsertDeleteFlags::CONTENTS & ~InsertDeleteFlags::NOTE, false, pRedoDoc );
+                rDoc.DeleteAreaTab( nCopyCol,nRow1, nCopyCol,nRow2, nTab, InsertDeleteFlags::CONTENTS & ~InsertDeleteFlags::NOTE );
             }
             rDoc.SetAutoCalc( bOldAutoCalc );
             bRedoFilled = true;
@@ -1132,7 +1116,7 @@ void ScUndoImportData::Undo()
         pRedoDBData->GetArea( aNew );
 
         rDoc.DeleteAreaTab( aNew.aStart.Col(), aNew.aStart.Row(),
-                                aNew.aEnd.Col(), aNew.aEnd.Row(), nTab, IDF_ALL & ~IDF_NOTE );
+                                aNew.aEnd.Col(), aNew.aEnd.Row(), nTab, InsertDeleteFlags::ALL & ~InsertDeleteFlags::NOTE );
 
         aOld.aEnd.SetCol( aOld.aEnd.Col() + nFormulaCols );     // FitBlock also for formulas
         aNew.aEnd.SetCol( aNew.aEnd.Col() + nFormulaCols );
@@ -1140,11 +1124,11 @@ void ScUndoImportData::Undo()
     }
     else
         rDoc.DeleteAreaTab( aImportParam.nCol1,aImportParam.nRow1,
-                                nEndCol,nEndRow, nTab, IDF_ALL & ~IDF_NOTE );
+                                nEndCol,nEndRow, nTab, InsertDeleteFlags::ALL & ~InsertDeleteFlags::NOTE );
 
     pUndoDoc->CopyToDocument( aImportParam.nCol1,aImportParam.nRow1,nTab,
                                 nEndCol+nFormulaCols,nEndRow,nTab,
-                                IDF_ALL & ~IDF_NOTE, false, &rDoc );
+                                InsertDeleteFlags::ALL & ~InsertDeleteFlags::NOTE, false, &rDoc );
 
     if (pCurrentData)
     {
@@ -1181,7 +1165,7 @@ void ScUndoImportData::Redo()
     SCTAB nTable;
     SCCOL nCol1, nCol2;
     SCROW nRow1, nRow2;
-    ScDBData* pCurrentData = NULL;
+    ScDBData* pCurrentData = nullptr;
     if (pUndoDBData && pRedoDBData)
     {
         pUndoDBData->GetArea( nTable, nCol1, nRow1, nCol2, nRow2 );
@@ -1189,7 +1173,7 @@ void ScUndoImportData::Redo()
                                                     nCol1, nRow1, nCol2, nRow2 );
     }
     bool bMoveCells = pUndoDBData && pRedoDBData &&
-                        pRedoDBData->IsDoSize();        // // the same in old and new
+                        pRedoDBData->IsDoSize();        // the same in old and new
     if (bMoveCells)
     {
         //  Redo: FitBlock, then delete data (needed for CopyToDocument)
@@ -1203,16 +1187,16 @@ void ScUndoImportData::Redo()
         rDoc.FitBlock( aOld, aNew );
 
         rDoc.DeleteAreaTab( aNew.aStart.Col(), aNew.aStart.Row(),
-                                aNew.aEnd.Col(), aNew.aEnd.Row(), nTab, IDF_ALL & ~IDF_NOTE );
+                                aNew.aEnd.Col(), aNew.aEnd.Row(), nTab, InsertDeleteFlags::ALL & ~InsertDeleteFlags::NOTE );
 
-        pRedoDoc->CopyToDocument( aNew, IDF_ALL & ~IDF_NOTE, false, &rDoc );        // including formulas
+        pRedoDoc->CopyToDocument( aNew, InsertDeleteFlags::ALL & ~InsertDeleteFlags::NOTE, false, &rDoc );        // including formulas
     }
     else
     {
         rDoc.DeleteAreaTab( aImportParam.nCol1,aImportParam.nRow1,
-                                nEndCol,nEndRow, nTab, IDF_ALL & ~IDF_NOTE );
+                                nEndCol,nEndRow, nTab, InsertDeleteFlags::ALL & ~InsertDeleteFlags::NOTE );
         pRedoDoc->CopyToDocument( aImportParam.nCol1,aImportParam.nRow1,nTab,
-                                nEndCol,nEndRow,nTab, IDF_ALL & ~IDF_NOTE, false, &rDoc );
+                                nEndCol,nEndRow,nTab, InsertDeleteFlags::ALL & ~InsertDeleteFlags::NOTE, false, &rDoc );
     }
 
     if (pCurrentData)
@@ -1239,7 +1223,7 @@ void ScUndoImportData::Redo()
 
 void ScUndoImportData::Repeat(SfxRepeatTarget& rTarget)
 {
-    if (rTarget.ISA(ScTabViewTarget))
+    if (dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr)
     {
         ScTabViewShell& rViewShell = *static_cast<ScTabViewTarget&>(rTarget).GetViewShell();
 
@@ -1257,7 +1241,7 @@ bool ScUndoImportData::CanRepeat(SfxRepeatTarget& rTarget) const
     //  Repeat only for import using a database range, then pUndoDBData is set
 
     if (pUndoDBData)
-        return rTarget.ISA(ScTabViewTarget);
+        return dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr;
     else
         return false;       // Address book
 }
@@ -1358,9 +1342,9 @@ void ScUndoRepeatDB::Undo()
         pUndoTable->GetRowArray().GetRange( nStartRow, nEndRow );
 
         pUndoDoc->CopyToDocument( static_cast<SCCOL>(nStartCol), 0, nTab,
-                static_cast<SCCOL>(nEndCol), MAXROW, nTab, IDF_NONE, false,
+                static_cast<SCCOL>(nEndCol), MAXROW, nTab, InsertDeleteFlags::NONE, false,
                 &rDoc );
-        pUndoDoc->CopyToDocument( 0, nStartRow, nTab, MAXCOL, nEndRow, nTab, IDF_NONE, false, &rDoc );
+        pUndoDoc->CopyToDocument( 0, nStartRow, nTab, MAXCOL, nEndRow, nTab, InsertDeleteFlags::NONE, false, &rDoc );
 
         pViewShell->UpdateScrollBars();
     }
@@ -1369,12 +1353,12 @@ void ScUndoRepeatDB::Undo()
     ScUndoUtil::MarkSimpleBlock( pDocShell, 0, aBlockStart.Row(), nTab,
                                             MAXCOL, aBlockEnd.Row(), nTab );
     rDoc.DeleteAreaTab( 0, aBlockStart.Row(),
-                            MAXCOL, aBlockEnd.Row(), nTab, IDF_ALL );
+                            MAXCOL, aBlockEnd.Row(), nTab, InsertDeleteFlags::ALL );
 
     pUndoDoc->CopyToDocument( 0, aBlockStart.Row(), nTab, MAXCOL, aBlockEnd.Row(), nTab,
-                                                            IDF_NONE, false, &rDoc );            // Flags
+                                                            InsertDeleteFlags::NONE, false, &rDoc );            // Flags
     pUndoDoc->UndoToDocument( 0, aBlockStart.Row(), nTab, MAXCOL, aBlockEnd.Row(), nTab,
-                                                            IDF_ALL, false, &rDoc );
+                                                            InsertDeleteFlags::ALL, false, &rDoc );
 
     ScUndoUtil::MarkSimpleBlock( pDocShell, aBlockStart.Col(),aBlockStart.Row(),nTab,
                                             aBlockEnd.Col(),aBlockEnd.Row(),nTab );
@@ -1416,13 +1400,13 @@ void ScUndoRepeatDB::Redo()
 
 void ScUndoRepeatDB::Repeat(SfxRepeatTarget& rTarget)
 {
-    if (rTarget.ISA(ScTabViewTarget))
+    if (dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr)
         static_cast<ScTabViewTarget&>(rTarget).GetViewShell()->RepeatDB();
 }
 
 bool ScUndoRepeatDB::CanRepeat(SfxRepeatTarget& rTarget) const
 {
-    return rTarget.ISA(ScTabViewTarget);
+    return dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr;
 }
 
 ScUndoDataPilot::ScUndoDataPilot( ScDocShell* pNewDocShell,
@@ -1431,8 +1415,8 @@ ScUndoDataPilot::ScUndoDataPilot( ScDocShell* pNewDocShell,
     ScSimpleUndo( pNewDocShell ),
     pOldUndoDoc( pOldDoc ),
     pNewUndoDoc( pNewDoc ),
-    pOldDPObject( NULL ),
-    pNewDPObject( NULL ),
+    pOldDPObject( nullptr ),
+    pNewDPObject( nullptr ),
     bAllowMove( bMove )
 {
     if (pOldObj)
@@ -1474,14 +1458,14 @@ void ScUndoDataPilot::Undo()
     if ( pNewDPObject && pNewUndoDoc )
     {
         aNewRange = pNewDPObject->GetOutRange();
-        rDoc.DeleteAreaTab( aNewRange, IDF_ALL );
-        pNewUndoDoc->CopyToDocument( aNewRange, IDF_ALL, false, &rDoc );
+        rDoc.DeleteAreaTab( aNewRange, InsertDeleteFlags::ALL );
+        pNewUndoDoc->CopyToDocument( aNewRange, InsertDeleteFlags::ALL, false, &rDoc );
     }
     if ( pOldDPObject && pOldUndoDoc )
     {
         aOldRange = pOldDPObject->GetOutRange();
-        rDoc.DeleteAreaTab( aOldRange, IDF_ALL );
-        pOldUndoDoc->CopyToDocument( aOldRange, IDF_ALL, false, &rDoc );
+        rDoc.DeleteAreaTab( aOldRange, InsertDeleteFlags::ALL );
+        pOldUndoDoc->CopyToDocument( aOldRange, InsertDeleteFlags::ALL, false, &rDoc );
     }
 
     //  update objects in collection
@@ -1555,7 +1539,7 @@ void ScUndoDataPilot::Redo()
 
     ScDocument& rDoc = pDocShell->GetDocument();
 
-    ScDPObject* pSourceObj = NULL;
+    ScDPObject* pSourceObj = nullptr;
     if ( pOldDPObject )
     {
         //  find object to modify
@@ -1628,19 +1612,19 @@ void ScUndoConsolidate::Undo()
         rDoc.SetOutlineTable( nTab, pUndoTab );
 
         // Row status
-        pUndoDoc->CopyToDocument( 0,0,nTab, MAXCOL,MAXROW,nTab, IDF_NONE, false, &rDoc );
+        pUndoDoc->CopyToDocument( 0,0,nTab, MAXCOL,MAXROW,nTab, InsertDeleteFlags::NONE, false, &rDoc );
 
         // Data and references
-        rDoc.DeleteAreaTab( 0,aDestArea.nRowStart, MAXCOL,aDestArea.nRowEnd, nTab, IDF_ALL );
+        rDoc.DeleteAreaTab( 0,aDestArea.nRowStart, MAXCOL,aDestArea.nRowEnd, nTab, InsertDeleteFlags::ALL );
         pUndoDoc->UndoToDocument( 0, aDestArea.nRowStart, nTab,
                                     MAXCOL, aDestArea.nRowEnd, nTab,
-                                    IDF_ALL, false, &rDoc );
+                                    InsertDeleteFlags::ALL, false, &rDoc );
 
         // Original range
         if (pUndoData)
         {
-            rDoc.DeleteAreaTab(aOldRange, IDF_ALL);
-            pUndoDoc->CopyToDocument(aOldRange, IDF_ALL, false, &rDoc);
+            rDoc.DeleteAreaTab(aOldRange, InsertDeleteFlags::ALL);
+            pUndoDoc->CopyToDocument(aOldRange, InsertDeleteFlags::ALL, false, &rDoc);
         }
 
         pDocShell->PostPaint( 0,aDestArea.nRowStart,nTab, MAXCOL,MAXROW,nTab,
@@ -1649,16 +1633,16 @@ void ScUndoConsolidate::Undo()
     else
     {
         rDoc.DeleteAreaTab( aDestArea.nColStart,aDestArea.nRowStart,
-                                aDestArea.nColEnd,aDestArea.nRowEnd, nTab, IDF_ALL );
+                                aDestArea.nColEnd,aDestArea.nRowEnd, nTab, InsertDeleteFlags::ALL );
         pUndoDoc->CopyToDocument( aDestArea.nColStart, aDestArea.nRowStart, nTab,
                                     aDestArea.nColEnd, aDestArea.nRowEnd, nTab,
-                                    IDF_ALL, false, &rDoc );
+                                    InsertDeleteFlags::ALL, false, &rDoc );
 
         //  Original range
         if (pUndoData)
         {
-            rDoc.DeleteAreaTab(aOldRange, IDF_ALL);
-            pUndoDoc->CopyToDocument(aOldRange, IDF_ALL, false, &rDoc);
+            rDoc.DeleteAreaTab(aOldRange, InsertDeleteFlags::ALL);
+            pUndoDoc->CopyToDocument(aOldRange, InsertDeleteFlags::ALL, false, &rDoc);
         }
 
         SCCOL nEndX = aDestArea.nColEnd;
@@ -1812,7 +1796,7 @@ ScUndoDataForm::ScUndoDataForm( ScDocShell* pNewDocShell,
         pRedoDoc( pNewRedoDoc ),
         nFlags( nNewFlags ),
         pRefUndoData( pRefData ),
-        pRefRedoData( NULL ),
+        pRefRedoData( nullptr ),
         bRedoFilled( bRedoIsFilled )
 {
         //      pFill1,pFill2,pFill3 are there so the ctor calls for simple paste (without cutting)
@@ -1844,7 +1828,7 @@ OUString ScUndoDataForm::GetComment() const
 void ScUndoDataForm::SetChangeTrack()
 {
         ScChangeTrack* pChangeTrack = pDocShell->GetDocument().GetChangeTrack();
-        if ( pChangeTrack && (nFlags & IDF_CONTENTS) )
+        if ( pChangeTrack && (nFlags & InsertDeleteFlags::CONTENTS) )
                 pChangeTrack->AppendContentRange( aBlockRange, pUndoDoc,
                         nStartChangeAction, nEndChangeAction, SC_CACM_PASTE );
         else
@@ -1877,7 +1861,7 @@ void ScUndoDataForm::Repeat(SfxRepeatTarget& /*rTarget*/)
 
 bool ScUndoDataForm::CanRepeat(SfxRepeatTarget& rTarget) const
 {
-        return (rTarget.ISA(ScTabViewTarget));
+        return (dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr);
 }
 
 void ScUndoDataForm::DoChange( const bool bUndo )
@@ -1893,11 +1877,11 @@ void ScUndoDataForm::DoChange( const bool bUndo )
     ScRefUndoData* pWorkRefData = bUndo ? pRefUndoData : pRefRedoData;
 
     // Always back-up either all or none of the content for Undo
-    InsertDeleteFlags nUndoFlags = IDF_NONE;
-    if (nFlags & IDF_CONTENTS)
-            nUndoFlags |= IDF_CONTENTS;
-    if (nFlags & IDF_ATTRIB)
-            nUndoFlags |= IDF_ATTRIB;
+    InsertDeleteFlags nUndoFlags = InsertDeleteFlags::NONE;
+    if (nFlags & InsertDeleteFlags::CONTENTS)
+            nUndoFlags |= InsertDeleteFlags::CONTENTS;
+    if (nFlags & InsertDeleteFlags::ATTRIB)
+            nUndoFlags |= InsertDeleteFlags::ATTRIB;
 
     bool bPaintAll = false;
 
@@ -1919,7 +1903,7 @@ void ScUndoDataForm::DoChange( const bool bUndo )
         ScRange aCopyRange = aBlockRange;
         aCopyRange.aStart.SetTab(0);
         aCopyRange.aEnd.SetTab(nTabCount-1);
-        rDoc.CopyToDocument( aCopyRange, IDF_VALUE, false, pRedoDoc );
+        rDoc.CopyToDocument( aCopyRange, InsertDeleteFlags::VALUE, false, pRedoDoc );
         bRedoFilled = true;
     }
 

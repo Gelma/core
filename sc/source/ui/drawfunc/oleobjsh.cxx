@@ -47,16 +47,15 @@ void ScOleObjectShell::InitInterface_Impl()
     GetStaticInterface()->RegisterObjectBar(SFX_OBJECTBAR_OBJECT|SFX_VISIBILITY_STANDARD|SFX_VISIBILITY_SERVER,
                                             RID_DRAW_OBJECTBAR);
 
-    GetStaticInterface()->RegisterPopupMenu(ScResId(RID_POPUP_OLE));
+    GetStaticInterface()->RegisterPopupMenu("oleobject");
 }
 
-TYPEINIT1( ScOleObjectShell, ScDrawShell );
 
 ScOleObjectShell::ScOleObjectShell(ScViewData* pData) :
     ScDrawShell(pData)
 {
     SetHelpId(HID_SCSHELL_OLEOBEJCTSH);
-    SetName(OUString("OleObject"));
+    SetName("OleObject");
     SfxShell::SetContextName(sfx2::sidebar::EnumContext::GetContextName(sfx2::sidebar::EnumContext::Context_OLE));
 }
 

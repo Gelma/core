@@ -21,6 +21,7 @@
 #include <com/sun/star/ui/ItemType.hpp>
 #include <fstream>
 #include <comphelper/processfactory.hxx>
+#include <comphelper/sequence.hxx>
 #include <unotools/configmgr.hxx>
 #include <vcl/graph.hxx>
 #include <map>
@@ -40,8 +41,8 @@ class MSOWordCommandConvertor : public MSOCommandConvertor
 
 public:
     MSOWordCommandConvertor();
-    virtual OUString MSOCommandToOOCommand( sal_Int16 msoCmd ) SAL_OVERRIDE;
-    virtual OUString MSOTCIDToOOCommand( sal_Int16 key ) SAL_OVERRIDE;
+    virtual OUString MSOCommandToOOCommand( sal_Int16 msoCmd ) override;
+    virtual OUString MSOTCIDToOOCommand( sal_Int16 key ) override;
 };
 
 MSOWordCommandConvertor::MSOWordCommandConvertor()
@@ -91,13 +92,13 @@ SwCTBWrapper::~SwCTBWrapper()
 Customization* SwCTBWrapper::GetCustomizaton( sal_Int16 index )
 {
     if ( index < 0 || index >= static_cast<sal_Int16>( rCustomizations.size() ) )
-        return NULL;
+        return nullptr;
     return &rCustomizations[ index ];
 }
 
 SwCTB* SwCTBWrapper::GetCustomizationData( const OUString& sTBName )
 {
-    SwCTB* pCTB = NULL;
+    SwCTB* pCTB = nullptr;
     for ( std::vector< Customization >::iterator it = rCustomizations.begin(); it != rCustomizations.end(); ++it )
     {
         if ( it->GetCustomizationData() && it->GetCustomizationData()->GetName() == sTBName )
@@ -177,7 +178,7 @@ SwTBC* SwCTBWrapper::GetTBCAtOffset( sal_uInt32 nStreamOffset )
         if ( (*it).GetOffset() == nStreamOffset )
             return &(*it);
     }
-    return NULL;
+    return nullptr;
 }
 
 #if OSL_DEBUG_LEVEL > 1
@@ -748,13 +749,7 @@ SwTBC::ImportToolBarControl( SwCTBWrapper& rWrapper, const css::uno::Reference< 
             toolbarcontainer->insertByIndex( toolbarcontainer->getCount(), uno::makeAny( sProps ) );
         }
 
-        uno::Sequence< beans::PropertyValue > sProps( props.size() );
-        beans::PropertyValue* pProp = sProps.getArray();
-
-        for ( std::vector< css::beans::PropertyValue >::iterator it = props.begin(); it != props.end(); ++it, ++pProp )
-            *pProp = *it;
-
-        toolbarcontainer->insertByIndex( toolbarcontainer->getCount(), uno::makeAny( sProps ) );
+        toolbarcontainer->insertByIndex( toolbarcontainer->getCount(), uno::makeAny( comphelper::containerToSequence(props) ) );
     }
     return true;
 }
@@ -832,7 +827,7 @@ Tcg255::~Tcg255()
 
 bool Tcg255::processSubStruct( sal_uInt8 nId, SvStream &rS )
 {
-     Tcg255SubStruct* pSubStruct = NULL;
+     Tcg255SubStruct* pSubStruct = nullptr;
      switch ( nId )
      {
          case 0x1:
@@ -985,7 +980,7 @@ void PlfMcd::Print( FILE* fp )
 
 PlfAcd::PlfAcd( bool bReadId ) : Tcg255SubStruct( bReadId )
 ,iMac(0)
-,rgacd(NULL)
+,rgacd(nullptr)
 {
 }
 
@@ -1037,7 +1032,7 @@ void PlfAcd::Print( FILE* fp )
 
 PlfKme::PlfKme( bool bReadId ) : Tcg255SubStruct( bReadId )
 ,iMac( 0 )
-,rgkme( NULL )
+,rgkme( nullptr )
 {
 }
 
@@ -1103,7 +1098,7 @@ void TcgSttbf::Print( FILE* fp )
 TcgSttbfCore::TcgSttbfCore() : fExtend( 0 )
 ,cData( 0 )
 ,cbExtra( 0 )
-,dataItems( NULL )
+,dataItems( nullptr )
 {
 }
 
@@ -1151,7 +1146,7 @@ void TcgSttbfCore::Print( FILE* fp )
 
 MacroNames::MacroNames( bool bReadId ) : Tcg255SubStruct( bReadId )
 ,iMac( 0 )
-,rgNames( NULL )
+,rgNames( nullptr )
 {
 }
 

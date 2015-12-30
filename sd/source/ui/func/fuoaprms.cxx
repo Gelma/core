@@ -50,7 +50,6 @@ using namespace ::com::sun::star;
 
 namespace sd {
 
-TYPEINIT1( FuObjectAnimationParameters, FuPoor );
 
 #define ATTR_MISSING    0       ///< Attribute missing
 #define ATTR_MIXED      1       ///< Attribute ambiguous (on multi-selection)
@@ -292,7 +291,7 @@ void FuObjectAnimationParameters::DoExecute( SfxRequest& rReq )
         SdrObjKind eKind2   = (SdrObjKind)pObject2->GetObjIdentifier();
         SdAnimationInfo* pInfo1 = mpDoc->GetAnimationInfo(pObject1);
         SdAnimationInfo* pInfo2 = mpDoc->GetAnimationInfo(pObject2);
-        pInfo  = NULL;
+        pInfo  = nullptr;
 
         if (pObject1->GetObjInventor() == SdrInventor &&
             ((eKind1 == OBJ_LINE) ||                        // 2 point line
@@ -446,7 +445,7 @@ void FuObjectAnimationParameters::DoExecute( SfxRequest& rReq )
             aSet.Put(SfxBoolItem(ATTR_ACTION_PLAYFULL, false));
 
         SdAbstractDialogFactory* pFact = SdAbstractDialogFactory::Create();
-        std::unique_ptr<SfxAbstractDialog> pDlg(pFact ? pFact->CreatSdActionDialog( NULL, &aSet, mpView ) : 0);
+        std::unique_ptr<SfxAbstractDialog> pDlg(pFact ? pFact->CreatSdActionDialog( nullptr, &aSet, mpView ) : nullptr);
 
         short nResult = pDlg ? pDlg->Execute() : static_cast<short>(RET_CANCEL);
 
@@ -626,8 +625,7 @@ void FuObjectAnimationParameters::DoExecute( SfxRequest& rReq )
         pUndoGroup->SetComment(aComment);
 
         // for the path effect, remember some stuff
-        SdrObject*  pRunningObj = NULL;
-        SdrPathObj* pPath       = NULL;
+        SdrPathObj* pPath       = nullptr;
         if (eEffect == presentation::AnimationEffect_PATH && nEffectSet == ATTR_SET)
         {
             DBG_ASSERT(nCount == 2, "This effect expects two selected objects");
@@ -635,6 +633,7 @@ void FuObjectAnimationParameters::DoExecute( SfxRequest& rReq )
             SdrObject* pObject2 = rMarkList.GetMark(1)->GetMarkedSdrObj();
             SdrObjKind eKind1   = (SdrObjKind)pObject1->GetObjIdentifier();
             SdrObjKind eKind2   = (SdrObjKind)pObject2->GetObjIdentifier();
+            SdrObject* pRunningObj = nullptr;
 
             if (pObject1->GetObjInventor() == SdrInventor &&
                 ((eKind1 == OBJ_LINE) ||        // 2 point line

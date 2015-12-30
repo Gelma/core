@@ -242,8 +242,8 @@ private:
 public:
 
     PictReader()
-        : pPict(NULL)
-        , pVirDev(NULL)
+        : pPict(nullptr)
+        , pVirDev(nullptr)
         , nOrigPos(0)
         , IsVersion2(false)
         , eActROP(ROP_OVERPAINT)
@@ -486,7 +486,7 @@ sal_uLong PictReader::ReadPixPattern(PictReader::Pattern &pattern)
     pPict->ReadUInt16( nPatType );
     if (nPatType==1) {
             pattern.read(*pPict);
-        nDataSize=ReadPixMapEtc(aBMP,false,true,NULL,NULL,false,false);
+        nDataSize=ReadPixMapEtc(aBMP,false,true,nullptr,nullptr,false,false);
         // CHANGEME: use average pixmap colors to update the pattern, ...
         if (nDataSize!=0xffffffff) nDataSize+=10;
     }
@@ -703,12 +703,12 @@ sal_uLong PictReader::ReadPixMapEtc( Bitmap &rBitmap, bool bBaseAddr, bool bColo
                                     Rectangle* pDestRect, bool bMode, bool bMaskRgn )
 {
     Bitmap              aBitmap;
-    BitmapWriteAccess*  pAcc = NULL;
-    BitmapReadAccess*   pReadAcc = NULL;
+    BitmapWriteAccess*  pAcc = nullptr;
+    BitmapReadAccess*   pReadAcc = nullptr;
     sal_uInt16              nColTabSize;
-    sal_uInt16              nRowBytes, nBndX, nBndY, nWidth, nHeight, nVersion, nPackType, nPixelType,
+    sal_uInt16              nRowBytes, nBndX, nBndY, nWidth, nHeight, nPackType,
                         nPixelSize, nCmpCount, nCmpSize;
-    sal_uInt32          nPackSize, nPlaneBytes, nHRes, nVRes;
+    sal_uInt32          nHRes, nVRes;
     sal_uInt8               nDat, nRed, nGreen, nBlue, nDummy;
     size_t              i, nDataSize = 0;
 
@@ -730,6 +730,10 @@ sal_uLong PictReader::ReadPixMapEtc( Bitmap &rBitmap, bool bBaseAddr, bool bColo
     if ( ( nRowBytes & 0x8000 ) != 0 )
     {   // it is a PixMap
         nRowBytes &= 0x3fff;
+        sal_uInt16 nVersion;
+        sal_uInt32 nPackSize;
+        sal_uInt16 nPixelType;
+        sal_uInt32 nPlaneBytes;
         pPict->ReadUInt16( nVersion ).ReadUInt16( nPackType ).ReadUInt32( nPackSize ).ReadUInt32( nHRes ).ReadUInt32( nVRes ).ReadUInt16( nPixelType ).                    ReadUInt16( nPixelSize ).ReadUInt16( nCmpCount ).ReadUInt16( nCmpSize ).ReadUInt32( nPlaneBytes );
 
         pPict->SeekRel( 8 );
@@ -742,7 +746,7 @@ sal_uLong PictReader::ReadPixMapEtc( Bitmap &rBitmap, bool bBaseAddr, bool bColo
             nDstBitCount = 4;
         aBitmap = Bitmap( Size( nWidth, nHeight ), nDstBitCount );
 
-        if ( ( pAcc = aBitmap.AcquireWriteAccess() ) == NULL )
+        if ( ( pAcc = aBitmap.AcquireWriteAccess() ) == nullptr )
             BITMAPERROR;
 
         if ( bColorTable )
@@ -769,14 +773,12 @@ sal_uLong PictReader::ReadPixMapEtc( Bitmap &rBitmap, bool bBaseAddr, bool bColo
     else
     {
         nRowBytes &= 0x3fff;
-        nVersion = 0;
         nPackType = 0;
-        nPackSize = nHRes = nVRes = nPlaneBytes = 0;
-        nPixelType = 0;
+        // nHRes = nVRes = 0;
         nPixelSize = nCmpCount = nCmpSize = 1;
         nDataSize += 10;
         aBitmap = Bitmap( Size( nWidth, nHeight ), 1 );
-        if ( ( pAcc = aBitmap.AcquireWriteAccess() ) == NULL )
+        if ( ( pAcc = aBitmap.AcquireWriteAccess() ) == nullptr )
             BITMAPERROR;
         pAcc->SetPaletteEntryCount( 2 );
         pAcc->SetPaletteColor( 0, BitmapColor( 0xff, 0xff, 0xff ) );
@@ -784,7 +786,7 @@ sal_uLong PictReader::ReadPixMapEtc( Bitmap &rBitmap, bool bBaseAddr, bool bColo
     }
 
     // conditionally read source rectangle:
-    if ( pSrcRect != 0)
+    if ( pSrcRect != nullptr)
     {
         sal_uInt16  nTop, nLeft, nBottom, nRight;
         pPict->ReadUInt16( nTop ).ReadUInt16( nLeft ).ReadUInt16( nBottom ).ReadUInt16( nRight );
@@ -793,7 +795,7 @@ sal_uLong PictReader::ReadPixMapEtc( Bitmap &rBitmap, bool bBaseAddr, bool bColo
     }
 
     // conditionally read destination rectangle:
-    if ( pDestRect != 0 )
+    if ( pDestRect != nullptr )
     {
         Point aTL, aBR;
         aTL = ReadPoint();
@@ -835,7 +837,7 @@ sal_uLong PictReader::ReadPixMapEtc( Bitmap &rBitmap, bool bBaseAddr, bool bColo
             BITMAPERROR;
 
         if ( nRowBytes < 8 || nPackType == 1 ) {
-            if (pPict->remainingSize() < sizeof(sal_uInt8) * nHeight * nRowBytes)
+            if (nHeight > pPict->remainingSize() / (sizeof(sal_uInt8) * nRowBytes))
                 BITMAPERROR;
         }
 
@@ -908,7 +910,7 @@ sal_uLong PictReader::ReadPixMapEtc( Bitmap &rBitmap, bool bBaseAddr, bool bColo
             BITMAPERROR;
 
         if ( nRowBytes < 8 || nPackType == 1 ) {
-            if (pPict->remainingSize() < sizeof(sal_uInt16) * nHeight * nWidth)
+            if (nHeight > pPict->remainingSize() / (sizeof(sal_uInt16) * nWidth))
                 BITMAPERROR;
         }
 
@@ -994,7 +996,7 @@ sal_uLong PictReader::ReadPixMapEtc( Bitmap &rBitmap, bool bBaseAddr, bool bColo
         size_t                  nCount;
         sal_uLong               nSrcBitsPos;
         BitmapColor         aBitmapColor;
-        if ( ( pReadAcc = aBitmap.AcquireReadAccess() ) == NULL )
+        if ( ( pReadAcc = aBitmap.AcquireReadAccess() ) == nullptr )
             BITMAPERROR;
         if ( nRowBytes != 4*nWidth )
             BITMAPERROR;
@@ -1963,15 +1965,8 @@ void ReadPictFile(SvStream &rStreamPict, GDIMetaFile& rGDIMetaFile)
 
 //================== GraphicImport - the exported function ================
 
-// this needs to be kept in sync with
-// ImpFilterLibCacheEntry::GetImportFunction() from
-// vcl/source/filter/graphicfilter.cxx
-#if defined(DISABLE_DYNLOADING)
-#define GraphicImport iptGraphicImport
-#endif
-
 extern "C" SAL_DLLPUBLIC_EXPORT bool SAL_CALL
-GraphicImport( SvStream& rIStm, Graphic & rGraphic, FilterConfigItem* )
+iptGraphicImport( SvStream& rIStm, Graphic & rGraphic, FilterConfigItem* )
 {
     GDIMetaFile aMTF;
     bool        bRet = false;

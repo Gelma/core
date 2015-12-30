@@ -139,8 +139,7 @@ namespace frm
 
     Sequence< OUString > FormOperations::getSupportedServiceNames_Static(  ) throw(RuntimeException)
     {
-        Sequence< OUString > aNames(1);
-        aNames[0] = "com.sun.star.form.runtime.FormOperations";
+        Sequence< OUString > aNames { "com.sun.star.form.runtime.FormOperations" };
         return aNames;
     }
 
@@ -620,7 +619,7 @@ namespace frm
             case FormFeature::ReloadForm:
                 if ( m_xLoadableForm.is() )
                 {
-                    WaitObject aWO( NULL );
+                    WaitObject aWO( nullptr );
                     m_xLoadableForm->reload();
 
                     // refresh all controls in the form (and sub forms) which can be refreshed
@@ -662,7 +661,7 @@ namespace frm
                     if ( xConfirmDelete.is() )
                     {
                         RowChangeEvent aEvent;
-                        aEvent.Source = Reference< XInterface >( m_xCursor, UNO_QUERY );
+                        aEvent.Source.set( m_xCursor, UNO_QUERY );
                         aEvent.Action = RowChangeAction::DELETE;
                         aEvent.Rows = 1;
                         bSuccess = xConfirmDelete->confirmDelete( aEvent );
@@ -745,7 +744,7 @@ namespace frm
                     aValues[0] <<= OUString();
                     aValues[1] <<= OUString();
 
-                    WaitObject aWO( NULL );
+                    WaitObject aWO( nullptr );
                     xProperties->setPropertyValues( aNames, aValues );
 
                     if ( m_xLoadableForm.is() )
@@ -763,7 +762,7 @@ namespace frm
                     m_xCursorProperties->setPropertyValue( PROPERTY_APPLYFILTER, makeAny( !bApplied ) );
 
                     // and reload
-                    WaitObject aWO( NULL );
+                    WaitObject aWO( nullptr );
                     m_xLoadableForm->reload();
                 }
                 break;
@@ -1395,7 +1394,7 @@ namespace frm
     {
         OSL_PRECOND( m_xController.is(), "FormOperations::impl_getCurrentBoundField_nothrow: no controller -> no control!" );
         if ( !m_xController.is() )
-            return NULL;
+            return nullptr;
 
         Reference< XPropertySet > xField;
         try
@@ -1569,7 +1568,7 @@ namespace frm
             impl_appendOrderByColumn_throw aAction(this, xBoundField, _bUp);
             impl_doActionInSQLContext_throw(aAction, RID_STR_COULD_NOT_SET_ORDER );
 
-            WaitObject aWO( NULL );
+            WaitObject aWO( nullptr );
             try
             {
                 m_xCursorProperties->setPropertyValue( PROPERTY_SORT, makeAny( m_xParser->getOrder() ) );
@@ -1635,7 +1634,7 @@ namespace frm
             impl_appendFilterByColumn_throw aAction(this, xBoundField);
             impl_doActionInSQLContext_throw( aAction, RID_STR_COULD_NOT_SET_FILTER );
 
-            WaitObject aWO( NULL );
+            WaitObject aWO( nullptr );
             try
             {
                 m_xCursorProperties->setPropertyValue( PROPERTY_FILTER, makeAny( m_xParser->getFilter() ) );
@@ -1689,18 +1688,18 @@ namespace frm
             Reference< XExecutableDialog> xDialog;
             if ( _bFilter )
             {
-                xDialog = com::sun::star::sdb::FilterDialog::createWithQuery(m_xContext, m_xParser, m_xCursor,
-                              Reference<com::sun::star::awt::XWindow>());
+                xDialog = css::sdb::FilterDialog::createWithQuery(m_xContext, m_xParser, m_xCursor,
+                              Reference<css::awt::XWindow>());
             }
             else
             {
-                xDialog = com::sun::star::sdb::OrderDialog::createWithQuery(m_xContext, m_xParser, m_xCursorProperties);
+                xDialog = css::sdb::OrderDialog::createWithQuery(m_xContext, m_xParser, m_xCursorProperties);
             }
 
 
             if ( RET_OK == xDialog->execute() )
             {
-                WaitObject aWO( NULL );
+                WaitObject aWO( nullptr );
                 if ( _bFilter )
                     m_xCursorProperties->setPropertyValue( PROPERTY_FILTER, makeAny( m_xParser->getFilter() ) );
                 else

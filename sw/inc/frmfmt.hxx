@@ -25,7 +25,7 @@
 #include <format.hxx>
 #include "swdllapi.h"
 
-class SwFlyFrm;
+class SwFlyFrame;
 class SwAnchoredObject;
 class Graphic;
 class ImageMap;
@@ -42,8 +42,7 @@ class SW_DLLPUBLIC SwFrameFormat: public SwFormat
     friend class SwPageDesc;    ///< Is allowed to call protected CTor.
     friend class ::sw::DocumentLayoutManager; ///< Is allowed to call protected CTor.
 
-    ::com::sun::star::uno::WeakReference<
-        ::com::sun::star::uno::XInterface> m_wXObject;
+    css::uno::WeakReference<css::uno::XInterface> m_wXObject;
 
     //UUUU DrawingLayer FillAttributes in a preprocessed form for primitive usage
     drawinglayer::attribute::SdrAllFillAttributesHelperPtr  maFillAttributes;
@@ -52,44 +51,43 @@ protected:
     SwFrameFormat(
         SwAttrPool& rPool,
         const sal_Char* pFormatNm,
-        SwFrameFormat *pDrvdFrm,
+        SwFrameFormat *pDrvdFrame,
         sal_uInt16 nFormatWhich = RES_FRMFMT,
-        const sal_uInt16* pWhichRange = 0);
+        const sal_uInt16* pWhichRange = nullptr);
 
     SwFrameFormat(
         SwAttrPool& rPool,
         const OUString &rFormatNm,
-        SwFrameFormat *pDrvdFrm,
+        SwFrameFormat *pDrvdFrame,
         sal_uInt16 nFormatWhich = RES_FRMFMT,
-        const sal_uInt16* pWhichRange = 0);
+        const sal_uInt16* pWhichRange = nullptr);
 
-    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNewValue ) SAL_OVERRIDE;
+    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNewValue ) override;
 
 public:
-    TYPEINFO_OVERRIDE();     ///< Already in base class Client.
     virtual ~SwFrameFormat();
 
-    /// Destroys all Frms in aDepend (Frms are identified via PTR_CAST).
-    virtual void DelFrms();
+    /// Destroys all Frames in aDepend (Frames are identified via dynamic_cast).
+    virtual void DelFrames();
 
     /// Creates the views.
-    virtual void MakeFrms();
+    virtual void MakeFrames();
 
-    virtual Graphic MakeGraphic( ImageMap* pMap = NULL );
+    virtual Graphic MakeGraphic( ImageMap* pMap = nullptr );
 
     /**  @return the IMapObject defined at format (Fly)
         in the ImageMap at position Point.
         rPoint - test on DocPosition.
         pFly - optional FlyFrame, in case it is already known. */
     IMapObject* GetIMapObject( const Point& rPoint,
-                                const SwFlyFrm *pFly = 0 ) const;
+                                const SwFlyFrame *pFly = nullptr ) const;
 
     /** @return the real size of the frame - or an empty rectangle
        if no layout exists.
        If pPoint is given, look for the frame closest to it. */
     SwRect FindLayoutRect( const bool bPrtArea = false,
-                           const Point* pPoint = 0,
-                           const bool bCalcFrm = false ) const;
+                           const Point* pPoint = nullptr,
+                           const bool bCalcFrame = false ) const;
 
     /** Searches SdrObject. SdrObjUserCall is client of the format.
        The UserCall knows its SdrObject. */
@@ -99,7 +97,7 @@ public:
 
     /** @return the SdrObject, that is connected to the ContactObject.
        Only DrawFrameFormats are connected to the "real SdrObject". FlyFrameFormats
-       are connected to a Master and all FlyFrms has the "real SdrObject".
+       are connected to a Master and all FlyFrames has the "real SdrObject".
        "Real SdrObject" has position and a Z-order. */
           SdrObject *FindSdrObject();
     const SdrObject *FindSdrObject() const
@@ -127,19 +125,17 @@ public:
 
     virtual OUString GetDescription() const;
 
-    SAL_DLLPRIVATE ::com::sun::star::uno::WeakReference<
-        ::com::sun::star::uno::XInterface> const& GetXObject() const
+    SAL_DLLPRIVATE css::uno::WeakReference<css::uno::XInterface> const& GetXObject() const
             { return m_wXObject; }
-    SAL_DLLPRIVATE void SetXObject(::com::sun::star::uno::Reference<
-                    ::com::sun::star::uno::XInterface> const& xObject)
+    SAL_DLLPRIVATE void SetXObject(css::uno::Reference<css::uno::XInterface> const& xObject)
             { m_wXObject = xObject; }
 
     DECL_FIXEDMEMPOOL_NEWDEL_DLL(SwFrameFormat)
     void RegisterToFormat( SwFormat& rFormat );
 
     //UUUU Access to DrawingLayer FillAttributes in a preprocessed form for primitive usage
-    virtual drawinglayer::attribute::SdrAllFillAttributesHelperPtr getSdrAllFillAttributesHelper() const SAL_OVERRIDE;
-    virtual bool supportsFullDrawingLayerFillAttributeSet() const SAL_OVERRIDE;
+    virtual drawinglayer::attribute::SdrAllFillAttributesHelperPtr getSdrAllFillAttributesHelper() const override;
+    virtual bool supportsFullDrawingLayerFillAttributeSet() const override;
 
     void dumpAsXml(struct _xmlTextWriter* pWriter) const;
 };
@@ -156,37 +152,36 @@ class SW_DLLPUBLIC SwFlyFrameFormat: public SwFrameFormat
        it stores the previous position of Prt rectangle from RequestObjectResize
        so it can be used to move frames of non-resizable objects to align them correctly
        when they get borders (this is done in SwWrtShell::CalcAndGetScale) */
-    Point   m_aLastFlyFrmPrtRectPos;
+    Point   m_aLastFlyFramePrtRectPos;
 
-    SwFlyFrameFormat( const SwFlyFrameFormat &rCpy ) SAL_DELETED_FUNCTION;
-    SwFlyFrameFormat &operator=( const SwFlyFrameFormat &rCpy ) SAL_DELETED_FUNCTION;
+    SwFlyFrameFormat( const SwFlyFrameFormat &rCpy ) = delete;
+    SwFlyFrameFormat &operator=( const SwFlyFrameFormat &rCpy ) = delete;
 
 protected:
     SwFlyFrameFormat( SwAttrPool& rPool, const sal_Char* pFormatNm,
-                    SwFrameFormat *pDrvdFrm )
-        : SwFrameFormat( rPool, pFormatNm, pDrvdFrm, RES_FLYFRMFMT )
+                    SwFrameFormat *pDrvdFrame )
+        : SwFrameFormat( rPool, pFormatNm, pDrvdFrame, RES_FLYFRMFMT )
     {}
     SwFlyFrameFormat( SwAttrPool& rPool, const OUString &rFormatNm,
-                    SwFrameFormat *pDrvdFrm )
-        : SwFrameFormat( rPool, rFormatNm, pDrvdFrm, RES_FLYFRMFMT )
+                    SwFrameFormat *pDrvdFrame )
+        : SwFrameFormat( rPool, rFormatNm, pDrvdFrame, RES_FLYFRMFMT )
     {}
 
 public:
-    TYPEINFO_OVERRIDE();
     virtual ~SwFlyFrameFormat();
 
     /// Creates the views.
-    virtual void MakeFrms() SAL_OVERRIDE;
+    virtual void MakeFrames() override;
 
-    SwFlyFrm* GetFrm( const Point* pDocPos = 0,
-                      const bool bCalcFrm = false ) const;
+    SwFlyFrame* GetFrame( const Point* pDocPos = nullptr,
+                      const bool bCalcFrame = false ) const;
 
-    SwAnchoredObject* GetAnchoredObj( const Point* pDocPos = 0,
-                                      const bool bCalcFrm = false ) const;
+    SwAnchoredObject* GetAnchoredObj( const Point* pDocPos = nullptr,
+                                      const bool bCalcFrame = false ) const;
 
-    virtual Graphic MakeGraphic( ImageMap* pMap = NULL ) SAL_OVERRIDE;
+    virtual Graphic MakeGraphic( ImageMap* pMap = nullptr ) override;
 
-    virtual bool GetInfo( SfxPoolItem& rInfo ) const SAL_OVERRIDE;
+    virtual bool GetInfo( SfxPoolItem& rInfo ) const override;
 
     OUString GetObjTitle() const;
     void SetObjTitle( const OUString& rTitle, bool bBroadcast = false );
@@ -204,7 +199,7 @@ public:
         @return true, if background color is transparent, but not "no fill"
         or a existing background graphic is transparent.
     */
-    virtual bool IsBackgroundTransparent() const SAL_OVERRIDE;
+    virtual bool IsBackgroundTransparent() const override;
 
     /** SwFlyFrameFormat::IsBackgroundBrushInherited
 
@@ -219,8 +214,8 @@ public:
     */
     bool IsBackgroundBrushInherited() const;
 
-    const Point & GetLastFlyFrmPrtRectPos() const       { return m_aLastFlyFrmPrtRectPos; }
-    void SetLastFlyFrmPrtRectPos( const Point &rPoint ) { m_aLastFlyFrmPrtRectPos = rPoint; }
+    const Point & GetLastFlyFramePrtRectPos() const       { return m_aLastFlyFramePrtRectPos; }
+    void SetLastFlyFramePrtRectPos( const Point &rPoint ) { m_aLastFlyFramePrtRectPos = rPoint; }
 
     DECL_FIXEDMEMPOOL_NEWDEL(SwFlyFrameFormat)
 };
@@ -231,11 +226,11 @@ class SW_DLLPUBLIC SwDrawFrameFormat: public SwFrameFormat
 {
     friend class SwDoc;
 
-    mutable const SdrObject * pSdrObjCached;
-    mutable OUString sSdrObjCachedComment;
+    mutable const SdrObject * m_pSdrObjectCached;
+    mutable OUString m_sSdrObjectCachedComment;
 
-    SwDrawFrameFormat( const SwDrawFrameFormat &rCpy ) SAL_DELETED_FUNCTION;
-    SwDrawFrameFormat &operator=( const SwDrawFrameFormat &rCpy ) SAL_DELETED_FUNCTION;
+    SwDrawFrameFormat( const SwDrawFrameFormat &rCpy ) = delete;
+    SwDrawFrameFormat &operator=( const SwDrawFrameFormat &rCpy ) = delete;
 
     SwFrameFormat::tLayoutDir meLayoutDir;
 
@@ -245,52 +240,51 @@ class SW_DLLPUBLIC SwDrawFrameFormat: public SwFrameFormat
 
 protected:
     SwDrawFrameFormat( SwAttrPool& rPool, const sal_Char* pFormatNm,
-                    SwFrameFormat *pDrvdFrm )
-        : SwFrameFormat( rPool, pFormatNm, pDrvdFrm, RES_DRAWFRMFMT ),
-          pSdrObjCached(NULL),
+                    SwFrameFormat *pDrvdFrame )
+        : SwFrameFormat( rPool, pFormatNm, pDrvdFrame, RES_DRAWFRMFMT ),
+          m_pSdrObjectCached(nullptr),
 
           meLayoutDir( SwFrameFormat::HORI_L2R ),
 
-          mnPositionLayoutDir( com::sun::star::text::PositionLayoutDir::PositionInLayoutDirOfAnchor ),
+          mnPositionLayoutDir( css::text::PositionLayoutDir::PositionInLayoutDirOfAnchor ),
 
           mbPosAttrSet( false )
 
     {}
     SwDrawFrameFormat( SwAttrPool& rPool, const OUString &rFormatNm,
-                    SwFrameFormat *pDrvdFrm )
-        : SwFrameFormat( rPool, rFormatNm, pDrvdFrm, RES_DRAWFRMFMT ),
-          pSdrObjCached(NULL),
+                    SwFrameFormat *pDrvdFrame )
+        : SwFrameFormat( rPool, rFormatNm, pDrvdFrame, RES_DRAWFRMFMT ),
+          m_pSdrObjectCached(nullptr),
           meLayoutDir( SwFrameFormat::HORI_L2R ),
 
-          mnPositionLayoutDir( com::sun::star::text::PositionLayoutDir::PositionInLayoutDirOfAnchor ),
+          mnPositionLayoutDir( css::text::PositionLayoutDir::PositionInLayoutDirOfAnchor ),
 
           mbPosAttrSet( false )
     {}
 
 public:
-    TYPEINFO_OVERRIDE();
     virtual ~SwDrawFrameFormat();
 
     /** DrawObjects are removed from the arrays at the layout.
      The DrawObjects are marked as deleted. */
-    virtual void DelFrms() SAL_OVERRIDE;
+    virtual void DelFrames() override;
 
     /** Register DrawObjects in the arrays at layout.
      Reset delete marks. */
-    virtual void MakeFrms() SAL_OVERRIDE;
+    virtual void MakeFrames() override;
 
-    virtual Graphic MakeGraphic( ImageMap* pMap = NULL ) SAL_OVERRIDE;
+    virtual Graphic MakeGraphic( ImageMap* pMap = nullptr ) override;
 
-    virtual SwFrameFormat::tLayoutDir GetLayoutDir() const SAL_OVERRIDE;
-    virtual void SetLayoutDir( const SwFrameFormat::tLayoutDir _eLayoutDir ) SAL_OVERRIDE;
+    virtual SwFrameFormat::tLayoutDir GetLayoutDir() const override;
+    virtual void SetLayoutDir( const SwFrameFormat::tLayoutDir _eLayoutDir ) override;
 
-    virtual sal_Int16 GetPositionLayoutDir() const SAL_OVERRIDE;
-    virtual void SetPositionLayoutDir( const sal_Int16 _nPositionLayoutDir ) SAL_OVERRIDE;
+    virtual sal_Int16 GetPositionLayoutDir() const override;
+    virtual void SetPositionLayoutDir( const sal_Int16 _nPositionLayoutDir ) override;
 
     inline bool IsPosAttrSet() const { return mbPosAttrSet; }
     inline void PosAttrSet() { mbPosAttrSet = true; }
 
-    virtual OUString GetDescription() const SAL_OVERRIDE;
+    virtual OUString GetDescription() const override;
 
     DECL_FIXEDMEMPOOL_NEWDEL(SwDrawFrameFormat);
 };

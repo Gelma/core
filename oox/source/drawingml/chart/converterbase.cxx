@@ -71,7 +71,7 @@ struct TitleLayoutInfo
     ModelRef< LayoutModel > mxLayout;   /// The layout model, if existing.
     GetShapeFunc        mpGetShape;     /// Helper function to receive the title shape.
 
-    inline explicit     TitleLayoutInfo() : mpGetShape( 0 ) {}
+    inline explicit     TitleLayoutInfo() : mpGetShape( nullptr ) {}
 
     void                convertTitlePos(
                             ConverterRoot& rRoot,
@@ -218,7 +218,7 @@ Reference< XInterface > ConverterRoot::createInstance( const OUString& rServiceN
     Reference< XInterface > xInt;
     try
     {
-        Reference<XMultiServiceFactory> xMSF = Reference<XMultiServiceFactory>(getComponentContext()->getServiceManager(), uno::UNO_QUERY_THROW);
+        Reference<XMultiServiceFactory> xMSF(getComponentContext()->getServiceManager(), uno::UNO_QUERY_THROW);
 
         xInt = xMSF->createInstance( rServiceName );
     }

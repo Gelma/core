@@ -41,7 +41,7 @@ class MMTest : public SwModelTestBase
 public:
     MMTest();
 
-    virtual void tearDown() SAL_OVERRIDE
+    virtual void tearDown() override
     {
         if (mxMMComponent.is())
         {
@@ -92,7 +92,7 @@ public:
         DBuriMap::const_iterator pos = aDBuriMap.find( aURI );
         if (pos == aDBuriMap.end())
         {
-            aDBName = SwDBManager::LoadAndRegisterDataSource( aURI, NULL, &aWorkDir );
+            aDBName = SwDBManager::LoadAndRegisterDataSource( aURI, nullptr, &aWorkDir );
             aDBuriMap.insert( std::pair< OUString, OUString >( aURI, aDBName ) );
             std::cout << "New datasource name: '" << aDBName << "'" << std::endl;
         }
@@ -170,7 +170,7 @@ public:
     xmlDocPtr parseMailMergeExport(int number, const OUString& rStreamName = OUString("word/document.xml"))
     {
         if (mnCurOutputType != text::MailMergeType::FILE)
-            return 0;
+            return nullptr;
 
         OUString name = mailMergeOutputPrefix + OUString::number( number ) + ".odt";
         return parseExportInternal( mailMergeOutputURL + "/" + name, rStreamName );
@@ -200,7 +200,7 @@ protected:
     // Returns page number of the first page of a MM document inside the large MM document (used in the SHELL case).
     int documentStartPageNumber( int document ) const;
 
-    uno::Reference< com::sun::star::task::XJob > mxJob;
+    uno::Reference< css::task::XJob > mxJob;
     uno::Sequence< beans::NamedValue > mSeqMailMergeArgs;
     OUString mailMergeOutputURL;
     OUString mailMergeOutputPrefix;
@@ -211,7 +211,7 @@ protected:
 #define DECLARE_MAILMERGE_TEST(TestName, filename, datasource, tablename, file, BaseClass) \
     class TestName : public BaseClass { \
     protected: \
-        virtual OUString getTestName() SAL_OVERRIDE { return OUString(#TestName); } \
+        virtual OUString getTestName() override { return OUString(#TestName); } \
     public: \
         CPPUNIT_TEST_SUITE(TestName); \
         CPPUNIT_TEST(MailMerge); \
@@ -220,7 +220,7 @@ protected:
         void MailMerge() { \
             executeMailMergeTest(filename, datasource, tablename, file); \
         } \
-        void verify() SAL_OVERRIDE; \
+        void verify() override; \
     }; \
     CPPUNIT_TEST_SUITE_REGISTRATION(TestName); \
     void TestName::verify()

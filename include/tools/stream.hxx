@@ -25,7 +25,6 @@
 #include <tools/lineend.hxx>
 #include <tools/errinf.hxx>
 #include <tools/ref.hxx>
-#include <tools/rtti.hxx>
 #include <rtl/string.hxx>
 #include <o3tl/typed_flags_set.hxx>
 
@@ -112,9 +111,8 @@ protected:
     void close();
 
 public:
-    TYPEINFO();
 
-    SvLockBytes() : m_pStream(0), m_bOwner(false), m_bSync(false) {}
+    SvLockBytes() : m_pStream(nullptr), m_bOwner(false), m_bSync(false) {}
 
     SvLockBytes(SvStream * pTheStream, bool bTheOwner = false) :
         m_pStream(pTheStream), m_bOwner(bTheOwner), m_bSync(false) {}
@@ -145,16 +143,13 @@ typedef tools::SvRef<SvLockBytes> SvLockBytesRef;
 class TOOLS_DLLPUBLIC SvOpenLockBytes: public SvLockBytes
 {
 public:
-    TYPEINFO_OVERRIDE();
 
-    SvOpenLockBytes() : SvLockBytes(0, false) {}
+    SvOpenLockBytes() : SvLockBytes(nullptr, false) {}
     SvOpenLockBytes(SvStream * pStream, bool bOwner):
         SvLockBytes(pStream, bOwner) {}
 
     virtual ErrCode FillAppend(const void * pBuffer, sal_Size nCount,
                                sal_Size * pWritten) = 0;
-
-    virtual void    Terminate() = 0;
 };
 
 
@@ -166,20 +161,17 @@ class SvAsyncLockBytes: public SvOpenLockBytes
     bool m_bTerminated;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     SvAsyncLockBytes(SvStream * pStream, bool bOwner):
         SvOpenLockBytes(pStream, bOwner), m_nSize(0), m_bTerminated(false) {}
 
     virtual ErrCode ReadAt(sal_uInt64 nPos, void * pBuffer, sal_Size nCount,
-                           sal_Size * pRead) const SAL_OVERRIDE;
+                           sal_Size * pRead) const override;
     virtual ErrCode WriteAt(sal_uInt64 nPos, const void * pBuffer, sal_Size nCount,
-                            sal_Size * pWritten) SAL_OVERRIDE;
+                            sal_Size * pWritten) override;
 
     virtual ErrCode FillAppend(const void * pBuffer, sal_Size nCount,
-                               sal_Size * pWritten) SAL_OVERRIDE;
-
-    virtual void    Terminate() SAL_OVERRIDE { m_bTerminated = true; }
+                               sal_Size * pWritten) override;
 };
 
 
@@ -226,8 +218,8 @@ private:
     // helper methods
     TOOLS_DLLPRIVATE void ImpInit();
 
-                    SvStream ( const SvStream& rStream ) SAL_DELETED_FUNCTION;
-    SvStream&       operator=( const SvStream& rStream ) SAL_DELETED_FUNCTION;
+                    SvStream ( const SvStream& rStream ) = delete;
+    SvStream&       operator=( const SvStream& rStream ) = delete;
 
 protected:
     sal_uInt64      m_nBufFilePos; ///< File position of pBuf[0]
@@ -291,6 +283,7 @@ public:
     SvStream&       ReadSChar( signed char& rChar );
     SvStream&       ReadChar( char& rChar );
     SvStream&       ReadUChar( unsigned char& rChar );
+    SvStream&       ReadUtf16( sal_Unicode& rUtf16 );
     SvStream&       ReadCharAsBool( bool& rBool );
     SvStream&       ReadFloat( float& rFloat );
     SvStream&       ReadDouble( double& rDouble );
@@ -622,8 +615,8 @@ private:
     sal_uInt16      nLockCounter;
     bool            bIsOpen;
 
-    SvFileStream (const SvFileStream&) SAL_DELETED_FUNCTION;
-    SvFileStream & operator= (const SvFileStream&) SAL_DELETED_FUNCTION;
+    SvFileStream (const SvFileStream&) = delete;
+    SvFileStream & operator= (const SvFileStream&) = delete;
 
     bool LockRange( sal_Size nByteOffset, sal_Size nBytes );
     bool UnlockRange( sal_Size nByteOffset, sal_Size nBytes );
@@ -631,11 +624,11 @@ private:
     bool UnlockFile();
 
 protected:
-    virtual sal_Size GetData( void* pData, sal_Size nSize ) SAL_OVERRIDE;
-    virtual sal_Size PutData( const void* pData, sal_Size nSize ) SAL_OVERRIDE;
-    virtual sal_uInt64 SeekPos( sal_uInt64 nPos ) SAL_OVERRIDE;
-    virtual void    SetSize( sal_uInt64 nSize ) SAL_OVERRIDE;
-    virtual void    FlushData() SAL_OVERRIDE;
+    virtual sal_Size GetData( void* pData, sal_Size nSize ) override;
+    virtual sal_Size PutData( const void* pData, sal_Size nSize ) override;
+    virtual sal_uInt64 SeekPos( sal_uInt64 nPos ) override;
+    virtual void    SetSize( sal_uInt64 nSize ) override;
+    virtual void    FlushData() override;
 
 public:
                     // Switches to Read StreamMode on failed attempt of Write opening
@@ -643,7 +636,7 @@ public:
                     SvFileStream();
                     virtual ~SvFileStream();
 
-    virtual void    ResetError() SAL_OVERRIDE;
+    virtual void    ResetError() override;
 
     void            Open( const OUString& rFileName, StreamMode eOpenMode );
     void            Close();
@@ -656,8 +649,8 @@ public:
 
 class TOOLS_DLLPUBLIC SvMemoryStream : public SvStream
 {
-    SvMemoryStream (const SvMemoryStream&) SAL_DELETED_FUNCTION;
-    SvMemoryStream & operator= (const SvMemoryStream&) SAL_DELETED_FUNCTION;
+    SvMemoryStream (const SvMemoryStream&) = delete;
+    SvMemoryStream & operator= (const SvMemoryStream&) = delete;
 
 protected:
     sal_Size        nSize;
@@ -667,11 +660,11 @@ protected:
     sal_uInt8*      pBuf;
     bool            bOwnsData;
 
-    virtual sal_Size GetData( void* pData, sal_Size nSize ) SAL_OVERRIDE;
-    virtual sal_Size PutData( const void* pData, sal_Size nSize ) SAL_OVERRIDE;
-    virtual sal_uInt64 SeekPos( sal_uInt64 nPos ) SAL_OVERRIDE;
-    virtual void    SetSize( sal_uInt64 nSize ) SAL_OVERRIDE;
-    virtual void    FlushData() SAL_OVERRIDE;
+    virtual sal_Size GetData( void* pData, sal_Size nSize ) override;
+    virtual sal_Size PutData( const void* pData, sal_Size nSize ) override;
+    virtual sal_uInt64 SeekPos( sal_uInt64 nPos ) override;
+    virtual void    SetSize( sal_uInt64 nSize ) override;
+    virtual void    FlushData() override;
 
     /// AllocateMemory must update pBuf accordingly
     /// - pBuf: Address of new block
@@ -696,10 +689,10 @@ public:
                     SvMemoryStream( sal_Size nInitSize=512, sal_Size nResize=64 );
                     virtual ~SvMemoryStream();
 
-    virtual void    ResetError() SAL_OVERRIDE;
+    virtual void    ResetError() override;
 
     const void*    GetBuffer();
-    sal_uIntPtr     GetSize();
+    sal_uInt64     GetSize();
     sal_Size        GetEndOfData() const { return nEndOfData; }
     const void*     GetData() { Flush(); return pBuf; }
     operator const  void*() { Flush(); return pBuf; }
@@ -710,7 +703,7 @@ public:
 
     void            ObjectOwnsMemory( bool bOwn ) { bOwnsData = bOwn; }
     void            SetResizeOffset( sal_Size nNewResize ) { nResize = nNewResize; }
-    virtual sal_uInt64 remainingSize() SAL_OVERRIDE { return GetEndOfData() - Tell(); }
+    virtual sal_uInt64 remainingSize() override { return GetEndOfData() - Tell(); }
 };
 
 class TOOLS_DLLPUBLIC SvScriptStream: public SvStream
@@ -722,8 +715,8 @@ public:
     SvScriptStream(const OUString& rUrl);
     virtual ~SvScriptStream();
 
-    virtual bool ReadLine(OString &rStr, sal_Int32) SAL_OVERRIDE;
-    virtual bool good() const SAL_OVERRIDE;
+    virtual bool ReadLine(OString &rStr, sal_Int32) override;
+    virtual bool good() const override;
 };
 
 /** Data Copy Stream

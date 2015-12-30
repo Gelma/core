@@ -34,7 +34,7 @@ namespace avmedia { namespace macavf {
 // ----------------
 
 FrameGrabber::FrameGrabber( const uno::Reference< lang::XMultiServiceFactory >& /*rxMgr*/ )
-:   mpImageGen( NULL )
+:   mpImageGen( nullptr )
 {}
 
 // ------------------------------------------------------------------------------
@@ -49,8 +49,11 @@ FrameGrabber::~FrameGrabber()
 
 bool FrameGrabber::create( const ::rtl::OUString& rURL )
 {
-    NSString* pNSStr = [NSString stringWithCharacters:rURL.getStr() length:rURL.getLength()];
+    NSString* pNSStr = [NSString stringWithCharacters:reinterpret_cast<unichar const *>(rURL.getStr()) length:rURL.getLength()];
+    SAL_WNODEPRECATED_DECLARATIONS_PUSH
+        //TODO: 10.11 stringByAddingPercentEscapesUsingEncoding
     NSURL* pNSURL = [NSURL URLWithString: [pNSStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    SAL_WNODEPRECATED_DECLARATIONS_POP
     AVAsset* pMovie = [AVURLAsset URLAssetWithURL:pNSURL options:nil];
     if( !pMovie )
     {
@@ -87,12 +90,12 @@ uno::Reference< graphic::XGraphic > SAL_CALL FrameGrabber::grabFrame( double fMe
     OSL_TRACE( "AVPlayer::grabFrame( %.3fsec)", fMediaTime );
 
     // get the requested image from the movie
-    CGImage* pCGImage = [mpImageGen copyCGImageAtTime:CMTimeMakeWithSeconds(fMediaTime,1000) actualTime:NULL error:NULL];
+    CGImage* pCGImage = [mpImageGen copyCGImageAtTime:CMTimeMakeWithSeconds(fMediaTime,1000) actualTime:nullptr error:nullptr];
 
     // convert the image to a TIFF-formatted byte-array
     CFMutableDataRef pCFData = CFDataCreateMutable( kCFAllocatorDefault, 0 );
-    CGImageDestination* pCGImgDest = CGImageDestinationCreateWithData( pCFData, kUTTypeTIFF, 1, 0 );
-    CGImageDestinationAddImage( pCGImgDest, pCGImage, NULL );
+    CGImageDestination* pCGImgDest = CGImageDestinationCreateWithData( pCFData, kUTTypeTIFF, 1, nullptr );
+    CGImageDestinationAddImage( pCGImgDest, pCGImage, nullptr );
     CGImageDestinationFinalize( pCGImgDest );
     CFRelease( pCGImgDest );
     const long nBitmapLen = CFDataGetLength( pCFData );
@@ -130,8 +133,7 @@ sal_Bool SAL_CALL FrameGrabber::supportsService( const ::rtl::OUString& ServiceN
 uno::Sequence< ::rtl::OUString > SAL_CALL FrameGrabber::getSupportedServiceNames(  )
     throw (uno::RuntimeException)
 {
-    uno::Sequence< ::rtl::OUString > aRet(1);
-    aRet[0] = ::rtl::OUString( RTL_CONSTASCII_USTRINGPARAM ( AVMEDIA_MACAVF_FRAMEGRABBER_SERVICENAME ) );
+    uno::Sequence< ::rtl::OUString > aRet { AVMEDIA_MACAVF_FRAMEGRABBER_SERVICENAME };
 
     return aRet;
 }

@@ -166,7 +166,7 @@ void OComboBoxModel::disposing()
     OBoundControlModel::disposing();
     OEntryListHelper::disposing();
     OErrorBroadcaster::disposing();
-    m_xFormatter = NULL;
+    m_xFormatter = nullptr;
 }
 
 
@@ -609,7 +609,7 @@ void OComboBoxModel::loadData( bool _bForce )
                 Reference<XIndexAccess> xColumns;
                 if (xSupplyCols.is())
                 {
-                    xColumns = Reference<XIndexAccess>(xSupplyCols->getColumns(), UNO_QUERY);
+                    xColumns.set(xSupplyCols->getColumns(), UNO_QUERY);
                     DBG_ASSERT(xColumns.is(), "OComboBoxModel::loadData : no columns supplied by the row set !");
                 }
                 Reference< XPropertySet > xDataField;
@@ -659,14 +659,8 @@ void OComboBoxModel::loadData( bool _bForce )
         return;
     }
 
-    // Create css::uno::Sequence<OUString> for ListBox
-    css::uno::Sequence<OUString> aStringSeq(aStringList.size());
-    OUString* pStringAry = aStringSeq.getArray();
-    for (sal_Int32 i = 0; i<aStringSeq.getLength(); ++i)
-        pStringAry[i] = aStringList[i];
-
     // Set String-Sequence at ListBox
-    setFastPropertyValue( PROPERTY_ID_STRINGITEMLIST, makeAny( aStringSeq ) );
+    setFastPropertyValue( PROPERTY_ID_STRINGITEMLIST, makeAny( comphelper::containerToSequence(aStringList) ) );
 }
 
 
@@ -880,16 +874,16 @@ css::uno::Sequence<OUString> SAL_CALL OComboBoxControl::getSupportedServiceNames
 
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_form_OComboBoxModel_get_implementation(::com::sun::star::uno::XComponentContext* component,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_form_OComboBoxModel_get_implementation(css::uno::XComponentContext* component,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new frm::OComboBoxModel(component));
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_form_OComboBoxControl_get_implementation(::com::sun::star::uno::XComponentContext* component,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_form_OComboBoxControl_get_implementation(css::uno::XComponentContext* component,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new frm::OComboBoxControl(component));
 }

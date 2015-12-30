@@ -52,7 +52,7 @@ namespace frm
         );
 
         virtual ~RichTextControl( );
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
         /* enables the change notifications for a particular attribute
 
@@ -67,7 +67,7 @@ namespace frm
            If you previously already enabled the notification for this attribute, and specified a different listener,
            then the previous listener will be replaced with the new listener, provided the latter is not <NULL/>.
         */
-        void        enableAttributeNotification( AttributeId _nAttributeId, ITextAttributeListener* _pListener = NULL );
+        void        enableAttributeNotification( AttributeId _nAttributeId, ITextAttributeListener* _pListener = nullptr );
 
         /** disables the change notifications for a particular attribute
 
@@ -84,8 +84,8 @@ namespace frm
         static bool isMappableSlot( SfxSlotId _nSlotId );
 
         // IMultiAttributeDispatcher
-        virtual AttributeState  getState( AttributeId _nAttributeId ) const SAL_OVERRIDE;
-        virtual void            executeAttribute( AttributeId _nAttributeId, const SfxPoolItem* _pArgument ) SAL_OVERRIDE;
+        virtual AttributeState  getState( AttributeId _nAttributeId ) const override;
+        virtual void            executeAttribute( AttributeId _nAttributeId, const SfxPoolItem* _pArgument ) override;
 
         void    SetBackgroundColor( );
         void    SetBackgroundColor( const Color& _rColor );
@@ -100,15 +100,15 @@ namespace frm
               EditView& getView();
 
         // Window overridables
-        virtual void        Draw( OutputDevice* _pDev, const Point& _rPos, const Size& _rSize, DrawFlags _nFlags ) SAL_OVERRIDE;
+        virtual void        Draw( OutputDevice* _pDev, const Point& _rPos, const Size& _rSize, DrawFlags _nFlags ) override;
 
     protected:
         // Window overridables
-        virtual void        Resize() SAL_OVERRIDE;
-        virtual void        GetFocus() SAL_OVERRIDE;
-        virtual void        StateChanged( StateChangedType nStateChange ) SAL_OVERRIDE;
-        virtual bool        PreNotify( NotifyEvent& _rNEvt ) SAL_OVERRIDE;
-        virtual bool        Notify( NotifyEvent& _rNEvt ) SAL_OVERRIDE;
+        virtual void        Resize() override;
+        virtual void        GetFocus() override;
+        virtual void        StateChanged( StateChangedType nStateChange ) override;
+        virtual bool        PreNotify( NotifyEvent& _rNEvt ) override;
+        virtual bool        Notify( NotifyEvent& _rNEvt ) override;
 
     private:
                 void    applyAttributes( const SfxItemSet& _rAttributesToApply );

@@ -76,7 +76,7 @@ public:
     bool mbHover;
     BitmapEx maPreview1;
     OUString maTitle;
-    ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible >* mpxAcc;
+    css::uno::Reference< css::accessibility::XAccessible > mxAcc;
 
     ThumbnailViewItem (ThumbnailView &rView, sal_uInt16 nId);
 
@@ -107,7 +107,7 @@ public:
     void updateTitleEditSize ();
     void setTitle (const OUString& rTitle);
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible >
+    css::uno::Reference< css::accessibility::XAccessible >
                         GetAccessible( bool bIsTransientChildrenDisabled );
 
     void setDrawArea (const Rectangle &area);
@@ -121,7 +121,7 @@ public:
 
     virtual void Paint (drawinglayer::processor2d::BaseProcessor2D *pProcessor,
                         const ThumbnailItemAttributes *pAttrs);
-    void addTextPrimitives (const OUString& rText, const ThumbnailItemAttributes *pAttrs, Point aPos, drawinglayer::primitive2d::Primitive2DSequence& rSeq);
+    void addTextPrimitives (const OUString& rText, const ThumbnailItemAttributes *pAttrs, Point aPos, drawinglayer::primitive2d::Primitive2DContainer& rSeq);
 
     static drawinglayer::primitive2d::PolygonHairlinePrimitive2D*
         createBorderLine (const basegfx::B2DPolygon &rPolygon);

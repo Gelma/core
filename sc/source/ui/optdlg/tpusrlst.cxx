@@ -35,8 +35,6 @@
 #include "globstr.hrc"
 #include "tpusrlst.hxx"
 
-// STATIC DATA -----------------------------------------------------------
-
 #define CR  (sal_Unicode)13
 #define LF  (sal_Unicode)10
 
@@ -55,9 +53,9 @@ ScTpUserLists::ScTpUserLists( vcl::Window*               pParent,
         aStrCopyFrom    ( ScGlobal::GetRscString( STR_COPYFROM ) ),
         aStrCopyErr     ( ScGlobal::GetRscString( STR_COPYERR ) ),
         nWhichUserLists ( GetWhich( SID_SCUSERLISTS ) ),
-        pUserLists      ( NULL ),
-        pDoc            ( NULL ),
-        pViewData       ( NULL ),
+        pUserLists      ( nullptr ),
+        pDoc            ( nullptr ),
+        pViewData       ( nullptr ),
         pRangeUtil      ( new ScRangeUtil ),
         bModifyMode     ( false ),
         bCancelMode     ( false ),
@@ -109,7 +107,7 @@ void ScTpUserLists::dispose()
 void ScTpUserLists::Init()
 {
     SfxViewShell*   pSh = SfxViewShell::Current();
-    ScTabViewShell* pViewSh = PTR_CAST(ScTabViewShell, pSh);
+    ScTabViewShell* pViewSh = dynamic_cast<ScTabViewShell*>( pSh );
 
     mpLbLists->SetSelectHdl   ( LINK( this, ScTpUserLists, LbSelectHdl ) );
     mpBtnNew->SetClickHdl     ( LINK( this, ScTpUserLists, BtnClickHdl ) );
@@ -222,13 +220,13 @@ bool ScTpUserLists::FillItemSet( SfxItemSet* rCoreAttrs )
     ScUserList* pCoreList       = rUserListItem.GetUserList();
     bool        bDataModified   = false;
 
-    if ( (pUserLists == NULL) && (pCoreList == NULL) )
+    if ( (pUserLists == nullptr) && (pCoreList == nullptr) )
     {
         bDataModified = false;
     }
-    else if ( pUserLists != NULL )
+    else if ( pUserLists != nullptr )
     {
-        if ( pCoreList != NULL )
+        if ( pCoreList != nullptr )
             bDataModified = (*pUserLists != *pCoreList);
         else
             bDataModified = true;
@@ -457,9 +455,9 @@ void ScTpUserLists::RemoveList( size_t nList )
 
 // Handler:
 
-IMPL_LINK( ScTpUserLists, LbSelectHdl, ListBox*, pLb )
+IMPL_LINK_TYPED( ScTpUserLists, LbSelectHdl, ListBox&, rLb, void )
 {
-    if ( pLb == mpLbLists )
+    if ( &rLb == mpLbLists )
     {
         sal_Int32 nSelPos = mpLbLists->GetSelectEntryPos();
         if ( nSelPos != LISTBOX_ENTRY_NOTFOUND )
@@ -476,8 +474,6 @@ IMPL_LINK( ScTpUserLists, LbSelectHdl, ListBox*, pLb )
             UpdateEntries( nSelPos );
         }
     }
-
-    return 0;
 }
 
 IMPL_LINK_TYPED( ScTpUserLists, BtnClickHdl, Button*, pBtn, void )
@@ -515,7 +511,7 @@ IMPL_LINK_TYPED( ScTpUserLists, BtnClickHdl, Button*, pBtn, void )
             if ( mpLbLists->GetEntryCount() > 0 )
             {
                 mpLbLists->SelectEntryPos( nCancelPos );
-                LbSelectHdl( mpLbLists );
+                LbSelectHdl( *mpLbLists.get() );
                 mpFtLists->Enable();
                 mpLbLists->Enable();
             }
@@ -552,7 +548,7 @@ IMPL_LINK_TYPED( ScTpUserLists, BtnClickHdl, Button*, pBtn, void )
                 AddNewList( theEntriesStr );
                 UpdateUserListBox();
                 mpLbLists->SelectEntryPos( mpLbLists->GetEntryCount()-1 );
-                LbSelectHdl( mpLbLists );
+                LbSelectHdl( *mpLbLists.get() );
                 mpFtLists->Enable();
                 mpLbLists->Enable();
             }
@@ -561,7 +557,7 @@ IMPL_LINK_TYPED( ScTpUserLists, BtnClickHdl, Button*, pBtn, void )
                 if ( mpLbLists->GetEntryCount() > 0 )
                 {
                     mpLbLists->SelectEntryPos( nCancelPos );
-                    LbSelectHdl( mpLbLists );
+                    LbSelectHdl( *mpLbLists.get() );
                     mpLbLists->Enable();
                     mpLbLists->Enable();
                 }
@@ -589,7 +585,7 @@ IMPL_LINK_TYPED( ScTpUserLists, BtnClickHdl, Button*, pBtn, void )
             else
             {
                 mpLbLists->SelectEntryPos( 0 );
-                LbSelectHdl( mpLbLists );
+                LbSelectHdl( *mpLbLists.get() );
             }
 
             mpBtnNew->Show();
@@ -636,7 +632,7 @@ IMPL_LINK_TYPED( ScTpUserLists, BtnClickHdl, Button*, pBtn, void )
                         ( nRemovePos >= mpLbLists->GetEntryCount() )
                             ? mpLbLists->GetEntryCount()-1
                             : nRemovePos );
-                    LbSelectHdl( mpLbLists );
+                    LbSelectHdl( *mpLbLists.get() );
                 }
                 else
                 {
@@ -693,7 +689,7 @@ IMPL_LINK_TYPED( ScTpUserLists, BtnClickHdl, Button*, pBtn, void )
             CopyListFromArea( theStartPos, theEndPos );
             UpdateUserListBox();
             mpLbLists->SelectEntryPos( mpLbLists->GetEntryCount()-1 );
-            LbSelectHdl( mpLbLists );
+            LbSelectHdl( *mpLbLists.get() );
             mpEdCopyFrom->SetText( theAreaStr );
             mpEdCopyFrom->Disable();
             mpBtnCopy->Disable();
@@ -710,10 +706,10 @@ IMPL_LINK_TYPED( ScTpUserLists, BtnClickHdl, Button*, pBtn, void )
     }
 }
 
-IMPL_LINK( ScTpUserLists, EdEntriesModHdl, VclMultiLineEdit*, pEd )
+IMPL_LINK_TYPED( ScTpUserLists, EdEntriesModHdl, Edit&, rEd, void )
 {
-    if ( pEd != mpEdEntries )
-        return 0;
+    if ( &rEd != mpEdEntries )
+        return;
 
     if ( mpBtnCopy->IsEnabled() )
     {
@@ -755,8 +751,6 @@ IMPL_LINK( ScTpUserLists, EdEntriesModHdl, VclMultiLineEdit*, pEd )
             mpBtnModify->Disable();
         }
     }
-
-    return 0;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

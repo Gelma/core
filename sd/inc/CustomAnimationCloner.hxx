@@ -26,9 +26,9 @@ class SdPage;
 
 namespace sd
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::animations::XAnimationNode > Clone(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::animations::XAnimationNode >& xSourceNode,
-        const SdPage* pSource = 0, const SdPage* pTarget = 0 );
+    css::uno::Reference< css::animations::XAnimationNode > Clone(
+        const css::uno::Reference< css::animations::XAnimationNode >& xSourceNode,
+        const SdPage* pSource = nullptr, const SdPage* pTarget = nullptr );
 }
 
 #endif // INCLUDED_SD_INC_CUSTOMANIMATIONCLONER_HXX

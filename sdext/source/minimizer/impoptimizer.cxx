@@ -122,8 +122,7 @@ void ImpDeleteHiddenSlides(  const Reference< XModel >& rxModel )
             Reference< XPropertySet > xPropSet( xDrawPage, UNO_QUERY_THROW );
 
             bool bVisible = true;
-            const OUString sVisible( "Visible"  );
-            if ( xPropSet->getPropertyValue( sVisible ) >>= bVisible )
+            if ( xPropSet->getPropertyValue( "Visible" ) >>= bVisible )
             {
                 if (!bVisible )
                 {
@@ -153,8 +152,7 @@ void ImpDeleteNotesPages( const Reference< XModel >& rxModel )
             while( xShapes->getCount() )
                 xShapes->remove( Reference< XShape >( xShapes->getByIndex( xShapes->getCount() - 1 ), UNO_QUERY_THROW ) );
 
-            const OUString sLayout( "Layout"  );
-            xPropSet->setPropertyValue( sLayout, Any( (sal_Int16)21 ) );
+            xPropSet->setPropertyValue( "Layout", Any( (sal_Int16)21 ) );
         }
     }
     catch( Exception& )
@@ -173,9 +171,8 @@ void ImpConvertOLE( const Reference< XModel >& rxModel, sal_Int32 nOLEOptimizati
             Reference< XShapes > xShapes( xDrawPages->getByIndex( i ), UNO_QUERY_THROW );
             for ( sal_Int32 j = 0; j < xShapes->getCount(); j++ )
             {
-                const OUString sOLE2Shape( "com.sun.star.drawing.OLE2Shape"  );
                 Reference< XShape > xShape( xShapes->getByIndex( j ), UNO_QUERY_THROW );
-                if ( xShape->getShapeType() == sOLE2Shape )
+                if ( xShape->getShapeType() == "com.sun.star.drawing.OLE2Shape" )
                 {
                     Reference< XPropertySet > xPropSet( xShape, UNO_QUERY_THROW );
 
@@ -191,9 +188,8 @@ void ImpConvertOLE( const Reference< XModel >& rxModel, sal_Int32 nOLEOptimizati
                         Reference< XGraphic > xGraphic;
                         if ( xPropSet->getPropertyValue( "Graphic" ) >>= xGraphic )
                         {
-                            const OUString sGraphicShape( "com.sun.star.drawing.GraphicObjectShape"  );
                             Reference< XMultiServiceFactory > xFact( rxModel, UNO_QUERY_THROW );
-                            Reference< XShape > xShape2( xFact->createInstance( sGraphicShape ), UNO_QUERY_THROW );
+                            Reference< XShape > xShape2( xFact->createInstance( "com.sun.star.drawing.GraphicObjectShape" ), UNO_QUERY_THROW );
                             xShapes->add( xShape2 );
                             xShape2->setPosition( xShape->getPosition() );
                             xShape2->setSize( xShape->getSize() );
@@ -265,7 +261,7 @@ Reference< XGraphic > ImpCompressGraphic( const Reference< XComponentContext >& 
         if ( xGraphicPropertySet->getPropertyValue( "MimeType" ) >>= aSourceMimeType )
         {
             sal_Int8 nGraphicType( xGraphic->getType() );
-            if ( nGraphicType == com::sun::star::graphic::GraphicType::PIXEL )
+            if ( nGraphicType == css::graphic::GraphicType::PIXEL )
             {
                 bool bTransparent = false;
                 bool bAlpha       = false;
@@ -402,7 +398,7 @@ void CompressGraphics( ImpOptimizer& rOptimizer, const Reference< XComponentCont
                 {
                     Reference< XBitmap > xFillBitmap;
                     if ( aGraphicIter->maUser[ 0 ].mxPropertySet->getPropertyValue( "FillBitmap" ) >>= xFillBitmap )
-                        xGraphic = Reference< XGraphic >( xFillBitmap, UNO_QUERY_THROW );
+                        xGraphic.set( xFillBitmap, UNO_QUERY_THROW );
                 }
                 else if ( aGraphicIter->maUser[ 0 ].mxShape.is() )
                 {
@@ -615,7 +611,7 @@ bool ImpOptimizer::Optimize( const Sequence< PropertyValue >& rArguments )
                 case TK_InformationDialog: rArguments[ i ].Value >>= mxInformationDialog; break;
                 case TK_Settings :
                 {
-                    com::sun::star::uno::Sequence< com::sun::star::beans::PropertyValue > aSettings;
+                    css::uno::Sequence< css::beans::PropertyValue > aSettings;
                     int j, nJCount;
                     rArguments[ i ].Value >>= aSettings;
                     for ( j = 0, nJCount = aSettings.getLength(); j < nJCount; j++ )
@@ -686,7 +682,7 @@ bool ImpOptimizer::Optimize( const Sequence< PropertyValue >& rArguments )
                 Sequence< PropertyValue > aLoadProps( 1 );
                 aLoadProps[ 0 ].Name = "Hidden";
                 aLoadProps[ 0 ].Value <<= true;
-                mxModel = Reference< XModel >( xComponentLoader->loadComponentFromURL(
+                mxModel.set( xComponentLoader->loadComponentFromURL(
                     maSaveAsURL, "_self", 0, aLoadProps ), UNO_QUERY );
             }
         }

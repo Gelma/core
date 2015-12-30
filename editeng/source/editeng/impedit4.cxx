@@ -190,7 +190,7 @@ EditPaM ImpEditEngine::ReadHTML( SvStream& rInput, const OUString& rBaseURL, Edi
 EditPaM ImpEditEngine::ReadBin( SvStream& rInput, EditSelection aSel )
 {
     // Simply abuse a temporary text object ...
-    std::unique_ptr<EditTextObject> xObj(EditTextObject::Create( rInput, NULL ));
+    std::unique_ptr<EditTextObject> xObj(EditTextObject::Create( rInput ));
 
     EditPaM aLastPaM = aSel.Max();
     if (xObj)
@@ -292,7 +292,7 @@ static void lcl_FindValidAttribs( ItemList& rLst, ContentNode* pNode, sal_Int32 
 
 sal_uInt32 ImpEditEngine::WriteBin(SvStream& rOutput, const EditSelection& rSel, bool bStoreUnicodeStrings)
 {
-    std::unique_ptr<EditTextObject> xObj(CreateTextObject(rSel, NULL));
+    std::unique_ptr<EditTextObject> xObj(CreateTextObject(rSel, nullptr));
     xObj->mpImpl->StoreUnicodeStrings(bStoreUnicodeStrings);
     xObj->Store(rOutput);
     return 0;
@@ -1111,7 +1111,7 @@ EditTextObject* ImpEditEngine::CreateTextObject( EditSelection aSel, SfxItemPool
                 if ( !pX->GetLen() && !bEmptyPara )
                     pTxtObj->mpImpl->DestroyAttrib(pX);
                 else
-                    pC->GetAttribs().push_back(pX);
+                    pC->GetAttribs().push_back(std::unique_ptr<XEditAttribute>(pX));
             }
             nAttr++;
             pAttr = GetAttrib( pNode->GetCharAttribs().GetAttribs(), nAttr );
@@ -1241,7 +1241,7 @@ EditSelection ImpEditEngine::InsertTextObject( const EditTextObject& rTextObject
 
     for (sal_Int32 n = 0; n < nContents; ++n, ++nPara)
     {
-        const ContentInfo* pC = &rTextObject.mpImpl->GetContents()[n];
+        const ContentInfo* pC = rTextObject.mpImpl->GetContents()[n].get();
         bool bNewContent = aPaM.GetNode()->Len() == 0;
         const sal_Int32 nStartPos = aPaM.GetIndex();
 
@@ -1259,7 +1259,7 @@ EditSelection ImpEditEngine::InsertTextObject( const EditTextObject& rTextObject
             bool bUpdateFields = false;
             for (size_t nAttr = 0; nAttr < nNewAttribs; ++nAttr)
             {
-                const XEditAttribute& rX = pC->GetAttribs()[nAttr];
+                const XEditAttribute& rX = *pC->GetAttribs()[nAttr].get();
                 // Can happen when paragraphs > 16K, it is simply wrapped.
                 if ( rX.GetEnd() <= aPaM.GetNode()->Len() )
                 {
@@ -1307,7 +1307,6 @@ EditSelection ImpEditEngine::InsertTextObject( const EditTextObject& rTextObject
         bool bParaAttribs = false;
         if ( bNewContent || ( ( n > 0 ) && ( n < (nContents-1) ) ) )
         {
-            bParaAttribs = false;
             {
                 // only style and ParaAttribs when new paragraph, or
                 // completely internal ...
@@ -1477,7 +1476,7 @@ SpellInfo * ImpEditEngine::CreateSpellInfo( bool bMultipleDocs )
 
 EESpellState ImpEditEngine::Spell( EditView* pEditView, bool bMultipleDoc )
 {
-    DBG_ASSERTWARNING( xSpeller.is(), "No Spell checker set!" );
+    SAL_WARN_IF( !xSpeller.is(), "editeng", "No Spell checker set!" );
 
     if ( !xSpeller.is() )
         return EE_SPELL_NOSPELLER;
@@ -1500,7 +1499,7 @@ EESpellState ImpEditEngine::Spell( EditView* pEditView, bool bMultipleDoc )
         bIsStart = true;
 
     EditSpellWrapper* pWrp = new EditSpellWrapper( Application::GetDefDialogParent(),
-            xSpeller, bIsStart, false, pEditView );
+            bIsStart, false, pEditView );
     pWrp->SpellDocument();
     delete pWrp;
 
@@ -1516,7 +1515,7 @@ EESpellState ImpEditEngine::Spell( EditView* pEditView, bool bMultipleDoc )
     }
     EESpellState eState = pSpellInfo->eState;
     delete pSpellInfo;
-    pSpellInfo = 0;
+    pSpellInfo = nullptr;
     return eState;
 }
 
@@ -1640,7 +1639,7 @@ void ImpEditEngine::Convert( EditView* pEditView,
         pEditView->ShowCursor( true, false );
     }
     delete pConvInfo;
-    pConvInfo = 0;
+    pConvInfo = nullptr;
 }
 
 
@@ -1988,7 +1987,7 @@ bool ImpEditEngine::SpellSentence(EditView& rEditView,
         //add the portion preceding the error
         EditSelection aStartSelection(aSentencePaM.Min(), aCurSel.Min());
         if(aStartSelection.HasRange())
-            AddPortionIterated(rEditView, aStartSelection, 0, rToFill);
+            AddPortionIterated(rEditView, aStartSelection, nullptr, rToFill);
         //add the error portion
         AddPortionIterated(rEditView, aCurSel, xAlt, rToFill);
         //find the end of the sentence
@@ -2000,7 +1999,7 @@ bool ImpEditEngine::SpellSentence(EditView& rEditView,
             if(xAlt.is())
             {
                 //add the part between the previous and the current error
-                AddPortionIterated(rEditView, EditSelection(aCurSel.Max(), aNextSel.Min()), 0, rToFill);
+                AddPortionIterated(rEditView, EditSelection(aCurSel.Max(), aNextSel.Min()), nullptr, rToFill);
                 //add the current error
                 AddPortionIterated(rEditView, aNextSel, xAlt, rToFill);
             }
@@ -2404,7 +2403,7 @@ void ImpEditEngine::DoOnlineSpelling( ContentNode* pThisNodeOnly, bool bSpellAtC
                     if ( pActiveView && pActiveView->HasSelection() )
                     {
                         // Then no output through VDev.
-                        UpdateViews( NULL );
+                        UpdateViews();
                     }
                     else if ( bSimpleRepaint )
                     {
@@ -2733,7 +2732,7 @@ EditSelection ImpEditEngine::TransliterateText( const EditSelection& rSelection,
 
     bool bChanges = false;
     bool bLenChanged = false;
-    EditUndoTransliteration* pUndo = NULL;
+    EditUndoTransliteration* pUndo = nullptr;
 
     utl::TransliterationWrapper aTransliterationWrapper( ::comphelper::getProcessComponentContext(), nTransliterationMode );
     bool bConsiderLanguage = aTransliterationWrapper.needLanguageForTheMode();
@@ -2973,7 +2972,7 @@ EditSelection ImpEditEngine::TransliterateText( const EditSelection& rSelection,
                 if (bSingleNode && !bHasAttribs)
                     pUndo->SetText( aSel.Min().GetNode()->Copy( aSel.Min().GetIndex(), aSel.Max().GetIndex()-aSel.Min().GetIndex() ) );
                 else
-                    pUndo->SetText( CreateTextObject( aSel, NULL ) );
+                    pUndo->SetText( CreateTextObject( aSel, nullptr ) );
             }
 
             // now apply the changes from end to start to leave the offsets of the
@@ -3118,7 +3117,7 @@ sal_Int32 ImpEditEngine::LogicToTwips(sal_Int32 n)
 {
     Size aSz(n, 0);
     MapMode aTwipsMode( MAP_TWIP );
-    aSz = pRefDev->LogicToLogic( aSz, NULL, &aTwipsMode );
+    aSz = pRefDev->LogicToLogic( aSz, nullptr, &aTwipsMode );
     return aSz.Width();
 }
 

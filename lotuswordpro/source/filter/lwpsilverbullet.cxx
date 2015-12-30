@@ -73,7 +73,7 @@ LwpSilverBullet::LwpSilverBullet(LwpObjectHeader& objHdr, LwpSvStream* pStrm)
     , m_nFlags(0)
     , m_nUseCount(0)
     , m_pAtomHolder(new LwpAtomHolder)
-    , m_pBulletPara(NULL)
+    , m_pBulletPara(nullptr)
 {
 }
 
@@ -93,6 +93,9 @@ void LwpSilverBullet::Read()
     m_aStory.ReadIndexed(m_pObjStrm);
 
     sal_uInt16 nNumPos = m_pObjStrm->QuickReaduInt16();
+
+    if (nNumPos > SAL_N_ELEMENTS(m_pResetPositionFlags))
+        throw std::range_error("corrupt SilverBullet");
 
     for (sal_uInt16 nC = 0; nC < nNumPos; nC++)
         m_pResetPositionFlags[nC] = m_pObjStrm->QuickReaduInt8();
@@ -231,7 +234,7 @@ LwpPara* LwpSilverBullet::GetBulletPara()
         LwpStory* pStory = dynamic_cast<LwpStory*>(m_aStory.obj(VO_STORY).get());
         if (!pStory)
         {
-            return NULL;
+            return nullptr;
         }
 
         m_pBulletPara = dynamic_cast<LwpPara*>(pStory->GetFirstPara().obj(VO_PARA).get());
@@ -278,7 +281,7 @@ OUString LwpSilverBullet::GetNumCharByStyleID(LwpFribParaNumber* pParaNumber)
         strNumChar = "i";
         break;
     case NUMCHAR_other:
-        strNumChar = OUString(pParaNumber->GetNumberChar());
+        strNumChar = OUString(sal_Unicode(pParaNumber->GetNumberChar()));
         break;
     case NUMCHAR_Chinese1:
         {
@@ -319,7 +322,7 @@ bool LwpSilverBullet::IsBulletOrdered()
 
     LwpFribPtr& rFribs = m_pBulletPara->GetFribs();
 
-    return (rFribs.HasFrib(FRIB_TAG_PARANUMBER) != NULL);
+    return (rFribs.HasFrib(FRIB_TAG_PARANUMBER) != nullptr);
 }
 
 /**

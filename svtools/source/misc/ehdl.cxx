@@ -144,7 +144,7 @@ static sal_uInt16 aWndFunc(
 
 SfxErrorHandler::SfxErrorHandler(sal_uInt16 nIdP, sal_uLong lStartP, sal_uLong lEndP, ResMgr *pMgrP) :
 
-    lStart(lStartP), lEnd(lEndP), nId(nIdP), pMgr(pMgrP), pFreeMgr( NULL )
+    lStart(lStartP), lEnd(lEndP), nId(nIdP), pMgr(pMgrP), pFreeMgr( nullptr )
 
 {
     RegisterDisplay(&aWndFunc);
@@ -176,7 +176,7 @@ bool SfxErrorHandler::CreateString(
     sal_uLong nErrCode = pErr->GetErrorCode() & ERRCODE_ERROR_MASK;
     if( nErrCode>=lEnd || nErrCode<=lStart )
         return false;
-    const MessageInfo *pMsgInfo = PTR_CAST(MessageInfo,pErr);
+    const MessageInfo *pMsgInfo = dynamic_cast<const MessageInfo*>( pErr );
     if(pMsgInfo)
     {
         if(GetMessageString(nErrCode, rStr, nFlags))
@@ -187,15 +187,14 @@ bool SfxErrorHandler::CreateString(
     }
     else if(GetErrorString(nErrCode, rStr, nFlags))
     {
-        const StringErrorInfo *pStringInfo = PTR_CAST(StringErrorInfo,pErr);
+        const StringErrorInfo *pStringInfo = dynamic_cast<const StringErrorInfo *>(pErr);
         if(pStringInfo)
         {
             rStr = rStr.replaceAll("$(ARG1)", pStringInfo->GetErrorString());
         }
         else
         {
-            const TwoStringErrorInfo * pTwoStringInfo = PTR_CAST(TwoStringErrorInfo,
-                                                           pErr);
+            const TwoStringErrorInfo * pTwoStringInfo = dynamic_cast<const TwoStringErrorInfo* >(pErr);
             if (pTwoStringInfo)
             {
                 rStr = rStr.replaceAll("$(ARG1)", pTwoStringInfo->GetArg1());
@@ -399,7 +398,7 @@ bool SfxErrorContext::GetString(sal_uLong nErrId, OUString &rStr)
 
 {
     bool bRet = false;
-    ResMgr* pFreeMgr = NULL;
+    ResMgr* pFreeMgr = nullptr;
     if( ! pMgr )
     {
         pFreeMgr = pMgr = ResMgr::CreateResMgr("ofa", Application::GetSettings().GetUILanguageTag() );
@@ -435,7 +434,7 @@ bool SfxErrorContext::GetString(sal_uLong nErrId, OUString &rStr)
     if( pFreeMgr )
     {
         delete pFreeMgr;
-        pMgr = NULL;
+        pMgr = nullptr;
     }
     return bRet;
 }

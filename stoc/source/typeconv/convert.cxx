@@ -251,17 +251,17 @@ public:
     virtual ~TypeConverter_Impl();
 
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName() throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName() throw( RuntimeException, std::exception ) override;
     virtual sal_Bool SAL_CALL supportsService(const OUString& ServiceName)
-        throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception ) override;
     virtual  Sequence< OUString > SAL_CALL getSupportedServiceNames()
-        throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception ) override;
 
     // XTypeConverter
     virtual Any SAL_CALL convertTo( const Any& aFrom, const Type& DestinationType )
-        throw( IllegalArgumentException, CannotConvertException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw( IllegalArgumentException, CannotConvertException, RuntimeException, std::exception) override;
     virtual Any SAL_CALL convertToSimpleType( const Any& aFrom, TypeClass aDestinationType )
-        throw( IllegalArgumentException, CannotConvertException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw( IllegalArgumentException, CannotConvertException, RuntimeException, std::exception) override;
 };
 
 TypeConverter_Impl::TypeConverter_Impl() {}
@@ -283,8 +283,7 @@ sal_Bool TypeConverter_Impl::supportsService(const OUString& ServiceName) throw(
 // XServiceInfo
 Sequence< OUString > TypeConverter_Impl::getSupportedServiceNames() throw( RuntimeException, std::exception )
 {
-    Sequence< OUString > seqNames(1);
-    seqNames.getArray()[0] = "com.sun.star.script.Converter";
+    Sequence< OUString > seqNames { "com.sun.star.script.Converter" };
     return seqNames;
 }
 
@@ -533,7 +532,7 @@ Any SAL_CALL TypeConverter_Impl::convertTo( const Any& rVal, const Type& aDestTy
         if (! rVal.hasValue())
         {
             // void -> interface (null)
-            void * null_ref = 0;
+            void * null_ref = nullptr;
             aRet.setValue( &null_ref, aDestType );
             break;
         }
@@ -564,19 +563,19 @@ Any SAL_CALL TypeConverter_Impl::convertTo( const Any& rVal, const Type& aDestTy
 
             TypeDescription aSourceTD( aSourceType );
             TypeDescription aDestTD( aDestType );
-            typelib_TypeDescription * pSourceElementTD = 0;
+            typelib_TypeDescription * pSourceElementTD = nullptr;
             TYPELIB_DANGER_GET(
                 &pSourceElementTD,
                 reinterpret_cast<typelib_IndirectTypeDescription *>(aSourceTD.get())->pType );
-            typelib_TypeDescription * pDestElementTD = 0;
+            typelib_TypeDescription * pDestElementTD = nullptr;
             TYPELIB_DANGER_GET(
                 &pDestElementTD,
                 reinterpret_cast<typelib_IndirectTypeDescription *>(aDestTD.get())->pType );
 
             sal_uInt32 nPos = (*static_cast<const uno_Sequence * const *>(rVal.getValue()))->nElements;
-            uno_Sequence * pRet = 0;
+            uno_Sequence * pRet = nullptr;
             uno_sequence_construct(
-                &pRet, aDestTD.get(), 0, nPos,
+                &pRet, aDestTD.get(), nullptr, nPos,
                 reinterpret_cast< uno_AcquireFunc >(cpp_acquire) );
             aRet.setValue( &pRet, aDestTD.get() );
             uno_destructData(
@@ -894,9 +893,9 @@ Any TypeConverter_Impl::convertToSimpleType( const Any& rVal, TypeClass aDestina
 
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_stoc_TypeConverter_get_implementation(::com::sun::star::uno::XComponentContext*,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_stoc_TypeConverter_get_implementation(css::uno::XComponentContext*,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     return ::cppu::acquire(new stoc_tcv::TypeConverter_Impl());
 }

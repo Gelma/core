@@ -68,7 +68,7 @@ struct TargetData
 //#                                                                      #
 SvxHlmarkTreeLBox::SvxHlmarkTreeLBox(vcl::Window* pParent, WinBits nStyle)
     : SvTreeListBox(pParent, nStyle)
-    , mpParentWnd(NULL)
+    , mpParentWnd(nullptr)
 {
     SetNodeDefaultImages();
 }
@@ -350,7 +350,7 @@ bool SvxHlinkDlgMarkWnd::RefreshFromDoc(const OUString& aURL)
                 uno::Sequence< beans::PropertyValue > aArg(1);
                 aArg.getArray()[0].Name = "Hidden";
                 aArg.getArray()[0].Value <<= true;
-                xComp = xLoader->loadComponentFromURL( aURL, OUString( "_blank" ), 0, aArg );
+                xComp = xLoader->loadComponentFromURL( aURL, "_blank", 0, aArg );
             }
             catch( const io::IOException& )
             {
@@ -563,7 +563,7 @@ bool SvxHlinkDlgMarkWnd::SelectEntry(const OUString& aStrMark)
 
 IMPL_LINK_NOARG_TYPED(SvxHlinkDlgMarkWnd, DoubleClickApplyHdl_Impl, SvTreeListBox*, bool)
 {
-    ClickApplyHdl_Impl(NULL);
+    ClickApplyHdl_Impl(nullptr);
     return false;
 }
 
@@ -610,11 +610,11 @@ IMPL_LINK_NOARG_TYPED(SvxHlinkDlgMarkWnd, ClickCloseHdl_Impl, Button*, void)
             }
         }
 
-        uno::Sequence< beans::NamedValue > aSettings(2);
-        aSettings[0].Name = TG_SETTING_LASTMARK;
-        aSettings[0].Value <<= sLastSelectedMark;
-        aSettings[1].Name = TG_SETTING_LASTPATH;
-        aSettings[1].Value <<= comphelper::containerToSequence<OUString>(aLastSelectedPath);
+        uno::Sequence< beans::NamedValue > aSettings
+        {
+            { TG_SETTING_LASTMARK, css::uno::makeAny(sLastSelectedMark) },
+            { TG_SETTING_LASTPATH, css::uno::makeAny(comphelper::containerToSequence<OUString>(aLastSelectedPath)) }
+        };
 
         // write
         SvtViewOptions aViewSettings( E_DIALOG, TG_SETTING_MANAGER );

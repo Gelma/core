@@ -144,7 +144,7 @@ TabControl* TabWindow::impl_GetTabControl( const css::uno::Reference< css::awt::
     if ( pWindow )
         return static_cast<TabControl *>(pWindow);
     else
-        return NULL;
+        return nullptr;
 }
 
 void TabWindow::impl_SetTitle( const OUString& rTitle )
@@ -163,7 +163,7 @@ void TabWindow::implts_SendNotification( Notification eNotify, sal_Int32 ID ) co
 {
     ::cppu::OInterfaceContainerHelper* pContainer = m_aListenerContainer.getContainer(
                                                         cppu::UnoType<css::awt::XTabListener>::get());
-    if (pContainer!=NULL)
+    if (pContainer!=nullptr)
     {
         ::cppu::OInterfaceIteratorHelper pIterator(*pContainer);
         while (pIterator.hasMoreElements())
@@ -200,7 +200,7 @@ void TabWindow::implts_SendNotification( Notification eNotify, sal_Int32 ID, con
 {
     ::cppu::OInterfaceContainerHelper* pContainer = m_aListenerContainer.getContainer(
                                                         cppu::UnoType<css::awt::XTabListener>::get());
-    if (pContainer!=NULL)
+    if (pContainer!=nullptr)
     {
         ::cppu::OInterfaceIteratorHelper pIterator(*pContainer);
         while (pIterator.hasMoreElements())
@@ -318,13 +318,13 @@ throw (css::uno::Exception, css::uno::RuntimeException, std::exception)
                 // describe top window properties.
                 aDescriptor.Type                =   css::awt::WindowClass_TOP;
                 aDescriptor.ParentIndex         =   -1;
-                aDescriptor.Parent              =   css::uno::Reference< css::awt::XWindowPeer >();
+                aDescriptor.Parent.clear();
                 aDescriptor.Bounds              =   css::awt::Rectangle( 0, 0, aSize.Width, aSize.Height );
                 aDescriptor.WindowAttributes    =   0;
 
                 try
                 {
-                    xTopWindow = css::uno::Reference< css::awt::XTopWindow >( xToolkit->createWindow( aDescriptor ), css::uno::UNO_QUERY );
+                    xTopWindow.set( xToolkit->createWindow( aDescriptor ), css::uno::UNO_QUERY );
                 }
                 catch ( const css::uno::RuntimeException& )
                 {
@@ -356,21 +356,21 @@ throw (css::uno::Exception, css::uno::RuntimeException, std::exception)
                 // describe container window properties.
                 aDescriptor.Type                =   css::awt::WindowClass_SIMPLE;
                 aDescriptor.ParentIndex         =   -1;
-                aDescriptor.Parent              =   css::uno::Reference< css::awt::XWindowPeer >( xTopWindow, css::uno::UNO_QUERY );
+                aDescriptor.Parent.set( xTopWindow, css::uno::UNO_QUERY );
                 aDescriptor.Bounds              =   css::awt::Rectangle(0,0,0,0);
                 aDescriptor.WindowAttributes    =   0;
 
-                xContainerWindow = css::uno::Reference< css::awt::XWindow >( xToolkit->createWindow( aDescriptor ), css::uno::UNO_QUERY );
+                xContainerWindow.set( xToolkit->createWindow( aDescriptor ), css::uno::UNO_QUERY );
 
                 // create a tab control window properties
                 aDescriptor.Type                = css::awt::WindowClass_SIMPLE;
                 aDescriptor.WindowServiceName   = "tabcontrol";
                 aDescriptor.ParentIndex         = -1;
-                aDescriptor.Parent              = css::uno::Reference< css::awt::XWindowPeer >( xTopWindow, css::uno::UNO_QUERY );
+                aDescriptor.Parent.set( xTopWindow, css::uno::UNO_QUERY );
                 aDescriptor.Bounds              = css::awt::Rectangle( 0,0,0,0 );
                 aDescriptor.WindowAttributes    = 0;
 
-                xTabControl = css::uno::Reference< css::awt::XWindow >( xToolkit->createWindow( aDescriptor ), css::uno::UNO_QUERY );
+                xTabControl.set( xToolkit->createWindow( aDescriptor ), css::uno::UNO_QUERY );
 
                 if ( xContainerWindow.is() && xTabControl.is() )
                 {
@@ -387,7 +387,7 @@ throw (css::uno::Exception, css::uno::RuntimeException, std::exception)
                     SolarMutexGuard aGuard;
                     vcl::Window* pWindow = VCLUnoHelper::GetWindow( xWindow );
                     if( pWindow )
-                        pWindow->Show( true );
+                        pWindow->Show();
 
                     pWindow = VCLUnoHelper::GetWindow( xContainerWindow );
                     if ( pWindow )
@@ -435,11 +435,11 @@ void SAL_CALL TabWindow::dispose() throw (css::uno::RuntimeException, std::excep
     if ( xComponent.is() )
         xComponent->dispose();
 
-    xComponent = css::uno::Reference< css::lang::XComponent >( xContainerWindow, css::uno::UNO_QUERY );
+    xComponent.set( xContainerWindow, css::uno::UNO_QUERY );
     if ( xComponent.is() )
         xComponent->dispose();
 
-    xComponent = css::uno::Reference< css::lang::XComponent >( xTopWindow, css::uno::UNO_QUERY );
+    xComponent.set( xTopWindow, css::uno::UNO_QUERY );
     if ( xComponent.is() )
         xComponent->dispose();
 
@@ -606,15 +606,11 @@ throw (css::lang::IndexOutOfBoundsException, css::uno::RuntimeException, std::ex
     TabControl* pTabControl = impl_GetTabControl( m_xTabControlWindow );
     if ( pTabControl )
     {
-        sal_uInt16 nCurTabId = pTabControl->GetCurPageId();
         sal_uInt16 nPos      = pTabControl->GetPagePos( sal_uInt16( ID ));
         if ( nPos == TAB_PAGE_NOTFOUND )
             throw css::lang::IndexOutOfBoundsException();
-        else
-        {
-            pTabControl->RemovePage( sal_uInt16( ID ));
-            nCurTabId = pTabControl->GetCurPageId();
-        }
+        pTabControl->RemovePage( sal_uInt16( ID ));
+        sal_uInt16 nCurTabId = pTabControl->GetCurPageId();
         aLock.clear();
         /* SAFE AREA ----------------------------------------------------------------------------------------------- */
 
@@ -694,11 +690,11 @@ throw (css::lang::IndexOutOfBoundsException, css::uno::RuntimeException, std::ex
             OUString aTitle = pTabControl->GetPageText( sal_uInt16( ID ));
                           nPos   = pTabControl->GetPagePos( sal_uInt16( ID ));
 
-            css::uno::Sequence< css::beans::NamedValue > aSeq( 2 );
-            aSeq[0].Name  = m_aTitlePropName;
-            aSeq[0].Value = css::uno::makeAny( aTitle );
-            aSeq[1].Name  = m_aPosPropName;
-            aSeq[1].Value = css::uno::makeAny( sal_Int32( nPos ));
+            css::uno::Sequence< css::beans::NamedValue > aSeq
+            {
+                { m_aTitlePropName, css::uno::makeAny( aTitle ) },
+                { m_aPosPropName,   css::uno::makeAny( sal_Int32( nPos )) }
+            };
             return aSeq;
         }
     }
@@ -806,7 +802,7 @@ throw( css::lang::IllegalArgumentException )
     {
         case TABWINDOW_PROPHANDLE_PARENTWINDOW :
             bReturn = PropHelper::willPropertyBeChanged(
-                        com::sun::star::uno::makeAny( m_xContainerWindow ),
+                        css::uno::makeAny( m_xContainerWindow ),
                         aValue,
                         aOldValue,
                         aConvertedValue);
@@ -814,7 +810,7 @@ throw( css::lang::IllegalArgumentException )
 
         case TABWINDOW_PROPHANDLE_TOPWINDOW :
             bReturn = PropHelper::willPropertyBeChanged(
-                        com::sun::star::uno::makeAny( m_xTopWindow ),
+                        css::uno::makeAny( m_xTopWindow ),
                         aValue,
                         aOldValue,
                         aConvertedValue);
@@ -850,15 +846,15 @@ void SAL_CALL TabWindow::getFastPropertyValue( css::uno::Any& aValue  ,
     // Optimize this method !
     // We initialize a static variable only one time. And we don't must use a mutex at every call!
     // For the first call; pInfoHelper is NULL - for the second call pInfoHelper is different from NULL!
-    static ::cppu::OPropertyArrayHelper* pInfoHelper = NULL;
+    static ::cppu::OPropertyArrayHelper* pInfoHelper = nullptr;
 
-    if( pInfoHelper == NULL )
+    if( pInfoHelper == nullptr )
     {
         // Ready for multithreading
         osl::MutexGuard aGuard( osl::Mutex::getGlobalMutex() );
 
         // Control this pointer again, another instance can be faster then these!
-        if( pInfoHelper == NULL )
+        if( pInfoHelper == nullptr )
         {
             // Define static member to give structure of properties to baseclass "OPropertySetHelper".
             // "impl_getStaticPropertyDescriptor" is a non exported and static function, who will define a static propertytable.
@@ -877,14 +873,14 @@ throw ( css::uno::RuntimeException, std::exception )
     // Optimize this method !
     // We initialize a static variable only one time. And we don't must use a mutex at every call!
     // For the first call; pInfo is NULL - for the second call pInfo is different from NULL!
-    static css::uno::Reference< css::beans::XPropertySetInfo >* pInfo = NULL;
+    static css::uno::Reference< css::beans::XPropertySetInfo >* pInfo = nullptr;
 
-    if( pInfo == NULL )
+    if( pInfo == nullptr )
     {
         // Ready for multithreading
         osl::MutexGuard aGuard( osl::Mutex::getGlobalMutex() );
         // Control this pointer again, another instance can be faster then these!
-        if( pInfo == NULL )
+        if( pInfo == nullptr )
         {
             // Create structure of propertysetinfo for baseclass "OPropertySetHelper".
             // (Use method "getInfoHelper()".)
@@ -905,18 +901,18 @@ const css::uno::Sequence< css::beans::Property > TabWindow::impl_getStaticProper
     // ATTENTION:
     //      YOU MUST SORT FOLLOW TABLE BY NAME ALPHABETICAL !!!
 
-    const com::sun::star::beans::Property pProperties[] =
+    const css::beans::Property pProperties[] =
     {
-        com::sun::star::beans::Property( TABWINDOW_PROPNAME_PARENTWINDOW,
+        css::beans::Property( TABWINDOW_PROPNAME_PARENTWINDOW,
                                          TABWINDOW_PROPHANDLE_PARENTWINDOW,
                                          cppu::UnoType<css::awt::XWindow>::get(),
-                                         com::sun::star::beans::PropertyAttribute::READONLY  ),
-        com::sun::star::beans::Property( TABWINDOW_PROPNAME_TOPWINDOW,
+                                         css::beans::PropertyAttribute::READONLY  ),
+        css::beans::Property( TABWINDOW_PROPNAME_TOPWINDOW,
                                          TABWINDOW_PROPHANDLE_TOPWINDOW,
                                          cppu::UnoType<css::awt::XWindow>::get(),
-                                         com::sun::star::beans::PropertyAttribute::READONLY  )
+                                         css::beans::PropertyAttribute::READONLY  )
     };  // Use it to initialize sequence!
-    const com::sun::star::uno::Sequence< com::sun::star::beans::Property > lPropertyDescriptor( pProperties, TABWINDOW_PROPCOUNT );
+    const css::uno::Sequence< css::beans::Property > lPropertyDescriptor( pProperties, TABWINDOW_PROPCOUNT );
 
     // Return "PropertyDescriptor"
     return lPropertyDescriptor;

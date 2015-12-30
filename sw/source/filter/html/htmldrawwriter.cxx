@@ -66,7 +66,7 @@ const sal_uInt32 HTML_FRMOPTS_MARQUEE_CSS1  =
 const SdrObject *SwHTMLWriter::GetMarqueeTextObj( const SwDrawFrameFormat& rFormat )
 {
     const SdrObject* pObj = rFormat.FindSdrObject();
-    return (pObj && ::IsMarqueeTextObj( *pObj )) ? pObj : 0;
+    return (pObj && ::IsMarqueeTextObj( *pObj )) ? pObj : nullptr;
 }
 
 void SwHTMLWriter::GetEEAttrsFromDrwObj( SfxItemSet& rItemSet,
@@ -158,7 +158,7 @@ Writer& OutHTML_DrawFrameFormatAsMarquee( Writer& rWrt,
             SDRTEXTANI_SLIDE==eAniKind,
             "Text-Draw-Objekt nicht fuer Marquee geeignet" );
 
-    const sal_Char *pStr = 0;
+    const sal_Char *pStr = nullptr;
     switch( eAniKind )
     {
     case SDRTEXTANI_SCROLL:     pStr = OOO_STRING_SVTOOLS_HTML_BEHAV_scroll;        break;
@@ -175,7 +175,7 @@ Writer& OutHTML_DrawFrameFormatAsMarquee( Writer& rWrt,
     }
 
     // DIRECTION
-    pStr = 0;
+    pStr = nullptr;
     SdrTextAniDirection eAniDir = pTextObj->GetTextAniDirection();
     switch( eAniDir )
     {
@@ -276,30 +276,30 @@ Writer& OutHTML_DrawFrameFormatAsMarquee( Writer& rWrt,
 
         sOut.append(' ').append(OOO_STRING_SVTOOLS_HTML_O_bgcolor).append("=");
         rWrt.Strm().WriteCharPtr( sOut.makeStringAndClear().getStr() );
-        HTMLOutFuncs::Out_Color( rWrt.Strm(), rFillColor, rHTMLWrt.eDestEnc );
+        HTMLOutFuncs::Out_Color( rWrt.Strm(), rFillColor, rHTMLWrt.m_eDestEnc );
     }
 
     if (!sOut.isEmpty())
         rWrt.Strm().WriteCharPtr( sOut.makeStringAndClear().getStr() );
 
     // und nun noch ALIGN, HSPACE und VSPACE
-    sal_uInt32 nFrmFlags = HTML_FRMOPTS_MARQUEE;
+    sal_uInt32 nFrameFlags = HTML_FRMOPTS_MARQUEE;
     if( rHTMLWrt.IsHTMLMode( HTMLMODE_ABS_POS_DRAW ) )
-        nFrmFlags |= HTML_FRMOPTS_MARQUEE_CSS1;
-    OString aEndTags = rHTMLWrt.OutFrameFormatOptions( rFormat, aEmptyOUStr, nFrmFlags );
+        nFrameFlags |= HTML_FRMOPTS_MARQUEE_CSS1;
+    OString aEndTags = rHTMLWrt.OutFrameFormatOptions( rFormat, aEmptyOUStr, nFrameFlags );
     if( rHTMLWrt.IsHTMLMode( HTMLMODE_ABS_POS_DRAW ) )
-        rHTMLWrt.OutCSS1_FrameFormatOptions( rFormat, nFrmFlags, &rSdrObject );
+        rHTMLWrt.OutCSS1_FrameFormatOptions( rFormat, nFrameFlags, &rSdrObject );
 
     rWrt.Strm().WriteChar( '>' );
 
     // Was jetzt kommt ist das Gegenstueck zu SdrTextObjectt::SetText()
-    Outliner aOutliner(0, OUTLINERMODE_TEXTOBJECT);
+    Outliner aOutliner(nullptr, OUTLINERMODE_TEXTOBJECT);
     aOutliner.SetUpdateMode( false );
     aOutliner.SetText( *pOutlinerParaObj );
     OUString aText( aOutliner.GetText( aOutliner.GetParagraph(0),
                                      aOutliner.GetParagraphCount() ) );
     HTMLOutFuncs::Out_String( rWrt.Strm(), aText,
-                                rHTMLWrt.eDestEnc, &rHTMLWrt.aNonConvertableCharacters );
+                                rHTMLWrt.m_eDestEnc, &rHTMLWrt.m_aNonConvertableCharacters );
 
     HTMLOutFuncs::Out_AsciiTag( rWrt.Strm(), OOO_STRING_SVTOOLS_HTML_marquee, false );
 

@@ -14,8 +14,6 @@
 #include <vector>
 #include <osl/time.h>
 
-#define LOK_USE_UNSTABLE_API
-
 #include <LibreOfficeKit/LibreOfficeKitInit.h>
 #include <LibreOfficeKit/LibreOfficeKit.hxx>
 
@@ -42,7 +40,7 @@ int main( int argc, char* argv[] )
         const char *mpName;
         double mfTime;
 
-        TimeRecord() : mpName(NULL), mfTime(getTimeNow()) { }
+        TimeRecord() : mpName(nullptr), mfTime(getTimeNow()) { }
         explicit TimeRecord(const char *pName) :
                        mpName(pName ), mfTime(getTimeNow()) { }
     };
@@ -62,7 +60,7 @@ int main( int argc, char* argv[] )
     Office *pOffice = lok_cpp_init(argv[1]);
     aTimes.push_back(TimeRecord());
 
-    if (argv[2] != NULL)
+    if (argv[2] != nullptr)
     {
         aTimes.push_back(TimeRecord("load document"));
         Document *pDocument(pOffice->documentLoad(argv[2]));
@@ -157,7 +155,7 @@ int main( int argc, char* argv[] )
     {
         double nDelta = aTimes[i+1].mfTime - aTimes[i].mfTime;
         fprintf (stderr, "  %s - %2.4f(ms)\n", aTimes[i].mpName, nDelta * 1000.0);
-        if (aTimes[i+1].mpName == NULL)
+        if (aTimes[i+1].mpName == nullptr)
             i++; // skip it.
         nTotal += nDelta;
     }

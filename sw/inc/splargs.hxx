@@ -22,12 +22,15 @@
 #include <i18nlangtag/lang.h>
 #include <tools/solar.h>
 #include <tools/gen.hxx>
-#include <limits.h>
 
 #include <com/sun/star/linguistic2/XSpellAlternatives.hpp>
 #include <com/sun/star/linguistic2/XSpellChecker1.hpp>
 #include <com/sun/star/linguistic2/XHyphenatedWord.hpp>
 
+#include <functional>
+#include <limits.h>
+
+class SwTextFrame;
 class SwTextNode;
 class SwIndex;
 namespace vcl { class Font; }
@@ -77,23 +80,21 @@ struct SwConversionArgs : SwArgsBase
           nConvSrcLang( nLang ),
           nConvTextLang( LANGUAGE_NONE ),
           nConvTargetLang( LANGUAGE_NONE ),
-          pTargetFont( NULL ),
+          pTargetFont( nullptr ),
           bAllowImplicitChangesForNotConvertibleText( false )
         {}
 };
 
 struct SwSpellArgs : SwArgsBase
 {
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::linguistic2::XSpellChecker1 >     xSpeller;
+    css::uno::Reference< css::linguistic2::XSpellChecker1 >     xSpeller;
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::linguistic2::XSpellAlternatives > xSpellAlt;
+    css::uno::Reference< css::linguistic2::XSpellAlternatives > xSpellAlt;
 
     bool bIsGrammarCheck;
 
-    SwSpellArgs(::com::sun::star::uno::Reference<
-            ::com::sun::star::linguistic2::XSpellChecker1 > &rxSplChk,
+    SwSpellArgs(css::uno::Reference<
+            css::linguistic2::XSpellChecker1 > &rxSplChk,
             SwTextNode* pStart, SwIndex& rStart,
             SwTextNode* pEnd, SwIndex& rEnd,
             bool bGrammar )
@@ -106,12 +107,12 @@ struct SwSpellArgs : SwArgsBase
 // Parameter-class for Hyphenate.
 // docedt.cxx:  SwDoc::Hyphenate()
 // txtedt.cxx:  SwTextNode::Hyphenate()
-// txthyph.cxx: SwTextFrm::Hyphenate()
+// txthyph.cxx: SwTextFrame::Hyphenate()
 
 class SwInterHyphInfo
 {
     css::uno::Reference< css::linguistic2::XHyphenatedWord >    xHyphWord;
-    const Point aCrsrPos;
+    const Point aCursorPos;
     bool bNoLang : 1;
     bool bCheck  : 1;
 public:
@@ -119,27 +120,24 @@ public:
     sal_Int32 nEnd;
     sal_Int32 nWordStart;
     sal_Int32 nWordLen;
-    sal_Int32 nHyphPos;
-    sal_uInt16 nMinTrail;
 
-    SwInterHyphInfo( const Point &rCrsrPos, sal_Int32 nStartPos = 0,
+    SwInterHyphInfo( const Point &rCursorPos, sal_Int32 nStartPos = 0,
         sal_Int32 nLength = SAL_MAX_INT32 )
-        : aCrsrPos(rCrsrPos)
+        : aCursorPos(rCursorPos)
         , bNoLang(false)
         , bCheck(false)
         , nStart(nStartPos)
         , nEnd(nLength == SAL_MAX_INT32 ? SAL_MAX_INT32 : nStartPos + nLength)
         , nWordStart(0), nWordLen(0)
-        , nHyphPos(0), nMinTrail(0)
     {
     }
     sal_Int32 GetEnd() const
     {
         return nEnd;
     }
-    const Point *GetCrsrPos() const
+    const Point *GetCursorPos() const
     {
-        return aCrsrPos.X() || aCrsrPos.Y() ? &aCrsrPos : 0;
+        return aCursorPos.X() || aCursorPos.Y() ? &aCursorPos : nullptr;
     }
     bool IsCheck() const { return bCheck; }
     void SetCheck( const bool bNew ) { bCheck = bNew; }
@@ -153,6 +151,14 @@ public:
         return xHyphWord;
     }
 };
+
+
+namespace sw {
+
+SwTextFrame *
+SwHyphIterCacheLastTextFrame(SwTextNode *, std::function<SwTextFrame * ()>);
+
+}
 
 #endif
 

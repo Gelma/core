@@ -278,7 +278,7 @@ SwGlossaries::~SwGlossaries()
 SwTextBlocks* SwGlossaries::GetGlosDoc( const OUString &rName, bool bCreate ) const
 {
     sal_uInt16 nPath = (sal_uInt16)rName.getToken(1, GLOS_DELIM).toInt32();
-    SwTextBlocks *pTmp = 0;
+    SwTextBlocks *pTmp = nullptr;
     if (static_cast<size_t>(nPath) < m_PathArr.size())
     {
         const OUString sFileURL =
@@ -468,7 +468,7 @@ void SwGlossaries::RemoveFileFromList( const OUString& rGroup )
                     {
                         Reference< lang::XUnoTunnel > xEntryTunnel( aLoop->get(), UNO_QUERY );
 
-                        SwXAutoTextEntry* pEntry = NULL;
+                        SwXAutoTextEntry* pEntry = nullptr;
                         if ( xEntryTunnel.is() )
                             pEntry = reinterpret_cast< SwXAutoTextEntry* >(
                                 xEntryTunnel->getSomething( SwXAutoTextEntry::getUnoTunnelId() ) );
@@ -536,7 +536,7 @@ void SwGlossaries::InvalidateUNOOjects()
         )
     {
         Reference< lang::XUnoTunnel > xEntryTunnel( aEntryLoop->get(), UNO_QUERY );
-        SwXAutoTextEntry* pEntry = NULL;
+        SwXAutoTextEntry* pEntry = nullptr;
         if ( xEntryTunnel.is() )
             pEntry = reinterpret_cast< SwXAutoTextEntry* >(
                 xEntryTunnel->getSomething( SwXAutoTextEntry::getUnoTunnelId() ) );
@@ -561,7 +561,7 @@ Reference< text::XAutoTextGroup > SwGlossaries::GetAutoTextGroup( const OUString
     {
         Reference< lang::XUnoTunnel > xGroupTunnel( aSearch->get(), UNO_QUERY );
 
-        SwXAutoTextGroup* pSwGroup = 0;
+        SwXAutoTextGroup* pSwGroup = nullptr;
         if ( xGroupTunnel.is() )
             pSwGroup = reinterpret_cast< SwXAutoTextGroup* >( xGroupTunnel->getSomething( SwXAutoTextGroup::getUnoTunnelId() ) );
 
@@ -596,7 +596,7 @@ Reference< text::XAutoTextGroup > SwGlossaries::GetAutoTextGroup( const OUString
     {
         xGroup = new SwXAutoTextGroup( sCompleteGroupName, this );
         // cache it
-        m_aGlossaryGroups.push_back( AutoTextGroupRef( xGroup ) );
+        m_aGlossaryGroups.push_back( css::uno::WeakReference< css::text::XAutoTextGroup >( xGroup ) );
     }
 
     return xGroup;
@@ -628,7 +628,7 @@ Reference< text::XAutoTextEntry > SwGlossaries::GetAutoTextEntry(
     {
         Reference< lang::XUnoTunnel > xEntryTunnel( aSearch->get(), UNO_QUERY );
 
-        SwXAutoTextEntry* pEntry = NULL;
+        SwXAutoTextEntry* pEntry = nullptr;
         if ( xEntryTunnel.is() )
             pEntry = reinterpret_cast< SwXAutoTextEntry* >( xEntryTunnel->getSomething( SwXAutoTextEntry::getUnoTunnelId() ) );
         else
@@ -654,7 +654,7 @@ Reference< text::XAutoTextEntry > SwGlossaries::GetAutoTextEntry(
     {
         xReturn = new SwXAutoTextEntry( this, rGroupName, rEntryName );
         // cache it
-        m_aGlossaryEntries.push_back( AutoTextEntryRef( xReturn ) );
+        m_aGlossaryEntries.push_back( css::uno::WeakReference< css::text::XAutoTextEntry >( xReturn ) );
     }
 
     return xReturn;

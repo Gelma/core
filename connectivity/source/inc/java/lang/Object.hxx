@@ -44,8 +44,8 @@ namespace connectivity
     class SDBThreadAttach
     {
         jvmaccess::VirtualMachine::AttachGuard m_aGuard;
-        SDBThreadAttach(SDBThreadAttach&) SAL_DELETED_FUNCTION;
-        SDBThreadAttach& operator= (SDBThreadAttach&) SAL_DELETED_FUNCTION;
+        SDBThreadAttach(SDBThreadAttach&) = delete;
+        SDBThreadAttach& operator= (SDBThreadAttach&) = delete;
     public:
         SDBThreadAttach();
         ~SDBThreadAttach();
@@ -66,8 +66,8 @@ namespace connectivity
 
     class  java_lang_Object
     {
-        java_lang_Object& operator= (java_lang_Object&) SAL_DELETED_FUNCTION;
-        java_lang_Object(java_lang_Object&) SAL_DELETED_FUNCTION;
+        java_lang_Object& operator= (java_lang_Object&) = delete;
+        java_lang_Object(java_lang_Object&) = delete;
 
     protected:
         // The Java handle to this class
@@ -103,7 +103,7 @@ namespace connectivity
         );
         static void ThrowRuntimeException(JNIEnv * pEnv,const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface> & _rContext);
 
-        static ::rtl::Reference< jvmaccess::VirtualMachine > getVM(const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& _rxContext=NULL);
+        static ::rtl::Reference< jvmaccess::VirtualMachine > getVM(const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& _rxContext=nullptr);
 
         static jclass   findMyClass(const char* _pClassName);
         void            obtainMethodId_throwSQL(JNIEnv* _pEnv, const char* _pMethodName, const char* _pSignature, jmethodID& _inout_MethodID) const;
@@ -135,7 +135,7 @@ namespace connectivity
             SDBThreadAttach t;
             obtainMethodId_throwSQL(t.pEnv, _pMethodName,_pSignature, _inout_MethodID);
             T out = (t.pEnv->*pCallMethod)( object, _inout_MethodID,_nArgument);
-            ThrowSQLException( t.pEnv, NULL );
+            ThrowSQLException( t.pEnv, nullptr );
             return out;
         }
 
@@ -145,7 +145,7 @@ namespace connectivity
             SDBThreadAttach t;
             obtainMethodId_throwSQL(t.pEnv, _pMethodName,_pSignature, _inout_MethodID);
             t.pEnv->CallVoidMethod( object, _inout_MethodID,_nArgument,_aValue);
-            ThrowSQLException( t.pEnv, NULL );
+            ThrowSQLException( t.pEnv, nullptr );
         }
 
 

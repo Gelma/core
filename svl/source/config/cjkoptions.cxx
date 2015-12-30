@@ -57,13 +57,13 @@ class SvtCJKOptions_Impl : public utl::ConfigItem
     bool        bROEmphasisMarks;
     bool        bROVerticalCallOut;
 
-    virtual void    ImplCommit() SAL_OVERRIDE;
+    virtual void    ImplCommit() override;
 
 public:
     SvtCJKOptions_Impl();
     virtual ~SvtCJKOptions_Impl();
 
-    virtual void    Notify( const com::sun::star::uno::Sequence< OUString >& rPropertyNames ) SAL_OVERRIDE;
+    virtual void    Notify( const css::uno::Sequence< OUString >& rPropertyNames ) override;
     void            Load();
 
     bool IsLoaded()                         { return bIsLoaded;         }
@@ -379,7 +379,7 @@ bool SvtCJKOptions_Impl::IsReadOnly(SvtCJKOptions::EOption eOption) const
 
 // global
 
-static SvtCJKOptions_Impl*  pCJKOptions = NULL;
+static SvtCJKOptions_Impl*  pCJKOptions = nullptr;
 static sal_Int32            nCJKRefCount = 0;
 namespace { struct theCJKOptionsMutex : public rtl::Static< ::osl::Mutex , theCJKOptionsMutex >{}; }
 

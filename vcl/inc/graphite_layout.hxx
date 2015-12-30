@@ -64,7 +64,7 @@ public:
         GrFontMap::const_iterator i = m_fonts.find(GrFontMapKey(ppm, styleKey));
         if (i != m_fonts.end())
             return i->second;
-        return NULL;
+        return nullptr;
     };
     void addFont(int ppm, gr_font * pFont, bool isBold, bool isItalic)
     {
@@ -104,40 +104,42 @@ private:
     const grutils::GrFeatureParser * mpFeatures;
 
 public:
-    GraphiteLayout(const gr_face * pFace, gr_font * pFont = NULL,
-        const grutils::GrFeatureParser * features = NULL) throw();
+    GraphiteLayout(const gr_face * pFace, gr_font * pFont = nullptr,
+        const grutils::GrFeatureParser * features = nullptr) throw();
 
     // used by upper layers
-    virtual bool  LayoutText( ImplLayoutArgs& ) SAL_OVERRIDE;    // first step of layout
+    virtual bool  LayoutText( ImplLayoutArgs& ) override;    // first step of layout
     // split into two stages to allow dc to be restored on the segment
 
-    virtual void  AdjustLayout( ImplLayoutArgs& ) SAL_OVERRIDE;  // adjusting positions
+    virtual void  AdjustLayout( ImplLayoutArgs& ) override;  // adjusting positions
 
     // methods using string indexing
-    virtual sal_Int32 GetTextBreak(DeviceCoordinate nMaxWidth, DeviceCoordinate nCharExtra=0, int nFactor=1) const SAL_OVERRIDE;
-    virtual DeviceCoordinate FillDXArray( DeviceCoordinate* pDXArray ) const SAL_OVERRIDE;
+    virtual sal_Int32 GetTextBreak(DeviceCoordinate nMaxWidth, DeviceCoordinate nCharExtra=0, int nFactor=1) const override;
+    virtual DeviceCoordinate FillDXArray( DeviceCoordinate* pDXArray ) const override;
     void  ApplyDXArray(ImplLayoutArgs &rArgs, std::vector<int> & rDeltaWidth);
 
-    virtual void  GetCaretPositions( int nArraySize, long* pCaretXArray ) const SAL_OVERRIDE;
+    virtual void  GetCaretPositions( int nArraySize, long* pCaretXArray ) const override;
 
     // methods using glyph indexing
     virtual int   GetNextGlyphs(int nLen, sal_GlyphId* pGlyphIdxAry, ::Point & rPos, int&,
-            long* pGlyphAdvAry = NULL, int* pCharPosAry = NULL,
-            const PhysicalFontFace** pFallbackFonts = NULL ) const SAL_OVERRIDE;
+            long* pGlyphAdvAry = nullptr, int* pCharPosAry = nullptr,
+            const PhysicalFontFace** pFallbackFonts = nullptr ) const override;
 
     // used by glyph+font+script fallback
-    virtual void    MoveGlyph( int nStart, long nNewXPos ) SAL_OVERRIDE;
-    virtual void    DropGlyph( int nStart ) SAL_OVERRIDE;
-    virtual void    Simplify( bool bIsBase ) SAL_OVERRIDE;
+    virtual void    MoveGlyph( int nStart, long nNewXPos ) override;
+    virtual void    DropGlyph( int nStart ) override;
+    virtual void    Simplify( bool bIsBase ) override;
 
     // Dummy implementation so layout can be shared between Linux/Windows
-    virtual void    DrawText(SalGraphics&) const SAL_OVERRIDE {};
+    virtual void    DrawText(SalGraphics&) const override {};
 
     virtual ~GraphiteLayout() throw();
     void SetFont(gr_font * pFont) { mpFont = pFont; }
+#ifdef WNT
     gr_font * GetFont() { return mpFont; }
-    void SetFeatures(grutils::GrFeatureParser * aFeature) { mpFeatures = aFeature; }
     void SetFontScale(float s) { mfScaling = s; };
+#endif
+    void SetFeatures(grutils::GrFeatureParser * aFeature) { mpFeatures = aFeature; }
     virtual sal_GlyphId getKashidaGlyph(int & width) = 0;
     void kashidaJustify(std::vector<int> & rDeltaWidth, sal_GlyphId, int width);
 
@@ -151,7 +153,7 @@ private:
                 const gr_slot * pSlot, float gOrigin,
                 float nextGlyphOrigin, float fScaling,
                 long & rDXOffset, bool bIsBase, int baseChar, int baseGlyph, bool bRtl);
-    int ScanFwdForChar(int &findChar, bool fallback) const;
+    unsigned int ScanFwdForChar(int &findChar, bool fallback) const;
 };
 
 #endif // INCLUDED_VCL_INC_GRAPHITE_LAYOUT_HXX

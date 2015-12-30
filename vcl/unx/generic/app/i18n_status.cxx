@@ -62,7 +62,7 @@ public:
 }
 
 StatusWindow::StatusWindow( WinBits nWinBits ) :
-        WorkWindow( NULL, nWinBits )
+        WorkWindow( nullptr, nWinBits )
 {
 }
 
@@ -97,14 +97,14 @@ public:
     explicit XIMStatusWindow( bool bOn );
     virtual ~XIMStatusWindow();
 
-    virtual void setPosition( SalFrame* ) SAL_OVERRIDE;
-    virtual void setText( const OUString & ) SAL_OVERRIDE;
-    virtual void show( bool bShow, I18NStatus::ShowReason eReason ) SAL_OVERRIDE;
-    virtual void toggle( bool bOn ) SAL_OVERRIDE;
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void setPosition( SalFrame* ) override;
+    virtual void setText( const OUString & ) override;
+    virtual void show( bool bShow, I18NStatus::ShowReason eReason ) override;
+    virtual void toggle( bool bOn ) override;
+    virtual void dispose() override;
 
     // override WorkWindow::DataChanged
-    virtual void DataChanged( const DataChangedEvent& rEvt ) SAL_OVERRIDE;
+    virtual void DataChanged( const DataChangedEvent& rEvt ) override;
 };
 
 }
@@ -112,11 +112,11 @@ public:
 XIMStatusWindow::XIMStatusWindow( bool bOn ) :
         StatusWindow( WB_BORDER | WB_SYSTEMFLOATWIN | WB_TOOLTIPWIN ),
         m_aStatusText(VclPtr<FixedText>::Create(this, 0)),
-        m_pLastParent( NULL ),
+        m_pLastParent( nullptr ),
         m_bAnchoredAtRight( false ),
         m_bDelayedShow( false ),
         m_eDelayedReason( I18NStatus::contextmap ),
-        m_nDelayedEvent( 0 ),
+        m_nDelayedEvent( nullptr ),
         m_bOn( bOn )
 {
     layout();
@@ -154,7 +154,7 @@ void XIMStatusWindow::layout()
 
     m_aStatusText->SetPosSizePixel( Point( 1, 1 ), aControlSize );
     m_aStatusText->SetFont( aFont );
-    m_aStatusText->Show( true );
+    m_aStatusText->Show();
 
     if (m_bAnchoredAtRight && IsVisible())
     {
@@ -260,7 +260,7 @@ void XIMStatusWindow::setPosition( SalFrame* pParent )
 
 IMPL_LINK_NOARG_TYPED(XIMStatusWindow, DelayedShowHdl, void*, void)
 {
-    m_nDelayedEvent = 0;
+    m_nDelayedEvent = nullptr;
     const SystemEnvData* pData = GetSystemData();
     SalFrame* pStatusFrame = static_cast<SalFrame*>(pData->pSalFrame);
     if( m_bDelayedShow )
@@ -286,7 +286,7 @@ void XIMStatusWindow::show( bool bShow, I18NStatus::ShowReason eReason )
     m_bDelayedShow = bShow;
     m_eDelayedReason = eReason;
     if( ! m_nDelayedEvent )
-        m_nDelayedEvent = Application::PostUserEvent( LINK( this, XIMStatusWindow, DelayedShowHdl ), NULL, true );
+        m_nDelayedEvent = Application::PostUserEvent( LINK( this, XIMStatusWindow, DelayedShowHdl ), nullptr, true );
 }
 
 void XIMStatusWindow::setText( const OUString& rText )
@@ -312,17 +312,17 @@ class IIIMPStatusWindow : public StatusWindow
 public:
     IIIMPStatusWindow( SalFrame* pParent, bool bOn ); // for initial position
 
-    virtual void setText( const OUString & ) SAL_OVERRIDE;
-    virtual void show( bool bShow, I18NStatus::ShowReason eReason ) SAL_OVERRIDE;
-    virtual void toggle( bool bOn ) SAL_OVERRIDE;
+    virtual void setText( const OUString & ) override;
+    virtual void show( bool bShow, I18NStatus::ShowReason eReason ) override;
+    virtual void toggle( bool bOn ) override;
     virtual ~IIIMPStatusWindow() { disposeOnce(); }
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
     void layout();
 
     // override Window focus handler
-    virtual void        GetFocus() SAL_OVERRIDE;
+    virtual void        GetFocus() override;
     // override WorkWindow::DataChanged
-    virtual void DataChanged( const DataChangedEvent& rEvt ) SAL_OVERRIDE;
+    virtual void DataChanged( const DataChangedEvent& rEvt ) override;
 };
 
 }
@@ -334,13 +334,13 @@ IIIMPStatusWindow::IIIMPStatusWindow( SalFrame* pParent, bool bOn ) :
         m_bShow( true ),
         m_bOn( bOn )
 {
-    SetText( OUString( "IME Status" ) );
+    SetText( "IME Status" );
 
     layout();
 
     m_aStatusBtn->SetSelectHdl( LINK( this, IIIMPStatusWindow, SelectHdl ) );
     m_aStatusBtn->SetPopupMenu( &m_aMenu );
-    m_aStatusBtn->Show( true );
+    m_aStatusBtn->Show();
 
     const ::std::vector< I18NStatus::ChoiceData >& rChoices( I18NStatus::get().getChoices() );
     int i = 1;
@@ -455,7 +455,7 @@ void IIIMPStatusWindow::GetFocus()
             XSync( static_cast<Display*>(pParentEnvData->pDisplay), False );
             GetGenericData()->ErrorTrapPop();
         }
-        m_pResetFocus = NULL;
+        m_pResetFocus = nullptr;
     }
 }
 
@@ -470,7 +470,7 @@ IMPL_LINK_TYPED( IIIMPStatusWindow, SelectHdl, MenuButton*, pBtn, void )
             XSetICValues( static_cast<X11SalFrame*>(I18NStatus::get().getParent())->getInputContext()->GetContext(),
                           XNUnicodeCharacterSubset,
                           rChoices[nIndex].pData,
-                          NULL);
+                          nullptr);
             // FIXME: get rid of X11SalFrame
             X11SalFrame* pParent = static_cast<X11SalFrame*>(I18NStatus::get().getParent());
             if( pParent && pParent->isMapped() )
@@ -493,37 +493,37 @@ IMPL_LINK_TYPED( IIIMPStatusWindow, SelectHdl, MenuButton*, pBtn, void )
  *  I18NStatus
  */
 
-I18NStatus* I18NStatus::pInstance = NULL;
+static I18NStatus* g_pI18NStatusInstance = nullptr;
 
 I18NStatus& I18NStatus::get()
 {
-    if( ! pInstance )
-        pInstance = new I18NStatus();
-    return *pInstance;
+    if (!g_pI18NStatusInstance)
+        g_pI18NStatusInstance = new I18NStatus();
+    return *g_pI18NStatusInstance;
 }
 
 bool I18NStatus::exists()
 {
-    return pInstance != NULL;
+    return g_pI18NStatusInstance != nullptr;
 }
 
 void I18NStatus::free()
 {
-    if( pInstance )
-        delete pInstance, pInstance = NULL;
+    if (g_pI18NStatusInstance)
+        delete g_pI18NStatusInstance, g_pI18NStatusInstance = nullptr;
 }
 
 I18NStatus::I18NStatus() :
-        m_pParent( NULL ),
-        m_pStatusWindow( NULL )
+        m_pParent( nullptr ),
+        m_pStatusWindow( nullptr )
 {
 }
 
 I18NStatus::~I18NStatus()
 {
     m_pStatusWindow.disposeAndClear();
-    if( pInstance == this )
-        pInstance = NULL;
+    if( g_pI18NStatusInstance == this )
+        g_pI18NStatusInstance = nullptr;
 }
 
 void I18NStatus::setParent( SalFrame* pParent )
@@ -586,14 +586,9 @@ void I18NStatus::setStatusText( const OUString& rText )
     }
 }
 
-void I18NStatus::changeIM( const OUString& rIM )
-{
-    m_aCurrentIM = rIM;
-}
-
 SalFrame* I18NStatus::getStatusFrame() const
 {
-    SalFrame* pRet = NULL;
+    SalFrame* pRet = nullptr;
     if( m_pStatusWindow )
     {
         const SystemEnvData* pData = m_pStatusWindow->GetSystemData();

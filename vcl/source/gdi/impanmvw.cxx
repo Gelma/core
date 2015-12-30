@@ -165,7 +165,7 @@ void ImplAnimView::drawToPos( sal_uLong nPos )
     }
 
     ScopedVclPtrInstance<VirtualDevice> aVDev;
-    std::unique_ptr<vcl::Region> xOldClip(!maClip.IsNull() ? new vcl::Region( pRenderContext->GetClipRegion() ) : NULL);
+    std::unique_ptr<vcl::Region> xOldClip(!maClip.IsNull() ? new vcl::Region( pRenderContext->GetClipRegion() ) : nullptr);
 
     aVDev->SetOutputSizePixel( maSzPix, false );
     nPos = std::min( nPos, (sal_uLong) mpParent->Count() - 1UL );
@@ -283,7 +283,7 @@ void ImplAnimView::draw( sal_uLong nPos, VirtualDevice* pVDev )
 
         if( !pVDev )
         {
-            std::unique_ptr<vcl::Region> xOldClip(!maClip.IsNull() ? new vcl::Region( pRenderContext->GetClipRegion() ) : NULL);
+            std::unique_ptr<vcl::Region> xOldClip(!maClip.IsNull() ? new vcl::Region( pRenderContext->GetClipRegion() ) : nullptr);
 
             if (xOldClip)
                 pRenderContext->SetClipRegion( maClip );
@@ -301,7 +301,7 @@ void ImplAnimView::draw( sal_uLong nPos, VirtualDevice* pVDev )
             pDev.disposeAndClear();
 
             if( pRenderContext->GetOutDevType() == OUTDEV_WINDOW )
-                static_cast<vcl::Window*>( pRenderContext.get() )->Sync();
+                static_cast<vcl::Window*>( pRenderContext.get() )->Flush();
         }
     }
 }

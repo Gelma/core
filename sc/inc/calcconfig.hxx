@@ -20,6 +20,8 @@
 #include <formula/opcode.hxx>
 #include <rtl/ustring.hxx>
 
+#include <comphelper/configurationlistener.hxx>
+
 // have to match the registry values
 enum ScRecalcOptions
 {
@@ -46,6 +48,9 @@ struct SC_DLLPUBLIC ScCalcConfig
     bool mbEmptyStringAsZero:1;
     bool mbHasStringRefSyntax:1;
 
+    static bool isOpenCLEnabled();
+    static bool isSwInterpreterEnabled();
+
     bool mbOpenCLSubsetOnly:1;
     bool mbOpenCLAutoSelect:1;
     OUString maOpenCLDevice;
@@ -54,6 +59,7 @@ struct SC_DLLPUBLIC ScCalcConfig
     typedef std::shared_ptr<std::set<OpCode>> OpCodeSet;
 
     OpCodeSet mpOpenCLSubsetOpCodes;
+    OpCodeSet mpSwInterpreterSubsetOpCodes;
 
     ScCalcConfig();
 
@@ -66,8 +72,6 @@ struct SC_DLLPUBLIC ScCalcConfig
     bool operator== (const ScCalcConfig& r) const;
     bool operator!= (const ScCalcConfig& r) const;
 };
-
-SC_DLLPUBLIC std::ostream& operator<<(std::ostream& rStream, const ScCalcConfig& rConfig);
 
 SC_DLLPUBLIC OUString ScOpCodeSetToSymbolicString(const ScCalcConfig::OpCodeSet& rOpCodes);
 SC_DLLPUBLIC ScCalcConfig::OpCodeSet ScStringToOpCodeSet(const OUString& rOpCodes);

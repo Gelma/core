@@ -21,10 +21,12 @@
 
 #include <tools/solar.h>
 #include <tools/color.hxx>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <o3tl/sorted_vector.hxx>
 
 #include <swdllapi.h>
+
+#include <memory>
+#include <vector>
 
 class SwTableBox;
 class SwTableLine;
@@ -89,11 +91,11 @@ public:
     bool HasPrcWidthOpt() const { return bPrcWidthOpt; }
 };
 
-typedef boost::ptr_vector<SwWriteTableCell> SwWriteTableCells;
+typedef std::vector<std::unique_ptr<SwWriteTableCell>> SwWriteTableCells;
 
 class SW_DLLPUBLIC SwWriteTableRow
 {
-    SwWriteTableCells aCells;       // Alle Zellen der Rows
+    SwWriteTableCells m_Cells; ///< All cells of the Rows
     const SvxBrushItem *pBackground;// Hintergrund
 
     long nPos;                  // End-Position (twips) der Zeile
@@ -102,7 +104,7 @@ class SW_DLLPUBLIC SwWriteTableRow
     // Forbidden and not implemented.
     SwWriteTableRow();
 
-    SwWriteTableRow & operator= (const SwWriteTableRow &) SAL_DELETED_FUNCTION;
+    SwWriteTableRow & operator= (const SwWriteTableRow &) = delete;
 
 protected:
     // GCC >= 3.4 needs accessible T (const T&) to pass T as const T& argument.
@@ -133,7 +135,7 @@ public:
     bool HasTopBorder() const                   { return bTopBorder; }
     bool HasBottomBorder() const                { return bBottomBorder; }
 
-    const SwWriteTableCells& GetCells() const   { return aCells; }
+    const SwWriteTableCells& GetCells() const   { return m_Cells; }
 
     inline bool operator==( const SwWriteTableRow& rRow ) const;
     inline bool operator<( const SwWriteTableRow& rRow2 ) const;
@@ -234,7 +236,7 @@ protected:
 
     sal_uInt16 nBorder;             // Dicke der ausseren Umrandung
     sal_uInt16 nInnerBorder;        // Dicke der inneren Umrandung
-    sal_uInt32 nBaseWidth;            // Bezugsgroesse fur Breiten SwFormatFrmSize
+    sal_uInt32 nBaseWidth;            // Bezugsgroesse fur Breiten SwFormatFrameSize
 
     sal_uInt16 nHeadEndRow;         // letzte Zeile des Tabellen-Kopfes
 
@@ -249,7 +251,6 @@ protected:
     bool m_bGetLineHeightCalled : 1;
 #endif
 
-    bool bColsOption : 1;
     bool bColTags : 1;
     bool bLayoutExport : 1;
     bool bCollectBorderWidth : 1;

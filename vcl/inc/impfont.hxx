@@ -100,10 +100,11 @@ private:
     long                mnExtLeading;  // External Leading
     long                mnLineHeight;  // Ascent+Descent+EmphasisMark
     long                mnSlant;       // Slant
+    long                mnBulletOffset;// Offset for non-priting character
     sal_uInt16          mnMiscFlags;   // Misc Flags
     sal_uInt32          mnRefCount;    // Reference Counter
 
-    enum { DEVICE_FLAG=1, SCALABLE_FLAG=2, LATIN_FLAG=4, CJK_FLAG=8, CTL_FLAG=16 };
+    enum { DEVICE_FLAG=1, SCALABLE_FLAG=2, LATIN_FLAG=4, CJK_FLAG=8, CTL_FLAG=16, FULLSTOP_CENTERED_FLAG=32 };
 
 public:
                         ImplFontMetric();
@@ -116,16 +117,16 @@ public:
     long                GetExtLeading() const   { return mnExtLeading; }
     long                GetLineHeight() const   { return mnLineHeight; }
     long                GetSlant() const        { return mnSlant; }
+    bool                IsFullstopCentered() const { return  ((mnMiscFlags & FULLSTOP_CENTERED_FLAG ) != 0); }
 
+    long                GetBulletOffset() const { return mnBulletOffset; }
     bool                IsScalable() const      { return ((mnMiscFlags & SCALABLE_FLAG) != 0); }
-    bool                SupportsCJK() const     { return ((mnMiscFlags & CJK_FLAG) != 0); }
 
     bool                operator==( const ImplFontMetric& ) const;
 };
 
-// - ImplFontOptions -
-
-class ImplFontOptions
+typedef struct _FcPattern   FcPattern;
+class FontConfigFontOptions
 {
 public:
     FontEmbeddedBitmap meEmbeddedBitmap; // whether the embedded bitmaps should be used
@@ -133,21 +134,31 @@ public:
     FontAutoHint       meAutoHint;       // whether the font should be autohinted
     FontHinting        meHinting;        // whether the font should be hinted
     FontHintStyle      meHintStyle;      // type of font hinting to be used
-public:
-                        ImplFontOptions() :
+
+                        FontConfigFontOptions() :
                             meEmbeddedBitmap(EMBEDDEDBITMAP_DONTKNOW),
                             meAntiAlias(ANTIALIAS_DONTKNOW),
                             meAutoHint(AUTOHINT_DONTKNOW),
                             meHinting(HINTING_DONTKNOW),
-                            meHintStyle(HINT_SLIGHT) {}
-    virtual             ~ImplFontOptions() {}
+                            meHintStyle(HINT_SLIGHT),
+                            mpPattern(nullptr) {}
+                        FontConfigFontOptions(FcPattern* pPattern) :
+                            meEmbeddedBitmap(EMBEDDEDBITMAP_DONTKNOW),
+                            meAntiAlias(ANTIALIAS_DONTKNOW),
+                            meAutoHint(AUTOHINT_DONTKNOW),
+                            meHinting(HINTING_DONTKNOW),
+                            meHintStyle(HINT_SLIGHT),
+                            mpPattern(pPattern) {}
+                        ~FontConfigFontOptions();
 
     FontAutoHint        GetUseAutoHint() const { return meAutoHint; }
     FontHintStyle       GetHintStyle() const { return meHintStyle; }
     bool                DontUseEmbeddedBitmaps() const { return meEmbeddedBitmap == EMBEDDEDBITMAP_FALSE; }
     bool                DontUseAntiAlias() const { return meAntiAlias == ANTIALIAS_FALSE; }
     bool                DontUseHinting() const { return (meHinting == HINTING_FALSE) || (GetHintStyle() == HINT_NONE); }
-    virtual void*       GetPattern(void * /*pFace*/, bool /*bEmbolden*/, bool /*bVerticalMetrics*/) const { return NULL; }
+    void*               GetPattern(void * /*pFace*/, bool /*bEmbolden*/) const;
+private:
+    FcPattern* mpPattern;
 };
 
 // - ImplFontCharMap -
@@ -165,8 +176,8 @@ private:
     friend void intrusive_ptr_add_ref(ImplFontCharMap* pImplFontCharMap);
     friend void intrusive_ptr_release(ImplFontCharMap* pImplFontCharMap);
 
-                        ImplFontCharMap( const ImplFontCharMap& ) SAL_DELETED_FUNCTION;
-    void                operator=( const ImplFontCharMap& ) SAL_DELETED_FUNCTION;
+                        ImplFontCharMap( const ImplFontCharMap& ) = delete;
+    void                operator=( const ImplFontCharMap& ) = delete;
 
     static ImplFontCharMapPtr getDefaultMap( bool bSymbols=false);
     bool                isDefaultMap() const;
@@ -196,8 +207,8 @@ class VCL_PLUGIN_PUBLIC CmapResult
 {
 public:
     explicit            CmapResult( bool bSymbolic = false,
-                            const sal_uInt32* pRangeCodes = NULL, int nRangeCount = 0,
-                            const int* pStartGlyphs = 0, const sal_uInt16* pGlyphIds = NULL );
+                            const sal_uInt32* pRangeCodes = nullptr, int nRangeCount = 0,
+                            const int* pStartGlyphs = nullptr, const sal_uInt16* pGlyphIds = nullptr );
 
     const sal_uInt32*   mpRangeCodes;
     const int*          mpStartGlyphs;
@@ -208,8 +219,6 @@ public:
 };
 
 bool ParseCMAP( const unsigned char* pRawData, int nRawLength, CmapResult& );
-
-void UpdateAttributesFromPSName( const OUString& rPSName, ImplDevFontAttributes& );
 
 #endif // INCLUDED_VCL_INC_IMPFONT_HXX
 

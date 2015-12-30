@@ -44,7 +44,7 @@ namespace svx
 
 SvxShowCharSetVirtualAcc::SvxShowCharSetVirtualAcc( SvxShowCharSet* pParent ) : OAccessibleComponentHelper(new VCLExternalSolarLock())
 ,mpParent( pParent )
-,m_pTable(NULL)
+,m_pTable(nullptr)
 {
     osl_atomic_increment(&m_refCount);
     {
@@ -66,8 +66,8 @@ IMPLEMENT_FORWARD_XTYPEPROVIDER2( SvxShowCharSetVirtualAcc, OAccessibleComponent
 
 void SAL_CALL SvxShowCharSetVirtualAcc::fireEvent(
                     const sal_Int16 _nEventId,
-                    const ::com::sun::star::uno::Any& _rOldValue,
-                    const ::com::sun::star::uno::Any& _rNewValue
+                    const css::uno::Any& _rOldValue,
+                    const css::uno::Any& _rNewValue
                 )
 {
     if ( m_pTable )
@@ -148,19 +148,19 @@ Reference< XAccessible > SAL_CALL SvxShowCharSetVirtualAcc::getAccessibleParent(
     return xRet;
 }
 
-::com::sun::star::awt::Rectangle SvxShowCharSetVirtualAcc::implGetBounds(  ) throw (RuntimeException)
+css::awt::Rectangle SvxShowCharSetVirtualAcc::implGetBounds(  ) throw (RuntimeException)
 {
-    ::com::sun::star::awt::Rectangle aBounds ( 0, 0, 0, 0 );
+    css::awt::Rectangle aBounds ( 0, 0, 0, 0 );
     vcl::Window* pWindow = mpParent;
     if ( pWindow )
     {
-        Rectangle aRect = pWindow->GetWindowExtentsRelative( NULL );
+        Rectangle aRect = pWindow->GetWindowExtentsRelative( nullptr );
         aBounds = AWTRectangle( aRect );
         vcl::Window* pParent = pWindow->GetAccessibleParentWindow();
         if ( pParent )
         {
-            Rectangle aParentRect = pParent->GetWindowExtentsRelative( NULL );
-            ::com::sun::star::awt::Point aParentScreenLoc = AWTPoint( aParentRect.TopLeft() );
+            Rectangle aParentRect = pParent->GetWindowExtentsRelative( nullptr );
+            css::awt::Point aParentScreenLoc = AWTPoint( aParentRect.TopLeft() );
             aBounds.X -= aParentScreenLoc.X;
             aBounds.Y -= aParentScreenLoc.Y;
         }
@@ -221,7 +221,7 @@ void SAL_CALL SvxShowCharSetVirtualAcc::disposing()
     OAccessibleContextHelper::disposing();
     if ( m_pTable )
         m_pTable->dispose();
-    m_pTable = NULL;
+    m_pTable = nullptr;
 }
 
 
@@ -231,7 +231,7 @@ void SAL_CALL SvxShowCharSetVirtualAcc::disposing()
 SvxShowCharSetItem::SvxShowCharSetItem( SvxShowCharSet& rParent,SvxShowCharSetAcc*  _pParent,sal_uInt16 _nPos ) :
     mrParent( rParent )
     ,mnId( _nPos )
-    ,m_pItem(NULL)
+    ,m_pItem(nullptr)
     ,m_pParent(_pParent)
 {
 }
@@ -265,8 +265,8 @@ void SvxShowCharSetItem::ClearAccessible()
 {
     if ( m_xAcc.is() )
     {
-        m_pItem = NULL;
-        m_xAcc  = NULL;
+        m_pItem = nullptr;
+        m_xAcc  = nullptr;
     }
 }
 
@@ -302,7 +302,7 @@ void SAL_CALL SvxShowCharSetAcc::disposing()
         ::comphelper::disposeComponent(*aIter);
 
     m_aChildren.clear();
-    m_pParent = NULL;
+    m_pParent = nullptr;
 }
 
 
@@ -328,7 +328,7 @@ void SvxShowCharSetAcc::implSelect(sal_Int32 nAccessibleChildIndex, bool bSelect
     }
 }
 
-::com::sun::star::awt::Rectangle SvxShowCharSetAcc::implGetBounds(  ) throw (RuntimeException)
+css::awt::Rectangle SvxShowCharSetAcc::implGetBounds(  ) throw (RuntimeException)
 {
     const Point   aOutPos;//( m_pParent->getCharSetControl()->GetPosPixel() );
     Size          aOutSize( m_pParent->getCharSetControl()->GetOutputSizePixel());
@@ -632,7 +632,7 @@ IMPLEMENT_FORWARD_XTYPEPROVIDER2( SvxShowCharSetItemAcc, OAccessibleComponentHel
 void SvxShowCharSetItemAcc::ParentDestroyed()
 {
     const ::osl::MutexGuard aGuard( GetMutex() );
-    mpParent = NULL;
+    mpParent = nullptr;
 }
 
 

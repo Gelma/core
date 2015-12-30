@@ -31,9 +31,6 @@ class SwWrtShell;
 class SW_DLLPUBLIC SwDBTreeList : public SvTreeListBox
 {
     ImageList       aImageList;
-    Image           aDBBMP;
-    Image           aTableBMP;
-    Image           aQueryBMP;
 
     OUString        sDefDBName;
     bool            bInitialized;
@@ -44,20 +41,20 @@ class SW_DLLPUBLIC SwDBTreeList : public SvTreeListBox
     DECL_DLLPRIVATE_LINK_TYPED( DBCompare, const SvSortData&, sal_Int32 );
 
     SAL_DLLPRIVATE void          InitTreeList();
-    SAL_DLLPRIVATE virtual void  RequestingChildren( SvTreeListEntry* pParent ) SAL_OVERRIDE;
+    SAL_DLLPRIVATE virtual void  RequestingChildren( SvTreeListEntry* pParent ) override;
 
-    SAL_DLLPRIVATE virtual sal_Int8 AcceptDrop( const AcceptDropEvent& rEvt ) SAL_OVERRIDE;
-    SAL_DLLPRIVATE virtual void  StartDrag( sal_Int8 nAction, const Point& rPosPixel ) SAL_OVERRIDE;
+    SAL_DLLPRIVATE virtual sal_Int8 AcceptDrop( const AcceptDropEvent& rEvt ) override;
+    SAL_DLLPRIVATE virtual void  StartDrag( sal_Int8 nAction, const Point& rPosPixel ) override;
 
     using SvTreeListBox::Select;
 
 public:
     SwDBTreeList(vcl::Window* pParent, WinBits nStyle);
     virtual ~SwDBTreeList();
-    virtual void dispose() SAL_OVERRIDE;
-    virtual Size GetOptimalSize() const SAL_OVERRIDE;
+    virtual void dispose() override;
+    virtual Size GetOptimalSize() const override;
 
-    OUString GetDBName( OUString& rTableName, OUString& rColumnName, sal_Bool* pbIsTable = 0);
+    OUString GetDBName( OUString& rTableName, OUString& rColumnName, sal_Bool* pbIsTable = nullptr);
 
     void    Select( const OUString& rDBName, const OUString& rTableName,
                     const OUString& rColumnName );

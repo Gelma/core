@@ -123,8 +123,8 @@ public:
                         ScModule( SfxObjectFactory* pFact );
     virtual            ~ScModule();
 
-    virtual void        Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
-    virtual void        ConfigurationChanged( utl::ConfigurationBroadcaster*, sal_uInt32 ) SAL_OVERRIDE;
+    virtual void        Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
+    virtual void        ConfigurationChanged( utl::ConfigurationBroadcaster*, sal_uInt32 ) override;
     void                DeleteCfg();
 
                         // moved by the application
@@ -203,13 +203,13 @@ public:
     // InputHandler:
     bool                IsEditMode();   // not for SC_INPUT_TYPE
     bool                IsInputMode();  // also for SC_INPUT_TYPE
-    void                SetInputMode( ScInputMode eMode, const OUString* pInitText = NULL );
+    void                SetInputMode( ScInputMode eMode, const OUString* pInitText = nullptr );
     bool                InputKeyEvent( const KeyEvent& rKEvt, bool bStartEdit = false );
     SC_DLLPUBLIC void   InputEnterHandler( ScEnterMode nBlockMode = ScEnterMode::NORMAL );
     void                InputCancelHandler();
     void                InputSelection( EditView* pView );
     void                InputChanged( EditView* pView );
-    ScInputHandler*     GetInputHdl( ScTabViewShell* pViewSh = NULL, bool bUseRef = true );
+    ScInputHandler*     GetInputHdl( ScTabViewShell* pViewSh = nullptr, bool bUseRef = true );
 
     void                SetRefInputHdl( ScInputHandler* pNew );
     ScInputHandler*     GetRefInputHdl() { return pRefInputHandler;}
@@ -222,7 +222,7 @@ public:
     void                InputReplaceSelection( const OUString& rStr );
     void                InputTurnOffWinEngine();
     OUString            InputGetFormulaStr();
-    void                ActivateInputWindow( const OUString* pStr = NULL,
+    void                ActivateInputWindow( const OUString* pStr = nullptr,
                                                 bool bMatrix = false );
 
     void                InitFormEditData();
@@ -230,21 +230,21 @@ public:
     ScFormEditData*     GetFormEditData()       { return pFormEditData; }
 
     // input of reference:
-    SC_DLLPUBLIC void   SetRefDialog( sal_uInt16 nId, bool bVis, SfxViewFrame* pViewFrm = NULL );
-    bool                IsModalMode(SfxObjectShell* pDocSh = NULL);
+    SC_DLLPUBLIC void   SetRefDialog( sal_uInt16 nId, bool bVis, SfxViewFrame* pViewFrm = nullptr );
+    bool                IsModalMode(SfxObjectShell* pDocSh = nullptr);
     bool                IsFormulaMode();
     bool                IsRefDialogOpen();
     bool                IsTableLocked();
     void                SetReference( const ScRange& rRef, ScDocument* pDoc,
-                                        const ScMarkData* pMarkData = NULL );
+                                        const ScMarkData* pMarkData = nullptr );
     void                AddRefEntry();
     void                EndReference();
     sal_uInt16          GetCurRefDlgId() const                  { return nCurRefDlgId; }
 
     // virtual methods for the options dialog
-    virtual SfxItemSet*  CreateItemSet( sal_uInt16 nId ) SAL_OVERRIDE;
-    virtual void         ApplyItemSet( sal_uInt16 nId, const SfxItemSet& rSet ) SAL_OVERRIDE;
-    virtual VclPtr<SfxTabPage> CreateTabPage( sal_uInt16 nId, vcl::Window* pParent, const SfxItemSet& rSet ) SAL_OVERRIDE;
+    virtual SfxItemSet*  CreateItemSet( sal_uInt16 nId ) override;
+    virtual void         ApplyItemSet( sal_uInt16 nId, const SfxItemSet& rSet ) override;
+    virtual VclPtr<SfxTabPage> CreateTabPage( sal_uInt16 nId, vcl::Window* pParent, const SfxItemSet& rSet ) override;
 
     void                SetInSharedDocLoading( bool bNew )  { mbIsInSharedDocLoading = bNew; }
     bool                IsInSharedDocLoading() const        { return mbIsInSharedDocLoading; }

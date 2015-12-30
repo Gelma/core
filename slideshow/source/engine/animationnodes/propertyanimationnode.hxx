@@ -28,19 +28,18 @@ class PropertyAnimationNode : public AnimationBaseNode
 {
 public:
     PropertyAnimationNode(
-        ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XAnimationNode> const& xNode,
+        css::uno::Reference<css::animations::XAnimationNode> const& xNode,
         ::boost::shared_ptr<BaseContainerNode> const& pParent,
         NodeContext const& rContext )
         : AnimationBaseNode( xNode, pParent, rContext ) {}
 
 #if defined(DBG_UTIL)
-    virtual const char* getDescription() const SAL_OVERRIDE
+    virtual const char* getDescription() const override
         { return "PropertyAnimationNode"; }
 #endif
 
 private:
-    virtual AnimationActivitySharedPtr createActivity() const SAL_OVERRIDE;
+    virtual AnimationActivitySharedPtr createActivity() const override;
 };
 
 } // namespace internal

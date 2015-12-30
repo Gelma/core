@@ -179,7 +179,6 @@ namespace {
 
 OUString getSourceRangeStrFromLabeledSequences( const uno::Sequence< uno::Reference< chart2::data::XLabeledDataSequence > >& aSequences, bool bPositive )
 {
-    const OUString aRolePrefix( "error-bars" );
     OUString aDirection;
     if(bPositive)
         aDirection = "positive";
@@ -195,9 +194,8 @@ OUString getSourceRangeStrFromLabeledSequences( const uno::Sequence< uno::Refere
                 uno::Reference< chart2::data::XDataSequence > xSequence( aSequences[nI]->getValues());
                 uno::Reference< beans::XPropertySet > xSeqProp( xSequence, uno::UNO_QUERY_THROW );
                 OUString aRole;
-                if( ( xSeqProp->getPropertyValue(
-                                OUString( "Role" )) >>= aRole ) &&
-                        aRole.match( aRolePrefix ) && aRole.indexOf(aDirection) >= 0 )
+                if( ( xSeqProp->getPropertyValue( "Role" ) >>= aRole ) &&
+                        aRole.match( "error-bars" ) && aRole.indexOf(aDirection) >= 0 )
                 {
                     return xSequence->getSourceRangeRepresentation();
                 }
@@ -442,7 +440,7 @@ void SAL_CALL ErrorBar::setData( const uno::Sequence< uno::Reference< chart2::da
 uno::Sequence< uno::Reference< chart2::data::XLabeledDataSequence > > SAL_CALL ErrorBar::getDataSequences()
     throw (uno::RuntimeException, std::exception)
 {
-    return ContainerHelper::ContainerToSequence( m_aDataSequences );
+    return comphelper::containerToSequence( m_aDataSequences );
 }
 
 uno::Sequence< OUString > ErrorBar::getSupportedServiceNames_Static()

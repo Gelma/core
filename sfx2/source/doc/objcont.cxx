@@ -306,7 +306,7 @@ std::set<Color> SfxObjectShell::GetDocColors()
 
 SfxStyleSheetBasePool* SfxObjectShell::GetStyleSheetPool()
 {
-    return 0;
+    return nullptr;
 }
 
 struct Styles_Impl
@@ -396,7 +396,7 @@ void SfxObjectShell::UpdateFromTemplate_Impl(  )
     if ( !pFile->GetFilter() || !pFile->GetFilter()->IsOwnFormat() )
         return;
 
-    SFX_ITEMSET_ARG( pFile->GetItemSet(), pUpdateDocItem, SfxUInt16Item, SID_UPDATEDOCMODE, false);
+    const SfxUInt16Item* pUpdateDocItem = SfxItemSet::GetItem<SfxUInt16Item>(pFile->GetItemSet(), SID_UPDATEDOCMODE, false);
     sal_Int16 bCanUpdateFromTemplate = pUpdateDocItem ? pUpdateDocItem->GetValue() : document::UpdateDocMode::NO_UPDATE;
 
     // created from template?
@@ -490,7 +490,7 @@ void SfxObjectShell::UpdateFromTemplate_Impl(  )
                 // styles should be updated, create document in organizer mode to read in the styles
                 //TODO: testen!
                 SfxObjectShellLock xTemplDoc = CreateObjectByFactoryName( GetFactory().GetFactoryName(), SfxObjectCreateMode::ORGANIZER );
-                xTemplDoc->DoInitNew(0);
+                xTemplDoc->DoInitNew();
 
                 // TODO/MBA: do we need a BaseURL? Then LoadFrom must be extended!
                 //xTemplDoc->SetBaseURL( aFoundName );
@@ -560,6 +560,11 @@ bool SfxObjectShell::IsUseUserData() const
     return pImp->bUseUserData;
 }
 
+bool SfxObjectShell::IsUseThumbnailSave() const
+{
+    return pImp->bUseThumbnailSave;
+}
+
 void SfxObjectShell::SetQueryLoadTemplate( bool bNew )
 {
     if ( pImp->bQueryLoadTemplate != bNew )
@@ -572,6 +577,13 @@ void SfxObjectShell::SetUseUserData( bool bNew )
     if ( pImp->bUseUserData != bNew )
         SetModified();
     pImp->bUseUserData = bNew;
+}
+
+void SfxObjectShell::SetUseThumbnailSave( bool _bNew )
+{
+    if ( pImp->bUseThumbnailSave != _bNew )
+        SetModified();
+    pImp->bUseThumbnailSave = _bNew;
 }
 
 bool SfxObjectShell::IsLoadReadonly() const
@@ -648,13 +660,7 @@ bool SfxObjectShell::IsModifyPasswordEntered()
 
 void SfxObjectShell::libreOfficeKitCallback(int /*nType*/, const char* /*pPayload*/) const
 {
-    SAL_INFO("tiled-rendering", "SfxObjectShell::libreOfficeKitCallback interface not overridden for SfxObjectShell subclass typeId: " << typeid(*this).name());
-}
-
-bool SfxObjectShell::isTiledRendering() const
-{
-    SAL_INFO("tiled-rendering", "SfxObjectShell::isTiledRendering interface not overridden for SfxObjectShell subclass typeId: " << typeid(*this).name());
-    return false;
+    SAL_INFO("sfx.tiledrendering", "SfxObjectShell::libreOfficeKitCallback interface not overridden for SfxObjectShell subclass typeId: " << typeid(*this).name());
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

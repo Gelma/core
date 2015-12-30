@@ -29,7 +29,7 @@
 template<class T>
 class NamedCollection : public cppu::ImplInheritanceHelper<
                             Collection<T>,
-                            com::sun::star::container::XNameAccess>
+                            css::container::XNameAccess>
 {
     using Collection<T>::maItems;
     using Collection<T>::getItem;
@@ -50,8 +50,7 @@ public:
         return findItem( rName ) != maItems.end();
     }
 
-    typedef com::sun::star::uno::Sequence<OUString> Names_t;
-    Names_t getNames() const
+    css::uno::Sequence<OUString> getNames() const
     {
         // iterate over members, and collect all those that have names
         std::vector<OUString> aNames;
@@ -59,18 +58,13 @@ public:
              aIter != maItems.end();
              ++aIter )
         {
-            com::sun::star::uno::Reference<com::sun::star::container::XNamed>
-                xNamed( *aIter, com::sun::star::uno::UNO_QUERY );
+            css::uno::Reference<css::container::XNamed>
+                xNamed( *aIter, css::uno::UNO_QUERY );
             if( xNamed.is() )
                 aNames.push_back( xNamed->getName() );
         }
 
-        // copy names to Sequence and return
-        Names_t aResult( aNames.size() );
-        OUString* pStrings = aResult.getArray();
-        std::copy( aNames.begin(), aNames.end(), pStrings );
-
-        return aResult;
+        return comphelper::containerToSequence(aNames);
     }
 
 protected:
@@ -80,8 +74,8 @@ protected:
              aIter != maItems.end();
              ++aIter )
         {
-            com::sun::star::uno::Reference<com::sun::star::container::XNamed>
-                xNamed( *aIter, com::sun::star::uno::UNO_QUERY );
+            css::uno::Reference<css::container::XNamed>
+                xNamed( *aIter, css::uno::UNO_QUERY );
             if( xNamed.is()  &&  xNamed->getName() == rName )
                 return aIter;
         }
@@ -92,13 +86,13 @@ public:
 
     // XElementAccess
     virtual css::uno::Type SAL_CALL getElementType()
-        throw( css::uno::RuntimeException ) SAL_OVERRIDE
+        throw( css::uno::RuntimeException ) override
     {
         return Collection<T>::getElementType();
     }
 
     virtual sal_Bool SAL_CALL hasElements()
-        throw( css::uno::RuntimeException ) SAL_OVERRIDE
+        throw( css::uno::RuntimeException ) override
     {
         return Collection<T>::hasElements();
     }
@@ -108,24 +102,24 @@ public:
         const OUString& aName )
         throw( css::container::NoSuchElementException,
                css::lang::WrappedTargetException,
-               css::uno::RuntimeException ) SAL_OVERRIDE
+               css::uno::RuntimeException ) override
     {
         if( hasItem( aName ) )
-            return com::sun::star::uno::makeAny( getItem( aName ) );
+            return css::uno::makeAny( getItem( aName ) );
         else
             throw css::container::NoSuchElementException();
 
     }
 
-    virtual Names_t SAL_CALL getElementNames()
-        throw( css::uno::RuntimeException ) SAL_OVERRIDE
+    virtual css::uno::Sequence<OUString> SAL_CALL getElementNames()
+        throw( css::uno::RuntimeException ) override
     {
         return getNames();
     }
 
     virtual sal_Bool SAL_CALL hasByName(
         const OUString& aName )
-        throw( css::uno::RuntimeException ) SAL_OVERRIDE
+        throw( css::uno::RuntimeException ) override
     {
         return hasItem( aName );
     }

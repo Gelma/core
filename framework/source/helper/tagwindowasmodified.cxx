@@ -19,7 +19,6 @@
 
 #include <helper/tagwindowasmodified.hxx>
 #include <pattern/window.hxx>
-#include <macros/generic.hxx>
 #include <services.h>
 
 #include <com/sun/star/awt/XWindow.hpp>
@@ -139,7 +138,7 @@ void SAL_CALL TagWindowAsModified::disposing(const css::lang::EventObject& aEven
         (aEvent.Source == xFrame)
        )
     {
-        m_xFrame = css::uno::Reference< css::frame::XFrame >();
+        m_xFrame.clear();
         return;
     }
 
@@ -149,7 +148,7 @@ void SAL_CALL TagWindowAsModified::disposing(const css::lang::EventObject& aEven
         (aEvent.Source == xModel)
        )
     {
-        m_xModel = css::uno::Reference< css::frame::XModel >();
+        m_xModel.clear();
         return;
     }
 }

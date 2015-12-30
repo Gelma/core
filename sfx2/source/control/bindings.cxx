@@ -64,8 +64,8 @@
 
 #include <com/sun/star/frame/XModuleManager.hpp>
 #include <memory>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <unordered_map>
+#include <vector>
 
 using namespace ::com::sun::star;
 using namespace ::com::sun::star::uno;
@@ -85,13 +85,11 @@ typedef std::vector<SfxStateCache*> SfxStateCacheArr_Impl;
 
 struct SfxFoundCache_Impl
 {
-    sal_uInt16      nSlotId;   // the Slot-Id
     sal_uInt16      nWhichId;  // If available: Which-Id, else: nSlotId
     const SfxSlot*  pSlot;     // Pointer to <Master-Slot>
     SfxStateCache*  pCache;    // Pointer to StatusCache, if possible NULL
 
-    SfxFoundCache_Impl(sal_uInt16 nS, sal_uInt16 nW, const SfxSlot *pS, SfxStateCache *pC ):
-        nSlotId(nS),
+    SfxFoundCache_Impl(sal_uInt16 nW, const SfxSlot *pS, SfxStateCache *pC ):
         nWhichId(nW),
         pSlot(pS),
         pCache(pC)
@@ -100,14 +98,14 @@ struct SfxFoundCache_Impl
 
 class SfxFoundCacheArr_Impl
 {
-    typedef boost::ptr_vector<SfxFoundCache_Impl> DataType;
+    typedef std::vector<std::unique_ptr<SfxFoundCache_Impl> > DataType;
     DataType maData;
 
 public:
 
     SfxFoundCache_Impl& operator[] ( size_t i )
     {
-        return maData[i];
+        return *maData[i].get();
     }
 
     size_t size() const
@@ -117,7 +115,7 @@ public:
 
     void push_back( SfxFoundCache_Impl* p )
     {
-        maData.push_back(p);
+        maData.push_back(std::unique_ptr<SfxFoundCache_Impl>(p));
     }
 };
 
@@ -163,13 +161,13 @@ public:
 
 class SfxAsyncExec_Impl
 {
-    ::com::sun::star::util::URL aCommand;
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatch > xDisp;
+    css::util::URL aCommand;
+    css::uno::Reference< css::frame::XDispatch > xDisp;
     Timer           aTimer;
 
 public:
 
-    SfxAsyncExec_Impl( const ::com::sun::star::util::URL& rCmd, const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatch >& rDisp )
+    SfxAsyncExec_Impl( const css::util::URL& rCmd, const css::uno::Reference< css::frame::XDispatch >& rDisp )
         : aCommand( rCmd )
         , xDisp( rDisp )
     {
@@ -203,8 +201,8 @@ enum class SfxPopupAction
 class SfxBindings_Impl
 {
 public:
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatchRecorder > xRecorder;
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatchProvider >  xProv;
+    css::uno::Reference< css::frame::XDispatchRecorder > xRecorder;
+    css::uno::Reference< css::frame::XDispatchProvider >  xProv;
     SfxUnoControllerArr_Impl*
                             pUnoCtrlArr;
     SfxWorkWindow*          pWorkWin;
@@ -231,7 +229,7 @@ public:
 
 SfxBindings::SfxBindings()
 :   pImp(new SfxBindings_Impl),
-    pDispatcher(0),
+    pDispatcher(nullptr),
     nRegLevel(1)    // first becomes 0, when the Dispatcher is set
 {
     pImp->nMsgPos = 0;
@@ -246,10 +244,10 @@ SfxBindings::SfxBindings()
     pImp->bFirstRound = false;
     pImp->bInNextJob = false;
     pImp->bInUpdate = false;
-    pImp->pSubBindings = NULL;
-    pImp->pSuperBindings = NULL;
-    pImp->pWorkWin = NULL;
-    pImp->pUnoCtrlArr = NULL;
+    pImp->pSubBindings = nullptr;
+    pImp->pSuperBindings = nullptr;
+    pImp->pWorkWin = nullptr;
+    pImp->pUnoCtrlArr = nullptr;
     pImp->nOwnRegLevel = nRegLevel;
 
     // all caches are valid (no pending invalidate-job)
@@ -276,7 +274,7 @@ SfxBindings::~SfxBindings()
 
 {
     // The SubBindings should not be locked!
-    pImp->pSubBindings = NULL;
+    pImp->pSubBindings = nullptr;
 
     ENTERREGISTRATIONS();
 
@@ -321,7 +319,7 @@ void SfxBindings::DeleteControllers_Impl()
     // Delete all Caches
     for ( nCache = pImp->pCaches->size(); nCache > 0; --nCache )
     {
-        // Get Cache via ::com::sun::star::sdbcx::Index
+        // Get Cache via css::sdbcx::Index
         SfxStateCache *pCache = (*pImp->pCaches)[ nCache-1 ];
 
         // unbind all controllers in the cache
@@ -410,8 +408,8 @@ void SfxBindings::Update_Impl
 
     // gather together all with the same status method which are dirty
     SfxDispatcher &rDispat = *pDispatcher;
-    const SfxSlot *pRealSlot = 0;
-    const SfxSlotServer* pMsgServer = 0;
+    const SfxSlot *pRealSlot = nullptr;
+    const SfxSlotServer* pMsgServer = nullptr;
     SfxFoundCacheArr_Impl aFound;
     SfxItemSet *pSet = CreateSet_Impl( pCache, pRealSlot, &pMsgServer, aFound );
     bool bUpdated = false;
@@ -427,7 +425,7 @@ void SfxBindings::Update_Impl
             {
                 const SfxFoundCache_Impl& rFound = aFound[nPos];
                 sal_uInt16 nWhich = rFound.nWhichId;
-                const SfxPoolItem *pItem = 0;
+                const SfxPoolItem *pItem = nullptr;
                 SfxItemState eState = pSet->GetItemState(nWhich, true, &pItem);
                 if ( eState == SfxItemState::DEFAULT && SfxItemPool::IsWhich(nWhich) )
                     pItem = &pSet->Get(nWhich);
@@ -444,10 +442,8 @@ void SfxBindings::Update_Impl
         // When pCache == NULL and no SlotServer
         // (for example due to locked Dispatcher! ),
         // obviously do not try to update
-        SfxFoundCache_Impl aFoundCache(
-                            pCache->GetId(), 0,
-                            pRealSlot, pCache );
-        UpdateControllers_Impl( 0, aFoundCache, 0, SfxItemState::DISABLED);
+        SfxFoundCache_Impl aFoundCache(0, pRealSlot, pCache );
+        UpdateControllers_Impl( nullptr, aFoundCache, nullptr, SfxItemState::DISABLED);
     }
 }
 
@@ -478,7 +474,7 @@ void SfxBindings::Update
     sal_uInt16      nId     // the bound and up-to-date Slot-Id
 )
 {
-    DBG_ASSERT( pImp->pCaches != 0, "SfxBindings not initialized" );
+    DBG_ASSERT( pImp->pCaches != nullptr, "SfxBindings not initialized" );
 
     if ( pDispatcher )
         pDispatcher->Flush();
@@ -502,13 +498,13 @@ void SfxBindings::Update
             if( pCache->GetDispatch().is() && pCache->GetItemLink() )
             {
                 pCache->SetCachedState(true);
-                bInternalUpdate = ( pCache->GetInternalController() != 0 );
+                bInternalUpdate = ( pCache->GetInternalController() != nullptr );
             }
 
             if ( bInternalUpdate )
             {
                 // Query Status
-                const SfxSlotServer* pMsgServer = pDispatcher ? pCache->GetSlotServer(*pDispatcher, pImp->xProv) : NULL;
+                const SfxSlotServer* pMsgServer = pDispatcher ? pCache->GetSlotServer(*pDispatcher, pImp->xProv) : nullptr;
                 if ( !pCache->IsControllerDirty() &&
                     ( !pMsgServer ||
                     !pMsgServer->GetSlot()->IsMode(SfxSlotMode::VOLATILE) ) )
@@ -519,7 +515,7 @@ void SfxBindings::Update
                 }
                 if (!pMsgServer)
                 {
-                    pCache->SetState(SfxItemState::DISABLED, 0);
+                    pCache->SetState(SfxItemState::DISABLED, nullptr);
                     pImp->bInUpdate = false;
                     InvalidateSlotsInMap_Impl();
                     return;
@@ -540,7 +536,7 @@ void SfxBindings::Update
 
 void SfxBindings::Update()
 {
-    DBG_ASSERT( pImp->pCaches != 0, "SfxBindings not initialized" );
+    DBG_ASSERT( pImp->pCaches != nullptr, "SfxBindings not initialized" );
 
     if ( pImp->pSubBindings )
         pImp->pSubBindings->Update();
@@ -553,7 +549,7 @@ void SfxBindings::Update()
         pImp->bInUpdate = true;
         pDispatcher->Flush();
         pDispatcher->Update_Impl();
-        while ( !NextJob_Impl(0) )
+        while ( !NextJob_Impl(nullptr) )
             ; // loop
         pImp->bInUpdate = false;
         InvalidateSlotsInMap_Impl();
@@ -653,7 +649,7 @@ SfxStateCache* SfxBindings::GetStateCache
     sal_uInt16   nId   /*  Slot-Id, which SfxStatusCache is to be found */
 )
 {
-    return GetStateCache(nId, 0);
+    return GetStateCache(nId, nullptr);
 }
 
 SfxStateCache* SfxBindings::GetStateCache
@@ -665,7 +661,7 @@ SfxStateCache* SfxBindings::GetStateCache
                            or where it was inserted. */
 )
 {
-    DBG_ASSERT( pImp->pCaches != 0, "SfxBindings not initialized" );
+    DBG_ASSERT( pImp->pCaches != nullptr, "SfxBindings not initialized" );
     // is the specified function bound?
     const sal_uInt16 nStart = ( pPos ? *pPos : 0 );
     const sal_uInt16 nPos = GetSlotPos( nId, nStart );
@@ -677,7 +673,7 @@ SfxStateCache* SfxBindings::GetStateCache
             *pPos = nPos;
         return (*pImp->pCaches)[nPos];
     }
-    return 0;
+    return nullptr;
 }
 
 
@@ -902,15 +898,15 @@ void SfxBindings::Invalidate
 
 bool SfxBindings::IsBound( sal_uInt16 nSlotId, sal_uInt16 nStartSearchAt )
 {
-    DBG_ASSERT( pImp->pCaches != 0, "SfxBindings not initialized" );
-    return GetStateCache(nSlotId, &nStartSearchAt ) != 0;
+    DBG_ASSERT( pImp->pCaches != nullptr, "SfxBindings not initialized" );
+    return GetStateCache(nSlotId, &nStartSearchAt ) != nullptr;
 }
 
 
 
 sal_uInt16 SfxBindings::GetSlotPos( sal_uInt16 nId, sal_uInt16 nStartSearchAt )
 {
-    DBG_ASSERT( pImp->pCaches != 0, "SfxBindings not initialized" );
+    DBG_ASSERT( pImp->pCaches != nullptr, "SfxBindings not initialized" );
 
     // answer immediately if a function-seek comes repeated
     if ( pImp->nCachedFunc1 < pImp->pCaches->size() &&
@@ -1022,14 +1018,14 @@ void SfxBindings::Register_Impl( SfxControllerItem& rItem, bool bInternal )
 
 void SfxBindings::Release( SfxControllerItem& rItem )
 {
-    DBG_ASSERT( pImp->pCaches != 0, "SfxBindings not initialized" );
+    DBG_ASSERT( pImp->pCaches != nullptr, "SfxBindings not initialized" );
     DBG_ASSERT( !pImp->bInNextJob, "SfxBindings::Release while status-updating" );
     ENTERREGISTRATIONS();
 
     // find the bound function
     sal_uInt16 nId = rItem.GetId();
     sal_uInt16 nPos = GetSlotPos(nId);
-    SfxStateCache* pCache = (nPos < pImp->pCaches->size()) ? (*pImp->pCaches)[nPos] : 0;
+    SfxStateCache* pCache = (nPos < pImp->pCaches->size()) ? (*pImp->pCaches)[nPos] : nullptr;
     if ( pCache && pCache->GetId() == nId )
     {
         if ( pCache->GetInternalController() == &rItem )
@@ -1055,7 +1051,7 @@ void SfxBindings::Release( SfxControllerItem& rItem )
         }
 
         // was this the last controller?
-        if ( pCache->GetItemLink() == 0 && !pCache->GetInternalController() )
+        if ( pCache->GetItemLink() == nullptr && !pCache->GetInternalController() )
         {
             pImp->bCtrlReleased = true;
         }
@@ -1068,10 +1064,10 @@ void SfxBindings::Release( SfxControllerItem& rItem )
 const SfxPoolItem* SfxBindings::ExecuteSynchron( sal_uInt16 nId, const SfxPoolItem** ppItems, sal_uInt16 nModi,
             const SfxPoolItem **ppInternalArgs )
 {
-    DBG_ASSERT( pImp->pCaches != 0, "SfxBindings not initialized" );
+    DBG_ASSERT( pImp->pCaches != nullptr, "SfxBindings not initialized" );
 
     if( !nId || !pDispatcher )
-        return NULL;
+        return nullptr;
 
     return Execute_Impl( nId, ppItems, nModi, SfxCallMode::SYNCHRON, ppInternalArgs );
 }
@@ -1079,13 +1075,13 @@ const SfxPoolItem* SfxBindings::ExecuteSynchron( sal_uInt16 nId, const SfxPoolIt
 bool SfxBindings::Execute( sal_uInt16 nId, const SfxPoolItem** ppItems, sal_uInt16 nModi, SfxCallMode nCallMode,
                         const SfxPoolItem **ppInternalArgs )
 {
-    DBG_ASSERT( pImp->pCaches != 0, "SfxBindings not initialized" );
+    DBG_ASSERT( pImp->pCaches != nullptr, "SfxBindings not initialized" );
 
     if( !nId || !pDispatcher )
         return false;
 
     const SfxPoolItem* pRet = Execute_Impl( nId, ppItems, nModi, nCallMode, ppInternalArgs );
-    return ( pRet != 0 );
+    return ( pRet != nullptr );
 }
 
 const SfxPoolItem* SfxBindings::Execute_Impl( sal_uInt16 nId, const SfxPoolItem** ppItems, sal_uInt16 nModi, SfxCallMode nCallMode,
@@ -1139,13 +1135,13 @@ const SfxPoolItem* SfxBindings::Execute_Impl( sal_uInt16 nId, const SfxPoolItem*
     if ( pImp->bMsgDirty )
         UpdateSlotServer_Impl();
 
-    SfxShell *pShell=0;
-    const SfxSlot *pSlot=0;
+    SfxShell *pShell=nullptr;
+    const SfxSlot *pSlot=nullptr;
 
     const SfxSlotServer* pServer = pCache->GetSlotServer( rDispatcher, pImp->xProv );
     if ( !pServer )
     {
-        return NULL;
+        return nullptr;
     }
     else
     {
@@ -1154,8 +1150,8 @@ const SfxPoolItem* SfxBindings::Execute_Impl( sal_uInt16 nId, const SfxPoolItem*
     }
 
     if ( bGlobalOnly )
-        if ( !pShell->ISA(SfxModule) && !pShell->ISA(SfxApplication) && !pShell->ISA(SfxViewFrame) )
-            return NULL;
+        if ( dynamic_cast< const SfxModule *>( pShell ) == nullptr && dynamic_cast< const SfxApplication *>( pShell ) == nullptr && dynamic_cast< const SfxViewFrame *>( pShell ) == nullptr )
+            return nullptr;
 
     SfxItemPool &rPool = pShell->GetPool();
     SfxRequest aReq( nId, nCallMode, rPool );
@@ -1223,7 +1219,7 @@ void SfxBindings::Execute_Impl( SfxRequest& aReq, const SfxSlot* pSlot, SfxShell
                    SfxItemPool::IsWhich(nWhich) &&
                    pOldItem ) )
             {
-                if ( pOldItem->ISA(SfxBoolItem) )
+                if ( dynamic_cast< const SfxBoolItem *>( pOldItem ) !=  nullptr )
                 {
                     // we can toggle Bools
                     bool bOldValue = static_cast<const SfxBoolItem *>(pOldItem)->GetValue();
@@ -1232,7 +1228,7 @@ void SfxBindings::Execute_Impl( SfxRequest& aReq, const SfxSlot* pSlot, SfxShell
                     aReq.AppendItem( *pNewItem );
                     delete pNewItem;
                 }
-                else if ( pOldItem->ISA(SfxEnumItemInterface) &&
+                else if ( dynamic_cast< const SfxEnumItemInterface *>( pOldItem ) !=  nullptr &&
                         static_cast<const SfxEnumItemInterface *>(pOldItem)->HasBoolValue())
                 {
                     // and Enums with Bool-Interface
@@ -1253,13 +1249,13 @@ void SfxBindings::Execute_Impl( SfxRequest& aReq, const SfxSlot* pSlot, SfxShell
                 DBG_ASSERT( pNewItem, "Toggle to slot without ItemFactory" );
                 pNewItem->SetWhich( nWhich );
 
-                if ( pNewItem->ISA(SfxBoolItem) )
+                if ( dynamic_cast< const SfxBoolItem *>( pNewItem ) !=  nullptr )
                 {
                   // we can toggle Bools
                     static_cast<SfxBoolItem*>(pNewItem)->SetValue( true );
                     aReq.AppendItem( *pNewItem );
                 }
-                else if ( pNewItem->ISA(SfxEnumItemInterface) &&
+                else if ( dynamic_cast< const SfxEnumItemInterface *>( pNewItem ) !=  nullptr &&
                         static_cast<SfxEnumItemInterface *>(pNewItem)->HasBoolValue())
                 {
                     // and Enums with Bool-Interface
@@ -1286,7 +1282,7 @@ void SfxBindings::Execute_Impl( SfxRequest& aReq, const SfxSlot* pSlot, SfxShell
 
 void SfxBindings::UpdateSlotServer_Impl()
 {
-    DBG_ASSERT( pImp->pCaches != 0, "SfxBindings not initialized" );
+    DBG_ASSERT( pImp->pCaches != nullptr, "SfxBindings not initialized" );
 
     // synchronize
     pDispatcher->Flush();
@@ -1295,7 +1291,7 @@ void SfxBindings::UpdateSlotServer_Impl()
     {
         if ( !nRegLevel )
         {
-            ::com::sun::star::uno::Reference < ::com::sun::star::frame::XFrame > xFrame
+            css::uno::Reference < css::frame::XFrame > xFrame
                 ( pDispatcher->GetFrame()->GetFrame().GetFrameInterface(), UNO_QUERY );
             pImp->bContextChanged = false;
         }
@@ -1324,27 +1320,27 @@ SfxItemSet* SfxBindings::CreateSet_Impl
     SfxFoundCacheArr_Impl&  rFound      // out: List of Caches for Siblings
 )
 {
-    DBG_ASSERT( pImp->pCaches != 0, "SfxBindings not initialized" );
+    DBG_ASSERT( pImp->pCaches != nullptr, "SfxBindings not initialized" );
 
     DBG_ASSERT( !pImp->bMsgDirty, "CreateSet_Impl with dirty MessageServer" );
     assert(pDispatcher);
 
     const SfxSlotServer* pMsgSvr = pCache->GetSlotServer(*pDispatcher, pImp->xProv);
     if (!pMsgSvr)
-        return 0;
+        return nullptr;
 
-    pRealSlot = 0;
+    pRealSlot = nullptr;
     *pMsgServer = pMsgSvr;
 
     sal_uInt16 nShellLevel = pMsgSvr->GetShellLevel();
     SfxShell *pShell = pDispatcher->GetShell( nShellLevel );
     if ( !pShell ) // rare GPF when browsing through update from Inet-Notify
-        return 0;
+        return nullptr;
 
     SfxItemPool &rPool = pShell->GetPool();
 
     // get the status method, which is served by the pCache
-    SfxStateFunc pFnc = 0;
+    SfxStateFunc pFnc = nullptr;
     const SfxInterface *pInterface = pShell->GetInterface();
     if ( SFX_KIND_ENUM == pMsgSvr->GetSlot()->GetKind() )
     {
@@ -1360,7 +1356,7 @@ SfxItemSet* SfxBindings::CreateSet_Impl
 
     // the RealSlot is always on
     SfxFoundCache_Impl *pFound = new SfxFoundCache_Impl(
-        pRealSlot->GetSlotId(), pRealSlot->GetWhich(rPool), pRealSlot, pCache );
+        pRealSlot->GetWhich(rPool), pRealSlot, pCache );
     rFound.push_back( pFound );
 
     // Search through the bindings for slots served by the same function. This ,    // will only affect slots which are present in the found interface.
@@ -1372,7 +1368,7 @@ SfxItemSet* SfxBindings::CreateSet_Impl
     // the Slots ODF a interfaces ar linked in a circle
     while ( pSibling > pRealSlot )
     {
-        SfxStateFunc pSiblingFnc=0;
+        SfxStateFunc pSiblingFnc=nullptr;
         SfxStateCache *pSiblingCache =
                 GetStateCache( pSibling->GetSlotId(), &nCachePos );
 
@@ -1420,7 +1416,7 @@ SfxItemSet* SfxBindings::CreateSet_Impl
         if ( bInsert && bSameMethod )
         {
             SfxFoundCache_Impl *pFoundCache = new SfxFoundCache_Impl(
-                pSibling->GetSlotId(), pSibling->GetWhich(rPool),
+                pSibling->GetWhich(rPool),
                 pSibling, pSiblingCache );
 
             rFound.push_back( pFoundCache );
@@ -1481,22 +1477,21 @@ void SfxBindings::UpdateControllers_Impl
             pCache->SetState( SfxItemState::UNKNOWN, &aVoid );
         }
         else if ( SfxItemState::DISABLED == eState )
-            pCache->SetState(SfxItemState::DISABLED, 0);
+            pCache->SetState(SfxItemState::DISABLED, nullptr);
         else
             pCache->SetState(SfxItemState::DEFAULT, pItem);
     }
 
     // Update the slots for so far available and bound Controllers for
     // Slave-Slots (Enum-value)
-    DBG_ASSERT( !pSlot || 0 == pSlot->GetLinkedSlot() || !pItem ||
-                pItem->ISA(SfxEnumItemInterface),
+    DBG_ASSERT( !pSlot || nullptr == pSlot->GetLinkedSlot() || !pItem ||
+                dynamic_cast< const SfxEnumItemInterface *>( pItem ) !=  nullptr,
                 "master slot with non-enum-type found" );
-    const SfxSlot *pFirstSlave = pSlot ? pSlot->GetLinkedSlot() : 0;
+    const SfxSlot *pFirstSlave = pSlot ? pSlot->GetLinkedSlot() : nullptr;
     if ( pIF && pFirstSlave)
     {
         // Items cast on EnumItem
-        const SfxEnumItemInterface *pEnumItem =
-                PTR_CAST(SfxEnumItemInterface,pItem);
+        const SfxEnumItemInterface *pEnumItem = dynamic_cast< const SfxEnumItemInterface* >(pItem);
         if ( eState == SfxItemState::DEFAULT && !pEnumItem )
             eState = SfxItemState::DONTCARE;
         else
@@ -1530,7 +1525,7 @@ void SfxBindings::UpdateControllers_Impl
                 if ( SfxItemState::DISABLED == eState || (pEnumItem && !pEnumItem->IsEnabled( pSlave->GetSlotId())) )
                 {
                     // disabled
-                    pEnumCache->SetState(SfxItemState::DISABLED, 0);
+                    pEnumCache->SetState(SfxItemState::DISABLED, nullptr);
                 }
                 else if ( SfxItemState::DEFAULT == eState && pEnumItem )
                 {
@@ -1567,7 +1562,7 @@ bool SfxBindings::NextJob_Impl(Timer * pTimer)
 #endif
     const unsigned MAX_INPUT_DELAY = 200;
 
-    DBG_ASSERT( pImp->pCaches != 0, "SfxBindings not initialized" );
+    DBG_ASSERT( pImp->pCaches != nullptr, "SfxBindings not initialized" );
 
     if ( Application::GetLastInputInterval() < MAX_INPUT_DELAY && pTimer )
     {
@@ -1581,7 +1576,7 @@ bool SfxBindings::NextJob_Impl(Timer * pTimer)
         pDispatcher->Update_Impl();
 
     // modifying the SfxObjectInterface-stack without SfxBindings => nothing to do
-    SfxViewFrame* pFrame = pDispatcher ? pDispatcher->GetFrame() : NULL;
+    SfxViewFrame* pFrame = pDispatcher ? pDispatcher->GetFrame() : nullptr;
     if ( (pFrame && !pFrame->GetObjectShell()->AcceptStateUpdate()) || pSfxApp->IsDowning() || pImp->pCaches->empty() )
     {
         return true;
@@ -1759,11 +1754,11 @@ void SfxBindings::LeaveRegistrations( sal_uInt16 nLevel, const char *pFile, int 
         {
             for ( sal_uInt16 nCache = pImp->pCaches->size(); nCache > 0; --nCache )
             {
-                // Get Cache via ::com::sun::star::sdbcx::Index
+                // Get Cache via css::sdbcx::Index
                 SfxStateCache *pCache = (*pImp->pCaches)[nCache-1];
 
                 // No interested Controller present
-                if ( pCache->GetItemLink() == 0 && !pCache->GetInternalController() )
+                if ( pCache->GetItemLink() == nullptr && !pCache->GetInternalController() )
                 {
                     // Remove Cache. Safety: first remove and then delete
                     pImp->pCaches->erase(pImp->pCaches->begin() + nCache - 1);
@@ -1805,17 +1800,16 @@ void SfxBindings::SetDispatcher( SfxDispatcher *pDisp )
             while ( pBind )
             {
                 if ( pBind->pImp->pSubBindings == this && pBind->pDispatcher != pDisp )
-                    pBind->SetSubBindings_Impl( NULL );
+                    pBind->SetSubBindings_Impl( nullptr );
                 pBind = pBind->pImp->pSubBindings;
             }
         }
 
         pDispatcher = pDisp;
 
-        ::com::sun::star::uno::Reference < ::com::sun::star::frame::XDispatchProvider > xProv;
+        css::uno::Reference < css::frame::XDispatchProvider > xProv;
         if ( pDisp )
-            xProv = ::com::sun::star::uno::Reference < ::com::sun::star::frame::XDispatchProvider >
-                                        ( pDisp->GetFrame()->GetFrame().GetFrameInterface(), UNO_QUERY );
+            xProv.set( pDisp->GetFrame()->GetFrame().GetFrameInterface(), UNO_QUERY );
 
         SetDispatchProvider_Impl( xProv );
         InvalidateAll( true );
@@ -1880,14 +1874,14 @@ void SfxBindings::StartUpdate_Impl( bool bComplete )
         NextJob_Impl(&pImp->aTimer);
     else
         // Update all slots in a row
-        NextJob_Impl(0);
+        NextJob_Impl(nullptr);
 }
 
 
 
-SfxItemState SfxBindings::QueryState( sal_uInt16 nSlot, SfxPoolItem* &rpState )
+SfxItemState SfxBindings::QueryState( sal_uInt16 nSlot, std::unique_ptr<SfxPoolItem> &rpState )
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatch >  xDisp;
+    css::uno::Reference< css::frame::XDispatch >  xDisp;
     SfxStateCache *pCache = GetStateCache( nSlot );
     if ( pCache )
         xDisp = pCache->GetDispatch();
@@ -1897,7 +1891,7 @@ SfxItemState SfxBindings::QueryState( sal_uInt16 nSlot, SfxPoolItem* &rpState )
         if ( !pSlot || !pSlot->pUnoName )
             return SfxItemState::DISABLED;
 
-        ::com::sun::star::util::URL aURL;
+        css::util::URL aURL;
         OUString aCmd( ".uno:" );
         aURL.Protocol = aCmd;
         aURL.Path = OUString::createFromAscii(pSlot->GetUnoName());
@@ -1910,8 +1904,8 @@ SfxItemState SfxBindings::QueryState( sal_uInt16 nSlot, SfxPoolItem* &rpState )
 
         if ( xDisp.is() )
         {
-            ::com::sun::star::uno::Reference< ::com::sun::star::lang::XUnoTunnel > xTunnel( xDisp, ::com::sun::star::uno::UNO_QUERY );
-            SfxOfficeDispatch* pDisp = NULL;
+            css::uno::Reference< css::lang::XUnoTunnel > xTunnel( xDisp, css::uno::UNO_QUERY );
+            SfxOfficeDispatch* pDisp = nullptr;
             if ( xTunnel.is() )
             {
                 sal_Int64 nImplementation = xTunnel->getSomething(SfxOfficeDispatch::impl_getStaticIdentifier());
@@ -1929,7 +1923,6 @@ SfxItemState SfxBindings::QueryState( sal_uInt16 nSlot, SfxPoolItem* &rpState )
                 }
 
                 SfxItemState eState = SfxItemState::SET;
-                SfxPoolItem *pItem=NULL;
                 BindDispatch_Impl *pBind = new BindDispatch_Impl( xDisp, aURL, pCache, pSlot );
                 pBind->acquire();
                 xDisp->addStatusListener( pBind, aURL );
@@ -1939,40 +1932,39 @@ SfxItemState SfxBindings::QueryState( sal_uInt16 nSlot, SfxPoolItem* &rpState )
                 }
                 else
                 {
-                    ::com::sun::star::uno::Any aAny = pBind->GetStatus().State;
-                    ::com::sun::star::uno::Type pType = aAny.getValueType();
+                    css::uno::Any aAny = pBind->GetStatus().State;
+                    css::uno::Type pType = aAny.getValueType();
 
                     if ( pType == cppu::UnoType<bool>::get() )
                     {
                         bool bTemp = false;
                         aAny >>= bTemp ;
-                        pItem = new SfxBoolItem( nSlot, bTemp );
+                        rpState.reset(new SfxBoolItem( nSlot, bTemp ));
                     }
                     else if ( pType == ::cppu::UnoType< ::cppu::UnoUnsignedShortType >::get() )
                     {
                         sal_uInt16 nTemp = 0;
                         aAny >>= nTemp ;
-                        pItem = new SfxUInt16Item( nSlot, nTemp );
+                        rpState.reset(new SfxUInt16Item( nSlot, nTemp ));
                     }
                     else if ( pType == cppu::UnoType<sal_uInt32>::get() )
                     {
                         sal_uInt32 nTemp = 0;
                         aAny >>= nTemp ;
-                        pItem = new SfxUInt32Item( nSlot, nTemp );
+                        rpState.reset(new SfxUInt32Item( nSlot, nTemp ));
                     }
                     else if ( pType == cppu::UnoType<OUString>::get() )
                     {
                         OUString sTemp ;
                         aAny >>= sTemp ;
-                        pItem = new SfxStringItem( nSlot, sTemp );
+                        rpState.reset(new SfxStringItem( nSlot, sTemp ));
                     }
                     else
-                        pItem = new SfxVoidItem( nSlot );
+                        rpState.reset(new SfxVoidItem( nSlot ));
                 }
 
                 xDisp->removeStatusListener( pBind, aURL );
                 pBind->Release();
-                rpState = pItem;
                 if ( bDeleteCache )
                     DELETEZ( pCache );
                 return eState;
@@ -1983,17 +1975,17 @@ SfxItemState SfxBindings::QueryState( sal_uInt16 nSlot, SfxPoolItem* &rpState )
     // Then test at the dispatcher to check if the returned items from
     // there are always DELETE_ON_IDLE, a copy of it has to be made in
     // order to allow for transition of ownership.
-    const SfxPoolItem *pItem = NULL;
+    const SfxPoolItem *pItem = nullptr;
     SfxItemState eState = pDispatcher->QueryState( nSlot, pItem );
     if ( eState == SfxItemState::SET )
     {
         DBG_ASSERT( pItem, "SfxItemState::SET but no item!" );
         if ( pItem )
-            rpState = pItem->Clone();
+            rpState.reset(pItem->Clone());
     }
     else if ( eState == SfxItemState::DEFAULT && pItem )
     {
-        rpState = pItem->Clone();
+        rpState.reset(pItem->Clone());
     }
 
     return eState;
@@ -2003,8 +1995,8 @@ void SfxBindings::SetSubBindings_Impl( SfxBindings *pSub )
 {
     if ( pImp->pSubBindings )
     {
-        pImp->pSubBindings->SetDispatchProvider_Impl( ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatchProvider > () );
-        pImp->pSubBindings->pImp->pSuperBindings = NULL;
+        pImp->pSubBindings->SetDispatchProvider_Impl( css::uno::Reference< css::frame::XDispatchProvider > () );
+        pImp->pSubBindings->pImp->pSuperBindings = nullptr;
     }
 
     pImp->pSubBindings = pSub;
@@ -2070,7 +2062,7 @@ void SfxBindings::InvalidateUnoControllers_Impl()
         for ( sal_uInt16 n=nCount; n>0; n-- )
         {
             SfxUnoControllerItem *pCtrl = (*pImp->pUnoCtrlArr)[n-1];
-            ::com::sun::star::uno::Reference< ::com::sun::star::frame::XStatusListener >  xRef( static_cast<cppu::OWeakObject*>(pCtrl), ::com::sun::star::uno::UNO_QUERY );
+            css::uno::Reference< css::frame::XStatusListener >  xRef( static_cast<cppu::OWeakObject*>(pCtrl), css::uno::UNO_QUERY );
             pCtrl->ReleaseDispatch();
             pCtrl->GetNewDispatch();
         }
@@ -2090,31 +2082,31 @@ bool SfxBindings::IsInUpdate() const
 
 void SfxBindings::SetVisibleState( sal_uInt16 nId, bool bShow )
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatch >  xDisp;
+    css::uno::Reference< css::frame::XDispatch >  xDisp;
     SfxStateCache *pCache = GetStateCache( nId );
     if ( pCache )
         pCache->SetVisibleState( bShow );
 }
 
-void SfxBindings::SetActiveFrame( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > & rFrame )
+void SfxBindings::SetActiveFrame( const css::uno::Reference< css::frame::XFrame > & rFrame )
 {
     if ( rFrame.is() || !pDispatcher )
-        SetDispatchProvider_Impl( ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatchProvider > ( rFrame, ::com::sun::star::uno::UNO_QUERY ) );
+        SetDispatchProvider_Impl( css::uno::Reference< css::frame::XDispatchProvider > ( rFrame, css::uno::UNO_QUERY ) );
     else
-        SetDispatchProvider_Impl( ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatchProvider > (
-            pDispatcher->GetFrame()->GetFrame().GetFrameInterface(), ::com::sun::star::uno::UNO_QUERY ) );
+        SetDispatchProvider_Impl( css::uno::Reference< css::frame::XDispatchProvider > (
+            pDispatcher->GetFrame()->GetFrame().GetFrameInterface(), css::uno::UNO_QUERY ) );
 }
 
-const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > SfxBindings::GetActiveFrame() const
+const css::uno::Reference< css::frame::XFrame > SfxBindings::GetActiveFrame() const
 {
-    const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > xFrame( pImp->xProv, ::com::sun::star::uno::UNO_QUERY );
+    const css::uno::Reference< css::frame::XFrame > xFrame( pImp->xProv, css::uno::UNO_QUERY );
     if ( xFrame.is() || !pDispatcher )
         return xFrame;
     else
         return pDispatcher->GetFrame()->GetFrame().GetFrameInterface();
 }
 
-void SfxBindings::SetDispatchProvider_Impl( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatchProvider > & rProv )
+void SfxBindings::SetDispatchProvider_Impl( const css::uno::Reference< css::frame::XDispatchProvider > & rProv )
 {
     bool bInvalidate = ( rProv != pImp->xProv );
     if ( bInvalidate )
@@ -2130,11 +2122,11 @@ void SfxBindings::SetDispatchProvider_Impl( const ::com::sun::star::uno::Referen
 
 bool SfxBindings::ExecuteCommand_Impl( const OUString& rCommand )
 {
-    ::com::sun::star::util::URL aURL;
+    css::util::URL aURL;
     aURL.Complete = rCommand;
     Reference< util::XURLTransformer > xTrans( util::URLTransformer::create( ::comphelper::getProcessComponentContext() ) );
     xTrans->parseStrict( aURL );
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatch >  xDisp = pImp->xProv->queryDispatch( aURL, OUString(), 0 );
+    css::uno::Reference< css::frame::XDispatch >  xDisp = pImp->xProv->queryDispatch( aURL, OUString(), 0 );
     if ( xDisp.is() )
     {
         new SfxAsyncExec_Impl( aURL, xDisp );
@@ -2144,12 +2136,12 @@ bool SfxBindings::ExecuteCommand_Impl( const OUString& rCommand )
     return false;
 }
 
-com::sun::star::uno::Reference< com::sun::star::frame::XDispatchRecorder > SfxBindings::GetRecorder() const
+css::uno::Reference< css::frame::XDispatchRecorder > SfxBindings::GetRecorder() const
 {
     return pImp->xRecorder;
 }
 
-void SfxBindings::SetRecorder_Impl( com::sun::star::uno::Reference< com::sun::star::frame::XDispatchRecorder >& rRecorder )
+void SfxBindings::SetRecorder_Impl( css::uno::Reference< css::frame::XDispatchRecorder >& rRecorder )
 {
     pImp->xRecorder = rRecorder;
 }
@@ -2176,7 +2168,7 @@ uno::Reference < frame::XDispatch > SfxBindings::GetDispatch( const SfxSlot* pSl
             new SfxOfficeDispatch( *this, pDispatcher, pSlot, aURL );
 
         pDispatch->SetMasterUnoCommand( bMasterCommand );
-        xRet = uno::Reference < frame::XDispatch >( pDispatch );
+        xRet.set( pDispatch );
         if ( !pCache )
             pCache = GetStateCache( pSlot->nSlotId );
 

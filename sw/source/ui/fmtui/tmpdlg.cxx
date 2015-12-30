@@ -242,10 +242,10 @@ SwTemplateDlg::SwTemplateDlg(vcl::Window* pParent,
         // frame styles
         case SFX_STYLE_FAMILY_FRAME:
         {
-            m_nTypeId = AddTabPage("type", SwFrmPage::Create,
-                                        SwFrmPage::GetRanges);
-            m_nOptionsId = AddTabPage("options", SwFrmAddPage::Create,
-                                        SwFrmAddPage::GetRanges);
+            m_nTypeId = AddTabPage("type", SwFramePage::Create,
+                                        SwFramePage::GetRanges);
+            m_nOptionsId = AddTabPage("options", SwFrameAddPage::Create,
+                                        SwFrameAddPage::GetRanges);
             m_nWrapId = AddTabPage("wrap", SwWrapTabPage::Create,
                                         SwWrapTabPage::GetRanges);
 
@@ -258,7 +258,7 @@ SwTemplateDlg::SwTemplateDlg(vcl::Window* pParent,
             m_nColumnId = AddTabPage("columns", SwColumnPage::Create,
                                         SwColumnPage::GetRanges );
 
-            m_nMacroId = AddTabPage("macros", pFact->GetTabPageCreatorFunc(RID_SVXPAGE_MACROASSIGN), 0);
+            m_nMacroId = AddTabPage("macros", pFact->GetTabPageCreatorFunc(RID_SVXPAGE_MACROASSIGN), nullptr);
 
         break;
         }
@@ -448,13 +448,13 @@ void SwTemplateDlg::PageCreated( sal_uInt16 nId, SfxTabPage &rPage )
     }
     else if (nId == m_nTypeId)
     {
-        static_cast<SwFrmPage&>(rPage).SetNewFrame( true );
-        static_cast<SwFrmPage&>(rPage).SetFormatUsed( true );
+        static_cast<SwFramePage&>(rPage).SetNewFrame( true );
+        static_cast<SwFramePage&>(rPage).SetFormatUsed( true );
     }
     else if (nId == m_nOptionsId)
     {
-        static_cast<SwFrmAddPage&>(rPage).SetFormatUsed(true);
-        static_cast<SwFrmAddPage&>(rPage).SetNewFrame(true);
+        static_cast<SwFrameAddPage&>(rPage).SetFormatUsed(true);
+        static_cast<SwFrameAddPage&>(rPage).SetNewFrame(true);
     }
     else if (nId == m_nWrapId)
     {
@@ -463,7 +463,7 @@ void SwTemplateDlg::PageCreated( sal_uInt16 nId, SfxTabPage &rPage )
     else if (nId == m_nColumnId)
     {
         if( nType == SFX_STYLE_FAMILY_FRAME )
-            static_cast<SwColumnPage&>(rPage).SetFrmMode(true);
+            static_cast<SwColumnPage&>(rPage).SetFrameMode(true);
         static_cast<SwColumnPage&>(rPage).SetFormatUsed( true );
     }
     //UUUU do not remove; many other style dialog combinations still use the SfxTabPage
@@ -538,14 +538,14 @@ void SwTemplateDlg::PageCreated( sal_uInt16 nId, SfxTabPage &rPage )
              aList.push_back( rCharFormatLB->GetEntry(j) );
 
         aSet.Put( SfxStringListItem( SID_CHAR_FMT_LIST_BOX,&aList ) ) ;
-        FieldUnit eMetric = ::GetDfltMetric(pDocShell->ISA(SwWebDocShell));
+        FieldUnit eMetric = ::GetDfltMetric(dynamic_cast< const SwWebDocShell *>( pDocShell ) !=  nullptr);
         aSet.Put ( SfxAllEnumItem(SID_METRIC_ITEM, static_cast< sal_uInt16 >(eMetric)));
         rPage.PageCreated(aSet);
     }
     else if (nId == m_nNumPosId)
     {
         SwDocShell* pDocShell = ::GetActiveWrtShell()->GetView().GetDocShell();
-        FieldUnit eMetric = ::GetDfltMetric(0 != PTR_CAST(SwWebDocShell, pDocShell));
+        FieldUnit eMetric = ::GetDfltMetric(dynamic_cast<SwWebDocShell*>( pDocShell) !=  nullptr );
 
         aSet.Put ( SfxAllEnumItem(SID_METRIC_ITEM, static_cast< sal_uInt16 >(eMetric)));
         rPage.PageCreated(aSet);

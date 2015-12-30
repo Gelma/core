@@ -14,10 +14,11 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <map>
 
-#define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKit.h>
 #include <LibreOfficeKit/LibreOfficeKitEnums.h>
 #include <LibreOfficeKit/LibreOfficeKitGtk.h>
+
+#define LOK_TILEBUFFER_ERROR (LOKTileBufferErrorQuark())
 
 // We know that VirtualDevices use a DPI of 96.
 const int DPI = 96;
@@ -45,14 +46,23 @@ float pixelToTwip(float fInput, float zoom);
 float twipToPixel(float fInput, float zoom);
 
 /**
+   Gets GQuark identifying this tile buffer errors
+*/
+GQuark LOKTileBufferErrorQuark(void);
+
+/**
    This class represents a single tile in the tile buffer.
    It encloses a reference to GdkPixBuf containing the pixel data of the tile.
 */
 class Tile
 {
  public:
-    Tile() : valid(false), m_pBuffer(0) {}
-    ~Tile() { }
+    Tile() : valid(false), m_pBuffer(nullptr) {}
+    ~Tile()
+    {
+        if (m_pBuffer)
+            cairo_surface_destroy(m_pBuffer);
+    }
 
     /**
        Tells if this tile is valid or not. Initialised to 0 (invalid) during
@@ -60,14 +70,14 @@ class Tile
     */
     bool valid;
 
-    /// Function to get the pointer to enclosing GdkPixbuf
-    GdkPixbuf* getBuffer();
+    /// Function to get the pointer to enclosing cairo_surface_t
+    cairo_surface_t* getBuffer();
     /// Used to set the pixel buffer of this object
-    void setPixbuf(GdkPixbuf*);
+    void setSurface(cairo_surface_t*);
 
 private:
     /// Pixel buffer data for this tile
-    GdkPixbuf *m_pBuffer;
+    cairo_surface_t *m_pBuffer;
 };
 
 /**
@@ -80,13 +90,14 @@ private:
 class TileBuffer
 {
  public:
- TileBuffer(LibreOfficeKitDocument *document,
-            int columns)
+ TileBuffer(LibreOfficeKitDocument *document = nullptr,
+            int columns = 0)
      : m_pLOKDocument(document)
-        , m_nWidth(columns)
+     , m_nWidth(columns)
     {
-        GdkPixbuf* pPixBuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, nTileSizePixels, nTileSizePixels);
-        m_DummyTile.setPixbuf(pPixBuf);
+        cairo_surface_t *pSurface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, nTileSizePixels, nTileSizePixels);
+        m_DummyTile.setSurface(pSurface);
+        cairo_surface_destroy(pSurface);
     }
 
     ~TileBuffer() {}
@@ -101,7 +112,6 @@ class TileBuffer
 
        @param x the tile along the x-axis of the buffer
        @param y the tile along the y-axis of the buffer
-       @param aZoom current zoom factor of the document
        @param task GTask object containing the necessary data
        @param pool GThreadPool managed by the widget instance used for all the
        LOK calls made by widget. It is needed here because getTile invokes one
@@ -109,7 +119,7 @@ class TileBuffer
 
        @return the tile at the mentioned position (x, y)
      */
-    Tile& getTile(int x, int y, float aZoom, GTask* task, GThreadPool* pool);
+    Tile& getTile(int x, int y, GTask* task, GThreadPool* pool);
     /// Destroys all the tiles in the tile buffer; also frees the memory allocated
     /// for all the Tile objects.
     void resetAllTiles();
@@ -147,7 +157,14 @@ enum
     LOK_POST_KEY,
     LOK_PAINT_TILE,
     LOK_POST_MOUSE_EVENT,
-    LOK_SET_GRAPHIC_SELECTION
+    LOK_SET_GRAPHIC_SELECTION,
+    LOK_SET_CLIENT_ZOOM
+};
+
+enum
+{
+    LOK_TILEBUFFER_CHANGED,
+    LOK_TILEBUFFER_MEMORY
 };
 
 /**
@@ -166,6 +183,7 @@ struct LOEvent
     ///@{
     const gchar* m_pCommand;
     gchar* m_pArguments;
+    gboolean m_bNotifyWhenFinished;
     ///@}
 
     /// @name open_document parameter
@@ -194,6 +212,7 @@ struct LOEvent
     int m_nPaintTileX;
     int m_nPaintTileY;
     float m_fPaintTileZoom;
+    TileBuffer* m_pTileBuffer;
     ///@}
 
     /// @name postMouseEvent parameters
@@ -202,6 +221,8 @@ struct LOEvent
     int m_nPostMouseEventX;
     int m_nPostMouseEventY;
     int m_nPostMouseEventCount;
+    int m_nPostMouseEventButton;
+    int m_nPostMouseEventModifier;
     ///@}
 
     /// @name setGraphicSelection parameters
@@ -211,12 +232,21 @@ struct LOEvent
     int m_nSetGraphicSelectionY;
     ///@}
 
+    /// @name setClientView parameters
+    ///@{
+    int m_nTilePixelWidth;
+    int m_nTilePixelHeight;
+    int m_nTileTwipWidth;
+    int m_nTileTwipHeight;
+    ///@}
+
     /// Constructor to instantiate an object of type `type`.
-    LOEvent(int type)
+    explicit LOEvent(int type)
         : m_nType(type)
-        , m_pCommand(0)
-        , m_pArguments(0)
-        , m_pPath(0)
+        , m_pCommand(nullptr)
+        , m_pArguments(nullptr)
+        , m_bNotifyWhenFinished(false)
+        , m_pPath(nullptr)
         , m_bEdit(false)
         , m_nPartMode(0)
         , m_nPart(0)
@@ -226,13 +256,20 @@ struct LOEvent
         , m_nPaintTileX(0)
         , m_nPaintTileY(0)
         , m_fPaintTileZoom(0)
+        , m_pTileBuffer(nullptr)
         , m_nPostMouseEventType(0)
         , m_nPostMouseEventX(0)
         , m_nPostMouseEventY(0)
         , m_nPostMouseEventCount(0)
+        , m_nPostMouseEventButton(0)
+        , m_nPostMouseEventModifier(0)
         , m_nSetGraphicSelectionType(0)
         , m_nSetGraphicSelectionX(0)
         , m_nSetGraphicSelectionY(0)
+        , m_nTilePixelWidth(0)
+        , m_nTilePixelHeight(0)
+        , m_nTileTwipWidth(0)
+        , m_nTileTwipHeight(0)
     {
     }
 

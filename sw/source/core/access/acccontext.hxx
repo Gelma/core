@@ -31,7 +31,7 @@
 
 namespace vcl { class Window; }
 class SwAccessibleMap;
-class SwCrsrShell;
+class SwCursorShell;
 class SdrObject;
 class SwPaM;
 namespace utl {
@@ -45,21 +45,20 @@ const sal_Char sAccessibleServiceName[] = "com.sun.star.accessibility.Accessible
 
 class SwAccessibleContext :
     public ::cppu::WeakImplHelper<
-                ::com::sun::star::accessibility::XAccessible,
-                ::com::sun::star::accessibility::XAccessibleContext,
-                ::com::sun::star::accessibility::XAccessibleComponent,
-                ::com::sun::star::accessibility::XAccessibleEventBroadcaster,
-                ::com::sun::star::lang::XServiceInfo
+                css::accessibility::XAccessible,
+                css::accessibility::XAccessibleContext,
+                css::accessibility::XAccessibleComponent,
+                css::accessibility::XAccessibleEventBroadcaster,
+                css::lang::XServiceInfo
                 >,
     public SwAccessibleFrame
 {
     // The implements for the XAccessibleSelection interface has been
     // 'externalized' and wants access to the protected members like
-    // GetMap, GetChild, GetParent, and GetFrm.
+    // GetMap, GetChild, GetParent, and GetFrame.
     friend class SwAccessibleSelectionHelper;
 
 protected:
-    mutable ::osl::Mutex m_ListenerMutex;
     mutable ::osl::Mutex m_Mutex;
 
 private:
@@ -67,8 +66,8 @@ private:
 
     // The parent if it has been retrieved. This is always an
     // SwAccessibleContext. (protected by Mutex)
-    ::com::sun::star::uno::WeakReference <
-        ::com::sun::star::accessibility::XAccessible > m_xWeakParent;
+    css::uno::WeakReference <
+        css::accessibility::XAccessible > m_xWeakParent;
 
     SwAccessibleMap *m_pMap; // must be protected by solar mutex
 
@@ -99,7 +98,7 @@ protected:
     //This flag is used to mark the object's selected state.
     bool   m_isSelectedInDoc;
     void SetParent( SwAccessibleContext *pParent );
-    ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible> GetWeakParent() const;
+    css::uno::Reference< css::accessibility::XAccessible> GetWeakParent() const;
 
     bool IsDisposing() const { return m_isDisposing; }
 
@@ -117,15 +116,15 @@ protected:
         return GetMap()->GetShell();
     }
 
-    /** convenience method to get SwCrsrShell through accessibility map
-     * @returns SwCrsrShell, or NULL if none is found */
-    SwCrsrShell* GetCrsrShell();
-    const SwCrsrShell* GetCrsrShell() const;
+    /** convenience method to get SwCursorShell through accessibility map
+     * @returns SwCursorShell, or NULL if none is found */
+    SwCursorShell* GetCursorShell();
+    const SwCursorShell* GetCursorShell() const;
 
     // Notify all children that the vis area has changed.
-    // The SwFrm might belong to the current object or to any other child or
+    // The SwFrame might belong to the current object or to any other child or
     // grandchild.
-    void ChildrenScrolled( const SwFrm *pFrm, const SwRect& rOldVisArea );
+    void ChildrenScrolled( const SwFrame *pFrame, const SwRect& rOldVisArea );
 
     // The context's showing state changed. May only be called for context that
     // exist even if they aren't visible.
@@ -140,15 +139,15 @@ protected:
     // The context has to be removed while setting the vis area
     void ScrolledOut( const SwRect& rOldVisArea );
 
-    // Invalidate the states of all children of the specified SwFrm. The
-    // SwFrm might belong the current object or to any child or grandchild!
+    // Invalidate the states of all children of the specified SwFrame. The
+    // SwFrame might belong the current object or to any child or grandchild!
     // #i27301# - use new type definition for <_nStates>
-    void InvalidateChildrenStates( const SwFrm* _pFrm,
+    void InvalidateChildrenStates( const SwFrame* _pFrame,
                                    AccessibleStates _nStates );
 
-    // Dispose children of the specified SwFrm. The SwFrm might belong to
+    // Dispose children of the specified SwFrame. The SwFrame might belong to
     // the current object or to any other child or grandchild.
-    void DisposeChildren( const SwFrm *pFrm,
+    void DisposeChildren( const SwFrame *pFrame,
                           bool bRecursive );
 
     void DisposeShape( const SdrObject *pObj,
@@ -163,7 +162,7 @@ protected:
 
 public:
     void SetMap(SwAccessibleMap *const pMap) { m_pMap = pMap; }
-    void FireAccessibleEvent( ::com::sun::star::accessibility::AccessibleEventObject& rEvent );
+    void FireAccessibleEvent( css::accessibility::AccessibleEventObject& rEvent );
 
 protected:
     // broadcast visual data event
@@ -179,7 +178,7 @@ protected:
 
      bool IsEditableState();
 
-    ::com::sun::star::awt::Rectangle SAL_CALL
+    css::awt::Rectangle SAL_CALL
         getBoundsImpl(bool bRelative)
         throw (css::uno::RuntimeException, std::exception);
 
@@ -188,133 +187,130 @@ protected:
     {
         m_isRegisteredAtAccessibleMap = false;
     }
-    void RemoveFrmFromAccessibleMap();
+    void RemoveFrameFromAccessibleMap();
 
     virtual ~SwAccessibleContext();
 
 public:
     SwAccessibleContext( SwAccessibleMap *m_pMap, sal_Int16 nRole,
-                         const SwFrm *pFrm );
+                         const SwFrame *pFrame );
 
     // XAccessible
 
     // Return the XAccessibleContext.
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessibleContext> SAL_CALL
-        getAccessibleContext() throw (com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Reference< css::accessibility::XAccessibleContext> SAL_CALL
+        getAccessibleContext() throw (css::uno::RuntimeException, std::exception) override;
 
     // XAccessibleContext
 
     // Return the number of currently visible children.
     virtual sal_Int32 SAL_CALL getAccessibleChildCount()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // Return the specified child or NULL if index is invalid.
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible> SAL_CALL
+    virtual css::uno::Reference< css::accessibility::XAccessible> SAL_CALL
         getAccessibleChild (sal_Int32 nIndex)
-        throw (::com::sun::star::uno::RuntimeException,
-                ::com::sun::star::lang::IndexOutOfBoundsException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException,
+                css::lang::IndexOutOfBoundsException, std::exception) override;
 
     // Return a reference to the parent.
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible> SAL_CALL
+    virtual css::uno::Reference< css::accessibility::XAccessible> SAL_CALL
         getAccessibleParent()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // Return this objects index among the parents children.
     virtual sal_Int32 SAL_CALL
         getAccessibleIndexInParent()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // Return this object's role.
     virtual sal_Int16 SAL_CALL
         getAccessibleRole()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // Return this object's description.
     virtual OUString SAL_CALL
         getAccessibleDescription()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // Return the object's current name.
     virtual OUString SAL_CALL
         getAccessibleName()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // Return NULL to indicate that an empty relation set.
-    virtual ::com::sun::star::uno::Reference<
-            ::com::sun::star::accessibility::XAccessibleRelationSet> SAL_CALL
+    virtual css::uno::Reference<
+            css::accessibility::XAccessibleRelationSet> SAL_CALL
         getAccessibleRelationSet()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // Return the set of current states.
-    virtual ::com::sun::star::uno::Reference<
-            ::com::sun::star::accessibility::XAccessibleStateSet> SAL_CALL
+    virtual css::uno::Reference<
+            css::accessibility::XAccessibleStateSet> SAL_CALL
         getAccessibleStateSet()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     /** Return the parents locale or throw exception if this object has no
         parent yet/anymore. */
-    virtual ::com::sun::star::lang::Locale SAL_CALL
+    virtual css::lang::Locale SAL_CALL
         getLocale()
-        throw (::com::sun::star::accessibility::IllegalAccessibleComponentStateException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::accessibility::IllegalAccessibleComponentStateException, css::uno::RuntimeException, std::exception) override;
 
     // XAccessibleEventBroadcaster
 
     virtual void SAL_CALL addAccessibleEventListener(
-            const ::com::sun::star::uno::Reference<
-                ::com::sun::star::accessibility::XAccessibleEventListener >& xListener )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            const css::uno::Reference< css::accessibility::XAccessibleEventListener >& xListener )
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL removeAccessibleEventListener(
-            const ::com::sun::star::uno::Reference<
-                ::com::sun::star::accessibility::XAccessibleEventListener >& xListener )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            const css::uno::Reference< css::accessibility::XAccessibleEventListener >& xListener )
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // XAccessibleComponent
     virtual sal_Bool SAL_CALL containsPoint(
-            const ::com::sun::star::awt::Point& aPoint )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            const css::awt::Point& aPoint )
+        throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual ::com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessible > SAL_CALL getAccessibleAtPoint(
-                const ::com::sun::star::awt::Point& aPoint )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Reference< css::accessibility::XAccessible > SAL_CALL getAccessibleAtPoint(
+                const css::awt::Point& aPoint )
+        throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual ::com::sun::star::awt::Rectangle SAL_CALL getBounds()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::awt::Rectangle SAL_CALL getBounds()
+        throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual ::com::sun::star::awt::Point SAL_CALL getLocation()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::awt::Point SAL_CALL getLocation()
+        throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual ::com::sun::star::awt::Point SAL_CALL getLocationOnScreen()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::awt::Point SAL_CALL getLocationOnScreen()
+        throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual ::com::sun::star::awt::Size SAL_CALL getSize()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::awt::Size SAL_CALL getSize()
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL grabFocus()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual sal_Int32 SAL_CALL getForeground()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual sal_Int32 SAL_CALL getBackground()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // XServiceInfo
 
     /** Returns an identifier for the implementation of this object. */
     virtual OUString SAL_CALL
         getImplementationName()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     /** Return whether the specified service is supported by this class. */
     virtual sal_Bool SAL_CALL
         supportsService (const OUString& sServiceName)
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     /** Returns a list of all supported services.  In this case that is just
         the AccessibleContext service. */
-    virtual ::com::sun::star::uno::Sequence< OUString> SAL_CALL
+    virtual css::uno::Sequence< OUString> SAL_CALL
         getSupportedServiceNames()
-             throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+             throw (css::uno::RuntimeException, std::exception) override;
 
     // thread safe C++ interface
 
@@ -322,14 +318,14 @@ public:
     virtual void Dispose( bool bRecursive = false );
 
     // The child object is not visible an longer and should be destroyed
-    virtual void DisposeChild( const sw::access::SwAccessibleChild& rFrmOrObj, bool bRecursive );
+    virtual void DisposeChild( const sw::access::SwAccessibleChild& rFrameOrObj, bool bRecursive );
 
     // The object has been moved by the layout
-    virtual void InvalidatePosOrSize( const SwRect& rFrm );
+    virtual void InvalidatePosOrSize( const SwRect& rFrame );
 
     // The child object has been moved by the layout
-    virtual void InvalidateChildPosOrSize( const sw::access::SwAccessibleChild& rFrmOrObj,
-                                           const SwRect& rFrm );
+    virtual void InvalidateChildPosOrSize( const sw::access::SwAccessibleChild& rFrameOrObj,
+                                           const SwRect& rFrame );
 
     // The content may have changed (but it hasn't to have changed)
     void InvalidateContent();
@@ -365,11 +361,11 @@ public:
     bool Select( SwPaM *pPaM, SdrObject *pObj, bool bAdd );
     inline bool Select( SwPaM& rPaM )
     {
-        return Select( &rPaM, 0, false );
+        return Select( &rPaM, nullptr, false );
     }
     inline bool Select( SdrObject *pObj, bool bAdd )
     {
-        return Select( 0, pObj, bAdd );
+        return Select( nullptr, pObj, bAdd );
     }
 
     //This method is used to updated the selected state and fire the selected state changed event.
@@ -377,25 +373,25 @@ public:
     bool  IsSeletedInDoc() { return m_isSelectedInDoc; }
 
     static OUString GetResource( sal_uInt16 nResId,
-                                        const OUString *pArg1 = 0,
-                                        const OUString *pArg2 = 0 );
+                                        const OUString *pArg1 = nullptr,
+                                        const OUString *pArg2 = nullptr );
 };
 
 // some heavily used exception support
-#define THROW_RUNTIME_EXCEPTION( ifc, msg )                                 \
-    ::com::sun::star::uno::Reference < ifc > xThis( this );                 \
-    ::com::sun::star::uno::RuntimeException aExcept(                        \
+#define THROW_RUNTIME_EXCEPTION( ifc, msg )         \
+    css::uno::Reference < ifc > xThis( this );      \
+    css::uno::RuntimeException aExcept(             \
         OUString( msg ), xThis );       \
     throw aExcept;
 
-#define CHECK_FOR_DEFUNC_THIS( ifc, ths )                                   \
-    if( !(GetFrm() && GetMap()) )                                           \
-    {                                                                       \
-        ::com::sun::star::uno::Reference < ifc > xThis( ths );              \
-        ::com::sun::star::lang::DisposedException aExcept(                  \
+#define CHECK_FOR_DEFUNC_THIS( ifc, ths )                \
+    if( !(GetFrame() && GetMap()) )                        \
+    {                                                    \
+        css::uno::Reference < ifc > xThis( ths );        \
+        css::lang::DisposedException aExcept(            \
             OUString( "object is defunctional" ),        \
-            xThis );                                                        \
-        throw aExcept;                                                      \
+            xThis );                                     \
+        throw aExcept;                                   \
     }
 
 #define CHECK_FOR_DEFUNC( ifc )                                             \

@@ -159,13 +159,12 @@ WriteAndUpdateSignatures(FILE *fpDest, void *buffer,
 void
 AdjustIndexContentOffsets(char *indexBuf, uint32_t indexLength, uint32_t offsetAmount)
 {
-  uint32_t *offsetToContent;
   char *indexBufLoc = indexBuf;
 
   /* Consume the index and adjust each index by the specified amount */
   while (indexBufLoc != (indexBuf + indexLength)) {
     /* Adjust the offset */
-    offsetToContent = (uint32_t *)indexBufLoc;
+    uint32_t* offsetToContent = (uint32_t *)indexBufLoc;
     *offsetToContent = ntohl(*offsetToContent);
     *offsetToContent += offsetAmount;
     *offsetToContent = htonl(*offsetToContent);
@@ -263,7 +262,7 @@ strip_signature_block(const char *src, const char * dest)
   FILE *fpSrc = NULL, *fpDest = NULL;
   int rv = -1, hasSignatureBlock;
   char buf[BLOCKSIZE];
-  char *indexBuf = NULL, *indexBufLoc;
+  char *indexBuf = NULL;
 
   if (!src || !dest) {
     fprintf(stderr, "ERROR: Invalid parameter passed in.\n");
@@ -433,7 +432,6 @@ strip_signature_block(const char *src, const char * dest)
 
   /* Consume the index and adjust each index by the difference */
   indexBuf = malloc(indexLength);
-  indexBufLoc = indexBuf;
   if (fread(indexBuf, indexLength, 1, fpSrc) != 1) {
     fprintf(stderr, "ERROR: Could not read index\n");
     goto failure;
@@ -837,7 +835,7 @@ mar_repackage_and_sign(const char *NSSConfigDir,
   char buf[BLOCKSIZE];
   SECKEYPrivateKey *privKeys[MAX_SIGNATURES];
   CERTCertificate *certs[MAX_SIGNATURES];
-  char *indexBuf = NULL, *indexBufLoc;
+  char *indexBuf = NULL;
   uint32_t k;
 
   memset(signatureLengths, 0, sizeof(signatureLengths));
@@ -1059,7 +1057,6 @@ mar_repackage_and_sign(const char *NSSConfigDir,
 
   /* Consume the index and adjust each index by signatureSectionLength */
   indexBuf = malloc(indexLength);
-  indexBufLoc = indexBuf;
   if (fread(indexBuf, indexLength, 1, fpSrc) != 1) {
     fprintf(stderr, "ERROR: Could not read index\n");
     goto failure;

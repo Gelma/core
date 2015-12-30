@@ -74,7 +74,7 @@ struct ScAccNote
     bool    mbMarkNote;
 
     ScAccNote()
-        : mpTextHelper(NULL)
+        : mpTextHelper(nullptr)
         , mnParaCount(0)
         , mbMarkNote(false)
     {
@@ -174,7 +174,7 @@ sal_Int32 ScNotesChildren::AddNotes(const ScPreviewLocationData& rData, const Re
                 if (bMark)
                 {
                     // Document not needed, because only the cell address, but not the tablename is needed
-                    aNote.maNoteText = aNote.maNoteCell.Format(SCA_VALID, NULL);
+                    aNote.maNoteText = aNote.maNoteCell.Format(SCA_VALID);
                 }
                 else
                 {
@@ -207,7 +207,7 @@ void ScNotesChildren::Init(const Rectangle& rVisRect, sal_Int32 nOffset)
 struct ScParaFound
 {
     sal_Int32 mnIndex;
-    ScParaFound(sal_Int32 nIndex) : mnIndex(nIndex) {}
+    explicit ScParaFound(sal_Int32 nIndex) : mnIndex(nIndex) {}
     bool operator() (const ScAccNote& rNote)
     {
         bool bResult(false);
@@ -264,7 +264,7 @@ struct ScPointFound
 {
     Rectangle maPoint;
     sal_Int32 mnParagraphs;
-    ScPointFound(const Point& rPoint) : maPoint(rPoint, Size(0, 0)), mnParagraphs(0) {}
+    explicit ScPointFound(const Point& rPoint) : maPoint(rPoint, Size(0, 0)), mnParagraphs(0) {}
     bool operator() (const ScAccNote& rNote)
     {
         bool bResult(false);
@@ -346,7 +346,7 @@ sal_Int32 ScNotesChildren::CheckChanges(const ScPreviewLocationData& rData,
                 if (bMark)
                 {
                     // Document not needed, because only the cell address, but not the tablename is needed
-                    aNote.maNoteText = aNote.maNoteCell.Format(SCA_VALID, NULL);
+                    aNote.maNoteText = aNote.maNoteCell.Format(SCA_VALID);
                 }
                 else
                 {
@@ -421,7 +421,7 @@ sal_Int32 ScNotesChildren::CheckChanges(const ScPreviewLocationData& rData,
 struct ScChildGone
 {
     ScAccessibleDocumentPagePreview* mpAccDoc;
-    ScChildGone(ScAccessibleDocumentPagePreview* pAccDoc) : mpAccDoc(pAccDoc) {}
+    explicit ScChildGone(ScAccessibleDocumentPagePreview* pAccDoc) : mpAccDoc(pAccDoc) {}
     void operator() (const uno::Reference<XAccessible>& xAccessible) const
     {
         if (mpAccDoc)
@@ -439,7 +439,7 @@ struct ScChildGone
 struct ScChildNew
 {
     ScAccessibleDocumentPagePreview* mpAccDoc;
-    ScChildNew(ScAccessibleDocumentPagePreview* pAccDoc) : mpAccDoc(pAccDoc) {}
+    explicit ScChildNew(ScAccessibleDocumentPagePreview* pAccDoc) : mpAccDoc(pAccDoc) {}
     void operator() (const uno::Reference<XAccessible>& xAccessible) const
     {
         if (mpAccDoc)
@@ -474,7 +474,7 @@ void ScNotesChildren::DataChanged(const Rectangle& rVisRect)
 
 inline ScDocument* ScNotesChildren::GetDocument() const
 {
-    ScDocument* pDoc = NULL;
+    ScDocument* pDoc = nullptr;
     if (mpViewShell)
         pDoc = &mpViewShell->GetDocument();
     return pDoc;
@@ -491,9 +491,9 @@ public:
 
     ///=====  IAccessibleViewForwarder  ========================================
 
-    virtual Rectangle GetVisibleArea() const SAL_OVERRIDE;
-    virtual Point LogicToPixel (const Point& rPoint) const SAL_OVERRIDE;
-    virtual Size LogicToPixel (const Size& rSize) const SAL_OVERRIDE;
+    virtual Rectangle GetVisibleArea() const override;
+    virtual Point LogicToPixel (const Point& rPoint) const override;
+    virtual Size LogicToPixel (const Size& rSize) const override;
 
 private:
     ScPreviewShell*                     mpViewShell;
@@ -503,7 +503,7 @@ private:
 };
 
 ScIAccessibleViewForwarder::ScIAccessibleViewForwarder()
-    : mpViewShell(NULL), mpAccDoc(NULL), mbValid(false)
+    : mpViewShell(nullptr), mpAccDoc(nullptr), mbValid(false)
 {
 }
 
@@ -566,14 +566,13 @@ Size ScIAccessibleViewForwarder::LogicToPixel (const Size& rSize) const
 struct ScShapeChild
 {
     ScShapeChild()
-        : mpAccShape(NULL)
-        , mnRangeId(0)
+        : mnRangeId(0)
     {
     }
     ScShapeChild(const ScShapeChild& rOld);
     ~ScShapeChild();
-    mutable ::accessibility::AccessibleShape* mpAccShape;
-    com::sun::star::uno::Reference< com::sun::star::drawing::XShape > mxShape;
+    mutable rtl::Reference< ::accessibility::AccessibleShape > mpAccShape;
+    css::uno::Reference< css::drawing::XShape > mxShape;
     sal_Int32 mnRangeId;
 };
 
@@ -582,17 +581,13 @@ ScShapeChild::ScShapeChild(const ScShapeChild& rOld)
 mpAccShape(rOld.mpAccShape),
 mxShape(rOld.mxShape),
 mnRangeId(rOld.mnRangeId)
-{
-    if (mpAccShape)
-        mpAccShape->acquire();
-}
+{}
 
 ScShapeChild::~ScShapeChild()
 {
-    if (mpAccShape)
+    if (mpAccShape.is())
     {
         mpAccShape->dispose();
-        mpAccShape->release();
     }
 }
 
@@ -630,16 +625,16 @@ public:
 
     ///=====  SfxListener  =====================================================
 
-    virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+    virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
     ///=====  IAccessibleParent  ==============================================
 
     virtual bool ReplaceChild (
         ::accessibility::AccessibleShape* pCurrentChild,
-        const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >& _rxShape,
+        const css::uno::Reference< css::drawing::XShape >& _rxShape,
         const long _nIndex,
         const ::accessibility::AccessibleShapeTreeInfo& _rShapeTreeInfo
-    )   throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
+    )   throw (css::uno::RuntimeException) override;
 
     ///=====  Internal  ========================================================
 
@@ -813,10 +808,10 @@ namespace
     struct ScVisAreaChanged
     {
         const ScIAccessibleViewForwarder* mpViewForwarder;
-        ScVisAreaChanged(const ScIAccessibleViewForwarder* pViewForwarder) : mpViewForwarder(pViewForwarder) {}
+        explicit ScVisAreaChanged(const ScIAccessibleViewForwarder* pViewForwarder) : mpViewForwarder(pViewForwarder) {}
         void operator() (const ScShapeChild& rAccShapeData) const
         {
-            if (rAccShapeData.mpAccShape)
+            if (rAccShapeData.mpAccShape.is())
             {
                 rAccShapeData.mpAccShape->ViewForwarderChanged(::accessibility::IAccessibleViewForwarderListener::VISIBLE_AREA, mpViewForwarder);
             }
@@ -841,7 +836,7 @@ void ScShapeChildren::VisAreaChanged() const
     ///=====  IAccessibleParent  ==============================================
 
 bool ScShapeChildren::ReplaceChild (::accessibility::AccessibleShape* /* pCurrentChild */,
-    const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >& /* _rxShape */,
+    const css::uno::Reference< css::drawing::XShape >& /* _rxShape */,
         const long /* _nIndex */, const ::accessibility::AccessibleShapeTreeInfo& /* _rShapeTreeInfo */)
         throw (uno::RuntimeException)
 {
@@ -961,7 +956,7 @@ uno::Reference<XAccessible> ScShapeChildren::GetControl(sal_Int32 nIndex) const
 struct ScShapePointFound
 {
     Point maPoint;
-    ScShapePointFound(const awt::Point& rPoint) : maPoint(VCLPoint(rPoint)) {}
+    explicit ScShapePointFound(const awt::Point& rPoint) : maPoint(VCLPoint(rPoint)) {}
     bool operator() (const ScShapeChild& rShape)
     {
         bool bResult(false);
@@ -1015,7 +1010,7 @@ uno::Reference<XAccessible> ScShapeChildren::GetBackgroundShapeAt(const awt::Poi
 
 ::accessibility::AccessibleShape* ScShapeChildren::GetAccShape(const ScShapeChild& rShape) const
 {
-    if (!rShape.mpAccShape)
+    if (!rShape.mpAccShape.is())
     {
         ::accessibility::ShapeTypeHandler& rShapeHandler = ::accessibility::ShapeTypeHandler::Instance();
         ::accessibility::AccessibleShapeInfo aShapeInfo(rShape.mxShape, mpAccDoc, const_cast<ScShapeChildren*>(this));
@@ -1024,18 +1019,17 @@ uno::Reference<XAccessible> ScShapeChildren::GetBackgroundShapeAt(const awt::Poi
         {
             ::accessibility::AccessibleShapeTreeInfo aShapeTreeInfo;
             aShapeTreeInfo.SetSdrView(mpViewShell->GetPreview()->GetDrawView());
-            aShapeTreeInfo.SetController(NULL);
+            aShapeTreeInfo.SetController(nullptr);
             aShapeTreeInfo.SetWindow(mpViewShell->GetWindow());
             aShapeTreeInfo.SetViewForwarder(&(maShapeRanges[rShape.mnRangeId].maViewForwarder));
             rShape.mpAccShape = rShapeHandler.CreateAccessibleObject(aShapeInfo, aShapeTreeInfo);
-            if (rShape.mpAccShape)
+            if (rShape.mpAccShape.is())
             {
-                rShape.mpAccShape->acquire();
                 rShape.mpAccShape->Init();
             }
         }
     }
-    return rShape.mpAccShape;
+    return rShape.mpAccShape.get();
 }
 
 ::accessibility::AccessibleShape* ScShapeChildren::GetAccShape(const ScShapeChildVec& rShapes, sal_Int32 nIndex) const
@@ -1121,7 +1115,7 @@ void ScShapeChildren::FillShapes(const Rectangle& aPixelPaintRect, const MapMode
 SdrPage* ScShapeChildren::GetDrawPage() const
 {
     SCTAB nTab( mpViewShell->GetLocationData().GetPrintTab() );
-    SdrPage* pDrawPage = NULL;
+    SdrPage* pDrawPage = nullptr;
     ScDocument& rDoc = mpViewShell->GetDocument();
     if (rDoc.GetDrawLayer())
     {
@@ -1198,11 +1192,10 @@ ScAccessibleDocumentPagePreview::ScAccessibleDocumentPagePreview(
         const uno::Reference<XAccessible>& rxParent, ScPreviewShell* pViewShell ) :
     ScAccessibleDocumentBase(rxParent),
     mpViewShell(pViewShell),
-    mpNotesChildren(NULL),
-    mpShapeChildren(NULL),
-    mpTable(NULL),
-    mpHeader(NULL),
-    mpFooter(NULL)
+    mpNotesChildren(nullptr),
+    mpShapeChildren(nullptr),
+    mpHeader(nullptr),
+    mpFooter(nullptr)
 {
     if (pViewShell)
         pViewShell->AddAccessibilityObject(*this);
@@ -1223,26 +1216,22 @@ ScAccessibleDocumentPagePreview::~ScAccessibleDocumentPagePreview()
 void SAL_CALL ScAccessibleDocumentPagePreview::disposing()
 {
     SolarMutexGuard aGuard;
-    if (mpTable)
-    {
-        mpTable->release();
-        mpTable = NULL;
-    }
+    mpTable.clear();
     if (mpHeader)
     {
         mpHeader->release();
-        mpHeader = NULL;
+        mpHeader = nullptr;
     }
     if (mpFooter)
     {
         mpFooter->release();
-        mpFooter = NULL;
+        mpFooter = nullptr;
     }
 
     if (mpViewShell)
     {
         mpViewShell->RemoveAccessibilityObject(*this);
-        mpViewShell = NULL;
+        mpViewShell = nullptr;
     }
 
     // no need to Dispose the AccessibleTextHelper,
@@ -1266,10 +1255,10 @@ void ScAccessibleDocumentPagePreview::Notify( SfxBroadcaster& rBC, const SfxHint
         // only notify if child exist, otherwise it is not necessary
         if (pSimpleHint->GetId() == SC_HINT_DATACHANGED)
         {
-            if (mpTable) // if there is no table there is nothing to notify, because no one recongnizes the change
+            if (mpTable.is()) // if there is no table there is nothing to notify, because no one recongnizes the change
             {
                 {
-                    uno::Reference<XAccessible> xAcc = mpTable;
+                    uno::Reference<XAccessible> xAcc = mpTable.get();
                     AccessibleEventObject aEvent;
                     aEvent.EventId = AccessibleEventId::CHILD;
                     aEvent.Source = uno::Reference< XAccessibleContext >(this);
@@ -1278,8 +1267,7 @@ void ScAccessibleDocumentPagePreview::Notify( SfxBroadcaster& rBC, const SfxHint
                 }
 
                 mpTable->dispose();
-                mpTable->release();
-                mpTable = NULL;
+                mpTable.clear();
             }
 
             Size aOutputSize;
@@ -1301,11 +1289,10 @@ void ScAccessibleDocumentPagePreview::Notify( SfxBroadcaster& rBC, const SfxHint
                 sal_Int32 nIndex (aCount.nBackShapes + aCount.nHeaders);
 
                 mpTable = new ScAccessiblePreviewTable( this, mpViewShell, nIndex );
-                mpTable->acquire();
                 mpTable->Init();
 
                 {
-                    uno::Reference<XAccessible> xAcc = mpTable;
+                    uno::Reference<XAccessible> xAcc = mpTable.get();
                     AccessibleEventObject aEvent;
                     aEvent.EventId = AccessibleEventId::CHILD;
                     aEvent.Source = uno::Reference< XAccessibleContext >(this);
@@ -1366,17 +1353,16 @@ uno::Reference< XAccessible > SAL_CALL ScAccessibleDocumentPagePreview::getAcces
                 const ScPreviewLocationData& rData = mpViewShell->GetLocationData();
                 ScPagePreviewCountData aCount( rData, mpViewShell->GetWindow(), GetNotesChildren(), GetShapeChildren() );
 
-                if ( !mpTable && (aCount.nTables > 0) )
+                if ( !mpTable.is() && (aCount.nTables > 0) )
                 {
                     //! order is background shapes, header, table or notes, footer, foreground shapes, controls
                     sal_Int32 nIndex (aCount.nBackShapes + aCount.nHeaders);
 
                     mpTable = new ScAccessiblePreviewTable( this, mpViewShell, nIndex );
-                    mpTable->acquire();
                     mpTable->Init();
                 }
-                if (mpTable && VCLRectangle(mpTable->getBounds()).IsInside(VCLPoint(rPoint)))
-                    xAccessible = mpTable;
+                if (mpTable.is() && VCLRectangle(mpTable->getBounds()).IsInside(VCLPoint(rPoint)))
+                    xAccessible = mpTable.get();
             }
             if (!xAccessible.is())
                 xAccessible = GetNotesChildren()->GetAt(rPoint);
@@ -1475,13 +1461,12 @@ uno::Reference<XAccessible> SAL_CALL ScAccessibleDocumentPagePreview::getAccessi
         }
         else if ( nIndex < aCount.nBackShapes + aCount.nHeaders + aCount.nTables )
         {
-            if ( !mpTable )
+            if ( !mpTable.is() )
             {
                 mpTable = new ScAccessiblePreviewTable( this, mpViewShell, nIndex );
-                mpTable->acquire();
                 mpTable->Init();
             }
-            xAccessible = mpTable;
+            xAccessible = mpTable.get();
         }
         else if ( nIndex < aCount.nBackShapes + aCount.nHeaders + aCount.nNoteParagraphs )
         {
@@ -1591,7 +1576,7 @@ Rectangle ScAccessibleDocumentPagePreview::GetBoundingBoxOnScreen() const throw 
     {
         vcl::Window* pWindow = mpViewShell->GetWindow();
         if (pWindow)
-            aRect = pWindow->GetWindowExtentsRelative(NULL);
+            aRect = pWindow->GetWindowExtentsRelative(nullptr);
     }
     return aRect;
 }
@@ -1642,7 +1627,7 @@ ScShapeChildren* ScAccessibleDocumentPagePreview::GetShapeChildren()
 }
 
 OUString ScAccessibleDocumentPagePreview::getAccessibleName()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard g;
 

@@ -20,6 +20,10 @@
 #ifndef INCLUDED_OSL_MODULE_HXX
 #define INCLUDED_OSL_MODULE_HXX
 
+#include <sal/config.h>
+
+#include <cstddef>
+
 #include <rtl/ustring.hxx>
 #include <osl/module.h>
 
@@ -61,11 +65,11 @@ public:
         return osl_getModuleURLFromFunctionAddress( addr, &libraryUrl.pData );
     }
 
-    Module(): m_Module(0){}
+    Module(): m_Module(NULL){}
 
 #ifndef DISABLE_DYNLOADING
 
-    Module( const ::rtl::OUString& strModuleName, sal_Int32 nRtldMode = SAL_LOADMODULE_DEFAULT) : m_Module(0)
+    Module( const ::rtl::OUString& strModuleName, sal_Int32 nRtldMode = SAL_LOADMODULE_DEFAULT) : m_Module(NULL)
     {
         load( strModuleName, nRtldMode);
     }
@@ -114,7 +118,7 @@ public:
         if (m_Module)
         {
             osl_unloadModule(m_Module);
-            m_Module = 0;
+            m_Module = NULL;
         }
     }
 
@@ -170,7 +174,7 @@ public:
 
         @since LibreOffice 4.3
     */
-    void release() { m_Module = 0; }
+    void release() { m_Module = NULL; }
 
 private:
     oslModule m_Module;

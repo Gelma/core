@@ -58,9 +58,6 @@
 using namespace formula;
 using namespace com::sun::star;
 
-ScDocument* ScFormulaDlg::pDoc = NULL;
-ScAddress ScFormulaDlg::aCursorPos;
-
 //      init/ shared functions for dialog
 
 ScFormulaDlg::ScFormulaDlg( SfxBindings* pB, SfxChildWindow* pCW,
@@ -71,7 +68,7 @@ ScFormulaDlg::ScFormulaDlg( SfxBindings* pB, SfxChildWindow* pCW,
     m_aHelper.SetWindow(this);
     ScModule* pScMod = SC_MOD();
     pScMod->InputEnterHandler();
-    ScTabViewShell* pScViewShell = NULL;
+    ScTabViewShell* pScViewShell = nullptr;
 
     // title has to be from the view that opened the dialog,
     // even if it's not the current view
@@ -84,29 +81,28 @@ ScFormulaDlg::ScFormulaDlg( SfxBindings* pB, SfxChildWindow* pCW,
             SfxViewFrame* pMyViewFrm = pMyDisp->GetFrame();
             if (pMyViewFrm)
             {
-                pScViewShell = PTR_CAST( ScTabViewShell, pMyViewFrm->GetViewShell() );
+                pScViewShell = dynamic_cast<ScTabViewShell*>( pMyViewFrm->GetViewShell()  );
                 if( pScViewShell )
                     pScViewShell->UpdateInputHandler(true);
             }
         }
     }
 
-    if ( pDoc == NULL )
-        pDoc = pViewData->GetDocument();
-    m_xParser.set(ScServiceProvider::MakeInstance(SC_SERVICE_FORMULAPARS, static_cast<ScDocShell*>(pDoc->GetDocumentShell())),uno::UNO_QUERY);
+    m_pDoc = pViewData->GetDocument();
+    m_xParser.set(ScServiceProvider::MakeInstance(SC_SERVICE_FORMULAPARS, static_cast<ScDocShell*>(m_pDoc->GetDocumentShell())),uno::UNO_QUERY);
     uno::Reference< beans::XPropertySet> xSet(m_xParser,uno::UNO_QUERY);
-    xSet->setPropertyValue(OUString(SC_UNO_COMPILEFAP),uno::makeAny(sal_True));
+    xSet->setPropertyValue(SC_UNO_COMPILEFAP, uno::makeAny(sal_True));
 
-    m_xOpCodeMapper.set(ScServiceProvider::MakeInstance(SC_SERVICE_OPCODEMAPPER, static_cast<ScDocShell*>(pDoc->GetDocumentShell())),uno::UNO_QUERY);
+    m_xOpCodeMapper.set(ScServiceProvider::MakeInstance(SC_SERVICE_OPCODEMAPPER, static_cast<ScDocShell*>(m_pDoc->GetDocumentShell())),uno::UNO_QUERY);
 
     ScInputHandler* pInputHdl = SC_MOD()->GetInputHdl(pScViewShell);
 
     OSL_ENSURE( pInputHdl, "Missing input handler :-/" );
 
     if ( pInputHdl )
-        pInputHdl->NotifyChange( NULL );
+        pInputHdl->NotifyChange( nullptr );
 
-    ScFormulaReferenceHelper::enableInput( false );
+    ScFormulaReferenceHelper::enableInput( true );
     ScFormulaReferenceHelper::EnableSpreadsheets();
     m_aHelper.Init();
     ScFormulaReferenceHelper::SetDispatcherLock( true );
@@ -119,11 +115,11 @@ ScFormulaDlg::ScFormulaDlg( SfxBindings* pB, SfxChildWindow* pCW,
     {
         pScMod->SetRefInputHdl(pScMod->GetInputHdl());
 
-        pDoc = pViewData->GetDocument();
+        m_pDoc = pViewData->GetDocument();
         SCCOL nCol = pViewData->GetCurX();
         SCROW nRow = pViewData->GetCurY();
         SCTAB nTab = pViewData->GetTabNo();
-        aCursorPos = ScAddress( nCol, nRow, nTab );
+        m_CursorPos = ScAddress( nCol, nRow, nTab );
 
         pScMod->InitFormEditData();                             // create new
         pData = pScMod->GetFormEditData();
@@ -137,7 +133,7 @@ ScFormulaDlg::ScFormulaDlg( SfxBindings* pB, SfxChildWindow* pCW,
         // edit if formula exists
 
         OUString aFormula;
-        pDoc->GetFormula( nCol, nRow, nTab, aFormula );
+        m_pDoc->GetFormula( nCol, nRow, nTab, aFormula );
         bool bEdit   = ( aFormula.getLength() > 1 );
         bool bMatrix = false;
         if ( bEdit )
@@ -189,7 +185,7 @@ void ScFormulaDlg::notifyChange()
 
     ScInputHandler* pInputHdl = pScMod->GetInputHdl();
     if ( pInputHdl )
-        pInputHdl->NotifyChange( NULL );
+        pInputHdl->NotifyChange( nullptr );
 }
 
 void ScFormulaDlg::fill()
@@ -201,7 +197,7 @@ void ScFormulaDlg::fill()
     if (pData)
     {
         //  data exists -> restore state (after switch)
-        //  don't reinitialise pDoc and aCursorPos
+        //  don't reinitialise m_pDoc and m_CursorPos
         //pDoc = pViewData->GetDocument();
         if(IsInputHdl(pData->GetInputHandler()))
         {
@@ -212,7 +208,7 @@ void ScFormulaDlg::fill()
             ScTabViewShell* pTabViewShell;
             ScInputHandler* pInputHdl = GetNextInputHandler(pData->GetDocShell(),&pTabViewShell);
 
-            if ( pInputHdl == NULL ) //no more InputHandler for DocShell
+            if ( pInputHdl == nullptr ) //no more InputHandler for DocShell
             {
                 disableOk();
                 pInputHdl = pScMod->GetInputHdl();
@@ -235,7 +231,7 @@ void ScFormulaDlg::fill()
 
         Update();
         // switch back, maybe new Doc has been opened
-        pScMod->SetRefInputHdl(NULL);
+        pScMod->SetRefInputHdl(nullptr);
     }
 }
 
@@ -253,7 +249,7 @@ void ScFormulaDlg::dispose()
     if (pData) // close dosen't destroy;
     {
         //set back reference input handler
-        pScMod->SetRefInputHdl(NULL);
+        pScMod->SetRefInputHdl(nullptr);
         StoreFormEditData(pData);
     }
     formula::FormulaDlg::dispose();
@@ -265,13 +261,12 @@ bool ScFormulaDlg::IsInputHdl(ScInputHandler* pHdl)
 
     //  belongs InputHandler to a ViewShell?
 
-    TypeId aScType = TYPE(ScTabViewShell);
-    SfxViewShell* pSh = SfxViewShell::GetFirst( &aScType );
+    SfxViewShell* pSh = SfxViewShell::GetFirst( true, checkSfxViewShell<ScTabViewShell> );
     while ( pSh && !bAlive )
     {
         if (static_cast<ScTabViewShell*>(pSh)->GetInputHandler() == pHdl)
             bAlive = true;
-        pSh = SfxViewShell::GetNext( *pSh, &aScType );
+        pSh = SfxViewShell::GetNext( *pSh, true, checkSfxViewShell<ScTabViewShell> );
     }
 
     return bAlive;
@@ -280,17 +275,17 @@ bool ScFormulaDlg::IsInputHdl(ScInputHandler* pHdl)
 
 ScInputHandler* ScFormulaDlg::GetNextInputHandler(ScDocShell* pDocShell, ScTabViewShell** ppViewSh)
 {
-    ScInputHandler* pHdl=NULL;
+    ScInputHandler* pHdl=nullptr;
 
     SfxViewFrame* pFrame = SfxViewFrame::GetFirst( pDocShell );
-    while( pFrame && pHdl==NULL)
+    while( pFrame && pHdl==nullptr)
     {
         SfxViewShell* p = pFrame->GetViewShell();
-        ScTabViewShell* pViewSh = PTR_CAST(ScTabViewShell,p);
-        if(pViewSh!=NULL)
+        ScTabViewShell* pViewSh = dynamic_cast< ScTabViewShell *>( p );
+        if(pViewSh!=nullptr)
         {
             pHdl=pViewSh->GetInputHandler();
-            if(ppViewSh!=NULL) *ppViewSh=pViewSh;
+            if(ppViewSh!=nullptr) *ppViewSh=pViewSh;
         }
         pFrame = SfxViewFrame::GetNext( *pFrame, pDocShell );
     }
@@ -306,9 +301,10 @@ bool ScFormulaDlg::Close()
 
 //                          functions for right side
 
-bool ScFormulaDlg::calculateValue( const OUString& rStrExp, OUString& rStrResult )
+bool ScFormulaDlg::calculateValue( const OUString& rStrExp, OUString& rStrResult, bool bMatrixFormula )
 {
-    std::unique_ptr<ScSimpleFormulaCalculator> pFCell( new ScSimpleFormulaCalculator( pDoc, aCursorPos, rStrExp ) );
+    std::unique_ptr<ScSimpleFormulaCalculator> pFCell( new ScSimpleFormulaCalculator(
+                m_pDoc, m_CursorPos, rStrExp, bMatrixFormula));
     pFCell->SetLimitString(true);
 
     // HACK! to avoid neither #REF! from ColRowNames
@@ -325,7 +321,8 @@ bool ScFormulaDlg::calculateValue( const OUString& rStrExp, OUString& rStrResult
             aBraced.append('(');
             aBraced.append(rStrExp);
             aBraced.append(')');
-            pFCell.reset( new ScSimpleFormulaCalculator( pDoc, aCursorPos, aBraced.makeStringAndClear() ) );
+            pFCell.reset( new ScSimpleFormulaCalculator(
+                        m_pDoc, m_CursorPos, aBraced.makeStringAndClear(), bMatrixFormula));
             pFCell->SetLimitString(true);
         }
         else
@@ -335,7 +332,7 @@ bool ScFormulaDlg::calculateValue( const OUString& rStrExp, OUString& rStrResult
     sal_uInt16 nErrCode = pFCell->GetErrCode();
     if ( nErrCode == 0 || pFCell->IsMatrix() )
     {
-        SvNumberFormatter& aFormatter = *(pDoc->GetFormatTable());
+        SvNumberFormatter& aFormatter = *(m_pDoc->GetFormatTable());
         Color* pColor;
         if ( pFCell->IsValue() )
         {
@@ -393,7 +390,7 @@ void ScFormulaDlg::SetReference( const ScRange& rRef, ScDocument* pRefDoc )
         }
 
         OUString      aRefStr;
-        bool bOtherDoc = ( pRefDoc != pDoc && pRefDoc->GetDocumentShell()->HasName() );
+        bool bOtherDoc = (pRefDoc != m_pDoc && pRefDoc->GetDocumentShell()->HasName());
         if ( bOtherDoc )
         {
             //  reference to other document - wie inputhdl.cxx
@@ -420,16 +417,16 @@ void ScFormulaDlg::SetReference( const ScRange& rRef, ScDocument* pRefDoc )
             // position.
             ScTokenArray aArray;
             ScComplexRefData aRefData;
-            aRefData.InitRangeRel(rRef, aCursorPos);
+            aRefData.InitRangeRel(rRef, m_CursorPos);
             bool bSingle = aRefData.Ref1 == aRefData.Ref2;
-            if (aCursorPos.Tab() != rRef.aStart.Tab())
+            if (m_CursorPos.Tab() != rRef.aStart.Tab())
                 aRefData.Ref1.SetFlag3D(true);
             if (bSingle)
                 aArray.AddSingleReference(aRefData.Ref1);
             else
                 aArray.AddDoubleReference(aRefData);
-            ScCompiler aComp(pDoc, aCursorPos, aArray);
-            aComp.SetGrammar(pDoc->GetGrammar());
+            ScCompiler aComp(m_pDoc, m_CursorPos, aArray);
+            aComp.SetGrammar(m_pDoc->GetGrammar());
             OUStringBuffer aBuf;
             aComp.CreateStringFromTokenArray(aBuf);
             aRefStr = aBuf.makeStringAndClear();
@@ -442,7 +439,7 @@ void ScFormulaDlg::SetReference( const ScRange& rRef, ScDocument* pRefDoc )
 bool ScFormulaDlg::IsRefInputMode() const
 {
     const IFunctionDescription* pDesc = getCurrentFunctionDescription();
-    bool bRef = (pDesc && (pDesc->getSuppressedArgumentCount() > 0)) && (pDoc!=NULL);
+    bool bRef = (pDesc && (pDesc->getSuppressedArgumentCount() > 0)) && (m_pDoc != nullptr);
     return bRef;
 }
 
@@ -450,7 +447,7 @@ bool ScFormulaDlg::IsDocAllowed(SfxObjectShell* pDocSh) const
 {
     //  not allowed: different from this doc, and no name
     //  pDocSh is always a ScDocShell
-    if ( pDocSh && &static_cast<ScDocShell*>(pDocSh)->GetDocument() != pDoc && !pDocSh->HasName() )
+    if (pDocSh && &static_cast<ScDocShell*>(pDocSh)->GetDocument() != m_pDoc && !pDocSh->HasName())
         return false;
 
     return true;        // everything else is allowed
@@ -553,14 +550,14 @@ void ScFormulaDlg::deleteFormData()
 }
 void ScFormulaDlg::clear()
 {
-    pDoc = NULL;
+    m_pDoc = nullptr;
 
     //restore reference inputhandler
     ScModule* pScMod = SC_MOD();
-    pScMod->SetRefInputHdl(NULL);
+    pScMod->SetRefInputHdl(nullptr);
 
     // force Enable() of edit line
-    ScTabViewShell* pScViewShell = PTR_CAST(ScTabViewShell, SfxViewShell::Current());
+    ScTabViewShell* pScViewShell = dynamic_cast<ScTabViewShell*>( SfxViewShell::Current() );
     if ( pScViewShell )
         pScViewShell->UpdateInputHandler();
 }
@@ -572,21 +569,21 @@ void ScFormulaDlg::switchBack()
     ScInputHandler* pHdl = pScMod->GetInputHdl();
     if ( pHdl )
     {
-        pHdl->ViewShellGone(NULL);  // -> get active view
+        pHdl->ViewShellGone(nullptr);  // -> get active view
         pHdl->ShowRefFrame();
     }
 
     // restore current chart (cause mouse-RefInput)
-    ScTabViewShell* pScViewShell = PTR_CAST(ScTabViewShell, SfxViewShell::Current());
+    ScTabViewShell* pScViewShell = dynamic_cast<ScTabViewShell*>( SfxViewShell::Current() );
     if ( pScViewShell )
     {
         ScViewData& rVD=pScViewShell->GetViewData();
-        SCTAB nExecTab = aCursorPos.Tab();
+        SCTAB nExecTab = m_CursorPos.Tab();
         if ( nExecTab != rVD.GetTabNo() )
             pScViewShell->SetTabNo( nExecTab );
 
-        SCROW nRow=aCursorPos.Row();
-        SCCOL nCol=aCursorPos.Col();
+        SCROW nRow = m_CursorPos.Row();
+        SCCOL nCol = m_CursorPos.Col();
 
         if(rVD.GetCurX()!=nCol || rVD.GetCurY()!=nRow)
             pScViewShell->SetCursor(nCol,nRow);
@@ -649,13 +646,13 @@ uno::Reference< sheet::XFormulaOpCodeMapper> ScFormulaDlg::getFormulaOpCodeMappe
 
 table::CellAddress ScFormulaDlg::getReferencePosition() const
 {
-    return table::CellAddress(aCursorPos.Tab(),aCursorPos.Col(),aCursorPos.Row());
+    return table::CellAddress(m_CursorPos.Tab(), m_CursorPos.Col(), m_CursorPos.Row());
 }
 
 ::std::unique_ptr<formula::FormulaTokenArray> ScFormulaDlg::convertToTokenArray(const uno::Sequence< sheet::FormulaToken >& _aTokenList)
 {
     ::std::unique_ptr<formula::FormulaTokenArray> pArray(new ScTokenArray());
-    pArray->Fill(_aTokenList, pDoc->GetSharedStringPool(), pDoc->GetExternalRefManager());
+    pArray->Fill(_aTokenList, m_pDoc->GetSharedStringPool(), m_pDoc->GetExternalRefManager());
     return pArray;
 }
 

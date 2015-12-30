@@ -55,14 +55,18 @@
 #include <rtl/ustring.hxx>
 #include <sal/types.h>
 #include <comphelper/processfactory.hxx>
+#include <comphelper/configuration.hxx>
+#include <comphelper/configurationlistener.hxx>
+#include <comphelper/configurationlistener.hxx>
 #include <unotest/bootstrapfixturebase.hxx>
+#include <officecfg/Office/Math.hxx>
 
 namespace {
 
 class Test: public CppUnit::TestFixture {
 public:
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
     void testKeyFetch();
     void testKeySet();
@@ -70,6 +74,7 @@ public:
     void testSetSetMemberName();
     void testInsertSetMember();
     void testReadCommands();
+    void testListener();
 #if 0
     void testThreads();
 #endif
@@ -98,6 +103,7 @@ public:
     CPPUNIT_TEST(testSetSetMemberName);
     CPPUNIT_TEST(testInsertSetMember);
     CPPUNIT_TEST(testReadCommands);
+    CPPUNIT_TEST(testListener);
 #if 0
     CPPUNIT_TEST(testThreads);
 #endif
@@ -106,7 +112,6 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
 private:
-    css::uno::Reference< css::uno::XComponentContext > context_;
     css::uno::Reference< css::lang::XMultiServiceFactory > provider_;
 };
 
@@ -127,11 +132,11 @@ protected:
 
 private:
     virtual void SAL_CALL disposing(css::lang::EventObject const &)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL propertyChange(
         css::beans::PropertyChangeEvent const &)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     int count_;
     bool * destroyed_;
@@ -145,13 +150,12 @@ RecursiveTest::RecursiveTest(
 
 void RecursiveTest::test()
 {
-    properties_ = css::uno::Reference< css::beans::XPropertySet >(
+    properties_.set(
         test_.createUpdateAccess(
-            OUString("/org.openoffice.Office.UI.GenericCommands/UserInterface/Commands/"
-                     ".uno:WebHtml")),
+            "/org.openoffice.Office.UI.GenericCommands/UserInterface/Commands/"
+                     ".uno:WebHtml"),
         css::uno::UNO_QUERY_THROW);
-    properties_->addPropertyChangeListener(
-        OUString("Label"), this);
+    properties_->addPropertyChangeListener("Label", this);
     step();
     CPPUNIT_ASSERT(count_ == 0);
     css::uno::Reference< css::lang::XComponent >(
@@ -185,7 +189,7 @@ public:
     SimpleRecursiveTest(Test const & theTest, int count, bool * destroyed);
 
 private:
-    virtual void step() const SAL_OVERRIDE;
+    virtual void step() const override;
 };
 
 SimpleRecursiveTest::SimpleRecursiveTest(
@@ -196,9 +200,9 @@ SimpleRecursiveTest::SimpleRecursiveTest(
 void SimpleRecursiveTest::step() const
 {
     test_.setKey(
-        OUString("/org.openoffice.Office.UI.GenericCommands/UserInterface/Commands/"
-                 ".uno:WebHtml"),
-        OUString("Label"),
+        "/org.openoffice.Office.UI.GenericCommands/UserInterface/Commands/"
+                 ".uno:WebHtml",
+        "Label",
         css::uno::makeAny(OUString("step")));
 }
 
@@ -217,22 +221,22 @@ void Test::testKeyFetch()
     OUString s;
     CPPUNIT_ASSERT(
         getKey(
-            OUString("/org.openoffice.System"),
-            OUString("L10N/Locale")) >>=
+            "/org.openoffice.System",
+            "L10N/Locale") >>=
         s);
 }
 
 void Test::testKeySet()
 {
     setKey(
-        OUString("/org.openoffice.System/L10N"),
-        OUString("Locale"),
+        "/org.openoffice.System/L10N",
+        "Locale",
         css::uno::makeAny(OUString("com.sun.star.configuration.backend.LocaleBackend UILocale")));
     OUString s;
     CPPUNIT_ASSERT(
         getKey(
-            OUString("/org.openoffice.System/L10N"),
-            OUString("Locale")) >>=
+            "/org.openoffice.System/L10N",
+            "Locale") >>=
         s);
     CPPUNIT_ASSERT( s == "com.sun.star.configuration.backend.LocaleBackend UILocale" );
 }
@@ -240,14 +244,14 @@ void Test::testKeySet()
 void Test::testKeyReset()
 {
     if (resetKey(
-            OUString("/org.openoffice.System/L10N"),
-            OUString("Locale")))
+            "/org.openoffice.System/L10N",
+            "Locale"))
     {
         OUString s;
         CPPUNIT_ASSERT(
             getKey(
-                OUString("/org.openoffice.System/L10N"),
-                OUString("Locale")) >>=
+                "/org.openoffice.System/L10N",
+                "Locale") >>=
             s);
         CPPUNIT_ASSERT( s == "com.sun.star.configuration.backend.LocaleBackend Locale" );
     }
@@ -258,24 +262,21 @@ void Test::testSetSetMemberName()
     OUString s;
     CPPUNIT_ASSERT(
         getKey(
-            OUString("/org.openoffice.Office.UI.GenericCommands/UserInterface/Commands/"
-                     ".uno:FontworkShapeType"),
-            OUString("Label")) >>=
+            "/org.openoffice.Office.UI.GenericCommands/UserInterface/Commands/"
+                     ".uno:FontworkShapeType",
+            "Label") >>=
         s);
     CPPUNIT_ASSERT( s == "Fontwork Shape" );
 
     css::uno::Reference< css::container::XNameAccess > access(
         createUpdateAccess(
-            OUString("/org.openoffice.Office.UI.GenericCommands/UserInterface/"
-                     "Commands")),
+            "/org.openoffice.Office.UI.GenericCommands/UserInterface/"
+                     "Commands"),
         css::uno::UNO_QUERY_THROW);
     css::uno::Reference< css::container::XNamed > member;
-    access->getByName(
-        OUString(".uno:FontworkGalleryFloater")) >>=
-        member;
+    access->getByName(".uno:FontworkGalleryFloater") >>= member;
     CPPUNIT_ASSERT(member.is());
-    member->setName(
-        OUString(".uno:FontworkShapeType"));
+    member->setName(".uno:FontworkShapeType");
     css::uno::Reference< css::util::XChangesBatch >(
         access, css::uno::UNO_QUERY_THROW)->commitChanges();
     css::uno::Reference< css::lang::XComponent >(
@@ -283,9 +284,9 @@ void Test::testSetSetMemberName()
 
     CPPUNIT_ASSERT(
         getKey(
-            OUString("/org.openoffice.Office.UI.GenericCommands/UserInterface/Commands/"
-                    ".uno:FontworkShapeType"),
-            OUString("Label")) >>=
+            "/org.openoffice.Office.UI.GenericCommands/UserInterface/Commands/"
+                    ".uno:FontworkShapeType",
+            "Label") >>=
         s);
     CPPUNIT_ASSERT( s == "Fontwork Gallery..." );
 }
@@ -328,8 +329,8 @@ void Test::testReadCommands()
 {
     css::uno::Reference< css::container::XNameAccess > access(
         createViewAccess(
-            OUString("/org.openoffice.Office.UI.GenericCommands/UserInterface/"
-                     "Commands")),
+            "/org.openoffice.Office.UI.GenericCommands/UserInterface/"
+                     "Commands"),
         css::uno::UNO_QUERY_THROW);
     css::uno::Sequence< OUString > names(access->getElementNames());
 
@@ -341,12 +342,9 @@ void Test::testReadCommands()
             css::uno::Reference< css::container::XNameAccess > child;
             if (access->getByName(names[j]) >>= child) {
                 CPPUNIT_ASSERT(child.is());
-                child->getByName(
-                    OUString("Label"));
-                child->getByName(
-                    OUString("ContextLabel"));
-                child->getByName(
-                    OUString("Properties"));
+                child->getByName("Label");
+                child->getByName("ContextLabel");
+                child->getByName("Properties");
             }
         }
     }
@@ -354,6 +352,47 @@ void Test::testReadCommands()
     printf("Reading elements took %" SAL_PRIuUINT32 " ms\n", n);
     css::uno::Reference< css::lang::XComponent >(
         access, css::uno::UNO_QUERY_THROW)->dispose();
+}
+
+void Test::testListener()
+{
+    OUString aRandomPath = "/org.openoffice.Office.Math/View";
+
+    // test with no props.
+    {
+        rtl::Reference<comphelper::ConfigurationListener> xListener(
+            new comphelper::ConfigurationListener(aRandomPath));
+        xListener->dispose();
+    }
+
+    // test some changes
+    {
+        rtl::Reference<comphelper::ConfigurationListener> xListener(
+            new comphelper::ConfigurationListener(aRandomPath));
+
+        comphelper::ConfigurationListenerProperty<bool> aSetting(xListener, "AutoRedraw");
+        CPPUNIT_ASSERT_MESSAGE("check AutoRedraw defaults to true", aSetting.get());
+
+        // set to false
+        {
+            std::shared_ptr< comphelper::ConfigurationChanges > xChanges(
+                comphelper::ConfigurationChanges::create());
+            officecfg::Office::Math::View::AutoRedraw::set(false, xChanges);
+            xChanges->commit();
+        }
+        CPPUNIT_ASSERT_MESSAGE("listener failed to trigger", !aSetting.get());
+
+        // set to true
+        {
+            std::shared_ptr< comphelper::ConfigurationChanges > xChanges(
+                comphelper::ConfigurationChanges::create());
+            officecfg::Office::Math::View::AutoRedraw::set(true, xChanges);
+            xChanges->commit();
+        }
+        CPPUNIT_ASSERT_MESSAGE("listener failed to trigger", aSetting.get());
+
+        xListener->dispose();
+    }
 }
 
 void Test::testRecursive()
@@ -423,8 +462,7 @@ css::uno::Reference< css::uno::XInterface > Test::createViewAccess(
                 OUString("nodepath"),
                 css::uno::makeAny(path))));
     return provider_->createInstanceWithArguments(
-        OUString(
-                "com.sun.star.configuration.ConfigurationAccess"),
+        "com.sun.star.configuration.ConfigurationAccess",
         css::uno::Sequence< css::uno::Any >(&arg, 1));
 }
 
@@ -437,8 +475,7 @@ css::uno::Reference< css::uno::XInterface > Test::createUpdateAccess(
                 OUString("nodepath"),
                 css::uno::makeAny(path))));
     return provider_->createInstanceWithArguments(
-        OUString(
-                "com.sun.star.configuration.ConfigurationUpdateAccess"),
+        "com.sun.star.configuration.ConfigurationUpdateAccess",
         css::uno::Sequence< css::uno::Any >(&arg, 1));
 }
 
@@ -453,7 +490,7 @@ protected:
     virtual bool iteration() = 0;
 
 private:
-    virtual void SAL_CALL run() SAL_OVERRIDE;
+    virtual void SAL_CALL run() override;
 
     osl::Condition & stop_;
     bool success_;
@@ -489,7 +526,7 @@ public:
         OUString const & relative);
 
 private:
-    virtual bool iteration() SAL_OVERRIDE;
+    virtual bool iteration() override;
 
     Test const & test_;
     OUString path_;
@@ -533,7 +570,7 @@ public:
         OUString const & relative);
 
 private:
-    virtual bool iteration() SAL_OVERRIDE;
+    virtual bool iteration() override;
 
     Test const & test_;
     OUString path_;

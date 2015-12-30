@@ -24,7 +24,7 @@
 
 //#define erDEBUG
 
-#if defined(ENABLE_LIBLANGTAG)
+#if ENABLE_LIBLANGTAG
 #if LIBLANGTAG_INLINE_FIX
 #define LT_HAVE_INLINE
 #endif
@@ -45,7 +45,7 @@ using namespace com::sun::star;
 struct myLtError
 {
     lt_error_t* p;
-    myLtError() : p(NULL) {}
+    myLtError() : p(nullptr) {}
     ~myLtError() { if (p) lt_error_unref( p); }
 };
 
@@ -232,7 +232,7 @@ void LiblangtagDataRef::setupDataPath()
  * BCP 47 if available. For now just remove them to not confuse any later
  * treatments that check for empty variants. This vendor stuff was never
  * supported anyway. */
-static void handleVendorVariant( com::sun::star::lang::Locale & rLocale )
+static void handleVendorVariant( css::lang::Locale & rLocale )
 {
     if (!rLocale.Variant.isEmpty() && rLocale.Language != I18NLANGTAG_QLT)
         rLocale.Variant.clear();
@@ -259,7 +259,7 @@ private:
         DECISION_YES
     };
 
-    mutable com::sun::star::lang::Locale    maLocale;
+    mutable css::lang::Locale               maLocale;
     mutable OUString                        maBcp47;
     mutable OUString                        maCachedLanguage;   ///< cache getLanguage()
     mutable OUString                        maCachedScript;     ///< cache getScript()
@@ -361,7 +361,7 @@ private:
 
     /** Convert Locale to BCP 47 string without resolving system and creating
         temporary LanguageTag instances. */
-    static OUString     convertToBcp47( const com::sun::star::lang::Locale& rLocale );
+    static OUString     convertToBcp47( const css::lang::Locale& rLocale );
 };
 
 
@@ -369,7 +369,7 @@ LanguageTagImpl::LanguageTagImpl( const LanguageTag & rLanguageTag )
     :
         maLocale( rLanguageTag.maLocale),
         maBcp47( rLanguageTag.maBcp47),
-        mpImplLangtag( NULL),
+        mpImplLangtag( nullptr),
         mnLangID( rLanguageTag.mnLangID),
         meIsValid( DECISION_DONTKNOW),
         meIsIsoLocale( DECISION_DONTKNOW),
@@ -396,7 +396,7 @@ LanguageTagImpl::LanguageTagImpl( const LanguageTagImpl & rLanguageTagImpl )
         maCachedCountry( rLanguageTagImpl.maCachedCountry),
         maCachedVariants( rLanguageTagImpl.maCachedVariants),
         mpImplLangtag( rLanguageTagImpl.mpImplLangtag ?
-                lt_tag_copy( rLanguageTagImpl.mpImplLangtag) : NULL),
+                lt_tag_copy( rLanguageTagImpl.mpImplLangtag) : nullptr),
         mnLangID( rLanguageTagImpl.mnLangID),
         meIsValid( rLanguageTagImpl.meIsValid),
         meIsIsoLocale( rLanguageTagImpl.meIsIsoLocale),
@@ -429,7 +429,7 @@ LanguageTagImpl& LanguageTagImpl::operator=( const LanguageTagImpl & rLanguageTa
     maCachedVariants    = rLanguageTagImpl.maCachedVariants;
     lt_tag_t * oldTag = mpImplLangtag;
     mpImplLangtag       = rLanguageTagImpl.mpImplLangtag ?
-                            lt_tag_copy( rLanguageTagImpl.mpImplLangtag) : NULL;
+                            lt_tag_copy( rLanguageTagImpl.mpImplLangtag) : nullptr;
     lt_tag_unref(oldTag);
     mnLangID            = rLanguageTagImpl.mnLangID;
     meIsValid           = rLanguageTagImpl.meIsValid;
@@ -480,7 +480,7 @@ LanguageTag::LanguageTag( const OUString & rBcp47LanguageTag, bool bCanonicalize
 }
 
 
-LanguageTag::LanguageTag( const com::sun::star::lang::Locale & rLocale )
+LanguageTag::LanguageTag( const css::lang::Locale & rLocale )
     :
         maLocale( rLocale),
         mnLangID( LANGUAGE_DONTKNOW),
@@ -1030,7 +1030,7 @@ LanguageTag & LanguageTag::reset( const OUString & rBcp47LanguageTag, bool bCano
 }
 
 
-LanguageTag & LanguageTag::reset( const com::sun::star::lang::Locale & rLocale )
+LanguageTag & LanguageTag::reset( const css::lang::Locale & rLocale )
 {
     resetVars();
     maLocale            = rLocale;
@@ -1058,7 +1058,7 @@ bool LanguageTagImpl::canonicalize()
     struct dumper
     {
         lt_tag_t** mpp;
-        dumper( lt_tag_t** pp ) : mpp( *pp ? NULL : pp) {}
+        explicit dumper( lt_tag_t** pp ) : mpp( *pp ? NULL : pp) {}
         ~dumper() { if (mpp && *mpp) lt_tag_dump( *mpp); }
     };
     dumper aDumper( &mpImplLangtag);
@@ -1649,7 +1649,7 @@ OUString LanguageTagImpl::getVariantsFromLangtag()
 }
 
 
-const com::sun::star::lang::Locale & LanguageTag::getLocale( bool bResolveSystem ) const
+const css::lang::Locale & LanguageTag::getLocale( bool bResolveSystem ) const
 {
     if (!bResolveSystem && mbSystemLocale)
         return theEmptyLocale::get();
@@ -2516,9 +2516,9 @@ LanguageTagImpl::Extraction LanguageTagImpl::simpleExtract( const OUString& rBcp
 
 
 // static
-::std::vector< com::sun::star::lang::Locale >::const_iterator LanguageTag::getMatchingFallback(
-        const ::std::vector< com::sun::star::lang::Locale > & rList,
-        const com::sun::star::lang::Locale & rReference )
+::std::vector< css::lang::Locale >::const_iterator LanguageTag::getMatchingFallback(
+        const ::std::vector< css::lang::Locale > & rList,
+        const css::lang::Locale & rReference )
 {
     if (rList.empty())
         return rList.end();
@@ -2575,7 +2575,7 @@ static bool lcl_isSystem( LanguageType nLangID )
 
 
 // static
-com::sun::star::lang::Locale LanguageTag::convertToLocale( LanguageType nLangID, bool bResolveSystem )
+css::lang::Locale LanguageTag::convertToLocale( LanguageType nLangID, bool bResolveSystem )
 {
     if (!bResolveSystem && lcl_isSystem( nLangID))
         return lang::Locale();
@@ -2585,7 +2585,7 @@ com::sun::star::lang::Locale LanguageTag::convertToLocale( LanguageType nLangID,
 
 
 // static
-LanguageType LanguageTag::convertToLanguageType( const com::sun::star::lang::Locale& rLocale, bool bResolveSystem )
+LanguageType LanguageTag::convertToLanguageType( const css::lang::Locale& rLocale, bool bResolveSystem )
 {
     if (rLocale.Language.isEmpty() && !bResolveSystem)
         return LANGUAGE_SYSTEM;
@@ -2595,7 +2595,7 @@ LanguageType LanguageTag::convertToLanguageType( const com::sun::star::lang::Loc
 
 
 // static
-OUString LanguageTagImpl::convertToBcp47( const com::sun::star::lang::Locale& rLocale )
+OUString LanguageTagImpl::convertToBcp47( const css::lang::Locale& rLocale )
 {
     OUString aBcp47;
     if (rLocale.Language.isEmpty())
@@ -2623,7 +2623,7 @@ OUString LanguageTagImpl::convertToBcp47( const com::sun::star::lang::Locale& rL
 
 
 // static
-OUString LanguageTag::convertToBcp47( const com::sun::star::lang::Locale& rLocale, bool bResolveSystem )
+OUString LanguageTag::convertToBcp47( const css::lang::Locale& rLocale, bool bResolveSystem )
 {
     OUString aBcp47;
     if (rLocale.Language.isEmpty())
@@ -2658,7 +2658,7 @@ OUString LanguageTag::convertToBcp47( LanguageType nLangID, bool bResolveSystem 
 
 
 // static
-com::sun::star::lang::Locale LanguageTag::convertToLocale( const OUString& rBcp47, bool bResolveSystem )
+css::lang::Locale LanguageTag::convertToLocale( const OUString& rBcp47, bool bResolveSystem )
 {
     if (rBcp47.isEmpty() && !bResolveSystem)
         return lang::Locale();
@@ -2685,7 +2685,7 @@ LanguageType LanguageTag::convertToLanguageTypeWithFallback( const OUString& rBc
 
 
 // static
-com::sun::star::lang::Locale LanguageTag::convertToLocaleWithFallback( const OUString& rBcp47 )
+css::lang::Locale LanguageTag::convertToLocaleWithFallback( const OUString& rBcp47 )
 {
     return LanguageTag( rBcp47).makeFallback().getLocale();
 }

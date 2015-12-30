@@ -29,8 +29,8 @@ class WriterfilterMiscTest
     : public ::CppUnit::TestFixture
 {
 public:
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
     void testTwipConversions();
     void testFieldParameters();
@@ -160,6 +160,26 @@ void WriterfilterMiscTest::testFieldParameters()
     CPPUNIT_ASSERT_EQUAL(OUString("foobar"), boost::get<2>(result)[1]);
     CPPUNIT_ASSERT_EQUAL(OUString("\\A"), boost::get<2>(result)[2]);
     CPPUNIT_ASSERT_EQUAL(OUString(), boost::get<2>(result)[3]);
+
+    for (auto prefix : {"#", "$", "%", "&", "'", "(", ")", "*", "+", ",",
+                        "-", ".", "/", ":", ";", "<", ">", "?", "@", "[",
+                        "]", "^", "_", "`", "{", "|", "}", "~"})
+    {
+        OUString test(OUString::createFromAscii(prefix) + "PAGE");
+        result = lcl_SplitFieldCommand(test + " ");
+        CPPUNIT_ASSERT_EQUAL(test, boost::get<0>(result));
+    }
+    result = lcl_SplitFieldCommand("\\PAGE ");
+    CPPUNIT_ASSERT_EQUAL(OUString("PAGE"), boost::get<0>(result));
+    result = lcl_SplitFieldCommand("\\ PAGE ");
+    CPPUNIT_ASSERT_EQUAL(OUString("\\ "), boost::get<0>(result));
+    CPPUNIT_ASSERT_EQUAL(OUString("PAGE"), boost::get<1>(result)[0]);
+    result = lcl_SplitFieldCommand("\\\\PAGE ");
+    CPPUNIT_ASSERT_EQUAL(OUString("\\PAGE"), boost::get<0>(result));
+    result = lcl_SplitFieldCommand("\"PAGE\" ");
+    CPPUNIT_ASSERT_EQUAL(OUString("PAGE"), boost::get<0>(result));
+    result = lcl_SplitFieldCommand("\"PAGE ");
+    CPPUNIT_ASSERT_EQUAL(OUString("PAGE "), boost::get<0>(result));
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(WriterfilterMiscTest);

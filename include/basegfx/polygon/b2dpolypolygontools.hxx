@@ -95,7 +95,7 @@ namespace basegfx
             const B2DPolyPolygon& rCandidate,
             const ::std::vector<double>& rDotDashArray,
             B2DPolyPolygon* pLineTarget,
-            B2DPolyPolygon* pGapTarget = 0,
+            B2DPolyPolygon* pGapTarget = nullptr,
             double fFullDashDotLen = 0.0);
 
         // test if point is inside epsilon-range around the given PolyPolygon. Can be used
@@ -106,7 +106,7 @@ namespace basegfx
         /** Helper class to transport PointIndices to a PolyPolygon,
             with an operator< for convenient sorting in a std::set usage
          */
-        class BASEGFX_DLLPUBLIC SAL_WARN_UNUSED PointIndex
+        class SAL_WARN_UNUSED BASEGFX_DLLPUBLIC PointIndex
         {
         private:
             sal_uInt32 mnPolygonIndex;
@@ -287,26 +287,21 @@ namespace basegfx
         */
         BASEGFX_DLLPUBLIC B2DPolyPolygon snapPointsOfHorizontalOrVerticalEdges(const B2DPolyPolygon& rCandidate);
 
-        /** returns true if the Polygon only contains horizontal or vertical edges
-            so that it could be represented by RegionBands
-        */
-        BASEGFX_DLLPUBLIC bool containsOnlyHorizontalAndVerticalEdges(const B2DPolyPolygon& rCandidate);
-
-        /// converters for com::sun::star::drawing::PointSequence
+        /// converters for css::drawing::PointSequence
         BASEGFX_DLLPUBLIC B2DPolyPolygon UnoPointSequenceSequenceToB2DPolyPolygon(
-            const com::sun::star::drawing::PointSequenceSequence& rPointSequenceSequenceSource,
+            const css::drawing::PointSequenceSequence& rPointSequenceSequenceSource,
             bool bCheckClosed = true);
         BASEGFX_DLLPUBLIC void B2DPolyPolygonToUnoPointSequenceSequence(
             const B2DPolyPolygon& rPolyPolygon,
-            com::sun::star::drawing::PointSequenceSequence& rPointSequenceSequenceRetval);
+            css::drawing::PointSequenceSequence& rPointSequenceSequenceRetval);
 
-        /// converters for com::sun::star::drawing::PolyPolygonBezierCoords (curved polygons)
+        /// converters for css::drawing::PolyPolygonBezierCoords (curved polygons)
         BASEGFX_DLLPUBLIC B2DPolyPolygon UnoPolyPolygonBezierCoordsToB2DPolyPolygon(
-            const com::sun::star::drawing::PolyPolygonBezierCoords& rPolyPolygonBezierCoordsSource,
+            const css::drawing::PolyPolygonBezierCoords& rPolyPolygonBezierCoordsSource,
             bool bCheckClosed = true);
         BASEGFX_DLLPUBLIC void B2DPolyPolygonToUnoPolyPolygonBezierCoords(
             const B2DPolyPolygon& rPolyPolygon,
-            com::sun::star::drawing::PolyPolygonBezierCoords& rPolyPolygonBezierCoordsRetval);
+            css::drawing::PolyPolygonBezierCoords& rPolyPolygonBezierCoordsRetval);
 
     } // end of namespace tools
 } // end of namespace basegfx

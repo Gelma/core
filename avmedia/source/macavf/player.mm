@@ -60,7 +60,7 @@ using namespace ::com::sun::star;
 
 namespace avmedia { namespace macavf {
 
-MacAVObserverObject* MacAVObserverHandler::mpMacAVObserverObject = NULL;
+MacAVObserverObject* MacAVObserverHandler::mpMacAVObserverObject = nullptr;
 
 MacAVObserverObject* MacAVObserverHandler::getObserver()
 {
@@ -79,7 +79,7 @@ MacAVObserverObject* MacAVObserverHandler::getObserver()
 
 Player::Player( const uno::Reference< lang::XMultiServiceFactory >& rxMgr )
 :   mxMgr( rxMgr )
-,   mpPlayer( NULL )
+,   mpPlayer( nullptr )
 ,   mfUnmutedVolume( 0 )
 ,   mfStopTime( DBL_MAX )
 ,   mbMuted( false )
@@ -122,8 +122,11 @@ bool Player::handleObservation( NSString* pKeyPath )
 bool Player::create( const ::rtl::OUString& rURL )
 {
     // get the media asset
-    NSString* aNSStr = [NSString stringWithCharacters:rURL.getStr() length:rURL.getLength()];
+    NSString* aNSStr = [NSString stringWithCharacters:reinterpret_cast<unichar const *>(rURL.getStr()) length:rURL.getLength()];
+    SAL_WNODEPRECATED_DECLARATIONS_PUSH
+        //TODO: 10.11 stringByAddingPercentEscapesUsingEncoding
     NSURL* aNSURL = [NSURL URLWithString: [aNSStr stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    SAL_WNODEPRECATED_DECLARATIONS_POP
     // get the matching AVPlayerItem
     AVPlayerItem* pPlayerItem = [AVPlayerItem playerItemWithURL:aNSURL];
 
@@ -377,7 +380,7 @@ uno::Reference< ::media::XPlayerWindow > SAL_CALL Player::createPlayerWindow( co
 
     // check the window parameters
     uno::Reference< ::media::XPlayerWindow > xRet;
-    if( (aSize.Width <= 0) || (aSize.Height <= 0) || (pParentView == NULL) )
+    if( (aSize.Width <= 0) || (aSize.Height <= 0) || (pParentView == nullptr) )
          return xRet;
 
     // create the window
@@ -423,8 +426,7 @@ sal_Bool SAL_CALL Player::supportsService( const ::rtl::OUString& ServiceName )
 uno::Sequence< ::rtl::OUString > SAL_CALL Player::getSupportedServiceNames(  )
     throw (uno::RuntimeException)
 {
-    uno::Sequence< ::rtl::OUString > aRet(1);
-    aRet[0] = ::rtl::OUString( RTL_CONSTASCII_USTRINGPARAM ( AVMEDIA_MACAVF_PLAYER_SERVICENAME ) );
+    uno::Sequence< ::rtl::OUString > aRet { AVMEDIA_MACAVF_PLAYER_SERVICENAME };
 
     return aRet;
 }

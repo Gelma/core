@@ -62,12 +62,6 @@ namespace com { namespace sun { namespace star { namespace rendering
     struct Texture;
     class  XIntegerBitmapColorSpace;
     class  XPolyPolygon2D;
-
-    bool operator==( const RenderState& rLHS,
-                     const RenderState& rRHS );
-
-    bool operator==( const ViewState& rLHS,
-                     const ViewState& rRHS );
 } } } }
 
 namespace com { namespace sun { namespace star { namespace awt
@@ -108,29 +102,6 @@ namespace canvas
          *
          */
 
-        // mickey's math tricks...
-        inline unsigned int pow2( unsigned int c ) { return 0x1 << c; }
-        inline unsigned int mask( unsigned int c ) { return ((unsigned int)(-1)) / (pow2(pow2(c)) + 1); }
-        inline unsigned int count( unsigned int x, unsigned int c ) { return ((x) & mask(c)) + (((x) >> (pow2(c))) & mask(c)); }
-        template<typename T>
-        inline unsigned int bitcount( T c ) {
-            unsigned int nByteIndex = 0;
-            unsigned int nNumBytes = sizeof(T)<<2;
-            do {
-                c=count(c,nByteIndex++);
-                nNumBytes >>= 1;
-            } while(nNumBytes);
-            return c;
-        }
-        inline sal_uInt32 bitcount32( sal_uInt32 c ) {
-            c=count(c,0);
-            c=count(c,1);
-            c=count(c,2);
-            c=count(c,3);
-            c=count(c,4);
-            return c;
-        }
-
         /** Round given floating point value down to next integer
          */
         inline sal_Int32 roundDown( const double& rVal )
@@ -147,56 +118,56 @@ namespace canvas
 
         /** Create a RealSize2D with both coordinate values set to +infinity
          */
-        CANVASTOOLS_DLLPUBLIC ::com::sun::star::geometry::RealSize2D createInfiniteSize2D();
+        CANVASTOOLS_DLLPUBLIC css::geometry::RealSize2D createInfiniteSize2D();
 
 
         // View- and RenderState utilities
 
 
-        CANVASTOOLS_DLLPUBLIC ::com::sun::star::rendering::RenderState&
-            initRenderState( ::com::sun::star::rendering::RenderState&                      renderState );
+        CANVASTOOLS_DLLPUBLIC css::rendering::RenderState&
+            initRenderState( css::rendering::RenderState&                      renderState );
 
-        CANVASTOOLS_DLLPUBLIC ::com::sun::star::rendering::ViewState&
-            initViewState( ::com::sun::star::rendering::ViewState&                          viewState );
-
-        CANVASTOOLS_DLLPUBLIC ::basegfx::B2DHomMatrix&
-            getViewStateTransform( ::basegfx::B2DHomMatrix&                                 transform,
-                                   const ::com::sun::star::rendering::ViewState&            viewState );
-
-        CANVASTOOLS_DLLPUBLIC ::com::sun::star::rendering::ViewState&
-            setViewStateTransform( ::com::sun::star::rendering::ViewState&                  viewState,
-                                   const ::basegfx::B2DHomMatrix&                           transform );
+        CANVASTOOLS_DLLPUBLIC css::rendering::ViewState&
+            initViewState( css::rendering::ViewState&                          viewState );
 
         CANVASTOOLS_DLLPUBLIC ::basegfx::B2DHomMatrix&
-            getRenderStateTransform( ::basegfx::B2DHomMatrix&                               transform,
-                                     const ::com::sun::star::rendering::RenderState&        renderState );
+            getViewStateTransform( ::basegfx::B2DHomMatrix&                    transform,
+                                   const css::rendering::ViewState&            viewState );
 
-        CANVASTOOLS_DLLPUBLIC ::com::sun::star::rendering::RenderState&
-            setRenderStateTransform( ::com::sun::star::rendering::RenderState&              renderState,
-                                     const ::basegfx::B2DHomMatrix&                         transform );
-
-        CANVASTOOLS_DLLPUBLIC ::com::sun::star::rendering::RenderState&
-            appendToRenderState( ::com::sun::star::rendering::RenderState&                  renderState,
-                                 const ::basegfx::B2DHomMatrix&                             transform );
-
-        CANVASTOOLS_DLLPUBLIC ::com::sun::star::rendering::RenderState&
-            prependToRenderState( ::com::sun::star::rendering::RenderState&                 renderState,
-                                  const ::basegfx::B2DHomMatrix&                            transform );
+        CANVASTOOLS_DLLPUBLIC css::rendering::ViewState&
+            setViewStateTransform( css::rendering::ViewState&                  viewState,
+                                   const ::basegfx::B2DHomMatrix&              transform );
 
         CANVASTOOLS_DLLPUBLIC ::basegfx::B2DHomMatrix&
-            mergeViewAndRenderTransform( ::basegfx::B2DHomMatrix&                           transform,
-                                         const ::com::sun::star::rendering::ViewState&      viewState,
-                                         const ::com::sun::star::rendering::RenderState&    renderState );
+            getRenderStateTransform( ::basegfx::B2DHomMatrix&                  transform,
+                                     const css::rendering::RenderState&        renderState );
+
+        CANVASTOOLS_DLLPUBLIC css::rendering::RenderState&
+            setRenderStateTransform( css::rendering::RenderState&              renderState,
+                                     const ::basegfx::B2DHomMatrix&            transform );
+
+        CANVASTOOLS_DLLPUBLIC css::rendering::RenderState&
+            appendToRenderState( css::rendering::RenderState&                  renderState,
+                                 const ::basegfx::B2DHomMatrix&                transform );
+
+        CANVASTOOLS_DLLPUBLIC css::rendering::RenderState&
+            prependToRenderState( css::rendering::RenderState&                 renderState,
+                                  const ::basegfx::B2DHomMatrix&               transform );
+
+        CANVASTOOLS_DLLPUBLIC ::basegfx::B2DHomMatrix&
+            mergeViewAndRenderTransform( ::basegfx::B2DHomMatrix&              transform,
+                                         const css::rendering::ViewState&      viewState,
+                                         const css::rendering::RenderState&    renderState );
 
 
         // Matrix utilities
 
 
-        CANVASTOOLS_DLLPUBLIC ::com::sun::star::geometry::AffineMatrix2D&
-            setIdentityAffineMatrix2D( ::com::sun::star::geometry::AffineMatrix2D&  matrix );
+        CANVASTOOLS_DLLPUBLIC css::geometry::AffineMatrix2D&
+            setIdentityAffineMatrix2D( css::geometry::AffineMatrix2D&  matrix );
 
-        CANVASTOOLS_DLLPUBLIC ::com::sun::star::geometry::Matrix2D&
-            setIdentityMatrix2D( ::com::sun::star::geometry::Matrix2D&              matrix );
+        CANVASTOOLS_DLLPUBLIC css::geometry::Matrix2D&
+            setIdentityMatrix2D( css::geometry::Matrix2D&              matrix );
 
 
         // Special utilities
@@ -349,16 +320,16 @@ namespace canvas
 
             @return A reference to the resulting sequence of parameters
         */
-        CANVASTOOLS_DLLPUBLIC ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any >& getDeviceInfo(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::rendering::XCanvas >& i_rxCanvas,
-            ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any >& o_rxParams );
+        CANVASTOOLS_DLLPUBLIC css::uno::Sequence< css::uno::Any >& getDeviceInfo(
+            const css::uno::Reference< css::rendering::XCanvas >& i_rxCanvas,
+            css::uno::Sequence< css::uno::Any >& o_rxParams );
 
         /** Return a color space for a default RGBA integer format
 
             Use this method for dead-simple bitmap implementations,
             that map all their formats to 8888 RGBA color.
          */
-        CANVASTOOLS_DLLPUBLIC ::com::sun::star::uno::Reference< ::com::sun::star::rendering::XIntegerBitmapColorSpace> getStdColorSpace();
+        CANVASTOOLS_DLLPUBLIC css::uno::Reference< css::rendering::XIntegerBitmapColorSpace> getStdColorSpace();
 
         /** Return a color space for a default RGB integer format
 
@@ -366,21 +337,21 @@ namespace canvas
             that map all their formats to 8888 RGB color (the last byte
             is unused).
          */
-        CANVASTOOLS_DLLPUBLIC ::com::sun::star::uno::Reference< ::com::sun::star::rendering::XIntegerBitmapColorSpace> getStdColorSpaceWithoutAlpha();
+        CANVASTOOLS_DLLPUBLIC css::uno::Reference< css::rendering::XIntegerBitmapColorSpace> getStdColorSpaceWithoutAlpha();
 
         /** Return a memory layout for a default RGBA integer format
 
             Use this method for dead-simple bitmap implementations,
             that map all their formats to 8888 RGBA color.
          */
-        CANVASTOOLS_DLLPUBLIC ::com::sun::star::rendering::IntegerBitmapLayout getStdMemoryLayout(
-            const ::com::sun::star::geometry::IntegerSize2D& rBitmapSize );
+        CANVASTOOLS_DLLPUBLIC css::rendering::IntegerBitmapLayout getStdMemoryLayout(
+            const css::geometry::IntegerSize2D& rBitmapSize );
 
         /// Convert standard 8888 RGBA color to vcl color
-        CANVASTOOLS_DLLPUBLIC ::Color stdIntSequenceToColor( const ::com::sun::star::uno::Sequence<sal_Int8>& rColor );
+        CANVASTOOLS_DLLPUBLIC ::Color stdIntSequenceToColor( const css::uno::Sequence<sal_Int8>& rColor );
 
         /// Convert standard 8888 RGBA color to vcl color
-        CANVASTOOLS_DLLPUBLIC ::com::sun::star::uno::Sequence<sal_Int8> colorToStdIntSequence( const ::Color& rColor );
+        CANVASTOOLS_DLLPUBLIC css::uno::Sequence<sal_Int8> colorToStdIntSequence( const ::Color& rColor );
 
         // Modelled closely after boost::numeric_cast, only that we
         // issue some trace output here and throw a RuntimeException
@@ -408,17 +379,17 @@ namespace canvas
 # if OSL_DEBUG_LEVEL > 2
                 OSL_TRACE("numeric_cast detected data loss");
 #endif
-                throw ::com::sun::star::uno::RuntimeException(
+                throw css::uno::RuntimeException(
                     "numeric_cast detected data loss",
-                    NULL );
+                    nullptr );
             }
 
             return static_cast<Target>(arg);
         }
 
-        CANVASTOOLS_DLLPUBLIC ::com::sun::star::awt::Rectangle getAbsoluteWindowRect(
-            const ::com::sun::star::awt::Rectangle&                                    rRect,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindow2 >& xWin  );
+        CANVASTOOLS_DLLPUBLIC css::awt::Rectangle getAbsoluteWindowRect(
+            const css::awt::Rectangle&                       rRect,
+            const css::uno::Reference< css::awt::XWindow2 >& xWin  );
 
         /** Retrieve for small bound marks around each corner of the given rectangle
          */
@@ -431,11 +402,11 @@ namespace canvas
            Maximal integer difference between all color stops, needed
            for smooth gradient color differences
          */
-        CANVASTOOLS_DLLPUBLIC int calcGradientStepCount( ::basegfx::B2DHomMatrix&                        rTotalTransform,
-                                   const ::com::sun::star::rendering::ViewState&   viewState,
-                                   const ::com::sun::star::rendering::RenderState& renderState,
-                                   const ::com::sun::star::rendering::Texture&     texture,
-                                   int                                             nColorSteps );
+        CANVASTOOLS_DLLPUBLIC int calcGradientStepCount( ::basegfx::B2DHomMatrix&   rTotalTransform,
+                                   const css::rendering::ViewState&   viewState,
+                                   const css::rendering::RenderState& renderState,
+                                   const css::rendering::Texture&     texture,
+                                   int                                nColorSteps );
 
         /** A very simplistic map for ASCII strings and arbitrary value
             types.
@@ -584,7 +555,7 @@ namespace canvas
         CANVASTOOLS_DLLPUBLIC void clipOutDev(const css::rendering::ViewState& viewState,
                         const css::rendering::RenderState& renderState,
                         OutputDevice& rOutDev,
-                        OutputDevice* p2ndOutDev=NULL);
+                        OutputDevice* p2ndOutDev=nullptr);
     }
 }
 

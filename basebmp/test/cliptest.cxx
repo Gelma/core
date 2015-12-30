@@ -154,15 +154,14 @@ private:
 
     void implTestMaskColorClip(const BitmapDeviceSharedPtr& rDevice)
     {
-        sal_Int32 nStride = basebmp::getBitmapDeviceStrideForWidth(Format::EightBitGrey, rDevice->getSize().getX());
         BitmapDeviceSharedPtr pBmp( createBitmapDevice( rDevice->getSize(),
                                                         true,
-                                                        Format::EightBitGrey, nStride ));
+                                                        Format::EightBitGrey ));
 
         OUString aSvg( "m 0 0h5v10h5v-5h-10z" );
 
         basegfx::B2DPolyPolygon aPoly;
-        basegfx::tools::importFromSvgD( aPoly, aSvg, false, NULL );
+        basegfx::tools::importFromSvgD( aPoly, aSvg, false, nullptr );
         const basebmp::Color aCol(0xFF);
         pBmp->clear( basebmp::Color(0) );
         pBmp->fillPolyPolygon(
@@ -186,25 +185,22 @@ private:
     }
 
 public:
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         const basegfx::B2ISize aSize(11,11);
-        sal_Int32 nStride = basebmp::getBitmapDeviceStrideForWidth(Format::OneBitMsbGrey, aSize.getX());
         mpClipMask = createBitmapDevice( aSize,
                                          true,
-                                         Format::OneBitMsbGrey, nStride );
-        nStride = basebmp::getBitmapDeviceStrideForWidth(Format::OneBitMsbPal, aSize.getX());
+                                         Format::OneBitMsbGrey );
         mpDevice1bpp = createBitmapDevice( aSize,
                                            true,
-                                           Format::OneBitMsbPal, nStride );
-        nStride = basebmp::getBitmapDeviceStrideForWidth(Format::ThirtyTwoBitTcMaskBGRA, aSize.getX());
+                                           Format::OneBitMsbPal );
         mpDevice32bpp = createBitmapDevice( aSize,
                                            true,
-                                           Format::ThirtyTwoBitTcMaskBGRA, nStride );
+                                           Format::ThirtyTwoBitTcMaskBGRA );
 
         OUString aSvg( "m 0 0 h5 l5 5 v5 h-5 l-5-5 z" );
         basegfx::B2DPolyPolygon aPoly;
-        basegfx::tools::importFromSvgD( aPoly, aSvg, false, NULL );
+        basegfx::tools::importFromSvgD( aPoly, aSvg, false, nullptr );
         mpClipMask->clear(Color(0));
         mpClipMask->drawPolygon(
             aPoly.getB2DPolygon(0),

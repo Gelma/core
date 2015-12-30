@@ -116,7 +116,7 @@ namespace pcr
     }
 
 
-    /** implementation for of <type scope="com::sun::star::inspection">XPropertyControlContext</type>
+    /** implementation for of <type scope="css::inspection">XPropertyControlContext</type>
         which forwards all events to a non-UNO version of this interface
     */
     typedef ::cppu::WeakImplHelper< XPropertyControlContext > PropertyControlContext_Impl_Base;
@@ -131,48 +131,48 @@ namespace pcr
         };
 
     private:
-        IControlContext*    m_pContext;
-        NotificationMode     m_eMode;
+        VclPtr<OBrowserListBox>     m_pContext;
+        NotificationMode            m_eMode;
 
     public:
         /** creates an instance
             @param _rContextImpl
                 the instance to delegate events to
         */
-        PropertyControlContext_Impl( IControlContext& _rContextImpl );
+        explicit PropertyControlContext_Impl( OBrowserListBox& _rContextImpl );
 
         /** disposes the context.
 
             When you call this method, all subsequent callbacks to the
-            <type scope="com::sun::star::inspection">XPropertyControlContext</type> methods
-            will throw a <type scope="com::sun::star::lang">DisposedException</type>.
+            <type scope="css::inspection">XPropertyControlContext</type> methods
+            will throw a <type scope="css::lang">DisposedException</type>.
         */
         void SAL_CALL dispose();
 
         /** sets the notification mode, so that notifications received from the controls are
-            forwarded to our IControlContext either synchronously or asynchronously
+            forwarded to our OBrowserListBox either synchronously or asynchronously
             @param  _eMode
                 the new notification mode
         */
         void setNotificationMode( NotificationMode _eMode );
 
-        virtual void SAL_CALL acquire() throw() SAL_OVERRIDE;
-        virtual void SAL_CALL release() throw() SAL_OVERRIDE;
+        virtual void SAL_CALL acquire() throw() override;
+        virtual void SAL_CALL release() throw() override;
 
     protected:
         virtual ~PropertyControlContext_Impl();
 
         // XPropertyControlObserver
-        virtual void SAL_CALL focusGained( const Reference< XPropertyControl >& Control ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL valueChanged( const Reference< XPropertyControl >& Control ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL focusGained( const Reference< XPropertyControl >& Control ) throw (RuntimeException, std::exception) override;
+        virtual void SAL_CALL valueChanged( const Reference< XPropertyControl >& Control ) throw (RuntimeException, std::exception) override;
         // XPropertyControlContext
-        virtual void SAL_CALL activateNextControl( const Reference< XPropertyControl >& CurrentControl ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL activateNextControl( const Reference< XPropertyControl >& CurrentControl ) throw (RuntimeException, std::exception) override;
 
         // IEventProcessor
-        virtual void processEvent( const ::comphelper::AnyEvent& _rEvent ) SAL_OVERRIDE;
+        virtual void processEvent( const ::comphelper::AnyEvent& _rEvent ) override;
 
     private:
-        /** processes the given event, i.e. notifies it to our IControlContext
+        /** processes the given event, i.e. notifies it to our OBrowserListBox
             @param  _rEvent
                 the event no notify
             @precond
@@ -189,7 +189,7 @@ namespace pcr
 
         /** checks whether the instance is already disposed
         */
-        bool impl_isDisposed_nothrow() const { return m_pContext == NULL; }
+        bool impl_isDisposed_nothrow() const { return m_pContext.get() == nullptr; }
 
         /** notifies the given event originating from the given control
         @throws DisposedException
@@ -200,7 +200,7 @@ namespace pcr
     };
 
 
-    PropertyControlContext_Impl::PropertyControlContext_Impl( IControlContext& _rContextImpl )
+    PropertyControlContext_Impl::PropertyControlContext_Impl( OBrowserListBox& _rContextImpl )
         :m_pContext( &_rContextImpl )
         ,m_eMode( eAsynchronously )
     {
@@ -228,7 +228,7 @@ namespace pcr
             return;
 
         SharedNotifier::getNotifier()->removeEventsForProcessor( this );
-        m_pContext = NULL;
+        m_pContext = nullptr;
     }
 
 
@@ -336,8 +336,8 @@ namespace pcr
             ,m_aLinesPlayground(VclPtr<vcl::Window>::Create(this,WB_DIALOGCONTROL | WB_CLIPCHILDREN))
             ,m_aVScroll(VclPtr<ScrollBar>::Create(this,WB_VSCROLL|WB_REPEAT|WB_DRAG))
             ,m_pHelpWindow( VclPtr<InspectorHelpWindow>::Create( this ) )
-            ,m_pLineListener(NULL)
-            ,m_pControlObserver( NULL )
+            ,m_pLineListener(nullptr)
+            ,m_pControlObserver( nullptr )
             ,m_nYOffset(0)
             ,m_nCurrentPreferredHelpHeight(0)
             ,m_nTheNameSize(0)
@@ -692,7 +692,7 @@ namespace pcr
             _out_rpLine = line->pLine;
         else
             _out_rpLine.reset();
-        return ( NULL != _out_rpLine.get() );
+        return ( nullptr != _out_rpLine.get() );
     }
 
 
@@ -717,7 +717,7 @@ namespace pcr
         BrowserLinePointer pLine;
         if ( impl_getBrowserLineForName( _rEntryName, pLine ) )
             return pLine->getControl();
-        return NULL;
+        return nullptr;
     }
 
 
@@ -1030,7 +1030,7 @@ namespace pcr
                 return;
             try
             {
-                _rxControl->setControlContext( NULL );
+                _rxControl->setControlContext( nullptr );
                 Reference< XComponent > xControlComponent( _rxControl, UNO_QUERY );
                 if ( xControlComponent.is() )
                     xControlComponent->dispose();
@@ -1090,7 +1090,7 @@ namespace pcr
 
         if ( nPos < m_aLines.size() )
         {
-            vcl::Window* pRefWindow = NULL;
+            vcl::Window* pRefWindow = nullptr;
             if ( nPos > 0 )
                 pRefWindow = m_aLines[nPos-1].pLine->GetRefWindow();
 
@@ -1267,7 +1267,7 @@ namespace pcr
                 // interested in scroll events if we have a scrollbar
                 if ( m_aVScroll->IsVisible() )
                 {
-                    HandleScrollCommand( *pCommand, NULL, m_aVScroll.get() );
+                    HandleScrollCommand( *pCommand, nullptr, m_aVScroll.get() );
                 }
             }
         }

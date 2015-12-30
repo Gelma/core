@@ -88,7 +88,7 @@ void SvxModifyControl::StateChanged( sal_uInt16, SfxItemState eState,
     if ( SfxItemState::DEFAULT != eState )
         return;
 
-    DBG_ASSERT( pState->ISA( SfxBoolItem ), "invalid item type" );
+    DBG_ASSERT( dynamic_cast<const SfxBoolItem*>( pState) !=  nullptr, "invalid item type" );
     const SfxBoolItem* pItem = static_cast<const SfxBoolItem*>(pState);
     mxImpl->maIdle.Stop();
 
@@ -110,7 +110,7 @@ void SvxModifyControl::StateChanged( sal_uInt16, SfxItemState eState,
 
 IMPL_LINK_TYPED( SvxModifyControl, OnTimer, Idle *, pTimer, void )
 {
-    if (pTimer == 0)
+    if (pTimer == nullptr)
         return;
 
     pTimer->Stop();
@@ -124,7 +124,7 @@ IMPL_LINK_TYPED( SvxModifyControl, OnTimer, Idle *, pTimer, void )
 void SvxModifyControl::_repaint()
 {
     if ( GetStatusBar().AreItemsVisible() )
-        GetStatusBar().SetItemData( GetId(), 0 );    // force repaint
+        GetStatusBar().SetItemData( GetId(), nullptr );    // force repaint
 }
 
 /**
@@ -165,7 +165,7 @@ void SvxModifyControl::Click()
         return;
 
     Sequence<PropertyValue> aArgs;
-    execute(OUString(".uno:Save"), aArgs);
+    execute(".uno:Save", aArgs);
 }
 
 

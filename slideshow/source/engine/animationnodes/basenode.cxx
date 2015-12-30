@@ -318,7 +318,7 @@ BaseNode::BaseNode( const uno::Reference< animations::XAnimationNode >& xNode,
     mxAnimationNode( xNode ),
     mpParent( rParent ),
     mpSelf(),
-    mpStateTransitionTable( NULL ),
+    mpStateTransitionTable( nullptr ),
     mnStartDelay( rContext.mnStartDelay ),
     meCurrState( UNRESOLVED ),
     meCurrentStateTransition( 0 ),
@@ -386,7 +386,7 @@ sal_Int16 BaseNode::getFillDefaultMode() const
 {
     sal_Int16 nFillDefault = mxAnimationNode->getFillDefault();
     if (nFillDefault  == animations::AnimationFill::DEFAULT) {
-        nFillDefault = (mpParent != 0
+        nFillDefault = (mpParent != nullptr
                         ? mpParent->getFillDefaultMode()
                         : animations::AnimationFill::AUTO);
     }
@@ -397,7 +397,7 @@ sal_Int16 BaseNode::getRestartDefaultMode() const
 {
     sal_Int16 nRestartDefaultMode = mxAnimationNode->getRestartDefault();
     if (nRestartDefaultMode == animations::AnimationRestart::DEFAULT) {
-        nRestartDefaultMode = (mpParent != 0
+        nRestartDefaultMode = (mpParent != nullptr
                                ? mpParent->getRestartDefaultMode()
                                : animations::AnimationRestart::ALWAYS);
     }
@@ -704,7 +704,7 @@ void BaseNode::showState() const
 
         if( !xTargetShape.is() )
         {
-            ::com::sun::star::presentation::ParagraphTarget aTarget;
+            css::presentation::ParagraphTarget aTarget;
 
             // no shape provided. Maybe a ParagraphTarget?
             if( (xAnimate->getTarget() >>= aTarget) )
@@ -718,9 +718,7 @@ void BaseNode::showState() const
 
             // read shape name
             OUString aName;
-            if( (xPropSet->getPropertyValue(
-                     OUString("Name") )
-                 >>= aName) )
+            if( xPropSet->getPropertyValue("Name") >>= aName )
             {
                 SAL_INFO("slideshow.verbose", "Node info: n" <<
                          reinterpret_cast<const char*>(this)+debugGetCurrentOffset() <<

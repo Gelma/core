@@ -17,12 +17,22 @@
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
 
-#include <math.h>
-
 #include <tools/poly.hxx>
 #include <memory>
 
 #include <sgvspln.hxx>
+#include <cmath>
+
+#if defined(ANDROID)
+namespace std
+{
+template<typename T>
+T copysign(T x, T y)
+{
+    return ::copysign(x, y);
+}
+}
+#endif
 
 extern "C" {
 
@@ -103,12 +113,6 @@ short basis()              /* calculate BASE machine independence     */
 #define MAXROOT   sqrt(POSMAX)
 
 #endif              /*-------------- END of ifdef --------------------*/
-
-/* defines for function macros:                                        */
-
-#define abs(X) ((X) >= 0  ?  (X) : -(X))        /* absolute number  X */
-#define sign(X, Y) (Y < 0 ? -abs(X) : abs(X))   /* sign of Y times    */
-                                                /* abs(X)             */
 
 /*--------------------  END of FILE u_const.h  -----------------------*/
 
@@ -486,7 +490,7 @@ sal_uInt16 PeriodicSpline(sal_uInt16 n, double* x, double* y,
 {                     // array dimensions should range from [0..n]!
     sal_uInt16  Error;
     sal_uInt16  i,im1,nm1; //integer
-    double  hr,hl;
+    double  hl;
     std::unique_ptr<double[]> a;
     std::unique_ptr<double[]> lowrow;
     std::unique_ptr<double[]> ricol;
@@ -506,6 +510,7 @@ sal_uInt16 PeriodicSpline(sal_uInt16 n, double* x, double* y,
         c[1]=c[1]/(x[2]-x[0]);
         c[2]=-c[1];
     } else {
+        double hr;
         for (i=1;i<=nm1;i++) {
             im1=i-1;
             hl=x[i]-x[im1];
@@ -550,8 +555,7 @@ sal_uInt16 ParaSpline(sal_uInt16 n, double* x, double* y, sal_uInt8 MargCond,
 {
     sal_uInt16 Error;
     sal_uInt16 i;
-    double deltX,deltY,delt,
-           alphX = 0,alphY = 0,
+    double alphX = 0,alphY = 0,
            betX = 0,betY = 0;
 
     if (n<2) return 1;
@@ -559,6 +563,7 @@ sal_uInt16 ParaSpline(sal_uInt16 n, double* x, double* y, sal_uInt8 MargCond,
     if (!CondT) {
         T[0]=0.0;
         for (i=0;i<n;i++) {
+            double deltX,deltY,delt;
             deltX=x[i+1]-x[i]; deltY=y[i+1]-y[i];
             delt =deltX*deltX+deltY*deltY;
             if (delt<=0.0) return 3;            // two identical adjacent points!
@@ -576,18 +581,18 @@ sal_uInt16 ParaSpline(sal_uInt16 n, double* x, double* y, sal_uInt8 MargCond,
             if (y[n]!=y[0]) return 4;
         } break;
         case 4: {
-            if (abs(Marg01)>=MAXROOT) {
+            if (std::abs(Marg01)>=MAXROOT) {
                 alphX=0.0;
-                alphY=sign(1.0,y[1]-y[0]);
+                alphY=std::copysign(1.0,y[1]-y[0]);
             } else {
-                alphX=sign(sqrt(1.0/(1.0+Marg01*Marg01)),x[1]-x[0]);
+                alphX=std::copysign(sqrt(1.0/(1.0+Marg01*Marg01)),x[1]-x[0]);
                 alphY=alphX*Marg01;
             }
-            if (abs(MargN1)>=MAXROOT) {
+            if (std::abs(MargN1)>=MAXROOT) {
                 betX=0.0;
-                betY=sign(1.0,y[n]-y[n-1]);
+                betY=std::copysign(1.0,y[n]-y[n-1]);
             } else {
-                betX=sign(sqrt(1.0/(1.0+MargN1*MargN1)),x[n]-x[n-1]);
+                betX=std::copysign(sqrt(1.0/(1.0+MargN1*MargN1)),x[n]-x[n-1]);
                 betY=betX*MargN1;
             }
         }
@@ -677,8 +682,8 @@ bool CalcSpline(tools::Polygon& rPoly, bool Periodic, sal_uInt16& n,
 
 bool Spline2Poly(tools::Polygon& rSpln, bool Periodic, tools::Polygon& rPoly)
 {
-    short  MinKoord=-32000;    // to prevent
-    short  MaxKoord=32000;     // overflows
+    const short MinKoord = -32000;    // to prevent
+    const short MaxKoord = 32000;     // overflows
 
     double* ax;                // coefficients of the polynoms
     double* ay;
@@ -690,16 +695,14 @@ bool Spline2Poly(tools::Polygon& rSpln, bool Periodic, tools::Polygon& rPoly)
     double* dy;
     double* tv;
 
-    double      Step;          // stepsize for t
-    double      dt1,dt2,dt3;   // delta t, y, ^3
     sal_uInt16  n;             // number of partial polynoms to draw
     sal_uInt16  i;             // actual partial polynom
     bool        bOk;           // all still ok?
-    sal_uInt16  PolyMax=16380; // max number of polygon points
+    const sal_uInt16  PolyMax=16380; // max number of polygon points
 
     bOk=CalcSpline(rSpln,Periodic,n,ax,ay,bx,by,cx,cy,dx,dy,tv);
     if (bOk) {
-        Step =10;
+        const double Step = 10;          // stepsize for t
 
         rPoly.SetSize(1);
         rPoly.SetPoint(Point(short(ax[0]),short(ay[0])),0); // first point
@@ -708,6 +711,7 @@ bool Spline2Poly(tools::Polygon& rSpln, bool Periodic, tools::Polygon& rPoly)
             double t=tv[i]+Step;
             bool bEnd=false; // partial polynom ended?
             while (!bEnd) {  // extrapolate one partial polynom
+                double      dt1,dt2,dt3;   // delta t, y, ^3
                 bEnd=t>=tv[i+1];
                 if (bEnd) t=tv[i+1];
                 dt1=t-tv[i]; dt2=dt1*dt1; dt3=dt2*dt1;

@@ -73,7 +73,7 @@ VCLXAccessibleComponent::~VCLXAccessibleComponent()
     }
 
     delete m_pSolarLock;
-    m_pSolarLock = NULL;
+    m_pSolarLock = nullptr;
     // This is not completely safe. If we assume that the base class dtor calls some method which
     // uses this lock, the we crash. However, as the base class' dtor does not have a chance to call _out_
     // virtual methods, this is no problem as long as the base class is safe, i.e. does not use the external
@@ -97,8 +97,7 @@ sal_Bool VCLXAccessibleComponent::supportsService( const OUString& rServiceName 
 
 uno::Sequence< OUString > VCLXAccessibleComponent::getSupportedServiceNames() throw (uno::RuntimeException, std::exception)
 {
-    uno::Sequence< OUString > aNames(1);
-    aNames[0] = "com.sun.star.awt.AccessibleWindow";
+    uno::Sequence< OUString > aNames { "com.sun.star.awt.AccessibleWindow" };
     return aNames;
 }
 
@@ -190,7 +189,7 @@ void VCLXAccessibleComponent::ProcessWindowEvent( const VclWindowEvent& rVclWind
             pAccWindow->RemoveEventListener( LINK( this, VCLXAccessibleComponent, WindowEventListener ) );
             pAccWindow->RemoveChildEventListener( LINK( this, VCLXAccessibleComponent, WindowChildEventListener ) );
             mxWindow.clear();
-            mpVCLXindow = NULL;
+            mpVCLXindow = nullptr;
         }
         break;
         case VCLEVENT_WINDOW_CHILDDESTROYED:
@@ -348,7 +347,7 @@ void VCLXAccessibleComponent::disposing()
     AccessibleExtendedComponentHelper_BASE::disposing();
 
     mxWindow.clear();
-    mpVCLXindow = NULL;
+    mpVCLXindow = nullptr;
 }
 
 VclPtr<vcl::Window> VCLXAccessibleComponent::GetWindow() const
@@ -365,24 +364,21 @@ void VCLXAccessibleComponent::FillAccessibleRelationSet( utl::AccessibleRelation
         vcl::Window *pLabeledBy = pWindow->GetAccessibleRelationLabeledBy();
         if ( pLabeledBy && pLabeledBy != pWindow )
         {
-            uno::Sequence< uno::Reference< uno::XInterface > > aSequence(1);
-            aSequence[0] = pLabeledBy->GetAccessible();
+            uno::Sequence< uno::Reference< uno::XInterface > > aSequence { pLabeledBy->GetAccessible() };
             rRelationSet.AddRelation( accessibility::AccessibleRelation( accessibility::AccessibleRelationType::LABELED_BY, aSequence ) );
         }
 
         vcl::Window* pLabelFor = pWindow->GetAccessibleRelationLabelFor();
         if ( pLabelFor && pLabelFor != pWindow )
         {
-            uno::Sequence< uno::Reference< uno::XInterface > > aSequence(1);
-            aSequence[0] = pLabelFor->GetAccessible();
+            uno::Sequence< uno::Reference< uno::XInterface > > aSequence { pLabelFor->GetAccessible() };
             rRelationSet.AddRelation( accessibility::AccessibleRelation( accessibility::AccessibleRelationType::LABEL_FOR, aSequence ) );
         }
 
         vcl::Window* pMemberOf = pWindow->GetAccessibleRelationMemberOf();
         if ( pMemberOf && pMemberOf != pWindow )
         {
-            uno::Sequence< uno::Reference< uno::XInterface > > aSequence(1);
-            aSequence[0] = pMemberOf->GetAccessible();
+            uno::Sequence< uno::Reference< uno::XInterface > > aSequence { pMemberOf->GetAccessible() };
             rRelationSet.AddRelation( accessibility::AccessibleRelation( accessibility::AccessibleRelationType::MEMBER_OF, aSequence ) );
         }
     }
@@ -700,12 +696,12 @@ awt::Rectangle VCLXAccessibleComponent::implGetBounds() throw (uno::RuntimeExcep
     vcl::Window* pWindow = GetWindow();
     if ( pWindow )
     {
-        Rectangle aRect = pWindow->GetWindowExtentsRelative( NULL );
+        Rectangle aRect = pWindow->GetWindowExtentsRelative( nullptr );
         aBounds = AWTRectangle( aRect );
         vcl::Window* pParent = pWindow->GetAccessibleParentWindow();
         if ( pParent )
         {
-            Rectangle aParentRect = pParent->GetWindowExtentsRelative( NULL );
+            Rectangle aParentRect = pParent->GetWindowExtentsRelative( nullptr );
             awt::Point aParentScreenLoc = AWTPoint( aParentRect.TopLeft() );
             aBounds.X -= aParentScreenLoc.X;
             aBounds.Y -= aParentScreenLoc.Y;
@@ -752,7 +748,7 @@ awt::Point VCLXAccessibleComponent::getLocationOnScreen(  ) throw (uno::RuntimeE
     awt::Point aPos;
     if ( GetWindow() )
     {
-        Rectangle aRect = GetWindow()->GetWindowExtentsRelative( NULL );
+        Rectangle aRect = GetWindow()->GetWindowExtentsRelative( nullptr );
         aPos.X = aRect.Left();
         aPos.Y = aRect.Top();
     }

@@ -44,9 +44,6 @@ namespace /* private */
     const char* CLSID_ENTRY                         = "CLSID\\{GUID}\\InProcServer32";
     const char* SHELLEX_IID_ENTRY                   = "{EXT}\\shellex\\{GUID}";
     const char* SHELLEX_ENTRY                       = "{EXT}\\shellex";
-    const char* PROPSHEET_ENTRY                     = "{EXT}\\CLSID\\{GUID}\\InProcServer32";
-    const char* EXTENSION_CLSID                     = "{EXT}\\CLSID";
-    const char* EXTENSION_CLSID_GUID                = "{EXT}\\CLSID\\{GUID}";
     const char* FORWARD_PROPSHEET_MYPROPSHEET_ENTRY = "{FWDKEY}\\shellex\\PropertySheetHandlers\\MyPropSheet1";
     const char* FORWARD_PROPSHEET_ENTRY             = "{FWDKEY}\\shellex\\PropertySheetHandlers";
     const char* FORWARD_SHELLEX_ENTRY               = "{FWDKEY}\\shellex";
@@ -302,7 +299,7 @@ namespace /* private */
 // COM exports
 
 
-extern "C" STDAPI DllRegisterServer()
+STDAPI DllRegisterServer()
 {
     TCHAR ModuleFileName[MAX_PATH];
 
@@ -340,7 +337,7 @@ extern "C" STDAPI DllRegisterServer()
     return hr;
 }
 
-extern "C" STDAPI DllUnregisterServer()
+STDAPI DllUnregisterServer()
 {
     HRESULT hr = S_OK;
 
@@ -370,7 +367,7 @@ extern "C" STDAPI DllUnregisterServer()
     return hr;
 }
 
-extern "C" STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv)
+STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv)
 {
     *ppv = 0;
 
@@ -397,7 +394,7 @@ extern "C" STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv)
     return S_OK;
 }
 
-extern "C" STDAPI DllCanUnloadNow()
+STDAPI DllCanUnloadNow()
 {
     if (CClassFactory::IsLocked() || g_DllRefCnt > 0)
         return S_FALSE;

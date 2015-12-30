@@ -47,7 +47,7 @@ DlgQryJoin::DlgQryJoin( OQueryTableView * pParent,
                        const Reference< XConnection >& _xConnection,
                        bool _bAllowTableSelect)
     : ModalDialog( pParent, "JoinDialog", "dbaccess/ui/joindialog.ui" )
-    , m_pTableControl( NULL )
+    , m_pTableControl( nullptr )
     , m_pTableMap(_pTableMap)
     , m_pTableView(pParent)
     , eJoinType(static_cast<OQueryTableConnectionData*>(_pData.get())->GetJoinType())
@@ -153,10 +153,10 @@ void DlgQryJoin::dispose()
     ModalDialog::dispose();
 }
 
-IMPL_LINK( DlgQryJoin, LBChangeHdl, ListBox*, /*pListBox*/ )
+IMPL_LINK_NOARG_TYPED( DlgQryJoin, LBChangeHdl, ListBox&, void )
 {
     if (m_pLB_JoinType->GetSelectEntryPos() == m_pLB_JoinType->GetSavedValue() )
-        return 1;
+        return;
 
     m_pLB_JoinType->SaveValue();
     m_pML_HelpText->SetText(OUString());
@@ -205,7 +205,7 @@ IMPL_LINK( DlgQryJoin, LBChangeHdl, ListBox*, /*pListBox*/ )
                 m_pCBNatural->Check(false);
                 m_pTableControl->enableRelation(false);
                 m_pConnData->AppendConnLine("","");
-                m_pPB_OK->Enable(true);
+                m_pPB_OK->Enable();
             }
             break;
     }
@@ -237,7 +237,6 @@ IMPL_LINK( DlgQryJoin, LBChangeHdl, ListBox*, /*pListBox*/ )
     }
 
     m_pML_HelpText->SetText( sHelpText );
-    return 1;
 }
 
 IMPL_LINK_NOARG_TYPED( DlgQryJoin, OKClickHdl, Button*, void )
@@ -275,11 +274,6 @@ IMPL_LINK_NOARG_TYPED( DlgQryJoin, NaturalToggleHdl, CheckBox&, void )
         m_pTableControl->NotifyCellChange();
         m_pTableControl->Invalidate();
     }
-}
-
-TTableConnectionData::value_type DlgQryJoin::getConnectionData() const
-{
-    return m_pConnData;
 }
 
 void DlgQryJoin::setValid(bool _bValid)
@@ -330,7 +324,7 @@ void DlgQryJoin::setJoinType(EJoinType _eNewJoinType)
         }
     }
 
-    LBChangeHdl(m_pLB_JoinType);
+    LBChangeHdl(*m_pLB_JoinType);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

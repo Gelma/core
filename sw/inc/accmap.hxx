@@ -37,9 +37,9 @@
 class SwAccessibleParagraph;
 class SwViewShell;
 class Rectangle;
-class SwFrm;
-class SwTextFrm;
-class SwPageFrm;
+class SwFrame;
+class SwTextFrame;
+class SwPageFrame;
 class SwAccessibleContext;
 class SwAccessibleContextMap_Impl;
 class SwAccessibleEventList_Impl;
@@ -79,7 +79,7 @@ class SwAccessibleMap : public ::accessibility::IAccessibleViewForwarder,
 {
     mutable ::osl::Mutex maMutex;
     ::osl::Mutex maEventMutex;
-    SwAccessibleContextMap_Impl *mpFrmMap;
+    SwAccessibleContextMap_Impl *mpFrameMap;
     SwAccessibleShapeMap_Impl *mpShapeMap;
     SwShapeList_Impl *mpShapes;
     SwAccessibleEventList_Impl *mpEvents;
@@ -92,7 +92,7 @@ class SwAccessibleMap : public ::accessibility::IAccessibleViewForwarder,
     /// preview-to-display coordinates
     SwAccPreviewData* mpPreview;
 
-    ::com::sun::star::uno::WeakReference < ::com::sun::star::accessibility::XAccessible > mxCursorContext;
+    css::uno::WeakReference < css::accessibility::XAccessible > mxCursorContext;
 
     sal_Int32 mnPara;
 
@@ -102,22 +102,19 @@ class SwAccessibleMap : public ::accessibility::IAccessibleViewForwarder,
 
     void AppendEvent( const SwAccessibleEvent_Impl& rEvent );
 
-    void InvalidateCursorPosition(
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::accessibility::XAccessible>& rAcc );
+    void InvalidateCursorPosition( const css::uno::Reference<css::accessibility::XAccessible>& rAcc );
     void DoInvalidateShapeSelection(bool bInvalidateFocusMode = false);
 
     void InvalidateShapeSelection();
 
-    //mpSelectedFrmMap contains the old selected objects.
-    SwAccessibleContextMap_Impl *mpSeletedFrmMap;
+    //mpSelectedFrameMap contains the old selected objects.
+    SwAccessibleContextMap_Impl *mpSeletedFrameMap;
     //IvalidateShapeInParaSelection() method is responsible for the updating the selected states of the objects.
     void InvalidateShapeInParaSelection();
 
-    void _InvalidateRelationSet( const SwFrm* pFrm, bool bFrom );
+    void _InvalidateRelationSet( const SwFrame* pFrame, bool bFrom );
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessible>
+    css::uno::Reference<css::accessibility::XAccessible>
             _GetDocumentView( bool bPagePreview );
 
     /** method to build up a new data structure of the accessible paragraphs,
@@ -134,30 +131,26 @@ public:
     SwAccessibleMap( SwViewShell *pSh );
     virtual ~SwAccessibleMap();
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessible> GetDocumentView();
+    css::uno::Reference<css::accessibility::XAccessible> GetDocumentView();
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessible> GetDocumentPreview(
+    css::uno::Reference<css::accessibility::XAccessible> GetDocumentPreview(
                             const std::vector<PreviewPage*>& _rPreviewPages,
                             const Fraction&  _rScale,
-                            const SwPageFrm* _pSelectedPageFrm,
+                            const SwPageFrame* _pSelectedPageFrame,
                             const Size&      _rPreviewWinSize );
 
     ::rtl::Reference < SwAccessibleContext > GetContextImpl(
-                                                 const SwFrm *pFrm,
+                                                 const SwFrame *pFrame,
                                                 bool bCreate = true );
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessible> GetContext(
-                                                 const SwFrm *pFrm,
+    css::uno::Reference<css::accessibility::XAccessible> GetContext(
+                                                 const SwFrame *pFrame,
                                                 bool bCreate = true );
 
     ::rtl::Reference < ::accessibility::AccessibleShape > GetContextImpl(
                                         const SdrObject *pObj,
                                         SwAccessibleContext *pParentImpl,
                                         bool bCreate = true );
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessible> GetContext(
+    css::uno::Reference<css::accessibility::XAccessible> GetContext(
                                         const SdrObject *pObj,
                                         SwAccessibleContext *pParentImpl,
                                         bool bCreate = true );
@@ -168,11 +161,11 @@ public:
     }
     static bool IsInSameLevel(const SdrObject* pObj, const SwFEShell* pFESh);
     void AddShapeContext(const SdrObject *pObj,
-                             ::com::sun::star::uno::Reference < ::com::sun::star::accessibility::XAccessible > xAccShape);
+                             css::uno::Reference < css::accessibility::XAccessible > xAccShape);
 
     void AddGroupContext(const SdrObject *pParentObj,
-                    ::com::sun::star::uno::Reference < ::com::sun::star::accessibility::XAccessible > xAccParent);
-    void RemoveGroupContext(const SdrObject *pParentObj, ::com::sun::star::uno::Reference < ::com::sun::star::accessibility::XAccessible > xAccParent);
+                    css::uno::Reference < css::accessibility::XAccessible > xAccParent);
+    void RemoveGroupContext(const SdrObject *pParentObj, css::uno::Reference < css::accessibility::XAccessible > xAccParent);
 
     const SwRect& GetVisArea() const;
 
@@ -187,25 +180,25 @@ public:
     */
     Size GetPreviewPageSize( sal_uInt16 _nPreviewPageNum ) const;
 
-    void RemoveContext( const SwFrm *pFrm );
+    void RemoveContext( const SwFrame *pFrame );
     void RemoveContext( const SdrObject *pObj );
 
     // Dispose frame and its children if bRecursive is set
-    void Dispose( const SwFrm* pFrm,
+    void Dispose( const SwFrame* pFrame,
                   const SdrObject* pObj,
                   vcl::Window* pWindow,
                   bool bRecursive = false );
 
-    void InvalidatePosOrSize( const SwFrm* pFrm,
+    void InvalidatePosOrSize( const SwFrame* pFrame,
                               const SdrObject* pObj,
                               vcl::Window* pWindow,
-                              const SwRect& rOldFrm );
+                              const SwRect& rOldFrame );
 
-    void InvalidateContent( const SwFrm *pFrm );
+    void InvalidateContent( const SwFrame *pFrame );
 
-    void InvalidateAttr( const SwTextFrm& rTextFrm );
+    void InvalidateAttr( const SwTextFrame& rTextFrame );
 
-    void InvalidateCursorPosition( const SwFrm *pFrm );
+    void InvalidateCursorPosition( const SwFrame *pFrame );
     void InvalidateFocus();
     void SetCursorContext(
         const ::rtl::Reference < SwAccessibleContext >& rCursorContext );
@@ -213,15 +206,15 @@ public:
     // Invalidate state of whole tree. If an action is open, this call
     // is processed when the last action ends.
     void InvalidateStates( AccessibleStates _nStates,
-                           const SwFrm* _pFrm = 0 );
+                           const SwFrame* _pFrame = nullptr );
 
-    void InvalidateRelationSet( const SwFrm* pMaster, const SwFrm* pFollow );
+    void InvalidateRelationSet( const SwFrame* pMaster, const SwFrame* pFollow );
 
     /** invalidation CONTENT_FLOWS_FROM/_TO relation of a paragraph
 
         @author OD
 
-        @param _rTextFrm
+        @param _rTextFrame
         input parameter - reference to paragraph, whose CONTENT_FLOWS_FROM/_TO
         has to be invalidated.
 
@@ -229,14 +222,14 @@ public:
         input parameter - boolean indicating, if relation CONTENT_FLOWS_FROM
         (value <true>) or CONTENT_FLOWS_TO (value <false>) has to be invalidated.
     */
-    void InvalidateParaFlowRelation( const SwTextFrm& _rTextFrm,
+    void InvalidateParaFlowRelation( const SwTextFrame& _rTextFrame,
                                      const bool _bFrom );
 
     /** invalidation of text selection of a paragraph
 
         @author OD
     */
-    void InvalidateParaTextSelection( const SwTextFrm& _rTextFrm );
+    void InvalidateParaTextSelection( const SwTextFrame& _rTextFrame );
 
     /** invalidation of text selection of all paragraphs
 
@@ -244,39 +237,39 @@ public:
     */
     void InvalidateTextSelectionOfAllParas();
 
-    sal_Int32 GetChildIndex( const SwFrm& rParentFrm,
+    sal_Int32 GetChildIndex( const SwFrame& rParentFrame,
                              vcl::Window& rChild ) const;
 
     // update preview data (and fire events if necessary)
     void UpdatePreview( const std::vector<PreviewPage*>& _rPreviewPages,
                         const Fraction&  _rScale,
-                        const SwPageFrm* _pSelectedPageFrm,
+                        const SwPageFrame* _pSelectedPageFrame,
                         const Size&      _rPreviewWinSize );
 
     void InvalidatePreviewSelection( sal_uInt16 nSelPage );
-    bool IsPageSelected( const SwPageFrm *pPageFrm ) const;
+    bool IsPageSelected( const SwPageFrame *pPageFrame ) const;
 
     void FireEvents();
 
     // IAccessibleViewForwarder
 
-    virtual Rectangle GetVisibleArea() const SAL_OVERRIDE;
-    virtual Point LogicToPixel (const Point& rPoint) const SAL_OVERRIDE;
-    virtual Size LogicToPixel (const Size& rSize) const SAL_OVERRIDE;
+    virtual Rectangle GetVisibleArea() const override;
+    virtual Point LogicToPixel (const Point& rPoint) const override;
+    virtual Size LogicToPixel (const Size& rSize) const override;
 
     // IAccessibleParent
     virtual bool ReplaceChild (
         ::accessibility::AccessibleShape* pCurrentChild,
-        const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >& _rxShape,
+        const css::uno::Reference< css::drawing::XShape >& _rxShape,
         const long _nIndex,
         const ::accessibility::AccessibleShapeTreeInfo& _rShapeTreeInfo
-    )   throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
+    )   throw (css::uno::RuntimeException) override;
     virtual ::accessibility::AccessibleControlShape* GetAccControlShapeFromModel
-        (::com::sun::star::beans::XPropertySet* pSet)
-        throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible >   GetAccessibleCaption (
-        const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & xShape)
-    throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
+        (css::beans::XPropertySet* pSet)
+        throw (css::uno::RuntimeException) override;
+    virtual css::uno::Reference< css::accessibility::XAccessible >   GetAccessibleCaption (
+        const css::uno::Reference< css::drawing::XShape > & xShape)
+    throw (css::uno::RuntimeException) override;
 
     // additional Core/Pixel conversions for internal use; also works
     // for preview
@@ -306,9 +299,9 @@ private:
     void GetMapMode( const Point& _rPoint,
                      MapMode&     _orMapMode ) const;
 public:
-    virtual bool IsDocumentSelAll() SAL_OVERRIDE;
+    virtual bool IsDocumentSelAll() override;
 
-    ::com::sun::star::uno::WeakReference < ::com::sun::star::accessibility::XAccessible >
+    css::uno::WeakReference < css::accessibility::XAccessible >
         GetCursorContext() const { return mxCursorContext; }
 
     //Para Container for InvalidateCursorPosition

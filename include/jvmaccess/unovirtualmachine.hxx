@@ -74,7 +74,7 @@ public:
         @return
         The Java virtual machine wrapper.  Will never be null.
      */
-    rtl::Reference< jvmaccess::VirtualMachine > getVirtualMachine() const { return m_virtualMachine;}
+    rtl::Reference< jvmaccess::VirtualMachine > getVirtualMachine() const;
 
     /** Get the UNO class loader.
 
@@ -88,8 +88,8 @@ public:
     void * getClassLoader() const { return m_classLoader;}
 
 private:
-    UnoVirtualMachine(UnoVirtualMachine &) SAL_DELETED_FUNCTION;
-    void operator =(UnoVirtualMachine &) SAL_DELETED_FUNCTION;
+    UnoVirtualMachine(UnoVirtualMachine &) = delete;
+    void operator =(UnoVirtualMachine &) = delete;
 
     virtual ~UnoVirtualMachine();
 

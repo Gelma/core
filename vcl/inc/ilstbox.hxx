@@ -20,13 +20,14 @@
 #ifndef INCLUDED_VCL_INC_ILSTBOX_HXX
 #define INCLUDED_VCL_INC_ILSTBOX_HXX
 
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
+#include <memory>
 #include <boost/signals2/signal.hpp>
 #include <vcl/image.hxx>
 #include <vcl/ctrl.hxx>
 #include <vcl/button.hxx>
 #include <vcl/floatwin.hxx>
-#include <vcl/lstbox.h>
+#include <vcl/lstbox.hxx>
 #include <vcl/timer.hxx>
 
 #include "vcl/quickselectionengine.hxx"
@@ -51,7 +52,7 @@ struct ImplEntryType
     OUString    maStr;
     Image       maImage;
     void*       mpUserData;
-    bool    mbIsSelected;
+    bool        mbIsSelected;
     ListBoxEntryFlags mnFlags;
     long        mnHeight;
 
@@ -62,7 +63,7 @@ struct ImplEntryType
         mnHeight( 0 )
     {
         mbIsSelected = false;
-        mpUserData = NULL;
+        mpUserData = nullptr;
     }
 
     ImplEntryType( const OUString& rStr ) :
@@ -71,7 +72,7 @@ struct ImplEntryType
         mnHeight( 0 )
     {
         mbIsSelected = false;
-        mpUserData = NULL;
+        mpUserData = nullptr;
     }
 
     ImplEntryType( const Image& rImage ) :
@@ -80,7 +81,7 @@ struct ImplEntryType
         mnHeight( 0 )
     {
         mbIsSelected = false;
-        mpUserData = NULL;
+        mpUserData = nullptr;
     }
 };
 
@@ -97,13 +98,13 @@ private:
 
     Link<sal_Int32,void> maSelectionChangedHdl;
     bool            mbCallSelectionChangedHdl;
-    boost::ptr_vector<ImplEntryType> maEntries;
+    std::vector<std::unique_ptr<ImplEntryType> > maEntries;
 
     ImplEntryType*  GetEntry( sal_Int32  nPos ) const
     {
         if (nPos < 0 || static_cast<size_t>(nPos) >= maEntries.size())
-            return NULL;
-        return const_cast<ImplEntryType*>(&maEntries[nPos]);
+            return nullptr;
+        return maEntries[nPos].get();
     }
 
 public:
@@ -240,14 +241,14 @@ private:
     vcl::QuickSelectionEngine maQuickSelectionEngine;
 
 protected:
-    virtual void    KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    MouseMove( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    Tracking( const TrackingEvent& rTEvt ) SAL_OVERRIDE;
-    virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) SAL_OVERRIDE;
-    virtual void    Resize() SAL_OVERRIDE;
-    virtual void    GetFocus() SAL_OVERRIDE;
-    virtual void    LoseFocus() SAL_OVERRIDE;
+    virtual void    KeyInput( const KeyEvent& rKEvt ) override;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void    MouseMove( const MouseEvent& rMEvt ) override;
+    virtual void    Tracking( const TrackingEvent& rTEvt ) override;
+    virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) override;
+    virtual void    Resize() override;
+    virtual void    GetFocus() override;
+    virtual void    LoseFocus() override;
 
     bool            SelectEntries( sal_Int32  nSelect, LB_EVENT_TYPE eLET, bool bShift = false, bool bCtrl = false, bool bSelectPosChange = false );
     void            ImplPaint(vcl::RenderContext& rRenderContext, sal_Int32 nPos, bool bErase = false, bool bLayout = false);
@@ -259,15 +260,15 @@ protected:
     void            ImplShowFocusRect();
     void            ImplHideFocusRect();
 
-    virtual void    StateChanged( StateChangedType nType ) SAL_OVERRIDE;
-    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual void    StateChanged( StateChangedType nType ) override;
+    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) override;
 
 public:
-    virtual void  FillLayoutData() const SAL_OVERRIDE;
+    virtual void  FillLayoutData() const override;
 
                     ImplListBoxWindow( vcl::Window* pParent, WinBits nWinStyle );
     virtual         ~ImplListBoxWindow();
-    virtual void    dispose() SAL_OVERRIDE;
+    virtual void    dispose() override;
 
     ImplEntryList*  GetEntryList() const { return mpEntryList; }
 
@@ -294,7 +295,6 @@ public:
         either at top or in the middle depending on the chosen style*/
     void            ShowProminentEntry( sal_Int32  nEntryPos );
     void            SetProminentEntryType( ProminentEntry eType ) { meProminentType = eType; }
-    ProminentEntry  GetProminentEntryType() const { return meProminentType; }
     using Window::IsVisible;
     bool            IsVisible( sal_Int32  nEntry ) const;
 
@@ -333,19 +333,14 @@ public:
 
     void            SetScrollHdl( const Link<ImplListBoxWindow*,void>& rLink ) { maScrollHdl = rLink; }
     void            SetSelectHdl( const Link<LinkParamNone*,void>& rLink ) { maSelectHdl = rLink; }
-    const Link<LinkParamNone*,void>&   GetSelectHdl() const                { return maSelectHdl; }
     void            SetCancelHdl( const Link<LinkParamNone*,void>& rLink ) { maCancelHdl = rLink; }
-    const Link<LinkParamNone*,void>&   GetCancelHdl() const                { return maCancelHdl; }
     void            SetDoubleClickHdl( const Link<ImplListBoxWindow*,void>& rLink ) { maDoubleClickHdl = rLink; }
-    const Link<ImplListBoxWindow*,void>&   GetDoubleClickHdl() const               { return maDoubleClickHdl; }
     void            SetMRUChangedHdl( const Link<LinkParamNone*,void>& rLink ) { maMRUChangedHdl = rLink; }
     void            SetFocusHdl( const Link<sal_Int32,void>& rLink )  { maFocusHdl = rLink ; }
-    const Link<sal_Int32,void>&   GetFocusHdl() const             { return maFocusHdl; }
 
     boost::signals2::signal< void ( UserDrawEvent* ) > userDrawSignal;
 
     void            SetListItemSelectHdl( const Link<LinkParamNone*,void>& rLink ) { maListItemSelectHdl = rLink ; }
-    const Link<LinkParamNone*,void>&   GetListItemSelectHdl() const                { return maListItemSelectHdl; }
     bool            IsSelectionChanged() const { return mbSelectionChanged; }
     sal_uInt16      GetSelectModifier() const { return mnSelectModifier; }
 
@@ -365,13 +360,13 @@ public:
     void EnableQuickSelection( const bool& b );
 
     using Control::ImplInitSettings;
-    virtual void ApplySettings(vcl::RenderContext& rRenderContext) SAL_OVERRIDE;
+    virtual void ApplySettings(vcl::RenderContext& rRenderContext) override;
 
 protected:
     // ISearchableStringList
-    virtual vcl::StringEntryIdentifier    CurrentEntry( OUString& _out_entryText ) const SAL_OVERRIDE;
-    virtual vcl::StringEntryIdentifier    NextEntry( vcl::StringEntryIdentifier _currentEntry, OUString& _out_entryText ) const SAL_OVERRIDE;
-    virtual void                            SelectEntry( vcl::StringEntryIdentifier _entry ) SAL_OVERRIDE;
+    virtual vcl::StringEntryIdentifier    CurrentEntry( OUString& _out_entryText ) const override;
+    virtual vcl::StringEntryIdentifier    NextEntry( vcl::StringEntryIdentifier _currentEntry, OUString& _out_entryText ) const override;
+    virtual void                            SelectEntry( vcl::StringEntryIdentifier _entry ) override;
 };
 
 class ImplListBox : public Control
@@ -389,14 +384,14 @@ private:
     bool mbEdgeBlending : 1;
 
     Link<ImplListBox*,void>   maScrollHdl;    // because it is needed by ImplListBoxWindow itself
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > mxDNDListenerContainer;
+    css::uno::Reference< css::uno::XInterface > mxDNDListenerContainer;
 
 protected:
-    virtual void        GetFocus() SAL_OVERRIDE;
-    virtual void        StateChanged( StateChangedType nType ) SAL_OVERRIDE;
-    virtual void        DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual void        GetFocus() override;
+    virtual void        StateChanged( StateChangedType nType ) override;
+    virtual void        DataChanged( const DataChangedEvent& rDCEvt ) override;
 
-    virtual bool        Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual bool        Notify( NotifyEvent& rNEvt ) override;
 
     void                ImplResizeControls();
     void                ImplCheckScrollBars();
@@ -409,14 +404,14 @@ protected:
 public:
                     ImplListBox( vcl::Window* pParent, WinBits nWinStyle );
                     virtual ~ImplListBox();
-    virtual void    dispose() SAL_OVERRIDE;
+    virtual void    dispose() override;
 
     const ImplEntryList*    GetEntryList() const            { return maLBWindow->GetEntryList(); }
     ImplListBoxWindow*      GetMainWindow()                 { return maLBWindow.get(); }
 
-    virtual void    Resize() SAL_OVERRIDE;
-    virtual const Wallpaper& GetDisplayBackground() const SAL_OVERRIDE;
-    virtual vcl::Window*     GetPreferredKeyInputWindow() SAL_OVERRIDE;
+    virtual void    Resize() override;
+    virtual const Wallpaper& GetDisplayBackground() const override;
+    virtual vcl::Window*     GetPreferredKeyInputWindow() override;
 
     sal_Int32       InsertEntry( sal_Int32  nPos, const OUString& rStr );
     sal_Int32       InsertEntry( sal_Int32  nPos, const OUString& rStr, const Image& rImage );
@@ -490,7 +485,7 @@ public:
 
     /// pb: #106948# explicit mirroring for calc
     inline void     EnableMirroring()   { maLBWindow->EnableMirroring(); }
-    inline void     SetDropTraget(const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >& i_xDNDListenerContainer){ mxDNDListenerContainer= i_xDNDListenerContainer; }
+    inline void     SetDropTraget(const css::uno::Reference< css::uno::XInterface >& i_xDNDListenerContainer){ mxDNDListenerContainer= i_xDNDListenerContainer; }
 };
 
 class ImplListBoxFloatingWindow : public FloatingWindow
@@ -503,12 +498,12 @@ private:
     bool            mbAutoWidth;
 
 protected:
-    virtual bool    PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual bool    PreNotify( NotifyEvent& rNEvt ) override;
 
 public:
                     ImplListBoxFloatingWindow( vcl::Window* pParent );
     virtual         ~ImplListBoxFloatingWindow();
-    virtual void    dispose() SAL_OVERRIDE;
+    virtual void    dispose() override;
     void            SetImplListBox( ImplListBox* pLB )  { mpImplLB = pLB; }
 
     void            SetPrefSize( const Size& rSz )      { maPrefSz = rSz; }
@@ -520,8 +515,8 @@ public:
     void            StartFloat( bool bStartTracking );
 
     virtual void    setPosSizePixel( long nX, long nY,
-                                     long nWidth, long nHeight, PosSizeFlags nFlags = PosSizeFlags::All ) SAL_OVERRIDE;
-    void            SetPosSizePixel( const Point& rNewPos, const Size& rNewSize ) SAL_OVERRIDE
+                                     long nWidth, long nHeight, PosSizeFlags nFlags = PosSizeFlags::All ) override;
+    void            SetPosSizePixel( const Point& rNewPos, const Size& rNewSize ) override
                         { FloatingWindow::SetPosSizePixel( rNewPos, rNewSize ); }
 
     void            SetDropDownLineCount( sal_uInt16 n ) { mnDDLineCount = n; }
@@ -529,7 +524,7 @@ public:
 
     sal_Int32       GetPopupModeStartSaveSelection() const { return mnPopupModeStartSaveSelection; }
 
-    virtual void    Resize() SAL_OVERRIDE;
+    virtual void    Resize() override;
 };
 
 class ImplWin : public Control
@@ -550,17 +545,17 @@ private:
 
     void ImplDraw(vcl::RenderContext& rRenderContext, bool bLayout = false);
 protected:
-    virtual void  FillLayoutData() const SAL_OVERRIDE;
+    virtual void  FillLayoutData() const override;
 
 public:
                     ImplWin( vcl::Window* pParent, WinBits nWinStyle = 0 );
 
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    Paint( vcl::RenderContext& rRenderContext, const Rectangle& rRect ) SAL_OVERRIDE;
-    virtual void    Resize() SAL_OVERRIDE;
-    virtual void    GetFocus() SAL_OVERRIDE;
-    virtual void    LoseFocus() SAL_OVERRIDE;
-    virtual bool    PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void    Paint( vcl::RenderContext& rRenderContext, const Rectangle& rRect ) override;
+    virtual void    Resize() override;
+    virtual void    GetFocus() override;
+    virtual void    LoseFocus() override;
+    virtual bool    PreNotify( NotifyEvent& rNEvt ) override;
 
     sal_Int32       GetItemPos() const { return mnItemPos; }
     void            SetItemPos( sal_Int32  n ) { mnItemPos = n; }
@@ -585,10 +580,10 @@ public:
     bool GetEdgeBlending() const { return mbEdgeBlending; }
     void SetEdgeBlending(bool bNew) { mbEdgeBlending = bNew; }
 
-    virtual void    ShowFocus(const Rectangle& rRect) SAL_OVERRIDE;
+    virtual void    ShowFocus(const Rectangle& rRect) override;
 
     using Control::ImplInitSettings;
-    virtual void ApplySettings(vcl::RenderContext& rRenderContext) SAL_OVERRIDE;
+    virtual void ApplySettings(vcl::RenderContext& rRenderContext) override;
 
 };
 
@@ -600,13 +595,12 @@ private:
 public:
                     ImplBtn( vcl::Window* pParent, WinBits nWinStyle = 0 );
 
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
     void    MBDown();
 
     boost::signals2::signal< void ( ImplBtn* ) > buttonDownSignal;
 };
 
-void ImplInitFieldSettings( vcl::Window* pWin, bool bFont, bool bForeground, bool bBackground );
 void ImplInitDropDownButton( PushButton* pButton );
 
 #endif // INCLUDED_VCL_INC_ILSTBOX_HXX

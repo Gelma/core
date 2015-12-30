@@ -29,7 +29,6 @@
 
 #include <svl/lstner.hxx>
 #include <svtools/embedhlp.hxx>
-#define LOK_USE_UNSTABLE_API
 #include <LibreOfficeKit/LibreOfficeKitTypes.h>
 
 #include <sfx2/StyleManager.hxx>
@@ -45,7 +44,7 @@ class SwWrtShell;
 class SwFEShell;
 class Reader;
 class SwReader;
-class SwCrsrShell;
+class SwCursorShell;
 class SwSrcView;
 class SwPaM;
 class SwgReaderOption;
@@ -80,7 +79,7 @@ class SW_DLLPUBLIC SwDocShell
     SwWrtShell* m_pWrtShell;
 
     comphelper::EmbeddedObjectContainer* m_pOLEChildList;
-    sal_Int16   m_nUpdateDocMode;   ///< contains the com::sun::star::document::UpdateDocMode
+    sal_Int16   m_nUpdateDocMode;   ///< contains the css::document::UpdateDocMode
     bool        m_IsATemplate;      ///< prevent nested calls of UpdateFontList
 
     bool m_IsRemovedInvisibleContent;
@@ -92,28 +91,28 @@ class SW_DLLPUBLIC SwDocShell
     SAL_DLLPRIVATE void                  RemoveLink();
 
     /// Catch hint for DocInfo.
-    SAL_DLLPRIVATE virtual void          Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+    SAL_DLLPRIVATE virtual void          Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
     /// FileIO
-    SAL_DLLPRIVATE virtual bool InitNew( const ::com::sun::star::uno::Reference< ::com::sun::star::embed::XStorage >& xStorage ) SAL_OVERRIDE;
-    SAL_DLLPRIVATE virtual bool Load( SfxMedium& rMedium ) SAL_OVERRIDE;
-    SAL_DLLPRIVATE virtual bool LoadFrom( SfxMedium& rMedium ) SAL_OVERRIDE;
-    SAL_DLLPRIVATE virtual bool ConvertFrom( SfxMedium &rMedium ) SAL_OVERRIDE;
-    SAL_DLLPRIVATE virtual bool ConvertTo( SfxMedium &rMedium ) SAL_OVERRIDE;
-    SAL_DLLPRIVATE virtual bool SaveAs( SfxMedium& rMedium ) SAL_OVERRIDE;
-    SAL_DLLPRIVATE virtual bool SaveCompleted( const ::com::sun::star::uno::Reference< ::com::sun::star::embed::XStorage >& xStorage ) SAL_OVERRIDE;
+    SAL_DLLPRIVATE virtual bool InitNew( const css::uno::Reference< css::embed::XStorage >& xStorage ) override;
+    SAL_DLLPRIVATE virtual bool Load( SfxMedium& rMedium ) override;
+    SAL_DLLPRIVATE virtual bool LoadFrom( SfxMedium& rMedium ) override;
+    SAL_DLLPRIVATE virtual bool ConvertFrom( SfxMedium &rMedium ) override;
+    SAL_DLLPRIVATE virtual bool ConvertTo( SfxMedium &rMedium ) override;
+    SAL_DLLPRIVATE virtual bool SaveAs( SfxMedium& rMedium ) override;
+    SAL_DLLPRIVATE virtual bool SaveCompleted( const css::uno::Reference< css::embed::XStorage >& xStorage ) override;
 
-    SAL_DLLPRIVATE virtual bool     PrepareClose( bool bUI = true ) SAL_OVERRIDE;
+    SAL_DLLPRIVATE virtual bool     PrepareClose( bool bUI = true ) override;
 
     SAL_DLLPRIVATE virtual bool     InsertGeneratedStream(SfxMedium& rMedium,
             css::uno::Reference<css::text::XTextRange> const& xInsertPosition)
-        SAL_OVERRIDE;
+        override;
 
     /// Make DocInfo known to the Doc.
     SAL_DLLPRIVATE virtual VclPtr<SfxDocumentInfoDialog> CreateDocumentInfoDialog(
-                                    vcl::Window *pParent, const SfxItemSet &) SAL_OVERRIDE;
+                                    vcl::Window *pParent, const SfxItemSet &) override;
     /// OLE-stuff
-    SAL_DLLPRIVATE virtual void          Draw( OutputDevice*, const JobSetup&, sal_uInt16) SAL_OVERRIDE;
+    SAL_DLLPRIVATE virtual void          Draw( OutputDevice*, const JobSetup&, sal_uInt16) override;
 
     /// Methods for StyleSheets
 
@@ -127,19 +126,19 @@ class SW_DLLPUBLIC SwDocShell
         sal_uInt16 nMask,
         const bool bNew,
         const OString& sPageId = OString(),
-        SwWrtShell* pActShell = 0,
+        SwWrtShell* pActShell = nullptr,
         const bool bBasic = false );
 
     SAL_DLLPRIVATE bool                  Delete(const OUString &rName, sal_uInt16 nFamily);
     SAL_DLLPRIVATE bool                  Hide(const OUString &rName, sal_uInt16 nFamily, bool bHidden);
     SAL_DLLPRIVATE sal_uInt16            ApplyStyles(const OUString &rName,
         const sal_uInt16 nFamily,
-        SwWrtShell* pShell = 0,
+        SwWrtShell* pShell = nullptr,
         sal_uInt16 nMode = 0);
     SAL_DLLPRIVATE sal_uInt16            DoWaterCan( const OUString &rName, sal_uInt16 nFamily);
-    SAL_DLLPRIVATE sal_uInt16            UpdateStyle(const OUString &rName, sal_uInt16 nFamily, SwWrtShell* pShell = 0);
+    SAL_DLLPRIVATE sal_uInt16            UpdateStyle(const OUString &rName, sal_uInt16 nFamily, SwWrtShell* pShell = nullptr);
     SAL_DLLPRIVATE sal_uInt16            MakeByExample(const OUString &rName,
-                                        sal_uInt16 nFamily, sal_uInt16 nMask, SwWrtShell* pShell = 0);
+                                        sal_uInt16 nFamily, sal_uInt16 nMask, SwWrtShell* pShell = nullptr);
 
     SAL_DLLPRIVATE void                  SubInitNew();   ///< for InitNew and HtmlSourceMode.
 
@@ -152,13 +151,12 @@ class SW_DLLPUBLIC SwDocShell
 
 protected:
     /// override to update text fields
-    virtual void                DoFlushDocInfo() SAL_OVERRIDE;
+    virtual void                DoFlushDocInfo() override;
 
 public:
     /// but we implement this ourselves.
     SFX_DECL_INTERFACE(SW_DOCSHELL)
     SFX_DECL_OBJECTFACTORY()
-    TYPEINFO_OVERRIDE();
 
 private:
     /// SfxInterface initializer.
@@ -177,22 +175,22 @@ public:
     DECL_LINK_TYPED( Ole2ModifiedHdl, bool, void );
 
     /// OLE-stuff.
-    virtual void      SetVisArea( const Rectangle &rRect ) SAL_OVERRIDE;
-    virtual Rectangle GetVisArea( sal_uInt16 nAspect ) const SAL_OVERRIDE;
-    virtual Printer  *GetDocumentPrinter() SAL_OVERRIDE;
-    virtual OutputDevice* GetDocumentRefDev() SAL_OVERRIDE;
-    virtual void      OnDocumentPrinterChanged( Printer * pNewPrinter ) SAL_OVERRIDE;
-    virtual sal_uLong     GetMiscStatus() const SAL_OVERRIDE;
+    virtual void      SetVisArea( const Rectangle &rRect ) override;
+    virtual Rectangle GetVisArea( sal_uInt16 nAspect ) const override;
+    virtual Printer  *GetDocumentPrinter() override;
+    virtual OutputDevice* GetDocumentRefDev() override;
+    virtual void      OnDocumentPrinterChanged( Printer * pNewPrinter ) override;
+    virtual sal_uLong     GetMiscStatus() const override;
 
-    virtual void            PrepareReload() SAL_OVERRIDE;
-    virtual void            SetModified( bool = true ) SAL_OVERRIDE;
+    virtual void            PrepareReload() override;
+    virtual void            SetModified( bool = true ) override;
 
     /// Dispatcher
     void                    Execute(SfxRequest &);
     void                    ExecStyleSheet(SfxRequest&);
 
     void                    GetState(SfxItemSet &);
-    void                    StateStyleSheet(SfxItemSet&, SwWrtShell* pSh = 0 );
+    void                    StateStyleSheet(SfxItemSet&, SwWrtShell* pSh = nullptr );
 
     /// returns Doc. But be careful!
     inline SwDoc*                   GetDoc() { return m_pDoc; }
@@ -204,11 +202,11 @@ public:
     void                    UpdateChildWindows();
 
     /// global IO.
-    virtual bool            Save() SAL_OVERRIDE;
+    virtual bool            Save() override;
 
     /// For Style PI.
-    virtual SfxStyleSheetBasePool*  GetStyleSheetPool() SAL_OVERRIDE;
-    virtual sfx2::StyleManager* GetStyleManager() SAL_OVERRIDE;
+    virtual SfxStyleSheetBasePool*  GetStyleSheetPool() override;
+    virtual sfx2::StyleManager* GetStyleManager() override;
 
     /// Set View for actions via Shell.
     void          SetView(SwView* pVw);
@@ -229,16 +227,16 @@ public:
 
     /// For inserting document.
     Reader* StartConvertFrom(SfxMedium& rMedium, SwReader** ppRdr,
-                            SwCrsrShell* pCrsrSh = 0, SwPaM* pPaM = 0);
+                            SwCursorShell* pCursorSh = nullptr, SwPaM* pPaM = nullptr);
 
 #if defined WNT
     virtual bool DdeGetData( const OUString& rItem, const OUString& rMimeType,
-                             ::com::sun::star::uno::Any & rValue ) SAL_OVERRIDE;
+                             css::uno::Any & rValue ) override;
     virtual bool DdeSetData( const OUString& rItem, const OUString& rMimeType,
-                             const ::com::sun::star::uno::Any & rValue ) SAL_OVERRIDE;
+                             const css::uno::Any & rValue ) override;
 #endif
-    virtual ::sfx2::SvLinkSource* DdeCreateLinkSource( const OUString& rItem ) SAL_OVERRIDE;
-    virtual void ReconnectDdeLink(SfxObjectShell& rServer) SAL_OVERRIDE;
+    virtual ::sfx2::SvLinkSource* DdeCreateLinkSource( const OUString& rItem ) override;
+    virtual void ReconnectDdeLink(SfxObjectShell& rServer) override;
 
     virtual void FillClass( SvGlobalName * pClassName,
                                    SotClipboardFormatId * pClipFormat,
@@ -246,11 +244,11 @@ public:
                                    OUString * pLongUserName,
                                    OUString * pUserName,
                                    sal_Int32 nFileFormat,
-                                   bool bTemplate = false ) const SAL_OVERRIDE;
+                                   bool bTemplate = false ) const override;
 
-    virtual std::set<Color> GetDocColors() SAL_OVERRIDE;
+    virtual std::set<Color> GetDocColors() override;
 
-    virtual void LoadStyles( SfxObjectShell& rSource ) SAL_OVERRIDE;
+    virtual void LoadStyles( SfxObjectShell& rSource ) override;
 
     void _LoadStyles( SfxObjectShell& rSource, bool bPreserveCurrentDocument );
 
@@ -270,7 +268,7 @@ public:
     void LoadingFinished();
 
     /// Cancel transfer (called from SFX).
-    virtual void CancelTransfers() SAL_OVERRIDE;
+    virtual void CancelTransfers() override;
 
     /// Re-read Doc from Html-source.
     void    ReloadFromHtml( const OUString& rStreamName, SwSrcView* pSrcView );
@@ -284,35 +282,34 @@ public:
     void InvalidateModel();
     void ReactivateModel();
 
-    virtual ::com::sun::star::uno::Sequence< OUString >  GetEventNames() SAL_OVERRIDE;
+    virtual css::uno::Sequence< OUString >  GetEventNames() override;
 
     /// #i20883# Digital Signatures and Encryption
-    virtual HiddenInformation GetHiddenInformationState( HiddenInformation nStates ) SAL_OVERRIDE;
+    virtual HiddenInformation GetHiddenInformationState( HiddenInformation nStates ) override;
 
     /** #i42634# Overwrites SfxObjectShell::UpdateLinks
      This new function is necessary to trigger update of links in docs
      read by the binary filter: */
-    virtual void UpdateLinks() SAL_OVERRIDE;
+    virtual void UpdateLinks() override;
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XController >
+    css::uno::Reference< css::frame::XController >
                                 GetController();
 
     SfxInPlaceClient* GetIPClient( const ::svt::EmbeddedObjectRef& xObjRef );
     SAL_DLLPRIVATE bool IsTemplate() { return m_IsATemplate; }
     SAL_DLLPRIVATE void SetIsTemplate( bool bValue ) { m_IsATemplate = bValue; }
 
-    virtual const ::sfx2::IXmlIdRegistry* GetXmlIdRegistry() const SAL_OVERRIDE;
+    virtual const ::sfx2::IXmlIdRegistry* GetXmlIdRegistry() const override;
 
     /** passwword protection for Writer (derived from SfxObjectShell)
      see also:    FN_REDLINE_ON, FN_REDLINE_ON */
-    virtual bool    IsChangeRecording() const SAL_OVERRIDE;
-    virtual bool    HasChangeRecordProtection() const SAL_OVERRIDE;
-    virtual void    SetChangeRecording( bool bActivate ) SAL_OVERRIDE;
-    virtual bool    SetProtectionPassword( const OUString &rPassword ) SAL_OVERRIDE;
-    virtual bool    GetProtectionHash( /*out*/ ::com::sun::star::uno::Sequence< sal_Int8 > &rPasswordHash ) SAL_OVERRIDE;
+    virtual bool    IsChangeRecording() const override;
+    virtual bool    HasChangeRecordProtection() const override;
+    virtual void    SetChangeRecording( bool bActivate ) override;
+    virtual bool    SetProtectionPassword( const OUString &rPassword ) override;
+    virtual bool    GetProtectionHash( /*out*/ css::uno::Sequence< sal_Int8 > &rPasswordHash ) override;
 
-    virtual void libreOfficeKitCallback(int nType, const char* pPayload) const SAL_OVERRIDE;
-    virtual bool isTiledRendering() const SAL_OVERRIDE;
+    virtual void libreOfficeKitCallback(int nType, const char* pPayload) const override;
 };
 
 /** Find the right DocShell and create a new one:

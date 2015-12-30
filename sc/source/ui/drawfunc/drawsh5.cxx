@@ -80,7 +80,7 @@ void ScDrawShell::GetHLinkState( SfxItemSet& rSet )             //  Hyperlink
             aHLinkItem.SetURL( pInfo->GetHlink() );
             aHLinkItem.SetInsertMode(HLINK_FIELD);
         }
-        SdrUnoObj* pUnoCtrl = PTR_CAST(SdrUnoObj, pObj);
+        SdrUnoObj* pUnoCtrl = dynamic_cast<SdrUnoObj*>( pObj );
         if (pUnoCtrl && FmFormInventor == pUnoCtrl->GetObjInventor())
         {
             uno::Reference<awt::XControlModel> xControlModel = pUnoCtrl->GetUnoControlModel();
@@ -166,7 +166,7 @@ void ScDrawShell::ExecuteHLink( SfxRequest& rReq )
                         if ( rMarkList.GetMarkCount() == 1 )
                         {
                             SdrObject* pObj = rMarkList.GetMark(0)->GetMarkedSdrObj();
-                            SdrUnoObj* pUnoCtrl = PTR_CAST(SdrUnoObj, pObj );
+                            SdrUnoObj* pUnoCtrl = dynamic_cast<SdrUnoObj*>( pObj  );
                             if (pUnoCtrl && FmFormInventor == pUnoCtrl->GetObjInventor())
                             {
                                 uno::Reference<awt::XControlModel> xControlModel =
@@ -461,7 +461,7 @@ void ScDrawShell::ExecDrawFunc( SfxRequest& rReq )
 
         case SID_ENABLE_HYPHENATION:
             {
-                SFX_REQUEST_ARG( rReq, pItem, SfxBoolItem, SID_ENABLE_HYPHENATION, false);
+                const SfxBoolItem* pItem = rReq.GetArg<SfxBoolItem>(SID_ENABLE_HYPHENATION);
                 if( pItem )
                 {
                     SfxItemSet aSet( GetPool(), EE_PARA_HYPHENATE, EE_PARA_HYPHENATE );
@@ -487,7 +487,7 @@ void ScDrawShell::ExecDrawFunc( SfxRequest& rReq )
 
                         SvxAbstractDialogFactory* pFact = SvxAbstractDialogFactory::Create();
                         OSL_ENSURE(pFact, "Dialog creation failed!");
-                        std::unique_ptr<AbstractSvxObjectNameDialog> pDlg(pFact->CreateSvxObjectNameDialog(NULL, aName));
+                        std::unique_ptr<AbstractSvxObjectNameDialog> pDlg(pFact->CreateSvxObjectNameDialog(nullptr, aName));
                         OSL_ENSURE(pDlg, "Dialog creation failed!");
 
                         pDlg->SetCheckNameHdl(LINK(this, ScDrawShell, NameObjectHdl));
@@ -556,7 +556,7 @@ void ScDrawShell::ExecDrawFunc( SfxRequest& rReq )
 
                         SvxAbstractDialogFactory* pFact = SvxAbstractDialogFactory::Create();
                         OSL_ENSURE(pFact, "Dialog creation failed!");
-                        std::unique_ptr<AbstractSvxObjectTitleDescDialog> pDlg(pFact->CreateSvxObjectTitleDescDialog(NULL, aTitle, aDescription));
+                        std::unique_ptr<AbstractSvxObjectTitleDescDialog> pDlg(pFact->CreateSvxObjectTitleDescDialog(nullptr, aTitle, aDescription));
                         OSL_ENSURE(pDlg, "Dialog creation failed!");
 
                         if(RET_OK == pDlg->Execute())

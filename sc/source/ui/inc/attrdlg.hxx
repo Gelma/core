@@ -29,13 +29,12 @@ class SfxItemSet;
 class ScAttrDlg : public SfxTabDialog
 {
 public:
-                ScAttrDlg( SfxViewFrame*     pFrame,
-                           vcl::Window*           pParent,
+                ScAttrDlg( vcl::Window*           pParent,
                            const SfxItemSet* pCellAttrs );
                 virtual ~ScAttrDlg();
 
 protected:
-    virtual void    PageCreated( sal_uInt16 nPageId, SfxTabPage& rTabPage ) SAL_OVERRIDE;
+    virtual void    PageCreated( sal_uInt16 nPageId, SfxTabPage& rTabPage ) override;
 
 private:
     DECL_LINK_TYPED( OkHandler, SfxPoolItem*, void ); // for closing by double clicking in TabPages

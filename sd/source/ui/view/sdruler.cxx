@@ -41,7 +41,7 @@ class RulerCtrlItem : public SfxControllerItem
 
  protected:
     virtual void StateChanged( sal_uInt16 nSId, SfxItemState eState,
-                                const SfxPoolItem* pItem ) SAL_OVERRIDE;
+                                const SfxPoolItem* pItem ) override;
 
  public:
     RulerCtrlItem(sal_uInt16 nId, Ruler& rRlr, SfxBindings& rBind);
@@ -70,7 +70,6 @@ void RulerCtrlItem::StateChanged( sal_uInt16 nSId, SfxItemState, const SfxPoolIt
 
 Ruler::Ruler( DrawViewShell& rViewSh, vcl::Window* pParent, ::sd::Window* pWin, SvxRulerSupportFlags nRulerFlags,  SfxBindings& rBindings, WinBits nWinStyle)
     : SvxRuler(pParent, pWin, nRulerFlags, rBindings, nWinStyle)
-    , pSdView(NULL)
     , pSdWin(pWin)
     , pDrViewShell(&rViewSh)
 {

@@ -22,11 +22,10 @@
 #include <ooo/vba/word/XListFormat.hpp>
 #include <ooo/vba/word/XListTemplate.hpp>
 #include <vbahelper/vbahelperinterface.hxx>
-#include <cppuhelper/implbase1.hxx>
 #include <com/sun/star/text/XTextRange.hpp>
 #include "vbalisthelper.hxx"
 
-typedef InheritedHelperInterfaceImpl1< ooo::vba::word::XListFormat > SwVbaListFormat_BASE;
+typedef InheritedHelperInterfaceWeakImpl< ooo::vba::word::XListFormat > SwVbaListFormat_BASE;
 
 class SwVbaListFormat : public SwVbaListFormat_BASE
 {
@@ -38,12 +37,12 @@ public:
     virtual ~SwVbaListFormat();
 
     // Methods
-    virtual void SAL_CALL ApplyListTemplate( const css::uno::Reference< ::ooo::vba::word::XListTemplate >& ListTemplate, const css::uno::Any& ContinuePreviousList, const css::uno::Any& ApplyTo, const css::uno::Any& DefaultListBehavior ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL ConvertNumbersToText(  ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL ApplyListTemplate( const css::uno::Reference< ::ooo::vba::word::XListTemplate >& ListTemplate, const css::uno::Any& ContinuePreviousList, const css::uno::Any& ApplyTo, const css::uno::Any& DefaultListBehavior ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL ConvertNumbersToText(  ) throw (css::uno::RuntimeException, std::exception) override;
 
     // XHelperInterface
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 #endif // INCLUDED_SW_SOURCE_UI_VBA_VBALISTFORMAT_HXX
 

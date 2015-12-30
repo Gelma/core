@@ -65,49 +65,56 @@ public:
       @param _rArgumens
       Vector, which the indices are written to
     */
-    virtual void fillVisibleArgumentMapping(::std::vector<sal_uInt16>& _rArguments) const SAL_OVERRIDE ;
+    virtual void fillVisibleArgumentMapping(::std::vector<sal_uInt16>& _rArguments) const override ;
 
     /**
       Returns the category of the function
 
       @return    the category of the function
     */
-    virtual const formula::IFunctionCategory* getCategory() const SAL_OVERRIDE ;
+    virtual const formula::IFunctionCategory* getCategory() const override ;
 
     /**
       Returns the description of the function
 
       @return    the description of the function, or an empty OUString if there is no description
     */
-    virtual OUString getDescription() const SAL_OVERRIDE ;
+    virtual OUString getDescription() const override ;
 
     /**
       Returns the function signature with parameters from the passed string array.
 
       @return    function signature with parameters
     */
-    virtual OUString getFormula(const ::std::vector< OUString >& _aArguments) const SAL_OVERRIDE ;
+    virtual OUString getFormula(const ::std::vector< OUString >& _aArguments) const override ;
 
     /**
       Returns the name of the function
 
       @return    the name of the function, or an empty OUString if there is no name
     */
-    virtual OUString getFunctionName() const SAL_OVERRIDE ;
+    virtual OUString getFunctionName() const override ;
 
     /**
       Returns the help id of the function
 
       @return   help id of the function
     */
-    virtual OString getHelpId() const SAL_OVERRIDE ;
+    virtual OString getHelpId() const override ;
 
     /**
       Returns number of arguments
 
-      @return   help id of the function
+      @return   number of arguments
     */
-    virtual sal_uInt32 getParameterCount() const SAL_OVERRIDE ;
+    virtual sal_uInt32 getParameterCount() const override ;
+
+    /**
+      Returns start of variable arguments
+
+      @return   start of variable arguments
+    */
+    virtual sal_uInt32 getVarArgsStart() const override ;
 
     /**
       Returns description of parameter at given position
@@ -117,7 +124,7 @@ public:
 
       @return   OUString description of the parameter
     */
-    virtual OUString getParameterDescription(sal_uInt32 _nPos) const SAL_OVERRIDE ;
+    virtual OUString getParameterDescription(sal_uInt32 _nPos) const override ;
 
     /**
       Returns name of parameter at given position
@@ -127,7 +134,7 @@ public:
 
       @return   OUString name of the parameter
     */
-    virtual OUString getParameterName(sal_uInt32 _nPos) const SAL_OVERRIDE ;
+    virtual OUString getParameterName(sal_uInt32 _nPos) const override ;
 
     /**
       Returns list of all parameter names
@@ -141,7 +148,7 @@ public:
 
       @return   OUString of the form "FUNCTIONNAME( parameter list )"
     */
-    virtual OUString getSignature() const SAL_OVERRIDE ;
+    virtual OUString getSignature() const override ;
 
     /**
       Returns the number of non-suppressed arguments
@@ -154,14 +161,14 @@ public:
       @return    number of non-suppressed arguments
     */
     sal_uInt16  GetSuppressedArgCount() const;
-    virtual sal_Int32 getSuppressedArgumentCount() const SAL_OVERRIDE ;
+    virtual sal_Int32 getSuppressedArgumentCount() const override ;
 
     /**
       Requests function data from AddInCollection
 
       Logs error message on failure for debugging purposes
     */
-    virtual void initArgumentInfo()  const SAL_OVERRIDE;
+    virtual void initArgumentInfo()  const override;
 
     /**
       Returns true if parameter at given position is optional
@@ -171,7 +178,7 @@ public:
 
       @return   true if optional, false if not optional
     */
-    virtual bool isParameterOptional(sal_uInt32 _nPos) const SAL_OVERRIDE ;
+    virtual bool isParameterOptional(sal_uInt32 _nPos) const override ;
 
     /**
       Compares functions by name, respecting special characters
@@ -205,6 +212,7 @@ public:
     sal_uInt16            nFIndex;                /**< Unique function index */
     sal_uInt16            nCategory;              /**< Function category */
     sal_uInt16            nArgCount;              /**< All parameter count, suppressed and unsuppressed */
+    sal_uInt16            nVarArgsStart;          /**< Start of variable arguments, for numbering */
     OString          sHelpId;                /**< HelpId of function */
     bool                  bIncomplete         :1; /**< Incomplete argument info (set for add-in info from configuration) */
     bool                  bHasSuppressedArgs  :1; /**< Whether there is any suppressed parameter. */
@@ -257,7 +265,7 @@ public:
     /**
       @return count of functions in this category
     */
-    virtual sal_uInt32 getCount() const SAL_OVERRIDE;
+    virtual sal_uInt32 getCount() const override;
 
     /**
       Gives the _nPos'th function in this category.
@@ -267,13 +275,13 @@ public:
 
       @return function at the _nPos position in this category, null if _nPos out of bounds.
     */
-    virtual const formula::IFunctionDescription* getFunction(sal_uInt32 _nPos) const SAL_OVERRIDE;
+    virtual const formula::IFunctionDescription* getFunction(sal_uInt32 _nPos) const override;
 
     /**
       @return index number of this category.
     */
-    virtual sal_uInt32 getNumber() const SAL_OVERRIDE;
-    virtual OUString getName() const SAL_OVERRIDE;
+    virtual sal_uInt32 getNumber() const override;
+    virtual OUString getName() const override;
 
 private:
     ::std::vector<const ScFuncDesc*>* m_pCategory; /**< list of functions in this category */
@@ -340,7 +348,7 @@ public:
     /**
       @return number of categories, not counting the cumulative category ('All')
     */
-    virtual sal_uInt32 getCount() const SAL_OVERRIDE;
+    virtual sal_uInt32 getCount() const override;
 
     /**
       Returns a category.
@@ -352,7 +360,7 @@ public:
 
       @return pointer to an IFunctionCategory object, null if nPos out of bounds.
     */
-    virtual const formula::IFunctionCategory* getCategory(sal_uInt32 nPos) const SAL_OVERRIDE;
+    virtual const formula::IFunctionCategory* getCategory(sal_uInt32 nPos) const override;
 
     /**
       Appends the last recently used functions.
@@ -362,7 +370,7 @@ public:
       @param _rLastRUFunctions
       a vector of pointer to IFunctionDescription, by reference.
     */
-    virtual void fillLastRecentlyUsedFunctions(::std::vector< const formula::IFunctionDescription*>& _rLastRUFunctions) const SAL_OVERRIDE;
+    virtual void fillLastRecentlyUsedFunctions(::std::vector< const formula::IFunctionDescription*>& _rLastRUFunctions) const override;
 
     /**
       Maps Etoken to character
@@ -374,7 +382,7 @@ public:
 
       @return character
     */
-    virtual sal_Unicode getSingleToken(const formula::IFunctionManager::EToken _eToken) const SAL_OVERRIDE;
+    virtual sal_Unicode getSingleToken(const formula::IFunctionManager::EToken _eToken) const override;
 
 private:
     ScFunctionList* pFuncList; /**< list of all calc functions */

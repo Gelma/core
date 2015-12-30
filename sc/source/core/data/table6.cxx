@@ -45,7 +45,7 @@ bool lcl_GetTextWithBreaks( const EditTextObject& rData, ScDocument* pDoc, OUStr
 
     EditEngine& rEngine = pDoc->GetEditEngine();
     rEngine.SetText(rData);
-    rVal = rEngine.GetText( LINEEND_LF );
+    rVal = rEngine.GetText();
     return ( rEngine.GetParagraphCount() > 1 );
 }
 
@@ -60,6 +60,7 @@ bool ScTable::SearchCell(const SvxSearchItem& rSearchItem, SCCOL nCol, SCROW nRo
     bool    bFound = false;
     bool    bDoSearch = true;
     bool    bDoBack = rSearchItem.GetBackward();
+    bool    bSearchFormatted = rSearchItem.IsSearchFormatted();
 
     OUString  aString;
     ScRefCellValue aCell;
@@ -85,7 +86,10 @@ bool ScTable::SearchCell(const SvxSearchItem& rSearchItem, SCCOL nCol, SCROW nRo
                 bMultiLine = lcl_GetTextWithBreaks(*aCell.mpEditText, pDocument, aString);
             else
             {
-                aCol[nCol].GetInputString( nRow, aString );
+                if( !bSearchFormatted )
+                    aCol[nCol].GetInputString( nRow, aString );
+                else
+                    aCol[nCol].GetString( nRow, aString );
             }
         }
         break;
@@ -94,7 +98,10 @@ bool ScTable::SearchCell(const SvxSearchItem& rSearchItem, SCCOL nCol, SCROW nRo
                 bMultiLine = lcl_GetTextWithBreaks(*aCell.mpEditText, pDocument, aString);
             else
             {
-                aCol[nCol].GetInputString( nRow, aString );
+                if( !bSearchFormatted )
+                    aCol[nCol].GetInputString( nRow, aString );
+                else
+                    aCol[nCol].GetString( nRow, aString );
             }
             break;
         case SvxSearchCellType::NOTE:
@@ -104,7 +111,7 @@ bool ScTable::SearchCell(const SvxSearchItem& rSearchItem, SCCOL nCol, SCROW nRo
     }
     sal_Int32 nStart = 0;
     sal_Int32 nEnd = aString.getLength();
-    ::com::sun::star::util::SearchResult aSearchResult;
+    css::util::SearchResult aSearchResult;
     if (pSearchText)
     {
         if ( bDoBack )
@@ -249,7 +256,7 @@ void ScTable::SkipFilteredRows(SCROW& rRow, SCROW& rLastNonFilteredRow, bool bFo
             return;
 
         SCROW nLastRow = rRow;
-        if (RowFiltered(rRow, NULL, &nLastRow))
+        if (RowFiltered(rRow, nullptr, &nLastRow))
             // move to the first non-filtered row.
             rRow = nLastRow + 1;
         else
@@ -265,7 +272,7 @@ void ScTable::SkipFilteredRows(SCROW& rRow, SCROW& rLastNonFilteredRow, bool bFo
             return;
 
         SCROW nFirstRow = rRow;
-        if (RowFiltered(rRow, &nFirstRow, NULL))
+        if (RowFiltered(rRow, &nFirstRow))
             // move to the first non-filtered row.
             rRow = nFirstRow - 1;
         else
@@ -371,7 +378,7 @@ bool ScTable::Search(const SvxSearchItem& rSearchItem, SCCOL& rCol, SCROW& rRow,
     else
     {
         SCROW nLastNonFilteredRow = -1;
-        if (!bAll && rSearchItem.GetRowDirection())
+        if (rSearchItem.GetRowDirection())
         {
             nCol++;
             while (!bFound && (nRow <= nLastRow))
@@ -679,7 +686,7 @@ bool ScTable::ReplaceAllStyle(
         {
             if (pUndoDoc)
                 pDocument->CopyToDocument( 0,0,nTab, MAXCOL,MAXROW,nTab,
-                                            IDF_ATTRIB, true, pUndoDoc, &rMark );
+                                            InsertDeleteFlags::ATTRIB, true, pUndoDoc, &rMark );
             ApplySelectionStyle( *pReplaceStyle, rMark );
         }
         else
@@ -720,7 +727,7 @@ bool ScTable::SearchAndReplace(
         else
         {
             //  SearchParam no longer needed - SearchOptions contains all settings
-            com::sun::star::util::SearchOptions aSearchOptions = rSearchItem.GetSearchOptions();
+            css::util::SearchOptions aSearchOptions = rSearchItem.GetSearchOptions();
             aSearchOptions.Locale = *ScGlobal::GetLocale();
 
             if (aSearchOptions.searchString.isEmpty())
@@ -734,8 +741,8 @@ bool ScTable::SearchAndReplace(
             //  This is also done in SvxSearchDialog CommandHdl, but not in API object.
             if ( !rSearchItem.IsUseAsianOptions() )
                 aSearchOptions.transliterateFlags &=
-                    ( com::sun::star::i18n::TransliterationModules_IGNORE_CASE |
-                      com::sun::star::i18n::TransliterationModules_IGNORE_WIDTH );
+                    ( css::i18n::TransliterationModules_IGNORE_CASE |
+                      css::i18n::TransliterationModules_IGNORE_WIDTH );
 
             pSearchText = new utl::TextSearch( aSearchOptions );
 
@@ -749,7 +756,7 @@ bool ScTable::SearchAndReplace(
                 bFound = ReplaceAll(rSearchItem, rMark, rMatchedRanges, rUndoStr, pUndoDoc);
 
             delete pSearchText;
-            pSearchText = NULL;
+            pSearchText = nullptr;
         }
     }
     return bFound;
@@ -986,7 +993,7 @@ bool ScTable::SearchRangeForAllEmptyCells(
             for (SCROW nRow = rRange.aStart.Row(); nRow <= rRange.aEnd.Row(); ++nRow)
             {
                 SCROW nLastRow;
-                if (!RowFiltered(nRow, NULL, &nLastRow))
+                if (!RowFiltered(nRow, nullptr, &nLastRow))
                 {
                     rMatchedRanges.Join(ScRange(nCol, nRow, nTab, nCol, nLastRow, nTab));
                     if (bReplace)

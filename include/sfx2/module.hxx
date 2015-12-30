@@ -62,7 +62,6 @@ private:
     SAL_DLLPRIVATE void Construct_Impl();
 
 public:
-                                TYPEINFO_OVERRIDE();
                                 SFX_DECL_INTERFACE(SFX_INTERFACE_SFXMODULE)
 
 private:
@@ -78,19 +77,17 @@ public:
     ResMgr*                     GetResMgr();
     SfxSlotPool*                GetSlotPool() const;
 
-    void                        RegisterToolBoxControl(SfxTbxCtrlFactory*);
+    void                        RegisterToolBoxControl(const SfxTbxCtrlFactory&);
     void                        RegisterChildWindow(SfxChildWinFactory*);
-    void                        RegisterStatusBarControl(SfxStbCtrlFactory*);
-    void                        RegisterMenuControl(SfxMenuCtrlFactory*);
+    void                        RegisterStatusBarControl(const SfxStbCtrlFactory&);
+    void                        RegisterMenuControl(const SfxMenuCtrlFactory&);
 
     virtual VclPtr<SfxTabPage>  CreateTabPage( sal_uInt16 nId,
                                                vcl::Window* pParent,
                                                const SfxItemSet& rSet );
-    virtual void                Invalidate(sal_uInt16 nId = 0) SAL_OVERRIDE;
+    virtual void                Invalidate(sal_uInt16 nId = 0) override;
 
-    bool                        IsChildWindowAvailable( const sal_uInt16 i_nId, const SfxViewFrame* i_pViewFrame ) const;
-
-    static SfxModule*           GetActiveModule( SfxViewFrame* pFrame=NULL );
+    static SfxModule*           GetActiveModule( SfxViewFrame* pFrame=nullptr );
     static FieldUnit            GetCurrentFieldUnit();
     /** retrieves the field unit of the module belonging to the document displayed in the given frame
 
@@ -99,7 +96,7 @@ public:
 
         Failures in any of those steps are reported as assertion in non-product builds, and then FUNIT_100TH_MM is returned.
      */
-    static FieldUnit            GetModuleFieldUnit( ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > const & i_frame );
+    static FieldUnit            GetModuleFieldUnit( css::uno::Reference< css::frame::XFrame > const & i_frame );
     FieldUnit                   GetFieldUnit() const;
 
     SAL_DLLPRIVATE static SfxModuleArr_Impl& GetModules_Impl();

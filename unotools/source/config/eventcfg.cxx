@@ -90,20 +90,20 @@ private:
 
     void initBindingInfo();
 
-    virtual void ImplCommit() SAL_OVERRIDE;
+    virtual void ImplCommit() override;
 
 public:
     GlobalEventConfig_Impl( );
     virtual ~GlobalEventConfig_Impl( );
 
-    void            Notify( const com::sun::star::uno::Sequence<OUString>& aPropertyNames) SAL_OVERRIDE;
+    void            Notify( const css::uno::Sequence<OUString>& aPropertyNames) override;
 
-    void SAL_CALL replaceByName( const OUString& aName, const ::com::sun::star::uno::Any& aElement ) throw (::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException);
-    ::com::sun::star::uno::Any SAL_CALL getByName( const OUString& aName ) throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException);
-    ::com::sun::star::uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw (::com::sun::star::uno::RuntimeException);
-    bool SAL_CALL hasByName( const OUString& aName ) throw (::com::sun::star::uno::RuntimeException);
-    static ::com::sun::star::uno::Type SAL_CALL getElementType(  ) throw (::com::sun::star::uno::RuntimeException);
-    bool SAL_CALL hasElements(  ) throw (::com::sun::star::uno::RuntimeException);
+    void SAL_CALL replaceByName( const OUString& aName, const css::uno::Any& aElement ) throw (css::lang::IllegalArgumentException, css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException);
+    css::uno::Any SAL_CALL getByName( const OUString& aName ) throw (css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException);
+    css::uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw (css::uno::RuntimeException);
+    bool SAL_CALL hasByName( const OUString& aName ) throw (css::uno::RuntimeException);
+    static css::uno::Type SAL_CALL getElementType(  ) throw (css::uno::RuntimeException);
+    bool SAL_CALL hasElements(  ) throw (css::uno::RuntimeException);
     OUString GetEventName( GlobalEventId nID );
 };
 
@@ -112,7 +112,7 @@ GlobalEventConfig_Impl::GlobalEventConfig_Impl()
     :   ConfigItem( ROOTNODE_EVENTS, ConfigItemMode::ImmediateUpdate )
 {
     // the supported event names
-    for (GlobalEventId id : o3tl::enumrange<GlobalEventId>())
+    for (const GlobalEventId id : o3tl::enumrange<GlobalEventId>())
         m_supportedEvents[id] = OUString::createFromAscii( pEventAsciiNames[id] );
 
     initBindingInfo();
@@ -120,8 +120,7 @@ GlobalEventConfig_Impl::GlobalEventConfig_Impl()
 /*TODO: Not used in the moment! see Notify() ...
     // Enable notification mechanism of our baseclass.
     // We need it to get information about changes outside these class on our used configuration keys! */
-    Sequence< OUString > aNotifySeq( 1 );
-    aNotifySeq[0] = "Events";
+    Sequence<OUString> aNotifySeq { "Events" };
     EnableNotification( aNotifySeq, true );
 }
 
@@ -151,7 +150,7 @@ void GlobalEventConfig_Impl::Notify( const Sequence< OUString >& )
                                         pIt != m_lFrames.end();
                                       ++pIt                     )
     {
-        ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > xFrame(pIt->get(), ::com::sun::star::uno::UNO_QUERY);
+        css::uno::Reference< css::frame::XFrame > xFrame(pIt->get(), css::uno::UNO_QUERY);
         if (xFrame.is())
             xFrame->contextChanged();
     }
@@ -305,7 +304,7 @@ bool SAL_CALL GlobalEventConfig_Impl::hasElements(  ) throw (RuntimeException)
 // and now the wrapper
 
 //initialize static member
-GlobalEventConfig_Impl*     GlobalEventConfig::m_pImpl = NULL;
+GlobalEventConfig_Impl*     GlobalEventConfig::m_pImpl = nullptr;
 sal_Int32                   GlobalEventConfig::m_nRefCount      = 0;
 
 GlobalEventConfig::GlobalEventConfig()
@@ -315,7 +314,7 @@ GlobalEventConfig::GlobalEventConfig()
     // Increase our refcount ...
     ++m_nRefCount;
     // ... and initialize our data container only if it not already exist!
-    if( m_pImpl == NULL )
+    if( m_pImpl == nullptr )
     {
         m_pImpl = new GlobalEventConfig_Impl;
         ItemHolder1::holdConfigItem(E_EVENTCFG);
@@ -333,11 +332,11 @@ GlobalEventConfig::~GlobalEventConfig()
     if( m_nRefCount <= 0 )
     {
         delete m_pImpl;
-        m_pImpl = NULL;
+        m_pImpl = nullptr;
     }
 }
 
-Reference< container::XNameReplace > SAL_CALL GlobalEventConfig::getEvents() throw (::com::sun::star::uno::RuntimeException, std::exception)
+Reference< container::XNameReplace > SAL_CALL GlobalEventConfig::getEvents() throw (css::uno::RuntimeException, std::exception)
 {
     MutexGuard aGuard( GetOwnStaticMutex() );
     Reference< container::XNameReplace > ret(this);

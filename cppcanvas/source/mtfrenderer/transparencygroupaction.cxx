@@ -97,15 +97,15 @@ namespace cppcanvas
                                          const CanvasSharedPtr&         rCanvas,
                                          const OutDevState&             rState );
 
-                virtual bool render( const ::basegfx::B2DHomMatrix& rTransformation ) const SAL_OVERRIDE;
+                virtual bool render( const ::basegfx::B2DHomMatrix& rTransformation ) const override;
                 virtual bool renderSubset( const ::basegfx::B2DHomMatrix& rTransformation,
-                                           const Subset&                  rSubset ) const SAL_OVERRIDE;
+                                           const Subset&                  rSubset ) const override;
 
-                virtual ::basegfx::B2DRange getBounds( const ::basegfx::B2DHomMatrix& rTransformation ) const SAL_OVERRIDE;
+                virtual ::basegfx::B2DRange getBounds( const ::basegfx::B2DHomMatrix& rTransformation ) const override;
                 virtual ::basegfx::B2DRange getBounds( const ::basegfx::B2DHomMatrix&   rTransformation,
-                                                       const Subset&                    rSubset ) const SAL_OVERRIDE;
+                                                       const Subset&                    rSubset ) const override;
 
-                virtual sal_Int32 getActionCount() const SAL_OVERRIDE;
+                virtual sal_Int32 getActionCount() const override;
 
             private:
                 MtfAutoPtr                                          mpGroupMtf;
@@ -167,8 +167,8 @@ namespace cppcanvas
                                    rState,
                                    rCanvas,
                                    rDstPoint,
-                                   NULL,
-                                   NULL );
+                                   nullptr,
+                                   nullptr );
 
                 maLastSubset.mnSubsetBegin = 0;
                 maLastSubset.mnSubsetEnd = -1;
@@ -241,7 +241,7 @@ namespace cppcanvas
                     // render our content into an appropriately sized
                     // VirtualDevice with alpha channel
                     ScopedVclPtrInstance<VirtualDevice> aVDev(
-                        *::Application::GetDefaultDevice(), 0, 0 );
+                        *::Application::GetDefaultDevice(), DeviceFormat::DEFAULT, DeviceFormat::DEFAULT );
                     aVDev->SetOutputSizePixel( aBitmapSizePixel );
                     aVDev->SetMapMode();
 

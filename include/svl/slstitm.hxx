@@ -22,7 +22,6 @@
 #include <vector>
 
 #include <svl/svldllapi.h>
-#include <tools/rtti.hxx>
 #include <svl/poolitem.hxx>
 #include <com/sun/star/uno/Sequence.h>
 
@@ -34,10 +33,10 @@ protected:
     SfxImpStringList*   pImp;
 
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     SfxStringListItem();
-    SfxStringListItem( sal_uInt16 nWhich, const std::vector<OUString> *pList=NULL );
+    SfxStringListItem( sal_uInt16 nWhich, const std::vector<OUString> *pList=nullptr );
     SfxStringListItem( sal_uInt16 nWhich, SvStream& rStream );
     SfxStringListItem( const SfxStringListItem& rItem );
     virtual ~SfxStringListItem();
@@ -50,23 +49,23 @@ public:
     void                    SetString( const OUString& );
     OUString                GetString();
 
-    void                    SetStringList( const com::sun::star::uno::Sequence< OUString >& rList );
-    void                    GetStringList( com::sun::star::uno::Sequence< OUString >& rList ) const;
+    void                    SetStringList( const css::uno::Sequence< OUString >& rList );
+    void                    GetStringList( css::uno::Sequence< OUString >& rList ) const;
 
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
     virtual bool            GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
                                     OUString &rText,
-                                    const IntlWrapper * = 0 ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Create( SvStream &, sal_uInt16 nVersion ) const SAL_OVERRIDE;
-    virtual SvStream&       Store( SvStream &, sal_uInt16 nItemVersion ) const SAL_OVERRIDE;
+                                    const IntlWrapper * = nullptr ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual SfxPoolItem*    Create( SvStream &, sal_uInt16 nVersion ) const override;
+    virtual SvStream&       Store( SvStream &, sal_uInt16 nItemVersion ) const override;
 
-    virtual bool            PutValue  ( const com::sun::star::uno::Any& rVal,
-                                         sal_uInt8 nMemberId ) SAL_OVERRIDE;
-    virtual bool            QueryValue( com::sun::star::uno::Any& rVal,
-                                         sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
+    virtual bool            PutValue  ( const css::uno::Any& rVal,
+                                         sal_uInt8 nMemberId ) override;
+    virtual bool            QueryValue( css::uno::Any& rVal,
+                                         sal_uInt8 nMemberId = 0 ) const override;
 };
 #endif
 

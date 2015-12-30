@@ -29,21 +29,18 @@ typedef CollTestImplHelper< ooo::vba::word::XPanes > SwVbaPanes_BASE;
 
 class SwVbaPanes : public SwVbaPanes_BASE
 {
-private:
-    css::uno::Reference< css::frame::XModel > mxModel;
-
 public:
     SwVbaPanes( const css::uno::Reference< ov::XHelperInterface >& xParent, const css::uno::Reference< css::uno::XComponentContext > & xContext, const css::uno::Reference< css::frame::XModel >& xModel );
     virtual ~SwVbaPanes() {}
 
     // XEnumerationAccess
-    virtual css::uno::Type SAL_CALL getElementType() throw (css::uno::RuntimeException) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::container::XEnumeration > SAL_CALL createEnumeration() throw (css::uno::RuntimeException) SAL_OVERRIDE;
+    virtual css::uno::Type SAL_CALL getElementType() throw (css::uno::RuntimeException) override;
+    virtual css::uno::Reference< css::container::XEnumeration > SAL_CALL createEnumeration() throw (css::uno::RuntimeException) override;
 
     // SwVbaPanes_BASE
-    virtual css::uno::Any createCollectionObject( const css::uno::Any& aSource ) SAL_OVERRIDE;
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual css::uno::Any createCollectionObject( const css::uno::Any& aSource ) override;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 
 #endif // INCLUDED_SW_SOURCE_UI_VBA_VBAPANES_HXX

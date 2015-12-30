@@ -38,7 +38,7 @@ SdXML3DLightContext::SdXML3DLightContext(
     SvXMLImport& rImport,
     sal_uInt16 nPrfx,
     const OUString& rLName,
-    const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList)
+    const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList)
 :   SvXMLImportContext( rImport, nPrfx, rLName),
     maDiffuseColor(0x00000000),
     maDirection(0.0, 0.0, 1.0),
@@ -64,7 +64,16 @@ SdXML3DLightContext::SdXML3DLightContext(
             }
             case XML_TOK_3DLIGHT_DIRECTION:
             {
-                SvXMLUnitConverter::convertB3DVector(maDirection, sValue);
+                ::basegfx::B3DVector aVal;
+                SvXMLUnitConverter::convertB3DVector(aVal, sValue);
+                if (!isnan(aVal.getX()) && !isnan(aVal.getY()) && !isnan(aVal.getZ()))
+                {
+                    maDirection = aVal;
+                }
+                else
+                {
+                    SAL_WARN("xmloff", "NaNs found in light direction: " << sValue);
+                }
                 break;
             }
             case XML_TOK_3DLIGHT_ENABLED:
@@ -85,13 +94,12 @@ SdXML3DLightContext::~SdXML3DLightContext()
 {
 }
 
-TYPEINIT1( SdXML3DSceneShapeContext, SdXMLShapeContext );
 
 SdXML3DSceneShapeContext::SdXML3DSceneShapeContext(
     SvXMLImport& rImport,
     sal_uInt16 nPrfx,
     const OUString& rLocalName,
-    const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList,
+    const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList,
     uno::Reference< drawing::XShapes >& rShapes,
     bool bTemporaryShapes)
 :   SdXMLShapeContext( rImport, nPrfx, rLocalName, xAttrList, rShapes, bTemporaryShapes ), SdXML3DSceneAttributesHelper( rImport )
@@ -111,7 +119,7 @@ void SdXML3DSceneShapeContext::StartElement(const uno::Reference< xml::sax::XAtt
     {
         SetStyle();
 
-        mxChildren = uno::Reference< drawing::XShapes >::query( mxShape );
+        mxChildren.set( mxShape, uno::UNO_QUERY );
         if( mxChildren.is() )
             GetImport().GetShapeImport()->pushGroupForSorting( mxChildren );
 
@@ -162,7 +170,7 @@ SvXMLImportContext* SdXML3DSceneShapeContext::CreateChildContext( sal_uInt16 nPr
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList>& xAttrList )
 {
-    SvXMLImportContext* pContext = 0L;
+    SvXMLImportContext* pContext = nullptr;
 
     // #i68101#
     if( nPrefix == XML_NAMESPACE_SVG &&
@@ -226,7 +234,7 @@ SdXML3DSceneAttributesHelper::~SdXML3DSceneAttributesHelper()
 }
 
 /** creates a 3d light context and adds it to the internal list for later processing */
-SvXMLImportContext * SdXML3DSceneAttributesHelper::create3DLightContext( sal_uInt16 nPrfx, const OUString& rLName, const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList)
+SvXMLImportContext * SdXML3DSceneAttributesHelper::create3DLightContext( sal_uInt16 nPrfx, const OUString& rLName, const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList)
 {
     SvXMLImportContext* pContext = new SdXML3DLightContext(mrImport, nPrfx, rLName, xAttrList);
 
@@ -336,7 +344,7 @@ void SdXML3DSceneAttributesHelper::processSceneAttribute( sal_uInt16 nPrefix, co
 }
 
 /** this sets the scene attributes at this propertyset */
-void SdXML3DSceneAttributesHelper::setSceneAttributes( const com::sun::star::uno::Reference< com::sun::star::beans::XPropertySet >& xPropSet )
+void SdXML3DSceneAttributesHelper::setSceneAttributes( const css::uno::Reference< css::beans::XPropertySet >& xPropSet )
 {
     uno::Any aAny;
 

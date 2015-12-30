@@ -24,6 +24,7 @@
 #include <cppuhelper/factory.hxx>
 #include <cppuhelper/supportsservice.hxx>
 #include <comphelper/processfactory.hxx>
+#include <comphelper/sequence.hxx>
 #include <com/sun/star/registry/XSimpleRegistry.hpp>
 #include <com/sun/star/beans/PropertyValue.hpp>
 #include <com/sun/star/task/InteractionHandler.hpp>
@@ -177,30 +178,11 @@ static ::rtl::ByteSequence getBufFromAsciiLine( const OUString& line )
 }
 
 
-static Sequence< OUString > copyVectorToSequence( const vector< OUString >& original )
-{
-    Sequence< OUString > newOne ( original.size() );
-    for( size_t i = 0; i < original.size() ; i++ )
-        newOne[i] = original[i];
-
-    return newOne;
-}
-
-static vector< OUString > copySequenceToVector( const Sequence< OUString >& original )
-{
-    vector< OUString > newOne ( original.getLength() );
-    for( int i = 0; i < original.getLength() ; i++ )
-        newOne[i] = original[i];
-
-    return newOne;
-}
-
-
 PassMap StorageItem::getInfo()
 {
     PassMap aResult;
 
-    Sequence< OUString > aNodeNames     = ConfigItem::GetNodeNames( OUString("Store") );
+    Sequence< OUString > aNodeNames     = ConfigItem::GetNodeNames( "Store" );
     sal_Int32 aNodeCount = aNodeNames.getLength();
     Sequence< OUString > aPropNames( aNodeCount );
     sal_Int32 aNodeInd;
@@ -265,8 +247,7 @@ void StorageItem::setUseStorage( bool bUse )
 
 bool StorageItem::useStorage()
 {
-    Sequence< OUString > aNodeNames( 1 );
-    aNodeNames[0] = "UseStorage";
+    Sequence<OUString> aNodeNames { "UseStorage" };
 
     Sequence< Any > aPropertyValues = ConfigItem::GetProperties( aNodeNames );
 
@@ -342,13 +323,13 @@ void StorageItem::remove( const OUString& aURL, const OUString& aName )
 
     sendSeq[0] = createIndex( forIndex );
 
-    ConfigItem::ClearNodeElements( OUString("Store"), sendSeq );
+    ConfigItem::ClearNodeElements( "Store", sendSeq );
 }
 
 
 void StorageItem::clear()
 {
-    ConfigItem::ClearNodeSet( OUString("Store") );
+    ConfigItem::ClearNodeSet( "Store" );
 }
 
 
@@ -371,7 +352,7 @@ void StorageItem::update( const OUString& aURL, const NamePassRecord& aRecord )
     sendSeq[0].Value <<= aRecord.GetPersPasswords();
 
     ConfigItem::SetModified();
-    ConfigItem::SetSetProperties( OUString("Store"), sendSeq );
+    ConfigItem::SetSetProperties( "Store", sendSeq );
 }
 
 
@@ -390,12 +371,12 @@ void StorageItem::ImplCommit()
 
 
 PasswordContainer::PasswordContainer( const Reference<XMultiServiceFactory>& xServiceFactory ):
-    m_pStorageFile( NULL )
+    m_pStorageFile( nullptr )
 {
     // m_pStorageFile->Notify() can be called
     ::osl::MutexGuard aGuard( mMutex );
 
-    mComponent = Reference< XComponent >( xServiceFactory, UNO_QUERY );
+    mComponent.set( xServiceFactory, UNO_QUERY );
     mComponent->addEventListener( this );
 
     m_pStorageFile = new StorageItem( this, OUString("Office.Common/Passwords") );
@@ -411,7 +392,7 @@ PasswordContainer::~PasswordContainer()
     if( m_pStorageFile )
     {
         delete m_pStorageFile;
-        m_pStorageFile = NULL;
+        m_pStorageFile = nullptr;
     }
 
     if( mComponent.is() )
@@ -429,7 +410,7 @@ void SAL_CALL PasswordContainer::disposing( const EventObject& ) throw(RuntimeEx
     if( m_pStorageFile )
     {
         delete m_pStorageFile;
-        m_pStorageFile = NULL;
+        m_pStorageFile = nullptr;
     }
 
     if( mComponent.is() )
@@ -457,7 +438,7 @@ vector< OUString > PasswordContainer::DecodePasswords( const OUString& aLine, co
 
             rtlCipherError result = rtl_cipher_init (
                     aDecoder, rtl_Cipher_DirectionDecode,
-                    code, RTL_DIGEST_LENGTH_MD5, NULL, 0 );
+                    code, RTL_DIGEST_LENGTH_MD5, nullptr, 0 );
 
             if( result == rtl_Cipher_E_None )
             {
@@ -465,7 +446,7 @@ vector< OUString > PasswordContainer::DecodePasswords( const OUString& aLine, co
 
                 ::rtl::ByteSequence resSeq( aSeq.getLength() );
 
-                result = rtl_cipher_decode ( aDecoder, aSeq.getArray(), aSeq.getLength(),
+                rtl_cipher_decode ( aDecoder, aSeq.getArray(), aSeq.getLength(),
                                                         reinterpret_cast<sal_uInt8*>(resSeq.getArray()), resSeq.getLength() );
 
                 OUString aPasswd( reinterpret_cast<char*>(resSeq.getArray()), resSeq.getLength(), RTL_TEXTENCODING_UTF8 );
@@ -508,7 +489,7 @@ OUString PasswordContainer::EncodePasswords(const vector< OUString >& lines, con
 
             rtlCipherError result = rtl_cipher_init (
                     aEncoder, rtl_Cipher_DirectionEncode,
-                    code, RTL_DIGEST_LENGTH_MD5, NULL, 0 );
+                    code, RTL_DIGEST_LENGTH_MD5, nullptr, 0 );
 
             if( result == rtl_Cipher_E_None )
             {
@@ -619,7 +600,7 @@ UserRecord PasswordContainer::CopyToUserRecord( const NamePassRecord& aRecord, b
         }
     }
 
-    return UserRecord( aRecord.GetUserName(), copyVectorToSequence( aPasswords ) );
+    return UserRecord( aRecord.GetUserName(), comphelper::containerToSequence( aPasswords ) );
 }
 
 
@@ -659,7 +640,7 @@ void SAL_CALL PasswordContainer::addPersistent( const OUString& Url, const OUStr
 void PasswordContainer::PrivateAdd( const OUString& Url, const OUString& UserName, const Sequence< OUString >& Passwords, char Mode, const Reference< XInteractionHandler >& aHandler ) throw(RuntimeException, std::exception)
 {
     NamePassRecord aRecord( UserName );
-    ::std::vector< OUString > aStorePass = copySequenceToVector( Passwords );
+    ::std::vector< OUString > aStorePass = comphelper::sequenceToContainer< std::vector<OUString>, OUString>( Passwords );
 
     if( Mode == PERSISTENT_RECORD )
         aRecord.SetPersPasswords( EncodePasswords( aStorePass, GetMasterPassword( aHandler ) ) );
@@ -1036,7 +1017,7 @@ Sequence< UrlRecord > SAL_CALL PasswordContainer::getAllPersistent( const Refere
             {
                 sal_Int32 oldLen = aUsers.getLength();
                 aUsers.realloc( oldLen + 1 );
-                aUsers[ oldLen ] = UserRecord( aNPIter->GetUserName(), copyVectorToSequence( DecodePasswords( aNPIter->GetPersPasswords(), GetMasterPassword( xHandler ) ) ) );
+                aUsers[ oldLen ] = UserRecord( aNPIter->GetUserName(), comphelper::containerToSequence( DecodePasswords( aNPIter->GetPersPasswords(), GetMasterPassword( xHandler ) ) ) );
             }
 
         if( aUsers.getLength() )
@@ -1073,7 +1054,7 @@ sal_Bool SAL_CALL PasswordContainer::authorizateWithMasterPassword( const uno::R
             {
                 uno::Reference< lang::XMultiServiceFactory > xFactory( mComponent, uno::UNO_QUERY_THROW );
                 uno::Reference< uno::XComponentContext > xContext( comphelper::getComponentContext(xFactory) );
-                xTmpHandler.set( InteractionHandler::createWithParent(xContext, 0), uno::UNO_QUERY_THROW );
+                xTmpHandler.set( InteractionHandler::createWithParent(xContext, nullptr), uno::UNO_QUERY_THROW );
             }
 
             if ( !m_aMasterPasswd.isEmpty() )
@@ -1117,7 +1098,7 @@ sal_Bool SAL_CALL PasswordContainer::changeMasterPassword( const uno::Reference<
         {
             uno::Reference< lang::XMultiServiceFactory > xFactory( mComponent, uno::UNO_QUERY_THROW );
             uno::Reference< uno::XComponentContext > xContext( comphelper::getComponentContext(xFactory) );
-            xTmpHandler.set( InteractionHandler::createWithParent(xContext, 0), uno::UNO_QUERY_THROW );
+            xTmpHandler.set( InteractionHandler::createWithParent(xContext, nullptr), uno::UNO_QUERY_THROW );
         }
 
         bool bCanChangePassword = true;
@@ -1176,7 +1157,7 @@ void SAL_CALL PasswordContainer::removeMasterPassword()
 }
 
 sal_Bool SAL_CALL PasswordContainer::hasMasterPassword(  )
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     ::osl::MutexGuard aGuard( mMutex );
 
@@ -1188,7 +1169,7 @@ sal_Bool SAL_CALL PasswordContainer::hasMasterPassword(  )
 }
 
 sal_Bool SAL_CALL PasswordContainer::allowPersistentStoring( sal_Bool bAllow )
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     ::osl::MutexGuard aGuard( mMutex );
 
@@ -1206,7 +1187,7 @@ sal_Bool SAL_CALL PasswordContainer::allowPersistentStoring( sal_Bool bAllow )
 }
 
 sal_Bool SAL_CALL PasswordContainer::isPersistentStoringAllowed()
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     ::osl::MutexGuard aGuard( mMutex );
 
@@ -1229,7 +1210,7 @@ sal_Bool SAL_CALL PasswordContainer::useDefaultMasterPassword( const uno::Refere
         {
             uno::Reference< lang::XMultiServiceFactory > xFactory( mComponent, uno::UNO_QUERY_THROW );
             uno::Reference< uno::XComponentContext > xContext( comphelper::getComponentContext(xFactory) );
-            xTmpHandler.set( InteractionHandler::createWithParent(xContext, 0), uno::UNO_QUERY_THROW );
+            xTmpHandler.set( InteractionHandler::createWithParent(xContext, nullptr), uno::UNO_QUERY_THROW );
         }
 
         bool bCanChangePassword = true;
@@ -1371,8 +1352,7 @@ Sequence< OUString > SAL_CALL PasswordContainer::getSupportedServiceNames(  ) th
 
 Sequence< OUString > SAL_CALL PasswordContainer::impl_getStaticSupportedServiceNames(  ) throw(uno::RuntimeException)
 {
-    Sequence< OUString > aRet(1);
-    aRet[0] = "com.sun.star.task.PasswordContainer";
+    Sequence< OUString > aRet { "com.sun.star.task.PasswordContainer" };
     return aRet;
 }
 
@@ -1444,7 +1424,7 @@ SAL_DLLPUBLIC_EXPORT void * SAL_CALL passwordcontainer_component_getFactory (
     SAL_UNUSED_PARAMETER void * pServiceManager,
     SAL_UNUSED_PARAMETER void * /* pRegistryKey */)
 {
-    void * pResult = 0;
+    void * pResult = nullptr;
     if (pServiceManager)
     {
         Reference< XSingleServiceFactory > xFactory;

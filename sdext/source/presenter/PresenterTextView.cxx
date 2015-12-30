@@ -22,6 +22,7 @@
 #include "PresenterGeometryHelper.hxx"
 #include "PresenterTimer.hxx"
 
+#include <algorithm>
 #include <cmath>
 
 #include <com/sun/star/accessibility/AccessibleTextType.hpp>
@@ -78,7 +79,6 @@ PresenterTextView::PresenterTextView (
           rInvalidator)),
       mnLeftOffset(0),
       mnTopOffset(0),
-      maInvalidator(rInvalidator),
       mbIsFormatPending(false),
       mnCharacterCount(-1),
       maTextChangeBroadcaster()
@@ -93,7 +93,7 @@ PresenterTextView::PresenterTextView (
 
     // Create the script type detector that is used to split paragraphs into
     // portions of the same text direction.
-    mxScriptTypeDetector = Reference<i18n::XScriptTypeDetector>(
+    mxScriptTypeDetector.set(
         xFactory->createInstanceWithContext(
             "com.sun.star.i18n.ScriptTypeDetector",
             rxContext),
@@ -334,7 +334,7 @@ void PresenterTextView::Paint (
 
     rendering::RenderState aRenderState (
         geometry::AffineMatrix2D(1,0,nX, 0,1,nY),
-        NULL,
+        nullptr,
         Sequence<double>(4),
         rendering::CompositeOperation::SOURCE);
     PresenterCanvasHelper::SetDeviceColor(aRenderState, mpFont->mnColor);

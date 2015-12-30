@@ -21,14 +21,15 @@
 
 #include <svtools/svtdllapi.h>
 #include <unotools/configitem.hxx>
+#include <memory>
 
 struct SvtFontSubstConfig_Impl;
 
 
 struct SubstitutionStruct
 {
-    OUString   sFont;
-    OUString   sReplaceBy;
+    OUString    sFont;
+    OUString    sReplaceBy;
     bool        bReplaceAlways;
     bool        bReplaceOnScreenOnly;
 };
@@ -37,15 +38,15 @@ class SVT_DLLPUBLIC SvtFontSubstConfig : public utl::ConfigItem
 {
 private:
     bool                        bIsEnabled;
-    SvtFontSubstConfig_Impl*    pImpl;
+    std::unique_ptr<SvtFontSubstConfig_Impl> pImpl;
 
-    virtual void                ImplCommit() SAL_OVERRIDE;
+    virtual void                ImplCommit() override;
 
 public:
     SvtFontSubstConfig();
     virtual ~SvtFontSubstConfig();
 
-    virtual void                Notify( const com::sun::star::uno::Sequence< OUString >& _rPropertyNames) SAL_OVERRIDE;
+    virtual void                Notify( const css::uno::Sequence< OUString >& _rPropertyNames) override;
 
     bool                        IsEnabled() const {return bIsEnabled;}
     void                        Enable(bool bSet)  {bIsEnabled = bSet; SetModified();}

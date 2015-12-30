@@ -30,7 +30,6 @@ import com.sun.star.wizards.common.Helper;
 import com.sun.star.wizards.common.JavaTools;
 import com.sun.star.wizards.common.PropertyNames;
 import com.sun.star.wizards.db.TableDescriptor;
-import com.sun.star.wizards.db.TypeInspector;
 import com.sun.star.wizards.ui.FieldSelection;
 import com.sun.star.wizards.ui.UIConsts;
 import com.sun.star.wizards.ui.UnoDialog;
@@ -60,7 +59,7 @@ public class PrimaryKeyHandler implements XFieldSelectionListener
     {
         this.CurUnoDialog = _CurUnoDialog;
         curTableDescriptor = _curTableDescriptor;
-        bAutoPrimaryKeysupportsAutoIncrmentation = isAutoPrimeKeyAutoIncrementationsupported();
+        bAutoPrimaryKeysupportsAutoIncrmentation = curTableDescriptor.oTypeInspector.isAutoIncrementationSupported();
         short curtabindex = (short) ((TableWizard.SOPRIMARYKEYPAGE * 100) - 20);
         Integer IPRIMEKEYSTEP = Integer.valueOf(TableWizard.SOPRIMARYKEYPAGE);
         final String sExplanations = CurUnoDialog.m_oResource.getResText(UIConsts.RID_TABLE + 26);
@@ -225,13 +224,10 @@ public class PrimaryKeyHandler implements XFieldSelectionListener
         fieldnames = curTableDescriptor.getNonBinaryFieldNames();
         String[] skeyfieldnames = curPrimaryKeySelection.getSelectedFieldNames();
         curPrimaryKeySelection.initialize(fieldnames, false);
-        if (skeyfieldnames != null)
+        if (skeyfieldnames != null && skeyfieldnames.length > 0)
         {
-            if (skeyfieldnames.length > 0)
-            {
-                String[] snewkeyfieldnames = JavaTools.removeOutdatedFields(skeyfieldnames, fieldnames);
-                curPrimaryKeySelection.setSelectedFieldNames(snewkeyfieldnames);
-            }
+            String[] snewkeyfieldnames = JavaTools.removeOutdatedFields(skeyfieldnames, fieldnames);
+            curPrimaryKeySelection.setSelectedFieldNames(snewkeyfieldnames);
         }
         String selfield = lstSinglePrimeKey.getSelectedItem();
         Helper.setUnoPropertyValue(UnoDialog.getModel(lstSinglePrimeKey), PropertyNames.STRING_ITEM_LIST, fieldnames);
@@ -243,13 +239,6 @@ public class PrimaryKeyHandler implements XFieldSelectionListener
             }
         }
         togglePrimeKeyFields();
-    }
-
-    private boolean isAutoPrimeKeyAutoIncrementationsupported()
-    {
-        TypeInspector.TypeInfo aAutoPrimeTypeInfo;
-        aAutoPrimeTypeInfo = curTableDescriptor.oTypeInspector.findAutomaticPrimaryKeyType();
-        return aAutoPrimeTypeInfo.bisAutoIncrementable;
     }
 
     public boolean iscompleted()
@@ -321,12 +310,9 @@ public class PrimaryKeyHandler implements XFieldSelectionListener
         try
         {
             XPropertySet xColPropertySet = curTableDescriptor.getByName(_fieldname);
-            if (xColPropertySet != null)
+            if (xColPropertySet != null && curTableDescriptor.getDBDataTypeInspector() != null)
             {
-                if (curTableDescriptor.getDBDataTypeInspector() != null)
-                {
-                    return curTableDescriptor.getDBDataTypeInspector().isAutoIncrementable(xColPropertySet);
-                }
+                return curTableDescriptor.getDBDataTypeInspector().isAutoIncrementable(xColPropertySet);
             }
         }
         catch (Exception e)
@@ -434,17 +420,17 @@ public class PrimaryKeyHandler implements XFieldSelectionListener
         }
         else if (optUseExisting.getState())
         {
-            return (new String[]
+            return new String[]
                     {
                         lstSinglePrimeKey.getSelectedItem()
-                    });
+                    };
         }
         else if (optAddAutomatically.getState())
         {
-            return (new String[]
+            return new String[]
                     {
                         SAUTOMATICKEYFIELDNAME
-                    });
+                    };
         }
         return null;
     }

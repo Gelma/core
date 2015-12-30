@@ -168,7 +168,7 @@ public:
 
 //  override methods of baseclass
 
-    virtual void Notify( const com::sun::star::uno::Sequence<OUString>& aPropertyNames) SAL_OVERRIDE;
+    virtual void Notify( const css::uno::Sequence<OUString>& aPropertyNames) override;
 
 
 //  public interface
@@ -217,14 +217,11 @@ public:
     sal_uInt16  GetTransparentSelectionPercent() const { return m_nTransparentSelectionPercent;}
     sal_uInt16  GetSelectionMaximumLuminancePercent() const { return m_nSelectionMaximumLuminancePercent;}
 
-    void        SetTransparentSelection( bool bState );
-    void        SetTransparentSelectionPercent( sal_uInt16 nPercent );
-
 //  private methods
 
 private:
 
-    virtual void ImplCommit() SAL_OVERRIDE;
+    virtual void ImplCommit() override;
 
     static Sequence< OUString > impl_GetPropertyNames();
 
@@ -676,7 +673,7 @@ void SvtOptionsDrawinglayer_Impl::ImplCommit()
     PutProperties( aSeqNames, aSeqValues );
 }
 
-void SvtOptionsDrawinglayer_Impl::Notify( const com::sun::star::uno::Sequence<OUString>& )
+void SvtOptionsDrawinglayer_Impl::Notify( const css::uno::Sequence<OUString>& )
 {
 }
 
@@ -757,29 +754,6 @@ void SvtOptionsDrawinglayer_Impl::SetAntiAliasing( bool bState )
     }
 }
 
-// #i97672# selection settings
-
-void SvtOptionsDrawinglayer_Impl::SetTransparentSelection( bool bState )
-{
-    if(m_bTransparentSelection != bState)
-    {
-        m_bTransparentSelection = bState;
-        SetModified();
-    }
-}
-
-void SvtOptionsDrawinglayer_Impl::SetTransparentSelectionPercent( sal_uInt16 nPercent )
-{
-    if(m_nTransparentSelectionPercent != nPercent)
-    {
-        m_nTransparentSelectionPercent = nPercent;
-        SetModified();
-    }
-}
-
-
-
-
 //  private method
 
 Sequence< OUString > SvtOptionsDrawinglayer_Impl::impl_GetPropertyNames()
@@ -837,7 +811,7 @@ Sequence< OUString > SvtOptionsDrawinglayer_Impl::impl_GetPropertyNames()
 //  DON'T DO IT IN YOUR HEADER!
 //  see definition for further information
 
-SvtOptionsDrawinglayer_Impl* SvtOptionsDrawinglayer::m_pDataContainer = NULL;
+SvtOptionsDrawinglayer_Impl* SvtOptionsDrawinglayer::m_pDataContainer = nullptr;
 sal_Int32 SvtOptionsDrawinglayer::m_nRefCount = 0;
 
 
@@ -850,7 +824,7 @@ SvtOptionsDrawinglayer::SvtOptionsDrawinglayer()
     // Increase our refcount ...
     ++m_nRefCount;
     // ... and initialize our data container only if it not already!
-    if( m_pDataContainer == NULL )
+    if( m_pDataContainer == nullptr )
     {
         m_pDataContainer = new SvtOptionsDrawinglayer_Impl();
     }
@@ -872,7 +846,7 @@ SvtOptionsDrawinglayer::~SvtOptionsDrawinglayer()
         if (m_pDataContainer->IsModified())
             m_pDataContainer->Commit();
         delete m_pDataContainer;
-        m_pDataContainer = NULL;
+        m_pDataContainer = nullptr;
     }
 }
 
@@ -1058,12 +1032,6 @@ bool SvtOptionsDrawinglayer::IsTransparentSelection() const
     return m_pDataContainer->IsTransparentSelection();
 }
 
-void SvtOptionsDrawinglayer::SetTransparentSelection( bool bState )
-{
-    MutexGuard aGuard( GetOwnStaticMutex() );
-    m_pDataContainer->SetTransparentSelection( bState );
-}
-
 sal_uInt16 SvtOptionsDrawinglayer::GetTransparentSelectionPercent() const
 {
     MutexGuard aGuard( GetOwnStaticMutex() );
@@ -1081,24 +1049,6 @@ sal_uInt16 SvtOptionsDrawinglayer::GetTransparentSelectionPercent() const
     }
 
     return aRetval;
-}
-
-void SvtOptionsDrawinglayer::SetTransparentSelectionPercent( sal_uInt16 nPercent )
-{
-    MutexGuard aGuard( GetOwnStaticMutex() );
-
-    // crop to range [10% .. 90%]
-    if(nPercent < 10)
-    {
-        nPercent = 10;
-    }
-
-    if(nPercent > 90)
-    {
-        nPercent = 90;
-    }
-
-    m_pDataContainer->SetTransparentSelectionPercent( nPercent );
 }
 
 sal_uInt16 SvtOptionsDrawinglayer::GetSelectionMaximumLuminancePercent() const

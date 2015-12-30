@@ -57,12 +57,11 @@ struct TGAFileFooter
 struct TGAExtension
 {
     sal_uInt16      nExtensionSize;
-    char        sAuthorName[41];
-    char        sAuthorComment[324];
-    char        sDateTimeStamp[12];
-    char        sJobNameID[41];
-    sal_uInt16      nJobTime[3];
-    char        sSoftwareID[41];
+    char            sAuthorName[41];
+    char            sAuthorComment[324];
+    char            sDateTimeStamp[12];
+    char            sJobNameID[41];
+    char            sSoftwareID[41];
     sal_uInt16      nSoftwareVersionNumber;
     sal_uInt8       nSoftwareVersionLetter;
     sal_uInt32      nKeyColor;
@@ -100,8 +99,8 @@ private:
     bool                ImplReadBody();
 
 public:
-                        TGAReader(SvStream &rTGA);
-                        ~TGAReader();
+    explicit TGAReader(SvStream &rTGA);
+    ~TGAReader();
     bool                ReadTGA(Graphic &rGraphic);
 };
 
@@ -109,11 +108,11 @@ public:
 
 TGAReader::TGAReader(SvStream &rTGA)
     : m_rTGA(rTGA)
-    , mpAcc(NULL)
-    , mpFileHeader(NULL)
-    , mpFileFooter(NULL)
-    , mpExtension(NULL)
-    , mpColorMap(NULL)
+    , mpAcc(nullptr)
+    , mpFileHeader(nullptr)
+    , mpFileFooter(nullptr)
+    , mpExtension(nullptr)
+    , mpColorMap(nullptr)
     , mbStatus(true)
     , mnTGAVersion(1)
     , mnDestBitDepth(8)
@@ -161,7 +160,7 @@ bool TGAReader::ReadTGA(Graphic & rGraphic)
                 mbStatus = false;
 
             if ( mpAcc )
-                Bitmap::ReleaseAccess ( mpAcc), mpAcc = NULL;
+                Bitmap::ReleaseAccess ( mpAcc), mpAcc = nullptr;
 
             if ( mbStatus )
                 rGraphic = aBitmap;
@@ -786,15 +785,8 @@ bool TGAReader::ImplReadPalette()
 
 //================== GraphicImport - die exportierte Funktion ================
 
-// this needs to be kept in sync with
-// ImpFilterLibCacheEntry::GetImportFunction() from
-// vcl/source/filter/graphicfilter.cxx
-#if defined(DISABLE_DYNLOADING)
-#define GraphicImport itgGraphicImport
-#endif
-
 extern "C" SAL_DLLPUBLIC_EXPORT bool SAL_CALL
-GraphicImport( SvStream & rStream, Graphic & rGraphic, FilterConfigItem* )
+itgGraphicImport( SvStream & rStream, Graphic & rGraphic, FilterConfigItem* )
 {
     TGAReader aTGAReader(rStream);
 

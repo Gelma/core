@@ -85,9 +85,9 @@ OUString decomposeType(
     OUString const & type, std::size_t * rank,
     std::vector<OUString> * typeArguments, bool * entity)
 {
-    assert(rank != 0);
-    assert(typeArguments != 0);
-    assert(entity != 0);
+    assert(rank != nullptr);
+    assert(typeArguments != nullptr);
+    assert(entity != nullptr);
     OUString nucl(type);
     *rank = 0;
     typeArguments->clear();
@@ -1151,6 +1151,9 @@ SAL_IMPLEMENT_MAIN() {
         std::cerr
             << "Bad input <" << e1.getUri() << ">: " << e1.getDetail()
             << std::endl;
+        std::exit(EXIT_FAILURE);
+    } catch (std::exception & e1) {
+        std::cerr << "Failure: " << e1.what() << std::endl;
         std::exit(EXIT_FAILURE);
     }
 }

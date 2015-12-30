@@ -64,7 +64,7 @@ VCLXAccessibleTabPage::VCLXAccessibleTabPage( TabControl* pTabControl, sal_uInt1
 VCLXAccessibleTabPage::~VCLXAccessibleTabPage()
 {
     delete m_pExternalLock;
-    m_pExternalLock = NULL;
+    m_pExternalLock = nullptr;
 }
 
 
@@ -253,7 +253,7 @@ void VCLXAccessibleTabPage::disposing()
 {
     AccessibleTextHelper_BASE::disposing();
 
-    m_pTabControl = NULL;
+    m_pTabControl = nullptr;
     m_sPageText.clear();
 }
 
@@ -277,8 +277,7 @@ sal_Bool VCLXAccessibleTabPage::supportsService( const OUString& rServiceName ) 
 
 Sequence< OUString > VCLXAccessibleTabPage::getSupportedServiceNames() throw (RuntimeException, std::exception)
 {
-    Sequence< OUString > aNames(1);
-    aNames[0] = "com.sun.star.awt.AccessibleTabPage";
+    Sequence< OUString > aNames { "com.sun.star.awt.AccessibleTabPage" };
     return aNames;
 }
 
@@ -667,7 +666,7 @@ sal_Bool VCLXAccessibleTabPage::copyText( sal_Int32 nStartIndex, sal_Int32 nEndI
             vcl::unohelper::TextDataObject* pDataObj = new vcl::unohelper::TextDataObject( sText );
 
             SolarMutexReleaser aReleaser;
-            xClipboard->setContents( pDataObj, NULL );
+            xClipboard->setContents( pDataObj, nullptr );
 
             Reference< datatransfer::clipboard::XFlushableClipboard > xFlushableClipboard( xClipboard, uno::UNO_QUERY );
             if( xFlushableClipboard.is() )

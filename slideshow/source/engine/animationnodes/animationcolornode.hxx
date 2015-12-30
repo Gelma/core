@@ -30,22 +30,20 @@ class AnimationColorNode : public AnimationBaseNode
 {
 public:
     AnimationColorNode(
-        ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XAnimationNode> const& xNode,
+        css::uno::Reference<css::animations::XAnimationNode> const& xNode,
         ::boost::shared_ptr<BaseContainerNode> const& pParent,
         NodeContext const& rContext )
         : AnimationBaseNode( xNode, pParent, rContext ),
-          mxColorNode( xNode, ::com::sun::star::uno::UNO_QUERY_THROW ) {}
+          mxColorNode( xNode, css::uno::UNO_QUERY_THROW ) {}
 
 #if defined(DBG_UTIL)
-    virtual const char* getDescription() const SAL_OVERRIDE { return "AnimationColorNode"; }
+    virtual const char* getDescription() const override { return "AnimationColorNode"; }
 #endif
 
 private:
-    virtual AnimationActivitySharedPtr createActivity() const SAL_OVERRIDE;
+    virtual AnimationActivitySharedPtr createActivity() const override;
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XAnimateColor > mxColorNode;
+    css::uno::Reference<css::animations::XAnimateColor > mxColorNode;
 };
 
 } // namespace internal

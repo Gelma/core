@@ -66,8 +66,7 @@ OUString OToolboxController::getImplementationName_Static() throw( RuntimeExcept
 
 Sequence< OUString> OToolboxController::getSupportedServiceNames_Static() throw( RuntimeException )
 {
-    Sequence< OUString> aSupported(1);
-    aSupported[0] = "com.sun.star.report.ReportToolboxController";
+    Sequence<OUString> aSupported { "com.sun.star.report.ReportToolboxController" };
     return aSupported;
 }
 
@@ -87,7 +86,7 @@ Reference< XInterface > OToolboxController::create(Reference< XComponentContext 
 }
 
 OToolboxController::OToolboxController(const Reference< XComponentContext >& _rxORB)
-    : m_pToolbarController(NULL)
+    : m_pToolbarController(nullptr)
     ,m_nToolBoxId(1)
     ,m_nSlotId(0)
 {

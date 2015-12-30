@@ -41,10 +41,9 @@ void ScMediaShell::InitInterface_Impl()
 {
     GetStaticInterface()->RegisterObjectBar(SFX_OBJECTBAR_OBJECT, RID_MEDIA_OBJECTBAR);
 
-    GetStaticInterface()->RegisterPopupMenu(ScResId(RID_POPUP_MEDIA));
+    GetStaticInterface()->RegisterPopupMenu("media");
 }
 
-TYPEINIT1( ScMediaShell, ScDrawShell );
 
 ScMediaShell::ScMediaShell(ScViewData* pData) :
     ScDrawShell(pData)
@@ -78,7 +77,7 @@ void ScMediaShell::GetMediaState( SfxItemSet& rSet )
                 {
                     SdrObject* pObj = pMarkList->GetMark( 0 )->GetMarkedSdrObj();
 
-                    if( pObj && pObj->ISA( SdrMediaObj ) )
+                    if( pObj && dynamic_cast<const SdrMediaObj*>( pObj) !=  nullptr )
                     {
                         ::avmedia::MediaItem aItem( SID_AVMEDIA_TOOLBOX );
 
@@ -107,7 +106,7 @@ void ScMediaShell::ExecuteMedia( SfxRequest& rReq )
         const SfxPoolItem*  pItem;
 
         if( !pArgs || ( SfxItemState::SET != pArgs->GetItemState( SID_AVMEDIA_TOOLBOX, false, &pItem ) ) )
-            pItem = NULL;
+            pItem = nullptr;
 
         if( pItem )
         {
@@ -117,7 +116,7 @@ void ScMediaShell::ExecuteMedia( SfxRequest& rReq )
             {
                 SdrObject* pObj = pMarkList->GetMark( 0 )->GetMarkedSdrObj();
 
-                if( pObj && pObj->ISA( SdrMediaObj ) )
+                if( pObj && dynamic_cast<const SdrMediaObj*>( pObj) !=  nullptr )
                 {
                     static_cast< sdr::contact::ViewContactOfSdrMediaObj& >( pObj->GetViewContact() ).executeMediaItem(
                         static_cast< const ::avmedia::MediaItem& >( *pItem ) );

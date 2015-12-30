@@ -67,8 +67,6 @@ namespace xmloff
     using namespace ::com::sun::star::util;
     using namespace ::com::sun::star::text;
 
-    typedef ::com::sun::star::xforms::XFormsSupplier XXFormsSupplier;
-
     //= OFormLayerXMLExport_Impl
     const OUString& OFormLayerXMLExport_Impl::getControlNumberStyleNamePrefix()
     {
@@ -78,7 +76,7 @@ namespace xmloff
 
     OFormLayerXMLExport_Impl::OFormLayerXMLExport_Impl(SvXMLExport& _rContext)
         :m_rContext(_rContext)
-        ,m_pControlNumberStyles(NULL)
+        ,m_pControlNumberStyles(nullptr)
     {
         initializePropertyMaps();
 
@@ -115,7 +113,7 @@ namespace xmloff
             // nothing to do at all
             return false;
 
-        _rxForms = Reference< XIndexAccess >(xFormsSupp->getForms(), UNO_QUERY);
+        _rxForms.set(xFormsSupp->getForms(), UNO_QUERY);
         Reference< XServiceInfo > xSI(_rxForms, UNO_QUERY); // order is important!
         OSL_ENSURE(xSI.is(), "OFormLayerXMLExport_Impl::impl_isFormPageContainingForms: invalid collection (must not be NULL and must have a ServiceInfo)!");
         if (!xSI.is())
@@ -298,7 +296,7 @@ namespace xmloff
 
     bool OFormLayerXMLExport_Impl::documentContainsXForms() const
     {
-        Reference< XXFormsSupplier > xXFormSupp( m_rContext.GetModel(), UNO_QUERY );
+        Reference< css::xforms::XFormsSupplier > xXFormSupp( m_rContext.GetModel(), UNO_QUERY );
         Reference< XNameContainer > xForms;
         if ( xXFormSupp.is() )
             xForms = xXFormSupp->getXForms();

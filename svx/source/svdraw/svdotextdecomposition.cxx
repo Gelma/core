@@ -61,10 +61,10 @@ using namespace com::sun::star;
 
 namespace
 {
-    drawinglayer::primitive2d::Primitive2DSequence impConvertVectorToPrimitive2DSequence(const std::vector< drawinglayer::primitive2d::BasePrimitive2D* >& rPrimitiveVector)
+    drawinglayer::primitive2d::Primitive2DContainer impConvertVectorToPrimitive2DSequence(const std::vector< drawinglayer::primitive2d::BasePrimitive2D* >& rPrimitiveVector)
     {
         const sal_Int32 nCount(rPrimitiveVector.size());
-        drawinglayer::primitive2d::Primitive2DSequence aRetval(nCount);
+        drawinglayer::primitive2d::Primitive2DContainer aRetval(nCount);
 
         for(sal_Int32 a(0L); a < nCount; a++)
         {
@@ -161,7 +161,7 @@ namespace
             mrOutliner.SetDrawBulletHdl(Link<DrawBulletInfo*,void>());
         }
 
-        drawinglayer::primitive2d::Primitive2DSequence getPrimitive2DSequence();
+        drawinglayer::primitive2d::Primitive2DContainer getPrimitive2DSequence();
     };
 
     bool impTextBreakupHandler::impIsUnderlineAbove(const vcl::Font& rFont)
@@ -273,7 +273,7 @@ namespace
             const bool bWordLineMode(rInfo.mrFont.IsWordLineMode() && !rInfo.mbEndOfBullet);
 
             // prepare new primitive
-            drawinglayer::primitive2d::BasePrimitive2D* pNewPrimitive = 0;
+            drawinglayer::primitive2d::BasePrimitive2D* pNewPrimitive = nullptr;
             const bool bDecoratedIsNeeded(
                    UNDERLINE_NONE != rInfo.mrFont.GetOverline()
                 || UNDERLINE_NONE != rInfo.mrFont.GetUnderline()
@@ -343,7 +343,7 @@ namespace
                     rInfo.mnTextLen,
                     aDXArray,
                     aFontAttribute,
-                    rInfo.mpLocale ? *rInfo.mpLocale : ::com::sun::star::lang::Locale(),
+                    rInfo.mpLocale ? *rInfo.mpLocale : css::lang::Locale(),
                     aBFontColor,
                     aTextFillColor,
 
@@ -371,7 +371,7 @@ namespace
                     rInfo.mnTextLen,
                     aDXArray,
                     aFontAttribute,
-                    rInfo.mpLocale ? *rInfo.mpLocale : ::com::sun::star::lang::Locale(),
+                    rInfo.mpLocale ? *rInfo.mpLocale : css::lang::Locale(),
                     aBFontColor,
                     rInfo.mbFilled,
                     rInfo.mnWidthToFill,
@@ -382,7 +382,7 @@ namespace
             {
                 // embed in TextHierarchyBulletPrimitive2D
                 const drawinglayer::primitive2d::Primitive2DReference aNewReference(pNewPrimitive);
-                const drawinglayer::primitive2d::Primitive2DSequence aNewSequence(&aNewReference, 1);
+                const drawinglayer::primitive2d::Primitive2DContainer aNewSequence { aNewReference } ;
                 pNewPrimitive = new drawinglayer::primitive2d::TextHierarchyBulletPrimitive2D(aNewSequence);
             }
 
@@ -467,11 +467,11 @@ namespace
             const SvxPageField* pPageField = dynamic_cast< const SvxPageField* >(rInfo.mpFieldData);
 
             // embed current primitive to a sequence
-            drawinglayer::primitive2d::Primitive2DSequence aSequence;
+            drawinglayer::primitive2d::Primitive2DContainer aSequence;
 
             if(pPrimitive)
             {
-                aSequence.realloc(1);
+                aSequence.resize(1);
                 aSequence[0] = drawinglayer::primitive2d::Primitive2DReference(pPrimitive);
             }
 
@@ -498,7 +498,7 @@ namespace
         // empty line primitives (contrary to paragraphs, see below).
         if(!maTextPortionPrimitives.empty())
         {
-            drawinglayer::primitive2d::Primitive2DSequence aLineSequence(impConvertVectorToPrimitive2DSequence(maTextPortionPrimitives));
+            drawinglayer::primitive2d::Primitive2DContainer aLineSequence(impConvertVectorToPrimitive2DSequence(maTextPortionPrimitives));
             maTextPortionPrimitives.clear();
             maLinePrimitives.push_back(new drawinglayer::primitive2d::TextHierarchyLinePrimitive2D(aLineSequence));
         }
@@ -509,7 +509,7 @@ namespace
         // ALWAYS create a paragraph primitive, even when no content was added. This is done to
         // have the correct paragraph count even with empty paragraphs. Those paragraphs will
         // have an empty sub-PrimitiveSequence.
-        drawinglayer::primitive2d::Primitive2DSequence aParagraphSequence(impConvertVectorToPrimitive2DSequence(maLinePrimitives));
+        drawinglayer::primitive2d::Primitive2DContainer aParagraphSequence(impConvertVectorToPrimitive2DSequence(maLinePrimitives));
         maLinePrimitives.clear();
         maParagraphPrimitives.push_back(new drawinglayer::primitive2d::TextHierarchyParagraphPrimitive2D(aParagraphSequence));
     }
@@ -555,7 +555,7 @@ namespace
             aGraphicAttr));
 
         // embed in TextHierarchyBulletPrimitive2D
-        const drawinglayer::primitive2d::Primitive2DSequence aNewSequence(&aNewReference, 1);
+        const drawinglayer::primitive2d::Primitive2DContainer aNewSequence { aNewReference };
         drawinglayer::primitive2d::BasePrimitive2D* pNewPrimitive = new drawinglayer::primitive2d::TextHierarchyBulletPrimitive2D(aNewSequence);
 
         // add to output
@@ -649,7 +649,7 @@ namespace
         }
     }
 
-    drawinglayer::primitive2d::Primitive2DSequence impTextBreakupHandler::getPrimitive2DSequence()
+    drawinglayer::primitive2d::Primitive2DContainer impTextBreakupHandler::getPrimitive2DSequence()
     {
         if(!maTextPortionPrimitives.empty())
         {
@@ -671,7 +671,7 @@ namespace
 // primitive decompositions
 
 void SdrTextObj::impDecomposeContourTextPrimitive(
-    drawinglayer::primitive2d::Primitive2DSequence& rTarget,
+    drawinglayer::primitive2d::Primitive2DContainer& rTarget,
     const drawinglayer::primitive2d::SdrContourTextPrimitive2D& rSdrContourTextPrimitive,
     const drawinglayer::geometry::ViewInformation2D& aViewInformation) const
 {
@@ -715,13 +715,13 @@ void SdrTextObj::impDecomposeContourTextPrimitive(
 
     // cleanup outliner
     rOutliner.Clear();
-    rOutliner.setVisualizedPage(0);
+    rOutliner.setVisualizedPage(nullptr);
 
     rTarget = aConverter.getPrimitive2DSequence();
 }
 
 void SdrTextObj::impDecomposeAutoFitTextPrimitive(
-    drawinglayer::primitive2d::Primitive2DSequence& rTarget,
+    drawinglayer::primitive2d::Primitive2DContainer& rTarget,
     const drawinglayer::primitive2d::SdrAutoFitTextPrimitive2D& rSdrAutofitTextPrimitive,
     const drawinglayer::geometry::ViewInformation2D& aViewInformation) const
 {
@@ -848,14 +848,14 @@ void SdrTextObj::impDecomposeAutoFitTextPrimitive(
 
     // cleanup outliner
     rOutliner.Clear();
-    rOutliner.setVisualizedPage(0);
+    rOutliner.setVisualizedPage(nullptr);
     rOutliner.SetControlWord(nOriginalControlWord);
 
     rTarget = aConverter.getPrimitive2DSequence();
 }
 
 void SdrTextObj::impDecomposeBlockTextPrimitive(
-    drawinglayer::primitive2d::Primitive2DSequence& rTarget,
+    drawinglayer::primitive2d::Primitive2DContainer& rTarget,
     const drawinglayer::primitive2d::SdrBlockTextPrimitive2D& rSdrBlockTextPrimitive,
     const drawinglayer::geometry::ViewInformation2D& aViewInformation) const
 {
@@ -1091,13 +1091,13 @@ void SdrTextObj::impDecomposeBlockTextPrimitive(
     // cleanup outliner
     rOutliner.SetBackgroundColor(aOriginalBackColor);
     rOutliner.Clear();
-    rOutliner.setVisualizedPage(0);
+    rOutliner.setVisualizedPage(nullptr);
 
     rTarget = aConverter.getPrimitive2DSequence();
 }
 
 void SdrTextObj::impDecomposeStretchTextPrimitive(
-    drawinglayer::primitive2d::Primitive2DSequence& rTarget,
+    drawinglayer::primitive2d::Primitive2DContainer& rTarget,
     const drawinglayer::primitive2d::SdrStretchTextPrimitive2D& rSdrStretchTextPrimitive,
     const drawinglayer::geometry::ViewInformation2D& aViewInformation) const
 {
@@ -1169,7 +1169,7 @@ void SdrTextObj::impDecomposeStretchTextPrimitive(
     // cleanup outliner
     rOutliner.SetControlWord(nOriginalControlWord);
     rOutliner.Clear();
-    rOutliner.setVisualizedPage(0);
+    rOutliner.setVisualizedPage(nullptr);
 
     rTarget = aConverter.getPrimitive2DSequence();
 }
@@ -1206,8 +1206,8 @@ void SdrTextObj::impGetBlinkTextTiming(drawinglayer::animation::AnimationEntryLi
         // add stopped state if loop is not endless
         if(0L != nRepeat)
         {
-            bool bVisisbleWhenStopped(static_cast<const SdrTextAniStopInsideItem&>(rSet.Get(SDRATTR_TEXT_ANISTOPINSIDE)).GetValue());
-            drawinglayer::animation::AnimationEntryFixed aStop(ENDLESS_TIME, bVisisbleWhenStopped ? 0.0 : 1.0);
+            bool bVisibleWhenStopped(static_cast<const SdrTextAniStopInsideItem&>(rSet.Get(SDRATTR_TEXT_ANISTOPINSIDE)).GetValue());
+            drawinglayer::animation::AnimationEntryFixed aStop(ENDLESS_TIME, bVisibleWhenStopped ? 0.0 : 1.0);
             rAnimList.append(aStop);
         }
     }
@@ -1215,11 +1215,11 @@ void SdrTextObj::impGetBlinkTextTiming(drawinglayer::animation::AnimationEntryLi
 
 void impCreateScrollTiming(const SfxItemSet& rSet, drawinglayer::animation::AnimationEntryList& rAnimList, bool bForward, double fTimeFullPath, double fFrequency)
 {
-    bool bVisisbleWhenStopped(static_cast<const SdrTextAniStopInsideItem&>(rSet.Get(SDRATTR_TEXT_ANISTOPINSIDE)).GetValue());
-    bool bVisisbleWhenStarted(static_cast<const SdrTextAniStartInsideItem&>(rSet.Get(SDRATTR_TEXT_ANISTOPINSIDE )).GetValue());
+    bool bVisibleWhenStopped(static_cast<const SdrTextAniStopInsideItem&>(rSet.Get(SDRATTR_TEXT_ANISTOPINSIDE)).GetValue());
+    bool bVisibleWhenStarted(static_cast<const SdrTextAniStartInsideItem&>(rSet.Get(SDRATTR_TEXT_ANISTARTINSIDE)).GetValue());
     const sal_uInt32 nRepeat(static_cast<const SdrTextAniCountItem&>(rSet.Get(SDRATTR_TEXT_ANICOUNT)).GetValue());
 
-    if(bVisisbleWhenStarted)
+    if(bVisibleWhenStarted)
     {
         // move from center to outside
         drawinglayer::animation::AnimationEntryLinear aInOut(fTimeFullPath * 0.5, fFrequency, 0.5, bForward ? 1.0 : 0.0);
@@ -1232,7 +1232,7 @@ void impCreateScrollTiming(const SfxItemSet& rSet, drawinglayer::animation::Anim
     aLoop.append(aThrough);
     rAnimList.append(aLoop);
 
-    if(0L != nRepeat && bVisisbleWhenStopped)
+    if(0L != nRepeat && bVisibleWhenStopped)
     {
         // move from outside to center
         drawinglayer::animation::AnimationEntryLinear aOutIn(fTimeFullPath * 0.5, fFrequency, bForward ? 0.0 : 1.0, 0.5);
@@ -1255,10 +1255,10 @@ void impCreateAlternateTiming(const SfxItemSet& rSet, drawinglayer::animation::A
 
     const double fStartPosition(bForward ? fRelativeTextLength : 1.0 - fRelativeTextLength);
     const double fEndPosition(bForward ? 1.0 - fRelativeTextLength : fRelativeTextLength);
-    bool bVisisbleWhenStarted(static_cast<const SdrTextAniStartInsideItem&>(rSet.Get(SDRATTR_TEXT_ANISTOPINSIDE )).GetValue());
+    bool bVisibleWhenStarted(static_cast<const SdrTextAniStartInsideItem&>(rSet.Get(SDRATTR_TEXT_ANISTARTINSIDE)).GetValue());
     const sal_uInt32 nRepeat(static_cast<const SdrTextAniCountItem&>(rSet.Get(SDRATTR_TEXT_ANICOUNT)).GetValue());
 
-    if(!bVisisbleWhenStarted)
+    if(!bVisibleWhenStarted)
     {
         // move from outside to center
         drawinglayer::animation::AnimationEntryLinear aOutIn(fTimeFullPath * 0.5, fFrequency, bForward ? 0.0 : 1.0, 0.5);
@@ -1296,8 +1296,8 @@ void impCreateAlternateTiming(const SfxItemSet& rSet, drawinglayer::animation::A
 
     if(0L != nRepeat)
     {
-        bool bVisisbleWhenStopped(static_cast<const SdrTextAniStopInsideItem&>(rSet.Get(SDRATTR_TEXT_ANISTOPINSIDE)).GetValue());
-        if(bVisisbleWhenStopped)
+        bool bVisibleWhenStopped(static_cast<const SdrTextAniStopInsideItem&>(rSet.Get(SDRATTR_TEXT_ANISTOPINSIDE)).GetValue());
+        if(bVisibleWhenStopped)
         {
             // add timing for staying at the end
             drawinglayer::animation::AnimationEntryFixed aEnd(ENDLESS_TIME, 0.5);
@@ -1455,7 +1455,7 @@ void SdrTextObj::impHandleChainingEventsDuringDecomposition(SdrOutliner &rOutlin
 }
 
 void SdrTextObj::impDecomposeChainedTextPrimitive(
-        drawinglayer::primitive2d::Primitive2DSequence& rTarget,
+        drawinglayer::primitive2d::Primitive2DContainer& rTarget,
         const drawinglayer::primitive2d::SdrChainedTextPrimitive2D& rSdrChainedTextPrimitive,
         const drawinglayer::geometry::ViewInformation2D& aViewInformation) const
 {
@@ -1592,7 +1592,7 @@ void SdrTextObj::impDecomposeChainedTextPrimitive(
 
     // cleanup outliner
     rOutliner.Clear();
-    rOutliner.setVisualizedPage(0);
+    rOutliner.setVisualizedPage(nullptr);
     rOutliner.SetControlWord(nOriginalControlWord);
 
     rTarget = aConverter.getPrimitive2DSequence();

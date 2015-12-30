@@ -82,21 +82,8 @@ void RscTypCont::Init()
     RscTop   *  pClassKeyCode;
     RscTop   *  pLangClassKeyCode;
     RscTop   *  pClassAccelItem;
-    RscTop   *  pClassAccel;
-    RscTop   *  pClassMenuItem;
-    RscTop   *  pClassMenu;
-    RscTop   *  pClassSplitWindow;
-    RscTop   *  pClassSpinButton;
     RscTop   *  pClassSpinField;
-    RscTop   *  pClassNumericField;
-    RscTop   *  pClassMetricField;
-    RscTop   *  pClassDockingWindow;
-    RscTop   *  pClassToolBoxItem;
-    RscTop   *  pClassToolBox;
-    RscTop   *  pClassFixedLine;
-    RscTop *    pClassSfxStyleFamilyItem;
-    RscTop *    pClassSfxTemplateDialog;
-    RscTop *    pClassSfxSlotInfo;
+    RscTop   *  pClassAccel;
 
     Atom        nId;
 
@@ -283,7 +270,7 @@ void RscTypCont::Init()
 
     aVersion.pClass = new RscClass( pHS->getID( "VersionControl" ),
                                     RSC_VERSIONCONTROL, pClassMgr );
-    aVersion = aVersion.pClass->Create( NULL, RSCINST() );
+    aVersion = aVersion.pClass->Create( nullptr, RSCINST() );
 
     pClassString = InitClassString( pClassMgr );
     pRoot->Insert( pClassString );
@@ -390,28 +377,28 @@ void RscTypCont::Init()
 
     // pClassAccel is only completely defined here
     nId = aNmTb.Put( "SubAccelerator", VARNAME );
-    pClassAccelItem->SetVariable( nId, pClassAccel, NULL, VAR_SVDYNAMIC,
+    pClassAccelItem->SetVariable( nId, pClassAccel, nullptr, VAR_SVDYNAMIC,
                                ACCELITEM_ACCEL );
 
-    pClassMenuItem = InitClassMenuItem( pClassMgr, pClassBitmap,
+    RscTop* pClassMenuItem = InitClassMenuItem( pClassMgr, pClassBitmap,
                                         pLangClassKeyCode );
     pRoot->Insert( pClassMenuItem );
 
-    pClassMenu = InitClassMenu( pClassMgr, pClassMenuItem );
+    RscTop* pClassMenu = InitClassMenu( pClassMgr, pClassMenuItem );
     pRoot->Insert( pClassMenu );
 
     // pClassMenu is only completely defined here
     nId = aNmTb.Put( "SubMenu", VARNAME );
-    pClassMenuItem->SetVariable( nId, pClassMenu, NULL, VAR_SVDYNAMIC,
+    pClassMenuItem->SetVariable( nId, pClassMenu, nullptr, VAR_SVDYNAMIC,
                                  RSC_MENUITEM_MENU );
 }
 {
-    pClassSplitWindow = InitClassSplitWindow( pClassWindow );
+    RscTop* pClassSplitWindow = InitClassSplitWindow( pClassWindow );
     pRoot->Insert( pClassSplitWindow );
 
     // initialize class
     nId = pHS->getID( "SpinButton" );
-    pClassSpinButton = new RscClass( nId, RSC_SPINBUTTON, pClassControl );
+    RscTop*  pClassSpinButton = new RscClass( nId, RSC_SPINBUTTON, pClassControl );
     pClassSpinButton->SetCallPar( *pWinPar1, *pWinPar2, *pWinParType );
     aNmTb.Put( nId, CLASSNAME, pClassSpinButton );
     {
@@ -423,7 +410,7 @@ void RscTypCont::Init()
             pClient = new RscClient( pHS->getID( "sal_Bool" ), RSC_NOTYPE, &aWinBits, nRepeatId )
         );
         nId = aNmTb.Put( "Repeat", VARNAME );
-        pClassSpinButton->SetVariable( nId, pClient, NULL,
+        pClassSpinButton->SetVariable( nId, pClient, nullptr,
                                       VAR_NODATAINST, 0, nWinBitVarId );
     }
     pRoot->Insert( pClassSpinButton );
@@ -434,38 +421,37 @@ void RscTypCont::Init()
 }
 {
     { // hand-made multiple inheritance
-    RscTop * pClassTmp = InitClassNumericFormatter( pClassSpinField );
-    aBaseLst.push_back( pClassTmp );
+        RscTop* pClassTmp = InitClassNumericFormatter( pClassSpinField );
+        aBaseLst.push_back( pClassTmp );
 
-    pClassNumericField = InitClassNumericField( pClassTmp );
-    pRoot->Insert( pClassNumericField );
+        RscTop* pClassNumericField = InitClassNumericField( pClassTmp );
+        pRoot->Insert( pClassNumericField );
     }
     { // hand-made multiple inheritance
-    RscTop * pClassTmp = InitClassNumericFormatter( pClassSpinField );
-    aBaseLst.push_back( pClassTmp );
-    pClassTmp = InitClassMetricFormatter( pClassTmp, pFieldUnits );
-    aBaseLst.push_back( pClassTmp );
+        RscTop* pClassTmp = InitClassNumericFormatter( pClassSpinField );
+        aBaseLst.push_back( pClassTmp );
+        pClassTmp = InitClassMetricFormatter( pClassTmp, pFieldUnits );
+        aBaseLst.push_back( pClassTmp );
 
-    pClassMetricField = InitClassMetricField( pClassTmp );
-    pRoot->Insert( pClassMetricField );
+        RscTop* pClassMetricField = InitClassMetricField( pClassTmp );
+        pRoot->Insert( pClassMetricField );
     }
 }
 {
-    pClassDockingWindow = InitClassDockingWindow( pClassWindow, pMapUnit );
+    RscTop* pClassDockingWindow = InitClassDockingWindow( pClassWindow, pMapUnit );
     pRoot->Insert( pClassDockingWindow );
 
-    pClassToolBoxItem = InitClassToolBoxItem( pClassMgr, pClassBitmap,
+    RscTop* pClassToolBoxItem = InitClassToolBoxItem( pClassMgr, pClassBitmap,
                                               pClassImage, pTriState );
     pRoot->Insert( pClassToolBoxItem );
 
-    pClassToolBox = InitClassToolBox( pClassDockingWindow, pClassToolBoxItem,
+    RscTop* pClassToolBox = InitClassToolBox( pClassDockingWindow, pClassToolBoxItem,
                                       pClassImageList );
     pRoot->Insert( pClassToolBox );
 
     // initialize class
     nId = pHS->getID( "FixedLine" );
-    pClassFixedLine =
-          new RscClass( nId, RSC_FIXEDLINE, pClassControl );
+    RscTop* pClassFixedLine = new RscClass( nId, RSC_FIXEDLINE, pClassControl );
     pClassFixedLine->SetCallPar( *pWinPar1, *pWinPar2, *pWinParType );
 
     INS_WINBIT(pClassFixedLine,Vert)
@@ -473,17 +459,17 @@ void RscTypCont::Init()
     aNmTb.Put( nId, CLASSNAME, pClassFixedLine );
     pRoot->Insert( pClassFixedLine );
 
-    pClassSfxStyleFamilyItem = InitClassSfxStyleFamilyItem( pClassMgr,
+    RscTop* pClassSfxStyleFamilyItem = InitClassSfxStyleFamilyItem( pClassMgr,
                                                    pClassBitmap,
                                                    pClassImage,
                                                    pLangStringLongTupelList );
     pRoot->Insert( pClassSfxStyleFamilyItem );
 
-    pClassSfxTemplateDialog = InitClassSfxTemplateDialog( pClassMgr,
+    RscTop* pClassSfxTemplateDialog = InitClassSfxTemplateDialog( pClassMgr,
                                                   pClassSfxStyleFamilyItem );
     pRoot->Insert( pClassSfxTemplateDialog );
 
-    pClassSfxSlotInfo = InitClassSfxSlotInfo( pClassMgr );
+    RscTop* pClassSfxSlotInfo = InitClassSfxSlotInfo( pClassMgr );
     pRoot->Insert( pClassSfxSlotInfo );
 }
 

@@ -40,7 +40,7 @@ XMLElementWrapper_XmlSecImpl::XMLElementWrapper_XmlSecImpl(const xmlNodePtr pNod
 cssu::Sequence< sal_Int8 > XMLElementWrapper_XmlSecImpl::getUnoTunnelImplementationId()
     throw (cssu::RuntimeException)
 {
-    static ::cppu::OImplementationId* pId = 0;
+    static ::cppu::OImplementationId* pId = nullptr;
     if (! pId)
     {
         ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );
@@ -80,9 +80,7 @@ OUString XMLElementWrapper_XmlSecImpl_getImplementationName ()
 cssu::Sequence< OUString > SAL_CALL XMLElementWrapper_XmlSecImpl_getSupportedServiceNames(  )
     throw (cssu::RuntimeException)
 {
-    cssu::Sequence < OUString > aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.xml.wrapper.XMLElementWrapper";
+    cssu::Sequence<OUString> aRet { "com.sun.star.xml.wrapper.XMLElementWrapper" };
     return aRet;
 }
 
@@ -91,7 +89,7 @@ cssu::Reference< cssu::XInterface > SAL_CALL
         const cssu::Reference< cssu::XComponentContext > &)
     throw( cssu::Exception )
 {
-    return static_cast<cppu::OWeakObject*>(new XMLElementWrapper_XmlSecImpl(NULL));
+    return static_cast<cppu::OWeakObject*>(new XMLElementWrapper_XmlSecImpl(nullptr));
 }
 
 /* XServiceInfo */

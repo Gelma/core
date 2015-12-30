@@ -25,7 +25,7 @@
 #include <com/sun/star/accessibility/XAccessibleExtendedAttributes.hpp>
 
 class SwAccessibleEmbeddedObject : public   SwAccessibleNoTextFrame
-            , public ::com::sun::star::accessibility::XAccessibleExtendedAttributes
+            , public css::accessibility::XAccessibleExtendedAttributes
 
 {
 protected:
@@ -33,46 +33,46 @@ protected:
 
 public:
     SwAccessibleEmbeddedObject( SwAccessibleMap* pInitMap,
-                                const SwFlyFrm* pFlyFrm );
+                                const SwFlyFrame* pFlyFrame );
 
     // XInterface
 
-    virtual com::sun::star::uno::Any SAL_CALL
-        queryInterface (const com::sun::star::uno::Type & rType)
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Any SAL_CALL
+        queryInterface (const css::uno::Type & rType)
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL
         acquire()
-        throw () SAL_OVERRIDE;
+        throw () override;
 
     virtual void SAL_CALL
         release()
-        throw () SAL_OVERRIDE;
+        throw () override;
 
     // XServiceInfo
 
     // Returns an identifier for the implementation of this object.
     virtual OUString SAL_CALL
         getImplementationName()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // Return whether the specified service is supported by this class.
     virtual sal_Bool SAL_CALL
         supportsService (const OUString& sServiceName)
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // Returns a list of all supported services.  In this case that is just
     // the AccessibleContext service.
-    virtual ::com::sun::star::uno::Sequence< OUString> SAL_CALL
+    virtual css::uno::Sequence< OUString> SAL_CALL
         getSupportedServiceNames()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // XTypeProvider
-    virtual ::com::sun::star::uno::Sequence< sal_Int8 > SAL_CALL getImplementationId(  ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Sequence< sal_Int8 > SAL_CALL getImplementationId(  ) throw(css::uno::RuntimeException, std::exception) override;
 
     // XAccessibleExtendedAttributes
-        virtual ::com::sun::star::uno::Any SAL_CALL getExtendedAttributes()
-            throw (::com::sun::star::lang::IndexOutOfBoundsException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE ;
+        virtual css::uno::Any SAL_CALL getExtendedAttributes()
+            throw (css::lang::IndexOutOfBoundsException, css::uno::RuntimeException, std::exception) override ;
 };
 
 #endif

@@ -57,7 +57,7 @@ namespace comphelper
         inline OUString convertLogArgToString( sal_Int16   _nValue ) { return OUString::number( _nValue ); }
         inline OUString convertLogArgToString( sal_Unicode _nValue ) { return OUString( _nValue ); }
         inline OUString convertLogArgToString( bool    _bValue ) { return OUString::boolean( _bValue ); }
-        void convertLogArgToString(sal_Bool) SAL_DELETED_FUNCTION;
+        void convertLogArgToString(sal_Bool) = delete;
 
     } } // namespace log::convert
 
@@ -67,7 +67,7 @@ namespace comphelper
     class EventLogger_Impl;
     typedef ::boost::optional< OUString >    OptionalString;
 
-    /** encapsulates an com::sun::star::logging::XLogger
+    /** encapsulates an css::logging::XLogger
 
         The class silences several (unlikely) errors which could potentially happen
         when working with a logger. Additionally, it provides some convenience methods
@@ -105,7 +105,7 @@ namespace comphelper
                 the ASCII name of the logger to create.
         */
         EventLogger(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& _rxContext,
+            const css::uno::Reference< css::uno::XComponentContext >& _rxContext,
             const sal_Char* _pAsciiLoggerName
         );
 
@@ -130,7 +130,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const OUString& _rMessage, ARGTYPE1 _argument1 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, _rMessage,
+                return impl_log( _nLogLevel, nullptr, nullptr, _rMessage,
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ) );
             return false;
         }
@@ -140,7 +140,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const OUString& _rMessage, ARGTYPE1 _argument1, ARGTYPE2 _argument2 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, _rMessage,
+                return impl_log( _nLogLevel, nullptr, nullptr, _rMessage,
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument2 ) ) );
             return false;
@@ -151,7 +151,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const OUString& _rMessage, ARGTYPE1 _argument1, ARGTYPE2 _argument2, ARGTYPE3 _argument3 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, _rMessage,
+                return impl_log( _nLogLevel, nullptr, nullptr, _rMessage,
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument2 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument3 ) ) );
@@ -163,7 +163,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const OUString& _rMessage, ARGTYPE1 _argument1, ARGTYPE2 _argument2, ARGTYPE3 _argument3, ARGTYPE4 _argument4 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, _rMessage,
+                return impl_log( _nLogLevel, nullptr, nullptr, _rMessage,
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument2 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument3 ) ),
@@ -176,7 +176,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const OUString& _rMessage, ARGTYPE1 _argument1, ARGTYPE2 _argument2, ARGTYPE3 _argument3, ARGTYPE4 _argument4, ARGTYPE5 _argument5 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, _rMessage,
+                return impl_log( _nLogLevel, nullptr, nullptr, _rMessage,
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument2 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument3 ) ),
@@ -190,7 +190,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const OUString& _rMessage, ARGTYPE1 _argument1, ARGTYPE2 _argument2, ARGTYPE3 _argument3, ARGTYPE4 _argument4, ARGTYPE5 _argument5, ARGTYPE6 _argument6 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, _rMessage,
+                return impl_log( _nLogLevel, nullptr, nullptr, _rMessage,
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument2 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument3 ) ),
@@ -215,7 +215,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const sal_Char* _pMessage, ARGTYPE1 _argument1 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, OUString::createFromAscii( _pMessage ),
+                return impl_log( _nLogLevel, nullptr, nullptr, OUString::createFromAscii( _pMessage ),
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ) );
             return false;
         }
@@ -225,7 +225,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const sal_Char* _pMessage, ARGTYPE1 _argument1, ARGTYPE2 _argument2 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, OUString::createFromAscii( _pMessage ),
+                return impl_log( _nLogLevel, nullptr, nullptr, OUString::createFromAscii( _pMessage ),
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument2 ) ) );
             return false;
@@ -236,7 +236,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const sal_Char* _pMessage, ARGTYPE1 _argument1, ARGTYPE2 _argument2, ARGTYPE3 _argument3 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, OUString::createFromAscii( _pMessage ),
+                return impl_log( _nLogLevel, nullptr, nullptr, OUString::createFromAscii( _pMessage ),
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument2 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument3 ) ) );
@@ -248,7 +248,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const sal_Char* _pMessage, ARGTYPE1 _argument1, ARGTYPE2 _argument2, ARGTYPE3 _argument3, ARGTYPE4 _argument4 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, OUString::createFromAscii( _pMessage ),
+                return impl_log( _nLogLevel, nullptr, nullptr, OUString::createFromAscii( _pMessage ),
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument2 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument3 ) ),
@@ -261,7 +261,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const sal_Char* _pMessage, ARGTYPE1 _argument1, ARGTYPE2 _argument2, ARGTYPE3 _argument3, ARGTYPE4 _argument4, ARGTYPE5 _argument5 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, OUString::createFromAscii( _pMessage ),
+                return impl_log( _nLogLevel, nullptr, nullptr, OUString::createFromAscii( _pMessage ),
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument2 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument3 ) ),
@@ -275,7 +275,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const sal_Char* _pMessage, ARGTYPE1 _argument1, ARGTYPE2 _argument2, ARGTYPE3 _argument3, ARGTYPE4 _argument4, ARGTYPE5 _argument5, ARGTYPE6 _argument6 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, OUString::createFromAscii( _pMessage ),
+                return impl_log( _nLogLevel, nullptr, nullptr, OUString::createFromAscii( _pMessage ),
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument2 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument3 ) ),
@@ -495,9 +495,9 @@ namespace comphelper
 
         */
         ResourceBasedEventLogger(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& _rxContext,
+            const css::uno::Reference< css::uno::XComponentContext >& _rxContext,
             const sal_Char* _pResourceBundleBaseName,
-            const sal_Char* _pAsciiLoggerName = NULL
+            const sal_Char* _pAsciiLoggerName = nullptr
         );
 
 
@@ -508,7 +508,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const sal_Int32 _nMessageResID ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, impl_loadStringMessage_nothrow( _nMessageResID ) );
+                return impl_log( _nLogLevel, nullptr, nullptr, impl_loadStringMessage_nothrow( _nMessageResID ) );
             return false;
         }
 
@@ -523,7 +523,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const sal_Int32 _nMessageResID, ARGTYPE1 _argument1 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, impl_loadStringMessage_nothrow( _nMessageResID ),
+                return impl_log( _nLogLevel, nullptr, nullptr, impl_loadStringMessage_nothrow( _nMessageResID ),
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ) );
             return false;
         }
@@ -533,7 +533,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const sal_Int32 _nMessageResID, ARGTYPE1 _argument1, ARGTYPE2 _argument2 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, impl_loadStringMessage_nothrow( _nMessageResID ),
+                return impl_log( _nLogLevel, nullptr, nullptr, impl_loadStringMessage_nothrow( _nMessageResID ),
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument2 ) ) );
             return false;
@@ -544,7 +544,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const sal_Int32 _nMessageResID, ARGTYPE1 _argument1, ARGTYPE2 _argument2, ARGTYPE3 _argument3 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, impl_loadStringMessage_nothrow( _nMessageResID ),
+                return impl_log( _nLogLevel, nullptr, nullptr, impl_loadStringMessage_nothrow( _nMessageResID ),
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument2 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument3 ) ) );
@@ -556,7 +556,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const sal_Int32 _nMessageResID, ARGTYPE1 _argument1, ARGTYPE2 _argument2, ARGTYPE3 _argument3, ARGTYPE4 _argument4 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, impl_loadStringMessage_nothrow( _nMessageResID ),
+                return impl_log( _nLogLevel, nullptr, nullptr, impl_loadStringMessage_nothrow( _nMessageResID ),
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument2 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument3 ) ),
@@ -569,7 +569,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const sal_Int32 _nMessageResID, ARGTYPE1 _argument1, ARGTYPE2 _argument2, ARGTYPE3 _argument3, ARGTYPE4 _argument4, ARGTYPE5 _argument5 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, impl_loadStringMessage_nothrow( _nMessageResID ),
+                return impl_log( _nLogLevel, nullptr, nullptr, impl_loadStringMessage_nothrow( _nMessageResID ),
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument2 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument3 ) ),
@@ -583,7 +583,7 @@ namespace comphelper
         bool        log( const sal_Int32 _nLogLevel, const sal_Int32 _nMessageResID, ARGTYPE1 _argument1, ARGTYPE2 _argument2, ARGTYPE3 _argument3, ARGTYPE4 _argument4, ARGTYPE5 _argument5, ARGTYPE6 _argument6 ) const
         {
             if ( isLoggable( _nLogLevel ) )
-                return impl_log( _nLogLevel, NULL, NULL, impl_loadStringMessage_nothrow( _nMessageResID ),
+                return impl_log( _nLogLevel, nullptr, nullptr, impl_loadStringMessage_nothrow( _nMessageResID ),
                     OptionalString( log::convert::convertLogArgToString( _argument1 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument2 ) ),
                     OptionalString( log::convert::convertLogArgToString( _argument3 ) ),

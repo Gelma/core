@@ -24,6 +24,7 @@
 #include <sal/types.h>
 
 #include <salhelper/simplereferenceobject.hxx>
+#include <memory>
 
 class XMLPropertyHandler;
 
@@ -39,10 +40,10 @@ class XMLPropertyHandler;
 class XMLOFF_DLLPUBLIC XMLPropertyHandlerFactory : public salhelper::SimpleReferenceObject
 {
     struct Impl;
-    Impl* mpImpl;
+    std::unique_ptr<Impl> mpImpl;
 
-    XMLPropertyHandlerFactory( const XMLPropertyHandlerFactory& ) SAL_DELETED_FUNCTION;
-    XMLPropertyHandlerFactory& operator= ( const XMLPropertyHandlerFactory& ) SAL_DELETED_FUNCTION;
+    XMLPropertyHandlerFactory( const XMLPropertyHandlerFactory& ) = delete;
+    XMLPropertyHandlerFactory& operator= ( const XMLPropertyHandlerFactory& ) = delete;
 
 public:
     XMLPropertyHandlerFactory();

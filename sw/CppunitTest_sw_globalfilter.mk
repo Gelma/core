@@ -39,6 +39,7 @@ $(eval $(call gb_CppunitTest_set_include,sw_globalfilter,\
     -I$(SRCDIR)/sw/inc \
     -I$(SRCDIR)/sw/source/core/inc \
     -I$(SRCDIR)/sw/qa/extras/inc \
+    -I$(SRCDIR)/sw/source/uibase/inc \
     $$(INCLUDE) \
 ))
 
@@ -78,6 +79,7 @@ $(eval $(call gb_CppunitTest_use_components,sw_globalfilter,\
 	ucb/source/core/ucb1 \
 	ucb/source/ucp/file/ucpfile1 \
 	unotools/util/utl \
+	unoxml/source/rdf/unordf \
 	unoxml/source/service/unoxml \
 	uui/util/uui \
 	$(if $(filter DESKTOP,$(BUILD_TYPE)),xmlhelp/util/ucpchelp1) \

@@ -112,7 +112,7 @@ namespace toolkit
             INetURLObject aURL( i_imageURL );
             if ( aURL.GetProtocol() != INetProtocol::PrivSoffice )
             {
-                OSL_VERIFY( aURL.insertName( OUString( "hicontrast" ), false, 0 ) );
+                OSL_VERIFY( aURL.insertName( "hicontrast", false, 0 ) );
                 return aURL.GetMainURL( INetURLObject::NO_DECODE );
             }
             // the private: scheme is not considered to be hierarchical by INetURLObject, so manually insert the
@@ -190,7 +190,7 @@ namespace toolkit
             {
                 // collect the image sizes of the different image sets
                 const Reference< XComponentContext > xContext( ::comphelper::getProcessComponentContext() );
-                const Reference< XGraphicProvider > xGraphicProvider( com::sun::star::graphic::GraphicProvider::create(xContext) );
+                const Reference< XGraphicProvider > xGraphicProvider( css::graphic::GraphicProvider::create(xContext) );
 
                 const bool isHighContrast = pThrobber->GetSettings().GetStyleSettings().GetHighContrastMode();
 
@@ -244,12 +244,12 @@ namespace toolkit
                 }
 
                 // found a set?
-                Sequence< Reference< XGraphic > > aImages;
+                std::vector< Image > aImages;
                 if ( ( nPreferredSet >= 0 ) && ( size_t( nPreferredSet ) < nImageSetCount ) )
                 {
                     // => set the images
                     ::std::vector< CachedImage > const& rImageSet( i_data.aCachedImageSets[ nPreferredSet ] );
-                    aImages.realloc( rImageSet.size() );
+                    aImages.resize( rImageSet.size() );
                     sal_Int32 imageIndex = 0;
                     for (   ::std::vector< CachedImage >::const_iterator cachedImage = rImageSet.begin();
                             cachedImage != rImageSet.end();
@@ -257,7 +257,7 @@ namespace toolkit
                         )
                     {
                         lcl_ensureImage_throw( xGraphicProvider, isHighContrast, *cachedImage );
-                        aImages[ imageIndex ] = cachedImage->xGraphic;
+                        aImages[ imageIndex ] = Image(cachedImage->xGraphic);
                     }
                 }
                 pThrobber->setImageList( aImages );

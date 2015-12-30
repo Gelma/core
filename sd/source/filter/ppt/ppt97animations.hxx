@@ -20,10 +20,12 @@
 #ifndef INCLUDED_SD_SOURCE_FILTER_PPT_PPT97ANIMATIONS_HXX
 #define INCLUDED_SD_SOURCE_FILTER_PPT_PPT97ANIMATIONS_HXX
 
-#include <tools/stream.hxx>
+#include <rtl/ustring.hxx>
+#include <sal/types.h>
 
 class SdrObject;
 class Ppt97Animation;
+class SvStream;
 
 /// helper class for reading PPT AnimationInfoAtom
 class Ppt97AnimationInfoAtom
@@ -84,7 +86,7 @@ class Ppt97Animation
 {
 
 public: //public methods
-    Ppt97Animation( SvStream& rIn );
+    explicit Ppt97Animation( SvStream& rIn );
 
     Ppt97Animation( const Ppt97Animation& rAnimation );
     Ppt97Animation& operator= ( const Ppt97Animation& rAnimation );
@@ -128,10 +130,10 @@ private: //private methods
     ///paragraph level that is animated ( that paragraph and higher levels )
     sal_Int32 GetParagraphLevel() const;
 
-    ///@see com::sun::star::presentation::TextAnimationType
+    ///@see css::presentation::TextAnimationType
     sal_Int16 GetTextAnimationType() const;
 
-    ///@see com::sun::star::presentation::EffectNodeType
+    ///@see css::presentation::EffectNodeType
     sal_Int16 GetEffectNodeType() const;
 
     /// @return -1 for start on mouseclick or >= 0 for a delay in seconds for automatic start

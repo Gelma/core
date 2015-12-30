@@ -460,8 +460,6 @@ public:
 
      @see Quit, Reschedule, Yield, EndYield, GetSolarMutex,
           GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
     */
     static void                 Execute();
 
@@ -469,8 +467,6 @@ public:
 
      @see Execute, Reschedule, Yield, EndYield, GetSolarMutex,
           GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
     */
     static void                 Quit();
 
@@ -482,8 +478,6 @@ public:
 
      @see Execute, Quit, Yield, EndYield, GetSolarMutex,
           GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
      */
     static void                 Reschedule( bool bAllEvents = false );
 
@@ -491,8 +485,6 @@ public:
 
      @see Execute, Quit, Reschedule, EndYield, GetSolarMutex,
           GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
     */
     static void                 Yield();
 
@@ -500,8 +492,6 @@ public:
 
      @see Execute, Quit, Reschedule, Yield, GetSolarMutex,
           GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
     */
     static void                 EndYield();
 
@@ -520,8 +510,6 @@ public:
 
      @see Execute, Quit, Reschedule, Yield, EndYield,
           GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
     */
     static comphelper::SolarMutex& GetSolarMutex();
 
@@ -531,8 +519,6 @@ public:
 
      @see Execute, Quit, Reschedule, Yield, EndYield, GetSolarMutex,
           ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
     */
     static oslThreadIdentifier  GetMainThreadIdentifier();
 
@@ -545,8 +531,6 @@ public:
 
      @see Execute, Quit, Reschedule, Yield, EndYield, GetSolarMutex,
           GetMainThreadIdentifier, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
     */
     static sal_uLong            ReleaseSolarMutex();
 
@@ -557,58 +541,8 @@ public:
 
      @see Execute, Quit, Reschedule, Yield, EndYield, GetSolarMutex,
           GetMainThreadIdentifier, ReleaseSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
     */
     static void                 AcquireSolarMutex( sal_uLong nCount );
-
-    /** @brief Enables "no yield" mode
-
-     "No yield" mode prevents Yield() from waiting for events.
-
-     @remarks This was originally implemented in OOo bug 98792 to improve
-        Impress slideshows.
-
-     @see DisableNoYieldMode, Execute, Quit, Reschedule, Yield, EndYield, GetSolarMutex,
-          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          DisableNoYield, AddPostYieldListener, RemovePostYieldListener
-    */
-    static void                 EnableNoYieldMode();
-
-    /** @brief Disables "no yield" mode
-
-     "No yield" mode prevents Yield() from waiting for events.
-
-     @remarks This was originally implemented in OOo bug 98792 to improve
-        Impress slideshows.
-
-     @see EnableNoYieldMode, Execute, Quit, Reschedule, Yield, EndYield, GetSolarMutex,
-          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYield, AddPostYieldListener, RemovePostYieldListener
-    */
-
-    static void                 DisableNoYieldMode();
-
-    /** Add a listener for yield events
-
-     @param  i_rListener     Listener to add
-
-     @see Execute, Quit, Reschedule, Yield, EndYield, GetSolarMutex,
-          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, RemovePostYieldListener
-    */
-    static void                 AddPostYieldListener( const Link<LinkParamNone*,void>& i_rListener );
-
-    /** Remove listener for yield events
-
-     @param  i_rListener     Listener to remove
-
-     @see Execute, Quit, Reschedule, Yield, EndYield, GetSolarMutex,
-          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          AddPostYieldListener, EnableNoYieldMode, DisableNoYieldMode
-    */
-    static void                 RemovePostYieldListener( const Link<LinkParamNone*,void>& i_rListener );
-
 
     /** Queries whether the application is in "main", i.e. not yet in
         the event loop
@@ -854,7 +788,7 @@ public:
 
      @return the event ID used to post the event.
     */
-    static ImplSVEvent * PostUserEvent( const Link<void*,void>& rLink, void* pCaller = NULL,
+    static ImplSVEvent * PostUserEvent( const Link<void*,void>& rLink, void* pCaller = nullptr,
                                         bool bReferenceLink = false );
 
     /** Remove user event based on event ID
@@ -1013,6 +947,11 @@ public:
      @returns The application name.
     */
     static OUString             GetAppName();
+
+    /** Get useful OS, Hardware and configuration information,
+     * cf. Help->About, and User-Agent
+     */
+    static OUString             GetHWOSConfInfo();
 
     /** Load a localized branding PNG file as a bitmap.
 
@@ -1185,7 +1124,7 @@ public:
 
      @see GetHelp
     */
-    static void                 SetHelp( Help* pHelp = NULL );
+    static void                 SetHelp( Help* pHelp = nullptr );
 
     /** Gets the application's help
 
@@ -1382,6 +1321,22 @@ public:
 
     ///@}
 
+    /** @name Event Testing Mode
+    */
+
+    /** Enables event testing mode.
+
+    */
+    static void                 EnableEventTestingMode();
+
+    /** Determines if event testing mode is enabled
+
+     @return True if event testing mode is enabled, false if not.
+    */
+    static bool                 IsEventTestingModeEnabled();
+
+    ///@}
+
     /** @name IME Status Window Control
     */
     ///@{
@@ -1481,15 +1436,20 @@ public:
     static css::uno::Reference< css::ui::dialogs::XFolderPicker2 >
         createFolderPicker( const css::uno::Reference< css::uno::XComponentContext >& rServiceManager );
 
+    /** Cancel all open dialogs
+    */
+    static void                 EndAllDialogs();
+
+    /** Cancel all open popups
+    */
+    static void                 EndAllPopups();
+
     ///@}
 
     // For vclbootstrapprotector:
     static void setDeInitHook(Link<LinkParamNone*,void> const & hook);
 
 private:
-
-    static void InitSettings(ImplSVData* pSVData);
-
     DECL_STATIC_LINK_TYPED( Application, PostEventHandler, void*, void );
 };
 
@@ -1497,8 +1457,8 @@ private:
 class VCL_DLLPUBLIC SolarMutexGuard
 {
 private:
-    SolarMutexGuard( const SolarMutexGuard& ) SAL_DELETED_FUNCTION;
-    const SolarMutexGuard& operator = ( const SolarMutexGuard& ) SAL_DELETED_FUNCTION;
+    SolarMutexGuard( const SolarMutexGuard& ) = delete;
+    const SolarMutexGuard& operator = ( const SolarMutexGuard& ) = delete;
     comphelper::SolarMutex& m_solarMutex;
 
 public:
@@ -1517,10 +1477,10 @@ public:
     }
 };
 
-class VCL_DLLPUBLIC SolarMutexClearableGuard SAL_FINAL
+class VCL_DLLPUBLIC SolarMutexClearableGuard final
 {
-    SolarMutexClearableGuard( const SolarMutexClearableGuard& ) SAL_DELETED_FUNCTION;
-    const SolarMutexClearableGuard& operator = ( const SolarMutexClearableGuard& ) SAL_DELETED_FUNCTION;
+    SolarMutexClearableGuard( const SolarMutexClearableGuard& ) = delete;
+    const SolarMutexClearableGuard& operator = ( const SolarMutexClearableGuard& ) = delete;
     bool m_bCleared;
 public:
     /** Acquires mutex
@@ -1555,10 +1515,10 @@ protected:
     comphelper::SolarMutex& m_solarMutex;
 };
 
-class VCL_DLLPUBLIC SolarMutexResettableGuard SAL_FINAL
+class VCL_DLLPUBLIC SolarMutexResettableGuard final
 {
-    SolarMutexResettableGuard( const SolarMutexResettableGuard& ) SAL_DELETED_FUNCTION;
-    const SolarMutexResettableGuard& operator = ( const SolarMutexResettableGuard& ) SAL_DELETED_FUNCTION;
+    SolarMutexResettableGuard( const SolarMutexResettableGuard& ) = delete;
+    const SolarMutexResettableGuard& operator = ( const SolarMutexResettableGuard& ) = delete;
     bool m_bCleared;
 public:
     /** Acquires mutex
@@ -1617,8 +1577,8 @@ private:
 #endif
     comphelper::SolarMutex& m_rSolarMutex;
 
-    SolarMutexTryAndBuyGuard(const SolarMutexTryAndBuyGuard&) SAL_DELETED_FUNCTION;
-    SolarMutexTryAndBuyGuard& operator=(const SolarMutexTryAndBuyGuard&) SAL_DELETED_FUNCTION;
+    SolarMutexTryAndBuyGuard(const SolarMutexTryAndBuyGuard&) = delete;
+    SolarMutexTryAndBuyGuard& operator=(const SolarMutexTryAndBuyGuard&) = delete;
 
 public:
 
@@ -1684,13 +1644,6 @@ VCL_DLLPUBLIC void JoinMainLoopThread();
 inline void Application::EndYield()
 {
     PostUserEvent( Link<void*,void>() );
-}
-
-namespace vcl
-{
-
-VCL_DLLPUBLIC bool IsWindowSystemAvailable();
-
 }
 
 #endif // _APP_HXX

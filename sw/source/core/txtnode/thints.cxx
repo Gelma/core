@@ -86,8 +86,7 @@
 using namespace ::com::sun::star::i18n;
 
 SwpHints::SwpHints()
-    : m_pHistory(0)
-    , m_bFontChange(true)
+    : m_pHistory(nullptr)
     , m_bInSplitNode(false)
     , m_bCalcHiddenParaField(false)
     , m_bHasHiddenParaField(false)
@@ -96,30 +95,20 @@ SwpHints::SwpHints()
 {
 }
 
-struct TextAttrDeleter
+static void TextAttrDelete( SwDoc & rDoc, SwTextAttr * const pAttr )
 {
-    SwAttrPool & m_rPool;
-    explicit TextAttrDeleter( SwDoc & rDoc ) : m_rPool( rDoc.GetAttrPool() ) { }
-    void operator() (SwTextAttr * const pAttr)
+    if (RES_TXTATR_META == pAttr->Which() ||
+        RES_TXTATR_METAFIELD == pAttr->Which())
     {
-        if (RES_TXTATR_META == pAttr->Which() ||
-            RES_TXTATR_METAFIELD == pAttr->Which())
-        {
-            static_txtattr_cast<SwTextMeta *>(pAttr)->ChgTextNode(0); // prevents ASSERT
-        }
-        SwTextAttr::Destroy( pAttr, m_rPool );
+        static_txtattr_cast<SwTextMeta *>(pAttr)->ChgTextNode(nullptr); // prevents ASSERT
     }
-};
+    SwTextAttr::Destroy( pAttr, rDoc.GetAttrPool() );
+}
 
-struct TextAttrContains
+static bool TextAttrContains(const sal_Int32 nPos, SwTextAttrEnd * const pAttr)
 {
-    sal_Int32 m_nPos;
-    explicit TextAttrContains( const sal_Int32 nPos ) : m_nPos( nPos ) { }
-    bool operator() (SwTextAttrEnd * const pAttr)
-    {
-        return (pAttr->GetStart() < m_nPos) && (m_nPos < *pAttr->End());
-    }
-};
+    return (pAttr->GetStart() < nPos) && (nPos < *pAttr->End());
+}
 
 // a:       |-----|
 // b:
@@ -264,7 +253,9 @@ lcl_DoSplitNew(NestList_t & rSplits, SwTextNode & rNode,
     // first find the portion that is split (not necessarily the last one!)
     NestList_t::iterator const iter(
         ::std::find_if( rSplits.begin(), rSplits.end(),
-            TextAttrContains(nSplitPos) ) );
+            [nSplitPos](SwTextAttrEnd * const pAttr) {
+                return TextAttrContains(nSplitPos, pAttr);
+            } ) );
     if (iter != rSplits.end()) // already split here?
     {
         const sal_Int32 nStartPos( // skip other's dummy character!
@@ -390,8 +381,8 @@ SwpHints::TryInsertNesting( SwTextNode & rNode, SwTextAttrNesting & rNewHint )
                 {
                     case FAIL:
                         SAL_INFO("sw.core", "cannot insert hint: overlap");
-                        ::std::for_each(SplitNew.begin(), SplitNew.end(),
-                            TextAttrDeleter(*rNode.GetDoc()));
+                        for (const auto& aSplit : SplitNew)
+                            TextAttrDelete(*rNode.GetDoc(), aSplit);
                         return false;
                     case SPLIT_NEW:
                         lcl_DoSplitNew(SplitNew, rNode, nNewStart,
@@ -731,7 +722,7 @@ void SwpHints::BuildPortions( SwTextNode& rNode, SwTextAttr& rNewHint,
             }
         }
 
-        SwTextAttr* pNewAttr = 0;
+        SwTextAttr* pNewAttr = nullptr;
         if ( RES_TXTATR_CHARFMT == nWhich )
         {
             // pNewHint can be inserted after calculating the sort value.
@@ -824,8 +815,8 @@ void SwpHints::BuildPortions( SwTextNode& rNode, SwTextAttr& rNewHint,
         else
         {
             // Find the current autostyle. Mix attributes if necessary.
-            SwTextAttr* pCurrentAutoStyle = 0;
-            SwTextAttr* pCurrentCharFormat = 0;
+            SwTextAttr* pCurrentAutoStyle = nullptr;
+            SwTextAttr* pCurrentCharFormat = nullptr;
             aIter = aInsDelHints.begin();
             while ( aIter != aInsDelHints.end() )
             {
@@ -855,16 +846,16 @@ void SwpHints::BuildPortions( SwTextNode& rNode, SwTextAttr& rNewHint,
 
                     do
                     {
-                        const SfxPoolItem* pTmpItem = 0;
+                        const SfxPoolItem* pTmpItem = nullptr;
                         if ( SfxItemState::SET == rWholeParaAttrSet.GetItemState( pItem->Which(), false, &pTmpItem ) &&
                              pTmpItem == pItem )
                         {
                             // Do not clear item if the attribute is set in a character format:
-                            if ( !pCurrentCharFormat || 0 == CharFormat::GetItem( *pCurrentCharFormat, pItem->Which() ) )
+                            if ( !pCurrentCharFormat || nullptr == CharFormat::GetItem( *pCurrentCharFormat, pItem->Which() ) )
                                 aNewSet.ClearItem( pItem->Which() );
                         }
                     }
-                    while (!aIter2.IsAtEnd() && 0 != (pItem = aIter2.NextItem()));
+                    while (!aIter2.IsAtEnd() && nullptr != (pItem = aIter2.NextItem()));
                 }
 
                 // Remove old hint
@@ -885,7 +876,7 @@ void SwpHints::BuildPortions( SwTextNode& rNode, SwTextAttr& rNewHint,
                 // #i81764# This should not be applied for no length attributes!!! <--
                 if ( !bNoLengthAttribute && rNode.HasSwAttrSet() && pNewStyle->Count() )
                 {
-                    SfxItemSet* pNewSet = 0;
+                    SfxItemSet* pNewSet = nullptr;
 
                     SfxItemIter aIter2( *pNewStyle );
                     const SfxPoolItem* pItem = aIter2.GetCurItem();
@@ -893,20 +884,20 @@ void SwpHints::BuildPortions( SwTextNode& rNode, SwTextAttr& rNewHint,
 
                     do
                     {
-                        const SfxPoolItem* pTmpItem = 0;
+                        const SfxPoolItem* pTmpItem = nullptr;
                         if ( SfxItemState::SET == rWholeParaAttrSet.GetItemState( pItem->Which(), false, &pTmpItem ) &&
                              pTmpItem == pItem )
                         {
                             // Do not clear item if the attribute is set in a character format:
-                            if ( !pCurrentCharFormat || 0 == CharFormat::GetItem( *pCurrentCharFormat, pItem->Which() ) )
+                            if ( !pCurrentCharFormat || nullptr == CharFormat::GetItem( *pCurrentCharFormat, pItem->Which() ) )
                             {
                                 if ( !pNewSet )
-                                    pNewSet = pNewStyle->Clone( true );
+                                    pNewSet = pNewStyle->Clone();
                                 pNewSet->ClearItem( pItem->Which() );
                             }
                         }
                     }
-                    while (!aIter2.IsAtEnd() && 0 != (pItem = aIter2.NextItem()));
+                    while (!aIter2.IsAtEnd() && nullptr != (pItem = aIter2.NextItem()));
 
                     if ( pNewSet )
                     {
@@ -1024,7 +1015,7 @@ SwTextAttr* MakeTextAttr(
     SfxPoolItem& rNew =
         const_cast<SfxPoolItem&>( rDoc.GetAttrPool().Put( rAttr ) );
 
-    SwTextAttr* pNew = 0;
+    SwTextAttr* pNew = nullptr;
     switch( rNew.Which() )
     {
     case RES_TXTATR_CHARFMT:
@@ -1144,7 +1135,7 @@ void SwTextNode::DestroyAttr( SwTextAttr* pAttr )
             break;
 
         case RES_TXTATR_FTN:
-            static_cast<SwTextFootnote*>(pAttr)->SetStartNode( 0 );
+            static_cast<SwTextFootnote*>(pAttr)->SetStartNode( nullptr );
             static_cast<SwFormatFootnote&>(pAttr->GetAttr()).InvalidateFootnote();
             break;
 
@@ -1204,7 +1195,7 @@ void SwTextNode::DestroyAttr( SwTextAttr* pAttr )
 
         case RES_TXTATR_META:
         case RES_TXTATR_METAFIELD:
-            static_txtattr_cast<SwTextMeta*>(pAttr)->ChgTextNode(0);
+            static_txtattr_cast<SwTextMeta*>(pAttr)->ChgTextNode(nullptr);
             break;
 
         default:
@@ -1221,7 +1212,7 @@ SwTextAttr* SwTextNode::InsertItem(
     const sal_Int32 nEnd,
     const SetAttrMode nMode )
 {
-   // character attributes will be inserted as automatic styles:
+    // character attributes will be inserted as automatic styles:
     OSL_ENSURE( !isCHRATR(rAttr.Which()), "AUTOSTYLES - "
         "SwTextNode::InsertItem should not be called with character attributes");
 
@@ -1242,7 +1233,7 @@ SwTextAttr* SwTextNode::InsertItem(
         // insertion, and thus destroyed!
         if (!bSuccess || !m_pSwpHints->Contains( pNew ))
         {
-            return 0;
+            return nullptr;
         }
     }
 
@@ -1279,12 +1270,12 @@ bool SwTextNode::InsertHint( SwTextAttr * const pAttr, const SetAttrMode nMode )
                 if( !(SetAttrMode::NOTXTATRCHR & nInsMode) )
                 {
                     // Wir muessen zuerst einfuegen, da in SetAnchor()
-                    // dem FlyFrm GetStart() uebermittelt wird.
+                    // dem FlyFrame GetStart() uebermittelt wird.
                     //JP 11.05.98: falls das Anker-Attribut schon richtig
                     // gesetzt ist, dann korrigiere dieses nach dem Einfuegen
                     // des Zeichens. Sonst muesste das immer  ausserhalb
                     // erfolgen (Fehleranfaellig !)
-                    const SwFormatAnchor* pAnchor = 0;
+                    const SwFormatAnchor* pAnchor = nullptr;
                     pFormat->GetItemState( RES_ANCHOR, false,
                         reinterpret_cast<const SfxPoolItem**>(&pAnchor) );
 
@@ -1387,12 +1378,12 @@ bool SwTextNode::InsertHint( SwTextAttr * const pAttr, const SetAttrMode nMode )
                 }
 
                 // wird eine neue Fussnote eingefuegt ??
-                bool bNewFootnote = 0 == static_cast<SwTextFootnote*>(pAttr)->GetStartNode();
+                bool bNewFootnote = nullptr == static_cast<SwTextFootnote*>(pAttr)->GetStartNode();
                 if( bNewFootnote )
                 {
                     static_cast<SwTextFootnote*>(pAttr)->MakeNewTextSection( GetNodes() );
                     SwRegHistory* pHist = GetpSwpHints()
-                        ? GetpSwpHints()->GetHistory() : 0;
+                        ? GetpSwpHints()->GetHistory() : nullptr;
                     if( pHist )
                         pHist->ChangeNodeIndex( GetIndex() );
                 }
@@ -1405,8 +1396,8 @@ bool SwTextNode::InsertHint( SwTextAttr * const pAttr, const SetAttrMode nMode )
                     for( ; nSttIdx < nEndIdx; ++nSttIdx )
                     {
                         SwContentNode* pCNd = rNodes[ nSttIdx ]->GetContentNode();
-                        if( 0 != pCNd )
-                            pCNd->DelFrms();
+                        if( nullptr != pCNd )
+                            pCNd->DelFrames();
                     }
                 }
 
@@ -1427,7 +1418,7 @@ bool SwTextNode::InsertHint( SwTextAttr * const pAttr, const SetAttrMode nMode )
                 }
 
                 // Wir tragen uns am FootnoteIdx-Array des Docs ein ...
-                SwTextFootnote* pTextFootnote = 0;
+                SwTextFootnote* pTextFootnote = nullptr;
                 if( !bNewFootnote )
                 {
                     // eine alte Footnote wird umgehaengt (z.B. SplitNode)
@@ -1522,8 +1513,8 @@ bool SwTextNode::InsertHint( SwTextAttr * const pAttr, const SetAttrMode nMode )
                         InsertText( OUString(CH_TXT_ATR_INPUTFIELDEND), aIdx, nInsertFlags );
 
                         sal_Int32* const pEnd(pAttr->GetEnd());
-                        OSL_ENSURE( pEnd != NULL, "<SwTextNode::InsertHint(..)> - missing end of RES_TXTATR_INPUTFIELD!" );
-                        if ( pEnd != NULL )
+                        OSL_ENSURE( pEnd != nullptr, "<SwTextNode::InsertHint(..)> - missing end of RES_TXTATR_INPUTFIELD!" );
+                        if ( pEnd != nullptr )
                         {
                             *pEnd = *pEnd + 2 + aContent.getLength();
                             nEnd = *pEnd;
@@ -1538,8 +1529,8 @@ bool SwTextNode::InsertHint( SwTextAttr * const pAttr, const SetAttrMode nMode )
                             InsertText( OUString(CH_TXT_ATR_INPUTFIELDSTART), aIdx, nInsertFlags );
                             bInputFieldStartCharInserted = true;
                             sal_Int32* const pEnd(pAttr->GetEnd());
-                            OSL_ENSURE( pEnd != NULL, "<SwTextNode::InsertHint(..)> - missing end of RES_TXTATR_INPUTFIELD!" );
-                            if ( pEnd != NULL )
+                            OSL_ENSURE( pEnd != nullptr, "<SwTextNode::InsertHint(..)> - missing end of RES_TXTATR_INPUTFIELD!" );
+                            if ( pEnd != nullptr )
                             {
                                 *pEnd = *pEnd + 1;
                                 nEnd = *pEnd;
@@ -1547,8 +1538,8 @@ bool SwTextNode::InsertHint( SwTextAttr * const pAttr, const SetAttrMode nMode )
                         }
 
                         sal_Int32* const pEnd(pAttr->GetEnd());
-                        OSL_ENSURE( pEnd != NULL, "<SwTextNode::InsertHint(..)> - missing end of RES_TXTATR_INPUTFIELD!" );
-                        if ( pEnd != NULL
+                        OSL_ENSURE( pEnd != nullptr, "<SwTextNode::InsertHint(..)> - missing end of RES_TXTATR_INPUTFIELD!" );
+                        if ( pEnd != nullptr
                              && m_Text[ *(pEnd) - 1 ] != CH_TXT_ATR_INPUTFIELDEND )
                         {
                             SwIndex aIdx( this, *(pEnd) );
@@ -1572,9 +1563,9 @@ bool SwTextNode::InsertHint( SwTextAttr * const pAttr, const SetAttrMode nMode )
     bool bInsertHint = true;
     {
         const SwTextInputField* pTextInputField = GetOverlappingInputField( *pAttr );
-        if ( pTextInputField != NULL )
+        if ( pTextInputField != nullptr )
         {
-            if ( pAttr->End() == NULL )
+            if ( pAttr->End() == nullptr )
             {
                 bInsertHint = false;
             }
@@ -1664,7 +1655,7 @@ void SwTextNode::DeleteAttribute( SwTextAttr * const pAttr )
     else if ( pAttr->HasContent() )
     {
         const SwIndex aIdx( this, pAttr->GetStart() );
-        OSL_ENSURE( pAttr->End() != NULL, "<SwTextNode::DeleteAttribute(..)> - missing End() at <SwTextAttr> instance which has content" );
+        OSL_ENSURE( pAttr->End() != nullptr, "<SwTextNode::DeleteAttribute(..)> - missing End() at <SwTextAttr> instance which has content" );
         EraseText( aIdx, *pAttr->End() - pAttr->GetStart() );
     }
     else
@@ -1677,7 +1668,7 @@ void SwTextNode::DeleteAttribute( SwTextAttr * const pAttr )
 
         m_pSwpHints->Delete( pAttr );
         SwTextAttr::Destroy( pAttr, GetDoc()->GetAttrPool() );
-        NotifyClients( 0, &aHint );
+        NotifyClients( nullptr, &aHint );
 
         TryDeleteSwpHints();
     }
@@ -1738,7 +1729,7 @@ void SwTextNode::DeleteAttributes(
             else if ( pTextHt->HasContent() )
             {
                 const SwIndex aIdx( this, nStart );
-                OSL_ENSURE( pTextHt->End() != NULL, "<SwTextNode::DeleteAttributes(..)> - missing End() at <SwTextAttr> instance which has content" );
+                OSL_ENSURE( pTextHt->End() != nullptr, "<SwTextNode::DeleteAttributes(..)> - missing End() at <SwTextAttr> instance which has content" );
                 EraseText( aIdx, *pTextHt->End() - nStart );
             }
             else if( *pEndIdx == nEnd )
@@ -1754,7 +1745,7 @@ void SwTextNode::DeleteAttributes(
 
                 m_pSwpHints->DeleteAtPos( nPos );    // gefunden, loeschen,
                 SwTextAttr::Destroy( pTextHt, GetDoc()->GetAttrPool() );
-                NotifyClients( 0, &aHint );
+                NotifyClients( nullptr, &aHint );
             }
         }
     }
@@ -1932,7 +1923,7 @@ bool SwTextNode::SetAttr(
                      static_cast<const SwFormatCharFormat*>(pItem)->GetCharFormat()))
                 {
                     SwIndex aIndex( this, nStt );
-                    RstTextAttr( aIndex, nEnd - nStt, RES_TXTATR_CHARFMT, 0 );
+                    RstTextAttr( aIndex, nEnd - nStt, RES_TXTATR_CHARFMT );
                     DontExpandFormat( aIndex );
                 }
                 else
@@ -1995,7 +1986,7 @@ static void lcl_MergeAttr( SfxItemSet& rSet, const SfxPoolItem& rAttr )
         {
             if( ( nWhich < RES_CHRATR_END ||
                   RES_TXTATR_UNKNOWN_CONTAINER == nWhich ) &&
-                ( SfxItemState::SET == pCFSet->GetItemState( nWhich, true ) ) )
+                ( SfxItemState::SET == pCFSet->GetItemState( nWhich ) ) )
                 rSet.Put( pCFSet->Get( nWhich ) );
             nWhich = aIter.NextWhich();
         }
@@ -2020,7 +2011,7 @@ static void lcl_MergeAttr_ExpandChrFormat( SfxItemSet& rSet, const SfxPoolItem& 
             {
                 if( ( nWhich < RES_CHRATR_END ||
                       ( RES_TXTATR_AUTOFMT == rAttr.Which() && RES_TXTATR_UNKNOWN_CONTAINER == nWhich ) ) &&
-                    ( SfxItemState::SET == pCFSet->GetItemState( nWhich, true ) ) )
+                    ( SfxItemState::SET == pCFSet->GetItemState( nWhich ) ) )
                     rSet.Put( pCFSet->Get( nWhich ) );
                 nWhich = aIter.NextWhich();
             }
@@ -2046,7 +2037,7 @@ public:
     const SfxPoolItem* mpItem;
     sal_Int32 mnEndPos;
 
-    SwPoolItemEndPair() : mpItem( 0 ), mnEndPos( 0 ) {};
+    SwPoolItemEndPair() : mpItem( nullptr ), mnEndPos( 0 ) {};
 };
 
 static void lcl_MergeListLevelIndentAsLRSpaceItem( const SwTextNode& rTextNode,
@@ -2165,7 +2156,7 @@ bool SwTextNode::GetAttr( SfxItemSet& rSet, sal_Int32 nStt, sal_Int32 nEnd,
                 {
                     // uneindeutig ?
                     std::unique_ptr< SfxItemIter > pItemIter;
-                    const SfxPoolItem* pItem = 0;
+                    const SfxPoolItem* pItem = nullptr;
 
                     if ( RES_TXTATR_AUTOFMT == pHt->Which() )
                     {
@@ -2239,7 +2230,7 @@ bool SwTextNode::GetAttr( SfxItemSet& rSet, sal_Int32 nStt, sal_Int32 nEnd,
                         }
 
                         pItem = ( pItemIter.get() && !pItemIter->IsAtEnd() )
-                                    ? pItemIter->NextItem() : 0;
+                                    ? pItemIter->NextItem() : nullptr;
                     } // end while
                 }
             }
@@ -2249,7 +2240,7 @@ bool SwTextNode::GetAttr( SfxItemSet& rSet, sal_Int32 nStt, sal_Int32 nEnd,
                 for (size_t n = 0; n < coArrSz; ++n)
                 {
                     const SwPoolItemEndPair& rItemPair = (*pAttrArr)[ n ];
-                    if( (0 != rItemPair.mpItem) && (reinterpret_cast<SfxPoolItem*>(-1) != rItemPair.mpItem) )
+                    if( (nullptr != rItemPair.mpItem) && (reinterpret_cast<SfxPoolItem*>(-1) != rItemPair.mpItem) )
                     {
                         const sal_uInt16 nWh =
                             static_cast<sal_uInt16>(n + RES_CHRATR_BEGIN);
@@ -2519,7 +2510,7 @@ void SwTextNode::FormatToTextAttr( SwTextNode* pNd )
         if( aThisSet.Count() )
         {
             SfxItemIter aIter( aThisSet );
-            const SfxPoolItem* pItem = aIter.GetCurItem(), *pNdItem = 0;
+            const SfxPoolItem* pItem = aIter.GetCurItem(), *pNdItem = nullptr;
             SfxItemSet aConvertSet( GetDoc()->GetAttrPool(), aCharFormatSetRange );
             std::vector<sal_uInt16> aClearWhichIds;
 
@@ -3025,7 +3016,7 @@ bool SwpHints::TryInsertHint(
     case RES_TXTATR_INPUTFIELD:
         {
             SwTextField *const pTextField(static_txtattr_cast<SwTextField*>(pHint));
-            bool bDelFirst = 0 != pTextField->GetpTextNode();
+            bool bDelFirst = nullptr != pTextField->GetpTextNode();
             pTextField->ChgTextNode( &rNode );
             SwDoc* pDoc = rNode.GetDoc();
             const SwField* pField = pTextField->GetFormatField().GetField();
@@ -3111,14 +3102,14 @@ bool SwpHints::TryInsertHint(
         {
             // search for a reference with the same name
             SwTextAttr* pTmpHt;
-            sal_Int32 *pTmpHtEnd;
-            sal_Int32 *pTmpHintEnd;
             for( size_t n = 0, nEnd = Count(); n < nEnd; ++n )
             {
+                sal_Int32 *pTmpHtEnd;
+                sal_Int32 *pTmpHintEnd;
                 if (RES_TXTATR_REFMARK == (pTmpHt = Get(n))->Which() &&
                     pHint->GetAttr() == pTmpHt->GetAttr() &&
-                    0 != ( pTmpHtEnd = pTmpHt->GetEnd() ) &&
-                    0 != ( pTmpHintEnd = pHint->GetEnd() ) )
+                    nullptr != ( pTmpHtEnd = pTmpHt->GetEnd() ) &&
+                    nullptr != ( pTmpHintEnd = pHint->GetEnd() ) )
                 {
                     SwComparePosition eCmp = ::ComparePosition(
                             pTmpHt->GetStart(), *pTmpHtEnd,
@@ -3195,7 +3186,7 @@ bool SwpHints::TryInsertHint(
                 nHtStart,
                 nWhich);
 
-            rNode.ModifyNotification(0,&aHint);
+            rNode.ModifyNotification(nullptr,&aHint);
         }
 
         return true;
@@ -3279,7 +3270,7 @@ bool SwpHints::TryInsertHint(
             nHtStart == nHintEnd ? nHintEnd + 1 : nHintEnd,
             nWhich);
 
-        rNode.ModifyNotification( 0, &aHint );
+        rNode.ModifyNotification( nullptr, &aHint );
     }
 
 #ifdef DBG_UTIL
@@ -3315,7 +3306,7 @@ void SwpHints::DeleteAtPos( const size_t nPos )
             const SwTextNode* pNd = pTextField->GetpTextNode();
             if( pNd && pNd->GetNodes().IsDocNodes() )
                 const_cast<SwDDEFieldType*>(static_cast<const SwDDEFieldType*>(pFieldTyp))->DecRefCnt();
-            pTextField->ChgTextNode(0);
+            pTextField->ChgTextNode(nullptr);
         }
         else if ( m_bHasHiddenParaField &&
                  RES_HIDDENPARAFLD == pFieldTyp->Which() )

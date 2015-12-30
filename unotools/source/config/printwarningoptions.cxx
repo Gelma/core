@@ -59,7 +59,7 @@ public:
 
 //  override methods of baseclass
 
-    virtual void    Notify( const com::sun::star::uno::Sequence< OUString >& aPropertyNames ) SAL_OVERRIDE;
+    virtual void    Notify( const css::uno::Sequence< OUString >& aPropertyNames ) override;
 
 //  public interface
 
@@ -77,7 +77,7 @@ public:
 
 private:
 
-    virtual void ImplCommit() SAL_OVERRIDE;
+    virtual void ImplCommit() override;
 
     static Sequence< OUString > impl_GetPropertyNames();
 
@@ -225,7 +225,7 @@ Sequence< OUString > SvtPrintWarningOptions_Impl::impl_GetPropertyNames()
 //  DON'T DO IT IN YOUR HEADER!
 //  see definition for further information
 
-SvtPrintWarningOptions_Impl*    SvtPrintWarningOptions::m_pDataContainer = NULL;
+SvtPrintWarningOptions_Impl*    SvtPrintWarningOptions::m_pDataContainer = nullptr;
 sal_Int32                       SvtPrintWarningOptions::m_nRefCount = 0;
 
 //  constructor
@@ -237,7 +237,7 @@ SvtPrintWarningOptions::SvtPrintWarningOptions()
     // Increase our refcount ...
     ++m_nRefCount;
     // ... and initialize our data container only if it not already!
-    if( m_pDataContainer == NULL )
+    if( m_pDataContainer == nullptr )
     {
         m_pDataContainer = new SvtPrintWarningOptions_Impl();
         ItemHolder1::holdConfigItem(E_PRINTWARNINGOPTIONS);
@@ -257,7 +257,7 @@ SvtPrintWarningOptions::~SvtPrintWarningOptions()
     if( m_nRefCount <= 0 )
     {
         delete m_pDataContainer;
-        m_pDataContainer = NULL;
+        m_pDataContainer = nullptr;
     }
 }
 

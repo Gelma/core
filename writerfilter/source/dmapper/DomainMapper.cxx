@@ -31,6 +31,7 @@
 #include <oox/drawingml/drawingmltypes.hxx>
 #include <com/sun/star/document/XDocumentPropertiesSupplier.hpp>
 #include <com/sun/star/document/XOOXMLDocumentPropertiesImporter.hpp>
+#include <com/sun/star/drawing/TextVerticalAdjust.hpp>
 #include <com/sun/star/table/ShadowFormat.hpp>
 #include <com/sun/star/text/HoriOrientation.hpp>
 #include <com/sun/star/text/RelOrientation.hpp>
@@ -65,6 +66,7 @@
 #include <comphelper/storagehelper.hxx>
 #include <comphelper/sequence.hxx>
 #include <filter/msfilter/util.hxx>
+#include <sfx2/DocumentMetadataAccess.hxx>
 #include <unotools/mediadescriptor.hxx>
 
 #include <TextEffectsHandler.hxx>
@@ -94,12 +96,11 @@ DomainMapper::DomainMapper( const uno::Reference< uno::XComponentContext >& xCon
                             uno::Reference<lang::XComponent> const& xModel,
                             bool bRepairStorage,
                             SourceDocumentType eDocumentType,
-                            uno::Reference<text::XTextRange> const& xInsertTextRange,
                             utl::MediaDescriptor& rMediaDesc) :
     LoggedProperties("DomainMapper"),
     LoggedTable("DomainMapper"),
     LoggedStream("DomainMapper"),
-    m_pImpl( new DomainMapper_Impl( *this, xContext, xModel, eDocumentType, xInsertTextRange, !rMediaDesc.getUnpackedValueOrDefault("InsertMode", false))),
+    m_pImpl(new DomainMapper_Impl(*this, xContext, xModel, eDocumentType, rMediaDesc)),
     mbIsSplitPara(false)
 {
     // #i24363# tab stops relative to indent
@@ -115,6 +116,22 @@ DomainMapper::DomainMapper( const uno::Reference< uno::XComponentContext >& xCon
 
     // Don't load the default style definitions to avoid weird mix
     m_pImpl->SetDocumentSettingsProperty("StylesNoDefault", uno::makeAny(true));
+
+    // Initialize RDF metadata, to be able to add statements during the import.
+    try
+    {
+        uno::Reference<rdf::XDocumentMetadataAccess> xDocumentMetadataAccess(xModel, uno::UNO_QUERY_THROW);
+        uno::Reference<embed::XStorage> xStorage(comphelper::OStorageHelper::GetStorageOfFormatFromInputStream(OFOPXML_STORAGE_FORMAT_STRING, xInputStream, xContext, bRepairStorage));
+        OUString aBaseURL = rMediaDesc.getUnpackedValueOrDefault("URL", OUString());
+        OUString aStreamPath;
+        const uno::Reference<rdf::XURI> xBaseURI(sfx2::createBaseURI(xContext, xStorage, aBaseURL, aStreamPath));
+        const uno::Reference<task::XInteractionHandler> xHandler;
+        xDocumentMetadataAccess->loadMetadataFromStorage(xStorage, xBaseURI, xHandler);
+    }
+    catch (const uno::Exception& rException)
+    {
+        SAL_WARN("writerfilter", "DomainMapper::DomainMapper: failed to initialize RDF metadata: " << rException.Message);
+    }
 
     //import document properties
     try
@@ -627,8 +644,10 @@ void DomainMapper::lcl_attribute(Id nName, Value & val)
         }
         break;
         case NS_ooxml::LN_CT_SmartTagRun_uri:
+            m_pImpl->getSmartTagHandler().setURI(val.getString());
+        break;
         case NS_ooxml::LN_CT_SmartTagRun_element:
-            //TODO: add handling of SmartTags
+            m_pImpl->getSmartTagHandler().setElement(val.getString());
         break;
         case NS_ooxml::LN_CT_Br_type :
             //TODO: attributes for break (0x12) are not supported
@@ -1265,9 +1284,9 @@ void DomainMapper::sprmWithProps( Sprm& rSprm, PropertyMapPtr rContext )
             default:;
             }
             if( eBorderId )
-                rContext->Insert( eBorderId, uno::makeAny( pBorderHandler->getBorderLine()) , true);
+                rContext->Insert( eBorderId, uno::makeAny( pBorderHandler->getBorderLine()) );
             if(eBorderDistId)
-                rContext->Insert(eBorderDistId, uno::makeAny( pBorderHandler->getLineDistance()), true);
+                rContext->Insert(eBorderDistId, uno::makeAny( pBorderHandler->getLineDistance()));
             if (nSprmId == NS_ooxml::LN_CT_PBdr_right && pBorderHandler->getShadow())
             {
                 table::ShadowFormat aFormat = writerfilter::dmapper::PropertyMap::getShadowFromBorder(pBorderHandler->getBorderLine());
@@ -1374,12 +1393,12 @@ void DomainMapper::sprmWithProps( Sprm& rSprm, PropertyMapPtr rContext )
             if (nIntValue != 0)
             {
                 rContext->Insert(PROP_WRITING_MODE, uno::makeAny( text::WritingMode2::RL_TB ));
-                rContext->Insert(PROP_PARA_ADJUST, uno::makeAny( style::ParagraphAdjust_RIGHT ));
+                rContext->Insert(PROP_PARA_ADJUST, uno::makeAny( style::ParagraphAdjust_RIGHT ), /*bOverwrite=*/false);
             }
             else
             {
                 rContext->Insert(PROP_WRITING_MODE, uno::makeAny( text::WritingMode2::LR_TB ));
-                rContext->Insert(PROP_PARA_ADJUST, uno::makeAny( style::ParagraphAdjust_LEFT ));
+                rContext->Insert(PROP_PARA_ADJUST, uno::makeAny( style::ParagraphAdjust_LEFT ), /*bOverwrite=*/false);
             }
         }
 
@@ -2305,7 +2324,31 @@ void DomainMapper::sprmWithProps( Sprm& rSprm, PropertyMapPtr rContext )
         rContext->Insert(PROP_MIRROR_INDENTS, uno::makeAny( nIntValue != 0 ), true, PARA_GRAB_BAG);
     break;
     case NS_ooxml::LN_EG_SectPrContents_formProt: //section protection, only form editing is enabled - unsupported
+    break;
     case NS_ooxml::LN_EG_SectPrContents_vAlign:
+    {
+        OSL_ENSURE(pSectionContext, "SectionContext unavailable!");
+        if( pSectionContext )
+        {
+            drawing::TextVerticalAdjust nVA = drawing::TextVerticalAdjust_TOP;
+            switch( nIntValue )
+            {
+                case NS_ooxml::LN_Value_ST_VerticalJc_center: //92367
+                    nVA = drawing::TextVerticalAdjust_CENTER;
+                    break;
+                case NS_ooxml::LN_Value_ST_VerticalJc_both:   //92368 - justify
+                    nVA = drawing::TextVerticalAdjust_BLOCK;
+                    break;
+                case NS_ooxml::LN_Value_ST_VerticalJc_bottom: //92369
+                    nVA = drawing::TextVerticalAdjust_BOTTOM;
+                    break;
+                default:
+                    break;
+            }
+            pSectionContext->Insert( PROP_TEXT_VERTICAL_ADJUST, uno::makeAny( nVA ), true, PARA_GRAB_BAG );
+        }
+    }
+    break;
     case NS_ooxml::LN_EG_RPrBase_fitText:
     break;
     case NS_ooxml::LN_ffdata:
@@ -2614,6 +2657,13 @@ void DomainMapper::sprmWithProps( Sprm& rSprm, PropertyMapPtr rContext )
                 break;
         }
         m_pImpl->SetRubyInfo(aInfo);
+    }
+    break;
+    case NS_ooxml::LN_CT_SmartTagRun_smartTagPr:
+    {
+        writerfilter::Reference<Properties>::Pointer_t pProperties = rSprm.getProps();
+        if (pProperties.get() && m_pImpl->GetTopContextType() == CONTEXT_PARAGRAPH)
+            pProperties->resolve(m_pImpl->getSmartTagHandler());
     }
     break;
     default:

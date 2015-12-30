@@ -32,11 +32,9 @@ namespace connectivity
 
         public:
             OBoundParam()
-                : binaryData(NULL)
+                : binaryData(nullptr)
                 , paramLength(0)
                 , paramInputStreamLen(0)
-                , sqlType(::com::sun::star::sdbc::DataType::SQLNULL)
-                , outputParameter(false)
             {
             }
             ~OBoundParam()
@@ -51,11 +49,11 @@ namespace connectivity
             void* allocBindDataBuffer (sal_Int32 bufLen)
             {
                 // Reset the input stream and sequence, we are doing a new bind
-                setInputStream (NULL, 0);
+                setInputStream (nullptr, 0);
                 aSequence.realloc(0);
 
                 free(binaryData);
-                binaryData = (bufLen > 0) ? malloc(bufLen) : NULL;
+                binaryData = (bufLen > 0) ? malloc(bufLen) : nullptr;
 
                 return binaryData;
             }
@@ -125,12 +123,7 @@ namespace connectivity
                                         // until not needed anymore.
 
             sal_Int32 paramInputStreamLen;                // Length of input stream
-
-            sal_Int32 sqlType;                          // Java SQL type used to
-                                                            // register an OUT parameter
-
-            bool outputParameter;   // true for OUTPUT parameters
-        };
+       };
     }
 }
 #endif // INCLUDED_CONNECTIVITY_SOURCE_INC_ODBC_OBOUNDPARAM_HXX

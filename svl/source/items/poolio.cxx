@@ -27,6 +27,7 @@
 #include <svl/SfxBroadcaster.hxx>
 #include <svl/filerec.hxx>
 #include "poolio.hxx"
+#include <algorithm>
 #include <memory>
 
 /**
@@ -122,7 +123,7 @@ static SfxItemKind convertUInt16ToSfxItemKind(sal_uInt16 x)
 SvStream &SfxItemPool::Store(SvStream &rStream) const
 {
     // Find StoreMaster
-    SfxItemPool *pStoreMaster = pImp->mpMaster != this ? pImp->mpMaster : 0;
+    SfxItemPool *pStoreMaster = pImp->mpMaster != this ? pImp->mpMaster : nullptr;
     while ( pStoreMaster && !pStoreMaster->pImp->bStreaming )
         pStoreMaster = pStoreMaster->pImp->mpSecondary;
 
@@ -197,7 +198,7 @@ SvStream &SfxItemPool::Store(SvStream &rStream) const
                 // ! Poolable is not even saved in the Pool
                 // And itemsets/plain-items depending on the round
                 if ( *itrArr && IsItemFlag(**ppDefItem, SfxItemPoolFlags::POOLABLE) &&
-                     pImp->bInSetItem == (bool) (*ppDefItem)->ISA(SfxSetItem) )
+                     pImp->bInSetItem == (dynamic_cast< const SfxSetItem* >(*ppDefItem) !=  nullptr) )
                 {
                     // Own signature, global WhichId and ItemVersion
                     sal_uInt16 nSlotId = GetSlotId( (*ppDefItem)->Which(), false );
@@ -232,7 +233,7 @@ SvStream &SfxItemPool::Store(SvStream &rStream) const
                             else
                                 break;
 #ifdef DBG_UTIL_MI
-                            if ( !pItem->ISA(SfxSetItem) )
+                            if ( dynamic_cast<const SfxSetItem*>( pItem ) ==  nullptr )
                             {
                                 sal_uLong nMark = rStream.Tell();
                                 rStream.Seek( nItemStartPos + sizeof(sal_uInt16) );
@@ -280,7 +281,7 @@ SvStream &SfxItemPool::Store(SvStream &rStream) const
     }
 
     // Write out additional Pools
-    pStoringPool_ = 0;
+    pStoringPool_ = nullptr;
     aPoolRec.Close();
     if ( !rStream.GetError() && pImp->mpSecondary )
         pImp->mpSecondary->Store( rStream );
@@ -364,7 +365,7 @@ void SfxItemPool_Impl::readTheItems (
     SfxMultiRecordReader aItemsRec( &rStream, SFX_ITEMPOOL_REC_ITEMS );
 
     SfxPoolItemArray_Impl *pNewArr = new SfxPoolItemArray_Impl();
-    SfxPoolItem *pItem = 0;
+    SfxPoolItem *pItem = nullptr;
 
     sal_uLong n, nLastSurrogate = sal_uLong(-1);
     while (aItemsRec.GetContent())
@@ -376,7 +377,7 @@ void SfxItemPool_Impl::readTheItems (
 
         // Fill up missing ones
         // coverity[tainted_data] - ignore this, though we should finally kill off this format
-        for ( pItem = 0, n = nLastSurrogate+1; n < nSurrogate; ++n )
+        for ( pItem = nullptr, n = nLastSurrogate+1; n < nSurrogate; ++n )
             pNewArr->push_back( pItem );
         nLastSurrogate = nSurrogate;
 
@@ -400,7 +401,7 @@ void SfxItemPool_Impl::readTheItems (
     }
 
     // Fill up missing ones
-    for ( pItem = 0, n = nLastSurrogate+1; n < nItemCount; ++n )
+    for ( pItem = nullptr, n = nLastSurrogate+1; n < nItemCount; ++n )
         pNewArr->push_back( pItem );
 
     SfxPoolItemArray_Impl *pOldArr = *ppArr;
@@ -408,10 +409,10 @@ void SfxItemPool_Impl::readTheItems (
 
     // Remember items that are already in the pool
     bool bEmpty = true;
-    if ( 0 != pOldArr )
+    if ( nullptr != pOldArr )
         for ( n = 0; bEmpty && n < pOldArr->size(); ++n )
-            bEmpty = pOldArr->operator[](n) == 0;
-    DBG_ASSERTWARNING( bEmpty, "loading non-empty pool" );
+            bEmpty = pOldArr->operator[](n) == nullptr;
+    SAL_WARN_IF( !bEmpty, "svl", "loading non-empty pool" );
     if ( !bEmpty )
     {
         // See if there's a new one for all old ones
@@ -480,7 +481,7 @@ SvStream &SfxItemPool::Load(SvStream &rStream)
                 for( size_t n = (*itrItemArr)->size(); n; --n, ++ppHtArr )
                     if (*ppHtArr)
                     {
-                        DBG_WARNING( "loading non-empty ItemPool" );
+                        SAL_INFO( "svl", "loading non-empty ItemPool" );
 
                         AddRef( **ppHtArr );
                     }
@@ -492,7 +493,7 @@ SvStream &SfxItemPool::Load(SvStream &rStream)
     }
 
     // Find LoadMaster
-    SfxItemPool *pLoadMaster = pImp->mpMaster != this ? pImp->mpMaster : 0;
+    SfxItemPool *pLoadMaster = pImp->mpMaster != this ? pImp->mpMaster : nullptr;
     while ( pLoadMaster && !pLoadMaster->pImp->bStreaming )
         pLoadMaster = pLoadMaster->pImp->mpSecondary;
 
@@ -646,7 +647,7 @@ SvStream &SfxItemPool::Load(SvStream &rStream)
 
             // SfxSetItems could contain Items from secondary Pools
             SfxPoolItem *pDefItem = *(pImp->ppStaticDefaults + nIndex);
-            pImp->bInSetItem = pDefItem->ISA(SfxSetItem);
+            pImp->bInSetItem = dynamic_cast<const SfxSetItem*>( pDefItem ) !=  nullptr;
             if ( !bSecondaryLoaded && pImp->mpSecondary && pImp->bInSetItem )
             {
                 // Seek to end of own Pool
@@ -779,13 +780,13 @@ const SfxPoolItem* SfxItemPool::LoadSurrogate
 
     // Is item stored directly?
     if ( SFX_ITEMS_DIRECT == nSurrogat )
-        return 0;
+        return nullptr;
 
     // Item does not exist?
     if ( SFX_ITEMS_NULL == nSurrogat )
     {
         rWhich = 0;
-        return 0;
+        return nullptr;
     }
 
     // If the Pool in the stream has the same structure, the surrogate
@@ -810,7 +811,7 @@ const SfxPoolItem* SfxItemPool::LoadSurrogate
     // Can the surrogate be resolved?
     if ( bResolvable )
     {
-        const SfxPoolItem *pItem = 0;
+        const SfxPoolItem *pItem = nullptr;
         for ( SfxItemPool *pTarget = this; pTarget; pTarget = pTarget->pImp->mpSecondary )
         {
             // Found the right (Range-)Pool?
@@ -825,12 +826,12 @@ const SfxPoolItem* SfxItemPool::LoadSurrogate
                     pTarget->pImp->maPoolItems[pTarget->GetIndex_Impl(rWhich)];
                 pItem = pItemArr && nSurrogat < pItemArr->size()
                             ? (*pItemArr)[nSurrogat]
-                            : 0;
+                            : nullptr;
                 if ( !pItem )
                 {
                     OSL_FAIL( "can't resolve surrogate" );
                     rWhich = 0; // Just to be sure; for the right StreamPos
-                    return 0;
+                    return nullptr;
                 }
 
                 // Reload from RefPool?
@@ -850,7 +851,7 @@ const SfxPoolItem* SfxItemPool::LoadSurrogate
         SFX_ASSERT( false, rWhich, "can't resolve Which-Id in LoadSurrogate" );
     }
 
-    return 0;
+    return nullptr;
 }
 
 
@@ -1159,10 +1160,10 @@ bool SfxItemPool::StoreItem( SvStream &rStream, const SfxPoolItem &rItem,
 
     const SfxItemPool *pPool = this;
     while ( !pPool->IsInStoringRange(rItem.Which()) )
-        if ( 0 == ( pPool = pPool->pImp->mpSecondary ) )
+        if ( nullptr == ( pPool = pPool->pImp->mpSecondary ) )
             return false;
 
-    DBG_ASSERT( !pImp->bInSetItem || !rItem.ISA(SfxSetItem),
+    DBG_ASSERT( !pImp->bInSetItem || dynamic_cast<const SfxSetItem*>( &rItem ) ==  nullptr,
                 "SetItem contains ItemSet with SetItem" );
 
     sal_uInt16 nSlotId = pPool->GetSlotId( rItem.Which() );
@@ -1216,7 +1217,7 @@ const SfxPoolItem* SfxItemPool::LoadItem( SvStream &rStream, bool bDirect,
                 rStream.ReadUInt16( nVersion ).ReadUInt16( nLen );
                 rStream.SeekRel( nLen );
             }
-            return 0;
+            return nullptr;
         }
     }
 
@@ -1226,11 +1227,11 @@ const SfxPoolItem* SfxItemPool::LoadItem( SvStream &rStream, bool bDirect,
         nWhich = pRefPool->GetNewWhich( nWhich ); // Map WhichId to new version
 
     DBG_ASSERT( !nWhich || !pImp->bInSetItem ||
-                !pRefPool->pImp->ppStaticDefaults[pRefPool->GetIndex_Impl(nWhich)]->ISA(SfxSetItem),
+                dynamic_cast<const SfxSetItem*>( pRefPool->pImp->ppStaticDefaults[pRefPool->GetIndex_Impl(nWhich)] ) == nullptr,
                 "loading SetItem in ItemSet of SetItem" );
 
     // Are we loading via surrogate?
-    const SfxPoolItem *pItem = 0;
+    const SfxPoolItem *pItem = nullptr;
     if ( !bDirect )
     {
         // WhichId known in this version?
@@ -1266,7 +1267,7 @@ const SfxPoolItem* SfxItemPool::LoadItem( SvStream &rStream, bool bDirect,
                     delete pNewItem;
                 }
                 else
-                    pItem = 0;
+                    pItem = nullptr;
             sal_uLong nIEnd = rStream.Tell();
             DBG_ASSERT( nIEnd <= (nIStart+nLen), "read past end of item" );
             if ( (nIStart+nLen) != nIEnd )

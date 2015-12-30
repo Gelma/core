@@ -33,31 +33,31 @@ namespace pcr
     private:
         VclPtr<ListBox>        m_pEntries;
 
-        ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >
-                        m_xListBox;
-        OUString m_sPropertyName;
+        css::uno::Reference< css::beans::XPropertySet >
+                               m_xListBox;
+        OUString               m_sPropertyName;
 
     public:
         ListSelectionDialog(
             vcl::Window* _pParent,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& _rxListBox,
+            const css::uno::Reference< css::beans::XPropertySet >& _rxListBox,
             const OUString& _rPropertyName,
             const OUString& _rPropertyUIName
         );
         virtual ~ListSelectionDialog();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
         // Dialog overridables
-        virtual short   Execute() SAL_OVERRIDE;
+        virtual short   Execute() override;
 
     private:
         void    initialize( );
         void    commitSelection();
 
-        void    fillEntryList   ( const ::com::sun::star::uno::Sequence< OUString >& _rListEntries );
+        void    fillEntryList   ( const css::uno::Sequence< OUString >& _rListEntries );
 
-        void    selectEntries   ( const ::com::sun::star::uno::Sequence< sal_Int16 >& /* [in ] */ _rSelection );
-        void    collectSelection(       ::com::sun::star::uno::Sequence< sal_Int16 >& /* [out] */ _rSelection );
+        void    selectEntries   ( const css::uno::Sequence< sal_Int16 >& /* [in ] */ _rSelection );
+        void    collectSelection(       css::uno::Sequence< sal_Int16 >& /* [out] */ _rSelection );
     };
 
 

@@ -75,8 +75,8 @@ public class _XMultiPropertyStates extends MultiMethodTest {
         boolean result = false;
         try {
             Object[] defaults = oObj.getPropertyDefaults(names);
-            result = (defaults != null) && defaults.length == names.length;
             log.println("Number of default values: " + defaults.length);
+            result = defaults.length == names.length;
         } catch (com.sun.star.beans.UnknownPropertyException e) {
             log.println("some properties seem to be unknown: " + e.toString());
         } catch (com.sun.star.lang.WrappedTargetException e) {
@@ -95,7 +95,12 @@ public class _XMultiPropertyStates extends MultiMethodTest {
         try {
             states = oObj.getPropertyStates(names);
             result = (states != null) && (states.length == names.length);
-            log.println("Number of states: " + states.length);
+            if (states != null) {
+                log.println("Number of states: " + states.length);
+            }
+            else {
+                log.println("Number of states: <null>");
+            }
         } catch (com.sun.star.beans.UnknownPropertyException e) {
             log.println("some properties seem to be unknown: " + e.toString());
         }
@@ -150,8 +155,7 @@ public class _XMultiPropertyStates extends MultiMethodTest {
             the_first[0] = propName;
             log.println("Setting " + propName + " to default");
             oObj.setPropertiesToDefault(the_first);
-            result = (oObj.getPropertyStates(the_first)[0].equals
-                (PropertyState.DEFAULT_VALUE));
+            result = oObj.getPropertyStates(the_first)[0].equals(PropertyState.DEFAULT_VALUE);
         } catch (com.sun.star.beans.UnknownPropertyException e) {
             log.println("some properties seem to be unknown: " + e.toString());
         }

@@ -60,7 +60,7 @@ class SvtDynamicMenuOptions_Impl;
     @devstatus      ready to use
 *//*-*************************************************************************************************************/
 
-class UNOTOOLS_DLLPUBLIC SAL_WARN_UNUSED SvtDynamicMenuOptions : public utl::detail::Options
+class SAL_WARN_UNUSED UNOTOOLS_DLLPUBLIC SvtDynamicMenuOptions : public utl::detail::Options
 {
     public:
         /*-****************************************************************************************************
@@ -87,7 +87,7 @@ class UNOTOOLS_DLLPUBLIC SAL_WARN_UNUSED SvtDynamicMenuOptions : public utl::det
             @onerror    We return an empty list.
         *//*-*****************************************************************************************************/
 
-        ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue > > GetMenu( EDynamicMenuType eMenu ) const;
+        css::uno::Sequence< css::uno::Sequence< css::beans::PropertyValue > > GetMenu( EDynamicMenuType eMenu ) const;
     private:
 
         /*-****************************************************************************************************

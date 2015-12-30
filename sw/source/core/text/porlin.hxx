@@ -34,7 +34,7 @@ class SwPortionHandler;
 // The portions output operators are virtual methods of the portion.
 #ifdef DBG_UTIL
 #define OUTPUT_OPERATOR  virtual SvStream & operator<<( SvStream & aOs ) const;
-#define OUTPUT_OPERATOR_OVERRIDE virtual SvStream & operator<<( SvStream & aOs ) const SAL_OVERRIDE;
+#define OUTPUT_OPERATOR_OVERRIDE virtual SvStream & operator<<( SvStream & aOs ) const override;
 #else
 #define OUTPUT_OPERATOR
 #define OUTPUT_OPERATOR_OVERRIDE
@@ -148,7 +148,7 @@ public:
     SwLinePortion *FindPrevPortion( const SwLinePortion *pRoot );
     SwLinePortion *FindLastPortion();
 
-    virtual sal_Int32 GetCrsrOfst( const sal_uInt16 nOfst ) const;
+    virtual sal_Int32 GetCursorOfst( const sal_uInt16 nOfst ) const;
     virtual SwPosSize GetTextSize( const SwTextSizeInfo &rInfo ) const;
     void CalcTextSize( const SwTextSizeInfo &rInfo );
 
@@ -202,7 +202,7 @@ inline bool SwLinePortion::operator==(const SwLinePortion &rPortion ) const
 
 inline SwLinePortion::SwLinePortion(const SwLinePortion &rPortion) :
     SwPosSize( rPortion ),
-    pPortion( 0 ),
+    pPortion( nullptr ),
     nLineLength( rPortion.nLineLength ),
     nAscent( rPortion.nAscent ),
     nWhichPor( rPortion.nWhichPor ),

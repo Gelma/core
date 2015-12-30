@@ -23,39 +23,32 @@
 #include <sal/config.h>
 
 #include <com/sun/star/io/XOutputStream.hpp>
-#include <tools/stream.hxx>
 
 
 class SvOutputStreamOpenLockBytes: public SvOpenLockBytes
 {
-    com::sun::star::uno::Reference< com::sun::star::io::XOutputStream >
-        m_xOutputStream;
-    sal_uInt64 m_nPosition;
+    css::uno::Reference< css::io::XOutputStream >  m_xOutputStream;
+    sal_uInt64                                     m_nPosition;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     SvOutputStreamOpenLockBytes(
-            const com::sun::star::uno::Reference<
-                      com::sun::star::io::XOutputStream > &
-                rTheOutputStream):
+            const css::uno::Reference< css::io::XOutputStream > &  rTheOutputStream):
         m_xOutputStream(rTheOutputStream), m_nPosition(0) {}
 
-    virtual ErrCode ReadAt(sal_uInt64, void *, sal_uLong, sal_Size *) const SAL_OVERRIDE;
+    virtual ErrCode ReadAt(sal_uInt64, void *, sal_uLong, sal_Size *) const override;
 
     virtual ErrCode WriteAt(sal_uInt64 nPos, const void * pBuffer, sal_uLong nCount,
-                            sal_Size * pWritten) SAL_OVERRIDE;
+                            sal_Size * pWritten) override;
 
-    virtual ErrCode Flush() const SAL_OVERRIDE;
+    virtual ErrCode Flush() const override;
 
-    virtual ErrCode SetSize(sal_uInt64) SAL_OVERRIDE;
+    virtual ErrCode SetSize(sal_uInt64) override;
 
-    virtual ErrCode Stat(SvLockBytesStat * pStat, SvLockBytesStatFlag) const SAL_OVERRIDE;
+    virtual ErrCode Stat(SvLockBytesStat * pStat, SvLockBytesStatFlag) const override;
 
     virtual ErrCode FillAppend(const void * pBuffer, sal_uLong nCount,
-                               sal_uLong * pWritten) SAL_OVERRIDE;
-
-    virtual void Terminate() SAL_OVERRIDE;
+                               sal_uLong * pWritten) override;
 };
 
 #endif // INCLUDED_SVL_STRMADPT_HXX

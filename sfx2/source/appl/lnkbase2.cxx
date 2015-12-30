@@ -38,7 +38,6 @@ using namespace ::com::sun::star::uno;
 namespace sfx2
 {
 
-TYPEINIT0( SvBaseLink )
 
 class  ImplDdeItem;
 
@@ -51,9 +50,9 @@ struct BaseLink_Impl
     bool                m_bIsConnect;
 
     BaseLink_Impl() :
-          m_pLinkMgr( NULL )
-        , m_pParentWin( NULL )
-        , m_pFileDlg( NULL )
+          m_pLinkMgr( nullptr )
+        , m_pParentWin( nullptr )
+        , m_pFileDlg( nullptr )
         , m_bIsConnect( false )
         {}
 
@@ -87,7 +86,7 @@ struct ImplBaseLinkData
         ClientType.nCntntType = SotClipboardFormatId::NONE;
         ClientType.bIntrnlLnk = false;
         ClientType.nUpdateMode = SfxLinkUpdateMode::NONE;
-        DDEType.pItem = NULL;
+        DDEType.pItem = nullptr;
     }
 };
 
@@ -108,9 +107,9 @@ public:
 #endif
     virtual ~ImplDdeItem();
 
-    virtual DdeData* Get( SotClipboardFormatId ) SAL_OVERRIDE;
-    virtual bool     Put( const DdeData* ) SAL_OVERRIDE;
-    virtual void     AdviseLoop( bool ) SAL_OVERRIDE;
+    virtual DdeData* Get( SotClipboardFormatId ) override;
+    virtual bool     Put( const DdeData* ) override;
+    virtual void     AdviseLoop( bool ) override;
 
     void Notify()
     {
@@ -124,9 +123,9 @@ public:
 
 
 SvBaseLink::SvBaseLink()
-    : m_bIsReadOnly(false)
+    : pImpl ( new BaseLink_Impl ),
+      m_bIsReadOnly(false)
 {
-    pImpl = new BaseLink_Impl();
     nObjType = OBJECT_CLIENT_SO;
     pImplData = new ImplBaseLinkData;
     bVisible = bSynchron = bUseCache = true;
@@ -136,9 +135,9 @@ SvBaseLink::SvBaseLink()
 
 
 SvBaseLink::SvBaseLink( SfxLinkUpdateMode nUpdateMode, SotClipboardFormatId nContentType )
-    : m_bIsReadOnly(false)
+   : pImpl( new BaseLink_Impl ),
+     m_bIsReadOnly(false)
 {
-    pImpl = new BaseLink_Impl();
     nObjType = OBJECT_CLIENT_SO;
     pImplData = new ImplBaseLinkData;
     bVisible = bSynchron = bUseCache = true;
@@ -193,7 +192,7 @@ static DdeTopic* FindTopic( const OUString & rLinkName, sal_uInt16* pItemStt )
 }
 
 SvBaseLink::SvBaseLink( const OUString& rLinkName, sal_uInt16 nObjectType, SvLinkSource* pObj )
-    : pImpl(0)
+    : pImpl()
     , m_bIsReadOnly(false)
 {
     bVisible = bSynchron = bUseCache = true;
@@ -244,7 +243,6 @@ SvBaseLink::~SvBaseLink()
     }
 
     delete pImplData;
-    delete pImpl;
 }
 
 IMPL_LINK_TYPED( SvBaseLink, EndEditHdl, const OUString&, _rNewName, void )
@@ -253,8 +251,7 @@ IMPL_LINK_TYPED( SvBaseLink, EndEditHdl, const OUString&, _rNewName, void )
     if ( !ExecuteEdit( sNewName ) )
         sNewName.clear();
     bWasLastEditOK = !sNewName.isEmpty();
-    if ( pImpl->m_aEndEditLink.IsSet() )
-        pImpl->m_aEndEditLink.Call( *this );
+    pImpl->m_aEndEditLink.Call( *this );
 }
 
 
@@ -460,7 +457,7 @@ void SvBaseLink::Disconnect()
     }
 }
 
-SvBaseLink::UpdateResult SvBaseLink::DataChanged( const OUString &, const ::com::sun::star::uno::Any & )
+SvBaseLink::UpdateResult SvBaseLink::DataChanged( const OUString &, const css::uno::Any & )
 {
     switch( nObjType )
     {
@@ -505,8 +502,7 @@ void SvBaseLink::Edit( vcl::Window* pParent, const Link<SvBaseLink&,void>& rEndE
     {
         ExecuteEdit( OUString() );
         bWasLastEditOK = false;
-        if ( pImpl->m_aEndEditLink.IsSet() )
-            pImpl->m_aEndEditLink.Call( *this );
+        pImpl->m_aEndEditLink.Call( *this );
     }
 }
 
@@ -523,19 +519,19 @@ bool SvBaseLink::ExecuteEdit( const OUString& _rNewName )
             {
                 sError = SFX2_RESSTR(STR_DDE_ERROR);
 
-                sal_Int32 nFndPos = sError.indexOf( '%' );
+                sal_Int32 nFndPos = sError.indexOf( "%1" );
                 if( -1 != nFndPos )
                 {
-                    sError = sError.replaceAt( nFndPos, 1, sApp );
+                    sError = sError.replaceAt( nFndPos, 2, sApp );
                     nFndPos = nFndPos + sApp.getLength();
 
-                    if( -1 != ( nFndPos = sError.indexOf( '%', nFndPos )))
+                    if( -1 != ( nFndPos = sError.indexOf( "%2", nFndPos )))
                     {
-                        sError = sError.replaceAt( nFndPos, 1, sTopic );
+                        sError = sError.replaceAt( nFndPos, 2, sTopic );
                         nFndPos = nFndPos + sTopic.getLength();
 
-                        if( -1 != ( nFndPos = sError.indexOf( '%', nFndPos )))
-                            sError = sError.replaceAt( nFndPos, 1, sItem );
+                        if( -1 != ( nFndPos = sError.indexOf( "%3", nFndPos )))
+                            sError = sError.replaceAt( nFndPos, 2, sItem );
                     }
                 }
             }
@@ -571,7 +567,7 @@ ImplDdeItem::~ImplDdeItem()
 {
     bIsInDTOR = true;
     // So that no-one gets the idea to delete the pointer when Disconnecting!
-    SvBaseLinkRef aRef( pLink );
+    tools::SvRef<SvBaseLink> aRef( pLink );
     aRef->Disconnect();
 }
 
@@ -598,7 +594,7 @@ DdeData* ImplDdeItem::Get( SotClipboardFormatId nFormat )
     }
     aSeq.realloc( 0 );
     bIsValidData = false;
-    return 0;
+    return nullptr;
 }
 
 
@@ -619,7 +615,7 @@ void ImplDdeItem::AdviseLoop( bool bOpen )
             // A connection is re-established
             if( OBJECT_DDE_EXTERN == pLink->GetObjType() )
             {
-                pLink->GetObj()->AddDataAdvise( pLink, OUString("text/plain;charset=utf-16"),  ADVISEMODE_NODATA );
+                pLink->GetObj()->AddDataAdvise( pLink, "text/plain;charset=utf-16",  ADVISEMODE_NODATA );
                 pLink->GetObj()->AddConnectAdvise( pLink );
             }
         }
@@ -627,7 +623,7 @@ void ImplDdeItem::AdviseLoop( bool bOpen )
         {
             // So that no-one gets the idea to delete the pointer
             // when Disconnecting!
-            SvBaseLinkRef aRef( pLink );
+            tools::SvRef<SvBaseLink> aRef( pLink );
             aRef->Disconnect();
         }
     }

@@ -49,7 +49,7 @@ public:
                             SfxMenuControl( sal_uInt16, SfxBindings&);
 
     static SfxMenuControl*  CreateImpl( sal_uInt16 nId, Menu &rMenu, SfxBindings &rBindings );
-    static void             RegisterControl( sal_uInt16 nSlotId = 0, SfxModule *pMod=NULL );
+    static void             RegisterControl( sal_uInt16 nSlotId = 0, SfxModule *pMod=nullptr );
 
                     virtual ~SfxMenuControl();
 
@@ -64,11 +64,11 @@ public:
     SfxVirtualMenu*         GetPopupMenu() const;
 
     virtual void            StateChanged( sal_uInt16 nSID, SfxItemState eState,
-                                          const SfxPoolItem* pState ) SAL_OVERRIDE;
+                                          const SfxPoolItem* pState ) override;
 
     static SfxMenuControl*    CreateControl( sal_uInt16 nId, Menu &, SfxBindings & );
     static SfxUnoMenuControl* CreateControl( const OUString&, sal_uInt16, Menu&, const OUString& sItemText, SfxBindings&, SfxVirtualMenu* );
-    static void               RegisterMenuControl( SfxModule*, SfxMenuCtrlFactory* );
+    static void               RegisterMenuControl( SfxModule*, const SfxMenuCtrlFactory& );
 
 };
 
@@ -87,11 +87,11 @@ typedef SfxMenuControl* (*SfxMenuControlCtor)( sal_uInt16 nId, Menu &, SfxBindin
 struct SfxMenuCtrlFactory
 {
     SfxMenuControlCtor  pCtor;
-    TypeId              nTypeId;
+    const std::type_info&   nTypeId;
     sal_uInt16              nSlotId;
 
     SfxMenuCtrlFactory( SfxMenuControlCtor pTheCtor,
-            TypeId nTheTypeId, sal_uInt16 nTheSlotId ):
+            const std::type_info& nTheTypeId, sal_uInt16 nTheSlotId ):
         pCtor(pTheCtor),
         nTypeId(nTheTypeId),
         nSlotId(nTheSlotId)
@@ -110,14 +110,14 @@ inline SfxVirtualMenu* SfxMenuControl::GetPopupMenu() const
 
 #define SFX_DECL_MENU_CONTROL() \
         static SfxMenuControl* CreateImpl( sal_uInt16 nId, Menu &rMenu, SfxBindings &rBindings ); \
-        static void RegisterControl(sal_uInt16 nSlotId = 0, SfxModule *pMod=NULL)
+        static void RegisterControl(sal_uInt16 nSlotId = 0, SfxModule *pMod=nullptr)
 
 #define SFX_IMPL_MENU_CONTROL(Class, nItemClass) \
         SfxMenuControl* Class::CreateImpl( sal_uInt16 nId, Menu &rMenu, SfxBindings &rBindings ) \
                { return new Class(nId, rMenu, rBindings); } \
         void Class::RegisterControl(sal_uInt16 nSlotId, SfxModule *pMod) \
-               { SfxMenuControl::RegisterMenuControl( pMod, new SfxMenuCtrlFactory( \
-                    Class::CreateImpl, TYPE(nItemClass), nSlotId ) ); }
+               { SfxMenuControl::RegisterMenuControl( pMod, SfxMenuCtrlFactory( \
+                    Class::CreateImpl, typeid(nItemClass), nSlotId ) ); }
 
 #endif
 

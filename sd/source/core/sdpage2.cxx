@@ -18,7 +18,7 @@
  */
 
 #include <vector>
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <libxml/xmlwriter.h>
 
 #include <sfx2/docfile.hxx>
 #include <vcl/svapp.hxx>
@@ -93,7 +93,7 @@ void SdPage::SetPresentationLayout(const OUString& rLayoutName,
     if (bSetMasterPage && !IsMasterPage())
     {
         SdPage* pMaster;
-        SdPage* pFoundMaster = 0;
+        SdPage* pFoundMaster = nullptr;
         sal_uInt16 nMaster = 0;
         sal_uInt16 nMasterCount = pModel->GetMasterPageCount();
 
@@ -125,7 +125,7 @@ void SdPage::SetPresentationLayout(const OUString& rLayoutName,
         DBG_ASSERT(pFoundMaster, "Masterpage for presentation layout not found!");
 
         // this should never happen, but we play failsafe here
-        if( pFoundMaster == 0 )
+        if( pFoundMaster == nullptr )
             pFoundMaster = static_cast< SdDrawDocument *>(pModel)->GetSdPage( 0, mePageKind );
 
         if( pFoundMaster )
@@ -140,14 +140,14 @@ void SdPage::SetPresentationLayout(const OUString& rLayoutName,
     // - replace-data for OutlinerParaObject
     std::vector<SfxStyleSheetBase*> aOutlineStyles;
     std::vector<SfxStyleSheetBase*> aOldOutlineStyles;
-    boost::ptr_vector<StyleReplaceData> aReplList;
+    std::vector<StyleReplaceData> aReplList;
     bool bListsFilled = false;
 
     const size_t nObjCount = GetObjCount();
 
     for (size_t nObj = 0; nObj < nObjCount; ++nObj)
     {
-        SdrTextObj* pObj = static_cast<SdrTextObj*>( GetObj(nObj) );
+        auto pObj = GetObj(nObj);
 
         if (pObj->GetObjInventor() == SdrInventor &&
             pObj->GetObjIdentifier() == OBJ_OUTLINETEXT)
@@ -156,7 +156,7 @@ void SdPage::SetPresentationLayout(const OUString& rLayoutName,
             {
                 OUString aFullName;
                 OUString aOldFullName;
-                SfxStyleSheetBase* pSheet = NULL;
+                SfxStyleSheetBase* pSheet = nullptr;
                 SfxStyleSheetBasePool* pStShPool = pModel->GetStyleSheetPool();
 
                 for (sal_Int16 i = -1; i < 9; i++)
@@ -176,12 +176,12 @@ void SdPage::SetPresentationLayout(const OUString& rLayoutName,
                     if (bReplaceStyleSheets && pSheet)
                     {
                         // Replace instead Set
-                        StyleReplaceData* pReplData = new StyleReplaceData;
-                        pReplData->nNewFamily = pSheet->GetFamily();
-                        pReplData->nFamily    = pSheet->GetFamily();
-                        pReplData->aNewName   = aFullName;
-                        pReplData->aName      = aOldFullName;
-                        aReplList.push_back(pReplData);
+                        StyleReplaceData aReplData;
+                        aReplData.nNewFamily = pSheet->GetFamily();
+                        aReplData.nFamily    = pSheet->GetFamily();
+                        aReplData.aNewName   = aFullName;
+                        aReplData.aName      = aOldFullName;
+                        aReplList.push_back(aReplData);
                     }
                     else
                     {
@@ -220,7 +220,7 @@ void SdPage::SetPresentationLayout(const OUString& rLayoutName,
             OutlinerParaObject* pOPO = pObj->GetOutlinerParaObject();
             if ( bReplaceStyleSheets && pOPO )
             {
-                boost::ptr_vector<StyleReplaceData>::const_iterator it = aReplList.begin();
+                std::vector<StyleReplaceData>::const_iterator it = aReplList.begin();
                 while (it != aReplList.end())
                 {
                     pOPO->ChangeStyleSheets( it->aName, it->nFamily, it->aNewName, it->nNewFamily );
@@ -315,7 +315,7 @@ bool SdPage::IsReadOnly() const
 
 void SdPage::ConnectLink()
 {
-    sfx2::LinkManager* pLinkManager = pModel!=NULL ? pModel->GetLinkManager() : NULL;
+    sfx2::LinkManager* pLinkManager = pModel!=nullptr ? pModel->GetLinkManager() : nullptr;
 
     if (pLinkManager && !mpPageLink && !maFileName.isEmpty() && !maBookmarkName.isEmpty() &&
         mePageKind==PK_STANDARD && !IsMasterPage() &&
@@ -347,7 +347,7 @@ void SdPage::ConnectLink()
 
 void SdPage::DisconnectLink()
 {
-    sfx2::LinkManager* pLinkManager = pModel!=NULL ? pModel->GetLinkManager() : NULL;
+    sfx2::LinkManager* pLinkManager = pModel!=nullptr ? pModel->GetLinkManager() : nullptr;
 
     if (pLinkManager && mpPageLink)
     {
@@ -356,7 +356,7 @@ void SdPage::DisconnectLink()
         * (remove deletes *pGraphicLink implicit)
         **********************************************************************/
         pLinkManager->Remove(mpPageLink);
-        mpPageLink=NULL;
+        mpPageLink=nullptr;
     }
 }
 
@@ -369,7 +369,7 @@ void SdPage::DisconnectLink()
 SdPage::SdPage(const SdPage& rSrcPage)
 :   FmFormPage(rSrcPage)
 ,   SdrObjUserCall()
-,   mpItems(NULL)
+,   mpItems(nullptr)
 {
     mePageKind           = rSrcPage.mePageKind;
     meAutoLayout         = rSrcPage.meAutoLayout;
@@ -398,7 +398,7 @@ SdPage::SdPage(const SdPage& rSrcPage)
     mnPaperBin           = rSrcPage.mnPaperBin;
     meOrientation        = rSrcPage.meOrientation;
 
-    mpPageLink           = NULL;    // is set when inserting via ConnectLink()
+    mpPageLink           = nullptr;    // is set when inserting via ConnectLink()
 
     mbIsPrecious         = false;
 }
@@ -428,12 +428,12 @@ void SdPage::lateInit(const SdPage& rSrcPage)
 
 SdrPage* SdPage::Clone() const
 {
-    return Clone(NULL);
+    return Clone(nullptr);
 }
 
 SdrPage* SdPage::Clone(SdrModel* pNewModel) const
 {
-    DBG_ASSERT( pNewModel == 0, "sd::SdPage::Clone(), new page ignored, please check code! CL" );
+    DBG_ASSERT( pNewModel == nullptr, "sd::SdPage::Clone(), new page ignored, please check code! CL" );
     (void)pNewModel;
 
     SdPage* pNewPage = new SdPage(*this);
@@ -476,13 +476,13 @@ SfxStyleSheet* SdPage::GetTextStyleSheetForObject( SdrObject* pObj ) const
 
 SfxItemSet* SdPage::getOrCreateItems()
 {
-    if( mpItems == NULL )
+    if( mpItems == nullptr )
         mpItems = new SfxItemSet( pModel->GetItemPool(), SDRATTR_XMLATTRIBUTES, SDRATTR_XMLATTRIBUTES );
 
     return mpItems;
 }
 
-bool SdPage::setAlienAttributes( const com::sun::star::uno::Any& rAttributes )
+bool SdPage::setAlienAttributes( const css::uno::Any& rAttributes )
 {
     SfxItemSet* pSet = getOrCreateItems();
 
@@ -496,11 +496,11 @@ bool SdPage::setAlienAttributes( const com::sun::star::uno::Any& rAttributes )
     return false;
 }
 
-void SdPage::getAlienAttributes( com::sun::star::uno::Any& rAttributes )
+void SdPage::getAlienAttributes( css::uno::Any& rAttributes )
 {
     const SfxPoolItem* pItem;
 
-    if( (mpItems == NULL) || ( SfxItemState::SET != mpItems->GetItemState( SDRATTR_XMLATTRIBUTES, false, &pItem ) ) )
+    if( (mpItems == nullptr) || ( SfxItemState::SET != mpItems->GetItemState( SDRATTR_XMLATTRIBUTES, false, &pItem ) ) )
     {
         SvXMLAttrContainerItem aAlienAttributes;
         aAlienAttributes.QueryValue( rAttributes );
@@ -577,12 +577,7 @@ OString SdPage::stringify() const
     return aString.makeStringAndClear();
 }
 
-sal_Int32 SdPage::getHash() const
-{
-    return stringify().hashCode();
-}
-
-void SdPage::createAnnotation( ::com::sun::star::uno::Reference< ::com::sun::star::office::XAnnotation >& xAnnotation )
+void SdPage::createAnnotation( css::uno::Reference< css::office::XAnnotation >& xAnnotation )
 {
     sd::createAnnotation( xAnnotation, this );
 }
@@ -632,6 +627,31 @@ void SdPage::removeAnnotation( const Reference< XAnnotation >& xAnnotation )
         pModel->SetChanged();
         NotifyDocumentEvent( static_cast< SdDrawDocument* >( pModel ), "OnAnnotationRemoved", Reference<XInterface>( xAnnotation, UNO_QUERY ) );
     }
+}
+
+void SdPage::dumpAsXml(xmlTextWriterPtr pWriter) const
+{
+    xmlTextWriterStartElement(pWriter, BAD_CAST("sdPage"));
+
+    const char* pPageKind = nullptr;
+    switch (mePageKind)
+    {
+    case PK_STANDARD:
+        pPageKind = "PK_STANDARD";
+    break;
+    case PK_NOTES:
+        pPageKind = "PK_NOTES";
+        break;
+    case PK_HANDOUT:
+        pPageKind = "PK_HANDOUT";
+        break;
+    }
+    if (pPageKind)
+        xmlTextWriterWriteAttribute(pWriter, BAD_CAST("mePageKind"), BAD_CAST(pPageKind));
+
+
+    FmFormPage::dumpAsXml(pWriter);
+    xmlTextWriterEndElement(pWriter);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

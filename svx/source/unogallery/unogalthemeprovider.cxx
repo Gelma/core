@@ -60,8 +60,7 @@ sal_Bool SAL_CALL GalleryThemeProvider::supportsService( const OUString& Service
 uno::Sequence< OUString > SAL_CALL GalleryThemeProvider::getSupportedServiceNames()
     throw( uno::RuntimeException, std::exception )
 {
-    uno::Sequence< OUString > aSeq( 1 );
-    aSeq.getArray()[ 0 ] = "com.sun.star.gallery.GalleryThemeProvider";
+    uno::Sequence<OUString> aSeq { "com.sun.star.gallery.GalleryThemeProvider" };
     return aSeq;
 }
 
@@ -123,7 +122,7 @@ sal_Bool SAL_CALL GalleryThemeProvider::hasElements()
 {
     const SolarMutexGuard aGuard;
 
-    return( ( mpGallery != NULL ) && ( mpGallery->GetThemeCount() > 0 ) );
+    return( ( mpGallery != nullptr ) && ( mpGallery->GetThemeCount() > 0 ) );
 }
 
 

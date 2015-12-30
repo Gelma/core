@@ -25,6 +25,7 @@
 #include <com/sun/star/xml/sax/XDocumentHandler.hpp>
 #include <xmloff/xmlprmap.hxx>
 #include <salhelper/simplereferenceobject.hxx>
+#include <memory>
 
 class SvXMLExportPropertyMapper;
 class SvXMLNamespaceMap;
@@ -40,7 +41,7 @@ class XMLOFF_DLLPUBLIC SvXMLAutoStylePoolP : public salhelper::SimpleReferenceOb
     friend class Test;
     friend class SvXMLAutoStylePoolP_Impl;
 
-    SvXMLAutoStylePoolP_Impl    *pImpl;
+    std::unique_ptr<SvXMLAutoStylePoolP_Impl>    pImpl;
 
 protected:
 
@@ -48,18 +49,18 @@ protected:
             SvXMLAttributeList& rAttrList,
             sal_Int32 nFamily,
             const ::std::vector< XMLPropertyState >& rProperties,
-            const SvXMLExportPropertyMapper& rPropExp
-            , const SvXMLUnitConverter& rUnitConverter,
+            const SvXMLExportPropertyMapper& rPropExp,
+            const SvXMLUnitConverter& rUnitConverter,
             const SvXMLNamespaceMap& rNamespaceMap
             ) const;
 
 // this methode is executed after Properties Export, so you can e.g. export a map or so on
     virtual void exportStyleContent(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XDocumentHandler > & rHandler,
+            const css::uno::Reference< css::xml::sax::XDocumentHandler > & rHandler,
             sal_Int32 nFamily,
             const ::std::vector< XMLPropertyState >& rProperties,
-            const SvXMLExportPropertyMapper& rPropExp
-            , const SvXMLUnitConverter& rUnitConverter,
+            const SvXMLExportPropertyMapper& rPropExp,
+            const SvXMLUnitConverter& rUnitConverter,
             const SvXMLNamespaceMap& rNamespaceMap
             ) const;
 
@@ -89,13 +90,13 @@ public:
 
     /// retrieve the registered names (names + families)
     void GetRegisteredNames(
-        com::sun::star::uno::Sequence<sal_Int32>& aFamilies,
-        com::sun::star::uno::Sequence<OUString>& aNames );
+        css::uno::Sequence<sal_Int32>& aFamilies,
+        css::uno::Sequence<OUString>& aNames );
 
     /// register (families + names)
     void RegisterNames(
-        com::sun::star::uno::Sequence<sal_Int32>& aFamilies,
-        com::sun::star::uno::Sequence<OUString>& aNames );
+        css::uno::Sequence<sal_Int32>& aFamilies,
+        css::uno::Sequence<OUString>& aNames );
 
     /// Add an item set to the pool and return its generated name.
     OUString Add( sal_Int32 nFamily, const ::std::vector< XMLPropertyState >& rProperties );
@@ -110,8 +111,8 @@ public:
     OUString Find( sal_Int32 nFamily, const OUString& rParent, const ::std::vector< XMLPropertyState >& rProperties ) const;
 
     /** Export all item sets ofs a certain class in the order in that they have been added. */
-    void exportXML( sal_Int32 nFamily
-        , const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XDocumentHandler > & rHandler,
+    void exportXML( sal_Int32 nFamily,
+        const css::uno::Reference< css::xml::sax::XDocumentHandler > & rHandler,
         const SvXMLUnitConverter& rUnitConverter,
         const SvXMLNamespaceMap& rNamespaceMap
         ) const;

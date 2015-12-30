@@ -252,6 +252,12 @@ void
 #include "mscx.hxx"
 #include "bridges/cpp_uno/shared/except.hxx"
 
+//TOOD: Work around missing __CxxDetectRethrow in clang-cl for now (predefined
+// in cl, <www.geoffchappell.com/studies/msvc/language/predefined/index.html>):
+#if defined __clang__
+extern "C" int __cdecl __CxxDetectRethrow(void *);
+#endif
+
 #pragma pack(push, 8)
 
 using namespace ::com::sun::star::uno;
@@ -317,8 +323,8 @@ public:
     int getRTTI_len(OUString const & rUNOname) throw ();
     __type_info_descriptor * insert_new_type_info_descriptor(OUString const & rUNOname);
 
-    RTTInfos();
-    ~RTTInfos();
+    RTTInfos() throw ();
+    ~RTTInfos() throw ();
 };
 class __type_info
 {
@@ -340,6 +346,7 @@ private:
 
 __type_info::~__type_info() throw ()
 {
+    (void)_m_data;
 }
 
 class __type_info_descriptor
@@ -469,7 +476,7 @@ void GenerateConstructorTrampoline(
 
     // mov r11, copyConstruct
     *p++ = 0x49; *p++ = 0xBB;
-    *((void **)p) = &copyConstruct; p += 8;
+    *((void **)p) = reinterpret_cast<void *>(&copyConstruct); p += 8;
 
     // jmp r11
     *p++ = 0x41; *p++ = 0xFF; *p++ = 0xE3;
@@ -489,7 +496,7 @@ void GenerateDestructorTrampoline(
 
     // mov r11, destruct
     *p++ = 0x49; *p++ = 0xBB;
-    *((void **)p) = &destruct; p += 8;
+    *((void **)p) = reinterpret_cast<void *>(&destruct); p += 8;
 
     // jmp r11
     *p++ = 0x41; *p++ = 0xFF; *p++ = 0xE3;
@@ -523,7 +530,7 @@ struct ExceptionType
             // As _n0 is always initialized to zero, that means the
             // hasvirtbase flag (see the ONTL catchabletype struct) is
             // off, and thus the copyctor is of the ctor_ptr kind.
-            memcpy(&type_info, mscx_getRTTI(pTD->pTypeName), mscx_getRTTI_len(pTD->pTypeName));
+            memcpy(static_cast<void *>(&type_info), static_cast<void *>(mscx_getRTTI(pTD->pTypeName)), mscx_getRTTI_len(pTD->pTypeName));
             _pTypeInfo = static_cast<sal_uInt32>(
             reinterpret_cast<sal_uInt64>(&type_info) - pCodeBase);
             GenerateConstructorTrampoline( pCode, pTD );
@@ -655,10 +662,9 @@ RaiseInfo::RaiseInfo(typelib_TypeDescription * pTD)throw ()
         & ~static_cast<sal_uInt64>(ExceptionInfos::allocationGranularity - 1);
 
     DWORD old_protect;
-#if OSL_DEBUG_LEVEL > 0
     BOOL success =
-#endif
         VirtualProtect(pCode, codeSize, PAGE_EXECUTE_READWRITE, &old_protect);
+    (void) success;
     assert(success && "VirtualProtect() failed!");
 
     ::typelib_typedescription_acquire(pTD);

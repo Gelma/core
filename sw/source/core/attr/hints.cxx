@@ -45,7 +45,7 @@ SwDelText::SwDelText( sal_Int32 nS, sal_Int32 nL )
 }
 
 SwUpdateAttr::SwUpdateAttr( sal_Int32 nS, sal_Int32 nE, sal_uInt16 nW )
-    : SwMsgPoolItem( RES_UPDATE_ATTR ), nStart( nS ), nEnd( nE ), nWhichAttr( nW ), aWhichFormatAttr()
+    : SwMsgPoolItem( RES_UPDATE_ATTR ), m_nStart( nS ), m_nEnd( nE ), m_nWhichAttr( nW ), m_aWhichFormatAttr()
 {
 }
 
@@ -63,16 +63,16 @@ SwDocPosUpdate::SwDocPosUpdate( const SwTwips nDcPos )
 
 SwTableFormulaUpdate::SwTableFormulaUpdate( const SwTable* pNewTable )
     : SwMsgPoolItem( RES_TABLEFML_UPDATE ),
-    pTable( pNewTable ), pHistory( 0 ), nSplitLine( USHRT_MAX ),
-    eFlags( TBL_CALC )
+    m_pTable( pNewTable ), m_pHistory( nullptr ), m_nSplitLine( USHRT_MAX ),
+    m_eFlags( TBL_CALC )
 {
-    DATA.pDelTable = 0;
-    bModified = bBehindSplitLine = false;
-    OSL_ENSURE( pTable, "No Table pointer" );
+    m_aData.pDelTable = nullptr;
+    m_bModified = m_bBehindSplitLine = false;
+    OSL_ENSURE( m_pTable, "No Table pointer" );
 }
 
 SwAutoFormatGetDocNode::SwAutoFormatGetDocNode( const SwNodes* pNds )
-    : SwMsgPoolItem( RES_AUTOFMT_DOCNODE ), pContentNode( 0 ), pNodes( pNds )
+    : SwMsgPoolItem( RES_AUTOFMT_DOCNODE ), pContentNode( nullptr ), pNodes( pNds )
 {
 }
 
@@ -120,7 +120,7 @@ bool SwMsgPoolItem::operator==( const SfxPoolItem& ) const
 SfxPoolItem* SwMsgPoolItem::Clone( SfxItemPool* ) const
 {
     OSL_FAIL( "SwMsgPoolItem knows no Clone" );
-    return 0;
+    return nullptr;
 }
 
 #if OSL_DEBUG_LEVEL > 0
@@ -144,25 +144,25 @@ SwCondCollCondChg::SwCondCollCondChg( SwFormat *pFormat )
 {
 }
 
-SwVirtPageNumInfo::SwVirtPageNumInfo( const SwPageFrm *pPg ) :
-    SwMsgPoolItem( RES_VIRTPAGENUM_INFO ), pPage( 0 ), pOrigPage( pPg ), pFrm( 0 )
+SwVirtPageNumInfo::SwVirtPageNumInfo( const SwPageFrame *pPg ) :
+    SwMsgPoolItem( RES_VIRTPAGENUM_INFO ), m_pPage( nullptr ), m_pOrigPage( pPg ), m_pFrame( nullptr )
 {
 }
 
 SwFindNearestNode::SwFindNearestNode( const SwNode& rNd )
-    : SwMsgPoolItem( RES_FINDNEARESTNODE ), pNd( &rNd ), pFnd( 0 )
+    : SwMsgPoolItem( RES_FINDNEARESTNODE ), m_pNode( &rNd ), m_pFound( nullptr )
 {
 }
 
 void SwFindNearestNode::CheckNode( const SwNode& rNd )
 {
-    if( &pNd->GetNodes() == &rNd.GetNodes() )
+    if( &m_pNode->GetNodes() == &rNd.GetNodes() )
     {
         sal_uLong nIdx = rNd.GetIndex();
-        if( nIdx < pNd->GetIndex() &&
-            ( !pFnd || nIdx > pFnd->GetIndex() ) &&
+        if( nIdx < m_pNode->GetIndex() &&
+            ( !m_pFound || nIdx > m_pFound->GetIndex() ) &&
             nIdx > rNd.GetNodes().GetEndOfExtras().GetIndex() )
-            pFnd = &rNd;
+            m_pFound = &rNd;
     }
 }
 
@@ -213,7 +213,7 @@ sal_uInt16 GetWhichOfScript( sal_uInt16 nWhich, sal_uInt16 nScript )
         break;
 
     default:
-        pM = 0;
+        pM = nullptr;
     }
 
     sal_uInt16 nRet;

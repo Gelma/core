@@ -44,23 +44,16 @@ namespace dbaui
 
         void SetOwnership(bool bTakeIt) { m_bOwnerOfObjects = bTakeIt; }
 
-        virtual void Undo() SAL_OVERRIDE = 0;
-        virtual void Redo() SAL_OVERRIDE = 0;
+        virtual void Undo() override = 0;
+        virtual void Redo() override = 0;
 
         // access to the TabWin
         void SetTabWin(OQueryTableWindow* pTW) { m_pTabWin = pTW; }
         // now SetOwnership should be invoked
 
-        // access to the managed connections
-        sal_uInt16  ConnCount() { return (sal_uInt16)m_vTableConnection.size(); }
-
         ::std::vector<VclPtr<OTableConnection> >&       GetTabConnList() { return m_vTableConnection; }
 
         void InsertConnection( OTableConnection* pConnection ) { m_vTableConnection.push_back(pConnection); }
-        void RemoveConnection( OTableConnection* pConnection )
-        {
-            m_vTableConnection.erase(::std::remove(m_vTableConnection.begin(),m_vTableConnection.end(),pConnection),m_vTableConnection.end());
-        }
     };
 
 }

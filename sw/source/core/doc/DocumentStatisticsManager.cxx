@@ -175,7 +175,7 @@ bool DocumentStatisticsManager::IncrementalDocStatCalculate(long nChars, bool bF
     mpDocStat->nPage     = m_rDoc.getIDocumentLayoutAccess().GetCurrentLayout() ? m_rDoc.getIDocumentLayoutAccess().GetCurrentLayout()->GetPageNum() : 0;
     mpDocStat->bModified = false;
 
-    com::sun::star::uno::Sequence < com::sun::star::beans::NamedValue > aStat( mpDocStat->nPage ? 8 : 7);
+    css::uno::Sequence < css::beans::NamedValue > aStat( mpDocStat->nPage ? 8 : 7);
     sal_Int32 n=0;
     aStat[n].Name = "TableCount";
     aStat[n++].Value <<= (sal_Int32)mpDocStat->nTable;
@@ -234,7 +234,7 @@ IMPL_LINK_TYPED( DocumentStatisticsManager, DoIdleStatsUpdate, Timer *, pTimer, 
     if (IncrementalDocStatCalculate(32000))
         maStatsUpdateTimer.Start();
 
-    SwView* pView = m_rDoc.GetDocShell() ? m_rDoc.GetDocShell()->GetView() : NULL;
+    SwView* pView = m_rDoc.GetDocShell() ? m_rDoc.GetDocShell()->GetView() : nullptr;
     if( pView )
         pView->UpdateDocStats();
 }

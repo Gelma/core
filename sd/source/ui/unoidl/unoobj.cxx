@@ -115,29 +115,29 @@ using ::com::sun::star::drawing::XShape;
 #define WID_LEGACYFRAGMENT  25
 
         #define IMPRESS_MAP_ENTRIES \
-        { OUString(UNO_NAME_OBJ_LEGACYFRAGMENT),WID_LEGACYFRAGMENT,  cppu::UnoType<drawing::XShape>::get(),                                   0, 0},\
-        { OUString(UNO_NAME_OBJ_ANIMATIONPATH), WID_ANIMPATH,        cppu::UnoType<drawing::XShape>::get(),                                   0, 0},\
-        { OUString(UNO_NAME_OBJ_BOOKMARK),      WID_BOOKMARK,        ::cppu::UnoType<OUString>::get(),                        0, 0},\
-        { OUString(UNO_NAME_OBJ_DIMCOLOR),      WID_DIMCOLOR,        ::cppu::UnoType<sal_Int32>::get(),                       0, 0},\
-        { OUString(UNO_NAME_OBJ_DIMHIDE),       WID_DIMHIDE,         cppu::UnoType<bool>::get(),                                   0, 0},\
-        { OUString(UNO_NAME_OBJ_DIMPREV),       WID_DIMPREV,         cppu::UnoType<bool>::get(),                                   0, 0},\
-        { OUString(UNO_NAME_OBJ_EFFECT),        WID_EFFECT,          ::cppu::UnoType<presentation::AnimationEffect>::get(),   0, 0},\
-        { OUString(UNO_NAME_OBJ_ISEMPTYPRESOBJ),WID_ISEMPTYPRESOBJ,  cppu::UnoType<bool>::get(),                                   0, 0},\
-        { OUString(UNO_NAME_OBJ_ISPRESOBJ),     WID_ISPRESOBJ,       cppu::UnoType<bool>::get(),                                   ::com::sun::star::beans::PropertyAttribute::READONLY, 0},\
-        { OUString(UNO_NAME_OBJ_MASTERDEPENDENT),WID_MASTERDEPEND,   cppu::UnoType<bool>::get(),                                   0, 0},\
-        { OUString(UNO_NAME_OBJ_CLICKACTION),   WID_CLICKACTION,     ::cppu::UnoType<presentation::ClickAction>::get(),       0, 0},\
-        { OUString(UNO_NAME_OBJ_PLAYFULL),      WID_PLAYFULL,        cppu::UnoType<bool>::get(),                                   0, 0},\
-        { OUString(UNO_NAME_OBJ_PRESORDER),     WID_PRESORDER,       ::cppu::UnoType<sal_Int32>::get(),                       0, 0},\
-        { OUString(UNO_NAME_OBJ_STYLE),         WID_STYLE,           cppu::UnoType<style::XStyle>::get(),                                    ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},\
-        { OUString(UNO_NAME_OBJ_SOUNDFILE),     WID_SOUNDFILE,       ::cppu::UnoType<OUString>::get(),                        0, 0},\
-        { OUString(UNO_NAME_OBJ_SOUNDON),       WID_SOUNDON,         cppu::UnoType<bool>::get(),                                   0, 0},\
-        { OUString(UNO_NAME_OBJ_SPEED),         WID_SPEED,           ::cppu::UnoType<presentation::AnimationSpeed>::get(),    0, 0},\
-        { OUString(UNO_NAME_OBJ_TEXTEFFECT),    WID_TEXTEFFECT,      ::cppu::UnoType<presentation::AnimationEffect>::get(),   0, 0},\
-        { OUString(UNO_NAME_OBJ_BLUESCREEN),    WID_BLUESCREEN,      ::cppu::UnoType<sal_Int32>::get(),                       0, 0},\
-        { OUString(UNO_NAME_OBJ_VERB),          WID_VERB,            ::cppu::UnoType<sal_Int32>::get(),                       0, 0},\
-        { OUString("IsAnimation"),              WID_ISANIMATION,     cppu::UnoType<bool>::get(),                                   0, 0},\
-        { OUString("NavigationOrder"),          WID_NAVORDER,        ::cppu::UnoType<sal_Int32>::get(),                       0, 0},\
-        { OUString("PlaceholderText"),          WID_PLACEHOLDERTEXT, ::cppu::UnoType<OUString>::get(),                        0, 0},\
+        { OUString(UNO_NAME_OBJ_LEGACYFRAGMENT),WID_LEGACYFRAGMENT,  cppu::UnoType<drawing::XShape>::get(),                 0, 0},\
+        { OUString(UNO_NAME_OBJ_ANIMATIONPATH), WID_ANIMPATH,        cppu::UnoType<drawing::XShape>::get(),                 0, 0},\
+        { OUString(UNO_NAME_OBJ_BOOKMARK),      WID_BOOKMARK,        cppu::UnoType<OUString>::get(),                        0, 0},\
+        { OUString(UNO_NAME_OBJ_DIMCOLOR),      WID_DIMCOLOR,        cppu::UnoType<sal_Int32>::get(),                       0, 0},\
+        { OUString(UNO_NAME_OBJ_DIMHIDE),       WID_DIMHIDE,         cppu::UnoType<bool>::get(),                            0, 0},\
+        { OUString(UNO_NAME_OBJ_DIMPREV),       WID_DIMPREV,         cppu::UnoType<bool>::get(),                            0, 0},\
+        { OUString(UNO_NAME_OBJ_EFFECT),        WID_EFFECT,          cppu::UnoType<presentation::AnimationEffect>::get(),   0, 0},\
+        { OUString(UNO_NAME_OBJ_ISEMPTYPRESOBJ),WID_ISEMPTYPRESOBJ,  cppu::UnoType<bool>::get(),                            0, 0},\
+        { OUString(UNO_NAME_OBJ_ISPRESOBJ),     WID_ISPRESOBJ,       cppu::UnoType<bool>::get(),                            css::beans::PropertyAttribute::READONLY, 0},\
+        { OUString(UNO_NAME_OBJ_MASTERDEPENDENT),WID_MASTERDEPEND,   cppu::UnoType<bool>::get(),                            0, 0},\
+        { OUString(UNO_NAME_OBJ_CLICKACTION),   WID_CLICKACTION,     cppu::UnoType<presentation::ClickAction>::get(),       0, 0},\
+        { OUString(UNO_NAME_OBJ_PLAYFULL),      WID_PLAYFULL,        cppu::UnoType<bool>::get(),                            0, 0},\
+        { OUString(UNO_NAME_OBJ_PRESORDER),     WID_PRESORDER,       cppu::UnoType<sal_Int32>::get(),                       0, 0},\
+        { OUString(UNO_NAME_OBJ_STYLE),         WID_STYLE,           cppu::UnoType<style::XStyle>::get(),                   css::beans::PropertyAttribute::MAYBEVOID, 0},\
+        { OUString(UNO_NAME_OBJ_SOUNDFILE),     WID_SOUNDFILE,       cppu::UnoType<OUString>::get(),                        0, 0},\
+        { OUString(UNO_NAME_OBJ_SOUNDON),       WID_SOUNDON,         cppu::UnoType<bool>::get(),                            0, 0},\
+        { OUString(UNO_NAME_OBJ_SPEED),         WID_SPEED,           cppu::UnoType<presentation::AnimationSpeed>::get(),    0, 0},\
+        { OUString(UNO_NAME_OBJ_TEXTEFFECT),    WID_TEXTEFFECT,      cppu::UnoType<presentation::AnimationEffect>::get(),   0, 0},\
+        { OUString(UNO_NAME_OBJ_BLUESCREEN),    WID_BLUESCREEN,      cppu::UnoType<sal_Int32>::get(),                       0, 0},\
+        { OUString(UNO_NAME_OBJ_VERB),          WID_VERB,            cppu::UnoType<sal_Int32>::get(),                       0, 0},\
+        { OUString("IsAnimation"),              WID_ISANIMATION,     cppu::UnoType<bool>::get(),                            0, 0},\
+        { OUString("NavigationOrder"),          WID_NAVORDER,        cppu::UnoType<sal_Int32>::get(),                       0, 0},\
+        { OUString("PlaceholderText"),          WID_PLACEHOLDERTEXT, cppu::UnoType<OUString>::get(),                        0, 0},\
         { OUString(), 0, css::uno::Type(), 0, 0 }
 
     static const SfxItemPropertyMapEntry* lcl_GetImpress_SdXShapePropertyGraphicMap_Impl()
@@ -162,10 +162,10 @@ using ::com::sun::star::drawing::XShape;
     }
 
     #define DRAW_MAP_ENTRIES\
-        { OUString(UNO_NAME_OBJ_BOOKMARK),      WID_BOOKMARK,       ::cppu::UnoType<OUString>::get(),                 0, 0},\
-        { OUString(UNO_NAME_OBJ_CLICKACTION),   WID_CLICKACTION,    ::cppu::UnoType<presentation::ClickAction>::get(),0, 0},\
-        { OUString(UNO_NAME_OBJ_STYLE),         WID_STYLE,          cppu::UnoType<style::XStyle>::get(),                              ::com::sun::star::beans::PropertyAttribute::MAYBEVOID, 0},\
-        { OUString("NavigationOrder"),          WID_NAVORDER,       ::cppu::UnoType<sal_Int32>::get(),                       0, 0},\
+        { OUString(UNO_NAME_OBJ_BOOKMARK),      WID_BOOKMARK,       cppu::UnoType<OUString>::get(),                 0, 0},\
+        { OUString(UNO_NAME_OBJ_CLICKACTION),   WID_CLICKACTION,    cppu::UnoType<presentation::ClickAction>::get(),0, 0},\
+        { OUString(UNO_NAME_OBJ_STYLE),         WID_STYLE,          cppu::UnoType<style::XStyle>::get(),            css::beans::PropertyAttribute::MAYBEVOID, 0},\
+        { OUString("NavigationOrder"),          WID_NAVORDER,       cppu::UnoType<sal_Int32>::get(),                0, 0},\
         { OUString(), 0, css::uno::Type(), 0, 0 }
 
     static const SfxItemPropertyMapEntry* lcl_GetDraw_SdXShapePropertySimpleMap_Impl()
@@ -187,7 +187,7 @@ using ::com::sun::star::drawing::XShape;
     }
     static const SfxItemPropertyMapEntry* lcl_ImplGetShapePropertyMap( bool bImpress, bool bGraphicObj )
     {
-        const SfxItemPropertyMapEntry* pRet = 0;
+        const SfxItemPropertyMapEntry* pRet = nullptr;
         if( bImpress )
         {
             if( bGraphicObj )
@@ -207,7 +207,7 @@ using ::com::sun::star::drawing::XShape;
     }
     static const SvxItemPropertySet* lcl_ImplGetShapePropertySet( bool bImpress, bool bGraphicObj )
     {
-        const SvxItemPropertySet* pRet = 0;
+        const SvxItemPropertySet* pRet = nullptr;
         if( bImpress )
         {
             if( bGraphicObj )
@@ -256,22 +256,11 @@ const SvEventDescription* ImplGetSupportedMacroItems()
     {
         { SFX_EVENT_MOUSEOVER_OBJECT, "OnMouseOver" },
         { SFX_EVENT_MOUSEOUT_OBJECT, "OnMouseOut" },
-        { 0, NULL }
+        { 0, nullptr }
     };
 
     return aMacroDescriptionsImpl;
 }
-
-/**
- * compare function for QSort
- */
-struct SortStruct
-{
-    SdrObject*  pObj;
-    sal_uInt32      nOrder;
-};
-
-typedef SortStruct  SORT;
 
 SdXShape::SdXShape( SvxShape* pShape, SdXImpressDocument* pModel) throw()
 :   mpShape( pShape ),
@@ -281,9 +270,7 @@ SdXShape::SdXShape( SvxShape* pShape, SdXImpressDocument* pModel) throw()
     mpMap( pModel?
                     lcl_ImplGetShapePropertyMap(pModel->IsImpressDocument(), pShape->getShapeKind() == OBJ_GRAF )
                 :   lcl_GetEmpty_SdXShapePropertyMap_Impl() ),
-    mpModel(pModel),
-    mpImplementationId( NULL )
-
+    mpModel(pModel)
 {
 
     pShape->setMaster( this );
@@ -295,7 +282,7 @@ SdXShape::~SdXShape() throw()
 
 void SdXShape::dispose()
 {
-    mpShape->setMaster( NULL );
+    mpShape->setMaster( nullptr );
     delete this;
 }
 
@@ -315,7 +302,7 @@ void SAL_CALL SdXShape::release() throw()
     mpShape->release();
 }
 
-bool SdXShape::queryAggregation( const com::sun::star::uno::Type & rType, com::sun::star::uno::Any& aAny )
+bool SdXShape::queryAggregation( const css::uno::Type & rType, css::uno::Any& aAny )
 {
     if( mpModel && mpModel ->IsImpressDocument() )
     {
@@ -372,7 +359,7 @@ beans::PropertyState SAL_CALL SdXShape::getPropertyState( const OUString& Proper
     else
     {
         SdrObject* pObj = mpShape->GetSdrObject();
-        if( pObj == NULL || ( pObj->GetPage()->IsMasterPage() && pObj->IsEmptyPresObj() ) )
+        if( pObj == nullptr || ( pObj->GetPage()->IsMasterPage() && pObj->IsEmptyPresObj() ) )
             return beans::PropertyState_DEFAULT_VALUE;
 
         return mpShape->_getPropertyState( PropertyName );
@@ -419,8 +406,8 @@ uno::Any SAL_CALL SdXShape::getPropertyDefault( const OUString& aPropertyName ) 
 }
 
 //XPropertySet
-::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySetInfo > SAL_CALL SdXShape::getPropertySetInfo()
-    throw(::com::sun::star::uno::RuntimeException)
+css::uno::Reference< css::beans::XPropertySetInfo > SAL_CALL SdXShape::getPropertySetInfo()
+    throw(css::uno::RuntimeException)
 {
     sal_uIntPtr nObjId = reinterpret_cast<sal_uIntPtr>(mpShape->getPropertyMapEntries());
     css::uno::Reference<css::beans::XPropertySetInfo> pInfo;
@@ -445,12 +432,12 @@ uno::Any SAL_CALL SdXShape::getPropertyDefault( const OUString& aPropertyName ) 
     return pInfo;
 }
 
-void SAL_CALL SdXShape::setPropertyValue( const OUString& aPropertyName, const ::com::sun::star::uno::Any& aValue )
-    throw (::com::sun::star::beans::UnknownPropertyException,
-           ::com::sun::star::beans::PropertyVetoException,
-           ::com::sun::star::lang::IllegalArgumentException,
-           ::com::sun::star::lang::WrappedTargetException,
-           ::com::sun::star::uno::RuntimeException,
+void SAL_CALL SdXShape::setPropertyValue( const OUString& aPropertyName, const css::uno::Any& aValue )
+    throw (css::beans::UnknownPropertyException,
+           css::beans::PropertyVetoException,
+           css::lang::IllegalArgumentException,
+           css::lang::WrappedTargetException,
+           css::uno::RuntimeException,
            std::exception)
 {
     SolarMutexGuard aGuard;
@@ -517,7 +504,7 @@ void SAL_CALL SdXShape::setPropertyValue( const OUString& aPropertyName, const :
                     if(bIsAnimation)
                     {
                         SdrObjGroup* pGroup = dynamic_cast< SdrObjGroup* >(pObj);
-                        SdPage* pPage = pGroup ? dynamic_cast< SdPage* >(pGroup->GetPage()) : NULL;
+                        SdPage* pPage = pGroup ? dynamic_cast< SdPage* >(pGroup->GetPage()) : nullptr;
 
                         if (pPage)
                         {
@@ -641,9 +628,9 @@ void SAL_CALL SdXShape::setPropertyValue( const OUString& aPropertyName, const :
                 case WID_ANIMPATH:
                 {
                     uno::Reference< drawing::XShape > xShape( aValue, uno::UNO_QUERY );
-                    SdrPathObj* pObj2 = xShape.is() ? dynamic_cast< SdrPathObj* >( GetSdrObjectFromXShape( xShape ) ) : NULL;
+                    SdrPathObj* pObj2 = xShape.is() ? dynamic_cast< SdrPathObj* >( GetSdrObjectFromXShape( xShape ) ) : nullptr;
 
-                    if( pObj2 == NULL )
+                    if( pObj2 == nullptr )
                         throw lang::IllegalArgumentException();
 
                     EffectMigration::SetAnimationPath( mpShape, pObj2 );
@@ -651,7 +638,7 @@ void SAL_CALL SdXShape::setPropertyValue( const OUString& aPropertyName, const :
                 }
                 case WID_IMAGEMAP:
                 {
-                    SdDrawDocument* pDoc = mpModel?mpModel->GetDoc():NULL;
+                    SdDrawDocument* pDoc = mpModel?mpModel->GetDoc():nullptr;
                     if( pDoc )
                     {
                         ImageMap aImageMap;
@@ -699,10 +686,10 @@ void SAL_CALL SdXShape::setPropertyValue( const OUString& aPropertyName, const :
         mpModel->SetModified();
 }
 
-::com::sun::star::uno::Any SAL_CALL SdXShape::getPropertyValue( const OUString& PropertyName )
-    throw (::com::sun::star::beans::UnknownPropertyException,
-           ::com::sun::star::lang::WrappedTargetException,
-           ::com::sun::star::uno::RuntimeException,
+css::uno::Any SAL_CALL SdXShape::getPropertyValue( const OUString& PropertyName )
+    throw (css::beans::UnknownPropertyException,
+           css::lang::WrappedTargetException,
+           css::uno::RuntimeException,
            std::exception)
 {
     SolarMutexGuard aGuard;
@@ -750,7 +737,7 @@ void SAL_CALL SdXShape::setPropertyValue( const OUString& aPropertyName, const :
         case WID_BOOKMARK:
         {
             OUString aString;
-            SdDrawDocument* pDoc = mpModel ? mpModel->GetDoc() : NULL;
+            SdDrawDocument* pDoc = mpModel ? mpModel->GetDoc() : nullptr;
             if (pInfo && pDoc)
             {
                 // is the bookmark a page?
@@ -820,7 +807,7 @@ void SAL_CALL SdXShape::setPropertyValue( const OUString& aPropertyName, const :
             {
                 uno::Reference< uno::XInterface > xImageMap;
 
-                SdDrawDocument* pDoc = mpModel?mpModel->GetDoc():NULL;
+                SdDrawDocument* pDoc = mpModel?mpModel->GetDoc():nullptr;
                 if( pDoc )
                 {
 
@@ -863,7 +850,7 @@ void SAL_CALL SdXShape::setPropertyValue( const OUString& aPropertyName, const :
 SdAnimationInfo* SdXShape::GetAnimationInfo( bool bCreate ) const
     throw (std::exception)
 {
-    SdAnimationInfo* pInfo = NULL;
+    SdAnimationInfo* pInfo = nullptr;
 
     SdrObject* pObj = mpShape->GetSdrObject();
     if(pObj)
@@ -872,7 +859,7 @@ SdAnimationInfo* SdXShape::GetAnimationInfo( bool bCreate ) const
     return pInfo;
 }
 
-uno::Sequence< OUString > SAL_CALL SdXShape::getSupportedServiceNames() throw(::com::sun::star::uno::RuntimeException)
+uno::Sequence< OUString > SAL_CALL SdXShape::getSupportedServiceNames() throw(css::uno::RuntimeException)
 {
     uno::Sequence< OUString > aSeq( mpShape->_getSupportedServiceNames() );
 
@@ -904,7 +891,7 @@ bool SdXShape::IsPresObj() const
     SdrObject* pObj = mpShape->GetSdrObject();
     if(pObj)
     {
-        SdPage* pPage = PTR_CAST(SdPage,pObj->GetPage());
+        SdPage* pPage = dynamic_cast<SdPage* >(pObj->GetPage());
         if(pPage)
             return pPage->GetPresObjKind(pObj) != PRESOBJ_NONE;
     }
@@ -916,11 +903,11 @@ bool SdXShape::IsPresObj() const
 bool SdXShape::IsEmptyPresObj() const throw()
 {
     SdrObject* pObj = mpShape->GetSdrObject();
-    if( (pObj != NULL) && pObj->IsEmptyPresObj() )
+    if( (pObj != nullptr) && pObj->IsEmptyPresObj() )
     {
         // check if the object is in edit, than its temporarily not empty
         SdrTextObj* pTextObj = dynamic_cast< SdrTextObj* >( pObj );
-        if( pTextObj == 0 )
+        if( pTextObj == nullptr )
             return true;
 
         OutlinerParaObject* pParaObj = pTextObj->GetEditOutlinerParaObject();
@@ -944,12 +931,12 @@ OUString SdXShape::GetPlaceholderText() const
         return OUString();
 
     SdrObject* pObj = mpShape->GetSdrObject();
-    if( pObj == NULL )
+    if( pObj == nullptr )
         return OUString();
 
-    SdPage* pPage = PTR_CAST(SdPage,pObj->GetPage());
+    SdPage* pPage = dynamic_cast< SdPage* >(pObj->GetPage());
     DBG_ASSERT( pPage, "no page?" );
-    if( pPage == NULL )
+    if( pPage == nullptr )
         return OUString();
 
     return pPage->GetPresObjText( pPage->GetPresObjKind(pObj) );
@@ -965,7 +952,7 @@ void SdXShape::SetEmptyPresObj(bool bEmpty)
         return;
 
     SdrObject* pObj = mpShape->GetSdrObject();
-    if( pObj == NULL )
+    if( pObj == nullptr )
         return;
 
     if( pObj->IsEmptyPresObj() != bEmpty )
@@ -976,11 +963,11 @@ void SdXShape::SetEmptyPresObj(bool bEmpty)
             const bool bVertical = pOutlinerParaObject && pOutlinerParaObject->IsVertical();
 
             // really delete SdrOutlinerObj at pObj
-            pObj->NbcSetOutlinerParaObject(0L);
-            if( bVertical && PTR_CAST( SdrTextObj, pObj ) )
+            pObj->NbcSetOutlinerParaObject(nullptr);
+            if( bVertical && dynamic_cast<SdrTextObj*>( pObj )  )
                 static_cast<SdrTextObj*>(pObj)->SetVerticalWriting( true );
 
-            SdrGrafObj* pGraphicObj = PTR_CAST( SdrGrafObj, pObj );
+            SdrGrafObj* pGraphicObj = dynamic_cast<SdrGrafObj*>( pObj  );
             if( pGraphicObj )
             {
                 Graphic aEmpty;
@@ -988,10 +975,10 @@ void SdXShape::SetEmptyPresObj(bool bEmpty)
             }
             else
             {
-                SdrOle2Obj* pOleObj = PTR_CAST( SdrOle2Obj, pObj );
+                SdrOle2Obj* pOleObj = dynamic_cast< SdrOle2Obj* >( pObj );
                 if( pOleObj )
                 {
-                    pOleObj->SetGraphic( NULL );
+                    pOleObj->SetGraphic( nullptr );
                 }
             }
         }
@@ -1002,19 +989,19 @@ void SdXShape::SetEmptyPresObj(bool bEmpty)
             // first paragraph
             do
             {
-                SdDrawDocument* pDoc = mpModel?mpModel->GetDoc():NULL;
+                SdDrawDocument* pDoc = mpModel?mpModel->GetDoc():nullptr;
                 DBG_ASSERT( pDoc, "no document?" );
-                if( pDoc == NULL)
+                if( pDoc == nullptr)
                     break;
 
                 ::sd::Outliner* pOutliner = pDoc->GetInternalOutliner();
                 DBG_ASSERT( pOutliner, "no outliner?" );
-                if( pOutliner == NULL )
+                if( pOutliner == nullptr )
                     break;
 
-                SdPage* pPage = PTR_CAST(SdPage,pObj->GetPage());
+                SdPage* pPage = dynamic_cast< SdPage* >(pObj->GetPage());
                 DBG_ASSERT( pPage, "no page?" );
-                if( pPage == NULL )
+                if( pPage == nullptr )
                     break;
 
                 OutlinerParaObject* pOutlinerParaObject = pObj->GetOutlinerParaObject();
@@ -1039,7 +1026,7 @@ void SdXShape::SetEmptyPresObj(bool bEmpty)
 bool SdXShape::IsMasterDepend() const throw()
 {
     SdrObject* pObj = mpShape->GetSdrObject();
-    return pObj && pObj->GetUserCall() != NULL;
+    return pObj && pObj->GetUserCall() != nullptr;
 }
 
 void SdXShape::SetMasterDepend( bool bDepend ) throw()
@@ -1051,12 +1038,12 @@ void SdXShape::SetMasterDepend( bool bDepend ) throw()
         {
             if( bDepend )
             {
-                SdPage* pPage = PTR_CAST(SdPage,pObj->GetPage());
+                SdPage* pPage = dynamic_cast< SdPage* >(pObj->GetPage());
                 pObj->SetUserCall( pPage );
             }
             else
             {
-                pObj->SetUserCall( NULL );
+                pObj->SetUserCall( nullptr );
             }
         }
     }
@@ -1065,7 +1052,7 @@ void SdXShape::SetMasterDepend( bool bDepend ) throw()
 void SdXShape::SetStyleSheet( const uno::Any& rAny ) throw( lang::IllegalArgumentException, beans::UnknownPropertyException, uno::RuntimeException )
 {
     SdrObject* pObj = mpShape->GetSdrObject();
-    if( pObj == NULL )
+    if( pObj == nullptr )
         throw beans::UnknownPropertyException();
 
     uno::Reference< style::XStyle > xStyle( rAny, uno::UNO_QUERY );
@@ -1074,16 +1061,16 @@ void SdXShape::SetStyleSheet( const uno::Any& rAny ) throw( lang::IllegalArgumen
     const SfxStyleSheet* pOldStyleSheet = pObj->GetStyleSheet();
     if( pOldStyleSheet != pStyleSheet )
     {
-        if( pStyleSheet == 0 || (pStyleSheet->GetFamily() != SD_STYLE_FAMILY_GRAPHICS && pStyleSheet->GetFamily() != SD_STYLE_FAMILY_MASTERPAGE) )
+        if( pStyleSheet == nullptr || (pStyleSheet->GetFamily() != SD_STYLE_FAMILY_GRAPHICS && pStyleSheet->GetFamily() != SD_STYLE_FAMILY_MASTERPAGE) )
             throw lang::IllegalArgumentException();
 
         pObj->SetStyleSheet( pStyleSheet, false );
 
-        SdDrawDocument* pDoc = mpModel? mpModel->GetDoc() : NULL;
+        SdDrawDocument* pDoc = mpModel? mpModel->GetDoc() : nullptr;
         if( pDoc )
         {
             ::sd::DrawDocShell* pDocSh = pDoc->GetDocSh();
-            ::sd::ViewShell* pViewSh = pDocSh ? pDocSh->GetViewShell() : NULL;
+            ::sd::ViewShell* pViewSh = pDocSh ? pDocSh->GetViewShell() : nullptr;
 
             if( pViewSh )
                 pViewSh->GetViewFrame()->GetBindings().Invalidate( SID_STYLE_FAMILY2 );
@@ -1094,19 +1081,19 @@ void SdXShape::SetStyleSheet( const uno::Any& rAny ) throw( lang::IllegalArgumen
 uno::Any SdXShape::GetStyleSheet() const throw( beans::UnknownPropertyException  )
 {
     SdrObject* pObj = mpShape->GetSdrObject();
-    if( pObj == NULL )
+    if( pObj == nullptr )
         throw beans::UnknownPropertyException();
 
     SfxStyleSheet* pStyleSheet = pObj->GetStyleSheet();
     // it is possible for shapes inside a draw to have a presentation style
     // but we don't want this for the api
-    if( (pStyleSheet == NULL) || ((pStyleSheet->GetFamily() != SD_STYLE_FAMILY_GRAPHICS) && !mpModel->IsImpressDocument()) )
+    if( (pStyleSheet == nullptr) || ((pStyleSheet->GetFamily() != SD_STYLE_FAMILY_GRAPHICS) && !mpModel->IsImpressDocument()) )
         return Any();
 
     return Any( uno::Reference< style::XStyle >( dynamic_cast< SfxUnoStyleSheet* >( pStyleSheet ) ) );
 }
 
-class SdUnoEventsAccess : public cppu::WeakImplHelper< com::sun::star::container::XNameReplace, com::sun::star::lang::XServiceInfo >
+class SdUnoEventsAccess : public cppu::WeakImplHelper< css::container::XNameReplace, css::lang::XServiceInfo >
 {
 private:
     const OUString      maStrOnClick;
@@ -1126,31 +1113,30 @@ private:
     const OUString      maStrScript;
 
     SdXShape*   mpShape;
-    uno::Reference< document::XEventsSupplier > mxShape;
 
 public:
     SdUnoEventsAccess( SdXShape* pShape ) throw();
 
     // XNameReplace
-    virtual void SAL_CALL replaceByName( const OUString& aName, const ::com::sun::star::uno::Any& aElement ) throw(::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL replaceByName( const OUString& aName, const css::uno::Any& aElement ) throw(css::lang::IllegalArgumentException, css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
 
     // XNameAccess
-    virtual ::com::sun::star::uno::Any SAL_CALL getByName( const OUString& aName ) throw(::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Any SAL_CALL getByName( const OUString& aName ) throw(css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw(css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw(css::uno::RuntimeException, std::exception) override;
 
     // XElementAccess
-    virtual ::com::sun::star::uno::Type SAL_CALL getElementType(  ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL hasElements(  ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Type SAL_CALL getElementType(  ) throw(css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL hasElements(  ) throw(css::uno::RuntimeException, std::exception) override;
 
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName(  ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName(  ) throw(css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw(css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw(css::uno::RuntimeException, std::exception) override;
 };
 
 // XEventsSupplier
-uno::Reference< container::XNameReplace > SAL_CALL SdXShape::getEvents(  ) throw(::com::sun::star::uno::RuntimeException, std::exception)
+uno::Reference< container::XNameReplace > SAL_CALL SdXShape::getEvents(  ) throw(css::uno::RuntimeException, std::exception)
 {
     return new SdUnoEventsAccess( this );
 }
@@ -1171,7 +1157,7 @@ SdUnoEventsAccess::SdUnoEventsAccess( SdXShape* pShape ) throw()
   maStrSpeed( "Speed" ),
   maStrStarBasic( "StarBasic" ),
   maStrScript( "Script" ),
-  mpShape( pShape ), mxShape( pShape )
+  mpShape( pShape )
 {
 }
 
@@ -1201,7 +1187,7 @@ static void clearEventsInAnimationInfo( SdAnimationInfo* pInfo )
 void SAL_CALL SdUnoEventsAccess::replaceByName( const OUString& aName, const uno::Any& aElement )
     throw(lang::IllegalArgumentException, container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception)
 {
-    if( mpShape == NULL || aName != maStrOnClick )
+    if( mpShape == nullptr || aName != maStrOnClick )
         throw container::NoSuchElementException();
 
     uno::Sequence< beans::PropertyValue > aProperties;
@@ -1322,17 +1308,17 @@ void SAL_CALL SdUnoEventsAccess::replaceByName( const OUString& aName, const uno
                 break;
 
             SdAnimationInfo* pInfo = mpShape->GetAnimationInfo();
-            if( presentation::ClickAction_NONE == eClickAction && NULL == pInfo )
+            if( presentation::ClickAction_NONE == eClickAction && nullptr == pInfo )
             {
                 bOk = true;
                 break;
             }
 
-            if( NULL == pInfo )
+            if( nullptr == pInfo )
                 pInfo = mpShape->GetAnimationInfo( true );
 
             DBG_ASSERT( pInfo, "shape animation info could not be created!" );
-            if( NULL == pInfo )
+            if( nullptr == pInfo )
                 break;
 
             clearEventsInAnimationInfo( pInfo );
@@ -1424,7 +1410,7 @@ void SAL_CALL SdUnoEventsAccess::replaceByName( const OUString& aName, const uno
             SdAnimationInfo* pInfo = mpShape->GetAnimationInfo( true );
 
             DBG_ASSERT( pInfo, "shape animation info could not be created!" );
-            if( NULL == pInfo )
+            if( nullptr == pInfo )
                 break;
 
             clearEventsInAnimationInfo( pInfo );
@@ -1474,7 +1460,7 @@ void SAL_CALL SdUnoEventsAccess::replaceByName( const OUString& aName, const uno
 uno::Any SAL_CALL SdUnoEventsAccess::getByName( const OUString& aName )
     throw(container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception)
 {
-    if( mpShape == NULL || aName != maStrOnClick )
+    if( mpShape == nullptr || aName != maStrOnClick )
         throw container::NoSuchElementException();
 
     SdAnimationInfo* pInfo = mpShape->GetAnimationInfo();
@@ -1736,7 +1722,7 @@ void SdXShape::modelChanged( SdrModel* pNewModel )
     }
     else
     {
-        mpModel = 0;
+        mpModel = nullptr;
     }
 }
 

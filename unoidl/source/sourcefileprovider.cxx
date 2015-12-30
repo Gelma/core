@@ -29,14 +29,14 @@ public:
 private:
     virtual ~Cursor() throw () {}
 
-    virtual rtl::Reference< Entity > getNext(OUString * name) SAL_OVERRIDE;
+    virtual rtl::Reference< Entity > getNext(OUString * name) override;
 
     std::map< OUString, rtl::Reference<Entity> > const & map_; //TODO: extent
     std::map< OUString, rtl::Reference<Entity> >::const_iterator iterator_;
 };
 
 rtl::Reference< Entity > Cursor::getNext(OUString * name) {
-    assert(name != 0);
+    assert(name != nullptr);
     rtl::Reference< Entity > ent;
     if (iterator_ != map_.end()) {
         *name = iterator_->first;
@@ -55,9 +55,9 @@ public:
 private:
     virtual ~Module() throw () {}
 
-    virtual std::vector<rtl::OUString> getMemberNames() const SAL_OVERRIDE;
+    virtual std::vector<rtl::OUString> getMemberNames() const override;
 
-    virtual rtl::Reference<MapCursor> createCursor() const SAL_OVERRIDE
+    virtual rtl::Reference<MapCursor> createCursor() const override
     { return new Cursor(map); }
 };
 
@@ -129,7 +129,7 @@ rtl::Reference<Entity> SourceFileProvider::findEntity(OUString const & name)
             return rtl::Reference<Entity>();
         }
         Module * mod = dynamic_cast< Module * >(j->second.get());
-        assert(mod != 0);
+        assert(mod != nullptr);
         map = &mod->map;
     }
 }

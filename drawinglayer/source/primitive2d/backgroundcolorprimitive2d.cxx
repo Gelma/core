@@ -35,24 +35,26 @@ namespace drawinglayer
 {
     namespace primitive2d
     {
-        Primitive2DSequence BackgroundColorPrimitive2D::create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const
+        Primitive2DContainer BackgroundColorPrimitive2D::create2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const
         {
             if(!rViewInformation.getViewport().isEmpty())
             {
                 const basegfx::B2DPolygon aOutline(basegfx::tools::createPolygonFromRect(rViewInformation.getViewport()));
                 const Primitive2DReference xRef(new PolyPolygonColorPrimitive2D(basegfx::B2DPolyPolygon(aOutline), getBColor()));
-                return Primitive2DSequence(&xRef, 1L);
+                return Primitive2DContainer { xRef };
             }
             else
             {
-                return Primitive2DSequence();
+                return Primitive2DContainer();
             }
         }
 
         BackgroundColorPrimitive2D::BackgroundColorPrimitive2D(
-            const basegfx::BColor& rBColor)
+            const basegfx::BColor& rBColor,
+            double fTransparency)
         :   BufferedDecompositionPrimitive2D(),
             maBColor(rBColor),
+            mfTransparency(fTransparency),
             maLastViewport()
         {
         }
@@ -63,7 +65,7 @@ namespace drawinglayer
             {
                 const BackgroundColorPrimitive2D& rCompare = static_cast<const BackgroundColorPrimitive2D&>(rPrimitive);
 
-                return (getBColor() == rCompare.getBColor());
+                return (getBColor() == rCompare.getBColor() && getTransparency() == rCompare.getTransparency());
             }
 
             return false;
@@ -75,17 +77,17 @@ namespace drawinglayer
             return rViewInformation.getViewport();
         }
 
-        Primitive2DSequence BackgroundColorPrimitive2D::get2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const
+        Primitive2DContainer BackgroundColorPrimitive2D::get2DDecomposition(const geometry::ViewInformation2D& rViewInformation) const
         {
             ::osl::MutexGuard aGuard( m_aMutex );
 
-            if(getBuffered2DDecomposition().hasElements() && (maLastViewport != rViewInformation.getViewport()))
+            if(!getBuffered2DDecomposition().empty() && (maLastViewport != rViewInformation.getViewport()))
             {
                 // conditions of last local decomposition have changed, delete
-                const_cast< BackgroundColorPrimitive2D* >(this)->setBuffered2DDecomposition(Primitive2DSequence());
+                const_cast< BackgroundColorPrimitive2D* >(this)->setBuffered2DDecomposition(Primitive2DContainer());
             }
 
-            if(!getBuffered2DDecomposition().hasElements())
+            if(getBuffered2DDecomposition().empty())
             {
                 // remember ViewRange
                 const_cast< BackgroundColorPrimitive2D* >(this)->maLastViewport = rViewInformation.getViewport();

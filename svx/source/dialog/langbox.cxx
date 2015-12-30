@@ -130,7 +130,7 @@ VCL_BUILDER_DECL_FACTORY(SvxLanguageComboBox)
 }
 
 SvxLanguageBoxBase::SvxLanguageBoxBase( bool bCheck )
-    : m_pSpellUsedLang(NULL)
+    : m_pSpellUsedLang(nullptr)
     , m_nLangList(SvxLanguageListFlags::EMPTY)
     , m_bHasLangNone(false)
     , m_bLangNoneIsLangAll(false)
@@ -237,7 +237,7 @@ void SvxLanguageBoxBase::SetLanguageList( SvxLanguageListFlags nLangList,
             }
         }
 
-        ::com::sun::star::uno::Sequence< sal_uInt16 > xKnown;
+        css::uno::Sequence< sal_uInt16 > xKnown;
         const sal_uInt16* pKnown;
         sal_uInt32 nCount;
         if ( nLangList & SvxLanguageListFlags::ONLY_KNOWN )
@@ -249,7 +249,7 @@ void SvxLanguageBoxBase::SetLanguageList( SvxLanguageListFlags nLangList,
         else
         {
             nCount = SvtLanguageTable::GetLanguageEntryCount();
-            pKnown = NULL;
+            pKnown = nullptr;
         }
         for ( sal_uInt32 i = 0; i < nCount; i++ )
         {
@@ -299,7 +299,7 @@ void SvxLanguageBoxBase::SetLanguageList( SvxLanguageListFlags nLangList,
 
 sal_Int32 SvxLanguageBoxBase::InsertLanguage( const LanguageType nLangType, sal_Int32 nPos )
 {
-    return ImplInsertLanguage( nLangType, nPos, ::com::sun::star::i18n::ScriptType::WEAK );
+    return ImplInsertLanguage( nLangType, nPos, css::i18n::ScriptType::WEAK );
 }
 
 
@@ -366,7 +366,7 @@ sal_Int32 SvxLanguageBoxBase::InsertDefaultLanguage( sal_Int16 nType, sal_Int32 
 
 sal_Int32 SvxLanguageBoxBase::InsertSystemLanguage( sal_Int32 nPos )
 {
-    return ImplInsertLanguage( LANGUAGE_USER_SYSTEM_CONFIG, nPos, ::com::sun::star::i18n::ScriptType::WEAK );
+    return ImplInsertLanguage( LANGUAGE_USER_SYSTEM_CONFIG, nPos, css::i18n::ScriptType::WEAK );
 }
 
 
@@ -679,7 +679,7 @@ sal_Int32 SvxLanguageComboBox::ImplGetSavedValue() const
 }
 
 
-IMPL_LINK( SvxLanguageComboBox, EditModifyHdl, SvxLanguageComboBox*, /*pEd*/ )
+IMPL_LINK_NOARG_TYPED( SvxLanguageComboBox, EditModifyHdl, Edit&, void )
 {
     EditedAndValid eOldState = meEditedAndValid;
     OUString aStr( vcl::I18nHelper::filterFormattingChars( GetText()));
@@ -755,7 +755,6 @@ IMPL_LINK( SvxLanguageComboBox, EditModifyHdl, SvxLanguageComboBox*, /*pEd*/ )
             SetControlBackground();
         }
     }
-    return 0;
 }
 
 

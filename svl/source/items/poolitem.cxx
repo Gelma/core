@@ -22,12 +22,7 @@
 #include <tools/stream.hxx>
 #include <osl/diagnose.h>
 #include <libxml/xmlwriter.h>
-
-TYPEINIT0(SfxPoolItem);
-TYPEINIT1(SfxVoidItem, SfxPoolItem);
-// @@@ TYPEINIT1(SfxInvalidItem, SfxPoolItem);
-TYPEINIT1(SfxSetItem, SfxPoolItem);
-// @@@ TYPEINIT1(SfxItemChangedHint, SfxHint);
+#include <typeinfo>
 
 
 #if OSL_DEBUG_LEVEL > 1
@@ -50,27 +45,27 @@ SfxPoolItem::SfxPoolItem(sal_uInt16 const nWhich)
     ++nItemCount;
     if ( pw1 && nItemCount>=10000 )
     {
-        DBG_WARNING( pw1 );
+        SAL_INFO( "svl", pw1 );
         pw1 = NULL;
     }
     if ( pw2 && nItemCount>=100000 )
     {
-        DBG_WARNING( pw2 );
+        SAL_INFO( "svl", pw2 );
         pw2 = NULL;
     }
     if ( pw3 && nItemCount>=1000000 )
     {
-        DBG_WARNING( pw3 );
+        SAL_INFO( "svl", pw3 );
         pw3 = NULL;
     }
     if ( pw4 && nItemCount>=5000000 )
     {
-        DBG_WARNING( pw4 );
+        SAL_INFO( "svl", pw4 );
         pw4 = NULL;
     }
     if ( pw5 && nItemCount>=10000000 )
     {
-        DBG_WARNING( pw5 );
+        SAL_INFO( "svl", pw5 );
         pw5 = NULL;
     }
 #endif
@@ -86,27 +81,27 @@ SfxPoolItem::SfxPoolItem( const SfxPoolItem& rCpy )
     ++nItemCount;
     if ( pw1 && nItemCount>=10000 )
     {
-        DBG_WARNING( pw1 );
+        SAL_INFO( "svl", pw1 );
         pw1 = NULL;
     }
     if ( pw2 && nItemCount>=100000 )
     {
-        DBG_WARNING( pw2 );
+        SAL_INFO( "svl", pw2 );
         pw2 = NULL;
     }
     if ( pw3 && nItemCount>=1000000 )
     {
-        DBG_WARNING( pw3 );
+        SAL_INFO( "svl", pw3 );
         pw3 = NULL;
     }
     if ( pw4 && nItemCount>=5000000 )
     {
-        DBG_WARNING( pw4 );
+        SAL_INFO( "svl", pw4 );
         pw4 = NULL;
     }
     if ( pw5 && nItemCount>=10000000 )
     {
-        DBG_WARNING( pw5 );
+        SAL_INFO( "svl", pw5 );
         pw5 = NULL;
     }
 #endif
@@ -125,7 +120,7 @@ SfxPoolItem::~SfxPoolItem()
 
 bool SfxPoolItem::operator==( const SfxPoolItem& rCmp ) const
 {
-    return rCmp.Type() == Type();
+    return typeid(rCmp)  == typeid(*this);
 }
 
 
@@ -200,6 +195,10 @@ void SfxPoolItem::dumpAsXml(xmlTextWriterPtr pWriter) const
     xmlTextWriterWriteAttribute(pWriter, BAD_CAST("whichId"), BAD_CAST(OString::number(Which()).getStr()));
     xmlTextWriterEndElement(pWriter);
 }
+SfxPoolItem* SfxVoidItem::CreateDefault()
+{
+    return new SfxVoidItem(0);
+}
 
 SfxVoidItem::SfxVoidItem( sal_uInt16 which ):
     SfxPoolItem(which)
@@ -251,7 +250,7 @@ bool SfxPoolItem::HasMetrics() const
 
 
 
-bool SfxPoolItem::QueryValue( com::sun::star::uno::Any&, sal_uInt8 ) const
+bool SfxPoolItem::QueryValue( css::uno::Any&, sal_uInt8 ) const
 {
     OSL_FAIL("There is no implementation for QueryValue for this item!");
     return false;
@@ -259,7 +258,7 @@ bool SfxPoolItem::QueryValue( com::sun::star::uno::Any&, sal_uInt8 ) const
 
 
 
-bool SfxPoolItem::PutValue( const com::sun::star::uno::Any&, sal_uInt8 )
+bool SfxPoolItem::PutValue( const css::uno::Any&, sal_uInt8 )
 {
     OSL_FAIL("There is no implementation for PutValue for this item!");
     return false;

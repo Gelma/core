@@ -35,7 +35,6 @@
 #include <xmloff/xmlexppr.hxx>
 
 #include <boost/noncopyable.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 
 class SvXMLAutoStylePoolP;
 class XMLAutoStylePoolParent;
@@ -70,11 +69,11 @@ public:
 class XMLAutoStylePoolParent
 {
 public:
-    typedef boost::ptr_vector<XMLAutoStylePoolProperties> PropertiesListType;
+    typedef std::vector<std::unique_ptr<XMLAutoStylePoolProperties>> PropertiesListType;
 
 private:
     OUString msParent;
-    PropertiesListType maPropertiesList;
+    PropertiesListType m_PropertiesList;
 
 public:
 
@@ -95,7 +94,7 @@ public:
 
     PropertiesListType& GetPropertiesList()
     {
-        return maPropertiesList;
+        return m_PropertiesList;
     }
 
     bool operator< (const XMLAutoStylePoolParent& rOther) const;
@@ -157,8 +156,8 @@ public:
         const rtl::Reference < SvXMLExportPropertyMapper > & rMapper );
     void RegisterName( sal_Int32 nFamily, const OUString& rName );
     void GetRegisteredNames(
-        com::sun::star::uno::Sequence<sal_Int32>& aFamilies,
-        com::sun::star::uno::Sequence<OUString>& aNames );
+        css::uno::Sequence<sal_Int32>& aFamilies,
+        css::uno::Sequence<OUString>& aNames );
 
     bool Add(
         OUString& rName, sal_Int32 nFamily,
@@ -175,7 +174,7 @@ public:
                           const ::std::vector< XMLPropertyState >& rProperties ) const;
 
     void exportXML( sal_Int32 nFamily,
-        const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XDocumentHandler > & rHandler,
+        const css::uno::Reference< css::xml::sax::XDocumentHandler > & rHandler,
         const SvXMLUnitConverter& rUnitConverter,
         const SvXMLNamespaceMap& rNamespaceMap,
         const SvXMLAutoStylePoolP *pAntiImpl) const;

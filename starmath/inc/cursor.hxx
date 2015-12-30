@@ -12,7 +12,9 @@
 #include "node.hxx"
 #include "caret.hxx"
 
+#include <cassert>
 #include <list>
+#include <memory>
 
 /** Factor to multiple the squared horizontal distance with
  * Used for Up and Down movement.
@@ -73,19 +75,18 @@ class SmDocShell;
  *
  * This class is used to represent a cursor in a formula, which can be used to manipulate
  * an formula programmatically.
- * @remarks This class is a very infinite friend of SmDocShell.
+ * @remarks This class is a very intimate friend of SmDocShell.
  */
 class SmCursor{
 public:
     SmCursor(SmNode* tree, SmDocShell* pShell)
-        : anchor(NULL)
-        , position(NULL)
-        , pTree(tree)
-        , pDocShell(pShell)
-        , pGraph(NULL)
-        , pClipboard(NULL)
-        , nEditSections(0)
-        , bIsEnabledSetModifiedSmDocShell(false)
+        : mpAnchor(nullptr)
+        , mpPosition(nullptr)
+        , mpTree(tree)
+        , mpDocShell(pShell)
+        , mpClipboard(nullptr)
+        , mnEditSections(0)
+        , mbIsEnabledSetModifiedSmDocShell(false)
     {
         //Build graph
         BuildGraph();
@@ -94,15 +95,13 @@ public:
     ~SmCursor()
     {
         SetClipboard();
-        delete pGraph;
-        pGraph = NULL;
     }
 
     /** Get position */
-    SmCaretPos GetPosition() const { return position->CaretPos; }
+    SmCaretPos GetPosition() const { return mpPosition->CaretPos; }
 
     /** True, if the cursor has a selection */
-    bool HasSelection() { return anchor != position; }
+    bool HasSelection() { return mpAnchor != mpPosition; }
 
     /** Move the position of this cursor */
     void Move(OutputDevice* pDev, SmMovementDirection direction, bool bMoveAnchor = true);
@@ -217,22 +216,22 @@ public:
     /** Draw the caret */
     void Draw(OutputDevice& pDev, Point Offset, bool isCaretVisible);
 
-    bool IsAtTailOfBracket(SmBracketType eBracketType, SmBraceNode** ppBraceNode = NULL) const;
+    bool IsAtTailOfBracket(SmBracketType eBracketType, SmBraceNode** ppBraceNode = nullptr) const;
     void MoveAfterBracket(SmBraceNode* pBraceNode, bool bMoveAnchor = true);
 
 private:
     friend class SmDocShell;
 
-    SmCaretPosGraphEntry    *anchor,
-                            *position;
+    SmCaretPosGraphEntry    *mpAnchor,
+                            *mpPosition;
     /** Formula tree */
-    SmNode* pTree;
+    SmNode* mpTree;
     /** Owner of the formula tree */
-    SmDocShell* pDocShell;
+    SmDocShell* mpDocShell;
     /** Graph over caret position in the current tree */
-    SmCaretPosGraph* pGraph;
+    std::unique_ptr<SmCaretPosGraph> mpGraph;
     /** Clipboard holder */
-    SmNodeList* pClipboard;
+    SmNodeList* mpClipboard;
 
     /** Returns a node that is selected, if any could be found */
     SmNode* FindSelectedNode(SmNode* pNode);
@@ -270,10 +269,10 @@ private:
         SmNode* pNode = rpNode;
         if(rpNode && rpNode->GetParent()){    //Don't remove this, correctness relies on it
             int index = rpNode->GetParent()->IndexOfSubNode(rpNode);
-            if(index != -1)
-                rpNode->GetParent()->SetSubNode(index, NULL);
+            assert(index >= 0);
+            rpNode->GetParent()->SetSubNode(index, nullptr);
         }
-        rpNode = NULL;
+        rpNode = nullptr;
         //Create line from node
         if(pNode && IsLineCompositionNode(pNode))
             return LineToList(static_cast<SmStructureNode*>(pNode), pList);
@@ -310,7 +309,7 @@ private:
      * Call this method with NULL to reset the clipboard
      * @remarks: This method takes ownership of pList.
      */
-    void SetClipboard(SmNodeList* pList = NULL);
+    void SetClipboard(SmNodeList* pList = nullptr);
 
     /** Clone list of nodes (creates a deep clone) */
     static SmNodeList* CloneList(SmNodeList* pList);
@@ -352,7 +351,7 @@ private:
      * @returns An iterator pointing to the element following the selection taken.
      */
     static SmNodeList::iterator TakeSelectedNodesFromList(SmNodeList *pLineList,
-                                                         SmNodeList *pSelectedNodes = NULL);
+                                                         SmNodeList *pSelectedNodes = nullptr);
 
     /** Create an instance of SmMathSymbolNode usable for brackets */
     static SmNode *CreateBracket(SmBracketType eBracketType, bool bIsLeft);
@@ -360,9 +359,9 @@ private:
     /** The number of times BeginEdit have been called
      * Used to allow nesting of BeginEdit() and EndEdit() sections
      */
-    int nEditSections;
+    int mnEditSections;
     /** Holds data for BeginEdit() and EndEdit() */
-    bool bIsEnabledSetModifiedSmDocShell;
+    bool mbIsEnabledSetModifiedSmDocShell;
     /** Begin edit section where the tree will be modified */
     void BeginEdit();
     /** End edit section where the tree will be modified */
@@ -386,7 +385,7 @@ private:
                     SmStructureNode* pParent,
                     int nParentIndex,
                     SmCaretPos PosAfterEdit,
-                    SmNode* pStartLine = NULL);
+                    SmNode* pStartLine = nullptr);
     /** Request the formula is repainted */
     void RequestRepaint();
 };
@@ -413,7 +412,7 @@ class SmNodeListParser{
 public:
     /** Create an instance of SmNodeListParser */
     SmNodeListParser(){
-        pList = NULL;
+        pList = nullptr;
     }
     /** Parse a list of nodes to an expression
      *
@@ -438,7 +437,7 @@ private:
     SmNode* Terminal(){
         if(pList->size() > 0)
             return pList->front();
-        return NULL;
+        return nullptr;
     }
     /** Move to next terminal */
     SmNode* Next(){

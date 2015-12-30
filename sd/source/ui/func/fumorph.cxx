@@ -51,7 +51,6 @@ using namespace com::sun::star;
 namespace sd {
 
 #define  ITEMVALUE( ItemSet, Id, Cast ) ( static_cast<const Cast&>( (ItemSet).Get( (Id) ) ).GetValue() )
-TYPEINIT1( FuMorph, FuPoor );
 
 FuMorph::FuMorph (
     ViewShell* pViewSh,
@@ -89,14 +88,14 @@ void FuMorph::DoExecute( SfxRequest& )
         SdrObject*  pCloneObj2 = pObj2->Clone();
 
         // delete text at clone, otherwise we do net get a correct PathObj
-        pCloneObj1->SetOutlinerParaObject(NULL);
-        pCloneObj2->SetOutlinerParaObject(NULL);
+        pCloneObj1->SetOutlinerParaObject(nullptr);
+        pCloneObj2->SetOutlinerParaObject(nullptr);
 
         // create path objects
         SdrObject*  pPolyObj1 = pCloneObj1->ConvertToPolyObj(false, false);
         SdrObject*  pPolyObj2 = pCloneObj2->ConvertToPolyObj(false, false);
         SdAbstractDialogFactory* pFact = SdAbstractDialogFactory::Create();
-        std::unique_ptr<AbstractMorphDlg> pDlg(pFact ? pFact->CreateMorphDlg( static_cast< vcl::Window*>(mpWindow), pObj1, pObj2 ) : 0);
+        std::unique_ptr<AbstractMorphDlg> pDlg(pFact ? pFact->CreateMorphDlg( static_cast< vcl::Window*>(mpWindow), pObj1, pObj2 ) : nullptr);
         if(pPolyObj1 && pPolyObj2 && pDlg && (pDlg->Execute() == RET_OK))
         {
             B2DPolyPolygonList_impl aPolyPolyList;
@@ -113,14 +112,14 @@ void FuMorph::DoExecute( SfxRequest& )
             while(aIter1.IsMore())
             {
                 SdrObject* pObj = aIter1.Next();
-                if(pObj && pObj->ISA(SdrPathObj))
+                if(pObj && dynamic_cast< SdrPathObj *>( pObj ) !=  nullptr)
                     aPolyPoly1.append(static_cast<SdrPathObj*>(pObj)->GetPathPoly());
             }
 
             while(aIter2.IsMore())
             {
                 SdrObject* pObj = aIter2.Next();
-                if(pObj && pObj->ISA(SdrPathObj))
+                if(pObj && dynamic_cast< SdrPathObj *>( pObj ) !=  nullptr)
                     aPolyPoly2.append(static_cast<SdrPathObj*>(pObj)->GetPathPoly());
             }
 

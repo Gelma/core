@@ -94,68 +94,50 @@ struct NamespaceIds: public rtl::StaticWithInit<
 {
     Sequence< beans::Pair< OUString, sal_Int32 > > operator()()
     {
-        static const char* const namespaceURIs[] = {
-            "http://www.w3.org/XML/1998/namespace",
-            "http://schemas.openxmlformats.org/package/2006/relationships",
-            "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
-            "http://purl.oclc.org/ooxml/officeDocument/relationships",
-            "http://schemas.openxmlformats.org/drawingml/2006/main",
-            "http://purl.oclc.org/ooxml/drawingml/main",
-            "http://schemas.openxmlformats.org/drawingml/2006/diagram",
-            "http://purl.oclc.org/ooxml/drawingml/diagram",
-            "http://schemas.openxmlformats.org/drawingml/2006/chart",
-            "http://schemas.openxmlformats.org/drawingml/2006/chartDrawing",
-            "urn:schemas-microsoft-com:vml",
-            "urn:schemas-microsoft-com:office:office",
-            "urn:schemas-microsoft-com:office:word",
-            "urn:schemas-microsoft-com:office:excel",
-            "urn:schemas-microsoft-com:office:powerpoint",
-            "http://schemas.microsoft.com/office/2006/activeX",
-            "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
-            "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing",
-            "http://schemas.microsoft.com/office/excel/2006/main",
-            "http://schemas.openxmlformats.org/presentationml/2006/main",
-            "http://schemas.openxmlformats.org/markup-compatibility/2006",
-            "http://schemas.openxmlformats.org/spreadsheetml/2006/main/v2",
-            "http://schemas.microsoft.com/office/drawing/2008/diagram",
-            "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main",
-            "http://schemas.libreoffice.org/"
-        };
-
-        static const sal_Int32 namespaceIds[] = {
-            NMSP_xml,
-            NMSP_packageRel,
-            NMSP_officeRel,
-            NMSP_officeRel,
-            NMSP_dml,
-            NMSP_dml,
-            NMSP_dmlDiagram,
-            NMSP_dmlDiagram,
-            NMSP_dmlChart,
-            NMSP_dmlChartDr,
-            NMSP_vml,
-            NMSP_vmlOffice,
-            NMSP_vmlWord,
-            NMSP_vmlExcel,
-            NMSP_vmlPowerpoint,
-            NMSP_ax,
-            NMSP_xls,
-            NMSP_xm,
-            NMSP_dmlSpreadDr,
-            NMSP_ppt,
-            NMSP_mce,
-            NMSP_mceTest,
-            NMSP_dsp,
-            NMSP_xls14Lst,
-            NMSP_loext
-        };
-
-        Sequence< beans::Pair< OUString, sal_Int32 > > aRet(SAL_N_ELEMENTS(namespaceIds));
-        for( sal_Int32 i=0; i<aRet.getLength(); ++i )
-            aRet[i] = make_Pair(
-                OUString::createFromAscii(namespaceURIs[i]),
-                namespaceIds[i]);
-        return aRet;
+        return css::uno::Sequence<css::beans::Pair<OUString, sal_Int32>>{
+            {"http://www.w3.org/XML/1998/namespace", NMSP_xml},
+            {"http://schemas.openxmlformats.org/package/2006/relationships",
+             NMSP_packageRel},
+            {"http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+             NMSP_officeRel},
+            {"http://purl.oclc.org/ooxml/officeDocument/relationships",
+             NMSP_officeRel},
+            {"http://schemas.openxmlformats.org/drawingml/2006/main", NMSP_dml},
+            {"http://purl.oclc.org/ooxml/drawingml/main", NMSP_dml},
+            {"http://schemas.openxmlformats.org/drawingml/2006/diagram",
+             NMSP_dmlDiagram},
+            {"http://purl.oclc.org/ooxml/drawingml/diagram", NMSP_dmlDiagram},
+            {"http://schemas.openxmlformats.org/drawingml/2006/chart",
+             NMSP_dmlChart},
+            {"http://schemas.openxmlformats.org/drawingml/2006/chartDrawing",
+             NMSP_dmlChartDr},
+            {"urn:schemas-microsoft-com:vml", NMSP_vml},
+            {"urn:schemas-microsoft-com:office:office", NMSP_vmlOffice},
+            {"urn:schemas-microsoft-com:office:word", NMSP_vmlWord},
+            {"urn:schemas-microsoft-com:office:excel", NMSP_vmlExcel},
+            {"urn:schemas-microsoft-com:office:powerpoint", NMSP_vmlPowerpoint},
+            {"http://schemas.microsoft.com/office/2006/activeX", NMSP_ax},
+            {"http://schemas.openxmlformats.org/spreadsheetml/2006/main",
+             NMSP_xls},
+            {"http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing",
+             NMSP_xm},
+            {"http://schemas.microsoft.com/office/excel/2006/main",
+             NMSP_dmlSpreadDr},
+            {"http://schemas.openxmlformats.org/presentationml/2006/main",
+             NMSP_ppt},
+            {"http://schemas.openxmlformats.org/markup-compatibility/2006",
+             NMSP_mce},
+            {"http://schemas.openxmlformats.org/spreadsheetml/2006/main/v2",
+             NMSP_mceTest},
+            {"http://schemas.microsoft.com/office/drawing/2008/diagram",
+             NMSP_dsp},
+            {"http://schemas.microsoft.com/office/spreadsheetml/2009/9/main",
+             NMSP_xls14Lst},
+            {"http://schemas.libreoffice.org/", NMSP_loext},
+            {"http://schemas.microsoft.com/office/powerpoint/2010/main",
+             NMSP_p14},
+            {"http://schemas.microsoft.com/office/powerpoint/2012/main",
+             NMSP_p15}};
     }
 };
 
@@ -182,7 +164,6 @@ struct XmlFilterBaseImpl
     Reference<XComponentContext>   mxContext;
     FastParser                     maFastParser;
     const OUString                 maBinSuffix;
-    const OUString                 maVmlSuffix;
     RelationsMap                   maRelationsMap;
     TextFieldStack                 maTextFieldStack;
 
@@ -193,8 +174,7 @@ struct XmlFilterBaseImpl
 XmlFilterBaseImpl::XmlFilterBaseImpl( const Reference< XComponentContext >& rxContext ) throw( RuntimeException ) :
     mxContext(rxContext),
     maFastParser( rxContext ),
-    maBinSuffix( ".bin" ),
-    maVmlSuffix( ".vml" )
+    maBinSuffix( ".bin" )
 {
     // register XML namespaces
     registerNamespaces(maFastParser);
@@ -222,7 +202,7 @@ XmlFilterBase::~XmlFilterBase()
     // the following implicit destruction chain of ~XmlFilterBaseImpl, but in that
     // case it's member RelationsMap maRelationsMap will be destroyed, but maybe
     // still be used by ~FragmentHandler -> crash.
-    mxImpl->maFastParser.setDocumentHandler( 0 );
+    mxImpl->maFastParser.setDocumentHandler( nullptr );
 }
 
 void XmlFilterBase::checkDocumentProperties(Reference<XDocumentProperties> xDocProps)
@@ -382,21 +362,6 @@ bool XmlFilterBase::importFragment( const rtl::Reference<FragmentHandler>& rxHan
     {
     }
     return false;
-}
-
-OUString XmlFilterBase::getNamespaceURL( const OUString& rPrefix )
-{
-    return mxImpl->maFastParser.getNamespaceURL( rPrefix );
-}
-
-bool XmlFilterBase::hasNamespaceURL( const OUString& rPrefix ) const
-{
-    return mxImpl->maFastParser.hasNamespaceURL(rPrefix);
-}
-
-sal_Int32 XmlFilterBase::getNamespaceId( const OUString& rUrl )
-{
-     return mxImpl->maFastParser.getNamespaceId( rUrl );
 }
 
 Reference<XDocument> XmlFilterBase::importFragment( const OUString& aFragmentPath )
@@ -668,9 +633,6 @@ writeAppProperties( XmlFilterBase& rSelf, Reference< XDocumentProperties > xProp
     writeElement( pAppProps, XML_Template,              xProperties->getTemplateName() );
 #ifdef OOXTODO
     writeElement( pAppProps, XML_Manager,               "manager" );
-    writeElement( pAppProps, XML_Pages,                 "pages" );
-    writeElement( pAppProps, XML_Words,                 "words" );
-    writeElement( pAppProps, XML_Characters,            "characters" );
     writeElement( pAppProps, XML_PresentationFormat,    "presentation format" );
     writeElement( pAppProps, XML_Lines,                 "lines" );
     writeElement( pAppProps, XML_Slides,                "slides" );
@@ -685,7 +647,6 @@ writeAppProperties( XmlFilterBase& rSelf, Reference< XDocumentProperties > xProp
     writeElement( pAppProps, XML_HeadingPairs,          "heading pairs" );
     writeElement( pAppProps, XML_TitlesOfParts,         "titles of parts" );
     writeElement( pAppProps, XML_LinksUpToDate,         "links up-to-date" );
-    writeElement( pAppProps, XML_CharactersWithSpaces,  "characters with spaces" );
     writeElement( pAppProps, XML_SharedDoc,             "shared doc" );
     writeElement( pAppProps, XML_HyperlinkBase,         "hyperlink base" );
     writeElement( pAppProps, XML_HLinks,                "hlinks" );
@@ -699,10 +660,40 @@ writeAppProperties( XmlFilterBase& rSelf, Reference< XDocumentProperties > xProp
 #endif  /* def OOXTODO */
 
     comphelper::SequenceAsHashMap aStats = xProperties->getDocumentStatistics();
-    comphelper::SequenceAsHashMap::iterator it = aStats.find("ParagraphCount");
+    comphelper::SequenceAsHashMap::iterator it;
+    sal_Int32 nValue = 0;
+
+    it = aStats.find("PageCount");
     if (it != aStats.end())
     {
-            sal_Int32 nValue = 0;
+            if (it->second >>= nValue)
+                writeElement(pAppProps, XML_Pages, nValue);
+    }
+
+    it = aStats.find("WordCount");
+    if (it != aStats.end())
+    {
+            if (it->second >>= nValue)
+                writeElement(pAppProps, XML_Words, nValue);
+    }
+
+    it = aStats.find("NonWhitespaceCharacterCount");
+    if (it != aStats.end())
+    {
+            if (it->second >>= nValue)
+                writeElement(pAppProps, XML_Characters, nValue);
+    }
+
+    it = aStats.find("CharacterCount");
+    if (it != aStats.end())
+    {
+            if (it->second >>= nValue)
+                writeElement(pAppProps, XML_CharactersWithSpaces, nValue);
+    }
+
+    it = aStats.find("ParagraphCount");
+    if (it != aStats.end())
+    {
             if (it->second >>= nValue)
                 writeElement(pAppProps, XML_Paragraphs, nValue);
     }

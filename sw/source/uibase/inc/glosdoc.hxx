@@ -35,11 +35,8 @@ typedef tools::SvRef<SwDocShell> SwDocShellRef;
 #include <vector>
 #include "swdllapi.h"
 
-typedef ::com::sun::star::uno::WeakReference< ::com::sun::star::text::XAutoTextGroup > AutoTextGroupRef;
-typedef ::std::vector< AutoTextGroupRef > UnoAutoTextGroups;
-
-typedef ::com::sun::star::uno::WeakReference< ::com::sun::star::text::XAutoTextEntry > AutoTextEntryRef;
-typedef ::std::vector< AutoTextEntryRef > UnoAutoTextEntries;
+typedef ::std::vector< css::uno::WeakReference< css::text::XAutoTextGroup > > UnoAutoTextGroups;
+typedef ::std::vector< css::uno::WeakReference< css::text::XAutoTextEntry > > UnoAutoTextEntries;
 
 #define GLOS_DELIM (sal_Unicode)'*'
 
@@ -75,7 +72,7 @@ public:
         @param _bCreate
             if <TRUE/>, the group is created if it does not yet exist
     */
-    ::com::sun::star::uno::Reference< ::com::sun::star::text::XAutoTextGroup >
+    css::uno::Reference< css::text::XAutoTextGroup >
                             GetAutoTextGroup(
                                 const OUString& _rGroupName,
                                 bool _bCreate = false
@@ -95,7 +92,7 @@ public:
         @param _bCreate
             if <TRUE/>, the entry is created if it does not yet exist
     */
-    ::com::sun::star::uno::Reference< ::com::sun::star::text::XAutoTextEntry >
+    css::uno::Reference< css::text::XAutoTextEntry >
                             GetAutoTextEntry(
                                 const OUString& _rCompleteGroupName,
                                 const OUString& _rGroupName,

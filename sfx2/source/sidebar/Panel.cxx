@@ -39,8 +39,6 @@
 #include <com/sun/star/awt/PosSize.hpp>
 #include <com/sun/star/ui/XToolPanel.hpp>
 
-#include <boost/bind.hpp>
-
 using namespace css;
 using namespace css::uno;
 
@@ -81,11 +79,11 @@ void Panel::ApplySettings(vcl::RenderContext& rRenderContext)
 
 void Panel::dispose()
 {
-    mxPanelComponent = NULL;
+    mxPanelComponent = nullptr;
 
     {
         Reference<lang::XComponent> xComponent (mxElement, UNO_QUERY);
-        mxElement = NULL;
+        mxElement = nullptr;
         if (xComponent.is())
             xComponent->dispose();
     }
@@ -178,7 +176,7 @@ Reference<awt::XWindow> Panel::GetElementWindow()
             return xToolPanel->getWindow();
     }
 
-    return NULL;
+    return nullptr;
 }
 
 } } // end of namespace sfx2::sidebar

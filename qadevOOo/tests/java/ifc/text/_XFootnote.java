@@ -22,7 +22,6 @@ import lib.MultiMethodTest;
 import util.XInstCreator;
 
 import com.sun.star.text.XFootnote;
-import com.sun.star.uno.XInterface;
 
 
 /**
@@ -38,9 +37,6 @@ import com.sun.star.uno.XInterface;
 public class _XFootnote extends MultiMethodTest {
 
     public XFootnote oObj = null;        // oObj filled by MultiMethodTest
-
-    XInstCreator info = null;               // instance creator
-    XInterface oInt = null;
 
     /**
      * Test calls the method. <p>
@@ -89,7 +85,7 @@ public class _XFootnote extends MultiMethodTest {
         String res = oObj.getLabel();
 
         log.println("verify setLabel result");
-        result = (res.equals(str));
+        result = res.equals(str);
         if (result) {
             log.println(" ... setLabel() - OK");
         }

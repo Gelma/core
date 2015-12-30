@@ -41,14 +41,14 @@
 #include <map>
 
 using namespace ::com::sun::star;
-using namespace ::com::sun::star::uno;
-using namespace ::com::sun::star::lang;
-using namespace ::com::sun::star::awt::tree;
-using namespace ::com::sun::star::beans;
-using namespace ::com::sun::star::view;
-using namespace ::com::sun::star::container;
-using namespace ::com::sun::star::util;
-using namespace ::com::sun::star::graphic;
+using namespace css::uno;
+using namespace css::lang;
+using namespace css::awt::tree;
+using namespace css::beans;
+using namespace css::view;
+using namespace css::container;
+using namespace css::util;
+using namespace css::graphic;
 
 struct LockGuard
 {
@@ -87,14 +87,14 @@ class UnoTreeListBoxImpl : public SvTreeListBox
 public:
     UnoTreeListBoxImpl( TreeControlPeer* pPeer, vcl::Window* pParent, WinBits nWinStyle );
     virtual ~UnoTreeListBoxImpl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     sal_uInt32 insert( SvTreeListEntry* pEntry,SvTreeListEntry* pParent,sal_uLong nPos=TREELIST_APPEND );
 
-    virtual void    RequestingChildren( SvTreeListEntry* pParent ) SAL_OVERRIDE;
+    virtual void    RequestingChildren( SvTreeListEntry* pParent ) override;
 
-    virtual bool    EditingEntry( SvTreeListEntry* pEntry, Selection& ) SAL_OVERRIDE;
-    virtual bool    EditedEntry( SvTreeListEntry* pEntry, const OUString& rNewText ) SAL_OVERRIDE;
+    virtual bool    EditingEntry( SvTreeListEntry* pEntry, Selection& ) override;
+    virtual bool    EditedEntry( SvTreeListEntry* pEntry, const OUString& rNewText ) override;
 
     DECL_LINK_TYPED(OnSelectionChangeHdl, SvTreeListBox*, void);
     DECL_LINK_TYPED(OnExpandingHdl, SvTreeListBox*, bool);
@@ -112,14 +112,14 @@ public:
     explicit        UnoTreeListItem( SvTreeListEntry* );
                     UnoTreeListItem();
     virtual         ~UnoTreeListItem();
-    void            InitViewData( SvTreeListBox*,SvTreeListEntry*,SvViewDataItem* ) SAL_OVERRIDE;
+    void            InitViewData( SvTreeListBox*,SvTreeListEntry*,SvViewDataItem* ) override;
     void            SetImage( const Image& rImage );
     OUString        GetGraphicURL() const { return maGraphicURL;}
     void            SetGraphicURL( const OUString& rGraphicURL );
     virtual void    Paint(const Point& rPos, SvTreeListBox& rOutDev, vcl::RenderContext& rRenderContext,
-                          const SvViewDataEntry* pView, const SvTreeListEntry& rEntry) SAL_OVERRIDE;
-    SvLBoxItem*     Create() const SAL_OVERRIDE;
-    void            Clone( SvLBoxItem* pSource ) SAL_OVERRIDE;
+                          const SvViewDataEntry* pView, const SvTreeListEntry& rEntry) override;
+    SvLBoxItem*     Create() const override;
+    void            Clone( SvLBoxItem* pSource ) override;
 
 private:
     OUString        maGraphicURL;
@@ -143,9 +143,9 @@ TreeControlPeer::TreeControlPeer()
     , maTreeExpansionListeners( *this )
     , maTreeEditListeners( *this )
     , mbIsRootDisplayed(false)
-    , mpTreeImpl( 0 )
+    , mpTreeImpl( nullptr )
     , mnEditLock( 0 )
-    , mpTreeNodeMap( 0 )
+    , mpTreeNodeMap( nullptr )
 {
 }
 
@@ -201,7 +201,7 @@ UnoTreeListEntry* TreeControlPeer::getEntry( const Reference< XTreeNode >& xNode
     if( bThrow )
         throw IllegalArgumentException();
 
-    return 0;
+    return nullptr;
 }
 
 
@@ -218,8 +218,8 @@ vcl::Window* TreeControlPeer::createVclControl( vcl::Window* pParent, sal_Int64 
 void TreeControlPeer::disposeControl()
 {
     delete mpTreeNodeMap;
-    mpTreeNodeMap = 0;
-    mpTreeImpl = 0;
+    mpTreeNodeMap = nullptr;
+    mpTreeImpl = nullptr;
 }
 
 
@@ -233,7 +233,7 @@ void TreeControlPeer::SetWindow( const VclPtr< vcl::Window > &pWindow )
 
 UnoTreeListEntry* TreeControlPeer::createEntry( const Reference< XTreeNode >& xNode, UnoTreeListEntry* pParent, sal_uLong nPos /* = TREELIST_APPEND */ )
 {
-    UnoTreeListEntry* pEntry = 0;
+    UnoTreeListEntry* pEntry = nullptr;
     if( mpTreeImpl )
     {
         Image aImage;
@@ -423,13 +423,13 @@ void TreeControlPeer::fillTree( UnoTreeListBoxImpl& rTree, const Reference< XTre
         {
             if( mbIsRootDisplayed )
             {
-                addNode( rTree, xRootNode, 0 );
+                addNode( rTree, xRootNode, nullptr );
             }
             else
             {
                 const sal_Int32 nChildCount = xRootNode->getChildCount();
                 for( sal_Int32 nChild = 0; nChild < nChildCount; nChild++ )
-                    addNode( rTree, xRootNode->getChildAt( nChild ), 0 );
+                    addNode( rTree, xRootNode->getChildAt( nChild ), nullptr );
             }
         }
     }
@@ -467,7 +467,7 @@ void TreeControlPeer::ChangeNodesSelection( const Any& rSelection, bool bSelect,
 
     Reference< XTreeNode > xTempNode;
 
-    const Reference< XTreeNode > *pNodes = 0;
+    const Reference< XTreeNode > *pNodes = nullptr;
     sal_Int32 nCount = 0;
 
     if( rSelection.hasValue() )
@@ -517,7 +517,7 @@ void TreeControlPeer::ChangeNodesSelection( const Any& rSelection, bool bSelect,
 }
 
 
-// ::com::sun::star::view::XSelectionSupplier
+// css::view::XSelectionSupplier
 
 
 sal_Bool SAL_CALL TreeControlPeer::select( const Any& rSelection ) throw (IllegalArgumentException, RuntimeException, std::exception)
@@ -556,7 +556,7 @@ Any SAL_CALL TreeControlPeer::getSelection() throw (RuntimeException, std::excep
             --nSelectionCount;
         }
 
-        OSL_ASSERT( (pEntry == 0) && (nSelectionCount == 0) );
+        OSL_ASSERT( (pEntry == nullptr) && (nSelectionCount == 0) );
         aRet <<= aSelection;
     }
 
@@ -578,7 +578,7 @@ void SAL_CALL TreeControlPeer::removeSelectionChangeListener( const Reference< X
 }
 
 
-// ::com::sun::star::view::XMultiSelectionSupplier
+// css::view::XMultiSelectionSupplier
 
 
 sal_Bool SAL_CALL TreeControlPeer::addSelection( const Any& rSelection ) throw (IllegalArgumentException, RuntimeException, std::exception)
@@ -616,8 +616,8 @@ class TreeSelectionEnumeration : public ::cppu::WeakImplHelper< XEnumeration >
 {
 public:
     explicit TreeSelectionEnumeration( std::list< Any >& rSelection );
-    virtual sal_Bool SAL_CALL hasMoreElements() throw (RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual Any SAL_CALL nextElement() throw (NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual sal_Bool SAL_CALL hasMoreElements() throw (RuntimeException, std::exception) override;
+    virtual Any SAL_CALL nextElement() throw (NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) override;
 
     std::list< Any > maSelection;
     std::list< Any >::iterator maIter;
@@ -667,7 +667,7 @@ Reference< XEnumeration > SAL_CALL TreeControlPeer::createSelectionEnumeration()
         --nSelectionCount;
     }
 
-    OSL_ASSERT( (pEntry == 0) && (nSelectionCount == 0) );
+    OSL_ASSERT( (pEntry == nullptr) && (nSelectionCount == 0) );
 
     return Reference< XEnumeration >( new TreeSelectionEnumeration( aSelection ) );
 }
@@ -691,16 +691,16 @@ Reference< XEnumeration > SAL_CALL TreeControlPeer::createReverseSelectionEnumer
         --nSelectionCount;
     }
 
-    OSL_ASSERT( (pEntry == 0) && (nSelectionCount == 0) );
+    OSL_ASSERT( (pEntry == nullptr) && (nSelectionCount == 0) );
 
     return Reference< XEnumeration >( new TreeSelectionEnumeration( aSelection ) );
 }
 
 
-// ::com::sun::star::awt::XTreeControl
+// css::awt::XTreeControl
 
 
-OUString SAL_CALL TreeControlPeer::getDefaultExpandedGraphicURL() throw (::com::sun::star::uno::RuntimeException, std::exception)
+OUString SAL_CALL TreeControlPeer::getDefaultExpandedGraphicURL() throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
     return msDefaultExpandedGraphicURL;
@@ -708,7 +708,7 @@ OUString SAL_CALL TreeControlPeer::getDefaultExpandedGraphicURL() throw (::com::
 
 
 
-void SAL_CALL TreeControlPeer::setDefaultExpandedGraphicURL( const OUString& sDefaultExpandedGraphicURL ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL TreeControlPeer::setDefaultExpandedGraphicURL( const OUString& sDefaultExpandedGraphicURL ) throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
     if( msDefaultExpandedGraphicURL != sDefaultExpandedGraphicURL )
@@ -738,7 +738,7 @@ void SAL_CALL TreeControlPeer::setDefaultExpandedGraphicURL( const OUString& sDe
 
 
 
-OUString SAL_CALL TreeControlPeer::getDefaultCollapsedGraphicURL() throw (::com::sun::star::uno::RuntimeException, std::exception)
+OUString SAL_CALL TreeControlPeer::getDefaultCollapsedGraphicURL() throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
     return msDefaultCollapsedGraphicURL;
@@ -746,7 +746,7 @@ OUString SAL_CALL TreeControlPeer::getDefaultCollapsedGraphicURL() throw (::com:
 
 
 
-void SAL_CALL TreeControlPeer::setDefaultCollapsedGraphicURL( const OUString& sDefaultCollapsedGraphicURL ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL TreeControlPeer::setDefaultCollapsedGraphicURL( const OUString& sDefaultCollapsedGraphicURL ) throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
     if( msDefaultCollapsedGraphicURL != sDefaultCollapsedGraphicURL )
@@ -1009,10 +1009,10 @@ bool TreeControlPeer::onEditedEntry( UnoTreeListEntry* pEntry, const OUString& r
 }
 
 
-// ::com::sun::star::awt::tree::TreeDataModelListener
+// css::awt::tree::TreeDataModelListener
 
 
-void SAL_CALL TreeControlPeer::treeNodesChanged( const ::com::sun::star::awt::tree::TreeDataModelEvent& rEvent ) throw (RuntimeException, std::exception)
+void SAL_CALL TreeControlPeer::treeNodesChanged( const css::awt::tree::TreeDataModelEvent& rEvent ) throw (RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
@@ -1022,7 +1022,7 @@ void SAL_CALL TreeControlPeer::treeNodesChanged( const ::com::sun::star::awt::tr
     updateTree( rEvent, true );
 }
 
-void SAL_CALL TreeControlPeer::treeNodesInserted( const ::com::sun::star::awt::tree::TreeDataModelEvent& rEvent ) throw (RuntimeException, std::exception)
+void SAL_CALL TreeControlPeer::treeNodesInserted( const css::awt::tree::TreeDataModelEvent& rEvent ) throw (RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
@@ -1032,7 +1032,7 @@ void SAL_CALL TreeControlPeer::treeNodesInserted( const ::com::sun::star::awt::t
     updateTree( rEvent, true );
 }
 
-void SAL_CALL TreeControlPeer::treeNodesRemoved( const ::com::sun::star::awt::tree::TreeDataModelEvent& rEvent ) throw (RuntimeException, std::exception)
+void SAL_CALL TreeControlPeer::treeNodesRemoved( const css::awt::tree::TreeDataModelEvent& rEvent ) throw (RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
@@ -1042,7 +1042,7 @@ void SAL_CALL TreeControlPeer::treeNodesRemoved( const ::com::sun::star::awt::tr
     updateTree( rEvent, true );
 }
 
-void SAL_CALL TreeControlPeer::treeStructureChanged( const ::com::sun::star::awt::tree::TreeDataModelEvent& rEvent ) throw (RuntimeException, std::exception)
+void SAL_CALL TreeControlPeer::treeStructureChanged( const css::awt::tree::TreeDataModelEvent& rEvent ) throw (RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
@@ -1052,7 +1052,7 @@ void SAL_CALL TreeControlPeer::treeStructureChanged( const ::com::sun::star::awt
     updateTree( rEvent, true );
 }
 
-void TreeControlPeer::updateTree( const ::com::sun::star::awt::tree::TreeDataModelEvent& rEvent, bool bRecursive )
+void TreeControlPeer::updateTree( const css::awt::tree::TreeDataModelEvent& rEvent, bool bRecursive )
 {
     UnoTreeListBoxImpl& rTree = getTreeListBoxOrThrow();
 
@@ -1076,7 +1076,7 @@ void TreeControlPeer::updateNode( UnoTreeListBoxImpl& rTree, const Reference< XT
         if( !pNodeEntry )
         {
             Reference< XTreeNode > xParentNode( xNode->getParent() );
-            UnoTreeListEntry* pParentEntry = 0;
+            UnoTreeListEntry* pParentEntry = nullptr;
             sal_uLong nChild = TREELIST_APPEND;
 
             if( xParentNode.is() )
@@ -1106,7 +1106,7 @@ void TreeControlPeer::updateChildNodes( UnoTreeListBoxImpl& rTree, const Referen
             if( !pCurrentChild || ( pCurrentChild->mxNode != xNode ) )
             {
                 UnoTreeListEntry* pNodeEntry = getEntry( xNode, false );
-                if( pNodeEntry == 0 )
+                if( pNodeEntry == nullptr )
                 {
                     // child node is not yet part of the tree, add it
                     pCurrentChild = createEntry( xNode, pParentEntry, nChild );
@@ -1211,7 +1211,7 @@ OUString TreeControlPeer::getEntryString( const Any& rValue )
 }
 
 // XEventListener
-void SAL_CALL TreeControlPeer::disposing( const ::com::sun::star::lang::EventObject& ) throw(::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL TreeControlPeer::disposing( const css::lang::EventObject& ) throw(css::uno::RuntimeException, std::exception)
 {
     // model is disposed, so we clear our tree
     SolarMutexGuard aGuard;
@@ -1239,14 +1239,14 @@ void TreeControlPeer::onChangeDataModel( UnoTreeListBoxImpl& rTree, const Refere
 }
 
 
-// ::com::sun::star::awt::XLayoutConstrains
+// css::awt::XLayoutConstrains
 
 
-::com::sun::star::awt::Size TreeControlPeer::getMinimumSize() throw(RuntimeException, std::exception)
+css::awt::Size TreeControlPeer::getMinimumSize() throw(RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    ::com::sun::star::awt::Size aSz;
+    css::awt::Size aSz;
 /* todo
     MultiLineEdit* pEdit = (MultiLineEdit*) GetWindow();
     if ( pEdit )
@@ -1255,16 +1255,16 @@ void TreeControlPeer::onChangeDataModel( UnoTreeListBoxImpl& rTree, const Refere
     return aSz;
 }
 
-::com::sun::star::awt::Size TreeControlPeer::getPreferredSize() throw(RuntimeException, std::exception)
+css::awt::Size TreeControlPeer::getPreferredSize() throw(RuntimeException, std::exception)
 {
     return getMinimumSize();
 }
 
-::com::sun::star::awt::Size TreeControlPeer::calcAdjustedSize( const ::com::sun::star::awt::Size& rNewSize ) throw(RuntimeException, std::exception)
+css::awt::Size TreeControlPeer::calcAdjustedSize( const css::awt::Size& rNewSize ) throw(RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 
-    ::com::sun::star::awt::Size aSz = rNewSize;
+    css::awt::Size aSz = rNewSize;
 /* todo
     MultiLineEdit* pEdit = (MultiLineEdit*) GetWindow();
     if ( pEdit )
@@ -1274,7 +1274,7 @@ void TreeControlPeer::onChangeDataModel( UnoTreeListBoxImpl& rTree, const Refere
 }
 
 
-// ::com::sun::star::awt::XVclWindowPeer
+// css::awt::XVclWindowPeer
 
 
 void TreeControlPeer::setProperty( const OUString& PropertyName, const Any& aValue) throw(RuntimeException, std::exception)
@@ -1456,7 +1456,7 @@ bool TreeControlPeer::loadImage( const OUString& rURL, Image& rImage )
 
     try
     {
-        ::com::sun::star::beans::PropertyValues aProps( 1 );
+        css::beans::PropertyValues aProps( 1 );
         aProps[0].Name = "URL";
         aProps[0].Value <<= rURL;
 

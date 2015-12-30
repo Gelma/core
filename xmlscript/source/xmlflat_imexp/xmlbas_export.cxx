@@ -48,8 +48,7 @@ namespace xmlscript
 
     Sequence< OUString > getSupportedServiceNames_XMLBasicExporter()
     {
-        Sequence< OUString > aNames(1);
-        aNames.getArray()[0] = "com.sun.star.document.XMLBasicExporter";
+        Sequence< OUString > aNames { "com.sun.star.document.XMLBasicExporter" };
         return aNames;
     }
 
@@ -60,16 +59,14 @@ namespace xmlscript
 
     Sequence< OUString > getSupportedServiceNames_XMLOasisBasicExporter()
     {
-        Sequence< OUString > aNames(1);
-        aNames.getArray()[0] = "com.sun.star.document.XMLOasisBasicExporter";
+        Sequence< OUString > aNames { "com.sun.star.document.XMLOasisBasicExporter" };
         return aNames;
     }
 
     // XMLBasicExporterBase
 
-    XMLBasicExporterBase::XMLBasicExporterBase( const Reference< XComponentContext >& rxContext, bool bOasis )
-        :m_xContext( rxContext )
-        ,m_bOasis( bOasis )
+    XMLBasicExporterBase::XMLBasicExporterBase( bool bOasis )
+        :m_bOasis( bOasis )
     {
     }
 
@@ -366,8 +363,8 @@ sal_Bool XMLBasicExporterBase::filter( const Sequence< beans::PropertyValue >& /
 
     // XMLBasicExporter
 
-    XMLBasicExporter::XMLBasicExporter( const Reference< XComponentContext >& rxContext )
-        :XMLBasicExporterBase( rxContext, false )
+    XMLBasicExporter::XMLBasicExporter()
+        :XMLBasicExporterBase( false )
     {
     }
 
@@ -389,8 +386,8 @@ sal_Bool XMLBasicExporterBase::filter( const Sequence< beans::PropertyValue >& /
 
     // XMLOasisBasicExporter
 
-    XMLOasisBasicExporter::XMLOasisBasicExporter( const Reference< XComponentContext >& rxContext )
-        :XMLBasicExporterBase( rxContext, true )
+    XMLOasisBasicExporter::XMLOasisBasicExporter()
+        :XMLBasicExporterBase( true )
     {
     }
 
@@ -413,15 +410,15 @@ sal_Bool XMLBasicExporterBase::filter( const Sequence< beans::PropertyValue >& /
     // component operations
 
     Reference< XInterface > SAL_CALL create_XMLBasicExporter(
-        Reference< XComponentContext > const & xContext )
+        Reference< XComponentContext > const &  )
     {
-        return static_cast< lang::XTypeProvider * >( new XMLBasicExporter( xContext ) );
+        return static_cast< lang::XTypeProvider * >( new XMLBasicExporter );
     }
 
     Reference< XInterface > SAL_CALL create_XMLOasisBasicExporter(
-        Reference< XComponentContext > const & xContext )
+        Reference< XComponentContext > const &  )
     {
-        return static_cast< lang::XTypeProvider * >( new XMLOasisBasicExporter( xContext ) );
+        return static_cast< lang::XTypeProvider * >( new XMLOasisBasicExporter );
     }
 
 }   // namespace xmlscript

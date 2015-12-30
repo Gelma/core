@@ -48,19 +48,19 @@ public:
     }
 
     ~RegisterConfigItemHelper() {
-        if (item_ != 0) {
+        if (item_ != nullptr) {
             manager_.removeConfigItem(*item_);
         }
     }
 
-    void keep() { item_ = 0; }
+    void keep() { item_ = nullptr; }
 
 private:
     utl::ConfigManager & manager_;
     utl::ConfigItem * item_;
 
-    RegisterConfigItemHelper(const RegisterConfigItemHelper&) SAL_DELETED_FUNCTION;
-    RegisterConfigItemHelper& operator=(const RegisterConfigItemHelper&) SAL_DELETED_FUNCTION;
+    RegisterConfigItemHelper(const RegisterConfigItemHelper&) = delete;
+    RegisterConfigItemHelper& operator=(const RegisterConfigItemHelper&) = delete;
 };
 
 css::uno::Reference< css::lang::XMultiServiceFactory >
@@ -77,7 +77,7 @@ OUString getConfigurationString(OUString const & module, OUString const & path)
     return
         css::uno::Reference< css::container::XHierarchicalNameAccess >(
             getConfigurationProvider()->createInstanceWithArguments(
-                OUString("com.sun.star.configuration.ConfigurationAccess"),
+                "com.sun.star.configuration.ConfigurationAccess",
                 args),
             css::uno::UNO_QUERY_THROW)->
         getByHierarchicalName(path).get< OUString >();
@@ -91,50 +91,50 @@ struct theConfigManager:
 
 OUString utl::ConfigManager::getAboutBoxProductVersion() {
     return getConfigurationString(
-        OUString("/org.openoffice.Setup"),
-        OUString("Product/ooSetupVersionAboutBox"));
+        "/org.openoffice.Setup",
+        "Product/ooSetupVersionAboutBox");
 }
 
 OUString utl::ConfigManager::getAboutBoxProductVersionSuffix() {
     return getConfigurationString(
-        OUString("/org.openoffice.Setup"),
-        OUString("Product/ooSetupVersionAboutBoxSuffix"));
+        "/org.openoffice.Setup",
+        "Product/ooSetupVersionAboutBoxSuffix");
 }
 
 OUString utl::ConfigManager::getDefaultCurrency() {
     return getConfigurationString(
-        OUString("/org.openoffice.Setup"),
-        OUString("L10N/ooSetupCurrency"));
+        "/org.openoffice.Setup",
+        "L10N/ooSetupCurrency");
 }
 
 OUString utl::ConfigManager::getLocale() {
     return getConfigurationString(
-        OUString("/org.openoffice.Setup"),
-        OUString("L10N/ooLocale"));
+        "/org.openoffice.Setup",
+        "L10N/ooLocale");
 }
 
 OUString utl::ConfigManager::getProductExtension() {
     return getConfigurationString(
-        OUString("/org.openoffice.Setup"),
-        OUString("Product/ooSetupExtension"));
+        "/org.openoffice.Setup",
+        "Product/ooSetupExtension");
 }
 
 OUString utl::ConfigManager::getProductName() {
     return getConfigurationString(
-        OUString("/org.openoffice.Setup"),
-        OUString("Product/ooName"));
+        "/org.openoffice.Setup",
+        "Product/ooName");
 }
 
 OUString utl::ConfigManager::getProductVersion() {
     return getConfigurationString(
-        OUString("/org.openoffice.Setup"),
-        OUString("Product/ooSetupVersion"));
+        "/org.openoffice.Setup",
+        "Product/ooSetupVersion");
 }
 
 OUString utl::ConfigManager::getVendor() {
     return getConfigurationString(
-        OUString("/org.openoffice.Setup"),
-        OUString("Product/ooVendor"));
+        "/org.openoffice.Setup",
+        "Product/ooVendor");
 }
 
 void utl::ConfigManager::storeConfigItems() {
@@ -157,7 +157,7 @@ utl::ConfigManager::acquireTree(utl::ConfigItem & item) {
     }
     return css::uno::Reference< css::container::XHierarchicalNameAccess >(
         getConfigurationProvider()->createInstanceWithArguments(
-            OUString("com.sun.star.configuration.ConfigurationUpdateAccess"),
+            "com.sun.star.configuration.ConfigurationUpdateAccess",
             args),
         css::uno::UNO_QUERY_THROW);
 }
@@ -189,7 +189,7 @@ void utl::ConfigManager::removeConfigItem(utl::ConfigItem & item) {
 }
 
 void utl::ConfigManager::registerConfigItem(utl::ConfigItem * item) {
-    OSL_ASSERT(item != 0);
+    OSL_ASSERT(item != nullptr);
     items_.push_back(item);
 }
 

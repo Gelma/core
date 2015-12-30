@@ -147,7 +147,7 @@ namespace basegfx
             const B2DPoint& rEdge1Start, const B2DVector& rEdge1Delta,
             const B2DPoint& rEdge2Start, const B2DVector& rEdge2Delta,
             CutFlagValue aCutFlags = CutFlagValue::DEFAULT,
-            double* pCut1 = 0L, double* pCut2 = 0L);
+            double* pCut1 = nullptr, double* pCut2 = nullptr);
 
         // test if point is on the given edge in range ]0.0..1.0[ without
         // the start/end points. If so, return true and put the parameter
@@ -156,7 +156,7 @@ namespace basegfx
             const B2DPoint& rPoint,
             const B2DPoint& rEdgeStart,
             const B2DVector& rEdgeDelta,
-            double* pCut = 0L);
+            double* pCut = nullptr);
 
         /** Apply given LineDashing to given polygon
 
@@ -195,7 +195,7 @@ namespace basegfx
             const B2DPolygon& rCandidate,
             const ::std::vector<double>& rDotDashArray,
             B2DPolyPolygon* pLineTarget,
-            B2DPolyPolygon* pGapTarget = 0,
+            B2DPolyPolygon* pGapTarget = nullptr,
             double fFullDashDotLen = 0.0);
 
         // test if point is inside epsilon-range around an edge defined
@@ -442,11 +442,6 @@ namespace basegfx
         */
         BASEGFX_DLLPUBLIC B2DPolygon snapPointsOfHorizontalOrVerticalEdges(const B2DPolygon& rCandidate);
 
-        /** returns true if the Polygon only contains horizontal or vertical edges
-            so that it could be represented by RegionBands
-        */
-        bool containsOnlyHorizontalAndVerticalEdges(const B2DPolygon& rCandidate);
-
         /// get the tangent with which the given point is entered seen from the previous
         /// polygon path data. Take into account all stuff like closed state, zero-length edges and others.
         BASEGFX_DLLPUBLIC B2DVector getTangentEnteringPoint(const B2DPolygon& rCandidate, sal_uInt32 nIndex);
@@ -455,25 +450,25 @@ namespace basegfx
         /// polygon path data. Take into account all stuff like closed state, zero-length edges and others.
         BASEGFX_DLLPUBLIC B2DVector getTangentLeavingPoint(const B2DPolygon& rCandidate, sal_uInt32 nIndex);
 
-        /// converters for com::sun::star::drawing::PointSequence
+        /// converters for css::drawing::PointSequence
         BASEGFX_DLLPUBLIC B2DPolygon UnoPointSequenceToB2DPolygon(
-            const com::sun::star::drawing::PointSequence& rPointSequenceSource,
+            const css::drawing::PointSequence& rPointSequenceSource,
             bool bCheckClosed = true);
         BASEGFX_DLLPUBLIC void B2DPolygonToUnoPointSequence(
             const B2DPolygon& rPolygon,
-            com::sun::star::drawing::PointSequence& rPointSequenceRetval);
+            css::drawing::PointSequence& rPointSequenceRetval);
 
-        /* converters for com::sun::star::drawing::PointSequence and
-           com::sun::star::drawing::FlagSequence to B2DPolygon (curved polygons)
+        /* converters for css::drawing::PointSequence and
+           css::drawing::FlagSequence to B2DPolygon (curved polygons)
          */
         B2DPolygon UnoPolygonBezierCoordsToB2DPolygon(
-            const com::sun::star::drawing::PointSequence& rPointSequenceSource,
-            const com::sun::star::drawing::FlagSequence& rFlagSequenceSource,
+            const css::drawing::PointSequence& rPointSequenceSource,
+            const css::drawing::FlagSequence& rFlagSequenceSource,
             bool bCheckClosed = true);
         void B2DPolygonToUnoPolygonBezierCoords(
             const B2DPolygon& rPolyPolygon,
-            com::sun::star::drawing::PointSequence& rPointSequenceRetval,
-            com::sun::star::drawing::FlagSequence& rFlagSequenceRetval);
+            css::drawing::PointSequence& rPointSequenceRetval,
+            css::drawing::FlagSequence& rFlagSequenceRetval);
 
         /** Read poly-polygon from SVG.
 

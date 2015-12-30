@@ -115,7 +115,7 @@ namespace abp
         // create a new data source
         Reference< XPropertySet > xNewDataSource;
         if (xContext.is())
-            xNewDataSource = Reference< XPropertySet >( xContext->createInstance(), UNO_QUERY );
+            xNewDataSource.set( xContext->createInstance(), UNO_QUERY );
         DBG_ASSERT( xNewDataSource.is(), "lcl_implCreateAndInsert: could not create a new data source!" );
 
 
@@ -146,7 +146,7 @@ namespace abp
             if (xNewDataSource.is())
             {
                 xNewDataSource->setPropertyValue(
-                    OUString( "URL" ),
+                    "URL",
                     makeAny( OUString::createFromAscii( _pInitialAsciiURL ) )
                 );
             }
@@ -199,9 +199,7 @@ namespace abp
         try
         {
             // create the UNO context
-            m_pImpl->xContext = Reference<XNameAccess>(
-                      lcl_getDataSourceContext( _rxORB ),
-                      UNO_QUERY_THROW);
+            m_pImpl->xContext.set( lcl_getDataSourceContext( _rxORB ), UNO_QUERY_THROW );
 
             if (m_pImpl->xContext.is())
             {
@@ -221,7 +219,6 @@ namespace abp
     }
     ODataSourceContext::~ODataSourceContext()
     {
-        delete(m_pImpl);
     }
 
 
@@ -247,12 +244,6 @@ namespace abp
     void ODataSourceContext::getDataSourceNames( StringBag& _rNames ) const
     {
         _rNames = m_pImpl->aDataSourceNames;
-    }
-
-
-    ODataSource ODataSourceContext::createNewLDAP( const OUString& _rName)
-    {
-        return lcl_implCreateAndSetURL( m_pImpl->xORB, _rName, "sdbc:address:ldap:" );
     }
 
 
@@ -296,18 +287,6 @@ namespace abp
     }
 
 
-    ODataSource ODataSourceContext::createNewOutlook( const OUString& _rName)
-    {
-        return lcl_implCreateAndSetURL( m_pImpl->xORB, _rName, "sdbc:address:outlook" );
-    }
-
-
-    ODataSource ODataSourceContext::createNewOE( const OUString& _rName)
-    {
-        return lcl_implCreateAndSetURL( m_pImpl->xORB, _rName, "sdbc:address:outlookexp" );
-    }
-
-
     ODataSource ODataSourceContext::createNewDBase( const OUString& _rName)
     {
         return lcl_implCreateAndSetURL( m_pImpl->xORB, _rName, "sdbc:dbase:" );
@@ -345,7 +324,7 @@ namespace abp
     }
 
     ODataSource::ODataSource( const ODataSource& _rSource )
-        :m_pImpl( NULL )
+        :m_pImpl( nullptr )
     {
         *this = _rSource;
     }
@@ -556,7 +535,7 @@ namespace abp
         try
         {
             xInteractions.set(
-                InteractionHandler::createWithParent(m_pImpl->xORB, 0),
+                InteractionHandler::createWithParent(m_pImpl->xORB, nullptr),
                 UNO_QUERY);
         }
         catch(const Exception&)

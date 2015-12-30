@@ -32,8 +32,8 @@ class ScConditionalFormatTest : public CalcUnoApiTest
 public:
     ScConditionalFormatTest();
 
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
     uno::Reference< uno::XInterface > init(sal_Int32 nIndex = 0);
     void testRequestCondFormatListFromSheet();
@@ -73,7 +73,7 @@ uno::Reference< uno::XInterface > ScConditionalFormatTest::init(sal_Int32 nIndex
     {
         // get the test file
         OUString aFileURL;
-        createFileURL(OUString("new_cond_format_api.ods"), aFileURL);
+        createFileURL("new_cond_format_api.ods", aFileURL);
         mxComponent = loadFromDesktop(aFileURL);
     }
     CPPUNIT_ASSERT_MESSAGE("Component not loaded", mxComponent.is());

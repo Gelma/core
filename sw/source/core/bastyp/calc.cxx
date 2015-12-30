@@ -205,7 +205,7 @@ SwHash* Find( const OUString& rStr, SwHash* const * ppTable,
             return pEntry;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 inline LanguageType GetDocAppScriptLang( SwDoc& rDoc )
@@ -230,7 +230,7 @@ static double lcl_ConvertToDateValue( SwDoc& rDoc, sal_Int32 nDate )
 }
 
 SwCalc::SwCalc( SwDoc& rD )
-    : aErrExpr( OUString(), SwSbxValue(), 0 )
+    : aErrExpr( OUString(), SwSbxValue(), nullptr )
     , nCommandPos(0)
     , rDoc( rD )
     , pLclData( m_aSysLocale.GetLocaleDataPtr() )
@@ -333,7 +333,7 @@ SwCalc::SwCalc( SwDoc& rD )
     for( n = 0; n < 25; ++n )
     {
         sTmpStr = OUString::createFromAscii(sNTypeTab[n]);
-        VarTable[ aHashValue[ n ] ] = new SwCalcExp( sTmpStr, nVal, 0 );
+        VarTable[ aHashValue[ n ] ] = new SwCalcExp( sTmpStr, nVal, nullptr );
     }
 
     static_cast<SwCalcExp*>(VarTable[ aHashValue[ 0 ] ])->nValue.PutBool( false );
@@ -358,7 +358,7 @@ SwCalc::SwCalc( SwDoc& rD )
 
     nVal.PutString( rUserOptions.GetToken( aAdrToken[ 11 ] ));
     sTmpStr = OUString::createFromAscii(sNTypeTab[25]);
-    VarTable[ aHashValue[ 25 ] ]->pNext = new SwCalcExp( sTmpStr, nVal, 0 );
+    VarTable[ aHashValue[ 25 ] ]->pNext = new SwCalcExp( sTmpStr, nVal, nullptr );
 
 } // SwCalc::SwCalc
 
@@ -524,7 +524,7 @@ SwCalcExp* SwCalc::VarLook( const OUString& rStr, bool bIns )
         OUString sSourceName(sDBName.getToken(0, DB_DELIM));
         OUString sTableName(sDBName.getToken(0, ';').getToken(1, DB_DELIM));
         if( pMgr && !sSourceName.isEmpty() && !sTableName.isEmpty() &&
-            pMgr->OpenDataSource(sSourceName, sTableName, -1))
+            pMgr->OpenDataSource(sSourceName, sTableName))
         {
             OUString sColumnName( GetColumnName( sTmpName ));
             OSL_ENSURE(!sColumnName.isEmpty(), "Missing DB column name");
@@ -544,7 +544,7 @@ SwCalcExp* SwCalc::VarLook( const OUString& rStr, bool bIns )
             }
 
             sal_uLong nTmpRec = 0;
-            if( 0 != ( pFnd = Find( sDBNum, VarTable, TBLSZ ) ) )
+            if( nullptr != ( pFnd = Find( sDBNum, VarTable, TBLSZ ) ) )
                 nTmpRec = static_cast<SwCalcExp*>(pFnd)->nValue.GetULong();
 
             OUString sResult;
@@ -572,7 +572,7 @@ SwCalcExp* SwCalc::VarLook( const OUString& rStr, bool bIns )
         return &aErrExpr;
     }
 
-    SwCalcExp* pNewExp = new SwCalcExp( aStr, SwSbxValue(), 0 );
+    SwCalcExp* pNewExp = new SwCalcExp( aStr, SwSbxValue(), nullptr );
     pNewExp->pNext = VarTable[ ii ];
     VarTable[ ii ] = pNewExp;
 
@@ -587,7 +587,7 @@ SwCalcExp* SwCalc::VarLook( const OUString& rStr, bool bIns )
         OUString sSourceName(sDBName.getToken(0, DB_DELIM));
         OUString sTableName(sDBName.getToken(0, ';').getToken(1, DB_DELIM));
         if( pMgr && !sSourceName.isEmpty() && !sTableName.isEmpty() &&
-            pMgr->OpenDataSource(sSourceName, sTableName, -1) &&
+            pMgr->OpenDataSource(sSourceName, sTableName) &&
             !pMgr->IsInMerge())
         {
             pNewExp->nValue.PutULong( pMgr->GetSelectedRecordId(sSourceName, sTableName));
@@ -617,7 +617,7 @@ void SwCalc::VarChange( const OUString& rStr, const SwSbxValue& rValue )
 
     if( !pFnd )
     {
-        pFnd = new SwCalcExp( aStr, SwSbxValue( rValue ), 0 );
+        pFnd = new SwCalcExp( aStr, SwSbxValue( rValue ), nullptr );
         pFnd->pNext = VarTable[ nPos ];
         VarTable[ nPos ] = pFnd;
     }
@@ -629,18 +629,18 @@ void SwCalc::VarChange( const OUString& rStr, const SwSbxValue& rValue )
 
 bool SwCalc::Push( const SwUserFieldType* pUserFieldType )
 {
-    if( aRekurStk.end() != std::find(aRekurStk.begin(), aRekurStk.end(), pUserFieldType ) )
+    if( aRekurStack.end() != std::find(aRekurStack.begin(), aRekurStack.end(), pUserFieldType ) )
         return false;
 
-    aRekurStk.push_back( pUserFieldType );
+    aRekurStack.push_back( pUserFieldType );
     return true;
 }
 
 void SwCalc::Pop()
 {
-    OSL_ENSURE( aRekurStk.size(), "SwCalc: Pop on an invalid pointer" );
+    OSL_ENSURE( aRekurStack.size(), "SwCalc: Pop on an invalid pointer" );
 
-    aRekurStk.pop_back();
+    aRekurStack.pop_back();
 }
 
 SwCalcOper SwCalc::GetToken()
@@ -1257,7 +1257,7 @@ SwSbxValue SwCalc::Prim()
 {
     SwSbxValue nErg;
 
-    pfCalc pFnc = 0;
+    pfCalc pFnc = nullptr;
 
     bool bChkTrig = false, bChkPow = false;
 
@@ -1317,16 +1317,23 @@ SwSbxValue SwCalc::Prim()
         break;
 
     case CALC_NAME:
-        if( GetToken() == CALC_ASSIGN )
+        switch(SwCalcOper eOper = GetToken())
         {
-            SwCalcExp* n = VarInsert( aVarName );
-            GetToken();
-            nErg = n->nValue = Expr();
-        }
-        else
-        {
-            nErg = VarLook( aVarName )->nValue;
-            bChkPow = true;
+            case CALC_ASSIGN:
+                {
+                    SwCalcExp* n = VarInsert(aVarName);
+                    GetToken();
+                    nErg = n->nValue = Expr();
+                }
+                break;
+            default:
+                nErg = VarLook(aVarName)->nValue;
+                // Explicitly disallow unknown function names (followed by "("),
+                // allow unknown variable names (equal to zero)
+                if (nErg.IsVoidValue() && (eOper == CALC_LP))
+                    eError = CALC_SYNTAX;
+                else
+                    bChkPow = true;
         }
         break;
 
@@ -1569,7 +1576,7 @@ bool SwCalc::IsValidVarName( const OUString& rStr, OUString* pValidName )
 
 SwHash::SwHash(const OUString& rStr)
     : aStr(rStr)
-    , pNext(0)
+    , pNext(nullptr)
 {
 }
 
@@ -1666,7 +1673,7 @@ void main()
 
     for( int n = 0; n < 27; ++n )
     {
-        unsigned long ii = 0;
+        unsigned int ii = 0;
         const sal_Char* pp = sNTypeTab[ n ];
 
         while( *pp )
@@ -1677,7 +1684,7 @@ void main()
 
         ch = aArr[ ii ] ? 'X' : ' ';
         aArr[ ii ] = 1;
-        printf( "%-20s -> %3d [%c]\n", sNTypeTab[ n ], ii, ch );
+        printf( "%-20s -> %3u [%c]\n", sNTypeTab[ n ], ii, ch );
     }
 }
 

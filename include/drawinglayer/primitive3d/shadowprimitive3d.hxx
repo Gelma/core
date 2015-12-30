@@ -60,7 +60,7 @@ namespace drawinglayer
                 const basegfx::BColor& rShadowColor,
                 double fShadowTransparence,
                 bool bShadow3D,
-                const Primitive3DSequence& rChildren);
+                const Primitive3DContainer& rChildren);
 
             /// data read access
             const basegfx::B2DHomMatrix& getShadowTransform() const { return maShadowTransform; }
@@ -69,7 +69,7 @@ namespace drawinglayer
             bool getShadow3D() const { return mbShadow3D; }
 
             /// compare operator
-            virtual bool operator==(const BasePrimitive3D& rPrimitive) const SAL_OVERRIDE;
+            virtual bool operator==(const BasePrimitive3D& rPrimitive) const override;
 
             /// provide unique ID
             DeclPrimitive3DIDBlock()

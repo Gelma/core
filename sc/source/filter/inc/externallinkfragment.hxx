@@ -38,13 +38,13 @@ class ExternalSheetDataContext : public WorkbookContextBase
 public:
     explicit            ExternalSheetDataContext(
                             WorkbookFragmentBase& rFragment,
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::sheet::XExternalSheetCache >& rxSheetCache );
+                            const css::uno::Reference< css::sheet::XExternalSheetCache >& rxSheetCache );
 
 protected:
-    virtual ::oox::core::ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) SAL_OVERRIDE;
-    virtual void        onCharacters( const OUString& rChars ) SAL_OVERRIDE;
+    virtual ::oox::core::ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) override;
+    virtual void        onCharacters( const OUString& rChars ) override;
 
-    virtual ::oox::core::ContextHandlerRef onCreateRecordContext( sal_Int32 nRecId, SequenceInputStream& rStrm ) SAL_OVERRIDE;
+    virtual ::oox::core::ContextHandlerRef onCreateRecordContext( sal_Int32 nRecId, SequenceInputStream& rStrm ) override;
 
 private:
     /** Imports cell settings from a c element. */
@@ -62,12 +62,12 @@ private:
     void                importExtCellString( SequenceInputStream& rStrm );
 
     /** Sets the passed cell value to the current position in the sheet cache. */
-    void                setCellValue( const ::com::sun::star::uno::Any& rValue );
+    void                setCellValue( const css::uno::Any& rValue );
 
 private:
-    ::com::sun::star::uno::Reference< ::com::sun::star::sheet::XExternalSheetCache >
+    css::uno::Reference< css::sheet::XExternalSheetCache >
                         mxSheetCache;               /// The sheet cache used to store external cell values.
-    ::com::sun::star::table::CellAddress maCurrPos; /// Position of current cell.
+    css::table::CellAddress maCurrPos; /// Position of current cell.
     sal_Int32           mnCurrType;                 /// Data type of current cell.
 };
 
@@ -80,13 +80,13 @@ public:
                             ExternalLink& rExtLink );
 
 protected:
-    virtual ::oox::core::ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) SAL_OVERRIDE;
-    virtual void        onCharacters( const OUString& rChars ) SAL_OVERRIDE;
-    virtual void        onEndElement() SAL_OVERRIDE;
+    virtual ::oox::core::ContextHandlerRef onCreateContext( sal_Int32 nElement, const AttributeList& rAttribs ) override;
+    virtual void        onCharacters( const OUString& rChars ) override;
+    virtual void        onEndElement() override;
 
-    virtual ::oox::core::ContextHandlerRef onCreateRecordContext( sal_Int32 nRecId, SequenceInputStream& rStrm ) SAL_OVERRIDE;
+    virtual ::oox::core::ContextHandlerRef onCreateRecordContext( sal_Int32 nRecId, SequenceInputStream& rStrm ) override;
 
-    virtual const ::oox::core::RecordInfo* getRecordInfos() const SAL_OVERRIDE;
+    virtual const ::oox::core::RecordInfo* getRecordInfos() const override;
 
 private:
     ::oox::core::ContextHandlerRef createSheetDataContext( sal_Int32 nSheetId );

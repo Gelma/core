@@ -53,22 +53,26 @@ public:
     bool getDirection() const { return mbDirection; }
     sal_Int32 getFadeColor() const { return mnFadeColor; }
 
-    const OUString& getUIName() const { return maUIName; }
     const OUString& getPresetId() const { return maPresetId; }
+    const OUString& getSetId() const { return maSetId; }
+    const OUString& getSetLabel() const { return maSetLabel; }
+    const OUString& getVariantLabel() const { return maVariantLabel; }
 
 private:
-    TransitionPreset( const ::com::sun::star::uno::Reference< ::com::sun::star::animations::XAnimationNode >& xNode );
+    TransitionPreset( const css::uno::Reference< css::animations::XAnimationNode >& xNode );
 
     sal_Int16 mnTransition;
     sal_Int16 mnSubtype;
     bool mbDirection;
     sal_Int32 mnFadeColor;
     OUString maPresetId;
-    OUString maUIName;
+    OUString maGroupId;
+    OUString maSetId;
+    OUString maSetLabel;
+    OUString maVariantLabel;
 
     static bool importTransitionsFile( TransitionPresetList& rList,
-                                       ::com::sun::star::uno::Reference< ::com::sun::star::lang::XMultiServiceFactory >& xServiceFactory,
-                                       UStringMap& rTransitionNameMape,
+                                       css::uno::Reference< css::lang::XMultiServiceFactory >& xServiceFactory,
                                        const OUString& aFilename );
 };
 

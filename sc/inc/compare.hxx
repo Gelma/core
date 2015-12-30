@@ -56,8 +56,8 @@ struct CompareOptions
 
     CompareOptions( ScDocument* pDoc, const ScQueryEntry& rEntry, bool bReg );
 private:
-    CompareOptions( const CompareOptions & ) SAL_DELETED_FUNCTION;
-    CompareOptions& operator=( const CompareOptions & ) SAL_DELETED_FUNCTION;
+    CompareOptions( const CompareOptions & ) = delete;
+    CompareOptions& operator=( const CompareOptions & ) = delete;
 };
 
 /** @param pOptions
@@ -67,8 +67,8 @@ private:
         Case sensitivity document option is always to be passed in
         rComp.mbIgnoreCase.
  */
-double CompareFunc( const Compare& rComp, CompareOptions* pOptions = NULL );
-double CompareFunc( const Compare::Cell& rCell1, double fCell2, CompareOptions* pOptions = NULL );
+double CompareFunc( const Compare& rComp, CompareOptions* pOptions = nullptr );
+double CompareFunc( const Compare::Cell& rCell1, double fCell2, CompareOptions* pOptions = nullptr );
 double CompareFunc( double fCell1, double fCell2 );
 
 /**

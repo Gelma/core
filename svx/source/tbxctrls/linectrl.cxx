@@ -54,12 +54,12 @@ SvxLineStyleToolBoxControl::SvxLineStyleToolBoxControl( sal_uInt16 nSlotId,
                                                         sal_uInt16 nId,
                                                         ToolBox& rTbx ) :
     SfxToolBoxControl( nSlotId, nId, rTbx ),
-    pStyleItem      ( NULL ),
-    pDashItem       ( NULL ),
+    pStyleItem      ( nullptr ),
+    pDashItem       ( nullptr ),
     bUpdate         ( false )
 {
-    addStatusListener( OUString( ".uno:LineDash" ));
-    addStatusListener( OUString( ".uno:DashListState" ));
+    addStatusListener( ".uno:LineDash");
+    addStatusListener( ".uno:DashListState");
 }
 
 
@@ -166,7 +166,7 @@ void SvxLineStyleToolBoxControl::Update( const SfxPoolItem* pState )
         }
     }
 
-    if ( pState && ( pState->ISA( SvxDashListItem ) ) )
+    if ( pState && ( dynamic_cast<const SvxDashListItem*>( pState) !=  nullptr ) )
     {
         // The list of line styles has changed
         SvxLineBox* pBox = static_cast<SvxLineBox*>(GetToolBox().GetItemWindow( GetId() ));
@@ -192,7 +192,7 @@ SvxLineWidthToolBoxControl::SvxLineWidthToolBoxControl(
     sal_uInt16 nSlotId, sal_uInt16 nId, ToolBox& rTbx ) :
     SfxToolBoxControl( nSlotId, nId, rTbx )
 {
-    addStatusListener( OUString( ".uno:MetricUnit" ));
+    addStatusListener( ".uno:MetricUnit");
 }
 
 
@@ -227,7 +227,7 @@ void SvxLineWidthToolBoxControl::StateChanged(
 
             if ( eState == SfxItemState::DEFAULT )
             {
-                DBG_ASSERT( pState->ISA(XLineWidthItem), "wrong ItemType" );
+                DBG_ASSERT( dynamic_cast<const XLineWidthItem*>( pState) !=  nullptr, "wrong ItemType" );
 
                 // Core-Unit handed over to MetricField
                 // Should not happen in CreateItemWin ()!
@@ -237,7 +237,7 @@ void SvxLineWidthToolBoxControl::StateChanged(
                 pFld->Update( static_cast<const XLineWidthItem*>(pState) );
             }
             else
-                pFld->Update( NULL );
+                pFld->Update( nullptr );
         }
     }
 }
@@ -314,7 +314,7 @@ void SvxLineEndWindow::implInit()
     // ValueSet fill with entries of LineEndList
     FillValueSet();
 
-    AddStatusListener( OUString( ".uno:LineEndListState" ));
+    AddStatusListener( ".uno:LineEndListState");
 
     //ChangeHelpId( HID_POPUP_LINEENDSTYLE );
     aLineEndSet->Show();
@@ -381,7 +381,7 @@ IMPL_LINK_NOARG_TYPED(SvxLineEndWindow, SelectHdl, ValueSet*, void)
     aLineEndSet->SetNoSelection();
 
     SfxToolBoxControl::Dispatch( Reference< XDispatchProvider >( mxFrame->getController(), UNO_QUERY ),
-                                 OUString( ".uno:LineEndStyle" ),
+                                 ".uno:LineEndStyle",
                                  aArgs );
 }
 
@@ -391,7 +391,7 @@ void SvxLineEndWindow::FillValueSet()
 {
     if( pLineEndList.is() )
     {
-        XLineEndEntry*      pEntry  = NULL;
+        XLineEndEntry*      pEntry  = nullptr;
         ScopedVclPtrInstance< VirtualDevice > pVD;
 
         long nCount = pLineEndList->Count();
@@ -531,7 +531,7 @@ void SvxLineEndWindow::StateChanged(
     if ( nSID == SID_LINEEND_LIST )
     {
         // The list of line ends (LineEndList) has changed
-        if ( pState && pState->ISA( SvxLineEndListItem ))
+        if ( pState && dynamic_cast<const SvxLineEndListItem*>( pState) !=  nullptr)
         {
             pLineEndList = static_cast<const SvxLineEndListItem*>(pState)->GetLineEndList();
             DBG_ASSERT( pLineEndList.is(), "LineEndList not found" );

@@ -27,7 +27,6 @@
 #include <ctype.h>
 
 #if defined(SOLARIS) || defined(AIX)
-#include <sal/alloca.h>
 #include <osl/module.h>
 #endif
 
@@ -52,6 +51,7 @@
 #include <vcl/settings.hxx>
 
 #include <unx/salunx.h>
+#include <sal/log.hxx>
 #include <sal/types.h>
 #include "unx/i18n_im.hxx"
 #include "unx/i18n_xkb.hxx"
@@ -72,6 +72,7 @@
 #include <osl/socket.h>
 #include <poll.h>
 #include <memory>
+#include <vector>
 
 #include <com/sun/star/uno/DeploymentException.hpp>
 #include <officecfg/Office/Common.hxx>
@@ -108,7 +109,7 @@ static int sal_Shift( Pixel nMask )
     if( nMask < 0x01000000 ) { nMask <<=  8; i -=  8; }
     if( nMask < 0x10000000 ) { nMask <<=  4; i -=  4; }
     if( nMask < 0x40000000 ) { nMask <<=  2; i -=  2; }
-    if( nMask < 0x80000000 ) { nMask <<=  1; i -=  1; }
+    if( nMask < 0x80000000 ) {               i -=  1; }
     return i;
 }
 
@@ -163,7 +164,7 @@ sal_GetServerVendor( Display *p_display )
     const vendor_t p_vendorlist[] = {
         { vendor_sun,         "Sun Microsystems, Inc.",          10 },
         // always the last entry: vendor_none to indicate eol
-        { vendor_none,        NULL,                               0 },
+        { vendor_none,        nullptr,                               0 },
     };
 
     // handle regular server vendors
@@ -210,7 +211,7 @@ bool SalDisplay::BestVisual( Display     *pDisplay,
                                            &aVI, &nVisuals );
     // pVInfos should contain at least one visual, otherwise
     // we're in trouble
-    int* pWeight = static_cast<int*>(alloca( sizeof(int)*nVisuals ));
+    std::vector<int> aWeights(nVisuals);
     int i;
     for( i = 0; i < nVisuals; i++ )
     {
@@ -231,17 +232,17 @@ bool SalDisplay::BestVisual( Display     *pDisplay,
         {
             bUsable = true;
         }
-        pWeight[ i ] = bUsable ? nTrueColor*pVInfos[i].depth : -1024;
-        pWeight[ i ] -= pVInfos[ i ].visualid;
+        aWeights[i] = bUsable ? nTrueColor*pVInfos[i].depth : -1024;
+        aWeights[i] -= pVInfos[ i ].visualid;
     }
 
     int nBestVisual = 0;
     int nBestWeight = -1024;
     for( i = 0; i < nVisuals; i++ )
     {
-        if( pWeight[ i ] > nBestWeight )
+        if (aWeights[i] > nBestWeight)
         {
-            nBestWeight = pWeight[ i ];
+            nBestWeight = aWeights[i];
             nBestVisual = i;
         }
     }
@@ -253,10 +254,10 @@ bool SalDisplay::BestVisual( Display     *pDisplay,
 }
 
 SalDisplay::SalDisplay( Display *display ) :
-        pXLib_( NULL ),
-        mpInputMethod( NULL ),
-        mpKbdExtension( NULL ),
-        mpFactory( NULL ),
+        pXLib_( nullptr ),
+        mpInputMethod( nullptr ),
+        mpKbdExtension( nullptr ),
+        mpFactory( nullptr ),
         pDisp_( display ),
         m_nXDefaultScreen( 0 ),
         nMaxRequestSize_( 0 ),
@@ -267,7 +268,7 @@ SalDisplay::SalDisplay( Display *display ) :
         nShiftKeySym_( 0 ),
         nCtrlKeySym_( 0 ),
         nMod1KeySym_( 0 ),
-        m_pWMAdaptor( NULL ),
+        m_pWMAdaptor( nullptr ),
         m_bXinerama( false ),
         m_bUseRandRWrapper( true ),
         m_nLastUserEventTime( CurrentTime )
@@ -294,7 +295,7 @@ SalDisplay::~SalDisplay()
 #if OSL_DEBUG_LEVEL > 1
         fprintf( stderr, "display %p closed\n", pDisp_ );
 #endif
-        pDisp_ = NULL;
+        pDisp_ = nullptr;
     }
     // don't do this in doDestruct since RandR extension adds hooks into Display
     // that is XCloseDisplay still needs the RandR library if it was used
@@ -306,14 +307,14 @@ void SalDisplay::doDestruct()
     SalGenericData *pData = GetGenericData();
 
     delete m_pWMAdaptor;
-    m_pWMAdaptor = NULL;
+    m_pWMAdaptor = nullptr;
     X11SalBitmap::ImplDestroyCache();
     X11SalGraphics::releaseGlyphPeer();
 
     if( IsDisplay() )
     {
-        delete mpInputMethod, mpInputMethod = NULL;
-        delete mpKbdExtension, mpKbdExtension = NULL;
+        delete mpInputMethod, mpInputMethod = nullptr;
+        delete mpKbdExtension, mpKbdExtension = nullptr;
 
         for( size_t i = 0; i < m_aScreens.size(); i++ )
         {
@@ -346,7 +347,7 @@ void SalDisplay::doDestruct()
     }
 
     if( pData->GetDisplay() == static_cast<const SalGenericDisplay *>( this ) )
-        pData->SetDisplay( NULL );
+        pData->SetDisplay( nullptr );
 }
 
 static int DisplayHasEvent( int fd, SalX11Display *pDisplay  )
@@ -412,7 +413,7 @@ SalX11Display::~SalX11Display()
     {
         doDestruct();
         XCloseDisplay( pDisp_ );
-        pDisp_ = NULL;
+        pDisp_ = nullptr;
     }
 }
 
@@ -429,7 +430,7 @@ SalDisplay::initScreen( SalX11Screen nXScreen ) const
         nXScreen = m_nXDefaultScreen;
     ScreenData* pSD = const_cast<ScreenData *>(&m_aScreens[nXScreen.getXScreen()]);
     if( pSD->m_bInit )
-        return NULL;
+        return nullptr;
     pSD->m_bInit = true;
 
     XVisualInfo aVI;
@@ -571,7 +572,7 @@ void SalDisplay::Init()
      *  it is what modern desktops use.
      */
     const char* pValStr = XGetDefault( pDisp_, "Xft", "dpi" );
-    if( pValStr != NULL )
+    if( pValStr != nullptr )
     {
         const OString aValStr( pValStr );
         const long nDPI = (long) aValStr.toDouble();
@@ -1397,13 +1398,13 @@ KeySym SalDisplay::GetKeySym( XKeyEvent        *pEvent,
     *pStatusReturn = 0;
 
     // first get the printable of the possibly modified KeySym
-    if (   (aInputContext == 0)
+    if (   (aInputContext == nullptr)
         || (pEvent->type == KeyRelease)
-        || (mpInputMethod != NULL && mpInputMethod->PosixLocale()) )
+        || (mpInputMethod != nullptr && mpInputMethod->PosixLocale()) )
     {
         // XmbLookupString must not be called for KeyRelease events
         // Cannot enter space in c locale problem #89616# #88978# btraq #4478197
-        *pLen = XLookupString( pEvent, reinterpret_cast<char*>(pPrintable), 1, &nKeySym, NULL );
+        *pLen = XLookupString( pEvent, reinterpret_cast<char*>(pPrintable), 1, &nKeySym, nullptr );
     }
     else
     {
@@ -1797,8 +1798,15 @@ Cursor SalDisplay::GetPointer( PointerStyle ePointerStyle )
             break;
 
         // #i20119# Paintbrush tool
-        case PointerStyle::Paintbrush :
+        case PointerStyle::Paintbrush:
             MAKE_CURSOR( paintbrush_ );
+            break;
+
+        case PointerStyle::HideWhitespace:
+            MAKE_CURSOR( hidewhitespace_ );
+            break;
+        case PointerStyle::ShowWhitespace:
+            MAKE_CURSOR( showwhitespace_ );
             break;
 
         default:
@@ -1833,14 +1841,14 @@ int SalDisplay::CaptureMouse( SalFrame *pCapture )
 
     if( !pCapture )
     {
-        m_pCapture = NULL;
+        m_pCapture = nullptr;
         if( !pEnv || !*pEnv )
             XUngrabPointer( GetDisplay(), CurrentTime );
         XFlush( GetDisplay() );
         return 0;
     }
 
-    m_pCapture = NULL;
+    m_pCapture = nullptr;
 
     // FIXME: get rid of X11SalFrame
     const SystemEnvData* pEnvData = pCapture->GetSystemData();
@@ -1858,7 +1866,7 @@ int SalDisplay::CaptureMouse( SalFrame *pCapture )
 
         if( ret != GrabSuccess )
         {
-            DBG_ASSERT( true, "SalDisplay::CaptureMouse could not grab pointer\n");
+            SAL_WARN("vcl", "SalDisplay::CaptureMouse could not grab pointer: " << ret);
             return -1;
         }
     }
@@ -1878,10 +1886,10 @@ bool SalX11Display::IsEvent()
     return false;
 }
 
-void SalX11Display::Yield()
+bool SalX11Display::Yield()
 {
     if( DispatchInternalEvent() )
-        return;
+        return true;
 
     XEvent aEvent;
     DBG_ASSERT( static_cast<SalYieldMutex*>(GetSalData()->m_pInstance->GetYieldMutex())->GetThreadId() ==
@@ -1890,7 +1898,8 @@ void SalX11Display::Yield()
 
     XNextEvent( pDisp_, &aEvent );
 
-    Dispatch( &aEvent );
+    // FIXME: under-convinced by Dispatch boolean return value vs. salframe.
+    bool bProcessedEvent = Dispatch( &aEvent );
 
 #ifdef DBG_UTIL
     if( GetX11SalData()->HasXErrorOccurred() )
@@ -1900,6 +1909,8 @@ void SalX11Display::Yield()
     }
 #endif
     GetX11SalData()->ResetXErrorOccurred();
+
+    return bProcessedEvent;
 }
 
 bool SalX11Display::Dispatch( XEvent *pEvent )
@@ -1950,7 +1961,7 @@ bool SalX11Display::Dispatch( XEvent *pEvent )
                     {
                         std::list< SalFrame* >::const_iterator it;
                         for( it = m_aFrames.begin(); it != m_aFrames.end(); ++it )
-                            (*it)->CallCallback( SALEVENT_SETTINGSCHANGED, NULL );
+                            (*it)->CallCallback( SALEVENT_SETTINGSCHANGED, nullptr );
                         return false;
                     }
                 }
@@ -2014,8 +2025,8 @@ void SalDisplay::DbgPrintDisplayEvent(const char *pComment, XEvent *pEvent) cons
 {
     static const char* const EventNames[] =
     {
-        NULL,
-        NULL,
+        nullptr,
+        nullptr,
         "KeyPress",
         "KeyRelease",
         "ButtonPress",
@@ -2557,7 +2568,7 @@ SalColormap::SalColormap()
       m_nWhitePixel( 1 ),
       m_nBlackPixel( 0 ),
       m_nUsed( 2 ),
-      m_nXScreen( m_pDisplay != NULL ? m_pDisplay->GetDefaultXScreen() : SalX11Screen( 0 ) )
+      m_nXScreen( m_pDisplay != nullptr ? m_pDisplay->GetDefaultXScreen() : SalX11Screen( 0 ) )
 {
     m_aPalette = std::vector<SalColor>(m_nUsed);
 
@@ -2632,7 +2643,7 @@ SalColormap::SalColormap( sal_uInt16 nDepth )
             aVI.colormap_size   = 0;
             aVI.bits_per_rgb    = 8;
 
-            aVI.visual->ext_data        = NULL;
+            aVI.visual->ext_data        = nullptr;
             aVI.visual->visualid        = aVI.visualid;
             aVI.visual->c_class         = aVI.c_class;
             aVI.visual->red_mask        = aVI.red_mask;
@@ -2656,7 +2667,7 @@ SalColormap::~SalColormap()
 {
 #ifdef DBG_UTIL
     m_hColormap      = None;
-    m_pDisplay       = NULL;
+    m_pDisplay       = nullptr;
 #endif
 }
 
@@ -2737,9 +2748,9 @@ SalColor SalColormap::GetColor( Pixel nPixel ) const
     if( !m_aPalette.empty() && nPixel < m_nUsed )
         return m_aPalette[nPixel];
 
-    if( m_hColormap )
+    if( !m_hColormap )
     {
-        DBG_ASSERT( true, "SalColormap::GetColor() !hColormap_\n" );
+        SAL_WARN("vcl", "SalColormap::GetColor() !m_hColormap");
         return nPixel;
     }
 

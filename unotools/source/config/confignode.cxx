@@ -54,19 +54,19 @@ namespace utl
         if (_rxNode.is())
         {
             // collect all interfaces necessary
-            m_xHierarchyAccess = Reference< XHierarchicalNameAccess >(_rxNode, UNO_QUERY);
-            m_xDirectAccess = Reference< XNameAccess >(_rxNode, UNO_QUERY);
+            m_xHierarchyAccess.set(_rxNode, UNO_QUERY);
+            m_xDirectAccess.set(_rxNode, UNO_QUERY);
 
             // reset _all_ interfaces if _one_ of them is not supported
             if (!m_xHierarchyAccess.is() || !m_xDirectAccess.is())
             {
-                m_xHierarchyAccess = NULL;
-                m_xDirectAccess = NULL;
+                m_xHierarchyAccess = nullptr;
+                m_xDirectAccess = nullptr;
             }
 
             // now for the non-critical interfaces
-            m_xReplaceAccess = Reference< XNameReplace >(_rxNode, UNO_QUERY);
-            m_xContainerAccess = Reference< XNameContainer >(_rxNode, UNO_QUERY);
+            m_xReplaceAccess.set(_rxNode, UNO_QUERY);
+            m_xContainerAccess.set(_rxNode, UNO_QUERY);
         }
 
         Reference< XComponent > xConfigNodeComp(m_xDirectAccess, UNO_QUERY);
@@ -130,21 +130,6 @@ namespace utl
             DBG_UNHANDLED_EXCEPTION();
         }
         return sLocalName;
-    }
-
-    OUString OConfigurationNode::getNodePath() const
-    {
-        OUString sNodePath;
-        try
-        {
-            Reference< XHierarchicalName > xNamed( m_xDirectAccess, UNO_QUERY_THROW );
-            sNodePath = xNamed->getHierarchicalName();
-        }
-        catch( const Exception& )
-        {
-            DBG_UNHANDLED_EXCEPTION();
-        }
-        return sNodePath;
     }
 
     OUString OConfigurationNode::normalizeName(const OUString& _rName, NAMEORIGIN _eOrigin) const
@@ -474,13 +459,13 @@ namespace utl
             {
                 DBG_UNHANDLED_EXCEPTION();
             }
-            return NULL;
+            return nullptr;
         }
 
         Reference< XInterface > lcl_createConfigurationRoot( const Reference< XMultiServiceFactory >& i_rxConfigProvider,
             const OUString& i_rNodePath, const bool i_bUpdatable, const sal_Int32 i_nDepth, const bool i_bLazyWrite )
         {
-            ENSURE_OR_RETURN( i_rxConfigProvider.is(), "invalid provider", NULL );
+            ENSURE_OR_RETURN( i_rxConfigProvider.is(), "invalid provider", nullptr );
             try
             {
                 ::comphelper::NamedValueCollection aArgs;
@@ -502,7 +487,7 @@ namespace utl
             {
                 DBG_UNHANDLED_EXCEPTION();
             }
-            return NULL;
+            return nullptr;
         }
     }
 

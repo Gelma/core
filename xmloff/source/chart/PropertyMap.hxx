@@ -93,7 +93,7 @@
 #define MAP_CONTEXT( a, ns, nm, t, c )       { a, sizeof(a)-1, XML_NAMESPACE_##ns, xmloff::token::nm, t|XML_TYPE_PROP_CHART, c, SvtSaveOptions::ODFVER_010, false }
 #define MAP_SPECIAL( a, ns, nm, t, c )       { a, sizeof(a)-1, XML_NAMESPACE_##ns, xmloff::token::nm, t|XML_TYPE_PROP_CHART | MID_FLAG_SPECIAL_ITEM, c, SvtSaveOptions::ODFVER_010, false }
 #define MAP_SPECIAL_ODF12( a, ns, nm, t, c ) { a, sizeof(a)-1, XML_NAMESPACE_##ns, xmloff::token::nm, t|XML_TYPE_PROP_CHART | MID_FLAG_SPECIAL_ITEM, c, SvtSaveOptions::ODFVER_012, false }
-#define MAP_ENTRY_END { 0,0,0,xmloff::token::XML_TOKEN_INVALID,0,0,SvtSaveOptions::ODFVER_010, false }
+#define MAP_ENTRY_END { nullptr,0,0,xmloff::token::XML_TOKEN_INVALID,0,0,SvtSaveOptions::ODFVER_010, false }
 
 // PropertyMap for Chart properties drawing- and
 // textproperties are added later using the chaining
@@ -184,6 +184,7 @@ const XMLPropertyMapEntry aXMLChartPropMap[] =
     MAP_ENTRY( "TextCanOverlap", CHART, XML_TEXT_OVERLAP, XML_TYPE_BOOL ),
     MAP_ENTRY_ODF12( "ReverseDirection", CHART, XML_REVERSE_DIRECTION, XML_TYPE_BOOL ),
     MAP_ENTRY( "TextBreak", TEXT, XML_LINE_BREAK, XML_TYPE_BOOL ),
+    MAP_ENTRY_ODF_EXT( "TryStaggeringFirst", LO_EXT, XML_TRY_STAGGERING_FIRST, XML_TYPE_BOOL ),
     MAP_ENTRY( "ArrangeOrder", CHART, XML_LABEL_ARRANGEMENT, XML_SCH_TYPE_AXIS_ARRANGEMENT ),
     MAP_SPECIAL( "NumberFormat", STYLE, XML_DATA_STYLE_NAME, XML_TYPE_NUMBER, XML_SCH_CONTEXT_SPECIAL_NUMBER_FORMAT ),
     MAP_ENTRY( "LinkNumberFormatToSource", CHART, XML_LINK_DATA_STYLE_TO_SOURCE, XML_TYPE_BOOL ),
@@ -238,7 +239,6 @@ const XMLPropertyMapEntry aXMLChartPropMap[] =
     MAP_SPECIAL( "DataCaption", CHART, XML_DATA_LABEL_NUMBER, XML_TYPE_NUMBER | MID_FLAG_MERGE_PROPERTY, XML_SCH_CONTEXT_SPECIAL_DATA_LABEL_NUMBER ),   // convert one constant
     MAP_SPECIAL( "DataCaption", CHART, XML_DATA_LABEL_TEXT, XML_TYPE_NUMBER | MID_FLAG_MERGE_PROPERTY, XML_SCH_CONTEXT_SPECIAL_DATA_LABEL_TEXT ),       // to 'tristate' and two bools
     MAP_SPECIAL( "DataCaption", CHART, XML_DATA_LABEL_SYMBOL, XML_TYPE_NUMBER | MID_FLAG_MERGE_PROPERTY, XML_SCH_CONTEXT_SPECIAL_DATA_LABEL_SYMBOL ),
-    MAP_ENTRY_ODF_EXT( "TextWrap", LO_EXT, XML_DATA_LABEL_WRAP, XML_TYPE_BOOL ),
     MAP_SPECIAL_ODF12( "LabelSeparator", CHART, XML_LABEL_SEPARATOR, XML_TYPE_STRING | MID_FLAG_ELEMENT_ITEM, XML_SCH_CONTEXT_SPECIAL_LABEL_SEPARATOR ),
     MAP_ENTRY_ODF12( "LabelPlacement", CHART, XML_LABEL_POSITION, XML_SCH_TYPE_LABEL_PLACEMENT_TYPE ),
     MAP_ENTRY( "SegmentOffset", CHART, XML_PIE_OFFSET, XML_TYPE_NUMBER ),
@@ -260,57 +260,57 @@ const XMLPropertyMapEntry aXMLChartPropMap[] =
 
 const SvXMLEnumMapEntry aXMLChartAxisLabelPositionEnumMap[] =
 {
-    { ::xmloff::token::XML_NEAR_AXIS,               ::com::sun::star::chart::ChartAxisLabelPosition_NEAR_AXIS },
-    { ::xmloff::token::XML_NEAR_AXIS_OTHER_SIDE,    ::com::sun::star::chart::ChartAxisLabelPosition_NEAR_AXIS_OTHER_SIDE },
-    { ::xmloff::token::XML_OUTSIDE_START,           ::com::sun::star::chart::ChartAxisLabelPosition_OUTSIDE_START },
-    { ::xmloff::token::XML_OUTSIDE_END,             ::com::sun::star::chart::ChartAxisLabelPosition_OUTSIDE_END },
-    { ::xmloff::token::XML_OUTSIDE_MINIMUM,         ::com::sun::star::chart::ChartAxisLabelPosition_OUTSIDE_START },//#i114142#
-    { ::xmloff::token::XML_OUTSIDE_MAXIMUM,         ::com::sun::star::chart::ChartAxisLabelPosition_OUTSIDE_END },//#i114142#
+    { ::xmloff::token::XML_NEAR_AXIS,               css::chart::ChartAxisLabelPosition_NEAR_AXIS },
+    { ::xmloff::token::XML_NEAR_AXIS_OTHER_SIDE,    css::chart::ChartAxisLabelPosition_NEAR_AXIS_OTHER_SIDE },
+    { ::xmloff::token::XML_OUTSIDE_START,           css::chart::ChartAxisLabelPosition_OUTSIDE_START },
+    { ::xmloff::token::XML_OUTSIDE_END,             css::chart::ChartAxisLabelPosition_OUTSIDE_END },
+    { ::xmloff::token::XML_OUTSIDE_MINIMUM,         css::chart::ChartAxisLabelPosition_OUTSIDE_START },//#i114142#
+    { ::xmloff::token::XML_OUTSIDE_MAXIMUM,         css::chart::ChartAxisLabelPosition_OUTSIDE_END },//#i114142#
     { ::xmloff::token::XML_TOKEN_INVALID, 0 }
 };
 
 const SvXMLEnumMapEntry aXMLChartAxisMarkPositionEnumMap[] =
 {
-    { ::xmloff::token::XML_AT_LABELS,           ::com::sun::star::chart::ChartAxisMarkPosition_AT_LABELS },
-    { ::xmloff::token::XML_AT_AXIS,             ::com::sun::star::chart::ChartAxisMarkPosition_AT_AXIS },
-    { ::xmloff::token::XML_AT_LABELS_AND_AXIS,  ::com::sun::star::chart::ChartAxisMarkPosition_AT_LABELS_AND_AXIS },
+    { ::xmloff::token::XML_AT_LABELS,           css::chart::ChartAxisMarkPosition_AT_LABELS },
+    { ::xmloff::token::XML_AT_AXIS,             css::chart::ChartAxisMarkPosition_AT_AXIS },
+    { ::xmloff::token::XML_AT_LABELS_AND_AXIS,  css::chart::ChartAxisMarkPosition_AT_LABELS_AND_AXIS },
     { ::xmloff::token::XML_TOKEN_INVALID, 0 }
 };
 
 const SvXMLEnumMapEntry aXMLChartAxisArrangementEnumMap[] =
 {
-    { ::xmloff::token::XML_SIDE_BY_SIDE,        ::com::sun::star::chart::ChartAxisArrangeOrderType_SIDE_BY_SIDE },
-    { ::xmloff::token::XML_STAGGER_EVEN,        ::com::sun::star::chart::ChartAxisArrangeOrderType_STAGGER_EVEN },
-    { ::xmloff::token::XML_STAGGER_ODD,     ::com::sun::star::chart::ChartAxisArrangeOrderType_STAGGER_ODD },
+    { ::xmloff::token::XML_SIDE_BY_SIDE,        css::chart::ChartAxisArrangeOrderType_SIDE_BY_SIDE },
+    { ::xmloff::token::XML_STAGGER_EVEN,        css::chart::ChartAxisArrangeOrderType_STAGGER_EVEN },
+    { ::xmloff::token::XML_STAGGER_ODD,     css::chart::ChartAxisArrangeOrderType_STAGGER_ODD },
     { ::xmloff::token::XML_TOKEN_INVALID, 0 }
 };
 
 const SvXMLEnumMapEntry aXMLChartErrorBarStyleEnumMap[] =
 {
-    { ::xmloff::token::XML_NONE,                ::com::sun::star::chart::ErrorBarStyle::NONE },
-    { ::xmloff::token::XML_VARIANCE,            ::com::sun::star::chart::ErrorBarStyle::VARIANCE },
-    { ::xmloff::token::XML_STANDARD_DEVIATION,  ::com::sun::star::chart::ErrorBarStyle::STANDARD_DEVIATION },
-    { ::xmloff::token::XML_CONSTANT,            ::com::sun::star::chart::ErrorBarStyle::ABSOLUTE },
-    { ::xmloff::token::XML_PERCENTAGE,          ::com::sun::star::chart::ErrorBarStyle::RELATIVE },
-    { ::xmloff::token::XML_ERROR_MARGIN,        ::com::sun::star::chart::ErrorBarStyle::ERROR_MARGIN },
-    { ::xmloff::token::XML_STANDARD_ERROR,      ::com::sun::star::chart::ErrorBarStyle::STANDARD_ERROR },
-    { ::xmloff::token::XML_CELL_RANGE,          ::com::sun::star::chart::ErrorBarStyle::FROM_DATA },
+    { ::xmloff::token::XML_NONE,                css::chart::ErrorBarStyle::NONE },
+    { ::xmloff::token::XML_VARIANCE,            css::chart::ErrorBarStyle::VARIANCE },
+    { ::xmloff::token::XML_STANDARD_DEVIATION,  css::chart::ErrorBarStyle::STANDARD_DEVIATION },
+    { ::xmloff::token::XML_CONSTANT,            css::chart::ErrorBarStyle::ABSOLUTE },
+    { ::xmloff::token::XML_PERCENTAGE,          css::chart::ErrorBarStyle::RELATIVE },
+    { ::xmloff::token::XML_ERROR_MARGIN,        css::chart::ErrorBarStyle::ERROR_MARGIN },
+    { ::xmloff::token::XML_STANDARD_ERROR,      css::chart::ErrorBarStyle::STANDARD_ERROR },
+    { ::xmloff::token::XML_CELL_RANGE,          css::chart::ErrorBarStyle::FROM_DATA },
     { ::xmloff::token::XML_TOKEN_INVALID, 0 }
 };
 
 const SvXMLEnumMapEntry aXMLChartSolidTypeEnumMap[] =
 {
-    { ::xmloff::token::XML_CUBOID,      ::com::sun::star::chart::ChartSolidType::RECTANGULAR_SOLID },
-    { ::xmloff::token::XML_CYLINDER,    ::com::sun::star::chart::ChartSolidType::CYLINDER },
-    { ::xmloff::token::XML_CONE,            ::com::sun::star::chart::ChartSolidType::CONE },
-    { ::xmloff::token::XML_PYRAMID,     ::com::sun::star::chart::ChartSolidType::PYRAMID },
+    { ::xmloff::token::XML_CUBOID,      css::chart::ChartSolidType::RECTANGULAR_SOLID },
+    { ::xmloff::token::XML_CYLINDER,    css::chart::ChartSolidType::CYLINDER },
+    { ::xmloff::token::XML_CONE,            css::chart::ChartSolidType::CONE },
+    { ::xmloff::token::XML_PYRAMID,     css::chart::ChartSolidType::PYRAMID },
     { ::xmloff::token::XML_TOKEN_INVALID, 0 }
 };
 
 const SvXMLEnumMapEntry aXMLChartDataRowSourceTypeEnumMap[] =
 {
-    { ::xmloff::token::XML_COLUMNS,     ::com::sun::star::chart::ChartDataRowSource_COLUMNS },
-    { ::xmloff::token::XML_ROWS,        ::com::sun::star::chart::ChartDataRowSource_ROWS },
+    { ::xmloff::token::XML_COLUMNS,     css::chart::ChartDataRowSource_COLUMNS },
+    { ::xmloff::token::XML_ROWS,        css::chart::ChartDataRowSource_ROWS },
     { ::xmloff::token::XML_TOKEN_INVALID, 0 }
 };
 
@@ -336,27 +336,27 @@ const SvXMLEnumMapEntry aXMLChartInterpolationTypeEnumMap[] =
 
 const SvXMLEnumMapEntry aXMLChartDataLabelPlacementEnumMap[] =
 {
-    { ::xmloff::token::XML_AVOID_OVERLAP,   ::com::sun::star::chart::DataLabelPlacement::AVOID_OVERLAP },
-    { ::xmloff::token::XML_CENTER,          ::com::sun::star::chart::DataLabelPlacement::CENTER },
-    { ::xmloff::token::XML_TOP,             ::com::sun::star::chart::DataLabelPlacement::TOP },
-    { ::xmloff::token::XML_TOP_LEFT,        ::com::sun::star::chart::DataLabelPlacement::TOP_LEFT },
-    { ::xmloff::token::XML_LEFT,            ::com::sun::star::chart::DataLabelPlacement::LEFT },
-    { ::xmloff::token::XML_BOTTOM_LEFT,     ::com::sun::star::chart::DataLabelPlacement::BOTTOM_LEFT },
-    { ::xmloff::token::XML_BOTTOM,          ::com::sun::star::chart::DataLabelPlacement::BOTTOM },
-    { ::xmloff::token::XML_BOTTOM_RIGHT,    ::com::sun::star::chart::DataLabelPlacement::BOTTOM_RIGHT },
-    { ::xmloff::token::XML_RIGHT,           ::com::sun::star::chart::DataLabelPlacement::RIGHT },
-    { ::xmloff::token::XML_TOP_RIGHT,       ::com::sun::star::chart::DataLabelPlacement::TOP_RIGHT },
-    { ::xmloff::token::XML_INSIDE,          ::com::sun::star::chart::DataLabelPlacement::INSIDE },
-    { ::xmloff::token::XML_OUTSIDE,         ::com::sun::star::chart::DataLabelPlacement::OUTSIDE },
-    { ::xmloff::token::XML_NEAR_ORIGIN,     ::com::sun::star::chart::DataLabelPlacement::NEAR_ORIGIN },
+    { ::xmloff::token::XML_AVOID_OVERLAP,   css::chart::DataLabelPlacement::AVOID_OVERLAP },
+    { ::xmloff::token::XML_CENTER,          css::chart::DataLabelPlacement::CENTER },
+    { ::xmloff::token::XML_TOP,             css::chart::DataLabelPlacement::TOP },
+    { ::xmloff::token::XML_TOP_LEFT,        css::chart::DataLabelPlacement::TOP_LEFT },
+    { ::xmloff::token::XML_LEFT,            css::chart::DataLabelPlacement::LEFT },
+    { ::xmloff::token::XML_BOTTOM_LEFT,     css::chart::DataLabelPlacement::BOTTOM_LEFT },
+    { ::xmloff::token::XML_BOTTOM,          css::chart::DataLabelPlacement::BOTTOM },
+    { ::xmloff::token::XML_BOTTOM_RIGHT,    css::chart::DataLabelPlacement::BOTTOM_RIGHT },
+    { ::xmloff::token::XML_RIGHT,           css::chart::DataLabelPlacement::RIGHT },
+    { ::xmloff::token::XML_TOP_RIGHT,       css::chart::DataLabelPlacement::TOP_RIGHT },
+    { ::xmloff::token::XML_INSIDE,          css::chart::DataLabelPlacement::INSIDE },
+    { ::xmloff::token::XML_OUTSIDE,         css::chart::DataLabelPlacement::OUTSIDE },
+    { ::xmloff::token::XML_NEAR_ORIGIN,     css::chart::DataLabelPlacement::NEAR_ORIGIN },
     { ::xmloff::token::XML_TOKEN_INVALID, 0 }
 };
 
 const SvXMLEnumMapEntry aXMLChartMissingValueTreatmentEnumMap[] =
 {
-    { ::xmloff::token::XML_LEAVE_GAP,    ::com::sun::star::chart::MissingValueTreatment::LEAVE_GAP },
-    { ::xmloff::token::XML_USE_ZERO,     ::com::sun::star::chart::MissingValueTreatment::USE_ZERO },
-    { ::xmloff::token::XML_IGNORE,       ::com::sun::star::chart::MissingValueTreatment::CONTINUE },
+    { ::xmloff::token::XML_LEAVE_GAP,    css::chart::MissingValueTreatment::LEAVE_GAP },
+    { ::xmloff::token::XML_USE_ZERO,     css::chart::MissingValueTreatment::USE_ZERO },
+    { ::xmloff::token::XML_IGNORE,       css::chart::MissingValueTreatment::CONTINUE },
     { ::xmloff::token::XML_TOKEN_INVALID,0 },
 };
 

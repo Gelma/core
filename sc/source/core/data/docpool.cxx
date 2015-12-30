@@ -72,20 +72,18 @@
 #define SC_MAX_POOLREF      (SFX_ITEMS_OLD_MAXREF - 39)
 #define SC_SAFE_POOLREF     (SC_MAX_POOLREF + 20)
 
-// STATIC DATA -----------------------------------------------------------
-
-sal_uInt16* ScDocumentPool::pVersionMap1 = 0;
-sal_uInt16* ScDocumentPool::pVersionMap2 = 0;
-sal_uInt16* ScDocumentPool::pVersionMap3 = 0;
-sal_uInt16* ScDocumentPool::pVersionMap4 = 0;
-sal_uInt16* ScDocumentPool::pVersionMap5 = 0;
-sal_uInt16* ScDocumentPool::pVersionMap6 = 0;
-sal_uInt16* ScDocumentPool::pVersionMap7 = 0;
-sal_uInt16* ScDocumentPool::pVersionMap8 = 0;
-sal_uInt16* ScDocumentPool::pVersionMap9 = 0;
-sal_uInt16* ScDocumentPool::pVersionMap10 = 0;
-sal_uInt16* ScDocumentPool::pVersionMap11 = 0;
-sal_uInt16* ScDocumentPool::pVersionMap12 = 0;
+sal_uInt16* ScDocumentPool::pVersionMap1 = nullptr;
+sal_uInt16* ScDocumentPool::pVersionMap2 = nullptr;
+sal_uInt16* ScDocumentPool::pVersionMap3 = nullptr;
+sal_uInt16* ScDocumentPool::pVersionMap4 = nullptr;
+sal_uInt16* ScDocumentPool::pVersionMap5 = nullptr;
+sal_uInt16* ScDocumentPool::pVersionMap6 = nullptr;
+sal_uInt16* ScDocumentPool::pVersionMap7 = nullptr;
+sal_uInt16* ScDocumentPool::pVersionMap8 = nullptr;
+sal_uInt16* ScDocumentPool::pVersionMap9 = nullptr;
+sal_uInt16* ScDocumentPool::pVersionMap10 = nullptr;
+sal_uInt16* ScDocumentPool::pVersionMap11 = nullptr;
+sal_uInt16* ScDocumentPool::pVersionMap12 = nullptr;
 
 // ATTR_FONT_TWOLINES (not used) was changed to ATTR_USERDEF (not saved in binary format) in 641c
 
@@ -192,7 +190,7 @@ ScDocumentPool::ScDocumentPool( SfxItemPool* pSecPool)
 
     :   SfxItemPool ( OUString("ScDocumentPool"),
                         ATTR_STARTINDEX, ATTR_ENDINDEX,
-                        aItemInfos, NULL, false/*bLoadRefCounts*/ ),
+                        aItemInfos, nullptr, false/*bLoadRefCounts*/ ),
         pSecondary  ( pSecPool )
 {
     //  latin font from GetDefaultFonts is not used, DEFAULTFONT_LATIN_SPREADSHEET instead
@@ -218,8 +216,8 @@ ScDocumentPool::ScDocumentPool( SfxItemPool* pSecPool)
                                      ATTR_PAGE_ON,    ATTR_PAGE_SHARED,
                                      0 );
 
-    pGlobalBorderInnerAttr->SetLine(NULL, SvxBoxInfoItemLine::HORI);
-    pGlobalBorderInnerAttr->SetLine(NULL, SvxBoxInfoItemLine::VERT);
+    pGlobalBorderInnerAttr->SetLine(nullptr, SvxBoxInfoItemLine::HORI);
+    pGlobalBorderInnerAttr->SetLine(nullptr, SvxBoxInfoItemLine::VERT);
     pGlobalBorderInnerAttr->SetTable(true);
     pGlobalBorderInnerAttr->SetDist(true);
     pGlobalBorderInnerAttr->SetMinDist(false);
@@ -572,29 +570,29 @@ void ScDocumentPool::DeleteVersionMaps()
                 pVersionMap11 && pVersionMap12 , "DeleteVersionMaps without maps" );
 
     delete[] pVersionMap12;
-    pVersionMap12 = 0;
+    pVersionMap12 = nullptr;
     delete[] pVersionMap11;
-    pVersionMap11 = 0;
+    pVersionMap11 = nullptr;
     delete[] pVersionMap10;
-    pVersionMap10 = 0;
+    pVersionMap10 = nullptr;
     delete[] pVersionMap9;
-    pVersionMap9 = 0;
+    pVersionMap9 = nullptr;
     delete[] pVersionMap8;
-    pVersionMap8 = 0;
+    pVersionMap8 = nullptr;
     delete[] pVersionMap7;
-    pVersionMap7 = 0;
+    pVersionMap7 = nullptr;
     delete[] pVersionMap6;
-    pVersionMap6 = 0;
+    pVersionMap6 = nullptr;
     delete[] pVersionMap5;
-    pVersionMap5 = 0;
+    pVersionMap5 = nullptr;
     delete[] pVersionMap4;
-    pVersionMap4 = 0;
+    pVersionMap4 = nullptr;
     delete[] pVersionMap3;
-    pVersionMap3 = 0;
+    pVersionMap3 = nullptr;
     delete[] pVersionMap2;
-    pVersionMap2 = 0;
+    pVersionMap2 = nullptr;
     delete[] pVersionMap1;
-    pVersionMap1 = 0;
+    pVersionMap1 = nullptr;
 }
 
 /**
@@ -675,7 +673,7 @@ void ScDocumentPool::CellStyleCreated( const OUString& rName, ScDocument* pDoc )
         ScPatternAttr *const pPattern =
             const_cast<ScPatternAttr*>(
                 static_cast<ScPatternAttr const*>(GetItem2(ATTR_PATTERN, i)));
-        if ( pPattern && pPattern->GetStyleSheet() == NULL )
+        if ( pPattern && pPattern->GetStyleSheet() == nullptr )
         {
             const OUString* pStyleName = pPattern->GetStyleName();
             if ( pStyleName && *pStyleName == rName )
@@ -710,7 +708,6 @@ static bool lcl_HFPresentation
     SfxItemIter aIter( rSet );
     pItem = aIter.FirstItem();
     OUString aText;
-    OUString aDel(" + ");
 
     while( pItem )
     {
@@ -776,7 +773,7 @@ static bool lcl_HFPresentation
 
         if ( aText.getLength() )
         {
-            rText = rText + aText + aDel;
+            rText = rText + aText + " + ";
         }
 
         pItem = aIter.NextItem();

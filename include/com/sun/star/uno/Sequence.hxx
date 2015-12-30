@@ -22,6 +22,7 @@
 #include <sal/config.h>
 
 #include <cassert>
+#include <cstddef>
 
 #include <osl/interlck.h>
 #include <com/sun/star/uno/Sequence.h>
@@ -41,7 +42,7 @@ namespace uno
 
 /// @cond INTERNAL
 template< class E >
-typelib_TypeDescriptionReference * Sequence< E >::s_pType = 0;
+typelib_TypeDescriptionReference * Sequence< E >::s_pType = NULL;
 /// @endcond
 
 template< class E >
@@ -55,7 +56,7 @@ inline Sequence< E >::Sequence()
 }
 
 template< class E >
-inline Sequence< E >::Sequence( const Sequence< E > & rSeq )
+inline Sequence< E >::Sequence( const Sequence & rSeq )
 {
     osl_atomic_increment( &rSeq._pSequence->nRefCount );
     _pSequence = rSeq._pSequence;
@@ -115,7 +116,7 @@ inline Sequence< E >::~Sequence()
 }
 
 template< class E >
-inline Sequence< E > & Sequence< E >::operator = ( const Sequence< E > & rSeq )
+inline Sequence< E > & Sequence< E >::operator = ( const Sequence & rSeq )
 {
     const Type & rType = ::cppu::getTypeFavourUnsigned( this );
     ::uno_type_sequence_assign(
@@ -124,20 +125,20 @@ inline Sequence< E > & Sequence< E >::operator = ( const Sequence< E > & rSeq )
 }
 
 template< class E >
-inline bool Sequence< E >::operator == ( const Sequence< E > & rSeq ) const
+inline bool Sequence< E >::operator == ( const Sequence & rSeq ) const
 {
     if (_pSequence == rSeq._pSequence)
         return true;
     const Type & rType = ::cppu::getTypeFavourUnsigned( this );
     return ::uno_type_equalData(
-        const_cast< Sequence< E > * >( this ), rType.getTypeLibType(),
-        const_cast< Sequence< E > * >( &rSeq ), rType.getTypeLibType(),
+        const_cast< Sequence * >( this ), rType.getTypeLibType(),
+        const_cast< Sequence * >( &rSeq ), rType.getTypeLibType(),
         cpp_queryInterface,
         cpp_release );
 }
 
 template< class E >
-inline bool Sequence< E >::operator != ( const Sequence< E > & rSeq ) const
+inline bool Sequence< E >::operator != ( const Sequence & rSeq ) const
 {
     return (! operator == ( rSeq ));
 }
@@ -230,8 +231,8 @@ getTypeFavourChar(
 {
     //TODO  On certain platforms with weak memory models, the following code can
     // result in some threads observing that td points to garbage:
-    static typelib_TypeDescriptionReference * td = 0;
-    if (td == 0) {
+    static typelib_TypeDescriptionReference * td = NULL;
+    if (td == NULL) {
         ::typelib_static_sequence_type_init(
             &td,
             (::cppu::getTypeFavourChar(
@@ -274,7 +275,7 @@ SAL_CALL getCppuSequenceType( const ::com::sun::star::uno::Type & rElementType )
 inline const ::com::sun::star::uno::Type &
 SAL_CALL getCharSequenceCppuType()
 {
-    static typelib_TypeDescriptionReference * s_pType_com_sun_star_uno_Sequence_Char = 0;
+    static typelib_TypeDescriptionReference * s_pType_com_sun_star_uno_Sequence_Char = NULL;
     if (! s_pType_com_sun_star_uno_Sequence_Char)
     {
         const ::com::sun::star::uno::Type & rElementType = cppu::UnoType<cppu::UnoCharType>::get();

@@ -103,17 +103,17 @@ public:
     }
 
     // XEventListener
-    virtual void SAL_CALL disposing( const lang::EventObject& ) throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE {}
+    virtual void SAL_CALL disposing( const lang::EventObject& ) throw( uno::RuntimeException, std::exception ) override {}
 
     // XContainerListener
-    virtual void SAL_CALL elementInserted( const container::ContainerEvent& Event ) throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE
+    virtual void SAL_CALL elementInserted( const container::ContainerEvent& Event ) throw( uno::RuntimeException, std::exception ) override
     {
         OUString sModuleName;
         if( mpShell && ( Event.Accessor >>= sModuleName ) )
             mpShell->FindBasWin( mpShell->m_aCurDocument, mpShell->m_aCurLibName, sModuleName, true );
     }
-    virtual void SAL_CALL elementReplaced( const container::ContainerEvent& ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE { }
-    virtual void SAL_CALL elementRemoved( const container::ContainerEvent& Event ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE
+    virtual void SAL_CALL elementReplaced( const container::ContainerEvent& ) throw( css::uno::RuntimeException, std::exception ) override { }
+    virtual void SAL_CALL elementRemoved( const container::ContainerEvent& Event ) throw( css::uno::RuntimeException, std::exception ) override
     {
         OUString sModuleName;
         if( mpShell && ( Event.Accessor >>= sModuleName ) )
@@ -125,8 +125,6 @@ public:
     }
 
 };
-
-TYPEINIT1( Shell, SfxViewShell );
 
 SFX_IMPL_NAMED_VIEWFACTORY( Shell, "Default" )
 {
@@ -152,7 +150,7 @@ Shell::Shell( SfxViewFrame* pFrame_, SfxViewShell* /* pOldShell */ ) :
     aHScrollBar( VclPtr<ScrollBar>::Create(&GetViewFrame()->GetWindow(), WinBits( WB_HSCROLL | WB_DRAG )) ),
     aVScrollBar( VclPtr<ScrollBar>::Create(&GetViewFrame()->GetWindow(), WinBits( WB_VSCROLL | WB_DRAG )) ),
     aScrollBarBox( VclPtr<ScrollBarBox>::Create(&GetViewFrame()->GetWindow(), WinBits( WB_SIZEABLE )) ),
-    pLayout(0),
+    pLayout(nullptr),
     aObjectCatalog(VclPtr<ObjectCatalog>::Create(&GetViewFrame()->GetWindow())),
     m_bAppBasicModified( false ),
     m_aNotifier( *this )
@@ -170,11 +168,11 @@ void Shell::Init()
     SvxSimpleUndoRedoController::RegisterControl( SID_UNDO );
     SvxSimpleUndoRedoController::RegisterControl( SID_REDO );
 
-    SvxSearchDialogWrapper::RegisterChildWindow(false);
+    SvxSearchDialogWrapper::RegisterChildWindow();
 
     GetExtraData()->ShellInCriticalSection() = true;
 
-    SetName( OUString( "BasicIDE" ) );
+    SetName( "BasicIDE" );
     SetHelpId( SVX_INTERFACE_BASIDE_VIEWSH );
 
     LibBoxControl::RegisterControl( SID_BASICIDE_LIBSELECTOR );
@@ -184,7 +182,7 @@ void Shell::Init()
         GetViewFrame()->GetWindow().GetSettings().GetStyleSettings().GetWindowColor()
     );
 
-    pCurWin = 0;
+    pCurWin = nullptr;
     m_aCurDocument = ScriptDocument::getApplicationScriptDocument();
     bCreatingWindow = false;
 
@@ -222,8 +220,8 @@ Shell::~Shell()
     // so that on a basic saving error, the shell doesn't pop right up again
     GetExtraData()->ShellInCriticalSection() = true;
 
-    SetWindow( 0 );
-    SetCurWindow( 0 );
+    SetWindow( nullptr );
+    SetCurWindow( nullptr );
 
     aObjectCatalog.disposeAndClear();
     aScrollBarBox.disposeAndClear();
@@ -500,7 +498,7 @@ void Shell::ArrangeTabBar()
 
 ::svl::IUndoManager* Shell::GetUndoManager()
 {
-    ::svl::IUndoManager* pMgr = NULL;
+    ::svl::IUndoManager* pMgr = nullptr;
     if( pCurWin )
         pMgr = pCurWin->GetUndoManager();
 
@@ -527,7 +525,7 @@ void Shell::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
 
             if (SbxHint const* pSbxHint = dynamic_cast<SbxHint const*>(&rHint))
             {
-                sal_uLong nHintId = pSbxHint->GetId();
+                const sal_uInt32 nHintId = pSbxHint->GetId();
                 if (    ( nHintId == SBX_HINT_BASICSTART ) ||
                         ( nHintId == SBX_HINT_BASICSTOP ) )
                 {
@@ -665,7 +663,7 @@ void Shell::UpdateWindows()
     if ( bCreatingWindow )
         return;
 
-    BaseWindow* pNextActiveWindow = 0;
+    BaseWindow* pNextActiveWindow = nullptr;
 
     // show all windows that are to be shown
     ScriptDocuments aDocuments( ScriptDocument::getAllScriptDocuments( ScriptDocument::AllWithApplication ) );
@@ -701,7 +699,7 @@ void Shell::UpdateWindows()
 
                 if ( !bProtected )
                 {
-                    LibInfos::Item const* pLibInfoItem = 0;
+                    LibInfos::Item const* pLibInfoItem = nullptr;
                     if (ExtraData* pData = GetExtraData())
                         pLibInfoItem = pData->GetLibInfos().GetInfo(*doc, aLibName);
 
@@ -721,7 +719,7 @@ void Shell::UpdateWindows()
                             for ( sal_Int32 j = 0 ; j < nModCount ; j++ )
                             {
                                 OUString aModName = pModNames[ j ];
-                                ModulWindow* pWin = FindBasWin( *doc, aLibName, aModName, false );
+                                ModulWindow* pWin = FindBasWin( *doc, aLibName, aModName );
                                 if ( !pWin )
                                     pWin = CreateBasWin( *doc, aLibName, aModName );
                                 if ( !pNextActiveWindow && pLibInfoItem && pLibInfoItem->GetCurrentName() == aModName &&
@@ -752,7 +750,7 @@ void Shell::UpdateWindows()
                                 OUString aDlgName = pDlgNames[ j ];
                                 // this find only looks for non-suspended windows;
                                 // suspended windows are handled in CreateDlgWin
-                                VclPtr<DialogWindow> pWin = FindDlgWin( *doc, aLibName, aDlgName, false );
+                                VclPtr<DialogWindow> pWin = FindDlgWin( *doc, aLibName, aDlgName );
                                 if ( !pWin )
                                     pWin = CreateDlgWin( *doc, aLibName, aDlgName );
                                 if ( !pNextActiveWindow && pLibInfoItem && pLibInfoItem->GetCurrentName() == aDlgName &&
@@ -798,7 +796,7 @@ void Shell::RemoveWindow( BaseWindow* pWindow_, bool bDestroy, bool bAllowChange
         }
         else
         {
-            SetCurWindow( NULL, false );
+            SetCurWindow( nullptr );
         }
     }
     if ( bDestroy )

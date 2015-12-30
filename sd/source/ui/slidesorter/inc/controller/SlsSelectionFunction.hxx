@@ -41,27 +41,26 @@ class SelectionFunction
       private ::boost::noncopyable
 {
 public:
-    TYPEINFO_OVERRIDE();
 
     static rtl::Reference<FuPoor> Create( SlideSorter& rSlideSorter, SfxRequest& rRequest );
 
     // Mouse- & Key-Events
-    virtual bool KeyInput(const KeyEvent& rKEvt) SAL_OVERRIDE;
-    virtual bool MouseMove(const MouseEvent& rMEvt) SAL_OVERRIDE;
-    virtual bool MouseButtonUp(const MouseEvent& rMEvt) SAL_OVERRIDE;
-    virtual bool MouseButtonDown(const MouseEvent& rMEvt) SAL_OVERRIDE;
+    virtual bool KeyInput(const KeyEvent& rKEvt) override;
+    virtual bool MouseMove(const MouseEvent& rMEvt) override;
+    virtual bool MouseButtonUp(const MouseEvent& rMEvt) override;
+    virtual bool MouseButtonDown(const MouseEvent& rMEvt) override;
 
-    virtual void Activate() SAL_OVERRIDE;
-    virtual void Deactivate() SAL_OVERRIDE;
-
-    /// Forward to the clipboard manager.
-    virtual void DoCut() SAL_OVERRIDE;
+    virtual void Activate() override;
+    virtual void Deactivate() override;
 
     /// Forward to the clipboard manager.
-    virtual void DoCopy() SAL_OVERRIDE;
+    virtual void DoCut() override;
 
     /// Forward to the clipboard manager.
-    virtual void DoPaste() SAL_OVERRIDE;
+    virtual void DoCopy() override;
+
+    /// Forward to the clipboard manager.
+    virtual void DoPaste() override;
 
     /** is called when the current function should be aborted. <p>
         This is used when a function gets a KEY_ESCAPE but can also
@@ -70,7 +69,7 @@ public:
         @returns
             true if a active function was aborted
     */
-    virtual bool cancel() SAL_OVERRIDE;
+    virtual bool cancel() override;
 
     void MouseDragged (
         const AcceptDropEvent& rEvent,
@@ -79,11 +78,6 @@ public:
     /** Turn of substitution display and insertion indicator.
     */
     void NotifyDragFinished();
-
-    /** Call when drag-and-drop or multi selection is started or stopped in
-        order to update permission of mouse over indication.
-    */
-    void UpdateMouseOverIndicationPermission();
 
     class EventDescriptor;
     class ModeHandler;
@@ -118,14 +112,6 @@ protected:
     virtual ~SelectionFunction();
 
 private:
-
-    /// The rectangle of the mouse drag selection.
-    Rectangle maDragSelectionRectangle;
-    bool mbDragSelection;
-
-    /// Box of the insert marker in model coordinates.
-    Rectangle maInsertionMarkerBox;
-
     /** We use this flag to filter out the cases where MouseMotion() is called
         with a pressed mouse button but without a prior MouseButtonDown()
         call.  This is an indication that the mouse button was pressed over
@@ -171,8 +157,6 @@ private:
         const FocusManager::FocusMoveDirection eDirection,
         const bool bIsShiftDown,
         const bool bIsControlDown);
-
-    void StopDragAndDrop();
 
     void SwitchMode (const std::shared_ptr<ModeHandler>& rpHandler);
 };

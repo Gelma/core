@@ -48,13 +48,7 @@
 #define FORMAT_PNG      2
 #define FORMAT_BMP      3
 #define FORMAT_GIF      4
-#define FORMAT_PBM      5
-#define FORMAT_PGM      6
-#define FORMAT_PPM      7
-#define FORMAT_PCT      8
-#define FORMAT_RAS      9
 #define FORMAT_TIF      10
-#define FORMAT_XPM      11
 #define FORMAT_WMF      12
 #define FORMAT_EMF      13
 #define FORMAT_EPS      14
@@ -83,20 +77,8 @@ static sal_Int16 GetFilterFormat(const OUString& rExt)
         nFormat = FORMAT_BMP;
     else if ( rExt == "GIF" )
         nFormat = FORMAT_GIF;
-    else if ( rExt == "PBM" )
-        nFormat = FORMAT_PBM;
-    else if ( rExt == "PGM" )
-        nFormat = FORMAT_PGM;
-    else if ( rExt == "PPM" )
-        nFormat = FORMAT_PPM;
-    else if ( rExt == "PCT" )
-        nFormat = FORMAT_PCT;
-    else if ( rExt == "RAS" )
-        nFormat = FORMAT_RAS;
     else if ( rExt == "TIF" )
         nFormat = FORMAT_TIF;
-    else if ( rExt == "XPM" )
-        nFormat = FORMAT_XPM;
     else if ( rExt == "WMF" )
         nFormat = FORMAT_WMF;
     else if ( rExt == "EMF" )
@@ -192,16 +174,16 @@ uno::Sequence< beans::PropertyValue > ExportDialog::GetFilterData( bool bUpdateC
             if ( nResolution < 1 )
                 nResolution = 96;
 
-            mpOptionsItem->WriteInt32(OUString("PixelExportUnit"), nUnit);
-            mpOptionsItem->WriteInt32(OUString("PixelExportResolution"), nResolution);
-            mpOptionsItem->WriteInt32(OUString("PixelExportResolutionUnit"), mpLbResolution->GetSelectEntryPos());
+            mpOptionsItem->WriteInt32("PixelExportUnit", nUnit);
+            mpOptionsItem->WriteInt32("PixelExportResolution", nResolution);
+            mpOptionsItem->WriteInt32("PixelExportResolutionUnit", mpLbResolution->GetSelectEntryPos());
         }
         else
         {
             if ( nUnit >= UNIT_PIXEL )
                 nUnit = UNIT_CM;
 
-            mpOptionsItem->WriteInt32(OUString("VectorExportUnit"), nUnit);
+            mpOptionsItem->WriteInt32("VectorExportUnit", nUnit);
         }
     }
 
@@ -218,8 +200,8 @@ uno::Sequence< beans::PropertyValue > ExportDialog::GetFilterData( bool bUpdateC
     const OUString sLogicalHeight("LogicalHeight");
     if ( mbIsPixelFormat )
     {
-        pFilterOptions->WriteInt32(OUString("PixelWidth"), static_cast< sal_Int32 >( maSize.Width ) );
-        pFilterOptions->WriteInt32(OUString("PixelHeight"), static_cast< sal_Int32 >( maSize.Height ) );
+        pFilterOptions->WriteInt32("PixelWidth", static_cast< sal_Int32 >( maSize.Width ) );
+        pFilterOptions->WriteInt32("PixelHeight", static_cast< sal_Int32 >( maSize.Height ) );
         if ( maResolution.Width && maResolution.Height )
         {
             const double f100thmmPerPixelX = 100000.0 / maResolution.Width;
@@ -247,29 +229,29 @@ uno::Sequence< beans::PropertyValue > ExportDialog::GetFilterData( bool bUpdateC
                 nColor = 0;
             else
                 nColor = 1;
-            pFilterOptions->WriteInt32(OUString("ColorMode"), nColor);
-            pFilterOptions->WriteInt32(OUString("Quality"), static_cast<sal_Int32>(mpSbCompression->GetThumbPos()));
+            pFilterOptions->WriteInt32("ColorMode", nColor);
+            pFilterOptions->WriteInt32("Quality", static_cast<sal_Int32>(mpSbCompression->GetThumbPos()));
         }
         break;
 
         case FORMAT_PNG :
         {
-            pFilterOptions->WriteInt32(OUString("Compression"), static_cast<sal_Int32>(mpSbCompression->GetThumbPos()));
+            pFilterOptions->WriteInt32("Compression", static_cast<sal_Int32>(mpSbCompression->GetThumbPos()));
             sal_Int32 nInterlace = 0;
             if ( mpCbInterlaced->IsChecked() )
                 nInterlace++;
-            pFilterOptions->WriteInt32(OUString("Interlaced"), nInterlace);
+            pFilterOptions->WriteInt32("Interlaced", nInterlace);
             sal_Int32 nValue = 0;
             if ( mpCbSaveTransparency->IsChecked() )
                 nValue++;
-            pFilterOptions->WriteInt32(OUString("Translucent"), nValue);
+            pFilterOptions->WriteInt32("Translucent", nValue);
         }
         break;
 
         case FORMAT_BMP :
         {
-            pFilterOptions->WriteInt32(OUString("Color"), mpLbColorDepth->GetSelectEntryPos() + 1);
-            pFilterOptions->WriteBool(OUString("RLE_Coding"), mpCbRLEEncoding->IsChecked());
+            pFilterOptions->WriteInt32("Color", mpLbColorDepth->GetSelectEntryPos() + 1);
+            pFilterOptions->WriteBool("RLE_Coding", mpCbRLEEncoding->IsChecked());
         }
         break;
 
@@ -278,23 +260,12 @@ uno::Sequence< beans::PropertyValue > ExportDialog::GetFilterData( bool bUpdateC
             sal_Int32 nValue = 0;
             if ( mpCbInterlaced->IsChecked() )
                 nValue++;
-            pFilterOptions->WriteInt32(OUString("Interlaced"), nValue);
+            pFilterOptions->WriteInt32("Interlaced", nValue);
 
             nValue = 0;
             if (mpCbSaveTransparency->IsChecked())
                 nValue++;
-            pFilterOptions->WriteInt32(OUString("Translucent"), nValue);
-        }
-        break;
-
-        case FORMAT_PBM :
-        case FORMAT_PGM :
-        case FORMAT_PPM :
-        {
-            sal_Int32 nFormat = 0;
-            if ( mpRbText->IsChecked() )
-                nFormat++;
-            pFilterOptions->WriteInt32(OUString("FileFormat"), nFormat);
+            pFilterOptions->WriteInt32("Translucent", nValue);
         }
         break;
 
@@ -305,22 +276,22 @@ uno::Sequence< beans::PropertyValue > ExportDialog::GetFilterData( bool bUpdateC
                 nCheck++;
             if ( mpCbEPSPreviewEPSI->IsChecked() )
                 nCheck += 2;
-            pFilterOptions->WriteInt32(OUString("Preview"), nCheck);
+            pFilterOptions->WriteInt32("Preview", nCheck);
 
             nCheck = 1;
             if ( mpRbEPSLevel2->IsChecked() )
                 nCheck++;
-            pFilterOptions->WriteInt32(OUString("Version"), nCheck);
+            pFilterOptions->WriteInt32("Version", nCheck);
 
             nCheck = 1;
             if ( mpRbEPSColorFormat2->IsChecked() )
                 nCheck++;
-            pFilterOptions->WriteInt32(OUString("ColorFormat"), nCheck);
+            pFilterOptions->WriteInt32("ColorFormat", nCheck);
 
             nCheck = 1;
             if ( mpRbEPSCompressionNone->IsChecked() )
                 nCheck++;
-            pFilterOptions->WriteInt32(OUString("CompressionMode"), nCheck);
+            pFilterOptions->WriteInt32("CompressionMode", nCheck);
         }
         break;
     }
@@ -343,7 +314,7 @@ awt::Size ExportDialog::GetOriginalSize()
         {
             sal_Int32 nWidth = 0;
             sal_Int32 nHeight= 0;
-            com::sun::star::uno::Any aAny;
+            css::uno::Any aAny;
             aAny = xPagePropSet->getPropertyValue("Width");
             aAny >>= nWidth;
             aAny = xPagePropSet->getPropertyValue("Height");
@@ -356,7 +327,7 @@ awt::Size ExportDialog::GetOriginalSize()
         uno::Reference< graphic::XPrimitiveFactory2D > xPrimitiveFactory = graphic::PrimitiveFactory2D::create( mxContext );
 
         basegfx::B2DHomMatrix aViewTransformation( Application::GetDefaultDevice()->GetViewTransformation() );
-        com::sun::star::geometry::AffineMatrix2D aTransformation;
+        css::geometry::AffineMatrix2D aTransformation;
         aTransformation.m00 = aViewTransformation.get(0,0);
         aTransformation.m01 = aViewTransformation.get(0,1);
         aTransformation.m02 = aViewTransformation.get(0,2);
@@ -466,11 +437,11 @@ bool ExportDialog::GetGraphicStream()
 
             uno::Reference< lang::XComponent > xSourceDoc;
             if ( mxPage.is() )
-                xSourceDoc = uno::Reference< lang::XComponent >( mxPage, uno::UNO_QUERY_THROW );
+                xSourceDoc.set( mxPage, uno::UNO_QUERY_THROW );
             else if ( mxShapes.is() )
-                xSourceDoc = uno::Reference< lang::XComponent >( mxShapes, uno::UNO_QUERY_THROW );
+                xSourceDoc.set( mxShapes, uno::UNO_QUERY_THROW );
             else if ( mxShape.is() )
-                xSourceDoc = uno::Reference< lang::XComponent >( mxShape, uno::UNO_QUERY_THROW );
+                xSourceDoc.set( mxShape, uno::UNO_QUERY_THROW );
             if ( xSourceDoc.is() )
             {
                 xGraphicExporter->setSourceDocument( xSourceDoc );
@@ -502,7 +473,7 @@ Bitmap ExportDialog::GetGraphicBitmap( SvStream& rInputStream )
     Bitmap aRet;
     Graphic aGraphic;
     GraphicFilter aFilter( false );
-    if ( aFilter.ImportGraphic( aGraphic, "", rInputStream, GRFILTER_FORMAT_NOTFOUND, NULL, GraphicFilterImportFlags::NONE, static_cast<com::sun::star::uno::Sequence< com::sun::star::beans::PropertyValue >*>(NULL), NULL ) == GRFILTER_OK )
+    if ( aFilter.ImportGraphic( aGraphic, "", rInputStream, GRFILTER_FORMAT_NOTFOUND, nullptr, GraphicFilterImportFlags::NONE, static_cast<css::uno::Sequence< css::beans::PropertyValue >*>(nullptr) ) == GRFILTER_OK )
     {
         aRet = aGraphic.GetBitmap();
     }
@@ -551,15 +522,15 @@ bool ExportDialog::IsTempExportAvailable() const
 }
 
 ExportDialog::ExportDialog(FltCallDialogParameter& rPara,
-    const com::sun::star::uno::Reference< com::sun::star::uno::XComponentContext >& rxContext,
-    const com::sun::star::uno::Reference< ::com::sun::star::lang::XComponent >& rxSourceDocument,
+    const css::uno::Reference< css::uno::XComponentContext >& rxContext,
+    const css::uno::Reference< css::lang::XComponent >& rxSourceDocument,
     bool bExportSelection, bool bIsPixelFormat)
     : ModalDialog(rPara.pWindow, "GraphicExportDialog", "svt/ui/graphicexport.ui")
     , mrFltCallPara(rPara)
     , mxContext(rxContext)
     , mxSourceDocument(rxSourceDocument)
-    , mpSbCompression(NULL)
-    , mpNfCompression(NULL)
+    , mpSbCompression(nullptr)
+    , mpNfCompression(nullptr)
     , msEstimatedSizePix1(SVT_RESSTR(STR_SVT_ESTIMATED_SIZE_PIX_1))
     , msEstimatedSizePix2(SVT_RESSTR(STR_SVT_ESTIMATED_SIZE_PIX_2))
     , msEstimatedSizeVec(SVT_RESSTR(STR_SVT_ESTIMATED_SIZE_VEC))
@@ -630,11 +601,11 @@ ExportDialog::ExportDialog(FltCallDialogParameter& rPara,
     mpFilterOptionsItem = new FilterConfigItem( aFilterConfigPath, &rPara.aFilterData );
 
     mnInitialResolutionUnit = mbIsPixelFormat
-        ? mpOptionsItem->ReadInt32(OUString("PixelExportUnit"), UNIT_DEFAULT)
-        : mpOptionsItem->ReadInt32(OUString( "VectorExportUnit"), UNIT_DEFAULT);
+        ? mpOptionsItem->ReadInt32("PixelExportUnit", UNIT_DEFAULT)
+        : mpOptionsItem->ReadInt32("VectorExportUnit", UNIT_DEFAULT);
 
-    mnMaxFilesizeForRealtimePreview = mpOptionsItem->ReadInt32(OUString("MaxFilesizeForRealtimePreview"), 0);
-    mpFtEstimatedSize->SetText(OUString(" \n "));
+    mnMaxFilesizeForRealtimePreview = mpOptionsItem->ReadInt32("MaxFilesizeForRealtimePreview", 0);
+    mpFtEstimatedSize->SetText(" \n ");
 
     SetText( GetText().replaceFirst("%1", maExt) ); //Set dialog title
 
@@ -658,7 +629,7 @@ ExportDialog::ExportDialog(FltCallDialogParameter& rPara,
     setupControls();
 
     // Size
-    mpLbSizeX->SetSelectHdl( LINK( this, ExportDialog, SelectHdl ) );
+    mpLbSizeX->SetSelectHdl( LINK( this, ExportDialog, SelectListBoxHdl ) );
 
     if (mpSbCompression)
         mpSbCompression->SetScrollHdl(LINK(this, ExportDialog, SbCompressionUpdateHdl));
@@ -669,9 +640,9 @@ ExportDialog::ExportDialog(FltCallDialogParameter& rPara,
     mpMfSizeY->SetModifyHdl( LINK( this, ExportDialog, UpdateHdlMtfSizeY ) );
 
     mpNfResolution->SetModifyHdl( LINK( this, ExportDialog, UpdateHdlNfResolution ) );
-    mpLbResolution->SetSelectHdl( LINK( this, ExportDialog, SelectHdl ) );
+    mpLbResolution->SetSelectHdl( LINK( this, ExportDialog, SelectListBoxHdl ) );
 
-    mpLbColorDepth->SetSelectHdl( LINK( this, ExportDialog, SelectHdl ) );
+    mpLbColorDepth->SetSelectHdl( LINK( this, ExportDialog, SelectListBoxHdl ) );
 
     mpCbInterlaced->SetClickHdl( LINK( this, ExportDialog, UpdateHdl ) );
 
@@ -722,12 +693,12 @@ void ExportDialog::setupSizeControls()
     if ( mbIsPixelFormat )      // TODO: (metafileresolutionsupport) should be supported for vector formats also... this makes
     {                           // sense eg for bitmap fillings in metafiles, to preserve high dpi output
                                 // (atm without special vector support the bitmaps are rendered with 96dpi)
-        sal_Int32 nResolution = mpOptionsItem->ReadInt32(OUString("PixelExportResolution"), 96);
+        sal_Int32 nResolution = mpOptionsItem->ReadInt32("PixelExportResolution", 96);
         if ( nResolution < 1 )
             nResolution = 96;
         mpNfResolution->SetValue( nResolution );
 
-        sal_Int32 nResolutionUnit = mpOptionsItem->ReadInt32(OUString("PixelExportResolutionUnit"), 1);
+        sal_Int32 nResolutionUnit = mpOptionsItem->ReadInt32("PixelExportResolutionUnit", 1);
         if ( ( nResolutionUnit < 0 ) || ( nResolutionUnit > 2 ) )
             nResolutionUnit = 1;
         mpLbResolution->SelectEntryPos( static_cast< sal_uInt16 >( nResolutionUnit ) );
@@ -740,7 +711,7 @@ void ExportDialog::createFilterOptions()
     {
         case FORMAT_JPG :
         {
-            sal_Int32 nColor = mpFilterOptionsItem->ReadInt32(OUString("ColorMode"), 0);
+            sal_Int32 nColor = mpFilterOptionsItem->ReadInt32("ColorMode", 0);
             if ( nColor == 1 )
                 nColor = 0;
             else
@@ -752,7 +723,7 @@ void ExportDialog::createFilterOptions()
 
             // Quality
             mpJPGQuality->Show();
-            sal_Int32 nQuality = mpFilterOptionsItem->ReadInt32(OUString("Quality"), 75);
+            sal_Int32 nQuality = mpFilterOptionsItem->ReadInt32("Quality", 75);
             if ((nQuality < 1 ) || (nQuality > 100))
                 nQuality = 75;
             get(mpSbCompression, "compressionjpgsb");
@@ -769,7 +740,7 @@ void ExportDialog::createFilterOptions()
         {
             // Compression 1..9
             mpPNGCompression->Show();
-            sal_Int32 nCompression = mpFilterOptionsItem->ReadInt32(OUString("Compression"), 6);
+            sal_Int32 nCompression = mpFilterOptionsItem->ReadInt32("Compression", 6);
             if ( ( nCompression < 1 ) || ( nCompression > 9 ) )
                 nCompression = 6;
 
@@ -784,16 +755,16 @@ void ExportDialog::createFilterOptions()
 
             // Interlaced
             mpMode->Show();
-            mpCbInterlaced->Check(mpFilterOptionsItem->ReadInt32(OUString("Interlaced"), 0) != 0);
+            mpCbInterlaced->Check(mpFilterOptionsItem->ReadInt32("Interlaced", 0) != 0);
 
             // Transparency
             mpDrawingObjects->Show();
-            mpCbSaveTransparency->Check(mpFilterOptionsItem->ReadInt32(OUString("Translucent"), 1) != 0);
+            mpCbSaveTransparency->Check(mpFilterOptionsItem->ReadInt32("Translucent", 1) != 0);
         }
         break;
         case FORMAT_BMP :
         {
-            sal_Int32 nColor = mpFilterOptionsItem->ReadInt32(OUString("Color"), 0);
+            sal_Int32 nColor = mpFilterOptionsItem->ReadInt32("Color", 0);
             if ( nColor == 0 )
                 nColor = 6;
             else
@@ -810,41 +781,30 @@ void ExportDialog::createFilterOptions()
 
             // RLE coding
             mpBMPCompression->Show();
-            mpCbRLEEncoding->Check(mpFilterOptionsItem->ReadBool(OUString("RLE_Coding"), true));
+            mpCbRLEEncoding->Check(mpFilterOptionsItem->ReadBool("RLE_Coding", true));
         }
         break;
         case FORMAT_GIF :
         {
             // Interlaced
             mpMode->Show();
-            mpCbInterlaced->Check(mpFilterOptionsItem->ReadInt32(OUString("Interlaced"), 1) != 0);
+            mpCbInterlaced->Check(mpFilterOptionsItem->ReadInt32("Interlaced", 1) != 0);
 
             // Transparency
             mpDrawingObjects->Show();
-            mpCbSaveTransparency->Check(mpFilterOptionsItem->ReadInt32(OUString("Translucent"), 1) != 0);
-        }
-        break;
-        case FORMAT_PBM :
-        case FORMAT_PGM :
-        case FORMAT_PPM :
-        {
-            // RB Binary / Text
-            mpEncoding->Show();
-            sal_Int32 nFormat = mpFilterOptionsItem->ReadInt32(OUString("FileFormat"), 1);
-            mpRbBinary->Check( nFormat == 0 );
-            mpRbText->Check( nFormat != 0 );
+            mpCbSaveTransparency->Check(mpFilterOptionsItem->ReadInt32("Translucent", 1) != 0);
         }
         break;
         case FORMAT_EPS :
         {
             mpEPSGrid->Show();
 
-            sal_Int32 nPreview = mpFilterOptionsItem->ReadInt32(OUString("Preview"), 0);
-            sal_Int32 nVersion = mpFilterOptionsItem->ReadInt32(OUString("Version"), 2);
-            sal_Int32 nColor = mpFilterOptionsItem->ReadInt32(OUString("ColorFormat"), 0);
-            sal_Int32 nCompr = mpFilterOptionsItem->ReadInt32(OUString("CompressionMode"), 2);
+            sal_Int32 nPreview = mpFilterOptionsItem->ReadInt32("Preview", 0);
+            sal_Int32 nVersion = mpFilterOptionsItem->ReadInt32("Version", 2);
+            sal_Int32 nColor = mpFilterOptionsItem->ReadInt32("ColorFormat", 0);
+            sal_Int32 nCompr = mpFilterOptionsItem->ReadInt32("CompressionMode", 2);
 
-            mpFilterOptionsItem->ReadInt32(OUString("TextMode"), 0);
+            mpFilterOptionsItem->ReadInt32("TextMode", 0);
 
             mpCbEPSPreviewTIFF->Check( ( nPreview & 1 ) != 0 );
             mpCbEPSPreviewEPSI->Check( ( nPreview & 2 ) != 0 );
@@ -1028,17 +988,20 @@ void ExportDialog::dispose()
 |* stores values set in the ini-file
 |*
 \************************************************************************/
-IMPL_LINK_NOARG(ExportDialog, SelectHdl)
+IMPL_LINK_NOARG_TYPED(ExportDialog, SelectHdl, Edit&, void)
 {
-    UpdateHdl(NULL);
-    return 0;
+    updateControls();
+}
+IMPL_LINK_NOARG_TYPED(ExportDialog, SelectListBoxHdl, ListBox&, void)
+{
+    updateControls();
 }
 IMPL_LINK_NOARG_TYPED(ExportDialog, UpdateHdl, Button*, void)
 {
     updateControls();
 }
 
-IMPL_LINK_NOARG(ExportDialog, UpdateHdlMtfSizeX)
+IMPL_LINK_NOARG_TYPED(ExportDialog, UpdateHdlMtfSizeX, Edit&, void)
 {
     double fRatio = static_cast< double >( maOriginalSize.Height ) / maOriginalSize.Width;
 
@@ -1069,10 +1032,9 @@ IMPL_LINK_NOARG(ExportDialog, UpdateHdlMtfSizeX)
             maSize.Height = aDest.Height();
     }
     updateControls();
-    return 0;
 }
 
-IMPL_LINK_NOARG(ExportDialog, UpdateHdlMtfSizeY)
+IMPL_LINK_NOARG_TYPED(ExportDialog, UpdateHdlMtfSizeY, Edit&, void)
 {
     double fRatio = static_cast< double >( maOriginalSize.Width ) / maOriginalSize.Height;
 
@@ -1103,10 +1065,9 @@ IMPL_LINK_NOARG(ExportDialog, UpdateHdlMtfSizeY)
             maSize.Width = aDest.Width();
     }
     updateControls();
-    return 0;
 }
 
-IMPL_LINK_NOARG(ExportDialog, UpdateHdlNfResolution)
+IMPL_LINK_NOARG_TYPED(ExportDialog, UpdateHdlNfResolution, Edit&, void)
 {
     sal_Int32 nResolution = mpNfResolution->GetValue();
     if ( mpLbResolution->GetSelectEntryPos() == 0 )      // pixels / cm
@@ -1117,7 +1078,6 @@ IMPL_LINK_NOARG(ExportDialog, UpdateHdlNfResolution)
     maResolution.Height= nResolution;
 
     updateControls();
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(ExportDialog, SbCompressionUpdateHdl, ScrollBar*, void)

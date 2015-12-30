@@ -40,7 +40,7 @@ class SwFormatRefMark
     friend class SwTextRefMark;
     SwTextRefMark* pTextAttr;
 
-    SwFormatRefMark& operator=(const SwFormatRefMark& rRefMark) SAL_DELETED_FUNCTION;
+    SwFormatRefMark& operator=(const SwFormatRefMark& rRefMark) = delete;
     OUString aRefName;
 
     css::uno::WeakReference<css::text::XTextContent> m_wXReferenceMark;
@@ -51,17 +51,16 @@ public:
     virtual ~SwFormatRefMark( );
 
     /// "Pure virtual methods" of SfxPoolItem.
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = nullptr ) const override;
 
     // SwClient
     virtual void Modify(SfxPoolItem const* pOld, SfxPoolItem const* pNew)
-        SAL_OVERRIDE;
+        override;
 
     void InvalidateRefMark();
 
     const SwTextRefMark *GetTextRefMark() const   { return pTextAttr; }
-    SwTextRefMark *GetTextRefMark()               { return pTextAttr; }
 
     inline       OUString &GetRefName()       { return aRefName; }
     inline const OUString &GetRefName() const { return aRefName; }

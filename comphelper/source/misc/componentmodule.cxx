@@ -75,22 +75,17 @@ namespace comphelper
 
     void OModule::registerClient( OModule::ClientAccess )
     {
-        ::osl::MutexGuard aGuard(m_aMutex);
-        if ( 1 == osl_atomic_increment( &m_nClients ) )
-            onFirstClient();
+        osl_atomic_increment( &m_nClients );
     }
 
 
     void OModule::revokeClient( OModule::ClientAccess )
     {
-        ::osl::MutexGuard aGuard(m_aMutex);
         if ( 0 == osl_atomic_decrement( &m_nClients ) )
+        {
+            ::osl::MutexGuard aGuard(m_aMutex);
             onLastClient();
-    }
-
-
-    void OModule::onFirstClient()
-    {
+        }
     }
 
 
@@ -112,7 +107,7 @@ namespace comphelper
     void OModule::registerImplementation( const OUString& _rImplementationName, const css::uno::Sequence< OUString >& _rServiceNames,
         ::cppu::ComponentFactoryFunc _pCreateFunction, FactoryInstantiation _pFactoryFunction )
     {
-        ComponentDescription aComponent( _rImplementationName, _rServiceNames, OUString(), _pCreateFunction, _pFactoryFunction );
+        ComponentDescription aComponent( _rImplementationName, _rServiceNames, _pCreateFunction, _pFactoryFunction );
         registerImplementation( aComponent );
     }
 
@@ -140,7 +135,7 @@ namespace comphelper
                     component->pComponentCreationFunc,
                     component->sImplementationName,
                     component->aSupportedServices,
-                    NULL
+                    nullptr
                 );
                 if ( xReturn.is() )
                 {
@@ -150,7 +145,7 @@ namespace comphelper
             }
         }
 
-        return NULL;
+        return nullptr;
     }
 
 

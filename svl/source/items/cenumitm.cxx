@@ -26,7 +26,6 @@
 
 #include <comphelper/extract.hxx>
 
-TYPEINIT1(SfxEnumItemInterface, SfxPoolItem)
 
 // virtual
 bool SfxEnumItemInterface::operator ==(const SfxPoolItem & rItem) const
@@ -47,7 +46,7 @@ bool SfxEnumItemInterface::GetPresentation(SfxItemPresentation, SfxMapUnit,
 }
 
 // virtual
-bool SfxEnumItemInterface::QueryValue(com::sun::star::uno::Any& rVal, sal_uInt8)
+bool SfxEnumItemInterface::QueryValue(css::uno::Any& rVal, sal_uInt8)
     const
 {
     rVal <<= sal_Int32(GetEnumValue());
@@ -55,7 +54,7 @@ bool SfxEnumItemInterface::QueryValue(com::sun::star::uno::Any& rVal, sal_uInt8)
 }
 
 // virtual
-bool SfxEnumItemInterface::PutValue(const com::sun::star::uno::Any& rVal,
+bool SfxEnumItemInterface::PutValue(const css::uno::Any& rVal,
                                     sal_uInt8)
 {
     sal_Int32 nTheValue = 0;
@@ -71,7 +70,7 @@ bool SfxEnumItemInterface::PutValue(const com::sun::star::uno::Any& rVal,
 
 OUString SfxEnumItemInterface::GetValueTextByPos(sal_uInt16) const
 {
-    DBG_WARNING("SfxEnumItemInterface::GetValueTextByPos(): Pure virtual");
+    SAL_INFO("svl", "SfxEnumItemInterface::GetValueTextByPos(): Pure virtual");
     return OUString();
 }
 
@@ -119,7 +118,6 @@ SfxEnumItem::SfxEnumItem(sal_uInt16 const nWhich, SvStream & rStream)
     rStream.ReadUInt16( m_nValue );
 }
 
-TYPEINIT1(SfxEnumItem, SfxEnumItemInterface)
 
 // virtual
 SvStream & SfxEnumItem::Store(SvStream & rStream, sal_uInt16) const
@@ -146,7 +144,10 @@ void SfxEnumItem::SetValue(sal_uInt16 const nTheValue)
     m_nValue = nTheValue;
 }
 
-TYPEINIT1_AUTOFACTORY(SfxBoolItem, SfxPoolItem);
+SfxPoolItem* SfxBoolItem::CreateDefault()
+{
+    return new SfxBoolItem();
+}
 
 SfxBoolItem::SfxBoolItem(sal_uInt16 const nWhich, SvStream & rStream)
     : SfxPoolItem(nWhich)
@@ -159,7 +160,7 @@ SfxBoolItem::SfxBoolItem(sal_uInt16 const nWhich, SvStream & rStream)
 // virtual
 bool SfxBoolItem::operator ==(const SfxPoolItem & rItem) const
 {
-    DBG_ASSERT(rItem.ISA(SfxBoolItem),
+    DBG_ASSERT(dynamic_cast<const SfxBoolItem*>( &rItem ) !=  nullptr,
                "SfxBoolItem::operator ==(): Bad type");
     return m_bValue == static_cast< SfxBoolItem const * >(&rItem)->m_bValue;
 }
@@ -175,14 +176,14 @@ bool SfxBoolItem::GetPresentation(SfxItemPresentation,
 }
 
 // virtual
-bool SfxBoolItem::QueryValue(com::sun::star::uno::Any& rVal, sal_uInt8) const
+bool SfxBoolItem::QueryValue(css::uno::Any& rVal, sal_uInt8) const
 {
     rVal <<= m_bValue;
     return true;
 }
 
 // virtual
-bool SfxBoolItem::PutValue(const com::sun::star::uno::Any& rVal, sal_uInt8)
+bool SfxBoolItem::PutValue(const css::uno::Any& rVal, sal_uInt8)
 {
     bool bTheValue = bool();
     if (rVal >>= bTheValue)

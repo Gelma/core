@@ -21,7 +21,6 @@
 #define INCLUDED_BASIC_SOURCE_INC_RTLPROTO_HXX
 
 #include <basic/sbstar.hxx>
-#include "sbtrace.hxx"
 
 #define RTLFUNC( name ) void SbRtl_##name( StarBASIC* pBasic, SbxArray& rPar, bool bWrite )
 #define RTLNAME( name ) &SbRtl_##name
@@ -138,11 +137,6 @@ extern RTLFUNC(CLEAR_ALLTABS);
 extern RTLFUNC(CLEAR_TAB);
 extern RTLFUNC(SET_TAB);
 
-extern RTLFUNC(LINEPROP);
-extern RTLFUNC(LINE_1);
-extern RTLFUNC(LINE_15);
-extern RTLFUNC(LINE_2);
-
 // Methoden
 
 extern RTLFUNC(CreateObject);
@@ -205,6 +199,7 @@ extern RTLFUNC(StrComp);
 extern RTLFUNC(String);
 extern RTLFUNC(StrReverse);
 extern RTLFUNC(SYD);
+extern RTLFUNC(Tab);
 extern RTLFUNC(Tan);
 extern RTLFUNC(UCase);
 extern RTLFUNC(Val);
@@ -361,10 +356,6 @@ extern RTLFUNC(CompatibilityMode);
 extern RTLFUNC(CDec);
 
 extern RTLFUNC(Partition); // Fong
-
-#ifdef DBG_TRACE_BASIC
-extern RTLFUNC(TraceCommand);
-#endif
 
 extern double Now_Impl();
 extern void Wait_Impl( bool bDurationBased, SbxArray& rPar );

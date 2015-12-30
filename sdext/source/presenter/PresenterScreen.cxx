@@ -72,22 +72,22 @@ namespace {
         virtual ~PresenterScreenListener();
 
         void Initialize();
-        virtual void SAL_CALL disposing() SAL_OVERRIDE;
+        virtual void SAL_CALL disposing() override;
 
         // document::XEventListener
 
-        virtual void SAL_CALL notifyEvent( const css::document::EventObject& Event ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL notifyEvent( const css::document::EventObject& Event ) throw (css::uno::RuntimeException, std::exception) override;
 
         // XEventListener
 
-        virtual void SAL_CALL disposing ( const css::lang::EventObject& rEvent) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing ( const css::lang::EventObject& rEvent) throw (css::uno::RuntimeException, std::exception) override;
 
     private:
         css::uno::Reference<css::frame::XModel2 > mxModel;
         css::uno::Reference<css::uno::XComponentContext> mxComponentContext;
         rtl::Reference<PresenterScreen> mpPresenterScreen;
 
-        void ThrowIfDisposed() const throw (::com::sun::star::lang::DisposedException);
+        void ThrowIfDisposed() const throw (css::lang::DisposedException);
     };
 }
 
@@ -122,7 +122,7 @@ PresenterScreenJob::~PresenterScreenJob()
 
 void SAL_CALL PresenterScreenJob::disposing()
 {
-    mxComponentContext = NULL;
+    mxComponentContext = nullptr;
 }
 
 //----- XJob -----------------------------------------------------------
@@ -208,7 +208,7 @@ void SAL_CALL PresenterScreenListener::disposing()
     if (mpPresenterScreen.is())
     {
         mpPresenterScreen->RequestShutdownPresenterScreen();
-        mpPresenterScreen = NULL;
+        mpPresenterScreen = nullptr;
     }
 }
 
@@ -229,7 +229,7 @@ void SAL_CALL PresenterScreenListener::notifyEvent( const css::document::EventOb
         if (mpPresenterScreen.is())
         {
             mpPresenterScreen->RequestShutdownPresenterScreen();
-            mpPresenterScreen = NULL;
+            mpPresenterScreen = nullptr;
         }
     }
 }
@@ -244,12 +244,12 @@ void SAL_CALL PresenterScreenListener::disposing (const css::lang::EventObject& 
     if (mpPresenterScreen.is())
     {
         mpPresenterScreen->RequestShutdownPresenterScreen();
-        mpPresenterScreen = NULL;
+        mpPresenterScreen = nullptr;
     }
 }
 
 void PresenterScreenListener::ThrowIfDisposed() const throw (
-    ::com::sun::star::lang::DisposedException)
+    css::lang::DisposedException)
 {
     if (rBHelper.bDisposed || rBHelper.bInDispose)
     {
@@ -274,7 +274,6 @@ PresenterScreen::PresenterScreen (
       mxContextWeak(rxContext),
       mxSlideShowControllerWeak(),
       mpPresenterController(),
-      mxSlideShowViewId(),
       mxSavedConfiguration(),
       mpPaneContainer(),
       mnComponentIndex(0),
@@ -306,7 +305,7 @@ void SAL_CALL PresenterScreen::disposing()
     {
         xCC->restoreConfiguration(mxSavedConfiguration);
     }
-    mxConfigurationControllerWeak = Reference<XConfigurationController>(NULL);
+    mxConfigurationControllerWeak = Reference<XConfigurationController>(nullptr);
 
     Reference<lang::XComponent> xViewFactoryComponent (mxViewFactory, UNO_QUERY);
     if (xViewFactoryComponent.is())
@@ -315,7 +314,7 @@ void SAL_CALL PresenterScreen::disposing()
     if (xPaneFactoryComponent.is())
         xPaneFactoryComponent->dispose();
 
-    mxModel = NULL;
+    mxModel = nullptr;
 }
 
 //----- XEventListener --------------------------------------------------------
@@ -508,7 +507,7 @@ sal_Int32 PresenterScreen::GetPresenterScreenNumber (
                 PresenterConfigurationAccess::READ_ONLY);
             bool bStartAlways (false);
             if (aConfiguration.GetConfigurationNode(
-                OUString("Presenter/StartAlways")) >>= bStartAlways)
+                "Presenter/StartAlways") >>= bStartAlways)
             {
                 if (bStartAlways)
                     return GetPresenterScreenFromScreen(nScreenNumber);
@@ -560,7 +559,7 @@ Reference<drawing::framework::XResourceId> PresenterScreen::GetMainPaneId (
     // displays.  That leaves no room for the presenter.
     const sal_Int32 nScreen(GetPresenterScreenNumber(rxPresentation));
     if (nScreen < 0)
-        return NULL;
+        return nullptr;
 
     return ResourceId::create(
         Reference<XComponentContext>(mxContextWeak),
@@ -578,7 +577,7 @@ void PresenterScreen::RequestShutdownPresenterScreen()
     if (xCC.is() && mxSavedConfiguration.is())
     {
         xCC->restoreConfiguration(mxSavedConfiguration);
-        mxSavedConfiguration = NULL;
+        mxSavedConfiguration = nullptr;
     }
 
     if (xCC.is())
@@ -600,17 +599,17 @@ void PresenterScreen::ShutdownPresenterScreen()
     Reference<lang::XComponent> xViewFactoryComponent (mxViewFactory, UNO_QUERY);
     if (xViewFactoryComponent.is())
         xViewFactoryComponent->dispose();
-    mxViewFactory = NULL;
+    mxViewFactory = nullptr;
 
     Reference<lang::XComponent> xPaneFactoryComponent (mxPaneFactory, UNO_QUERY);
     if (xPaneFactoryComponent.is())
         xPaneFactoryComponent->dispose();
-    mxPaneFactory = NULL;
+    mxPaneFactory = nullptr;
 
-    if (mpPresenterController.get() != NULL)
+    if (mpPresenterController.get() != nullptr)
     {
         mpPresenterController->dispose();
-        mpPresenterController = rtl::Reference<PresenterController>();
+        mpPresenterController.clear();
     }
     mpPaneContainer = new PresenterPaneContainer(Reference<XComponentContext>(mxContextWeak));
 }
@@ -661,7 +660,7 @@ void PresenterScreen::SetupConfiguration (
         ProcessViewDescriptions(aConfiguration);
         OUString sLayoutName ("DefaultLayout");
         aConfiguration.GetConfigurationNode(
-            OUString("Presenter/CurrentLayout")) >>= sLayoutName;
+            "Presenter/CurrentLayout") >>= sLayoutName;
         ProcessLayout(aConfiguration, sLayoutName, rxContext, rxAnchorId);
     }
     catch (const RuntimeException&)
@@ -686,7 +685,7 @@ void PresenterScreen::ProcessLayout (
         OUString sParentLayout;
         PresenterConfigurationAccess::GetConfigurationNode(
             xLayoutNode,
-            OUString("ParentLayout")) >>= sParentLayout;
+            "ParentLayout") >>= sParentLayout;
         if (!sParentLayout.isEmpty())
         {
             // Prevent infinite recursion.
@@ -698,7 +697,7 @@ void PresenterScreen::ProcessLayout (
         Reference<container::XNameAccess> xList (
             PresenterConfigurationAccess::GetConfigurationNode(
                 xLayoutNode,
-                OUString("Layout")),
+                "Layout"),
             UNO_QUERY_THROW);
 
         ::std::vector<OUString> aProperties (6);
@@ -844,7 +843,7 @@ void PresenterScreen::SetupView(
             aViewDescriptor = iDescriptor->second;
 
         // Prepare the pane.
-        OSL_ASSERT(mpPaneContainer.get() != NULL);
+        OSL_ASSERT(mpPaneContainer.get() != nullptr);
         mpPaneContainer->PreparePane(
             xPaneId,
             rsViewURL,

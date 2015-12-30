@@ -34,7 +34,7 @@
 #include <sfx2/docfile.hxx>
 #include <rtl/textenc.h>
 #include <com/sun/star/ui/dialogs/TemplateDescription.hpp>
-#include <com/sun/star/ui/dialogs/XFilePicker.hpp>
+#include <com/sun/star/ui/dialogs/XFilePicker2.hpp>
 #include <com/sun/star/ui/dialogs/XFilterManager.hpp>
 #include <tools/urlobj.hxx>
 #include <dbui.hrc>
@@ -61,34 +61,34 @@ class SwAddressControl_Impl : public Control
 
     DECL_LINK_TYPED(ScrollHdl_Impl, ScrollBar*, void);
     DECL_LINK_TYPED(GotFocusHdl_Impl, Control&, void);
-    DECL_LINK(EditModifyHdl_Impl, Edit*);
+    DECL_LINK_TYPED(EditModifyHdl_Impl, Edit&, void);
 
     void                MakeVisible(const Rectangle& aRect);
 
-    virtual bool        PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
-    virtual void        Command( const CommandEvent& rCEvt ) SAL_OVERRIDE;
-    virtual Size        GetOptimalSize() const SAL_OVERRIDE;
+    virtual bool        PreNotify( NotifyEvent& rNEvt ) override;
+    virtual void        Command( const CommandEvent& rCEvt ) override;
+    virtual Size        GetOptimalSize() const override;
 
     using Window::SetData;
 
 public:
     SwAddressControl_Impl(vcl::Window* pParent , WinBits nBits );
     virtual ~SwAddressControl_Impl();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void        SetData(SwCSVData& rDBData);
 
     void        SetCurrentDataSet(sal_uInt32 nSet);
     sal_uInt32  GetCurrentDataSet() const { return m_nCurrentDataSet;}
     void        SetCursorTo(sal_uInt32 nElement);
-    virtual void Resize() SAL_OVERRIDE;
+    virtual void Resize() override;
 };
 
 SwAddressControl_Impl::SwAddressControl_Impl(vcl::Window* pParent, WinBits nBits ) :
     Control(pParent, nBits),
     m_pScrollBar(VclPtr<ScrollBar>::Create(this)),
     m_pWindow(VclPtr<vcl::Window>::Create(this, WB_DIALOGCONTROL)),
-    m_pData(0),
+    m_pData(nullptr),
     m_nLineHeight(0),
     m_nCurrentDataSet(0),
     m_bNoDataSet(true)
@@ -126,8 +126,8 @@ void SwAddressControl_Impl::dispose()
     for(auto aEditIter = m_aEdits.begin(); aEditIter != m_aEdits.end(); ++aEditIter)
         aEditIter->disposeAndClear();
     m_aEdits.clear();
-    m_pScrollBar.clear();
-    m_pWindow.clear();
+    m_pScrollBar.disposeAndClear();
+    m_pWindow.disposeAndClear();
     Control::dispose();
 }
 
@@ -174,8 +174,8 @@ void SwAddressControl_Impl::SetData(SwCSVData& rDBData)
     long nFTYPos = nEDYPos + nEDHeight - nFTHeight;
 
     Link<Control&,void> aFocusLink = LINK(this, SwAddressControl_Impl, GotFocusHdl_Impl);
-    Link<> aEditModifyLink = LINK(this, SwAddressControl_Impl, EditModifyHdl_Impl);
-    Edit* pLastEdit = 0;
+    Link<Edit&,void> aEditModifyLink = LINK(this, SwAddressControl_Impl, EditModifyHdl_Impl);
+    Edit* pLastEdit = nullptr;
     sal_Int32 nVisibleLines = 0;
     sal_uIntPtr nLines = 0;
     for(aHeaderIter = m_pData->aDBColumnHeaders.begin();
@@ -218,7 +218,7 @@ void SwAddressControl_Impl::SetData(SwCSVData& rDBData)
         }
         else
         {
-            m_pScrollBar->Enable(true);
+            m_pScrollBar->Enable();
             m_pScrollBar->SetRange(Range(0, nLines));
             m_pScrollBar->SetThumbPos(0);
             m_pScrollBar->SetVisibleSize(nVisibleLines);
@@ -299,17 +299,16 @@ void SwAddressControl_Impl::MakeVisible(const Rectangle & rRect)
 }
 
 // copy data changes into database
-IMPL_LINK(SwAddressControl_Impl, EditModifyHdl_Impl, Edit*, pEdit)
+IMPL_LINK_TYPED(SwAddressControl_Impl, EditModifyHdl_Impl, Edit&, rEdit, void)
 {
     //get the data element number of the current set
-    sal_Int32 nIndex = (sal_Int32)reinterpret_cast<sal_IntPtr>(pEdit->GetData());
+    sal_Int32 nIndex = (sal_Int32)reinterpret_cast<sal_IntPtr>(rEdit.GetData());
     //get the index of the set
     OSL_ENSURE(m_pData->aDBData.size() > m_nCurrentDataSet, "wrong data set index" );
     if(m_pData->aDBData.size() > m_nCurrentDataSet)
     {
-        m_pData->aDBData[m_nCurrentDataSet][nIndex] = pEdit->GetText();
+        m_pData->aDBData[m_nCurrentDataSet][nIndex] = rEdit.GetText();
     }
-    return 0;
 }
 
 void SwAddressControl_Impl::SetCursorTo(sal_uInt32 nElement)
@@ -335,7 +334,7 @@ void SwAddressControl_Impl::Command( const CommandEvent& rCEvt )
             const CommandWheelData* pWheelData = rCEvt.GetWheelData();
             if(pWheelData && !pWheelData->IsHorz() && CommandWheelMode::ZOOM != pWheelData->GetMode())
             {
-                HandleScrollCommand( rCEvt, 0, m_pScrollBar );
+                HandleScrollCommand( rCEvt, nullptr, m_pScrollBar );
             }
         }
         break;
@@ -396,7 +395,7 @@ SwCreateAddressListDialog::SwCreateAddressListDialog(
     m_sAddressListFilterName( SW_RES(    ST_FILTERNAME)),
     m_sURL(rURL),
     m_pCSVData( new SwCSVData ),
-    m_pFindDlg(0)
+    m_pFindDlg(nullptr)
 {
     get(m_pNewPB, "NEW");
     get(m_pDeletePB, "DELETE");
@@ -625,7 +624,7 @@ IMPL_LINK_NOARG_TYPED(SwCreateAddressListDialog, OkHdl_Impl, Button*, void)
     if(m_sURL.isEmpty())
     {
         sfx2::FileDialogHelper aDlgHelper( TemplateDescription::FILESAVE_SIMPLE, 0 );
-        uno::Reference < XFilePicker > xFP = aDlgHelper.GetFilePicker();
+        uno::Reference < XFilePicker2 > xFP = aDlgHelper.GetFilePicker();
 
         const OUString sPath( SvtPathOptions().SubstituteVariable("$(userurl)/database") );
         aDlgHelper.SetDisplayDirectory( sPath );
@@ -635,7 +634,7 @@ IMPL_LINK_NOARG_TYPED(SwCreateAddressListDialog, OkHdl_Impl, Button*, void)
 
         if( ERRCODE_NONE == aDlgHelper.Execute() )
         {
-            m_sURL = xFP->getFiles().getConstArray()[0];
+            m_sURL = xFP->getSelectedFiles().getConstArray()[0];
             INetURLObject aResult( m_sURL );
             aResult.setExtension("csv");
             m_sURL = aResult.GetMainURL(INetURLObject::NO_DECODE);
@@ -681,15 +680,14 @@ IMPL_LINK_TYPED(SwCreateAddressListDialog, DBCursorHdl_Impl, Button*, pButton, v
     if(nValue != m_pSetNoNF->GetValue())
     {
         m_pSetNoNF->SetValue(nValue);
-        DBNumCursorHdl_Impl(m_pSetNoNF);
+        DBNumCursorHdl_Impl(*m_pSetNoNF);
     }
 }
 
-IMPL_LINK_NOARG(SwCreateAddressListDialog, DBNumCursorHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SwCreateAddressListDialog, DBNumCursorHdl_Impl, Edit&, void)
 {
     m_pAddressControl->SetCurrentDataSet( static_cast< sal_uInt32 >(m_pSetNoNF->GetValue() - 1) );
     UpdateButtons();
-    return 0;
 }
 
 void SwCreateAddressListDialog::UpdateButtons()
@@ -788,10 +786,9 @@ IMPL_LINK_NOARG_TYPED(SwFindEntryDialog, FindHdl_Impl, Button*, void)
         m_pParent->Find(m_pFindED->GetText(), nColumn);
 }
 
-IMPL_LINK_NOARG(SwFindEntryDialog, FindEnableHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SwFindEntryDialog, FindEnableHdl_Impl, Edit&, void)
 {
     m_pFindPB->Enable(!m_pFindED->GetText().isEmpty());
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(SwFindEntryDialog, CloseHdl_Impl, Button*, void)

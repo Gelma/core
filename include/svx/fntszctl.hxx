@@ -29,18 +29,17 @@ class FontSizeMenu;
 
 // class SvxFontSizeMenuControl ------------------------------------------
 
-class SVX_DLLPUBLIC SAL_WARN_UNUSED SvxFontSizeMenuControl : public SfxMenuControl
+class SAL_WARN_UNUSED SVX_DLLPUBLIC SvxFontSizeMenuControl : public SfxMenuControl
 {
 private:
     FontSizeMenu*   pMenu;
     Menu&           rParent;
-    SfxStatusForwarder  aFontNameForwarder;
 
     DECL_LINK_TYPED( MenuSelect, FontSizeMenu *, void );
 
 protected:
     virtual void    StateChanged( sal_uInt16 nSID, SfxItemState eState,
-                                  const SfxPoolItem* pState ) SAL_OVERRIDE;
+                                  const SfxPoolItem* pState ) override;
 
 public:
     SvxFontSizeMenuControl( sal_uInt16 nId, Menu&, SfxBindings& );

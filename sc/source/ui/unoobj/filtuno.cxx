@@ -62,12 +62,10 @@ static void load_CharSet( rtl_TextEncoding &nCharSet, bool bExport )
 {
     Sequence<Any> aValues;
     const Any *pProperties;
-    Sequence<OUString> aNames(1);
-    OUString* pNames = aNames.getArray();
+    Sequence<OUString> aNames { DBF_CHAR_SET };
     ScLinkConfigItem aItem( OUString::createFromAscii(
                                 bExport?DBF_SEP_PATH_EXPORT:DBF_SEP_PATH_IMPORT ) );
 
-    pNames[0] = DBF_CHAR_SET;
     aValues = aItem.GetProperties( aNames );
     pProperties = aValues.getConstArray();
 
@@ -89,12 +87,10 @@ static void save_CharSet( rtl_TextEncoding nCharSet, bool bExport )
 {
     Sequence<Any> aValues;
     Any *pProperties;
-    Sequence<OUString> aNames(1);
-    OUString* pNames = aNames.getArray();
+    Sequence<OUString> aNames { DBF_CHAR_SET };
     ScLinkConfigItem aItem( OUString::createFromAscii(
                                 bExport?DBF_SEP_PATH_EXPORT:DBF_SEP_PATH_IMPORT ) );
 
-    pNames[0] = DBF_CHAR_SET;
     aValues = aItem.GetProperties( aNames );
     pProperties = aValues.getArray();
     pProperties[0] <<= (sal_Int32) nCharSet;
@@ -180,7 +176,7 @@ sal_Int16 SAL_CALL ScFilterOptionsObj::execute() throw(uno::RuntimeException, st
         if ( xInputStream.is() )
             pInStream.reset(utl::UcbStreamHelper::CreateStream( xInputStream ));
 
-        std::unique_ptr<AbstractScImportAsciiDlg> pDlg(pFact->CreateScImportAsciiDlg( NULL, aPrivDatName, pInStream.get(), SC_IMPORTFILE));
+        std::unique_ptr<AbstractScImportAsciiDlg> pDlg(pFact->CreateScImportAsciiDlg( nullptr, aPrivDatName, pInStream.get(), SC_IMPORTFILE));
         OSL_ENSURE(pDlg, "Dialog create fail!");
         if ( pDlg->Execute() == RET_OK )
         {
@@ -199,7 +195,7 @@ sal_Int16 SAL_CALL ScFilterOptionsObj::execute() throw(uno::RuntimeException, st
         {
             // HTML import.
             std::unique_ptr<AbstractScTextImportOptionsDlg> pDlg(
-                pFact->CreateScTextImportOptionsDlg(NULL));
+                pFact->CreateScTextImportOptionsDlg(nullptr));
 
             if (pDlg->Execute() == RET_OK)
             {
@@ -281,7 +277,7 @@ sal_Int16 SAL_CALL ScFilterOptionsObj::execute() throw(uno::RuntimeException, st
 
         ScImportOptions aOptions( cAsciiDel, cStrDel, eEncoding);
 
-        std::unique_ptr<AbstractScImportOptionsDlg> pDlg(pFact->CreateScImportOptionsDlg(NULL,
+        std::unique_ptr<AbstractScImportOptionsDlg> pDlg(pFact->CreateScImportOptionsDlg(nullptr,
                                                                             bAscii, &aOptions, &aTitle, bMultiByte, bDBEnc,
                                                                             !bExport));
         OSL_ENSURE(pDlg, "Dialog create fail!");

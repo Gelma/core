@@ -61,6 +61,8 @@
 #include <com/sun/star/document/XUndoManagerSupplier.hpp>
 #include <com/sun/star/document/XUndoAction.hpp>
 #include <com/sun/star/ui/XSidebar.hpp>
+#include <com/sun/star/chart2/XChartTypeContainer.hpp>
+#include <com/sun/star/chart2/XCoordinateSystemContainer.hpp>
 
 #include <svx/sidebar/SelectionChangeHandler.hxx>
 #include <vcl/msgbox.hxx>
@@ -73,8 +75,6 @@
 
 #include <com/sun/star/frame/XLayoutManager.hpp>
 #include <com/sun/star/ui/dialogs/XExecutableDialog.hpp>
-
-#include <boost/bind.hpp>
 
 // this is needed to properly destroy the unique_ptr to the AcceleratorExecute
 // object in the DTOR
@@ -97,28 +97,28 @@ using ::com::sun::star::uno::Reference;
 using ::com::sun::star::uno::Sequence;
 
 ChartController::ChartController(uno::Reference<uno::XComponentContext> const & xContext) :
-    m_aLifeTimeManager( NULL ),
+    m_aLifeTimeManager( nullptr ),
     m_bSuspended( false ),
     m_bCanClose( true ),
     m_xCC(xContext), //@todo is it allowed to hold this context??
-    m_xFrame( NULL ),
+    m_xFrame( nullptr ),
     m_aModelMutex(),
-    m_aModel( NULL, m_aModelMutex ),
-    m_pChartWindow( NULL ),
+    m_aModel( nullptr, m_aModelMutex ),
+    m_pChartWindow( nullptr ),
     m_xViewWindow(),
     m_xChartView(),
     m_pDrawModelWrapper(),
-    m_pDrawViewWrapper(NULL),
+    m_pDrawViewWrapper(nullptr),
     m_eDragMode(SDRDRAG_MOVE),
     m_bWaitingForDoubleClick(false),
     m_bWaitingForMouseUp(false),
     m_bConnectingToView(false),
     m_bDisposed(false),
-    m_xUndoManager( 0 ),
+    m_xUndoManager( nullptr ),
     m_aDispatchContainer( m_xCC, this ),
     m_eDrawMode( CHARTDRAW_SELECT ),
     mpSelectionChangeHandler(new svx::sidebar::SelectionChangeHandler(
-            ::boost::bind(&ChartController::GetContextName, this),
+            [this]() { return this->GetContextName(); },
                 this, sfx2::sidebar::EnumContext::Context_Cell))
 {
     m_aDoubleClickTimer.SetTimeoutHdl( LINK( this, ChartController, DoubleClickWaitingHdl ) );
@@ -129,27 +129,9 @@ ChartController::~ChartController()
     stopDoubleClickWaiting();
 }
 
-ChartController::RefCountable::RefCountable() : m_nRefCount(0)
-{
-}
-
-ChartController::RefCountable::~RefCountable()
-{
-}
-void ChartController::RefCountable::acquire()
-{
-    m_nRefCount++;
-}
-void ChartController::RefCountable::release()
-{
-    m_nRefCount--;
-    if(!m_nRefCount)
-        delete this;
-}
-
 ChartController::TheModel::TheModel( const uno::Reference< frame::XModel > & xModel ) :
     m_xModel( xModel ),
-    m_xCloseable( NULL ),
+    m_xCloseable( nullptr ),
     m_bOwnership( true )
 {
     m_xCloseable =
@@ -295,7 +277,27 @@ ChartController::TheModelRef::~TheModelRef()
 }
 bool ChartController::TheModelRef::is() const
 {
-    return (m_pTheModel != 0);
+    return (m_pTheModel != nullptr);
+}
+
+namespace {
+
+css::uno::Reference<css::chart2::XChartType> getChartType(
+        css::uno::Reference<css::chart2::XChartDocument> xChartDoc)
+{
+    Reference <chart2::XDiagram > xDiagram = xChartDoc->getFirstDiagram();
+
+    Reference< chart2::XCoordinateSystemContainer > xCooSysContainer( xDiagram, uno::UNO_QUERY_THROW );
+
+    Sequence< Reference< chart2::XCoordinateSystem > > xCooSysSequence( xCooSysContainer->getCoordinateSystems());
+
+    Reference< chart2::XChartTypeContainer > xChartTypeContainer( xCooSysSequence[0], uno::UNO_QUERY_THROW );
+
+    Sequence< Reference< chart2::XChartType > > xChartTypeSequence( xChartTypeContainer->getChartTypes() );
+
+    return xChartTypeSequence[0];
+}
+
 }
 
 OUString ChartController::GetContextName()
@@ -314,6 +316,8 @@ OUString ChartController::GetContextName()
         return OUString("Chart");
 
     ObjectType eObjectID = ObjectIdentifier::getObjectType(aCID);
+
+    css::uno::Reference<css::chart2::XChartType> xChartType = getChartType(css::uno::Reference<css::chart2::XChartDocument>(getModel(), uno::UNO_QUERY_THROW));
     switch (eObjectID)
     {
         case OBJECTTYPE_DATA_SERIES:
@@ -327,6 +331,12 @@ OUString ChartController::GetContextName()
             return OUString("Axis");
         case OBJECTTYPE_GRID:
             return OUString("Grid");
+        case OBJECTTYPE_DIAGRAM:
+            if (xChartType->getChartType() == "com.sun.star.chart2.PieChartType")
+                return OUString("ChartElements");
+        case OBJECTTYPE_DATA_CURVE:
+        case OBJECTTYPE_DATA_AVERAGE_LINE:
+            return OUString("Trendline");
         default:
         break;
     }
@@ -389,19 +399,19 @@ uno::Reference<ui::XSidebar> getSidebarFromModel(uno::Reference<frame::XModel> x
 {
     uno::Reference<container::XChild> xChild(xModel, uno::UNO_QUERY);
     if (!xChild.is())
-        return NULL;
+        return nullptr;
 
     uno::Reference<frame::XModel> xParent (xChild->getParent(), uno::UNO_QUERY);
     if (!xParent.is())
-        return NULL;
+        return nullptr;
 
     uno::Reference<frame::XController2> xController(xParent->getCurrentController(), uno::UNO_QUERY);
     if (!xController.is())
-        return NULL;
+        return nullptr;
 
     uno::Reference<ui::XSidebarProvider> xSidebarProvider (xController->getSidebar(), uno::UNO_QUERY);
     if (!xSidebarProvider.is())
-        return NULL;
+        return nullptr;
 
     uno::Reference<ui::XSidebar> xSidebar(xSidebarProvider->getSidebar(), uno::UNO_QUERY);
 
@@ -453,7 +463,7 @@ void SAL_CALL ChartController::attachFrame(
 
     //create view @todo is this the correct place here??
 
-    vcl::Window* pParent = NULL;
+    vcl::Window* pParent = nullptr;
     //get the window parent from the frame to use as parent for our new window
     if(xFrame.is())
     {
@@ -477,7 +487,7 @@ void SAL_CALL ChartController::attachFrame(
         SolarMutexGuard aSolarGuard;
         m_pChartWindow = VclPtr<ChartWindow>::Create(this,pParent,pParent?pParent->GetStyle():0);
         m_pChartWindow->SetBackground();//no Background
-        m_xViewWindow = uno::Reference< awt::XWindow >( m_pChartWindow->GetComponentInterface(), uno::UNO_QUERY );
+        m_xViewWindow.set( m_pChartWindow->GetComponentInterface(), uno::UNO_QUERY );
         m_pChartWindow->Show();
         m_apDropTargetHelper.reset(
             new ChartDropTargetHelper( m_pChartWindow->GetDropTarget(),
@@ -798,18 +808,17 @@ void SAL_CALL ChartController::dispose()
     throw(uno::RuntimeException, std::exception)
 {
     m_bDisposed = true;
-    mpSelectionChangeHandler->selectionChanged(css::lang::EventObject());
-    mpSelectionChangeHandler->Disconnect();
 
     if (getModel().is())
     {
         uno::Reference<ui::XSidebar> xSidebar = getSidebarFromModel(getModel());
-        if (xSidebar.is())
+        if (sfx2::sidebar::SidebarController* pSidebar = dynamic_cast<sfx2::sidebar::SidebarController*>(xSidebar.get()))
         {
-            sfx2::sidebar::SidebarController* pSidebar = dynamic_cast<sfx2::sidebar::SidebarController*>(xSidebar.get());
             sfx2::sidebar::SidebarController::unregisterSidebarForFrame(pSidebar, this);
         }
     }
+    mpSelectionChangeHandler->selectionChanged(css::lang::EventObject());
+    mpSelectionChangeHandler->Disconnect();
 
     try
     {
@@ -832,7 +841,7 @@ void SAL_CALL ChartController::dispose()
             uno::Reference< view::XSelectionChangeListener > xSelectionChangeListener;
             uno::Reference< chart2::data::XDataReceiver > xDataReceiver( getModel(), uno::UNO_QUERY );
             if( xDataReceiver.is() )
-                xSelectionChangeListener = uno::Reference< view::XSelectionChangeListener >( xDataReceiver->getRangeHighlighter(), uno::UNO_QUERY );
+                xSelectionChangeListener.set( xDataReceiver->getRangeHighlighter(), uno::UNO_QUERY );
             if( xSelectionChangeListener.is() )
             {
                 uno::Reference< frame::XController > xController( this );
@@ -860,7 +869,7 @@ void SAL_CALL ChartController::dispose()
 
             //the accessible view is disposed within window destructor of m_pChartWindow
             m_pChartWindow->clear();
-            m_pChartWindow = NULL;//m_pChartWindow is deleted via UNO due to dispose of m_xViewWindow (trigerred by Framework (Controller pretends to be XWindow also))
+            m_pChartWindow = nullptr;//m_pChartWindow is deleted via UNO due to dispose of m_xViewWindow (trigerred by Framework (Controller pretends to be XWindow also))
             m_xViewWindow->dispose();
             m_xChartView.clear();
         }
@@ -869,14 +878,14 @@ void SAL_CALL ChartController::dispose()
         if( m_xLayoutManagerEventBroadcaster.is())
         {
             m_xLayoutManagerEventBroadcaster->removeLayoutManagerEventListener( this );
-            m_xLayoutManagerEventBroadcaster.set( 0 );
+            m_xLayoutManagerEventBroadcaster.set( nullptr );
         }
 
         m_xFrame.clear();
         m_xUndoManager.clear();
 
         TheModelRef aModelRef( m_aModel, m_aModelMutex);
-        m_aModel = NULL;
+        m_aModel = nullptr;
 
         if( aModelRef.is())
         {
@@ -1008,7 +1017,7 @@ bool ChartController::impl_releaseThisModel(
         ::osl::Guard< ::osl::Mutex > aGuard( m_aModelMutex );
         if( m_aModel.is() && m_aModel->getModel() == xModel )
         {
-            m_aModel = NULL;
+            m_aModel = nullptr;
             m_xUndoManager.clear();
             bReleaseModel = true;
         }
@@ -1016,7 +1025,7 @@ bool ChartController::impl_releaseThisModel(
     if( bReleaseModel )
     {
         SolarMutexGuard g;
-        m_aDispatchContainer.setModel( 0 );
+        m_aDispatchContainer.setModel( nullptr );
     }
     return bReleaseModel;
 }
@@ -1029,7 +1038,7 @@ void SAL_CALL ChartController::disposing(
     if( !impl_releaseThisModel( rSource.Source ))
     {
         if( rSource.Source == m_xLayoutManagerEventBroadcaster )
-            m_xLayoutManagerEventBroadcaster.set( 0 );
+            m_xLayoutManagerEventBroadcaster.set( nullptr );
     }
 }
 
@@ -1371,7 +1380,7 @@ void ChartController::executeDispatch_ChartType()
 
     SolarMutexGuard aSolarGuard;
     //prepare and open dialog
-    ScopedVclPtrInstance< ChartTypeDialog > aDlg( m_pChartWindow, getModel(), m_xCC );
+    ScopedVclPtrInstance< ChartTypeDialog > aDlg( m_pChartWindow, getModel() );
     if( aDlg->Execute() == RET_OK )
     {
         impl_adaptDataSeriesAutoResize();
@@ -1451,8 +1460,7 @@ uno::Sequence< OUString > SAL_CALL
     ChartController::getAvailableServiceNames()
         throw (uno::RuntimeException, std::exception)
 {
-    uno::Sequence< OUString > aServiceNames(1);
-    aServiceNames[0] = CHART_ACCESSIBLE_TEXT_SERVICE_NAME;
+    uno::Sequence< OUString > aServiceNames { CHART_ACCESSIBLE_TEXT_SERVICE_NAME };
     return aServiceNames;
 }
 
@@ -1513,7 +1521,7 @@ DrawViewWrapper* ChartController::GetDrawViewWrapper()
 
 uno::Reference< XAccessible > ChartController::CreateAccessible()
 {
-    uno::Reference< XAccessible > xResult = new AccessibleChartView( m_xCC, GetDrawViewWrapper() );
+    uno::Reference< XAccessible > xResult = new AccessibleChartView( GetDrawViewWrapper() );
     impl_initializeAccessible( uno::Reference< lang::XInitialization >( xResult, uno::UNO_QUERY ) );
     return xResult;
 }

@@ -31,7 +31,6 @@ class GraphicViewShellBase
     : public ViewShellBase
 {
 public:
-    TYPEINFO_OVERRIDE();
     SFX_DECL_VIEWFACTORY(GraphicViewShellBase);
 
     /** This constructor is used by the view factory of the SFX
@@ -42,10 +41,10 @@ public:
 
     /** Callback function for general slot calls.
     */
-    virtual void Execute (SfxRequest& rRequest) SAL_OVERRIDE;
+    virtual void Execute (SfxRequest& rRequest) override;
 
 protected:
-    virtual void InitializeFramework() SAL_OVERRIDE;
+    virtual void InitializeFramework() override;
 };
 
 } // end of namespace sd

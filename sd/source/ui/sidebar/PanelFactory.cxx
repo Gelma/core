@@ -44,21 +44,6 @@ using ::rtl::OUString;
 
 namespace sd { namespace sidebar {
 
-namespace {
-    /** Note that these names have to be identical to (the tail of)
-        the entries in officecfg/registry/data/org/openoffice/Office/Impress.xcu
-        for the TaskPanelFactory.
-    */
-    const static char* gsResourceNameCustomAnimations = "/CustomAnimations";
-    const static char* gsResourceNameLayouts = "/Layouts";
-    const static char* gsResourceNameAllMasterPages = "/AllMasterPages";
-    const static char* gsResourceNameRecentMasterPages = "/RecentMasterPages";
-    const static char* gsResourceNameUsedMasterPages = "/UsedMasterPages";
-    const static char* gsResourceNameSlideTransitions = "/SlideTransitions";
-    const static char* gsResourceNameTableDesign = "/TableDesign";
-    const static char* gsResourceNameNavigator = "/NavigatorPanel";
-}
-
 Reference<lang::XEventListener> mxControllerDisposeListener;
 
 //----- PanelFactory --------------------------------------------------------
@@ -95,7 +80,7 @@ Reference<ui::XUIElement> SAL_CALL PanelFactory::createUIElement (
 
     // Throw exceptions when the arguments are not as expected.
     vcl::Window* pParentWindow = VCLUnoHelper::GetWindow(xParentWindow);
-    if ( ! xParentWindow.is() || pParentWindow==NULL)
+    if ( ! xParentWindow.is() || pParentWindow==nullptr)
         throw RuntimeException(
             "PanelFactory::createUIElement called without ParentWindow");
     if ( ! xFrame.is())
@@ -103,16 +88,16 @@ Reference<ui::XUIElement> SAL_CALL PanelFactory::createUIElement (
             "PanelFactory::createUIElement called without XFrame");
 
     // Tunnel through the controller to obtain a ViewShellBase.
-    ViewShellBase* pBase = NULL;
+    ViewShellBase* pBase = nullptr;
     Reference<lang::XUnoTunnel> xTunnel (xFrame->getController(), UNO_QUERY);
     if (xTunnel.is())
     {
         ::sd::DrawController* pController = reinterpret_cast<sd::DrawController*>(
             xTunnel->getSomething(sd::DrawController::getUnoTunnelId()));
-        if (pController != NULL)
+        if (pController != nullptr)
             pBase = pController->GetViewShellBase();
     }
-    if (pBase == NULL)
+    if (pBase == nullptr)
         throw RuntimeException("can not get ViewShellBase for frame");
 
     // Get bindings from given arguments.
@@ -123,22 +108,26 @@ Reference<ui::XUIElement> SAL_CALL PanelFactory::createUIElement (
     VclPtr<vcl::Window> pControl;
     css::ui::LayoutSize aLayoutSize (-1,-1,-1);
 
+    /** Note that these names have to be identical to (the tail of)
+        the entries in officecfg/registry/data/org/openoffice/Office/Impress.xcu
+        for the TaskPanelFactory.
+    */
 #define EndsWith(s,t) s.endsWithAsciiL(t,strlen(t))
-    if (EndsWith(rsUIElementResourceURL, gsResourceNameCustomAnimations))
+    if (EndsWith(rsUIElementResourceURL, "/CustomAnimations"))
         pControl = VclPtr<CustomAnimationPanel>::Create(pParentWindow, *pBase, xFrame);
-    else if (EndsWith(rsUIElementResourceURL, gsResourceNameLayouts))
+    else if (EndsWith(rsUIElementResourceURL, "/Layouts"))
         pControl = VclPtr<LayoutMenu>::Create(pParentWindow, *pBase, xSidebar);
-    else if (EndsWith(rsUIElementResourceURL, gsResourceNameAllMasterPages))
+    else if (EndsWith(rsUIElementResourceURL, "/AllMasterPages"))
         pControl = AllMasterPagesSelector::Create(pParentWindow, *pBase, xSidebar);
-    else if (EndsWith(rsUIElementResourceURL, gsResourceNameRecentMasterPages))
+    else if (EndsWith(rsUIElementResourceURL, "/RecentMasterPages"))
         pControl = RecentMasterPagesSelector::Create(pParentWindow, *pBase, xSidebar);
-    else if (EndsWith(rsUIElementResourceURL, gsResourceNameUsedMasterPages))
+    else if (EndsWith(rsUIElementResourceURL, "/UsedMasterPages"))
         pControl = CurrentMasterPagesSelector::Create(pParentWindow, *pBase, xSidebar);
-    else if (EndsWith(rsUIElementResourceURL, gsResourceNameSlideTransitions))
+    else if (EndsWith(rsUIElementResourceURL, "/SlideTransitions"))
         pControl = VclPtr<SlideTransitionPanel>::Create(pParentWindow, *pBase, xFrame);
-    else if (EndsWith(rsUIElementResourceURL, gsResourceNameTableDesign))
+    else if (EndsWith(rsUIElementResourceURL, "/TableDesign"))
         pControl = VclPtr<TableDesignPanel>::Create(pParentWindow, *pBase);
-    else if (EndsWith(rsUIElementResourceURL, gsResourceNameNavigator))
+    else if (EndsWith(rsUIElementResourceURL, "/NavigatorPanel"))
         pControl = VclPtr<NavigatorWrapper>::Create(pParentWindow, *pBase, pBindings);
 #undef EndsWith
 
@@ -157,9 +146,9 @@ Reference<ui::XUIElement> SAL_CALL PanelFactory::createUIElement (
 } } // end of namespace sd::sidebar
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-org_openoffice_comp_Draw_framework_PanelFactory_get_implementation(::com::sun::star::uno::XComponentContext* context,
-                                                                   ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+org_openoffice_comp_Draw_framework_PanelFactory_get_implementation(css::uno::XComponentContext* context,
+                                                                   css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new sd::sidebar::PanelFactory(context));
 }

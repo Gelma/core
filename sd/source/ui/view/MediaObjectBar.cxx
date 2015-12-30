@@ -50,7 +50,6 @@ namespace sd {
 
 // - MediaObjectBar -
 
-TYPEINIT1( MediaObjectBar, SfxShell );
 
 SFX_IMPL_INTERFACE(MediaObjectBar, SfxShell)
 
@@ -74,7 +73,7 @@ MediaObjectBar::MediaObjectBar( ViewShell* pSdViewShell, ::sd::View* pSdView ) :
 
 MediaObjectBar::~MediaObjectBar()
 {
-    SetRepeatTarget( NULL );
+    SetRepeatTarget( nullptr );
 }
 
 void MediaObjectBar::GetState( SfxItemSet& rSet )
@@ -93,7 +92,7 @@ void MediaObjectBar::GetState( SfxItemSet& rSet )
             {
                 SdrObject* pObj =pMarkList->GetMark( 0 )->GetMarkedSdrObj();
 
-                if( pObj && pObj->ISA( SdrMediaObj ) )
+                if( pObj && dynamic_cast< SdrMediaObj *>( pObj ) !=  nullptr )
                 {
                     ::avmedia::MediaItem aItem( SID_AVMEDIA_TOOLBOX );
 
@@ -119,7 +118,7 @@ void MediaObjectBar::Execute( SfxRequest& rReq )
         const SfxPoolItem*  pItem;
 
         if( !pArgs || ( SfxItemState::SET != pArgs->GetItemState( SID_AVMEDIA_TOOLBOX, false, &pItem ) ) )
-            pItem = NULL;
+            pItem = nullptr;
 
         if( pItem )
         {
@@ -129,7 +128,7 @@ void MediaObjectBar::Execute( SfxRequest& rReq )
             {
                 SdrObject* pObj = pMarkList->GetMark( 0 )->GetMarkedSdrObj();
 
-                if( pObj && pObj->ISA( SdrMediaObj ) )
+                if( pObj && dynamic_cast< SdrMediaObj *>( pObj ) !=  nullptr )
                 {
                     static_cast< sdr::contact::ViewContactOfSdrMediaObj& >( pObj->GetViewContact() ).executeMediaItem(
                         static_cast< const ::avmedia::MediaItem& >( *pItem ) );

@@ -251,7 +251,7 @@ public class ORowSet extends TestCase {
         if (isMySQLDB)
         {
             DBTools.DataSourceInfo legacyDescriptor = dbTools.newDataSourceInfo();
-            legacyDescriptor.Name = srcInf.Name;
+            legacyDescriptor.Name = null;
             legacyDescriptor.User = srcInf.User;
             legacyDescriptor.Password = srcInf.Password;
             legacyDescriptor.Info = srcInf.Info;
@@ -522,8 +522,9 @@ public class ORowSet extends TestCase {
     private final void impl_deleteFile( final String _file )
     {
         java.io.File file = new java.io.File( _file );
-        file.delete();
-        if ( file.exists() )
+
+        boolean bDeleteOk = file.delete();
+        if (!bDeleteOk && file.exists())
             file.deleteOnExit();
     }
 
@@ -532,7 +533,7 @@ public class ORowSet extends TestCase {
      * for the XCompletedExecution test
      * @see ifc.sdb._XCompletedExecution
      */
-    private class InteractionHandlerImpl implements _XCompletedExecution.CheckInteractionHandler {
+    private static class InteractionHandlerImpl implements _XCompletedExecution.CheckInteractionHandler {
         private boolean handlerWasUsed = false;
         private PrintWriter log = new PrintWriter(System.out);
 

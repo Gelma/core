@@ -45,7 +45,7 @@ namespace drawinglayer
         public:
             /// constructor
             ObjectInfoPrimitive2D(
-                const Primitive2DSequence& rChildren,
+                const Primitive2DContainer& rChildren,
                 const OUString& rName,
                 const OUString& rTitle,
                 const OUString& rDesc);
@@ -56,7 +56,7 @@ namespace drawinglayer
             const OUString& getDesc() const { return maDesc; }
 
             /// compare operator
-            virtual bool operator==(const BasePrimitive2D& rPrimitive) const SAL_OVERRIDE;
+            virtual bool operator==(const BasePrimitive2D& rPrimitive) const override;
 
             /// provide unique ID
             DeclPrimitive2DIDBlock()

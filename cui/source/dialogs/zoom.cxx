@@ -163,7 +163,7 @@ SvxZoomDialog::SvxZoomDialog( vcl::Window* pParent, const SfxItemSet& rCoreSet )
     m_pSingleBtn->SetClickHdl(aViewLayoutLink);
     m_pColumnsBtn->SetClickHdl(aViewLayoutLink);
 
-    Link<> aViewLayoutSpinLink = LINK(this, SvxZoomDialog, ViewLayoutSpinHdl);
+    Link<Edit&,void> aViewLayoutSpinLink = LINK(this, SvxZoomDialog, ViewLayoutSpinHdl);
     m_pColumnsEdit->SetModifyHdl(aViewLayoutSpinLink);
 
     Link<Button*,void> aViewLayoutCheckLink = LINK(this, SvxZoomDialog, ViewLayoutCheckHdl);
@@ -178,7 +178,7 @@ SvxZoomDialog::SvxZoomDialog( vcl::Window* pParent, const SfxItemSet& rCoreSet )
     sal_uInt16 nMax = 1000;
 
     // maybe get the old value first
-    const SfxUInt16Item* pOldUserItem = 0;
+    const SfxUInt16Item* pOldUserItem = nullptr;
     SfxObjectShell* pShell = SfxObjectShell::Current();
 
     if (pShell)
@@ -203,7 +203,7 @@ SvxZoomDialog::SvxZoomDialog( vcl::Window* pParent, const SfxItemSet& rCoreSet )
 
     const SfxPoolItem& rItem = mrSet.Get(mrSet.GetPool()->GetWhich(SID_ATTR_ZOOM));
 
-    if (0 != dynamic_cast<const SvxZoomItem*>( &rItem))
+    if (nullptr != dynamic_cast<const SvxZoomItem*>( &rItem))
     {
         const SvxZoomItem& rZoomItem = static_cast<const SvxZoomItem&>(rItem);
         const sal_uInt16 nZoom = rZoomItem.GetValue();
@@ -245,7 +245,7 @@ SvxZoomDialog::SvxZoomDialog( vcl::Window* pParent, const SfxItemSet& rCoreSet )
         SetFactor(nZoom);
     }
 
-    const SfxPoolItem* pPoolViewLayoutItem = NULL;
+    const SfxPoolItem* pPoolViewLayoutItem = nullptr;
     if (SfxItemState::SET == mrSet.GetItemState(SID_ATTR_VIEWLAYOUT, false, &pPoolViewLayoutItem))
     {
         const SvxViewLayoutItem* pViewLayoutItem = static_cast<const SvxViewLayoutItem*>(pPoolViewLayoutItem);
@@ -328,13 +328,12 @@ IMPL_LINK_TYPED(SvxZoomDialog, UserHdl, Button *, pButton, void)
     }
 }
 
-IMPL_LINK_NOARG(SvxZoomDialog, SpinHdl)
+IMPL_LINK_NOARG_TYPED(SvxZoomDialog, SpinHdl, Edit&, void)
 {
     if (!m_pUserBtn->IsChecked())
-        return 0;
+        return;
 
     mbModified = true;
-    return 0;
 }
 
 IMPL_LINK_TYPED(SvxZoomDialog, ViewLayoutUserHdl, Button*, pButton, void)
@@ -364,10 +363,10 @@ IMPL_LINK_TYPED(SvxZoomDialog, ViewLayoutUserHdl, Button*, pButton, void)
     }
 }
 
-IMPL_LINK(SvxZoomDialog, ViewLayoutSpinHdl, NumericField*, pEdit)
+IMPL_LINK_TYPED(SvxZoomDialog, ViewLayoutSpinHdl, Edit&, rEdit, void)
 {
-    if (pEdit == m_pColumnsEdit && !m_pColumnsBtn->IsChecked())
-        return 0;
+    if (&rEdit == m_pColumnsEdit && !m_pColumnsBtn->IsChecked())
+        return;
 
     if (m_pColumnsEdit->GetValue() % 2 == 0)
     {
@@ -380,8 +379,6 @@ IMPL_LINK(SvxZoomDialog, ViewLayoutSpinHdl, NumericField*, pEdit)
     }
 
     mbModified = true;
-
-    return 0;
 }
 
 IMPL_LINK_TYPED(SvxZoomDialog, ViewLayoutCheckHdl, Button*, pCheckBox, void)

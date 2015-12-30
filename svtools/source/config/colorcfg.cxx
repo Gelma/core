@@ -60,7 +60,7 @@ namespace
         : public rtl::Static< ::osl::Mutex, ColorMutex_Impl > {};
 }
 
-ColorConfig_Impl*    ColorConfig::m_pImpl = NULL;
+ColorConfig_Impl*    ColorConfig::m_pImpl = nullptr;
 
 class ColorConfig_Impl : public utl::ConfigItem
 {
@@ -72,7 +72,7 @@ class ColorConfig_Impl : public utl::ConfigItem
 
     uno::Sequence< OUString> GetPropertyNames(const OUString& rScheme);
 
-    virtual void                    ImplCommit() SAL_OVERRIDE;
+    virtual void                    ImplCommit() override;
 
 public:
     explicit ColorConfig_Impl(bool bEditMode = false);
@@ -82,7 +82,7 @@ public:
     void                            CommitCurrentSchemeName();
     //changes the name of the current scheme but doesn't load it!
     void                            SetCurrentSchemeName(const OUString& rSchemeName) {m_sLoadedScheme = rSchemeName;}
-    virtual void                    Notify( const uno::Sequence<OUString>& aPropertyNames) SAL_OVERRIDE;
+    virtual void                    Notify( const uno::Sequence<OUString>& aPropertyNames) override;
 
     const ColorConfigValue&         GetColorConfigValue(ColorConfigEntry eValue)
                                                             {return m_aConfigValues[eValue];}
@@ -100,7 +100,6 @@ public:
     void                            SettingsChanged();
     bool GetAutoDetectSystemHC() {return m_bAutoDetectSystemHC;}
 
-    // #100822#
     DECL_LINK_TYPED( DataChangedEventListener, VclSimpleEvent&, void );
 
     void ImplUpdateApplicationSettings();
@@ -206,14 +205,12 @@ ColorConfig_Impl::ColorConfig_Impl(bool bEditMode) :
 
     ImplUpdateApplicationSettings();
 
-    // #100822#
     ::Application::AddEventListener( LINK(this, ColorConfig_Impl, DataChangedEventListener) );
 
 }
 
 ColorConfig_Impl::~ColorConfig_Impl()
 {
-    // #100822#
     ::Application::RemoveEventListener( LINK(this, ColorConfig_Impl, DataChangedEventListener) );
 }
 
@@ -223,8 +220,7 @@ void ColorConfig_Impl::Load(const OUString& rScheme)
     if(sScheme.isEmpty())
     {
         //detect current scheme name
-        uno::Sequence < OUString > aCurrent(1);
-        aCurrent.getArray()[0] = "CurrentColorScheme";
+        uno::Sequence < OUString > aCurrent { "CurrentColorScheme" };
         uno::Sequence< uno::Any > aCurrentVal = GetProperties( aCurrent );
         aCurrentVal.getConstArray()[0] >>= sScheme;
     }
@@ -250,7 +246,7 @@ void ColorConfig_Impl::Load(const OUString& rScheme)
     }
     // fdo#71511: check if we are running in a11y autodetect
     {
-        utl::OConfigurationNode aNode = utl::OConfigurationTreeRoot::tryCreateWithComponentContext(comphelper::getProcessComponentContext(),OUString("org.openoffice.Office.Common/Accessibility") );
+        utl::OConfigurationNode aNode = utl::OConfigurationTreeRoot::tryCreateWithComponentContext(comphelper::getProcessComponentContext(),"org.openoffice.Office.Common/Accessibility" );
         if(aNode.isValid())
         {
             uno::Any aValue = aNode.getNodeValue(OUString("AutoDetectSystemHC"));
@@ -301,8 +297,7 @@ void ColorConfig_Impl::ImplCommit()
 void ColorConfig_Impl::CommitCurrentSchemeName()
 {
     //save current scheme name
-    uno::Sequence < OUString > aCurrent(1);
-    aCurrent.getArray()[0] = "CurrentColorScheme";
+    uno::Sequence < OUString > aCurrent { "CurrentColorScheme" };
     uno::Sequence< uno::Any > aCurrentVal(1);
     aCurrentVal.getArray()[0] <<= m_sLoadedScheme;
     PutProperties(aCurrent, aCurrentVal);
@@ -335,8 +330,7 @@ bool ColorConfig_Impl::AddScheme(const OUString& rScheme)
 
 bool ColorConfig_Impl::RemoveScheme(const OUString& rScheme)
 {
-    uno::Sequence< OUString > aElements(1);
-    aElements.getArray()[0] = rScheme;
+    uno::Sequence< OUString > aElements { rScheme };
     return ClearNodeElements("ColorSchemes", aElements);
 }
 
@@ -412,7 +406,7 @@ ColorConfig::~ColorConfig()
     if(!--nColorRefCount_Impl)
     {
         delete m_pImpl;
-        m_pImpl = 0;
+        m_pImpl = nullptr;
     }
 }
 
@@ -421,7 +415,7 @@ Color ColorConfig::GetDefaultColor(ColorConfigEntry eEntry)
     static const sal_Int32 aAutoColors[] =
     {
         COL_WHITE, // DOCCOLOR
-        0xc0c0c0, // DOCBOUNDARIES
+        COL_LIGHTGRAY, // DOCBOUNDARIES
         0xDFDFDE, // APPBACKGROUND
         COL_LIGHTGRAY, // OBJECTBOUNDARIES
         COL_LIGHTGRAY, // TABLEBOUNDARIES
@@ -429,13 +423,13 @@ Color ColorConfig::GetDefaultColor(ColorConfigEntry eEntry)
         COL_BLUE, // LINKS
         0x0000cc, // LINKSVISITED
         COL_LIGHTRED, // SPELL
-        COL_LIGHTMAGENTA,// SMARTTAGS
+        COL_LIGHTMAGENTA, // SMARTTAGS
         COL_GRAY, // SHADOWCOLOR
         COL_LIGHTGRAY, // WRITERTEXTGRID
         COL_LIGHTGRAY, // WRITERFIELDSHADIN
         COL_LIGHTGRAY, // WRITERIDXSHADINGS
-        0, // WRITERDIRECTCURSOR
-        COL_GREEN,  //WRITERSCRIPTINDICATOR
+        COL_BLACK, // WRITERDIRECTCURSOR
+        COL_GREEN, //WRITERSCRIPTINDICATOR
         COL_LIGHTGRAY, //WRITERSECTIONBOUNDARIES
         0x0369a3, //WRITERHEADERFOOTERMARK,
         COL_BLUE, //WRITERPAGEBREAKS,
@@ -443,29 +437,29 @@ Color ColorConfig::GetDefaultColor(ColorConfigEntry eEntry)
         COL_LIGHTGREEN, // HTMLCOMMENT
         COL_LIGHTRED, // HTMLKEYWORD
         COL_GRAY, // HTMLUNKNOWN
-        COL_LIGHTGRAY, // CALCGRID
+        0xcccccc, // CALCGRID
         COL_BLUE, //CALCPAGEBREAK
         0x2300dc, //CALCPAGEBREAKMANUAL
-        COL_GRAY, //CALCPAGEBREAKAUTOMATIC
+        0x666666, //CALCPAGEBREAKAUTOMATIC
         COL_LIGHTBLUE, // CALCDETECTIVE
         COL_LIGHTRED, // CALCDETECTIVEERROR
         0xef0fff, // CALCREFERENCE
         0xffffc0, // CALCNOTESBACKGROUND
         COL_LIGHTGRAY, // DRAWGRID
         COL_GREEN, // BASICIDENTIFIER,
-        COL_GRAY,// BASICCOMMENT   ,
-        COL_LIGHTRED,// BASICNUMBER    ,
-        COL_LIGHTRED,// BASICSTRING    ,
-        COL_BLUE, // BASICOPERATOR  ,
-        COL_BLUE, // BASICKEYWORD   ,
+        COL_GRAY, // BASICCOMMENT,
+        COL_LIGHTRED, // BASICNUMBER,
+        COL_LIGHTRED, // BASICSTRING,
+        COL_BLUE, // BASICOPERATOR,
+        COL_BLUE, // BASICKEYWORD,
         COL_RED, //BASICERROR
         0x009900, // SQLIDENTIFIER
-        0x000000, // SQLNUMBER
+        COL_BLACK, // SQLNUMBER
         0xCE7B00, // SQLSTRING
-        0x000000, // SQLOPERATOR
+        COL_BLACK, // SQLOPERATOR
         0x0000E6, // SQLKEYWORD
         0x259D9D, // SQLPARAMTER
-        0x969696,// SQLCOMMENT
+        COL_GRAY, // SQLCOMMENT
     };
     Color aRet;
     switch(eEntry)
@@ -538,7 +532,6 @@ EditableColorConfig::~EditableColorConfig()
         m_pImpl->SetModified();
     if(m_pImpl->IsModified())
         m_pImpl->Commit();
-    delete m_pImpl;
 }
 
 uno::Sequence< OUString >  EditableColorConfig::GetSchemeNames() const

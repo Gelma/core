@@ -17,7 +17,7 @@
 // Second-guess that certain private special member function declarations for
 // which no definition can be found are left undefined to prevent them from
 // being implicitly declared.  Such situations are better expressed by marking
-// the function as SAL_DELETED_FUNCTION (it e.g. helps compilers determine
+// the function as = delete (it e.g. helps compilers determine
 // whether class members are unused if all of a class's member definitions are
 // seen in a compilation unit).  (Default constructors for classes with multiple
 // constructors are exempted as they would not be implicitly declared.
@@ -118,7 +118,7 @@ bool DeletedSpecial::VisitCXXMethodDecl(CXXMethodDecl const * decl) {
                 || whitelist(decl, "sd::IconCache", "sd/source/ui/inc/tools/IconCache.hxx")
                 || whitelist(decl, "sd::RemoteServer", "sd/source/ui/inc/RemoteServer.hxx")
                 || whitelist(decl, "sd::slidesorter::cache::PageCacheManager", "sd/source/ui/slidesorter/inc/cache/SlsPageCacheManager.hxx")
-                || whitelist(decl, "sfx2::sidebar::CommandInfoProvider", "include/sfx2/sidebar/CommandInfoProvider.hxx")
+                || whitelist(decl, "framework::CommandInfoProvider", "include/framework/commandinfoprovider.hxx")
                 || whitelist(decl, "vcl::SettingsConfigItem", "include/vcl/configsettings.hxx")
                 || whitelist(decl, "writerfilter::ooxml::OOXMLFactory", "writerfilter/source/ooxml/OOXMLFactory.hxx"))
             {

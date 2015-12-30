@@ -29,30 +29,30 @@ class SvNumberFormatter;
 class ScNumFormatAbbrev
 {
     OUString sFormatstring;
-    LanguageType eLnge;
-    LanguageType eSysLnge;
+    LanguageType eLanguage;
+    LanguageType eSysLanguage;
 public:
     ScNumFormatAbbrev();
     ScNumFormatAbbrev(const ScNumFormatAbbrev& aFormat);
-    ScNumFormatAbbrev(sal_uLong nFormat, SvNumberFormatter& rFormatter);
+    ScNumFormatAbbrev(sal_uInt32 nFormat, SvNumberFormatter& rFormatter);
     void Load( SvStream& rStream, rtl_TextEncoding eByteStrSet );            // loading of the numberformats
     void Save( SvStream& rStream, rtl_TextEncoding eByteStrSet ) const;   // saving of the numberformats
-    void PutFormatIndex(sal_uLong nFormat, SvNumberFormatter& rFormatter);
-    sal_uLong GetFormatIndex( SvNumberFormatter& rFormatter);
+    void PutFormatIndex(sal_uInt32 nFormat, SvNumberFormatter& rFormatter);
+    sal_uInt32 GetFormatIndex( SvNumberFormatter& rFormatter);
     inline bool operator==(const ScNumFormatAbbrev& rNumFormat) const
     {
         return ((sFormatstring == rNumFormat.sFormatstring)
-            && (eLnge == rNumFormat.eLnge)
-            && (eSysLnge == rNumFormat.eSysLnge));
+            && (eLanguage == rNumFormat.eLanguage)
+            && (eSysLanguage == rNumFormat.eSysLanguage));
     }
     inline ScNumFormatAbbrev& operator=(const ScNumFormatAbbrev& rNumFormat)
     {
         sFormatstring = rNumFormat.sFormatstring;
-        eLnge = rNumFormat.eLnge;
-        eSysLnge = rNumFormat.eSysLnge;
+        eLanguage = rNumFormat.eLanguage;
+        eSysLanguage = rNumFormat.eSysLanguage;
         return *this;
     }
-    inline LanguageType GetLanguage() const { return eLnge; }
+    inline LanguageType GetLanguage() const { return eLanguage; }
 };
 
 #endif

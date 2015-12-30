@@ -42,7 +42,7 @@ extern "C" SAL_DLLPUBLIC_EXPORT void* SAL_CALL mysql_component_getFactory(
 {
     if (!pServiceManager)
     {
-        return 0;
+        return nullptr;
     }
 
     Reference< XSingleServiceFactory > xRet;
@@ -53,7 +53,7 @@ extern "C" SAL_DLLPUBLIC_EXPORT void* SAL_CALL mysql_component_getFactory(
         try
         {
             xRet = ::cppu::createSingleFactory( xServiceManager, sImplementationName, ODriverDelegator_CreateInstance,
-                       ODriverDelegator::getSupportedServiceNames_Static(), 0);
+                       ODriverDelegator::getSupportedServiceNames_Static());
         }
         catch(...)
         {

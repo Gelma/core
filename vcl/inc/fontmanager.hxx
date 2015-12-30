@@ -45,7 +45,7 @@
 namespace utl { class MultiAtomProvider; }
 
 class FontSubsetInfo;
-class ImplFontOptions;
+class FontConfigFontOptions;
 class FontSelectPattern;
 
 namespace psp {
@@ -228,7 +228,7 @@ class VCL_PLUGIN_PUBLIC PrintFontManager
 
         Type1FontFile() : PrintFont( fonttype::Type1 ), m_nDirectory( 0 ) {}
         virtual ~Type1FontFile();
-        virtual bool queryMetricPage( int nPage, utl::MultiAtomProvider* pProvider ) SAL_OVERRIDE;
+        virtual bool queryMetricPage( int nPage, utl::MultiAtomProvider* pProvider ) override;
     };
 
     struct TrueTypeFontFile : public PrintFont
@@ -240,13 +240,12 @@ class VCL_PLUGIN_PUBLIC PrintFontManager
 
         TrueTypeFontFile();
         virtual ~TrueTypeFontFile();
-        virtual bool queryMetricPage( int nPage, utl::MultiAtomProvider* pProvider ) SAL_OVERRIDE;
+        virtual bool queryMetricPage( int nPage, utl::MultiAtomProvider* pProvider ) override;
     };
 
     fontID                                      m_nNextFontID;
     std::unordered_map< fontID, PrintFont* >       m_aFonts;
     std::unordered_map< int, FontFamily >        m_aFamilyTypes;
-    std::list< OUString >              m_aPrinterDrivers;
     std::list< OString >               m_aFontDirectories;
     std::list< int >                            m_aPrivateFontDirectories;
     utl::MultiAtomProvider*                   m_pAtoms;
@@ -271,7 +270,7 @@ class VCL_PLUGIN_PUBLIC PrintFontManager
     OString getAfmFile( PrintFont* pFont ) const;
     OString getFontFile( PrintFont* pFont ) const;
 
-    bool analyzeFontFile( int nDirID, const OString& rFileName, std::list< PrintFont* >& rNewFonts, const char *pFormat=NULL ) const;
+    bool analyzeFontFile( int nDirID, const OString& rFileName, std::list< PrintFont* >& rNewFonts, const char *pFormat=nullptr ) const;
     static OUString convertTrueTypeName( void* pNameRecord ); // actually a NameRecord* formt font subsetting code
     static void analyzeTrueTypeFamilyName( void* pTTFont, std::list< OUString >& rnames ); // actually a TrueTypeFont* from font subsetting code
     bool analyzeTrueTypeFile( PrintFont* pFont ) const;
@@ -288,7 +287,7 @@ class VCL_PLUGIN_PUBLIC PrintFontManager
     {
         std::unordered_map< fontID, PrintFont* >::const_iterator it;
         it = m_aFonts.find( nID );
-        return it == m_aFonts.end() ? NULL : it->second;
+        return it == m_aFonts.end() ? nullptr : it->second;
     }
     void fillPrintFontInfo( PrintFont* pFont, FastPrintFontInfo& rInfo ) const;
     void fillPrintFontInfo( PrintFont* pFont, PrintFontInfo& rInfo ) const;
@@ -319,7 +318,9 @@ class VCL_PLUGIN_PUBLIC PrintFontManager
     static bool addFontconfigDir(const OString& rDirectory);
 
     std::set<OString> m_aPreviousLangSupportRequests;
+#if defined(ENABLE_DBUS) && defined(ENABLE_PACKAGEKIT)
     std::vector<OString> m_aCurrentRequests;
+#endif
     Timer m_aFontInstallerTimer;
 
 #if defined(ENABLE_DBUS) && defined(ENABLE_PACKAGEKIT)
@@ -335,9 +336,6 @@ public:
 
     void initialize();
 
-    // returns the number of managed fonts
-    int getFontCount() const { return m_aFonts.size(); }
-
     // returns the ids of all managed fonts.
     void getFontList( std::list< fontID >& rFontIDs );
 
@@ -350,9 +348,6 @@ public:
 
     // get a specific fonts PSName name
     const OUString& getPSName( fontID nFontID ) const;
-
-    // get a specific fonts family name aliases
-    void getFontFamilyAliases( fontID nFontID ) const;
 
     // get a specific fonts type
     fonttype::type getFontType( fontID nFontID ) const
@@ -368,25 +363,11 @@ public:
         return pFont ? pFont->m_eItalic : ITALIC_DONTKNOW;
     }
 
-    // get a specific fonts width type
-    FontWidth getFontWidth( fontID nFontID ) const
-    {
-        PrintFont* pFont = getFont( nFontID );
-        return pFont ? pFont->m_eWidth : WIDTH_DONTKNOW;
-    }
-
     // get a specific fonts weight type
     FontWeight getFontWeight( fontID nFontID ) const
     {
         PrintFont* pFont = getFont( nFontID );
         return pFont ? pFont->m_eWeight : WEIGHT_DONTKNOW;
-    }
-
-    // get a specific fonts pitch type
-    FontPitch getFontPitch( fontID nFontID ) const
-    {
-        PrintFont* pFont = getFont( nFontID );
-        return pFont ? pFont->m_ePitch : PITCH_DONTKNOW;
     }
 
     // get a specific fonts encoding
@@ -448,12 +429,6 @@ public:
     // helper for type 1 fonts
     std::list< OString > getAdobeNameFromUnicode( sal_Unicode aChar ) const;
 
-    std::pair< std::unordered_multimap< sal_Unicode, sal_uInt8 >::const_iterator,
-               std::unordered_multimap< sal_Unicode, sal_uInt8 >::const_iterator >
-    getAdobeCodeFromUnicode( sal_Unicode aChar ) const
-    {
-        return m_aUnicodeToAdobecode.equal_range( aChar );
-    }
     std::list< sal_Unicode >  getUnicodeFromAdobeName( const OString& rName ) const;
     std::pair< std::unordered_multimap< sal_uInt8, sal_Unicode >::const_iterator,
                  std::unordered_multimap< sal_uInt8, sal_Unicode >::const_iterator >
@@ -523,12 +498,11 @@ public:
     true if a match was found
     false else
      */
-    bool matchFont( FastPrintFontInfo& rInfo, const com::sun::star::lang::Locale& rLocale );
-    static ImplFontOptions* getFontOptions( const FastPrintFontInfo&, int nSize, void (*subcallback)(void*));
+    bool matchFont( FastPrintFontInfo& rInfo, const css::lang::Locale& rLocale );
+    static FontConfigFontOptions* getFontOptions( const FastPrintFontInfo&, int nSize, void (*subcallback)(void*));
 
     bool Substitute( FontSelectPattern &rPattern, OUString& rMissingCodes );
 
-    int FreeTypeCharIndex( void *pFace, sal_uInt32 aChar );
 };
 
 } // namespace

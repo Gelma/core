@@ -126,7 +126,7 @@ void OleEmbeddedObject::MoveListeners()
         {
             ::cppu::OInterfaceContainerHelper* pStateChangeContainer =
                 m_pInterfaceContainer->getContainer( cppu::UnoType<embed::XStateChangeListener>::get());
-            if ( pStateChangeContainer != NULL )
+            if ( pStateChangeContainer != nullptr )
             {
                 uno::Reference< embed::XStateChangeBroadcaster > xWrappedObject( m_xWrappedObject, uno::UNO_QUERY );
                 if ( xWrappedObject.is() )
@@ -151,7 +151,7 @@ void OleEmbeddedObject::MoveListeners()
         {
             ::cppu::OInterfaceContainerHelper* pEventContainer =
                 m_pInterfaceContainer->getContainer( cppu::UnoType<document::XEventListener>::get());
-            if ( pEventContainer != NULL )
+            if ( pEventContainer != nullptr )
             {
                 uno::Reference< document::XEventBroadcaster > xWrappedObject( m_xWrappedObject, uno::UNO_QUERY );
                 if ( xWrappedObject.is() )
@@ -176,7 +176,7 @@ void OleEmbeddedObject::MoveListeners()
         {
             ::cppu::OInterfaceContainerHelper* pCloseContainer =
                 m_pInterfaceContainer->getContainer( cppu::UnoType<util::XCloseListener>::get());
-            if ( pCloseContainer != NULL )
+            if ( pCloseContainer != nullptr )
             {
                 uno::Reference< util::XCloseBroadcaster > xWrappedObject( m_xWrappedObject, uno::UNO_QUERY );
                 if ( xWrappedObject.is() )
@@ -198,7 +198,7 @@ void OleEmbeddedObject::MoveListeners()
         }
 
         delete m_pInterfaceContainer;
-        m_pInterfaceContainer = NULL;
+        m_pInterfaceContainer = nullptr;
     }
 }
 
@@ -344,7 +344,7 @@ bool OleEmbeddedObject::TryToConvertToOOo()
                 nStep = 1;
                 uno::Reference< lang::XComponent > xComp( m_xObjectStream, uno::UNO_QUERY_THROW );
                 xComp->dispose();
-                m_xObjectStream = uno::Reference< io::XStream >();
+                m_xObjectStream.clear();
                 m_nObjectState = -1;
 
                 nStep = 2;
@@ -587,17 +587,6 @@ void SAL_CALL OleEmbeddedObject::changeState( sal_Int32 nNewState )
         }
     }
     else
-#else
-    // if it is possible, the object will be converted to OOo format
-    if ( !m_bTriedConversion )
-    {
-        m_bTriedConversion = true;
-        if ( TryToConvertToOOo() )
-        {
-            changeState( nNewState );
-            return;
-        }
-    }
 #endif
     {
         throw embed::UnreachableStateException();
@@ -674,6 +663,7 @@ sal_Int32 SAL_CALL OleEmbeddedObject::getCurrentState()
 
 namespace
 {
+#ifndef WNT
     bool lcl_CopyStream(uno::Reference<io::XInputStream> xIn, uno::Reference<io::XOutputStream> xOut)
     {
         const sal_Int32 nChunkSize = 4096;
@@ -688,12 +678,13 @@ namespace
         } while (nRead == nChunkSize);
         return nTotalRead != 0;
     }
+#endif
 
     //Dump the objects content to a tempfile, just the "CONTENTS" stream if
     //there is one for non-compound documents, otherwise the whole content.
     //On success a file is returned which must be removed by the caller
-    OUString lcl_ExtractObject(::com::sun::star::uno::Reference< ::com::sun::star::lang::XMultiServiceFactory > xFactory,
-        ::com::sun::star::uno::Reference< ::com::sun::star::io::XStream > xObjectStream)
+    OUString lcl_ExtractObject(css::uno::Reference< css::lang::XMultiServiceFactory > xFactory,
+        css::uno::Reference< css::io::XStream > xObjectStream)
     {
         OUString sUrl;
 
@@ -709,7 +700,7 @@ namespace
         aArgs[1] <<= true; // do not create copy
         uno::Reference< container::XNameContainer > xNameContainer(
             xFactory->createInstanceWithArguments(
-                OUString("com.sun.star.embed.OLESimpleStorage"),
+                "com.sun.star.embed.OLESimpleStorage",
                 aArgs ), uno::UNO_QUERY_THROW );
 
         uno::Reference< io::XStream > xCONTENTS;
@@ -738,7 +729,7 @@ namespace
             uno::Any aUrl = xNativeTempFile->getPropertyValue("Uri");
             aUrl >>= sUrl;
 
-            xNativeTempFile = uno::Reference<beans::XPropertySet>();
+            xNativeTempFile.clear();
 
             uno::Reference < ucb::XSimpleFileAccess3 > xSimpleFileAccess(
                     ucb::SimpleFileAccess::create( comphelper::getComponentContext(xFactory) ) );
@@ -879,9 +870,9 @@ void SAL_CALL OleEmbeddedObject::doVerb( sal_Int32 nVerbID )
 
                 if (!m_aTempDumpURL.isEmpty())
                 {
-                    uno::Reference< ::com::sun::star::system::XSystemShellExecute > xSystemShellExecute(
-                        ::com::sun::star::system::SystemShellExecute::create(comphelper::getComponentContext(m_xFactory)) );
-                    xSystemShellExecute->execute(m_aTempDumpURL, OUString(), ::com::sun::star::system::SystemShellExecuteFlags::URIS_ONLY);
+                    uno::Reference< css::system::XSystemShellExecute > xSystemShellExecute(
+                        css::system::SystemShellExecute::create(comphelper::getComponentContext(m_xFactory)) );
+                    xSystemShellExecute->execute(m_aTempDumpURL, OUString(), css::system::SystemShellExecuteFlags::URIS_ONLY);
                 }
                 else
                     throw embed::UnreachableStateException();

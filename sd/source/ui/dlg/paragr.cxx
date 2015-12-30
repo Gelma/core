@@ -39,13 +39,13 @@ class SdParagraphNumTabPage : public SfxTabPage
 public:
     SdParagraphNumTabPage(vcl::Window* pParent, const SfxItemSet& rSet );
     virtual ~SdParagraphNumTabPage();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     static VclPtr<SfxTabPage>  Create( vcl::Window* pParent, const SfxItemSet* rSet );
     static const sal_uInt16*  GetRanges();
 
-    virtual bool        FillItemSet( SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void        Reset( const SfxItemSet* rSet ) SAL_OVERRIDE;
+    virtual bool        FillItemSet( SfxItemSet* rSet ) override;
+    virtual void        Reset( const SfxItemSet* rSet ) override;
 
 private:
     VclPtr<TriStateBox>     m_pNewStartCB;
@@ -178,7 +178,7 @@ SdParagraphDlg::SdParagraphDlg( vcl::Window* pParent, const SfxItemSet* pAttr )
 
     AddTabPage( "labelTP_PARA_ALIGN", RID_SVXPAGE_ALIGN_PARAGRAPH);
 
-    static const bool bShowParaNumbering = ( getenv( "SD_SHOW_NUMBERING_PAGE" ) != NULL );
+    static const bool bShowParaNumbering = ( getenv( "SD_SHOW_NUMBERING_PAGE" ) != nullptr );
     if( bShowParaNumbering )
         AddTabPage( "labelNUMBERING", SdParagraphNumTabPage::Create, SdParagraphNumTabPage::GetRanges );
     else

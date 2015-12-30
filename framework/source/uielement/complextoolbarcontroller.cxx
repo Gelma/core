@@ -38,13 +38,13 @@
 #include <vcl/settings.hxx>
 
 using namespace ::com::sun::star;
-using namespace ::com::sun::star::awt;
-using namespace ::com::sun::star::uno;
-using namespace ::com::sun::star::beans;
-using namespace ::com::sun::star::lang;
-using namespace ::com::sun::star::frame;
-using namespace ::com::sun::star::frame::status;
-using namespace ::com::sun::star::util;
+using namespace css::awt;
+using namespace css::uno;
+using namespace css::beans;
+using namespace css::lang;
+using namespace css::frame;
+using namespace css::frame::status;
+using namespace css::util;
 
 namespace framework
 {
@@ -72,7 +72,7 @@ throw ( RuntimeException, std::exception )
 {
     SolarMutexGuard aSolarMutexGuard;
 
-    m_pToolbar->SetItemWindow( m_nID, 0 );
+    m_pToolbar->SetItemWindow( m_nID, nullptr );
     svt::ToolboxController::dispose();
 
     m_xURLTransformer.clear();
@@ -96,7 +96,7 @@ throw ( RuntimeException, std::exception )
     Reference< XDispatch >       xDispatch;
     Reference< XURLTransformer > xURLTransformer;
     OUString                     aCommandURL;
-    ::com::sun::star::util::URL  aTargetURL;
+    css::util::URL  aTargetURL;
     Sequence<PropertyValue> aArgs;
 
     {
@@ -124,7 +124,7 @@ throw ( RuntimeException, std::exception )
         pExecuteInfo->xDispatch     = xDispatch;
         pExecuteInfo->aTargetURL    = aTargetURL;
         pExecuteInfo->aArgs         = aArgs;
-        Application::PostUserEvent( LINK(0, ComplexToolbarController , ExecuteHdl_Impl), pExecuteInfo );
+        Application::PostUserEvent( LINK(nullptr, ComplexToolbarController , ExecuteHdl_Impl), pExecuteInfo );
     }
 }
 
@@ -260,7 +260,7 @@ void ComplexToolbarController::addNotifyInfo(
         aInfoSeq[nCount].Value = uno::makeAny( getFrameInterface() );
         pNotifyInfo->aInfoSeq  = aInfoSeq;
 
-        Application::PostUserEvent( LINK(0, ComplexToolbarController, Notify_Impl), pNotifyInfo );
+        Application::PostUserEvent( LINK(nullptr, ComplexToolbarController, Notify_Impl), pNotifyInfo );
     }
 }
 
@@ -289,7 +289,7 @@ uno::Reference< frame::XDispatch > ComplexToolbarController::getDispatchFromComm
     return xDispatch;
 }
 
-const ::com::sun::star::util::URL& ComplexToolbarController::getInitializedURL()
+const css::util::URL& ComplexToolbarController::getInitializedURL()
 {
     if ( m_aURL.Complete.isEmpty() )
     {
@@ -303,7 +303,7 @@ void ComplexToolbarController::notifyFocusGet()
 {
     // send focus get notification
     uno::Sequence< beans::NamedValue > aInfo;
-    addNotifyInfo( OUString( "FocusSet" ),
+    addNotifyInfo( "FocusSet",
                     getDispatchFromCommand( m_aCommandURL ),
                     aInfo );
 }
@@ -312,7 +312,7 @@ void ComplexToolbarController::notifyFocusLost()
 {
     // send focus lost notification
     uno::Sequence< beans::NamedValue > aInfo;
-    addNotifyInfo( OUString( "FocusLost" ),
+    addNotifyInfo( "FocusLost",
                     getDispatchFromCommand( m_aCommandURL ),
                     aInfo );
 }
@@ -320,10 +320,8 @@ void ComplexToolbarController::notifyFocusLost()
 void ComplexToolbarController::notifyTextChanged( const OUString& aText )
 {
     // send text changed notification
-    uno::Sequence< beans::NamedValue > aInfo( 1 );
-    aInfo[0].Name  = "Text";
-    aInfo[0].Value <<= aText;
-    addNotifyInfo( OUString( "TextChanged" ),
+    uno::Sequence< beans::NamedValue > aInfo { { "Text", css::uno::makeAny(aText) } };
+    addNotifyInfo( "TextChanged",
                    getDispatchFromCommand( m_aCommandURL ),
                    aInfo );
 }

@@ -29,6 +29,9 @@
 #include "formulacell.hxx"
 #include "docoptio.hxx"
 
+#include <comphelper/stl_types.hxx>
+#include <o3tl/make_unique.hxx>
+
 #include <vector>
 
 using ::std::vector;
@@ -163,12 +166,12 @@ ScMemChart* ScChartArray::CreateMemChartSingle()
     // Skip hidden columns.
     // TODO: make use of last column value once implemented.
     SCCOL nLastCol = -1;
-    while (pDocument->ColHidden(nCol1, nTab1, NULL, &nLastCol))
+    while (pDocument->ColHidden(nCol1, nTab1, nullptr, &nLastCol))
         ++nCol1;
 
     // Skip hidden rows.
     SCROW nLastRow = -1;
-    if (pDocument->RowHidden(nRow1, nTab1, NULL, &nLastRow))
+    if (pDocument->RowHidden(nRow1, nTab1, nullptr, &nLastRow))
         nRow1 = nLastRow + 1;
 
     // if everything is hidden then the label remains at the beginning
@@ -189,7 +192,7 @@ ScMemChart* ScChartArray::CreateMemChartSingle()
     for (SCSIZE i=0; i<nTotalCols; i++)
     {
         SCCOL nThisCol = sal::static_int_cast<SCCOL>(nCol1+i);
-        if (!pDocument->ColHidden(nThisCol, nTab1, NULL, &nLastCol))
+        if (!pDocument->ColHidden(nThisCol, nTab1, nullptr, &nLastCol))
             aCols.push_back(nThisCol);
     }
     SCSIZE nColCount = aCols.size();
@@ -203,7 +206,7 @@ ScMemChart* ScChartArray::CreateMemChartSingle()
         SCROW nThisRow = nRow1;
         while (nThisRow <= nRow2)
         {
-            if (pDocument->RowHidden(nThisRow, nTab1, NULL, &nLastRow))
+            if (pDocument->RowHidden(nThisRow, nTab1, nullptr, &nLastRow))
                 nThisRow = nLastRow;
             else
                 aRows.push_back(nThisRow);
@@ -272,7 +275,7 @@ ScMemChart* ScChartArray::CreateMemChartSingle()
             aBuf.append(' ');
 
             ScAddress aPos( aCols[ nCol ], 0, 0 );
-            aBuf.append(aPos.Format(SCA_VALID_COL, NULL));
+            aBuf.append(aPos.Format(SCA_VALID_COL));
 
             aString = aBuf.makeStringAndClear();
         }
@@ -385,7 +388,7 @@ ScMemChart* ScChartArray::CreateMemChartMulti()
             else
                 nPosCol++;
             ScAddress aPos( nPosCol - 1, 0, 0 );
-            aBuf.append(aPos.Format(SCA_VALID_COL, NULL));
+            aBuf.append(aPos.Format(SCA_VALID_COL));
             aString = aBuf.makeStringAndClear();
         }
         pMemChart->SetColText( nCol, aString);
@@ -419,46 +422,51 @@ ScMemChart* ScChartArray::CreateMemChartMulti()
 }
 
 ScChartCollection::ScChartCollection() {}
-ScChartCollection::ScChartCollection(const ScChartCollection& r) :
-    maData(r.maData) {}
+ScChartCollection::ScChartCollection(const ScChartCollection& r)
+{
+    for (auto const& it : r.m_Data)
+    {
+        m_Data.push_back(o3tl::make_unique<ScChartArray>(*it));
+    }
+}
 
 void ScChartCollection::push_back(ScChartArray* p)
 {
-    maData.push_back(p);
+    m_Data.push_back(std::unique_ptr<ScChartArray>(p));
 }
 
 void ScChartCollection::clear()
 {
-    maData.clear();
+    m_Data.clear();
 }
 
 size_t ScChartCollection::size() const
 {
-    return maData.size();
+    return m_Data.size();
 }
 
 bool ScChartCollection::empty() const
 {
-    return maData.empty();
+    return m_Data.empty();
 }
 
 ScChartArray* ScChartCollection::operator[](size_t nIndex)
 {
-    if (maData.size() <= nIndex)
-        return NULL;
-    return &maData[nIndex];
+    if (m_Data.size() <= nIndex)
+        return nullptr;
+    return m_Data[nIndex].get();
 }
 
 const ScChartArray* ScChartCollection::operator[](size_t nIndex) const
 {
-    if (maData.size() <= nIndex)
-        return NULL;
-    return &maData[nIndex];
+    if (m_Data.size() <= nIndex)
+        return nullptr;
+    return m_Data[nIndex].get();
 }
 
 bool ScChartCollection::operator==(const ScChartCollection& rCmp) const
 {
-    return maData == rCmp.maData;
+    return ::comphelper::ContainerUniquePtrEquals(m_Data, rCmp.m_Data);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

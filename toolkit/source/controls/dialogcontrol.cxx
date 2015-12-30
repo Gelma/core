@@ -65,9 +65,9 @@ using namespace ::com::sun::star::container;
 using namespace ::com::sun::star::beans;
 using namespace ::com::sun::star::util;
 
-#define PROPERTY_DIALOGSOURCEURL OUString( "DialogSourceURL" )
-#define PROPERTY_IMAGEURL OUString( "ImageURL" )
-#define PROPERTY_GRAPHIC OUString( "Graphic" )
+#define PROPERTY_DIALOGSOURCEURL "DialogSourceURL"
+#define PROPERTY_IMAGEURL "ImageURL"
+#define PROPERTY_GRAPHIC "Graphic"
 
 
 // we probably will need both a hash of control models and hash of controls
@@ -81,8 +81,8 @@ class SimpleNamedThingContainer : public ::cppu::WeakImplHelper< container::XNam
     NamedThingsHash things;
     ::osl::Mutex m_aMutex;
 public:
-    // ::com::sun::star::container::XNameContainer, XNameReplace, XNameAccess
-    virtual void SAL_CALL replaceByName( const OUString& aName, const Any& aElement ) throw(IllegalArgumentException, NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) SAL_OVERRIDE
+    // css::container::XNameContainer, XNameReplace, XNameAccess
+    virtual void SAL_CALL replaceByName( const OUString& aName, const Any& aElement ) throw(IllegalArgumentException, NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) override
     {
         ::osl::MutexGuard aGuard( m_aMutex );
         if ( !hasByName( aName ) )
@@ -92,30 +92,24 @@ public:
             throw IllegalArgumentException();
         things[ aName ] = xElement;
     }
-    virtual Any SAL_CALL getByName( const OUString& aName ) throw(NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) SAL_OVERRIDE
+    virtual Any SAL_CALL getByName( const OUString& aName ) throw(NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) override
     {
         ::osl::MutexGuard aGuard( m_aMutex );
         if ( !hasByName( aName ) )
             throw NoSuchElementException();
         return uno::makeAny( things[ aName ] );
     }
-    virtual Sequence< OUString > SAL_CALL getElementNames(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE
+    virtual Sequence< OUString > SAL_CALL getElementNames(  ) throw(RuntimeException, std::exception) override
     {
         ::osl::MutexGuard aGuard( m_aMutex );
-        Sequence< OUString > aResult( things.size() );
-        typename NamedThingsHash::iterator it = things.begin();
-        typename NamedThingsHash::iterator it_end = things.end();
-        OUString* pName = aResult.getArray();
-        for (; it != it_end; ++it, ++pName )
-            *pName = it->first;
-        return aResult;
+        return comphelper::mapKeysToSequence( things );
     }
-    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw(RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw(RuntimeException, std::exception) override
     {
         ::osl::MutexGuard aGuard( m_aMutex );
         return ( things.find( aName ) != things.end() );
     }
-    virtual void SAL_CALL insertByName( const OUString& aName, const Any& aElement ) throw(IllegalArgumentException, ElementExistException, WrappedTargetException, RuntimeException, std::exception) SAL_OVERRIDE
+    virtual void SAL_CALL insertByName( const OUString& aName, const Any& aElement ) throw(IllegalArgumentException, ElementExistException, WrappedTargetException, RuntimeException, std::exception) override
     {
         ::osl::MutexGuard aGuard( m_aMutex );
         if ( hasByName( aName ) )
@@ -125,18 +119,18 @@ public:
             throw IllegalArgumentException();
         things[ aName ] = xElement;
     }
-    virtual void SAL_CALL removeByName( const OUString& aName ) throw(NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) SAL_OVERRIDE
+    virtual void SAL_CALL removeByName( const OUString& aName ) throw(NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) override
     {
         ::osl::MutexGuard aGuard( m_aMutex );
         if ( !hasByName( aName ) )
             throw NoSuchElementException();
         things.erase( things.find( aName ) );
     }
-    virtual Type SAL_CALL getElementType(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE
+    virtual Type SAL_CALL getElementType(  ) throw (RuntimeException, std::exception) override
     {
         return cppu::UnoType<T>::get();
     }
-    virtual sal_Bool SAL_CALL hasElements(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasElements(  ) throw (RuntimeException, std::exception) override
     {
         ::osl::MutexGuard aGuard( m_aMutex );
         return ( !things.empty() );
@@ -149,29 +143,29 @@ class UnoControlDialogModel :   public ControlModelContainerBase
 {
 protected:
     css::uno::Reference< css::graphic::XGraphicObject > mxGrfObj;
-    css::uno::Any          ImplGetDefaultValue( sal_uInt16 nPropId ) const SAL_OVERRIDE;
-    ::cppu::IPropertyArrayHelper&       SAL_CALL getInfoHelper() SAL_OVERRIDE;
+    css::uno::Any          ImplGetDefaultValue( sal_uInt16 nPropId ) const override;
+    ::cppu::IPropertyArrayHelper&       SAL_CALL getInfoHelper() override;
     // ::cppu::OPropertySetHelper
-    void SAL_CALL setFastPropertyValue_NoBroadcast( sal_Int32 nHandle, const css::uno::Any& rValue ) throw (css::uno::Exception, std::exception) SAL_OVERRIDE;
+    void SAL_CALL setFastPropertyValue_NoBroadcast( sal_Int32 nHandle, const css::uno::Any& rValue ) throw (css::uno::Exception, std::exception) override;
 public:
     explicit UnoControlDialogModel( const css::uno::Reference< css::uno::XComponentContext >& rxContext );
     UnoControlDialogModel( const UnoControlDialogModel& rModel );
     virtual ~UnoControlDialogModel();
 
-    UnoControlModel*    Clone() const SAL_OVERRIDE;
+    UnoControlModel*    Clone() const override;
     // css::beans::XMultiPropertySet
-    css::uno::Reference< css::beans::XPropertySetInfo > SAL_CALL getPropertySetInfo(  ) throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    css::uno::Reference< css::beans::XPropertySetInfo > SAL_CALL getPropertySetInfo(  ) throw(css::uno::RuntimeException, std::exception) override;
 
     // css::io::XPersistObject
-    OUString SAL_CALL getServiceName() throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    OUString SAL_CALL getServiceName() throw(css::uno::RuntimeException, std::exception) override;
 
     // XServiceInfo
     OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return OUString("stardiv.Toolkit.UnoControlDialogModel"); }
 
     css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         auto s(ControlModelContainerBase::getSupportedServiceNames());
         s.realloc(s.getLength() + 2);
@@ -277,7 +271,7 @@ Any UnoControlDialogModel::ImplGetDefaultValue( sal_uInt16 nPropId ) const
 
 ::cppu::IPropertyArrayHelper& UnoControlDialogModel::getInfoHelper()
 {
-    static UnoPropertyArrayHelper* pHelper = NULL;
+    static UnoPropertyArrayHelper* pHelper = nullptr;
     if ( !pHelper )
     {
         Sequence<sal_Int32> aIDs = ImplGetPropertyIds();
@@ -293,7 +287,7 @@ Reference< XPropertySetInfo > UnoControlDialogModel::getPropertySetInfo(  ) thro
     return xInfo;
 }
 
-void SAL_CALL UnoControlDialogModel::setFastPropertyValue_NoBroadcast( sal_Int32 nHandle, const ::com::sun::star::uno::Any& rValue ) throw (::com::sun::star::uno::Exception, std::exception)
+void SAL_CALL UnoControlDialogModel::setFastPropertyValue_NoBroadcast( sal_Int32 nHandle, const css::uno::Any& rValue ) throw (css::uno::Exception, std::exception)
 {
     ControlModelContainerBase::setFastPropertyValue_NoBroadcast( nHandle, rValue );
     try
@@ -305,7 +299,7 @@ void SAL_CALL UnoControlDialogModel::setFastPropertyValue_NoBroadcast( sal_Int32
             setPropertyValue( GetPropertyName( BASEPROPERTY_GRAPHIC ), uno::makeAny( ImageHelper::getGraphicAndGraphicObjectFromURL_nothrow( mxGrfObj, sImageURL ) ) );
         }
     }
-    catch( const ::com::sun::star::uno::Exception& )
+    catch( const css::uno::Exception& )
     {
         OSL_ENSURE( false, "UnoControlDialogModel::setFastPropertyValue_NoBroadcast: caught an exception while setting ImageURL properties!" );
     }
@@ -416,7 +410,7 @@ css::uno::Sequence<OUString> UnoDialogControl::getSupportedServiceNames()
         "stardiv.vcl.control.Dialog"};
 }
 
-void UnoDialogControl::PrepareWindowDescriptor( ::com::sun::star::awt::WindowDescriptor& rDesc )
+void UnoDialogControl::PrepareWindowDescriptor( css::awt::WindowDescriptor& rDesc )
 {
     UnoControlContainer::PrepareWindowDescriptor( rDesc );
     bool bDecoration( true );
@@ -424,7 +418,7 @@ void UnoDialogControl::PrepareWindowDescriptor( ::com::sun::star::awt::WindowDes
     if ( !bDecoration )
     {
         // Now we have to manipulate the WindowDescriptor
-        rDesc.WindowAttributes = rDesc.WindowAttributes | ::com::sun::star::awt::WindowAttribute::NODECORATION;
+        rDesc.WindowAttributes = rDesc.WindowAttributes | css::awt::WindowAttribute::NODECORATION;
     }
 
     // We have to set the graphic property before the peer
@@ -505,9 +499,9 @@ static ::Size ImplMapPixelToAppFont( OutputDevice* pOutDev, const ::Size& aSize 
     ::Size aTmp = pOutDev->PixelToLogic( aSize, MAP_APPFONT );
     return aTmp;
 }
-// ::com::sun::star::awt::XWindowListener
-void SAL_CALL UnoDialogControl::windowResized( const ::com::sun::star::awt::WindowEvent& e )
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+// css::awt::XWindowListener
+void SAL_CALL UnoDialogControl::windowResized( const css::awt::WindowEvent& e )
+throw (css::uno::RuntimeException, std::exception)
 {
     OutputDevice*pOutDev = Application::GetDefaultDevice();
     DBG_ASSERT( pOutDev, "Missing Default Device!" );
@@ -547,8 +541,8 @@ throw (::com::sun::star::uno::RuntimeException, std::exception)
     }
 }
 
-void SAL_CALL UnoDialogControl::windowMoved( const ::com::sun::star::awt::WindowEvent& e )
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL UnoDialogControl::windowMoved( const css::awt::WindowEvent& e )
+throw (css::uno::RuntimeException, std::exception)
 {
     OutputDevice*pOutDev = Application::GetDefaultDevice();
     DBG_ASSERT( pOutDev, "Missing Default Device!" );
@@ -650,7 +644,7 @@ throw (RuntimeException, std::exception)
     ImplUpdateResourceResolver();
 }
 
-void UnoDialogControl::ImplModelPropertiesChanged( const Sequence< PropertyChangeEvent >& rEvents ) throw(RuntimeException)
+void UnoDialogControl::ImplModelPropertiesChanged( const Sequence< PropertyChangeEvent >& rEvents ) throw(RuntimeException, std::exception)
 {
     sal_Int32 nLen = rEvents.getLength();
     for( sal_Int32 i = 0; i < nLen; i++ )
@@ -724,7 +718,7 @@ void SAL_CALL UnoMultiPageControl::dispose() throw (RuntimeException, std::excep
     ControlContainerBase::dispose();
 }
 
-// com::sun::star::awt::XSimpleTabController
+// css::awt::XSimpleTabController
 ::sal_Int32 SAL_CALL UnoMultiPageControl::insertTab() throw (RuntimeException, std::exception)
 {
     Reference< XSimpleTabController > xMultiPage( getPeer(), UNO_QUERY );
@@ -824,7 +818,7 @@ void UnoMultiPageControl::bindPage( const uno::Reference< awt::XControl >& _rxCo
     uno::Reference< beans::XPropertySet > xProps( _rxControl->getModel(), uno::UNO_QUERY );
 
    VCLXTabPage* pXPage = dynamic_cast< VCLXTabPage* >( xPage.get() );
-   TabPage* pPage = pXPage ? pXPage->getTabPage() : NULL;
+   TabPage* pPage = pXPage ? pXPage->getTabPage() : nullptr;
     if ( xTabCntrl.is() && pPage )
     {
         VCLXMultiPage* pXTab = dynamic_cast< VCLXMultiPage* >( xTabCntrl.get() );
@@ -873,7 +867,7 @@ void    UnoMultiPageControl::impl_createControlPeerIfNecessary( const uno::Refer
 
     if( xMyPeer.is() )
     {
-        _rxControl->createPeer( NULL, xMyPeer );
+        _rxControl->createPeer( nullptr, xMyPeer );
         bindPage( _rxControl );
         ImplActivateTabControllers();
     }
@@ -928,7 +922,7 @@ UnoMultiPageModel::Clone() const
     return pClone;
 }
 
-OUString UnoMultiPageModel::getServiceName() throw(::com::sun::star::uno::RuntimeException, std::exception)
+OUString UnoMultiPageModel::getServiceName() throw(css::uno::RuntimeException, std::exception)
 {
     return OUString( "com.sun.star.awt.UnoMultiPageModel" );
 }
@@ -946,7 +940,7 @@ uno::Any UnoMultiPageModel::ImplGetDefaultValue( sal_uInt16 nPropId ) const
 
 ::cppu::IPropertyArrayHelper& UnoMultiPageModel::getInfoHelper()
 {
-    static UnoPropertyArrayHelper* pHelper = NULL;
+    static UnoPropertyArrayHelper* pHelper = nullptr;
     if ( !pHelper )
     {
         uno::Sequence<sal_Int32>    aIDs = ImplGetPropertyIds();
@@ -1048,7 +1042,7 @@ UnoPageModel::Clone() const
     return pClone;
 }
 
-OUString UnoPageModel::getServiceName() throw(::com::sun::star::uno::RuntimeException, std::exception)
+OUString UnoPageModel::getServiceName() throw(css::uno::RuntimeException, std::exception)
 {
     return OUString( "com.sun.star.awt.UnoPageModel" );
 }
@@ -1066,7 +1060,7 @@ uno::Any UnoPageModel::ImplGetDefaultValue( sal_uInt16 nPropId ) const
 
 ::cppu::IPropertyArrayHelper& UnoPageModel::getInfoHelper()
 {
-    static UnoPropertyArrayHelper* pHelper = NULL;
+    static UnoPropertyArrayHelper* pHelper = nullptr;
     if ( !pHelper )
     {
         uno::Sequence<sal_Int32>  aIDs = ImplGetPropertyIds();
@@ -1213,7 +1207,7 @@ UnoFrameModel::Clone() const
     return pClone;
 }
 
-OUString UnoFrameModel::getServiceName() throw(::com::sun::star::uno::RuntimeException, std::exception)
+OUString UnoFrameModel::getServiceName() throw(css::uno::RuntimeException, std::exception)
 {
     return OUString( "com.sun.star.awt.UnoFrameModel" );
 }
@@ -1245,7 +1239,7 @@ uno::Any UnoFrameModel::ImplGetDefaultValue( sal_uInt16 nPropId ) const
 
 ::cppu::IPropertyArrayHelper& UnoFrameModel::getInfoHelper()
 {
-    static UnoPropertyArrayHelper* pHelper = NULL;
+    static UnoPropertyArrayHelper* pHelper = nullptr;
     if ( !pHelper )
     {
         uno::Sequence<sal_Int32>    aIDs = ImplGetPropertyIds();

@@ -90,7 +90,7 @@ void PasswordTable::setColWidths()
         return;
     long nUserNameWidth = 12 +
         std::max(rBar.GetTextWidth(rBar.GetItemText(2)),
-        GetTextWidth(OUString("XXXXXXXXXXXX")));
+        GetTextWidth("XXXXXXXXXXXX"));
     long nWebSiteWidth = std::max(
         12 + rBar.GetTextWidth(rBar.GetItemText(1)),
         GetSizePixel().Width() - nUserNameWidth);
@@ -137,7 +137,7 @@ WebConnectionInfoDialog::WebConnectionInfoDialog(vcl::Window* pParent)
     m_pRemoveBtn->Enable( false );
     m_pChangeBtn->Enable( false );
 
-    HeaderBarClickedHdl( NULL );
+    HeaderBarClickedHdl( nullptr );
 }
 
 WebConnectionInfoDialog::~WebConnectionInfoDialog()
@@ -156,7 +156,7 @@ void WebConnectionInfoDialog::dispose()
 
 IMPL_LINK_TYPED( WebConnectionInfoDialog, HeaderBarClickedHdl, SvSimpleTable*, pTable, void )
 {
-    m_pPasswordsLB->Resort( NULL == pTable );
+    m_pPasswordsLB->Resort( nullptr == pTable );
 }
 
 
@@ -170,7 +170,7 @@ void WebConnectionInfoDialog::FillPasswordList()
         if ( xMasterPasswd->isPersistentStoringAllowed() )
         {
             uno::Reference< task::XInteractionHandler > xInteractionHandler(
-                task::InteractionHandler::createWithParent(comphelper::getProcessComponentContext(), 0),
+                task::InteractionHandler::createWithParent(comphelper::getProcessComponentContext(), nullptr),
                 uno::UNO_QUERY);
 
             uno::Sequence< task::UrlRecord > aURLEntries = xMasterPasswd->getAllPersistent( xInteractionHandler );
@@ -272,15 +272,14 @@ IMPL_LINK_NOARG_TYPED(WebConnectionInfoDialog, ChangePasswordHdl, Button*, void)
             uno::Reference< task::XInteractionRequest > rRequest( pPasswordRequest );
 
             uno::Reference< task::XInteractionHandler > xInteractionHandler(
-                task::InteractionHandler::createWithParent(comphelper::getProcessComponentContext(), 0),
+                task::InteractionHandler::createWithParent(comphelper::getProcessComponentContext(), nullptr),
                 uno::UNO_QUERY );
             xInteractionHandler->handle( rRequest );
 
             if ( pPasswordRequest->isPassword() )
             {
                 OUString aNewPass = pPasswordRequest->getPassword();
-                uno::Sequence< OUString > aPasswd( 1 );
-                aPasswd[0] = aNewPass;
+                uno::Sequence<OUString> aPasswd { aNewPass };
 
                 uno::Reference< task::XPasswordContainer2 > xPasswdContainer(
                     task::PasswordContainer::create(comphelper::getProcessComponentContext()));
@@ -304,7 +303,7 @@ IMPL_LINK_NOARG_TYPED(WebConnectionInfoDialog, EntrySelectedHdl, SvTreeListBox*,
     }
     else
     {
-        m_pRemoveBtn->Enable( true );
+        m_pRemoveBtn->Enable();
 
         // url container entries (-> use system credentials) have
         // no password

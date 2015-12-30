@@ -169,8 +169,7 @@ OUString OApplicationController::getImplementationName_Static() throw( RuntimeEx
 
 Sequence< OUString> OApplicationController::getSupportedServiceNames_Static() throw( RuntimeException )
 {
-    Sequence< OUString> aSupported(1);
-    aSupported[0] = "com.sun.star.sdb.application.DefaultViewController";
+    Sequence<OUString> aSupported { "com.sun.star.sdb.application.DefaultViewController" };
     return aSupported;
 }
 
@@ -269,13 +268,13 @@ private:
 
 // OApplicationController
 OApplicationController::OApplicationController(const Reference< XComponentContext >& _rxORB)
-    :OApplicationController_CBASE( _rxORB )
+    :OGenericUnoController( _rxORB )
     ,m_aContextMenuInterceptors( getMutex() )
     ,m_pSubComponentManager( new SubComponentManager( *this, getSharedMutex() ) )
     ,m_aTypeCollection( _rxORB )
     ,m_aTableCopyHelper(this)
-    ,m_pClipbordNotifier(NULL)
-    ,m_nAsyncDrop(0)
+    ,m_pClipbordNotifier(nullptr)
+    ,m_nAsyncDrop(nullptr)
     ,m_aSelectContainerEvent( LINK( this, OApplicationController, OnSelectContainer ) )
     ,m_ePreviewMode(E_PREVIEWNONE)
     ,m_eCurrentType(E_NONE)
@@ -297,8 +296,8 @@ OApplicationController::~OApplicationController()
     clearView();
 }
 
-IMPLEMENT_FORWARD_XTYPEPROVIDER2(OApplicationController,OApplicationController_CBASE,OApplicationController_Base)
-IMPLEMENT_FORWARD_XINTERFACE2(OApplicationController,OApplicationController_CBASE,OApplicationController_Base)
+IMPLEMENT_FORWARD_XTYPEPROVIDER2(OApplicationController,OGenericUnoController,OApplicationController_Base)
+IMPLEMENT_FORWARD_XINTERFACE2(OApplicationController,OGenericUnoController,OApplicationController_Base)
 void OApplicationController::disconnect()
 {
     if ( m_xDataSourceConnection.is() )
@@ -338,11 +337,11 @@ void SAL_CALL OApplicationController::disposing()
 
     if ( getView() )
     {
-        getContainer()->showPreview(NULL);
+        getContainer()->showPreview(nullptr);
         m_pClipbordNotifier->ClearCallbackLink();
         m_pClipbordNotifier->AddRemoveListener( getView(), false );
         m_pClipbordNotifier->release();
-        m_pClipbordNotifier = NULL;
+        m_pClipbordNotifier = nullptr;
     }
 
     disconnect();
@@ -364,7 +363,7 @@ void SAL_CALL OApplicationController::disposing()
             m_xDataSource->removePropertyChangeListener(PROPERTY_USER, this);
             // otherwise we may delete our datasource twice
             Reference<XPropertySet> xProp = m_xDataSource;
-            m_xDataSource = NULL;
+            m_xDataSource = nullptr;
         }
 
         Reference< XModifyBroadcaster > xBroadcaster( m_xModel, UNO_QUERY );
@@ -412,7 +411,7 @@ void SAL_CALL OApplicationController::disposing()
     }
 
     clearView();
-    OApplicationController_CBASE::disposing(); // here the m_refCount must be equal 5
+    OGenericUnoController::disposing(); // here the m_refCount must be equal 5
 }
 
 bool OApplicationController::Construct(vcl::Window* _pParent)
@@ -449,7 +448,7 @@ bool OApplicationController::Construct(vcl::Window* _pParent)
     m_pClipbordNotifier->acquire();
     m_pClipbordNotifier->AddRemoveListener( getView(), true );
 
-    OApplicationController_CBASE::Construct( _pParent );
+    OGenericUnoController::Construct( _pParent );
     getView()->Show();
 
     return true;
@@ -478,7 +477,7 @@ void SAL_CALL OApplicationController::disposing(const EventObject& _rSource) thr
     }
     else if ( _rSource.Source == m_xDataSource )
     {
-        m_xDataSource = NULL;
+        m_xDataSource = nullptr;
     }
     else
     {
@@ -489,7 +488,7 @@ void SAL_CALL OApplicationController::disposing(const EventObject& _rSource) thr
             if ( aFind != m_aCurrentContainers.end() )
                 m_aCurrentContainers.erase(aFind);
         }
-        OApplicationController_CBASE::disposing( _rSource );
+        OGenericUnoController::disposing( _rSource );
     }
 }
 
@@ -500,7 +499,7 @@ sal_Bool SAL_CALL OApplicationController::suspend(sal_Bool bSuspend) throw( Runt
     if ( xBroadcaster.is() )
     {
         xBroadcaster->notifyDocumentEvent(
-            OUString("OnPrepareViewClosing"),
+            "OnPrepareViewClosing",
             this,
             Any()
         );
@@ -600,7 +599,7 @@ FeatureState OApplicationController::GetState(sal_uInt16 _nId) const
                 aReturn.bEnabled = true;
                 break;
             case ID_BROWSER_SAVEDOC:
-                aReturn.bEnabled = !isDataSourceReadOnly() && m_xDocumentModify.is() && m_xDocumentModify->isModified();
+                aReturn.bEnabled = !isDataSourceReadOnly();
                 break;
             case ID_BROWSER_SAVEASDOC:
                 aReturn.bEnabled = true;
@@ -930,7 +929,7 @@ FeatureState OApplicationController::GetState(sal_uInt16 _nId) const
                 }
                 break;
             default:
-                aReturn = OApplicationController_CBASE::GetState(_nId);
+                aReturn = OGenericUnoController::GetState(_nId);
         }
     }
     catch(const Exception& )
@@ -977,7 +976,7 @@ void OApplicationController::Execute(sal_uInt16 _nId, const Sequence< PropertyVa
 
     if ( isUserDefinedFeature( _nId ) )
     {
-        OApplicationController_CBASE::Execute( _nId, aArgs );
+        OGenericUnoController::Execute( _nId, aArgs );
         return;
     }
 
@@ -1236,7 +1235,7 @@ void OApplicationController::Execute(sal_uInt16 _nId, const Sequence< PropertyVa
             case SID_APP_NEW_FOLDER:
                 {
                     ElementType eType = getContainer()->getElementType();
-                    OUString sName = getContainer()->getQualifiedName( NULL );
+                    OUString sName = getContainer()->getQualifiedName( nullptr );
                     insertHierachyElement(eType,sName);
                 }
                 break;
@@ -1253,7 +1252,7 @@ void OApplicationController::Execute(sal_uInt16 _nId, const Sequence< PropertyVa
 
                         const Reference< XDataSource > xDataSource( m_xDataSource, UNO_QUERY );
                         const Reference< XComponent > xComponent( aDesigner.createNew( xDataSource, aCreationArgs ), UNO_QUERY );
-                        onDocumentOpened( OUString(), E_QUERY, E_OPEN_DESIGN, xComponent, NULL );
+                        onDocumentOpened( OUString(), E_QUERY, E_OPEN_DESIGN, xComponent, nullptr );
                     }
                 }
                 break;
@@ -1305,7 +1304,7 @@ void OApplicationController::Execute(sal_uInt16 _nId, const Sequence< PropertyVa
 
                         const Reference< XDataSource > xDataSource( m_xDataSource, UNO_QUERY );
                         const Reference< XComponent > xComponent( aDesigner.createNew( xDataSource ), UNO_QUERY );
-                        onDocumentOpened( OUString(), SID_DB_APP_DSRELDESIGN, E_OPEN_DESIGN, xComponent, NULL );
+                        onDocumentOpened( OUString(), SID_DB_APP_DSRELDESIGN, E_OPEN_DESIGN, xComponent, nullptr );
                     }
                 }
             }
@@ -1314,7 +1313,7 @@ void OApplicationController::Execute(sal_uInt16 _nId, const Sequence< PropertyVa
                 {
                     SharedConnection xConnection( ensureConnection() );
                     if ( xConnection.is() )
-                        openDialog(OUString("com.sun.star.sdb.UserAdministrationDialog"));
+                        openDialog("com.sun.star.sdb.UserAdministrationDialog");
                 }
                 break;
             case SID_DB_APP_TABLEFILTER:
@@ -1329,11 +1328,11 @@ void OApplicationController::Execute(sal_uInt16 _nId, const Sequence< PropertyVa
                 askToReconnect();
                 break;
             case SID_DB_APP_DSADVANCED_SETTINGS:
-                openDialog(OUString("com.sun.star.sdb.AdvancedDatabaseSettingsDialog"));
+                openDialog("com.sun.star.sdb.AdvancedDatabaseSettingsDialog");
                 askToReconnect();
                 break;
             case SID_DB_APP_DSCONNECTION_TYPE:
-                openDialog(OUString("com.sun.star.sdb.DataSourceTypeChangeDialog"));
+                openDialog("com.sun.star.sdb.DataSourceTypeChangeDialog");
                 askToReconnect();
                 break;
             case ID_DIRECT_SQL:
@@ -1391,7 +1390,7 @@ void OApplicationController::Execute(sal_uInt16 _nId, const Sequence< PropertyVa
 
 void OApplicationController::describeSupportedFeatures()
 {
-    OApplicationController_CBASE::describeSupportedFeatures();
+    OGenericUnoController::describeSupportedFeatures();
 
     implDescribeSupportedFeature( ".uno:Save",               ID_BROWSER_SAVEDOC,        CommandGroup::DOCUMENT );
     implDescribeSupportedFeature( ".uno:SaveAs",             ID_BROWSER_SAVEASDOC,      CommandGroup::DOCUMENT );
@@ -1707,9 +1706,7 @@ bool OApplicationController::onContainerSelect(ElementType _eType)
         SelectionByElementType::iterator pendingSelection = m_aPendingSelection.find( _eType );
         if ( pendingSelection != m_aPendingSelection.end() )
         {
-            Sequence< OUString > aSelected( pendingSelection->second.size() );
-            ::std::copy( pendingSelection->second.begin(), pendingSelection->second.end(), aSelected.getArray() );
-            getContainer()->selectElements( aSelected );
+            getContainer()->selectElements( comphelper::containerToSequence(pendingSelection->second) );
 
             m_aPendingSelection.erase( pendingSelection );
         }
@@ -1778,13 +1775,13 @@ Reference< XComponent > OApplicationController::openElementWithArguments( const 
 {
     OSL_PRECOND( getContainer(), "OApplicationController::openElementWithArguments: no view!" );
     if ( !getContainer() )
-        return NULL;
+        return nullptr;
 
     Reference< XComponent > xRet;
     if ( _eOpenMode == E_OPEN_DESIGN )
     {
         // OJ: http://www.openoffice.org/issues/show_bug.cgi?id=30382
-        getContainer()->showPreview(NULL);
+        getContainer()->showPreview(nullptr);
     }
 
     bool isStandaloneDocument = false;
@@ -1869,7 +1866,7 @@ Reference< XComponent > OApplicationController::openElementWithArguments( const 
             }
 
             xRet.set( pDesigner->openExisting( aDataSource, _sName, aArguments ) );
-            onDocumentOpened( _sName, _eType, _eOpenMode, xRet, NULL );
+            onDocumentOpened( _sName, _eType, _eOpenMode, xRet, nullptr );
         }
     }
     break;
@@ -2183,7 +2180,7 @@ void OApplicationController::onSelectionChanged()
         const ElementType eType = pView->getElementType();
           if ( pView->isALeafSelected() )
         {
-            const OUString sName = pView->getQualifiedName( NULL /* means 'first selected' */ );
+            const OUString sName = pView->getQualifiedName( nullptr /* means 'first selected' */ );
             showPreviewFor( eType, sName );
         }
     }
@@ -2248,10 +2245,6 @@ void OApplicationController::OnInvalidateClipboard()
     InvalidateFeature(SID_DB_APP_PASTE_SPECIAL);
 }
 
-void OApplicationController::onCutEntry()
-{
-}
-
 void OApplicationController::onCopyEntry()
 {
     Execute(ID_BROWSER_COPY,Sequence<PropertyValue>());
@@ -2289,52 +2282,52 @@ void OApplicationController::onDeleteEntry()
 
 void OApplicationController::executeUnChecked(const URL& _rCommand, const Sequence< PropertyValue>& aArgs)
 {
-    OApplicationController_CBASE::executeUnChecked( _rCommand, aArgs );
+    OGenericUnoController::executeUnChecked( _rCommand, aArgs );
 }
 
 void OApplicationController::executeChecked(const URL& _rCommand, const Sequence< PropertyValue>& aArgs)
 {
-    OApplicationController_CBASE::executeChecked( _rCommand, aArgs );
+    OGenericUnoController::executeChecked( _rCommand, aArgs );
 }
 
 void OApplicationController::executeUnChecked(sal_uInt16 _nCommandId, const Sequence< PropertyValue>& aArgs)
 {
-    OApplicationController_CBASE::executeUnChecked( _nCommandId, aArgs );
+    OGenericUnoController::executeUnChecked( _nCommandId, aArgs );
 }
 
 void OApplicationController::executeChecked(sal_uInt16 _nCommandId, const Sequence< PropertyValue>& aArgs)
 {
-    OApplicationController_CBASE::executeChecked( _nCommandId, aArgs );
+    OGenericUnoController::executeChecked( _nCommandId, aArgs );
 }
 
 bool OApplicationController::isCommandEnabled(sal_uInt16 _nCommandId) const
 {
-    return OApplicationController_CBASE::isCommandEnabled( _nCommandId );
+    return OGenericUnoController::isCommandEnabled( _nCommandId );
 }
 
 bool OApplicationController::isCommandEnabled( const OUString& _rCompleteCommandURL ) const
 {
-    return OApplicationController_CBASE::isCommandEnabled( _rCompleteCommandURL );
+    return OGenericUnoController::isCommandEnabled( _rCompleteCommandURL );
 }
 
 sal_uInt16 OApplicationController::registerCommandURL( const OUString& _rCompleteCommandURL )
 {
-    return OApplicationController_CBASE::registerCommandURL( _rCompleteCommandURL );
+    return OGenericUnoController::registerCommandURL( _rCompleteCommandURL );
 }
 
 void OApplicationController::notifyHiContrastChanged()
 {
-    OApplicationController_CBASE::notifyHiContrastChanged();
+    OGenericUnoController::notifyHiContrastChanged();
 }
 
 Reference< XController > OApplicationController::getXController() throw( RuntimeException )
 {
-    return OApplicationController_CBASE::getXController();
+    return OGenericUnoController::getXController();
 }
 
 bool OApplicationController::interceptUserInput( const NotifyEvent& _rEvent )
 {
-    return OApplicationController_CBASE::interceptUserInput( _rEvent );
+    return OGenericUnoController::interceptUserInput( _rEvent );
 }
 
 PopupMenu* OApplicationController::getContextMenu( Control& /*_rControl*/ ) const
@@ -2344,7 +2337,7 @@ PopupMenu* OApplicationController::getContextMenu( Control& /*_rControl*/ ) cons
 
 IController& OApplicationController::getCommandController()
 {
-    return *static_cast< IApplicationController* >( this );
+    return *this;
 }
 
 ::cppu::OInterfaceContainerHelper* OApplicationController::getContextMenuInterceptors()
@@ -2366,7 +2359,7 @@ bool OApplicationController::requestQuickHelp( const SvTreeListEntry* /*_pEntry*
 
 bool OApplicationController::requestDrag( sal_Int8 /*_nAction*/, const Point& /*_rPosPixel*/ )
 {
-    TransferableHelper* pTransfer = NULL;
+    TransferableHelper* pTransfer = nullptr;
     if ( getContainer() && getContainer()->getSelectionCount() )
     {
         try
@@ -2386,7 +2379,7 @@ bool OApplicationController::requestDrag( sal_Int8 /*_nAction*/, const Point& /*
         }
     }
 
-    return NULL != pTransfer;
+    return nullptr != pTransfer;
 }
 
 sal_Int8 OApplicationController::queryDrop( const AcceptDropEvent& _rEvt, const DataFlavorExVector& _rFlavors )
@@ -2451,7 +2444,7 @@ sal_Int8 OApplicationController::executeDrop( const ExecuteDropEvent& _rEvt )
     if ( m_nAsyncDrop )
         Application::RemoveUserEvent(m_nAsyncDrop);
 
-    m_nAsyncDrop = 0;
+    m_nAsyncDrop = nullptr;
     m_aAsyncDrop.aDroppedData.clear();
     m_aAsyncDrop.nType          = pView->getElementType();
     m_aAsyncDrop.nAction        = _rEvt.mnAction;
@@ -2602,7 +2595,7 @@ void OApplicationController::OnFirstControllerConnected()
         aDetail.Message = OUString( ModuleRes( STR_SUB_DOCS_WITH_SCRIPTS_DETAIL ) );
         aWarning.NextException <<= aDetail;
 
-        Reference< XExecutableDialog > xDialog = ErrorMessageDialog::create( getORB(), "", NULL, makeAny( aWarning ) );
+        Reference< XExecutableDialog > xDialog = ErrorMessageDialog::create( getORB(), "", nullptr, makeAny( aWarning ) );
         xDialog->execute();
     }
     catch( const Exception& )
@@ -2617,7 +2610,7 @@ void SAL_CALL OApplicationController::attachFrame( const Reference< XFrame > & i
 {
     ::osl::MutexGuard aGuard( getMutex() );
 
-    OApplicationController_CBASE::attachFrame( i_rxFrame );
+    OGenericUnoController::attachFrame( i_rxFrame );
     if ( getFrame().is() )
         onAttachedFrame();
 }
@@ -2666,7 +2659,6 @@ sal_Bool SAL_CALL OApplicationController::attachModel(const Reference< XModel > 
     }
 
     m_xModel = _rxModel;
-    m_xDocumentModify = xDocModify;
     m_xDataSource.set( xOfficeDoc.is() ? xOfficeDoc->getDataSource() : Reference< XDataSource >(), UNO_QUERY );
 
     // connect to new model
@@ -2698,7 +2690,7 @@ sal_Bool SAL_CALL OApplicationController::attachModel(const Reference< XModel > 
             ::comphelper::NamedValueCollection aLayoutInfo( m_xDataSource->getPropertyValue( PROPERTY_LAYOUTINFORMATION ) );
             if ( aLayoutInfo.has( OUString(INFO_PREVIEW) ) )
             {
-                const sal_Int32 nPreviewMode( aLayoutInfo.getOrDefault( OUString(INFO_PREVIEW), (sal_Int32)0 ) );
+                const sal_Int32 nPreviewMode( aLayoutInfo.getOrDefault( INFO_PREVIEW, (sal_Int32)0 ) );
                 m_ePreviewMode = static_cast< PreviewMode >( nPreviewMode );
                 if ( getView() )
                     getContainer()->switchPreview( m_ePreviewMode );
@@ -2739,7 +2731,7 @@ OUString OApplicationController::getCurrentlySelectedName(sal_Int32& _rnCommandT
     {
         try
         {
-            sName = getContainer()->getQualifiedName( NULL );
+            sName = getContainer()->getQualifiedName( nullptr );
             OSL_ENSURE( !sName.isEmpty(), "OApplicationController::getCurrentlySelectedName: no name given!" );
         }
         catch( const Exception& )
@@ -2866,9 +2858,7 @@ sal_Bool SAL_CALL OApplicationController::select( const Any& _aSelection ) throw
     {
         if ( sel->first == m_eCurrentType )
         {
-            Sequence< OUString > aSelected( sel->second.size() );
-            ::std::copy( sel->second.begin(), sel->second.end(), aSelected.getArray() );
-            getContainer()->selectElements( aSelected );
+            getContainer()->selectElements( comphelper::containerToSequence(sel->second) );
         }
         else
         {

@@ -34,6 +34,7 @@
 #include <SidebarWindowsTypes.hxx>
 #include <svl/lstner.hxx>
 #include <vcl/vclptr.hxx>
+#include <LibreOfficeKit/LibreOfficeKitTypes.h>
 
 class OutputDevice;
 class SwWrtShell;
@@ -55,10 +56,10 @@ namespace sw { namespace annotation {
 }}
 namespace sw { namespace sidebarwindows {
     class SwSidebarWin;
-    class SwFrmSidebarWinContainer;
+    class SwFrameSidebarWinContainer;
 }}
 class SwSidebarItem;
-class SwFrm;
+class SwFrame;
 namespace vcl { class Window; }
 struct ImplSVEvent;
 
@@ -92,7 +93,7 @@ struct FieldShadowState
     const SwPostItField* mpShadowField;
     bool bCursor;
     bool bMouse;
-    FieldShadowState(): mpShadowField(0),bCursor(false),bMouse(false)
+    FieldShadowState(): mpShadowField(nullptr),bCursor(false),bMouse(false)
     {
     }
 };
@@ -102,18 +103,18 @@ class SwNoteProps: public utl::ConfigItem
     private:
         bool bIsShowAnchor;
 
-        virtual void ImplCommit() SAL_OVERRIDE;
+        virtual void ImplCommit() override;
 
     public:
         SwNoteProps()
             : ConfigItem(OUString("Office.Writer/Notes"))
             , bIsShowAnchor(false)
         {
-            const ::com::sun::star::uno::Sequence< OUString >& rNames = GetPropertyNames();
-                ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any > aValues = GetProperties(rNames);
-                const ::com::sun::star::uno::Any* pValues = aValues.getConstArray();
-                SAL_WARN_IF(aValues.getLength() != rNames.getLength(), "sw", "GetProperties failed");
-                if (aValues.getLength())
+            const css::uno::Sequence< OUString >& rNames = GetPropertyNames();
+            css::uno::Sequence< css::uno::Any > aValues = GetProperties(rNames);
+            const css::uno::Any* pValues = aValues.getConstArray();
+            SAL_WARN_IF(aValues.getLength() != rNames.getLength(), "sw", "GetProperties failed");
+            if (aValues.getLength())
                     pValues[0]>>=bIsShowAnchor;
         }
 
@@ -121,9 +122,9 @@ class SwNoteProps: public utl::ConfigItem
         {
             return bIsShowAnchor;
         }
-        static ::com::sun::star::uno::Sequence< OUString >& GetPropertyNames()
+        static css::uno::Sequence< OUString >& GetPropertyNames()
         {
-            static ::com::sun::star::uno::Sequence< OUString > aNames;
+            static css::uno::Sequence< OUString > aNames;
             if(!aNames.getLength())
             {
                 aNames.realloc(1);
@@ -133,7 +134,7 @@ class SwNoteProps: public utl::ConfigItem
             return aNames;
         }
 
-    virtual void Notify( const ::com::sun::star::uno::Sequence< OUString >& aPropertyNames ) SAL_OVERRIDE;
+    virtual void Notify( const css::uno::Sequence< OUString >& aPropertyNames ) override;
 };
 
 class SwPostItMgr: public SfxListener
@@ -156,8 +157,8 @@ class SwPostItMgr: public SfxListener
         OutlinerParaObject*             mpAnswer;
         bool                            mbIsShowAnchor;
 
-        // data structure to collect the <SwSidebarWin> instances for certain <SwFrm> instances.
-        sw::sidebarwindows::SwFrmSidebarWinContainer* mpFrmSidebarWinContainer;
+        // data structure to collect the <SwSidebarWin> instances for certain <SwFrame> instances.
+        sw::sidebarwindows::SwFrameSidebarWinContainer* mpFrameSidebarWinContainer;
 
         typedef std::list<sw::sidebarwindows::SwSidebarWin*>::iterator  SwSidebarWin_iterator;
 
@@ -197,7 +198,7 @@ class SwPostItMgr: public SfxListener
         const_iterator begin()  const { return mvPostItFields.begin(); }
         const_iterator end()    const { return mvPostItFields.end();  }
 
-        void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+        void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
         void LayoutPostIts();
         bool CalcRects();
@@ -234,6 +235,8 @@ class SwPostItMgr: public SfxListener
         Rectangle GetTopScrollRect(const unsigned long aPage) const;
 
         bool IsHit(const Point &aPointPixel);
+        /// Get the matching window that is responsible for handling mouse events of rPointLogic, if any.
+        vcl::Window* IsHitSidebarWindow(const Point& rPointLogic);
         Color GetArrowColor(sal_uInt16 aDirection,unsigned long aPage) const;
 
         sw::annotation::SwAnnotationWin* GetAnnotationWin(const SwPostItField* pField) const;
@@ -268,23 +271,26 @@ class SwPostItMgr: public SfxListener
         void CheckMetaText();
 
         sal_uInt16 Replace(SvxSearchItem* pItem);
-        sal_uInt16 SearchReplace(const SwFormatField &pField, const ::com::sun::star::util::SearchOptions& rSearchOptions,bool bSrchForward);
-        sal_uInt16 FinishSearchReplace(const ::com::sun::star::util::SearchOptions& rSearchOptions,bool bSrchForward);
+        sal_uInt16 SearchReplace(const SwFormatField &pField, const css::util::SearchOptions& rSearchOptions,bool bSrchForward);
+        sal_uInt16 FinishSearchReplace(const css::util::SearchOptions& rSearchOptions,bool bSrchForward);
 
         void AssureStdModeAtShell();
 
-        void ConnectSidebarWinToFrm( const SwFrm& rFrm,
+        void ConnectSidebarWinToFrame( const SwFrame& rFrame,
                                      const SwFormatField& rFormatField,
                                      sw::sidebarwindows::SwSidebarWin& rSidebarWin );
-        void DisconnectSidebarWinFromFrm( const SwFrm& rFrm,
+        void DisconnectSidebarWinFromFrame( const SwFrame& rFrame,
                                           sw::sidebarwindows::SwSidebarWin& rSidebarWin );
-        bool HasFrmConnectedSidebarWins( const SwFrm& rFrm );
-        vcl::Window* GetSidebarWinForFrmByIndex( const SwFrm& rFrm,
+        bool HasFrameConnectedSidebarWins( const SwFrame& rFrame );
+        vcl::Window* GetSidebarWinForFrameByIndex( const SwFrame& rFrame,
                                             const sal_Int32 nIndex );
-        void GetAllSidebarWinForFrm( const SwFrm& rFrm,
+        void GetAllSidebarWinForFrame( const SwFrame& rFrame,
                                      std::vector< vcl::Window* >* pChildren );
 
         void DrawNotesForPage(OutputDevice *pOutDev, sal_uInt32 nPage);
+        void PaintTile(OutputDevice& rRenderContext, const Rectangle& rRect);
+        /// Informs already created annotations about a newly registered LOK callback.
+        void registerLibreOfficeKitCallback(LibreOfficeKitCallback pCallback, void* pData);
 };
 
 #endif

@@ -45,8 +45,8 @@ class EndListeningContext : boost::noncopyable
     ScAddress maPosDelta; // Add this to get the old position prior to the move.
 
 public:
-    EndListeningContext(ScDocument& rDoc, ScTokenArray* pOldCode = NULL);
-    EndListeningContext(ScDocument& rDoc, const std::shared_ptr<ColumnBlockPositionSet>& pSet, ScTokenArray* pOldCode = NULL);
+    EndListeningContext(ScDocument& rDoc, ScTokenArray* pOldCode = nullptr);
+    EndListeningContext(ScDocument& rDoc, const std::shared_ptr<ColumnBlockPositionSet>& pSet, ScTokenArray* pOldCode = nullptr);
 
     void setPositionDelta( const ScAddress& rDelta );
 
@@ -68,8 +68,8 @@ class PurgeListenerAction : public ColumnSpanSet::Action, boost::noncopyable
 public:
     PurgeListenerAction( ScDocument& rDoc );
 
-    virtual void startColumn( SCTAB nTab, SCCOL nCol ) SAL_OVERRIDE;
-    virtual void execute( const ScAddress& rPos, SCROW nLength, bool bVal ) SAL_OVERRIDE;
+    virtual void startColumn( SCTAB nTab, SCCOL nCol ) override;
+    virtual void execute( const ScAddress& rPos, SCROW nLength, bool bVal ) override;
 };
 
 }

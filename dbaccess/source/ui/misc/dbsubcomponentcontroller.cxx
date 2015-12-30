@@ -89,7 +89,7 @@ namespace dbaui
         {
         }
 
-        DataSourceHolder( const Reference< XDataSource >& _rxDataSource )
+        explicit DataSourceHolder(const Reference< XDataSource >& _rxDataSource)
         {
             m_xDataSource = _rxDataSource;
             Reference< XDocumentDataSource > xDocDS( m_xDataSource, UNO_QUERY );
@@ -135,7 +135,6 @@ namespace dbaui
         // </properties>
         OUString                        m_sDataSourceName;  // the data source we're working for
         DataSourceHolder                m_aDataSource;
-        Reference< XModel >             m_xDocument;
         Reference< XNumberFormatter >   m_xFormatter;   // a number formatter working with the connection's NumberFormatsSupplier
         sal_Int32                       m_nDocStartNumber;
         bool                            m_bSuspended;   // is true when the controller was already suspended
@@ -143,7 +142,7 @@ namespace dbaui
         bool                            m_bModified;    // is the data modified
         bool                            m_bNotAttached;
 
-        DBSubComponentController_Impl( ::osl::Mutex& i_rMutex )
+        explicit DBSubComponentController_Impl(osl::Mutex& i_rMutex)
             :m_aDocScriptSupport()
             ,m_aModifyListeners( i_rMutex )
             ,m_nDocStartNumber(0)
@@ -187,7 +186,7 @@ namespace dbaui
         const ::comphelper::NamedValueCollection& rArguments( getInitParams() );
 
         Reference< XConnection > xConnection;
-        xConnection = rArguments.getOrDefault( OUString(PROPERTY_ACTIVE_CONNECTION), xConnection );
+        xConnection = rArguments.getOrDefault( PROPERTY_ACTIVE_CONNECTION, xConnection );
 
         if ( !xConnection.is() )
             ::dbtools::isEmbeddedInDatabase( getModel(), xConnection );
@@ -258,10 +257,10 @@ namespace dbaui
                 Reference< XChild > xConnAsChild( m_pImpl->m_xConnection, UNO_QUERY );
                 Reference< XDataSource > xDS;
                 if ( xConnAsChild.is() )
-                    xDS = Reference< XDataSource >( xConnAsChild->getParent(), UNO_QUERY );
+                    xDS.set( xConnAsChild->getParent(), UNO_QUERY );
 
                 // (take the indirection through XDataSource to ensure we have a correct object ....)
-                m_pImpl->m_aDataSource = xDS;
+                m_pImpl->m_aDataSource = DataSourceHolder(xDS);
             }
             SAL_WARN_IF( !m_pImpl->m_aDataSource.is(), "dbaccess.ui", "DBSubComponentController::initializeConnection: unable to obtain the data source object!" );
 
@@ -284,8 +283,7 @@ namespace dbaui
             Reference< XNumberFormatsSupplier> xSupplier = ::dbtools::getNumberFormats(m_pImpl->m_xConnection);
             if(xSupplier.is())
             {
-                m_pImpl->m_xFormatter = Reference< XNumberFormatter >(
-                    NumberFormatter::create(getORB()), UNO_QUERY_THROW);
+                m_pImpl->m_xFormatter.set(NumberFormatter::create(getORB()), UNO_QUERY_THROW);
                 m_pImpl->m_xFormatter->attachNumberFormatsSupplier(xSupplier);
             }
             OSL_ENSURE(m_pImpl->m_xFormatter.is(),"No NumberFormatter!");
@@ -301,7 +299,7 @@ namespace dbaui
         OSL_ENSURE(!m_pImpl->m_bSuspended, "Cannot reconnect while suspended!");
 
         stopConnectionListening( m_pImpl->m_xConnection );
-        m_pImpl->m_aSdbMetaData.reset( NULL );
+        m_pImpl->m_aSdbMetaData.reset( nullptr );
         m_pImpl->m_xConnection.clear();
 
         // reconnect
@@ -315,7 +313,7 @@ namespace dbaui
         // now really reconnect ...
         if ( bReConnect )
         {
-            m_pImpl->m_xConnection.reset( connect( m_pImpl->m_aDataSource.getDataSource(), NULL ), SharedConnection::TakeOwnership );
+            m_pImpl->m_xConnection.reset( connect( m_pImpl->m_aDataSource.getDataSource(), nullptr ), SharedConnection::TakeOwnership );
             m_pImpl->m_aSdbMetaData.reset( m_pImpl->m_xConnection );
         }
 
@@ -326,7 +324,7 @@ namespace dbaui
     void DBSubComponentController::disconnect()
     {
         stopConnectionListening(m_pImpl->m_xConnection);
-        m_pImpl->m_aSdbMetaData.reset( NULL );
+        m_pImpl->m_aSdbMetaData.reset( nullptr );
         m_pImpl->m_xConnection.clear();
 
         InvalidateAll();
@@ -451,7 +449,7 @@ namespace dbaui
     {
         OUString aMessage(ModuleRes(RID_STR_CONNECTION_LOST));
         Reference< XWindow > xWindow = getTopMostContainerWindow();
-        vcl::Window* pWin = NULL;
+        vcl::Window* pWin = nullptr;
         if ( xWindow.is() )
             pWin = VCLUnoHelper::GetWindow(xWindow);
         if ( !pWin )
@@ -556,7 +554,7 @@ namespace dbaui
     {
         ::osl::MutexGuard aGuard( getMutex() );
         if ( !m_pImpl->documentHasScriptSupport() )
-            return NULL;
+            return nullptr;
 
         return Reference< XEmbeddedScripts >( getDatabaseDocument(), UNO_QUERY_THROW );
     }

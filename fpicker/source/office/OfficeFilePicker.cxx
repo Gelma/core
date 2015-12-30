@@ -44,8 +44,6 @@
 #include "osl/mutex.hxx"
 #include "vcl/svapp.hxx"
 
-// using ----------------------------------------------------------------
-
 using namespace     ::com::sun::star::container;
 using namespace     ::com::sun::star::lang;
 using namespace     ::com::sun::star::ui::dialogs;
@@ -53,8 +51,6 @@ using namespace     ::com::sun::star::uno;
 using namespace     ::com::sun::star::beans;
 using namespace     ::com::sun::star::awt;
 using namespace     ::utl;
-
-
 
 
 
@@ -113,8 +109,6 @@ sal_Int32 FilterEntry::getSubFilters( UnoFilterList& _rSubFilterList )
     _rSubFilterList = m_aSubFilters;
     return m_aSubFilters.getLength();
 }
-
-// struct ElementEntry_Impl ----------------------------------------------
 
 struct ElementEntry_Impl
 {
@@ -223,16 +217,15 @@ void SvtFilePicker::prepareExecute()
 }
 
 
-IMPL_LINK( SvtFilePicker, DialogClosedHdl, Dialog*, pDlg )
+IMPL_LINK_TYPED( SvtFilePicker, DialogClosedHdl, Dialog&, rDlg, void )
 {
     if ( m_xDlgClosedListener.is() )
     {
-        sal_Int16 nRet = static_cast< sal_Int16 >( pDlg->GetResult() );
-        ::com::sun::star::ui::dialogs::DialogClosedEvent aEvent( *this, nRet );
+        sal_Int16 nRet = static_cast< sal_Int16 >( rDlg.GetResult() );
+        css::ui::dialogs::DialogClosedEvent aEvent( *this, nRet );
         m_xDlgClosedListener->dialogClosed( aEvent );
         m_xDlgClosedListener.clear();
     }
-    return 0;
 }
 
 
@@ -422,10 +415,9 @@ void SvtFilePicker::ensureFilterList( const OUString& _rInitialCurrentFilter )
 
 // class SvtFilePicker
 
-SvtFilePicker::SvtFilePicker( const Reference < XMultiServiceFactory >& xFactory )
-    :OCommonPicker( xFactory )
-    ,m_pFilterList      ( NULL )
-    ,m_pElemList        ( NULL )
+SvtFilePicker::SvtFilePicker()
+    :m_pFilterList      ( nullptr )
+    ,m_pElemList        ( nullptr )
     ,m_bMultiSelection  ( false )
     ,m_nServiceType     ( TemplateDescription::FILEOPEN_SIMPLE )
 {
@@ -455,7 +447,7 @@ sal_Int16 SvtFilePicker::implExecutePicker( )
 
     // the execution of the dialog yields, so it is possible the at this point the window or the dialog is closed
     if ( getDialog() )
-        getDialog()->SetFileCallback( NULL );
+        getDialog()->SetFileCallback( nullptr );
 
     return nRet;
 }
@@ -523,7 +515,7 @@ void SAL_CALL SvtFilePicker::setDialogTitle( const OUString& _rTitle ) throw (Ru
 }
 
 
-void SAL_CALL SvtFilePicker::startExecuteModal( const Reference< ::com::sun::star::ui::dialogs::XDialogClosedListener >& xListener )
+void SAL_CALL SvtFilePicker::startExecuteModal( const Reference< css::ui::dialogs::XDialogClosedListener >& xListener )
     throw (RuntimeException,
            std::exception)
 {
@@ -572,12 +564,10 @@ OUString SAL_CALL SvtFilePicker::getDisplayDirectory() throw( RuntimeException, 
     {
         OUString aPath = getDialog()->GetPath();
 
-        // #97148# ----
         if( m_aOldHideDirectory == aPath )
             return m_aOldDisplayDirectory;
         m_aOldHideDirectory = aPath;
 
-        // #102204# -----
         if( !getDialog()->ContentIsFolder( aPath ) )
         {
             INetURLObject aFolder( aPath );
@@ -933,7 +923,7 @@ sal_Bool SAL_CALL SvtFilePicker::setShowState( sal_Bool )
     // else we would have to change the layout
     // of the file dialog dynamically
     // support for set/getShowState is opionally
-    // see com::sun::star::ui::dialogs::XFilePreview
+    // see css::ui::dialogs::XFilePreview
 
         bRet = false;
     }
@@ -1144,9 +1134,7 @@ Sequence< OUString > SAL_CALL SvtFilePicker::getSupportedServiceNames() throw( R
 /* Helper for XServiceInfo */
 Sequence< OUString > SvtFilePicker::impl_getStaticSupportedServiceNames()
 {
-    Sequence< OUString > seqServiceNames( 1 );
-    OUString* pArray = seqServiceNames.getArray();
-    pArray[0] = "com.sun.star.ui.dialogs.OfficeFilePicker";
+    Sequence<OUString> seqServiceNames { "com.sun.star.ui.dialogs.OfficeFilePicker" };
     return seqServiceNames ;
 }
 
@@ -1158,16 +1146,14 @@ OUString SvtFilePicker::impl_getStaticImplementationName()
 
 /* Helper for registry */
 Reference< XInterface > SAL_CALL SvtFilePicker::impl_createInstance(
-    const Reference< XComponentContext >& rxContext) throw( Exception )
+    const Reference< XComponentContext >& ) throw( Exception )
 {
-    Reference< XMultiServiceFactory > xServiceManager (rxContext->getServiceManager(), UNO_QUERY_THROW);
-    return Reference< XInterface >( *new SvtFilePicker( xServiceManager ) );
+    return Reference< XInterface >( *new SvtFilePicker );
 }
 
 // SvtRemoteFilePicker
 
-SvtRemoteFilePicker::SvtRemoteFilePicker( const Reference < XMultiServiceFactory >& xFactory )
-    :SvtFilePicker( xFactory )
+SvtRemoteFilePicker::SvtRemoteFilePicker()
 {
 }
 
@@ -1213,9 +1199,7 @@ Sequence< OUString > SAL_CALL SvtRemoteFilePicker::getSupportedServiceNames() th
 /* Helper for XServiceInfo */
 Sequence< OUString > SvtRemoteFilePicker::impl_getStaticSupportedServiceNames()
 {
-    Sequence< OUString > seqServiceNames( 1 );
-    OUString* pArray = seqServiceNames.getArray();
-    pArray[0] = "com.sun.star.ui.dialogs.RemoteFilePicker";
+    Sequence<OUString> seqServiceNames { "com.sun.star.ui.dialogs.RemoteFilePicker" };
     return seqServiceNames ;
 }
 
@@ -1227,10 +1211,9 @@ OUString SvtRemoteFilePicker::impl_getStaticImplementationName()
 
 /* Helper for registry */
 Reference< XInterface > SAL_CALL SvtRemoteFilePicker::impl_createInstance(
-    const Reference< XComponentContext >& rxContext) throw( Exception )
+    const Reference< XComponentContext >& ) throw( Exception )
 {
-    Reference< XMultiServiceFactory > xServiceManager (rxContext->getServiceManager(), UNO_QUERY_THROW);
-    return Reference< XInterface >( *new SvtRemoteFilePicker( xServiceManager ) );
+    return Reference< XInterface >( *new SvtRemoteFilePicker );
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

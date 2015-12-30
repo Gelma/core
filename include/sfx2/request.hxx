@@ -24,6 +24,7 @@
 #include <sal/types.h>
 #include <svl/itemset.hxx>
 #include <svl/hint.hxx>
+#include <functional>
 
 #include <com/sun/star/uno/Sequence.hxx>
 #include <com/sun/star/beans/PropertyValue.hpp>
@@ -39,8 +40,6 @@ class SfxViewFrame;
 struct SfxRequest_Impl;
 enum class SfxCallMode : sal_uInt16;
 
-
-
 class SFX2_DLLPUBLIC SfxRequest: public SfxHint
 {
 friend struct SfxRequest_Impl;
@@ -49,10 +48,9 @@ friend struct SfxRequest_Impl;
     SfxAllItemSet*      pArgs;
     SfxRequest_Impl*    pImp;
 
-
 public:
     SAL_DLLPRIVATE void Record_Impl( SfxShell &rSh, const SfxSlot &rSlot,
-                                     com::sun::star::uno::Reference< com::sun::star::frame::XDispatchRecorder > xRecorder,
+                                     css::uno::Reference< css::frame::XDispatchRecorder > xRecorder,
                                      SfxViewFrame* );
 private:
     SAL_DLLPRIVATE void Done_Impl( const SfxItemSet *pSet );
@@ -62,7 +60,7 @@ private:
 public:
                         SfxRequest( SfxViewFrame*, sal_uInt16 nSlotId );
                         SfxRequest( sal_uInt16 nSlot, SfxCallMode nCallMode, SfxItemPool &rPool );
-                        SfxRequest( const SfxSlot* pSlot, const com::sun::star::uno::Sequence < com::sun::star::beans::PropertyValue >& rArgs,
+                        SfxRequest( const SfxSlot* pSlot, const css::uno::Sequence < css::beans::PropertyValue >& rArgs,
                                             SfxCallMode nCallMode, SfxItemPool &rPool );
                         SfxRequest( sal_uInt16 nSlot, SfxCallMode nCallMode, const SfxAllItemSet& rSfxArgs );
                         SfxRequest( const SfxRequest& rOrig );
@@ -80,16 +78,24 @@ public:
     void                AppendItem(const SfxPoolItem &);
     void                RemoveItem( sal_uInt16 nSlotId );
 
-    static const SfxPoolItem* GetItem( const SfxItemSet*, sal_uInt16 nSlotId,
-                                       bool bDeep = false,
-                                       TypeId aType = 0 );
-    const SfxPoolItem*  GetArg( sal_uInt16 nSlotId, bool bDeep = false, TypeId aType = 0 ) const;
+    /** Templatized access to the individual parameters of the SfxRequest.
+
+        Use like: const SfxInt32Item *pPosItem = rReq.GetArg<SfxInt32Item>(SID_POS);
+    */
+    template<class T> const T* GetArg(sal_uInt16 nSlotId) const
+    {
+        if (pArgs)
+            return pArgs->GetItem<T>(nSlotId, false);
+
+        return nullptr;
+    }
+
     void                ReleaseArgs();
     void                SetReturnValue(const SfxPoolItem &);
     const SfxPoolItem*  GetReturnValue() const;
 
-    static com::sun::star::uno::Reference< com::sun::star::frame::XDispatchRecorder > GetMacroRecorder( SfxViewFrame* pFrame=NULL );
-    static bool         HasMacroRecorder( SfxViewFrame* pFrame=NULL );
+    static css::uno::Reference< css::frame::XDispatchRecorder > GetMacroRecorder( SfxViewFrame* pFrame=nullptr );
+    static bool         HasMacroRecorder( SfxViewFrame* pFrame=nullptr );
     SfxCallMode         GetCallMode() const;
     void                AllowRecording( bool );
     bool                AllowsRecording() const;
@@ -108,17 +114,8 @@ public:
     void                ForgetAllArgs();
 
 private:
-    const SfxRequest&   operator=(const SfxRequest &) SAL_DELETED_FUNCTION;
+    const SfxRequest&   operator=(const SfxRequest &) = delete;
 };
-
-
-
-#define SFX_REQUEST_ARG(rReq, pItem, ItemType, nSlotId, bDeep) \
-        const ItemType *pItem = static_cast<const ItemType*>( \
-                rReq.GetArg( nSlotId, bDeep, TYPE(ItemType) ) )
-#define SFX_ITEMSET_ARG(pArgs, pItem, ItemType, nSlotId, bDeep) \
-    const ItemType *pItem = static_cast<const ItemType*>( \
-        SfxRequest::GetItem( pArgs, nSlotId, bDeep, TYPE(ItemType) ) )
 
 #endif
 

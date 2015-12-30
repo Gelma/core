@@ -77,8 +77,8 @@ public:
     inline sal_Int32    GetValue() const { return mnValue; }
 
 private:
-    virtual void        ImplLoad( SvStream& rStrm ) SAL_OVERRIDE;
-    virtual void        ImplSave( SvStream& rStrm ) SAL_OVERRIDE;
+    virtual void        ImplLoad( SvStream& rStrm ) override;
+    virtual void        ImplSave( SvStream& rStrm ) override;
 
 private:
     sal_Int32           mnValue;
@@ -95,8 +95,8 @@ public:
     inline double       GetValue() const { return mfValue; }
 
 private:
-    virtual void        ImplLoad( SvStream& rStrm ) SAL_OVERRIDE;
-    virtual void        ImplSave( SvStream& rStrm ) SAL_OVERRIDE;
+    virtual void        ImplLoad( SvStream& rStrm ) override;
+    virtual void        ImplSave( SvStream& rStrm ) override;
 
 private:
     double              mfValue;
@@ -113,8 +113,8 @@ public:
     inline bool         GetValue() const { return mbValue; }
 
 private:
-    virtual void        ImplLoad( SvStream& rStrm ) SAL_OVERRIDE;
-    virtual void        ImplSave( SvStream& rStrm ) SAL_OVERRIDE;
+    virtual void        ImplLoad( SvStream& rStrm ) override;
+    virtual void        ImplSave( SvStream& rStrm ) override;
 
 private:
     bool                mbValue;
@@ -156,8 +156,8 @@ public:
                             const OUString& rValue );
 
 private:
-    virtual void        ImplLoad( SvStream& rStrm ) SAL_OVERRIDE;
-    virtual void        ImplSave( SvStream& rStrm ) SAL_OVERRIDE;
+    virtual void        ImplLoad( SvStream& rStrm ) override;
+    virtual void        ImplSave( SvStream& rStrm ) override;
 };
 
 
@@ -169,8 +169,8 @@ public:
     explicit            SfxOleString16Property( sal_Int32 nPropId );
 
 private:
-    virtual void        ImplLoad( SvStream& rStrm ) SAL_OVERRIDE;
-    virtual void        ImplSave( SvStream& rStrm ) SAL_OVERRIDE;
+    virtual void        ImplLoad( SvStream& rStrm ) override;
+    virtual void        ImplSave( SvStream& rStrm ) override;
 };
 
 
@@ -187,8 +187,8 @@ public:
     inline const util::DateTime& GetValue() const { return maDateTime; }
 
 private:
-    virtual void        ImplLoad( SvStream& rStrm ) SAL_OVERRIDE;
-    virtual void        ImplSave( SvStream& rStrm ) SAL_OVERRIDE;
+    virtual void        ImplLoad( SvStream& rStrm ) override;
+    virtual void        ImplSave( SvStream& rStrm ) override;
 
 private:
     util::DateTime      maDateTime;
@@ -204,8 +204,8 @@ public:
     inline const util::Date& GetValue() const { return maDate; }
 
 private:
-    virtual void        ImplLoad( SvStream& rStrm ) SAL_OVERRIDE;
-    virtual void        ImplSave( SvStream& rStrm ) SAL_OVERRIDE;
+    virtual void        ImplLoad( SvStream& rStrm ) override;
+    virtual void        ImplSave( SvStream& rStrm ) override;
 
 private:
     util::Date      maDate;
@@ -226,8 +226,8 @@ public:
     inline bool         IsValid() const { return mData.getLength() > 0; }
 
 private:
-    virtual void        ImplLoad( SvStream& rStrm ) SAL_OVERRIDE;
-    virtual void        ImplSave( SvStream& rStrm ) SAL_OVERRIDE;
+    virtual void        ImplLoad( SvStream& rStrm ) override;
+    virtual void        ImplSave( SvStream& rStrm ) override;
 
 private:
     uno::Sequence<sal_uInt8>    mData;
@@ -248,8 +248,8 @@ public:
     inline bool         IsValid() const { return mData.getLength() > 0; }
 
 private:
-    virtual void        ImplLoad( SvStream& rStrm ) SAL_OVERRIDE;
-    virtual void        ImplSave( SvStream& rStrm ) SAL_OVERRIDE;
+    virtual void        ImplLoad( SvStream& rStrm ) override;
+    virtual void        ImplSave( SvStream& rStrm ) override;
 
 private:
     uno::Sequence<sal_uInt8>    mData;
@@ -783,7 +783,7 @@ bool SfxOleSection::GetInt32Value( sal_Int32& rnValue, sal_Int32 nPropId ) const
         dynamic_cast< const SfxOleInt32Property* >( xProp.get() );
     if( pProp )
         rnValue = pProp->GetValue();
-    return pProp != 0;
+    return pProp != nullptr;
 }
 
 bool SfxOleSection::GetDoubleValue( double& rfValue, sal_Int32 nPropId ) const
@@ -793,7 +793,7 @@ bool SfxOleSection::GetDoubleValue( double& rfValue, sal_Int32 nPropId ) const
         dynamic_cast< const SfxOleDoubleProperty* >( xProp.get() );
     if( pProp )
         rfValue = pProp->GetValue();
-    return pProp != 0;
+    return pProp != nullptr;
 }
 
 bool SfxOleSection::GetBoolValue( bool& rbValue, sal_Int32 nPropId ) const
@@ -803,7 +803,7 @@ bool SfxOleSection::GetBoolValue( bool& rbValue, sal_Int32 nPropId ) const
         dynamic_cast< const SfxOleBoolProperty* >( xProp.get() );
     if( pProp )
         rbValue = pProp->GetValue();
-    return pProp != 0;
+    return pProp != nullptr;
 }
 
 bool SfxOleSection::GetStringValue( OUString& rValue, sal_Int32 nPropId ) const
@@ -813,7 +813,7 @@ bool SfxOleSection::GetStringValue( OUString& rValue, sal_Int32 nPropId ) const
         dynamic_cast< const SfxOleStringPropertyBase* >( xProp.get() );
     if( pProp )
         rValue = pProp->GetValue();
-    return pProp != 0;
+    return pProp != nullptr;
 }
 
 bool SfxOleSection::GetFileTimeValue( util::DateTime& rValue, sal_Int32 nPropId ) const
@@ -828,7 +828,7 @@ bool SfxOleSection::GetFileTimeValue( util::DateTime& rValue, sal_Int32 nPropId 
         else
             rValue = pProp->GetValue();
     }
-    return pProp != 0;
+    return pProp != nullptr;
 }
 
 bool SfxOleSection::GetDateValue( util::Date& rValue, sal_Int32 nPropId ) const
@@ -843,7 +843,7 @@ bool SfxOleSection::GetDateValue( util::Date& rValue, sal_Int32 nPropId ) const
         else
             rValue = pProp->GetValue();
     }
-    return pProp != 0;
+    return pProp != nullptr;
 }
 
 void SfxOleSection::SetProperty( SfxOlePropertyRef xProp )
@@ -923,8 +923,8 @@ Any SfxOleSection::GetAnyValue( sal_Int32 nPropId ) const
     double fDouble = 0.0;
     bool bBool = false;
     OUString aString;
-    ::com::sun::star::util::DateTime aApiDateTime;
-    ::com::sun::star::util::Date aApiDate;
+    css::util::DateTime aApiDateTime;
+    css::util::Date aApiDate;
 
     if( GetInt32Value( nInt32, nPropId ) )
         aValue <<= nInt32;
@@ -951,8 +951,8 @@ bool SfxOleSection::SetAnyValue( sal_Int32 nPropId, const Any& rValue )
     sal_Int32 nInt32 = 0;
     double fDouble = 0.0;
     OUString aString;
-    ::com::sun::star::util::DateTime aApiDateTime;
-    ::com::sun::star::util::Date aApiDate;
+    css::util::DateTime aApiDateTime;
+    css::util::Date aApiDate;
 
     if( rValue.getValueType() == cppu::UnoType<bool>::get() )
         SetBoolValue( nPropId, ::comphelper::getBOOL( rValue ) );

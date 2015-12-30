@@ -96,8 +96,8 @@ LRESULT AWindow::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandle
         ::SendMessageA(m_hwndEdit, WM_SETTEXT, 0, (LPARAM) szSTAWin);
 
     // create the DragSource
-    Reference< XInterface> xint= MultiServiceFactory->createInstance(OUString(L"com.sun.star.datatransfer.dnd.OleDragSource"));
-    m_xDragSource= Reference<XDragSource>( xint, UNO_QUERY);
+    Reference< XInterface> xint= MultiServiceFactory->createInstance("com.sun.star.datatransfer.dnd.OleDragSource");
+    m_xDragSource.set( xint, UNO_QUERY );
     Reference<XInitialization> xInit( xint, UNO_QUERY);
 
     Any ar[2];
@@ -105,8 +105,8 @@ LRESULT AWindow::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandle
     xInit->initialize( Sequence<Any>( ar, 2) );
 
     //create the DropTarget
-    Reference< XInterface> xintTarget= MultiServiceFactory->createInstance(OUString(L"com.sun.star.datatransfer.dnd.OleDropTarget"));
-    m_xDropTarget= Reference<XDropTarget>( xintTarget, UNO_QUERY);
+    Reference< XInterface> xintTarget= MultiServiceFactory->createInstance("com.sun.star.datatransfer.dnd.OleDropTarget");
+    m_xDropTarget.set( xintTarget, UNO_QUERY );
     Reference<XInitialization> xInitTarget( xintTarget, UNO_QUERY);
 
     Any any;
@@ -139,7 +139,6 @@ LRESULT AWindow::OnMouseAction(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 
 LRESULT AWindow::OnTimer(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-    HRESULT hr;
     USES_CONVERSION;
     KillTimer( 1);
     if(m_xDragSource.is())

@@ -137,7 +137,7 @@ Reference< chart2::data::XDataSequence > ExplicitCategoriesProvider::getOriginal
 {
     if( m_xOriginalCategories.is() )
         return m_xOriginalCategories->getValues();
-    return 0;
+    return nullptr;
 }
 
 bool ExplicitCategoriesProvider::hasComplexCategories() const
@@ -174,8 +174,7 @@ void ExplicitCategoriesProvider::convertCategoryAnysToText( uno::Sequence< OUStr
     if(!nCount)
         return;
     rOutTexts.realloc(nCount);
-    Reference< util::XNumberFormats > xNumberFormats;
-    xNumberFormats = Reference< util::XNumberFormats >( rModel.getNumberFormats() );
+    Reference< util::XNumberFormats > xNumberFormats( rModel.getNumberFormats() );
 
     sal_Int32 nAxisNumberFormat = 0;
     Reference< XCoordinateSystem > xCooSysModel( ChartModelHelper::getFirstCoordinateSystem( rModel ) );
@@ -232,8 +231,8 @@ public:
     virtual ~SplitCategoriesProvider_ForLabeledDataSequences()
     {}
 
-    virtual sal_Int32 getLevelCount() const SAL_OVERRIDE;
-    virtual uno::Sequence< OUString > getStringsForLevel( sal_Int32 nIndex ) const SAL_OVERRIDE;
+    virtual sal_Int32 getLevelCount() const override;
+    virtual uno::Sequence< OUString > getStringsForLevel( sal_Int32 nIndex ) const override;
 
 private:
     const ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Reference<
@@ -372,7 +371,6 @@ Sequence< OUString > lcl_getExplicitSimpleCategories(
     {
         aRet.realloc(nMaxCategoryCount);
         aOuterEnd = aComplexCatsPerIndex.end();
-        OUString aSpace(" ");
         for(sal_Int32 nN=0; nN<nMaxCategoryCount; nN++)
         {
             OUString aText;
@@ -384,7 +382,7 @@ Sequence< OUString > lcl_getExplicitSimpleCategories(
                     if( !aAddText.isEmpty() )
                     {
                         if(!aText.isEmpty())
-                            aText += aSpace;
+                            aText += " ";
                         aText += aAddText;
                     }
                 }
@@ -421,8 +419,7 @@ bool lcl_fillDateCategories( const uno::Reference< data::XDataSequence >& xDataS
         uno::Sequence< uno::Any > aValues = xDataSequence->getData();
         sal_Int32 nCount = aValues.getLength();
         rDateCategories.reserve(nCount);
-        Reference< util::XNumberFormats > xNumberFormats;
-        xNumberFormats = Reference< util::XNumberFormats >( rModel.getNumberFormats() );
+        Reference< util::XNumberFormats > xNumberFormats( rModel.getNumberFormats() );
 
         bool bOwnData = false;
         bool bOwnDataAnddAxisHasAnyFormat = false;
@@ -551,7 +548,7 @@ const std::vector<ComplexCategory>* ExplicitCategoriesProvider::getCategoriesByL
     sal_Int32 nMaxIndex = m_aComplexCats.size()-1;
     if (nLevel >= 0 && nLevel <= nMaxIndex)
         return &m_aComplexCats[nMaxIndex-nLevel];
-    return NULL;
+    return nullptr;
 }
 
 OUString ExplicitCategoriesProvider::getCategoryByIndex(

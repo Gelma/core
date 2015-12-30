@@ -15,7 +15,7 @@ extern "C"
 {
 #endif
 
-#ifdef LOK_USE_UNSTABLE_API
+#if defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
 typedef enum
 {
   LOK_DOCTYPE_TEXT,
@@ -32,6 +32,13 @@ typedef enum
     LOK_PARTMODE_NOTES
 }
 LibreOfficeKitPartMode;
+
+typedef enum
+{
+    LOK_TILEMODE_RGBA,
+    LOK_TILEMODE_BGRA
+}
+LibreOfficeKitTileMode;
 
 typedef enum
 {
@@ -155,7 +162,66 @@ typedef enum
      *
      * Payload is a single 0-based integer.
      */
-    LOK_CALLBACK_SET_PART
+    LOK_CALLBACK_SET_PART,
+
+    /**
+     * Selection rectangles of the search result when find all is performed.
+     *
+     * Payload format example, in case of two matches:
+     *
+     * {
+     *     "searchString": "...",
+     *     "searchResultSelection": [
+     *         {
+     *             "part": "...",
+     *             "rectangles": "..."
+     *         },
+     *         {
+     *             "part": "...",
+     *             "rectangles": "..."
+     *         }
+     *     ]
+     * }
+     *
+     * - searchString is the search query
+     * - searchResultSelection is an array of part-number and rectangle list
+     *   pairs, in LOK_CALLBACK_SET_PART / LOK_CALLBACK_TEXT_SELECTION format.
+     */
+    LOK_CALLBACK_SEARCH_RESULT_SELECTION,
+
+    /**
+     * Result of the UNO command execution when bNotifyWhenFinished was set
+     * to 'true' during the postUnoCommand() call.
+     *
+     * The result returns a success / failure state, and potentially
+     * additional data:
+     *
+     * {
+     *     "commandName": "...",    // the command for which this is the result
+     *     "success": true/false,   // when the result is "don't know", this is missing
+     *     // TODO "result": "..."  // UNO Any converted to JSON (not implemented yet)
+     * }
+     */
+    LOK_CALLBACK_UNO_COMMAND_RESULT,
+
+    /**
+     * The size and/or the position of the cell cursor changed.
+     *
+     * Rectangle format is the same as LOK_CALLBACK_INVALIDATE_TILES.
+     */
+    LOK_CALLBACK_CELL_CURSOR,
+
+    /**
+     * The current mouse pointer style.
+     *
+     * Payload is a css mouse pointer style.
+     */
+    LOK_CALLBACK_MOUSE_POINTER,
+
+    /**
+     * The text content of the formula bar in Calc.
+     */
+    LOK_CALLBACK_CELL_FORMULA
 }
 LibreOfficeKitCallbackType;
 
@@ -215,7 +281,7 @@ typedef enum
 }
 LibreOfficeKitSetGraphicSelectionType;
 
-#endif // LOK_USE_UNSTABLE_API
+#endif // defined LOK_USE_UNSTABLE_API || defined LIBO_INTERNAL_ONLY
 
 #ifdef __cplusplus
 }

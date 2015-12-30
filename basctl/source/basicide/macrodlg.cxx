@@ -178,7 +178,7 @@ void MacroChooser::RestoreMacroDescription()
     if ( !aLastMacro.isEmpty() )
     {
         // find entry in macro box
-        SvTreeListEntry* pEntry = 0;
+        SvTreeListEntry* pEntry = nullptr;
         sal_uLong nPos = 0;
         SvTreeListEntry* pE = m_pMacroBox->GetEntry( nPos );
         while ( pE )
@@ -271,7 +271,7 @@ void MacroChooser::EnableButton( Button& rButton, bool bEnable )
 
 SbMethod* MacroChooser::GetMacro()
 {
-    SbMethod* pMethod = 0;
+    SbMethod* pMethod = nullptr;
     SbModule* pModule = m_pBasicBox->FindModule( m_pBasicBox->GetCurEntry() );
     if ( pModule )
     {
@@ -310,7 +310,7 @@ void MacroChooser::DeleteMacro()
         }
 
         SbModule* pModule = pMethod->GetModule();
-        DBG_ASSERT( pModule, "DeleteMacro: Kein Modul?!" );
+        assert(pModule && "DeleteMacro: Kein Modul?!");
         OUString aSource( pModule->GetSource32() );
         sal_uInt16 nStart, nEnd;
         pMethod->GetLineRange( nStart, nEnd );
@@ -332,13 +332,13 @@ void MacroChooser::DeleteMacro()
 
 SbMethod* MacroChooser::CreateMacro()
 {
-    SbMethod* pMethod = 0;
+    SbMethod* pMethod = nullptr;
     SvTreeListEntry* pCurEntry = m_pBasicBox->GetCurEntry();
     EntryDescriptor aDesc = m_pBasicBox->GetEntryDescriptor(pCurEntry);
     ScriptDocument aDocument( aDesc.GetDocument() );
     OSL_ENSURE( aDocument.isAlive(), "MacroChooser::CreateMacro: no document!" );
     if ( !aDocument.isAlive() )
-        return NULL;
+        return nullptr;
 
     OUString aLibName( aDesc.GetLibName() );
 
@@ -356,10 +356,10 @@ SbMethod* MacroChooser::CreateMacro()
         xDlgLibContainer->loadLibrary( aOULibName );
 
     BasicManager* pBasMgr = aDocument.getBasicManager();
-    StarBASIC* pBasic = pBasMgr ? pBasMgr->GetLib( aLibName ) : 0;
+    StarBASIC* pBasic = pBasMgr ? pBasMgr->GetLib( aLibName ) : nullptr;
     if ( pBasic )
     {
-        SbModule* pModule = 0;
+        SbModule* pModule = nullptr;
         OUString aModName( aDesc.GetName() );
         if ( !aModName.isEmpty() )
         {
@@ -382,7 +382,7 @@ SbMethod* MacroChooser::CreateMacro()
 
         OUString aSubName = m_pMacroNameEdit->GetText();
         DBG_ASSERT( !pModule || !pModule->GetMethods()->Find( aSubName, SbxCLASS_METHOD ), "Macro existiert schon!" );
-        pMethod = pModule ? basctl::CreateMacro( pModule, aSubName ) : NULL;
+        pMethod = pModule ? basctl::CreateMacro( pModule, aSubName ) : nullptr;
     }
 
     return pMethod;
@@ -550,10 +550,8 @@ IMPL_LINK_TYPED( MacroChooser, BasicSelectHdl, SvTreeListBox *, pBox, void )
 
 
 
-IMPL_LINK( MacroChooser, EditModifyHdl, Edit *, pEdit )
+IMPL_LINK_NOARG_TYPED( MacroChooser, EditModifyHdl, Edit&, void )
 {
-    (void)pEdit;
-
     // select the module in which the macro is put at Neu (new),
     // if BasicManager or Lib is selecting
     SvTreeListEntry* pCurEntry = m_pBasicBox->GetCurEntry();
@@ -606,7 +604,6 @@ IMPL_LINK( MacroChooser, EditModifyHdl, Edit *, pEdit )
     }
 
     CheckButtons();
-    return 0;
 }
 
 
@@ -622,9 +619,9 @@ IMPL_LINK_TYPED( MacroChooser, ButtonHdl, Button *, pButton, void )
         if (nMode == All)
         {
             SbMethod* pMethod = GetMacro();
-            SbModule* pModule = pMethod ? pMethod->GetModule() : NULL;
-            StarBASIC* pBasic = pModule ? static_cast<StarBASIC*>(pModule->GetParent()) : NULL;
-            BasicManager* pBasMgr = pBasic ? FindBasicManager(pBasic) : NULL;
+            SbModule* pModule = pMethod ? pMethod->GetModule() : nullptr;
+            StarBASIC* pBasic = pModule ? static_cast<StarBASIC*>(pModule->GetParent()) : nullptr;
+            BasicManager* pBasMgr = pBasic ? FindBasicManager(pBasic) : nullptr;
             if ( pBasMgr )
             {
                 ScriptDocument aDocument( ScriptDocument::getDocumentForBasicManager( pBasMgr ) );
@@ -757,7 +754,7 @@ IMPL_LINK_TYPED( MacroChooser, ButtonHdl, Button *, pButton, void )
         SvTreeListEntry* pCurEntry = m_pBasicBox->GetCurEntry();
         EntryDescriptor aDesc = m_pBasicBox->GetEntryDescriptor(pCurEntry);
         ScriptDocument aDocument( aDesc.GetDocument() );
-        createLibImpl( static_cast<vcl::Window*>( this ), aDocument, NULL, m_pBasicBox );
+        createLibImpl( static_cast<vcl::Window*>( this ), aDocument, nullptr, m_pBasicBox );
     }
     else if (pButton == m_pNewModButton)
     {

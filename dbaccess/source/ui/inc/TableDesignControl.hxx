@@ -41,7 +41,6 @@ namespace dbaui
         sal_uInt16  m_nCurUndoActId;
 
     protected:
-        bool    m_bCurrentModified;
         bool    m_bClipboardFilled;
 
     public:
@@ -51,16 +50,15 @@ namespace dbaui
         virtual void SetCellData( long nRow, sal_uInt16 nColId, const css::uno::Any& _rNewData ) = 0;
         virtual css::uno::Any          GetCellData( long nRow, sal_uInt16 nColId ) = 0;
         virtual void SetControlText( long nRow, sal_uInt16 nColId, const OUString& rText ) = 0;
-        virtual OUString GetControlText( long nRow, sal_uInt16 nColId ) = 0;
 
         virtual OTableDesignView* GetView() const = 0;
 
         sal_uInt16 GetCurUndoActId(){ return m_nCurUndoActId; }
 
         // IClipboardTest
-        virtual void cut() SAL_OVERRIDE;
-        virtual void copy() SAL_OVERRIDE;
-        virtual void paste() SAL_OVERRIDE;
+        virtual void cut() override;
+        virtual void copy() override;
+        virtual void paste() override;
 
     protected:
         void Paste( long nRow );
@@ -74,11 +72,11 @@ namespace dbaui
         virtual bool IsInsertNewAllowed( long nRow )    = 0;
         virtual bool IsDeleteAllowed( long nRow )       = 0;
 
-        virtual RowStatus GetRowStatus(long nRow) const SAL_OVERRIDE;
-        virtual void KeyInput(const KeyEvent& rEvt) SAL_OVERRIDE;
-        virtual void Command( const CommandEvent& rEvt ) SAL_OVERRIDE;
+        virtual RowStatus GetRowStatus(long nRow) const override;
+        virtual void KeyInput(const KeyEvent& rEvt) override;
+        virtual void Command( const CommandEvent& rEvt ) override;
 
-        virtual void Init() SAL_OVERRIDE;
+        virtual void Init() override;
     };
 }
 #endif

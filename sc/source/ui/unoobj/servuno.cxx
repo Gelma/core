@@ -83,7 +83,7 @@ class ScVbaObjectForCodeNameProvider : public ::cppu::WeakImplHelper< container:
     uno::Any maCachedObject;
     ScDocShell* mpDocShell;
 public:
-    ScVbaObjectForCodeNameProvider( ScDocShell* pDocShell ) : mpDocShell( pDocShell )
+    explicit ScVbaObjectForCodeNameProvider( ScDocShell* pDocShell ) : mpDocShell( pDocShell )
     {
         uno::Sequence< uno::Any > aArgs(2);
         // access the application object ( parent for workbook )
@@ -92,7 +92,7 @@ public:
         maWorkbook <<= ooo::vba::createVBAUnoAPIServiceWithArgs( mpDocShell, "ooo.vba.excel.Workbook", aArgs );
     }
 
-    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw (::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE
+    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw (css::uno::RuntimeException, std::exception ) override
     {
         SolarMutexGuard aGuard;
         maCachedObject = uno::Any(); // clear cached object
@@ -135,16 +135,16 @@ public:
         return maCachedObject.hasValue();
 
     }
-    ::com::sun::star::uno::Any SAL_CALL getByName( const OUString& aName ) throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    css::uno::Any SAL_CALL getByName( const OUString& aName ) throw (css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override
     {
         SolarMutexGuard aGuard;
         OSL_TRACE("ScVbaObjectForCodeNameProvider::getByName( %s )",
             OUStringToOString( aName, RTL_TEXTENCODING_UTF8 ).getStr() );
         if ( !hasByName( aName ) )
-            throw ::com::sun::star::container::NoSuchElementException();
+            throw css::container::NoSuchElementException();
         return maCachedObject;
     }
-    virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual css::uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw (css::uno::RuntimeException, std::exception) override
     {
         SolarMutexGuard aGuard;
         ScDocument& rDoc = mpDocShell->GetDocument();
@@ -161,8 +161,8 @@ public:
         return aNames;
     }
     // XElemenAccess
-    virtual ::com::sun::star::uno::Type SAL_CALL getElementType(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE { return uno::Type(); }
-    virtual sal_Bool SAL_CALL hasElements(  ) throw (::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE { return sal_True; }
+    virtual css::uno::Type SAL_CALL getElementType(  ) throw (css::uno::RuntimeException, std::exception) override { return uno::Type(); }
+    virtual sal_Bool SAL_CALL hasElements(  ) throw (css::uno::RuntimeException, std::exception ) override { return sal_True; }
 
 };
 
@@ -170,9 +170,9 @@ class ScVbaCodeNameProvider : public ::cppu::WeakImplHelper< document::XCodeName
 {
     ScDocShell& mrDocShell;
 public:
-    ScVbaCodeNameProvider( ScDocShell& rDocShell ) : mrDocShell(rDocShell) {}
+    explicit ScVbaCodeNameProvider( ScDocShell& rDocShell ) : mrDocShell(rDocShell) {}
     // XCodeNameQuery
-    OUString SAL_CALL getCodeNameForObject( const uno::Reference< uno::XInterface >& xIf ) throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE
+    OUString SAL_CALL getCodeNameForObject( const uno::Reference< uno::XInterface >& xIf ) throw( uno::RuntimeException, std::exception ) override
     {
         SolarMutexGuard aGuard;
         OUString sCodeName;
@@ -212,7 +212,7 @@ public:
     }
 
     OUString SAL_CALL getCodeNameForContainer( const uno::Reference<uno::XInterface>& xContainer )
-            throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE
+            throw( uno::RuntimeException, std::exception ) override
     {
         SolarMutexGuard aGuard;
         uno::Reference<drawing::XDrawPagesSupplier> xSupplier(mrDocShell.GetModel(), uno::UNO_QUERY_THROW);
@@ -435,7 +435,7 @@ uno::Reference<uno::XInterface> ScServiceProvider::MakeInstance(
     {
         case SC_SERVICE_SHEET:
             //  noch nicht eingefuegt - DocShell=Null
-            xRet.set(static_cast<sheet::XSpreadsheet*>(new ScTableSheetObj(NULL,0)));
+            xRet.set(static_cast<sheet::XSpreadsheet*>(new ScTableSheetObj(nullptr,0)));
             break;
         case SC_SERVICE_URLFIELD:
         case SC_SERVICE_PAGEFIELD:
@@ -449,14 +449,14 @@ uno::Reference<uno::XInterface> ScServiceProvider::MakeInstance(
         {
             uno::Reference<text::XTextRange> xNullContent;
             xRet.set(static_cast<text::XTextField*>(
-                new ScEditFieldObj(xNullContent, NULL, getFieldType(nType), ESelection())));
+                new ScEditFieldObj(xNullContent, nullptr, getFieldType(nType), ESelection())));
         }
         break;
         case SC_SERVICE_CELLSTYLE:
-            xRet.set(static_cast<style::XStyle*>(new ScStyleObj( NULL, SFX_STYLE_FAMILY_PARA, OUString() )));
+            xRet.set(static_cast<style::XStyle*>(new ScStyleObj( nullptr, SFX_STYLE_FAMILY_PARA, OUString() )));
             break;
         case SC_SERVICE_PAGESTYLE:
-            xRet.set(static_cast<style::XStyle*>(new ScStyleObj( NULL, SFX_STYLE_FAMILY_PAGE, OUString() )));
+            xRet.set(static_cast<style::XStyle*>(new ScStyleObj( nullptr, SFX_STYLE_FAMILY_PAGE, OUString() )));
             break;
         case SC_SERVICE_AUTOFORMAT:
             xRet.set(static_cast<container::XIndexAccess*>(new ScAutoFormatObj( SC_AFMTOBJ_INVALID )));
@@ -613,7 +613,7 @@ uno::Reference<uno::XInterface> ScServiceProvider::MakeInstance(
                 {
                     uno::Sequence< uno::Any > aArgs(1);
                     aArgs[ 0 ] <<= pDocShell->GetModel();
-                    xRet = ::comphelper::getProcessServiceFactory()->createInstanceWithArguments( OUString( "ooo.vba.excel.Globals" ), aArgs );
+                    xRet = ::comphelper::getProcessServiceFactory()->createInstanceWithArguments( "ooo.vba.excel.Globals", aArgs );
                     pDocShell->GetBasicManager()->SetGlobalUNOConstant( "VBAGlobals", uno::Any( xRet ) );
                     BasicManager* pAppMgr = SfxApplication::GetBasicManager();
                     if ( pAppMgr )

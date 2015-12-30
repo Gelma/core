@@ -107,7 +107,7 @@ Content* Content::create(
     if ( !Content::loadData( pProvider,
                              Uri( Identifier->getContentIdentifier() ),
                              aProps ) )
-        return 0;
+        return nullptr;
 
     return new Content( rxContext, pProvider, Identifier, aProps );
 }
@@ -121,12 +121,12 @@ Content* Content::create(
             const ucb::ContentInfo& Info )
 {
     if ( Info.Type.isEmpty() )
-        return 0;
+        return nullptr;
 
     if ( Info.Type != TDOC_FOLDER_CONTENT_TYPE && Info.Type != TDOC_STREAM_CONTENT_TYPE )
     {
         OSL_FAIL( "Content::create - unsupported content type!" );
-        return 0;
+        return nullptr;
     }
 
     return new Content( rxContext, pProvider, Identifier, Info );
@@ -220,11 +220,11 @@ XTYPEPROVIDER_COMMON_IMPL( Content );
 uno::Sequence< uno::Type > SAL_CALL Content::getTypes()
     throw( uno::RuntimeException, std::exception )
 {
-    cppu::OTypeCollection * pCollection = 0;
+    cppu::OTypeCollection * pCollection = nullptr;
 
     if ( m_aProps.isContentCreator() )
     {
-        static cppu::OTypeCollection* pFolderTypes = 0;
+        static cppu::OTypeCollection* pFolderTypes = nullptr;
 
         pCollection = pFolderTypes;
         if ( !pCollection )
@@ -257,7 +257,7 @@ uno::Sequence< uno::Type > SAL_CALL Content::getTypes()
     }
     else
     {
-        static cppu::OTypeCollection* pDocumentTypes = 0;
+        static cppu::OTypeCollection* pDocumentTypes = nullptr;
 
         pCollection = pDocumentTypes;
         if ( !pCollection )
@@ -558,7 +558,7 @@ uno::Any SAL_CALL Content::execute(
                 ucb::IOErrorCode_CANT_WRITE,
                 uno::Sequence< uno::Any >(&aProps, 1),
                 Environment,
-                OUString( "Cannot remove persistent data!" ),
+                "Cannot remove persistent data!",
                 this );
             // Unreachable
         }
@@ -1005,8 +1005,7 @@ uno::Reference< sdbc::XRow > Content::getPropertyValues(
 
                 if ( !bTriedToGetAdditionalPropSet && !xAdditionalPropSet.is() )
                 {
-                    xAdditionalPropSet
-                        = uno::Reference< beans::XPropertySet >(
+                    xAdditionalPropSet.set(
                             pProvider->getAdditionalPropertySet( rContentId,
                                                                  false ),
                             uno::UNO_QUERY );
@@ -1383,7 +1382,7 @@ uno::Sequence< uno::Any > Content::setPropertyValues(
                     ucb::IOErrorCode_CANT_WRITE,
                     uno::Sequence< uno::Any >(&aProps, 1),
                     xEnv,
-                    OUString( "Cannot store persistent data!" ),
+                    "Cannot store persistent data!",
                     this );
                 // Unreachable
             }
@@ -1460,7 +1459,7 @@ uno::Any Content::open(
                     m_eState == PERSISTENT
                         ? xEnv
                         : uno::Reference< ucb::XCommandEnvironment >(),
-                    OUString( "Got no data stream!" ),
+                    "Got no data stream!",
                     this );
                 // Unreachable
             }
@@ -1494,7 +1493,7 @@ uno::Any Content::open(
                         m_eState == PERSISTENT
                             ? xEnv
                             : uno::Reference< ucb::XCommandEnvironment >(),
-                        OUString("Got no data stream!"),
+                        "Got no data stream!",
                         this );
                     // Unreachable
                 }
@@ -1555,7 +1554,7 @@ uno::Any Content::open(
                                 ? xEnv
                                 : uno::Reference<
                                       ucb::XCommandEnvironment >(),
-                            OUString( "Got no data stream!" ),
+                            "Got no data stream!",
                             this );
                         // Unreachable
                     }
@@ -1738,7 +1737,7 @@ void Content::insert( const uno::Reference< io::XInputStream >& xData,
             ucb::IOErrorCode_CANT_WRITE,
             uno::Sequence< uno::Any >(&aProps, 1),
             xEnv,
-            OUString("Cannot store persistent data!"),
+            "Cannot store persistent data!",
             this );
         // Unreachable
     }
@@ -1997,7 +1996,7 @@ void Content::transfer(
                 ucb::IOErrorCode_RECURSIVE,
                 uno::Sequence< uno::Any >(&aProps, 1),
                 xEnv,
-                OUString( "Target is equal to or is a child of source!" ),
+                "Target is equal to or is a child of source!",
                 this );
             // Unreachable
         }
@@ -2079,7 +2078,7 @@ void Content::transfer(
             ucb::IOErrorCode_CANT_WRITE,
             uno::Sequence< uno::Any >(&aProps, 1),
             xEnv,
-            OUString( "Cannot copy data!"  ),
+            "Cannot copy data!",
             this );
         // Unreachable
     }
@@ -2111,7 +2110,7 @@ void Content::transfer(
             ucb::IOErrorCode_CANT_WRITE,
             uno::Sequence< uno::Any >(&aProps, 1),
             xEnv,
-            OUString( "Cannot copy additional properties!"  ),
+            "Cannot copy additional properties!",
             this );
         // Unreachable
     }
@@ -2149,7 +2148,7 @@ void Content::transfer(
             ucb::IOErrorCode_CANT_READ,
             uno::Sequence< uno::Any >(&aProps, 1),
             xEnv,
-            OUString( "Cannot instanciate target object!" ),
+            "Cannot instanciate target object!",
             this );
         // Unreachable
     }
@@ -2191,7 +2190,7 @@ void Content::transfer(
                 ucb::IOErrorCode_CANT_READ,
                 uno::Sequence< uno::Any >(&aProps, 1),
                 xEnv,
-                OUString( "Cannot instanciate target object!" ),
+                "Cannot instanciate target object!",
                 this );
             // Unreachable
         }
@@ -2213,7 +2212,7 @@ void Content::transfer(
                 ucb::IOErrorCode_CANT_WRITE,
                 uno::Sequence< uno::Any >(&aProps, 1),
                 xEnv,
-                OUString( "Cannot remove persistent data of source object!" ),
+                "Cannot remove persistent data of source object!",
                 this );
             // Unreachable
         }
@@ -2232,7 +2231,7 @@ void Content::transfer(
                 ucb::IOErrorCode_CANT_WRITE,
                 uno::Sequence< uno::Any >(&aProps, 1),
                 xEnv,
-                OUString( "Cannot remove additional properties of source object!" ),
+                "Cannot remove additional properties of source object!",
                 this );
             // Unreachable
         }
@@ -2383,7 +2382,7 @@ bool Content::storeData( const uno::Reference< io::XInputStream >& xData,
             // According to MBA, if no mediatype is set, folder and all
             // its contents will be lost on save of the document!!!
             xPropSet->setPropertyValue(
-                OUString(  "MediaType"  ),
+                "MediaType",
                 uno::makeAny(
                     OUString(                        // @@@ better mediatype
                         "application/binary"  ) ) );

@@ -26,12 +26,11 @@
 
 class XMLMetaExportComponent : public SvXMLExport
 {
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::document::XDocumentProperties > mxDocProps;
+    css::uno::Reference< css::document::XDocumentProperties > mxDocProps;
 
 public:
     XMLMetaExportComponent(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& xContext,
+        const css::uno::Reference< css::uno::XComponentContext >& xContext,
         OUString const & implementationName, SvXMLExportFlags nFlags
         );
 
@@ -40,18 +39,18 @@ public:
 protected:
     // export the events off all autotexts
     virtual sal_uInt32 exportDoc(
-        enum ::xmloff::token::XMLTokenEnum eClass = xmloff::token::XML_TOKEN_INVALID ) SAL_OVERRIDE;
+        enum ::xmloff::token::XMLTokenEnum eClass = xmloff::token::XML_TOKEN_INVALID ) override;
 
     // accept XDocumentProperties in addition to XModel
-    virtual void SAL_CALL setSourceDocument( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XComponent >& xDoc ) throw(::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL setSourceDocument( const css::uno::Reference< css::lang::XComponent >& xDoc ) throw(css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) override;
 
     // override
-    virtual void _ExportMeta() SAL_OVERRIDE;
+    virtual void _ExportMeta() override;
 
     // methods without content:
-    virtual void _ExportAutoStyles() SAL_OVERRIDE;
-    virtual void _ExportMasterStyles() SAL_OVERRIDE;
-    virtual void _ExportContent() SAL_OVERRIDE;
+    virtual void _ExportAutoStyles() override;
+    virtual void _ExportMasterStyles() override;
+    virtual void _ExportContent() override;
 };
 
 #endif

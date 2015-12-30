@@ -30,7 +30,10 @@
 //  class SfxByteItem
 
 
-TYPEINIT1_AUTOFACTORY(SfxByteItem, CntByteItem);
+SfxPoolItem* SfxByteItem::CreateDefault()
+{
+    return new SfxByteItem();
+};
 
 // virtual
 SfxPoolItem * SfxByteItem::Create(SvStream & rStream, sal_uInt16) const
@@ -40,7 +43,10 @@ SfxPoolItem * SfxByteItem::Create(SvStream & rStream, sal_uInt16) const
     return new SfxByteItem(Which(), sal_uInt8(nValue));
 }
 
-TYPEINIT1_AUTOFACTORY(SfxInt16Item, SfxPoolItem);
+SfxPoolItem* SfxInt16Item::CreateDefault()
+{
+    return new SfxInt16Item();
+};
 
 SfxInt16Item::SfxInt16Item(sal_uInt16 which, SvStream & rStream):
     SfxPoolItem(which)
@@ -70,7 +76,7 @@ bool SfxInt16Item::GetPresentation(SfxItemPresentation,
 
 
 // virtual
-bool SfxInt16Item::QueryValue(com::sun::star::uno::Any& rVal, sal_uInt8) const
+bool SfxInt16Item::QueryValue(css::uno::Any& rVal, sal_uInt8) const
 {
     sal_Int16 nValue = m_nValue;
     rVal <<= nValue;
@@ -78,7 +84,7 @@ bool SfxInt16Item::QueryValue(com::sun::star::uno::Any& rVal, sal_uInt8) const
 }
 
 // virtual
-bool SfxInt16Item::PutValue(const com::sun::star::uno::Any& rVal, sal_uInt8 )
+bool SfxInt16Item::PutValue(const css::uno::Any& rVal, sal_uInt8 )
 {
     sal_Int16 nValue = sal_Int16();
     if (rVal >>= nValue)
@@ -110,7 +116,10 @@ SfxPoolItem * SfxInt16Item::Clone(SfxItemPool *) const
 }
 
 //  class SfxUInt16Item
-TYPEINIT1_AUTOFACTORY(SfxUInt16Item, CntUInt16Item);
+SfxPoolItem* SfxUInt16Item::CreateDefault()
+{
+    return new SfxUInt16Item();
+};
 
 void SfxUInt16Item::dumpAsXml(xmlTextWriterPtr pWriter) const
 {
@@ -124,16 +133,21 @@ void SfxUInt16Item::dumpAsXml(xmlTextWriterPtr pWriter) const
 //  class SfxInt32Item
 
 
-TYPEINIT1_AUTOFACTORY(SfxInt32Item, CntInt32Item);
+SfxPoolItem* SfxInt32Item::CreateDefault()
+{
+    return new SfxInt32Item();
+};
 
 
 
 //  class SfxUInt32Item
 
 
-TYPEINIT1_AUTOFACTORY(SfxUInt32Item, CntUInt32Item);
+SfxPoolItem* SfxUInt32Item::CreateDefault()
+{
+    return new SfxUInt32Item();
+};
 
-TYPEINIT1_AUTOFACTORY(SfxMetricItem, SfxInt32Item);
 
 SfxMetricItem::SfxMetricItem(sal_uInt16 which, sal_uInt32 nValue):
     SfxInt32Item(which, nValue)

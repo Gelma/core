@@ -21,11 +21,10 @@
 
 #include <ooo/vba/word/XTableOfContents.hpp>
 #include <vbahelper/vbahelperinterface.hxx>
-#include <cppuhelper/implbase1.hxx>
 #include <com/sun/star/text/XTextDocument.hpp>
 #include <com/sun/star/text/XDocumentIndex.hpp>
 
-typedef InheritedHelperInterfaceImpl1< ooo::vba::word::XTableOfContents > SwVbaTableOfContents_BASE;
+typedef InheritedHelperInterfaceWeakImpl< ooo::vba::word::XTableOfContents > SwVbaTableOfContents_BASE;
 
 class SwVbaTableOfContents : public SwVbaTableOfContents_BASE
 {
@@ -39,22 +38,22 @@ public:
     virtual ~SwVbaTableOfContents();
 
     // Attributes
-    virtual ::sal_Int32 SAL_CALL getLowerHeadingLevel() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setLowerHeadingLevel( ::sal_Int32 _lowerheadinglevel ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::sal_Int32 SAL_CALL getTabLeader() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setTabLeader( ::sal_Int32 _tableader ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL getUseFields() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setUseFields( sal_Bool _useFields ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL getUseOutlineLevels() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setUseOutlineLevels( sal_Bool _useOutlineLevels ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual ::sal_Int32 SAL_CALL getLowerHeadingLevel() throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setLowerHeadingLevel( ::sal_Int32 _lowerheadinglevel ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual ::sal_Int32 SAL_CALL getTabLeader() throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setTabLeader( ::sal_Int32 _tableader ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL getUseFields() throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setUseFields( sal_Bool _useFields ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL getUseOutlineLevels() throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setUseOutlineLevels( sal_Bool _useOutlineLevels ) throw (css::uno::RuntimeException, std::exception) override;
 
     // Methods
-    virtual void SAL_CALL Delete(  ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL Update(  ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL Delete(  ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL Update(  ) throw (css::uno::RuntimeException, std::exception) override;
 
     // XHelperInterface
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 #endif // INCLUDED_SW_SOURCE_UI_VBA_VBATABLEOFCONTENTS_HXX
 

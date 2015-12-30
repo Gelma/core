@@ -94,19 +94,19 @@ namespace connectivity
             ODbaseIndex(ODbaseTable* _pTable,const NDXHeader& _aHeader,const OUString& _Name);
 
             bool openIndexFile();
-            virtual void refreshColumns() SAL_OVERRIDE;
+            virtual void refreshColumns() override;
 
             // com::sun::star::lang::XUnoTunnel
-            virtual sal_Int64 SAL_CALL getSomething( const com::sun::star::uno::Sequence< sal_Int8 >& aIdentifier ) throw(com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            virtual sal_Int64 SAL_CALL getSomething( const com::sun::star::uno::Sequence< sal_Int8 >& aIdentifier ) throw(com::sun::star::uno::RuntimeException, std::exception) override;
             static com::sun::star::uno::Sequence< sal_Int8 > getUnoTunnelImplementationId();
 
-            virtual void SAL_CALL acquire() throw() SAL_OVERRIDE;
-            virtual void SAL_CALL release() throw() SAL_OVERRIDE;
+            virtual void SAL_CALL acquire() throw() override;
+            virtual void SAL_CALL release() throw() override;
 
             const ODbaseTable* getTable() const { return m_pTable; }
             const NDXHeader& getHeader() const { return m_aHeader; }
             OIndexIterator* createIterator(OBoolOperator_BASE* pOp,
-                                                         const OOperand_BASE* pOperand = NULL);
+                                                         const OOperand_BASE* pOperand = nullptr);
 
             void SetRootPos(sal_uInt32 nPos)        {m_nRootPage = nPos;}
             void SetPageCount(sal_uInt32 nCount)    {m_nPageCount = nCount;}
@@ -127,7 +127,7 @@ namespace connectivity
             DECLARE_SERVICE_INFO();
         protected:
 
-            ONDXPage* CreatePage(sal_uInt32 nPagePos, ONDXPage* pParent = NULL, bool bLoad = false);
+            ONDXPage* CreatePage(sal_uInt32 nPagePos, ONDXPage* pParent = nullptr, bool bLoad = false);
             void Collect(ONDXPage*);
             ONDXPagePtr getRoot();
 

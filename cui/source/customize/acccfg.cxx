@@ -625,7 +625,7 @@ public:
     virtual ~SfxAccCfgLBoxString_Impl();
 
     virtual void Paint(const Point& aPos, SvTreeListBox& rDevice, vcl::RenderContext& rRenderContext,
-                       const SvViewDataEntry* pView, const SvTreeListEntry& rEntry) SAL_OVERRIDE;
+                       const SvViewDataEntry* pView, const SvTreeListEntry& rEntry) override;
 };
 
 
@@ -730,7 +730,7 @@ SfxAcceleratorConfigPage::SfxAcceleratorConfigPage( vcl::Window* pParent, const 
     , m_pMacroInfoItem()
     , m_pStringItem()
     , m_pFontItem()
-    , m_pFileDlg(NULL)
+    , m_pFileDlg(nullptr)
     , aLoadAccelConfigStr(CUI_RES(RID_SVXSTR_LOADACCELCONFIG))
     , aSaveAccelConfigStr(CUI_RES(RID_SVXSTR_SAVEACCELCONFIG))
     , aFilterCfgStr(CUI_RES(RID_SVXSTR_FILTERNAME_CFG))
@@ -782,7 +782,7 @@ SfxAcceleratorConfigPage::SfxAcceleratorConfigPage( vcl::Window* pParent, const 
     // initialize Entriesbox
     m_pEntriesBox->SetStyle(m_pEntriesBox->GetStyle()|WB_HSCROLL|WB_CLIPCHILDREN);
     m_pEntriesBox->SetSelectionMode(SINGLE_SELECTION);
-    m_pEntriesBox->SetTabs(&AccCfgTabs[0], MAP_APPFONT);
+    m_pEntriesBox->SetTabs(&AccCfgTabs[0]);
     m_pEntriesBox->Resize(); // OS: Hack for right selection
     m_pEntriesBox->SetSpaceBetweenEntries(0);
     m_pEntriesBox->SetDragDropMode(DragDropMode::NONE);
@@ -835,7 +835,7 @@ void SfxAcceleratorConfigPage::dispose()
     m_pKeyBox->Clear();
 
     delete m_pFileDlg;
-    m_pFileDlg = NULL;
+    m_pFileDlg = nullptr;
 
     m_pEntriesBox.clear();
     m_pOfficeButton.clear();
@@ -954,7 +954,7 @@ void SfxAcceleratorConfigPage::Init(const uno::Reference<ui::XAcceleratorConfigu
         if (sKey.isEmpty())
             continue;
         TAccInfo*    pEntry   = new TAccInfo(i1, nListPos, aKey);
-        SvTreeListEntry* pLBEntry = m_pEntriesBox->InsertEntryToColumn(sKey, 0L, TREELIST_APPEND, 0xFFFF);
+        SvTreeListEntry* pLBEntry = m_pEntriesBox->InsertEntryToColumn(sKey, nullptr, TREELIST_APPEND, 0xFFFF);
         pLBEntry->SetUserData(pEntry);
     }
 
@@ -977,7 +977,7 @@ void SfxAcceleratorConfigPage::Init(const uno::Reference<ui::XAcceleratorConfigu
 
         m_pEntriesBox->SetEntryText(sLabel, nPos, nCol);
 
-        SvTreeListEntry* pLBEntry = m_pEntriesBox->GetEntry(0, nPos);
+        SvTreeListEntry* pLBEntry = m_pEntriesBox->GetEntry(nullptr, nPos);
         TAccInfo* pEntry = static_cast<TAccInfo*>(pLBEntry->GetUserData());
 
         pEntry->m_bIsConfigurable = true;
@@ -997,7 +997,7 @@ void SfxAcceleratorConfigPage::Init(const uno::Reference<ui::XAcceleratorConfigu
             continue;
 
         // Hardcoded function mapped so no ID possible and mark entry as not changeable
-        SvTreeListEntry* pLBEntry = m_pEntriesBox->GetEntry(0, nPos);
+        SvTreeListEntry* pLBEntry = m_pEntriesBox->GetEntry(nullptr, nPos);
         TAccInfo* pEntry = static_cast<TAccInfo*>(pLBEntry->GetUserData());
 
         pEntry->m_bIsConfigurable = false;
@@ -1072,13 +1072,13 @@ IMPL_LINK_NOARG_TYPED(SfxAcceleratorConfigPage, Default, Button*, void)
     Init(m_xAct);
     m_pEntriesBox->SetUpdateMode(true);
     m_pEntriesBox->Invalidate();
-    m_pEntriesBox->Select(m_pEntriesBox->GetEntry(0, 0));
+    m_pEntriesBox->Select(m_pEntriesBox->GetEntry(nullptr, 0));
 }
 
 IMPL_LINK_NOARG_TYPED(SfxAcceleratorConfigPage, ChangeHdl, Button*, void)
 {
     sal_uLong nPos = SvTreeList::GetRelPos( m_pEntriesBox->FirstSelected() );
-    TAccInfo* pEntry = static_cast<TAccInfo*>(m_pEntriesBox->GetEntry(0, nPos)->GetUserData());
+    TAccInfo* pEntry = static_cast<TAccInfo*>(m_pEntriesBox->GetEntry(nullptr, nPos)->GetUserData());
     OUString sNewCommand = m_pFunctionBox->GetCurCommand();
     OUString sLabel = m_pFunctionBox->GetCurLabel();
     if (sLabel.isEmpty())
@@ -1095,7 +1095,7 @@ IMPL_LINK_NOARG_TYPED(SfxAcceleratorConfigPage, RemoveHdl, Button*, void)
 {
     // get selected entry
     sal_uLong nPos = SvTreeList::GetRelPos( m_pEntriesBox->FirstSelected() );
-    TAccInfo* pEntry = static_cast<TAccInfo*>(m_pEntriesBox->GetEntry(0, nPos)->GetUserData());
+    TAccInfo* pEntry = static_cast<TAccInfo*>(m_pEntriesBox->GetEntry(nullptr, nPos)->GetUserData());
 
     // remove function name from selected entry
     sal_uInt16 nCol = m_pEntriesBox->TabCount() - 1;
@@ -1108,11 +1108,11 @@ IMPL_LINK_NOARG_TYPED(SfxAcceleratorConfigPage, RemoveHdl, Button*, void)
 IMPL_LINK_TYPED( SfxAcceleratorConfigPage, SelectHdl, SvTreeListBox*, pListBox, void )
 {
     // disable help
-    Help::ShowBalloon( this, Point(), OUString() );
+    Help::ShowBalloon( this, Point(), Rectangle(), OUString() );
     if (pListBox == m_pEntriesBox)
     {
         sal_uLong nPos = SvTreeList::GetRelPos( m_pEntriesBox->FirstSelected() );
-        TAccInfo* pEntry = static_cast<TAccInfo*>(m_pEntriesBox->GetEntry(0, nPos)->GetUserData());
+        TAccInfo* pEntry = static_cast<TAccInfo*>(m_pEntriesBox->GetEntry(nullptr, nPos)->GetUserData());
         OUString sPossibleNewCommand = m_pFunctionBox->GetCurCommand();
 
         m_pRemoveButton->Enable( false );
@@ -1121,7 +1121,7 @@ IMPL_LINK_TYPED( SfxAcceleratorConfigPage, SelectHdl, SvTreeListBox*, pListBox, 
         if (pEntry->m_bIsConfigurable)
         {
             if (pEntry->isConfigured())
-                m_pRemoveButton->Enable( true );
+                m_pRemoveButton->Enable();
             m_pChangeButton->Enable( pEntry->m_sCommand != sPossibleNewCommand );
         }
     }
@@ -1138,16 +1138,16 @@ IMPL_LINK_TYPED( SfxAcceleratorConfigPage, SelectHdl, SvTreeListBox*, pListBox, 
 
         // #i36994 First selected can return zero!
         SvTreeListEntry* pLBEntry = m_pEntriesBox->FirstSelected();
-        if ( pLBEntry != 0 )
+        if ( pLBEntry != nullptr )
         {
             sal_uLong nPos = SvTreeList::GetRelPos( pLBEntry );
-            TAccInfo* pEntry = static_cast<TAccInfo*>(m_pEntriesBox->GetEntry(0, nPos)->GetUserData());
+            TAccInfo* pEntry = static_cast<TAccInfo*>(m_pEntriesBox->GetEntry(nullptr, nPos)->GetUserData());
             OUString sPossibleNewCommand = m_pFunctionBox->GetCurCommand();
 
             if (pEntry->m_bIsConfigurable)
             {
                 if (pEntry->isConfigured())
-                    m_pRemoveButton->Enable( true );
+                    m_pRemoveButton->Enable();
                 m_pChangeButton->Enable( pEntry->m_sCommand != sPossibleNewCommand );
             }
 
@@ -1160,7 +1160,7 @@ IMPL_LINK_TYPED( SfxAcceleratorConfigPage, SelectHdl, SvTreeListBox*, pListBox, 
                 if ( pUserData && pUserData->m_sCommand == sPossibleNewCommand )
                 {
                     TAccInfo* pU1 = new TAccInfo(-1, -1, pUserData->m_aKey);
-                    SvTreeListEntry* pE1 = m_pKeyBox->InsertEntry( pUserData->m_aKey.GetName(), 0L, true, TREELIST_APPEND );
+                    SvTreeListEntry* pE1 = m_pKeyBox->InsertEntry( pUserData->m_aKey.GetName(), nullptr, true );
                     pE1->SetUserData(pU1);
                     pE1->EnableChildrenOnDemand( false );
                 }
@@ -1171,10 +1171,10 @@ IMPL_LINK_TYPED( SfxAcceleratorConfigPage, SelectHdl, SvTreeListBox*, pListBox, 
     else
     {
         // goto selected "key" entry of the key box
-        SvTreeListEntry* pE2 = 0;
-        TAccInfo* pU2 = 0;
+        SvTreeListEntry* pE2 = nullptr;
+        TAccInfo* pU2 = nullptr;
         sal_uLong nP2 = TREELIST_ENTRY_NOTFOUND;
-        SvTreeListEntry* pE3 = 0;
+        SvTreeListEntry* pE3 = nullptr;
 
         pE2 = m_pKeyBox->FirstSelected();
         if (pE2)
@@ -1182,7 +1182,7 @@ IMPL_LINK_TYPED( SfxAcceleratorConfigPage, SelectHdl, SvTreeListBox*, pListBox, 
         if (pU2)
             nP2 = MapKeyCodeToPos(pU2->m_aKey);
         if (nP2 != TREELIST_ENTRY_NOTFOUND)
-            pE3 = m_pEntriesBox->GetEntry( 0, nP2 );
+            pE3 = m_pEntriesBox->GetEntry( nullptr, nP2 );
         if (pE3)
         {
             m_pEntriesBox->Select( pE3 );
@@ -1213,10 +1213,10 @@ IMPL_LINK_NOARG_TYPED(SfxAcceleratorConfigPage, RadioHdl, Button*, void)
     m_pGroupLBox->Init(m_xContext, m_xFrame, m_sModuleLongName, true);
 
     // pb: #133213# do not select NULL entries
-    SvTreeListEntry* pEntry = m_pEntriesBox->GetEntry( 0, 0 );
+    SvTreeListEntry* pEntry = m_pEntriesBox->GetEntry( nullptr, 0 );
     if ( pEntry )
         m_pEntriesBox->Select( pEntry );
-    pEntry = m_pGroupLBox->GetEntry( 0, 0 );
+    pEntry = m_pGroupLBox->GetEntry( nullptr, 0 );
     if ( pEntry )
         m_pGroupLBox->Select( pEntry );
 
@@ -1260,7 +1260,7 @@ IMPL_LINK_NOARG_TYPED(SfxAcceleratorConfigPage, LoadHdl, sfx2::FileDialogHelper*
             lArgs[0] <<= sCfgName;
             lArgs[1] <<= css::embed::ElementModes::READ;
 
-            xRootStorage = uno::Reference<embed::XStorage>(xStorageFactory->createInstanceWithArguments(lArgs), uno::UNO_QUERY_THROW);
+            xRootStorage.set(xStorageFactory->createInstanceWithArguments(lArgs), uno::UNO_QUERY_THROW);
             uno::Reference<embed::XStorage> xUIConfig = xRootStorage->openStorageElement(FOLDERNAME_UICONFIG, embed::ElementModes::READ);
             if (xUIConfig.is())
             {
@@ -1280,7 +1280,7 @@ IMPL_LINK_NOARG_TYPED(SfxAcceleratorConfigPage, LoadHdl, sfx2::FileDialogHelper*
             Init(xTempAccMgr);
             m_pEntriesBox->SetUpdateMode(true);
             m_pEntriesBox->Invalidate();
-            m_pEntriesBox->Select(m_pEntriesBox->GetEntry(0, 0));
+            m_pEntriesBox->Select(m_pEntriesBox->GetEntry(nullptr, 0));
 
         }
 
@@ -1289,10 +1289,10 @@ IMPL_LINK_NOARG_TYPED(SfxAcceleratorConfigPage, LoadHdl, sfx2::FileDialogHelper*
         if (xRootStorage.is())
         {
             uno::Reference<lang::XComponent> xComponent;
-            xComponent = uno::Reference<css::lang::XComponent>(xCfgMgr, uno::UNO_QUERY);
+            xComponent.set(xCfgMgr, uno::UNO_QUERY);
             if (xComponent.is())
                 xComponent->dispose();
-            xComponent = uno::Reference<css::lang::XComponent>(xRootStorage, uno::UNO_QUERY);
+            xComponent.set(xRootStorage, uno::UNO_QUERY);
             if (xComponent.is())
                 xComponent->dispose();
         }
@@ -1343,9 +1343,8 @@ IMPL_LINK_NOARG_TYPED(SfxAcceleratorConfigPage, SaveHdl, sfx2::FileDialogHelper*
             lArgs[0] <<= sCfgName;
             lArgs[1] <<= embed::ElementModes::WRITE;
 
-            xRootStorage = uno::Reference<embed::XStorage>(
-                                xStorageFactory->createInstanceWithArguments(lArgs),
-                                uno::UNO_QUERY_THROW);
+            xRootStorage.set( xStorageFactory->createInstanceWithArguments(lArgs),
+                              uno::UNO_QUERY_THROW);
 
             uno::Reference<embed::XStorage> xUIConfig(
                                 xRootStorage->openStorageElement(FOLDERNAME_UICONFIG, embed::ElementModes::WRITE),
@@ -1418,8 +1417,8 @@ void SfxAcceleratorConfigPage::StartFileDialog( WinBits nBits, const OUString& r
     m_pFileDlg = new sfx2::FileDialogHelper( nDialogType, 0 );
 
     m_pFileDlg->SetTitle( rTitle );
-    m_pFileDlg->AddFilter( aFilterAllStr, OUString(FILEDIALOG_FILTER_ALL) );
-    m_pFileDlg->AddFilter( aFilterCfgStr, OUString("*.cfg") );
+    m_pFileDlg->AddFilter( aFilterAllStr, FILEDIALOG_FILTER_ALL );
+    m_pFileDlg->AddFilter( aFilterCfgStr, "*.cfg" );
     m_pFileDlg->SetCurrentFilter( aFilterCfgStr );
 
     Link<sfx2::FileDialogHelper*,void> aDlgClosedLink = bSave ? LINK( this, SfxAcceleratorConfigPage, SaveHdl )
@@ -1469,21 +1468,21 @@ void SfxAcceleratorConfigPage::Reset( const SfxItemSet* rSet )
         m_pOfficeButton->Check();
     }
 
-    RadioHdl(0);
+    RadioHdl(nullptr);
 
-    const SfxPoolItem* pMacroItem=0;
+    const SfxPoolItem* pMacroItem=nullptr;
     if( SfxItemState::SET == rSet->GetItemState( SID_MACROINFO, true, &pMacroItem ) )
     {
-        m_pMacroInfoItem = dynamic_cast<const SfxMacroInfoItem*>( pMacroItem  );
+        m_pMacroInfoItem = &dynamic_cast<const SfxMacroInfoItem&>(*pMacroItem);
         m_pGroupLBox->SelectMacro( m_pMacroInfoItem );
     }
     else
     {
-        const SfxPoolItem* pStringItem=0;
+        const SfxPoolItem* pStringItem=nullptr;
         if( SfxItemState::SET == rSet->GetItemState( SID_CHARMAP, true, &pStringItem ) )
             m_pStringItem = dynamic_cast<const SfxStringItem*>( pStringItem  );
 
-        const SfxPoolItem* pFontItem=0;
+        const SfxPoolItem* pFontItem=nullptr;
         if( SfxItemState::SET == rSet->GetItemState( SID_ATTR_SPECIALCHAR, true, &pFontItem ) )
             m_pFontItem = dynamic_cast<const SfxStringItem*>( pFontItem  );
     }

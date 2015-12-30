@@ -46,13 +46,12 @@ using namespace ::com::sun::star::accessibility;
 
 //=====  internal  ============================================================
 
-ScAccessiblePreviewTable::ScAccessiblePreviewTable( const ::com::sun::star::uno::Reference<
-                                ::com::sun::star::accessibility::XAccessible>& rxParent,
+ScAccessiblePreviewTable::ScAccessiblePreviewTable( const css::uno::Reference<css::accessibility::XAccessible>& rxParent,
                             ScPreviewShell* pViewShell, sal_Int32 nIndex ) :
     ScAccessibleContextBase( rxParent, AccessibleRole::TABLE ),
     mpViewShell( pViewShell ),
     mnIndex( nIndex ),
-    mpTableInfo( NULL )
+    mpTableInfo( nullptr )
 {
     if (mpViewShell)
         mpViewShell->AddAccessibilityObject(*this);
@@ -74,7 +73,7 @@ void SAL_CALL ScAccessiblePreviewTable::disposing()
     if (mpViewShell)
     {
         mpViewShell->RemoveAccessibilityObject(*this);
-        mpViewShell = NULL;
+        mpViewShell = nullptr;
     }
 
     if (mpTableInfo)
@@ -90,14 +89,14 @@ void ScAccessiblePreviewTable::Notify( SfxBroadcaster& rBC, const SfxHint& rHint
     const SfxSimpleHint* pSimpleHint = dynamic_cast<const SfxSimpleHint*>(&rHint);
     if (pSimpleHint)
     {
-        sal_uLong nId = pSimpleHint->GetId();
+        const sal_uInt32 nId {pSimpleHint->GetId()};
         if ( nId == SFX_HINT_DATACHANGED )
         {
             //  column / row layout may change with any document change,
             //  so it must be invalidated
             DELETEZ( mpTableInfo );
         }
-        else if (pSimpleHint->GetId() == SC_HINT_ACC_VISAREACHANGED)
+        else if (nId == SC_HINT_ACC_VISAREACHANGED)
         {
             AccessibleEventObject aEvent;
             aEvent.EventId = AccessibleEventId::VISIBLE_DATA_CHANGED;
@@ -253,13 +252,13 @@ sal_Int32 SAL_CALL ScAccessiblePreviewTable::getAccessibleColumnExtentAt( sal_In
 uno::Reference< XAccessibleTable > SAL_CALL ScAccessiblePreviewTable::getAccessibleRowHeaders() throw (uno::RuntimeException, std::exception)
 {
     //! missing
-    return NULL;
+    return nullptr;
 }
 
 uno::Reference< XAccessibleTable > SAL_CALL ScAccessiblePreviewTable::getAccessibleColumnHeaders() throw (uno::RuntimeException, std::exception)
 {
     //! missing
-    return NULL;
+    return nullptr;
 }
 
 uno::Sequence< sal_Int32 > SAL_CALL ScAccessiblePreviewTable::getSelectedAccessibleRows() throw (uno::RuntimeException, std::exception)
@@ -322,15 +321,15 @@ uno::Reference< XAccessible > SAL_CALL ScAccessiblePreviewTable::getAccessibleCe
         {
             const bool bRotatedColHeader = rRowInfo.bIsHeader;
             const bool bRotatedRowHeader = rColInfo.bIsHeader;
-            ScAccessiblePreviewHeaderCell* pHeaderCell = new ScAccessiblePreviewHeaderCell(this, mpViewShell, aCellPos,
-                                        bRotatedColHeader, bRotatedRowHeader, nNewIndex);
-            xRet = pHeaderCell;
+            rtl::Reference<ScAccessiblePreviewHeaderCell> pHeaderCell(new ScAccessiblePreviewHeaderCell(this, mpViewShell, aCellPos,
+                                        bRotatedColHeader, bRotatedRowHeader, nNewIndex));
+            xRet = pHeaderCell.get();
             pHeaderCell->Init();
         }
         else
         {
-            ScAccessiblePreviewCell* pCell = new ScAccessiblePreviewCell( this, mpViewShell, aCellPos, nNewIndex );
-            xRet = pCell;
+            rtl::Reference<ScAccessiblePreviewCell> pCell(new ScAccessiblePreviewCell( this, mpViewShell, aCellPos, nNewIndex ));
+            xRet = pCell.get();
             pCell->Init();
         }
     }
@@ -344,13 +343,13 @@ uno::Reference< XAccessible > SAL_CALL ScAccessiblePreviewTable::getAccessibleCe
 uno::Reference< XAccessible > SAL_CALL ScAccessiblePreviewTable::getAccessibleCaption() throw (uno::RuntimeException, std::exception)
 {
     //! missing
-    return NULL;
+    return nullptr;
 }
 
 uno::Reference< XAccessible > SAL_CALL ScAccessiblePreviewTable::getAccessibleSummary() throw (uno::RuntimeException, std::exception)
 {
     //! missing
-    return NULL;
+    return nullptr;
 }
 
 sal_Bool SAL_CALL ScAccessiblePreviewTable::isAccessibleSelected( sal_Int32 nRow, sal_Int32 nColumn )
@@ -638,7 +637,7 @@ Rectangle ScAccessiblePreviewTable::GetBoundingBoxOnScreen() const throw (uno::R
         vcl::Window* pWindow = mpViewShell->GetWindow();
         if (pWindow)
         {
-            Rectangle aRect = pWindow->GetWindowExtentsRelative(NULL);
+            Rectangle aRect = pWindow->GetWindowExtentsRelative(nullptr);
             aCellRect.setX(aCellRect.getX() + aRect.getX());
             aCellRect.setY(aCellRect.getY() + aRect.getY());
         }
@@ -672,7 +671,7 @@ Rectangle ScAccessiblePreviewTable::GetBoundingBox() const
 
 bool ScAccessiblePreviewTable::IsDefunc( const uno::Reference<XAccessibleStateSet>& rxParentStates )
 {
-    return ScAccessibleContextBase::IsDefunc() || (mpViewShell == NULL) || !getAccessibleParent().is() ||
+    return ScAccessibleContextBase::IsDefunc() || (mpViewShell == nullptr) || !getAccessibleParent().is() ||
         (rxParentStates.is() && rxParentStates->contains(AccessibleStateType::DEFUNC));
 }
 

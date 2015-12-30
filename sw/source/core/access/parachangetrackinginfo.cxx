@@ -31,7 +31,7 @@
 #include <algorithm>
 
 namespace {
-    void initChangeTrackTextMarkupLists( const SwTextFrm& rTextFrm,
+    void initChangeTrackTextMarkupLists( const SwTextFrame& rTextFrame,
                                          SwWrongList*& opChangeTrackInsertionTextMarkupList,
                                          SwWrongList*& opChangeTrackDeletionTextMarkupList,
                                          SwWrongList*& opChangeTrackFormatChangeTextMarkupList )
@@ -40,12 +40,12 @@ namespace {
         opChangeTrackDeletionTextMarkupList = new SwWrongList( WRONGLIST_CHANGETRACKING );
         opChangeTrackFormatChangeTextMarkupList = new SwWrongList( WRONGLIST_CHANGETRACKING );
 
-        if ( !rTextFrm.GetTextNode() )
+        if ( !rTextFrame.GetTextNode() )
         {
             OSL_FAIL( "<initChangeTrackTextMarkupLists(..) - missing <SwTextNode> instance!" );
             return;
         }
-        const SwTextNode& rTextNode( *(rTextFrm.GetTextNode()) );
+        const SwTextNode& rTextNode( *(rTextFrame.GetTextNode()) );
 
         const IDocumentRedlineAccess& rIDocChangeTrack( rTextNode.getIDocumentRedlineAccess() );
 
@@ -64,12 +64,12 @@ namespace {
             return;
         }
 
-        const sal_Int32 nTextFrmTextStartPos = rTextFrm.IsFollow()
-                                               ? rTextFrm.GetOfst()
+        const sal_Int32 nTextFrameTextStartPos = rTextFrame.IsFollow()
+                                               ? rTextFrame.GetOfst()
                                                : 0;
-        const sal_Int32 nTextFrmTextEndPos = rTextFrm.HasFollow()
-                                             ? rTextFrm.GetFollow()->GetOfst()
-                                             : rTextFrm.GetText().getLength();
+        const sal_Int32 nTextFrameTextEndPos = rTextFrame.HasFollow()
+                                             ? rTextFrame.GetFollow()->GetOfst()
+                                             : rTextFrame.GetText().getLength();
 
         // iteration over the redlines which overlap with the text node.
         const SwRedlineTable& rRedlineTable = rIDocChangeTrack.GetRedlineTable();
@@ -89,14 +89,14 @@ namespace {
             pActRedline->CalcStartEnd( rTextNode.GetIndex(),
                                        nTextNodeChangeTrackStart,
                                        nTextNodeChangeTrackEnd );
-            if ( nTextNodeChangeTrackStart > nTextFrmTextEndPos ||
-                 nTextNodeChangeTrackEnd < nTextFrmTextStartPos )
+            if ( nTextNodeChangeTrackStart > nTextFrameTextEndPos ||
+                 nTextNodeChangeTrackEnd < nTextFrameTextStartPos )
             {
                 // Consider only redlines which overlap with the text frame's text.
                 continue;
             }
 
-            SwWrongList* pMarkupList( 0 );
+            SwWrongList* pMarkupList( nullptr );
             switch ( pActRedline->GetType() )
             {
                 case nsRedlineType_t::REDLINE_INSERT:
@@ -121,26 +121,26 @@ namespace {
             }
             if ( pMarkupList )
             {
-                const sal_Int32 nTextFrmChangeTrackStart =
-                    std::max(nTextNodeChangeTrackStart, nTextFrmTextStartPos);
+                const sal_Int32 nTextFrameChangeTrackStart =
+                    std::max(nTextNodeChangeTrackStart, nTextFrameTextStartPos);
 
-                const sal_Int32 nTextFrmChangeTrackEnd =
-                    std::min(nTextNodeChangeTrackEnd, nTextFrmTextEndPos);
+                const sal_Int32 nTextFrameChangeTrackEnd =
+                    std::min(nTextNodeChangeTrackEnd, nTextFrameTextEndPos);
 
-                pMarkupList->Insert( OUString(), 0,
-                                     nTextFrmChangeTrackStart,
-                                     nTextFrmChangeTrackEnd - nTextFrmChangeTrackStart,
+                pMarkupList->Insert( OUString(), nullptr,
+                                     nTextFrameChangeTrackStart,
+                                     nTextFrameChangeTrackEnd - nTextFrameChangeTrackStart,
                                      pMarkupList->Count() );
             }
         } // eof iteration over the redlines which overlap with the text node
     }
 } // eof anonymous namespace
 
-SwParaChangeTrackingInfo::SwParaChangeTrackingInfo( const SwTextFrm& rTextFrm )
-    : mrTextFrm( rTextFrm )
-    , mpChangeTrackInsertionTextMarkupList( 0 )
-    , mpChangeTrackDeletionTextMarkupList( 0 )
-    , mpChangeTrackFormatChangeTextMarkupList( 0 )
+SwParaChangeTrackingInfo::SwParaChangeTrackingInfo( const SwTextFrame& rTextFrame )
+    : mrTextFrame( rTextFrame )
+    , mpChangeTrackInsertionTextMarkupList( nullptr )
+    , mpChangeTrackDeletionTextMarkupList( nullptr )
+    , mpChangeTrackFormatChangeTextMarkupList( nullptr )
 {
 }
 
@@ -152,26 +152,26 @@ SwParaChangeTrackingInfo::~SwParaChangeTrackingInfo()
 void SwParaChangeTrackingInfo::reset()
 {
     delete mpChangeTrackInsertionTextMarkupList;
-    mpChangeTrackInsertionTextMarkupList = 0;
+    mpChangeTrackInsertionTextMarkupList = nullptr;
 
     delete mpChangeTrackDeletionTextMarkupList;
-    mpChangeTrackDeletionTextMarkupList = 0;
+    mpChangeTrackDeletionTextMarkupList = nullptr;
 
     delete mpChangeTrackFormatChangeTextMarkupList;
-    mpChangeTrackFormatChangeTextMarkupList = 0;
+    mpChangeTrackFormatChangeTextMarkupList = nullptr;
 }
 
 const SwWrongList* SwParaChangeTrackingInfo::getChangeTrackingTextMarkupList( const sal_Int32 nTextMarkupType )
 {
-    SwWrongList* pChangeTrackingTextMarkupList = 0;
+    SwWrongList* pChangeTrackingTextMarkupList = nullptr;
 
-    if ( mpChangeTrackInsertionTextMarkupList == 0 )
+    if ( mpChangeTrackInsertionTextMarkupList == nullptr )
     {
-        OSL_ENSURE( mpChangeTrackDeletionTextMarkupList == 0,
+        OSL_ENSURE( mpChangeTrackDeletionTextMarkupList == nullptr,
                 "<SwParaChangeTrackingInfo::getChangeTrackingTextMarkupList(..) - <mpChangeTrackDeletionTextMarkupList> expected to be NULL." );
-        OSL_ENSURE( mpChangeTrackFormatChangeTextMarkupList == 0,
+        OSL_ENSURE( mpChangeTrackFormatChangeTextMarkupList == nullptr,
                 "<SwParaChangeTrackingInfo::getChangeTrackingTextMarkupList(..) - <mpChangeTrackFormatChangeTextMarkupList> expected to be NULL." );
-        initChangeTrackTextMarkupLists( mrTextFrm,
+        initChangeTrackTextMarkupLists( mrTextFrame,
                                         mpChangeTrackInsertionTextMarkupList,
                                         mpChangeTrackDeletionTextMarkupList,
                                         mpChangeTrackFormatChangeTextMarkupList );

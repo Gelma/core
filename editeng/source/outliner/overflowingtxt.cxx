@@ -33,7 +33,7 @@
 
 
 OutlinerParaObject *TextChainingUtils::JuxtaposeParaObject(
-        TranferableText xOverflowingContent,
+        css::uno::Reference< css::datatransfer::XTransferable > xOverflowingContent,
         Outliner *pOutl,
         OutlinerParaObject *pNextPObj)
 {
@@ -69,7 +69,7 @@ OutlinerParaObject *TextChainingUtils::JuxtaposeParaObject(
 }
 
 OutlinerParaObject *TextChainingUtils::DeeplyMergeParaObject(
-        TranferableText xOverflowingContent,
+        css::uno::Reference< css::datatransfer::XTransferable > xOverflowingContent,
         Outliner *pOutl,
         OutlinerParaObject *pNextPObj)
 {
@@ -94,7 +94,7 @@ OutlinerParaObject *TextChainingUtils::DeeplyMergeParaObject(
     return pOutl->CreateParaObject();
 }
 
-TranferableText TextChainingUtils::CreateTransferableFromText(Outliner *pOutl)
+css::uno::Reference< css::datatransfer::XTransferable > TextChainingUtils::CreateTransferableFromText(Outliner *pOutl)
 {
     const EditEngine &rEditEngine = pOutl->GetEditEngine();
     sal_Int32 nLastPara = pOutl->GetParagraphCount()-1;
@@ -104,34 +104,14 @@ TranferableText TextChainingUtils::CreateTransferableFromText(Outliner *pOutl)
 }
 
 
-/* Helper functions for *OverflowingText classes  */
-
-ESelection getLastPositionSel(const EditTextObject *pTObj)
-{
-    sal_Int32 nLastPara = pTObj->GetParagraphCount()-1;
-    // If text is empty
-    if (nLastPara < 0 )
-        nLastPara = 0;
-    sal_Int32 nLen = pTObj->GetText(nLastPara).getLength();
-    ESelection aEndPos(nLastPara, nLen, nLastPara, nLen);
-
-    return aEndPos;
-}
-
 // class OverflowingText
 
-OverflowingText::OverflowingText(TranferableText xOverflowingContent) :
+OverflowingText::OverflowingText(css::uno::Reference< css::datatransfer::XTransferable > xOverflowingContent) :
         mxOverflowingContent(xOverflowingContent)
 {
 
 }
 
-
-ESelection OverflowingText::GetInsertionPointSel()
-{
-    assert(false && "You should never get here");
-    return getLastPositionSel(NULL);
-}
 
 // class NonOverflowingText
 
@@ -199,11 +179,6 @@ OFlowChainedText::~OFlowChainedText()
 }
 
 
-ESelection OFlowChainedText::GetInsertionPointSel()
-{
-    return OverflowingText::GetInsertionPointSel();
-}
-
 ESelection OFlowChainedText::GetOverflowPointSel() const
 {
     return mpNonOverflowingTxt->GetOverflowPointSel();
@@ -212,8 +187,8 @@ ESelection OFlowChainedText::GetOverflowPointSel() const
 OutlinerParaObject *OFlowChainedText::InsertOverflowingText(Outliner *pOutliner, OutlinerParaObject *pTextToBeMerged)
 {
     // Just return the roughly merged paras for now
-    if (mpOverflowingTxt == NULL)
-        return NULL;
+    if (mpOverflowingTxt == nullptr)
+        return nullptr;
 
     if (mbIsDeepMerge) {
         SAL_INFO("editeng.chaining", "[TEXTCHAINFLOW - OF] Deep merging paras" );
@@ -227,8 +202,8 @@ OutlinerParaObject *OFlowChainedText::InsertOverflowingText(Outliner *pOutliner,
 
 OutlinerParaObject *OFlowChainedText::RemoveOverflowingText(Outliner *pOutliner)
 {
-    if (mpNonOverflowingTxt == NULL)
-        return NULL;
+    if (mpNonOverflowingTxt == nullptr)
+        return nullptr;
 
     return mpNonOverflowingTxt->RemoveOverflowingText(pOutliner);
 }
@@ -249,7 +224,7 @@ UFlowChainedText::UFlowChainedText(Outliner *pOutl, bool bIsDeepMerge)
 
 OutlinerParaObject *UFlowChainedText::CreateMergedUnderflowParaObject(Outliner *pOutl, OutlinerParaObject *pNextLinkWholeText)
 {
-    OutlinerParaObject *pNewText = NULL;
+    OutlinerParaObject *pNewText = nullptr;
 
     if (mbIsDeepMerge) {
         SAL_INFO("editeng.chaining", "[TEXTCHAINFLOW - UF] Deep merging paras" );

@@ -182,7 +182,7 @@ SvxPageDescPage::SvxPageDescPage( vcl::Window* pParent, const SfxItemSet& rAttr 
 
     //UUUU
     m_nPos( 0 ),
-    mpDefPrinter( 0 ),
+    mpDefPrinter( nullptr ),
     mbDelPrinter( false ),
 
     //UUUU
@@ -242,8 +242,8 @@ SvxPageDescPage::SvxPageDescPage( vcl::Window* pParent, const SfxItemSet& rAttr 
 
     SfxObjectShell* pShell;
     if(SfxItemState::SET == rAttr.GetItemState(SID_HTML_MODE, false, &pItem) ||
-        ( 0 != (pShell = SfxObjectShell::Current()) &&
-                    0 != (pItem = pShell->GetItem(SID_HTML_MODE))))
+        ( nullptr != (pShell = SfxObjectShell::Current()) &&
+                    nullptr != (pItem = pShell->GetItem(SID_HTML_MODE))))
         bWeb = 0 != (static_cast<const SfxUInt16Item*>(pItem)->GetValue() & HTMLMODE_ON);
 
     //  fill text flow listbox with valid entries
@@ -422,7 +422,7 @@ void SvxPageDescPage::Init_Impl()
     m_pLandscapeBtn->SetClickHdl(     LINK( this, SvxPageDescPage, SwapOrientation_Impl ) );
     m_pPortraitBtn->SetClickHdl(      LINK( this, SvxPageDescPage, SwapOrientation_Impl ) );
 
-    Link<> aLink = LINK( this, SvxPageDescPage, BorderModify_Impl );
+    Link<Edit&,void> aLink = LINK( this, SvxPageDescPage, BorderModify_Impl );
     m_pLeftMarginEdit->SetModifyHdl( aLink );
     m_pRightMarginEdit->SetModifyHdl( aLink );
     m_pTopMarginEdit->SetModifyHdl( aLink );
@@ -494,7 +494,7 @@ void SvxPageDescPage::Reset( const SfxItemSet* rSet )
     // alignment
     m_pLayoutBox->SelectEntryPos( ::PageUsageToPos_Impl( nUse ) );
     m_pBspWin->SetUsage( nUse );
-    LayoutHdl_Impl( 0 );
+    LayoutHdl_Impl( *m_pLayoutBox );
 
     //adjust numeration type of the page style
     //Get the Position of the saved NumType
@@ -711,7 +711,7 @@ bool SvxPageDescPage::FillItemSet( SfxItemSet* rSet )
     DBG_ASSERT( pPool, "Wo ist der Pool" );
     sal_uInt16 nWhich = GetWhich( SID_ATTR_LRSPACE );
     SfxMapUnit eUnit = pPool->GetMetric( nWhich );
-    const SfxPoolItem* pOld = 0;
+    const SfxPoolItem* pOld = nullptr;
 
     // copy old left and right margins
     SvxLRSpaceItem aMargin( static_cast<const SvxLRSpaceItem&>(rOldSet.Get( nWhich )) );
@@ -927,7 +927,7 @@ bool SvxPageDescPage::FillItemSet( SfxItemSet* rSet )
 
 
 
-IMPL_LINK_NOARG(SvxPageDescPage, LayoutHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvxPageDescPage, LayoutHdl_Impl, ListBox&, void)
 {
     // switch inside outside
     const sal_uInt16 nPos = PosToPageUsage_Impl( m_pLayoutBox->GetSelectEntryPos() );
@@ -947,7 +947,6 @@ IMPL_LINK_NOARG(SvxPageDescPage, LayoutHdl_Impl)
         m_pOutsideLbl->Hide();
     }
     UpdateExample_Impl( true );
-    return 0;
 }
 
 
@@ -987,9 +986,9 @@ IMPL_LINK_NOARG_TYPED(SvxPageDescPage, PaperBinHdl_Impl, Control&, void)
 
 
 
-IMPL_LINK( SvxPageDescPage, PaperSizeSelect_Impl, ListBox *, pBox )
+IMPL_LINK_TYPED( SvxPageDescPage, PaperSizeSelect_Impl, ListBox&, rBox, void )
 {
-    const sal_Int32 nPos = pBox->GetSelectEntryPos();
+    const sal_Int32 nPos = rBox.GetSelectEntryPos();
     Paper ePaper = (Paper)reinterpret_cast<sal_uLong>(m_pPaperSizeBox->GetEntryData( nPos ));
 
     if ( ePaper != PAPER_USER )
@@ -1054,12 +1053,11 @@ IMPL_LINK( SvxPageDescPage, PaperSizeSelect_Impl, ListBox *, pBox )
             UpdateExample_Impl( true );
         }
     }
-    return 0;
 }
 
 
 
-IMPL_LINK_NOARG(SvxPageDescPage, PaperSizeModify_Impl)
+IMPL_LINK_NOARG_TYPED(SvxPageDescPage, PaperSizeModify_Impl, Edit&, void)
 {
     sal_uInt16 nWhich = GetWhich( SID_ATTR_LRSPACE );
     SfxMapUnit eUnit = GetItemSet().GetPool()->GetMetric( nWhich );
@@ -1079,7 +1077,6 @@ IMPL_LINK_NOARG(SvxPageDescPage, PaperSizeModify_Impl)
         }
     }
     UpdateExample_Impl( true );
-    return 0;
 }
 
 
@@ -1103,7 +1100,7 @@ IMPL_LINK_TYPED( SvxPageDescPage, SwapOrientation_Impl, Button *, pBtn, void )
         // recalculate margins if necessary
         CalcMargin_Impl();
 
-        PaperSizeSelect_Impl( m_pPaperSizeBox );
+        PaperSizeSelect_Impl( *m_pPaperSizeBox );
         RangeHdl_Impl( *m_pPaperWidthEdit );
         SwapFirstValues_Impl( bBorderModified );
         UpdateExample_Impl( true );
@@ -1180,12 +1177,11 @@ void SvxPageDescPage::SwapFirstValues_Impl( bool bSet )
 
 
 
-IMPL_LINK_NOARG(SvxPageDescPage, BorderModify_Impl)
+IMPL_LINK_NOARG_TYPED(SvxPageDescPage, BorderModify_Impl, Edit&, void)
 {
     if ( !bBorderModified )
         bBorderModified = true;
     UpdateExample_Impl();
-    return 0;
 }
 
 void SvxPageDescPage::UpdateExample_Impl( bool bResetbackground )
@@ -1301,7 +1297,7 @@ void SvxPageDescPage::ResetBackground_Impl(const SfxItemSet& rSet)
     }
 
     drawinglayer::attribute::SdrAllFillAttributesHelperPtr aPageFillAttributes;
-    const SfxPoolItem* pItem = 0;
+    const SfxPoolItem* pItem = nullptr;
 
     if(mbEnableDrawingLayerFillStyles)
     {
@@ -1340,7 +1336,7 @@ void SvxPageDescPage::InitHeadFoot_Impl( const SfxItemSet& rSet )
     if ( pItem )
         m_pBspWin->SetSize( static_cast<const SvxSizeItem*>(pItem)->GetSize() );
 
-    const SvxSetItem* pSetItem = 0;
+    const SvxSetItem* pSetItem = nullptr;
 
     // evaluate header attributes
 
@@ -1491,7 +1487,7 @@ SfxTabPage::sfxpg SvxPageDescPage::DeactivatePage( SfxItemSet* _pSet )
     {
         if ( ScopedVclPtr<QueryBox>::Create( this, WB_YES_NO | WB_DEF_NO, m_pPrintRangeQueryText->GetText() )->Execute() == RET_NO )
         {
-            MetricField* pField = NULL;
+            MetricField* pField = nullptr;
             if ( IsPrinterRangeOverflow( *m_pLeftMarginEdit, nFirstLeftMargin, nLastLeftMargin, MARGIN_LEFT ) )
                 pField = m_pLeftMarginEdit;
             if (    IsPrinterRangeOverflow( *m_pRightMarginEdit, nFirstRightMargin, nLastRightMargin, MARGIN_RIGHT )
@@ -1694,11 +1690,10 @@ void SvxPageDescPage::DisableVerticalPageDir()
     }
 }
 
-IMPL_LINK( SvxPageDescPage, FrameDirectionModify_Impl, ListBox*,)
+IMPL_LINK_NOARG_TYPED( SvxPageDescPage, FrameDirectionModify_Impl, ListBox&, void)
 {
     m_pBspWin->SetFrameDirection( (sal_uInt32) m_pTextFlowBox->GetSelectEntryValue() );
     m_pBspWin->Invalidate();
-    return 0;
 }
 
 bool SvxPageDescPage::IsPrinterRangeOverflow(
@@ -1763,13 +1758,13 @@ bool SvxPageDescPage::IsMarginOutOfRange()
 
 void SvxPageDescPage::PageCreated(const SfxAllItemSet& aSet)
 {
-    SFX_ITEMSET_ARG (&aSet,pModeItem,SfxAllEnumItem,SID_ENUM_PAGE_MODE,false);
-    SFX_ITEMSET_ARG (&aSet,pPaperStartItem,SfxAllEnumItem,SID_PAPER_START,false);
-    SFX_ITEMSET_ARG (&aSet,pPaperEndItem,SfxAllEnumItem,SID_PAPER_END,false);
-    SFX_ITEMSET_ARG (&aSet,pCollectListItem,SfxStringListItem,SID_COLLECT_LIST,false);
+    const SfxAllEnumItem* pModeItem = aSet.GetItem<SfxAllEnumItem>(SID_ENUM_PAGE_MODE, false);
+    const SfxAllEnumItem* pPaperStartItem = aSet.GetItem<SfxAllEnumItem>(SID_PAPER_START, false);
+    const SfxAllEnumItem* pPaperEndItem = aSet.GetItem<SfxAllEnumItem>(SID_PAPER_END, false);
+    const SfxStringListItem* pCollectListItem = aSet.GetItem<SfxStringListItem>(SID_COLLECT_LIST, false);
 
     //UUUU
-    SFX_ITEMSET_ARG (&aSet, pSupportDrawingLayerFillStyleItem, SfxBoolItem, SID_DRAWINGLAYER_FILLSTYLES, false);
+    const SfxBoolItem* pSupportDrawingLayerFillStyleItem = aSet.GetItem<SfxBoolItem>(SID_DRAWINGLAYER_FILLSTYLES, false);
 
     if (pModeItem)
     {

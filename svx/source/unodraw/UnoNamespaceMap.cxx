@@ -24,6 +24,7 @@
 #include <com/sun/star/container/XNameAccess.hpp>
 #include <com/sun/star/lang/XServiceInfo.hpp>
 
+#include <comphelper/sequence.hxx>
 #include <cppuhelper/implbase.hxx>
 #include <cppuhelper/supportsservice.hxx>
 #include <osl/diagnose.h>
@@ -57,18 +58,18 @@ namespace svx
         virtual ~NamespaceMap();
 
         // XNameAccess
-        virtual Any SAL_CALL getByName( const OUString& aName ) throw (NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Sequence< OUString > SAL_CALL getElementNames(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual Any SAL_CALL getByName( const OUString& aName ) throw (NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) override;
+        virtual Sequence< OUString > SAL_CALL getElementNames(  ) throw (RuntimeException, std::exception) override;
+        virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw (RuntimeException, std::exception) override;
 
         // XElementAccess
-        virtual Type SAL_CALL getElementType(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual sal_Bool SAL_CALL hasElements(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual Type SAL_CALL getElementType(  ) throw (RuntimeException, std::exception) override;
+        virtual sal_Bool SAL_CALL hasElements(  ) throw (RuntimeException, std::exception) override;
 
         // XServiceInfo
-        virtual OUString SAL_CALL getImplementationName(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual OUString SAL_CALL getImplementationName(  ) throw(RuntimeException, std::exception) override;
+        virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw(RuntimeException, std::exception) override;
+        virtual Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw(RuntimeException, std::exception) override;
     };
 
     Reference< XInterface > SAL_CALL NamespaceMap_createInstance( sal_uInt16* pWhichIds, SfxItemPool* pPool )
@@ -79,8 +80,7 @@ namespace svx
     Sequence< OUString > SAL_CALL NamespaceMap_getSupportedServiceNames()
         throw()
     {
-        Sequence< OUString > aSupportedServiceNames( 1 );
-        aSupportedServiceNames[0] = "com.sun.star.xml.NamespaceMap";
+        Sequence<OUString> aSupportedServiceNames { "com.sun.star.xml.NamespaceMap" };
         return aSupportedServiceNames;
     }
 
@@ -120,7 +120,7 @@ using namespace ::svx;
 NamespaceIteratorImpl::NamespaceIteratorImpl( sal_uInt16* pWhichIds, SfxItemPool* pPool )
 {
     mpPool = pPool;
-    mpCurrentAttr = NULL;
+    mpCurrentAttr = nullptr;
     mnCurrentAttr = 0;
 
     mpWhichId = pWhichIds;
@@ -142,11 +142,11 @@ bool NamespaceIteratorImpl::next( OUString& rPrefix, OUString& rURL )
     }
 
     // we need the next namespace item
-    mpCurrentAttr = NULL;
+    mpCurrentAttr = nullptr;
 
-    const SfxPoolItem* pItem = 0;
+    const SfxPoolItem* pItem = nullptr;
     // look for the next available item in the current pool
-    while( (mnItem < mnItemCount) && ( NULL == (pItem = mpPool->GetItem2( *mpWhichId, mnItem ) ) ) )
+    while( (mnItem < mnItemCount) && ( nullptr == (pItem = mpPool->GetItem2( *mpWhichId, mnItem ) ) ) )
         mnItem++;
 
     // are we finished with the current whichid?
@@ -162,7 +162,7 @@ bool NamespaceIteratorImpl::next( OUString& rPrefix, OUString& rURL )
             return next( rPrefix, rURL );
         }
 
-        pItem = NULL;
+        pItem = nullptr;
     }
 
     if( pItem )
@@ -227,18 +227,7 @@ Sequence< OUString > SAL_CALL NamespaceMap::getElementNames() throw (RuntimeExce
     while( aIter.next( aPrefix, aURL ) )
         aPrefixSet.insert( aPrefix );
 
-    Sequence< OUString > aSeq( aPrefixSet.size() );
-    OUString* pPrefixes = aSeq.getArray();
-
-    std::set< OUString >::iterator aPrefixIter( aPrefixSet.begin() );
-    const std::set< OUString >::iterator aEnd( aPrefixSet.end() );
-
-    while( aPrefixIter != aEnd )
-    {
-        *pPrefixes++ = *aPrefixIter++;
-    }
-
-    return aSeq;
+    return comphelper::containerToSequence<OUString>(aPrefixSet);
 }
 
 sal_Bool SAL_CALL NamespaceMap::hasByName( const OUString& aName ) throw (RuntimeException, std::exception)

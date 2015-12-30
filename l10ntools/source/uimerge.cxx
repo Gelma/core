@@ -49,16 +49,16 @@ int extractTranslations()
 
     xmlDocPtr doc = xmlParseFile(sInputFileName.getStr());
 
-    xmlDocPtr res = xsltApplyStylesheet(stylesheet, doc, NULL);
+    xmlDocPtr res = xsltApplyStylesheet(stylesheet, doc, nullptr);
 
-    for( xmlNodePtr nodeLevel1 = res->children; nodeLevel1 != NULL; nodeLevel1 = nodeLevel1->next)
+    for( xmlNodePtr nodeLevel1 = res->children; nodeLevel1 != nullptr; nodeLevel1 = nodeLevel1->next)
     {
-        for( xmlNodePtr nodeLevel2 = nodeLevel1->children; nodeLevel2 != NULL; nodeLevel2 = nodeLevel2->next)
+        for( xmlNodePtr nodeLevel2 = nodeLevel1->children; nodeLevel2 != nullptr; nodeLevel2 = nodeLevel2->next)
         {
             if (nodeLevel2->type == XML_ELEMENT_NODE)
             {
                 std::vector<OString> vIDs;
-                for(xmlAttrPtr attribute = nodeLevel2->properties; attribute != NULL; attribute = attribute->next)
+                for(xmlAttrPtr attribute = nodeLevel2->properties; attribute != nullptr; attribute = attribute->next)
                 {
                     xmlChar *content = xmlNodeListGetString(res, attribute->children, 1);
                     vIDs.push_back(helper::xmlStrToOString(content));
@@ -182,26 +182,33 @@ bool Merge(
 SAL_IMPLEMENT_MAIN_WITH_ARGS(argc, argv)
 {
     int nRetValue = 0;
-
-    common::HandledArgs aArgs;
-    if ( !common::handleArguments(argc, argv, aArgs) )
+    try
     {
-        common::writeUsage("uiex","*.ui");
+
+        common::HandledArgs aArgs;
+        if ( !common::handleArguments(argc, argv, aArgs) )
+        {
+            common::writeUsage("uiex","*.ui");
+            return 1;
+        }
+
+        sInputFileName = aArgs.m_sInputFile;
+        sOutputFile = aArgs.m_sOutputFile;
+
+        if (!aArgs.m_bMergeMode)
+        {
+            nRetValue = extractTranslations();
+        }
+        else
+        {
+            Merge(aArgs.m_sMergeSrc, sInputFileName, sOutputFile, aArgs.m_sLanguage);
+        }
+    }
+    catch (std::exception& e)
+    {
+        fprintf(stderr, "exception: %s\n", e.what());
         return 1;
     }
-
-    sInputFileName = aArgs.m_sInputFile;
-    sOutputFile = aArgs.m_sOutputFile;
-
-    if (!aArgs.m_bMergeMode)
-    {
-        nRetValue = extractTranslations();
-    }
-    else
-    {
-        Merge(aArgs.m_sMergeSrc, sInputFileName, sOutputFile, aArgs.m_sLanguage);
-    }
-
     return nRetValue;
 }
 

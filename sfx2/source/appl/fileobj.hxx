@@ -28,14 +28,14 @@ namespace sfx2 { class FileDialogHelper; }
 
 class SvFileObject : public sfx2::SvLinkSource
 {
-    OUString            sFileNm;
-    OUString            sFilter;
-    OUString            sReferer;
-    Link<const OUString&, void>  aEndEditLink;
-    SfxMediumRef        xMed;
-    ImplSVEvent*        nPostUserEventId;
-    SfxMediumRef*       pDelMed;
-    VclPtr<vcl::Window> pOldParent;
+    OUString                    sFileNm;
+    OUString                    sFilter;
+    OUString                    sReferer;
+    Link<const OUString&, void> aEndEditLink;
+    tools::SvRef<SfxMedium>     xMed;
+    ImplSVEvent*                nPostUserEventId;
+    tools::SvRef<SfxMedium>     mxDelMed;
+    VclPtr<vcl::Window>         pOldParent;
 
     sal_uInt8 nType;
 
@@ -50,7 +50,7 @@ class SvFileObject : public sfx2::SvLinkSource
     bool bStateChangeCalled : 1;
     bool bInCallDownload : 1;
 
-    bool GetGraphic_Impl( Graphic&, SvStream* pStream = 0 );
+    bool GetGraphic_Impl( Graphic&, SvStream* pStream = nullptr );
     bool LoadFile_Impl();
     void SendStateChg_Impl( sfx2::LinkManager::LinkState nState );
 
@@ -64,16 +64,16 @@ protected:
 public:
     SvFileObject();
 
-    virtual bool GetData( ::com::sun::star::uno::Any & rData /*out param*/,
+    virtual bool GetData( css::uno::Any & rData /*out param*/,
                             const OUString & rMimeType,
-                            bool bSynchron = false ) SAL_OVERRIDE;
+                            bool bSynchron = false ) override;
 
-    virtual bool Connect( sfx2::SvBaseLink* ) SAL_OVERRIDE;
-    virtual void Edit( vcl::Window *, sfx2::SvBaseLink *, const Link<const OUString&, void>& rEndEditHdl ) SAL_OVERRIDE;
+    virtual bool Connect( sfx2::SvBaseLink* ) override;
+    virtual void Edit( vcl::Window *, sfx2::SvBaseLink *, const Link<const OUString&, void>& rEndEditHdl ) override;
 
     // Ask whether you can access data directly or whether it has to be triggered
-    virtual bool IsPending() const SAL_OVERRIDE;
-    virtual bool IsDataComplete() const SAL_OVERRIDE;
+    virtual bool IsPending() const override;
+    virtual bool IsDataComplete() const override;
 
     void CancelTransfers();
 };

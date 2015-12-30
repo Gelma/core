@@ -22,12 +22,14 @@
 #include <sfx2/objitem.hxx>
 #include <com/sun/star/lang/XUnoTunnel.hpp>
 
-TYPEINIT1_AUTOFACTORY(SfxObjectShellItem,SfxPoolItem)
-TYPEINIT1_AUTOFACTORY(SfxObjectItem,SfxPoolItem)
+
+SfxPoolItem* SfxObjectShellItem::CreateDefault() { return new SfxObjectShellItem; }
+
+SfxPoolItem* SfxObjectItem::CreateDefault() { return new SfxObjectItem; }
 
 bool SfxObjectShellItem::operator==( const SfxPoolItem &rItem ) const
 {
-     return PTR_CAST(SfxObjectShellItem, &rItem)->pObjSh == pObjSh;
+     return dynamic_cast<const SfxObjectShellItem&>(rItem).pObjSh == pObjSh;
 }
 
 SfxPoolItem* SfxObjectShellItem::Clone( SfxItemPool *) const
@@ -35,7 +37,7 @@ SfxPoolItem* SfxObjectShellItem::Clone( SfxItemPool *) const
     return new SfxObjectShellItem( Which(), pObjSh );
 }
 
-bool SfxObjectShellItem::QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 /*nMemberId*/ ) const
+bool SfxObjectShellItem::QueryValue( css::uno::Any& rVal, sal_uInt8 /*nMemberId*/ ) const
 {
     if ( pObjSh )
     {
@@ -45,26 +47,25 @@ bool SfxObjectShellItem::QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 /
     }
     else
     {
-        rVal <<= ::com::sun::star::uno::Reference< ::com::sun::star::frame::XModel >();
+        rVal <<= css::uno::Reference< css::frame::XModel >();
     }
     return true;
 }
 
-bool SfxObjectShellItem::PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 /*nMemberId*/ )
+bool SfxObjectShellItem::PutValue( const css::uno::Any& rVal, sal_uInt8 /*nMemberId*/ )
 {
     // This item MUST have a model. Please don't change this, there are UNO-based
     // implementations which need it!!
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XModel > xModel;
+    css::uno::Reference< css::frame::XModel > xModel;
 
     if ( rVal >>= xModel )
     {
         if ( xModel.is() )
         {
-            ::com::sun::star::uno::Reference< ::com::sun::star::lang::XUnoTunnel > xTunnel(
-                xModel, ::com::sun::star::uno::UNO_QUERY );
+            css::uno::Reference< css::lang::XUnoTunnel > xTunnel( xModel, css::uno::UNO_QUERY );
             if ( xTunnel.is() )
             {
-                ::com::sun::star::uno::Sequence < sal_Int8 > aSeq = SvGlobalName( SFX_GLOBAL_CLASSID ).GetByteSequence();
+                css::uno::Sequence < sal_Int8 > aSeq = SvGlobalName( SFX_GLOBAL_CLASSID ).GetByteSequence();
                 sal_Int64 nHandle = xTunnel->getSomething( aSeq );
                 if ( nHandle )
                 {
@@ -74,7 +75,7 @@ bool SfxObjectShellItem::PutValue( const com::sun::star::uno::Any& rVal, sal_uIn
             }
         }
 
-        pObjSh = 0;
+        pObjSh = nullptr;
         return true;
     }
 
@@ -88,11 +89,9 @@ SfxObjectItem::SfxObjectItem( sal_uInt16 nWhichId, SfxShell *pSh )
 
 bool SfxObjectItem::operator==( const SfxPoolItem &rItem ) const
 {
-     const SfxObjectItem *pOther = PTR_CAST(SfxObjectItem, &rItem);
-     return pOther->_pSh == _pSh;
+     const SfxObjectItem& rOther = dynamic_cast<const SfxObjectItem&>(rItem);
+     return rOther._pSh == _pSh;
 }
-
-
 
 SfxPoolItem* SfxObjectItem::Clone( SfxItemPool *) const
 {

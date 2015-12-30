@@ -52,7 +52,6 @@ using com::sun::star::uno::UNO_QUERY;
 using com::sun::star::container::XChild;
 using com::sun::star::container::XNameContainer;
 
-TYPEINIT1(FmFormPage, SdrPage);
 
 
 FmFormPage::FmFormPage(FmFormModel& rModel, bool bMasterPage)
@@ -109,7 +108,7 @@ void FmFormPage::SetModel(SdrModel* pNewModel)
                     xForms->setParent( pObjShell->GetModel() );
             }
         }
-        catch( ::com::sun::star::uno::Exception const& )
+        catch( css::uno::Exception const& )
         {
             OSL_FAIL( "UNO Exception caught resetting model for m_pImpl (FmFormPageImpl) in FmFormPage::SetModel" );
         }
@@ -119,13 +118,13 @@ void FmFormPage::SetModel(SdrModel* pNewModel)
 
 SdrPage* FmFormPage::Clone() const
 {
-    return Clone(0);
+    return Clone(nullptr);
 }
 
 SdrPage* FmFormPage::Clone(SdrModel* const pNewModel) const
 {
     FmFormPage* const pNewPage = new FmFormPage(*this);
-    FmFormModel* pFormModel = 0;
+    FmFormModel* pFormModel = nullptr;
     if (pNewModel)
     {
         pFormModel = dynamic_cast<FmFormModel*>(pNewModel);
@@ -167,8 +166,8 @@ bool FmFormPage::RequestHelp( vcl::Window* pWindow, SdrView* pView,
     aPos = pWindow->ScreenToOutputPixel( aPos );
     aPos = pWindow->PixelToLogic( aPos );
 
-    SdrObject* pObj = NULL;
-    SdrPageView* pPV = NULL;
+    SdrObject* pObj = nullptr;
+    SdrPageView* pPV = nullptr;
     if ( !pView->PickObj( aPos, 0, pObj, pPV, SdrSearchOptions::DEEP ) )
         return false;
 
@@ -177,7 +176,7 @@ bool FmFormPage::RequestHelp( vcl::Window* pWindow, SdrView* pView,
         return false;
 
     OUString aHelpText;
-    ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >  xSet( pFormObject->GetUnoControlModel(), ::com::sun::star::uno::UNO_QUERY );
+    css::uno::Reference< css::beans::XPropertySet >  xSet( pFormObject->GetUnoControlModel(), css::uno::UNO_QUERY );
     if (xSet.is())
     {
         if (::comphelper::hasProperty(FM_PROP_HELPTEXT, xSet))

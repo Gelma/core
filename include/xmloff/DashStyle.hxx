@@ -20,9 +20,8 @@
 #ifndef INCLUDED_XMLOFF_DASHSTYLE_HXX
 #define INCLUDED_XMLOFF_DASHSTYLE_HXX
 
-#include <sal/config.h>
+#include <rtl/ustring.hxx>
 #include <xmloff/dllapi.h>
-#include <sal/types.h>
 
 class SvXMLImport;
 class SvXMLExport;
@@ -42,9 +41,8 @@ public:
     ~XMLDashStyleImport();
 
     void importXML(
-        const ::com::sun::star::uno::Reference<
-                ::com::sun::star::xml::sax::XAttributeList >& xAttrList,
-        ::com::sun::star::uno::Any& rValue,
+        const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList,
+        css::uno::Any& rValue,
         OUString& rStrName );
 };
 
@@ -58,7 +56,7 @@ public:
     ~XMLDashStyleExport();
 
     bool exportXML( const OUString& rStrName,
-                        const ::com::sun::star::uno::Any& rValue );
+                        const css::uno::Any& rValue );
 };
 
 #endif // INCLUDED_XMLOFF_DASHSTYLE_HXX

@@ -43,9 +43,9 @@ using namespace ::com::sun::star::beans;
 #define ROOTNODE_MENUS                                  OUString("Office.Common/Menus/")
 #define PATHDELIMITER                                   "/"
 
-#define SETNODE_NEWMENU                                 OUString("New")
-#define SETNODE_WIZARDMENU                              OUString("Wizard")
-#define SETNODE_HELPBOOKMARKS                           OUString("HelpBookmarks")
+#define SETNODE_NEWMENU                                 "New"
+#define SETNODE_WIZARDMENU                              "Wizard"
+#define SETNODE_HELPBOOKMARKS                           "HelpBookmarks"
 
 #define PROPERTYNAME_URL                                DYNAMICMENU_PROPERTYNAME_URL
 #define PROPERTYNAME_TITLE                              DYNAMICMENU_PROPERTYNAME_TITLE
@@ -66,7 +66,6 @@ using namespace ::com::sun::star::beans;
 ****************************************************************************************************************-*/
 struct SvtDynMenuEntry
 {
-        OUString    sName;
         OUString    sURL;
         OUString    sTitle;
         OUString    sImageIdentifier;
@@ -115,7 +114,7 @@ class SvtDynMenu
             lProperties[OFFSET_IMAGEIDENTIFIER].Name = PROPERTYNAME_IMAGEIDENTIFIER;
             lProperties[OFFSET_TARGETNAME     ].Name = PROPERTYNAME_TARGETNAME;
 
-            while( pList != NULL )
+            while( pList != nullptr )
             {
                 for( vector< SvtDynMenuEntry >::const_iterator pItem =pList->begin();
                                                          pItem!=pList->end();
@@ -141,7 +140,7 @@ class SvtDynMenu
                 if( pList == &lSetupEntries )
                     pList = &lUserEntries;
                 else
-                    pList = NULL;
+                    pList = nullptr;
             }
             return lResult;
         }
@@ -169,7 +168,7 @@ class SvtDynamicMenuOptions_Impl : public ConfigItem
             @param      "lPropertyNames" is the list of properties which should be updated.
         *//*-*****************************************************************************************************/
 
-        virtual void Notify( const Sequence< OUString >& lPropertyNames ) SAL_OVERRIDE;
+        virtual void Notify( const Sequence< OUString >& lPropertyNames ) override;
 
         /*-****************************************************************************************************
             @short      base implementation of public interface for "SvtDynamicMenuOptions"!
@@ -181,7 +180,7 @@ class SvtDynamicMenuOptions_Impl : public ConfigItem
 
     private:
 
-        virtual void ImplCommit() SAL_OVERRIDE;
+        virtual void ImplCommit() override;
 
         /*-****************************************************************************************************
             @short      return list of key names of our configuration management which represent oue module tree
@@ -571,7 +570,7 @@ void SvtDynamicMenuOptions_Impl::impl_SortAndExpandPropertyNames( const Sequence
 //  DON'T DO IT IN YOUR HEADER!
 //  see definition for further information
 
-SvtDynamicMenuOptions_Impl*     SvtDynamicMenuOptions::m_pDataContainer = NULL;
+SvtDynamicMenuOptions_Impl*     SvtDynamicMenuOptions::m_pDataContainer = nullptr;
 sal_Int32                       SvtDynamicMenuOptions::m_nRefCount      = 0;
 
 //  constructor
@@ -583,7 +582,7 @@ SvtDynamicMenuOptions::SvtDynamicMenuOptions()
     // Increase our refcount ...
     ++m_nRefCount;
     // ... and initialize our data container only if it not already exist!
-    if( m_pDataContainer == NULL )
+    if( m_pDataContainer == nullptr )
     {
         m_pDataContainer = new SvtDynamicMenuOptions_Impl;
         ItemHolder1::holdConfigItem(E_DYNAMICMENUOPTIONS);
@@ -603,7 +602,7 @@ SvtDynamicMenuOptions::~SvtDynamicMenuOptions()
     if( m_nRefCount <= 0 )
     {
         delete m_pDataContainer;
-        m_pDataContainer = NULL;
+        m_pDataContainer = nullptr;
     }
 }
 

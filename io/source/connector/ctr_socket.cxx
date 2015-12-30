@@ -20,7 +20,7 @@
 
 #include "connector.hxx"
 #include <rtl/ustrbuf.hxx>
-#include <algorithm>
+#include <exception>
 
 using namespace ::osl;
 using namespace ::com::sun::star::uno;
@@ -43,7 +43,8 @@ namespace stoc_connector {
             }
         }
 
-        ::std::for_each(listeners.begin(), listeners.end(), t);
+        for(auto& listener : listeners)
+            t(listener);
     }
 
 
@@ -55,7 +56,7 @@ namespace stoc_connector {
     struct callError {
         const Any & any;
 
-        callError(const Any & any);
+        explicit callError(const Any & any);
 
         void operator () (Reference<XStreamListener> xStreamListener);
     };
@@ -115,8 +116,8 @@ namespace stoc_connector {
     }
 
     sal_Int32 SocketConnection::read( Sequence < sal_Int8 > & aReadBytes , sal_Int32 nBytesToRead )
-            throw(::com::sun::star::io::IOException,
-                  ::com::sun::star::uno::RuntimeException, std::exception)
+            throw(css::io::IOException,
+                  css::uno::RuntimeException, std::exception)
     {
         if( ! m_nStatus )
         {
@@ -161,8 +162,8 @@ namespace stoc_connector {
     }
 
     void SocketConnection::write( const Sequence < sal_Int8 > &seq )
-            throw(::com::sun::star::io::IOException,
-                  ::com::sun::star::uno::RuntimeException, std::exception)
+            throw(css::io::IOException,
+                  css::uno::RuntimeException, std::exception)
     {
         if( ! m_nStatus )
         {
@@ -197,15 +198,15 @@ namespace stoc_connector {
     }
 
     void SocketConnection::flush( )
-            throw(::com::sun::star::io::IOException,
-                  ::com::sun::star::uno::RuntimeException, std::exception)
+            throw(css::io::IOException,
+                  css::uno::RuntimeException, std::exception)
     {
 
     }
 
     void SocketConnection::close()
-            throw(::com::sun::star::io::IOException,
-                  ::com::sun::star::uno::RuntimeException, std::exception)
+            throw(css::io::IOException,
+                  css::uno::RuntimeException, std::exception)
     {
             // ensure that close is called only once
         if( 1 == osl_atomic_increment( (&m_nStatus) ) )
@@ -216,7 +217,7 @@ namespace stoc_connector {
     }
 
     OUString SocketConnection::getDescription()
-            throw( ::com::sun::star::uno::RuntimeException, std::exception)
+            throw( css::uno::RuntimeException, std::exception)
     {
         return m_sDescription;
     }

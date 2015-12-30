@@ -91,7 +91,7 @@ OUString getArgumentUri(sal_uInt32 argument, bool * delimiter) {
     OUString arg;
     rtl_getAppCommandArg(argument, &arg.pData);
     if (arg == "--") {
-        if (delimiter == 0) {
+        if (delimiter == nullptr) {
             badUsage();
         }
         *delimiter = true;
@@ -1172,7 +1172,7 @@ SAL_IMPLEMENT_MAIN() {
         int side = 0;
         for (sal_uInt32 i = 0; i != args; ++i) {
             bool delimiter = false;
-            OUString uri(getArgumentUri(i, side == 0 ? &delimiter : 0));
+            OUString uri(getArgumentUri(i, side == 0 ? &delimiter : nullptr));
             if (delimiter) {
                 side = 1;
             } else {
@@ -1195,6 +1195,9 @@ SAL_IMPLEMENT_MAIN() {
         std::cerr
             << "Bad input <" << e1.getUri() << ">: " << e1.getDetail()
             << std::endl;
+        std::exit(EXIT_FAILURE);
+    } catch (std::exception & e1) {
+        std::cerr << "Failure: " << e1.what() << std::endl;
         std::exit(EXIT_FAILURE);
     }
 }

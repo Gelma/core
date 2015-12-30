@@ -137,7 +137,7 @@ void SAL_CALL ClipboardListener::changedContents( const ClipboardEvent& event )
     throw(RuntimeException)
 {
     m_nReceivedChangedContentsEvents++;
-    m_xClipboard = Reference< XClipboard > (event.Source, UNO_QUERY);
+    m_xClipboard.set(event.Source, UNO_QUERY);
     m_xTransferable = event.Contents;
 }
 
@@ -290,7 +290,7 @@ int SAL_CALL main( int argc, const char* argv[] )
         arguments[0] = makeAny( OUString("generic") );
 
         Reference< XClipboard > xClipboard( xServiceManager->createInstanceWithArguments(
-            OUString("com.sun.star.datatransfer.clipboard.GenericClipboard"),
+            "com.sun.star.datatransfer.clipboard.GenericClipboard",
             arguments ), UNO_QUERY );
 
         ENSURE( xClipboard.is(), "*** ERROR *** generic clipboard service could not be created." );
@@ -365,7 +365,7 @@ int SAL_CALL main( int argc, const char* argv[] )
         // create an instance of ClipboardManager service
 
         Reference< XClipboardManager > xClipboardManager( xServiceManager->createInstance(
-            OUString("com.sun.star.datatransfer.clipboard.ClipboardManager") ), UNO_QUERY );
+            "com.sun.star.datatransfer.clipboard.ClipboardManager" ), UNO_QUERY );
 
         ENSURE( xClipboardManager.is(), "*** ERROR *** clipboard manager service could not be created." );
 

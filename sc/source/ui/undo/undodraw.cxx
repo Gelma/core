@@ -23,7 +23,6 @@
 #include "docsh.hxx"
 #include "tabvwsh.hxx"
 
-TYPEINIT1(ScUndoDraw, SfxUndoAction);
 
 ScUndoDraw::ScUndoDraw( SfxUndoAction* pUndo, ScDocShell* pDocSh ) :
     pDrawUndo( pUndo ),
@@ -38,7 +37,7 @@ ScUndoDraw::~ScUndoDraw()
 
 void ScUndoDraw::ForgetDrawUndo()
 {
-    pDrawUndo = NULL;   // do not delete (DrawUndo has to be remembered from outside)
+    pDrawUndo = nullptr;   // do not delete (DrawUndo has to be remembered from outside)
 }
 
 OUString ScUndoDraw::GetComment() const

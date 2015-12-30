@@ -46,7 +46,7 @@ using ::xmloff::token::IsXMLToken;
 using ::xmloff::token::XML_AUTO_TEXT_EVENTS;
 
 XMLAutoTextEventImport::XMLAutoTextEventImport(
-    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& xContext) throw()
+    const css::uno::Reference< css::uno::XComponentContext >& xContext) throw()
 :   SvXMLImport(xContext, "")
 {
 }
@@ -108,8 +108,7 @@ Sequence< OUString > SAL_CALL
     XMLAutoTextEventImport_getSupportedServiceNames()
         throw()
 {
-    Sequence< OUString > aSeq( 1 );
-    aSeq[0] = XMLAutoTextEventImport_getImplementationName();
+    Sequence<OUString> aSeq { XMLAutoTextEventImport_getImplementationName() };
     return aSeq;
 }
 

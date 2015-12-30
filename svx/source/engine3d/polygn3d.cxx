@@ -25,7 +25,6 @@
 #include <basegfx/polygon/b3dpolygon.hxx>
 #include <basegfx/polygon/b3dpolygontools.hxx>
 
-TYPEINIT1(E3dPolygonObj, E3dCompoundObject);
 
 
 // DrawContact section
@@ -220,7 +219,7 @@ void E3dPolygonObj::SetPolyTexture2D(const basegfx::B2DPolyPolygon& rNewPolyText
 
 SdrObject *E3dPolygonObj::DoConvertToPolyObj(bool /*bBezier*/, bool /*bAddText*/) const
 {
-    return NULL;
+    return nullptr;
 }
 
 E3dPolygonObj* E3dPolygonObj::Clone() const

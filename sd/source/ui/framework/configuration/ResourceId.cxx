@@ -109,7 +109,7 @@ ResourceId::~ResourceId()
 
 OUString SAL_CALL
     ResourceId::getResourceURL()
-    throw(com::sun::star::uno::RuntimeException, std::exception)
+    throw(css::uno::RuntimeException, std::exception)
 {
     if (!maResourceURLs.empty())
         return maResourceURLs[0];
@@ -119,9 +119,9 @@ OUString SAL_CALL
 
 util::URL SAL_CALL
     ResourceId::getFullResourceURL()
- throw(com::sun::star::uno::RuntimeException, std::exception)
+ throw(css::uno::RuntimeException, std::exception)
 {
-    if (mpURL.get() != NULL)
+    if (mpURL.get() != nullptr)
         return *mpURL;
 
     Reference<util::XURLTransformer> xURLTransformer (mxURLTransformerWeak);
@@ -215,11 +215,11 @@ sal_Int16 SAL_CALL
     }
     else
     {
-        ResourceId* pId = NULL;
+        ResourceId* pId = nullptr;
 #ifdef USE_OPTIMIZATIONS
         pId = dynamic_cast<ResourceId*>(rxResourceId.get());
 #endif
-        if (pId != NULL)
+        if (pId != nullptr)
         {
             // We have direct access to the implementation of the given
             // resource id object.
@@ -332,14 +332,14 @@ sal_Bool SAL_CALL
     if ( ! rxResourceId.is())
     {
         // An empty reference is interpreted as empty resource id.
-        return IsBoundToAnchor(NULL, NULL, eMode);
+        return IsBoundToAnchor(nullptr, nullptr, eMode);
     }
 
-    ResourceId* pId = NULL;
+    ResourceId* pId = nullptr;
 #ifdef USE_OPTIMIZATIONS
     pId = dynamic_cast<ResourceId*>(rxResourceId.get());
 #endif
-    if (pId != NULL)
+    if (pId != nullptr)
     {
         return IsBoundToAnchor(pId->maResourceURLs, eMode);
     }
@@ -357,7 +357,7 @@ sal_Bool SAL_CALL
         AnchorBindingMode eMode)
     throw (RuntimeException, std::exception)
 {
-    return IsBoundToAnchor(&rsAnchorURL, NULL, eMode);
+    return IsBoundToAnchor(&rsAnchorURL, nullptr, eMode);
 }
 
 Reference<XResourceId> SAL_CALL
@@ -428,9 +428,9 @@ bool ResourceId::IsBoundToAnchor (
     AnchorBindingMode eMode) const
 {
     const sal_uInt32 nLocalAnchorURLCount (maResourceURLs.size() - 1);
-    const bool bHasFirstAnchorURL (psFirstAnchorURL!=NULL);
+    const bool bHasFirstAnchorURL (psFirstAnchorURL!=nullptr);
     const sal_uInt32 nAnchorURLCount ((bHasFirstAnchorURL?1:0)
-        + (paAnchorURLs!=NULL ? paAnchorURLs->getLength() : 0));
+        + (paAnchorURLs!=nullptr ? paAnchorURLs->getLength() : 0));
 
     // Check the lengths.
     if (nLocalAnchorURLCount<nAnchorURLCount ||
@@ -442,7 +442,7 @@ bool ResourceId::IsBoundToAnchor (
     // Compare the nAnchorURLCount bottom-most anchor URLs of this resource
     // id and the given anchor.
     sal_uInt32 nOffset = 0;
-    if (paAnchorURLs != NULL)
+    if (paAnchorURLs != nullptr)
     {
         sal_uInt32 nCount = paAnchorURLs->getLength();
         while (nOffset < nCount)
@@ -500,7 +500,7 @@ void ResourceId::ParseResourceURL()
     {
         // Create the URL transformer.
         Reference<uno::XComponentContext> xContext(::comphelper::getProcessComponentContext());
-        xURLTransformer = Reference<util::XURLTransformer>(util::URLTransformer::create(xContext));
+        xURLTransformer.set(util::URLTransformer::create(xContext));
         mxURLTransformerWeak = xURLTransformer;
         SdGlobalResourceContainer::Instance().AddResource(
             Reference<XInterface>(xURLTransformer,UNO_QUERY));
@@ -521,9 +521,9 @@ void ResourceId::ParseResourceURL()
 } } // end of namespace sd::framework
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_Draw_framework_ResourceID_get_implementation(::com::sun::star::uno::XComponentContext*,
-                                                               ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_Draw_framework_ResourceID_get_implementation(css::uno::XComponentContext*,
+                                                               css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new sd::framework::ResourceId());
 }

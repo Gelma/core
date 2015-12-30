@@ -219,7 +219,7 @@ void SbiCodeGen::Save()
                     }
                 }
             }
-            SbMethod* pMeth = NULL;
+            SbMethod* pMeth = nullptr;
             for( sal_uInt16 nPass = 0 ; nPass < nPassCount ; nPass++ )
             {
                 if( nPass == 1 )
@@ -336,7 +336,7 @@ void SbiCodeGen::Save()
                         {
                             nUserData |= PARAM_INFO_WITHBRACKETS;
                         }
-                        SbxParamInfo* pParam = NULL;
+                        SbxParamInfo* pParam = nullptr;
                         if( nUserData )
                         {
                             pParam = const_cast<SbxParamInfo*>(pInfo->GetParam( i ));
@@ -468,11 +468,11 @@ class OffSetAccumulator : public PCodeVisitor< T >
 public:
 
     OffSetAccumulator() : m_nNumOp0(0), m_nNumSingleParams(0), m_nNumDoubleParams(0){}
-    virtual void start( sal_uInt8* /*pStart*/ ){}
-    virtual void processOpCode0( SbiOpcode /*eOp*/ ){ ++m_nNumOp0; }
-    virtual void processOpCode1( SbiOpcode /*eOp*/, T /*nOp1*/ ){  ++m_nNumSingleParams; }
-    virtual void processOpCode2( SbiOpcode /*eOp*/, T /*nOp1*/, T /*nOp2*/ ) { ++m_nNumDoubleParams; }
-    virtual void end(){}
+    virtual void start( sal_uInt8* /*pStart*/ ) override {}
+    virtual void processOpCode0( SbiOpcode /*eOp*/ ) override { ++m_nNumOp0; }
+    virtual void processOpCode1( SbiOpcode /*eOp*/, T /*nOp1*/ ) override {  ++m_nNumSingleParams; }
+    virtual void processOpCode2( SbiOpcode /*eOp*/, T /*nOp1*/, T /*nOp2*/ ) override { ++m_nNumDoubleParams; }
+    virtual void end() override {}
     S offset()
     {
         T result = 0 ;
@@ -480,25 +480,24 @@ public:
         result = m_nNumOp0 + ( ( sizeof(S) + 1 ) * m_nNumSingleParams ) + ( (( sizeof(S) * 2 )+ 1 )  * m_nNumDoubleParams );
         return std::min(static_cast<T>(max), result);
     }
-   virtual bool processParams(){ return false; }
+   virtual bool processParams() override { return false; }
 };
 
 
 
 template < class T, class S >
-
 class BufferTransformer : public PCodeVisitor< T >
 {
     sal_uInt8* m_pStart;
     SbiBuffer m_ConvertedBuf;
 public:
-    BufferTransformer():m_pStart(NULL), m_ConvertedBuf( NULL, 1024 ) {}
-    virtual void start( sal_uInt8* pStart ){ m_pStart = pStart; }
-    virtual void processOpCode0( SbiOpcode eOp )
+    BufferTransformer():m_pStart(nullptr), m_ConvertedBuf( nullptr, 1024 ) {}
+    virtual void start( sal_uInt8* pStart ) override { m_pStart = pStart; }
+    virtual void processOpCode0( SbiOpcode eOp ) override
     {
         m_ConvertedBuf += (sal_uInt8)eOp;
     }
-    virtual void processOpCode1( SbiOpcode eOp, T nOp1 )
+    virtual void processOpCode1( SbiOpcode eOp, T nOp1 ) override
     {
         m_ConvertedBuf += (sal_uInt8)eOp;
         switch( eOp )
@@ -523,7 +522,7 @@ public:
         }
         m_ConvertedBuf += static_cast<S>(nOp1);
     }
-    virtual void processOpCode2( SbiOpcode eOp, T nOp1, T nOp2 )
+    virtual void processOpCode2( SbiOpcode eOp, T nOp1, T nOp2 ) override
     {
         m_ConvertedBuf += (sal_uInt8)eOp;
         if ( eOp == _CASEIS )
@@ -533,8 +532,8 @@ public:
         m_ConvertedBuf += static_cast<S>(nOp2);
 
     }
-    virtual bool processParams(){ return true; }
-    virtual void end() {}
+    virtual bool processParams() override { return true; }
+    virtual void end() override {}
     // yeuch, careful here, you can only call
     // GetBuffer on the returned SbiBuffer once, also
     // you (as the caller) get to own the memory

@@ -177,7 +177,7 @@ SmViewShell * SmEditWindow::GetView()
 SmDocShell * SmEditWindow::GetDoc()
 {
     SmViewShell *pView = rCmdBox.GetView();
-    return pView ? pView->GetDoc() : 0;
+    return pView ? pView->GetDoc() : nullptr;
 }
 
 EditView * SmEditWindow::GetEditView()
@@ -187,7 +187,7 @@ EditView * SmEditWindow::GetEditView()
 
 EditEngine * SmEditWindow::GetEditEngine()
 {
-    EditEngine *pEditEng = 0;
+    EditEngine *pEditEng = nullptr;
     if (pEditView)
         pEditEng = pEditView->GetEditEngine();
     else
@@ -203,7 +203,7 @@ EditEngine * SmEditWindow::GetEditEngine()
 SfxItemPool * SmEditWindow::GetEditEngineItemPool()
 {
     SmDocShell *pDoc = GetDoc();
-    return pDoc ? &pDoc->GetEditEngineItemPool() : 0;
+    return pDoc ? &pDoc->GetEditEngineItemPool() : nullptr;
 }
 
 void SmEditWindow::ApplyColorConfigValues( const svtools::ColorConfig &rColorCfg )
@@ -238,14 +238,14 @@ void SmEditWindow::DataChanged( const DataChangedEvent& )
         //! see also SmDocShell::GetEditEngine() !
         //!
 
-        pEditEngine->SetDefTab(sal_uInt16(GetTextWidth(OUString("XXXX"))));
+        pEditEngine->SetDefTab(sal_uInt16(GetTextWidth("XXXX")));
 
         SetEditEngineDefaultFonts(*pEditEngineItemPool);
 
         // forces new settings to be used
         // unfortunately this resets the whole edit engine
         // thus we need to save at least the text
-        OUString aTxt( pEditEngine->GetText( LINEEND_LF ) );
+        OUString aTxt( pEditEngine->GetText() );
         pEditEngine->Clear();   //incorrect font size
         pEditEngine->SetText( aTxt );
     }
@@ -347,8 +347,8 @@ void SmEditWindow::Command(const CommandEvent& rCEvt)
         std::unique_ptr<PopupMenu> xPopupMenu(new PopupMenu(SmResId(RID_COMMANDMENU)));
 
         // added for replaceability of context menus
-        Menu* pMenu = NULL;
-        ::com::sun::star::ui::ContextMenuExecuteEvent aEvent;
+        Menu* pMenu = nullptr;
+        css::ui::ContextMenuExecuteEvent aEvent;
         aEvent.SourceWindow = VCLUnoHelper::GetInterface( this );
         aEvent.ExecutePosition.X = aPoint.X();
         aEvent.ExecutePosition.Y = aPoint.Y();
@@ -414,7 +414,7 @@ void SmEditWindow::KeyInput(const KeyEvent& rKEvt)
     {
         bool bCallBase = true;
         SfxViewShell* pViewShell = GetView();
-        if ( pViewShell && pViewShell->ISA(SmViewShell) )
+        if ( pViewShell && dynamic_cast<const SmViewShell *>(pViewShell) != nullptr )
         {
             // Terminate possible InPlace mode
             bCallBase = !pViewShell->Escape();
@@ -435,7 +435,11 @@ void SmEditWindow::KeyInput(const KeyEvent& rKEvt)
         aSelection.Adjust();
         OUString selected = pEditView->GetEditEngine()->GetText(aSelection);
 
-        if (selected.trim() == "<?>")
+        // Check is auto close brackets/braces is disabled
+        SmModule *pMod = SM_MOD();
+        if (pMod && !pMod->GetConfig()->IsAutoCloseBrackets())
+            autoClose = false;
+        else if (selected.trim() == "<?>")
             autoClose = true;
         else if (selected.isEmpty() && !aSelection.HasRange())
         {
@@ -482,7 +486,7 @@ void SmEditWindow::KeyInput(const KeyEvent& rKEvt)
                 // SFX has maybe called a slot of the view and thus (because of a hack in SFX)
                 // set the focus to the view
                 SfxViewShell* pVShell = GetView();
-                if ( pVShell && pVShell->ISA(SmViewShell) &&
+                if ( pVShell && dynamic_cast<const SmViewShell *>(pVShell) != nullptr &&
                      static_cast<SmViewShell*>(pVShell)->GetGraphicWindow().HasFocus() )
                 {
                     GrabFocus();
@@ -560,7 +564,7 @@ void SmEditWindow::CreateEditView()
 
         pEditView->SetSelection(eSelection);
         Update();
-        pEditView->ShowCursor(true);
+        pEditView->ShowCursor();
 
         pEditEngine->SetStatusEventHdl( LINK(this, SmEditWindow, EditStatusHdl) );
         SetPointer(pEditView->GetPointer());
@@ -657,7 +661,7 @@ OUString SmEditWindow::GetText() const
     EditEngine *pEditEngine = const_cast< SmEditWindow* >(this)->GetEditEngine();
     OSL_ENSURE( pEditEngine, "EditEngine missing" );
     if (pEditEngine)
-        aText = pEditEngine->GetText( LINEEND_LF );
+        aText = pEditEngine->GetText();
     return aText;
 }
 
@@ -739,7 +743,7 @@ bool SmEditWindow::IsAllSelected() const
         sal_Int32 nParaCnt = pEditEngine->GetParagraphCount();
         if (!(nParaCnt - 1))
         {
-            sal_Int32 nTextLen = pEditEngine->GetText( LINEEND_LF ).getLength();
+            sal_Int32 nTextLen = pEditEngine->GetText().getLength();
             bRes = !eSelection.nStartPos && (eSelection.nEndPos == nTextLen - 1);
         }
         else
@@ -1011,7 +1015,6 @@ void SmEditWindow::InsertText(const OUString& rText)
         ESelection aSelection = pEditView->GetSelection();
         OUString aCurrentFormula = pEditView->GetEditEngine()->GetText();
         sal_Int32 nStartIndex = 0;
-        sal_Int32 nEndIndex = 0;
 
         // get the start position (when we get a multi line formula)
         for (sal_Int32 nParaPos = 0; nParaPos < aSelection.nStartPara; nParaPos++)
@@ -1019,15 +1022,14 @@ void SmEditWindow::InsertText(const OUString& rText)
 
         nStartIndex += aSelection.nStartPos;
 
-        // get the end position (when we get a multi line formula)
-        for (sal_Int32 nParaPos = 0; nParaPos < aSelection.nEndPara; nParaPos++)
-             nEndIndex = aCurrentFormula.indexOf("\n", nEndIndex) + 1;
-
-        nEndIndex += aSelection.nEndPos;
-
         // TODO: unify this function with the InsertCommand: The do the same thing for different
         // callers
         OUString string(rText);
+
+        OUString selected(pEditView->GetSelected());
+        // if we have text selected, use it in the first placeholder
+        if (!selected.isEmpty())
+            string = string.replaceFirst("<?>", selected);
 
         // put a space before a new command if not in the beginning of a line
         if (aSelection.nStartPos > 0 && aCurrentFormula[nStartIndex - 1] != ' ')

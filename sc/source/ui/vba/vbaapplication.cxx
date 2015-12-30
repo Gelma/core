@@ -101,7 +101,6 @@ using ::com::sun::star::uno::UNO_QUERY;
 /** Global application settings shared by all open workbooks. */
 struct ScVbaAppSettings
 {
-    sal_Int32 mnCalculation;
     bool mbDisplayAlerts;
     bool mbEnableEvents;
     bool mbExcel4Menus;
@@ -112,7 +111,6 @@ struct ScVbaAppSettings
 };
 
 ScVbaAppSettings::ScVbaAppSettings() :
-    mnCalculation( excel::XlCalculation::xlCalculationAutomatic ),
     mbDisplayAlerts( true ),
     mbEnableEvents( true ),
     mbExcel4Menus( false ),
@@ -334,7 +332,7 @@ ScVbaApplication::Worksheets( const uno::Any& aIndex ) throw (uno::RuntimeExcept
 }
 
 uno::Any SAL_CALL
-ScVbaApplication::WorksheetFunction( ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+ScVbaApplication::WorksheetFunction( ) throw (css::uno::RuntimeException, std::exception)
 {
     return uno::makeAny( uno::Reference< script::XInvocation >( new ScVbaWSFunction( this, mxContext ) ) );
 }
@@ -461,7 +459,7 @@ ScVbaApplication::wait( double time ) throw (uno::RuntimeException, std::excepti
     SbxVariableRef aRef = new SbxVariable;
     aRef->PutDouble( time );
     aArgs->Put(  aRef, 1 );
-    SbMethod* pMeth = static_cast<SbMethod*>(pBasic->GetRtl()->Find( OUString("WaitUntil"), SbxCLASS_METHOD ));
+    SbMethod* pMeth = static_cast<SbMethod*>(pBasic->GetRtl()->Find( "WaitUntil", SbxCLASS_METHOD ));
 
     if ( pMeth )
     {
@@ -485,7 +483,7 @@ ScVbaApplication::Names( const css::uno::Any& aIndex ) throw ( uno::RuntimeExcep
     uno::Reference< frame::XModel > xModel( getCurrentDocument(), uno::UNO_QUERY_THROW );
     uno::Reference< beans::XPropertySet > xPropertySet( xModel, uno::UNO_QUERY_THROW );
     uno::Reference< sheet::XNamedRanges > xNamedRanges( xPropertySet->getPropertyValue(
-        OUString( "NamedRanges" ) ), uno::UNO_QUERY_THROW );
+        "NamedRanges" ), uno::UNO_QUERY_THROW );
 
     css::uno::Reference< excel::XNames > xNames ( new ScVbaNames( this , mxContext , xNamedRanges , xModel ) );
     if (  aIndex.getValueTypeClass() == uno::TypeClass_VOID )
@@ -752,7 +750,7 @@ ScVbaApplication::setDisplayFullScreen( sal_Bool bSet )  throw (uno::RuntimeExce
     // #FIXME calling  ScViewUtil::SetFullScreen( *pShell, bSet );
     // directly results in a strange crash, using dispatch instead
     if ( bSet != getDisplayFullScreen() )
-        dispatchRequests( getCurrentDocument(), OUString(".uno:FullScreen") );
+        dispatchRequests( getCurrentDocument(), ".uno:FullScreen" );
 }
 
 sal_Bool SAL_CALL
@@ -860,7 +858,7 @@ static uno::Reference< util::XPathSettings > lcl_getPathSettingsService( const u
     return xPathSettings;
 }
 
-OUString ScVbaApplication::getOfficePath( const OUString& _sPathType ) throw (uno::RuntimeException)
+OUString ScVbaApplication::getOfficePath( const OUString& _sPathType ) throw (uno::RuntimeException, std::exception)
 {
     OUString sRetPath;
     uno::Reference< util::XPathSettings > xProps = lcl_getPathSettingsService( mxContext );
@@ -894,19 +892,19 @@ ScVbaApplication::setDefaultFilePath( const OUString& DefaultFilePath ) throw (u
 OUString SAL_CALL
 ScVbaApplication::getDefaultFilePath() throw (uno::RuntimeException, std::exception)
 {
-    return getOfficePath( OUString("Work"));
+    return getOfficePath( "Work");
 }
 
 OUString SAL_CALL
 ScVbaApplication::getLibraryPath() throw (uno::RuntimeException, std::exception)
 {
-    return getOfficePath( OUString("Basic"));
+    return getOfficePath( "Basic");
 }
 
 OUString SAL_CALL
 ScVbaApplication::getTemplatesPath() throw (uno::RuntimeException, std::exception)
 {
-    return getOfficePath( OUString("Template"));
+    return getOfficePath( "Template");
 }
 
 OUString SAL_CALL
@@ -1085,7 +1083,7 @@ uno::Reference< excel::XRange > lclCreateVbaRange(
         uno::Reference< sheet::XSheetCellRangeContainer > xRanges( new ScCellRangesObj( pDocShell, aCellRanges ) );
         return new ScVbaRange( excel::getUnoSheetModuleObj( xRanges ), rxContext, xRanges );
     }
-    return 0;
+    return nullptr;
 }
 
 } // namespace
@@ -1235,7 +1233,7 @@ ScVbaApplication::getDisplayFormulaBar()
         reqList.Put( sfxFormBar );
 
         pViewShell->GetState( reqList );
-        const SfxPoolItem *pItem=0;
+        const SfxPoolItem *pItem=nullptr;
         if ( reqList.GetItemState( FID_TOGGLEINPUTLINE, false, &pItem ) == SfxItemState::SET )
             bRes = static_cast<const SfxBoolItem*>(pItem)->GetValue();
     }
@@ -1260,7 +1258,7 @@ uno::Any SAL_CALL
 ScVbaApplication::Caller( const uno::Any& /*aIndex*/ ) throw ( uno::RuntimeException, std::exception )
 {
     StarBASIC* pBasic = SfxApplication::GetBasic();
-    SbMethod* pMeth = static_cast<SbMethod*>(pBasic->GetRtl()->Find( OUString("FuncCaller"), SbxCLASS_METHOD ));
+    SbMethod* pMeth = static_cast<SbMethod*>(pBasic->GetRtl()->Find( "FuncCaller", SbxCLASS_METHOD ));
     uno::Any aRet;
     if ( pMeth )
     {

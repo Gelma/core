@@ -156,7 +156,7 @@ private:
         ::std::sort( aProperties.begin(), aProperties.end(),
                      ::chart::PropertyNameLess() );
 
-        return ::chart::ContainerHelper::ContainerToSequence( aProperties );
+        return comphelper::containerToSequence( aProperties );
     }
 };
 
@@ -190,7 +190,7 @@ RegressionCurveModel::RegressionCurveModel(
     m_xContext( xContext ),
     m_eRegressionCurveType( eCurveType ),
         m_xModifyEventForwarder( ModifyListenerHelper::createModifyEventForwarder()),
-        m_xEquationProperties( new RegressionEquation( xContext ))
+        m_xEquationProperties( new RegressionEquation )
 {
     // set 0 line width (default) hard, so that it is always written to XML,
     // because the old implementation uses different defaults

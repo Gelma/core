@@ -55,19 +55,13 @@ namespace comphelper
     OAccessibleImplementationAccess::~OAccessibleImplementationAccess( )
     {
         delete m_pImpl;
-        m_pImpl = NULL;
+        m_pImpl = nullptr;
     }
 
 
     Reference< XAccessible > OAccessibleImplementationAccess::implGetForeignControlledParent( ) const
     {
         return m_pImpl->m_xAccParent;
-    }
-
-
-    void OAccessibleImplementationAccess::setAccessibleParent( const Reference< XAccessible >& _rxAccParent )
-    {
-        m_pImpl->m_xAccParent = _rxAccParent;
     }
 
 
@@ -97,39 +91,6 @@ namespace comphelper
 
         return nReturn;
     }
-
-
-    OAccessibleImplementationAccess* OAccessibleImplementationAccess::getImplementation( const Reference< XAccessibleContext >& _rxComponent )
-    {
-        OAccessibleImplementationAccess* pImplementation = NULL;
-        try
-        {
-            Reference< XUnoTunnel > xTunnel( _rxComponent, UNO_QUERY );
-            if ( xTunnel.is() )
-            {
-                pImplementation = reinterpret_cast< OAccessibleImplementationAccess* >(
-                        xTunnel->getSomething( getUnoTunnelImplementationId() ) );
-            }
-        }
-        catch( const Exception& )
-        {
-            OSL_FAIL( "OAccessibleImplementationAccess::setAccessibleParent: caught an exception while retrieving the implementation!" );
-        }
-        return pImplementation;
-    }
-
-
-    bool OAccessibleImplementationAccess::setAccessibleParent(
-            const Reference< XAccessibleContext >& _rxComponent, const Reference< XAccessible >& _rxNewParent )
-    {
-        OAccessibleImplementationAccess* pImplementation = getImplementation( _rxComponent );
-
-        if ( pImplementation )
-            pImplementation->setAccessibleParent( _rxNewParent );
-
-        return ( NULL != pImplementation );
-    }
-
 
 }   // namespace comphelper
 

@@ -49,16 +49,16 @@ const sal_Unicode cBulletChar = 0x2022; ///< Character for lists.
 
 class SW_DLLPUBLIC SwNumFormat : public SvxNumberFormat, public SwClient
 {
-    SwFormatVertOrient* pVertOrient;
+    SwFormatVertOrient* m_pVertOrient;
     //For i120928,record the cp info of graphic within bullet
-    sal_Unicode     cGrfBulletCP;
+    sal_Unicode     m_cGrfBulletCP;
     SAL_DLLPRIVATE void UpdateNumNodes( SwDoc* pDoc );
 
     using SvxNumberFormat::operator ==;
     using SvxNumberFormat::operator !=;
 
 protected:
-   virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNew ) SAL_OVERRIDE;
+   virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNew ) override;
 
 public:
     SwNumFormat();
@@ -76,16 +76,16 @@ public:
     void       SetCharFormat( SwCharFormat* );
 
     void                    SetCharFormatName(const OUString& rSet);
-    virtual OUString        GetCharFormatName() const SAL_OVERRIDE;
+    virtual OUString        GetCharFormatName() const override;
 
     //For i120928,access the cp info of graphic within bullet
-    void            SetGrfBulletCP(sal_Unicode cP){cGrfBulletCP = cP;}
-    sal_Unicode     GetGrfBulletCP() const {return cGrfBulletCP;}
+    void            SetGrfBulletCP(sal_Unicode cP){m_cGrfBulletCP = cP;}
+    sal_Unicode     GetGrfBulletCP() const {return m_cGrfBulletCP;}
 
-    virtual void    SetGraphicBrush( const SvxBrushItem* pBrushItem, const Size* pSize = 0, const sal_Int16* pOrient = 0) SAL_OVERRIDE;
+    virtual void    SetGraphicBrush( const SvxBrushItem* pBrushItem, const Size* pSize = nullptr, const sal_Int16* pOrient = nullptr) override;
 
-    virtual void                SetVertOrient(sal_Int16 eSet) SAL_OVERRIDE;
-    virtual sal_Int16   GetVertOrient() const SAL_OVERRIDE;
+    virtual void                SetVertOrient(sal_Int16 eSet) override;
+    virtual sal_Int16   GetVertOrient() const override;
     const SwFormatVertOrient*      GetGraphicOrientation() const;
 
     bool IsEnumeration() const; // #i22362#
@@ -173,7 +173,7 @@ public:
                           const bool bInclStrings = true,
                           const bool bOnlyArabic = false,
                           const unsigned int _nRestrictToThisLevel = MAXLEVEL,
-                          Extremities* pExtremities = 0 ) const;
+                          Extremities* pExtremities = nullptr ) const;
     OUString MakeRefNumString( const SwNodeNum& rNodeNum,
                              const bool bInclSuperiorNumLabels = false,
                              const sal_uInt8 nRestrictInclToThisLevel = 0 ) const;
@@ -272,8 +272,8 @@ public:
 
     void Validate();
     void dumpAsXml(xmlTextWriterPtr w) const;
-    void GetGrabBagItem(com::sun::star::uno::Any& rVal) const;
-    void SetGrabBagItem(const com::sun::star::uno::Any& rVal);
+    void GetGrabBagItem(css::uno::Any& rVal) const;
+    void SetGrabBagItem(const css::uno::Any& rVal);
 };
 
 /// namespace for static functions and methods for numbering and bullets

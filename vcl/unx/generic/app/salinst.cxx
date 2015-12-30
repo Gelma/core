@@ -151,11 +151,11 @@ bool X11SalInstance::AnyInput(VclInputFlags nType)
     return bRet;
 }
 
-void X11SalInstance::DoYield(bool bWait, bool bHandleAllCurrentEvents, sal_uLong const nReleased)
+SalYieldResult X11SalInstance::DoYield(bool bWait, bool bHandleAllCurrentEvents, sal_uLong const nReleased)
 {
     (void) nReleased;
     assert(nReleased == 0); // not implemented
-    mpXLib->Yield( bWait, bHandleAllCurrentEvents );
+    return mpXLib->Yield( bWait, bHandleAllCurrentEvents );
 }
 
 void* X11SalInstance::GetConnectionIdentifier( ConnectionIdentifierType& rReturnedType,
@@ -167,16 +167,16 @@ void* X11SalInstance::GetConnectionIdentifier( ConnectionIdentifierType& rReturn
     return pDisplay ? const_cast<char *>(pDisplay) : const_cast<char *>("");
 }
 
-SalFrame *X11SalInstance::CreateFrame( SalFrame *pParent, sal_uLong nSalFrameStyle )
+SalFrame *X11SalInstance::CreateFrame( SalFrame *pParent, SalFrameStyleFlags nSalFrameStyle )
 {
     SalFrame *pFrame = new X11SalFrame( pParent, nSalFrameStyle );
 
     return pFrame;
 }
 
-SalFrame* X11SalInstance::CreateChildFrame( SystemParentData* pParentData, sal_uLong nStyle )
+SalFrame* X11SalInstance::CreateChildFrame( SystemParentData* pParentData, SalFrameStyleFlags nStyle )
 {
-    SalFrame* pFrame = new X11SalFrame( NULL, nStyle, pParentData );
+    SalFrame* pFrame = new X11SalFrame( nullptr, nStyle, pParentData );
 
     return pFrame;
 }
@@ -190,16 +190,14 @@ extern "C" { static void SAL_CALL thisModule() {} }
 
 void X11SalInstance::AddToRecentDocumentList(const OUString& rFileUrl, const OUString& rMimeType, const OUString& rDocumentService)
 {
-    const OUString SYM_ADD_TO_RECENTLY_USED_FILE_LIST("add_to_recently_used_file_list");
-    const OUString LIB_RECENT_FILE("librecentfile.so");
     typedef void (*PFUNC_ADD_TO_RECENTLY_USED_LIST)(const OUString&, const OUString&, const OUString&);
 
-    PFUNC_ADD_TO_RECENTLY_USED_LIST add_to_recently_used_file_list = 0;
+    PFUNC_ADD_TO_RECENTLY_USED_LIST add_to_recently_used_file_list = nullptr;
 
     osl::Module module;
-    module.loadRelative( &thisModule, LIB_RECENT_FILE );
+    module.loadRelative( &thisModule, "librecentfile.so" );
     if (module.is())
-        add_to_recently_used_file_list = reinterpret_cast<PFUNC_ADD_TO_RECENTLY_USED_LIST>(module.getFunctionSymbol(SYM_ADD_TO_RECENTLY_USED_FILE_LIST));
+        add_to_recently_used_file_list = reinterpret_cast<PFUNC_ADD_TO_RECENTLY_USED_LIST>(module.getFunctionSymbol("add_to_recently_used_file_list"));
     if (add_to_recently_used_file_list)
         add_to_recently_used_file_list(rFileUrl, rMimeType, rDocumentService);
 }
@@ -210,7 +208,7 @@ void X11SalInstance::PostPrintersChanged()
     const std::list< SalFrame* >& rList = pDisp->getFrames();
     for( std::list< SalFrame* >::const_iterator it = rList.begin();
          it != rList.end(); ++it )
-        pDisp->SendInternalEvent( *it, NULL, SALEVENT_PRINTERCHANGED );
+        pDisp->SendInternalEvent( *it, nullptr, SALEVENT_PRINTERCHANGED );
 }
 
 GenPspGraphics *X11SalInstance::CreatePrintGraphics()

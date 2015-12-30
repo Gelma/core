@@ -22,6 +22,8 @@
 #include <sfx2/sidebar/ControlFactory.hxx>
 #include <com/sun/star/chart2/LegendPosition.hpp>
 #include <com/sun/star/chart/ChartLegendExpansion.hpp>
+#include <com/sun/star/chart2/XChartTypeContainer.hpp>
+#include <com/sun/star/chart2/XCoordinateSystemContainer.hpp>
 
 #include "ChartElementsPanel.hxx"
 #include "ChartController.hxx"
@@ -40,6 +42,7 @@
 #include "ChartModelHelper.hxx"
 #include "AxisHelper.hxx"
 #include "DiagramHelper.hxx"
+#include "ChartTypeHelper.hxx"
 
 #include "ChartModel.hxx"
 
@@ -273,7 +276,6 @@ ChartElementsPanel::ChartElementsPanel(
     const css::uno::Reference<css::frame::XFrame>& rxFrame,
     ChartController* pController)
   : PanelLayout(pParent, "ChartElementsPanel", "modules/schart/ui/sidebarelements.ui", rxFrame),
-    mxFrame(rxFrame),
     maContext(),
     mxModel(pController->getModel()),
     mxListener(new ChartSidebarModifyListener(this)),
@@ -297,6 +299,9 @@ ChartElementsPanel::ChartElementsPanel(
     get(mpCBGridVerticalMinor,  "checkbutton_gridline_vertical_minor");
     get(mpCBGridHorizontalMinor,  "checkbutton_gridline_horizontal_minor");
 
+    get(mpLBAxis, "label_axes");
+    get(mpLBGrid, "label_gri");
+
     get(mpLBLegendPosition, "comboboxtext_legend");
     get(mpBoxLegend, "box_legend");
 
@@ -316,7 +321,6 @@ ChartElementsPanel::~ChartElementsPanel()
 
 void ChartElementsPanel::dispose()
 {
-
     css::uno::Reference<css::util::XModifyBroadcaster> xBroadcaster(mxModel, css::uno::UNO_QUERY_THROW);
     xBroadcaster->removeModifyListener(mxListener);
     mpCBTitle.clear();
@@ -339,6 +343,9 @@ void ChartElementsPanel::dispose()
 
     mpLBLegendPosition.clear();
     mpBoxLegend.clear();
+
+    mpLBAxis.clear();
+    mpLBGrid.clear();
 
     mpTextTitle.clear();
     mpTextSubTitle.clear();
@@ -374,6 +381,26 @@ void ChartElementsPanel::Initialize()
     mpLBLegendPosition->SetSelectHdl(LINK(this, ChartElementsPanel, LegendPosHdl));
 }
 
+namespace {
+
+css::uno::Reference<css::chart2::XChartType> getChartType(css::uno::Reference<css::frame::XModel> xModel)
+{
+    css::uno::Reference<css::chart2::XChartDocument> xChartDoc(xModel, css::uno::UNO_QUERY_THROW);
+    css::uno::Reference<chart2::XDiagram > xDiagram = xChartDoc->getFirstDiagram();
+
+    css::uno::Reference<css::chart2::XCoordinateSystemContainer > xCooSysContainer( xDiagram, css::uno::UNO_QUERY_THROW );
+
+    css::uno::Sequence<css::uno::Reference<css::chart2::XCoordinateSystem>> xCooSysSequence(xCooSysContainer->getCoordinateSystems());
+
+    css::uno::Reference<css::chart2::XChartTypeContainer> xChartTypeContainer(xCooSysSequence[0], css::uno::UNO_QUERY_THROW);
+
+    css::uno::Sequence<css::uno::Reference<css::chart2::XChartType>> xChartTypeSequence(xChartTypeContainer->getChartTypes());
+
+    return xChartTypeSequence[0];
+}
+
+}
+
 void ChartElementsPanel::updateData()
 {
     if (!mbModelValid)
@@ -401,6 +428,40 @@ void ChartElementsPanel::updateData()
     mpCB2ndXAxis->Check(isAxisVisible(mxModel, AxisType::X_SECOND));
     mpCB2ndYAxis->Check(isAxisVisible(mxModel, AxisType::Y_SECOND));
 
+
+    bool bSupportsMainAxis = ChartTypeHelper::isSupportingMainAxis(
+            getChartType(mxModel), 0, 0);
+    if (bSupportsMainAxis)
+    {
+        mpCBXAxis->Show();
+        mpCBYAxis->Show();
+        mpCBZAxis->Show();
+        mpCBXAxisTitle->Show();
+        mpCBYAxisTitle->Show();
+        mpCBZAxisTitle->Show();
+        mpCBGridVerticalMajor->Show();
+        mpCBGridVerticalMinor->Show();
+        mpCBGridHorizontalMajor->Show();
+        mpCBGridHorizontalMinor->Show();
+        mpLBAxis->Show();
+        mpLBGrid->Show();
+    }
+    else
+    {
+        mpCBXAxis->Hide();
+        mpCBYAxis->Hide();
+        mpCBZAxis->Hide();
+        mpCBXAxisTitle->Hide();
+        mpCBYAxisTitle->Hide();
+        mpCBZAxisTitle->Hide();
+        mpCBGridVerticalMajor->Hide();
+        mpCBGridVerticalMinor->Hide();
+        mpCBGridHorizontalMajor->Hide();
+        mpCBGridHorizontalMinor->Hide();
+        mpLBAxis->Hide();
+        mpLBGrid->Hide();
+    }
+
     if (nDimension == 3)
     {
         mpCBZAxis->Enable();
@@ -420,10 +481,10 @@ VclPtr<vcl::Window> ChartElementsPanel::Create (
     const css::uno::Reference<css::frame::XFrame>& rxFrame,
     ChartController* pController)
 {
-    if (pParent == NULL)
-        throw lang::IllegalArgumentException("no parent Window given to ChartElementsPanel::Create", NULL, 0);
+    if (pParent == nullptr)
+        throw lang::IllegalArgumentException("no parent Window given to ChartElementsPanel::Create", nullptr, 0);
     if ( ! rxFrame.is())
-        throw lang::IllegalArgumentException("no XFrame given to ChartElementsPanel::Create", NULL, 1);
+        throw lang::IllegalArgumentException("no XFrame given to ChartElementsPanel::Create", nullptr, 1);
     return  VclPtr<ChartElementsPanel>::Create(
                         pParent, rxFrame, pController);
 }
@@ -511,11 +572,10 @@ IMPL_LINK_TYPED(ChartElementsPanel, CheckBoxHdl, Button*, pButton, void)
         setGridVisible(mxModel, GridType::HOR_MINOR, bChecked);
 }
 
-IMPL_LINK_NOARG(ChartElementsPanel, LegendPosHdl)
+IMPL_LINK_NOARG_TYPED(ChartElementsPanel, LegendPosHdl, ListBox&, void)
 {
     sal_Int32 nPos = mpLBLegendPosition->GetSelectEntryPos();
     setLegendPos(mxModel, nPos);
-    return 0;
 }
 
 void ChartElementsPanel::setTitleVisible(TitleHelper::eTitleType eTitle, bool bVisible)

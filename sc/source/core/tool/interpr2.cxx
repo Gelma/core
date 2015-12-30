@@ -213,7 +213,44 @@ void ScInterpreter::ScGetWeekOfYear()
 
         Date aDate = *(pFormatter->GetNullDate());
         aDate += (long)::rtl::math::approxFloor(GetDouble());
-        PushInt( (int) aDate.GetWeekOfYear( nFlag == 1 ? SUNDAY : MONDAY ));
+
+        sal_Int32 nMinimumNumberOfDaysInWeek;
+        DayOfWeek eFirstDayOfWeek;
+        switch ( nFlag )
+        {
+            case   1 :
+            case  11 :
+            case   2 :
+            case  12 :
+            case  13 :
+            case  14 :
+            case  15 :
+            case  16 :
+            case  17 :
+                eFirstDayOfWeek = (DayOfWeek) ( ( nFlag - 1 )  % 10 );
+                nMinimumNumberOfDaysInWeek = 1; //the week containing January 1 is week 1
+                break;
+            case  21 :
+            case 150 :
+                // ISO 8601
+                eFirstDayOfWeek = MONDAY;
+                nMinimumNumberOfDaysInWeek = 4;
+                break;
+            default :
+                PushIllegalArgument();
+                return;
+        }
+        PushInt( (int) aDate.GetWeekOfYear( eFirstDayOfWeek, nMinimumNumberOfDaysInWeek ) );
+    }
+}
+
+void ScInterpreter::ScGetIsoWeekOfYear()
+{
+    if ( MustHaveParamCount( GetByte(), 1 ) )
+    {
+        Date aDate = *(pFormatter->GetNullDate());
+        aDate += (long)::rtl::math::approxFloor(GetDouble());
+        PushInt( (int) aDate.GetWeekOfYear() );
     }
 }
 
@@ -277,7 +314,7 @@ sal_uInt16 ScInterpreter::GetWeekendAndHolidayMasks(
 
     if ( nParamCount >= 3 )
     {
-        GetSortArray( 1, rSortArray, NULL, false, true );
+        GetSortArray( 1, rSortArray, nullptr, false, true );
         size_t nMax = rSortArray.size();
         for ( size_t i = 0; i < nMax; i++ )
             rSortArray.at( i ) = ::rtl::math::approxFloor( rSortArray.at( i ) ) + nNullDate;
@@ -294,7 +331,7 @@ sal_uInt16 ScInterpreter::GetWeekendAndHolidayMasks_MS(
     OUString aWeekendDays;
     if ( nParamCount == 4 )
     {
-        GetSortArray( 1, rSortArray, NULL, true, true );
+        GetSortArray( 1, rSortArray, nullptr, true, true );
         size_t nMax = rSortArray.size();
         for ( size_t i = 0; i < nMax; i++ )
             rSortArray.at( i ) = ::rtl::math::approxFloor( rSortArray.at( i ) ) + nNullDate;
@@ -1126,8 +1163,7 @@ void ScInterpreter::ScNPV()
                     {
                         ScAddress aAdr;
                         PopSingleRef( aAdr );
-                        ScRefCellValue aCell;
-                        aCell.assign(*pDok, aAdr);
+                        ScRefCellValue aCell(*pDok, aAdr);
                         if (!aCell.hasEmptyValue() && aCell.hasNumeric())
                         {
                             double nCellVal = GetCellValue(aAdr, aCell);
@@ -1702,12 +1738,12 @@ bool ScInterpreter::RateIteration( double fNper, double fPayment, double fPv,
     // convert any fPayType situation to fPayType == zero situation
     fFv = fFv - fPayment * fPayType;
     fPv = fPv + fPayment * fPayType;
-    if (fNper == ::rtl::math::round( fNper, 0, rtl_math_RoundingMode_Corrected ))
+    if (fNper == ::rtl::math::round( fNper ))
     { // Nper is an integer value
         fX = fGuess;
-        double fPowN, fPowNminus1;  // for (1.0+fX)^Nper and (1.0+fX)^(Nper-1)
         while (!bFound && nCount < nIterationsMax)
         {
+            double fPowN, fPowNminus1;  // for (1.0+fX)^Nper and (1.0+fX)^(Nper-1)
             fPowNminus1 = pow( 1.0+fX, fNper-1.0);
             fPowN = fPowNminus1 * (1.0+fX);
             if (rtl::math::approxEqual( fabs(fX), 0.0))
@@ -2345,10 +2381,9 @@ static ScDdeLink* lcl_GetDdeLink( sfx2::LinkManager* pLinkMgr,
     size_t nCount = pLinkMgr->GetLinks().size();
     for (size_t i=0; i<nCount; i++ )
     {
-        ::sfx2::SvBaseLink* pBase = *pLinkMgr->GetLinks()[i];
-        if (pBase->ISA(ScDdeLink))
+        ::sfx2::SvBaseLink* pBase = pLinkMgr->GetLinks()[i].get();
+        if (ScDdeLink* pLink = dynamic_cast<ScDdeLink*>(pBase))
         {
-            ScDdeLink* pLink = static_cast<ScDdeLink*>(pBase);
             if ( pLink->GetAppl() == rA &&
                  pLink->GetTopic() == rT &&
                  pLink->GetItem() == rI &&
@@ -2357,7 +2392,7 @@ static ScDdeLink* lcl_GetDdeLink( sfx2::LinkManager* pLinkMgr,
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void ScInterpreter::ScDde()
@@ -2839,8 +2874,7 @@ void ScInterpreter::ScHyperLink()
                     if ( !PopDoubleRefOrSingleRef( aAdr ) )
                         break;
 
-                    ScRefCellValue aCell;
-                    aCell.assign(*pDok, aAdr);
+                    ScRefCellValue aCell(*pDok, aAdr);
                     if (aCell.hasEmptyValue())
                         nResultType = SC_MATVAL_EMPTY;
                     else

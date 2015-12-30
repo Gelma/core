@@ -43,35 +43,14 @@ namespace migration
 
     OUString WordbookMigration_getImplementationName()
     {
-        static OUString* pImplName = 0;
-        if ( !pImplName )
-        {
-            ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );
-            if ( !pImplName )
-            {
-                static OUString aImplName( "com.sun.star.comp.desktop.migration.Wordbooks" );
-                pImplName = &aImplName;
-            }
-        }
-        return *pImplName;
+        return OUString( "com.sun.star.comp.desktop.migration.Wordbooks" );
     }
 
 
 
     Sequence< OUString > WordbookMigration_getSupportedServiceNames()
     {
-        static Sequence< OUString >* pNames = 0;
-        if ( !pNames )
-        {
-            ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );
-            if ( !pNames )
-            {
-                static Sequence< OUString > aNames(1);
-                aNames.getArray()[0] = "com.sun.star.migration.Wordbooks";
-                pNames = &aNames;
-            }
-        }
-        return *pNames;
+        return Sequence< OUString > { "com.sun.star.migration.Wordbooks" };
     }
 
 
@@ -146,15 +125,11 @@ namespace migration
 #define MAX_HEADER_LENGTH 16
 bool IsUserWordbook( const OUString& rFile )
 {
-    static const sal_Char*      pVerStr2    = "WBSWG2";
-    static const sal_Char*      pVerStr5    = "WBSWG5";
-    static const sal_Char*      pVerStr6    = "WBSWG6";
-    static const sal_Char*      pVerOOo7    = "OOoUserDict1";
-
     bool bRet = false;
     SvStream* pStream = ::utl::UcbStreamHelper::CreateStream( OUString(rFile), STREAM_STD_READ );
     if ( pStream && !pStream->GetError() )
     {
+        static const sal_Char*      pVerOOo7    = "OOoUserDict1";
         sal_Size nSniffPos = pStream->Tell();
         static sal_Size nVerOOo7Len = sal::static_int_cast< sal_Size >(strlen( pVerOOo7 ));
         sal_Char pMagicHeader[MAX_HEADER_LENGTH];
@@ -172,9 +147,9 @@ bool IsUserWordbook( const OUString& rFile )
                 {
                    pStream->Read(pMagicHeader, nLen);
                    pMagicHeader[nLen] = '\0';
-                    if ( !strcmp(pMagicHeader, pVerStr2)
-                     ||  !strcmp(pMagicHeader, pVerStr5)
-                     ||  !strcmp(pMagicHeader, pVerStr6) )
+                    if ( !strcmp(pMagicHeader, "WBSWG2")
+                     ||  !strcmp(pMagicHeader, "WBSWG5")
+                     ||  !strcmp(pMagicHeader, "WBSWG6") )
                     bRet = true;
                 }
             }

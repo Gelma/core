@@ -39,7 +39,6 @@ struct PosVecf3
 };
 
 typedef std::vector <glm::vec3> Vertices3D;
-typedef std::vector <glm::vec2> UVs3D;
 typedef std::vector <glm::vec3> Normals3D;
 
 struct MaterialParameters
@@ -60,9 +59,6 @@ struct LightSource
     glm::vec4   lightColor;
     glm::vec4   positionWorldspace;
     float  lightPower;
-    float  pad1;
-    float  pad2;
-    float  pad3;
 };
 
 struct GlobalLights

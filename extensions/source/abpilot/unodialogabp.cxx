@@ -44,7 +44,7 @@ namespace abp
     OABSPilotUno::OABSPilotUno(const Reference< XComponentContext >& _rxORB)
         :OGenericUnoDialog(_rxORB)
     {
-        registerProperty( OUString("DataSourceName"), PROPERTY_ID_DATASOURCENAME, PropertyAttribute::READONLY ,
+        registerProperty( "DataSourceName", PROPERTY_ID_DATASOURCENAME, PropertyAttribute::READONLY ,
             &m_sDataSourceName, cppu::UnoType<decltype(m_sDataSourceName)>::get() );
     }
 
@@ -109,8 +109,7 @@ namespace abp
 
     css::uno::Sequence<OUString> OABSPilotUno::getSupportedServiceNames_Static() throw(RuntimeException)
     {
-        css::uno::Sequence<OUString> aSupported(1);
-        aSupported[0] = "com.sun.star.ui.dialogs.AddressBookSourcePilot";
+        css::uno::Sequence<OUString> aSupported { "com.sun.star.ui.dialogs.AddressBookSourcePilot" };
         return aSupported;
     }
 
@@ -165,9 +164,7 @@ namespace abp
         // User has one chance to accept it or not.
         // (or he can start it again by using wizard-menu!)
         // So we should deregister it on our general job execution service by using right protocol parameters.
-        ::com::sun::star::uno::Sequence< ::com::sun::star::beans::NamedValue > lProtocol(1);
-        lProtocol[0].Name    = "Deactivate";
-        lProtocol[0].Value <<= sal_True;
+        css::uno::Sequence< css::beans::NamedValue > lProtocol { { "Deactivate", css::uno::makeAny( sal_True ) } };
         return makeAny( lProtocol );
     }
 

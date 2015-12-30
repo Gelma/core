@@ -62,11 +62,11 @@ private:
 
     void                    ImpInsertParaBreak();
     void                    ImpInsertText( const OUString& rText );
-    void                    ImpSetAttribs( const SfxItemSet& rItems, EditSelection* pSel = 0 );
+    void                    ImpSetAttribs( const SfxItemSet& rItems, EditSelection* pSel = nullptr );
     void                    ImpSetStyleSheet( sal_uInt16 nHeadingLevel );
 
 protected:
-    virtual void            NextToken( int nToken ) SAL_OVERRIDE;
+    virtual void            NextToken( int nToken ) override;
 
 public:
     EditHTMLParser(SvStream& rIn, const OUString& rBaseURL, SvKeyValueIterator* pHTTPHeaderAttrs);

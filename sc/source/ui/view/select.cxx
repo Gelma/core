@@ -40,15 +40,13 @@ extern sal_uInt16 nScFillModeMouseModifier;             // global.cxx
 
 using namespace com::sun::star;
 
-// STATIC DATA -----------------------------------------------------------
-
 static Point aSwitchPos;                //! Member
 static bool bDidSwitch = false;
 
 // View (Gridwin / keyboard)
 ScViewFunctionSet::ScViewFunctionSet( ScViewData* pNewViewData ) :
         pViewData( pNewViewData ),
-        pEngine( NULL ),
+        pEngine( nullptr ),
         bAnchor( false ),
         bStarted( false )
 {
@@ -206,7 +204,7 @@ void ScViewFunctionSet::BeginDrag()
                 if ( pWindow->IsTracking() )
                     pWindow->EndTracking( TrackingEventFlags::Cancel );    // abort selecting
 
-                SC_MOD()->SetDragObject( pTransferObj, NULL );      // for internal D&D
+                SC_MOD()->SetDragObject( pTransferObj, nullptr );      // for internal D&D
                 pTransferObj->StartDrag( pWindow, nDragActions );
 
                 return;         // dragging started
@@ -776,7 +774,7 @@ void ScHeaderFunctionSet::CreateAnchor()
     pView->DoneBlockMode( true );
     if (bColumn)
     {
-        pView->InitBlockMode( static_cast<SCCOL>(nCursorPos), 0, pViewData->GetTabNo(), true, true, false );
+        pView->InitBlockMode( static_cast<SCCOL>(nCursorPos), 0, pViewData->GetTabNo(), true, true );
         pView->MarkCursor( static_cast<SCCOL>(nCursorPos), MAXROW, pViewData->GetTabNo() );
     }
     else

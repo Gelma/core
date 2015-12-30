@@ -240,7 +240,7 @@ void VCLXAccessibleTabControl::ProcessWindowEvent( const VclWindowEvent& rVclWin
         {
             if ( m_pTabControl )
             {
-                m_pTabControl = NULL;
+                m_pTabControl = nullptr;
 
                 // dispose all tab pages
                 for ( size_t i = 0; i < m_aAccessibleChildren.size(); ++i )
@@ -323,7 +323,7 @@ void VCLXAccessibleTabControl::disposing()
 
     if ( m_pTabControl )
     {
-        m_pTabControl = NULL;
+        m_pTabControl = nullptr;
 
         // dispose all tab pages
         for ( size_t i = 0; i < m_aAccessibleChildren.size(); ++i )
@@ -349,8 +349,7 @@ OUString VCLXAccessibleTabControl::getImplementationName() throw (RuntimeExcepti
 
 Sequence< OUString > VCLXAccessibleTabControl::getSupportedServiceNames() throw (RuntimeException, std::exception)
 {
-    Sequence< OUString > aNames(1);
-    aNames[0] = "com.sun.star.awt.AccessibleTabControl";
+    Sequence< OUString > aNames { "com.sun.star.awt.AccessibleTabControl" };
     return aNames;
 }
 

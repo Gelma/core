@@ -106,10 +106,7 @@ namespace dbtools
             OSL_ENSURE( rxContext.is(), "OPredicateInputController::OPredicateInputController: need a service factory!" );
             if ( rxContext.is() )
             {
-                m_xFormatter = Reference< XNumberFormatter >(
-                    NumberFormatter::create(rxContext),
-                    UNO_QUERY_THROW
-                );
+                m_xFormatter.set( NumberFormatter::create(rxContext), UNO_QUERY_THROW );
             }
 
             Reference< XNumberFormatsSupplier >  xNumberFormats = ::dbtools::getNumberFormats( m_xConnection, true );
@@ -206,7 +203,7 @@ namespace dbtools
                             ::comphelper::getNumberFormatProperty(
                                 m_xFormatter,
                                 nFormatKey,
-                                OUString( "Locale" )
+                                "Locale"
                             ) >>= aFormatLocale;
 
                             // valid locale
@@ -398,7 +395,7 @@ namespace dbtools
                     OSQLParseNode* pFuncSpecParent = pOdbcSpec->getParent();
                     OSL_ENSURE( pFuncSpecParent, "OPredicateInputController::getPredicateValue: an ODBC func spec node without parent?" );
                     if ( pFuncSpecParent )
-                        pFuncSpecParent->parseNodeToStr(sReturn, m_xConnection, &m_aParser.getContext(), false);
+                        pFuncSpecParent->parseNodeToStr(sReturn, m_xConnection, &m_aParser.getContext());
                 }
                 else
                 {
@@ -406,7 +403,7 @@ namespace dbtools
                     if ( SQL_NODE_STRING == pValueNode->getNodeType() )
                         sReturn = pValueNode->getTokenValue();
                     else
-                        pValueNode->parseNodeToStr(sReturn, m_xConnection, &m_aParser.getContext(), false);
+                        pValueNode->parseNodeToStr(sReturn, m_xConnection, &m_aParser.getContext());
                 }
             }
             else
@@ -427,12 +424,12 @@ namespace dbtools
                             sReturn = pValueNode->getTokenValue();
                         else
                             pValueNode->parseNodeToStr(
-                                sReturn, m_xConnection, &m_aParser.getContext(), false
+                                sReturn, m_xConnection, &m_aParser.getContext()
                             );
                     }
                     else
                         pValueNode->parseNodeToStr(
-                            sReturn, m_xConnection, &m_aParser.getContext(), false
+                            sReturn, m_xConnection, &m_aParser.getContext()
                         );
                 }
                 else

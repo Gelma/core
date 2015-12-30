@@ -21,18 +21,18 @@
 
 #include <objectformatter.hxx>
 
-class SwLayoutFrm;
+class SwLayoutFrame;
 
 // Format floating screen objects, which are anchored at a given anchor text frame
 // and registered at the given page frame.
-class SwObjectFormatterLayFrm : public SwObjectFormatter
+class SwObjectFormatterLayFrame : public SwObjectFormatter
 {
     private:
         // anchor layout frame
-        SwLayoutFrm& mrAnchorLayFrm;
+        SwLayoutFrame& mrAnchorLayFrame;
 
-        SwObjectFormatterLayFrm( SwLayoutFrm& _rAnchorLayFrm,
-                                 const SwPageFrm& _rPageFrm,
+        SwObjectFormatterLayFrame( SwLayoutFrame& _rAnchorLayFrame,
+                                 const SwPageFrame& _rPageFrame,
                                  SwLayAction* _pLayAction );
 
         /** method to format all anchored objects, which are registered at
@@ -48,20 +48,20 @@ class SwObjectFormatterLayFrm : public SwObjectFormatter
 
     protected:
 
-        virtual SwFrm& GetAnchorFrm() SAL_OVERRIDE;
+        virtual SwFrame& GetAnchorFrame() override;
 
     public:
-        virtual ~SwObjectFormatterLayFrm();
+        virtual ~SwObjectFormatterLayFrame();
 
         // #i40147# - add parameter <_bCheckForMovedFwd>.
         // Not relevant for objects anchored at layout frame.
         virtual bool DoFormatObj( SwAnchoredObject& _rAnchoredObj,
-                                  const bool _bCheckForMovedFwd = false ) SAL_OVERRIDE;
-        virtual bool DoFormatObjs() SAL_OVERRIDE;
+                                  const bool _bCheckForMovedFwd = false ) override;
+        virtual bool DoFormatObjs() override;
 
-        static SwObjectFormatterLayFrm* CreateObjFormatter(
-                                                SwLayoutFrm& _rAnchorLayFrm,
-                                                const SwPageFrm& _rPageFrm,
+        static SwObjectFormatterLayFrame* CreateObjFormatter(
+                                                SwLayoutFrame& _rAnchorLayFrame,
+                                                const SwPageFrame& _rPageFrame,
                                                 SwLayAction* _pLayAction );
 };
 

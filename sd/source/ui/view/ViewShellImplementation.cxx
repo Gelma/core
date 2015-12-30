@@ -78,7 +78,7 @@ ViewShell::Implementation::~Implementation()
     if ( ! mpUpdateLockForMouse.expired())
     {
         std::shared_ptr<ToolBarManagerLock> pLock(mpUpdateLockForMouse);
-        if (pLock.get() != NULL)
+        if (pLock.get() != nullptr)
         {
             // Force the ToolBarManagerLock to be released even when the
             // IsUICaptured() returns <TRUE/>.
@@ -98,7 +98,7 @@ void ViewShell::Implementation::ProcessModifyPageSlot (
     sal_uInt8 aBckgrndObj = rLayerAdmin.GetLayerID(SD_RESSTR(STR_LAYER_BCKGRNDOBJ), false);
     SetOfByte aVisibleLayers;
     bool bHandoutMode = false;
-    SdPage* pHandoutMPage = NULL;
+    SdPage* pHandoutMPage = nullptr;
     OUString aNewName;
 
     AutoLayout aNewAutoLayout;
@@ -107,14 +107,14 @@ void ViewShell::Implementation::ProcessModifyPageSlot (
     bool bBObjsVisible;
     const SfxItemSet* pArgs = rRequest.GetArgs();
 
-    if (pCurrentPage != NULL && pCurrentPage->TRG_HasMasterPage())
+    if (pCurrentPage != nullptr && pCurrentPage->TRG_HasMasterPage())
         aVisibleLayers = pCurrentPage->TRG_GetMasterPageVisibleLayers();
     else
         aVisibleLayers.SetAll();
 
     do
     {
-        if (pCurrentPage == NULL)
+        if (pCurrentPage == nullptr)
             break;
 
         if (!pArgs || pArgs->Count() == 1 || pArgs->Count() == 2 )
@@ -122,16 +122,16 @@ void ViewShell::Implementation::ProcessModifyPageSlot (
             // First make sure that the sidebar is visible
             mrViewShell.GetViewFrame()->ShowChildWindow(SID_SIDEBAR);
             sfx2::sidebar::Sidebar::ShowPanel(
-                OUString("ImpressLayoutsPanel"),
+                "SdLayoutsPanel",
                 mrViewShell.GetViewFrame()->GetFrame().GetFrameInterface());
             break;
         }
         else if (pArgs->Count() == 4)
         {
-            SFX_REQUEST_ARG (rRequest, pNewName, SfxStringItem, ID_VAL_PAGENAME, false);
-            SFX_REQUEST_ARG (rRequest, pNewAutoLayout, SfxUInt32Item, ID_VAL_WHATLAYOUT, false);
-            SFX_REQUEST_ARG (rRequest, pBVisible, SfxBoolItem, ID_VAL_ISPAGEBACK, false);
-            SFX_REQUEST_ARG (rRequest, pBObjsVisible, SfxBoolItem, ID_VAL_ISPAGEOBJ, false);
+            const SfxStringItem* pNewName = rRequest.GetArg<SfxStringItem>(ID_VAL_PAGENAME);
+            const SfxUInt32Item* pNewAutoLayout = rRequest.GetArg<SfxUInt32Item>(ID_VAL_WHATLAYOUT);
+            const SfxBoolItem* pBVisible = rRequest.GetArg<SfxBoolItem>(ID_VAL_ISPAGEBACK);
+            const SfxBoolItem* pBObjsVisible = rRequest.GetArg<SfxBoolItem>(ID_VAL_ISPAGEOBJ);
             AutoLayout aLayout ((AutoLayout)pNewAutoLayout->GetValue ());
             if (aLayout >= AUTOLAYOUT__START
                 && aLayout < AUTOLAYOUT__END)
@@ -192,7 +192,7 @@ void ViewShell::Implementation::ProcessModifyPageSlot (
                     {
                         sal_uInt16 nPage = (pCurrentPage->GetPageNum()-1) / 2;
                         SdPage* pNotesPage = pDocument->GetSdPage(nPage, PK_NOTES);
-                        if (pNotesPage != NULL)
+                        if (pNotesPage != nullptr)
                             pNotesPage->SetName(aNewName);
                     }
                 }
@@ -234,20 +234,20 @@ void ViewShell::Implementation::ProcessModifyPageSlot (
 
 void ViewShell::Implementation::AssignLayout ( SfxRequest& rRequest, PageKind ePageKind )
 {
-    const SfxUInt32Item* pWhatPage = static_cast< const SfxUInt32Item*  > ( rRequest.GetArg( ID_VAL_WHATPAGE, false, TYPE(SfxUInt32Item) ) );
-    const SfxUInt32Item* pWhatLayout = static_cast< const SfxUInt32Item*  > ( rRequest.GetArg( ID_VAL_WHATLAYOUT, false, TYPE(SfxUInt32Item) ) );
+    const SfxUInt32Item* pWhatPage = rRequest.GetArg<SfxUInt32Item>(ID_VAL_WHATPAGE);
+    const SfxUInt32Item* pWhatLayout = rRequest.GetArg<SfxUInt32Item>(ID_VAL_WHATLAYOUT);
 
     SdDrawDocument* pDocument = mrViewShell.GetDoc();
     if( !pDocument )
         return;
 
-    SdPage* pPage = 0;
+    SdPage* pPage = nullptr;
     if( pWhatPage )
     {
         pPage = pDocument->GetSdPage(static_cast<sal_uInt16>(pWhatPage->GetValue()), ePageKind);
     }
 
-    if( pPage == 0 )
+    if( pPage == nullptr )
         pPage = mrViewShell.getCurrentPage();
 
     if( pPage )
@@ -314,10 +314,10 @@ sal_uInt16 ViewShell::Implementation::GetViewId()
 
 SvxIMapDlg* ViewShell::Implementation::GetImageMapDialog()
 {
-    SvxIMapDlg* pDialog = NULL;
+    SvxIMapDlg* pDialog = nullptr;
     SfxChildWindow* pChildWindow = SfxViewFrame::Current()->GetChildWindow(
         SvxIMapDlgChildWindow::GetChildWindowId());
-    if (pChildWindow != NULL)
+    if (pChildWindow != nullptr)
         pDialog = dynamic_cast<SvxIMapDlg*>(pChildWindow->GetWindow());
     return pDialog;
 }

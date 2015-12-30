@@ -241,7 +241,7 @@ void    SvxHtmlOptions::ImplCommit()
     PutProperties(aNames, aValues);
 }
 
-void SvxHtmlOptions::Notify( const com::sun::star::uno::Sequence< OUString >& )
+void SvxHtmlOptions::Notify( const css::uno::Sequence< OUString >& )
 {
     Load( GetPropertyNames() );
 }
@@ -291,18 +291,6 @@ void SvxHtmlOptions::SetImportUnknown(bool bSet)
 sal_uInt16  SvxHtmlOptions::GetExportMode() const
 {
     return (sal_uInt16)pImp->nExportMode;
-}
-
-
-
-
-void SvxHtmlOptions::SetExportMode(sal_uInt16 nSet)
-{
-    if(nSet <= HTML_CFG_MAX )
-    {
-        pImp->nExportMode = nSet;
-        SetModified();
-    }
 }
 
 

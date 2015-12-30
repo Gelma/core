@@ -170,12 +170,12 @@ void MediaWindowImpl::dispose()
 
     mxPlayer.clear();
 
-    mpMediaWindow = NULL;
+    mpMediaWindow = nullptr;
 
     delete mpEmptyBmpEx;
-    mpEmptyBmpEx = NULL;
+    mpEmptyBmpEx = nullptr;
     delete mpAudioBmpEx;
-    mpAudioBmpEx = NULL;
+    mpAudioBmpEx = nullptr;
     mpMediaWindowControl.disposeAndClear();
     mpChildWindow.disposeAndClear();
 
@@ -243,7 +243,7 @@ uno::Reference< media::XPlayer > MediaWindowImpl::createPlayer(
             xContext->getServiceManager()->createInstanceWithContext(rManagerServName, xContext),
             uno::UNO_QUERY );
         if( xManager.is() )
-            xPlayer = uno::Reference< media::XPlayer >( xManager->createPlayer( rURL ), uno::UNO_QUERY );
+            xPlayer.set( xManager->createPlayer( rURL ), uno::UNO_QUERY );
         else
             SAL_WARN( "avmedia", "failed to create media player service " << rManagerServName );
     } catch ( const uno::Exception &e )
@@ -639,7 +639,7 @@ void MediaWindowImpl::Paint(vcl::RenderContext& rRenderContext, const Rectangle&
     if (mxPlayerWindow.is())
         mxPlayerWindow->update();
 
-    BitmapEx* pLogo = NULL;
+    BitmapEx* pLogo = nullptr;
 
     if (!mxPlayer.is())
     {

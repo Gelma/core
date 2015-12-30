@@ -70,7 +70,6 @@ public:
     void ConnectToApplication();
     void DisconnectFromApplication();
 
-    TYPEINFO_OVERRIDE();
 
     static SdrTextObj*     GetTitleTextObject(SdrPage* pPage);
     static SdrTextObj*     GetOutlineTextObject(SdrPage* pPage);
@@ -78,8 +77,8 @@ public:
     static SdrTextObj*     CreateTitleTextObject(SdPage* pPage);
     static SdrTextObj*     CreateOutlineTextObject(SdPage* pPage);
 
-    virtual void AddWindowToPaintView(OutputDevice* pWin, vcl::Window* pWindow) SAL_OVERRIDE;
-    virtual void DeleteWindowFromPaintView(OutputDevice* pWin) SAL_OVERRIDE;
+    virtual void AddWindowToPaintView(OutputDevice* pWin, vcl::Window* pWindow) override;
+    virtual void DeleteWindowFromPaintView(OutputDevice* pWin) override;
 
     OutlinerView*   GetViewByWindow(vcl::Window* pWin) const;
     SdrOutliner&    GetOutliner() { return mrOutliner; }
@@ -96,12 +95,12 @@ public:
     void Paint (const Rectangle& rRect, ::sd::Window* pWin);
 
                     // Callbacks fuer LINKs
-    DECL_LINK_TYPED( ParagraphInsertedHdl, Outliner *, void );
-    DECL_LINK_TYPED( ParagraphRemovingHdl, Outliner *, void );
-    DECL_LINK_TYPED( DepthChangedHdl, Outliner *, void );
+    DECL_LINK_TYPED( ParagraphInsertedHdl, ::Outliner *, void );
+    DECL_LINK_TYPED( ParagraphRemovingHdl, ::Outliner *, void );
+    DECL_LINK_TYPED( DepthChangedHdl, ::Outliner *, void );
     DECL_LINK_TYPED( StatusEventHdl, EditStatus&, void );
-    DECL_LINK_TYPED( BeginMovingHdl, Outliner *, void );
-    DECL_LINK_TYPED( EndMovingHdl, Outliner *, void );
+    DECL_LINK_TYPED( BeginMovingHdl, ::Outliner *, void );
+    DECL_LINK_TYPED( EndMovingHdl, ::Outliner *, void );
     DECL_LINK_TYPED( RemovingPagesHdl, OutlinerView *, bool );
     DECL_LINK_TYPED( IndentingPagesHdl, OutlinerView *, bool );
     DECL_LINK_TYPED( BeginDropHdl, EditView*, void );
@@ -112,32 +111,31 @@ public:
 
     bool          PrepareClose(bool bUI = true);
 
-    virtual bool    GetAttributes( SfxItemSet& rTargetSet, bool bOnlyHardAttr = false ) const SAL_OVERRIDE;
-    virtual bool    SetAttributes(const SfxItemSet& rSet, bool bReplaceAll = false) SAL_OVERRIDE;
+    virtual bool    GetAttributes( SfxItemSet& rTargetSet, bool bOnlyHardAttr = false ) const override;
+    virtual bool    SetAttributes(const SfxItemSet& rSet, bool bReplaceAll = false) override;
 
     void               FillOutliner();
     void               SetLinks();
     void               ResetLinks() const;
 
-    SfxStyleSheet*     GetStyleSheet() const SAL_OVERRIDE;
+    SfxStyleSheet*     GetStyleSheet() const override;
 
     void               SetSelectedPages();
 
     virtual sal_Int8 AcceptDrop (
         const AcceptDropEvent& rEvt,
         DropTargetHelper& rTargetHelper,
-        ::sd::Window* pTargetWindow = NULL,
+        ::sd::Window* pTargetWindow = nullptr,
         sal_uInt16 nPage = SDRPAGE_NOTFOUND,
-        sal_uInt16 nLayer = SDRPAGE_NOTFOUND) SAL_OVERRIDE;
+        sal_uInt16 nLayer = SDRPAGE_NOTFOUND) override;
     virtual sal_Int8 ExecuteDrop (
         const ExecuteDropEvent& rEvt,
-        DropTargetHelper& rTargetHelper,
-        ::sd::Window* pTargetWindow = NULL,
+        ::sd::Window* pTargetWindow = nullptr,
         sal_uInt16 nPage = SDRPAGE_NOTFOUND,
-        sal_uInt16 nLayer = SDRPAGE_NOTFOUND) SAL_OVERRIDE;
+        sal_uInt16 nLayer = SDRPAGE_NOTFOUND) override;
 
     // Re-implement GetScriptType for this view to get correct results
-    virtual SvtScriptType GetScriptType() const SAL_OVERRIDE;
+    virtual SvtScriptType GetScriptType() const override;
 
     /** After this method has been called with <TRUE/> following changes of
         the current page are ignored in that the corresponding text is not
@@ -153,8 +151,8 @@ public:
     void UpdateParagraph( sal_Int32 nPara );
 
 protected:
-    virtual void OnBeginPasteOrDrop( PasteOrDropInfos* pInfos ) SAL_OVERRIDE;
-    virtual void OnEndPasteOrDrop( PasteOrDropInfos* pInfos ) SAL_OVERRIDE;
+    virtual void OnBeginPasteOrDrop( PasteOrDropInfos* pInfos ) override;
+    virtual void OnEndPasteOrDrop( PasteOrDropInfos* pInfos ) override;
 
 private:
     /** call this method before you do anything that can modify the outliner

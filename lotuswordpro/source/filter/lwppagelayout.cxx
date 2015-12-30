@@ -79,7 +79,7 @@ LwpPageLayout::LwpPageLayout(LwpObjectHeader &objHdr, LwpSvStream* pStrm)
     , m_nPrinterBin(0)
     , m_nBdroffset(0)
     , m_pPaperName(new LwpAtomHolder)
-    , m_pXFPageMaster(NULL)
+    , m_pXFPageMaster(nullptr)
 {
 }
 
@@ -124,7 +124,7 @@ void LwpPageLayout::Parse(IXFStream* pOutputStream)
     if(pStory.is())
     {
         pStory->SetFoundry(m_pFoundry);
-        pStory->Parse(pOutputStream);   //Do not parse the next story
+        pStory->DoParse(pOutputStream);   //Do not parse the next story
     }
 }
 
@@ -264,12 +264,12 @@ void LwpPageLayout::ParseBackColor(XFPageMaster* pm1)
 void LwpPageLayout::ParseFootNoteSeparator(XFPageMaster * pm1)
 {
     //Get the footnoteoptions for the root document
-    LwpDocument* pDocument = m_pFoundry->GetDocument();
-    if(pDocument)
+    LwpDocument* pDocument = m_pFoundry ? m_pFoundry->GetDocument() : nullptr;
+    if (pDocument)
     {
         LwpObjectID* pFontnodeId = pDocument->GetValidFootnoteOpts();
 
-        LwpFootnoteOptions* pFootnoteOpts = pFontnodeId ? dynamic_cast<LwpFootnoteOptions*>(pFontnodeId->obj().get()) : NULL;
+        LwpFootnoteOptions* pFootnoteOpts = pFontnodeId ? dynamic_cast<LwpFootnoteOptions*>(pFontnodeId->obj().get()) : nullptr;
         if(pFootnoteOpts)
         {
             LwpFootnoteSeparatorOptions& rFootnoteSep = pFootnoteOpts->GetFootnoteSeparator();
@@ -497,32 +497,32 @@ void LwpPageLayout::ResetXFColumns()
 {
     if(m_pXFPageMaster)
     {
-        m_pXFPageMaster->SetColumns(NULL);
+        m_pXFPageMaster->SetColumns(nullptr);
     }
 }
 
 LwpHeaderLayout* LwpPageLayout::GetHeaderLayout()
 {
-    LwpVirtualLayout* pLay = dynamic_cast<LwpVirtualLayout*>(GetChildHead().obj().get());
-    while(pLay)
+    rtl::Reference<LwpVirtualLayout> xLay(dynamic_cast<LwpVirtualLayout*>(GetChildHead().obj().get()));
+    while (xLay.is())
     {
-        if( pLay->GetLayoutType() == LWP_HEADER_LAYOUT )
-            return ( static_cast<LwpHeaderLayout*> (pLay) );
-        pLay = dynamic_cast<LwpVirtualLayout*> (pLay->GetNext().obj().get());
+        if (xLay->GetLayoutType() == LWP_HEADER_LAYOUT)
+            return dynamic_cast<LwpHeaderLayout*>(xLay.get());
+        xLay.set(dynamic_cast<LwpVirtualLayout*>(xLay->GetNext().obj().get()));
     }
-    return NULL;
+    return nullptr;
 }
 
 LwpFooterLayout* LwpPageLayout::GetFooterLayout()
 {
-    LwpVirtualLayout* pLay = dynamic_cast<LwpVirtualLayout*>(GetChildHead().obj().get());
-    while(pLay)
+    rtl::Reference<LwpVirtualLayout> xLay(dynamic_cast<LwpVirtualLayout*>(GetChildHead().obj().get()));
+    while (xLay.is())
     {
-        if( pLay->GetLayoutType() == LWP_FOOTER_LAYOUT )
-            return ( static_cast<LwpFooterLayout*> (pLay) );
-        pLay = dynamic_cast<LwpVirtualLayout*> (pLay->GetNext().obj().get());
+        if (xLay->GetLayoutType() == LWP_FOOTER_LAYOUT)
+            return dynamic_cast<LwpFooterLayout*>(xLay.get());
+        xLay.set(dynamic_cast<LwpVirtualLayout*>(xLay->GetNext().obj().get()));
     }
-    return NULL;
+    return nullptr;
 }
 
 /**
@@ -533,22 +533,22 @@ LwpPageLayout* LwpPageLayout::GetOddChildLayout()
 {
     if(IsComplex())
     {
-        LwpVirtualLayout* pLay = dynamic_cast<LwpVirtualLayout*>(GetChildHead().obj().get());
-        while(pLay)
+        rtl::Reference<LwpVirtualLayout> xLay(dynamic_cast<LwpVirtualLayout*>(GetChildHead().obj().get()));
+        while (xLay.is())
         {
-            if( pLay->GetLayoutType() == LWP_PAGE_LAYOUT )
+            if (xLay->GetLayoutType() == LWP_PAGE_LAYOUT)
             {
-                LwpPageLayout* pPageLayout = static_cast<LwpPageLayout*> (pLay);
+                LwpPageLayout* pPageLayout = static_cast<LwpPageLayout*>(xLay.get());
                 LwpUseWhen* pUseWhen = pPageLayout->GetUseWhen();
                 if(pUseWhen && pUseWhen->IsUseOnAllOddPages())
                 {
                     return pPageLayout;
                 }
             }
-            pLay = dynamic_cast<LwpVirtualLayout*> (pLay->GetNext().obj().get());
+            xLay.set(dynamic_cast<LwpVirtualLayout*>(xLay->GetNext().obj().get()));
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 /**
@@ -576,6 +576,8 @@ sal_Int32 LwpPageLayout::GetPageNumber(sal_uInt16 nLayoutNumber)
 {
     sal_Int16 nPageNumber = -1;
     LwpFoundry* pFoundry = this->GetFoundry();
+    if (!pFoundry)
+        return nPageNumber;
     LwpDocument* pDoc = pFoundry->GetDocument();
     LwpDLVListHeadTailHolder* pHeadTail = dynamic_cast<LwpDLVListHeadTailHolder*>(pDoc->GetPageHintsID().obj().get());
     if(!pHeadTail) return nPageNumber;
@@ -719,7 +721,7 @@ LwpPara* LwpPageLayout::GetPagePosition()
     LwpFoundry* pFoundry = GetFoundry();
     if(pFoundry)
     {
-        LwpSection* pSection = NULL;
+        LwpSection* pSection = nullptr;
         while( (pSection = pFoundry->EnumSections(pSection)) )
         {
             if(pSection->GetPageLayout() == this)
@@ -727,7 +729,7 @@ LwpPara* LwpPageLayout::GetPagePosition()
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 LwpHeaderLayout::LwpHeaderLayout( LwpObjectHeader &objHdr, LwpSvStream* pStrm )
     : LwpPlacableLayout(objHdr, pStrm)
@@ -881,7 +883,7 @@ void LwpHeaderLayout::RegisterStyle(XFMasterPage* mp1)
 
         //Call the RegisterStyle first to register the styles in header paras, and then XFConvert()
         pStory->SetFoundry(m_pFoundry);
-        pStory->RegisterStyle();
+        pStory->DoRegisterStyle();
         //, 06/27/2005
         //register child layout style for framelayout,
         RegisterChildStyle();
@@ -1034,7 +1036,7 @@ void LwpFooterLayout::RegisterStyle(XFMasterPage* mp1)
         pChangeMgr->SetHeadFootFribMap(true);
 
         pStory->SetFoundry(m_pFoundry);
-        pStory->RegisterStyle();
+        pStory->DoRegisterStyle();
         //register child layout style for framelayout,
         RegisterChildStyle();
 

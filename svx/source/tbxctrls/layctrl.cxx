@@ -77,13 +77,13 @@ public:
                                          const OUString&            rText,
                                          const Reference< XFrame >& rFrame );
                             virtual ~TableWindow();
-    virtual void            dispose() SAL_OVERRIDE;
+    virtual void            dispose() override;
 
-    void                    KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
-    virtual void            MouseMove( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void            MouseButtonUp( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void            Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& ) SAL_OVERRIDE;
-    virtual void            PopupModeEnd() SAL_OVERRIDE;
+    void                    KeyInput( const KeyEvent& rKEvt ) override;
+    virtual void            MouseMove( const MouseEvent& rMEvt ) override;
+    virtual void            MouseButtonUp( const MouseEvent& rMEvt ) override;
+    virtual void            Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& ) override;
+    virtual void            PopupModeEnd() override;
 
 private:
     void                    Update( long nNewCol, long nNewLine );
@@ -373,7 +373,7 @@ void TableWindow::TableDialog( const Sequence< PropertyValue >& rArgs )
     Reference< XDispatchProvider > xDispatchProvider( mxFrame, UNO_QUERY );
     if ( xDispatchProvider.is() )
     {
-        com::sun::star::util::URL aTargetURL;
+        css::util::URL aTargetURL;
         Reference < XURLTransformer > xTrans( URLTransformer::create(::comphelper::getProcessComponentContext()) );
         aTargetURL.Complete = maCommand;
         xTrans->parseStrict( aTargetURL );
@@ -416,12 +416,12 @@ private:
 public:
                             ColumnsWindow( sal_uInt16 nId, const OUString& rCmd, const OUString &rText, const Reference< XFrame >& rFrame );
 
-    void                    KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
-    virtual void            MouseMove( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void            MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void            MouseButtonUp( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void            Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& ) SAL_OVERRIDE;
-    virtual void            PopupModeEnd() SAL_OVERRIDE;
+    void                    KeyInput( const KeyEvent& rKEvt ) override;
+    virtual void            MouseMove( const MouseEvent& rMEvt ) override;
+    virtual void            MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void            MouseButtonUp( const MouseEvent& rMEvt ) override;
+    virtual void            Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& ) override;
+    virtual void            PopupModeEnd() override;
 };
 
 
@@ -720,12 +720,12 @@ VclPtr<SfxPopupWindow> SvxTableToolBoxControl::CreatePopupWindow()
         SetPopupWindow( pWin );
         return pWin;
     }
-    return 0;
+    return nullptr;
 }
 
 void SvxTableToolBoxControl::StateChanged( sal_uInt16, SfxItemState eState, const SfxPoolItem* pState )
 {
-    if ( pState && pState->ISA(SfxUInt16Item) )
+    if ( pState && dynamic_cast<const SfxUInt16Item* >(pState) !=  nullptr )
     {
         sal_Int16 nValue = static_cast< const SfxUInt16Item* >( pState )->GetValue();
         bEnabled = ( nValue != 0 );
@@ -759,7 +759,7 @@ SvxColumnsToolBoxControl::~SvxColumnsToolBoxControl()
 
 VclPtr<SfxPopupWindow> SvxColumnsToolBoxControl::CreatePopupWindow()
 {
-    ColumnsWindow* pWin = 0;
+    ColumnsWindow* pWin = nullptr;
     if(bEnabled)
     {
             pWin = VclPtr<ColumnsWindow>::Create( GetSlotId(), m_aCommandURL, GetToolBox().GetItemText( GetId() ), m_xFrame );

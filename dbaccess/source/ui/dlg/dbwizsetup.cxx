@@ -108,10 +108,7 @@ ODbTypeWizDialogSetup::ODbTypeWizDialogSetup(vcl::Window* _pParent
                                )
     :svt::RoadmapWizard( _pParent, WizardButtonFlags::NEXT | WizardButtonFlags::PREVIOUS | WizardButtonFlags::FINISH | WizardButtonFlags::CANCEL | WizardButtonFlags::HELP )
 
-    , m_pOutSet(NULL)
-    , m_bResetting(false)
-    , m_bApplied(false)
-    , m_bUIEnabled( true )
+    , m_pOutSet(nullptr)
     , m_bIsConnectable( false)
     , m_sRM_IntroText( ModuleRes( STR_PAGETITLE_INTROPAGE ) )
     , m_sRM_dBaseText( ModuleRes( STR_PAGETITLE_DBASE ) )
@@ -128,10 +125,10 @@ ODbTypeWizDialogSetup::ODbTypeWizDialogSetup(vcl::Window* _pParent
     , m_sRM_AuthentificationText( ModuleRes( STR_PAGETITLE_AUTHENTIFICATION ) )
     , m_sRM_FinalText( ModuleRes( STR_PAGETITLE_FINAL ) )
     , m_sWorkPath( SvtPathOptions().GetWorkPath() )
-    , m_pGeneralPage( NULL )
-    , m_pMySQLIntroPage( NULL )
-    , m_pFinalPage( NULL )
-    , m_pCollection( NULL )
+    , m_pGeneralPage( nullptr )
+    , m_pMySQLIntroPage( nullptr )
+    , m_pFinalPage( nullptr )
+    , m_pCollection( nullptr )
 {
     // no local resources needed anymore
     // extract the datasource type collection from the item set
@@ -271,7 +268,7 @@ ODbTypeWizDialogSetup::~ODbTypeWizDialogSetup()
 void ODbTypeWizDialogSetup::dispose()
 {
     delete m_pOutSet;
-    m_pOutSet = NULL;
+    m_pOutSet = nullptr;
     m_pGeneralPage.clear();
     m_pMySQLIntroPage.clear();
     m_pFinalPage.clear();
@@ -324,7 +321,7 @@ void ODbTypeWizDialogSetup::activateDatabasePath()
     {
         sal_Int32 nCreateNewDBIndex = m_pCollection->getIndexOf( m_pGeneralPage->GetSelectedType() );
         if ( nCreateNewDBIndex == -1 )
-            nCreateNewDBIndex = m_pCollection->getIndexOf( OUString("sdbc:dbase:") );
+            nCreateNewDBIndex = m_pCollection->getIndexOf( "sdbc:dbase:" );
         OSL_ENSURE( nCreateNewDBIndex != -1, "ODbTypeWizDialogSetup::activateDatabasePath: the GeneralPage should have prevented this!" );
         activatePath( static_cast< PathId >( nCreateNewDBIndex + 1 ), true );
 
@@ -509,16 +506,16 @@ VclPtr<TabPage> ODbTypeWizDialogSetup::createPage(WizardState _nState)
             break;
 
         case PAGE_DBSETUPWIZARD_MYSQL_ODBC:
-            m_pOutSet->Put(SfxStringItem(DSID_CONNECTURL, m_pCollection->getPrefix(OUString("sdbc:mysql:odbc:"))));
+            m_pOutSet->Put(SfxStringItem(DSID_CONNECTURL, m_pCollection->getPrefix("sdbc:mysql:odbc:")));
             pPage = OConnectionTabPageSetup::CreateODBCTabPage( this, *m_pOutSet);
             break;
 
         case PAGE_DBSETUPWIZARD_MYSQL_JDBC:
-            m_pOutSet->Put(SfxStringItem(DSID_CONNECTURL, m_pCollection->getPrefix(OUString("sdbc:mysql:jdbc:"))));
+            m_pOutSet->Put(SfxStringItem(DSID_CONNECTURL, m_pCollection->getPrefix("sdbc:mysql:jdbc:")));
             pPage = OGeneralSpecialJDBCConnectionPageSetup::CreateMySQLJDBCTabPage( this, *m_pOutSet);
             break;
         case PAGE_DBSETUPWIZARD_MYSQL_NATIVE:
-            m_pOutSet->Put(SfxStringItem(DSID_CONNECTURL, m_pCollection->getPrefix(OUString("sdbc:mysql:mysqlc:"))));
+            m_pOutSet->Put(SfxStringItem(DSID_CONNECTURL, m_pCollection->getPrefix("sdbc:mysql:mysqlc:")));
             pPage = MySQLNativeSetupPage::Create( this, *m_pOutSet);
             break;
 
@@ -684,7 +681,7 @@ namespace
 
 bool ODbTypeWizDialogSetup::SaveDatabaseDocument()
 {
-    Reference< XInteractionHandler2 > xHandler( InteractionHandler::createWithParent(getORB(), 0) );
+    Reference< XInteractionHandler2 > xHandler( InteractionHandler::createWithParent(getORB(), nullptr) );
     try
     {
         if (callSaveAsDialog())
@@ -835,7 +832,7 @@ bool ODbTypeWizDialogSetup::SaveDatabaseDocument()
     void ODbTypeWizDialogSetup::createUniqueFolderName(INetURLObject* pURL)
     {
         Reference< XSimpleFileAccess3 > xSimpleFileAccess(ucb::SimpleFileAccess::create(getORB()));
-        :: OUString sLastSegmentName = pURL->getName();
+        OUString sLastSegmentName = pURL->getName();
         bool bFolderExists = true;
         sal_Int32 i = 1;
         while (bFolderExists)
@@ -893,10 +890,10 @@ bool ODbTypeWizDialogSetup::SaveDatabaseDocument()
             void doLoadAsync();
 
             // XTerminateListener
-            virtual void SAL_CALL queryTermination( const css::lang::EventObject& Event ) throw (TerminationVetoException, RuntimeException, std::exception) SAL_OVERRIDE;
-            virtual void SAL_CALL notifyTermination( const css::lang::EventObject& Event ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+            virtual void SAL_CALL queryTermination( const css::lang::EventObject& Event ) throw (TerminationVetoException, RuntimeException, std::exception) override;
+            virtual void SAL_CALL notifyTermination( const css::lang::EventObject& Event ) throw (RuntimeException, std::exception) override;
             // XEventListener
-            virtual void SAL_CALL disposing( const css::lang::EventObject& Source ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            virtual void SAL_CALL disposing( const css::lang::EventObject& Source ) throw (css::uno::RuntimeException, std::exception) override;
 
         private:
             DECL_LINK_TYPED( OnOpenDocument, void*, void );
@@ -910,7 +907,7 @@ bool ODbTypeWizDialogSetup::SaveDatabaseDocument()
             {
                 m_xDesktop.set( Desktop::create(_rxORB) );
                 m_xFrameLoader.set( m_xDesktop, UNO_QUERY_THROW );
-                m_xInteractionHandler = InteractionHandler::createWithParent(_rxORB, 0);
+                m_xInteractionHandler = InteractionHandler::createWithParent(_rxORB, nullptr);
             }
             catch( const Exception& )
             {
@@ -930,7 +927,7 @@ bool ODbTypeWizDialogSetup::SaveDatabaseDocument()
             }
             catch( const Exception& ) { DBG_UNHANDLED_EXCEPTION(); }
 
-            m_aAsyncCaller.Call( NULL );
+            m_aAsyncCaller.Call();
         }
 
         IMPL_LINK_NOARG_TYPED( AsyncLoader, OnOpenDocument, void*, void )
@@ -947,7 +944,7 @@ bool ODbTypeWizDialogSetup::SaveDatabaseDocument()
                     aLoadArgs >>= aLoadArgPV;
 
                     m_xFrameLoader->loadComponentFromURL( m_sURL,
-                        OUString( "_default" ),
+                        "_default",
                         FrameSearchFlag::ALL,
                         aLoadArgPV
                     );

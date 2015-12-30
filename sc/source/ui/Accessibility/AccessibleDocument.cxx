@@ -106,21 +106,20 @@ using ::std::for_each;
 
 struct ScAccessibleShapeData
 {
-    ScAccessibleShapeData() : pAccShape(NULL), pRelationCell(NULL), bSelected(false), bSelectable(true) {}
+    ScAccessibleShapeData() : pRelationCell(nullptr), bSelected(false), bSelectable(true) {}
     ~ScAccessibleShapeData();
-    mutable ::accessibility::AccessibleShape* pAccShape;
+    mutable rtl::Reference< ::accessibility::AccessibleShape > pAccShape;
     mutable ScAddress*          pRelationCell; // if it is NULL this shape is anchored on the table
-    com::sun::star::uno::Reference< com::sun::star::drawing::XShape > xShape;
+    css::uno::Reference< css::drawing::XShape > xShape;
     mutable bool            bSelected;
     bool                    bSelectable;
 };
 
 ScAccessibleShapeData::~ScAccessibleShapeData()
 {
-    if (pAccShape)
+    if (pAccShape.is())
     {
         pAccShape->dispose();
-        pAccShape->release();
     }
 }
 
@@ -217,7 +216,7 @@ struct DeselectShape
         if (pAccShapeData)
         {
             pAccShapeData->bSelected = false;
-            if (pAccShapeData->pAccShape)
+            if (pAccShapeData->pAccShape.is())
                 pAccShapeData->pAccShape->ResetState(AccessibleStateType::SELECTED);
         }
     }
@@ -226,13 +225,13 @@ struct DeselectShape
 struct SelectShape
 {
     uno::Reference < drawing::XShapes > xShapes;
-    SelectShape(uno::Reference<drawing::XShapes>& xTemp) : xShapes(xTemp) {}
+    explicit SelectShape(uno::Reference<drawing::XShapes>& xTemp) : xShapes(xTemp) {}
     void operator() (const ScAccessibleShapeData* pAccShapeData) const
     {
         if (pAccShapeData && pAccShapeData->bSelectable)
         {
             pAccShapeData->bSelected = true;
-            if (pAccShapeData->pAccShape)
+            if (pAccShapeData->pAccShape.is())
                 pAccShapeData->pAccShape->SetState(AccessibleStateType::SELECTED);
             if (xShapes.is())
                 xShapes->add(pAccShapeData->xShape);
@@ -258,25 +257,23 @@ public:
 
     ///=====  SfxListener  =====================================================
 
-    virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+    virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
     ///=====  IAccessibleParent  ===============================================
 
     virtual bool ReplaceChild (
         ::accessibility::AccessibleShape* pCurrentChild,
-        const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >& _rxShape,
+        const css::uno::Reference< css::drawing::XShape >& _rxShape,
         const long _nIndex,
         const ::accessibility::AccessibleShapeTreeInfo& _rShapeTreeInfo
-    )   throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
+    )   throw (css::uno::RuntimeException) override;
 
     virtual ::accessibility::AccessibleControlShape* GetAccControlShapeFromModel
-        (::com::sun::star::beans::XPropertySet* pSet)
-        throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
-    virtual  ::com::sun::star::uno::Reference<
-            ::com::sun::star::accessibility::XAccessible>
-        GetAccessibleCaption (const ::com::sun::star::uno::Reference<
-            ::com::sun::star::drawing::XShape>& xShape)
-            throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
+        (css::beans::XPropertySet* pSet)
+        throw (css::uno::RuntimeException) override;
+    virtual css::uno::Reference< css::accessibility::XAccessible>
+        GetAccessibleCaption (const css::uno::Reference<css::drawing::XShape>& xShape)
+            throw (css::uno::RuntimeException) override;
     ///=====  Internal  ========================================================
     void SetDrawBroadcaster();
 
@@ -288,7 +285,7 @@ public:
     // gets the index of the shape starting on 0 (without the index of the table)
     // returns the selected shape
     bool IsSelected(sal_Int32 nIndex,
-        com::sun::star::uno::Reference<com::sun::star::drawing::XShape>& rShape) const;
+        css::uno::Reference<css::drawing::XShape>& rShape) const;
 
     bool SelectionChanged();
 
@@ -310,7 +307,7 @@ private:
     mutable SortedShapes maZOrderedShapes; // a null pointer represents the sheet in the correct order
 
     mutable ::accessibility::AccessibleShapeTreeInfo maShapeTreeInfo;
-    mutable com::sun::star::uno::Reference<com::sun::star::view::XSelectionSupplier> xSelectionSupplier;
+    mutable css::uno::Reference<css::view::XSelectionSupplier> xSelectionSupplier;
     mutable size_t mnSdrObjCount;
     mutable sal_uInt32 mnShapesSelected;
     ScTabViewShell* mpViewShell;
@@ -318,7 +315,7 @@ private:
     ScSplitPos meSplitPos;
 
     void FillShapes(std::vector < uno::Reference < drawing::XShape > >& rShapes) const;
-    bool FindSelectedShapesChanges(const com::sun::star::uno::Reference<com::sun::star::drawing::XShapes>& xShapes, bool bCommitChange) const;
+    bool FindSelectedShapesChanges(const css::uno::Reference<css::drawing::XShapes>& xShapes, bool bCommitChange) const;
     void FillSelectionSupplier() const;
 
     ScAddress* GetAnchor(const uno::Reference<drawing::XShape>& xShape) const;
@@ -342,7 +339,7 @@ ScChildrenShapes::ScChildrenShapes(ScAccessibleDocument* pAccessibleDocument, Sc
     meSplitPos(eSplitPos)
 {
     FillSelectionSupplier();
-    maZOrderedShapes.push_back(NULL); // add an element which represents the table
+    maZOrderedShapes.push_back(nullptr); // add an element which represents the table
 
     GetCount(); // fill list with filtered shapes (no internal shapes)
 
@@ -366,7 +363,7 @@ ScChildrenShapes::ScChildrenShapes(ScAccessibleDocument* pAccessibleDocument, Sc
 
             maShapeTreeInfo.SetModelBroadcaster( new ScDrawModelBroadcaster(rViewData.GetDocument()->GetDrawLayer()) );
             maShapeTreeInfo.SetSdrView(rViewData.GetScDrawView());
-            maShapeTreeInfo.SetController(NULL);
+            maShapeTreeInfo.SetController(nullptr);
             maShapeTreeInfo.SetWindow(pViewShell->GetWindowByPos(meSplitPos));
             maShapeTreeInfo.SetViewForwarder(mpAccessibleDocument);
         }
@@ -396,7 +393,7 @@ void ScChildrenShapes::SetDrawBroadcaster()
 
             maShapeTreeInfo.SetModelBroadcaster( new ScDrawModelBroadcaster(rViewData.GetDocument()->GetDrawLayer()) );
             maShapeTreeInfo.SetSdrView(rViewData.GetScDrawView());
-            maShapeTreeInfo.SetController(NULL);
+            maShapeTreeInfo.SetController(nullptr);
             maShapeTreeInfo.SetWindow(mpViewShell->GetWindowByPos(meSplitPos));
             maShapeTreeInfo.SetViewForwarder(mpAccessibleDocument);
         }
@@ -450,28 +447,27 @@ void ScChildrenShapes::Notify(SfxBroadcaster&, const SfxHint& rHint)
 }
 
 bool ScChildrenShapes::ReplaceChild (::accessibility::AccessibleShape* pCurrentChild,
-        const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >& _rxShape,
+        const css::uno::Reference< css::drawing::XShape >& _rxShape,
         const long _nIndex, const ::accessibility::AccessibleShapeTreeInfo& _rShapeTreeInfo)
     throw (uno::RuntimeException)
 {
     // create the new child
-    ::accessibility::AccessibleShape* pReplacement = ::accessibility::ShapeTypeHandler::Instance().CreateAccessibleObject (
+    rtl::Reference< ::accessibility::AccessibleShape > pReplacement(::accessibility::ShapeTypeHandler::Instance().CreateAccessibleObject (
         ::accessibility::AccessibleShapeInfo ( _rxShape, pCurrentChild->getAccessibleParent(), this, _nIndex ),
         _rShapeTreeInfo
-    );
-    ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > xNewChild( pReplacement ); // keep this alive (do this before calling Init!)
-    if ( pReplacement )
+    ));
+    if ( pReplacement.is() )
         pReplacement->Init();
 
     bool bResult(false);
-    if (pReplacement)
+    if (pReplacement.is())
     {
         OSL_ENSURE(pCurrentChild->GetXShape().get() == pReplacement->GetXShape().get(), "XShape changes and should be inserted sorted");
         SortedShapes::iterator aItr;
 
         if (FindShape(pCurrentChild->GetXShape(), aItr) || (aItr != maZOrderedShapes.end() && (*aItr)))
         {
-            if ((*aItr)->pAccShape)
+            if ((*aItr)->pAccShape.is())
             {
                 OSL_ENSURE((*aItr)->pAccShape == pCurrentChild, "wrong child found");
                 AccessibleEventObject aEvent;
@@ -487,7 +483,7 @@ bool ScChildrenShapes::ReplaceChild (::accessibility::AccessibleShape* pCurrentC
             AccessibleEventObject aEvent;
             aEvent.EventId = AccessibleEventId::CHILD;
             aEvent.Source = uno::Reference< XAccessibleContext >(mpAccessibleDocument);
-            aEvent.NewValue <<= uno::makeAny(uno::Reference<XAccessible>(pReplacement));
+            aEvent.NewValue <<= uno::makeAny(uno::Reference<XAccessible>(pReplacement.get()));
 
             mpAccessibleDocument->CommitChange(aEvent); // child is new - event
             bResult = true;
@@ -496,7 +492,7 @@ bool ScChildrenShapes::ReplaceChild (::accessibility::AccessibleShape* pCurrentC
     return bResult;
 }
 
-::accessibility::AccessibleControlShape * ScChildrenShapes::GetAccControlShapeFromModel(::com::sun::star::beans::XPropertySet* pSet) throw (::com::sun::star::uno::RuntimeException)
+::accessibility::AccessibleControlShape * ScChildrenShapes::GetAccControlShapeFromModel(css::beans::XPropertySet* pSet) throw (css::uno::RuntimeException)
 {
     sal_Int32 count = GetCount();
     for (sal_Int32 index=0;index<count;index++)
@@ -504,21 +500,21 @@ bool ScChildrenShapes::ReplaceChild (::accessibility::AccessibleShape* pCurrentC
         ScAccessibleShapeData* pShape = maZOrderedShapes[index];
                 if (pShape)
             {
-                ::accessibility::AccessibleShape* pAccShape = pShape->pAccShape;
-                if (pAccShape  && ::accessibility::ShapeTypeHandler::Instance().GetTypeId (pAccShape->GetXShape()) == ::accessibility::DRAWING_CONTROL)
+                rtl::Reference< ::accessibility::AccessibleShape > pAccShape(pShape->pAccShape);
+                if (pAccShape.is() && ::accessibility::ShapeTypeHandler::Instance().GetTypeId (pAccShape->GetXShape()) == ::accessibility::DRAWING_CONTROL)
                 {
-                ::accessibility::AccessibleControlShape *pCtlAccShape = static_cast < ::accessibility::AccessibleControlShape* >(pAccShape);
+                ::accessibility::AccessibleControlShape *pCtlAccShape = static_cast < ::accessibility::AccessibleControlShape* >(pAccShape.get());
                 if (pCtlAccShape && pCtlAccShape->GetControlModel() == pSet)
                     return pCtlAccShape;
               }
                 }
     }
-    return NULL;
+    return nullptr;
 }
 
-::com::sun::star::uno::Reference < ::com::sun::star::accessibility::XAccessible >
-ScChildrenShapes::GetAccessibleCaption (const ::com::sun::star::uno::Reference < ::com::sun::star::drawing::XShape>& xShape)
-            throw (::com::sun::star::uno::RuntimeException)
+css::uno::Reference < css::accessibility::XAccessible >
+ScChildrenShapes::GetAccessibleCaption (const css::uno::Reference < css::drawing::XShape>& xShape)
+            throw (css::uno::RuntimeException)
 {
     sal_Int32 count = GetCount();
     for (sal_Int32 index=0;index<count;index++)
@@ -526,12 +522,12 @@ ScChildrenShapes::GetAccessibleCaption (const ::com::sun::star::uno::Reference <
         ScAccessibleShapeData* pShape = maZOrderedShapes[index];
             if (pShape && pShape->xShape == xShape )
             {
-                ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > xNewChild(  pShape->pAccShape );
+                css::uno::Reference< css::accessibility::XAccessible > xNewChild(  pShape->pAccShape.get() );
                 if(xNewChild.get())
                 return xNewChild;
             }
     }
-    return NULL;
+    return nullptr;
 }
 
 sal_Int32 ScChildrenShapes::GetCount() const
@@ -557,17 +553,16 @@ sal_Int32 ScChildrenShapes::GetCount() const
 uno::Reference< XAccessible > ScChildrenShapes::Get(const ScAccessibleShapeData* pData) const
 {
     if (!pData)
-        return NULL;
+        return nullptr;
 
-    if (!pData->pAccShape)
+    if (!pData->pAccShape.is())
     {
         ::accessibility::ShapeTypeHandler& rShapeHandler = ::accessibility::ShapeTypeHandler::Instance();
         ::accessibility::AccessibleShapeInfo aShapeInfo(pData->xShape, mpAccessibleDocument, const_cast<ScChildrenShapes*>(this));
         pData->pAccShape = rShapeHandler.CreateAccessibleObject(
             aShapeInfo, maShapeTreeInfo);
-        if (pData->pAccShape)
+        if (pData->pAccShape.is())
         {
-            pData->pAccShape->acquire();
             pData->pAccShape->Init();
             if (pData->bSelected)
                 pData->pAccShape->SetState(AccessibleStateType::SELECTED);
@@ -576,7 +571,7 @@ uno::Reference< XAccessible > ScChildrenShapes::Get(const ScAccessibleShapeData*
             pData->pAccShape->SetRelationSet(GetRelationSet(pData));
         }
     }
-    return pData->pAccShape;
+    return pData->pAccShape.get();
  }
 
 uno::Reference< XAccessible > ScChildrenShapes::Get(sal_Int32 nIndex) const
@@ -585,7 +580,7 @@ uno::Reference< XAccessible > ScChildrenShapes::Get(sal_Int32 nIndex) const
         GetCount(); // fill list with filtered shapes (no internal shapes)
 
     if (static_cast<sal_uInt32>(nIndex) >= maZOrderedShapes.size())
-        return NULL;
+        return nullptr;
 
     return Get(maZOrderedShapes[nIndex]);
 }
@@ -602,16 +597,16 @@ uno::Reference< XAccessible > ScChildrenShapes::GetAt(const awt::Point& rPoint) 
             ScAccessibleShapeData* pShape = maZOrderedShapes[i];
             if (pShape)
             {
-                if (!pShape->pAccShape)
+                if (!pShape->pAccShape.is())
                     Get(pShape);
 
-                if (pShape->pAccShape)
+                if (pShape->pAccShape.is())
                 {
                     Point aPoint(VCLPoint(rPoint));
                     aPoint -= VCLRectangle(pShape->pAccShape->getBounds()).TopLeft();
                     if (pShape->pAccShape->containsPoint(AWTPoint(aPoint)))
                     {
-                        xAccessible = pShape->pAccShape;
+                        xAccessible = pShape->pAccShape.get();
                         bFound = true;
                     }
                 }
@@ -718,7 +713,7 @@ void ScChildrenShapes::Select(sal_Int32 nIndex)
         {
             xSelectionSupplier->select(uno::makeAny(xShapes));
             maZOrderedShapes[nIndex]->bSelected = true;
-            if (maZOrderedShapes[nIndex]->pAccShape)
+            if (maZOrderedShapes[nIndex]->pAccShape.is())
                 maZOrderedShapes[nIndex]->pAccShape->SetState(AccessibleStateType::SELECTED);
         }
         catch (lang::IllegalArgumentException&)
@@ -848,7 +843,7 @@ uno::Reference< XAccessible > ScChildrenShapes::GetSelected(sal_Int32 nSelectedC
                 ++aItr;
         }
         if (bFound && *aItr)
-            xAccessible = (*aItr)->pAccShape;
+            xAccessible = (*aItr)->pAccShape.get();
     }
 
     return xAccessible;
@@ -876,7 +871,7 @@ void ScChildrenShapes::Deselect(sal_Int32 nChildIndex)
             }
 
             maZOrderedShapes[nChildIndex]->bSelected = false;
-            if (maZOrderedShapes[nChildIndex]->pAccShape)
+            if (maZOrderedShapes[nChildIndex]->pAccShape.is())
                 maZOrderedShapes[nChildIndex]->pAccShape->ResetState(AccessibleStateType::SELECTED);
         }
     }
@@ -885,7 +880,7 @@ void ScChildrenShapes::Deselect(sal_Int32 nChildIndex)
 SdrPage* ScChildrenShapes::GetDrawPage() const
 {
     SCTAB nTab(mpAccessibleDocument->getVisibleTable());
-    SdrPage* pDrawPage = NULL;
+    SdrPage* pDrawPage = nullptr;
     if (mpViewShell)
     {
         ScViewData& rViewData = mpViewShell->GetViewData();
@@ -908,7 +903,7 @@ struct SetRelation
     SetRelation(const ScChildrenShapes* pChildrenShapes, const ScAddress* pAddress)
         :
         mpChildrenShapes(pChildrenShapes),
-        mpRelationSet(NULL),
+        mpRelationSet(nullptr),
         mpAddress(pAddress)
     {
     }
@@ -960,7 +955,7 @@ bool ScChildrenShapes::FindSelectedShapesChanges(const uno::Reference<drawing::X
     }
     else
         mnShapesSelected = 0;
-    SdrObject *pFocusedObj = NULL;
+    SdrObject *pFocusedObj = nullptr;
     if( mnShapesSelected == 1 && aShapesList.size() == 1)
     {
         pFocusedObj = GetSdrObjectFromXShape(aShapesList[0]->xShape);
@@ -989,7 +984,7 @@ bool ScChildrenShapes::FindSelectedShapesChanges(const uno::Reference<drawing::X
                 if (!(*aDataItr)->bSelected)
                 {
                     (*aDataItr)->bSelected = true;
-                    if ((*aDataItr)->pAccShape)
+                    if ((*aDataItr)->pAccShape.is())
                     {
                         (*aDataItr)->pAccShape->SetState(AccessibleStateType::SELECTED);
                         (*aDataItr)->pAccShape->SetState(AccessibleStateType::FOCUSED);
@@ -1010,7 +1005,7 @@ bool ScChildrenShapes::FindSelectedShapesChanges(const uno::Reference<drawing::X
                 if ((*aDataItr)->bSelected)
                 {
                     (*aDataItr)->bSelected = false;
-                    if ((*aDataItr)->pAccShape)
+                    if ((*aDataItr)->pAccShape.is())
                     {
                         (*aDataItr)->pAccShape->ResetState(AccessibleStateType::SELECTED);
                         (*aDataItr)->pAccShape->ResetState(AccessibleStateType::FOCUSED);
@@ -1039,9 +1034,9 @@ bool ScChildrenShapes::FindSelectedShapesChanges(const uno::Reference<drawing::X
             bWinFocus = pWin->HasFocus();
         }
     }
-    const SdrMarkList* pMarkList = NULL;
-    SdrObject* pMarkedObj = NULL;
-    SdrObject* pUpObj = NULL;
+    const SdrMarkList* pMarkList = nullptr;
+    SdrObject* pMarkedObj = nullptr;
+    SdrObject* pUpObj = nullptr;
     bool bIsFocuseMarked = true;
     if( mpViewShell && mnShapesSelected == 1 && bWinFocus)
     {
@@ -1061,8 +1056,8 @@ bool ScChildrenShapes::FindSelectedShapesChanges(const uno::Reference<drawing::X
             }
         }
     }
-    //if ((aFocusedItr != aDataEndItr) && (*aFocusedItr)->pAccShape && (mnShapesSelected == 1))
-    if ( bIsFocuseMarked && (aFocusedItr != aDataEndItr) && (*aFocusedItr)->pAccShape && (mnShapesSelected == 1) && bWinFocus)
+    //if ((aFocusedItr != aDataEndItr) && (*aFocusedItr)->pAccShape.is() && (mnShapesSelected == 1))
+    if ( bIsFocuseMarked && (aFocusedItr != aDataEndItr) && (*aFocusedItr)->pAccShape.is() && (mnShapesSelected == 1) && bWinFocus)
     {
         (*aFocusedItr)->pAccShape->SetState(AccessibleStateType::FOCUSED);
     }
@@ -1132,7 +1127,7 @@ bool ScChildrenShapes::FindSelectedShapesChanges(const uno::Reference<drawing::X
                 aEvent.EventId = AccessibleEventId::SELECTION_CHANGED;
             }
             aEvent.Source = uno::Reference< XAccessible >(mpAccessibleDocument);
-            uno::Reference< XAccessible > xChild( (*vi)->pAccShape);
+            uno::Reference< XAccessible > xChild( (*vi)->pAccShape.get());
             aEvent.NewValue <<= xChild;
             mpAccessibleDocument->CommitChange(aEvent);
         }
@@ -1143,7 +1138,7 @@ bool ScChildrenShapes::FindSelectedShapesChanges(const uno::Reference<drawing::X
         AccessibleEventObject aEvent;
         aEvent.EventId =  AccessibleEventId::SELECTION_CHANGED_REMOVE;
         aEvent.Source = uno::Reference< XAccessible >(mpAccessibleDocument);
-        uno::Reference< XAccessible > xChild( (*vi)->pAccShape);
+        uno::Reference< XAccessible > xChild( (*vi)->pAccShape.get());
         aEvent.NewValue <<= xChild;
         mpAccessibleDocument->CommitChange(aEvent);
     }
@@ -1174,7 +1169,7 @@ void ScChildrenShapes::FillSelectionSupplier() const
 
 ScAddress* ScChildrenShapes::GetAnchor(const uno::Reference<drawing::XShape>& xShape) const
 {
-    ScAddress* pAddress = NULL;
+    ScAddress* pAddress = nullptr;
     if (mpViewShell)
     {
         SvxShape* pShapeImp = SvxShape::getImplementation(xShape);
@@ -1233,7 +1228,7 @@ void ScChildrenShapes::SetAnchor(const uno::Reference<drawing::XShape>& xShape, 
             if (pData->pRelationCell)
                 delete pData->pRelationCell;
             pData->pRelationCell = pAddress;
-            if (pData->pAccShape)
+            if (pData->pAccShape.is())
                 pData->pAccShape->SetRelationSet(GetRelationSet(pData));
         }
         else
@@ -1341,7 +1336,7 @@ bool ScChildrenShapes::FindShape(const uno::Reference<drawing::XShape>& xShape, 
     aShape.xShape = xShape;
     ScShapeDataLess aLess;
     rItr = std::lower_bound(maZOrderedShapes.begin(), maZOrderedShapes.end(), &aShape, aLess);
-    if ((rItr != maZOrderedShapes.end()) && (*rItr != NULL) && ((*rItr)->xShape.get() == xShape.get()))
+    if ((rItr != maZOrderedShapes.end()) && (*rItr != nullptr) && ((*rItr)->xShape.get() == xShape.get()))
         bResult = true; // if the shape is found
 
 #if OSL_DEBUG_LEVEL > 0 // test whether it finds truly the correct shape (perhaps it is not really sorted)
@@ -1383,10 +1378,10 @@ namespace
     struct ScVisAreaChanged
     {
         ScAccessibleDocument* mpAccDoc;
-        ScVisAreaChanged(ScAccessibleDocument* pAccDoc) : mpAccDoc(pAccDoc) {}
+        explicit ScVisAreaChanged(ScAccessibleDocument* pAccDoc) : mpAccDoc(pAccDoc) {}
         void operator() (const ScAccessibleShapeData* pAccShapeData) const
         {
-            if (pAccShapeData && pAccShapeData->pAccShape)
+            if (pAccShapeData && pAccShapeData->pAccShape.is())
             {
                 pAccShapeData->pAccShape->ViewForwarderChanged(::accessibility::IAccessibleViewForwarderListener::VISIBLE_AREA, mpAccDoc);
             }
@@ -1407,15 +1402,19 @@ ScAccessibleDocument::ScAccessibleDocument(
     : ScAccessibleDocumentBase(rxParent),
     mpViewShell(pViewShell),
     meSplitPos(eSplitPos),
-    mpAccessibleSpreadsheet(NULL),
-    mpChildrenShapes(NULL),
-    mpTempAccEdit(NULL),
+    mpChildrenShapes(nullptr),
+    mpTempAccEdit(nullptr),
     mbCompleteSheetSelected(false)
 {
-    if (pViewShell)
+    maVisArea = GetVisibleArea_Impl();
+}
+
+void ScAccessibleDocument::PreInit()
+{
+    if (mpViewShell)
     {
-        pViewShell->AddAccessibilityObject(*this);
-        vcl::Window *pWin = pViewShell->GetWindowByPos(eSplitPos);
+        mpViewShell->AddAccessibilityObject(*this);
+        vcl::Window *pWin = mpViewShell->GetWindowByPos(meSplitPos);
         if( pWin )
         {
             pWin->AddChildEventListener( LINK( this, ScAccessibleDocument, WindowChildEventListener ));
@@ -1428,16 +1427,15 @@ ScAccessibleDocument::ScAccessibleDocument(
                     AddChild( pChildWin->GetAccessible(), false );
             }
         }
-        ScViewData& rViewData = pViewShell->GetViewData();
-        if (rViewData.HasEditView(eSplitPos))
+        ScViewData& rViewData = mpViewShell->GetViewData();
+        if (rViewData.HasEditView(meSplitPos))
         {
-            uno::Reference<XAccessible> xAcc = new ScAccessibleEditObject(this, rViewData.GetEditView(eSplitPos),
-                pViewShell->GetWindowByPos(eSplitPos), GetCurrentCellName(), GetCurrentCellDescription(),
+            uno::Reference<XAccessible> xAcc = new ScAccessibleEditObject(this, rViewData.GetEditView(meSplitPos),
+                mpViewShell->GetWindowByPos(meSplitPos), GetCurrentCellName(), GetCurrentCellDescription(),
                 ScAccessibleEditObject::CellInEditMode);
             AddChild(xAcc, false);
         }
     }
-    maVisArea = GetVisibleArea_Impl();
 }
 
 void ScAccessibleDocument::Init()
@@ -1467,7 +1465,7 @@ void SAL_CALL ScAccessibleDocument::disposing()
             pWin->RemoveChildEventListener( LINK( this, ScAccessibleDocument, WindowChildEventListener ));
 
         mpViewShell->RemoveAccessibilityObject(*this);
-        mpViewShell = NULL;
+        mpViewShell = nullptr;
     }
     if (mpChildrenShapes)
         DELETEZ(mpChildrenShapes);
@@ -1518,7 +1516,7 @@ void ScAccessibleDocument::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
         {
             if (mxTempAcc.is() && mpTempAccEdit)
                 mpTempAccEdit->LostFocus();
-            else if (mpAccessibleSpreadsheet)
+            else if (mpAccessibleSpreadsheet.is())
                 mpAccessibleSpreadsheet->LostFocus();
             else
                 CommitFocusLost();
@@ -1548,7 +1546,7 @@ void ScAccessibleDocument::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
             {
             if (mxTempAcc.is() && mpTempAccEdit)
                 mpTempAccEdit->GotFocus();
-            else if (mpAccessibleSpreadsheet)
+            else if (mpAccessibleSpreadsheet.is())
                 mpAccessibleSpreadsheet->GotFocus();
             else
                 CommitFocusGained();
@@ -1560,7 +1558,7 @@ void ScAccessibleDocument::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
         const SfxSimpleHint* pSimpleHint = static_cast<const SfxSimpleHint*>(&rHint);
         // only notify if child exist, otherwise it is not necessary
         if ((pSimpleHint->GetId() == SC_HINT_ACC_TABLECHANGED) &&
-            mpAccessibleSpreadsheet)
+            mpAccessibleSpreadsheet.is())
         {
             FreeAccessibleSpreadsheet();
             if (mpChildrenShapes)
@@ -1580,7 +1578,7 @@ void ScAccessibleDocument::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
             aEvent.Source = uno::Reference< XAccessibleContext >(this);
             CommitChange(aEvent); // all children changed
 
-            if (mpAccessibleSpreadsheet)
+            if (mpAccessibleSpreadsheet.is())
                 mpAccessibleSpreadsheet->FireFirstCellFocus();
         }
         else if (pSimpleHint->GetId() == SC_HINT_ACC_MAKEDRAWLAYER)
@@ -1603,7 +1601,7 @@ void ScAccessibleDocument::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
 
                     AddChild(xAcc, true);
 
-                    if (mpAccessibleSpreadsheet)
+                    if (mpAccessibleSpreadsheet.is())
                         mpAccessibleSpreadsheet->LostFocus();
                     else
                         CommitFocusLost();
@@ -1619,9 +1617,9 @@ void ScAccessibleDocument::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
                 if (mpTempAccEdit)
                     mpTempAccEdit->LostFocus();
 
-                mpTempAccEdit = NULL;
+                mpTempAccEdit = nullptr;
                 RemoveChild(mxTempAcc, true);
-                if (mpAccessibleSpreadsheet && mpViewShell && mpViewShell->IsActive())
+                if (mpAccessibleSpreadsheet.is() && mpViewShell && mpViewShell->IsActive())
                     mpAccessibleSpreadsheet->GotFocus();
                 else if( mpViewShell && mpViewShell->IsActive())
                     CommitFocusGained();
@@ -1642,12 +1640,12 @@ void ScAccessibleDocument::Notify( SfxBroadcaster& rBC, const SfxHint& rHint )
 
                     CommitChange(aEvent);
 
-                    if (mpAccessibleSpreadsheet)
+                    if (mpAccessibleSpreadsheet.is())
                         mpAccessibleSpreadsheet->BoundingBoxChanged();
-                    if (mpAccessibleSpreadsheet && mpViewShell && mpViewShell->IsActive())
+                    if (mpAccessibleSpreadsheet.is() && mpViewShell && mpViewShell->IsActive())
                         mpAccessibleSpreadsheet->FireFirstCellFocus();
                 }
-                else if (mpAccessibleSpreadsheet)
+                else if (mpAccessibleSpreadsheet.is())
                 {
                     mpAccessibleSpreadsheet->VisAreaChanged();
                 }
@@ -1664,7 +1662,7 @@ void SAL_CALL ScAccessibleDocument::selectionChanged( const lang::EventObject& /
         throw (uno::RuntimeException, std::exception)
 {
     bool bSelectionChanged(false);
-    if (mpAccessibleSpreadsheet)
+    if (mpAccessibleSpreadsheet.is())
     {
         bool bOldSelected(mbCompleteSheetSelected);
         mbCompleteSheetSelected = IsTableSelected();
@@ -1695,11 +1693,11 @@ uno::Any SAL_CALL ScAccessibleDocument::queryInterface( uno::Type const & rType 
 {
     uno::Any aAnyTmp;
     if(rType == cppu::UnoType<XAccessibleGetAccFlowTo>::get())
-       {
-         com::sun::star::uno::Reference<XAccessibleGetAccFlowTo> AccFromXShape = this;
-            aAnyTmp <<= AccFromXShape;
+    {
+         css::uno::Reference<XAccessibleGetAccFlowTo> AccFromXShape = this;
+         aAnyTmp <<= AccFromXShape;
          return aAnyTmp;
-       }
+    }
     uno::Any aAny (ScAccessibleDocumentImpl::queryInterface(rType));
     return aAny.hasValue() ? aAny : ScAccessibleContextBase::queryInterface(rType);
 }
@@ -1722,7 +1720,7 @@ uno::Reference< XAccessible > SAL_CALL ScAccessibleDocument::getAccessibleAtPoin
         const awt::Point& rPoint )
         throw (uno::RuntimeException, std::exception)
 {
-    uno::Reference<XAccessible> xAccessible = NULL;
+    uno::Reference<XAccessible> xAccessible = nullptr;
     if (containsPoint(rPoint))
     {
         SolarMutexGuard aGuard;
@@ -1852,7 +1850,7 @@ uno::Reference<XAccessibleStateSet> SAL_CALL
 
 OUString SAL_CALL
     ScAccessibleDocument::getAccessibleName()
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard g;
 
@@ -2134,7 +2132,7 @@ Point ScAccessibleDocument::LogicToPixel (const Point& rPoint) const
     if (pWin)
     {
         aPoint = pWin->LogicToPixel(rPoint, pWin->GetDrawMapMode());
-        aPoint += pWin->GetWindowExtentsRelative(NULL).TopLeft();
+        aPoint += pWin->GetWindowExtentsRelative(nullptr).TopLeft();
     }
     return aPoint;
 }
@@ -2154,7 +2152,7 @@ Size ScAccessibleDocument::LogicToPixel (const Size& rSize) const
 
 utl::AccessibleRelationSetHelper* ScAccessibleDocument::GetRelationSet(const ScAddress* pAddress) const
 {
-    utl::AccessibleRelationSetHelper* pRelationSet = NULL;
+    utl::AccessibleRelationSetHelper* pRelationSet = nullptr;
     if (mpChildrenShapes)
         pRelationSet = mpChildrenShapes->GetRelationSet(pAddress);
     return pRelationSet;
@@ -2188,7 +2186,7 @@ Rectangle ScAccessibleDocument::GetBoundingBoxOnScreen() const
     {
         vcl::Window* pWindow = mpViewShell->GetWindowByPos(meSplitPos);
         if (pWindow)
-            aRect = pWindow->GetWindowExtentsRelative(NULL);
+            aRect = pWindow->GetWindowExtentsRelative(nullptr);
     }
     return aRect;
 }
@@ -2217,23 +2215,21 @@ SCTAB ScAccessibleDocument::getVisibleTable() const
 uno::Reference < XAccessible >
     ScAccessibleDocument::GetAccessibleSpreadsheet()
 {
-    if (!mpAccessibleSpreadsheet && mpViewShell)
+    if (!mpAccessibleSpreadsheet.is() && mpViewShell)
     {
         mpAccessibleSpreadsheet = new ScAccessibleSpreadsheet(this, mpViewShell, getVisibleTable(), meSplitPos);
-        mpAccessibleSpreadsheet->acquire();
         mpAccessibleSpreadsheet->Init();
         mbCompleteSheetSelected = IsTableSelected();
     }
-    return mpAccessibleSpreadsheet;
+    return mpAccessibleSpreadsheet.get();
 }
 
 void ScAccessibleDocument::FreeAccessibleSpreadsheet()
 {
-    if (mpAccessibleSpreadsheet)
+    if (mpAccessibleSpreadsheet.is())
     {
         mpAccessibleSpreadsheet->dispose();
-        mpAccessibleSpreadsheet->release();
-        mpAccessibleSpreadsheet = NULL;
+        mpAccessibleSpreadsheet.clear();
     }
 }
 
@@ -2255,7 +2251,7 @@ bool ScAccessibleDocument::IsTableSelected() const
 bool ScAccessibleDocument::IsDefunc(
     const uno::Reference<XAccessibleStateSet>& rxParentStates)
 {
-    return ScAccessibleContextBase::IsDefunc() || (mpViewShell == NULL) || !getAccessibleParent().is() ||
+    return ScAccessibleContextBase::IsDefunc() || (mpViewShell == nullptr) || !getAccessibleParent().is() ||
         (rxParentStates.is() && rxParentStates->contains(AccessibleStateType::DEFUNC));
 }
 
@@ -2290,7 +2286,7 @@ void ScAccessibleDocument::RemoveChild(const uno::Reference<XAccessible>& xAcc, 
             aEvent.OldValue <<= mxTempAcc;
             CommitChange( aEvent );
         }
-        mxTempAcc = NULL;
+        mxTempAcc = nullptr;
     }
 }
 
@@ -2300,7 +2296,7 @@ OUString ScAccessibleDocument::GetCurrentCellName() const
     if (mpViewShell)
     {
         // Document not needed, because only the cell address, but not the tablename is needed
-        OUString sAddress(mpViewShell->GetViewData().GetCurPos().Format(SCA_VALID, NULL));
+        OUString sAddress(mpViewShell->GetViewData().GetCurPos().Format(SCA_VALID));
         sName = sName.replaceFirst("%1", sAddress);
     }
     return sName;
@@ -2313,7 +2309,7 @@ OUString ScAccessibleDocument::GetCurrentCellDescription()
 
 ScDocument *ScAccessibleDocument::GetDocument() const
 {
-    return mpViewShell ? mpViewShell->GetViewData().GetDocument() : NULL;
+    return mpViewShell ? mpViewShell->GetViewData().GetDocument() : nullptr;
 }
 
 ScAddress   ScAccessibleDocument::GetCurCellAddress() const
@@ -2322,7 +2318,7 @@ ScAddress   ScAccessibleDocument::GetCurCellAddress() const
 }
 
 uno::Any SAL_CALL ScAccessibleDocument::getExtendedAttributes()
-        throw (::com::sun::star::lang::IndexOutOfBoundsException, ::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::lang::IndexOutOfBoundsException, css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard g;
 
@@ -2333,7 +2329,7 @@ uno::Any SAL_CALL ScAccessibleDocument::getExtendedAttributes()
     sal_uInt16 sheetIndex;
     OUString sSheetName;
     sheetIndex = getVisibleTable();
-    if(GetDocument()==NULL)
+    if(GetDocument()==nullptr)
         return anyAtrribute;
     GetDocument()->GetName(sheetIndex,sSheetName);
     sName = "page-name:";
@@ -2349,7 +2345,7 @@ uno::Any SAL_CALL ScAccessibleDocument::getExtendedAttributes()
     return anyAtrribute;
 }
 
-com::sun::star::uno::Sequence< com::sun::star::uno::Any > ScAccessibleDocument::GetScAccFlowToSequence()
+css::uno::Sequence< css::uno::Any > ScAccessibleDocument::GetScAccFlowToSequence()
 {
     if ( getAccessibleChildCount() )
     {
@@ -2397,9 +2393,9 @@ com::sun::star::uno::Sequence< com::sun::star::uno::Any > ScAccessibleDocument::
     return aEmpty;
 }
 
-::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any >
-        SAL_CALL ScAccessibleDocument::getAccFlowTo(const ::com::sun::star::uno::Any& rAny, sal_Int32 nType)
-        throw ( ::com::sun::star::uno::RuntimeException, std::exception )
+css::uno::Sequence< css::uno::Any >
+        SAL_CALL ScAccessibleDocument::getAccFlowTo(const css::uno::Any& rAny, sal_Int32 nType)
+        throw ( css::uno::RuntimeException, std::exception )
 {
     SolarMutexGuard g;
 
@@ -2407,7 +2403,7 @@ com::sun::star::uno::Sequence< com::sun::star::uno::Any > ScAccessibleDocument::
     const sal_Int32 FINDREPLACEFLOWTO = 2;
     if ( nType == SPELLCHECKFLOWTO )
     {
-        uno::Reference< ::com::sun::star::drawing::XShape > xShape;
+        uno::Reference< css::drawing::XShape > xShape;
         rAny >>= xShape;
         if ( xShape.is() )
         {
@@ -2453,9 +2449,9 @@ com::sun::star::uno::Sequence< com::sun::star::uno::Any > ScAccessibleDocument::
                                 uno::Reference < XAccessible > xChildSel = xAccChildSelection->getSelectedAccessibleChild( 0 );
                                 if ( xChildSel.is() )
                                 {
-                                    uno::Reference < ::com::sun::star::accessibility::XAccessibleContext > xChildSelContext( xChildSel->getAccessibleContext() );
+                                    uno::Reference < css::accessibility::XAccessibleContext > xChildSelContext( xChildSel->getAccessibleContext() );
                                     if ( xChildSelContext.is() &&
-                                        xChildSelContext->getAccessibleRole() == ::com::sun::star::accessibility::AccessibleRole::PARAGRAPH )
+                                        xChildSelContext->getAccessibleRole() == css::accessibility::AccessibleRole::PARAGRAPH )
                                     {
                                         uno::Sequence<uno::Any> aRet( 1 );
                                         aRet[0] = uno::makeAny( xChildSel );
@@ -2480,7 +2476,7 @@ com::sun::star::uno::Sequence< com::sun::star::uno::Any > ScAccessibleDocument::
             {
                 return aSeq;
             }
-            else if( mpAccessibleSpreadsheet )
+            else if( mpAccessibleSpreadsheet.is() )
             {
                 uno::Reference < XAccessible > xFindCellAcc = mpAccessibleSpreadsheet->GetActiveCell();
                 // add xFindCellAcc to the return the Sequence

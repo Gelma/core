@@ -16,10 +16,11 @@
  *   except in compliance with the License. You may obtain a copy of
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
-#include <unotools/unotoolsdllapi.h>
 
 #ifndef INCLUDED_UNOTOOLS_CONFIGPATHS_HXX
 #define INCLUDED_UNOTOOLS_CONFIGPATHS_HXX
+
+#include <unotools/unotoolsdllapi.h>
 #include <sal/types.h>
 #include <rtl/ustring.hxx>
 
@@ -73,7 +74,7 @@ namespace utl
 
     */
     UNOTOOLS_DLLPUBLIC OUString extractFirstFromConfigurationPath(
-        OUString const& _sInPath, OUString* _sOutPath = 0);
+        OUString const& _sInPath, OUString* _sOutPath = nullptr);
 
     /** check whether a path is to a nested node with respect to a parent path.
 

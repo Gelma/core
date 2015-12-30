@@ -144,7 +144,7 @@ void SwInsertChart(vcl::Window* pParent, SfxBindings* pBindings )
     uno::Reference< frame::XModel > xChartModel;
     OUString aRangeString;
 
-    if( rWrtShell.IsCrsrInTable())
+    if( rWrtShell.IsCursorInTable())
     {
         if (!rWrtShell.IsTableMode())
         {
@@ -162,7 +162,7 @@ void SwInsertChart(vcl::Window* pParent, SfxBindings* pBindings )
         }
     }
 
-    SwFlyFrameFormat *pFlyFrameFormat = 0;
+    SwFlyFrameFormat *pFlyFrameFormat = nullptr;
     xChartModel.set( SwTableFUNC( &rWrtShell, false ).InsertChart( xDataProvider, xDataProvider.is(), aRangeString, &pFlyFrameFormat ));
 
     //open wizard
@@ -176,12 +176,12 @@ void SwInsertChart(vcl::Window* pParent, SfxBindings* pBindings )
         {
             uno::Reference< ui::dialogs::XExecutableDialog > xDialog(
                 xMCF->createInstanceWithContext(
-                    OUString("com.sun.star.comp.chart2.WizardDialog")
-                    , xContext), uno::UNO_QUERY);
+                    "com.sun.star.comp.chart2.WizardDialog", xContext),
+                uno::UNO_QUERY);
             uno::Reference< lang::XInitialization > xInit( xDialog, uno::UNO_QUERY );
             if( xInit.is() )
             {
-                uno::Reference< awt::XWindow > xDialogParentWindow(0);
+                uno::Reference< awt::XWindow > xDialogParentWindow(nullptr);
                 //  initialize dialog
                 uno::Sequence<uno::Any> aSeq(2);
                 uno::Any* pArray = aSeq.getArray();

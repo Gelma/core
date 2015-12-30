@@ -52,7 +52,7 @@ SwFieldRefPage::SwFieldRefPage(vcl::Window* pParent, const SfxItemSet& rCoreSet 
         "modules/swriter/ui/fldrefpage.ui", rCoreSet)
     , maOutlineNodes()
     , maNumItems()
-    , mpSavedSelectedTextNode(0)
+    , mpSavedSelectedTextNode(nullptr)
     , mnSavedSelectedPos(0)
 {
     get(m_pTypeLB, "type");
@@ -93,7 +93,7 @@ SwFieldRefPage::SwFieldRefPage(vcl::Window* pParent, const SfxItemSet& rCoreSet 
 
     m_pTypeLB->SetDoubleClickHdl       (LINK(this, SwFieldRefPage, ListBoxInsertHdl));
     m_pTypeLB->SetSelectHdl            (LINK(this, SwFieldRefPage, TypeHdl));
-    m_pSelectionLB->SetSelectHdl       (LINK(this, SwFieldRefPage, SubTypeHdl));
+    m_pSelectionLB->SetSelectHdl       (LINK(this, SwFieldRefPage, SubTypeListBoxHdl));
     m_pSelectionLB->SetDoubleClickHdl  (LINK(this, SwFieldRefPage, ListBoxInsertHdl));
     m_pFormatLB->SetDoubleClickHdl     (LINK(this, SwFieldRefPage, ListBoxInsertHdl));
 
@@ -127,7 +127,7 @@ void SwFieldRefPage::dispose()
 // #i83479#
 void SwFieldRefPage::SaveSelectedTextNode()
 {
-    mpSavedSelectedTextNode = 0;
+    mpSavedSelectedTextNode = nullptr;
     mnSavedSelectedPos = 0;
     if ( m_pSelectionToolTipLB->IsVisible() )
     {
@@ -264,7 +264,7 @@ void SwFieldRefPage::Reset(const SfxItemSet* )
             }
         }
     }
-    TypeHdl(0);
+    TypeHdl(*m_pTypeLB);
 
     if (IsFieldEdit())
     {
@@ -276,7 +276,7 @@ void SwFieldRefPage::Reset(const SfxItemSet* )
     }
 }
 
-IMPL_LINK_NOARG(SwFieldRefPage, TypeHdl)
+IMPL_LINK_NOARG_TYPED(SwFieldRefPage, TypeHdl, ListBox&, void)
 {
     // save old ListBoxPos
     const sal_Int32 nOld = GetTypeSel();
@@ -407,18 +407,20 @@ IMPL_LINK_NOARG(SwFieldRefPage, TypeHdl)
         bool bFormat = nSize != 0;
         m_pFormat->Enable(bFormat);
 
-        SubTypeHdl(NULL);
-        ModifyHdl(NULL);
+        SubTypeHdl();
+        ModifyHdl(*m_pNameED);
     }
-
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(SwFieldRefPage, SubTypeTreeListBoxHdl, SvTreeListBox*, void)
 {
-    SubTypeHdl(NULL);
+    SubTypeHdl();
 }
-IMPL_LINK_NOARG(SwFieldRefPage, SubTypeHdl)
+IMPL_LINK_NOARG_TYPED(SwFieldRefPage, SubTypeListBoxHdl, ListBox&, void)
+{
+    SubTypeHdl();
+}
+void SwFieldRefPage::SubTypeHdl()
 {
     sal_uInt16 nTypeId = (sal_uInt16)reinterpret_cast<sal_uLong>(m_pTypeLB->GetEntryData(GetTypeSel()));
 
@@ -428,7 +430,7 @@ IMPL_LINK_NOARG(SwFieldRefPage, SubTypeHdl)
             if (!IsFieldEdit() || m_pSelectionLB->GetSelectEntryCount())
             {
                 m_pNameED->SetText(m_pSelectionLB->GetSelectEntry());
-                ModifyHdl(m_pNameED);
+                ModifyHdl(*m_pNameED);
             }
             break;
 
@@ -461,8 +463,6 @@ IMPL_LINK_NOARG(SwFieldRefPage, SubTypeHdl)
                 m_pNameED->SetText(m_pSelectionLB->GetSelectEntry());
             break;
     }
-
-    return 0;
 }
 
 // renew types in SelectionLB
@@ -642,12 +642,12 @@ void SwFieldRefPage::UpdateSubType()
         bool bEnable = m_pSelectionToolTipLB->GetEntryCount() != 0;
         m_pSelection->Enable( bEnable );
 
-        if ( m_pSelectionToolTipLB->GetCurEntry() != 0 )
+        if ( m_pSelectionToolTipLB->GetCurEntry() != nullptr )
         {
             m_pSelectionToolTipLB->MakeVisible( m_pSelectionToolTipLB->GetCurEntry() );
         }
 
-        if ( IsFieldEdit() && m_pSelectionToolTipLB->GetCurEntry() == 0 )
+        if ( IsFieldEdit() && m_pSelectionToolTipLB->GetCurEntry() == nullptr )
         {
             m_pNameED->SetText(sOldSel);
         }
@@ -758,7 +758,7 @@ sal_Int32 SwFieldRefPage::FillFormatLB(sal_uInt16 nTypeId)
 }
 
 // Modify
-IMPL_LINK_NOARG(SwFieldRefPage, ModifyHdl)
+IMPL_LINK_NOARG_TYPED(SwFieldRefPage, ModifyHdl, Edit&, void)
 {
     OUString aName(m_pNameED->GetText());
     const bool bEmptyName = aName.isEmpty();
@@ -774,8 +774,6 @@ IMPL_LINK_NOARG(SwFieldRefPage, ModifyHdl)
     EnableInsert(bEnable);
 
     m_pSelectionLB->SelectEntry(aName);
-
-    return 0;
 }
 
 bool SwFieldRefPage::FillItemSet(SfxItemSet* )
@@ -954,7 +952,7 @@ bool SwFieldRefPage::FillItemSet(SfxItemSet* )
         InsertField( nTypeId, nSubType, aName, aVal, nFormat );
     }
 
-    ModifyHdl();    // enable/disable insert if applicable
+    ModifyHdl(*m_pNameED);    // enable/disable insert if applicable
 
     return false;
 }

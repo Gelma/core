@@ -30,7 +30,6 @@
 #include <com/sun/star/embed/XStorage.hpp>
 
 
-#include <tools/rtti.hxx>
 #include <tools/solar.h>
 #include <tools/stream.hxx>
 #include <tools/globname.hxx>
@@ -48,18 +47,17 @@ typedef struct SvGUID ClsId;
 class SOT_DLLPUBLIC StorageBase : public SvRefBase
 {
 protected:
-    sal_uLong       m_nError;                   // error code
+    mutable ErrCode m_nError;                   // error code
     StreamMode      m_nMode;                    // open mode
     bool            m_bAutoCommit;
                     StorageBase();
     virtual         ~StorageBase();
 public:
-                    TYPEINFO();
     virtual bool    Validate( bool=false ) const = 0;
     virtual bool    ValidateMode( StreamMode ) const = 0;
     void            ResetError() const;
-    void            SetError( sal_uLong ) const;
-    sal_uLong       GetError() const;
+    void            SetError( ErrCode ) const;
+    ErrCode         GetError() const;
     bool            Good() const          { return bool( m_nError == SVSTREAM_OK ); }
     StreamMode      GetMode() const  { return m_nMode;  }
     void            SetAutoCommit( bool bSet )
@@ -69,7 +67,6 @@ public:
 class BaseStorageStream : public StorageBase
 {
 public:
-                        TYPEINFO_OVERRIDE();
     virtual sal_uLong   Read( void * pData, sal_uLong nSize ) = 0;
     virtual sal_uLong   Write( const void* pData, sal_uLong nSize ) = 0;
     virtual sal_uInt64  Seek( sal_uInt64 nPos ) = 0;
@@ -87,7 +84,6 @@ enum class SotClipboardFormatId : sal_uLong;
 class BaseStorage : public StorageBase
 {
 public:
-                                TYPEINFO_OVERRIDE();
     virtual const OUString&     GetName() const = 0;
     virtual bool                IsRoot() const = 0;
     virtual void                SetClassId( const ClsId& ) = 0;
@@ -105,7 +101,7 @@ public:
     virtual bool                Revert() = 0;
     virtual BaseStorageStream*  OpenStream( const OUString & rEleName,
                                             StreamMode = STREAM_STD_READWRITE,
-                                            bool bDirect = true, const OString* pKey=0 ) = 0;
+                                            bool bDirect = true, const OString* pKey=nullptr ) = 0;
     virtual BaseStorage*        OpenStorage( const OUString & rEleName,
                                              StreamMode = STREAM_STD_READWRITE,
                                              bool bDirect = false ) = 0;
@@ -133,7 +129,7 @@ protected:
                     OLEStorageBase( StgIo*, StgDirEntry*, StreamMode& );
                     ~OLEStorageBase();
     bool            Validate_Impl( bool=false ) const;
-    static bool     ValidateMode_Impl( StreamMode, StgDirEntry* p = NULL );
+    static bool     ValidateMode_Impl( StreamMode, StgDirEntry* p = nullptr );
 };
 
 class StorageStream : public BaseStorageStream, public OLEStorageBase
@@ -143,20 +139,19 @@ class StorageStream : public BaseStorageStream, public OLEStorageBase
 protected:
                         virtual ~StorageStream();
 public:
-                        TYPEINFO_OVERRIDE();
                         StorageStream( StgIo*, StgDirEntry*, StreamMode );
-    virtual sal_uLong   Read( void * pData, sal_uLong nSize ) SAL_OVERRIDE;
-    virtual sal_uLong   Write( const void* pData, sal_uLong nSize ) SAL_OVERRIDE;
-    virtual sal_uInt64  Seek( sal_uInt64 nPos ) SAL_OVERRIDE;
-    virtual sal_uLong   Tell() SAL_OVERRIDE { return nPos; }
-    virtual void        Flush() SAL_OVERRIDE;
-    virtual bool        SetSize( sal_uLong nNewSize ) SAL_OVERRIDE;
-    virtual sal_uLong   GetSize() const SAL_OVERRIDE;
-    virtual bool        CopyTo( BaseStorageStream * pDestStm ) SAL_OVERRIDE;
-    virtual bool        Commit() SAL_OVERRIDE;
-    virtual bool        Validate( bool=false ) const SAL_OVERRIDE;
-    virtual bool        ValidateMode( StreamMode ) const SAL_OVERRIDE;
-    virtual bool        Equals( const BaseStorageStream& rStream ) const SAL_OVERRIDE;
+    virtual sal_uLong   Read( void * pData, sal_uLong nSize ) override;
+    virtual sal_uLong   Write( const void* pData, sal_uLong nSize ) override;
+    virtual sal_uInt64  Seek( sal_uInt64 nPos ) override;
+    virtual sal_uLong   Tell() override { return nPos; }
+    virtual void        Flush() override;
+    virtual bool        SetSize( sal_uLong nNewSize ) override;
+    virtual sal_uLong   GetSize() const override;
+    virtual bool        CopyTo( BaseStorageStream * pDestStm ) override;
+    virtual bool        Commit() override;
+    virtual bool        Validate( bool=false ) const override;
+    virtual bool        ValidateMode( StreamMode ) const override;
+    virtual bool        Equals( const BaseStorageStream& rStream ) const override;
 };
 
 class UCBStorageStream;
@@ -170,7 +165,6 @@ class SOT_DLLPUBLIC Storage : public BaseStorage, public OLEStorageBase
 protected:
                                 virtual ~Storage();
 public:
-                                TYPEINFO_OVERRIDE();
                                 Storage( const OUString &, StreamMode = STREAM_STD_READWRITE, bool bDirect = true );
                                 Storage( SvStream& rStrm, bool bDirect = true );
                                 Storage( UCBStorageStream& rStrm, bool bDirect = true );
@@ -178,43 +172,43 @@ public:
     static bool                 IsStorageFile( const OUString & rFileName );
     static bool                 IsStorageFile( SvStream* );
 
-    virtual const OUString&     GetName() const SAL_OVERRIDE;
-    virtual bool                IsRoot() const SAL_OVERRIDE { return bIsRoot; }
-    virtual void                SetClassId( const ClsId& ) SAL_OVERRIDE;
-    virtual const ClsId&        GetClassId() const SAL_OVERRIDE;
-    virtual void                SetDirty() SAL_OVERRIDE;
+    virtual const OUString&     GetName() const override;
+    virtual bool                IsRoot() const override { return bIsRoot; }
+    virtual void                SetClassId( const ClsId& ) override;
+    virtual const ClsId&        GetClassId() const override;
+    virtual void                SetDirty() override;
     virtual void                SetClass( const SvGlobalName & rClass,
                                           SotClipboardFormatId nOriginalClipFormat,
-                                          const OUString & rUserTypeName ) SAL_OVERRIDE;
-    virtual SvGlobalName        GetClassName() SAL_OVERRIDE;
-    virtual SotClipboardFormatId         GetFormat() SAL_OVERRIDE;
-    virtual OUString            GetUserName() SAL_OVERRIDE;
-    virtual void                FillInfoList( SvStorageInfoList* ) const SAL_OVERRIDE;
-    virtual bool                CopyTo( BaseStorage* pDestStg ) const SAL_OVERRIDE;
-    virtual bool                Commit() SAL_OVERRIDE;
-    virtual bool                Revert() SAL_OVERRIDE;
+                                          const OUString & rUserTypeName ) override;
+    virtual SvGlobalName        GetClassName() override;
+    virtual SotClipboardFormatId         GetFormat() override;
+    virtual OUString            GetUserName() override;
+    virtual void                FillInfoList( SvStorageInfoList* ) const override;
+    virtual bool                CopyTo( BaseStorage* pDestStg ) const override;
+    virtual bool                Commit() override;
+    virtual bool                Revert() override;
     virtual BaseStorageStream*  OpenStream( const OUString & rEleName,
                                             StreamMode = STREAM_STD_READWRITE,
-                                            bool bDirect = true, const OString* pKey=0 ) SAL_OVERRIDE;
+                                            bool bDirect = true, const OString* pKey=nullptr ) override;
     virtual BaseStorage*        OpenStorage( const OUString & rEleName,
                                              StreamMode = STREAM_STD_READWRITE,
-                                             bool bDirect = false ) SAL_OVERRIDE;
+                                             bool bDirect = false ) override;
     virtual BaseStorage*        OpenUCBStorage( const OUString & rEleName,
                                                 StreamMode = STREAM_STD_READWRITE,
-                                                bool bDirect = false ) SAL_OVERRIDE;
+                                                bool bDirect = false ) override;
     virtual BaseStorage*        OpenOLEStorage( const OUString & rEleName,
                                                 StreamMode = STREAM_STD_READWRITE,
-                                                bool bDirect = false ) SAL_OVERRIDE;
-    virtual bool                IsStream( const OUString& rEleName ) const SAL_OVERRIDE;
-    virtual bool                IsStorage( const OUString& rEleName ) const SAL_OVERRIDE;
-    virtual bool                IsContained( const OUString& rEleName ) const SAL_OVERRIDE;
-    virtual bool                Remove( const OUString & rEleName ) SAL_OVERRIDE;
-    virtual bool                CopyTo( const OUString & rEleName, BaseStorage * pDest, const OUString & rNewName ) SAL_OVERRIDE;
-    virtual bool                ValidateFAT() SAL_OVERRIDE;
-    virtual bool                Validate( bool=false ) const SAL_OVERRIDE;
-    virtual bool                ValidateMode( StreamMode ) const SAL_OVERRIDE;
+                                                bool bDirect = false ) override;
+    virtual bool                IsStream( const OUString& rEleName ) const override;
+    virtual bool                IsStorage( const OUString& rEleName ) const override;
+    virtual bool                IsContained( const OUString& rEleName ) const override;
+    virtual bool                Remove( const OUString & rEleName ) override;
+    virtual bool                CopyTo( const OUString & rEleName, BaseStorage * pDest, const OUString & rNewName ) override;
+    virtual bool                ValidateFAT() override;
+    virtual bool                Validate( bool=false ) const override;
+    virtual bool                ValidateMode( StreamMode ) const override;
     bool                        ValidateMode( StreamMode, StgDirEntry* p ) const;
-    virtual bool                Equals( const BaseStorage& rStream ) const SAL_OVERRIDE;
+    virtual bool                Equals( const BaseStorage& rStream ) const override;
 };
 
 class UCBStorageStream_Impl;
@@ -227,23 +221,22 @@ friend class UCBStorage;
 protected:
                                 virtual ~UCBStorageStream();
 public:
-                                TYPEINFO_OVERRIDE();
-                                UCBStorageStream( const OUString& rName, StreamMode nMode, bool bDirect, const OString* pKey, bool bRepair, ::com::sun::star::uno::Reference< ::com::sun::star::ucb::XProgressHandler > xProgress );
+                                UCBStorageStream( const OUString& rName, StreamMode nMode, bool bDirect, const OString* pKey, bool bRepair, css::uno::Reference< css::ucb::XProgressHandler > xProgress );
                                 UCBStorageStream( UCBStorageStream_Impl* );
 
-    virtual sal_uLong           Read( void * pData, sal_uLong nSize ) SAL_OVERRIDE;
-    virtual sal_uLong           Write( const void* pData, sal_uLong nSize ) SAL_OVERRIDE;
-    virtual sal_uInt64          Seek( sal_uInt64 nPos ) SAL_OVERRIDE;
-    virtual sal_uLong           Tell() SAL_OVERRIDE;
-    virtual void                Flush() SAL_OVERRIDE;
-    virtual bool                SetSize( sal_uLong nNewSize ) SAL_OVERRIDE;
-    virtual sal_uLong           GetSize() const SAL_OVERRIDE;
-    virtual bool                CopyTo( BaseStorageStream * pDestStm ) SAL_OVERRIDE;
-    virtual bool                Commit() SAL_OVERRIDE;
-    virtual bool                Validate( bool=false ) const SAL_OVERRIDE;
-    virtual bool                ValidateMode( StreamMode ) const SAL_OVERRIDE;
-    virtual bool                Equals( const BaseStorageStream& rStream ) const SAL_OVERRIDE;
-    bool                        SetProperty( const OUString& rName, const ::com::sun::star::uno::Any& rValue );
+    virtual sal_uLong           Read( void * pData, sal_uLong nSize ) override;
+    virtual sal_uLong           Write( const void* pData, sal_uLong nSize ) override;
+    virtual sal_uInt64          Seek( sal_uInt64 nPos ) override;
+    virtual sal_uLong           Tell() override;
+    virtual void                Flush() override;
+    virtual bool                SetSize( sal_uLong nNewSize ) override;
+    virtual sal_uLong           GetSize() const override;
+    virtual bool                CopyTo( BaseStorageStream * pDestStm ) override;
+    virtual bool                Commit() override;
+    virtual bool                Validate( bool=false ) const override;
+    virtual bool                ValidateMode( StreamMode ) const override;
+    virtual bool                Equals( const BaseStorageStream& rStream ) const override;
+    bool                        SetProperty( const OUString& rName, const css::uno::Any& rValue );
 
     SvStream*                   GetModifySvStream();
 };
@@ -276,49 +269,48 @@ public:
                                             bool bDirect,
                                             bool bIsRoot,
                                             bool bIsRepair,
-                                            ::com::sun::star::uno::Reference< ::com::sun::star::ucb::XProgressHandler >
+                                            css::uno::Reference< css::ucb::XProgressHandler >
                                             xProgressHandler );
 
                                 UCBStorage( UCBStorage_Impl* );
                                 UCBStorage( SvStream& rStrm, bool bDirect = true );
 
-                                TYPEINFO_OVERRIDE();
-    virtual const OUString&     GetName() const SAL_OVERRIDE;
-    virtual bool                IsRoot() const SAL_OVERRIDE;
-    virtual void                SetClassId( const ClsId& ) SAL_OVERRIDE;
-    virtual const ClsId&        GetClassId() const SAL_OVERRIDE;
-    virtual void                SetDirty() SAL_OVERRIDE;
+    virtual const OUString&     GetName() const override;
+    virtual bool                IsRoot() const override;
+    virtual void                SetClassId( const ClsId& ) override;
+    virtual const ClsId&        GetClassId() const override;
+    virtual void                SetDirty() override;
     virtual void                SetClass( const SvGlobalName & rClass,
                                           SotClipboardFormatId nOriginalClipFormat,
-                                          const OUString & rUserTypeName ) SAL_OVERRIDE;
-    virtual SvGlobalName        GetClassName() SAL_OVERRIDE;
-    virtual SotClipboardFormatId         GetFormat() SAL_OVERRIDE;
-    virtual OUString            GetUserName() SAL_OVERRIDE;
-    virtual void                FillInfoList( SvStorageInfoList* ) const SAL_OVERRIDE;
-    virtual bool                CopyTo( BaseStorage* pDestStg ) const SAL_OVERRIDE;
-    virtual bool                Commit() SAL_OVERRIDE;
-    virtual bool                Revert() SAL_OVERRIDE;
+                                          const OUString & rUserTypeName ) override;
+    virtual SvGlobalName        GetClassName() override;
+    virtual SotClipboardFormatId         GetFormat() override;
+    virtual OUString            GetUserName() override;
+    virtual void                FillInfoList( SvStorageInfoList* ) const override;
+    virtual bool                CopyTo( BaseStorage* pDestStg ) const override;
+    virtual bool                Commit() override;
+    virtual bool                Revert() override;
     virtual BaseStorageStream*  OpenStream( const OUString & rEleName,
                                             StreamMode = STREAM_STD_READWRITE,
-                                            bool bDirect = true, const OString* pKey=0 ) SAL_OVERRIDE;
+                                            bool bDirect = true, const OString* pKey=nullptr ) override;
     virtual BaseStorage*        OpenStorage( const OUString & rEleName,
                                              StreamMode = STREAM_STD_READWRITE,
-                                             bool bDirect = false ) SAL_OVERRIDE;
+                                             bool bDirect = false ) override;
     virtual BaseStorage*        OpenUCBStorage( const OUString & rEleName,
                                                 StreamMode = STREAM_STD_READWRITE,
-                                                bool bDirect = false ) SAL_OVERRIDE;
+                                                bool bDirect = false ) override;
     virtual BaseStorage*        OpenOLEStorage( const OUString & rEleName,
                                                 StreamMode = STREAM_STD_READWRITE,
-                                                bool bDirect = false ) SAL_OVERRIDE;
-    virtual bool                IsStream( const OUString& rEleName ) const SAL_OVERRIDE;
-    virtual bool                IsStorage( const OUString& rEleName ) const SAL_OVERRIDE;
-    virtual bool                IsContained( const OUString& rEleName ) const SAL_OVERRIDE;
-    virtual bool                Remove( const OUString & rEleName ) SAL_OVERRIDE;
-    virtual bool                CopyTo( const OUString & rEleName, BaseStorage * pDest, const OUString & rNewName ) SAL_OVERRIDE;
-    virtual bool                ValidateFAT() SAL_OVERRIDE;
-    virtual bool                Validate( bool=false ) const SAL_OVERRIDE;
-    virtual bool                ValidateMode( StreamMode ) const SAL_OVERRIDE;
-    virtual bool                Equals( const BaseStorage& rStream ) const SAL_OVERRIDE;
+                                                bool bDirect = false ) override;
+    virtual bool                IsStream( const OUString& rEleName ) const override;
+    virtual bool                IsStorage( const OUString& rEleName ) const override;
+    virtual bool                IsContained( const OUString& rEleName ) const override;
+    virtual bool                Remove( const OUString & rEleName ) override;
+    virtual bool                CopyTo( const OUString & rEleName, BaseStorage * pDest, const OUString & rNewName ) override;
+    virtual bool                ValidateFAT() override;
+    virtual bool                Validate( bool=false ) const override;
+    virtual bool                ValidateMode( StreamMode ) const override;
+    virtual bool                Equals( const BaseStorage& rStream ) const override;
 
     UCBStorageElement_Impl*     FindElement_Impl( const OUString& rName ) const;
     bool                        CopyStorageElement_Impl( UCBStorageElement_Impl& rElement,

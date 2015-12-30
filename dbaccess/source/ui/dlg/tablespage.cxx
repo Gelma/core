@@ -83,7 +83,7 @@ namespace dbaui
         m_pTablesList->set_width_request(56 * m_pTablesList->approximate_char_width());
         m_pTablesList->set_height_request(12 * m_pTablesList->GetTextHeight());
 
-        m_pTablesList->SetCheckHandler(getControlModifiedLink());
+        m_pTablesList->SetCheckHandler(LINK(this,OGenericAdministrationPage,OnControlModified));
 
         // initialize the TabListBox
         m_pTablesList->SetSelectionMode( MULTIPLE_SELECTION );
@@ -226,7 +226,7 @@ namespace dbaui
         getFlags(_rSet, bValid, bReadonly);
 
         // get the name of the data source we're working for
-        SFX_ITEMSET_GET(_rSet, pNameItem, SfxStringItem, DSID_NAME, true);
+        const SfxStringItem* pNameItem = _rSet.GetItem<SfxStringItem>(DSID_NAME);
         OSL_ENSURE(pNameItem, "OTableSubscriptionPage::implInitControls: missing the name attribute!");
         OUString sDSName = pNameItem->GetValue();
 
@@ -284,8 +284,7 @@ namespace dbaui
                     Reference<XModifiable> xModi(getDataSourceOrModel(xProp),UNO_QUERY);
                     bool bModified = ( xModi.is() && xModi->isModified() );
 
-                    Sequence< OUString > aNewTableFilter(1);
-                    aNewTableFilter[0] = "%";
+                    Sequence< OUString > aNewTableFilter { "%" };
                     xProp->setPropertyValue(PROPERTY_TABLEFILTER,makeAny(aNewTableFilter));
 
                     xProp->setPropertyValue( PROPERTY_TABLETYPEFILTER, makeAny( Sequence< OUString >() ) );
@@ -350,7 +349,7 @@ namespace dbaui
         }
 
         // get the current table filter
-        SFX_ITEMSET_GET(_rSet, pTableFilter, OStringListItem, DSID_TABLEFILTER, true);
+        const OStringListItem* pTableFilter = _rSet.GetItem<OStringListItem>(DSID_TABLEFILTER);
         Sequence< OUString > aTableFilter;
         if (pTableFilter)
             aTableFilter = pTableFilter->getList();
@@ -364,7 +363,7 @@ namespace dbaui
             m_pTablesList->Expand(pExpand);
             pExpand = m_pTablesList->FirstChild(pExpand);
             if (pExpand && SvTreeList::NextSibling(pExpand))
-                pExpand = NULL;
+                pExpand = nullptr;
         }
 
         // update the toolbox according the current selection and check state
@@ -402,9 +401,9 @@ namespace dbaui
     {
         callModifiedHdl();
     }
-    IMPL_LINK( OTableSubscriptionPage, OnTreeEntryChecked, Control*, _pControl )
+    IMPL_LINK_TYPED( OTableSubscriptionPage, OnTreeEntryChecked, void*, _pControl, void )
     {
-        return OnControlModified(static_cast<Button*>(_pControl));
+        OnControlModified(_pControl);
     }
     IMPL_LINK_TYPED( OTableSubscriptionPage, OnTreeEntryCompare, const SvSortData&, _rSortData, sal_Int32 )
     {
@@ -453,8 +452,8 @@ namespace dbaui
         {
             bool bCatalogWildcard = false;
             bool bSchemaWildcard =  false;
-            SvTreeListEntry* pSchema = NULL;
-            SvTreeListEntry* pCatalog = NULL;
+            SvTreeListEntry* pSchema = nullptr;
+            SvTreeListEntry* pCatalog = nullptr;
 
             if (m_pTablesList->GetCheckButtonState(pEntry) == SV_BUTTON_CHECKED && !m_pTablesList->GetModel()->HasChildren(pEntry))
             {   // checked and a leaf, which means it's no catalog, no schema, but a real table
@@ -464,7 +463,7 @@ namespace dbaui
                     pSchema = m_pTablesList->GetModel()->GetParent(pEntry);
                     if (pAllObjectsEntry == pSchema)
                         // do not want to have the root entry
-                        pSchema = NULL;
+                        pSchema = nullptr;
 
                     if (pSchema)
                     {   // it's a real schema entry, not the "all objects" root
@@ -473,7 +472,7 @@ namespace dbaui
                             pCatalog = m_pTablesList->GetModel()->GetParent(pSchema);
                             if (pAllObjectsEntry == pCatalog)
                                 // do not want to have the root entry
-                                pCatalog = NULL;
+                                pCatalog = nullptr;
 
                             if (pCatalog)
                             {   // it's a real catalog entry, not the "all objects" root
@@ -533,7 +532,7 @@ namespace dbaui
 
     SvTreeListEntry* OTableSubscriptionPage::implNextSibling(SvTreeListEntry* _pEntry) const
     {
-        SvTreeListEntry* pReturn = NULL;
+        SvTreeListEntry* pReturn = nullptr;
         if (_pEntry)
         {
             pReturn = SvTreeList::NextSibling(_pEntry);

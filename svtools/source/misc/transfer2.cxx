@@ -109,7 +109,7 @@ void DragSourceHelper::StartDrag( sal_Int8, const Point& )
 
 DropTargetHelper::DropTargetListener::DropTargetListener( DropTargetHelper& rDropTargetHelper ) :
     mrParent( rDropTargetHelper ),
-    mpLastDragOverEvent( NULL )
+    mpLastDragOverEvent( nullptr )
 {
 }
 
@@ -168,10 +168,10 @@ void SAL_CALL DropTargetHelper::DropTargetListener::drop( const DropTargetDropEv
         if( mpLastDragOverEvent )
         {
             delete mpLastDragOverEvent;
-            mpLastDragOverEvent = NULL;
+            mpLastDragOverEvent = nullptr;
         }
     }
-    catch( const ::com::sun::star::uno::Exception& )
+    catch( const css::uno::Exception& )
     {
     }
 }
@@ -186,7 +186,7 @@ void SAL_CALL DropTargetHelper::DropTargetListener::dragEnter( const DropTargetD
     {
         mrParent.ImplBeginDrag( rDTDEE.SupportedDataFlavors );
     }
-    catch( const ::com::sun::star::uno::Exception& )
+    catch( const css::uno::Exception& )
     {
     }
 
@@ -213,7 +213,7 @@ void SAL_CALL DropTargetHelper::DropTargetListener::dragOver( const DropTargetDr
         else
             rDTDE.Context->acceptDrag( nRet );
     }
-    catch( const ::com::sun::star::uno::Exception& )
+    catch( const css::uno::Exception& )
     {
     }
 }
@@ -231,12 +231,12 @@ void SAL_CALL DropTargetHelper::DropTargetListener::dragExit( const DropTargetEv
             mpLastDragOverEvent->mbLeaving = true;
             mrParent.AcceptDrop( *mpLastDragOverEvent );
             delete mpLastDragOverEvent;
-            mpLastDragOverEvent = NULL;
+            mpLastDragOverEvent = nullptr;
         }
 
         mrParent.ImplEndDrag();
     }
-    catch( const ::com::sun::star::uno::Exception& )
+    catch( const css::uno::Exception& )
     {
     }
 }
@@ -345,7 +345,7 @@ bool DropTargetHelper::IsDropFormatSupported( SotClipboardFormatId nFormat )
 
 struct TDataCntnrEntry_Impl
 {
-    ::com::sun::star::uno::Any aAny;
+    css::uno::Any aAny;
     SotClipboardFormatId nId;
 };
 
@@ -363,7 +363,7 @@ struct TransferDataContainer_Impl
     Graphic* pGrf;
 
     TransferDataContainer_Impl()
-        : pBookmk( 0 ), pGrf( 0 )
+        : pBookmk( nullptr ), pGrf( nullptr )
     {
     }
 
@@ -558,7 +558,7 @@ void TransferDataContainer::CopyString( const OUString& rStr )
 
 
 void TransferDataContainer::CopyAny( SotClipboardFormatId nFmt,
-                                    const ::com::sun::star::uno::Any& rAny )
+                                    const css::uno::Any& rAny )
 {
     TDataCntnrEntry_Impl aEntry;
     aEntry.nId = nFmt;
@@ -572,7 +572,7 @@ void TransferDataContainer::CopyAny( SotClipboardFormatId nFmt,
 bool TransferDataContainer::HasAnyData() const
 {
     return pImpl->aFmtList.begin() != pImpl->aFmtList.end() ||
-            0 != pImpl->pBookmk;
+            nullptr != pImpl->pBookmk;
 }
 
 
@@ -590,8 +590,7 @@ void TransferDataContainer::StartDrag(
 
 void TransferDataContainer::DragFinished( sal_Int8 nDropAction )
 {
-    if( pImpl->aFinshedLnk.IsSet() )
-        pImpl->aFinshedLnk.Call( nDropAction );
+    pImpl->aFinshedLnk.Call( nDropAction );
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

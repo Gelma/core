@@ -23,10 +23,10 @@
 
 #include <sal/types.h>
 #include <tools/globname.hxx>
-#include <tools/stream.hxx>
 
 class SvStringHashEntry;
 class SvIdlDataBase;
+class SvStream;
 class SvTokenStream;
 
 class Svint
@@ -56,8 +56,6 @@ public:
 
     operator    bool() const { return nVal; }
     bool        IsSet() const { return bSet; }
-
-    friend SvStream& operator >> (SvStream &, SvBOOL &);
 
     bool        ReadSvIdl( SvStringHashEntry * pName, SvTokenStream & rInStm );
 };
@@ -105,7 +103,6 @@ public:
     {
         return !m_aStr.isEmpty();
     }
-    friend SvStream& operator >> (SvStream &, SvString &);
 
     bool        ReadSvIdl( SvStringHashEntry * pName, SvTokenStream & rInStm );
 };
@@ -147,10 +144,6 @@ public:
                     return !(*this == r);
                 }
 
-    sal_uInt16      GetMajorVersion() const { return nMajorVersion; }
-    sal_uInt16      GetMinorVersion() const { return nMinorVersion; }
-
-    friend SvStream& operator >> (SvStream &, SvVersion &);
     bool        ReadSvIdl( SvTokenStream & rInStm );
 };
 

@@ -24,7 +24,6 @@
 #include <com/sun/star/awt/XControl.hpp>
 #include <com/sun/star/awt/XControlModel.hpp>
 #include <com/sun/star/form/XForm.hpp>
-// #100312# -----------------
 #include <com/sun/star/frame/XDispatchProviderInterception.hpp>
 #include <vcl/splitwin.hxx>
 #include "toolbar.hxx"
@@ -45,10 +44,8 @@ namespace bib
     {
         private:
 
-            ::com::sun::star::uno::Reference< ::com::sun::star::frame::XController >            m_xController;
-            ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >                 m_xToolBarRef;
-            ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >                 m_xGridRef;
-            ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindow >                  m_xGridWin;
+            css::uno::Reference< css::frame::XController >            m_xController;
+            css::uno::Reference< css::frame::XFrame >                 m_xToolBarRef;
 
             BibDataManager*         pDatMan;
             VclPtr<BibToolBar>      pToolBar;
@@ -62,20 +59,19 @@ namespace bib
             void                    createGridWin();
 
             // FormControlContainer ----------
-            virtual ::com::sun::star::uno::Reference< ::com::sun::star::awt::XControlContainer >
-                    getControlContainer() SAL_OVERRIDE;
+            virtual css::uno::Reference< css::awt::XControlContainer >
+                    getControlContainer() override;
         public:
-            // #100312# -------------------
-            ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatchProviderInterception >
+            css::uno::Reference< css::frame::XDispatchProviderInterception >
                     getDispatchProviderInterception();
 
             BibBeamer(vcl::Window* pParent,BibDataManager* pDatMan, WinBits nStyle = WB_3DLOOK );
             virtual ~BibBeamer();
-            virtual void dispose() SAL_OVERRIDE;
+            virtual void dispose() override;
 
-            void    SetXController(const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XController > &);
+            void    SetXController(const css::uno::Reference< css::frame::XController > &);
 
-            virtual void            GetFocus() SAL_OVERRIDE;
+            virtual void            GetFocus() override;
     };
 
 

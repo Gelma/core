@@ -36,11 +36,10 @@ class NoBitmapCompression::DummyReplacement
 {
 public:
     Bitmap maPreview;
-    Size maOriginalSize;
 
-    DummyReplacement (const Bitmap& rPreview) : maPreview(rPreview)  { }
+    explicit DummyReplacement (const Bitmap& rPreview) : maPreview(rPreview)  { }
     virtual ~DummyReplacement() {}
-    virtual sal_Int32 GetMemorySize() const SAL_OVERRIDE { return maPreview.GetSizeBytes(); }
+    virtual sal_Int32 GetMemorySize() const override { return maPreview.GetSizeBytes(); }
 };
 
 std::shared_ptr<BitmapReplacement> NoBitmapCompression::Compress (const Bitmap& rBitmap) const
@@ -88,7 +87,7 @@ public:
     Size maOriginalSize;
 
     virtual ~ResolutionReducedReplacement();
-    virtual sal_Int32 GetMemorySize() const SAL_OVERRIDE;
+    virtual sal_Int32 GetMemorySize() const override;
 };
 
 ResolutionReduction::ResolutionReducedReplacement::~ResolutionReducedReplacement()
@@ -147,7 +146,7 @@ public:
     sal_Int32 mnDataSize;
     Size maImageSize;
     PngReplacement()
-        : mpData(NULL),
+        : mpData(nullptr),
           mnDataSize(0),
           maImageSize(0,0)
     {}
@@ -155,7 +154,7 @@ public:
     {
         delete [] static_cast<char*>(mpData);
     }
-    virtual sal_Int32 GetMemorySize() const SAL_OVERRIDE
+    virtual sal_Int32 GetMemorySize() const override
     {
         return mnDataSize;
     }
@@ -181,7 +180,7 @@ Bitmap PngCompression::Decompress (
 {
     Bitmap aResult;
     const PngReplacement* pData (dynamic_cast<const PngReplacement*>(&rBitmapData));
-    if (pData != NULL)
+    if (pData != nullptr)
     {
         SvMemoryStream aStream (pData->mpData, pData->mnDataSize, StreamMode::READ);
         vcl::PNGReader aReader (aStream);

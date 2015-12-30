@@ -43,7 +43,7 @@ void TextCharacterSpacingPopup::Rearrange (bool bLBAvailable,bool bAvailable, lo
     ProvideContainerAndControl();
 
     TextCharacterSpacingControl* pControl = dynamic_cast<TextCharacterSpacingControl*>(mxControl.get());
-    if (pControl != NULL)
+    if (pControl != nullptr)
         pControl->Rearrange(bLBAvailable,bAvailable,nKerning);
 }
 
@@ -51,15 +51,14 @@ void TextCharacterSpacingPopup::PopupModeEndCallback()
 {
     ProvideContainerAndControl();
     TextCharacterSpacingControl* pControl = dynamic_cast<TextCharacterSpacingControl*>(mxControl.get());
-    if (pControl == NULL)
+    if (pControl == nullptr)
         return;
 
     if( pControl->GetLastCustomState() == SPACING_CLOSE_BY_CUS_EDIT)
     {
         SvtViewOptions aWinOpt( E_WINDOW, SIDEBAR_SPACING_GLOBAL_VALUE );
-        ::com::sun::star::uno::Sequence < ::com::sun::star::beans::NamedValue > aSeq(1);
-        aSeq[0].Name = "Spacing";
-        aSeq[0].Value <<= ::rtl::OUString::number(pControl->GetLastCustomValue());
+        css::uno::Sequence < css::beans::NamedValue > aSeq
+            { { "Spacing", css::uno::makeAny(OUString::number(pControl->GetLastCustomValue())) } };
         aWinOpt.SetUserData( aSeq );
 
     }

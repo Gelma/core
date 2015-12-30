@@ -64,15 +64,15 @@ public:
     // Animation interface
 
     virtual void prefetch( const AnimatableShapeSharedPtr&     rShape,
-                           const ShapeAttributeLayerSharedPtr& rAttrLayer ) SAL_OVERRIDE;
+                           const ShapeAttributeLayerSharedPtr& rAttrLayer ) override;
     virtual void start( const AnimatableShapeSharedPtr&     rShape,
-                        const ShapeAttributeLayerSharedPtr& rAttrLayer ) SAL_OVERRIDE;
-    virtual void end() SAL_OVERRIDE;
+                        const ShapeAttributeLayerSharedPtr& rAttrLayer ) override;
+    virtual void end() override;
 
     // NumberAnimation interface
 
-    virtual bool operator()( double nValue ) SAL_OVERRIDE;
-    virtual double getUnderlyingValue() const SAL_OVERRIDE;
+    virtual bool operator()( double nValue ) override;
+    virtual double getUnderlyingValue() const override;
 
 private:
     void end_();
@@ -196,8 +196,7 @@ AnimationActivitySharedPtr createShapeTransitionByType(
     const AnimatableShapeSharedPtr&                         rShape,
     const ShapeManagerSharedPtr&                            rShapeManager,
     const ::basegfx::B2DVector&                             rSlideSize,
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XTransitionFilter > const& xTransition,
+    css::uno::Reference< css::animations::XTransitionFilter > const& xTransition,
     sal_Int16                                               nType,
     sal_Int16                                               nSubType )
 {
@@ -209,7 +208,7 @@ AnimationActivitySharedPtr createShapeTransitionByType(
         getTransitionInfo( nType, nSubType ) );
 
     AnimationActivitySharedPtr pGeneratedActivity;
-    if( pTransitionInfo != NULL )
+    if( pTransitionInfo != nullptr )
     {
         switch( pTransitionInfo->meTransitionClass )
         {
@@ -252,7 +251,7 @@ AnimationActivitySharedPtr createShapeTransitionByType(
 
                         const TransitionInfo* pRandomTransitionInfo( getRandomTransitionInfo() );
 
-                        ENSURE_OR_THROW( pRandomTransitionInfo != NULL,
+                        ENSURE_OR_THROW( pRandomTransitionInfo != nullptr,
                                           "createShapeTransitionByType(): Got invalid random transition info" );
 
                         ENSURE_OR_THROW( pRandomTransitionInfo->mnTransitionType != animations::TransitionType::RANDOM,
@@ -335,7 +334,7 @@ AnimationActivitySharedPtr createShapeTransitionByType(
                         pGeneratedActivity = ActivitiesFactory::createSimpleActivity(
                             rParms,
                             AnimationFactory::createNumberPropertyAnimation(
-                                OUString("Opacity"),
+                                "Opacity",
                                 rShape,
                                 rShapeManager,
                                 rSlideSize ),

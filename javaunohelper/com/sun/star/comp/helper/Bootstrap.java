@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -88,6 +89,34 @@ public class Bootstrap {
         // insert the acceptor
         xSet.insert( xImpLoader.activate(
             "com.sun.star.comp.connections.Acceptor", null, null, null ) );
+    }
+
+    /**
+     * Returns an array of default commandline options to start bootstrapped
+     * instance of soffice with. You may use it in connection with bootstrap
+     * method for example like this:
+     * <pre>
+     *     List list = Arrays.asList( Bootstrap.getDefaultOptions() );
+     *     list.remove("--nologo");
+     *     list.remove("--nodefault");
+     *     list.add("--invisible");
+     *
+     *     Bootstrap.bootstrap( list.toArray( new String[list.size()] );
+     * </pre>
+     *
+     * @return an array of default commandline options
+     * @see #bootstrap( String[] )
+     * @since LibreOffice 5.1
+     */
+    public static final String[] getDefaultOptions()
+    {
+        return new String[]
+        {
+            "--nologo",
+            "--nodefault",
+            "--norestore",
+            "--nolockcheck"
+        };
     }
 
     /**
@@ -247,6 +276,24 @@ public class Bootstrap {
     public static final XComponentContext bootstrap()
         throws BootstrapException {
 
+        String[] defaultArgArray = getDefaultOptions();
+        return bootstrap( defaultArgArray );
+    }
+
+    /**
+     * Bootstraps the component context from a UNO installation.
+     *
+     * @param argArray
+     *        an array of strings - commandline options to start instance of
+     *        soffice with
+     * @see #getDefaultOptions()
+     * @return a bootstrapped component context.
+     *
+     * @since LibreOffice 5.1
+     */
+    public static final XComponentContext bootstrap( String[] argArray )
+        throws BootstrapException {
+
         XComponentContext xContext = null;
 
         try {
@@ -267,16 +314,14 @@ public class Bootstrap {
 
             // create random pipe name
             String sPipeName = "uno" +
-                Long.toString( (new Random()).nextLong() & 0x7fffffffffffffffL );
+                Long.toString(randomPipeName.nextLong() & 0x7fffffffffffffffL);
 
             // create call with arguments
-            String[] cmdArray = new String[] {
-                fOffice.getPath(),
-                "--nologo",
-                "--nodefault",
-                "--norestore",
-                "--nolockcheck",
-                "--accept=pipe,name=" + sPipeName + ";urp;" };
+            String[] cmdArray = new String[ argArray.length + 2 ];
+            cmdArray[0] = fOffice.getPath();
+            cmdArray[1] = ( "--accept=pipe,name=" + sPipeName + ";urp;" );
+
+            System.arraycopy( argArray, 0, cmdArray, 2, argArray.length );
 
             // start office process
             Process p = Runtime.getRuntime().exec( cmdArray );
@@ -327,15 +372,18 @@ public class Bootstrap {
         return xContext;
     }
 
+    private static final Random randomPipeName = new Random();
+
     private static void pipe(
         final InputStream in, final PrintStream out, final String prefix ) {
 
         new Thread( "Pipe: " + prefix) {
             @Override
             public void run() {
-                BufferedReader r = new BufferedReader(
-                    new InputStreamReader( in ) );
                 try {
+                    BufferedReader r = new BufferedReader(
+                        new InputStreamReader(in, "UTF-8") );
+
                     for ( ; ; ) {
                         String s = r.readLine();
                         if ( s == null ) {
@@ -343,6 +391,8 @@ public class Bootstrap {
                         }
                         out.println( prefix + s );
                     }
+                } catch ( UnsupportedEncodingException e ) {
+                    e.printStackTrace( System.err );
                 } catch ( java.io.IOException e ) {
                     e.printStackTrace( System.err );
                 }

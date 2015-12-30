@@ -44,13 +44,13 @@ namespace sfx2
     // FormatID "RegisterStatusInfoId" and a string as the data container.
     // This contains the following enum.
 
-typedef std::vector<SvBaseLinkRef*> SvBaseLinks;
+typedef std::vector<tools::SvRef<SvBaseLink> > SvBaseLinks;
 
 typedef std::set<SvLinkSource*> SvLinkSources;
 
 class SFX2_DLLPUBLIC LinkManager
 {
-    typedef ::std::vector< ::com::sun::star::uno::Reference< ::com::sun::star::lang::XComponent > >
+    typedef ::std::vector< css::uno::Reference< css::lang::XComponent > >
         CompVector;
     CompVector maCachedComps;
 
@@ -60,7 +60,7 @@ class SFX2_DLLPUBLIC LinkManager
     SfxObjectShell *pPersist; // LinkMgr must be release before SfxObjectShell
 protected:
     bool        InsertLink( SvBaseLink* pLink, sal_uInt16 nObjType, SfxLinkUpdateMode nUpdateType,
-                            const OUString* pName = 0 );
+                            const OUString* pName = nullptr );
 public:
 
     enum LinkState
@@ -79,7 +79,7 @@ public:
      *
      * @param xComp component loaded during link update.
      */
-    void        InsertCachedComp(const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XComponent >& xComp);
+    void        InsertCachedComp(const css::uno::Reference< css::lang::XComponent >& xComp);
 
     void        CloseCachedComps();
 
@@ -103,8 +103,8 @@ public:
     bool InsertFileLink( sfx2::SvBaseLink&,
                         sal_uInt16 nFileType,
                         const OUString& rFileNm,
-                        const OUString* pFilterNm = NULL,
-                        const OUString* pRange = NULL );
+                        const OUString* pFilterNm = nullptr,
+                        const OUString* pRange = nullptr );
 
     void ReconnectDdeLink(SfxObjectShell& rServer);
 
@@ -120,16 +120,16 @@ public:
     // Obtain the string for the dialog
     static bool GetDisplayNames( const SvBaseLink *,
                                     OUString* pType,
-                                    OUString* pFile = NULL,
-                                    OUString* pLink = NULL,
-                                    OUString* pFilter = NULL );
+                                    OUString* pFile = nullptr,
+                                    OUString* pLink = nullptr,
+                                    OUString* pFilter = nullptr );
 
     static SvLinkSourceRef CreateObj( SvBaseLink* );
 
     void        UpdateAllLinks( bool bAskUpdate = true,
                                 bool bCallErrHdl = true,
                                 bool bUpdateGrfLinks = false,
-                                vcl::Window* pParentWin = 0 );
+                                vcl::Window* pParentWin = nullptr );
 
     // Call for list of links (eg for link-dialog)
     const       SvBaseLinks& GetLinks() const { return aLinkTbl; }
@@ -156,12 +156,12 @@ public:
     // if the mimetype says graphic/bitmap/gdimetafile then get the
     // graphic from the Any. Return says no errors
     static bool GetGraphicFromAny( const OUString& rMimeType,
-                                const ::com::sun::star::uno::Any & rValue,
+                                const css::uno::Any & rValue,
                                 Graphic& rGrf );
 
 private:
-                LinkManager( const LinkManager& ) SAL_DELETED_FUNCTION;
-                LinkManager& operator=( const LinkManager& ) SAL_DELETED_FUNCTION;
+                LinkManager( const LinkManager& ) = delete;
+                LinkManager& operator=( const LinkManager& ) = delete;
 };
 
 // Separator in the link name for the DDE-/File-/Graphics- links
@@ -175,7 +175,7 @@ SFX2_DLLPUBLIC void MakeLnkName( OUString& rName,
                  const OUString* pType,       // Can also be null!!
                  const OUString& rFile,
                  const OUString& rLink,
-                 const OUString* pFilter = 0 );
+                 const OUString* pFilter = nullptr );
 
 }
 

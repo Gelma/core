@@ -21,6 +21,7 @@
 #define INCLUDED_SC_INC_FORMULACELL_HXX
 
 #include <set>
+#include <memory>
 
 #include <boost/noncopyable.hpp>
 
@@ -56,7 +57,7 @@ struct SC_DLLPUBLIC ScFormulaCellGroup : boost::noncopyable
 {
 private:
     struct Impl;
-    Impl* mpImpl;
+    std::unique_ptr<Impl> mpImpl;
 
 public:
 
@@ -71,7 +72,6 @@ public:
     bool mbSubTotal:1;
 
     sal_uInt8 meCalcState;
-    sal_uInt8 meKernelState;
 
     ScFormulaCellGroup();
     ~ScFormulaCellGroup();
@@ -80,7 +80,6 @@ public:
     void setCode( ScTokenArray* pCode );
     void compileCode(
         ScDocument& rDoc, const ScAddress& rPos, formula::FormulaGrammar::Grammar eGram );
-    void compileOpenCLKernel();
 
     sc::FormulaGroupAreaListener* getAreaListener(
         ScFormulaCell** ppTopCell, const ScRange& rRange, bool bStartFixed, bool bEndFixed );
@@ -147,7 +146,7 @@ private:
     bool UpdateReferenceOnCopy(
         const sc::RefUpdateContext& rCxt, ScDocument* pUndoDoc, const ScAddress* pUndoCellPos );
 
-    ScFormulaCell( const ScFormulaCell& ) SAL_DELETED_FUNCTION;
+    ScFormulaCell( const ScFormulaCell& ) = delete;
 public:
 
     enum CompareState { NotEqual = 0, EqualInvariant, EqualRelativeRef };
@@ -245,7 +244,7 @@ public:
     bool            HasRelNameReference() const;
 
     bool UpdateReference(
-        const sc::RefUpdateContext& rCxt, ScDocument* pUndoDoc = NULL, const ScAddress* pUndoCellPos = NULL );
+        const sc::RefUpdateContext& rCxt, ScDocument* pUndoDoc = nullptr, const ScAddress* pUndoCellPos = nullptr );
 
     /**
      * Shift the position of formula cell as part of reference update.
@@ -319,8 +318,8 @@ public:
     void            SetPreviousTrack( ScFormulaCell* pF );
     void            SetNextTrack( ScFormulaCell* pF );
 
-    virtual void Notify( const SfxHint& rHint ) SAL_OVERRIDE;
-    virtual void Query( SvtListener::QueryBase& rQuery ) const SAL_OVERRIDE;
+    virtual void Notify( const SfxHint& rHint ) override;
+    virtual void Query( SvtListener::QueryBase& rQuery ) const override;
 
     void SetCompile( bool bVal );
     ScDocument* GetDocument() const { return pDocument;}
@@ -395,7 +394,7 @@ public:
     void StartListeningTo( ScDocument* pDoc );
     void StartListeningTo( sc::StartListeningContext& rCxt );
     void EndListeningTo(
-        ScDocument* pDoc, ScTokenArray* pArr = NULL, ScAddress aPos = ScAddress() );
+        ScDocument* pDoc, ScTokenArray* pArr = nullptr, ScAddress aPos = ScAddress() );
     void EndListeningTo( sc::EndListeningContext& rCxt );
 
     bool IsShared() const;

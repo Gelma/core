@@ -58,7 +58,7 @@ using namespace ::formula;
 #define MAP_EXT(name,prefix,token,type,context)  { name, sizeof(name)-1, prefix, token, type, context, SvtSaveOptions::ODFVER_012_EXT_COMPAT, false }
 // extensions import only
 #define MAP_EXT_I(name,prefix,token,type,context)  { name, sizeof(name)-1, prefix, token, type, context, SvtSaveOptions::ODFVER_012_EXT_COMPAT, true }
-#define MAP_END()   { NULL, 0, 0, XML_TOKEN_INVALID, 0, 0, SvtSaveOptions::ODFVER_010, false }
+#define MAP_END()   { nullptr, 0, 0, XML_TOKEN_INVALID, 0, 0, SvtSaveOptions::ODFVER_010, false }
 
 const XMLPropertyMapEntry aXMLScCellStylesProperties[] =
 {
@@ -193,47 +193,47 @@ void ScXMLCellExportPropertyMapper::ContextFilter(
     ::std::vector< XMLPropertyState >& rProperties,
     uno::Reference< beans::XPropertySet > rPropSet ) const
 {
-    XMLPropertyState* pPadding = NULL;
-    XMLPropertyState* pPadding_Bottom = NULL;
-    XMLPropertyState* pPadding_Left = NULL;
-    XMLPropertyState* pPadding_Right = NULL;
-    XMLPropertyState* pPadding_Top = NULL;
+    XMLPropertyState* pPadding = nullptr;
+    XMLPropertyState* pPadding_Bottom = nullptr;
+    XMLPropertyState* pPadding_Left = nullptr;
+    XMLPropertyState* pPadding_Right = nullptr;
+    XMLPropertyState* pPadding_Top = nullptr;
 
-    XMLPropertyState* pBorder = NULL;
-    XMLPropertyState* pBorder_Bottom = NULL;
-    XMLPropertyState* pBorder_Left = NULL;
-    XMLPropertyState* pBorder_Right = NULL;
-    XMLPropertyState* pBorder_Top = NULL;
-    XMLPropertyState* pSWBorder = NULL;
-    XMLPropertyState* pSWBorder_Bottom = NULL;
-    XMLPropertyState* pSWBorder_Left = NULL;
-    XMLPropertyState* pSWBorder_Right = NULL;
-    XMLPropertyState* pSWBorder_Top = NULL;
+    XMLPropertyState* pBorder = nullptr;
+    XMLPropertyState* pBorder_Bottom = nullptr;
+    XMLPropertyState* pBorder_Left = nullptr;
+    XMLPropertyState* pBorder_Right = nullptr;
+    XMLPropertyState* pBorder_Top = nullptr;
+    XMLPropertyState* pSWBorder = nullptr;
+    XMLPropertyState* pSWBorder_Bottom = nullptr;
+    XMLPropertyState* pSWBorder_Left = nullptr;
+    XMLPropertyState* pSWBorder_Right = nullptr;
+    XMLPropertyState* pSWBorder_Top = nullptr;
 
-    XMLPropertyState* pAllBorderWidthState = NULL;
-    XMLPropertyState* pLeftBorderWidthState = NULL;
-    XMLPropertyState* pRightBorderWidthState = NULL;
-    XMLPropertyState* pTopBorderWidthState = NULL;
-    XMLPropertyState* pBottomBorderWidthState = NULL;
-    XMLPropertyState* pSWAllBorderWidthState = NULL;
-    XMLPropertyState* pSWLeftBorderWidthState = NULL;
-    XMLPropertyState* pSWRightBorderWidthState = NULL;
-    XMLPropertyState* pSWTopBorderWidthState = NULL;
-    XMLPropertyState* pSWBottomBorderWidthState = NULL;
-    XMLPropertyState* pDiagonalTLBRWidthState = NULL;
-    XMLPropertyState* pDiagonalBLTRWidthState = NULL;
+    XMLPropertyState* pAllBorderWidthState = nullptr;
+    XMLPropertyState* pLeftBorderWidthState = nullptr;
+    XMLPropertyState* pRightBorderWidthState = nullptr;
+    XMLPropertyState* pTopBorderWidthState = nullptr;
+    XMLPropertyState* pBottomBorderWidthState = nullptr;
+    XMLPropertyState* pSWAllBorderWidthState = nullptr;
+    XMLPropertyState* pSWLeftBorderWidthState = nullptr;
+    XMLPropertyState* pSWRightBorderWidthState = nullptr;
+    XMLPropertyState* pSWTopBorderWidthState = nullptr;
+    XMLPropertyState* pSWBottomBorderWidthState = nullptr;
+    XMLPropertyState* pDiagonalTLBRWidthState = nullptr;
+    XMLPropertyState* pDiagonalBLTRWidthState = nullptr;
 
-    XMLPropertyState* pParaMarginLeft = NULL;
-    XMLPropertyState* pParaMarginLeftRel = NULL;
-    XMLPropertyState* pParaMarginRight = NULL;
-    XMLPropertyState* pParaMarginRightRel = NULL;
-    XMLPropertyState* pParaMarginTop = NULL;
-    XMLPropertyState* pParaMarginTopRel = NULL;
-    XMLPropertyState* pParaMarginBottom = NULL;
-    XMLPropertyState* pParaMarginBottomRel = NULL;
+    XMLPropertyState* pParaMarginLeft = nullptr;
+    XMLPropertyState* pParaMarginLeftRel = nullptr;
+    XMLPropertyState* pParaMarginRight = nullptr;
+    XMLPropertyState* pParaMarginRightRel = nullptr;
+    XMLPropertyState* pParaMarginTop = nullptr;
+    XMLPropertyState* pParaMarginTopRel = nullptr;
+    XMLPropertyState* pParaMarginBottom = nullptr;
+    XMLPropertyState* pParaMarginBottomRel = nullptr;
 
-    XMLPropertyState* pParaAdjust = NULL;
-    XMLPropertyState* pParaAdjustLast = NULL;
+    XMLPropertyState* pParaAdjust = nullptr;
+    XMLPropertyState* pParaAdjustLast = nullptr;
 
     ::std::vector< XMLPropertyState >::iterator aEndIter(rProperties.end());
     for( ::std::vector< XMLPropertyState >::iterator aIter = rProperties.begin();
@@ -675,7 +675,7 @@ void ScXMLAutoStylePoolP::exportStyleAttributes(
 }
 
 void ScXMLAutoStylePoolP::exportStyleContent(
-        const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XDocumentHandler > & rHandler,
+        const css::uno::Reference< css::xml::sax::XDocumentHandler > & rHandler,
         sal_Int32 nFamily,
         const std::vector< XMLPropertyState >& rProperties,
         const SvXMLExportPropertyMapper& rPropExp
@@ -805,8 +805,7 @@ ScXMLAutoStylePoolP::~ScXMLAutoStylePoolP()
 }
 
 void ScXMLStyleExport::exportStyleAttributes(
-        const ::com::sun::star::uno::Reference<
-                ::com::sun::star::style::XStyle > & rStyle )
+        const css::uno::Reference< css::style::XStyle > & rStyle )
 {
     uno::Reference< beans::XPropertySet > xPropSet( rStyle, uno::UNO_QUERY );
     if (xPropSet.is())
@@ -828,9 +827,7 @@ void ScXMLStyleExport::exportStyleAttributes(
     }
 }
 
-void ScXMLStyleExport::exportStyleContent(
-        const ::com::sun::star::uno::Reference<
-                ::com::sun::star::style::XStyle > & /* rStyle */ )
+void ScXMLStyleExport::exportStyleContent( const css::uno::Reference<css::style::XStyle > & /* rStyle */ )
 {
 }
 
@@ -949,8 +946,8 @@ XmlScPropHdl_CellProtection::~XmlScPropHdl_CellProtection()
 }
 
 bool XmlScPropHdl_CellProtection::equals(
-    const ::com::sun::star::uno::Any& r1,
-    const ::com::sun::star::uno::Any& r2 ) const
+    const css::uno::Any& r1,
+    const css::uno::Any& r2 ) const
 {
     util::CellProtection aCellProtection1, aCellProtection2;
 
@@ -965,7 +962,7 @@ bool XmlScPropHdl_CellProtection::equals(
 
 bool XmlScPropHdl_CellProtection::importXML(
     const OUString& rStrImpValue,
-    ::com::sun::star::uno::Any& rValue,
+    css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1038,7 +1035,7 @@ bool XmlScPropHdl_CellProtection::importXML(
 
 bool XmlScPropHdl_CellProtection::exportXML(
     OUString& rStrExpValue,
-    const ::com::sun::star::uno::Any& rValue,
+    const css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1085,8 +1082,8 @@ XmlScPropHdl_PrintContent::~XmlScPropHdl_PrintContent()
 }
 
 bool XmlScPropHdl_PrintContent::equals(
-    const ::com::sun::star::uno::Any& r1,
-    const ::com::sun::star::uno::Any& r2 ) const
+    const css::uno::Any& r1,
+    const css::uno::Any& r2 ) const
 {
     util::CellProtection aCellProtection1, aCellProtection2;
 
@@ -1099,7 +1096,7 @@ bool XmlScPropHdl_PrintContent::equals(
 
 bool XmlScPropHdl_PrintContent::importXML(
     const OUString& rStrImpValue,
-    ::com::sun::star::uno::Any& rValue,
+    css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1129,7 +1126,7 @@ bool XmlScPropHdl_PrintContent::importXML(
 
 bool XmlScPropHdl_PrintContent::exportXML(
     OUString& rStrExpValue,
-    const ::com::sun::star::uno::Any& rValue,
+    const css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1151,8 +1148,8 @@ XmlScPropHdl_JustifyMethod::~XmlScPropHdl_JustifyMethod()
 }
 
 bool XmlScPropHdl_JustifyMethod::equals(
-    const ::com::sun::star::uno::Any& r1,
-    const ::com::sun::star::uno::Any& r2 ) const
+    const css::uno::Any& r1,
+    const css::uno::Any& r2 ) const
 {
     sal_Int32 nVal1(0), nVal2(0);
 
@@ -1163,7 +1160,7 @@ bool XmlScPropHdl_JustifyMethod::equals(
 
 bool XmlScPropHdl_JustifyMethod::importXML(
     const OUString& rStrImpValue,
-    ::com::sun::star::uno::Any& rValue,
+    css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval = false;
@@ -1189,7 +1186,7 @@ bool XmlScPropHdl_JustifyMethod::importXML(
 
 bool XmlScPropHdl_JustifyMethod::exportXML(
     OUString& rStrExpValue,
-    const ::com::sun::star::uno::Any& rValue,
+    const css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     sal_Int32 nVal(0);
@@ -1225,8 +1222,8 @@ XmlScPropHdl_HoriJustify::~XmlScPropHdl_HoriJustify()
 }
 
 bool XmlScPropHdl_HoriJustify::equals(
-    const ::com::sun::star::uno::Any& r1,
-    const ::com::sun::star::uno::Any& r2 ) const
+    const css::uno::Any& r1,
+    const css::uno::Any& r2 ) const
 {
     table::CellHoriJustify aHoriJustify1, aHoriJustify2;
 
@@ -1237,7 +1234,7 @@ bool XmlScPropHdl_HoriJustify::equals(
 
 bool XmlScPropHdl_HoriJustify::importXML(
     const OUString& rStrImpValue,
-    ::com::sun::star::uno::Any& rValue,
+    css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1279,7 +1276,7 @@ bool XmlScPropHdl_HoriJustify::importXML(
 
 bool XmlScPropHdl_HoriJustify::exportXML(
     OUString& rStrExpValue,
-    const ::com::sun::star::uno::Any& rValue,
+    const css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     table::CellHoriJustify nVal;
@@ -1329,8 +1326,8 @@ XmlScPropHdl_HoriJustifySource::~XmlScPropHdl_HoriJustifySource()
 }
 
 bool XmlScPropHdl_HoriJustifySource::equals(
-    const ::com::sun::star::uno::Any& r1,
-    const ::com::sun::star::uno::Any& r2 ) const
+    const css::uno::Any& r1,
+    const css::uno::Any& r2 ) const
 {
     table::CellHoriJustify aHoriJustify1, aHoriJustify2;
 
@@ -1341,7 +1338,7 @@ bool XmlScPropHdl_HoriJustifySource::equals(
 
 bool XmlScPropHdl_HoriJustifySource::importXML(
     const OUString& rStrImpValue,
-    ::com::sun::star::uno::Any& rValue,
+    css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1362,7 +1359,7 @@ bool XmlScPropHdl_HoriJustifySource::importXML(
 
 bool XmlScPropHdl_HoriJustifySource::exportXML(
     OUString& rStrExpValue,
-    const ::com::sun::star::uno::Any& rValue,
+    const css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     table::CellHoriJustify nVal;
@@ -1390,8 +1387,8 @@ XmlScPropHdl_HoriJustifyRepeat::~XmlScPropHdl_HoriJustifyRepeat()
 }
 
 bool XmlScPropHdl_HoriJustifyRepeat::equals(
-    const ::com::sun::star::uno::Any& r1,
-    const ::com::sun::star::uno::Any& r2 ) const
+    const css::uno::Any& r1,
+    const css::uno::Any& r2 ) const
 {
     table::CellHoriJustify aHoriJustify1, aHoriJustify2;
 
@@ -1402,7 +1399,7 @@ bool XmlScPropHdl_HoriJustifyRepeat::equals(
 
 bool XmlScPropHdl_HoriJustifyRepeat::importXML(
     const OUString& rStrImpValue,
-    ::com::sun::star::uno::Any& rValue,
+    css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1423,7 +1420,7 @@ bool XmlScPropHdl_HoriJustifyRepeat::importXML(
 
 bool XmlScPropHdl_HoriJustifyRepeat::exportXML(
     OUString& rStrExpValue,
-    const ::com::sun::star::uno::Any& rValue,
+    const css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     table::CellHoriJustify nVal;
@@ -1451,8 +1448,8 @@ XmlScPropHdl_Orientation::~XmlScPropHdl_Orientation()
 }
 
 bool XmlScPropHdl_Orientation::equals(
-    const ::com::sun::star::uno::Any& r1,
-    const ::com::sun::star::uno::Any& r2 ) const
+    const css::uno::Any& r1,
+    const css::uno::Any& r2 ) const
 {
     table::CellOrientation aOrientation1, aOrientation2;
 
@@ -1463,7 +1460,7 @@ bool XmlScPropHdl_Orientation::equals(
 
 bool XmlScPropHdl_Orientation::importXML(
     const OUString& rStrImpValue,
-    ::com::sun::star::uno::Any& rValue,
+    css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1487,7 +1484,7 @@ bool XmlScPropHdl_Orientation::importXML(
 
 bool XmlScPropHdl_Orientation::exportXML(
     OUString& rStrExpValue,
-    const ::com::sun::star::uno::Any& rValue,
+    const css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     table::CellOrientation nVal;
@@ -1520,8 +1517,8 @@ XmlScPropHdl_RotateAngle::~XmlScPropHdl_RotateAngle()
 }
 
 bool XmlScPropHdl_RotateAngle::equals(
-    const ::com::sun::star::uno::Any& r1,
-    const ::com::sun::star::uno::Any& r2 ) const
+    const css::uno::Any& r1,
+    const css::uno::Any& r2 ) const
 {
     sal_Int32 aAngle1 = 0, aAngle2 = 0;
 
@@ -1532,7 +1529,7 @@ bool XmlScPropHdl_RotateAngle::equals(
 
 bool XmlScPropHdl_RotateAngle::importXML(
     const OUString& rStrImpValue,
-    ::com::sun::star::uno::Any& rValue,
+    css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1550,7 +1547,7 @@ bool XmlScPropHdl_RotateAngle::importXML(
 
 bool XmlScPropHdl_RotateAngle::exportXML(
     OUString& rStrExpValue,
-    const ::com::sun::star::uno::Any& rValue,
+    const css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     sal_Int32 nVal = 0;
@@ -1572,8 +1569,8 @@ XmlScPropHdl_RotateReference::~XmlScPropHdl_RotateReference()
 }
 
 bool XmlScPropHdl_RotateReference::equals(
-    const ::com::sun::star::uno::Any& r1,
-    const ::com::sun::star::uno::Any& r2 ) const
+    const css::uno::Any& r1,
+    const css::uno::Any& r2 ) const
 {
     sal_Int32 aReference1(0), aReference2(0);
 
@@ -1584,7 +1581,7 @@ bool XmlScPropHdl_RotateReference::equals(
 
 bool XmlScPropHdl_RotateReference::importXML(
     const OUString& rStrImpValue,
-    ::com::sun::star::uno::Any& rValue,
+    css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1620,7 +1617,7 @@ bool XmlScPropHdl_RotateReference::importXML(
 
 bool XmlScPropHdl_RotateReference::exportXML(
     OUString& rStrExpValue,
-    const ::com::sun::star::uno::Any& rValue,
+    const css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     sal_Int32 nVal(0);
@@ -1669,8 +1666,8 @@ XmlScPropHdl_VertJustify::~XmlScPropHdl_VertJustify()
 }
 
 bool XmlScPropHdl_VertJustify::equals(
-    const ::com::sun::star::uno::Any& r1,
-    const ::com::sun::star::uno::Any& r2 ) const
+    const css::uno::Any& r1,
+    const css::uno::Any& r2 ) const
 {
     sal_Int32 aReference1(0), aReference2(0);
 
@@ -1681,7 +1678,7 @@ bool XmlScPropHdl_VertJustify::equals(
 
 bool XmlScPropHdl_VertJustify::importXML(
     const OUString& rStrImpValue,
-    ::com::sun::star::uno::Any& rValue,
+    css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1723,7 +1720,7 @@ bool XmlScPropHdl_VertJustify::importXML(
 
 bool XmlScPropHdl_VertJustify::exportXML(
     OUString& rStrExpValue,
-    const ::com::sun::star::uno::Any& rValue,
+    const css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     sal_Int32 nVal(0);
@@ -1778,8 +1775,8 @@ XmlScPropHdl_BreakBefore::~XmlScPropHdl_BreakBefore()
 }
 
 bool XmlScPropHdl_BreakBefore::equals(
-    const ::com::sun::star::uno::Any& r1,
-    const ::com::sun::star::uno::Any& r2 ) const
+    const css::uno::Any& r1,
+    const css::uno::Any& r2 ) const
 {
     bool aBreak1 = false, aBreak2 = false;
 
@@ -1790,7 +1787,7 @@ bool XmlScPropHdl_BreakBefore::equals(
 
 bool XmlScPropHdl_BreakBefore::importXML(
     const OUString& rStrImpValue,
-    ::com::sun::star::uno::Any& rValue,
+    css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1814,7 +1811,7 @@ bool XmlScPropHdl_BreakBefore::importXML(
 
 bool XmlScPropHdl_BreakBefore::exportXML(
     OUString& rStrExpValue,
-    const ::com::sun::star::uno::Any& rValue,
+    const css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1838,15 +1835,15 @@ XmlScPropHdl_IsTextWrapped::~XmlScPropHdl_IsTextWrapped()
 }
 
 bool XmlScPropHdl_IsTextWrapped::equals(
-    const ::com::sun::star::uno::Any& r1,
-    const ::com::sun::star::uno::Any& r2 ) const
+    const css::uno::Any& r1,
+    const css::uno::Any& r2 ) const
 {
     return (::cppu::any2bool(r1) == ::cppu::any2bool(r2));
 }
 
 bool XmlScPropHdl_IsTextWrapped::importXML(
     const OUString& rStrImpValue,
-    ::com::sun::star::uno::Any& rValue,
+    css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1867,7 +1864,7 @@ bool XmlScPropHdl_IsTextWrapped::importXML(
 
 bool XmlScPropHdl_IsTextWrapped::exportXML(
     OUString& rStrExpValue,
-    const ::com::sun::star::uno::Any& rValue,
+    const css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1887,7 +1884,7 @@ bool XmlScPropHdl_IsTextWrapped::exportXML(
 }
 
 bool XmlScPropHdl_IsEqual::importXML( const OUString& /* rStrImpValue */,
-    ::com::sun::star::uno::Any& /* rValue */,
+    css::uno::Any& /* rValue */,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     OSL_FAIL("should never be called");
@@ -1895,7 +1892,7 @@ bool XmlScPropHdl_IsEqual::importXML( const OUString& /* rStrImpValue */,
 }
 
 bool XmlScPropHdl_IsEqual::exportXML( OUString& /* rStrExpValue */,
-    const ::com::sun::star::uno::Any& /* rValue */,
+    const css::uno::Any& /* rValue */,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     OSL_FAIL("should never be called");
@@ -1907,15 +1904,15 @@ XmlScPropHdl_Vertical::~XmlScPropHdl_Vertical()
 }
 
 bool XmlScPropHdl_Vertical::equals(
-    const ::com::sun::star::uno::Any& r1,
-    const ::com::sun::star::uno::Any& r2 ) const
+    const css::uno::Any& r1,
+    const css::uno::Any& r2 ) const
 {
     return (::cppu::any2bool(r1) == ::cppu::any2bool(r2));
 }
 
 bool XmlScPropHdl_Vertical::importXML(
     const OUString& rStrImpValue,
-    ::com::sun::star::uno::Any& rValue,
+    css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);
@@ -1936,7 +1933,7 @@ bool XmlScPropHdl_Vertical::importXML(
 
 bool XmlScPropHdl_Vertical::exportXML(
     OUString& rStrExpValue,
-    const ::com::sun::star::uno::Any& rValue,
+    const css::uno::Any& rValue,
     const SvXMLUnitConverter& /* rUnitConverter */ ) const
 {
     bool bRetval(false);

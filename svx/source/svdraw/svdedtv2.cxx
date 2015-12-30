@@ -49,12 +49,12 @@ using namespace com::sun::star;
 
 SdrObject* SdrEditView::GetMaxToTopObj(SdrObject* /*pObj*/) const
 {
-  return NULL;
+  return nullptr;
 }
 
 SdrObject* SdrEditView::GetMaxToBtmObj(SdrObject* /*pObj*/) const
 {
-  return NULL;
+  return nullptr;
 }
 
 void SdrEditView::ObjOrderChanged(SdrObject* /*pObj*/, sal_uIntPtr /*nOldPos*/, sal_uIntPtr /*nNewPos*/)
@@ -77,7 +77,7 @@ void SdrEditView::MovMarkedToTop()
             GetMarkedObjectByIndex(nm)->GetOrdNum();
         }
         bool bChg=false;
-        SdrObjList* pOL0=NULL;
+        SdrObjList* pOL0=nullptr;
         size_t nNewPos=0;
         for (size_t nm=nAnz; nm>0;)
         {
@@ -94,7 +94,7 @@ void SdrEditView::MovMarkedToTop()
             const Rectangle& rBR=pObj->GetCurrentBoundRect();
             size_t nCmpPos = nNowPos+1;
             SdrObject* pMaxObj=GetMaxToTopObj(pObj);
-            if (pMaxObj!=NULL)
+            if (pMaxObj!=nullptr)
             {
                 size_t nMaxPos=pMaxObj->GetOrdNum();
                 if (nMaxPos!=0)
@@ -108,7 +108,7 @@ void SdrEditView::MovMarkedToTop()
             while (nCmpPos<nNewPos && !bEnd)
             {
                 SdrObject* pCmpObj=pOL->GetObj(nCmpPos);
-                if (pCmpObj==NULL)
+                if (pCmpObj==nullptr)
                 {
                     OSL_FAIL("MovMarkedToTop(): Reference object not found.");
                     bEnd=true;
@@ -165,7 +165,7 @@ void SdrEditView::MovMarkedToBtm()
         }
 
         bool bChg=false;
-        SdrObjList* pOL0=NULL;
+        SdrObjList* pOL0=nullptr;
         size_t nNewPos=0;
         for (size_t nm=0; nm<nAnz; ++nm)
         {
@@ -183,7 +183,7 @@ void SdrEditView::MovMarkedToBtm()
             if (nCmpPos>0)
                 --nCmpPos;
             SdrObject* pMaxObj=GetMaxToBtmObj(pObj);
-            if (pMaxObj!=NULL)
+            if (pMaxObj!=nullptr)
             {
                 const size_t nMinPos=pMaxObj->GetOrdNum()+1;
                 if (nNewPos<nMinPos)
@@ -198,7 +198,7 @@ void SdrEditView::MovMarkedToBtm()
             while (nCmpPos>nNewPos && !bEnd)
             {
                 SdrObject* pCmpObj=pOL->GetObj(nCmpPos);
-                if (pCmpObj==NULL)
+                if (pCmpObj==nullptr)
                 {
                     OSL_FAIL("MovMarkedToBtm(): Reference object not found.");
                     bEnd=true;
@@ -240,7 +240,7 @@ void SdrEditView::MovMarkedToBtm()
 
 void SdrEditView::PutMarkedToTop()
 {
-    PutMarkedInFrontOfObj(NULL);
+    PutMarkedInFrontOfObj(nullptr);
 }
 
 void SdrEditView::PutMarkedInFrontOfObj(const SdrObject* pRefObj)
@@ -254,7 +254,7 @@ void SdrEditView::PutMarkedInFrontOfObj(const SdrObject* pRefObj)
 
         SortMarkedObjects();
 
-        if (pRefObj!=NULL)
+        if (pRefObj!=nullptr)
         {
             // Make "in front of the object" work, even if the
             // selected objects are already in front of the other object
@@ -277,7 +277,7 @@ void SdrEditView::PutMarkedInFrontOfObj(const SdrObject* pRefObj)
             GetMarkedObjectByIndex(nm)->GetOrdNum();
         }
         bool bChg=false;
-        SdrObjList* pOL0=NULL;
+        SdrObjList* pOL0=nullptr;
         size_t nNewPos=0;
         for (size_t nm=nAnz; nm>0;)
         {
@@ -294,7 +294,7 @@ void SdrEditView::PutMarkedInFrontOfObj(const SdrObject* pRefObj)
                 }
                 const size_t nNowPos=pObj->GetOrdNumDirect();
                 SdrObject* pMaxObj=GetMaxToTopObj(pObj);
-                if (pMaxObj!=NULL)
+                if (pMaxObj!=nullptr)
                 {
                     size_t nMaxOrd=pMaxObj->GetOrdNum(); // sadly doesn't work any other way
                     if (nMaxOrd>0)
@@ -304,7 +304,7 @@ void SdrEditView::PutMarkedInFrontOfObj(const SdrObject* pRefObj)
                     if (nNewPos<nNowPos)
                         nNewPos=nNowPos; // nor go into the other direction
                 }
-                if (pRefObj!=NULL)
+                if (pRefObj!=nullptr)
                 {
                     if (pRefObj->GetObjList()==pObj->GetObjList())
                     {
@@ -341,7 +341,7 @@ void SdrEditView::PutMarkedInFrontOfObj(const SdrObject* pRefObj)
 
 void SdrEditView::PutMarkedToBtm()
 {
-    PutMarkedBehindObj(NULL);
+    PutMarkedBehindObj(nullptr);
 }
 
 void SdrEditView::PutMarkedBehindObj(const SdrObject* pRefObj)
@@ -355,7 +355,7 @@ void SdrEditView::PutMarkedBehindObj(const SdrObject* pRefObj)
             BegUndo(ImpGetResStr(STR_EditPutToBtm),GetDescriptionOfMarkedObjects(),SDRREPFUNC_OBJ_PUTTOBTM);
 
         SortMarkedObjects();
-        if (pRefObj!=NULL)
+        if (pRefObj!=nullptr)
         {
             // Make "behind the object" work, even if the
             // selected objects are already behind the other object
@@ -377,7 +377,7 @@ void SdrEditView::PutMarkedBehindObj(const SdrObject* pRefObj)
             GetMarkedObjectByIndex(nm)->GetOrdNum();
         }
         bool bChg=false;
-        SdrObjList* pOL0=NULL;
+        SdrObjList* pOL0=nullptr;
         size_t nNewPos=0;
         for (size_t nm=0; nm<nAnz; ++nm) {
             SdrMark* pM=GetSdrMarkByIndex(nm);
@@ -390,12 +390,12 @@ void SdrEditView::PutMarkedBehindObj(const SdrObject* pRefObj)
                 }
                 const size_t nNowPos=pObj->GetOrdNumDirect();
                 SdrObject* pMinObj=GetMaxToBtmObj(pObj);
-                if (pMinObj!=NULL) {
+                if (pMinObj!=nullptr) {
                     const size_t nMinOrd=pMinObj->GetOrdNum()+1; // sadly doesn't work any differently
                     if (nNewPos<nMinOrd) nNewPos=nMinOrd; // neither go faster...
                     if (nNewPos>nNowPos) nNewPos=nNowPos; // nor go into the other direction
                 }
-                if (pRefObj!=NULL) {
+                if (pRefObj!=nullptr) {
                     if (pRefObj->GetObjList()==pObj->GetObjList()) {
                         const size_t nMinOrd=pRefObj->GetOrdNum(); // sadly doesn't work any differently
                         if (nNewPos<nMinOrd) nNewPos=nMinOrd; // neither go faster...
@@ -488,19 +488,19 @@ void SdrEditView::ImpCheckToTopBtmPossible()
         size_t nMin=0;
         const size_t nObjNum=pObj->GetOrdNum();
         SdrObject* pRestrict=GetMaxToTopObj(pObj);
-        if (pRestrict!=NULL) {
+        if (pRestrict!=nullptr) {
             const size_t nRestrict=pRestrict->GetOrdNum();
             if (nRestrict<nMax) nMax=nRestrict;
         }
         pRestrict=GetMaxToBtmObj(pObj);
-        if (pRestrict!=NULL) {
+        if (pRestrict!=nullptr) {
             const size_t nRestrict=pRestrict->GetOrdNum();
             if (nRestrict>nMin) nMin=nRestrict;
         }
         bToTopPossible=nObjNum<nMax-1;
         bToBtmPossible=nObjNum>nMin;
     } else { // multiple selection
-        SdrObjList* pOL0=NULL;
+        SdrObjList* pOL0=nullptr;
         size_t nPos0 = 0;
         for (size_t nm = 0; !bToBtmPossible && nm<nAnz; ++nm) { // check 'send to background'
             SdrObject* pObj=GetMarkedObjectByIndex(nm);
@@ -514,7 +514,7 @@ void SdrEditView::ImpCheckToTopBtmPossible()
             nPos0 = nPos;
         }
 
-        pOL0=NULL;
+        pOL0=nullptr;
         nPos0 = SAL_MAX_SIZE;
         for (size_t nm=nAnz; !bToTopPossible && nm>0; ) { // check 'bring to front'
             --nm;
@@ -537,9 +537,9 @@ void SdrEditView::ImpCheckToTopBtmPossible()
 
 void SdrEditView::ImpCopyAttributes(const SdrObject* pSource, SdrObject* pDest) const
 {
-    if (pSource!=NULL) {
+    if (pSource!=nullptr) {
         SdrObjList* pOL=pSource->GetSubList();
-        if (pOL!=NULL && !pSource->Is3DObj()) { // get first non-group object from group
+        if (pOL!=nullptr && !pSource->Is3DObj()) { // get first non-group object from group
             SdrObjListIter aIter(*pOL,IM_DEEPNOGROUPS);
             pSource=aIter.Next();
         }
@@ -568,7 +568,7 @@ bool SdrEditView::ImpCanConvertForCombine1(const SdrObject* pObj)
     // new condition IsLine() to be able to combine simple Lines
     bool bIsLine(false);
 
-    const SdrPathObj* pPath = PTR_CAST(SdrPathObj,pObj);
+    const SdrPathObj* pPath = dynamic_cast< const SdrPathObj*>( pObj );
 
     if(pPath)
     {
@@ -614,7 +614,7 @@ bool SdrEditView::ImpCanConvertForCombine(const SdrObject* pObj)
 basegfx::B2DPolyPolygon SdrEditView::ImpGetPolyPolygon1(const SdrObject* pObj, bool bCombine)
 {
     basegfx::B2DPolyPolygon aRetval;
-    const SdrPathObj* pPath = PTR_CAST(SdrPathObj, pObj);
+    const SdrPathObj* pPath = dynamic_cast<const SdrPathObj*>( pObj );
 
     if(bCombine && pPath && !pObj->GetOutlinerParaObject())
     {
@@ -635,7 +635,7 @@ basegfx::B2DPolyPolygon SdrEditView::ImpGetPolyPolygon1(const SdrObject* pObj, b
                 while(aIter.IsMore())
                 {
                     SdrObject* pObj1 = aIter.Next();
-                    pPath = PTR_CAST(SdrPathObj, pObj1);
+                    pPath = dynamic_cast<SdrPathObj*>( pObj1 );
 
                     if(pPath)
                     {
@@ -645,7 +645,7 @@ basegfx::B2DPolyPolygon SdrEditView::ImpGetPolyPolygon1(const SdrObject* pObj, b
             }
             else
             {
-                pPath = PTR_CAST(SdrPathObj, pConvObj);
+                pPath = dynamic_cast<SdrPathObj*>( pConvObj );
 
                 if(pPath)
                 {
@@ -770,7 +770,7 @@ void SdrEditView::DistributeMarkedObjects()
         SvxAbstractDialogFactory* pFact = SvxAbstractDialogFactory::Create();
         if(pFact)
         {
-            std::unique_ptr<AbstractSvxDistributeDialog> pDlg(pFact->CreateSvxDistributeDialog(NULL, aNewAttr));
+            std::unique_ptr<AbstractSvxDistributeDialog> pDlg(pFact->CreateSvxDistributeDialog(nullptr, aNewAttr));
             DBG_ASSERT(pDlg, "Dialog creation failed!");
 
             sal_uInt16 nResult = pDlg->Execute();
@@ -1001,12 +1001,12 @@ void SdrEditView::MergeMarkedObjects(SdrMergeMode eMode)
             BegUndo();
 
         size_t nInsPos = SAL_MAX_SIZE;
-        const SdrObject* pAttrObj = NULL;
+        const SdrObject* pAttrObj = nullptr;
         basegfx::B2DPolyPolygon aMergePolyPolygonA;
         basegfx::B2DPolyPolygon aMergePolyPolygonB;
 
-        SdrObjList* pInsOL = NULL;
-        SdrPageView* pInsPV = NULL;
+        SdrObjList* pInsOL = nullptr;
+        SdrPageView* pInsPV = nullptr;
         bool bFirstObjectComplete(false);
 
         // make sure selected objects are contour objects
@@ -1038,7 +1038,7 @@ void SdrEditView::MergeMarkedObjects(SdrMergeMode eMode)
                 while(aIter.IsMore())
                 {
                     SdrObject* pCandidate = aIter.Next();
-                    SdrPathObj* pPathObj = PTR_CAST(SdrPathObj, pCandidate);
+                    SdrPathObj* pPathObj = dynamic_cast<SdrPathObj*>( pCandidate );
                     if(pPathObj)
                     {
                         basegfx::B2DPolyPolygon aTmpPoly(pPathObj->GetPathPoly());
@@ -1266,14 +1266,14 @@ void SdrEditView::CombineMarkedObjects(bool bNoPolyPoly)
 
     // continue as before
     basegfx::B2DPolyPolygon aPolyPolygon;
-    SdrObjList* pAktOL = 0L;
+    SdrObjList* pAktOL = nullptr;
     SdrMarkList aRemoveMerker;
 
     SortMarkedObjects();
     size_t nInsPos = SAL_MAX_SIZE;
-    SdrObjList* pInsOL = 0L;
-    SdrPageView* pInsPV = 0L;
-    const SdrObject* pAttrObj = 0L;
+    SdrObjList* pInsOL = nullptr;
+    SdrPageView* pInsPV = nullptr;
+    const SdrObject* pAttrObj = nullptr;
 
     for(size_t a = GetMarkedObjectCount(); a; )
     {
@@ -1367,7 +1367,7 @@ void SdrEditView::CombineMarkedObjects(bool bNoPolyPoly)
         const drawing::FillStyle eFillStyle = static_cast<const XFillStyleItem&>(pAttrObj->GetMergedItem(XATTR_FILLSTYLE)).GetValue();
 
         // Take fill style/closed state of pAttrObj in account when deciding to change the line style
-        bool bIsClosedPathObj(pAttrObj->ISA(SdrPathObj) && static_cast<const SdrPathObj*>(pAttrObj)->IsClosed());
+        bool bIsClosedPathObj(dynamic_cast<const SdrPathObj*>( pAttrObj) != nullptr && static_cast<const SdrPathObj*>(pAttrObj)->IsClosed());
 
         if(drawing::LineStyle_NONE == eLineStyle && (drawing::FillStyle_NONE == eFillStyle || !bIsClosedPathObj))
         {
@@ -1441,7 +1441,7 @@ bool SdrEditView::ImpCanDismantle(const SdrObject* pObj, bool bMakeLines)
         while(aIter.IsMore() && !bOtherObjs)
         {
             const SdrObject* pObj1 = aIter.Next();
-            const SdrPathObj* pPath = PTR_CAST(SdrPathObj, pObj1);
+            const SdrPathObj* pPath = dynamic_cast<const SdrPathObj*>( pObj1 );
 
             if(pPath)
             {
@@ -1506,15 +1506,15 @@ bool SdrEditView::ImpCanDismantle(const SdrObject* pObj, bool bMakeLines)
 
 void SdrEditView::ImpDismantleOneObject(const SdrObject* pObj, SdrObjList& rOL, size_t& rPos, SdrPageView* pPV, bool bMakeLines)
 {
-    const SdrPathObj* pSrcPath = PTR_CAST(SdrPathObj, pObj);
-    const SdrObjCustomShape* pCustomShape = PTR_CAST(SdrObjCustomShape, pObj);
+    const SdrPathObj* pSrcPath = dynamic_cast<const SdrPathObj*>( pObj );
+    const SdrObjCustomShape* pCustomShape = dynamic_cast<const SdrObjCustomShape*>( pObj );
 
     const bool bUndo = IsUndoEnabled();
 
     if(pSrcPath)
     {
         // #i74631# redesigned due to XpolyPolygon removal and explicit constructors
-        SdrObject* pLast = 0; // to be able to apply OutlinerParaObject
+        SdrObject* pLast = nullptr; // to be able to apply OutlinerParaObject
         const basegfx::B2DPolyPolygon& rPolyPolygon(pSrcPath->GetPathPoly());
         const sal_uInt32 nPolyCount(rPolyPolygon.count());
 
@@ -1593,7 +1593,7 @@ void SdrEditView::ImpDismantleOneObject(const SdrObject* pObj, SdrObjList& rOL, 
 
                 if(static_cast<const SdrOnOffItem&>(pCustomShape->GetMergedItem(SDRATTR_SHADOW)).GetValue())
                 {
-                    if(pReplacement->ISA(SdrObjGroup))
+                    if(dynamic_cast<const SdrObjGroup*>( pReplacement) !=  nullptr)
                     {
                         pCandidate->SetMergedItem(makeSdrShadowItem(true));
                     }
@@ -1609,7 +1609,7 @@ void SdrEditView::ImpDismantleOneObject(const SdrObject* pObj, SdrObjList& rOL, 
                 {
                     // #i37011# also create a text object and add at rPos + 1
                     SdrObject* pTextObj = SdrObjFactory::MakeNewObject(
-                        pCustomShape->GetObjInventor(), OBJ_TEXT, 0L, pCustomShape->GetModel());
+                        pCustomShape->GetObjInventor(), OBJ_TEXT, nullptr, pCustomShape->GetModel());
 
                     // Copy text content
                     OutlinerParaObject* pParaObj = pCustomShape->GetOutlinerParaObject();
@@ -1670,7 +1670,7 @@ void SdrEditView::DismantleMarkedObjects(bool bMakeLines)
         BegUndo("", "", bMakeLines ? SDRREPFUNC_OBJ_DISMANTLE_LINES : SDRREPFUNC_OBJ_DISMANTLE_POLYS);
     }
 
-    SdrObjList* pOL0=NULL;
+    SdrObjList* pOL0=nullptr;
     for (size_t nm=GetMarkedObjectCount(); nm>0;) {
         --nm;
         SdrMark* pM=GetSdrMarkByIndex(nm);
@@ -1683,7 +1683,7 @@ void SdrEditView::DismantleMarkedObjects(bool bMakeLines)
             const size_t nPos0=pObj->GetOrdNumDirect();
             size_t nPos=nPos0+1;
             SdrObjList* pSubList=pObj->GetSubList();
-            if (pSubList!=NULL && !pObj->Is3DObj()) {
+            if (pSubList!=nullptr && !pObj->Is3DObj()) {
                 SdrObjListIter aIter(*pSubList,IM_DEEPNOGROUPS);
                 while (aIter.IsMore()) {
                     const SdrObject* pObj1=aIter.Next();
@@ -1748,8 +1748,8 @@ void SdrEditView::GroupMarked(const SdrObject* pUserGrp)
             // make sure OrdNums are correct
             if (pSrcLst->IsObjOrdNumsDirty())
                 pSrcLst->RecalcObjOrdNums();
-            SdrObject*  pGrp=NULL;
-            SdrObjList* pDstLst=NULL;
+            SdrObject*  pGrp=nullptr;
+            SdrObjList* pDstLst=nullptr;
             // if all selected objects come from foreign object lists.
             // the group object is the last one in the list.
             size_t      nInsPos=pSrcLst->GetObjCount();
@@ -1760,14 +1760,14 @@ void SdrEditView::GroupMarked(const SdrObject* pUserGrp)
                 SdrMark* pM=GetSdrMarkByIndex(nm);
                 if (pM->GetPageView()==pPV)
                 {
-                    if (pGrp==NULL)
+                    if (pGrp==nullptr)
                     {
-                        if (pUserGrp!=NULL)
+                        if (pUserGrp!=nullptr)
                             pGrp=pUserGrp->Clone();
-                        if (pGrp==NULL)
+                        if (pGrp==nullptr)
                             pGrp=new SdrObjGroup;
                         pDstLst=pGrp->GetSubList();
-                        DBG_ASSERT(pDstLst!=NULL,"Alleged group object doesn't return object list.");
+                        DBG_ASSERT(pDstLst!=nullptr,"Alleged group object doesn't return object list.");
                     }
                     SdrObject* pObj=pM->GetMarkedSdrObj();
                     pSrcLst=pObj->GetObjList();
@@ -1792,7 +1792,7 @@ void SdrEditView::GroupMarked(const SdrObject* pUserGrp)
                     pSrcLst0=pSrcLst;
                 }
             }
-            if (pGrp!=NULL)
+            if (pGrp!=nullptr)
             {
                 aNewMark.InsertEntry(SdrMark(pGrp,pPV));
                 const size_t nAnz=pDstLst->GetObjCount();
@@ -1837,7 +1837,7 @@ void SdrEditView::UnGroupMarked()
         SdrMark* pM=GetSdrMarkByIndex(nm);
         SdrObject* pGrp=pM->GetMarkedSdrObj();
         SdrObjList* pSrcLst=pGrp->GetSubList();
-        if (pSrcLst!=NULL) {
+        if (pSrcLst!=nullptr) {
             nCount++;
             if (nCount==1) {
                 aName = pGrp->TakeObjNameSingul();  // retrieve name of group
@@ -1922,11 +1922,11 @@ void SdrEditView::UnGroupMarked()
 SdrObject* SdrEditView::ImpConvertOneObj(SdrObject* pObj, bool bPath, bool bLineToArea)
 {
     SdrObject* pNewObj = pObj->ConvertToPolyObj(bPath, bLineToArea);
-    if (pNewObj!=NULL)
+    if (pNewObj!=nullptr)
     {
         SdrObjList* pOL=pObj->GetObjList();
-        DBG_ASSERT(pOL!=NULL,"ConvertTo: Object doesn't return object list");
-        if (pOL!=NULL)
+        DBG_ASSERT(pOL!=nullptr,"ConvertTo: Object doesn't return object list");
+        if (pOL!=nullptr)
         {
             const bool bUndo = IsUndoEnabled();
             if( bUndo )
@@ -1982,7 +1982,7 @@ void SdrEditView::ImpConvertTo(bool bPath, bool bLineToArea)
                 }
             } else {
                 SdrObject* pNewObj=ImpConvertOneObj(pObj,bPath,bLineToArea);
-                if (pNewObj!=NULL) {
+                if (pNewObj!=nullptr) {
                     bMrkChg=true;
                     GetMarkedObjectListWriteAccess().ReplaceMark(SdrMark(pNewObj,pPV),nm);
                 }
@@ -2023,7 +2023,7 @@ void SdrEditView::DoImportMarkedMtf(SvdProgressInfo *pProgrInfo)
     for (size_t nm=nAnz; nm>0;)
     { // create Undo objects for all new objects
         // check for cancellation between the metafiles
-        if( pProgrInfo != NULL )
+        if( pProgrInfo != nullptr )
         {
             pProgrInfo->SetNextObject();
             if(!pProgrInfo->ReportActions(0))
@@ -2036,8 +2036,8 @@ void SdrEditView::DoImportMarkedMtf(SvdProgressInfo *pProgrInfo)
         SdrPageView* pPV=pM->GetPageView();
         SdrObjList*  pOL=pObj->GetObjList();
         const size_t nInsPos=pObj->GetOrdNum()+1;
-        SdrGrafObj*  pGraf=PTR_CAST(SdrGrafObj,pObj);
-        SdrOle2Obj*  pOle2=PTR_CAST(SdrOle2Obj,pObj);
+        SdrGrafObj*  pGraf= dynamic_cast<SdrGrafObj*>( pObj );
+        SdrOle2Obj*  pOle2= dynamic_cast<SdrOle2Obj*>( pObj );
         sal_uIntPtr        nInsAnz=0;
         Rectangle aLogicRect;
 
@@ -2061,7 +2061,7 @@ void SdrEditView::DoImportMarkedMtf(SvdProgressInfo *pProgrInfo)
                 nInsAnz = aFilter.DoImport(aMetaFile, *pOL, nInsPos, pProgrInfo);
             }
         }
-        if ( pOle2!=NULL && pOle2->GetGraphic() )
+        if ( pOle2!=nullptr && pOle2->GetGraphic() )
         {
             aLogicRect = pOle2->GetLogicRect();
             ImpSdrGDIMetaFileImport aFilter(*mpModel, pObj->GetLayer(), aLogicRect);

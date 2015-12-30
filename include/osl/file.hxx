@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include <cassert>
+#include <cstddef>
 
 #include <sal/log.hxx>
 #include <osl/time.h>
@@ -313,8 +314,8 @@ public:
         oslFileHandle*   pHandle,
         ::rtl::OUString* pustrTempFileURL)
     {
-        rtl_uString*  pustr_dir_url       = pustrDirectoryURL ? pustrDirectoryURL->pData : 0;
-        rtl_uString** ppustr_tmp_file_url = pustrTempFileURL  ? &pustrTempFileURL->pData : 0;
+        rtl_uString*  pustr_dir_url       = pustrDirectoryURL ? pustrDirectoryURL->pData : NULL;
+        rtl_uString** ppustr_tmp_file_url = pustrTempFileURL  ? &pustrTempFileURL->pData : NULL;
 
         return static_cast< RC >( osl_createTempFile(pustr_dir_url, pHandle, ppustr_tmp_file_url) );
     }
@@ -926,7 +927,7 @@ public:
         The full qualified URL of the file. Relative paths are not allowed.
     */
 
-    File( const ::rtl::OUString& ustrFileURL ): _pData( 0 ), _aPath( ustrFileURL ) {}
+    File( const ::rtl::OUString& ustrFileURL ): _pData( NULL ), _aPath( ustrFileURL ) {}
 
     /** Destructor
     */
@@ -1670,7 +1671,7 @@ public:
         Relative URLs are not allowed.
      */
 
-    Directory( const ::rtl::OUString& strPath ): _pData( 0 ), _aPath( strPath )
+    Directory( const ::rtl::OUString& strPath ): _pData( NULL ), _aPath( strPath )
     {
     }
 
@@ -1804,7 +1805,7 @@ public:
         if( rItem._pData )
         {
             osl_releaseDirectoryItem( rItem._pData );
-            rItem._pData = 0;
+            rItem._pData = NULL;
         }
         return ( RC) osl_getNextDirectoryItem( _pData, &rItem._pData, nHint );
     }

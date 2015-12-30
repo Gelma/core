@@ -37,9 +37,9 @@ ScDocument* ScXMLConverter::GetScDocument( uno::Reference< frame::XModel > xMode
     if (xModel.is())
     {
         ScModelObj* pDocObj = ScModelObj::getImplementation( xModel );
-        return pDocObj ? pDocObj->GetDocument() : NULL;
+        return pDocObj ? pDocObj->GetDocument() : nullptr;
     }
-    return NULL;
+    return nullptr;
 }
 
 sheet::GeneralFunction ScXMLConverter::GetFunctionFromString( const OUString& sFunction )
@@ -279,41 +279,33 @@ void ScXMLConverter::GetStringFromDetOpType(
     ScRangeStringConverter::AssignString( rString, sTypeStr, bAppendStr );
 }
 
-void ScXMLConverter::ParseFormula(OUString& sFormula, const bool bIsFormula)
+void ScXMLConverter::ConvertCellRangeAddress(OUString& sFormula)
 {
     OUStringBuffer sBuffer(sFormula.getLength());
     bool bInQuotationMarks(false);
-    bool bInDoubleQuotationMarks(false);
-    sal_Int16 nCountBraces(0);
     sal_Unicode chPrevious('=');
-    for (sal_Int32 i = 0; i < sFormula.getLength(); ++i)
+    const sal_Unicode* p = sFormula.getStr();
+    const sal_Unicode* const pStop = p + sFormula.getLength();
+    for ( ; p < pStop; ++p)
     {
-        if (sFormula[i] == '\'' && !bInDoubleQuotationMarks &&
-            chPrevious != '\\')
+        const sal_Unicode c = *p;
+        if (c == '\'')
             bInQuotationMarks = !bInQuotationMarks;
-        else if (sFormula[i] == '"' && !bInQuotationMarks)
-            bInDoubleQuotationMarks = !bInDoubleQuotationMarks;
-        if (bInQuotationMarks || bInDoubleQuotationMarks)
-            sBuffer.append(sFormula[i]);
-        else if (sFormula[i] == '[')
-            ++nCountBraces;
-        else if (sFormula[i] == ']')
-            nCountBraces--;
-        else if ((sFormula[i] != '.') ||
-                ((nCountBraces == 0) && bIsFormula) ||
-                !((chPrevious == '[') || (chPrevious == ':') || (chPrevious == ' ') || (chPrevious == '=')))
-                sBuffer.append(sFormula[i]);
-        chPrevious = sFormula[i];
+        if (bInQuotationMarks)
+            sBuffer.append(c);
+        else if ((c != '.') ||
+                !((chPrevious == ':') || (chPrevious == ' ') || (chPrevious == '=')))
+            sBuffer.append(c);
+        chPrevious = c;
     }
 
-    OSL_ENSURE(nCountBraces == 0, "there are some braces still open");
     sFormula = sBuffer.makeStringAndClear();
 }
 
 void ScXMLConverter::ConvertDateTimeToString(const DateTime& aDateTime, OUStringBuffer& sDate)
 {
     css::util::DateTime aAPIDateTime = aDateTime.GetUNODateTime();
-    ::sax::Converter::convertDateTime(sDate, aAPIDateTime, 0);
+    ::sax::Converter::convertDateTime(sDate, aAPIDateTime, nullptr);
 }
 
 namespace {
@@ -375,7 +367,7 @@ const ScXMLConditionInfo* lclGetConditionInfo( const sal_Unicode*& rpcString, co
             if( (nLength == pInfo->mnIdentLength) && (::rtl_ustr_ascii_shortenedCompare_WithLength( pcIdStart, nLength, pInfo->mpcIdentifier, nLength ) == 0) )
                 return pInfo;
 
-    return 0;
+    return nullptr;
 }
 
 sheet::ConditionOperator lclGetConditionOperator( const sal_Unicode*& rpcString, const sal_Unicode* pcEnd )

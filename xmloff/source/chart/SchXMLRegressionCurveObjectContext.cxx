@@ -89,12 +89,12 @@ SvXMLImportContext* SchXMLRegressionCurveObjectContext::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList >& xAttrList )
 {
-    SvXMLImportContext* pContext = 0;
+    SvXMLImportContext* pContext = nullptr;
 
     if( nPrefix == XML_NAMESPACE_CHART && IsXMLToken( rLocalName, XML_EQUATION ) )
     {
         pContext = new SchXMLEquationContext(
-            mrImportHelper, GetImport(), nPrefix, rLocalName, mxSeries, maChartSize, mrRegressionStyleList.back());
+            mrImportHelper, GetImport(), nPrefix, rLocalName, maChartSize, mrRegressionStyleList.back());
     }
     else
     {
@@ -109,15 +109,12 @@ SchXMLEquationContext::SchXMLEquationContext(
     SvXMLImport& rImport,
     sal_uInt16 nPrefix,
     const OUString& rLocalName,
-    const css::uno::Reference<
-        css::chart2::XDataSeries >& xSeries,
     const awt::Size& rChartSize,
     RegressionStyle& rRegressionStyle ) :
 
         SvXMLImportContext( rImport, nPrefix, rLocalName ),
         mrImportHelper( rImpHelper ),
         mrRegressionStyle( rRegressionStyle ),
-        mxSeries( xSeries ),
         maChartSize( rChartSize )
 {}
 
@@ -188,15 +185,15 @@ void SchXMLEquationContext::StartElement( const uno::Reference< xml::sax::XAttri
                     pPropStyleContext->FillPropertySet( xEqationProperties );
             }
         }
-        xEqationProperties->setPropertyValue( OUString( "ShowEquation"), uno::makeAny( bShowEquation ));
-        xEqationProperties->setPropertyValue( OUString( "ShowCorrelationCoefficient"), uno::makeAny( bShowRSquare ));
+        xEqationProperties->setPropertyValue( "ShowEquation", uno::makeAny( bShowEquation ));
+        xEqationProperties->setPropertyValue( "ShowCorrelationCoefficient", uno::makeAny( bShowRSquare ));
 
         if( bHasXPos && bHasYPos )
         {
             chart2::RelativePosition aRelPos;
             aRelPos.Primary = static_cast< double >( aPosition.X ) / static_cast< double >( maChartSize.Width );
             aRelPos.Secondary = static_cast< double >( aPosition.Y ) / static_cast< double >( maChartSize.Height );
-            xEqationProperties->setPropertyValue( OUString(  "RelativePosition" ), uno::makeAny( aRelPos ));
+            xEqationProperties->setPropertyValue( "RelativePosition", uno::makeAny( aRelPos ));
         }
         mrRegressionStyle.m_xEquationProperties.set( xEqationProperties );
     }

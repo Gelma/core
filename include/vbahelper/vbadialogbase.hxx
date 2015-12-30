@@ -19,12 +19,11 @@
 #ifndef INCLUDED_VBAHELPER_VBADIALOGBASE_HXX
 #define INCLUDED_VBAHELPER_VBADIALOGBASE_HXX
 
-#include <cppuhelper/implbase1.hxx>
 #include <ooo/vba/XDialogBase.hpp>
 #include <vbahelper/vbahelperinterface.hxx>
 #include <com/sun/star/frame/XModel.hpp>
 
-typedef InheritedHelperInterfaceImpl1< ov::XDialogBase > VbaDialogBase_BASE;
+typedef InheritedHelperInterfaceWeakImpl< ov::XDialogBase > VbaDialogBase_BASE;
 
 class VBAHELPER_DLLPUBLIC VbaDialogBase : public VbaDialogBase_BASE
 {
@@ -36,7 +35,7 @@ public:
     virtual ~VbaDialogBase() {}
 
     // Methods
-    virtual void SAL_CALL Show() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL Show() throw (css::uno::RuntimeException, std::exception) override;
     virtual OUString mapIndexToName( sal_Int32 nIndex ) = 0;
 };
 

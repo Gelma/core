@@ -75,7 +75,7 @@ namespace svxform
         Reference< XFormComponent >  xFormComponent(evt.Source, UNO_QUERY);
         Reference< XForm >  xForm(evt.Source, UNO_QUERY);
 
-        FmEntryData* pEntryData( NULL );
+        FmEntryData* pEntryData( nullptr );
         if( xForm.is() )
             pEntryData = m_pNavModel->FindData( xForm, m_pNavModel->GetRootList() );
         else if( xFormComponent.is() )
@@ -144,7 +144,7 @@ namespace svxform
         FmEntryData* pEntryData = m_pNavModel->FindData(xReplaced, m_pNavModel->GetRootList());
         if (pEntryData)
         {
-            if (pEntryData->ISA(FmControlData))
+            if (dynamic_cast<const FmControlData*>( pEntryData) !=  nullptr)
             {
                 Reference< XFormComponent >  xComp;
                 evt.Element >>= xComp;
@@ -152,7 +152,7 @@ namespace svxform
                     // FmControlData should be coupled with XFormComponent
                 m_pNavModel->ReplaceFormComponent(xReplaced, xComp);
             }
-            else if (pEntryData->ISA(FmFormData))
+            else if (dynamic_cast<const FmFormData*>( pEntryData) !=  nullptr)
             {
                 OSL_FAIL("replacing forms not implemented yet !");
             }
@@ -162,7 +162,7 @@ namespace svxform
     }
 
 
-    void OFormComponentObserver::Remove( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >& _rxElement )
+    void OFormComponentObserver::Remove( const css::uno::Reference< css::uno::XInterface >& _rxElement )
     {
         if (IsLocked() || !m_pNavModel)
             return;
@@ -187,9 +187,9 @@ namespace svxform
     }
 
     NavigatorTreeModel::NavigatorTreeModel( const ImageList& _rNormalImages )
-                    :m_pFormShell(NULL)
-                    ,m_pFormPage(NULL)
-                    ,m_pFormModel(NULL)
+                    :m_pFormShell(nullptr)
+                    ,m_pFormPage(nullptr)
+                    ,m_pFormModel(nullptr)
                     ,m_aNormalImages( _rNormalImages )
     {
         m_pPropChangeList = new OFormComponentObserver(this);
@@ -249,7 +249,7 @@ namespace svxform
     Reference< css::form::XForms >  NavigatorTreeModel::GetForms() const
     {
         if( !m_pFormShell || !m_pFormShell->GetCurPage())
-            return NULL;
+            return nullptr;
         else
             return m_pFormShell->GetCurPage()->GetForms();
     }
@@ -266,16 +266,16 @@ namespace svxform
         if (bAlterModel)
         {
             OUString aStr;
-            if (pEntry->ISA(FmFormData))
+            if (dynamic_cast<const FmFormData*>( pEntry) !=  nullptr)
                 aStr = SVX_RESSTR(RID_STR_FORM);
             else
                 aStr = SVX_RESSTR(RID_STR_CONTROL);
 
             Reference< XIndexContainer >  xContainer;
             if (pFolder)
-                xContainer = Reference< XIndexContainer > (pFolder->GetFormIface(), UNO_QUERY);
+                xContainer.set(pFolder->GetFormIface(), UNO_QUERY);
             else
-                xContainer = Reference< XIndexContainer > (GetForms(), UNO_QUERY);
+                xContainer.set(GetForms(), UNO_QUERY);
 
             bool bUndo = m_pFormModel->IsUndoEnabled();
 
@@ -330,7 +330,7 @@ namespace svxform
 
 
         // Remove data from model
-        if (pEntry->ISA(FmFormData))
+        if (dynamic_cast<const FmFormData*>( pEntry) !=  nullptr)
         {
             Reference< XContainer >  xContainer(xElement, UNO_QUERY);
             if (xContainer.is())
@@ -371,7 +371,7 @@ namespace svxform
         if (bAlterModel)
         {
             OUString        aStr;
-            if (pEntry->ISA(FmFormData))
+            if (dynamic_cast<const FmFormData*>( pEntry) !=  nullptr)
                 aStr = SVX_RESSTR(RID_STR_FORM);
             else
                 aStr = SVX_RESSTR(RID_STR_CONTROL);
@@ -385,7 +385,7 @@ namespace svxform
         }
 
         // now real deletion of data form model
-        if (pEntry->ISA(FmFormData))
+        if (dynamic_cast<const FmFormData*>( pEntry) !=  nullptr)
             RemoveForm(static_cast<FmFormData*>(pEntry));
         else
             RemoveFormComponent(static_cast<FmControlData*>(pEntry));
@@ -457,9 +457,9 @@ namespace svxform
 
 
             // Child is form -> recursive call
-            if( pEntryData->ISA(FmFormData) )
+            if( dynamic_cast<const FmFormData*>( pEntryData) !=  nullptr )
                 RemoveForm( static_cast<FmFormData*>(pEntryData));
-            else if( pEntryData->ISA(FmControlData) )
+            else if( dynamic_cast<const FmControlData*>( pEntryData) !=  nullptr )
                 RemoveFormComponent(static_cast<FmControlData*>(pEntryData));
         }
 
@@ -499,7 +499,7 @@ namespace svxform
         for( size_t i = pChildList->size(); i > 0; )
         {
             FmEntryData* pChildData = pChildList->at( --i );
-            if( pChildData->ISA(FmFormData) )
+            if( dynamic_cast<const FmFormData*>( pChildData) !=  nullptr )
                 ClearBranch( static_cast<FmFormData*>(pChildData) );
 
             pChildList->remove( pChildData );
@@ -511,7 +511,7 @@ namespace svxform
     {
 
         // insert forms from root
-        if( pFormData == NULL )
+        if( pFormData == nullptr )
         {
             Reference< XIndexContainer >   xForms(GetForms(), UNO_QUERY);
             if (!xForms.is())
@@ -525,7 +525,7 @@ namespace svxform
 
                 xForms->getByIndex(i) >>= xSubForm;
                 FmFormData* pSubFormData = new FmFormData( xSubForm, m_aNormalImages, pFormData );
-                Insert( pSubFormData, CONTAINER_APPEND );
+                Insert( pSubFormData );
 
 
                 // new branch, if SubForm contains Subforms itself
@@ -554,7 +554,7 @@ namespace svxform
                 if (xSubForm.is())
                 {   // actual component is a form
                     pSubFormData = new FmFormData(xSubForm, m_aNormalImages, pFormData);
-                    Insert(pSubFormData, CONTAINER_APPEND);
+                    Insert(pSubFormData);
 
 
                     // new branch, if SubForm contains Subforms itself
@@ -563,7 +563,7 @@ namespace svxform
                 else
                 {
                     pNewControlData = new FmControlData(xCurrentComponent, m_aNormalImages, pFormData);
-                    Insert(pNewControlData, CONTAINER_APPEND);
+                    Insert(pNewControlData);
                 }
             }
         }
@@ -580,7 +580,7 @@ namespace svxform
         // set ParentData
         Reference< XInterface >  xIFace( xForm->getParent());
         Reference< XForm >  xParentForm(xIFace, UNO_QUERY);
-        FmFormData* pParentData = NULL;
+        FmFormData* pParentData = nullptr;
         if (xParentForm.is())
             pParentData = static_cast<FmFormData*>(FindData( xParentForm, GetRootList() ));
 
@@ -601,8 +601,8 @@ namespace svxform
         FmFormData* pParentData = static_cast<FmFormData*>(FindData( xForm, GetRootList() ));
         if( !pParentData )
         {
-            pParentData = new FmFormData( xForm, m_aNormalImages, NULL );
-            Insert( pParentData, CONTAINER_APPEND );
+            pParentData = new FmFormData( xForm, m_aNormalImages, nullptr );
+            Insert( pParentData );
         }
 
         if (!FindData(xComp, pParentData->GetChildList(),false))
@@ -624,8 +624,8 @@ namespace svxform
     )
     {
         FmEntryData* pData = FindData(xOld, GetRootList());
-        assert(pData && pData->ISA(FmControlData)); //NavigatorTreeModel::ReplaceFormComponent : invalid argument
-        if (!pData || !pData->ISA(FmControlData))
+        assert(pData && dynamic_cast<const FmControlData*>( pData) !=  nullptr); //NavigatorTreeModel::ReplaceFormComponent : invalid argument
+        if (!pData || dynamic_cast<const FmControlData*>( pData) ==  nullptr)
             return;
         static_cast<FmControlData*>(pData)->ModelReplaced( xNew, m_aNormalImages );
 
@@ -651,7 +651,7 @@ namespace svxform
                     return pEntryData;
             }
         }
-        return NULL;
+        return nullptr;
     }
 
 
@@ -675,7 +675,7 @@ namespace svxform
             if (rText == aEntryText)
                 return pEntryData;
 
-            if( bRecurs && pEntryData->ISA(FmFormData) )
+            if( bRecurs && dynamic_cast<const FmFormData*>( pEntryData) !=  nullptr )
             {
                 pChildData = FindData( rText, static_cast<FmFormData*>(pEntryData) );
                 if( pChildData )
@@ -683,7 +683,7 @@ namespace svxform
             }
         }
 
-        return NULL;
+        return nullptr;
     }
 
 
@@ -771,7 +771,7 @@ namespace svxform
 
     bool NavigatorTreeModel::InsertFormComponent(FmNavRequestSelectHint& rHint, SdrObject* pObject)
     {
-        if ( pObject->ISA(SdrObjGroup) )
+        if ( dynamic_cast<const SdrObjGroup*>( pObject) !=  nullptr )
         {   // descend recursively
             const SdrObjList *pChildren = static_cast<SdrObjGroup*>(pObject)->GetSubList();
             for ( size_t i=0; i<pChildren->GetObjCount(); ++i )
@@ -838,14 +838,14 @@ namespace svxform
         {
             xForms->addContainerListener(static_cast<XContainerListener*>(m_pPropChangeList));
 
-            FillBranch(NULL);
+            FillBranch(nullptr);
 
             // select same control in tree as in view
             // (or all of them), if there is one ...
             if(!m_pFormShell) return;       // no shell
 
             FmFormView* pFormView = m_pFormShell->GetFormView();
-            DBG_ASSERT(pFormView != NULL, "NavigatorTreeModel::UpdateContent : keine FormView");
+            DBG_ASSERT(pFormView != nullptr, "NavigatorTreeModel::UpdateContent : keine FormView");
             BroadcastMarkedObjects(pFormView->GetMarkedObjectList());
         }
     }
@@ -855,7 +855,7 @@ namespace svxform
     {
 
         // If shell is unchanged, do nothing
-        FmFormPage* pNewPage = pShell ? pShell->GetCurPage() : NULL;
+        FmFormPage* pNewPage = pShell ? pShell->GetCurPage() : nullptr;
         if ((pShell == m_pFormShell) && (m_pFormPage == pNewPage))
             return;
 
@@ -865,7 +865,7 @@ namespace svxform
         {
             if (m_pFormModel)
                 EndListening( *m_pFormModel );
-            m_pFormModel = NULL;
+            m_pFormModel = nullptr;
             EndListening( *m_pFormShell );
             Clear();
         }
@@ -878,7 +878,7 @@ namespace svxform
             m_pFormPage = pNewPage;
             UpdateContent(m_pFormPage->GetForms());
         } else
-            m_pFormPage = NULL;
+            m_pFormPage = nullptr;
 
 
         // register as Listener again
@@ -913,14 +913,14 @@ namespace svxform
         // get PropertySet
         Reference< XFormComponent >  xFormComponent;
 
-        if( pEntryData->ISA(FmFormData) )
+        if( dynamic_cast<const FmFormData*>( pEntryData) !=  nullptr )
         {
             FmFormData* pFormData = static_cast<FmFormData*>(pEntryData);
             Reference< XForm >  xForm( pFormData->GetFormIface());
             xFormComponent = xForm;
         }
 
-        if( pEntryData->ISA(FmControlData) )
+        if( dynamic_cast<const FmControlData*>( pEntryData) !=  nullptr )
         {
             FmControlData* pControlData = static_cast<FmControlData*>(pEntryData);
             xFormComponent = pControlData->GetFormComponent();
@@ -958,7 +958,7 @@ namespace svxform
                     return pObj;
             }
         }
-        return NULL;
+        return nullptr;
     }
 
 

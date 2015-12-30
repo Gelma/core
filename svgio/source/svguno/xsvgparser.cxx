@@ -25,6 +25,7 @@
 #include <com/sun/star/lang/XInitialization.hpp>
 #include <cppuhelper/implbase2.hxx>
 #include <cppuhelper/supportsservice.hxx>
+#include <comphelper/sequence.hxx>
 #include <com/sun/star/xml/sax/XParser.hpp>
 #include <com/sun/star/xml/sax/Parser.hpp>
 #include <com/sun/star/xml/sax/InputSource.hpp>
@@ -53,12 +54,12 @@ namespace svgio
             // XSvgParser
             virtual uno::Sequence< uno::Reference< ::graphic::XPrimitive2D > > SAL_CALL getDecomposition(
                 const uno::Reference< ::io::XInputStream >& xSVGStream,
-                const OUString& aAbsolutePath) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+                const OUString& aAbsolutePath) throw (uno::RuntimeException, std::exception) override;
 
             // XServiceInfo
-            virtual OUString SAL_CALL getImplementationName() throw(uno::RuntimeException, std::exception) SAL_OVERRIDE;
-            virtual sal_Bool SAL_CALL supportsService(const OUString&) throw(uno::RuntimeException, std::exception) SAL_OVERRIDE;
-            virtual uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw(uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            virtual OUString SAL_CALL getImplementationName() throw(uno::RuntimeException, std::exception) override;
+            virtual sal_Bool SAL_CALL supportsService(const OUString&) throw(uno::RuntimeException, std::exception) override;
+            virtual uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw(uno::RuntimeException, std::exception) override;
         };
     } // end of namespace svgreader
 } // end of namespace svgio
@@ -70,9 +71,7 @@ namespace svgio
     {
         uno::Sequence< OUString > XSvgParser_getSupportedServiceNames()
         {
-            OUString aServiceName("com.sun.star.graphic.SvgTools" );
-            uno::Sequence< OUString > aServiceNames( &aServiceName, 1 );
-            return aServiceNames;
+            return uno::Sequence< OUString > { "com.sun.star.graphic.SvgTools" };
         }
 
         OUString XSvgParser_getImplementationName()
@@ -156,7 +155,9 @@ namespace svgio
 
                     if(Display_none != pCandidate->getDisplay())
                     {
-                        pCandidate->decomposeSvgNode(aRetval, false);
+                        drawinglayer::primitive2d::Primitive2DContainer aTmp = comphelper::sequenceToContainer<drawinglayer::primitive2d::Primitive2DContainer>(aRetval);
+                        pCandidate->decomposeSvgNode(aTmp, false);
+                        aRetval = comphelper::containerToSequence(aTmp);
                     }
                 }
             }

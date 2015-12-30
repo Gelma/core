@@ -59,7 +59,7 @@ namespace connectivity
         {
         protected:
 
-            virtual OUString getDropForeignKey() const SAL_OVERRIDE
+            virtual OUString getDropForeignKey() const override
             {
                 return OUString(" DROP FOREIGN KEY ");
             }
@@ -147,7 +147,7 @@ sdbcx::OCollection* OMySQLTable::createIndexes(const TStringVector& _rNames)
 
 Sequence< sal_Int8 > OMySQLTable::getUnoTunnelImplementationId()
 {
-    static ::cppu::OImplementationId * pId = 0;
+    static ::cppu::OImplementationId * pId = nullptr;
     if (! pId)
     {
         ::osl::MutexGuard aGuard( ::osl::Mutex::getGlobalMutex() );

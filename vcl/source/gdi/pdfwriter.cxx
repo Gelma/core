@@ -27,7 +27,7 @@ PDFWriter::AnyWidget::~AnyWidget()
 {
 }
 
-PDFWriter::PDFWriter( const PDFWriter::PDFWriterContext& rContext, const com::sun::star::uno::Reference< com::sun::star::beans::XMaterialHolder >& xEnc )
+PDFWriter::PDFWriter( const PDFWriter::PDFWriterContext& rContext, const css::uno::Reference< css::beans::XMaterialHolder >& xEnc )
         :
         xImplementation( new PDFWriterImpl( rContext, xEnc, *this ) )
 {
@@ -52,7 +52,7 @@ bool PDFWriter::Emit()
     return xImplementation->emit();
 }
 
-void PDFWriter::SetDocumentLocale( const com::sun::star::lang::Locale& rLoc )
+void PDFWriter::SetDocumentLocale( const css::lang::Locale& rLoc )
 {
     xImplementation->setDocumentLocale( rLoc );
 }
@@ -456,7 +456,7 @@ std::set< PDFWriter::ErrorCode > PDFWriter::GetErrors()
     return xImplementation->getErrors();
 }
 
-com::sun::star::uno::Reference< com::sun::star::beans::XMaterialHolder >
+css::uno::Reference< css::beans::XMaterialHolder >
 PDFWriter::InitEncryption( const OUString& i_rOwnerPassword,
                            const OUString& i_rUserPassword,
                            bool b128Bit
@@ -467,7 +467,7 @@ PDFWriter::InitEncryption( const OUString& i_rOwnerPassword,
 
 void PDFWriter::PlayMetafile( const GDIMetaFile& i_rMTF, const vcl::PDFWriter::PlayMetafileContext& i_rPlayContext, PDFExtOutDevData* i_pData )
 {
-    xImplementation->playMetafile( i_rMTF, i_pData, i_rPlayContext, NULL);
+    xImplementation->playMetafile( i_rMTF, i_pData, i_rPlayContext );
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

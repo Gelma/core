@@ -70,7 +70,7 @@ ScXMLSourceDlg::ScXMLSourceDlg(
     SfxBindings* pB, SfxChildWindow* pCW, vcl::Window* pParent, ScDocument* pDoc)
     : ScAnyRefDlg(pB, pCW, pParent, "XMLSourceDialog",
         "modules/scalc/ui/xmlsourcedialog.ui")
-    , mpCurRefEntry(NULL)
+    , mpCurRefEntry(nullptr)
     , mpDoc(pDoc)
     , mbDlgLostFocus(false)
 {
@@ -82,7 +82,7 @@ ScXMLSourceDlg::ScXMLSourceDlg(
     mpLbTree->set_width_request(aTreeSize.Width());
     mpLbTree->set_height_request(aTreeSize.Height());
     get(mpRefEdit, "edit");
-    mpRefEdit->SetReferences(this, NULL);
+    mpRefEdit->SetReferences(this, nullptr);
     get(mpRefBtn, "ref");
     mpRefBtn->SetReferences(this, mpRefEdit);
     get(mpBtnCancel, "cancel");
@@ -105,7 +105,7 @@ ScXMLSourceDlg::ScXMLSourceDlg(
 
     mpLbTree->SetSelectHdl(LINK(this, ScXMLSourceDlg, TreeItemSelectHdl));
 
-    Link<> aLink = LINK(this, ScXMLSourceDlg, RefModifiedHdl);
+    Link<Edit&,void> aLink = LINK(this, ScXMLSourceDlg, RefModifiedHdl);
     mpRefEdit->SetModifyHdl(aLink);
 
     mpBtnOk->Disable();
@@ -201,7 +201,7 @@ void ScXMLSourceDlg::SelectSourceFile()
         // File picker dialog cancelled.
         return;
 
-    uno::Sequence<OUString> aFiles = xFilePicker->getFiles();
+    uno::Sequence<OUString> aFiles = xFilePicker->getSelectedFiles();
     if (!aFiles.getLength())
         return;
 
@@ -227,7 +227,7 @@ void ScXMLSourceDlg::LoadSourceFileStructure(const OUString& rPath)
 
 void ScXMLSourceDlg::HandleGetFocus(Control* pCtrl)
 {
-    mpActiveEdit = NULL;
+    mpActiveEdit = nullptr;
     if (pCtrl == mpRefEdit || pCtrl == mpRefBtn)
         mpActiveEdit = mpRefEdit;
 
@@ -241,7 +241,7 @@ class UnhighlightEntry : std::unary_function<SvTreeListEntry*, void>
 {
     SvTreeListBox& mrTree;
 public:
-    UnhighlightEntry(SvTreeListBox& rTree) : mrTree(rTree) {}
+    explicit UnhighlightEntry(SvTreeListBox& rTree) : mrTree(rTree) {}
 
     void operator() (SvTreeListEntry* p)
     {
@@ -263,7 +263,7 @@ public:
 SvTreeListEntry* getReferenceEntry(SvTreeListBox& rTree, SvTreeListEntry* pCurEntry)
 {
     SvTreeListEntry* pParent = rTree.GetParent(pCurEntry);
-    SvTreeListEntry* pRefEntry = NULL;
+    SvTreeListEntry* pRefEntry = nullptr;
     while (pParent)
     {
         ScOrcusXMLTreeParam::EntryData* pUserData = ScOrcusXMLTreeParam::getUserData(*pParent);
@@ -682,10 +682,9 @@ IMPL_LINK_NOARG_TYPED(ScXMLSourceDlg, TreeItemSelectHdl, SvTreeListBox*, void)
     TreeItemSelected();
 }
 
-IMPL_LINK_NOARG(ScXMLSourceDlg, RefModifiedHdl)
+IMPL_LINK_NOARG_TYPED(ScXMLSourceDlg, RefModifiedHdl, Edit&, void)
 {
     RefEditModified();
-    return 0;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

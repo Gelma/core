@@ -50,8 +50,6 @@ private:
     std::vector<css::table::BorderLine2> m_aBottomBorderLines;
     std::vector<css::table::BorderLine2> m_aInsideHBorderLines;
     std::vector<css::table::BorderLine2> m_aInsideVBorderLines;
-    std::vector<css::table::BorderLine2> m_aTl2brBorderLines;
-    std::vector<css::table::BorderLine2> m_aTr2blBorderLines;
 
     //values of the current border
     sal_Int32                                           m_nLineWidth;
@@ -66,8 +64,8 @@ private:
     void localResolve(Id Name, writerfilter::Reference<Properties>::Pointer_t pProperties);
 
     // Properties
-    virtual void lcl_attribute(Id Name, Value & val) SAL_OVERRIDE;
-    virtual void lcl_sprm(Sprm & sprm) SAL_OVERRIDE;
+    virtual void lcl_attribute(Id Name, Value & val) override;
+    virtual void lcl_sprm(Sprm & sprm) override;
 
 public:
     TDefTableHandler();

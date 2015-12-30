@@ -29,15 +29,15 @@ namespace rptui
     */
     class OGroupExchange : public TransferableHelper
     {
-        ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any> m_aGroupRow;
+        css::uno::Sequence< css::uno::Any> m_aGroupRow;
     public:
-        explicit OGroupExchange(const ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any>& _aGroupRow);
+        explicit OGroupExchange(const css::uno::Sequence< css::uno::Any>& _aGroupRow);
 
         static SotClipboardFormatId getReportGroupId();
     protected:
-        virtual void        AddSupportedFormats() SAL_OVERRIDE;
-        virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) SAL_OVERRIDE;
-        virtual void        ObjectReleased() SAL_OVERRIDE;
+        virtual void        AddSupportedFormats() override;
+        virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) override;
+        virtual void        ObjectReleased() override;
     };
 }
 #endif // INCLUDED_REPORTDESIGN_SOURCE_UI_DLG_GROUPEXCHANGE_HXX

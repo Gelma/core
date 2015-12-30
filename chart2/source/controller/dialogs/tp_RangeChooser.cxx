@@ -72,9 +72,8 @@ RangeChooserTabPage::RangeChooserTabPage( vcl::Window* pParent
         ,"modules/schart/ui/tp_RangeChooser.ui")
         , m_nChangingControlCalls(0)
         , m_bIsDirty(false)
-        , m_xDataProvider( 0 )
         , m_aLastValidRangeString()
-        , m_xCurrentChartTypeTemplate(0)
+        , m_xCurrentChartTypeTemplate(nullptr)
         , m_pTemplateProvider(pTemplateProvider)
         , m_rDialogModel( rDialogModel )
         , m_pParentDialog( pParentDialog )
@@ -351,29 +350,27 @@ bool RangeChooserTabPage::isValid()
     return bIsValid;
 }
 
-IMPL_LINK_NOARG(RangeChooserTabPage, ControlEditedHdl)
+IMPL_LINK_NOARG_TYPED(RangeChooserTabPage, ControlEditedHdl, Edit&, void)
 {
     setDirty();
     isValid();
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(RangeChooserTabPage, ControlChangedRadioHdl, RadioButton&, void)
 {
-    ControlChangedHdl(NULL);
+    ControlChangedHdl(*m_pED_Range);
 }
 
 IMPL_LINK_NOARG_TYPED(RangeChooserTabPage, ControlChangedCheckBoxHdl, CheckBox&, void)
 {
-    ControlChangedHdl(NULL);
+    ControlChangedHdl(*m_pED_Range);
 }
 
-IMPL_LINK_NOARG(RangeChooserTabPage, ControlChangedHdl)
+IMPL_LINK_NOARG_TYPED(RangeChooserTabPage, ControlChangedHdl, Edit&, void)
 {
     setDirty();
     if( isValid())
         changeDialogModelAccordingToControls();
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(RangeChooserTabPage, ChooseRangeHdl, Button*, void)

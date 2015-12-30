@@ -131,8 +131,7 @@ void TreeListBox::RequestingChildren( SvTreeListEntry* pEntry )
 void TreeListBox::ExpandedHdl()
 {
     SvTreeListEntry* pEntry = GetHdlEntry();
-    DBG_ASSERT( pEntry, "Was wurde zugeklappt?" );
-
+    assert(pEntry && "Was wurde zugeklappt?");
     if ( !IsExpanded( pEntry ) && pEntry->HasChildrenOnDemand() )
     {
         SvTreeListEntry* pChild = FirstChild( pEntry );
@@ -163,7 +162,7 @@ void TreeListBox::ScanAllEntries()
 SbxVariable* TreeListBox::FindVariable( SvTreeListEntry* pEntry )
 {
     if ( !pEntry )
-        return 0;
+        return nullptr;
 
     ScriptDocument aDocument( ScriptDocument::getApplicationScriptDocument() );
     EntryArray aEntries;
@@ -190,7 +189,7 @@ SbxVariable* TreeListBox::FindVariable( SvTreeListEntry* pEntry )
         pEntry = GetParent( pEntry );
     }
 
-    SbxVariable* pVar = 0;
+    SbxVariable* pVar = nullptr;
     if ( !aEntries.empty() )
     {
         bool bDocumentObjects = false;
@@ -242,7 +241,7 @@ SbxVariable* TreeListBox::FindVariable( SvTreeListEntry* pEntry )
                 continue;
             default:
                 OSL_FAIL( "FindVariable: Unbekannter Typ!" );
-                pVar = 0;
+                pVar = nullptr;
                 break;
             }
             if ( !pVar )
@@ -300,9 +299,9 @@ EntryDescriptor TreeListBox::GetEntryDescriptor( SvTreeListEntry* pEntry )
         for ( size_t n = 0; n < aEntries.size(); n++ )
         {
             SvTreeListEntry* pLE = aEntries[n];
-            DBG_ASSERT( pLE, "Entrie im Array nicht gefunden" );
+            assert(pLE && "Entrie im Array nicht gefunden");
             Entry* pBE = static_cast<Entry*>(pLE->GetUserData());
-            DBG_ASSERT( pBE, "Keine Daten im Eintrag gefunden!" );
+            assert(pBE && "Keine Daten im Eintrag gefunden!");
 
             switch ( pBE->GetType() )
             {
@@ -442,7 +441,7 @@ SvTreeListEntry* TreeListBox::FindRootEntry( const ScriptDocument& rDocument, Li
             return pRootEntry;
         pRootEntry = GetEntry( ++nRootPos );
     }
-    return 0;
+    return nullptr;
 }
 
 OUString CreateMgrAndLibStr( const OUString& rMgrName, const OUString& rLibName )

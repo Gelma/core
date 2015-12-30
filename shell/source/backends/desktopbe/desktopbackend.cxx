@@ -75,19 +75,19 @@ private:
     virtual ~Default() {}
 
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return getDefaultImplementationName(); }
 
     virtual sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return ServiceName == getSupportedServiceNames()[0]; }
 
     virtual css::uno::Sequence< OUString > SAL_CALL
-    getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) override
     { return getDefaultSupportedServiceNames(); }
 
     virtual css::uno::Reference< css::beans::XPropertySetInfo > SAL_CALL
-    getPropertySetInfo() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+    getPropertySetInfo() throw (css::uno::RuntimeException, std::exception) override
     { return css::uno::Reference< css::beans::XPropertySetInfo >(); }
 
     virtual void SAL_CALL setPropertyValue(
@@ -96,20 +96,20 @@ private:
             css::beans::UnknownPropertyException,
             css::beans::PropertyVetoException,
             css::lang::IllegalArgumentException,
-            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Any SAL_CALL getPropertyValue(
         OUString const & PropertyName)
         throw (
             css::beans::UnknownPropertyException,
-            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL addPropertyChangeListener(
         OUString const &,
         css::uno::Reference< css::beans::XPropertyChangeListener > const &)
         throw (
             css::beans::UnknownPropertyException,
-            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override
     {}
 
     virtual void SAL_CALL removePropertyChangeListener(
@@ -117,7 +117,7 @@ private:
         css::uno::Reference< css::beans::XPropertyChangeListener > const &)
         throw (
             css::beans::UnknownPropertyException,
-            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override
     {}
 
     virtual void SAL_CALL addVetoableChangeListener(
@@ -125,7 +125,7 @@ private:
         css::uno::Reference< css::beans::XVetoableChangeListener > const &)
         throw (
             css::beans::UnknownPropertyException,
-            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override
     {}
 
     virtual void SAL_CALL removeVetoableChangeListener(
@@ -133,7 +133,7 @@ private:
         css::uno::Reference< css::beans::XVetoableChangeListener > const &)
         throw (
             css::beans::UnknownPropertyException,
-            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+            css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override
     {}
 };
 
@@ -204,9 +204,7 @@ css::uno::Reference< css::uno::XInterface > SAL_CALL createInstance(
     css::uno::Reference< css::uno::XCurrentContext > current(
         css::uno::getCurrentContext());
     if (current.is()) {
-        current->getValueByName(
-            OUString("system.desktop-environment")) >>=
-            desktop;
+        current->getValueByName("system.desktop-environment") >>= desktop;
     }
 
     // Fall back to the default if the specific backend is not available:
@@ -214,18 +212,15 @@ css::uno::Reference< css::uno::XInterface > SAL_CALL createInstance(
     if ( desktop == "GNOME" ) {
         backend = createBackend(
             context,
-            OUString(
-                    "com.sun.star.configuration.backend.GconfBackend"));
+            "com.sun.star.configuration.backend.GconfBackend");
     } else if ( desktop == "KDE" ) {
         backend = createBackend(
             context,
-            OUString(
-                    "com.sun.star.configuration.backend.KDEBackend"));
+            "com.sun.star.configuration.backend.KDEBackend");
     } else if ( desktop == "KDE4" ) {
         backend = createBackend(
             context,
-            OUString(
-                    "com.sun.star.configuration.backend.KDE4Backend"));
+            "com.sun.star.configuration.backend.KDE4Backend");
     }
     return backend.is()
         ? backend : static_cast< cppu::OWeakObject * >(new Default);
@@ -233,9 +228,9 @@ css::uno::Reference< css::uno::XInterface > SAL_CALL createInstance(
 
 static cppu::ImplementationEntry const services[] = {
     { &createInstance, &getDefaultImplementationName,
-      &getDefaultSupportedServiceNames, &cppu::createSingleComponentFactory, 0,
+      &getDefaultSupportedServiceNames, &cppu::createSingleComponentFactory, nullptr,
       0 },
-    { 0, 0, 0, 0, 0, 0 }
+    { nullptr, nullptr, nullptr, nullptr, nullptr, 0 }
 };
 
 }

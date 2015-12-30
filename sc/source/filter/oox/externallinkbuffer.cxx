@@ -66,7 +66,6 @@ const sal_uInt16 BIFF12_EXTNAME_ICONIFIED   = 0x0020;
 } // namespace
 
 ExternalNameModel::ExternalNameModel() :
-    mbBuiltIn( false ),
     mbNotify( false ),
     mbPreferPic( false ),
     mbStdDocName( false ),
@@ -227,7 +226,7 @@ bool ExternalName::getDdeLinkData( OUString& orDdeServer, OUString& orDdeTopic, 
         {
             PropertySet aDocProps( getDocument() );
             Reference< XDDELinks > xDdeLinks( aDocProps.getAnyProperty( PROP_DDELinks ), UNO_QUERY_THROW );
-            mxDdeLink = xDdeLinks->addDDELink( mrParentLink.getClassName(), mrParentLink.getTargetUrl(), maModel.maName, ::com::sun::star::sheet::DDELinkMode_DEFAULT );
+            mxDdeLink = xDdeLinks->addDDELink( mrParentLink.getClassName(), mrParentLink.getTargetUrl(), maModel.maName, css::sheet::DDELinkMode_DEFAULT );
             mbDdeLinkCreated = true;    // ignore if setting results fails
             if( !maResults.empty() )
             {
@@ -428,19 +427,19 @@ ExternalLinkInfo ExternalLink::getLinkInfo() const
         case LINKTYPE_SELF:
         case LINKTYPE_SAME:
         case LINKTYPE_INTERNAL:
-            aLinkInfo.Type = ::com::sun::star::sheet::ExternalLinkType::SELF;
+            aLinkInfo.Type = css::sheet::ExternalLinkType::SELF;
         break;
         case LINKTYPE_EXTERNAL:
-            aLinkInfo.Type = ::com::sun::star::sheet::ExternalLinkType::DOCUMENT;
+            aLinkInfo.Type = css::sheet::ExternalLinkType::DOCUMENT;
             aLinkInfo.Data <<= maTargetUrl;
         break;
         case LINKTYPE_LIBRARY:
             // parser will return library function names in OPCODE_BAD string tokens
-            aLinkInfo.Type = ::com::sun::star::sheet::ExternalLinkType::SPECIAL;
+            aLinkInfo.Type = css::sheet::ExternalLinkType::SPECIAL;
         break;
         case LINKTYPE_DDE:
         {
-            aLinkInfo.Type = ::com::sun::star::sheet::ExternalLinkType::DDE;
+            aLinkInfo.Type = css::sheet::ExternalLinkType::DDE;
             DDELinkInfo aDdeLinkInfo;
             aDdeLinkInfo.Service = maClassName;
             aDdeLinkInfo.Topic = maTargetUrl;
@@ -454,7 +453,7 @@ ExternalLinkInfo ExternalLink::getLinkInfo() const
         }
         break;
         default:
-            aLinkInfo.Type = ::com::sun::star::sheet::ExternalLinkType::UNKNOWN;
+            aLinkInfo.Type = css::sheet::ExternalLinkType::UNKNOWN;
     }
     return aLinkInfo;
 }
@@ -490,7 +489,7 @@ Reference< XExternalSheetCache > ExternalLink::getSheetCache( sal_Int32 nTabId )
     catch( Exception& )
     {
     }
-    return 0;
+    return nullptr;
 }
 
 void ExternalLink::getSheetRange( LinkSheetRange& orSheetRange, sal_Int32 nTabId1, sal_Int32 nTabId2 ) const
@@ -782,7 +781,7 @@ ExternalLinkRef ExternalLinkBuffer::createExternalLink()
 const RefSheetsModel* ExternalLinkBuffer::getRefSheets( sal_Int32 nRefId ) const
 {
     return ((0 <= nRefId) && (static_cast< size_t >( nRefId ) < maRefSheets.size())) ?
-        &maRefSheets[ static_cast< size_t >( nRefId ) ] : 0;
+        &maRefSheets[ static_cast< size_t >( nRefId ) ] : nullptr;
 }
 
 } // namespace xls

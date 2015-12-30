@@ -69,7 +69,7 @@ class XMLOFF_DLLPUBLIC XMLEventExport
 
 public:
     XMLEventExport(SvXMLExport& rExport,
-                   const XMLEventNameTranslation* pTranslationTable = NULL);
+                   const XMLEventNameTranslation* pTranslationTable = nullptr);
     ~XMLEventExport();
 
     /// register an EventExportHandler for a particular script type
@@ -84,30 +84,25 @@ public:
     void AddTranslationTable( const XMLEventNameTranslation* pTransTable );
 
     /// export the events (calls EventExport::Export(Reference<XNameAcess>) )
-    void Export( ::com::sun::star::uno::Reference<
-                     ::com::sun::star::document::XEventsSupplier> & xAccess,
+    void Export( css::uno::Reference<css::document::XEventsSupplier> & xAccess,
                 bool bUseWhitespace = true);
 
     /// export the events (calls EventExport::Export(Reference<XNameAcess>) )
-    void Export( ::com::sun::star::uno::Reference<
-                     ::com::sun::star::container::XNameReplace> & xAccess,
+    void Export( css::uno::Reference<css::container::XNameReplace> & xAccess,
                 bool bUseWhitespace = true);
 
     /// export the events (writes <office:events> element)
-    void Export( ::com::sun::star::uno::Reference<
-                     ::com::sun::star::container::XNameAccess> & xAccess,
+    void Export( css::uno::Reference<css::container::XNameAccess> & xAccess,
                 bool bUseWhitespace = true);
 
     /// export the events, but write <officeooo:events> element
     /// (for new file format additions)
-    void ExportExt( ::com::sun::star::uno::Reference<
-                     ::com::sun::star::container::XNameAccess> & xAccess,
+    void ExportExt( css::uno::Reference<css::container::XNameAccess> & xAccess,
                 bool bUseWhitespace = true);
 
     /// export a single event (writes <office:events> element)
     void ExportSingleEvent(
-        ::com::sun::star::uno::Sequence<
-            ::com::sun::star::beans::PropertyValue>& rEventValues,
+        css::uno::Sequence<css::beans::PropertyValue>& rEventValues,
         const OUString& rApiEventName,
         bool bUseWhitespace = true );
 
@@ -115,8 +110,7 @@ private:
 
     /// export one event (start container-element if necessary)
     SAL_DLLPRIVATE void ExportEvent(
-        ::com::sun::star::uno::Sequence<
-            ::com::sun::star::beans::PropertyValue>& rEventValues,
+        css::uno::Sequence<css::beans::PropertyValue>& rEventValues,
         const XMLEventName& rXmlEventName,
         bool bUseWhitespace,
         bool& rExported);

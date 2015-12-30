@@ -42,39 +42,39 @@ private:
     SVX_DLLPRIVATE void ImpCheckPolyPossibilities();
 
     typedef void (*PPolyTrFunc)(Point&, Point*, Point*, const void*, const void*, const void*, const void*, const void*);
-    SVX_DLLPRIVATE void ImpTransformMarkedPoints(PPolyTrFunc pTrFunc, const void* p1=NULL, const void* p2=NULL, const void* p3=NULL, const void* p4=NULL, const void* p5=NULL);
+    SVX_DLLPRIVATE void ImpTransformMarkedPoints(PPolyTrFunc pTrFunc, const void* p1=nullptr, const void* p2=nullptr, const void* p3=nullptr, const void* p4=nullptr, const void* p5=nullptr);
 
 protected:
     // #i71538# make constructors of SdrView sub-components protected to avoid incomplete incarnations which may get casted to SdrView
-    SdrPolyEditView(SdrModel* pModel1, OutputDevice* pOut = 0L);
+    SdrPolyEditView(SdrModel* pModel1, OutputDevice* pOut = nullptr);
     virtual ~SdrPolyEditView();
 
 public:
-    bool IsSetMarkedPointsSmoothPossible() const SAL_OVERRIDE;
-    SdrPathSmoothKind GetMarkedPointsSmooth() const SAL_OVERRIDE;
-    void SetMarkedPointsSmooth(SdrPathSmoothKind eKind) SAL_OVERRIDE;
+    bool IsSetMarkedPointsSmoothPossible() const override;
+    SdrPathSmoothKind GetMarkedPointsSmooth() const override;
+    void SetMarkedPointsSmooth(SdrPathSmoothKind eKind) override;
 
     // A PolySegment can either be a segment or a Bézier curve
-    bool IsSetMarkedSegmentsKindPossible() const SAL_OVERRIDE;
-    SdrPathSegmentKind GetMarkedSegmentsKind() const SAL_OVERRIDE;
-    void SetMarkedSegmentsKind(SdrPathSegmentKind eKind) SAL_OVERRIDE;
+    bool IsSetMarkedSegmentsKindPossible() const override;
+    SdrPathSegmentKind GetMarkedSegmentsKind() const override;
+    void SetMarkedSegmentsKind(SdrPathSegmentKind eKind) override;
 
     // Probably Obj has been deleted afterwards
-    void DeleteMarkedPoints() SAL_OVERRIDE;
-    bool IsDeleteMarkedPointsPossible() const SAL_OVERRIDE;
+    void DeleteMarkedPoints() override;
+    bool IsDeleteMarkedPointsPossible() const override;
 
     void MoveMarkedPoints(const Size& rSiz);
     void ResizeMarkedPoints(const Point& rRef, const Fraction& xFact, const Fraction& yFact);
     void RotateMarkedPoints(const Point& rRef, long nAngle);
 
     // This probably creates an abitrary amount of new objects
-    void RipUpAtMarkedPoints() SAL_OVERRIDE;
-    bool IsRipUpAtMarkedPointsPossible() const SAL_OVERRIDE;
+    void RipUpAtMarkedPoints() override;
+    bool IsRipUpAtMarkedPointsPossible() const override;
 
     // All marked Polylines are turned into polygons
     // All open Bézier curves are turned into closed ones
-    bool IsOpenCloseMarkedObjectsPossible() const SAL_OVERRIDE;
-    SdrObjClosedKind GetMarkedObjectsClosedState() const SAL_OVERRIDE;
+    bool IsOpenCloseMarkedObjectsPossible() const override;
+    SdrObjClosedKind GetMarkedObjectsClosedState() const override;
 
     void CheckPolyPossibilitiesHelper( SdrMark* pM, bool& b1stSmooth, bool& b1stSegm, bool& bCurve, bool& bSmoothFuz, bool& bSegmFuz, basegfx::B2VectorContinuity& eSmooth );
 };

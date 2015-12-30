@@ -60,7 +60,7 @@ ScAddInListener::~ScAddInListener()
 
 ScAddInListener* ScAddInListener::Get( uno::Reference<sheet::XVolatileResult> xVR )
 {
-    ScAddInListener* pLst = NULL;
+    ScAddInListener* pLst = nullptr;
     sheet::XVolatileResult* pComp = xVR.get();
 
     for(::std::list<ScAddInListener*>::iterator iter = aAllListeners.begin(); iter != aAllListeners.end(); ++iter)
@@ -105,8 +105,8 @@ void ScAddInListener::RemoveDocument( ScDocument* pDocumentP )
 
 // XResultListener
 
-void SAL_CALL ScAddInListener::modified( const ::com::sun::star::sheet::ResultEvent& aEvent )
-                                throw(::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ScAddInListener::modified( const css::sheet::ResultEvent& aEvent )
+                                throw(css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard; //TODO: or generate a UserEvent
 
@@ -126,8 +126,8 @@ void SAL_CALL ScAddInListener::modified( const ::com::sun::star::sheet::ResultEv
 
 // XEventListener
 
-void SAL_CALL ScAddInListener::disposing( const ::com::sun::star::lang::EventObject& /* Source */ )
-                                throw(::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL ScAddInListener::disposing( const css::lang::EventObject& /* Source */ )
+                                throw(css::uno::RuntimeException, std::exception)
 {
     // hold a ref so this is not deleted at removeResultListener
     uno::Reference<sheet::XResultListener> xRef( this );
@@ -135,7 +135,7 @@ void SAL_CALL ScAddInListener::disposing( const ::com::sun::star::lang::EventObj
     if ( xVolRes.is() )
     {
         xVolRes->removeResultListener( this );
-        xVolRes = NULL;
+        xVolRes = nullptr;
     }
 }
 

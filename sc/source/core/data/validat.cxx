@@ -191,7 +191,7 @@ bool ScValidationData::DoScript( const ScAddress& rPos, const OUString& rInput,
     bool bScriptReturnedFalse = false;  // default: do not abort
 
     // Set up parameters
-    ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any > aParams(2);
+    css::uno::Sequence< css::uno::Any > aParams(2);
 
     //  1) entered or calculated value
     OUString aValStr = rInput;
@@ -206,13 +206,13 @@ bool ScValidationData::DoScript( const ScAddress& rPos, const OUString& rInput,
             aValStr = pCell->GetString().getString();
     }
     if ( bIsValue )
-        aParams[0] = ::com::sun::star::uno::makeAny( nValue );
+        aParams[0] = css::uno::makeAny( nValue );
     else
-        aParams[0] = ::com::sun::star::uno::makeAny( OUString( aValStr ) );
+        aParams[0] = css::uno::makeAny( OUString( aValStr ) );
 
     //  2) Position of the cell
     OUString aPosStr(rPos.Format(SCA_VALID | SCA_TAB_3D, pDocument, pDocument->GetAddressConvention()));
-    aParams[1] = ::com::sun::star::uno::makeAny(aPosStr);
+    aParams[1] = css::uno::makeAny(aPosStr);
 
     //  use link-update flag to prevent closing the document
     //  while the macro is running
@@ -223,9 +223,9 @@ bool ScValidationData::DoScript( const ScAddress& rPos, const OUString& rInput,
     if ( pCell )
         pDocument->LockTable( rPos.Tab() );
 
-    ::com::sun::star::uno::Any aRet;
-    ::com::sun::star::uno::Sequence< sal_Int16 > aOutArgsIndex;
-    ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any > aOutArgs;
+    css::uno::Any aRet;
+    css::uno::Sequence< sal_Int16 > aOutArgsIndex;
+    css::uno::Sequence< css::uno::Any > aOutArgs;
 
     ErrCode eRet = pDocSh->CallXScript(
         aErrorTitle, aParams, aRet, aOutArgsIndex, aOutArgs );
@@ -289,9 +289,8 @@ bool ScValidationData::DoMacro( const ScAddress& rPos, const OUString& rInput,
 
     StarBASIC* pRoot = pDocSh->GetBasic();
     SbxVariable* pVar = pRoot->Find( aErrorTitle, SbxCLASS_METHOD );
-    if ( pVar && pVar->ISA(SbMethod) )
+    if (SbMethod* pMethod = dynamic_cast<SbMethod*>(pVar))
     {
-        SbMethod* pMethod = static_cast<SbMethod*>(pVar);
         SbModule* pModule = pMethod->GetModule();
         SbxObject* pObject = pModule->GetParent();
         OUStringBuffer aMacroStr = pObject->GetName();
@@ -368,7 +367,7 @@ bool ScValidationData::DoMacro( const ScAddress& rPos, const OUString& rInput,
 void ScValidationData::DoCalcError( ScFormulaCell* pCell ) const
 {
     if ( eErrorStyle == SC_VALERR_MACRO )
-        DoMacro( pCell->aPos, EMPTY_OUSTRING, pCell, NULL );
+        DoMacro( pCell->aPos, EMPTY_OUSTRING, pCell, nullptr );
 }
 
     // true -> abort
@@ -377,7 +376,7 @@ bool ScValidationData::DoError( vcl::Window* pParent, const OUString& rInput,
                                 const ScAddress& rPos ) const
 {
     if ( eErrorStyle == SC_VALERR_MACRO )
-        return DoMacro( rPos, rInput, NULL, pParent );
+        return DoMacro( rPos, rInput, nullptr, pParent );
 
     //  Output error message
 
@@ -584,7 +583,7 @@ rtl_uString* ScStringTokenIterator::First()
 rtl_uString* ScStringTokenIterator::Next()
 {
     if( !mbOk )
-        return NULL;
+        return nullptr;
 
     // seek to next non-separator token
     const FormulaToken* pToken = mrTokArr.NextNoSpaces();
@@ -625,7 +624,7 @@ bool ScValidationData::GetSelectionFromFormula(
 
     // pDoc is private in condition, use an accessor and a long winded name.
     ScDocument* pDocument = GetDocument();
-    if( NULL == pDocument )
+    if( nullptr == pDocument )
         return false;
 
     ScFormulaCell aValidationSrc(
@@ -644,7 +643,7 @@ bool ScValidationData::GetSelectionFromFormula(
         // is stored as a single value.
 
         // Use an interim matrix to create the TypedStrData below.
-        xMatRef = new ScMatrix(1, 1, 0.0);
+        xMatRef = new ScFullMatrix(1, 1, 0.0);
 
         sal_uInt16 nErrCode = aValidationSrc.GetErrCode();
         if (nErrCode)
@@ -681,8 +680,8 @@ bool ScValidationData::GetSelectionFromFormula(
 
     ScTokenArray* pArr = const_cast<ScTokenArray*>(&rTokArr);
     pArr->Reset();
-    formula::FormulaToken* t = NULL;
-    if (pArr->GetLen() == 1 && (t = pArr->GetNextReferenceOrName()) != NULL)
+    formula::FormulaToken* t = nullptr;
+    if (pArr->GetLen() == 1 && (t = pArr->GetNextReferenceOrName()) != nullptr)
     {
         OpCode eOpCode = t->GetOpCode();
         if (eOpCode == ocDBArea || eOpCode == ocTableRef)
@@ -724,7 +723,7 @@ bool ScValidationData::GetSelectionFromFormula(
         for( nCol = 0; nCol < nCols ; nCol++ )
         {
             ScTokenArray         aCondTokArr;
-            ScTypedStrData*        pEntry = NULL;
+            ScTypedStrData*        pEntry = nullptr;
             OUString               aValStr;
             ScMatrixValue nMatVal = pValues->Get( nCol, nRow);
 
@@ -743,7 +742,7 @@ bool ScValidationData::GetSelectionFromFormula(
                     bHaveEmpty = true;
                 }
 
-                if( NULL != pStrings )
+                if( nullptr != pStrings )
                     pEntry = new ScTypedStrData( aValStr, 0.0, ScTypedStrData::Standard);
 
                 if (!rCell.isEmpty() && rMatch < 0)
@@ -780,7 +779,7 @@ bool ScValidationData::GetSelectionFromFormula(
                     // manually enter an error yet so the point is somewhat moot.
                     aCondTokArr.AddDouble( nMatVal.fVal );
                 }
-                if( NULL != pStrings )
+                if( nullptr != pStrings )
                     pEntry = new ScTypedStrData( aValStr, nMatVal.fVal, ScTypedStrData::Value);
             }
 
@@ -788,11 +787,11 @@ bool ScValidationData::GetSelectionFromFormula(
             {
                 rMatch = n;
                 // short circuit on the first match if not filling the list
-                if( NULL == pStrings )
+                if( nullptr == pStrings )
                     return true;
             }
 
-            if( NULL != pEntry )
+            if( nullptr != pEntry )
             {
                 pStrings->push_back(*pEntry);
                 delete pEntry;
@@ -846,7 +845,7 @@ bool ScValidationData::FillSelectionList(std::vector<ScTypedStrData>& rStrColl, 
 bool ScValidationData::IsEqualToTokenArray( ScRefCellValue& rCell, const ScAddress& rPos, const ScTokenArray& rTokArr ) const
 {
     // create a condition entry that tests on equality and set the passed token array
-    ScConditionEntry aCondEntry( SC_COND_EQUAL, &rTokArr, NULL, GetDocument(), rPos );
+    ScConditionEntry aCondEntry( SC_COND_EQUAL, &rTokArr, nullptr, GetDocument(), rPos );
     return aCondEntry.IsCellValid(rCell, rPos);
 }
 
@@ -900,7 +899,7 @@ bool ScValidationData::IsListValid( ScRefCellValue& rCell, const ScAddress& rPos
     if (!bIsValid)
     {
         int nMatch;
-        bIsValid = GetSelectionFromFormula(NULL, rCell, rPos, *pTokArr, nMatch);
+        bIsValid = GetSelectionFromFormula(nullptr, rCell, rPos, *pTokArr, nMatch);
         bIsValid = bIsValid && nMatch >= 0;
     }
 
@@ -941,7 +940,7 @@ ScValidationData* ScValidationDataList::GetData( sal_uInt32 nKey )
             return *it;
 
     OSL_FAIL("ScValidationDataList: Entry not found");
-    return NULL;
+    return nullptr;
 }
 
 void ScValidationDataList::CompileXML()

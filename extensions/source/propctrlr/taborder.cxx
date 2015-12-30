@@ -48,20 +48,20 @@ namespace pcr
         Sequence< Reference< XControlModel > > m_aModels;
 
     public:
-        OSimpleTabModel( const Sequence< Reference< XControlModel > >& _rModels )
+        explicit OSimpleTabModel( const Sequence< Reference< XControlModel > >& _rModels )
             :m_aModels( _rModels )
         {
         }
 
         // XTabControllerModel
-        virtual void SAL_CALL setControlModels(const Sequence< Reference< XControlModel > >& rModels) throw( RuntimeException, std::exception ) SAL_OVERRIDE {m_aModels = rModels;}
-        virtual Sequence< Reference< XControlModel > > SAL_CALL getControlModels() throw( RuntimeException, std::exception ) SAL_OVERRIDE {return m_aModels;}
-        virtual void SAL_CALL setGroup(const Sequence< Reference< XControlModel > >& /*Group*/, const OUString& /*GroupName*/) throw( RuntimeException, std::exception ) SAL_OVERRIDE {}
-        virtual sal_Int32 SAL_CALL getGroupCount() throw( RuntimeException, std::exception ) SAL_OVERRIDE {return 0;}
-        virtual void SAL_CALL getGroup(sal_Int32 /*nGroup*/, Sequence< Reference< XControlModel > >& /*Group*/, OUString& /*Name*/) throw( RuntimeException, std::exception ) SAL_OVERRIDE {}
-        virtual void SAL_CALL getGroupByName(const OUString& /*Name*/, Sequence< Reference< XControlModel > >& /*Group*/) throw( RuntimeException, std::exception ) SAL_OVERRIDE {}
-        virtual sal_Bool SAL_CALL getGroupControl() throw( RuntimeException, std::exception ) SAL_OVERRIDE {return sal_False;} ;
-        virtual void SAL_CALL setGroupControl(sal_Bool /*GroupControl*/) throw( RuntimeException, std::exception ) SAL_OVERRIDE {};
+        virtual void SAL_CALL setControlModels(const Sequence< Reference< XControlModel > >& rModels) throw( RuntimeException, std::exception ) override {m_aModels = rModels;}
+        virtual Sequence< Reference< XControlModel > > SAL_CALL getControlModels() throw( RuntimeException, std::exception ) override {return m_aModels;}
+        virtual void SAL_CALL setGroup(const Sequence< Reference< XControlModel > >& /*Group*/, const OUString& /*GroupName*/) throw( RuntimeException, std::exception ) override {}
+        virtual sal_Int32 SAL_CALL getGroupCount() throw( RuntimeException, std::exception ) override {return 0;}
+        virtual void SAL_CALL getGroup(sal_Int32 /*nGroup*/, Sequence< Reference< XControlModel > >& /*Group*/, OUString& /*Name*/) throw( RuntimeException, std::exception ) override {}
+        virtual void SAL_CALL getGroupByName(const OUString& /*Name*/, Sequence< Reference< XControlModel > >& /*Group*/) throw( RuntimeException, std::exception ) override {}
+        virtual sal_Bool SAL_CALL getGroupControl() throw( RuntimeException, std::exception ) override {return sal_False;} ;
+        virtual void SAL_CALL setGroupControl(sal_Bool /*GroupControl*/) throw( RuntimeException, std::exception ) override {};
     };
 
 
@@ -74,7 +74,7 @@ namespace pcr
         ,m_xModel( _rxTabModel )
         ,m_xControlContainer( _rxControlCont )
         ,m_xORB( _rxORB )
-        ,pImageList( NULL )
+        ,pImageList( nullptr )
     {
         get(m_pLB_Controls, "CTRLtree");
         get(m_pPB_OK, "ok");
@@ -200,7 +200,7 @@ namespace pcr
                         aName = ::comphelper::getString( xControl->getPropertyValue( PROPERTY_NAME ) );
                             // TODO: do Basic controls have a name?
                         aImage = GetImage( xControl );
-                        m_pLB_Controls->InsertEntry( aName, aImage, aImage, 0, false, TREELIST_APPEND, xControl.get() );
+                        m_pLB_Controls->InsertEntry( aName, aImage, aImage, nullptr, false, TREELIST_APPEND, xControl.get() );
                     }
                 }
                 else
@@ -349,7 +349,7 @@ namespace pcr
                     void*  pData = pSelEntryPrev->GetUserData();
 
                     GetModel()->Remove( pSelEntryPrev );
-                    InsertEntry( aSelEntryPrevText, aImage, aImage, 0, false, nSelEntryPos, pData );
+                    InsertEntry( aSelEntryPrevText, aImage, aImage, nullptr, false, nSelEntryPos, pData );
 
                     pSelEntry = NextSelected( pSelEntry );
                 }
@@ -380,7 +380,7 @@ namespace pcr
                     aImage = GetExpandedEntryBmp(pSelEntryNext);
 
                     GetModel()->Remove( pSelEntryNext );
-                    InsertEntry( aSelEntryNextText, aImage, aImage, 0, false, nSelEntryPos, pData );
+                    InsertEntry( aSelEntryNextText, aImage, aImage, nullptr, false, nSelEntryPos, pData );
 
                     pSelEntry = PrevSelected( pSelEntry );
                 }

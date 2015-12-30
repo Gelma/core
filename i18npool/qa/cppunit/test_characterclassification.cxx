@@ -22,8 +22,8 @@ using namespace ::com::sun::star;
 class TestCharacterClassification : public test::BootstrapFixtureBase
 {
 public:
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
     void testTitleCase();
     void testStringType();
@@ -96,8 +96,7 @@ void TestCharacterClassification::testStringType()
 void TestCharacterClassification::setUp()
 {
     BootstrapFixtureBase::setUp();
-    m_xCC = uno::Reference< i18n::XCharacterClassification >(m_xSFactory->createInstance(
-        "com.sun.star.i18n.CharacterClassification"), uno::UNO_QUERY_THROW);
+    m_xCC.set(m_xSFactory->createInstance("com.sun.star.i18n.CharacterClassification"), uno::UNO_QUERY_THROW);
 }
 
 void TestCharacterClassification::tearDown()

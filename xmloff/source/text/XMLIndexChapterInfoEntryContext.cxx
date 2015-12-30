@@ -46,7 +46,6 @@ using ::com::sun::star::xml::sax::XAttributeList;
 
 
 
-TYPEINIT1( XMLIndexChapterInfoEntryContext, XMLIndexSimpleEntryContext);
 
 XMLIndexChapterInfoEntryContext::XMLIndexChapterInfoEntryContext(
     SvXMLImport& rImport,
@@ -170,8 +169,7 @@ void XMLIndexChapterInfoEntryContext::StartElement(
 }
 
 void XMLIndexChapterInfoEntryContext::FillPropertyValues(
-    ::com::sun::star::uno::Sequence<
-        ::com::sun::star::beans::PropertyValue> & rValues)
+    css::uno::Sequence<css::beans::PropertyValue> & rValues)
 {
     // entry name and (optionally) style name in parent class
     XMLIndexSimpleEntryContext::FillPropertyValues(rValues);

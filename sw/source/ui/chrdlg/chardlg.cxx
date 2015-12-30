@@ -44,7 +44,7 @@
 #include <chrdlg.hrc>
 #include <chrdlgmodes.hxx>
 #include <com/sun/star/ui/dialogs/TemplateDescription.hpp>
-#include <com/sun/star/ui/dialogs/XFilePicker.hpp>
+#include <com/sun/star/ui/dialogs/XFilePicker2.hpp>
 #include <SwStyleNameMapper.hxx>
 #include <sfx2/filedlghelper.hxx>
 #include <sfx2/viewfrm.hxx>
@@ -61,8 +61,8 @@ using namespace ::sfx2;
 
 SwCharDlg::SwCharDlg(vcl::Window* pParent, SwView& rVw, const SfxItemSet& rCoreSet,
     sal_uInt8 nDialogMode, const OUString* pStr)
-    : SfxTabDialog(0, pParent, "CharacterPropertiesDialog",
-        "modules/swriter/ui/characterproperties.ui", &rCoreSet, pStr != 0)
+    : SfxTabDialog(pParent, "CharacterPropertiesDialog",
+        "modules/swriter/ui/characterproperties.ui", &rCoreSet, pStr != nullptr)
     , m_rView(rVw)
     , m_nDialogMode(nDialogMode)
 {
@@ -72,13 +72,13 @@ SwCharDlg::SwCharDlg(vcl::Window* pParent, SwView& rVw, const SfxItemSet& rCoreS
     }
     SfxAbstractDialogFactory* pFact = SfxAbstractDialogFactory::Create();
     OSL_ENSURE(pFact, "Dialog creation failed!");
-    m_nCharStdId = AddTabPage("font", pFact->GetTabPageCreatorFunc(RID_SVXPAGE_CHAR_NAME), 0);
-    m_nCharExtId = AddTabPage("fonteffects", pFact->GetTabPageCreatorFunc(RID_SVXPAGE_CHAR_EFFECTS), 0);
-    m_nCharPosId = AddTabPage("position", pFact->GetTabPageCreatorFunc( RID_SVXPAGE_CHAR_POSITION ), 0 );
-    m_nCharTwoId = AddTabPage("asianlayout", pFact->GetTabPageCreatorFunc( RID_SVXPAGE_CHAR_TWOLINES ), 0 );
-    m_nCharUrlId = AddTabPage("hyperlink", SwCharURLPage::Create, 0);
-    m_nCharBgdId = AddTabPage("background", pFact->GetTabPageCreatorFunc( RID_SVXPAGE_BACKGROUND ), 0 );
-    m_nCharBrdId = AddTabPage("borders", pFact->GetTabPageCreatorFunc( RID_SVXPAGE_BORDER ), 0 );
+    m_nCharStdId = AddTabPage("font", pFact->GetTabPageCreatorFunc(RID_SVXPAGE_CHAR_NAME), nullptr);
+    m_nCharExtId = AddTabPage("fonteffects", pFact->GetTabPageCreatorFunc(RID_SVXPAGE_CHAR_EFFECTS), nullptr);
+    m_nCharPosId = AddTabPage("position", pFact->GetTabPageCreatorFunc( RID_SVXPAGE_CHAR_POSITION ), nullptr );
+    m_nCharTwoId = AddTabPage("asianlayout", pFact->GetTabPageCreatorFunc( RID_SVXPAGE_CHAR_TWOLINES ), nullptr );
+    m_nCharUrlId = AddTabPage("hyperlink", SwCharURLPage::Create, nullptr);
+    m_nCharBgdId = AddTabPage("background", pFact->GetTabPageCreatorFunc( RID_SVXPAGE_BACKGROUND ), nullptr );
+    m_nCharBrdId = AddTabPage("borders", pFact->GetTabPageCreatorFunc( RID_SVXPAGE_BORDER ), nullptr );
 
     SvtCJKOptions aCJKOptions;
     if(m_nDialogMode == DLG_CHAR_DRAW || m_nDialogMode == DLG_CHAR_ANN)
@@ -135,7 +135,7 @@ void SwCharDlg::PageCreated( sal_uInt16 nId, SfxTabPage &rPage )
 
 SwCharURLPage::SwCharURLPage(vcl::Window* pParent, const SfxItemSet& rCoreSet)
     : SfxTabPage(pParent, "CharURLPage", "modules/swriter/ui/charurlpage.ui", &rCoreSet)
-    , pINetItem(0)
+    , pINetItem(nullptr)
     , bModified(false)
 
 {
@@ -143,7 +143,7 @@ SwCharURLPage::SwCharURLPage(vcl::Window* pParent, const SfxItemSet& rCoreSet)
     get(m_pTextFT, "textft");
     get(m_pTextED, "texted");
     get(m_pNameED, "nameed");
-    get(m_pTargetFrmLB, "targetfrmlb");
+    get(m_pTargetFrameLB, "targetfrmlb");
     get(m_pURLPB, "urlpb");
     get(m_pEventPB, "eventpb");
     get(m_pVisitedLB, "visitedlb");
@@ -153,8 +153,8 @@ SwCharURLPage::SwCharURLPage(vcl::Window* pParent, const SfxItemSet& rCoreSet)
     const SfxPoolItem* pItem;
     SfxObjectShell* pShell;
     if(SfxItemState::SET == rCoreSet.GetItemState(SID_HTML_MODE, false, &pItem) ||
-        ( 0 != ( pShell = SfxObjectShell::Current()) &&
-                    0 != (pItem = pShell->GetItem(SID_HTML_MODE))))
+        ( nullptr != ( pShell = SfxObjectShell::Current()) &&
+                    nullptr != (pItem = pShell->GetItem(SID_HTML_MODE))))
     {
         sal_uInt16 nHtmlMode = static_cast<const SfxUInt16Item*>(pItem)->GetValue();
         if(HTMLMODE_ON & nHtmlMode)
@@ -177,7 +177,7 @@ SwCharURLPage::SwCharURLPage(vcl::Window* pParent, const SfxItemSet& rCoreSet)
 
         for ( size_t i = 0; i < nCount; i++ )
         {
-            m_pTargetFrmLB->InsertEntry( pList->at( i ) );
+            m_pTargetFrameLB->InsertEntry( pList->at( i ) );
         }
     }
     delete pList;
@@ -195,7 +195,7 @@ void SwCharURLPage::dispose()
     m_pTextFT.clear();
     m_pTextED.clear();
     m_pNameED.clear();
-    m_pTargetFrmLB.clear();
+    m_pTargetFrameLB.clear();
     m_pURLPB.clear();
     m_pEventPB.clear();
     m_pVisitedLB.clear();
@@ -231,10 +231,10 @@ void SwCharURLPage::Reset(const SfxItemSet* rSet)
         }
         m_pNotVisitedLB->SelectEntry(sEntry);
 
-        m_pTargetFrmLB->SetText(pINetFormat->GetTargetFrame());
+        m_pTargetFrameLB->SetText(pINetFormat->GetTargetFrame());
         m_pVisitedLB->   SaveValue();
         m_pNotVisitedLB->SaveValue();
-        m_pTargetFrmLB-> SaveValue();
+        m_pTargetFrameLB-> SaveValue();
         pINetItem = new SvxMacroItem(FN_INET_FIELD_MACRO);
 
         if( pINetFormat->GetMacroTable() )
@@ -259,11 +259,11 @@ bool SwCharURLPage::FillItemSet(SfxItemSet* rSet)
             sURL = URIHelper::simpleNormalizedMakeRelative(OUString(), sURL);
     }
 
-    SwFormatINetFormat aINetFormat(sURL, m_pTargetFrmLB->GetText());
+    SwFormatINetFormat aINetFormat(sURL, m_pTargetFrameLB->GetText());
     aINetFormat.SetName(m_pNameED->GetText());
     bool bURLModified = m_pURLED->IsValueChangedFromSaved();
     bool bNameModified = m_pNameED->IsModified();
-    bool bTargetModified = m_pTargetFrmLB->IsValueChangedFromSaved();
+    bool bTargetModified = m_pTargetFrameLB->IsValueChangedFromSaved();
     bModified = bURLModified || bNameModified || bTargetModified;
 
     // set valid settings first
@@ -305,8 +305,8 @@ IMPL_LINK_NOARG_TYPED(SwCharURLPage, InsertFileHdl, Button*, void)
     FileDialogHelper aDlgHelper( TemplateDescription::FILEOPEN_SIMPLE, 0 );
     if( aDlgHelper.Execute() == ERRCODE_NONE )
     {
-        Reference < XFilePicker > xFP = aDlgHelper.GetFilePicker();
-        m_pURLED->SetText(xFP->getFiles().getConstArray()[0]);
+        Reference < XFilePicker2 > xFP = aDlgHelper.GetFilePicker();
+        m_pURLED->SetText(xFP->getSelectedFiles().getConstArray()[0]);
     }
 }
 

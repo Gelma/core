@@ -44,11 +44,11 @@ namespace tools_urlobj
 
       public:
         // initialise your test code values here.
-        void setUp(  ) SAL_OVERRIDE
+        void setUp(  ) override
         {
         }
 
-        void tearDown(  ) SAL_OVERRIDE
+        void tearDown(  ) override
         {
         }
 
@@ -82,7 +82,7 @@ namespace tools_urlobj
         {
             INetURLObject aUrl;
             aUrl.
-                setFSysPath( OUString( "\\\\137.65.170.24\\c$\\Img0001.jpg" ),
+                setFSysPath( "\\\\137.65.170.24\\c$\\Img0001.jpg",
                              INetURLObject::FSYS_DETECT );
 #ifdef LINUX
             CPPUNIT_ASSERT( aUrl.GetMainURL( INetURLObject::NO_DECODE )
@@ -108,7 +108,7 @@ namespace tools_urlobj
         {
             INetURLObject aUrl;
             aUrl.
-                setFSysPath( OUString( "\\\\hive-winxp-x86\\pmladek\\test2.odt" ),
+                setFSysPath( "\\\\hive-winxp-x86\\pmladek\\test2.odt",
                              INetURLObject::FSYS_DETECT );
 #ifdef LINUX
             CPPUNIT_ASSERT( aUrl.GetMainURL( INetURLObject::NO_DECODE )
@@ -151,7 +151,7 @@ namespace tools_urlobj
         void urlobjTest_005(  )
         {
             INetURLObject aUrl;
-            aUrl.setFSysPath( OUString( "//137.65.170.24/c$/Img0001.jpg" ),
+            aUrl.setFSysPath( "//137.65.170.24/c$/Img0001.jpg",
                               INetURLObject::FSYS_DETECT );
 #ifdef LINUX
             CPPUNIT_ASSERT( aUrl.GetMainURL( INetURLObject::NO_DECODE )
@@ -176,7 +176,7 @@ namespace tools_urlobj
         void urlobjTest_006(  )
         {
             INetURLObject aUrl;
-            aUrl.setFSysPath( OUString( "//hive-winxp-x86/pmladek/test2.odt" ),
+            aUrl.setFSysPath( "//hive-winxp-x86/pmladek/test2.odt",
                               INetURLObject::FSYS_DETECT );
 #ifdef LINUX
             CPPUNIT_ASSERT( aUrl.GetMainURL( INetURLObject::NO_DECODE )
@@ -249,20 +249,20 @@ namespace tools_urlobj
             url = INetURLObject("data:");
             //TODO: CPPUNIT_ASSERT(url.HasError());
             strm = url.getData();
-            CPPUNIT_ASSERT(strm == 0);
+            CPPUNIT_ASSERT(strm == nullptr);
 
             url = INetURLObject("data:,");
             CPPUNIT_ASSERT(!url.HasError());
             strm = url.getData();
-            CPPUNIT_ASSERT(strm != 0);
-            CPPUNIT_ASSERT_EQUAL(sal_uIntPtr(0), strm->GetSize());
+            CPPUNIT_ASSERT(strm != nullptr);
+            CPPUNIT_ASSERT_EQUAL(sal_uInt64(0), strm->GetSize());
             strm.reset();
 
             url = INetURLObject("data:,,%C3%A4%90");
             CPPUNIT_ASSERT(!url.HasError());
             strm = url.getData();
-            CPPUNIT_ASSERT(strm != 0);
-            CPPUNIT_ASSERT_EQUAL(sal_uIntPtr(4), strm->GetSize());
+            CPPUNIT_ASSERT(strm != nullptr);
+            CPPUNIT_ASSERT_EQUAL(sal_uInt64(4), strm->GetSize());
             buf = static_cast<unsigned char const *>(strm->GetData());
             CPPUNIT_ASSERT_EQUAL(0x2C, int(buf[0]));
             CPPUNIT_ASSERT_EQUAL(0xC3, int(buf[1]));
@@ -273,27 +273,27 @@ namespace tools_urlobj
             url = INetURLObject("data:base64,");
             //TODO: CPPUNIT_ASSERT(url.HasError());
             strm = url.getData();
-            CPPUNIT_ASSERT(strm == 0);
+            CPPUNIT_ASSERT(strm == nullptr);
 
             url = INetURLObject("data:;base64,");
             CPPUNIT_ASSERT(!url.HasError());
             strm = url.getData();
-            CPPUNIT_ASSERT(strm != 0);
-            CPPUNIT_ASSERT_EQUAL(sal_uIntPtr(0), strm->GetSize());
+            CPPUNIT_ASSERT(strm != nullptr);
+            CPPUNIT_ASSERT_EQUAL(sal_uInt64(0), strm->GetSize());
             strm.reset();
 
             url = INetURLObject("data:;bAsE64,");
             CPPUNIT_ASSERT(!url.HasError());
             strm = url.getData();
-            CPPUNIT_ASSERT(strm != 0);
-            CPPUNIT_ASSERT_EQUAL(sal_uIntPtr(0), strm->GetSize());
+            CPPUNIT_ASSERT(strm != nullptr);
+            CPPUNIT_ASSERT_EQUAL(sal_uInt64(0), strm->GetSize());
             strm.reset();
 
             url = INetURLObject("data:;base64,YWJjCg==");
             CPPUNIT_ASSERT(!url.HasError());
             strm = url.getData();
-            CPPUNIT_ASSERT(strm != 0);
-            CPPUNIT_ASSERT_EQUAL(sal_uIntPtr(4), strm->GetSize());
+            CPPUNIT_ASSERT(strm != nullptr);
+            CPPUNIT_ASSERT_EQUAL(sal_uInt64(4), strm->GetSize());
             buf = static_cast<unsigned char const *>(strm->GetData());
             CPPUNIT_ASSERT_EQUAL(0x61, int(buf[0]));
             CPPUNIT_ASSERT_EQUAL(0x62, int(buf[1]));
@@ -304,18 +304,18 @@ namespace tools_urlobj
             url = INetURLObject("data:;base64,YWJjCg=");
             CPPUNIT_ASSERT(!url.HasError());
             strm = url.getData();
-            CPPUNIT_ASSERT(strm == 0);
+            CPPUNIT_ASSERT(strm == nullptr);
 
             url = INetURLObject("data:;base64,YWJ$Cg==");
             CPPUNIT_ASSERT(!url.HasError());
             strm = url.getData();
-            CPPUNIT_ASSERT(strm == 0);
+            CPPUNIT_ASSERT(strm == nullptr);
 
             url = INetURLObject("data:text/plain;param=%22;base64,%22,YQ==");
             CPPUNIT_ASSERT(!url.HasError());
             strm = url.getData();
-            CPPUNIT_ASSERT(strm != 0);
-            CPPUNIT_ASSERT_EQUAL(sal_uIntPtr(4), strm->GetSize());
+            CPPUNIT_ASSERT(strm != nullptr);
+            CPPUNIT_ASSERT_EQUAL(sal_uInt64(4), strm->GetSize());
             buf = static_cast<unsigned char const *>(strm->GetData());
             CPPUNIT_ASSERT_EQUAL(0x59, int(buf[0]));
             CPPUNIT_ASSERT_EQUAL(0x51, int(buf[1]));
@@ -326,7 +326,45 @@ namespace tools_urlobj
             url = INetURLObject("http://example.com");
             CPPUNIT_ASSERT(!url.HasError());
             strm = url.getData();
-            CPPUNIT_ASSERT(strm == 0);
+            CPPUNIT_ASSERT(strm == nullptr);
+        }
+
+        void urlobjTest_isSchemeEqualTo() {
+            CPPUNIT_ASSERT(INetURLObject().isSchemeEqualTo(INetProtocol::NotValid));
+            CPPUNIT_ASSERT(!INetURLObject().isSchemeEqualTo(""));
+            CPPUNIT_ASSERT(
+                INetURLObject("http://example.org").isSchemeEqualTo(
+                    INetProtocol::Http));
+            CPPUNIT_ASSERT(
+                !INetURLObject("http://example.org").isSchemeEqualTo(
+                    INetProtocol::Https));
+            CPPUNIT_ASSERT(
+                INetURLObject("http://example.org").isSchemeEqualTo("Http"));
+            CPPUNIT_ASSERT(
+                !INetURLObject("http://example.org").isSchemeEqualTo("dav"));
+            CPPUNIT_ASSERT(
+                INetURLObject("dav://example.org").isSchemeEqualTo("dav"));
+        }
+
+        void urlobjTest_isAnyKnownWebDAVScheme() {
+            CPPUNIT_ASSERT(
+                INetURLObject("http://example.org").isAnyKnownWebDAVScheme());
+            CPPUNIT_ASSERT(
+                INetURLObject("https://example.org").isAnyKnownWebDAVScheme());
+            CPPUNIT_ASSERT(
+                INetURLObject("vnd.sun.star.webdav://example.org").isAnyKnownWebDAVScheme());
+            CPPUNIT_ASSERT(
+                INetURLObject("vnd.sun.star.webdavs://example.org").isAnyKnownWebDAVScheme());
+            CPPUNIT_ASSERT(
+                !INetURLObject("ftp://example.org").isAnyKnownWebDAVScheme());
+            CPPUNIT_ASSERT(
+                !INetURLObject("file://example.org").isAnyKnownWebDAVScheme());
+            CPPUNIT_ASSERT(
+                !INetURLObject("dav://example.org").isAnyKnownWebDAVScheme());
+            CPPUNIT_ASSERT(
+                !INetURLObject("davs://example.org").isAnyKnownWebDAVScheme());
+            CPPUNIT_ASSERT(
+                !INetURLObject("vnd.sun.star.pkg://example.org").isAnyKnownWebDAVScheme());
         }
 
         // Change the following lines only, if you add, remove or rename
@@ -343,6 +381,8 @@ namespace tools_urlobj
         CPPUNIT_TEST( urlobjCmisTest );
         CPPUNIT_TEST( urlobjTest_emptyPath );
         CPPUNIT_TEST( urlobjTest_data );
+        CPPUNIT_TEST( urlobjTest_isSchemeEqualTo );
+        CPPUNIT_TEST( urlobjTest_isAnyKnownWebDAVScheme );
         CPPUNIT_TEST_SUITE_END(  );
     };                          // class createPool
 

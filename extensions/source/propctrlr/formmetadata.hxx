@@ -45,12 +45,12 @@ namespace pcr
 
     public:
         // IPropertyInfoService
-        virtual sal_Int32                      getPropertyId(const OUString& _rName) const SAL_OVERRIDE;
-        virtual OUString                       getPropertyTranslation(sal_Int32 _nId) const SAL_OVERRIDE;
-        virtual OString                        getPropertyHelpId(sal_Int32 _nId) const SAL_OVERRIDE;
-        virtual sal_Int16                      getPropertyPos(sal_Int32 _nId) const SAL_OVERRIDE;
-        virtual sal_uInt32                     getPropertyUIFlags(sal_Int32 _nId) const SAL_OVERRIDE;
-        virtual ::std::vector< OUString >      getPropertyEnumRepresentations(sal_Int32 _nId) const SAL_OVERRIDE;
+        virtual sal_Int32                      getPropertyId(const OUString& _rName) const override;
+        virtual OUString                       getPropertyTranslation(sal_Int32 _nId) const override;
+        virtual OString                        getPropertyHelpId(sal_Int32 _nId) const override;
+        virtual sal_Int16                      getPropertyPos(sal_Int32 _nId) const override;
+        virtual sal_uInt32                     getPropertyUIFlags(sal_Int32 _nId) const override;
+        virtual ::std::vector< OUString >      getPropertyEnumRepresentations(sal_Int32 _nId) const override;
 
         bool                                   isComposeable( const OUString& _rPropertyName ) const;
 
@@ -72,7 +72,7 @@ namespace pcr
     {
     private:
         const IPropertyInfoService& m_rMetaData;
-        ::com::sun::star::uno::Type m_aType;
+        css::uno::Type              m_aType;
         const sal_Int32             m_nPropertyId;
 
     public:
@@ -82,7 +82,7 @@ namespace pcr
                 An instance implementing IPropertyInfoService. Must live at least as
                 long as the DefaultEnumRepresentation should live.
         */
-        DefaultEnumRepresentation( const IPropertyInfoService& _rInfo, const ::com::sun::star::uno::Type& _rType, sal_Int32 _nPropertyId );
+        DefaultEnumRepresentation( const IPropertyInfoService& _rInfo, const css::uno::Type& _rType, sal_Int32 _nPropertyId );
 
     protected:
         virtual ~DefaultEnumRepresentation();
@@ -90,13 +90,13 @@ namespace pcr
     protected:
         // IPropertyEnumRepresentation implementqation
         virtual ::std::vector< OUString >
-                                    SAL_CALL getDescriptions() const SAL_OVERRIDE;
-        virtual void                SAL_CALL getValueFromDescription( const OUString& _rDescription, ::com::sun::star::uno::Any& _out_rValue ) const SAL_OVERRIDE;
-        virtual OUString     SAL_CALL getDescriptionForValue( const ::com::sun::star::uno::Any& _rEnumValue ) const SAL_OVERRIDE;
+                                    SAL_CALL getDescriptions() const override;
+        virtual void                SAL_CALL getValueFromDescription( const OUString& _rDescription, css::uno::Any& _out_rValue ) const override;
+        virtual OUString            SAL_CALL getDescriptionForValue( const css::uno::Any& _rEnumValue ) const override;
 
     private:
-        DefaultEnumRepresentation( const DefaultEnumRepresentation& ) SAL_DELETED_FUNCTION;
-        DefaultEnumRepresentation& operator=( const DefaultEnumRepresentation& ) SAL_DELETED_FUNCTION;
+        DefaultEnumRepresentation( const DefaultEnumRepresentation& ) = delete;
+        DefaultEnumRepresentation& operator=( const DefaultEnumRepresentation& ) = delete;
     };
 
 

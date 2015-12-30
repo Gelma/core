@@ -94,23 +94,23 @@ void SAL_CALL JavaInteractionHandler::handle( const Reference< XInteractionReque
 
     for ( i = 0; i < aSeqCont.getLength(); i++ )
     {
-        abort = Reference< XInteractionAbort>::query( aSeqCont[i]);
+        abort.set( aSeqCont[i], UNO_QUERY );
         if ( abort.is() )
             break;
     }
 
     for ( i= 0; i < aSeqCont.getLength(); i++)
     {
-        retry= Reference<XInteractionRetry>::query( aSeqCont[i]);
+        retry.set( aSeqCont[i], UNO_QUERY );
         if ( retry.is() )
             break;
     }
 
-    com::sun::star::java::JavaNotFoundException e1;
-    com::sun::star::java::InvalidJavaSettingsException e2;
-     com::sun::star::java::JavaDisabledException                e3;
-    com::sun::star::java::JavaVMCreationFailureException    e4;
-    com::sun::star::java::RestartRequiredException e5;
+    css::java::JavaNotFoundException           e1;
+    css::java::InvalidJavaSettingsException    e2;
+    css::java::JavaDisabledException           e3;
+    css::java::JavaVMCreationFailureException  e4;
+    css::java::RestartRequiredException        e5;
     // Try to recover the Exception type in the any and
     // react accordingly.
     sal_uInt16      nResult = RET_CANCEL;
@@ -203,7 +203,7 @@ void SAL_CALL JavaInteractionHandler::handle( const Reference< XInteractionReque
             SolarMutexGuard aSolarGuard;
             m_bRestartRequired_Handled = true;
             svtools::executeRestartDialog(
-                comphelper::getProcessComponentContext(), 0,
+                comphelper::getProcessComponentContext(), nullptr,
                 svtools::RESTART_REASON_JAVA);
         }
         nResult = RET_OK;

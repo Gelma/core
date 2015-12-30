@@ -24,13 +24,31 @@
 
 #include <vcl/builderfactory.hxx>
 #include <vcl/gradient.hxx>
+#include <vcl/settings.hxx>
 #include <toolkit/helper/vclunohelper.hxx>
 #include <svtools/miscopt.hxx>
-#include <framework/imageproducer.hxx>
 #include <com/sun/star/frame/XSubToolbarController.hpp>
 
 using namespace css;
 using namespace css::uno;
+
+namespace {
+    void lcl_RTLizeCommandURL( OUString& rCommandURL )
+    {
+        if (rCommandURL == ".uno:ParaLeftToRight")
+            rCommandURL = ".uno:ParaRightToLeft";
+        else if (rCommandURL == ".uno:ParaRightToLeft")
+            rCommandURL = ".uno:ParaLeftToRight";
+        else if (rCommandURL == ".uno:LeftPara")
+            rCommandURL = ".uno:RightPara";
+        else if (rCommandURL == ".uno:RightPara")
+            rCommandURL = ".uno:LeftPara";
+        else if (rCommandURL == ".uno:AlignLeft")
+            rCommandURL = ".uno:AlignRight";
+        else if (rCommandURL == ".uno:AlignRight")
+            rCommandURL = ".uno:AlignLeft";
+    }
+}
 
 namespace sfx2 { namespace sidebar {
 
@@ -87,9 +105,16 @@ void SidebarToolBox::InsertItem(const OUString& rCommand,
         const css::uno::Reference<css::frame::XFrame>& rFrame,
         ToolBoxItemBits nBits, const Size& rRequestedSize, sal_uInt16 nPos)
 {
-    ToolBox::InsertItem(rCommand, rFrame, nBits, rRequestedSize, nPos);
+    OUString aCommand( rCommand );
 
-    CreateController(GetItemId(rCommand), rFrame, std::max(rRequestedSize.Width(), 0L));
+    if( AllSettings::GetLayoutRTL() )
+    {
+        lcl_RTLizeCommandURL( aCommand );
+    }
+
+    ToolBox::InsertItem(aCommand, rFrame, nBits, rRequestedSize, nPos);
+
+    CreateController(GetItemId(aCommand), rFrame, std::max(rRequestedSize.Width(), 0L));
     RegisterHandlers();
 }
 
@@ -157,7 +182,7 @@ Reference<frame::XToolbarController> SidebarToolBox::GetControllerForItemId (con
     if (iController != maControllers.end())
         return iController->second.mxController;
     else
-        return NULL;
+        return nullptr;
 }
 
 void SidebarToolBox::SetController(const sal_uInt16 nItemId,
@@ -227,7 +252,7 @@ void SidebarToolBox::RegisterHandlers()
 
 IMPL_LINK_TYPED(SidebarToolBox, DropDownClickHandler, ToolBox*, pToolBox, void)
 {
-    if (pToolBox != NULL)
+    if (pToolBox != nullptr)
     {
         Reference<frame::XToolbarController> xController (GetControllerForItemId(pToolBox->GetCurItemId()));
         if (xController.is())
@@ -241,7 +266,7 @@ IMPL_LINK_TYPED(SidebarToolBox, DropDownClickHandler, ToolBox*, pToolBox, void)
 
 IMPL_LINK_TYPED(SidebarToolBox, ClickHandler, ToolBox*, pToolBox, void)
 {
-    if (pToolBox == NULL)
+    if (pToolBox == nullptr)
         return;
 
     Reference<frame::XToolbarController> xController (GetControllerForItemId(pToolBox->GetCurItemId()));
@@ -251,7 +276,7 @@ IMPL_LINK_TYPED(SidebarToolBox, ClickHandler, ToolBox*, pToolBox, void)
 
 IMPL_LINK_TYPED(SidebarToolBox, DoubleClickHandler, ToolBox*, pToolBox, void)
 {
-    if (pToolBox == NULL)
+    if (pToolBox == nullptr)
         return;
 
     Reference<frame::XToolbarController> xController (GetControllerForItemId(pToolBox->GetCurItemId()));
@@ -261,7 +286,7 @@ IMPL_LINK_TYPED(SidebarToolBox, DoubleClickHandler, ToolBox*, pToolBox, void)
 
 IMPL_LINK_TYPED(SidebarToolBox, SelectHandler, ToolBox*, pToolBox, void)
 {
-    if (pToolBox == NULL)
+    if (pToolBox == nullptr)
         return;
 
     Reference<frame::XToolbarController> xController (GetControllerForItemId(pToolBox->GetCurItemId()));

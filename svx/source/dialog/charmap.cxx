@@ -202,7 +202,7 @@ void SvxShowCharSet::MouseMove( const MouseEvent& rMEvt )
 
 void SvxShowCharSet::Command( const CommandEvent& rCEvt )
 {
-    if( !HandleScrollCommand( rCEvt, 0, aVscrollSB.get() ) )
+    if( !HandleScrollCommand( rCEvt, nullptr, aVscrollSB.get() ) )
         Control::Command( rCEvt );
 }
 
@@ -702,7 +702,7 @@ IMPL_LINK_NOARG_TYPED(SvxShowCharSet, VscrollHdl, ScrollBar*, void)
     {
         if( m_pAccessible )
         {
-            ::com::sun::star::uno::Any aOldAny, aNewAny;
+            css::uno::Any aOldAny, aNewAny;
             int nLast = LastInView();
             for ( ; nLast != nSelectedIndex; ++nLast)
             {
@@ -734,11 +734,11 @@ void SvxShowCharSet::dispose()
 void SvxShowCharSet::ReleaseAccessible()
 {
     m_aItems.clear();
-    m_pAccessible = NULL;
-    m_xAccessible = NULL;
+    m_pAccessible = nullptr;
+    m_xAccessible = nullptr;
 }
 
-::com::sun::star::uno::Reference< XAccessible > SvxShowCharSet::CreateAccessible()
+css::uno::Reference< XAccessible > SvxShowCharSet::CreateAccessible()
 {
     OSL_ENSURE(!m_pAccessible,"Accessible already created!");
     m_pAccessible = new svx::SvxShowCharSetVirtualAcc(this);
@@ -788,7 +788,7 @@ const Subset* SubsetMap::GetNextSubset( bool bFirst ) const
     if( bFirst )
         maSubsetIterator = maSubsets.begin();
     if( maSubsetIterator == maSubsets.end() )
-        return NULL;
+        return nullptr;
     const Subset* s = &*(maSubsetIterator++);
     return s;
 }
@@ -799,7 +799,7 @@ const Subset* SubsetMap::GetSubsetByUnicode( sal_UCS4 cChar ) const
     for( const Subset* s = GetNextSubset( true ); s; s = GetNextSubset( false ) )
         if( (s->GetRangeMin() <= cChar) && (cChar <= s->GetRangeMax()) )
             return s;
-    return NULL;
+    return nullptr;
 }
 
 inline Subset::Subset( sal_UCS4 nMin, sal_UCS4 nMax, int resId)
@@ -1580,6 +1580,38 @@ void SubsetMap::InitList()
                     break;
                 case UBLOCK_WARANG_CITI:
                     aAllSubsets.push_back( Subset( 0x118A0, 0x118FF, RID_SUBSETSTR_WARANG_CITI ) );
+                    break;
+#endif
+#if U_ICU_VERSION_MAJOR_NUM >= 56
+                case UBLOCK_AHOM:
+                    aAllSubsets.push_back( Subset( 0x11700, 0x1173F, RID_SUBSETSTR_AHOM ) );
+                    break;
+                case UBLOCK_ANATOLIAN_HIEROGLYPHS:
+                    aAllSubsets.push_back( Subset( 0x14400, 0x1467F, RID_SUBSETSTR_ANATOLIAN_HIEROGLYPHS ) );
+                    break;
+                case UBLOCK_CHEROKEE_SUPPLEMENT:
+                    aAllSubsets.push_back( Subset( 0xAB70, 0xABBF, RID_SUBSETSTR_CHEROKEE_SUPPLEMENT ) );
+                    break;
+                case UBLOCK_CJK_UNIFIED_IDEOGRAPHS_EXTENSION_E:
+                    aAllSubsets.push_back( Subset( 0x2B820, 0x2CEAF, RID_SUBSETSTR_CJK_UNIFIED_IDEOGRAPHS_EXTENSION_E ) );
+                    break;
+                case UBLOCK_EARLY_DYNASTIC_CUNEIFORM:
+                    aAllSubsets.push_back( Subset( 0x12480, 0x1254F, RID_SUBSETSTR_EARLY_DYNASTIC_CUNEIFORM ) );
+                    break;
+                case UBLOCK_HATRAN:
+                    aAllSubsets.push_back( Subset( 0x108E0, 0x108FF, RID_SUBSETSTR_HATRAN ) );
+                    break;
+                case UBLOCK_MULTANI:
+                    aAllSubsets.push_back( Subset( 0x11280, 0x112AF, RID_SUBSETSTR_MULTANI ) );
+                    break;
+                case UBLOCK_OLD_HUNGARIAN:
+                    aAllSubsets.push_back( Subset( 0x10C80, 0x10CFF, RID_SUBSETSTR_OLD_HUNGARIAN ) );
+                    break;
+                case UBLOCK_SUPPLEMENTAL_SYMBOLS_AND_PICTOGRAPHS:
+                    aAllSubsets.push_back( Subset( 0x1F900, 0x1F9FF, RID_SUBSETSTR_SUPPLEMENTAL_SYMBOLS_AND_PICTOGRAPHS ) );
+                    break;
+                case UBLOCK_SUTTON_SIGNWRITING:
+                    aAllSubsets.push_back( Subset( 0x1D800, 0x1DAAF, RID_SUBSETSTR_SUTTON_SIGNWRITING ) );
                     break;
 #endif
 

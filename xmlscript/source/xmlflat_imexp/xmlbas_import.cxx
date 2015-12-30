@@ -63,7 +63,7 @@ namespace xmlscript
     }
 
     bool BasicElementBase::getBoolAttr( sal_Bool* pRet, const OUString& rAttrName,
-        const ::com::sun::star::uno::Reference< ::com::sun::star::xml::input::XAttributes >& xAttributes,
+        const css::uno::Reference< css::xml::input::XAttributes >& xAttributes,
         sal_Int32 nUid )
     {
         if ( xAttributes.is() )
@@ -486,7 +486,7 @@ void BasicImport::setDocumentLocator( const Reference< xml::sax::XLocator >& /*x
 
             if ( xLibContainer.is() )
             {
-                xElement.set( new BasicLibrariesElement( rLocalName, xAttributes, 0, this, xLibContainer ) );
+                xElement.set( new BasicLibrariesElement( rLocalName, xAttributes, nullptr, this, xLibContainer ) );
             }
         }
         else
@@ -506,8 +506,7 @@ void BasicImport::setDocumentLocator( const Reference< xml::sax::XLocator >& /*x
 
     Sequence< OUString > getSupportedServiceNames_XMLBasicImporter()
     {
-        Sequence< OUString > aNames(1);
-        aNames.getArray()[0] = "com.sun.star.document.XMLBasicImporter";
+        Sequence< OUString > aNames { "com.sun.star.document.XMLBasicImporter" };
         return aNames;
     }
 
@@ -518,8 +517,7 @@ void BasicImport::setDocumentLocator( const Reference< xml::sax::XLocator >& /*x
 
     Sequence< OUString > getSupportedServiceNames_XMLOasisBasicImporter()
     {
-        Sequence< OUString > aNames(1);
-        aNames.getArray()[0] = "com.sun.star.document.XMLOasisBasicImporter";
+        Sequence< OUString > aNames { "com.sun.star.document.XMLOasisBasicImporter" };
         return aNames;
     }
 

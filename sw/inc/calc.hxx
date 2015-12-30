@@ -137,11 +137,11 @@ struct SwCalcExp : public SwHash
     const SwFieldType* pFieldType;
 
     SwCalcExp( const OUString& rStr, const SwSbxValue& rVal,
-                const SwFieldType* pFieldType = 0 );
+                const SwFieldType* pFieldType = nullptr );
 };
 
 SwHash* Find( const OUString& rSrch, SwHash* const * ppTable,
-                sal_uInt16 nTableSize, sal_uInt16* pPos = 0 );
+                sal_uInt16 nTableSize, sal_uInt16* pPos = nullptr );
 
 void DeleteHashTable( SwHash** ppTable, sal_uInt16 nTableSize );
 
@@ -154,7 +154,7 @@ class SwCalc
     SwHash*     VarTable[ TBLSZ ];
     OUString    aVarName, sCurrSym;
     OUString    sCommand;
-    std::vector<const SwUserFieldType*> aRekurStk;
+    std::vector<const SwUserFieldType*> aRekurStack;
     SwSbxValue  nLastLeft;
     SwSbxValue  nNumberValue;
     SwCalcExp   aErrExpr;
@@ -178,8 +178,8 @@ class SwCalc
     static OUString  GetColumnName( const OUString& rName );
     OUString  GetDBName( const OUString& rName );
 
-    SwCalc( const SwCalc& ) SAL_DELETED_FUNCTION;
-    SwCalc& operator=( const SwCalc& ) SAL_DELETED_FUNCTION;
+    SwCalc( const SwCalc& ) = delete;
+    SwCalc& operator=( const SwCalc& ) = delete;
 
 public:
         SwCalc( SwDoc& rD );
@@ -203,12 +203,12 @@ public:
 
     static bool Str2Double( const OUString& rStr, sal_Int32& rPos,
                                 double& rVal,
-                                LocaleDataWrapper const*const pData = 0 );
+                                LocaleDataWrapper const*const pData = nullptr );
     static bool Str2Double( const OUString& rStr, sal_Int32& rPos,
                                 double& rVal, SwDoc *const pDoc );
 
     SW_DLLPUBLIC static bool IsValidVarName( const OUString& rStr,
-                                    OUString* pValidName = 0 );
+                                    OUString* pValidName = nullptr );
 };
 
 #endif

@@ -21,6 +21,7 @@
 
 #include <rtl/byteseq.h>
 
+#include <cstddef>
 #include <new>
 
 namespace rtl
@@ -28,13 +29,13 @@ namespace rtl
 
 
 inline ByteSequence::ByteSequence()
-    : _pSequence( 0 )
+    : _pSequence( NULL )
 {
     ::rtl_byte_sequence_construct( &_pSequence, 0 );
 }
 
 inline ByteSequence::ByteSequence( const ByteSequence & rSeq )
-    : _pSequence( 0 )
+    : _pSequence( NULL )
 {
     ::rtl_byte_sequence_assign( &_pSequence, rSeq._pSequence );
 }
@@ -46,18 +47,18 @@ inline ByteSequence::ByteSequence( sal_Sequence *pSequence)
 }
 
 inline ByteSequence::ByteSequence( const sal_Int8 * pElements, sal_Int32 len )
-    : _pSequence( 0 )
+    : _pSequence( NULL )
 {
     ::rtl_byte_sequence_constructFromArray( &_pSequence, pElements, len );
-    if (_pSequence == 0)
+    if (_pSequence == NULL)
         throw ::std::bad_alloc();
 }
 
 inline ByteSequence::ByteSequence( sal_Int32 len, enum __ByteSequence_NoDefault )
-    : _pSequence( 0 )
+    : _pSequence( NULL )
 {
     ::rtl_byte_sequence_constructNoDefault( &_pSequence, len );
-    if (_pSequence == 0)
+    if (_pSequence == NULL)
         throw ::std::bad_alloc();
 }
 
@@ -67,10 +68,10 @@ inline ByteSequence::ByteSequence( sal_Sequence *pSequence, enum __ByteSequence_
 }
 
 inline ByteSequence::ByteSequence( sal_Int32 len )
-    : _pSequence( 0 )
+    : _pSequence( NULL )
 {
     ::rtl_byte_sequence_construct( &_pSequence, len );
-    if (_pSequence == 0)
+    if (_pSequence == NULL)
         throw ::std::bad_alloc();
 }
 
@@ -93,7 +94,7 @@ inline bool ByteSequence::operator == ( const ByteSequence & rSeq ) const
 inline sal_Int8 * ByteSequence::getArray()
 {
     ::rtl_byte_sequence_reference2One( &_pSequence );
-    if (_pSequence == 0)
+    if (_pSequence == NULL)
         throw ::std::bad_alloc();
     return reinterpret_cast<sal_Int8 *>(_pSequence->elements);
 }
@@ -101,7 +102,7 @@ inline sal_Int8 * ByteSequence::getArray()
 inline void ByteSequence::realloc( sal_Int32 nSize )
 {
     ::rtl_byte_sequence_realloc( &_pSequence, nSize );
-    if (_pSequence == 0)
+    if (_pSequence == NULL)
         throw ::std::bad_alloc();
 }
 

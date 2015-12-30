@@ -26,7 +26,6 @@
 #include <cppcanvas/canvas.hxx>
 #include <cppcanvas/sprite.hxx>
 #include <cppcanvas/customsprite.hxx>
-#include <boost/noncopyable.hpp>
 #include <memory>
 
 namespace com { namespace sun { namespace star { namespace rendering
@@ -46,15 +45,18 @@ namespace cppcanvas
 
     /** SpriteCanvas interface
      */
-    class SpriteCanvas : public virtual Canvas, private boost::noncopyable
+    class SpriteCanvas : public virtual Canvas
     {
+        SpriteCanvas(const SpriteCanvas&) = delete;
+        SpriteCanvas& operator=( const SpriteCanvas& ) = delete;
     public:
+        SpriteCanvas() {}
         virtual bool                    updateScreen( bool bUpdateAll ) const = 0;
 
         virtual CustomSpriteSharedPtr   createCustomSprite( const ::basegfx::B2DSize& ) const = 0;
 
-        virtual ::com::sun::star::uno::Reference<
-            ::com::sun::star::rendering::XSpriteCanvas >    getUNOSpriteCanvas() const = 0;
+        virtual css::uno::Reference<
+            css::rendering::XSpriteCanvas >    getUNOSpriteCanvas() const = 0;
     };
 
 }

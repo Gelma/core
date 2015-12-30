@@ -48,7 +48,7 @@ private:
     sal_uInt16          nZoom;
     sal_uInt16          nCurId;
 
-    virtual void    Select() SAL_OVERRIDE;
+    virtual void    Select() override;
 };
 
 
@@ -114,7 +114,7 @@ void SvxZoomStatusBarControl::StateChanged( sal_uInt16, SfxItemState eState,
         GetStatusBar().SetItemText( GetId(), "" );
         nValueSet = SvxZoomEnableFlags::NONE;
     }
-    else if ( pState->ISA( SfxUInt16Item) )
+    else if ( dynamic_cast< const SfxUInt16Item* >(pState) !=  nullptr )
     {
         const SfxUInt16Item* pItem = static_cast<const SfxUInt16Item*>(pState);
         nZoom = pItem->GetValue();
@@ -122,13 +122,13 @@ void SvxZoomStatusBarControl::StateChanged( sal_uInt16, SfxItemState eState,
         OUString aStr(unicode::formatPercent(nZoom, Application::GetSettings().GetUILanguageTag()));
         GetStatusBar().SetItemText( GetId(), aStr );
 
-        if ( pState->ISA(SvxZoomItem) )
+        if ( dynamic_cast<const SvxZoomItem*>( pState) !=  nullptr )
         {
             nValueSet = static_cast<const SvxZoomItem*>(pState)->GetValueSet();
         }
         else
         {
-            DBG_WARNING( "use SfxZoomItem for SID_ATTR_ZOOM" );
+            SAL_INFO( "svx", "use SfxZoomItem for SID_ATTR_ZOOM" );
             nValueSet = SvxZoomEnableFlags::ALL;
         }
     }
@@ -159,10 +159,10 @@ void SvxZoomStatusBarControl::Command( const CommandEvent& rCEvt )
             case ZOOM_WHOLE_PAGE:   aZoom.SetType( SvxZoomType::WHOLEPAGE ); break;
             }
 
-            ::com::sun::star::uno::Any a;
+            css::uno::Any a;
             INetURLObject aObj( m_aCommandURL );
 
-            ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue > aArgs( 1 );
+            css::uno::Sequence< css::beans::PropertyValue > aArgs( 1 );
             aArgs[0].Name  = aObj.GetURLPath();
             aZoom.QueryValue( a );
             aArgs[0].Value = a;
@@ -196,10 +196,10 @@ bool SvxZoomPageStatusBarControl::MouseButtonDown(const MouseEvent&)
 {
     SvxZoomItem aZoom( SvxZoomType::WHOLEPAGE, 0, GetId() );
 
-    ::com::sun::star::uno::Any a;
+    css::uno::Any a;
     INetURLObject aObj( m_aCommandURL );
 
-    ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue > aArgs( 1 );
+    css::uno::Sequence< css::beans::PropertyValue > aArgs( 1 );
     aArgs[0].Name  = aObj.GetURLPath();
     aZoom.QueryValue( a );
     aArgs[0].Value = a;

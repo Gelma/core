@@ -22,6 +22,7 @@
 
 #include <com/sun/star/uno/Reference.hxx>
 #include <com/sun/star/uno/XComponentContext.hpp>
+#include <memory>
 
 #include "abptypes.hxx"
 
@@ -45,11 +46,11 @@ namespace abp
     class ODataSourceContext
     {
     private:
-        ODataSourceContextImpl*     m_pImpl;
+        std::unique_ptr<ODataSourceContextImpl>   m_pImpl;
 
     public:
         explicit ODataSourceContext(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& _rxORB
+            const css::uno::Reference< css::uno::XComponentContext >& _rxORB
         );
         ~ODataSourceContext();
 
@@ -80,15 +81,6 @@ namespace abp
         /// creates a new Mac OS X address book data source
         ODataSource createNewMacab( const OUString& _rName );
 
-        /// creates a new LDAP data source
-        ODataSource createNewLDAP( const OUString& _rName );
-
-        /// creates a new Outlook data source
-        ODataSource createNewOutlook( const OUString& _rName );
-
-        /// creates a new Outlook express data source
-        ODataSource createNewOE( const OUString& _rName );
-
         /// creates a new dBase data source
         ODataSource createNewDBase( const OUString& _rName );
     };
@@ -113,7 +105,7 @@ namespace abp
 
         /// constructs an object which is initially invalid
         explicit ODataSource(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& _rxORB
+            const css::uno::Reference< css::uno::XComponentContext >& _rxORB
         );
 
         /// copy ctor
@@ -176,7 +168,7 @@ namespace abp
         bool    hasTable( const OUString& _rTableName ) const;
 
         /// return the intern data source object
-        ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > getDataSource() const;
+        css::uno::Reference< css::beans::XPropertySet > getDataSource() const;
 
 
 
@@ -184,7 +176,7 @@ namespace abp
             <p>Available to selected clients only</p>
         */
         void        setDataSource(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& _rxDS
+             const css::uno::Reference< css::beans::XPropertySet >& _rxDS
             ,const OUString& _sName
             ,PackageAccessControl
         );

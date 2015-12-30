@@ -51,12 +51,12 @@ public:
     GalApp() : mbInBuildTree( false ), mbRelativeURLs( false )
     {
     }
-    virtual int Main() SAL_OVERRIDE;
+    virtual int Main() override;
 
 protected:
     uno::Reference<lang::XMultiServiceFactory> xMSF;
-    void Init() SAL_OVERRIDE;
-    void DeInit() SAL_OVERRIDE;
+    void Init() override;
+    void DeInit() override;
 };
 
 Gallery* createGallery( const OUString& rURL )
@@ -170,7 +170,7 @@ static INetURLObject Smartify( const OUString &rPath )
 void GalApp::Init()
 {
     try {
-        if( !mbInBuildTree && getenv( "OOO_INSTALL_PREFIX" ) == NULL ) {
+        if( !mbInBuildTree && getenv( "OOO_INSTALL_PREFIX" ) == nullptr ) {
             OUString fileName = GetAppFileName();
             int lastSlash = fileName.lastIndexOf( '/' );
 #ifdef WNT
@@ -189,8 +189,7 @@ void GalApp::Init()
 
         uno::Reference<uno::XComponentContext> xComponentContext
             = ::cppu::defaultBootstrap_InitialComponentContext();
-        xMSF = uno::Reference<lang::XMultiServiceFactory>
-            ( xComponentContext->getServiceManager(), uno::UNO_QUERY );
+        xMSF.set( xComponentContext->getServiceManager(), uno::UNO_QUERY );
         if( !xMSF.is() )
         {
             fprintf( stderr, "Failed to bootstrap\n" );
@@ -200,7 +199,7 @@ void GalApp::Init()
 
         // For backwards compatibility, in case some code still uses plain
         // createInstance w/o args directly to obtain an instance:
-        com::sun::star::ucb::UniversalContentBroker::create(xComponentContext);
+        css::ucb::UniversalContentBroker::create(xComponentContext);
     } catch (const uno::Exception &e) {
         fprintf( stderr, "Bootstrap exception '%s'\n",
                  rtl::OUStringToOString( e.Message, RTL_TEXTENCODING_UTF8 ).getStr() );
@@ -322,6 +321,11 @@ int GalApp::Main()
         SAL_WARN("vcl.app", "Fatal exception: " << e.Message);
         return EXIT_FAILURE;
     }
+    catch (const std::exception &e)
+    {
+        SAL_WARN("vcl.app", "Fatal exception: " << e.what());
+        return 1;
+    }
 
     return EXIT_SUCCESS;
 }
@@ -331,7 +335,7 @@ void GalApp::DeInit()
     uno::Reference< lang::XComponent >(
         comphelper::getProcessComponentContext(),
         uno::UNO_QUERY_THROW )-> dispose();
-    ::comphelper::setProcessServiceFactory( NULL );
+    ::comphelper::setProcessServiceFactory( nullptr );
 }
 
 void vclmain::createApplication()

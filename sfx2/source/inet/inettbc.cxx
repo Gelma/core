@@ -63,7 +63,7 @@ SFX_IMPL_TOOLBOX_CONTROL(SfxURLToolBoxControl_Impl,SfxStringItem)
 SfxURLToolBoxControl_Impl::SfxURLToolBoxControl_Impl( sal_uInt16 nSlotId, sal_uInt16 nId, ToolBox& rBox )
     : SfxToolBoxControl( nSlotId, nId, rBox )
 {
-    addStatusListener( OUString( ".uno:CurrentURL" ));
+    addStatusListener( ".uno:CurrentURL");
 }
 
 SfxURLToolBoxControl_Impl::~SfxURLToolBoxControl_Impl()
@@ -126,7 +126,7 @@ void SfxURLToolBoxControl_Impl::OpenURL( const OUString& rName, bool /*bNew*/ ) 
             pExecuteInfo->xDispatch     = xDispatch;
             pExecuteInfo->aTargetURL    = aTargetURL;
             pExecuteInfo->aArgs         = aArgs;
-            Application::PostUserEvent( LINK( 0, SfxURLToolBoxControl_Impl, ExecuteHdl_Impl), pExecuteInfo );
+            Application::PostUserEvent( LINK( nullptr, SfxURLToolBoxControl_Impl, ExecuteHdl_Impl), pExecuteInfo );
         }
     }
 }
@@ -159,15 +159,13 @@ VclPtr<vcl::Window> SfxURLToolBoxControl_Impl::CreateItemWindow( vcl::Window* pP
     return pURLBox.get();
 }
 
-IMPL_LINK_NOARG(SfxURLToolBoxControl_Impl, SelectHdl)
+IMPL_LINK_NOARG_TYPED(SfxURLToolBoxControl_Impl, SelectHdl, ComboBox&, void)
 {
     SvtURLBox* pURLBox = GetURLBox();
     OUString aName( pURLBox->GetURL() );
 
     if ( !pURLBox->IsTravelSelect() && !aName.isEmpty() )
         OpenURL( aName, false );
-
-    return 1L;
 }
 
 IMPL_LINK_NOARG_TYPED(SfxURLToolBoxControl_Impl, OpenHdl, SvtURLBox*, void)
@@ -215,10 +213,10 @@ void SfxURLToolBoxControl_Impl::StateChanged
             SvtURLBox* pURLBox = GetURLBox();
             pURLBox->Clear();
 
-            ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue > > lList = SvtHistoryOptions().GetList(ePICKLIST);
+            css::uno::Sequence< css::uno::Sequence< css::beans::PropertyValue > > lList = SvtHistoryOptions().GetList(ePICKLIST);
             for (sal_Int32 i=0; i<lList.getLength(); ++i)
             {
-                ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue > lProps = lList[i];
+                css::uno::Sequence< css::beans::PropertyValue > lProps = lList[i];
                 for (sal_Int32 p=0; p<lProps.getLength(); ++p)
                 {
                     if (lProps[p].Name != HISTORY_PROPERTYNAME_URL)
@@ -239,7 +237,7 @@ void SfxURLToolBoxControl_Impl::StateChanged
                 }
             }
 
-            const SfxStringItem *pURL = PTR_CAST(SfxStringItem,pState);
+            const SfxStringItem *pURL = dynamic_cast< const SfxStringItem* >(pState);
             OUString aRep( pURL->GetValue() );
             INetURLObject aURL( aRep );
             INetProtocol eProt = aURL.GetProtocol();

@@ -42,7 +42,6 @@ using namespace ::com::sun::star;
 ReportComponentHandler::ReportComponentHandler(uno::Reference< uno::XComponentContext > const & context)
     :ReportComponentHandler_Base(m_aMutex)
     ,m_xContext(context)
-    ,m_pInfoService( new OPropertyInfoService() )
 {
     try
     {
@@ -75,8 +74,7 @@ OUString ReportComponentHandler::getImplementationName_Static(  ) throw(uno::Run
 
 uno::Sequence< OUString > ReportComponentHandler::getSupportedServiceNames_static(  ) throw(uno::RuntimeException)
 {
-    uno::Sequence< OUString > aSupported(1);
-    aSupported[0] = "com.sun.star.report.inspection.ReportComponentHandler";
+    uno::Sequence< OUString > aSupported { "com.sun.star.report.inspection.ReportComponentHandler" };
     return aSupported;
 }
 

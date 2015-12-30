@@ -67,36 +67,34 @@ class KDEXLib : public QObject, public SalXLib
         void userEventActivated();
         void startTimeoutTimer();
         void startUserEventTimer();
-        void processYield( bool bWait, bool bHandleAllCurrentEvents );
+        SalYieldResult processYield( bool bWait, bool bHandleAllCurrentEvents );
     Q_SIGNALS:
         void startTimeoutTimerSignal();
         void startUserEventTimerSignal();
         void processYieldSignal( bool bWait, bool bHandleAllCurrentEvents );
-        com::sun::star::uno::Reference< com::sun::star::ui::dialogs::XFilePicker2 >
-            createFilePickerSignal( const com::sun::star::uno::Reference<
-                                          com::sun::star::uno::XComponentContext >& );
+        css::uno::Reference< css::ui::dialogs::XFilePicker2 >
+            createFilePickerSignal( const css::uno::Reference< css::uno::XComponentContext >& );
         int getFrameWidthSignal();
 
     public:
         KDEXLib();
         virtual ~KDEXLib();
 
-        virtual void Init() SAL_OVERRIDE;
-        virtual void Yield( bool bWait, bool bHandleAllCurrentEvents ) SAL_OVERRIDE;
-        virtual void Insert( int fd, void* data, YieldFunc pending, YieldFunc queued, YieldFunc handle ) SAL_OVERRIDE;
-        virtual void Remove( int fd ) SAL_OVERRIDE;
-        virtual void StartTimer( sal_uLong nMS ) SAL_OVERRIDE;
-        virtual void StopTimer() SAL_OVERRIDE;
-        virtual void Wakeup() SAL_OVERRIDE;
-        virtual void PostUserEvent() SAL_OVERRIDE;
+        virtual void Init() override;
+        virtual SalYieldResult Yield( bool bWait, bool bHandleAllCurrentEvents ) override;
+        virtual void Insert( int fd, void* data, YieldFunc pending, YieldFunc queued, YieldFunc handle ) override;
+        virtual void Remove( int fd ) override;
+        virtual void StartTimer( sal_uLong nMS ) override;
+        virtual void StopTimer() override;
+        virtual void Wakeup() override;
+        virtual void PostUserEvent() override;
 
         void doStartup();
         bool allowKdeDialogs() { return m_allowKdeDialogs; }
 
     public Q_SLOTS:
-        com::sun::star::uno::Reference< com::sun::star::ui::dialogs::XFilePicker2 >
-            createFilePicker( const com::sun::star::uno::Reference<
-                                  com::sun::star::uno::XComponentContext >& );
+        css::uno::Reference< css::ui::dialogs::XFilePicker2 >
+            createFilePicker( const css::uno::Reference< css::uno::XComponentContext >& );
         int getFrameWidth();
 };
 

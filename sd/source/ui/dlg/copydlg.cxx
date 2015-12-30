@@ -108,7 +108,7 @@ void CopyDlg::dispose()
  */
 void CopyDlg::Reset()
 {
-    const SfxPoolItem* pPoolItem = NULL;
+    const SfxPoolItem* pPoolItem = nullptr;
     OUString aStr( GetExtraData() );
 
     if (comphelper::string::getTokenCount(aStr, TOKEN) < 8)
@@ -221,7 +221,7 @@ void CopyDlg::GetAttr( SfxItemSet& rOutAttrs )
 /**
  * enables and selects end color LB
  */
-IMPL_LINK_NOARG(CopyDlg, SelectColorHdl)
+IMPL_LINK_NOARG_TYPED(CopyDlg, SelectColorHdl, ListBox&, void)
 {
     sal_Int32 nPos = m_pLbStartColor->GetSelectEntryPos();
 
@@ -232,7 +232,6 @@ IMPL_LINK_NOARG(CopyDlg, SelectColorHdl)
         m_pLbEndColor->Enable();
         m_pFtEndColor->Enable();
     }
-    return 0;
 }
 
 /**
@@ -248,7 +247,7 @@ IMPL_LINK_NOARG_TYPED(CopyDlg, SetViewData, Button*, void)
                                     maUIScale, SFX_MAPUNIT_100TH_MM);
 
     // sets color attribute
-    const SfxPoolItem*  pPoolItem = NULL;
+    const SfxPoolItem*  pPoolItem = nullptr;
     if( SfxItemState::SET == mrOutAttrs.GetItemState( ATTR_COPY_START_COLOR, true, &pPoolItem ) )
     {
         Color aColor = static_cast<const XColorItem*>( pPoolItem )->GetColorValue();
@@ -273,7 +272,7 @@ IMPL_LINK_NOARG_TYPED(CopyDlg, SetDefault, Button*, void)
     SetMetricValue( *m_pMtrFldHeight, Fraction(nValue) / maUIScale, SFX_MAPUNIT_100TH_MM);
 
     // set color attribute
-    const SfxPoolItem*  pPoolItem = NULL;
+    const SfxPoolItem*  pPoolItem = nullptr;
     if( SfxItemState::SET == mrOutAttrs.GetItemState( ATTR_COPY_START_COLOR, true, &pPoolItem ) )
     {
         Color aColor = static_cast<const XColorItem*>( pPoolItem )->GetColorValue();

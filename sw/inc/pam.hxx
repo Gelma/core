@@ -154,8 +154,6 @@ extern SwGoInDoc fnGoContentCells;
 extern SwGoInDoc fnGoContentSkipHidden;
 extern SwGoInDoc fnGoContentCellsSkipHidden;
 
-void _InitPam();
-
 class SwPaM;
 /// PaM is Point and Mark: a selection of the document model.
 class SW_DLLPUBLIC SwPaM : public sw::Ring<SwPaM>
@@ -166,23 +164,23 @@ class SW_DLLPUBLIC SwPaM : public sw::Ring<SwPaM>
     SwPosition * m_pMark;  ///< points at either m_Bound1 or m_Bound2
     bool m_bIsInFrontOfLabel;
 
-    SwPaM* MakeRegion( SwMoveFn fnMove, const SwPaM * pOrigRg = 0 );
+    SwPaM* MakeRegion( SwMoveFn fnMove, const SwPaM * pOrigRg = nullptr );
 
-    SwPaM(SwPaM const& rPaM) SAL_DELETED_FUNCTION;
+    SwPaM(SwPaM const& rPaM) = delete;
 
 public:
-    explicit SwPaM( const SwPosition& rPos, SwPaM* pRing = 0 );
-    SwPaM( const SwPosition& rMk, const SwPosition& rPt, SwPaM* pRing = 0 );
+    explicit SwPaM( const SwPosition& rPos, SwPaM* pRing = nullptr );
+    SwPaM( const SwPosition& rMk, const SwPosition& rPt, SwPaM* pRing = nullptr );
     SwPaM( const SwNodeIndex& rMk, const SwNodeIndex& rPt,
-           long nMkOffset = 0, long nPtOffset = 0, SwPaM* pRing = 0 );
+           long nMkOffset = 0, long nPtOffset = 0, SwPaM* pRing = nullptr );
     SwPaM( const SwNode& rMk, const SwNode& rPt,
-           long nMkOffset = 0, long nPtOffset = 0, SwPaM* pRing = 0 );
+           long nMkOffset = 0, long nPtOffset = 0, SwPaM* pRing = nullptr );
     SwPaM(  const SwNodeIndex& rMk, sal_Int32 nMkContent,
-            const SwNodeIndex& rPt, sal_Int32 nPtContent, SwPaM* pRing = 0 );
+            const SwNodeIndex& rPt, sal_Int32 nPtContent, SwPaM* pRing = nullptr );
     SwPaM(  const SwNode& rMk, sal_Int32 nMkContent,
-            const SwNode& rPt, sal_Int32 nPtContent, SwPaM* pRing = 0 );
-    SwPaM( const SwNode& rNd, sal_Int32 nContent = 0, SwPaM* pRing = 0 );
-    SwPaM( const SwNodeIndex& rNd, sal_Int32 nContent = 0, SwPaM* pRing = 0 );
+            const SwNode& rPt, sal_Int32 nPtContent, SwPaM* pRing = nullptr );
+    SwPaM( const SwNode& rNd, sal_Int32 nContent = 0, SwPaM* pRing = nullptr );
+    SwPaM( const SwNodeIndex& rNd, sal_Int32 nContent = 0, SwPaM* pRing = nullptr );
     virtual ~SwPaM();
 
     /// this takes a second parameter, which indicates the Ring that
@@ -196,22 +194,22 @@ public:
                 SwGoInDoc fnGo = fnGoContent );
 
     /// Search.
-    bool Find(  const com::sun::star::util::SearchOptions& rSearchOpt,
+    bool Find(  const css::util::SearchOptions& rSearchOpt,
                 bool bSearchInNotes,
                 utl::TextSearch& rSText,
                 SwMoveFn fnMove = fnMoveForward,
-                const SwPaM *pPam =0, bool bInReadOnly = false);
+                const SwPaM *pPam =nullptr, bool bInReadOnly = false);
     bool Find(  const SwFormat& rFormat,
                 SwMoveFn fnMove = fnMoveForward,
-                const SwPaM *pPam =0, bool bInReadOnly = false);
+                const SwPaM *pPam =nullptr, bool bInReadOnly = false);
     bool Find(  const SfxPoolItem& rAttr, bool bValue = true,
                 SwMoveFn fnMove = fnMoveForward,
-                const SwPaM *pPam =0, bool bInReadOnly = false );
+                const SwPaM *pPam =nullptr, bool bInReadOnly = false );
     bool Find(  const SfxItemSet& rAttr, bool bNoColls,
                 SwMoveFn fnMove,
                 const SwPaM *pPam, bool bInReadOnly, bool bMoveFirst );
 
-    bool DoSearch( const com::sun::star::util::SearchOptions& rSearchOpt, utl::TextSearch& rSText,
+    bool DoSearch( const css::util::SearchOptions& rSearchOpt, utl::TextSearch& rSText,
                    SwMoveFn fnMove, bool bSrchForward, bool bRegSearch, bool bChkEmptyPara, bool bChkParaEnd,
                    sal_Int32 &nStart, sal_Int32 &nEnd, sal_Int32 nTextLen, SwNode* pNode, SwPaM* pPam);
 
@@ -295,7 +293,7 @@ public:
                             { return bOne ? m_Bound1 : m_Bound2; }
 
     /// Get number of page which contains cursor.
-    sal_uInt16 GetPageNum( bool bAtPoint = true, const Point* pLayPos = 0 );
+    sal_uInt16 GetPageNum( bool bAtPoint = true, const Point* pLayPos = nullptr );
 
     /** Is in something protected (readonly) or selection contains
        something protected. */

@@ -63,7 +63,7 @@ OCalcConnection::~OCalcConnection()
 }
 
 void OCalcConnection::construct(const OUString& url,const Sequence< PropertyValue >& info)
-    throw(SQLException, RuntimeException, DeploymentException)
+    throw(SQLException, RuntimeException, DeploymentException, std::exception)
 {
     //  open file
 
@@ -131,7 +131,7 @@ Reference< XSpreadsheetDocument> OCalcConnection::acquireDoc()
     try
     {
         xComponent = xDesktop->loadComponentFromURL(
-            m_aFileName, OUString("_blank"), 0, aArgs );
+            m_aFileName, "_blank", 0, aArgs );
     }
     catch( const Exception& )
     {
@@ -266,7 +266,7 @@ Reference< XPreparedStatement > SAL_CALL OCalcConnection::prepareCall( const OUS
     checkDisposed(OConnection_BASE::rBHelper.bDisposed);
 
     ::dbtools::throwFeatureNotImplementedSQLException( "XConnection::prepareCall", *this );
-    return NULL;
+    return nullptr;
 }
 
 

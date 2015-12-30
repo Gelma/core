@@ -30,13 +30,13 @@ using namespace ::com::sun::star;
 using namespace ::com::sun::star::chart2;
 
 PlotterBase::PlotterBase( sal_Int32 nDimensionCount )
-        : m_xLogicTarget(NULL)
-        , m_xFinalTarget(NULL)
-        , m_xShapeFactory(NULL)
-        , m_pShapeFactory(NULL)
+        : m_xLogicTarget(nullptr)
+        , m_xFinalTarget(nullptr)
+        , m_xShapeFactory(nullptr)
+        , m_pShapeFactory(nullptr)
         , m_aCID()
         , m_nDimension(nDimensionCount)
-        , m_pPosHelper(NULL)
+        , m_pPosHelper(nullptr)
 {
 }
 
@@ -44,7 +44,7 @@ void PlotterBase::initPlotter(  const uno::Reference< drawing::XShapes >& xLogic
        , const uno::Reference< drawing::XShapes >& xFinalTarget
        , const uno::Reference< lang::XMultiServiceFactory >& xShapeFactory
        , const OUString& rCID )
-            throw (uno::RuntimeException)
+            throw (uno::RuntimeException, std::exception)
 {
     OSL_PRECOND(xLogicTarget.is()&&xFinalTarget.is()&&xShapeFactory.is(),"no proper initialization parameters");
     //is only allowed to be called once
@@ -84,7 +84,7 @@ uno::Reference< drawing::XShapes > PlotterBase::createGroupShape(
             , const OUString& rName )
 {
     if(!m_xShapeFactory.is())
-        return NULL;
+        return nullptr;
 
     if(m_nDimension==2)
     {

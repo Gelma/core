@@ -140,10 +140,9 @@ static bool readOption( OUString * pValue, const sal_Char * pOpt,
 static bool readOption( bool * pbOpt, const sal_Char * pOpt,
                         sal_uInt32 * pnIndex, const OUString & aArg)
 {
-    const OUString dashdash("--");
     OUString aOpt = OUString::createFromAscii(pOpt);
 
-    if(aArg.startsWith(dashdash) && aOpt.equals(aArg.copy(2)))
+    if(aArg.startsWith("--") && aOpt.equals(aArg.copy(2)))
     {
         ++(*pnIndex);
         *pbOpt = true;
@@ -171,7 +170,7 @@ void createInstance(
         throw RuntimeException( "cannot get service instance \"" + rServiceName + "\"!" );
     }
 
-    rxOut = Reference< T >::query( x );
+    rxOut.set( x, UNO_QUERY );
     if (! rxOut.is())
     {
         const Type & rType = cppu::UnoType<T>::get();
@@ -198,12 +197,12 @@ static Reference< XInterface > loadComponent(
         if (aExt == "dll" || aExt == "exe" || aExt == "dylib" || aExt == "so")
         {
             createInstance(
-                xLoader, xContext, OUString("com.sun.star.loader.SharedLibrary") );
+                xLoader, xContext, "com.sun.star.loader.SharedLibrary" );
         }
         else if (aExt == "jar" || aExt == "class")
         {
             createInstance(
-                xLoader, xContext, OUString("com.sun.star.loader.Java") );
+                xLoader, xContext, "com.sun.star.loader.Java" );
         }
         else
         {
@@ -285,7 +284,7 @@ public:
 
     // XInstanceProvider
     virtual Reference< XInterface > SAL_CALL getInstance( const OUString & rName )
-        throw (NoSuchElementException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (NoSuchElementException, RuntimeException, std::exception) override;
 };
 
 inline Reference< XInterface > OInstanceProvider::createInstance()
@@ -354,7 +353,7 @@ struct ODisposingListener : public WeakImplHelper< XEventListener >
 
     // XEventListener
     virtual void SAL_CALL disposing( const EventObject & rEvt )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 
     static void waitFor( const Reference< XComponent > & xComp );
 };
@@ -408,8 +407,7 @@ SAL_IMPLEMENT_MAIN()
 
             rtl_getAppCommandArg(nPos, &arg.pData);
 
-            const OUString dashdash("--");
-            if (dashdash == arg)
+            if (arg == "--")
             {
                 ++nPos;
                 break;
@@ -502,7 +500,7 @@ SAL_IMPLEMENT_MAIN()
                 Reference< XBridgeFactory > xBridgeFactory;
                 createInstance(
                     xBridgeFactory, xContext,
-                    OUString("com.sun.star.bridge.BridgeFactory") );
+                    "com.sun.star.bridge.BridgeFactory" );
 
                 // bridge
                 Reference< XBridge > xBridge( xBridgeFactory->createBridge(

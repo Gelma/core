@@ -56,7 +56,7 @@ typedef std::unordered_map< OUString,
 
 
 Image SAL_CALL GetImage(
-    const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& rFrame,
+    const css::uno::Reference< css::frame::XFrame >& rFrame,
     const OUString& aURL,
     bool bBig
 )
@@ -79,7 +79,7 @@ Image SAL_CALL GetImage(
     if ( nProtocol == INetProtocol::Slot )
     {
         sal_uInt16 nId = ( sal_uInt16 ) aURL.copy(5).toInt32();
-        const SfxSlot* pSlot = 0;
+        const SfxSlot* pSlot = nullptr;
         if ( xModel.is() )
         {
             Reference < XUnoTunnel > xObj( xModel, UNO_QUERY );
@@ -111,25 +111,23 @@ Image SAL_CALL GetImage(
         if ( xSupplier.is() )
         {
             Reference< XUIConfigurationManager > xDocUICfgMgr( xSupplier->getUIConfigurationManager(), UNO_QUERY );
-            xDocImgMgr = Reference< XImageManager >( xDocUICfgMgr->getImageManager(), UNO_QUERY );
+            xDocImgMgr.set( xDocUICfgMgr->getImageManager(), UNO_QUERY );
         }
     }
 
-    sal_Int16 nImageType( ::com::sun::star::ui::ImageType::COLOR_NORMAL|
-                            ::com::sun::star::ui::ImageType::SIZE_DEFAULT );
+    sal_Int16 nImageType( css::ui::ImageType::COLOR_NORMAL| css::ui::ImageType::SIZE_DEFAULT );
     if ( bBig )
-        nImageType |= ::com::sun::star::ui::ImageType::SIZE_LARGE;
+        nImageType |= css::ui::ImageType::SIZE_LARGE;
 
     if ( xDocImgMgr.is() )
     {
-        Sequence< Reference< ::com::sun::star::graphic::XGraphic > > aGraphicSeq;
-        Sequence< OUString > aImageCmdSeq( 1 );
-        aImageCmdSeq[0] = aCommandURL;
+        Sequence< Reference< css::graphic::XGraphic > > aGraphicSeq;
+        Sequence<OUString> aImageCmdSeq { aCommandURL };
 
         try
         {
             aGraphicSeq = xDocImgMgr->getImages( nImageType, aImageCmdSeq );
-            Reference< ::com::sun::star::graphic::XGraphic > xGraphic = aGraphicSeq[0];
+            Reference< css::graphic::XGraphic > xGraphic = aGraphicSeq[0];
             Image aImage( xGraphic );
 
             if ( !!aImage )
@@ -177,17 +175,16 @@ Image SAL_CALL GetImage(
                 }
 
                 Reference< XUIConfigurationManager > xUICfgMgr = xModuleCfgMgrSupplier->getUIConfigurationManager( aModuleId );
-                xModuleImageManager = Reference< XImageManager >( xUICfgMgr->getImageManager(), UNO_QUERY );
+                xModuleImageManager.set( xUICfgMgr->getImageManager(), UNO_QUERY );
                 m_aModuleIdToImageMgrMap.insert( ModuleIdToImagegMgr::value_type( aModuleId, xModuleImageManager ));
             }
 
-            Sequence< Reference< ::com::sun::star::graphic::XGraphic > > aGraphicSeq;
-            Sequence< OUString > aImageCmdSeq( 1 );
-            aImageCmdSeq[0] = aCommandURL;
+            Sequence< Reference< css::graphic::XGraphic > > aGraphicSeq;
+            Sequence<OUString> aImageCmdSeq { aCommandURL };
 
             aGraphicSeq = xModuleImageManager->getImages( nImageType, aImageCmdSeq );
 
-            Reference< ::com::sun::star::graphic::XGraphic > xGraphic = aGraphicSeq[0];
+            Reference< css::graphic::XGraphic > xGraphic = aGraphicSeq[0];
             Image aImage( xGraphic );
 
             if ( !!aImage )

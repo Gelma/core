@@ -51,7 +51,7 @@ SFX_IMPL_MENU_CONTROL(SvxFontSizeMenuControl, SvxFontHeightItem);
 IMPL_LINK_TYPED( SvxFontSizeMenuControl, MenuSelect, FontSizeMenu*, pMen, void )
 {
     SfxViewFrame* pFrm = SfxViewFrame::Current();
-    SfxShell* pSh = pFrm ? pFrm->GetDispatcher()->GetShell( 0 ) : NULL;
+    SfxShell* pSh = pFrm ? pFrm->GetDispatcher()->GetShell( 0 ) : nullptr;
 
     if ( !pSh )
         return;
@@ -83,17 +83,17 @@ void SvxFontSizeMenuControl::StateChanged(
 
     if ( SfxItemState::DEFAULT == eState )
     {
-        if ( pState->ISA(SvxFontHeightItem) )
+        if ( dynamic_cast<const SvxFontHeightItem*>( pState) !=  nullptr )
         {
             const SvxFontHeightItem* pItem =
-                PTR_CAST( SvxFontHeightItem, pState );
+                dynamic_cast<const SvxFontHeightItem*>( pState  );
             long nVal = 0;
 
             if ( pItem )
             {
                 SfxViewFrame* pFrm = SfxViewFrame::Current();
                 SfxShell* pSh = pFrm ? pFrm->GetDispatcher()->GetShell( 0 )
-                                     : NULL;
+                                     : nullptr;
 
                 if ( !pSh )
                     return;
@@ -106,9 +106,9 @@ void SvxFontSizeMenuControl::StateChanged(
             }
             pMenu->SetCurHeight( nVal );
         }
-        else if ( pState->ISA(SvxFontItem) )
+        else if ( dynamic_cast<const SvxFontItem*>( pState) !=  nullptr )
         {
-            const SvxFontItem* pItem = PTR_CAST( SvxFontItem, pState );
+            const SvxFontItem* pItem = dynamic_cast<const SvxFontItem*>( pState  );
 
             if ( pItem )
             {
@@ -118,7 +118,7 @@ void SvxFontSizeMenuControl::StateChanged(
                 {
                     const SvxFontListItem* pFonts = static_cast<const SvxFontListItem*>(
                         pDoc->GetItem( SID_ATTR_CHAR_FONTLIST ));
-                    const FontList* pList = pFonts ? pFonts->GetFontList(): 0;
+                    const FontList* pList = pFonts ? pFonts->GetFontList(): nullptr;
 
                     if ( pList )
                     {
@@ -141,7 +141,7 @@ void SvxFontSizeMenuControl::StateChanged(
             // daf"ur von der Shell eine Fontliste besorgen
             const SvxFontListItem* pFonts =
                 static_cast<const SvxFontListItem*>(pSh->GetItem( SID_ATTR_CHAR_FONTLIST ));
-            const FontList* pList = pFonts ? pFonts->GetFontList(): NULL;
+            const FontList* pList = pFonts ? pFonts->GetFontList(): nullptr;
             if ( pList )
                 pMenu->Fill( pList->GetFontName(0), pList );
         }
@@ -165,8 +165,7 @@ SvxFontSizeMenuControl::SvxFontSizeMenuControl
     SfxMenuControl( _nId, rBindings ),
 
     pMenu   ( new FontSizeMenu ),
-    rParent ( rMenu ),
-    aFontNameForwarder( SID_ATTR_CHAR_FONT, *this )
+    rParent ( rMenu )
 
 {
     rMenu.SetPopupMenu( _nId, pMenu );

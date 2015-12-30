@@ -83,7 +83,7 @@ void releaseDecimalPtr( SbxDecimal*& rpDecimal )
         if( rpDecimal->mnRefCount == 0 )
         {
             delete rpDecimal;
-            rpDecimal = NULL;
+            rpDecimal = nullptr;
         }
     }
 }
@@ -239,7 +239,11 @@ bool SbxDecimal::setString( OUString* pOUString )
 
 bool SbxDecimal::getChar( sal_Unicode& rVal )
 {
-    bool bRet = ( VarUI2FromDec( &maDec, &rVal ) == S_OK );
+    USHORT n;
+    bool bRet = ( VarUI2FromDec( &maDec, &n ) == S_OK );
+    if (bRet) {
+        rVal = n;
+    }
     return bRet;
 }
 
@@ -393,10 +397,10 @@ bool SbxDecimal::getString( OUString& rString )
 SbxDecimal* ImpCreateDecimal( SbxValues* p )
 {
     if( !p )
-        return NULL;
+        return nullptr;
 
     SbxDecimal*& rpDecimal = p->pDecimal;
-    if( rpDecimal == NULL )
+    if( rpDecimal == nullptr )
     {
         rpDecimal = new SbxDecimal();
         rpDecimal->addRef();

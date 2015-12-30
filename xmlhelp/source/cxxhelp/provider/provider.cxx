@@ -35,7 +35,6 @@
 #include <cppuhelper/supportsservice.hxx>
 #include <unotools/configmgr.hxx>
 #include <unotools/pathoptions.hxx>
-#include <rtl/bootstrap.hxx>
 
 #include "databases.hxx"
 #include "provider.hxx"
@@ -50,7 +49,7 @@ ContentProvider::ContentProvider( const uno::Reference< uno::XComponentContext >
     : ::ucbhelper::ContentProviderImplHelper( rxContext )
     , isInitialized( false )
     , m_aScheme(MYUCP_URL_SCHEME)
-    , m_pDatabases( 0 )
+    , m_pDatabases( nullptr )
 {
 }
 
@@ -98,7 +97,7 @@ css::uno::Sequence< sal_Int8 > SAL_CALL ContentProvider::getImplementationId()
 css::uno::Sequence< css::uno::Type > SAL_CALL ContentProvider::getTypes()
     throw( css::uno::RuntimeException, std::exception )
 {
-    static cppu::OTypeCollection* pCollection = NULL;
+    static cppu::OTypeCollection* pCollection = nullptr;
       if ( !pCollection )
       {
         osl::Guard< osl::Mutex > aGuard( osl::Mutex::getGlobalMutex() );
@@ -311,7 +310,7 @@ void ContentProvider::init()
 
         // open it
         uno::Reference< uno::XInterface > xCFG( xConfigProvider->createInstanceWithArguments(
-                    OUString("com.sun.star.configuration.ConfigurationAccess"),
+                    "com.sun.star.configuration.ConfigurationAccess",
                     lParams) );
 
         uno::Reference< container::XNameAccess > xDirectAccess(xCFG, uno::UNO_QUERY);
@@ -324,22 +323,9 @@ void ContentProvider::init()
     }
 
     OUString productversion( setupversion + " " + setupextension );
-
-    uno::Sequence< OUString > aImagesZipPaths( 2 );
-    xHierAccess = getHierAccess( sProvider,  "org.openoffice.Office.Common" );
-
-    OUString aPath( getKey( xHierAccess, "Path/Current/UserConfig" ) );
-    subst( aPath );
-    aImagesZipPaths[ 0 ] = aPath;
-
-    aPath = "$BRAND_BASE_DIR/$BRAND_SHARE_SUBDIR/config";
-    rtl::Bootstrap::expandMacros(aPath);
-    aImagesZipPaths[ 1 ] = aPath;
-
     bool showBasic = getBooleanKey(xHierAccess,"Help/ShowBasic");
     m_pDatabases = new Databases( showBasic,
                                   instPath,
-                                  aImagesZipPaths,
                                   utl::ConfigManager::getProductName(),
                                   productversion,
                                   stylesheet,

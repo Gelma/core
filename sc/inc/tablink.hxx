@@ -25,6 +25,7 @@
 #include <sfx2/lnkbase.hxx>
 
 #include <sfx2/objsh.hxx>
+#include <memory>
 
 class ScDocShell;
 struct TableLink_Impl;
@@ -32,7 +33,7 @@ struct TableLink_Impl;
 class ScTableLink : public ::sfx2::SvBaseLink, public ScRefreshTimer
 {
 private:
-    TableLink_Impl* pImpl;
+    std::unique_ptr<TableLink_Impl> pImpl;
     OUString aFileName;
     OUString aFilterName;
     OUString aOptions;
@@ -42,17 +43,16 @@ private:
     bool bDoPaint:1;
 
 public:
-    TYPEINFO_OVERRIDE();
     ScTableLink( ScDocShell* pDocSh, const OUString& rFile,
                     const OUString& rFilter, const OUString& rOpt, sal_uLong nRefresh );
     ScTableLink( SfxObjectShell* pShell, const OUString& rFile,
                     const OUString& rFilter, const OUString& rOpt, sal_uLong nRefresh );
     virtual ~ScTableLink();
-    virtual void Closed() SAL_OVERRIDE;
+    virtual void Closed() override;
     virtual ::sfx2::SvBaseLink::UpdateResult DataChanged(
-        const OUString& rMimeType, const ::com::sun::star::uno::Any & rValue ) SAL_OVERRIDE;
+        const OUString& rMimeType, const css::uno::Any & rValue ) override;
 
-    virtual void    Edit( vcl::Window*, const Link<SvBaseLink&,void>& rEndEditHdl ) SAL_OVERRIDE;
+    virtual void    Edit( vcl::Window*, const Link<SvBaseLink&,void>& rEndEditHdl ) override;
 
     bool    Refresh(const OUString& rNewFile, const OUString& rNewFilter,
                     const OUString* pNewOptions /* = NULL */, sal_uLong nNewRefresh );

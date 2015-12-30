@@ -349,13 +349,13 @@ void OutputDevice::ImplInvalidateViewTransform()
     if(mpOutDevData->mpViewTransform)
     {
         delete mpOutDevData->mpViewTransform;
-        mpOutDevData->mpViewTransform = NULL;
+        mpOutDevData->mpViewTransform = nullptr;
     }
 
     if(mpOutDevData->mpInverseViewTransform)
     {
         delete mpOutDevData->mpInverseViewTransform;
-        mpOutDevData->mpInverseViewTransform = NULL;
+        mpOutDevData->mpInverseViewTransform = nullptr;
     }
 }
 
@@ -708,7 +708,7 @@ void OutputDevice::SetMapMode( const MapMode& rNewMapMode )
         mpMetaFile->AddAction( new MetaMapModeAction( rNewMapMode ) );
 #ifdef DBG_UTIL
         if ( GetOutDevType() != OUTDEV_PRINTER )
-            DBG_ASSERTWARNING( bRelMap, "Please record only relative MapModes!" );
+            SAL_WARN_IF( !bRelMap, "vcl", "Please record only relative MapModes!" );
 #endif
     }
 
@@ -821,7 +821,7 @@ void OutputDevice::SetRelativeMapMode( const MapMode& rNewMapMode )
                                      rNewMapMode.GetScaleY().GetDenominator(),
                                      maMapMode.GetScaleY().GetNumerator() );
 
-    Point aPt( LogicToLogic( Point(), NULL, &rNewMapMode ) );
+    Point aPt( LogicToLogic( Point(), nullptr, &rNewMapMode ) );
     if ( eNew != eOld )
     {
         if ( eOld > MAP_PIXEL )
@@ -1057,7 +1057,7 @@ tools::PolyPolygon OutputDevice::LogicToPixel( const tools::PolyPolygon& rLogicP
 basegfx::B2DPolyPolygon OutputDevice::LogicToPixel( const basegfx::B2DPolyPolygon& rLogicPolyPoly ) const
 {
     basegfx::B2DPolyPolygon aTransformedPoly = rLogicPolyPoly;
-    const ::basegfx::B2DHomMatrix& rTransformationMatrix = GetViewTransformation();
+    const basegfx::B2DHomMatrix& rTransformationMatrix = GetViewTransformation();
     aTransformedPoly.transform( rTransformationMatrix );
     return aTransformedPoly;
 }
@@ -1201,7 +1201,7 @@ basegfx::B2DPolyPolygon OutputDevice::LogicToPixel( const basegfx::B2DPolyPolygo
                                                     const MapMode& rMapMode ) const
 {
     basegfx::B2DPolyPolygon aTransformedPoly = rLogicPolyPoly;
-    const ::basegfx::B2DHomMatrix& rTransformationMatrix = GetViewTransformation( rMapMode );
+    const basegfx::B2DHomMatrix& rTransformationMatrix = GetViewTransformation( rMapMode );
     aTransformedPoly.transform( rTransformationMatrix );
     return aTransformedPoly;
 }
@@ -1302,7 +1302,7 @@ tools::PolyPolygon OutputDevice::PixelToLogic( const tools::PolyPolygon& rDevice
 basegfx::B2DPolyPolygon OutputDevice::PixelToLogic( const basegfx::B2DPolyPolygon& rPixelPolyPoly ) const
 {
     basegfx::B2DPolyPolygon aTransformedPoly = rPixelPolyPoly;
-    const ::basegfx::B2DHomMatrix& rTransformationMatrix = GetInverseViewTransformation();
+    const basegfx::B2DHomMatrix& rTransformationMatrix = GetInverseViewTransformation();
     aTransformedPoly.transform( rTransformationMatrix );
     return aTransformedPoly;
 }
@@ -1450,7 +1450,7 @@ basegfx::B2DPolygon OutputDevice::PixelToLogic( const basegfx::B2DPolygon& rPixe
                                                 const MapMode& rMapMode ) const
 {
     basegfx::B2DPolygon aTransformedPoly = rPixelPoly;
-    const ::basegfx::B2DHomMatrix& rTransformationMatrix = GetInverseViewTransformation( rMapMode );
+    const basegfx::B2DHomMatrix& rTransformationMatrix = GetInverseViewTransformation( rMapMode );
     aTransformedPoly.transform( rTransformationMatrix );
     return aTransformedPoly;
 }
@@ -1459,7 +1459,7 @@ basegfx::B2DPolyPolygon OutputDevice::PixelToLogic( const basegfx::B2DPolyPolygo
                                                     const MapMode& rMapMode ) const
 {
     basegfx::B2DPolyPolygon aTransformedPoly = rPixelPolyPoly;
-    const ::basegfx::B2DHomMatrix& rTransformationMatrix = GetInverseViewTransformation( rMapMode );
+    const basegfx::B2DHomMatrix& rTransformationMatrix = GetInverseViewTransformation( rMapMode );
     aTransformedPoly.transform( rTransformationMatrix );
     return aTransformedPoly;
 }
@@ -1511,15 +1511,15 @@ static void verifyUnitSourceDest( MapUnit eUnitSource, MapUnit eUnitDest )
     DBG_ASSERT( eUnitSource != MAP_SYSFONT
                 && eUnitSource != MAP_APPFONT
                 && eUnitSource != MAP_RELATIVE,
-                "Source MapUnit nicht erlaubt" );
+                "Source MapUnit is not permitted" );
     DBG_ASSERT( eUnitDest != MAP_SYSFONT
                 && eUnitDest != MAP_APPFONT
                 && eUnitDest != MAP_RELATIVE,
-                "Destination MapUnit nicht erlaubt" );
-    DBG_ASSERTWARNING( eUnitSource != MAP_PIXEL,
-                       "MAP_PIXEL mit 72dpi angenaehert" );
-    DBG_ASSERTWARNING( eUnitDest != MAP_PIXEL,
-                       "MAP_PIXEL mit 72dpi angenaehert" );
+                "Destination MapUnit is not permitted" );
+    SAL_WARN_IF( eUnitSource == MAP_PIXEL, "vcl",
+                       "MAP_PIXEL approximated with 72dpi" );
+    SAL_WARN_IF( eUnitDest == MAP_PIXEL, "vcl",
+                       "MAP_PIXEL approximated with 72dpi" );
 }
 
 #define ENTER3( eUnitSource, eUnitDest )                                \

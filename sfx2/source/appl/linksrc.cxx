@@ -33,12 +33,11 @@ using namespace ::com::sun::star::uno;
 namespace sfx2
 {
 
-TYPEINIT0( SvLinkSource )
 
 class SvLinkSourceTimer : public Timer
 {
     SvLinkSource *  pOwner;
-    virtual void    Invoke() SAL_OVERRIDE;
+    virtual void    Invoke() override;
 public:
     explicit SvLinkSourceTimer( SvLinkSource * pOwn );
 };
@@ -69,10 +68,10 @@ static void StartTimer( SvLinkSourceTimer ** ppTimer, SvLinkSource * pOwner,
 
 struct SvLinkSource_Entry_Impl
 {
-    SvBaseLinkRef       xSink;
-    OUString            aDataMimeType;
-    sal_uInt16          nAdviseModes;
-    bool            bIsDataSink;
+    tools::SvRef<SvBaseLink>  xSink;
+    OUString                  aDataMimeType;
+    sal_uInt16                nAdviseModes;
+    bool                      bIsDataSink;
 
     SvLinkSource_Entry_Impl( SvBaseLink* pLink, const OUString& rMimeType,
                                 sal_uInt16 nAdvMode )
@@ -132,7 +131,7 @@ public:
     explicit SvLinkSource_EntryIter_Impl( const SvLinkSource_Array_Impl& rArr );
     ~SvLinkSource_EntryIter_Impl();
     SvLinkSource_Entry_Impl* Curr()
-                            { return nPos < aArr.size() ? aArr[ nPos ] : 0; }
+                            { return nPos < aArr.size() ? aArr[ nPos ] : nullptr; }
     SvLinkSource_Entry_Impl* Next();
     bool IsValidCurrValue( SvLinkSource_Entry_Impl* pEntry );
 };
@@ -155,7 +154,7 @@ bool SvLinkSource_EntryIter_Impl::IsValidCurrValue( SvLinkSource_Entry_Impl* pEn
 
 SvLinkSource_Entry_Impl* SvLinkSource_EntryIter_Impl::Next()
 {
-    SvLinkSource_Entry_Impl* pRet = 0;
+    SvLinkSource_Entry_Impl* pRet = nullptr;
     if( nPos + 1 < (sal_uInt16)aArr.size() )
     {
         ++nPos;
@@ -169,12 +168,12 @@ SvLinkSource_Entry_Impl* SvLinkSource_EntryIter_Impl::Next()
                 pRet = aArr[ nPos ];
                 if( std::find(rOrigArr.cbegin(), rOrigArr.cend(), pRet ) != rOrigArr.cend() )
                     break;
-                pRet = 0;
+                pRet = nullptr;
                 ++nPos;
             } while( nPos < aArr.size() );
 
             if( nPos >= aArr.size() )
-                pRet = 0;
+                pRet = nullptr;
         }
     }
     return pRet;
@@ -191,7 +190,7 @@ struct SvLinkSource_Impl
     bool               m_bIsReadOnly;
 
     SvLinkSource_Impl()
-        : pTimer(0)
+        : pTimer(nullptr)
         , nTimeout(3000)
         , m_bIsReadOnly(false)
     {
@@ -211,7 +210,6 @@ SvLinkSource::SvLinkSource()
 
 SvLinkSource::~SvLinkSource()
 {
-    delete pImpl;
 }
 
 
@@ -222,7 +220,7 @@ SvLinkSource::StreamToLoadFrom SvLinkSource::getStreamToLoadFrom()
         pImpl->m_bIsReadOnly);
 }
 
-void SvLinkSource::setStreamToLoadFrom(const com::sun::star::uno::Reference<com::sun::star::io::XInputStream>& xInputStream, bool bIsReadOnly )
+void SvLinkSource::setStreamToLoadFrom(const css::uno::Reference<css::io::XInputStream>& xInputStream, bool bIsReadOnly )
 {
     pImpl->m_xInputStreamToLoadFrom = xInputStream;
     pImpl->m_bIsReadOnly = bIsReadOnly;
@@ -285,7 +283,7 @@ void SvLinkSource::SendDataChanged()
     if( pImpl->pTimer )
     {
         delete pImpl->pTimer;
-        pImpl->pTimer = NULL;
+        pImpl->pTimer = nullptr;
     }
     pImpl->aDataMimeType.clear();
 }
@@ -319,7 +317,7 @@ void SvLinkSource::NotifyDataChanged()
         if( pImpl->pTimer )
         {
             delete pImpl->pTimer;
-            pImpl->pTimer = NULL;
+            pImpl->pTimer = nullptr;
         }
     }
 }
@@ -327,7 +325,7 @@ void SvLinkSource::NotifyDataChanged()
 // notify the sink, the mime type is not
 // a selection criterion
 void SvLinkSource::DataChanged( const OUString & rMimeType,
-                                const ::com::sun::star::uno::Any & rVal )
+                                const css::uno::Any & rVal )
 {
     if( pImpl->nTimeout && !rVal.hasValue() )
     {   // only when no data was included
@@ -357,7 +355,7 @@ void SvLinkSource::DataChanged( const OUString & rMimeType,
         if( pImpl->pTimer )
         {
             delete pImpl->pTimer;
-            pImpl->pTimer = NULL;
+            pImpl->pTimer = nullptr;
         }
     }
 }
@@ -430,7 +428,7 @@ bool SvLinkSource::Connect( SvBaseLink* )
     return true;
 }
 
-bool SvLinkSource::GetData( ::com::sun::star::uno::Any &, const OUString &, bool )
+bool SvLinkSource::GetData( css::uno::Any &, const OUString &, bool )
 {
     return false;
 }

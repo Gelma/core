@@ -29,8 +29,6 @@
 #include <sfx2/sfx.hrc>
 #include "dialog.hrc"
 
-// STATIC DATA -----------------------------------------------------------
-
 // Constructor
 
 SfxTemplateControllerItem::SfxTemplateControllerItem(
@@ -41,7 +39,7 @@ SfxTemplateControllerItem::SfxTemplateControllerItem(
     SfxControllerItem(nSlotId, rBindings),
     rTemplateDlg(rDlg),
     nWaterCanState(0xff),
-    nUserEventId(0)
+    nUserEventId(nullptr)
 {
 }
 
@@ -68,11 +66,10 @@ void SfxTemplateControllerItem::StateChanged( sal_uInt16 nSID, SfxItemState eSta
         {
             bool bAvailable = SfxItemState::DEFAULT == eState;
             if ( !bAvailable )
-                rTemplateDlg.SetFamilyState(GetId(), 0);
+                rTemplateDlg.SetFamilyState(GetId(), nullptr);
             else {
-                const SfxTemplateItem *pStateItem = PTR_CAST(
-                    SfxTemplateItem, pItem);
-                DBG_ASSERT(pStateItem != 0, "SfxTemplateItem expected");
+                const SfxTemplateItem *pStateItem = dynamic_cast< const SfxTemplateItem* >(pItem);
+                DBG_ASSERT(pStateItem != nullptr, "SfxTemplateItem expected");
                 rTemplateDlg.SetFamilyState( GetId(), pStateItem );
             }
             bool bDisable = eState == SfxItemState::DISABLED;
@@ -146,7 +143,7 @@ void SfxTemplateControllerItem::StateChanged( sal_uInt16 nSID, SfxItemState eSta
         }
         case SID_STYLE_FAMILY :
         {
-            const SfxUInt16Item *pStateItem = PTR_CAST( SfxUInt16Item, pItem);
+            const SfxUInt16Item *pStateItem = dynamic_cast< const SfxUInt16Item* >(pItem);
             if (pStateItem)
                 rTemplateDlg.SetFamily( pStateItem->GetValue() );
             break;
@@ -156,8 +153,8 @@ void SfxTemplateControllerItem::StateChanged( sal_uInt16 nSID, SfxItemState eSta
 
 IMPL_LINK_NOARG_TYPED(SfxTemplateControllerItem, SetWaterCanStateHdl_Impl, void*, void)
 {
-    nUserEventId = 0;
-    SfxBoolItem* pState = 0;
+    nUserEventId = nullptr;
+    SfxBoolItem* pState = nullptr;
     switch(nWaterCanState)
     {
         case 0 :

@@ -71,18 +71,18 @@ protected:
 
 protected:
     // #i71538# make constructors of SdrView sub-components protected to avoid incomplete incarnations which may get casted to SdrView
-    SdrCreateView(SdrModel* pModel1, OutputDevice* pOut = 0L);
+    SdrCreateView(SdrModel* pModel1, OutputDevice* pOut = nullptr);
     virtual ~SdrCreateView();
 
 public:
-    virtual bool IsAction() const SAL_OVERRIDE;
-    virtual void MovAction(const Point& rPnt) SAL_OVERRIDE;
-    virtual void EndAction() SAL_OVERRIDE;
-    virtual void BckAction() SAL_OVERRIDE;
-    virtual void BrkAction() SAL_OVERRIDE;
-    virtual void TakeActionRect(Rectangle& rRect) const SAL_OVERRIDE;
+    virtual bool IsAction() const override;
+    virtual void MovAction(const Point& rPnt) override;
+    virtual void EndAction() override;
+    virtual void BckAction() override;
+    virtual void BrkAction() override;
+    virtual void TakeActionRect(Rectangle& rRect) const override;
 
-    virtual bool MouseMove(const MouseEvent& rMEvt, vcl::Window* pWin) SAL_OVERRIDE;
+    virtual bool MouseMove(const MouseEvent& rMEvt, vcl::Window* pWin) override;
 
     void SetMeasureLayer(const OUString& rName) { maMeasureLayer=rName; }
 
@@ -107,19 +107,19 @@ public:
     sal_uInt16 GetCurrentObjIdentifier() const { return nAktIdent; }
 
     // Beginning the regular Create
-    bool BegCreateObj(const Point& rPnt, OutputDevice* pOut=NULL, short nMinMov=-3, SdrPageView* pPV=NULL);
+    bool BegCreateObj(const Point& rPnt, OutputDevice* pOut=nullptr, short nMinMov=-3, SdrPageView* pPV=nullptr);
     bool BegCreatePreparedObject(const Point& rPnt, sal_Int16 nMinMov, SdrObject* pPreparedFactoryObject);
     void MovCreateObj(const Point& rPnt);
     bool EndCreateObj(SdrCreateCmd eCmd);
     void BckCreateObj();  // go back one polygon point
     void BrkCreateObj();
-    bool IsCreateObj() const { return pAktCreate!=NULL; }
+    bool IsCreateObj() const { return pAktCreate!=nullptr; }
     SdrObject* GetCreateObj() const { return pAktCreate; }
 
     // BegCreateCaptionObj() creates a SdrCaptionObj (legend item).
     // rObjSiz is the initial size of the legend text frame.
     // Only the length of the tip is dragged
-    bool BegCreateCaptionObj(const Point& rPnt, const Size& rObjSiz, OutputDevice* pOut=NULL, short nMinMov=-3, SdrPageView* pPV=NULL);
+    bool BegCreateCaptionObj(const Point& rPnt, const Size& rObjSiz, OutputDevice* pOut=nullptr, short nMinMov=-3, SdrPageView* pPV=nullptr);
 
     // If TextEditAfterCreate is sal_True (the default),
     // then after the creation of a TextFrame object (OBJ_TEXT,

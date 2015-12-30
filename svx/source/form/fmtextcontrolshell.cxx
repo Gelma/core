@@ -72,7 +72,6 @@ namespace svx
 
     using namespace ::com::sun::star;
     using namespace ::com::sun::star::uno;
-    using namespace ::com::sun::star::awt;
     using namespace ::com::sun::star::form;
     using namespace ::com::sun::star::form::runtime;
     using namespace ::com::sun::star::lang;
@@ -160,16 +159,16 @@ namespace svx
         0
     };
 
-    typedef ::cppu::WeakImplHelper <   XFocusListener
+    typedef ::cppu::WeakImplHelper <   css::awt::XFocusListener
                                     >   FmFocusListenerAdapter_Base;
     class FmFocusListenerAdapter : public FmFocusListenerAdapter_Base
     {
     private:
         IFocusObserver*         m_pObserver;
-        Reference< XWindow >    m_xWindow;
+        Reference< css::awt::XWindow >    m_xWindow;
 
     public:
-        FmFocusListenerAdapter( const Reference< XControl >& _rxControl, IFocusObserver* _pObserver );
+        FmFocusListenerAdapter( const Reference< css::awt::XControl >& _rxControl, IFocusObserver* _pObserver );
 
         // clean up the instance
         void    dispose();
@@ -178,14 +177,14 @@ namespace svx
         virtual ~FmFocusListenerAdapter();
 
     protected:
-        virtual void SAL_CALL focusGained( const FocusEvent& e ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL focusLost( const FocusEvent& e ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL disposing( const EventObject& Source ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL focusGained( const css::awt::FocusEvent& e ) throw (RuntimeException, std::exception) override;
+        virtual void SAL_CALL focusLost( const css::awt::FocusEvent& e ) throw (RuntimeException, std::exception) override;
+        virtual void SAL_CALL disposing( const EventObject& Source ) throw (RuntimeException, std::exception) override;
     };
 
 
 
-    FmFocusListenerAdapter::FmFocusListenerAdapter( const Reference< XControl >& _rxControl, IFocusObserver* _pObserver )
+    FmFocusListenerAdapter::FmFocusListenerAdapter( const Reference< css::awt::XControl >& _rxControl, IFocusObserver* _pObserver )
         :m_pObserver( _pObserver )
         ,m_xWindow( _rxControl, UNO_QUERY )
     {
@@ -225,14 +224,14 @@ namespace svx
     }
 
 
-    void SAL_CALL FmFocusListenerAdapter::focusGained( const FocusEvent& e ) throw (RuntimeException, std::exception)
+    void SAL_CALL FmFocusListenerAdapter::focusGained( const css::awt::FocusEvent& e ) throw (RuntimeException, std::exception)
     {
         if ( m_pObserver )
             m_pObserver->focusGained( e );
     }
 
 
-    void SAL_CALL FmFocusListenerAdapter::focusLost( const FocusEvent& e ) throw (RuntimeException, std::exception)
+    void SAL_CALL FmFocusListenerAdapter::focusLost( const css::awt::FocusEvent& e ) throw (RuntimeException, std::exception)
     {
         if ( m_pObserver )
             m_pObserver->focusLost( e );
@@ -246,16 +245,16 @@ namespace svx
         m_xWindow.clear();
     }
 
-    typedef ::cppu::WeakImplHelper <   XMouseListener
+    typedef ::cppu::WeakImplHelper <   css::awt::XMouseListener
                                     >   FmMouseListenerAdapter_Base;
     class FmMouseListenerAdapter : public FmMouseListenerAdapter_Base
     {
     private:
         IContextRequestObserver*  m_pObserver;
-        Reference< XWindow >    m_xWindow;
+        Reference< css::awt::XWindow >    m_xWindow;
 
     public:
-        FmMouseListenerAdapter( const Reference< XControl >& _rxControl, IContextRequestObserver* _pObserver );
+        FmMouseListenerAdapter( const Reference< css::awt::XControl >& _rxControl, IContextRequestObserver* _pObserver );
 
         // clean up the instance
         void    dispose();
@@ -264,14 +263,14 @@ namespace svx
         virtual ~FmMouseListenerAdapter();
 
     protected:
-        virtual void SAL_CALL mousePressed( const awt::MouseEvent& e ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL mouseReleased( const awt::MouseEvent& e ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL mouseEntered( const awt::MouseEvent& e ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL mouseExited( const awt::MouseEvent& e ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL disposing( const EventObject& Source ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL mousePressed( const css::awt::MouseEvent& e ) throw (RuntimeException, std::exception) override;
+        virtual void SAL_CALL mouseReleased( const css::awt::MouseEvent& e ) throw (RuntimeException, std::exception) override;
+        virtual void SAL_CALL mouseEntered( const css::awt::MouseEvent& e ) throw (RuntimeException, std::exception) override;
+        virtual void SAL_CALL mouseExited( const css::awt::MouseEvent& e ) throw (RuntimeException, std::exception) override;
+        virtual void SAL_CALL disposing( const EventObject& Source ) throw (RuntimeException, std::exception) override;
     };
 
-    FmMouseListenerAdapter::FmMouseListenerAdapter( const Reference< XControl >& _rxControl, IContextRequestObserver* _pObserver )
+    FmMouseListenerAdapter::FmMouseListenerAdapter( const Reference< css::awt::XControl >& _rxControl, IContextRequestObserver* _pObserver )
         :m_pObserver( _pObserver )
         ,m_xWindow( _rxControl, UNO_QUERY )
     {
@@ -311,7 +310,7 @@ namespace svx
     }
 
 
-    void SAL_CALL FmMouseListenerAdapter::mousePressed( const awt::MouseEvent& _rEvent ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+    void SAL_CALL FmMouseListenerAdapter::mousePressed( const css::awt::MouseEvent& _rEvent ) throw (css::uno::RuntimeException, std::exception)
     {
         SolarMutexGuard aGuard;
         // is this a request for a context menu?
@@ -323,19 +322,19 @@ namespace svx
     }
 
 
-    void SAL_CALL FmMouseListenerAdapter::mouseReleased( const awt::MouseEvent& /*e*/ ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+    void SAL_CALL FmMouseListenerAdapter::mouseReleased( const css::awt::MouseEvent& /*e*/ ) throw (css::uno::RuntimeException, std::exception)
     {
         // not interested in
     }
 
 
-    void SAL_CALL FmMouseListenerAdapter::mouseEntered( const awt::MouseEvent& /*e*/ ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+    void SAL_CALL FmMouseListenerAdapter::mouseEntered( const css::awt::MouseEvent& /*e*/ ) throw (css::uno::RuntimeException, std::exception)
     {
         // not interested in
     }
 
 
-    void SAL_CALL FmMouseListenerAdapter::mouseExited( const awt::MouseEvent& /*e*/ ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+    void SAL_CALL FmMouseListenerAdapter::mouseExited( const css::awt::MouseEvent& /*e*/ ) throw (css::uno::RuntimeException, std::exception)
     {
         // not interested in
     }
@@ -416,10 +415,10 @@ namespace svx
         {
             OUString sSlotUnoName;
 
-            SfxSlotPool& rSlotPool = SfxSlotPool::GetSlotPool( NULL );
+            SfxSlotPool& rSlotPool = SfxSlotPool::GetSlotPool();
             const SfxSlot* pSlot = rSlotPool.GetSlot( _nSlotId );
 
-            const sal_Char* pAsciiUnoName = NULL;
+            const sal_Char* pAsciiUnoName = nullptr;
             if ( pSlot )
             {
                 pAsciiUnoName = pSlot->GetUnoName();
@@ -455,7 +454,7 @@ namespace svx
         }
 
 
-        bool lcl_determineReadOnly( const Reference< XControl >& _rxControl )
+        bool lcl_determineReadOnly( const Reference< css::awt::XControl >& _rxControl )
         {
             bool bIsReadOnlyModel = true;
             try
@@ -484,12 +483,12 @@ namespace svx
         }
 
 
-        static vcl::Window* lcl_getWindow( const Reference< XControl >& _rxControl )
+        static vcl::Window* lcl_getWindow( const Reference< css::awt::XControl >& _rxControl )
         {
-            vcl::Window* pWindow = NULL;
+            vcl::Window* pWindow = nullptr;
             try
             {
-                Reference< XWindowPeer > xControlPeer;
+                Reference< css::awt::XWindowPeer > xControlPeer;
                 if ( _rxControl.is() )
                     xControlPeer = _rxControl->getPeer();
                 if ( xControlPeer.is() )
@@ -504,7 +503,7 @@ namespace svx
         }
 
 
-        bool lcl_isRichText( const Reference< XControl >& _rxControl )
+        bool lcl_isRichText( const Reference< css::awt::XControl >& _rxControl )
         {
             if ( !_rxControl.is() )
                 return false;
@@ -637,7 +636,7 @@ namespace svx
 
     void FmTextControlShell::executeAttributeDialog( AttributeSet _eSet, SfxRequest& _rReq )
     {
-        const SvxFontListItem* pFontList = PTR_CAST( SvxFontListItem, m_pViewFrame->GetObjectShell()->GetItem( SID_ATTR_CHAR_FONTLIST ) );
+        const SvxFontListItem* pFontList = dynamic_cast<const SvxFontListItem*>( m_pViewFrame->GetObjectShell()->GetItem( SID_ATTR_CHAR_FONTLIST )  );
         DBG_ASSERT( pFontList, "FmTextControlShell::executeAttributeDialog: no font list item!" );
         if ( !pFontList )
             return;
@@ -710,7 +709,7 @@ namespace svx
                             // handle them
                             DBG_ASSERT( aArgs.getLength() == 0, "FmTextControlShell::executeAttributeDialog: these are no UNO slots - are they?" );
 
-                            const SfxBoolItem* pBoolItem = PTR_CAST( SfxBoolItem, pModifiedItem );
+                            const SfxBoolItem* pBoolItem = dynamic_cast<const SfxBoolItem*>( pModifiedItem  );
                             DBG_ASSERT( pBoolItem, "FmTextControlShell::executeAttributeDialog: no bool item?!" );
                             if ( pBoolItem )
                             {
@@ -758,7 +757,7 @@ namespace svx
             if ( m_xActiveTextComponent.is() )
             {
                 sal_Int32 nTextLen = m_xActiveTextComponent->getText().getLength();
-                m_xActiveTextComponent->setSelection( awt::Selection( 0, nTextLen ) );
+                m_xActiveTextComponent->setSelection( css::awt::Selection( 0, nTextLen ) );
                 return true;
             }
         }
@@ -785,7 +784,7 @@ namespace svx
                     ::svt::OStringTransfer::CopyString( sSelectedText, lcl_getWindow( m_xActiveControl ) );
                     if ( SID_CUT == _nSlot )
                     {
-                        awt::Selection aSelection( m_xActiveTextComponent->getSelection() );
+                        css::awt::Selection aSelection( m_xActiveTextComponent->getSelection() );
                         m_xActiveTextComponent->insertText( aSelection, OUString() );
                     }
                 }
@@ -794,7 +793,7 @@ namespace svx
                 {
                     OUString sClipboardContent;
                     OSL_VERIFY( ::svt::OStringTransfer::PasteString( sClipboardContent, lcl_getWindow( m_xActiveControl ) ) );
-                    awt::Selection aSelection( m_xActiveTextComponent->getSelection() );
+                    css::awt::Selection aSelection( m_xActiveTextComponent->getSelection() );
                     m_xActiveTextComponent->insertText( aSelection, sClipboardContent );
                 }
                 break;
@@ -862,7 +861,7 @@ namespace svx
                 const SfxPoolItem* pItem = aToggled.GetItem( nWhich );
                 if ( ( SID_ATTR_CHAR_UNDERLINE == nSlot ) || ( SID_ATTR_CHAR_OVERLINE == nSlot ) )
                 {
-                    const SvxOverlineItem* pTextLine = PTR_CAST( SvxOverlineItem, pItem );
+                    const SvxOverlineItem* pTextLine = dynamic_cast<const SvxOverlineItem*>( pItem  );
                     DBG_ASSERT( pTextLine, "FmTextControlShell::ExecuteTextAttribute: ooops - no underline/overline item!" );
                     if ( pTextLine )
                     {
@@ -876,7 +875,7 @@ namespace svx
                 }
                 else
                 {
-                    const SvxCrossedOutItem* pCrossedOut = PTR_CAST( SvxCrossedOutItem, pItem );
+                    const SvxCrossedOutItem* pCrossedOut = dynamic_cast<const SvxCrossedOutItem*>( pItem  );
                     DBG_ASSERT( pCrossedOut, "FmTextControlShell::ExecuteTextAttribute: ooops - no CrossedOut item!" );
                     if ( pCrossedOut )
                     {
@@ -1008,7 +1007,7 @@ namespace svx
 
                 if ( !bDisable && bNeedSelection )
                 {
-                    awt::Selection aSelection = m_xActiveTextComponent->getSelection();
+                    css::awt::Selection aSelection = m_xActiveTextComponent->getSelection();
                     bDisable |= aSelection.Min == aSelection.Max;
                 }
 
@@ -1102,12 +1101,12 @@ namespace svx
 
         try
         {
-            Sequence< Reference< XControl > > aControls( _rxController->getControls() );
+            Sequence< Reference< css::awt::XControl > > aControls( _rxController->getControls() );
             m_aControlObservers.resize( 0 );
             m_aControlObservers.reserve( aControls.getLength() );
 
-            const Reference< XControl >* pControls = aControls.getConstArray();
-            const Reference< XControl >* pControlsEnd = pControls + aControls.getLength();
+            const Reference< css::awt::XControl >* pControls = aControls.getConstArray();
+            const Reference< css::awt::XControl >* pControlsEnd = pControls + aControls.getLength();
             for ( ; pControls != pControlsEnd; ++pControls )
             {
                 m_aControlObservers.push_back( FocusListenerAdapter( new FmFocusListenerAdapter( *pControls, this ) ) );
@@ -1186,7 +1185,7 @@ namespace svx
     }
 
 
-    void FmTextControlShell::controlActivated( const Reference< XControl >& _rxControl )
+    void FmTextControlShell::controlActivated( const Reference< css::awt::XControl >& _rxControl )
     {
         // ensure that all knittings with the previously active control are lost
         if ( m_xActiveControl.is() )
@@ -1195,14 +1194,14 @@ namespace svx
 
 #if OSL_DEBUG_LEVEL > 0
         {
-            Sequence< Reference< XControl > > aActiveControls;
+            Sequence< Reference< css::awt::XControl > > aActiveControls;
             if ( m_xActiveController.is() )
                 aActiveControls = m_xActiveController->getControls();
 
             bool bFoundThisControl = false;
 
-            const Reference< XControl >* pControls = aActiveControls.getConstArray();
-            const Reference< XControl >* pControlsEnd = pControls + aActiveControls.getLength();
+            const Reference< css::awt::XControl >* pControls = aActiveControls.getConstArray();
+            const Reference< css::awt::XControl >* pControlsEnd = pControls + aActiveControls.getLength();
             for ( ; ( pControls != pControlsEnd ) && !bFoundThisControl; ++pControls )
             {
                 if ( *pControls == _rxControl )
@@ -1223,7 +1222,7 @@ namespace svx
         // if we found a rich text control, we need context menu support
         if ( m_bActiveControlIsRichText )
         {
-            DBG_ASSERT( NULL == m_aContextMenuObserver.get(), "FmTextControlShell::controlActivated: already have an observer!" );
+            DBG_ASSERT( nullptr == m_aContextMenuObserver.get(), "FmTextControlShell::controlActivated: already have an observer!" );
             m_aContextMenuObserver = MouseListenerAdapter( new FmMouseListenerAdapter( _rxControl, this ) );
         }
 
@@ -1256,14 +1255,13 @@ namespace svx
         // #i51621# / 2005-08-19 / frank.schoenheit@sun.com
         // bool bHaveAnyServeableSlots = m_xActiveTextComponent.is() || !m_aControlFeatures.empty();
         // LEM: not calling m_aControlActivatonHandler causes fdo#63695, so disable this hack for now.
-        if ( m_aControlActivationHandler.IsSet() /* && bHaveAnyServeableSlots */ )
-            m_aControlActivationHandler.Call( NULL );
+        m_aControlActivationHandler.Call( nullptr );
 
         m_bNeedClipboardInvalidation = true;
     }
 
 
-    void FmTextControlShell::fillFeatureDispatchers(const Reference< XControl >& _rxControl, SfxSlotId* _pZeroTerminatedSlots,
+    void FmTextControlShell::fillFeatureDispatchers(const Reference< css::awt::XControl >& _rxControl, SfxSlotId* _pZeroTerminatedSlots,
             ControlFeatures& _rDispatchers)
     {
         Reference< XDispatchProvider > xProvider( _rxControl, UNO_QUERY );
@@ -1311,7 +1309,7 @@ namespace svx
         Reference< XDispatch > xDispatcher = _rxProvider->queryDispatch( aFeatureURL, OUString(), 0xFF );
         if ( xDispatcher.is() )
             return new FmTextControlFeature( xDispatcher, aFeatureURL, _nSlot, this );
-        return NULL;
+        return nullptr;
     }
 
 
@@ -1324,9 +1322,9 @@ namespace svx
     }
 
 
-    void FmTextControlShell::focusGained( const ::com::sun::star::awt::FocusEvent& _rEvent )
+    void FmTextControlShell::focusGained( const css::awt::FocusEvent& _rEvent )
     {
-        Reference< XControl > xControl( _rEvent.Source, UNO_QUERY );
+        Reference< css::awt::XControl > xControl( _rEvent.Source, UNO_QUERY );
 
 #if OSL_DEBUG_LEVEL > 0
         OString sTrace( "FmTextControlShell::focusGained: 0x" );
@@ -1340,9 +1338,9 @@ namespace svx
     }
 
 
-    void FmTextControlShell::focusLost( const ::com::sun::star::awt::FocusEvent& _rEvent )
+    void FmTextControlShell::focusLost( const css::awt::FocusEvent& _rEvent )
     {
-        Reference< XControl > xControl( _rEvent.Source, UNO_QUERY );
+        Reference< css::awt::XControl > xControl( _rEvent.Source, UNO_QUERY );
 
 #if OSL_DEBUG_LEVEL > 0
         OString sTrace( "FmTextControlShell::focusLost: 0x" );
@@ -1360,7 +1358,7 @@ namespace svx
     }
 
 
-    void FmTextControlShell::contextMenuRequested( const awt::MouseEvent& /*_rEvent*/ )
+    void FmTextControlShell::contextMenuRequested( const css::awt::MouseEvent& /*_rEvent*/ )
     {
         m_rBindings.GetDispatcher()->ExecutePopup( SVX_RES( RID_FM_TEXTATTRIBUTE_MENU ) );
     }

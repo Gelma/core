@@ -54,7 +54,6 @@ class SdPageFormatUndoAction : public SdUndoAction
     bool        mbNewFullSize;
 
 public:
-    TYPEINFO_OVERRIDE();
     SdPageFormatUndoAction( SdDrawDocument* pDoc,
                             SdPage*         pThePage,
                             const Size&     rOldSz,
@@ -100,8 +99,8 @@ public:
         {}
     virtual ~SdPageFormatUndoAction();
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 };
 
 /************************************************************************/
@@ -116,7 +115,6 @@ class SdPageLRUndoAction : public SdUndoAction
     sal_Int32   mnNewRight;
 
 public:
-    TYPEINFO_OVERRIDE();
     SdPageLRUndoAction( SdDrawDocument* pDoc, SdPage* pThePage,
                         sal_Int32 nOldLft, sal_Int32 nOldRgt,
                         sal_Int32 nNewLft, sal_Int32 nNewRgt ) :
@@ -129,8 +127,8 @@ public:
         {}
     virtual ~SdPageLRUndoAction();
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 };
 
 /************************************************************************/
@@ -145,7 +143,6 @@ class SdPageULUndoAction : public SdUndoAction
     sal_Int32   mnNewLower;
 
 public:
-    TYPEINFO_OVERRIDE();
     SdPageULUndoAction( SdDrawDocument* pDoc, SdPage* pThePage,
                         sal_Int32 nOldUpr, sal_Int32 nOldLwr,
                         sal_Int32 nNewUpr, sal_Int32 nNewLwr ) :
@@ -158,8 +155,8 @@ public:
         {}
     virtual ~SdPageULUndoAction();
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 };
 
 #endif // INCLUDED_SD_SOURCE_UI_INC_UNDOPAGE_HXX

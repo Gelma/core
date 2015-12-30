@@ -289,12 +289,12 @@ class SvtModuleOptions_Impl : public ::utl::ConfigItem
 
         //  override methods of baseclass
 
-        virtual void Notify( const css::uno::Sequence< OUString >& lPropertyNames ) SAL_OVERRIDE;
+        virtual void Notify( const css::uno::Sequence< OUString >& lPropertyNames ) override;
 
         //  public interface
 
         bool            IsModuleInstalled         (       SvtModuleOptions::EModule     eModule    ) const;
-        ::com::sun::star::uno::Sequence < OUString > GetAllServiceNames();
+        css::uno::Sequence < OUString > GetAllServiceNames();
         OUString        GetFactoryName            (       SvtModuleOptions::EFactory    eFactory   ) const;
         OUString        GetFactoryStandardTemplate(       SvtModuleOptions::EFactory    eFactory   ) const;
         static OUString GetFactoryEmptyDocumentURL(       SvtModuleOptions::EFactory    eFactory   );
@@ -315,7 +315,7 @@ class SvtModuleOptions_Impl : public ::utl::ConfigItem
         static css::uno::Sequence< OUString > impl_ExpandSetNames ( const css::uno::Sequence< OUString >& lSetNames   );
                void                                  impl_Read           ( const css::uno::Sequence< OUString >& lSetNames   );
 
-        virtual void ImplCommit() SAL_OVERRIDE;
+        virtual void ImplCommit() override;
 
     //  private types
 
@@ -474,7 +474,7 @@ bool SvtModuleOptions_Impl::IsModuleInstalled( SvtModuleOptions::EModule eModule
     return bInstalled;
 }
 
-::com::sun::star::uno::Sequence < OUString > SvtModuleOptions_Impl::GetAllServiceNames()
+css::uno::Sequence < OUString > SvtModuleOptions_Impl::GetAllServiceNames()
 {
     std::vector<OUString> aVec;
 
@@ -756,7 +756,7 @@ void SvtModuleOptions_Impl::impl_Read( const css::uno::Sequence< OUString >& lFa
 
     sal_Int32                   nPropertyStart  = 0;
     sal_Int32                   nNodeCount      = lFactories.getLength();
-    FactoryInfo*                pInfo           = NULL;
+    FactoryInfo*                pInfo           = nullptr;
     SvtModuleOptions::EFactory  eFactory;
 
     for( sal_Int32 nSetNode=0; nSetNode<nNodeCount; ++nSetNode )
@@ -828,7 +828,7 @@ void SvtModuleOptions_Impl::MakeReadonlyStatesAvailable()
 //  DON'T DO IT IN YOUR HEADER!
 //  see definition for further information
 
-SvtModuleOptions_Impl*  SvtModuleOptions::m_pDataContainer  = NULL;
+SvtModuleOptions_Impl*  SvtModuleOptions::m_pDataContainer  = nullptr;
 sal_Int32               SvtModuleOptions::m_nRefCount       = 0;
 
 /*-************************************************************************************************************
@@ -858,7 +858,7 @@ SvtModuleOptions::~SvtModuleOptions()
     if( m_nRefCount == 0 )
     {
         delete m_pDataContainer;
-        m_pDataContainer = NULL;
+        m_pDataContainer = nullptr;
     }
 }
 
@@ -1078,9 +1078,9 @@ SvtModuleOptions::EFactory SvtModuleOptions::ClassifyFactoryByURL(const OUString
     css::uno::Reference< css::container::XNameAccess > xTypeCfg;
     try
     {
-        xFilterCfg = css::uno::Reference< css::container::XNameAccess >(
+        xFilterCfg.set(
             xContext->getServiceManager()->createInstanceWithContext("com.sun.star.document.FilterFactory", xContext), css::uno::UNO_QUERY);
-        xTypeCfg = css::uno::Reference< css::container::XNameAccess >(
+        xTypeCfg.set(
             xContext->getServiceManager()->createInstanceWithContext("com.sun.star.document.TypeDetection", xContext), css::uno::UNO_QUERY);
     }
     catch(const css::uno::RuntimeException&)
@@ -1163,7 +1163,7 @@ SvtModuleOptions::EFactory SvtModuleOptions::ClassifyFactoryByModel(const css::u
     return EFactory::UNKNOWN_FACTORY;
 }
 
-::com::sun::star::uno::Sequence < OUString > SvtModuleOptions::GetAllServiceNames()
+css::uno::Sequence < OUString > SvtModuleOptions::GetAllServiceNames()
 {
     ::osl::MutexGuard aGuard( impl_GetOwnStaticMutex() );
     return m_pDataContainer->GetAllServiceNames();

@@ -26,7 +26,6 @@
 #include <xmloff/xmlimp.hxx>
 #include <xmloff/nmspmap.hxx>
 
-TYPEINIT1( XMLLabelSeparatorContext, XMLElementPropertyContext );
 
 using namespace ::com::sun::star;
 
@@ -52,7 +51,7 @@ SvXMLImportContext* XMLLabelSeparatorContext::CreateChildContext(
     sal_uInt16 nPrefix, const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList > & /*xAttrList*/ )
 {
-    SvXMLImportContext* pContext = NULL;
+    SvXMLImportContext* pContext = nullptr;
     if( xmloff::token::IsXMLToken( rLocalName, xmloff::token::XML_P ) )
     {
         pContext = new SchXMLParagraphContext( GetImport(),

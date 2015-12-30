@@ -31,16 +31,15 @@ class SVX_DLLPUBLIC SdrGrafCropItem : public SvxGrfCrop
 {
 public:
 
-                            TYPEINFO_OVERRIDE();
 
                             SdrGrafCropItem( sal_Int32 nLeftCrop = 0, sal_Int32 nTopCrop = 0,
                                              sal_Int32 nRightCrop = 0, sal_Int32 nBottomCrop = 0,
                                              sal_uInt16 nWhichId = SDRATTR_GRAFCROP ) :
                                 SvxGrfCrop( nLeftCrop, nRightCrop, nTopCrop, nBottomCrop, nWhichId ) {}
 
-    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = NULL ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Create( SvStream& rIn, sal_uInt16 nVer ) const SAL_OVERRIDE;
-    virtual sal_uInt16          GetVersion( sal_uInt16 nFileVersion ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = nullptr ) const override;
+    virtual SfxPoolItem*    Create( SvStream& rIn, sal_uInt16 nVer ) const override;
+    virtual sal_uInt16          GetVersion( sal_uInt16 nFileVersion ) const override;
 };
 
 #endif // INCLUDED_SVX_SDGCPITM_HXX

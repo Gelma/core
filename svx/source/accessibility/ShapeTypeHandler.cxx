@@ -38,7 +38,7 @@ using namespace ::com::sun::star::accessibility;
 namespace accessibility {
 
 // Pointer to the shape type handler singleton.
-ShapeTypeHandler* ShapeTypeHandler::instance = NULL;
+ShapeTypeHandler* ShapeTypeHandler::instance = nullptr;
 
 
 // Create an empty reference to an accessible object.
@@ -48,7 +48,7 @@ AccessibleShape*
         const AccessibleShapeTreeInfo& /*rShapeTreeInfo*/,
         ShapeTypeId /*nId*/)
 {
-    return NULL;
+    return nullptr;
 }
 
 
@@ -58,10 +58,10 @@ ShapeTypeHandler& ShapeTypeHandler::Instance()
 {
     // Using double check pattern to make sure that exactly one instance of
     // the shape type handler is instantiated.
-    if (instance == NULL)
+    if (instance == nullptr)
     {
         SolarMutexGuard aGuard;
-        if (instance == NULL)
+        if (instance == nullptr)
         {
             // Create the single instance of the shape type handler.
             instance = new ShapeTypeHandler;
@@ -113,17 +113,17 @@ ShapeTypeId ShapeTypeHandler::GetTypeId (const uno::Reference<drawing::XShape>& 
     given shape, then calls the descriptor's create function, and finally
     initializes the new object.
 */
-AccessibleShape*
+rtl::Reference<AccessibleShape>
     ShapeTypeHandler::CreateAccessibleObject (
         const AccessibleShapeInfo& rShapeInfo,
         const AccessibleShapeTreeInfo& rShapeTreeInfo) const
 {
     ShapeTypeId nSlotId (GetSlotId (rShapeInfo.mxShape));
-    AccessibleShape* pShape =
+    rtl::Reference<AccessibleShape> pShape(
         maShapeTypeDescriptorList[nSlotId].maCreateFunction (
             rShapeInfo,
             rShapeTreeInfo,
-            maShapeTypeDescriptorList[nSlotId].mnShapeTypeId);
+            maShapeTypeDescriptorList[nSlotId].mnShapeTypeId));
     return pShape;
 }
 
@@ -154,7 +154,7 @@ ShapeTypeHandler::~ShapeTypeHandler()
     //  we reset the static variable instance, so that further calls to
     //  getInstance do not return an undefined object but create a new
     //  singleton.
-    instance = NULL;
+    instance = nullptr;
 }
 
 
@@ -219,7 +219,7 @@ long ShapeTypeHandler::GetSlotId (const uno::Reference<drawing::XShape>& rxShape
 /// get the accessible base name for an object
 OUString
     ShapeTypeHandler::CreateAccessibleBaseName (const uno::Reference<drawing::XShape>& rxShape)
-    throw (::com::sun::star::uno::RuntimeException, std::exception)
+    throw (css::uno::RuntimeException, std::exception)
 {
     sal_Int32 nResourceId;
     OUString sName;
@@ -305,7 +305,7 @@ OUString
                     SdrObject *pSdrObj = pShape->GetSdrObject();
                     if (pSdrObj)
                     {
-                        if(pSdrObj->ISA(SdrObjCustomShape))
+                        if(dynamic_cast<const SdrObjCustomShape*>( pSdrObj) !=  nullptr)
                         {
                             SdrObjCustomShape* pCustomShape = static_cast<SdrObjCustomShape*>(pSdrObj);
                             if(pCustomShape)

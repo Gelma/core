@@ -79,8 +79,8 @@ bool ScConversionEngineBase::FindNextConversionCell()
 {
     ScMarkData& rMark = mrViewData.GetMarkData();
     ScTabViewShell* pViewShell = mrViewData.GetViewShell();
-    const ScPatternAttr* pPattern = NULL;
-    const ScPatternAttr* pLastPattern = NULL;
+    const ScPatternAttr* pPattern = nullptr;
+    const ScPatternAttr* pLastPattern = nullptr;
 
     std::unique_ptr<SfxItemSet> pEditDefaults(new SfxItemSet(GetEmptyItemSet()));
 
@@ -188,7 +188,7 @@ bool ScConversionEngineBase::FindNextConversionCell()
 
                 // language changed?
                 const SfxPoolItem* pItem = mrDoc.GetAttr( nNewCol, nNewRow, mnStartTab, ATTR_FONT_LANGUAGE );
-                if( const SvxLanguageItem* pLangItem = PTR_CAST( SvxLanguageItem, pItem ) )
+                if( const SvxLanguageItem* pLangItem = dynamic_cast<const SvxLanguageItem*>( pItem )  )
                 {
                     LanguageType eLang = static_cast< LanguageType >( pLangItem->GetValue() );
                     if( eLang == LANGUAGE_SYSTEM )

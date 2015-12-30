@@ -29,8 +29,7 @@ class XMLTextListBlockContext : public SvXMLImportContext
 {
     XMLTextImportHelper&    mrTxtImport;
 
-    ::com::sun::star::uno::Reference<
-                ::com::sun::star::container::XIndexReplace > mxNumRules;
+    css::uno::Reference< css::container::XIndexReplace > mxNumRules;
 
     // text:style-name property of <list> element
     OUString         msListStyleName;
@@ -49,7 +48,6 @@ class XMLTextListBlockContext : public SvXMLImportContext
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     // add optional parameter <bRestartNumberingAtSubList>
     XMLTextListBlockContext(
@@ -57,25 +55,22 @@ public:
                 XMLTextImportHelper& rTxtImp,
                 sal_uInt16 nPrfx,
                 const OUString& rLName,
-                const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList,
+                const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList,
                 const bool bRestartNumberingAtSubList = false );
     virtual ~XMLTextListBlockContext();
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
     SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                 const OUString& rLocalName,
-                 const ::com::sun::star::uno::Reference<
-                    ::com::sun::star::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+                 const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
 
     const OUString& GetListStyleName() const { return msListStyleName; }
     sal_Int16 GetLevel() const { return mnLevel; }
     bool IsRestartNumbering() const { return mbRestartNumbering; }
     void ResetRestartNumbering() { mbRestartNumbering = false; }
 
-    const ::com::sun::star::uno::Reference <
-        ::com::sun::star::container::XIndexReplace >& GetNumRules() const
+    const css::uno::Reference < css::container::XIndexReplace >& GetNumRules() const
         { return mxNumRules; }
 
     const OUString& GetListId() const { return msListId;}

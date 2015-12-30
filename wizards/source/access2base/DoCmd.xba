@@ -1210,14 +1210,21 @@ Public Function OutputTo(ByVal pvObjectType As Variant _
 							, ByVal Optional pvAutoStart As Variant _
 							, ByVal Optional pvTemplateFile As Variant _
 							, ByVal Optional pvEncoding As Variant _
+							, ByVal Optional pvQuality As Variant _
 							) As Boolean
-&apos;Supported:	acFormatPDF, acFormatODT, acFormatDOC, acFormatHTML for forms
+REM https://wiki.openoffice.org/wiki/Framework/Article/Filter/FilterList_OOo_3_0
+REM https://wiki.openoffice.org/wiki/Documentation/DevGuide/Spreadsheets/Filter_Options
+REM https://msdn.microsoft.com/en-us/library/ms709353%28v=vs.85%29.aspx
+&apos;Supported:	acFormatPDF, acFormatODT, acFormatDOC, acFormatHTML		for forms
+&apos;			acFormatHTML, acFormatODS, acFormatXLS, acFormatXLSX, acFormatTXT		for tables and queries
 
 	If _ErrorHandler() Then On Local Error Goto Error_Function
-	Utils._SetCalledSub(&quot;OutputTo&quot;)
+Const cstThisSub = &quot;OutputTo&quot;
+	Utils._SetCalledSub(cstThisSub)
+
 	OutputTo = False
 	
-	If Not Utils._CheckArgument(pvObjectType, 1, Utils._AddNumeric(), acSendForm) Then Goto Exit_Function
+	If Not Utils._CheckArgument(pvObjectType, 1, Utils._AddNumeric(), Array(acOutputTable, acOutputQuery, acOutputForm)) Then Goto Exit_Function
 	If IsMissing(pvObjectName) Then pvObjectName = &quot;&quot;
 	If Not Utils._CheckArgument(pvObjectName, 2, vbString) Then Goto Exit_Function
 	If IsMissing(pvOutputFormat) Then pvOutputFormat = &quot;&quot;
@@ -1225,7 +1232,8 @@ Public Function OutputTo(ByVal pvObjectType As Variant _
 	If pvOutputFormat &lt;&gt; &quot;&quot; Then
 		If Not Utils._CheckArgument(UCase(pvOutputFormat), 3, vbString, Array( _
 			UCase(acFormatPDF), UCase(acFormatODT), UCase(acFormatDOC), UCase(acFormatHTML) _
-			, &quot;PDF&quot;, &quot;ODT&quot;, &quot;DOC&quot;, &quot;HTML&quot;, &quot;&quot; _
+			, UCase(acFormatODS), UCase(acFormatXLS), UCase(acFormatXLSX), UCase(acFormatTXT) _
+			, &quot;PDF&quot;, &quot;ODT&quot;, &quot;DOC&quot;, &quot;HTML&quot;, &quot;ODS&quot;, &quot;XLS&quot;, &quot;XLSX&quot;, &quot;TXT&quot;, &quot;CSV&quot;, &quot;&quot; _
 			)) Then Goto Exit_Function				&apos;	A 2nd time to allow case unsensitivity
 	End If
 	If IsMissing(pvOutputFile) Then pvOutputFile = &quot;&quot;
@@ -1233,15 +1241,31 @@ Public Function OutputTo(ByVal pvObjectType As Variant _
 	If IsMissing(pvAutoStart) Then pvAutoStart = False
 	If Not Utils._CheckArgument(pvAutoStart, 5, vbBoolean) Then Goto Exit_Function
 	If IsMissing(pvTemplateFile) Then pvTemplateFile = &quot;&quot;
-	If Not Utils._CheckArgument(pvTemplateFile, 6, vbString, &quot;&quot;) Then Goto Exit_Function
-	If IsMissing(pvEncoding) Then pvEncoding = &quot;&quot;
-	If Not Utils._CheckArgument(pvEncoding, 7, vbString, &quot;&quot;) Then Goto Exit_Function
+	If Not Utils._CheckArgument(pvTemplateFile, 6, vbString) Then Goto Exit_Function
+	If IsMissing(pvEncoding) Then pvEncoding = 0
+	If Not Utils._CheckArgument(pvEncoding, 7, _AddNumeric()) Then Goto Exit_Function
+	If IsMissing(pvQuality) Then pvQuality = acExportQualityPrint
+	If Not Utils._CheckArgument(pvQuality, 7, _AddNumeric(), Array(acExportQualityPrint, acExportQualityScreen)) Then Goto Exit_Function
+
+	If pvObjectType = acOutputTable Or pvObjectType = acOutputQuery Then
+		OutputTo = Application._CurrentDb().OutputTo( _
+					pvObjectType _
+					, pvObjectName _
+					, pvOutputFormat _
+					, pvOutputFile _
+					, pvAutoStart _
+					, pvTemplateFile _
+					, pvEncoding _
+					, pvQuality _
+					)
+		GoTo Exit_Function
+	End If
 	
 Dim vWindow As Variant, sOutputFile As String, ofForm As Object, i As Integer, bFound As Boolean
 	&apos;Find applicable form
 	If pvObjectName = &quot;&quot; Then
 		vWindow = _SelectWindow()
-		If vWindow.WindowType &lt;&gt; acSendForm Then Goto Error_Action
+		If vWindow.WindowType &lt;&gt; acOutoutForm Then Goto Error_Action
 		Set ofForm = Application.Forms(vWindow._Name)
 	Else
 		bFound = False
@@ -1258,7 +1282,7 @@ Dim vWindow As Variant, sOutputFile As String, ofForm As Object, i As Integer, b
 	&apos;Determine format and parameters
 Dim sOutputFormat As String, sFilter As String, oFilterData As Object, oExport As Object, sSuffix As String
 	If pvOutputFormat = &quot;&quot; Then
-		sOutputFormat = _PromptFormat()			&apos;	Prompt user for format
+		sOutputFormat = _PromptFormat(Array(&quot;PDF&quot;, &quot;ODT&quot;, &quot;DOC&quot;, &quot;HTML&quot;))			&apos;	Prompt user for format
 		If sOutputFormat = &quot;&quot; Then Goto Exit_Function
 	Else
 		sOutputFormat = UCase(pvOutputFormat)
@@ -1309,7 +1333,7 @@ Dim sOutputFormat As String, sFilter As String, oFilterData As Object, oExport A
 	OutputTo = True
 	
 Exit_Function:
-	Utils._ResetCalledSub(&quot;OutputTo&quot;)
+	Utils._ResetCalledSub(cstThisSub)
 	Exit Function
 Error_NotFound:
 	TraceError(TRACEFATAL, ERROBJECTNOTFOUND, Utils._CalledSub(), 0, , Array(_GetLabel(&quot;OBJECT&quot;), pvObjectName))
@@ -1318,7 +1342,7 @@ Error_Action:
 	TraceError(TRACEFATAL, ERRACTION, Utils._CalledSub(), 0)
 	Goto Exit_Function
 Error_Function:
-	TraceError(TRACEABORT, Err, &quot;OutputTo&quot;, Erl)
+	TraceError(TRACEABORT, Err, cstThisSub, Erl)
 	GoTo Exit_Function
 Error_File:
 	TraceError(TRACEFATAL, ERRFILENOTCREATED, Utils._CalledSub(), 0, , sOutputFile)
@@ -1765,7 +1789,7 @@ Const cstSemiColon = &quot;;&quot;
 				sDirectory =  _getTempDirectoryURL()
 				If Right(sDirectory, 1) &lt;&gt; &quot;/&quot; Then sDirectory = sDirectory &amp; &quot;/&quot;
 				If pvOutputFormat = &quot;&quot; Then
-					sOutputFormat = _PromptFormat()			&apos;	Prompt user for format
+					sOutputFormat = _PromptFormat(Array(&quot;PDF&quot;, &quot;ODT&quot;, &quot;DOC&quot;, &quot;HTML&quot;))			&apos;	Prompt user for format
 					If sOutputFormat = &quot;&quot; Then Goto Exit_Function
 				Else
 					sOutputFormat = UCase(pvOutputFormat)
@@ -2066,7 +2090,7 @@ Dim oDatabase As Object
 	If oDatabase._DbConnect &lt;&gt; DBCONNECTBASE Then Goto Error_NotApplicable
 			
 Dim sObjects() As String, sObjectName As String, oController As Object, oObject As Object
-Dim i As Integer, bFound As Boolean, lComponent As Long
+Dim i As Integer, bFound As Boolean, lComponent As Long, oQuery As Object
 	
 	&apos;	Check existence of object and find its exact (case-sensitive) name
 	Select Case psObjectType
@@ -2090,12 +2114,20 @@ Dim i As Integer, bFound As Boolean, lComponent As Long
 	Next i
 	If Not bFound Then Goto Trace_NotFound
 
+	If psObjectType = &quot;Query&quot; Then		&apos;	Processing for action query
+		Set oQuery = Application._CurrentDb().QueryDefs(pvObjectName)
+		If oQuery.pType &lt;&gt; dbQSelect Then
+			_OpenObject = oQuery.Execute()
+			GoTo Exit_Function
+		End If
+	End If
 	Set oController = oDatabase.Document.CurrentController
 	Set oObject = oController.loadComponent(lComponent, sObjectName, ( pvView = acViewDesign ))
 	_OpenObject = True	
 
 Exit_Function:
 	Set oObject = Nothing
+	Set oQuery = Nothing
 	Set oController = Nothing
 	Exit Function
 Error_Function:
@@ -2113,7 +2145,7 @@ Trace_NotFound:
 End Function		&apos;	_OpenObject	V0.8.9
 
 REM -----------------------------------------------------------------------------------------------------------------------
-Private Function _PromptFormat() As String
+Private Function _PromptFormat(ByVal pvList As Variant) As String
 &apos;	Return user selection in Format dialog
 
 Dim oDialog As Object, oDialogLib As Object, iOKCancel As Integer, oControl As Object
@@ -2142,10 +2174,19 @@ Dim oDialog As Object, oDialogLib As Object, iOKCancel As Integer, oControl As O
 	oControl.Label = _GetLabel(&quot;DLGFORMAT_CMDCANCEL_LABEL&quot;)
 	oControl.HelpText = _GetLabel(&quot;DLGFORMAT_CMDCANCEL_HELP&quot;)
 
+	Set oControl = oDialog.Model.getByName(&quot;cboFormat&quot;)
+	If UBound(pvList) &gt;= 0 Then
+		oControl.Text = pvList(0)
+		oControl.StringItemList = pvList
+	Else
+		oControl.Text = &quot;&quot;
+		oControl.StringItemList = Array()
+	End If
+	
 	iOKCancel = oDialog.Execute()
 	Select Case iOKCancel
 		Case 1					&apos;	OK
-				_PromptFormat = oDialog.Model.getByName(&quot;cboFormat&quot;).Text
+				_PromptFormat = oControl.Text
 		Case 0					&apos;	Cancel
 				_PromptFormat = &quot;&quot;
 		Case Else
@@ -2436,7 +2477,7 @@ Const cstComma = &quot;,&quot;
 				&amp; Iif(psSubject = &quot;&quot;, &quot;&quot;, &quot;subject=&quot; &amp; psSubject &amp; &quot;&amp;&quot;) _
 				&amp; Iif(psBody = &quot;&quot;, &quot;&quot;, &quot;body=&quot; &amp; psBody &amp; &quot;&amp;&quot;)
 	If Right(sMailTo, 1) = &quot;&amp;&quot; Or Right(sMailTo, 1) = &quot;?&quot; Then sMailTo = Left(sMailTo, Len(sMailTo) - 1)
-	sMailTo = Utils._URLEncode(sMailTo)
+	sMailTo = ConvertToUrl(sMailTo)
 	
 	oDispatch = createUnoService( &quot;com.sun.star.frame.DispatchHelper&quot;)
 	oDispatch.executeDispatch(StarDesktop, sMailTo, &quot;&quot;, 0, Array())

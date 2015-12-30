@@ -58,25 +58,18 @@
 
 
 using namespace dbtools;
-using namespace ::com::sun::star::uno;
-using namespace ::com::sun::star::sdb;
-using namespace ::com::sun::star::sdbc;
-using namespace ::com::sun::star::sdbcx;
-using namespace ::com::sun::star::beans;
-using namespace ::com::sun::star::container;
-using namespace ::com::sun::star::form;
-using namespace ::com::sun::star::awt;
-using namespace ::com::sun::star::io;
-using namespace ::com::sun::star::lang;
-using namespace ::com::sun::star::util;
-using namespace ::com::sun::star::form::binding;
-
-namespace
-{
-    typedef com::sun::star::util::Date UNODate;
-    typedef com::sun::star::util::Time UNOTime;
-    typedef com::sun::star::util::DateTime UNODateTime;
-}
+using namespace css::uno;
+using namespace css::sdb;
+using namespace css::sdbc;
+using namespace css::sdbcx;
+using namespace css::beans;
+using namespace css::container;
+using namespace css::form;
+using namespace css::awt;
+using namespace css::io;
+using namespace css::lang;
+using namespace css::util;
+using namespace css::form::binding;
 
 namespace frm
 {
@@ -93,8 +86,8 @@ protected:
     StandardFormatsSupplier(const Reference< XComponentContext >& _rxFactory,LanguageType _eSysLanguage);
     virtual ~StandardFormatsSupplier();
 protected:
-    virtual bool    queryTermination() const SAL_OVERRIDE;
-    virtual void    notifyTermination() SAL_OVERRIDE;
+    virtual bool    queryTermination() const override;
+    virtual void    notifyTermination() override;
 };
 WeakReference< XNumberFormatsSupplier > StandardFormatsSupplier::s_xDefaultFormatsSupplier;
 StandardFormatsSupplier::StandardFormatsSupplier(const Reference< XComponentContext > & _rxContext,LanguageType _eSysLanguage)
@@ -145,7 +138,7 @@ void StandardFormatsSupplier::notifyTermination()
     // earlier than upon unloading the library
     // #i29147#
     s_xDefaultFormatsSupplier = WeakReference< XNumberFormatsSupplier >( );
-    SetNumberFormatter( NULL );
+    SetNumberFormatter( nullptr );
     DELETEZ( m_pMyPrivateFormatter );
 }
 Sequence<Type> OFormattedControl::_getTypes()
@@ -164,7 +157,7 @@ Any SAL_CALL OFormattedControl::queryAggregation(const Type& _rType) throw (Runt
 }
 OFormattedControl::OFormattedControl(const Reference<XComponentContext>& _rxFactory)
                :OBoundControl(_rxFactory, VCL_CONTROL_FORMATTEDFIELD)
-               ,m_nKeyEvent(0)
+               ,m_nKeyEvent(nullptr)
 {
     osl_atomic_increment(&m_refCount);
     {
@@ -192,19 +185,19 @@ void OFormattedControl::disposing(const EventObject& _rSource) throw(RuntimeExce
 {
     OBoundControl::disposing(_rSource);
 }
-void OFormattedControl::keyPressed(const ::com::sun::star::awt::KeyEvent& e) throw ( ::com::sun::star::uno::RuntimeException, std::exception)
+void OFormattedControl::keyPressed(const css::awt::KeyEvent& e) throw ( css::uno::RuntimeException, std::exception)
 {
     if( e.KeyCode != KEY_RETURN || e.Modifiers != 0 )
         return;
     // Is the control located in a form with a Submit URL?
-    Reference<com::sun::star::beans::XPropertySet>  xSet(getModel(), UNO_QUERY);
+    Reference<css::beans::XPropertySet>  xSet(getModel(), UNO_QUERY);
     if( !xSet.is() )
         return;
     Reference<XFormComponent>  xFComp(xSet, UNO_QUERY);
     css::uno::Reference<css::uno::XInterface>  xParent = xFComp->getParent();
     if( !xParent.is() )
         return;
-    Reference<com::sun::star::beans::XPropertySet>  xFormSet(xParent, UNO_QUERY);
+    Reference<css::beans::XPropertySet>  xFormSet(xParent, UNO_QUERY);
     if( !xFormSet.is() )
         return;
     Any aTmp(xFormSet->getPropertyValue( PROPERTY_TARGET_URL ));
@@ -215,7 +208,7 @@ void OFormattedControl::keyPressed(const ::com::sun::star::awt::KeyEvent& e) thr
     sal_Int32 nCount = xElements->getCount();
     if( nCount > 1 )
     {
-        Reference<com::sun::star::beans::XPropertySet>  xFCSet;
+        Reference<css::beans::XPropertySet>  xFCSet;
         for( sal_Int32 nIndex=0; nIndex < nCount; nIndex++ )
         {
             //  Any aElement(xElements->getByIndex(nIndex));
@@ -236,18 +229,18 @@ void OFormattedControl::keyPressed(const ::com::sun::star::awt::KeyEvent& e) thr
                                             OnKeyPressed) );
 }
 
-void OFormattedControl::keyReleased(const ::com::sun::star::awt::KeyEvent& /*e*/) throw ( ::com::sun::star::uno::RuntimeException, std::exception)
+void OFormattedControl::keyReleased(const css::awt::KeyEvent& /*e*/) throw ( css::uno::RuntimeException, std::exception)
 {
 }
 
 IMPL_LINK_NOARG_TYPED(OFormattedControl, OnKeyPressed, void*, void)
 {
-    m_nKeyEvent = 0;
+    m_nKeyEvent = nullptr;
     Reference<XFormComponent>  xFComp(getModel(), UNO_QUERY);
     css::uno::Reference<css::uno::XInterface>  xParent = xFComp->getParent();
     Reference<XSubmit>  xSubmit(xParent, UNO_QUERY);
     if (xSubmit.is())
-        xSubmit->submit( Reference<XControl> (), ::com::sun::star::awt::MouseEvent() );
+        xSubmit->submit( Reference<XControl> (), css::awt::MouseEvent() );
 }
 
 css::uno::Sequence<OUString>  OFormattedControl::getSupportedServiceNames() throw(std::exception)
@@ -260,7 +253,7 @@ css::uno::Sequence<OUString>  OFormattedControl::getSupportedServiceNames() thro
     return aSupported;
 }
 
-void OFormattedControl::setDesignMode(sal_Bool bOn) throw ( ::com::sun::star::uno::RuntimeException, std::exception)
+void OFormattedControl::setDesignMode(sal_Bool bOn) throw ( css::uno::RuntimeException, std::exception)
 {
     OBoundControl::setDesignMode(bOn);
 }
@@ -270,7 +263,7 @@ void OFormattedModel::implConstruct()
     // members
     m_bOriginalNumeric = false;
     m_bNumeric = false;
-    m_xOriginalFormatter = NULL;
+    m_xOriginalFormatter = nullptr;
     m_nKeyType = NumberFormat::UNDEFINED;
     m_aNullDate = DBTypeConversion::getStandardDate();
     m_nFieldType =  DataType::OTHER;
@@ -346,7 +339,7 @@ Sequence< Type > OFormattedModel::_getTypes()
 }
 
 // XPersistObject
-OUString SAL_CALL OFormattedModel::getServiceName() throw ( ::com::sun::star::uno::RuntimeException, std::exception)
+OUString SAL_CALL OFormattedModel::getServiceName() throw ( css::uno::RuntimeException, std::exception)
 {
     return OUString(FRM_COMPONENT_EDIT);
 }
@@ -382,7 +375,7 @@ void OFormattedModel::getFastPropertyValue(Any& rValue, sal_Int32 nHandle) const
     OEditBaseModel::getFastPropertyValue(rValue, nHandle);
 }
 
-void OFormattedModel::setFastPropertyValue_NoBroadcast(sal_Int32 nHandle, const Any& rValue) throw ( ::com::sun::star::uno::Exception, std::exception)
+void OFormattedModel::setFastPropertyValue_NoBroadcast(sal_Int32 nHandle, const Any& rValue) throw ( css::uno::Exception, std::exception)
 {
     OEditBaseModel::setFastPropertyValue_NoBroadcast(nHandle, rValue);
 }
@@ -406,7 +399,7 @@ void OFormattedModel::setPropertyToDefaultByHandle(sal_Int32 nHandle)
         OEditBaseModel::setPropertyToDefaultByHandle(nHandle);
 }
 
-void OFormattedModel::setPropertyToDefault(const OUString& aPropertyName) throw( com::sun::star::beans::UnknownPropertyException, RuntimeException, std::exception )
+void OFormattedModel::setPropertyToDefault(const OUString& aPropertyName) throw( css::beans::UnknownPropertyException, RuntimeException, std::exception )
 {
     OPropertyArrayAggregationHelper& rPH = m_aPropertyBagHelper.getInfoHelper();
     sal_Int32 nHandle = rPH.getHandleByName( aPropertyName );
@@ -427,7 +420,7 @@ Any OFormattedModel::getPropertyDefaultByHandle( sal_Int32 nHandle ) const
         return OEditBaseModel::getPropertyDefaultByHandle(nHandle);
 }
 
-Any SAL_CALL OFormattedModel::getPropertyDefault( const OUString& aPropertyName ) throw( com::sun::star::beans::UnknownPropertyException, RuntimeException, std::exception )
+Any SAL_CALL OFormattedModel::getPropertyDefault( const OUString& aPropertyName ) throw( css::beans::UnknownPropertyException, RuntimeException, std::exception )
 {
     OPropertyArrayAggregationHelper& rPH = m_aPropertyBagHelper.getInfoHelper();
     sal_Int32 nHandle = rPH.getHandleByName( aPropertyName );
@@ -437,7 +430,7 @@ Any SAL_CALL OFormattedModel::getPropertyDefault( const OUString& aPropertyName 
         return OEditBaseModel::getPropertyDefault(aPropertyName);
 }
 
-void OFormattedModel::_propertyChanged( const com::sun::star::beans::PropertyChangeEvent& evt ) throw(RuntimeException, std::exception)
+void OFormattedModel::_propertyChanged( const css::beans::PropertyChangeEvent& evt ) throw(RuntimeException, std::exception)
 {
     // TODO: check how this works with external bindings
     OSL_ENSURE( evt.Source == m_xAggregateSet, "OFormattedModel::_propertyChanged: where did this come from?" );
@@ -524,7 +517,7 @@ Reference<XNumberFormatsSupplier>  OFormattedModel::calcFormFormatsSupplier() co
     if (!xNextParentForm.is())
     {
         OSL_FAIL("OFormattedModel::calcFormFormatsSupplier : have no ancestor which is a form !");
-        return NULL;
+        return nullptr;
     }
     // The FormatSupplier of my ancestor (if it has one)
     Reference< XRowSet > xRowSet( xNextParentForm, UNO_QUERY );
@@ -540,12 +533,12 @@ Reference< XNumberFormatsSupplier > OFormattedModel::calcDefaultFormatsSupplier(
 }
 
 // XBoundComponent
-void OFormattedModel::loaded(const EventObject& rEvent) throw ( ::com::sun::star::uno::RuntimeException, std::exception)
+void OFormattedModel::loaded(const EventObject& rEvent) throw ( css::uno::RuntimeException, std::exception)
 {
     // HACK: our onConnectedDbColumn accesses our NumberFormatter which locks the solar mutex (as it doesn't have
     // an own one). To prevent deadlocks with other threads which may request a property from us in an
     // UI-triggered action (e.g. an tooltip) we lock the solar mutex _here_ before our base class locks
-    // it's own mutex (which is used for property requests)
+    // its own mutex (which is used for property requests)
     // alternative a): we use two mutexes, one which is passed to the OPropertysetHelper and used for
     // property requests and one for our own code. This would need a lot of code rewriting
     // alternative b): The NumberFormatter has to be really threadsafe (with an own mutex), which is
@@ -556,7 +549,7 @@ void OFormattedModel::loaded(const EventObject& rEvent) throw ( ::com::sun::star
 
 void OFormattedModel::onConnectedDbColumn( const Reference< XInterface >& _rxForm )
 {
-    m_xOriginalFormatter = NULL;
+    m_xOriginalFormatter = nullptr;
     // get some properties of the field
     m_nFieldType = DataType::OTHER;
     Reference<XPropertySet> xField = getField();
@@ -646,14 +639,14 @@ void OFormattedModel::onDisconnectedDbColumn()
         m_xAggregateSet->setPropertyValue(PROPERTY_FORMATSSUPPLIER, makeAny(m_xOriginalFormatter));
         m_xAggregateSet->setPropertyValue(PROPERTY_FORMATKEY, Any());
         setPropertyValue(PROPERTY_TREATASNUMERIC, makeAny(m_bOriginalNumeric));
-        m_xOriginalFormatter = NULL;
+        m_xOriginalFormatter = nullptr;
     }
     m_nFieldType = DataType::OTHER;
     m_nKeyType   = NumberFormat::UNDEFINED;
     m_aNullDate  = DBTypeConversion::getStandardDate();
 }
 
-void OFormattedModel::write(const Reference<XObjectOutputStream>& _rxOutStream) throw ( ::com::sun::star::io::IOException, ::com::sun::star::uno::RuntimeException, std::exception)
+void OFormattedModel::write(const Reference<XObjectOutputStream>& _rxOutStream) throw ( css::io::IOException, css::uno::RuntimeException, std::exception)
 {
     OEditBaseModel::write(_rxOutStream);
     _rxOutStream->writeShort(0x0003);
@@ -685,7 +678,7 @@ void OFormattedModel::write(const Reference<XObjectOutputStream>& _rxOutStream) 
         OUString         sFormatDescription;
         LanguageType    eFormatLanguage = LANGUAGE_DONTKNOW;
         static const char s_aLocaleProp[] = "Locale";
-        Reference<com::sun::star::beans::XPropertySet>  xFormat = xFormats->getByKey(nKey);
+        Reference<css::beans::XPropertySet>  xFormat = xFormats->getByKey(nKey);
         if (hasProperty(s_aLocaleProp, xFormat))
         {
             Any aLocale = xFormat->getPropertyValue(s_aLocaleProp);
@@ -740,7 +733,7 @@ void OFormattedModel::write(const Reference<XObjectOutputStream>& _rxOutStream) 
     }
 }
 
-void OFormattedModel::read(const Reference<XObjectInputStream>& _rxInStream) throw ( ::com::sun::star::io::IOException, ::com::sun::star::uno::RuntimeException, std::exception)
+void OFormattedModel::read(const Reference<XObjectInputStream>& _rxInStream) throw ( css::io::IOException, css::uno::RuntimeException, std::exception)
 {
     OEditBaseModel::read(_rxInStream);
     sal_uInt16 nVersion = _rxInStream->readShort();
@@ -899,21 +892,21 @@ Any OFormattedModel::translateExternalValueToControlValue( const Any& _rExternal
     break;
     default:
     {
-        if ( _rExternalValue.getValueType().equals( cppu::UnoType< UNODate >::get() ) )
+        if ( _rExternalValue.getValueType().equals( cppu::UnoType< css::util::Date >::get() ) )
         {
-            UNODate aDate;
+            css::util::Date aDate;
             _rExternalValue >>= aDate;
             aControlValue <<= DBTypeConversion::toDouble( aDate, m_aNullDate );
         }
-        else if ( _rExternalValue.getValueType().equals( cppu::UnoType< UNOTime >::get() ) )
+        else if ( _rExternalValue.getValueType().equals( cppu::UnoType< css::util::Time >::get() ) )
         {
-            UNOTime aTime;
+            css::util::Time aTime;
             _rExternalValue >>= aTime;
             aControlValue <<= DBTypeConversion::toDouble( aTime );
         }
-        else if ( _rExternalValue.getValueType().equals( cppu::UnoType< UNODateTime >::get() ) )
+        else if ( _rExternalValue.getValueType().equals( cppu::UnoType< css::util::DateTime >::get() ) )
         {
-            UNODateTime aDateTime;
+            css::util::DateTime aDateTime;
             _rExternalValue >>= aDateTime;
             aControlValue <<= DBTypeConversion::toDouble( aDateTime, m_aNullDate );
         }
@@ -969,15 +962,15 @@ Any OFormattedModel::translateControlValueToExternalValue( ) const
         // if this asserts ... well, the somebody set the TreatAsNumeric property to false,
         // and the control value is a string. This implies some weird misconfiguration
         // of the FormattedModel, so we won't care for it for the moment.
-        if ( aExternalValueType.equals( cppu::UnoType< UNODate >::get() ) )
+        if ( aExternalValueType.equals( cppu::UnoType< css::util::Date >::get() ) )
         {
             aExternalValue <<= DBTypeConversion::toDate( fValue, m_aNullDate );
         }
-        else if ( aExternalValueType.equals( cppu::UnoType< UNOTime >::get() ) )
+        else if ( aExternalValueType.equals( cppu::UnoType< css::util::Time >::get() ) )
         {
             aExternalValue <<= DBTypeConversion::toTime( fValue );
         }
-        else if ( aExternalValueType.equals( cppu::UnoType< UNODateTime >::get() ) )
+        else if ( aExternalValueType.equals( cppu::UnoType< css::util::DateTime >::get() ) )
         {
             aExternalValue <<= DBTypeConversion::toDateTime( fValue, m_aNullDate );
         }
@@ -1011,13 +1004,13 @@ Sequence< Type > OFormattedModel::getSupportedBindingTypes()
     switch ( m_nKeyType & ~NumberFormat::DEFINED )
     {
     case NumberFormat::DATE:
-        aTypes.push_front(cppu::UnoType< UNODate >::get() );
+        aTypes.push_front(cppu::UnoType< css::util::Date >::get() );
         break;
     case NumberFormat::TIME:
-        aTypes.push_front(cppu::UnoType< UNOTime >::get() );
+        aTypes.push_front(cppu::UnoType< css::util::Time >::get() );
         break;
     case NumberFormat::DATETIME:
-        aTypes.push_front(cppu::UnoType< UNODateTime >::get() );
+        aTypes.push_front(cppu::UnoType< css::util::DateTime >::get() );
         break;
     case NumberFormat::TEXT:
         aTypes.push_front(cppu::UnoType< OUString >::get() );
@@ -1026,9 +1019,7 @@ Sequence< Type > OFormattedModel::getSupportedBindingTypes()
         aTypes.push_front(cppu::UnoType< sal_Bool >::get() );
         break;
     }
-    Sequence< Type > aTypesRet( aTypes.size() );
-    ::std::copy( aTypes.begin(), aTypes.end(), aTypesRet.getArray() );
-    return aTypesRet;
+    return comphelper::containerToSequence<Type>(aTypes);
 }
 
 Any OFormattedModel::getDefaultForReset() const
@@ -1044,9 +1035,9 @@ void OFormattedModel::resetNoBroadcast()
 
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_form_OFormattedControl_get_implementation(::com::sun::star::uno::XComponentContext* component,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_form_OFormattedControl_get_implementation(css::uno::XComponentContext* component,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new frm::OFormattedControl(component));
 }

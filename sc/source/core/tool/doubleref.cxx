@@ -192,7 +192,7 @@ bool lcl_createExcelQuery(
                     if (nIndex < nNewEntries)
                     {
                         pParam->GetEntry(nIndex).nField = aFields[nCol];
-                        pParam->FillInExcelSyntax(rPool, aCellStr, nIndex, NULL);
+                        pParam->FillInExcelSyntax(rPool, aCellStr, nIndex, nullptr);
                         nIndex++;
                         if (nIndex < nNewEntries)
                             pParam->GetEntry(nIndex).eConnect = SC_AND;
@@ -241,8 +241,8 @@ bool lcl_fillQueryEntries(
 
 }
 
-ScDBRangeBase::ScDBRangeBase(ScDocument* pDoc, RefType eType) :
-    mpDoc(pDoc), meType(eType)
+ScDBRangeBase::ScDBRangeBase(ScDocument* pDoc) :
+    mpDoc(pDoc)
 {
 }
 
@@ -269,7 +269,7 @@ void ScDBRangeBase::fillQueryOptions(ScQueryParamBase* pParam)
 }
 
 ScDBInternalRange::ScDBInternalRange(ScDocument* pDoc, const ScRange& rRange) :
-    ScDBRangeBase(pDoc, INTERNAL), maRange(rRange)
+    ScDBRangeBase(pDoc), maRange(rRange)
 {
 }
 
@@ -373,7 +373,7 @@ std::unique_ptr<ScDBQueryParamBase> ScDBInternalRange::createQueryParam(const Sc
 
     // Now construct the query entries from the query range.
     if (!pQueryRef->fillQueryEntries(pParam.get(), this))
-        return NULL;
+        return nullptr;
 
     return std::unique_ptr<ScDBQueryParamBase>(std::move(pParam));
 }
@@ -384,7 +384,7 @@ bool ScDBInternalRange::isRangeEqual(const ScRange& rRange) const
 }
 
 ScDBExternalRange::ScDBExternalRange(ScDocument* pDoc, const ScMatrixRef& pMat) :
-    ScDBRangeBase(pDoc, EXTERNAL), mpMatrix(pMat)
+    ScDBRangeBase(pDoc), mpMatrix(pMat)
 {
     SCSIZE nC, nR;
     mpMatrix->GetDimensions(nC, nR);
@@ -437,7 +437,7 @@ SCCOL ScDBExternalRange::findFieldColumn(SCCOL nIndex) const
 SCCOL ScDBExternalRange::findFieldColumn(const OUString& rStr, sal_uInt16* pErr) const
 {
     if (pErr)
-        pErr = 0;
+        pErr = nullptr;
 
     OUString aUpper = rStr;
     lcl_uppercase(aUpper);
@@ -459,7 +459,7 @@ std::unique_ptr<ScDBQueryParamBase> ScDBExternalRange::createQueryParam(const Sc
 
     // Now construct the query entries from the query range.
     if (!pQueryRef->fillQueryEntries(pParam.get(), this))
-        return NULL;
+        return nullptr;
 
     return std::unique_ptr<ScDBQueryParamBase>(std::move(pParam));
 }

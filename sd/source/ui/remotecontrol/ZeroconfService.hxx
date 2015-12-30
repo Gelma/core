@@ -42,7 +42,6 @@ namespace sd{
 
         std::string getName() const {return name;}
         void setName(const char * n) {name = n;}
-        uint getPort() const {return port;}
 
         // Clean up the service when closing
         virtual void clear() = 0;

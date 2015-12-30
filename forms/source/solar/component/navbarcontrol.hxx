@@ -35,17 +35,17 @@
 namespace frm
 {
 
-    typedef ::cppu::ImplHelper1 <   ::com::sun::star::frame::XDispatchProviderInterception
+    typedef ::cppu::ImplHelper1 <   css::frame::XDispatchProviderInterception
                                 >   ONavigationBarControl_Base;
 
     class ONavigationBarControl
                             :public UnoControl
                             ,public ONavigationBarControl_Base
     {
-        ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > m_xContext;
+        css::uno::Reference< css::uno::XComponentContext > m_xContext;
     public:
-        ONavigationBarControl(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& _rxORB
+        explicit ONavigationBarControl(
+            const css::uno::Reference< css::uno::XComponentContext >& _rxORB
         );
 
     protected:
@@ -54,29 +54,29 @@ namespace frm
     public:
         // XServiceInfo - static version
         static  OUString SAL_CALL getImplementationName_Static();
-        static  ::com::sun::star::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames_Static();
+        static  css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames_Static();
 
     protected:
         // UNO
         DECLARE_UNO3_AGG_DEFAULTS( ONavigationBarControl, UnoControl )
-        virtual ::com::sun::star::uno::Any SAL_CALL queryAggregation( const ::com::sun::star::uno::Type& _rType ) throw ( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual css::uno::Any SAL_CALL queryAggregation( const css::uno::Type& _rType ) throw ( css::uno::RuntimeException, std::exception ) override;
 
         // XControl
-        virtual void SAL_CALL createPeer( const ::com::sun::star::uno::Reference< ::com::sun::star::awt::XToolkit >& _rToolkit, const ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindowPeer >& _rParent ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual void SAL_CALL createPeer( const css::uno::Reference< css::awt::XToolkit >& _rToolkit, const css::uno::Reference< css::awt::XWindowPeer >& _rParent ) throw( css::uno::RuntimeException, std::exception ) override;
 
         // XServiceInfo
-        virtual OUString SAL_CALL getImplementationName()  throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()  throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual OUString SAL_CALL getImplementationName()  throw(css::uno::RuntimeException, std::exception) override;
+        virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()  throw(css::uno::RuntimeException, std::exception) override;
 
         // XTypeProvider
         DECLARE_XTYPEPROVIDER()
 
         // XVclWindowPeer
-        virtual void SAL_CALL setDesignMode( sal_Bool _bOn ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual void SAL_CALL setDesignMode( sal_Bool _bOn ) throw( css::uno::RuntimeException, std::exception ) override;
 
         // XDispatchProviderInterception
-        virtual void SAL_CALL registerDispatchProviderInterceptor( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatchProviderInterceptor >& Interceptor ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL releaseDispatchProviderInterceptor( const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatchProviderInterceptor >& Interceptor ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL registerDispatchProviderInterceptor( const css::uno::Reference< css::frame::XDispatchProviderInterceptor >& Interceptor ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL releaseDispatchProviderInterceptor( const css::uno::Reference< css::frame::XDispatchProviderInterceptor >& Interceptor ) throw (css::uno::RuntimeException, std::exception) override;
     };
 
     class ONavigationBarPeer
@@ -89,14 +89,14 @@ namespace frm
                 a new ONavigationBarPeer instance, which has been acquired once!
         */
         static ONavigationBarPeer* Create(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& _rxORB,
+            const css::uno::Reference< css::uno::XComponentContext >& _rxORB,
             vcl::Window* _pParentWindow,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::awt::XControlModel >& _rxModel
+            const css::uno::Reference< css::awt::XControlModel >& _rxModel
         );
 
     protected:
-        ONavigationBarPeer(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& _rxORB
+        explicit ONavigationBarPeer(
+            const css::uno::Reference< css::uno::XComponentContext >& _rxORB
         );
         virtual ~ONavigationBarPeer();
 
@@ -105,7 +105,7 @@ namespace frm
         DECLARE_XINTERFACE( )
 
         // XVclWindowPeer
-        virtual void SAL_CALL setDesignMode( sal_Bool _bOn ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual void SAL_CALL setDesignMode( sal_Bool _bOn ) throw( css::uno::RuntimeException, std::exception ) override;
 
         // XWindow2
         using VCLXWindow::isEnabled;
@@ -115,23 +115,23 @@ namespace frm
         DECLARE_XTYPEPROVIDER( )
 
         // XComponent
-        void SAL_CALL dispose(  ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        void SAL_CALL dispose(  ) throw( css::uno::RuntimeException, std::exception ) override;
 
         // XVclWindowPeer
-        void SAL_CALL setProperty( const OUString& _rPropertyName, const ::com::sun::star::uno::Any& _rValue ) throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-        ::com::sun::star::uno::Any SAL_CALL getProperty( const OUString& _rPropertyName ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        void SAL_CALL setProperty( const OUString& _rPropertyName, const css::uno::Any& _rValue ) throw( css::uno::RuntimeException, std::exception ) override;
+        css::uno::Any SAL_CALL getProperty( const OUString& _rPropertyName ) throw(css::uno::RuntimeException, std::exception) override;
 
         // XEventListener
-        virtual void SAL_CALL disposing( const ::com::sun::star::lang::EventObject& Source ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing( const css::lang::EventObject& Source ) throw (css::uno::RuntimeException, std::exception) override;
 
         // OFormNavigationHelper overriables
-        virtual void    interceptorsChanged( ) SAL_OVERRIDE;
-        virtual void    featureStateChanged( sal_Int16 _nFeatureId, bool _bEnabled ) SAL_OVERRIDE;
-        virtual void    allFeatureStatesChanged( ) SAL_OVERRIDE;
-        virtual void    getSupportedFeatures( ::std::vector< sal_Int16 >& /* [out] */ _rFeatureIds ) SAL_OVERRIDE;
+        virtual void    interceptorsChanged( ) override;
+        virtual void    featureStateChanged( sal_Int16 _nFeatureId, bool _bEnabled ) override;
+        virtual void    allFeatureStatesChanged( ) override;
+        virtual void    getSupportedFeatures( ::std::vector< sal_Int16 >& /* [out] */ _rFeatureIds ) override;
 
         // IFeatureDispatcher overriables
-        virtual bool    isEnabled( sal_Int16 _nFeatureId ) const SAL_OVERRIDE;
+        virtual bool    isEnabled( sal_Int16 _nFeatureId ) const override;
     };
 
 

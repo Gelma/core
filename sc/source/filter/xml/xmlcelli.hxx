@@ -28,9 +28,9 @@
 #include <editeng/flditem.hxx>
 
 #include <boost/optional.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/noncopyable.hpp>
 #include <memory>
+#include <vector>
 
 class ScXMLImport;
 class ScFormulaCell;
@@ -44,7 +44,7 @@ class ScXMLTableRowCellContext : public ScXMLImportContext
         SfxItemSet maItemSet;
         ESelection maSelection;
 
-        ParaFormat(ScEditEngineDefaulter& rEditEngine);
+        explicit ParaFormat(ScEditEngineDefaulter& rEditEngine);
     };
 
     struct Field : boost::noncopyable
@@ -52,12 +52,12 @@ class ScXMLTableRowCellContext : public ScXMLImportContext
         SvxFieldData* mpData;
         ESelection maSelection;
 
-        Field(SvxFieldData* pData);
+        explicit Field(SvxFieldData* pData);
         ~Field();
     };
 
-    typedef boost::ptr_vector<ParaFormat> ParaFormatsType;
-    typedef boost::ptr_vector<Field> FieldsType;
+    typedef std::vector<std::unique_ptr<ParaFormat> > ParaFormatsType;
+    typedef std::vector<std::unique_ptr<Field> > FieldsType;
     typedef std::pair<OUString, OUString> FormulaWithNamespace;
 
     boost::optional<FormulaWithNamespace> maFormula; /// table:formula attribute
@@ -130,16 +130,14 @@ public:
 
     ScXMLTableRowCellContext( ScXMLImport& rImport, sal_uInt16 nPrfx,
                        const OUString& rLName,
-                       const ::com::sun::star::uno::Reference<
-                                        ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
-                                        const bool bIsCovered, const sal_Int32 nRepeatedRows );
+                       const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
+                       const bool bIsCovered, const sal_Int32 nRepeatedRows );
 
     virtual ~ScXMLTableRowCellContext();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                      const OUString& rLocalName,
-                                     const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
+                                     const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList ) override;
 
     void PushParagraphSpan(const OUString& rSpan, const OUString& rStyleName);
     void PushParagraphFieldDate(const OUString& rStyleName);
@@ -152,7 +150,7 @@ public:
     void SetDetectiveObj( const ScAddress& rPosition );
     void SetCellRangeSource( const ScAddress& rPosition );
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 };
 
 #endif

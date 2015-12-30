@@ -68,7 +68,7 @@ namespace pcr
     using ::com::sun::star::frame::XFrame;
     using ::com::sun::star::awt::XWindow;
 
-    namespace PropertyAttribute = ::com::sun::star::beans::PropertyAttribute;
+    namespace PropertyAttribute = css::beans::PropertyAttribute;
 
 
     //= FormController
@@ -137,8 +137,7 @@ namespace pcr
 
     Sequence< OUString > FormController::getSupportedServiceNames_static(  ) throw(RuntimeException)
     {
-        Sequence< OUString > aSupported(1);
-        aSupported[0] = "com.sun.star.form.PropertyBrowserController";
+        Sequence< OUString > aSupported { "com.sun.star.form.PropertyBrowserController" };
         return aSupported;
     }
 
@@ -239,7 +238,7 @@ namespace pcr
     }
 
 
-    void SAL_CALL FormController::getFastPropertyValue( ::com::sun::star::uno::Any& rValue, sal_Int32 nHandle ) const
+    void SAL_CALL FormController::getFastPropertyValue( css::uno::Any& rValue, sal_Int32 nHandle ) const
     {
         switch ( nHandle )
         {
@@ -265,8 +264,7 @@ namespace pcr
 
     Sequence< OUString > DialogController::getSupportedServiceNames_static(  ) throw(RuntimeException)
     {
-        Sequence< OUString > aSupported(1);
-        aSupported[0] = "com.sun.star.awt.PropertyBrowserController";
+        Sequence< OUString > aSupported { "com.sun.star.awt.PropertyBrowserController" };
         return aSupported;
     }
 

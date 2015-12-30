@@ -35,25 +35,12 @@ namespace framework
 
 class ListBoxControl;
 
-class IListBoxListener
-{
-    public:
-        virtual void Select() = 0;
-        virtual void DoubleClick() = 0;
-        virtual void GetFocus() = 0;
-        virtual void LoseFocus() = 0;
-        virtual bool PreNotify( NotifyEvent& rNEvt ) = 0;
-    protected:
-        ~IListBoxListener() {}
-};
-
-class DropdownToolbarController : public IListBoxListener,
-                                  public ComplexToolbarController
+class DropdownToolbarController : public ComplexToolbarController
 
 {
     public:
-        DropdownToolbarController( const com::sun::star::uno::Reference< com::sun::star::uno::XComponentContext >& rxContext,
-                                   const com::sun::star::uno::Reference< com::sun::star::frame::XFrame >& rFrame,
+        DropdownToolbarController( const css::uno::Reference< css::uno::XComponentContext >& rxContext,
+                                   const css::uno::Reference< css::frame::XFrame >& rFrame,
                                    ToolBox* pToolBar,
                                    sal_uInt16 nID,
                                    sal_Int32 nWidth,
@@ -61,18 +48,16 @@ class DropdownToolbarController : public IListBoxListener,
         virtual ~DropdownToolbarController();
 
         // XComponent
-        virtual void SAL_CALL dispose() throw ( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual void SAL_CALL dispose() throw ( css::uno::RuntimeException, std::exception ) override;
 
-        // IComboBoxListener
-        virtual void Select() SAL_OVERRIDE;
-        virtual void DoubleClick() SAL_OVERRIDE;
-        virtual void GetFocus() SAL_OVERRIDE;
-        virtual void LoseFocus() SAL_OVERRIDE;
-        virtual bool PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+        // called from ListBoxControl
+        void Select();
+        void GetFocus();
+        void LoseFocus();
 
     protected:
-        virtual void executeControlCommand( const ::com::sun::star::frame::ControlCommand& rControlCommand ) SAL_OVERRIDE;
-        virtual ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue> getExecuteArgs(sal_Int16 KeyModifier) const SAL_OVERRIDE;
+        virtual void executeControlCommand( const css::frame::ControlCommand& rControlCommand ) override;
+        virtual css::uno::Sequence< css::beans::PropertyValue> getExecuteArgs(sal_Int16 KeyModifier) const override;
 
     private:
         VclPtr<ListBoxControl>    m_pListBoxControl;

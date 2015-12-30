@@ -83,12 +83,9 @@ css::uno::Reference< css::uno::XInterface > SAL_CALL ContentHandlerFactory::crea
         {
             _FILTER_CONFIG_LOG_("ContentHandlerFactory::createInstanceWithArguments() ... simulate old type search functionality!\n");
 
-            css::uno::Sequence< OUString > lTypes(1);
-            lTypes[0] = sHandler;
+            css::uno::Sequence< OUString > lTypes { sHandler };
 
-            css::uno::Sequence< css::beans::NamedValue > lQuery(1);
-            lQuery[0].Name    = PROPNAME_TYPES;
-            lQuery[0].Value <<= lTypes;
+            css::uno::Sequence< css::beans::NamedValue > lQuery { { PROPNAME_TYPES, css::uno::makeAny(lTypes) } };
 
             css::uno::Reference< css::container::XEnumeration > xSet = BaseContainer::createSubSetEnumerationByProperties(lQuery);
             while(xSet->hasMoreElements())
@@ -155,8 +152,7 @@ OUString ContentHandlerFactory::impl_getImplementationName()
 
 css::uno::Sequence< OUString > ContentHandlerFactory::impl_getSupportedServiceNames()
 {
-    css::uno::Sequence< OUString > lServiceNames(1);
-    lServiceNames[0] = "com.sun.star.frame.ContentHandlerFactory";
+    css::uno::Sequence< OUString > lServiceNames { "com.sun.star.frame.ContentHandlerFactory" };
     return lServiceNames;
 }
 

@@ -66,8 +66,8 @@ using namespace ::com::sun::star;
 namespace cairocanvas
 {
     CanvasHelper::CanvasHelper() :
-        mpSurfaceProvider(NULL),
-        mpDevice(NULL),
+        mpSurfaceProvider(nullptr),
+        mpDevice(nullptr),
         mpVirtualDevice(),
         mbHaveAlpha(),
         mpCairo(),
@@ -81,8 +81,8 @@ namespace cairocanvas
         mpSurface.reset();
         mpCairo.reset();
         mpVirtualDevice.disposeAndClear();
-        mpDevice = NULL;
-        mpSurfaceProvider = NULL;
+        mpDevice = nullptr;
+        mpSurfaceProvider = nullptr;
     }
 
     void CanvasHelper::init( const ::basegfx::B2ISize&  rSizePixel,
@@ -408,7 +408,7 @@ namespace cairocanvas
         bHasAlpha = xBitmap->hasAlpha();
         SurfaceSharedPtr pSurface = surfaceFromXBitmap( xBitmap );
         if( pSurface )
-            data = NULL;
+            data = nullptr;
         else
         {
             ::BitmapEx aBmpEx = bitmapExFromXBitmap(xBitmap);
@@ -420,7 +420,7 @@ namespace cairocanvas
             if( !aBmpEx.IsTransparent() && !aBmpEx.IsAlpha() )
             {
                 pSurface = rSurfaceProvider->createSurface( aBitmap );
-                data = NULL;
+                data = nullptr;
                 bHasAlpha = false;
             }
 
@@ -429,7 +429,7 @@ namespace cairocanvas
                 AlphaMask aAlpha = aBmpEx.GetAlpha();
 
                 ::BitmapReadAccess* pBitmapReadAcc = aBitmap.AcquireReadAccess();
-                ::BitmapReadAccess* pAlphaReadAcc = NULL;
+                ::BitmapReadAccess* pAlphaReadAcc = nullptr;
                 const long      nWidth = pBitmapReadAcc->Width();
                 const long      nHeight = pBitmapReadAcc->Height();
                 long nX, nY;
@@ -704,7 +704,7 @@ namespace cairocanvas
 
     static cairo_pattern_t* patternFromParametricPolyPolygon( ::canvas::ParametricPolyPolygon& rPolygon )
     {
-        cairo_pattern_t* pPattern = NULL;
+        cairo_pattern_t* pPattern = nullptr;
         const ::canvas::ParametricPolyPolygon::Values aValues = rPolygon.getValues();
         double x0, x1, y0, y1, cx, cy, r0, r1;
 
@@ -750,7 +750,7 @@ namespace cairocanvas
                     const css::rendering::Texture& aTexture ( (*pTextures)[0] );
                     if( aTexture.Bitmap.is() )
                     {
-                        unsigned char* data = NULL;
+                        unsigned char* data = nullptr;
                         bool bHasAlpha = false;
                         SurfaceSharedPtr pSurface = surfaceFromXBitmap( (*pTextures)[0].Bitmap, pDevice, data, bHasAlpha );
 
@@ -1149,7 +1149,7 @@ namespace cairocanvas
         mxDevice->stopPerfTrace( &aTimer, "drawPolyPolygon" );
 #endif
 
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::strokePolyPolygon( const rendering::XCanvas*                            ,
@@ -1232,7 +1232,7 @@ namespace cairocanvas
 #endif
 
         // TODO(P1): Provide caching here.
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::strokeTexturedPolyPolygon( const rendering::XCanvas*                            ,
@@ -1243,7 +1243,7 @@ namespace cairocanvas
                                                                                            const rendering::StrokeAttributes&                   /*strokeAttributes*/ )
     {
         // TODO
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::strokeTextureMappedPolyPolygon( const rendering::XCanvas*                           ,
@@ -1255,7 +1255,7 @@ namespace cairocanvas
                                                                                                 const rendering::StrokeAttributes&                  /*strokeAttributes*/ )
     {
         // TODO
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XPolyPolygon2D >   CanvasHelper::queryStrokeShapes( const rendering::XCanvas*                            ,
@@ -1265,7 +1265,7 @@ namespace cairocanvas
                                                                                    const rendering::StrokeAttributes&                   /*strokeAttributes*/ )
     {
         // TODO
-        return uno::Reference< rendering::XPolyPolygon2D >(NULL);
+        return uno::Reference< rendering::XPolyPolygon2D >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::fillPolyPolygon( const rendering::XCanvas*                          ,
@@ -1294,7 +1294,7 @@ namespace cairocanvas
         mxDevice->stopPerfTrace( &aTimer, "fillPolyPolygon" );
 #endif
 
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::fillTexturedPolyPolygon( const rendering::XCanvas*                          ,
@@ -1313,7 +1313,7 @@ namespace cairocanvas
             cairo_restore( mpCairo.get() );
         }
 
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::fillTextureMappedPolyPolygon( const rendering::XCanvas*                             ,
@@ -1324,7 +1324,7 @@ namespace cairocanvas
                                                                                               const uno::Reference< geometry::XMapping2D >&         /*xMapping*/ )
     {
         // TODO
-        return uno::Reference< rendering::XCachedPrimitive >(NULL);
+        return uno::Reference< rendering::XCachedPrimitive >(nullptr);
     }
 
     uno::Reference< rendering::XCachedPrimitive > CanvasHelper::implDrawBitmapSurface( const rendering::XCanvas*        pCanvas,
@@ -1336,7 +1336,7 @@ namespace cairocanvas
                                                                                        bool                             bHasAlpha )
     {
         SurfaceSharedPtr pSurface=pInputSurface;
-        uno::Reference< rendering::XCachedPrimitive > rv = uno::Reference< rendering::XCachedPrimitive >(NULL);
+        uno::Reference< rendering::XCachedPrimitive > rv(nullptr);
         geometry::IntegerSize2D aBitmapSize = rSize;
 
         if( mpCairo )
@@ -1381,7 +1381,7 @@ namespace cairocanvas
                 aMatrix.xx = aMatrix.yy = 1;
                 cairo_set_matrix( mpCairo.get(), &aMatrix );
 
-                rv = uno::Reference< rendering::XCachedPrimitive >(
+                rv.set(
                     new CachedBitmap( pSurface, viewState, renderState,
                                       // cast away const, need to
                                       // change refcount (as this is
@@ -1454,7 +1454,7 @@ namespace cairocanvas
 #endif
 
         uno::Reference< rendering::XCachedPrimitive > rv;
-        unsigned char* data = NULL;
+        unsigned char* data = nullptr;
         bool bHasAlpha = false;
         SurfaceSharedPtr pSurface = surfaceFromXBitmap( xBitmap, mpSurfaceProvider, data, bHasAlpha );
         geometry::IntegerSize2D aSize = xBitmap->getSize();
@@ -1467,7 +1467,7 @@ namespace cairocanvas
                 free( data );
         }
         else
-            rv = uno::Reference< rendering::XCachedPrimitive >(NULL);
+            rv.set(nullptr);
 
 #ifdef CAIRO_CANVAS_PERF_TRACE
         mxDevice->stopPerfTrace( &aTimer, "drawBitmap" );
@@ -1487,7 +1487,7 @@ namespace cairocanvas
 #endif
 
         uno::Reference< rendering::XCachedPrimitive > rv;
-        unsigned char* data = NULL;
+        unsigned char* data = nullptr;
         bool bHasAlpha = false;
         SurfaceSharedPtr pSurface = surfaceFromXBitmap( xBitmap, mpSurfaceProvider, data, bHasAlpha );
         geometry::IntegerSize2D aSize = xBitmap->getSize();
@@ -1500,7 +1500,7 @@ namespace cairocanvas
                 free( data );
         }
         else
-            rv = uno::Reference< rendering::XCachedPrimitive >(NULL);
+            rv.set(nullptr);
 
 #ifdef CAIRO_CANVAS_PERF_TRACE
         mxDevice->stopPerfTrace( &aTimer, "drawBitmap" );
@@ -1513,7 +1513,7 @@ namespace cairocanvas
     geometry::IntegerSize2D CanvasHelper::getSize()
     {
         if( !mpSurfaceProvider )
-            geometry::IntegerSize2D(1, 1); // we're disposed
+            return geometry::IntegerSize2D(1, 1); // we're disposed
 
         return ::basegfx::unotools::integerSize2DFromB2ISize( maSize );
     }
@@ -1583,25 +1583,25 @@ namespace cairocanvas
             uno::Sequence< sal_Int8 >  maComponentTags;
             uno::Sequence< sal_Int32 > maBitCounts;
 
-            virtual ::sal_Int8 SAL_CALL getType(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual ::sal_Int8 SAL_CALL getType(  ) throw (uno::RuntimeException, std::exception) override
             {
                 return rendering::ColorSpaceType::RGB;
             }
-            virtual uno::Sequence< ::sal_Int8 > SAL_CALL getComponentTags(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< ::sal_Int8 > SAL_CALL getComponentTags(  ) throw (uno::RuntimeException, std::exception) override
             {
                 return maComponentTags;
             }
-            virtual ::sal_Int8 SAL_CALL getRenderingIntent(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual ::sal_Int8 SAL_CALL getRenderingIntent(  ) throw (uno::RuntimeException, std::exception) override
             {
                 return rendering::RenderingIntent::PERCEPTUAL;
             }
-            virtual uno::Sequence< beans::PropertyValue > SAL_CALL getProperties(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< beans::PropertyValue > SAL_CALL getProperties(  ) throw (uno::RuntimeException, std::exception) override
             {
                 return uno::Sequence< beans::PropertyValue >();
             }
             virtual uno::Sequence< double > SAL_CALL convertColorSpace( const uno::Sequence< double >& deviceColor,
                                                                         const uno::Reference< rendering::XColorSpace >& targetColorSpace ) throw (lang::IllegalArgumentException,
-                                                                                                                                                  uno::RuntimeException, std::exception) SAL_OVERRIDE
+                                                                                                                                                  uno::RuntimeException, std::exception) override
             {
                 // TODO(P3): if we know anything about target
                 // colorspace, this can be greatly sped up
@@ -1609,7 +1609,7 @@ namespace cairocanvas
                     convertToARGB(deviceColor));
                 return targetColorSpace->convertFromARGB(aIntermediate);
             }
-            virtual uno::Sequence< rendering::RGBColor > SAL_CALL convertToRGB( const uno::Sequence< double >& deviceColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< rendering::RGBColor > SAL_CALL convertToRGB( const uno::Sequence< double >& deviceColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const double*  pIn( deviceColor.getConstArray() );
                 const sal_Size nLen( deviceColor.getLength() );
@@ -1630,7 +1630,7 @@ namespace cairocanvas
                 }
                 return aRes;
             }
-            virtual uno::Sequence< rendering::ARGBColor > SAL_CALL convertToARGB( const uno::Sequence< double >& deviceColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< rendering::ARGBColor > SAL_CALL convertToARGB( const uno::Sequence< double >& deviceColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const double*  pIn( deviceColor.getConstArray() );
                 const sal_Size nLen( deviceColor.getLength() );
@@ -1651,7 +1651,7 @@ namespace cairocanvas
                 }
                 return aRes;
             }
-            virtual uno::Sequence< rendering::ARGBColor > SAL_CALL convertToPARGB( const uno::Sequence< double >& deviceColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< rendering::ARGBColor > SAL_CALL convertToPARGB( const uno::Sequence< double >& deviceColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const double*  pIn( deviceColor.getConstArray() );
                 const sal_Size nLen( deviceColor.getLength() );
@@ -1668,7 +1668,7 @@ namespace cairocanvas
                 }
                 return aRes;
             }
-            virtual uno::Sequence< double > SAL_CALL convertFromRGB( const uno::Sequence< rendering::RGBColor >& rgbColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< double > SAL_CALL convertFromRGB( const uno::Sequence< rendering::RGBColor >& rgbColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const rendering::RGBColor* pIn( rgbColor.getConstArray() );
                 const sal_Size             nLen( rgbColor.getLength() );
@@ -1685,7 +1685,7 @@ namespace cairocanvas
                 }
                 return aRes;
             }
-            virtual uno::Sequence< double > SAL_CALL convertFromARGB( const uno::Sequence< rendering::ARGBColor >& rgbColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< double > SAL_CALL convertFromARGB( const uno::Sequence< rendering::ARGBColor >& rgbColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const rendering::ARGBColor* pIn( rgbColor.getConstArray() );
                 const sal_Size              nLen( rgbColor.getLength() );
@@ -1702,7 +1702,7 @@ namespace cairocanvas
                 }
                 return aRes;
             }
-            virtual uno::Sequence< double > SAL_CALL convertFromPARGB( const uno::Sequence< rendering::ARGBColor >& rgbColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< double > SAL_CALL convertFromPARGB( const uno::Sequence< rendering::ARGBColor >& rgbColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const rendering::ARGBColor* pIn( rgbColor.getConstArray() );
                 const sal_Size              nLen( rgbColor.getLength() );
@@ -1721,21 +1721,21 @@ namespace cairocanvas
             }
 
             // XIntegerBitmapColorSpace
-            virtual ::sal_Int32 SAL_CALL getBitsPerPixel(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual ::sal_Int32 SAL_CALL getBitsPerPixel(  ) throw (uno::RuntimeException, std::exception) override
             {
                 return 32;
             }
-            virtual uno::Sequence< ::sal_Int32 > SAL_CALL getComponentBitCounts(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< ::sal_Int32 > SAL_CALL getComponentBitCounts(  ) throw (uno::RuntimeException, std::exception) override
             {
                 return maBitCounts;
             }
-            virtual ::sal_Int8 SAL_CALL getEndianness(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual ::sal_Int8 SAL_CALL getEndianness(  ) throw (uno::RuntimeException, std::exception) override
             {
                 return util::Endianness::LITTLE;
             }
             virtual uno::Sequence<double> SAL_CALL convertFromIntegerColorSpace( const uno::Sequence< ::sal_Int8 >& deviceColor,
                                                                                  const uno::Reference< rendering::XColorSpace >& targetColorSpace )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 if( dynamic_cast<CairoColorSpace*>(targetColorSpace.get()) )
                 {
@@ -1767,7 +1767,7 @@ namespace cairocanvas
             }
             virtual uno::Sequence< ::sal_Int8 > SAL_CALL convertToIntegerColorSpace( const uno::Sequence< ::sal_Int8 >& deviceColor,
                                                                                      const uno::Reference< rendering::XIntegerBitmapColorSpace >& targetColorSpace )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 if( dynamic_cast<CairoColorSpace*>(targetColorSpace.get()) )
                 {
@@ -1784,7 +1784,7 @@ namespace cairocanvas
                 }
             }
             virtual uno::Sequence< rendering::RGBColor > SAL_CALL convertIntegerToRGB( const uno::Sequence< ::sal_Int8 >& deviceColor )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const sal_Int8* pIn( deviceColor.getConstArray() );
                 const sal_Size  nLen( deviceColor.getLength() );
@@ -1810,7 +1810,7 @@ namespace cairocanvas
             }
 
             virtual uno::Sequence< rendering::ARGBColor > SAL_CALL convertIntegerToARGB( const uno::Sequence< ::sal_Int8 >& deviceColor )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const sal_Int8* pIn( deviceColor.getConstArray() );
                 const sal_Size  nLen( deviceColor.getLength() );
@@ -1836,7 +1836,7 @@ namespace cairocanvas
                 return aRes;
             }
             virtual uno::Sequence< rendering::ARGBColor > SAL_CALL convertIntegerToPARGB( const uno::Sequence< ::sal_Int8 >& deviceColor )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const sal_Int8* pIn( deviceColor.getConstArray() );
                 const sal_Size  nLen( deviceColor.getLength() );
@@ -1859,7 +1859,7 @@ namespace cairocanvas
             }
 
             virtual uno::Sequence< ::sal_Int8 > SAL_CALL convertIntegerFromRGB( const uno::Sequence< rendering::RGBColor >& rgbColor )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const rendering::RGBColor* pIn( rgbColor.getConstArray() );
                 const sal_Size             nLen( rgbColor.getLength() );
@@ -1878,7 +1878,7 @@ namespace cairocanvas
             }
 
             virtual uno::Sequence< ::sal_Int8 > SAL_CALL convertIntegerFromARGB( const uno::Sequence< rendering::ARGBColor >& rgbColor )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const rendering::ARGBColor* pIn( rgbColor.getConstArray() );
                 const sal_Size              nLen( rgbColor.getLength() );
@@ -1897,7 +1897,7 @@ namespace cairocanvas
                 return aRes;
             }
             virtual uno::Sequence< ::sal_Int8 > SAL_CALL convertIntegerFromPARGB( const uno::Sequence< rendering::ARGBColor >& rgbColor )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const rendering::ARGBColor* pIn( rgbColor.getConstArray() );
                 const sal_Size              nLen( rgbColor.getLength() );
@@ -1940,25 +1940,25 @@ namespace cairocanvas
             uno::Sequence< sal_Int8 >  maComponentTags;
             uno::Sequence< sal_Int32 > maBitCounts;
 
-            virtual ::sal_Int8 SAL_CALL getType(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual ::sal_Int8 SAL_CALL getType(  ) throw (uno::RuntimeException, std::exception) override
             {
                 return rendering::ColorSpaceType::RGB;
             }
-            virtual uno::Sequence< ::sal_Int8 > SAL_CALL getComponentTags(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< ::sal_Int8 > SAL_CALL getComponentTags(  ) throw (uno::RuntimeException, std::exception) override
             {
                 return maComponentTags;
             }
-            virtual ::sal_Int8 SAL_CALL getRenderingIntent(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual ::sal_Int8 SAL_CALL getRenderingIntent(  ) throw (uno::RuntimeException, std::exception) override
             {
                 return rendering::RenderingIntent::PERCEPTUAL;
             }
-            virtual uno::Sequence< beans::PropertyValue > SAL_CALL getProperties(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< beans::PropertyValue > SAL_CALL getProperties(  ) throw (uno::RuntimeException, std::exception) override
             {
                 return uno::Sequence< beans::PropertyValue >();
             }
             virtual uno::Sequence< double > SAL_CALL convertColorSpace( const uno::Sequence< double >& deviceColor,
                                                                         const uno::Reference< rendering::XColorSpace >& targetColorSpace ) throw (lang::IllegalArgumentException,
-                                                                                                                                                  uno::RuntimeException, std::exception) SAL_OVERRIDE
+                                                                                                                                                  uno::RuntimeException, std::exception) override
             {
                 // TODO(P3): if we know anything about target
                 // colorspace, this can be greatly sped up
@@ -1966,7 +1966,7 @@ namespace cairocanvas
                     convertToARGB(deviceColor));
                 return targetColorSpace->convertFromARGB(aIntermediate);
             }
-            virtual uno::Sequence< rendering::RGBColor > SAL_CALL convertToRGB( const uno::Sequence< double >& deviceColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< rendering::RGBColor > SAL_CALL convertToRGB( const uno::Sequence< double >& deviceColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const double*  pIn( deviceColor.getConstArray() );
                 const sal_Size nLen( deviceColor.getLength() );
@@ -2000,15 +2000,15 @@ namespace cairocanvas
                 }
                 return aRes;
             }
-            virtual uno::Sequence< rendering::ARGBColor > SAL_CALL convertToARGB( const uno::Sequence< double >& deviceColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< rendering::ARGBColor > SAL_CALL convertToARGB( const uno::Sequence< double >& deviceColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 return impl_convertToARGB( deviceColor );
             }
-            virtual uno::Sequence< rendering::ARGBColor > SAL_CALL convertToPARGB( const uno::Sequence< double >& deviceColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< rendering::ARGBColor > SAL_CALL convertToPARGB( const uno::Sequence< double >& deviceColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 return impl_convertToARGB( deviceColor );
             }
-            virtual uno::Sequence< double > SAL_CALL convertFromRGB( const uno::Sequence< rendering::RGBColor >& rgbColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< double > SAL_CALL convertFromRGB( const uno::Sequence< rendering::RGBColor >& rgbColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const rendering::RGBColor* pIn( rgbColor.getConstArray() );
                 const sal_Size             nLen( rgbColor.getLength() );
@@ -2042,31 +2042,31 @@ namespace cairocanvas
                 }
                 return aRes;
             }
-            virtual uno::Sequence< double > SAL_CALL convertFromARGB( const uno::Sequence< rendering::ARGBColor >& rgbColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< double > SAL_CALL convertFromARGB( const uno::Sequence< rendering::ARGBColor >& rgbColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 return impl_convertFromARGB( rgbColor );
             }
-            virtual uno::Sequence< double > SAL_CALL convertFromPARGB( const uno::Sequence< rendering::ARGBColor >& rgbColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< double > SAL_CALL convertFromPARGB( const uno::Sequence< rendering::ARGBColor >& rgbColor ) throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 return impl_convertFromARGB( rgbColor );
             }
 
             // XIntegerBitmapColorSpace
-            virtual ::sal_Int32 SAL_CALL getBitsPerPixel(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual ::sal_Int32 SAL_CALL getBitsPerPixel(  ) throw (uno::RuntimeException, std::exception) override
             {
                 return 32;
             }
-            virtual uno::Sequence< ::sal_Int32 > SAL_CALL getComponentBitCounts(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual uno::Sequence< ::sal_Int32 > SAL_CALL getComponentBitCounts(  ) throw (uno::RuntimeException, std::exception) override
             {
                 return maBitCounts;
             }
-            virtual ::sal_Int8 SAL_CALL getEndianness(  ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+            virtual ::sal_Int8 SAL_CALL getEndianness(  ) throw (uno::RuntimeException, std::exception) override
             {
                 return util::Endianness::LITTLE;
             }
             virtual uno::Sequence<double> SAL_CALL convertFromIntegerColorSpace( const uno::Sequence< ::sal_Int8 >& deviceColor,
                                                                                  const uno::Reference< rendering::XColorSpace >& targetColorSpace )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 if( dynamic_cast<CairoColorSpace*>(targetColorSpace.get()) )
                 {
@@ -2098,7 +2098,7 @@ namespace cairocanvas
             }
             virtual uno::Sequence< ::sal_Int8 > SAL_CALL convertToIntegerColorSpace( const uno::Sequence< ::sal_Int8 >& deviceColor,
                                                                                      const uno::Reference< rendering::XIntegerBitmapColorSpace >& targetColorSpace )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 if( dynamic_cast<CairoNoAlphaColorSpace*>(targetColorSpace.get()) )
                 {
@@ -2115,7 +2115,7 @@ namespace cairocanvas
                 }
             }
             virtual uno::Sequence< rendering::RGBColor > SAL_CALL convertIntegerToRGB( const uno::Sequence< ::sal_Int8 >& deviceColor )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const sal_Int8* pIn( deviceColor.getConstArray() );
                 const sal_Size  nLen( deviceColor.getLength() );
@@ -2134,12 +2134,12 @@ namespace cairocanvas
             }
 
             virtual uno::Sequence< rendering::ARGBColor > SAL_CALL convertIntegerToARGB( const uno::Sequence< ::sal_Int8 >& deviceColor )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 return impl_convertIntegerToARGB( deviceColor );
             }
             virtual uno::Sequence< rendering::ARGBColor > SAL_CALL convertIntegerToPARGB( const uno::Sequence< ::sal_Int8 >& deviceColor )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 return impl_convertIntegerToARGB( deviceColor );
             }
@@ -2166,7 +2166,7 @@ namespace cairocanvas
             }
 
             virtual uno::Sequence< ::sal_Int8 > SAL_CALL convertIntegerFromRGB( const uno::Sequence< rendering::RGBColor >& rgbColor )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 const rendering::RGBColor* pIn( rgbColor.getConstArray() );
                 const sal_Size             nLen( rgbColor.getLength() );
@@ -2185,12 +2185,12 @@ namespace cairocanvas
             }
 
             virtual uno::Sequence< ::sal_Int8 > SAL_CALL convertIntegerFromARGB( const uno::Sequence< rendering::ARGBColor >& rgbColor )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 return impl_convertIntegerFromARGB( rgbColor );
             }
             virtual uno::Sequence< ::sal_Int8 > SAL_CALL convertIntegerFromPARGB( const uno::Sequence< rendering::ARGBColor >& rgbColor )
-                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) SAL_OVERRIDE
+                throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception) override
             {
                 return impl_convertIntegerFromARGB( rgbColor );
             }

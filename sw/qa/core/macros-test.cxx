@@ -71,8 +71,8 @@ public:
 
     void createFileURL(const OUString& aFileBase, const OUString& aFileExtension, OUString& rFilePath);
 
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
     //void testStarBasic();
 #if !defined MACOSX && !defined WNT
@@ -126,7 +126,7 @@ void SwMacrosTest::testStarBasic()
     OUString aFileExtension(aFileFormats[0].pName, strlen(aFileFormats[0].pName), RTL_TEXTENCODING_UTF8 );
     OUString aFileName;
     createFileURL(aFileNameBase, aFileExtension, aFileName);
-    uno::Reference< com::sun::star::lang::XComponent > xComponent = loadFromDesktop(aFileName, "com.sun.star.text.TextDocument");
+    uno::Reference< css::lang::XComponent > xComponent = loadFromDesktop(aFileName, "com.sun.star.text.TextDocument");
 
     CPPUNIT_ASSERT_MESSAGE("Failed to load StarBasic.ods", xComponent.is());
 
@@ -161,7 +161,7 @@ void SwMacrosTest::testVba()
     {
         OUString aFileName;
         createFileURL(testInfo[i].sFileBaseName, aFileExtension, aFileName);
-        uno::Reference< com::sun::star::lang::XComponent > xComponent = loadFromDesktop(aFileName, "com.sun.star.text.TextDocument");
+        uno::Reference< css::lang::XComponent > xComponent = loadFromDesktop(aFileName, "com.sun.star.text.TextDocument");
         OUStringBuffer sMsg( "Failed to load " );
         sMsg.append ( aFileName );
         CPPUNIT_ASSERT_MESSAGE( OUStringToOString( sMsg.makeStringAndClear(), RTL_TEXTENCODING_UTF8 ).getStr(), xComponent.is() );
@@ -194,9 +194,9 @@ void SwMacrosTest::testBookmarkDeleteAndJoin()
 
     IDocumentContentOperations & rIDCO(pDoc->getIDocumentContentOperations());
     rIDCO.AppendTextNode(*aPaM.GetPoint());
-    rIDCO.InsertString(aPaM, OUString("A"));
+    rIDCO.InsertString(aPaM, "A");
     rIDCO.AppendTextNode(*aPaM.GetPoint());
-    rIDCO.InsertString(aPaM, OUString("A"));
+    rIDCO.InsertString(aPaM, "A");
     rIDCO.AppendTextNode(*aPaM.GetPoint());
     aPaM.Move(fnMoveBackward, fnGoNode);
     aPaM.Move(fnMoveBackward, fnGoNode);
@@ -233,7 +233,7 @@ void SwMacrosTest::testBookmarkDeleteTdf90816()
 
     IDocumentContentOperations & rIDCO(pDoc->getIDocumentContentOperations());
     rIDCO.AppendTextNode(*aPaM.GetPoint());
-    rIDCO.InsertString(aPaM, OUString("ABC"));
+    rIDCO.InsertString(aPaM, "ABC");
     aPaM.Move(fnMoveBackward, fnGoContent);
     aPaM.SetMark();
     aPaM.Move(fnMoveBackward, fnGoContent);
@@ -258,7 +258,7 @@ void SwMacrosTest::testControlShapeGrouping()
 {
     OUString aFileName;
     createFileURL("testControlShapeGrouping.", "odt", aFileName);
-    Reference< com::sun::star::lang::XComponent > xComponent(
+    Reference< css::lang::XComponent > xComponent(
         loadFromDesktop(aFileName, "com.sun.star.text.TextDocument"));
     CPPUNIT_ASSERT(xComponent.is());
 
@@ -395,7 +395,7 @@ void SwMacrosTest::testFdo68983()
 {
     OUString aFileName;
     createFileURL("fdo68983.", "odt", aFileName);
-    Reference< com::sun::star::lang::XComponent > xComponent =
+    Reference< css::lang::XComponent > xComponent =
         loadFromDesktop(aFileName, "com.sun.star.text.TextDocument");
 
     CPPUNIT_ASSERT_MESSAGE("Failed to load fdo68983.odt", xComponent.is());
@@ -439,15 +439,15 @@ void SwMacrosTest::testFindReplace()
     CPPUNIT_ASSERT(pTextDoc);
     SwDoc *const pDoc = pTextDoc->GetDocShell()->GetDoc();
     SwNodeIndex aIdx(pDoc->GetNodes().GetEndOfContent(), -1);
-    // use a UnoCrsr so it will be corrected when deleting nodes
-    auto pPaM(pDoc->CreateUnoCrsr(SwPosition(aIdx)));
+    // use a UnoCursor so it will be corrected when deleting nodes
+    auto pPaM(pDoc->CreateUnoCursor(SwPosition(aIdx)));
 
     IDocumentContentOperations & rIDCO(pDoc->getIDocumentContentOperations());
-    rIDCO.InsertString(*pPaM, OUString("foo"));
+    rIDCO.InsertString(*pPaM, "foo");
     rIDCO.AppendTextNode(*pPaM->GetPoint());
-    rIDCO.InsertString(*pPaM, OUString("bar"));
+    rIDCO.InsertString(*pPaM, "bar");
     rIDCO.AppendTextNode(*pPaM->GetPoint());
-    rIDCO.InsertString(*pPaM, OUString("baz"));
+    rIDCO.InsertString(*pPaM, "baz");
     pPaM->Move(fnMoveBackward, fnGoDoc);
 
     bool bCancel(false);
@@ -464,7 +464,7 @@ void SwMacrosTest::testFindReplace()
 
     // find newline on 1st paragraph
     bool bFound = pPaM->Find(
-            opts, false, DOCPOS_CURR, DOCPOS_END, bCancel, FND_IN_BODY);
+            opts, false, DOCPOS_CURR, DOCPOS_END, bCancel);
     CPPUNIT_ASSERT(bFound);
     CPPUNIT_ASSERT(pPaM->HasMark());
     CPPUNIT_ASSERT_EQUAL(OUString(""), pPaM->GetText());
@@ -502,10 +502,9 @@ void SwMacrosTest::setUp()
     // This is a bit of a fudge, we do this to ensure that SwGlobals::ensure,
     // which is a private symbol to us, gets called
     m_xWriterComponent =
-        getMultiServiceFactory()->createInstance(OUString(
-        "com.sun.star.comp.Writer.TextDocument"));
+        getMultiServiceFactory()->createInstance("com.sun.star.comp.Writer.TextDocument");
     CPPUNIT_ASSERT_MESSAGE("no calc component!", m_xWriterComponent.is());
-    mxDesktop = com::sun::star::frame::Desktop::create( comphelper::getComponentContext(getMultiServiceFactory()) );
+    mxDesktop = css::frame::Desktop::create( comphelper::getComponentContext(getMultiServiceFactory()) );
 }
 
 void SwMacrosTest::tearDown()

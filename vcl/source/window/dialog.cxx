@@ -46,6 +46,7 @@
 #include <vcl/msgbox.hxx>
 #include <vcl/unowrap.hxx>
 #include <vcl/settings.hxx>
+#include <salframe.hxx>
 
 #include <iostream>
 
@@ -135,9 +136,9 @@ vcl::Window * nextLogicalChildOfParent(vcl::Window *pTopLevel, vcl::Window *pChi
     {
         vcl::Window *pParent = pLastChild->GetParent();
         if (!pParent)
-            return NULL;
+            return nullptr;
         if (pParent == pTopLevel)
-            return NULL;
+            return nullptr;
         pLastChild = pParent;
         pChild = pParent->GetWindow(GetWindowType::Next);
     }
@@ -161,9 +162,9 @@ vcl::Window * prevLogicalChildOfParent(vcl::Window *pTopLevel, vcl::Window *pChi
     {
         vcl::Window *pParent = pLastChild->GetParent();
         if (!pParent)
-            return NULL;
+            return nullptr;
         if (pParent == pTopLevel)
-            return NULL;
+            return nullptr;
         pLastChild = pParent;
         pChild = pParent->GetWindow(GetWindowType::Prev);
     }
@@ -237,7 +238,7 @@ void ImplWindowAutoMnemonic( vcl::Window* pWindow )
 
 static VclButtonBox* getActionArea(Dialog *pDialog)
 {
-    VclButtonBox *pButtonBox = NULL;
+    VclButtonBox *pButtonBox = nullptr;
     if (pDialog->isLayoutEnabled())
     {
         vcl::Window *pBox = pDialog->GetWindow(GetWindowType::FirstChild);
@@ -276,7 +277,7 @@ static PushButton* ImplGetDefaultButton( Dialog* pDialog )
         pChild = pChild->GetWindow( GetWindowType::Next );
     }
 
-    return NULL;
+    return nullptr;
 }
 
 static PushButton* ImplGetOKButton( Dialog* pDialog )
@@ -290,7 +291,7 @@ static PushButton* ImplGetOKButton( Dialog* pDialog )
         pChild = pChild->GetWindow( GetWindowType::Next );
     }
 
-    return NULL;
+    return nullptr;
 }
 
 static PushButton* ImplGetCancelButton( Dialog* pDialog )
@@ -305,7 +306,7 @@ static PushButton* ImplGetCancelButton( Dialog* pDialog )
         pChild = pChild->GetWindow( GetWindowType::Next );
     }
 
-    return NULL;
+    return nullptr;
 }
 
 static void ImplMouseAutoPos( Dialog* pDialog )
@@ -334,7 +335,7 @@ struct DialogImpl
 {
     long    mnResult;
     bool    mbStartedModal;
-    Link<>  maEndDialogHdl;
+    Link<Dialog&,void>  maEndDialogHdl;
 
     DialogImpl() : mnResult( -1 ), mbStartedModal( false ) {}
 };
@@ -342,7 +343,7 @@ struct DialogImpl
 void Dialog::ImplInitDialogData()
 {
     mpWindowImpl->mbDialog  = true;
-    mpPrevExecuteDlg        = NULL;
+    mpPrevExecuteDlg        = nullptr;
     mbInExecute             = false;
     mbOldSaveBack           = false;
     mbInClose               = false;
@@ -365,7 +366,7 @@ void Dialog::ImplInit( vcl::Window* pParent, WinBits nStyle, InitFlag eFlag )
     nStyle |= WB_SYSTEMWINDOW;
 
     if (eFlag == InitFlag::NoParent)
-        pParent = NULL;
+        pParent = nullptr;
     else if (!pParent) // parent is NULL: get the default Dialog parent
     {
         pParent = Application::GetDefDialogParent();
@@ -402,7 +403,7 @@ void Dialog::ImplInit( vcl::Window* pParent, WinBits nStyle, InitFlag eFlag )
         if ( (nStyle & (WB_BORDER | WB_NOBORDER | WB_MOVEABLE | WB_SIZEABLE | WB_CLOSEABLE)) == WB_BORDER )
         {
             VclPtrInstance<ImplBorderWindow> pBorderWin( pParent, nStyle, BORDERWINDOW_STYLE_FRAME );
-            SystemWindow::ImplInit( pBorderWin, nStyle & ~WB_BORDER, NULL );
+            SystemWindow::ImplInit( pBorderWin, nStyle & ~WB_BORDER, nullptr );
             pBorderWin->mpWindowImpl->mpClientWindow = this;
             pBorderWin->GetBorder( mpWindowImpl->mnLeftBorder, mpWindowImpl->mnTopBorder, mpWindowImpl->mnRightBorder, mpWindowImpl->mnBottomBorder );
             mpWindowImpl->mpBorderWindow  = pBorderWin;
@@ -412,7 +413,7 @@ void Dialog::ImplInit( vcl::Window* pParent, WinBits nStyle, InitFlag eFlag )
         {
             mpWindowImpl->mbFrame         = true;
             mpWindowImpl->mbOverlapWin    = true;
-            SystemWindow::ImplInit( pParent, (nStyle & (WB_MOVEABLE | WB_SIZEABLE | WB_ROLLABLE | WB_CLOSEABLE | WB_STANDALONE)) | WB_CLOSEABLE, NULL );
+            SystemWindow::ImplInit( pParent, (nStyle & (WB_MOVEABLE | WB_SIZEABLE | WB_ROLLABLE | WB_CLOSEABLE | WB_STANDALONE)) | WB_CLOSEABLE, nullptr );
             // Now set all style bits
             mpWindowImpl->mnStyle = nStyle;
         }
@@ -420,7 +421,7 @@ void Dialog::ImplInit( vcl::Window* pParent, WinBits nStyle, InitFlag eFlag )
     else
     {
         VclPtrInstance<ImplBorderWindow> pBorderWin( pParent, nStyle, BORDERWINDOW_STYLE_OVERLAP | BORDERWINDOW_STYLE_BORDER );
-        SystemWindow::ImplInit( pBorderWin, nStyle & ~WB_BORDER, NULL );
+        SystemWindow::ImplInit( pBorderWin, nStyle & ~WB_BORDER, nullptr );
         pBorderWin->mpWindowImpl->mpClientWindow = this;
         pBorderWin->GetBorder( mpWindowImpl->mnLeftBorder, mpWindowImpl->mnTopBorder, mpWindowImpl->mnRightBorder, mpWindowImpl->mnBottomBorder );
         mpWindowImpl->mpBorderWindow  = pBorderWin;
@@ -508,7 +509,7 @@ OUString VclBuilderContainer::getUIRootDir()
 void Dialog::doDeferredInit(WinBits nBits)
 {
     VclPtr<vcl::Window> pParent = mpDialogParent;
-    mpDialogParent = NULL;
+    mpDialogParent = nullptr;
     ImplInit(pParent, nBits, mnInitFlag);
     mbIsDefferedInit = false;
 }
@@ -572,7 +573,7 @@ Dialog::~Dialog()
 void Dialog::dispose()
 {
     delete mpDialogImpl;
-    mpDialogImpl = NULL;
+    mpDialogImpl = nullptr;
     mpPrevExecuteDlg.clear();
     mpActionArea.clear();
     mpContentArea.clear();
@@ -829,7 +830,7 @@ bool Dialog::ImplStartExecuteModal()
         pSVData->maWinData.mpTrackWin->EndTracking( TrackingEventFlags::Cancel );
     if ( pSVData->maWinData.mpCaptureWin )
         pSVData->maWinData.mpCaptureWin->ReleaseMouse();
-    EnableInput( true );
+    EnableInput();
 
     if ( GetParent() )
     {
@@ -845,6 +846,7 @@ bool Dialog::ImplStartExecuteModal()
     ImplAdjustNWFSizes();
 
     Show();
+    ToTop();
 
     pSVData->maAppData.mnModalMode++;
     return true;
@@ -915,7 +917,7 @@ short Dialog::Execute()
 }
 
 // virtual
-void Dialog::StartExecuteModal( const Link<>& rEndDialogHdl )
+void Dialog::StartExecuteModal( const Link<Dialog&,void>& rEndDialogHdl )
 {
     if ( !ImplStartExecuteModal() )
         return;
@@ -955,7 +957,7 @@ void Dialog::EndDialog( long nResult )
                 mpPrevExecuteDlg->GrabFocus();
             }
         }
-        mpPrevExecuteDlg = NULL;
+        mpPrevExecuteDlg = nullptr;
 
         Hide();
         EnableSaveBackground( mbOldSaveBack );
@@ -972,8 +974,8 @@ void Dialog::EndDialog( long nResult )
             ImplEndExecuteModal();
             if (mpDialogImpl->maEndDialogHdl.IsSet())
             {
-                mpDialogImpl->maEndDialogHdl.Call( this );
-                mpDialogImpl->maEndDialogHdl = Link<>();
+                mpDialogImpl->maEndDialogHdl.Call( *this );
+                mpDialogImpl->maEndDialogHdl = Link<Dialog&,void>();
             }
             mpDialogImpl->mbStartedModal = false;
             mpDialogImpl->mnResult = -1;
@@ -989,19 +991,19 @@ long Dialog::GetResult() const
 
 void Dialog::EndAllDialogs( vcl::Window* pParent )
 {
-   ImplSVData*  pSVData = ImplGetSVData();
-   Dialog*      pTempModDialog;
-   Dialog*      pModDialog = pSVData->maWinData.mpLastExecuteDlg;
-   while ( pModDialog )
-   {
-     pTempModDialog = pModDialog->mpPrevExecuteDlg;
-     if(!pParent || pParent->IsWindowOrChild(pModDialog,true))
-     {
-        pModDialog->EndDialog();
-        pModDialog->PostUserEvent( Link<void*,void>() );
-     }
-     pModDialog = pTempModDialog;
-   }
+    ImplSVData* pSVData = ImplGetSVData();
+    Dialog* pTempModDialog;
+    Dialog* pModDialog = pSVData->maWinData.mpLastExecuteDlg;
+    while (pModDialog)
+    {
+        pTempModDialog = pModDialog->mpPrevExecuteDlg;
+        if(!pParent || pParent->IsWindowOrChild(pModDialog,true))
+        {
+            pModDialog->EndDialog();
+            pModDialog->PostUserEvent( Link<void*,void>() );
+        }
+        pModDialog = pTempModDialog;
+    }
 }
 
 void Dialog::SetModalInputMode( bool bModal )
@@ -1031,7 +1033,6 @@ void Dialog::SetModalInputMode( bool bModal )
             mpDialogParent = pParent->mpWindowImpl->mpFrameWindow;
             mpDialogParent->ImplIncModalCount();
         }
-
     }
     else
     {
@@ -1067,6 +1068,7 @@ void Dialog::SetModalInputMode( bool bModal )
             }
         }
     }
+    ImplGetFrame()->SetModal(bModal);
 }
 
 void Dialog::SetModalInputMode( bool bModal, bool bSubModalDialogs )
@@ -1092,7 +1094,7 @@ void Dialog::GrabFocusToFirstControl()
 
     // find focus control, even if the dialog has focus
     if ( HasFocus() )
-        pFocusControl = NULL;
+        pFocusControl = nullptr;
     else
     {
         // prefer a child window which had focus before
@@ -1174,7 +1176,7 @@ bool Dialog::set_property(const OString &rKey, const OString &rValue)
 }
 
 VclBuilderContainer::VclBuilderContainer()
-    : m_pUIBuilder(NULL)
+    : m_pUIBuilder(nullptr)
 {
 }
 

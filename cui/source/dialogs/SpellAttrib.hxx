@@ -41,7 +41,6 @@ struct SpellErrorDescription
     OUString                                     sExplanationURL;
     css::lang::Locale                      aLocale;
     css::uno::Reference< css::linguistic2::XProofreader > xGrammarChecker;
-    OUString                                     sServiceName; ///< service name of GrammarChecker/SpellChecker
     css::uno::Sequence< OUString >  aSuggestions;
     OUString                                     sRuleId;
 
@@ -53,11 +52,10 @@ struct SpellErrorDescription
                       const css::lang::Locale& rLocale,
                       const css::uno::Sequence< OUString >& rSuggestions,
                       css::uno::Reference< css::linguistic2::XProofreader > rxGrammarChecker,
-                      const OUString& rServiceName,
-                      const OUString* pDialogTitle = 0,
-                      const OUString* pExplanation = 0,
-                      const OUString* pRuleId = 0,
-                      const OUString* pExplanationURL = 0 ) :
+                      const OUString* pDialogTitle = nullptr,
+                      const OUString* pExplanation = nullptr,
+                      const OUString* pRuleId = nullptr,
+                      const OUString* pExplanationURL = nullptr ) :
         bIsGrammarError( bGrammar ),
         sErrorText( rText ),
         sDialogTitle( ),
@@ -65,7 +63,6 @@ struct SpellErrorDescription
         sExplanationURL( ),
         aLocale( rLocale ),
         xGrammarChecker( rxGrammarChecker ),
-        sServiceName( rServiceName ),
         aSuggestions( rSuggestions )
         {
             if( pDialogTitle )
@@ -112,9 +109,9 @@ public:
     const SpellErrorDescription& GetErrorDescription() const { return m_aSpellErrorDescription; }
 
 
-    virtual void            SetFont( vcl::Font& rFont ) const SAL_OVERRIDE;
-    virtual TextAttrib*     Clone() const SAL_OVERRIDE;
-    virtual bool            operator==( const TextAttrib& rAttr ) const SAL_OVERRIDE;
+    virtual void            SetFont( vcl::Font& rFont ) const override;
+    virtual TextAttrib*     Clone() const override;
+    virtual bool            operator==( const TextAttrib& rAttr ) const override;
 };
 
 
@@ -132,9 +129,9 @@ public:
 
     LanguageType            GetLanguage() const {return m_eLanguage;}
 
-    virtual void            SetFont( vcl::Font& rFont ) const SAL_OVERRIDE;
-    virtual TextAttrib*     Clone() const SAL_OVERRIDE;
-    virtual bool            operator==( const TextAttrib& rAttr ) const SAL_OVERRIDE;
+    virtual void            SetFont( vcl::Font& rFont ) const override;
+    virtual TextAttrib*     Clone() const override;
+    virtual bool            operator==( const TextAttrib& rAttr ) const override;
 };
 
 
@@ -150,9 +147,9 @@ public:
                             SpellBackgroundAttrib( const SpellBackgroundAttrib& rAttr );
                             virtual ~SpellBackgroundAttrib();
 
-    virtual void            SetFont( vcl::Font& rFont ) const SAL_OVERRIDE;
-    virtual TextAttrib*     Clone() const SAL_OVERRIDE;
-    virtual bool            operator==( const TextAttrib& rAttr ) const SAL_OVERRIDE;
+    virtual void            SetFont( vcl::Font& rFont ) const override;
+    virtual TextAttrib*     Clone() const override;
+    virtual bool            operator==( const TextAttrib& rAttr ) const override;
 };
 }//namespace svx
 #endif

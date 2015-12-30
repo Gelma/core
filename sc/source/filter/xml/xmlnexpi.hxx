@@ -50,8 +50,8 @@ public:
     class GlobalInserter : public Inserter
     {
     public:
-        GlobalInserter(ScXMLImport& rImport);
-        virtual void insert(ScMyNamedExpression* pExp) SAL_OVERRIDE;
+        explicit GlobalInserter(ScXMLImport& rImport);
+        virtual void insert(ScMyNamedExpression* pExp) override;
     private:
         ScXMLImport& mrImport;
     };
@@ -65,7 +65,7 @@ public:
     {
     public:
         SheetLocalInserter(ScXMLImport& rImport, SCTAB nTab);
-        virtual void insert(ScMyNamedExpression* pExp) SAL_OVERRIDE;
+        virtual void insert(ScMyNamedExpression* pExp) override;
     private:
         ScXMLImport& mrImport;
         SCTAB mnTab;
@@ -73,18 +73,16 @@ public:
 
     ScXMLNamedExpressionsContext(
         ScXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
+        const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
         Inserter* pInserter );
 
     virtual ~ScXMLNamedExpressionsContext();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                      const OUString& rLocalName,
-                                     const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
+                                     const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList ) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
 private:
     std::shared_ptr<Inserter> mpInserter;
@@ -99,18 +97,16 @@ public:
 
     ScXMLNamedRangeContext(
         ScXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
+        const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
         ScXMLNamedExpressionsContext::Inserter* pInserter );
 
     virtual ~ScXMLNamedRangeContext();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                      const OUString& rLocalName,
-                                     const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
+                                     const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList ) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
 private:
     ScXMLNamedExpressionsContext::Inserter* mpInserter;
@@ -125,18 +121,16 @@ public:
 
     ScXMLNamedExpressionContext(
         ScXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLName,
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::xml::sax::XAttributeList>& xAttrList,
+        const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList,
         ScXMLNamedExpressionsContext::Inserter* pInserter );
 
     virtual ~ScXMLNamedExpressionContext();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                      const OUString& rLocalName,
-                                     const ::com::sun::star::uno::Reference<
-                                          ::com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
+                                     const css::uno::Reference<css::xml::sax::XAttributeList>& xAttrList ) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
 private:
     ScXMLNamedExpressionsContext::Inserter* mpInserter;

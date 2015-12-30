@@ -58,7 +58,6 @@
 #include <com/sun/star/sheet/FormulaMapGroup.hpp>
 #include <com/sun/star/sheet/FormulaMapGroupSpecialOffset.hpp>
 #include <com/sun/star/beans/XPropertySet.hpp>
-#include <boost/ref.hpp>
 #include <comphelper/processfactory.hxx>
 #include <comphelper/string.hxx>
 #include <map>
@@ -78,20 +77,22 @@ public:
         RefInputStartBefore( RefEdit* pEdit, RefButton* pButton );
     void            RefInputStartAfter( RefEdit* pEdit, RefButton* pButton );
     void            RefInputDoneAfter( bool bForced );
-    bool        CalcValue( const OUString& rStrExp, OUString& rStrResult );
-    bool        CalcStruct( const OUString& rStrExp);
-    void            UpdateValues();
+    bool            CalcValue( const OUString& rStrExp, OUString& rStrResult, bool bForceMatrixFormula = false );
+    bool            CalcStruct( const OUString& rStrExp, bool bForceRecalcStruct = false );
+    void            UpdateValues( bool bForceRecalcStruct = false );
     void            DeleteArgs();
     sal_Int32       GetFunctionPos(sal_Int32 nPos);
     void            ClearAllParas();
 
-    void            MakeTree(IStructHelper* _pTree,SvTreeListEntry* pParent,FormulaToken* _pToken,long Count);
-    void            fillTree(IStructHelper* _pTree);
+    void            MakeTree(StructPage* _pTree,SvTreeListEntry* pParent,FormulaToken* _pToken,long Count);
+    void            fillTree(StructPage* _pTree);
     void            UpdateTokenArray( const OUString& rStrExp);
     OUString        RepairFormula(const OUString& aFormula);
     void            FillDialog(bool bFlag=true);
     bool            EditNextFunc( bool bForward, sal_Int32 nFStart=NOT_FOUND );
     void            EditThisFunc(sal_Int32 nFStart);
+
+    OUString        GetPrevFuncExpression( bool bStartFromEnd );
 
     void            StoreFormEditData(FormEditData* pEditData);
 
@@ -125,7 +126,7 @@ public:
     DECL_LINK_TYPED( FxHdl, ParaWin&, void );
 
     DECL_LINK_TYPED( MatrixHdl, Button*, void );
-    DECL_LINK(FormulaHdl, void *);
+    DECL_LINK_TYPED( FormulaHdl, Edit&, void);
     DECL_LINK_TYPED( FormulaCursorHdl, EditBox&, void );
     DECL_LINK_TYPED( BtnHdl, Button*, void );
     DECL_LINK_TYPED( DblClkHdl, FuncPage&, void );
@@ -147,7 +148,6 @@ public:
     ::std::map<FormulaToken*,sheet::FormulaToken>           m_aTokenMap;
     IFormulaEditorHelper*                                   m_pHelper;
     VclPtr<Dialog>          m_pParent;
-    IControlReferenceHandler*  m_pDlg;
     VclPtr<TabControl>      m_pTabCtrl;
     VclPtr<VclVBox>         m_pParaWinBox;
     VclPtr<ParaWin>         pParaWin;
@@ -188,7 +188,6 @@ public:
 
     const OUString  aTitle1;
     const OUString  aTitle2;
-    const OUString  aTxtEnd;
     OUString  aTxtOk;     // behind aBtnEnd
     FormulaHelper   m_aFormulaHelper;
 
@@ -209,6 +208,8 @@ public:
     ::std::vector< OUString > m_aArguments;
     Selection       aFuncSel;
 
+    sal_Int32       mnFuncExpStart;     ///< current formula position for treeview results
+
     FormulaDlg_Impl(Dialog* pParent
             , bool _bSupportFunctionResult
             , bool _bSupportResult
@@ -228,26 +229,25 @@ FormulaDlg_Impl::FormulaDlg_Impl(Dialog* pParent
                                         ,const IFunctionManager* _pFunctionMgr
                                         ,IControlReferenceHandler* _pDlg)
     :
-    m_pSpecialOpCodesEnd(NULL),
-    m_pFunctionOpCodesEnd(NULL),
-    m_pUnaryOpCodesEnd(NULL),
-    m_pBinaryOpCodesEnd(NULL),
+    m_pSpecialOpCodesEnd(nullptr),
+    m_pFunctionOpCodesEnd(nullptr),
+    m_pUnaryOpCodesEnd(nullptr),
+    m_pBinaryOpCodesEnd(nullptr),
     m_pHelper       (_pHelper),
     m_pParent       (pParent),
-    m_pDlg          (_pDlg),
-    pTheRefEdit     (NULL),
-    pTheRefButton   (NULL),
-    pMEdit          (NULL),
+    pTheRefEdit     (nullptr),
+    pTheRefButton   (nullptr),
+    pMEdit          (nullptr),
     bUserMatrixFlag (false),
     aTitle1         ( ModuleRes( STR_TITLE1 ) ),
     aTitle2         ( ModuleRes( STR_TITLE2 ) ),
-    aTxtEnd         ( ModuleRes( STR_END ) ),
     m_aFormulaHelper(_pFunctionMgr),
     bIsShutDown     (false),
     bMakingTree     (false),
     nEdFocus        (0),
-    pFuncDesc       (NULL),
-    nArgs           (0)
+    pFuncDesc       (nullptr),
+    nArgs           (0),
+    mnFuncExpStart  (0)
 {
     pParent->get(m_pParaWinBox, "BOX");
     pParent->get(m_pTabCtrl, "tabs");
@@ -395,13 +395,13 @@ void FormulaDlg_Impl::PreNotify( NotifyEvent& rNEvt )
     if(nSwitch==MouseNotifyEvent::GETFOCUS && !bIsShutDown)
     {
         vcl::Window* pWin=rNEvt.GetWindow();
-        if(pWin!=NULL)
+        if(pWin!=nullptr)
         {
             aActivWinId = pWin->GetUniqueId();
             if(aActivWinId.isEmpty())
             {
                 vcl::Window* pParent=pWin->GetParent();
-                while(pParent!=NULL)
+                while(pParent!=nullptr)
                 {
                     aActivWinId=pParent->GetUniqueId();
 
@@ -453,17 +453,6 @@ void FormulaDlg_Impl::DeleteArgs()
 {
     ::std::vector< OUString>().swap(m_aArguments);
     nArgs = 0;
-}
-namespace
-{
-    // comparing two property instances
-    struct OpCodeCompare : public ::std::binary_function< sheet::FormulaOpCodeMapEntry, sal_Int32 , bool >
-    {
-        bool operator() (const sheet::FormulaOpCodeMapEntry& x, sal_Int32 y) const
-        {
-            return x.Token.OpCode == y;
-        }
-    };
 }
 
 sal_Int32 FormulaDlg_Impl::GetFunctionPos(sal_Int32 nPos)
@@ -540,7 +529,9 @@ sal_Int32 FormulaDlg_Impl::GetFunctionPos(sal_Int32 nPos)
                 bFlag = false;
                 nFuncPos = nPrevFuncPos;
             }
-            bool bIsFunction = ::std::find_if(m_aFunctionOpCodes.getConstArray(),m_pFunctionOpCodesEnd,::std::bind2nd(OpCodeCompare(),boost::cref(eOp))) != m_pFunctionOpCodesEnd;
+            bool bIsFunction = ::std::find_if(m_aFunctionOpCodes.getConstArray(),
+                                    m_pFunctionOpCodesEnd,
+                                    [&eOp](const sheet::FormulaOpCodeMapEntry& aEntry) { return aEntry.Token.OpCode == eOp; } ) != m_pFunctionOpCodesEnd;
 
             if( bIsFunction && m_aSpecialOpCodes[sheet::FormulaMapGroupSpecialOffset::SPACES].Token.OpCode != eOp )
             {
@@ -577,7 +568,7 @@ sal_Int32 FormulaDlg_Impl::GetFunctionPos(sal_Int32 nPos)
     return nFuncPos;
 }
 
-bool FormulaDlg_Impl::CalcValue( const OUString& rStrExp, OUString& rStrResult )
+bool FormulaDlg_Impl::CalcValue( const OUString& rStrExp, OUString& rStrResult, bool bForceMatrixFormula )
 {
     bool bResult = true;
 
@@ -587,7 +578,7 @@ bool FormulaDlg_Impl::CalcValue( const OUString& rStrExp, OUString& rStrResult )
 
         if ( !Application::AnyInput( VclInputFlags::KEYBOARD ) )
         {
-            bResult = m_pHelper->calculateValue(rStrExp,rStrResult);
+            bResult = m_pHelper->calculateValue( rStrExp, rStrResult, bForceMatrixFormula || m_pBtnMatrix->IsChecked());
         }
         else
             bResult = false;
@@ -596,7 +587,7 @@ bool FormulaDlg_Impl::CalcValue( const OUString& rStrExp, OUString& rStrResult )
     return bResult;
 }
 
-void FormulaDlg_Impl::UpdateValues()
+void FormulaDlg_Impl::UpdateValues( bool bForceRecalcStruct )
 {
     OUString aStrResult;
     if ( CalcValue( pFuncDesc->getFormula( m_aArguments ), aStrResult ) )
@@ -612,15 +603,15 @@ void FormulaDlg_Impl::UpdateValues()
         aStrResult.clear();
         m_pWndFormResult->SetText( aStrResult );
     }
-    CalcStruct(pMEdit->GetText());
+    CalcStruct( pMEdit->GetText(), bForceRecalcStruct);
 }
 
-bool FormulaDlg_Impl::CalcStruct( const OUString& rStrExp)
+bool FormulaDlg_Impl::CalcStruct( const OUString& rStrExp, bool bForceRecalcStruct )
 {
     bool bResult = true;
     sal_Int32 nLength = rStrExp.getLength();
 
-    if ( !rStrExp.isEmpty() && aOldFormula!=rStrExp && bStructUpdate)
+    if ( !rStrExp.isEmpty() && (bForceRecalcStruct || aOldFormula != rStrExp) && bStructUpdate)
     {
         // Only calculate the value when there isn't any more keyboard input:
 
@@ -654,9 +645,9 @@ bool FormulaDlg_Impl::CalcStruct( const OUString& rStrExp)
 }
 
 
-void FormulaDlg_Impl::MakeTree(IStructHelper* _pTree,SvTreeListEntry* pParent,FormulaToken* _pToken,long Count)
+void FormulaDlg_Impl::MakeTree(StructPage* _pTree,SvTreeListEntry* pParent,FormulaToken* _pToken,long Count)
 {
-    if( _pToken != NULL && Count > 0 )
+    if( _pToken != nullptr && Count > 0 )
     {
         long nParas = _pToken->GetParamCount();
         OpCode eOp = _pToken->GetOpCode();
@@ -709,28 +700,25 @@ void FormulaDlg_Impl::MakeTree(IStructHelper* _pTree,SvTreeListEntry* pParent,Fo
 
                 if (bCalcSubformula)
                 {
-                    OUString aStr;
-                    OUString aEquals(" = ");
+                    OUString aFormula;
 
                     if (!bMakingTree)
-                    { // gets the last subformula result
+                    {
+                        // gets the last subformula result
                         bMakingTree = true;
-                        EditThisFunc(0);
-                        while ( EditNextFunc(true) ) {}
+                        aFormula = GetPrevFuncExpression( true);
                     }
                     else
-                    { // gets subsequent subformula results (from the back)
-                        const IFunctionDescription* pDesc =pFuncPage->GetFuncDesc( pFuncPage->GetFunction() );
-                        if(pDesc==pFuncDesc || !pFuncPage->IsVisible())
-                        {
-                            EditNextFunc(false);
-                        }
+                    {
+                        // gets subsequent subformula results (from the back)
+                        aFormula = GetPrevFuncExpression( false);
                     }
 
-                    if ( CalcValue( pFuncDesc->getFormula( m_aArguments ), aStr ) )
+                    OUString aStr;
+                    if (CalcValue( aFormula, aStr))
                         m_pWndResult->SetText( aStr );
                     aStr = m_pWndResult->GetText();
-                    pStructPage->GetTlbStruct()->SetEntryText(pEntry,aResult + aEquals + aStr);
+                    pStructPage->GetTlbStruct()->SetEntryText( pEntry, aResult + " = " + aStr);
                 }
 
                 --Count;
@@ -745,10 +733,17 @@ void FormulaDlg_Impl::MakeTree(IStructHelper* _pTree,SvTreeListEntry* pParent,Fo
                 }
                 else if (eOp==ocPush)
                 {
+                    // Interpret range reference in matrix context to resolve
+                    // as array elements.
+                    /* TODO: this should depend on parameter classification, if
+                     * a scalar value is expected matrix should not be forced.
+                     * */
+                    bool bForceMatrix = (!m_pBtnMatrix->IsChecked() &&
+                            (_pToken->GetType() == svDoubleRef || _pToken->GetType() == svExternalDoubleRef));
                     OUString aCellResult;
-                    OUString aEquals(" = ");
-                    if (CalcValue( "=" + aResult, aCellResult) && aCellResult != aResult) // cell is a formula, print subformula
-                        _pTree->InsertEntry(aResult + aEquals + aCellResult,pParent,STRUCT_END,0,_pToken);
+                    if (CalcValue( "=" + aResult, aCellResult, bForceMatrix) && aCellResult != aResult)
+                        // Cell is a formula, print subformula.
+                        _pTree->InsertEntry(aResult + " = " + aCellResult, pParent,STRUCT_END,0,_pToken);
                     else
                         _pTree->InsertEntry(aResult,pParent,STRUCT_END,0,_pToken);
                 }
@@ -767,14 +762,14 @@ void FormulaDlg_Impl::MakeTree(IStructHelper* _pTree,SvTreeListEntry* pParent,Fo
     }
 }
 
-void FormulaDlg_Impl::fillTree(IStructHelper* _pTree)
+void FormulaDlg_Impl::fillTree(StructPage* _pTree)
 {
     GetFormulaOpCodeMapper();
     FormulaToken* pToken = m_pTokenArray->LastRPN();
 
-    if( pToken != NULL)
+    if( pToken != nullptr)
     {
-        MakeTree(_pTree,NULL,pToken,1);
+        MakeTree(_pTree,nullptr,pToken,1);
         bMakingTree = false;
     }
 }
@@ -968,7 +963,7 @@ void FormulaDlg_Impl::FillControls(bool &rbNext, bool &rbPrev)
 void FormulaDlg_Impl::ClearAllParas()
 {
     DeleteArgs();
-    pFuncDesc = NULL;
+    pFuncDesc = nullptr;
     pParaWin->ClearAll();
     m_pWndResult->SetText(OUString());
     m_pFtFuncName->SetText(OUString());
@@ -979,7 +974,7 @@ void FormulaDlg_Impl::ClearAllParas()
         m_pFtEditName->Hide();
         m_pParaWinBox->Hide();
 
-        m_pBtnForward->Enable(true); //@new
+        m_pBtnForward->Enable(); //@new
         m_pFtHeadLine->Show();
         m_pFtFuncName->Show();
         m_pFtFuncDesc->Show();
@@ -1059,7 +1054,7 @@ IMPL_LINK_TYPED( FormulaDlg_Impl, BtnHdl, Button*, pBtn, void )
     else if ( pBtn == m_pBtnBackward )
     {
         bEditFlag=false;
-        m_pBtnForward->Enable(true);
+        m_pBtnForward->Enable();
         EditNextFunc( false );
         m_pMEFormula->Invalidate();
         m_pMEFormula->Update();
@@ -1092,7 +1087,7 @@ IMPL_LINK_NOARG_TYPED(FormulaDlg_Impl, DblClkHdl, FuncPage&, void)
     aSel.Max()=aSel.Max()-1;
     pMEdit->SetSelection(aSel);
 
-    FormulaHdl(pMEdit);
+    FormulaHdl(*pMEdit);
 
     aSel.Min()=aSel.Max();
     pMEdit->SetSelection(aSel);
@@ -1211,6 +1206,28 @@ bool FormulaDlg_Impl::EditNextFunc( bool bForward, sal_Int32 nFStart )
     return bFound;
 }
 
+OUString FormulaDlg_Impl::GetPrevFuncExpression( bool bStartFromEnd )
+{
+    OUString aExpression;
+
+    OUString aFormula( m_pHelper->getCurrentFormula());
+    if (aFormula.isEmpty())
+        return aExpression;
+
+    if (bStartFromEnd || mnFuncExpStart >= aFormula.getLength())
+        mnFuncExpStart = aFormula.getLength() - 1;
+
+    sal_Int32 nFStart = mnFuncExpStart;
+    sal_Int32 nFEnd   = 0;
+    if (m_aFormulaHelper.GetNextFunc( aFormula, true, nFStart, &nFEnd))
+    {
+        aExpression = aFormula.copy( nFStart, nFEnd - nFStart); // nFEnd is exclusive
+        mnFuncExpStart = nFStart;
+    }
+
+    return aExpression;
+}
+
 void FormulaDlg_Impl::SaveArg( sal_uInt16 nEd )
 {
     if (nEd<nArgs)
@@ -1243,7 +1260,7 @@ IMPL_LINK_TYPED( FormulaDlg_Impl, FxHdl, ParaWin&, rPtr, void )
 {
     if(&rPtr==pParaWin)
     {
-        m_pBtnForward->Enable(true); //@ In order to be able to input another function.
+        m_pBtnForward->Enable(); //@ In order to be able to input another function.
         m_pTabCtrl->SetCurPageId(TP_FUNCTION);
 
         OUString aUndoStr = m_pHelper->getCurrentFormula();       // it will be added before a ";"
@@ -1285,11 +1302,11 @@ IMPL_LINK_TYPED( FormulaDlg_Impl, ModifyHdl, ParaWin&, rPtr, void )
     }
 }
 
-IMPL_LINK_NOARG(FormulaDlg_Impl, FormulaHdl)
+IMPL_LINK_NOARG_TYPED(FormulaDlg_Impl, FormulaHdl, Edit&, void)
 {
 
     FormEditData* pData = m_pHelper->getFormEditData();
-    if (!pData) return 0;
+    if (!pData) return;
 
     bEditFlag=true;
     OUString    aInputFormula=m_pHelper->getCurrentFormula();
@@ -1347,14 +1364,12 @@ IMPL_LINK_NOARG(FormulaDlg_Impl, FormulaHdl)
 
     m_pHelper->setSelection(aSel.Min(), aSel.Max());
     bEditFlag=false;
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(FormulaDlg_Impl, FormulaCursorHdl, EditBox&, void)
 {
     FormEditData* pData = m_pHelper->getFormEditData();
     if (!pData) return;
-    sal_Int32 nFStart = pData->GetFStart();
 
     bEditFlag=true;
 
@@ -1373,7 +1388,7 @@ IMPL_LINK_NOARG_TYPED(FormulaDlg_Impl, FormulaCursorHdl, EditBox&, void)
     {
         sal_Int32 nPos = aSel.Min();
 
-        nFStart=GetFunctionPos(nPos - 1);
+        sal_Int32 nFStart=GetFunctionPos(nPos - 1);
 
         if(nFStart<nPos)
         {
@@ -1433,12 +1448,21 @@ void FormulaDlg_Impl::UpdateSelection()
     sal_Int32 nArgPos=m_aFormulaHelper.GetArgStart( aFormula,PrivStart,0);
 
     sal_uInt16 nPos=pParaWin->GetActiveLine();
+    if (nPos >= m_aArguments.size())
+    {
+        SAL_WARN("formula.ui","FormulaDlg_Impl::UpdateSelection - shot in foot: nPos " <<
+                nPos << " >= m_aArguments.size() " << m_aArguments.size() <<
+                " for aFormula '" << aFormula << "'");
+        nPos = m_aArguments.size();
+        if (nPos)
+            --nPos;
+    }
 
     for(sal_uInt16 i=0;i<nPos;i++)
     {
         nArgPos += (m_aArguments[i].getLength() + 1);
     }
-    sal_Int32 nLength= m_aArguments[nPos].getLength();
+    sal_Int32 nLength = (nPos < m_aArguments.size()) ? m_aArguments[nPos].getLength() : 0;
 
     Selection aSel(nArgPos,nArgPos+nLength);
     m_pHelper->setSelection((sal_uInt16)nArgPos,(sal_uInt16)(nArgPos+nLength));
@@ -1464,10 +1488,10 @@ void FormulaDlg_Impl::UpdateSelection()
         m_pEdRef->SetUniqueId( pTheRefEdit->GetUniqueId() );
     }
 
-    m_pRefBtn->Show( pButton != NULL );
+    m_pRefBtn->Show( pButton != nullptr );
 
     ::std::pair<RefButton*,RefEdit*> aPair;
-    aPair.first = pButton ? m_pRefBtn.get() : NULL;
+    aPair.first = pButton ? m_pRefBtn.get() : nullptr;
     aPair.second = m_pEdRef;
     return aPair;
 }
@@ -1507,7 +1531,7 @@ void FormulaDlg_Impl::RefInputDoneAfter( bool bForced )
             sal_uInt16 nPrivActiv = pParaWin->GetActiveLine();
             pParaWin->SetArgument( nPrivActiv, m_pEdRef->GetText() );
             ModifyHdl( *pParaWin );
-            pTheRefEdit = NULL;
+            pTheRefEdit = nullptr;
         }
         m_pParent->SetText( aTitle1 );
     }
@@ -1590,6 +1614,7 @@ IMPL_LINK_NOARG_TYPED(FormulaDlg_Impl, StructSelHdl, StructPage&, void)
 IMPL_LINK_NOARG_TYPED(FormulaDlg_Impl, MatrixHdl, Button*, void)
 {
     bUserMatrixFlag=true;
+    UpdateValues(true);
 }
 
 IMPL_LINK_NOARG_TYPED(FormulaDlg_Impl, FuncSelHdl, FuncPage&, void)
@@ -1599,7 +1624,7 @@ IMPL_LINK_NOARG_TYPED(FormulaDlg_Impl, FuncSelHdl, FuncPage&, void)
     {
         const IFunctionDescription* pDesc =pFuncPage->GetFuncDesc( pFuncPage->GetFunction() );
 
-        if(pDesc!=pFuncDesc) m_pBtnForward->Enable(true); //new
+        if(pDesc!=pFuncDesc) m_pBtnForward->Enable(); //new
 
         if (pDesc)
         {
@@ -1634,7 +1659,7 @@ void FormulaDlg_Impl::UpdateParaWin(const Selection& _rSelection, const OUString
     pParaWin->UpdateParas();
 
     Edit* pEd = GetCurrRefEdit();
-    if( pEd != NULL )
+    if( pEd != nullptr )
         pEd->SetSelection( theSel );
 
     pParaWin->SetRefMode(false);
@@ -1645,7 +1670,7 @@ bool FormulaDlg_Impl::UpdateParaWin(Selection& _rSelection)
 
     OUString      aStrEd;
     Edit* pEd = GetCurrRefEdit();
-    if(pEd!=NULL && pTheRefEdit==nullptr)
+    if(pEd!=nullptr && pTheRefEdit==nullptr)
     {
         _rSelection=pEd->GetSelection();
         _rSelection.Justify();
@@ -1670,7 +1695,7 @@ void FormulaDlg_Impl::SetEdSelection()
         Selection theSel = m_pEdRef->GetSelection();
         //  Edit may have the focus -> call ModifyHdl in addition
         //  to what's happening in GetFocus
-        pEd->GetModifyHdl().Call(pEd);
+        pEd->GetModifyHdl().Call(*pEd);
         pEd->GrabFocus();
         pEd->SetSelection(theSel);
     } // if( pEd )
@@ -1752,7 +1777,8 @@ void FormulaModalDialog::SetFocusWin(vcl::Window *pWin,const OString& nUniqueId)
 
 bool FormulaModalDialog::PreNotify( NotifyEvent& rNEvt )
 {
-    m_pImpl->PreNotify( rNEvt );
+    if (m_pImpl)
+        m_pImpl->PreNotify( rNEvt );
 
     return ModalDialog::PreNotify(rNEvt);
 }
@@ -1933,7 +1959,7 @@ void FormEditData::SaveValues()
 
 void FormEditData::Reset()
 {
-    pParent = NULL;
+    pParent = nullptr;
     nMode = 0;
     nFStart = 0;
     nCatSel = 1;        //! oder 0 (zuletzt benutzte)

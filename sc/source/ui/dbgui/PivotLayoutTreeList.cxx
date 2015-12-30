@@ -71,13 +71,16 @@ bool ScPivotLayoutTreeList::DoubleClickHdl()
 void ScPivotLayoutTreeList::FillFields(ScPivotFieldVector& rFieldVector)
 {
     Clear();
+    maItemValues.clear();
 
     ScPivotFieldVector::iterator it;
     for (it = rFieldVector.begin(); it != rFieldVector.end(); ++it)
     {
         ScPivotField& rField = *it;
-        ScItemValue* pItemValue = mpParent->GetItem(rField.nCol);
-        InsertEntry(pItemValue->maName, NULL, false, TREELIST_APPEND, pItemValue);
+        OUString aLabel = mpParent->GetItem( rField.nCol )->maName;
+        ScItemValue* pItemValue = new ScItemValue( aLabel, rField.nCol, rField.nFuncMask );
+        maItemValues.push_back(std::unique_ptr<ScItemValue>(pItemValue));
+        InsertEntry(pItemValue->maName, nullptr, false, TREELIST_APPEND, pItemValue);
     }
 }
 
@@ -92,14 +95,16 @@ void ScPivotLayoutTreeList::InsertEntryForSourceTarget(SvTreeListEntry* pSource,
 
     mpParent->ItemInserted(pOriginalItemValue, meType);
 
-    sal_uLong nPosition = (pTarget == NULL) ? TREELIST_APPEND : GetModel()->GetAbsPos(pTarget) + 1;
+    sal_uLong nPosition = (pTarget == nullptr) ? TREELIST_APPEND : GetModel()->GetAbsPos(pTarget) + 1;
     InsertEntryForItem(pOriginalItemValue, nPosition);
 }
 
 void ScPivotLayoutTreeList::InsertEntryForItem(ScItemValue* pItemValue, sal_uLong nPosition)
 {
-    OUString rName = pItemValue->maName;
-    InsertEntry(rName, NULL, false, nPosition, pItemValue);
+    ScItemValue *pListItemValue = new ScItemValue(pItemValue);
+    maItemValues.push_back(std::unique_ptr<ScItemValue>(pListItemValue));
+    OUString rName = pListItemValue->maName;
+    InsertEntry(rName, nullptr, false, nPosition, pListItemValue);
 }
 
 void ScPivotLayoutTreeList::KeyInput(const KeyEvent& rKeyEvent)

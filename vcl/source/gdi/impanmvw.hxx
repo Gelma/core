@@ -43,7 +43,6 @@ private:
     Size            maSzPix;
     Size            maDispSz;
     Size            maRestSz;
-    MapMode         maMap;
     vcl::Region     maClip;
     VclPtr<VirtualDevice>  mpBackground;
     VclPtr<VirtualDevice>  mpRestore;
@@ -57,12 +56,12 @@ private:
 private:
                     ImplAnimView( Animation* pParent, OutputDevice* pOut,
                                   const Point& rPt, const Size& rSz, sal_uLong nExtraData,
-                                  OutputDevice* pFirstFrameOutDev = NULL );
+                                  OutputDevice* pFirstFrameOutDev = nullptr );
                     ~ImplAnimView();
 
     bool            matches( OutputDevice* pOut, long nExtraData ) const;
     void            drawToPos( sal_uLong nPos );
-    void            draw( sal_uLong nPos, VirtualDevice* pVDev=NULL );
+    void            draw( sal_uLong nPos, VirtualDevice* pVDev=nullptr );
     void            repaint();
     AInfo*          createAInfo() const;
 
@@ -70,7 +69,6 @@ private:
 
     const Point&    getOutPos() const { return maPt; }
 
-    const Size&     getOutSize() const { return maSz; }
     const Size&     getOutSizePix() const { return maSzPix; }
 
     void            pause( bool bPause ) { mbPause = bPause; }

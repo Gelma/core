@@ -70,7 +70,7 @@ using namespace cppu;
 
 namespace { struct lcl_CachedImplId : public rtl::Static< cppu::OImplementationId, lcl_CachedImplId > {}; }
 
-::com::sun::star::uno::Sequence < sal_Int8 > ZipPackageStream::static_getImplementationId()
+css::uno::Sequence < sal_Int8 > ZipPackageStream::static_getImplementationId()
 {
     return lcl_CachedImplId::get().getImplementationId();
 }
@@ -141,7 +141,7 @@ void ZipPackageStream::CloseOwnStreamIfAny()
     if ( m_xStream.is() )
     {
         m_xStream->closeInput();
-        m_xStream = uno::Reference< io::XInputStream >();
+        m_xStream.clear();
         m_bHasSeekable = false;
     }
 }
@@ -202,7 +202,7 @@ sal_Int32 ZipPackageStream::GetEncryptionAlgorithm() const
 
 sal_Int32 ZipPackageStream::GetBlockSize() const
 {
-    return GetEncryptionAlgorithm() == ::com::sun::star::xml::crypto::CipherID::AES_CBC_W3C_PADDING ? 16 : 8;
+    return GetEncryptionAlgorithm() == css::xml::crypto::CipherID::AES_CBC_W3C_PADDING ? 16 : 8;
 }
 
 ::rtl::Reference< EncryptionData > ZipPackageStream::GetEncryptionData( bool bUseWinEncoding )
@@ -349,12 +349,12 @@ uno::Reference< io::XInputStream > ZipPackageStream::TryToGetRawFromDataStream( 
         xTempSeek->seek( 0 );
 
         // close raw stream, package stream and folder
-        xInRaw = uno::Reference< io::XInputStream >();
-        xNewPSProps = uno::Reference< XPropertySet >();
-        xNPSTunnel = uno::Reference< XUnoTunnel >();
-        xNewPackStream = uno::Reference< XDataSinkEncrSupport >();
-        xTunnel = uno::Reference< XUnoTunnel >();
-        xRootNameContainer = uno::Reference< container::XNameContainer >();
+        xInRaw.clear();
+        xNewPSProps.clear();
+        xNPSTunnel.clear();
+        xNewPackStream.clear();
+        xTunnel.clear();
+        xRootNameContainer.clear();
 
         // return the stream representing the first temporary file
         return xTempIn;
@@ -470,7 +470,7 @@ public:
     {}
 
 private:
-    virtual void doWork() SAL_OVERRIDE
+    virtual void doWork() override
     {
         try
         {
@@ -1382,8 +1382,7 @@ OUString ZipPackageStream::getImplementationName()
 Sequence< OUString > ZipPackageStream::getSupportedServiceNames()
     throw ( RuntimeException, std::exception )
 {
-    Sequence< OUString > aNames( 1 );
-    aNames[0] = "com.sun.star.packages.PackageStream";
+    Sequence<OUString> aNames { "com.sun.star.packages.PackageStream" };
     return aNames;
 }
 

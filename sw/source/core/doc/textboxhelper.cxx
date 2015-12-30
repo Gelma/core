@@ -151,14 +151,14 @@ std::set<const SwFrameFormat*> SwTextBoxHelper::findTextBoxes(const SwDoc* pDoc)
 std::set<const SwFrameFormat*> SwTextBoxHelper::findTextBoxes(const SwNode& rNode)
 {
     const SwDoc* pDoc = rNode.GetDoc();
-    const SwContentNode* pContentNode = 0;
-    const SwContentFrm* pContentFrm = 0;
+    const SwContentNode* pContentNode = nullptr;
+    const SwContentFrame* pContentFrame = nullptr;
     bool bHaveViewShell = pDoc->getIDocumentLayoutAccess().GetCurrentViewShell();
-    if (bHaveViewShell && (pContentNode = rNode.GetContentNode()) && (pContentFrm = pContentNode->getLayoutFrm(pDoc->getIDocumentLayoutAccess().GetCurrentLayout())))
+    if (bHaveViewShell && (pContentNode = rNode.GetContentNode()) && (pContentFrame = pContentNode->getLayoutFrame(pDoc->getIDocumentLayoutAccess().GetCurrentLayout())))
     {
         // We can use the layout information to iterate over only the frames which are anchored to us.
         std::set<const SwFrameFormat*> aRet;
-        const SwSortedObjs* pSortedObjs = pContentFrm->GetDrawObjs();
+        const SwSortedObjs* pSortedObjs = pContentFrame->GetDrawObjs();
         if (pSortedObjs)
         {
             for (size_t i = 0; i < pSortedObjs->size(); ++i)
@@ -195,13 +195,13 @@ std::map<SwFrameFormat*, SwFrameFormat*> SwTextBoxHelper::findShapes(const SwDoc
 /// If the passed SdrObject is in fact a TextFrame, that is used as a TextBox.
 bool lcl_isTextBox(SdrObject* pSdrObject, std::set<const SwFrameFormat*>& rTextBoxes)
 {
-    SwVirtFlyDrawObj* pObject = PTR_CAST(SwVirtFlyDrawObj, pSdrObject);
+    SwVirtFlyDrawObj* pObject = dynamic_cast<SwVirtFlyDrawObj*>(pSdrObject);
     return pObject && rTextBoxes.find(pObject->GetFormat()) != rTextBoxes.end();
 }
 
 bool SwTextBoxHelper::isTextBox(const SdrObject* pObject)
 {
-    const SwVirtFlyDrawObj* pVirtFlyDrawObj = PTR_CAST(SwVirtFlyDrawObj, pObject);
+    const SwVirtFlyDrawObj* pVirtFlyDrawObj = dynamic_cast<const SwVirtFlyDrawObj*>(pObject);
     if (!pVirtFlyDrawObj)
         return false;
     std::set<const SwFrameFormat*> aTextBoxes = findTextBoxes(pVirtFlyDrawObj->GetFormat()->GetDoc());
@@ -225,7 +225,7 @@ uno::Any SwTextBoxHelper::getByIndex(SdrPage* pPage, sal_Int32 nIndex, std::set<
     if (nIndex < 0)
         throw lang::IndexOutOfBoundsException();
 
-    SdrObject* pRet = 0;
+    SdrObject* pRet = nullptr;
     sal_Int32 nCount = 0; // Current logical index.
     for (size_t i = 0; i < pPage->GetObjCount(); ++i)
     {
@@ -268,14 +268,14 @@ SwFrameFormat* SwTextBoxHelper::findTextBox(uno::Reference<drawing::XShape> xSha
 {
     SwXShape* pShape = dynamic_cast<SwXShape*>(xShape.get());
     if (!pShape)
-        return 0;
+        return nullptr;
 
     return findTextBox(pShape->GetFrameFormat());
 }
 
 SwFrameFormat* SwTextBoxHelper::findTextBox(const SwFrameFormat* pShape)
 {
-    SwFrameFormat* pRet = 0;
+    SwFrameFormat* pRet = nullptr;
 
     // Only draw frames can have TextBoxes.
     if (pShape && pShape->Which() == RES_DRAWFRMFMT && pShape->GetAttrSet().HasItem(RES_CNTNT))
@@ -486,6 +486,12 @@ void SwTextBoxHelper::syncProperty(SwFrameFormat* pShape, sal_uInt16 nWID, sal_u
             case MID_FRMSIZE_IS_AUTO_HEIGHT:
                 aPropertyName = UNO_NAME_FRAME_ISAUTOMATIC_HEIGHT;
                 break;
+            case MID_FRMSIZE_REL_HEIGHT_RELATION:
+                aPropertyName = UNO_NAME_RELATIVE_HEIGHT_RELATION;
+                break;
+            case MID_FRMSIZE_REL_WIDTH_RELATION:
+                aPropertyName = UNO_NAME_RELATIVE_WIDTH_RELATION;
+                break;
             default:
                 aPropertyName = UNO_NAME_SIZE;
                 bAdjustSize = true;
@@ -614,7 +620,7 @@ void SwTextBoxHelper::restoreLinks(std::set<_ZSortFly>& rOld, std::vector<SwFram
     }
 }
 
-void SwTextBoxHelper::syncFlyFrmAttr(SwFrameFormat& rShape, SfxItemSet& rSet)
+void SwTextBoxHelper::syncFlyFrameAttr(SwFrameFormat& rShape, SfxItemSet& rSet)
 {
     if (SwFrameFormat* pFormat = findTextBox(&rShape))
     {
@@ -638,7 +644,7 @@ void SwTextBoxHelper::syncFlyFrmAttr(SwFrameFormat& rShape, SfxItemSet& rSet)
                 aTextBoxSet.Put(aOrient);
 
                 // restore height (shrinked for extending beyond the page bottom - tdf#91260)
-                SwFormatFrmSize aSize(pFormat->GetFrmSize());
+                SwFormatFrameSize aSize(pFormat->GetFrameSize());
                 if (!aRect.IsEmpty())
                 {
                     aSize.SetHeight(aRect.getHeight());
@@ -666,7 +672,7 @@ void SwTextBoxHelper::syncFlyFrmAttr(SwFrameFormat& rShape, SfxItemSet& rSet)
                 // textbox).
                 SwFormatVertOrient aVertOrient(rShape.GetVertOrient());
                 SwFormatHoriOrient aHoriOrient(rShape.GetHoriOrient());
-                SwFormatFrmSize aSize(pFormat->GetFrmSize());
+                SwFormatFrameSize aSize(pFormat->GetFrameSize());
 
                 Rectangle aRect = getTextRectangle(&rShape, /*bAbsolute=*/false);
                 if (!aRect.IsEmpty())
@@ -684,7 +690,7 @@ void SwTextBoxHelper::syncFlyFrmAttr(SwFrameFormat& rShape, SfxItemSet& rSet)
             }
             break;
             default:
-                SAL_WARN("sw.core", "SwTextBoxHelper::syncFlyFrmAttr: unhandled which-id: " << nWhich);
+                SAL_WARN("sw.core", "SwTextBoxHelper::syncFlyFrameAttr: unhandled which-id: " << nWhich);
                 break;
             }
 
@@ -694,7 +700,7 @@ void SwTextBoxHelper::syncFlyFrmAttr(SwFrameFormat& rShape, SfxItemSet& rSet)
         while (0 != (nWhich = aIter.NextItem()->Which()));
 
         if (aTextBoxSet.Count())
-            pFormat->GetDoc()->SetFlyFrmAttr(*pFormat, aTextBoxSet);
+            pFormat->GetDoc()->SetFlyFrameAttr(*pFormat, aTextBoxSet);
     }
 }
 

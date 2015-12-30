@@ -87,28 +87,28 @@ namespace sw
                 utl::MediaDescriptor::PROP_OUTPUTSTREAM(),
                 uno::Reference< io::XOutputStream >() );
 
-        // Actually get the SwRootFrm to call dumpAsXml
+        // Actually get the SwRootFrame to call dumpAsXml
         uno::Reference< lang::XUnoTunnel > xDocTunnel( m_xSrcDoc, uno::UNO_QUERY );
         SwXTextDocument* pXDoc = UnoTunnelGetImplementation< SwXTextDocument >( xDocTunnel );
         if ( pXDoc )
         {
-            SwRootFrm* pLayout = pXDoc->GetDocShell()->GetWrtShell()->GetLayout();
+            SwRootFrame* pLayout = pXDoc->GetDocShell()->GetWrtShell()->GetLayout();
 
             // Get sure that the whole layout is processed: set a visible area
             // even though there isn't any need of it
             pXDoc->GetDocShell()->GetWrtShell()->StartAction();
             Rectangle aRect( 0, 0, 26000, 21000 );
             pXDoc->GetDocShell()->SetVisArea( aRect );
-            pLayout->InvalidateAllContent( );
+            pLayout->InvalidateAllContent( INV_SIZE );
             pXDoc->GetDocShell()->GetWrtShell()->EndAction();
 
             // Dump the layout XML into the XOutputStream
             xmlOutputBufferPtr outBuffer = xmlOutputBufferCreateIO(
-                    writeCallback, closeCallback, static_cast<void*>(xOut.get()), NULL );
+                    writeCallback, closeCallback, static_cast<void*>(xOut.get()), nullptr );
 
             xmlTextWriterPtr writer = xmlNewTextWriter( outBuffer );
             xmlTextWriterSetIndent(writer, 1);
-            xmlTextWriterStartDocument( writer, NULL, NULL, NULL );
+            xmlTextWriterStartDocument( writer, nullptr, nullptr, nullptr );
 
             // TODO This doesn't export the whole XML file, whereas dumpAsXML() does it nicely
             pLayout->dumpAsXml( writer );
@@ -155,17 +155,16 @@ namespace sw
     uno::Sequence< OUString > LayoutDumpFilter::getSupportedServiceNames()
         throw (uno::RuntimeException, std::exception)
     {
-        uno::Sequence< OUString > aSeq( 1 );
-        aSeq[0] = "com.sun.star.document.ExportFilter";
+        uno::Sequence<OUString> aSeq { "com.sun.star.document.ExportFilter" };
         return aSeq;
     }
 
 } // Namespace sw
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_Writer_LayoutDump_get_implementation(::com::sun::star::uno::XComponentContext*,
-                                ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_Writer_LayoutDump_get_implementation(css::uno::XComponentContext*,
+                                css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new sw::LayoutDumpFilter());
 }

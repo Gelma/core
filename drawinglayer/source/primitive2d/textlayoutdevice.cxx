@@ -24,6 +24,7 @@
 #include <drawinglayer/primitive2d/textlayoutdevice.hxx>
 #include <comphelper/processfactory.hxx>
 #include <comphelper/unique_disposing_ptr.hxx>
+#include <tools/gen.hxx>
 #include <vcl/timer.hxx>
 #include <vcl/virdev.hxx>
 #include <vcl/font.hxx>
@@ -65,15 +66,16 @@ namespace
     public:
         explicit ImpTimedRefDev(scoped_timed_RefDev& rOwnerofMe);
         virtual ~ImpTimedRefDev();
-        virtual void Invoke() SAL_OVERRIDE;
+        virtual void Invoke() override;
 
         VirtualDevice& acquireVirtualDevice();
         void releaseVirtualDevice();
     };
 
     ImpTimedRefDev::ImpTimedRefDev(scoped_timed_RefDev& rOwnerOfMe)
-    :   mrOwnerOfMe(rOwnerOfMe),
-        mpVirDev(0L),
+    :   Timer( "Timer to destroy drawinglayer reference device" ),
+        mrOwnerOfMe(rOwnerOfMe),
+        mpVirDev(nullptr),
         mnUseCount(0L)
     {
         SetTimeout(3L * 60L * 1000L); // three minutes
@@ -269,10 +271,7 @@ namespace drawinglayer
                     rText,
                     nIndex,
                     nIndex,
-                    nLength,
-                    true,
-                    0,
-                    0);
+                    nLength);
             }
         }
 

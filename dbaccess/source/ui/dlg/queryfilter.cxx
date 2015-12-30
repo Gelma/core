@@ -516,9 +516,9 @@ void DlgFilterCrit::SetLine( sal_uInt16 nIdx,const PropertyValue& _rItem,bool _b
     aStr = comphelper::string::stripStart(aStr, ' ');
 
     // to make sure that we only set first three
-    ListBox* pColumnListControl =  NULL;
-    ListBox* pPredicateListControl = NULL;
-    Edit* pPredicateValueControl = NULL;
+    ListBox* pColumnListControl =  nullptr;
+    ListBox* pPredicateListControl = nullptr;
+    Edit* pPredicateValueControl = nullptr;
     switch( nIdx )
     {
         case 0:
@@ -551,7 +551,7 @@ void DlgFilterCrit::SetLine( sal_uInt16 nIdx,const PropertyValue& _rItem,bool _b
             sName = _rItem.Name;
         // select the appropriate field name
         SelectField( *pColumnListControl, sName );
-        ListSelectHdl( pColumnListControl );
+        ListSelectHdl( *pColumnListControl );
 
         // select the appropriate condition
         pPredicateListControl->SelectEntryPos( GetSelectionPos( (sal_Int32)_rItem.Handle, *pPredicateListControl ) );
@@ -681,16 +681,16 @@ void DlgFilterCrit::EnableLines()
         m_pET_WHEREVALUE3->Disable();
 }
 
-IMPL_LINK( DlgFilterCrit, ListSelectHdl, ListBox *, pListBox )
+IMPL_LINK_TYPED( DlgFilterCrit, ListSelectHdl, ListBox&, rListBox, void )
 {
     OUString aName;
     ListBox* pComp;
-    if(pListBox == m_pLB_WHEREFIELD1)
+    if(&rListBox == m_pLB_WHEREFIELD1)
     {
         aName = LbText(*m_pLB_WHEREFIELD1);
         pComp = m_pLB_WHERECOMP1;
     }
-    else if(pListBox == m_pLB_WHEREFIELD2)
+    else if(&rListBox == m_pLB_WHEREFIELD2)
     {
         aName = LbText(*m_pLB_WHEREFIELD2);
         pComp = m_pLB_WHERECOMP2;
@@ -736,13 +736,11 @@ IMPL_LINK( DlgFilterCrit, ListSelectHdl, ListBox *, pListBox )
     pComp->SelectEntryPos(0);
 
     EnableLines();
-    return 0;
 }
 
-IMPL_LINK( DlgFilterCrit, ListSelectCompHdl, ListBox *, /*pListBox*/ )
+IMPL_LINK_NOARG_TYPED( DlgFilterCrit, ListSelectCompHdl, ListBox&, void )
 {
     EnableLines();
-    return 0;
 }
 
 void DlgFilterCrit::BuildWherePart()
@@ -772,7 +770,7 @@ void DlgFilterCrit::BuildWherePart()
         Sequence<Sequence<PropertyValue> >& _rValues = aFilter;
         if ( getCondition(*m_pLB_WHEREFIELD2,*m_pLB_WHERECOMP2,*m_pET_WHEREVALUE2,aValue) )
             _rValues = aHaving;
-        PropertyValue* pPos = NULL;
+        PropertyValue* pPos = nullptr;
         if ( m_pLB_WHERECOND2->GetSelectEntryPos() )
         {
             sal_Int32 nPos = _rValues.getLength();
@@ -796,7 +794,7 @@ void DlgFilterCrit::BuildWherePart()
         Sequence<Sequence<PropertyValue> >& _rValues = aFilter;
         if ( getCondition(*m_pLB_WHEREFIELD3,*m_pLB_WHERECOMP3,*m_pET_WHEREVALUE3,aValue) )
             _rValues = aHaving;
-        PropertyValue* pPos = NULL;
+        PropertyValue* pPos = nullptr;
         if ( m_pLB_WHERECOND3->GetSelectEntryPos() )
         {
             sal_Int32 nPos = _rValues.getLength();

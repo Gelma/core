@@ -59,77 +59,6 @@ uno::Reference< linguistic2::XLanguageGuessing > LanguageGuessingHelper::GetGues
     return m_xLanguageGuesser;
 }
 
-OUString RetrieveLabelFromCommand(
-    const OUString& aCmdURL,
-    const uno::Reference< uno::XComponentContext >& _xContext,
-    uno::Reference< container::XNameAccess >& _xUICommandLabels,
-    const uno::Reference< frame::XFrame >& _xFrame,
-    OUString& _rModuleIdentifier,
-    bool& _rIni,
-    const sal_Char* _pName)
-{
-    OUString aLabel;
-
-    // Retrieve popup menu labels
-    if ( !_xUICommandLabels.is() )
-    {
-      try
-        {
-            if ( !_rIni )
-            {
-                _rIni = true;
-                Reference< XModuleManager2 > xModuleManager = ModuleManager::create( _xContext );
-
-                try
-                {
-                    _rModuleIdentifier = xModuleManager->identify( _xFrame );
-                }
-                catch( const Exception& )
-                {
-                }
-            }
-
-            Reference< XNameAccess > xNameAccess = frame::theUICommandDescription::get( _xContext );
-            xNameAccess->getByName( _rModuleIdentifier ) >>= _xUICommandLabels;
-        }
-        catch ( const Exception& )
-        {
-        }
-    }
-
-    if ( _xUICommandLabels.is() )
-    {
-        try
-        {
-            if ( !aCmdURL.isEmpty() )
-            {
-                OUString aStr;
-                Sequence< PropertyValue > aPropSeq;
-                if( _xUICommandLabels->hasByName( aCmdURL ) )
-                {
-                    if ( _xUICommandLabels->getByName( aCmdURL ) >>= aPropSeq )
-                    {
-                        for ( sal_Int32 i = 0; i < aPropSeq.getLength(); i++ )
-                        {
-                            if ( aPropSeq[i].Name.equalsAscii( _pName/*"Label"*/ ))
-                            {
-                                aPropSeq[i].Value >>= aStr;
-                                break;
-                            }
-                        }
-                    }
-                }
-                aLabel = aStr;
-            }
-        }
-        catch ( const com::sun::star::uno::Exception& )
-        {
-        }
-    }
-
-    return aLabel;
-}
-
 void FillLangItems( std::set< OUString > &rLangItems,
         const uno::Reference< frame::XFrame > & rxFrame,
         const LanguageGuessingHelper & rLangGuessHelper,
@@ -166,7 +95,7 @@ void FillLangItems( std::set< OUString > &rLangItems,
     uno::Reference< linguistic2::XLanguageGuessing > xLangGuesser( rLangGuessHelper.GetGuesser() );
     if ( xLangGuesser.is() && !rGuessedTextLang.isEmpty())
     {
-        ::com::sun::star::lang::Locale aLocale(xLangGuesser->guessPrimaryLanguage( rGuessedTextLang, 0, rGuessedTextLang.getLength()) );
+        css::lang::Locale aLocale(xLangGuesser->guessPrimaryLanguage( rGuessedTextLang, 0, rGuessedTextLang.getLength()) );
         LanguageType nLang = LanguageTag( aLocale ).makeFallback().getLanguageType();
         if (nLang != LANGUAGE_DONTKNOW && nLang != LANGUAGE_NONE && nLang != LANGUAGE_SYSTEM
             && IsScriptTypeMatchingToLanguage( nScriptType, nLang ))
@@ -181,10 +110,10 @@ void FillLangItems( std::set< OUString > &rLangItems,
     }
 
     //6--all languages used in current document
-    Reference< com::sun::star::frame::XModel > xModel;
+    Reference< css::frame::XModel > xModel;
     if ( rxFrame.is() )
     {
-       Reference< com::sun::star::frame::XController > xController( rxFrame->getController(), UNO_QUERY );
+       Reference< css::frame::XController > xController( rxFrame->getController(), UNO_QUERY );
        if ( xController.is() )
            xModel = xController->getModel();
     }

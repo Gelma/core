@@ -18,7 +18,6 @@
  */
 
 #include <string.h>
-#include <vcl/svpforlokit.hxx>
 #include <vcl/syswin.hxx>
 
 #include "headless/svpframe.hxx"
@@ -32,23 +31,24 @@
 using namespace basebmp;
 using namespace basegfx;
 
-SvpSalFrame* SvpSalFrame::s_pFocusFrame = NULL;
+SvpSalFrame* SvpSalFrame::s_pFocusFrame = nullptr;
 
 #ifdef IOS
 #define SvpSalGraphics AquaSalGraphics
 #endif
 
 #ifndef IOS
-
 namespace {
     /// Decouple SalFrame lifetime from damagetracker lifetime
     struct DamageTracker : public basebmp::IBitmapDeviceDamageTracker
     {
         virtual ~DamageTracker() {}
-        virtual void damaged( const basegfx::B2IBox& ) const SAL_OVERRIDE {}
+        virtual void damaged( const basegfx::B2IBox& ) const override {}
     };
 }
+#endif
 
+#ifdef ANDROID
 void SvpSalFrame::enableDamageTracker( bool bOn )
 {
     if( m_bDamageTracking == bOn )
@@ -63,24 +63,22 @@ void SvpSalFrame::enableDamageTracker( bool bOn )
     }
     m_bDamageTracking = bOn;
 }
-
 #endif
+
 
 SvpSalFrame::SvpSalFrame( SvpSalInstance* pInstance,
                           SalFrame* pParent,
-                          sal_uLong nSalFrameStyle,
-                          bool      bTopDown,
+                          SalFrameStyleFlags nSalFrameStyle,
                           basebmp::Format nScanlineFormat,
                           SystemParentData* ) :
     m_pInstance( pInstance ),
     m_pParent( static_cast<SvpSalFrame*>(pParent) ),
     m_nStyle( nSalFrameStyle ),
     m_bVisible( false ),
-    m_bTopDown( bTopDown ),
 #ifndef IOS
     m_bDamageTracking( false ),
-#endif
     m_nScanlineFormat( nScanlineFormat ),
+#endif
     m_nMinWidth( 0 ),
     m_nMinHeight( 0 ),
     m_nMaxWidth( 0 ),
@@ -91,7 +89,7 @@ SvpSalFrame::SvpSalFrame( SvpSalInstance* pInstance,
     memset( static_cast<void *>(&m_aSystemChildData), 0, sizeof( SystemEnvData ) );
     m_aSystemChildData.nSize        = sizeof( SystemEnvData );
 #ifdef IOS
-    // Nothing
+    (void) nScanlineFormat;
 #elif defined ANDROID
     // Nothing
 #else
@@ -123,22 +121,22 @@ SvpSalFrame::~SvpSalFrame()
     if( s_pFocusFrame == this )
     {
         // SAL_DEBUG("SvpSalFrame::~SvpSalFrame: losing focus: " << this);
-        s_pFocusFrame = NULL;
+        s_pFocusFrame = nullptr;
         // call directly here, else an event for a destroyed frame would be dispatched
-        CallCallback( SALEVENT_LOSEFOCUS, NULL );
+        CallCallback( SALEVENT_LOSEFOCUS, nullptr );
         // if the handler has not set a new focus frame
         // pass focus to another frame, preferably a document style window
-        if( s_pFocusFrame == NULL )
+        if( s_pFocusFrame == nullptr )
         {
             const std::list< SalFrame* >& rFrames( m_pInstance->getFrames() );
             for( std::list< SalFrame* >::const_iterator it = rFrames.begin(); it != rFrames.end(); ++it )
             {
                 SvpSalFrame* pFrame = const_cast<SvpSalFrame*>(static_cast<const SvpSalFrame*>(*it));
                 if( pFrame->m_bVisible        &&
-                    pFrame->m_pParent == NULL &&
-                    (pFrame->m_nStyle & (SAL_FRAME_STYLE_MOVEABLE |
-                                         SAL_FRAME_STYLE_SIZEABLE |
-                                         SAL_FRAME_STYLE_CLOSEABLE) ) != 0
+                    pFrame->m_pParent == nullptr &&
+                    (pFrame->m_nStyle & (SalFrameStyleFlags::MOVEABLE |
+                                         SalFrameStyleFlags::SIZEABLE |
+                                         SalFrameStyleFlags::CLOSEABLE) )
                     )
                 {
                     pFrame->GetFocus();
@@ -154,13 +152,13 @@ void SvpSalFrame::GetFocus()
     if( s_pFocusFrame == this )
         return;
 
-    if( (m_nStyle & (SAL_FRAME_STYLE_OWNERDRAWDECORATION | SAL_FRAME_STYLE_FLOAT)) == 0 )
+    if( (m_nStyle & (SalFrameStyleFlags::OWNERDRAWDECORATION | SalFrameStyleFlags::FLOAT)) == SalFrameStyleFlags::NONE )
     {
         if( s_pFocusFrame )
             s_pFocusFrame->LoseFocus();
         // SAL_DEBUG("SvpSalFrame::GetFocus(): " << this);
         s_pFocusFrame = this;
-        m_pInstance->PostEvent( this, NULL, SALEVENT_GETFOCUS );
+        m_pInstance->PostEvent( this, nullptr, SALEVENT_GETFOCUS );
     }
 }
 
@@ -169,8 +167,8 @@ void SvpSalFrame::LoseFocus()
     if( s_pFocusFrame == this )
     {
         // SAL_DEBUG("SvpSalFrame::LoseFocus: " << this);
-        m_pInstance->PostEvent( this, NULL, SALEVENT_LOSEFOCUS );
-        s_pFocusFrame = NULL;
+        m_pInstance->PostEvent( this, nullptr, SALEVENT_LOSEFOCUS );
+        s_pFocusFrame = nullptr;
     }
 }
 
@@ -233,7 +231,7 @@ void SvpSalFrame::Show( bool bVisible, bool bNoActivate )
     {
         // SAL_DEBUG("SvpSalFrame::Show: showing: " << this);
         m_bVisible = true;
-        m_pInstance->PostEvent( this, NULL, SALEVENT_RESIZE );
+        m_pInstance->PostEvent( this, nullptr, SALEVENT_RESIZE );
         if( ! bNoActivate )
             GetFocus();
     }
@@ -241,7 +239,7 @@ void SvpSalFrame::Show( bool bVisible, bool bNoActivate )
     {
         // SAL_DEBUG("SvpSalFrame::Show: hiding: " << this);
         m_bVisible = false;
-        m_pInstance->PostEvent( this, NULL, SALEVENT_RESIZE );
+        m_pInstance->PostEvent( this, nullptr, SALEVENT_RESIZE );
         LoseFocus();
     }
     else
@@ -292,8 +290,7 @@ void SvpSalFrame::SetPosSize( long nX, long nY, long nWidth, long nHeight, sal_u
             aFrameSize.setX( 1 );
         if( aFrameSize.getY() == 0 )
             aFrameSize.setY( 1 );
-        sal_Int32 nStride = basebmp::getBitmapDeviceStrideForWidth(m_nScanlineFormat, aFrameSize.getX());
-        m_aFrame = createBitmapDevice( aFrameSize, m_bTopDown, m_nScanlineFormat, nStride );
+        m_aFrame = createBitmapDevice( aFrameSize, true, m_nScanlineFormat );
         if (m_bDamageTracking)
             m_aFrame->setDamageTracker(
                 basebmp::IBitmapDeviceDamageTrackerSharedPtr( new DamageTracker ) );
@@ -305,7 +302,7 @@ void SvpSalFrame::SetPosSize( long nX, long nY, long nWidth, long nHeight, sal_u
         }
     }
     if( m_bVisible )
-        m_pInstance->PostEvent( this, NULL, SALEVENT_RESIZE );
+        m_pInstance->PostEvent( this, nullptr, SALEVENT_RESIZE );
 #endif
 }
 
@@ -337,7 +334,7 @@ SalFrame* SvpSalFrame::GetParent() const
 
 void SvpSalFrame::SetWindowState( const SalFrameState *pState )
 {
-    if (pState == NULL)
+    if (pState == nullptr)
         return;
 
     // Request for position or size change
@@ -408,10 +405,6 @@ void SvpSalFrame::SetPointerPos( long, long )
 }
 
 void SvpSalFrame::Flush()
-{
-}
-
-void SvpSalFrame::Sync()
 {
 }
 
@@ -493,16 +486,6 @@ void SvpSalFrame::UnionClipRegion( long, long, long, long )
 
 void SvpSalFrame::EndSetClipRegion()
 {
-}
-
-SalFrame* GetSvpFocusFrameForLibreOfficeKit()
-{
-    return SvpSalFrame::GetFocusFrame();
-}
-
-vcl::Window* GetSalFrameWindowForLibreOfficeKit(SalFrame *pSF)
-{
-    return pSF->GetWindow();
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

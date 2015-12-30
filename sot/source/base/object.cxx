@@ -44,7 +44,7 @@ SotFactory * SotObject::ClassFactory()
 
 void * SotObject::Cast( const SotFactory * pFact )
 {
-    void * pRet = NULL;
+    void * pRet = nullptr;
     if( !pFact || pFact == ClassFactory() )
         pRet = this;
     return pRet;
@@ -58,7 +58,6 @@ void * SotObject::Cast( const SotFactory * pFact )
 SotObject::SotObject()
     : nOwnerLockCount( 0 )
     , bOwner      ( true )
-    , bSVObject   ( false )
     , bInClose    ( false )
 {
     SotFactory::IncSvObjectCount( this );

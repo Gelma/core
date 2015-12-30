@@ -271,8 +271,8 @@ OConnection::OConnection(ODatabaseSource& _rDB
             ,m_aTableTypeFilter(_rDB.m_pImpl->m_aTableTypeFilter)
             ,m_aContext( _rxORB )
             ,m_xMasterConnection(_rxMaster)
-            ,m_pTables(NULL)
-            ,m_pViews(NULL)
+            ,m_pTables(nullptr)
+            ,m_pViews(nullptr)
             ,m_aWarnings( Reference< XWarningsSupplier >( _rxMaster, UNO_QUERY ) )
             ,m_nInAppend(0)
             ,m_bSupportsViews(false)
@@ -412,9 +412,7 @@ Sequence< Type > OConnection::getTypes() throw (RuntimeException, std::exception
     if ( !m_bSupportsGroups )
         aNormalizedTypes.erase( cppu::UnoType<XGroupsSupplier>::get() );
 
-    Sequence< Type > aSupportedTypes( aNormalizedTypes.size() );
-    ::std::copy( aNormalizedTypes.begin(), aNormalizedTypes.end(), aSupportedTypes.getArray() );
-    return aSupportedTypes;
+    return comphelper::containerToSequence<Type>(aNormalizedTypes);
 }
 
 Sequence< sal_Int8 > OConnection::getImplementationId() throw (RuntimeException, std::exception)
@@ -468,7 +466,7 @@ void OConnection::disposing()
         ::comphelper::disposeComponent(xComp);
     }
     m_aStatements.clear();
-    m_xMasterTables = NULL;
+    m_xMasterTables = nullptr;
 
     if(m_pTables)
         m_pTables->dispose();
@@ -494,7 +492,7 @@ void OConnection::disposing()
     catch(const Exception&)
     {
     }
-    m_xMasterConnection = NULL;
+    m_xMasterConnection = nullptr;
 }
 
 // XChild
@@ -667,8 +665,7 @@ Reference< XInterface > SAL_CALL OConnection::createInstanceWithArguments( const
 
 Sequence< OUString > SAL_CALL OConnection::getAvailableServiceNames(  ) throw (RuntimeException, std::exception)
 {
-    Sequence< OUString > aRet(1);
-    aRet[0] = SERVICE_NAME_SINGLESELECTQUERYCOMPOSER;
+    Sequence< OUString > aRet { SERVICE_NAME_SINGLESELECTQUERYCOMPOSER };
     return aRet;
 }
 

@@ -45,12 +45,12 @@ public:
     OPackageStructureCreator() {}
 
     // XPackageStructureCreator
-    virtual void SAL_CALL convertToPackage( const OUString& aFolderUrl, const uno::Reference< io::XOutputStream >& xTargetStream ) throw (io::IOException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL convertToPackage( const OUString& aFolderUrl, const uno::Reference< io::XOutputStream >& xTargetStream ) throw (io::IOException, uno::RuntimeException, std::exception) override;
 
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName() throw (uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw (uno::RuntimeException, std::exception) override;
+    virtual uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (uno::RuntimeException, std::exception) override;
 };
 
 
@@ -68,7 +68,7 @@ void SAL_CALL OPackageStructureCreator::convertToPackage( const OUString& aFolde
     ::ucbhelper::Content aContent;
     if( ::ucbhelper::Content::create( aFolderUrl, xComEnv, comphelper::getProcessComponentContext(), aContent ) )
     {
-        SvStream* pTempStream = NULL;
+        SvStream* pTempStream = nullptr;
 
         OUString aTempURL = ::utl::TempFile().GetURL();
         try {
@@ -91,8 +91,8 @@ void SAL_CALL OPackageStructureCreator::convertToPackage( const OUString& aFolde
                     if ( aStorage->GetError() || aTargetStorage->GetError() || pTempStream->GetError() )
                         throw io::IOException();
 
-                    aTargetStorage = NULL;
-                    aStorage = NULL;
+                    aTargetStorage = nullptr;
+                    aStorage = nullptr;
 
                     pTempStream->Seek( 0 );
 

@@ -172,12 +172,7 @@ PropertyMapPtr TableStyleSheetEntry::GetProperties( sal_Int32 nMask, StyleSheetE
 
 beans::PropertyValues StyleSheetEntry::GetInteropGrabBagSeq()
 {
-    uno::Sequence<beans::PropertyValue> aSeq(m_aInteropGrabBag.size());
-    beans::PropertyValue* pSeq = aSeq.getArray();
-    for (std::vector<beans::PropertyValue>::iterator i = m_aInteropGrabBag.begin(); i != m_aInteropGrabBag.end(); ++i)
-        *pSeq++ = *i;
-
-    return aSeq;
+    return comphelper::containerToSequence(m_aInteropGrabBag);
 }
 
 beans::PropertyValue StyleSheetEntry::GetInteropGrabBag()
@@ -290,7 +285,6 @@ struct StyleSheetTable_Impl
     std::vector< StyleSheetEntryPtr >       m_aStyleSheetEntries;
     StyleSheetEntryPtr                      m_pCurrentEntry;
     PropertyMapPtr                          m_pDefaultParaProps, m_pDefaultCharProps;
-    PropertyMapPtr                          m_pCurrentProps;
     StringPairMap_t                         m_aStyleNameMap;
     /// Style names which should not be used without a " (user)" suffix.
     std::set<OUString>                      m_aReservedStyleNames;
@@ -831,21 +825,13 @@ void StyleSheetTable::lcl_entry(int /*pos*/, writerfilter::Reference<Properties>
         if (!m_pImpl->m_pCurrentEntry->aLsdExceptions.empty())
         {
             std::vector<beans::PropertyValue>& rLsdExceptions = m_pImpl->m_pCurrentEntry->aLsdExceptions;
-            uno::Sequence<beans::PropertyValue> aLsdExceptions(rLsdExceptions.size());
-            beans::PropertyValue* pLsdExceptions = aLsdExceptions.getArray();
-            for (std::vector<beans::PropertyValue>::iterator i = rLsdExceptions.begin(); i != rLsdExceptions.end(); ++i)
-                *pLsdExceptions++ = *i;
-
             beans::PropertyValue aValue;
             aValue.Name = "lsdExceptions";
-            aValue.Value = uno::makeAny(aLsdExceptions);
+            aValue.Value = uno::makeAny( comphelper::containerToSequence(rLsdExceptions) );
             rLatentStyles.push_back(aValue);
         }
 
-        uno::Sequence<beans::PropertyValue> aLatentStyles(rLatentStyles.size());
-        beans::PropertyValue* pLatentStyles = aLatentStyles.getArray();
-        for (std::vector<beans::PropertyValue>::iterator i = rLatentStyles.begin(); i != rLatentStyles.end(); ++i)
-            *pLatentStyles++ = *i;
+        uno::Sequence<beans::PropertyValue> aLatentStyles( comphelper::containerToSequence(rLatentStyles) );
 
         // We can put all latent style info directly to the document interop
         // grab bag, as we can be sure that only a single style entry has
@@ -975,11 +961,11 @@ void StyleSheetTable::ApplyStyleSheets( FontTablePtr rFontTable )
                     else
                     {
                         bInsert = true;
-                        xStyle = uno::Reference< style::XStyle >(xDocFactory->createInstance(
-                                    bParaStyle ?
+                        xStyle.set(xDocFactory->createInstance(
+                                     bParaStyle ?
                                         getPropertyName( PROP_SERVICE_PARA_STYLE ) :
                                         (bListStyle ? OUString("com.sun.star.style.NumberingStyle") : getPropertyName( PROP_SERVICE_CHAR_STYLE ))),
-                                        uno::UNO_QUERY_THROW);
+                                   uno::UNO_QUERY_THROW);
 
                         // Numbering styles have to be inserted early, as e.g. the NumberingRules property is only available after insertion.
                         if (bListStyle)
@@ -1343,7 +1329,6 @@ static const sal_Char* const aStyleNamePairs[] =
     "TOC 7",                     "Contents 7",
     "TOC 8",                     "Contents 8",
     "TOC 9",                     "Contents 9",
-    "TOC Heading",               "Contents Heading",
     "TOCHeading",                "Contents Heading",
     "toc 1",                     "Contents 1",
     "toc 2",                     "Contents 2",
@@ -1493,7 +1478,7 @@ void StyleSheetTable::applyDefaults(bool bParaProperties)
     try{
         if(!m_pImpl->m_xTextDefaults.is())
         {
-            m_pImpl->m_xTextDefaults = uno::Reference< beans::XPropertySet>(
+            m_pImpl->m_xTextDefaults.set(
                 m_pImpl->m_rDMapper.GetTextFactory()->createInstance("com.sun.star.text.Defaults"),
                 uno::UNO_QUERY_THROW );
         }

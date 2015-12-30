@@ -99,19 +99,19 @@ ScMacroManager::~ScMacroManager()
 {
 }
 
-typedef ::cppu::WeakImplHelper< ::com::sun::star::container::XContainerListener > ContainerListenerHelper;
+typedef ::cppu::WeakImplHelper< css::container::XContainerListener > ContainerListenerHelper;
 
 class VBAProjectListener : public ContainerListenerHelper
 {
     ScMacroManager* mpMacroMgr;
 public:
-    VBAProjectListener( ScMacroManager* pMacroMgr ) : mpMacroMgr( pMacroMgr ) {}
+    explicit VBAProjectListener( ScMacroManager* pMacroMgr ) : mpMacroMgr( pMacroMgr ) {}
     // XEventListener
-    virtual void SAL_CALL disposing( const lang::EventObject& /*Source*/ ) throw(RuntimeException, std::exception) SAL_OVERRIDE {}
+    virtual void SAL_CALL disposing( const lang::EventObject& /*Source*/ ) throw(RuntimeException, std::exception) override {}
 
     // XContainerListener
-    virtual void SAL_CALL elementInserted( const container::ContainerEvent& /*Event*/ ) throw(RuntimeException, std::exception) SAL_OVERRIDE {}
-    virtual void SAL_CALL elementReplaced( const container::ContainerEvent& Event ) throw(RuntimeException, std::exception) SAL_OVERRIDE
+    virtual void SAL_CALL elementInserted( const container::ContainerEvent& /*Event*/ ) throw(RuntimeException, std::exception) override {}
+    virtual void SAL_CALL elementReplaced( const container::ContainerEvent& Event ) throw(RuntimeException, std::exception) override
     {
         OUString sModuleName;
         Event.Accessor >>= sModuleName;
@@ -119,7 +119,7 @@ public:
         mpMacroMgr->InitUserFuncData();
         mpMacroMgr->BroadcastModuleUpdate(sModuleName);
     }
-    virtual void SAL_CALL elementRemoved( const container::ContainerEvent& /*Event*/ ) throw(RuntimeException, std::exception) SAL_OVERRIDE {}
+    virtual void SAL_CALL elementRemoved( const container::ContainerEvent& /*Event*/ ) throw(RuntimeException, std::exception) override {}
 
 };
 

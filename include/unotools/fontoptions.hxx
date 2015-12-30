@@ -39,7 +39,7 @@ class SvtFontOptions_Impl;
     @devstatus      ready to use
 *//*-*************************************************************************************************************/
 
-class UNOTOOLS_DLLPUBLIC SAL_WARN_UNUSED SvtFontOptions : public utl::detail::Options
+class SAL_WARN_UNUSED UNOTOOLS_DLLPUBLIC SvtFontOptions : public utl::detail::Options
 {
     public:
         /*-****************************************************************************************************
@@ -72,10 +72,9 @@ class UNOTOOLS_DLLPUBLIC SAL_WARN_UNUSED SvtFontOptions : public utl::detail::Op
             @onerror    No error should occur!
         *//*-*****************************************************************************************************/
 
-        bool    IsFontHistoryEnabled        (                   ) const;
-        void        EnableFontHistory           ( bool bState   );
+        bool        IsFontHistoryEnabled        (                   ) const;
 
-        bool    IsFontWYSIWYGEnabled        (                   ) const;
+        bool        IsFontWYSIWYGEnabled        (                   ) const;
         void        EnableFontWYSIWYG           ( bool bState   );
     private:
 

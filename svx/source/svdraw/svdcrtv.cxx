@@ -153,7 +153,7 @@ void ImpSdrCreateViewExtraData::CreateAndShowOverlay(const SdrCreateView& rView,
             if(pObject)
             {
                 const sdr::contact::ViewContact& rVC = pObject->GetViewContact();
-                const drawinglayer::primitive2d::Primitive2DSequence aSequence = rVC.getViewIndependentPrimitive2DSequence();
+                const drawinglayer::primitive2d::Primitive2DContainer aSequence = rVC.getViewIndependentPrimitive2DSequence();
                 sdr::overlay::OverlayObject* pNew = new sdr::overlay::OverlayPrimitive2DSequenceObject(aSequence);
 
                 xOverlayManager->add(*pNew);
@@ -189,7 +189,7 @@ void SdrCreateView::ImpClearConnectMarker()
     if(mpCoMaOverlay)
     {
         delete mpCoMaOverlay;
-        mpCoMaOverlay = 0L;
+        mpCoMaOverlay = nullptr;
     }
 }
 
@@ -197,8 +197,8 @@ void SdrCreateView::ImpClearVars()
 {
     nAktInvent=SdrInventor;
     nAktIdent=OBJ_NONE;
-    pAktCreate=NULL;
-    pCreatePV=NULL;
+    pAktCreate=nullptr;
+    pCreatePV=nullptr;
     bAutoTextEdit=false;
     b1stPointAsCenter=false;
     aAktCreatePointer=Pointer(PointerStyle::Cross);
@@ -212,7 +212,7 @@ void SdrCreateView::ImpClearVars()
 
 SdrCreateView::SdrCreateView(SdrModel* pModel1, OutputDevice* pOut)
 :   SdrDragView(pModel1,pOut),
-    mpCoMaOverlay(0L),
+    mpCoMaOverlay(nullptr),
     mpCreateViewExtraData(new ImpSdrCreateViewExtraData())
 {
     ImpClearVars();
@@ -227,26 +227,26 @@ SdrCreateView::~SdrCreateView()
 
 bool SdrCreateView::IsAction() const
 {
-    return SdrDragView::IsAction() || pAktCreate!=NULL;
+    return SdrDragView::IsAction() || pAktCreate!=nullptr;
 }
 
 void SdrCreateView::MovAction(const Point& rPnt)
 {
     SdrDragView::MovAction(rPnt);
-    if (pAktCreate!=NULL) {
+    if (pAktCreate!=nullptr) {
         MovCreateObj(rPnt);
     }
 }
 
 void SdrCreateView::EndAction()
 {
-    if (pAktCreate!=NULL) EndCreateObj(SDRCREATE_FORCEEND);
+    if (pAktCreate!=nullptr) EndCreateObj(SDRCREATE_FORCEEND);
     SdrDragView::EndAction();
 }
 
 void SdrCreateView::BckAction()
 {
-    if (pAktCreate!=NULL) BckCreateObj();
+    if (pAktCreate!=nullptr) BckCreateObj();
     SdrDragView::BckAction();
 }
 
@@ -258,7 +258,7 @@ void SdrCreateView::BrkAction()
 
 void SdrCreateView::TakeActionRect(Rectangle& rRect) const
 {
-    if (pAktCreate!=NULL)
+    if (pAktCreate!=nullptr)
     {
         rRect=maDragStat.GetActionRect();
         if (rRect.IsEmpty())
@@ -274,7 +274,7 @@ void SdrCreateView::TakeActionRect(Rectangle& rRect) const
 
 bool SdrCreateView::CheckEdgeMode()
 {
-    if (pAktCreate!=NULL)
+    if (pAktCreate!=nullptr)
     {
         // is managed by EdgeObj
         if (nAktInvent==SdrInventor && nAktIdent==OBJ_EDGE) return false;
@@ -330,9 +330,9 @@ bool SdrCreateView::MouseMove(const MouseEvent& rMEvt, vcl::Window* pWin)
         {
             // TODO: Change default hit tolerance at IsMarkedHit() some time!
             Point aPos(pWin->PixelToLogic(rMEvt.GetPosPixel()));
-            bool bMarkHit=PickHandle(aPos)!=NULL || IsMarkedObjHit(aPos);
+            bool bMarkHit=PickHandle(aPos)!=nullptr || IsMarkedObjHit(aPos);
             SdrObjConnection aCon;
-            if (!bMarkHit) SdrEdgeObj::ImpFindConnector(aPos,*pPV,aCon,NULL,pWin);
+            if (!bMarkHit) SdrEdgeObj::ImpFindConnector(aPos,*pPV,aCon,nullptr,pWin);
             SetConnectMarker(aCon,*pPV);
         }
     }
@@ -360,7 +360,7 @@ void SdrCreateView::SetCurrentObj(sal_uInt16 nIdent, sal_uInt32 nInvent)
     {
         nAktInvent=nInvent;
         nAktIdent=nIdent;
-        SdrObject* pObj = SdrObjFactory::MakeNewObject(nInvent,nIdent,NULL,NULL);
+        SdrObject* pObj = SdrObjFactory::MakeNewObject(nInvent,nIdent,nullptr);
 
         if(pObj)
         {
@@ -396,7 +396,7 @@ bool SdrCreateView::ImpBegCreateObj(sal_uInt32 nInvent, sal_uInt16 nIdent, const
 
     ImpClearConnectMarker();
 
-    if (pPV!=NULL)
+    if (pPV!=nullptr)
     {
         pCreatePV=pPV;
     }
@@ -404,7 +404,7 @@ bool SdrCreateView::ImpBegCreateObj(sal_uInt32 nInvent, sal_uInt16 nIdent, const
     {
         pCreatePV = GetSdrPageView();
     }
-    if (pCreatePV!=NULL)
+    if (pCreatePV!=nullptr)
     { // otherwise no side registered!
         OUString aLay(maActualLayer);
 
@@ -441,9 +441,9 @@ bool SdrCreateView::ImpBegCreateObj(sal_uInt32 nInvent, sal_uInt16 nIdent, const
                                             nAktIdent!=sal_uInt16(OBJ_FREEFILL) )) { // no snapping for Edge and Freehand
                 aPnt=GetSnapPos(aPnt,pCreatePV);
             }
-            if (pAktCreate!=NULL)
+            if (pAktCreate!=nullptr)
             {
-                if (mpDefaultStyleSheet!=NULL) pAktCreate->NbcSetStyleSheet(mpDefaultStyleSheet, false);
+                if (mpDefaultStyleSheet!=nullptr) pAktCreate->NbcSetStyleSheet(mpDefaultStyleSheet, false);
 
                 // SW uses a naked SdrObject for frame construction. Normally, such an
                 // object should not be created. Since it is possible to use it as a helper
@@ -454,7 +454,7 @@ bool SdrCreateView::ImpBegCreateObj(sal_uInt32 nInvent, sal_uInt16 nIdent, const
                     pAktCreate->SetMergedItemSet(maDefaultAttr);
                 }
 
-                if (mpModel && HAS_BASE(SdrCaptionObj,pAktCreate))
+                if (mpModel && dynamic_cast<const SdrCaptionObj *>(pAktCreate) != nullptr)
                 {
                     SfxItemSet aSet(mpModel->GetItemPool());
                     aSet.Put(XFillColorItem(OUString(),Color(COL_WHITE))); // in case someone turns on Solid
@@ -515,8 +515,8 @@ bool SdrCreateView::ImpBegCreateObj(sal_uInt32 nInvent, sal_uInt16 nIdent, const
                 else
                 {
                     SdrObject::Free( pAktCreate );
-                    pAktCreate=NULL;
-                    pCreatePV=NULL;
+                    pAktCreate=nullptr;
+                    pCreatePV=nullptr;
                 }
             }
         }
@@ -526,7 +526,7 @@ bool SdrCreateView::ImpBegCreateObj(sal_uInt32 nInvent, sal_uInt16 nIdent, const
 
 bool SdrCreateView::BegCreateObj(const Point& rPnt, OutputDevice* pOut, short nMinMov, SdrPageView* pPV)
 {
-    return ImpBegCreateObj(nAktInvent,nAktIdent,rPnt,pOut,nMinMov,pPV,Rectangle(), 0L);
+    return ImpBegCreateObj(nAktInvent,nAktIdent,rPnt,pOut,nMinMov,pPV,Rectangle(), nullptr);
 }
 
 bool SdrCreateView::BegCreatePreparedObject(const Point& rPnt, sal_Int16 nMinMov, SdrObject* pPreparedFactoryObject)
@@ -540,19 +540,19 @@ bool SdrCreateView::BegCreatePreparedObject(const Point& rPnt, sal_Int16 nMinMov
         nIdent = pPreparedFactoryObject->GetObjIdentifier();
     }
 
-    return ImpBegCreateObj(nInvent, nIdent, rPnt, 0L, nMinMov, 0L, Rectangle(), pPreparedFactoryObject);
+    return ImpBegCreateObj(nInvent, nIdent, rPnt, nullptr, nMinMov, nullptr, Rectangle(), pPreparedFactoryObject);
 }
 
 bool SdrCreateView::BegCreateCaptionObj(const Point& rPnt, const Size& rObjSiz,
     OutputDevice* pOut, short nMinMov, SdrPageView* pPV)
 {
     return ImpBegCreateObj(SdrInventor,OBJ_CAPTION,rPnt,pOut,nMinMov,pPV,
-        Rectangle(rPnt,Size(rObjSiz.Width()+1,rObjSiz.Height()+1)), 0L);
+        Rectangle(rPnt,Size(rObjSiz.Width()+1,rObjSiz.Height()+1)), nullptr);
 }
 
 void SdrCreateView::MovCreateObj(const Point& rPnt)
 {
-    if (pAktCreate!=NULL) {
+    if (pAktCreate!=nullptr) {
         Point aPnt(rPnt);
         if (!maDragStat.IsNoSnap())
         {
@@ -599,7 +599,7 @@ bool SdrCreateView::EndCreateObj(SdrCreateCmd eCmd)
     SdrObject* pObjMerk=pAktCreate;
     SdrPageView* pPVMerk=pCreatePV;
 
-    if (pAktCreate!=NULL)
+    if (pAktCreate!=nullptr)
     {
         sal_uIntPtr nCount=maDragStat.GetPointAnz();
 
@@ -622,13 +622,13 @@ bool SdrCreateView::EndCreateObj(SdrCreateCmd eCmd)
             {
                 // otherwise Brk, because all points are equal
                 SdrObject* pObj=pAktCreate;
-                pAktCreate=NULL;
+                pAktCreate=nullptr;
 
                 const SdrLayerAdmin& rAd = pCreatePV->GetPage()->GetLayerAdmin();
                 SdrLayerID nLayer(0);
 
                 // #i72535#
-                if(pObj->ISA(FmFormObj))
+                if(dynamic_cast<const FmFormObj*>( pObj) !=  nullptr)
                 {
                     // for FormControls, force to form layer
                     nLayer = rAd.GetLayerID(rAd.GetControlLayerName(), true);
@@ -648,20 +648,18 @@ bool SdrCreateView::EndCreateObj(SdrCreateCmd eCmd)
                 // recognize creation of a new 3D object inside a 3D scene
                 bool bSceneIntoScene(false);
 
-                if(pObjMerk
-                    && pObjMerk->ISA(E3dScene)
-                    && pCreatePV
-                    && pCreatePV->GetAktGroup()
-                    && pCreatePV->GetAktGroup()->ISA(E3dScene))
+                E3dScene* pObjScene = dynamic_cast<E3dScene*>(pObjMerk);
+                E3dScene* pAktScene = pObjScene ? dynamic_cast<E3dScene*>(pCreatePV->GetAktGroup()) : nullptr;
+                if (pAktScene)
                 {
                     bool bDidInsert = static_cast<E3dView*>(this)->ImpCloneAll3DObjectsToDestScene(
-                        static_cast<E3dScene*>(pObjMerk), static_cast<E3dScene*>(pCreatePV->GetAktGroup()), Point(0, 0));
+                        pObjScene, pAktScene, Point(0, 0));
 
                     if(bDidInsert)
                     {
                         // delete object, its content is cloned and inserted
                         SdrObject::Free( pObjMerk );
-                        pObjMerk = 0L;
+                        pObjMerk = nullptr;
                         bSceneIntoScene = true;
                     }
                 }
@@ -672,7 +670,7 @@ bool SdrCreateView::EndCreateObj(SdrCreateCmd eCmd)
                     InsertObjectAtView(pObj, *pCreatePV);
                 }
 
-                pCreatePV=NULL;
+                pCreatePV=nullptr;
                 bRet=true; // sal_True = event interpreted
             }
             else
@@ -696,12 +694,12 @@ bool SdrCreateView::EndCreateObj(SdrCreateCmd eCmd)
                 bRet=true;
             }
         }
-        if (bRet && pObjMerk!=NULL && IsTextEditAfterCreate())
+        if (bRet && pObjMerk!=nullptr && IsTextEditAfterCreate())
         {
-            SdrTextObj* pText=PTR_CAST(SdrTextObj,pObjMerk);
-            if (pText!=NULL && pText->IsTextFrame())
+            SdrTextObj* pText=dynamic_cast<SdrTextObj*>( pObjMerk );
+            if (pText!=nullptr && pText->IsTextFrame())
             {
-                SdrBeginTextEdit(pText, pPVMerk, nullptr, true, nullptr, nullptr);
+                SdrBeginTextEdit(pText, pPVMerk, nullptr, true);
             }
         }
     }
@@ -710,7 +708,7 @@ bool SdrCreateView::EndCreateObj(SdrCreateCmd eCmd)
 
 void SdrCreateView::BckCreateObj()
 {
-    if (pAktCreate!=NULL)
+    if (pAktCreate!=nullptr)
     {
         if (maDragStat.GetPointAnz()<=2 )
         {
@@ -734,13 +732,13 @@ void SdrCreateView::BckCreateObj()
 
 void SdrCreateView::BrkCreateObj()
 {
-    if (pAktCreate!=NULL)
+    if (pAktCreate!=nullptr)
     {
         HideCreateObj();
         pAktCreate->BrkCreate(maDragStat);
         SdrObject::Free( pAktCreate );
-        pAktCreate=NULL;
-        pCreatePV=NULL;
+        pAktCreate=nullptr;
+        pCreatePV=nullptr;
     }
 }
 
@@ -779,7 +777,7 @@ void SdrCreateView::ShowCreateObj(/*OutputDevice* pOut, sal_Bool bFull*/)
             // check for form controls
             if(bUseSolidDragging)
             {
-                if(pAktCreate->ISA(SdrUnoObj))
+                if(dynamic_cast<const SdrUnoObj*>( pAktCreate) !=  nullptr)
                 {
                     bUseSolidDragging = false;
                 }
@@ -804,7 +802,7 @@ void SdrCreateView::ShowCreateObj(/*OutputDevice* pOut, sal_Bool bFull*/)
             {
                 basegfx::B2DPolyPolygon aDragPolyPolygon;
 
-                if(pAktCreate->ISA(SdrRectObj))
+                if(dynamic_cast<const SdrRectObj*>( pAktCreate) !=  nullptr)
                 {
                     // ensure object has some size, necessary for SdrTextObj because
                     // there are still untested divisions by that sizes
@@ -817,7 +815,7 @@ void SdrCreateView::ShowCreateObj(/*OutputDevice* pOut, sal_Bool bFull*/)
                     }
                 }
 
-                if(pAktCreate->ISA(SdrPathObj))
+                if(dynamic_cast<const SdrPathObj*>( pAktCreate) !=  nullptr)
                 {
                     // The up-to-now created path needs to be set at the object to have something
                     // that can be visualized
@@ -843,7 +841,7 @@ void SdrCreateView::ShowCreateObj(/*OutputDevice* pOut, sal_Bool bFull*/)
                 // object according to current zoom so as objects relative
                 // position to grid appears stable
                 aPoly.transform( basegfx::tools::createTranslateB2DHomMatrix( aGridOff.X(), aGridOff.Y() ) );
-                mpCreateViewExtraData->CreateAndShowOverlay(*this, 0, aPoly);
+                mpCreateViewExtraData->CreateAndShowOverlay(*this, nullptr, aPoly);
             }
 
             // #i101679# Force changed overlay to be shown
@@ -907,7 +905,7 @@ bool SdrCreateView::SetAttributes(const SfxItemSet& rSet, bool bReplaceAll)
 
 SfxStyleSheet* SdrCreateView::GetStyleSheet() const
 {
-    if (pAktCreate!=NULL)
+    if (pAktCreate!=nullptr)
     {
         return pAktCreate->GetStyleSheet();
     }
@@ -919,7 +917,7 @@ SfxStyleSheet* SdrCreateView::GetStyleSheet() const
 
 bool SdrCreateView::SetStyleSheet(SfxStyleSheet* pStyleSheet, bool bDontRemoveHardAttr)
 {
-    if (pAktCreate!=NULL)
+    if (pAktCreate!=nullptr)
     {
         pAktCreate->SetStyleSheet(pStyleSheet,bDontRemoveHardAttr);
         return true;

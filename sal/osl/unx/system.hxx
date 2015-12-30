@@ -85,7 +85,7 @@
 
 #endif
 
-#ifdef ANDROID
+#if defined(ANDROID) || defined(EMSCRIPTEN)
 #   include <pthread.h>
 #   include <sys/file.h>
 #   include <sys/ioctl.h>
@@ -243,7 +243,8 @@ int macxp_resolveAlias(char *path, int buflen);
     !defined(AIX)     && \
     !defined(SOLARIS) && !defined(MACOSX) && \
     !defined(OPENBSD) && !defined(DRAGONFLY) && \
-    !defined(IOS) && !defined(ANDROID)
+    !defined(IOS) && !defined(ANDROID) && \
+    !defined(EMSCRIPTEN)
 #   error "Target platform not specified!"
 #endif
 
@@ -265,7 +266,7 @@ int macxp_resolveAlias(char *path, int buflen);
 #endif
 
 #ifndef SLEEP_TIMESPEC
-#   define SLEEP_TIMESPEC(timespec) nanosleep(&timespec, 0)
+#   define SLEEP_TIMESPEC(timespec) nanosleep(&timespec, nullptr)
 #endif
 
 #ifndef INIT_GROUPS
@@ -286,13 +287,13 @@ int macxp_resolveAlias(char *path, int buflen);
 #endif
 
 #ifndef PTHREAD_ATTR_DEFAULT
-#   define PTHREAD_ATTR_DEFAULT         NULL
+#   define PTHREAD_ATTR_DEFAULT         nullptr
 #endif
 #ifndef PTHREAD_MUTEXATTR_DEFAULT
-#   define PTHREAD_MUTEXATTR_DEFAULT    NULL
+#   define PTHREAD_MUTEXATTR_DEFAULT    nullptr
 #endif
 #ifndef PTHREAD_CONDATTR_DEFAULT
-#   define PTHREAD_CONDATTR_DEFAULT     NULL
+#   define PTHREAD_CONDATTR_DEFAULT     nullptr
 #endif
 
 #ifndef PTHREAD_SIGACTION

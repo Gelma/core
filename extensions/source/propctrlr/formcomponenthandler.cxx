@@ -169,8 +169,7 @@ namespace pcr
 
     Sequence< OUString > SAL_CALL FormComponentPropertyHandler::getSupportedServiceNames_static(  ) throw (RuntimeException)
     {
-        Sequence< OUString > aSupported( 1 );
-        aSupported[0] = "com.sun.star.form.inspection.FormComponentPropertyHandler";
+        Sequence<OUString> aSupported { "com.sun.star.form.inspection.FormComponentPropertyHandler" };
         return aSupported;
     }
 
@@ -190,7 +189,7 @@ namespace pcr
         { "HelpText",        8 },
         { "CurrencySymbol", 14 },
         { "StringItemList", 14 },
-        { 0, 0                 }
+        { nullptr, 0                 }
     };
 
     namespace
@@ -200,7 +199,7 @@ namespace pcr
             bool bRet = false;
 
             const LanguageDependentProp* pLangDepProp = aLanguageDependentProp;
-            while( pLangDepProp->pPropName != 0 )
+            while( pLangDepProp->pPropName != nullptr )
             {
                 if( aName.equalsAsciiL( pLangDepProp->pPropName, pLangDepProp->nPropNameLength ))
                 {
@@ -502,7 +501,7 @@ namespace pcr
         {
             if ( ( aProperty.Attributes & PropertyAttribute::MAYBEVOID ) == 0 )
                 // default construct an instance of the proper type
-                aPropertyValue = Any( NULL, aProperty.Type );
+                aPropertyValue = Any( nullptr, aProperty.Type );
             // nothing to do
             return aPropertyValue;
         }
@@ -567,7 +566,7 @@ namespace pcr
             else
             {
                 INetURLObject aDocURL( impl_getDocumentURL_nothrow() );
-                aPropertyValue <<= URIHelper::SmartRel2Abs( aDocURL, sControlValue, Link<OUString *, bool>(), false, true, INetURLObject::WAS_ENCODED, INetURLObject::DECODE_TO_IURI );
+                aPropertyValue <<= URIHelper::SmartRel2Abs( aDocURL, sControlValue, Link<OUString *, bool>(), false, true );
             }
         }
         break;
@@ -632,7 +631,7 @@ namespace pcr
         sal_Int32 nPropId = m_pInfoService->getPropertyId( _rPropertyName );
         DBG_ASSERT( nPropId != -1, "FormComponentPropertyHandler::convertToPropertyValue: not one of my properties!!" );
 
-        Property aProperty( impl_getPropertyFromId_throw( nPropId ) );
+        impl_getPropertyFromId_throw( nPropId );
 
         Any aControlValue( _rPropertyValue );
         if ( !aControlValue.hasValue() )
@@ -1121,7 +1120,7 @@ namespace pcr
                 DBG_ASSERT(xTunnel.is(), "FormComponentPropertyHandler::describePropertyLine : xTunnel is invalid!");
                 SvNumberFormatsSupplierObj* pSupplier = reinterpret_cast<SvNumberFormatsSupplierObj*>(xTunnel->getSomething(SvNumberFormatsSupplierObj::getUnoTunnelId()));
 
-                if (pSupplier != NULL)
+                if (pSupplier != nullptr)
                 {
                     bool bIsFormatKey = (PROPERTY_ID_FORMATKEY == nPropId);
 
@@ -2300,7 +2299,7 @@ namespace pcr
             xRowSet.set( m_xComponent, UNO_QUERY );
             if ( !xRowSet.is() )
             {
-                xRowSet = Reference< XRowSet >( m_xObjectParent, UNO_QUERY );
+                xRowSet.set( m_xObjectParent, UNO_QUERY );
                 if ( !xRowSet.is() )
                 {
                     // are we inspecting a grid column?
@@ -2308,7 +2307,7 @@ namespace pcr
                     {   // yes
                         Reference< XChild > xParentAsChild( m_xObjectParent, UNO_QUERY );
                         if ( xParentAsChild.is() )
-                            xRowSet = Reference< XRowSet >( xParentAsChild->getParent(), UNO_QUERY );
+                            xRowSet.set( xParentAsChild->getParent(), UNO_QUERY );
                     }
                 }
                 if ( !xRowSet.is() )
@@ -2709,7 +2708,7 @@ namespace pcr
             Reference< XUnoTunnel > xTunnel( xSupplier, UNO_QUERY_THROW );
             SvNumberFormatsSupplierObj* pSupplier =
                 reinterpret_cast< SvNumberFormatsSupplierObj* >( xTunnel->getSomething( SvNumberFormatsSupplierObj::getUnoTunnelId() ) );
-            DBG_ASSERT( pSupplier != NULL, "FormComponentPropertyHandler::impl_dialogFormatting_nothrow: invalid call !" );
+            DBG_ASSERT( pSupplier != nullptr, "FormComponentPropertyHandler::impl_dialogFormatting_nothrow: invalid call !" );
 
             sal_Int32 nFormatKey = 0;
             impl_getPropertyValue_throw( PROPERTY_FORMATKEY ) >>= nFormatKey;
@@ -2747,7 +2746,7 @@ namespace pcr
                         pFormatter->DeleteEntry(*pDeletedKeys);
                 }
 
-                pItem = NULL;
+                pItem = nullptr;
                 if ( SfxItemState::SET == pResult->GetItemState( SID_ATTR_NUMBERFORMAT_VALUE, false, &pItem ) )
                 {
                     _out_rNewValue <<= (sal_Int32)( static_cast< const SfxUInt32Item* >( pItem )->GetValue() );
@@ -2783,7 +2782,7 @@ namespace pcr
             // Not implemented in reports
             if (bHandleNonLink)
             {
-                Reference< XReportDefinition > xReportDef( xModel, ::com::sun::star::uno::UNO_QUERY );
+                Reference< XReportDefinition > xReportDef( xModel, css::uno::UNO_QUERY );
                 bHandleNonLink = !xReportDef.is();
             }
         }
@@ -2861,9 +2860,9 @@ namespace pcr
         bool bSuccess = false;
 
         // create an item set for use with the dialog
-        SfxItemSet* pSet = NULL;
-        SfxItemPool* pPool = NULL;
-        SfxPoolItem** pDefaults = NULL;
+        SfxItemSet* pSet = nullptr;
+        SfxItemPool* pPool = nullptr;
+        SfxPoolItem** pDefaults = nullptr;
         ControlCharacterDialog::createItemSet(pSet, pPool, pDefaults);
         ControlCharacterDialog::translatePropertiesToItems(m_xComponent, pSet);
 
@@ -2903,7 +2902,7 @@ namespace pcr
             // is considered to be potentially expensive
             aFileDlg.SetDisplayDirectory( sDataSource );
 
-        const SfxFilter* pFilter = SfxFilter::GetFilterByName(OUString("StarOffice XML (Base)"));
+        const SfxFilter* pFilter = SfxFilter::GetFilterByName("StarOffice XML (Base)");
         OSL_ENSURE(pFilter,"Filter: StarOffice XML (Base) could not be found!");
         if ( pFilter )
         {
@@ -2995,7 +2994,7 @@ namespace pcr
         class SQLCommandPropertyUI : public ISQLCommandPropertyUI
         {
         protected:
-            SQLCommandPropertyUI( const Reference< XPropertySet >& _rxObject )
+            explicit SQLCommandPropertyUI( const Reference< XPropertySet >& _rxObject )
                 : m_xObject(_rxObject)
             {
                 if ( !m_xObject.is() )
@@ -3012,16 +3011,16 @@ namespace pcr
         class FormSQLCommandUI : public SQLCommandPropertyUI
         {
         public:
-            FormSQLCommandUI( const Reference< XPropertySet >& _rxForm );
+            explicit FormSQLCommandUI( const Reference< XPropertySet >& _rxForm );
 
             // ISQLCommandAdapter
-            virtual OUString        getSQLCommand() const SAL_OVERRIDE;
-            virtual bool            getEscapeProcessing() const SAL_OVERRIDE;
-            virtual void            setSQLCommand( const OUString& _rCommand ) const SAL_OVERRIDE;
-            virtual void            setEscapeProcessing( const bool _bEscapeProcessing ) const SAL_OVERRIDE;
+            virtual OUString        getSQLCommand() const override;
+            virtual bool            getEscapeProcessing() const override;
+            virtual void            setSQLCommand( const OUString& _rCommand ) const override;
+            virtual void            setEscapeProcessing( const bool _bEscapeProcessing ) const override;
 
             // ISQLCommandPropertyUI
-            virtual OUString*    getPropertiesToDisable() SAL_OVERRIDE;
+            virtual OUString*    getPropertiesToDisable() override;
         };
 
 
@@ -3079,16 +3078,16 @@ namespace pcr
         class ValueListCommandUI : public SQLCommandPropertyUI
         {
         public:
-            ValueListCommandUI( const Reference< XPropertySet >& _rxListOrCombo );
+            explicit ValueListCommandUI( const Reference< XPropertySet >& _rxListOrCombo );
 
             // ISQLCommandAdapter
-            virtual OUString        getSQLCommand() const SAL_OVERRIDE;
-            virtual bool            getEscapeProcessing() const SAL_OVERRIDE;
-            virtual void            setSQLCommand( const OUString& _rCommand ) const SAL_OVERRIDE;
-            virtual void            setEscapeProcessing( const bool _bEscapeProcessing ) const SAL_OVERRIDE;
+            virtual OUString        getSQLCommand() const override;
+            virtual bool            getEscapeProcessing() const override;
+            virtual void            setSQLCommand( const OUString& _rCommand ) const override;
+            virtual void            setEscapeProcessing( const bool _bEscapeProcessing ) const override;
 
             // ISQLCommandPropertyUI
-            virtual OUString*    getPropertiesToDisable() SAL_OVERRIDE;
+            virtual OUString*    getPropertiesToDisable() override;
         private:
             mutable bool    m_bPropertyValueIsList;
         };
@@ -3180,7 +3179,7 @@ namespace pcr
                     return true;
                 }
                 m_xCommandDesigner->dispose();
-                m_xCommandDesigner.set( NULL );
+                m_xCommandDesigner.set( nullptr );
             }
 
             if ( !impl_ensureRowsetConnection_nothrow() )

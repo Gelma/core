@@ -97,7 +97,6 @@ using namespace ::xmloff::token;
 // XMLVarFieldImportContext: superclass for all variable related fields
 
 
-TYPEINIT1( XMLVarFieldImportContext, XMLTextFieldImportContext );
 
 XMLVarFieldImportContext::XMLVarFieldImportContext(
     SvXMLImport& rImport, XMLTextImportHelper& rHlp,
@@ -291,7 +290,6 @@ void XMLVarFieldImportContext::PrepareField(
 // variable set fields
 
 
-TYPEINIT1( XMLSetVarFieldImportContext, XMLVarFieldImportContext );
 
 XMLSetVarFieldImportContext::XMLSetVarFieldImportContext(
     SvXMLImport& rImport, XMLTextImportHelper& rHlp,
@@ -379,7 +377,6 @@ bool XMLSetVarFieldImportContext::FindFieldMaster(
 // sequence field
 
 
-TYPEINIT1( XMLSequenceFieldImportContext, XMLSetVarFieldImportContext );
 
 XMLSequenceFieldImportContext::XMLSequenceFieldImportContext(
     SvXMLImport& rImport, XMLTextImportHelper& rHlp,
@@ -452,7 +449,6 @@ void XMLSequenceFieldImportContext::PrepareField(
 // variable set field
 
 
-TYPEINIT1( XMLVariableSetFieldImportContext, XMLSetVarFieldImportContext );
 
 XMLVariableSetFieldImportContext::XMLVariableSetFieldImportContext(
     SvXMLImport& rImport, XMLTextImportHelper& rHlp,
@@ -488,7 +484,6 @@ void XMLVariableSetFieldImportContext::PrepareField(
 // variable input field
 
 
-TYPEINIT1( XMLVariableInputFieldImportContext, XMLSetVarFieldImportContext );
 
 XMLVariableInputFieldImportContext::XMLVariableInputFieldImportContext(
     SvXMLImport& rImport, XMLTextImportHelper& rHlp, sal_uInt16 nPrfx,
@@ -530,7 +525,6 @@ void XMLVariableInputFieldImportContext::PrepareField(
 // user field
 
 
-TYPEINIT1( XMLUserFieldImportContext, XMLSetVarFieldImportContext );
 
 XMLUserFieldImportContext::XMLUserFieldImportContext(
     SvXMLImport& rImport, XMLTextImportHelper& rHlp,
@@ -552,7 +546,6 @@ XMLUserFieldImportContext::XMLUserFieldImportContext(
 // user input field
 
 
-TYPEINIT1( XMLUserFieldInputImportContext, XMLVarFieldImportContext );
 
 // bug: doesn't work (SO API lacking)
 XMLUserFieldInputImportContext::XMLUserFieldInputImportContext(
@@ -585,7 +578,6 @@ void XMLUserFieldInputImportContext::PrepareField(
 // variable get field
 
 
-TYPEINIT1( XMLVariableGetFieldImportContext, XMLVarFieldImportContext );
 
 XMLVariableGetFieldImportContext::XMLVariableGetFieldImportContext(
     SvXMLImport& rImport, XMLTextImportHelper& rHlp,
@@ -619,7 +611,6 @@ void XMLVariableGetFieldImportContext::PrepareField(
 // expression field
 
 
-TYPEINIT1( XMLExpressionFieldImportContext, XMLVarFieldImportContext );
 
 XMLExpressionFieldImportContext::XMLExpressionFieldImportContext(
     SvXMLImport& rImport, XMLTextImportHelper& rHlp,
@@ -656,7 +647,6 @@ void XMLExpressionFieldImportContext::PrepareField(
 // text input field
 
 
-TYPEINIT1( XMLTextInputFieldImportContext, XMLVarFieldImportContext );
 
 XMLTextInputFieldImportContext::XMLTextInputFieldImportContext(
     SvXMLImport& rImport, XMLTextImportHelper& rHlp,
@@ -689,7 +679,6 @@ void XMLTextInputFieldImportContext::PrepareField(
 // table formula field
 
 
-TYPEINIT1( XMLTableFormulaImportContext, XMLTextFieldImportContext );
 
 XMLTableFormulaImportContext::XMLTableFormulaImportContext(
     SvXMLImport& rImport,
@@ -764,7 +753,6 @@ void XMLTableFormulaImportContext::PrepareField(
 // declaration containter import (<variable/user-field/sequence-decls>)
 
 
-TYPEINIT1( XMLVariableDeclsImportContext, SvXMLImportContext );
 
 XMLVariableDeclsImportContext::XMLVariableDeclsImportContext(
     SvXMLImport& rImport, XMLTextImportHelper& rHlp, sal_uInt16 nPrfx,
@@ -780,7 +768,7 @@ SvXMLImportContext* XMLVariableDeclsImportContext::CreateChildContext(
     const Reference<xml::sax::XAttributeList> & xAttrList )
 {
     enum XMLTokenEnum eElementName;
-    SvXMLImportContext* pImportContext = NULL;
+    SvXMLImportContext* pImportContext = nullptr;
 
     if( XML_NAMESPACE_TEXT == nPrefix )
     {
@@ -810,7 +798,7 @@ SvXMLImportContext* XMLVariableDeclsImportContext::CreateChildContext(
     }
 
     // if no context was created, use default context
-    if (NULL == pImportContext) {
+    if (nullptr == pImportContext) {
         pImportContext = SvXMLImportContext::CreateChildContext(nPrefix,
                                                                 rLocalName,
                                                                 xAttrList);
@@ -825,7 +813,6 @@ SvXMLImportContext* XMLVariableDeclsImportContext::CreateChildContext(
 // declaration import (<variable/user-field/sequence-decl> elements)
 
 
-TYPEINIT1( XMLVariableDeclImportContext, SvXMLImportContext );
 
 XMLVariableDeclImportContext::XMLVariableDeclImportContext(
     SvXMLImport& rImport, XMLTextImportHelper& rHlp,
@@ -975,10 +962,7 @@ bool XMLVariableDeclImportContext::FindFieldMaster(
         Any aAny = xFieldMasterNameAccess->getByName(sVarServiceName);
         aAny >>= xMaster;
 
-        aAny = xMaster->getPropertyValue(
-            // sPropertySubType
-            OUString(sAPI_sub_type)
-            );
+        aAny = xMaster->getPropertyValue(sAPI_sub_type);
         sal_Int16 nType = 0;
         aAny >>= nType;
 
@@ -1052,10 +1036,7 @@ bool XMLVariableDeclImportContext::FindFieldMaster(
                 // set name
                 Any aAny;
                 aAny <<= sName;
-                xMaster->setPropertyValue(
-                    // sPropertyName
-                    OUString(sAPI_name)
-                    , aAny);
+                xMaster->setPropertyValue(sAPI_name, aAny);
 
                 if (eVarType != VarTypeUserField) {
                     // set subtype for setexp field
@@ -1063,10 +1044,7 @@ bool XMLVariableDeclImportContext::FindFieldMaster(
                     aAny <<= ((eVarType == VarTypeSimple) ?
                               SetVariableType::VAR :
                               SetVariableType::SEQUENCE);
-                    xMaster->setPropertyValue(
-                        // sPropertySubType
-                        OUString(sAPI_sub_type)
-                        , aAny);
+                    xMaster->setPropertyValue(sAPI_sub_type, aAny);
                 } // else : user field: no subtype
 
             } else {
@@ -1087,7 +1065,6 @@ bool XMLVariableDeclImportContext::FindFieldMaster(
 
 
 
-TYPEINIT1( XMLDatabaseDisplayImportContext, XMLDatabaseFieldImportContext );
 
 XMLDatabaseDisplayImportContext::XMLDatabaseDisplayImportContext(
     SvXMLImport& rImport, XMLTextImportHelper& rHlp, sal_uInt16 nPrfx,
@@ -1153,8 +1130,7 @@ void XMLDatabaseDisplayImportContext::EndElement()
 
         // create and prepare field master first
         if (CreateField(xMaster,
-                        OUString(
-                            sAPI_fieldmaster_database)))
+                        sAPI_fieldmaster_database))
         {
             Any aAny;
             aAny <<= sColumnName;
@@ -1166,8 +1142,7 @@ void XMLDatabaseDisplayImportContext::EndElement()
             // create field
             Reference<XPropertySet> xField;
             if (CreateField(xField,
-                            OUString(
-                                sAPI_database)))
+                            sAPI_database))
             {
                 // attach field master
                 Reference<XDependentTextField> xDepField(xField, UNO_QUERY);

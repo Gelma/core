@@ -57,7 +57,7 @@ public:
                                     SalGraphics* pGraphics ) = 0;
     virtual bool            Create( const SalBitmap& rSalBmp,
                                     sal_uInt16 nNewBitCount ) = 0;
-    virtual bool            Create( const ::com::sun::star::uno::Reference< ::com::sun::star::rendering::XBitmapCanvas >& rBitmapCanvas,
+    virtual bool            Create( const css::uno::Reference< css::rendering::XBitmapCanvas >& rBitmapCanvas,
                                     Size& rSize,
                                     bool bMask = false ) = 0;
     virtual void            Destroy() = 0;
@@ -72,7 +72,7 @@ public:
     virtual bool            Replace( const Color& rSearchColor, const Color& rReplaceColor, sal_uLong nTol ) = 0;
 
 
-    virtual bool GetChecksum(ChecksumType& rChecksum) const
+    bool GetChecksum(ChecksumType& rChecksum) const
     {
         updateChecksum();
         if (!mbChecksumValid)
@@ -82,7 +82,7 @@ public:
         return mbChecksumValid;
     }
 
-    virtual void InvalidateChecksum()
+    void InvalidateChecksum()
     {
         mbChecksumValid = false;
     }

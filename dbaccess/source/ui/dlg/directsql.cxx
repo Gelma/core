@@ -71,7 +71,7 @@ namespace dbaui
             startComponentListening(xConnComp);
 
         m_pSQL->SetModifyHdl(LINK(this, DirectSQLDialog, OnStatementModified));
-        OnStatementModified(m_pSQL);
+        OnStatementModified(*m_pSQL);
     }
 
     DirectSQLDialog::~DirectSQLDialog()
@@ -110,7 +110,7 @@ namespace dbaui
             aError->Execute();
         }
 
-        PostUserEvent(LINK(this, DirectSQLDialog, OnClose), NULL, true);
+        PostUserEvent(LINK(this, DirectSQLDialog, OnClose), nullptr, true);
     }
 
     sal_Int32 DirectSQLDialog::getHistorySize() const
@@ -170,7 +170,7 @@ namespace dbaui
         if (!m_xConnection.is())
             return "have no connection!";
 
-        return NULL;
+        return nullptr;
     }
 #endif
 
@@ -291,7 +291,7 @@ namespace dbaui
             // set the text in the statement editor
             OUString sStatement = m_aStatementHistory[_nHistoryPos];
             m_pSQL->SetText(sStatement);
-            OnStatementModified(m_pSQL);
+            OnStatementModified(*m_pSQL);
 
             if (_bUpdateListBox)
             {
@@ -308,10 +308,9 @@ namespace dbaui
             OSL_FAIL("DirectSQLDialog::switchToHistory: invalid position!");
     }
 
-    IMPL_LINK_NOARG( DirectSQLDialog, OnStatementModified )
+    IMPL_LINK_NOARG_TYPED( DirectSQLDialog, OnStatementModified, Edit&, void )
     {
         m_pExecute->Enable(!m_pSQL->GetText().isEmpty());
-        return 0L;
     }
 
     IMPL_LINK_NOARG_TYPED( DirectSQLDialog, OnCloseClick, Button*, void )
@@ -328,7 +327,7 @@ namespace dbaui
         executeCurrent();
     }
 
-    IMPL_LINK_NOARG( DirectSQLDialog, OnListEntrySelected )
+    IMPL_LINK_NOARG_TYPED( DirectSQLDialog, OnListEntrySelected, ListBox&, void )
     {
         if (!m_pSQLHistory->IsTravelSelect())
         {
@@ -336,7 +335,6 @@ namespace dbaui
             if (LISTBOX_ENTRY_NOTFOUND != nSelected)
                 switchToHistory(nSelected, false);
         }
-        return 0L;
     }
 
 }   // namespace dbaui

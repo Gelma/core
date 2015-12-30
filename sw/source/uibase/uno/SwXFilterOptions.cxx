@@ -95,12 +95,12 @@ sal_Int16 SwXFilterOptions::execute() throw (uno::RuntimeException, std::excepti
         pInStream.reset(utl::UcbStreamHelper::CreateStream( xInputStream ));
 
     uno::Reference< XUnoTunnel > xTunnel(xModel, uno::UNO_QUERY);
-    SwDocShell* pDocShell = 0;
+    SwDocShell* pDocShell = nullptr;
     if(xTunnel.is())
     {
         SwXTextDocument* pXDoc = reinterpret_cast< SwXTextDocument * >(
                 sal::static_int_cast< sal_IntPtr >(xTunnel->getSomething(SwXTextDocument::getUnoTunnelId())));
-        pDocShell = pXDoc ? pXDoc->GetDocShell() : 0;
+        pDocShell = pXDoc ? pXDoc->GetDocShell() : nullptr;
     }
     if(pDocShell)
     {
@@ -108,7 +108,7 @@ sal_Int16 SwXFilterOptions::execute() throw (uno::RuntimeException, std::excepti
         SwAbstractDialogFactory* pFact = SwAbstractDialogFactory::Create();
         OSL_ENSURE(pFact, "SwAbstractDialogFactory fail!");
 
-        std::unique_ptr<AbstractSwAsciiFilterDlg> pAsciiDlg(pFact->CreateSwAsciiFilterDlg(NULL, *pDocShell,
+        std::unique_ptr<AbstractSwAsciiFilterDlg> pAsciiDlg(pFact->CreateSwAsciiFilterDlg(nullptr, *pDocShell,
             pInStream.get()));
         OSL_ENSURE(pAsciiDlg, "Dialog creation failed!");
         if(RET_OK == pAsciiDlg->Execute())
@@ -155,9 +155,9 @@ uno::Sequence< OUString > SwXFilterOptions::getSupportedServiceNames()
     return uno::Sequence< OUString> (&sService, 1);
 }
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_Writer_FilterOptionsDialog_get_implementation(::com::sun::star::uno::XComponentContext*,
-                                ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_Writer_FilterOptionsDialog_get_implementation(css::uno::XComponentContext*,
+                                css::uno::Sequence<css::uno::Any> const &)
 {
     SolarMutexGuard aGuard;
 

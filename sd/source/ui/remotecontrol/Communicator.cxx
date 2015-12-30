@@ -29,8 +29,8 @@ using namespace osl;
 Communicator::Communicator( IBluetoothSocket *pSocket ):
     Thread( "CommunicatorThread" ),
     mpSocket( pSocket ),
-    pTransmitter( 0 ),
-    mListener( 0 )
+    pTransmitter( nullptr ),
+    mListener( nullptr )
 {
 }
 
@@ -67,10 +67,10 @@ void Communicator::execute()
 
         uno::Reference<presentation::XPresentationSupplier> xPS;
         if( xFrame.is() )
-            xPS = uno::Reference<presentation::XPresentationSupplier>( xFrame->getController()->getModel(), uno::UNO_QUERY );
+            xPS.set( xFrame->getController()->getModel(), uno::UNO_QUERY );
         uno::Reference<presentation::XPresentation2> xPresentation;
         if( xPS.is() )
-            xPresentation = uno::Reference<presentation::XPresentation2>( xPS->getPresentation(), uno::UNO_QUERY );
+            xPresentation.set( xPS->getPresentation(), uno::UNO_QUERY );
         if ( xPresentation.is() && xPresentation->isRunning() )
         {
             presentationStarted( xPresentation->getController() );
@@ -120,11 +120,11 @@ void Communicator::execute()
 
     pTransmitter->notifyFinished();
     pTransmitter->join();
-    pTransmitter = NULL;
+    pTransmitter = nullptr;
 
     mpSocket->close();
     delete mpSocket;
-    mpSocket = NULL;
+    mpSocket = nullptr;
 
     RemoteServer::removeCommunicator( this );
 }
@@ -142,7 +142,7 @@ void Communicator::presentationStarted( const css::uno::Reference<
 {
     if ( pTransmitter )
     {
-        mListener = rtl::Reference<Listener>( new Listener( this, pTransmitter ) );
+        mListener.set( new Listener( this, pTransmitter ) );
         mListener->init( rController );
     }
 }
@@ -152,7 +152,7 @@ void Communicator::disposeListener()
     if ( mListener.is() )
     {
         mListener->disposing();
-        mListener = NULL;
+        mListener = nullptr;
     }
 }
 

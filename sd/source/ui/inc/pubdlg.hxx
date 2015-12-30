@@ -32,7 +32,7 @@
 #include "assclass.hxx"
 
 #include <memory>
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
 
 class FixedText;
 class RadioButton;
@@ -166,7 +166,7 @@ private:
     void    ChangePage();
     void    UpdatePage();
 
-    boost::ptr_vector<SdPublishingDesign>   m_aDesignList;
+    std::vector<SdPublishingDesign>   m_aDesignList;
     bool    m_bDesignListDirty;
     SdPublishingDesign* m_pDesign;
     bool    Load();
@@ -182,7 +182,7 @@ private:
     DECL_LINK_TYPED( LastPageHdl, Button*, void );
 
     DECL_LINK_TYPED( DesignHdl, Button*, void );
-    DECL_LINK( DesignSelectHdl, void * );
+    DECL_LINK_TYPED( DesignSelectHdl, ListBox&, void );
     DECL_LINK_TYPED( DesignDeleteHdl, Button*, void );
     DECL_LINK_TYPED( BaseHdl, Button*, void );
     DECL_LINK_TYPED( ContentHdl, Button*, void );
@@ -197,9 +197,9 @@ public:
 
     SdPublishingDlg(vcl::Window* pWindow, DocumentType eDocType);
     virtual ~SdPublishingDlg();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    void GetParameterSequence( ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue >& rParams );
+    void GetParameterSequence( css::uno::Sequence< css::beans::PropertyValue >& rParams );
 };
 
 #endif // INCLUDED_SD_SOURCE_UI_INC_PUBDLG_HXX

@@ -68,9 +68,9 @@ void SwView::GetState(SfxItemSet &rSet)
 {
     SfxWhichIter aIter(rSet);
     sal_uInt16 nWhich = aIter.FirstWhich();
-    FrmTypeFlags eFrmType = FrmTypeFlags::NONE;
-    bool bGetFrmType = false;
-    bool bWeb = 0 != PTR_CAST(SwWebView, this);
+    FrameTypeFlags eFrameType = FrameTypeFlags::NONE;
+    bool bGetFrameType = false;
+    bool bWeb = dynamic_cast<SwWebView*>( this ) !=  nullptr;
 
     while(nWhich)
     {
@@ -79,7 +79,7 @@ void SwView::GetState(SfxItemSet &rSet)
         case FN_EDIT_LINK_DLG:
             if( m_pWrtShell->GetLinkManager().GetLinks().empty() )
                 rSet.DisableItem(nWhich);
-            else if( m_pWrtShell->IsSelFrmMode() &&
+            else if( m_pWrtShell->IsSelFrameMode() &&
                 m_pWrtShell->IsSelObjProtected(FlyProtectFlags::Content) != FlyProtectFlags::NONE)
             {
                 rSet.DisableItem(nWhich);
@@ -87,7 +87,7 @@ void SwView::GetState(SfxItemSet &rSet)
             break;
 
         case SID_INSERT_GRAPHIC:
-            if( m_pWrtShell->CrsrInsideInputField() )
+            if( m_pWrtShell->CursorInsideInputField() )
             {
                 rSet.DisableItem(nWhich);
             }
@@ -96,25 +96,25 @@ void SwView::GetState(SfxItemSet &rSet)
             case FN_INSERT_CAPTION:
                 {
                     // There are captions for graphics, OLE objects, frames and tables
-                    if( !bGetFrmType )
+                    if( !bGetFrameType )
                     {
-                        eFrmType = m_pWrtShell->GetFrmType(0, true);
-                        bGetFrmType = true;
+                        eFrameType = m_pWrtShell->GetFrameType(nullptr, true);
+                        bGetFrameType = true;
                     }
-                    if (! ( ((eFrmType & FrmTypeFlags::FLY_ANY) && m_nSelectionType != nsSelectionType::SEL_DRW_TXT)||
+                    if (! ( ((eFrameType & FrameTypeFlags::FLY_ANY) && m_nSelectionType != nsSelectionType::SEL_DRW_TXT)||
                         m_nSelectionType & nsSelectionType::SEL_TBL ||
                         m_nSelectionType & nsSelectionType::SEL_DRW) )
                     {
                         rSet.DisableItem(nWhich);
                     }
-                    else if((m_pWrtShell->IsObjSelected() || m_pWrtShell->IsFrmSelected()) &&
+                    else if((m_pWrtShell->IsObjSelected() || m_pWrtShell->IsFrameSelected()) &&
                         (m_pWrtShell->IsSelObjProtected( FlyProtectFlags::Parent) != FlyProtectFlags::NONE ||
                         m_pWrtShell->IsSelObjProtected( FlyProtectFlags::Content ) != FlyProtectFlags::NONE))
                     {
                         rSet.DisableItem(nWhich);
                     }
                     else if( m_pWrtShell->IsTableMode()
-                        || m_pWrtShell->CrsrInsideInputField() )
+                        || m_pWrtShell->CursorInsideInputField() )
                     {
                         rSet.DisableItem(nWhich);
                     }
@@ -130,9 +130,9 @@ void SwView::GetState(SfxItemSet &rSet)
 
             case FN_CHANGE_PAGENUM:
             {
-                FrmTypeFlags nType = m_pWrtShell->GetFrmType(0,true);
-                if( ( FrmTypeFlags::FLY_ANY | FrmTypeFlags::HEADER | FrmTypeFlags::FOOTER |
-                      FrmTypeFlags::FOOTNOTE | FrmTypeFlags::DRAWOBJ ) & nType )
+                FrameTypeFlags nType = m_pWrtShell->GetFrameType(nullptr,true);
+                if( ( FrameTypeFlags::FLY_ANY | FrameTypeFlags::HEADER | FrameTypeFlags::FOOTER |
+                      FrameTypeFlags::FOOTNOTE | FrameTypeFlags::DRAWOBJ ) & nType )
                     rSet.DisableItem(nWhich);
                 else
                     rSet.Put(SfxUInt16Item(nWhich, m_pWrtShell->GetPageOffset()));
@@ -175,7 +175,7 @@ void SwView::GetState(SfxItemSet &rSet)
             break;
             case SID_CLEARHISTORY:
             {
-                rSet.Put(SfxBoolItem(nWhich, m_pWrtShell->GetLastUndoInfo(0, 0)));
+                rSet.Put(SfxBoolItem(nWhich, m_pWrtShell->GetLastUndoInfo(nullptr, nullptr)));
             }
             break;
             case SID_UNDO:
@@ -193,7 +193,7 @@ void SwView::GetState(SfxItemSet &rSet)
             break;
             case FN_INSERT_OBJ_CTRL:
                 if( bWeb
-                    || m_pWrtShell->CrsrInsideInputField() )
+                    || m_pWrtShell->CursorInsideInputField() )
                 {
                     rSet.DisableItem(nWhich);
                 }
@@ -206,8 +206,8 @@ void SwView::GetState(SfxItemSet &rSet)
             case FN_EDIT_CURRENT_TOX:
             case FN_UPDATE_CUR_TOX:
             {
-                const SwTOXBase* pBase = 0;
-                if(0 == (pBase = m_pWrtShell->GetCurTOX()) ||
+                const SwTOXBase* pBase = nullptr;
+                if(nullptr == (pBase = m_pWrtShell->GetCurTOX()) ||
                     (FN_EDIT_CURRENT_TOX == nWhich && pBase->IsTOXBaseInReadonly()))
                     rSet.DisableItem(nWhich);
             }
@@ -272,7 +272,7 @@ void SwView::GetState(SfxItemSet &rSet)
             case FN_REDLINE_REJECT_DIRECT:
             {
                 SwDoc *pDoc = m_pWrtShell->GetDoc();
-                SwPaM *pCursor = m_pWrtShell->GetCrsr();
+                SwPaM *pCursor = m_pWrtShell->GetCursor();
                 if (GetDocShell()->HasChangeRecordProtection())
                     rSet.DisableItem(nWhich);
                 else if (pCursor->HasMark())
@@ -280,9 +280,9 @@ void SwView::GetState(SfxItemSet &rSet)
                     sal_uInt16 index = 0;
                     const SwRedlineTable& table = pDoc->getIDocumentRedlineAccess().GetRedlineTable();
                     const SwRangeRedline* redline = table.FindAtPosition( *pCursor->Start(), index );
-                    if( redline != NULL && *redline->Start() == *pCursor->End())
-                        redline = NULL;
-                    if( redline == NULL )
+                    if( redline != nullptr && *redline->Start() == *pCursor->End())
+                        redline = nullptr;
+                    if( redline == nullptr )
                     {
                         for(; index < table.size(); ++index )
                         {
@@ -296,14 +296,14 @@ void SwView::GetState(SfxItemSet &rSet)
                             }
                         }
                     }
-                    if( redline == NULL )
+                    if( redline == nullptr )
                         rSet.DisableItem(nWhich);
                 }
                 else
                 {
                     // If the cursor position isn't on a redline, disable
                     // accepting/rejecting changes.
-                    if (0 == pDoc->getIDocumentRedlineAccess().GetRedline(*pCursor->Start(), 0))
+                    if (nullptr == pDoc->getIDocumentRedlineAccess().GetRedline(*pCursor->Start(), nullptr))
                         rSet.DisableItem(nWhich);
                 }
             }
@@ -323,7 +323,7 @@ void SwView::GetState(SfxItemSet &rSet)
             case SID_THESAURUS:
             {
                 SwWrtShell  &rSh = GetWrtShell();
-                if (2 <= rSh.GetCrsrCnt())  // multi selection?
+                if (2 <= rSh.GetCursorCnt())  // multi selection?
                     rSet.DisableItem(nWhich);
                 else
                 {
@@ -360,7 +360,7 @@ void SwView::GetState(SfxItemSet &rSet)
 
             case SID_DOCUMENT_COMPARE:
             case SID_DOCUMENT_MERGE:
-                if( GetDocShell()->IsA( SwGlobalDocShell::StaticType() ) ||
+                if( dynamic_cast<const SwGlobalDocShell* >(GetDocShell()) != nullptr||
                     (SID_DOCUMENT_MERGE == nWhich && m_pWrtShell->getIDocumentRedlineAccess().GetRedlinePassword().getLength()))
                     rSet.DisableItem(nWhich);
             break;
@@ -430,7 +430,7 @@ void SwView::GetState(SfxItemSet &rSet)
                     //the draw shell cannot provide a status per item - only one for SID_OBJECT_ALIGN
                     if(nWhich != SID_ALIGN_ANY_JUSTIFIED)
                     {
-                        const SfxPoolItem* pItem = 0;
+                        const SfxPoolItem* pItem = nullptr;
                         GetViewFrame()->GetDispatcher()->QueryState( SID_OBJECT_ALIGN, pItem );
                         if(pItem)
                             bDraw = true;
@@ -449,7 +449,7 @@ void SwView::GetState(SfxItemSet &rSet)
                     }
                 }
                 //these slots are either re-mapped to text or object alignment
-                const SfxPoolItem* pState = 0;
+                const SfxPoolItem* pState = nullptr;
                 if(nAlias)
                     GetViewFrame()->GetDispatcher()->QueryState( nAlias, pState );
                 if(pState)
@@ -466,7 +466,7 @@ void SwView::GetState(SfxItemSet &rSet)
 void SwView::GetDrawState(SfxItemSet &rSet)
 {
     SfxWhichIter aIter(rSet);
-    bool bWeb = 0 != PTR_CAST(SwWebView, this);
+    bool bWeb = dynamic_cast<SwWebView*>( this ) !=  nullptr;
 
     for( sal_uInt16 nWhich = aIter.FirstWhich(); nWhich;
                                             nWhich = aIter.NextWhich() )
@@ -534,7 +534,7 @@ bool SwView::HasUIFeature( sal_uInt32 nFeature )
     {
         case CHILDWIN_LABEL     : bRet = m_pWrtShell->IsLabelDoc(); break;
 #if HAVE_FEATURE_DBCONNECTIVITY
-        case CHILDWIN_MAILMERGE : bRet = 0 != GetMailMergeConfigItem(); break;
+        case CHILDWIN_MAILMERGE : bRet = nullptr != GetMailMergeConfigItem(); break;
 #endif
     }
     return bRet;

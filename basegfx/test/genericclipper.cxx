@@ -47,7 +47,7 @@ private:
 
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         aSelfIntersecting.append(B2DPoint(0,  0));
         aSelfIntersecting.append(B2DPoint(0,  100));
@@ -63,7 +63,7 @@ public:
             B2DRange(0,90,20,150));
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {}
 
     void validate(const char* pName,
@@ -135,8 +135,8 @@ public:
         OUString aValid=OUString::createFromAscii(pValidSvgD);
         B2DPolyPolygon aInputPoly, aValidPoly;
 
-        tools::importFromSvgD(aInputPoly, aInput, false, NULL);
-        tools::importFromSvgD(aValidPoly, aValid, false, NULL);
+        tools::importFromSvgD(aInputPoly, aInput, false, nullptr);
+        tools::importFromSvgD(aValidPoly, aValid, false, nullptr);
 
         CPPUNIT_ASSERT_MESSAGE(
             pName,

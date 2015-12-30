@@ -24,10 +24,10 @@
 
 #include <sal/main.h>
 #include <vcl/cmdevt.hxx>
+#include <vcl/implimagetree.hxx>
 #include <vcl/svapp.hxx>
 #include <vcl/window.hxx>
 
-#include "impimagetree.hxx"
 #include "osx/saldata.hxx"
 #include "osx/salframe.h"
 #include "osx/salframeview.h"
@@ -150,7 +150,7 @@
             // popup windows do not get the focus, so they don't get these either
             // simplest would be dispatch this to the key window always if it is without parent
             // however e.g. in document we want the menu shortcut if e.g. the stylist has focus
-            if( pFrame->mpParent && (pFrame->mnStyle & SAL_FRAME_STYLE_FLOAT) == 0 )
+            if( pFrame->mpParent && !(pFrame->mnStyle & SalFrameStyleFlags::FLOAT) )
             {
                 [[pKeyWin contentView] keyDown: pEvent];
                 bHandled = GetSalData()->maKeyEventAnswer[ pEvent ];
@@ -161,7 +161,7 @@
             // the main menu just beeps for an unknown or disabled key equivalent
             // and swallows the event wholesale
             NSMenu* pMainMenu = [NSApp mainMenu];
-            if( ! bHandled && (pMainMenu == 0 || ! [pMainMenu performKeyEquivalent: pEvent]) )
+            if( ! bHandled && (pMainMenu == nullptr || ! [pMainMenu performKeyEquivalent: pEvent]) )
             {
                 [[pKeyWin contentView] keyDown: pEvent];
                 bHandled = GetSalData()->maKeyEventAnswer[ pEvent ];
@@ -247,7 +247,7 @@
             ++it;
             if( it != rFrames.end() )
             {
-                if( (*it)->mpDockMenuEntry != NULL &&
+                if( (*it)->mpDockMenuEntry != nullptr &&
                     (*it)->mbShown )
                 {
                     [(*it)->getNSWindow() makeKeyAndOrderFront: NSApp];
@@ -259,7 +259,7 @@
         it = rFrames.begin();
         while( *it != pCurFrame )
         {
-            if( (*it)->mpDockMenuEntry != NULL &&
+            if( (*it)->mpDockMenuEntry != nullptr &&
                 (*it)->mbShown )
             {
                 [(*it)->getNSWindow() makeKeyAndOrderFront: NSApp];
@@ -287,7 +287,7 @@
             ++it;
             if( it != rFrames.rend() )
             {
-                if( (*it)->mpDockMenuEntry != NULL &&
+                if( (*it)->mpDockMenuEntry != nullptr &&
                     (*it)->mbShown )
                 {
                     [(*it)->getNSWindow() makeKeyAndOrderFront: NSApp];
@@ -299,7 +299,7 @@
         it = rFrames.rbegin();
         while( *it != pCurFrame )
         {
-            if( (*it)->mpDockMenuEntry != NULL &&
+            if( (*it)->mpDockMenuEntry != nullptr &&
                 (*it)->mbShown )
             {
                 [(*it)->getNSWindow() makeKeyAndOrderFront: NSApp];
@@ -405,14 +405,14 @@
         {
             // the following QueryExit will likely present a message box, activate application
             [NSApp activateIgnoringOtherApps: YES];
-            aReply = pSalData->maFrames.front()->CallCallback( SALEVENT_SHUTDOWN, NULL ) ? NSTerminateCancel : NSTerminateNow;
+            aReply = pSalData->maFrames.front()->CallCallback( SALEVENT_SHUTDOWN, nullptr ) ? NSTerminateCancel : NSTerminateNow;
         }
 
         if( aReply == NSTerminateNow )
         {
             ApplicationEvent aEv(ApplicationEvent::TYPE_PRIVATE_DOSHUTDOWN);
             GetpApp()->AppEvent( aEv );
-            ImplImageTreeSingletonRef()->shutDown();
+            ImplImageTree::get().shutDown();
             // DeInitVCL should be called in ImplSVMain - unless someon _exits first which
             // can occur in Desktop::doShutdown for example
         }
@@ -428,7 +428,7 @@
 
     const SalData* pSalData = GetSalData();
 	if( !pSalData->maFrames.empty() )
-		pSalData->maFrames.front()->CallCallback( SALEVENT_SETTINGSCHANGED, NULL );
+		pSalData->maFrames.front()->CallCallback( SALEVENT_SETTINGSCHANGED, nullptr );
 }
 
 -(void)screenParametersChanged: (NSNotification*) pNotification

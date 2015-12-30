@@ -24,8 +24,8 @@
 
 #include <comphelper/sequence.hxx>
 #include <cppuhelper/typeprovider.hxx>
-#include <propertyids.hxx>
-#include <TConnection.hxx>
+#include "propertyids.hxx"
+#include "TConnection.hxx"
 
 using namespace ::connectivity::firebird;
 
@@ -47,8 +47,7 @@ OStatementCommonBase::OStatementCommonBase(Connection* _pConnection)
     : OStatementCommonBase_Base(m_aMutex),
       OPropertySetHelper(OStatementCommonBase_Base::rBHelper),
       m_pConnection(_pConnection),
-      m_aStatementHandle( 0 ),
-      rBHelper(OStatementCommonBase_Base::rBHelper)
+      m_aStatementHandle( 0 )
 {
 }
 
@@ -61,7 +60,7 @@ void OStatementCommonBase::disposeResultSet()
     uno::Reference< XComponent > xComp(m_xResultSet.get(), UNO_QUERY);
     if (xComp.is())
         xComp->dispose();
-    m_xResultSet = uno::Reference< XResultSet>();
+    m_xResultSet.clear();
 }
 
 void OStatementCommonBase::freeStatementHandle()
@@ -215,7 +214,7 @@ void OStatementCommonBase::prepareAndDescribeStatement(const OUString& sql,
     if(aErr)
     {
         free(pOutSqlda);
-        pOutSqlda = NULL;
+        pOutSqlda = nullptr;
     }
 }
 

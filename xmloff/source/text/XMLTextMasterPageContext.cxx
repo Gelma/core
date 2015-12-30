@@ -53,12 +53,11 @@ Reference < XStyle > XMLTextMasterPageContext::Create()
         Reference < XInterface > xIfc =
             xFactory->createInstance("com.sun.star.style.PageStyle");
         if( xIfc.is() )
-            xNewStyle = Reference < XStyle >( xIfc, UNO_QUERY );
+            xNewStyle.set( xIfc, UNO_QUERY );
     }
 
     return xNewStyle;
 }
-TYPEINIT1( XMLTextMasterPageContext, SvXMLStyleContext );
 
 XMLTextMasterPageContext::XMLTextMasterPageContext( SvXMLImport& rImport,
         sal_uInt16 nPrfx, const OUString& rLName,
@@ -178,7 +177,7 @@ SvXMLImportContext *XMLTextMasterPageContext::CreateChildContext(
         const OUString& rLocalName,
         const Reference< XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap =
         GetImport().GetTextImport()->GetTextMasterPageElemTokenMap();
@@ -236,7 +235,7 @@ SvXMLImportContext *XMLTextMasterPageContext::CreateChildContext(
 SvXMLImportContext *XMLTextMasterPageContext::CreateHeaderFooterContext(
             sal_uInt16 nPrefix,
             const OUString& rLocalName,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList,
+            const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList,
             const bool bFooter,
             const bool bLeft,
             const bool bFirst )

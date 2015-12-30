@@ -60,7 +60,7 @@ namespace drawinglayer
 
         protected:
             // local decomposition.
-            virtual Primitive2DSequence create2DDecomposition(const geometry::ViewInformation2D& aViewInformation) const SAL_OVERRIDE;
+            virtual Primitive2DContainer create2DDecomposition(const geometry::ViewInformation2D& aViewInformation) const override;
 
         public:
             SdrCellPrimitive2D(
@@ -77,16 +77,16 @@ namespace drawinglayer
             const attribute::SdrFillTextAttribute& getSdrFTAttribute() const { return maSdrFTAttribute; }
 
             // compare operator
-            virtual bool operator==(const BasePrimitive2D& rPrimitive) const SAL_OVERRIDE;
+            virtual bool operator==(const BasePrimitive2D& rPrimitive) const override;
 
             // provide unique ID
             DeclPrimitive2DIDBlock()
         };
 
-        Primitive2DSequence SdrCellPrimitive2D::create2DDecomposition(const geometry::ViewInformation2D& /*aViewInformation*/) const
+        Primitive2DContainer SdrCellPrimitive2D::create2DDecomposition(const geometry::ViewInformation2D& /*aViewInformation*/) const
         {
             // prepare unit polygon
-            Primitive2DSequence aRetval;
+            Primitive2DContainer aRetval;
             const basegfx::B2DPolyPolygon aUnitPolyPolygon(basegfx::tools::createUnitPolygon());
 
             // add fill
@@ -95,7 +95,7 @@ namespace drawinglayer
                 basegfx::B2DPolyPolygon aTransformed(aUnitPolyPolygon);
 
                 aTransformed.transform(getTransform());
-                appendPrimitive2DReferenceToPrimitive2DSequence(aRetval,
+                aRetval.push_back(
                     createPolyPolygonFillPrimitive(
                         aTransformed,
                         getSdrFTAttribute().getFill(),
@@ -104,7 +104,7 @@ namespace drawinglayer
             else
             {
                 // if no fill create one for HitTest and BoundRect fallback
-                appendPrimitive2DReferenceToPrimitive2DSequence(aRetval,
+                aRetval.push_back(
                     createHiddenGeometryPrimitives2D(
                         true,
                         aUnitPolyPolygon,
@@ -114,7 +114,7 @@ namespace drawinglayer
             // add text
             if(!getSdrFTAttribute().getText().isDefault())
             {
-                appendPrimitive2DReferenceToPrimitive2DSequence(aRetval,
+                aRetval.push_back(
                     createTextPrimitive(
                         aUnitPolyPolygon,
                         getTransform(),
@@ -181,7 +181,7 @@ namespace drawinglayer
 
         protected:
             // local decomposition.
-            virtual Primitive2DSequence create2DDecomposition(const geometry::ViewInformation2D& aViewInformation) const SAL_OVERRIDE;
+            virtual Primitive2DContainer create2DDecomposition(const geometry::ViewInformation2D& aViewInformation) const override;
 
         public:
             SdrBorderlinePrimitive2D(
@@ -238,7 +238,7 @@ namespace drawinglayer
             bool getInTwips() const { return mbInTwips; }
 
             // compare operator
-            virtual bool operator==(const BasePrimitive2D& rPrimitive) const SAL_OVERRIDE;
+            virtual bool operator==(const BasePrimitive2D& rPrimitive) const override;
 
             // provide unique ID
             DeclPrimitive2DIDBlock()
@@ -291,9 +291,9 @@ namespace drawinglayer
             return (double)nValue;
         }
 
-        Primitive2DSequence SdrBorderlinePrimitive2D::create2DDecomposition(const geometry::ViewInformation2D& /*aViewInformation*/) const
+        Primitive2DContainer SdrBorderlinePrimitive2D::create2DDecomposition(const geometry::ViewInformation2D& /*aViewInformation*/) const
         {
-            Primitive2DSequence xRetval(4);
+            Primitive2DContainer xRetval(4);
             sal_uInt32 nInsert(0);
             const double fTwipsToMM(getInTwips() ? (127.0 / 72.0) : 1.0);
 
@@ -431,7 +431,7 @@ namespace drawinglayer
                 }
             }
 
-            xRetval.realloc(nInsert);
+            xRetval.resize(nInsert);
             return xRetval;
         }
 
@@ -519,15 +519,15 @@ namespace sdr
             aLine = aEmptyLine;
         }
 
-        drawinglayer::primitive2d::Primitive2DSequence ViewContactOfTableObj::createViewIndependentPrimitive2DSequence() const
+        drawinglayer::primitive2d::Primitive2DContainer ViewContactOfTableObj::createViewIndependentPrimitive2DSequence() const
         {
             const sdr::table::SdrTableObj& rTableObj = GetTableObj();
-            const uno::Reference< com::sun::star::table::XTable > xTable = rTableObj.getTable();
+            const uno::Reference< css::table::XTable > xTable = rTableObj.getTable();
 
             if(xTable.is())
             {
                 // create primitive representation for table
-                drawinglayer::primitive2d::Primitive2DSequence xRetval;
+                drawinglayer::primitive2d::Primitive2DContainer xRetval;
                 const sal_Int32 nRowCount(xTable->getRowCount());
                 const sal_Int32 nColCount(xTable->getColumnCount());
                 const sal_Int32 nAllCount(nRowCount * nColCount);
@@ -535,7 +535,7 @@ namespace sdr
                 if(nAllCount)
                 {
                     const sdr::table::TableLayouter& rTableLayouter = rTableObj.getTableLayouter();
-                    const bool bIsRTL(com::sun::star::text::WritingMode_RL_TB == rTableObj.GetWritingMode());
+                    const bool bIsRTL(css::text::WritingMode_RL_TB == rTableObj.GetWritingMode());
                     sdr::table::CellPos aCellPos;
                     sdr::table::CellRef xCurrentCell;
                     basegfx::B2IRectangle aCellArea;
@@ -547,8 +547,8 @@ namespace sdr
 
                     // for each cell we need potentially a cell primitive and a border primitive
                     // (e.g. single cell). Prepare sequences and input counters
-                    drawinglayer::primitive2d::Primitive2DSequence xCellSequence(nAllCount);
-                    drawinglayer::primitive2d::Primitive2DSequence xBorderSequence(nAllCount);
+                    drawinglayer::primitive2d::Primitive2DContainer xCellSequence(nAllCount);
+                    drawinglayer::primitive2d::Primitive2DContainer xBorderSequence(nAllCount);
                     sal_uInt32 nCellInsert(0);
                     sal_uInt32 nBorderInsert(0);
 
@@ -677,18 +677,18 @@ namespace sdr
                     }
 
                     // no empty references; reallocate sequences by used count
-                    xCellSequence.realloc(nCellInsert);
-                    xBorderSequence.realloc(nBorderInsert);
+                    xCellSequence.resize(nCellInsert);
+                    xBorderSequence.resize(nBorderInsert);
 
                     // append to target. We want fillings and text first
                     xRetval = xCellSequence;
-                    drawinglayer::primitive2d::appendPrimitive2DSequenceToPrimitive2DSequence(xRetval, xBorderSequence);
+                    xRetval.append(xBorderSequence);
                 }
 
-                if(xRetval.hasElements())
+                if(!xRetval.empty())
                 {
                     // check and create evtl. shadow for created content
-                       const SfxItemSet& rObjectItemSet = rTableObj.GetMergedItemSet();
+                    const SfxItemSet& rObjectItemSet = rTableObj.GetMergedItemSet();
                     const drawinglayer::attribute::SdrShadowAttribute aNewShadowAttribute(
                         drawinglayer::primitive2d::createNewSdrShadowAttribute(rObjectItemSet));
 
@@ -722,7 +722,7 @@ namespace sdr
                         false,
                         aObjectMatrix));
 
-                return drawinglayer::primitive2d::Primitive2DSequence(&xReference, 1);
+                return drawinglayer::primitive2d::Primitive2DContainer { xReference };
             }
         }
 

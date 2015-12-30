@@ -48,7 +48,7 @@ public:
             preview.  This makes the actual preview smaller.
     */
     PreviewRenderer (
-        OutputDevice* pTemplate = NULL,
+        OutputDevice* pTemplate = nullptr,
         const bool bPaintFrame = true);
 
     virtual ~PreviewRenderer();
@@ -123,7 +123,7 @@ public:
         int nWidth);
 
 protected:
-    virtual void Notify(SfxBroadcaster& rBC, const SfxHint& rHint) SAL_OVERRIDE;
+    virtual void Notify(SfxBroadcaster& rBC, const SfxHint& rHint) override;
 
 private:
     ScopedVclPtr<VirtualDevice> mpPreviewDevice;

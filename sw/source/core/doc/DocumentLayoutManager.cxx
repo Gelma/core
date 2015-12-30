@@ -47,8 +47,8 @@ namespace sw
 
 DocumentLayoutManager::DocumentLayoutManager( SwDoc& i_rSwdoc ) :
     m_rDoc( i_rSwdoc ),
-    mpCurrentView( 0 ),
-    mpLayouter( 0 )
+    mpCurrentView( nullptr ),
+    mpLayouter( nullptr )
 {
 }
 
@@ -68,24 +68,24 @@ void DocumentLayoutManager::SetCurrentViewShell( SwViewShell* pNew )
 }
 
 // It must be able to communicate to a SwViewShell. This is going to be removed later.
-const SwRootFrm *DocumentLayoutManager::GetCurrentLayout() const
+const SwRootFrame *DocumentLayoutManager::GetCurrentLayout() const
 {
     if(GetCurrentViewShell())
         return GetCurrentViewShell()->GetLayout();
-    return 0;
+    return nullptr;
 }
 
-SwRootFrm *DocumentLayoutManager::GetCurrentLayout()
+SwRootFrame *DocumentLayoutManager::GetCurrentLayout()
 {
     if(GetCurrentViewShell())
         return GetCurrentViewShell()->GetLayout();
-    return 0;
+    return nullptr;
 }
 
 bool DocumentLayoutManager::HasLayout() const
 {
     // if there is a view, there is always a layout
-    return (mpCurrentView != 0);
+    return (mpCurrentView != nullptr);
 }
 
 SwLayouter* DocumentLayoutManager::GetLayouter()
@@ -109,7 +109,7 @@ void DocumentLayoutManager::SetLayouter( SwLayouter* pNew )
     If there already is a fitting format, it is returned instead. */
 SwFrameFormat *DocumentLayoutManager::MakeLayoutFormat( RndStdIds eRequest, const SfxItemSet* pSet )
 {
-    SwFrameFormat *pFormat = 0;
+    SwFrameFormat *pFormat = nullptr;
     const bool bMod = m_rDoc.getIDocumentState().IsModified();
     bool bHeader = false;
 
@@ -210,7 +210,7 @@ void DocumentLayoutManager::DelLayoutFormat( SwFrameFormat *pFormat )
         m_rDoc.SetAttr( aChain, *rChain.GetNext() );
     }
 
-    const SwNodeIndex* pCntIdx = 0;
+    const SwNodeIndex* pCntIdx = nullptr;
     // The draw format doesn't own its content, it just has a pointer to it.
     if (pFormat->Which() != RES_DRAWFRMFMT)
         pCntIdx = pFormat->GetContent().GetContentIdx();
@@ -239,7 +239,7 @@ void DocumentLayoutManager::DelLayoutFormat( SwFrameFormat *pFormat )
     }
 
     // Destroy Frames
-    pFormat->DelFrms();
+    pFormat->DelFrames();
 
     // Only FlyFrames are undoable at first
     const sal_uInt16 nWh = pFormat->Which();
@@ -254,7 +254,7 @@ void DocumentLayoutManager::DelLayoutFormat( SwFrameFormat *pFormat )
         if ( nWh == RES_FLYFRMFMT )
         {
             // determine frame formats of at-frame anchored objects
-            const SwNodeIndex* pContentIdx = 0;
+            const SwNodeIndex* pContentIdx = nullptr;
             if (pFormat->Which() != RES_DRAWFRMFMT)
                 pContentIdx = pFormat->GetContent().GetContentIdx();
             if (pContentIdx)
@@ -292,7 +292,7 @@ void DocumentLayoutManager::DelLayoutFormat( SwFrameFormat *pFormat )
         if( pCntIdx )
         {
             SwNode *pNode = &pCntIdx->GetNode();
-            const_cast<SwFormatContent&>(static_cast<const SwFormatContent&>(pFormat->GetFormatAttr( RES_CNTNT ))).SetNewContentIdx( 0 );
+            const_cast<SwFormatContent&>(static_cast<const SwFormatContent&>(pFormat->GetFormatAttr( RES_CNTNT ))).SetNewContentIdx( nullptr );
             m_rDoc.getIDocumentContentOperations().DeleteSection( pNode );
         }
 
@@ -334,7 +334,7 @@ SwFrameFormat *DocumentLayoutManager::CopyLayoutFormat(
     const SwFrameFormat& rSource,
     const SwFormatAnchor& rNewAnchor,
     bool bSetTextFlyAtt,
-    bool bMakeFrms )
+    bool bMakeFrames )
 {
     const bool bFly = RES_FLYFRMFMT == rSource.Which();
     const bool bDraw = RES_DRAWFRMFMT == rSource.Which();
@@ -358,14 +358,14 @@ SwFrameFormat *DocumentLayoutManager::CopyLayoutFormat(
              (FLY_AT_CHAR == rNewAnchor.GetAnchorId())) &&
             rNewAnchor.GetContentAnchor() &&
             m_rDoc.IsInHeaderFooter( rNewAnchor.GetContentAnchor()->nNode ) &&
-            pDrawContact != NULL  &&
-            pDrawContact->GetMaster() != NULL  &&
+            pDrawContact != nullptr  &&
+            pDrawContact->GetMaster() != nullptr  &&
             CheckControlLayer( pDrawContact->GetMaster() );
     }
 
     // just return if we can't copy this
     if( bMayNotCopy )
-        return NULL;
+        return nullptr;
 
     SwFrameFormat* pDest = m_rDoc.GetDfltFrameFormat();
     if( rSource.GetRegisteredIn() != pSrcDoc->GetDfltFrameFormat() )
@@ -444,7 +444,7 @@ SwFrameFormat *DocumentLayoutManager::CopyLayoutFormat(
         //contact object itself. They should be managed by SwUndoInsLayFormat.
         const ::sw::DrawUndoGuard drawUndoGuard(m_rDoc.GetIDocumentUndoRedo());
 
-        pSrcDoc->GetDocumentContentOperationsManager().CopyWithFlyInFly( aRg, 0, aIdx, NULL, false, true, true );
+        pSrcDoc->GetDocumentContentOperationsManager().CopyWithFlyInFly( aRg, 0, aIdx, nullptr, false, true, true );
     }
     else
     {
@@ -458,8 +458,8 @@ SwFrameFormat *DocumentLayoutManager::CopyLayoutFormat(
         // #i49730# - notify draw frame format that position attributes are
         // already set, if the position attributes are already set at the
         // source draw frame format.
-        if ( pDest->ISA(SwDrawFrameFormat) &&
-             rSource.ISA(SwDrawFrameFormat) &&
+        if ( dynamic_cast<const SwDrawFrameFormat*>( pDest) !=  nullptr &&
+             dynamic_cast<const SwDrawFrameFormat*>( &rSource) !=  nullptr &&
              static_cast<const SwDrawFrameFormat&>(rSource).IsPosAttrSet() )
         {
             static_cast<SwDrawFrameFormat*>(pDest)->PosAttrSet();
@@ -467,8 +467,8 @@ SwFrameFormat *DocumentLayoutManager::CopyLayoutFormat(
 
         if( pDest->GetAnchor() == rNewAnchor )
         {
-            // Do *not* connect to layout, if a <MakeFrms> will not be called.
-            if ( bMakeFrms )
+            // Do *not* connect to layout, if a <MakeFrames> will not be called.
+            if ( bMakeFrames )
             {
                 pContact->ConnectToLayout( &rNewAnchor );
             }
@@ -490,8 +490,8 @@ SwFrameFormat *DocumentLayoutManager::CopyLayoutFormat(
             aFormat, pPos->nContent.GetIndex(), 0 );
     }
 
-    if( bMakeFrms )
-        pDest->MakeFrms();
+    if( bMakeFrames )
+        pDest->MakeFrames();
 
     // If the draw format has a TextBox, then copy its fly format as well.
     if (SwFrameFormat* pSourceTextBox = SwTextBoxHelper::findTextBox(&rSource))
@@ -505,7 +505,7 @@ SwFrameFormat *DocumentLayoutManager::CopyLayoutFormat(
         // presumably these anchors are supported though not sure
         assert(FLY_AT_CHAR == boxAnchor.GetAnchorId() || FLY_AT_PARA == boxAnchor.GetAnchorId());
         SwFrameFormat* pDestTextBox = CopyLayoutFormat(*pSourceTextBox,
-                boxAnchor, bSetTextFlyAtt, bMakeFrms);
+                boxAnchor, bSetTextFlyAtt, bMakeFrames);
         SwAttrSet aSet(pDest->GetAttrSet());
         SwFormatContent aContent(pDestTextBox->GetContent().GetContentIdx()->GetNode().GetStartNode());
         aSet.Put(aContent);
@@ -521,7 +521,7 @@ SwFrameFormat *DocumentLayoutManager::CopyLayoutFormat(
 //by the SwLayouter
 void DocumentLayoutManager::ClearSwLayouterEntries()
 {
-    SwLayouter::ClearMovedFwdFrms( m_rDoc );
+    SwLayouter::ClearMovedFwdFrames( m_rDoc );
     SwLayouter::ClearObjsTmpConsiderWrapInfluence( m_rDoc );
     // #i65250#
     SwLayouter::ClearMoveBwdLayoutInfo( m_rDoc );
@@ -530,7 +530,7 @@ void DocumentLayoutManager::ClearSwLayouterEntries()
 DocumentLayoutManager::~DocumentLayoutManager()
 {
     delete mpLayouter;
-    mpLayouter = 0L;
+    mpLayouter = nullptr;
 }
 
 }

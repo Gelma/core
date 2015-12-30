@@ -69,8 +69,7 @@ using namespace ::com::sun::star;
 
 static uno::Sequence< OUString > getServiceNames()
 {
-    uno::Sequence< OUString > aServiceList(1);
-    aServiceList[0] = "com.sun.star.setup.UpdateCheckUI";
+    uno::Sequence< OUString > aServiceList { "com.sun.star.setup.UpdateCheckUI" };
     return aServiceList;
 }
 
@@ -109,9 +108,9 @@ public:
                                   const OUString& rText, const Image& rImage );
                    virtual ~BubbleWindow();
 
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) SAL_OVERRIDE;
-    void            Resize() SAL_OVERRIDE;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) override;
+    void            Resize() override;
     void            Show( bool bVisible = true, ShowFlags nFlags = ShowFlags::NoActivate );
     void            SetTipPosPixel( const Point& rTipPos ) { maTipPos = rTipPos; }
     void            SetTitleAndText( const OUString& rTitle, const OUString& rText,
@@ -163,44 +162,44 @@ public:
 
     // XServiceInfo
     virtual OUString SAL_CALL getImplementationName()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL supportsService(OUString const & serviceName)
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
 
     // XDocumentEventListener
     virtual void SAL_CALL documentEventOccured(const document::DocumentEvent& Event)
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL disposing(const lang::EventObject& Event)
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
 
     //XPropertySet
     virtual uno::Reference< beans::XPropertySetInfo > SAL_CALL getPropertySetInfo()
-        throw ( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL setPropertyValue(const OUString& PropertyName, const uno::Any& aValue)
         throw( beans::UnknownPropertyException, beans::PropertyVetoException,
-               lang::IllegalArgumentException, lang::WrappedTargetException, uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+               lang::IllegalArgumentException, lang::WrappedTargetException, uno::RuntimeException, std::exception ) override;
     virtual uno::Any SAL_CALL getPropertyValue(const OUString& PropertyName)
-        throw ( beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw ( beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL addPropertyChangeListener(const OUString& PropertyName,
                                                     const uno::Reference< beans::XPropertyChangeListener > & aListener)
-        throw( beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL removePropertyChangeListener(const OUString& PropertyName,
                                                        const uno::Reference< beans::XPropertyChangeListener > & aListener)
-        throw( beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL addVetoableChangeListener(const OUString& PropertyName,
                                                     const uno::Reference< beans::XVetoableChangeListener > & aListener)
-        throw( beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL removeVetoableChangeListener(const OUString& PropertyName,
                                                        const uno::Reference< beans::XVetoableChangeListener > & aListener)
-        throw( beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException, std::exception ) override;
 };
 
 
 UpdateCheckUI::UpdateCheckUI(const uno::Reference<uno::XComponentContext>& xContext) :
       m_xContext(xContext)
-    , mpIconMBar( NULL )
+    , mpIconMBar( nullptr )
     , mbShowBubble( false )
     , mbShowMenuIcon( false )
     , mbBubbleChanged( false )
@@ -356,7 +355,7 @@ void UpdateCheckUI::AddMenuBarIcon( SystemWindow *pSysWin, bool bAddEventHdl )
         mpBubbleWin = GetBubbleWindow();
         if ( mpBubbleWin )
         {
-            mpBubbleWin->Show( true );
+            mpBubbleWin->Show();
             maTimeoutTimer.Start();
         }
         mbShowBubble = false;
@@ -385,7 +384,7 @@ void SAL_CALL UpdateCheckUI::disposing(const lang::EventObject&)
 uno::Reference< beans::XPropertySetInfo > UpdateCheckUI::getPropertySetInfo()
     throw ( uno::RuntimeException, std::exception )
 {
-    return NULL;
+    return nullptr;
 }
 
 
@@ -519,11 +518,11 @@ void UpdateCheckUI::removeVetoableChangeListener( const OUString& /*aPropertyNam
 BubbleWindow * UpdateCheckUI::GetBubbleWindow()
 {
     if ( !mpIconSysWin )
-        return NULL;
+        return nullptr;
 
     Rectangle aIconRect = mpIconMBar->GetMenuBarButtonRectPixel( mnIconID );
     if( aIconRect.IsEmpty() )
-        return NULL;
+        return nullptr;
 
     BubbleWindow* pBubbleWin = mpBubbleWin;
 
@@ -564,16 +563,16 @@ void UpdateCheckUI::RemoveBubbleWindow( bool bRemoveIcon )
             if ( mpIconMBar && ( mnIconID != 0 ) )
             {
                 mpIconMBar->RemoveMenuBarButton( mnIconID );
-                mpIconMBar = NULL;
+                mpIconMBar = nullptr;
                 mnIconID = 0;
             }
         }
         catch ( ... ) {
-            mpIconMBar = NULL;
+            mpIconMBar = nullptr;
             mnIconID = 0;
         }
 
-        mpIconSysWin = NULL;
+        mpIconSysWin = nullptr;
     }
 }
 
@@ -637,9 +636,9 @@ IMPL_LINK_NOARG_TYPED(UpdateCheckUI, UserEventHdl, void*, void)
 
     vcl::Window *pTopWin = Application::GetFirstTopLevelWindow();
     vcl::Window *pActiveWin = Application::GetActiveTopWindow();
-    SystemWindow *pActiveSysWin = NULL;
+    SystemWindow *pActiveSysWin = nullptr;
 
-    vcl::Window *pBubbleWin = NULL;
+    vcl::Window *pBubbleWin = nullptr;
     if ( mpBubbleWin )
         pBubbleWin = mpBubbleWin;
 
@@ -647,7 +646,7 @@ IMPL_LINK_NOARG_TYPED(UpdateCheckUI, UserEventHdl, void*, void)
         pActiveSysWin = pActiveWin->GetSystemWindow();
 
     if ( pActiveWin == pBubbleWin )
-        pActiveSysWin = NULL;
+        pActiveSysWin = nullptr;
 
     while ( !pActiveSysWin && pTopWin )
     {
@@ -700,7 +699,7 @@ IMPL_LINK_TYPED( UpdateCheckUI, WindowEventHdl, VclWindowEvent&, rEvent, void )
     {
         SolarMutexGuard aGuard;
         if ( ( mpIconSysWin == rEvent.GetWindow() ) &&
-             mpBubbleWin && ( mpIconMBar != NULL ) )
+             mpBubbleWin && ( mpIconMBar != nullptr ) )
         {
             Rectangle aIconRect = mpIconMBar->GetMenuBarButtonRectPixel( mnIconID );
             Point aWinPos = aIconRect.BottomCenter();
@@ -725,7 +724,7 @@ IMPL_LINK_TYPED( UpdateCheckUI, ApplicationEventHdl, VclSimpleEvent&, rEvent, vo
             if ( pWindow && pWindow->IsTopWindow() )
             {
                 SystemWindow *pSysWin = pWindow->GetSystemWindow();
-                MenuBar *pMBar = pSysWin ? pSysWin->GetMenuBar() : NULL;
+                MenuBar *pMBar = pSysWin ? pSysWin->GetMenuBar() : nullptr;
                 if (pMBar)
                 {
                     AddMenuBarIcon( pSysWin, true );
@@ -969,10 +968,10 @@ static const cppu::ImplementationEntry kImplementations_entries[] =
         getImplementationName,
         getServiceNames,
         cppu::createSingleComponentFactory,
-        NULL,
+        nullptr,
         0
     },
-    { NULL, NULL, NULL, NULL, NULL, 0 }
+    { nullptr, nullptr, nullptr, nullptr, nullptr, 0 }
 } ;
 
 

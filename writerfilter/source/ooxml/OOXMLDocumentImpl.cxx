@@ -31,12 +31,13 @@
 #include "OOXMLDocumentImpl.hxx"
 #include "OOXMLBinaryObjectReference.hxx"
 #include "OOXMLFastDocumentHandler.hxx"
-#include "OOXMLPropertySetImpl.hxx"
+#include "OOXMLPropertySet.hxx"
 
 #include <tools/resmgr.hxx>
 #include <vcl/svapp.hxx>
 #include <vcl/settings.hxx>
 #include <svx/dialogs.hrc>
+#include <comphelper/sequence.hxx>
 
 #include <iostream>
 
@@ -48,7 +49,7 @@ namespace writerfilter {
 namespace ooxml
 {
 
-OOXMLDocumentImpl::OOXMLDocumentImpl(OOXMLStream::Pointer_t pStream, const uno::Reference<task::XStatusIndicator>& xStatusIndicator, bool bSkipImages)
+OOXMLDocumentImpl::OOXMLDocumentImpl(OOXMLStream::Pointer_t pStream, const uno::Reference<task::XStatusIndicator>& xStatusIndicator, bool bSkipImages, OUString const& rBaseURL)
     : mpStream(pStream)
     , mxStatusIndicator(xStatusIndicator)
     , mnXNoteId(0)
@@ -60,6 +61,7 @@ OOXMLDocumentImpl::OOXMLDocumentImpl(OOXMLStream::Pointer_t pStream, const uno::
     , mnProgressLastPos(0)
     , mnProgressCurrentPos(0)
     , mnProgressEndPos(0)
+    , m_rBaseURL(rBaseURL)
 {
 }
 
@@ -264,7 +266,7 @@ OOXMLDocumentImpl::getSubStream(const OUString & rId)
 
     OOXMLDocumentImpl * pTemp;
     // Do not pass status indicator to sub-streams: they are typically marginal in size, so we just track the main document for now.
-    writerfilter::Reference<Stream>::Pointer_t pRet( pTemp = new OOXMLDocumentImpl(pStream, uno::Reference<task::XStatusIndicator>(), mbSkipImages ));
+    writerfilter::Reference<Stream>::Pointer_t pRet( pTemp = new OOXMLDocumentImpl(pStream, uno::Reference<task::XStatusIndicator>(), mbSkipImages, m_rBaseURL));
     pTemp->setModel(mxModel);
     pTemp->setDrawPage(mxDrawPage);
     pTemp->setIsSubstream( true );
@@ -278,9 +280,11 @@ OOXMLDocumentImpl::getXNoteStream(OOXMLStream::StreamType_t nType, const Id & rT
     OOXMLStream::Pointer_t pStream =
         (OOXMLDocumentFactory::createStream(mpStream, nType));
     // See above, no status indicator for the note stream, either.
-    OOXMLDocumentImpl * pDocument = new OOXMLDocumentImpl(pStream, uno::Reference<task::XStatusIndicator>(), mbSkipImages);
+    OOXMLDocumentImpl * pDocument = new OOXMLDocumentImpl(pStream, uno::Reference<task::XStatusIndicator>(), mbSkipImages, m_rBaseURL);
     pDocument->setXNoteId(nId);
     pDocument->setXNoteType(rType);
+    pDocument->setModel(getModel());
+    pDocument->setDrawPage(getDrawPage());
 
     return writerfilter::Reference<Stream>::Pointer_t(pDocument);
 }
@@ -350,20 +354,20 @@ OOXMLPropertySet * OOXMLDocumentImpl::getPicturePropSet
     OOXMLValue::Pointer_t pPayloadValue(new OOXMLBinaryValue(pPicture));
 
     OOXMLProperty::Pointer_t pPayloadProperty
-        (new OOXMLPropertyImpl(NS_ooxml::LN_payload, pPayloadValue,
-                               OOXMLPropertyImpl::ATTRIBUTE));
+        (new OOXMLProperty(NS_ooxml::LN_payload, pPayloadValue,
+                               OOXMLProperty::ATTRIBUTE));
 
-    OOXMLPropertySet::Pointer_t pBlipSet(new OOXMLPropertySetImpl());
+    OOXMLPropertySet::Pointer_t pBlipSet(new OOXMLPropertySet);
 
     pBlipSet->add(pPayloadProperty);
 
     OOXMLValue::Pointer_t pBlipValue(new OOXMLPropertySetValue(pBlipSet));
 
     OOXMLProperty::Pointer_t pBlipProperty
-        (new OOXMLPropertyImpl(NS_ooxml::LN_blip, pBlipValue,
-                               OOXMLPropertyImpl::ATTRIBUTE));
+        (new OOXMLProperty(NS_ooxml::LN_blip, pBlipValue,
+                               OOXMLProperty::ATTRIBUTE));
 
-    OOXMLPropertySet * pProps = new OOXMLPropertySetImpl();
+    OOXMLPropertySet * pProps = new OOXMLPropertySet;
 
     pProps->add(pBlipProperty);
 
@@ -552,8 +556,8 @@ void OOXMLDocumentImpl::resolveCustomXmlStream(Stream & rStream)
         bool bFound = false;
         sal_Int32 counter = 0;
         uno::Sequence< uno::Sequence< beans::StringPair > >aSeqs = xRelationshipAccess->getAllRelationships();
-        uno::Sequence<uno::Reference<xml::dom::XDocument> > xCustomXmlDomListTemp(aSeqs.getLength());
-        uno::Sequence<uno::Reference<xml::dom::XDocument> > xCustomXmlDomPropsListTemp(aSeqs.getLength());
+        std::vector< uno::Reference<xml::dom::XDocument> > aCustomXmlDomList;
+        std::vector< uno::Reference<xml::dom::XDocument> > aCustomXmlDomPropsList;
         for (sal_Int32 j = 0; j < aSeqs.getLength(); j++)
         {
             uno::Sequence< beans::StringPair > aSeq = aSeqs[j];
@@ -579,8 +583,8 @@ void OOXMLDocumentImpl::resolveCustomXmlStream(Stream & rStream)
                 // grabbag list.
                 if(mxCustomXmlProsDom.is() && customXmlTemp.is())
                 {
-                    xCustomXmlDomListTemp[counter] = customXmlTemp;
-                    xCustomXmlDomPropsListTemp[counter] = mxCustomXmlProsDom;
+                    aCustomXmlDomList.push_back(customXmlTemp);
+                    aCustomXmlDomPropsList.push_back(mxCustomXmlProsDom);
                     counter++;
                     resolveFastSubStream(rStream, OOXMLStream::CUSTOMXML);
                 }
@@ -588,10 +592,8 @@ void OOXMLDocumentImpl::resolveCustomXmlStream(Stream & rStream)
             }
         }
 
-        xCustomXmlDomListTemp.realloc(counter);
-        xCustomXmlDomPropsListTemp.realloc(counter);
-        mxCustomXmlDomList = xCustomXmlDomListTemp;
-        mxCustomXmlDomPropsList = xCustomXmlDomPropsListTemp;
+        mxCustomXmlDomList = comphelper::containerToSequence(aCustomXmlDomList);
+        mxCustomXmlDomPropsList = comphelper::containerToSequence(aCustomXmlDomPropsList);
     }
 }
 
@@ -623,7 +625,7 @@ void OOXMLDocumentImpl::resolveGlossaryStream(Stream & /*rStream*/)
     {
 
         uno::Sequence< uno::Sequence< beans::StringPair > >aSeqs = xRelationshipAccess->getAllRelationships();
-        uno::Sequence<uno::Sequence< uno::Any> > xGlossaryDomListTemp(aSeqs.getLength());
+        std::vector< uno::Sequence<uno::Any> > aGlossaryDomList;
          sal_Int32 counter = 0;
          for (sal_Int32 j = 0; j < aSeqs.getLength(); j++)
          {
@@ -693,13 +695,12 @@ void OOXMLDocumentImpl::resolveGlossaryStream(Stream & /*rStream*/)
                       glossaryTuple[2] = uno::makeAny(gType);
                       glossaryTuple[3] = uno::makeAny(gTarget);
                       glossaryTuple[4] = uno::makeAny(contentType);
-                      xGlossaryDomListTemp[counter] = glossaryTuple;
+                      aGlossaryDomList.push_back(glossaryTuple);
                       counter++;
                   }
               }
           }
-          xGlossaryDomListTemp.realloc(counter);
-          mxGlossaryDomList = xGlossaryDomListTemp;
+          mxGlossaryDomList = comphelper::containerToSequence(aGlossaryDomList);
       }
 }
 
@@ -707,6 +708,7 @@ void OOXMLDocumentImpl::resolveEmbeddingsStream(OOXMLStream::Pointer_t pStream)
 {
     uno::Reference<embed::XRelationshipAccess> xRelationshipAccess;
     xRelationshipAccess.set((dynamic_cast<OOXMLStreamImpl&>(*pStream.get())).accessDocumentStream(), uno::UNO_QUERY_THROW);
+    std::vector<css::beans::PropertyValue> aEmbeddings;
     if (xRelationshipAccess.is())
     {
         OUString sChartType("http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart");
@@ -772,7 +774,7 @@ void OOXMLDocumentImpl::resolveEmbeddingsStream(OOXMLStream::Pointer_t pStream)
                     {
                         embeddingsTemp.Name = embeddingsTarget;
                         embeddingsTemp.Value = uno::makeAny(mxEmbeddings);
-                        mxEmbeddingsListTemp.push_back(embeddingsTemp);
+                        aEmbeddings.push_back(embeddingsTemp);
                         mxEmbeddings.clear();
                     }
                 }
@@ -781,14 +783,8 @@ void OOXMLDocumentImpl::resolveEmbeddingsStream(OOXMLStream::Pointer_t pStream)
             }
         }
     }
-    if(0 != mxEmbeddingsListTemp.size())
-    {
-        mxEmbeddingsList.realloc(mxEmbeddingsListTemp.size());
-        for (size_t i = 0; i < mxEmbeddingsListTemp.size(); i++)
-        {
-            mxEmbeddingsList[i] = mxEmbeddingsListTemp[i];
-        }
-    }
+    if (!aEmbeddings.empty())
+        mxEmbeddingsList = comphelper::containerToSequence(aEmbeddings);
 }
 
 void OOXMLDocumentImpl::resolveActiveXStream(Stream & rStream)
@@ -932,9 +928,11 @@ uno::Sequence<beans::PropertyValue > OOXMLDocumentImpl::getEmbeddingsList( )
 
 OOXMLDocument *
 OOXMLDocumentFactory::createDocument
-(OOXMLStream::Pointer_t pStream, const uno::Reference<task::XStatusIndicator>& xStatusIndicator, bool mbSkipImages)
+(OOXMLStream::Pointer_t pStream,
+ const uno::Reference<task::XStatusIndicator>& xStatusIndicator,
+ bool mbSkipImages, OUString const& rBaseURL)
 {
-    return new OOXMLDocumentImpl(pStream, xStatusIndicator, mbSkipImages);
+    return new OOXMLDocumentImpl(pStream, xStatusIndicator, mbSkipImages, rBaseURL);
 }
 
 }}

@@ -33,7 +33,7 @@ namespace svgio
             maCx(0),
             maCy(0),
             maR(0),
-            mpaTransform(0)
+            mpaTransform(nullptr)
         {
         }
 
@@ -44,7 +44,7 @@ namespace svgio
 
         const SvgStyleAttributes* SvgCircleNode::getSvgStyleAttributes() const
         {
-            return checkForCssStyle(OUString("circle"), maSvgStyleAttributes);
+            return checkForCssStyle("circle", maSvgStyleAttributes);
         }
 
         void SvgCircleNode::parseAttribute(const OUString& rTokenName, SVGToken aSVGToken, const OUString& aContent)
@@ -113,13 +113,13 @@ namespace svgio
             }
         }
 
-        void SvgCircleNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DSequence& rTarget, bool /*bReferenced*/) const
+        void SvgCircleNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DContainer& rTarget, bool /*bReferenced*/) const
         {
             const SvgStyleAttributes* pStyle = getSvgStyleAttributes();
 
             if(pStyle && getR().isSet())
             {
-                const double fR(getR().solve(*this, length));
+                const double fR(getR().solve(*this));
 
                 if(fR > 0.0)
                 {
@@ -130,11 +130,11 @@ namespace svgio
                                 getCy().isSet() ? getCy().solve(*this, ycoordinate) : 0.0),
                             fR));
 
-                    drawinglayer::primitive2d::Primitive2DSequence aNewTarget;
+                    drawinglayer::primitive2d::Primitive2DContainer aNewTarget;
 
-                    pStyle->add_path(basegfx::B2DPolyPolygon(aPath), aNewTarget, 0);
+                    pStyle->add_path(basegfx::B2DPolyPolygon(aPath), aNewTarget, nullptr);
 
-                    if(aNewTarget.hasElements())
+                    if(!aNewTarget.empty())
                     {
                         pStyle->add_postProcess(rTarget, aNewTarget, getTransform());
                     }

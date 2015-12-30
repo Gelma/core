@@ -33,12 +33,12 @@ class SVT_DLLPUBLIC SfxErrorContext : private ErrorContext
 {
 public:
     SfxErrorContext(
-            sal_uInt16 nCtxIdP, vcl::Window *pWin=0,
-            sal_uInt16 nResIdP=USHRT_MAX, ResMgr *pMgrP=0);
+            sal_uInt16 nCtxIdP, vcl::Window *pWin=nullptr,
+            sal_uInt16 nResIdP=USHRT_MAX, ResMgr *pMgrP=nullptr);
     SfxErrorContext(
-            sal_uInt16 nCtxIdP, const OUString &aArg1, vcl::Window *pWin=0,
-            sal_uInt16 nResIdP=USHRT_MAX, ResMgr *pMgrP=0);
-    bool GetString(sal_uLong nErrId, OUString &rStr) SAL_OVERRIDE;
+            sal_uInt16 nCtxIdP, const OUString &aArg1, vcl::Window *pWin=nullptr,
+            sal_uInt16 nResIdP=USHRT_MAX, ResMgr *pMgrP=nullptr);
+    bool GetString(sal_uLong nErrId, OUString &rStr) override;
 
 private:
     sal_uInt16 nCtxId;
@@ -50,7 +50,7 @@ private:
 class SVT_DLLPUBLIC SfxErrorHandler : private ErrorHandler
 {
 public:
-    SfxErrorHandler(sal_uInt16 nId, sal_uLong lStart, sal_uLong lEnd, ResMgr *pMgr=0);
+    SfxErrorHandler(sal_uInt16 nId, sal_uLong lStart, sal_uLong lEnd, ResMgr *pMgr=nullptr);
     virtual ~SfxErrorHandler();
 
 protected:
@@ -66,7 +66,7 @@ private:
     ResMgr              *pFreeMgr;
 
     SVT_DLLPRIVATE bool   GetClassString(sal_uLong lErrId, OUString &) const;
-    virtual bool          CreateString( const ErrorInfo *, OUString &, sal_uInt16 &) const SAL_OVERRIDE;
+    virtual bool          CreateString( const ErrorInfo *, OUString &, sal_uInt16 &) const override;
 };
 
 #endif

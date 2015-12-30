@@ -26,12 +26,28 @@
  *
  ************************************************************************/
 
+#version 140
+
+attribute vec3 a_position;
+attribute vec3 a_normal;
+attribute vec2 a_texCoord;
+
+uniform mat4 u_projectionMatrix;
+uniform mat4 u_modelViewMatrix;
+uniform mat4 u_sceneTransformMatrix;
+uniform mat4 u_primitiveTransformMatrix;
+uniform mat4 u_operationsTransformMatrix;
+
 varying vec2 v_texturePosition;
+varying vec3 v_normal;
 
 void main( void )
 {
-    gl_Position = ftransform();
-    v_texturePosition = gl_MultiTexCoord0.xy;
+    mat4 modelViewMatrix = u_modelViewMatrix * u_operationsTransformMatrix * u_sceneTransformMatrix * u_primitiveTransformMatrix;
+    mat3 normalMatrix = mat3(transpose(inverse(modelViewMatrix)));
+    gl_Position = u_projectionMatrix * modelViewMatrix * vec4(a_position, 1.0);
+    v_texturePosition = a_texCoord;
+    v_normal = normalize(normalMatrix * a_normal);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

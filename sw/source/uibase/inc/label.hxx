@@ -38,7 +38,7 @@ class SwLabDlg : public SfxTabDialog
     std::vector<sal_uInt16> aTypeIds;
     std::vector<OUString> aMakes;
 
-    SwLabRecs* pRecs;
+    SwLabRecs* m_pRecs;
     OUString   aLstGroup;
     OUString   m_sBusinessCardDlg;
     bool       m_bLabel;
@@ -50,19 +50,19 @@ class SwLabDlg : public SfxTabDialog
     sal_uInt16 m_nPrivateId;
     void          _ReplaceGroup( const OUString &rMake );
 
-    virtual void PageCreated( sal_uInt16 nId, SfxTabPage &rPage ) SAL_OVERRIDE;
+    virtual void PageCreated( sal_uInt16 nId, SfxTabPage &rPage ) override;
 public:
 
      SwLabDlg( vcl::Window* pParent, const SfxItemSet& rSet,
                  SwDBManager* pDBManager, bool bLabel);
     virtual ~SwLabDlg();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     SwLabRec*   GetRecord(const OUString &rRecName, bool bCont);
     void        GetLabItem(SwLabItem &rItem);
 
-          SwLabRecs &Recs()           { return *pRecs;   }
-    const SwLabRecs &Recs()     const { return *pRecs;   }
+          SwLabRecs &Recs()           { return *m_pRecs; }
+    const SwLabRecs &Recs()     const { return *m_pRecs; }
 
           std::vector<sal_uInt16> &TypeIds()       { return aTypeIds; }
     const std::vector<sal_uInt16> &TypeIds() const { return aTypeIds; }
@@ -73,7 +73,7 @@ public:
     Printer *GetPrt();
     inline void ReplaceGroup( const OUString &rMake );
     void UpdateGroup( const OUString &rMake ) {_ReplaceGroup( rMake );}
-    static void UpdateFieldInformation(::com::sun::star::uno::Reference< ::com::sun::star::frame::XModel>& xModel,
+    static void UpdateFieldInformation(css::uno::Reference< css::frame::XModel>& xModel,
                                                                                 const SwLabItem& rItem);
     const OUString& GetBusinessCardStr() const {return m_sBusinessCardDlg;}
 

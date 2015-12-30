@@ -181,7 +181,7 @@ public:
     ScTabEditEngine( ScDocument* pDoc );            // Default
     ScTabEditEngine( const ScPatternAttr& rPattern,
                     SfxItemPool* pEnginePool,
-                    SfxItemPool* pTextObjectPool = NULL );
+                    SfxItemPool* pTextObjectPool = nullptr );
 };
 
 struct ScHeaderFieldData
@@ -208,13 +208,13 @@ private:
 
 public:
     ScFieldEditEngine(
-        ScDocument* pDoc, SfxItemPool* pEnginePool, SfxItemPool* pTextObjectPool = NULL,
+        ScDocument* pDoc, SfxItemPool* pEnginePool, SfxItemPool* pTextObjectPool = nullptr,
         bool bDeleteEnginePool = false);
 
     void SetExecuteURL(bool bSet)    { bExecuteURL = bSet; }
 
-    virtual void    FieldClicked( const SvxFieldItem& rField, sal_Int32, sal_Int32 ) SAL_OVERRIDE;
-    virtual OUString CalcFieldValue( const SvxFieldItem& rField, sal_Int32 nPara, sal_Int32 nPos, Color*& rTxtColor, Color*& rFldColor ) SAL_OVERRIDE;
+    virtual void    FieldClicked( const SvxFieldItem& rField, sal_Int32, sal_Int32 ) override;
+    virtual OUString CalcFieldValue( const SvxFieldItem& rField, sal_Int32 nPara, sal_Int32 nPos, Color*& rTxtColor, Color*& rFldColor ) override;
 };
 
 // for headers/footers with fields
@@ -225,7 +225,7 @@ private:
 
 public:
     ScHeaderEditEngine( SfxItemPool* pEnginePool, bool bDeleteEnginePool = false );
-    virtual OUString CalcFieldValue( const SvxFieldItem& rField, sal_Int32 nPara, sal_Int32 nPos, Color*& rTxtColor, Color*& rFldColor ) SAL_OVERRIDE;
+    virtual OUString CalcFieldValue( const SvxFieldItem& rField, sal_Int32 nPara, sal_Int32 nPos, Color*& rTxtColor, Color*& rFldColor ) override;
 
     void SetNumType(SvxNumType eNew)                { aData.eNumType = eNew; }
     void SetData(const ScHeaderFieldData& rNew)     { aData = rNew; }
@@ -237,7 +237,7 @@ class ScNoteEditEngine : public ScEditEngineDefaulter
 
 public:
     ScNoteEditEngine( SfxItemPool* pEnginePool,
-                SfxItemPool* pTextObjectPool = NULL,
+                SfxItemPool* pTextObjectPool = nullptr,
                 bool bDeleteEnginePool = false );
 
 };

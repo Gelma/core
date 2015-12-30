@@ -509,14 +509,11 @@ public class ProcessHandler
             }
         }
 
-        if (bKillProcessAfterTimeout)
+        if (bKillProcessAfterTimeout && !isFinished)
         {
-            if (!isFinished)
-            {
-                log.println("Going to destroy the process!!");
-                m_aProcess.destroy();
-                log.println("Process has been destroyed!");
-            }
+            log.println("Going to destroy the process!!");
+            m_aProcess.destroy();
+            log.println("Process has been destroyed!");
         }
 
         return isFinished();
@@ -625,7 +622,7 @@ public class ProcessHandler
         bUseOutput = false;
     }
 
-    private class ProcessWatcher extends Thread
+    private static class ProcessWatcher extends Thread
     {
 
         private int m_nTimeoutInSec;

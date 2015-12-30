@@ -77,18 +77,18 @@ public:
         throw(
             css::container::NoSuchElementException,
             css::lang::IllegalArgumentException,
-            css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            css::uno::RuntimeException, std::exception) override;
 
     OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return OUString("org.apache.openoffice.comp.svx.sidebar.PanelFactory"); }
 
     sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return cppu::supportsService(this, ServiceName); }
 
     css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { return css::uno::Sequence<OUString>{"com.sun.star.ui.UIElementFactory"}; }
 };
 
@@ -126,18 +126,18 @@ Reference<ui::XUIElement> SAL_CALL PanelFactory::createUIElement (
         aArguments.getOrDefault("ContextName", OUString()));
 
     vcl::Window* pParentWindow = VCLUnoHelper::GetWindow(xParentWindow);
-    if ( ! xParentWindow.is() || pParentWindow==NULL)
+    if ( ! xParentWindow.is() || pParentWindow==nullptr)
         throw RuntimeException(
             "PanelFactory::createUIElement called without ParentWindow",
-            NULL);
+            nullptr);
     if ( ! xFrame.is())
         throw RuntimeException(
             "PanelFactory::createUIElement called without Frame",
-            NULL);
-    if (pBindings == NULL)
+            nullptr);
+    if (pBindings == nullptr)
         throw RuntimeException(
             "PanelFactory::createUIElement called without SfxBindings",
-            NULL);
+            nullptr);
 
     VclPtr<vcl::Window> pControl;
     ui::LayoutSize aLayoutSize (-1,-1,-1);

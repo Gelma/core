@@ -78,8 +78,6 @@
 #include <sxmoitm.hxx>
 #include <sxmovitm.hxx>
 #include <sxmsitm.hxx>
-#include <svx/sxmspitm.hxx>
-#include <svx/sxmsuitm.hxx>
 #include <sxmtaitm.hxx>
 #include <svx/sxmtfitm.hxx>
 #include <svx/sxmtpitm.hxx>
@@ -236,7 +234,7 @@ SdrItemPool::SdrItemPool(
     mppLocalPoolDefaults[SDRATTR_TRANSFORMREF1Y -SDRATTR_START]=new SdrTransformRef1YItem;
     mppLocalPoolDefaults[SDRATTR_TRANSFORMREF2X -SDRATTR_START]=new SdrTransformRef2XItem;
     mppLocalPoolDefaults[SDRATTR_TRANSFORMREF2Y -SDRATTR_START]=new SdrTransformRef2YItem;
-    mppLocalPoolDefaults[SDRATTR_TEXTDIRECTION  -SDRATTR_START]=new SvxWritingModeItem(com::sun::star::text::WritingMode_LR_TB, SDRATTR_TEXTDIRECTION);
+    mppLocalPoolDefaults[SDRATTR_TEXTDIRECTION  -SDRATTR_START]=new SvxWritingModeItem(css::text::WritingMode_LR_TB, SDRATTR_TEXTDIRECTION);
     mppLocalPoolDefaults[ SDRATTR_GRAFRED               - SDRATTR_START] = new SdrGrafRedItem;
     mppLocalPoolDefaults[ SDRATTR_GRAFGREEN         - SDRATTR_START] = new SdrGrafGreenItem;
     mppLocalPoolDefaults[ SDRATTR_GRAFBLUE          - SDRATTR_START] = new SdrGrafBlueItem;
@@ -368,12 +366,12 @@ SdrItemPool::~SdrItemPool()
         {
             SetRefCount(*mppLocalPoolDefaults[i],0);
             delete mppLocalPoolDefaults[i];
-            mppLocalPoolDefaults[i] = 0L;
+            mppLocalPoolDefaults[i] = nullptr;
         }
     }
 
     // split pools before destroying
-    SetSecondaryPool(NULL);
+    SetSecondaryPool(nullptr);
 }
 
 bool SdrItemPool::GetPresentation(
@@ -627,7 +625,6 @@ void SdrItemPool::TakeItemName(sal_uInt16 nWhich, OUString& rItemName)
 // FractionItem
 
 
-TYPEINIT1_AUTOFACTORY(SdrFractionItem,SfxPoolItem);
 
 SdrFractionItem::SdrFractionItem(sal_uInt16 nId, SvStream& rIn):
     SfxPoolItem(nId)
@@ -698,7 +695,6 @@ SfxPoolItem* SdrFractionItem::Clone(SfxItemPool * /*pPool*/) const
 // ScaleItem
 
 
-TYPEINIT1_AUTOFACTORY(SdrScaleItem,SdrFractionItem);
 
 bool SdrScaleItem::GetPresentation(
     SfxItemPresentation ePresentation, SfxMapUnit /*eCoreMetric*/,
@@ -740,7 +736,6 @@ SfxPoolItem* SdrScaleItem::Clone(SfxItemPool * /*pPool*/) const
 // OnOffItem
 
 
-TYPEINIT1_AUTOFACTORY(SdrOnOffItem,SfxBoolItem);
 
 SfxPoolItem* SdrOnOffItem::Clone(SfxItemPool* /*pPool*/) const
 {
@@ -772,7 +767,6 @@ bool SdrOnOffItem::GetPresentation(SfxItemPresentation ePres,
     return true;
 }
 
-TYPEINIT1_AUTOFACTORY(SdrYesNoItem,SfxBoolItem);
 
 SfxPoolItem* SdrYesNoItem::Clone(SfxItemPool* /*pPool*/) const
 {
@@ -808,7 +802,6 @@ bool SdrYesNoItem::GetPresentation(SfxItemPresentation ePres,
 // class SdrPercentItem
 
 
-TYPEINIT1_AUTOFACTORY(SdrPercentItem,SfxUInt16Item);
 
 SfxPoolItem* SdrPercentItem::Clone(SfxItemPool* /*pPool*/) const
 {
@@ -842,7 +835,6 @@ bool SdrPercentItem::GetPresentation(
 // class SdrAngleItem
 
 
-TYPEINIT1_AUTOFACTORY(SdrAngleItem,SfxInt32Item);
 
 SfxPoolItem* SdrAngleItem::Clone(SfxItemPool* /*pPool*/) const
 {
@@ -871,7 +863,7 @@ bool SdrAngleItem::GetPresentation(
         sal_Unicode aUnicodeNull('0');
         sal_Int32 nCount(2);
 
-        const IntlWrapper* pMyIntlWrapper = NULL;
+        const IntlWrapper* pMyIntlWrapper = nullptr;
         if(!pIntlWrapper)
             pIntlWrapper = pMyIntlWrapper = new IntlWrapper(
                 Application::GetSettings().GetLanguageTag() );
@@ -908,7 +900,7 @@ bool SdrAngleItem::GetPresentation(
         if ( pMyIntlWrapper )
         {
             delete pMyIntlWrapper;
-            pIntlWrapper = NULL;
+            pIntlWrapper = nullptr;
         }
     }
 
@@ -931,7 +923,6 @@ bool SdrAngleItem::GetPresentation(
 // class SdrMetricItem
 
 
-TYPEINIT1_AUTOFACTORY(SdrMetricItem,SfxInt32Item);
 
 SfxPoolItem* SdrMetricItem::Clone(SfxItemPool* /*pPool*/) const
 {
@@ -982,7 +973,6 @@ bool SdrMetricItem::GetPresentation(SfxItemPresentation ePres,
 // items of the legend object
 
 
-TYPEINIT1_AUTOFACTORY(SdrCaptionTypeItem,SfxEnumItem);
 
 SfxPoolItem* SdrCaptionTypeItem::Clone(SfxItemPool* /*pPool*/) const                { return new SdrCaptionTypeItem(*this); }
 
@@ -1008,7 +998,6 @@ bool SdrCaptionTypeItem::GetPresentation(SfxItemPresentation ePres,
     return true;
 }
 
-TYPEINIT1_AUTOFACTORY(SdrCaptionEscDirItem,SfxEnumItem);
 
 SfxPoolItem* SdrCaptionEscDirItem::Clone(SfxItemPool* /*pPool*/) const              { return new SdrCaptionEscDirItem(*this); }
 
@@ -1039,7 +1028,8 @@ bool SdrCaptionEscDirItem::GetPresentation(SfxItemPresentation ePres,
 
 
 // FitToSize
-TYPEINIT1_AUTOFACTORY(SdrTextFitToSizeTypeItem,SfxEnumItem);
+
+SfxPoolItem* SdrTextFitToSizeTypeItem::CreateDefault() { return new SdrTextFitToSizeTypeItem; }
 
 SfxPoolItem* SdrTextFitToSizeTypeItem::Clone(SfxItemPool* /*pPool*/) const         { return new SdrTextFitToSizeTypeItem(*this); }
 
@@ -1099,7 +1089,6 @@ bool SdrTextFitToSizeTypeItem::PutValue( const uno::Any& rVal, sal_uInt8 /*nMemb
     return true;
 }
 
-TYPEINIT1_AUTOFACTORY(SdrTextVertAdjustItem,SfxEnumItem);
 
 SfxPoolItem* SdrTextVertAdjustItem::Clone(SfxItemPool* /*pPool*/) const            { return new SdrTextVertAdjustItem(*this); }
 
@@ -1148,7 +1137,6 @@ bool SdrTextVertAdjustItem::PutValue( const uno::Any& rVal, sal_uInt8 /*nMemberI
     return true;
 }
 
-TYPEINIT1_AUTOFACTORY(SdrTextHorzAdjustItem,SfxEnumItem);
 
 SfxPoolItem* SdrTextHorzAdjustItem::Clone(SfxItemPool* /*pPool*/) const            { return new SdrTextHorzAdjustItem(*this); }
 
@@ -1197,7 +1185,6 @@ bool SdrTextHorzAdjustItem::PutValue( const uno::Any& rVal, sal_uInt8 /*nMemberI
     return true;
 }
 
-TYPEINIT1_AUTOFACTORY(SdrTextAniKindItem,SfxEnumItem);
 
 SfxPoolItem* SdrTextAniKindItem::Clone(SfxItemPool* /*pPool*/) const            { return new SdrTextAniKindItem(*this); }
 
@@ -1245,7 +1232,6 @@ bool SdrTextAniKindItem::PutValue( const uno::Any& rVal, sal_uInt8 /*nMemberId*/
     return true;
 }
 
-TYPEINIT1_AUTOFACTORY(SdrTextAniDirectionItem,SfxEnumItem);
 
 SfxPoolItem* SdrTextAniDirectionItem::Clone(SfxItemPool* /*pPool*/) const            { return new SdrTextAniDirectionItem(*this); }
 
@@ -1294,7 +1280,6 @@ bool SdrTextAniDirectionItem::PutValue( const uno::Any& rVal, sal_uInt8 /*nMembe
     return true;
 }
 
-TYPEINIT1_AUTOFACTORY(SdrTextAniDelayItem,SfxUInt16Item);
 
 SfxPoolItem* SdrTextAniDelayItem::Clone(SfxItemPool* /*pPool*/) const            { return new SdrTextAniDelayItem(*this); }
 
@@ -1317,7 +1302,6 @@ bool SdrTextAniDelayItem::GetPresentation(
     return true;
 }
 
-TYPEINIT1_AUTOFACTORY(SdrTextAniAmountItem,SfxInt16Item);
 
 SfxPoolItem* SdrTextAniAmountItem::Clone(SfxItemPool* /*pPool*/) const            { return new SdrTextAniAmountItem(*this); }
 
@@ -1374,7 +1358,7 @@ bool SdrTextAniAmountItem::GetPresentation(
     return true;
 }
 
-TYPEINIT1_AUTOFACTORY( SdrTextFixedCellHeightItem, SfxBoolItem );
+
 SdrTextFixedCellHeightItem::SdrTextFixedCellHeightItem( bool bUseFixedCellHeight )
     : SfxBoolItem( SDRATTR_TEXT_USEFIXEDCELLHEIGHT, bUseFixedCellHeight )
 {
@@ -1438,7 +1422,6 @@ bool SdrTextFixedCellHeightItem::PutValue( const uno::Any& rVal, sal_uInt8 /*nMe
     return true;
 }
 
-TYPEINIT1_AUTOFACTORY( SdrCustomShapeAdjustmentItem, SfxPoolItem );
 
 SdrCustomShapeAdjustmentItem::SdrCustomShapeAdjustmentItem() : SfxPoolItem( SDRATTR_CUSTOMSHAPE_ADJUSTMENT )
 {
@@ -1584,7 +1567,6 @@ bool SdrCustomShapeAdjustmentItem::PutValue( const uno::Any& rVal, sal_uInt8 /*n
 }
 
 // EdgeKind
-TYPEINIT1_AUTOFACTORY(SdrEdgeKindItem,SfxEnumItem);
 
 SfxPoolItem* SdrEdgeKindItem::Clone(SfxItemPool* /*pPool*/) const            { return new SdrEdgeKindItem(*this); }
 
@@ -1673,6 +1655,11 @@ bool SdrEdgeNode1HorzDistItem::PutValue( const uno::Any& rVal, sal_uInt8 /*nMemb
     return true;
 }
 
+SfxPoolItem* SdrEdgeNode1HorzDistItem::Clone(SfxItemPool* /*pPool*/) const
+{
+    return new SdrEdgeNode1HorzDistItem(*this);
+}
+
 bool SdrEdgeNode1VertDistItem::QueryValue( uno::Any& rVal, sal_uInt8 /*nMemberId*/) const
 {
     rVal <<= (sal_Int32)GetValue();
@@ -1687,6 +1674,11 @@ bool SdrEdgeNode1VertDistItem::PutValue( const uno::Any& rVal, sal_uInt8 /*nMemb
 
     SetValue( nValue );
     return true;
+}
+
+SfxPoolItem* SdrEdgeNode1VertDistItem::Clone(SfxItemPool* /*pPool*/) const
+{
+    return new SdrEdgeNode1VertDistItem(*this);
 }
 
 bool SdrEdgeNode2HorzDistItem::QueryValue( uno::Any& rVal, sal_uInt8 /*nMemberId*/) const
@@ -1705,6 +1697,11 @@ bool SdrEdgeNode2HorzDistItem::PutValue( const uno::Any& rVal, sal_uInt8 /*nMemb
     return true;
 }
 
+SfxPoolItem* SdrEdgeNode2HorzDistItem::Clone(SfxItemPool* /*pPool*/) const
+{
+    return new SdrEdgeNode2HorzDistItem(*this);
+}
+
 bool SdrEdgeNode2VertDistItem::QueryValue( uno::Any& rVal, sal_uInt8 /*nMemberId*/) const
 {
     rVal <<= (sal_Int32)GetValue();
@@ -1721,7 +1718,20 @@ bool SdrEdgeNode2VertDistItem::PutValue( const uno::Any& rVal, sal_uInt8 /*nMemb
     return true;
 }
 
-TYPEINIT1_AUTOFACTORY(SdrMeasureKindItem,SfxEnumItem);
+SfxPoolItem* SdrEdgeNode2VertDistItem::Clone(SfxItemPool* /*pPool*/) const
+{
+    return new SdrEdgeNode2VertDistItem(*this);
+}
+
+SfxPoolItem* SdrEdgeNode1GlueDistItem::Clone(SfxItemPool* /*pPool*/) const
+{
+    return new SdrEdgeNode1GlueDistItem(*this);
+}
+
+SfxPoolItem* SdrEdgeNode2GlueDistItem::Clone(SfxItemPool* /*pPool*/) const
+{
+    return new SdrEdgeNode2GlueDistItem(*this);
+}
 
 SfxPoolItem* SdrMeasureKindItem::Clone(SfxItemPool* /*pPool*/) const            { return new SdrMeasureKindItem(*this); }
 
@@ -1769,7 +1779,6 @@ bool SdrMeasureKindItem::PutValue( const uno::Any& rVal, sal_uInt8 /*nMemberId*/
     return true;
 }
 
-TYPEINIT1_AUTOFACTORY(SdrMeasureTextHPosItem,SfxEnumItem);
 
 SfxPoolItem* SdrMeasureTextHPosItem::Clone(SfxItemPool* /*pPool*/) const            { return new SdrMeasureTextHPosItem(*this); }
 
@@ -1817,7 +1826,6 @@ bool SdrMeasureTextHPosItem::PutValue( const uno::Any& rVal, sal_uInt8 /*nMember
     return true;
 }
 
-TYPEINIT1_AUTOFACTORY(SdrMeasureTextVPosItem,SfxEnumItem);
 
 SfxPoolItem* SdrMeasureTextVPosItem::Clone(SfxItemPool* /*pPool*/) const            { return new SdrMeasureTextVPosItem(*this); }
 
@@ -1865,7 +1873,6 @@ bool SdrMeasureTextVPosItem::PutValue( const uno::Any& rVal, sal_uInt8 /*nMember
     return true;
 }
 
-TYPEINIT1_AUTOFACTORY(SdrMeasureUnitItem,SfxEnumItem);
 
 SfxPoolItem* SdrMeasureUnitItem::Clone(SfxItemPool* /*pPool*/) const            { return new SdrMeasureUnitItem(*this); }
 
@@ -1914,7 +1921,6 @@ bool SdrMeasureUnitItem::PutValue( const uno::Any& rVal, sal_uInt8 /*nMemberId*/
     return true;
 }
 
-TYPEINIT1_AUTOFACTORY(SdrCircKindItem,SfxEnumItem);
 
 SfxPoolItem* SdrCircKindItem::Clone(SfxItemPool* /*pPool*/) const          { return new SdrCircKindItem(*this); }
 
@@ -1966,8 +1972,6 @@ bool SdrCircKindItem::PutValue( const uno::Any& rVal, sal_uInt8 /*nMemberId*/)
 // class SdrSignedPercentItem
 
 
-TYPEINIT1_AUTOFACTORY( SdrSignedPercentItem, SfxInt16Item );
-
 
 SfxPoolItem* SdrSignedPercentItem::Clone(SfxItemPool* /*pPool*/) const
 {
@@ -1997,7 +2001,6 @@ bool SdrSignedPercentItem::GetPresentation(
     return true;
 }
 
-TYPEINIT1( SdrGrafRedItem, SdrSignedPercentItem );
 
 SfxPoolItem* SdrGrafRedItem::Clone( SfxItemPool* /*pPool*/) const
 {
@@ -2009,7 +2012,6 @@ SfxPoolItem* SdrGrafRedItem::Create( SvStream& rIn, sal_uInt16 /*nVer*/) const
     return new SdrGrafRedItem( rIn );
 }
 
-TYPEINIT1( SdrGrafGreenItem, SdrSignedPercentItem );
 
 SfxPoolItem* SdrGrafGreenItem::Clone( SfxItemPool* /*pPool*/) const
 {
@@ -2021,7 +2023,6 @@ SfxPoolItem* SdrGrafGreenItem::Create( SvStream& rIn, sal_uInt16 /*nVer*/) const
     return new SdrGrafGreenItem( rIn );
 }
 
-TYPEINIT1( SdrGrafBlueItem, SdrSignedPercentItem );
 
 SfxPoolItem* SdrGrafBlueItem::Clone( SfxItemPool* /*pPool*/) const
 {
@@ -2033,7 +2034,6 @@ SfxPoolItem* SdrGrafBlueItem::Create( SvStream& rIn, sal_uInt16 /*nVer*/) const
     return new SdrGrafBlueItem( rIn );
 }
 
-TYPEINIT1( SdrGrafLuminanceItem, SdrSignedPercentItem );
 
 SfxPoolItem* SdrGrafLuminanceItem::Clone( SfxItemPool* /*pPool*/) const
 {
@@ -2045,7 +2045,6 @@ SfxPoolItem* SdrGrafLuminanceItem::Create( SvStream& rIn, sal_uInt16 /*nVer*/) c
     return new SdrGrafLuminanceItem( rIn );
 }
 
-TYPEINIT1( SdrGrafContrastItem, SdrSignedPercentItem );
 
 SfxPoolItem* SdrGrafContrastItem::Clone( SfxItemPool* /*pPool*/) const
 {
@@ -2057,7 +2056,6 @@ SfxPoolItem* SdrGrafContrastItem::Create( SvStream& rIn, sal_uInt16 /*nVer*/) co
     return new SdrGrafContrastItem( rIn );
 }
 
-TYPEINIT1( SdrGrafGamma100Item, SfxUInt32Item );
 
 SfxPoolItem* SdrGrafGamma100Item::Clone( SfxItemPool* /*pPool */) const
 {
@@ -2085,7 +2083,6 @@ bool SdrGrafGamma100Item::PutValue( const uno::Any& rVal, sal_uInt8 /*nMemberId*
     return true;
 }
 
-TYPEINIT1( SdrGrafInvertItem, SdrOnOffItem );
 
 SfxPoolItem* SdrGrafInvertItem::Clone( SfxItemPool* /*pPool*/) const
 {
@@ -2097,7 +2094,6 @@ SfxPoolItem* SdrGrafInvertItem::Create( SvStream& rIn, sal_uInt16 /*nVer*/) cons
     return new SdrGrafInvertItem( rIn );
 }
 
-TYPEINIT1( SdrGrafTransparenceItem, SdrPercentItem );
 
 SfxPoolItem* SdrGrafTransparenceItem::Clone( SfxItemPool* /*pPool*/) const
 {
@@ -2109,7 +2105,6 @@ SfxPoolItem* SdrGrafTransparenceItem::Create( SvStream& rIn, sal_uInt16 /*nVer*/
     return new SdrGrafTransparenceItem( rIn );
 }
 
-TYPEINIT1( SdrGrafModeItem, SfxEnumItem );
 
 SfxPoolItem* SdrGrafModeItem::Clone(SfxItemPool* /*pPool*/) const
 {
@@ -2174,7 +2169,6 @@ bool SdrGrafModeItem::GetPresentation( SfxItemPresentation ePres,
     return true;
 }
 
-TYPEINIT1( SdrGrafCropItem, SvxGrfCrop );
 
 SfxPoolItem* SdrGrafCropItem::Clone( SfxItemPool* /*pPool*/) const
 {
@@ -2183,13 +2177,114 @@ SfxPoolItem* SdrGrafCropItem::Clone( SfxItemPool* /*pPool*/) const
 
 SfxPoolItem* SdrGrafCropItem::Create( SvStream& rIn, sal_uInt16 nVer ) const
 {
-    return( ( 0 == nVer ) ? Clone( NULL ) : SvxGrfCrop::Create( rIn, nVer ) );
+    return( ( 0 == nVer ) ? Clone() : SvxGrfCrop::Create( rIn, nVer ) );
 }
 
 sal_uInt16 SdrGrafCropItem::GetVersion( sal_uInt16 /*nFileVersion*/) const
 {
     // GRFCROP_VERSION_MOVETOSVX is 1
     return GRFCROP_VERSION_MOVETOSVX;
+}
+SdrTextAniStartInsideItem::~SdrTextAniStartInsideItem()
+{
+}
+SfxPoolItem* SdrTextAniStartInsideItem::Clone(SfxItemPool* ) const
+{
+    return new SdrTextAniStartInsideItem(*this);
+}
+SdrTextAniStopInsideItem::~SdrTextAniStopInsideItem()
+{
+}
+SfxPoolItem* SdrTextAniStopInsideItem::Clone(SfxItemPool* ) const
+{
+    return new SdrTextAniStopInsideItem(*this);
+}
+SdrCaptionEscIsRelItem::~SdrCaptionEscIsRelItem()
+{
+}
+SfxPoolItem* SdrCaptionEscIsRelItem::Clone(SfxItemPool* ) const
+{
+    return new SdrCaptionEscIsRelItem(*this);
+}
+SdrCaptionEscRelItem::~SdrCaptionEscRelItem()
+{
+}
+SfxPoolItem* SdrCaptionEscRelItem::Clone(SfxItemPool*) const
+{
+    return new SdrCaptionEscRelItem(*this);
+}
+SdrCaptionFitLineLenItem::~SdrCaptionFitLineLenItem()
+{
+}
+SfxPoolItem* SdrCaptionFitLineLenItem::Clone(SfxItemPool* ) const
+{
+    return new SdrCaptionFitLineLenItem(*this);
+}
+SdrCaptionLineLenItem::~SdrCaptionLineLenItem()
+{
+}
+SfxPoolItem* SdrCaptionLineLenItem::Clone(SfxItemPool*) const
+{
+    return new SdrCaptionLineLenItem(*this);
+}
+SdrMeasureBelowRefEdgeItem::~SdrMeasureBelowRefEdgeItem()
+{
+}
+SfxPoolItem* SdrMeasureBelowRefEdgeItem::Clone(SfxItemPool* ) const
+{
+    return new SdrMeasureBelowRefEdgeItem(*this);
+}
+SdrMeasureTextIsFixedAngleItem::~SdrMeasureTextIsFixedAngleItem()
+{
+}
+SfxPoolItem* SdrMeasureTextIsFixedAngleItem::Clone(SfxItemPool* ) const
+{
+    return new SdrMeasureTextIsFixedAngleItem(*this);
+}
+SdrMeasureTextFixedAngleItem::~SdrMeasureTextFixedAngleItem()
+{
+}
+SfxPoolItem* SdrMeasureTextFixedAngleItem::Clone(SfxItemPool* ) const
+{
+    return new SdrMeasureTextFixedAngleItem(*this);
+}
+SdrMeasureDecimalPlacesItem::~SdrMeasureDecimalPlacesItem()
+{
+}
+SfxPoolItem* SdrMeasureDecimalPlacesItem::Clone(SfxItemPool* ) const
+{
+    return new SdrMeasureDecimalPlacesItem(*this);
+}
+SdrMeasureTextRota90Item::~SdrMeasureTextRota90Item()
+{
+}
+SfxPoolItem* SdrMeasureTextRota90Item::Clone(SfxItemPool* ) const
+{
+    return new SdrMeasureTextRota90Item(*this);
+}
+SdrMeasureTextUpsideDownItem::~SdrMeasureTextUpsideDownItem()
+{
+}
+SfxPoolItem* SdrMeasureTextUpsideDownItem::Clone(SfxItemPool* ) const
+{
+    return new SdrMeasureTextUpsideDownItem(*this);
+}
+SdrCustomShapeReplacementURLItem::~SdrCustomShapeReplacementURLItem()
+{
+}
+SfxPoolItem* SdrCustomShapeReplacementURLItem::Clone( SfxItemPool*) const
+{
+    return new SdrCustomShapeReplacementURLItem(*this);
+}
+
+SfxPoolItem* SdrLayerIdItem::Clone(SfxItemPool* /*pPool*/) const
+{
+    return new SdrLayerIdItem(*this);
+}
+
+SfxPoolItem* SdrLayerNameItem::Clone(SfxItemPool* /*pPool*/) const
+{
+    return new SdrLayerNameItem(*this);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

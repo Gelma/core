@@ -31,7 +31,7 @@
 #include "oox/helper/propertymap.hxx"
 #include "oox/token/namespaces.hxx"
 #include "oox/token/tokens.hxx"
-#include "pptfilterhelpers.hxx"
+#include <oox/ppt/pptfilterhelpers.hxx>
 
 using namespace ::com::sun::star::uno;
 using namespace ::com::sun::star::beans;
@@ -288,11 +288,9 @@ namespace oox { namespace ppt {
             mbTransitionDirectionNormal = false;
             break;
         case PPT_TOKEN( cut ):
-            // The binfilter seems to ignore this transition.
-            // Fade to black instead if thrBlk is true.
             if( param1 )
             {
-                mnTransitionType = TransitionType::FADE;
+                mnTransitionType = TransitionType::BARWIPE;
                 mnTransitionSubType = TransitionSubType::FADEOVERCOLOR;
             }
             OSL_TRACE( "OOX: cut transition fallback." );
@@ -381,9 +379,8 @@ namespace oox { namespace ppt {
             mnTransitionSubType = TransitionSubType::DEFAULT;
             break;
         case PPT_TOKEN( newsflash ):
-            // this is what the PPT binary filter does.... not sure I agree.
-            mnTransitionType = TransitionType::FOURBOXWIPE;
-            mnTransitionSubType = TransitionSubType::CORNERSOUT;
+            mnTransitionType = TransitionType::ZOOM;
+            mnTransitionSubType = TransitionSubType::ROTATEIN;
             break;
         case PPT_TOKEN( plus ):
             mnTransitionType = TransitionType::FOURBOXWIPE;
@@ -401,9 +398,45 @@ namespace oox { namespace ppt {
             mnTransitionType = TransitionType::ZOOM;
             mnTransitionSubType = TransitionSubType::DEFAULT;
             break;
+        case P14_TOKEN(prism):
+            mnTransitionType = TransitionType::MISCSHAPEWIPE;
+            if (param1)
+                mnTransitionSubType = TransitionSubType::CORNERSIN;
+            else
+                mnTransitionSubType = TransitionSubType::CORNERSOUT;
+            break;
+        case P14_TOKEN(vortex):
+            mnTransitionType = TransitionType::MISCSHAPEWIPE;
+            mnTransitionSubType = TransitionSubType::VERTICAL;
+            break;
+        case P14_TOKEN(ripple):
+            mnTransitionType = TransitionType::MISCSHAPEWIPE;
+            mnTransitionSubType = TransitionSubType::HORIZONTAL;
+            break;
+        case P14_TOKEN(glitter):
+            mnTransitionType = TransitionType::MISCSHAPEWIPE;
+            mnTransitionSubType = TransitionSubType::DIAMOND;
+            break;
+        case P14_TOKEN(honeycomb):
+            mnTransitionType = TransitionType::MISCSHAPEWIPE;
+            mnTransitionSubType = TransitionSubType::HEART;
+            break;
         default:
             mnTransitionType = 0;
             break;
+        }
+    }
+
+    void SlideTransition::setPresetTransition(OUString const & sPresetTransition)
+    {
+        if (sPresetTransition == "fallOver")
+        {
+            mnTransitionType = TransitionType::MISCSHAPEWIPE;
+            mnTransitionSubType = TransitionSubType::LEFTTORIGHT;
+        }
+        else
+        {
+            mnTransitionType = 0;
         }
     }
 

@@ -53,7 +53,6 @@ protected:
     BitmapEx                aThumbBmp; // Allow transparence to survive
     GDIMetaFile             aThumbMtf;
     INetURLObject           aURL;
-    OUString                aUserName;
     OUString                aTitle;
     bool                    bIsValid;
     bool                    bIsThumbBmp;
@@ -91,10 +90,10 @@ private:
 
     GalSoundType        eSoundType;
 
-    virtual void        WriteData( SvStream& rOut, const OUString& rDestDir ) const SAL_OVERRIDE;
-    virtual void        ReadData( SvStream& rIn, sal_uInt16& rReadVersion ) SAL_OVERRIDE;
+    virtual void        WriteData( SvStream& rOut, const OUString& rDestDir ) const override;
+    virtual void        ReadData( SvStream& rIn, sal_uInt16& rReadVersion ) override;
 
-    virtual sal_uInt16      GetVersion() const SAL_OVERRIDE { return 6; }
+    virtual sal_uInt16      GetVersion() const override { return 6; }
 
 public:
 
@@ -102,8 +101,8 @@ public:
                         SgaObjectSound( const INetURLObject& rURL );
     virtual            ~SgaObjectSound();
 
-    virtual SgaObjKind  GetObjKind() const SAL_OVERRIDE { return SGA_OBJ_SOUND; }
-    virtual BitmapEx    GetThumbBmp() const SAL_OVERRIDE;
+    virtual SgaObjKind  GetObjKind() const override { return SGA_OBJ_SOUND; }
+    virtual BitmapEx    GetThumbBmp() const override;
 };
 
 class FmFormModel;
@@ -116,10 +115,10 @@ private:
 
     bool                CreateThumb( const FmFormModel& rModel );
 
-    virtual void        WriteData( SvStream& rOut, const OUString& rDestDir ) const SAL_OVERRIDE;
-    virtual void        ReadData( SvStream& rIn, sal_uInt16& rReadVersion ) SAL_OVERRIDE;
+    virtual void        WriteData( SvStream& rOut, const OUString& rDestDir ) const override;
+    virtual void        ReadData( SvStream& rIn, sal_uInt16& rReadVersion ) override;
 
-    virtual sal_uInt16      GetVersion() const SAL_OVERRIDE { return 5; }
+    virtual sal_uInt16      GetVersion() const override { return 5; }
 
 public:
 
@@ -128,7 +127,7 @@ public:
                         SgaObjectSvDraw( SvStream& rIStm, const INetURLObject& rURL );
     virtual            ~SgaObjectSvDraw() {};
 
-    virtual SgaObjKind  GetObjKind() const SAL_OVERRIDE { return SGA_OBJ_SVDRAW; }
+    virtual SgaObjKind  GetObjKind() const override { return SGA_OBJ_SVDRAW; }
 };
 
 class SgaObjectBmp: public SgaObject
@@ -137,10 +136,10 @@ private:
 
     void                Init( const Graphic& rGraphic, const INetURLObject& rURL );
 
-    virtual void        WriteData( SvStream& rOut, const OUString& rDestDir ) const SAL_OVERRIDE;
-    virtual void        ReadData( SvStream& rIn, sal_uInt16& rReadVersion ) SAL_OVERRIDE;
+    virtual void        WriteData( SvStream& rOut, const OUString& rDestDir ) const override;
+    virtual void        ReadData( SvStream& rIn, sal_uInt16& rReadVersion ) override;
 
-    virtual sal_uInt16      GetVersion() const SAL_OVERRIDE { return 5; }
+    virtual sal_uInt16      GetVersion() const override { return 5; }
 
 public:
 
@@ -149,7 +148,7 @@ public:
                         SgaObjectBmp( const Graphic& rGraphic, const INetURLObject& rURL, const OUString& rFormat );
     virtual             ~SgaObjectBmp() {};
 
-    virtual SgaObjKind  GetObjKind() const SAL_OVERRIDE { return SGA_OBJ_BMP; }
+    virtual SgaObjKind  GetObjKind() const override { return SGA_OBJ_BMP; }
 };
 
 class SgaObjectAnim : public SgaObjectBmp
@@ -165,7 +164,7 @@ public:
 
     virtual            ~SgaObjectAnim() {};
 
-    virtual SgaObjKind  GetObjKind() const SAL_OVERRIDE { return SGA_OBJ_ANIM; }
+    virtual SgaObjKind  GetObjKind() const override { return SGA_OBJ_ANIM; }
 };
 
 class SgaObjectINet : public SgaObjectAnim
@@ -181,7 +180,7 @@ public:
 
     virtual            ~SgaObjectINet() {};
 
-    virtual SgaObjKind  GetObjKind() const SAL_OVERRIDE { return SGA_OBJ_INET; }
+    virtual SgaObjKind  GetObjKind() const override { return SGA_OBJ_INET; }
 };
 #endif
 

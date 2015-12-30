@@ -27,8 +27,6 @@
 
 SvStream& ReadPair( SvStream& rIStream, Pair& rPair )
 {
-    DBG_ASSERTWARNING( rIStream.GetVersion(), "Pair::>> - Solar-Version not set on rIStream" );
-
     sal_Int32 nTmpA(0), nTmpB(0);
     rIStream.ReadInt32( nTmpA ).ReadInt32( nTmpB );
     rPair.nA = nTmpA;
@@ -39,8 +37,6 @@ SvStream& ReadPair( SvStream& rIStream, Pair& rPair )
 
 SvStream& WritePair( SvStream& rOStream, const Pair& rPair )
 {
-    DBG_ASSERTWARNING( rOStream.GetVersion(), "Pair::<< - Solar-Version not set on rOStream" );
-
     rOStream.WriteInt32( rPair.nA ).WriteInt32( rPair.nB );
 
     return rOStream;
@@ -133,28 +129,27 @@ bool Rectangle::IsInside( const Point& rPoint ) const
     if ( IsEmpty() )
         return false;
 
-    bool bRet = true;
     if ( nLeft <= nRight )
     {
         if ( (rPoint.X() < nLeft) || (rPoint.X() > nRight) )
-            bRet = false;
+            return false;
     }
     else
     {
         if ( (rPoint.X() > nLeft) || (rPoint.X() < nRight) )
-            bRet = false;
+            return false;
     }
     if ( nTop <= nBottom )
     {
         if ( (rPoint.Y() < nTop) || (rPoint.Y() > nBottom) )
-            bRet = false;
+            return false;
     }
     else
     {
         if ( (rPoint.Y() > nTop) || (rPoint.Y() < nBottom) )
-            bRet = false;
+            return false;
     }
-    return bRet;
+    return true;
 }
 
 bool Rectangle::IsInside( const Rectangle& rRect ) const
@@ -173,8 +168,6 @@ bool Rectangle::IsOver( const Rectangle& rRect ) const
 
 SvStream& ReadRectangle( SvStream& rIStream, Rectangle& rRect )
 {
-    DBG_ASSERTWARNING( rIStream.GetVersion(), "Rectangle::>> - Solar-Version not set on rIStream" );
-
     sal_Int32 nTmpL(0), nTmpT(0), nTmpR(0), nTmpB(0);
 
     rIStream.ReadInt32( nTmpL ).ReadInt32( nTmpT ).ReadInt32( nTmpR ).ReadInt32( nTmpB );
@@ -189,8 +182,6 @@ SvStream& ReadRectangle( SvStream& rIStream, Rectangle& rRect )
 
 SvStream& WriteRectangle( SvStream& rOStream, const Rectangle& rRect )
 {
-    DBG_ASSERTWARNING( rOStream.GetVersion(), "Rectangle::<< - Solar-Version not set on rOStream" );
-
     rOStream.WriteInt32( rRect.nLeft )
             .WriteInt32( rRect.nTop )
             .WriteInt32( rRect.nRight )

@@ -28,8 +28,8 @@ $(eval $(call gb_Library_add_defs,sal,\
 	) \
 	$(LFS_CFLAGS) \
 	-DSAL_DLLIMPLEMENTATION \
-	-DRTL_OS="\"$(RTL_OS)"\" \
-	-DRTL_ARCH="\"$(RTL_ARCH)"\" \
+	-DRTL_OS="\"$(RTL_OS)\"" \
+	-DRTL_ARCH="\"$(RTL_ARCH)\"" \
 	-DSRCDIR="\"$(SRCDIR)\"" \
 ))
 
@@ -48,6 +48,7 @@ $(eval $(call gb_Library_use_externals,sal,\
 $(eval $(call gb_Library_use_system_win32_libs,sal,\
 	advapi32 \
 	comdlg32 \
+	dbghelp \
 	mpr \
 	ole32 \
 	shell32 \
@@ -146,6 +147,7 @@ endif
 
 ifneq ($(OS),WNT)
 $(eval $(call gb_Library_add_exception_objects,sal,\
+	sal/osl/unx/backtraceapi \
 	sal/osl/unx/conditn \
 	sal/osl/unx/file \
 	sal/osl/unx/file_error_transl \
@@ -215,6 +217,7 @@ else # $(OS) == WNT
 # .ENDIF
 
 $(eval $(call gb_Library_add_exception_objects,sal,\
+	sal/osl/w32/backtrace \
 	sal/osl/w32/file \
 	sal/osl/w32/file_dirvol \
 	sal/osl/w32/file_url \

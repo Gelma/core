@@ -25,7 +25,7 @@
 
 using namespace fileaccess;
 using namespace com::sun::star;
-using namespace com::sun::star::uno;
+using namespace css::uno;
 
 #if OSL_DEBUG_LEVEL > 0
 #define THROW_WHERE SAL_WHERE
@@ -79,8 +79,7 @@ XRow_impl::XRow_impl( shell* pMyShell,const uno::Sequence< uno::Any >& seq )
     : m_aValueMap( seq ),
       m_nWasNull(false),
       m_pMyShell( pMyShell ),
-      m_xProvider( pMyShell->m_pProvider ),
-      m_xTypeConverter( 0 )
+      m_xTypeConverter( nullptr )
 {
 }
 

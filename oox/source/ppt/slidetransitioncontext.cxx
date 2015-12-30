@@ -129,6 +129,10 @@ SlideTransitionContext::~SlideTransitionContext() throw()
     case PPT_TOKEN( plus ):
     case PPT_TOKEN( random ):
     case PPT_TOKEN( wedge ):
+    case P14_TOKEN( vortex ):
+    case P14_TOKEN( ripple ):
+    case P14_TOKEN( glitter ):
+    case P14_TOKEN( honeycomb ):
         // CT_Empty
         if (!mbHasTransition)
         {
@@ -142,6 +146,23 @@ SlideTransitionContext::~SlideTransitionContext() throw()
         return new SoundActionContext ( *this, maSlideProperties );
     case PPT_TOKEN( extLst ): // CT_OfficeArtExtensionList
         return this;
+
+    case P14_TOKEN(prism):
+        if (!mbHasTransition)
+        {
+            mbHasTransition = true;
+            maTransition.setOoxTransitionType(aElementToken, sal_Int32(rAttribs.getBool(XML_isInverted, false)), 0);
+        }
+        return this;
+    case P15_TOKEN(prstTrans):
+        if (!mbHasTransition)
+        {
+            mbHasTransition = true;
+            maTransition.setPresetTransition(rAttribs.getString(XML_prst, ""));
+        }
+        return this;
+
+
     default:
         break;
     }

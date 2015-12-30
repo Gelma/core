@@ -93,8 +93,7 @@ namespace pcr
 
     Sequence< OUString > SAL_CALL XSDValidationPropertyHandler::getSupportedServiceNames_static(  ) throw (RuntimeException)
     {
-        Sequence< OUString > aSupported( 1 );
-        aSupported[0] = "com.sun.star.form.inspection.XSDValidationPropertyHandler";
+        Sequence<OUString> aSupported { "com.sun.star.form.inspection.XSDValidationPropertyHandler" };
         return aSupported;
     }
 
@@ -262,7 +261,7 @@ namespace pcr
     Sequence< OUString > SAL_CALL XSDValidationPropertyHandler::getActuatingProperties( ) throw (RuntimeException, std::exception)
     {
         ::osl::MutexGuard aGuard( m_aMutex );
-        ::std::vector< OUString > aInterestedInActuations( 2 );
+        ::std::vector< OUString > aInterestedInActuations;
         if ( m_pHelper.get() )
         {
             aInterestedInActuations.push_back(  OUString(PROPERTY_XSD_DATA_TYPE) );
@@ -608,7 +607,7 @@ namespace pcr
             };
 
             size_t i=0;
-            const OUString* pLoop = NULL;
+            const OUString* pLoop = nullptr;
             for ( i = 0, pLoop = aFacets;
                   i < SAL_N_ELEMENTS( aFacets );
                   ++i, ++pLoop

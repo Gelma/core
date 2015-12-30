@@ -33,7 +33,7 @@ extern "C" VclAbstractDialogFactory* CreateDialogFactory();
 
 VclAbstractDialogFactory* VclAbstractDialogFactory::Create()
 {
-    FuncPtrCreateDialogFactory fp = 0;
+    FuncPtrCreateDialogFactory fp = nullptr;
 #if HAVE_FEATURE_DESKTOP
 #ifndef DISABLE_DYNLOADING
     static ::osl::Module aDialogLibrary;
@@ -42,7 +42,7 @@ VclAbstractDialogFactory* VclAbstractDialogFactory::Create()
                 SAL_LOADMODULE_GLOBAL | SAL_LOADMODULE_LAZY))
     {
         fp = reinterpret_cast<VclAbstractDialogFactory* (SAL_CALL*)()>(
-            aDialogLibrary.getFunctionSymbol( OUString("CreateDialogFactory") ) );
+            aDialogLibrary.getFunctionSymbol( "CreateDialogFactory" ) );
     }
 #else
     fp = CreateDialogFactory;
@@ -50,7 +50,7 @@ VclAbstractDialogFactory* VclAbstractDialogFactory::Create()
 #endif
     if ( fp )
         return fp();
-    return 0;
+    return nullptr;
 }
 
 VclAbstractDialog::~VclAbstractDialog()

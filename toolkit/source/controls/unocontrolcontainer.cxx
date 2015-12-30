@@ -367,10 +367,10 @@ public:
         : mxControlContainer( xControlContainer ) {}
 
     // XEventListener
-    virtual void SAL_CALL disposing( const  lang::EventObject& Source ) throw( uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing( const  lang::EventObject& Source ) throw( uno::RuntimeException, std::exception) override;
 
     // XPropertyChangeListener
-    virtual void SAL_CALL propertyChange( const  beans::PropertyChangeEvent& evt ) throw( uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL propertyChange( const  beans::PropertyChangeEvent& evt ) throw( uno::RuntimeException, std::exception) override;
 
 };
 
@@ -496,7 +496,7 @@ void UnoControlContainer::removeContainerListener( const uno::Reference< contain
             1
         );
 
-    return impl_addControl( xControl, NULL );
+    return impl_addControl( xControl );
 }
 
 void SAL_CALL UnoControlContainer::removeByIdentifier( ::sal_Int32 _nIdentifier ) throw (container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception)
@@ -510,7 +510,7 @@ void SAL_CALL UnoControlContainer::removeByIdentifier( ::sal_Int32 _nIdentifier 
             *this
         );
 
-    impl_removeControl( _nIdentifier, xControl, NULL );
+    impl_removeControl( _nIdentifier, xControl, nullptr );
 }
 
 void SAL_CALL UnoControlContainer::replaceByIdentifer( ::sal_Int32 _nIdentifier, const uno::Any& _rElement ) throw (lang::IllegalArgumentException, container::NoSuchElementException, lang::WrappedTargetException, uno::RuntimeException, std::exception)
@@ -628,7 +628,7 @@ void UnoControlContainer::impl_createControlPeerIfNecessary( const uno::Referenc
 
     if( xMyPeer.is() )
     {
-        _rxControl->createPeer( NULL, xMyPeer );
+        _rxControl->createPeer( nullptr, xMyPeer );
         ImplActivateTabControllers();
     }
 
@@ -666,7 +666,7 @@ void UnoControlContainer::removingControl( const uno::Reference< awt::XControl >
     if ( _rxControl.is() )
     {
         _rxControl->removeEventListener( this );
-        _rxControl->setContext( NULL );
+        _rxControl->setContext( nullptr );
     }
 }
 
@@ -701,7 +701,7 @@ void UnoControlContainer::removeControl( const uno::Reference< awt::XControl >& 
 
         UnoControlHolderList::ControlIdentifier id = mpControls->getControlIdentifier( _rxControl );
         if ( id != -1 )
-            impl_removeControl( id, _rxControl, NULL );
+            impl_removeControl( id, _rxControl, nullptr );
     }
 }
 
@@ -776,7 +776,7 @@ void UnoControlContainer::createPeer( const uno::Reference< awt::XToolkit >& rxT
             OUString aPropName( "Step" );
             if ( xInfo->hasPropertyByName( aPropName ) )
             {
-                ::com::sun::star::uno::Any aVal = xPSet->getPropertyValue( aPropName );
+                css::uno::Any aVal = xPSet->getPropertyValue( aPropName );
                 sal_Int32 nDialogStep = 0;
                 aVal >>= nDialogStep;
                 uno::Reference< awt::XControlContainer > xContainer =
@@ -833,24 +833,24 @@ css::uno::Sequence<OUString> UnoControlContainer::getSupportedServiceNames()
     return s;
 }
 
-void UnoControlContainer::PrepareWindowDescriptor( ::com::sun::star::awt::WindowDescriptor& rDesc )
+void UnoControlContainer::PrepareWindowDescriptor( css::awt::WindowDescriptor& rDesc )
 {
     // HACK due to the fact that we can't really use VSCROLL & HSCROLL
-    // for Dialog  ( ::com::sun::star::awt::VclWindowPeerAttribute::VSCROLL
+    // for Dialog  ( css::awt::VclWindowPeerAttribute::VSCROLL
     // has the same value as
-    // ::com::sun::star::awt::WindowAttribute::NODECORATION )
+    // css::awt::WindowAttribute::NODECORATION )
     // For convenience in the PropBrowse using HSCROLL and VSCROLL ensures
     // the Correct text. We exchange them here and the control knows
     // about this hack ( it sucks badly I know )
-    if ( rDesc.WindowAttributes & ::com::sun::star::awt::VclWindowPeerAttribute::VSCROLL )
+    if ( rDesc.WindowAttributes & css::awt::VclWindowPeerAttribute::VSCROLL )
     {
-       rDesc.WindowAttributes &= ~::com::sun::star::awt::VclWindowPeerAttribute::VSCROLL;
-       rDesc.WindowAttributes |= ::com::sun::star::awt::VclWindowPeerAttribute::AUTOVSCROLL;
+       rDesc.WindowAttributes &= ~css::awt::VclWindowPeerAttribute::VSCROLL;
+       rDesc.WindowAttributes |= css::awt::VclWindowPeerAttribute::AUTOVSCROLL;
     }
-    if ( rDesc.WindowAttributes & ::com::sun::star::awt::VclWindowPeerAttribute::HSCROLL )
+    if ( rDesc.WindowAttributes & css::awt::VclWindowPeerAttribute::HSCROLL )
     {
-       rDesc.WindowAttributes &= ~::com::sun::star::awt::VclWindowPeerAttribute::HSCROLL;
-       rDesc.WindowAttributes |= ::com::sun::star::awt::VclWindowPeerAttribute::AUTOHSCROLL;
+       rDesc.WindowAttributes &= ~css::awt::VclWindowPeerAttribute::HSCROLL;
+       rDesc.WindowAttributes |= css::awt::VclWindowPeerAttribute::AUTOHSCROLL;
     }
 }
 

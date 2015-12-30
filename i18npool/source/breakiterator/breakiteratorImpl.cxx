@@ -591,7 +591,7 @@ BreakIteratorImpl::getLocaleSpecificBreakIterator(const Locale& rLocale) throw (
                  // load service with name <base>_<lang>
                  createLocaleSpecificBreakIterator(rLocale.Language)) ||
                 // load default service with name <base>_Unicode
-                createLocaleSpecificBreakIterator(OUString("Unicode"))) {
+                createLocaleSpecificBreakIterator("Unicode")) {
             lookupTable.push_back( new lookupTableItem(aLocale, xBI) );
             return xBI;
         }
@@ -614,8 +614,7 @@ BreakIteratorImpl::supportsService(const OUString& rServiceName) throw( RuntimeE
 Sequence< OUString > SAL_CALL
 BreakIteratorImpl::getSupportedServiceNames() throw( RuntimeException, std::exception )
 {
-    Sequence< OUString > aRet(1);
-    aRet[0] = "com.sun.star.i18n.BreakIterator";
+    Sequence< OUString > aRet { "com.sun.star.i18n.BreakIterator" };
     return aRet;
 }
 
@@ -626,7 +625,7 @@ com_sun_star_i18n_BreakIterator_get_implementation(
     css::uno::XComponentContext *context,
     css::uno::Sequence<css::uno::Any> const &)
 {
-    return cppu::acquire(new com::sun::star::i18n::BreakIteratorImpl(context));
+    return cppu::acquire(new css::i18n::BreakIteratorImpl(context));
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

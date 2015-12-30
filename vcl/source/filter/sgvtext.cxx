@@ -29,12 +29,9 @@
 #include "sgfbram.hxx"
 #include "sgvmain.hxx"
 #include <memory>
+#include <cstdlib>
 
 extern SgfFontLst* pSgfFonts;
-
-#ifndef abs
-#define abs(x) ((x)<0 ? -(x) : (x))
-#endif
 
 //  Limitations:  only grey shadows, 2D and with fixed distance.
 // Start of AbsBase.Pas
@@ -469,7 +466,7 @@ sal_uInt16 SetTextContext(OutputDevice& rOut, ObjTextType& Atr, bool Kapt, sal_u
 
     pSgfFont = pSgfFonts->GetFontDesc(Atr.GetFont());
 
-    if ( pSgfFont!=NULL )
+    if ( pSgfFont!=nullptr )
     {
         FNam   =pSgfFont->SVFName;
         StdBrei=pSgfFont->SVWidth;
@@ -724,10 +721,10 @@ void FormatLine(UCHAR* TBuf, sal_uInt16& Index, ObjTextType& Atr0, ObjTextType& 
 
     if (Border) { // separate and crush
         (*WErec0)=(*WErec); WEnChar0=WEnChar;
-        AbsEnd=false; c0=0;
+        c0=0;
         (*R)=(*WErec); nChars=WEnChar;
         (*TRrec)=(*R); TRnChar=nChars;
-        Border0=false; Border=false;
+        Border0=false;
         do {                // first check how many syllables fit
             UCHAR ct=ProcessChar(*vOut.get(),TBuf,*TRrec,Atr0,TRnChar,DoTrenn,Line,cLine);
             c=ProcessChar(*vOut.get(),TBuf,*R,Atr0,nChars,NoTrenn,Line,cLine);
@@ -754,7 +751,7 @@ void FormatLine(UCHAR* TBuf, sal_uInt16& Index, ObjTextType& Atr0, ObjTextType& 
         } while (!(AbsEnd || (Border && ((WordEndCnt>0) || WordEnd || Trenn))));
 
         while (WErec0->Index<WErec->Index) { // to assure Line[] matches }
-            ProcessChar(*vOut.get(),TBuf,*WErec0,Atr0,WEnChar0,WEnChar-WEnChar0-1,Line,cLine);
+            (void)ProcessChar(*vOut.get(),TBuf,*WErec0,Atr0,WEnChar0,WEnChar-WEnChar0-1,Line,cLine);
         }
 
         (*R)=(*WErec); nChars=WEnChar;
@@ -788,7 +785,7 @@ void FormatLine(UCHAR* TBuf, sal_uInt16& Index, ObjTextType& Atr0, ObjTextType& 
         nChars++; Line[nChars]=R->ChrXP; // to assure AbsatzEnde is read
         Line[nChars+1]=R->ChrXP;         // as the width of CR or #0 is very small
         if (TBuf[R->Index-1]!=AbsatzEnd &&  TBuf[R->Index-1]!=TextEnd) {
-            c=GetTextChar(TBuf,R->Index,Atr0,R->Attrib,NoTrenn,false); // small correction needed, if 1st word read
+            GetTextChar(TBuf,R->Index,Atr0,R->Attrib,NoTrenn,false); // small correction needed, if 1st word read
         }
     }
 
@@ -922,8 +919,8 @@ void TextType::Draw(OutputDevice& rOut)
         xSize=32000 /2;      // break
         xSAdj=Pos2.x-Pos1.x; // to align for center/block
         //if (xSize<=0) { xSize=32000 /2; LineFit=true; }
-        FitXMul=sal::static_int_cast< sal_uInt16 >(abs(Pos2.x-Pos1.x)); FitXDiv=FitSize.x; if (FitXDiv==0) FitXDiv=1;
-        FitYMul=sal::static_int_cast< sal_uInt16 >(abs(Pos2.y-Pos1.y)); FitYDiv=FitSize.y; if (FitYDiv==0) FitYDiv=1;
+        FitXMul=sal::static_int_cast< sal_uInt16 >(std::abs(Pos2.x-Pos1.x)); FitXDiv=FitSize.x; if (FitXDiv==0) FitXDiv=1;
+        FitYMul=sal::static_int_cast< sal_uInt16 >(std::abs(Pos2.y-Pos1.y)); FitYDiv=FitSize.y; if (FitYDiv==0) FitYDiv=1;
     } else {
         xSize=Pos2.x-Pos1.x;
         xSAdj=xSize;
@@ -998,7 +995,7 @@ void ObjTextType::SetFont(sal_uInt32 FontID)
 // SGF.Ini lesen
 SgfFontOne::SgfFontOne()
 {
-    Next=NULL;
+    Next=nullptr;
     IFID=0;
     Bold=false;
     Ital=false;
@@ -1061,10 +1058,10 @@ void SgfFontOne::ReadOne( const OString& rID, OString& Dsc )
 
 SgfFontLst::SgfFontLst()
 {
-    pList=NULL;
-    Last=NULL;
+    pList=nullptr;
+    Last=nullptr;
     LastID=0;
-    LastLn=NULL;
+    LastLn=nullptr;
     Tried=false;
 }
 
@@ -1078,16 +1075,16 @@ void SgfFontLst::RausList()
     SgfFontOne* P;
     SgfFontOne* P1;
     P=pList;
-    while (P!=NULL) {
+    while (P!=nullptr) {
         P1=P->Next;
         delete P;
         P=P1;
     }
-    pList=NULL;
-    Last=NULL;
+    pList=nullptr;
+    Last=nullptr;
     Tried=false;
     LastID=0;
-    LastLn=NULL;
+    LastLn=nullptr;
 }
 
 void SgfFontLst::AssignFN(const OUString& rFName)
@@ -1099,7 +1096,7 @@ void SgfFontLst::ReadList()
     {
         Tried=true;
         LastID=0;
-        LastLn=NULL;
+        LastLn=nullptr;
         SgfFontOne* P,P1;
         Config aCfg(FNam);
         aCfg.SetGroup("SGV Fonts fuer StarView");
@@ -1115,7 +1112,7 @@ void SgfFontLst::ReadList()
             if (comphelper::string::isdigitAsciiString(FID))
             {
                 P=new SgfFontOne;                                   // new entry
-                if (Last!=NULL) Last->Next=P; else pList=P; Last=P; // link it
+                if (Last!=nullptr) Last->Next=P; else pList=P; Last=P; // link it
                 P->ReadOne(FID,Dsc);                                // interpret line
             }
         }
@@ -1127,7 +1124,7 @@ SgfFontOne* SgfFontLst::GetFontDesc(sal_uInt32 ID)
     if (ID!=LastID) {
         SgfFontOne* P;
         P=pList;
-        while (P!=NULL && P->IFID!=ID) P=P->Next;
+        while (P!=nullptr && P->IFID!=ID) P=P->Next;
         LastID=ID;
         LastLn=P;
     }

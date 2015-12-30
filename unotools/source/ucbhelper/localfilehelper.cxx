@@ -38,25 +38,23 @@ namespace utl
 
 typedef ::std::vector< OUString* > StringList_Impl;
 
-::com::sun::star::uno::Sequence < OUString > LocalFileHelper::GetFolderContents( const OUString& rFolder, bool bFolder )
+css::uno::Sequence < OUString > LocalFileHelper::GetFolderContents( const OUString& rFolder, bool bFolder )
 {
-    StringList_Impl* pFiles = NULL;
+    StringList_Impl* pFiles = nullptr;
     try
     {
         ::ucbhelper::Content aCnt(
             rFolder, Reference< XCommandEnvironment >(),
             comphelper::getProcessComponentContext() );
-        Reference< ::com::sun::star::sdbc::XResultSet > xResultSet;
-        ::com::sun::star::uno::Sequence< OUString > aProps(1);
-        OUString* pProps = aProps.getArray();
-        pProps[0] = "Url";
+        Reference< css::sdbc::XResultSet > xResultSet;
+        css::uno::Sequence< OUString > aProps { "Url" };
 
         try
         {
             ::ucbhelper::ResultSetInclude eInclude = bFolder ? ::ucbhelper::INCLUDE_FOLDERS_AND_DOCUMENTS : ::ucbhelper::INCLUDE_DOCUMENTS_ONLY;
             xResultSet = aCnt.createCursor( aProps, eInclude );
         }
-        catch( ::com::sun::star::ucb::CommandAbortedException& )
+        catch( css::ucb::CommandAbortedException& )
         {
         }
         catch( Exception& )
@@ -76,7 +74,7 @@ typedef ::std::vector< OUString* > StringList_Impl;
                     pFiles->push_back( pFile );
                 }
             }
-            catch( ::com::sun::star::ucb::CommandAbortedException& )
+            catch( css::ucb::CommandAbortedException& )
             {
             }
             catch( Exception& )

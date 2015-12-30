@@ -35,13 +35,13 @@ class SchXMLListItemContext : public SvXMLImportContext
 public:
     SchXMLListItemContext( SvXMLImport& rImport, const OUString& rLocalName, OUString& rText );
     virtual ~SchXMLListItemContext();
-    virtual void StartElement( const Reference< xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void StartElement( const Reference< xml::sax::XAttributeList >& xAttrList ) override;
+    virtual void EndElement() override;
 
     virtual SvXMLImportContext* CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+        const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
 
 private:
     OUString& m_rText;
@@ -71,7 +71,7 @@ SvXMLImportContext* SchXMLListItemContext::CreateChildContext(
     sal_uInt16 nPrefix, const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList >& )
 {
-    SvXMLImportContext* pContext = 0;
+    SvXMLImportContext* pContext = nullptr;
     if( (nPrefix == XML_NAMESPACE_TEXT ||
                 nPrefix == XML_NAMESPACE_LO_EXT) && IsXMLToken( rLocalName, XML_P ) )
         pContext = new SchXMLParagraphContext( GetImport(), rLocalName, m_rText );
@@ -110,7 +110,7 @@ SvXMLImportContext* SchXMLTextListContext::CreateChildContext(
     sal_uInt16 nPrefix, const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList >& )
 {
-    SvXMLImportContext* pContext = 0;
+    SvXMLImportContext* pContext = nullptr;
     if( nPrefix == XML_NAMESPACE_TEXT && IsXMLToken( rLocalName, XML_LIST_ITEM ) )
     {
         m_aTextVector.push_back( OUString() );

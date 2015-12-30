@@ -20,7 +20,6 @@
 #ifndef INCLUDED_FRAMEWORK_INC_UIELEMENT_STATUSBARMANAGER_HXX
 #define INCLUDED_FRAMEWORK_INC_UIELEMENT_STATUSBARMANAGER_HXX
 
-#include <macros/generic.hxx>
 #include <macros/xinterface.hxx>
 #include <macros/xtypeprovider.hxx>
 #include <stdtypes.h>
@@ -53,31 +52,30 @@ class StatusBarManager : public ::cppu::WeakImplHelper<
     friend class FrameworkStatusBar;
 
     public:
-        StatusBarManager( const com::sun::star::uno::Reference< com::sun::star::uno::XComponentContext >& rxContext,
-                          const com::sun::star::uno::Reference< com::sun::star::frame::XFrame >& rFrame,
-                          const OUString& rResourceName,
+        StatusBarManager( const css::uno::Reference< css::uno::XComponentContext >& rxContext,
+                          const css::uno::Reference< css::frame::XFrame >& rFrame,
                           StatusBar* pStatusBar );
         virtual ~StatusBarManager();
 
         StatusBar* GetStatusBar() const;
 
         // XFrameActionListener
-        virtual void SAL_CALL frameAction( const com::sun::star::frame::FrameActionEvent& Action ) throw ( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual void SAL_CALL frameAction( const css::frame::FrameActionEvent& Action ) throw ( css::uno::RuntimeException, std::exception ) override;
 
         // XEventListener
-        virtual void SAL_CALL disposing( const com::sun::star::lang::EventObject& Source ) throw ( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing( const css::lang::EventObject& Source ) throw ( css::uno::RuntimeException, std::exception ) override;
 
         // XUIConfigurationListener
-        virtual void SAL_CALL elementInserted( const ::com::sun::star::ui::ConfigurationEvent& Event ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL elementRemoved( const ::com::sun::star::ui::ConfigurationEvent& Event ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL elementReplaced( const ::com::sun::star::ui::ConfigurationEvent& Event ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL elementInserted( const css::ui::ConfigurationEvent& Event ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL elementRemoved( const css::ui::ConfigurationEvent& Event ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL elementReplaced( const css::ui::ConfigurationEvent& Event ) throw (css::uno::RuntimeException, std::exception) override;
 
         // XComponent
-        void SAL_CALL dispose() throw ( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-        void SAL_CALL addEventListener( const com::sun::star::uno::Reference< XEventListener >& xListener ) throw( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-        void SAL_CALL removeEventListener( const com::sun::star::uno::Reference< XEventListener >& xListener ) throw( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        void SAL_CALL dispose() throw ( css::uno::RuntimeException, std::exception ) override;
+        void SAL_CALL addEventListener( const css::uno::Reference< XEventListener >& xListener ) throw( css::uno::RuntimeException, std::exception ) override;
+        void SAL_CALL removeEventListener( const css::uno::Reference< XEventListener >& xListener ) throw( css::uno::RuntimeException, std::exception ) override;
 
-        void FillStatusBar( const ::com::sun::star::uno::Reference< ::com::sun::star::container::XIndexAccess >& rStatusBarData );
+        void FillStatusBar( const css::uno::Reference< css::container::XIndexAccess >& rStatusBarData );
 
     protected:
         void DataChanged( const DataChangedEvent& rDCEvt );
@@ -90,29 +88,25 @@ class StatusBarManager : public ::cppu::WeakImplHelper<
         DECL_LINK_TYPED(DoubleClick, StatusBar*, void);
 
         void RemoveControllers();
-        OUString RetrieveLabelFromCommand( const OUString& aCmdURL );
         void CreateControllers();
         void UpdateControllers();
         void AddFrameActionListener();
-        void MouseButton( const MouseEvent& rMEvt ,sal_Bool ( SAL_CALL ::com::sun::star::frame::XStatusbarController::*_pMethod )(const ::com::sun::star::awt::MouseEvent&));
+        void MouseButton( const MouseEvent& rMEvt ,sal_Bool ( SAL_CALL css::frame::XStatusbarController::*_pMethod )(const css::awt::MouseEvent&));
 
     protected:
-        typedef std::map< sal_uInt16, ::com::sun::star::uno::Reference< com::sun::star::frame::XStatusbarController > > StatusBarControllerMap;
+        typedef std::map< sal_uInt16, css::uno::Reference< css::frame::XStatusbarController > > StatusBarControllerMap;
 
-        bool                                                                                            m_bDisposed : 1,
-                                                                                                        m_bFrameActionRegistered : 1,
-                                                                                                        m_bUpdateControllers : 1;
-        bool                                                                                            m_bModuleIdentified;
-        VclPtr<StatusBar>                                                                               m_pStatusBar;
-        OUString                                                                                        m_aModuleIdentifier;
-        OUString                                                                                        m_aResourceName;
-        com::sun::star::uno::Reference< com::sun::star::frame::XFrame >                                 m_xFrame;
-        com::sun::star::uno::Reference< com::sun::star::container::XNameAccess >                        m_xUICommandLabels;
-        StatusBarControllerMap                                                                          m_aControllerMap;
-        osl::Mutex m_mutex;
-        ::cppu::OMultiTypeInterfaceContainerHelper                                                      m_aListenerContainer;   /// container for ALL Listener
-        ::com::sun::star::uno::Reference< com::sun::star::uno::XComponentContext >                      m_xContext;
-        ::com::sun::star::uno::Reference< ::com::sun::star::frame::XUIControllerFactory >               m_xStatusbarControllerFactory;
+        bool                                                                  m_bDisposed : 1,
+                                                                              m_bFrameActionRegistered : 1,
+                                                                              m_bUpdateControllers : 1;
+        VclPtr<StatusBar>                                                     m_pStatusBar;
+        OUString                                                              m_aModuleIdentifier;
+        css::uno::Reference< css::frame::XFrame >                             m_xFrame;
+        StatusBarControllerMap                                                m_aControllerMap;
+        osl::Mutex                                                            m_mutex;
+        ::cppu::OMultiTypeInterfaceContainerHelper                            m_aListenerContainer;   /// container for ALL Listener
+        css::uno::Reference< css::uno::XComponentContext >                    m_xContext;
+        css::uno::Reference< css::frame::XUIControllerFactory >               m_xStatusbarControllerFactory;
 };
 
 }

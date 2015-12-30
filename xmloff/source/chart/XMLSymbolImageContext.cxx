@@ -26,7 +26,6 @@
 #include <xmloff/XMLBase64ImportContext.hxx>
 #include <com/sun/star/io/XOutputStream.hpp>
 
-TYPEINIT1( XMLSymbolImageContext, XMLElementPropertyContext );
 
 using namespace ::com::sun::star;
 
@@ -94,7 +93,7 @@ SvXMLImportContext* XMLSymbolImageContext::CreateChildContext(
     sal_uInt16 nPrefix, const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList > & xAttrList )
 {
-    SvXMLImportContext* pContext = NULL;
+    SvXMLImportContext* pContext = nullptr;
     if( xmloff::token::IsXMLToken( rLocalName,
                                    xmloff::token::XML_BINARY_DATA ) )
     {
@@ -126,7 +125,7 @@ void XMLSymbolImageContext::EndElement()
     else if( mxBase64Stream.is() )
     {
         sResolvedURL = GetImport().ResolveGraphicObjectURLFromBase64( mxBase64Stream );
-        mxBase64Stream = 0;
+        mxBase64Stream = nullptr;
     }
 
     if( !sResolvedURL.isEmpty())

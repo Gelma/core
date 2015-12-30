@@ -47,7 +47,7 @@ AxisPositionsTabPage::AxisPositionsTabPage(vcl::Window* pWindow,const SfxItemSet
                 ,"tp_AxisPositions"
                 ,"modules/schart/ui/tp_AxisPositions.ui"
                 , &rInAttrs)
-    , m_pNumFormatter(NULL)
+    , m_pNumFormatter(nullptr)
     , m_bCrossingAxisIsCategoryAxis(false)
     , m_aCategories()
     , m_bSupportAxisPositioning(false)
@@ -180,7 +180,7 @@ void AxisPositionsTabPage::Reset(const SfxItemSet* rInAttrs)
     }
 
     //fill controls
-    const SfxPoolItem *pPoolItem = NULL;
+    const SfxPoolItem *pPoolItem = nullptr;
 
     //axis line
     if(rInAttrs->GetItemState(SCHATTR_AXIS_POSITION,true, &pPoolItem)== SfxItemState::SET)
@@ -198,7 +198,7 @@ void AxisPositionsTabPage::Reset(const SfxItemSet* rInAttrs)
 
         if( nPos < m_pLB_CrossesAt->GetEntryCount() )
             m_pLB_CrossesAt->SelectEntryPos( nPos );
-        CrossesAtSelectHdl( nullptr );
+        CrossesAtSelectHdl( *m_pLB_CrossesAt );
 
         if( rInAttrs->GetItemState(SCHATTR_AXIS_POSITION_VALUE,true, &pPoolItem)== SfxItemState::SET || bZero )
         {
@@ -231,7 +231,7 @@ void AxisPositionsTabPage::Reset(const SfxItemSet* rInAttrs)
     }
     else
         m_pLB_PlaceLabels->SetNoSelection();
-    PlaceLabelsSelectHdl( nullptr );
+    PlaceLabelsSelectHdl( *m_pLB_PlaceLabels );
 
     // Tick marks
     long nTicks = 0, nMinorTicks = 0;
@@ -290,7 +290,7 @@ void AxisPositionsTabPage::SetNumFormatter( SvNumberFormatter* pFormatter )
     m_pED_CrossesAt->SetFormatter( m_pNumFormatter );
     m_pED_CrossesAt->UseInputStringForFormatting();
 
-    const SfxPoolItem *pPoolItem = NULL;
+    const SfxPoolItem *pPoolItem = nullptr;
     if( GetItemSet().GetItemState( SCHATTR_AXIS_CROSSING_MAIN_AXIS_NUMBERFORMAT, true, &pPoolItem ) == SfxItemState::SET )
     {
         sal_uLong nFmt = (sal_uLong)static_cast<const SfxInt32Item*>(pPoolItem)->GetValue();
@@ -313,7 +313,7 @@ void AxisPositionsTabPage::SupportAxisPositioning( bool bSupportAxisPositioning 
     m_bSupportAxisPositioning = bSupportAxisPositioning;
 }
 
-IMPL_LINK_NOARG(AxisPositionsTabPage, CrossesAtSelectHdl)
+IMPL_LINK_NOARG_TYPED(AxisPositionsTabPage, CrossesAtSelectHdl, ListBox&, void)
 {
     sal_Int32 nPos = m_pLB_CrossesAt->GetSelectEntryPos();
     m_pED_CrossesAt->Show( (2==nPos) && !m_bCrossingAxisIsCategoryAxis );
@@ -324,11 +324,10 @@ IMPL_LINK_NOARG(AxisPositionsTabPage, CrossesAtSelectHdl)
     if( 0 == m_pED_CrossesAtCategory->GetSelectEntryCount() )
         m_pED_CrossesAtCategory->SelectEntryPos(0);
 
-    PlaceLabelsSelectHdl( nullptr );
-    return 0;
+    PlaceLabelsSelectHdl( *m_pLB_PlaceLabels );
 }
 
-IMPL_LINK_NOARG(AxisPositionsTabPage, PlaceLabelsSelectHdl)
+IMPL_LINK_NOARG_TYPED(AxisPositionsTabPage, PlaceLabelsSelectHdl, ListBox&, void)
 {
     sal_Int32 nLabelPos = m_pLB_PlaceLabels->GetSelectEntryPos();
 
@@ -340,8 +339,6 @@ IMPL_LINK_NOARG(AxisPositionsTabPage, PlaceLabelsSelectHdl)
             bEnableTickmarkPlacement=false;
     }
     m_pBxPlaceTicks->Enable(bEnableTickmarkPlacement);
-
-    return 0;
 }
 
 } //namespace chart

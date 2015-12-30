@@ -37,7 +37,7 @@ namespace abp
 
     const SfxFilter* lcl_getBaseFilter()
     {
-        const SfxFilter* pFilter = SfxFilter::GetFilterByName(OUString("StarOffice XML (Base)"));
+        const SfxFilter* pFilter = SfxFilter::GetFilterByName("StarOffice XML (Base)");
         OSL_ENSURE(pFilter,"Filter: StarOffice XML (Base) could not be found!");
         return pFilter;
     }
@@ -211,10 +211,9 @@ namespace abp
     }
 
 
-    IMPL_LINK( FinalPage, OnNameModified, Edit*, /**/ )
+    IMPL_LINK_NOARG_TYPED( FinalPage, OnNameModified, Edit&, void )
     {
         implCheckName();
-        return 0L;
     }
 
 

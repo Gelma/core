@@ -29,8 +29,8 @@
 #include <olmenu.hxx>
 #include <cmdid.h>
 
-typedef std::map<OUString, com::sun::star::uno::Sequence< com::sun::star::table::BorderLine> > AllBordersMap;
-typedef std::pair<OUString, com::sun::star::uno::Sequence< com::sun::star::table::BorderLine> > StringSequencePair;
+typedef std::map<OUString, css::uno::Sequence< css::table::BorderLine> > AllBordersMap;
+typedef std::pair<OUString, css::uno::Sequence< css::table::BorderLine> > StringSequencePair;
 
 class Test : public SwModelTestBase
 {
@@ -256,18 +256,18 @@ DECLARE_ODFIMPORT_TEST(testTdf74524, "tdf74524.odt")
     uno::Reference<container::XEnumeration> xFields(xFieldsAccess->createEnumeration());
     uno::Any aField1 = xFields->nextElement();
     uno::Reference<lang::XServiceInfo> xServiceInfo1(aField1, uno::UNO_QUERY);
-    CPPUNIT_ASSERT(xServiceInfo1->supportsService(OUString("com.sun.star.text.textfield.PageNumber")));
+    CPPUNIT_ASSERT(xServiceInfo1->supportsService("com.sun.star.text.textfield.PageNumber"));
     uno::Reference<beans::XPropertySet> xPropertySet(aField1, uno::UNO_QUERY);
-    CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_Int16(style::NumberingType::PAGE_DESCRIPTOR)), xPropertySet->getPropertyValue(OUString("NumberingType")));
-    CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_Int16(0)), xPropertySet->getPropertyValue(OUString("Offset")));
-    CPPUNIT_ASSERT_EQUAL(uno::makeAny(text::PageNumberType_CURRENT), xPropertySet->getPropertyValue(OUString("SubType")));
+    CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_Int16(style::NumberingType::PAGE_DESCRIPTOR)), xPropertySet->getPropertyValue("NumberingType"));
+    CPPUNIT_ASSERT_EQUAL(uno::makeAny(sal_Int16(0)), xPropertySet->getPropertyValue("Offset"));
+    CPPUNIT_ASSERT_EQUAL(uno::makeAny(text::PageNumberType_CURRENT), xPropertySet->getPropertyValue("SubType"));
     uno::Reference<text::XTextContent> xField1(aField1, uno::UNO_QUERY);
     CPPUNIT_ASSERT_EQUAL(OUString("1"), xField1->getAnchor()->getString());
     uno::Any aField2 = xFields->nextElement();
     uno::Reference<lang::XServiceInfo> xServiceInfo2(aField2, uno::UNO_QUERY);
-    CPPUNIT_ASSERT(xServiceInfo2->supportsService(OUString("com.sun.star.text.textfield.Annotation")));
+    CPPUNIT_ASSERT(xServiceInfo2->supportsService("com.sun.star.text.textfield.Annotation"));
     uno::Reference<beans::XPropertySet> xPropertySet2(aField2, uno::UNO_QUERY);
-    CPPUNIT_ASSERT_EQUAL(uno::makeAny(OUString("Comment 1")), xPropertySet2->getPropertyValue(OUString("Content")));
+    CPPUNIT_ASSERT_EQUAL(uno::makeAny(OUString("Comment 1")), xPropertySet2->getPropertyValue("Content"));
     uno::Reference<text::XTextContent> xField2(aField2, uno::UNO_QUERY);
     CPPUNIT_ASSERT_EQUAL(OUString("Hello 1World"), xField2->getAnchor()->getString());
     CPPUNIT_ASSERT(!xFields->hasMoreElements());
@@ -459,20 +459,20 @@ DECLARE_ODFIMPORT_TEST(testFdo37606, "fdo37606.odt")
     SwXTextDocument* pTextDoc = dynamic_cast<SwXTextDocument *>(mxComponent.get());
     CPPUNIT_ASSERT(pTextDoc);
     SwWrtShell* pWrtShell = pTextDoc->GetDocShell()->GetWrtShell();
-    SwShellCrsr* pShellCrsr = pWrtShell->getShellCrsr(false);
+    SwShellCursor* pShellCursor = pWrtShell->getShellCursor(false);
 
     {
         pWrtShell->SelAll(); // Selects A1.
-        SwTextNode& rCellEnd = dynamic_cast<SwTextNode&>(pShellCrsr->End()->nNode.GetNode());
+        SwTextNode& rCellEnd = dynamic_cast<SwTextNode&>(pShellCursor->End()->nNode.GetNode());
         // fdo#72486 This was "Hello.", i.e. a single select-all selected the whole document, not just the cell only.
         CPPUNIT_ASSERT_EQUAL(OUString("A1"), rCellEnd.GetText());
 
         pWrtShell->SelAll(); // Selects the whole table.
         pWrtShell->SelAll(); // Selects the whole document.
-        SwTextNode& rStart = dynamic_cast<SwTextNode&>(pShellCrsr->Start()->nNode.GetNode());
+        SwTextNode& rStart = dynamic_cast<SwTextNode&>(pShellCursor->Start()->nNode.GetNode());
         CPPUNIT_ASSERT_EQUAL(OUString("A1"), rStart.GetText());
 
-        SwTextNode& rEnd = dynamic_cast<SwTextNode&>(pShellCrsr->End()->nNode.GetNode());
+        SwTextNode& rEnd = dynamic_cast<SwTextNode&>(pShellCursor->End()->nNode.GetNode());
         // This was "A1", i.e. Ctrl-A only selected the A1 cell of the table, not the whole document.
         CPPUNIT_ASSERT_EQUAL(OUString("Hello."), rEnd.GetText());
     }
@@ -480,11 +480,11 @@ DECLARE_ODFIMPORT_TEST(testFdo37606, "fdo37606.odt")
     {
         pWrtShell->SttEndDoc(false); // Go to the end of the doc.
         pWrtShell->SelAll(); // And now that we're outside of the table, try Ctrl-A again.
-        SwTextNode& rStart = dynamic_cast<SwTextNode&>(pShellCrsr->Start()->nNode.GetNode());
+        SwTextNode& rStart = dynamic_cast<SwTextNode&>(pShellCursor->Start()->nNode.GetNode());
         // This was "Hello", i.e. Ctrl-A did not select the starting table.
         CPPUNIT_ASSERT_EQUAL(OUString("A1"), rStart.GetText());
 
-        SwTextNode& rEnd = dynamic_cast<SwTextNode&>(pShellCrsr->End()->nNode.GetNode());
+        SwTextNode& rEnd = dynamic_cast<SwTextNode&>(pShellCursor->End()->nNode.GetNode());
         CPPUNIT_ASSERT_EQUAL(OUString("Hello."), rEnd.GetText());
     }
 
@@ -534,16 +534,16 @@ DECLARE_ODFIMPORT_TEST(testFdo69862, "fdo69862.odt")
     SwXTextDocument* pTextDoc = dynamic_cast<SwXTextDocument *>(mxComponent.get());
     CPPUNIT_ASSERT(pTextDoc);
     SwWrtShell* pWrtShell = pTextDoc->GetDocShell()->GetWrtShell();
-    SwShellCrsr* pShellCrsr = pWrtShell->getShellCrsr(false);
+    SwShellCursor* pShellCursor = pWrtShell->getShellCursor(false);
 
     pWrtShell->SelAll(); // Selects A1.
     pWrtShell->SelAll(); // Selects the whole table.
     pWrtShell->SelAll(); // Selects the whole document.
-    SwTextNode& rStart = dynamic_cast<SwTextNode&>(pShellCrsr->Start()->nNode.GetNode());
+    SwTextNode& rStart = dynamic_cast<SwTextNode&>(pShellCursor->Start()->nNode.GetNode());
     // This was "Footnote.", as Ctrl-A also selected footnotes, but it should not.
     CPPUNIT_ASSERT_EQUAL(OUString("A1"), rStart.GetText());
 
-    SwTextNode& rEnd = dynamic_cast<SwTextNode&>(pShellCrsr->End()->nNode.GetNode());
+    SwTextNode& rEnd = dynamic_cast<SwTextNode&>(pShellCursor->End()->nNode.GetNode());
     CPPUNIT_ASSERT_EQUAL(OUString("H" "\x01" "ello."), rEnd.GetText());
 }
 
@@ -553,16 +553,16 @@ DECLARE_ODFIMPORT_TEST(testFdo69979, "fdo69979.odt")
     SwXTextDocument* pTextDoc = dynamic_cast<SwXTextDocument *>(mxComponent.get());
     CPPUNIT_ASSERT(pTextDoc);
     SwWrtShell* pWrtShell = pTextDoc->GetDocShell()->GetWrtShell();
-    SwShellCrsr* pShellCrsr = pWrtShell->getShellCrsr(false);
+    SwShellCursor* pShellCursor = pWrtShell->getShellCursor(false);
 
     pWrtShell->SelAll(); // Selects A1.
     pWrtShell->SelAll(); // Selects the whole table.
     pWrtShell->SelAll(); // Selects the whole document.
-    SwTextNode& rStart = dynamic_cast<SwTextNode&>(pShellCrsr->Start()->nNode.GetNode());
+    SwTextNode& rStart = dynamic_cast<SwTextNode&>(pShellCursor->Start()->nNode.GetNode());
     // This was "", as Ctrl-A also selected headers, but it should not.
     CPPUNIT_ASSERT_EQUAL(OUString("A1"), rStart.GetText());
 
-    SwTextNode& rEnd = dynamic_cast<SwTextNode&>(pShellCrsr->End()->nNode.GetNode());
+    SwTextNode& rEnd = dynamic_cast<SwTextNode&>(pShellCursor->End()->nNode.GetNode());
     CPPUNIT_ASSERT_EQUAL(OUString("Hello."), rEnd.GetText());
 }
 
@@ -629,6 +629,12 @@ DECLARE_ODFIMPORT_TEST(testBnc800714, "bnc800714.fodt")
     // This was a layout loop.
     CPPUNIT_ASSERT(getProperty< uno::Reference<text::XTextSection> >(getParagraph(2), "TextSection").is());
     CPPUNIT_ASSERT(getProperty<bool>(getParagraph(2), "ParaKeepTogether"));
+}
+
+DECLARE_ODFIMPORT_TEST(testTdf96113, "tdf96113.odt")
+{
+    // Background of the formula frame was white (0xffffff), not green.
+    CPPUNIT_ASSERT_EQUAL(sal_Int32(0x00ff00), getProperty<sal_Int32>(getShape(1), "BackColor"));
 }
 
 CPPUNIT_PLUGIN_IMPLEMENT();

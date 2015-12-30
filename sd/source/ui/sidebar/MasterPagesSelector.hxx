@@ -63,7 +63,7 @@ public:
         const std::shared_ptr<MasterPageContainer>& rpContainer,
         const css::uno::Reference<css::ui::XSidebar>& rxSidebar);
     virtual ~MasterPagesSelector();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     virtual void LateInit();
 
@@ -104,24 +104,18 @@ public:
     void UpdateAllPreviews();
 
     // ILayoutableWindow
-    virtual css::ui::LayoutSize GetHeightForWidth (const sal_Int32 nWidth) SAL_OVERRIDE;
+    virtual css::ui::LayoutSize GetHeightForWidth (const sal_Int32 nWidth) override;
 
 protected:
     mutable ::osl::Mutex maMutex;
     std::shared_ptr<MasterPageContainer> mpContainer;
 
     SdDrawDocument& mrDocument;
-    bool mbSmallPreviewSize;
     ViewShellBase& mrBase;
     /** Slot that is executed as default action when the left mouse button is
         clicked over a master page.
     */
     sal_uInt16 mnDefaultClickAction;
-    /** Pages with pointers in this queue have their previews updated
-        eventually.  Filled by InvalidatePreview() and operated upon by
-        UpdatePreviews().
-    */
-    ::std::queue<sal_uInt16> maPreviewUpdateQueue;
 
     SdPage* GetSelectedMasterPage();
 
@@ -179,7 +173,7 @@ protected:
     */
     virtual ResId GetContextMenuResId() const;
 
-    virtual void Command (const CommandEvent& rEvent) SAL_OVERRIDE;
+    virtual void Command (const CommandEvent& rEvent) override;
 
     virtual void ProcessPopupMenu (Menu& rMenu);
     virtual void ExecuteCommand (const sal_Int32 nCommandId);
@@ -193,7 +187,6 @@ private:
     */
     DECL_LINK_TYPED(ClickHandler, ValueSet*, void);
     DECL_LINK_TYPED(RightClickHandler, const MouseEvent&, void);
-    DECL_LINK(ContextMenuCallback, CommandEvent*);
     DECL_LINK_TYPED(ContainerChangeListener, MasterPageContainerChangeEvent&, void);
     DECL_LINK_TYPED(OnMenuItemSelected, Menu*, bool);
 

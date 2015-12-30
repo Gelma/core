@@ -79,7 +79,7 @@ public:
         ItemUpdateReceiverInterface& rItemUpdateReceiver);
 
     /// releases our action listener
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     virtual ~ControllerItem();
 
@@ -93,11 +93,6 @@ public:
         callback with up-to-date data.
     */
     void RequestUpdate();
-
-    /** Return the label for the command.  It contains the keyboard
-        accelerator when one exists.
-    */
-    ::rtl::OUString GetLabel() const;
 
     /** Return the extended help text for the command.
         Returns an empty string when the UNO command name is not available.
@@ -125,7 +120,7 @@ public:
 
 protected:
 
-    virtual void StateChanged (sal_uInt16 nSId, SfxItemState eState, const SfxPoolItem* pState) SAL_OVERRIDE;
+    virtual void StateChanged (sal_uInt16 nSId, SfxItemState eState, const SfxPoolItem* pState) override;
 
 private:
     ItemUpdateReceiverInterface& mrItemUpdateReceiver;

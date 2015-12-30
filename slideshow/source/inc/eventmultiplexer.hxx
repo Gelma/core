@@ -74,7 +74,6 @@ public:
 };
 
 typedef ::boost::shared_ptr< ViewRepaintHandler > ViewRepaintHandlerSharedPtr;
-typedef ::boost::weak_ptr< ViewRepaintHandler >   ViewRepaintHandlerWeakPtr;
 
 /** Interface for handling hyperlink clicks.
 
@@ -123,24 +122,6 @@ public:
 };
 
 typedef ::boost::shared_ptr< UserPaintEventHandler > UserPaintEventHandlerSharedPtr;
-
-/** Interface for handling view events.
-
-    Classes implementing this interface can be added to an
-    EventMultiplexer object, and are called from there to
-    handle view events.
-*/
-class ShapeCursorEventHandler
-{
-public:
-    virtual ~ShapeCursorEventHandler() {}
-
-    virtual bool cursorChanged( const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::drawing::XShape>&   xShape,
-                                      sal_Int16                                nCursor ) = 0;
-};
-
-typedef ::boost::shared_ptr< ShapeCursorEventHandler > ShapeCursorEventHandlerSharedPtr;
 
 /** This class multiplexes user-activated and
     slide-show global events.
@@ -491,8 +472,7 @@ public:
         @param xView
         View that has changed
     */
-    bool notifyViewChanged( const ::com::sun::star::uno::Reference<
-                               ::com::sun::star::presentation::XSlideShowView>& xView );
+    bool notifyViewChanged( const css::uno::Reference<css::presentation::XSlideShowView>& xView );
 
     /** All Views changed
 
@@ -510,8 +490,7 @@ public:
         @param xView
         View that has been clobbered
     */
-    bool notifyViewClobbered( const ::com::sun::star::uno::Reference<
-                                 ::com::sun::star::presentation::XSlideShowView>& xView );
+    bool notifyViewClobbered( const css::uno::Reference<css::presentation::XSlideShowView>& xView );
 
     /** New shape event listener added
 
@@ -521,10 +500,8 @@ public:
         @return true, if at least one handler successfully processed
         the notification.
      */
-    bool notifyShapeListenerAdded( const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::presentation::XShapeEventListener>& xListener,
-                                   const ::com::sun::star::uno::Reference<
-                                      ::com::sun::star::drawing::XShape>&                   xShape );
+    bool notifyShapeListenerAdded( const css::uno::Reference<css::presentation::XShapeEventListener>& xListener,
+                                   const css::uno::Reference<css::drawing::XShape>&                   xShape );
 
     /** A shape event listener was removed
 
@@ -534,22 +511,8 @@ public:
         @return true, if at least one handler successfully processed
         the notification.
      */
-    bool notifyShapeListenerRemoved( const ::com::sun::star::uno::Reference<
-                                         ::com::sun::star::presentation::XShapeEventListener>& xListener,
-                                     const ::com::sun::star::uno::Reference<
-                                         ::com::sun::star::drawing::XShape>&                   xShape );
-
-    /** A new shape cursor was set
-
-        This method announces that the given cursor was set for the
-        specified shape.
-
-        @return true, if at least one handler successfully processed
-        the notification.
-     */
-    bool notifyShapeCursorChange( const ::com::sun::star::uno::Reference<
-                                     ::com::sun::star::drawing::XShape>&  xShape,
-                                  sal_Int16                               nPointerShape );
+    bool notifyShapeListenerRemoved( const css::uno::Reference<css::presentation::XShapeEventListener>& xListener,
+                                     const css::uno::Reference<css::drawing::XShape>&                   xShape );
 
     /** Notify a new user paint color
 

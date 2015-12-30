@@ -29,7 +29,6 @@ namespace dbaxml
     class ODBFilter;
     class OXMLHierarchyCollection : public SvXMLImportContext
     {
-        css::uno::Reference< css::container::XNameAccess > m_xParentContainer;
         css::uno::Reference< css::container::XNameAccess > m_xContainer;
         css::uno::Reference< css::beans::XPropertySet >    m_xTable;
         OUString     m_sName;
@@ -57,7 +56,7 @@ namespace dbaxml
 
         virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                     const OUString& rLocalName,
-                    const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+                    const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
     };
 } // namespace dbaxml
 

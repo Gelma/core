@@ -28,35 +28,35 @@ namespace rptxml
     class OXMLTable;
     class OXMLCell : public SvXMLImportContext
     {
-        ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportComponent >  m_xComponent;
+        css::uno::Reference< css::report::XReportComponent >  m_xComponent;
         OXMLTable*      m_pContainer;
         OXMLCell*       m_pCell;
-          OUString m_sStyleName;
-        OUString m_sText;
+        OUString        m_sStyleName;
+        OUString        m_sText;
         sal_Int32       m_nCurrentCount;
         bool            m_bContainsShape;
 
         ORptFilter& GetOwnImport();
-        OXMLCell(const OXMLCell&) SAL_DELETED_FUNCTION;
-        OXMLCell& operator =(const OXMLCell&) SAL_DELETED_FUNCTION;
+        OXMLCell(const OXMLCell&) = delete;
+        OXMLCell& operator =(const OXMLCell&) = delete;
     public:
 
         OXMLCell( ORptFilter& rImport
                     ,sal_uInt16 nPrfx
                     ,const OUString& rLName
-                    ,const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList
+                    ,const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList
                     ,OXMLTable* _pContainer
-                    ,OXMLCell* _pCell = NULL);
+                    ,OXMLCell* _pCell = nullptr);
         virtual ~OXMLCell();
 
         virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                     const OUString& rLocalName,
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+                    const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
 
-        virtual void Characters( const OUString& rChars ) SAL_OVERRIDE;
-        virtual void EndElement() SAL_OVERRIDE;
+        virtual void Characters( const OUString& rChars ) override;
+        virtual void EndElement() override;
 
-        void setComponent(const ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportComponent >& _xComponent);
+        void setComponent(const css::uno::Reference< css::report::XReportComponent >& _xComponent);
         void setContainsShape(bool _bContainsShapes);
     };
 

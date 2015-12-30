@@ -555,7 +555,7 @@ static const struct InstancesArray {
         &halfwidthToFullwidthLikeJIS_CreateInstance },
 #endif
 // add here new services !!
-    { 0, 0, 0 }
+    { nullptr, nullptr, nullptr }
 };
 
 
@@ -564,7 +564,7 @@ extern "C"
 
 SAL_DLLPUBLIC_EXPORT void* SAL_CALL i18npool_component_getFactory( const sal_Char* sImplementationName, void* _pServiceManager, SAL_UNUSED_PARAMETER void* /*_pRegistryKey*/ )
 {
-    void* pRet = NULL;
+    void* pRet = nullptr;
 
     lang::XMultiServiceFactory* pServiceManager =
         static_cast< lang::XMultiServiceFactory* >( _pServiceManager );
@@ -574,9 +574,8 @@ SAL_DLLPUBLIC_EXPORT void* SAL_CALL i18npool_component_getFactory( const sal_Cha
     {
         if( 0 == rtl_str_compare( sImplementationName, pArr->pImplementationNm ) )
         {
-            uno::Sequence< OUString > aServiceNames(1);
-            aServiceNames.getArray()[0] =
-                OUString::createFromAscii( pArr->pServiceNm );
+            uno::Sequence< OUString > aServiceNames {
+                OUString::createFromAscii( pArr->pServiceNm ) };
             xFactory = ::cppu::createSingleFactory(
                     pServiceManager,
                     OUString::createFromAscii( pArr->pImplementationNm ),

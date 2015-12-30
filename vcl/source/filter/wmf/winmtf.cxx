@@ -408,8 +408,18 @@ Size WinMtfOutput::ImplMap(const Size& rSz, bool bDoWorldTransform)
         }
         else
         {
-            fWidth = rSz.Width();
-            fHeight = rSz.Height();
+            //take the scale, but not the rotation
+            basegfx::B2DHomMatrix aMatrix(maXForm.eM11, maXForm.eM12, 0,
+                                          maXForm.eM21, maXForm.eM22, 0);
+            basegfx::B2DTuple aScale, aTranslate;
+            double fRotate, fShearX;
+            if (!aMatrix.decompose(aScale, aTranslate, fRotate, fShearX))
+            {
+                aScale.setX(1.0);
+                aScale.setY(1.0);
+            }
+            fWidth = rSz.Width() * aScale.getX();
+            fHeight = rSz.Height() * aScale.getY();
         }
 
         if ( mnGfxMode == GM_COMPATIBLE )
@@ -522,7 +532,7 @@ tools::PolyPolygon& WinMtfOutput::ImplMap( tools::PolyPolygon& rPolyPolygon )
 
 void WinMtfOutput::SelectObject( sal_Int32 nIndex )
 {
-    GDIObj* pGDIObj = NULL;
+    GDIObj* pGDIObj = nullptr;
 
     if ( nIndex & ENHMETA_STOCK_OBJECT )
         pGDIObj = new GDIObj();
@@ -534,7 +544,7 @@ void WinMtfOutput::SelectObject( sal_Int32 nIndex )
             pGDIObj = vGDIObj[ nIndex ];
     }
 
-    if( pGDIObj == NULL )
+    if( pGDIObj == nullptr )
         return;
 
     if ( nIndex & ENHMETA_STOCK_OBJECT )
@@ -639,7 +649,7 @@ void WinMtfOutput::SetTextAlign( sal_uInt32 nAlign )
 
 void WinMtfOutput::ImplResizeObjectArry( sal_uInt32 nNewEntrys )
 {
-    vGDIObj.resize(nNewEntrys, NULL);
+    vGDIObj.resize(nNewEntrys, nullptr);
 }
 
 void WinMtfOutput::ImplDrawClippedPolyPolygon( const tools::PolyPolygon& rPolyPoly )
@@ -693,7 +703,7 @@ void WinMtfOutput::CreateObject( GDIObjectType eType, void* pStyle )
     sal_uInt32 nIndex;
     for ( nIndex = 0; nIndex < vGDIObj.size(); nIndex++ )
     {
-        if ( vGDIObj[ nIndex ] == NULL )
+        if ( vGDIObj[ nIndex ] == nullptr )
             break;
     }
     if ( nIndex == vGDIObj.size() )
@@ -727,7 +737,7 @@ void WinMtfOutput::CreateObject( sal_Int32 nIndex, GDIObjectType eType, void* pS
         if ( (sal_uInt32)nIndex >= vGDIObj.size() )
             ImplResizeObjectArry( nIndex + 16 );
 
-        if ( vGDIObj[ nIndex ] != NULL )
+        if ( vGDIObj[ nIndex ] != nullptr )
             delete vGDIObj[ nIndex ];
 
         vGDIObj[ nIndex ] = new GDIObj( eType, pStyle );
@@ -760,7 +770,7 @@ void WinMtfOutput::DeleteObject( sal_Int32 nIndex )
         if ( (sal_uInt32)nIndex < vGDIObj.size() )
         {
             delete vGDIObj[ nIndex ];
-            vGDIObj[ nIndex ] = NULL;
+            vGDIObj[ nIndex ] = nullptr;
         }
     }
 }
@@ -934,13 +944,11 @@ sal_uInt32 WinMtfOutput::SetRasterOp( sal_uInt32 nRasterOp )
     if ( nRasterOp != mnRop )
     {
         mnRop = nRasterOp;
-        static WinMtfFillStyle aNopFillStyle;
-        static WinMtfLineStyle aNopLineStyle;
 
         if ( mbNopMode && ( nRasterOp != R2_NOP ) )
         {   // changing modes from R2_NOP so set pen and brush
-            maFillStyle = aNopFillStyle;
-            maLineStyle = aNopLineStyle;
+            maFillStyle = m_NopFillStyle;
+            maLineStyle = m_NopLineStyle;
             mbNopMode = false;
         }
         switch( nRasterOp )
@@ -958,8 +966,8 @@ sal_uInt32 WinMtfOutput::SetRasterOp( sal_uInt32 nRasterOp )
                 meRasterOp = ROP_OVERPAINT;
                 if( !mbNopMode )
                 {
-                    aNopFillStyle = maFillStyle;
-                    aNopLineStyle = maLineStyle;
+                    m_NopFillStyle = maFillStyle;
+                    m_NopLineStyle = maLineStyle;
                     maFillStyle = WinMtfFillStyle( Color( COL_TRANSPARENT ), true );
                     maLineStyle = WinMtfLineStyle( Color( COL_TRANSPARENT ), true );
                     mbNopMode = true;

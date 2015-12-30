@@ -20,6 +20,30 @@
 #include "compiler.hxx"
 #include "docsh.hxx"
 
+#include <comphelper/configurationlistener.hxx>
+
+using comphelper::ConfigurationListener;
+
+static rtl::Reference<ConfigurationListener> getMiscListener()
+{
+    static rtl::Reference<ConfigurationListener> xListener;
+    if (!xListener.is())
+        xListener.set(new ConfigurationListener("/org.openoffice.Office.Common/Misc"));
+    return xListener;
+}
+
+bool ScCalcConfig::isOpenCLEnabled()
+{
+    static comphelper::ConfigurationListenerProperty<bool> gOpenCLEnabled(getMiscListener(), OUString("UseOpenCL"));
+    return gOpenCLEnabled.get();
+}
+
+bool ScCalcConfig::isSwInterpreterEnabled()
+{
+    static comphelper::ConfigurationListenerProperty<bool> gSwInterpreterEnabled(getMiscListener(), OUString("UseSwInterpreter"));
+    return gSwInterpreterEnabled.get();
+}
+
 ScCalcConfig::ScCalcConfig() :
     meStringRefAddressSyntax(formula::FormulaGrammar::CONV_UNSPECIFIED),
     meStringConversion(StringConversion::LOCALE),     // old LibreOffice behavior
@@ -68,6 +92,15 @@ void ScCalcConfig::setOpenCLConfigToDefault()
         ocSlope,
         ocSumIfs}));
 
+    // opcodes that are known to work well with the software interpreter
+    static OpCodeSet pDefaultSwInterpreterSubsetOpCodes(new std::set<OpCode>({
+        ocAdd,
+        ocSub,
+        ocMul,
+        ocDiv,
+        ocSum,
+        ocProduct}));
+
     // Note that these defaults better be kept in sync with those in
     // officecfg/registry/schema/org/openoffice/Office/Calc.xcs.
     // Crazy.
@@ -75,6 +108,7 @@ void ScCalcConfig::setOpenCLConfigToDefault()
     mbOpenCLAutoSelect = true;
     mnOpenCLMinimumFormulaGroupSize = 100;
     mpOpenCLSubsetOpCodes = pDefaultOpenCLSubsetOpCodes;
+    mpSwInterpreterSubsetOpCodes = pDefaultSwInterpreterSubsetOpCodes;
 }
 
 void ScCalcConfig::reset()
@@ -109,44 +143,13 @@ bool ScCalcConfig::operator== (const ScCalcConfig& r) const
            maOpenCLDevice == r.maOpenCLDevice &&
            mnOpenCLMinimumFormulaGroupSize == r.mnOpenCLMinimumFormulaGroupSize &&
            *mpOpenCLSubsetOpCodes == *r.mpOpenCLSubsetOpCodes &&
+           *mpSwInterpreterSubsetOpCodes == *r.mpSwInterpreterSubsetOpCodes &&
            true;
 }
 
 bool ScCalcConfig::operator!= (const ScCalcConfig& r) const
 {
     return !operator==(r);
-}
-
-namespace {
-
-OUString StringConversionToString(ScCalcConfig::StringConversion eConv)
-{
-    switch (eConv)
-    {
-    case ScCalcConfig::StringConversion::ILLEGAL: return OUString("ILLEGAL");
-    case ScCalcConfig::StringConversion::ZERO: return OUString("ZERO");
-    case ScCalcConfig::StringConversion::UNAMBIGUOUS: return OUString("UNAMBIGUOUS");
-    case ScCalcConfig::StringConversion::LOCALE: return OUString("LOCALE");
-    default: return OUString::number((int) eConv);
-    }
-}
-
-} // anonymous namespace
-
-std::ostream& operator<<(std::ostream& rStream, const ScCalcConfig& rConfig)
-{
-    rStream << "{"
-        "StringRefAddressSyntax=" << rConfig.meStringRefAddressSyntax << ","
-        "StringConversion=" << StringConversionToString(rConfig.meStringConversion) << ","
-        "EmptyStringAsZero=" << (rConfig.mbEmptyStringAsZero?"Y":"N") << ","
-        "HasStringRefSyntax=" << (rConfig.mbHasStringRefSyntax?"Y":"N") << ","
-        "OpenCLSubsetOnly=" << (rConfig.mbOpenCLSubsetOnly?"Y":"N") << ","
-        "OpenCLAutoSelect=" << (rConfig.mbOpenCLAutoSelect?"Y":"N") << ","
-        "OpenCLDevice='" << rConfig.maOpenCLDevice << "',"
-        "OpenCLMinimumFormulaGroupSize=" << rConfig.mnOpenCLMinimumFormulaGroupSize << ","
-        "OpenCLSubsetOpCodes={" << ScOpCodeSetToSymbolicString(rConfig.mpOpenCLSubsetOpCodes) << "},"
-        "}";
-    return rStream;
 }
 
 OUString ScOpCodeSetToSymbolicString(const ScCalcConfig::OpCodeSet& rOpCodes)

@@ -145,31 +145,27 @@ private:
     }
 
 public:
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         const basegfx::B2ISize aSize(10,10);
-        sal_Int32 nStride = basebmp::getBitmapDeviceStrideForWidth(Format::OneBitMsbPal, aSize.getX());
         mpDevice1bpp = createBitmapDevice( aSize,
                                            true,
-                                           Format::OneBitMsbPal, nStride );
-        nStride = basebmp::getBitmapDeviceStrideForWidth(Format::ThirtyTwoBitTcMaskBGRA, aSize.getX());
+                                           Format::OneBitMsbPal );
         mpDevice32bpp = createBitmapDevice( aSize,
                                             true,
-                                            Format::ThirtyTwoBitTcMaskBGRA, nStride );
+                                            Format::ThirtyTwoBitTcMaskBGRA );
 
-        nStride = basebmp::getBitmapDeviceStrideForWidth(Format::OneBitMsbPal, aSize.getX());
         mpBmp1bpp = createBitmapDevice( aSize,
                                         true,
-                                        Format::OneBitMsbPal, nStride );
-        nStride = basebmp::getBitmapDeviceStrideForWidth(Format::ThirtyTwoBitTcMaskBGRA, aSize.getX());
+                                        Format::OneBitMsbPal );
         mpBmp32bpp = createBitmapDevice( aSize,
                                          true,
-                                         Format::ThirtyTwoBitTcMaskBGRA, nStride );
+                                         Format::ThirtyTwoBitTcMaskBGRA );
 
         OUString aSvg( "m 0 0h5v10h5v-5h-10z" );
 
         basegfx::B2DPolyPolygon aPoly;
-        basegfx::tools::importFromSvgD( aPoly, aSvg, false, NULL );
+        basegfx::tools::importFromSvgD( aPoly, aSvg, false, nullptr );
         const Color aCol(0xFFFFFFFF);
         mpBmp1bpp->fillPolyPolygon(
             aPoly,

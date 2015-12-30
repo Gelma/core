@@ -134,8 +134,8 @@ class WaitWindow_Impl : public WorkWindow
 public:
     WaitWindow_Impl();
     virtual ~WaitWindow_Impl();
-    virtual void dispose() SAL_OVERRIDE;
-    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) SAL_OVERRIDE;
+    virtual void dispose() override;
+    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) override;
 };
 
 #define X_OFFSET 15
@@ -166,10 +166,10 @@ public:
                                 : m_xInteractionHandler( rxInteractionHandler )
                             {}
 
-    virtual uno::Reference<task::XInteractionHandler> SAL_CALL getInteractionHandler() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Reference<task::XInteractionHandler> SAL_CALL getInteractionHandler() throw (uno::RuntimeException, std::exception) override
     { return m_xInteractionHandler; }
 
-    virtual uno::Reference<ucb::XProgressHandler> SAL_CALL    getProgressHandler() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE
+    virtual uno::Reference<ucb::XProgressHandler> SAL_CALL    getProgressHandler() throw (uno::RuntimeException, std::exception) override
     { return m_xProgressHandler; }
 };
 
@@ -305,7 +305,7 @@ public:
 
     void                        update( bool bUpdateNow );
     void                        doUpdate();
-    void                        finished() { mpUpdater = NULL; }
+    void                        finished() { mpUpdater = nullptr; }
 };
 
 
@@ -319,8 +319,8 @@ public:
     explicit                Updater_Impl( SfxDocTplService_Impl* pTemplates );
     virtual                 ~Updater_Impl();
 
-    virtual void SAL_CALL   run() SAL_OVERRIDE;
-    virtual void SAL_CALL   onTerminated() SAL_OVERRIDE;
+    virtual void SAL_CALL   run() override;
+    virtual void SAL_CALL   onTerminated() override;
 };
 
 
@@ -401,7 +401,7 @@ void SfxDocTplService_Impl::init_Impl()
 {
     uno::Reference< uno::XComponentContext > xContext = ::comphelper::getProcessComponentContext();
     uno::Reference < task::XInteractionHandler > xInteractionHandler(
-        task::InteractionHandler::createWithParent(xContext, 0), uno::UNO_QUERY_THROW );
+        task::InteractionHandler::createWithParent(xContext, nullptr), uno::UNO_QUERY_THROW );
     maCmdEnv = new TplTaskEnvironment( xInteractionHandler );
 
     ::osl::ClearableMutexGuard aGuard( maMutex );
@@ -455,7 +455,7 @@ void SfxDocTplService_Impl::init_Impl()
         }
 
         OUString const aService = SERVICENAME_TYPEDETECTION;
-        mxType = uno::Reference< XTypeDetection > ( mxContext->getServiceManager()->createInstanceWithContext(aService, mxContext), UNO_QUERY );
+        mxType.set( mxContext->getServiceManager()->createInstanceWithContext(aService, mxContext), UNO_QUERY );
 
         getDirList();
         readFolderList();
@@ -681,7 +681,7 @@ bool SfxDocTplService_Impl::getTitleFromURL( const OUString& rURL, OUString& aTi
                 uno::Reference< container::XNameAccess > xTypeDetection( mxType, uno::UNO_QUERY_THROW );
                 SequenceAsHashMap aTypeProps( xTypeDetection->getByName( aDocType ) );
                 aType = aTypeProps.getUnpackedValueOrDefault(
-                            OUString("MediaType"),
+                            "MediaType",
                             OUString() );
             }
             catch( uno::Exception& )
@@ -1101,7 +1101,7 @@ SfxDocTplService_Impl::SfxDocTplService_Impl( const uno::Reference< XComponentCo
     : maRelocator(xContext)
 {
     mxContext       = xContext;
-    mpUpdater       = NULL;
+    mpUpdater       = nullptr;
     mbIsInitialized = false;
     mbLocaleSet     = false;
 }
@@ -1212,7 +1212,7 @@ void SfxDocTplService_Impl::doUpdate()
                 Content aGroup;
                 if ( Content::create( pGroup->getHierarchyURL(), maCmdEnv, comphelper::getProcessComponentContext(), aGroup ) )
                     setProperty( aGroup,
-                                 OUString( TARGET_DIR_URL  ),
+                                 TARGET_DIR_URL,
                                  makeAny( pGroup->getTargetURL() ) );
 
                 size_t nCount = pGroup->count();
@@ -1253,7 +1253,7 @@ void SfxDocTplService_Impl::doUpdate()
 uno::Sequence< beans::StringPair > SfxDocTplService_Impl::ReadUINamesForTemplateDir_Impl( const OUString& aUserPath )
 {
     INetURLObject aLocObj( aUserPath );
-    aLocObj.insertName( OUString( "groupuinames.xml"  ), false,
+    aLocObj.insertName( "groupuinames.xml", false,
                       INetURLObject::LAST_SEGMENT, true,
                       INetURLObject::ENCODE_ALL );
     Content aLocContent;
@@ -1377,9 +1377,9 @@ bool SfxDocTplService_Impl::WriteUINamesForTemplateDir_Impl( const OUString& aUs
         Content aSourceContent( aTempURL, maCmdEnv, comphelper::getProcessComponentContext() );
         aTargetContent.transferContent( aSourceContent,
                                         InsertOperation_COPY,
-                                        OUString( "groupuinames.xml"  ),
+                                        "groupuinames.xml",
                                         ucb::NameClash::OVERWRITE,
-                                        OUString( "text/xml" ) );
+                                        "text/xml" );
         bResult = true;
     }
     catch ( uno::Exception& )
@@ -1409,7 +1409,7 @@ OUString SfxDocTplService_Impl::CreateNewGroupFsys( const OUString& rGroupName, 
                                                 aResultURL,
                                                 aNewFolder )
           && !CreateNewUniqueFolderWithPrefix( aTargetPath,
-                                                OUString( "UserGroup"  ),
+                                                "UserGroup",
                                                 aNewFolderName,
                                                 aResultURL,
                                                 aNewFolder ) )
@@ -1487,7 +1487,7 @@ bool SfxDocTplService_Impl::addGroup( const OUString& rGroupName )
                                             aNewFolderURL,
                                             aNewFolder )
       && !CreateNewUniqueFolderWithPrefix( aUserPath,
-                                            OUString( "UserGroup"  ),
+                                            "UserGroup",
                                             aNewFolderName,
                                             aNewFolderURL,
                                             aNewFolder ) )
@@ -1569,9 +1569,7 @@ bool SfxDocTplService_Impl::removeGroup( const OUString& rGroupName )
 
         // now get the content of the Group
         uno::Reference< XResultSet > xResultSet;
-        Sequence< OUString > aProps( 1 );
-
-        aProps[0] = TARGET_URL;
+        Sequence< OUString > aProps { TARGET_URL };
 
         try
         {
@@ -1686,9 +1684,7 @@ bool SfxDocTplService_Impl::renameGroup( const OUString& rOldName,
        try
        {
         uno::Reference< XResultSet > xResultSet;
-        Sequence< OUString > aProps( 1 );
-
-        aProps[0] = TARGET_URL;
+        Sequence< OUString > aProps { TARGET_URL };
         ResultSetInclude eInclude = INCLUDE_DOCUMENTS_ONLY;
         xResultSet = aGroup.createCursor( aProps, eInclude );
 
@@ -1809,7 +1805,7 @@ bool SfxDocTplService_Impl::storeTemplate( const OUString& rGroupName,
 
         uno::Reference< container::XNameAccess > xSOFConfig(
             xConfigProvider->createInstanceWithArguments(
-                                    OUString("com.sun.star.configuration.ConfigurationAccess"),
+                                    "com.sun.star.configuration.ConfigurationAccess",
                                     aArgs ),
             uno::UNO_QUERY_THROW );
 
@@ -1871,7 +1867,7 @@ bool SfxDocTplService_Impl::storeTemplate( const OUString& rGroupName,
         OUString aNewTemplateTargetURL = CreateNewUniqueFileWithPrefix( aGroupTargetURL, rTemplateName, aExt );
         if ( aNewTemplateTargetURL.isEmpty() )
         {
-            aNewTemplateTargetURL = CreateNewUniqueFileWithPrefix( aGroupTargetURL, OUString( "UserTemplate"  ), aExt );
+            aNewTemplateTargetURL = CreateNewUniqueFileWithPrefix( aGroupTargetURL, "UserTemplate", aExt );
 
             if ( aNewTemplateTargetURL.isEmpty() )
                 throw uno::RuntimeException();
@@ -2214,48 +2210,47 @@ public:
     virtual ~SfxDocTplService();
 
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return OUString("com.sun.star.comp.sfx2.DocumentTemplates");
     }
 
     virtual sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return cppu::supportsService(this, ServiceName);
     }
 
     virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
-        css::uno::Sequence< OUString > aSeq(1);
-        aSeq[0] = "com.sun.star.frame.DocumentTemplates";
+        css::uno::Sequence< OUString > aSeq { "com.sun.star.frame.DocumentTemplates" };
         return aSeq;
     }
 
 
     // --- XLocalizable ---
-    void SAL_CALL                   setLocale( const css::lang::Locale & eLocale ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    css::lang::Locale SAL_CALL              getLocale() throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    void SAL_CALL                   setLocale( const css::lang::Locale & eLocale ) throw( css::uno::RuntimeException, std::exception ) override;
+    css::lang::Locale SAL_CALL              getLocale() throw( css::uno::RuntimeException, std::exception ) override;
 
     // --- XDocumentTemplates ---
-    css::uno::Reference< css::ucb::XContent > SAL_CALL  getContent() throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    css::uno::Reference< css::ucb::XContent > SAL_CALL  getContent() throw( css::uno::RuntimeException, std::exception ) override;
     sal_Bool SAL_CALL               storeTemplate( const OUString& GroupName,
                                                    const OUString& TemplateName,
-                                                   const css::uno::Reference< css::frame::XStorable >& Storable ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                                                   const css::uno::Reference< css::frame::XStorable >& Storable ) throw( css::uno::RuntimeException, std::exception ) override;
     sal_Bool SAL_CALL               addTemplate( const OUString& GroupName,
                                                  const OUString& TemplateName,
-                                                 const OUString& SourceURL ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                                                 const OUString& SourceURL ) throw( css::uno::RuntimeException, std::exception ) override;
     sal_Bool SAL_CALL               removeTemplate( const OUString& GroupName,
-                                                    const OUString& TemplateName ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                                                    const OUString& TemplateName ) throw( css::uno::RuntimeException, std::exception ) override;
     sal_Bool SAL_CALL               renameTemplate( const OUString& GroupName,
                                                     const OUString& OldTemplateName,
-                                                    const OUString& NewTemplateName ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    sal_Bool SAL_CALL               addGroup( const OUString& GroupName ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    sal_Bool SAL_CALL               removeGroup( const OUString& GroupName ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                                                    const OUString& NewTemplateName ) throw( css::uno::RuntimeException, std::exception ) override;
+    sal_Bool SAL_CALL               addGroup( const OUString& GroupName ) throw( css::uno::RuntimeException, std::exception ) override;
+    sal_Bool SAL_CALL               removeGroup( const OUString& GroupName ) throw( css::uno::RuntimeException, std::exception ) override;
     sal_Bool SAL_CALL               renameGroup( const OUString& OldGroupName,
-                                                 const OUString& NewGroupName ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    void SAL_CALL                   update() throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                                                 const OUString& NewGroupName ) throw( css::uno::RuntimeException, std::exception ) override;
+    void SAL_CALL                   update() throw( css::uno::RuntimeException, std::exception ) override;
 };
 
 
@@ -2298,7 +2293,7 @@ uno::Reference< ucb::XContent > SAL_CALL SfxDocTplService::getContent()
     if ( pImp->init() )
         return pImp->getContent().get();
     else
-        return NULL;
+        return nullptr;
 }
 
 
@@ -2421,7 +2416,7 @@ void SAL_CALL Updater_Impl::onTerminated()
 }
 
 
-WaitWindow_Impl::WaitWindow_Impl() : WorkWindow(NULL, WB_BORDER | WB_3DLOOK)
+WaitWindow_Impl::WaitWindow_Impl() : WorkWindow(nullptr, WB_BORDER | WB_3DLOOK)
 {
     Rectangle aRect = Rectangle(0, 0, 300, 30000);
     mnTextStyle = DrawTextFlags::Center | DrawTextFlags::VCenter | DrawTextFlags::WordBreak | DrawTextFlags::MultiLine;
@@ -2551,7 +2546,7 @@ void SfxDocTplService_Impl::addFsysGroup( GroupList_Impl& rList,
     if ( aTitle.isEmpty() )
         return;
 
-    GroupData_Impl* pGroup = NULL;
+    GroupData_Impl* pGroup = nullptr;
     for ( size_t i = 0, n = rList.size(); i < n; ++i )
     {
         if ( rList[ i ]->getTitle() == aTitle )
@@ -2575,8 +2570,7 @@ void SfxDocTplService_Impl::addFsysGroup( GroupList_Impl& rList,
     // now get the content of the Group
     Content                 aContent;
     uno::Reference< XResultSet > xResultSet;
-    Sequence< OUString >    aProps(1);
-    aProps[0] = TITLE;
+    Sequence< OUString >    aProps { TITLE };
 
     try
     {
@@ -2628,7 +2622,7 @@ void SfxDocTplService_Impl::createFromContent( GroupList_Impl& rList,
     // when scanning the file system, we have to add the 'standard' group, too
     if ( ! bHierarchy )
     {
-        OUString aUIStdTitle = getLongName( OUString( STANDARD_FOLDER  ) );
+        OUString aUIStdTitle = getLongName( STANDARD_FOLDER );
         addFsysGroup( rList, OUString(), aUIStdTitle, aTargetURL, bWriteableContent );
     }
 
@@ -2641,8 +2635,7 @@ void SfxDocTplService_Impl::createFromContent( GroupList_Impl& rList,
         aUINames = ReadUINamesForTemplateDir_Impl( aLayerObj.GetMainURL( INetURLObject::NO_DECODE ) );
 
     uno::Reference< XResultSet > xResultSet;
-    Sequence< OUString > aProps(1);
-    aProps[0] = TITLE;
+    Sequence< OUString > aProps { TITLE };
 
     try
     {
@@ -2805,7 +2798,7 @@ DocTemplates_EntryData_Impl* GroupData_Impl::addEntry( const OUString& rTitle,
                                           const OUString& rType,
                                           const OUString& rHierURL )
 {
-    DocTemplates_EntryData_Impl* pData = NULL;
+    DocTemplates_EntryData_Impl* pData = nullptr;
     bool EntryFound = false;
 
     for ( size_t i = 0, n = maEntries.size(); i < n; ++i )

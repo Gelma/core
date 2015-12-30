@@ -145,11 +145,11 @@ public:
 
     // XChangesListener
     virtual void SAL_CALL changesOccurred( const util::ChangesEvent& Event )
-        throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( uno::RuntimeException, std::exception ) override;
 
     // XEventListener ( base of XChangesLisetenr )
     virtual void SAL_CALL disposing( const lang::EventObject& Source )
-        throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( uno::RuntimeException, std::exception ) override;
 
 private:
     void setNoProxyList( const OUString & rNoProxyList );
@@ -313,9 +313,8 @@ InternetProxyDecider_Impl::InternetProxyDecider_Impl(
 
         uno::Reference< uno::XInterface > xInterface(
                     xConfigProv->createInstanceWithArguments(
-                        OUString(
-                            "com.sun.star.configuration.ConfigurationAccess" ),
-                    aArguments ) );
+                        "com.sun.star.configuration.ConfigurationAccess",
+                        aArguments ) );
 
         OSL_ENSURE( xInterface.is(),
                     "InternetProxyDecider - No config access!" );
@@ -370,8 +369,7 @@ InternetProxyDecider_Impl::InternetProxyDecider_Impl(
 
             // Register as listener for config changes.
 
-            m_xNotifier = uno::Reference< util::XChangesNotifier >(
-                                                xInterface, uno::UNO_QUERY );
+            m_xNotifier.set( xInterface, uno::UNO_QUERY );
 
             OSL_ENSURE( m_xNotifier.is(),
                         "InternetProxyDecider - No notifier!" );

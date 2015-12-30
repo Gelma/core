@@ -71,10 +71,6 @@ class RecoveryUI : public ::cppu::WeakImplHelper< css::lang::XServiceInfo       
         /** @short TODO */
         RecoveryUI::EJob m_eJob;
 
-        /** @short TODO */
-        css::uno::Reference< css::task::XStatusIndicatorFactory > m_xProgressFactory;
-
-
     // interface
     public:
 
@@ -90,18 +86,18 @@ class RecoveryUI : public ::cppu::WeakImplHelper< css::lang::XServiceInfo       
         // css.lang.XServiceInfo
 
         virtual OUString SAL_CALL getImplementationName()
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 
         virtual sal_Bool SAL_CALL supportsService(const OUString& sServiceName)
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 
         virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 
 
-        virtual com::sun::star::uno::Any SAL_CALL dispatchWithReturnValue(const css::util::URL& aURL,
+        virtual css::uno::Any SAL_CALL dispatchWithReturnValue(const css::util::URL& aURL,
                                             const css::uno::Sequence< css::beans::PropertyValue >& lArguments )
-            throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(css::uno::RuntimeException, std::exception) override;
 
 
     // helper
@@ -119,7 +115,7 @@ class RecoveryUI : public ::cppu::WeakImplHelper< css::lang::XServiceInfo       
 
 RecoveryUI::RecoveryUI(const css::uno::Reference< css::uno::XComponentContext >& xContext)
     : m_xContext     (xContext                 )
-    , m_pParentWindow(0                        )
+    , m_pParentWindow(nullptr                        )
     , m_eJob         (RecoveryUI::E_JOB_UNKNOWN)
 {
 }
@@ -143,8 +139,7 @@ sal_Bool SAL_CALL RecoveryUI::supportsService(const OUString& sServiceName)
 css::uno::Sequence< OUString > SAL_CALL RecoveryUI::getSupportedServiceNames()
     throw(css::uno::RuntimeException, std::exception)
 {
-    css::uno::Sequence< OUString > lServiceNames(1);
-    lServiceNames[0] = "com.sun.star.dialog.RecoveryUI";
+    css::uno::Sequence< OUString > lServiceNames { "com.sun.star.dialog.RecoveryUI" };
     return lServiceNames;
 }
 

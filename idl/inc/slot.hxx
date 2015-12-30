@@ -146,16 +146,15 @@ protected:
             }
 
 public:
-            TYPEINFO_OVERRIDE();
             SvMetaObject *  MakeClone() const;
             SvMetaSlot *Clone() const { return static_cast<SvMetaSlot *>(MakeClone()); }
 
             SvMetaSlot();
             SvMetaSlot( SvMetaType * pType );
 
-    virtual bool    IsVariable() const SAL_OVERRIDE;
-    virtual bool    IsMethod() const SAL_OVERRIDE;
-    virtual OString GetMangleName( bool bVariable ) const SAL_OVERRIDE;
+    virtual bool    IsVariable() const override;
+    virtual bool    IsMethod() const override;
+    virtual OString GetMangleName( bool bVariable ) const override;
 
     SvMetaAttribute *   GetMethod() const;
     SvMetaType *        GetSlotType() const;
@@ -198,14 +197,14 @@ public:
     void                SetListPos(sal_uLong n)
                         { nListPos = n; }
     void                ResetSlotPointer()
-                        { pNextSlot = pLinkedSlot = 0; }
+                        { pNextSlot = pLinkedSlot = nullptr; }
 
-    virtual bool        Test( SvIdlDataBase &, SvTokenStream & rInStm ) SAL_OVERRIDE;
+    virtual bool        Test( SvIdlDataBase &, SvTokenStream & rInStm ) override;
     virtual void        ReadAttributesSvIdl( SvIdlDataBase & rBase,
-                                             SvTokenStream & rInStm ) SAL_OVERRIDE;
-    virtual bool        ReadSvIdl( SvIdlDataBase &, SvTokenStream & rInStm ) SAL_OVERRIDE;
+                                             SvTokenStream & rInStm ) override;
+    virtual bool        ReadSvIdl( SvIdlDataBase &, SvTokenStream & rInStm ) override;
     virtual void        Insert( SvSlotElementList&, const OString& rPrefix,
-                                SvIdlDataBase& ) SAL_OVERRIDE;
+                                SvIdlDataBase& ) override;
     void                WriteSlotStubs( const OString& rShellName,
                                     ByteStringList & rList,
                                     SvStream & rOutStm );

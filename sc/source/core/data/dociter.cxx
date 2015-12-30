@@ -54,8 +54,6 @@ using ::std::set;
 // #define debugiter(...) fprintf(stderr, __VA_ARGS__)
 #define debugiter(...)
 
-// STATIC DATA -----------------------------------------------------------
-
 namespace {
 
 template<typename _Iter>
@@ -100,7 +98,7 @@ void ScAttrArray_IterGetNumberFormat( sal_uLong& nFormat, const ScAttrArray*& rp
 ScValueIterator::ScValueIterator( ScDocument* pDocument, const ScRange& rRange,
             sal_uInt16 nSubTotalFlags, bool bTextZero )
     : pDoc(pDocument)
-    , pAttrArray(NULL)
+    , pAttrArray(nullptr)
     , nNumFormat(0) // Initialized in GetNumberFormat
     , nNumFmtIndex(0)
     , maStartPos(rRange.aStart)
@@ -113,7 +111,7 @@ ScValueIterator::ScValueIterator( ScDocument* pDocument, const ScRange& rRange,
     , bNumValid(false)
     , bCalcAsShown(pDocument->GetDocOptions().IsCalcAsShown())
     , bTextAsZero(bTextZero)
-    , mpCells(NULL)
+    , mpCells(nullptr)
 {
     SCTAB nDocMaxTab = pDocument->GetTableCount() - 1;
 
@@ -193,9 +191,9 @@ bool ScValueIterator::GetThis(double& rValue, sal_uInt16& rErr)
         SCROW nLastRow;
         // Skip all filtered or hidden rows, depending on mnSubTotalFlags
         if ( ( ( mnSubTotalFlags & SUBTOTAL_IGN_FILTERED ) &&
-               pDoc->RowFiltered( nCurRow, mnTab, NULL, &nLastRow ) ) ||
+               pDoc->RowFiltered( nCurRow, mnTab, nullptr, &nLastRow ) ) ||
              ( ( mnSubTotalFlags & SUBTOTAL_IGN_HIDDEN ) &&
-               pDoc->RowHidden( nCurRow, mnTab, NULL, &nLastRow ) ) )
+               pDoc->RowHidden( nCurRow, mnTab, nullptr, &nLastRow ) ) )
         {
             SetPos(nLastRow+1);
             continue;
@@ -294,7 +292,7 @@ bool ScValueIterator::GetFirst(double& rValue, sal_uInt16& rErr)
         return false;
 
     nNumFormat = 0; // Initialized in GetNumberFormat
-    pAttrArray = 0;
+    pAttrArray = nullptr;
     nAttrEndRow = 0;
 
     mpCells = &pTab->aCol[maStartPos.Col()].maCells;
@@ -308,8 +306,7 @@ bool ScValueIterator::GetNext(double& rValue, sal_uInt16& rErr)
     return GetThis(rValue, rErr);
 }
 
-ScDBQueryDataIterator::DataAccess::DataAccess(const ScDBQueryDataIterator* pParent) :
-    mpParent(pParent)
+ScDBQueryDataIterator::DataAccess::DataAccess()
 {
 }
 
@@ -321,7 +318,7 @@ const sc::CellStoreType* ScDBQueryDataIterator::GetColumnCellStore(ScDocument& r
 {
     ScTable* pTab = rDoc.FetchTable(nTab);
     if (!pTab)
-        return NULL;
+        return nullptr;
 
     return &pTab->aCol[nCol].maCells;
 }
@@ -342,12 +339,12 @@ bool ScDBQueryDataIterator::IsQueryValid(
     return rDoc.maTabs[nTab]->ValidQuery(nRow, rParam, pCell);
 }
 
-ScDBQueryDataIterator::DataAccessInternal::DataAccessInternal(const ScDBQueryDataIterator* pParent, ScDBQueryParamInternal* pParam, ScDocument* pDoc)
-    : DataAccess(pParent)
-    , mpCells(NULL)
+ScDBQueryDataIterator::DataAccessInternal::DataAccessInternal(ScDBQueryParamInternal* pParam, ScDocument* pDoc)
+    : DataAccess()
+    , mpCells(nullptr)
     , mpParam(pParam)
     , mpDoc(pDoc)
-    , pAttrArray(0)
+    , pAttrArray(nullptr)
     , nNumFormat(0) // Initialized in GetNumberFormat
     , nNumFmtIndex(0)
     , nCol(mpParam->mnField)
@@ -402,7 +399,7 @@ bool ScDBQueryDataIterator::DataAccessInternal::getCurrent(Value& rValue)
             continue;
         }
 
-        ScRefCellValue* pCell = NULL;
+        ScRefCellValue* pCell = nullptr;
         if (nCol == static_cast<SCCOL>(nFirstQueryField))
         {
             aCell = sc::toRefCell(maCurPos.first, maCurPos.second);
@@ -522,8 +519,8 @@ void ScDBQueryDataIterator::DataAccessInternal::incPos()
         incBlock();
 }
 
-ScDBQueryDataIterator::DataAccessMatrix::DataAccessMatrix(const ScDBQueryDataIterator* pParent, ScDBQueryParamMatrix* pParam)
-    : DataAccess(pParent)
+ScDBQueryDataIterator::DataAccessMatrix::DataAccessMatrix(ScDBQueryParamMatrix* pParam)
+    : DataAccess()
     , mpParam(pParam)
     , mnCurRow(0)
 {
@@ -764,13 +761,13 @@ ScDBQueryDataIterator::ScDBQueryDataIterator(ScDocument* pDocument, ScDBQueryPar
         case ScDBQueryParamBase::INTERNAL:
         {
             ScDBQueryParamInternal* p = static_cast<ScDBQueryParamInternal*>(pParam);
-            mpData.reset(new DataAccessInternal(this, p, pDocument));
+            mpData.reset(new DataAccessInternal(p, pDocument));
         }
         break;
         case ScDBQueryParamBase::MATRIX:
         {
             ScDBQueryParamMatrix* p = static_cast<ScDBQueryParamMatrix*>(pParam);
-            mpData.reset(new DataAccessMatrix(this, p));
+            mpData.reset(new DataAccessMatrix(p));
         }
     }
 }
@@ -820,7 +817,7 @@ sc::FormulaGroupEntry* ScFormulaGroupIterator::next()
                 mnCol = 0;
                 mnTab++;
                 if (mnTab >= mpDoc->GetTableCount())
-                    return NULL;
+                    return nullptr;
             }
             ScTable *pTab = mpDoc->FetchTable(mnTab);
             ScColumn *pCol = pTab->FetchColumn(mnCol);
@@ -953,9 +950,9 @@ bool ScCellIterator::getCurrent()
         SCROW nLastRow;
         // Skip all filtered or hidden rows, depending on mSubTotalFlags
         if ( ( ( mnSubTotalFlags & SUBTOTAL_IGN_FILTERED ) &&
-               pCol->GetDoc().RowFiltered(maCurPos.Row(), maCurPos.Tab(), NULL, &nLastRow) ) ||
+               pCol->GetDoc().RowFiltered(maCurPos.Row(), maCurPos.Tab(), nullptr, &nLastRow) ) ||
              ( ( mnSubTotalFlags & SUBTOTAL_IGN_HIDDEN ) &&
-               pCol->GetDoc().RowHidden(maCurPos.Row(), maCurPos.Tab(), NULL, &nLastRow) ) )
+               pCol->GetDoc().RowHidden(maCurPos.Row(), maCurPos.Tab(), nullptr, &nLastRow) ) )
         {
             setPos(nLastRow+1);
             continue;
@@ -1036,8 +1033,7 @@ bool ScCellIterator::isEmpty() const
 
 bool ScCellIterator::equalsWithoutFormat( const ScAddress& rPos ) const
 {
-    ScRefCellValue aOther;
-    aOther.assign(*mpDoc, rPos);
+    ScRefCellValue aOther(*mpDoc, rPos);
     return maCurCell.equalsWithoutFormat(aOther);
 }
 
@@ -1086,7 +1082,7 @@ ScQueryCellIterator::ScQueryCellIterator(ScDocument* pDocument, SCTAB nTable,
         }
     }
     nNumFormat = 0; // Initialized in GetNumberFormat
-    pAttrArray = 0;
+    pAttrArray = nullptr;
     nAttrEndRow = 0;
 }
 
@@ -1197,8 +1193,8 @@ bool ScQueryCellIterator::GetThis()
         {
             bool bTestEqualCondition = false;
             if ( pDoc->maTabs[nTab]->ValidQuery( nRow, *mpParam,
-                    (nCol == static_cast<SCCOL>(nFirstQueryField) ? &aCell : NULL),
-                    (nTestEqualCondition ? &bTestEqualCondition : NULL) ) )
+                    (nCol == static_cast<SCCOL>(nFirstQueryField) ? &aCell : nullptr),
+                    (nTestEqualCondition ? &bTestEqualCondition : nullptr) ) )
             {
                 if ( nTestEqualCondition && bTestEqualCondition )
                     nTestEqualCondition |= nTestEqualConditionMatched;
@@ -2011,7 +2007,7 @@ ScRefCellValue* ScHorizontalCellIterator::GetNext( SCCOL& rCol, SCROW& rRow )
     if (!mbMore)
     {
         debugiter("no more !\n");
-        return NULL;
+        return nullptr;
     }
 
     // Return the current non-empty cell, and move the cursor to the next one.
@@ -2203,7 +2199,7 @@ ScHorizontalValueIterator::ScHorizontalValueIterator( ScDocument* pDocument,
     nCurTab = nStartTab;
 
     nNumFormat = 0; // Will be initialized in GetNumberFormat()
-    pAttrArray = 0;
+    pAttrArray = nullptr;
     nAttrEndRow = 0;
 
     pCellIter = new ScHorizontalCellIterator( pDoc, nStartTab, nStartCol,
@@ -2349,7 +2345,7 @@ void ScHorizontalAttrIterator::InitForNextRow(bool bInitialization)
                 SCROW nThisEnd = pArray->pData[nIndex].nRow;
 
                 if ( IsDefaultItem( pPattern ) )
-                    pPattern = NULL;
+                    pPattern = nullptr;
                 else
                     bEmpty = false; // Found attributes
 
@@ -2361,7 +2357,7 @@ void ScHorizontalAttrIterator::InitForNextRow(bool bInitialization)
             {
                 OSL_FAIL("AttrArray does not range to MAXROW");
                 pNextEnd[nPos] = MAXROW;
-                ppPatterns[nPos] = NULL;
+                ppPatterns[nPos] = nullptr;
             }
         }
         else if ( ppPatterns[nPos] )
@@ -2419,7 +2415,7 @@ const ScPatternAttr* ScHorizontalAttrIterator::GetNext( SCCOL& rCol1, SCCOL& rCo
         // Next row
         ++nRow;
         if ( nRow > nEndRow ) // Already at the end?
-            return NULL; // Found nothing
+            return nullptr; // Found nothing
         nCol = nStartCol; // Start at the left again
 
         if ( bRowEmpty || nRow > nMinNextEnd )
@@ -2446,7 +2442,7 @@ ScUsedAreaIterator::ScUsedAreaIterator( ScDocument* pDocument, SCTAB nTable,
     , nFoundStartCol( 0 )
     , nFoundEndCol( 0 )
     , nFoundRow( 0 )
-    , pFoundPattern( NULL )
+    , pFoundPattern( nullptr )
 {
     pCell    = aCellIter.GetNext( nCellCol, nCellRow );
     pPattern = aAttrIter.GetNext( nAttrCol1, nAttrCol2, nAttrRow );
@@ -2494,12 +2490,12 @@ bool ScUsedAreaIterator::GetNext()
             if ( nAttrRow == nCellRow && nAttrCol1 == nCellCol ) // Attributes on the cell?
                 pFoundPattern = pPattern;
             else
-                pFoundPattern = NULL;
+                pFoundPattern = nullptr;
         }
     }
     else if ( pCell ) // Just a cell -> take over right away
     {
-        pFoundPattern = NULL;
+        pFoundPattern = nullptr;
         bUseCell = true; // Cell position
     }
     else if ( pPattern ) // Just attributes -> take over right away
@@ -2546,7 +2542,7 @@ ScDocAttrIterator::ScDocAttrIterator(ScDocument* pDocument, SCTAB nTable,
     if ( ValidTab(nTab) && nTab < pDoc->GetTableCount() && pDoc->maTabs[nTab] )
         pColIter = pDoc->maTabs[nTab]->aCol[nCol].CreateAttrIterator( nStartRow, nEndRow );
     else
-        pColIter = NULL;
+        pColIter = nullptr;
 }
 
 ScDocAttrIterator::~ScDocAttrIterator()
@@ -2570,9 +2566,9 @@ const ScPatternAttr* ScDocAttrIterator::GetNext( SCCOL& rCol, SCROW& rRow1, SCRO
         if ( nCol <= nEndCol )
             pColIter = pDoc->maTabs[nTab]->aCol[nCol].CreateAttrIterator( nStartRow, nEndRow );
         else
-            pColIter = NULL;
+            pColIter = nullptr;
     }
-    return NULL;  // Nothing anymore
+    return nullptr;  // Nothing anymore
 }
 
 ScDocRowHeightUpdater::TabRanges::TabRanges(SCTAB nTab) :
@@ -2682,7 +2678,7 @@ ScAttrRectIterator::ScAttrRectIterator(ScDocument* pDocument, SCTAB nTable,
             ++nIterEndCol;
     }
     else
-        pColIter = NULL;
+        pColIter = nullptr;
 }
 
 ScAttrRectIterator::~ScAttrRectIterator()
@@ -2725,9 +2721,9 @@ const ScPatternAttr* ScAttrRectIterator::GetNext( SCCOL& rCol1, SCCOL& rCol2,
                 ++nIterEndCol;
         }
         else
-            pColIter = NULL;
+            pColIter = nullptr;
     }
-    return NULL; // Nothing anymore
+    return nullptr; // Nothing anymore
 }
 
 SCROW ScRowBreakIterator::NOT_FOUND = -1;

@@ -31,7 +31,7 @@ class ScDocument;
 
 struct ScMyToFixupOLE
 {
-    com::sun::star::uno::Reference <com::sun::star::drawing::XShape> xShape;
+    css::uno::Reference <css::drawing::XShape> xShape;
     OUString sRangeList;
 };
 
@@ -47,11 +47,11 @@ class ScMyOLEFixer
         const OUString& rName,
         const OUString& rRangeList);
 public:
-    ScMyOLEFixer(ScXMLImport& rImport);
+    explicit ScMyOLEFixer(ScXMLImport& rImport);
     ~ScMyOLEFixer();
 
-    static bool IsOLE(com::sun::star::uno::Reference< com::sun::star::drawing::XShape >& rShape);
-    void    AddOLE(com::sun::star::uno::Reference <com::sun::star::drawing::XShape>& rShape,
+    static bool IsOLE(css::uno::Reference< css::drawing::XShape >& rShape);
+    void    AddOLE(css::uno::Reference <css::drawing::XShape>& rShape,
                    const OUString &rRangeList);
     void    FixupOLEs();
 };

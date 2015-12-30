@@ -41,8 +41,6 @@ SFX_IMPL_STATUSBAR_CONTROL( XmlSecStatusBarControl, SfxUInt16Item );
 
 struct XmlSecStatusBarControl::XmlSecStatusBarControl_Impl
 {
-    Point       maPos;
-    Size        maSize;
     SignatureState  mnState;
     Image       maImage;
     Image       maImageBroken;
@@ -89,7 +87,7 @@ void XmlSecStatusBarControl::StateChanged( sal_uInt16, SfxItemState eState, cons
     {
         mpImpl->mnState = SignatureState::UNKNOWN;
     }
-    else if( pState->ISA( SfxUInt16Item ) )
+    else if( dynamic_cast< const SfxUInt16Item* >(pState) !=  nullptr )
     {
         mpImpl->mnState = static_cast<SignatureState>(static_cast<const SfxUInt16Item*>(pState)->GetValue());
     }
@@ -100,7 +98,7 @@ void XmlSecStatusBarControl::StateChanged( sal_uInt16, SfxItemState eState, cons
     }
 
     if( GetStatusBar().AreItemsVisible() )              // necessary ?
-        GetStatusBar().SetItemData( GetId(), 0 );
+        GetStatusBar().SetItemData( GetId(), nullptr );
 
     GetStatusBar().SetItemText( GetId(), "" );    // necessary ?
 
@@ -124,11 +122,11 @@ void XmlSecStatusBarControl::Command( const CommandEvent& rCEvt )
         PopupMenu aPopupMenu( ResId( RID_SVXMNU_XMLSECSTATBAR, DIALOG_MGR() ) );
         if( aPopupMenu.Execute( &GetStatusBar(), rCEvt.GetMousePosPixel() ) )
         {
-            ::com::sun::star::uno::Any a;
+            css::uno::Any a;
             SfxUInt16Item aState( GetSlotId(), 0 );
             INetURLObject aObj( m_aCommandURL );
 
-            ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue > aArgs( 1 );
+            css::uno::Sequence< css::beans::PropertyValue > aArgs( 1 );
             aArgs[0].Name  = aObj.GetURLPath();
             aState.QueryValue( a );
             aArgs[0].Value = a;

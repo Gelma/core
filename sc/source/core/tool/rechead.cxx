@@ -22,8 +22,6 @@
 
 #include <osl/diagnose.h>
 
-// STATIC DATA
-
 ScMultipleReadHeader::ScMultipleReadHeader(SvStream& rNewStream) :
     rStream( rNewStream )
 {
@@ -43,7 +41,7 @@ ScMultipleReadHeader::ScMultipleReadHeader(SvStream& rNewStream) :
             rStream.SetError( SVSTREAM_FILEFORMAT_ERROR );
 
         //  everything to 0, so  BytesLeft() aborts at least
-        pBuf = NULL; pMemStream = NULL;
+        pBuf = nullptr; pMemStream = nullptr;
         nEntryEnd = nDataPos;
     }
     else

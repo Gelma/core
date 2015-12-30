@@ -144,8 +144,7 @@ static const sal_uInt16 aElemActionMaps[XML_PROP_TYPE_END] =
 
 class XMLTypedPropertiesOOoTContext_Impl : public XMLPersElemContentTContext
 {
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::xml::sax::XAttributeList > m_xAttrList;
+    css::uno::Reference< css::xml::sax::XAttributeList > m_xAttrList;
 
 public:
     XMLTypedPropertiesOOoTContext_Impl( XMLTransformerBase& rTransformer,
@@ -159,9 +158,9 @@ public:
     void AddAttribute( sal_uInt16 nPrefix, XMLTokenEnum eToken,
                        const OUString &sValue );
 
-    virtual void StartElement( const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& rAttrList ) SAL_OVERRIDE;
+    virtual void StartElement( const css::uno::Reference< css::xml::sax::XAttributeList >& rAttrList ) override;
 
-    virtual void Export() SAL_OVERRIDE;
+    virtual void Export() override;
 };
 
 XMLTypedPropertiesOOoTContext_Impl::XMLTypedPropertiesOOoTContext_Impl(
@@ -238,21 +237,21 @@ public:
 
     virtual ~XMLPropertiesOOoTContext_Impl();
 
-    XMLTransformerContext *CreateChildContext(
+    rtl::Reference<XMLTransformerContext> CreateChildContext(
             sal_uInt16 nPrefix,
             const OUString& rLocalName,
             const OUString& rQName,
-            const Reference< XAttributeList >& rAttrList ) SAL_OVERRIDE;
+            const Reference< XAttributeList >& rAttrList ) override;
 
-    virtual void StartElement( const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& rAttrList ) SAL_OVERRIDE;
+    virtual void StartElement( const css::uno::Reference< css::xml::sax::XAttributeList >& rAttrList ) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
-    virtual void Characters( const OUString& rChars ) SAL_OVERRIDE;
+    virtual void Characters( const OUString& rChars ) override;
 
-    virtual void Export() SAL_OVERRIDE;
+    virtual void Export() override;
 
-    virtual bool IsPersistent() const SAL_OVERRIDE;
+    virtual bool IsPersistent() const override;
 };
 
 XMLTypedPropertiesOOoTContext_Impl
@@ -269,7 +268,7 @@ XMLTypedPropertiesOOoTContext_Impl
         }
     }
     if( MAX_PROP_TYPES == nIndex )
-        return 0;
+        return nullptr;
 
     if( !m_aPropContexts[nIndex].is() )
     {
@@ -379,7 +378,7 @@ XMLPropertiesOOoTContext_Impl::~XMLPropertiesOOoTContext_Impl()
 {
 }
 
-XMLTransformerContext *XMLPropertiesOOoTContext_Impl::CreateChildContext(
+rtl::Reference<XMLTransformerContext> XMLPropertiesOOoTContext_Impl::CreateChildContext(
             sal_uInt16 nPrefix,
             const OUString& rLocalName,
             const OUString& rQName,
@@ -395,13 +394,13 @@ void XMLPropertiesOOoTContext_Impl::StartElement(
 {
     Reference< XAttributeList > xAttrList( rAttrList );
 
-    XMLTypedPropertiesOOoTContext_Impl * pIntervalMinorDivisorContext = 0;
+    XMLTypedPropertiesOOoTContext_Impl * pIntervalMinorDivisorContext = nullptr;
     double fIntervalMajor = 0.0;
     double fIntervalMinor = 0.0;
     bool bMoveProtect = false;
     bool bSizeProtect = false;
     OUString aProtectAttrValue;
-    XMLTypedPropertiesOOoTContext_Impl * pProtectContext = 0;
+    XMLTypedPropertiesOOoTContext_Impl * pProtectContext = nullptr;
 
     /* Attribute <style:mirror> has to be priority over attribute <style:draw>.
        The filter from OpenDocument file format to OpenOffice.org file format
@@ -411,7 +410,7 @@ void XMLPropertiesOOoTContext_Impl::StartElement(
     OUString aStyleMirrorAttrValue;
     bool bExistDrawMirror( false );
     OUString aDrawMirrorAttrValue;
-    XMLTypedPropertiesOOoTContext_Impl* pMirrorContext( 0L );
+    XMLTypedPropertiesOOoTContext_Impl* pMirrorContext( nullptr );
 
     sal_Int16 nAttrCount = xAttrList.is() ? xAttrList->getLength() : 0;
     for( sal_Int16 i=0; i < nAttrCount; i++ )
@@ -1068,13 +1067,13 @@ XMLStyleOOoTContext::~XMLStyleOOoTContext()
 {
 }
 
-XMLTransformerContext *XMLStyleOOoTContext::CreateChildContext(
+rtl::Reference<XMLTransformerContext> XMLStyleOOoTContext::CreateChildContext(
             sal_uInt16 nPrefix,
             const OUString& rLocalName,
             const OUString& rQName,
             const Reference< XAttributeList >& rAttrList )
 {
-    XMLTransformerContext *pContext = 0;
+    rtl::Reference<XMLTransformerContext> pContext;
 
     if( XML_NAMESPACE_STYLE == nPrefix &&
         IsXMLToken( rLocalName, XML_PROPERTIES ) )
@@ -1094,29 +1093,29 @@ XMLTransformerContext *XMLStyleOOoTContext::CreateChildContext(
                 aAttrActionMaps[aPropTypes[m_eFamily][0]];
             if( nActionMap < MAX_OOO_PROP_ACTIONS )
             {
-                pContext = new XMLPropertiesOOoTContext_Impl(
+                pContext.set(new XMLPropertiesOOoTContext_Impl(
                                     GetTransformer(), rQName,
-                                    aPropTypes[m_eFamily], m_bPersistent );
+                                    aPropTypes[m_eFamily], m_bPersistent ));
             }
             else
             {
                 if( m_bPersistent )
-                    pContext = new XMLPersElemContentTContext(
+                    pContext.set(new XMLPersElemContentTContext(
                                     GetTransformer(), rQName,
                                     XML_NAMESPACE_STYLE,
-                                    aPropTokens[aPropTypes[m_eFamily][0]] );
+                                    aPropTokens[aPropTypes[m_eFamily][0]] ));
                 else
-                    pContext = new XMLRenameElemTransformerContext(
+                    pContext.set(new XMLRenameElemTransformerContext(
                                     GetTransformer(), rQName,
                                     XML_NAMESPACE_STYLE,
-                                    aPropTokens[aPropTypes[m_eFamily][0]] );
+                                    aPropTokens[aPropTypes[m_eFamily][0]] ));
             }
         }
         else
         {
-            pContext = new XMLPropertiesOOoTContext_Impl(
+            pContext.set(new XMLPropertiesOOoTContext_Impl(
                                 GetTransformer(), rQName,
-                                aPropTypes[m_eFamily], m_bPersistent);
+                                aPropTypes[m_eFamily], m_bPersistent));
         }
 
         if( m_bPersistent )
@@ -1142,7 +1141,7 @@ void XMLStyleOOoTContext::StartElement(
     OSL_ENSURE( pActions, "go no actions" );
 
     Reference< XAttributeList > xAttrList( rAttrList );
-    XMLMutableAttributeList *pMutableAttrList = 0;
+    XMLMutableAttributeList *pMutableAttrList = nullptr;
     sal_Int16 nAttrCount = xAttrList.is() ? xAttrList->getLength() : 0;
     for( sal_Int16 i=0; i < nAttrCount; i++ )
     {
@@ -1294,7 +1293,7 @@ bool XMLStyleOOoTContext::IsPersistent() const
 XMLTransformerActions *XMLStyleOOoTContext::CreateTransformerActions(
         sal_uInt16 nType )
 {
-    XMLTransformerActionInit *pInit = 0;
+    XMLTransformerActionInit *pInit = nullptr;
 
     switch( nType )
     {
@@ -1354,7 +1353,7 @@ XMLTransformerActions *XMLStyleOOoTContext::CreateTransformerActions(
         break;
     }
 
-    XMLTransformerActions *pActions = 0;
+    XMLTransformerActions *pActions = nullptr;
     if( pInit )
         pActions = new XMLTransformerActions( pInit );
 

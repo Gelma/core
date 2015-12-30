@@ -51,6 +51,7 @@
 
 #include "currentcontextchecker.hxx"
 #include "multi.hxx"
+#include <memory>
 
 using namespace osl;
 using namespace cppu;
@@ -114,12 +115,12 @@ public:
     }
 
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName() throw (RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService( const OUString & rServiceName ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName() throw (RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL supportsService( const OUString & rServiceName ) throw (RuntimeException, std::exception) override;
+    virtual Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (RuntimeException, std::exception) override;
 
     // XMain
-    virtual sal_Int32 SAL_CALL run( const Sequence< OUString > & rArgs ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual sal_Int32 SAL_CALL run( const Sequence< OUString > & rArgs ) throw (RuntimeException, std::exception) override;
 };
 
 
@@ -189,8 +190,8 @@ static void assign( TestElement & rData,
                     sal_Int64 nHyper, sal_uInt64 nUHyper,
                     float fFloat, double fDouble,
                     TestEnum eEnum, const OUString& rStr,
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >& xTest,
-                    const ::com::sun::star::uno::Any& rAny )
+                    const css::uno::Reference< css::uno::XInterface >& xTest,
+                    const css::uno::Any& rAny )
 {
     rData.Bool = bBool;
     rData.Char = cChar;
@@ -214,7 +215,7 @@ namespace {
 template < typename T >
 bool testAny(
     T const & value, Reference< XBridgeTest > const & xLBT,
-    char const * typeName = 0)
+    char const * typeName = nullptr)
 {
     Any any;
     any <<=  value;
@@ -231,7 +232,7 @@ bool testAny(
                 RTL_TEXTENCODING_ASCII_US).getStr());
         success = false;
     }
-    if (typeName != 0
+    if (typeName != nullptr
         && !any2.getValueType().getTypeName().equalsAscii(typeName))
     {
         fprintf(
@@ -311,9 +312,9 @@ private:
 
 public:
     void SAL_CALL callRecursivly(
-        const ::com::sun::star::uno::Reference< XRecursiveCall >& xCall,
+        const css::uno::Reference< XRecursiveCall >& xCall,
         sal_Int32 nToCall )
-        throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw(css::uno::RuntimeException, std::exception) override
         {
             MutexGuard guard( m_mutex );
             if( nToCall )
@@ -339,8 +340,8 @@ class MyClass : public osl::DebugBase<MyClass>, public OWeakObject
 public:
     MyClass();
     virtual ~MyClass();
-    virtual void SAL_CALL acquire() throw () SAL_OVERRIDE;
-    virtual void SAL_CALL release() throw () SAL_OVERRIDE;
+    virtual void SAL_CALL acquire() throw () override;
+    virtual void SAL_CALL release() throw () override;
 };
 
 
@@ -653,8 +654,6 @@ static bool performTest(
             static_cast< sal_Int64 >(SAL_CONST_INT64(0x8000000000000000)), 1,
             SAL_CONST_INT64(0x7FFFFFFFFFFFFFFF) };
         sal_uInt64 _arUHyper[] = { 0, 1, SAL_CONST_UINT64(0xFFFFFFFFFFFFFFFF) };
-        float _arFloat[] = { 1.1f, 2.2f, 3.3f };
-        double _arDouble[] = { 1.11, 2.22, 3.33 };
         OUString _arString[] = {
             OUString("String 1"),
             OUString("String 2"),
@@ -691,6 +690,8 @@ static bool performTest(
             TestEnum_CHECK, STRING_TEST_CONSTANT, _arObj[2],
             Any(&_arObj[2], cppu::UnoType<XInterface>::get()));
         {
+            float _arFloat[] = { 1.1f, 2.2f, 3.3f };
+            double _arDouble[] = { 1.11, 2.22, 3.33 };
             Sequence<sal_Bool> arBool(_arBool, 3);
             Sequence<sal_Unicode> arChar( _arChar, 3);
             Sequence<sal_Int8> arByte(_arByte, 3);
@@ -1043,10 +1044,10 @@ uno_Sequence* cloneSequence(const uno_Sequence* val, const Type& type)
         reinterpret_cast<typelib_IndirectTypeDescription*>(pTdRaw);
 
     typelib_TypeDescription* pTdElem = pIndirectTd->pType->pType;
-    sal_Int8* buf = new sal_Int8[pTdElem->nSize * val->nElements];
-    sal_Int8* pBufCur = buf;
+    std::unique_ptr<sal_Int8[]> buf(new sal_Int8[pTdElem->nSize * val->nElements]);
+    sal_Int8* pBufCur = buf.get();
 
-    uno_Sequence* retSeq = NULL;
+    uno_Sequence* retSeq = nullptr;
     switch (pTdElem->eTypeClass)
     {
     case TypeClass_SEQUENCE:
@@ -1070,7 +1071,6 @@ uno_Sequence* cloneSequence(const uno_Sequence* val, const Type& type)
             val->nElements, reinterpret_cast< uno_AcquireFunc >(cpp_acquire));
         break;
     }
-    delete[] buf;
     return retSeq;
 }
 
@@ -1100,14 +1100,14 @@ inline bool makeSurrogate(
     // official:
     uno_getEnvironment(
         reinterpret_cast< uno_Environment ** >( &aCppEnv_official ),
-        aCppEnvTypeName.pData, 0 );
+        aCppEnvTypeName.pData, nullptr );
     // anonymous:
     uno_createEnvironment(
         reinterpret_cast< uno_Environment ** >( &aCppEnv_ano ),
-        aCppEnvTypeName.pData, 0 );
+        aCppEnvTypeName.pData, nullptr );
     uno_createEnvironment(
         reinterpret_cast< uno_Environment ** >( &aUnoEnv_ano ),
-        aUnoEnvTypeName.pData, 0 );
+        aUnoEnvTypeName.pData, nullptr );
 
     UnoInterfaceReference unoI;
     Mapping cpp2uno( aCppEnv_official.get(), aUnoEnv_ano.get() );
@@ -1261,14 +1261,14 @@ SAL_DLLPUBLIC_EXPORT void * SAL_CALL component_getFactory(
     const sal_Char * pImplName, void * pServiceManager,
     SAL_UNUSED_PARAMETER void * )
 {
-    void * pRet = 0;
+    void * pRet = nullptr;
 
     if (pServiceManager && rtl_str_compare( pImplName, IMPLNAME ) == 0)
     {
         Reference< XInterface > xFactory(
             createSingleComponentFactory(
                 bridge_test::TestBridgeImpl_create,
-                OUString( IMPLNAME ),
+                IMPLNAME,
                 bridge_test::getSupportedServiceNames() ) );
 
         if (xFactory.is())

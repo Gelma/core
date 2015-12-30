@@ -40,8 +40,8 @@ ScDrawView::ScDrawView( OutputDevice* pOut, ScViewData* pData ) :
     pDev( pOut ),
     pDoc( pData->GetDocument() ),
     nTab( pData->GetTabNo() ),
-    pDropMarker( NULL ),
-    pDropMarkObj( NULL ),
+    pDropMarker( nullptr ),
+    pDropMarkObj( nullptr ),
     bInConstruct( true )
 {
     // #i73602# Use default from the configuration
@@ -197,12 +197,12 @@ void ScDrawView::UpdateIMap( SdrObject* pObj )
 {
     if ( pViewData &&
          pViewData->GetViewShell()->GetViewFrame()->HasChildWindow( ScIMapChildWindowId() ) &&
-         pObj && ( pObj->ISA(SdrGrafObj) || pObj->ISA(SdrOle2Obj) ) )
+         pObj && ( dynamic_cast<const SdrGrafObj*>( pObj) != nullptr || dynamic_cast<const SdrOle2Obj*>( pObj) != nullptr ) )
     {
         Graphic     aGraphic;
         TargetList  aTargetList;
         ScIMapInfo* pIMapInfo = ScDrawLayer::GetIMapInfo( pObj );
-        const ImageMap* pImageMap = NULL;
+        const ImageMap* pImageMap = nullptr;
         if ( pIMapInfo )
             pImageMap = &pIMapInfo->GetImageMap();
 
@@ -210,7 +210,7 @@ void ScDrawView::UpdateIMap( SdrObject* pObj )
         pViewData->GetViewShell()->GetViewFrame()->GetTargetList( aTargetList );
 
         // handle graphics from object
-        if ( pObj->ISA( SdrGrafObj ) )
+        if ( dynamic_cast<const SdrGrafObj*>( pObj) !=  nullptr )
             aGraphic = static_cast<SdrGrafObj*>(pObj)->GetGraphic();
         else
         {

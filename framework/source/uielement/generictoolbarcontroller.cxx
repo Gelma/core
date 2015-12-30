@@ -91,13 +91,6 @@ static OUString getMasterCommand( const OUString& rCommand )
     return aMasterCommand;
 }
 
-struct ExecuteInfo
-{
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatch >     xDispatch;
-    ::com::sun::star::util::URL                                                aTargetURL;
-    ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue >  aArgs;
-};
-
 GenericToolbarController::GenericToolbarController( const Reference< XComponentContext >&    rxContext,
                                                     const Reference< XFrame >&               rFrame,
                                                     ToolBox*                                 pToolbar,
@@ -157,7 +150,7 @@ throw ( RuntimeException, std::exception )
 
     if ( xDispatch.is() && xURLTransformer.is() )
     {
-        com::sun::star::util::URL aTargetURL;
+        css::util::URL aTargetURL;
         Sequence<PropertyValue>   aArgs( 1 );
 
         // Add key modifier to argument list
@@ -172,7 +165,7 @@ throw ( RuntimeException, std::exception )
         pExecuteInfo->xDispatch     = xDispatch;
         pExecuteInfo->aTargetURL    = aTargetURL;
         pExecuteInfo->aArgs         = aArgs;
-        Application::PostUserEvent( LINK(0, GenericToolbarController , ExecuteHdl_Impl), pExecuteInfo );
+        Application::PostUserEvent( LINK(nullptr, GenericToolbarController , ExecuteHdl_Impl), pExecuteInfo );
     }
 }
 
@@ -297,7 +290,7 @@ MenuToolbarController::MenuToolbarController( const Reference< XComponentContext
                                               const Reference< XIndexAccess >& xMenuDesc )
     : GenericToolbarController( rxContext, rFrame, pToolBar, nID, aCommand ),
       m_xMenuDesc( xMenuDesc ),
-      pMenu( NULL ),
+      pMenu( nullptr ),
       m_aModuleIdentifier( aModuleIdentifier )
 {
 }
@@ -313,7 +306,7 @@ MenuToolbarController::~MenuToolbarController()
     if ( pMenu )
     {
         delete pMenu;
-        pMenu = NULL;
+        pMenu = nullptr;
     }
 
 }
@@ -341,14 +334,14 @@ void SAL_CALL MenuToolbarController::click() throw (RuntimeException, std::excep
 }
 
 Reference< XWindow > SAL_CALL
-MenuToolbarController::createPopupWindow() throw (::com::sun::star::uno::RuntimeException, std::exception)
+MenuToolbarController::createPopupWindow() throw (css::uno::RuntimeException, std::exception)
 {
     if ( !pMenu )
     {
         Reference< XDispatchProvider > xDispatch;
         Reference< XURLTransformer > xURLTransformer = URLTransformer::create( m_xContext );
         pMenu = new Toolbarmenu();
-        m_xMenuManager.set( new MenuBarManager( m_xContext, m_xFrame, xURLTransformer, xDispatch, m_aModuleIdentifier, pMenu, true, true ) );
+        m_xMenuManager.set( new MenuBarManager( m_xContext, m_xFrame, xURLTransformer, xDispatch, m_aModuleIdentifier, pMenu, true, true, false ) );
         if (m_xMenuManager.is())
         {
             MenuBarManager& rMgr = dynamic_cast<MenuBarManager&>(*m_xMenuManager.get());
@@ -357,14 +350,14 @@ MenuToolbarController::createPopupWindow() throw (::com::sun::star::uno::Runtime
     }
 
     if ( !pMenu || !m_pToolbar )
-        return NULL;
+        return nullptr;
 
     OSL_ENSURE ( pMenu->GetItemCount(), "Empty PopupMenu!" );
 
     ::Rectangle aRect( m_pToolbar->GetItemRect( m_nID ) );
     pMenu->Execute( m_pToolbar, aRect, PopupMenuFlags::ExecuteDown );
 
-    return NULL;
+    return nullptr;
 }
 } // namespace
 

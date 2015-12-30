@@ -124,8 +124,8 @@ struct PPTExOleObjEntry
     sal_uInt32              nOfsA; ///< offset to the EPP_ExOleObjAtom in mpExEmbed (set at creation)
     sal_uInt32              nOfsB; ///< offset to the EPP_ExOleObjStg
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::awt::XControlModel >    xControlModel;
-    ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >       xShape;
+    css::uno::Reference< css::awt::XControlModel >    xControlModel;
+    css::uno::Reference< css::drawing::XShape >       xShape;
 
     PPTExOleObjEntry(PPTExOleObjEntryType eT, sal_uInt32 nOfs)
         : eType(eT)
@@ -136,12 +136,10 @@ struct PPTExOleObjEntry
 
 struct TextRuleEntry
 {
-    int                 nPageNumber;
     SvMemoryStream*     pOut;
 
-    TextRuleEntry( int nPg ) :
-        nPageNumber( nPg ),
-        pOut ( NULL ){};
+    explicit TextRuleEntry() :
+        pOut ( nullptr ){};
 
     ~TextRuleEntry() { delete pOut; };
 };
@@ -149,7 +147,7 @@ struct TextRuleEntry
 class TextObjBinary : public TextObj
 {
 public:
-    TextObjBinary( ::com::sun::star::uno::Reference< ::com::sun::star::text::XSimpleText > &
+    TextObjBinary( css::uno::Reference< css::text::XSimpleText > &
                    rXText, int nInstance, FontCollection& rFontCollection, PPTExBulletProvider& rBuProv ) : TextObj( rXText, nInstance, rFontCollection, rBuProv ) {}
     void            Write( SvStream* pStrm );
     void            WriteTextSpecInfo( SvStream* pStrm );
@@ -167,14 +165,10 @@ class PPTWriter : public PPTWriterBase, public PPTExBulletProvider
         std::vector<OUString>      maSlideNameList;
         OUString                   maBaseURI;
 
-        ::com::sun::star::uno::Reference< ::com::sun::star::text::XSimpleText >             mXText;             // TextRef of the global text
-        ::com::sun::star::uno::Reference< ::com::sun::star::text::XTextCursor >             mXCursor;
-        ::com::sun::star::uno::Reference< ::com::sun::star::text::XTextRange >              mXCursorText;       // TextRef of part of the cursor
-        ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >           mXCursorPropSet;    // properties of the part
-        ::com::sun::star::uno::Reference< ::com::sun::star::text::XTextField >              mXTextField;
+        css::uno::Reference< css::text::XSimpleText >             mXText;             // TextRef of the global text
         sal_uInt32          mnTextStyle;
 
-        bool            mbFontIndependentLineSpacing;
+        bool                mbFontIndependentLineSpacing;
         sal_uInt32          mnTextSize;
 
         tools::SvRef<SotStorage>        mrStg;
@@ -191,7 +185,6 @@ class PPTWriter : public PPTWriterBase, public PPTExBulletProvider
 
         sal_uInt32          mnDrawings;         // number of Slides +  masterpages + notes +  handout
         sal_uInt32          mnPagesWritten;
-        sal_uInt32          mnUniqueSlideIdentifier;
         sal_uInt32          mnTxId;             // Identifier determined by the HOST (PP) ????
         sal_uInt32          mnDiaMode;          // 0 -> manual
                                                 // 1 -> semi-automatic
@@ -206,14 +199,14 @@ class PPTWriter : public PPTWriterBase, public PPTExBulletProvider
 
         void                ImplWriteExtParaHeader( SvMemoryStream& rSt, sal_uInt32 nRef, sal_uInt32 nInstance, sal_uInt32 nSlideId );
 
-        sal_uInt32          ImplProgBinaryTag( SvStream* pOutStrm = NULL );
-        sal_uInt32          ImplProgBinaryTagContainer( SvStream* pOutStrm = NULL, SvMemoryStream* pBinTag = NULL );
-        sal_uInt32          ImplProgTagContainer( SvStream* pOutStrm = NULL, SvMemoryStream* pBinTag = NULL );
-        static sal_uInt32   ImplOutlineViewInfoContainer( SvStream* pOutStrm = NULL );
-        static sal_uInt32   ImplSlideViewInfoContainer( sal_uInt32 nInstance, SvStream* pOutStrm = NULL );
-        sal_uInt32          ImplVBAInfoContainer( SvStream* pOutStrm = NULL );
-        sal_uInt32          ImplDocumentListContainer( SvStream* pOutStrm = NULL );
-        sal_uInt32          ImplMasterSlideListContainer( SvStream* pOutStrm = NULL );
+        sal_uInt32          ImplProgBinaryTag( SvStream* pOutStrm = nullptr );
+        sal_uInt32          ImplProgBinaryTagContainer( SvStream* pOutStrm = nullptr, SvMemoryStream* pBinTag = nullptr );
+        sal_uInt32          ImplProgTagContainer( SvStream* pOutStrm = nullptr, SvMemoryStream* pBinTag = nullptr );
+        static sal_uInt32   ImplOutlineViewInfoContainer( SvStream* pOutStrm = nullptr );
+        static sal_uInt32   ImplSlideViewInfoContainer( sal_uInt32 nInstance, SvStream* pOutStrm = nullptr );
+        sal_uInt32          ImplVBAInfoContainer( SvStream* pOutStrm = nullptr );
+        sal_uInt32          ImplDocumentListContainer( SvStream* pOutStrm = nullptr );
+        sal_uInt32          ImplMasterSlideListContainer( SvStream* pOutStrm = nullptr );
 
     public:
         static void         WriteCString( SvStream&, const OUString&, sal_uInt32 nInstance = 0 );
@@ -223,14 +216,14 @@ class PPTWriter : public PPTWriterBase, public PPTExBulletProvider
         bool                ImplCreateDocumentSummaryInformation();
         bool                ImplCreateCurrentUserStream();
         static void         ImplCreateHeaderFooterStrings( SvStream& rOut,
-                                ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& rXPagePropSet );
-        void                ImplCreateHeaderFooters( ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& rXPagePropSet );
-        virtual bool        ImplCreateDocument() SAL_OVERRIDE;
+                                css::uno::Reference< css::beans::XPropertySet >& rXPagePropSet );
+        void                ImplCreateHeaderFooters( css::uno::Reference< css::beans::XPropertySet >& rXPagePropSet );
+        virtual bool        ImplCreateDocument() override;
         bool                ImplCreateHyperBlob( SvMemoryStream& rStream );
         sal_uInt32          ImplInsertBookmarkURL( const OUString& rBookmark, const sal_uInt32 nType,
                                 const OUString& rStringVer0, const OUString& rStringVer1, const OUString& rStringVer2, const OUString& rStringVer3 );
-        virtual bool        ImplCreateMainNotes() SAL_OVERRIDE;
-        void                ImplWriteBackground( ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > & rXBackgroundPropSet );
+        virtual bool        ImplCreateMainNotes() override;
+        void                ImplWriteBackground( css::uno::Reference< css::beans::XPropertySet > & rXBackgroundPropSet );
         void                ImplWriteVBA();
         void                ImplWriteOLE();
         bool                ImplWriteAtomEnding();
@@ -239,15 +232,15 @@ class PPTWriter : public PPTWriterBase, public PPTExBulletProvider
         bool                ImplGetText();
         bool                ImplCreatePresentationPlaceholder( const bool bMaster, const PageType PageType,
                                 const sal_uInt32 StyleInstance, const sal_uInt8 PlaceHolderId );
-        static bool         ImplGetEffect( const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > &,
-                                ::com::sun::star::presentation::AnimationEffect& eEffect,
-                                ::com::sun::star::presentation::AnimationEffect& eTextEffect,
+        static bool         ImplGetEffect( const css::uno::Reference< css::beans::XPropertySet > &,
+                                css::presentation::AnimationEffect& eEffect,
+                                css::presentation::AnimationEffect& eTextEffect,
                                 bool& bHasSound );
         void                ImplWriteObjectEffect( SvStream& rSt,
-                                ::com::sun::star::presentation::AnimationEffect eEffect,
-                                ::com::sun::star::presentation::AnimationEffect eTextEffect,
+                                css::presentation::AnimationEffect eEffect,
+                                css::presentation::AnimationEffect eTextEffect,
                                 sal_uInt16 nOrder );
-        void                ImplWriteClickAction( SvStream& rSt, ::com::sun::star::presentation::ClickAction eAction, bool bMediaClickAction );
+        void                ImplWriteClickAction( SvStream& rSt, css::presentation::ClickAction eAction, bool bMediaClickAction );
         void                ImplWriteParagraphs( SvStream& rOutStrm, TextObj& rTextObj );
         void                ImplWritePortions( SvStream& rOutStrm, TextObj& rTextObj );
         void                ImplWriteTextStyleAtom( SvStream& rOut, int nTextInstance, sal_uInt32 nAtomInstance,
@@ -262,28 +255,28 @@ class PPTWriter : public PPTWriterBase, public PPTExBulletProvider
                                            bool bMaster,
                                            int nPageNumber = 0 );
         bool                ImplCreateCellBorder( const CellBorder* pCellBorder, sal_Int32 nX1, sal_Int32 nY1, sal_Int32 nX2, sal_Int32 nY2 );
-        void                ImplCreateTable( com::sun::star::uno::Reference< com::sun::star::drawing::XShape >& rXShape, EscherSolverContainer& aSolverContainer,
+        void                ImplCreateTable( css::uno::Reference< css::drawing::XShape >& rXShape, EscherSolverContainer& aSolverContainer,
                                 EscherPropertyContainer& aPropOpt );
 
         bool                ImplCloseDocument();        // we write the font, hyper and sound list
 
         virtual void        ImplWriteSlide( sal_uInt32 nPageNum, sal_uInt32 nMasterID, sal_uInt16 nMode,
-                                            bool bHasBackground, ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > aXBackgroundPropSet ) SAL_OVERRIDE;
-        virtual void        ImplWriteNotes( sal_uInt32 nPageNum ) SAL_OVERRIDE;
-        virtual void        ImplWriteSlideMaster( sal_uInt32 nPageNum, ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > aXBackgroundPropSet ) SAL_OVERRIDE;
+                                            bool bHasBackground, css::uno::Reference< css::beans::XPropertySet > aXBackgroundPropSet ) override;
+        virtual void        ImplWriteNotes( sal_uInt32 nPageNum ) override;
+        virtual void        ImplWriteSlideMaster( sal_uInt32 nPageNum, css::uno::Reference< css::beans::XPropertySet > aXBackgroundPropSet ) override;
 
     public:
                                 PPTWriter( tools::SvRef<SotStorage>& rSvStorage,
-                                            ::com::sun::star::uno::Reference< ::com::sun::star::frame::XModel > & rModel,
-                                            ::com::sun::star::uno::Reference< ::com::sun::star::task::XStatusIndicator > & rStatInd,
-                                                SvMemoryStream* pVBA, sal_uInt32 nCnvrtFlags );
+                                            css::uno::Reference< css::frame::XModel > & rModel,
+                                            css::uno::Reference< css::task::XStatusIndicator > & rStatInd,
+                                            SvMemoryStream* pVBA, sal_uInt32 nCnvrtFlags );
 
                                 virtual ~PPTWriter();
 
         bool                IsValid() const { return mbStatus; };
 
-        virtual void        exportPPTPre( const std::vector< com::sun::star::beans::PropertyValue >& ) SAL_OVERRIDE;
-        virtual void        exportPPTPost( ) SAL_OVERRIDE;
+        virtual void        exportPPTPre( const std::vector< css::beans::PropertyValue >& ) override;
+        virtual void        exportPPTPost( ) override;
 };
 
 #endif

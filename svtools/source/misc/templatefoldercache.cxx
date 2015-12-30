@@ -468,7 +468,7 @@ namespace svt
 
 
     TemplateFolderCacheImpl::TemplateFolderCacheImpl( bool _bAutoStoreState )
-        :m_pCacheStream         ( NULL )
+        :m_pCacheStream         ( nullptr )
         ,m_bNeedsUpdate         ( true )
         ,m_bKnowState           ( false )
         ,m_bValidCurrentState   ( false )
@@ -563,12 +563,12 @@ namespace svt
     {
         INetURLObject aParser;
         aParser.SetSmartProtocol( INetProtocol::File );
-        aParser.SetURL( _rPath, INetURLObject::WAS_ENCODED );
+        aParser.SetURL( _rPath );
         if ( INetProtocol::NotValid == aParser.GetProtocol() )
         {
             OUString sURL;
             osl::FileBase::getFileURLFromSystemPath( _rPath, sURL );
-            aParser.SetURL( sURL, INetURLObject::WAS_ENCODED );
+            aParser.SetURL( sURL );
         }
         return aParser.GetMainURL( INetURLObject::DECODE_TO_IURI );
     }
@@ -607,7 +607,7 @@ namespace svt
                 SAL_WARN( "svtools.misc", "TemplateFolderCacheImpl::implReadFolder: caught a CommandAbortedException!" );
                 return false;
             }
-            catch( ::com::sun::star::uno::Exception& )
+            catch( css::uno::Exception& )
             {
             }
 
@@ -773,7 +773,7 @@ namespace svt
         if ( m_pCacheStream )
             m_pCacheStream->SetStreamCharSet( RTL_TEXTENCODING_UTF8 );
 
-        return NULL != m_pCacheStream;
+        return nullptr != m_pCacheStream;
     }
 
 
@@ -832,7 +832,6 @@ namespace svt
 
     TemplateFolderCache::~TemplateFolderCache( )
     {
-        DELETEZ( m_pImpl );
     }
 
 

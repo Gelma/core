@@ -97,20 +97,17 @@ class SW_DLLPUBLIC SwModule: public SfxModule, public SfxListener, public utl::C
     std::vector<OUString>* m_pAuthorNames;
 
     // DictionaryList listener to trigger spellchecking or hyphenation
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::linguistic2::XLinguServiceEventListener > m_xLinguServiceEventListener;
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::scanner::XScannerManager2 >    m_xScannerManager;
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::linguistic2::XLanguageGuessing >  m_xLanguageGuesser;
+    css::uno::Reference< css::linguistic2::XLinguServiceEventListener > m_xLinguServiceEventListener;
+    css::uno::Reference< css::scanner::XScannerManager2 >    m_xScannerManager;
+    css::uno::Reference< css::linguistic2::XLanguageGuessing >  m_xLanguageGuesser;
 
     bool                m_bAuthorInitialised : 1;
     bool                m_bEmbeddedLoadSave : 1;
 
     // Catch hint for DocInfo.
-    virtual void        Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+    virtual void        Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
-    virtual void        ConfigurationChanged( utl::ConfigurationBroadcaster*, sal_uInt32 ) SAL_OVERRIDE;
+    virtual void        ConfigurationChanged( utl::ConfigurationBroadcaster*, sal_uInt32 ) override;
 
 protected:
     // Envelopes, labels.
@@ -121,7 +118,6 @@ public:
     // public Data - used for internal Clipboard / Drag & Drop / XSelection
     SwTransferable  *m_pDragDrop, *m_pXSelection;
 
-    TYPEINFO_OVERRIDE();
     SFX_DECL_INTERFACE(SW_INTERFACE_MODULE)
 
 private:
@@ -217,9 +213,9 @@ public:
     SwFieldUpdateFlags GetFieldUpdateFlags( bool bWeb ) const;
 
     // Virtual methods for options dialog.
-    virtual SfxItemSet*  CreateItemSet( sal_uInt16 nId ) SAL_OVERRIDE;
-    virtual void         ApplyItemSet( sal_uInt16 nId, const SfxItemSet& rSet ) SAL_OVERRIDE;
-    virtual VclPtr<SfxTabPage> CreateTabPage( sal_uInt16 nId, vcl::Window* pParent, const SfxItemSet& rSet ) SAL_OVERRIDE;
+    virtual SfxItemSet*  CreateItemSet( sal_uInt16 nId ) override;
+    virtual void         ApplyItemSet( sal_uInt16 nId, const SfxItemSet& rSet ) override;
+    virtual VclPtr<SfxTabPage> CreateTabPage( sal_uInt16 nId, vcl::Window* pParent, const SfxItemSet& rSet ) override;
 
     // Pool is created here and set at SfxShell.
     void    InitAttrPool();
@@ -230,22 +226,18 @@ public:
     static void  CheckSpellChanges( bool bOnlineSpelling,
                     bool bIsSpellWrongAgain, bool bIsSpellAllAgain, bool bSmartTags );
 
-    inline ::com::sun::star::uno::Reference<
-        ::com::sun::star::linguistic2::XLinguServiceEventListener >
+    inline css::uno::Reference< css::linguistic2::XLinguServiceEventListener >
             GetLngSvcEvtListener();
     void    CreateLngSvcEvtListener();
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::scanner::XScannerManager2 >
+    css::uno::Reference< css::scanner::XScannerManager2 >
             GetScannerManager();
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::linguistic2::XLanguageGuessing >
+    css::uno::Reference< css::linguistic2::XLanguageGuessing >
             GetLanguageGuesser();
 };
 
-inline ::com::sun::star::uno::Reference<
-    ::com::sun::star::linguistic2::XLinguServiceEventListener >
+inline css::uno::Reference< css::linguistic2::XLinguServiceEventListener >
         SwModule::GetLngSvcEvtListener()
 {
     return m_xLinguServiceEventListener;

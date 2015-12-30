@@ -34,22 +34,22 @@ public:
                         virtual ~SfxRecordingFloatWrapper_Impl();
 
                         SFX_DECL_CHILDWINDOW(SfxRecordingFloatWrapper_Impl);
-    virtual bool        QueryClose() SAL_OVERRIDE;
+    virtual bool        QueryClose() override;
 };
 
 class SfxRecordingFloat_Impl : public SfxFloatingWindow
 {
     VclPtr<ToolBox>                m_pTbx;
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XToolbarController > xStopRecTbxCtrl;
+    css::uno::Reference< css::frame::XToolbarController > xStopRecTbxCtrl;
 public:
                         SfxRecordingFloat_Impl( SfxBindings* pBindings ,
                             SfxChildWindow* pChildWin ,
                             vcl::Window* pParent );
     virtual             ~SfxRecordingFloat_Impl();
-    virtual void        dispose() SAL_OVERRIDE;
-    virtual bool        Close() SAL_OVERRIDE;
-    virtual void        FillInfo( SfxChildWinInfo& rInfo ) const SAL_OVERRIDE;
-    virtual void        StateChanged( StateChangedType nStateChange ) SAL_OVERRIDE;
+    virtual void        dispose() override;
+    virtual bool        Close() override;
+    virtual void        FillInfo( SfxChildWinInfo& rInfo ) const override;
+    virtual void        StateChanged( StateChangedType nStateChange ) override;
 
     DECL_LINK_TYPED( Select, ToolBox *, void );
 };

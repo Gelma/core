@@ -232,7 +232,7 @@ class SvtCompatibilityOptions_Impl : public ConfigItem
             @param      "lPropertyNames" is the list of properties which should be updated.
         *//*-*****************************************************************************************************/
 
-        virtual void Notify( const Sequence< OUString >& lPropertyNames ) SAL_OVERRIDE;
+        virtual void Notify( const Sequence< OUString >& lPropertyNames ) override;
 
         //  public interface
 
@@ -274,7 +274,7 @@ class SvtCompatibilityOptions_Impl : public ConfigItem
 
     private:
 
-        virtual void ImplCommit() SAL_OVERRIDE;
+        virtual void ImplCommit() override;
 
         /*-****************************************************************************************************
             @short      return list of key names of our configuration management which represent one module tree
@@ -351,7 +351,7 @@ SvtCompatibilityOptions_Impl::SvtCompatibilityOptions_Impl()
         if ( !bDefaultFound && aItem.sName == COMPATIBILITY_DEFAULT_NAME )
         {
             SvtSysLocale aSysLocale;
-            com::sun::star::lang::Locale aLocale = aSysLocale.GetLanguageTag().getLocale();
+            css::lang::Locale aLocale = aSysLocale.GetLanguageTag().getLocale();
             if ( aLocale.Language == "zh" || aLocale.Language == "ja" || aLocale.Language == "ko" )
                 aItem.bExpandWordSpace = false;
 
@@ -575,7 +575,7 @@ void SvtCompatibilityOptions_Impl::impl_ExpandPropertyNames(
 //  DON'T DO IT IN YOUR HEADER!
 //  see definition for further information
 
-SvtCompatibilityOptions_Impl*   SvtCompatibilityOptions::m_pDataContainer = NULL;
+SvtCompatibilityOptions_Impl*   SvtCompatibilityOptions::m_pDataContainer = nullptr;
 sal_Int32                       SvtCompatibilityOptions::m_nRefCount = 0;
 
 //  constructor
@@ -587,7 +587,7 @@ SvtCompatibilityOptions::SvtCompatibilityOptions()
     // Increase our refcount ...
     ++m_nRefCount;
     // ... and initialize our data container only if it not already exist!
-    if( m_pDataContainer == NULL )
+    if( m_pDataContainer == nullptr )
     {
         m_pDataContainer = new SvtCompatibilityOptions_Impl;
         ItemHolder1::holdConfigItem(E_COMPATIBILITY);
@@ -607,7 +607,7 @@ SvtCompatibilityOptions::~SvtCompatibilityOptions()
     if( m_nRefCount <= 0 )
     {
         delete m_pDataContainer;
-        m_pDataContainer = NULL;
+        m_pDataContainer = nullptr;
     }
 }
 

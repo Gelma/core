@@ -34,7 +34,7 @@ namespace svgio
             maCy(0),
             maRx(0),
             maRy(0),
-            mpaTransform(0)
+            mpaTransform(nullptr)
         {
         }
 
@@ -45,7 +45,7 @@ namespace svgio
 
         const SvgStyleAttributes* SvgEllipseNode::getSvgStyleAttributes() const
         {
-            return checkForCssStyle(OUString("ellipse"), maSvgStyleAttributes);
+            return checkForCssStyle("ellipse", maSvgStyleAttributes);
         }
 
         void SvgEllipseNode::parseAttribute(const OUString& rTokenName, SVGToken aSVGToken, const OUString& aContent)
@@ -127,7 +127,7 @@ namespace svgio
             }
         }
 
-        void SvgEllipseNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DSequence& rTarget, bool /*bReferenced*/) const
+        void SvgEllipseNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DContainer& rTarget, bool /*bReferenced*/) const
         {
             const SvgStyleAttributes* pStyle = getSvgStyleAttributes();
 
@@ -145,11 +145,11 @@ namespace svgio
                                 getCy().isSet() ? getCy().solve(*this, ycoordinate) : 0.0),
                             fRx, fRy));
 
-                    drawinglayer::primitive2d::Primitive2DSequence aNewTarget;
+                    drawinglayer::primitive2d::Primitive2DContainer aNewTarget;
 
-                    pStyle->add_path(basegfx::B2DPolyPolygon(aPath), aNewTarget, 0);
+                    pStyle->add_path(basegfx::B2DPolyPolygon(aPath), aNewTarget, nullptr);
 
-                    if(aNewTarget.hasElements())
+                    if(!aNewTarget.empty())
                     {
                         pStyle->add_postProcess(rTarget, aNewTarget, getTransform());
                     }

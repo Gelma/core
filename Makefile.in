@@ -17,7 +17,6 @@ build_goal:=$(if $(filter build check,$(MAKECMDGOALS)),all)\
  $(if $(filter check,$(MAKECMDGOALS)),subsequentcheck)\
  $(filter all build-l10n-only build-non-l10n-only debugrun help showmodules translations $(gb_Top_MODULE_CHECK_TARGETS) check packageinfo,$(MAKECMDGOALS))
 
-SHELL := @SHELL_BASH@
 SRCDIR := @SRC_ROOT@
 BUILDDIR := @BUILDDIR@
 GIT_BUILD := $(if $(wildcard $(SRCDIR)/.git),T)
@@ -43,7 +42,6 @@ $(BUILDDIR)/config_host.mk : $(wildcard \
 		$(SRCDIR)/instsetoo_native/util/openoffice.lst.in \
 		$(SRCDIR)/configure.ac \
 		$(SRCDIR)/config_host/*.h.in \
-		$(SRCDIR)/android/source/AndroidManifest.xml.in \
 		$(BUILDDIR)/autogen.input \
 		$(BUILDDIR)/autogen.lastrun \
 		$(BUILDDIR)/autogen.sh \
@@ -172,7 +170,6 @@ distclean : clean compilerplugins-clean
 	rm -fr \
         $(BUILDDIR)/Makefile \
         $(BUILDDIR)/aclocal.m4 \
-        $(BUILDDIR)/android/source/AndroidManifest.xml \
         $(BUILDDIR)/autom4te.cache \
         $(BUILDDIR)/config.log \
         $(BUILDDIR)/config.Build.log \
@@ -371,7 +368,8 @@ $(foreach ide,\
 	vs2013 \
 	vim \
 	xcode \
-	qtcreator,\
+	qtcreator \
+        eclipsecdt,\
 $(eval $(call gb_Top_GbuildToIdeIntegration,$(ide))))
 
 endif # MAKE_RESTARTS

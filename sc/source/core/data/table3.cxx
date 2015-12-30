@@ -211,8 +211,6 @@ short Compare( const OUString &sInput1, const OUString &sInput2,
 
 }
 
-// STATIC DATA -----------------------------------------------------------
-
 struct ScSortInfo
 {
     ScRefCellValue maCell;
@@ -220,8 +218,6 @@ struct ScSortInfo
     DECL_FIXEDMEMPOOL_NEWDEL( ScSortInfo );
 };
 IMPL_FIXEDMEMPOOL_NEWDEL( ScSortInfo )
-
-// END OF STATIC DATA -----------------------------------------------------
 
 class ScSortInfoArray : boost::noncopyable
 {
@@ -235,7 +231,7 @@ public:
         const ScPostIt* mpNote;
         const ScPatternAttr* mpPattern;
 
-        Cell() : mpAttr(NULL), mpBroadcaster(NULL), mpNote(NULL), mpPattern(NULL) {}
+        Cell() : mpAttr(nullptr), mpBroadcaster(nullptr), mpNote(nullptr), mpPattern(nullptr) {}
     };
 
     struct Row
@@ -245,7 +241,7 @@ public:
         bool mbHidden:1;
         bool mbFiltered:1;
 
-        Row( size_t nColSize ) : maCells(nColSize, Cell()), mbHidden(false), mbFiltered(false) {}
+        explicit Row( size_t nColSize ) : maCells(nColSize, Cell()), mbHidden(false), mbFiltered(false) {}
     };
 
     typedef std::vector<Row*> RowsType;
@@ -265,7 +261,7 @@ private:
 
 public:
     ScSortInfoArray( sal_uInt16 nSorts, SCCOLROW nInd1, SCCOLROW nInd2 ) :
-        pppInfo(NULL),
+        pppInfo(nullptr),
         nCount( nInd2 - nInd1 + 1 ), nStart( nInd1 ),
         mnLastIndex(nInd2),
         nUsedSorts(nSorts),
@@ -464,7 +460,7 @@ void initDataRows(
 
 ScSortInfoArray* ScTable::CreateSortInfoArray( const sc::ReorderParam& rParam )
 {
-    ScSortInfoArray* pArray = NULL;
+    ScSortInfoArray* pArray = nullptr;
 
     if (rParam.mbByRow)
     {
@@ -557,12 +553,12 @@ struct SortedColumn : boost::noncopyable
     PatRangeType maPatterns;
     PatRangeType::const_iterator miPatternPos;
 
-    SortedColumn( size_t nTopEmptyRows ) :
+    explicit SortedColumn( size_t nTopEmptyRows ) :
         maCells(nTopEmptyRows),
         maCellTextAttrs(nTopEmptyRows),
         maBroadcasters(nTopEmptyRows),
         maCellNotes(nTopEmptyRows),
-        maPatterns(0, MAXROWCOUNT, NULL),
+        maPatterns(0, MAXROWCOUNT, nullptr),
         miPatternPos(maPatterns.begin()) {}
 
     void setPattern( SCROW nRow, const ScPatternAttr* pPat )
@@ -648,7 +644,7 @@ void ScTable::DestroySortCollator()
     {
         if ( !IsSortCollatorGlobal() )
             delete pSortCollator;
-        pSortCollator = NULL;
+        pSortCollator = nullptr;
     }
 }
 
@@ -697,7 +693,7 @@ class FormulaGroupPosCollector : std::unary_function<SvtListener*, void>
     sc::RefQueryFormulaGroup& mrQuery;
 
 public:
-    FormulaGroupPosCollector( sc::RefQueryFormulaGroup& rQuery ) : mrQuery(rQuery) {}
+    explicit FormulaGroupPosCollector( sc::RefQueryFormulaGroup& rQuery ) : mrQuery(rQuery) {}
 
     void operator() ( SvtListener* p )
     {
@@ -845,15 +841,15 @@ class FormulaCellCollectAction : public sc::ColumnSpanSet::ColumnAction
     ScColumn* mpCol;
 
 public:
-    FormulaCellCollectAction( std::vector<ScFormulaCell*>& rCells ) :
-        mrCells(rCells), mpCol(NULL) {}
+    explicit FormulaCellCollectAction( std::vector<ScFormulaCell*>& rCells ) :
+        mrCells(rCells), mpCol(nullptr) {}
 
-    virtual void startColumn( ScColumn* pCol ) SAL_OVERRIDE
+    virtual void startColumn( ScColumn* pCol ) override
     {
         mpCol = pCol;
     }
 
-    virtual void execute( SCROW nRow1, SCROW nRow2, bool bVal ) SAL_OVERRIDE
+    virtual void execute( SCROW nRow1, SCROW nRow2, bool bVal ) override
     {
         assert(mpCol);
 
@@ -873,18 +869,18 @@ class ListenerStartAction : public sc::ColumnSpanSet::ColumnAction
     sc::EndListeningContext maEndCxt;
 
 public:
-    ListenerStartAction( ScDocument& rDoc ) :
-        mpCol(0),
+    explicit ListenerStartAction( ScDocument& rDoc ) :
+        mpCol(nullptr),
         mpPosSet(new sc::ColumnBlockPositionSet(rDoc)),
         maStartCxt(rDoc, mpPosSet),
         maEndCxt(rDoc, mpPosSet) {}
 
-    virtual void startColumn( ScColumn* pCol ) SAL_OVERRIDE
+    virtual void startColumn( ScColumn* pCol ) override
     {
         mpCol = pCol;
     }
 
-    virtual void execute( SCROW nRow1, SCROW nRow2, bool bVal ) SAL_OVERRIDE
+    virtual void execute( SCROW nRow1, SCROW nRow2, bool bVal ) override
     {
         assert(mpCol);
 
@@ -1523,7 +1519,7 @@ short ScTable::CompareCell(
                 if (!bUserDef)
                 {
                     if ( bNaturalSort )
-                        nRes = naturalsort::Compare( aStr1, aStr2, bCaseSens, NULL, pSortCollator );
+                        nRes = naturalsort::Compare( aStr1, aStr2, bCaseSens, nullptr, pSortCollator );
                     else
                         nRes = static_cast<short>( pSortCollator->compareString( aStr1, aStr2 ) );
                 }
@@ -2497,10 +2493,10 @@ public:
                     OUString aQueryStr = rItem.maString.getString();
                     OUString aCell( mpTransliteration->transliterate(
                         aCellStr.getString(), ScGlobal::eLnge, 0, aCellStr.getLength(),
-                        NULL ) );
+                        nullptr ) );
                     OUString aQuer( mpTransliteration->transliterate(
                         aQueryStr, ScGlobal::eLnge, 0, aQueryStr.getLength(),
-                        NULL ) );
+                        nullptr ) );
                     sal_Int32 nIndex = (rEntry.eOp == SC_ENDS_WITH || rEntry.eOp == SC_DOES_NOT_END_WITH) ?
                         (aCell.getLength() - aQuer.getLength()) : 0;
                     sal_Int32 nStrPos = ((nIndex < 0) ? -1 : aCell.indexOf( aQuer, nIndex ));
@@ -2620,17 +2616,14 @@ bool ScTable::ValidQuery(
     long    nPos = -1;
     QueryEvaluator aEval(*pDocument, *this, rParam, pbTestEqualCondition);
     ScQueryParam::const_iterator it, itBeg = rParam.begin(), itEnd = rParam.end();
-    for (it = itBeg; it != itEnd && it->bDoQuery; ++it)
+    for (it = itBeg; it != itEnd && (*it)->bDoQuery; ++it)
     {
-        const ScQueryEntry& rEntry = *it;
+        const ScQueryEntry& rEntry = **it;
         SCCOL nCol = static_cast<SCCOL>(rEntry.nField);
 
-        // we can only handle one single direct query
-        ScRefCellValue aCell;
-        if (pCell && it == itBeg)
-            aCell = *pCell;
-        else
-            aCell = GetCellValue(nCol, nRow);
+        // We can only handle one single direct query passed as a known pCell,
+        // subsequent queries have to obtain the cell.
+        ScRefCellValue aCell( (pCell && it == itBeg) ? *pCell : GetCellValue(nCol, nRow));
 
         std::pair<bool,bool> aRes(false, false);
 
@@ -2833,7 +2826,7 @@ class PrepareQueryItem : public std::unary_function<ScQueryEntry::Item, void>
 {
     const ScDocument& mrDoc;
 public:
-    PrepareQueryItem(const ScDocument& rDoc) : mrDoc(rDoc) {}
+    explicit PrepareQueryItem(const ScDocument& rDoc) : mrDoc(rDoc) {}
 
     void operator() (ScQueryEntry::Item& rItem)
     {
@@ -3080,7 +3073,7 @@ bool ScTable::CreateExcelQuery(SCCOL nCol1, SCROW nRow1, SCCOL nCol2, SCROW nRow
                     if (nIndex < nNewEntries)
                     {
                         rQueryParam.GetEntry(nIndex).nField = pFields[nCol - nCol1];
-                        rQueryParam.FillInExcelSyntax(rPool, aCellStr, nIndex, NULL);
+                        rQueryParam.FillInExcelSyntax(rPool, aCellStr, nIndex, nullptr);
                         nIndex++;
                         if (nIndex < nNewEntries)
                             rQueryParam.GetEntry(nIndex).eConnect = SC_AND;

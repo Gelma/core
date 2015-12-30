@@ -41,24 +41,24 @@ public:
 
     // Create a children element context. By default, the import's
     // CreateContext method is called to create a new default context.
-    virtual XMLTransformerContext *CreateChildContext( sal_uInt16 nPrefix,
+    virtual rtl::Reference<XMLTransformerContext> CreateChildContext( sal_uInt16 nPrefix,
                                    const OUString& rLocalName,
                                    const OUString& rQName,
-                                   const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+                                   const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
 
     // StartElement is called after a context has been constructed and
     // before a elements context is parsed. It may be used for actions that
     // require virtual methods. The default is to do nothing.
-    virtual void StartElement( const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+    virtual void StartElement( const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
 
     // EndElement is called before a context will be destructed, but
     // after a elements context has been parsed. It may be used for actions
     // that require virtual methods. The default is to do nothing.
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
     // This method is called for all characters that are contained in the
     // current element. The default is to ignore them.
-    virtual void Characters( const OUString& rChars ) SAL_OVERRIDE;
+    virtual void Characters( const OUString& rChars ) override;
 };
 
 XMLParagraphTransformerContext::XMLParagraphTransformerContext(
@@ -72,18 +72,14 @@ XMLParagraphTransformerContext::~XMLParagraphTransformerContext()
 {
 }
 
-XMLTransformerContext *XMLParagraphTransformerContext::CreateChildContext(
+rtl::Reference<XMLTransformerContext> XMLParagraphTransformerContext::CreateChildContext(
         sal_uInt16 /*nPrefix*/,
         const OUString& /*rLocalName*/,
         const OUString& rQName,
         const Reference< XAttributeList >& )
 {
-    XMLTransformerContext *pContext = 0;
-
-    pContext = new XMLIgnoreTransformerContext( GetTransformer(),
+    return new XMLIgnoreTransformerContext( GetTransformer(),
                                                 rQName, true );
-
-    return pContext;
 }
 
 void XMLParagraphTransformerContext::StartElement( const Reference< XAttributeList >& rAttrList )
@@ -111,7 +107,7 @@ public:
         ::xmloff::token::XMLTokenEnum eToken );
     virtual ~XMLPersTextContentRNGTransformTContext();
 
-    virtual void Characters( const OUString& rChars ) SAL_OVERRIDE;
+    virtual void Characters( const OUString& rChars ) override;
 };
 
 XMLPersTextContentRNGTransformTContext::XMLPersTextContentRNGTransformTContext(
@@ -200,13 +196,13 @@ void XMLMergeElemTransformerContext::StartElement(
     }
 }
 
-XMLTransformerContext *XMLMergeElemTransformerContext::CreateChildContext(
+rtl::Reference<XMLTransformerContext> XMLMergeElemTransformerContext::CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
         const OUString& rQName,
         const Reference< XAttributeList >& rAttrList )
 {
-    XMLTransformerContext *pContext = 0;
+    rtl::Reference<XMLTransformerContext> pContext;
 
     if( !m_bStartElementExported )
     {
@@ -225,36 +221,33 @@ XMLTransformerContext *XMLMergeElemTransformerContext::CreateChildContext(
                 {
                 case XML_ETACTION_MOVE_TO_ATTR_RNG2ISO_DATETIME:
                     {
-                        XMLPersTextContentTContext *pTC =
+                        rtl::Reference<XMLPersTextContentTContext> pTC(
                             new XMLPersTextContentRNGTransformTContext(
                                     GetTransformer(), rQName,
                                     (*aIter).second.GetQNamePrefixFromParam1(),
-                                    (*aIter).second.GetQNameTokenFromParam1() );
-                        XMLPersTextContentTContextVector::value_type aVal(pTC);
-                        m_aChildContexts.push_back( aVal );
-                        pContext = pTC;
+                                    (*aIter).second.GetQNameTokenFromParam1() ));
+                        m_aChildContexts.push_back(pTC);
+                        pContext.set(pTC.get());
                     }
                     break;
                 case XML_ETACTION_MOVE_TO_ATTR:
                     {
-                        XMLPersTextContentTContext *pTC =
+                        rtl::Reference<XMLPersTextContentTContext> pTC(
                             new XMLPersTextContentTContext(
                                     GetTransformer(), rQName,
                                     (*aIter).second.GetQNamePrefixFromParam1(),
-                                    (*aIter).second.GetQNameTokenFromParam1() );
-                        XMLPersTextContentTContextVector::value_type aVal(pTC);
-                        m_aChildContexts.push_back( aVal );
-                        pContext = pTC;
+                                    (*aIter).second.GetQNameTokenFromParam1() ));
+                        m_aChildContexts.push_back(pTC);
+                        pContext.set(pTC.get());
                     }
                     break;
                 case XML_ETACTION_EXTRACT_CHARACTERS:
                     {
                         if( !m_bStartElementExported )
                             ExportStartElement();
-                        XMLParagraphTransformerContext* pPTC =
+                        pContext.set(
                             new XMLParagraphTransformerContext( GetTransformer(),
-                            rQName);
-                        pContext = pPTC;
+                            rQName));
                     }
                     break;
                 default:
@@ -283,10 +276,9 @@ XMLTransformerContext *XMLMergeElemTransformerContext::CreateChildContext(
                     {
                         if( !m_bStartElementExported )
                             ExportStartElement();
-                        XMLParagraphTransformerContext* pPTC =
+                        pContext.set(
                             new XMLParagraphTransformerContext( GetTransformer(),
-                            rQName);
-                        pContext = pPTC;
+                            rQName));
                     }
                     break;
                 default:
@@ -298,7 +290,7 @@ XMLTransformerContext *XMLMergeElemTransformerContext::CreateChildContext(
     }
 
     // default is copying
-    if( !pContext )
+    if( !pContext.is() )
     {
         if( !m_bStartElementExported )
             ExportStartElement();

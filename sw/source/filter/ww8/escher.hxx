@@ -31,7 +31,7 @@ class SwFormatVertOrient;
 class WinwordAnchoring : public EscherExClientRecord_Base
 {
 public:
-    void WriteData(EscherEx& rEx) const SAL_OVERRIDE;
+    void WriteData(EscherEx& rEx) const override;
     void SetAnchoring(const SwFrameFormat& rFormat);
 
     /** method to perform conversion of positioning attributes with the help
@@ -81,7 +81,7 @@ public:
 
 private:
     /** Override to create a new memory stream for picture data. */
-    virtual SvStream*   ImplQueryPictureStream() SAL_OVERRIDE;
+    virtual SvStream*   ImplQueryPictureStream() override;
 
 private:
     std::shared_ptr< SvStream > mxPicStrm;
@@ -102,7 +102,7 @@ protected:
         EscherPropertyContainer& rPropOpt);
     void WriteOLEPicture(EscherPropertyContainer &rPropOpt,
         sal_uInt32 nShapeFlags, const Graphic &rGraphic, const SdrObject &rObj,
-        sal_uInt32 nShapeId, const com::sun::star::awt::Rectangle* pVisArea );
+        sal_uInt32 nShapeId, const css::awt::Rectangle* pVisArea );
     static void WriteGrfAttr(const SwNoTextNode& rNd,EscherPropertyContainer& rPropOpt);
 
     sal_Int32 DrawModelToEmu(sal_Int32 nVal) const
@@ -120,7 +120,7 @@ public:
     sal_Int32 WriteGrfBullet(const Graphic&);
     sal_Int32 WriteOLEFlyFrame(const SwFrameFormat& rFormat, sal_uInt32 nShapeId);
     void WriteEmptyFlyFrame(const SwFrameFormat& rFormat, sal_uInt32 nShapeId);
-    virtual void WriteFrmExtraData(const SwFrameFormat&);
+    virtual void WriteFrameExtraData(const SwFrameFormat&);
     virtual void WritePictures();
     virtual ~SwBasicEscherEx();
     //i120927,this function is added to export hyperlink info,such as graphic/frame/OLE
@@ -131,8 +131,8 @@ public:
     void PreWriteHyperlinkWithinFly(const SwFrameFormat& rFormat,EscherPropertyContainer& rPropOpt);
 
 private:
-    SwBasicEscherEx(const SwBasicEscherEx&) SAL_DELETED_FUNCTION;
-    SwBasicEscherEx& operator=(const SwBasicEscherEx&) SAL_DELETED_FUNCTION;
+    SwBasicEscherEx(const SwBasicEscherEx&) = delete;
+    SwBasicEscherEx& operator=(const SwBasicEscherEx&) = delete;
 };
 
 class SwEscherEx : public SwBasicEscherEx
@@ -148,32 +148,30 @@ private:
     void MakeZOrderArrAndFollowIds(std::vector<DrawObj>& rSrcArr,
         DrawObjPointerVector& rDstArr);
 
-    sal_Int32 WriteFlyFrm(const DrawObj &rObj, sal_uInt32 &rShapeId,
+    sal_Int32 WriteFlyFrame(const DrawObj &rObj, sal_uInt32 &rShapeId,
         DrawObjPointerVector &rPVec);
     sal_Int32 WriteTextFlyFrame(const DrawObj &rObj, sal_uInt32 nShapeId,
         sal_uInt32 nTextBox, DrawObjPointerVector &rPVec);
     void WriteOCXControl(const SwFrameFormat& rFormat,sal_uInt32 nShapeId);
     virtual sal_Int32 WriteFlyFrameAttr(const SwFrameFormat& rFormat, MSO_SPT eShapeType,
-        EscherPropertyContainer& rPropOpt) SAL_OVERRIDE;
+        EscherPropertyContainer& rPropOpt) override;
 
     virtual sal_uInt32 QueryTextID(
-        const com::sun::star::uno::Reference<
-        com::sun::star::drawing::XShape > &,sal_uInt32) SAL_OVERRIDE;
+        const css::uno::Reference< css::drawing::XShape > &, sal_uInt32) override;
     virtual void SetPicId(const SdrObject &rSdrObj, sal_uInt32 nShapeId,
-        EscherPropertyContainer &rPropOpt) SAL_OVERRIDE;
+        EscherPropertyContainer &rPropOpt) override;
 public:
     SwEscherEx( SvStream* pStrm, WW8Export& rWW8Wrt );
     virtual ~SwEscherEx();
     void FinishEscher();
-    virtual void WritePictures() SAL_OVERRIDE;
+    virtual void WritePictures() override;
 
-    virtual void WriteFrmExtraData(const SwFrameFormat& rFormat) SAL_OVERRIDE;
+    virtual void WriteFrameExtraData(const SwFrameFormat& rFormat) override;
 
-    EscherExHostAppData* StartShape(const com::sun::star::uno::Reference<
-        com::sun::star::drawing::XShape > &, const Rectangle*) SAL_OVERRIDE {return &aHostData;}
+    EscherExHostAppData* StartShape(const css::uno::Reference< css::drawing::XShape > &, const Rectangle*) override {return &aHostData;}
 private:
-    SwEscherEx(const SwEscherEx&) SAL_DELETED_FUNCTION;
-    SwEscherEx &operator=(const SwEscherEx&) SAL_DELETED_FUNCTION;
+    SwEscherEx(const SwEscherEx&) = delete;
+    SwEscherEx &operator=(const SwEscherEx&) = delete;
 };
 
 #endif

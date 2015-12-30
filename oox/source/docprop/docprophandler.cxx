@@ -39,8 +39,7 @@ namespace docprop {
 
 OOXMLDocPropHandler::OOXMLDocPropHandler( const uno::Reference< uno::XComponentContext >& xContext,
                                           const uno::Reference< document::XDocumentProperties >& rDocProp )
-    : m_xContext( xContext )
-    , m_xDocProp( rDocProp )
+    : m_xDocProp( rDocProp )
     , m_nState( 0 )
     , m_nBlock( 0 )
     , m_nType( 0 )
@@ -312,7 +311,7 @@ void SAL_CALL OOXMLDocPropHandler::startFastElement( ::sal_Int32 nElement, const
     }
     else
     {
-        OSL_FAIL( "For now unexpected tags are ignored!" );
+        SAL_WARN("oox", "OOXMLDocPropHandler::startFastElement: unknown element " << getBaseToken(nElement));
     }
 
     if ( m_nInBlock == SAL_MAX_INT32 )

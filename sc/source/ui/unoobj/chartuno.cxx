@@ -84,7 +84,7 @@ static SdrOle2Obj* lcl_FindChartObj( ScDocShell* pDocShell, SCTAB nTab, const OU
             }
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 ScChartsObj::ScChartsObj(ScDocShell* pDocSh, SCTAB nT) :
@@ -109,7 +109,7 @@ void ScChartsObj::Notify( SfxBroadcaster&, const SfxHint& rHint )
     const SfxSimpleHint* pSimpleHint = dynamic_cast<const SfxSimpleHint*>(&rHint);
     if ( pSimpleHint && pSimpleHint->GetId() == SFX_HINT_DYING )
     {
-        pDocShell = NULL;       // ungueltig geworden
+        pDocShell = nullptr;       // ungueltig geworden
     }
 }
 
@@ -150,14 +150,14 @@ ScChartObj* ScChartsObj::GetObjectByIndex_Impl(long nIndex) const
 
     if (!aName.isEmpty())
         return new ScChartObj( pDocShell, nTab, aName );
-    return NULL;
+    return nullptr;
 }
 
 ScChartObj* ScChartsObj::GetObjectByName_Impl(const OUString& aName) const
 {
     if ( lcl_FindChartObj( pDocShell, nTab, aName ) )
         return new ScChartObj( pDocShell, nTab, aName );
-    return NULL;
+    return nullptr;
 }
 
 // XTableCharts
@@ -166,7 +166,7 @@ void SAL_CALL ScChartsObj::addNewByName( const OUString& rName,
                                         const awt::Rectangle& aRect,
                                         const uno::Sequence<table::CellRangeAddress>& aRanges,
                                         sal_Bool bColumnHeaders, sal_Bool bRowHeaders )
-                                    throw(::com::sun::star::uno::RuntimeException,
+                                    throw(css::uno::RuntimeException,
                                           std::exception)
 {
     SolarMutexGuard aGuard;
@@ -437,7 +437,7 @@ sal_Bool SAL_CALL ScChartsObj::hasByName( const OUString& aName )
                                         throw(uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
-    return ( lcl_FindChartObj( pDocShell, nTab, aName ) != NULL );
+    return ( lcl_FindChartObj( pDocShell, nTab, aName ) != nullptr );
 }
 
 ScChartObj::ScChartObj(ScDocShell* pDocSh, SCTAB nT, const OUString& rN)
@@ -450,7 +450,7 @@ ScChartObj::ScChartObj(ScDocShell* pDocSh, SCTAB nT, const OUString& rN)
     pDocShell->GetDocument().AddUnoObject(*this);
 
     uno::Sequence< table::CellRangeAddress > aInitialPropValue;
-    registerPropertyNoMember( OUString( "RelatedCellRanges" ),
+    registerPropertyNoMember( "RelatedCellRanges",
         PROP_HANDLE_RELATED_CELLRANGES, beans::PropertyAttribute::MAYBEVOID,
         cppu::UnoType<decltype(aInitialPropValue)>::get(), &aInitialPropValue );
 }
@@ -470,7 +470,7 @@ void ScChartObj::Notify( SfxBroadcaster&, const SfxHint& rHint )
     const SfxSimpleHint* pSimpleHint = dynamic_cast<const SfxSimpleHint*>(&rHint);
     if ( pSimpleHint && pSimpleHint->GetId() == SFX_HINT_DYING )
     {
-        pDocShell = NULL;       // ungueltig geworden
+        pDocShell = nullptr;       // ungueltig geworden
     }
 }
 
@@ -528,7 +528,7 @@ void ScChartObj::GetData_Impl( ScRangeListRef& rRanges, bool& rColHeaders, bool&
      }
     if( !bFound )
     {
-        rRanges = 0;
+        rRanges = nullptr;
         rColHeaders = false;
         rRowHeaders = false;
     }
@@ -770,7 +770,7 @@ uno::Reference<lang::XComponent> SAL_CALL ScChartObj::getEmbeddedObject() throw(
         return uno::Reference < lang::XComponent > ( pObject->GetObjRef()->getComponent(), uno::UNO_QUERY );
     }
 
-    return NULL;
+    return nullptr;
 }
 
 // XNamed

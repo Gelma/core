@@ -48,12 +48,11 @@ namespace {
 void renderPreview(sfx2::StyleManager* pStyleManager, OutputDevice& aOutputDevice,
                    OUString const & sName, sal_Int32 nHeight, Rectangle& aRect)
 {
-    sfx2::StylePreviewRenderer* pStylePreviewRenderer;
-
     SfxStyleSheetBase* pStyleSheet = pStyleManager->Search(sName, SFX_STYLE_FAMILY_PARA);
 
     if (pStyleSheet)
     {
+        sfx2::StylePreviewRenderer* pStylePreviewRenderer;
         pStylePreviewRenderer = pStyleManager->CreateStylePreviewRenderer(aOutputDevice, pStyleSheet, nHeight);
         pStylePreviewRenderer->recalculate();
         pStylePreviewRenderer->render(aRect, sfx2::StylePreviewRenderer::RenderAlign::TOP);
@@ -134,7 +133,7 @@ BitmapEx CreatePreview(OUString& aUrl, OUString& aName)
     SfxMedium aMedium(aUrl, STREAM_STD_READWRITE);
     SfxObjectShell* pObjectShell = SfxObjectShell::Current();
     SfxObjectShellLock xTemplDoc = SfxObjectShell::CreateObjectByFactoryName(pObjectShell->GetFactory().GetFactoryName(), SfxObjectCreateMode::ORGANIZER);
-    xTemplDoc->DoInitNew(0);
+    xTemplDoc->DoInitNew();
     if (xTemplDoc->LoadFrom(aMedium))
     {
         return GenerateStylePreview(*xTemplDoc, aName);
@@ -145,24 +144,19 @@ BitmapEx CreatePreview(OUString& aUrl, OUString& aName)
 }
 
 VclPtr<vcl::Window> StylePresetsPanel::Create (vcl::Window* pParent,
-                                        const css::uno::Reference<css::frame::XFrame>& rxFrame,
-                                        SfxBindings* pBindings)
+                                        const css::uno::Reference<css::frame::XFrame>& rxFrame)
 {
-    if (pParent == NULL)
-        throw css::lang::IllegalArgumentException("no parent Window given to PagePropertyPanel::Create", NULL, 0);
+    if (pParent == nullptr)
+        throw css::lang::IllegalArgumentException("no parent Window given to StylePresetsPanel::Create", nullptr, 0);
     if (!rxFrame.is())
-        throw css::lang::IllegalArgumentException("no XFrame given to PagePropertyPanel::Create", NULL, 1);
-    if (pBindings == NULL)
-        throw css::lang::IllegalArgumentException("no SfxBindings given to PagePropertyPanel::Create", NULL, 2);
+        throw css::lang::IllegalArgumentException("no XFrame given to StylePresetsPanel::Create", nullptr, 1);
 
-    return VclPtr<StylePresetsPanel>::Create(pParent, rxFrame, pBindings);
+    return VclPtr<StylePresetsPanel>::Create(pParent, rxFrame);
 }
 
 StylePresetsPanel::StylePresetsPanel(vcl::Window* pParent,
-                               const css::uno::Reference<css::frame::XFrame>& rxFrame,
-                               SfxBindings* pBindings)
+                               const css::uno::Reference<css::frame::XFrame>& rxFrame)
     : PanelLayout(pParent, "StylePresetsPanel", "modules/swriter/ui/sidebarstylepresets.ui", rxFrame)
-    , mpBindings(pBindings)
 {
     get(mpValueSet, "valueset");
 
@@ -188,7 +182,7 @@ void StylePresetsPanel::RefreshList()
                 OUString aURL = aTemplates.GetPath(i,j);
                 BitmapEx aPreview = CreatePreview(aURL, aName);
                 mpValueSet->InsertItem(j, Image(aPreview), aName);
-                maTemplateEntries.push_back(std::unique_ptr<TemplateEntry>(new TemplateEntry(aName, aURL)));
+                maTemplateEntries.push_back(std::unique_ptr<TemplateEntry>(new TemplateEntry(aURL)));
                 mpValueSet->SetItemData(j, maTemplateEntries.back().get());
             }
         }

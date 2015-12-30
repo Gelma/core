@@ -20,12 +20,17 @@
 #ifndef INCLUDED_XMLOFF_SOURCE_TRANSFORM_TRANSFORMERBASE_HXX
 #define INCLUDED_XMLOFF_SOURCE_TRANSFORM_TRANSFORMERBASE_HXX
 
+#include <sal/config.h>
+
+#include <vector>
+
 #include <com/sun/star/xml/sax/SAXParseException.hpp>
 #include <com/sun/star/xml/sax/SAXException.hpp>
 #include <com/sun/star/xml/sax/XAttributeList.hpp>
 #include <com/sun/star/xml/sax/XLocator.hpp>
 #include <com/sun/star/beans/XPropertySet.hpp>
 #include <com/sun/star/frame/XModel.hpp>
+#include <rtl/ref.hxx>
 #include <xmloff/xmltoken.hxx>
 
 #include "Transformer.hxx"
@@ -36,7 +41,6 @@ namespace com { namespace sun { namespace star {
 
 class SvXMLNamespaceMap;
 class XMLTransformerContext;
-class XMLTransformerContextVector;
 class XMLTransformerActions;
 struct XMLTransformerActionInit;
 struct TransformerAction_Impl;
@@ -49,26 +53,23 @@ class XMLTransformerBase : public XMLTransformer
 {
     friend class XMLTransformerContext;
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XLocator >
-        m_xLocator;
-
-    ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XDocumentHandler >            m_xHandler;     // the handlers
-    ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XExtendedDocumentHandler >    m_xExtHandler;
-    ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > m_xPropSet;
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::i18n::XCharacterClassification > xCharClass;
+    css::uno::Reference< css::xml::sax::XLocator >                    m_xLocator;
+    css::uno::Reference< css::xml::sax::XDocumentHandler >            m_xHandler;     // the handlers
+    css::uno::Reference< css::xml::sax::XExtendedDocumentHandler >    m_xExtHandler;
+    css::uno::Reference< css::beans::XPropertySet >                   m_xPropSet;
+    css::uno::Reference< css::i18n::XCharacterClassification >        xCharClass;
 
     OUString m_aExtPathPrefix;
     OUString m_aClass;
 
     SvXMLNamespaceMap           *m_pNamespaceMap;
     SvXMLNamespaceMap           *m_pReplaceNamespaceMap;
-    XMLTransformerContextVector *m_pContexts;
+    std::vector<rtl::Reference<XMLTransformerContext>> m_pContexts;
     XMLTransformerActions       *m_pElemActions;
     XMLTransformerTokenMap      *m_pTokenMap;
 
 protected:
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XModel >     mxModel;
+    css::uno::Reference< css::frame::XModel >     mxModel;
 
     // This method is called after the namespace map has been updated, but
     // before a context for the current element has been pushed.
@@ -77,47 +78,47 @@ protected:
                                       const OUString& rQName );
 
 public:
-    XMLTransformerBase( XMLTransformerActionInit *pInit=0,
-                           ::xmloff::token::XMLTokenEnum *pTKMapInit=0 ) throw();
+    XMLTransformerBase( XMLTransformerActionInit *pInit=nullptr,
+                           ::xmloff::token::XMLTokenEnum *pTKMapInit=nullptr ) throw();
     virtual ~XMLTransformerBase() throw();
 
-    // ::com::sun::star::xml::sax::XDocumentHandler
+    // css::xml::sax::XDocumentHandler
     virtual void SAL_CALL startDocument()
-        throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL endDocument()
-        throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL startElement(const OUString& aName,
-                              const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttribs)
-        throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                              const css::uno::Reference< css::xml::sax::XAttributeList > & xAttribs)
+        throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL endElement(const OUString& aName)
-        throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL characters(const OUString& aChars)
-        throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL ignorableWhitespace(const OUString& aWhitespaces)
-        throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL processingInstruction(const OUString& aTarget,
                                        const OUString& aData)
-        throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL setDocumentLocator(const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XLocator > & xLocator)
-        throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL setDocumentLocator(const css::uno::Reference< css::xml::sax::XLocator > & xLocator)
+        throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception ) override;
 
-    // ::com::sun::star::xml::sax::XExtendedDocumentHandler
-    virtual void SAL_CALL startCDATA() throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL endCDATA() throw( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    // css::xml::sax::XExtendedDocumentHandler
+    virtual void SAL_CALL startCDATA() throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception ) override;
+    virtual void SAL_CALL endCDATA() throw( css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL comment(const OUString& sComment)
-        throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL allowLineBreak()
-        throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL unknown(const OUString& sString)
-        throw( ::com::sun::star::xml::sax::SAXException, ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::xml::sax::SAXException, css::uno::RuntimeException, std::exception ) override;
 
     // XInitialization
-    virtual void SAL_CALL initialize( const ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any >& aArguments ) throw(::com::sun::star::uno::Exception, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL initialize( const css::uno::Sequence< css::uno::Any >& aArguments ) throw(css::uno::Exception, css::uno::RuntimeException, std::exception) override;
 
     // C++
-    const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XDocumentHandler > & GetDocHandler() { return m_xHandler; }
+    const css::uno::Reference< css::xml::sax::XDocumentHandler > & GetDocHandler() { return m_xHandler; }
 
-    const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > & GetPropertySet() { return m_xPropSet; }
+    const css::uno::Reference< css::beans::XPropertySet > & GetPropertySet() { return m_xPropSet; }
 
 
     SvXMLNamespaceMap& GetNamespaceMap() { return *m_pNamespaceMap; }
@@ -134,8 +135,7 @@ public:
                                              bool bForm = false ) = 0;
 
 
-    XMLMutableAttributeList *ProcessAttrList( ::com::sun::star::uno::Reference<
-                ::com::sun::star::xml::sax::XAttributeList >& rAttrList,
+    XMLMutableAttributeList *ProcessAttrList( css::uno::Reference< css::xml::sax::XAttributeList >& rAttrList,
                          sal_uInt16 nActionMap, bool bClone );
 
     static bool ReplaceSingleInchWithIn( OUString& rValue );

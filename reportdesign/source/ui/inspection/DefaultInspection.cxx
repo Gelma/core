@@ -57,7 +57,6 @@ namespace rptui
         ,m_bIsReadOnly(false)
         ,m_nMinHelpTextLines( 3 )
         ,m_nMaxHelpTextLines( 8 )
-        ,m_pInfoService(new OPropertyInfoService())
     {
     }
 
@@ -87,8 +86,7 @@ namespace rptui
 
     Sequence< OUString > DefaultComponentInspectorModel::getSupportedServiceNames_static(  ) throw(RuntimeException)
     {
-        Sequence< OUString > aSupported(1);
-        aSupported[0] = "com.sun.star.report.inspection.DefaultComponentInspectorModel";
+        Sequence< OUString > aSupported { "com.sun.star.report.inspection.DefaultComponentInspectorModel" };
         return aSupported;
     }
 
@@ -142,13 +140,13 @@ namespace rptui
         return m_nMinHelpTextLines;
     }
 
-    sal_Bool SAL_CALL DefaultComponentInspectorModel::getIsReadOnly() throw (::com::sun::star::uno::RuntimeException, std::exception)
+    sal_Bool SAL_CALL DefaultComponentInspectorModel::getIsReadOnly() throw (css::uno::RuntimeException, std::exception)
     {
         ::osl::MutexGuard aGuard(m_aMutex);
         return m_bIsReadOnly;
     }
 
-    void SAL_CALL DefaultComponentInspectorModel::setIsReadOnly( sal_Bool _isreadonly ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+    void SAL_CALL DefaultComponentInspectorModel::setIsReadOnly( sal_Bool _isreadonly ) throw (css::uno::RuntimeException, std::exception)
     {
         ::osl::MutexGuard aGuard(m_aMutex);
         m_bIsReadOnly = _isreadonly;

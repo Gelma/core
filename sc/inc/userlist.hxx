@@ -20,10 +20,10 @@
 #ifndef INCLUDED_SC_INC_USERLIST_HXX
 #define INCLUDED_SC_INC_USERLIST_HXX
 
-#include <tools/stream.hxx>
 #include "scdllapi.h"
 
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <memory>
+#include <vector>
 
 /**
  * Stores individual user-defined sort list.
@@ -38,7 +38,7 @@ public:
         SubStr(const OUString& rReal, const OUString& rUpper);
     };
 private:
-    typedef ::boost::ptr_vector<SubStr> SubStringsType;
+    typedef std::vector<SubStr> SubStringsType;
     SubStringsType maSubStrings;
     OUString aStr;
 
@@ -52,7 +52,7 @@ public:
     const OUString& GetString() const { return aStr; }
     void SetString(const OUString& rStr);
     size_t GetSubCount() const;
-    bool GetSubIndex(const OUString& rSubStr, sal_uInt16& rIndex) const;
+    bool GetSubIndex(const OUString& rSubStr, sal_uInt16& rIndex, bool& bMatchCase) const;
     OUString GetSubStr(sal_uInt16 nIndex) const;
     sal_Int32 Compare(const OUString& rSubStr1, const OUString& rSubStr2) const;
     sal_Int32 ICompare(const OUString& rSubStr1, const OUString& rSubStr2) const;
@@ -63,7 +63,7 @@ public:
  */
 class SC_DLLPUBLIC ScUserList
 {
-    typedef ::boost::ptr_vector<ScUserListData> DataType;
+    typedef std::vector< std::unique_ptr<ScUserListData> > DataType;
     DataType maData;
 public:
     typedef DataType::iterator iterator;

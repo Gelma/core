@@ -69,7 +69,7 @@ bool FrameGrabber::create( const ::rtl::OUString& rURL )
     bool bRet = false;
     maURL = rURL;
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-    NSString* aNSStr = [[[NSString alloc] initWithCharacters: rURL.getStr() length: rURL.getLength()]stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding] ;
+    NSString* aNSStr = [[[NSString alloc] initWithCharacters: reinterpret_cast<unichar const *>(rURL.getStr()) length: rURL.getLength()]stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding] ;
     NSURL* aURL = [NSURL URLWithString:aNSStr ];
 
     // create the Movie
@@ -128,8 +128,7 @@ sal_Bool SAL_CALL FrameGrabber::supportsService( const ::rtl::OUString& ServiceN
 uno::Sequence< ::rtl::OUString > SAL_CALL FrameGrabber::getSupportedServiceNames(  )
     throw (uno::RuntimeException)
 {
-    uno::Sequence< ::rtl::OUString > aRet(1);
-    aRet[0] = AVMEDIA_QUICKTIME_FRAMEGRABBER_SERVICENAME;
+    uno::Sequence<OUString> aRet { AVMEDIA_QUICKTIME_FRAMEGRABBER_SERVICENAME };
 
     return aRet;
 }

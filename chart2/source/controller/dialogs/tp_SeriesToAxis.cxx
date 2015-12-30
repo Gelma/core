@@ -137,7 +137,7 @@ bool SchOptionTabPage::FillItemSet(SfxItemSet* rOutAttrs)
 
 void SchOptionTabPage::Reset(const SfxItemSet* rInAttrs)
 {
-    const SfxPoolItem *pPoolItem = NULL;
+    const SfxPoolItem *pPoolItem = nullptr;
 
     m_pRbtAxis1->Check();
     m_pRbtAxis2->Check(false);
@@ -189,25 +189,25 @@ void SchOptionTabPage::Reset(const SfxItemSet* rInAttrs)
 
     //missing value treatment
     {
-        ::com::sun::star::uno::Sequence < sal_Int32 > aMissingValueTreatments;
+        std::vector< sal_Int32 > aMissingValueTreatments;
         if( rInAttrs->GetItemState(SCHATTR_AVAILABLE_MISSING_VALUE_TREATMENTS, true, &pPoolItem) == SfxItemState::SET )
-            aMissingValueTreatments =static_cast<const SfxIntegerListItem*>(pPoolItem)->GetConstSequence();
+            aMissingValueTreatments = static_cast<const SfxIntegerListItem*>(pPoolItem)->GetList();
 
-        if ( aMissingValueTreatments.getLength()>1 && rInAttrs->GetItemState(SCHATTR_MISSING_VALUE_TREATMENT,true, &pPoolItem) == SfxItemState::SET)
+        if ( aMissingValueTreatments.size()>1 && rInAttrs->GetItemState(SCHATTR_MISSING_VALUE_TREATMENT,true, &pPoolItem) == SfxItemState::SET)
         {
             m_pRB_DontPaint->Enable(false);
             m_pRB_AssumeZero->Enable(false);
             m_pRB_ContinueLine->Enable(false);
 
-            for( sal_Int32 nN =0; nN<aMissingValueTreatments.getLength(); nN++ )
+            for( size_t nN =0; nN<aMissingValueTreatments.size(); nN++ )
             {
                 sal_Int32 nVal = aMissingValueTreatments[nN];
                 if(nVal==::com::sun::star::chart::MissingValueTreatment::LEAVE_GAP)
-                    m_pRB_DontPaint->Enable(true);
+                    m_pRB_DontPaint->Enable();
                 else if(nVal==::com::sun::star::chart::MissingValueTreatment::USE_ZERO)
-                    m_pRB_AssumeZero->Enable(true);
+                    m_pRB_AssumeZero->Enable();
                 else if(nVal==::com::sun::star::chart::MissingValueTreatment::CONTINUE)
-                    m_pRB_ContinueLine->Enable(true);
+                    m_pRB_ContinueLine->Enable();
             }
 
             long nVal=static_cast<const SfxInt32Item*>(pPoolItem)->GetValue();

@@ -38,7 +38,7 @@ namespace sd
     class Communicator : public salhelper::Thread
     {
         public:
-            Communicator( IBluetoothSocket *pSocket );
+            explicit Communicator( IBluetoothSocket *pSocket );
             virtual ~Communicator();
 
             void presentationStarted( const css::uno::Reference<
@@ -48,7 +48,7 @@ namespace sd
             void forceClose();
 
         private:
-            void execute() SAL_OVERRIDE;
+            void execute() override;
             IBluetoothSocket *mpSocket;
 
             Transmitter *pTransmitter;

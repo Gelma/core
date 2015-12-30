@@ -41,15 +41,9 @@
 
 using namespace com::sun::star;
 
-TYPEINIT1(ScMergeAttr,          SfxPoolItem);
-TYPEINIT1_AUTOFACTORY(ScProtectionAttr,     SfxPoolItem);
-TYPEINIT1(ScRangeItem,          SfxPoolItem);
-TYPEINIT1(ScTableListItem,      SfxPoolItem);
-TYPEINIT1(ScPageHFItem,         SfxPoolItem);
-TYPEINIT1(ScViewObjectModeItem, SfxEnumItem);
-TYPEINIT1(ScDoubleItem,         SfxPoolItem);
-TYPEINIT1(ScPageScaleToItem,    SfxPoolItem);
-TYPEINIT1(ScCondFormatItem,    SfxPoolItem);
+
+SfxPoolItem* ScProtectionAttr::CreateDefault() { return new ScProtectionAttr; }
+SfxPoolItem* ScDoubleItem::CreateDefault() { DBG_ASSERT(false, "No ScDoubleItem factory available"); return nullptr; }
 
 /**
  * General Help Function
@@ -112,7 +106,7 @@ ScMergeAttr::~ScMergeAttr()
 
 bool ScMergeAttr::operator==( const SfxPoolItem& rItem ) const
 {
-    OSL_ENSURE( Which() != rItem.Which() || Type() == rItem.Type(), "which ==, type !=" );
+    OSL_ENSURE( Which() != rItem.Which() || typeid(*this) == typeid(rItem), "which ==, type !=" );
     return (Which() == rItem.Which())
              && (nColMerge == static_cast<const ScMergeAttr&>(rItem).nColMerge)
              && (nRowMerge == static_cast<const ScMergeAttr&>(rItem).nRowMerge);
@@ -331,7 +325,7 @@ bool ScProtectionAttr::GetPresentation
 
 bool ScProtectionAttr::operator==( const SfxPoolItem& rItem ) const
 {
-    OSL_ENSURE( Which() != rItem.Which() || Type() == rItem.Type(), "which ==, type !=" );
+    OSL_ENSURE( Which() != rItem.Which() || typeid(*this) == typeid(rItem), "which ==, type !=" );
     return (Which() == rItem.Which())
              && (bProtection == static_cast<const ScProtectionAttr&>(rItem).bProtection)
              && (bHideFormula == static_cast<const ScProtectionAttr&>(rItem).bHideFormula)
@@ -446,7 +440,7 @@ ScTableListItem::ScTableListItem( const ScTableListItem& rCpy )
             pTabArr[i] = rCpy.pTabArr[i];
     }
     else
-        pTabArr = NULL;
+        pTabArr = nullptr;
 }
 
 ScTableListItem::~ScTableListItem()
@@ -465,7 +459,7 @@ ScTableListItem& ScTableListItem::operator=( const ScTableListItem& rCpy )
             pTabArr[i] = rCpy.pTabArr[i];
     }
     else
-        pTabArr = NULL;
+        pTabArr = nullptr;
 
     nCount = rCpy.nCount;
 
@@ -542,17 +536,17 @@ bool ScTableListItem::GetPresentation
  */
 ScPageHFItem::ScPageHFItem( sal_uInt16 nWhichP )
     :   SfxPoolItem ( nWhichP ),
-        pLeftArea   ( NULL ),
-        pCenterArea ( NULL ),
-        pRightArea  ( NULL )
+        pLeftArea   ( nullptr ),
+        pCenterArea ( nullptr ),
+        pRightArea  ( nullptr )
 {
 }
 
 ScPageHFItem::ScPageHFItem( const ScPageHFItem& rItem )
     :   SfxPoolItem ( rItem ),
-        pLeftArea   ( NULL ),
-        pCenterArea ( NULL ),
-        pRightArea  ( NULL )
+        pLeftArea   ( nullptr ),
+        pCenterArea ( nullptr ),
+        pRightArea  ( nullptr )
 {
     if ( rItem.pLeftArea )
         pLeftArea = rItem.pLeftArea->Clone();
@@ -592,15 +586,15 @@ bool ScPageHFItem::PutValue( const uno::Any& rVal, sal_uInt8 /* nMemberId */ )
             {
                 const EditTextObject* pImpLeft = pImp->GetLeftEditObject();
                 delete pLeftArea;
-                pLeftArea = pImpLeft ? pImpLeft->Clone() : NULL;
+                pLeftArea = pImpLeft ? pImpLeft->Clone() : nullptr;
 
                 const EditTextObject* pImpCenter = pImp->GetCenterEditObject();
                 delete pCenterArea;
-                pCenterArea = pImpCenter ? pImpCenter->Clone() : NULL;
+                pCenterArea = pImpCenter ? pImpCenter->Clone() : nullptr;
 
                 const EditTextObject* pImpRight = pImp->GetRightEditObject();
                 delete pRightArea;
-                pRightArea = pImpRight ? pImpRight->Clone() : NULL;
+                pRightArea = pImpRight ? pImpRight->Clone() : nullptr;
 
                 if ( !pLeftArea || !pCenterArea || !pRightArea )
                 {
@@ -709,25 +703,25 @@ SfxPoolItem* ScPageHFItem::Create( SvStream& rStream, sal_uInt16 nVer ) const
 
     OSL_ENSURE( pLeft && pCenter && pRight, "Error reading ScPageHFItem" );
 
-    if ( pLeft == NULL   || pLeft->GetParagraphCount() == 0 ||
-         pCenter == NULL || pCenter->GetParagraphCount() == 0 ||
-         pRight == NULL  || pRight->GetParagraphCount() == 0 )
+    if ( pLeft == nullptr   || pLeft->GetParagraphCount() == 0 ||
+         pCenter == nullptr || pCenter->GetParagraphCount() == 0 ||
+         pRight == nullptr  || pRight->GetParagraphCount() == 0 )
     {
         // If successfully loaded, each object contains at least one paragraph.
         // Excel import in 5.1 created broken TextObjects (#67442#) that are
         // corrected here to avoid saving wrong files again (#90487#).
         ScEditEngineDefaulter aEngine( EditEngine::CreatePool(), true );
-        if ( pLeft == NULL || pLeft->GetParagraphCount() == 0 )
+        if ( pLeft == nullptr || pLeft->GetParagraphCount() == 0 )
         {
             delete pLeft;
             pLeft = aEngine.CreateTextObject();
         }
-        if ( pCenter == NULL || pCenter->GetParagraphCount() == 0 )
+        if ( pCenter == nullptr || pCenter->GetParagraphCount() == 0 )
         {
             delete pCenter;
             pCenter = aEngine.CreateTextObject();
         }
-        if ( pRight == NULL || pRight->GetParagraphCount() == 0 )
+        if ( pRight == nullptr || pRight->GetParagraphCount() == 0 )
         {
             delete pRight;
             pRight = aEngine.CreateTextObject();

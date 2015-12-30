@@ -165,8 +165,8 @@ void SwSpellPopup::fillLangPopupMenu(
     }
 
     //6--all languages used in current document
-    uno::Reference< com::sun::star::frame::XModel > xModel;
-    uno::Reference< com::sun::star::frame::XController > xController( pWrtSh->GetView().GetViewFrame()->GetFrame().GetFrameInterface()->getController(), uno::UNO_QUERY );
+    uno::Reference< css::frame::XModel > xModel;
+    uno::Reference< css::frame::XController > xController( pWrtSh->GetView().GetViewFrame()->GetFrame().GetFrameInterface()->getController(), uno::UNO_QUERY );
     if ( xController.is() )
         xModel = xController->getModel();
     uno::Reference< document::XDocumentLanguages > xDocumentLanguages( xModel, uno::UNO_QUERY );
@@ -218,8 +218,8 @@ void SwSpellPopup::fillLangPopupMenu(
     if ( SvtLanguageTable::GetLanguageString( LANGUAGE_NONE ) == aCurLang )
         pPopupMenu->CheckItem( nLangItemIdStart + MN_NONE_OFFSET );
 
-    pPopupMenu->InsertItem( nLangItemIdStart + MN_RESET_OFFSET, OUString(SW_RES( STR_RESET_TO_DEFAULT_LANGUAGE )), MenuItemBits::NONE );
-    pPopupMenu->InsertItem( nLangItemIdStart + MN_MORE_OFFSET,  OUString(SW_RES( STR_LANGSTATUS_MORE )), MenuItemBits::NONE );
+    pPopupMenu->InsertItem( nLangItemIdStart + MN_RESET_OFFSET, OUString(SW_RES( STR_RESET_TO_DEFAULT_LANGUAGE )) );
+    pPopupMenu->InsertItem( nLangItemIdStart + MN_MORE_OFFSET,  OUString(SW_RES( STR_LANGSTATUS_MORE )) );
 }
 
 OUString RetrieveLabelFromCommand( const OUString& aCmdURL )
@@ -244,7 +244,7 @@ OUString RetrieveLabelFromCommand( const OUString& aCmdURL )
             {
                 for ( sal_Int32 i = 0; i < aPropSeq.getLength(); i++ )
                 {
-                    if ( aPropSeq[i].Name == "Name" )
+                    if ( aPropSeq[i].Name == "Label" )
                     {
                         aPropSeq[i].Value >>= aStr;
                         break;
@@ -536,6 +536,7 @@ m_aInfo16( SW_RES(IMG_INFO_16) )
     SetHelpId( MN_IGNORE_SELECTION, HID_LINGU_IGNORE_SELECTION);
 
     EnableItem( MN_AUTOCORR, false );
+    EnableItem( MN_AUTO_CORRECT_DLG, false );
 
     uno::Reference< linguistic2::XLanguageGuessing > xLG = SW_MOD()->GetLanguageGuesser();
     m_nGuessLangWord = LANGUAGE_NONE;
@@ -668,10 +669,9 @@ void SwSpellPopup::Execute( sal_uInt16 nId )
                 aTmp += ".";
             }
 
-            // #111827#
             SwRewriter aRewriter;
 
-            aRewriter.AddRule(UndoArg1, m_pSh->GetCrsrDescr());
+            aRewriter.AddRule(UndoArg1, m_pSh->GetCursorDescr());
             aRewriter.AddRule(UndoArg2, OUString(SW_RES(STR_YIELDS)));
 
             OUString aTmpStr( SW_RES(STR_START_QUOTE) );
@@ -728,7 +728,7 @@ void SwSpellPopup::Execute( sal_uInt16 nId )
     }
     else if (nId == MN_IGNORE_SELECTION)
     {
-        SwPaM *pPaM = m_pSh->GetCrsr();
+        SwPaM *pPaM = m_pSh->GetCursor();
         if (pPaM)
             SwEditShell::IgnoreGrammarErrorAt( *pPaM );
     }
@@ -742,7 +742,7 @@ void SwSpellPopup::Execute( sal_uInt16 nId )
                     m_xGrammarResult.aErrors[ m_nGrammarError ].aRuleIdentifier,
                         m_xGrammarResult.aLocale );
                 // refresh the layout of the actual paragraph (faster)
-                SwPaM *pPaM = m_pSh->GetCrsr();
+                SwPaM *pPaM = m_pSh->GetCursor();
                 if (pPaM)
                     SwEditShell::IgnoreGrammarErrorAt( *pPaM );
                 // refresh the layout of all paragraphs (workaround to launch a dictionary event)
@@ -798,10 +798,10 @@ void SwSpellPopup::Execute( sal_uInt16 nId )
     {
         try
         {
-            uno::Reference< com::sun::star::system::XSystemShellExecute > xSystemShellExecute(
-                com::sun::star::system::SystemShellExecute::create( ::comphelper::getProcessComponentContext() ) );
+            uno::Reference< css::system::XSystemShellExecute > xSystemShellExecute(
+                css::system::SystemShellExecute::create( ::comphelper::getProcessComponentContext() ) );
             xSystemShellExecute->execute( m_sExplanationLink, OUString(),
-                    com::sun::star::system::SystemShellExecuteFlags::URIS_ONLY );
+                    css::system::SystemShellExecuteFlags::URIS_ONLY );
         }
         catch (const uno::Exception&)
         {
@@ -850,7 +850,7 @@ void SwSpellPopup::Execute( sal_uInt16 nId )
         else if (nId == MN_SET_SELECTION_MORE)
         {
             //Open Format/Character Dialog
-            sw_CharDialog( *m_pSh, true, SID_ATTR_CHAR_FONT, 0, 0 );
+            sw_CharDialog( *m_pSh, true, SID_ATTR_CHAR_FONT, nullptr, nullptr );
         }
         else if (MN_SET_LANGUAGE_PARAGRAPH_START <= nId && nId <= MN_SET_LANGUAGE_PARAGRAPH_END)
         {
@@ -882,7 +882,7 @@ void SwSpellPopup::Execute( sal_uInt16 nId )
             m_pSh->Push();        // save cursor
             SwLangHelper::SelectCurrentPara( *m_pSh );
             //Open Format/Character Dialog
-            sw_CharDialog( *m_pSh, true, SID_ATTR_CHAR_FONT, 0, 0 );
+            sw_CharDialog( *m_pSh, true, SID_ATTR_CHAR_FONT, nullptr, nullptr );
             m_pSh->Pop( false );  // restore cursor
         }
     }

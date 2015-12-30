@@ -60,10 +60,9 @@ private:
 
     struct DimensionNode : boost::noncopyable
     {
-        const MemberNode* mpParent;
         MembersType maChildMembers;
 
-        DimensionNode(const MemberNode* pParent);
+        DimensionNode();
         ~DimensionNode();
 
 #if DEBUG_PIVOT_TABLE
@@ -73,11 +72,10 @@ private:
 
     struct MemberNode : boost::noncopyable
     {
-        const DimensionNode* mpParent;
         ValuesType maValues;
         DimensionsType maChildDimensions;
 
-        MemberNode(const DimensionNode* pParent);
+        MemberNode();
         ~MemberNode();
 
 #if DEBUG_PIVOT_TABLE
@@ -121,10 +119,9 @@ public:
     void clear();
 
     const ValuesType* getResults(
-        const com::sun::star::uno::Sequence<
-            com::sun::star::sheet::DataPilotFieldFilter>& rFilters) const;
+        const css::uno::Sequence< css::sheet::DataPilotFieldFilter>& rFilters) const;
 
-    double getLeafResult(const com::sun::star::sheet::DataPilotFieldFilter& rFilter) const;
+    double getLeafResult(const css::sheet::DataPilotFieldFilter& rFilter) const;
 
 #if DEBUG_PIVOT_TABLE
     void dump() const;

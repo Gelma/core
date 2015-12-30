@@ -194,6 +194,7 @@ $(eval $(call gb_Library_add_exception_objects,sd,\
 	sd/source/ui/app/sdxfer \
 	sd/source/ui/app/tmplctrl \
 	sd/source/ui/controller/slidelayoutcontroller \
+	sd/source/ui/controller/displaymodecontroller \
 	sd/source/ui/dlg/AnimationChildWindow \
 	sd/source/ui/dlg/LayerTabBar \
 	sd/source/ui/dlg/NavigatorChildWindow \
@@ -528,14 +529,7 @@ $(eval $(call gb_Library_add_exception_objects,sd,\
 	sd/source/ui/remotecontrol/WINNetworkService \
 ))
 
-$(eval $(call gb_Library_add_cobjects,sd,\
-    sd/source/ui/remotecontrol/mDNSResponder/DebugServices \
-    sd/source/ui/remotecontrol/mDNSResponder/dnssd_clientlib \
-    sd/source/ui/remotecontrol/mDNSResponder/dnssd_clientstub \
-	sd/source/ui/remotecontrol/mDNSResponder/dnssd_ipc \
-    sd/source/ui/remotecontrol/mDNSResponder/GenLinkedList \
-    sd/source/ui/remotecontrol/mDNSResponder/dllmain \
-))
+$(eval $(call gb_Library_use_external,sd,mDNSResponder))
 
 endif # OS=WNT
 

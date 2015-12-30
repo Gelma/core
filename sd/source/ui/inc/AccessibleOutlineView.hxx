@@ -41,47 +41,43 @@ public:
     AccessibleOutlineView (
         ::sd::Window* pSdWindow,
         ::sd::OutlineViewShell* pViewShell,
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::frame::XController>& rxController,
-        const ::com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessible>& rxParent);
+        const css::uno::Reference<css::frame::XController>& rxController,
+        const css::uno::Reference<css::accessibility::XAccessible>& rxParent);
 
     virtual ~AccessibleOutlineView();
 
     /** Complete the initialization begun in the constructor.
     */
-    virtual void Init() SAL_OVERRIDE;
+    virtual void Init() override;
 
     //=====  IAccessibleViewForwarderListener  ================================
 
     virtual void ViewForwarderChanged (ChangeType aChangeType,
-        const IAccessibleViewForwarder* pViewForwarder) SAL_OVERRIDE;
+        const IAccessibleViewForwarder* pViewForwarder) override;
 
     //=====  XAccessibleContext  ==============================================
 
     virtual sal_Int32 SAL_CALL
         getAccessibleChildCount()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible> SAL_CALL
+    virtual css::uno::Reference< css::accessibility::XAccessible> SAL_CALL
         getAccessibleChild (sal_Int32 nIndex)
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual OUString SAL_CALL
         getAccessibleName()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     //=====  XAccessibleEventBroadcaster  ========================================
 
     virtual void SAL_CALL
         addAccessibleEventListener (
-            const ::com::sun::star::uno::Reference<
-                ::com::sun::star::accessibility::XAccessibleEventListener >& xListener)
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            const css::uno::Reference<css::accessibility::XAccessibleEventListener >& xListener)
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual void SAL_CALL
         removeAccessibleEventListener (
-            const ::com::sun::star::uno::Reference<
-                ::com::sun::star::accessibility::XAccessibleEventListener >& xListener)
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            const css::uno::Reference<css::accessibility::XAccessibleEventListener >& xListener)
+        throw (css::uno::RuntimeException, std::exception) override;
 
     //=====  XServiceInfo  ====================================================
 
@@ -89,45 +85,45 @@ public:
     */
     virtual OUString SAL_CALL
         getImplementationName()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     //=====  lang::XEventListener  ============================================
 
     virtual void SAL_CALL
-        disposing (const ::com::sun::star::lang::EventObject& rEventObject)
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        disposing (const css::lang::EventObject& rEventObject)
+        throw (css::uno::RuntimeException, std::exception) override;
 
     //=====  XPropertyChangeListener  =========================================
 
     virtual void SAL_CALL
-        propertyChange (const ::com::sun::star::beans::PropertyChangeEvent& rEventObject)
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        propertyChange (const css::beans::PropertyChangeEvent& rEventObject)
+        throw (css::uno::RuntimeException, std::exception) override;
 
 protected:
 
     // overridden to detect focus changes
-    virtual void Activated() SAL_OVERRIDE;
+    virtual void Activated() override;
 
     // overridden to detect focus changes
-    virtual void Deactivated() SAL_OVERRIDE;
+    virtual void Deactivated() override;
 
     // declared, but not defined
     AccessibleOutlineView( const AccessibleOutlineView& );
     AccessibleOutlineView& operator= ( const AccessibleOutlineView& );
 
     // This method is called from the component helper base class while disposing.
-    virtual void SAL_CALL disposing() SAL_OVERRIDE;
+    virtual void SAL_CALL disposing() override;
 
     /// Create an accessible name that contains the current view mode.
     virtual OUString
         CreateAccessibleName ()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     /// Create an accessible description that contains the current
     /// view mode.
     virtual OUString
         CreateAccessibleDescription ()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
 private:
 

@@ -61,7 +61,7 @@ struct VCL_DLLPUBLIC JobData
             m_nColorDevice( 0 ),
             m_nPDFDevice( 0 ),
             m_eOrientation( orientation::Portrait ),
-            m_pParser( NULL ) {}
+            m_pParser( nullptr ) {}
 
     JobData& operator=(const psp::JobData& rRight);
 
@@ -75,8 +75,8 @@ struct VCL_DLLPUBLIC JobData
 
     // creates a new buffer using new
     // it is up to the user to delete it again
-    bool getStreamBuffer( void*& pData, int& bytes );
-    static bool constructFromStreamBuffer( void* pData, int bytes, JobData& rJobData );
+    bool getStreamBuffer( void*& pData, sal_uInt32& bytes );
+    static bool constructFromStreamBuffer( void* pData, sal_uInt32 bytes, JobData& rJobData );
 };
 
 bool operator==(const psp::JobData& rLeft, const psp::JobData& rRight);

@@ -25,6 +25,8 @@
 #include <osl/module.hxx>
 #include <osl/file.hxx>
 #include <unotools/transliterationwrapper.hxx>
+#include <o3tl/make_unique.hxx>
+#include <memory>
 
 #include "callform.hxx"
 #include "global.hxx"
@@ -122,8 +124,8 @@ namespace {
 
 class ModuleCollection
 {
-    typedef boost::ptr_map<OUString, ModuleData> MapType;
-    MapType maData;
+    typedef std::map<OUString, std::unique_ptr<ModuleData>> MapType;
+    MapType m_Data;
 public:
     ModuleCollection() {}
 
@@ -134,8 +136,8 @@ public:
 
 const ModuleData* ModuleCollection::findByName(const OUString& rName) const
 {
-    MapType::const_iterator it = maData.find(rName);
-    return it == maData.end() ? NULL : it->second;
+    MapType::const_iterator it = m_Data.find(rName);
+    return it == m_Data.end() ? nullptr : it->second.get();
 }
 
 void ModuleCollection::insert(ModuleData* pNew)
@@ -144,12 +146,12 @@ void ModuleCollection::insert(ModuleData* pNew)
         return;
 
     OUString aName = pNew->GetName();
-    maData.insert(aName, pNew);
+    m_Data.insert(std::make_pair(aName, std::unique_ptr<ModuleData>(pNew)));
 }
 
 void ModuleCollection::clear()
 {
-    maData.clear();
+    m_Data.clear();
 }
 
 ModuleCollection aModuleCollection;
@@ -170,75 +172,69 @@ bool InitExternalFunc(const OUString& rModuleName)
     OUString aNP;
     aNP = rModuleName;
 
-    bool bRet = false;
-    osl::Module* pLib = new osl::Module( aNP );
-    if (pLib->is())
+    std::unique_ptr<osl::Module> pLib(new osl::Module( aNP ));
+    if (!pLib->is())
+       return false;
+
+    oslGenericFunction fpGetCount = pLib->getFunctionSymbol(GETFUNCTIONCOUNT);
+    oslGenericFunction fpGetData = pLib->getFunctionSymbol(GETFUNCTIONDATA);
+    if ((fpGetCount == nullptr) || (fpGetData == nullptr))
+       return false;
+
+    oslGenericFunction fpIsAsync = pLib->getFunctionSymbol(ISASYNC);
+    oslGenericFunction fpAdvice = pLib->getFunctionSymbol(ADVICE);
+    oslGenericFunction fpSetLanguage = pLib->getFunctionSymbol(SETLANGUAGE);
+    if ( fpSetLanguage )
     {
-        oslGenericFunction fpGetCount = pLib->getFunctionSymbol(GETFUNCTIONCOUNT);
-        oslGenericFunction fpGetData = pLib->getFunctionSymbol(GETFUNCTIONDATA);
-        if ((fpGetCount != NULL) && (fpGetData != NULL))
-        {
-            oslGenericFunction fpIsAsync = pLib->getFunctionSymbol(ISASYNC);
-            oslGenericFunction fpAdvice = pLib->getFunctionSymbol(ADVICE);
-            oslGenericFunction fpSetLanguage = pLib->getFunctionSymbol(SETLANGUAGE);
-            if ( fpSetLanguage )
-            {
-                LanguageType eLanguage = Application::GetSettings().GetUILanguageTag().getLanguageType();
-                sal_uInt16 nLanguage = (sal_uInt16) eLanguage;
-                (*reinterpret_cast<SetLanguagePtr>(fpSetLanguage))( nLanguage );
-            }
-
-            // Module in die Collection aufnehmen
-            ModuleData* pModuleData = new ModuleData(rModuleName, pLib);
-            aModuleCollection.insert(pModuleData);
-
-            // Schnittstelle initialisieren
-            AdvData pfCallBack = &ScAddInAsyncCallBack;
-            LegacyFuncCollection* pLegacyFuncCol = ScGlobal::GetLegacyFuncCollection();
-            sal_uInt16 nCount;
-            (*reinterpret_cast<GetFuncCountPtr>(fpGetCount))(nCount);
-            for (sal_uInt16 i=0; i < nCount; i++)
-            {
-                sal_Char cFuncName[256];
-                sal_Char cInternalName[256];
-                sal_uInt16 nParamCount;
-                ParamType eParamType[MAXFUNCPARAM];
-                ParamType eAsyncType = ParamType::NONE;
-                // initialize all,  in case the AddIn behaves bad
-                cFuncName[0] = 0;
-                cInternalName[0] = 0;
-                nParamCount = 0;
-                for ( sal_uInt16 j=0; j<MAXFUNCPARAM; j++ )
-                {
-                    eParamType[j] = ParamType::NONE;
-                }
-                (*reinterpret_cast<GetFuncDataPtr>(fpGetData))(i, cFuncName, nParamCount,
-                                               eParamType, cInternalName);
-                if( fpIsAsync )
-                {
-                    (*reinterpret_cast<IsAsync>(fpIsAsync))(i, &eAsyncType);
-                    if ( fpAdvice && eAsyncType != ParamType::NONE )
-                        (*reinterpret_cast<Advice>(fpAdvice))( i, pfCallBack );
-                }
-                OUString aInternalName( cInternalName, strlen(cInternalName), osl_getThreadTextEncoding() );
-                OUString aFuncName( cFuncName, strlen(cFuncName), osl_getThreadTextEncoding() );
-                LegacyFuncData* pLegacyFuncData = new LegacyFuncData( pModuleData,
-                                          aInternalName,
-                                          aFuncName,
-                                          i,
-                                          nParamCount,
-                                          eParamType,
-                                          eAsyncType );
-                pLegacyFuncCol->insert(pLegacyFuncData);
-            }
-            bRet = true;
-        }
-        else
-            delete pLib;
+        LanguageType eLanguage = Application::GetSettings().GetUILanguageTag().getLanguageType();
+        sal_uInt16 nLanguage = (sal_uInt16) eLanguage;
+        (*reinterpret_cast<SetLanguagePtr>(fpSetLanguage))( nLanguage );
     }
-    else
-        delete pLib;
-    return bRet;
+
+    // Module in die Collection aufnehmen
+    ModuleData* pModuleData = new ModuleData(rModuleName, pLib.release());
+    aModuleCollection.insert(pModuleData);
+
+    // Schnittstelle initialisieren
+    AdvData pfCallBack = &ScAddInAsyncCallBack;
+    LegacyFuncCollection* pLegacyFuncCol = ScGlobal::GetLegacyFuncCollection();
+    sal_uInt16 nCount;
+    (*reinterpret_cast<GetFuncCountPtr>(fpGetCount))(nCount);
+    for (sal_uInt16 i=0; i < nCount; i++)
+    {
+        sal_Char cFuncName[256];
+        sal_Char cInternalName[256];
+        sal_uInt16 nParamCount;
+        ParamType eParamType[MAXFUNCPARAM];
+        ParamType eAsyncType = ParamType::NONE;
+        // initialize all,  in case the AddIn behaves bad
+        cFuncName[0] = 0;
+        cInternalName[0] = 0;
+        nParamCount = 0;
+        for ( sal_uInt16 j=0; j<MAXFUNCPARAM; j++ )
+        {
+            eParamType[j] = ParamType::NONE;
+        }
+        (*reinterpret_cast<GetFuncDataPtr>(fpGetData))(i, cFuncName, nParamCount,
+                                       eParamType, cInternalName);
+        if( fpIsAsync )
+        {
+            (*reinterpret_cast<IsAsync>(fpIsAsync))(i, &eAsyncType);
+            if ( fpAdvice && eAsyncType != ParamType::NONE )
+                (*reinterpret_cast<Advice>(fpAdvice))( i, pfCallBack );
+        }
+        OUString aInternalName( cInternalName, strlen(cInternalName), osl_getThreadTextEncoding() );
+        OUString aFuncName( cFuncName, strlen(cFuncName), osl_getThreadTextEncoding() );
+        LegacyFuncData* pLegacyFuncData = new LegacyFuncData( pModuleData,
+                                  aInternalName,
+                                  aFuncName,
+                                  i,
+                                  nParamCount,
+                                  eParamType,
+                                  eAsyncType );
+        pLegacyFuncCol->insert(pLegacyFuncData);
+    }
+    return true;
 #endif
 }
 
@@ -256,7 +252,7 @@ bool LegacyFuncData::Call(void** ppParam) const
     bool bRet = false;
     osl::Module* pLib = pModuleData->GetInstance();
     oslGenericFunction fProc = pLib->getFunctionSymbol(aFuncName);
-    if (fProc != NULL)
+    if (fProc != nullptr)
     {
         switch (nParamCount)
         {
@@ -354,7 +350,7 @@ bool LegacyFuncData::Unadvice( double nHandle )
     bool bRet = false;
     osl::Module* pLib = pModuleData->GetInstance();
     oslGenericFunction fProc = pLib->getFunctionSymbol(UNADVICE);
-    if (fProc != NULL)
+    if (fProc != nullptr)
     {
         reinterpret_cast< ::Unadvice>(fProc)(nHandle);
         bRet = true;
@@ -381,7 +377,7 @@ bool LegacyFuncData::getParamDesc( OUString& aName, OUString& aDesc, sal_uInt16 
     {
         osl::Module* pLib = pModuleData->GetInstance();
         oslGenericFunction fProc = pLib->getFunctionSymbol(GETPARAMDESC);
-        if ( fProc != NULL )
+        if ( fProc != nullptr )
         {
             sal_Char pcName[256];
             sal_Char pcDesc[256];
@@ -403,34 +399,40 @@ bool LegacyFuncData::getParamDesc( OUString& aName, OUString& aDesc, sal_uInt16 
 }
 
 LegacyFuncCollection::LegacyFuncCollection() {}
-LegacyFuncCollection::LegacyFuncCollection(const LegacyFuncCollection& r) : maData(r.maData) {}
+LegacyFuncCollection::LegacyFuncCollection(const LegacyFuncCollection& r)
+{
+    for (auto const& it : r.m_Data)
+    {
+        m_Data.insert(std::make_pair(it.first, o3tl::make_unique<LegacyFuncData>(*it.second)));
+    }
+}
 
 const LegacyFuncData* LegacyFuncCollection::findByName(const OUString& rName) const
 {
-    MapType::const_iterator it = maData.find(rName);
-    return it == maData.end() ? NULL : it->second;
+    MapType::const_iterator it = m_Data.find(rName);
+    return it == m_Data.end() ? nullptr : it->second.get();
 }
 
 LegacyFuncData* LegacyFuncCollection::findByName(const OUString& rName)
 {
-    MapType::iterator it = maData.find(rName);
-    return it == maData.end() ? NULL : it->second;
+    MapType::iterator it = m_Data.find(rName);
+    return it == m_Data.end() ? nullptr : it->second.get();
 }
 
 void LegacyFuncCollection::insert(LegacyFuncData* pNew)
 {
     OUString aName = pNew->GetInternalName();
-    maData.insert(aName, pNew);
+    m_Data.insert(std::make_pair(aName, std::unique_ptr<LegacyFuncData>(pNew)));
 }
 
 LegacyFuncCollection::const_iterator LegacyFuncCollection::begin() const
 {
-    return maData.begin();
+    return m_Data.begin();
 }
 
 LegacyFuncCollection::const_iterator LegacyFuncCollection::end() const
 {
-    return maData.end();
+    return m_Data.end();
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

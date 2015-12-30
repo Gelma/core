@@ -114,10 +114,9 @@ void ScDataPilotDatabaseDlg::GetValues( ScImportSourceDesc& rDesc )
     rDesc.bNative = ( nSelect == DP_TYPELIST_SQLNAT );
 }
 
-IMPL_LINK_NOARG(ScDataPilotDatabaseDlg, SelectHdl)
+IMPL_LINK_NOARG_TYPED(ScDataPilotDatabaseDlg, SelectHdl, ListBox&, void)
 {
     FillObjects();
-    return 0;
 }
 
 void ScDataPilotDatabaseDlg::FillObjects()
@@ -145,7 +144,7 @@ void ScDataPilotDatabaseDlg::FillObjects()
         if ( !xSource.is() ) return;
 
         uno::Reference<task::XInteractionHandler> xHandler(
-            task::InteractionHandler::createWithParent(comphelper::getProcessComponentContext(), 0),
+            task::InteractionHandler::createWithParent(comphelper::getProcessComponentContext(), nullptr),
             uno::UNO_QUERY_THROW);
 
         uno::Reference<sdbc::XConnection> xConnection = xSource->connectWithCompletion( xHandler );

@@ -18,6 +18,11 @@
  */
 #ifndef INCLUDED_RTL_BOOTSTRAP_HXX
 #define INCLUDED_RTL_BOOTSTRAP_HXX
+
+#include <sal/config.h>
+
+#include <cstddef>
+
 #include <rtl/ustring.hxx>
 #include <rtl/bootstrap.h>
 
@@ -157,7 +162,7 @@ namespace rtl
     inline bool Bootstrap::get( const ::rtl::OUString &sName,
                                     ::rtl::OUString & outValue )
     {
-        return rtl_bootstrap_get( sName.pData , &(outValue.pData) , 0 );
+        return rtl_bootstrap_get( sName.pData , &(outValue.pData) , NULL );
     }
 
     inline void Bootstrap::get( const ::rtl::OUString &sName,
@@ -174,7 +179,7 @@ namespace rtl
 
     inline Bootstrap::Bootstrap()
     {
-        _handle = 0;
+        _handle = NULL;
     }
 
     inline Bootstrap::Bootstrap(const rtl::OUString & iniName)
@@ -183,7 +188,7 @@ namespace rtl
             _handle = rtl_bootstrap_args_open(iniName.pData);
 
         else
-            _handle = 0;
+            _handle = NULL;
     }
 
     inline Bootstrap::~Bootstrap()
@@ -195,7 +200,7 @@ namespace rtl
     inline bool Bootstrap::getFrom(const ::rtl::OUString &sName,
                                        ::rtl::OUString &outValue) const
     {
-        return rtl_bootstrap_get_from_handle(_handle, sName.pData, &outValue.pData, 0);
+        return rtl_bootstrap_get_from_handle(_handle, sName.pData, &outValue.pData, NULL);
     }
 
     inline void Bootstrap::getFrom(const ::rtl::OUString &sName,

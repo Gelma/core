@@ -78,7 +78,7 @@ size_t ScDPSaveGroupItem::GetElementCount() const
 
 const OUString* ScDPSaveGroupItem::GetElementByIndex(size_t nIndex) const
 {
-    return (nIndex < aElements.size()) ? &aElements[ nIndex ] : 0;
+    return (nIndex < aElements.size()) ? &aElements[ nIndex ] : nullptr;
 }
 
 void ScDPSaveGroupItem::Rename( const OUString& rNewName )
@@ -199,7 +199,7 @@ ScDPSaveGroupItem* ScDPSaveGroupDimension::GetNamedGroupAcc( const OUString& rGr
         if (aIter->GetGroupName().equals(rGroupName))         //TODO: ignore case
             return &*aIter;
 
-    return NULL;        // none found
+    return nullptr;        // none found
 }
 
 long ScDPSaveGroupDimension::GetGroupCount() const
@@ -289,8 +289,8 @@ void fillDateGroupDimension(
     double fSourceMax = 0.0;
     bool bFirst = true;
 
-    const ScDPCache::ItemsType& rItems = rCache.GetDimMemberValues(nSourceDim);
-    ScDPCache::ItemsType::const_iterator it = rItems.begin(), itEnd = rItems.end();
+    const ScDPCache::ScDPItemDataVec& rItems = rCache.GetDimMemberValues(nSourceDim);
+    ScDPCache::ScDPItemDataVec::const_iterator it = rItems.begin(), itEnd = rItems.end();
     for (; it != itEnd; ++it)
     {
         const ScDPItemData& rItem = *it;
@@ -328,8 +328,8 @@ void fillDateGroupDimension(
     {
         case sheet::DataPilotFieldGroupBy::YEARS:
             nStart = ScDPUtil::getDatePartValue(
-                fSourceMin, NULL, sheet::DataPilotFieldGroupBy::YEARS, pFormatter);
-            nEnd = ScDPUtil::getDatePartValue(fSourceMax, NULL, sheet::DataPilotFieldGroupBy::YEARS, pFormatter);
+                fSourceMin, nullptr, sheet::DataPilotFieldGroupBy::YEARS, pFormatter);
+            nEnd = ScDPUtil::getDatePartValue(fSourceMax, nullptr, sheet::DataPilotFieldGroupBy::YEARS, pFormatter);
             break;
         case sheet::DataPilotFieldGroupBy::QUARTERS: nStart = 1; nEnd = 4;   break;
         case sheet::DataPilotFieldGroupBy::MONTHS:   nStart = 1; nEnd = 12;  break;
@@ -404,9 +404,9 @@ void ScDPSaveGroupDimension::AddToCache(ScDPCache& rCache) const
         }
     }
 
-    const ScDPCache::ItemsType& rItems = rCache.GetDimMemberValues(nSourceDim);
+    const ScDPCache::ScDPItemDataVec& rItems = rCache.GetDimMemberValues(nSourceDim);
     {
-        ScDPCache::ItemsType::const_iterator it = rItems.begin(), itEnd = rItems.end();
+        ScDPCache::ScDPItemDataVec::const_iterator it = rItems.begin(), itEnd = rItems.end();
         for (; it != itEnd; ++it)
         {
             const ScDPItemData& rItem = *it;
@@ -477,8 +477,8 @@ void ScDPSaveNumGroupDimension::AddToCache(ScDPCache& rCache) const
         double fSourceMax = 0.0;
         bool bFirst = true;
 
-        const ScDPCache::ItemsType& rItems = rCache.GetDimMemberValues(nDim);
-        ScDPCache::ItemsType::const_iterator it = rItems.begin(), itEnd = rItems.end();
+        const ScDPCache::ScDPItemDataVec& rItems = rCache.GetDimMemberValues(nDim);
+        ScDPCache::ScDPItemDataVec::const_iterator it = rItems.begin(), itEnd = rItems.end();
         for (; it != itEnd; ++it)
         {
             const ScDPItemData& rItem = *it;
@@ -662,7 +662,7 @@ class AddGroupDimToCache : std::unary_function<ScDPSaveGroupDimension, void>
 {
     ScDPCache& mrCache;
 public:
-    AddGroupDimToCache(ScDPCache& rCache) : mrCache(rCache) {}
+    explicit AddGroupDimToCache(ScDPCache& rCache) : mrCache(rCache) {}
     void operator() (const ScDPSaveGroupDimension& rDim)
     {
         rDim.AddToCache(mrCache);
@@ -714,14 +714,14 @@ ScDPSaveGroupDimension* ScDPDimensionSaveData::GetNamedGroupDimAcc( const OUStri
 {
     ScDPSaveGroupDimVec::iterator aIt = ::std::find_if(
         maGroupDims.begin(), maGroupDims.end(), ScDPSaveGroupDimNameFunc( rGroupDimName ) );
-    return (aIt == maGroupDims.end()) ? 0 : &*aIt;
+    return (aIt == maGroupDims.end()) ? nullptr : &*aIt;
 }
 
 ScDPSaveGroupDimension* ScDPDimensionSaveData::GetFirstNamedGroupDimAcc( const OUString& rBaseDimName )
 {
     ScDPSaveGroupDimVec::iterator aIt = ::std::find_if(
         maGroupDims.begin(), maGroupDims.end(), ScDPSaveGroupSourceNameFunc( rBaseDimName ) );
-    return (aIt == maGroupDims.end()) ? 0 : &*aIt;
+    return (aIt == maGroupDims.end()) ? nullptr : &*aIt;
 }
 
 ScDPSaveGroupDimension* ScDPDimensionSaveData::GetNextNamedGroupDimAcc( const OUString& rGroupDimName )
@@ -732,13 +732,13 @@ ScDPSaveGroupDimension* ScDPDimensionSaveData::GetNextNamedGroupDimAcc( const OU
     // find next group dimension based on the same source dimension name
     if( aIt != maGroupDims.end() )
         aIt = ::std::find_if( aIt + 1, maGroupDims.end(), ScDPSaveGroupSourceNameFunc( aIt->GetSourceDimName() ) );
-    return (aIt == maGroupDims.end()) ? 0 : &*aIt;
+    return (aIt == maGroupDims.end()) ? nullptr : &*aIt;
 }
 
 ScDPSaveNumGroupDimension* ScDPDimensionSaveData::GetNumGroupDimAcc( const OUString& rGroupDimName )
 {
     ScDPSaveNumGroupDimMap::iterator aIt = maNumGroupDims.find( rGroupDimName );
-    return (aIt == maNumGroupDims.end()) ? 0 : &aIt->second;
+    return (aIt == maNumGroupDims.end()) ? nullptr : &aIt->second;
 }
 
 bool ScDPDimensionSaveData::HasGroupDimensions() const
@@ -824,7 +824,7 @@ OUString ScDPDimensionSaveData::CreateDateGroupDimName(
     sal_Int32 nDatePart, const ScDPObject& rObject, bool bAllowSource,
     const std::vector<OUString>* pDeletedNames )
 {
-    using namespace ::com::sun::star::sheet::DataPilotFieldGroupBy;
+    using namespace css::sheet::DataPilotFieldGroupBy;
     OUString aPartName;
     switch( nDatePart )
     {

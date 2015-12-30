@@ -59,7 +59,7 @@ using namespace ::com::sun::star::io;
 class OInputStream : public WeakImplHelper < XInputStream >
 {
 public:
-    OInputStream( const Sequence< sal_Int8 >&seq ) :
+    explicit OInputStream( const Sequence< sal_Int8 >&seq ) :
         m_seq( seq ),
         nPos( 0 )
         {}
@@ -76,7 +76,7 @@ public:
             return nBytesToRead;
         }
     virtual sal_Int32 SAL_CALL readSomeBytes(
-        ::com::sun::star::uno::Sequence< sal_Int8 >& aData,
+        css::uno::Sequence< sal_Int8 >& aData,
         sal_Int32 nMaxBytesToRead )
         throw(NotConnectedException, BufferSizeExceededException, IOException, RuntimeException)
         {
@@ -118,7 +118,7 @@ Reference< XInputStream > createStreamFromFile(
         Sequence<sal_Int8> seqIn(nLength);
         fread( seqIn.getArray() , nLength , 1 , f );
 
-        r = Reference< XInputStream > ( new OInputStream( seqIn ) );
+        r.set( new OInputStream( seqIn ) );
         fclose( f );
     }
     return r;
@@ -433,7 +433,7 @@ class OFileWriter :
         public WeakImplHelper< XOutputStream >
 {
 public:
-    OFileWriter( char *pcFile ) { strncpy( m_pcFile , pcFile, 256 - 1 ); m_f = 0; }
+    explicit OFileWriter( char *pcFile ) { strncpy( m_pcFile , pcFile, 256 - 1 ); m_f = 0; }
 
 
 public:
@@ -499,9 +499,8 @@ int main (int argc, char **argv)
     try
     {
         // Create registration service
-        Reference < XInterface > x = xSMgr->createInstance(
-            OUString("com.sun.star.registry.ImplementationRegistration") );
-        xReg = Reference<  XImplementationRegistration > ( x , UNO_QUERY );
+        Reference < XInterface > x = xSMgr->createInstance( "com.sun.star.registry.ImplementationRegistration" );
+        xReg.set( x , UNO_QUERY );
     }
     catch( Exception & ) {
         printf( "Couldn't create ImplementationRegistration service\n" );
@@ -530,8 +529,7 @@ int main (int argc, char **argv)
     // parser demo
     // read xml from a file and count elements
 
-    Reference< XInterface > x = xSMgr->createInstance(
-        OUString("com.sun.star.xml.sax.Parser") );
+    Reference< XInterface > x = xSMgr->createInstance( "com.sun.star.xml.sax.Parser" );
     if( x.is() )
     {
         Reference< XParser > rParser( x , UNO_QUERY );

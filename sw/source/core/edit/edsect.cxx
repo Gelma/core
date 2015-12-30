@@ -35,21 +35,21 @@ SwSection const*
 SwEditShell::InsertSection(
         SwSectionData & rNewData, SfxItemSet const*const pAttr)
 {
-    const SwSection* pRet = 0;
+    const SwSection* pRet = nullptr;
     if( !IsTableMode() )
     {
         StartAllAction();
-        GetDoc()->GetIDocumentUndoRedo().StartUndo( UNDO_INSSECTION, NULL );
+        GetDoc()->GetIDocumentUndoRedo().StartUndo( UNDO_INSSECTION, nullptr );
 
-        for(SwPaM& rPaM : GetCrsr()->GetRingContainer())
+        for(SwPaM& rPaM : GetCursor()->GetRingContainer())
         {
             SwSection const*const pNew =
-                GetDoc()->InsertSwSection( rPaM, rNewData, 0, pAttr );
+                GetDoc()->InsertSwSection( rPaM, rNewData, nullptr, pAttr );
             if( !pRet )
                 pRet = pNew;
         }
 
-        GetDoc()->GetIDocumentUndoRedo().EndUndo( UNDO_INSSECTION, NULL );
+        GetDoc()->GetIDocumentUndoRedo().EndUndo( UNDO_INSSECTION, nullptr );
         EndAllAction();
     }
     return pRet;
@@ -59,11 +59,11 @@ bool SwEditShell::IsInsRegionAvailable() const
 {
     if( IsTableMode() )
         return false;
-    SwPaM* pCrsr = GetCrsr();
-    if( pCrsr->GetNext() != pCrsr )
+    SwPaM* pCursor = GetCursor();
+    if( pCursor->GetNext() != pCursor )
         return false;
-    if( pCrsr->HasMark() )
-        return 0 != SwDoc::IsInsRegionAvailable( *pCrsr );
+    if( pCursor->HasMark() )
+        return 0 != SwDoc::IsInsRegionAvailable( *pCursor );
 
     return true;
 }
@@ -71,9 +71,9 @@ bool SwEditShell::IsInsRegionAvailable() const
 const SwSection* SwEditShell::GetCurrSection() const
 {
     if( IsTableMode() )
-        return 0;
+        return nullptr;
 
-    return SwDoc::GetCurrSection( *GetCrsr()->GetPoint() );
+    return SwDoc::GetCurrSection( *GetCursor()->GetPoint() );
 }
 
 /** Deliver the responsible area of the columns.
@@ -82,32 +82,32 @@ const SwSection* SwEditShell::GetCurrSection() const
  */
 SwSection* SwEditShell::GetAnySection( bool bOutOfTab, const Point* pPt )
 {
-    SwFrm *pFrm;
+    SwFrame *pFrame;
     if ( pPt )
     {
-        SwPosition aPos( *GetCrsr()->GetPoint() );
+        SwPosition aPos( *GetCursor()->GetPoint() );
         Point aPt( *pPt );
-        GetLayout()->GetCrsrOfst( &aPos, aPt );
+        GetLayout()->GetCursorOfst( &aPos, aPt );
         SwContentNode *pNd = aPos.nNode.GetNode().GetContentNode();
-        pFrm = pNd->getLayoutFrm( GetLayout(), pPt );
+        pFrame = pNd->getLayoutFrame( GetLayout(), pPt );
     }
     else
-        pFrm = GetCurrFrm( false );
+        pFrame = GetCurrFrame( false );
 
-    if( bOutOfTab && pFrm )
-        pFrm = pFrm->FindTabFrm();
-    if( pFrm && pFrm->IsInSct() )
+    if( bOutOfTab && pFrame )
+        pFrame = pFrame->FindTabFrame();
+    if( pFrame && pFrame->IsInSct() )
     {
-        SwSectionFrm* pSect = pFrm->FindSctFrm();
+        SwSectionFrame* pSect = pFrame->FindSctFrame();
         OSL_ENSURE( pSect, "GetAnySection: Where's my Sect?" );
         if( pSect->IsInFootnote() && pSect->GetUpper()->IsInSct() )
         {
-            pSect = pSect->GetUpper()->FindSctFrm();
-            OSL_ENSURE( pSect, "GetAnySection: Where's my SectFrm?" );
+            pSect = pSect->GetUpper()->FindSctFrame();
+            OSL_ENSURE( pSect, "GetAnySection: Where's my SectFrame?" );
         }
         return pSect->GetSection();
     }
-    return NULL;
+    return nullptr;
 }
 
 size_t SwEditShell::GetSectionFormatCount() const
@@ -181,7 +181,7 @@ void SwEditShell::SetSectionAttr( const SfxItemSet& rSet,
     {
         // for all section in the selection
 
-        for(SwPaM& rPaM : GetCrsr()->GetRingContainer())
+        for(SwPaM& rPaM : GetCursor()->GetRingContainer())
         {
             const SwPosition* pStt = rPaM.Start(),
                             * pEnd = rPaM.End();
@@ -211,9 +211,9 @@ void SwEditShell::SetSectionAttr( const SfxItemSet& rSet,
 
                     while( aSIdx < aEIdx )
                     {
-                        if( 0 != (pSttSectNd = aSIdx.GetNode().GetSectionNode())
+                        if( nullptr != (pSttSectNd = aSIdx.GetNode().GetSectionNode())
                             || ( aSIdx.GetNode().IsEndNode() &&
-                                0 != ( pSttSectNd = aSIdx.GetNode().
+                                nullptr != ( pSttSectNd = aSIdx.GetNode().
                                     StartOfSectionNode()->GetSectionNode())) )
                             _SetSectionAttr( *pSttSectNd->GetSection().GetFormat(),
                                             rSet );
@@ -251,7 +251,7 @@ void SwEditShell::_SetSectionAttr( SwSectionFormat& rSectFormat,
 sal_uInt16 SwEditShell::GetFullSelectedSectionCount() const
 {
     sal_uInt16 nRet = 0;
-    for(SwPaM& rPaM : GetCrsr()->GetRingContainer())
+    for(SwPaM& rPaM : GetCursor()->GetRingContainer())
     {
 
         const SwPosition* pStt = rPaM.Start(),
@@ -259,7 +259,7 @@ sal_uInt16 SwEditShell::GetFullSelectedSectionCount() const
         const SwContentNode* pCNd;
         // check the selection, if Start at Node begin and End at Node end
         if( pStt->nContent.GetIndex() ||
-            ( 0 == ( pCNd = pEnd->nNode.GetNode().GetContentNode() )) ||
+            ( nullptr == ( pCNd = pEnd->nNode.GetNode().GetContentNode() )) ||
             pCNd->Len() != pEnd->nContent.GetIndex() )
         {
             nRet = 0;
@@ -304,24 +304,24 @@ sal_uInt16 SwEditShell::GetFullSelectedSectionCount() const
  */
 static const SwNode* lcl_SpecialInsertNode(const SwPosition* pCurrentPos)
 {
-    const SwNode* pReturn = NULL;
+    const SwNode* pReturn = nullptr;
 
     // the current position
-    OSL_ENSURE( pCurrentPos != NULL, "Strange, we have no position!" );
+    OSL_ENSURE( pCurrentPos != nullptr, "Strange, we have no position!" );
     const SwNode& rCurrentNode = pCurrentPos->nNode.GetNode();
 
     // find innermost section or table.  At the end of this scope,
     // pInntermostNode contain the section/table before/after which we should
     // insert our empty paragraph, or it will be NULL if none is found.
-    const SwNode* pInnermostNode = NULL;
+    const SwNode* pInnermostNode = nullptr;
     {
         const SwNode* pTableNode = rCurrentNode.FindTableNode();
         const SwNode* pSectionNode = rCurrentNode.FindSectionNode();
 
         // find the table/section which is close
-        if( pTableNode == NULL )
+        if( pTableNode == nullptr )
             pInnermostNode = pSectionNode;
-        else if ( pSectionNode == NULL )
+        else if ( pSectionNode == nullptr )
             pInnermostNode = pTableNode;
         else
         {
@@ -337,7 +337,7 @@ static const SwNode* lcl_SpecialInsertNode(const SwPosition* pCurrentPos)
     // inside a protected area.
 
     // Now, pInnermostNode is NULL or the innermost section or table node.
-    if( (pInnermostNode != NULL) && !pInnermostNode->IsProtect() )
+    if( (pInnermostNode != nullptr) && !pInnermostNode->IsProtect() )
     {
         OSL_ENSURE( pInnermostNode->IsTableNode() ||
                     pInnermostNode->IsSectionNode(), "wrong node found" );
@@ -380,7 +380,7 @@ static const SwNode* lcl_SpecialInsertNode(const SwPosition* pCurrentPos)
             pReturn = pInnermostNode;
     }
 
-    OSL_ENSURE( ( pReturn == NULL ) || pReturn->IsStartNode() ||
+    OSL_ENSURE( ( pReturn == nullptr ) || pReturn->IsStartNode() ||
                                        pReturn->IsEndNode(),
                 "SpecialInsertNode failed" );
     return pReturn;
@@ -391,7 +391,7 @@ static const SwNode* lcl_SpecialInsertNode(const SwPosition* pCurrentPos)
 */
 bool SwEditShell::CanSpecialInsert() const
 {
-    return NULL != lcl_SpecialInsertNode( GetCrsr()->GetPoint() );
+    return nullptr != lcl_SpecialInsertNode( GetCursor()->GetPoint() );
 }
 
 /** check whether a node can be special-inserted (alt-Enter), and do so. Return
@@ -402,9 +402,9 @@ bool SwEditShell::DoSpecialInsert()
     bool bRet = false;
 
     // get current node
-    SwPosition* pCursorPos = GetCrsr()->GetPoint();
+    SwPosition* pCursorPos = GetCursor()->GetPoint();
     const SwNode* pInsertNode = lcl_SpecialInsertNode( pCursorPos );
-    if( pInsertNode != NULL )
+    if( pInsertNode != nullptr )
     {
         StartAllAction();
 

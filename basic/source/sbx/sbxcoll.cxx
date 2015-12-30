@@ -22,8 +22,6 @@
 #include <basic/sbx.hxx>
 #include "sbxres.hxx"
 
-TYPEINIT1(SbxCollection,SbxObject)
-TYPEINIT1(SbxStdCollection,SbxCollection)
 
 static OUString pCount;
 static OUString pAdd;
@@ -93,7 +91,7 @@ SbxVariable* SbxCollection::FindUserData( sal_uInt32 nData )
     if( GetParameters() )
     {
         SbxObject* pObj = static_cast<SbxObject*>(GetObject());
-        return pObj ? pObj->FindUserData( nData ) : NULL;
+        return pObj ? pObj->FindUserData( nData ) : nullptr;
     }
     else
     {
@@ -106,7 +104,7 @@ SbxVariable* SbxCollection::Find( const OUString& rName, SbxClassType t )
     if( GetParameters() )
     {
         SbxObject* pObj = static_cast<SbxObject*>(GetObject());
-        return pObj ? pObj->Find( rName, t ) : NULL;
+        return pObj ? pObj->Find( rName, t ) : nullptr;
     }
     else
     {
@@ -119,7 +117,7 @@ void SbxCollection::Notify( SfxBroadcaster& rCst, const SfxHint& rHint )
     const SbxHint* p = dynamic_cast<const SbxHint*>(&rHint);
     if( p )
     {
-        sal_uLong nId = p->GetId();
+        const sal_uInt32 nId = p->GetId();
         bool bRead  = ( nId == SBX_HINT_DATAWANTED );
         bool bWrite = ( nId == SBX_HINT_DATACHANGED );
         SbxVariable* pVar = p->GetVar();
@@ -172,7 +170,7 @@ void SbxCollection::CollAdd( SbxArray* pPar_ )
     else
     {
         SbxBase* pObj = pPar_->Get( 1 )->GetObject();
-        if( !pObj || !( 0 != dynamic_cast<const SbxObject*>( pObj) ) )
+        if( !pObj || !( nullptr != dynamic_cast<const SbxObject*>( pObj) ) )
         {
             SetError( ERRCODE_SBX_NOTIMP );
         }
@@ -193,7 +191,7 @@ void SbxCollection::CollItem( SbxArray* pPar_ )
     }
     else
     {
-        SbxVariable* pRes = NULL;
+        SbxVariable* pRes = nullptr;
         SbxVariable* p = pPar_->Get( 1 );
         if( p->GetType() == SbxSTRING )
         {

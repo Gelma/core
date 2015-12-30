@@ -342,16 +342,6 @@ inline XclImpStream& operator>>( XclImpStream& rStrm, XclObjAnchor& rAnchor )
     return rStrm;
 }
 
-template< typename StreamType >
-StreamType& operator<<( StreamType& rStrm, const XclObjAnchor& rAnchor )
-{
-    return rStrm
-        << rAnchor.maFirst.mnCol << rAnchor.mnLX
-        << static_cast<sal_uInt16>(rAnchor.maFirst.mnRow) << static_cast<sal_uInt16>(rAnchor.mnTY)
-        << rAnchor.maLast.mnCol  << rAnchor.mnRX
-        << static_cast<sal_uInt16>(rAnchor.maLast.mnRow)  << static_cast<sal_uInt16>(rAnchor.mnBY);
-}
-
 inline SvStream& WriteXclObjAnchor( SvStream& rStrm, const XclObjAnchor& rAnchor )
 {
     return rStrm
@@ -430,19 +420,19 @@ class XclControlHelper
 {
 public:
     /** Returns the API control model from the passed API shape object. */
-    static ::com::sun::star::uno::Reference< ::com::sun::star::awt::XControlModel >
-                        GetControlModel( ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > xShape );
+    static css::uno::Reference< css::awt::XControlModel >
+                        GetControlModel( css::uno::Reference< css::drawing::XShape > xShape );
 
     /** Fills the macro descriptor according to the passed macro name. */
     static bool         FillMacroDescriptor(
-                            ::com::sun::star::script::ScriptEventDescriptor& rDescriptor,
+                            css::script::ScriptEventDescriptor& rDescriptor,
                             XclTbxEventType eEventType,
                             const OUString& rXclMacroName,
-                            SfxObjectShell* pDocShell = 0 );
+                            SfxObjectShell* pDocShell = nullptr );
     /** Tries to extract an Excel macro name from the passed macro descriptor. */
     static OUString     ExtractFromMacroDescriptor(
-                            const ::com::sun::star::script::ScriptEventDescriptor& rDescriptor,
-                            XclTbxEventType eEventType, SfxObjectShell* pShell = NULL );
+                            const css::script::ScriptEventDescriptor& rDescriptor,
+                            XclTbxEventType eEventType, SfxObjectShell* pShell = nullptr );
 };
 
 #endif

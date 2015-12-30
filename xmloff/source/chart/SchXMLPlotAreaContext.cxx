@@ -189,32 +189,20 @@ SchXMLPlotAreaContext::SchXMLPlotAreaContext(
     {
         try
         {
-            xProp->setPropertyValue(
-                    OUString( "HasXAxis" ), aFalseBool );
-            xProp->setPropertyValue(
-                    OUString( "HasXAxisGrid" ), aFalseBool );
-            xProp->setPropertyValue(
-                    OUString( "HasXAxisDescription" ), aFalseBool );
-            xProp->setPropertyValue(
-                    OUString( "HasSecondaryXAxis" ), aFalseBool );
-            xProp->setPropertyValue(
-                    OUString( "HasSecondaryXAxisDescription" ), aFalseBool );
+            xProp->setPropertyValue("HasXAxis", aFalseBool );
+            xProp->setPropertyValue("HasXAxisGrid", aFalseBool );
+            xProp->setPropertyValue("HasXAxisDescription", aFalseBool );
+            xProp->setPropertyValue("HasSecondaryXAxis", aFalseBool );
+            xProp->setPropertyValue("HasSecondaryXAxisDescription", aFalseBool );
 
-            xProp->setPropertyValue(
-                    OUString( "HasYAxis" ), aFalseBool );
-            xProp->setPropertyValue(
-                    OUString( "HasYAxisGrid" ), aFalseBool );
-            xProp->setPropertyValue(
-                    OUString( "HasYAxisDescription" ), aFalseBool );
-            xProp->setPropertyValue(
-                    OUString( "HasSecondaryYAxis" ), aFalseBool );
-            xProp->setPropertyValue(
-                    OUString( "HasSecondaryYAxisDescription" ), aFalseBool );
+            xProp->setPropertyValue("HasYAxis", aFalseBool );
+            xProp->setPropertyValue("HasYAxisGrid", aFalseBool );
+            xProp->setPropertyValue("HasYAxisDescription", aFalseBool );
+            xProp->setPropertyValue("HasSecondaryYAxis", aFalseBool );
+            xProp->setPropertyValue("HasSecondaryYAxisDescription", aFalseBool );
 
-            xProp->setPropertyValue(
-                    OUString( "HasZAxis" ), aFalseBool );
-            xProp->setPropertyValue(
-                    OUString( "HasZAxisDescription" ), aFalseBool );
+            xProp->setPropertyValue("HasZAxis", aFalseBool );
+            xProp->setPropertyValue("HasZAxisDescription", aFalseBool );
 
             uno::Any aAny;
             chart::ChartDataRowSource eSource = chart::ChartDataRowSource_COLUMNS;
@@ -296,14 +284,10 @@ void SchXMLPlotAreaContext::StartElement( const uno::Reference< xml::sax::XAttri
             {
                 uno::Any aAny;
                 aAny <<= mrColHasLabels;
-                xDocProp->setPropertyValue(
-                    OUString( "DataSourceLabelsInFirstColumn" ),
-                    aAny );
+                xDocProp->setPropertyValue("DataSourceLabelsInFirstColumn", aAny );
 
                 aAny <<= mrRowHasLabels;
-                xDocProp->setPropertyValue(
-                    OUString( "DataSourceLabelsInFirstRow" ),
-                    aAny );
+                xDocProp->setPropertyValue("DataSourceLabelsInFirstRow", aAny );
             }
             catch( const beans::UnknownPropertyException & )
             {
@@ -338,7 +322,7 @@ void SchXMLPlotAreaContext::StartElement( const uno::Reference< xml::sax::XAttri
                     //lines on/off
                     //this old property is not supported fully anymore with the new chart, so we need to get the information a little bit different from similar properties
                     mrSeriesDefaultsAndStyles.maLinesOnProperty = SchXMLTools::getPropertyFromContext(
-                        OUString("Lines"), pPropStyleContext, pStylesCtxt );
+                        "Lines", pPropStyleContext, pStylesCtxt );
 
                     //handle automatic position and size
                     m_aOuterPositioning.readAutomaticPositioningProperties( pPropStyleContext, pStylesCtxt );
@@ -438,7 +422,7 @@ SvXMLImportContext* SchXMLPlotAreaContext::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList >& xAttrList )
 {
-    SvXMLImportContext* pContext = 0;
+    SvXMLImportContext* pContext = nullptr;
     const SvXMLTokenMap& rTokenMap = mrImportHelper.GetPlotAreaElemTokenMap();
 
     switch( rTokenMap.Get( nPrefix, rLocalName ))
@@ -624,8 +608,7 @@ void SchXMLPlotAreaContext::EndElement()
 
 SchXMLDataPointContext::SchXMLDataPointContext(  SvXMLImport& rImport, const OUString& rLocalName,
                                                  ::std::list< DataRowPointStyle >& rStyleList,
-                                                 const ::com::sun::star::uno::Reference<
-                                                    ::com::sun::star::chart2::XDataSeries >& xSeries,
+                                                 const css::uno::Reference< css::chart2::XDataSeries >& xSeries,
                                                  sal_Int32& rIndex,
                                                  bool bSymbolSizeForSeriesIsMissingInFile ) :
         SvXMLImportContext( rImport, XML_NAMESPACE_CHART, rLocalName ),
@@ -752,9 +735,9 @@ void SchXMLPositonAttributesHelper::readAutomaticPositioningProperties( XMLPropS
     {
         //handle automatic position and size
         SchXMLTools::getPropertyFromContext(
-            OUString("AutomaticSize"), pPropStyleContext, pStylesCtxt ) >>= m_bAutoSize;
+            "AutomaticSize", pPropStyleContext, pStylesCtxt ) >>= m_bAutoSize;
         SchXMLTools::getPropertyFromContext(
-            OUString("AutomaticPosition"), pPropStyleContext, pStylesCtxt ) >>= m_bAutoPosition;
+            "AutomaticPosition", pPropStyleContext, pStylesCtxt ) >>= m_bAutoPosition;
     }
 }
 
@@ -924,9 +907,9 @@ static void lcl_setErrorBarSequence ( const uno::Reference< chart2::XChartDocume
                                bool bPositiveValue, bool bYError,
                                tSchXMLLSequencesPerIndex& rSequences)
 {
-    uno::Reference< com::sun::star::chart2::data::XDataProvider > xDataProvider(xDoc->getDataProvider());
-    uno::Reference< com::sun::star::chart2::data::XDataSource > xDataSource( xBarProp, uno::UNO_QUERY );
-    uno::Reference< com::sun::star::chart2::data::XDataSink > xDataSink( xDataSource, uno::UNO_QUERY );
+    uno::Reference< css::chart2::data::XDataProvider > xDataProvider(xDoc->getDataProvider());
+    uno::Reference< css::chart2::data::XDataSource > xDataSource( xBarProp, uno::UNO_QUERY );
+    uno::Reference< css::chart2::data::XDataSink > xDataSink( xDataSource, uno::UNO_QUERY );
 
     assert( xDataSink.is() && xDataSource.is() && xDataProvider.is() );
 
@@ -984,10 +967,8 @@ SchXMLStatisticsObjectContext::SchXMLStatisticsObjectContext(
     const OUString& rLocalName,
     const OUString &rSeriesStyleName,
     ::std::list< DataRowPointStyle >& rStyleList,
-    const ::com::sun::star::uno::Reference<
-                ::com::sun::star::chart2::XDataSeries >& xSeries,
+    const css::uno::Reference< css::chart2::XDataSeries >& xSeries,
     ContextType eContextType,
-    const awt::Size & rChartSize,
     tSchXMLLSequencesPerIndex & rLSequencesPerIndex) :
 
         SvXMLImportContext( rImport, nPrefix, rLocalName ),
@@ -995,7 +976,6 @@ SchXMLStatisticsObjectContext::SchXMLStatisticsObjectContext(
         mrStyleList( rStyleList ),
         m_xSeries( xSeries ),
         meContextType( eContextType ),
-        maChartSize( rChartSize ),
         maSeriesStyleName( rSeriesStyleName),
         mrLSequencesPerIndex(rLSequencesPerIndex)
 {}
@@ -1034,7 +1014,7 @@ void SetErrorBarPropertiesFromStyleName( const OUString& aStyleName, uno::Refere
 
     if ( aAny.hasValue() )
     {
-        sal_Int32 aBarStyle = com::sun::star::chart::ErrorBarStyle::NONE;
+        sal_Int32 aBarStyle = css::chart::ErrorBarStyle::NONE;
         aAny >>= aBarStyle;
         xBarProp->setPropertyValue("ErrorBarStyle", aAny);
 
@@ -1101,7 +1081,7 @@ void SetErrorBarPropertiesFromStyleName( const OUString& aStyleName, uno::Refere
 
         aAny = SchXMLTools::getPropertyFromContext("PercentageError",
                 pSeriesStyleContext, pStylesCtxt);
-        if( aAny.hasValue() && aBarStyle == com::sun::star::chart::ErrorBarStyle::RELATIVE )
+        if( aAny.hasValue() && aBarStyle == css::chart::ErrorBarStyle::RELATIVE )
         {
             xBarProp->setPropertyValue("PositiveError", aAny);
             xBarProp->setPropertyValue("NegativeError", aAny);
@@ -1109,7 +1089,7 @@ void SetErrorBarPropertiesFromStyleName( const OUString& aStyleName, uno::Refere
 
         switch(aBarStyle)
         {
-            case com::sun::star::chart::ErrorBarStyle::ERROR_MARGIN:
+            case css::chart::ErrorBarStyle::ERROR_MARGIN:
                 {
                     aAny = SchXMLTools::getPropertyFromContext("NegativeError",
                             pSeriesStyleContext,pStylesCtxt);
@@ -1177,7 +1157,7 @@ void SchXMLStatisticsObjectContext::StartElement( const uno::Reference< xml::sax
                     uno::Reference< beans::XPropertySet > xBarProp( xFact->createInstance("com.sun.star.chart2.ErrorBar" ),
                                                                     uno::UNO_QUERY );
 
-                    xBarProp->setPropertyValue("ErrorBarStyle",uno::makeAny(com::sun::star::chart::ErrorBarStyle::NONE));
+                    xBarProp->setPropertyValue("ErrorBarStyle",uno::makeAny(css::chart::ErrorBarStyle::NONE));
                     xBarProp->setPropertyValue("PositiveError",uno::makeAny(static_cast<double>(0.0)));
                     xBarProp->setPropertyValue("NegativeError",uno::makeAny(static_cast<double>(0.0)));
                     xBarProp->setPropertyValue("Weight",uno::makeAny(static_cast<double>(1.0)));
@@ -1219,7 +1199,7 @@ SvXMLImportContext* SchXMLStatisticsObjectContext::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference< xml::sax::XAttributeList >& xAttrList )
 {
-    SvXMLImportContext* pContext = 0;
+    SvXMLImportContext* pContext = nullptr;
     pContext = SvXMLImportContext::CreateChildContext( nPrefix, rLocalName, xAttrList );
     return pContext;
 }

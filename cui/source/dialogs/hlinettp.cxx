@@ -66,7 +66,7 @@ SvxHyperlinkInternetTp::SvxHyperlinkInternetTp ( vcl::Window *pParent,
 
     // set defaults
     m_pRbtLinktypInternet->Check ();
-    m_pBtBrowse->Enable( true );
+    m_pBtBrowse->Enable();
 
 
     // set handlers
@@ -129,14 +129,14 @@ void SvxHyperlinkInternetTp::FillDlgFields(const OUString& rStrURL)
     if ( aURL.GetProtocol() != INetProtocol::NotValid )
         m_pCbbTarget->SetText( aURL.GetMainURL( INetURLObject::DECODE_UNAMBIGUOUS ) );
     else
-        m_pCbbTarget->SetText(rStrURL); // #77696#
+        m_pCbbTarget->SetText(rStrURL);
 
     SetScheme(aStrScheme);
 }
 
 void SvxHyperlinkInternetTp::setAnonymousFTPUser()
 {
-    m_pEdLogin->SetText(OUString(sAnonymous));
+    m_pEdLogin->SetText(sAnonymous);
     SvAddressParser aAddress( SvtUserOptions().GetEmail() );
     m_pEdPassword->SetText( aAddress.Count() ? aAddress.GetEmailAddress(0) : OUString() );
 
@@ -224,7 +224,7 @@ void SvxHyperlinkInternetTp::SetInitFocus()
 |*
 |************************************************************************/
 
-IMPL_LINK_NOARG(SvxHyperlinkInternetTp, ModifiedTargetHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvxHyperlinkInternetTp, ModifiedTargetHdl_Impl, Edit&, void)
 {
     OUString aScheme = GetSchemeFromURL( m_pCbbTarget->GetText() );
     if( !aScheme.isEmpty() )
@@ -233,8 +233,6 @@ IMPL_LINK_NOARG(SvxHyperlinkInternetTp, ModifiedTargetHdl_Impl)
     // start timer
     maTimer.SetTimeout( 2500 );
     maTimer.Start();
-
-    return 0L;
 }
 
 /*************************************************************************
@@ -254,16 +252,14 @@ IMPL_LINK_NOARG_TYPED(SvxHyperlinkInternetTp, TimeoutHdl_Impl, Timer *, void)
 |*
 |************************************************************************/
 
-IMPL_LINK_NOARG(SvxHyperlinkInternetTp, ModifiedLoginHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SvxHyperlinkInternetTp, ModifiedLoginHdl_Impl, Edit&, void)
 {
     OUString aStrLogin ( m_pEdLogin->GetText() );
     if ( aStrLogin.equalsIgnoreAsciiCase( sAnonymous ) )
     {
         m_pCbAnonymous->Check();
-        ClickAnonymousHdl_Impl(NULL);
+        ClickAnonymousHdl_Impl(nullptr);
     }
-
-    return 0L;
 }
 
 void SvxHyperlinkInternetTp::SetScheme(const OUString& rScheme)
@@ -407,7 +403,7 @@ IMPL_LINK_NOARG_TYPED(SvxHyperlinkInternetTp, ClickBrowseHdl_Impl, Button*, void
 
     SfxBoolItem aBrowse( SID_BROWSE, true );
 
-    const SfxPoolItem *ppItems[] = { &aName, &aNewView, &aSilent, &aReadOnly, &aRefererItem, &aBrowse, NULL };
+    const SfxPoolItem *ppItems[] = { &aName, &aNewView, &aSilent, &aReadOnly, &aRefererItem, &aBrowse, nullptr };
     static_cast<SvxHpLinkDlg*>(mpDialog.get())->GetBindings()->Execute( SID_OPENDOC, ppItems, 0, SfxCallMode::ASYNCHRON | SfxCallMode::RECORD );
 }
 

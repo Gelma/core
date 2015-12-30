@@ -55,7 +55,7 @@ namespace svt
                 _nPos,
                 _rParent,
                 _rBrowseBox,
-                NULL,
+                nullptr,
                 _eType
             );
             aFind = _raHeaderCells.insert( BrowseBoxImpl::THeaderCellMap::value_type( _nPos, xAccessible ) ).first;
@@ -71,7 +71,7 @@ namespace svt
     {
         if ( m_pAccessible && m_pAccessible->isAlive() )
             return m_pAccessible->getHeaderBar( _eObjType );
-        return NULL;
+        return nullptr;
     }
 
 
@@ -79,7 +79,7 @@ namespace svt
     {
         if ( m_pAccessible && m_pAccessible->isAlive() )
             return m_pAccessible->getTable( );
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -119,7 +119,7 @@ Reference< XAccessible > BrowseBox::CreateAccessibleCell( sal_Int32 _nRow, sal_u
     return m_pImpl->m_aFactoryAccess.getFactory().createAccessibleBrowseBoxTableCell(
         m_pImpl->getAccessibleTable(),
         *this,
-        NULL,
+        nullptr,
         _nRow,
         _nColumnPos,
         OFFSET_DEFAULT
@@ -162,7 +162,7 @@ sal_Int32 BrowseBox::GetAccessibleControlCount() const
 Reference< XAccessible > BrowseBox::CreateAccessibleControl( sal_Int32 )
 {
     DBG_ASSERT( false, "BrowseBox::CreateAccessibleControl: to be overwritten!" );
-    return NULL;
+    return nullptr;
 }
 
 
@@ -435,7 +435,7 @@ void BrowseBox::commitBrowseBoxEvent( sal_Int16 _nEventId, const Any& _rNewValue
 
 bool BrowseBox::isAccessibleAlive( ) const
 {
-    return ( NULL != m_pImpl->m_pAccessible ) && m_pImpl->m_pAccessible->isAlive();
+    return ( nullptr != m_pImpl->m_pAccessible ) && m_pImpl->m_pAccessible->isAlive();
 }
 
 // IAccessibleTableProvider
@@ -482,7 +482,7 @@ sal_Int32 BrowseBox::GetSelectedColumnCount() const
     return pColumnSel ? pColumnSel->GetSelectCount() : 0;
 }
 
-void BrowseBox::GetAllSelectedRows( ::com::sun::star::uno::Sequence< sal_Int32 >& _rRows ) const
+void BrowseBox::GetAllSelectedRows( css::uno::Sequence< sal_Int32 >& _rRows ) const
 {
     sal_Int32 nCount = GetSelectRowCount();
     if( nCount )
@@ -496,7 +496,7 @@ void BrowseBox::GetAllSelectedRows( ::com::sun::star::uno::Sequence< sal_Int32 >
     }
 }
 
-void BrowseBox::GetAllSelectedColumns( ::com::sun::star::uno::Sequence< sal_Int32 >& _rColumns ) const
+void BrowseBox::GetAllSelectedColumns( css::uno::Sequence< sal_Int32 >& _rColumns ) const
 {
     const MultiSelection* pColumnSel = GetColumnSelection();
     sal_Int32 nCount = GetSelectedColumnCount();

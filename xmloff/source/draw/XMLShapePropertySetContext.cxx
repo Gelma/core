@@ -28,7 +28,6 @@
 using namespace ::com::sun::star;
 using namespace ::com::sun::star::uno;
 
-TYPEINIT1( XMLShapePropertySetContext, SvXMLPropertySetContext );
 
 XMLShapePropertySetContext::XMLShapePropertySetContext(
                  SvXMLImport& rImport, sal_uInt16 nPrfx,
@@ -74,7 +73,7 @@ SvXMLImportContext *XMLShapePropertySetContext::CreateChildContext(
                    ::std::vector< XMLPropertyState > &rProperties,
                    const XMLPropertyState& rProp )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     switch( mxMapper->getPropertySetMapper()->GetEntryContextId( rProp.mnIndex ) )
     {

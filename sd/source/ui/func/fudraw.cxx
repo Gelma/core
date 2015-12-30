@@ -68,7 +68,6 @@ using namespace ::com::sun::star;
 
 namespace sd {
 
-TYPEINIT1( FuDraw, FuPoor );
 
 /**
  * Base-class for all drawmodul-specific functions
@@ -214,14 +213,14 @@ bool FuDraw::MouseButtonDown(const MouseEvent& rMEvt)
 
         DoModifiers(rMEvt, bSnapModPressed);
 
-        SdrPageView* pPV = 0;
+        SdrPageView* pPV = nullptr;
         sal_uInt16 nHitLog = sal_uInt16 ( mpWindow->PixelToLogic(Size(HITPIX,0)).Width() );
 
         // look only for HelpLines when they are visible (!)
         bool bHelpLine(false);
         if(mpView->IsHlplVisible())
             bHelpLine = mpView->PickHelpLine(aMDPos, nHitLog, *mpWindow, nHelpLine, pPV);
-        bool bHitHdl = (mpView->PickHandle(aMDPos) != NULL);
+        bool bHitHdl = (mpView->PickHandle(aMDPos) != nullptr);
 
         if ( bHelpLine
             && !mpView->IsCreateObj()
@@ -369,11 +368,11 @@ bool FuDraw::KeyInput(const KeyEvent& rKEvt)
                        avoid the restoration of an no more existing object in
                        ::SelectionHasChanged after deletion. All other OLE
                        objects are not affected. */
-                    OSL_ASSERT (mpViewShell->GetViewShell()!=NULL);
+                    OSL_ASSERT (mpViewShell->GetViewShell()!=nullptr);
                     Client* pIPClient = static_cast<Client*>(
                         mpViewShell->GetViewShell()->GetIPClient());
                     if (pIPClient && pIPClient->IsObjectInPlaceActive())
-                        pIPClient->SetSdrGrafObj(NULL);
+                        pIPClient->SetSdrGrafObj(nullptr);
 
                     // wait-mousepointer while deleting object
                     WaitObject aWait( static_cast<vcl::Window*>(mpViewShell->GetActiveWindow()) );
@@ -529,7 +528,7 @@ void FuDraw::ForcePointer(const MouseEvent* pMEvt)
         {
             // pipette mode
             SfxChildWindow* pWnd = mpViewShell->GetViewFrame()->GetChildWindow(SvxBmpMaskChildWindow::GetChildWindowId());
-            SvxBmpMask* pMask = pWnd ? static_cast<SvxBmpMask*>(pWnd->GetWindow()) : NULL;
+            SvxBmpMask* pMask = pWnd ? static_cast<SvxBmpMask*>(pWnd->GetWindow()) : nullptr;
             if (pMask && pMask->IsEyedropping())
             {
                 bDefPointer = false;
@@ -538,8 +537,8 @@ void FuDraw::ForcePointer(const MouseEvent* pMEvt)
         }
         else if (!mpView->IsAction())
         {
-            SdrObject* pObj = NULL;
-            SdrPageView* pPV = NULL;
+            SdrObject* pObj = nullptr;
+            SdrPageView* pPV = nullptr;
             SdrViewEvent aVEvt;
             SdrHitKind eHit = SDRHIT_NONE;
             SdrDragMode eDragMode = mpView->GetDragMode();
@@ -557,7 +556,7 @@ void FuDraw::ForcePointer(const MouseEvent* pMEvt)
                 // wouldn't be possible per default.
                 const SdrMarkList& rMarkList = mpView->GetMarkedObjectList();
                 SdrObject* pObject = rMarkList.GetMark(0)->GetMarkedSdrObj();
-                if ((pObject->ISA(E3dObject)) && (rMarkList.GetMarkCount() == 1))
+                if ((dynamic_cast<const E3dObject* >(pObject) !=  nullptr) && (rMarkList.GetMarkCount() == 1))
                 {
                     mpWindow->SetPointer(Pointer(PointerStyle::Rotate));
                     bDefPointer = false;     // Otherwise it'll be calles Joes routine and the mousepointer will reconfigurate again
@@ -573,7 +572,7 @@ void FuDraw::ForcePointer(const MouseEvent* pMEvt)
             {
                 pObj = aVEvt.pObj;
             }
-            else if (eHit == SDRHIT_TEXTEDITOBJ && this->ISA(FuSelection))
+            else if (eHit == SDRHIT_TEXTEDITOBJ && dynamic_cast< const FuSelection *>( this ) !=  nullptr)
             {
                 sal_uInt16 nSdrObjKind = aVEvt.pObj->GetObjIdentifier();
 
@@ -582,18 +581,18 @@ void FuDraw::ForcePointer(const MouseEvent* pMEvt)
                      nSdrObjKind != OBJ_OUTLINETEXT &&
                      aVEvt.pObj->IsEmptyPresObj() )
                 {
-                    pObj = NULL;
+                    pObj = nullptr;
                     bDefPointer = false;
                     mpWindow->SetPointer(Pointer(PointerStyle::Arrow));
                 }
             }
 
-            if (pObj && pMEvt && !pMEvt->IsMod2() && this->ISA(FuSelection))
+            if (pObj && pMEvt && !pMEvt->IsMod2() && dynamic_cast< const   FuSelection *>( this ) !=  nullptr)
             {
                 // test for animation or ImageMap
                 bDefPointer = !SetPointer(pObj, aPnt);
 
-                if (bDefPointer && (pObj->ISA(SdrObjGroup) || pObj->ISA(E3dPolyScene)))
+                if (bDefPointer && (dynamic_cast< const SdrObjGroup *>( pObj ) != nullptr || dynamic_cast< const E3dPolyScene* >(pObj) !=  nullptr))
                 {
                     // take a glance into the group
                     if (mpView->PickObj(aPnt, mpView->getHitTolLog(), pObj, pPV, SdrSearchOptions::ALSOONMASTER | SdrSearchOptions::DEEP))
@@ -617,7 +616,7 @@ bool FuDraw::SetPointer(SdrObject* pObj, const Point& rPos)
 {
     bool bSet = false;
 
-    bool bAnimationInfo = !mpDocSh->ISA(GraphicDocShell) &&
+    bool bAnimationInfo = dynamic_cast< const GraphicDocShell *>( mpDocSh ) ==  nullptr &&
                           mpDoc->GetAnimationInfo(pObj);
 
     bool bImageMapInfo = false;
@@ -657,7 +656,7 @@ bool FuDraw::SetPointer(SdrObject* pObj, const Point& rPos)
                 ******************************************************/
                 SdAnimationInfo* pInfo = mpDoc->GetAnimationInfo(pObj);
 
-                if ((mpView->ISA(DrawView) &&
+                if(( dynamic_cast< const DrawView *>( mpView ) !=  nullptr &&
                       (pInfo->meClickAction == presentation::ClickAction_BOOKMARK  ||
                        pInfo->meClickAction == presentation::ClickAction_DOCUMENT  ||
                        pInfo->meClickAction == presentation::ClickAction_PREVPAGE  ||
@@ -669,7 +668,7 @@ bool FuDraw::SetPointer(SdrObject* pObj, const Point& rPos)
                        pInfo->meClickAction == presentation::ClickAction_MACRO     ||
                        pInfo->meClickAction == presentation::ClickAction_SOUND))
                                                                     ||
-                    (mpView->ISA(DrawView) &&
+                    ( dynamic_cast< const DrawView *>( mpView ) !=  nullptr &&
                         SlideShow::IsRunning( mpViewShell->GetViewShellBase() )   &&
                          (pInfo->meClickAction == presentation::ClickAction_VANISH            ||
                           pInfo->meClickAction == presentation::ClickAction_INVISIBLE         ||
@@ -735,7 +734,7 @@ void FuDraw::DoubleClick(const MouseEvent& rMEvt)
                     GetDispatcher()->Execute( SID_INSERT_GRAPHIC,
                                               SfxCallMode::ASYNCHRON | SfxCallMode::RECORD );
             }
-            else if ( ( pObj->ISA(SdrTextObj) || pObj->ISA(SdrObjGroup) ) &&
+            else if ( ( dynamic_cast< const SdrTextObj *>( pObj ) != nullptr || dynamic_cast< const SdrObjGroup *>( pObj ) !=  nullptr ) &&
                       !SD_MOD()->GetWaterCan()                            &&
                       mpViewShell->GetFrameView()->IsDoubleClickTextEdit() &&
                       !mpDocSh->IsReadOnly())
@@ -771,16 +770,16 @@ bool FuDraw::RequestHelp(const HelpEvent& rHEvt)
 
         SdrObject* pObj = aVEvt.pObj;
 
-        if (eHit != SDRHIT_NONE && pObj != NULL)
+        if (eHit != SDRHIT_NONE && pObj != nullptr)
         {
             Point aPosPixel = rHEvt.GetMousePosPixel();
 
             bReturn = SetHelpText(pObj, aPosPixel, aVEvt);
 
-            if (!bReturn && (pObj->ISA(SdrObjGroup) || pObj->ISA(E3dPolyScene)))
+            if (!bReturn && (dynamic_cast< const SdrObjGroup *>( pObj ) != nullptr || dynamic_cast< const E3dPolyScene* >(pObj) !=  nullptr))
             {
                 // take a glance into the group
-                SdrPageView* pPV = NULL;
+                SdrPageView* pPV = nullptr;
 
                 Point aPos(mpWindow->PixelToLogic(mpWindow->ScreenToOutputPixel(aPosPixel)));
 
@@ -821,7 +820,7 @@ bool FuDraw::SetHelpText(SdrObject* pObj, const Point& rPosPixel, const SdrViewE
             }
         }
     }
-    else if (!mpDocSh->ISA(GraphicDocShell) && mpDoc->GetAnimationInfo(pObj))
+    else if (dynamic_cast< GraphicDocShell *>( mpDocSh ) ==  nullptr && mpDoc->GetAnimationInfo(pObj))
     {
         SdAnimationInfo* pInfo = mpDoc->GetAnimationInfo(pObj);
 

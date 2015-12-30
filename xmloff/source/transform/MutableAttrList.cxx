@@ -51,7 +51,7 @@ XMLMutableAttributeList::XMLMutableAttributeList() :
 XMLMutableAttributeList::XMLMutableAttributeList( const Reference<
         XAttributeList> & rAttrList, bool bClone ) :
     m_xAttrList( rAttrList.is() ? rAttrList : new SvXMLAttributeList ),
-    m_pMutableAttrList( 0 )
+    m_pMutableAttrList( nullptr )
 {
     if( bClone )
         GetMutableAttrList();
@@ -60,7 +60,7 @@ XMLMutableAttributeList::XMLMutableAttributeList( const Reference<
 
 XMLMutableAttributeList::~XMLMutableAttributeList()
 {
-    m_xAttrList = 0;
+    m_xAttrList = nullptr;
 }
 
 namespace
@@ -161,7 +161,7 @@ void XMLMutableAttributeList::RenameAttributeByIndex( sal_Int16 i,
 }
 
 void XMLMutableAttributeList::AppendAttributeList(
-        const Reference< ::com::sun::star::xml::sax::XAttributeList >& r )
+        const Reference< css::xml::sax::XAttributeList >& r )
 {
     GetMutableAttrList()->AppendAttributeList( r );
 }

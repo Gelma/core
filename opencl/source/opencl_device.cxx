@@ -216,7 +216,7 @@ ds_status deserializeScore(ds_device* device, const unsigned char* serializedSco
 /* Releases memory held by score */
 ds_status releaseScore(void* score)
 {
-    if (NULL != score)
+    if (nullptr != score)
     {
         delete static_cast<LibreOfficeDeviceScore*>(score);
     }
@@ -233,21 +233,21 @@ ds_status evaluateScoreForDevice(ds_device* device, void* evalData)
         cl_int clStatus;
         /* Check for 64-bit float extensions */
         size_t aDevExtInfoSize = 0;
-        clStatus = clGetDeviceInfo(device->oclDeviceID, CL_DEVICE_EXTENSIONS, 0, NULL, &aDevExtInfoSize);
+        clStatus = clGetDeviceInfo(device->oclDeviceID, CL_DEVICE_EXTENSIONS, 0, nullptr, &aDevExtInfoSize);
         DS_CHECK_STATUS(clStatus, "evaluateScoreForDevice::clGetDeviceInfo");
 
-        char* aExtInfo = new char[aDevExtInfoSize];
-        clStatus = clGetDeviceInfo(device->oclDeviceID, CL_DEVICE_EXTENSIONS, sizeof(char) * aDevExtInfoSize, aExtInfo, NULL);
+        std::unique_ptr<char[]> aExtInfo(new char[aDevExtInfoSize]);
+        clStatus = clGetDeviceInfo(device->oclDeviceID, CL_DEVICE_EXTENSIONS, sizeof(char) * aDevExtInfoSize, aExtInfo.get(), nullptr);
         DS_CHECK_STATUS(clStatus, "evaluateScoreForDevice::clGetDeviceInfo");
         bool bKhrFp64Flag = false;
         bool bAmdFp64Flag = false;
-        const char* buildOption = NULL;
+        const char* buildOption = nullptr;
         std::string tmpStr("-Dfp_t=double -Dfp_t4=double4 -Dfp_t16=double16 -DINPUTSIZE=");
         std::ostringstream tmpOStrStr;
         tmpOStrStr << std::dec << INPUTSIZE;
         tmpStr.append(tmpOStrStr.str());
 
-        if ((std::string(aExtInfo)).find("cl_khr_fp64") != std::string::npos)
+        if ((std::string(aExtInfo.get())).find("cl_khr_fp64") != std::string::npos)
         {
             bKhrFp64Flag = true;
             //buildOption = "-D KHR_DP_EXTENSION -Dfp_t=double -Dfp_t4=double4 -Dfp_t16=double16";
@@ -255,7 +255,7 @@ ds_status evaluateScoreForDevice(ds_device* device, void* evalData)
             buildOption = tmpStr.c_str();
             SAL_INFO("opencl.device", "... has cl_khr_fp64");
         }
-        else if ((std::string(aExtInfo)).find("cl_amd_fp64") != std::string::npos)
+        else if ((std::string(aExtInfo.get())).find("cl_amd_fp64") != std::string::npos)
         {
             bAmdFp64Flag = true;
             //buildOption = "-D AMD_DP_EXTENSION -Dfp_t=double -Dfp_t4=double4 -Dfp_t16=double16";
@@ -263,7 +263,6 @@ ds_status evaluateScoreForDevice(ds_device* device, void* evalData)
             buildOption = tmpStr.c_str();
             SAL_INFO("opencl.device", "... has cl_amd_fp64");
         }
-        delete[] aExtInfo;
 
         if (!bKhrFp64Flag && !bAmdFp64Flag)
         {
@@ -278,7 +277,7 @@ ds_status evaluateScoreForDevice(ds_device* device, void* evalData)
             /* 64-bit float support present */
 
             /* Create context and command queue */
-            cl_context  clContext = clCreateContext(NULL, 1, &device->oclDeviceID, NULL, NULL, &clStatus);
+            cl_context  clContext = clCreateContext(nullptr, 1, &device->oclDeviceID, nullptr, nullptr, &clStatus);
             DS_CHECK_STATUS(clStatus, "evaluateScoreForDevice::clCreateContext");
             cl_command_queue clQueue = clCreateCommandQueue(clContext, device->oclDeviceID, 0, &clStatus);
             DS_CHECK_STATUS(clStatus, "evaluateScoreForDevice::clCreateCommandQueue");
@@ -286,14 +285,14 @@ ds_status evaluateScoreForDevice(ds_device* device, void* evalData)
             /* Build program */
             cl_program clProgram = clCreateProgramWithSource(clContext, 1, &source, sourceSize, &clStatus);
             DS_CHECK_STATUS(clStatus, "evaluateScoreForDevice::clCreateProgramWithSource");
-            clStatus = clBuildProgram(clProgram, 1, &device->oclDeviceID, buildOption, NULL, NULL);
+            clStatus = clBuildProgram(clProgram, 1, &device->oclDeviceID, buildOption, nullptr, nullptr);
             DS_CHECK_STATUS(clStatus, "evaluateScoreForDevice::clBuildProgram");
             if (CL_SUCCESS != clStatus)
             {
                 /* Build program failed */
                 size_t length;
                 char* buildLog;
-                clStatus = clGetProgramBuildInfo(clProgram, device->oclDeviceID, CL_PROGRAM_BUILD_LOG, 0, NULL, &length);
+                clStatus = clGetProgramBuildInfo(clProgram, device->oclDeviceID, CL_PROGRAM_BUILD_LOG, 0, nullptr, &length);
                 buildLog = static_cast<char*>(malloc(length));
                 clGetProgramBuildInfo(clProgram, device->oclDeviceID, CL_PROGRAM_BUILD_LOG, length, buildLog, &length);
                 SAL_INFO("opencl.device", "Build Errors:\n" << buildLog);
@@ -335,7 +334,7 @@ ds_status evaluateScoreForDevice(ds_device* device, void* evalData)
                 DS_CHECK_STATUS(clStatus, "evaluateScoreForDevice::clSetKernelArg::clInput3");
                 size_t globalWS[1] = { testData->outputSize };
                 size_t localSize[1] = { 64 };
-                clStatus = clEnqueueNDRangeKernel(clQueue, clKernel, 1, 0, globalWS, localSize, 0, NULL, NULL);
+                clStatus = clEnqueueNDRangeKernel(clQueue, clKernel, 1, nullptr, globalWS, localSize, 0, nullptr, nullptr);
                 DS_CHECK_STATUS(clStatus, "evaluateScoreForDevice::clEnqueueNDRangeKernel");
                 clFinish(clQueue);
                 clReleaseMemObject(clInput3);
@@ -485,9 +484,8 @@ ds_device getDeviceSelection(const char* sProfilePath, bool bForceSelection)
     if (!bIsDeviceSelected || bForceSelection)
     {
         /* Setup */
-        ds_status status;
-        ds_profile* profile = NULL;
-        status = initDSProfile(&profile, "LibreOffice v0.1");
+        ds_profile* profile = nullptr;
+        initDSProfile(&profile, "LibreOffice v0.1");
 
         if (!profile)
         {
@@ -499,6 +497,7 @@ ds_device getDeviceSelection(const char* sProfilePath, bool bForceSelection)
         /* Try reading scores from file */
         std::string tmpStr(sProfilePath);
         const char* fileName = tmpStr.append("sc_opencl_device_profile.dat").c_str();
+        ds_status status;
         if (!bForceSelection)
         {
             status = readProfileFromFile(profile, deserializeScore, fileName);
@@ -559,7 +558,7 @@ ds_device getDeviceSelection(const char* sProfilePath, bool bForceSelection)
 
         /* Override if necessary */
         char* overrideDeviceStr = getenv("SC_OPENCL_DEVICE_OVERRIDE");
-        if (NULL != overrideDeviceStr)
+        if (nullptr != overrideDeviceStr)
         {
             int overrideDeviceIdx = matchDevice(profile, overrideDeviceStr);
             if (-1 != overrideDeviceIdx)

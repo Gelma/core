@@ -20,11 +20,10 @@
 #ifndef INCLUDED_BASIC_SBXCORE_HXX
 #define INCLUDED_BASIC_SBXCORE_HXX
 
-#include <tools/rtti.hxx>
-#include <tools/ref.hxx>
-
-#include <basic/sbxdef.hxx>
 #include <basic/basicdllapi.h>
+#include <basic/sbxdef.hxx>
+#include <rtl/ustring.hxx>
+#include <tools/ref.hxx>
 
 class SvStream;
 
@@ -35,9 +34,9 @@ class SvStream;
 
 // This version of the Macros does not define Load/StorePrivateData()-methods
 #define SBX_DECL_PERSIST_NODATA( nCre, nSbxId, nVer )       \
-    virtual sal_uInt32 GetCreator() const SAL_OVERRIDE { return nCre;   }    \
-    virtual sal_uInt16 GetVersion() const SAL_OVERRIDE { return nVer;   }    \
-    virtual sal_uInt16 GetSbxId() const SAL_OVERRIDE   { return nSbxId; }
+    virtual sal_uInt32 GetCreator() const override { return nCre;   }    \
+    virtual sal_uInt16 GetVersion() const override { return nVer;   }    \
+    virtual sal_uInt16 GetSbxId() const override   { return nSbxId; }
 
 class SbxBase;
 class SbxFactory;
@@ -55,14 +54,11 @@ protected:
     SbxBase& operator=( const SbxBase& );
     virtual ~SbxBase();
 
-    virtual bool LoadPrivateData( SvStream&, sal_uInt16 );
-    virtual bool StorePrivateData( SvStream& ) const;
     virtual sal_uInt32 GetCreator() const { return 0;   }
     virtual sal_uInt16 GetVersion() const { return 0;   }
     virtual sal_uInt16 GetSbxId() const   { return 0; }
 
 public:
-    TYPEINFO();
     inline void         SetFlags( SbxFlagBits n );
     inline SbxFlagBits  GetFlags() const;
     inline void         SetFlag( SbxFlagBits n );

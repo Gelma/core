@@ -46,6 +46,7 @@
 #include <vector>
 #include <numeric>
 #include <algorithm>
+#include <memory>
 #include <comphelper/processfactory.hxx>
 #include <com/sun/star/i18n/BreakIterator.hpp>
 #include <com/sun/star/i18n/ScriptType.hpp>
@@ -165,7 +166,7 @@ void CalculateHorizontalScalingFactor( const SdrObject* pCustomShape,
     aFont.SetOrientation( 0 );
     // initializing virtual device
 
-    ScopedVclPtrInstance< VirtualDevice > pVirDev( 1 );
+    ScopedVclPtrInstance< VirtualDevice > pVirDev(DeviceFormat::BITMASK);
     pVirDev->SetMapMode( MAP_100TH_MM );
     pVirDev->SetFont( aFont );
 
@@ -259,7 +260,7 @@ void GetTextAreaOutline( const FWData& rFWData, const SdrObject* pCustomShape, F
             aFont.SetWeight( rWeightItem.GetWeight() );
 
             // initializing virtual device
-            ScopedVclPtrInstance< VirtualDevice > pVirDev( 1 );
+            ScopedVclPtrInstance< VirtualDevice > pVirDev(DeviceFormat::BITMASK);
             pVirDev->SetMapMode( MAP_100TH_MM );
             pVirDev->SetFont( aFont );
             pVirDev->EnableRTL();
@@ -268,7 +269,7 @@ void GetTextAreaOutline( const FWData& rFWData, const SdrObject* pCustomShape, F
 
             const SvxCharScaleWidthItem& rCharScaleWidthItem = static_cast<const SvxCharScaleWidthItem&>(pCustomShape->GetMergedItem( EE_CHAR_FONTWIDTH ));
             sal_uInt16 nCharScaleWidth = rCharScaleWidthItem.GetValue();
-            long* pDXArry = NULL;
+            std::unique_ptr<long[]> pDXArry;
             sal_Int32 nWidth = 0;
 
             // VERTICAL
@@ -282,7 +283,7 @@ void GetTextAreaOutline( const FWData& rFWData, const SdrObject* pCustomShape, F
                 {
                     FWCharacterData aCharacterData;
                     OUString aCharText( (sal_Unicode)rText[ i ] );
-                    if ( pVirDev->GetTextOutlines( aCharacterData.vOutlines, aCharText, 0, 0, -1, true, nWidth, pDXArry ) )
+                    if ( pVirDev->GetTextOutlines( aCharacterData.vOutlines, aCharText, 0, 0, -1, true, nWidth, pDXArry.get() ) )
                     {
                         sal_Int32 nTextWidth = pVirDev->GetTextWidth( aCharText);
                         std::vector< tools::PolyPolygon >::iterator aOutlineIter = aCharacterData.vOutlines.begin();
@@ -333,19 +334,18 @@ void GetTextAreaOutline( const FWData& rFWData, const SdrObject* pCustomShape, F
             {
                 if ( ( nCharScaleWidth != 100 ) && nCharScaleWidth )
                 {   // applying character spacing
-                    pDXArry = new long[ rText.getLength() ];
-                    pVirDev->GetTextArray( rText, pDXArry);
+                    pDXArry.reset(new long[ rText.getLength() ]);
+                    pVirDev->GetTextArray( rText, pDXArry.get());
                     FontMetric aFontMetric( pVirDev->GetFontMetric() );
                     aFont.SetWidth( (sal_Int32)( (double)aFontMetric.GetWidth() * ( (double)100 / (double)nCharScaleWidth ) ) );
                     pVirDev->SetFont( aFont );
                 }
                 FWCharacterData aCharacterData;
-                if ( pVirDev->GetTextOutlines( aCharacterData.vOutlines, rText, 0, 0, -1, true, nWidth, pDXArry ) )
+                if ( pVirDev->GetTextOutlines( aCharacterData.vOutlines, rText, 0, 0, -1, true, nWidth, pDXArry.get() ) )
                 {
                     aParagraphIter->vCharacters.push_back( aCharacterData );
                 }
             }
-            delete[] pDXArry;
 
             // vertical alignment
             std::vector< FWCharacterData >::iterator aCharacterIter( aParagraphIter->vCharacters.begin() );
@@ -426,7 +426,7 @@ void GetFontWorkOutline( FWData& rFWData, const SdrObject* pCustomShape )
 
     bool bSameLetterHeights = false;
     const SdrCustomShapeGeometryItem& rGeometryItem = static_cast<const SdrCustomShapeGeometryItem&>(pCustomShape->GetMergedItem( SDRATTR_CUSTOMSHAPE_GEOMETRY ));
-    const com::sun::star::uno::Any* pAny = rGeometryItem.GetPropertyValueByName( "TextPath", "SameLetterHeights" );
+    const css::uno::Any* pAny = rGeometryItem.GetPropertyValueByName( "TextPath", "SameLetterHeights" );
     if ( pAny )
         *pAny >>= bSameLetterHeights;
 
@@ -514,7 +514,7 @@ basegfx::B2DPolyPolygon GetOutlinesFromShape2d( const SdrObject* pShape2d )
     while( aObjListIter.IsMore() )
     {
         SdrObject* pPartObj = aObjListIter.Next();
-        if ( pPartObj->ISA( SdrPathObj ) )
+        if ( dynamic_cast<const SdrPathObj*>( pPartObj) !=  nullptr )
         {
             basegfx::B2DPolyPolygon aCandidate(static_cast<SdrPathObj*>(pPartObj)->GetPathPoly());
             if(aCandidate.areControlPointsUsed())
@@ -791,7 +791,7 @@ void FitTextOutlinesToShapeOutlines( const tools::PolyPolygon& aOutlines2d, FWDa
 
 SdrObject* CreateSdrObjectFromParagraphOutlines( const FWData& rFWData, const SdrObject* pCustomShape )
 {
-    SdrObject* pRet = NULL;
+    SdrObject* pRet = nullptr;
     basegfx::B2DPolyPolygon aPolyPoly;
     if ( !rFWData.vTextAreas.empty() )
     {
@@ -831,7 +831,7 @@ SdrObject* CreateSdrObjectFromParagraphOutlines( const FWData& rFWData, const Sd
     return pRet;
 }
 
-Reference < i18n::XBreakIterator > EnhancedCustomShapeFontWork::mxBreakIterator = 0;
+Reference < i18n::XBreakIterator > EnhancedCustomShapeFontWork::mxBreakIterator = nullptr;
 
 Reference < i18n::XBreakIterator > EnhancedCustomShapeFontWork::GetBreakIterator()
 {
@@ -845,7 +845,7 @@ Reference < i18n::XBreakIterator > EnhancedCustomShapeFontWork::GetBreakIterator
 
 SdrObject* EnhancedCustomShapeFontWork::CreateFontWork( const SdrObject* pShape2d, const SdrObject* pCustomShape )
 {
-    SdrObject* pRet = NULL;
+    SdrObject* pRet = nullptr;
 
     tools::PolyPolygon aOutlines2d( GetOutlinesFromShape2d( pShape2d ) );
     sal_uInt16 nOutlinesCount2d = aOutlines2d.Count();

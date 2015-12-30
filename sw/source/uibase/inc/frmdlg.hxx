@@ -25,7 +25,7 @@
 class SwWrtShell;
 
 // frame dialog
-class SwFrmDlg : public SfxTabDialog
+class SwFrameDlg : public SfxTabDialog
 {
     bool m_bFormat;
     bool m_bNew;
@@ -47,18 +47,18 @@ class SwFrmDlg : public SfxTabDialog
     sal_uInt16 m_nMacroId;
     sal_uInt16 m_nBorderId;
 
-    virtual void PageCreated( sal_uInt16 nId, SfxTabPage &rPage ) SAL_OVERRIDE;
+    virtual void PageCreated( sal_uInt16 nId, SfxTabPage &rPage ) override;
 
 public:
-    SwFrmDlg(   SfxViewFrame *pFrame, vcl::Window *pParent,
+    SwFrameDlg(   SfxViewFrame *pFrame, vcl::Window *pParent,
                 const SfxItemSet& rCoreSet,
-                bool bNewFrm  = false,
+                bool bNewFrame  = false,
                 const OUString& sResType = OUString("FrameDialog"),
                 bool bFormat     = false,
                 const OString& sDefPage = OString(),
-                const OUString* pFormatStr  = 0);
+                const OUString* pFormatStr  = nullptr);
 
-    virtual ~SwFrmDlg();
+    virtual ~SwFrameDlg();
 
     SwWrtShell*  GetWrtShell()   { return m_pWrtShell; }
 };

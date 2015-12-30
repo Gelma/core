@@ -84,21 +84,21 @@ private:
 // attribute maps
 
 SchXMLImportHelper::SchXMLImportHelper() :
-        mpAutoStyles( 0 ),
+        mpAutoStyles( nullptr ),
 
-        mpChartDocElemTokenMap( 0 ),
-        mpTableElemTokenMap( 0 ),
-        mpChartElemTokenMap( 0 ),
-        mpPlotAreaElemTokenMap( 0 ),
-        mpSeriesElemTokenMap( 0 ),
+        mpChartDocElemTokenMap( nullptr ),
+        mpTableElemTokenMap( nullptr ),
+        mpChartElemTokenMap( nullptr ),
+        mpPlotAreaElemTokenMap( nullptr ),
+        mpSeriesElemTokenMap( nullptr ),
 
-        mpChartAttrTokenMap( 0 ),
-        mpPlotAreaAttrTokenMap( 0 ),
-        mpAutoStyleAttrTokenMap( 0 ),
-        mpCellAttrTokenMap( 0 ),
-        mpSeriesAttrTokenMap( 0 ),
-        mpPropMappingAttrTokenMap( 0 ),
-        mpRegEquationAttrTokenMap( 0 )
+        mpChartAttrTokenMap( nullptr ),
+        mpPlotAreaAttrTokenMap( nullptr ),
+        mpAutoStyleAttrTokenMap( nullptr ),
+        mpCellAttrTokenMap( nullptr ),
+        mpSeriesAttrTokenMap( nullptr ),
+        mpPropMappingAttrTokenMap( nullptr ),
+        mpRegEquationAttrTokenMap( nullptr )
 {
 }
 
@@ -125,7 +125,7 @@ SvXMLImportContext* SchXMLImportHelper::CreateChartContext(
     const Reference< frame::XModel >& rChartModel,
     const Reference< xml::sax::XAttributeList >& )
 {
-    SvXMLImportContext* pContext = 0;
+    SvXMLImportContext* pContext = nullptr;
 
     Reference< chart::XChartDocument > xDoc( rChartModel, uno::UNO_QUERY );
     if( xDoc.is())
@@ -487,7 +487,7 @@ Reference< chart2::XDataSeries > SchXMLImportHelper::GetNewDataSeries(
                 {
                     xResult.set(
                         xContext->getServiceManager()->createInstanceWithContext(
-                            OUString( "com.sun.star.chart2.DataSeries" ),
+                            "com.sun.star.chart2.DataSeries",
                             xContext ), uno::UNO_QUERY_THROW );
                 }
                 if( xResult.is() )
@@ -502,7 +502,6 @@ Reference< chart2::XDataSeries > SchXMLImportHelper::GetNewDataSeries(
     return xResult;
 }
 
-// #110680#
 SchXMLImport::SchXMLImport(
     const Reference< uno::XComponentContext >& xContext,
     OUString const & implementationName, SvXMLImportFlags nImportFlags ) :
@@ -534,7 +533,7 @@ SchXMLImport::~SchXMLImport() throw ()
 SvXMLImportContext *SchXMLImport::CreateContext( sal_uInt16 nPrefix, const OUString& rLocalName,
     const Reference< xml::sax::XAttributeList >& xAttrList )
 {
-    SvXMLImportContext* pContext = 0;
+    SvXMLImportContext* pContext = nullptr;
 
     // accept <office:document>
     if( XML_NAMESPACE_OFFICE == nPrefix &&
@@ -659,9 +658,7 @@ void SAL_CALL SchXMLImport::setTargetDocument( const uno::Reference< lang::XComp
 
 Sequence< OUString > SAL_CALL SchXMLImport_getSupportedServiceNames() throw()
 {
-    const OUString aServiceName(  "com.sun.star.comp.Chart.XMLOasisImporter"  );
-    const Sequence< OUString > aSeq( &aServiceName, 1 );
-    return aSeq;
+    return Sequence< OUString > { "com.sun.star.comp.Chart.XMLOasisImporter" };
 }
 
 OUString SAL_CALL SchXMLImport_getImplementationName() throw()
@@ -671,7 +668,6 @@ OUString SAL_CALL SchXMLImport_getImplementationName() throw()
 
 Reference< uno::XInterface > SAL_CALL SchXMLImport_createInstance(const Reference< lang::XMultiServiceFactory > & rSMgr) throw( uno::Exception )
 {
-    // #110680#
     return static_cast<cppu::OWeakObject*>(new SchXMLImport( comphelper::getComponentContext(rSMgr), SchXMLImport_getImplementationName(), SvXMLImportFlags::ALL));
 }
 
@@ -679,27 +675,22 @@ Reference< uno::XInterface > SAL_CALL SchXMLImport_createInstance(const Referenc
 
 Sequence< OUString > SAL_CALL SchXMLImport_Styles_getSupportedServiceNames() throw()
 {
-    const OUString aServiceName(  "com.sun.star.comp.Chart.XMLOasisStylesImporter"  );
-    const Sequence< OUString > aSeq( &aServiceName, 1 );
-    return aSeq;
+    return Sequence< OUString > { "com.sun.star.comp.Chart.XMLOasisStylesImporter" };
 }
 
 OUString SAL_CALL SchXMLImport_Styles_getImplementationName() throw()
 {
-    return OUString(  "SchXMLImport.Styles"  );
+    return OUString( "SchXMLImport.Styles" );
 }
 
 Reference< uno::XInterface > SAL_CALL SchXMLImport_Styles_createInstance(const Reference< lang::XMultiServiceFactory > & rSMgr) throw( uno::Exception )
 {
-    // #110680#
     return static_cast<cppu::OWeakObject*>(new SchXMLImport( comphelper::getComponentContext(rSMgr), SchXMLImport_Styles_getImplementationName(), SvXMLImportFlags::STYLES ));
 }
 
 Sequence< OUString > SAL_CALL SchXMLImport_Content_getSupportedServiceNames() throw()
 {
-    const OUString aServiceName(  "com.sun.star.comp.Chart.XMLOasisContentImporter"  );
-    const Sequence< OUString > aSeq( &aServiceName, 1 );
-    return aSeq;
+    return Sequence< OUString > { "com.sun.star.comp.Chart.XMLOasisContentImporter" };
 }
 
 OUString SAL_CALL SchXMLImport_Content_getImplementationName() throw()
@@ -709,15 +700,12 @@ OUString SAL_CALL SchXMLImport_Content_getImplementationName() throw()
 
 Reference< uno::XInterface > SAL_CALL SchXMLImport_Content_createInstance(const Reference< lang::XMultiServiceFactory > & rSMgr) throw( uno::Exception )
 {
-    // #110680#
     return static_cast<cppu::OWeakObject*>(new SchXMLImport( comphelper::getComponentContext(rSMgr), SchXMLImport_Content_getImplementationName(), SvXMLImportFlags::CONTENT | SvXMLImportFlags::AUTOSTYLES | SvXMLImportFlags::FONTDECLS ));
 }
 
 Sequence< OUString > SAL_CALL SchXMLImport_Meta_getSupportedServiceNames() throw()
 {
-    const OUString aServiceName(  "com.sun.star.comp.Chart.XMLOasisMetaImporter"  );
-    const Sequence< OUString > aSeq( &aServiceName, 1 );
-    return aSeq;
+    return Sequence< OUString > { "com.sun.star.comp.Chart.XMLOasisMetaImporter" };
 }
 
 OUString SAL_CALL SchXMLImport_Meta_getImplementationName() throw()
@@ -727,7 +715,6 @@ OUString SAL_CALL SchXMLImport_Meta_getImplementationName() throw()
 
 Reference< uno::XInterface > SAL_CALL SchXMLImport_Meta_createInstance(const Reference< lang::XMultiServiceFactory > & rSMgr) throw( uno::Exception )
 {
-    // #110680#
     return static_cast<cppu::OWeakObject*>(new SchXMLImport( comphelper::getComponentContext(rSMgr), SchXMLImport_Meta_getImplementationName(), SvXMLImportFlags::META ));
 }
 

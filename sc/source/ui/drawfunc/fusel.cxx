@@ -114,7 +114,7 @@ bool FuSelection::MouseButtonDown(const MouseEvent& rMEvt)
     {
         SdrHdl* pHdl = pView->PickHandle(aMDPos);
 
-        if ( pHdl!=NULL || pView->IsMarkedHit(aMDPos) )
+        if ( pHdl!=nullptr || pView->IsMarkedHit(aMDPos) )
         {
             // Determine if this is the tail of a SdrCaptionObj i.e.
             // we need to disable the drag option on the tail of a note
@@ -183,7 +183,7 @@ bool FuSelection::MouseButtonDown(const MouseEvent& rMEvt)
                        ScMacroInfo* pTmpInfo = ScDrawLayer::GetMacroInfo( pObj );
                        if ( !pTmpInfo || pTmpInfo->GetMacro().isEmpty() )
                        {
-                           SdrObject* pHit = NULL;
+                           SdrObject* pHit = nullptr;
                            if ( pView->PickObj(aMDPos, pView->getHitTolLog(), pHit, pPV, SdrSearchOptions::DEEP ) )
                                pObj = pHit;
                        }
@@ -214,10 +214,9 @@ bool FuSelection::MouseButtonDown(const MouseEvent& rMEvt)
                            uno::Any aRet;
                            uno::Sequence< sal_Int16 > aOutArgsIndex;
                            uno::Sequence< uno::Any > aOutArgs;
-                           uno::Sequence< uno::Any >* pInArgs =
-                               new uno::Sequence< uno::Any >(0);
+                           uno::Sequence< uno::Any > aInArgs;
                            pObjSh->CallXScript( pInfo->GetMacro(),
-                               *pInArgs, aRet, aOutArgsIndex, aOutArgs, true, &aCaller );
+                               aInArgs, aRet, aOutArgsIndex, aOutArgs, true, &aCaller );
                            pViewShell->FakeButtonUp( pViewShell->GetViewData().GetActivePart() );
                            return true;        // kein CaptureMouse etc.
                        }
@@ -229,7 +228,7 @@ bool FuSelection::MouseButtonDown(const MouseEvent& rMEvt)
                 SdrViewEvent aVEvt;
                 if ( !bAlt &&
                     pView->PickAnything( rMEvt, SdrMouseEventKind::BUTTONDOWN, aVEvt ) != SDRHIT_NONE &&
-                    aVEvt.pObj != NULL )
+                    aVEvt.pObj != nullptr )
                 {
                     if ( ScDrawLayer::GetIMapInfo( aVEvt.pObj ) )       // ImageMap
                     {
@@ -379,7 +378,7 @@ bool FuSelection::MouseButtonUp(const MouseEvent& rMEvt)
     bool bReturn = FuDraw::MouseButtonUp(rMEvt);
     bool bOle = pViewShell && pViewShell->GetViewFrame()->GetFrame().IsInPlace();
 
-    SdrObject* pObj = NULL;
+    SdrObject* pObj = nullptr;
     if (aDragTimer.IsActive() )
     {
         aDragTimer.Stop();
@@ -389,10 +388,10 @@ bool FuSelection::MouseButtonUp(const MouseEvent& rMEvt)
     Point aPnt( pWindow->PixelToLogic( rMEvt.GetPosPixel() ) );
 
     bool bCopy = false;
-    ScViewData* pViewData = ( pViewShell ? &pViewShell->GetViewData() : NULL );
-    ScDocument* pDocument = ( pViewData ? pViewData->GetDocument() : NULL );
-    SdrPageView* pPageView = ( pView ? pView->GetSdrPageView() : NULL );
-    SdrPage* pPage = ( pPageView ? pPageView->GetPage() : NULL );
+    ScViewData* pViewData = ( pViewShell ? &pViewShell->GetViewData() : nullptr );
+    ScDocument* pDocument = ( pViewData ? pViewData->GetDocument() : nullptr );
+    SdrPageView* pPageView = ( pView ? pView->GetSdrPageView() : nullptr );
+    SdrPage* pPage = ( pPageView ? pPageView->GetPage() : nullptr );
     ::std::vector< OUString > aExcludedChartNames;
     ScRangeListVector aProtectedChartRangesVector;
 
@@ -416,7 +415,7 @@ bool FuSelection::MouseButtonUp(const MouseEvent& rMEvt)
                     for ( size_t i = 0; i < nMarkCount; ++i )
                     {
                         SdrMark* pMark = rSdrMarkList.GetMark( i );
-                        pObj = ( pMark ? pMark->GetMarkedSdrObj() : NULL );
+                        pObj = ( pMark ? pMark->GetMarkedSdrObj() : nullptr );
                         if ( pObj )
                         {
                             ScChartHelper::AddRangesIfProtectedChart( aProtectedChartRangesVector, pDocument, pObj );
@@ -434,11 +433,11 @@ bool FuSelection::MouseButtonUp(const MouseEvent& rMEvt)
                 * If a user wants to click on an object in front of a marked
                 * one, he releases the mouse button immediately
                 **************************************************************/
-                SdrPageView* pPV = NULL;
+                SdrPageView* pPV = nullptr;
                 if (pView->PickObj(aMDPos, pView->getHitTolLog(), pObj, pPV, SdrSearchOptions::ALSOONMASTER | SdrSearchOptions::BEFOREMARK))
                 {
                     pView->UnmarkAllObj();
-                    pView->MarkObj(pObj,pPV,false);
+                    pView->MarkObj(pObj,pPV);
                     return true;
                 }
             }
@@ -487,7 +486,7 @@ bool FuSelection::MouseButtonUp(const MouseEvent& rMEvt)
     /**************************************************************************
     * Ggf. OLE-Objekt beruecksichtigen
     **************************************************************************/
-    SfxInPlaceClient* pIPClient = pViewShell ? pViewShell->GetIPClient() : NULL;
+    SfxInPlaceClient* pIPClient = pViewShell ? pViewShell->GetIPClient() : nullptr;
 
     if (pIPClient)
     {
@@ -535,7 +534,7 @@ bool FuSelection::MouseButtonUp(const MouseEvent& rMEvt)
                     //  not in UNO controls
                     //  #i32352# not in media objects
 
-                    else if ( pObj->ISA(SdrTextObj) && !pObj->ISA(SdrUnoObj) && !pObj->ISA(SdrMediaObj) )
+                    else if ( dynamic_cast<const SdrTextObj*>( pObj) != nullptr && dynamic_cast<const SdrUnoObj*>( pObj) == nullptr && dynamic_cast<const SdrMediaObj*>( pObj) ==  nullptr )
                     {
                         OutlinerParaObject* pOPO = pObj->GetOutlinerParaObject();
                         bool bVertical = ( pOPO && pOPO->IsVertical() );
@@ -583,7 +582,7 @@ bool FuSelection::MouseButtonUp(const MouseEvent& rMEvt)
     if ( bCopy && pViewData && pDocument && pPage )
     {
         ScDocShell* pDocShell = pViewData->GetDocShell();
-        ScModelObj* pModelObj = ( pDocShell ? ScModelObj::getImplementation( pDocShell->GetModel() ) : NULL );
+        ScModelObj* pModelObj = ( pDocShell ? ScModelObj::getImplementation( pDocShell->GetModel() ) : nullptr );
         if ( pModelObj )
         {
             SCTAB nTab = pViewData->GetTabNo();

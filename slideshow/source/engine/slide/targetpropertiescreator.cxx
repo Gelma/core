@@ -95,19 +95,24 @@ namespace internal
         class NodeFunctor
         {
         public:
-            explicit NodeFunctor( XShapeHash& rShapeHash ) :
-                mrShapeHash( rShapeHash ),
+            explicit NodeFunctor(
+                XShapeHash& rShapeHash,
+                bool bInitial )
+            :   mrShapeHash( rShapeHash ),
                 mxTargetShape(),
-                mnParagraphIndex( -1 )
+                mnParagraphIndex( -1 ),
+                mbInitial( bInitial)
             {
             }
 
             NodeFunctor( XShapeHash&                                rShapeHash,
                          const uno::Reference< drawing::XShape >&   rTargetShape,
-                         sal_Int16                                  nParagraphIndex ) :
+                         sal_Int16                                  nParagraphIndex,
+                         bool                                       bInitial) :
                 mrShapeHash( rShapeHash ),
                 mxTargetShape( rTargetShape ),
-                mnParagraphIndex( nParagraphIndex )
+                mnParagraphIndex( nParagraphIndex ),
+                mbInitial( bInitial )
             {
             }
 
@@ -144,7 +149,7 @@ namespace internal
 
                         if( !xTargetShape.is() )
                         {
-                            ::com::sun::star::presentation::ParagraphTarget aTarget;
+                            css::presentation::ParagraphTarget aTarget;
 
                             // no shape provided. Maybe a ParagraphTarget?
                             if( !(xIterNode->getTarget() >>= aTarget) )
@@ -169,9 +174,11 @@ namespace internal
                         // FALLTHROUGH intended
                     case animations::AnimationNodeType::SEQ:
                     {
+                        /// forward bInitial
                         NodeFunctor aFunctor( mrShapeHash,
                                               xTargetShape,
-                                              nParagraphIndex );
+                                              nParagraphIndex,
+                                              mbInitial );
                         if( !for_each_childNode( xNode, aFunctor ) )
                         {
                             OSL_FAIL( "AnimCore: NodeFunctor::operator(): child node iteration failed, "
@@ -250,8 +257,11 @@ namespace internal
 
                         // check whether we already have an entry for
                         // this target (we only take the first set
-                        // effect for every shape)
-                        if( mrShapeHash.find( aTarget ) != mrShapeHash.end() )
+                        // effect for every shape) - but keep going if
+                        // we're requested the final state (which
+                        // eventually gets overwritten in the
+                        // unordered list, see tdf#96083)
+                        if( mbInitial && mrShapeHash.find( aTarget ) != mrShapeHash.end() )
                             break; // already an entry in existence for given XShape
 
                         // if this is an appear effect, hide shape
@@ -286,6 +296,13 @@ namespace internal
                                 }
                             }
                         }
+
+                        // if initial anim sets shape visible, set it
+                        // to invisible. If we're asked for the final
+                        // state, don't do anything obviously
+                        if(mbInitial)
+                            bVisible = !bVisible;
+
                         // target is set the 'visible' value,
                         // so we should record the opposite value
                         mrShapeHash.insert(
@@ -296,7 +313,7 @@ namespace internal
                                             beans::NamedValue(
                                                 //xAnimateNode->getAttributeName(),
                                                 OUString("visibility"),
-                                                uno::makeAny( !bVisible ) ) ) ) );
+                                                uno::makeAny( bVisible ) ) ) ) );
                     break;
                     }
                 }
@@ -306,19 +323,25 @@ namespace internal
             XShapeHash&                         mrShapeHash;
             uno::Reference< drawing::XShape >   mxTargetShape;
             sal_Int16                           mnParagraphIndex;
+
+            // get initial or filal state
+            bool                                mbInitial;
         };
     }
 
-    uno::Sequence< animations::TargetProperties > SAL_CALL TargetPropertiesCreator::createInitialTargetProperties
+    uno::Sequence< animations::TargetProperties > SAL_CALL TargetPropertiesCreator::createTargetProperties
         (
-            const uno::Reference< animations::XAnimationNode >& xRootNode
+            const uno::Reference< animations::XAnimationNode >& xRootNode,
+            bool bInitial
         ) //throw (uno::RuntimeException, std::exception)
     {
         // scan all nodes for visibility changes, and record first
         // 'visibility=true' for each shape
         XShapeHash aShapeHash( 101 );
 
-        NodeFunctor aFunctor( aShapeHash );
+        NodeFunctor aFunctor(
+            aShapeHash,
+            bInitial );
 
         // TODO(F1): Maybe limit functor application to main sequence
         // alone (CL said something that shape visibility is only
@@ -332,23 +355,23 @@ namespace internal
         uno::Sequence< animations::TargetProperties > aRes( aShapeHash.size() );
 
         ::std::size_t                       nCurrIndex(0);
-        for( const auto& rShapeHash : aShapeHash )
+        for( const auto& rIter : aShapeHash )
         {
             animations::TargetProperties& rCurrProps( aRes[ nCurrIndex++ ] );
 
-            if( rShapeHash.first.mnParagraphIndex == -1 )
+            if( rIter.first.mnParagraphIndex == -1 )
             {
-                rCurrProps.Target = uno::makeAny( rShapeHash.first.mxRef );
+                rCurrProps.Target = uno::makeAny( rIter.first.mxRef );
             }
             else
             {
                 rCurrProps.Target = uno::makeAny(
                     presentation::ParagraphTarget(
-                        rShapeHash.first.mxRef,
-                        rShapeHash.first.mnParagraphIndex ) );
+                        rIter.first.mxRef,
+                        rIter.first.mnParagraphIndex ) );
             }
 
-            rCurrProps.Properties = ::comphelper::containerToSequence( rShapeHash.second );
+            rCurrProps.Properties = ::comphelper::containerToSequence( rIter.second );
         }
 
         return aRes;

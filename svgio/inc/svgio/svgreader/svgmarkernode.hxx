@@ -38,7 +38,7 @@ namespace svgio
 
         private:
             /// buffered decomposition
-            drawinglayer::primitive2d::Primitive2DSequence aPrimitives;
+            drawinglayer::primitive2d::Primitive2DContainer aPrimitives;
 
             /// use styles
             SvgStyleAttributes      maSvgStyleAttributes;
@@ -62,18 +62,18 @@ namespace svgio
                 SvgNode* pParent);
             virtual ~SvgMarkerNode();
 
-            virtual const SvgStyleAttributes* getSvgStyleAttributes() const SAL_OVERRIDE;
-            virtual void parseAttribute(const OUString& rTokenName, SVGToken aSVGToken, const OUString& aContent) SAL_OVERRIDE;
+            virtual const SvgStyleAttributes* getSvgStyleAttributes() const override;
+            virtual void parseAttribute(const OUString& rTokenName, SVGToken aSVGToken, const OUString& aContent) override;
 
             /// get marker primitives buffered, uses decomposeSvgNode internally
-            const drawinglayer::primitive2d::Primitive2DSequence& getMarkerPrimitives() const;
+            const drawinglayer::primitive2d::Primitive2DContainer& getMarkerPrimitives() const;
 
             /// InfoProvider support for % values
-            virtual const basegfx::B2DRange getCurrentViewPort() const SAL_OVERRIDE;
+            virtual const basegfx::B2DRange getCurrentViewPort() const override;
 
             /// viewBox content
             const basegfx::B2DRange* getViewBox() const { return mpViewBox; }
-            void setViewBox(const basegfx::B2DRange* pViewBox = 0) { if(mpViewBox) delete mpViewBox; mpViewBox = 0; if(pViewBox) mpViewBox = new basegfx::B2DRange(*pViewBox); }
+            void setViewBox(const basegfx::B2DRange* pViewBox = nullptr) { if(mpViewBox) delete mpViewBox; mpViewBox = nullptr; if(pViewBox) mpViewBox = new basegfx::B2DRange(*pViewBox); }
 
             /// SvgAspectRatio content
             const SvgAspectRatio& getSvgAspectRatio() const { return maSvgAspectRatio; }

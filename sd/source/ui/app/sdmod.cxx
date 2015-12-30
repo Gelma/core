@@ -54,7 +54,6 @@
 #include "cfgids.hxx"
 #include "tools/SdGlobalResourceContainer.hxx"
 
-TYPEINIT1( SdModule, SfxModule );
 
 #define SdModule
 #include "sdslots.hxx"
@@ -69,19 +68,19 @@ void SdModule::InitInterface_Impl()
 // Ctor
 SdModule::SdModule(SfxObjectFactory* pFact1, SfxObjectFactory* pFact2 )
 :   SfxModule( ResMgr::CreateResMgr("sd"), false,
-                  pFact1, pFact2, NULL ),
-    pTransferClip(NULL),
-    pTransferDrag(NULL),
-    pTransferSelection(NULL),
-    pImpressOptions(NULL),
-    pDrawOptions(NULL),
-    pSearchItem(NULL),
-    pNumberFormatter( NULL ),
+                  pFact1, pFact2, nullptr ),
+    pTransferClip(nullptr),
+    pTransferDrag(nullptr),
+    pTransferSelection(nullptr),
+    pImpressOptions(nullptr),
+    pDrawOptions(nullptr),
+    pSearchItem(nullptr),
+    pNumberFormatter( nullptr ),
     bWaterCan(false),
     mpResourceContainer(new ::sd::SdGlobalResourceContainer()),
     mbEventListenerAdded(false)
 {
-    SetName( OUString( "StarDraw" ) );  // Do not translate!
+    SetName( "StarDraw" );  // Do not translate!
     pSearchItem = new SvxSearchItem(SID_SEARCH_ITEM);
     pSearchItem->SetAppFlag(SvxSearchApp::DRAW);
     StartListening( *SfxGetpApp() );
@@ -114,8 +113,8 @@ SdModule::~SdModule()
 
     // Mark the module in the global AppData structure as deleted.
     SdModule** ppShellPointer = reinterpret_cast<SdModule**>(GetAppData(SHL_DRAW));
-    if (ppShellPointer != NULL)
-        (*ppShellPointer) = NULL;
+    if (ppShellPointer != nullptr)
+        (*ppShellPointer) = nullptr;
 
     delete mpErrorHdl;
     mpVirtualRefDevice.disposeAndClear();
@@ -127,15 +126,15 @@ void SdModule::Notify( SfxBroadcaster&, const SfxHint& rHint )
     const SfxSimpleHint* pSimpleHint = dynamic_cast<const SfxSimpleHint*>(&rHint);
     if( pSimpleHint && pSimpleHint->GetId() == SFX_HINT_DEINITIALIZING )
     {
-        delete pImpressOptions, pImpressOptions = NULL;
-        delete pDrawOptions, pDrawOptions = NULL;
+        delete pImpressOptions, pImpressOptions = nullptr;
+        delete pDrawOptions, pDrawOptions = nullptr;
     }
 }
 
 /// Return options
 SdOptions* SdModule::GetSdOptions(DocumentType eDocType)
 {
-    SdOptions* pOptions = NULL;
+    SdOptions* pOptions = nullptr;
 
     if (eDocType == DOCUMENT_TYPE_DRAW)
     {
@@ -155,8 +154,8 @@ SdOptions* SdModule::GetSdOptions(DocumentType eDocType)
     {
         sal_uInt16 nMetric = pOptions->GetMetric();
 
-        ::sd::DrawDocShell* pDocSh = PTR_CAST(::sd::DrawDocShell, SfxObjectShell::Current() );
-        SdDrawDocument* pDoc = NULL;
+        ::sd::DrawDocShell* pDocSh = dynamic_cast< ::sd::DrawDocShell *>( SfxObjectShell::Current() );
+        SdDrawDocument* pDoc = nullptr;
         if (pDocSh)
             pDoc = pDocSh->GetDoc();
 
@@ -175,7 +174,7 @@ SdOptions* SdModule::GetSdOptions(DocumentType eDocType)
 tools::SvRef<SotStorageStream> SdModule::GetOptionStream( const OUString& rOptionName,
                                               SdOptionStreamMode eMode )
 {
-    ::sd::DrawDocShell*     pDocSh = PTR_CAST(::sd::DrawDocShell, SfxObjectShell::Current() );
+    ::sd::DrawDocShell*     pDocSh = dynamic_cast< ::sd::DrawDocShell *>( SfxObjectShell::Current() );
     tools::SvRef<SotStorageStream>  xStm;
 
     if( pDocSh )
@@ -186,7 +185,7 @@ tools::SvRef<SotStorageStream> SdModule::GetOptionStream( const OUString& rOptio
         {
             INetURLObject aURL( SvtPathOptions().GetUserConfigPath() );
 
-            aURL.Append( OUString( "drawing.cfg" ) );
+            aURL.Append( "drawing.cfg" );
 
             SvStream* pStm = ::utl::UcbStreamHelper::CreateStream( aURL.GetMainURL( INetURLObject::NO_DECODE ), STREAM_READWRITE );
 

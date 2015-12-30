@@ -78,7 +78,7 @@ void DrawViewShell::GetCtrlState(SfxItemSet &rSet)
     if (rSet.GetItemState(SID_RELOAD) != SfxItemState::UNKNOWN)
     {
         // let "last version" of SFx en/disable
-        GetViewFrame()->GetSlotState (SID_RELOAD, NULL, &rSet);
+        GetViewFrame()->GetSlotState (SID_RELOAD, nullptr, &rSet);
     }
 
     if (SfxItemState::DEFAULT == rSet.GetItemState(SID_HYPERLINK_GETLINK))
@@ -97,7 +97,7 @@ void DrawViewShell::GetCtrlState(SfxItemSet &rSet)
                 if ( abs( aSel.nEndPos - aSel.nStartPos ) == 1 )
                 {
                     const SvxFieldData* pField = pFieldItem->GetField();
-                    if (pField->ISA(SvxURLField))
+                    if( dynamic_cast< const SvxURLField *>( pField ) !=  nullptr)
                     {
                         aHLinkItem.SetName(static_cast<const SvxURLField*>(pField)->GetRepresentation());
                         aHLinkItem.SetURL(static_cast<const SvxURLField*>(pField)->GetURL());
@@ -207,7 +207,7 @@ void DrawViewShell::GetCtrlState(SfxItemSet &rSet)
     if ( SfxItemState::DEFAULT == rSet.GetItemState(SID_ATTR_YEAR2000) )
     {
         FmFormShell* pFormShell = GetViewShellBase().GetFormShellManager()->GetFormShell();
-        if (pFormShell != NULL)
+        if (pFormShell != nullptr)
         {
             sal_uInt16 nState = 0;
             if (pFormShell->GetY2KState(nState))
@@ -488,9 +488,9 @@ void DrawViewShell::GetAttrState( SfxItemSet& rSet )
 
             case SID_STYLE_WATERCAN:
             {
-                SfxPoolItem* pItem = NULL;
+                std::unique_ptr<SfxPoolItem> pItem;
                 GetViewFrame()->GetBindings().QueryState(SID_STYLE_FAMILY, pItem);
-                SfxUInt16Item* pFamilyItem = dynamic_cast<SfxUInt16Item*>(pItem);
+                SfxUInt16Item* pFamilyItem = dynamic_cast<SfxUInt16Item*>(pItem.get());
                 if (pFamilyItem && SfxTemplate::NIdToSfxFamilyId(pFamilyItem->GetValue()) == SD_STYLE_FAMILY_PSEUDO)
                     rSet.Put(SfxBoolItem(nWhich,false));
                 else
@@ -498,31 +498,28 @@ void DrawViewShell::GetAttrState( SfxItemSet& rSet )
                     SfxBoolItem aItem(nWhich, SD_MOD()->GetWaterCan());
                     aAllSet.Put( aItem, aItem.Which());
                 }
-                delete pItem;
             }
             break;
 
             case SID_STYLE_NEW:
             {
-                SfxPoolItem* pItem = NULL;
+                std::unique_ptr<SfxPoolItem> pItem;
                 GetViewFrame()->GetBindings().QueryState(SID_STYLE_FAMILY, pItem);
-                SfxUInt16Item* pFamilyItem = dynamic_cast<SfxUInt16Item*>(pItem);
+                SfxUInt16Item* pFamilyItem = dynamic_cast<SfxUInt16Item*>(pItem.get());
                 if (pFamilyItem && SfxTemplate::NIdToSfxFamilyId(pFamilyItem->GetValue()) == SD_STYLE_FAMILY_PSEUDO)
                 {
                     rSet.DisableItem(nWhich);
                 }
-                delete pItem;
             }
             break;
 
             case SID_STYLE_DRAGHIERARCHIE:
             {
-                SfxPoolItem* pItem = NULL;
+                std::unique_ptr<SfxPoolItem> pItem;
                 GetViewFrame()->GetBindings().QueryState(SID_STYLE_FAMILY, pItem);
-                SfxUInt16Item* pFamilyItem = dynamic_cast<SfxUInt16Item*>(pItem);
+                SfxUInt16Item* pFamilyItem = dynamic_cast<SfxUInt16Item*>(pItem.get());
                 if (pFamilyItem && SfxTemplate::NIdToSfxFamilyId(pFamilyItem->GetValue()) == SD_STYLE_FAMILY_PSEUDO)
                     rSet.DisableItem(nWhich);
-                delete pItem;
             }
             break;
 
@@ -531,9 +528,9 @@ void DrawViewShell::GetAttrState( SfxItemSet& rSet )
                 // It is not possible to create PseudoStyleSheets 'by Example';
                 // normal style sheets need a selected object for that
 
-                SfxPoolItem* pItem = NULL;
+                std::unique_ptr<SfxPoolItem> pItem;
                 GetViewFrame()->GetBindings().QueryState(SID_STYLE_FAMILY, pItem);
-                SfxUInt16Item* pFamilyItem = dynamic_cast<SfxUInt16Item*>(pItem);
+                SfxUInt16Item* pFamilyItem = dynamic_cast<SfxUInt16Item*>(pItem.get());
                 if (pFamilyItem)
                 {
                     if (SfxTemplate::NIdToSfxFamilyId(pFamilyItem->GetValue()) == SD_STYLE_FAMILY_PSEUDO)
@@ -557,7 +554,6 @@ void DrawViewShell::GetAttrState( SfxItemSet& rSet )
                         rSet.DisableItem(nWhich);
                     }
                 }
-                delete pItem;
             }
             break;
 
@@ -579,7 +575,7 @@ void DrawViewShell::GetAttrState( SfxItemSet& rSet )
                 aNewAttr.Put( aEditAttr, false );
 
                 std::unique_ptr<SvxNumRule> pNumRule;
-                const SfxPoolItem* pTmpItem=NULL;
+                const SfxPoolItem* pTmpItem=nullptr;
                 sal_uInt16 nNumItemId = SID_ATTR_NUMBERING_RULE;
                 sal_uInt16 nActNumLvl = mpDrawView->GetSelectionLevel();
                 pTmpItem=GetNumBulletItem(aNewAttr, nNumItemId);
@@ -737,7 +733,7 @@ void DrawViewShell::GetAttrState( SfxItemSet& rSet )
             rSet.Put( SfxBoolItem( SID_SET_SUB_SCRIPT, true ) );
         }
 
-        eState = pSet->GetItemState( EE_CHAR_KERNING, true );
+        eState = pSet->GetItemState( EE_CHAR_KERNING );
         if ( eState == SfxItemState::DONTCARE )
         {
             rSet.InvalidateItem(EE_CHAR_KERNING);

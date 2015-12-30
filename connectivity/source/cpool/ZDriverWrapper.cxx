@@ -44,10 +44,10 @@ namespace connectivity
         {
             // transfer the (one and only) real ref to the aggregate to our member
             m_xDriverAggregate = _rxAggregateDriver;
-            _rxAggregateDriver = NULL;
+            _rxAggregateDriver = nullptr;
 
             // a second "real" reference
-            m_xDriver = Reference< XDriver >(m_xDriverAggregate, UNO_QUERY);
+            m_xDriver.set(m_xDriverAggregate, UNO_QUERY);
             OSL_ENSURE(m_xDriver.is(), "ODriverWrapper::ODriverWrapper: invalid aggregate (no XDriver)!");
 
             // set ourself as delegator
@@ -60,11 +60,11 @@ namespace connectivity
     ODriverWrapper::~ODriverWrapper()
     {
         if (m_xDriverAggregate.is())
-            m_xDriverAggregate->setDelegator(NULL);
+            m_xDriverAggregate->setDelegator(nullptr);
 
         if (m_pConnectionPool)
             m_pConnectionPool->release();
-        m_pConnectionPool = NULL;
+        m_pConnectionPool = nullptr;
     }
 
 

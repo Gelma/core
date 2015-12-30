@@ -58,42 +58,44 @@ public:
         throw (css::uno::RuntimeException);
 
     css::uno::Reference< com::sun::star::lang::XMultiServiceFactory > getFactory(){return m_xFactory;}
+    OUString getProfilePath() {return m_sProfilePath;}
 private:
 
     virtual ~MorkDriver() {}
 
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Sequence< OUString > SAL_CALL
-    getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Reference< css::sdbc::XConnection > SAL_CALL connect(
         OUString const & url,
         css::uno::Sequence< css::beans::PropertyValue > const & info)
-        throw (css::sdbc::SQLException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::sdbc::SQLException, css::uno::RuntimeException, std::exception) override;
 
     virtual sal_Bool SAL_CALL acceptsURL(
         OUString const & url)
-        throw (css::sdbc::SQLException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::sdbc::SQLException, css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Sequence< css::sdbc::DriverPropertyInfo > SAL_CALL
     getPropertyInfo(
         OUString const & url,
         css::uno::Sequence< css::beans::PropertyValue > const & info)
-        throw (css::sdbc::SQLException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::sdbc::SQLException, css::uno::RuntimeException, std::exception) override;
 
     virtual sal_Int32 SAL_CALL getMajorVersion()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual sal_Int32 SAL_CALL getMinorVersion()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     css::uno::Reference< css::uno::XComponentContext > context_;
     css::uno::Reference< com::sun::star::lang::XMultiServiceFactory > m_xFactory;
+    OUString m_sProfilePath;
 };
 
 } }

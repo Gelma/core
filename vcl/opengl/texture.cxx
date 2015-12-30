@@ -35,21 +35,30 @@ ImplOpenGLTexture::ImplOpenGLTexture( int nWidth, int nHeight, bool bAllocate ) 
     mnWidth( nWidth ),
     mnHeight( nHeight ),
     mnFilter( GL_NEAREST ),
+    mnOptStencil( 0 ),
     mnFreeSlots(-1)
 {
     glGenTextures( 1, &mnTexture );
-    glBindTexture( GL_TEXTURE_2D, mnTexture );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-    if( bAllocate )
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, nWidth, nHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
-    glBindTexture( GL_TEXTURE_2D, 0 );
-
-    VCL_GL_INFO( "vcl.opengl", "OpenGLTexture " << mnTexture << " " << nWidth << "x" << nHeight << " allocate" );
-
     CHECK_GL_ERROR();
+    glBindTexture( GL_TEXTURE_2D, mnTexture );
+    CHECK_GL_ERROR();
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    CHECK_GL_ERROR();
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+    CHECK_GL_ERROR();
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    CHECK_GL_ERROR();
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    CHECK_GL_ERROR();
+    if( bAllocate )
+    {
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, nWidth, nHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr );
+        CHECK_GL_ERROR();
+    }
+    glBindTexture( GL_TEXTURE_2D, 0 );
+    CHECK_GL_ERROR();
+
+    VCL_GL_INFO( "OpenGLTexture " << mnTexture << " " << nWidth << "x" << nHeight << " allocate" );
 }
 
 // texture with content retrieved from FBO
@@ -59,24 +68,30 @@ ImplOpenGLTexture::ImplOpenGLTexture( int nX, int nY, int nWidth, int nHeight ) 
     mnWidth( nWidth ),
     mnHeight( nHeight ),
     mnFilter( GL_NEAREST ),
+    mnOptStencil( 0 ),
     mnFreeSlots(-1)
 {
     // FIXME We need the window height here
     // nY = GetHeight() - nHeight - nY;
 
     glGenTextures( 1, &mnTexture );
+    CHECK_GL_ERROR();
     glBindTexture( GL_TEXTURE_2D, mnTexture );
+    CHECK_GL_ERROR();
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    CHECK_GL_ERROR();
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+    CHECK_GL_ERROR();
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    CHECK_GL_ERROR();
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    CHECK_GL_ERROR();
     glCopyTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, nX, nY, nWidth, nHeight, 0 );
     CHECK_GL_ERROR();
     glBindTexture( GL_TEXTURE_2D, 0 );
-
-    VCL_GL_INFO( "vcl.opengl", "OpenGLTexture " << mnTexture << " " << nWidth << "x" << nHeight << " from x" << nX << ", y" << nY );
-
     CHECK_GL_ERROR();
+
+    VCL_GL_INFO( "OpenGLTexture " << mnTexture << " " << nWidth << "x" << nHeight << " from x" << nX << ", y" << nY );
 }
 
 // texture from buffer data
@@ -86,27 +101,52 @@ ImplOpenGLTexture::ImplOpenGLTexture( int nWidth, int nHeight, int nFormat, int 
     mnWidth( nWidth ),
     mnHeight( nHeight ),
     mnFilter( GL_NEAREST ),
+    mnOptStencil( 0 ),
     mnFreeSlots(-1)
 {
     if( !mnTexture )
+    {
         glGenTextures( 1, &mnTexture );
+        CHECK_GL_ERROR();
+    }
     glBindTexture( GL_TEXTURE_2D, mnTexture );
-    glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, mnWidth, mnHeight, 0, nFormat, nType, pData );
-    glBindTexture( GL_TEXTURE_2D, 0 );
-
-    VCL_GL_INFO( "vcl.opengl", "OpenGLTexture " << mnTexture << " " << nWidth << "x" << nHeight << " from data" );
-
     CHECK_GL_ERROR();
+    glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+    CHECK_GL_ERROR();
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    CHECK_GL_ERROR();
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+    CHECK_GL_ERROR();
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    CHECK_GL_ERROR();
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    CHECK_GL_ERROR();
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, mnWidth, mnHeight, 0, nFormat, nType, pData );
+    CHECK_GL_ERROR();
+    glBindTexture( GL_TEXTURE_2D, 0 );
+    CHECK_GL_ERROR();
+
+    VCL_GL_INFO( "OpenGLTexture " << mnTexture << " " << nWidth << "x" << nHeight << " from data" );
+}
+
+GLuint ImplOpenGLTexture::AddStencil()
+{
+    assert( mnOptStencil == 0 );
+
+    glGenRenderbuffers( 1, &mnOptStencil );
+    glBindRenderbuffer( GL_RENDERBUFFER, mnOptStencil );
+    CHECK_GL_ERROR();
+    VCL_GL_INFO( "Allocate stencil " << mnWidth << " x " << mnHeight );
+    glRenderbufferStorage( GL_RENDERBUFFER, GL_STENCIL_INDEX,
+                           mnWidth, mnHeight );
+    CHECK_GL_ERROR();
+
+    return mnOptStencil;
 }
 
 ImplOpenGLTexture::~ImplOpenGLTexture()
 {
-    VCL_GL_INFO( "vcl.opengl", "~OpenGLTexture " << mnTexture );
+    VCL_GL_INFO( "~OpenGLTexture " << mnTexture );
     if( mnTexture != 0 )
     {
         // FIXME: this is really not optimal performance-wise.
@@ -114,9 +154,11 @@ ImplOpenGLTexture::~ImplOpenGLTexture()
         // Check we have been correctly un-bound from all framebuffers.
         ImplSVData* pSVData = ImplGetSVData();
         rtl::Reference<OpenGLContext> pContext = pSVData->maGDIData.mpLastContext;
-        if (pContext.is())
+        if( pContext.is() )
             pContext->UnbindTextureFromFramebuffers( mnTexture );
 
+        if( mnOptStencil != 0 )
+            glDeleteRenderbuffers( 1, &mnOptStencil );
         glDeleteTextures( 1, &mnTexture );
     }
 }
@@ -126,13 +168,16 @@ bool ImplOpenGLTexture::InsertBuffer(int nX, int nY, int nWidth, int nHeight, in
     if (!pData || mnTexture == 0)
         return false;
     glBindTexture(GL_TEXTURE_2D, mnTexture);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, nX, mnHeight - nY - nHeight, nWidth, nHeight, nFormat, nType, pData);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    VCL_GL_INFO( "vcl.opengl", "OpenGLTexture " << mnTexture << " Insert buff. to " << nX << " " << nY
-                                             << " size " << nWidth << "x" << nHeight << " from data" );
     CHECK_GL_ERROR();
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    CHECK_GL_ERROR();
+    glTexSubImage2D(GL_TEXTURE_2D, 0, nX, mnHeight - nY - nHeight, nWidth, nHeight, nFormat, nType, pData);
+    CHECK_GL_ERROR();
+    glBindTexture(GL_TEXTURE_2D, 0);
+    CHECK_GL_ERROR();
+
+    VCL_GL_INFO( "OpenGLTexture " << mnTexture << " Insert buff. to " << nX << " " << nY
+                                             << " size " << nWidth << "x" << nHeight << " from data" );
 
     return true;
 }
@@ -165,7 +210,7 @@ int ImplOpenGLTexture::FindFreeSlot()
 
 OpenGLTexture::OpenGLTexture() :
     maRect( 0, 0, 0, 0 ),
-    mpImpl(NULL),
+    mpImpl(nullptr),
     mnSlotNumber(-1)
 {
 }
@@ -219,7 +264,7 @@ OpenGLTexture::OpenGLTexture( const OpenGLTexture& rTexture,
     mnSlotNumber = rTexture.mnSlotNumber;
     if (mpImpl)
         mpImpl->IncreaseRefCount(mnSlotNumber);
-    VCL_GL_INFO( "vcl.opengl", "Copying texture " << Id() << " [" << maRect.Left() << "," << maRect.Top() << "] " << GetWidth() << "x" << GetHeight() );
+    VCL_GL_INFO( "Copying texture " << Id() << " [" << maRect.Left() << "," << maRect.Top() << "] " << GetWidth() << "x" << GetHeight() );
 }
 
 OpenGLTexture::~OpenGLTexture()
@@ -234,7 +279,7 @@ OpenGLTexture::~OpenGLTexture()
 
 bool OpenGLTexture::IsUnique() const
 {
-    return ( mpImpl == NULL || mpImpl->mnRefCount == 1 );
+    return ( mpImpl == nullptr || mpImpl->mnRefCount == 1 );
 }
 
 GLuint OpenGLTexture::Id() const
@@ -254,11 +299,24 @@ int OpenGLTexture::GetHeight() const
     return maRect.GetHeight();
 }
 
+GLuint OpenGLTexture::StencilId() const
+{
+    return mpImpl ? mpImpl->mnOptStencil : 0;
+}
+
+GLuint OpenGLTexture::AddStencil()
+{
+    if (mpImpl)
+        return mpImpl->AddStencil();
+    else
+        return 0;
+}
+
 void OpenGLTexture::GetCoord( GLfloat* pCoord, const SalTwoRect& rPosAry, bool bInverted ) const
 {
-    VCL_GL_INFO( "vcl.opengl", "Getting coord " << Id() << " [" << maRect.Left() << "," << maRect.Top() << "] " << GetWidth() << "x" << GetHeight() );
+    VCL_GL_INFO( "Getting coord " << Id() << " [" << maRect.Left() << "," << maRect.Top() << "] " << GetWidth() << "x" << GetHeight() );
 
-    if( mpImpl == NULL )
+    if( mpImpl == nullptr )
     {
         pCoord[0] = pCoord[1] = pCoord[2] = pCoord[3] = 0.0f;
         pCoord[4] = pCoord[5] = pCoord[6] = pCoord[7] = 0.0f;
@@ -311,16 +369,21 @@ void OpenGLTexture::SetFilter( GLenum nFilter )
     {
         mpImpl->mnFilter = nFilter;
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, nFilter );
+        CHECK_GL_ERROR();
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, nFilter );
+        CHECK_GL_ERROR();
     }
-
-    CHECK_GL_ERROR();
 }
 
 void OpenGLTexture::Bind()
 {
     if( mpImpl )
+    {
         glBindTexture( GL_TEXTURE_2D, mpImpl->mnTexture );
+        CHECK_GL_ERROR();
+    }
+    else
+        VCL_GL_INFO( "OpenGLTexture::Binding invalid texture" );
 
     CHECK_GL_ERROR();
 }
@@ -328,9 +391,10 @@ void OpenGLTexture::Bind()
 void OpenGLTexture::Unbind()
 {
     if( mpImpl )
+    {
         glBindTexture( GL_TEXTURE_2D, 0 );
-
-    CHECK_GL_ERROR();
+        CHECK_GL_ERROR();
+    }
 }
 
 void OpenGLTexture::SaveToFile(const OUString& rFileName)
@@ -349,26 +413,26 @@ void OpenGLTexture::SaveToFile(const OUString& rFileName)
     {
         SAL_WARN("vcl.opengl", "Error writing png to " << rFileName);
     }
-
-    CHECK_GL_ERROR();
 }
 
 void OpenGLTexture::Read( GLenum nFormat, GLenum nType, sal_uInt8* pData )
 {
-    if( mpImpl == NULL )
+    if( mpImpl == nullptr )
     {
         SAL_WARN( "vcl.opengl", "Can't read invalid texture" );
         return;
     }
 
-    VCL_GL_INFO( "vcl.opengl", "Reading texture " << Id() << " " << GetWidth() << "x" << GetHeight() );
+    VCL_GL_INFO( "Reading texture " << Id() << " " << GetWidth() << "x" << GetHeight() );
 
     if( GetWidth() == mpImpl->mnWidth && GetHeight() == mpImpl->mnHeight )
     {
         Bind();
         glPixelStorei( GL_PACK_ALIGNMENT, 1 );
+        CHECK_GL_ERROR();
         // XXX: Call not available with GLES 2.0
         glGetTexImage( GL_TEXTURE_2D, 0, nFormat, nType, pData );
+        CHECK_GL_ERROR();
         Unbind();
     }
     else
@@ -383,16 +447,16 @@ void OpenGLTexture::Read( GLenum nFormat, GLenum nType, sal_uInt8* pData )
         rtl::Reference<OpenGLContext> pContext = pSVData->maGDIData.mpLastContext;
         OpenGLFramebuffer* pFramebuffer = pContext->AcquireFramebuffer(*this);
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        CHECK_GL_ERROR();
         glReadPixels(nX, nY, nWidth, nHeight, nFormat, nType, pData);
+        CHECK_GL_ERROR();
         OpenGLContext::ReleaseFramebuffer(pFramebuffer);
     }
-
-    CHECK_GL_ERROR();
 }
 
 OpenGLTexture::operator bool() const
 {
-    return ( mpImpl != NULL );
+    return ( mpImpl != nullptr );
 }
 
 OpenGLTexture&  OpenGLTexture::operator=( const OpenGLTexture& rTexture )

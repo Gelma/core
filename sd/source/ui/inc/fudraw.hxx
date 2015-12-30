@@ -35,18 +35,17 @@ class FuDraw
     : public FuPoor
 {
 public:
-    TYPEINFO_OVERRIDE();
 
-    virtual bool KeyInput(const KeyEvent& rKEvt) SAL_OVERRIDE;
-    virtual bool MouseMove(const MouseEvent& rMEvt) SAL_OVERRIDE;
-    virtual bool MouseButtonUp(const MouseEvent& rMEvt) SAL_OVERRIDE;
-    virtual bool MouseButtonDown(const MouseEvent& rMEvt) SAL_OVERRIDE;
-    virtual bool RequestHelp(const HelpEvent& rHEvt) SAL_OVERRIDE;
+    virtual bool KeyInput(const KeyEvent& rKEvt) override;
+    virtual bool MouseMove(const MouseEvent& rMEvt) override;
+    virtual bool MouseButtonUp(const MouseEvent& rMEvt) override;
+    virtual bool MouseButtonDown(const MouseEvent& rMEvt) override;
+    virtual bool RequestHelp(const HelpEvent& rHEvt) override;
 
-    virtual void Activate() SAL_OVERRIDE;
-    virtual void Deactivate() SAL_OVERRIDE;
+    virtual void Activate() override;
+    virtual void Deactivate() override;
 
-    virtual void ForcePointer(const MouseEvent* pMEvt = NULL);
+    virtual void ForcePointer(const MouseEvent* pMEvt = nullptr);
 
     virtual void DoubleClick(const MouseEvent& rMEvt);
 
@@ -61,7 +60,7 @@ public:
 
         @returns true if a active function was aborted
     */
-    virtual bool cancel() SAL_OVERRIDE;
+    virtual bool cancel() override;
 
 protected:
     FuDraw (ViewShell* pViewSh,

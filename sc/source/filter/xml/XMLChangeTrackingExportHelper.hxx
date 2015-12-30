@@ -45,7 +45,7 @@ class ScChangeTrackingExportHelper
     ScEditEngineTextObj* pEditTextObj;
     ScChangeActionMap* pDependings;
     OUString   sChangeIDPrefix;
-    com::sun::star::uno::Reference<com::sun::star::text::XText> xText;
+    css::uno::Reference<css::text::XText> xText;
 
     OUString GetChangeID(const sal_uInt32 nActionNumber);
     void GetAcceptanceState(const ScChangeAction* pAction);
@@ -78,7 +78,7 @@ class ScChangeTrackingExportHelper
     void CollectActionAutoStyles(ScChangeAction* pAction);
     void WorkWithChangeAction(ScChangeAction* pAction);
 public:
-    ScChangeTrackingExportHelper(ScXMLExport& rExport);
+    explicit ScChangeTrackingExportHelper(ScXMLExport& rExport);
     ~ScChangeTrackingExportHelper();
 
     void CollectAutoStyles();

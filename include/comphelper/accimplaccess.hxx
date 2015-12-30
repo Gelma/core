@@ -33,7 +33,7 @@ namespace comphelper
 {
     //= OAccessibleImplementationAccess
 
-    typedef ::cppu::ImplHelper1 <   ::com::sun::star::lang::XUnoTunnel
+    typedef ::cppu::ImplHelper1 <   css::lang::XUnoTunnel
                                 >   OAccImpl_Base;
     struct OAccImpl_Impl;
 
@@ -66,7 +66,7 @@ namespace comphelper
 
     protected:
         /// retrieves the parent previously set via <method>setAccessibleParent</method>
-        ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible >
+        css::uno::Reference< css::accessibility::XAccessible >
                 implGetForeignControlledParent( ) const;
 
         /** retrieves the set of currently set states which are controlled by a foreign instance
@@ -75,49 +75,17 @@ namespace comphelper
         */
         sal_Int64   implGetForeignControlledStates( ) const;
 
-        /// sets the accessible parent component
-        void setAccessibleParent(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible >& _rxAccParent );
-
     protected:
         OAccessibleImplementationAccess( );
         virtual ~OAccessibleImplementationAccess( );
 
         // XUnoTunnel
-        virtual sal_Int64 SAL_CALL getSomething( const ::com::sun::star::uno::Sequence< sal_Int8 >& _rIdentifier ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual sal_Int64 SAL_CALL getSomething( const css::uno::Sequence< sal_Int8 >& _rIdentifier ) throw (css::uno::RuntimeException, std::exception) override;
 
     public:
-        /** tries to access the implementation of an OAccessibleImplementationAccess derivee which is known as
-            interface only.
-
-        @param _rxComponent
-            is the component which should be examined.
-        @return
-            the pointer to the implementation, if successful. The only known error condition so far
-            is an invalid context (which means it is <NULL/>, or the implementation is not derived
-            from OAccessibleImplementationAccess, or retrieving the implementation failed).
-        */
-        static OAccessibleImplementationAccess* getImplementation(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessibleContext >& _rxComponent
-        );
-
-        /** sets the parent for a derived implementation
-
-        @param _rxComponent
-            is the component which's new parent should be set
-        @param _rxNewParent
-            is the new parent of the component
-        @return
-            <TRUE/> in case of success, <FALSE/> otherwise. For error condition please look at
-            <method>getImplementation</method>.
-        */
-        static bool setAccessibleParent(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessibleContext >& _rxComponent,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible >& _rxNewParent
-        );
 
     private:
-        COMPHELPER_DLLPRIVATE static const ::com::sun::star::uno::Sequence< sal_Int8 > getUnoTunnelImplementationId();
+        COMPHELPER_DLLPRIVATE static const css::uno::Sequence< sal_Int8 > getUnoTunnelImplementationId();
     };
 
 } // namespace comphelper

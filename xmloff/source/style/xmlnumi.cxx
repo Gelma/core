@@ -81,7 +81,7 @@ public:
 
     virtual SvXMLImportContext *CreateChildContext(
             sal_uInt16 nPrefix, const OUString& rLocalName,
-            const Reference< xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+            const Reference< xml::sax::XAttributeList > & xAttrList ) override;
 };
 
 class SvxXMLListLevelStyleLabelAlignmentAttrContext_Impl : public SvXMLImportContext
@@ -220,7 +220,7 @@ public:
 
     virtual SvXMLImportContext *CreateChildContext(
             sal_uInt16 nPrefix, const OUString& rLocalName,
-            const Reference< xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+            const Reference< xml::sax::XAttributeList > & xAttrList ) override;
 
     sal_Int32 GetLevel() const { return nLevel; }
     Sequence<beans::PropertyValue> GetProperties();
@@ -370,7 +370,7 @@ SvXMLImportContext *SvxXMLListLevelStyleContext_Impl::CreateChildContext(
         sal_uInt16 nPrefix, const OUString& rLocalName,
         const Reference< xml::sax::XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
     if( XML_NAMESPACE_STYLE == nPrefix &&
         ( IsXMLToken( rLocalName, XML_LIST_LEVEL_PROPERTIES ) ||
              IsXMLToken( rLocalName, XML_TEXT_PROPERTIES ) ) )
@@ -903,7 +903,7 @@ SvXMLImportContext* SvxXMLListLevelStyleAttrContext_Impl::CreateChildContext(
         sal_uInt16 nPrefix, const OUString& rLocalName,
         const Reference< xml::sax::XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
     if ( XML_NAMESPACE_STYLE == nPrefix &&
          IsXMLToken( rLocalName, XML_LIST_LEVEL_LABEL_ALIGNMENT ) )
     {
@@ -1025,7 +1025,7 @@ SvxXMLListStyleContext::SvxXMLListStyleContext( SvXMLImport& rImport,
 ,   sIsPhysical( "IsPhysical"  )
 ,   sNumberingRules( "NumberingRules"  )
 ,   sIsContinuousNumbering( "IsContinuousNumbering"  )
-,   pLevelStyles( 0 )
+,   pLevelStyles( nullptr )
 ,   nLevels( 0 )
 ,   bConsecutive( false )
 ,   bOutline( bOutl )
@@ -1047,14 +1047,13 @@ SvxXMLListStyleContext::~SvxXMLListStyleContext()
     delete pLevelStyles;
 }
 
-TYPEINIT1( SvxXMLListStyleContext, SvXMLStyleContext );
 
 SvXMLImportContext *SvxXMLListStyleContext::CreateChildContext(
         sal_uInt16 nPrefix,
         const OUString& rLocalName,
         const Reference< xml::sax::XAttributeList > & xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     if( XML_NAMESPACE_TEXT == nPrefix &&
         ( bOutline
@@ -1252,7 +1251,7 @@ Reference < XIndexReplace > SvxXMLListStyleContext::CreateNumRule(
     if( !xIfc.is() )
         return xNumRule;
 
-    xNumRule = Reference<XIndexReplace>( xIfc, UNO_QUERY );
+    xNumRule.set( xIfc, UNO_QUERY );
     DBG_ASSERT( xNumRule.is(), "go no numbering rule" );
 
     return xNumRule;

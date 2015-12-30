@@ -43,7 +43,7 @@ struct ExchangeData
     tools::Time     aThemeChangeTime;
 
     ExchangeData()
-        : pTheme(NULL)
+        : pTheme(nullptr)
         , aThemeChangeDate( Date::EMPTY )
         , aThemeChangeTime( tools::Time::EMPTY )
         {
@@ -114,7 +114,7 @@ public:
 
     virtual                 ~SgaIMapInfo() {};
 
-    virtual SdrObjUserData* Clone( SdrObject* ) const SAL_OVERRIDE
+    virtual SdrObjUserData* Clone( SdrObject* ) const override
                             {
                                 SgaIMapInfo* pInfo = new SgaIMapInfo;
                                 pInfo->aImageMap = aImageMap;
@@ -137,12 +137,12 @@ class GraphicFilter;
 
 class SVX_DLLPUBLIC GalleryProgress
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::awt::XProgressBar > mxProgressBar;
+    css::uno::Reference< css::awt::XProgressBar > mxProgressBar;
     GraphicFilter*                                                          mpFilter;
 
     public:
 
-                                    GalleryProgress( GraphicFilter* pFilter = NULL );
+                                    GalleryProgress( GraphicFilter* pFilter = nullptr );
                                     ~GalleryProgress();
 
     void                            Update( sal_uIntPtr nVal, sal_uIntPtr nMaxVal );
@@ -175,11 +175,11 @@ protected:
     void                            InitData( bool bLazy );
 
     // TransferableHelper
-    virtual void                    AddSupportedFormats() SAL_OVERRIDE;
-    virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) SAL_OVERRIDE;
-    virtual bool                    WriteObject( tools::SvRef<SotStorageStream>& rxOStm, void* pUserObject, SotClipboardFormatId nUserObjectId, const ::com::sun::star::datatransfer::DataFlavor& rFlavor ) SAL_OVERRIDE;
-    virtual void                    DragFinished( sal_Int8 nDropAction ) SAL_OVERRIDE;
-    virtual void                    ObjectReleased() SAL_OVERRIDE;
+    virtual void                    AddSupportedFormats() override;
+    virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) override;
+    virtual bool                    WriteObject( tools::SvRef<SotStorageStream>& rxOStm, void* pUserObject, SotClipboardFormatId nUserObjectId, const css::datatransfer::DataFlavor& rFlavor ) override;
+    virtual void                    DragFinished( sal_Int8 nDropAction ) override;
+    virtual void                    ObjectReleased() override;
 
     void                            CopyToClipboard( vcl::Window* pWindow );
     void                            StartDrag( vcl::Window* pWindow, sal_Int8 nDragSourceActions,

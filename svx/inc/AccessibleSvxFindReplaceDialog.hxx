@@ -29,10 +29,10 @@ class VCLXAccessibleSvxFindReplaceDialog : public VCLXAccessibleComponent
 public:
     VCLXAccessibleSvxFindReplaceDialog(VCLXWindow* pVCLXindow);
     virtual ~VCLXAccessibleSvxFindReplaceDialog();
-    virtual void FillAccessibleRelationSet( utl::AccessibleRelationSetHelper& rRelationSet ) SAL_OVERRIDE;
+    virtual void FillAccessibleRelationSet( utl::AccessibleRelationSetHelper& rRelationSet ) override;
     // XServiceInfo
-    virtual ::rtl::OUString SAL_CALL getImplementationName() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Sequence< ::rtl::OUString > SAL_CALL getSupportedServiceNames() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual ::rtl::OUString SAL_CALL getImplementationName() throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< ::rtl::OUString > SAL_CALL getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) override;
 
 };
 
@@ -47,8 +47,7 @@ public:
     virtual ~VCLXSvxFindReplaceDialog()
     {};
 private:
-    virtual ::com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessibleContext >  CreateAccessibleContext() SAL_OVERRIDE
+    virtual css::uno::Reference< css::accessibility::XAccessibleContext >  CreateAccessibleContext() override
     {
         return new VCLXAccessibleSvxFindReplaceDialog(this);
     }

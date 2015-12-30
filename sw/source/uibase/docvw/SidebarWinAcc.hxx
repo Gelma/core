@@ -24,7 +24,7 @@
 
 class SwViewShell;
 class SwSidebarItem;
-class SwFrm;
+class SwFrame;
 
 namespace sw { namespace sidebarwindows {
 
@@ -38,15 +38,15 @@ class SidebarWinAccessible : public VCLXWindow
                                        const SwSidebarItem& rSidebarItem );
         virtual ~SidebarWinAccessible();
 
-        virtual com::sun::star::uno::Reference< com::sun::star::accessibility::XAccessibleContext >
-                CreateAccessibleContext() SAL_OVERRIDE;
+        virtual css::uno::Reference< css::accessibility::XAccessibleContext >
+                CreateAccessibleContext() override;
 
         void ChangeSidebarItem( const SwSidebarItem& rSidebarItem );
 
     private:
         SwSidebarWin& mrSidebarWin;
         SwViewShell& mrViewShell;
-        const SwFrm* mpAnchorFrm;
+        const SwFrame* mpAnchorFrame;
         bool bAccContextCreated;
 };
 

@@ -273,7 +273,7 @@ UcbContentProviderProxy::deregisterInstance( const OUString& Template,
     if ( m_bRegister && m_xTargetProvider.is() )
     {
         m_bRegister       = false;
-        m_xTargetProvider = 0;
+        m_xTargetProvider = nullptr;
 
         Reference< XParameterizedContentProvider >
                                 xParamProvider( m_xProvider, UNO_QUERY );
@@ -310,9 +310,7 @@ UcbContentProviderProxy::getContentProvider()
     {
         try
         {
-            m_xProvider
-                = Reference< XContentProvider >(
-                      m_xSMgr->createInstance( m_aService ), UNO_QUERY );
+            m_xProvider.set( m_xSMgr->createInstance( m_aService ), UNO_QUERY );
             if ( m_aArguments == "NoConfig" )
             {
                 Reference<XInitialization> xInit(m_xProvider,UNO_QUERY);

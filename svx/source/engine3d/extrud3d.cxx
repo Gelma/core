@@ -54,7 +54,6 @@ sdr::properties::BaseProperties* E3dExtrudeObj::CreateObjectSpecificProperties()
 
 
 
-TYPEINIT1(E3dExtrudeObj, E3dCompoundObject);
 
 // Constructor creates a two cover surface tools::PolyPolygon and (point-count 1) side
 // surfaces rectangles from the passed PolyPolygon
@@ -201,13 +200,13 @@ SdrAttrObj* E3dExtrudeObj::GetBreakObj()
         SdrPathObj* pPathObj = new SdrPathObj(OBJ_PLIN, aPoly);
 
         SfxItemSet aSet(GetObjectItemSet());
-        aSet.Put(XLineStyleItem(com::sun::star::drawing::LineStyle_SOLID));
+        aSet.Put(XLineStyleItem(css::drawing::LineStyle_SOLID));
         pPathObj->SetMergedItemSet(aSet);
 
         return pPathObj;
     }
 
-    return 0;
+    return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

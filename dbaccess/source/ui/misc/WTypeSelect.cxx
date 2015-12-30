@@ -243,7 +243,7 @@ OWizTypeSelect::OWizTypeSelect( vcl::Window* pParent, SvStream* _pStream )
     m_pTypeControl->Show();
     m_pTypeControl->Init();
 
-    m_pAutoEt->SetText(OUString("10"));
+    m_pAutoEt->SetText("10");
     m_pAutoEt->SetDecimalDigits(0);
     m_pAutoPb->SetClickHdl(LINK(this,OWizTypeSelect,ButtonClickHdl));
     m_pColumnNames->EnableMultiSelection(true);
@@ -281,7 +281,7 @@ OUString OWizTypeSelect::GetTitle() const
     return ModuleRes(STR_WIZ_TYPE_SELECT_TITEL);
 }
 
-IMPL_LINK( OWizTypeSelect, ColumnSelectHdl, MultiListBox *, /*pListBox*/ )
+IMPL_LINK_NOARG_TYPED( OWizTypeSelect, ColumnSelectHdl, ListBox&, void )
 {
     OUString aColumnName( m_pColumnNames->GetSelectEntry() );
 
@@ -290,7 +290,6 @@ IMPL_LINK( OWizTypeSelect, ColumnSelectHdl, MultiListBox *, /*pListBox*/ )
         m_pTypeControl->DisplayData(pField);
 
     m_pTypeControl->Enable(m_pColumnNames->GetSelectEntryCount() == 1 );
-    return 0;
 }
 
 void OWizTypeSelect::Reset()
@@ -324,7 +323,7 @@ void OWizTypeSelect::ActivatePage( )
 
     m_pColumnNames->SelectEntryPos(static_cast<sal_uInt16>(m_nDisplayRow));
     m_nDisplayRow = 0;
-    m_pColumnNames->GetSelectHdl().Call(m_pColumnNames);
+    m_pColumnNames->GetSelectHdl().Call(*m_pColumnNames);
 }
 
 bool OWizTypeSelect::LeavePage()
@@ -425,26 +424,48 @@ bool OWizTypeSelectList::PreNotify( NotifyEvent& rEvt )
                 ptWhere = pComEvt->GetMousePosPixel();
 
             PopupMenu aContextMenu(ModuleRes(RID_SBA_RTF_PKEYPOPUP));
+            // Should primary key checkbox be checked?
+            const sal_Int32 nCount = GetEntryCount();
+            bool bCheckOk = false;
+            for(sal_Int32 j = 0 ; j < nCount ; ++j)
+            {
+                OFieldDescription* pFieldDescr = static_cast<OFieldDescription*>(GetEntryData(j));
+                // if at least one of the fields is selected but not in the primary key,
+                // or is in the primary key but not selected, then don't check the
+                // primary key checkbox.
+                if( pFieldDescr && pFieldDescr->IsPrimaryKey() != IsEntryPosSelected(j) )
+                {
+                    bCheckOk = false;
+                    break;
+                }
+                if (!bCheckOk && IsEntryPosSelected(j))
+                    bCheckOk = true;
+            }
+
+            if (bCheckOk)
+                aContextMenu.CheckItem( SID_TABLEDESIGN_TABED_PRIMARYKEY );
+
             switch( aContextMenu.Execute( this, ptWhere ) )
             {
                 case SID_TABLEDESIGN_TABED_PRIMARYKEY:
                 {
-                    const sal_Int32 nCount = GetEntryCount();
                     for(sal_Int32 j = 0 ; j < nCount ; ++j)
                     {
                         OFieldDescription* pFieldDescr = static_cast<OFieldDescription*>(GetEntryData(j));
                         if( pFieldDescr )
                         {
-                            if(pFieldDescr->IsPrimaryKey() && !IsEntryPosSelected(j))
-                                setPrimaryKey(pFieldDescr,j);
-                            else if(IsEntryPosSelected(j))
+                            if(!bCheckOk && IsEntryPosSelected(j))
                             {
-                                setPrimaryKey(pFieldDescr,j,!pFieldDescr->IsPrimaryKey());
+                                setPrimaryKey(pFieldDescr,j,true);
                                 SelectEntryPos(j);
+                            }
+                            else
+                            {
+                                setPrimaryKey(pFieldDescr,j);
                             }
                         }
                     }
-                    GetSelectHdl().Call(this);
+                    GetSelectHdl().Call(*this);
                 }
                 break;
             }

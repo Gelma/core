@@ -64,7 +64,7 @@ SotFactory * SotStorageStream::ClassFactory()
 
 void * SotStorageStream::Cast( const SotFactory * pFact )
 {
-    void * pRet = NULL;
+    void * pRet = nullptr;
     if( !pFact || pFact == ClassFactory() )
         pRet = this;
     if( !pRet )
@@ -90,7 +90,7 @@ SvLockBytesRef MakeLockBytes_Impl( const OUString & rName, StreamMode nMode )
 
 SotStorageStream::SotStorageStream( const OUString & rName, StreamMode nMode )
     : SvStream( MakeLockBytes_Impl( rName, nMode ) )
-    , pOwnStm( NULL )
+    , pOwnStm( nullptr )
 {
     if( nMode & StreamMode::WRITE )
         m_isWritable = true;
@@ -113,14 +113,14 @@ SotStorageStream::SotStorageStream( BaseStorageStream * pStm )
     }
     else
     {
-        pOwnStm = NULL;
+        pOwnStm = nullptr;
         m_isWritable = true;
         SetError( SVSTREAM_INVALID_PARAMETER );
     }
 }
 
 SotStorageStream::SotStorageStream()
-    : pOwnStm( NULL )
+    : pOwnStm( nullptr )
 {
     // ??? wenn Init virtuell ist, entsprechen setzen
     m_isWritable = true;
@@ -273,9 +273,9 @@ bool SotStorageStream::Commit()
     return GetError() == SVSTREAM_OK;
 }
 
-bool SotStorageStream::SetProperty( const OUString& rName, const ::com::sun::star::uno::Any& rValue )
+bool SotStorageStream::SetProperty( const OUString& rName, const css::uno::Any& rValue )
 {
-    UCBStorageStream* pStg = PTR_CAST( UCBStorageStream, pOwnStm );
+    UCBStorageStream* pStg =  dynamic_cast<UCBStorageStream*>( pOwnStm );
     if ( pStg )
     {
         return pStg->SetProperty( rName, rValue );
@@ -313,7 +313,7 @@ SotFactory * SotStorage::ClassFactory()
 
 void * SotStorage::Cast( const SotFactory * pFact )
 {
-    void * pRet = NULL;
+    void * pRet = nullptr;
     if( !pFact || pFact == ClassFactory() )
         pRet = this;
     if( !pRet )
@@ -343,8 +343,8 @@ void * SotStorage::Cast( const SotFactory * pFact )
 |*
 *************************************************************************/
 #define INIT_SotStorage()                     \
-    : m_pOwnStg( NULL )                       \
-    , m_pStorStm( NULL )                      \
+    : m_pOwnStg( nullptr )                       \
+    , m_pStorStm( nullptr )                      \
     , m_nError( SVSTREAM_OK )                 \
     , m_bIsRoot( false )                      \
     , m_bDelStm( false )                      \
@@ -469,7 +469,7 @@ SotStorage::SotStorage( BaseStorage * pStor )
     }
 
     m_pOwnStg = pStor;
-    sal_uLong nErr = m_pOwnStg ? m_pOwnStg->GetError() : SVSTREAM_CANNOT_MAKE;
+    const ErrCode nErr = m_pOwnStg ? m_pOwnStg->GetError() : SVSTREAM_CANNOT_MAKE;
     SetError( nErr );
     if ( IsOLEStorage() )
         m_nVersion = SOFFICE_FILEFORMAT_50;
@@ -543,7 +543,7 @@ SotStorage::~SotStorage()
 
 SvMemoryStream * SotStorage::CreateMemoryStream()
 {
-    SvMemoryStream * pStm = NULL;
+    SvMemoryStream * pStm = nullptr;
     pStm = new SvMemoryStream( 0x8000, 0x8000 );
     tools::SvRef<SotStorage> aStg = new SotStorage( *pStm );
     if( CopyTo( aStg ) )
@@ -554,7 +554,7 @@ SvMemoryStream * SotStorage::CreateMemoryStream()
     {
         aStg.Clear(); // Storage vorher freigeben
         delete pStm;
-        pStm = NULL;
+        pStm = nullptr;
     }
     return pStm;
 }
@@ -688,7 +688,7 @@ bool SotStorage::Commit()
 SotStorageStream * SotStorage::OpenSotStream( const OUString & rEleName,
                                               StreamMode nMode )
 {
-    SotStorageStream * pStm = NULL;
+    SotStorageStream * pStm = nullptr;
     DBG_ASSERT( Owner(), "must be owner" );
     if( m_pOwnStg )
     {
@@ -696,7 +696,7 @@ SotStorageStream * SotStorage::OpenSotStream( const OUString & rEleName,
         // egal was kommt, nur exclusiv gestattet
         nMode |= StreamMode::SHARE_DENYALL;
         ErrCode nE = m_pOwnStg->GetError();
-        BaseStorageStream * p = m_pOwnStg->OpenStream( rEleName, nMode, true );
+        BaseStorageStream * p = m_pOwnStg->OpenStream( rEleName, nMode );
         pStm = new SotStorageStream( p );
 
         if( !nE )
@@ -732,7 +732,7 @@ SotStorage * SotStorage::OpenSotStorage( const OUString & rEleName,
 
     SetError( SVSTREAM_GENERALERROR );
 
-    return NULL;
+    return nullptr;
 }
 
 bool SotStorage::IsStorage( const OUString & rEleName ) const
@@ -807,7 +807,7 @@ bool SotStorage::Validate()
 
 bool SotStorage::IsOLEStorage() const
 {
-    UCBStorage* pStg = PTR_CAST( UCBStorage, m_pOwnStg );
+    UCBStorage* pStg =  dynamic_cast<UCBStorage*>( m_pOwnStg );
     return !pStg;
 }
 
@@ -821,7 +821,7 @@ bool SotStorage::IsOLEStorage( SvStream* pStream )
     return Storage::IsStorageFile( pStream );
 }
 
-SotStorage* SotStorage::OpenOLEStorage( const com::sun::star::uno::Reference < com::sun::star::embed::XStorage >& xStorage,
+SotStorage* SotStorage::OpenOLEStorage( const css::uno::Reference < css::embed::XStorage >& xStorage,
                                         const OUString& rEleName, StreamMode nMode )
 {
     sal_Int32 nEleMode = embed::ElementModes::SEEKABLEREAD;
@@ -832,7 +832,7 @@ SotStorage* SotStorage::OpenOLEStorage( const com::sun::star::uno::Reference < c
     if ( nMode & StreamMode::NOCREATE )
         nEleMode |= embed::ElementModes::NOCREATE;
 
-    SvStream* pStream = NULL;
+    SvStream* pStream = nullptr;
     try
     {
         uno::Reference < io::XStream > xStream = xStorage->openStreamElement( rEleName, nEleMode );
@@ -841,9 +841,8 @@ SotStorage* SotStorage::OpenOLEStorage( const com::sun::star::uno::Reference < c
         if ( nMode & StreamMode::WRITE )
         {
             uno::Reference < beans::XPropertySet > xStreamProps( xStream, uno::UNO_QUERY_THROW );
-            xStreamProps->setPropertyValue(
-                        OUString(  "MediaType"  ),
-                        uno::makeAny( OUString(  "application/vnd.sun.star.oleobject"  ) ) );
+            xStreamProps->setPropertyValue( "MediaType",
+                                            uno::makeAny( OUString(  "application/vnd.sun.star.oleobject"  ) ) );
         }
 
            pStream = utl::UcbStreamHelper::CreateStream( xStream );
@@ -858,7 +857,7 @@ SotStorage* SotStorage::OpenOLEStorage( const com::sun::star::uno::Reference < c
     return new SotStorage( pStream, true );
 }
 
-SotClipboardFormatId SotStorage::GetFormatID( const com::sun::star::uno::Reference < com::sun::star::embed::XStorage >& xStorage )
+SotClipboardFormatId SotStorage::GetFormatID( const css::uno::Reference < css::embed::XStorage >& xStorage )
 {
     uno::Reference< beans::XPropertySet > xProps( xStorage, uno::UNO_QUERY );
     if ( !xProps.is() )
@@ -868,7 +867,7 @@ SotClipboardFormatId SotStorage::GetFormatID( const com::sun::star::uno::Referen
     xProps->getPropertyValue("MediaType") >>= aMediaType;
     if ( !aMediaType.isEmpty() )
     {
-        ::com::sun::star::datatransfer::DataFlavor aDataFlavor;
+        css::datatransfer::DataFlavor aDataFlavor;
         aDataFlavor.MimeType = aMediaType;
         return SotExchange::GetFormat( aDataFlavor );
     }
@@ -876,7 +875,7 @@ SotClipboardFormatId SotStorage::GetFormatID( const com::sun::star::uno::Referen
     return SotClipboardFormatId::NONE;
 }
 
-sal_Int32 SotStorage::GetVersion( const com::sun::star::uno::Reference < com::sun::star::embed::XStorage >& xStorage )
+sal_Int32 SotStorage::GetVersion( const css::uno::Reference < css::embed::XStorage >& xStorage )
 {
     SotClipboardFormatId nSotFormatID = SotStorage::GetFormatID( xStorage );
     switch( nSotFormatID )

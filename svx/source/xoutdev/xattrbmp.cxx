@@ -47,13 +47,13 @@ using namespace ::com::sun::star;
 XOBitmap::XOBitmap( const Bitmap& rBmp ) :
     eType           ( XBITMAP_IMPORT ),
     aGraphicObject  ( rBmp ),
-    pPixelArray     ( NULL ),
+    pPixelArray     ( nullptr ),
     bGraphicDirty   ( false )
 {
 }
 
 XOBitmap::XOBitmap( const XOBitmap& rXBmp ) :
-    pPixelArray ( NULL )
+    pPixelArray ( nullptr )
 {
     eType = rXBmp.eType;
     aGraphicObject = rXBmp.aGraphicObject;
@@ -199,7 +199,8 @@ void XOBitmap::Array2Bitmap()
     bGraphicDirty = false;
 }
 
-TYPEINIT1_AUTOFACTORY(XFillBitmapItem, NameOrIndex);
+
+SfxPoolItem* XFillBitmapItem::CreateDefault() { return new XFillBitmapItem; }
 
 XFillBitmapItem::XFillBitmapItem(const OUString& rName, const GraphicObject& rGraphicObject)
 :   NameOrIndex(XATTR_FILLBITMAP, rName),
@@ -396,7 +397,7 @@ bool XFillBitmapItem::GetPresentation(
     return true;
 }
 
-bool XFillBitmapItem::QueryValue(::com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId) const
+bool XFillBitmapItem::QueryValue(css::uno::Any& rVal, sal_uInt8 nMemberId) const
 {
     nMemberId &= ~CONVERT_TWIPS;
 
@@ -406,7 +407,7 @@ bool XFillBitmapItem::QueryValue(::com::sun::star::uno::Any& rVal, sal_uInt8 nMe
     OUString aInternalName;
 
     OUString aURL;
-    ::com::sun::star::uno::Reference< ::com::sun::star::awt::XBitmap > xBmp;
+    css::uno::Reference< css::awt::XBitmap > xBmp;
 
     if( nMemberId == MID_NAME )
     {
@@ -456,14 +457,14 @@ bool XFillBitmapItem::QueryValue(::com::sun::star::uno::Any& rVal, sal_uInt8 nMe
     return true;
 }
 
-bool XFillBitmapItem::PutValue( const ::com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId )
+bool XFillBitmapItem::PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId )
 {
     nMemberId &= ~CONVERT_TWIPS;
 
     OUString aName;
     OUString aURL;
-    ::com::sun::star::uno::Reference< ::com::sun::star::awt::XBitmap > xBmp;
-    ::com::sun::star::uno::Reference< ::com::sun::star::graphic::XGraphic > xGraphic;
+    css::uno::Reference< css::awt::XBitmap > xBmp;
+    css::uno::Reference< css::graphic::XGraphic > xGraphic;
 
     bool bSetName   = false;
     bool bSetURL    = false;
@@ -542,7 +543,7 @@ XFillBitmapItem* XFillBitmapItem::checkForUniqueItem( SdrModel* pModel ) const
     {
         const OUString aUniqueName = NameOrIndex::CheckNamedItem(
                 this, XATTR_FILLBITMAP, &pModel->GetItemPool(),
-                pModel->GetStyleSheetPool() ? &pModel->GetStyleSheetPool()->GetPool() : NULL,
+                pModel->GetStyleSheetPool() ? &pModel->GetStyleSheetPool()->GetPool() : nullptr,
                 XFillBitmapItem::CompareValueFunc, RID_SVXSTR_BMP21,
                 pModel->GetPropertyList( XBITMAP_LIST ) );
 
@@ -553,7 +554,7 @@ XFillBitmapItem* XFillBitmapItem::checkForUniqueItem( SdrModel* pModel ) const
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void XFillBitmapItem::dumpAsXml(xmlTextWriterPtr pWriter) const

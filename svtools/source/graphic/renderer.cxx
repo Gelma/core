@@ -44,7 +44,7 @@ namespace {
 
 GraphicRendererVCL::GraphicRendererVCL() :
     ::comphelper::PropertySetHelper( createPropertySetInfo() ),
-    mpOutDev( NULL )
+    mpOutDev( nullptr )
 {
 }
 
@@ -123,8 +123,7 @@ sal_Bool SAL_CALL GraphicRendererVCL::supportsService( const OUString& ServiceNa
 uno::Sequence< OUString > SAL_CALL GraphicRendererVCL::getSupportedServiceNames()
     throw( uno::RuntimeException, std::exception )
 {
-    uno::Sequence< OUString > aSeq( 1 );
-    aSeq.getArray()[ 0 ] = "com.sun.star.graphic.GraphicRendererVCL";
+    uno::Sequence<OUString> aSeq { "com.sun.star.graphic.GraphicRendererVCL" };
     return aSeq;
 }
 
@@ -200,7 +199,7 @@ void GraphicRendererVCL::_setPropertyValues( const comphelper::PropertyMapEntry*
                 else
                 {
                     mxDevice.clear();
-                    mpOutDev = NULL;
+                    mpOutDev = nullptr;
                 }
             }
             break;

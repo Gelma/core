@@ -58,7 +58,7 @@ AccessibleDialogControlShape::AccessibleDialogControlShape (DialogWindow* pDialo
     m_pExternalLock = static_cast< VCLExternalSolarLock* >( getExternalLock() );
 
     if ( m_pDlgEdObj )
-        m_xControlModel = Reference< XPropertySet >( m_pDlgEdObj->GetUnoControlModel(), UNO_QUERY );
+        m_xControlModel.set( m_pDlgEdObj->GetUnoControlModel(), UNO_QUERY );
 
     if ( m_xControlModel.is() )
         m_xControlModel->addPropertyChangeListener( OUString(), static_cast< beans::XPropertyChangeListener* >( this ) );
@@ -76,7 +76,7 @@ AccessibleDialogControlShape::~AccessibleDialogControlShape()
         m_xControlModel->removePropertyChangeListener( OUString(), static_cast< beans::XPropertyChangeListener* >( this ) );
 
     delete m_pExternalLock;
-    m_pExternalLock = NULL;
+    m_pExternalLock = nullptr;
 }
 
 
@@ -180,7 +180,7 @@ void AccessibleDialogControlShape::SetBounds( const awt::Rectangle& aBounds )
 
 vcl::Window* AccessibleDialogControlShape::GetWindow() const
 {
-    vcl::Window* pWindow = NULL;
+    vcl::Window* pWindow = nullptr;
     if ( m_pDlgEdObj )
     {
         Reference< awt::XControl > xControl( m_pDlgEdObj->GetControl(), UNO_QUERY );
@@ -255,8 +255,8 @@ void AccessibleDialogControlShape::disposing()
 {
     AccessibleExtendedComponentHelper_BASE::disposing();
 
-    m_pDialogWindow = NULL;
-    m_pDlgEdObj = NULL;
+    m_pDialogWindow = nullptr;
+    m_pDlgEdObj = nullptr;
 
     if ( m_xControlModel.is() )
         m_xControlModel->removePropertyChangeListener( OUString(), static_cast< beans::XPropertyChangeListener* >( this ) );
@@ -312,8 +312,7 @@ sal_Bool AccessibleDialogControlShape::supportsService( const OUString& rService
 
 Sequence< OUString > AccessibleDialogControlShape::getSupportedServiceNames() throw (RuntimeException, std::exception)
 {
-    Sequence< OUString > aNames(1);
-    aNames[0] = "com.sun.star.drawing.AccessibleShape" ;
+    Sequence<OUString> aNames { "com.sun.star.drawing.AccessibleShape" };
     return aNames;
 }
 

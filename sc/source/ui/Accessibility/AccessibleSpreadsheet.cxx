@@ -197,7 +197,7 @@ bool ScAccessibleSpreadsheet::CalcScRangeDifferenceMax(ScRange *pSrc, ScRange *p
 //In Src , Not in Dest
 bool ScAccessibleSpreadsheet::CalcScRangeListDifferenceMax(ScRangeList *pSrc,ScRangeList *pDest,int nMax,VEC_MYADDR &vecRet)
 {
-    if (pSrc == NULL || pDest == NULL)
+    if (pSrc == nullptr || pDest == nullptr)
     {
         return false;
     }
@@ -285,8 +285,8 @@ void ScAccessibleSpreadsheet::ConstructScAccessibleSpreadsheet(
     ScSplitPos eSplitPos)
 {
     mpViewShell = pViewShell;
-    mpMarkedRanges = 0;
-    mpSortedMarkedCells = 0;
+    mpMarkedRanges = nullptr;
+    mpSortedMarkedCells = nullptr;
     mpAccDoc = pAccDoc;
     mpAccCell.clear();
     meSplitPos = eSplitPos;
@@ -319,7 +319,7 @@ void SAL_CALL ScAccessibleSpreadsheet::disposing()
     if (mpViewShell)
     {
         mpViewShell->RemoveAccessibilityObject(*this);
-        mpViewShell = NULL;
+        mpViewShell = nullptr;
     }
     mpAccCell.clear();
 
@@ -472,14 +472,14 @@ void ScAccessibleSpreadsheet::Notify( SfxBroadcaster& rBC, const SfxHint& rHint 
                 sal_uInt16 nTab = rViewData.GetTabNo();
                 ScRange aMarkRange;
                 refScMarkData.GetMarkArea(aMarkRange);
-                aEvent.OldValue <<= ::com::sun::star::uno::Any();
+                aEvent.OldValue <<= css::uno::Any();
                 //Mark All
                 if ( !bNewPosCellFocus &&
                     (bNewMarked || bIsMark || bIsMultMark ) &&
                     aMarkRange == ScRange( 0,0,nTab, MAXCOL,MAXROW,nTab ) )
                 {
                     aEvent.EventId = AccessibleEventId::SELECTION_CHANGED_WITHIN;
-                    aEvent.NewValue <<= ::com::sun::star::uno::Any();
+                    aEvent.NewValue <<= css::uno::Any();
                     CommitChange(aEvent);
                     return ;
                 }
@@ -511,7 +511,7 @@ void ScAccessibleSpreadsheet::Notify( SfxBroadcaster& rBC, const SfxHint& rHint 
                         if( !bSelSmaller )
                         {
                             aEvent.EventId = AccessibleEventId::SELECTION_CHANGED_WITHIN;
-                            aEvent.NewValue <<= ::com::sun::star::uno::Any();
+                            aEvent.NewValue <<= css::uno::Any();
                             CommitChange(aEvent);
                         }
                         m_aLastWithInMarkRange = aMarkRange;
@@ -569,7 +569,7 @@ void ScAccessibleSpreadsheet::Notify( SfxBroadcaster& rBC, const SfxHint& rHint 
                         if(CalcScRangeListDifferenceMax(mpMarkedRanges,&m_LastMarkedRanges,10,vecNew))
                         {
                             aEvent.EventId = AccessibleEventId::SELECTION_CHANGED_WITHIN;
-                            aEvent.NewValue <<= ::com::sun::star::uno::Any();
+                            aEvent.NewValue <<= css::uno::Any();
                             CommitChange(aEvent);
                         }
                         else
@@ -725,7 +725,7 @@ void ScAccessibleSpreadsheet::RemoveSelection(ScMarkData &refScMarkData)
 {
     AccessibleEventObject aEvent;
     aEvent.Source = uno::Reference< XAccessible >(this);
-    aEvent.OldValue <<= ::com::sun::star::uno::Any();
+    aEvent.OldValue <<= css::uno::Any();
     MAP_ADDR_XACC::iterator miRemove = m_mapSelectionSend.begin();
     for(;  miRemove != m_mapSelectionSend.end() ;)
     {
@@ -1002,9 +1002,9 @@ uno::Reference< XAccessible > SAL_CALL ScAccessibleSpreadsheet::getAccessibleAtP
             try {
                 xAccessible = getAccessibleCellAt(nY, nX);
             }
-            catch(const ::com::sun::star::lang::IndexOutOfBoundsException &)
+            catch(const css::lang::IndexOutOfBoundsException &)
             {
-                return NULL;
+                return nullptr;
             }
         }
     }
@@ -1039,11 +1039,11 @@ sal_Int32 SAL_CALL ScAccessibleSpreadsheet::getBackground(  )
     //=====  XAccessibleContext  ==============================================
 
 uno::Reference<XAccessibleRelationSet> SAL_CALL ScAccessibleSpreadsheet::getAccessibleRelationSet()
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
-    utl::AccessibleRelationSetHelper* pRelationSet = NULL;
+    utl::AccessibleRelationSetHelper* pRelationSet = nullptr;
     if(mpAccDoc)
-        pRelationSet = mpAccDoc->GetRelationSet(NULL);
+        pRelationSet = mpAccDoc->GetRelationSet(nullptr);
     if (!pRelationSet)
         pRelationSet = new utl::AccessibleRelationSetHelper();
     return pRelationSet;
@@ -1255,7 +1255,7 @@ void ScAccessibleSpreadsheet::SelectCell(sal_Int32 nRow, sal_Int32 nCol, bool bD
     mpViewShell->SetTabNo( maRange.aStart.Tab() );
 
     mpViewShell->DoneBlockMode( true ); // continue selecting
-    mpViewShell->InitBlockMode( static_cast<SCCOL>(nCol), static_cast<SCROW>(nRow), maRange.aStart.Tab(), bDeselect, false, false );
+    mpViewShell->InitBlockMode( static_cast<SCCOL>(nCol), static_cast<SCROW>(nRow), maRange.aStart.Tab(), bDeselect );
 
     mpViewShell->SelectionChanged();
 }
@@ -1356,7 +1356,7 @@ Rectangle ScAccessibleSpreadsheet::GetBoundingBoxOnScreen() const
     {
         vcl::Window* pWindow = mpViewShell->GetWindowByPos(meSplitPos);
         if (pWindow)
-            aRect = pWindow->GetWindowExtentsRelative(NULL);
+            aRect = pWindow->GetWindowExtentsRelative(nullptr);
     }
     return aRect;
 }
@@ -1378,7 +1378,7 @@ Rectangle ScAccessibleSpreadsheet::GetBoundingBox() const
 bool ScAccessibleSpreadsheet::IsDefunc(
     const uno::Reference<XAccessibleStateSet>& rxParentStates)
 {
-    return ScAccessibleContextBase::IsDefunc() || (mpViewShell == NULL) || !getAccessibleParent().is() ||
+    return ScAccessibleContextBase::IsDefunc() || (mpViewShell == nullptr) || !getAccessibleParent().is() ||
         (rxParentStates.is() && rxParentStates->contains(AccessibleStateType::DEFUNC));
 }
 
@@ -1427,7 +1427,7 @@ bool ScAccessibleSpreadsheet::IsCompleteSheetSelected()
 
 ScDocument* ScAccessibleSpreadsheet::GetDocument(ScTabViewShell* pViewShell)
 {
-    ScDocument* pDoc = NULL;
+    ScDocument* pDoc = nullptr;
     if (pViewShell)
         pDoc = pViewShell->GetViewData().GetDocument();
     return pDoc;
@@ -1494,8 +1494,8 @@ sal_Bool SAL_CALL ScAccessibleSpreadsheet::selectColumn( sal_Int32 column )
 
     mpViewShell->SetTabNo( maRange.aStart.Tab() );
     mpViewShell->DoneBlockMode( true ); // continue selecting
-    mpViewShell->InitBlockMode( static_cast<SCCOL>(column), 0, maRange.aStart.Tab(), false, true, false );
-    mpViewShell->MarkCursor( static_cast<SCCOL>(column), MAXROW, maRange.aStart.Tab(), true, false );
+    mpViewShell->InitBlockMode( static_cast<SCCOL>(column), 0, maRange.aStart.Tab(), false, true );
+    mpViewShell->MarkCursor( static_cast<SCCOL>(column), MAXROW, maRange.aStart.Tab(), true );
     mpViewShell->SelectionChanged();
     return sal_True;
 }
@@ -1532,7 +1532,7 @@ sal_Bool SAL_CALL ScAccessibleSpreadsheet::unselectColumn( sal_Int32 column )
     mpViewShell->SetTabNo( maRange.aStart.Tab() );
     mpViewShell->DoneBlockMode( true ); // continue selecting
     mpViewShell->InitBlockMode( static_cast<SCCOL>(column), 0, maRange.aStart.Tab(), false, true, false, true );
-    mpViewShell->MarkCursor( static_cast<SCCOL>(column), MAXROW, maRange.aStart.Tab(), true, false );
+    mpViewShell->MarkCursor( static_cast<SCCOL>(column), MAXROW, maRange.aStart.Tab(), true );
     mpViewShell->SelectionChanged();
     mpViewShell->DoneBlockMode( true );
     return sal_True;
@@ -1619,7 +1619,7 @@ void ScAccessibleSpreadsheet::NotifyRefMode()
             if ( nNewSize > 10 )
             {
                 aEvent.EventId = AccessibleEventId::SELECTION_CHANGED_WITHIN;
-                aEvent.NewValue <<= ::com::sun::star::uno::Any();
+                aEvent.NewValue <<= css::uno::Any();
                 CommitChange(aEvent);
             }
             else
@@ -1655,7 +1655,7 @@ void ScAccessibleSpreadsheet::RemoveFormulaSelection(bool bRemoveAll )
 {
     AccessibleEventObject aEvent;
     aEvent.Source = uno::Reference< XAccessible >(this);
-    aEvent.OldValue <<= ::com::sun::star::uno::Any();
+    aEvent.OldValue <<= css::uno::Any();
     MAP_ADDR_XACC::iterator miRemove = m_mapFormulaSelectionSend.begin();
     for(;  miRemove != m_mapFormulaSelectionSend.end() ;)
     {

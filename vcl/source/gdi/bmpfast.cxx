@@ -30,7 +30,7 @@ typedef unsigned char PIXBYTE;
 class BasePixelPtr
 {
 public:
-    explicit BasePixelPtr( PIXBYTE* p = NULL ) : mpPixel( p ) {}
+    explicit BasePixelPtr( PIXBYTE* p = nullptr ) : mpPixel( p ) {}
     void    SetRawPtr( PIXBYTE* pRawPtr )               { mpPixel = pRawPtr; }
     PIXBYTE* GetRawPtr() const                    { return mpPixel; }
     void    AddByteOffset( int nByteOffset )            { mpPixel += nByteOffset; }
@@ -221,7 +221,6 @@ public:
     void    operator++()                    { mpPixel += 1; }
     PIXBYTE GetAlpha() const                { return mpPixel[0]; }
     void    SetAlpha( PIXBYTE a ) const     { mpPixel[0] = a; }
-    static void SetColor( PIXBYTE, PIXBYTE, PIXBYTE ) {}
 };
 
 // TODO: for some reason many Alpha maps are BMP_FORMAT_8BIT_PAL

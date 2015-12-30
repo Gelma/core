@@ -40,12 +40,12 @@
 void PutFormString(LotusContext& rContext, SCCOL nCol, SCROW nRow, SCTAB nTab, sal_Char* pString)
 {
     // evaluate Label-Format
-    OSL_ENSURE( pString != NULL, "PutFormString(): pString == NULL" );
+    OSL_ENSURE( pString != nullptr, "PutFormString(): pString == NULL" );
     if (!pString)
         return;
 
     sal_Char            cForm;
-    SvxHorJustifyItem*  pJustify = NULL;
+    SvxHorJustifyItem*  pJustify = nullptr;
 
     cForm = *pString;
 
@@ -64,7 +64,7 @@ void PutFormString(LotusContext& rContext, SCCOL nCol, SCROW nRow, SCTAB nTab, s
             pString++;
             break;
         case '|':   // printer command
-            pString = NULL;
+            pString = nullptr;
             break;
         case '\\':  // repetition
             pJustify = rContext.pAttrRepeat;
@@ -334,7 +334,7 @@ SfxUInt32Item* FormCache::NewAttr( sal_uInt8 nFormat, sal_uInt8 nSt )
         pFormTable->PutEntry( aFormString, nDummy, eType, nHandle, eLanguage );
     }
 
-    return new SfxUInt32Item( ATTR_VALUE_FORMAT, ( sal_uInt32 ) nHandle );
+    return new SfxUInt32Item( ATTR_VALUE_FORMAT, nHandle );
 }
 
 void LotusRange::MakeHash()

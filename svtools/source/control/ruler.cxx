@@ -179,17 +179,17 @@ ImplRulerData& ImplRulerData::operator=( const ImplRulerData& rData )
 
 static const RulerUnitData aImplRulerUnitTab[RULER_UNIT_COUNT] =
 {
-{ MAP_100TH_MM,        100,    25.0,    25.0,     50.0,    100.0,     100, 3, " mm"    }, // MM
-{ MAP_100TH_MM,       1000,   100.0,   500.0,   1000.0,   1000.0,    1000, 3, " cm"    }, // CM
-{ MAP_MM,             1000,    10.0,   250.0,    500.0,   1000.0,   10000, 4, " m"     }, // M
-{ MAP_CM,           100000, 12500.0, 25000.0,  50000.0, 100000.0,  100000, 6, " km"    }, // KM
-{ MAP_1000TH_INCH,    1000,    62.5,   125.0,    500.0,   1000.0,   25400, 3, "\""     }, // INCH
-{ MAP_100TH_INCH,     1200,   120.0,   120.0,    600.0,   1200.0,   30480, 3, "'"      }, // FOOT
-{ MAP_10TH_INCH,    633600, 63360.0, 63360.0, 316800.0, 633600.0, 1609344, 4, " miles" }, // MILE
-{ MAP_POINT,             1,    12.0,    12.0,     12.0,     36.0,     353, 2, " pt"    }, // POINT
-{ MAP_100TH_MM,        423,   423.0,   423.0,    423.0,    846.0,     423, 3, " pi"    }, // PICA
-{ MAP_100TH_MM,        371,   371.0,   371.0,    371.0,    743.0,     371, 3, " ch"    }, // CHAR
-{ MAP_100TH_MM,        551,   551.0,   551.0,    551.0,   1102.0,     551, 3, " li"    }  // LINE
+{ MAP_100TH_MM,        100,    25.0,    25.0,     50.0,    100.0,  " mm"    }, // MM
+{ MAP_100TH_MM,       1000,   100.0,   500.0,   1000.0,   1000.0,  " cm"    }, // CM
+{ MAP_MM,             1000,    10.0,   250.0,    500.0,   1000.0,  " m"     }, // M
+{ MAP_CM,           100000, 12500.0, 25000.0,  50000.0, 100000.0,  " km"    }, // KM
+{ MAP_1000TH_INCH,    1000,    62.5,   125.0,    500.0,   1000.0,  "\""     }, // INCH
+{ MAP_100TH_INCH,     1200,   120.0,   120.0,    600.0,   1200.0,  "'"      }, // FOOT
+{ MAP_10TH_INCH,    633600, 63360.0, 63360.0, 316800.0, 633600.0,  " miles" }, // MILE
+{ MAP_POINT,             1,    12.0,    12.0,     12.0,     36.0,  " pt"    }, // POINT
+{ MAP_100TH_MM,        423,   423.0,   423.0,    423.0,    846.0,  " pi"    }, // PICA
+{ MAP_100TH_MM,        371,   371.0,   371.0,    371.0,    743.0,  " ch"    }, // CHAR
+{ MAP_100TH_MM,        551,   551.0,   551.0,    551.0,   1102.0,  " li"    }  // LINE
 };
 
 static RulerTabData ruler_tab =
@@ -235,7 +235,7 @@ void Ruler::ImplInit( WinBits nWinBits )
     mnVirWidth      = 0;                    // width or height from VirtualDevice
     mnVirHeight     = 0;                    // height of width from VirtualDevice
     mnDragPos       = 0;                    // Drag-Position (Null point)
-    mnUpdateEvtId   = 0;                    // Update event was not sent yet
+    mnUpdateEvtId   = nullptr;                    // Update event was not sent yet
     mnDragAryPos    = 0;                    // Drag-Array-Index
     mnDragSize      = 0;                    // Did size change at dragging
     mnDragModifier  = 0;                    // Modifier key at dragging
@@ -273,7 +273,7 @@ void Ruler::ImplInit( WinBits nWinBits )
 
     // Setup the default size
     Rectangle aRect;
-    GetTextBoundRect( aRect, OUString( "0123456789" ) );
+    GetTextBoundRect( aRect, "0123456789" );
     long nDefHeight = aRect.GetHeight() + RULER_OFF * 2 + ruler_tab.textoff * 2 + mnBorderWidth;
 
     Size aDefSize;
@@ -283,7 +283,7 @@ void Ruler::ImplInit( WinBits nWinBits )
         aDefSize.Width() = nDefHeight;
     SetOutputSizePixel( aDefSize );
     SetType(WINDOW_RULER);
-    pAccContext = NULL;
+    pAccContext = nullptr;
 }
 
 Ruler::Ruler( vcl::Window* pParent, WinBits nWinStyle ) :
@@ -291,7 +291,7 @@ Ruler::Ruler( vcl::Window* pParent, WinBits nWinStyle ) :
     maVirDev( VclPtr<VirtualDevice>::Create(*this) ),
     maMapMode( MAP_100TH_MM ),
     mpSaveData(new ImplRulerData),
-    mpData(NULL),
+    mpData(nullptr),
     mpDragData(new ImplRulerData)
 {
     // Check to see if the ruler constructor has
@@ -331,13 +331,13 @@ void Ruler::dispose()
     if ( mnUpdateEvtId )
         Application::RemoveUserEvent( mnUpdateEvtId );
     delete mpSaveData;
-    mpSaveData = NULL;
+    mpSaveData = nullptr;
     delete mpDragData;
-    mpDragData = NULL;
+    mpDragData = nullptr;
     if( pAccContext )
     {
         pAccContext->release();
-        pAccContext = NULL;
+        pAccContext = nullptr;
     }
     Window::dispose();
 }
@@ -484,8 +484,6 @@ void Ruler::ImplDrawTicks(vcl::RenderContext& rRenderContext, long nMin, long nM
     long nTickWidth;
     bool bNoTicks = false;
 
-    double nAcceptanceDelta = 0.0001;
-
     Size aPixSize = rRenderContext.LogicToPixel(Size(nTick4, nTick4), maMapMode);
 
     if (mnUnitIndex == RULER_UNIT_CHAR)
@@ -627,6 +625,7 @@ void Ruler::ImplDrawTicks(vcl::RenderContext& rRenderContext, long nMin, long nM
                 // Tick4 - Output (Text)
                 double aStep = (nTick / nTick4);
                 double aRest = std::abs(aStep - std::floor(aStep));
+                double nAcceptanceDelta = 0.0001;
 
                 if (aRest < nAcceptanceDelta)
                 {
@@ -862,7 +861,7 @@ void Ruler::ImplDrawIndents(vcl::RenderContext& rRenderContext, long nMin, long 
             if (RULER_INDENT_BORDER != nIndentStyle)
             {
                 bool bIsHit = false;
-                if(mxCurrentHitTest.get() != NULL && mxCurrentHitTest->eType == RULER_TYPE_INDENT)
+                if(mxCurrentHitTest.get() != nullptr && mxCurrentHitTest->eType == RULER_TYPE_INDENT)
                 {
                     bIsHit = mxCurrentHitTest->nAryPos == j;
                 }
@@ -2110,7 +2109,7 @@ void Ruler::MouseMove( const MouseEvent& rMEvt )
         }
     }
 
-    if (mxPreviousHitTest.get() != NULL && mxPreviousHitTest->eType != mxCurrentHitTest->eType)
+    if (mxPreviousHitTest.get() != nullptr && mxPreviousHitTest->eType != mxCurrentHitTest->eType)
     {
         mbFormat = true;
     }
@@ -2725,7 +2724,7 @@ void Ruler::SetIndents( sal_uInt32 aIndentArraySize, const RulerIndent* pIndentA
 
 void Ruler::SetTabs( sal_uInt32 aTabArraySize, const RulerTab* pTabArray )
 {
-    if ( aTabArraySize == 0 || pTabArray == NULL )
+    if ( aTabArraySize == 0 || pTabArray == nullptr )
     {
         if ( mpData->pTabs.empty() )
             return;

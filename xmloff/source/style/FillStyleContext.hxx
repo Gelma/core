@@ -29,19 +29,18 @@
 class XMLGradientStyleContext: public SvXMLStyleContext
 {
 private:
-    ::com::sun::star::uno::Any  maAny;
+    css::uno::Any          maAny;
     OUString               maStrName;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     XMLGradientStyleContext( SvXMLImport& rImport,  sal_uInt16 nPrfx,  const OUString& rLName,
-                           const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList );
+                           const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList );
     virtual ~XMLGradientStyleContext();
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
-    virtual bool IsTransient() const SAL_OVERRIDE;
+    virtual bool IsTransient() const override;
 };
 
 // draw:hatch context
@@ -49,19 +48,18 @@ public:
 class XMLHatchStyleContext: public SvXMLStyleContext
 {
 private:
-    ::com::sun::star::uno::Any  maAny;
+    css::uno::Any          maAny;
     OUString               maStrName;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     XMLHatchStyleContext( SvXMLImport& rImport,  sal_uInt16 nPrfx,  const OUString& rLName,
-                           const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList );
+                           const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList );
     virtual ~XMLHatchStyleContext();
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
-    virtual bool IsTransient() const SAL_OVERRIDE;
+    virtual bool IsTransient() const override;
 };
 
 // draw:fill-image context
@@ -69,25 +67,24 @@ public:
 class XMLBitmapStyleContext: public SvXMLStyleContext
 {
 private:
-    ::com::sun::star::uno::Any  maAny;
+    css::uno::Any          maAny;
     OUString               maStrName;
-    ::com::sun::star::uno::Reference < ::com::sun::star::io::XOutputStream > mxBase64Stream;
+    css::uno::Reference < css::io::XOutputStream > mxBase64Stream;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     XMLBitmapStyleContext( SvXMLImport& rImport,  sal_uInt16 nPrfx,  const OUString& rLName,
-                           const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList );
+                           const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList );
     virtual ~XMLBitmapStyleContext();
 
     virtual SvXMLImportContext *CreateChildContext(
             sal_uInt16 nPrefix,
             const OUString& rLocalName,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+            const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
-    virtual bool IsTransient() const SAL_OVERRIDE;
+    virtual bool IsTransient() const override;
 };
 
 // draw:transparency context
@@ -95,19 +92,18 @@ public:
 class XMLTransGradientStyleContext: public SvXMLStyleContext
 {
 private:
-    ::com::sun::star::uno::Any  maAny;
+    css::uno::Any          maAny;
     OUString               maStrName;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     XMLTransGradientStyleContext( SvXMLImport& rImport,  sal_uInt16 nPrfx,  const OUString& rLName,
-                           const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList );
+                           const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList );
     virtual ~XMLTransGradientStyleContext();
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
-    virtual bool IsTransient() const SAL_OVERRIDE;
+    virtual bool IsTransient() const override;
 };
 
 // draw:marker context
@@ -115,19 +111,18 @@ public:
 class XMLMarkerStyleContext: public SvXMLStyleContext
 {
 private:
-    ::com::sun::star::uno::Any  maAny;
+    css::uno::Any          maAny;
     OUString               maStrName;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     XMLMarkerStyleContext( SvXMLImport& rImport,  sal_uInt16 nPrfx,  const OUString& rLName,
-                           const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList );
+                           const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList );
     virtual ~XMLMarkerStyleContext();
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
-    virtual bool IsTransient() const SAL_OVERRIDE;
+    virtual bool IsTransient() const override;
 };
 
 // draw:marker context
@@ -135,19 +130,18 @@ public:
 class XMLDashStyleContext: public SvXMLStyleContext
 {
 private:
-    ::com::sun::star::uno::Any  maAny;
+    css::uno::Any          maAny;
     OUString               maStrName;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     XMLDashStyleContext( SvXMLImport& rImport,  sal_uInt16 nPrfx,  const OUString& rLName,
-                           const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttrList );
+                           const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList );
     virtual ~XMLDashStyleContext();
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
-    virtual bool IsTransient() const SAL_OVERRIDE;
+    virtual bool IsTransient() const override;
 };
 
 #endif // INCLUDED_XMLOFF_SOURCE_STYLE_FILLSTYLECONTEXT_HXX

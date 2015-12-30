@@ -211,13 +211,33 @@
       <node oor:name="X_MOD2" oor:op="replace">
         <prop oor:name="Command">
           <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
-          <value xml:lang="en-US">.uno:UnicodeNotationToggle</value>
+          <value xml:lang="en-US" install:module="unxwnt">.uno:UnicodeNotationToggle</value>
+          <!--  tdf#73691
+                Translations of main menu keyboard ALT shortcuts can conflict with this assignment.
+                Those languages need to have blank assignments in order to avoid inheriting the en-US value.
+          -->
+          <value xml:lang="de"    install:module="unxwnt"></value>
+          <value xml:lang="vi"    install:module="unxwnt"></value>
+          <value xml:lang="eu"    install:module="unxwnt"></value>
+          <value xml:lang="gl"    install:module="unxwnt"></value>
+          <value xml:lang="nl"    install:module="unxwnt"></value>
+          <value xml:lang="pt-BR" install:module="unxwnt"></value>
         </prop>
       </node>
       <node oor:name="C_MOD2" oor:op="replace">
         <prop oor:name="Command">
           <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
-          <value xml:lang="de">.uno:UnicodeNotationToggle</value>
+          <value xml:lang="de"    install:module="unxwnt">.uno:UnicodeNotationToggle</value>
+          <value xml:lang="eu"    install:module="unxwnt">.uno:UnicodeNotationToggle</value>
+          <value xml:lang="gl"    install:module="unxwnt">.uno:UnicodeNotationToggle</value>
+          <value xml:lang="nl"    install:module="unxwnt">.uno:UnicodeNotationToggle</value>
+          <value xml:lang="pt-BR" install:module="unxwnt">.uno:UnicodeNotationToggle</value>
+        </prop>
+      </node>
+      <node oor:name="X_MOD1_MOD2" oor:op="replace">
+        <prop oor:name="Command">
+          <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
+          <value xml:lang="en-US" install:module="macosx">.uno:UnicodeNotationToggle</value>
         </prop>
       </node>
       <node oor:name="Y_SHIFT_MOD1" oor:op="replace">
@@ -745,13 +765,19 @@
         <node oor:name="F4" oor:op="replace">
           <prop oor:name="Command">
             <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
-            <value xml:lang="en-US">.uno:ViewDataSourceBrowser</value>
+            <value xml:lang="en-US">.uno:ToggleRelative</value>
           </prop>
         </node>
         <node oor:name="F4_SHIFT" oor:op="replace">
           <prop oor:name="Command">
             <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
             <value xml:lang="en-US">.uno:ToggleRelative</value>
+          </prop>
+        </node>
+        <node oor:name="F4_SHIFT_MOD1" oor:op="replace">
+          <prop oor:name="Command">
+            <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
+            <value xml:lang="en-US">.uno:ViewDataSourceBrowser</value>
           </prop>
         </node>
         <node oor:name="F5" oor:op="replace">
@@ -2533,10 +2559,22 @@
             <value xml:lang="en-US">.uno:InsertAnnotation</value>
           </prop>
         </node>
+        <node oor:name="PAGEDOWN" oor:op="replace">
+          <prop oor:name="Command">
+            <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
+            <value xml:lang="en-US">.uno:NextPage</value>
+          </prop>
+        </node>
         <node oor:name="PAGEDOWN_MOD1_MOD2" oor:op="replace">
           <prop oor:name="Command">
             <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
             <value xml:lang="en-US">.uno:NextAnnotation</value>
+          </prop>
+        </node>
+        <node oor:name="PAGEUP" oor:op="replace">
+          <prop oor:name="Command">
+            <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
+            <value xml:lang="en-US">.uno:PreviousPage</value>
           </prop>
         </node>
         <node oor:name="PAGEUP_MOD1_MOD2" oor:op="replace">
@@ -2655,6 +2693,12 @@
             <value xml:lang="en-US">.uno:InsertZWSP</value>
           </prop>
         </node>
+        <node oor:name="DOWN_SHIFT_MOD1" oor:op="replace">
+          <prop oor:name="Command">
+            <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
+            <value xml:lang="en-US">.uno:MovePageDown</value>
+          </prop>
+        </node>
         <node oor:name="DOWN_SHIFT_MOD2" oor:op="replace">
           <prop oor:name="Command">
             <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
@@ -2666,6 +2710,18 @@
             <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
             <value xml:lang="en-US">.uno:CenterPara</value>
             <value xml:lang="es">.uno:SelectAll</value>
+          </prop>
+        </node>
+        <node oor:name="END" oor:op="replace">
+          <prop oor:name="Command">
+            <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
+            <value xml:lang="en-US">.uno:LastPage</value>
+          </prop>
+        </node>
+        <node oor:name="END_SHIFT_MOD1" oor:op="replace">
+          <prop oor:name="Command">
+            <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
+            <value xml:lang="en-US">.uno:MovePageLast</value>
           </prop>
         </node>
         <node oor:name="F11" oor:op="replace">
@@ -2794,6 +2850,18 @@
           <prop oor:name="Command">
             <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
             <value xml:lang="de" install:module="unxwnt">.uno:SuperScript</value>
+          </prop>
+        </node>
+        <node oor:name="HOME" oor:op="replace">
+          <prop oor:name="Command">
+            <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
+            <value xml:lang="en-US">.uno:FirstPage</value>
+          </prop>
+        </node>
+        <node oor:name="HOME_SHIFT_MOD1" oor:op="replace">
+          <prop oor:name="Command">
+            <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
+            <value xml:lang="en-US">.uno:MovePageFirst</value>
           </prop>
         </node>
         <node oor:name="I_MOD1" oor:op="replace">
@@ -2954,6 +3022,12 @@
             <value xml:lang="de" install:module="unxwnt">.uno:SubScript</value>
             <value xml:lang="es" install:module="unxwnt">.uno:CenterPara</value>
             <value xml:lang="en-US" install:module="macosx">.uno:DesignerDialog</value>
+          </prop>
+        </node>
+        <node oor:name="UP_SHIFT_MOD1" oor:op="replace">
+          <prop oor:name="Command">
+            <value xml:lang="x-no-translate">I10N SHORTCUTS - NO TRANSLATE</value>
+            <value xml:lang="en-US">.uno:MovePageUp</value>
           </prop>
         </node>
         <node oor:name="UP_SHIFT_MOD2" oor:op="replace">

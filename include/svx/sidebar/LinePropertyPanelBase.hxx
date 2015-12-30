@@ -72,10 +72,10 @@ class SVX_DLLPUBLIC LinePropertyPanelBase : public PanelLayout
 {
 public:
     virtual ~LinePropertyPanelBase();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     virtual void DataChanged(
-        const DataChangedEvent& rEvent) SAL_OVERRIDE;
+        const DataChangedEvent& rEvent) override;
 
     void SetWidth(long nWidth);
     void SetWidthIcon(int n);
@@ -118,6 +118,8 @@ protected:
 
     void setMapUnit(SfxMapUnit eMapUnit);
 
+    void disableArrowHead();
+
 protected:
 
     VclPtr<sfx2::sidebar::SidebarToolBox> mpTBColor;
@@ -158,20 +160,19 @@ private:
     // multi-images
     std::unique_ptr<Image[]> mpIMGWidthIcon;
 
-    css::uno::Reference<css::frame::XFrame> mxFrame;
-
     /// bitfield
     bool                mbWidthValuable : 1;
+    bool mbArrowSupported;
 
     void Initialize();
 
-    DECL_LINK(ChangeLineStyleHdl, void*);
+    DECL_LINK_TYPED(ChangeLineStyleHdl, ListBox&, void);
     DECL_LINK_TYPED(ToolboxWidthSelectHdl, ToolBox*, void);
-    DECL_LINK(ChangeTransparentHdl , void *);
-    DECL_LINK(ChangeStartHdl, void *);
-    DECL_LINK(ChangeEndHdl, void *);
-    DECL_LINK(ChangeEdgeStyleHdl, void *);
-    DECL_LINK(ChangeCapStyleHdl, void *);
+    DECL_LINK_TYPED(ChangeTransparentHdl, Edit&, void );
+    DECL_LINK_TYPED(ChangeStartHdl, ListBox&, void);
+    DECL_LINK_TYPED(ChangeEndHdl, ListBox&, void);
+    DECL_LINK_TYPED(ChangeEdgeStyleHdl, ListBox&, void);
+    DECL_LINK_TYPED(ChangeCapStyleHdl, ListBox&, void);
 
     VclPtr<PopupControl> CreateLineWidthPopupControl (PopupContainer* pParent);
 };

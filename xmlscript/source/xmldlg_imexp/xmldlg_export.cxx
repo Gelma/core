@@ -1026,13 +1026,13 @@ void ElementDescriptor::readImageScaleModeAttr( OUString const & rPropName, OUSt
             switch(nImageScaleMode)
             {
                 case ::awt::ImageScaleMode::NONE:
-                    addAttribute( rAttrName, OUString( "none") );
+                    addAttribute( rAttrName, "none" );
                     break;
                 case ::awt::ImageScaleMode::ISOTROPIC:
-                    addAttribute( rAttrName, OUString( "isotropic") );
+                    addAttribute( rAttrName, "isotropic" );
                     break;
                 case ::awt::ImageScaleMode::ANISOTROPIC:
-                    addAttribute( rAttrName, OUString( "anisotropic" ) );
+                    addAttribute( rAttrName, "anisotropic" );
                     break;
                 default:
                     OSL_ENSURE( false, "### illegal image scale mode value.");
@@ -1384,10 +1384,9 @@ void SAL_CALL exportDialogModel(
 
     xOut->startDocument();
 
-    OUString aDocTypeStr(
+    xOut->unknown(
         "<!DOCTYPE dlg:window PUBLIC \"-//OpenOffice.org//DTD OfficeDocument 1.0//EN\""
         " \"dialog.dtd\">" );
-    xOut->unknown( aDocTypeStr );
     xOut->ignorableWhitespace( OUString() );
 
     OUString aWindowName( XMLNS_DIALOGS_PREFIX ":window" );

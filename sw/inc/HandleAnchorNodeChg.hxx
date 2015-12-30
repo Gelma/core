@@ -21,7 +21,7 @@
 
 class SwFlyFrameFormat;
 class SwFormatAnchor;
-class SwFlyFrm;
+class SwFlyFrame;
 
 // helper class to track change of anchor node of at-paragraph respectively
 // at-character anchored fly frames
@@ -43,15 +43,15 @@ public:
         @param _rNewAnchorFormat
         new anchor attribute, which will be applied at the given fly frame format
 
-        @param _pKeepThisFlyFrm
+        @param _pKeepThisFlyFrame
         optional parameter - pointer to a fly frame of the given fly frame format,
         which isn't deleted, if re-creation of fly frames is necessary.
     */
     SwHandleAnchorNodeChg( SwFlyFrameFormat& _rFlyFrameFormat,
                            const SwFormatAnchor& _rNewAnchorFormat,
-                           SwFlyFrm* _pKeepThisFlyFrm = 0L );
+                           SwFlyFrame* _pKeepThisFlyFrame = nullptr );
 
-    /** calls <SwFlyFrameFormat::MakeFrms>, if re-creation of fly frames is necessary.
+    /** calls <SwFlyFrameFormat::MakeFrames>, if re-creation of fly frames is necessary.
 
         @author OD
     */
@@ -64,8 +64,8 @@ private:
     // and that re-creation of fly frames is necessary.
     bool mbAnchorNodeChanged;
 
-    SwHandleAnchorNodeChg( const SwHandleAnchorNodeChg& ) SAL_DELETED_FUNCTION;
-    void operator=( const SwHandleAnchorNodeChg ) SAL_DELETED_FUNCTION;
+    SwHandleAnchorNodeChg( const SwHandleAnchorNodeChg& ) = delete;
+    void operator=( const SwHandleAnchorNodeChg ) = delete;
 };
 #endif
 

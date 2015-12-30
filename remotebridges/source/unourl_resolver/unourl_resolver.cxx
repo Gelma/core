@@ -49,8 +49,7 @@ namespace unourl_resolver
 
 Sequence< OUString > resolver_getSupportedServiceNames()
 {
-    Sequence< OUString > seqNames(1);
-    seqNames.getArray()[0] = "com.sun.star.bridge.UnoUrlResolver";
+    Sequence< OUString > seqNames { "com.sun.star.bridge.UnoUrlResolver" };
     return seqNames;
 }
 
@@ -69,13 +68,13 @@ public:
     virtual ~ResolverImpl();
 
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName() throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService( const OUString & rServiceName ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual Sequence< OUString > SAL_CALL getSupportedServiceNames() throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName() throw(css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL supportsService( const OUString & rServiceName ) throw(css::uno::RuntimeException, std::exception) override;
+    virtual Sequence< OUString > SAL_CALL getSupportedServiceNames() throw(css::uno::RuntimeException, std::exception) override;
 
     // XUnoUrlResolver
     virtual Reference< XInterface > SAL_CALL resolve( const OUString & rUnoUrl )
-        throw (NoConnectException, ConnectionSetupException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (NoConnectException, ConnectionSetupException, RuntimeException, std::exception) override;
 };
 
 ResolverImpl::ResolverImpl( const Reference< XComponentContext > & xCtx )
@@ -87,19 +86,19 @@ ResolverImpl::~ResolverImpl() {}
 
 // XServiceInfo
 OUString ResolverImpl::getImplementationName()
-    throw(::com::sun::star::uno::RuntimeException, std::exception)
+    throw(css::uno::RuntimeException, std::exception)
 {
     return resolver_getImplementationName();
 }
 
 sal_Bool ResolverImpl::supportsService( const OUString & rServiceName )
-    throw(::com::sun::star::uno::RuntimeException, std::exception)
+    throw(css::uno::RuntimeException, std::exception)
 {
     return cppu::supportsService(this, rServiceName);
 }
 
 Sequence< OUString > ResolverImpl::getSupportedServiceNames()
-    throw(::com::sun::star::uno::RuntimeException, std::exception)
+    throw(css::uno::RuntimeException, std::exception)
 {
     return resolver_getSupportedServiceNames();
 }
@@ -120,13 +119,11 @@ Reference< XInterface > ResolverImpl::resolve( const OUString & rUnoUrl )
     }
     catch (const rtl::MalformedUriException & rEx)
     {
-        throw ConnectionSetupException(rEx.getMessage(), 0);
+        throw ConnectionSetupException(rEx.getMessage(), nullptr);
     }
 
     Reference< XConnector > xConnector(
-        _xSMgr->createInstanceWithContext(
-            OUString("com.sun.star.connection.Connector"),
-            _xCtx ),
+        _xSMgr->createInstanceWithContext( "com.sun.star.connection.Connector", _xCtx ),
         UNO_QUERY );
 
     if (! xConnector.is())
@@ -161,9 +158,9 @@ static const struct ImplementationEntry g_entries[] =
     {
         ResolverImpl_create, resolver_getImplementationName,
         resolver_getSupportedServiceNames, createSingleComponentFactory,
-        0, 0
+        nullptr, 0
     },
-    { 0, 0, 0, 0, 0, 0 }
+    { nullptr, nullptr, nullptr, nullptr, nullptr, 0 }
 };
 
 extern "C" SAL_DLLPUBLIC_EXPORT void * SAL_CALL uuresolver_component_getFactory(

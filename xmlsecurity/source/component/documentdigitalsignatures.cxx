@@ -210,7 +210,7 @@ bool DocumentDigitalSignatures::ImplViewSignatures(
 {
     Reference< io::XStream > xStream;
     if ( xSignStream.is() )
-        xStream = Reference< io::XStream >( xSignStream, UNO_QUERY );
+        xStream.set( xSignStream, UNO_QUERY );
     return ImplViewSignatures( rxStorage, xStream, eMode, bReadOnly );
 }
 
@@ -269,7 +269,7 @@ DocumentDigitalSignatures::ImplVerifySignatures(
     {
         aStreamHelper = DocumentSignatureHelper::OpenSignatureStream( rxStorage, embed::ElementModes::READ, eMode );
         if ( aStreamHelper.xSignatureStream.is() )
-            xInputStream = Reference< io::XInputStream >( aStreamHelper.xSignatureStream, UNO_QUERY );
+            xInputStream.set( aStreamHelper.xSignatureStream, UNO_QUERY );
     }
 
     if ( !xInputStream.is() )
@@ -442,12 +442,12 @@ Reference< css::security::XCertificate > DocumentDigitalSignatures::chooseCertif
     ScopedVclPtrInstance< CertificateChooser > aChooser( nullptr, mxCtx, xSecEnv, aSignatureHelper.GetSignatureInformations());
 
     if (aChooser->Execute() != RET_OK)
-        return Reference< css::security::XCertificate >(0);
+        return Reference< css::security::XCertificate >(nullptr);
 
     Reference< css::security::XCertificate > xCert = aChooser->GetSelectedCertificate();
 
     if ( !xCert.is() )
-        return Reference< css::security::XCertificate >(0);
+        return Reference< css::security::XCertificate >(nullptr);
 
     return xCert;
 }
@@ -502,9 +502,7 @@ OUString DocumentDigitalSignatures::GetImplementationName() throw (RuntimeExcept
 
 Sequence< OUString > DocumentDigitalSignatures::GetSupportedServiceNames() throw (css::uno::RuntimeException)
 {
-    Sequence < OUString > aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.security.DocumentDigitalSignatures";
+    Sequence<OUString> aRet { "com.sun.star.security.DocumentDigitalSignatures" };
     return aRet;
 }
 

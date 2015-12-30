@@ -21,7 +21,6 @@
 #define INCLUDED_VCL_VCLEVENT_HXX
 
 #include <tools/link.hxx>
-#include <tools/rtti.hxx>
 #include <vcl/dllapi.h>
 #include <vcl/impdel.hxx>
 #include <vcl/vclptr.hxx>
@@ -203,7 +202,6 @@ private:
 public:
     VclSimpleEvent( sal_uLong n ) { nId = n; }
     virtual ~VclSimpleEvent() {}
-    TYPEINFO();
 
     sal_uLong GetId() const { return nId; }
 };
@@ -215,9 +213,8 @@ private:
     void*   pData;
 
 public:
-    VclWindowEvent( vcl::Window* pWin, sal_uLong n, void* pDat = NULL );
+    VclWindowEvent( vcl::Window* pWin, sal_uLong n, void* pDat = nullptr );
     virtual ~VclWindowEvent();
-    TYPEINFO_OVERRIDE();
 
     vcl::Window* GetWindow() const { return pWindow; }
     void*   GetData() const { return pData; }
@@ -232,7 +229,6 @@ private:
 public:
     VclMenuEvent( Menu* pM, sal_uLong n, sal_uInt16 nPos ) : VclSimpleEvent(n) { pMenu = pM; mnPos = nPos; }
     virtual ~VclMenuEvent() {}
-    TYPEINFO_OVERRIDE();
 
     Menu* GetMenu() const { return pMenu; }
     sal_uInt16 GetItemPos() const { return mnPos; }
@@ -241,12 +237,12 @@ public:
 class VCL_DLLPUBLIC VclAccessibleEvent: public VclSimpleEvent
 {
 public:
-    VclAccessibleEvent( sal_uLong n, const ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible >& rxAccessible );
+    VclAccessibleEvent( sal_uLong n, const css::uno::Reference< css::accessibility::XAccessible >& rxAccessible );
     virtual ~VclAccessibleEvent();
-    ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > GetAccessible() const { return mxAccessible;}
+    css::uno::Reference< css::accessibility::XAccessible > GetAccessible() const { return mxAccessible;}
 
 private:
-    ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > mxAccessible;
+    css::uno::Reference< css::accessibility::XAccessible > mxAccessible;
 };
 
 #endif // INCLUDED_VCL_VCLEVENT_HXX

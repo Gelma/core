@@ -22,13 +22,15 @@
 #include <hints.hxx>
 #include <swcache.hxx>
 #include <swfntcch.hxx>
+#include <tools/debug.hxx>
 
 sw::LegacyModifyHint::~LegacyModifyHint() {}
 
-TYPEINIT0( SwClient );
 
 SwClient::~SwClient()
 {
+    if(GetRegisteredIn())
+        DBG_TESTSOLARMUTEX();
     OSL_ENSURE( !pRegisteredIn || pRegisteredIn->HasWriterListeners(), "SwModify still known, but Client already disconnected!" );
     if( pRegisteredIn && pRegisteredIn->HasWriterListeners() )
         pRegisteredIn->Remove( this );
@@ -36,6 +38,7 @@ SwClient::~SwClient()
 
 void SwClient::CheckRegistration( const SfxPoolItem* pOld, const SfxPoolItem* )
 {
+    DBG_TESTSOLARMUTEX();
     // this method only handles notification about dying SwModify objects
     if( (!pOld || pOld->Which() != RES_OBJECTDYING) )
         return;
@@ -71,44 +74,41 @@ void SwClient::Modify(SfxPoolItem const*const pOldValue, SfxPoolItem const*const
     CheckRegistration( pOldValue, pNewValue );
 }
 
+void SwModify::SetInDocDTOR()
+{
+    // If the document gets destroyed anyway, just tell clients to
+    // forget me so that they don't try to get removed from my list
+    // later when they also get destroyed
+    SwIterator<SwClient,SwModify> aIter(*this);
+    for(SwClient* pClient = aIter.First(); pClient; pClient = aIter.Next())
+        pClient->pRegisteredIn = nullptr;
+    m_pWriterListeners = nullptr;
+}
+
 SwModify::~SwModify()
 {
+    DBG_TESTSOLARMUTEX();
     OSL_ENSURE( !IsModifyLocked(), "Modify destroyed but locked." );
 
     if ( IsInCache() )
-        SwFrm::GetCache().Delete( this );
+        SwFrame::GetCache().Delete( this );
 
     if ( IsInSwFntCache() )
         pSwFontCache->Delete( this );
 
-    if( m_pWriterListeners )
-    {
-        // there are depending objects
-        if( IsInDocDTOR() )
-        {
-            // If the document gets destroyed anyway, just tell clients to
-            // forget me so that they don't try to get removed from my list
-            // later when they also get destroyed
-            SwIterator<SwClient,SwModify> aIter(*this);
-            for(SwClient* pClient = aIter.First(); pClient; pClient = aIter.Next())
-                pClient->pRegisteredIn = nullptr;
-        }
-        else
-        {
-            // notify all clients that they shall remove themselves
-            SwPtrMsgPoolItem aDyObject( RES_OBJECTDYING, this );
-            NotifyClients( &aDyObject, &aDyObject );
+    // notify all clients that they shall remove themselves
+    SwPtrMsgPoolItem aDyObject( RES_OBJECTDYING, this );
+    NotifyClients( &aDyObject, &aDyObject );
 
-            // remove all clients that have not done themselves
-            // mba: possibly a hotfix for forgotten base class calls?!
-            while( m_pWriterListeners )
-                static_cast<SwClient*>(m_pWriterListeners)->CheckRegistration( &aDyObject, &aDyObject );
-        }
-    }
+    // remove all clients that have not done themselves
+    // mba: possibly a hotfix for forgotten base class calls?!
+    while( m_pWriterListeners )
+        static_cast<SwClient*>(m_pWriterListeners)->CheckRegistration( &aDyObject, &aDyObject );
 }
 
 void SwModify::NotifyClients( const SfxPoolItem* pOldValue, const SfxPoolItem* pNewValue )
 {
+    DBG_TESTSOLARMUTEX();
     if ( IsInCache() || IsInSwFntCache() )
     {
         const sal_uInt16 nWhich = pOldValue ? pOldValue->Which() :
@@ -124,7 +124,7 @@ void SwModify::NotifyClients( const SfxPoolItem* pOldValue, const SfxPoolItem* p
     // mba: WTF?!
     if( !pOldValue )
     {
-        bLockClientList = true;
+        m_bLockClientList = true;
     }
     else
     {
@@ -132,16 +132,16 @@ void SwModify::NotifyClients( const SfxPoolItem* pOldValue, const SfxPoolItem* p
         {
         case RES_OBJECTDYING:
         case RES_REMOVE_UNO_OBJECT:
-            bLockClientList = static_cast<const SwPtrMsgPoolItem*>(pOldValue)->pObject != this;
+            m_bLockClientList = static_cast<const SwPtrMsgPoolItem*>(pOldValue)->pObject != this;
             break;
 
         default:
-            bLockClientList = true;
+            m_bLockClientList = true;
         }
     }
 
     ModifyBroadcast( pOldValue, pNewValue );
-    bLockClientList = false;
+    m_bLockClientList = false;
     UnlockModify();
 }
 
@@ -158,7 +158,8 @@ bool SwModify::GetInfo( SfxPoolItem& rInfo ) const
 
 void SwModify::Add( SwClient* pDepend )
 {
-    OSL_ENSURE( !bLockClientList, "Client inserted while in Modify" );
+    DBG_TESTSOLARMUTEX();
+    OSL_ENSURE( !m_bLockClientList, "Client inserted while in Modify" );
 
     if(pDepend->pRegisteredIn != this )
     {
@@ -199,9 +200,7 @@ void SwModify::Add( SwClient* pDepend )
 
 SwClient* SwModify::Remove( SwClient* pDepend )
 {
-    if(m_bInDocDTOR)
-        return nullptr;
-
+    DBG_TESTSOLARMUTEX();
     assert(pDepend->pRegisteredIn == this);
 
     // SwClient is my listener
@@ -259,7 +258,7 @@ void SwModify::CheckCaching( const sal_uInt16 nWhich )
         case RES_BREAK:
             if( IsInCache() )
             {
-                SwFrm::GetCache().Delete( this );
+                SwFrame::GetCache().Delete( this );
                 SetInCache( false );
             }
             break;

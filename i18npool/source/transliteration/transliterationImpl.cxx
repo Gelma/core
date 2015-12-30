@@ -134,7 +134,7 @@ static struct TMlist {
 //  TmItem2 (NumToCharEstern_Arabic_Indic),// () (68)
 //  TmItem2 (NumToCharIndic),           // () (69)
 //  TmItem2 (NumToCharThai),            // () (70)
-  {(TransliterationModules)0, (TransliterationModulesNew)0,  NULL}
+  {(TransliterationModules)0, (TransliterationModulesNew)0,  nullptr}
 };
 
 // Constructor/Destructor
@@ -196,11 +196,11 @@ TransliterationImpl::loadModule( TransliterationModules modType, const Locale& r
         // additional transliterations from TranslationModuleExtra (we cannot extend TransliterationModule)
         if (modType & TransliterationModulesExtra::IGNORE_DIACRITICS_CTL)
         {
-            if (loadModuleByName(OUString("ignoreDiacritics_CTL"), bodyCascade[numCascade], rLocale))
+            if (loadModuleByName("ignoreDiacritics_CTL", bodyCascade[numCascade], rLocale))
                 numCascade++;
         }
         if (modType & TransliterationModulesExtra::IGNORE_KASHIDA_CTL)
-            if (loadModuleByName(OUString("ignoreKashida_CTL"), bodyCascade[numCascade], rLocale))
+            if (loadModuleByName("ignoreKashida_CTL", bodyCascade[numCascade], rLocale))
                 numCascade++;
 
     } else if (modType&TransliterationModules_NON_IGNORE_MASK) {
@@ -595,7 +595,7 @@ namespace
     struct TransBody
     {
         OUString Name;
-        ::com::sun::star::uno::Reference< ::com::sun::star::i18n::XExtendedTransliteration > Body;
+        css::uno::Reference< css::i18n::XExtendedTransliteration > Body;
     };
     class theTransBodyMutex : public rtl::Static<osl::Mutex, theTransBodyMutex> {};
 }
@@ -659,8 +659,7 @@ TransliterationImpl::supportsService(const OUString& rServiceName) throw( Runtim
 Sequence< OUString > SAL_CALL
 TransliterationImpl::getSupportedServiceNames() throw( RuntimeException, std::exception )
 {
-    Sequence< OUString > aRet(1);
-    aRet[0] = "com.sun.star.i18n.Transliteration";
+    Sequence< OUString > aRet { "com.sun.star.i18n.Transliteration" };
     return aRet;
 }
 
@@ -671,7 +670,7 @@ com_sun_star_i18n_Transliteration_get_implementation(
     css::uno::XComponentContext *context,
     css::uno::Sequence<css::uno::Any> const &)
 {
-    return cppu::acquire(new com::sun::star::i18n::TransliterationImpl(context));
+    return cppu::acquire(new css::i18n::TransliterationImpl(context));
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

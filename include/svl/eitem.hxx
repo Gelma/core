@@ -44,18 +44,17 @@ protected:
     SfxEnumItem(sal_uInt16 const nWhich, SvStream & rStream);
 
 public:
-    TYPEINFO_OVERRIDE();
 
     sal_uInt16 GetValue() const { return m_nValue; }
 
     void SetValue(sal_uInt16 nTheValue);
 
     // SfxPoolItem
-    virtual SvStream & Store(SvStream & rStream, sal_uInt16) const SAL_OVERRIDE;
+    virtual SvStream & Store(SvStream & rStream, sal_uInt16) const override;
 
-    virtual sal_uInt16 GetEnumValue() const SAL_OVERRIDE;
+    virtual sal_uInt16 GetEnumValue() const override;
 
-    virtual void SetEnumValue(sal_uInt16 nTheValue) SAL_OVERRIDE;
+    virtual void SetEnumValue(sal_uInt16 nTheValue) override;
 
 };
 
@@ -67,7 +66,7 @@ class SVL_DLLPUBLIC SfxBoolItem
     bool m_bValue;
 
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     explicit SfxBoolItem(sal_uInt16 const nWhich = 0, bool const bValue = false)
         : SfxPoolItem(nWhich)
@@ -86,27 +85,25 @@ public:
     void SetValue(bool const bTheValue) { m_bValue = bTheValue; }
 
     // SfxPoolItem
-    virtual bool operator ==(const SfxPoolItem & rItem) const SAL_OVERRIDE;
+    virtual bool operator ==(const SfxPoolItem & rItem) const override;
 
     virtual bool GetPresentation(SfxItemPresentation,
                                                 SfxMapUnit, SfxMapUnit,
                                                 OUString & rText,
-                                                const IntlWrapper * = 0)
-        const SAL_OVERRIDE;
+                                                const IntlWrapper * = nullptr)
+        const override;
 
-    virtual bool QueryValue(com::sun::star::uno::Any& rVal, sal_uInt8 = 0)
-        const SAL_OVERRIDE;
+    virtual bool QueryValue(css::uno::Any& rVal, sal_uInt8 = 0) const override;
 
-    virtual bool PutValue(const com::sun::star::uno::Any& rVal, sal_uInt8)
-        SAL_OVERRIDE;
+    virtual bool PutValue(const css::uno::Any& rVal, sal_uInt8) override;
 
 
     virtual SfxPoolItem * Create(SvStream & rStream, sal_uInt16) const
-        SAL_OVERRIDE;
+        override;
 
-    virtual SvStream & Store(SvStream & rStream, sal_uInt16) const SAL_OVERRIDE;
+    virtual SvStream & Store(SvStream & rStream, sal_uInt16) const override;
 
-    virtual SfxPoolItem * Clone(SfxItemPool * = 0) const SAL_OVERRIDE;
+    virtual SfxPoolItem * Clone(SfxItemPool * = nullptr) const override;
 
     virtual OUString GetValueTextByVal(bool bTheValue) const;
 };

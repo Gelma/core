@@ -23,15 +23,6 @@
 #include <slot.hxx>
 #include <object.hxx>
 
-struct SvNamePos
-{
-    SvGlobalName    aUUId;
-    sal_uInt32          nStmPos;
-    SvNamePos( const SvGlobalName & rName, sal_uInt32 nPos )
-        : aUUId( rName )
-        , nStmPos( nPos ) {}
-};
-
 class SvMetaModule : public SvMetaExtern
 {
     SvMetaClassMemberList       aClassList;
@@ -49,19 +40,18 @@ class SvMetaModule : public SvMetaExtern
     SvGlobalName            aEndName;
     SvGlobalName            aNextName;
 protected:
-    virtual void        ReadAttributesSvIdl( SvIdlDataBase &, SvTokenStream & rInStm ) SAL_OVERRIDE;
-    virtual void        ReadContextSvIdl( SvIdlDataBase &, SvTokenStream & rInStm ) SAL_OVERRIDE;
+    virtual void        ReadAttributesSvIdl( SvIdlDataBase &, SvTokenStream & rInStm ) override;
+    virtual void        ReadContextSvIdl( SvIdlDataBase &, SvTokenStream & rInStm ) override;
 public:
-                        TYPEINFO_OVERRIDE();
 
-    virtual bool        SetName( const OString& rName, SvIdlDataBase * = NULL  ) SAL_OVERRIDE;
+    virtual bool        SetName( const OString& rName, SvIdlDataBase * = nullptr  ) override;
 
                         SvMetaModule( bool bImported );
 
     bool                FillNextName( SvGlobalName * );
     bool                IsImported() const { return bImported; }
 
-    virtual bool        ReadSvIdl( SvIdlDataBase &, SvTokenStream & rInStm ) SAL_OVERRIDE;
+    virtual bool        ReadSvIdl( SvIdlDataBase &, SvTokenStream & rInStm ) override;
 
     void                WriteSfx( SvIdlDataBase & rBase, SvStream & rOutStm );
 };

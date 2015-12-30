@@ -83,10 +83,7 @@ OUString GetConvDicMainURL( const OUString &rDicName, const OUString &rDirectory
 }
 
 class ConvDicNameContainer :
-    public cppu::WeakImplHelper
-    <
-        ::com::sun::star::container::XNameContainer
-    >,
+    public cppu::WeakImplHelper< css::container::XNameContainer >,
     private boost::noncopyable
 {
     uno::Sequence< uno::Reference< XConversionDictionary > >   aConvDics;
@@ -98,20 +95,20 @@ public:
     virtual ~ConvDicNameContainer();
 
     // XElementAccess
-    virtual ::com::sun::star::uno::Type SAL_CALL getElementType(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL hasElements(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Type SAL_CALL getElementType(  ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL hasElements(  ) throw (css::uno::RuntimeException, std::exception) override;
 
     // XNameAccess
-    virtual ::com::sun::star::uno::Any SAL_CALL getByName( const OUString& aName ) throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Any SAL_CALL getByName( const OUString& aName ) throw (css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw (css::uno::RuntimeException, std::exception) override;
 
     // XNameReplace
-    virtual void SAL_CALL replaceByName( const OUString& aName, const ::com::sun::star::uno::Any& aElement ) throw (::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL replaceByName( const OUString& aName, const css::uno::Any& aElement ) throw (css::lang::IllegalArgumentException, css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
 
     // XNameContainer
-    virtual void SAL_CALL insertByName( const OUString& aName, const ::com::sun::star::uno::Any& aElement ) throw (::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::container::ElementExistException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL removeByName( const OUString& Name ) throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL insertByName( const OUString& aName, const css::uno::Any& aElement ) throw (css::lang::IllegalArgumentException, css::container::ElementExistException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL removeByName( const OUString& Name ) throw (css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
 
     // looks for conversion dictionaries with the specified extension
     // in the directory and adds them to the container
@@ -283,11 +280,11 @@ void SAL_CALL ConvDicNameContainer::removeByName( const OUString& rName )
         try
         {
             ::ucbhelper::Content    aCnt( aObj.GetMainURL( INetURLObject::NO_DECODE ),
-                                    uno::Reference< ::com::sun::star::ucb::XCommandEnvironment >(),
+                                    uno::Reference< css::ucb::XCommandEnvironment >(),
                                     comphelper::getProcessComponentContext() );
             aCnt.executeCommand( "delete", makeAny( true ) );
         }
-        catch( ::com::sun::star::ucb::CommandAbortedException& )
+        catch( css::ucb::CommandAbortedException& )
         {
             SAL_WARN( "linguistic", "HangulHanjaOptionsDialog::OkHdl(): CommandAbortedException" );
         }
@@ -373,7 +370,7 @@ void ConvDicList::MyAppExitListener::AtExit()
 ConvDicList::ConvDicList() :
     aEvtListeners( GetLinguMutex() )
 {
-    pNameContainer = 0;
+    pNameContainer = nullptr;
     bDisposing = false;
 
     pExitListener = new MyAppExitListener( *this );
@@ -403,7 +400,7 @@ ConvDicNameContainer & ConvDicList::GetNameContainer()
     if (!pNameContainer)
     {
         pNameContainer = new ConvDicNameContainer;
-        pNameContainer->AddConvDics( GetDictionaryWriteablePath(), OUString(CONV_DIC_EXT)  );
+        pNameContainer->AddConvDics( GetDictionaryWriteablePath(), CONV_DIC_EXT  );
         xNameContainer = pNameContainer;
 
         // access list of text conversion dictionaries to activate
@@ -593,7 +590,6 @@ void SAL_CALL ConvDicList::removeEventListener(
 OUString SAL_CALL ConvDicList::getImplementationName()
     throw (RuntimeException, std::exception)
 {
-    MutexGuard  aGuard( GetLinguMutex() );
     return getImplementationName_Static();
 }
 
@@ -606,15 +602,13 @@ sal_Bool SAL_CALL ConvDicList::supportsService( const OUString& rServiceName )
 uno::Sequence< OUString > SAL_CALL ConvDicList::getSupportedServiceNames()
     throw (RuntimeException, std::exception)
 {
-    MutexGuard  aGuard( GetLinguMutex() );
     return getSupportedServiceNames_Static();
 }
 
 uno::Sequence< OUString > ConvDicList::getSupportedServiceNames_Static()
     throw()
 {
-    uno::Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[0] = SN_CONV_DICTIONARY_LIST;
+    uno::Sequence<OUString> aSNS { SN_CONV_DICTIONARY_LIST };
     return aSNS;
 }
 
@@ -629,7 +623,7 @@ void * SAL_CALL ConvDicList_getFactory(
         const sal_Char * pImplName,
         XMultiServiceFactory * pServiceManager, void *  )
 {
-    void * pRet = 0;
+    void * pRet = nullptr;
     if ( ConvDicList::getImplementationName_Static().equalsAscii( pImplName ) )
     {
         uno::Reference< XSingleServiceFactory > xFactory =

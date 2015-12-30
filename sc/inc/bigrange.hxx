@@ -71,9 +71,6 @@ public:
                     { return nCol == r.nCol && nRow == r.nRow && nTab == r.nTab; }
     bool            operator!=( const ScBigAddress& r ) const
                     { return !operator==( r ); }
-
-    friend inline SvStream& WriteScBigAddress( SvStream& rStream, const ScBigAddress& rAdr );
-    friend inline SvStream& ReadScBigAddress( SvStream& rStream, ScBigAddress& rAdr );
 };
 
 inline void ScBigAddress::PutInOrder( ScBigAddress& r )
@@ -129,18 +126,6 @@ inline ScAddress ScBigAddress::MakeAddress() const
     return ScAddress( nColA, nRowA, nTabA );
 }
 
-inline SvStream& WriteScBigAddress( SvStream& rStream, const ScBigAddress& rAdr )
-{
-    rStream.WriteInt32( rAdr.nCol ).WriteInt32( rAdr.nRow ).WriteInt32( rAdr.nTab );
-    return rStream;
-}
-
-inline SvStream& ReadScBigAddress( SvStream& rStream, ScBigAddress& rAdr )
-{
-    rStream.ReadInt32( rAdr.nCol ).ReadInt32( rAdr.nRow ).ReadInt32( rAdr.nTab );
-    return rStream;
-}
-
 class ScBigRange
 {
 public:
@@ -192,9 +177,6 @@ public:
                         { return (aStart == r.aStart) && (aEnd == r.aEnd); }
     bool            operator!=( const ScBigRange& r ) const
                         { return !operator==( r ); }
-
-    friend inline SvStream& WriteScBigRange( SvStream& rStream, const ScBigRange& rRange );
-    friend inline SvStream& ReadScBigRange( SvStream& rStream, ScBigRange& rRange );
 };
 
 inline bool ScBigRange::In( const ScBigAddress& rAddr ) const
@@ -220,20 +202,6 @@ inline bool ScBigRange::Intersects( const ScBigRange& r ) const
      || std::min( aEnd.Row(), r.aEnd.Row() ) < std::max( aStart.Row(), r.aStart.Row() )
      || std::min( aEnd.Tab(), r.aEnd.Tab() ) < std::max( aStart.Tab(), r.aStart.Tab() )
         );
-}
-
-inline SvStream& WriteScBigRange ( SvStream& rStream, const ScBigRange& rRange )
-{
-    WriteScBigAddress( rStream, rRange.aStart );
-    WriteScBigAddress( rStream, rRange.aEnd );
-    return rStream;
-}
-
-inline SvStream& ReadScBigRange( SvStream& rStream, ScBigRange& rRange )
-{
-    ReadScBigAddress( rStream, rRange.aStart );
-    ReadScBigAddress( rStream, rRange.aEnd );
-    return rStream;
 }
 
 #endif

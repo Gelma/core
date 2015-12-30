@@ -256,7 +256,7 @@ void checkEntityName(
 
 }
 
-MappedFile::MappedFile(OUString const & fileUrl): uri(fileUrl), handle(0) {
+MappedFile::MappedFile(OUString const & fileUrl): uri(fileUrl), handle(nullptr) {
     oslFileError e = osl_openFile(uri.pData, &handle, osl_File_OpenFlag_Read);
     switch (e) {
     case osl_File_E_None:
@@ -417,7 +417,7 @@ double MappedFile::getIso60599Binary64(sal_uInt32 offset) const {
 OUString MappedFile::readIdxString(
     sal_uInt32 * offset, rtl_TextEncoding encoding) const
 {
-    assert(offset != 0);
+    assert(offset != nullptr);
     sal_uInt32 len = read32(*offset);
     sal_uInt32 off;
     if ((len & 0x80000000) == 0) {
@@ -470,7 +470,7 @@ Compare compare(
     sal_Int32 nameOffset, sal_Int32 nameLength, MapEntry const * entry)
 {
     assert(file.is());
-    assert(entry != 0);
+    assert(entry != nullptr);
     sal_uInt32 off = entry->name.getUnsigned32();
     if (off > file->size - 1) { // at least a trailing NUL
         throw FileFormatException(
@@ -533,7 +533,7 @@ sal_uInt32 findInMap(
 
 std::vector< OUString > readAnnotations(
     bool annotated, rtl::Reference< MappedFile > const & file,
-    sal_uInt32 offset, sal_uInt32 * newOffset = 0)
+    sal_uInt32 offset, sal_uInt32 * newOffset = nullptr)
 {
     std::vector< OUString > ans;
     if (annotated) {
@@ -543,7 +543,7 @@ std::vector< OUString > readAnnotations(
             ans.push_back(file->readIdxString(&offset));
         }
     }
-    if (newOffset != 0) {
+    if (newOffset != nullptr) {
         *newOffset = offset;
     }
     return ans;
@@ -551,18 +551,18 @@ std::vector< OUString > readAnnotations(
 
 ConstantValue readConstant(
     rtl::Reference< MappedFile > const & file, sal_uInt32 offset,
-    sal_uInt32 * newOffset = 0, bool * annotated = 0)
+    sal_uInt32 * newOffset = nullptr, bool * annotated = nullptr)
 {
     assert(file.is());
     int v = file->read8(offset);
     int type = v & 0x7F;
-    if (annotated != 0) {
+    if (annotated != nullptr) {
         *annotated = (v & 0x80) != 0;
     }
     switch (type) {
     case 0: // BOOLEAN
         v = file->read8(offset + 1);
-        if (newOffset != 0) {
+        if (newOffset != nullptr) {
             *newOffset = offset + 2;
         }
         switch (v) {
@@ -577,14 +577,14 @@ ConstantValue readConstant(
                  + OUString::number(v)));
         }
     case 1: // BYTE
-        if (newOffset != 0) {
+        if (newOffset != nullptr) {
             *newOffset = offset + 2;
         }
         return ConstantValue(static_cast< sal_Int8 >(file->read8(offset + 1)));
             //TODO: implementation-defined behavior of conversion from sal_uInt8
             // to sal_Int8 relies on two's complement representation
     case 2: // SHORT
-        if (newOffset != 0) {
+        if (newOffset != nullptr) {
             *newOffset = offset + 3;
         }
         return ConstantValue(
@@ -592,12 +592,12 @@ ConstantValue readConstant(
             //TODO: implementation-defined behavior of conversion from
             // sal_uInt16 to sal_Int16 relies on two's complement representation
     case 3: // UNSIGNED SHORT
-        if (newOffset != 0) {
+        if (newOffset != nullptr) {
             *newOffset = offset + 3;
         }
         return ConstantValue(file->read16(offset + 1));
     case 4: // LONG
-        if (newOffset != 0) {
+        if (newOffset != nullptr) {
             *newOffset = offset + 5;
         }
         return ConstantValue(
@@ -605,12 +605,12 @@ ConstantValue readConstant(
             //TODO: implementation-defined behavior of conversion from
             // sal_uInt32 to sal_Int32 relies on two's complement representation
     case 5: // UNSIGNED LONG
-        if (newOffset != 0) {
+        if (newOffset != nullptr) {
             *newOffset = offset + 5;
         }
         return ConstantValue(file->read32(offset + 1));
     case 6: // HYPER
-        if (newOffset != 0) {
+        if (newOffset != nullptr) {
             *newOffset = offset + 9;
         }
         return ConstantValue(
@@ -618,17 +618,17 @@ ConstantValue readConstant(
             //TODO: implementation-defined behavior of conversion from
             // sal_uInt64 to sal_Int64 relies on two's complement representation
     case 7: // UNSIGNED HYPER
-        if (newOffset != 0) {
+        if (newOffset != nullptr) {
             *newOffset = offset + 9;
         }
         return ConstantValue(file->read64(offset + 1));
     case 8: // FLOAT
-        if (newOffset != 0) {
+        if (newOffset != nullptr) {
             *newOffset = offset + 5;
         }
         return ConstantValue(file->readIso60599Binary32(offset + 1));
     case 9: // DOUBLE
-        if (newOffset != 0) {
+        if (newOffset != nullptr) {
             *newOffset = offset + 9;
         }
         return ConstantValue(file->readIso60599Binary64(offset + 1));
@@ -659,7 +659,7 @@ public:
 private:
     virtual ~UnoidlCursor() throw () {}
 
-    virtual rtl::Reference< Entity > getNext(OUString * name) SAL_OVERRIDE;
+    virtual rtl::Reference< Entity > getNext(OUString * name) override;
 
     rtl::Reference< MappedFile > file_;
     rtl::Reference<UnoidlProvider> reference1_; // HACK to keep alive whatever
@@ -669,7 +669,7 @@ private:
 };
 
 rtl::Reference< Entity > UnoidlCursor::getNext(OUString * name) {
-    assert(name != 0);
+    assert(name != nullptr);
     rtl::Reference< Entity > ent;
     if (index_ != map_.map.size) {
         *name = file_->readNulName(map_.map.begin[index_].name.getUnsigned32());
@@ -701,9 +701,9 @@ public:
 private:
     virtual ~UnoidlModuleEntity() throw () {}
 
-    virtual std::vector< OUString > getMemberNames() const SAL_OVERRIDE;
+    virtual std::vector< OUString > getMemberNames() const override;
 
-    virtual rtl::Reference< MapCursor > createCursor() const SAL_OVERRIDE {
+    virtual rtl::Reference< MapCursor > createCursor() const override {
         return new UnoidlCursor(
             file_, rtl::Reference<UnoidlProvider>(),
             const_cast<UnoidlModuleEntity *>(this), map_);
@@ -777,10 +777,9 @@ rtl::Reference< Entity > readEntity(
                     // sal_uInt32 to sal_Int32 relies on two's complement
                     // representation
                 offset += 4;
-                mems.push_back(
-                    EnumTypeEntity::Member(
-                        memName, memValue,
-                        readAnnotations(annotated, file, offset, &offset)));
+                mems.emplace_back(
+                    memName, memValue,
+                    readAnnotations(annotated, file, offset, &offset));
             }
             return new EnumTypeEntity(
                 published, mems, readAnnotations(annotated, file, offset));
@@ -814,10 +813,9 @@ rtl::Reference< Entity > readEntity(
                 checkEntityName(file, memName);
                 OUString memType(file->readIdxName(&offset));
                 checkTypeName(file, memType);
-                mems.push_back(
-                    PlainStructTypeEntity::Member(
-                        memName, memType,
-                        readAnnotations(annotated, file, offset, &offset)));
+                mems.emplace_back(
+                    memName, memType,
+                    readAnnotations(annotated, file, offset, &offset));
             }
             return new PlainStructTypeEntity(
                 published, base, mems,
@@ -862,10 +860,9 @@ rtl::Reference< Entity > readEntity(
                          + " for member " + memName
                          + " of polymorphic struct type template"));
                 }
-                mems.push_back(
-                    PolymorphicStructTypeTemplateEntity::Member(
-                        memName, memType, v == 1,
-                        readAnnotations(annotated, file, offset, &offset)));
+                mems.emplace_back(
+                    memName, memType, v == 1,
+                    readAnnotations(annotated, file, offset, &offset));
             }
             return new PolymorphicStructTypeTemplateEntity(
                 published, params, mems,
@@ -899,10 +896,9 @@ rtl::Reference< Entity > readEntity(
                 checkEntityName(file, memName);
                 OUString memType(file->readIdxName(&offset));
                 checkTypeName(file, memType);
-                mems.push_back(
-                    ExceptionTypeEntity::Member(
-                        memName, memType,
-                        readAnnotations(annotated, file, offset, &offset)));
+                mems.emplace_back(
+                    memName, memType,
+                    readAnnotations(annotated, file, offset, &offset));
             }
             return new ExceptionTypeEntity(
                 published, base, mems,
@@ -922,10 +918,8 @@ rtl::Reference< Entity > readEntity(
             for (sal_uInt32 i = 0; i != n; ++i) {
                 OUString base(file->readIdxName(&offset));
                 checkTypeName(file, base);
-                mandBases.push_back(
-                    AnnotatedReference(
-                        base,
-                        readAnnotations(annotated, file, offset, &offset)));
+                mandBases.emplace_back(
+                    base, readAnnotations(annotated, file, offset, &offset));
             }
             n = file->read32(offset);
             if (n > SAL_MAX_INT32) {
@@ -939,10 +933,8 @@ rtl::Reference< Entity > readEntity(
             for (sal_uInt32 i = 0; i != n; ++i) {
                 OUString base(file->readIdxName(&offset));
                 checkTypeName(file, base);
-                optBases.push_back(
-                    AnnotatedReference(
-                        base,
-                        readAnnotations(annotated, file, offset, &offset)));
+                optBases.emplace_back(
+                    base, readAnnotations(annotated, file, offset, &offset));
             }
             sal_uInt32 nAttrs = file->read32(offset);
             if (nAttrs > SAL_MAX_INT32) {
@@ -997,11 +989,10 @@ rtl::Reference< Entity > readEntity(
                         setExcs.push_back(exc);
                     }
                 }
-                attrs.push_back(
-                    InterfaceTypeEntity::Attribute(
-                        attrName, attrType, (v & 0x01) != 0, (v & 0x02) != 0,
-                        getExcs, setExcs,
-                        readAnnotations(annotated, file, offset, &offset)));
+                attrs.emplace_back(
+                    attrName, attrType, (v & 0x01) != 0, (v & 0x02) != 0,
+                    getExcs, setExcs,
+                    readAnnotations(annotated, file, offset, &offset));
             }
             sal_uInt32 nMeths = file->read32(offset);
             if (nMeths > SAL_MAX_INT32 - nAttrs) {
@@ -1055,9 +1046,7 @@ rtl::Reference< Entity > readEntity(
                              + paramName + " for method " + methName
                              + " of interface type"));
                     }
-                    params.push_back(
-                        InterfaceTypeEntity::Method::Parameter(
-                            paramName, paramType, dir));
+                    params.emplace_back(paramName, paramType, dir);
                 }
                 std::vector< OUString > excs;
                 m = file->read32(offset);
@@ -1073,10 +1062,9 @@ rtl::Reference< Entity > readEntity(
                     checkTypeName(file, exc);
                     excs.push_back(exc);
                 }
-                meths.push_back(
-                    InterfaceTypeEntity::Method(
-                        methName, methType, params, excs,
-                        readAnnotations(annotated, file, offset, &offset)));
+                meths.emplace_back(
+                    methName, methType, params, excs,
+                    readAnnotations(annotated, file, offset, &offset));
             }
             return new InterfaceTypeEntity(
                 published, mandBases, optBases, attrs, meths,
@@ -1113,10 +1101,9 @@ rtl::Reference< Entity > readEntity(
                 sal_uInt32 off = p[i].data.getUnsigned32();
                 bool ann;
                 ConstantValue val(readConstant(file, off, &off, &ann));
-                mems.push_back(
-                    ConstantGroupEntity::Member(
-                        file->readNulName(p[i].name.getUnsigned32()), val,
-                        readAnnotations(ann, file, off)));
+                mems.emplace_back(
+                    file->readNulName(p[i].name.getUnsigned32()), val,
+                    readAnnotations(ann, file, off));
             }
             return new ConstantGroupEntity(
                 published, mems,
@@ -1179,10 +1166,7 @@ rtl::Reference< Entity > readEntity(
                                  + paramName + " for constructor " + ctorName
                                  + " of single-interface--based service"));
                         }
-                        params.push_back(
-                            SingleInterfaceBasedServiceEntity::Constructor::
-                            Parameter(
-                                paramName, paramType, rest));
+                        params.emplace_back(paramName, paramType, rest);
                     }
                     std::vector< OUString > excs;
                     m = file->read32(offset);
@@ -1223,10 +1207,8 @@ rtl::Reference< Entity > readEntity(
             for (sal_uInt32 i = 0; i != n; ++i) {
                 OUString base(file->readIdxName(&offset));
                 checkTypeName(file, base);
-                mandServs.push_back(
-                    AnnotatedReference(
-                        base,
-                        readAnnotations(annotated, file, offset, &offset)));
+                mandServs.emplace_back(
+                    base, readAnnotations(annotated, file, offset, &offset));
             }
             n = file->read32(offset);
             if (n > SAL_MAX_INT32) {
@@ -1240,10 +1222,8 @@ rtl::Reference< Entity > readEntity(
             for (sal_uInt32 i = 0; i != n; ++i) {
                 OUString base(file->readIdxName(&offset));
                 checkTypeName(file, base);
-                optServs.push_back(
-                    AnnotatedReference(
-                        base,
-                        readAnnotations(annotated, file, offset, &offset)));
+                optServs.emplace_back(
+                    base, readAnnotations(annotated, file, offset, &offset));
             }
             n = file->read32(offset);
             if (n > SAL_MAX_INT32) {
@@ -1257,10 +1237,8 @@ rtl::Reference< Entity > readEntity(
             for (sal_uInt32 i = 0; i != n; ++i) {
                 OUString base(file->readIdxName(&offset));
                 checkTypeName(file, base);
-                mandIfcs.push_back(
-                    AnnotatedReference(
-                        base,
-                        readAnnotations(annotated, file, offset, &offset)));
+                mandIfcs.emplace_back(
+                    base, readAnnotations(annotated, file, offset, &offset));
             }
             n = file->read32(offset);
             if (n > SAL_MAX_INT32) {
@@ -1274,10 +1252,8 @@ rtl::Reference< Entity > readEntity(
             for (sal_uInt32 i = 0; i != n; ++i) {
                 OUString base(file->readIdxName(&offset));
                 checkTypeName(file, base);
-                optIfcs.push_back(
-                    AnnotatedReference(
-                        base,
-                        readAnnotations(annotated, file, offset, &offset)));
+                optIfcs.emplace_back(
+                    base, readAnnotations(annotated, file, offset, &offset));
             }
             n = file->read32(offset);
             if (n > SAL_MAX_INT32) {
@@ -1302,14 +1278,12 @@ rtl::Reference< Entity > readEntity(
                          + " of property " + propName
                          + " for accumulation-based servcie"));
                 }
-                props.push_back(
-                    AccumulationBasedServiceEntity::Property(
-                        propName, propType,
-                        static_cast<
-                            AccumulationBasedServiceEntity::Property::
-                            Attributes >(
-                                attrs),
-                        readAnnotations(annotated, file, offset, &offset)));
+                props.emplace_back(
+                    propName, propType,
+                    static_cast<
+                        AccumulationBasedServiceEntity::Property::Attributes >(
+                            attrs),
+                    readAnnotations(annotated, file, offset, &offset));
             }
             return new AccumulationBasedServiceEntity(
                 published, mandServs, optServs, mandIfcs, optIfcs, props,

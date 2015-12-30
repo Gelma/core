@@ -33,8 +33,10 @@
 #include <swdbdata.hxx>
 #include <com/sun/star/uno/Reference.h>
 #include <com/sun/star/uno/Sequence.h>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <o3tl/sorted_vector.hxx>
+
+#include <memory>
+#include <vector>
 
 namespace com{namespace sun{namespace star{
     namespace sdbcx{
@@ -51,8 +53,9 @@ class SwTableAutoFormat;
 class SwView;
 class SfxItemSet;
 class SwTableRep;
-struct _DB_Column;
-typedef boost::ptr_vector<_DB_Column> _DB_Columns;
+struct DB_Column;
+
+typedef std::vector<std::unique_ptr<DB_Column>> DB_Columns;
 
 struct SwInsDBColumn
 {
@@ -60,16 +63,14 @@ struct SwInsDBColumn
     sal_Int32 nDBNumFormat;
     sal_uInt32 nUsrNumFormat;
     LanguageType eUsrNumFormatLng;
-    sal_uInt16 nCol;
     bool bHasFormat : 1;
     bool bIsDBFormat : 1;
 
-    SwInsDBColumn( const OUString& rStr, sal_uInt16 nColumn )
+    SwInsDBColumn( const OUString& rStr )
         : sColumn( rStr ),
         nDBNumFormat( 0 ),
         nUsrNumFormat( 0 ),
         eUsrNumFormatLng( LANGUAGE_SYSTEM ),
-        nCol( nColumn ),
         bHasFormat(false),
         bIsDBFormat(true)
     {}
@@ -123,7 +124,7 @@ class SwInsertDBColAutoPilot : public SfxModalDialog, public utl::ConfigItem
     SwInsDBColumns  aDBColumns;
     const SwDBData  aDBData;
 
-    Link<>          aOldNumFormatLnk;
+    Link<ListBox&,void>    aOldNumFormatLnk;
     OUString        sNoTmpl;
 
     SwView*         pView;
@@ -138,14 +139,14 @@ class SwInsertDBColAutoPilot : public SfxModalDialog, public utl::ConfigItem
     DECL_LINK_TYPED( TableFormatHdl, Button*, void );
     DECL_LINK_TYPED( DBFormatHdl, Button*, void );
     DECL_LINK_TYPED( TableToFromHdl, Button*, void );
-    DECL_LINK( SelectHdl, ListBox* );
+    DECL_LINK_TYPED( SelectHdl, ListBox&, void );
     DECL_LINK_TYPED( DblClickHdl, ListBox&, void );
     DECL_LINK_TYPED( HeaderHdl, Button*, void );
 
-    bool SplitTextToColArr( const OUString& rText, _DB_Columns& rColArr, bool bInsField );
+    bool SplitTextToColArr( const OUString& rText, DB_Columns& rColArr, bool bInsField );
         using SfxModalDialog::Notify;
-    virtual void Notify( const ::com::sun::star::uno::Sequence< OUString >& aPropertyNames ) SAL_OVERRIDE;
-    virtual void            ImplCommit() SAL_OVERRIDE;
+    virtual void Notify( const css::uno::Sequence< OUString >& aPropertyNames ) override;
+    virtual void            ImplCommit() override;
     void                    Load();
 
     // set the tables - properties
@@ -153,17 +154,17 @@ class SwInsertDBColAutoPilot : public SfxModalDialog, public utl::ConfigItem
 
 public:
     SwInsertDBColAutoPilot( SwView& rView,
-        ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XDataSource> rxSource,
-        com::sun::star::uno::Reference<com::sun::star::sdbcx::XColumnsSupplier>,
+        css::uno::Reference< css::sdbc::XDataSource> rxSource,
+        css::uno::Reference<css::sdbcx::XColumnsSupplier>,
         const SwDBData& rData  );
 
     virtual ~SwInsertDBColAutoPilot();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    void DataToDoc( const ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any >& rSelection,
-        ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XDataSource> rxSource,
-        ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XConnection> xConnection,
-        ::com::sun::star::uno::Reference< ::com::sun::star::sdbc::XResultSet > xResultSet);
+    void DataToDoc( const css::uno::Sequence< css::uno::Any >& rSelection,
+        css::uno::Reference< css::sdbc::XDataSource> rxSource,
+        css::uno::Reference< css::sdbc::XConnection> xConnection,
+        css::uno::Reference< css::sdbc::XResultSet > xResultSet);
 
 };
 

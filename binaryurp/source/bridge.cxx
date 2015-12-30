@@ -82,19 +82,19 @@ sal_Int32 random() {
 
 OUString toString(css::uno::TypeDescription const & type) {
     typelib_TypeDescription * d = type.get();
-    assert(d != 0 && d->pTypeName != 0);
+    assert(d != nullptr && d->pTypeName != nullptr);
     return OUString(d->pTypeName);
 }
 
 extern "C" void SAL_CALL freeProxyCallback(
     SAL_UNUSED_PARAMETER uno_ExtEnvironment *, void * pProxy)
 {
-    assert(pProxy != 0);
+    assert(pProxy != nullptr);
     static_cast< Proxy * >(pProxy)->do_free();
 }
 
 bool isThread(salhelper::Thread * thread) {
-    assert(thread != 0);
+    assert(thread != nullptr);
     return osl::Thread::getCurrentIdentifier() == thread->getIdentifier();
 }
 
@@ -107,15 +107,15 @@ public:
     rtl::ByteSequence getTid() throw () { return tid_;}
 
 private:
-    AttachThread(const AttachThread&) SAL_DELETED_FUNCTION;
-    AttachThread& operator=(const AttachThread&) SAL_DELETED_FUNCTION;
+    AttachThread(const AttachThread&) = delete;
+    AttachThread& operator=(const AttachThread&) = delete;
 
     uno_ThreadPool threadPool_;
     rtl::ByteSequence tid_;
 };
 
 AttachThread::AttachThread(uno_ThreadPool threadPool): threadPool_(threadPool) {
-    sal_Sequence * s = 0;
+    sal_Sequence * s = nullptr;
     uno_getIdOfCurrentThread(&s);
     tid_ = rtl::ByteSequence(s, rtl::BYTESEQ_NOACQUIRE);
     uno_threadpool_attach(threadPool_);
@@ -138,8 +138,8 @@ public:
     void clear();
 
 private:
-    PopOutgoingRequest(const PopOutgoingRequest&) SAL_DELETED_FUNCTION;
-    PopOutgoingRequest& operator=(const PopOutgoingRequest&) SAL_DELETED_FUNCTION;
+    PopOutgoingRequest(const PopOutgoingRequest&) = delete;
+    PopOutgoingRequest& operator=(const PopOutgoingRequest&) = delete;
 
     OutgoingRequests & requests_;
     rtl::ByteSequence tid_;
@@ -190,7 +190,7 @@ Bridge::Bridge(
             css::uno::Reference< css::bridge::XProtocolProperties > >::get()),
     protPropRequest_("com.sun.star.bridge.XProtocolProperties::requestChange"),
     protPropCommit_("com.sun.star.bridge.XProtocolProperties::commitChange"),
-    state_(STATE_INITIAL), threadPool_(0), currentContextMode_(false),
+    state_(STATE_INITIAL), threadPool_(nullptr), currentContextMode_(false),
     proxies_(0), calls_(0), normalCall_(false), activeCalls_(0),
     mode_(MODE_REQUESTED)
 {
@@ -210,10 +210,10 @@ void Bridge::start() {
     {
         osl::MutexGuard g(mutex_);
         assert(
-            state_ == STATE_INITIAL && threadPool_ == 0 && !writer_.is() &&
+            state_ == STATE_INITIAL && threadPool_ == nullptr && !writer_.is() &&
             !reader_.is());
         threadPool_ = uno_threadpool_create();
-        assert(threadPool_ != 0);
+        assert(threadPool_ != nullptr);
         reader_ = r;
         writer_ = w;
         state_ = STATE_STARTED;
@@ -252,7 +252,7 @@ void Bridge::terminate(bool final) {
                     {
                         osl::MutexGuard g2(mutex_);
                         tp = threadPool_;
-                        threadPool_ = 0;
+                        threadPool_ = nullptr;
                         if (reader_.is()) {
                             if (!isThread(reader_.get())) {
                                 r = reader_;
@@ -273,7 +273,7 @@ void Bridge::terminate(bool final) {
                     } else if (w.is()) {
                         w->join();
                     }
-                    if (tp != 0) {
+                    if (tp != nullptr) {
                         uno_threadpool_destroy(tp);
                     }
                 }
@@ -306,7 +306,7 @@ void Bridge::terminate(bool final) {
         if (joinW) {
             w->join();
         }
-        assert(tp != 0);
+        assert(tp != nullptr);
         uno_threadpool_dispose(tp);
         Stubs s;
         {
@@ -343,7 +343,7 @@ void Bridge::terminate(bool final) {
     {
         osl::MutexGuard g(mutex_);
         if (final) {
-            threadPool_ = 0;
+            threadPool_ = nullptr;
         }
     }
     terminated_.set();
@@ -366,7 +366,7 @@ BinaryAny Bridge::mapCppToBinaryAny(css::uno::Any const & cppAny) {
 uno_ThreadPool Bridge::getThreadPool() {
     osl::MutexGuard g(mutex_);
     checkDisposed();
-    assert(threadPool_ != 0);
+    assert(threadPool_ != nullptr);
     return threadPool_;
 }
 
@@ -608,7 +608,7 @@ bool Bridge::makeCall(
         decrementActiveCalls();
         decrementCalls();
     }
-    if (resp.get() == 0) {
+    if (resp.get() == nullptr) {
         throw css::lang::DisposedException(
             "Binary URP bridge disposed during call",
             static_cast< cppu::OWeakObject * >(this));
@@ -697,13 +697,13 @@ void Bridge::handleRequestChangeReply(
 void Bridge::handleCommitChangeReply(
     bool exception, BinaryAny const & returnValue)
 {
-    bool ccMode = true;
+    bool bCcMode = true;
     try {
         throwException(exception, returnValue);
     } catch (const css::bridge::InvalidProtocolChangeException &) {
-        ccMode = false;
+        bCcMode = false;
     }
-    if (ccMode) {
+    if (bCcMode) {
         setCurrentContextMode();
     }
     assert(mode_ == MODE_REQUESTED || mode_ == MODE_REPLY_1);
@@ -766,8 +766,8 @@ void Bridge::handleRequestChangeRequest(
 void Bridge::handleCommitChangeRequest(
     rtl::ByteSequence const & tid, std::vector< BinaryAny > const & inArguments)
 {
-    bool ccMode = false;
-    bool exc = false;
+    bool bCcMode = false;
+    bool bExc = false;
     BinaryAny ret;
     assert(inArguments.size() == 1);
     css::uno::Sequence< css::bridge::ProtocolProperty > s;
@@ -776,10 +776,10 @@ void Bridge::handleCommitChangeRequest(
     (void) ok; // avoid warnings
     for (sal_Int32 i = 0; i != s.getLength(); ++i) {
         if (s[i].Name == "CurrentContext") {
-            ccMode = true;
+            bCcMode = true;
         } else {
-            ccMode = false;
-            exc = true;
+            bCcMode = false;
+            bExc = true;
             ret = mapCppToBinaryAny(
                 css::uno::makeAny(
                     css::bridge::InvalidProtocolChangeException(
@@ -792,8 +792,8 @@ void Bridge::handleCommitChangeRequest(
     switch (mode_) {
     case MODE_WAIT:
         getWriter()->sendDirectReply(
-            tid, protPropCommit_, exc, ret, std::vector< BinaryAny >());
-        if (ccMode) {
+            tid, protPropCommit_, bExc, ret, std::vector< BinaryAny >());
+        if (bCcMode) {
             setCurrentContextMode();
             mode_ = MODE_NORMAL;
             getWriter()->unblock();
@@ -805,7 +805,7 @@ void Bridge::handleCommitChangeRequest(
     case MODE_NORMAL_WAIT:
         getWriter()->queueReply(
             tid, protPropCommit_, false, false, ret, std::vector< BinaryAny >(),
-            ccMode);
+            bCcMode);
         mode_ = MODE_NORMAL;
         break;
     default:
@@ -873,12 +873,12 @@ css::uno::Reference< css::uno::XInterface > Bridge::getInstance(
             &p));
     BinaryAny ret;
     std::vector< BinaryAny> outArgs;
-    bool exc = makeCall(
+    bool bExc = makeCall(
         sInstanceName,
         css::uno::TypeDescription(
             "com.sun.star.uno.XInterface::queryInterface"),
         false, inArgs, &ret, &outArgs);
-    throwException(exc, ret);
+    throwException(bExc, ret);
     return css::uno::Reference< css::uno::XInterface >(
         static_cast< css::uno::XInterface * >(
             binaryToCppMapping_.mapInterface(

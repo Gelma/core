@@ -34,7 +34,7 @@ struct TempFile {
     bool closed;
     OStringBuffer buffer;
 
-    TempFile(): handle(0), closed(false) {}
+    TempFile(): handle(nullptr), closed(false) {}
     ~TempFile();
     void closeAndRename(const OUString &url);
     oslFileError flush();
@@ -44,8 +44,8 @@ struct TempFile {
     void writeString(char const *begin, sal_Int32 length);
 
 private:
-    TempFile(const TempFile&) SAL_DELETED_FUNCTION;
-    TempFile& operator=(const TempFile&) SAL_DELETED_FUNCTION;
+    TempFile(const TempFile&) = delete;
+    TempFile& operator=(const TempFile&) = delete;
 };
 
 void writeData(TempFile &handle, OString const & text);

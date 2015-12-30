@@ -58,7 +58,7 @@ VCLXAccessibleHeaderBarItem::VCLXAccessibleHeaderBarItem( HeaderBar*    pHeadBar
 VCLXAccessibleHeaderBarItem::~VCLXAccessibleHeaderBarItem()
 {
     delete m_pExternalLock;
-    m_pExternalLock = NULL;
+    m_pExternalLock = nullptr;
 }
 
 void VCLXAccessibleHeaderBarItem::FillAccessibleStateSet( utl::AccessibleStateSetHelper& rStateSet )
@@ -82,8 +82,6 @@ awt::Rectangle VCLXAccessibleHeaderBarItem::implGetBounds() throw (RuntimeExcept
 {
     awt::Rectangle aBounds;
     OExternalLockGuard aGuard( this );
-
-    ::com::sun::star::awt::Size aSize;
 
     if ( m_pHeadBar )
         aBounds = AWTRectangle( m_pHeadBar->GetItemRect( sal_uInt16( m_nIndexInParent ) ) );
@@ -125,8 +123,7 @@ sal_Bool VCLXAccessibleHeaderBarItem::supportsService( const OUString& rServiceN
 
 Sequence< OUString > VCLXAccessibleHeaderBarItem::getSupportedServiceNames() throw (RuntimeException, std::exception)
 {
-    Sequence< OUString > aNames(1);
-    aNames[0] = "com.sun.star.awt.AccessibleHeaderBarItem";
+    Sequence< OUString > aNames { "com.sun.star.awt.AccessibleHeaderBarItem" };
     return aNames;
 }
 
@@ -248,7 +245,7 @@ Reference< XAccessibleStateSet > VCLXAccessibleHeaderBarItem::getAccessibleState
 
 
 
-com::sun::star::lang::Locale VCLXAccessibleHeaderBarItem::getLocale() throw (IllegalAccessibleComponentStateException, RuntimeException, std::exception)
+css::lang::Locale VCLXAccessibleHeaderBarItem::getLocale() throw (IllegalAccessibleComponentStateException, RuntimeException, std::exception)
 {
     OExternalLockGuard aGuard( this );
 

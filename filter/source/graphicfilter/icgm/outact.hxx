@@ -34,13 +34,6 @@
 #include <chart.hxx>
 #include <tools/poly.hxx>
 
-typedef struct NodeFrameSet
-{
-    Point       nTopLeft;
-    Point       nBottomRight;
-    ::com::sun::star::awt::Size     nSize;
-} NodeFrameSet;
-
 class CGM;
 class CGMBitmapDescriptor;
 class CGMOutAct
@@ -61,7 +54,7 @@ protected:
         CGM*                        mpCGM;
 
 public:
-                                CGMOutAct( CGM& rCGM );
+    explicit                    CGMOutAct( CGM& rCGM );
     virtual                     ~CGMOutAct();
     void                        FirstOutPut() { mpCGM->mbFirstOutPut = false; } ;
     virtual void                InsertPage() { mnCurrentPage++; } ;
@@ -86,49 +79,49 @@ public:
     virtual void                DrawPolyLine( tools::Polygon& ) {} ;
     virtual void                DrawPolybezier( tools::Polygon& ) {} ;
     virtual void                DrawPolyPolygon( tools::PolyPolygon& ) {} ;
-    virtual void                DrawText( ::com::sun::star::awt::Point&, ::com::sun::star::awt::Size&, char*, sal_uInt32, FinalFlag ) {} ;
+    virtual void                DrawText( css::awt::Point&, css::awt::Size&, char*, sal_uInt32, FinalFlag ) {} ;
     virtual void                AppendText( char*, sal_uInt32, FinalFlag ) {} ;
     virtual void                DrawChart(){} ;
 };
 
 class CGMImpressOutAct : public CGMOutAct
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XDrawPages >               maXDrawPages;
-    ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XDrawPage >                maXDrawPage;
+    css::uno::Reference< css::drawing::XDrawPages >               maXDrawPages;
+    css::uno::Reference< css::drawing::XDrawPage >                maXDrawPage;
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::lang::XMultiServiceFactory >        maXMultiServiceFactory;
-    ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >                   maXShape;
-    bool                        ImplCreateShape( const OUString& rType );
+    css::uno::Reference< css::lang::XMultiServiceFactory >        maXMultiServiceFactory;
+    css::uno::Reference< css::drawing::XShape >                   maXShape;
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >           maXPropSet;
-    ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShapes >                  maXShapes;
+    css::uno::Reference< css::beans::XPropertySet >               maXPropSet;
+    css::uno::Reference< css::drawing::XShapes >                  maXShapes;
 
     sal_uInt32                      nFinalTextCount;
 
+    bool                        ImplCreateShape( const OUString& rType );
     bool                        ImplInitPage();
     void                        ImplSetOrientation( FloatPoint& RefPoint, double& Orientation ) ;
     void                        ImplSetLineBundle() ;
     void                        ImplSetFillBundle() ;
-    void                        ImplSetTextBundle( const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet > & ) ;
+    void                        ImplSetTextBundle( const css::uno::Reference< css::beans::XPropertySet > & ) ;
 public:
-                                CGMImpressOutAct( CGM&, const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XModel > & ) ;
+                                CGMImpressOutAct( CGM&, const css::uno::Reference< css::frame::XModel > & ) ;
                                 virtual ~CGMImpressOutAct() {} ;
-    virtual void                InsertPage() SAL_OVERRIDE ;
-    virtual void                BeginGroup() SAL_OVERRIDE ;
-    virtual void                EndGroup() SAL_OVERRIDE ;
-    virtual void                EndGrouping() SAL_OVERRIDE ;
-    virtual void                DrawRectangle( FloatRect& ) SAL_OVERRIDE ;
-    virtual void                DrawEllipse( FloatPoint& center, FloatPoint&, double& Orientation ) SAL_OVERRIDE ;
+    virtual void                InsertPage() override ;
+    virtual void                BeginGroup() override ;
+    virtual void                EndGroup() override ;
+    virtual void                EndGrouping() override ;
+    virtual void                DrawRectangle( FloatRect& ) override ;
+    virtual void                DrawEllipse( FloatPoint& center, FloatPoint&, double& Orientation ) override ;
     virtual void                DrawEllipticalArc( FloatPoint& center, FloatPoint& size, double& orientation,
-                                    sal_uInt32 etype, double& startangle, double& endangle ) SAL_OVERRIDE ;
-    virtual void                DrawBitmap( CGMBitmapDescriptor* ) SAL_OVERRIDE ;
-    virtual void                DrawPolygon( tools::Polygon& ) SAL_OVERRIDE ;
-    virtual void                DrawPolyLine( tools::Polygon& ) SAL_OVERRIDE ;
-    virtual void                DrawPolybezier( tools::Polygon& ) SAL_OVERRIDE ;
-    virtual void                DrawPolyPolygon( tools::PolyPolygon& ) SAL_OVERRIDE ;
-    virtual void                DrawText( ::com::sun::star::awt::Point& TextRectPos, ::com::sun::star::awt::Size& TextRectSize, char* String, sal_uInt32 StringSize, FinalFlag ) SAL_OVERRIDE ;
-    virtual void                AppendText( char* String, sal_uInt32 StringSize, FinalFlag ) SAL_OVERRIDE ;
-    virtual void                DrawChart() SAL_OVERRIDE;
+                                    sal_uInt32 etype, double& startangle, double& endangle ) override ;
+    virtual void                DrawBitmap( CGMBitmapDescriptor* ) override ;
+    virtual void                DrawPolygon( tools::Polygon& ) override ;
+    virtual void                DrawPolyLine( tools::Polygon& ) override ;
+    virtual void                DrawPolybezier( tools::Polygon& ) override ;
+    virtual void                DrawPolyPolygon( tools::PolyPolygon& ) override ;
+    virtual void                DrawText( css::awt::Point& TextRectPos, css::awt::Size& TextRectSize, char* String, sal_uInt32 StringSize, FinalFlag ) override ;
+    virtual void                AppendText( char* String, sal_uInt32 StringSize, FinalFlag ) override ;
+    virtual void                DrawChart() override;
 };
 
 

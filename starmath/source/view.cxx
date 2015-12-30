@@ -29,6 +29,7 @@
 #include <comphelper/processfactory.hxx>
 #include <comphelper/storagehelper.hxx>
 #include <comphelper/string.hxx>
+#include <i18nutil/unicode.hxx>
 #include <sfx2/app.hxx>
 #include <sfx2/dispatch.hxx>
 #include <sfx2/docfile.hxx>
@@ -52,6 +53,7 @@
 #include <svx/dialogs.hrc>
 #include <svx/zoomslideritem.hxx>
 #include <editeng/editeng.hxx>
+#include <editeng/editview.hxx>
 #include <svx/svxdlg.hxx>
 #include <sfx2/zoomitem.hxx>
 #include <vcl/decoview.hxx>
@@ -93,7 +95,7 @@ using namespace css::uno;
 
 SmGraphicWindow::SmGraphicWindow(SmViewShell* pShell)
     : ScrollableWindow(&pShell->GetViewFrame()->GetWindow(), 0)
-    , pAccessible(0)
+    , pAccessible(nullptr)
     , pViewShell(pShell)
     , nZoom(100)
 {
@@ -177,7 +179,7 @@ void SmGraphicWindow::MouseButtonDown(const MouseEvent& rMEvt)
             pViewShell->GetDoc()->GetCursor().MoveTo(this, aPos, !rMEvt.IsShift());
             return;
         }
-        const SmNode *pNode = 0;
+        const SmNode *pNode = nullptr;
         // if it was clicked inside the formula then get the appropriate node
         if (pTree->OrientedDist(aPos) <= 0)
             pNode = pTree->FindRectClosestTo(aPos);
@@ -360,11 +362,11 @@ const SmNode * SmGraphicWindow::SetCursorPos(sal_uInt16 nRow, sal_uInt16 nCol)
     // In any case the search result is being returned.
 {
     if (IsInlineEditEnabled())
-        return NULL;
+        return nullptr;
 
     // find visible node with token at nRow, nCol
     const SmNode *pTree = pViewShell->GetDoc()->GetFormulaTree(),
-                 *pNode = 0;
+                 *pNode = nullptr;
     if (pTree)
         pNode = pTree->FindTokenAt(nRow, nCol);
 
@@ -513,7 +515,7 @@ void SmGraphicWindow::KeyInput(const KeyEvent& rKEvt)
         default:
         {
             sal_Unicode code = rKEvt.GetCharCode();
-            SmBraceNode* pBraceNode = NULL;
+            SmBraceNode* pBraceNode = nullptr;
 
             if(code == ' ') {
                 rCursor.InsertElement(BlankElement);
@@ -694,9 +696,9 @@ SmEditController::~SmEditController()
 
 void SmEditController::StateChanged(sal_uInt16 nSID, SfxItemState eState, const SfxPoolItem* pState)
 {
-    const SfxStringItem *pItem = PTR_CAST(SfxStringItem, pState);
+    const SfxStringItem *pItem =  dynamic_cast<const SfxStringItem*>( pState);
 
-    if ((pItem != NULL) && (rEdit.GetText() != OUString(pItem->GetValue())))
+    if ((pItem != nullptr) && (rEdit.GetText() != OUString(pItem->GetValue())))
         rEdit.SetText(pItem->GetValue());
     SfxControllerItem::StateChanged (nSID, eState, pState);
 }
@@ -736,8 +738,8 @@ void SmCmdBoxWindow::dispose()
 SmViewShell * SmCmdBoxWindow::GetView()
 {
     SfxDispatcher *pDispatcher = GetBindings().GetDispatcher();
-    SfxViewShell *pView = pDispatcher ? pDispatcher->GetFrame()->GetViewShell() : NULL;
-    return PTR_CAST(SmViewShell, pView);
+    SfxViewShell *pView = pDispatcher ? pDispatcher->GetFrame()->GetViewShell() : nullptr;
+    return  dynamic_cast<SmViewShell*>( pView);
 }
 
 void SmCmdBoxWindow::Resize()
@@ -909,7 +911,6 @@ struct SmViewShell_Impl
     SvtMiscOptions          aOpts;
 };
 
-TYPEINIT1(SmViewShell, SfxViewShell);
 
 SFX_IMPL_SUPERCLASS_INTERFACE(SmViewShell, SfxViewShell)
 
@@ -919,7 +920,6 @@ void SmViewShell::InitInterface_Impl()
                                             RID_MATH_TOOLBOX);
     //Dummy-Objectbar, to avoid quiver while activating
 
-    GetStaticInterface()->RegisterChildWindow(SID_TASKPANE);
     GetStaticInterface()->RegisterChildWindow(SmCmdBoxWrapper::GetChildWindowId());
     GetStaticInterface()->RegisterChildWindow(SmElementsDockingWindowWrapper::GetChildWindowId());
 }
@@ -1293,7 +1293,7 @@ SfxPrinter* SmViewShell::GetPrinter(bool bCreate)
     SmDocShell* pDoc = GetDoc();
     if (pDoc->HasPrinter() || bCreate)
         return pDoc->GetPrinter();
-    return 0;
+    return nullptr;
 }
 
 sal_uInt16 SmViewShell::SetPrinter(SfxPrinter *pNewPrinter, SfxPrinterChangeFlags nDiffFlags, bool )
@@ -1347,7 +1347,7 @@ void SmViewShell::SetStatusText(const OUString& rText)
 void SmViewShell::ShowError(const SmErrorDesc* pErrorDesc)
 {
     SAL_WARN_IF( !GetDoc(), "starmath", "Document missing" );
-    if (pErrorDesc || 0 != (pErrorDesc = GetDoc()->GetParser().GetError(0)) )
+    if (pErrorDesc || nullptr != (pErrorDesc = GetDoc()->GetParser().GetError(0)) )
     {
         SetStatusText( pErrorDesc->m_aText );
         GetEditWindow()->MarkError( Point( pErrorDesc->m_pNode->GetColumn(),
@@ -1382,10 +1382,10 @@ void SmViewShell::Insert( SfxMedium& rMedium )
     uno::Reference <container::XNameAccess> xNameAccess(xStorage, uno::UNO_QUERY);
     if (xNameAccess.is() && xNameAccess->getElementNames().getLength())
     {
-        if (xNameAccess->hasByName(OUString("content.xml")) || xNameAccess->hasByName(OUString("Content.xml")))
+        if (xNameAccess->hasByName("content.xml") || xNameAccess->hasByName("Content.xml"))
         {
             // is this a fabulous math package ?
-            Reference<com::sun::star::frame::XModel> xModel(pDoc->GetModel());
+            Reference<css::frame::XModel> xModel(pDoc->GetModel());
             SmXMLImportWrapper aEquation(xModel);    //!! modifies the result of pDoc->GetText() !!
             bRet = 0 == aEquation.Import(rMedium);
         }
@@ -1476,7 +1476,7 @@ void SmViewShell::Execute(SfxRequest& rReq)
             {
                 GetDoc()->SetText( pWin->GetText() );
                 SetStatusText(OUString());
-                ShowError( 0 );
+                ShowError( nullptr );
                 GetDoc()->Repaint();
             }
             break;
@@ -1565,7 +1565,7 @@ void SmViewShell::Execute(SfxRequest& rReq)
 
         case SID_PASTE:
             {
-                bool bCallExec = 0 == pWin;
+                bool bCallExec = nullptr == pWin;
                 if( !bCallExec )
                 {
                     TransferableDataHelper aDataHelper(
@@ -1750,7 +1750,7 @@ void SmViewShell::Execute(SfxRequest& rReq)
 
         case SID_TEXTSTATUS:
         {
-            if (rReq.GetArgs() != NULL)
+            if (rReq.GetArgs() != nullptr)
             {
                 const SfxStringItem& rItem =
                     static_cast<const SfxStringItem&>(rReq.GetArgs()->Get(SID_TEXTSTATUS));
@@ -1841,6 +1841,51 @@ void SmViewShell::Execute(SfxRequest& rReq)
             GetViewFrame()->GetBindings().Invalidate( SID_ELEMENTSDOCKINGWINDOW );
 
             rReq.Ignore ();
+        }
+        break;
+
+        case SID_UNICODE_NOTATION_TOGGLE:
+        {
+            EditEngine* pEditEngine = nullptr;
+            if( pWin )
+                pEditEngine = pWin->GetEditEngine();
+
+            EditView* pEditView = nullptr;
+            if( pEditEngine )
+                pEditView = pEditEngine->GetView();
+
+            if( pEditView )
+            {
+                const OUString sInput = pEditView->GetSurroundingText();
+                ESelection aSel(  pWin->GetSelection() );
+
+                if ( aSel.nStartPos > aSel.nEndPos )
+                    aSel.nEndPos = aSel.nStartPos;
+
+                //calculate a valid end-position by reading logical characters
+                sal_Int32 nUtf16Pos=0;
+                while( (nUtf16Pos < sInput.getLength()) && (nUtf16Pos < aSel.nEndPos) )
+                {
+                    sInput.iterateCodePoints(&nUtf16Pos);
+                    if( nUtf16Pos > aSel.nEndPos )
+                        aSel.nEndPos = nUtf16Pos;
+                }
+
+                ToggleUnicodeCodepoint aToggle;
+                while( nUtf16Pos && aToggle.AllowMoreInput( sInput[nUtf16Pos-1]) )
+                    --nUtf16Pos;
+                const OUString sReplacement = aToggle.ReplacementString();
+                if( !sReplacement.isEmpty() )
+                {
+                    pEditView->SetSelection( aSel );
+                    pEditEngine->UndoActionStart(EDITUNDO_REPLACEALL);
+                    aSel.nStartPos = aSel.nEndPos - aToggle.StringToReplace().getLength();
+                    pWin->SetSelection( aSel );
+                    pEditView->InsertText( sReplacement, true );
+                    pEditEngine->UndoActionEnd(EDITUNDO_REPLACEALL);
+                    pWin->Flush();
+                }
+            }
         }
         break;
 
@@ -1961,7 +2006,7 @@ SmViewShell::SmViewShell(SfxViewFrame *pFrame_, SfxViewShell *)
 {
     SetStatusText(OUString());
     SetWindow(aGraphic.get());
-    SfxShell::SetName(OUString("SmView"));
+    SfxShell::SetName("SmView");
     SfxShell::SetUndoManager( &GetDoc()->GetEditEngine().GetUndoManager() );
     SetHelpId( HID_SMA_VIEWSHELL_DOCUMENT );
 }
@@ -1999,7 +2044,7 @@ void SmViewShell::Activate( bool bIsMDIActivate )
         //! synchronize the GraphicWindow display with the text in the
         //! EditEngine.
         SmDocShell *pDoc = GetDoc();
-        pDoc->SetText( pDoc->GetEditEngine().GetText( LINEEND_LF ) );
+        pDoc->SetText( pDoc->GetEditEngine().GetText() );
 
         if ( bIsMDIActivate )
             pEdit->GrabFocus();
@@ -2015,7 +2060,7 @@ IMPL_LINK_TYPED( SmViewShell, DialogClosedHdl, sfx2::FileDialogHelper*, _pFileDl
     {
         SfxMedium* pMedium = pImpl->pDocInserter->CreateMedium();
 
-        if ( pMedium != NULL )
+        if ( pMedium != nullptr )
         {
             if ( pMedium->IsStorage() )
                 Insert( *pMedium );

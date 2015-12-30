@@ -64,12 +64,12 @@ void ScTabViewShell::ExecGallery( SfxRequest& rReq )
 {
     const SfxItemSet* pArgs = rReq.GetArgs();
 
-    SFX_ITEMSET_ARG( pArgs, pGalleryItem, SvxGalleryItem, SID_GALLERY_FORMATS, false );
+    const SvxGalleryItem* pGalleryItem = SfxItemSet::GetItem<SvxGalleryItem>(pArgs, SID_GALLERY_FORMATS, false);
     if ( !pGalleryItem )
         return;
 
     sal_Int8 nType( pGalleryItem->GetType() );
-    if ( nType == com::sun::star::gallery::GalleryItemType::GRAPHIC )
+    if ( nType == css::gallery::GalleryItemType::GRAPHIC )
     {
         MakeDrawLayer();
 
@@ -79,7 +79,7 @@ void ScTabViewShell::ExecGallery( SfxRequest& rReq )
         OUString aPath, aFilter;
         PasteGraphic( aPos, aGraphic, aPath, aFilter );
     }
-    else if ( nType == com::sun::star::gallery::GalleryItemType::MEDIA )
+    else if ( nType == css::gallery::GalleryItemType::MEDIA )
     {
         //  for sounds (linked or not), insert a hyperlink button,
         //  like in Impress and Writer
@@ -122,7 +122,7 @@ void ScTabViewShell::ExecImageMap( SfxRequest& rReq )
         case SID_IMAP_EXEC:
         {
             SdrView* pDrView = GetSdrView();
-            SdrMark* pMark = pDrView ? pDrView->GetMarkedObjectList().GetMark(0) : 0;
+            SdrMark* pMark = pDrView ? pDrView->GetMarkedObjectList().GetMark(0) : nullptr;
 
             if ( pMark )
             {
@@ -157,7 +157,7 @@ void ScTabViewShell::GetImageMapState( SfxItemSet& rSet )
         {
             case SID_IMAP:
                 {
-                    //  Disabled wird nicht mehr...
+                    // We don't disable this anymore
 
                     bool bThere = false;
                     SfxViewFrame* pThisFrame = GetViewFrame();

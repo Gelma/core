@@ -35,17 +35,17 @@ namespace sdr
         {
         private:
             // helpers for constructing various primitive visualisations in various states
-            drawinglayer::primitive2d::Primitive2DSequence createVIP2DSForPresObj(
+            drawinglayer::primitive2d::Primitive2DContainer createVIP2DSForPresObj(
                 const basegfx::B2DHomMatrix& rObjectMatrix,
                 const drawinglayer::attribute::SdrLineFillShadowTextAttribute& rAttribute) const;
-            drawinglayer::primitive2d::Primitive2DSequence createVIP2DSForDraft(
+            drawinglayer::primitive2d::Primitive2DContainer createVIP2DSForDraft(
                 const basegfx::B2DHomMatrix& rObjectMatrix,
                 const drawinglayer::attribute::SdrLineFillShadowTextAttribute& rAttribute) const;
 
         protected:
             // Create a Object-Specific ViewObjectContact, set ViewContact and
             // ObjectContact. Always needs to return something.
-            virtual ViewObjectContact& CreateObjectSpecificViewObjectContact(ObjectContact& rObjectContact) SAL_OVERRIDE;
+            virtual ViewObjectContact& CreateObjectSpecificViewObjectContact(ObjectContact& rObjectContact) override;
 
         public:
             // access to SdrObject
@@ -72,7 +72,7 @@ namespace sdr
         protected:
             // This method is responsible for creating the graphical visualisation data
             // ONLY based on model data
-            virtual drawinglayer::primitive2d::Primitive2DSequence createViewIndependentPrimitive2DSequence() const SAL_OVERRIDE;
+            virtual drawinglayer::primitive2d::Primitive2DContainer createViewIndependentPrimitive2DSequence() const override;
         };
     } // end of namespace contact
 } // end of namespace sdr

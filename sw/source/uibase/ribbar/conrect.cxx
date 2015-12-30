@@ -41,7 +41,6 @@ ConstRectangle::ConstRectangle( SwWrtShell* pWrtShell, SwEditWin* pEditWin,
     : SwDrawBase( pWrtShell, pEditWin, pSwView )
     , bMarquee(false)
     , bCapVertical(false)
-    // #93382#
     , mbVertical(false)
 {
 }
@@ -71,7 +70,7 @@ bool ConstRectangle::MouseButtonUp(const MouseEvent& rMEvt)
         SdrView *pSdrView = m_pSh->GetDrawView();
         const SdrMarkList& rMarkList = pSdrView->GetMarkedObjectList();
         SdrObject* pObj = rMarkList.GetMark(0) ? rMarkList.GetMark(0)->GetMarkedSdrObj()
-                                               : 0;
+                                               : nullptr;
         switch( m_pWin->GetSdrDrawMode() )
         {
         case OBJ_TEXT:
@@ -96,7 +95,7 @@ bool ConstRectangle::MouseButtonUp(const MouseEvent& rMEvt)
                     pObj->SetMergedItemSetAndBroadcast(aItemSet);
                 }
             }
-            else if(mbVertical && pObj && pObj->ISA(SdrTextObj))
+            else if(mbVertical && pObj && dynamic_cast< const SdrTextObj *>( pObj ) !=  nullptr)
             {
                 SdrTextObj* pText = static_cast<SdrTextObj*>(pObj);
                 SfxItemSet aSet(pSdrView->GetModel()->GetItemPool());

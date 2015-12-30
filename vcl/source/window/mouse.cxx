@@ -160,12 +160,12 @@ void Window::ImplCallMouseMove( sal_uInt16 nMouseCode, bool bModChanged )
 void Window::ImplGenerateMouseMove()
 {
     if ( !mpWindowImpl->mpFrameData->mnMouseMoveId )
-        mpWindowImpl->mpFrameData->mnMouseMoveId = Application::PostUserEvent( LINK( mpWindowImpl->mpFrameWindow, Window, ImplGenerateMouseMoveHdl ), NULL, true );
+        mpWindowImpl->mpFrameData->mnMouseMoveId = Application::PostUserEvent( LINK( mpWindowImpl->mpFrameWindow, Window, ImplGenerateMouseMoveHdl ), nullptr, true );
 }
 
 IMPL_LINK_NOARG_TYPED(Window, ImplGenerateMouseMoveHdl, void*, void)
 {
-    mpWindowImpl->mpFrameData->mnMouseMoveId = 0;
+    mpWindowImpl->mpFrameData->mnMouseMoveId = nullptr;
     vcl::Window* pCaptureWin = ImplGetSVData()->maWinData.mpCaptureWin;
     if( ! pCaptureWin ||
         (pCaptureWin->mpWindowImpl && pCaptureWin->mpWindowImpl->mpFrame == mpWindowImpl->mpFrame)
@@ -306,7 +306,6 @@ void Window::ImplGrabFocus( GetFocusFlags nFlags )
             {
                 // here we already switch focus as ToTop()
                 // should not give focus to another window
-                //DBG_WARNING( "Window::GrabFocus() - Frame doesn't have the focus" );
                 mpWindowImpl->mpFrame->ToTop( SAL_FRAME_TOTOP_GRABFOCUS | SAL_FRAME_TOTOP_GRABFOCUS_ONLY );
                 return;
             }
@@ -385,7 +384,7 @@ void Window::ImplGrabFocus( GetFocusFlags nFlags )
                 if ( !ImplCallPreNotify( aNEvt ) && !aDogTag.IsDead() )
                     CompatGetFocus();
                 if( !aDogTag.IsDead() )
-                    ImplCallActivateListeners( (pOldFocusWindow && ! aOldFocusDel.IsDead()) ? pOldFocusWindow : NULL );
+                    ImplCallActivateListeners( (pOldFocusWindow && ! aOldFocusDel.IsDead()) ? pOldFocusWindow : nullptr );
                 if( !aDogTag.IsDead() )
                 {
                     mpWindowImpl->mnGetFocusFlags = GetFocusFlags::NONE;
@@ -469,12 +468,12 @@ void Window::ReleaseMouse()
 
     ImplSVData* pSVData = ImplGetSVData();
 
-    DBG_ASSERTWARNING( pSVData->maWinData.mpCaptureWin.get() == this,
+    SAL_WARN_IF(!IsMouseCaptured(), "vcl",
                        "Window::ReleaseMouse(): window doesn't have the mouse capture" );
 
-    if ( pSVData->maWinData.mpCaptureWin.get() == this )
+    if (IsMouseCaptured())
     {
-        pSVData->maWinData.mpCaptureWin = NULL;
+        pSVData->maWinData.mpCaptureWin = nullptr;
         mpWindowImpl->mpFrame->CaptureMouse( false );
         ImplGenerateMouseMove();
     }

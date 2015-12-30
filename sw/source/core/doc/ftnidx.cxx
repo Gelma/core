@@ -170,8 +170,8 @@ void SwFootnoteIdxs::UpdateAllFootnote()
 
     SwUpdFootnoteEndNtAtEnd aNumArr;
 
-    SwRootFrm* pTmpRoot = pDoc->getIDocumentLayoutAccess().GetCurrentLayout();
-    std::set<SwRootFrm*> aAllLayouts = pDoc->GetAllLayouts();
+    SwRootFrame* pTmpRoot = pDoc->getIDocumentLayoutAccess().GetCurrentLayout();
+    std::set<SwRootFrame*> aAllLayouts = pDoc->GetAllLayouts();
     // For normal Footnotes per-chapter and per-document numbering are treated separately.
     // For Endnotes we only have document-wise numbering.
     if( FTNNUM_CHAPTER == rFootnoteInfo.eNum )
@@ -240,7 +240,8 @@ void SwFootnoteIdxs::UpdateAllFootnote()
     }
 
     if( pTmpRoot && FTNNUM_PAGE == rFootnoteInfo.eNum )
-        std::for_each( aAllLayouts.begin(), aAllLayouts.end(),std::mem_fun(&SwRootFrm::UpdateFootnoteNums));
+        for( auto aLayout : aAllLayouts )
+            aLayout->UpdateFootnoteNums();
 }
 
 SwTextFootnote* SwFootnoteIdxs::SeekEntry( const SwNodeIndex& rPos, size_t* pFndPos ) const
@@ -268,7 +269,7 @@ SwTextFootnote* SwFootnoteIdxs::SeekEntry( const SwNodeIndex& rPos, size_t* pFnd
             {
                 if( pFndPos )
                     *pFndPos = nU;
-                return 0;
+                return nullptr;
             }
             else
                 nO = nM - 1;
@@ -276,7 +277,7 @@ SwTextFootnote* SwFootnoteIdxs::SeekEntry( const SwNodeIndex& rPos, size_t* pFnd
     }
     if( pFndPos )
         *pFndPos = nU;
-    return 0;
+    return nullptr;
 }
 
 const SwSectionNode* SwUpdFootnoteEndNtAtEnd::FindSectNdWithEndAttr(

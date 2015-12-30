@@ -61,15 +61,13 @@ public:
             ::std::vector< XMLPropertyState >& /*rProperties*/,
             const OUString& /*rValue*/,
             const SvXMLUnitConverter& /*rUnitConverter*/,
-            const SvXMLNamespaceMap& /*rNamespaceMap*/ ) const SAL_OVERRIDE
+            const SvXMLNamespaceMap& /*rNamespaceMap*/ ) const override
     {
         // nothing to do here
         return true;
     }
 };
 
-TYPEINIT1( OControlStyleContext, XMLPropStyleContext );
-TYPEINIT1( OReportStylesContext, SvXMLStylesContext );
 
 OControlStyleContext::OControlStyleContext( ORptFilter& rImport,
         sal_uInt16 nPrfx, const OUString& rLName,
@@ -102,9 +100,9 @@ void OControlStyleContext::FillPropertySet(const Reference< XPropertySet > & rPr
                     XML_STYLE_FAMILY_DATA_STYLE, m_sDataStyleName)));
                 if ( !pStyle )
                 {
-                    OReportStylesContext* pMyStyles = PTR_CAST(OReportStylesContext,GetOwnImport().GetAutoStyles());
+                    OReportStylesContext* pMyStyles = dynamic_cast< OReportStylesContext *>(GetOwnImport().GetAutoStyles());
                     if ( pMyStyles )
-                        pStyle = const_cast<SvXMLNumFormatContext*>(PTR_CAST(SvXMLNumFormatContext,pMyStyles->
+                        pStyle = const_cast<SvXMLNumFormatContext*>(dynamic_cast< const SvXMLNumFormatContext *>(pMyStyles->
                             FindStyleChildContext(XML_STYLE_FAMILY_DATA_STYLE, m_sDataStyleName, true)));
                     else {
                         OSL_FAIL("not possible to get style");
@@ -244,7 +242,7 @@ SvXMLStyleContext *OReportStylesContext::CreateDefaultStyleStyleChildContext(
         sal_uInt16 nFamily, sal_uInt16 nPrefix, const OUString& rLocalName,
         const uno::Reference< xml::sax::XAttributeList > & xAttrList )
 {
-    SvXMLStyleContext *pStyle = 0;
+    SvXMLStyleContext *pStyle = nullptr;
 
     switch( nFamily )
     {

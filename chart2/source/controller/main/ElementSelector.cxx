@@ -108,7 +108,7 @@ void SelectorListBox::UpdateChartElementsListAndSelection()
         Reference< lang::XMultiServiceFactory > xFact( xChartController->getModel(), uno::UNO_QUERY );
         if( xFact.is() )
             xChartView = xFact->createInstance( CHART_VIEW_SERVICE_NAME );
-        ExplicitValueProvider* pExplicitValueProvider = 0; //ExplicitValueProvider::getExplicitValueProvider(xChartView); this creates all visible data points, that's too much
+        ExplicitValueProvider* pExplicitValueProvider = nullptr; //ExplicitValueProvider::getExplicitValueProvider(xChartView); this creates all visible data points, that's too much
         ObjectHierarchy aHierarchy( xChartDoc, pExplicitValueProvider, true /*bFlattenDiagram*/, true /*bOrderingForElementSelector*/ );
         lcl_addObjectsToList( aHierarchy, ::chart::ObjectHierarchy::getRootNodeOID(), m_aEntries, 0, xChartDoc );
 
@@ -268,12 +268,10 @@ css::uno::Sequence< OUString > SAL_CALL ElementSelectorToolbarController::getSup
 
 Sequence< OUString > ElementSelectorToolbarController::getSupportedServiceNames_Static()
 {
-    Sequence< OUString > aServices(1);
-    aServices[ 0 ] = "com.sun.star.frame.ToolbarController";
+    Sequence<OUString> aServices { "com.sun.star.frame.ToolbarController" };
     return aServices;
 }
-ElementSelectorToolbarController::ElementSelectorToolbarController( const uno::Reference< uno::XComponentContext > & xContext )
-    : m_xCC( xContext )
+ElementSelectorToolbarController::ElementSelectorToolbarController()
 {
 }
 ElementSelectorToolbarController::~ElementSelectorToolbarController()
@@ -337,10 +335,10 @@ uno::Reference< awt::XWindow > SAL_CALL ElementSelectorToolbarController::create
 } // chart2
 
 extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface * SAL_CALL
-com_sun_star_comp_chart_ElementSelectorToolbarController_get_implementation(css::uno::XComponentContext *context,
+com_sun_star_comp_chart_ElementSelectorToolbarController_get_implementation(css::uno::XComponentContext *,
                                                                             css::uno::Sequence<css::uno::Any> const &)
 {
-    return cppu::acquire(new chart::ElementSelectorToolbarController(context));
+    return cppu::acquire(new chart::ElementSelectorToolbarController );
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

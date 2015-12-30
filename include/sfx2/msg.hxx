@@ -19,13 +19,13 @@
 #ifndef INCLUDED_SFX2_MSG_HXX
 #define INCLUDED_SFX2_MSG_HXX
 
-#include <tools/rtti.hxx>
 #include <sfx2/shell.hxx>
 #include <rtl/string.hxx>
 #include <rtl/ustring.hxx>
 #include <sfx2/dllapi.h>
 #include <svl/itemset.hxx>
 #include <o3tl/typed_flags_set.hxx>
+#include <functional>
 
 enum class SfxSlotMode {
     NONE            =    0x0000L, // exclusiv to VOLATILE, default
@@ -107,31 +107,34 @@ struct SfxTypeAttrib
     sal_uInt16                  nAID;
     const char* pName;
 };
-
+class SfxPoolItem;
+template<class T> SfxPoolItem* createSfxPoolItem()
+{
+    return T::CreateDefault();
+}
 struct SfxType
 {
-    TypeId          aTypeId;
+    std::function<SfxPoolItem* ()> createSfxPoolItemFunc;
+    const std::type_info*   pType;
     sal_uInt16          nAttribs;
     SfxTypeAttrib   aAttrib[1]; // variable length
 
-    const TypeId&   Type() const
-                    { return aTypeId; }
+    const std::type_info* Type() const{return pType;}
     SfxPoolItem*    CreateItem() const
-                    { return static_cast<SfxPoolItem*>(aTypeId()); }
+                    { return static_cast<SfxPoolItem*>(createSfxPoolItemFunc()); }
 };
 
 struct SfxType0
 {
-    TypeId          aTypeId;
+    std::function<SfxPoolItem* ()> createSfxPoolItemFunc;
+    const std::type_info*   pType;
     sal_uInt16          nAttribs;
-
-    const TypeId&   Type() const
-                    { return aTypeId; }
+    const std::type_info*    Type() const { return pType;}
 };
-
 #define SFX_DECL_TYPE(n)    struct SfxType##n                   \
                             {                                   \
-                                TypeId          aTypeId;        \
+                                std::function<SfxPoolItem* ()> createSfxPoolItemFunc; \
+                                const std::type_info* pType; \
                                 sal_uInt16          nAttribs;       \
                                 SfxTypeAttrib   aAttrib[n];     \
                             }
@@ -153,13 +156,13 @@ SFX_DECL_TYPE(13); // for SwAddPrinterItem, Sd...
 SFX_DECL_TYPE(14);
 SFX_DECL_TYPE(16); // for SwDocDisplayItem
 SFX_DECL_TYPE(17); // for SvxAddressItem
-SFX_DECL_TYPE(20); // for SvxSearchItem
+SFX_DECL_TYPE(22); // for SvxSearchItem
 
 // all SfxTypes must be in this header
 #undef SFX_DECL_TYPE
 
 #define SFX_SLOT_ARG( aShellClass, id, GroupId, ExecMethodPtr, StateMethodPtr, Flags, ItemClass, nArg0, nArgs, Name, Prop ) \
-               { id, GroupId, id, Flags | Prop, \
+               { id, GroupId, Flags | Prop, \
                  USHRT_MAX, 0, \
                  ExecMethodPtr, \
                  StateMethodPtr, \
@@ -169,7 +172,7 @@ SFX_DECL_TYPE(20); // for SvxSearchItem
                }
 
 #define SFX_SLOT( aShellClass, id, GroupId, ExecMethodPtr, StateMethodPtr, Flags, ItemClass ) \
-               { id, GroupId, id, Flags, \
+               { id, GroupId, Flags, \
                  0, 0, \
                  ExecMethodPtr, \
                  StateMethodPtr, \
@@ -177,8 +180,8 @@ SFX_DECL_TYPE(20); // for SvxSearchItem
                  0, 0, 0, 0, 0 \
                }
 
-#define SFX_NEW_SLOT_ARG( aShellClass, id, hid, GroupId, pLinked, pNext, ExecMethodPtr, StateMethodPtr, Flags, DisableFlags, ItemClass, nArg0, nArgs, Prop, UnoName ) \
-               { id, GroupId, hid, Flags | Prop, \
+#define SFX_NEW_SLOT_ARG( aShellClass, id, GroupId, pLinked, pNext, ExecMethodPtr, StateMethodPtr, Flags, DisableFlags, ItemClass, nArg0, nArgs, Prop, UnoName ) \
+               { id, GroupId, Flags | Prop, \
                  USHRT_MAX, 0, \
                  ExecMethodPtr, \
                  StateMethodPtr, \
@@ -187,8 +190,8 @@ SFX_DECL_TYPE(20); // for SvxSearchItem
                  &a##aShellClass##Args_Impl[nArg0], nArgs, DisableFlags, UnoName \
                }
 
-#define SFX_NEW_SLOT_ENUM( SlaveId, hid, GroupId, pMaster, pNext, MasterId, Value, Flags, DisableFlags, UnoName  ) \
-               { SlaveId, GroupId, hid, Flags,   \
+#define SFX_NEW_SLOT_ENUM( SlaveId, GroupId, pMaster, pNext, MasterId, Value, Flags, DisableFlags, UnoName  ) \
+               { SlaveId, GroupId, Flags,   \
                  MasterId,  Value, \
                  0, \
                  0, \
@@ -198,7 +201,7 @@ SFX_DECL_TYPE(20); // for SvxSearchItem
                  0, 0, DisableFlags, UnoName \
                }
 
-class SfxPoolItem;
+//class SfxPoolItem;
 
 struct SfxFormalArgument
 {
@@ -206,10 +209,10 @@ struct SfxFormalArgument
     const char*     pName;    // Name of the sParameters
     sal_uInt16      nSlotId;  // Slot-Id for identification of the Parameters
 
-    const TypeId&           Type() const
-                            { return pType->aTypeId; }
+//    const TypeId&           Type() const
+//                            { return pType->aTypeId; }
     SfxPoolItem*            CreateItem() const
-                            { return static_cast<SfxPoolItem*>(pType->aTypeId()); }
+                            { return pType->createSfxPoolItemFunc(); }
 };
 
 
@@ -219,7 +222,6 @@ class SfxSlot
 public:
     sal_uInt16    nSlotId;   // Unique slot-ID in Shell
     sal_uInt16    nGroupId;  // for configuration region
-    sal_uIntPtr   nHelpId;   // Usually == nSlotId
     SfxSlotMode   nFlags;    // arithmetic ordered Flags
 
     sal_uInt16    nMasterSlotId;  // Enum-Slot for example Which-Id

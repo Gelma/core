@@ -102,7 +102,7 @@ friend void     PageNumNotify(  SwViewShell* pVwSh,
 
     SdrDropMarkerOverlay    *m_pUserMarker;
     SdrObject               *m_pUserMarkerObj;
-    SwShadowCursor          *m_pShadCrsr;
+    SwShadowCursor          *m_pShadCursor;
     Point                   *m_pRowColumnSelectionStart; // save position where table row/column selection has been started
 
     SwView         &m_rView;
@@ -114,11 +114,11 @@ friend void     PageNumNotify(  SwViewShell* pVwSh,
     SotExchangeDest m_nDropDestination;  // destination from the last QueryDrop
 
     sal_uInt16      m_eBezierMode;
-    sal_uInt16      m_nInsFrmColCount; // column number for interactive frame
+    sal_uInt16      m_nInsFrameColCount; // column number for interactive frame
     SdrObjKind      m_eDrawMode;
     bool        m_bMBPressed      : 1,
                     m_bInsDraw        : 1,
-                    m_bInsFrm         : 1,
+                    m_bInsFrame         : 1,
                     m_bIsInMove       : 1,
                     m_bIsInDrag       : 1, // don't execute StartExecuteDrag twice
                     m_bOldIdle        : 1, // to stop to idle
@@ -126,7 +126,7 @@ friend void     PageNumNotify(  SwViewShell* pVwSh,
                     m_bTableInsDelMode  : 1,
                     m_bTableIsInsMode   : 1,
                     m_bChainMode      : 1, // connect frames
-                    m_bWasShdwCrsr    : 1, // ShadowCrsr was on in MouseButtonDown
+                    m_bWasShdwCursor    : 1, // ShadowCursor was on in MouseButtonDown
                     m_bLockInput      : 1, // lock while calc panel is active
                     m_bIsRowDrag      : 1, //selection of rows is used, in combination with m_pRowColumnSelectionStart
                     /** #i42732# display status of font size/name depending on either the input language or the
@@ -156,7 +156,7 @@ friend void     PageNumNotify(  SwViewShell* pVwSh,
     void            DropCleanup();
     void            CleanupDropUserMarker();
     SotExchangeDest GetDropDestination( const Point& rPixPnt,
-                                        SdrObject ** ppObj = 0 );
+                                        SdrObject ** ppObj = nullptr );
     //select the object/cursor at the mouse position of the context menu request
     bool            SelectMenuPosition(SwWrtShell& rSh, const Point& rMousePos );
 
@@ -185,27 +185,27 @@ friend void     PageNumNotify(  SwViewShell* pVwSh,
 
 protected:
 
-    virtual void    DataChanged( const DataChangedEvent& ) SAL_OVERRIDE;
-    virtual void    PrePaint(vcl::RenderContext& rRenderContext) SAL_OVERRIDE;
-    virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) SAL_OVERRIDE;
+    virtual void    DataChanged( const DataChangedEvent& ) override;
+    virtual void    PrePaint(vcl::RenderContext& rRenderContext) override;
+    virtual void    Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect) override;
 
-    virtual void    GetFocus() SAL_OVERRIDE;
-    virtual void    LoseFocus() SAL_OVERRIDE;
+    virtual void    GetFocus() override;
+    virtual void    LoseFocus() override;
 
-    virtual void    MouseMove(const MouseEvent& rMEvt) SAL_OVERRIDE;
-    virtual void    MouseButtonDown(const MouseEvent& rMEvt) SAL_OVERRIDE;
-    virtual void    MouseButtonUp(const MouseEvent& rMEvt) SAL_OVERRIDE;
-    virtual void    RequestHelp(const HelpEvent& rEvt) SAL_OVERRIDE;
+    virtual void    MouseMove(const MouseEvent& rMEvt) override;
+    virtual void    MouseButtonDown(const MouseEvent& rMEvt) override;
+    virtual void    MouseButtonUp(const MouseEvent& rMEvt) override;
+    virtual void    RequestHelp(const HelpEvent& rEvt) override;
 
-    virtual void    Command( const CommandEvent& rCEvt ) SAL_OVERRIDE;
+    virtual void    Command( const CommandEvent& rCEvt ) override;
 
                                 // Drag & Drop Interface
-    virtual sal_Int8    AcceptDrop( const AcceptDropEvent& rEvt ) SAL_OVERRIDE;
-    virtual sal_Int8    ExecuteDrop( const ExecuteDropEvent& rEvt ) SAL_OVERRIDE;
-    virtual void        StartDrag( sal_Int8 nAction, const Point& rPosPixel ) SAL_OVERRIDE;
+    virtual sal_Int8    AcceptDrop( const AcceptDropEvent& rEvt ) override;
+    virtual sal_Int8    ExecuteDrop( const ExecuteDropEvent& rEvt ) override;
+    virtual void        StartDrag( sal_Int8 nAction, const Point& rPosPixel ) override;
 
-    virtual OUString GetSurroundingText() const SAL_OVERRIDE;
-    virtual Selection GetSurroundingTextSelection() const SAL_OVERRIDE;
+    virtual OUString GetSurroundingText() const override;
+    virtual Selection GetSurroundingTextSelection() const override;
 
     void    ShowAutoTextCorrectQuickHelp( const OUString& rWord, SvxAutoCorrCfg* pACfg,
                                 SvxAutoCorrect* pACorr, bool bFromIME = false );
@@ -216,7 +216,7 @@ protected:
     bool    IsOverHeaderFooterFly( const Point& rDocPos, FrameControlType& rControl, bool& bOverFly, bool& bPageAnchored ) const;
 public:
 
-    virtual void    KeyInput(const KeyEvent &rKEvt) SAL_OVERRIDE;
+    virtual void    KeyInput(const KeyEvent &rKEvt) override;
     void            UpdatePointer(const Point &, sal_uInt16 nButtons = 0);
 
     bool            IsDrawSelMode();
@@ -230,19 +230,19 @@ public:
     inline void         SetSdrDrawMode( SdrObjKind eSdrObjectKind ) { m_eDrawMode = eSdrObjectKind; SetObjectSelect( false ); }
     void                StdDrawMode( SdrObjKind eSdrObjectKind, bool bObjSelect );
 
-    bool            IsFrmAction() const             { return m_bInsFrm; }
+    bool            IsFrameAction() const             { return m_bInsFrame; }
     sal_uInt16      GetBezierMode() const           { return m_eBezierMode; }
     void            SetBezierMode(sal_uInt16 eBezMode)  { m_eBezierMode = eBezMode; }
     void            EnterDrawTextMode(const Point& aDocPos); // turn on DrawTextEditMode
-    void            InsFrm(sal_uInt16 nCols);
-    void            StopInsFrm();
-    sal_uInt16      GetFrmColCount() const {return m_nInsFrmColCount;} // column number for interactive frame
+    void            InsFrame(sal_uInt16 nCols);
+    void            StopInsFrame();
+    sal_uInt16      GetFrameColCount() const {return m_nInsFrameColCount;} // column number for interactive frame
 
     void            SetChainMode( bool bOn );
     bool            IsChainMode() const             { return m_bChainMode; }
 
     void            FlushInBuffer();
-    static bool     IsInputSequenceCheckingRequired( const OUString &rText, const SwPaM& rCrsr );
+    static bool     IsInputSequenceCheckingRequired( const OUString &rText, const SwPaM& rCursor );
 
     void             SetApplyTemplate(const SwApplyTemplate &);
     SwApplyTemplate* GetApplyTemplate() const { return m_pApplyTempl; }
@@ -263,7 +263,7 @@ public:
     const SwView &GetView() const { return m_rView; }
           SwView &GetView()       { return m_rView; }
 
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > CreateAccessible() SAL_OVERRIDE;
+    virtual css::uno::Reference< css::accessibility::XAccessible > CreateAccessible() override;
 
     static inline long GetDDStartPosX() { return m_nDDStartPosX; }
     static inline long GetDDStartPosY() { return m_nDDStartPosY; }
@@ -293,10 +293,10 @@ public:
 
     SwEditWin(vcl::Window *pParent, SwView &);
     virtual ~SwEditWin();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     /// @see OutputDevice::LogicInvalidate().
-    void LogicInvalidate(const Rectangle* pRectangle) SAL_OVERRIDE;
+    void LogicInvalidate(const Rectangle* pRectangle) override;
     /// Same as MouseButtonDown(), but coordinates are in logic unit.
     void LogicMouseButtonDown(const MouseEvent& rMouseEvent);
     /// Same as MouseButtonUp(), but coordinates are in logic unit.

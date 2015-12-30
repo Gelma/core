@@ -226,7 +226,7 @@ void Statement::close(  ) throw (SQLException, RuntimeException, std::exception)
     Reference< XCloseable > resultSet;
     {
         MutexGuard guard( m_refMutex->mutex );
-        m_pSettings = 0;
+        m_pSettings = nullptr;
         r = m_connection;
         m_connection.clear();
 
@@ -293,7 +293,7 @@ static void raiseSQLException(
     const Reference< XInterface> & owner,
     const OString & sql,
     const char * errorMsg,
-    const char *errorType = 0 )
+    const char *errorType = nullptr )
     throw( SQLException )
 {
     OUStringBuffer buf(128);
@@ -368,7 +368,7 @@ static Sequence< OUString > lookupKeys(
                         }
                         break;
                     }
-                    keySupplier = Reference< XKeysSupplier > ( set, UNO_QUERY );
+                    keySupplier.set( set, UNO_QUERY );
                 }
             }
         }
@@ -757,7 +757,7 @@ Reference< XResultSet > getGeneratedValuesFromLastInsert(
             buf.append( "SELECT * FROM " );
             bufferQuoteQualifiedIdentifier(buf, schemaName, tableName, pConnectionSettings );
             buf.append( " WHERE " );
-            bool additionalCondition = false;
+            bool bAdditionalCondition = false;
             String2StringMap autoValues;
             for( int i = 0 ; i < keyColumnNames.getLength() ; i ++ )
             {
@@ -813,12 +813,12 @@ Reference< XResultSet > getGeneratedValuesFromLastInsert(
                     }
                 }
 
-                if( additionalCondition )
+                if( bAdditionalCondition )
                     buf.append( " AND " );
                 bufferQuoteIdentifier( buf, keyColumnNames[i], pConnectionSettings );
                 buf.append( " = " );
                 buf.append( value );
-                additionalCondition = true;
+                bAdditionalCondition = true;
             }
             query = buf.makeStringAndClear();
         }
@@ -854,7 +854,7 @@ sal_Bool Statement::execute( const OUString& sql )
     data.pLastTableInserted = &m_lastTableInserted;
     data.pLastResultset = &m_lastResultset;
     data.owner = *this;
-    data.tableSupplier = Reference< com::sun::star::sdbcx::XTablesSupplier >( m_connection, UNO_QUERY );
+    data.tableSupplier.set( m_connection, UNO_QUERY );
     data.concurrency =
         extractIntProperty( this, getStatics().RESULT_SET_CONCURRENCY );
     return executePostgresCommand( cmd , &data );

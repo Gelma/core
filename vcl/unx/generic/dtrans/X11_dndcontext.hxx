@@ -34,60 +34,54 @@ namespace x11 {
     class SelectionManager;
 
     class DropTargetDropContext :
-        public ::cppu::WeakImplHelper<
-    ::com::sun::star::datatransfer::dnd::XDropTargetDropContext
-    >
+        public ::cppu::WeakImplHelper<css::datatransfer::dnd::XDropTargetDropContext>
     {
         ::Window                    m_aDropWindow;
         Time                        m_nTimestamp;
         SelectionManager&           m_rManager;
-        com::sun::star::uno::Reference< XInterface >     m_xManagerRef;
+        css::uno::Reference< XInterface >     m_xManagerRef;
     public:
         DropTargetDropContext( ::Window, Time, SelectionManager& );
         virtual ~DropTargetDropContext();
 
         // XDropTargetDropContext
-        virtual void SAL_CALL acceptDrop( sal_Int8 dragOperation ) throw(std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL rejectDrop() throw(std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL dropComplete( sal_Bool success ) throw(std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL acceptDrop( sal_Int8 dragOperation ) throw(std::exception) override;
+        virtual void SAL_CALL rejectDrop() throw(std::exception) override;
+        virtual void SAL_CALL dropComplete( sal_Bool success ) throw(std::exception) override;
     };
 
     class DropTargetDragContext :
-        public ::cppu::WeakImplHelper<
-    ::com::sun::star::datatransfer::dnd::XDropTargetDragContext
-    >
+        public ::cppu::WeakImplHelper<css::datatransfer::dnd::XDropTargetDragContext>
     {
         ::Window                    m_aDropWindow;
         Time                        m_nTimestamp;
         SelectionManager&           m_rManager;
-        com::sun::star::uno::Reference< XInterface >     m_xManagerRef;
+        css::uno::Reference< XInterface >     m_xManagerRef;
     public:
         DropTargetDragContext( ::Window, Time, SelectionManager& );
         virtual ~DropTargetDragContext();
 
         // XDropTargetDragContext
-        virtual void SAL_CALL acceptDrag( sal_Int8 dragOperation ) throw(std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL rejectDrag() throw(std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL acceptDrag( sal_Int8 dragOperation ) throw(std::exception) override;
+        virtual void SAL_CALL rejectDrag() throw(std::exception) override;
     };
 
     class DragSourceContext :
-        public ::cppu::WeakImplHelper<
-    ::com::sun::star::datatransfer::dnd::XDragSourceContext
-    >
+        public ::cppu::WeakImplHelper<css::datatransfer::dnd::XDragSourceContext>
     {
         ::Window                    m_aDropWindow;
         Time                        m_nTimestamp;
         SelectionManager&           m_rManager;
-        com::sun::star::uno::Reference< XInterface >     m_xManagerRef;
+        css::uno::Reference< XInterface >     m_xManagerRef;
     public:
         DragSourceContext( ::Window, Time, SelectionManager& );
         virtual ~DragSourceContext();
 
         // XDragSourceContext
-        virtual sal_Int32   SAL_CALL getCurrentCursor() throw(std::exception) SAL_OVERRIDE;
-        virtual void        SAL_CALL setCursor( sal_Int32 cursorId ) throw(std::exception) SAL_OVERRIDE;
-        virtual void        SAL_CALL setImage( sal_Int32 imageId ) throw(std::exception) SAL_OVERRIDE;
-        virtual void        SAL_CALL transferablesFlavorsChanged() throw(std::exception) SAL_OVERRIDE;
+        virtual sal_Int32   SAL_CALL getCurrentCursor() throw(std::exception) override;
+        virtual void        SAL_CALL setCursor( sal_Int32 cursorId ) throw(std::exception) override;
+        virtual void        SAL_CALL setImage( sal_Int32 imageId ) throw(std::exception) override;
+        virtual void        SAL_CALL transferablesFlavorsChanged() throw(std::exception) override;
     };
 } // namespace
 

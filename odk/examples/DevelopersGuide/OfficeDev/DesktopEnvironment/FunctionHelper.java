@@ -539,7 +539,7 @@ public class FunctionHelper
                 com.sun.star.frame.FrameSearchFlag.CHILDREN,
                 lProperties);
 
-            // don't forget to restore old frame name ...
+            // don't forget to restore old frame name...
             xFrame.setName(sOldName);
         }
         catch(com.sun.star.io.IOException exIO)

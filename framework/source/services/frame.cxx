@@ -144,7 +144,7 @@ class Frame :   // interfaces
 {
 public:
 
-             Frame( const css::uno::Reference< css::uno::XComponentContext >& xContext );
+    explicit Frame(const css::uno::Reference< css::uno::XComponentContext >& xContext);
     virtual ~Frame();
 
     /// Initialization function after having acquire()'d.
@@ -154,22 +154,21 @@ public:
     FWK_DECLARE_XTYPEPROVIDER
 
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return OUString("com.sun.star.comp.framework.Frame");
     }
 
     virtual sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return cppu::supportsService(this, ServiceName);
     }
 
     virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
-        css::uno::Sequence< OUString > aSeq(1);
-        aSeq[0] = "com.sun.star.frame.Frame";
+        css::uno::Sequence< OUString > aSeq { "com.sun.star.frame.Frame" };
         return aSeq;
     }
 
@@ -182,130 +181,130 @@ public:
             const css::uno::Sequence< css::beans::PropertyValue >& lArguments )
         throw( css::io::IOException,
                css::lang::IllegalArgumentException,
-               css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+               css::uno::RuntimeException, std::exception ) override;
 
     //  XFramesSupplier
 
-    virtual css::uno::Reference< css::frame::XFrames >          SAL_CALL getFrames                          (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::frame::XFrame >           SAL_CALL getActiveFrame                     (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL setActiveFrame                     (   const   css::uno::Reference< css::frame::XFrame >&                          xFrame              ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual css::uno::Reference< css::frame::XFrames >          SAL_CALL getFrames                          (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual css::uno::Reference< css::frame::XFrame >           SAL_CALL getActiveFrame                     (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL setActiveFrame                     (   const   css::uno::Reference< css::frame::XFrame >&                          xFrame              ) throw( css::uno::RuntimeException, std::exception ) override;
 
     //  XFrame
 
-    virtual void                                                SAL_CALL initialize                         (   const   css::uno::Reference< css::awt::XWindow >&                           xWindow             ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::awt::XWindow >            SAL_CALL getContainerWindow                 (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL setCreator                         (   const   css::uno::Reference< css::frame::XFramesSupplier >&                 xCreator            ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::frame::XFramesSupplier >  SAL_CALL getCreator                         (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual OUString                                     SAL_CALL getName                            (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL setName                            (   const   OUString&                                                    sName               ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void                                                SAL_CALL initialize                         (   const   css::uno::Reference< css::awt::XWindow >&                           xWindow             ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual css::uno::Reference< css::awt::XWindow >            SAL_CALL getContainerWindow                 (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL setCreator                         (   const   css::uno::Reference< css::frame::XFramesSupplier >&                 xCreator            ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual css::uno::Reference< css::frame::XFramesSupplier >  SAL_CALL getCreator                         (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual OUString                                     SAL_CALL getName                            (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL setName                            (   const   OUString&                                                    sName               ) throw( css::uno::RuntimeException, std::exception ) override;
     virtual css::uno::Reference< css::frame::XFrame >           SAL_CALL findFrame                          (   const   OUString&                                                    sTargetFrameName    ,
-                                                                                                                        sal_Int32                                                           nSearchFlags        ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual sal_Bool                                            SAL_CALL isTop                              (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL activate                           (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL deactivate                         (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual sal_Bool                                            SAL_CALL isActive                           (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL contextChanged                     (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                                                                                                                        sal_Int32                                                           nSearchFlags        ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual sal_Bool                                            SAL_CALL isTop                              (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL activate                           (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL deactivate                         (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual sal_Bool                                            SAL_CALL isActive                           (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL contextChanged                     (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) override;
     virtual sal_Bool                                            SAL_CALL setComponent                       (   const   css::uno::Reference< css::awt::XWindow >&                           xComponentWindow    ,
-                                                                                                                const   css::uno::Reference< css::frame::XController >&                     xController         ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::awt::XWindow >            SAL_CALL getComponentWindow                 (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual css::uno::Reference< css::frame::XController >      SAL_CALL getController                      (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL addFrameActionListener             (   const   css::uno::Reference< css::frame::XFrameActionListener >&            xListener           ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL removeFrameActionListener          (   const   css::uno::Reference< css::frame::XFrameActionListener >&            xListener           ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                                                                                                                const   css::uno::Reference< css::frame::XController >&                     xController         ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual css::uno::Reference< css::awt::XWindow >            SAL_CALL getComponentWindow                 (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual css::uno::Reference< css::frame::XController >      SAL_CALL getController                      (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL addFrameActionListener             (   const   css::uno::Reference< css::frame::XFrameActionListener >&            xListener           ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL removeFrameActionListener          (   const   css::uno::Reference< css::frame::XFrameActionListener >&            xListener           ) throw( css::uno::RuntimeException, std::exception ) override;
 
     //  XComponent
 
-    virtual void                                                SAL_CALL dispose                            (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL addEventListener                   (   const   css::uno::Reference< css::lang::XEventListener >&                   xListener           ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL removeEventListener                (   const   css::uno::Reference< css::lang::XEventListener >&                   xListener           ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void                                                SAL_CALL dispose                            (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL addEventListener                   (   const   css::uno::Reference< css::lang::XEventListener >&                   xListener           ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL removeEventListener                (   const   css::uno::Reference< css::lang::XEventListener >&                   xListener           ) throw( css::uno::RuntimeException, std::exception ) override;
 
     //  XStatusIndicatorFactory
 
-    virtual css::uno::Reference< css::task::XStatusIndicator >  SAL_CALL createStatusIndicator              (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual css::uno::Reference< css::task::XStatusIndicator >  SAL_CALL createStatusIndicator              (                                                                                                   ) throw( css::uno::RuntimeException, std::exception ) override;
 
     //  XDispatchProvider
 
     virtual css::uno::Reference< css::frame::XDispatch >        SAL_CALL queryDispatch                      (   const   css::util::URL&                                                     aURL                ,
                                                                                                                 const   OUString&                                                    sTargetFrameName    ,
-                                                                                                                        sal_Int32                                                           nSearchFlags        ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                                                                                                                        sal_Int32                                                           nSearchFlags        ) throw( css::uno::RuntimeException, std::exception ) override;
     virtual css::uno::Sequence<
-                css::uno::Reference< css::frame::XDispatch > >  SAL_CALL queryDispatches                    (   const   css::uno::Sequence< css::frame::DispatchDescriptor >&               lDescriptor         ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                css::uno::Reference< css::frame::XDispatch > >  SAL_CALL queryDispatches                    (   const   css::uno::Sequence< css::frame::DispatchDescriptor >&               lDescriptor         ) throw( css::uno::RuntimeException, std::exception ) override;
 
     //  XDispatchProviderInterception
 
-    virtual void                                                SAL_CALL registerDispatchProviderInterceptor(   const   css::uno::Reference< css::frame::XDispatchProviderInterceptor >&    xInterceptor        ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL releaseDispatchProviderInterceptor (   const   css::uno::Reference< css::frame::XDispatchProviderInterceptor >&    xInterceptor        ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void                                                SAL_CALL registerDispatchProviderInterceptor(   const   css::uno::Reference< css::frame::XDispatchProviderInterceptor >&    xInterceptor        ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL releaseDispatchProviderInterceptor (   const   css::uno::Reference< css::frame::XDispatchProviderInterceptor >&    xInterceptor        ) throw( css::uno::RuntimeException, std::exception ) override;
 
     //  XDispatchInformationProvider
 
-    virtual css::uno::Sequence< sal_Int16 >                       SAL_CALL getSupportedCommandGroups         (                       ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual css::uno::Sequence< css::frame::DispatchInformation > SAL_CALL getConfigurableDispatchInformation(sal_Int16 nCommandGroup) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Sequence< sal_Int16 >                       SAL_CALL getSupportedCommandGroups         (                       ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< css::frame::DispatchInformation > SAL_CALL getConfigurableDispatchInformation(sal_Int16 nCommandGroup) throw (css::uno::RuntimeException, std::exception) override;
 
     //  XWindowListener
     //  Attention: windowResized() and windowShown() are implement only! All other are empty!
 
-    virtual void                                                SAL_CALL windowResized                      (   const   css::awt::WindowEvent&                                              aEvent              ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL windowMoved                        (   const   css::awt::WindowEvent&                                              /*aEvent*/          ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE {};
-    virtual void                                                SAL_CALL windowShown                        (   const   css::lang::EventObject&                                             aEvent              ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL windowHidden                       (   const   css::lang::EventObject&                                             aEvent              ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void                                                SAL_CALL windowResized                      (   const   css::awt::WindowEvent&                                              aEvent              ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL windowMoved                        (   const   css::awt::WindowEvent&                                              /*aEvent*/          ) throw( css::uno::RuntimeException, std::exception ) override {};
+    virtual void                                                SAL_CALL windowShown                        (   const   css::lang::EventObject&                                             aEvent              ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL windowHidden                       (   const   css::lang::EventObject&                                             aEvent              ) throw( css::uno::RuntimeException, std::exception ) override;
 
     //  XFocusListener
     //  Attention: focusLost() not implemented yet!
 
-    virtual void                                                SAL_CALL focusGained                        (   const   css::awt::FocusEvent&                                               aEvent              ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL focusLost                          (   const   css::awt::FocusEvent&                                               /*aEvent*/          ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE {};
+    virtual void                                                SAL_CALL focusGained                        (   const   css::awt::FocusEvent&                                               aEvent              ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL focusLost                          (   const   css::awt::FocusEvent&                                               /*aEvent*/          ) throw( css::uno::RuntimeException, std::exception ) override {};
 
     //  XTopWindowListener
     //  Attention: windowActivated(), windowDeactivated() and windowClosing() are implement only! All other are empty!
 
-    virtual void                                                SAL_CALL windowActivated                    (   const   css::lang::EventObject&                                             aEvent              ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL windowDeactivated                  (   const   css::lang::EventObject&                                             aEvent              ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL windowOpened                       (   const   css::lang::EventObject&                                             /*aEvent*/          ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE {};
-    virtual void                                                SAL_CALL windowClosing                      (   const   css::lang::EventObject&                                             aEvent              ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void                                                SAL_CALL windowClosed                       (   const   css::lang::EventObject&                                             /*aEvent*/          ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE {};
-    virtual void                                                SAL_CALL windowMinimized                    (   const   css::lang::EventObject&                                             /*aEvent*/          ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE {};
-    virtual void                                                SAL_CALL windowNormalized                   (   const   css::lang::EventObject&                                             /*aEvent*/          ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE {};
+    virtual void                                                SAL_CALL windowActivated                    (   const   css::lang::EventObject&                                             aEvent              ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL windowDeactivated                  (   const   css::lang::EventObject&                                             aEvent              ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL windowOpened                       (   const   css::lang::EventObject&                                             /*aEvent*/          ) throw( css::uno::RuntimeException, std::exception ) override {};
+    virtual void                                                SAL_CALL windowClosing                      (   const   css::lang::EventObject&                                             aEvent              ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void                                                SAL_CALL windowClosed                       (   const   css::lang::EventObject&                                             /*aEvent*/          ) throw( css::uno::RuntimeException, std::exception ) override {};
+    virtual void                                                SAL_CALL windowMinimized                    (   const   css::lang::EventObject&                                             /*aEvent*/          ) throw( css::uno::RuntimeException, std::exception ) override {};
+    virtual void                                                SAL_CALL windowNormalized                   (   const   css::lang::EventObject&                                             /*aEvent*/          ) throw( css::uno::RuntimeException, std::exception ) override {};
 
     //  XEventListener
 
-    virtual void                                                SAL_CALL disposing                          (   const   css::lang::EventObject&                                             aEvent              ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void                                                SAL_CALL disposing                          (   const   css::lang::EventObject&                                             aEvent              ) throw( css::uno::RuntimeException, std::exception ) override;
 
     //  XActionLockable
 
-    virtual sal_Bool    SAL_CALL isActionLocked  (                 ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void        SAL_CALL addActionLock   (                 ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void        SAL_CALL removeActionLock(                 ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void        SAL_CALL setActionLocks  ( sal_Int16 nLock ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual sal_Int16   SAL_CALL resetActionLocks(                 ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual sal_Bool    SAL_CALL isActionLocked  (                 ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void        SAL_CALL addActionLock   (                 ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void        SAL_CALL removeActionLock(                 ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual void        SAL_CALL setActionLocks  ( sal_Int16 nLock ) throw( css::uno::RuntimeException, std::exception ) override;
+    virtual sal_Int16   SAL_CALL resetActionLocks(                 ) throw( css::uno::RuntimeException, std::exception ) override;
 
     //  XCloseable
 
     virtual void SAL_CALL close( sal_Bool bDeliverOwnership ) throw( css::util::CloseVetoException,
-                                                                     css::uno::RuntimeException, std::exception   ) SAL_OVERRIDE;
+                                                                     css::uno::RuntimeException, std::exception   ) override;
 
     //  XCloseBroadcaster
 
-    virtual void SAL_CALL addCloseListener   ( const css::uno::Reference< css::util::XCloseListener >& xListener ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL removeCloseListener( const css::uno::Reference< css::util::XCloseListener >& xListener ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL addCloseListener   ( const css::uno::Reference< css::util::XCloseListener >& xListener ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL removeCloseListener( const css::uno::Reference< css::util::XCloseListener >& xListener ) throw (css::uno::RuntimeException, std::exception) override;
 
     //  XTitle
 
-    virtual OUString SAL_CALL getTitle(                               ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void            SAL_CALL setTitle( const OUString& sTitle ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getTitle(                               ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void            SAL_CALL setTitle( const OUString& sTitle ) throw (css::uno::RuntimeException, std::exception) override;
 
     //  XTitleChangeBroadcaster
 
-    virtual void SAL_CALL addTitleChangeListener   ( const css::uno::Reference< css::frame::XTitleChangeListener >& xListener) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL removeTitleChangeListener( const css::uno::Reference< css::frame::XTitleChangeListener >& xListenr ) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL addTitleChangeListener   ( const css::uno::Reference< css::frame::XTitleChangeListener >& xListener) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL removeTitleChangeListener( const css::uno::Reference< css::frame::XTitleChangeListener >& xListenr ) throw (css::uno::RuntimeException, std::exception) override;
 
     //  XFrame2 attributes
 
-    virtual css::uno::Reference<css::container::XNameContainer> SAL_CALL getUserDefinedAttributes() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Reference<css::container::XNameContainer> SAL_CALL getUserDefinedAttributes() throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual css::uno::Reference<css::frame::XDispatchRecorderSupplier> SAL_CALL getDispatchRecorderSupplier() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setDispatchRecorderSupplier(const css::uno::Reference<css::frame::XDispatchRecorderSupplier>&) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Reference<css::frame::XDispatchRecorderSupplier> SAL_CALL getDispatchRecorderSupplier() throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setDispatchRecorderSupplier(const css::uno::Reference<css::frame::XDispatchRecorderSupplier>&) throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual css::uno::Reference<css::uno::XInterface> SAL_CALL getLayoutManager() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setLayoutManager(const css::uno::Reference<css::uno::XInterface>&) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Reference<css::uno::XInterface> SAL_CALL getLayoutManager() throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setLayoutManager(const css::uno::Reference<css::uno::XInterface>&) throw (css::uno::RuntimeException, std::exception) override;
 
     //  PropertySetHelper => XPropertySet, XPropertySetInfo
 
@@ -315,10 +314,10 @@ private:
 
     virtual void SAL_CALL impl_setPropertyValue(const OUString& sProperty,
                                                       sal_Int32        nHandle  ,
-                                                const css::uno::Any&   aValue   ) SAL_OVERRIDE;
+                                                const css::uno::Any&   aValue   ) override;
 
     virtual css::uno::Any SAL_CALL impl_getPropertyValue(const OUString& sProperty,
-                                                               sal_Int32        nHandle  ) SAL_OVERRIDE;
+                                                               sal_Int32        nHandle  ) override;
 
 
 private:
@@ -403,7 +402,6 @@ private:
     SvtCommandOptions                                                       m_aCommandOptions;           /// ref counted class to support disabling commands defined by configuration file
     bool                                                                    m_bSelfClose;                /// in case of CloseVetoException on method close() was thrown by ourself - we must close ourself later if no internal processes are running
     bool                                                                    m_bIsHidden;                 /// indicates, if this frame is used in hidden mode or not
-    static css::uno::WeakReference< css::frame::XFrame2 >                   m_xCloserFrame;              /// holds the only frame, which must show the special closer menu item (can be NULL!)
     css::uno::Reference< css::frame::XLayoutManager2 >                      m_xLayoutManager;            /// is used to layout the child windows of the frame.
     css::uno::Reference< css::frame::XDispatchInformationProvider >         m_xDispatchInfoHelper;
     css::uno::Reference< css::frame::XTitle >                               m_xTitleHelper;
@@ -414,8 +412,6 @@ protected:
 
     FrameContainer                                                          m_aChildFrameContainer;   /// array of child frames
 };
-
-css::uno::WeakReference< css::frame::XFrame2 > Frame::m_xCloserFrame;
 
 //  XInterface, XTypeProvider, XServiceInfo
 
@@ -508,7 +504,7 @@ Frame::Frame( const css::uno::Reference< css::uno::XComponentContext >& xContext
         ,   m_bSelfClose                ( false                                         ) // Important!
         ,   m_bIsHidden                 ( true                                          )
         ,   m_xTitleHelper              (                                                   )
-        ,   m_pWindowCommandDispatch    ( 0                                                 )
+        ,   m_pWindowCommandDispatch    ( nullptr                                                 )
         ,   m_aChildFrameContainer      (                                                   )
 {
 }
@@ -524,26 +520,26 @@ void Frame::initListeners()
     css::uno::Reference< css::frame::XDispatchProvider > xDispatchProvider( static_cast< ::cppu::OWeakObject* >(pDispatchHelper), css::uno::UNO_QUERY );
 
     DispatchInformationProvider* pInfoHelper = new DispatchInformationProvider(m_xContext, this);
-    m_xDispatchInfoHelper = css::uno::Reference< css::frame::XDispatchInformationProvider >( static_cast< ::cppu::OWeakObject* >(pInfoHelper), css::uno::UNO_QUERY );
+    m_xDispatchInfoHelper.set( static_cast< ::cppu::OWeakObject* >(pInfoHelper), css::uno::UNO_QUERY );
 
     // Initialize a new interception helper object to handle dispatches and implement an interceptor mechanism.
     // Set created dispatch provider as slowest slave of it.
     // Hold interception helper by reference only - not by pointer!
     // So it's easier to destroy it.
     InterceptionHelper* pInterceptionHelper = new InterceptionHelper( this, xDispatchProvider );
-    m_xDispatchHelper = css::uno::Reference< css::frame::XDispatchProvider >( static_cast< ::cppu::OWeakObject* >(pInterceptionHelper), css::uno::UNO_QUERY );
+    m_xDispatchHelper.set( static_cast< ::cppu::OWeakObject* >(pInterceptionHelper), css::uno::UNO_QUERY );
 
     // Initialize a new XFrames-helper-object to handle XIndexAccess and XElementAccess.
     // We hold member as reference ... not as pointer too!
     // Attention: We share our frame container with this helper. Container is threadsafe himself ... So I think we can do that.
     // But look on dispose() for right order of deinitialization.
     OFrames* pFramesHelper = new OFrames( this, &m_aChildFrameContainer );
-    m_xFramesHelper = css::uno::Reference< css::frame::XFrames >( static_cast< ::cppu::OWeakObject* >(pFramesHelper), css::uno::UNO_QUERY );
+    m_xFramesHelper.set( static_cast< ::cppu::OWeakObject* >(pFramesHelper), css::uno::UNO_QUERY );
 
     // Initialize a the drop target listener.
     // We hold member as reference ... not as pointer too!
     OpenFileDropTargetListener* pDropListener = new OpenFileDropTargetListener( m_xContext, this );
-    m_xDropTargetListener = css::uno::Reference< css::datatransfer::dnd::XDropTargetListener >( static_cast< ::cppu::OWeakObject* >(pDropListener), css::uno::UNO_QUERY );
+    m_xDropTargetListener.set( static_cast< ::cppu::OWeakObject* >(pDropListener), css::uno::UNO_QUERY );
 
     // Safe impossible cases
     // We can't work without these helpers!
@@ -853,7 +849,7 @@ void SAL_CALL Frame::initialize( const css::uno::Reference< css::awt::XWindow >&
 
     // Initialize title functionality
     TitleHelper* pTitleHelper = new TitleHelper( xContext );
-    m_xTitleHelper = css::uno::Reference< css::frame::XTitle >(static_cast< ::cppu::OWeakObject* >(pTitleHelper), css::uno::UNO_QUERY_THROW);
+    m_xTitleHelper.set(static_cast< ::cppu::OWeakObject* >(pTitleHelper), css::uno::UNO_QUERY_THROW);
     pTitleHelper->setOwner(xThis);
 }
 
@@ -1006,7 +1002,7 @@ css::uno::Reference< css::frame::XFrame > SAL_CALL Frame::findFrame( const OUStr
         (sTargetFrameName==SPECIALTARGET_MENUBAR  )         // valid for dispatches - not for findFrame()!
        )
     {
-        return NULL;
+        return nullptr;
     }
 
     // I) check for special defined targets first which must be handled exclusive.
@@ -1535,7 +1531,7 @@ sal_Bool SAL_CALL Frame::setComponent(  const   css::uno::Reference< css::awt::X
         // We hold it alive for next calls by using xOldController!
         /* SAFE {*/
         SolarMutexClearableGuard aWriteLock;
-        m_xController = NULL;
+        m_xController = nullptr;
         aWriteLock.clear();
         /* } SAFE */
 
@@ -1549,7 +1545,7 @@ sal_Bool SAL_CALL Frame::setComponent(  const   css::uno::Reference< css::awt::X
             catch(const css::lang::DisposedException&)
                 {}
         }
-        xOldController = NULL;
+        xOldController = nullptr;
     }
 
     // Now it's time to release the component window.
@@ -1564,7 +1560,7 @@ sal_Bool SAL_CALL Frame::setComponent(  const   css::uno::Reference< css::awt::X
     {
         /* SAFE { */
         SolarMutexClearableGuard aWriteLock;
-        m_xComponentWindow = NULL;
+        m_xComponentWindow = nullptr;
         aWriteLock.clear();
         /* } SAFE */
 
@@ -1579,7 +1575,7 @@ sal_Bool SAL_CALL Frame::setComponent(  const   css::uno::Reference< css::awt::X
             {
             }
         }
-        xOldComponentWindow = NULL;
+        xOldComponentWindow = nullptr;
     }
 
     // Now it's time to set the new component ...
@@ -1733,79 +1729,80 @@ void SAL_CALL Frame::removeFrameActionListener( const css::uno::Reference< css::
 void SAL_CALL Frame::close( sal_Bool bDeliverOwnership ) throw( css::util::CloseVetoException,
                                                                 css::uno::RuntimeException, std::exception   )
 {
-    TransactionGuard aTransaction( m_aTransactionManager, E_HARDEXCEPTIONS );
-
-    // At the end of this method may we must dispose ourself...
-    // and may nobody from outside hold a reference to us...
-    // then it's a good idea to do that by ourself.
-    css::uno::Reference< css::uno::XInterface > xSelfHold( static_cast< ::cppu::OWeakObject* >(this) );
-
-    // Check any close listener before we look for currently running internal processes.
-    // Because if a listener disagree with this close() request - we have time to finish this
-    // internal operations too...
-    // Note: container is threadsafe himself.
-    css::lang::EventObject             aSource    (static_cast< ::cppu::OWeakObject*>(this));
-    ::cppu::OInterfaceContainerHelper* pContainer = m_aListenerContainer.getContainer( cppu::UnoType<css::util::XCloseListener>::get());
-    if (pContainer!=NULL)
     {
-        ::cppu::OInterfaceIteratorHelper pIterator(*pContainer);
-        while (pIterator.hasMoreElements())
+        TransactionGuard aTransaction( m_aTransactionManager, E_HARDEXCEPTIONS );
+
+        // At the end of this method may we must dispose ourself...
+        // and may nobody from outside hold a reference to us...
+        // then it's a good idea to do that by ourself.
+        css::uno::Reference< css::uno::XInterface > xSelfHold( static_cast< ::cppu::OWeakObject* >(this) );
+
+        // Check any close listener before we look for currently running internal processes.
+        // Because if a listener disagree with this close() request - we have time to finish this
+        // internal operations too...
+        // Note: container is threadsafe himself.
+        css::lang::EventObject             aSource    (static_cast< ::cppu::OWeakObject*>(this));
+        ::cppu::OInterfaceContainerHelper* pContainer = m_aListenerContainer.getContainer( cppu::UnoType<css::util::XCloseListener>::get());
+        if (pContainer!=nullptr)
         {
-            try
+            ::cppu::OInterfaceIteratorHelper pIterator(*pContainer);
+            while (pIterator.hasMoreElements())
             {
-                static_cast<css::util::XCloseListener*>(pIterator.next())->queryClosing( aSource, bDeliverOwnership );
-            }
-            catch( const css::uno::RuntimeException& )
-            {
-                pIterator.remove();
+                try
+                {
+                    static_cast<css::util::XCloseListener*>(pIterator.next())->queryClosing( aSource, bDeliverOwnership );
+                }
+                catch( const css::uno::RuntimeException& )
+                {
+                    pIterator.remove();
+                }
             }
         }
-    }
 
-    // Ok - no listener disagreed with this close() request
-    // check if this frame is used for any load process currently
-    if (isActionLocked())
-    {
-        if (bDeliverOwnership)
+        // Ok - no listener disagreed with this close() request
+        // check if this frame is used for any load process currently
+        if (isActionLocked())
         {
-            SolarMutexGuard g;
-            m_bSelfClose = true;
+            if (bDeliverOwnership)
+            {
+                SolarMutexGuard g;
+                m_bSelfClose = true;
+            }
+
+            throw css::util::CloseVetoException("Frame in use for loading document ...",static_cast< ::cppu::OWeakObject*>(this));
         }
 
-        throw css::util::CloseVetoException("Frame in use for loading document ...",static_cast< ::cppu::OWeakObject*>(this));
-    }
+        if ( ! setComponent(nullptr,nullptr) )
+            throw css::util::CloseVetoException("Component couldn't be deattached ...",static_cast< ::cppu::OWeakObject*>(this));
 
-    if ( ! setComponent(NULL,NULL) )
-        throw css::util::CloseVetoException("Component couldn't be deattached ...",static_cast< ::cppu::OWeakObject*>(this));
-
-    // If closing is allowed... inform all listeners and dispose this frame!
-    pContainer = m_aListenerContainer.getContainer( cppu::UnoType<css::util::XCloseListener>::get());
-    if (pContainer!=NULL)
-    {
-        ::cppu::OInterfaceIteratorHelper pIterator(*pContainer);
-        while (pIterator.hasMoreElements())
+        // If closing is allowed... inform all listeners and dispose this frame!
+        pContainer = m_aListenerContainer.getContainer( cppu::UnoType<css::util::XCloseListener>::get());
+        if (pContainer!=nullptr)
         {
-            try
+            ::cppu::OInterfaceIteratorHelper pIterator(*pContainer);
+            while (pIterator.hasMoreElements())
             {
-                static_cast<css::util::XCloseListener*>(pIterator.next())->notifyClosing( aSource );
-            }
-            catch( const css::uno::RuntimeException& )
-            {
-                pIterator.remove();
+                try
+                {
+                    static_cast<css::util::XCloseListener*>(pIterator.next())->notifyClosing( aSource );
+                }
+                catch( const css::uno::RuntimeException& )
+                {
+                    pIterator.remove();
+                }
             }
         }
+
+        /* SAFE { */
+        SolarMutexClearableGuard aWriteLock;
+        m_bIsHidden = true;
+        aWriteLock.clear();
+        /* } SAFE */
+        impl_checkMenuCloser();
+
+        // Attention: We must release our own registered transaction here. Otherwhise following dispose() call
+        // wait for us too ....
     }
-
-    /* SAFE { */
-    SolarMutexClearableGuard aWriteLock;
-    m_bIsHidden = true;
-    aWriteLock.clear();
-    /* } SAFE */
-    impl_checkMenuCloser();
-
-    // Attention: We must release our own registered transaction here. Otherwhise following dispose() call
-    // wait for us too ....
-    aTransaction.stop();
     dispose();
 }
 
@@ -1900,7 +1897,7 @@ void SAL_CALL Frame::removeTitleChangeListener( const css::uno::Reference< css::
 css::uno::Reference<css::container::XNameContainer> SAL_CALL Frame::getUserDefinedAttributes() throw (css::uno::RuntimeException, std::exception)
 {
     // optional attribute
-    return 0;
+    return nullptr;
 }
 
 css::uno::Reference<css::frame::XDispatchRecorderSupplier> SAL_CALL Frame::getDispatchRecorderSupplier() throw (css::uno::RuntimeException, std::exception)
@@ -2038,7 +2035,7 @@ void SAL_CALL Frame::dispose() throw( css::uno::RuntimeException, std::exception
     if( m_xParent.is() )
     {
         m_xParent->getFrames()->remove( xThis );
-        m_xParent = css::uno::Reference< css::frame::XFramesSupplier >();
+        m_xParent.clear();
     }
 
     /* } SAFE */
@@ -2468,7 +2465,7 @@ void SAL_CALL Frame::windowClosing( const css::lang::EventObject& ) throw( css::
     if (xCloser.is())
         xCloser->dispatch(aURL, css::uno::Sequence< css::beans::PropertyValue >());
 
-    // Attention: If this dispatch works synchronous ... and full fill its job ...
+    // Attention: If this dispatch works synchronous ... and fulfill its job ...
     // this line of code will never be reached ...
     // Or if it will be reached it will be for sure that all your member are gone .-)
 }
@@ -2565,7 +2562,7 @@ void SAL_CALL Frame::disposing( const css::lang::EventObject& aEvent ) throw( cs
         aWriteLock.clear();
         implts_stopWindowListening();
         aWriteLock.reset();
-        m_xContainerWindow = css::uno::Reference< css::awt::XWindow >();
+        m_xContainerWindow.clear();
     }
 }
 
@@ -2647,35 +2644,35 @@ void Frame::impl_initializePropInfo()
 
     impl_addPropertyInfo(
         css::beans::Property(
-            FRAME_PROPNAME_DISPATCHRECORDERSUPPLIER,
+            FRAME_PROPNAME_ASCII_DISPATCHRECORDERSUPPLIER,
             FRAME_PROPHANDLE_DISPATCHRECORDERSUPPLIER,
             cppu::UnoType<css::frame::XDispatchRecorderSupplier>::get(),
             css::beans::PropertyAttribute::TRANSIENT));
 
     impl_addPropertyInfo(
         css::beans::Property(
-            FRAME_PROPNAME_INDICATORINTERCEPTION,
+            FRAME_PROPNAME_ASCII_INDICATORINTERCEPTION,
             FRAME_PROPHANDLE_INDICATORINTERCEPTION,
             cppu::UnoType<css::task::XStatusIndicator>::get(),
             css::beans::PropertyAttribute::TRANSIENT));
 
     impl_addPropertyInfo(
         css::beans::Property(
-            FRAME_PROPNAME_ISHIDDEN,
+            FRAME_PROPNAME_ASCII_ISHIDDEN,
             FRAME_PROPHANDLE_ISHIDDEN,
             cppu::UnoType<bool>::get(),
             css::beans::PropertyAttribute::TRANSIENT | css::beans::PropertyAttribute::READONLY));
 
     impl_addPropertyInfo(
         css::beans::Property(
-            FRAME_PROPNAME_LAYOUTMANAGER,
+            FRAME_PROPNAME_ASCII_LAYOUTMANAGER,
             FRAME_PROPHANDLE_LAYOUTMANAGER,
-            cppu::UnoType<com::sun::star::frame::XLayoutManager>::get(),
+            cppu::UnoType<css::frame::XLayoutManager>::get(),
             css::beans::PropertyAttribute::TRANSIENT));
 
     impl_addPropertyInfo(
         css::beans::Property(
-            FRAME_PROPNAME_TITLE,
+            FRAME_PROPNAME_ASCII_TITLE,
             FRAME_PROPHANDLE_TITLE,
             cppu::UnoType<OUString>::get(),
             css::beans::PropertyAttribute::TRANSIENT));
@@ -2801,7 +2798,7 @@ void Frame::impl_disposeContainerWindow( css::uno::Reference< css::awt::XWindow 
         // All VclComponents are XComponents; so call dispose before discarding
         // a css::uno::Reference< XVclComponent >, because this frame is the owner of the window
         xWindow->dispose();
-        xWindow = css::uno::Reference< css::awt::XWindow >();
+        xWindow.clear();
     }
 }
 
@@ -2838,7 +2835,7 @@ void Frame::implts_sendFrameActionEvent( const css::frame::FrameAction& aAction 
     // ( OInterfaceContainerHelper is synchronized with m_aListenerContainer! )
     ::cppu::OInterfaceContainerHelper* pContainer = m_aListenerContainer.getContainer( cppu::UnoType<css::frame::XFrameActionListener>::get());
 
-    if( pContainer != NULL )
+    if( pContainer != nullptr )
     {
         // Build action event.
         css::frame::FrameActionEvent aFrameActionEvent( static_cast< ::cppu::OWeakObject* >(this), this, aAction );
@@ -2964,7 +2961,7 @@ void Frame::implts_setIconOnWindow()
             SolarMutexGuard aSolarGuard;
             vcl::Window* pWindow = (VCLUnoHelper::GetWindow( xContainerWindow ));
             if(
-                ( pWindow            != NULL              ) &&
+                ( pWindow            != nullptr              ) &&
                 ( pWindow->GetType() == WINDOW_WORKWINDOW )
                 )
             {
@@ -3124,7 +3121,7 @@ void Frame::impl_setCloser( /*IN*/ const css::uno::Reference< css::frame::XFrame
     {
         css::uno::Reference< css::beans::XPropertySet > xFrameProps(xFrame, css::uno::UNO_QUERY_THROW);
         css::uno::Reference< css::frame::XLayoutManager > xLayoutManager;
-        xFrameProps->getPropertyValue(FRAME_PROPNAME_LAYOUTMANAGER) >>= xLayoutManager;
+        xFrameProps->getPropertyValue(FRAME_PROPNAME_ASCII_LAYOUTMANAGER) >>= xLayoutManager;
         css::uno::Reference< css::beans::XPropertySet > xLayoutProps(xLayoutManager, css::uno::UNO_QUERY_THROW);
         xLayoutProps->setPropertyValue(LAYOUTMANAGER_PROPNAME_MENUBARCLOSER, css::uno::makeAny(bState));
     }
@@ -3207,15 +3204,16 @@ void Frame::impl_checkMenuCloser()
     // Only if the closer state must be moved from one frame to another one
     // or must be enabled/disabled at all.
     SolarMutexGuard aGuard;
-
-    css::uno::Reference< css::frame::XFrame2 > xCloserFrame (m_xCloserFrame.get(), css::uno::UNO_QUERY);
+    // Holds the only frame, which must show the special closer menu item (can be NULL!)
+    static css::uno::WeakReference< css::frame::XFrame2 > s_xCloserFrame;
+    css::uno::Reference< css::frame::XFrame2 > xCloserFrame (s_xCloserFrame.get(), css::uno::UNO_QUERY);
     if (xCloserFrame!=xNewCloserFrame)
     {
         if (xCloserFrame.is())
             impl_setCloser(xCloserFrame, false);
         if (xNewCloserFrame.is())
             impl_setCloser(xNewCloserFrame, true);
-        m_xCloserFrame = xNewCloserFrame;
+        s_xCloserFrame = xNewCloserFrame;
     }
 }
 

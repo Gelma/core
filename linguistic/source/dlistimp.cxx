@@ -28,6 +28,7 @@
 #include <cppuhelper/supportsservice.hxx>
 #include <unotools/localfilehelper.hxx>
 #include <comphelper/processfactory.hxx>
+#include <comphelper/sequence.hxx>
 #include <unotools/ucbstreamhelper.hxx>
 #include <com/sun/star/frame/XStorable.hpp>
 #include <com/sun/star/lang/Locale.hpp>
@@ -80,12 +81,12 @@ public:
     // XEventListener
     virtual void SAL_CALL
         disposing( const EventObject& rSource )
-            throw(RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(RuntimeException, std::exception) override;
 
     // XDictionaryEventListener
     virtual void SAL_CALL
         processDictionaryEvent( const DictionaryEvent& rDicEvent )
-            throw(RuntimeException, std::exception) SAL_OVERRIDE;
+            throw(RuntimeException, std::exception) override;
 
     // non-UNO functions
     void    DisposeAndClear( const EventObject &rEvtObj );
@@ -404,14 +405,7 @@ uno::Sequence< uno::Reference< XDictionary > > SAL_CALL
 
     DictionaryVec_t& rDicList = GetOrCreateDicList();
 
-    uno::Sequence< uno::Reference< XDictionary > > aDics( rDicList.size() );
-    uno::Reference< XDictionary > *pDic = aDics.getArray();
-
-    sal_Int32 n = (sal_uInt16) aDics.getLength();
-    for (sal_Int32 i = 0;  i < n;  i++)
-        pDic[i] = rDicList[i];
-
-    return aDics;
+    return comphelper::containerToSequence(rDicList);
 }
 
 uno::Reference< XDictionary > SAL_CALL
@@ -727,7 +721,6 @@ void DicList::SaveDics()
 
 OUString SAL_CALL DicList::getImplementationName(  ) throw(RuntimeException, std::exception)
 {
-    osl::MutexGuard aGuard( GetLinguMutex() );
     return getImplementationName_Static();
 }
 
@@ -741,24 +734,20 @@ sal_Bool SAL_CALL DicList::supportsService( const OUString& ServiceName )
 uno::Sequence< OUString > SAL_CALL DicList::getSupportedServiceNames(  )
         throw(RuntimeException, std::exception)
 {
-    osl::MutexGuard aGuard( GetLinguMutex() );
     return getSupportedServiceNames_Static();
 }
 
 
 uno::Sequence< OUString > DicList::getSupportedServiceNames_Static() throw()
 {
-    osl::MutexGuard aGuard( GetLinguMutex() );
-
-    uno::Sequence< OUString > aSNS( 1 );   // more than 1 service possible
-    aSNS.getArray()[0] = "com.sun.star.linguistic2.DictionaryList";
+    uno::Sequence< OUString > aSNS { "com.sun.star.linguistic2.DictionaryList" };
     return aSNS;
 }
 
 void * SAL_CALL DicList_getFactory( const sal_Char * pImplName,
         XMultiServiceFactory * pServiceManager, void *  )
 {
-    void * pRet = 0;
+    void * pRet = nullptr;
     if ( DicList::getImplementationName_Static().equalsAscii( pImplName ) )
     {
         uno::Reference< XSingleServiceFactory > xFactory =
@@ -853,13 +842,12 @@ static bool IsVers2OrNewer( const OUString& rFileURL, sal_uInt16& nLng, bool& bN
 {
     if (rFileURL.isEmpty())
         return false;
-    OUString aDIC("dic");
     OUString aExt;
     sal_Int32 nPos = rFileURL.lastIndexOf( '.' );
     if (-1 != nPos)
         aExt = rFileURL.copy( nPos + 1 ).toAsciiLowerCase();
 
-    if (aDIC != aExt)
+    if (aExt != "dic")
         return false;
 
     // get stream to be used

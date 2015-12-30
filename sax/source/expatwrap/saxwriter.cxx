@@ -109,7 +109,7 @@ public:
     explicit SaxWriterHelper(Reference< XOutputStream > m_TempOut)
         : m_out(m_TempOut)
         , m_Sequence(SEQUENCESIZE)
-        , mp_Sequence(NULL)
+        , mp_Sequence(nullptr)
         , nLastLineFeedPos(0)
         , nCurrentPos(0)
         , m_bStartElementFinished(true)
@@ -875,7 +875,7 @@ class SAXWriter :
 {
 public:
     SAXWriter()
-        : m_pSaxWriterHelper(NULL)
+        : m_pSaxWriterHelper(nullptr)
         , m_bDocStarted(false)
         , m_bIsCDATA(false)
         , m_bForceLineBreak(false)
@@ -890,7 +890,7 @@ public:
 
 public: // XActiveDataSource
     virtual void SAL_CALL setOutputStream(const Reference< XOutputStream > & aStream)
-        throw (RuntimeException, std::exception) SAL_OVERRIDE
+        throw (RuntimeException, std::exception) override
     {
         try
         {
@@ -916,50 +916,50 @@ public: // XActiveDataSource
         }
     }
     virtual Reference< XOutputStream >  SAL_CALL getOutputStream()
-        throw(RuntimeException, std::exception) SAL_OVERRIDE
+        throw(RuntimeException, std::exception) override
     {
         return m_out;
     }
 
 public: // XDocumentHandler
     virtual void SAL_CALL startDocument()
-        throw(SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(SAXException, RuntimeException, std::exception) override;
 
     virtual void SAL_CALL endDocument()
-        throw(SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(SAXException, RuntimeException, std::exception) override;
 
     virtual void SAL_CALL startElement(const OUString& aName,
                                        const Reference< XAttributeList > & xAttribs)
-        throw (SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (SAXException, RuntimeException, std::exception) override;
 
     virtual void SAL_CALL endElement(const OUString& aName)
-        throw(SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(SAXException, RuntimeException, std::exception) override;
 
     virtual void SAL_CALL characters(const OUString& aChars)
-        throw(SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(SAXException, RuntimeException, std::exception) override;
 
     virtual void SAL_CALL ignorableWhitespace(const OUString& aWhitespaces)
-        throw(SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(SAXException, RuntimeException, std::exception) override;
     virtual void SAL_CALL processingInstruction(const OUString& aTarget,
                                                 const OUString& aData)
-        throw(SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(SAXException, RuntimeException, std::exception) override;
     virtual void SAL_CALL setDocumentLocator(const Reference< XLocator > & xLocator)
-        throw(SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(SAXException, RuntimeException, std::exception) override;
 
 public: // XExtendedDocumentHandler
-    virtual void SAL_CALL startCDATA() throw(SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL endCDATA() throw(SAXException,RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL startCDATA() throw(SAXException, RuntimeException, std::exception) override;
+    virtual void SAL_CALL endCDATA() throw(SAXException,RuntimeException, std::exception) override;
     virtual void SAL_CALL comment(const OUString& sComment)
-        throw(SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(SAXException, RuntimeException, std::exception) override;
     virtual void SAL_CALL unknown(const OUString& sString)
-        throw(SAXException, RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(SAXException, RuntimeException, std::exception) override;
     virtual void SAL_CALL allowLineBreak()
-        throw(SAXException,RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(SAXException,RuntimeException, std::exception) override;
 
 public: // XServiceInfo
-    OUString                     SAL_CALL getImplementationName() throw(std::exception) SAL_OVERRIDE;
-    Sequence< OUString >         SAL_CALL getSupportedServiceNames() throw(std::exception) SAL_OVERRIDE;
-    sal_Bool                    SAL_CALL supportsService(const OUString& ServiceName) throw(std::exception) SAL_OVERRIDE;
+    OUString                     SAL_CALL getImplementationName() throw(std::exception) override;
+    Sequence< OUString >         SAL_CALL getSupportedServiceNames() throw(std::exception) override;
+    sal_Bool                    SAL_CALL supportsService(const OUString& ServiceName) throw(std::exception) override;
 
 private:
     sal_Int32 getIndentPrefixLength( sal_Int32 nFirstLineBreakOccurrence ) throw();
@@ -1010,8 +1010,7 @@ sal_Bool SAXWriter::supportsService(const OUString& ServiceName) throw(std::exce
 // XServiceInfo
 Sequence< OUString > SAXWriter::getSupportedServiceNames() throw (std::exception)
 {
-    Sequence<OUString> seq(1);
-    seq[0] = "com.sun.star.xml.sax.Writer";
+    Sequence<OUString> seq { "com.sun.star.xml.sax.Writer" };
     return seq;
 }
 

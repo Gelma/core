@@ -42,8 +42,8 @@ public:
     UndoTextAPIChanged( SdrModel& rModel, TextApiObject* pTextObj );
     virtual ~UndoTextAPIChanged();
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
 
 protected:
     OutlinerParaObject* mpOldText;
@@ -54,7 +54,7 @@ protected:
 UndoTextAPIChanged::UndoTextAPIChanged(SdrModel& rModel, TextApiObject* pTextObj )
 : SdrUndoAction( rModel )
 , mpOldText( pTextObj->CreateText() )
-, mpNewText( 0 )
+, mpNewText( nullptr )
 , mxTextObj( pTextObj )
 {
 }
@@ -94,13 +94,13 @@ class TextAPIEditSource : public SvxEditSource
 {
     TextAPIEditSource_Impl* pImpl;
 
-    virtual SvxEditSource*      Clone() const SAL_OVERRIDE;
-    virtual SvxTextForwarder*   GetTextForwarder() SAL_OVERRIDE;
-    virtual void                UpdateData() SAL_OVERRIDE;
+    virtual SvxEditSource*      Clone() const override;
+    virtual SvxTextForwarder*   GetTextForwarder() override;
+    virtual void                UpdateData() override;
     explicit            TextAPIEditSource( const TextAPIEditSource& rSource );
 
 public:
-                        TextAPIEditSource(SdDrawDocument* pDoc);
+                        explicit TextAPIEditSource(SdDrawDocument* pDoc);
     virtual             ~TextAPIEditSource();
 
     void                Dispose();
@@ -152,7 +152,7 @@ void SAL_CALL TextApiObject::dispose() throw(RuntimeException)
     {
         mpSource->Dispose();
         delete mpSource;
-        mpSource = 0;
+        mpSource = nullptr;
     }
 
 }
@@ -177,7 +177,7 @@ OUString TextApiObject::GetText()
     return mpSource->GetText();
 }
 
-TextApiObject* TextApiObject::getImplementation( const ::com::sun::star::uno::Reference< ::com::sun::star::text::XText >& xText )
+TextApiObject* TextApiObject::getImplementation( const css::uno::Reference< css::text::XText >& xText )
 {
     TextApiObject* pImpl = dynamic_cast< TextApiObject* >( xText.get() );
 
@@ -209,8 +209,8 @@ TextAPIEditSource::TextAPIEditSource(SdDrawDocument* pDoc)
 : pImpl(new TextAPIEditSource_Impl)
 {
     pImpl->mpDoc = pDoc;
-    pImpl->mpOutliner = 0;
-    pImpl->mpTextForwarder = 0;
+    pImpl->mpOutliner = nullptr;
+    pImpl->mpTextForwarder = nullptr;
     pImpl->mnRef = 1;
 }
 
@@ -222,18 +222,18 @@ TextAPIEditSource::~TextAPIEditSource()
 
 void TextAPIEditSource::Dispose()
 {
-    pImpl->mpDoc=0;
+    pImpl->mpDoc=nullptr;
     delete pImpl->mpTextForwarder;
-    pImpl->mpTextForwarder = 0;
+    pImpl->mpTextForwarder = nullptr;
 
     delete pImpl->mpOutliner;
-    pImpl->mpOutliner = 0;
+    pImpl->mpOutliner = nullptr;
 }
 
 SvxTextForwarder* TextAPIEditSource::GetTextForwarder()
 {
     if( !pImpl->mpDoc )
-        return 0; // mpDoc == 0 can be used to flag this as disposed
+        return nullptr; // mpDoc == 0 can be used to flag this as disposed
 
     if( !pImpl->mpOutliner )
     {
@@ -268,7 +268,7 @@ OutlinerParaObject* TextAPIEditSource::CreateText()
     if ( pImpl->mpDoc && pImpl->mpOutliner )
         return pImpl->mpOutliner->CreateParaObject();
     else
-        return 0;
+        return nullptr;
 }
 
 OUString TextAPIEditSource::GetText()

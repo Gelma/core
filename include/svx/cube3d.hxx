@@ -41,7 +41,7 @@ enum { CUBE_BOTTOM = 0x0001, CUBE_BACK = 0x0002, CUBE_LEFT = 0x0004,
        CUBE_FULL = 0x003F, CUBE_OPEN_TB = 0x0036, CUBE_OPEN_LR = 0x002B,
        CUBE_OPEN_FB = 0x001D };
 
-class SVX_DLLPUBLIC SAL_WARN_UNUSED E3dCubeObj : public E3dCompoundObject
+class SAL_WARN_UNUSED SVX_DLLPUBLIC E3dCubeObj : public E3dCompoundObject
 {
 private:
     // Parameter
@@ -54,17 +54,16 @@ private:
 
 protected:
     void SetDefaultAttributes(E3dDefaultAttributes& rDefault);
-    virtual sdr::contact::ViewContact* CreateObjectSpecificViewContact() SAL_OVERRIDE;
+    virtual sdr::contact::ViewContact* CreateObjectSpecificViewContact() override;
 
 public:
-    TYPEINFO_OVERRIDE();
     E3dCubeObj(E3dDefaultAttributes& rDefault, basegfx::B3DPoint aPos, const basegfx::B3DVector& r3DSize);
     E3dCubeObj();
 
-    virtual sal_uInt16 GetObjIdentifier() const SAL_OVERRIDE;
-    virtual SdrObject* DoConvertToPolyObj(bool bBezier, bool bAddText) const SAL_OVERRIDE;
+    virtual sal_uInt16 GetObjIdentifier() const override;
+    virtual SdrObject* DoConvertToPolyObj(bool bBezier, bool bAddText) const override;
 
-    virtual E3dCubeObj* Clone() const SAL_OVERRIDE;
+    virtual E3dCubeObj* Clone() const override;
 
     // Set local parameters with geometry recreation
     void SetCubePos(const basegfx::B3DPoint& rNew);
@@ -77,8 +76,8 @@ public:
     bool GetPosIsCenter() const { return bPosIsCenter; }
 
     // TakeObjName...() is for the display in the UI, for example "3 frames selected".
-    virtual OUString TakeObjNameSingul() const SAL_OVERRIDE;
-    virtual OUString TakeObjNamePlural() const SAL_OVERRIDE;
+    virtual OUString TakeObjNameSingul() const override;
+    virtual OUString TakeObjNamePlural() const override;
 };
 
 #endif // INCLUDED_SVX_CUBE3D_HXX

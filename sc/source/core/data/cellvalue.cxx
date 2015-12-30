@@ -285,8 +285,7 @@ void ScCellValue::assign( const ScDocument& rDoc, const ScAddress& rPos )
 {
     clear();
 
-    ScRefCellValue aRefVal;
-    aRefVal.assign(const_cast<ScDocument&>(rDoc), rPos);
+    ScRefCellValue aRefVal(const_cast<ScDocument&>(rDoc), rPos);
 
     meType = aRefVal.meType;
     switch (meType)
@@ -494,9 +493,13 @@ ScRefCellValue::ScRefCellValue( ScFormulaCell* pFormula ) : meType(CELLTYPE_FORM
 // as the pointer values.
 ScRefCellValue::ScRefCellValue( const ScRefCellValue& r ) : meType(r.meType), mfValue(r.mfValue) {}
 
+ScRefCellValue::ScRefCellValue( ScDocument& rDoc, const ScAddress& rPos )
+{
+    assign( rDoc, rPos);
+}
+
 ScRefCellValue::~ScRefCellValue()
 {
-    clear();
 }
 
 void ScRefCellValue::clear()
@@ -588,8 +591,13 @@ bool ScRefCellValue::equalsWithoutFormat( const ScRefCellValue& r ) const
 
 ScRefCellValue& ScRefCellValue::operator= ( const ScRefCellValue& r )
 {
-    ScRefCellValue aTmp(r);
-    swap(aTmp);
+    // So we *could* have a copy-swap-idiom here for exception-safety if we had
+    // to slow down things.. but then implement an explicit move-ctor and pass
+    // r by-value instead of manually creating a temporary so the compiler can
+    // take advantage. And initialize
+    // ScRefCellValue(ScDocument&,const ScAddress&) with default ctor.
+    meType = r.meType;
+    mfValue = r.mfValue;    // largest member of union
     return *this;
 }
 

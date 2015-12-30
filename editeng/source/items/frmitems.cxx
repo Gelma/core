@@ -138,21 +138,23 @@ namespace
     }
 }
 
-TYPEINIT1_FACTORY(SvxPaperBinItem, SfxByteItem, new SvxPaperBinItem(0));
-TYPEINIT1_FACTORY(SvxSizeItem, SfxPoolItem, new SvxSizeItem(0));
-TYPEINIT1_FACTORY(SvxLRSpaceItem, SfxPoolItem, new SvxLRSpaceItem(0));
-TYPEINIT1_FACTORY(SvxULSpaceItem, SfxPoolItem, new SvxULSpaceItem(0));
-TYPEINIT1_FACTORY(SvxPrintItem, SfxBoolItem, new SvxPrintItem(0));
-TYPEINIT1_FACTORY(SvxOpaqueItem, SfxBoolItem, new SvxOpaqueItem(0));
-TYPEINIT1_FACTORY(SvxProtectItem, SfxPoolItem, new SvxProtectItem(0));
-TYPEINIT1_FACTORY(SvxBrushItem, SfxPoolItem, new SvxBrushItem(0));
-TYPEINIT1_FACTORY(SvxShadowItem, SfxPoolItem, new SvxShadowItem(0));
-TYPEINIT1_FACTORY(SvxBoxItem, SfxPoolItem, new SvxBoxItem(0));
-TYPEINIT1_FACTORY(SvxBoxInfoItem, SfxPoolItem, new SvxBoxInfoItem(0));
-TYPEINIT1_FACTORY(SvxFormatBreakItem, SfxEnumItem, new SvxFormatBreakItem(SVX_BREAK_NONE, 0));
-TYPEINIT1_FACTORY(SvxFormatKeepItem, SfxBoolItem, new SvxFormatKeepItem(false, 0));
-TYPEINIT1_FACTORY(SvxLineItem, SfxPoolItem, new SvxLineItem(0));
-TYPEINIT1_FACTORY(SvxFrameDirectionItem, SfxUInt16Item, new SvxFrameDirectionItem(FRMDIR_HORI_LEFT_TOP, 0));
+
+SfxPoolItem* SvxPaperBinItem::CreateDefault() { return new  SvxPaperBinItem(0);}
+SfxPoolItem* SvxSizeItem::CreateDefault() { return new  SvxSizeItem(0);}
+SfxPoolItem* SvxLRSpaceItem::CreateDefault() { return new  SvxLRSpaceItem(0);}
+SfxPoolItem* SvxULSpaceItem::CreateDefault() { return new  SvxULSpaceItem(0);}
+SfxPoolItem* SvxPrintItem::CreateDefault() { return new  SvxPrintItem(0);}
+SfxPoolItem* SvxOpaqueItem::CreateDefault() { return new  SvxOpaqueItem(0);}
+SfxPoolItem* SvxProtectItem::CreateDefault() { return new  SvxProtectItem(0);}
+SfxPoolItem* SvxBrushItem::CreateDefault() { return new  SvxBrushItem(0);}
+SfxPoolItem* SvxShadowItem::CreateDefault() { return new  SvxShadowItem(0);}
+SfxPoolItem* SvxBoxItem::CreateDefault() { return new  SvxBoxItem(0);}
+SfxPoolItem* SvxBoxInfoItem::CreateDefault() { return new  SvxBoxInfoItem(0);}
+SfxPoolItem* SvxFormatBreakItem::CreateDefault() { return new  SvxFormatBreakItem(SVX_BREAK_NONE, 0);}
+SfxPoolItem* SvxFormatKeepItem::CreateDefault() { return new  SvxFormatKeepItem(false, 0);}
+SfxPoolItem* SvxLineItem::CreateDefault() { return new  SvxLineItem(0);}
+SfxPoolItem* SvxFrameDirectionItem::CreateDefault() { return new  SvxFrameDirectionItem(FRMDIR_HORI_LEFT_TOP, 0);}
+
 
 // class SvxPaperBinItem ------------------------------------------------
 
@@ -399,13 +401,13 @@ SvxLRSpaceItem::SvxLRSpaceItem( const sal_uInt16 nId ) :
 
     SfxPoolItem( nId ),
 
-    nFirstLineOfst  ( 0 ),
     nTxtLeft        ( 0 ),
     nLeftMargin     ( 0 ),
     nRightMargin    ( 0 ),
     nPropFirstLineOfst( 100 ),
     nPropLeftMargin( 100 ),
     nPropRightMargin( 100 ),
+    nFirstLineOfst  ( 0 ),
     bAutoFirst      ( false ),
     bExplicitZeroMarginValRight(false),
     bExplicitZeroMarginValLeft(false)
@@ -420,13 +422,13 @@ SvxLRSpaceItem::SvxLRSpaceItem( const long nLeft, const long nRight,
 
     SfxPoolItem( nId ),
 
-    nFirstLineOfst  ( nOfset ),
     nTxtLeft        ( nTLeft ),
     nLeftMargin     ( nLeft ),
     nRightMargin    ( nRight ),
     nPropFirstLineOfst( 100 ),
     nPropLeftMargin( 100 ),
     nPropRightMargin( 100 ),
+    nFirstLineOfst  ( nOfset ),
     bAutoFirst      ( false ),
     bExplicitZeroMarginValRight(false),
     bExplicitZeroMarginValLeft(false)
@@ -1609,13 +1611,14 @@ SvxBoxItem::SvxBoxItem( const SvxBoxItem& rCpy ) :
     nTopDist    ( rCpy.nTopDist ),
     nBottomDist ( rCpy.nBottomDist ),
     nLeftDist   ( rCpy.nLeftDist ),
-    nRightDist  ( rCpy.nRightDist )
+    nRightDist  ( rCpy.nRightDist ),
+    bRemoveAdjCellBorder ( rCpy.bRemoveAdjCellBorder )
 
 {
-    pTop    = rCpy.GetTop()     ? new SvxBorderLine( *rCpy.GetTop() )    : 0;
-    pBottom = rCpy.GetBottom()  ? new SvxBorderLine( *rCpy.GetBottom() ) : 0;
-    pLeft   = rCpy.GetLeft()    ? new SvxBorderLine( *rCpy.GetLeft() )   : 0;
-    pRight  = rCpy.GetRight()   ? new SvxBorderLine( *rCpy.GetRight() )  : 0;
+    pTop    = rCpy.GetTop()     ? new SvxBorderLine( *rCpy.GetTop() )    : nullptr;
+    pBottom = rCpy.GetBottom()  ? new SvxBorderLine( *rCpy.GetBottom() ) : nullptr;
+    pLeft   = rCpy.GetLeft()    ? new SvxBorderLine( *rCpy.GetLeft() )   : nullptr;
+    pRight  = rCpy.GetRight()   ? new SvxBorderLine( *rCpy.GetRight() )  : nullptr;
 }
 
 
@@ -1623,15 +1626,15 @@ SvxBoxItem::SvxBoxItem( const SvxBoxItem& rCpy ) :
 SvxBoxItem::SvxBoxItem( const sal_uInt16 nId ) :
     SfxPoolItem( nId ),
 
-    pTop        ( 0 ),
-    pBottom     ( 0 ),
-    pLeft       ( 0 ),
-    pRight      ( 0 ),
+    pTop        ( nullptr ),
+    pBottom     ( nullptr ),
+    pLeft       ( nullptr ),
+    pRight      ( nullptr ),
     nTopDist    ( 0 ),
     nBottomDist ( 0 ),
     nLeftDist   ( 0 ),
-    nRightDist  ( 0 )
-
+    nRightDist  ( 0 ),
+    bRemoveAdjCellBorder ( false )
 {
 }
 
@@ -1653,6 +1656,7 @@ SvxBoxItem& SvxBoxItem::operator=( const SvxBoxItem& rBox )
     nBottomDist = rBox.nBottomDist;
     nLeftDist = rBox.nLeftDist;
     nRightDist = rBox.nRightDist;
+    bRemoveAdjCellBorder = rBox.bRemoveAdjCellBorder;
     SetLine( rBox.GetTop(), SvxBoxItemLine::TOP );
     SetLine( rBox.GetBottom(), SvxBoxItemLine::BOTTOM );
     SetLine( rBox.GetLeft(), SvxBoxItemLine::LEFT );
@@ -1664,15 +1668,11 @@ SvxBoxItem& SvxBoxItem::operator=( const SvxBoxItem& rBox )
 
 inline bool CmpBrdLn( const SvxBorderLine* pBrd1, const SvxBorderLine* pBrd2 )
 {
-    bool bRet;
-    if( 0 != pBrd1 ?  0 == pBrd2 : 0 != pBrd2 )
-        bRet = false;
-    else
-        if( !pBrd1 )
-            bRet = true;
-        else
-            bRet = (*pBrd1 == *pBrd2);
-    return bRet;
+    if( pBrd1 == pBrd2 )
+        return true;
+    if( pBrd1 == nullptr || pBrd2 == nullptr)
+        return false;
+    return *pBrd1 == *pBrd2;
 }
 
 
@@ -1687,6 +1687,7 @@ bool SvxBoxItem::operator==( const SfxPoolItem& rAttr ) const
         ( nBottomDist == rBoxItem.nBottomDist )   &&
         ( nLeftDist == rBoxItem.nLeftDist )   &&
         ( nRightDist == rBoxItem.nRightDist ) &&
+        ( bRemoveAdjCellBorder == rBoxItem.bRemoveAdjCellBorder ) &&
         CmpBrdLn( pTop, rBoxItem.GetTop() )           &&
         CmpBrdLn( pBottom, rBoxItem.GetBottom() )     &&
         CmpBrdLn( pLeft, rBoxItem.GetLeft() )         &&
@@ -1873,7 +1874,7 @@ lcl_setLine(const uno::Any& rAny, Item& rItem, Line nLine, const bool bConvert)
     {
         SvxBorderLine aLine;
         bool bSet = SvxBoxItem::LineToSvxLine(aBorderLine, aLine, bConvert);
-        rItem.SetLine( bSet ? &aLine : NULL, nLine);
+        rItem.SetLine( bSet ? &aLine : nullptr, nLine);
         bDone = true;
     }
     return bDone;
@@ -2071,7 +2072,7 @@ bool SvxBoxItem::PutValue( const uno::Any& rVal, sal_uInt8 nMemberId )
             return false;
 
         bool bSet = SvxBoxItem::LineToSvxLine(aBorderLine, aLine, bConvert);
-        SetLine(bSet ? &aLine : 0, nLine);
+        SetLine(bSet ? &aLine : nullptr, nLine);
     }
 
     return true;
@@ -2343,7 +2344,7 @@ SfxPoolItem* SvxBoxItem::Create( SvStream& rStrm, sal_uInt16 nIVersion ) const
 
 const SvxBorderLine *SvxBoxItem::GetLine( SvxBoxItemLine nLine ) const
 {
-    const SvxBorderLine *pRet = 0;
+    const SvxBorderLine *pRet = nullptr;
 
     switch ( nLine )
     {
@@ -2371,7 +2372,7 @@ const SvxBorderLine *SvxBoxItem::GetLine( SvxBoxItemLine nLine ) const
 
 void SvxBoxItem::SetLine( const SvxBorderLine* pNew, SvxBoxItemLine nLine )
 {
-    SvxBorderLine* pTmp = pNew ? new SvxBorderLine( *pNew ) : 0;
+    SvxBorderLine* pTmp = pNew ? new SvxBorderLine( *pNew ) : nullptr;
 
     switch ( nLine )
     {
@@ -2466,7 +2467,7 @@ void SvxBoxItem::SetDistance( sal_uInt16 nNew, SvxBoxItemLine nLine )
 
 sal_uInt16 SvxBoxItem::CalcLineSpace( SvxBoxItemLine nLine, bool bIgnoreLine ) const
 {
-    SvxBorderLine* pTmp = 0;
+    SvxBorderLine* pTmp = nullptr;
     sal_uInt16 nDist = 0;
     switch ( nLine )
     {
@@ -2503,8 +2504,8 @@ sal_uInt16 SvxBoxItem::CalcLineSpace( SvxBoxItemLine nLine, bool bIgnoreLine ) c
 
 SvxBoxInfoItem::SvxBoxInfoItem( const sal_uInt16 nId ) :
     SfxPoolItem( nId ),
-    pHori   ( 0 ),
-    pVert   ( 0 ),
+    pHori   ( nullptr ),
+    pVert   ( nullptr ),
     mbEnableHor( false ),
     mbEnableVer( false ),
     nDefDist( 0 )
@@ -2520,8 +2521,8 @@ SvxBoxInfoItem::SvxBoxInfoItem( const SvxBoxInfoItem& rCpy ) :
     mbEnableHor( rCpy.mbEnableHor ),
     mbEnableVer( rCpy.mbEnableVer )
 {
-    pHori       = rCpy.GetHori() ? new SvxBorderLine( *rCpy.GetHori() ) : 0;
-    pVert       = rCpy.GetVert() ? new SvxBorderLine( *rCpy.GetVert() ) : 0;
+    pHori       = rCpy.GetHori() ? new SvxBorderLine( *rCpy.GetHori() ) : nullptr;
+    pVert       = rCpy.GetVert() ? new SvxBorderLine( *rCpy.GetVert() ) : nullptr;
     bDist       = rCpy.IsDist();
     bMinDist    = rCpy.IsMinDist();
     nValidFlags = rCpy.nValidFlags;
@@ -2542,8 +2543,8 @@ SvxBoxInfoItem &SvxBoxInfoItem::operator=( const SvxBoxInfoItem& rCpy )
 {
     delete pHori;
     delete pVert;
-    pHori       = rCpy.GetHori() ? new SvxBorderLine( *rCpy.GetHori() ) : 0;
-    pVert       = rCpy.GetVert() ? new SvxBorderLine( *rCpy.GetVert() ) : 0;
+    pHori       = rCpy.GetHori() ? new SvxBorderLine( *rCpy.GetHori() ) : nullptr;
+    pVert       = rCpy.GetVert() ? new SvxBorderLine( *rCpy.GetVert() ) : nullptr;
     mbEnableHor = rCpy.mbEnableHor;
     mbEnableVer = rCpy.mbEnableVer;
     bDist       = rCpy.IsDist();
@@ -2576,7 +2577,7 @@ bool SvxBoxInfoItem::operator==( const SfxPoolItem& rAttr ) const
 
 void SvxBoxInfoItem::SetLine( const SvxBorderLine* pNew, SvxBoxInfoItemLine nLine )
 {
-    SvxBorderLine* pTmp = pNew ? new SvxBorderLine( *pNew ) : 0;
+    SvxBorderLine* pTmp = pNew ? new SvxBorderLine( *pNew ) : nullptr;
 
     if ( SvxBoxInfoItemLine::HORI == nLine )
     {
@@ -3110,7 +3111,7 @@ SvxLineItem::SvxLineItem( const sal_uInt16 nId ) :
 
     SfxPoolItem ( nId ),
 
-    pLine( NULL )
+    pLine( nullptr )
 {
 }
 
@@ -3120,7 +3121,7 @@ SvxLineItem::SvxLineItem( const SvxLineItem& rCpy ) :
 
     SfxPoolItem ( rCpy )
 {
-    pLine = rCpy.GetLine() ? new SvxBorderLine( *rCpy.GetLine() ) : 0;
+    pLine = rCpy.GetLine() ? new SvxBorderLine( *rCpy.GetLine() ) : nullptr;
 }
 
 
@@ -3298,7 +3299,7 @@ SfxPoolItem* SvxLineItem::Create( SvStream& rStrm, sal_uInt16 ) const
 void SvxLineItem::SetLine( const SvxBorderLine* pNew )
 {
     delete pLine;
-    pLine = pNew ? new SvxBorderLine( *pNew ) : 0;
+    pLine = pNew ? new SvxBorderLine( *pNew ) : nullptr;
 }
 
 // class SvxBrushItem ----------------------------------------------------
@@ -3317,7 +3318,7 @@ public:
                                           //copied to the GraphicObject when necessary
     SvStream*       pStream;
 
-    explicit SvxBrushItem_Impl( GraphicObject* p ) : pGraphicObject( p ), nGraphicTransparency(0), pStream(0) {}
+    explicit SvxBrushItem_Impl( GraphicObject* p ) : pGraphicObject( p ), nGraphicTransparency(0), pStream(nullptr) {}
 };
 
 
@@ -3328,7 +3329,7 @@ SvxBrushItem::SvxBrushItem( sal_uInt16 _nWhich ) :
 
     aColor           ( COL_TRANSPARENT ),
     nShadingValue    ( ShadingPattern::CLEAR ),
-    pImpl            ( new SvxBrushItem_Impl( 0 ) ),
+    pImpl            ( new SvxBrushItem_Impl( nullptr ) ),
     maStrLink        (),
     maStrFilter      (),
     eGraphicPos      ( GPOS_NONE ),
@@ -3345,7 +3346,7 @@ SvxBrushItem::SvxBrushItem( const Color& rColor, sal_uInt16 _nWhich) :
 
     aColor            ( rColor ),
     nShadingValue     ( ShadingPattern::CLEAR ),
-    pImpl             ( new SvxBrushItem_Impl( 0 ) ),
+    pImpl             ( new SvxBrushItem_Impl( nullptr ) ),
     maStrLink         (),
     maStrFilter       (),
     eGraphicPos       ( GPOS_NONE ),
@@ -3402,7 +3403,7 @@ SvxBrushItem::SvxBrushItem(
 
     aColor            ( COL_TRANSPARENT ),
     nShadingValue     ( ShadingPattern::CLEAR ),
-    pImpl             ( new SvxBrushItem_Impl( NULL ) ),
+    pImpl             ( new SvxBrushItem_Impl( nullptr ) ),
     maStrLink         ( rLink ),
     maStrFilter       ( rFilter ),
     eGraphicPos       ( ( GPOS_NONE != ePos ) ? ePos : GPOS_MM ),
@@ -3419,7 +3420,7 @@ SvxBrushItem::SvxBrushItem( SvStream& rStream, sal_uInt16 nVersion,
     : SfxPoolItem( _nWhich )
     , aColor            ( COL_TRANSPARENT )
     , nShadingValue     ( ShadingPattern::CLEAR )
-    , pImpl             ( new SvxBrushItem_Impl( NULL ) )
+    , pImpl             ( new SvxBrushItem_Impl( nullptr ) )
     , maStrLink         ()
     , maStrFilter       ()
     , eGraphicPos       ( GPOS_NONE )
@@ -3533,7 +3534,7 @@ SvxBrushItem::SvxBrushItem( const SvxBrushItem& rItem ) :
 
     SfxPoolItem( rItem.Which() ),
     nShadingValue     ( ShadingPattern::CLEAR ),
-    pImpl             ( new SvxBrushItem_Impl( NULL ) ),
+    pImpl             ( new SvxBrushItem_Impl( nullptr ) ),
     maStrLink         (),
     maStrFilter       (),
     eGraphicPos       ( GPOS_NONE ),
@@ -3548,7 +3549,6 @@ SvxBrushItem::SvxBrushItem( const SvxBrushItem& rItem ) :
 SvxBrushItem::~SvxBrushItem()
 {
     delete pImpl->pGraphicObject;
-    delete pImpl;
 }
 
 
@@ -3907,35 +3907,61 @@ void SvxBrushItem::PurgeMedium() const
     DELETEZ( pImpl->pStream );
 }
 
-
 const GraphicObject* SvxBrushItem::GetGraphicObject(OUString const & referer) const
 {
     if ( bLoadAgain && !maStrLink.isEmpty() && !pImpl->pGraphicObject )
     // when graphics already loaded, use as a cache
     {
         if (SvtSecurityOptions().isUntrustedReferer(referer)) {
-            return 0;
+            return nullptr;
         }
+
+        // tdf#94088 prepare graphic and state
+        Graphic aGraphic;
+        bool bGraphicLoaded = false;
+
+        // try to create stream directly from given URL
         pImpl->pStream = utl::UcbStreamHelper::CreateStream( maStrLink, STREAM_STD_READ );
+
+        // tdf#94088 if we have a stream, try to load it directly as graphic
         if( pImpl->pStream && !pImpl->pStream->GetError() )
         {
-            Graphic aGraphic;
-            int nRes;
-            pImpl->pStream->Seek( STREAM_SEEK_TO_BEGIN );
-            nRes = GraphicFilter::GetGraphicFilter().
-                ImportGraphic( aGraphic, maStrLink, *pImpl->pStream,
-                               GRFILTER_FORMAT_DONTKNOW, NULL, GraphicFilterImportFlags::DontSetLogsizeForJpeg );
-
-            if( nRes != GRFILTER_OK )
+            if (GRFILTER_OK == GraphicFilter::GetGraphicFilter().ImportGraphic( aGraphic, maStrLink, *pImpl->pStream,
+                GRFILTER_FORMAT_DONTKNOW, nullptr, GraphicFilterImportFlags::DontSetLogsizeForJpeg ))
             {
-                bLoadAgain = false;
+                bGraphicLoaded = true;
             }
-            else
+        }
+
+        // tdf#94088 if no succeeded, try if the string (which is not epty) contains
+        // a 'data:' scheme url and try to load that (embedded graphics)
+        if(!bGraphicLoaded)
+        {
+            INetURLObject aGraphicURL( maStrLink );
+
+            if( INetProtocol::Data == aGraphicURL.GetProtocol() )
             {
-                pImpl->pGraphicObject = new GraphicObject;
-                pImpl->pGraphicObject->SetGraphic( aGraphic );
-                const_cast < SvxBrushItem*> (this)->ApplyGraphicTransparency_Impl();
-             }
+                std::unique_ptr<SvMemoryStream> const pStream(aGraphicURL.getData());
+                if (pStream)
+                {
+                    if (GRFILTER_OK == GraphicFilter::GetGraphicFilter().ImportGraphic(aGraphic, "", *pStream))
+                    {
+                        bGraphicLoaded = true;
+
+                        // tdf#94088 delete the no longer needed data scheme URL which
+                        // is potentially pretty // large, containing a base64 encoded copy of the graphic
+                        const_cast< SvxBrushItem* >(this)->maStrLink.clear();
+                    }
+                }
+            }
+        }
+
+        // tdf#94088 when we got a graphic, set it
+        if(bGraphicLoaded && GRAPHIC_NONE != aGraphic.GetType())
+        {
+            pImpl->pGraphicObject = new GraphicObject;
+            pImpl->pGraphicObject->SetGraphic( aGraphic );
+            const_cast < SvxBrushItem*> (this)->ApplyGraphicTransparency_Impl();
         }
         else
         {
@@ -3969,7 +3995,7 @@ void SvxBrushItem::setGraphicTransparency(sal_Int8 nNew)
 const Graphic* SvxBrushItem::GetGraphic(OUString const & referer) const
 {
     const GraphicObject* pGrafObj = GetGraphicObject(referer);
-    return( pGrafObj ? &( pGrafObj->GetGraphic() ) : NULL );
+    return( pGrafObj ? &( pGrafObj->GetGraphic() ) : nullptr );
 }
 
 
@@ -4112,7 +4138,7 @@ WallpaperStyle SvxBrushItem::GraphicPos2WallpaperStyle( SvxGraphicPosition ePos 
 SvxBrushItem::SvxBrushItem( const CntWallpaperItem& rItem, sal_uInt16 _nWhich ) :
     SfxPoolItem    ( _nWhich ),
     nShadingValue  ( ShadingPattern::CLEAR ),
-    pImpl          ( new SvxBrushItem_Impl( 0 ) ),
+    pImpl          ( new SvxBrushItem_Impl( nullptr ) ),
     maStrLink      (),
     maStrFilter    (),
     bLoadAgain     ( true )

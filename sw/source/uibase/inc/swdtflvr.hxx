@@ -56,10 +56,9 @@ namespace nsTransferBufferType
 class SW_DLLPUBLIC SwTransferable : public TransferableHelper
 {
     friend class SwView_Impl;
-    SfxObjectShellLock             m_aDocShellRef;
-    TransferableDataHelper          m_aOleData;
+    SfxObjectShellLock              m_aDocShellRef;
     TransferableObjectDescriptor    m_aObjDesc;
-    ::sfx2::SvBaseLinkRef            m_xDdeLink;
+    tools::SvRef<sfx2::SvBaseLink>  m_xDdeLink;
 
     SwWrtShell      *m_pWrtShell;
     /* #96392# Added pCreatorView to distinguish SwFrameShell from
@@ -85,7 +84,7 @@ class SW_DLLPUBLIC SwTransferable : public TransferableHelper
     static SwTransferable* GetSwTransferable( const TransferableDataHelper& rData );
     static void SetSelInShell( SwWrtShell& , bool , const Point* );
     static bool _CheckForURLOrLNKFile( TransferableDataHelper& rData,
-                                OUString& rFileName, OUString* pTitle = 0 );
+                                OUString& rFileName, OUString* pTitle = nullptr );
     static bool _TestAllowedFormat( const TransferableDataHelper& rData,
                                         SotClipboardFormatId nFormat, SotExchangeDest nDestination );
 
@@ -131,18 +130,18 @@ class SW_DLLPUBLIC SwTransferable : public TransferableHelper
 
     void SetDataForDragAndDrop( const Point& rSttPos );
 
-                                    SwTransferable( const SwTransferable& ) SAL_DELETED_FUNCTION;
-    SwTransferable&                 operator=( const SwTransferable& ) SAL_DELETED_FUNCTION;
+                                    SwTransferable( const SwTransferable& ) = delete;
+    SwTransferable&                 operator=( const SwTransferable& ) = delete;
 
 protected:
-    virtual void        AddSupportedFormats() SAL_OVERRIDE;
-    virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) SAL_OVERRIDE;
+    virtual void        AddSupportedFormats() override;
+    virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) override;
     virtual bool        WriteObject( tools::SvRef<SotStorageStream>& rxOStm,
                                         void* pUserObject,
                                         SotClipboardFormatId nUserObjectId,
-                                        const css::datatransfer::DataFlavor& rFlavor ) SAL_OVERRIDE;
-    virtual void        DragFinished( sal_Int8 nDropAction ) SAL_OVERRIDE;
-    virtual void        ObjectReleased() SAL_OVERRIDE;
+                                        const css::datatransfer::DataFlavor& rFlavor ) override;
+    virtual void        DragFinished( sal_Int8 nDropAction ) override;
+    virtual void        ObjectReleased() override;
 
     using TransferableHelper::StartDrag;
 
@@ -150,7 +149,7 @@ public:
     SwTransferable( SwWrtShell& );
     virtual ~SwTransferable();
 
-    static SotExchangeDest GetSotDestination( const SwWrtShell& rSh, const Point* = 0 );
+    static SotExchangeDest GetSotDestination( const SwWrtShell& rSh, const Point* = nullptr );
 
     // set properties on the document, like PageMargin, VisArea.
     // And set real Size
@@ -173,7 +172,7 @@ public:
                           SwWrtShell& rSh, sal_uInt16 nAction, SotClipboardFormatId nFormat,
                           SotExchangeDest nDestination, bool bIsPasteFormat,
                           bool bIsDefault,
-                          const Point* pDDPos = 0, sal_Int8 nDropAction = 0,
+                          const Point* pDDPos = nullptr, sal_Int8 nDropAction = 0,
                           bool bPasteSelection = false );
 
     static bool IsPasteSpecial( const SwWrtShell& rWrtShell,
@@ -196,15 +195,15 @@ public:
     // Interfaces for Selection
     /* #96392# Added pCreator to distinguish SwFrameShell from SwWrtShell. */
     static void CreateSelection( SwWrtShell & rSh,
-                                 const SwFrameShell * pCreator = NULL );
+                                 const SwFrameShell * pCreator = nullptr );
     static void ClearSelection( SwWrtShell& rSh,
-                                const SwFrameShell * pCreator = NULL );
+                                const SwFrameShell * pCreator = nullptr );
 
     // the related SwView is being closed and the SwTransferable is invalid now
-    void    Invalidate() {m_pWrtShell = 0;}
+    void    Invalidate() {m_pWrtShell = nullptr;}
     static const css::uno::Sequence< sal_Int8 >& getUnoTunnelId();
 
-    virtual sal_Int64 SAL_CALL getSomething( const css::uno::Sequence< sal_Int8 >& rId ) throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual sal_Int64 SAL_CALL getSomething( const css::uno::Sequence< sal_Int8 >& rId ) throw( css::uno::RuntimeException, std::exception ) override;
 };
 
 #endif

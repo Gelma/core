@@ -27,7 +27,7 @@ GroupTable::GroupTable()
     , mnCurrentGroupEntry(0)
     , mnMaxGroupEntry(0)
     , mnGroupsClosed(0)
-    , mpGroupEntry(NULL)
+    , mpGroupEntry(nullptr)
 {
     ImplResizeGroupTable( 32 );
 }
@@ -52,7 +52,7 @@ void GroupTable::ImplResizeGroupTable( sal_uInt32 nEntrys )
     }
 }
 
-bool GroupTable::EnterGroup( ::com::sun::star::uno::Reference< ::com::sun::star::container::XIndexAccess >& rXIndexAccessRef )
+bool GroupTable::EnterGroup( css::uno::Reference< css::container::XIndexAccess >& rXIndexAccessRef )
 {
     bool bRet = false;
     if ( rXIndexAccessRef.is() )

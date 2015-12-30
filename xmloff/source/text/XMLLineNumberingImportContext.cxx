@@ -41,7 +41,6 @@ using ::com::sun::star::beans::XPropertySet;
 using ::com::sun::star::xml::sax::XAttributeList;
 using ::com::sun::star::text::XLineNumberingProperties;
 
-TYPEINIT1( XMLLineNumberingImportContext, SvXMLStyleContext );
 
 
 XMLLineNumberingImportContext::XMLLineNumberingImportContext(
@@ -228,7 +227,7 @@ void XMLLineNumberingImportContext::CreateAndInsert(bool)
 
             // set style name (if it exists)
             if ( GetImport().GetStyles()->FindStyleChildContext(
-                            XML_STYLE_FAMILY_TEXT_TEXT, sStyleName ) != NULL )
+                            XML_STYLE_FAMILY_TEXT_TEXT, sStyleName ) != nullptr )
             {
                 aAny <<= GetImport().GetStyleDisplayName(
                             XML_STYLE_FAMILY_TEXT_TEXT, sStyleName );

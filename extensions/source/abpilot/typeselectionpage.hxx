@@ -39,9 +39,6 @@ namespace abp
         VclPtr<RadioButton> m_pThunderbird;
         VclPtr<RadioButton> m_pKab;
         VclPtr<RadioButton> m_pMacab;
-        VclPtr<RadioButton> m_pLDAP;
-        VclPtr<RadioButton> m_pOutlook;
-        VclPtr<RadioButton> m_pOE;
         VclPtr<RadioButton> m_pOther;
 
         struct ButtonItem {
@@ -63,22 +60,22 @@ namespace abp
     public:
         explicit TypeSelectionPage( OAddessBookSourcePilot* _pParent );
         virtual ~TypeSelectionPage();
-        virtual void        dispose() SAL_OVERRIDE;
+        virtual void        dispose() override;
 
         // retrieves the currently selected type
         AddressSourceType   getSelectedType() const;
 
     protected:
         // OWizardPage overridables
-        virtual void        initializePage() SAL_OVERRIDE;
-        virtual bool        commitPage( ::svt::WizardTypes::CommitPageReason _eReason ) SAL_OVERRIDE;
+        virtual void        initializePage() override;
+        virtual bool        commitPage( ::svt::WizardTypes::CommitPageReason _eReason ) override;
 
         // TabDialog overridables
-        virtual void        ActivatePage() SAL_OVERRIDE;
-        virtual void        DeactivatePage() SAL_OVERRIDE;
+        virtual void        ActivatePage() override;
+        virtual void        DeactivatePage() override;
 
         // OImportPage overridables
-        virtual bool        canAdvance() const SAL_OVERRIDE;
+        virtual bool        canAdvance() const override;
 
     private:
         DECL_LINK_TYPED( OnTypeSelected, Button*, void );

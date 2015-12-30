@@ -40,28 +40,26 @@ class CBlankNode:
     private boost::noncopyable
 {
 public:
-    explicit CBlankNode(css::uno::Reference< css::uno::XComponentContext > const & context);
+    CBlankNode();
     virtual ~CBlankNode() {}
 
     // css::lang::XServiceInfo:
-    virtual OUString SAL_CALL getImplementationName() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService(const OUString & ServiceName) throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName() throw (css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL supportsService(const OUString & ServiceName) throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (css::uno::RuntimeException, std::exception) override;
 
     // css::lang::XInitialization:
-    virtual void SAL_CALL initialize(const css::uno::Sequence< css::uno::Any > & aArguments) throw (css::uno::RuntimeException, css::uno::Exception, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL initialize(const css::uno::Sequence< css::uno::Any > & aArguments) throw (css::uno::RuntimeException, css::uno::Exception, std::exception) override;
 
     // css::rdf::XNode:
-    virtual OUString SAL_CALL getStringValue() throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getStringValue() throw (css::uno::RuntimeException, std::exception) override;
 
 private:
-    css::uno::Reference< css::uno::XComponentContext > m_xContext;
-
     OUString m_NodeID;
 };
 
-CBlankNode::CBlankNode(css::uno::Reference< css::uno::XComponentContext > const & context) :
-    m_xContext(context), m_NodeID()
+CBlankNode::CBlankNode() :
+    m_NodeID()
 {}
 
 // com.sun.star.uno.XServiceInfo:
@@ -125,15 +123,14 @@ OUString SAL_CALL _getImplementationName() {
 
 css::uno::Sequence< OUString > SAL_CALL _getSupportedServiceNames()
 {
-    css::uno::Sequence< OUString > s(1);
-    s[0] = "com.sun.star.rdf.BlankNode";
+    css::uno::Sequence< OUString > s { "com.sun.star.rdf.BlankNode" };
     return s;
 }
 
 css::uno::Reference< css::uno::XInterface > SAL_CALL _create(
-    const css::uno::Reference< css::uno::XComponentContext > & context)
+    const css::uno::Reference< css::uno::XComponentContext > & )
 {
-    return static_cast< ::cppu::OWeakObject * >(new CBlankNode(context));
+    return static_cast< ::cppu::OWeakObject * >(new CBlankNode);
 }
 
 } // closing component helper namespace

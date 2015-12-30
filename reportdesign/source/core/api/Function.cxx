@@ -40,7 +40,6 @@ uno::Reference< uno::XInterface > OFunction::create(uno::Reference< uno::XCompon
 OFunction::OFunction(uno::Reference< uno::XComponentContext > const & _xContext)
 :FunctionBase(m_aMutex)
 ,FunctionPropertySet(_xContext,static_cast< Implements >(IMPLEMENTS_PROPERTY_SET),uno::Sequence< OUString >())
-,m_xContext(_xContext)
 ,m_bPreEvaluated(false)
 ,m_bDeepTraversing(false)
 {
@@ -72,8 +71,7 @@ OUString SAL_CALL OFunction::getImplementationName(  ) throw(uno::RuntimeExcepti
 
 uno::Sequence< OUString > OFunction::getSupportedServiceNames_Static(  ) throw(uno::RuntimeException)
 {
-    uno::Sequence< OUString > aServices(1);
-    aServices.getArray()[0] = SERVICE_FUNCTION;
+    uno::Sequence< OUString > aServices { SERVICE_FUNCTION };
 
     return aServices;
 }
@@ -199,7 +197,7 @@ void SAL_CALL OFunction::setParent( const uno::Reference< uno::XInterface >& Par
         m_xParent = xFunctions;
     }
     else
-        m_xParent = uno::WeakReference< report::XFunctions >();
+        m_xParent.clear();
 }
 
 

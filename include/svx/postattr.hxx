@@ -33,7 +33,7 @@ The author shorthand symbol of a note
 class SVX_DLLPUBLIC SvxPostItAuthorItem: public SfxStringItem
 {
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     SvxPostItAuthorItem( sal_uInt16 nWhich  );
 
@@ -41,9 +41,9 @@ public:
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
-                                    OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    OUString &rText, const IntlWrapper * = nullptr ) const override;
 
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
 
     inline SvxPostItAuthorItem& operator=( const SvxPostItAuthorItem& rAuthor )
     {
@@ -64,7 +64,7 @@ The date of a note
 class SVX_DLLPUBLIC SvxPostItDateItem: public SfxStringItem
 {
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     SvxPostItDateItem( sal_uInt16 nWhich  );
 
@@ -72,9 +72,9 @@ public:
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
-                                    OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    OUString &rText, const IntlWrapper * = nullptr ) const override;
 
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
 
     inline SvxPostItDateItem& operator=( const SvxPostItDateItem& rDate )
     {
@@ -95,7 +95,7 @@ The text of a note
 class SVX_DLLPUBLIC SvxPostItTextItem: public SfxStringItem
 {
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     SvxPostItTextItem( sal_uInt16 nWhich  );
 
@@ -104,9 +104,9 @@ public:
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
-                                    OUString &rText, const IntlWrapper * = 0 ) const SAL_OVERRIDE;
+                                    OUString &rText, const IntlWrapper * = nullptr ) const override;
 
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
 
     inline SvxPostItTextItem& operator=( const SvxPostItTextItem& rText )
     {

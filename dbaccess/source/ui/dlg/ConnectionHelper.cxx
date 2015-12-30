@@ -90,7 +90,7 @@ namespace dbaui
     OConnectionHelper::OConnectionHelper( vcl::Window* pParent, const OString& _rId, const OUString& _rUIXMLDescription, const SfxItemSet& _rCoreAttrs)
         : OGenericAdministrationPage(pParent, _rId, _rUIXMLDescription, _rCoreAttrs)
         , m_bUserGrabFocus(false)
-        , m_pCollection(NULL)
+        , m_pCollection(nullptr)
     {
         get(m_pFT_Connection, "browseurllabel");
         get(m_pConnectionURL, "browseurl");
@@ -139,7 +139,7 @@ namespace dbaui
         bool bEnableCreateButton = m_pCollection->supportsDBCreation( m_eType );
         m_pPB_CreateDB->Show( bEnableCreateButton );
 
-        SFX_ITEMSET_GET(_rSet, pUrlItem, SfxStringItem, DSID_CONNECTURL, true);
+        const SfxStringItem* pUrlItem = _rSet.GetItem<SfxStringItem>(DSID_CONNECTURL);
 
         // forward the values to the controls
         if ( bValid )
@@ -536,7 +536,7 @@ namespace dbaui
         ::ucbhelper::Content aCheckExistence;
         IS_PATH_EXIST eExists = PATH_NOT_EXIST;
         Reference< css::task::XInteractionHandler > xInteractionHandler(
-            task::InteractionHandler::createWithParent(m_xORB, 0), UNO_QUERY );
+            task::InteractionHandler::createWithParent(m_xORB, nullptr), UNO_QUERY );
         OFilePickerInteractionHandler* pHandler = new OFilePickerInteractionHandler(xInteractionHandler);
         xInteractionHandler = pHandler;
 
@@ -623,8 +623,7 @@ namespace dbaui
             }
 
             // the properties which need to be set on the new content
-            Sequence< OUString > aNewDirectoryProperties(1);
-            aNewDirectoryProperties[0] = "Title";
+            Sequence< OUString > aNewDirectoryProperties { "Title" };
 
             // the values to be set
             Sequence< Any > aNewDirectoryAttributes(1);

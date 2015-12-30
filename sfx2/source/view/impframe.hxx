@@ -36,18 +36,16 @@ class SfxViewFrame;
 class SfxFrame_Impl : public SfxBroadcaster
 {
 public:
-    ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame > xFrame;
+    css::uno::Reference< css::frame::XFrame > xFrame;
     sal_uInt32                nType;
     SfxViewFrame*             pCurrentViewFrame;
     SfxFrameDescriptor*       pDescr;
-    sal_uInt16                nLocks;
     bool                      bClosing : 1;
     bool                      bPrepClosing : 1;
     bool                      bInCancelTransfers : 1;
     bool                      bOwnsBindings : 1;
     bool                      bReleasingComponent : 1;
     bool                      bInPlace : 1;
-    SfxFrame*                 pFrame;
     SfxWorkWindow*            pWorkWin;
     SvBorder                  aBorder;
     // formerly SfxTopFrame
@@ -56,20 +54,18 @@ public:
     bool                      bLockResize;
     bool                      bMenuBarOn;
 
-    explicit SfxFrame_Impl( SfxFrame* pAntiImplP )
+    explicit SfxFrame_Impl()
         :nType( 0L )
-        ,pCurrentViewFrame( NULL )
-        ,pDescr( NULL )
-        ,nLocks( 0 )
+        ,pCurrentViewFrame( nullptr )
+        ,pDescr( nullptr )
         ,bClosing(false)
         ,bPrepClosing(false)
         ,bInCancelTransfers( false )
         ,bOwnsBindings( false )
         ,bReleasingComponent( false )
         ,bInPlace( false )
-        ,pFrame( pAntiImplP )
-        ,pWorkWin( 0 )
-        ,pExternalContainerWindow( NULL )
+        ,pWorkWin( nullptr )
+        ,pExternalContainerWindow( nullptr )
         ,bHidden( false )
         ,bLockResize( false )
         ,bMenuBarOn( true )

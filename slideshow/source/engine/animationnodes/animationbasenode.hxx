@@ -39,20 +39,18 @@ class AnimationBaseNode : public BaseNode
 {
 public:
     AnimationBaseNode(
-        ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XAnimationNode> const& xNode,
+        css::uno::Reference<css::animations::XAnimationNode> const& xNode,
         ::boost::shared_ptr<BaseContainerNode> const& pParent,
         NodeContext const& rContext );
 
 #if defined(DBG_UTIL)
-    virtual void showState() const SAL_OVERRIDE;
+    virtual void showState() const override;
 #endif
 
 protected:
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XAnimate> const& getXAnimateNode() const
+    css::uno::Reference<css::animations::XAnimate> const& getXAnimateNode() const
         { return mxAnimateNode; }
 
     /// Create parameter struct for ActivitiesFactory
@@ -61,13 +59,13 @@ protected:
     AttributableShapeSharedPtr          getShape() const;
 
 private:
-    virtual bool hasPendingAnimation() const SAL_OVERRIDE;
+    virtual bool hasPendingAnimation() const override;
 
 private: // state transition callbacks
-    virtual bool init_st() SAL_OVERRIDE;
-    virtual bool resolve_st() SAL_OVERRIDE;
-    virtual void activate_st() SAL_OVERRIDE;
-    virtual void deactivate_st( NodeState eDestState ) SAL_OVERRIDE;
+    virtual bool init_st() override;
+    virtual bool resolve_st() override;
+    virtual void activate_st() override;
+    virtual void deactivate_st( NodeState eDestState ) override;
     virtual AnimationActivitySharedPtr createActivity() const = 0;
 
 private:
@@ -79,8 +77,7 @@ private:
         { return mpShapeSubset && !mbIsIndependentSubset; }
 
 private:
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::animations::XAnimate>     mxAnimateNode;
+    css::uno::Reference<css::animations::XAnimate>  mxAnimateNode;
     ShapeAttributeLayerHolder                       maAttributeLayerHolder;
     ::basegfx::B2DVector                            maSlideSize;
     AnimationActivitySharedPtr                      mpActivity;

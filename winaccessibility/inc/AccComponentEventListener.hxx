@@ -38,11 +38,11 @@ class AccComponentEventListener: public AccEventListener
 private:
     static FILE *output, *output2, *output3, *outacc;//used for debugging
 public:
-    AccComponentEventListener(com::sun::star::accessibility::XAccessible* pAcc, AccObjectManagerAgent* Agent);
+    AccComponentEventListener(css::accessibility::XAccessible* pAcc, AccObjectManagerAgent* Agent);
     virtual ~AccComponentEventListener();
 
     // XAccessibleEventListener
-    virtual void SAL_CALL notifyEvent( const ::com::sun::star::accessibility::AccessibleEventObject& aEvent ) throw (::com::sun::star::uno::RuntimeException);
+    virtual void SAL_CALL notifyEvent( const css::accessibility::AccessibleEventObject& aEvent ) throw (css::uno::RuntimeException) override;
 
     //for value changed event
     virtual void HandleValueChangedEvent(
@@ -59,9 +59,9 @@ public:
     virtual void HandleCaretChangedEvent(
             css::uno::Any oldValue, css::uno::Any newValue);
 
-    virtual void SetComponentState(short state, bool enable) SAL_OVERRIDE;
-    virtual void FireStatePropertyChange(short state, bool set) SAL_OVERRIDE;
-    virtual void FireStateFocusedChange(bool enable) SAL_OVERRIDE;
+    virtual void SetComponentState(short state, bool enable) override;
+    virtual void FireStatePropertyChange(short state, bool set) override;
+    virtual void FireStateFocusedChange(bool enable) override;
 
     void HandleSelectionChangedEventNoArgs();
 

@@ -39,7 +39,6 @@
 
 namespace sd {
 
-TYPEINIT1( FuSnapLine, FuPoor );
 
 FuSnapLine::FuSnapLine(ViewShell* pViewSh, ::sd::Window* pWin, ::sd::View* pView,
                        SdDrawDocument* pDoc, SfxRequest& rReq) :
@@ -61,12 +60,12 @@ void FuSnapLine::DoExecute( SfxRequest& rReq )
     bool    bCreateNew = true;
 
     // Get index of snap line or snap point from the request.
-    SFX_REQUEST_ARG (rReq, pHelpLineIndex, SfxUInt32Item, ID_VAL_INDEX, false);
-    if (pHelpLineIndex != NULL)
+    const SfxUInt32Item* pHelpLineIndex = rReq.GetArg<SfxUInt32Item>(ID_VAL_INDEX);
+    if (pHelpLineIndex != nullptr)
     {
         nHelpLine = static_cast<sal_uInt16>(pHelpLineIndex->GetValue());
         // Reset the argument pointer to trigger the display of the dialog.
-        pArgs = NULL;
+        pArgs = nullptr;
     }
 
     SdrPageView* pPV = mpView->GetSdrPageView();
@@ -77,7 +76,7 @@ void FuSnapLine::DoExecute( SfxRequest& rReq )
         bool bLineExist (false);
         Point aLinePos;
 
-        if (pHelpLineIndex == NULL)
+        if (pHelpLineIndex == nullptr)
         {
             // The index of the snap line is not provided as argument to the
             // request.  Determine it from the mouse position.
@@ -102,7 +101,7 @@ void FuSnapLine::DoExecute( SfxRequest& rReq )
         }
         else
         {
-            assert(pPV!=NULL);
+            assert(pPV!=nullptr);
             aLinePos = (pPV->GetHelpLines())[nHelpLine].GetPos();
             pPV->LogicToPagePos(aLinePos);
             bLineExist = true;
@@ -111,7 +110,7 @@ void FuSnapLine::DoExecute( SfxRequest& rReq )
         aNewAttr.Put(SfxInt32Item(ATTR_SNAPLINE_Y, aLinePos.Y()));
 
         SdAbstractDialogFactory* pFact = SdAbstractDialogFactory::Create();
-        std::unique_ptr<AbstractSdSnapLineDlg> pDlg(pFact ? pFact->CreateSdSnapLineDlg( NULL, aNewAttr, mpView ) : 0);
+        std::unique_ptr<AbstractSdSnapLineDlg> pDlg(pFact ? pFact->CreateSdSnapLineDlg( nullptr, aNewAttr, mpView ) : nullptr);
         OSL_ASSERT(pDlg);
         if (!pDlg)
             return;

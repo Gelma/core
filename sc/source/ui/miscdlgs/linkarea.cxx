@@ -39,8 +39,8 @@
 
 ScLinkedAreaDlg::ScLinkedAreaDlg(vcl::Window* pParent)
     : ModalDialog(pParent, "ExternalDataDialog", "modules/scalc/ui/externaldata.ui")
-    , pSourceShell(NULL)
-    , pDocInserter(NULL)
+    , pSourceShell(nullptr)
+    , pDocInserter(nullptr)
 
 {
     get(m_pCbUrl, "url");
@@ -103,7 +103,7 @@ IMPL_LINK_NOARG_TYPED(ScLinkedAreaDlg, BrowseHdl, Button*, void)
     pDocInserter->StartExecuteModal( LINK( this, ScLinkedAreaDlg, DialogClosedHdl ) );
 }
 
-IMPL_LINK_NOARG(ScLinkedAreaDlg, FileHdl)
+IMPL_LINK_NOARG_TYPED(ScLinkedAreaDlg, FileHdl, ComboBox&, void)
 {
     OUString aEntered = m_pCbUrl->GetURL();
     if (pSourceShell)
@@ -112,7 +112,7 @@ IMPL_LINK_NOARG(ScLinkedAreaDlg, FileHdl)
         if ( aEntered.equals(pMed->GetName()) )
         {
             //  already loaded - nothing to do
-            return 0;
+            return;
         }
     }
 
@@ -121,7 +121,7 @@ IMPL_LINK_NOARG(ScLinkedAreaDlg, FileHdl)
     //  get filter name by looking at the file content (bWithContent = true)
     // Break operation if any error occurred inside.
     if (!ScDocumentLoader::GetFilterName( aEntered, aFilter, aOptions, true, true ))
-        return 0;
+        return;
 
     // #i53241# replace HTML filter with DataQuery filter
     if (aFilter == FILTERNAME_HTML)
@@ -131,7 +131,6 @@ IMPL_LINK_NOARG(ScLinkedAreaDlg, FileHdl)
 
     UpdateSourceRanges();
     UpdateEnable();
-    return 0;
 }
 
 void ScLinkedAreaDlg::LoadDocument( const OUString& rFile, const OUString& rFilter, const OUString& rOptions )
@@ -140,7 +139,7 @@ void ScLinkedAreaDlg::LoadDocument( const OUString& rFile, const OUString& rFilt
     {
         //  unload old document
         pSourceShell->DoClose();
-        pSourceShell = NULL;
+        pSourceShell = nullptr;
         aSourceRef.Clear();
     }
 
@@ -197,10 +196,9 @@ void ScLinkedAreaDlg::InitFromOldLink( const OUString& rFile, const OUString& rF
     UpdateEnable();
 }
 
-IMPL_LINK_NOARG(ScLinkedAreaDlg, RangeHdl)
+IMPL_LINK_NOARG_TYPED(ScLinkedAreaDlg, RangeHdl, ListBox&, void)
 {
     UpdateEnable();
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED(ScLinkedAreaDlg, ReloadHdl, Button*, void)
@@ -254,7 +252,7 @@ IMPL_LINK_TYPED( ScLinkedAreaDlg, DialogClosedHdl, sfx2::FileDialogHelper*, _pFi
         else
         {
             pSourceShell->DoClose();
-            pSourceShell = NULL;
+            pSourceShell = nullptr;
             aSourceRef.Clear();
 
             m_pCbUrl->SetText( EMPTY_OUSTRING );

@@ -59,8 +59,7 @@ protected:
     virtual void ContextFilter(
             bool bEnableFoFontFamily,
             ::std::vector< XMLPropertyState >& rProperties,
-            ::com::sun::star::uno::Reference<
-                        ::com::sun::star::beans::XPropertySet > rPropSet ) const SAL_OVERRIDE;
+            css::uno::Reference< css::beans::XPropertySet > rPropSet ) const override;
     const SvXMLExport& GetExport() const { return rExport; }
 
 public:
@@ -74,16 +73,16 @@ public:
         SvXMLExport& rExport,
         const XMLPropertyState& rProperty,
         SvXmlExportFlags nFlags,
-        const ::std::vector< XMLPropertyState > *pProperties = 0,
-        sal_uInt32 nIdx = 0 ) const SAL_OVERRIDE;
+        const ::std::vector< XMLPropertyState > *pProperties = nullptr,
+        sal_uInt32 nIdx = 0 ) const override;
 
     virtual void handleSpecialItem(
         SvXMLAttributeList& rAttrList,
         const XMLPropertyState& rProperty,
         const SvXMLUnitConverter& rUnitConverter,
         const SvXMLNamespaceMap& rNamespaceMap,
-        const ::std::vector< XMLPropertyState > *pProperties = 0,
-        sal_uInt32 nIdx = 0 ) const SAL_OVERRIDE;
+        const ::std::vector< XMLPropertyState > *pProperties = nullptr,
+        sal_uInt32 nIdx = 0 ) const override;
 };
 
 

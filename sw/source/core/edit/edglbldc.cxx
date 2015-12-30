@@ -73,7 +73,7 @@ void SwEditShell::GetGlobalDocContent( SwGlblDocContents& rArr ) const
             case TOX_HEADER_SECTION:
                 break;      // ignore
             case TOX_CONTENT_SECTION:
-                OSL_ENSURE( pSect->ISA( SwTOXBaseSection ), "no TOXBaseSection!" );
+                OSL_ENSURE( dynamic_cast<const SwTOXBaseSection*>( pSect) !=  nullptr, "no TOXBaseSection!" );
                 pNew = new SwGlblDocContent( static_cast<const SwTOXBaseSection*>(pSect) );
                 break;
 
@@ -142,11 +142,11 @@ bool SwEditShell::InsertGlobalDocContent( const SwGlblDocContent& rInsPos,
     SET_CURR_SHELL( this );
     StartAllAction();
 
-    SwPaM* pCrsr = GetCrsr();
-    if( pCrsr->GetNext() != pCrsr || IsTableMode() )
+    SwPaM* pCursor = GetCursor();
+    if( pCursor->GetNext() != pCursor || IsTableMode() )
         ClearMark();
 
-    SwPosition& rPos = *pCrsr->GetPoint();
+    SwPosition& rPos = *pCursor->GetPoint();
     rPos.nNode = rInsPos.GetDocPos();
 
     bool bEndUndo = false;
@@ -157,17 +157,17 @@ bool SwEditShell::InsertGlobalDocContent( const SwGlblDocContent& rInsPos,
     else
     {
         bEndUndo = true;
-        pMyDoc->GetIDocumentUndoRedo().StartUndo( UNDO_START, NULL );
+        pMyDoc->GetIDocumentUndoRedo().StartUndo( UNDO_START, nullptr );
         --rPos.nNode;
         pMyDoc->getIDocumentContentOperations().AppendTextNode( rPos );
-        pCrsr->SetMark();
+        pCursor->SetMark();
     }
 
     InsertSection( rNew );
 
     if( bEndUndo )
     {
-        pMyDoc->GetIDocumentUndoRedo().EndUndo( UNDO_END, NULL );
+        pMyDoc->GetIDocumentUndoRedo().EndUndo( UNDO_END, nullptr );
     }
     EndAllAction();
 
@@ -183,11 +183,11 @@ bool SwEditShell::InsertGlobalDocContent( const SwGlblDocContent& rInsPos,
     SET_CURR_SHELL( this );
     StartAllAction();
 
-    SwPaM* pCrsr = GetCrsr();
-    if( pCrsr->GetNext() != pCrsr || IsTableMode() )
+    SwPaM* pCursor = GetCursor();
+    if( pCursor->GetNext() != pCursor || IsTableMode() )
         ClearMark();
 
-    SwPosition& rPos = *pCrsr->GetPoint();
+    SwPosition& rPos = *pCursor->GetPoint();
     rPos.nNode = rInsPos.GetDocPos();
 
     bool bEndUndo = false;
@@ -199,7 +199,7 @@ bool SwEditShell::InsertGlobalDocContent( const SwGlblDocContent& rInsPos,
     else
     {
         bEndUndo = true;
-        pMyDoc->GetIDocumentUndoRedo().StartUndo( UNDO_START, NULL );
+        pMyDoc->GetIDocumentUndoRedo().StartUndo( UNDO_START, nullptr );
         --rPos.nNode;
         pMyDoc->getIDocumentContentOperations().AppendTextNode( rPos );
     }
@@ -208,7 +208,7 @@ bool SwEditShell::InsertGlobalDocContent( const SwGlblDocContent& rInsPos,
 
     if( bEndUndo )
     {
-        pMyDoc->GetIDocumentUndoRedo().EndUndo( UNDO_END, NULL );
+        pMyDoc->GetIDocumentUndoRedo().EndUndo( UNDO_END, nullptr );
     }
     EndAllAction();
 
@@ -223,13 +223,13 @@ bool SwEditShell::InsertGlobalDocContent( const SwGlblDocContent& rInsPos )
     SET_CURR_SHELL( this );
     StartAllAction();
 
-    SwPaM* pCrsr = GetCrsr();
-    if( pCrsr->GetNext() != pCrsr || IsTableMode() )
+    SwPaM* pCursor = GetCursor();
+    if( pCursor->GetNext() != pCursor || IsTableMode() )
         ClearMark();
 
-    SwPosition& rPos = *pCrsr->GetPoint();
+    SwPosition& rPos = *pCursor->GetPoint();
     rPos.nNode = rInsPos.GetDocPos() - 1;
-    rPos.nContent.Assign( 0, 0 );
+    rPos.nContent.Assign( nullptr, 0 );
 
     SwDoc* pMyDoc = GetDoc();
     pMyDoc->getIDocumentContentOperations().AppendTextNode( rPos );
@@ -247,11 +247,11 @@ bool SwEditShell::DeleteGlobalDocContent( const SwGlblDocContents& rArr ,
     StartAllAction();
     StartUndo( UNDO_START );
 
-    SwPaM* pCrsr = GetCrsr();
-    if( pCrsr->GetNext() != pCrsr || IsTableMode() )
+    SwPaM* pCursor = GetCursor();
+    if( pCursor->GetNext() != pCursor || IsTableMode() )
         ClearMark();
 
-    SwPosition& rPos = *pCrsr->GetPoint();
+    SwPosition& rPos = *pCursor->GetPoint();
 
     SwDoc* pMyDoc = GetDoc();
     const SwGlblDocContent& rDelPos = *rArr[ nDelPos ];
@@ -260,7 +260,7 @@ bool SwEditShell::DeleteGlobalDocContent( const SwGlblDocContents& rArr ,
     {
         // we need at least one node!
         rPos.nNode = nDelIdx - 1;
-        rPos.nContent.Assign( 0, 0 );
+        rPos.nContent.Assign( nullptr, 0 );
 
         pMyDoc->getIDocumentContentOperations().AppendTextNode( rPos );
         ++nDelIdx;
@@ -271,13 +271,13 @@ bool SwEditShell::DeleteGlobalDocContent( const SwGlblDocContents& rArr ,
     case GLBLDOC_UNKNOWN:
         {
             rPos.nNode = nDelIdx;
-            pCrsr->SetMark();
+            pCursor->SetMark();
             if( ++nDelPos < rArr.size() )
                 rPos.nNode = rArr[ nDelPos ]->GetDocPos();
             else
                 rPos.nNode = pMyDoc->GetNodes().GetEndOfContent();
             --rPos.nNode;
-            if( !pMyDoc->getIDocumentContentOperations().DelFullPara( *pCrsr ) )
+            if( !pMyDoc->getIDocumentContentOperations().DelFullPara( *pCursor ) )
                 Delete();
         }
         break;
@@ -315,8 +315,8 @@ bool SwEditShell::MoveGlobalDocContent( const SwGlblDocContents& rArr ,
     SET_CURR_SHELL( this );
     StartAllAction();
 
-    SwPaM* pCrsr = GetCrsr();
-    if( pCrsr->GetNext() != pCrsr || IsTableMode() )
+    SwPaM* pCursor = GetCursor();
+    if( pCursor->GetNext() != pCursor || IsTableMode() )
         ClearMark();
 
     SwDoc* pMyDoc = GetDoc();
@@ -345,30 +345,30 @@ bool SwEditShell::GotoGlobalDocContent( const SwGlblDocContent& rPos )
         return false;
 
     SET_CURR_SHELL( this );
-    SttCrsrMove();
+    SttCursorMove();
 
-    SwPaM* pCrsr = GetCrsr();
-    if( pCrsr->GetNext() != pCrsr || IsTableMode() )
+    SwPaM* pCursor = GetCursor();
+    if( pCursor->GetNext() != pCursor || IsTableMode() )
         ClearMark();
 
-    SwPosition& rCrsrPos = *pCrsr->GetPoint();
-    rCrsrPos.nNode = rPos.GetDocPos();
+    SwPosition& rCursorPos = *pCursor->GetPoint();
+    rCursorPos.nNode = rPos.GetDocPos();
 
     SwDoc* pMyDoc = GetDoc();
-    SwContentNode * pCNd = rCrsrPos.nNode.GetNode().GetContentNode();
+    SwContentNode * pCNd = rCursorPos.nNode.GetNode().GetContentNode();
     if( !pCNd )
-        pCNd = pMyDoc->GetNodes().GoNext( &rCrsrPos.nNode );
+        pCNd = pMyDoc->GetNodes().GoNext( &rCursorPos.nNode );
 
-    rCrsrPos.nContent.Assign( pCNd, 0 );
+    rCursorPos.nContent.Assign( pCNd, 0 );
 
-    EndCrsrMove();
+    EndCursorMove();
     return true;
 }
 
 SwGlblDocContent::SwGlblDocContent( sal_uLong nPos )
 {
     eType = GLBLDOC_UNKNOWN;
-    PTR.pTOX = 0;
+    PTR.pTOX = nullptr;
     nDocPos = nPos;
 }
 

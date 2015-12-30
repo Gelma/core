@@ -32,10 +32,10 @@ public:
     SdPageLink(SdPage* pPg, const OUString& rFileName, const OUString& rBookmarkName);
     virtual ~SdPageLink();
 
-    virtual void Closed() SAL_OVERRIDE;
+    virtual void Closed() override;
     virtual ::sfx2::SvBaseLink::UpdateResult DataChanged(
-        const OUString& rMimeType, const ::com::sun::star::uno::Any & rValue ) SAL_OVERRIDE;
-    bool         Connect() { return 0 != SvBaseLink::GetRealObject(); }
+        const OUString& rMimeType, const css::uno::Any & rValue ) override;
+    bool         Connect() { return nullptr != SvBaseLink::GetRealObject(); }
 };
 
 #endif // INCLUDED_SD_INC_PGLINK_HXX

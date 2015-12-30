@@ -31,11 +31,11 @@ class ScAnnontationObj : public CalcUnoApiTest, apitest::XSheetAnnotation
 public:
     ScAnnontationObj();
 
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
-    virtual uno::Reference< uno::XInterface > init() SAL_OVERRIDE;
-    virtual uno::Reference< sheet::XSheetAnnotation> getAnnotation(table::CellAddress&) SAL_OVERRIDE;
+    virtual uno::Reference< uno::XInterface > init() override;
+    virtual uno::Reference< sheet::XSheetAnnotation> getAnnotation(table::CellAddress&) override;
 
     CPPUNIT_TEST_SUITE(ScAnnontationObj);
     CPPUNIT_TEST(testGetPosition);
@@ -82,7 +82,7 @@ uno::Reference< uno::XInterface > ScAnnontationObj::init()
 
     // get the test file
     OUString aFileURL;
-    createFileURL(OUString("ScAnnotationObj.ods"), aFileURL);
+    createFileURL("ScAnnotationObj.ods", aFileURL);
     if(!mxComponent.is())
         mxComponent = loadFromDesktop(aFileURL);
     CPPUNIT_ASSERT_MESSAGE("Component not loaded",mxComponent.is());

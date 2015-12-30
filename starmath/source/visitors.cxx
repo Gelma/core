@@ -166,83 +166,83 @@ SmCaretDrawingVisitor::SmCaretDrawingVisitor( OutputDevice& rDevice,
                                              SmCaretPos position,
                                              Point offset,
                                              bool caretVisible )
- : rDev( rDevice )
+    : mrDev( rDevice )
+    , maPos( position )
+    , maOffset( offset )
+    , mbCaretVisible( caretVisible )
 {
-    pos = position;
-    Offset = offset;
-    isCaretVisible = caretVisible;
     SAL_WARN_IF( !position.IsValid(), "starmath", "Cannot draw invalid position!" );
     if( !position.IsValid( ) )
         return;
 
     //Save device state
-    rDev.Push( PushFlags::FONT | PushFlags::MAPMODE | PushFlags::LINECOLOR | PushFlags::FILLCOLOR | PushFlags::TEXTCOLOR );
+    mrDev.Push( PushFlags::FONT | PushFlags::MAPMODE | PushFlags::LINECOLOR | PushFlags::FILLCOLOR | PushFlags::TEXTCOLOR );
 
-    pos.pSelectedNode->Accept( this );
+    maPos.pSelectedNode->Accept( this );
     //Restore device state
-    rDev.Pop( );
+    mrDev.Pop( );
 }
 
 void SmCaretDrawingVisitor::Visit( SmTextNode* pNode )
 {
-    long i = pos.Index;
+    long i = maPos.Index;
 
-    rDev.SetFont( pNode->GetFont( ) );
+    mrDev.SetFont( pNode->GetFont( ) );
 
     //Find the line
     SmNode* pLine = SmCursor::FindTopMostNodeInLine( pNode );
 
     //Find coordinates
-    long left = pNode->GetLeft( ) + rDev.GetTextWidth( pNode->GetText( ), 0, i ) + Offset.X( );
-    long top = pLine->GetTop( ) + Offset.Y( );
+    long left = pNode->GetLeft( ) + mrDev.GetTextWidth( pNode->GetText( ), 0, i ) + maOffset.X( );
+    long top = pLine->GetTop( ) + maOffset.Y( );
     long height = pLine->GetHeight( );
-    long left_line = pLine->GetLeft( ) + Offset.X( );
-    long right_line = pLine->GetRight( ) + Offset.X( );
+    long left_line = pLine->GetLeft( ) + maOffset.X( );
+    long right_line = pLine->GetRight( ) + maOffset.X( );
 
     //Set color
-    rDev.SetLineColor( Color( COL_BLACK ) );
+    mrDev.SetLineColor( Color( COL_BLACK ) );
 
-    if ( isCaretVisible ) {
+    if ( mbCaretVisible ) {
         //Draw vertical line
         Point p1( left, top );
         Point p2( left, top + height );
-        rDev.DrawLine( p1, p2 );
+        mrDev.DrawLine( p1, p2 );
     }
 
     //Underline the line
     Point pLeft( left_line, top + height );
     Point pRight( right_line, top + height );
-    rDev.DrawLine( pLeft, pRight );
+    mrDev.DrawLine( pLeft, pRight );
 }
 
 void SmCaretDrawingVisitor::DefaultVisit( SmNode* pNode )
 {
-    rDev.SetLineColor( Color( COL_BLACK ) );
+    mrDev.SetLineColor( Color( COL_BLACK ) );
 
     //Find the line
     SmNode* pLine = SmCursor::FindTopMostNodeInLine( pNode );
 
     //Find coordinates
-    long left = pNode->GetLeft( ) + Offset.X( ) + ( pos.Index == 1 ? pNode->GetWidth( ) : 0 );
-    long top = pLine->GetTop( ) + Offset.Y( );
+    long left = pNode->GetLeft( ) + maOffset.X( ) + ( maPos.Index == 1 ? pNode->GetWidth( ) : 0 );
+    long top = pLine->GetTop( ) + maOffset.Y( );
     long height = pLine->GetHeight( );
-    long left_line = pLine->GetLeft( ) + Offset.X( );
-    long right_line = pLine->GetRight( ) + Offset.X( );
+    long left_line = pLine->GetLeft( ) + maOffset.X( );
+    long right_line = pLine->GetRight( ) + maOffset.X( );
 
     //Set color
-    rDev.SetLineColor( Color( COL_BLACK ) );
+    mrDev.SetLineColor( Color( COL_BLACK ) );
 
-    if ( isCaretVisible ) {
+    if ( mbCaretVisible ) {
         //Draw vertical line
         Point p1( left, top );
         Point p2( left, top + height );
-        rDev.DrawLine( p1, p2 );
+        mrDev.DrawLine( p1, p2 );
     }
 
     //Underline the line
     Point pLeft( left_line, top + height );
     Point pRight( right_line, top + height );
-    rDev.DrawLine( pLeft, pRight );
+    mrDev.DrawLine( pLeft, pRight );
 }
 
 // SmCaretPos2LineVisitor
@@ -250,31 +250,31 @@ void SmCaretDrawingVisitor::DefaultVisit( SmNode* pNode )
 void SmCaretPos2LineVisitor::Visit( SmTextNode* pNode )
 {
     //Save device state
-    pDev->Push( PushFlags::FONT | PushFlags::TEXTCOLOR );
+    mpDev->Push( PushFlags::FONT | PushFlags::TEXTCOLOR );
 
-    long i = pos.Index;
+    long i = maPos.Index;
 
-    pDev->SetFont( pNode->GetFont( ) );
+    mpDev->SetFont( pNode->GetFont( ) );
 
     //Find coordinates
-    long left = pNode->GetLeft( ) + pDev->GetTextWidth( pNode->GetText( ), 0, i );
+    long left = pNode->GetLeft( ) + mpDev->GetTextWidth( pNode->GetText( ), 0, i );
     long top = pNode->GetTop( );
     long height = pNode->GetHeight( );
 
-    line = SmCaretLine( left, top, height );
+    maLine = SmCaretLine( left, top, height );
 
     //Restore device state
-    pDev->Pop( );
+    mpDev->Pop( );
 }
 
 void SmCaretPos2LineVisitor::DefaultVisit( SmNode* pNode )
 {
     //Vertical line ( code from SmCaretDrawingVisitor )
     Point p1 = pNode->GetTopLeft( );
-    if( pos.Index == 1 )
+    if( maPos.Index == 1 )
         p1.Move( pNode->GetWidth( ), 0 );
 
-    line = SmCaretLine( p1.X( ), p1.Y( ), pNode->GetHeight( ) );
+    maLine = SmCaretLine( p1.X( ), p1.Y( ), pNode->GetHeight( ) );
 }
 
 
@@ -413,9 +413,9 @@ void SmDrawingVisitor::Visit( SmRootSymbolNode* pNode )
     // draw root-sign itself
     DrawSpecialNode( pNode );
 
-    SmTmpDevice aTmpDev( ( OutputDevice & ) rDev, true );
+    SmTmpDevice aTmpDev( mrDev, true );
     aTmpDev.SetFillColor( pNode->GetFont( ).GetColor( ) );
-    rDev.SetLineColor( );
+    mrDev.SetLineColor( );
     aTmpDev.SetFont( pNode->GetFont( ) );
 
     // since the width is always unscaled it corresponds ot the _original_
@@ -425,17 +425,17 @@ void SmDrawingVisitor::Visit( SmRootSymbolNode* pNode )
     long nBarHeight = pNode->GetWidth( ) * 7L / 100L;
     long nBarWidth = pNode->GetBodyWidth( ) + pNode->GetBorderWidth( );
     Point aBarOffset( pNode->GetWidth( ), +pNode->GetBorderWidth( ) );
-    Point aBarPos( Position + aBarOffset );
+    Point aBarPos( maPosition + aBarOffset );
 
     Rectangle  aBar( aBarPos, Size( nBarWidth, nBarHeight ) );
     //! avoid GROWING AND SHRINKING of drawn rectangle when constantly
     //! increasing zoomfactor.
     //  This is done by shifting its output-position to a point that
     //  corresponds exactly to a pixel on the output device.
-    Point  aDrawPos( rDev.PixelToLogic( rDev.LogicToPixel( aBar.TopLeft( ) ) ) );
+    Point  aDrawPos( mrDev.PixelToLogic( mrDev.LogicToPixel( aBar.TopLeft( ) ) ) );
     aBar.SetPos( aDrawPos );
 
-    rDev.DrawRect( aBar );
+    mrDev.DrawRect( aBar );
 }
 
 void SmDrawingVisitor::Visit( SmDynIntegralSymbolNode* pNode )
@@ -466,13 +466,13 @@ void SmDrawingVisitor::Visit( SmPolyLineNode* pNode )
 
     Point aOffset ( Point( ) - pNode->GetPolygon( ).GetBoundRect( ).TopLeft( )
                    + Point( nBorderwidth, nBorderwidth ) ),
-          aPos ( Position + aOffset );
+          aPos ( maPosition + aOffset );
     pNode->GetPolygon( ).Move( aPos.X( ), aPos.Y( ) );    //Works because Polygon wraps a pointer
 
-    SmTmpDevice aTmpDev ( ( OutputDevice & ) rDev, false );
+    SmTmpDevice aTmpDev ( mrDev, false );
     aTmpDev.SetLineColor( pNode->GetFont( ).GetColor( ) );
 
-    rDev.DrawPolyLine( pNode->GetPolygon( ), aInfo );
+    mrDev.DrawPolyLine( pNode->GetPolygon( ), aInfo );
 }
 
 void SmDrawingVisitor::Visit( SmRectangleNode* pNode )
@@ -480,15 +480,15 @@ void SmDrawingVisitor::Visit( SmRectangleNode* pNode )
     if ( pNode->IsPhantom( ) )
         return;
 
-    SmTmpDevice aTmpDev ( ( OutputDevice & ) rDev, false );
+    SmTmpDevice aTmpDev ( mrDev, false );
     aTmpDev.SetFillColor( pNode->GetFont( ).GetColor( ) );
-    rDev.SetLineColor( );
+    mrDev.SetLineColor( );
     aTmpDev.SetFont( pNode->GetFont( ) );
 
     sal_uLong  nTmpBorderWidth = pNode->GetFont( ).GetBorderWidth( );
 
     // get rectangle and remove borderspace
-    Rectangle  aTmp ( pNode->AsRectangle( ) + Position - pNode->GetTopLeft( ) );
+    Rectangle  aTmp ( pNode->AsRectangle( ) + maPosition - pNode->GetTopLeft( ) );
     aTmp.Left( )   += nTmpBorderWidth;
     aTmp.Right( )  -= nTmpBorderWidth;
     aTmp.Top( )    += nTmpBorderWidth;
@@ -501,10 +501,10 @@ void SmDrawingVisitor::Visit( SmRectangleNode* pNode )
     //! increasing zoomfactor.
     //  This is done by shifting its output-position to a point that
     //  corresponds exactly to a pixel on the output device.
-    Point  aPos ( rDev.PixelToLogic( rDev.LogicToPixel( aTmp.TopLeft( ) ) ) );
+    Point  aPos ( mrDev.PixelToLogic( mrDev.LogicToPixel( aTmp.TopLeft( ) ) ) );
     aTmp.SetPos( aPos );
 
-    rDev.DrawRect( aTmp );
+    mrDev.DrawRect( aTmp );
 }
 
 void SmDrawingVisitor::DrawTextNode( SmTextNode* pNode )
@@ -512,15 +512,15 @@ void SmDrawingVisitor::DrawTextNode( SmTextNode* pNode )
     if ( pNode->IsPhantom() || pNode->GetText().isEmpty() || pNode->GetText()[0] == '\0' )
         return;
 
-    SmTmpDevice aTmpDev ( ( OutputDevice & ) rDev, false );
+    SmTmpDevice aTmpDev ( mrDev, false );
     aTmpDev.SetFont( pNode->GetFont( ) );
 
-    Point  aPos ( Position );
+    Point  aPos ( maPosition );
     aPos.Y( ) += pNode->GetBaselineOffset( );
     // auf Pixelkoordinaten runden
-    aPos = rDev.PixelToLogic( rDev.LogicToPixel( aPos ) );
+    aPos = mrDev.PixelToLogic( mrDev.LogicToPixel( aPos ) );
 
-    rDev.DrawStretchText( aPos, pNode->GetWidth( ), pNode->GetText( ) );
+    mrDev.DrawStretchText( aPos, pNode->GetWidth( ), pNode->GetText( ) );
 }
 
 void SmDrawingVisitor::DrawSpecialNode( SmSpecialNode* pNode )
@@ -537,13 +537,13 @@ void SmDrawingVisitor::DrawChildren( SmNode* pNode )
     if ( pNode->IsPhantom( ) )
         return;
 
-    Point rPosition = Position;
+    Point rPosition = maPosition;
 
     SmNodeIterator it( pNode );
     while( it.Next( ) )
     {
         Point  aOffset ( it->GetTopLeft( ) - pNode->GetTopLeft( ) );
-        Position = rPosition + aOffset;
+        maPosition = rPosition + aOffset;
         it->Accept( this );
     }
 }
@@ -992,7 +992,7 @@ void SmCaretPosGraphBuildingVisitor::Visit( SmOperNode* pNode )
     bodyRight->SetRight( right );
 
     //Get subsup pNode if any
-    SmSubSupNode* pSubSup = pOper->GetType( ) == NSUBSUP ? static_cast<SmSubSupNode*>(pOper) : NULL;
+    SmSubSupNode* pSubSup = pOper->GetType( ) == NSUBSUP ? static_cast<SmSubSupNode*>(pOper) : nullptr;
 
     SmNode* pChild;
     SmCaretPosGraphEntry *childLeft;
@@ -1319,7 +1319,7 @@ void SmCaretPosGraphBuildingVisitor::Visit( SmFontNode* pNode )
  * n6 -> n7 [label="0"];
  * n7 [label="SmTextNode: i"];
  * n5 -> n8 [label="1"];
- * n8 [label="SmMathSymbolNode: ∣"];
+ * n8 [label="SmMathSymbolNode: &#124;"]; // Unicode "VERTICAL LINE"
  * n5 -> n9 [label="2"];
  * n9 [label="SmExpressionNode"];
  * n9 -> n10 [label="0"];
@@ -1327,9 +1327,9 @@ void SmCaretPosGraphBuildingVisitor::Visit( SmFontNode* pNode )
  * n10 -> n11 [label="0"];
  * n11 [label="SmTextNode: i"];
  * n10 -> n12 [label="1"];
- * n12 [label="SmMathSymbolNode: ∈"];
+ * n12 [label="SmMathSymbolNode: &#8712;"]; // Unicode "ELEMENT OF"
  * n10 -> n13 [label="2"];
- * n13 [label="SmMathSymbolNode: ℤ"];
+ * n13 [label="SmMathSymbolNode: &#8484;"]; // Unicode "DOUBLE-STRUCK CAPITAL Z"
  * n3 -> n14 [label="2"];
  * n14 [label="SmMathSymbolNode: }"];
  * }
@@ -1638,10 +1638,10 @@ void SmCloningVisitor::CloneKids( SmStructureNode* pSource, SmStructureNode* pTa
     //Clone children
     for( sal_uInt16 i = 0; i < nSize; i++ ){
         SmNode* pKid;
-        if( NULL != ( pKid = pSource->GetSubNode( i ) ) )
+        if( nullptr != ( pKid = pSource->GetSubNode( i ) ) )
             pKid->Accept( this );
         else
-            pResult = NULL;
+            pResult = nullptr;
         aNodes[i] = pResult;
     }
 

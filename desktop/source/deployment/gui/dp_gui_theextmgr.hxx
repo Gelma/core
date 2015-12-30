@@ -107,22 +107,22 @@ public:
 
     static ::rtl::Reference<TheExtensionManager> get(
         css::uno::Reference< css::uno::XComponentContext> const & xContext,
-        css::uno::Reference< css::awt::XWindow> const & xParent = 0,
+        css::uno::Reference< css::awt::XWindow> const & xParent = nullptr,
         OUString const & view = OUString() );
 
     // XEventListener
     virtual void SAL_CALL disposing( css::lang::EventObject const & evt )
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // XTerminateListener
     virtual void SAL_CALL queryTermination( css::lang::EventObject const & evt )
-        throw (css::frame::TerminationVetoException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::frame::TerminationVetoException, css::uno::RuntimeException, std::exception) override;
     virtual void SAL_CALL notifyTermination( css::lang::EventObject const & evt )
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // XModifyListener
     virtual void SAL_CALL modified( css::lang::EventObject const & evt )
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 };
 
 } // namespace dp_gui

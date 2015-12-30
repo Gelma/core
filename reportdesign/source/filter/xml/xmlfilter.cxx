@@ -76,10 +76,11 @@ using namespace ::com::sun::star::io;
 using namespace ::com::sun::star::report;
 using namespace ::com::sun::star::xml::sax;
 using namespace xmloff;
+using namespace ::com::sun::star::util;
+
     sal_Char const sXML_np__rpt[] = "_report";
     sal_Char const sXML_np___rpt[] = "__report";
 
-    using namespace ::com::sun::star::util;
 
 class RptMLMasterStylesContext_Impl:
     public XMLTextMasterStylesContext, private boost::noncopyable
@@ -88,17 +89,15 @@ class RptMLMasterStylesContext_Impl:
 
 public:
 
-    TYPEINFO_OVERRIDE();
 
     RptMLMasterStylesContext_Impl(
             ORptFilter& rImport, sal_uInt16 nPrfx,
             const OUString& rLName ,
             const uno::Reference< xml::sax::XAttributeList > & xAttrList );
     virtual ~RptMLMasterStylesContext_Impl();
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 };
 
-TYPEINIT1( RptMLMasterStylesContext_Impl, XMLTextMasterStylesContext );
 RptMLMasterStylesContext_Impl::RptMLMasterStylesContext_Impl(
         ORptFilter& rImport, sal_uInt16 nPrfx,
         const OUString& rLName ,
@@ -204,7 +203,7 @@ sal_Int32 ReadThroughComponent(
     ,const uno::Reference<beans::XPropertySet>& _xProp)
 {
     OSL_ENSURE( xStorage.is(), "Need storage!");
-    OSL_ENSURE(NULL != pStreamName, "Please, please, give me a name!");
+    OSL_ENSURE(nullptr != pStreamName, "Please, please, give me a name!");
 
     if ( xStorage.is() )
     {
@@ -221,7 +220,7 @@ sal_Int32 ReadThroughComponent(
                 // if no stream can be opened, return immediately with OK signal
 
                 // do we even have an alternative name?
-                if ( NULL == pCompatibilityStreamName )
+                if ( nullptr == pCompatibilityStreamName )
                     return 0;
 
                 // if so, does the stream exist?
@@ -293,8 +292,7 @@ OUString ORptImportHelper::getImplementationName_Static(  ) throw (RuntimeExcept
 
 Sequence< OUString > ORptImportHelper::getSupportedServiceNames_Static(  ) throw(RuntimeException)
 {
-    Sequence< OUString > aSupported(1);
-    aSupported[0] = SERVICE_IMPORTFILTER;
+    Sequence< OUString > aSupported { SERVICE_IMPORTFILTER };
     return aSupported;
 }
 
@@ -311,8 +309,7 @@ OUString ORptContentImportHelper::getImplementationName_Static(  ) throw (Runtim
 
 Sequence< OUString > ORptContentImportHelper::getSupportedServiceNames_Static(  ) throw(RuntimeException)
 {
-    Sequence< OUString > aSupported(1);
-    aSupported[0] = SERVICE_IMPORTFILTER;
+    Sequence< OUString > aSupported { SERVICE_IMPORTFILTER };
     return aSupported;
 }
 
@@ -331,8 +328,7 @@ OUString ORptStylesImportHelper::getImplementationName_Static(  ) throw (Runtime
 
 Sequence< OUString > ORptStylesImportHelper::getSupportedServiceNames_Static(  ) throw(RuntimeException)
 {
-    Sequence< OUString > aSupported(1);
-    aSupported[0] = SERVICE_IMPORTFILTER;
+    Sequence< OUString > aSupported { SERVICE_IMPORTFILTER };
     return aSupported;
 }
 
@@ -350,8 +346,7 @@ OUString ORptMetaImportHelper::getImplementationName_Static(  ) throw (RuntimeEx
 
 Sequence< OUString > ORptMetaImportHelper::getSupportedServiceNames_Static(  ) throw(RuntimeException)
 {
-    Sequence< OUString > aSupported(1);
-    aSupported[0] = SERVICE_IMPORTFILTER;
+    Sequence< OUString > aSupported { SERVICE_IMPORTFILTER };
     return aSupported;
 }
 
@@ -363,11 +358,11 @@ ORptFilter::ORptFilter( const uno::Reference< XComponentContext >& _rxContext, S
 {
     GetMM100UnitConverter().SetCoreMeasureUnit(util::MeasureUnit::MM_100TH);
     GetMM100UnitConverter().SetXMLMeasureUnit(util::MeasureUnit::CM);
-    GetNamespaceMap().Add( OUString( sXML_np__rpt ),
+    GetNamespaceMap().Add( sXML_np__rpt,
                         GetXMLToken(XML_N_RPT),
                         XML_NAMESPACE_REPORT );
 
-    GetNamespaceMap().Add( OUString( sXML_np___rpt ),
+    GetNamespaceMap().Add( sXML_np___rpt,
                         GetXMLToken(XML_N_RPT_OASIS),
                         XML_NAMESPACE_REPORT );
 
@@ -397,8 +392,7 @@ OUString ORptFilter::getImplementationName_Static(  ) throw(uno::RuntimeExceptio
 
 uno::Sequence< OUString > ORptFilter::getSupportedServiceNames_Static(  ) throw(uno::RuntimeException)
 {
-    uno::Sequence< OUString > aServices(1);
-    aServices.getArray()[0] = SERVICE_IMPORTFILTER;
+    uno::Sequence< OUString > aServices { SERVICE_IMPORTFILTER };
 
     return aServices;
 }
@@ -458,7 +452,7 @@ bool ORptFilter::implImport( const Sequence< PropertyValue >& rDescriptor )
     {
         uno::Reference<XComponent> xCom(GetModel(),UNO_QUERY);
 
-        SfxMediumRef pMedium = new SfxMedium(
+        tools::SvRef<SfxMedium> pMedium = new SfxMedium(
                 sFileName, ( StreamMode::READ | StreamMode::NOCREATE ) );
 
         if( pMedium )
@@ -503,7 +497,7 @@ bool ORptFilter::implImport( const Sequence< PropertyValue >& rDescriptor )
 
         uno::Reference< lang::XMultiServiceFactory > xReportServiceFactory( m_xReportDefinition, uno::UNO_QUERY);
         aArgs[0] <<= beans::NamedValue(OUString("Storage"),uno::makeAny(xStorage));
-        xEmbeddedObjectResolver.set( xReportServiceFactory->createInstanceWithArguments(OUString("com.sun.star.document.ImportEmbeddedObjectResolver"),aArgs) , uno::UNO_QUERY);
+        xEmbeddedObjectResolver.set( xReportServiceFactory->createInstanceWithArguments("com.sun.star.document.ImportEmbeddedObjectResolver",aArgs) , uno::UNO_QUERY);
 
         static const char s_sOld[] = "OldFormat";
         static comphelper::PropertyMapEntry const pMap[] =
@@ -518,6 +512,7 @@ bool ORptFilter::implImport( const Sequence< PropertyValue >& rDescriptor )
         utl::MediaDescriptor aDescriptor(rDescriptor);
         uno::Reference<beans::XPropertySet> xProp = comphelper::GenericPropertySet_CreateInstance(new comphelper::PropertySetInfo(pMap));
         const OUString sVal( aDescriptor.getUnpackedValueOrDefault(utl::MediaDescriptor::PROP_DOCUMENTBASEURL(),OUString()) );
+        assert(!sVal.isEmpty()); // needed for relative URLs
         xProp->setPropertyValue("BaseURI", uno::makeAny(sVal));
         const OUString sHierarchicalDocumentName( aDescriptor.getUnpackedValueOrDefault("HierarchicalDocumentName",OUString()) );
         xProp->setPropertyValue("StreamRelPath", uno::makeAny(sHierarchicalDocumentName));
@@ -626,7 +621,7 @@ SvXMLImportContext* ORptFilter::CreateContext( sal_uInt16 nPrefix,
                                       const OUString& rLocalName,
                                       const uno::Reference< xml::sax::XAttributeList >& xAttrList )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetDocElemTokenMap();
     switch( rTokenMap.Get( nPrefix, rLocalName ) )
@@ -641,13 +636,13 @@ SvXMLImportContext* ORptFilter::CreateContext( sal_uInt16 nPrefix,
                 const SvXMLStylesContext* pAutoStyles = GetAutoStyles();
                 if ( pAutoStyles )
                 {
-                    XMLPropStyleContext* pAutoStyle = const_cast<XMLPropStyleContext*>(PTR_CAST(XMLPropStyleContext,pAutoStyles->FindStyleChildContext(XML_STYLE_FAMILY_PAGE_MASTER,OUString("pm1"))));
+                    XMLPropStyleContext* pAutoStyle = const_cast<XMLPropStyleContext*>(dynamic_cast< const XMLPropStyleContext *>(pAutoStyles->FindStyleChildContext(XML_STYLE_FAMILY_PAGE_MASTER,"pm1")));
                     if ( pAutoStyle )
                     {
                         pAutoStyle->FillPropertySet(getReportDefinition().get());
                     }
                 }
-                pContext = new OXMLReport( *this, nPrefix, rLocalName,xAttrList,getReportDefinition(),NULL );
+                pContext = new OXMLReport( *this, nPrefix, rLocalName,xAttrList,getReportDefinition(),nullptr );
             }
             break;
         case XML_TOK_DOC_STYLES:
@@ -1011,14 +1006,14 @@ void ORptFilter::removeFunction(const OUString& _sFunctionName)
     m_aFunctions.erase(_sFunctionName);
 }
 
-void ORptFilter::insertFunction(const ::com::sun::star::uno::Reference< ::com::sun::star::report::XFunction > & _xFunction)
+void ORptFilter::insertFunction(const css::uno::Reference< css::report::XFunction > & _xFunction)
 {
     m_aFunctions.insert(TGroupFunctionMap::value_type(_xFunction->getName(),_xFunction));
 }
 
 SvXMLImportContext* ORptFilter::CreateMetaContext(const OUString& rLocalName,const uno::Reference<xml::sax::XAttributeList>&)
 {
-    SvXMLImportContext* pContext = NULL;
+    SvXMLImportContext* pContext = nullptr;
 
     if ( (getImportFlags() & SvXMLImportFlags::META) )
     {

@@ -45,12 +45,6 @@ class SwTableBox;
 class SwDoc;
 class SwPaM;
 
-inline void SwFltClearFlag(sal_uLong& rFieldFlags, int no)
-    { rFieldFlags &= ~(1L << no); }
-
-inline void SwFltSetFlag(sal_uLong& rFieldFlags, int no)
-    { rFieldFlags |= sal_uLong(1) << no; }
-
 inline bool SwFltGetFlag(sal_uLong nFieldFlags, int no)
     { return (nFieldFlags & (sal_uLong(1) << no)) != 0; }
 
@@ -138,7 +132,6 @@ class SW_DLLPUBLIC SwFltControlStack : private ::boost::noncopyable
     Entries m_Entries;
 
     sal_uLong nFieldFlags;
-    vcl::KeyCode aEmptyKeyCode; // fuer Bookmarks
 
 private:
     bool bHasSdOD;
@@ -184,7 +177,7 @@ public:
     void StealAttr(const SwNodeIndex& rNode, sal_uInt16 nAttrId = 0);
     void MarkAllAttrsOld();
     void KillUnlockedAttrs(const SwPosition& pPos);
-    SfxPoolItem* GetFormatStackAttr(sal_uInt16 nWhich, sal_uInt16 * pPos = 0);
+    SfxPoolItem* GetFormatStackAttr(sal_uInt16 nWhich, sal_uInt16 * pPos = nullptr);
     const SfxPoolItem* GetOpenStackAttr(const SwPosition& rPos, sal_uInt16 nWhich);
     void Delete(const SwPaM &rPam);
 
@@ -208,8 +201,8 @@ public:
     virtual ~SwFltAnchor();
 
     // "pure virtual Methoden" vom SfxPoolItem
-    virtual bool operator==(const SfxPoolItem&) const SAL_OVERRIDE;
-    virtual SfxPoolItem* Clone(SfxItemPool* = 0) const SAL_OVERRIDE;
+    virtual bool operator==(const SfxPoolItem&) const override;
+    virtual SfxPoolItem* Clone(SfxItemPool* = nullptr) const override;
     void SetFrameFormat(SwFrameFormat * _pFrameFormat);
     const SwFrameFormat* GetFrameFormat() const { return pFrameFormat;}
           SwFrameFormat* GetFrameFormat() { return pFrameFormat;}
@@ -222,7 +215,7 @@ class SwFltAnchorClient : public SwClient
 public:
     SwFltAnchorClient(SwFltAnchor * pFltAnchor);
 
-    virtual void Modify (const SfxPoolItem *pOld, const SfxPoolItem *pNew) SAL_OVERRIDE;
+    virtual void Modify (const SfxPoolItem *pOld, const SfxPoolItem *pNew) override;
 };
 
 class SW_DLLPUBLIC SwFltRedline : public SfxPoolItem
@@ -240,7 +233,7 @@ public:
                  const DateTime& rStamp_,
                  RedlineType_t   eTypePrev_    = nsRedlineType_t::REDLINE_INSERT,
                  sal_uInt16          nAutorNoPrev_ = USHRT_MAX,
-                 const DateTime* pStampPrev_   = 0)
+                 const DateTime* pStampPrev_   = nullptr)
         : SfxPoolItem(RES_FLTR_REDLINE), aStamp(rStamp_),
         aStampPrev( DateTime::EMPTY ),
         eType(eType_),
@@ -260,8 +253,8 @@ public:
         nAutorNoPrev(   rCpy.nAutorNoPrev )
         {}
     // "pure virtual Methoden" vom SfxPoolItem
-    virtual bool operator==(const SfxPoolItem& rItem) const SAL_OVERRIDE;
-    virtual SfxPoolItem* Clone(SfxItemPool* = 0) const SAL_OVERRIDE;
+    virtual bool operator==(const SfxPoolItem& rItem) const override;
+    virtual SfxPoolItem* Clone(SfxItemPool* = nullptr) const override;
 };
 
 class SW_DLLPUBLIC SwFltBookmark : public SfxPoolItem
@@ -281,8 +274,8 @@ public:
     SwFltBookmark( const SwFltBookmark& );
 
     // "pure virtual Methoden" vom SfxPoolItem
-    virtual bool operator==(const SfxPoolItem&) const SAL_OVERRIDE;
-    virtual SfxPoolItem* Clone(SfxItemPool* = 0) const SAL_OVERRIDE;
+    virtual bool operator==(const SfxPoolItem&) const override;
+    virtual SfxPoolItem* Clone(SfxItemPool* = nullptr) const override;
 
     long GetHandle() const              { return mnHandle; }
     const OUString& GetName() const       { return maName; }
@@ -291,6 +284,25 @@ public:
     {
         return mbIsTOCBookmark;
     }
+};
+
+/// Stores RDF statements on a paragraph (key-value pairs where the subject is the paragraph).
+class SW_DLLPUBLIC SwFltRDFMark : public SfxPoolItem
+{
+    long m_nHandle;
+    std::vector< std::pair<OUString, OUString> > m_aAttributes;
+
+public:
+    SwFltRDFMark();
+    SwFltRDFMark(const SwFltRDFMark&);
+
+    virtual bool operator==(const SfxPoolItem&) const override;
+    virtual SfxPoolItem* Clone(SfxItemPool* = nullptr) const override;
+
+    void SetHandle(long nHandle);
+    long GetHandle() const;
+    void SetAttributes(const std::vector< std::pair<OUString, OUString> >& rAttributes);
+    const std::vector< std::pair<OUString, OUString> >& GetAttributes() const;
 };
 
 class SW_DLLPUBLIC SwFltTOX : public SfxPoolItem
@@ -303,8 +315,8 @@ public:
     SwFltTOX(SwTOXBase* pBase, sal_uInt16 _nCols = 0);
     SwFltTOX(const SwFltTOX&);
     // "pure virtual Methoden" vom SfxPoolItem
-    virtual bool operator==(const SfxPoolItem&) const SAL_OVERRIDE;
-    virtual SfxPoolItem* Clone(SfxItemPool* = 0) const SAL_OVERRIDE;
+    virtual bool operator==(const SfxPoolItem&) const override;
+    virtual SfxPoolItem* Clone(SfxItemPool* = nullptr) const override;
     SwTOXBase* GetBase()            { return pTOXBase; }
     void SetHadBreakItem(    bool bVal ) { bHadBreakItem    = bVal; }
     void SetHadPageDescItem( bool bVal ) { bHadPageDescItem = bVal; }

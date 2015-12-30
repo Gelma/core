@@ -103,7 +103,7 @@ IMPL_LINK_NOARG_TYPED(SwGreetingsHandler, IndividualHdl_Impl, Button*, void)
 
 IMPL_LINK_TYPED(SwGreetingsHandler, GreetingHdl_Impl, Button*, pButton, void)
 {
-    VclPtr<SwCustomizeAddressBlockDialog> pDlg(
+    ScopedVclPtr<SwCustomizeAddressBlockDialog> pDlg(
             VclPtr<SwCustomizeAddressBlockDialog>::Create(pButton, m_pWizard->GetConfigItem(),
                         pButton == m_pMalePB ?
                         SwCustomizeAddressBlockDialog::GREETING_MALE :
@@ -129,7 +129,7 @@ void    SwGreetingsHandler::UpdatePreview()
 IMPL_LINK_TYPED(SwMailMergeGreetingsPage, AssignHdl_Impl, Button*, pButton, void)
 {
     const OUString sPreview(m_pFemaleLB->GetSelectEntry() + "\n" + m_pMaleLB->GetSelectEntry());
-    VclPtr<SwAssignFieldsDialog> pDlg(
+    ScopedVclPtr<SwAssignFieldsDialog> pDlg(
             VclPtr<SwAssignFieldsDialog>::Create(pButton, m_pWizard->GetConfigItem(), sPreview, false));
     if(RET_OK == pDlg->Execute())
     {
@@ -139,10 +139,17 @@ IMPL_LINK_TYPED(SwMailMergeGreetingsPage, AssignHdl_Impl, Button*, pButton, void
     }
 }
 
-IMPL_LINK_NOARG(SwMailMergeGreetingsPage, GreetingSelectHdl_Impl)
+IMPL_LINK_NOARG_TYPED(SwMailMergeGreetingsPage, GreetingSelectHdl_Impl, Edit&, void)
 {
     UpdatePreview();
-    return 0;
+}
+IMPL_LINK_NOARG_TYPED(SwMailMergeGreetingsPage, GreetingSelectListBoxHdl_Impl, ListBox&, void)
+{
+    UpdatePreview();
+}
+IMPL_LINK_NOARG_TYPED(SwMailMergeGreetingsPage, GreetingSelectComboBoxHdl_Impl, ComboBox&, void)
+{
+    UpdatePreview();
 }
 
 void SwMailMergeGreetingsPage::UpdatePreview()
@@ -155,7 +162,7 @@ void SwMailMergeGreetingsPage::UpdatePreview()
         const OUString sFemaleValue = m_pFemaleFieldCB->GetText();
         const OUString sFemaleColumn = m_pFemaleColumnLB->GetSelectEntry();
         Reference< sdbcx::XColumnsSupplier > xColsSupp( m_pWizard->GetConfigItem().GetResultSet(), UNO_QUERY);
-        Reference < container::XNameAccess> xColAccess = xColsSupp.is() ? xColsSupp->getColumns() : 0;
+        Reference < container::XNameAccess> xColAccess = xColsSupp.is() ? xColsSupp->getColumns() : nullptr;
         if(!sFemaleValue.isEmpty() && !sFemaleColumn.isEmpty() &&
                 xColAccess.is() &&
                 xColAccess->hasByName(sFemaleColumn))
@@ -259,13 +266,14 @@ SwMailMergeGreetingsPage::SwMailMergeGreetingsPage(SwMailMergeWizard* _pParent)
     m_pFemalePB->SetClickHdl(aGreetingLink);
     m_pMalePB->SetClickHdl(aGreetingLink);
     m_pAssignPB->SetClickHdl(LINK(this, SwMailMergeGreetingsPage, AssignHdl_Impl));
-    Link<> aLBoxLink = LINK(this, SwMailMergeGreetingsPage, GreetingSelectHdl_Impl);
-    m_pFemaleLB->SetSelectHdl(aLBoxLink);
-    m_pMaleLB->SetSelectHdl(aLBoxLink);
-    m_pFemaleColumnLB->SetSelectHdl(aLBoxLink);
-    m_pFemaleFieldCB->SetSelectHdl(aLBoxLink);
+    Link<Edit&,void> aLBoxLink = LINK(this, SwMailMergeGreetingsPage, GreetingSelectHdl_Impl);
+    Link<ListBox&,void> aLBoxLink2 = LINK(this, SwMailMergeGreetingsPage, GreetingSelectListBoxHdl_Impl);
+    m_pFemaleLB->SetSelectHdl(aLBoxLink2);
+    m_pMaleLB->SetSelectHdl(aLBoxLink2);
+    m_pFemaleColumnLB->SetSelectHdl(aLBoxLink2);
+    m_pFemaleFieldCB->SetSelectHdl(LINK(this, SwMailMergeGreetingsPage, GreetingSelectComboBoxHdl_Impl));
     m_pFemaleFieldCB->SetModifyHdl(aLBoxLink);
-    m_pNeutralCB->SetSelectHdl(aLBoxLink);
+    m_pNeutralCB->SetSelectHdl(LINK(this, SwMailMergeGreetingsPage, GreetingSelectComboBoxHdl_Impl));
     m_pNeutralCB->SetModifyHdl(aLBoxLink);
 
     Link<Button*,void> aDataLink = LINK(this, SwMailMergeGreetingsPage, InsertDataHdl_Impl);
@@ -276,7 +284,7 @@ SwMailMergeGreetingsPage::SwMailMergeGreetingsPage(SwMailMergeWizard* _pParent)
     m_pGreetingLineCB->Check(rConfig.IsGreetingLine(false));
     m_pPersonalizedCB->Check(rConfig.IsIndividualGreeting(false));
     ContainsHdl_Impl(m_pGreetingLineCB);
-    aIndividualLink.Call(0);
+    aIndividualLink.Call(nullptr);
 
     lcl_FillGreetingsBox(*m_pFemaleLB, rConfig, SwMailMergeConfigItem::FEMALE);
     lcl_FillGreetingsBox(*m_pMaleLB, rConfig, SwMailMergeConfigItem::MALE);
@@ -451,7 +459,7 @@ SwMailBodyDialog::SwMailBodyDialog(vcl::Window* pParent, SwMailMergeWizard* _pWi
     m_pGreetingLineCB->Check(rConfig.IsGreetingLine(true));
     m_pPersonalizedCB->Check(rConfig.IsIndividualGreeting(true));
     ContainsHdl_Impl(m_pGreetingLineCB);
-    aIndividualLink.Call(0);
+    aIndividualLink.Call(nullptr);
 
     lcl_FillGreetingsBox(*m_pFemaleLB, rConfig, SwMailMergeConfigItem::FEMALE);
     lcl_FillGreetingsBox(*m_pMaleLB, rConfig, SwMailMergeConfigItem::MALE);

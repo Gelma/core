@@ -37,7 +37,7 @@ using namespace com::sun::star::uno;
 using namespace com::sun::star;
 
 
-static SvtHelpOptions_Impl* pOptions = NULL;
+static SvtHelpOptions_Impl* pOptions = nullptr;
 static sal_Int32           nRefCount = 0;
 
 #define EXTENDEDHELP        0
@@ -55,18 +55,15 @@ class SvtHelpOptions_Impl : public utl::ConfigItem
     OUString        aSystem;
     OUString        sHelpStyleSheet;
 
-    typedef std::map <OUString, sal_Int32> MapString2Int;
-    MapString2Int   aURLIgnoreCounters;
-
     static Sequence< OUString > GetPropertyNames();
 
-    virtual void    ImplCommit() SAL_OVERRIDE;
+    virtual void    ImplCommit() override;
 
 public:
                     SvtHelpOptions_Impl();
 
-    virtual void    Notify( const com::sun::star::uno::Sequence< OUString >& aPropertyNames ) SAL_OVERRIDE;
-    void            Load( const ::com::sun::star::uno::Sequence< OUString>& aPropertyNames);
+    virtual void    Notify( const css::uno::Sequence< OUString >& aPropertyNames ) override;
+    void            Load( const css::uno::Sequence< OUString>& aPropertyNames);
 
     void            SetExtendedHelp( bool b )           { bExtendedHelp= b; SetModified(); }
     bool            IsExtendedHelp() const                  { return bExtendedHelp; }
@@ -105,7 +102,7 @@ Sequence< OUString > SvtHelpOptions_Impl::GetPropertyNames()
 
 ::osl::Mutex & SvtHelpOptions_Impl::getInitMutex()
 {
-    static ::osl::Mutex *pMutex = 0;
+    static ::osl::Mutex *pMutex = nullptr;
 
     if( ! pMutex )
     {

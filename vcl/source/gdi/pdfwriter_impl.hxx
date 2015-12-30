@@ -33,7 +33,6 @@
 #include <rtl/strbuf.hxx>
 #include <rtl/ustring.hxx>
 #include <tools/gen.hxx>
-#include <tools/stream.hxx>
 #include <vcl/bitmapex.hxx>
 #include <vcl/gradient.hxx>
 #include <vcl/hatch.hxx>
@@ -53,6 +52,8 @@ class ZCodec;
 class EncHashTransporter;
 struct BitStreamState;
 class PhysicalFontFace;
+class SvStream;
+class SvMemoryStream;
 
 // the maximum password length
 #define ENCRYPTED_PWD_SIZE     32
@@ -137,7 +138,7 @@ public:
         // to page (useful for transformation matrices
         // if pOutPoint is set it will be updated to the emitted point
         // (in PDF map mode, that is 10th of point)
-        void appendPoint( const Point& rPoint, OStringBuffer& rBuffer, bool bNeg = false, Point* pOutPoint = NULL ) const;
+        void appendPoint( const Point& rPoint, OStringBuffer& rBuffer, bool bNeg = false, Point* pOutPoint = nullptr ) const;
         // appends a B2DPoint without further transformation
         void appendPixelPoint( const basegfx::B2DPoint& rPoint, OStringBuffer& rBuffer ) const;
         // appends a rectangle
@@ -157,9 +158,9 @@ public:
         // symmetrical) to page length and appends it to the buffer
         // if pOutLength is set it will be updated to the emitted length
         // (in PDF map mode, that is 10th of point)
-        void appendMappedLength( sal_Int32 nLength, OStringBuffer& rBuffer, bool bVertical = true, sal_Int32* pOutLength = NULL ) const;
+        void appendMappedLength( sal_Int32 nLength, OStringBuffer& rBuffer, bool bVertical = true, sal_Int32* pOutLength = nullptr ) const;
         // the same for double values
-        void appendMappedLength( double fLength, OStringBuffer& rBuffer, bool bVertical = true, sal_Int32* pOutLength = NULL, sal_Int32 nPrecision = 5 ) const;
+        void appendMappedLength( double fLength, OStringBuffer& rBuffer, bool bVertical = true, sal_Int32* pOutLength = nullptr, sal_Int32 nPrecision = 5 ) const;
         // appends LineInfo
         // returns false if too many dash array entry were created for
         // the implementation limits of some PDF readers
@@ -167,7 +168,6 @@ public:
         // appends a horizontal waveline with vertical offset (helper for drawWaveLine)
         void appendWaveLine( sal_Int32 nLength, sal_Int32 nYOffset, sal_Int32 nDelta, OStringBuffer& rBuffer ) const;
 
-        sal_Int32 getWidth() const { return m_nPageWidth ? m_nPageWidth : m_pWriter->m_nInheritedPageWidth; }
         sal_Int32 getHeight() const { return m_nPageHeight ? m_nPageHeight : m_pWriter->m_nInheritedPageHeight; }
     };
 
@@ -214,7 +214,7 @@ public:
         bool                m_bTrueColor;
 
         JPGEmit()
-            : m_pStream(NULL)
+            : m_pStream(nullptr)
             , m_nObject(0)
             , m_bTrueColor(false)
         {
@@ -241,7 +241,7 @@ public:
 
         TilingEmit()
                 : m_nObject( 0 ),
-                  m_pTilingStream( NULL )
+                  m_pTilingStream( nullptr )
         {}
     };
 
@@ -259,8 +259,8 @@ public:
                 : m_nObject( 0 ),
                   m_nExtGStateObject( -1 ),
                   m_fAlpha( 0.0 ),
-                  m_pContentStream( NULL ),
-                  m_pSoftMaskStream( NULL )
+                  m_pContentStream( nullptr ),
+                  m_pSoftMaskStream( nullptr )
         {}
         ~TransparencyEmit()
         {
@@ -521,9 +521,9 @@ public:
         std::list< PDFStructureElementKid >                 m_aKids;
         PDFStructAttributes                                 m_aAttributes;
         Rectangle                                           m_aBBox;
-        OUString                                       m_aActualText;
-        OUString                                       m_aAltText;
-        com::sun::star::lang::Locale                        m_aLocale;
+        OUString                                            m_aActualText;
+        OUString                                            m_aAltText;
+        css::lang::Locale                                   m_aLocale;
 
         // m_aContents contains the element's marked content sequence
         // as pairs of (page nr, MCID)
@@ -547,7 +547,7 @@ public:
         sal_Int32               m_nStreamObject;
         bool                    m_bCompress;
 
-        PDFAddStream() : m_pStream( NULL ), m_nStreamObject( 0 ), m_bCompress( true ) {}
+        PDFAddStream() : m_pStream( nullptr ), m_nStreamObject( 0 ), m_bCompress( true ) {}
     };
 
     // helper structure for drawLayout and friends
@@ -609,7 +609,7 @@ private:
     std::vector<PDFLink>                m_aLinks;
     /* makes correctly encoded for export to PDF URLS
     */
-    com::sun::star::uno::Reference< com::sun::star::util::XURLTransformer > m_xTrans;
+    css::uno::Reference< css::util::XURLTransformer > m_xTrans;
     /* maps arbitrary link ids for structure attributes to real link ids
        (for setLinkPropertyId)
     */
@@ -629,10 +629,9 @@ private:
     sal_Int32                           m_nCurrentStructElement;
     /* structure parent tree */
     std::vector< OString >         m_aStructParentTree;
-    /* emit strucure marks currently (aka. NonStructElement or not)
+    /* emit structure marks currently (aka. NonStructElement or not)
      */
     bool                                m_bEmitStructure;
-    bool                                m_bNewMCID;
     /* role map of struct tree root */
     std::unordered_map< OString, OString, OStringHash >
                                         m_aRoleMap;
@@ -884,8 +883,6 @@ i12626
     bool emitWidgetAnnotations();
     // writes all annotation objects
     bool emitAnnotations();
-    // writes the dest dict for the catalog
-    sal_Int32 emitDestDict();
     //write the named destination stuff
     sal_Int32 emitNamedDestinations();//i56629
     // writes outline dict and tree
@@ -1009,7 +1006,7 @@ i12626
     static sal_Int32 computeAccessPermissions( const vcl::PDFWriter::PDFEncryptionProperties& i_rProperties,
                                                sal_Int32& o_rKeyLength, sal_Int32& o_rRC4KeyLength );
     void setupDocInfo();
-    bool prepareEncryption( const com::sun::star::uno::Reference< com::sun::star::beans::XMaterialHolder >& );
+    bool prepareEncryption( const css::uno::Reference< css::beans::XMaterialHolder >& );
 
     // helper for playMetafile
     void implWriteGradient( const tools::PolyPolygon& rPolyPoly, const Gradient& rGradient,
@@ -1026,10 +1023,10 @@ i12626
     void appendStrokingColor( const Color& rColor, OStringBuffer& rBuffer );
     void appendNonStrokingColor( const Color& rColor, OStringBuffer& rBuffer );
 public:
-    PDFWriterImpl( const PDFWriter::PDFWriterContext& rContext, const com::sun::star::uno::Reference< com::sun::star::beans::XMaterialHolder >&, PDFWriter& );
+    PDFWriterImpl( const PDFWriter::PDFWriterContext& rContext, const css::uno::Reference< css::beans::XMaterialHolder >&, PDFWriter& );
     ~PDFWriterImpl();
 
-    static com::sun::star::uno::Reference< com::sun::star::beans::XMaterialHolder >
+    static css::uno::Reference< css::beans::XMaterialHolder >
            initEncryption( const OUString& i_rOwnerPassword,
                            const OUString& i_rUserPassword,
                            bool b128Bit );
@@ -1043,7 +1040,7 @@ public:
     bool emit();
     const std::set< PDFWriter::ErrorCode > & getErrors() const { return m_aErrors;}
     void insertError( PDFWriter::ErrorCode eErr ) { m_aErrors.insert( eErr ); }
-    void playMetafile( const GDIMetaFile&, vcl::PDFExtOutDevData*, const vcl::PDFWriter::PlayMetafileContext&, VirtualDevice* pDummyDev = NULL );
+    void playMetafile( const GDIMetaFile&, vcl::PDFExtOutDevData*, const vcl::PDFWriter::PlayMetafileContext&, VirtualDevice* pDummyDev = nullptr );
 
     Size getCurPageSize() const
     {
@@ -1055,7 +1052,7 @@ public:
 
     PDFWriter::PDFVersion getVersion() const { return m_aContext.Version; }
 
-    void setDocumentLocale( const com::sun::star::lang::Locale& rLoc )
+    void setDocumentLocale( const css::lang::Locale& rLoc )
     { m_aContext.DocumentLocale = rLoc; }
 
     /* graphics state */

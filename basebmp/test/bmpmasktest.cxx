@@ -86,36 +86,31 @@ private:
     }
 
 public:
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         const basegfx::B2ISize aSize(10,10);
         mpDevice1bpp = createBitmapDevice( aSize,
                                            true,
-                                           Format::OneBitMsbPal,
-                                           basebmp::getBitmapDeviceStrideForWidth(Format::OneBitMsbPal, aSize.getX()));
+                                           Format::OneBitMsbPal );
         mpDevice32bpp = createBitmapDevice( aSize,
                                             true,
-                                            Format::ThirtyTwoBitTcMaskBGRA,
-                                            basebmp::getBitmapDeviceStrideForWidth(Format::ThirtyTwoBitTcMaskBGRA, aSize.getX()));
+                                            Format::ThirtyTwoBitTcMaskBGRA );
 
         mpMaskBmp1bpp = createBitmapDevice( aSize,
                                             true,
-                                            Format::OneBitMsbGrey,
-                                            basebmp::getBitmapDeviceStrideForWidth(Format::OneBitMsbGrey, aSize.getX()));
+                                            Format::OneBitMsbGrey );
 
         mpBmp1bpp = createBitmapDevice( aSize,
                                         true,
-                                        Format::OneBitMsbPal,
-                                        basebmp::getBitmapDeviceStrideForWidth(Format::OneBitMsbPal, aSize.getX()));
+                                        Format::OneBitMsbPal );
         mpBmp32bpp = createBitmapDevice( aSize,
                                          true,
-                                         Format::ThirtyTwoBitTcMaskBGRA,
-                                         basebmp::getBitmapDeviceStrideForWidth(Format::ThirtyTwoBitTcMaskBGRA, aSize.getX()));
+                                         Format::ThirtyTwoBitTcMaskBGRA );
 
         OUString aSvg( "m 0 0h5v10h5v-5h-10z" );
 
         basegfx::B2DPolyPolygon aPoly;
-        basegfx::tools::importFromSvgD( aPoly, aSvg, false, NULL );
+        basegfx::tools::importFromSvgD( aPoly, aSvg, false, nullptr );
         const Color aColWhite(0xFFFFFFFF);
         const Color aColBlack(0);
         mpBmp1bpp->fillPolyPolygon(
@@ -130,7 +125,7 @@ public:
         aSvg = "m 0 0 h6 v10 h-6z" ;
 
         aPoly.clear();
-        basegfx::tools::importFromSvgD( aPoly, aSvg, false, NULL );
+        basegfx::tools::importFromSvgD( aPoly, aSvg, false, nullptr );
         mpMaskBmp1bpp->clear(aColWhite);
         mpMaskBmp1bpp->fillPolyPolygon(
             aPoly,
@@ -169,7 +164,6 @@ public:
 //            nFormat = Format::OneBitMsbGrey; // FIXME - un-comment me to crash hard.
             xMask = createBitmapDevice( aSize, false /* bTopDown */,
                                         nFormat,
-                                         basebmp::getBitmapDeviceStrideForWidth( nFormat, aSize.getX()),
                                          PaletteMemorySharedVector(
                                                 new std::vector< basebmp::Color >(aDevPal) ) );
             // wipe to copy everything.
@@ -178,22 +172,18 @@ public:
             // punch out another piece not to copy
             basegfx::B2DPolyPolygon aPoly;
             basegfx::tools::importFromSvgD( aPoly, "m 2 2 h4 v8 h-4z",
-                                            false, NULL );
+                                            false, nullptr );
             xMask->fillPolyPolygon( aPoly, basebmp::Color( 0xff, 0xff, 0xff ),
                                     DrawMode::Paint );
 
             xBitmap = createBitmapDevice( aSize, false,
-                                          Format::ThirtyTwoBitTcMaskBGRX,
-                                          basebmp::getBitmapDeviceStrideForWidth(
-                                                Format::ThirtyTwoBitTcMaskBGRX, aSize.getX()) );
+                                          Format::ThirtyTwoBitTcMaskBGRA );
             xBitmap->clear(Color(0x80808080));
         }
         { // mpOutput & mpBitmap
             const basegfx::B2ISize aSize(9, 9);
             xOutput = createBitmapDevice( aSize, false,
-                                          Format::ThirtyTwoBitTcMaskBGRX,
-                                          basebmp::getBitmapDeviceStrideForWidth(
-                                                Format::ThirtyTwoBitTcMaskBGRX, aSize.getX()) );
+                                          Format::ThirtyTwoBitTcMaskBGRA );
             xOutput->clear(Color(0xffffffff));
         }
 

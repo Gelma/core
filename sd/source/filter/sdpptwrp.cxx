@@ -39,7 +39,7 @@ using namespace ::com::sun::star::beans;
 using namespace ::com::sun::star::task;
 using namespace ::com::sun::star::frame;
 
-typedef sal_Bool ( SAL_CALL *ExportPPTPointer )( const std::vector< com::sun::star::beans::PropertyValue >&, tools::SvRef<SotStorage>&,
+typedef sal_Bool ( SAL_CALL *ExportPPTPointer )( const std::vector< css::beans::PropertyValue >&, tools::SvRef<SotStorage>&,
                                              Reference< XModel > &,
                                              Reference< XStatusIndicator > &,
                                              SvMemoryStream*, sal_uInt32 nCnvrtFlags );
@@ -50,7 +50,7 @@ typedef sal_Bool ( SAL_CALL *SaveVBAPointer )( SfxObjectShell&, SvMemoryStream*&
 
 #ifdef DISABLE_DYNLOADING
 
-extern "C" sal_Bool ExportPPT( const std::vector< com::sun::star::beans::PropertyValue >&, tools::SvRef<SotStorage>&,
+extern "C" sal_Bool ExportPPT( const std::vector< css::beans::PropertyValue >&, tools::SvRef<SotStorage>&,
                                Reference< XModel > &,
                                Reference< XStatusIndicator > &,
                                SvMemoryStream*, sal_uInt32 nCnvrtFlags );
@@ -65,7 +65,7 @@ extern "C" sal_Bool SaveVBA( SfxObjectShell&, SvMemoryStream*& );
 
 SdPPTFilter::SdPPTFilter( SfxMedium& rMedium, ::sd::DrawDocShell& rDocShell, bool bShowProgress ) :
     SdFilter( rMedium, rDocShell, bShowProgress ),
-    pBas    ( NULL )
+    pBas    ( nullptr )
 {
 }
 
@@ -89,13 +89,13 @@ bool SdPPTFilter::Import()
             xDualStorage = pStorage->OpenSotStorage( sDualStorage, STREAM_STD_READ );
             pStorage = xDualStorage;
         }
-        SvStream* pDocStream = pStorage->OpenSotStream( OUString("PowerPoint Document") , STREAM_STD_READ );
+        SvStream* pDocStream = pStorage->OpenSotStream( "PowerPoint Document" , STREAM_STD_READ );
         if( pDocStream )
         {
             pDocStream->SetVersion( pStorage->GetVersion() );
             pDocStream->SetCryptMaskKey(pStorage->GetKey());
 
-            if ( pStorage->IsStream( OUString("EncryptedSummary" ) ) )
+            if ( pStorage->IsStream( "EncryptedSummary" ) )
                 mrMedium.SetError( ERRCODE_SVX_READ_FILTER_PPOINT, OSL_LOG_PREFIX );
             else
             {

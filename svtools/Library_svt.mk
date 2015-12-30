@@ -137,7 +137,6 @@ $(eval $(call gb_Library_add_exception_objects,svt,\
     svtools/source/dialogs/addresstemplate \
     svtools/source/dialogs/colrdlg \
     svtools/source/dialogs/insdlg \
-    svtools/source/dialogs/mcvmath \
     svtools/source/dialogs/PlaceEditDialog \
     svtools/source/dialogs/prnsetup \
     svtools/source/dialogs/restartdialog \
@@ -213,19 +212,6 @@ $(eval $(call gb_Library_add_exception_objects,svt,\
     svtools/source/table/mousefunction \
     svtools/source/table/cellvalueconversion \
     svtools/source/table/tablegeometry \
-    svtools/source/toolpanel/drawerlayouter \
-    svtools/source/toolpanel/dummypanel \
-    svtools/source/toolpanel/paneldecklisteners \
-    svtools/source/toolpanel/paneltabbar \
-    svtools/source/toolpanel/paneltabbarpeer \
-    svtools/source/toolpanel/tabbargeometry \
-    svtools/source/toolpanel/tablayouter \
-    svtools/source/toolpanel/toolpanel \
-    svtools/source/toolpanel/toolpanelcollection \
-    svtools/source/toolpanel/toolpaneldeck \
-    svtools/source/toolpanel/toolpaneldeckpeer \
-    svtools/source/toolpanel/toolpaneldrawer \
-    svtools/source/toolpanel/toolpaneldrawerpeer \
     svtools/source/uno/addrtempuno \
     svtools/source/uno/contextmenuhelper \
     svtools/source/uno/fpicker \

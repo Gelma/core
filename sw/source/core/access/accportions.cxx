@@ -80,12 +80,12 @@ SwAccessiblePortionData::SwAccessiblePortionData(
     aFieldPosition(),
     aAttrFieldType(),
     aPortionAttrs(),
-    pSentences( 0 ),
+    pSentences( nullptr ),
     nBeforePortions( 0 ),
     bFinished( false ),
     bLastIsSpecial( false )
 {
-    OSL_ENSURE( pTextNode != NULL, "Text node is needed!" );
+    OSL_ENSURE( pTextNode != nullptr, "Text node is needed!" );
 
     // reserve some space to reduce memory allocations
     aLineBreaks.reserve( 5 );
@@ -148,12 +148,8 @@ void SwAccessiblePortionData::Special(
     switch( nType )
     {
         case POR_POSTITS:
-            sDisplay = OUString(sal_Unicode(0xfffc));
-            break;
         case POR_FLYCNT:
             sDisplay = OUString(sal_Unicode(0xfffc));
-            break;
-        case POR_GRFNUM:
             break;
         case POR_FLD:
         case POR_HIDDEN:
@@ -180,10 +176,11 @@ void SwAccessiblePortionData::Special(
             break;
         case POR_NUMBER:
         case POR_BULLET:
-        {
             sDisplay = rText + " ";
             break;
-        }
+        // There should probably be some special treatment to graphical bullets
+        case POR_GRFNUM:
+            break;
         // #i111768# - apply patch from kstribley:
         // Include the control characters.
         case POR_CONTROLCHAR:
@@ -484,9 +481,9 @@ void SwAccessiblePortionData::GetSentenceBoundary(
     OSL_ENSURE( nPos >= 0, "illegal position; check before" );
     OSL_ENSURE( nPos < sAccessibleString.getLength(), "illegal position" );
 
-    if( pSentences == NULL )
+    if( pSentences == nullptr )
     {
-        OSL_ENSURE( g_pBreakIt != NULL, "We always need a break." );
+        OSL_ENSURE( g_pBreakIt != nullptr, "We always need a break." );
         OSL_ENSURE( g_pBreakIt->GetBreakIter().is(), "No break-iterator." );
         if( g_pBreakIt->GetBreakIter().is() )
         {
@@ -536,7 +533,7 @@ void SwAccessiblePortionData::GetAttributeBoundary(
     Boundary& rBound,
     sal_Int32 nPos) const
 {
-    OSL_ENSURE( pTextNode != NULL, "Need SwTextNode!" );
+    OSL_ENSURE( pTextNode != nullptr, "Need SwTextNode!" );
 
     // attribute boundaries can only occur on portion boundaries
     FillBoundary( rBound, aAccessiblePositions,
@@ -642,10 +639,10 @@ sal_Int32 SwAccessiblePortionData::FillSpecialPos(
                         "text portion expected" );
 
             nModelPos += nPos - aAccessiblePositions[ nPortionNo ];
-            rpPos = NULL;
+            rpPos = nullptr;
         }
     }
-    if( rpPos != NULL )
+    if( rpPos != nullptr )
     {
         OSL_ENSURE( rpPos == &rPos, "Yes!" );
         OSL_ENSURE( nRefPos <= nPos, "wrong reference" );
@@ -667,7 +664,7 @@ sal_Int32 SwAccessiblePortionData::FillSpecialPos(
     return nModelPos;
 }
 
-bool SwAccessiblePortionData::FillBoundaryIFDateField( com::sun::star::i18n::Boundary& rBound, const sal_Int32 nPos )
+bool SwAccessiblePortionData::FillBoundaryIFDateField( css::i18n::Boundary& rBound, const sal_Int32 nPos )
 {
     if( aFieldPosition.size() < 2 )
         return false;

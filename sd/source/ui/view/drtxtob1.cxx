@@ -83,13 +83,13 @@ namespace sd {
 void TextObjectBar::Execute( SfxRequest &rReq )
 {
     const SfxItemSet* pArgs = rReq.GetArgs();
-    const SfxPoolItem* pPoolItem = NULL;
+    const SfxPoolItem* pPoolItem = nullptr;
     sal_uInt16 nSlot = rReq.GetSlot();
     OutlinerView* pOLV = mpView->GetTextEditOutlinerView();
 
     std::unique_ptr< OutlineViewModelChangeGuard > aGuard;
 
-    if (mpView->ISA(OutlineView))
+    if( dynamic_cast< const OutlineView *>( mpView ) !=  nullptr)
     {
         pOLV = static_cast<OutlineView*>(mpView)
             ->GetViewByWindow(mpViewShell->GetActiveWindow());
@@ -145,10 +145,10 @@ void TextObjectBar::Execute( SfxRequest &rReq )
                 }
                 for( sal_Int32 nPara = nStartPara; nPara <= nEndPara; nPara++ )
                 {
-                    SfxStyleSheet* pStyleSheet = NULL;
-                    if (pOLV->GetOutliner() != NULL)
+                    SfxStyleSheet* pStyleSheet = nullptr;
+                    if (pOLV->GetOutliner() != nullptr)
                         pStyleSheet = pOLV->GetOutliner()->GetStyleSheet(nPara);
-                    if (pStyleSheet != NULL)
+                    if (pStyleSheet != nullptr)
                     {
                         SfxItemSet aAttr( pStyleSheet->GetItemSet() );
                         SfxItemSet aTmpSet( pOLV->GetOutliner()->GetParaAttribs( nPara ) );
@@ -310,7 +310,7 @@ void TextObjectBar::Execute( SfxRequest &rReq )
             SfxItemSet aAttr( mpView->GetDoc().GetPool(), SDRATTR_TEXTDIRECTION, SDRATTR_TEXTDIRECTION, 0 );
             aAttr.Put( SvxWritingModeItem(
                 nSlot == SID_TEXTDIRECTION_LEFT_TO_RIGHT ?
-                    com::sun::star::text::WritingMode_LR_TB : com::sun::star::text::WritingMode_TB_RL,
+                    css::text::WritingMode_LR_TB : css::text::WritingMode_TB_RL,
                     SDRATTR_TEXTDIRECTION ) );
             rReq.Done( aAttr );
             mpView->SetAttributes( aAttr );
@@ -344,7 +344,7 @@ void TextObjectBar::Execute( SfxRequest &rReq )
                     ::Outliner* pOL = pOLV->GetOutliner();
                     if (pOL)
                     {
-                        const SvxNumBulletItem *pItem = NULL;
+                        const SvxNumBulletItem *pItem = nullptr;
                         SfxStyleSheetBasePool* pSSPool = mpView->GetDocSh()->GetStyleSheetPool();
                         OUString sStyleName(SD_RESSTR(STR_PSEUDOSHEET_OUTLINE) + " 1");
                         SfxStyleSheetBase* pFirstStyleSheet = pSSPool->Find(sStyleName, SD_STYLE_FAMILY_PSEUDO);
@@ -391,7 +391,7 @@ void TextObjectBar::Execute( SfxRequest &rReq )
         case SID_SHRINK_FONT_SIZE:
         {
             const SvxFontListItem* pFonts = static_cast<const SvxFontListItem*>(mpViewShell->GetDocSh()->GetItem( SID_ATTR_CHAR_FONTLIST ));
-            const FontList* pFontList = pFonts ? pFonts->GetFontList(): 0;
+            const FontList* pFontList = pFonts ? pFonts->GetFontList(): nullptr;
             if( pFontList )
             {
                 FuText::ChangeFontSize( nSlot == SID_GROW_FONT_SIZE, pOLV, pFontList, mpView );
@@ -406,7 +406,7 @@ void TextObjectBar::Execute( SfxRequest &rReq )
         case SID_THES:
         {
             OUString aReplaceText;
-            SFX_REQUEST_ARG( rReq, pItem2, SfxStringItem, SID_THES, false );
+            const SfxStringItem* pItem2 = rReq.GetArg<SfxStringItem>(SID_THES);
             if (pItem2)
                 aReplaceText = pItem2->GetValue();
             if (!aReplaceText.isEmpty())

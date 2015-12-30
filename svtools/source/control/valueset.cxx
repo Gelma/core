@@ -57,8 +57,8 @@ enum
 
 void ValueSet::ImplInit()
 {
-    mpNoneItem.reset(NULL);
-    mxScrollBar.reset(NULL);
+    mpNoneItem.reset(nullptr);
+    mxScrollBar.reset(nullptr);
 
     mnItemWidth         = 0;
     mnItemHeight        = 0;
@@ -69,6 +69,7 @@ void ValueSet::ImplInit()
     mnUserItemHeight    = 0;
     mnFirstLine         = 0;
     mnSelItemId         = 0;
+    mnSavedItemId       = 0;
     mnHighItemId        = 0;
     mnCols              = 0;
     mnCurCol            = 0;
@@ -308,7 +309,9 @@ void ValueSet::ImplFormatItem(vcl::RenderContext& rRenderContext, ValueSetItem* 
                 Size  aRectSize = aRect.GetSize();
                 Point aPos(aRect.Left(), aRect.Top());
                 aPos.X() += (aRectSize.Width() - aImageSize.Width()) / 2;
-                aPos.Y() += (aRectSize.Height() - aImageSize.Height()) / 2;
+
+                if (pItem->meType != VALUESETITEM_IMAGE_AND_TEXT)
+                    aPos.Y() += (aRectSize.Height() - aImageSize.Height()) / 2;
 
                 DrawImageFlags  nImageStyle  = DrawImageFlags::NONE;
                 if (!IsEnabled())
@@ -323,6 +326,26 @@ void ValueSet::ImplFormatItem(vcl::RenderContext& rRenderContext, ValueSetItem* 
                 }
                 else
                     maVirDev->DrawImage(aPos, pItem->maImage, nImageStyle);
+
+                if (pItem->meType == VALUESETITEM_IMAGE_AND_TEXT)
+                {
+                    maVirDev->SetFont(rRenderContext.GetFont());
+                    maVirDev->SetTextColor((nStyle & WB_MENUSTYLEVALUESET) ? rStyleSettings.GetMenuTextColor() : rStyleSettings.GetWindowTextColor());
+                    maVirDev->SetTextFillColor();
+
+                    long nTxtWidth = maVirDev->GetTextWidth(pItem->maText);
+
+                    if (nTxtWidth > aRect.GetWidth())
+                        maVirDev->SetClipRegion(vcl::Region(aRect));
+
+                    maVirDev->DrawText(Point(aRect.Left() +
+                                             (aRect.GetWidth() - nTxtWidth) / 2,
+                                             aRect.Bottom() - maVirDev->GetTextHeight()),
+                                       pItem->maText);
+
+                    if (nTxtWidth > aRect.GetWidth())
+                        maVirDev->SetClipRegion();
+                }
             }
         }
 
@@ -408,7 +431,7 @@ void ValueSet::Format(vcl::RenderContext& rRenderContext)
         nNoneSpace = 0;
 
         if (mpNoneItem.get())
-            mpNoneItem.reset(NULL);
+            mpNoneItem.reset(nullptr);
     }
 
     // calculate ScrollBar width
@@ -585,7 +608,7 @@ void ValueSet::Format(vcl::RenderContext& rRenderContext)
         // create NoSelection field and show it
         if (nStyle & WB_NONEFIELD)
         {
-            if (mpNoneItem.get() == NULL)
+            if (mpNoneItem.get() == nullptr)
                 mpNoneItem.reset(new ValueSetItem(*this));
 
             mpNoneItem->mnId = 0;
@@ -910,7 +933,7 @@ void ValueSet::ImplHideSelect( sal_uInt16 nItemId )
     }
     else
     {
-        if (mpNoneItem.get() == NULL)
+        if (mpNoneItem.get() == nullptr)
         {
             return;
         }
@@ -1079,12 +1102,12 @@ ValueSetItem* ValueSet::ImplGetItem( size_t nPos )
     if (nPos == VALUESET_ITEM_NONEITEM)
         return mpNoneItem.get();
     else
-        return (nPos < mItemList.size()) ? mItemList[nPos] : NULL;
+        return (nPos < mItemList.size()) ? mItemList[nPos] : nullptr;
 }
 
 ValueSetItem* ValueSet::ImplGetFirstItem()
 {
-    return mItemList.size() ? mItemList[0] : NULL;
+    return mItemList.size() ? mItemList[0] : nullptr;
 }
 
 sal_uInt16 ValueSet::ImplGetVisibleItemCount() const
@@ -1169,7 +1192,7 @@ void ValueSet::ImplEndTracking( const Point& rPos, bool bCancel )
 
     // restore the old status in case of termination
     if ( bCancel )
-        pItem = NULL;
+        pItem = nullptr;
     else
         pItem = ImplGetItem( ImplGetItem( rPos ) );
 
@@ -1326,7 +1349,7 @@ void ValueSet::KeyInput( const KeyEvent& rKeyEvent )
             {
                 if (nCurPos == nLastItem)
                 {
-                    const size_t nCol = nLastItem % mnCols;
+                    const size_t nCol = mnCols ? nLastItem % mnCols : 0;
                     if (nCol < mnCurCol)
                     {
                         // Move to previous row/page, keeping the old column
@@ -1419,7 +1442,7 @@ void ValueSet::Command( const CommandEvent& rCommandEvent )
          rCommandEvent.GetCommand() == CommandEventId::StartAutoScroll ||
          rCommandEvent.GetCommand() == CommandEventId::AutoScroll )
     {
-        if ( HandleScrollCommand( rCommandEvent, NULL, mxScrollBar.get() ) )
+        if ( HandleScrollCommand( rCommandEvent, nullptr, mxScrollBar.get() ) )
             return;
     }
 
@@ -1584,11 +1607,12 @@ void ValueSet::InsertItem( sal_uInt16 nItemId, const Image& rImage, size_t nPos 
 }
 
 void ValueSet::InsertItem( sal_uInt16 nItemId, const Image& rImage,
-                           const OUString& rText, size_t nPos )
+                           const OUString& rText, size_t nPos,
+                           bool bShowLegend )
 {
     ValueSetItem* pItem = new ValueSetItem( *this );
     pItem->mnId     = nItemId;
-    pItem->meType   = VALUESETITEM_IMAGE;
+    pItem->meType   = bShowLegend ? VALUESETITEM_IMAGE_AND_TEXT : VALUESETITEM_IMAGE;
     pItem->maImage  = rImage;
     pItem->maText   = rText;
     ImplInsertItem( pItem, nPos );
@@ -1805,6 +1829,27 @@ void ValueSet::SetItemHeight( long nNewItemHeight )
     }
 }
 
+/**
+ * An inelegant method; sets the item width & height such that
+ * all of the included items and their labels fit; if we can
+ * calculate that.
+ */
+void ValueSet::RecalculateItemSizes()
+{
+    Size aLargestItem = GetLargestItemSize();
+
+    if ( mnUserItemWidth != aLargestItem.Width() ||
+         mnUserItemHeight != aLargestItem.Height() )
+    {
+        mnUserItemWidth = aLargestItem.Width();
+        mnUserItemHeight = aLargestItem.Height();
+        mbFormat = true;
+        queue_resize();
+        if ( IsReallyVisible() && IsUpdateMode() )
+            Invalidate();
+    }
+}
+
 void ValueSet::SelectItem( sal_uInt16 nItemId )
 {
     size_t nItemPos = 0;
@@ -1896,8 +1941,8 @@ void ValueSet::SelectItem( sal_uInt16 nItemId )
             else
                 pItem = mpNoneItem.get();
 
-            ValueItemAcc* pItemAcc = NULL;
-            if (pItem != NULL)
+            ValueItemAcc* pItemAcc = nullptr;
+            if (pItem != nullptr)
                 pItemAcc = ValueItemAcc::getImplementation( pItem->GetAccessible( mbIsTransientChildrenDisabled ) );
 
             if( pItemAcc )
@@ -2024,7 +2069,7 @@ void* ValueSet::GetItemData( sal_uInt16 nItemId ) const
     if ( nPos != VALUESET_ITEM_NOTFOUND )
         return mItemList[nPos]->mpData;
     else
-        return NULL;
+        return nullptr;
 }
 
 void ValueSet::SetItemText(sal_uInt16 nItemId, const OUString& rText)
@@ -2286,9 +2331,9 @@ void ValueSet::SetHighlightHdl( const Link<ValueSet*,void>& rLink )
     maHighlightHdl = rLink;
 }
 
-Size ValueSet::GetOptimalSize() const
+Size ValueSet::GetLargestItemSize()
 {
-    Size aLargestItemSize;
+    Size aLargestItem;
 
     for (size_t i = 0, n = mItemList.size(); i < n; ++i)
     {
@@ -2296,18 +2341,33 @@ Size ValueSet::GetOptimalSize() const
         if (!pItem->mbVisible)
             continue;
 
-        if (pItem->meType != VALUESETITEM_IMAGE)
+        if (pItem->meType != VALUESETITEM_IMAGE &&
+            pItem->meType != VALUESETITEM_IMAGE_AND_TEXT)
         {
-            //handle determining an optimal size for this case
+            // handle determining an optimal size for this case
             continue;
         }
 
-        Size aImageSize = pItem->maImage.GetSizePixel();
-        aLargestItemSize.Width() = std::max(aLargestItemSize.Width(), aImageSize.Width());
-        aLargestItemSize.Height() = std::max(aLargestItemSize.Height(), aImageSize.Height());
+        Size aSize = pItem->maImage.GetSizePixel();
+        if (pItem->meType == VALUESETITEM_IMAGE_AND_TEXT)
+        {
+            aSize.Height() += 3 * NAME_LINE_HEIGHT +
+                maVirDev->GetTextHeight();
+            aSize.Width() = std::max(aSize.Width(),
+                                     maVirDev->GetTextWidth(pItem->maText) + NAME_OFFSET);
+        }
+
+        aLargestItem.Width() = std::max(aLargestItem.Width(), aSize.Width());
+        aLargestItem.Height() = std::max(aLargestItem.Height(), aSize.Height());
     }
 
-    return CalcWindowSizePixel(aLargestItemSize);
+    return aLargestItem;
+}
+
+Size ValueSet::GetOptimalSize() const
+{
+    return CalcWindowSizePixel(
+        const_cast<ValueSet *>(this)->GetLargestItemSize());
 }
 
 void ValueSet::SetEdgeBlending(bool bNew)

@@ -65,15 +65,15 @@ class Listener:
     public cppu::WeakImplHelper< css::frame::XDispatchResultListener >
 {
 public:
-    explicit Listener(Result * result): result_(result) { OSL_ASSERT(result != 0); }
+    explicit Listener(Result * result): result_(result) { OSL_ASSERT(result != nullptr); }
 
 private:
     virtual void SAL_CALL disposing(css::lang::EventObject const &)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE {}
+        throw (css::uno::RuntimeException, std::exception) override {}
 
     virtual void SAL_CALL dispatchFinished(
         css::frame::DispatchResultEvent const & Result)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     Result * result_;
 };
@@ -101,7 +101,7 @@ public:
 
 private:
     virtual void SAL_CALL notify(css::uno::Any const &)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     { dispatch_->dispatchWithNotification(url_, arguments_, listener_); }
 
     css::uno::Reference< css::frame::XNotifyingDispatch > dispatch_;
@@ -112,9 +112,9 @@ private:
 
 class Test: public CppUnit::TestFixture {
 public:
-    virtual void setUp() SAL_OVERRIDE;
+    virtual void setUp() override;
 
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void tearDown() override;
 
 private:
     CPPUNIT_TEST_SUITE(Test);
@@ -138,12 +138,11 @@ void Test::test() {
     OUString doc;
     CPPUNIT_ASSERT(
         test::getTestArgument(
-            OUString("smoketest.doc"), &doc));
+            "smoketest.doc", &doc));
     css::uno::Sequence< css::beans::PropertyValue > args(2);
     args[0].Name = "MacroExecutionMode";
     args[0].Handle = -1;
-    args[0].Value <<=
-        com::sun::star::document::MacroExecMode::ALWAYS_EXECUTE_NO_WARN;
+    args[0].Value <<=  css::document::MacroExecMode::ALWAYS_EXECUTE_NO_WARN;
     args[0].State = css::beans::PropertyState_DIRECT_VALUE;
     args[1].Name = "ReadOnly";
     args[1].Handle = -1;
@@ -161,16 +160,16 @@ void Test::test() {
                 css::uno::Reference< css::frame::XModel >(
                     xDesktop->loadComponentFromURL(
                             test::toAbsoluteFileUrl(doc),
-                            OUString("_default"),
+                            "_default",
                             0, args),
                     css::uno::UNO_QUERY_THROW)->getCurrentController(),
                 css::uno::UNO_SET_THROW)->getFrame(),
             css::uno::UNO_QUERY_THROW)->queryDispatch(
-                url, OUString("_self"), 0),
+                url, "_self", 0),
         css::uno::UNO_QUERY_THROW);
     Result result;
     // Shifted to main thread to work around potential deadlocks (i112867):
-    com::sun::star::awt::AsyncCallback::create(
+    css::awt::AsyncCallback::create(
         connection_.getComponentContext())->addCallback(
             new Callback(
                 disp, url, css::uno::Sequence< css::beans::PropertyValue >(),

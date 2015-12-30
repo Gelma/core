@@ -55,8 +55,8 @@ namespace CopyTableOperation = css::sdb::application::CopyTableOperation;
 OCopyTable::OCopyTable(vcl::Window * pParent)
     : OWizardPage(pParent, "CopyTablePage", "dbaccess/ui/copytablepage.ui")
     , m_nOldOperation(0)
-    , m_pPage2(NULL)
-    , m_pPage3(NULL)
+    , m_pPage2(nullptr)
+    , m_pPage3(nullptr)
     , m_bPKeyAllowed(false)
     , m_bUseHeaderAllowed(true)
 {
@@ -249,7 +249,7 @@ bool OCopyTable::LeavePage()
 
 void OCopyTable::ActivatePage()
 {
-    m_pParent->GetOKButton().Enable( true );
+    m_pParent->GetOKButton().Enable();
     m_nOldOperation = m_pParent->getOperation();
     m_pEdTableName->GrabFocus();
     m_pCB_UseHeaderLine->Check(m_pParent->UseHeaderLine());

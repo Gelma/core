@@ -40,10 +40,9 @@ using namespace ::com::sun::star;
 
 
 
-OInstanceLocker::OInstanceLocker( const uno::Reference< uno::XComponentContext >& xContext )
-: m_xContext( xContext )
-, m_pLockListener( NULL )
-, m_pListenersContainer( NULL )
+OInstanceLocker::OInstanceLocker()
+: m_pLockListener( nullptr )
+, m_pListenersContainer( nullptr )
 , m_bDisposed( false )
 , m_bInitialized( false )
 {
@@ -65,7 +64,7 @@ OInstanceLocker::~OInstanceLocker()
     if ( m_pListenersContainer )
     {
         delete m_pListenersContainer;
-        m_pListenersContainer = NULL;
+        m_pListenersContainer = nullptr;
     }
 }
 
@@ -88,9 +87,9 @@ void SAL_CALL OInstanceLocker::dispose()
         if ( m_pLockListener )
         {
             m_pLockListener->Dispose();
-            m_pLockListener = NULL;
+            m_pLockListener = nullptr;
         }
-        m_xLockListener = uno::Reference< uno::XInterface >();
+        m_xLockListener.clear();
     }
 
     m_bDisposed = true;
@@ -177,7 +176,7 @@ void SAL_CALL OInstanceLocker::initialize( const uno::Sequence< uno::Any >& aArg
                                             xInstance,
                                             nModes,
                                             xApproval );
-        m_xLockListener = uno::Reference< uno::XInterface >( static_cast< OWeakObject* >( m_pLockListener ) );
+        m_xLockListener.set( static_cast< OWeakObject* >( m_pLockListener ) );
         m_pLockListener->Init();
     }
     catch( uno::Exception& )
@@ -224,9 +223,9 @@ OUString SAL_CALL OInstanceLocker::getImplementationName_static()
 
 
 uno::Reference< uno::XInterface > SAL_CALL OInstanceLocker::Create(
-                                const uno::Reference< uno::XComponentContext >& rxContext )
+                                const uno::Reference< uno::XComponentContext >&  )
 {
-    return static_cast< cppu::OWeakObject * >( new OInstanceLocker( rxContext ) );
+    return static_cast< cppu::OWeakObject * >( new OInstanceLocker );
 }
 
 
@@ -289,7 +288,7 @@ void OLockListener::Dispose()
         {}
     }
 
-    m_xInstance = uno::Reference< uno::XInterface >();
+    m_xInstance.clear();
     m_bDisposed = true;
 }
 

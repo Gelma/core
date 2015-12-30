@@ -26,7 +26,7 @@ SwBlockCursor::~SwBlockCursor()
     delete pEndPt;
 }
 
-SwShellCrsr& SwBlockCursor::getShellCrsr()
+SwShellCursor& SwBlockCursor::getShellCursor()
 {
     return aCursor;
 }
@@ -61,8 +61,8 @@ void SwBlockCursor::clearPoints()
 {
     delete pStartPt;
     delete pEndPt;
-    pStartPt = 0;
-    pEndPt = 0;
+    pStartPt = nullptr;
+    pEndPt = nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

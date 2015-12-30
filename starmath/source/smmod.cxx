@@ -30,7 +30,6 @@
 #include <vcl/msgbox.hxx>
 #include <vcl/virdev.hxx>
 #include <unotools/syslocale.hxx>
-#include <tools/rtti.hxx>
 #include "smmod.hxx"
 #include "symbol.hxx"
 #include "cfgitem.hxx"
@@ -40,7 +39,6 @@
 #include "starmath.hrc"
 #include "svx/modctrl.hxx"
 
-TYPEINIT1( SmModule, SfxModule );
 
 #define SmModule
 #include "smslots.hxx"
@@ -165,7 +163,7 @@ void SmModule::InitInterface_Impl()
 SmModule::SmModule(SfxObjectFactory* pObjFact) :
     SfxModule(ResMgr::CreateResMgr("sm"), false, pObjFact, nullptr)
 {
-    SetName(OUString("StarMath"));
+    SetName("StarMath");
 
     SvxModifyControl::RegisterControl(SID_DOC_MODIFIED, this);
 }
@@ -180,11 +178,10 @@ SmModule::~SmModule()
 void SmModule::ApplyColorConfigValues( const svtools::ColorConfig &rColorCfg )
 {
     //invalidate all graphic and edit windows
-    const TypeId aSmViewTypeId = TYPE(SmViewShell);
     SfxViewShell* pViewShell = SfxViewShell::GetFirst();
     while (pViewShell)
     {
-        if ((pViewShell->IsA(aSmViewTypeId)))
+        if ((dynamic_cast<const SmViewShell *>(pViewShell) != nullptr))
         {
             SmViewShell *pSmView = static_cast<SmViewShell *>(pViewShell);
             pSmView->GetGraphicWindow().ApplyColorConfigValues( rColorCfg );
@@ -263,7 +260,7 @@ void SmModule::GetState(SfxItemSet &rSet)
 
 SfxItemSet*  SmModule::CreateItemSet( sal_uInt16 nId )
 {
-    SfxItemSet*  pRet = 0;
+    SfxItemSet*  pRet = nullptr;
     if(nId == SID_SM_EDITOPTIONS)
     {
         pRet = new SfxItemSet(GetPool(),
@@ -275,6 +272,7 @@ SfxItemSet*  SmModule::CreateItemSet( sal_uInt16 nId )
                              SID_PRINTFRAME,        SID_PRINTFRAME,
                              SID_NO_RIGHT_SPACES,   SID_NO_RIGHT_SPACES,
                              SID_SAVE_ONLY_USED_SYMBOLS, SID_SAVE_ONLY_USED_SYMBOLS,
+                             SID_AUTO_CLOSE_BRACKETS,    SID_AUTO_CLOSE_BRACKETS,
                              0 );
 
             GetConfig()->ConfigToItemSet(*pRet);

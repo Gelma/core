@@ -28,7 +28,7 @@ class SwTextFormatInfo;
 
 class SwTextGuess
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::linguistic2::XHyphenatedWord >  xHyphWord;
+    css::uno::Reference< css::linguistic2::XHyphenatedWord >  xHyphWord;
     SwHangingPortion *pHanging; // for hanging punctuation
     sal_Int32 nCutPos;         // this character doesn't fit
     sal_Int32 nBreakStart;     // start index of word containing line break
@@ -37,7 +37,7 @@ class SwTextGuess
                                // a field in the text has been expanded
     sal_uInt16 nBreakWidth;    // width of the broken portion
 public:
-    inline SwTextGuess(): pHanging( NULL ), nCutPos(0), nBreakStart(0),
+    inline SwTextGuess(): pHanging( nullptr ), nCutPos(0), nBreakStart(0),
                         nBreakPos(0), nFieldDiff(0), nBreakWidth(0)
         { }
     ~SwTextGuess() { delete pHanging; }
@@ -48,13 +48,13 @@ public:
     bool AlternativeSpelling( const SwTextFormatInfo &rInf, const sal_Int32 nPos );
 
     inline SwHangingPortion* GetHangingPortion() const { return pHanging; }
-    inline void ClearHangingPortion() { pHanging = NULL; }
+    inline void ClearHangingPortion() { pHanging = nullptr; }
     inline sal_uInt16 BreakWidth() const { return nBreakWidth; }
     inline sal_Int32 CutPos() const { return nCutPos; }
     inline sal_Int32 BreakStart() const { return nBreakStart; }
     inline sal_Int32 BreakPos() const {return nBreakPos; }
     inline sal_Int32 FieldDiff() const {return nFieldDiff; }
-    inline ::com::sun::star::uno::Reference< ::com::sun::star::linguistic2::XHyphenatedWord > HyphWord() const
+    inline css::uno::Reference< css::linguistic2::XHyphenatedWord > HyphWord() const
         { return xHyphWord; }
 };
 

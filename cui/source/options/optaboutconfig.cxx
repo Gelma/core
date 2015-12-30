@@ -269,7 +269,7 @@ void CuiAboutConfigTabPage::FillItems(const Reference< XNameAccess >& xNameAcces
         Reference< XNameAccess > xNextNameAccess;
         try
         {
-            xNextNameAccess = Reference< XNameAccess >(aNode, uno::UNO_QUERY);
+            xNextNameAccess.set(aNode, uno::UNO_QUERY);
             bNotLeaf = xNextNameAccess.is();
         }
         catch (const RuntimeException& e)
@@ -576,7 +576,7 @@ IMPL_LINK_NOARG_TYPED( CuiAboutConfigTabPage, ResetBtnHdl_Impl, Button*, void )
 
 IMPL_LINK_NOARG_TYPED( CuiAboutConfigTabPage, DoubleClickHdl_Impl, SvTreeListBox*, bool )
 {
-    StandardHdl_Impl(NULL);
+    StandardHdl_Impl(nullptr);
     return false;
 }
 

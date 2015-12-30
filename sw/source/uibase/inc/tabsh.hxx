@@ -33,7 +33,6 @@ class SwTableShell: public SwBaseShell
 {
 public:
     SFX_DECL_INTERFACE(SW_TABSHELL)
-    TYPEINFO_OVERRIDE();
 
 private:
     /// SfxInterface initializer.
@@ -42,7 +41,7 @@ private:
 public:
     void    Execute(SfxRequest &);
     void    GetState(SfxItemSet &);
-    void    GetFrmBorderState(SfxItemSet &rSet);
+    void    GetFrameBorderState(SfxItemSet &rSet);
     void    GetLineStyleState(SfxItemSet &rSet);
     void    ExecTableStyle(SfxRequest& rReq);
 

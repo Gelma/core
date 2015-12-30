@@ -86,7 +86,7 @@ class SwMultiPortion : public SwLinePortion
     sal_uInt8 nDirection:2; // Direction (0/90/180/270 degrees)
 protected:
     explicit SwMultiPortion(sal_Int32 nEnd)
-        : pFieldRest(0)
+        : pFieldRest(nullptr)
         , bTab1(false)
         , bTab2(false)
         , bDouble(false)
@@ -128,8 +128,8 @@ public:
     inline bool OnTop() const { return bTop; }
     void ActualizeTabulator();
 
-    virtual void Paint( const SwTextPaintInfo &rInf ) const SAL_OVERRIDE;
-    virtual long CalcSpacing( long nSpaceAdd, const SwTextSizeInfo &rInf ) const SAL_OVERRIDE;
+    virtual void Paint( const SwTextPaintInfo &rInf ) const override;
+    virtual long CalcSpacing( long nSpaceAdd, const SwTextSizeInfo &rInf ) const override;
     virtual bool ChgSpaceAdd( SwLineLayout* pCurr, long nSpaceAdd ) const;
 
     // Summarize the internal lines to calculate the (external) size
@@ -141,7 +141,7 @@ public:
     inline sal_uInt8 GetDirection() const { return nDirection; }
 
     // Accessibility: pass information about this portion to the PortionHandler
-    virtual void HandlePortion( SwPortionHandler& rPH ) const SAL_OVERRIDE;
+    virtual void HandlePortion( SwPortionHandler& rPH ) const override;
 
     OUTPUT_OPERATOR_OVERRIDE
 };
@@ -175,8 +175,8 @@ public:
     inline sal_Int32 GetSmallerSpaceCnt() const
         { return ( nLineDiff < 0 ) ? nBlank1 : nBlank2; }
 
-    virtual long CalcSpacing( long nSpaceAdd, const SwTextSizeInfo &rInf ) const SAL_OVERRIDE;
-    virtual bool ChgSpaceAdd( SwLineLayout* pCurr, long nSpaceAdd ) const SAL_OVERRIDE;
+    virtual long CalcSpacing( long nSpaceAdd, const SwTextSizeInfo &rInf ) const override;
+    virtual bool ChgSpaceAdd( SwLineLayout* pCurr, long nSpaceAdd ) const override;
 };
 
 class SwRubyPortion : public SwMultiPortion
@@ -219,16 +219,16 @@ public:
     // Get number of blanks for justified alignment
     sal_Int32 GetSpaceCnt( const SwTextSizeInfo &rInf ) const;
     // Calculates extra spacing based on number of blanks
-    virtual long CalcSpacing( long nSpaceAdd, const SwTextSizeInfo &rInf ) const SAL_OVERRIDE;
+    virtual long CalcSpacing( long nSpaceAdd, const SwTextSizeInfo &rInf ) const override;
     // Manipulate the spacing array at pCurr
-    virtual bool ChgSpaceAdd( SwLineLayout* pCurr, long nSpaceAdd ) const SAL_OVERRIDE;
+    virtual bool ChgSpaceAdd( SwLineLayout* pCurr, long nSpaceAdd ) const override;
 };
 
 // For cursor travelling in multiportions
 
 class SwTextCursorSave
 {
-    SwTextCursor* pTextCrsr;
+    SwTextCursor* pTextCursor;
     SwLineLayout* pCurr;
     sal_Int32 nStart;
     sal_uInt16 nWidth;
@@ -242,7 +242,7 @@ public:
 
 inline bool SwMultiPortion::HasBrackets() const
 {
-    return IsDouble() && 0 != static_cast<const SwDoubleLinePortion*>(this)->GetBrackets();
+    return IsDouble() && nullptr != static_cast<const SwDoubleLinePortion*>(this)->GetBrackets();
 }
 
 #endif

@@ -86,7 +86,7 @@ IMPL_LINK_TYPED( DocumentTimerManager, DoIdleJobs, Idle*, pIdle, void )
         pModLogFile = new ::rtl::Logfile( "First DoIdleJobs" );
 #endif
 
-    SwRootFrm* pTmpRoot = m_rDoc.getIDocumentLayoutAccess().GetCurrentLayout();
+    SwRootFrame* pTmpRoot = m_rDoc.getIDocumentLayoutAccess().GetCurrentLayout();
     if( pTmpRoot &&
         !SfxProgress::GetActiveProgress( m_rDoc.GetDocShell() ) )
     {
@@ -110,8 +110,8 @@ IMPL_LINK_TYPED( DocumentTimerManager, DoIdleJobs, Idle*, pIdle, void )
             if (bIsOnlineSpell && bIsAutoGrammar)
                 StartGrammarChecking( m_rDoc );
         }
-        std::set<SwRootFrm*> aAllLayouts = m_rDoc.GetAllLayouts();
-        std::set<SwRootFrm*>::iterator pLayIter = aAllLayouts.begin();
+        std::set<SwRootFrame*> aAllLayouts = m_rDoc.GetAllLayouts();
+        std::set<SwRootFrame*>::iterator pLayIter = aAllLayouts.begin();
         for ( ;pLayIter != aAllLayouts.end();++pLayIter )
         {
             if ((*pLayIter)->IsIdleFormat())
@@ -148,10 +148,10 @@ IMPL_LINK_TYPED( DocumentTimerManager, DoIdleJobs, Idle*, pIdle, void )
             const bool bOldLockView = pShell->IsViewLocked();
             pShell->LockView( true );
 
-            m_rDoc.getIDocumentFieldsAccess().GetSysFieldType( RES_CHAPTERFLD )->ModifyNotification( 0, 0 );    // ChapterField
-            m_rDoc.getIDocumentFieldsAccess().UpdateExpFields( 0, false );      // Updates ExpressionFields
-            m_rDoc.getIDocumentFieldsAccess().UpdateTableFields(NULL);                // Tables
-            m_rDoc.getIDocumentFieldsAccess().UpdateRefFields(NULL);                // References
+            m_rDoc.getIDocumentFieldsAccess().GetSysFieldType( RES_CHAPTERFLD )->ModifyNotification( nullptr, nullptr );    // ChapterField
+            m_rDoc.getIDocumentFieldsAccess().UpdateExpFields( nullptr, false );      // Updates ExpressionFields
+            m_rDoc.getIDocumentFieldsAccess().UpdateTableFields(nullptr);                // Tables
+            m_rDoc.getIDocumentFieldsAccess().UpdateRefFields(nullptr);                // References
 
             pTmpRoot->EndAllAction();
 

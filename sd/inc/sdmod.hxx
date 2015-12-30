@@ -78,7 +78,6 @@ typedef std::map< sal_uInt32, css::uno::Sequence< css::uno::Type> > SdTypesCache
 class SdModule : public SfxModule, public SfxListener
 {
 public:
-                            TYPEINFO_OVERRIDE();
                             SFX_DECL_INTERFACE(SD_IF_SDAPP)
                             DECL_LINK_TYPED( CalcFieldValueHdl, EditFieldInfo*, void );
 
@@ -123,9 +122,9 @@ public:
     SD_DLLPUBLIC SvNumberFormatter*     GetNumberFormatter();
 
     // virtual methods for the option dialog
-    virtual SfxItemSet*  CreateItemSet( sal_uInt16 nId ) SAL_OVERRIDE;
-    virtual void         ApplyItemSet( sal_uInt16 nId, const SfxItemSet& rSet ) SAL_OVERRIDE;
-    virtual VclPtr<SfxTabPage> CreateTabPage( sal_uInt16 nId, vcl::Window* pParent, const SfxItemSet& rSet ) SAL_OVERRIDE;
+    virtual SfxItemSet*  CreateItemSet( sal_uInt16 nId ) override;
+    virtual void         ApplyItemSet( sal_uInt16 nId, const SfxItemSet& rSet ) override;
+    virtual VclPtr<SfxTabPage> CreateTabPage( sal_uInt16 nId, vcl::Window* pParent, const SfxItemSet& rSet ) override;
 
     SdExtPropertySetInfoCache gImplImpressPropertySetInfoCache;
     SdExtPropertySetInfoCache gImplDrawPropertySetInfoCache;
@@ -146,14 +145,14 @@ protected:
     */
     VclPtr< VirtualDevice >  mpVirtualRefDevice;
 
-    virtual void            Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+    virtual void            Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
 private:
     SfxFrame* ExecuteNewDocument( SfxRequest& rReq );
 
     static void ChangeMedium( ::sd::DrawDocShell* pDocShell, SfxViewFrame* pViewFrame, const sal_Int32 eMedium );
-    static SfxFrame* CreateEmptyDocument( DocumentType eDocType, const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& i_rFrame );
-    static SfxFrame* CreateFromTemplate( const OUString& rTemplatePath, const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& i_rFrame );
+    static SfxFrame* CreateEmptyDocument( DocumentType eDocType, const css::uno::Reference< css::frame::XFrame >& i_rFrame );
+    static SfxFrame* CreateFromTemplate( const OUString& rTemplatePath, const css::uno::Reference< css::frame::XFrame >& i_rFrame );
 
     /** The resource container controls the lifetime of some singletons.
     */

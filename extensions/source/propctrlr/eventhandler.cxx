@@ -53,6 +53,7 @@
 
 #include <comphelper/namedvaluecollection.hxx>
 #include <comphelper/evtmethodhelper.hxx>
+#include <comphelper/sequence.hxx>
 #include <comphelper/types.hxx>
 #include <cppuhelper/implbase.hxx>
 #include <cppuhelper/supportsservice.hxx>
@@ -133,9 +134,9 @@ namespace pcr
     using com::sun::star::uri::XVndSunStarScriptUrlReference;
     using ::com::sun::star::lang::XEventListener;
 
-    namespace PropertyControlType = ::com::sun::star::inspection::PropertyControlType;
-    namespace PropertyAttribute = ::com::sun::star::beans::PropertyAttribute;
-    namespace FormComponentType = ::com::sun::star::form::FormComponentType;
+    namespace PropertyControlType = css::inspection::PropertyControlType;
+    namespace PropertyAttribute = css::beans::PropertyAttribute;
+    namespace FormComponentType = css::form::FormComponentType;
 
     EventDescription::EventDescription( EventId _nId, const sal_Char* _pListenerNamespaceAscii, const sal_Char* _pListenerClassAsciiName,
             const sal_Char* _pListenerMethodAsciiName, sal_uInt16 _nDisplayNameResId, const OString& _sHelpId, const OString& _sUniqueBrowseId )
@@ -319,7 +320,7 @@ namespace pcr
         }
     }
 
-    typedef ::cppu::WeakImplHelper <   ::com::sun::star::container::XNameReplace
+    typedef ::cppu::WeakImplHelper <   css::container::XNameReplace
                                     >   EventHolder_Base;
     /* An UNO component holding assigned event descriptions, for use with a SvxMacroAssignDlg */
     class EventHolder : public EventHolder_Base
@@ -342,12 +343,12 @@ namespace pcr
         ScriptEventDescriptor getNormalizedDescriptorByName( const OUString& _rEventName ) const;
 
         // XNameReplace
-        virtual void SAL_CALL replaceByName( const OUString& _rName, const Any& aElement ) throw (IllegalArgumentException, NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Any SAL_CALL getByName( const OUString& _rName ) throw (NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Sequence< OUString > SAL_CALL getElementNames(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual sal_Bool SAL_CALL hasByName( const OUString& _rName ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual Type SAL_CALL getElementType(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual sal_Bool SAL_CALL hasElements(  ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL replaceByName( const OUString& _rName, const Any& aElement ) throw (IllegalArgumentException, NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) override;
+        virtual Any SAL_CALL getByName( const OUString& _rName ) throw (NoSuchElementException, WrappedTargetException, RuntimeException, std::exception) override;
+        virtual Sequence< OUString > SAL_CALL getElementNames(  ) throw (RuntimeException, std::exception) override;
+        virtual sal_Bool SAL_CALL hasByName( const OUString& _rName ) throw (RuntimeException, std::exception) override;
+        virtual Type SAL_CALL getElementType(  ) throw (RuntimeException, std::exception) override;
+        virtual sal_Bool SAL_CALL hasElements(  ) throw (RuntimeException, std::exception) override;
 
     protected:
         virtual ~EventHolder( );
@@ -491,8 +492,7 @@ namespace pcr
 
     Sequence< OUString > SAL_CALL EventHandler::getSupportedServiceNames_static(  ) throw (RuntimeException)
     {
-        Sequence< OUString > aSupported( 1 );
-        aSupported[0] = "com.sun.star.form.inspection.EventHandler";
+        Sequence<OUString> aSupported { "com.sun.star.form.inspection.EventHandler" };
         return aSupported;
     }
 
@@ -508,7 +508,7 @@ namespace pcr
         if ( !_rxIntrospectee.is() )
             throw NullPointerException();
 
-        m_xComponent = Reference< XPropertySet >( _rxIntrospectee, UNO_QUERY_THROW );
+        m_xComponent.set( _rxIntrospectee, UNO_QUERY_THROW );
 
         m_bEventsMapInitialized = false;
         EventMap aEmpty;
@@ -715,27 +715,25 @@ namespace pcr
             m_bEventsMapInitialized = true;
             try
             {
-                Sequence< Type > aListeners;
-                impl_getCopmonentListenerTypes_nothrow( aListeners );
-                sal_Int32 listenerCount = aListeners.getLength();
+                std::vector< Type > aListeners;
+                impl_getComponentListenerTypes_nothrow( aListeners );
 
                 Property aCurrentProperty;
                 OUString sListenerClassName;
 
                 // loop through all listeners and all methods, and see which we can present at the UI
-                const Type* pListeners = aListeners.getConstArray();
-                for ( sal_Int32 listener = 0; listener < listenerCount; ++listener, ++pListeners )
+                for ( const Type& rListener : aListeners )
                 {
                     aCurrentProperty = Property();
 
                     // the programmatic name of the listener, to be used as "property" name
-                    sListenerClassName = pListeners->getTypeName();
+                    sListenerClassName = rListener.getTypeName();
                     OSL_ENSURE( !sListenerClassName.isEmpty(), "EventHandler::getSupportedProperties: strange - no listener name ..." );
                     if ( sListenerClassName.isEmpty() )
                         continue;
 
                     // loop through all methods
-                    Sequence< OUString > aMethods( comphelper::getEventMethodsForType( *pListeners ) );
+                    Sequence< OUString > aMethods( comphelper::getEventMethodsForType( rListener ) );
 
                     const OUString* pMethods = aMethods.getConstArray();
                     sal_uInt32 methodCount = aMethods.getLength();
@@ -774,10 +772,7 @@ namespace pcr
                 PropertyAttribute::BOUND );
         }
 
-        StlSyntaxSequence< Property > aReturn( aOrderedProperties.size() );
-        ::std::transform( aOrderedProperties.begin(), aOrderedProperties.end(), aReturn.begin(),
-                ::o3tl::select2nd< std::map< EventId, Property >::value_type >() );
-        return aReturn;
+        return comphelper::mapValuesToSequence( aOrderedProperties );
     }
 
     Sequence< OUString > SAL_CALL EventHandler::getSupersededProperties( ) throw (RuntimeException, std::exception)
@@ -972,9 +967,9 @@ namespace pcr
         }
     }
 
-    void EventHandler::impl_getCopmonentListenerTypes_nothrow( Sequence< Type >& _out_rTypes ) const
+    void EventHandler::impl_getComponentListenerTypes_nothrow( std::vector< Type >& _out_rTypes ) const
     {
-        _out_rTypes.realloc( 0 );
+        _out_rTypes.clear();
         try
         {
             // we use a set to avoid duplicates
@@ -994,8 +989,7 @@ namespace pcr
             }
 
             // now that they're disambiguated, copy these types into our member
-            _out_rTypes.realloc( aListeners.size() );
-            ::std::copy( aListeners.begin(), aListeners.end(), _out_rTypes.getArray() );
+            std::copy(aListeners.begin(), aListeners.end(), std::back_inserter(_out_rTypes));
         }
         catch( const Exception& )
         {

@@ -69,8 +69,7 @@ namespace pcr
 
     Sequence< OUString > SAL_CALL EditPropertyHandler::getSupportedServiceNames_static(  ) throw (RuntimeException)
     {
-        Sequence< OUString > aSupported( 1 );
-        aSupported[0] = "com.sun.star.form.inspection.EditPropertyHandler";
+        Sequence<OUString> aSupported { "com.sun.star.form.inspection.EditPropertyHandler" };
         return aSupported;
     }
 
@@ -282,7 +281,7 @@ namespace pcr
             _rxInspectorUI->enablePropertyUI( PROPERTY_LINEEND_FORMAT,  nTextType != TEXTTYPE_SINGLELINE );
             _rxInspectorUI->enablePropertyUI( PROPERTY_VERTICAL_ALIGN,  nTextType == TEXTTYPE_SINGLELINE );
 
-            _rxInspectorUI->showCategory( OUString( "Data" ), nTextType != TEXTTYPE_RICHTEXT );
+            _rxInspectorUI->showCategory( "Data", nTextType != TEXTTYPE_RICHTEXT );
         }
         break;
 

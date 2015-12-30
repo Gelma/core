@@ -29,7 +29,6 @@
 #include <basegfx/polygon/b2dpolypolygontools.hxx>
 
 #include <o3tl/vector_pool.hxx>
-#include <boost/bind.hpp>
 #include <boost/next_prior.hpp>
 
 #include <algorithm>
@@ -93,12 +92,10 @@ namespace basegfx
             ActiveEdge( const B2DRectangle& rRect,
                         const double&       fInvariantCoord,
                         std::ptrdiff_t      nPolyIdx,
-                        EdgeType            eEdgeType,
                         EdgeDirection       eEdgeDirection ) :
                 mfInvariantCoord(fInvariantCoord),
                 mpAssociatedRect( &rRect ),
                 mnPolygonIdx( nPolyIdx ),
-                meEdgeType( eEdgeType ),
                 meEdgeDirection( eEdgeDirection )
             {}
 
@@ -135,9 +132,6 @@ namespace basegfx
                 -1 denotes no assigned polygon
              */
             std::ptrdiff_t      mnPolygonIdx;
-
-            /// 'upper' or 'lower' edge of original rectangle.
-            EdgeType            meEdgeType;
 
             /// 'left' or 'right'
             EdgeDirection       meEdgeDirection;
@@ -245,7 +239,7 @@ namespace basegfx
             /** Create polygon
              */
             ImplPolygon() :
-                mpLeadingRightEdge(NULL),
+                mpLeadingRightEdge(nullptr),
                 mnIdx(-1),
                 maPoints(),
                 mbIsFinished(false)
@@ -455,7 +449,7 @@ namespace basegfx
                     ActiveEdge* const pFarEdge=rTmp.mpLeadingRightEdge;
                     ActiveEdge* const pNearEdge=&rActiveEdge;
 
-                    rTmp.mpLeadingRightEdge = NULL;
+                    rTmp.mpLeadingRightEdge = nullptr;
                     pNearEdge->setTargetPolygonIndex(nTmpIdx);
 
                     mpLeadingRightEdge = pFarEdge;
@@ -477,7 +471,7 @@ namespace basegfx
                 rActiveEdge.setTargetPolygonIndex(mnIdx);
                 mpLeadingRightEdge = &rActiveEdge;
 
-                rTmp.mpLeadingRightEdge = NULL;
+                rTmp.mpLeadingRightEdge = nullptr;
 
                 return nTmpIdx;
             }
@@ -494,13 +488,8 @@ namespace basegfx
             B2DPolygon getPolygon() const
             {
                 B2DPolygon aRes;
-                std::for_each( maPoints.begin(),
-                               maPoints.end(),
-                               boost::bind(
-                     &B2DPolygon::append,
-                                   boost::ref(aRes),
-                                   _1,
-                                   1 ) );
+                for (auto const& aPoint : maPoints)
+                    aRes.append(aPoint, 1);
                 aRes.setClosed( true );
                 return aRes;
             }
@@ -515,7 +504,7 @@ namespace basegfx
                              "ImplPolygon::finish(): first and last point violate 90 degree line angle constraint!" );
 
                 mbIsFinished = true;
-                mpLeadingRightEdge = NULL;
+                mpLeadingRightEdge = nullptr;
 
                 rRes.append(getPolygon());
             }
@@ -646,7 +635,6 @@ namespace basegfx
                     rRect,
                     rRect.getMinY(),
                     bGoesDown ? nIdxPolygon : -1,
-                    ActiveEdge::UPPER,
                     bGoesDown ? ActiveEdge::PROCEED_LEFT : ActiveEdge::PROCEED_RIGHT) );
             // lower edge
             aNewEdges.push_back(
@@ -654,7 +642,6 @@ namespace basegfx
                     rRect,
                     rRect.getMaxY(),
                     bGoesDown ? -1 : nIdxPolygon,
-                    ActiveEdge::LOWER,
                     bGoesDown ? ActiveEdge::PROCEED_RIGHT : ActiveEdge::PROCEED_LEFT ) );
 
             // furthermore, have to respect a special tie-breaking
@@ -748,10 +735,7 @@ namespace basegfx
             // rect is regarded _outside_ any rects whose events have
             // started earlier
             first = std::find_if(first, last,
-                                 boost::bind(
-                         &isSameRect,
-                                     _1,
-                                     boost::cref(rCurrRect)));
+                                 [&rCurrRect](ActiveEdge& anEdge) { return isSameRect(anEdge, rCurrRect); });
 
             if(first == last)
                 return;
@@ -905,14 +889,8 @@ namespace basegfx
             // sometimes not enough, but a usable compromise
             aPolygonPool.reserve( rRanges.size() );
 
-            std::for_each( aSweepLineEvents.begin(),
-                           aSweepLineEvents.end(),
-                           boost::bind(
-                               &handleSweepLineEvent,
-                               _1,
-                               boost::ref(aActiveEdgeList),
-                               boost::ref(aPolygonPool),
-                               boost::ref(aRes)) );
+            for (auto& aSweepLineEvent : aSweepLineEvents)
+                handleSweepLineEvent(aSweepLineEvent, aActiveEdgeList, aPolygonPool, aRes);
 
             return aRes;
         }

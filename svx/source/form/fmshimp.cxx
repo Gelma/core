@@ -95,6 +95,7 @@
 #include <vcl/layout.hxx>
 #include <vcl/waitobj.hxx>
 #include <vcl/settings.hxx>
+#include <o3tl/make_unique.hxx>
 
 #include <algorithm>
 #include <functional>
@@ -264,7 +265,6 @@ using namespace ::com::sun::star::form::runtime;
 using namespace ::com::sun::star::awt;
 using namespace ::com::sun::star::view;
 using namespace ::com::sun::star::util;
-using namespace ::com::sun::star::frame;
 using namespace ::com::sun::star::script;
 using namespace ::svxform;
 using namespace ::svx;
@@ -289,7 +289,7 @@ namespace
             if ( pCurrent->IsGroupObject() )
             {
                 pGroupIterator.reset(new SdrObjListIter( *pCurrent->GetSubList() ));
-                pCurrent = pGroupIterator->IsMore() ? pGroupIterator->Next() : NULL;
+                pCurrent = pGroupIterator->IsMore() ? pGroupIterator->Next() : nullptr;
             }
 
             while ( pCurrent )
@@ -305,7 +305,7 @@ namespace
                 }
 
                 // next element
-                pCurrent = pGroupIterator && pGroupIterator->IsMore() ? pGroupIterator->Next() : NULL;
+                pCurrent = pGroupIterator && pGroupIterator->IsMore() ? pGroupIterator->Next() : nullptr;
             }
         }
     }
@@ -400,7 +400,7 @@ namespace
             // search the model/control idl classes for the event described by pCurrent
             for (   Sequence< Type>* pCurrentArray = &aModelListeners;
                     pCurrentArray;
-                    pCurrentArray = (pCurrentArray == &aModelListeners) ? &aControlListeners : NULL
+                    pCurrentArray = (pCurrentArray == &aModelListeners) ? &aControlListeners : nullptr
                 )
             {
                 const Type* pCurrentListeners = pCurrentArray->getConstArray();
@@ -478,7 +478,7 @@ namespace
 
 // check if the control has one of the interfaces we can use for searching
 // *_pCurrentText will be filled with the current text of the control (as used when searching this control)
-bool IsSearchableControl( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface>& _rxControl,
+bool IsSearchableControl( const css::uno::Reference< css::uno::XInterface>& _rxControl,
     OUString* _pCurrentText )
 {
     if ( !_rxControl.is() )
@@ -564,7 +564,7 @@ bool isControlList(const SdrMarkList& rMarkList)
     for (size_t i = 0; i < nMarkCount && bControlList; ++i)
     {
         SdrObject *pObj = rMarkList.GetMark(i)->GetMarkedSdrObj();
-        E3dObject* pAs3DObject = PTR_CAST(E3dObject, pObj);
+        E3dObject* pAs3DObject = dynamic_cast< E3dObject* >( pObj);
         // E3dObject's do not contain any 2D-objects (by definition)
         // we need this extra check here : an E3dObject->IsGroupObject says "YES", but an SdrObjListIter working
         // with an E3dObject doesn't give me any Nodes (E3dObject has a sub list, but no members in that list,
@@ -629,8 +629,8 @@ FmXFormShell::FmXFormShell( FmFormShell& _rShell, SfxViewFrame* _pViewFrame )
         :FmXFormShell_BASE(m_aMutex)
         ,FmXFormShell_CFGBASE(OUString("Office.Common/Misc"), ConfigItemMode::DelayedUpdate)
         ,m_eNavigate( NavigationBarMode_NONE )
-        ,m_nInvalidationEvent( 0 )
-        ,m_nActivationEvent( 0 )
+        ,m_nInvalidationEvent( nullptr )
+        ,m_nActivationEvent( nullptr )
         ,m_pShell( &_rShell )
         ,m_pTextShell( new svx::FmTextControlShell( _pViewFrame ) )
         ,m_aActiveControllerFeatures( this )
@@ -662,8 +662,7 @@ FmXFormShell::FmXFormShell( FmFormShell& _rShell, SfxViewFrame* _pViewFrame )
     // cache the current configuration settings we're interested in
     implAdjustConfigCache();
     // and register for changes on this settings
-    Sequence< OUString > aNames(1);
-    aNames[0] = "FormControlPilotsEnabled";
+    Sequence< OUString > aNames { "FormControlPilotsEnabled" };
     EnableNotification(aNames);
 }
 
@@ -674,14 +673,14 @@ FmXFormShell::~FmXFormShell()
 }
 
 
-Reference< XModel > FmXFormShell::getContextDocument() const
+Reference< css::frame::XModel > FmXFormShell::getContextDocument() const
 {
-    Reference< XModel > xModel;
+    Reference< css::frame::XModel > xModel;
 
     // determine the type of document we live in
     try
     {
-        Reference< XController > xController;
+        Reference< css::frame::XController > xController;
         if ( m_xAttachedFrame.is() )
             xController = m_xAttachedFrame->getController();
         if ( xController.is() )
@@ -718,7 +717,7 @@ bool FmXFormShell::impl_checkDisposed() const
         return m_eDocumentType;
 
     // determine the type of document we live in
-    Reference< XModel > xModel = getContextDocument();
+    Reference< css::frame::XModel > xModel = getContextDocument();
     if ( xModel.is() )
         m_eDocumentType = DocumentClassification::classifyDocument( xModel );
     else
@@ -752,9 +751,9 @@ void SAL_CALL FmXFormShell::disposing(const lang::EventObject& e) throw( Runtime
     {
         // wird der Controller freigeben dann alles loslassen
         stopListening();
-        m_xActiveForm = NULL;
-        m_xActiveController = NULL;
-        m_xNavigationController = NULL;
+        m_xActiveForm = nullptr;
+        m_xActiveController = nullptr;
+        m_xNavigationController = nullptr;
 
         m_aActiveControllerFeatures.dispose();
         m_aNavControllerFeatures.dispose();
@@ -770,20 +769,20 @@ void SAL_CALL FmXFormShell::disposing(const lang::EventObject& e) throw( Runtime
         if (xFormController.is())
             xFormController->removeActivateListener(static_cast<XFormControllerListener*>(this));
 
-        Reference< ::com::sun::star::lang::XComponent> xComp(m_xExternalViewController, UNO_QUERY);
+        Reference< css::lang::XComponent> xComp(m_xExternalViewController, UNO_QUERY);
         if (xComp.is())
             xComp->removeEventListener(static_cast<XEventListener*>(static_cast<XPropertyChangeListener*>(this)));
 
-        m_xExternalViewController = NULL;
-        m_xExternalDisplayedForm = NULL;
-        m_xExtViewTriggerController = NULL;
+        m_xExternalViewController = nullptr;
+        m_xExternalDisplayedForm = nullptr;
+        m_xExtViewTriggerController = nullptr;
 
         InvalidateSlot( SID_FM_VIEW_AS_GRID, false );
     }
 }
 
 
-void SAL_CALL FmXFormShell::propertyChange(const PropertyChangeEvent& evt) throw(::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL FmXFormShell::propertyChange(const PropertyChangeEvent& evt) throw(css::uno::RuntimeException, std::exception)
 {
     if ( impl_checkDisposed() )
         return;
@@ -875,7 +874,7 @@ void FmXFormShell::disposing()
     FmXFormShell_BASE::disposing();
 
     if ( m_pShell && !m_pShell->IsDesignMode() )
-        setActiveController( NULL, true );
+        setActiveController( nullptr, true );
         // do NOT save the content of the old form (the second parameter tells this)
         // if we're here, then we expect that PrepareClose has been called, and thus the user
         // got a chance to commit or reject any changes. So in case we're here and there
@@ -883,7 +882,7 @@ void FmXFormShell::disposing()
 
     m_pTextShell->dispose();
 
-    m_xAttachedFrame = NULL;
+    m_xAttachedFrame = nullptr;
 
     CloseExternalFormViewer();
 
@@ -898,12 +897,12 @@ void FmXFormShell::disposing()
         if (m_nInvalidationEvent)
         {
             Application::RemoveUserEvent(m_nInvalidationEvent);
-            m_nInvalidationEvent = 0;
+            m_nInvalidationEvent = nullptr;
         }
         if ( m_nActivationEvent )
         {
             Application::RemoveUserEvent( m_nActivationEvent );
-            m_nActivationEvent = 0;
+            m_nActivationEvent = nullptr;
         }
     }
 
@@ -923,18 +922,18 @@ void FmXFormShell::disposing()
     m_xForms.clear();
 
     impl_switchActiveControllerListening( false );
-    m_xActiveController         = NULL;
-    m_xActiveForm               = NULL;
+    m_xActiveController         = nullptr;
+    m_xActiveForm               = nullptr;
 
-    m_pShell                    = NULL;
-    m_xNavigationController     = NULL;
-    m_xCurrentForm              = NULL;
-    m_xLastGridFound            = NULL;
-    m_xAttachedFrame            = NULL;
-    m_xExternalViewController   = NULL;
-    m_xExtViewTriggerController = NULL;
-    m_xExternalDisplayedForm    = NULL;
-    m_xLastGridFound            = NULL;
+    m_pShell                    = nullptr;
+    m_xNavigationController     = nullptr;
+    m_xCurrentForm              = nullptr;
+    m_xLastGridFound            = nullptr;
+    m_xAttachedFrame            = nullptr;
+    m_xExternalViewController   = nullptr;
+    m_xExtViewTriggerController = nullptr;
+    m_xExternalDisplayedForm    = nullptr;
+    m_xLastGridFound            = nullptr;
 
     InterfaceBag aEmpty;
     m_aCurrentSelection.swap( aEmpty );
@@ -1009,7 +1008,7 @@ IMPL_LINK_NOARG_TYPED(FmXFormShell, OnInvalidateSlots, void*,void)
         return;
 
     ::osl::MutexGuard aGuard(m_aInvalidationSafety);
-    m_nInvalidationEvent = 0;
+    m_nInvalidationEvent = nullptr;
 
     for (std::vector<InvalidSlotInfo>::const_iterator i = m_arrInvalidSlots.begin(); i < m_arrInvalidSlots.end(); ++i)
     {
@@ -1089,7 +1088,7 @@ bool FmXFormShell::executeControlConversionSlot( const Reference< XFormComponent
         return false;
 
     SdrPage* pPage = m_pShell->GetCurPage();
-    FmFormPage* pFormPage = pPage ? dynamic_cast< FmFormPage* >( pPage ) : NULL;
+    FmFormPage* pFormPage = pPage ? dynamic_cast< FmFormPage* >( pPage ) : nullptr;
     OSL_ENSURE( pFormPage, "FmXFormShell::executeControlConversionSlot: no current (form) page!" );
     if ( !pFormPage )
         return false;
@@ -1103,7 +1102,7 @@ bool FmXFormShell::executeControlConversionSlot( const Reference< XFormComponent
         {
             Reference< XInterface > xNormalizedObject( _rxObject, UNO_QUERY );
 
-            FmFormObj* pFormObject = NULL;
+            FmFormObj* pFormObject = nullptr;
             SdrObjListIter aPageIter( *pFormPage );
             while ( aPageIter.IsMore() )
             {
@@ -1116,7 +1115,7 @@ bool FmXFormShell::executeControlConversionSlot( const Reference< XFormComponent
                 if ( xCurrentNormalized.get() == xNormalizedObject.get() )
                     break;
 
-                pFormObject = NULL;
+                pFormObject = nullptr;
             }
 
             if ( !pFormObject )
@@ -1139,14 +1138,14 @@ bool FmXFormShell::executeControlConversionSlot( const Reference< XFormComponent
             lang::Locale aNewLanguage = Application::GetSettings().GetUILanguageTag().getLocale();
             TransferFormComponentProperties(xOldSet, xNewSet, aNewLanguage);
 
-            Sequence< ::com::sun::star::script::ScriptEventDescriptor> aOldScripts;
+            Sequence< css::script::ScriptEventDescriptor> aOldScripts;
             Reference< XChild> xChild(xOldModel, UNO_QUERY);
             if (xChild.is())
             {
                 Reference< XIndexAccess> xParent(xChild->getParent(), UNO_QUERY);
 
                 // remember old script events
-                Reference< ::com::sun::star::script::XEventAttacherManager> xEvManager(xChild->getParent(), UNO_QUERY);
+                Reference< css::script::XEventAttacherManager> xEvManager(xChild->getParent(), UNO_QUERY);
                 if (xParent.is() && xEvManager.is())
                 {
                     sal_Int32 nIndex = getElementPos(xParent, xOldModel);
@@ -1171,7 +1170,7 @@ bool FmXFormShell::executeControlConversionSlot( const Reference< XFormComponent
                         else
                         {
                             OSL_FAIL("FmXFormShell::executeControlConversionSlot: could not replace the model !");
-                            Reference< ::com::sun::star::lang::XComponent> xNewComponent(xNewModel, UNO_QUERY);
+                            Reference< css::lang::XComponent> xNewComponent(xNewModel, UNO_QUERY);
                             if (xNewComponent.is())
                                 xNewComponent->dispose();
                             return false;
@@ -1180,7 +1179,7 @@ bool FmXFormShell::executeControlConversionSlot( const Reference< XFormComponent
                     catch(Exception&)
                     {
                         OSL_FAIL("FmXFormShell::executeControlConversionSlot: could not replace the model !");
-                        Reference< ::com::sun::star::lang::XComponent> xNewComponent(xNewModel, UNO_QUERY);
+                        Reference< css::lang::XComponent> xNewComponent(xNewModel, UNO_QUERY);
                         if (xNewComponent.is())
                             xNewComponent->dispose();
                         return false;
@@ -1240,7 +1239,7 @@ bool FmXFormShell::executeControlConversionSlot( const Reference< XFormComponent
                     {
                         if ( xNewBindable.is() )
                             xNewBindable->setValueBinding( xOldBindable->getValueBinding() );
-                        xOldBindable->setValueBinding( NULL );
+                        xOldBindable->setValueBinding( nullptr );
                     }
                     catch(const Exception&)
                     {
@@ -1258,7 +1257,7 @@ bool FmXFormShell::executeControlConversionSlot( const Reference< XFormComponent
                     {
                         if ( xNewSink.is() )
                             xNewSink->setListEntrySource( xOldSink->getListEntrySource() );
-                        xOldSink->setListEntrySource( NULL );
+                        xOldSink->setListEntrySource( nullptr );
                     }
                     catch(const Exception&)
                     {
@@ -1269,7 +1268,7 @@ bool FmXFormShell::executeControlConversionSlot( const Reference< XFormComponent
 
             // create an undo action
             FmFormModel* pModel = m_pShell->GetFormModel();
-            DBG_ASSERT(pModel != NULL, "FmXFormShell::executeControlConversionSlot: my shell has no model !");
+            DBG_ASSERT(pModel != nullptr, "FmXFormShell::executeControlConversionSlot: my shell has no model !");
             if (pModel && pModel->IsUndoEnabled() )
             {
                 pModel->AddUndo(new FmUndoModelReplaceAction(*pModel, pFormObject, xOldModel));
@@ -1398,9 +1397,9 @@ void FmXFormShell::LoopGrids(LoopGridsSync nSync, LoopGridsFlags nFlags)
 Reference< XControlContainer > FmXFormShell::getControlContainerForView()
 {
     if ( impl_checkDisposed() )
-        return NULL;
+        return nullptr;
 
-    SdrPageView* pPageView = NULL;
+    SdrPageView* pPageView = nullptr;
     if ( m_pShell && m_pShell->GetFormView() )
         pPageView = m_pShell->GetFormView()->GetSdrPageView();
 
@@ -1539,7 +1538,7 @@ void FmXFormShell::ExecuteSearch()
                 Reference< XGridPeer> xGridPeer(xActiveControl->getPeer(), UNO_QUERY);
                 Reference< XIndexAccess> xColumns;
                 if (xGridPeer.is())
-                    xColumns = Reference< XIndexAccess>(xGridPeer->getColumns(),UNO_QUERY);
+                    xColumns.set(xGridPeer->getColumns(),UNO_QUERY);
 
                 sal_Int16 nViewCol = xGrid->getCurrentColumnPosition();
                 sal_Int16 nModelCol = GridView2ModelPos(xColumns, nViewCol);
@@ -1606,7 +1605,7 @@ bool FmXFormShell::GetY2KState(sal_uInt16& n)
     Reference< XRowSet> xDB(xForm, UNO_QUERY);
     DBG_ASSERT(xDB.is(), "FmXFormShell::GetY2KState : current form has no dbform-interface !");
 
-    Reference< XNumberFormatsSupplier> xSupplier( getNumberFormats(getConnection(xDB), false));
+    Reference< XNumberFormatsSupplier> xSupplier( getNumberFormats(getConnection(xDB)));
     if (xSupplier.is())
     {
         Reference< XPropertySet> xSet(xSupplier->getNumberFormatSettings());
@@ -1637,7 +1636,7 @@ void FmXFormShell::SetY2KState(sal_uInt16 n)
     Reference< XRowSet > xActiveRowSet( xActiveForm, UNO_QUERY );
     if ( xActiveRowSet.is() )
     {
-        Reference< XNumberFormatsSupplier > xSupplier( getNumberFormats( getConnection( xActiveRowSet ), false ) );
+        Reference< XNumberFormatsSupplier > xSupplier( getNumberFormats( getConnection( xActiveRowSet ) ) );
         if (xSupplier.is())
         {
             Reference< XPropertySet> xSet(xSupplier->getNumberFormatSettings());
@@ -1664,7 +1663,7 @@ void FmXFormShell::SetY2KState(sal_uInt16 n)
     if (!xCurrentForms.is())
     {   // im alive-Modus sind meine Forms nicht gesetzt, wohl aber die an der Page
         if (m_pShell->GetCurPage())
-            xCurrentForms = Reference< XIndexAccess>( m_pShell->GetCurPage()->GetForms( false ), UNO_QUERY );
+            xCurrentForms.set( m_pShell->GetCurPage()->GetForms( false ), UNO_QUERY );
     }
     if (!xCurrentForms.is())
         return;
@@ -1677,7 +1676,7 @@ void FmXFormShell::SetY2KState(sal_uInt16 n)
         Reference< XRowSet> xElementAsRowSet( xCurrentElement, UNO_QUERY );
         if ( xElementAsRowSet.is() )
         {
-            Reference< XNumberFormatsSupplier > xSupplier( getNumberFormats( getConnection( xElementAsRowSet ), false ) );
+            Reference< XNumberFormatsSupplier > xSupplier( getNumberFormats( getConnection( xElementAsRowSet ) ) );
             if (!xSupplier.is())
                 continue;
 
@@ -1710,23 +1709,23 @@ void FmXFormShell::CloseExternalFormViewer()
     if (!m_xExternalViewController.is())
         return;
 
-    Reference< ::com::sun::star::frame::XFrame> xExternalViewFrame( m_xExternalViewController->getFrame());
-    Reference< ::com::sun::star::frame::XDispatchProvider> xCommLink(xExternalViewFrame, UNO_QUERY);
+    Reference< css::frame::XFrame> xExternalViewFrame( m_xExternalViewController->getFrame());
+    Reference< css::frame::XDispatchProvider> xCommLink(xExternalViewFrame, UNO_QUERY);
     if (!xCommLink.is())
         return;
 
-    xExternalViewFrame->setComponent(NULL,NULL);
+    xExternalViewFrame->setComponent(nullptr,nullptr);
     ::comphelper::disposeComponent(xExternalViewFrame);
-    m_xExternalViewController   = NULL;
-    m_xExtViewTriggerController = NULL;
-    m_xExternalDisplayedForm    = NULL;
+    m_xExternalViewController   = nullptr;
+    m_xExtViewTriggerController = nullptr;
+    m_xExternalDisplayedForm    = nullptr;
 }
 
 
 Reference< XResultSet> FmXFormShell::getInternalForm(const Reference< XResultSet>& _xForm) const
 {
     if ( impl_checkDisposed() )
-        return NULL;
+        return nullptr;
 
     Reference< runtime::XFormController> xExternalCtrlr(m_xExternalViewController, UNO_QUERY);
     if (xExternalCtrlr.is() && (_xForm == xExternalCtrlr->getModel()))
@@ -1741,7 +1740,7 @@ Reference< XResultSet> FmXFormShell::getInternalForm(const Reference< XResultSet
 Reference< XForm> FmXFormShell::getInternalForm(const Reference< XForm>& _xForm) const
 {
     if ( impl_checkDisposed() )
-        return NULL;
+        return nullptr;
 
     Reference< runtime::XFormController > xExternalCtrlr(m_xExternalViewController, UNO_QUERY);
     if (xExternalCtrlr.is() && (_xForm == xExternalCtrlr->getModel()))
@@ -1852,7 +1851,7 @@ void FmXFormShell::setActiveController( const Reference< runtime::XFormControlle
         // switch all nav dispatchers belonging to the form of the current nav controller to 'non active'
         Reference< XResultSet> xNavigationForm;
         if (m_xNavigationController.is())
-            xNavigationForm = Reference< XResultSet>(m_xNavigationController->getModel(), UNO_QUERY);
+            xNavigationForm.set(m_xNavigationController->getModel(), UNO_QUERY);
         aGuard.clear();
 
         m_bInActivate = true;
@@ -1860,7 +1859,7 @@ void FmXFormShell::setActiveController( const Reference< runtime::XFormControlle
         // check if the 2 controllers serve different forms
         Reference< XResultSet> xOldForm;
         if (m_xActiveController.is())
-            xOldForm = Reference< XResultSet>(m_xActiveController->getModel(), UNO_QUERY);
+            xOldForm.set(m_xActiveController->getModel(), UNO_QUERY);
         Reference< XResultSet> xNewForm;
         if (xController.is())
             xNewForm = Reference< XResultSet>(xController->getModel(), UNO_QUERY);
@@ -1918,14 +1917,14 @@ void FmXFormShell::setActiveController( const Reference< runtime::XFormControlle
         if ( m_xActiveController.is() )
             m_xActiveForm = getInternalForm( Reference< XForm >( m_xActiveController->getModel(), UNO_QUERY ) );
         else
-            m_xActiveForm = NULL;
+            m_xActiveForm = nullptr;
 
         startListening();
 
         // activate all dispatchers belonging to form of the new navigation controller
-        xNavigationForm = NULL;
+        xNavigationForm = nullptr;
         if (m_xNavigationController.is())
-            xNavigationForm = Reference< XResultSet>(m_xNavigationController->getModel(), UNO_QUERY);
+            xNavigationForm.set(m_xNavigationController->getModel(), UNO_QUERY);
 
         m_bInActivate = false;
 
@@ -2053,7 +2052,7 @@ void FmXFormShell::forgetCurrentForm()
         return;
 
     // reset ...
-    impl_updateCurrentForm( NULL );
+    impl_updateCurrentForm( nullptr );
 
     // ... and try finding a new current form
     // #i88186# / 2008-04-12 / frank.schoenheit@sun.com
@@ -2110,11 +2109,11 @@ void FmXFormShell::startListening()
                         Reference< runtime::XFormController > xParent;
                         while (xChild.is())
                         {
-                            xChild = Reference< XChild>(xChild->getParent(), UNO_QUERY);
-                            xParent  = Reference< runtime::XFormController >(xChild, UNO_QUERY);
+                            xChild.set(xChild->getParent(), UNO_QUERY);
+                            xParent.set(xChild, UNO_QUERY);
                             Reference< XPropertySet> xParentSet;
                             if (xParent.is())
-                                xParentSet = Reference< XPropertySet>(xParent->getModel(), UNO_QUERY);
+                                xParentSet.set(xParent->getModel(), UNO_QUERY);
                             if (xParentSet.is())
                             {
                                 xParentSet->getPropertyValue(FM_PROP_NAVIGATION) >>= m_eNavigate;
@@ -2131,7 +2130,7 @@ void FmXFormShell::startListening()
                         break;
 
                     default:
-                        m_xNavigationController = NULL;
+                        m_xNavigationController = nullptr;
                         m_bDatabaseBar = false;
                 }
 
@@ -2143,7 +2142,7 @@ void FmXFormShell::startListening()
                 Reference< XPropertySet> xNavigationSet;
                 if (m_xNavigationController.is())
                 {
-                    xNavigationSet = Reference< XPropertySet>(m_xNavigationController->getModel(), UNO_QUERY);
+                    xNavigationSet.set(m_xNavigationController->getModel(), UNO_QUERY);
                     if (xNavigationSet.is())
                         xNavigationSet->addPropertyChangeListener(FM_PROP_ROWCOUNT,this);
                 }
@@ -2154,7 +2153,7 @@ void FmXFormShell::startListening()
 
     m_eNavigate  = NavigationBarMode_NONE;
     m_bDatabaseBar = false;
-    m_xNavigationController = NULL;
+    m_xNavigationController = nullptr;
 }
 
 
@@ -2177,7 +2176,7 @@ void FmXFormShell::stopListening()
 
     m_bDatabaseBar = false;
     m_eNavigate  = NavigationBarMode_NONE;
-    m_xNavigationController = NULL;
+    m_xNavigationController = nullptr;
 }
 
 
@@ -2488,7 +2487,7 @@ IMPL_LINK_TYPED(FmXFormShell, OnSearchContextRequest, FmSearchContext&, rfmscCon
     if (rfmscContextInfo.arrFields.empty())
     {
         rfmscContextInfo.arrFields.clear();
-        rfmscContextInfo.xCursor = NULL;
+        rfmscContextInfo.xCursor = nullptr;
         rfmscContextInfo.strUsedFields.clear();
         return 0L;
     }
@@ -2514,7 +2513,7 @@ IMPL_LINK_TYPED(FmXFormShell, OnSearchContextRequest, FmSearchContext&, rfmscCon
 
   // XContainerListener
 
-void FmXFormShell::elementInserted(const ContainerEvent& evt) throw(::com::sun::star::uno::RuntimeException, std::exception)
+void FmXFormShell::elementInserted(const ContainerEvent& evt) throw(css::uno::RuntimeException, std::exception)
 {
     if ( impl_checkDisposed() )
         return;
@@ -2529,7 +2528,7 @@ void FmXFormShell::elementInserted(const ContainerEvent& evt) throw(::com::sun::
 }
 
 
-void FmXFormShell::elementReplaced(const ContainerEvent& evt) throw(::com::sun::star::uno::RuntimeException, std::exception)
+void FmXFormShell::elementReplaced(const ContainerEvent& evt) throw(css::uno::RuntimeException, std::exception)
 {
     if ( impl_checkDisposed() )
         return;
@@ -2542,7 +2541,7 @@ void FmXFormShell::elementReplaced(const ContainerEvent& evt) throw(::com::sun::
 }
 
 
-void FmXFormShell::elementRemoved(const ContainerEvent& evt) throw(::com::sun::star::uno::RuntimeException, std::exception)
+void FmXFormShell::elementRemoved(const ContainerEvent& evt) throw(css::uno::RuntimeException, std::exception)
 {
     if ( impl_checkDisposed() )
         return;
@@ -2608,7 +2607,7 @@ void FmXFormShell::impl_AddElement_nothrow(const Reference< XInterface>& Element
             xCont->addContainerListener(this);
     }
 
-    const Reference< ::com::sun::star::view::XSelectionSupplier> xSelSupplier(Element, UNO_QUERY);
+    const Reference< css::view::XSelectionSupplier> xSelSupplier(Element, UNO_QUERY);
     if (xSelSupplier.is())
         xSelSupplier->addSelectionChangeListener(this);
 }
@@ -2623,7 +2622,7 @@ void FmXFormShell::RemoveElement(const Reference< XInterface>& Element)
 
 void FmXFormShell::impl_RemoveElement_nothrow(const Reference< XInterface>& Element)
 {
-    const Reference< ::com::sun::star::view::XSelectionSupplier> xSelSupplier(Element, UNO_QUERY);
+    const Reference< css::view::XSelectionSupplier> xSelSupplier(Element, UNO_QUERY);
     if (xSelSupplier.is())
         xSelSupplier->removeSelectionChangeListener(this);
 
@@ -2650,7 +2649,7 @@ void FmXFormShell::impl_RemoveElement_nothrow(const Reference< XInterface>& Elem
 }
 
 
-void FmXFormShell::selectionChanged(const lang::EventObject& rEvent) throw(::com::sun::star::uno::RuntimeException, std::exception)
+void FmXFormShell::selectionChanged(const lang::EventObject& rEvent) throw(css::uno::RuntimeException, std::exception)
 {
     if ( impl_checkDisposed() )
         return;
@@ -2841,7 +2840,7 @@ void FmXFormShell::SetDesignMode(bool bDesign)
 Reference< XControl> FmXFormShell::impl_getControl( const Reference< XControlModel >& i_rxModel, const FmFormObj& i_rKnownFormObj )
 {
     if ( impl_checkDisposed() )
-        return NULL;
+        return nullptr;
 
     Reference< XControl > xControl;
     try
@@ -2867,7 +2866,7 @@ Reference< XControl> FmXFormShell::impl_getControl( const Reference< XControlMod
             const vcl::Window* pContainerWindow = VCLUnoHelper::GetWindow( xContainerControl->getPeer() );
             ENSURE_OR_THROW( pContainerWindow, "unexpected control container implementation" );
 
-            const SdrView* pSdrView = m_pShell ? m_pShell->GetFormView() : NULL;
+            const SdrView* pSdrView = m_pShell ? m_pShell->GetFormView() : nullptr;
             ENSURE_OR_THROW( pSdrView, "no current view" );
 
             xControl.set( i_rKnownFormObj.GetUnoControl( *pSdrView, *pContainerWindow ), UNO_QUERY_THROW );
@@ -2967,7 +2966,7 @@ void FmXFormShell::startFiltering()
         {
             Reference< XModeSelector> xModeSelector(*j, UNO_QUERY);
             if (xModeSelector.is())
-                xModeSelector->setMode( OUString( "FilterMode"  ) );
+                xModeSelector->setMode( "FilterMode" );
         }
     }
 
@@ -3073,7 +3072,7 @@ void FmXFormShell::stopFiltering(bool bSave)
 
             Reference< XModeSelector> xModeSelector(*j, UNO_QUERY);
             if (xModeSelector.is())
-                xModeSelector->setMode( OUString( "DataMode"  ) );
+                xModeSelector->setMode( "DataMode" );
         }
         if (bSave)  // execute the filter
         {
@@ -3128,9 +3127,9 @@ void FmXFormShell::CreateExternalView()
 
     // the frame the external view is displayed in
     bool bAlreadyExistent = m_xExternalViewController.is();
-    Reference< ::com::sun::star::frame::XFrame> xExternalViewFrame;
+    Reference< css::frame::XFrame> xExternalViewFrame;
     OUString sFrameName("_beamer");
-    sal_Int32 nSearchFlags = ::com::sun::star::frame::FrameSearchFlag::CHILDREN | ::com::sun::star::frame::FrameSearchFlag::CREATE;
+    sal_Int32 nSearchFlags = css::frame::FrameSearchFlag::CHILDREN | css::frame::FrameSearchFlag::CREATE;
 
     Reference< runtime::XFormController > xCurrentNavController( getNavController());
         // the creation of the "partwindow" may cause a deactivate of the document which will result in our nav controller to be set to NULL
@@ -3169,8 +3168,8 @@ void FmXFormShell::CreateExternalView()
         URL aWantToDispatch;
         aWantToDispatch.Complete = FMURL_COMPONENT_FORMGRIDVIEW;
 
-        Reference< ::com::sun::star::frame::XDispatchProvider> xProv(m_xAttachedFrame, UNO_QUERY);
-        Reference< ::com::sun::star::frame::XDispatch> xDisp;
+        Reference< css::frame::XDispatchProvider> xProv(m_xAttachedFrame, UNO_QUERY);
+        Reference< css::frame::XDispatch> xDisp;
         if (xProv.is())
             xDisp = xProv->queryDispatch(aWantToDispatch, sFrameName, nSearchFlags);
         if (xDisp.is())
@@ -3179,11 +3178,11 @@ void FmXFormShell::CreateExternalView()
         }
 
         // with this the component should be loaded, now search the frame where it resides in
-        xExternalViewFrame = m_xAttachedFrame->findFrame(sFrameName, ::com::sun::star::frame::FrameSearchFlag::CHILDREN);
+        xExternalViewFrame = m_xAttachedFrame->findFrame(sFrameName, css::frame::FrameSearchFlag::CHILDREN);
         if (xExternalViewFrame.is())
         {
             m_xExternalViewController = xExternalViewFrame->getController();
-            Reference< ::com::sun::star::lang::XComponent> xComp(m_xExternalViewController, UNO_QUERY);
+            Reference< css::lang::XComponent> xComp(m_xExternalViewController, UNO_QUERY);
             if (xComp.is())
                 xComp->addEventListener(static_cast<XEventListener*>(static_cast<XPropertyChangeListener*>(this)));
         }
@@ -3191,7 +3190,7 @@ void FmXFormShell::CreateExternalView()
     else
     {
         xExternalViewFrame = m_xExternalViewController->getFrame();
-        Reference< ::com::sun::star::frame::XDispatchProvider> xCommLink(xExternalViewFrame, UNO_QUERY);
+        Reference< css::frame::XDispatchProvider> xCommLink(xExternalViewFrame, UNO_QUERY);
 
         // if we display the active form we interpret the slot as "remove it"
         Reference< XForm> xCurrentModel(xCurrentNavController->getModel(), UNO_QUERY);
@@ -3200,7 +3199,7 @@ void FmXFormShell::CreateExternalView()
             if ( m_xExternalViewController == getActiveController() )
             {
                 Reference< runtime::XFormController > xAsFormController( m_xExternalViewController, UNO_QUERY );
-                ControllerFeatures aHelper( xAsFormController, NULL );
+                ControllerFeatures aHelper( xAsFormController, nullptr );
                 (void)aHelper->commitCurrentControl();
             }
 
@@ -3213,7 +3212,7 @@ void FmXFormShell::CreateExternalView()
         URL aClearURL;
         aClearURL.Complete = FMURL_GRIDVIEW_CLEARVIEW;
 
-        Reference< ::com::sun::star::frame::XDispatch> xClear( xCommLink->queryDispatch(aClearURL, OUString(), 0));
+        Reference< css::frame::XDispatch> xClear( xCommLink->queryDispatch(aClearURL, OUString(), 0));
         if (xClear.is())
             xClear->dispatch(aClearURL, Sequence< PropertyValue>());
     }
@@ -3222,7 +3221,7 @@ void FmXFormShell::CreateExternalView()
     // instance for which this "external view" was triggered
 
     // get the dispatch interface of the frame so we can communicate (interceptable) with the controller
-    Reference< ::com::sun::star::frame::XDispatchProvider> xCommLink(xExternalViewFrame, UNO_QUERY);
+    Reference< css::frame::XDispatchProvider> xCommLink(xExternalViewFrame, UNO_QUERY);
 
     if (m_xExternalViewController.is())
     {
@@ -3230,10 +3229,10 @@ void FmXFormShell::CreateExternalView()
         // collect the dispatchers we will need
         URL aAddColumnURL;
         aAddColumnURL.Complete = FMURL_GRIDVIEW_ADDCOLUMN;
-        Reference< ::com::sun::star::frame::XDispatch> xAddColumnDispatch( xCommLink->queryDispatch(aAddColumnURL, OUString(), 0));
+        Reference< css::frame::XDispatch> xAddColumnDispatch( xCommLink->queryDispatch(aAddColumnURL, OUString(), 0));
         URL aAttachURL;
         aAttachURL.Complete = FMURL_GRIDVIEW_ATTACHTOFORM;
-        Reference< ::com::sun::star::frame::XDispatch> xAttachDispatch( xCommLink->queryDispatch(aAttachURL, OUString(), 0));
+        Reference< css::frame::XDispatch> xAttachDispatch( xCommLink->queryDispatch(aAttachURL, OUString(), 0));
 
         if (xAddColumnDispatch.is() && xAttachDispatch.is())
         {
@@ -3531,15 +3530,14 @@ void FmXFormShell::CreateExternalView()
 void FmXFormShell::implAdjustConfigCache()
 {
     // get (cache) the wizard usage flag
-    Sequence< OUString > aNames(1);
-    aNames[0] = "FormControlPilotsEnabled";
+    Sequence< OUString > aNames { "FormControlPilotsEnabled" };
     Sequence< Any > aFlags = GetProperties(aNames);
     if (1 == aFlags.getLength())
         m_bUseWizards = ::cppu::any2bool(aFlags[0]);
 }
 
 
-void FmXFormShell::Notify( const com::sun::star::uno::Sequence< OUString >& _rPropertyNames)
+void FmXFormShell::Notify( const css::uno::Sequence< OUString >& _rPropertyNames)
 {
     if ( impl_checkDisposed() )
         return;
@@ -3563,8 +3561,7 @@ void FmXFormShell::SetWizardUsing(bool _bUseThem)
 {
     m_bUseWizards = _bUseThem;
 
-    Sequence< OUString > aNames(1);
-    aNames[0] = "FormControlPilotsEnabled";
+    Sequence< OUString > aNames { "FormControlPilotsEnabled" };
     Sequence< Any > aValues(1);
     aValues[0] <<= m_bUseWizards;
     PutProperties(aNames, aValues);
@@ -3617,7 +3614,7 @@ IMPL_LINK_NOARG_TYPED( FmXFormShell, OnFirstTimeActivation, void*, void )
     if ( impl_checkDisposed() )
         return;
 
-    m_nActivationEvent = 0;
+    m_nActivationEvent = nullptr;
     SfxObjectShell* pDocument = m_pShell->GetObjectShell();
 
     if  ( pDocument && !pDocument->HasName() )
@@ -3658,7 +3655,7 @@ void FmXFormShell::viewActivated( FmFormView& _rCurrentView, bool _bSyncAction /
         // first-time initializations for the views
         if ( !_rCurrentView.GetImpl()->hasEverBeenActivated( ) )
         {
-            _rCurrentView.GetImpl()->onFirstViewActivation( PTR_CAST( FmFormModel, _rCurrentView.GetModel() ) );
+            _rCurrentView.GetImpl()->onFirstViewActivation( dynamic_cast<FmFormModel*>( _rCurrentView.GetModel() )  );
             _rCurrentView.GetImpl()->setHasBeenActivated( );
         }
 
@@ -3696,7 +3693,7 @@ void FmXFormShell::impl_defaultCurrentForm_nothrow()
         return;
 
     FmFormView* pFormView = m_pShell->GetFormView();
-    FmFormPage* pPage = pFormView ? pFormView->GetCurPage() : NULL;
+    FmFormPage* pPage = pFormView ? pFormView->GetCurPage() : nullptr;
     if ( !pPage )
         return;
 
@@ -3842,7 +3839,7 @@ void FmXFormShell::loadForms( FmFormPage* _pPage, const sal_uInt16 _nBehaviour /
     {
         // lock the undo env so the forms can change non-transient properties while loading
         // (without this my doc's modified flag would be set)
-        FmFormModel* pModel = PTR_CAST( FmFormModel, _pPage->GetModel() );
+        FmFormModel* pModel = dynamic_cast<FmFormModel*>( _pPage->GetModel()  );
         DBG_ASSERT( pModel, "FmXFormShell::loadForms: invalid model!" );
         if ( pModel )
             pModel->GetUndoEnv().Lock();
@@ -4026,7 +4023,7 @@ SFX_IMPL_MENU_CONTROL(ControlConversionMenuController, SfxBoolItem);
 ControlConversionMenuController::ControlConversionMenuController( sal_uInt16 _nId, Menu& _rMenu, SfxBindings& _rBindings )
     :SfxMenuControl( _nId, _rBindings )
     ,m_pMainMenu( &_rMenu )
-    ,m_pConversionMenu( NULL )
+    ,m_pConversionMenu( nullptr )
 {
     if ( _nId == SID_FM_CHANGECONTROLTYPE )
     {
@@ -4036,8 +4033,7 @@ ControlConversionMenuController::ControlConversionMenuController( sal_uInt16 _nI
         for (sal_Int16 i=0; i<m_pConversionMenu->GetItemCount(); ++i)
         {
             _rBindings.Invalidate(m_pConversionMenu->GetItemId(i));
-            SfxStatusForwarder* pForwarder = new SfxStatusForwarder(m_pConversionMenu->GetItemId(i), *this);
-            m_aStatusForwarders.push_back(pForwarder);
+            m_aStatusForwarders.push_back(o3tl::make_unique<SfxStatusForwarder>(m_pConversionMenu->GetItemId(i), *this));
         }
     }
 }
@@ -4045,7 +4041,7 @@ ControlConversionMenuController::ControlConversionMenuController( sal_uInt16 _nI
 
 ControlConversionMenuController::~ControlConversionMenuController()
 {
-    m_pMainMenu->SetPopupMenu(SID_FM_CHANGECONTROLTYPE, NULL);
+    m_pMainMenu->SetPopupMenu(SID_FM_CHANGECONTROLTYPE, nullptr);
     delete m_pConversionMenu;
 }
 

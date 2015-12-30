@@ -81,7 +81,7 @@ svt::StatusbarController* SAL_CALL SfxStatusBarControllerFactory(
     uno::Reference < util::XURLTransformer > xTrans( util::URLTransformer::create( ::comphelper::getProcessComponentContext() ) );
     xTrans->parseStrict( aTargetURL );
 
-    SfxObjectShell* pObjShell = NULL;
+    SfxObjectShell* pObjShell = nullptr;
     uno::Reference < frame::XController > xController;
     uno::Reference < frame::XModel > xModel;
     if ( rFrame.is() )
@@ -94,8 +94,8 @@ svt::StatusbarController* SAL_CALL SfxStatusBarControllerFactory(
     if ( xModel.is() )
     {
         // Get tunnel from model to retrieve the SfxObjectShell pointer from it
-        ::com::sun::star::uno::Reference < ::com::sun::star::lang::XUnoTunnel > xObj( xModel, uno::UNO_QUERY );
-        ::com::sun::star::uno::Sequence < sal_Int8 > aSeq = SvGlobalName( SFX_GLOBAL_CLASSID ).GetByteSequence();
+        css::uno::Reference < css::lang::XUnoTunnel > xObj( xModel, uno::UNO_QUERY );
+        css::uno::Sequence < sal_Int8 > aSeq = SvGlobalName( SFX_GLOBAL_CLASSID ).GetByteSequence();
         if ( xObj.is() )
         {
             sal_Int64 nHandle = xObj->getSomething( aSeq );
@@ -104,13 +104,13 @@ svt::StatusbarController* SAL_CALL SfxStatusBarControllerFactory(
         }
     }
 
-    SfxModule*     pModule   = pObjShell ? pObjShell->GetModule() : NULL;
-    SfxSlotPool*   pSlotPool = 0;
+    SfxModule*     pModule   = pObjShell ? pObjShell->GetModule() : nullptr;
+    SfxSlotPool*   pSlotPool = nullptr;
 
     if ( pModule )
         pSlotPool = pModule->GetSlotPool();
     else
-        pSlotPool = &(SfxSlotPool::GetSlotPool( NULL ));
+        pSlotPool = &(SfxSlotPool::GetSlotPool());
 
     const SfxSlot* pSlot = pSlotPool->GetUnoSlot( aTargetURL.Path );
     if ( pSlot )
@@ -125,7 +125,7 @@ svt::StatusbarController* SAL_CALL SfxStatusBarControllerFactory(
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -210,9 +210,9 @@ throw (uno::RuntimeException, std::exception)
 
 // XStatusListener
 void SAL_CALL SfxStatusBarControl::statusChanged( const frame::FeatureStateEvent& rEvent )
-throw ( ::com::sun::star::uno::RuntimeException, std::exception )
+throw ( css::uno::RuntimeException, std::exception )
 {
-    SfxViewFrame* pViewFrame = NULL;
+    SfxViewFrame* pViewFrame = nullptr;
     uno::Reference < frame::XController > xController;
 
     SolarMutexGuard aGuard;
@@ -226,7 +226,7 @@ throw ( ::com::sun::star::uno::RuntimeException, std::exception )
         if ( xDisp.is() )
         {
             uno::Reference< lang::XUnoTunnel > xTunnel( xDisp, uno::UNO_QUERY );
-            SfxOfficeDispatch* pDisp = NULL;
+            SfxOfficeDispatch* pDisp = nullptr;
             if ( xTunnel.is() )
             {
                 sal_Int64 nImplementation = xTunnel->getSomething(SfxOfficeDispatch::impl_getStaticIdentifier());
@@ -251,7 +251,7 @@ throw ( ::com::sun::star::uno::RuntimeException, std::exception )
         else
         {
             SfxItemState eState = SfxItemState::DISABLED;
-            SfxPoolItem* pItem = NULL;
+            SfxPoolItem* pItem = nullptr;
             if ( rEvent.IsEnabled )
             {
                 eState = SfxItemState::DEFAULT;
@@ -286,7 +286,7 @@ throw ( ::com::sun::star::uno::RuntimeException, std::exception )
                     rEvent.State >>= sTemp ;
                     pItem = new SfxStringItem( nSlotID, sTemp );
                 }
-                else if ( pType == cppu::UnoType< ::com::sun::star::frame::status::ItemStatus>::get() )
+                else if ( pType == cppu::UnoType< css::frame::status::ItemStatus>::get() )
                 {
                     frame::status::ItemStatus aItemStatus;
                     rEvent.State >>= aItemStatus;
@@ -372,12 +372,12 @@ void SAL_CALL SfxStatusBarControl::command(
     const awt::Point& rPos,
     ::sal_Int32 nCommand,
     sal_Bool /*bMouseEvent*/,
-    const ::com::sun::star::uno::Any& /*aData*/ )
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+    const css::uno::Any& /*aData*/ )
+throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
     ::Point aPos( rPos.X, rPos.Y );
-    CommandEvent aCmdEvent( aPos, static_cast<CommandEventId>(nCommand), true, NULL );
+    CommandEvent aCmdEvent( aPos, static_cast<CommandEventId>(nCommand), true, nullptr );
 
     Command( aCmdEvent );
 }
@@ -444,12 +444,12 @@ void SfxStatusBarControl::StateChanged
 {
     DBG_ASSERT( pBar != nullptr, "setting state to dangling StatusBar" );
 
-    const SfxStringItem* pStr = PTR_CAST( SfxStringItem, pState );
+    const SfxStringItem* pStr = dynamic_cast<const SfxStringItem*>( pState  );
     if ( eState == SfxItemState::DEFAULT && pStr )
         pBar->SetItemText( nSID, pStr->GetValue() );
     else
     {
-        DBG_ASSERT( eState != SfxItemState::DEFAULT || pState->ISA(SfxVoidItem),
+        DBG_ASSERT( eState != SfxItemState::DEFAULT || dynamic_cast< const SfxVoidItem *>( pState ) !=  nullptr,
                     "wrong SfxPoolItem subclass in SfxStatusBarControl" );
         pBar->SetItemText( nSID, OUString() );
     }
@@ -561,7 +561,7 @@ void SfxStatusBarControl::Click()
 */
 
 {
-    ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue > aArgs;
+    css::uno::Sequence< css::beans::PropertyValue > aArgs;
     execute( aArgs );
 }
 
@@ -604,7 +604,7 @@ SfxStatusBarControl* SfxStatusBarControl::CreateControl
     else
         pSlotPool = &SfxSlotPool::GetSlotPool();
 
-    TypeId aSlotType = pSlotPool->GetSlotType(nSlotID);
+    const std::type_info* aSlotType = pSlotPool->GetSlotType(nSlotID);
     if ( aSlotType )
     {
         if ( pMod )
@@ -614,7 +614,7 @@ SfxStatusBarControl* SfxStatusBarControl::CreateControl
             {
                 SfxStbCtrlFactArr_Impl &rFactories = *pFactories;
                 for ( size_t nFactory = 0; nFactory < rFactories.size(); ++nFactory )
-                if ( rFactories[nFactory].nTypeId == aSlotType &&
+                if ( rFactories[nFactory].nTypeId == *aSlotType &&
                      ( ( rFactories[nFactory].nSlotId == 0 ) ||
                      ( rFactories[nFactory].nSlotId == nSlotID) ) )
                     return rFactories[nFactory].pCtor( nSlotID, nStbId, *pBar );
@@ -623,19 +623,19 @@ SfxStatusBarControl* SfxStatusBarControl::CreateControl
 
         SfxStbCtrlFactArr_Impl &rFactories = pApp->GetStbCtrlFactories_Impl();
         for ( size_t nFactory = 0; nFactory < rFactories.size(); ++nFactory )
-        if ( rFactories[nFactory].nTypeId == aSlotType &&
+        if ( rFactories[nFactory].nTypeId == *aSlotType &&
              ( ( rFactories[nFactory].nSlotId == 0 ) ||
              ( rFactories[nFactory].nSlotId == nSlotID) ) )
             return rFactories[nFactory].pCtor( nSlotID, nStbId, *pBar );
     }
 
-    return NULL;
+    return nullptr;
 }
 
 
-void SfxStatusBarControl::RegisterStatusBarControl(SfxModule* pMod, SfxStbCtrlFactory* pFact)
+void SfxStatusBarControl::RegisterStatusBarControl(SfxModule* pMod, const SfxStbCtrlFactory& rFact)
 {
-    SfxGetpApp()->RegisterStatusBarControl_Impl( pMod, pFact );
+    SfxGetpApp()->RegisterStatusBarControl_Impl( pMod, rFact );
 }
 
 

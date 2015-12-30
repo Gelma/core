@@ -263,7 +263,7 @@ awt::Point BarChart::getLabelScreenPositionAndAlignment(
 
     drawing::Position3D aScenePosition3D( pPosHelper->
             transformScaledLogicToScene( fX, fY, fZ, true ) );
-    return LabelPositionHelper(pPosHelper,m_nDimension,m_xLogicTarget,m_pShapeFactory)
+    return LabelPositionHelper(m_nDimension,m_xLogicTarget,m_pShapeFactory)
         .transformSceneToScreenPosition( aScenePosition3D );
 }
 
@@ -290,7 +290,7 @@ uno::Reference< drawing::XShape > BarChart::createDataPoint3D_Bar(
         ASSERT_EXCEPTION( e );
     }
 
-    uno::Reference< drawing::XShape > xShape(NULL);
+    uno::Reference< drawing::XShape > xShape(nullptr);
     switch( nGeometry3D )
     {
         case DataPointGeometry3D::CYLINDER:
@@ -661,11 +661,11 @@ void BarChart::createShapes()
                         //@todo clipping of X and Z is not fully integrated so far, as there is a need to create different objects
 
                         //apply scaling to Y before calculating width (necessary to maintain gradient in clipped objects)
-                        pSubPosHelper->doLogicScaling(NULL,&fLowerYValue,NULL);
-                        pSubPosHelper->doLogicScaling(NULL,&fUpperYValue,NULL);
+                        pSubPosHelper->doLogicScaling(nullptr,&fLowerYValue,nullptr);
+                        pSubPosHelper->doLogicScaling(nullptr,&fUpperYValue,nullptr);
                         //scaling of X and Z is not provided as the created objects should be symmetric in that dimensions
 
-                        pSubPosHelper->doLogicScaling(NULL,&fUnclippedUpperYValue,NULL);
+                        pSubPosHelper->doLogicScaling(nullptr,&fUnclippedUpperYValue,nullptr);
 
                         //calculate resulting width
                         double fCompleteHeight = bPositive ? fLogicPositiveYSum : fLogicNegativeYSum;
@@ -828,10 +828,9 @@ void BarChart::createShapes()
                             double fLowerBarDepth = fLogicBarDepth;
                             double fUpperBarDepth = fLogicBarDepth;
                             {
-                                double fOuterBarDepth = fLogicBarDepth;
                                 if( lcl_hasGeometry3DVariableWidth(nGeometry3D) && fCompleteHeight!=0.0 )
                                 {
-                                    fOuterBarDepth = fLogicBarDepth * (fTopHeight)/(fabs(fCompleteHeight));
+                                    double fOuterBarDepth = fLogicBarDepth * (fTopHeight)/(fabs(fCompleteHeight));
                                     fLowerBarDepth = (fBaseValue < fUpperYValue) ? fabs(fLogicBarDepth) : fabs(fOuterBarDepth);
                                     fUpperBarDepth = (fBaseValue < fUpperYValue) ? fabs(fOuterBarDepth) : fabs(fLogicBarDepth);
                                 }

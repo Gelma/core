@@ -23,7 +23,6 @@
 
 using namespace com::sun::star;
 
-SV_IMPL_PTRARR( XResultListenerArr_Impl, XResultListenerPtr );
 
 ScAddInResult::ScAddInResult(const String& rStr) :
     aArg( rStr ),
@@ -46,15 +45,14 @@ void ScAddInResult::NewValue()
 
     sheet::ResultEvent aEvent( (cppu::OWeakObject*)this, aAny );
 
-    for ( sal_uInt16 n=0; n<aListeners.Count(); n++ )
-        (*aListeners[n])->modified( aEvent );
+    for (size_t n = 0; n < m_Listeners.size(); ++n)
+        m_Listeners[n]->modified( aEvent );
 }
 
-IMPL_LINK( ScAddInResult, TimeoutHdl, Timer*, pT )
+IMPL_LINK_TYPED( ScAddInResult, TimeoutHdl, Timer*, pT, void )
 {
     NewValue();
     pT->Start();
-    return 0;
 }
 
 ScAddInResult::~ScAddInResult()
@@ -63,12 +61,11 @@ ScAddInResult::~ScAddInResult()
 
 // XVolatileResult
 
-void SAL_CALL ScAddInResult::addResultListener( const ::com::sun::star::uno::Reference< ::com::sun::star::sheet::XResultListener >& aListener ) throw(::com::sun::star::uno::RuntimeException)
+void SAL_CALL ScAddInResult::addResultListener( const css::uno::Reference< css::sheet::XResultListener >& aListener ) throw(css::uno::RuntimeException)
 {
-    uno::Reference<sheet::XResultListener> *pObj = new uno::Reference<sheet::XResultListener>( aListener );
-    aListeners.Insert( pObj, aListeners.Count() );
+    m_Listeners.push_back(uno::Reference<sheet::XResultListener>(aListener));
 
-    if ( aListeners.Count() == 1 )
+    if (m_Listeners.size() == 1)
     {
         acquire();                      // one Ref for all listeners
 
@@ -76,19 +73,17 @@ void SAL_CALL ScAddInResult::addResultListener( const ::com::sun::star::uno::Ref
     }
 }
 
-void SAL_CALL ScAddInResult::removeResultListener( const ::com::sun::star::uno::Reference< ::com::sun::star::sheet::XResultListener >& aListener ) throw(::com::sun::star::uno::RuntimeException)
+void SAL_CALL ScAddInResult::removeResultListener( const css::uno::Reference< css::sheet::XResultListener >& aListener ) throw(css::uno::RuntimeException)
 {
     acquire();
 
-    sal_uInt16 nCount = aListeners.Count();
-    for ( sal_uInt16 n=nCount; n--; )
+    for (size_t n = m_Listeners.size(); --n; )
     {
-        uno::Reference<sheet::XResultListener> *pObj = aListeners[n];
-        if ( *pObj == aListener )
+        if (m_Listeners[n] == aListener)
         {
-            aListeners.DeleteAndDestroy( n );
+            m_Listeners.erase(m_Listeners.begin() + n);
 
-            if ( aListeners.Count() == 0 )
+            if (m_Listeners.empty())
             {
                 nTickCount = 0; //! Test
 

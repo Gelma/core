@@ -39,13 +39,14 @@ namespace extensions { namespace resource
 {
     /** encapsulates access to a fixed resource type
     */
-    class IResourceType
+    class StringResourceAccess
     {
     public:
+        StringResourceAccess();
+
         /** returns the RESOURCE_TYPE associated with this instance
         */
-        virtual RESOURCE_TYPE getResourceType() const = 0;
-
+        static RESOURCE_TYPE getResourceType() { return RSC_STRING; }
         /** reads a single resource from the given resource manager
             @param  _resourceManager
                 the resource manager to read from
@@ -57,31 +58,14 @@ namespace extensions { namespace resource
                 the caller checked via <code>_resourceManager.IsAvailable( getResourceType(), _resourceId )</code>
                 that the required resource really exists
         */
-        virtual Any getResource( SimpleResMgr& _resourceManager, sal_Int32 _resourceId ) const = 0;
-
-        virtual ~IResourceType() { };
-    };
-
-    class StringResourceAccess : public IResourceType
-    {
-    public:
-        StringResourceAccess();
-
-        // IResourceType
-        virtual RESOURCE_TYPE getResourceType() const SAL_OVERRIDE;
-        virtual Any getResource( SimpleResMgr& _resourceManager, sal_Int32 _resourceId ) const SAL_OVERRIDE;
+        static Any getResource( SimpleResMgr& _resourceManager, sal_Int32 _resourceId );
     };
 
     StringResourceAccess::StringResourceAccess()
     {
     }
 
-    RESOURCE_TYPE StringResourceAccess::getResourceType() const
-    {
-        return RSC_STRING;
-    }
-
-    Any StringResourceAccess::getResource( SimpleResMgr& _resourceManager, sal_Int32 _resourceId ) const
+    Any StringResourceAccess::getResource( SimpleResMgr& _resourceManager, sal_Int32 _resourceId )
     {
         OSL_PRECOND( _resourceManager.IsAvailable( getResourceType(), _resourceId ), "StringResourceAccess::getResource: precondition not met!" );
         Any aResource;
@@ -94,7 +78,7 @@ namespace extensions { namespace resource
     class OpenOfficeResourceBundle : public OpenOfficeResourceBundle_Base
     {
     private:
-        typedef std::shared_ptr< IResourceType >            ResourceTypePtr;
+        typedef std::shared_ptr< StringResourceAccess >  ResourceTypePtr;
         typedef ::std::map< OUString, ResourceTypePtr >  ResourceTypes;
 
         ::osl::Mutex                    m_aMutex;
@@ -115,19 +99,19 @@ namespace extensions { namespace resource
 
     public:
         // XResourceBundle
-        virtual ::com::sun::star::uno::Reference< ::com::sun::star::resource::XResourceBundle > SAL_CALL getParent() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL setParent( const ::com::sun::star::uno::Reference< ::com::sun::star::resource::XResourceBundle >& _parent ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual ::com::sun::star::lang::Locale SAL_CALL getLocale(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual ::com::sun::star::uno::Any SAL_CALL getDirectElement( const OUString& key ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual css::uno::Reference< css::resource::XResourceBundle > SAL_CALL getParent() throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL setParent( const css::uno::Reference< css::resource::XResourceBundle >& _parent ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual css::lang::Locale SAL_CALL getLocale(  ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual css::uno::Any SAL_CALL getDirectElement( const OUString& key ) throw (css::uno::RuntimeException, std::exception) override;
 
         // XNameAccess (base of XResourceBundle)
-        virtual ::com::sun::star::uno::Any SAL_CALL getByName( const OUString& aName ) throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual css::uno::Any SAL_CALL getByName( const OUString& aName ) throw (css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
+        virtual css::uno::Sequence< OUString > SAL_CALL getElementNames(  ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual sal_Bool SAL_CALL hasByName( const OUString& aName ) throw (css::uno::RuntimeException, std::exception) override;
 
         // XElementAccess (base of XNameAccess)
-        virtual ::com::sun::star::uno::Type SAL_CALL getElementType(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual sal_Bool SAL_CALL hasElements(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual css::uno::Type SAL_CALL getElementType(  ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual sal_Bool SAL_CALL hasElements(  ) throw (css::uno::RuntimeException, std::exception) override;
 
     private:
         /** retrievs the element with the given key, without asking our parent bundle
@@ -191,7 +175,7 @@ namespace extensions { namespace resource
 
     OpenOfficeResourceBundle::OpenOfficeResourceBundle( const Reference< XComponentContext >& /*_rxContext*/, const OUString& _rBaseName, const Locale& _rLocale )
         :m_aLocale( _rLocale )
-        ,m_pResourceManager( NULL )
+        ,m_pResourceManager( nullptr )
     {
         OUString sBaseName( _rBaseName );
         m_pResourceManager = new SimpleResMgr( OUStringToOString( sBaseName, RTL_TEXTENCODING_UTF8 ).getStr(),
@@ -199,7 +183,7 @@ namespace extensions { namespace resource
 
         if ( !m_pResourceManager->IsValid() )
         {
-            delete m_pResourceManager, m_pResourceManager = NULL;
+            delete m_pResourceManager, m_pResourceManager = nullptr;
             throw MissingResourceException();
         }
 
@@ -257,11 +241,11 @@ namespace extensions { namespace resource
         if ( !impl_getResourceTypeAndId_nothrow( _key, resourceType, resourceId ) )
             return false;
 
-        if ( !m_pResourceManager->IsAvailable( resourceType->getResourceType(), resourceId ) )
+        if ( !m_pResourceManager->IsAvailable( StringResourceAccess::getResourceType(), resourceId ) )
             // no such resource with the given type/id
             return false;
 
-        _out_Element = resourceType->getResource( *m_pResourceManager, resourceId );
+        _out_Element = StringResourceAccess::getResource( *m_pResourceManager, resourceId );
         return _out_Element.hasValue();
     }
 
@@ -308,7 +292,7 @@ namespace extensions { namespace resource
         if ( !impl_getResourceTypeAndId_nothrow( _key, resourceType, resourceId ) )
             return sal_False;
 
-        if ( !m_pResourceManager->IsAvailable( resourceType->getResourceType(), resourceId ) )
+        if ( !m_pResourceManager->IsAvailable( StringResourceAccess::getResourceType(), resourceId ) )
             return sal_False;
 
         return sal_True;

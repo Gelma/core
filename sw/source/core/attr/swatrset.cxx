@@ -49,7 +49,7 @@ SwAttrPool::SwAttrPool( SwDoc* pD )
     : SfxItemPool( OUString("SWG"),
                     POOLATTR_BEGIN, POOLATTR_END-1,
                     aSlotTab, aAttrTab ),
-    pDoc( pD )
+    m_pDoc( pD )
 {
     SetVersionMap( 1, 1, 60, pVersionMap1 );
     SetVersionMap( 2, 1, 75, pVersionMap2 );
@@ -136,8 +136,8 @@ void SwAttrPool::removeAndDeleteSecondaryPools()
     // first delete the items, then break the linking
     pSdrPool->Delete();
 
-    SetSecondaryPool(0);
-    pSdrPool->SetSecondaryPool(0);
+    SetSecondaryPool(nullptr);
+    pSdrPool->SetSecondaryPool(nullptr);
 
     // final cleanup of secondary pool(s)
     SfxItemPool::Free(pSdrPool);
@@ -145,17 +145,17 @@ void SwAttrPool::removeAndDeleteSecondaryPools()
 }
 
 SwAttrSet::SwAttrSet( SwAttrPool& rPool, sal_uInt16 nWh1, sal_uInt16 nWh2 )
-    : SfxItemSet( rPool, nWh1, nWh2 ), pOldSet( 0 ), pNewSet( 0 )
+    : SfxItemSet( rPool, nWh1, nWh2 ), m_pOldSet( nullptr ), m_pNewSet( nullptr )
 {
 }
 
 SwAttrSet::SwAttrSet( SwAttrPool& rPool, const sal_uInt16* nWhichPairTable )
-    : SfxItemSet( rPool, nWhichPairTable ), pOldSet( 0 ), pNewSet( 0 )
+    : SfxItemSet( rPool, nWhichPairTable ), m_pOldSet( nullptr ), m_pNewSet( nullptr )
 {
 }
 
 SwAttrSet::SwAttrSet( const SwAttrSet& rSet )
-    : SfxItemSet( rSet ), pOldSet( 0 ), pNewSet( 0 )
+    : SfxItemSet( rSet ), m_pOldSet( nullptr ), m_pNewSet( nullptr )
 {
 }
 
@@ -164,7 +164,7 @@ SfxItemSet* SwAttrSet::Clone( bool bItems, SfxItemPool *pToPool ) const
     if ( pToPool && pToPool != GetPool() )
     {
         SwAttrPool* pAttrPool = dynamic_cast< SwAttrPool* >(pToPool);
-        SfxItemSet* pTmpSet = 0;
+        SfxItemSet* pTmpSet = nullptr;
         if ( !pAttrPool )
             pTmpSet = SfxItemSet::Clone( bItems, pToPool );
         else
@@ -194,30 +194,30 @@ SfxItemSet* SwAttrSet::Clone( bool bItems, SfxItemPool *pToPool ) const
 bool SwAttrSet::Put_BC( const SfxPoolItem& rAttr,
                        SwAttrSet* pOld, SwAttrSet* pNew )
 {
-    pNewSet = pNew;
-    pOldSet = pOld;
-    bool bRet = 0 != SfxItemSet::Put( rAttr );
-    pOldSet = pNewSet = 0;
+    m_pNewSet = pNew;
+    m_pOldSet = pOld;
+    bool bRet = nullptr != SfxItemSet::Put( rAttr );
+    m_pOldSet = m_pNewSet = nullptr;
     return bRet;
 }
 
 bool SwAttrSet::Put_BC( const SfxItemSet& rSet,
                        SwAttrSet* pOld, SwAttrSet* pNew )
 {
-    pNewSet = pNew;
-    pOldSet = pOld;
+    m_pNewSet = pNew;
+    m_pOldSet = pOld;
     bool bRet = SfxItemSet::Put( rSet );
-    pOldSet = pNewSet = 0;
+    m_pOldSet = m_pNewSet = nullptr;
     return bRet;
 }
 
 sal_uInt16 SwAttrSet::ClearItem_BC( sal_uInt16 nWhich,
                                     SwAttrSet* pOld, SwAttrSet* pNew )
 {
-    pNewSet = pNew;
-    pOldSet = pOld;
+    m_pNewSet = pNew;
+    m_pOldSet = pOld;
     sal_uInt16 nRet = SfxItemSet::ClearItem( nWhich );
-    pOldSet = pNewSet = 0;
+    m_pOldSet = m_pNewSet = nullptr;
     return nRet;
 }
 
@@ -225,32 +225,32 @@ sal_uInt16 SwAttrSet::ClearItem_BC( sal_uInt16 nWhich1, sal_uInt16 nWhich2,
                                     SwAttrSet* pOld, SwAttrSet* pNew )
 {
     OSL_ENSURE( nWhich1 <= nWhich2, "no valid range" );
-    pNewSet = pNew;
-    pOldSet = pOld;
+    m_pNewSet = pNew;
+    m_pOldSet = pOld;
     sal_uInt16 nRet = 0;
     for( ; nWhich1 <= nWhich2; ++nWhich1 )
         nRet = nRet + SfxItemSet::ClearItem( nWhich1 );
-    pOldSet = pNewSet = 0;
+    m_pOldSet = m_pNewSet = nullptr;
     return nRet;
 }
 
 int SwAttrSet::Intersect_BC( const SfxItemSet& rSet,
                              SwAttrSet* pOld, SwAttrSet* pNew )
 {
-    pNewSet = pNew;
-    pOldSet = pOld;
+    m_pNewSet = pNew;
+    m_pOldSet = pOld;
     SfxItemSet::Intersect( rSet );
-    pOldSet = pNewSet = 0;
+    m_pOldSet = m_pNewSet = nullptr;
     return pNew ? pNew->Count() : ( pOld ? pOld->Count() : 0 );
 }
 
 /// Notification callback
 void  SwAttrSet::Changed( const SfxPoolItem& rOld, const SfxPoolItem& rNew )
 {
-    if( pOldSet )
-        pOldSet->PutChgd( rOld );
-    if( pNewSet )
-        pNewSet->PutChgd( rNew );
+    if( m_pOldSet )
+        m_pOldSet->PutChgd( rOld );
+    if( m_pNewSet )
+        m_pNewSet->PutChgd( rNew );
 }
 
 /** special treatment for some attributes
@@ -279,7 +279,7 @@ bool SwAttrSet::SetModifyAtAttr( const SwModify* pModify )
         // If CharFormat is set and it is set in different attribute pools then
         // the CharFormat has to be copied.
         SwCharFormat* pCharFormat;
-        if( 0 != ( pCharFormat = const_cast<SwFormatDrop*>(static_cast<const SwFormatDrop*>(pItem))->GetCharFormat() )
+        if( nullptr != ( pCharFormat = const_cast<SwFormatDrop*>(static_cast<const SwFormatDrop*>(pItem))->GetCharFormat() )
             && GetPool() != pCharFormat->GetAttrSet().GetPool() )
         {
            pCharFormat = GetDoc()->CopyCharFormat( *pCharFormat );
@@ -302,15 +302,15 @@ bool SwAttrSet::SetModifyAtAttr( const SwModify* pModify )
 void SwAttrSet::CopyToModify( SwModify& rMod ) const
 {
     // copy attributes across multiple documents if needed
-    SwContentNode* pCNd = PTR_CAST( SwContentNode, &rMod );
-    SwFormat* pFormat = PTR_CAST( SwFormat, &rMod );
+    SwContentNode* pCNd = dynamic_cast<SwContentNode*>( &rMod  );
+    SwFormat* pFormat = dynamic_cast<SwFormat*>( &rMod  );
 
     if( pCNd || pFormat )
     {
         if( Count() )
         {
             // #i92811#
-            SfxStringItem* pNewListIdItem( 0 );
+            SfxStringItem* pNewListIdItem( nullptr );
 
             const SfxPoolItem* pItem;
             const SwDoc *pSrcDoc = GetDoc();
@@ -371,7 +371,7 @@ void SwAttrSet::CopyToModify( SwModify& rMod ) const
                     }
                     // check again, if list exist, because <SwDoc::MakeNumRule(..)>
                     // could have also created it.
-                    if ( pNewListIdItem == 0 &&
+                    if ( pNewListIdItem == nullptr &&
                          !pDstDoc->getIDocumentListsAccess().getListByName( sListId ) )
                     {
                         // copy list
@@ -385,7 +385,7 @@ void SwAttrSet::CopyToModify( SwModify& rMod ) const
             const SwPageDesc* pPgDesc;
             if( pSrcDoc != pDstDoc && SfxItemState::SET == GetItemState(
                                             RES_PAGEDESC, false, &pItem ) &&
-                0 != ( pPgDesc = static_cast<const SwFormatPageDesc*>(pItem)->GetPageDesc()) )
+                nullptr != ( pPgDesc = static_cast<const SwFormatPageDesc*>(pItem)->GetPageDesc()) )
             {
                 if( !tmpSet )
                     tmpSet.reset( new SfxItemSet( *this ));
@@ -402,7 +402,7 @@ void SwAttrSet::CopyToModify( SwModify& rMod ) const
             }
 
             if( pSrcDoc != pDstDoc && SfxItemState::SET == GetItemState( RES_ANCHOR, false, &pItem )
-                && static_cast< const SwFormatAnchor* >( pItem )->GetContentAnchor() != NULL )
+                && static_cast< const SwFormatAnchor* >( pItem )->GetContentAnchor() != nullptr )
             {
                 if( !tmpSet )
                     tmpSet.reset( new SfxItemSet( *this ));
@@ -416,7 +416,7 @@ void SwAttrSet::CopyToModify( SwModify& rMod ) const
                 if( pCNd )
                 {
                     // #i92811#
-                    if ( pNewListIdItem != 0 )
+                    if ( pNewListIdItem != nullptr )
                     {
                         tmpSet->Put( *pNewListIdItem );
                     }
@@ -430,7 +430,7 @@ void SwAttrSet::CopyToModify( SwModify& rMod ) const
             else if( pCNd )
             {
                 // #i92811#
-                if ( pNewListIdItem != 0 )
+                if ( pNewListIdItem != nullptr )
                 {
                     SfxItemSet aTmpSet( *this );
                     aTmpSet.Put( *pNewListIdItem );
@@ -448,7 +448,7 @@ void SwAttrSet::CopyToModify( SwModify& rMod ) const
 
             // #i92811#
             delete pNewListIdItem;
-            pNewListIdItem = 0;
+            pNewListIdItem = nullptr;
         }
     }
 #if OSL_DEBUG_LEVEL > 0

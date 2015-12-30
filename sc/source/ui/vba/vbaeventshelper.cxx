@@ -102,7 +102,7 @@ uno::Reference< awt::XWindow > lclGetWindowForController( const uno::Reference< 
     catch( uno::Exception& )
     {
     }
-    return 0;
+    return nullptr;
 }
 
 } // namespace
@@ -123,28 +123,28 @@ public:
     void stopControllerListening( const uno::Reference< frame::XController >& rxController );
 
     // XTopWindowListener
-    virtual void SAL_CALL windowOpened( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL windowClosing( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL windowClosed( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL windowMinimized( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL windowNormalized( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL windowActivated( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL windowDeactivated( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL windowOpened( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL windowClosing( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL windowClosed( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL windowMinimized( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL windowNormalized( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL windowActivated( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL windowDeactivated( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) override;
 
     // XWindowListener
-    virtual void SAL_CALL windowResized( const awt::WindowEvent& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL windowMoved( const awt::WindowEvent& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL windowShown( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL windowHidden( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL windowResized( const awt::WindowEvent& rEvent ) throw (uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL windowMoved( const awt::WindowEvent& rEvent ) throw (uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL windowShown( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL windowHidden( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) override;
 
     // XBorderResizeListener
-    virtual void SAL_CALL borderWidthsChanged( const uno::Reference< uno::XInterface >& rSource, const frame::BorderWidths& aNewSize ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL borderWidthsChanged( const uno::Reference< uno::XInterface >& rSource, const frame::BorderWidths& aNewSize ) throw (uno::RuntimeException, std::exception) override;
 
     // XChangesListener
-    virtual void SAL_CALL changesOccurred( const util::ChangesEvent& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL changesOccurred( const util::ChangesEvent& rEvent ) throw (uno::RuntimeException, std::exception) override;
 
     // XEventListener
-    virtual void SAL_CALL disposing( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing( const lang::EventObject& rEvent ) throw (uno::RuntimeException, std::exception) override;
 
 private:
     /** Starts listening to the document model. */
@@ -181,7 +181,7 @@ ScVbaEventListener::ScVbaEventListener( ScVbaEventsHelper& rVbaEvents, const uno
     mrVbaEvents( rVbaEvents ),
     mxModel( rxModel ),
     mpDocShell( pDocShell ),
-    mpActiveWindow( 0 ),
+    mpActiveWindow( nullptr ),
     mbWindowResized( false ),
     mbBorderChanged( false ),
     mbDisposed( !rxModel.is() )
@@ -246,7 +246,7 @@ void ScVbaEventListener::stopControllerListening( const uno::Reference< frame::X
     {
         maControllers.erase( pWindow );
         if( pWindow == mpActiveWindow )
-            mpActiveWindow = 0;
+            mpActiveWindow = nullptr;
     }
 }
 
@@ -305,7 +305,7 @@ void SAL_CALL ScVbaEventListener::windowDeactivated( const lang::EventObject& rE
         if( pWindow && (pWindow == mpActiveWindow) )
             processWindowActivateEvent( pWindow, false );
         // forget pointer to the active window
-        mpActiveWindow = 0;
+        mpActiveWindow = nullptr;
     }
 }
 
@@ -522,7 +522,7 @@ ScVbaEventsHelper::ScVbaEventsHelper( const uno::Sequence< uno::Any >& rArgs, co
     mbOpened( false )
 {
     mpDocShell = dynamic_cast< ScDocShell* >( mpShell ); // mpShell from base class
-    mpDoc = mpDocShell ? &mpDocShell->GetDocument() : 0;
+    mpDoc = mpDocShell ? &mpDocShell->GetDocument() : nullptr;
 
     if( !mxModel.is() || !mpDocShell || !mpDoc )
         return;

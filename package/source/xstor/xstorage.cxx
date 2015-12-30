@@ -118,8 +118,7 @@ void OStorage_Impl::completeStorageStreamCopy_Impl(
         // TODO: headers of encripted streams should be copied also
         ::comphelper::OStorageHelper::CopyInputToOutput( xSourceInStream, xDestOutStream );
 
-        uno::Sequence< OUString > aPropNames( 1 );
-        aPropNames[0] = "Compressed";
+        uno::Sequence<OUString> aPropNames { "Compressed" };
 
         if ( nStorageType == embed::StorageFormats::PACKAGE )
         {
@@ -168,8 +167,8 @@ SotElement_Impl::SotElement_Impl( const OUString& rName, bool bStor, bool bNew )
 , m_bIsRemoved( false )
 , m_bIsInserted( bNew )
 , m_bIsStorage( bStor )
-, m_pStorage( NULL )
-, m_pStream( NULL )
+, m_pStorage( nullptr )
+, m_pStream( nullptr )
 {
 }
 
@@ -186,7 +185,7 @@ OStorage_Impl::OStorage_Impl(   uno::Reference< io::XInputStream > xInputStream,
                                 uno::Reference< uno::XComponentContext > xContext,
                                 sal_Int32 nStorageType )
 : m_rMutexRef( new SotMutexHolder )
-, m_pAntiImpl( NULL )
+, m_pAntiImpl( nullptr )
 , m_nStorageMode( nMode & ~embed::ElementModes::SEEKABLE )
 , m_bIsModified( ( nMode & ( embed::ElementModes::WRITE | embed::ElementModes::TRUNCATE ) ) == ( embed::ElementModes::WRITE | embed::ElementModes::TRUNCATE ) )
 , m_bBroadcastModified( false )
@@ -197,13 +196,13 @@ OStorage_Impl::OStorage_Impl(   uno::Reference< io::XInputStream > xInputStream,
 , m_xContext( xContext )
 , m_xProperties( xProperties )
 , m_bHasCommonEncryptionData( false )
-, m_pParent( NULL )
+, m_pParent( nullptr )
 , m_bControlMediaType( false )
 , m_bMTFallbackUsed( false )
 , m_bControlVersion( false )
-, m_pSwitchStream( NULL )
+, m_pSwitchStream( nullptr )
 , m_nStorageType( nStorageType )
-, m_pRelStorElement( NULL )
+, m_pRelStorElement( nullptr )
 , m_nRelInfoStatus( RELINFO_NO_INIT )
 {
     // all the checks done below by assertion statements must be done by factory
@@ -226,7 +225,7 @@ OStorage_Impl::OStorage_Impl(   uno::Reference< io::XStream > xStream,
                                 uno::Reference< uno::XComponentContext > xContext,
                                 sal_Int32 nStorageType )
 : m_rMutexRef( new SotMutexHolder )
-, m_pAntiImpl( NULL )
+, m_pAntiImpl( nullptr )
 , m_nStorageMode( nMode & ~embed::ElementModes::SEEKABLE )
 , m_bIsModified( ( nMode & ( embed::ElementModes::WRITE | embed::ElementModes::TRUNCATE ) ) == ( embed::ElementModes::WRITE | embed::ElementModes::TRUNCATE ) )
 , m_bBroadcastModified( false )
@@ -237,13 +236,13 @@ OStorage_Impl::OStorage_Impl(   uno::Reference< io::XStream > xStream,
 , m_xContext( xContext )
 , m_xProperties( xProperties )
 , m_bHasCommonEncryptionData( false )
-, m_pParent( NULL )
+, m_pParent( nullptr )
 , m_bControlMediaType( false )
 , m_bMTFallbackUsed( false )
 , m_bControlVersion( false )
-, m_pSwitchStream( NULL )
+, m_pSwitchStream( nullptr )
 , m_nStorageType( nStorageType )
-, m_pRelStorElement( NULL )
+, m_pRelStorElement( nullptr )
 , m_nRelInfoStatus( RELINFO_NO_INIT )
 {
     // all the checks done below by assertion statements must be done by factory
@@ -268,7 +267,7 @@ OStorage_Impl::OStorage_Impl(   OStorage_Impl* pParent,
                                 uno::Reference< uno::XComponentContext > xContext,
                                 sal_Int32 nStorageType )
 : m_rMutexRef( new SotMutexHolder )
-, m_pAntiImpl( NULL )
+, m_pAntiImpl( nullptr )
 , m_nStorageMode( nMode & ~embed::ElementModes::SEEKABLE )
 , m_bIsModified( ( nMode & ( embed::ElementModes::WRITE | embed::ElementModes::TRUNCATE ) ) == ( embed::ElementModes::WRITE | embed::ElementModes::TRUNCATE ) )
 , m_bBroadcastModified( false )
@@ -284,9 +283,9 @@ OStorage_Impl::OStorage_Impl(   OStorage_Impl* pParent,
 , m_bControlMediaType( false )
 , m_bMTFallbackUsed( false )
 , m_bControlVersion( false )
-, m_pSwitchStream( NULL )
+, m_pSwitchStream( nullptr )
 , m_nStorageType( nStorageType )
-, m_pRelStorElement( NULL )
+, m_pRelStorElement( nullptr )
 , m_nRelInfoStatus( RELINFO_NO_INIT )
 {
     SAL_WARN_IF( !xPackageFolder.is(), "package.xstor", "No package folder!" );
@@ -308,7 +307,7 @@ OStorage_Impl::~OStorage_Impl()
                 AddLog( rException.Message );
                 AddLog( THROW_WHERE "Quiet exception" );
             }
-            m_pAntiImpl = NULL;
+            m_pAntiImpl = nullptr;
         }
         else if ( !m_aReadOnlyWrapList.empty() )
         {
@@ -329,7 +328,7 @@ OStorage_Impl::~OStorage_Impl()
             m_aReadOnlyWrapList.clear();
         }
 
-        m_pParent = NULL;
+        m_pParent = nullptr;
     }
 
     std::for_each(m_aChildrenList.begin(), m_aChildrenList.end(), boost::checked_deleter<SotElement_Impl>());
@@ -341,11 +340,11 @@ OStorage_Impl::~OStorage_Impl()
     if ( m_nStorageType == embed::StorageFormats::OFOPXML && m_pRelStorElement )
     {
         delete m_pRelStorElement;
-        m_pRelStorElement = NULL;
+        m_pRelStorElement = nullptr;
     }
 
-    m_xPackageFolder = uno::Reference< container::XNameContainer >();
-    m_xPackage = uno::Reference< lang::XSingleServiceFactory >();
+    m_xPackageFolder.clear();
+    m_xPackage.clear();
 
     OUString aPropertyName = "URL";
     for ( sal_Int32 aInd = 0; aInd < m_xProperties.getLength(); ++aInd )
@@ -358,7 +357,7 @@ OStorage_Impl::~OStorage_Impl()
                 if ( m_xInputStream.is() )
                 {
                     m_xInputStream->closeInput();
-                    m_xInputStream = uno::Reference< io::XInputStream >();
+                    m_xInputStream.clear();
                 }
 
                 if ( m_xStream.is() )
@@ -371,7 +370,7 @@ OStorage_Impl::~OStorage_Impl()
                     if ( xOutStr.is() )
                         xOutStr->closeOutput();
 
-                    m_xStream = uno::Reference< io::XStream >();
+                    m_xStream.clear();
                 }
             }
             catch( const uno::Exception& rException )
@@ -496,10 +495,9 @@ void OStorage_Impl::OpenOwnPackage()
                 aArguments[nArgNum-1] <<= aNamedValue;
             }
 
-            m_xPackage = uno::Reference< lang::XSingleServiceFactory > (
-                                        GetComponentContext()->getServiceManager()->createInstanceWithArgumentsAndContext(
-                                            "com.sun.star.packages.comp.ZipPackage", aArguments, GetComponentContext()),
-                                        uno::UNO_QUERY );
+            m_xPackage.set( GetComponentContext()->getServiceManager()->createInstanceWithArgumentsAndContext(
+                               "com.sun.star.packages.comp.ZipPackage", aArguments, GetComponentContext()),
+                            uno::UNO_QUERY );
         }
 
         uno::Reference< container::XHierarchicalNameAccess > xHNameAccess( m_xPackage, uno::UNO_QUERY );
@@ -670,7 +668,7 @@ void OStorage_Impl::ReadContents()
     if ( ( m_nStorageMode & embed::ElementModes::TRUNCATE ) == embed::ElementModes::TRUNCATE )
     {
         // if a storage is truncated the relations information should be cleaned
-        m_xNewRelInfoStream = uno::Reference< io::XInputStream >();
+        m_xNewRelInfoStream.clear();
         m_aRelInfo = uno::Sequence< uno::Sequence< beans::StringPair > >();
         m_nRelInfoStatus = RELINFO_CHANGED;
     }
@@ -997,7 +995,7 @@ void OStorage_Impl::CopyLastCommitTo( const uno::Reference< embed::XStorage >& x
     if ( !m_xPackageFolder.is() )
         throw uno::RuntimeException( THROW_WHERE );
 
-    OStorage_Impl aTempRepresent( NULL,
+    OStorage_Impl aTempRepresent( nullptr,
                                 embed::ElementModes::READ,
                                 m_xPackageFolder,
                                 m_xPackage,
@@ -1054,9 +1052,8 @@ void OStorage_Impl::Commit()
         uno::Sequence< uno::Any > aSeq( 1 );
         aSeq[0] <<= sal_True;
 
-        xNewPackageFolder = uno::Reference< container::XNameContainer >(
-                                                    m_xPackage->createInstanceWithArguments( aSeq ),
-                                                    uno::UNO_QUERY );
+        xNewPackageFolder.set( m_xPackage->createInstanceWithArguments( aSeq ),
+                               uno::UNO_QUERY );
     }
     else
         xNewPackageFolder = m_xPackageFolder;
@@ -1074,7 +1071,7 @@ void OStorage_Impl::Commit()
         if ( m_bCommited || m_bIsRoot )
             xNewPackageFolder->removeByName( (*pDeletedIter)->m_aOriginalName );
         delete *pDeletedIter;
-        *pDeletedIter = NULL;
+        *pDeletedIter = nullptr;
     }
     m_aDeletedList.clear();
 
@@ -1255,8 +1252,8 @@ void OStorage_Impl::Commit()
             embed::UseBackupException aException;
             if ( r.TargetException >>= aException )
             {
-                m_xStream = uno::Reference< io::XStream >();
-                m_xInputStream = uno::Reference< io::XInputStream >();
+                m_xStream.clear();
+                m_xInputStream.clear();
                 throw aException;
             }
 
@@ -1330,7 +1327,7 @@ void OStorage_Impl::Revert()
     if ( m_nStorageType == embed::StorageFormats::OFOPXML )
     {
         // currently the relations storage is changed only on commit
-        m_xNewRelInfoStream = uno::Reference< io::XInputStream >();
+        m_xNewRelInfoStream.clear();
         m_aRelInfo = uno::Sequence< uno::Sequence< beans::StringPair > >();
         m_nRelInfoStatus = RELINFO_NO_INIT;
     }
@@ -1375,7 +1372,7 @@ SotElement_Impl* OStorage_Impl::FindElement( const OUString& rName )
             return *pElementIter;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 SotElement_Impl* OStorage_Impl::InsertStream( const OUString& aName, bool bEncr )
@@ -1493,11 +1490,11 @@ SotElement_Impl* OStorage_Impl::InsertStorage( const OUString& aName, sal_Int32 
 
 SotElement_Impl* OStorage_Impl::InsertElement( const OUString& aName, bool bIsStorage )
 {
-    OSL_ENSURE( FindElement( aName ) == NULL, "Should not try to insert existing element" );
+    OSL_ENSURE( FindElement( aName ) == nullptr, "Should not try to insert existing element" );
 
     ::osl::MutexGuard aGuard( m_rMutexRef->GetMutex() );
 
-    SotElement_Impl* pDeletedElm = NULL;
+    SotElement_Impl* pDeletedElm = nullptr;
 
     for ( SotElementList_Impl::iterator pElementIter = m_aChildrenList.begin();
           pElementIter != m_aChildrenList.end(); ++pElementIter )
@@ -1632,13 +1629,13 @@ void OStorage_Impl::ClearElement( SotElement_Impl* pElement )
     if ( pElement->m_pStorage )
     {
         delete pElement->m_pStorage;
-        pElement->m_pStorage = NULL;
+        pElement->m_pStorage = nullptr;
     }
 
     if ( pElement->m_pStream )
     {
         delete pElement->m_pStream;
-        pElement->m_pStream = NULL;
+        pElement->m_pStream = nullptr;
     }
 }
 
@@ -1714,7 +1711,7 @@ void OStorage_Impl::CreateRelStorage()
             m_pRelStorElement = new SotElement_Impl( "_rels", true, true );
             m_pRelStorElement->m_pStorage = CreateNewStorageImpl( embed::ElementModes::WRITE );
             if ( m_pRelStorElement->m_pStorage )
-                m_pRelStorElement->m_pStorage->m_pParent = NULL; // the relation storage is completely controlled by parent
+                m_pRelStorElement->m_pStorage->m_pParent = nullptr; // the relation storage is completely controlled by parent
         }
 
         if ( !m_pRelStorElement->m_pStorage )
@@ -1724,7 +1721,7 @@ void OStorage_Impl::CreateRelStorage()
             throw uno::RuntimeException( THROW_WHERE );
 
         OStorage* pResultStorage = new OStorage( m_pRelStorElement->m_pStorage, false );
-        m_xRelStorage = uno::Reference< embed::XStorage >( static_cast<embed::XStorage*>(pResultStorage) );
+        m_xRelStorage.set( static_cast<embed::XStorage*>(pResultStorage) );
     }
 }
 
@@ -1838,7 +1835,7 @@ void OStorage_Impl::CommitRelInfo( const uno::Reference< container::XNameContain
                     "MediaType",
                     uno::makeAny( OUString( "application/vnd.openxmlformats-package.relationships+xml" ) ) );
 
-                m_xNewRelInfoStream = uno::Reference< io::XInputStream >();
+                m_xNewRelInfoStream.clear();
                   if ( m_nRelInfoStatus == RELINFO_CHANGED_STREAM )
                 {
                     m_aRelInfo = uno::Sequence< uno::Sequence< beans::StringPair > >();
@@ -1865,8 +1862,8 @@ void OStorage_Impl::CommitRelInfo( const uno::Reference< container::XNameContain
             {
                 // the empty relations storage should not be created
                 delete m_pRelStorElement;
-                m_pRelStorElement = NULL;
-                m_xRelStorage = uno::Reference< embed::XStorage >();
+                m_pRelStorElement = nullptr;
+                m_xRelStorage.clear();
             }
             else if ( m_pRelStorElement && m_pRelStorElement->m_pStorage && xNewPackageFolder.is() )
                 m_pRelStorElement->m_pStorage->InsertIntoPackageFolder( aRelsStorName, xNewPackageFolder );
@@ -1986,7 +1983,7 @@ void SAL_CALL OStorage::InternalDispose( bool bNotifyImpl )
     }
     else
     {
-        m_pImpl->m_pAntiImpl = NULL;
+        m_pImpl->m_pAntiImpl = nullptr;
 
         if ( bNotifyImpl )
         {
@@ -2000,7 +1997,7 @@ void SAL_CALL OStorage::InternalDispose( bool bNotifyImpl )
         }
     }
 
-    m_pImpl = NULL;
+    m_pImpl = nullptr;
 }
 
 void OStorage::ChildIsDisposed( const uno::Reference< uno::XInterface >& xChild )
@@ -2578,7 +2575,7 @@ uno::Reference< embed::XStorage > SAL_CALL OStorage::openStorageElement(
 
         bool bReadOnlyWrap = ( ( nStorageMode & embed::ElementModes::WRITE ) != embed::ElementModes::WRITE );
         OStorage* pResultStorage = new OStorage( pElement->m_pStorage, bReadOnlyWrap );
-        xResult = uno::Reference< embed::XStorage >( static_cast<embed::XStorage*>(pResultStorage) );
+        xResult.set( static_cast<embed::XStorage*>(pResultStorage) );
 
         if ( bReadOnlyWrap )
         {
@@ -2907,7 +2904,7 @@ sal_Bool SAL_CALL OStorage::isStreamElement( const OUString& aElementName )
     if ( m_pData->m_nStorageType == embed::StorageFormats::OFOPXML && aElementName == "_rels" )
         throw lang::IllegalArgumentException( THROW_WHERE, uno::Reference< uno::XInterface >(), 1 ); // unacceptable name
 
-    SotElement_Impl* pElement = NULL;
+    SotElement_Impl* pElement = nullptr;
 
     try
     {
@@ -2974,7 +2971,7 @@ sal_Bool SAL_CALL OStorage::isStorageElement( const OUString& aElementName )
     if ( m_pData->m_nStorageType == embed::StorageFormats::OFOPXML && aElementName == "_rels" )
         throw lang::IllegalArgumentException( THROW_WHERE, uno::Reference< uno::XInterface >(), 1 );
 
-    SotElement_Impl* pElement = NULL;
+    SotElement_Impl* pElement = nullptr;
 
     try
     {
@@ -4284,7 +4281,7 @@ sal_Bool SAL_CALL OStorage::hasByName( const OUString& aName )
     if ( m_pData->m_nStorageType == embed::StorageFormats::OFOPXML && aName == "_rels" )
         return sal_False;
 
-    SotElement_Impl* pElement = NULL;
+    SotElement_Impl* pElement = nullptr;
     try
     {
         pElement = m_pImpl->FindElement( aName );
@@ -4306,7 +4303,7 @@ sal_Bool SAL_CALL OStorage::hasByName( const OUString& aName )
                                             aCaught );
     }
 
-    return ( pElement != NULL );
+    return ( pElement != nullptr );
 }
 
 uno::Type SAL_CALL OStorage::getElementType()
@@ -4807,7 +4804,7 @@ void SAL_CALL OStorage::setPropertyValue( const OUString& aPropertyName, const u
         {
             if ( aValue >>= m_pImpl->m_aRelInfo )
             {
-                m_pImpl->m_xNewRelInfoStream = uno::Reference< io::XInputStream >();
+                m_pImpl->m_xNewRelInfoStream.clear();
                 m_pImpl->m_nRelInfoStatus = RELINFO_CHANGED;
                 m_pImpl->m_bBroadcastModified = true;
                 m_pImpl->m_bIsModified = true;
@@ -5247,7 +5244,7 @@ void SAL_CALL OStorage::insertRelationshipByID(  const OUString& sID, const uno:
         throw container::ElementExistException( THROW_WHERE );
 
     m_pImpl->m_aRelInfo = aSeq;
-    m_pImpl->m_xNewRelInfoStream = uno::Reference< io::XInputStream >();
+    m_pImpl->m_xNewRelInfoStream.clear();
     m_pImpl->m_nRelInfoStatus = RELINFO_CHANGED;
 }
 
@@ -5279,7 +5276,7 @@ void SAL_CALL OStorage::removeRelationshipByID(  const OUString& sID  )
                     aSeq.realloc( nLength - 1 );
 
                     m_pImpl->m_aRelInfo = aSeq;
-                    m_pImpl->m_xNewRelInfoStream = uno::Reference< io::XInputStream >();
+                    m_pImpl->m_xNewRelInfoStream.clear();
                     m_pImpl->m_nRelInfoStatus = RELINFO_CHANGED;
 
                     // TODO/LATER: in future the unification of the ID could be checked
@@ -5370,7 +5367,7 @@ void SAL_CALL OStorage::insertRelationships(  const uno::Sequence< uno::Sequence
 
     aResultSeq.realloc( nResultInd );
     m_pImpl->m_aRelInfo = aResultSeq;
-    m_pImpl->m_xNewRelInfoStream = uno::Reference< io::XInputStream >();
+    m_pImpl->m_xNewRelInfoStream.clear();
     m_pImpl->m_nRelInfoStatus = RELINFO_CHANGED;
 }
 
@@ -5390,7 +5387,7 @@ void SAL_CALL OStorage::clearRelationships()
         throw uno::RuntimeException( THROW_WHERE );
 
     m_pImpl->m_aRelInfo.realloc( 0 );
-    m_pImpl->m_xNewRelInfoStream = uno::Reference< io::XInputStream >();
+    m_pImpl->m_xNewRelInfoStream.clear();
     m_pImpl->m_nRelInfoStatus = RELINFO_CHANGED;
 }
 
@@ -5972,9 +5969,8 @@ uno::Reference< embed::XExtendedStorageStream > SAL_CALL OStorage::openStreamEle
             SotElement_Impl *pElement = OpenStreamElement_Impl( aStreamPath, nOpenMode, false );
             assert(pElement && pElement->m_pStream && "In case element can not be created an exception must be thrown!");
 
-            xResult = uno::Reference< embed::XExtendedStorageStream >(
-                            pElement->m_pStream->GetStream( nOpenMode, true ),
-                            uno::UNO_QUERY_THROW );
+            xResult.set( pElement->m_pStream->GetStream( nOpenMode, true ),
+                         uno::UNO_QUERY_THROW );
         }
         catch ( const container::NoSuchElementException & )
         {
@@ -6088,9 +6084,8 @@ uno::Reference< embed::XExtendedStorageStream > SAL_CALL OStorage::openEncrypted
         SotElement_Impl *pElement = OpenStreamElement_Impl( aStreamPath, nOpenMode, true );
         OSL_ENSURE( pElement && pElement->m_pStream, "In case element can not be created an exception must be thrown!" );
 
-        xResult = uno::Reference< embed::XExtendedStorageStream >(
-                        pElement->m_pStream->GetStream( nOpenMode, aEncryptionData, true ),
-                        uno::UNO_QUERY_THROW );
+        xResult.set( pElement->m_pStream->GetStream( nOpenMode, aEncryptionData, true ),
+                     uno::UNO_QUERY_THROW );
     }
     else
     {

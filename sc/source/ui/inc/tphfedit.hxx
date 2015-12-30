@@ -33,6 +33,8 @@
 #include <com/sun/star/accessibility/XAccessible.hpp>
 #include <cppuhelper/weakref.hxx>
 
+#include <functional>
+
 class ScHeaderEditEngine;
 class ScPatternAttr;
 class EditView;
@@ -40,8 +42,6 @@ class EditTextObject;
 class SvxFieldItem;
 class ScAccessibleEditObject;
 class ScEditWindow;
-
-SC_DLLPUBLIC ScEditWindow* GetScEditWindow ();
 
 enum ScEditWindowLocation
 {
@@ -55,7 +55,7 @@ class SC_DLLPUBLIC ScEditWindow : public Control
 public:
             ScEditWindow( vcl::Window* pParent,  WinBits nBits , ScEditWindowLocation eLoc );
             virtual ~ScEditWindow();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     using Control::SetFont;
     void            SetFont( const ScPatternAttr& rPattern );
@@ -68,22 +68,23 @@ public:
 
     void            SetNumType(SvxNumType eNumType);
 
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > CreateAccessible() SAL_OVERRIDE;
+    virtual css::uno::Reference< css::accessibility::XAccessible > CreateAccessible() override;
 
     ScHeaderEditEngine*  GetEditEngine() const { return pEdEngine; }
     void SetObjectSelectHdl( const Link<ScEditWindow&,void>& aLink) { aObjectSelectLink = aLink; }
+    void SetGetFocusHdl(const std::function<void (ScEditWindow&)>& rLink) { m_GetFocusLink = rLink; }
 
     void SetLocation(ScEditWindowLocation eLoc) { eLocation = eLoc; }
 protected:
-    virtual void    Paint( vcl::RenderContext& rRenderContext, const Rectangle& rRect ) SAL_OVERRIDE;
-    virtual void    MouseMove( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    MouseButtonUp( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
-    virtual void    Command( const CommandEvent& rCEvt ) SAL_OVERRIDE;
-    virtual void    GetFocus() SAL_OVERRIDE;
-    virtual void    LoseFocus() SAL_OVERRIDE;
-    virtual void    Resize() SAL_OVERRIDE;
+    virtual void    Paint( vcl::RenderContext& rRenderContext, const Rectangle& rRect ) override;
+    virtual void    MouseMove( const MouseEvent& rMEvt ) override;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void    MouseButtonUp( const MouseEvent& rMEvt ) override;
+    virtual void    KeyInput( const KeyEvent& rKEvt ) override;
+    virtual void    Command( const CommandEvent& rCEvt ) override;
+    virtual void    GetFocus() override;
+    virtual void    LoseFocus() override;
+    virtual void    Resize() override;
 
 private:
     ScHeaderEditEngine* pEdEngine;
@@ -91,10 +92,11 @@ private:
     ScEditWindowLocation eLocation;
     bool mbRTL;
 
-    com::sun::star::uno::WeakReference< ::com::sun::star::accessibility::XAccessible > xAcc;
+    css::uno::WeakReference< css::accessibility::XAccessible > xAcc;
     ScAccessibleEditObject* pAcc;
 
     Link<ScEditWindow&,void> aObjectSelectLink;
+    std::function<void (ScEditWindow&)> m_GetFocusLink;
 };
 
 class SC_DLLPUBLIC ScExtIButton : public ImageButton
@@ -111,9 +113,9 @@ private:
 
 protected:
 
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    MouseButtonUp( const MouseEvent& rMEvt) SAL_OVERRIDE;
-    virtual void    Click() SAL_OVERRIDE;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void    MouseButtonUp( const MouseEvent& rMEvt) override;
+    virtual void    Click() override;
 
     void            StartPopup();
 
@@ -128,7 +130,7 @@ public:
 
     void            SetMenuHdl( const Link<ScExtIButton&,void>& rLink ) { aMLink = rLink; }
 
-    virtual bool    PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual bool    PreNotify( NotifyEvent& rNEvt ) override;
 };
 
 #endif // INCLUDED_SC_SOURCE_UI_INC_TPHFEDIT_HXX

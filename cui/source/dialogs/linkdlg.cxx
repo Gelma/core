@@ -94,7 +94,7 @@ SvBaseLinksDlg::SvBaseLinksDlg( vcl::Window * pParent, LinkManager* pMgr, bool b
     aStrCloselinkmsg( CUI_RES( STR_CLOSELINKMSG ) ),
     aStrCloselinkmsgMulti( CUI_RES( STR_CLOSELINKMSG_MULTI ) ),
     aStrWaitinglink( CUI_RES( STR_WAITINGLINK ) ),
-    pLinkMgr( NULL ),
+    pLinkMgr( nullptr ),
     bHtmlMode(bHtml)
 {
     get(m_pTbLinks, "TB_LINKS");
@@ -112,7 +112,7 @@ SvBaseLinksDlg::SvBaseLinksDlg( vcl::Window * pParent, LinkManager* pMgr, bool b
     get(m_pPbBreakLink, "BREAK_LINK");
 
     m_pTbLinks->SetSelectionMode( MULTIPLE_SELECTION );
-    m_pTbLinks->SetTabs( &nTabs[0], MAP_APPFONT );
+    m_pTbLinks->SetTabs( &nTabs[0] );
     FixedText *pFtFiles = get<FixedText>("FILES");
     pFtFiles->set_width_request(LogicToPixel(Size(nTabs[2] - nTabs[1] - 2, 0), MAP_APPFONT).Width());
     FixedText *pFtLinks = get<FixedText>("LINKS");
@@ -171,8 +171,8 @@ IMPL_LINK_TYPED( SvBaseLinksDlg, LinksSelectHdl, SvTreeListBox *, pSvTabListBox,
     if(nSelectionCount > 1)
     {
         // possibly deselect old entries in case of multi-selection
-        SvTreeListEntry* pEntry = 0;
-        SvBaseLink* pLink = 0;
+        SvTreeListEntry* pEntry = nullptr;
+        SvBaseLink* pLink = nullptr;
         pEntry = pSvTabListBox->GetHdlEntry();
         pLink = static_cast<SvBaseLink*>(pEntry->GetUserData());
         sal_uInt16 nObjectType = pLink->GetObjType();
@@ -217,7 +217,7 @@ IMPL_LINK_TYPED( SvBaseLinksDlg, LinksSelectHdl, SvTreeListBox *, pSvTabListBox,
         m_pPbUpdateNow->Enable();
 
         OUString sType, sLink;
-        OUString *pLinkNm = &sLink, *pFilter = 0;
+        OUString *pLinkNm = &sLink, *pFilter = nullptr;
 
         if( FILEOBJECT & pLink->GetObjType() )
         {
@@ -225,7 +225,7 @@ IMPL_LINK_TYPED( SvBaseLinksDlg, LinksSelectHdl, SvTreeListBox *, pSvTabListBox,
             m_pRbManual->Check();
             m_pRbManual->Disable();
             if( OBJECT_CLIENT_GRF == pLink->GetObjType() )
-                pLinkNm = 0, pFilter = &sLink;
+                pLinkNm = nullptr, pFilter = &sLink;
         }
         else
         {
@@ -249,7 +249,7 @@ IMPL_LINK_TYPED( SvBaseLinksDlg, LinksSelectHdl, SvTreeListBox *, pSvTabListBox,
 
 IMPL_LINK_NOARG_TYPED( SvBaseLinksDlg, LinksDoubleClickHdl, SvTreeListBox *, bool )
 {
-    ChangeSourceClickHdl( 0 );
+    ChangeSourceClickHdl( nullptr );
     return false;
 }
 
@@ -297,11 +297,11 @@ IMPL_LINK_NOARG_TYPED(SvBaseLinksDlg, UpdateNowClickHdl, Button*, void)
     {
         for( size_t n = 0; n < aLnkArr.size(); ++n )
         {
-            SvBaseLinkRef xLink = aLnkArr[ n ];
+            tools::SvRef<SvBaseLink> xLink = aLnkArr[ n ];
 
             // first look for the entry in the array
             for( size_t i = 0; i < pLinkMgr->GetLinks().size(); ++i )
-                if( &xLink == *pLinkMgr->GetLinks()[ i ] )
+                if( xLink == pLinkMgr->GetLinks()[ i ] )
                 {
                     xLink->SetUseCache( false );
                     SetType( *xLink, aPosArr[ n ], xLink->GetUpdateMode() );
@@ -312,11 +312,11 @@ IMPL_LINK_NOARG_TYPED(SvBaseLinksDlg, UpdateNowClickHdl, Button*, void)
 
         // if somebody is of the opinion to swap his links (SD)
         LinkManager* pNewMgr = pLinkMgr;
-        pLinkMgr = 0;
+        pLinkMgr = nullptr;
         SetManager( pNewMgr );
 
 
-        if( 0 == (pE = rListBox.GetEntry( aPosArr[ 0 ] )) ||
+        if( nullptr == (pE = rListBox.GetEntry( aPosArr[ 0 ] )) ||
             pE->GetUserData() != aLnkArr[ 0 ] )
         {
             // search the link
@@ -358,7 +358,7 @@ IMPL_LINK_NOARG_TYPED( SvBaseLinksDlg, ChangeSourceClickHdl, Button *, void )
             OUString sFilter;
             SvTreeListEntry* pEntry = m_pTbLinks->FirstSelected();
             SvBaseLink* pLink = static_cast<SvBaseLink*>(pEntry->GetUserData());
-            sfx2::LinkManager::GetDisplayNames( pLink, &sType, &sFile, 0, 0 );
+            sfx2::LinkManager::GetDisplayNames( pLink, &sType, &sFile );
             INetURLObject aUrl(sFile);
             if(aUrl.GetProtocol() == INetProtocol::File)
             {
@@ -388,7 +388,7 @@ IMPL_LINK_NOARG_TYPED( SvBaseLinksDlg, ChangeSourceClickHdl, Button *, void )
                     INetURLObject aUrl2(aPath, INetProtocol::File);
                     aUrl2.insertName( aUrl_.getName() );
                     OUString sNewLinkName;
-                    MakeLnkName( sNewLinkName, 0 ,
+                    MakeLnkName( sNewLinkName, nullptr ,
                             aUrl2.GetMainURL(INetURLObject::DECODE_TO_IURI), sLinkName, &sFilter);
                     pLink->SetLinkSourceName( sNewLinkName );
                     pLink->Update();
@@ -396,7 +396,7 @@ IMPL_LINK_NOARG_TYPED( SvBaseLinksDlg, ChangeSourceClickHdl, Button *, void )
                 if( pLinkMgr->GetPersist() )
                     pLinkMgr->GetPersist()->SetModified();
                 LinkManager* pNewMgr = pLinkMgr;
-                pLinkMgr = 0;
+                pLinkMgr = nullptr;
                 SetManager( pNewMgr );
             }
         }
@@ -420,7 +420,7 @@ IMPL_LINK_NOARG_TYPED( SvBaseLinksDlg, BreakLinkClickHdl, Button*, void )
     if(m_pTbLinks->GetSelectionCount() <= 1)
     {
         sal_uLong nPos;
-        SvBaseLinkRef xLink = GetSelEntry( &nPos );
+        tools::SvRef<SvBaseLink> xLink = GetSelEntry( &nPos );
         if( !xLink.Is() )
             return;
 
@@ -443,7 +443,7 @@ IMPL_LINK_NOARG_TYPED( SvBaseLinksDlg, BreakLinkClickHdl, Button*, void )
             if( bNewLnkMgr )
             {
                 LinkManager* pNewMgr = pLinkMgr;
-                pLinkMgr = 0;
+                pLinkMgr = nullptr;
                 SetManager( pNewMgr );
 
                 SvTreeListEntry* pEntry = m_pTbLinks->GetEntry( nPos ? --nPos : 0 );
@@ -472,7 +472,7 @@ IMPL_LINK_NOARG_TYPED( SvBaseLinksDlg, BreakLinkClickHdl, Button*, void )
             m_pTbLinks->RemoveSelection();
             for( sal_uLong i = 0; i < aLinkList.size(); i++ )
             {
-                SvBaseLinkRef xLink = aLinkList[i];
+                tools::SvRef<SvBaseLink> xLink = aLinkList[i];
                 // tell the link that it will be resolved!
                 xLink->Closed();
 
@@ -507,7 +507,7 @@ IMPL_LINK_NOARG_TYPED( SvBaseLinksDlg, UpdateWaitingHdl, Idle*, void )
     for( sal_uLong nPos = m_pTbLinks->GetEntryCount(); nPos; )
     {
         SvTreeListEntry* pBox = m_pTbLinks->GetEntry( --nPos );
-        SvBaseLinkRef xLink( static_cast<SvBaseLink*>(pBox->GetUserData()) );
+        tools::SvRef<SvBaseLink> xLink( static_cast<SvBaseLink*>(pBox->GetUserData()) );
         if( xLink.Is() )
         {
             OUString sCur( ImplGetStateStr( *xLink ) ),
@@ -551,7 +551,7 @@ IMPL_LINK_TYPED( SvBaseLinksDlg, EndEditHdl, sfx2::SvBaseLink&, _rLink, void )
         else
         {
             LinkManager* pNewMgr = pLinkMgr;
-            pLinkMgr = 0;
+            pLinkMgr = nullptr;
             SetManager( pNewMgr );
         }
         if (pLinkMgr && pLinkMgr->GetPersist())
@@ -594,15 +594,15 @@ void SvBaseLinksDlg::SetManager( LinkManager* pNewMgr )
         SvBaseLinks& rLnks = (SvBaseLinks&)pLinkMgr->GetLinks();
         for( size_t n = 0; n < rLnks.size(); ++n )
         {
-            SvBaseLinkRef* pLinkRef = rLnks[ n ];
-            if( !pLinkRef->Is() )
+            tools::SvRef<SvBaseLink>& rLinkRef = rLnks[ n ];
+            if( !rLinkRef.Is() )
             {
                 rLnks.erase( rLnks.begin() + n );
                 --n;
                 continue;
             }
-            if( (*pLinkRef)->IsVisible() )
-                InsertEntry( **pLinkRef );
+            if( rLinkRef->IsVisible() )
+                InsertEntry( *rLinkRef );
         }
 
         if( !rLnks.empty() )
@@ -610,7 +610,7 @@ void SvBaseLinksDlg::SetManager( LinkManager* pNewMgr )
             SvTreeListEntry* pEntry = m_pTbLinks->GetEntry( 0 );
             m_pTbLinks->SetCurEntry( pEntry );
             m_pTbLinks->Select( pEntry );
-            LinksSelectHdl( 0 );
+            LinksSelectHdl( nullptr );
         }
         m_pTbLinks->SetUpdateMode( true );
         m_pTbLinks->Invalidate();
@@ -669,7 +669,7 @@ SvBaseLink* SvBaseLinksDlg::GetSelEntry( sal_uLong* pPos )
             *pPos = nPos;
         return static_cast<SvBaseLink*>(pE->GetUserData());
     }
-    return 0;
+    return nullptr;
 }
 
 void SvBaseLinksDlg::SetType( SvBaseLink& rLink,
@@ -692,15 +692,15 @@ void SvBaseLinksDlg::SetActLink( SvBaseLink * pLink )
         sal_uLong nSelect = 0;
         for( size_t n = 0; n < rLnks.size(); ++n )
         {
-            SvBaseLinkRef* pLinkRef = rLnks[ n ];
+            const tools::SvRef<SvBaseLink>& rLinkRef = rLnks[ n ];
             // #109573# only visible links have been inserted into the TreeListBox,
             // invisible ones have to be skipped here
-            if( (*pLinkRef)->IsVisible() )
+            if( rLinkRef->IsVisible() )
             {
-                if( pLink == *pLinkRef )
+                if( pLink == rLinkRef.get() )
                 {
                     m_pTbLinks->Select( m_pTbLinks->GetEntry( nSelect ) );
-                    LinksSelectHdl( 0 );
+                    LinksSelectHdl( nullptr );
                     return ;
                 }
                 nSelect++;

@@ -16,6 +16,7 @@
 #include "document.hxx"
 
 #include "rangeutl.hxx"
+#include <o3tl/make_unique.hxx>
 
 using ::oox::core::ContextHandlerRef;
 
@@ -71,7 +72,7 @@ void ExtCfRuleContext::onStartElement( const AttributeList& rAttribs )
 
 ExtConditionalFormattingContext::ExtConditionalFormattingContext(WorksheetContextBase& rFragment):
     WorksheetContextBase(rFragment),
-    mpCurrentRule(NULL)
+    mpCurrentRule(nullptr)
 {
 }
 
@@ -79,7 +80,7 @@ ContextHandlerRef ExtConditionalFormattingContext::onCreateContext(sal_Int32 nEl
 {
     if (mpCurrentRule)
     {
-        ScFormatEntry& rFormat = *maEntries.rbegin();
+        ScFormatEntry& rFormat = *maEntries.rbegin()->get();
         assert(rFormat.GetType() == condformat::ICONSET);
         ScIconSetFormat& rIconSet = static_cast<ScIconSetFormat&>(rFormat);
         ScDocument* pDoc = &getScDocument();
@@ -87,7 +88,7 @@ ContextHandlerRef ExtConditionalFormattingContext::onCreateContext(sal_Int32 nEl
         ScAddress aPos(0, 0, nTab);
         mpCurrentRule->SetData(&rIconSet, pDoc, aPos);
         delete mpCurrentRule;
-        mpCurrentRule = NULL;
+        mpCurrentRule = nullptr;
     }
     if (nElement == XLS14_TOKEN(cfRule))
     {
@@ -98,12 +99,12 @@ ContextHandlerRef ExtConditionalFormattingContext::onCreateContext(sal_Int32 nEl
             // an ext entry does not need to have an existing corresponding entry
             ExtLst::const_iterator aExt = getExtLst().find( aId );
             if(aExt == getExtLst().end())
-                return NULL;
+                return nullptr;
 
             ScDataBarFormatData* pInfo = aExt->second;
             if (!pInfo)
             {
-                return NULL;
+                return nullptr;
             }
             return new ExtCfRuleContext( *this, pInfo );
         }
@@ -111,8 +112,7 @@ ContextHandlerRef ExtConditionalFormattingContext::onCreateContext(sal_Int32 nEl
         {
             ScDocument* pDoc = &getScDocument();
             mpCurrentRule = new IconSetRule(*this);
-            ScIconSetFormat* pIconSet = new ScIconSetFormat(pDoc);
-            maEntries.push_back(pIconSet);
+            maEntries.push_back(o3tl::make_unique<ScIconSetFormat>(pDoc));
             return new IconSetContext(*this, mpCurrentRule);
         }
         else
@@ -125,7 +125,7 @@ ContextHandlerRef ExtConditionalFormattingContext::onCreateContext(sal_Int32 nEl
         return this;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void ExtConditionalFormattingContext::onStartElement(const AttributeList& /*rAttribs*/)
@@ -163,8 +163,8 @@ void ExtConditionalFormattingContext::onEndElement()
                 aRange[i]->aEnd.SetTab(nTab);
             }
 
-            boost::ptr_vector<ExtCfCondFormat>& rExtFormats =  getCondFormats().importExtCondFormat();
-            rExtFormats.push_back(new ExtCfCondFormat(aRange, maEntries));
+            std::vector< std::unique_ptr<ExtCfCondFormat> >& rExtFormats =  getCondFormats().importExtCondFormat();
+            rExtFormats.push_back(o3tl::make_unique<ExtCfCondFormat>(aRange, maEntries));
         }
         break;
         case XLS14_TOKEN(cfRule):
@@ -191,15 +191,15 @@ ContextHandlerRef ExtLstLocalContext::onCreateContext( sal_Int32 nElement, const
             if(nElement == XLS_TOKEN( ext ))
                 return this;
             else
-                return 0;
+                return nullptr;
             break;
         case XLS_TOKEN( ext ):
             if (nElement == XLS14_TOKEN( id ))
                 return this;
             else
-                return 0;
+                return nullptr;
     }
-    return 0;
+    return nullptr;
 }
 
 void ExtLstLocalContext::onStartElement( const AttributeList& )

@@ -54,8 +54,8 @@ const Sequence<OUString>& SwDBConfig::GetPropertyNames()
 SwDBConfig::SwDBConfig() :
     ConfigItem("Office.DataAccess",
         ConfigItemMode::DelayedUpdate|ConfigItemMode::ReleaseTree),
-    pAdrImpl(0),
-    pBibImpl(0)
+    pAdrImpl(nullptr),
+    pBibImpl(nullptr)
 {
 };
 
@@ -111,6 +111,6 @@ const SwDBData& SwDBConfig::GetBibliographySource()
 }
 
 void SwDBConfig::ImplCommit() {}
-void SwDBConfig::Notify( const ::com::sun::star::uno::Sequence< OUString >& ) {}
+void SwDBConfig::Notify( const css::uno::Sequence< OUString >& ) {}
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -92,8 +92,6 @@ public:
 
     storeError releasePage (const OStorePageDescriptor& rDescr);
 
-    sal_uInt32 getRefererCount();
-
     /** Page Allocation.
      */
     enum Allocation
@@ -125,41 +123,6 @@ public:
      *  @return store_E_None upon success.
      */
     storeError flush();
-
-    /** size.
-     */
-    storeError size (sal_uInt32 &rnSize);
-
-    /** ScanContext.
-     */
-    struct ScanContext
-    {
-        /** Representation.
-         */
-        OStorePageDescriptor m_aDescr;
-        sal_uInt32           m_nSize;
-        sal_uInt32           m_nMagic;
-
-        /** Construction.
-         */
-        inline ScanContext();
-
-        /** isValid.
-         */
-        inline bool isValid() const;
-    };
-
-    /** scanBegin.
-     */
-    storeError scanBegin (
-        ScanContext &rCtx,
-        sal_uInt32   nMagic = 0);
-
-    /** scanNext.
-     */
-    storeError scanNext (
-        ScanContext      &rCtx,
-        OStorePageObject &rPage);
 
 protected:
     /** Destruction (OReference).
@@ -219,8 +182,8 @@ private:
     storeError saveObjectAt_Impl (
         OStorePageObject & rPage, sal_uInt32 nAddr);
 
-    OStorePageBIOS (const OStorePageBIOS&) SAL_DELETED_FUNCTION;
-    OStorePageBIOS& operator= (const OStorePageBIOS&) SAL_DELETED_FUNCTION;
+    OStorePageBIOS (const OStorePageBIOS&) = delete;
+    OStorePageBIOS& operator= (const OStorePageBIOS&) = delete;
 };
 
 inline OStorePageBIOS::operator osl::Mutex& (void) const
@@ -234,15 +197,6 @@ inline bool OStorePageBIOS::isWriteable() const
 inline bool OStorePageBIOS::isValid() const
 {
     return m_xLockBytes.is();
-}
-
-inline OStorePageBIOS::ScanContext::ScanContext()
-    : m_aDescr (0, 0, 0), m_nSize (0), m_nMagic (0)
-{
-}
-inline bool OStorePageBIOS::ScanContext::isValid() const
-{
-    return (m_aDescr.m_nAddr < m_nSize);
 }
 
 /*========================================================================

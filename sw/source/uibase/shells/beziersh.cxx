@@ -52,12 +52,11 @@ void SwBezierShell::InitInterface_Impl()
     GetStaticInterface()->RegisterObjectBar(SFX_OBJECTBAR_OBJECT, RID_BEZIER_TOOLBOX);
 }
 
-TYPEINIT1(SwBezierShell,SwBaseShell)
 
 SwBezierShell::SwBezierShell(SwView &_rView):
     SwBaseShell( _rView )
 {
-    SetName(OUString("Bezier"));
+    SetName("Bezier");
     SetHelpId(SW_BEZIERSHELL);
 
     SwWrtShell *pSh = &GetShell();
@@ -90,9 +89,9 @@ void SwBezierShell::Execute(SfxRequest &rReq)
                 else
                 {
                     pSh->DelSelectedObj();
-                    if (pSh->IsSelFrmMode())
+                    if (pSh->IsSelFrameMode())
                     {
-                        pSh->LeaveSelFrmMode();
+                        pSh->LeaveSelFrameMode();
                         pSh->NoEdit();
                     }
                     GetView().AttrChangedNotify(pSh); // Shell change if applicable...

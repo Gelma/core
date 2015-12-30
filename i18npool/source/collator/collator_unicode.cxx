@@ -38,10 +38,10 @@ namespace com { namespace sun { namespace star { namespace i18n {
 Collator_Unicode::Collator_Unicode()
 {
     implementationName = "com.sun.star.i18n.Collator_Unicode";
-    collator = NULL;
-    uca_base = NULL;
+    collator = nullptr;
+    uca_base = nullptr;
 #ifndef DISABLE_DYNLOADING
-    hModule = NULL;
+    hModule = nullptr;
 #endif
 }
 
@@ -142,8 +142,8 @@ Collator_Unicode::loadCollatorAlgorithm(const OUString& rAlgorithm, const lang::
             if (! U_SUCCESS(status)) throw RuntimeException();
         }
         if (!collator && OUString(LOCAL_RULE_LANGS).indexOf(rLocale.Language) >= 0) {
-            const sal_uInt8* (*func)() = NULL;
-            size_t (*funclen)() = NULL;
+            const sal_uInt8* (*func)() = nullptr;
+            size_t (*funclen)() = nullptr;
 
 #ifndef DISABLE_DYNLOADING
             OUStringBuffer aBuf;
@@ -404,8 +404,7 @@ Collator_Unicode::supportsService(const OUString& rServiceName) throw( RuntimeEx
 Sequence< OUString > SAL_CALL
 Collator_Unicode::getSupportedServiceNames() throw( RuntimeException, std::exception )
 {
-    Sequence< OUString > aRet(1);
-    aRet[0] = OUString::createFromAscii(implementationName);
+    Sequence< OUString > aRet { OUString::createFromAscii(implementationName) };
     return aRet;
 }
 

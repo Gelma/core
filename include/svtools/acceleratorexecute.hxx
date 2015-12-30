@@ -22,6 +22,7 @@
 
 #include <svtools/svtdllapi.h>
 
+#include <memory>
 #include <vector>
 
 #include <com/sun/star/uno/XComponentContext.hpp>
@@ -71,16 +72,6 @@ struct TMutexInit
  */
 class SVT_DLLPUBLIC AcceleratorExecute : private TMutexInit
 {
-
-    // const, types
-    private:
-
-        /** @deprecated
-                replaced by internal class AsyncAccelExec ...
-                remove this resource here if we go forwards to next major */
-        typedef ::std::vector< ::std::pair< css::util::URL, css::uno::Reference< css::frame::XDispatch > > > TCommandQueue;
-
-
     // member
     private:
 
@@ -97,18 +88,6 @@ class SVT_DLLPUBLIC AcceleratorExecute : private TMutexInit
         css::uno::Reference< css::ui::XAcceleratorConfiguration > m_xGlobalCfg;
         css::uno::Reference< css::ui::XAcceleratorConfiguration > m_xModuleCfg;
         css::uno::Reference< css::ui::XAcceleratorConfiguration > m_xDocCfg;
-
-        /** @deprecated
-                replaced by internal class AsyncAccelExec ...
-                remove this resource here if we go forwards to next major */
-        TCommandQueue m_lCommandQueue;
-
-        /** @deprecated
-                replaced by internal class AsyncAccelExec ...
-                remove this resource here if we go forwards to next major */
-        vcl::EventPoster m_aAsyncCallback;
-
-
     // interface
     public:
 
@@ -136,7 +115,7 @@ class SVT_DLLPUBLIC AcceleratorExecute : private TMutexInit
                          environment will be recognized ... The helper stop its
                          work immediately then!
          */
-        static AcceleratorExecute* createAcceleratorHelper();
+        static std::unique_ptr<AcceleratorExecute> createAcceleratorHelper();
 
 
         /** @short  fight against inlining ... */
@@ -193,7 +172,7 @@ class SVT_DLLPUBLIC AcceleratorExecute : private TMutexInit
         * @param aKey The key event
         * @return The command or an empty string if the key event could not be found.
         */
-        OUString  findCommand(const ::com::sun::star::awt::KeyEvent& aKey);
+        OUString  findCommand(const css::awt::KeyEvent& aKey);
 
         /** TODO document me */
         static css::awt::KeyEvent st_VCLKey2AWTKey(const vcl::KeyCode&       aKey);
@@ -218,8 +197,8 @@ class SVT_DLLPUBLIC AcceleratorExecute : private TMutexInit
          */
         SVT_DLLPRIVATE AcceleratorExecute();
 
-        AcceleratorExecute(const AcceleratorExecute& rCopy) SAL_DELETED_FUNCTION;
-        void operator=(const AcceleratorExecute&)  SAL_DELETED_FUNCTION;
+        AcceleratorExecute(const AcceleratorExecute& rCopy) = delete;
+        void operator=(const AcceleratorExecute&)  = delete;
 
         /** TODO document me */
         SVT_DLLPRIVATE OUString impl_ts_findCommand(const css::awt::KeyEvent& aKey);
@@ -227,12 +206,6 @@ class SVT_DLLPUBLIC AcceleratorExecute : private TMutexInit
 
         /** TODO document me */
         SVT_DLLPRIVATE css::uno::Reference< css::util::XURLTransformer > impl_ts_getURLParser();
-
-
-        /** @deprecated
-                replaced by internal class AsyncAccelExec ...
-                remove this resource here if we go forwards to next major */
-        DECL_DLLPRIVATE_LINK_TYPED(impl_ts_asyncCallback, LinkParamNone*, void);
 };
 
 } // namespace svt

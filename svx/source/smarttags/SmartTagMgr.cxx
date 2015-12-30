@@ -125,7 +125,7 @@ void SmartTagMgr::RecognizeTextRange(const Reference< text::XTextRange>& xRange,
     {
         Reference < smarttags::XSmartTagRecognizer > xRecognizer = maRecognizerList[i];
 
-        Reference< smarttags::XRangeBasedSmartTagRecognizer > xRangeBasedRecognizer = Reference< smarttags::XRangeBasedSmartTagRecognizer >( xRecognizer, UNO_QUERY);
+        Reference< smarttags::XRangeBasedSmartTagRecognizer > xRangeBasedRecognizer( xRecognizer, UNO_QUERY);
 
         if (!xRangeBasedRecognizer.is()) continue;
 
@@ -152,14 +152,14 @@ void SmartTagMgr::RecognizeTextRange(const Reference< text::XTextRange>& xRange,
 
 typedef std::multimap < OUString, ActionReference >::const_iterator SmartTagMapIter;
 
-void SmartTagMgr::GetActionSequences( Sequence < OUString >& rSmartTagTypes,
+void SmartTagMgr::GetActionSequences( std::vector< OUString >& rSmartTagTypes,
                                       Sequence < Sequence< Reference< smarttags::XSmartTagAction > > >& rActionComponentsSequence,
                                       Sequence < Sequence< sal_Int32 > >& rActionIndicesSequence ) const
 {
-    rActionComponentsSequence.realloc( rSmartTagTypes.getLength() );
-    rActionIndicesSequence.realloc( rSmartTagTypes.getLength() );
+    rActionComponentsSequence.realloc( rSmartTagTypes.size() );
+    rActionIndicesSequence.realloc( rSmartTagTypes.size() );
 
-    for ( sal_Int32 j = 0; j < rSmartTagTypes.getLength(); ++j )
+    for ( size_t j = 0; j < rSmartTagTypes.size(); ++j )
     {
         const OUString& rSmartTagType = rSmartTagTypes[j];
 
@@ -185,7 +185,7 @@ void SmartTagMgr::GetActionSequences( Sequence < OUString >& rSmartTagTypes,
 
 /** Returns the caption for a smart tag type.
 */
-OUString SmartTagMgr::GetSmartTagCaption( const OUString& rSmartTagType, const com::sun::star::lang::Locale& rLocale ) const
+OUString SmartTagMgr::GetSmartTagCaption( const OUString& rSmartTagType, const css::lang::Locale& rLocale ) const
 {
     OUString aRet;
 
@@ -232,7 +232,7 @@ void SmartTagMgr::WriteConfiguration( const bool* pIsLabelTextWithSmartTags,
                 mxConfigurationSettings->setPropertyValue( "RecognizeSmartTags", aEnabled );
                 bCommit = true;
             }
-            catch ( ::com::sun::star::uno::Exception& )
+            catch ( css::uno::Exception& )
             {
             }
         }
@@ -254,7 +254,7 @@ void SmartTagMgr::WriteConfiguration( const bool* pIsLabelTextWithSmartTags,
                 mxConfigurationSettings->setPropertyValue( "ExcludedSmartTagTypes", aNewTypes );
                 bCommit = true;
             }
-            catch ( ::com::sun::star::uno::Exception& )
+            catch ( css::uno::Exception& )
             {
             }
         }
@@ -265,14 +265,14 @@ void SmartTagMgr::WriteConfiguration( const bool* pIsLabelTextWithSmartTags,
             {
                 Reference< util::XChangesBatch >( mxConfigurationSettings, UNO_QUERY_THROW )->commitChanges();
             }
-            catch ( ::com::sun::star::uno::Exception& )
+            catch ( css::uno::Exception& )
             {
             }
         }
     }
 }
 
-// ::com::sun::star::util::XModifyListener
+// css::util::XModifyListener
 void SmartTagMgr::modified( const lang::EventObject& )  throw( RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
@@ -284,7 +284,7 @@ void SmartTagMgr::modified( const lang::EventObject& )  throw( RuntimeException,
     LoadLibraries();
 }
 
-// ::com::sun::star::lang::XEventListener
+// css::lang::XEventListener
 void SmartTagMgr::disposing( const lang::EventObject& rEvent ) throw( RuntimeException, std::exception )
 {
     SolarMutexGuard aGuard;
@@ -311,7 +311,7 @@ void SmartTagMgr::disposing( const lang::EventObject& rEvent ) throw( RuntimeExc
     }
 }
 
-// ::com::sun::star::util::XChangesListener
+// css::util::XChangesListener
 void SmartTagMgr::changesOccurred( const util::ChangesEvent& rEvent ) throw( RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
@@ -354,7 +354,7 @@ void SmartTagMgr::LoadLibraries()
         Reference< lang::XServiceInfo > xsInfo;
 
         if (a >>= xsInfo)
-            xSCF = Reference< lang::XSingleComponentFactory >(xsInfo, UNO_QUERY);
+            xSCF.set(xsInfo, UNO_QUERY);
         else
             continue;
 
@@ -381,7 +381,7 @@ void SmartTagMgr::LoadLibraries()
         Reference< lang::XSingleComponentFactory > xSCF;
 
         if (a >>= xsInfo)
-            xSCF = Reference< lang::XSingleComponentFactory >(xsInfo, UNO_QUERY);
+            xSCF.set(xsInfo, UNO_QUERY);
         else
             continue;
 
@@ -437,7 +437,7 @@ void SmartTagMgr::PrepareConfiguration( const OUString& rConfigurationGroupName 
 
     if ( xConfigurationAccess.is() )
     {
-        mxConfigurationSettings = Reference< beans::XPropertySet >( xConfigurationAccess, UNO_QUERY );
+        mxConfigurationSettings.set( xConfigurationAccess, UNO_QUERY );
     }
 }
 

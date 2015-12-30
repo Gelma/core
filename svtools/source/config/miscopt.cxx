@@ -58,12 +58,10 @@ using namespace ::com::sun::star;
 #define PROPERTYHANDLE_SHOWLINKWARNINGDIALOG    6
 #define PROPERTYNAME_DISABLEUICUSTOMIZATION "DisableUICustomization"
 #define PROPERTYHANDLE_DISABLEUICUSTOMIZATION   7
-#define PROPERTYNAME_ALWAYSALLOWSAVE        "AlwaysAllowSave"
-#define PROPERTYHANDLE_ALWAYSALLOWSAVE          8
 #define PROPERTYNAME_EXPERIMENTALMODE       "ExperimentalMode"
-#define PROPERTYHANDLE_EXPERIMENTALMODE         9
+#define PROPERTYHANDLE_EXPERIMENTALMODE         8
 #define PROPERTYNAME_MACRORECORDERMODE       "MacroRecorderMode"
-#define PROPERTYHANDLE_MACRORECORDERMODE        10
+#define PROPERTYHANDLE_MACRORECORDERMODE        9
 
 #define VCL_TOOLBOX_STYLE_FLAT              ((sal_uInt16)0x0004) // from <vcl/toolbox.hxx>
 
@@ -85,12 +83,11 @@ private:
     bool        m_bShowLinkWarningDialog;
     bool        m_bIsShowLinkWarningDialogRO;
     bool        m_bDisableUICustomization;
-    bool        m_bAlwaysAllowSave;
     bool        m_bExperimentalMode;
     bool        m_bMacroRecorderMode;
     bool        m_bIconThemeWasSetAutomatically;
 
-        virtual void ImplCommit() SAL_OVERRIDE;
+        virtual void ImplCommit() override;
 
 public:
 
@@ -108,7 +105,7 @@ public:
             @param      "seqPropertyNames" is the list of properties which should be updated.
         *//*-*****************************************************************************************************/
 
-        virtual void Notify( const Sequence< OUString >& seqPropertyNames ) SAL_OVERRIDE;
+        virtual void Notify( const Sequence< OUString >& seqPropertyNames ) override;
 
         /** loads required data from the configuration. It's called in the constructor to
          read all entries and form ::Notify to re-read changed settings
@@ -130,12 +127,6 @@ public:
 
         inline bool DisableUICustomization() const
         { return m_bDisableUICustomization; }
-
-        inline void SetSaveAlwaysAllowed( bool bSet )
-        { m_bAlwaysAllowSave = bSet; SetModified(); }
-
-        inline bool IsSaveAlwaysAllowed() const
-        { return m_bAlwaysAllowSave; }
 
         inline void SetExperimentalMode( bool bSet )
         { m_bExperimentalMode = bSet; SetModified(); }
@@ -241,7 +232,6 @@ SvtMiscOptions_Impl::SvtMiscOptions_Impl()
     , m_bIsUseSystemPrintDialogRO( false )
     , m_bShowLinkWarningDialog( true )
     , m_bIsShowLinkWarningDialogRO( false )
-    , m_bAlwaysAllowSave( false )
     , m_bExperimentalMode( false )
     , m_bMacroRecorderMode( false )
     , m_bIconThemeWasSetAutomatically( false )
@@ -341,12 +331,6 @@ SvtMiscOptions_Impl::SvtMiscOptions_Impl()
             {
                 if( !(seqValues[nProperty] >>= m_bDisableUICustomization) )
                     OSL_FAIL("Wrong type of \"Misc\\DisableUICustomization\"!" );
-                break;
-            }
-            case PROPERTYHANDLE_ALWAYSALLOWSAVE :
-            {
-                if( !(seqValues[nProperty] >>= m_bAlwaysAllowSave) )
-                    OSL_FAIL("Wrong type of \"Misc\\AlwaysAllowSave\"!" );
                 break;
             }
             case PROPERTYHANDLE_EXPERIMENTALMODE :
@@ -461,12 +445,6 @@ void SvtMiscOptions_Impl::Load( const Sequence< OUString >& rPropertyNames )
                                                                 OSL_FAIL("Wrong type of \"Misc\\DisableUICustomization\"!" );
                                                         }
                                                     break;
-            case PROPERTYHANDLE_ALWAYSALLOWSAVE:
-            {
-                if( !(seqValues[nProperty] >>= m_bAlwaysAllowSave) )
-                    OSL_FAIL("Wrong type of \"Misc\\AlwaysAllowSave\"!" );
-            }
-            break;
         }
     }
 }
@@ -624,11 +602,6 @@ void SvtMiscOptions_Impl::ImplCommit()
                 seqValues[nProperty] <<= m_bDisableUICustomization;
                 break;
             }
-            case PROPERTYHANDLE_ALWAYSALLOWSAVE :
-            {
-                seqValues[nProperty] <<= m_bAlwaysAllowSave;
-                break;
-            }
             case PROPERTYHANDLE_EXPERIMENTALMODE :
             {
                 seqValues[nProperty] <<= m_bExperimentalMode;
@@ -661,7 +634,6 @@ Sequence< OUString > SvtMiscOptions_Impl::GetPropertyNames()
         OUString(PROPERTYNAME_USESYSTEMPRINTDIALOG),
         OUString(PROPERTYNAME_SHOWLINKWARNINGDIALOG),
         OUString(PROPERTYNAME_DISABLEUICUSTOMIZATION),
-        OUString(PROPERTYNAME_ALWAYSALLOWSAVE),
         OUString(PROPERTYNAME_EXPERIMENTALMODE),
         OUString(PROPERTYNAME_MACRORECORDERMODE)
     };
@@ -677,7 +649,7 @@ Sequence< OUString > SvtMiscOptions_Impl::GetPropertyNames()
 //  DON'T DO IT IN YOUR HEADER!
 //  see definition for further information
 
-SvtMiscOptions_Impl*    SvtMiscOptions::m_pDataContainer    = NULL  ;
+SvtMiscOptions_Impl*    SvtMiscOptions::m_pDataContainer    = nullptr  ;
 sal_Int32               SvtMiscOptions::m_nRefCount = 0     ;
 
 
@@ -693,7 +665,7 @@ SvtMiscOptions::SvtMiscOptions()
     // Increase our refcount ...
     ++m_nRefCount;
     // ... and initialize our data container only if it not already exist!
-    if( m_pDataContainer == NULL )
+    if( m_pDataContainer == nullptr )
     {
        m_pDataContainer = new SvtMiscOptions_Impl;
        svtools::ItemHolder2::holdConfigItem(E_MISCOPTIONS);
@@ -714,7 +686,7 @@ SvtMiscOptions::~SvtMiscOptions()
     if( m_nRefCount <= 0 )
     {
         delete m_pDataContainer;
-        m_pDataContainer = NULL;
+        m_pDataContainer = nullptr;
     }
 }
 
@@ -819,16 +791,6 @@ void SvtMiscOptions::SetShowLinkWarningDialog( bool bSet )
 bool SvtMiscOptions::IsShowLinkWarningDialogReadOnly() const
 {
     return m_pDataContainer->IsShowLinkWarningDialogReadOnly();
-}
-
-void SvtMiscOptions::SetSaveAlwaysAllowed( bool bSet )
-{
-    m_pDataContainer->SetSaveAlwaysAllowed( bSet );
-}
-
-bool SvtMiscOptions::IsSaveAlwaysAllowed() const
-{
-    return m_pDataContainer->IsSaveAlwaysAllowed();
 }
 
 void SvtMiscOptions::SetExperimentalMode( bool bSet )

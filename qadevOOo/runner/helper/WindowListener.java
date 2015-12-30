@@ -23,20 +23,6 @@ package helper;
  */
 public class WindowListener implements com.sun.star.awt.XWindowListener {
 
-
-
-    // resize called
-    public boolean resizedTrigger;
-
-
-
-    /**
-     * Creates a new WindowListener
-     */
-    public WindowListener() {
-        resetTrigger();
-    }
-
     /**
      * The window hidden event
      */
@@ -53,7 +39,6 @@ public class WindowListener implements com.sun.star.awt.XWindowListener {
      * The window resize event
      */
     public void windowResized(com.sun.star.awt.WindowEvent windowEvent) {
-        resizedTrigger = true;
     }
 
     /**
@@ -66,12 +51,5 @@ public class WindowListener implements com.sun.star.awt.XWindowListener {
      * The dispose event
      */
     public void disposing(com.sun.star.lang.EventObject eventObject) {
-    }
-
-    /**
-     * Reset all triggers to "not fired".
-     */
-    public void resetTrigger() {
-        resizedTrigger = false;
     }
 }

@@ -73,9 +73,9 @@ public:
         Invalidate();
     }
 
-    virtual void Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) SAL_OVERRIDE;
+    virtual void Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect ) override;
 
-    virtual Size GetOptimalSize() const SAL_OVERRIDE
+    virtual Size GetOptimalSize() const override
     {
         return LogicToPixel(Size(43, 14), MAP_APPFONT);
     }
@@ -88,11 +88,11 @@ class MaskSet : public ValueSet
 public:
     MaskSet(SvxBmpMask* pMask, vcl::Window* pParent);
     virtual ~MaskSet() { disposeOnce(); }
-    virtual void dispose() SAL_OVERRIDE { pSvxBmpMask.clear(); ValueSet::dispose(); }
-    virtual void Select() SAL_OVERRIDE;
-    virtual void KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
-    virtual void GetFocus() SAL_OVERRIDE;
-    virtual Size GetOptimalSize() const SAL_OVERRIDE
+    virtual void dispose() override { pSvxBmpMask.clear(); ValueSet::dispose(); }
+    virtual void Select() override;
+    virtual void KeyInput( const KeyEvent& rKEvt ) override;
+    virtual void GetFocus() override;
+    virtual Size GetOptimalSize() const override
     {
         return LogicToPixel(Size(24, 12), MAP_APPFONT);
     }
@@ -212,7 +212,7 @@ IMPL_LINK_TYPED( MaskData, CbxHdl, Button*, pButton, void )
     // When a checkbox is checked, the pipette is enabled
     if ( pCbx->IsChecked() )
     {
-        MaskSet* pSet = NULL;
+        MaskSet* pSet = nullptr;
 
         if (pCbx == pMask->m_pCbx1)
             pSet = pMask->m_pQSet1;
@@ -334,7 +334,7 @@ void SvxBmpMaskSelectItem::StateChanged( sal_uInt16 nSID, SfxItemState /*eState*
 {
     if ( ( nSID == SID_BMPMASK_EXEC ) && pItem )
     {
-        const SfxBoolItem* pStateItem = PTR_CAST( SfxBoolItem, pItem );
+        const SfxBoolItem* pStateItem = dynamic_cast<const SfxBoolItem*>( pItem  );
         assert(pStateItem); //SfxBoolItem erwartet
         if (pStateItem)
             rBmpMask.SetExecState( pStateItem->GetValue() );
@@ -477,7 +477,7 @@ void SvxBmpMask::dispose()
     m_pQSet4.disposeAndClear();
     m_pCtlPipette.disposeAndClear();
     delete pData;
-    pData = NULL;
+    pData = nullptr;
     m_pTbxPipette.clear();
     m_pBtnExec.clear();
     m_pCbx1.clear();

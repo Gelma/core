@@ -47,8 +47,8 @@ SwFootNoteOptionDlg::SwFootNoteOptionDlg(vcl::Window *pParent, SwWrtShell &rS)
     aOldOkHdl = GetOKButton().GetClickHdl();
     GetOKButton().SetClickHdl( LINK( this, SwFootNoteOptionDlg, OkHdl ) );
 
-    m_nFootNoteId = AddTabPage( "footnotes", SwFootNoteOptionPage::Create, 0 );
-    m_nEndNoteId = AddTabPage( "endnotes",  SwEndNoteOptionPage::Create, 0 );
+    m_nFootNoteId = AddTabPage( "footnotes", SwFootNoteOptionPage::Create, nullptr );
+    m_nEndNoteId = AddTabPage( "endnotes",  SwEndNoteOptionPage::Create, nullptr );
 }
 
 void SwFootNoteOptionDlg::PageCreated( sal_uInt16 /*nId*/, SfxTabPage &rPage )
@@ -74,13 +74,13 @@ SwEndNoteOptionPage::SwEndNoteOptionPage(vcl::Window *pParent, bool bEN,
         bEN ? OString("EndnotePage") : OString("FootnotePage"),
         bEN ? OUString("modules/swriter/ui/endnotepage.ui") : OUString("modules/swriter/ui/footnotepage.ui"),
         &rSet)
-    , m_pNumCountBox(NULL)
-    , m_pPosFT(NULL)
-    , m_pPosPageBox(NULL)
-    , m_pPosChapterBox(NULL)
-    , m_pContEdit(NULL)
-    , m_pContFromEdit(NULL)
-    , pSh(0)
+    , m_pNumCountBox(nullptr)
+    , m_pPosFT(nullptr)
+    , m_pPosPageBox(nullptr)
+    , m_pPosChapterBox(nullptr)
+    , m_pContEdit(nullptr)
+    , m_pContFromEdit(nullptr)
+    , pSh(nullptr)
     , bPosDoc(false)
     , bEndNote(bEN)
 {
@@ -149,7 +149,7 @@ void SwEndNoteOptionPage::Reset( const SfxItemSet* )
                                           : new SwFootnoteInfo( pSh->GetFootnoteInfo() ));
     SfxObjectShell * pDocSh = SfxObjectShell::Current();
 
-    if (PTR_CAST(SwWebDocShell, pDocSh))
+    if (dynamic_cast<SwWebDocShell*>( pDocSh) )
         m_pStylesContainer->Hide();
 
     if ( bEndNote )
@@ -272,7 +272,7 @@ void SwEndNoteOptionPage::SelectNumbering(int eNum)
 #endif
     }
     m_pNumCountBox->SelectEntry(sSelect);
-    NumCountHdl(m_pNumCountBox);
+    NumCountHdl(*m_pNumCountBox);
 }
 
 int SwEndNoteOptionPage::GetNumbering() const
@@ -310,7 +310,7 @@ IMPL_LINK_NOARG_TYPED(SwEndNoteOptionPage, PosPageHdl, Button*, void)
     m_pPageTemplBox->Enable(false);
 }
 
-IMPL_LINK_NOARG(SwEndNoteOptionPage, NumCountHdl)
+IMPL_LINK_NOARG_TYPED(SwEndNoteOptionPage, NumCountHdl, ListBox&, void)
 {
     bool bEnable = true;
     if( m_pNumCountBox->GetEntryCount() - 1 != m_pNumCountBox->GetSelectEntryPos() )
@@ -320,7 +320,6 @@ IMPL_LINK_NOARG(SwEndNoteOptionPage, NumCountHdl)
     }
     m_pOffsetLbl->Enable(bEnable);
     m_pOffsetField->Enable(bEnable);
-    return 0;
 }
 
 // Handler behind the button to collect the footnote at the chapter or end of
@@ -339,7 +338,7 @@ IMPL_LINK_NOARG_TYPED(SwEndNoteOptionPage, PosChapterHdl, Button*, void)
 
 static SwCharFormat* lcl_GetCharFormat( SwWrtShell* pSh, const OUString& rCharFormatName )
 {
-    SwCharFormat* pFormat = 0;
+    SwCharFormat* pFormat = nullptr;
     const sal_uInt16 nChCount = pSh->GetCharFormatCount();
     for(sal_uInt16 i = 0; i< nChCount; i++)
     {

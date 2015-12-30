@@ -30,7 +30,7 @@
 class PopupMenu;
 class SvxClipboardFormatItem;
 
-class SVX_DLLPUBLIC SAL_WARN_UNUSED SvxClipBoardControl : public SfxToolBoxControl
+class SAL_WARN_UNUSED SVX_DLLPUBLIC SvxClipBoardControl : public SfxToolBoxControl
 {
     SfxPoolItem*            pClipboardFmtItem;
     PopupMenu*              pPopup;
@@ -44,10 +44,10 @@ public:
     SvxClipBoardControl( sal_uInt16 nSlotId, sal_uInt16 nId, ToolBox& rTbx );
     virtual ~SvxClipBoardControl();
 
-    virtual VclPtr<SfxPopupWindow> CreatePopupWindow() SAL_OVERRIDE;
+    virtual VclPtr<SfxPopupWindow> CreatePopupWindow() override;
     virtual void                StateChanged( sal_uInt16 nSID,
                                               SfxItemState eState,
-                                              const SfxPoolItem* pState ) SAL_OVERRIDE;
+                                              const SfxPoolItem* pState ) override;
 };
 
 #endif

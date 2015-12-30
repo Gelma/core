@@ -81,7 +81,6 @@ struct XclRootData
     SfxMedium&          mrMedium;           /// The medium to import from.
     tools::SvRef<SotStorage>       mxRootStrg;         /// The root OLE storage of imported/exported file.
     ScDocument&         mrDoc;              /// The source or destination document.
-    ScDocumentImport    maDocImport;
     OUString            maDocUrl;           /// Document URL of imported/exported file.
     OUString            maBasePath;         /// Base path of imported/exported file (path of maDocUrl).
     OUString            maUserName;         /// Current user name.
@@ -181,7 +180,7 @@ public:
     /** Returns the default password used for stream encryption. */
     inline const OUString& GetDefaultPassword() const { return mrData.maDefPassword; }
     /** Requests and verifies a password from the medium or the user. */
-    ::com::sun::star::uno::Sequence< ::com::sun::star::beans::NamedValue >
+    css::uno::Sequence< css::beans::NamedValue >
         RequestEncryptionData( ::comphelper::IDocPasswordVerifier& rVerifier ) const;
 
     /** Returns the OLE2 root storage of the imported/exported file.

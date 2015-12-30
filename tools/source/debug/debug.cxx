@@ -49,7 +49,7 @@ struct DebugData
     DbgTestSolarMutexProc   pDbgTestSolarMutex;
 
     DebugData()
-        :pDbgTestSolarMutex( NULL )
+        :pDbgTestSolarMutex( nullptr )
     {
     }
 };
@@ -68,14 +68,14 @@ void* DbgFunc( sal_uInt16 nAction, void* pParam )
 
     case DBG_FUNC_TESTSOLARMUTEX:
         SAL_WARN_IF(
-            pDebugData->pDbgTestSolarMutex == 0, "tools.debug",
+            pDebugData->pDbgTestSolarMutex == nullptr, "tools.debug",
             "no DbgTestSolarMutex function set");
         if ( pDebugData->pDbgTestSolarMutex )
             pDebugData->pDbgTestSolarMutex();
         break;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 #endif
@@ -87,7 +87,7 @@ void DbgUnhandledException(const css::uno::Any & caught, const char* currentFunc
         sMessage += currentFunction;
         sMessage += "\ntype: ";
         sMessage += OUStringToOString( caught.getValueTypeName(), osl_getThreadTextEncoding() );
-        ::com::sun::star::uno::Exception exception;
+        css::uno::Exception exception;
         caught >>= exception;
         if ( !exception.Message.isEmpty() )
         {
@@ -101,7 +101,7 @@ void DbgUnhandledException(const css::uno::Any & caught, const char* currentFunc
             sMessage += pContext;
         }
         {
-            ::com::sun::star::configuration::CorruptedConfigurationException
+            css::configuration::CorruptedConfigurationException
                 specialized;
             if ( caught >>= specialized )
             {
@@ -111,7 +111,7 @@ void DbgUnhandledException(const css::uno::Any & caught, const char* currentFunc
             }
         }
         {
-            ::com::sun::star::task::ErrorCodeIOException specialized;
+            css::task::ErrorCodeIOException specialized;
             if ( caught >>= specialized )
             {
                 sMessage += "\ndetails: ";

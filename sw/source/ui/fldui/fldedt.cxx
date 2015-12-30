@@ -51,7 +51,7 @@
 
 void SwFieldEditDlg::EnsureSelection(SwField *pCurField, SwFieldMgr &rMgr)
 {
-    if (pSh->CrsrInsideInputField())
+    if (pSh->CursorInsideInputField())
     {
         // move cursor to start of Input Field
         SwInputField* pInputField = dynamic_cast<SwInputField*>(pCurField);
@@ -65,8 +65,8 @@ void SwFieldEditDlg::EnsureSelection(SwField *pCurField, SwFieldMgr &rMgr)
        Normalize PaM instead of swapping. */
     if (!pSh->HasSelection())
     {
-        SwShellCrsr* pCrsr = pSh->getShellCrsr(true);
-        SwPosition aOrigPos(*pCrsr->GetPoint());
+        SwShellCursor* pCursor = pSh->getShellCursor(true);
+        SwPosition aOrigPos(*pCursor->GetPoint());
 
         //After this attempt it is possible that rMgr.GetCurField() != pCurField if
         //the field was in e.g. a zero height portion and so invisible in which
@@ -78,8 +78,8 @@ void SwFieldEditDlg::EnsureSelection(SwField *pCurField, SwFieldMgr &rMgr)
         bool bSelectionFailed = pCurField != pRealCurField;
         if (bSelectionFailed)
         {
-            pCrsr->DeleteMark();
-            *pCrsr->GetPoint() = aOrigPos;
+            pCursor->DeleteMark();
+            *pCursor->GetPoint() = aOrigPos;
         }
     }
 
@@ -89,7 +89,7 @@ void SwFieldEditDlg::EnsureSelection(SwField *pCurField, SwFieldMgr &rMgr)
 }
 
 SwFieldEditDlg::SwFieldEditDlg(SwView& rVw)
-    : SfxSingleTabDialog(&rVw.GetViewFrame()->GetWindow(), 0,
+    : SfxSingleTabDialog(&rVw.GetViewFrame()->GetWindow(), nullptr,
         "EditFieldDialog", "modules/swriter/ui/editfielddialog.ui")
     , pSh(rVw.GetWrtShellPtr())
 {
@@ -137,7 +137,7 @@ void SwFieldEditDlg::Init()
 
         // Traveling only when more than one field
         pSh->StartAction();
-        pSh->CreateCrsr();
+        pSh->CreateCursor();
 
         bool bMove = rMgr.GoNext();
         if( bMove )
@@ -151,7 +151,7 @@ void SwFieldEditDlg::Init()
         if (pCurField->GetTypeId() == TYP_EXTUSERFLD)
             m_pAddressBT->Show();
 
-        pSh->DestroyCrsr();
+        pSh->DestroyCursor();
         pSh->EndAction();
     }
 
@@ -167,13 +167,13 @@ VclPtr<SfxTabPage> SwFieldEditDlg::CreatePage(sal_uInt16 nGroup)
     switch (nGroup)
     {
         case GRP_DOC:
-            pTabPage = SwFieldDokPage::Create(get_content_area(), 0);
+            pTabPage = SwFieldDokPage::Create(get_content_area(), nullptr);
             break;
         case GRP_FKT:
-            pTabPage = SwFieldFuncPage::Create(get_content_area(), 0);
+            pTabPage = SwFieldFuncPage::Create(get_content_area(), nullptr);
             break;
         case GRP_REF:
-            pTabPage = SwFieldRefPage::Create(get_content_area(), 0);
+            pTabPage = SwFieldRefPage::Create(get_content_area(), nullptr);
             break;
         case GRP_REG:
             {
@@ -192,11 +192,11 @@ VclPtr<SfxTabPage> SwFieldEditDlg::CreatePage(sal_uInt16 nGroup)
                 break;
             }
         case GRP_DB:
-            pTabPage = SwFieldDBPage::Create(get_content_area(), 0);
+            pTabPage = SwFieldDBPage::Create(get_content_area(), nullptr);
             static_cast<SwFieldDBPage*>(pTabPage.get())->SetWrtShell(*pSh);
             break;
         case GRP_VAR:
-            pTabPage = SwFieldVarPage::Create(get_content_area(), 0);
+            pTabPage = SwFieldVarPage::Create(get_content_area(), nullptr);
             break;
 
     }
@@ -219,7 +219,7 @@ SwFieldEditDlg::~SwFieldEditDlg()
 
 void SwFieldEditDlg::dispose()
 {
-    SwViewShell::SetCareWin(NULL);
+    SwViewShell::SetCareWin(nullptr);
     pSh->EnterStdMode();
     m_pPrevBT.clear();
     m_pNextBT.clear();
@@ -246,7 +246,7 @@ IMPL_LINK_NOARG_TYPED(SwFieldEditDlg, OKHdl, Button*, void)
     {
         VclPtr<SfxTabPage> pTabPage = GetTabPage();
         if (pTabPage)
-            pTabPage->FillItemSet(0);
+            pTabPage->FillItemSet(nullptr);
         EndDialog( RET_OK );
     }
 }
@@ -264,13 +264,13 @@ IMPL_LINK_TYPED( SwFieldEditDlg, NextPrevHdl, Button *, pButton, void )
 
     pSh->EnterStdMode();
 
-    SwFieldType *pOldTyp = 0;
+    SwFieldType *pOldTyp = nullptr;
     VclPtr<SwFieldPage> pTabPage = static_cast<SwFieldPage*>(GetTabPage());
 
     //#112462# FillItemSet may delete the current field
     //that's why it has to be called before accessing the current field
     if( GetOKButton()->IsEnabled() )
-        pTabPage->FillItemSet(0);
+        pTabPage->FillItemSet(nullptr);
 
     SwFieldMgr& rMgr = pTabPage->GetFieldMgr();
     SwField *pCurField = rMgr.GetCurField();

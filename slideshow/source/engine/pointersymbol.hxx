@@ -38,8 +38,7 @@ class PointerSymbol : public ViewEventHandler,
                       private ::boost::noncopyable
 {
 public:
-    static PointerSymbolSharedPtr create( const ::com::sun::star::uno::Reference<
-                                                ::com::sun::star::rendering::XBitmap>& xBitmap,
+    static PointerSymbolSharedPtr create( const css::uno::Reference<css::rendering::XBitmap>& xBitmap,
                                           ScreenUpdater&                               rScreenUpdater,
                                           EventMultiplexer&                            rEventMultiplexer,
                                           const UnoViewContainer&                      rViewContainer );
@@ -47,43 +46,31 @@ public:
     /** Use this method to update the pointer's position
     */
     void setVisible( const bool bVisible );
-    void viewsChanged(const ::com::sun::star::geometry::RealPoint2D pos);
+    void viewsChanged(const css::geometry::RealPoint2D pos);
 
 private:
-    PointerSymbol( const ::com::sun::star::uno::Reference<
-                         ::com::sun::star::rendering::XBitmap>& xBitmap,
+    PointerSymbol( const css::uno::Reference<css::rendering::XBitmap>& xBitmap,
                    ScreenUpdater&                               rScreenUpdater,
                    const UnoViewContainer&                      rViewContainer );
 
     // ViewEventHandler
-    virtual void viewAdded( const UnoViewSharedPtr& rView ) SAL_OVERRIDE;
-    virtual void viewRemoved( const UnoViewSharedPtr& rView ) SAL_OVERRIDE;
-    virtual void viewChanged( const UnoViewSharedPtr& rView ) SAL_OVERRIDE;
-    virtual void viewsChanged() SAL_OVERRIDE;
+    virtual void viewAdded( const UnoViewSharedPtr& rView ) override;
+    virtual void viewRemoved( const UnoViewSharedPtr& rView ) override;
+    virtual void viewChanged( const UnoViewSharedPtr& rView ) override;
+    virtual void viewsChanged() override;
 
     ::basegfx::B2DPoint calcSpritePos( UnoViewSharedPtr const & rView ) const;
-
-    template <typename func_type>
-    void for_each_sprite( func_type const & func ) const
-    {
-        ViewsVecT::const_iterator iPos( maViews.begin() );
-        const ViewsVecT::const_iterator iEnd( maViews.end() );
-        for ( ; iPos != iEnd; ++iPos )
-            if( iPos->second )
-                func( iPos->second );
-    }
 
     typedef ::std::vector<
         ::std::pair<UnoViewSharedPtr,
                     cppcanvas::CustomSpriteSharedPtr> > ViewsVecT;
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::rendering::XBitmap>  mxBitmap;
+    css::uno::Reference<css::rendering::XBitmap>  mxBitmap;
 
-    ViewsVecT                                  maViews;
-    ScreenUpdater&                             mrScreenUpdater;
-    ::com::sun::star::geometry::RealPoint2D    maPos;
-    bool                                       mbVisible;
+    ViewsVecT                                     maViews;
+    ScreenUpdater&                                mrScreenUpdater;
+    css::geometry::RealPoint2D                    maPos;
+    bool                                          mbVisible;
 };
 
 } // namespace internal

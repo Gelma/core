@@ -49,10 +49,10 @@ ODBTypeWizDialogSetup::ODBTypeWizDialogSetup(const Reference< XComponentContext 
     ,m_bOpenDatabase(true)
     ,m_bStartTableWizard(false)
 {
-    registerProperty(OUString("OpenDatabase"), 3, PropertyAttribute::TRANSIENT,
+    registerProperty("OpenDatabase", 3, PropertyAttribute::TRANSIENT,
         &m_bOpenDatabase, cppu::UnoType<bool>::get());
 
-    registerProperty(OUString("StartTableWizard"), 4, PropertyAttribute::TRANSIENT,
+    registerProperty("StartTableWizard", 4, PropertyAttribute::TRANSIENT,
         &m_bStartTableWizard, cppu::UnoType<bool>::get());
 }
 
@@ -84,8 +84,7 @@ css::uno::Sequence<OUString> SAL_CALL ODBTypeWizDialogSetup::getSupportedService
 
 css::uno::Sequence<OUString> ODBTypeWizDialogSetup::getSupportedServiceNames_Static() throw(RuntimeException)
 {
-    css::uno::Sequence<OUString> aSupported(1);
-    aSupported[0] = "com.sun.star.sdb.DatabaseWizardDialog";
+    css::uno::Sequence<OUString> aSupported { "com.sun.star.sdb.DatabaseWizardDialog" };
     return aSupported;
 }
 

@@ -99,8 +99,8 @@ void SwMediaShell::ExecMedia(SfxRequest &rReq)
                     pSh->SetModified();
                     pSh->DelSelectedObj();
 
-                    if( pSh->IsSelFrmMode() )
-                        pSh->LeaveSelFrmMode();
+                    if( pSh->IsSelFrameMode() )
+                        pSh->LeaveSelFrameMode();
 
                     GetView().AttrChangedNotify( pSh );
                 }
@@ -114,7 +114,7 @@ void SwMediaShell::ExecMedia(SfxRequest &rReq)
                     const SfxPoolItem*  pItem;
 
                     if( !pArgs || ( SfxItemState::SET != pArgs->GetItemState( SID_AVMEDIA_TOOLBOX, false, &pItem ) ) )
-                        pItem = NULL;
+                        pItem = nullptr;
 
                     if( pItem )
                     {
@@ -124,7 +124,7 @@ void SwMediaShell::ExecMedia(SfxRequest &rReq)
                         {
                             SdrObject* pObj = pMarkList->GetMark( 0 )->GetMarkedSdrObj();
 
-                            if( pObj && pObj->ISA( SdrMediaObj ) )
+                            if( pObj && dynamic_cast< const SdrMediaObj *>( pObj ) !=  nullptr )
                             {
                                 static_cast< sdr::contact::ViewContactOfSdrMediaObj& >( pObj->GetViewContact() ).executeMediaItem(
                                     static_cast< const ::avmedia::MediaItem& >( *pItem ) );
@@ -167,7 +167,7 @@ void SwMediaShell::GetMediaState(SfxItemSet &rSet)
                 {
                     SdrObject* pObj = pMarkList->GetMark( 0 )->GetMarkedSdrObj();
 
-                    if( pObj && pObj->ISA( SdrMediaObj ) )
+                    if( pObj && dynamic_cast< const SdrMediaObj *>( pObj ) !=  nullptr )
                     {
                         ::avmedia::MediaItem aItem( SID_AVMEDIA_TOOLBOX );
 
@@ -190,7 +190,7 @@ SwMediaShell::SwMediaShell(SwView &_rView) :
     SwBaseShell(_rView)
 
 {
-    SetName(OUString("Media Playback"));
+    SetName("Media Playback");
     SetHelpId(SW_MEDIASHELL);
     SfxShell::SetContextName(sfx2::sidebar::EnumContext::GetContextName(sfx2::sidebar::EnumContext::Context_Media));
 }

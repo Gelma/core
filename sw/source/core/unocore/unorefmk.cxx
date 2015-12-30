@@ -59,7 +59,7 @@ public:
     Impl(   SwDoc *const pDoc, SwFormatRefMark *const pRefMark)
         : SwClient(pRefMark)
         , m_EventListeners(m_Mutex)
-        , m_bIsDescriptor(0 == pRefMark)
+        , m_bIsDescriptor(nullptr == pRefMark)
         , m_pDoc(pDoc)
         , m_pMarkFormat(pRefMark)
     {
@@ -69,12 +69,12 @@ public:
         }
     }
 
-    bool    IsValid() const { return 0 != GetRegisteredIn(); }
+    bool    IsValid() const { return nullptr != GetRegisteredIn(); }
     void    InsertRefMark( SwPaM & rPam, SwXTextCursor const*const pCursor );
     void    Invalidate();
 protected:
     // SwClient
-    virtual void    Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew) SAL_OVERRIDE;
+    virtual void    Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew) override;
 
 };
 
@@ -84,8 +84,8 @@ void SwXReferenceMark::Impl::Invalidate()
     {
         GetRegisteredIn()->Remove(this);
     }
-    m_pDoc = 0;
-    m_pMarkFormat = 0;
+    m_pDoc = nullptr;
+    m_pMarkFormat = nullptr;
     uno::Reference<uno::XInterface> const xThis(m_wThis);
     if (!xThis.is())
     {   // fdo#72695: if UNO object is already dead, don't revive it with event
@@ -230,7 +230,7 @@ void SwXReferenceMark::Impl::InsertRefMark(SwPaM& rPam,
     }
 
     // aRefMark was copied into the document pool; now retrieve real format...
-    SwTextAttr * pTextAttr(0);
+    SwTextAttr * pTextAttr(nullptr);
     if (bMark)
     {
         // #i107672#
@@ -252,13 +252,13 @@ void SwXReferenceMark::Impl::InsertRefMark(SwPaM& rPam,
         SwTextNode *pTextNd = rPam.GetNode().GetTextNode();
         OSL_ASSERT(pTextNd);
         pTextAttr = pTextNd ? rPam.GetNode().GetTextNode()->GetTextAttrForCharAt(
-                rPam.GetPoint()->nContent.GetIndex() - 1, RES_TXTATR_REFMARK) : NULL;
+                rPam.GetPoint()->nContent.GetIndex() - 1, RES_TXTATR_REFMARK) : nullptr;
     }
 
     if (!pTextAttr)
     {
         throw uno::RuntimeException(
-            "SwXReferenceMark::InsertRefMark(): cannot insert attribute", 0);
+            "SwXReferenceMark::InsertRefMark(): cannot insert attribute", nullptr);
     }
 
     m_pMarkFormat = &pTextAttr->GetRefMark();
@@ -277,8 +277,8 @@ throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception)
         throw uno::RuntimeException();
     }
     uno::Reference<lang::XUnoTunnel> xRangeTunnel( xTextRange, uno::UNO_QUERY);
-    SwXTextRange* pRange = 0;
-    OTextCursorHelper* pCursor = 0;
+    SwXTextRange* pRange = nullptr;
+    OTextCursorHelper* pCursor = nullptr;
     if(xRangeTunnel.is())
     {
         pRange = ::sw::UnoTunnelGetImplementation<SwXTextRange>(xRangeTunnel);
@@ -286,7 +286,7 @@ throw (lang::IllegalArgumentException, uno::RuntimeException, std::exception)
             ::sw::UnoTunnelGetImplementation<OTextCursorHelper>(xRangeTunnel);
     }
     SwDoc *const pDocument =
-        (pRange) ? &pRange->GetDoc() : ((pCursor) ? pCursor->GetDoc() : 0);
+        (pRange) ? &pRange->GetDoc() : ((pCursor) ? pCursor->GetDoc() : nullptr);
     if (!pDocument)
     {
         throw lang::IllegalArgumentException();
@@ -328,7 +328,7 @@ SwXReferenceMark::getAnchor() throw (uno::RuntimeException, std::exception)
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 void SAL_CALL SwXReferenceMark::dispose() throw (uno::RuntimeException, std::exception)
@@ -432,7 +432,7 @@ throw (uno::RuntimeException, std::exception)
 
                 m_pImpl->m_sMarkName = rName;
                 //create a new one
-                m_pImpl->InsertRefMark( aPam, 0 );
+                m_pImpl->InsertRefMark( aPam, nullptr );
                 m_pImpl->m_pDoc = aPam.GetDoc();
             }
         }
@@ -524,15 +524,15 @@ private:
     SwXMeta & m_rMeta;
 
     virtual void PrepareForAttach(uno::Reference< text::XTextRange > & xRange,
-            const SwPaM & rPam) SAL_OVERRIDE;
+            const SwPaM & rPam) override;
 
     virtual bool CheckForOwnMemberMeta(const SwPaM & rPam, const bool bAbsorb)
-        throw (lang::IllegalArgumentException, uno::RuntimeException) SAL_OVERRIDE;
+        throw (lang::IllegalArgumentException, uno::RuntimeException) override;
 
 protected:
-    virtual const SwStartNode *GetStartNode() const SAL_OVERRIDE;
+    virtual const SwStartNode *GetStartNode() const override;
     virtual uno::Reference< text::XTextCursor >
-        CreateCursor() throw (uno::RuntimeException) SAL_OVERRIDE;
+        CreateCursor() throw (uno::RuntimeException) override;
 
 public:
     SwXMetaText(SwDoc & rDoc, SwXMeta & rMeta);
@@ -541,20 +541,20 @@ public:
     void Invalidate() { SwXText::Invalidate(); };
 
     // XInterface
-    virtual void SAL_CALL acquire() throw() SAL_OVERRIDE { cppu::OWeakObject::acquire(); }
-    virtual void SAL_CALL release() throw() SAL_OVERRIDE { cppu::OWeakObject::release(); }
+    virtual void SAL_CALL acquire() throw() override { cppu::OWeakObject::acquire(); }
+    virtual void SAL_CALL release() throw() override { cppu::OWeakObject::release(); }
 
     // XTypeProvider
     virtual uno::Sequence< sal_Int8 > SAL_CALL
-        getImplementationId() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        getImplementationId() throw (uno::RuntimeException, std::exception) override;
 
     // XText
     virtual uno::Reference< text::XTextCursor >  SAL_CALL
-        createTextCursor() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        createTextCursor() throw (uno::RuntimeException, std::exception) override;
     virtual uno::Reference< text::XTextCursor >  SAL_CALL
         createTextCursorByRange(
             const uno::Reference< text::XTextRange > & xTextPosition)
-        throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (uno::RuntimeException, std::exception) override;
 
 };
 
@@ -568,7 +568,7 @@ const SwStartNode *SwXMetaText::GetStartNode() const
 {
     SwXText const * const pParent(
             dynamic_cast<SwXText*>(m_rMeta.GetParentText().get()));
-    return (pParent) ? pParent->GetStartNode() : 0;
+    return (pParent) ? pParent->GetStartNode() : nullptr;
 }
 
 void SwXMetaText::PrepareForAttach( uno::Reference<text::XTextRange> & xRange,
@@ -577,7 +577,7 @@ void SwXMetaText::PrepareForAttach( uno::Reference<text::XTextRange> & xRange,
     // create a new cursor to prevent modifying SwXTextRange
     xRange = static_cast<text::XWordCursor*>(
         new SwXTextCursor(*GetDoc(), &m_rMeta, CURSOR_META, *rPam.GetPoint(),
-                (rPam.HasMark()) ? rPam.GetMark() : 0));
+                (rPam.HasMark()) ? rPam.GetMark() : nullptr));
 }
 
 bool SwXMetaText::CheckForOwnMemberMeta(const SwPaM & rPam, const bool bAbsorb)
@@ -657,7 +657,7 @@ public:
         , m_EventListeners(m_Mutex)
         , m_pTextPortions( pPortions )
         , m_bIsDisposed( false )
-        , m_bIsDescriptor(0 == pMeta)
+        , m_bIsDescriptor(nullptr == pMeta)
         , m_xParentText(xParentText)
         , m_xText(new SwXMetaText(rDoc, rThis))
     {
@@ -668,7 +668,7 @@ public:
     inline const ::sw::MetaField * GetMetaField() const;
 protected:
     // SwClient
-    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew) SAL_OVERRIDE;
+    virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem *pNew) override;
 
 };
 
@@ -713,7 +713,7 @@ SwXMeta::SwXMeta(SwDoc *const pDoc, ::sw::Meta *const pMeta,
 }
 
 SwXMeta::SwXMeta(SwDoc *const pDoc)
-    : m_pImpl( new SwXMeta::Impl(*this, *pDoc, 0, 0, 0) )
+    : m_pImpl( new SwXMeta::Impl(*this, *pDoc, nullptr, nullptr, nullptr) )
 {
 }
 
@@ -766,17 +766,17 @@ SwXMeta::CreateXMeta(::sw::Meta & rMeta,
     // create new SwXMeta
     SwTextNode * const pTextNode( rMeta.GetTextNode() );
     SAL_WARN_IF(!pTextNode, "sw.uno", "CreateXMeta: no text node?");
-    if (!pTextNode) { return 0; }
+    if (!pTextNode) { return nullptr; }
     uno::Reference<text::XText> xParentText(i_xParent);
     if (!xParentText.is())
     {
         SwTextMeta * const pTextAttr( rMeta.GetTextAttr() );
         SAL_WARN_IF(!pTextAttr, "sw.uno", "CreateXMeta: no text attr?");
-        if (!pTextAttr) { return 0; }
+        if (!pTextAttr) { return nullptr; }
         const SwPosition aPos(*pTextNode, pTextAttr->GetStart());
         xParentText.set( ::sw::CreateParentXText(*pTextNode->GetDoc(), aPos) );
     }
-    if (!xParentText.is()) { return 0; }
+    if (!xParentText.is()) { return nullptr; }
     SwXMeta *const pXMeta( (RES_TXTATR_META == rMeta.GetFormatMeta()->Which())
         ? new SwXMeta     (pTextNode->GetDoc(), &rMeta, xParentText,
                             pPortions.release()) // temporarily un-unique_ptr :-(
@@ -830,7 +830,7 @@ bool SwXMeta::CheckForOwnMemberMeta(const SwPaM & rPam, const bool bAbsorb)
         throw lang::IllegalArgumentException(
             "trying to insert into a nesting text content, but start "
                 "of text range not in same paragraph as text content",
-                0, 0);
+                nullptr, 0);
     }
     bool bForceExpandHints(false);
     const sal_Int32 nStartPos(pStartPos->nContent.GetIndex());
@@ -841,7 +841,7 @@ bool SwXMeta::CheckForOwnMemberMeta(const SwPaM & rPam, const bool bAbsorb)
         throw lang::IllegalArgumentException(
             "trying to insert into a nesting text content, but start "
                 "of text range not inside text content",
-                0, 0);
+                nullptr, 0);
     }
     else if (nStartPos == nMetaEnd)
     {
@@ -855,7 +855,7 @@ bool SwXMeta::CheckForOwnMemberMeta(const SwPaM & rPam, const bool bAbsorb)
             throw lang::IllegalArgumentException(
                 "trying to insert into a nesting text content, but end "
                     "of text range not in same paragraph as text content",
-                    0, 0);
+                    nullptr, 0);
         }
         const sal_Int32 nEndPos(pEndPos->nContent.GetIndex());
         // not <= but < because nMetaStart is behind dummy char!
@@ -865,7 +865,7 @@ bool SwXMeta::CheckForOwnMemberMeta(const SwPaM & rPam, const bool bAbsorb)
             throw lang::IllegalArgumentException(
                 "trying to insert into a nesting text content, but end "
                     "of text range not inside text content",
-                    0, 0);
+                    nullptr, 0);
         }
         else if (nEndPos == nMetaEnd)
         {
@@ -1001,7 +1001,7 @@ throw (lang::IllegalArgumentException, uno::RuntimeException)
     }
     SwXTextRange *const pRange(
             ::sw::UnoTunnelGetImplementation<SwXTextRange>(xRangeTunnel));
-    OTextCursorHelper *const pCursor( (pRange) ? 0 :
+    OTextCursorHelper *const pCursor( (pRange) ? nullptr :
             ::sw::UnoTunnelGetImplementation<OTextCursorHelper>(xRangeTunnel));
     if (!pRange && !pCursor)
     {
@@ -1288,10 +1288,10 @@ uno::Reference<frame::XModel> SwXMeta::GetModel()
         if (pTextNode)
         {
             SwDocShell const * const pShell(pTextNode->GetDoc()->GetDocShell());
-            return (pShell) ? pShell->GetModel() : 0;
+            return (pShell) ? pShell->GetModel() : nullptr;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 inline const ::sw::MetaField * SwXMeta::Impl::GetMetaField() const
@@ -1532,7 +1532,7 @@ lcl_getPrefixOrSuffix(
     uno::Reference<rdf::XURI> const & xPredicate)
 {
     const uno::Reference<container::XEnumeration> xEnum(
-        xRepository->getStatements(xMetaField, xPredicate, 0),
+        xRepository->getStatements(xMetaField, xPredicate, nullptr),
         uno::UNO_SET_THROW);
     while (xEnum->hasMoreElements()) {
         rdf::Statement stmt;
@@ -1576,7 +1576,7 @@ getPrefixAndSuffix(
     } catch (const uno::Exception & e) {
         throw lang::WrappedTargetRuntimeException(
             "getPrefixAndSuffix: exception",
-            0, uno::makeAny(e));
+            nullptr, uno::makeAny(e));
     }
 }
 

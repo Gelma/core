@@ -34,13 +34,13 @@
 #include <vcl/toolbox.hxx>
 
 using namespace ::com::sun::star;
-using namespace ::com::sun::star::awt;
-using namespace ::com::sun::star::uno;
-using namespace ::com::sun::star::beans;
-using namespace ::com::sun::star::lang;
-using namespace ::com::sun::star::frame;
-using namespace ::com::sun::star::frame::status;
-using namespace ::com::sun::star::util;
+using namespace css::awt;
+using namespace css::uno;
+using namespace css::beans;
+using namespace css::lang;
+using namespace css::frame;
+using namespace css::frame::status;
+using namespace css::util;
 
 namespace framework
 {
@@ -52,21 +52,20 @@ namespace framework
 class ListBoxControl : public ListBox
 {
     public:
-        ListBoxControl( vcl::Window* pParent, WinBits nStyle, IListBoxListener* pListBoxListener );
+        ListBoxControl( vcl::Window* pParent, WinBits nStyle, DropdownToolbarController* pListBoxListener );
         virtual ~ListBoxControl();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
-        virtual void Select() SAL_OVERRIDE;
-        virtual void DoubleClick() SAL_OVERRIDE;
-        virtual void GetFocus() SAL_OVERRIDE;
-        virtual void LoseFocus() SAL_OVERRIDE;
-        virtual bool PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+        virtual void Select() override;
+        virtual void GetFocus() override;
+        virtual void LoseFocus() override;
+        virtual bool PreNotify( NotifyEvent& rNEvt ) override;
 
     private:
-        IListBoxListener* m_pListBoxListener;
+        DropdownToolbarController* m_pListBoxListener;
 };
 
-ListBoxControl::ListBoxControl( vcl::Window* pParent, WinBits nStyle, IListBoxListener* pListBoxListener ) :
+ListBoxControl::ListBoxControl( vcl::Window* pParent, WinBits nStyle, DropdownToolbarController* pListBoxListener ) :
     ListBox( pParent, nStyle )
     , m_pListBoxListener( pListBoxListener )
 {
@@ -79,7 +78,7 @@ ListBoxControl::~ListBoxControl()
 
 void ListBoxControl::dispose()
 {
-    m_pListBoxListener = 0;
+    m_pListBoxListener = nullptr;
     ListBox::dispose();
 }
 
@@ -88,13 +87,6 @@ void ListBoxControl::Select()
     ListBox::Select();
     if ( m_pListBoxListener )
         m_pListBoxListener->Select();
-}
-
-void ListBoxControl::DoubleClick()
-{
-    ListBox::DoubleClick();
-    if ( m_pListBoxListener )
-        m_pListBoxListener->DoubleClick();
 }
 
 void ListBoxControl::GetFocus()
@@ -115,7 +107,7 @@ bool ListBoxControl::PreNotify( NotifyEvent& rNEvt )
 {
     bool bRet = false;
     if ( m_pListBoxListener )
-        bRet = m_pListBoxListener->PreNotify( rNEvt );
+        bRet = false;
     if ( !bRet )
         bRet = ListBox::PreNotify( rNEvt );
 
@@ -130,7 +122,7 @@ DropdownToolbarController::DropdownToolbarController(
     sal_Int32                                nWidth,
     const OUString&                          aCommand ) :
     ComplexToolbarController( rxContext, rFrame, pToolbar, nID, aCommand )
-    ,   m_pListBoxControl( 0 )
+    ,   m_pListBoxControl( nullptr )
 {
     m_pListBoxControl = VclPtr<ListBoxControl>::Create( m_pToolbar, WB_DROPDOWN|WB_AUTOHSCROLL|WB_BORDER, this );
     if ( nWidth == 0 )
@@ -154,7 +146,7 @@ throw ( RuntimeException, std::exception )
 {
     SolarMutexGuard aSolarMutexGuard;
 
-    m_pToolbar->SetItemWindow( m_nID, 0 );
+    m_pToolbar->SetItemWindow( m_nID, nullptr );
     m_pListBoxControl.disposeAndClear();
 
     ComplexToolbarController::dispose();
@@ -184,10 +176,6 @@ void DropdownToolbarController::Select()
     }
 }
 
-void DropdownToolbarController::DoubleClick()
-{
-}
-
 void DropdownToolbarController::GetFocus()
 {
     notifyFocusGet();
@@ -198,12 +186,7 @@ void DropdownToolbarController::LoseFocus()
     notifyFocusLost();
 }
 
-bool DropdownToolbarController::PreNotify( NotifyEvent& /*rNEvt*/ )
-{
-    return false;
-}
-
-void DropdownToolbarController::executeControlCommand( const ::com::sun::star::frame::ControlCommand& rControlCommand )
+void DropdownToolbarController::executeControlCommand( const css::frame::ControlCommand& rControlCommand )
 {
     if ( rControlCommand.Command == "SetList" )
     {
@@ -221,10 +204,8 @@ void DropdownToolbarController::executeControlCommand( const ::com::sun::star::f
                 m_pListBoxControl->SelectEntryPos( 0 );
 
                 // send notification
-                uno::Sequence< beans::NamedValue > aInfo( 1 );
-                aInfo[0].Name  = "List";
-                aInfo[0].Value <<= aList;
-                addNotifyInfo( OUString( "ListChanged" ),
+                uno::Sequence< beans::NamedValue > aInfo { { "List", css::uno::makeAny(aList) } };
+                addNotifyInfo( "ListChanged",
                                getDispatchFromCommand( m_aCommandURL ),
                                aInfo );
 

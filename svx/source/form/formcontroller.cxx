@@ -97,8 +97,8 @@ using namespace ::connectivity;
 using namespace ::dbtools;
 
 
-::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > SAL_CALL
-    FormController_NewInstance_Impl( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XMultiServiceFactory > & _rxORB )
+css::uno::Reference< css::uno::XInterface > SAL_CALL
+    FormController_NewInstance_Impl( const css::uno::Reference< css::lang::XMultiServiceFactory > & _rxORB )
     throw (css::uno::Exception)
 {
     return *( new ::svxform::FormController( comphelper::getComponentContext(_rxORB) ) );
@@ -433,7 +433,7 @@ public:
     Sequence< PropertyValue >   getValues() const { return m_aValues; }
 
 // XInteractionSupplyParameters
-    virtual void SAL_CALL setParameters( const Sequence< PropertyValue >& _rValues ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL setParameters( const Sequence< PropertyValue >& _rValues ) throw(RuntimeException, std::exception) override;
 };
 
 
@@ -465,11 +465,11 @@ public:
     {
     }
 
-    virtual OUString GetComponentServiceName() SAL_OVERRIDE {return OUString("Edit");}
-    virtual void SAL_CALL createPeer( const Reference< XToolkit > & rxToolkit, const Reference< XWindowPeer >  & rParentPeer ) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual OUString GetComponentServiceName() override {return OUString("Edit");}
+    virtual void SAL_CALL createPeer( const Reference< XToolkit > & rxToolkit, const Reference< XWindowPeer >  & rParentPeer ) throw( RuntimeException, std::exception ) override;
 
 protected:
-    virtual void ImplSetPeerProperty( const OUString& rPropName, const Any& rVal ) SAL_OVERRIDE;
+    virtual void ImplSetPeerProperty( const OUString& rPropName, const Any& rVal ) override;
 };
 
 
@@ -570,7 +570,7 @@ FormController::FormController(const Reference< css::uno::XComponentContext > & 
     osl_atomic_increment(&m_refCount);
     {
         m_xTabController = TabController::create( m_xComponentContext );
-        m_xAggregate = Reference< XAggregation >( m_xTabController, UNO_QUERY_THROW );
+        m_xAggregate.set( m_xTabController, UNO_QUERY_THROW );
         m_xAggregate->setDelegator( *this );
     }
     osl_atomic_decrement(&m_refCount);
@@ -609,7 +609,7 @@ FormController::~FormController()
     // Freigeben der Aggregation
     if ( m_xAggregate.is() )
     {
-        m_xAggregate->setDelegator( NULL );
+        m_xAggregate->setDelegator( nullptr );
         m_xAggregate.clear();
     }
 
@@ -669,8 +669,7 @@ Sequence< OUString> SAL_CALL FormController::getSupportedServiceNames() throw( R
 {
     // service names which are supported only, but cannot be used to created an
     // instance at a service factory
-    Sequence< OUString > aNonCreatableServiceNames( 1 );
-    aNonCreatableServiceNames[ 0 ] = "com.sun.star.form.FormControllerDispatcher";
+    Sequence<OUString> aNonCreatableServiceNames { "com.sun.star.form.FormControllerDispatcher" };
 
     // services which can be used to created an instance at a service factory
     Sequence< OUString > aCreatableServiceNames( getSupportedServiceNames_Static() );
@@ -825,7 +824,7 @@ void FormController::getFastPropertyValue( Any& rValue, sal_Int32 nHandle ) cons
                             if ( pParseNode != nullptr )
                             {
                                 // don't use a parse context here, we need it unlocalized
-                                pParseNode->parseNodeToStr( sCriteria, xConnection, NULL );
+                                pParseNode->parseNodeToStr( sCriteria, xConnection );
                                 if ( condition != rRow.begin() )
                                     aRowFilter.append( " AND " );
                                 aRowFilter.append( sCriteria );
@@ -903,7 +902,7 @@ void SAL_CALL FormController::removeFilterControllerListener( const Reference< X
 }
 
 
-::sal_Int32 SAL_CALL FormController::getFilterComponents() throw( ::com::sun::star::uno::RuntimeException, std::exception )
+::sal_Int32 SAL_CALL FormController::getFilterComponents() throw( css::uno::RuntimeException, std::exception )
 {
     ::osl::MutexGuard aGuard( m_aMutex );
     impl_checkDisposed_throw();
@@ -912,7 +911,7 @@ void SAL_CALL FormController::removeFilterControllerListener( const Reference< X
 }
 
 
-::sal_Int32 SAL_CALL FormController::getDisjunctiveTerms() throw( ::com::sun::star::uno::RuntimeException, std::exception )
+::sal_Int32 SAL_CALL FormController::getDisjunctiveTerms() throw( css::uno::RuntimeException, std::exception )
 {
     ::osl::MutexGuard aGuard( m_aMutex );
     impl_checkDisposed_throw();
@@ -1173,8 +1172,8 @@ void FormController::disposing()
     m_aFilterRows.clear();
 
     ::osl::MutexGuard aGuard( m_aMutex );
-    m_xActiveControl = NULL;
-    implSetCurrentControl( NULL );
+    m_xActiveControl = nullptr;
+    implSetCurrentControl( nullptr );
 
     // clean up our children
     for (FmFormControllers::const_iterator i = m_aChildren.begin();
@@ -1209,9 +1208,9 @@ void FormController::disposing()
     if (m_bDBConnection)
         unload();
 
-    setContainer( NULL );
-    setModel( NULL );
-    setParent( NULL );
+    setContainer( nullptr );
+    setModel( nullptr );
+    setParent( nullptr );
 
     ::comphelper::disposeComponent( m_xComposer );
 
@@ -1328,8 +1327,8 @@ bool FormController::replaceControl( const Reference< XControl >& _rxExistentCon
 
                 if ( bReplacedWasActive )
                 {
-                    m_xActiveControl = NULL;
-                    implSetCurrentControl( NULL );
+                    m_xActiveControl = nullptr;
+                    implSetCurrentControl( nullptr );
                 }
                 else if ( bReplacedWasCurrent )
                 {
@@ -1664,7 +1663,7 @@ void FormController::focusGained(const FocusEvent& e) throw( RuntimeException, s
             // zunaechst das Control fragen ob es das IFace unterstuetzt
             Reference< XBoundComponent >  xBound(m_xCurrentControl, UNO_QUERY);
             if (!xBound.is() && m_xCurrentControl.is())
-                xBound  = Reference< XBoundComponent > (m_xCurrentControl->getModel(), UNO_QUERY);
+                xBound.set(m_xCurrentControl->getModel(), UNO_QUERY);
 
             // lock if we lose the focus during commit
             m_bCommitLock = true;
@@ -1783,7 +1782,7 @@ void FormController::focusLost(const FocusEvent& e) throw( RuntimeException, std
     Reference< XControl >  xNextControl = isInList(xNext);
     if (!xNextControl.is())
     {
-        m_xActiveControl = NULL;
+        m_xActiveControl = nullptr;
         m_aDeactivationEvent.Call();
     }
 }
@@ -1867,14 +1866,14 @@ void FormController::setModel(const Reference< XTabControllerModel > & Model) th
         // set the new model wait for the load event
         if (m_xTabController.is())
             m_xTabController->setModel(Model);
-        m_xModelAsIndex = Reference< XIndexAccess > (Model, UNO_QUERY);
-        m_xModelAsManager = Reference< XEventAttacherManager > (Model, UNO_QUERY);
+        m_xModelAsIndex.set(Model, UNO_QUERY);
+        m_xModelAsManager.set(Model, UNO_QUERY);
 
         // only if both ifaces exit, the controller will work successful
         if (!m_xModelAsIndex.is() || !m_xModelAsManager.is())
         {
-            m_xModelAsManager = NULL;
-            m_xModelAsIndex = NULL;
+            m_xModelAsManager = nullptr;
+            m_xModelAsIndex = nullptr;
         }
 
         if (m_xModelAsIndex.is())
@@ -2015,7 +2014,7 @@ void FormController::setContainer(const Reference< XControlContainer > & xContai
     ::osl::MutexGuard aGuard( m_aMutex );
     Reference< XContainer >  xCurrentContainer;
     if (m_xTabController.is())
-        xCurrentContainer = Reference< XContainer > (m_xTabController->getContainer(), UNO_QUERY);
+        xCurrentContainer.set(m_xTabController->getContainer(), UNO_QUERY);
     if (xCurrentContainer.is())
     {
         xCurrentContainer->removeContainerListener(this);
@@ -2311,7 +2310,7 @@ void FormController::stopControlModifyListening(const Reference< XControl > & xC
 {
     OSL_ENSURE( !impl_isDisposed_nofail(), "FormController: already disposed!" );
 
-    bool bModifyListening = lcl_shouldListenForModifications( xControl, NULL );
+    bool bModifyListening = lcl_shouldListenForModifications( xControl, nullptr );
 
     // kuenstliches while
     while (bModifyListening)
@@ -2591,7 +2590,7 @@ void FormController::loaded(const EventObject& rEvent) throw( RuntimeException, 
     }
 
     Reference< XColumnsSupplier > xFormColumns( xForm, UNO_QUERY );
-    m_pColumnInfoCache.reset( xFormColumns.is() ? new ColumnInfoCache( xFormColumns ) : NULL );
+    m_pColumnInfoCache.reset( xFormColumns.is() ? new ColumnInfoCache( xFormColumns ) : nullptr );
 
     updateAllDispatchers();
 }
@@ -2770,7 +2769,7 @@ void FormController::stopFormListening( const Reference< XPropertySet >& _rxForm
     }
 }
 
-// com::sun::star::sdbc::XRowSetListener
+// css::sdbc::XRowSetListener
 
 void FormController::cursorMoved(const EventObject& /*event*/) throw( RuntimeException, std::exception )
 {
@@ -2828,7 +2827,7 @@ void SAL_CALL FormController::elementInserted(const ContainerEvent& evt) throw( 
     // are we in filtermode and a XModeSelector has inserted an element
     else if (m_bFiltering && Reference< XModeSelector > (evt.Source, UNO_QUERY).is())
     {
-        xModel = Reference< XFormComponent > (evt.Source, UNO_QUERY);
+        xModel.set(evt.Source, UNO_QUERY);
         if (xModel.is() && m_xModelAsIndex == xModel->getParent())
         {
             Reference< XPropertySet >  xSet(xControl->getModel(), UNO_QUERY);
@@ -3261,7 +3260,7 @@ void FormController::startFiltering()
             Reference< XModeSelector >  xSelector(xControl, UNO_QUERY);
             if (xSelector.is())
             {
-                xSelector->setMode( OUString( "FilterMode"  ) );
+                xSelector->setMode( "FilterMode" );
 
                 // listening for new controls of the selector
                 Reference< XContainer >  xContainer(xSelector, UNO_QUERY);
@@ -3387,7 +3386,7 @@ void FormController::stopFiltering()
             Reference< XModeSelector >  xSelector(xControl, UNO_QUERY);
             if (xSelector.is())
             {
-                xSelector->setMode( OUString( "DataMode"  ) );
+                xSelector->setMode( "DataMode" );
 
                 // listening for new controls of the selector
                 Reference< XContainer >  xContainer(xSelector, UNO_QUERY);
@@ -3511,7 +3510,7 @@ sal_Bool SAL_CALL FormController::supportsMode(const OUString& Mode) throw( Runt
 vcl::Window* FormController::getDialogParentWindow()
 {
     OSL_ENSURE( !impl_isDisposed_nofail(), "FormController: already disposed!" );
-    vcl::Window* pParentWindow = NULL;
+    vcl::Window* pParentWindow = nullptr;
     try
     {
         Reference< XControl > xContainerControl( getContainer(), UNO_QUERY_THROW );
@@ -3590,7 +3589,7 @@ Reference< XControl > FormController::locateControl( const Reference< XControlMo
     {
         DBG_UNHANDLED_EXCEPTION();
     }
-    return NULL;
+    return nullptr;
 }
 
 
@@ -4047,13 +4046,7 @@ void SAL_CALL FormController::invalidateAllFeatures(  ) throw (RuntimeException,
 {
     ::osl::ClearableMutexGuard aGuard( m_aMutex );
 
-    Sequence< sal_Int16 > aInterceptedFeatures( m_aFeatureDispatchers.size() );
-    ::std::transform(
-        m_aFeatureDispatchers.begin(),
-        m_aFeatureDispatchers.end(),
-        aInterceptedFeatures.getArray(),
-        ::o3tl::select1st< DispatcherContainer::value_type >()
-    );
+    Sequence< sal_Int16 > aInterceptedFeatures( comphelper::mapKeysToSequence(m_aFeatureDispatchers) );
 
     aGuard.clear();
     if ( aInterceptedFeatures.getLength() )
@@ -4200,7 +4193,7 @@ bool FormController::ensureInteractionHandler()
         return false;
     m_bAttemptedHandlerCreation = true;
 
-    m_xInteractionHandler = InteractionHandler::createWithParent(m_xComponentContext, 0);
+    m_xInteractionHandler = InteractionHandler::createWithParent(m_xComponentContext, nullptr);
     return m_xInteractionHandler.is();
 }
 

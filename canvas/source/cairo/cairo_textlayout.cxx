@@ -341,7 +341,7 @@ namespace cairocanvas
         aSysLayoutData = rOutDev.GetSysTextLayoutData(rOutpos, maText.Text,
                                                       ::canvas::tools::numeric_cast<sal_uInt16>(maText.StartPosition),
                                                       ::canvas::tools::numeric_cast<sal_uInt16>(maText.Length),
-                                                      maLogicalAdvancements.getLength() ? aOffsets.get() : NULL);
+                                                      maLogicalAdvancements.getLength() ? aOffsets.get() : nullptr);
 
         // Sort them so that all glyphs on the same glyph fallback level are consecutive
         std::sort(aSysLayoutData.rGlyphData.begin(), aSysLayoutData.rGlyphData.end(), compareFallbacks);
@@ -429,10 +429,18 @@ namespace cairocanvas
             if (cairo_glyphs.empty())
                 continue;
 
+            vcl::Font aFont = rOutDev.GetFont();
+            long nWidth = aFont.GetWidth();
+            long nHeight = aFont.GetHeight();
+            if (nWidth == 0)
+                nWidth = nHeight;
+            if (nWidth == 0 || nHeight == 0)
+                continue;
+
             /**
              * Setup font
              **/
-            cairo_font_face_t* font_face = NULL;
+            cairo_font_face_t* font_face = nullptr;
 
 #if defined CAIRO_HAS_FT_FONT
             font_face = cairo_ft_font_face_create_for_ft_face(static_cast<FT_Face>(rSysFontData.nFontId),
@@ -463,17 +471,12 @@ namespace cairocanvas
 
             // Font rotation and scaling
             cairo_matrix_t m;
-            vcl::Font aFont = rOutDev.GetFont();
 
             cairo_matrix_init_identity(&m);
 
             if (aSysLayoutData.orientation)
                 cairo_matrix_rotate(&m, (3600 - aSysLayoutData.orientation) * M_PI / 1800.0);
 
-            long nWidth = aFont.GetWidth();
-            long nHeight = aFont.GetHeight();
-            if (nWidth == 0)
-                nWidth = nHeight;
             cairo_matrix_scale(&m, nWidth, nHeight);
 
             //faux italics
@@ -563,7 +566,7 @@ namespace cairocanvas
                                        const rendering::ViewState&      viewState,
                                        const rendering::RenderState&    renderState     ) const
     {
-        ENSURE_OR_THROW( outputOffsets!=NULL,
+        ENSURE_OR_THROW( outputOffsets!=nullptr,
                           "TextLayout::setupTextOffsets offsets NULL" );
 
         ::basegfx::B2DHomMatrix aMatrix;
@@ -591,8 +594,7 @@ namespace cairocanvas
 
     uno::Sequence< OUString > SAL_CALL TextLayout::getSupportedServiceNames()  throw( uno::RuntimeException, std::exception )
     {
-        uno::Sequence< OUString > aRet(1);
-        aRet[0] = "com.sun.star.rendering.TextLayout";
+        uno::Sequence< OUString > aRet { "com.sun.star.rendering.TextLayout" };
 
         return aRet;
     }

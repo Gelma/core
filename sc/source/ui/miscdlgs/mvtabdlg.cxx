@@ -143,7 +143,7 @@ void ScMoveTableDlg::CheckNewTabName()
     if (aNewName.isEmpty())
     {
         // New sheet name is empty.  This is not good.
-        pFtWarn->Show(true);
+        pFtWarn->Show();
         pFtWarn->SetControlBackground(Color(COL_YELLOW));
         pFtWarn->SetText(msStrTabNameEmpty);
         pBtnOk->Disable();
@@ -153,7 +153,7 @@ void ScMoveTableDlg::CheckNewTabName()
     if (!ScDocument::ValidTabName(aNewName))
     {
         // New sheet name contains invalid characters.
-        pFtWarn->Show(true);
+        pFtWarn->Show();
         pFtWarn->SetControlBackground(Color(COL_YELLOW));
         pFtWarn->SetText(msStrTabNameInvalid);
         pBtnOk->Disable();
@@ -175,7 +175,7 @@ void ScMoveTableDlg::CheckNewTabName()
 
     if ( bFound )
     {
-        pFtWarn->Show(true);
+        pFtWarn->Show();
         pFtWarn->SetControlBackground(Color(COL_YELLOW));
         pFtWarn->SetText(msStrTabNameUsed);
         pBtnOk->Disable();
@@ -211,13 +211,13 @@ void ScMoveTableDlg::Init()
     pEdTabName->Enable(false);
     pFtWarn->Hide();
     InitDocListBox();
-    SelHdl( pLbDoc );
+    SelHdl( *pLbDoc.get() );
 }
 
 void ScMoveTableDlg::InitDocListBox()
 {
     SfxObjectShell* pSh     = SfxObjectShell::GetFirst();
-    ScDocShell*     pScSh   = NULL;
+    ScDocShell*     pScSh   = nullptr;
     sal_uInt16          nSelPos = 0;
     sal_uInt16          i       = 0;
     OUString          aEntryName;
@@ -227,7 +227,7 @@ void ScMoveTableDlg::InitDocListBox()
 
     while ( pSh )
     {
-        pScSh = PTR_CAST( ScDocShell, pSh );
+        pScSh = dynamic_cast<ScDocShell*>( pSh  );
 
         if ( pScSh )
         {
@@ -294,9 +294,9 @@ IMPL_LINK_NOARG_TYPED(ScMoveTableDlg, OkHdl, Button*, void)
     EndDialog( RET_OK );
 }
 
-IMPL_LINK( ScMoveTableDlg, SelHdl, ListBox *, pLb )
+IMPL_LINK_TYPED( ScMoveTableDlg, SelHdl, ListBox&, rLb, void )
 {
-    if ( pLb == pLbDoc )
+    if ( &rLb == pLbDoc )
     {
         ScDocument* pDoc = GetSelectedDoc();
         OUString aName;
@@ -317,19 +317,15 @@ IMPL_LINK( ScMoveTableDlg, SelHdl, ListBox *, pLb )
         pLbTable->SelectEntryPos( 0 );
         ResetRenameInput();
     }
-
-    return 0;
 }
 
-IMPL_LINK( ScMoveTableDlg, CheckNameHdl, Edit *, pEdt )
+IMPL_LINK_TYPED( ScMoveTableDlg, CheckNameHdl, Edit&, rEdt, void )
 {
-    if ( pEdt == pEdTabName )
+    if ( &rEdt == pEdTabName )
     {
         mbEverEdited = true;
         CheckNewTabName();
     }
-
-    return 0;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

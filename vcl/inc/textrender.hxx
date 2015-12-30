@@ -43,8 +43,6 @@ class TextRenderImpl
 public:
     virtual ~TextRenderImpl() {}
 
-    virtual void setDevice(basebmp::BitmapDeviceSharedPtr& /*rDevice*/) {}
-
     virtual void                    SetTextColor( SalColor nSalColor ) = 0;
     virtual sal_uInt16              SetFont( FontSelectPattern*, int nFallbackLevel ) = 0;
     virtual void                    GetFontMetric( ImplFontMetricData*, int nFallbackLevel ) = 0;
@@ -79,7 +77,7 @@ public:
                                         Ucs2UIntMap& rUnicodeEnc ) = 0;
 
     virtual bool                    GetGlyphBoundRect( sal_GlyphId nIndex, Rectangle& ) = 0;
-    virtual bool                    GetGlyphOutline( sal_GlyphId nIndex, ::basegfx::B2DPolyPolygon& ) = 0;
+    virtual bool                    GetGlyphOutline( sal_GlyphId nIndex, basegfx::B2DPolyPolygon& ) = 0;
     virtual SalLayout*              GetTextLayout( ImplLayoutArgs&, int nFallbackLevel ) = 0;
     virtual void                    DrawServerFontLayout( const ServerFontLayout& ) = 0;
 #if ENABLE_CAIRO_CANVAS

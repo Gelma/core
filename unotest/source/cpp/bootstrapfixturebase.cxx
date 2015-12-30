@@ -45,9 +45,9 @@ test::BootstrapFixtureBase::BootstrapFixtureBase()
 {
 #ifndef ANDROID
     const char* pSrcRoot = getenv( "SRC_ROOT" );
-    CPPUNIT_ASSERT_MESSAGE("SRC_ROOT env variable not set", pSrcRoot != NULL && pSrcRoot[0] != 0);
+    CPPUNIT_ASSERT_MESSAGE("SRC_ROOT env variable not set", pSrcRoot != nullptr && pSrcRoot[0] != 0);
     const char* pWorkdirRoot = getenv( "WORKDIR_FOR_BUILD" );
-    CPPUNIT_ASSERT_MESSAGE("$WORKDIR_FOR_BUILD env variable not set", pWorkdirRoot != NULL && pWorkdirRoot[0] != 0);
+    CPPUNIT_ASSERT_MESSAGE("$WORKDIR_FOR_BUILD env variable not set", pWorkdirRoot != nullptr && pWorkdirRoot[0] != 0);
 #else
     const char* pSrcRoot = "/assets";
     const char* pWorkdirRoot = "/assets";
@@ -95,11 +95,11 @@ void test::BootstrapFixtureBase::setUp()
 {
     // set UserInstallation to user profile dir in test/user-template
     OUString sUserInstallURL = m_aWorkdirRootURL + "/unittest";
-    rtl::Bootstrap::set(OUString("UserInstallation"), sUserInstallURL);
+    rtl::Bootstrap::set("UserInstallation", sUserInstallURL);
 
     m_xContext = comphelper::getProcessComponentContext();
     m_xFactory = m_xContext->getServiceManager();
-    m_xSFactory = uno::Reference<lang::XMultiServiceFactory>(m_xFactory, uno::UNO_QUERY_THROW);
+    m_xSFactory.set(m_xFactory, uno::UNO_QUERY_THROW);
 }
 
 void test::BootstrapFixtureBase::tearDown()

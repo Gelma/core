@@ -81,14 +81,14 @@ class SfxTerminateListener_Impl : public ::cppu::WeakImplHelper< XTerminateListe
 public:
 
     // XTerminateListener
-    virtual void SAL_CALL queryTermination( const EventObject& aEvent ) throw( TerminationVetoException, RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL notifyTermination( const EventObject& aEvent ) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual void SAL_CALL disposing( const EventObject& Source ) throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL queryTermination( const EventObject& aEvent ) throw( TerminationVetoException, RuntimeException, std::exception ) override;
+    virtual void SAL_CALL notifyTermination( const EventObject& aEvent ) throw( RuntimeException, std::exception ) override;
+    virtual void SAL_CALL disposing( const EventObject& Source ) throw( RuntimeException, std::exception ) override;
 
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName() throw (RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService( const OUString& sServiceName ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName() throw (RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL supportsService( const OUString& sServiceName ) throw (RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw (RuntimeException, std::exception) override;
 };
 
 void SAL_CALL SfxTerminateListener_Impl::disposing( const EventObject& ) throw( RuntimeException, std::exception )
@@ -146,8 +146,7 @@ Sequence< OUString > SAL_CALL SfxTerminateListener_Impl::getSupportedServiceName
     // The desktop must know, which listener will terminate the SfxApplication in real !
     // It must call this special listener as last one ... otherwise we shutdown the SfxApplication BEFORE other listener
     // can react ...
-    Sequence< OUString > lNames(1);
-    lNames[0] = "com.sun.star.frame.TerminateListener";
+    Sequence< OUString > lNames { "com.sun.star.frame.TerminateListener" };
     return lNames;
 }
 
@@ -173,7 +172,7 @@ extern "C" bool GetSpecialCharsForEdit( vcl::Window* i_pParent, const vcl::Font&
 OUString GetSpecialCharsForEdit(vcl::Window* pParent, const vcl::Font& rFont)
 {
     static bool bDetermineFunction = false;
-    static PFunc_getSpecialCharsForEdit pfunc_getSpecialCharsForEdit = 0;
+    static PFunc_getSpecialCharsForEdit pfunc_getSpecialCharsForEdit = nullptr;
 
     SolarMutexGuard aGuard;
     if ( !bDetermineFunction )
@@ -185,8 +184,7 @@ OUString GetSpecialCharsForEdit(vcl::Window* pParent, const vcl::Font& rFont)
         aMod.loadRelative(&thisModule, SVLIBRARY("cui"));
 
         // get symbol
-        OUString aSymbol( "GetSpecialCharsForEdit"  );
-        pfunc_getSpecialCharsForEdit = reinterpret_cast<PFunc_getSpecialCharsForEdit>(aMod.getFunctionSymbol(aSymbol));
+        pfunc_getSpecialCharsForEdit = reinterpret_cast<PFunc_getSpecialCharsForEdit>(aMod.getFunctionSymbol("GetSpecialCharsForEdit"));
         DBG_ASSERT( pfunc_getSpecialCharsForEdit, "GetSpecialCharsForEdit() not found!" );
         aMod.release();
 #else
@@ -277,7 +275,7 @@ bool SfxApplication::Initialize_Impl()
     // App-Dispatcher aufbauen
     pAppData_Impl->pAppDispat->Push(*this);
     pAppData_Impl->pAppDispat->Flush();
-    pAppData_Impl->pAppDispat->DoActivate_Impl( true, NULL );
+    pAppData_Impl->pAppDispat->DoActivate_Impl( true, nullptr );
 
     {
         SolarMutexGuard aGuard;

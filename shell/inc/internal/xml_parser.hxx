@@ -30,22 +30,10 @@ class xml_parser_exception : public std::runtime_error
 public:
 
     xml_parser_exception(
-        const std::string& error_msg,
-        int error_code,
-        int line_number,
-        int column_number,
-        long byte_index) :
-        std::runtime_error(error_msg),
-        error_code_(error_code),
-        line_number_(line_number),
-        column_number_(column_number),
-        byte_index_(byte_index)
+        const std::string& error_msg) :
+        std::runtime_error(error_msg)
     {}
 
-    int  error_code_;
-    int  line_number_;
-    int  column_number_;
-    long byte_index_;
 };
 
 
@@ -58,7 +46,7 @@ class i_xml_parser_event_handler;
 class xml_parser
 {
 public:
-    xml_parser(const XML_Char* EncodingName = 0);
+    xml_parser(const XML_Char* EncodingName = nullptr);
 
     ~xml_parser();
 
@@ -113,8 +101,8 @@ private:
     XML_Parser xml_parser_;
 
 private:
-    xml_parser(const xml_parser&) SAL_DELETED_FUNCTION;
-    xml_parser& operator=(const xml_parser&) SAL_DELETED_FUNCTION;
+    xml_parser(const xml_parser&) = delete;
+    xml_parser& operator=(const xml_parser&) = delete;
 };
 
 #endif

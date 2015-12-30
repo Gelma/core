@@ -224,8 +224,6 @@ enum SwDateTimeSubType
 };
 
 /// General tools.
-OUString  GetResult(double nVal, sal_uInt32 nNumFormat, sal_uInt16 nLang = LANGUAGE_SYSTEM);
-void      SetErrorStr(const OUString& rStr);
 OUString  FormatNumber(sal_uInt32 nNum, sal_uInt32 nFormat);
 
 /** Instances of SwFields and those derived from it occur 0 to n times.
@@ -234,8 +232,7 @@ OUString  FormatNumber(sal_uInt32 nNum, sal_uInt32 nFormat);
 
 class SW_DLLPUBLIC SwFieldType : public SwModify
 {
-    ::com::sun::star::uno::WeakReference<
-        ::com::sun::star::beans::XPropertySet> m_wXFieldMaster;
+    css::uno::WeakReference<css::beans::XPropertySet> m_wXFieldMaster;
 
     sal_uInt16 m_nWhich;
 
@@ -250,11 +247,9 @@ protected:
 
 public:
 
-    SAL_DLLPRIVATE ::com::sun::star::uno::WeakReference<
-        ::com::sun::star::beans::XPropertySet> const& GetXObject() const
+    SAL_DLLPRIVATE css::uno::WeakReference<css::beans::XPropertySet> const& GetXObject() const
             { return m_wXFieldMaster; }
-    SAL_DLLPRIVATE void SetXObject(::com::sun::star::uno::Reference<
-                    ::com::sun::star::beans::XPropertySet> const& xFieldMaster)
+    SAL_DLLPRIVATE void SetXObject(css::uno::Reference<css::beans::XPropertySet> const& xFieldMaster)
             { m_wXFieldMaster = xFieldMaster; }
 
     static OUString    GetTypeStr( sal_uInt16 nTypeId );
@@ -262,8 +257,8 @@ public:
     /// Only in derived classes.
     virtual OUString        GetName() const;
     virtual SwFieldType*    Copy()    const = 0;
-    virtual bool QueryValue( com::sun::star::uno::Any& rVal, sal_uInt16 nWhich ) const;
-    virtual bool PutValue( const com::sun::star::uno::Any& rVal, sal_uInt16 nWhich );
+    virtual bool QueryValue( css::uno::Any& rVal, sal_uInt16 nWhich ) const;
+    virtual bool PutValue( const css::uno::Any& rVal, sal_uInt16 nWhich );
 
             sal_uInt16          Which() const { return m_nWhich; }
 
@@ -272,7 +267,7 @@ public:
 
 inline void SwFieldType::UpdateFields() const
 {
-    const_cast<SwFieldType*>(this)->ModifyNotification( 0, 0 );
+    const_cast<SwFieldType*>(this)->ModifyNotification( nullptr, nullptr );
 }
 
 /** Base class of all fields.
@@ -352,8 +347,8 @@ public:
     virtual void        SetPar1(const OUString& rStr);
     virtual void        SetPar2(const OUString& rStr);
 
-    virtual bool        QueryValue( com::sun::star::uno::Any& rVal, sal_uInt16 nWhichId ) const;
-    virtual bool        PutValue( const com::sun::star::uno::Any& rVal, sal_uInt16 nWhichId );
+    virtual bool        QueryValue( css::uno::Any& rVal, sal_uInt16 nWhichId ) const;
+    virtual bool        PutValue( const css::uno::Any& rVal, sal_uInt16 nWhichId );
 
     /// Does the field possess an action on its ClickHandler? (e.g. INetFields, ...).
     bool            HasClickHdl() const;
@@ -365,6 +360,7 @@ public:
     virtual OUString    GetDescription() const;
     /// Is this field clickable?
     bool IsClickable() const;
+    virtual void dumpAsXml(struct _xmlTextWriter* pWriter) const;
 };
 
 inline SwFieldType* SwField::GetTyp() const
@@ -411,8 +407,8 @@ protected:
 public:
     virtual                 ~SwValueField();
 
-    virtual SwFieldType*    ChgTyp( SwFieldType* ) SAL_OVERRIDE;
-    virtual void            SetLanguage(sal_uInt16 nLng) SAL_OVERRIDE;
+    virtual SwFieldType*    ChgTyp( SwFieldType* ) override;
+    virtual void            SetLanguage(sal_uInt16 nLng) override;
 
     inline SwDoc*           GetDoc() const          { return static_cast<const SwValueFieldType*>(GetTyp())->GetDoc(); }
 
@@ -435,7 +431,7 @@ protected:
     SwFormulaField( const SwFormulaField& rField );
 
 public:
-    virtual OUString        GetFormula() const SAL_OVERRIDE;
+    virtual OUString        GetFormula() const override;
     void                    SetFormula(const OUString& rStr);
 
     void                    SetExpandedFormula(const OUString& rStr);

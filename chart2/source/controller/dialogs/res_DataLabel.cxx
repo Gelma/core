@@ -43,7 +43,7 @@ namespace
 bool lcl_ReadNumberFormatFromItemSet( const SfxItemSet& rSet, sal_uInt16 nValueWhich, sal_uInt16 nSourceFormatWhich, sal_uLong& rnFormatKeyOut, bool& rbSourceFormatOut, bool& rbSourceFormatMixedStateOut )
 {
     bool bSet = false;
-    const SfxPoolItem *pItem1 = NULL;
+    const SfxPoolItem *pItem1 = nullptr;
     if( rSet.GetItemState( nValueWhich, true, &pItem1 ) == SfxItemState::SET )
     {
         const SfxUInt32Item * pNumItem = dynamic_cast< const SfxUInt32Item * >( pItem1 );
@@ -55,7 +55,7 @@ bool lcl_ReadNumberFormatFromItemSet( const SfxItemSet& rSet, sal_uInt16 nValueW
     }
 
     rbSourceFormatMixedStateOut=true;
-    const SfxPoolItem *pItem2 = NULL;
+    const SfxPoolItem *pItem2 = nullptr;
     if( rSet.GetItemState( nSourceFormatWhich, true, &pItem2 ) == SfxItemState::SET )
     {
         const SfxBoolItem * pBoolItem = dynamic_cast< const SfxBoolItem * >( pItem2 );
@@ -72,7 +72,7 @@ void lcl_setBoolItemToCheckBox( const SfxItemSet& rInAttrs, sal_uInt16 nWhichId,
 {
     rCheckbox.EnableTriState( false );
 
-    const SfxPoolItem *pPoolItem = NULL;
+    const SfxPoolItem *pPoolItem = nullptr;
     if( rInAttrs.GetItemState(nWhichId, true, &pPoolItem) == SfxItemState::SET )
         rCheckbox.Check( static_cast<const SfxBoolItem*>(pPoolItem)->GetValue() );
     else
@@ -86,7 +86,7 @@ void lcl_setBoolItemToCheckBox( const SfxItemSet& rInAttrs, sal_uInt16 nWhichId,
 
 DataLabelResources::DataLabelResources(VclBuilderContainer* pWindow, vcl::Window* pParent, const SfxItemSet& rInAttrs )
     :
-    m_pNumberFormatter(0),
+    m_pNumberFormatter(nullptr),
     m_bNumberFormatMixedState(true),
     m_bPercentFormatMixedState(true),
     m_nNumberFormatForValue(0),
@@ -133,13 +133,13 @@ DataLabelResources::DataLabelResources(VclBuilderContainer* pWindow, vcl::Window
     for( sal_Int32 nEnum=0; nEnum<m_pLB_LabelPlacement->GetEntryCount(); ++nEnum )
         aPlacementToStringMap[nEnum] = m_pLB_LabelPlacement->GetEntry(static_cast<sal_uInt16>(nEnum));
 
-    ::com::sun::star::uno::Sequence < sal_Int32 > aAvailabelPlacementList;
-    const SfxPoolItem *pPoolItem = NULL;
+    std::vector< sal_Int32 > aAvailabelPlacementList;
+    const SfxPoolItem *pPoolItem = nullptr;
     if( rInAttrs.GetItemState(SCHATTR_DATADESCR_AVAILABLE_PLACEMENTS, true, &pPoolItem) == SfxItemState::SET )
-        aAvailabelPlacementList = static_cast<const SfxIntegerListItem*>(pPoolItem)->GetConstSequence();
+        aAvailabelPlacementList = static_cast<const SfxIntegerListItem*>(pPoolItem)->GetList();
 
     m_pLB_LabelPlacement->Clear();
-    for( sal_Int32 nN=0; nN<aAvailabelPlacementList.getLength(); ++nN )
+    for( size_t nN=0; nN<aAvailabelPlacementList.size(); ++nN )
     {
         sal_uInt16 nListBoxPos = static_cast<sal_uInt16>( nN );
         sal_Int32 nPlacement = aAvailabelPlacementList[nN];
@@ -294,7 +294,7 @@ bool DataLabelResources::FillItemSet( SfxItemSet* rOutAttrs ) const
         rOutAttrs->Put( SfxBoolItem( SCHATTR_DATADESCR_SHOW_CATEGORY, m_pCBCategory->IsChecked() ) );
     if( m_pCBSymbol->GetState()!= TRISTATE_INDET )
         rOutAttrs->Put( SfxBoolItem( SCHATTR_DATADESCR_SHOW_SYMBOL, m_pCBSymbol->IsChecked()) );
-    if( m_pCBSymbol->GetState()!= TRISTATE_INDET )
+    if( m_pCBWrapText->GetState()!= TRISTATE_INDET )
         rOutAttrs->Put( SfxBoolItem( SCHATTR_DATADESCR_WRAP_TEXT, m_pCBWrapText->IsChecked()) );
 
     OUString aSep = m_aEntryMap[m_pLB_Separator->GetSelectEntryPos()];
@@ -333,7 +333,7 @@ void DataLabelResources::Reset(const SfxItemSet& rInAttrs)
     m_bNumberFormatMixedState = !lcl_ReadNumberFormatFromItemSet( rInAttrs, SID_ATTR_NUMBERFORMAT_VALUE, SID_ATTR_NUMBERFORMAT_SOURCE, m_nNumberFormatForValue, m_bSourceFormatForValue, m_bSourceFormatMixedState );
     m_bPercentFormatMixedState = !lcl_ReadNumberFormatFromItemSet( rInAttrs, SCHATTR_PERCENT_NUMBERFORMAT_VALUE, SCHATTR_PERCENT_NUMBERFORMAT_SOURCE, m_nNumberFormatForPercent, m_bSourceFormatForPercent ,  m_bPercentSourceMixedState);
 
-    const SfxPoolItem *pPoolItem = NULL;
+    const SfxPoolItem *pPoolItem = nullptr;
     if( rInAttrs.GetItemState(SCHATTR_DATADESCR_SEPARATOR, true, &pPoolItem) == SfxItemState::SET )
        for(sal_Int32 i=0; i < NUMBER_SEPARATORS; ++i )
        {

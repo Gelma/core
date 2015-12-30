@@ -50,7 +50,7 @@ void WorkWindow::ImplInit( vcl::Window* pParent, WinBits nStyle, SystemParentDat
         nFrameStyle |= BORDERWINDOW_STYLE_APP;
 
     VclPtrInstance<ImplBorderWindow> pBorderWin( pParent, pSystemParentData, nStyle, nFrameStyle );
-    Window::ImplInit( pBorderWin, nStyle & (WB_3DLOOK | WB_CLIPCHILDREN | WB_DIALOGCONTROL | WB_SYSTEMFLOATWIN), NULL );
+    Window::ImplInit( pBorderWin, nStyle & (WB_3DLOOK | WB_CLIPCHILDREN | WB_DIALOGCONTROL | WB_SYSTEMFLOATWIN), nullptr );
     pBorderWin->mpWindowImpl->mpClientWindow = this;
     pBorderWin->GetBorder( mpWindowImpl->mnLeftBorder, mpWindowImpl->mnTopBorder, mpWindowImpl->mnRightBorder, mpWindowImpl->mnBottomBorder );
     mpWindowImpl->mpBorderWindow  = pBorderWin;
@@ -67,11 +67,11 @@ void WorkWindow::ImplInit( vcl::Window* pParent, WinBits nStyle, SystemParentDat
     SetActivateMode( ActivateModeFlags::GrabFocus );
 }
 
-void WorkWindow::ImplInit( vcl::Window* pParent, WinBits nStyle, const ::com::sun::star::uno::Any& aSystemWorkWindowToken )
+void WorkWindow::ImplInit( vcl::Window* pParent, WinBits nStyle, const css::uno::Any& aSystemWorkWindowToken )
 {
     if( aSystemWorkWindowToken.hasValue() )
     {
-        ::com::sun::star::uno::Sequence< sal_Int8 > aSeq;
+        css::uno::Sequence< sal_Int8 > aSeq;
         aSystemWorkWindowToken >>= aSeq;
         SystemParentData* pData = reinterpret_cast<SystemParentData*>(aSeq.getArray());
         DBG_ASSERT( aSeq.getLength() == sizeof( SystemParentData ) && pData->nSize == sizeof( SystemParentData ), "WorkWindow::WorkWindow( vcl::Window*, const Any&, WinBits ) called with invalid Any" );
@@ -79,7 +79,7 @@ void WorkWindow::ImplInit( vcl::Window* pParent, WinBits nStyle, const ::com::su
         ImplInit( pParent, 0, pData );
     }
     else
-        ImplInit( pParent, nStyle, NULL );
+        ImplInit( pParent, nStyle );
 }
 
 WorkWindow::WorkWindow( WindowType nType ) :
@@ -92,10 +92,10 @@ WorkWindow::WorkWindow( vcl::Window* pParent, WinBits nStyle ) :
     SystemWindow( WINDOW_WORKWINDOW )
 {
     ImplInitWorkWindowData();
-    ImplInit( pParent, nStyle, NULL );
+    ImplInit( pParent, nStyle );
 }
 
-WorkWindow::WorkWindow( vcl::Window* pParent, const ::com::sun::star::uno::Any& aSystemWorkWindowToken, WinBits nStyle ) :
+WorkWindow::WorkWindow( vcl::Window* pParent, const css::uno::Any& aSystemWorkWindowToken, WinBits nStyle ) :
     SystemWindow( WINDOW_WORKWINDOW )
 {
     ImplInitWorkWindowData();
@@ -108,7 +108,7 @@ WorkWindow::WorkWindow( SystemParentData* pParent ) :
 {
     ImplInitWorkWindowData();
     mbSysChild = true;
-    ImplInit( NULL, 0, pParent );
+    ImplInit( nullptr, 0, pParent );
 }
 
 WorkWindow::~WorkWindow()
@@ -121,7 +121,7 @@ void WorkWindow::dispose()
     ImplSVData* pSVData = ImplGetSVData();
     if ( pSVData->maWinData.mpAppWin == this )
     {
-        pSVData->maWinData.mpAppWin = NULL;
+        pSVData->maWinData.mpAppWin = nullptr;
         Application::Quit();
     }
     SystemWindow::dispose();
@@ -142,12 +142,10 @@ void WorkWindow::ShowFullScreenMode( bool bFullScreenMode, sal_Int32 nDisplayScr
     {
         // Dispose of the canvas implementation, which might rely on
         // screen-specific system data.
-        com::sun::star::uno::Reference< com::sun::star::rendering::XCanvas > xCanvas( mpWindowImpl->mxCanvas );
+        css::uno::Reference< css::rendering::XCanvas > xCanvas( mpWindowImpl->mxCanvas );
         if( xCanvas.is() )
         {
-            com::sun::star::uno::Reference< com::sun::star::lang::XComponent >
-                xCanvasComponent( xCanvas,
-                                  com::sun::star::uno::UNO_QUERY );
+            css::uno::Reference< css::lang::XComponent >  xCanvasComponent( xCanvas, css::uno::UNO_QUERY );
             if( xCanvasComponent.is() )
                 xCanvasComponent->dispose();
         }

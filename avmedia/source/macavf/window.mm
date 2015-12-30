@@ -39,7 +39,7 @@ Window::Window( const uno::Reference< lang::XMultiServiceFactory >& i_rxMgr, Pla
 ,   mrPlayer( i_rPlayer )
 ,   mnPointerType( awt::SystemPointer::ARROW )
 ,   mpView( i_pParentView )
-,   mpPlayerLayer( NULL )
+,   mpPlayerLayer( nullptr )
 {
     OSL_TRACE ("Constructing an avmedia::macavf::Window");
     if( !mpView ) // sanity check
@@ -322,9 +322,7 @@ sal_Bool SAL_CALL Window::supportsService( const ::rtl::OUString& ServiceName )
 uno::Sequence< ::rtl::OUString > SAL_CALL Window::getSupportedServiceNames(  )
     throw (uno::RuntimeException)
 {
-    uno::Sequence< ::rtl::OUString > aRet(1);
-    aRet[0] = ::rtl::OUString( RTL_CONSTASCII_USTRINGPARAM ( AVMEDIA_MACAVF_WINDOW_SERVICENAME ) );
-
+    uno::Sequence< ::rtl::OUString > aRet { AVMEDIA_MACAVF_WINDOW_SERVICENAME };
     return aRet;
 }
 

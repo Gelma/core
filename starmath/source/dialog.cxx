@@ -176,6 +176,7 @@ SmPrintOptionsTabPage::SmPrintOptionsTabPage(vcl::Window* pParent, const SfxItem
     get( m_pZoom,                "zoom");
     get( m_pNoRightSpaces,       "norightspaces");
     get( m_pSaveOnlyUsedSymbols, "saveonlyusedsymbols");
+    get( m_pAutoCloseBrackets,   "autoclosebrackets");
 
     m_pSizeNormal->SetClickHdl(LINK(this, SmPrintOptionsTabPage, SizeButtonClickHdl));
     m_pSizeScaled->SetClickHdl(LINK(this, SmPrintOptionsTabPage, SizeButtonClickHdl));
@@ -200,6 +201,7 @@ void SmPrintOptionsTabPage::dispose()
     m_pZoom.clear();
     m_pNoRightSpaces.clear();
     m_pSaveOnlyUsedSymbols.clear();
+    m_pAutoCloseBrackets.clear();
     SfxTabPage::dispose();
 }
 
@@ -214,13 +216,14 @@ bool SmPrintOptionsTabPage::FillItemSet(SfxItemSet* rSet)
     else
         nPrintSize = PRINT_SIZE_ZOOMED;
 
-    rSet->Put(SfxUInt16Item(GetWhich(SID_PRINTSIZE), (sal_uInt16) nPrintSize));
+    rSet->Put(SfxUInt16Item(GetWhich(SID_PRINTSIZE), nPrintSize));
     rSet->Put(SfxUInt16Item(GetWhich(SID_PRINTZOOM), (sal_uInt16) m_pZoom->GetValue()));
     rSet->Put(SfxBoolItem(GetWhich(SID_PRINTTITLE), m_pTitle->IsChecked()));
     rSet->Put(SfxBoolItem(GetWhich(SID_PRINTTEXT), m_pText->IsChecked()));
     rSet->Put(SfxBoolItem(GetWhich(SID_PRINTFRAME), m_pFrame->IsChecked()));
     rSet->Put(SfxBoolItem(GetWhich(SID_NO_RIGHT_SPACES), m_pNoRightSpaces->IsChecked()));
     rSet->Put(SfxBoolItem(GetWhich(SID_SAVE_ONLY_USED_SYMBOLS), m_pSaveOnlyUsedSymbols->IsChecked()));
+    rSet->Put(SfxBoolItem(GetWhich(SID_AUTO_CLOSE_BRACKETS), m_pAutoCloseBrackets->IsChecked()));
 
     return true;
 }
@@ -228,7 +231,7 @@ bool SmPrintOptionsTabPage::FillItemSet(SfxItemSet* rSet)
 
 void SmPrintOptionsTabPage::Reset(const SfxItemSet* rSet)
 {
-    SmPrintSize ePrintSize = (SmPrintSize)static_cast<const SfxUInt16Item &>(rSet->Get(GetWhich(SID_PRINTSIZE))).GetValue();
+    SmPrintSize ePrintSize = static_cast<SmPrintSize>(static_cast<const SfxUInt16Item &>(rSet->Get(GetWhich(SID_PRINTSIZE))).GetValue());
 
     m_pSizeNormal->Check(ePrintSize == PRINT_SIZE_NORMAL);
     m_pSizeScaled->Check(ePrintSize == PRINT_SIZE_SCALED);
@@ -243,6 +246,7 @@ void SmPrintOptionsTabPage::Reset(const SfxItemSet* rSet)
     m_pFrame->Check(static_cast<const SfxBoolItem &>(rSet->Get(GetWhich(SID_PRINTFRAME))).GetValue());
     m_pNoRightSpaces->Check(static_cast<const SfxBoolItem &>(rSet->Get(GetWhich(SID_NO_RIGHT_SPACES))).GetValue());
     m_pSaveOnlyUsedSymbols->Check(static_cast<const SfxBoolItem &>(rSet->Get(GetWhich(SID_SAVE_ONLY_USED_SYMBOLS))).GetValue());
+    m_pAutoCloseBrackets->Check(static_cast<const SfxBoolItem &>(rSet->Get(GetWhich(SID_AUTO_CLOSE_BRACKETS))).GetValue());
 }
 
 VclPtr<SfxTabPage> SmPrintOptionsTabPage::Create(vcl::Window* pWindow, const SfxItemSet& rSet)
@@ -295,22 +299,21 @@ void SmShowFont::SetFont(const vcl::Font& rFont)
     Invalidate();
 }
 
-IMPL_LINK( SmFontDialog, FontSelectHdl, ComboBox *, pComboBox )
+IMPL_LINK_TYPED( SmFontDialog, FontSelectHdl, ComboBox&, rComboBox, void )
 {
-    maFont.SetName(pComboBox->GetText());
+    maFont.SetName(rComboBox.GetText());
     m_pShowFont->SetFont(maFont);
-    return 0;
 }
 
-IMPL_LINK( SmFontDialog, FontModifyHdl, ComboBox *, pComboBox )
+IMPL_LINK_TYPED( SmFontDialog, FontModifyHdl, Edit&, rEdit, void )
 {
+    ComboBox& rComboBox = static_cast<ComboBox&>(rEdit);
     // if font is available in list then use it
-    sal_Int32 nPos = pComboBox->GetEntryPos( pComboBox->GetText() );
+    sal_Int32 nPos = rComboBox.GetEntryPos( rComboBox.GetText() );
     if (COMBOBOX_ENTRY_NOTFOUND != nPos)
     {
-        FontSelectHdl( pComboBox );
+        FontSelectHdl( rComboBox );
     }
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED( SmFontDialog, AttrChangeHdl, Button*, void )
@@ -506,7 +509,7 @@ IMPL_LINK_TYPED( SmFontTypeDialog, MenuSelectHdl, Menu *, pMenu, bool )
         case 5: pActiveListBox = m_pSerifFont; bHideCheckboxes = true;   break;
         case 6: pActiveListBox = m_pSansFont;  bHideCheckboxes = true;   break;
         case 7: pActiveListBox = m_pFixedFont; bHideCheckboxes = true;   break;
-        default:pActiveListBox = NULL;
+        default:pActiveListBox = nullptr;
     }
 
     if (pActiveListBox)
@@ -668,8 +671,8 @@ SmCategoryDesc::SmCategoryDesc(VclBuilderContainer& rBuilder, sal_uInt16 nCatego
         }
         else
         {
-            Strings  [i] = 0;
-            Graphics [i] = 0;
+            Strings  [i] = nullptr;
+            Graphics [i] = nullptr;
         }
 
         const FieldMinMax& rMinMax = pMinMaxData[ nCategoryIdx-1 ][i];
@@ -773,15 +776,15 @@ void SmDistanceDialog::SetCategory(sal_uInt16 nCategory)
 #endif
     static const char * aCatMf2Hid[10][4] =
     {
-        { HID_SMA_DEFAULT_DIST,         HID_SMA_LINE_DIST,          HID_SMA_ROOT_DIST, 0 },
-        { HID_SMA_SUP_DIST,             HID_SMA_SUB_DIST ,          0, 0 },
-        { HID_SMA_NUMERATOR_DIST,       HID_SMA_DENOMINATOR_DIST,   0, 0 },
-        { HID_SMA_FRACLINE_EXCWIDTH,    HID_SMA_FRACLINE_LINEWIDTH, 0, 0 },
-        { HID_SMA_UPPERLIMIT_DIST,      HID_SMA_LOWERLIMIT_DIST,    0, 0 },
-        { HID_SMA_BRACKET_EXCHEIGHT,    HID_SMA_BRACKET_DIST,       0, HID_SMA_BRACKET_EXCHEIGHT2 },
-        { HID_SMA_MATRIXROW_DIST,       HID_SMA_MATRIXCOL_DIST,     0, 0 },
-        { HID_SMA_ATTRIBUT_DIST,        HID_SMA_INTERATTRIBUT_DIST, 0, 0 },
-        { HID_SMA_OPERATOR_EXCHEIGHT,   HID_SMA_OPERATOR_DIST,      0, 0 },
+        { HID_SMA_DEFAULT_DIST,         HID_SMA_LINE_DIST,          HID_SMA_ROOT_DIST, nullptr },
+        { HID_SMA_SUP_DIST,             HID_SMA_SUB_DIST ,          nullptr, nullptr },
+        { HID_SMA_NUMERATOR_DIST,       HID_SMA_DENOMINATOR_DIST,   nullptr, nullptr },
+        { HID_SMA_FRACLINE_EXCWIDTH,    HID_SMA_FRACLINE_LINEWIDTH, nullptr, nullptr },
+        { HID_SMA_UPPERLIMIT_DIST,      HID_SMA_LOWERLIMIT_DIST,    nullptr, nullptr },
+        { HID_SMA_BRACKET_EXCHEIGHT,    HID_SMA_BRACKET_DIST,       nullptr, HID_SMA_BRACKET_EXCHEIGHT2 },
+        { HID_SMA_MATRIXROW_DIST,       HID_SMA_MATRIXCOL_DIST,     nullptr, nullptr },
+        { HID_SMA_ATTRIBUT_DIST,        HID_SMA_INTERATTRIBUT_DIST, nullptr, nullptr },
+        { HID_SMA_OPERATOR_EXCHEIGHT,   HID_SMA_OPERATOR_DIST,      nullptr, nullptr },
         { HID_SMA_LEFTBORDER_DIST,      HID_SMA_RIGHTBORDER_DIST,   HID_SMA_UPPERBORDER_DIST, HID_SMA_LOWERBORDER_DIST }
     };
 
@@ -821,7 +824,7 @@ void SmDistanceDialog::SetCategory(sal_uInt16 nCategory)
 
         // To determine which Controls should be active, the existence
         // of an associated HelpID is checked
-        bActive = aCatMf2Hid[nCategory][i] != 0;
+        bActive = aCatMf2Hid[nCategory][i] != nullptr;
 
         pFT->Show(bActive);
         pFT->Enable(bActive);
@@ -1096,7 +1099,7 @@ void SmAlignDialog::WriteTo(SmFormat &rFormat) const
 
 SmShowSymbolSetWindow::SmShowSymbolSetWindow(vcl::Window *pParent, WinBits nStyle)
     : Control(pParent, nStyle)
-    , m_pVScrollBar(0)
+    , m_pVScrollBar(nullptr)
     , nLen(0)
     , nRows(0)
     , nColumns(0)
@@ -1313,7 +1316,7 @@ void SmShowSymbolSetWindow::SetScrollBarRange()
     if (aSymbolSet.size() > static_cast<size_t>(nColumns * nRows))
     {
         m_pVScrollBar->SetRange(Range(0, ((aSymbolSet.size() + (nColumns - 1)) / nColumns) - nRows));
-        m_pVScrollBar->Enable(true);
+        m_pVScrollBar->Enable();
     }
     else
     {
@@ -1450,10 +1453,9 @@ void SmSymbolDialog::FillSymbolSets(bool bDeleteText)
 }
 
 
-IMPL_LINK_NOARG( SmSymbolDialog, SymbolSetChangeHdl )
+IMPL_LINK_NOARG_TYPED( SmSymbolDialog, SymbolSetChangeHdl, ListBox&, void )
 {
     SelectSymbolSet(m_pSymbolSets->GetSelectEntry());
-    return 0;
 }
 
 
@@ -1627,7 +1629,7 @@ bool SmSymbolDialog::SelectSymbolSet(const OUString &rSymbolSetName)
 
 void SmSymbolDialog::SelectSymbol(sal_uInt16 nSymbolNo)
 {
-    const SmSym *pSym = NULL;
+    const SmSym *pSym = nullptr;
     if (!aSymbolSetName.isEmpty()  &&  nSymbolNo < static_cast< sal_uInt16 >(aSymbolSet.size()))
         pSym = aSymbolSet[ nSymbolNo ];
 
@@ -1640,7 +1642,7 @@ const SmSym* SmSymbolDialog::GetSymbol() const
 {
     sal_uInt16 nSymbolNo = m_pSymbolSetDisplay->GetSelectSymbol();
     bool bValid = !aSymbolSetName.isEmpty()  &&  nSymbolNo < static_cast< sal_uInt16 >(aSymbolSet.size());
-    return bValid ? aSymbolSet[ nSymbolNo ] : NULL;
+    return bValid ? aSymbolSet[ nSymbolNo ] : nullptr;
 }
 
 VCL_BUILDER_DECL_FACTORY(SmShowChar)
@@ -1792,72 +1794,66 @@ SmSym * SmSymDefineDialog::GetSymbol(const ComboBox &rComboBox)
 }
 
 
-IMPL_LINK( SmSymDefineDialog, OldSymbolChangeHdl, ComboBox *, pComboBox )
+IMPL_LINK_TYPED( SmSymDefineDialog, OldSymbolChangeHdl, ComboBox&, rComboBox, void )
 {
-    (void) pComboBox;
+    (void) rComboBox;
 #if OSL_DEBUG_LEVEL > 1
-    OSL_ENSURE(pComboBox == pOldSymbols, "Sm : wrong argument");
+    OSL_ENSURE(&rComboBox == pOldSymbols, "Sm : wrong argument");
 #endif
     SelectSymbol(*pOldSymbols, pOldSymbols->GetText(), false);
-    return 0;
 }
 
 
-IMPL_LINK( SmSymDefineDialog, OldSymbolSetChangeHdl, ComboBox *, pComboBox )
+IMPL_LINK_TYPED( SmSymDefineDialog, OldSymbolSetChangeHdl, ComboBox&, rComboBox, void )
 {
-    (void) pComboBox;
+    (void) rComboBox;
 #if OSL_DEBUG_LEVEL > 1
-    OSL_ENSURE(pComboBox == pOldSymbolSets, "Sm : wrong argument");
+    OSL_ENSURE(&rComboBox == pOldSymbolSets, "Sm : wrong argument");
 #endif
     SelectSymbolSet(*pOldSymbolSets, pOldSymbolSets->GetText(), false);
-    return 0;
 }
 
 
-IMPL_LINK( SmSymDefineDialog, ModifyHdl, ComboBox *, pComboBox )
+IMPL_LINK_TYPED( SmSymDefineDialog, ModifyHdl, Edit&, rEdit, void )
 {
+    ComboBox& rComboBox = static_cast<ComboBox&>(rEdit);
     // remember cursor position for later restoring of it
-    Selection  aSelection (pComboBox->GetSelection());
+    Selection  aSelection (rComboBox.GetSelection());
 
-    if (pComboBox == pSymbols)
+    if (&rComboBox == pSymbols)
         SelectSymbol(*pSymbols, pSymbols->GetText(), false);
-    else if (pComboBox == pSymbolSets)
+    else if (&rComboBox == pSymbolSets)
         SelectSymbolSet(*pSymbolSets, pSymbolSets->GetText(), false);
-    else if (pComboBox == pOldSymbols)
+    else if (&rComboBox == pOldSymbols)
         // allow only names from the list
         SelectSymbol(*pOldSymbols, pOldSymbols->GetText(), true);
-    else if (pComboBox == pOldSymbolSets)
+    else if (&rComboBox == pOldSymbolSets)
         // allow only names from the list
         SelectSymbolSet(*pOldSymbolSets, pOldSymbolSets->GetText(), true);
-    else if (pComboBox == pStyles)
+    else if (&rComboBox == pStyles)
         // allow only names from the list (that's the case here anyway)
         SelectStyle(pStyles->GetText(), true);
     else
         SAL_WARN("starmath", "wrong combobox argument");
 
-    pComboBox->SetSelection(aSelection);
+    rComboBox.SetSelection(aSelection);
 
     UpdateButtons();
-
-    return 0;
 }
 
-
-IMPL_LINK( SmSymDefineDialog, FontChangeHdl, ListBox *, pListBox )
+IMPL_LINK_TYPED( SmSymDefineDialog, FontChangeHdl, ListBox&, rListBox, void )
 {
-    (void) pListBox;
+    (void) rListBox;
 #if OSL_DEBUG_LEVEL > 1
-    OSL_ENSURE(pListBox == pFonts, "Sm : wrong argument");
+    OSL_ENSURE(&rListBox == pFonts, "Sm : wrong argument");
 #endif
 
     SelectFont(pFonts->GetSelectEntry());
-    return 0;
 }
 
 
-IMPL_LINK( SmSymDefineDialog, SubsetChangeHdl, ListBox *, pListBox )
+IMPL_LINK_NOARG_TYPED( SmSymDefineDialog, SubsetChangeHdl, ListBox&, void )
 {
-    (void) pListBox;
     sal_Int32 nPos = pFontsSubsetLB->GetSelectEntryPos();
     if (LISTBOX_ENTRY_NOTFOUND != nPos)
     {
@@ -1867,19 +1863,17 @@ IMPL_LINK( SmSymDefineDialog, SubsetChangeHdl, ListBox *, pListBox )
             pCharsetDisplay->SelectCharacter( pSubset->GetRangeMin() );
         }
     }
-    return 0;
 }
 
 
-IMPL_LINK( SmSymDefineDialog, StyleChangeHdl, ComboBox *, pComboBox )
+IMPL_LINK_TYPED( SmSymDefineDialog, StyleChangeHdl, ComboBox&, rComboBox, void )
 {
-    (void) pComboBox;
+    (void) rComboBox;
 #if OSL_DEBUG_LEVEL > 1
-    OSL_ENSURE(pComboBox == pStyles, "Sm : falsches Argument");
+    OSL_ENSURE(&rComboBox == pStyles, "Sm : falsches Argument");
 #endif
 
     SelectStyle(pStyles->GetText());
-    return 0;
 }
 
 
@@ -1964,7 +1958,7 @@ IMPL_LINK_TYPED( SmSymDefineDialog, ChangeClickHdl, Button *, pButton, void )
 
     // clear display for original symbol if necessary
     if (bNameChanged)
-        SetOrigSymbol(NULL, OUString());
+        SetOrigSymbol(nullptr, OUString());
 
     // update display of new symbol
     pSymbolDisplay->SetSymbol( &aNewSymbol );
@@ -1994,7 +1988,7 @@ IMPL_LINK_TYPED( SmSymDefineDialog, DeleteClickHdl, Button *, pButton, void )
         aSymbolMgrCopy.RemoveSymbol( pOrigSymbol->GetName() );
 
         // clear display for original symbol
-        SetOrigSymbol(NULL, OUString());
+        SetOrigSymbol(nullptr, OUString());
 
         // update list box entries
         FillSymbolSets(*pOldSymbolSets, false);
@@ -2029,7 +2023,7 @@ void SmSymDefineDialog::UpdateButtons()
                     && pCharsetDisplay->GetSelectCharacter() == pOrigSymbol->GetCharacter();
 
         // only add it if there isn't already a symbol with the same name
-        bAdd    = aSymbolMgrCopy.GetSymbolByName(aTmpSymbolName) == NULL;
+        bAdd    = aSymbolMgrCopy.GetSymbolByName(aTmpSymbolName) == nullptr;
 
         // only delete it if all settings are equal
         bDelete = bool(pOrigSymbol);
@@ -2049,7 +2043,7 @@ SmSymDefineDialog::SmSymDefineDialog(vcl::Window * pParent,
     rSymbolMgr          (rMgr),
     pOrigSymbol         (),
     pSubsetMap          (),
-    pFontList           (NULL)
+    pFontList           (nullptr)
 {
     get(pOldSymbols, "oldSymbols");
     get(pOldSymbolSets, "oldSymbolSets");
@@ -2312,7 +2306,7 @@ bool SmSymDefineDialog::SelectSymbol(ComboBox &rComboBox,
     if (bIsOld)
     {
         // if there's a change of the old symbol, show only the available ones, otherwise show none
-        const SmSym *pOldSymbol = NULL;
+        const SmSym *pOldSymbol = nullptr;
         OUString     aTmpOldSymbolSetName;
         if (nPos != COMBOBOX_ENTRY_NOTFOUND)
         {
@@ -2349,7 +2343,7 @@ void SmSymDefineDialog::SetFont(const OUString &rFontName, const OUString &rStyl
     pFontsSubsetLB->Clear();
     bool bFirst = true;
     const Subset* pSubset;
-    while( NULL != (pSubset = pSubsetMap->GetNextSubset( bFirst )) )
+    while( nullptr != (pSubset = pSubsetMap->GetNextSubset( bFirst )) )
     {
         const sal_Int32 nPos = pFontsSubsetLB->InsertEntry( pSubset->GetName());
         pFontsSubsetLB->SetEntryData( nPos, const_cast<Subset *>(pSubset) );
@@ -2362,7 +2356,7 @@ void SmSymDefineDialog::SetFont(const OUString &rFontName, const OUString &rStyl
         pFontsSubsetLB->SetNoSelection();
     pFontsSubsetLB->Enable( !bFirst );
 
-    pFontCharMap = 0;
+    pFontCharMap = nullptr;
 }
 
 

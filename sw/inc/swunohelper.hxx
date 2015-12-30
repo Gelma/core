@@ -42,7 +42,7 @@ namespace SWUnoHelper {
 
 // calls over the compherl the getEnumAsInt32 function and handle the
 // exceptions.
-sal_Int32 GetEnumAsInt32( const com::sun::star::uno::Any& rVal );
+sal_Int32 GetEnumAsInt32( const css::uno::Any& rVal );
 
 // methods for UCB actions:
     // delete the file under this URL
@@ -65,8 +65,8 @@ SW_DLLPUBLIC bool UCB_IsReadOnlyFileName( const OUString& rURL );
     //                       !! objects must be deleted from the caller!!
 bool UCB_GetFileListOfFolder( const OUString& rURL,
                                 std::vector<OUString>& rList,
-                                const OUString* pExtension = 0,
-                                std::vector<DateTime*>* pDateTimeList = 0 );
+                                const OUString* pExtension = nullptr,
+                                std::vector<DateTime*>* pDateTimeList = nullptr );
 
     // is the URL an existing file?
 SW_DLLPUBLIC bool UCB_IsFile( const OUString& rURL );

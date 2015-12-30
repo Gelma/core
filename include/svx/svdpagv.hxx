@@ -45,7 +45,6 @@ class SdrView;
 class SdrPageObj;
 class SdrPageView;
 
-// #110094#
 namespace sdr
 {
     namespace contact
@@ -150,7 +149,7 @@ public:
      *      SdrPageView instance, the XControlContainer for this output device is returned, <NULL/>
      *      otherwise.
      */
-    ::com::sun::star::uno::Reference< ::com::sun::star::awt::XControlContainer >
+    css::uno::Reference< css::awt::XControlContainer >
         GetControlContainer( const OutputDevice& _rDevice ) const;
 
     /// Sets all elements in the view which support a design and a alive mode into the given mode
@@ -165,12 +164,12 @@ public:
     void PrePaint();
 
     /// @param rReg refers to the OutDev and not to the Page
-    void CompleteRedraw( SdrPaintWindow& rPaintWindow, const vcl::Region& rReg, sdr::contact::ViewObjectContactRedirector* pRedirector = NULL );
+    void CompleteRedraw( SdrPaintWindow& rPaintWindow, const vcl::Region& rReg, sdr::contact::ViewObjectContactRedirector* pRedirector = nullptr );
 
     /// Write access to mpPreparedPageWindow
     void setPreparedPageWindow(SdrPageWindow* pKnownTarget);
 
-    void DrawLayer(SdrLayerID nID, OutputDevice* pGivenTarget = 0, sdr::contact::ViewObjectContactRedirector* pRedirector = 0L,
+    void DrawLayer(SdrLayerID nID, OutputDevice* pGivenTarget = nullptr, sdr::contact::ViewObjectContactRedirector* pRedirector = nullptr,
                    const Rectangle& rRect =  Rectangle());
     void DrawPageViewGrid(OutputDevice& rOut, const Rectangle& rRect, Color aColor = Color( COL_BLACK ) );
 
@@ -257,7 +256,6 @@ public:
     // #103834# Set background color for svx at SdrPageViews
     void SetApplicationBackgroundColor(Color aBackgroundColor);
 
-    // #109585#
     Color GetApplicationBackgroundColor() const { return maBackgroundColor;}
 
     // #103911# Set/Get document color for svx at SdrPageViews

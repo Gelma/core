@@ -228,7 +228,7 @@ uno::Sequence< Property > lcl_GetPropertySequence( DataSeriesPointWrapper::eType
 
     ::std::sort( aProperties.begin(), aProperties.end(), ::chart::PropertyNameLess() );
 
-    return ::chart::ContainerHelper::ContainerToSequence( aProperties );
+    return comphelper::containerToSequence( aProperties );
 }
 
 struct StaticSeriesWrapperPropertyArray_Initializer
@@ -265,13 +265,13 @@ public:
     virtual ~WrappedAttachedAxisProperty();
 
     virtual void setPropertyValue( const Any& rOuterValue, const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& xInnerPropertySet ) const
-                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::beans::PropertyVetoException, ::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
+                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::beans::PropertyVetoException, ::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException) override;
 
     virtual Any getPropertyValue( const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& xInnerPropertySet ) const
-                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
+                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException) override;
 
     virtual Any getPropertyDefault( const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertyState >& xInnerPropertyState ) const
-                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
+                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException) override;
 
 protected:
     std::shared_ptr< Chart2ModelContact >   m_spChart2ModelContact;
@@ -317,7 +317,7 @@ void WrappedAttachedAxisProperty::setPropertyValue( const Any& rOuterValue, cons
 
     sal_Int32 nChartAxisAssign = ::com::sun::star::chart::ChartAxisAssign::PRIMARY_Y;
     if( ! (rOuterValue >>= nChartAxisAssign) )
-        throw lang::IllegalArgumentException("Property Axis requires value of type sal_Int32", 0, 0 );
+        throw lang::IllegalArgumentException("Property Axis requires value of type sal_Int32", nullptr, 0 );
 
     bool bNewAttachedToMainAxis = nChartAxisAssign == ::com::sun::star::chart::ChartAxisAssign::PRIMARY_Y;
     bool bOldAttachedToMainAxis = ::chart::DiagramHelper::isSeriesAttachedToMainAxis( xDataSeries );
@@ -337,8 +337,8 @@ public:
     virtual ~WrappedSegmentOffsetProperty();
 
 protected:
-    virtual Any convertInnerToOuterValue( const Any& rInnerValue ) const SAL_OVERRIDE;
-    virtual Any convertOuterToInnerValue( const Any& rOuterValue ) const SAL_OVERRIDE;
+    virtual Any convertInnerToOuterValue( const Any& rInnerValue ) const override;
+    virtual Any convertOuterToInnerValue( const Any& rOuterValue ) const override;
 };
 
 WrappedSegmentOffsetProperty::WrappedSegmentOffsetProperty() :
@@ -379,13 +379,13 @@ public:
     virtual ~WrappedLineColorProperty();
 
     virtual void setPropertyValue( const Any& rOuterValue, const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& xInnerPropertySet ) const
-                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::beans::PropertyVetoException, ::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
+                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::beans::PropertyVetoException, ::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException) override;
 
     virtual void setPropertyToDefault( const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertyState >& xInnerPropertyState ) const
-                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
+                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::uno::RuntimeException) override;
 
     virtual ::com::sun::star::uno::Any getPropertyDefault( const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertyState >& xInnerPropertyState ) const
-                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
+                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException) override;
 
 protected:
     DataSeriesPointWrapper* m_pDataSeriesPointWrapper;
@@ -440,10 +440,10 @@ public:
     virtual ~WrappedLineStyleProperty();
 
     virtual void setPropertyValue( const Any& rOuterValue, const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySet >& xInnerPropertySet ) const
-                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::beans::PropertyVetoException, ::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
+                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::beans::PropertyVetoException, ::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException) override;
 
     virtual void setPropertyToDefault( const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertyState >& xInnerPropertyState ) const
-                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::uno::RuntimeException) SAL_OVERRIDE;
+                        throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::uno::RuntimeException) override;
 
 protected:
     DataSeriesPointWrapper* m_pDataSeriesPointWrapper;
@@ -500,7 +500,7 @@ DataSeriesPointWrapper::DataSeriesPointWrapper(
         , m_nSeriesIndexInNewAPI( -1 )
         , m_nPointIndex( -1 )
         , m_bLinesAllowed(true)
-        , m_xDataSeries(0)
+        , m_xDataSeries(nullptr)
 {
     //need initialize call afterwards
 }
@@ -541,7 +541,7 @@ DataSeriesPointWrapper::DataSeriesPointWrapper( eType _eType,
     , m_nSeriesIndexInNewAPI( nSeriesIndexInNewAPI )
     , m_nPointIndex( (_eType == DATA_POINT) ? nPointIndex : -1 )
     , m_bLinesAllowed( false )
-    , m_xDataSeries(0)
+    , m_xDataSeries(nullptr)
 {
 }
 
@@ -777,7 +777,7 @@ const std::vector< WrappedProperty* > DataSeriesPointWrapper::createWrappedPrope
         aWrappedProperties.push_back( new WrappedAttachedAxisProperty( m_spChart2ModelContact ) );
 
         aWrappedProperties.push_back( new WrappedNumberFormatProperty(m_spChart2ModelContact) );
-        aWrappedProperties.push_back( new WrappedLinkNumberFormatProperty(m_spChart2ModelContact) );
+        aWrappedProperties.push_back( new WrappedLinkNumberFormatProperty );
     }
 
     WrappedSymbolProperties::addWrappedPropertiesForSeries( aWrappedProperties, m_spChart2ModelContact );
@@ -829,7 +829,7 @@ void SAL_CALL DataSeriesPointWrapper::setPropertyValue( const OUString& rPropert
     if(rPropertyName == "Lines")
     {
         if( ! (rValue >>= m_bLinesAllowed) )
-            throw lang::IllegalArgumentException("Property Lines requires value of type sal_Bool", 0, 0 );
+            throw lang::IllegalArgumentException("Property Lines requires value of type sal_Bool", nullptr, 0 );
     }
 
     sal_Int32 nHandle = getInfoHelper().getHandleByName( rPropertyName );

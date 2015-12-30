@@ -48,13 +48,13 @@ public:
         rFieldType( rType )
     {}
 
-    virtual void Closed() SAL_OVERRIDE;
+    virtual void Closed() override;
     virtual ::sfx2::SvBaseLink::UpdateResult DataChanged(
-        const OUString& rMimeType, const ::com::sun::star::uno::Any & rValue ) SAL_OVERRIDE;
+        const OUString& rMimeType, const css::uno::Any & rValue ) override;
 
-    virtual const SwNode* GetAnchor() const SAL_OVERRIDE;
+    virtual const SwNode* GetAnchor() const override;
     virtual bool IsInRange( sal_uLong nSttNd, sal_uLong nEndNd, sal_Int32 nStt = 0,
-                            sal_Int32 nEnd = -1 ) const SAL_OVERRIDE;
+                            sal_Int32 nEnd = -1 ) const override;
 };
 
 ::sfx2::SvBaseLink::UpdateResult SwIntrnlRefLink::DataChanged( const OUString& rMimeType,
@@ -110,7 +110,7 @@ public:
         for(SwClient* pLast = aIter.First(); pLast; pLast = aIter.Next())
         {
             // a DDE table or a DDE field attribute in the text
-            if( !pLast->IsA( TYPE( SwFormatField ) ) ||
+            if( dynamic_cast<const SwFormatField *>(pLast) == nullptr ||
                 static_cast<SwFormatField*>(pLast)->GetTextField() )
             {
                 if( !bCallModify )
@@ -120,7 +120,7 @@ public:
                     else if( pSh )
                         pSh->StartAction();
                 }
-                pLast->ModifyNotification( 0, &aUpdateDDE );
+                pLast->ModifyNotification( nullptr, &aUpdateDDE );
                 bCallModify = true;
             }
         }
@@ -168,12 +168,12 @@ void SwIntrnlRefLink::Closed()
 const SwNode* SwIntrnlRefLink::GetAnchor() const
 {
     // here, any anchor of the normal NodesArray should be sufficient
-    const SwNode* pNd = 0;
+    const SwNode* pNd = nullptr;
     SwIterator<SwClient,SwFieldType> aIter(rFieldType);
     for(SwClient* pLast = aIter.First(); pLast; pLast = aIter.Next())
     {
         // a DDE table or a DDE field attribute in the text
-        if( !pLast->IsA( TYPE( SwFormatField ) ))
+        if( dynamic_cast<const SwFormatField *>(pLast) == nullptr)
         {
             SwDepend* pDep = static_cast<SwDepend*>(pLast);
             SwDDETable* pDDETable = static_cast<SwDDETable*>(pDep->GetToTell());
@@ -184,7 +184,7 @@ const SwNode* SwIntrnlRefLink::GetAnchor() const
 
         if( pNd && &rFieldType.GetDoc()->GetNodes() == &pNd->GetNodes() )
             break;
-        pNd = 0;
+        pNd = nullptr;
     }
     return pNd;
 }
@@ -198,7 +198,7 @@ bool SwIntrnlRefLink::IsInRange( sal_uLong nSttNd, sal_uLong nEndNd,
     for(SwClient* pLast = aIter.First(); pLast; pLast = aIter.Next())
     {
         // a DDE table or a DDE field attribute in the text
-        if( !pLast->IsA( TYPE( SwFormatField ) ))
+        if( dynamic_cast<const SwFormatField *>(pLast) == nullptr)
         {
             SwDepend* pDep = static_cast<SwDepend*>(pLast);
             SwDDETable* pDDETable = static_cast<SwDDETable*>(pDep->GetToTell());
@@ -230,7 +230,7 @@ bool SwIntrnlRefLink::IsInRange( sal_uLong nSttNd, sal_uLong nEndNd,
 SwDDEFieldType::SwDDEFieldType(const OUString& rName,
                                const OUString& rCmd, SfxLinkUpdateMode nUpdateType )
     : SwFieldType( RES_DDEFLD ),
-    aName( rName ), pDoc( 0 ), nRefCnt( 0 )
+    aName( rName ), pDoc( nullptr ), nRefCnt( 0 )
 {
     bCRLFFlag = bDeleted = false;
     refLink = new SwIntrnlRefLink( *this, nUpdateType, SotClipboardFormatId::STRING );

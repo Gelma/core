@@ -50,24 +50,24 @@ class SVX_DLLPUBLIC SvxHyperlinkItem : public SfxPoolItem
     sal_uInt16 nMacroEvents;
 
 public:
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     SvxHyperlinkItem( sal_uInt16 _nWhich = SID_HYPERLINK_GETLINK ):
-                SfxPoolItem(_nWhich), pMacroTable(NULL) { eType = HLINK_DEFAULT; nMacroEvents=0; };
+                SfxPoolItem(_nWhich), pMacroTable(nullptr) { eType = HLINK_DEFAULT; nMacroEvents=0; };
     SvxHyperlinkItem( const SvxHyperlinkItem& rHyperlinkItem );
     SvxHyperlinkItem( sal_uInt16 nWhich, const OUString& rName, const OUString& rURL,
                                     const OUString& rTarget, const OUString& rIntName,
                                     SvxLinkInsertMode eTyp = HLINK_FIELD,
                                     sal_uInt16 nEvents = 0,
-                                    SvxMacroTableDtor *pMacroTbl =NULL );
+                                    SvxMacroTableDtor *pMacroTbl =nullptr );
     virtual ~SvxHyperlinkItem () { delete pMacroTable; }
 
     inline SvxHyperlinkItem& operator=( const SvxHyperlinkItem &rItem );
 
-    virtual bool             operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual bool             QueryValue( com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool             PutValue( const com::sun::star::uno::Any& rVal, sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual bool             operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*     Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual bool             QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool             PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
     const   OUString& GetName() const { return sName; }
     void    SetName(const OUString& rName) { sName = rName; }
@@ -92,8 +92,8 @@ public:
     void SetMacroEvents (const sal_uInt16 nEvents) { nMacroEvents = nEvents; }
     sal_uInt16 GetMacroEvents() const { return nMacroEvents; }
 
-    virtual SvStream&           Store( SvStream &, sal_uInt16 nItemVersion ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*        Create( SvStream &, sal_uInt16 nVer ) const SAL_OVERRIDE;
+    virtual SvStream&           Store( SvStream &, sal_uInt16 nItemVersion ) const override;
+    virtual SfxPoolItem*        Create( SvStream &, sal_uInt16 nVer ) const override;
 
 };
 

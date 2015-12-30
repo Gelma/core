@@ -49,25 +49,14 @@ rtl::Reference<OpenGLContext> X11OpenGLSalGraphicsImpl::CreateWinContext()
     X11WindowProvider *pProvider = dynamic_cast<X11WindowProvider*>(mrParent.m_pFrame);
 
     if( !pProvider )
-        return NULL;
+        return nullptr;
 
     Window aWin = pProvider->GetX11Window();
     rtl::Reference<OpenGLContext> pContext = OpenGLContext::Create();
+    pContext->setVCLOnly();
     pContext->init( mrParent.GetXDisplay(), aWin,
                     mrParent.m_nXScreen.getXScreen() );
     return pContext;
-}
-
-bool X11OpenGLSalGraphicsImpl::UseContext( const rtl::Reference<OpenGLContext> &pContext )
-{
-    X11WindowProvider *pProvider = dynamic_cast<X11WindowProvider*>(mrParent.m_pFrame);
-
-    if( !pContext->isInitialized() || IsForeignContext( pContext ) )
-        return false;
-    if( !pProvider )
-        return pContext->getOpenGLWindow().win != None;
-    else
-        return pContext->getOpenGLWindow().win == pProvider->GetX11Window();
 }
 
 void X11OpenGLSalGraphicsImpl::copyBits( const SalTwoRect& rPosAry, SalGraphics* pSrcGraphics )
@@ -96,19 +85,20 @@ bool X11OpenGLSalGraphicsImpl::FillPixmapFromScreen( X11Pixmap* pPixmap, int nX,
     // TODO: lfrb: What if offscreen?
     pData = static_cast<char*>(malloc( pPixmap->GetWidth() * pPixmap->GetHeight() * 4 ));
     glPixelStorei( GL_PACK_ALIGNMENT, 1 );
+    CHECK_GL_ERROR();
     glReadPixels( nX, GetHeight() - nY, pPixmap->GetWidth(), pPixmap->GetHeight(),
                   GL_RGBA, GL_UNSIGNED_BYTE, pData );
+    CHECK_GL_ERROR();
 
     pImage = XCreateImage( pDisplay, aVisualInfo.visual, 24, ZPixmap, 0, pData,
                            pPixmap->GetWidth(), pPixmap->GetHeight(), 8, 0 );
     XInitImage( pImage );
-    GC aGC = XCreateGC( pDisplay, pPixmap->GetPixmap(), 0, NULL );
+    GC aGC = XCreateGC( pDisplay, pPixmap->GetPixmap(), 0, nullptr );
     XPutImage( pDisplay, pPixmap->GetDrawable(), aGC, pImage,
                0, 0, 0, 0, pPixmap->GetWidth(), pPixmap->GetHeight() );
     XFreeGC( pDisplay, aGC );
     XDestroyImage( pImage );
 
-    CHECK_GL_ERROR();
     return true;
 }
 
@@ -140,7 +130,7 @@ bool X11OpenGLSalGraphicsImpl::RenderPixmap(X11Pixmap* pPixmap, X11Pixmap* pMask
     GLXFBConfig pFbConfig = OpenGLHelper::GetPixmapFBConfig( pDisplay, bInverted );
     GLXPixmap pGlxPixmap = glXCreatePixmap( pDisplay, pFbConfig, pPixmap->GetPixmap(), aAttribs);
     GLXPixmap pGlxMask;
-    if( pMask != NULL )
+    if( pMask != nullptr )
         pGlxMask = glXCreatePixmap( pDisplay, pFbConfig, pMask->GetPixmap(), aAttribs);
     else
         pGlxMask = 0;
@@ -154,15 +144,16 @@ bool X11OpenGLSalGraphicsImpl::RenderPixmap(X11Pixmap* pPixmap, X11Pixmap* pMask
     rCombo.mpTexture.reset(new OpenGLTexture(pPixmap->GetWidth(), pPixmap->GetHeight(), false));
 
     glActiveTexture( GL_TEXTURE0 );
+    CHECK_GL_ERROR();
     rCombo.mpTexture->Bind();
-    glXBindTexImageEXT( pDisplay, pGlxPixmap, GLX_FRONT_LEFT_EXT, NULL );
+    glXBindTexImageEXT( pDisplay, pGlxPixmap, GLX_FRONT_LEFT_EXT, nullptr );
     rCombo.mpTexture->Unbind();
 
-    if( pMask != NULL && pGlxMask )
+    if( pMask != nullptr && pGlxMask )
     {
         rCombo.mpMask.reset(new OpenGLTexture(pPixmap->GetWidth(), pPixmap->GetHeight(), false));
         rCombo.mpMask->Bind();
-        glXBindTexImageEXT( pDisplay, pGlxMask, GLX_FRONT_LEFT_EXT, NULL );
+        glXBindTexImageEXT( pDisplay, pGlxMask, GLX_FRONT_LEFT_EXT, nullptr );
         rCombo.mpMask->Unbind();
 
         DrawTextureDiff(*rCombo.mpTexture, *rCombo.mpMask, aPosAry, bInverted);

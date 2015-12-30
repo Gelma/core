@@ -52,7 +52,7 @@ sal_Int16 SwWriteTableCell::GetVertOri() const
 }
 
 SwWriteTableRow::SwWriteTableRow( long nPosition, bool bUseLayoutHeights )
-    : pBackground(0), nPos(nPosition), mbUseLayoutHeights(bUseLayoutHeights),
+    : pBackground(nullptr), nPos(nPosition), mbUseLayoutHeights(bUseLayoutHeights),
     nTopBorder(USHRT_MAX), nBottomBorder(USHRT_MAX), bTopBorder(true),
     bBottomBorder(true)
 {
@@ -67,7 +67,7 @@ SwWriteTableCell *SwWriteTableRow::AddCell( const SwTableBox *pBox,
     SwWriteTableCell *pCell =
         new SwWriteTableCell( pBox, nRow, nCol, nRowSpan, nColSpan,
                                 nHeight, pBackgroundBrush );
-    aCells.push_back( pCell );
+    m_Cells.push_back(std::unique_ptr<SwWriteTableCell>(pCell));
 
     return pCell;
 }
@@ -81,10 +81,10 @@ SwWriteTableCol::SwWriteTableCol(sal_uInt32 nPosition)
 sal_uInt32 SwWriteTable::GetBoxWidth( const SwTableBox *pBox )
 {
     const SwFrameFormat *pFormat = pBox->GetFrameFormat();
-    const SwFormatFrmSize& aFrmSize=
-        static_cast<const SwFormatFrmSize&>(pFormat->GetFormatAttr( RES_FRM_SIZE ));
+    const SwFormatFrameSize& aFrameSize=
+        static_cast<const SwFormatFrameSize&>(pFormat->GetFormatAttr( RES_FRM_SIZE ));
 
-    return sal::static_int_cast<sal_uInt32>(aFrmSize.GetSize().Width());
+    return sal::static_int_cast<sal_uInt32>(aFrameSize.GetSize().Width());
 }
 
 long SwWriteTable::GetLineHeight( const SwTableLine *pLine )
@@ -151,7 +151,7 @@ long SwWriteTable::GetLineHeight( const SwTableBox *pBox )
 
     long nHeight = 0;
     if( SfxItemState::SET == rItemSet.GetItemState( RES_FRM_SIZE, true, &pItem ))
-        nHeight = static_cast<const SwFormatFrmSize*>(pItem)->GetHeight();
+        nHeight = static_cast<const SwFormatFrameSize*>(pItem)->GetHeight();
 
     return nHeight;
 }
@@ -174,17 +174,17 @@ const SvxBrushItem *SwWriteTable::GetLineBrush( const SwTableBox *pBox,
             {
                 if( !pRow->GetBackground() )
                     pRow->SetBackground( static_cast<const SvxBrushItem *>(pItem) );
-                pItem = 0;
+                pItem = nullptr;
             }
 
             return static_cast<const SvxBrushItem *>(pItem);
         }
 
         pBox = pLine->GetUpper();
-        pLine = pBox ? pBox->GetUpper() : 0;
+        pLine = pBox ? pBox->GetUpper() : nullptr;
     }
 
-    return 0;
+    return nullptr;
 }
 
 void SwWriteTable::MergeBorders( const SvxBorderLine* pBorderLine,
@@ -362,7 +362,7 @@ long SwWriteTable::GetAbsHeight(long nRawHeight, size_t const nRow,
 
     // Additional subtract in the first column CELLSPACING and
     // line thickness once again.
-    const SwWriteTableRow *pRow = 0;
+    const SwWriteTableRow *pRow = nullptr;
     if( nRow==0 )
     {
         nRawHeight -= nCellSpacing;
@@ -587,7 +587,7 @@ void SwWriteTable::FillTableRowsCols( long nStartRPos, sal_uInt16 nStartRow,
 
         long nHeight = 0;
         if( SfxItemState::SET == rItemSet.GetItemState( RES_FRM_SIZE, true, &pItem ))
-            nHeight = static_cast<const SwFormatFrmSize*>(pItem)->GetHeight();
+            nHeight = static_cast<const SwFormatFrameSize*>(pItem)->GetHeight();
 
         const SvxBrushItem *pBrushItem, *pLineBrush = pParentBrush;
         if( SfxItemState::SET == rItemSet.GetItemState( RES_BACKGROUND, false,
@@ -607,7 +607,7 @@ void SwWriteTable::FillTableRowsCols( long nStartRPos, sal_uInt16 nStartRow,
             if( bOutAtRow )
             {
                 pRow->SetBackground( pLineBrush );
-                pBrushItem = 0;
+                pBrushItem = nullptr;
             }
             else
                 pBrushItem = pLineBrush;
@@ -615,7 +615,7 @@ void SwWriteTable::FillTableRowsCols( long nStartRPos, sal_uInt16 nStartRow,
         else
         {
             pRow->SetBackground( pLineBrush );
-            pBrushItem = 0;
+            pBrushItem = nullptr;
         }
 
         const SwTableBoxes::size_type nBoxes = rBoxes.size();
@@ -732,7 +732,7 @@ SwWriteTable::SwWriteTable(const SwTable* pTable, const SwTableLines& rLines, lo
 #ifdef DBG_UTIL
     m_bGetLineHeightCalled(false),
 #endif
-    bColsOption(false), bColTags(true), bLayoutExport(false),
+    bColTags(true), bLayoutExport(false),
     bCollectBorderWidth(true)
 {
     sal_uInt32 nParentWidth = nBaseWidth + nLeftSub + nRightSub;
@@ -750,7 +750,7 @@ SwWriteTable::SwWriteTable(const SwTable* pTable, const SwTableLines& rLines, lo
     // and is highly coupled to CollectTableRowsCols - sadly.
     bUseLayoutHeights = true;
     // And now fill with life
-    FillTableRowsCols( 0, 0, 0, 0, 0, nParentWidth, rLines, 0, nMaxDepth - 1, static_cast< sal_uInt16 >(nNumOfRowsToRepeat) );
+    FillTableRowsCols( 0, 0, 0, 0, 0, nParentWidth, rLines, nullptr, nMaxDepth - 1, static_cast< sal_uInt16 >(nNumOfRowsToRepeat) );
 
     // Adjust some Twip values to pixel boundaries
     if( !nBorder )
@@ -765,7 +765,6 @@ SwWriteTable::SwWriteTable(const SwTable* pTable, const SwHTMLTableLayout *pLayo
 #ifdef DBG_UTIL
     m_bGetLineHeightCalled(false),
 #endif
-    bColsOption(pLayoutInfo->HasColsOption()),
     bColTags(pLayoutInfo->HasColTags()), bLayoutExport(true),
     bCollectBorderWidth(pLayoutInfo->HaveBordersChanged())
 {

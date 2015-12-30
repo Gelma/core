@@ -51,10 +51,9 @@ struct RTFCellDefault
 {
     SfxItemSet          maItemSet;
     sal_Int32           mnCol;
-    sal_uInt16              mnTwips;         // right border of the cell
     sal_Int32           mnColSpan;   // MergeCell if >1, merged cells if 0
 
-    explicit RTFCellDefault( SfxItemPool* pPool ) : maItemSet( *pPool ), mnCol(0), mnTwips(0 ), mnColSpan(1) {}
+    explicit RTFCellDefault( SfxItemPool* pPool ) : maItemSet( *pPool ), mnCol(0), mnColSpan(1) {}
 };
 
 typedef std::vector< std::shared_ptr< RTFCellDefault > > RTFCellDefaultVector;
@@ -64,9 +63,8 @@ struct RTFCellInfo
     SfxItemSet          maItemSet;
     sal_Int32           mnStartPara;
     sal_Int32           mnParaCount;
-    sal_Int32           mnColSpan;
 
-    explicit RTFCellInfo( SfxItemPool& rPool ) : maItemSet(  rPool ), mnStartPara(0), mnParaCount(0), mnColSpan(0) {}
+    explicit RTFCellInfo( SfxItemPool& rPool ) : maItemSet(  rPool ), mnStartPara(0), mnParaCount(0) {}
 };
 
 typedef std::shared_ptr< RTFCellInfo > RTFCellInfoPtr;
@@ -121,8 +119,8 @@ private:
     Reference< XTable > mxTable;
 
     // Copy assignment is forbidden and not implemented.
-    SdrTableRTFParser (const SdrTableRTFParser &) SAL_DELETED_FUNCTION;
-    SdrTableRTFParser & operator= (const SdrTableRTFParser &) SAL_DELETED_FUNCTION;
+    SdrTableRTFParser (const SdrTableRTFParser &) = delete;
+    SdrTableRTFParser & operator= (const SdrTableRTFParser &) = delete;
 };
 
 SdrTableRTFParser::SdrTableRTFParser( SdrTableObj& rTableObj )
@@ -135,8 +133,8 @@ SdrTableRTFParser::SdrTableRTFParser( SdrTableObj& rTableObj )
 , mnColCnt( 0 )
 , mnRowCnt( 0 )
 , mnColMax( 0 )
-, mpActDefault( 0 )
-, mpDefMerge( 0 )
+, mpActDefault( nullptr )
+, mpDefMerge( nullptr )
 , mxTable( rTableObj.getTable() )
 {
     mpOutliner->SetUpdateMode(true);
@@ -183,7 +181,7 @@ IMPL_LINK_TYPED( SdrTableRTFParser, RTFImportHdl, ImportInfo&, rInfo, void )
         case RTFIMP_END:
             if ( rInfo.aSelection.nEndPos )
             {
-                mpActDefault = NULL;
+                mpActDefault = nullptr;
                 rInfo.nToken = RTF_PAR;
                 rInfo.aSelection.nEndPara++;
                 ProcToken( &rInfo );
@@ -268,7 +266,7 @@ void SdrTableRTFParser::FillTable()
                 CellRef xCell( dynamic_cast< Cell* >( mxTable->getCellByPosition( nCol, nRow ).get() ) );
                 if( xCell.is() && xCellInfo.get() )
                 {
-                    const SfxPoolItem *pPoolItem = 0;
+                    const SfxPoolItem *pPoolItem = nullptr;
                     if( xCellInfo->maItemSet.GetItemState(SDRATTR_TABLE_BORDER,false,&pPoolItem)==SfxItemState::SET)
                         xCell->SetMergedItem( *pPoolItem );
 
@@ -304,7 +302,7 @@ void SdrTableRTFParser::NewCellRow()
 
         maRows.push_back( RTFColumnVectorPtr( new RTFColumnVector() ) );
     }
-    mpDefMerge = NULL;
+    mpDefMerge = nullptr;
     maDefaultIterator = maDefaultList.begin();
 
     NextColumn();
@@ -317,7 +315,7 @@ void SdrTableRTFParser::NextColumn()
     if( maDefaultIterator != maDefaultList.end() )
         mpActDefault = (*maDefaultIterator++).get();
     else
-        mpActDefault = 0;
+        mpActDefault = nullptr;
 }
 
 long TwipsToHundMM( long nIn )
@@ -334,7 +332,7 @@ void SdrTableRTFParser::ProcToken( ImportInfo* pInfo )
         {
             mnColCnt = 0;
             maDefaultList.clear();
-            mpDefMerge = NULL;
+            mpDefMerge = nullptr;
             mnLastToken = pInfo->nToken;
         }
         break;

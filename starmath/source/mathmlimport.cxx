@@ -42,6 +42,7 @@ one go*/
 #include <comphelper/processfactory.hxx>
 #include <comphelper/servicehelper.hxx>
 #include <comphelper/string.hxx>
+#include <o3tl/make_unique.hxx>
 #include <rtl/math.hxx>
 #include <sfx2/frame.hxx>
 #include <sfx2/docfile.hxx>
@@ -95,13 +96,12 @@ sal_uLong SmXMLImportWrapper::Import(SfxMedium &rMedium)
     uno::Reference<task::XStatusIndicator> xStatusIndicator;
 
     bool bEmbedded = false;
-    uno::Reference <lang::XUnoTunnel> xTunnel;
-    xTunnel = uno::Reference <lang::XUnoTunnel> (xModel,uno::UNO_QUERY);
+    uno::Reference <lang::XUnoTunnel> xTunnel(xModel,uno::UNO_QUERY);
     SmModel *pModel = reinterpret_cast<SmModel *>
         (xTunnel->getSomething(SmModel::getUnoTunnelId()));
 
     SmDocShell *pDocShell = pModel ?
-            static_cast<SmDocShell*>(pModel->GetObjectShell()) : 0;
+            static_cast<SmDocShell*>(pModel->GetObjectShell()) : nullptr;
     if (pDocShell)
     {
         OSL_ENSURE( pDocShell->GetMedium() == &rMedium,
@@ -141,8 +141,9 @@ sal_uLong SmXMLImportWrapper::Import(SfxMedium &rMedium)
                             new comphelper::PropertySetInfo( aInfoMap ) ) );
 
     // Set base URI
-    OUString sPropName( "BaseURI" );
-    xInfoSet->setPropertyValue( sPropName, makeAny( rMedium.GetBaseURL() ) );
+    OUString const baseURI(rMedium.GetBaseURL());
+    assert(!baseURI.isEmpty()); // needed for relative URLs
+    xInfoSet->setPropertyValue("BaseURI", makeAny(baseURI));
 
     sal_Int32 nSteps=3;
     if ( !(rMedium.IsStorage()))
@@ -174,8 +175,7 @@ sal_uLong SmXMLImportWrapper::Import(SfxMedium &rMedium)
 
             if ( !aName.isEmpty() )
             {
-                sPropName = "StreamRelPath";
-                xInfoSet->setPropertyValue( sPropName, makeAny( aName ) );
+                xInfoSet->setPropertyValue("StreamRelPath", makeAny(aName));
             }
         }
 
@@ -195,7 +195,7 @@ sal_uLong SmXMLImportWrapper::Import(SfxMedium &rMedium)
                 xStatusIndicator->setValue(nSteps++);
 
             nWarn = ReadThroughComponent(
-                rMedium.GetStorage(), xModelComp, "settings.xml", 0,
+                rMedium.GetStorage(), xModelComp, "settings.xml", nullptr,
                 xContext, xInfoSet,
                 (bOASIS ? "com.sun.star.comp.Math.XMLOasisSettingsImporter"
                         : "com.sun.star.comp.Math.XMLSettingsImporter" ) );
@@ -246,7 +246,7 @@ sal_uLong SmXMLImportWrapper::ReadThroughComponent(
     OSL_ENSURE(xInputStream.is(), "input stream missing");
     OSL_ENSURE(xModelComponent.is(), "document missing");
     OSL_ENSURE(rxContext.is(), "factory missing");
-    OSL_ENSURE(NULL != pFilterName,"I need a service name for the component!");
+    OSL_ENSURE(nullptr != pFilterName,"I need a service name for the component!");
 
     // prepare ParserInputSrouce
     xml::sax::InputSource aParserInput;
@@ -279,9 +279,7 @@ sal_uLong SmXMLImportWrapper::ReadThroughComponent(
     {
         xParser->parseStream( aParserInput );
 
-        uno::Reference<lang::XUnoTunnel> xFilterTunnel;
-        xFilterTunnel = uno::Reference<lang::XUnoTunnel>
-            ( xFilter, uno::UNO_QUERY );
+        uno::Reference<lang::XUnoTunnel> xFilterTunnel( xFilter, uno::UNO_QUERY );
         SmXMLImport *pFilter = reinterpret_cast< SmXMLImport * >(
                 sal::static_int_cast< sal_uIntPtr >(
                 xFilterTunnel->getSomething( SmXMLImport::getUnoTunnelId() )));
@@ -342,7 +340,7 @@ sal_uLong SmXMLImportWrapper::ReadThroughComponent(
     const sal_Char* pFilterName )
 {
     OSL_ENSURE(xStorage.is(), "Need storage!");
-    OSL_ENSURE(NULL != pStreamName, "Please, please, give me a name!");
+    OSL_ENSURE(nullptr != pStreamName, "Please, please, give me a name!");
 
     // open stream (and set parser input)
     OUString sStreamName = OUString::createFromAscii(pStreamName);
@@ -396,7 +394,7 @@ sal_uLong SmXMLImportWrapper::ReadThroughComponent(
 
 
 SmXMLImport::SmXMLImport(
-    const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >& rContext,
+    const css::uno::Reference< css::uno::XComponentContext >& rContext,
     OUString const & implementationName, SvXMLImportFlags nImportFlags)
 :   SvXMLImport(rContext, implementationName, nImportFlags),
     bSuccess(false)
@@ -488,11 +486,10 @@ void SmXMLImport::endDocument()
 {
     //Set the resulted tree into the SmDocShell where it belongs
     SmNode *pTree;
-    if (NULL != (pTree = GetTree()))
+    if (nullptr != (pTree = GetTree()))
     {
         uno::Reference <frame::XModel> xModel = GetModel();
-        uno::Reference <lang::XUnoTunnel> xTunnel;
-        xTunnel = uno::Reference <lang::XUnoTunnel> (xModel,uno::UNO_QUERY);
+        uno::Reference <lang::XUnoTunnel> xTunnel(xModel,uno::UNO_QUERY);
         SmModel *pModel = reinterpret_cast<SmModel *>
             (xTunnel->getSomething(SmModel::getUnoTunnelId()));
 
@@ -542,8 +539,8 @@ public:
     }
 
     virtual void TCharacters(const OUString & /*rChars*/);
-    virtual void Characters(const OUString &rChars) SAL_OVERRIDE;
-    virtual SvXMLImportContext *CreateChildContext(sal_uInt16 /*nPrefix*/, const OUString& /*rLocalName*/, const uno::Reference< xml::sax::XAttributeList > & /*xAttrList*/) SAL_OVERRIDE;
+    virtual void Characters(const OUString &rChars) override;
+    virtual SvXMLImportContext *CreateChildContext(sal_uInt16 /*nPrefix*/, const OUString& /*rLocalName*/, const uno::Reference< xml::sax::XAttributeList > & /*xAttrList*/) override;
 };
 
 void SmXMLImportContext::TCharacters(const OUString & /*rChars*/)
@@ -568,7 +565,7 @@ SvXMLImportContext * SmXMLImportContext::CreateChildContext(sal_uInt16 /*nPrefix
     const OUString& /*rLocalName*/,
     const uno::Reference< xml::sax::XAttributeList > & /*xAttrList*/)
 {
-    return 0;
+    return nullptr;
 }
 
 
@@ -582,7 +579,7 @@ struct SmXMLContext_Helper
     OUString sFontFamily;
     OUString sColor;
 
-    SmXMLImportContext rContext;
+    SmXMLImportContext & rContext;
 
     explicit SmXMLContext_Helper(SmXMLImportContext &rImport)
         : nIsBold( -1 )
@@ -674,10 +671,9 @@ void SmXMLContext_Helper::ApplyAttrs()
                 aToken.eType = TBOLD;
             else
                 aToken.eType = TNBOLD;
-            SmStructureNode *pFontNode = static_cast<SmStructureNode *>
-                (new SmFontNode(aToken));
-            pFontNode->SetSubNodes(0,popOrZero(rNodeStack));
-            rNodeStack.push_front(pFontNode);
+            std::unique_ptr<SmFontNode> pFontNode(new SmFontNode(aToken));
+            pFontNode->SetSubNodes(nullptr,popOrZero(rNodeStack));
+            rNodeStack.push_front(std::move(pFontNode));
         }
         if (nIsItalic != -1)
         {
@@ -685,15 +681,14 @@ void SmXMLContext_Helper::ApplyAttrs()
                 aToken.eType = TITALIC;
             else
                 aToken.eType = TNITALIC;
-            SmStructureNode *pFontNode = static_cast<SmStructureNode *>
-                (new SmFontNode(aToken));
-            pFontNode->SetSubNodes(0,popOrZero(rNodeStack));
-            rNodeStack.push_front(pFontNode);
+            std::unique_ptr<SmFontNode> pFontNode(new SmFontNode(aToken));
+            pFontNode->SetSubNodes(nullptr,popOrZero(rNodeStack));
+            rNodeStack.push_front(std::move(pFontNode));
         }
         if (nFontSize != 0.0)
         {
             aToken.eType = TSIZE;
-            SmFontNode *pFontNode = new SmFontNode(aToken);
+            std::unique_ptr<SmFontNode> pFontNode(new SmFontNode(aToken));
 
             if (util::MeasureUnit::PERCENT == rContext.GetSmImport()
                     .GetMM100UnitConverter().GetXMLMeasureUnit())
@@ -708,8 +703,8 @@ void SmXMLContext_Helper::ApplyAttrs()
             else
                 pFontNode->SetSizeParameter(Fraction(nFontSize),FontSizeType::ABSOLUT);
 
-            pFontNode->SetSubNodes(0,popOrZero(rNodeStack));
-            rNodeStack.push_front(pFontNode);
+            pFontNode->SetSubNodes(nullptr,popOrZero(rNodeStack));
+            rNodeStack.push_front(std::move(pFontNode));
         }
         if (!sFontFamily.isEmpty())
         {
@@ -724,9 +719,9 @@ void SmXMLContext_Helper::ApplyAttrs()
                 return;
 
             aToken.aText = sFontFamily;
-            SmFontNode *pFontNode = new SmFontNode(aToken);
-            pFontNode->SetSubNodes(0,popOrZero(rNodeStack));
-            rNodeStack.push_front(pFontNode);
+            std::unique_ptr<SmFontNode> pFontNode(new SmFontNode(aToken));
+            pFontNode->SetSubNodes(nullptr,popOrZero(rNodeStack));
+            rNodeStack.push_front(std::move(pFontNode));
         }
         if (!sColor.isEmpty())
         {
@@ -738,9 +733,9 @@ void SmXMLContext_Helper::ApplyAttrs()
             if (tok != XML_TOK_UNKNOWN)
             {
                 aToken.eType = static_cast<SmTokenType>(tok);
-                SmFontNode *pFontNode = new SmFontNode(aToken);
-                pFontNode->SetSubNodes(0,popOrZero(rNodeStack));
-                rNodeStack.push_front(pFontNode);
+                std::unique_ptr<SmFontNode> pFontNode(new SmFontNode(aToken));
+                pFontNode->SetSubNodes(nullptr,popOrZero(rNodeStack));
+                rNodeStack.push_front(std::move(pFontNode));
             }
         }
 
@@ -756,9 +751,9 @@ public:
         const OUString& rLName)
         : SmXMLImportContext(rImport,nPrfx,rLName) {}
 
-    virtual SvXMLImportContext *CreateChildContext(sal_uInt16 nPrefix, const OUString& rLocalName, const uno::Reference< xml::sax::XAttributeList > &xAttrList) SAL_OVERRIDE;
+    virtual SvXMLImportContext *CreateChildContext(sal_uInt16 nPrefix, const OUString& rLocalName, const uno::Reference< xml::sax::XAttributeList > &xAttrList) override;
 
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
 };
 
 
@@ -775,13 +770,13 @@ public:
         : SmXMLDocContext_Impl(rImport,nPrefix,rLName)
         { nElementCount = GetSmImport().GetNodeStack().size(); }
 
-    virtual SvXMLImportContext *CreateChildContext(sal_uInt16 nPrefix, const OUString& rLocalName, const uno::Reference< xml::sax::XAttributeList > &xAttrList) SAL_OVERRIDE;
+    virtual SvXMLImportContext *CreateChildContext(sal_uInt16 nPrefix, const OUString& rLocalName, const uno::Reference< xml::sax::XAttributeList > &xAttrList) override;
 
     SvXMLImportContext *StrictCreateChildContext(sal_uInt16 nPrefix,
         const OUString& rLocalName,
         const uno::Reference< xml::sax::XAttributeList > &xAttrList);
 
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
 };
 
 
@@ -795,7 +790,7 @@ public:
         const OUString& rLName)
         : SmXMLRowContext_Impl(rImport,nPrefix,rLName) {}
 
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
 };
 
 void SmXMLEncloseContext_Impl::EndElement()
@@ -819,7 +814,7 @@ public:
         const OUString& rLName)
         : SmXMLRowContext_Impl(rImport,nPrefix,rLName) {}
 
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
 };
 
 
@@ -831,7 +826,7 @@ public:
         const OUString& rLName)
         : SmXMLRowContext_Impl(rImport,nPrefix,rLName) {}
 
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
 };
 
 
@@ -843,7 +838,7 @@ public:
         const OUString& rLName)
         : SmXMLRowContext_Impl(rImport,nPrefix,rLName) {}
 
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
 };
 
 
@@ -859,8 +854,8 @@ public:
         const OUString& rLName) : SmXMLRowContext_Impl(rImport,nPrefix,rLName),
         aStyleHelper(*this) {}
 
-    void EndElement() SAL_OVERRIDE;
-    void StartElement(const uno::Reference< xml::sax::XAttributeList > &xAttrList ) SAL_OVERRIDE;
+    void EndElement() override;
+    void StartElement(const uno::Reference< xml::sax::XAttributeList > &xAttrList ) override;
 };
 
 void SmXMLStyleContext_Impl::StartElement(const uno::Reference<
@@ -893,7 +888,7 @@ public:
         const OUString& rLName)
         : SmXMLRowContext_Impl(rImport,nPrefix,rLName) {}
 
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
 };
 
 void SmXMLPaddedContext_Impl::EndElement()
@@ -917,7 +912,7 @@ public:
         const OUString& rLName)
         : SmXMLRowContext_Impl(rImport,nPrefix,rLName) {}
 
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
 };
 
 void SmXMLPhantomContext_Impl::EndElement()
@@ -935,11 +930,10 @@ void SmXMLPhantomContext_Impl::EndElement()
     aToken.nLevel = 5;
     aToken.eType = TPHANTOM;
 
-    SmStructureNode *pPhantom = static_cast<SmStructureNode *>
-        (new SmFontNode(aToken));
+    std::unique_ptr<SmFontNode> pPhantom(new SmFontNode(aToken));
     SmNodeStack &rNodeStack = GetSmImport().GetNodeStack();
-    pPhantom->SetSubNodes(0,popOrZero(rNodeStack));
-    rNodeStack.push_front(pPhantom);
+    pPhantom->SetSubNodes(nullptr,popOrZero(rNodeStack));
+    rNodeStack.push_front(std::move(pPhantom));
 }
 
 
@@ -956,8 +950,8 @@ public:
         : SmXMLRowContext_Impl(rImport,nPrefix,rLName),
         cBegin('('), cEnd(')') {}
 
-    void StartElement(const uno::Reference< xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
-    void EndElement() SAL_OVERRIDE;
+    void StartElement(const uno::Reference< xml::sax::XAttributeList > & xAttrList ) override;
+    void EndElement() override;
 };
 
 
@@ -996,12 +990,11 @@ void SmXMLFencedContext_Impl::EndElement()
     SmToken aToken;
     aToken.cMathChar = '\0';
     aToken.aText = ",";
-    aToken.eType = TLEFT;
     aToken.nLevel = 5;
 
     aToken.eType = TLPARENT;
     aToken.cMathChar = cBegin;
-    SmStructureNode *pSNode = new SmBraceNode(aToken);
+    std::unique_ptr<SmStructureNode> pSNode(new SmBraceNode(aToken));
     SmNode *pLeft = new SmMathSymbolNode(aToken);
 
     aToken.cMathChar = cEnd;
@@ -1021,7 +1014,8 @@ void SmXMLFencedContext_Impl::EndElement()
     aRelationArray.resize(i);
     while (rNodeStack.size() > nElementCount)
     {
-        auto pNode = rNodeStack.pop_front();
+        auto pNode = std::move(rNodeStack.front());
+        rNodeStack.pop_front();
         aRelationArray[--i] = pNode.release();
         if (i > 1 && rNodeStack.size() > 1)
             aRelationArray[--i] = new SmGlyphSpecialNode(aToken);
@@ -1034,7 +1028,7 @@ void SmXMLFencedContext_Impl::EndElement()
 
     pSNode->SetSubNodes(pLeft,pBody,pRight);
     pSNode->SetScaleMode(SCALE_HEIGHT);
-    GetSmImport().GetNodeStack().push_front(pSNode);
+    GetSmImport().GetNodeStack().push_front(std::move(pSNode));
 }
 
 
@@ -1047,7 +1041,7 @@ public:
         const OUString& rLName)
         : SmXMLRowContext_Impl(rImport,nPrefix,rLName) {}
 
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
 };
 
 void SmXMLErrorContext_Impl::EndElement()
@@ -1083,9 +1077,9 @@ public:
         aToken.eType = TNUMBER;
     }
 
-    virtual void TCharacters(const OUString &rChars) SAL_OVERRIDE;
+    virtual void TCharacters(const OUString &rChars) override;
 
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
 };
 
 void SmXMLNumberContext_Impl::TCharacters(const OUString &rChars)
@@ -1095,7 +1089,7 @@ void SmXMLNumberContext_Impl::TCharacters(const OUString &rChars)
 
 void SmXMLNumberContext_Impl::EndElement()
 {
-    GetSmImport().GetNodeStack().push_front(new SmTextNode(aToken,FNT_NUMBER));
+    GetSmImport().GetNodeStack().push_front(o3tl::make_unique<SmTextNode>(aToken,FNT_NUMBER));
 }
 
 
@@ -1109,9 +1103,9 @@ public:
         const OUString& rLName)
         : SmXMLImportContext(rImport,nPrefix,rLName), bIsStarMath(false) {}
 
-    virtual void Characters(const OUString &rChars) SAL_OVERRIDE;
+    virtual void Characters(const OUString &rChars) override;
 
-    void StartElement(const uno::Reference<xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE;
+    void StartElement(const uno::Reference<xml::sax::XAttributeList > & xAttrList ) override;
 };
 
 void SmXMLAnnotationContext_Impl::StartElement(const uno::Reference<
@@ -1162,9 +1156,9 @@ public:
         aToken.eType = TTEXT;
     }
 
-    virtual void TCharacters(const OUString &rChars) SAL_OVERRIDE;
+    virtual void TCharacters(const OUString &rChars) override;
 
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
 };
 
 void SmXMLTextContext_Impl::TCharacters(const OUString &rChars)
@@ -1174,7 +1168,7 @@ void SmXMLTextContext_Impl::TCharacters(const OUString &rChars)
 
 void SmXMLTextContext_Impl::EndElement()
 {
-    GetSmImport().GetNodeStack().push_front(new SmTextNode(aToken,FNT_TEXT));
+    GetSmImport().GetNodeStack().push_front(o3tl::make_unique<SmTextNode>(aToken,FNT_TEXT));
 }
 
 
@@ -1194,9 +1188,9 @@ public:
         aToken.eType = TTEXT;
     }
 
-    virtual void TCharacters(const OUString &rChars) SAL_OVERRIDE;
+    virtual void TCharacters(const OUString &rChars) override;
 
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
 };
 
 void SmXMLStringContext_Impl::TCharacters(const OUString &rChars)
@@ -1216,7 +1210,7 @@ void SmXMLStringContext_Impl::TCharacters(const OUString &rChars)
 
 void SmXMLStringContext_Impl::EndElement()
 {
-    GetSmImport().GetNodeStack().push_front(new SmTextNode(aToken,FNT_FIXED));
+    GetSmImport().GetNodeStack().push_front(o3tl::make_unique<SmTextNode>(aToken,FNT_FIXED));
 }
 
 
@@ -1237,28 +1231,28 @@ public:
         aToken.eType = TIDENT;
     }
 
-    void TCharacters(const OUString &rChars) SAL_OVERRIDE;
-    void StartElement(const uno::Reference< xml::sax::XAttributeList > & xAttrList ) SAL_OVERRIDE
+    void TCharacters(const OUString &rChars) override;
+    void StartElement(const uno::Reference< xml::sax::XAttributeList > & xAttrList ) override
     {
         aStyleHelper.RetrieveAttrs(xAttrList);
     };
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
 };
 
 void SmXMLIdentifierContext_Impl::EndElement()
 {
-    SmTextNode *pNode = 0;
+    std::unique_ptr<SmTextNode> pNode;
     //we will handle identifier italic/normal here instead of with a standalone
     //font node
     if (((aStyleHelper.nIsItalic == -1) && (aToken.aText.getLength() > 1))
         || ((aStyleHelper.nIsItalic == 0) && (aToken.aText.getLength() == 1)))
     {
-        pNode = new SmTextNode(aToken,FNT_FUNCTION);
+        pNode.reset(new SmTextNode(aToken,FNT_FUNCTION));
         pNode->GetFont().SetItalic(ITALIC_NONE);
         aStyleHelper.nIsItalic = -1;
     }
     else
-        pNode = new SmTextNode(aToken,FNT_VARIABLE);
+        pNode.reset(new SmTextNode(aToken,FNT_VARIABLE));
     if (aStyleHelper.bFontNodeNeeded && aStyleHelper.nIsItalic != -1)
     {
         if (aStyleHelper.nIsItalic)
@@ -1275,7 +1269,7 @@ void SmXMLIdentifierContext_Impl::EndElement()
         aStyleHelper.bFontNodeNeeded=false;
     if (aStyleHelper.bFontNodeNeeded)
         aStyleHelper.ApplyAttrs();
-    GetSmImport().GetNodeStack().push_front(pNode);
+    GetSmImport().GetNodeStack().push_front(std::move(pNode));
 }
 
 void SmXMLIdentifierContext_Impl::TCharacters(const OUString &rChars)
@@ -1301,9 +1295,9 @@ public:
         aToken.nLevel = 5;
     }
 
-    void TCharacters(const OUString &rChars) SAL_OVERRIDE;
-    void StartElement(const uno::Reference< xml::sax::XAttributeList > &xAttrList ) SAL_OVERRIDE;
-    void EndElement() SAL_OVERRIDE;
+    void TCharacters(const OUString &rChars) override;
+    void StartElement(const uno::Reference< xml::sax::XAttributeList > &xAttrList ) override;
+    void EndElement() override;
 };
 
 void SmXMLOperatorContext_Impl::TCharacters(const OUString &rChars)
@@ -1313,13 +1307,13 @@ void SmXMLOperatorContext_Impl::TCharacters(const OUString &rChars)
 
 void SmXMLOperatorContext_Impl::EndElement()
 {
-    SmMathSymbolNode *pNode = new SmMathSymbolNode(aToken);
+    std::unique_ptr<SmMathSymbolNode> pNode(new SmMathSymbolNode(aToken));
     //For stretchy scaling the scaling must be retrieved from this node
     //and applied to the expression itself so as to get the expression
     //to scale the operator to the height of the expression itself
     if (bIsStretchy)
         pNode->SetScaleMode(SCALE_HEIGHT);
-    GetSmImport().GetNodeStack().push_front(pNode);
+    GetSmImport().GetNodeStack().push_front(std::move(pNode));
 }
 
 
@@ -1360,7 +1354,7 @@ public:
         const OUString& rLName)
         : SmXMLImportContext(rImport,nPrefix,rLName) {}
 
-    void StartElement(const uno::Reference< xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+    void StartElement(const uno::Reference< xml::sax::XAttributeList >& xAttrList ) override;
 };
 
 void SmXMLSpaceContext_Impl::StartElement(
@@ -1372,9 +1366,9 @@ void SmXMLSpaceContext_Impl::StartElement(
     aToken.cMathChar = '\0';
     aToken.eType = TBLANK;
     aToken.nLevel = 5;
-    SmBlankNode *pBlank = new SmBlankNode(aToken);
+    std::unique_ptr<SmBlankNode> pBlank(new SmBlankNode(aToken));
     pBlank->IncreaseBy(aToken);
-    GetSmImport().GetNodeStack().push_front(pBlank);
+    GetSmImport().GetNodeStack().push_front(std::move(pBlank));
 }
 
 
@@ -1389,7 +1383,7 @@ public:
         const OUString& rLName)
         : SmXMLRowContext_Impl(rImport,nPrefix,rLName) {}
 
-    void EndElement() SAL_OVERRIDE
+    void EndElement() override
     {
         GenericEndElement(TRSUB,RSUB);
     }
@@ -1407,19 +1401,19 @@ void SmXMLSubContext_Impl::GenericEndElement(SmTokenType eType, SmSubSup eSubSup
     SmToken aToken;
     aToken.cMathChar = '\0';
     aToken.eType = eType;
-    SmSubSupNode *pNode = new SmSubSupNode(aToken);
+    std::unique_ptr<SmSubSupNode> pNode(new SmSubSupNode(aToken));
     SmNodeStack &rNodeStack = GetSmImport().GetNodeStack();
 
     // initialize subnodes array
     SmNodeArray  aSubNodes;
     aSubNodes.resize(1 + SUBSUP_NUM_ENTRIES);
     for (size_t i = 1;  i < aSubNodes.size();  i++)
-        aSubNodes[i] = NULL;
+        aSubNodes[i] = nullptr;
 
     aSubNodes[eSubSup+1] = popOrZero(rNodeStack);
     aSubNodes[0] = popOrZero(rNodeStack);
     pNode->SetSubNodes(aSubNodes);
-    rNodeStack.push_front(pNode);
+    rNodeStack.push_front(std::move(pNode));
 }
 
 
@@ -1431,7 +1425,7 @@ public:
         const OUString& rLName)
         : SmXMLSubContext_Impl(rImport,nPrefix,rLName) {}
 
-    void EndElement() SAL_OVERRIDE
+    void EndElement() override
     {
         GenericEndElement(TRSUP,RSUP);
     }
@@ -1449,7 +1443,7 @@ public:
         const OUString& rLName)
         : SmXMLRowContext_Impl(rImport,nPrefix,rLName) {}
 
-    void EndElement() SAL_OVERRIDE
+    void EndElement() override
     {
         GenericEndElement(TRSUB,RSUB,RSUP);
     }
@@ -1467,20 +1461,20 @@ void SmXMLSubSupContext_Impl::GenericEndElement(SmTokenType eType,
     SmToken aToken;
     aToken.cMathChar = '\0';
     aToken.eType = eType;
-    SmSubSupNode *pNode = new SmSubSupNode(aToken);
+    std::unique_ptr<SmSubSupNode> pNode(new SmSubSupNode(aToken));
     SmNodeStack &rNodeStack = GetSmImport().GetNodeStack();
 
     // initialize subnodes array
     SmNodeArray  aSubNodes;
     aSubNodes.resize(1 + SUBSUP_NUM_ENTRIES);
     for (size_t i = 1;  i < aSubNodes.size();  i++)
-        aSubNodes[i] = NULL;
+        aSubNodes[i] = nullptr;
 
     aSubNodes[aSup+1] = popOrZero(rNodeStack);
     aSubNodes[aSub+1] = popOrZero(rNodeStack);
     aSubNodes[0] =  popOrZero(rNodeStack);
     pNode->SetSubNodes(aSubNodes);
-    rNodeStack.push_front(pNode);
+    rNodeStack.push_front(std::move(pNode));
 }
 
 
@@ -1497,8 +1491,8 @@ public:
         , nAttrCount( 0 )
         {}
 
-    void StartElement(const uno::Reference< xml::sax::XAttributeList > &xAttrList ) SAL_OVERRIDE;
-    void EndElement() SAL_OVERRIDE;
+    void StartElement(const uno::Reference< xml::sax::XAttributeList > &xAttrList ) override;
+    void EndElement() override;
     void HandleAccent();
 };
 
@@ -1526,7 +1520,7 @@ void SmXMLUnderContext_Impl::HandleAccent()
     SmNodeArray aSubNodes;
     aSubNodes.resize(2);
 
-    SmStructureNode *pNode = new SmAttributNode(aToken);
+    std::unique_ptr<SmStructureNode> pNode(new SmAttributNode(aToken));
     if ((pTest->GetToken().cMathChar & 0x0FFF) == 0x0332)
     {
         aSubNodes[0] = new SmRectangleNode(aToken);
@@ -1538,7 +1532,7 @@ void SmXMLUnderContext_Impl::HandleAccent()
     aSubNodes[1] = popOrZero(rNodeStack);
     pNode->SetSubNodes(aSubNodes);
     pNode->SetScaleMode(SCALE_WIDTH);
-    rNodeStack.push_front(pNode);
+    rNodeStack.push_front(std::move(pNode));
 }
 
 
@@ -1562,8 +1556,8 @@ public:
         const OUString& rLName)
         : SmXMLSubContext_Impl(rImport,nPrefix,rLName), nAttrCount(0) {}
 
-    void EndElement() SAL_OVERRIDE;
-    void StartElement(const uno::Reference< xml::sax::XAttributeList > &xAttrList ) SAL_OVERRIDE;
+    void EndElement() override;
+    void StartElement(const uno::Reference< xml::sax::XAttributeList > &xAttrList ) override;
     void HandleAccent();
 };
 
@@ -1595,7 +1589,7 @@ void SmXMLOverContext_Impl::HandleAccent()
     aToken.cMathChar = '\0';
     aToken.eType = TACUTE;
 
-    SmAttributNode *pNode = new SmAttributNode(aToken);
+    std::unique_ptr<SmAttributNode> pNode(new SmAttributNode(aToken));
     SmNodeStack &rNodeStack = GetSmImport().GetNodeStack();
 
     SmNodeArray aSubNodes;
@@ -1604,7 +1598,7 @@ void SmXMLOverContext_Impl::HandleAccent()
     aSubNodes[1] = popOrZero(rNodeStack);
     pNode->SetSubNodes(aSubNodes);
     pNode->SetScaleMode(SCALE_WIDTH);
-    rNodeStack.push_front(pNode);
+    rNodeStack.push_front(std::move(pNode));
 
 }
 
@@ -1617,7 +1611,7 @@ public:
         const OUString& rLName)
         : SmXMLSubSupContext_Impl(rImport,nPrefix,rLName) {}
 
-    void EndElement() SAL_OVERRIDE
+    void EndElement() override
     {
         GenericEndElement(TCSUB,CSUB,CSUP);
     }
@@ -1637,10 +1631,10 @@ public:
         SmXMLSubSupContext_Impl(rImport,nPrefix,rLName),
         bHasPrescripts(false) {}
 
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
     SvXMLImportContext *CreateChildContext(sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const uno::Reference< xml::sax::XAttributeList > &xAttrList) SAL_OVERRIDE;
+        const uno::Reference< xml::sax::XAttributeList > &xAttrList) override;
 };
 
 
@@ -1652,7 +1646,7 @@ public:
         const OUString& rLName)
         : SmXMLImportContext(rImport,nPrefix,rLName) {}
 
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
 };
 
 
@@ -1664,7 +1658,7 @@ void SmXMLNoneContext_Impl::EndElement()
     aToken.nLevel = 5;
     aToken.eType = TIDENT;
     GetSmImport().GetNodeStack().push_front(
-        new SmTextNode(aToken,FNT_VARIABLE));
+        o3tl::make_unique<SmTextNode>(aToken,FNT_VARIABLE));
 }
 
 
@@ -1689,7 +1683,7 @@ public:
 
     SvXMLImportContext *CreateChildContext(sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const uno::Reference< xml::sax::XAttributeList > &xAttrList) SAL_OVERRIDE;
+        const uno::Reference< xml::sax::XAttributeList > &xAttrList) override;
 };
 
 
@@ -1703,10 +1697,10 @@ public:
         SmXMLTableRowContext_Impl(rImport,nPrefix,rLName)
         {}
 
-    void EndElement() SAL_OVERRIDE;
+    void EndElement() override;
     SvXMLImportContext *CreateChildContext(sal_uInt16 nPrefix,
         const OUString& rLocalName,
-        const uno::Reference< xml::sax::XAttributeList > &xAttrList) SAL_OVERRIDE;
+        const uno::Reference< xml::sax::XAttributeList > &xAttrList) override;
 };
 
 
@@ -1732,7 +1726,7 @@ public:
         {}
 
     /*Don't do anything with alignment for now*/
-    void EndElement() SAL_OVERRIDE
+    void EndElement() override
     {
     }
 };
@@ -1750,8 +1744,8 @@ public:
       , mnSelection(1)
         {}
 
-    void StartElement(const uno::Reference<xml::sax::XAttributeList> &xAttrList) SAL_OVERRIDE;
-    void EndElement() SAL_OVERRIDE;
+    void StartElement(const uno::Reference<xml::sax::XAttributeList> &xAttrList) override;
+    void EndElement() override;
 };
 
 
@@ -1765,14 +1759,14 @@ public:
         const OUString& rLName)
         : SvXMLImportContext(rImport,nPrfx,rLName) {}
 
-    virtual SvXMLImportContext *CreateChildContext(sal_uInt16 nPrefix, const OUString& rLocalName, const uno::Reference< xml::sax::XAttributeList > &xAttrList) SAL_OVERRIDE;
+    virtual SvXMLImportContext *CreateChildContext(sal_uInt16 nPrefix, const OUString& rLocalName, const uno::Reference< xml::sax::XAttributeList > &xAttrList) override;
 };
 
 SvXMLImportContext *SmXMLOfficeContext_Impl::CreateChildContext(sal_uInt16 nPrefix,
         const OUString& rLocalName,
         const uno::Reference< xml::sax::XAttributeList > &xAttrList)
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
     if ( XML_NAMESPACE_OFFICE == nPrefix &&
         rLocalName == GetXMLToken(XML_META) )
     {
@@ -1804,7 +1798,7 @@ public:
 
     virtual ~SmXMLFlatDocContext_Impl();
 
-    virtual SvXMLImportContext *CreateChildContext(sal_uInt16 i_nPrefix, const OUString& i_rLocalName, const uno::Reference<xml::sax::XAttributeList>& i_xAttrList) SAL_OVERRIDE;
+    virtual SvXMLImportContext *CreateChildContext(sal_uInt16 i_nPrefix, const OUString& i_rLocalName, const uno::Reference<xml::sax::XAttributeList>& i_xAttrList) override;
 };
 
 SmXMLFlatDocContext_Impl::SmXMLFlatDocContext_Impl( SmXMLImport& i_rImport,
@@ -2031,7 +2025,7 @@ SvXMLImportContext *SmXMLDocContext_Impl::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference<xml::sax::XAttributeList>& xAttrList)
 {
-    SvXMLImportContext* pContext = 0L;
+    SvXMLImportContext* pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetSmImport().GetPresLayoutElemTokenMap();
 
@@ -2143,21 +2137,22 @@ void SmXMLDocContext_Impl::EndElement()
     ContextArray[0] = popOrZero(rNodeStack);
 
     SmToken aDummy;
-    SmStructureNode *pSNode = new SmLineNode(aDummy);
+    std::unique_ptr<SmStructureNode> pSNode(new SmLineNode(aDummy));
     pSNode->SetSubNodes(ContextArray);
-    rNodeStack.push_front(pSNode);
+    rNodeStack.push_front(std::move(pSNode));
 
     SmNodeArray  LineArray;
     auto n = rNodeStack.size();
     LineArray.resize(n);
     for (size_t j = 0; j < n; j++)
     {
-        auto pNode = rNodeStack.pop_front();
+        auto pNode = std::move(rNodeStack.front());
+        rNodeStack.pop_front();
         LineArray[n - (j + 1)] = pNode.release();
     }
-    SmStructureNode *pSNode2 = new SmTableNode(aDummy);
+    std::unique_ptr<SmStructureNode> pSNode2(new SmTableNode(aDummy));
     pSNode2->SetSubNodes(LineArray);
-    rNodeStack.push_front(pSNode2);
+    rNodeStack.push_front(std::move(pSNode2));
 }
 
 void SmXMLFracContext_Impl::EndElement()
@@ -2171,12 +2166,12 @@ void SmXMLFracContext_Impl::EndElement()
     SmToken aToken;
     aToken.cMathChar = '\0';
     aToken.eType = TOVER;
-    SmStructureNode *pSNode = new SmBinVerNode(aToken);
+    std::unique_ptr<SmStructureNode> pSNode(new SmBinVerNode(aToken));
     SmNode *pOper = new SmRectangleNode(aToken);
     SmNode *pSecond = popOrZero(rNodeStack);
     SmNode *pFirst = popOrZero(rNodeStack);
     pSNode->SetSubNodes(pFirst,pOper,pSecond);
-    rNodeStack.push_front(pSNode);
+    rNodeStack.push_front(std::move(pSNode));
 }
 
 void SmXMLRootContext_Impl::EndElement()
@@ -2190,13 +2185,13 @@ void SmXMLRootContext_Impl::EndElement()
     SmToken aToken;
     aToken.cMathChar = MS_SQRT;  //Temporary: alert, based on StarSymbol font
     aToken.eType = TNROOT;
-    SmStructureNode *pSNode = new SmRootNode(aToken);
+    std::unique_ptr<SmStructureNode> pSNode(new SmRootNode(aToken));
     SmNode *pOper = new SmRootSymbolNode(aToken);
     SmNodeStack &rNodeStack = GetSmImport().GetNodeStack();
     SmNode *pIndex = popOrZero(rNodeStack);
     SmNode *pBase = popOrZero(rNodeStack);
     pSNode->SetSubNodes(pIndex,pOper,pBase);
-    rNodeStack.push_front(pSNode);
+    rNodeStack.push_front(std::move(pSNode));
 }
 
 void SmXMLSqrtContext_Impl::EndElement()
@@ -2212,11 +2207,11 @@ void SmXMLSqrtContext_Impl::EndElement()
     SmToken aToken;
     aToken.cMathChar = MS_SQRT;  //Temporary: alert, based on StarSymbol font
     aToken.eType = TSQRT;
-    SmStructureNode *pSNode = new SmRootNode(aToken);
+    std::unique_ptr<SmStructureNode> pSNode(new SmRootNode(aToken));
     SmNode *pOper = new SmRootSymbolNode(aToken);
     SmNodeStack &rNodeStack = GetSmImport().GetNodeStack();
-    pSNode->SetSubNodes(0,pOper,popOrZero(rNodeStack));
-    rNodeStack.push_front(pSNode);
+    pSNode->SetSubNodes(nullptr,pOper,popOrZero(rNodeStack));
+    rNodeStack.push_front(std::move(pSNode));
 }
 
 void SmXMLRowContext_Impl::EndElement()
@@ -2231,7 +2226,8 @@ void SmXMLRowContext_Impl::EndElement()
         aRelationArray.resize(nSize);
         for (auto j=nSize;j > 0;j--)
         {
-            auto pNode = rNodeStack.pop_front();
+            auto pNode = std::move(rNodeStack.front());
+            rNodeStack.pop_front();
             aRelationArray[j-1] = pNode.release();
         }
 
@@ -2286,13 +2282,13 @@ void SmXMLRowContext_Impl::EndElement()
             }
 
             SmToken aDummy;
-            SmStructureNode *pSNode = new SmBraceNode(aToken);
+            std::unique_ptr<SmStructureNode> pSNode(new SmBraceNode(aToken));
             SmStructureNode *pBody = new SmExpressionNode(aDummy);
             pBody->SetSubNodes(aRelationArray2);
 
             pSNode->SetSubNodes(pLeft,pBody,pRight);
             pSNode->SetScaleMode(SCALE_HEIGHT);
-            rNodeStack.push_front(pSNode);
+            rNodeStack.push_front(std::move(pSNode));
             return;
         }
     }
@@ -2307,9 +2303,9 @@ void SmXMLRowContext_Impl::EndElement()
     }
 
     SmToken aDummy;
-    SmStructureNode *pSNode = new SmExpressionNode(aDummy);
+    std::unique_ptr<SmStructureNode> pSNode(new SmExpressionNode(aDummy));
     pSNode->SetSubNodes(aRelationArray);
-    rNodeStack.push_front(pSNode);
+    rNodeStack.push_front(std::move(pSNode));
 }
 
 
@@ -2318,7 +2314,7 @@ SvXMLImportContext *SmXMLRowContext_Impl::StrictCreateChildContext(
     const OUString& rLocalName,
     const uno::Reference<xml::sax::XAttributeList>& xAttrList)
 {
-    SvXMLImportContext* pContext = 0L;
+    SvXMLImportContext* pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetSmImport().GetPresElemTokenMap();
     switch(rTokenMap.Get(nPrefix, rLocalName))
@@ -2392,7 +2388,7 @@ SvXMLImportContext *SmXMLMultiScriptsContext_Impl::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference<xml::sax::XAttributeList>& xAttrList)
 {
-    SvXMLImportContext* pContext = 0L;
+    SvXMLImportContext* pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetSmImport().
         GetPresScriptEmptyElemTokenMap();
@@ -2436,8 +2432,9 @@ void SmXMLMultiScriptsContext_Impl::ProcessSubSupPairs(bool bIsPrescript)
         SmNodeStack aReverseStack;
         for (size_t i = 0; i < nCount + 1; i++)
         {
-            auto pNode = rNodeStack.pop_front();
-            aReverseStack.push_front(pNode.release());
+            auto pNode = std::move(rNodeStack.front());
+            rNodeStack.pop_front();
+            aReverseStack.push_front(std::move(pNode));
         }
 
         SmSubSup eSub = bIsPrescript ? LSUB : RSUB;
@@ -2445,7 +2442,7 @@ void SmXMLMultiScriptsContext_Impl::ProcessSubSupPairs(bool bIsPrescript)
 
         for (size_t i = 0; i < nCount; i += 2)
         {
-            SmSubSupNode *pNode = new SmSubSupNode(aToken);
+            std::unique_ptr<SmSubSupNode> pNode(new SmSubSupNode(aToken));
 
             // initialize subnodes array
             SmNodeArray aSubNodes(1 + SUBSUP_NUM_ENTRIES);
@@ -2466,11 +2463,12 @@ void SmXMLMultiScriptsContext_Impl::ProcessSubSupPairs(bool bIsPrescript)
                 aSubNodes[eSup+1] = pScriptNode;
 
             pNode->SetSubNodes(aSubNodes);
-            aReverseStack.push_front(pNode);
+            aReverseStack.push_front(std::move(pNode));
         }
         assert(!aReverseStack.empty());
-        auto pNode = aReverseStack.pop_front();
-        rNodeStack.push_front(pNode.release());
+        auto pNode = std::move(aReverseStack.front());
+        aReverseStack.pop_front();
+        rNodeStack.push_front(std::move(pNode));
     }
     else
     {
@@ -2496,8 +2494,8 @@ void SmXMLTableContext_Impl::EndElement()
     SmStructureNode *pArray;
     for (auto i=nRows;i > 0;i--)
     {
-        auto pNode = rNodeStack.pop_front();
-        pArray = static_cast<SmStructureNode *>(pNode.release());
+        pArray = static_cast<SmStructureNode *>(rNodeStack.front().release());
+        rNodeStack.pop_front();
         if (pArray->GetNumSubNodes() == 0)
         {
             //This is a little tricky, it is possible that there was
@@ -2518,14 +2516,14 @@ void SmXMLTableContext_Impl::EndElement()
 
         if (pArray->GetNumSubNodes() > nCols)
             nCols = pArray->GetNumSubNodes();
-        aReverseStack.push_front(pArray);
+        aReverseStack.push_front(std::unique_ptr<SmStructureNode>(pArray));
     }
     aExpressionArray.resize(nCols*nRows);
     size_t j=0;
     while ( !aReverseStack.empty() )
     {
-        auto pNode = aReverseStack.pop_front();
-        pArray = static_cast<SmStructureNode *>(pNode.release());
+        pArray = static_cast<SmStructureNode *>(aReverseStack.front().release());
+        aReverseStack.pop_front();
         for (sal_uInt16 i=0;i<pArray->GetNumSubNodes();i++)
             aExpressionArray[j++] = pArray->GetSubNode(i);
     }
@@ -2534,10 +2532,10 @@ void SmXMLTableContext_Impl::EndElement()
     aToken.cMathChar = '\0';
     aToken.nGroup = TRGROUP;
     aToken.eType = TMATRIX;
-    SmMatrixNode *pSNode = new SmMatrixNode(aToken);
+    std::unique_ptr<SmMatrixNode> pSNode(new SmMatrixNode(aToken));
     pSNode->SetSubNodes(aExpressionArray);
     pSNode->SetRowCol(static_cast<sal_uInt16>(nRows),nCols);
-    rNodeStack.push_front(pSNode);
+    rNodeStack.push_front(std::move(pSNode));
 }
 
 SvXMLImportContext *SmXMLTableRowContext_Impl::CreateChildContext(
@@ -2545,7 +2543,7 @@ SvXMLImportContext *SmXMLTableRowContext_Impl::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference<xml::sax::XAttributeList>& xAttrList)
 {
-    SvXMLImportContext* pContext = 0L;
+    SvXMLImportContext* pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetSmImport().
         GetPresTableElemTokenMap();
@@ -2568,7 +2566,7 @@ SvXMLImportContext *SmXMLTableContext_Impl::CreateChildContext(
     const OUString& rLocalName,
     const uno::Reference<xml::sax::XAttributeList>& xAttrList)
 {
-    SvXMLImportContext* pContext = 0L;
+    SvXMLImportContext* pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetSmImport().
         GetPresTableElemTokenMap();
@@ -2637,12 +2635,13 @@ void SmXMLActionContext_Impl::EndElement()
     {
         rNodeStack.pop_front();
     }
-    auto pSelected = rNodeStack.pop_front();
+    auto pSelected = std::move(rNodeStack.front());
+    rNodeStack.pop_front();
     for (auto i=rNodeStack.size()-nElementCount; i > 0; i--)
     {
         rNodeStack.pop_front();
     }
-    rNodeStack.push_front(pSelected.release());
+    rNodeStack.push_front(std::move(pSelected));
 }
 
 SvXMLImportContext *SmXMLImport::CreateContext(sal_uInt16 nPrefix,
@@ -2899,8 +2898,7 @@ void SmXMLImport::SetViewSettings(const Sequence<PropertyValue>& aViewProps)
     if ( !xModel.is() )
         return;
 
-    uno::Reference <lang::XUnoTunnel> xTunnel;
-    xTunnel = uno::Reference <lang::XUnoTunnel> (xModel,uno::UNO_QUERY);
+    uno::Reference <lang::XUnoTunnel> xTunnel(xModel,uno::UNO_QUERY);
     SmModel *pModel = reinterpret_cast<SmModel *>
         (xTunnel->getSomething(SmModel::getUnoTunnelId()));
 

@@ -23,14 +23,14 @@
 #include <comphelper/processfactory.hxx>
 
 IntlWrapper::IntlWrapper(
-            const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > & rxContext,
+            const css::uno::Reference< css::uno::XComponentContext > & rxContext,
             const LanguageTag& rLanguageTag )
         :
         maLanguageTag( rLanguageTag ),
         m_xContext( rxContext ),
-        pLocaleData( NULL ),
-        pCollator( NULL ),
-        pCaseCollator( NULL )
+        pLocaleData( nullptr ),
+        pCollator( nullptr ),
+        pCaseCollator( nullptr )
 {
 }
 
@@ -39,9 +39,9 @@ IntlWrapper::IntlWrapper(
         :
         maLanguageTag( rLanguageTag ),
         m_xContext( comphelper::getProcessComponentContext() ),
-        pLocaleData( NULL ),
-        pCollator( NULL ),
-        pCaseCollator( NULL )
+        pLocaleData( nullptr ),
+        pCollator( nullptr ),
+        pCaseCollator( nullptr )
 {
 }
 
@@ -68,7 +68,7 @@ void IntlWrapper::ImplNewCollator( bool bCaseSensitive ) const
     else
     {
         p->loadDefaultCollator( maLanguageTag.getLocale(),
-                ::com::sun::star::i18n::CollatorOptions::CollatorOptions_IGNORE_CASE );
+                css::i18n::CollatorOptions::CollatorOptions_IGNORE_CASE );
         const_cast<IntlWrapper*>(this)->pCollator = p;
     }
 }

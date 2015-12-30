@@ -77,9 +77,9 @@ public:
     explicit ChangeListener (Impl& rParent): m_rParent(rParent) { }
 
     // XChangesListener
-    virtual void SAL_CALL changesOccurred (util::ChangesEvent const& Event) throw(uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL changesOccurred (util::ChangesEvent const& Event) throw(uno::RuntimeException, std::exception) override;
     // XEventListener
-    virtual void SAL_CALL disposing (lang::EventObject const& Source) throw(uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing (lang::EventObject const& Source) throw(uno::RuntimeException, std::exception) override;
 
 private:
     Impl& m_rParent;
@@ -126,7 +126,7 @@ SvtUserOptions::Impl::Impl() :
 {
     try
     {
-        m_xCfg = uno::Reference<container::XNameAccess>(
+        m_xCfg.set(
             comphelper::ConfigurationHelper::openConfig(
                 comphelper::getProcessComponentContext(),
                 "org.openoffice.UserProfile/Data",
@@ -135,7 +135,7 @@ SvtUserOptions::Impl::Impl() :
             uno::UNO_QUERY
         );
 
-        m_xData = uno::Reference<beans::XPropertySet>(m_xCfg, uno::UNO_QUERY);
+        m_xData.set(m_xCfg, uno::UNO_QUERY);
         uno::Reference<util::XChangesNotifier> xChgNot(m_xCfg, uno::UNO_QUERY);
         try
         {

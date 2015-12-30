@@ -32,6 +32,7 @@
 #include "compiler.hxx"
 #include "interpre.hxx"
 #include <formula/compiler.hrc>
+#include <formulagroup.hxx>
 #include "rechead.hxx"
 #include "parclass.hxx"
 #include "jumpmatrix.hxx"
@@ -119,7 +120,7 @@ namespace
         FormulaToken**  mpStart;
         FormulaToken**  mpStop;
 
-        TokenPointerRange() : mpStart(NULL), mpStop(NULL) {}
+        TokenPointerRange() : mpStart(nullptr), mpStop(nullptr) {}
         TokenPointerRange( FormulaToken** p, sal_uInt16 n ) :
             mpStart(p), mpStop( p + static_cast<size_t>(n)) {}
     };
@@ -197,8 +198,6 @@ namespace
 // Since RawTokens are temporary for the compiler, don't align on 4k and waste memory.
 // ScRawToken size is FixMembers + MAXSTRLEN + ~4 ~= 1036
 IMPL_FIXEDMEMPOOL_NEWDEL( ScRawToken )
-// Some ScDoubleRawToken, FixMembers + sizeof(double) ~= 16
-IMPL_FIXEDMEMPOOL_NEWDEL( ScDoubleRawToken )
 
 // Need a whole bunch of ScSingleRefToken
 IMPL_FIXEDMEMPOOL_NEWDEL( ScSingleRefToken )
@@ -252,7 +251,7 @@ void ScRawToken::SetOpCode( OpCode e )
         default:
             eType = svByte;
             sbyte.cByte = 0;
-            sbyte.bHasForceArray = ScParameterClassification::HasForceArray( eOp);
+            sbyte.bIsInForceArray = false;
     }
 }
 
@@ -381,7 +380,7 @@ FormulaToken* ScRawToken::CreateToken() const
     switch ( GetType() )
     {
         case svByte :
-            return new FormulaByteToken( eOp, sbyte.cByte, sbyte.bHasForceArray );
+            return new FormulaByteToken( eOp, sbyte.cByte, sbyte.bIsInForceArray );
         case svDouble :
             IF_NOT_OPCODE_ERROR( ocPush, FormulaDoubleToken);
             return new FormulaDoubleToken( nValue );
@@ -431,7 +430,7 @@ FormulaToken* ScRawToken::CreateToken() const
         case svExternal :
             return new FormulaExternalToken( eOp, sbyte.cByte, OUString( cStr+1 ) );
         case svFAP :
-            return new FormulaFAPToken( eOp, sbyte.cByte, NULL );
+            return new FormulaFAPToken( eOp, sbyte.cByte, nullptr );
         case svMissing :
             IF_NOT_OPCODE_ERROR( ocMissing, FormulaMissingToken);
             return new FormulaMissingToken;
@@ -533,7 +532,7 @@ FormulaTokenRef extendRangeReference( FormulaToken & rTok1, FormulaToken & rTok2
     if (((sv1 = rTok1.GetType()) != svSingleRef && sv1 != svDoubleRef && sv1 != svRefList &&
             sv1 != svExternalSingleRef && sv1 != svExternalDoubleRef ) ||
         ((sv2 = rTok2.GetType()) != svSingleRef && sv2 != svDoubleRef && sv2 != svRefList))
-        return NULL;
+        return nullptr;
 
     ScTokenRef xRes;
     bool bExternal = (sv1 == svExternalSingleRef);
@@ -562,7 +561,7 @@ FormulaTokenRef extendRangeReference( FormulaToken & rTok1, FormulaToken & rTok2
 
         const ScSingleRefData& rRef2 = *rTok2.GetSingleRef();
         if (bExternal && rRef2.IsFlag3D())
-            return NULL;
+            return nullptr;
 
         ScComplexRefData aRef;
         aRef.Ref1 = aRef.Ref2 = *rTok1.GetSingleRef();
@@ -576,7 +575,7 @@ FormulaTokenRef extendRangeReference( FormulaToken & rTok1, FormulaToken & rTok2
     else
     {
         bExternal |= (sv1 == svExternalDoubleRef);
-        const ScRefList* pRefList = NULL;
+        const ScRefList* pRefList = nullptr;
         if (sv1 == svDoubleRef)
         {
             xRes = (bReuseDoubleRef && rTok1.GetRef() == 1 ? &rTok1 : rTok1.Clone());
@@ -594,13 +593,13 @@ FormulaTokenRef extendRangeReference( FormulaToken & rTok1, FormulaToken & rTok2
         if (pRefList)
         {
             if (pRefList->empty())
-                return NULL;
+                return nullptr;
             if (bExternal)
-                return NULL;    // external reference list not possible
+                return nullptr;    // external reference list not possible
             xRes = new ScDoubleRefToken( (*pRefList)[0] );
         }
         if (!xRes)
-            return NULL;    // shouldn't happen..
+            return nullptr;    // shouldn't happen..
         StackVar sv[2] = { sv1, sv2 };
         formula::FormulaToken* pt[2] = { &rTok1, &rTok2 };
         ScComplexRefData& rRef = *xRes->GetDoubleRef();
@@ -618,7 +617,7 @@ FormulaTokenRef extendRangeReference( FormulaToken & rTok1, FormulaToken & rTok2
                     {
                         const ScRefList* p = pt[i]->GetRefList();
                         if (p->empty())
-                            return NULL;
+                            return nullptr;
                         ScRefList::const_iterator it( p->begin());
                         ScRefList::const_iterator end( p->end());
                         for ( ; it != end; ++it)
@@ -629,13 +628,13 @@ FormulaTokenRef extendRangeReference( FormulaToken & rTok1, FormulaToken & rTok2
                     break;
                 case svExternalSingleRef:
                     if (rRef.Ref1.IsFlag3D() || rRef.Ref2.IsFlag3D())
-                        return NULL;    // no other sheets with external refs
+                        return nullptr;    // no other sheets with external refs
                     else
                         rRef.Extend( *pt[i]->GetSingleRef(), rPos);
                     break;
                 case svExternalDoubleRef:
                     if (rRef.Ref1.IsFlag3D() || rRef.Ref2.IsFlag3D())
-                        return NULL;    // no other sheets with external refs
+                        return nullptr;    // no other sheets with external refs
                     else
                         rRef.Extend( *pt[i]->GetDoubleRef(), rPos);
                     break;
@@ -1061,7 +1060,7 @@ ScMatrixFormulaCellToken::ScMatrixFormulaCellToken(
 }
 
 ScMatrixFormulaCellToken::ScMatrixFormulaCellToken( SCCOL nC, SCROW nR ) :
-    ScMatrixCellResultToken(NULL, NULL), nRows(nR), nCols(nC) {}
+    ScMatrixCellResultToken(nullptr, nullptr), nRows(nR), nCols(nC) {}
 
 ScMatrixFormulaCellToken::ScMatrixFormulaCellToken( const ScMatrixFormulaCellToken& r ) :
     ScMatrixCellResultToken(r), nRows(r.nRows), nCols(r.nCols)
@@ -1103,13 +1102,13 @@ void ScMatrixFormulaCellToken::Assign( const formula::FormulaToken& r )
         OSL_ENSURE( r.GetType() != svMatrix, "ScMatrixFormulaCellToken::operator=: assigning ScMatrixToken to ScMatrixFormulaCellToken is not proper, use ScMatrixCellResultToken instead");
         if (r.GetType() == svMatrix)
         {
-            xUpperLeft = NULL;
+            xUpperLeft = nullptr;
             xMatrix = r.GetMatrix();
         }
         else
         {
             xUpperLeft = &r;
-            xMatrix = NULL;
+            xMatrix = nullptr;
             CloneUpperLeftIfNecessary();
         }
     }
@@ -1141,8 +1140,8 @@ void ScMatrixFormulaCellToken::SetUpperLeftDouble( double f )
 
 void ScMatrixFormulaCellToken::ResetResult()
 {
-    xMatrix = NULL;
-    xUpperLeft = NULL;
+    xMatrix = nullptr;
+    xUpperLeft = nullptr;
 }
 
 ScHybridCellToken::ScHybridCellToken(
@@ -1316,6 +1315,14 @@ void ScTokenArray::CheckToken( const FormulaToken& r )
     if (SC_OPCODE_START_FUNCTION <= eOp && eOp < SC_OPCODE_STOP_FUNCTION)
     {
         if (ScInterpreter::GetGlobalConfig().mbOpenCLSubsetOnly && ScInterpreter::GetGlobalConfig().mpOpenCLSubsetOpCodes->find(eOp) == ScInterpreter::GetGlobalConfig().mpOpenCLSubsetOpCodes->end())
+        {
+            meVectorState = FormulaVectorDisabled;
+            return;
+        }
+
+        // test for OpenCL interpreter first - the assumption is that S/W
+        // interpreter blacklist is more strict than the OpenCL one
+        if (ScCalcConfig::isSwInterpreterEnabled() && (dynamic_cast<sc::FormulaGroupInterpreterSoftware*>(sc::FormulaGroupInterpreter::getStatic()) != nullptr) && ScInterpreter::GetGlobalConfig().mpSwInterpreterSubsetOpCodes->find(eOp) == ScInterpreter::GetGlobalConfig().mpSwInterpreterSubsetOpCodes->end())
         {
             meVectorState = FormulaVectorDisabled;
             return;
@@ -1557,6 +1564,18 @@ void ScTokenArray::CheckToken( const FormulaToken& r )
         eOp <= SC_OPCODE_STOP_UN_OP &&
         ScInterpreter::GetGlobalConfig().mbOpenCLSubsetOnly &&
         ScInterpreter::GetGlobalConfig().mpOpenCLSubsetOpCodes->find(eOp) == ScInterpreter::GetGlobalConfig().mpOpenCLSubsetOpCodes->end())
+    {
+        meVectorState = FormulaVectorDisabled;
+        return;
+    }
+
+    // only when openCL interpreter is not enabled - the assumption is that
+    // the S/W interpreter blacklist is more strict
+    if (eOp >= SC_OPCODE_START_BIN_OP &&
+        eOp <= SC_OPCODE_STOP_UN_OP &&
+        ScCalcConfig::isSwInterpreterEnabled() &&
+        (dynamic_cast<sc::FormulaGroupInterpreterSoftware*>(sc::FormulaGroupInterpreter::getStatic()) != nullptr) &&
+        ScInterpreter::GetGlobalConfig().mpSwInterpreterSubsetOpCodes->find(eOp) == ScInterpreter::GetGlobalConfig().mpSwInterpreterSubsetOpCodes->end())
     {
         meVectorState = FormulaVectorDisabled;
         return;
@@ -1840,13 +1859,13 @@ FormulaToken* ScTokenArray::MergeArray( )
             case ocPush :
                 if( checkArraySep( bPrevWasSep, false ) )
                 {
-                    return NULL;
+                    return nullptr;
                 }
 
                 // no references or nested arrays
                 if ( t->GetType() != svDouble  && t->GetType() != svString )
                 {
-                    return NULL;
+                    return nullptr;
                 }
                 bNumeric = (t->GetType() == svDouble);
             break;
@@ -1856,7 +1875,7 @@ FormulaToken* ScTokenArray::MergeArray( )
             case ocFalse :
                 if( checkArraySep( bPrevWasSep, false ) )
                 {
-                    return NULL;
+                    return nullptr;
                 }
                 bNumeric = false;
             break;
@@ -1865,7 +1884,7 @@ FormulaToken* ScTokenArray::MergeArray( )
             case ocSep :
                 if( checkArraySep( bPrevWasSep, true ) )
                 {
-                    return NULL;
+                    return nullptr;
                 }
                 bNumeric = false;
             break;
@@ -1875,12 +1894,12 @@ FormulaToken* ScTokenArray::MergeArray( )
                 // something changes in the future
                 if( i != (nLen-1))
                 {
-                    return NULL;
+                    return nullptr;
                 }
 
                 if( checkArraySep( bPrevWasSep, true ) )
                 {
-                    return NULL;
+                    return nullptr;
                 }
 
                 nPrevRowSep = i;
@@ -1894,13 +1913,13 @@ FormulaToken* ScTokenArray::MergeArray( )
             case ocArrayRowSep :
                 if( checkArraySep( bPrevWasSep, true ) )
                 {
-                    return NULL;
+                    return nullptr;
                 }
 
                 if( nPrevRowSep < 0 ||              // missing ocArrayClose
                     ((nPrevRowSep - i) % 2) == 1)   // no complex elements
                 {
-                    return NULL;
+                    return nullptr;
                 }
 
                 if( nCol < 0 )
@@ -1909,7 +1928,7 @@ FormulaToken* ScTokenArray::MergeArray( )
                 }
                 else if( (nPrevRowSep - i)/2 != nCol)   // irregular array
                 {
-                    return NULL;
+                    return nullptr;
                 }
 
                 nPrevRowSep = i;
@@ -1922,7 +1941,7 @@ FormulaToken* ScTokenArray::MergeArray( )
                 // negation or unary plus must precede numeric value
                 if( !bNumeric )
                 {
-                    return NULL;
+                    return nullptr;
                 }
                 --nPrevRowSep;      // shorten this row by 1
                 bNumeric = false;   // one level only, no --42
@@ -1935,14 +1954,14 @@ FormulaToken* ScTokenArray::MergeArray( )
 
             default :
                 // no functions or operators
-                return NULL;
+                return nullptr;
         }
     }
     if( nCol <= 0 || nRow <= 0 )
-        return NULL;
+        return nullptr;
 
     int nSign = 1;
-    ScMatrix* pArray = new ScMatrix(nCol, nRow, 0.0);
+    ScMatrix* pArray = new ScFullMatrix(nCol, nRow, 0.0);
     for ( i = nStart, nCol = 0, nRow = 0 ; i < nLen ; i++ )
     {
         t = pCode[i];
@@ -1989,7 +2008,7 @@ FormulaToken* ScTokenArray::MergeArray( )
             default :
                 break;
         }
-        pCode[i] = NULL;
+        pCode[i] = nullptr;
         t->DecRef();
     }
     nLen = sal_uInt16( nStart );
@@ -1999,13 +2018,13 @@ FormulaToken* ScTokenArray::MergeArray( )
 FormulaToken* ScTokenArray::MergeRangeReference( const ScAddress & rPos )
 {
     if (!pCode || !nLen)
-        return NULL;
+        return nullptr;
     sal_uInt16 nIdx = nLen;
     FormulaToken *p1, *p2, *p3;      // ref, ocRange, ref
     // The actual types are checked in extendRangeReference().
-    if (((p3 = PeekPrev(nIdx)) != 0) &&
-            (((p2 = PeekPrev(nIdx)) != 0) && p2->GetOpCode() == ocRange) &&
-            ((p1 = PeekPrev(nIdx)) != 0))
+    if (((p3 = PeekPrev(nIdx)) != nullptr) &&
+            (((p2 = PeekPrev(nIdx)) != nullptr) && p2->GetOpCode() == ocRange) &&
+            ((p1 = PeekPrev(nIdx)) != nullptr))
     {
         FormulaTokenRef p = extendRangeReference( *p1, *p3, rPos, true);
         if (p)
@@ -2580,22 +2599,30 @@ bool shrinkRange( const sc::RefUpdateContext& rCxt, ScRange& rRefRange, const Sc
                 // The reference range is truncated on the left.
                 SCCOL nOffset = rDeletedRange.aStart.Col() - rRefRange.aStart.Col();
                 SCCOL nDelta = rRefRange.aStart.Col() - rDeletedRange.aEnd.Col() - 1;
+                rRefRange.IncEndColSticky(nDelta+nOffset);
                 rRefRange.aStart.IncCol(nOffset);
-                rRefRange.aEnd.IncCol(nDelta+nOffset);
             }
         }
         else if (rDeletedRange.aEnd.Col() < rRefRange.aEnd.Col())
         {
+            if (rRefRange.IsEndColSticky())
+                // Sticky end not affected.
+                return false;
+
             // Reference is deleted in the middle. Move the last column
             // position to the left.
             SCCOL nDelta = rDeletedRange.aStart.Col() - rDeletedRange.aEnd.Col() - 1;
-            rRefRange.aEnd.IncCol(nDelta);
+            rRefRange.IncEndColSticky(nDelta);
         }
         else
         {
+            if (rRefRange.IsEndColSticky())
+                // Sticky end not affected.
+                return false;
+
             // The reference range is truncated on the right.
             SCCOL nDelta = rDeletedRange.aStart.Col() - rRefRange.aEnd.Col() - 1;
-            rRefRange.aEnd.IncCol(nDelta);
+            rRefRange.IncEndColSticky(nDelta);
         }
         return true;
     }
@@ -2623,22 +2650,30 @@ bool shrinkRange( const sc::RefUpdateContext& rCxt, ScRange& rRefRange, const Sc
                 // The reference range is truncated on the top.
                 SCCOL nOffset = rDeletedRange.aStart.Row() - rRefRange.aStart.Row();
                 SCCOL nDelta = rRefRange.aStart.Row() - rDeletedRange.aEnd.Row() - 1;
+                rRefRange.IncEndRowSticky(nDelta+nOffset);
                 rRefRange.aStart.IncRow(nOffset);
-                rRefRange.aEnd.IncRow(nDelta+nOffset);
             }
         }
         else if (rDeletedRange.aEnd.Row() < rRefRange.aEnd.Row())
         {
+            if (rRefRange.IsEndRowSticky())
+                // Sticky end not affected.
+                return false;
+
             // Reference is deleted in the middle. Move the last row
             // position upward.
             SCCOL nDelta = rDeletedRange.aStart.Row() - rDeletedRange.aEnd.Row() - 1;
-            rRefRange.aEnd.IncRow(nDelta);
+            rRefRange.IncEndRowSticky(nDelta);
         }
         else
         {
+            if (rRefRange.IsEndRowSticky())
+                // Sticky end not affected.
+                return false;
+
             // The reference range is truncated on the bottom.
             SCCOL nDelta = rDeletedRange.aStart.Row() - rRefRange.aEnd.Row() - 1;
-            rRefRange.aEnd.IncRow(nDelta);
+            rRefRange.IncEndRowSticky(nDelta);
         }
         return true;
     }
@@ -2676,9 +2711,13 @@ bool expandRange( const sc::RefUpdateContext& rCxt, ScRange& rRefRange, const Sc
                 return false;
         }
 
+        if (rRefRange.IsEndColSticky())
+            // Sticky end not affected.
+            return false;
+
         // Move the last column position to the right.
         SCCOL nDelta = rSelectedRange.aEnd.Col() - rSelectedRange.aStart.Col() + 1;
-        rRefRange.aEnd.IncCol(nDelta);
+        rRefRange.IncEndColSticky(nDelta);
         return true;
     }
     else if (rCxt.mnRowDelta > 0)
@@ -2705,9 +2744,13 @@ bool expandRange( const sc::RefUpdateContext& rCxt, ScRange& rRefRange, const Sc
                 return false;
         }
 
+        if (rRefRange.IsEndRowSticky())
+            // Sticky end not affected.
+            return false;
+
         // Move the last row position down.
         SCROW nDelta = rSelectedRange.aEnd.Row() - rSelectedRange.aStart.Row() + 1;
-        rRefRange.aEnd.IncRow(nDelta);
+        rRefRange.IncEndRowSticky(nDelta);
         return true;
     }
     return false;
@@ -2748,9 +2791,13 @@ bool expandRangeByEdge( const sc::RefUpdateContext& rCxt, ScRange& rRefRange, co
             // Selected range is not immediately adjacent. Bail out.
             return false;
 
+        if (rRefRange.IsEndColSticky())
+            // Sticky end not affected.
+            return false;
+
         // Move the last column position to the right.
         SCCOL nDelta = rSelectedRange.aEnd.Col() - rSelectedRange.aStart.Col() + 1;
-        rRefRange.aEnd.IncCol(nDelta);
+        rRefRange.IncEndColSticky(nDelta);
         return true;
     }
     else if (rCxt.mnRowDelta > 0)
@@ -2771,9 +2818,13 @@ bool expandRangeByEdge( const sc::RefUpdateContext& rCxt, ScRange& rRefRange, co
             // Selected range is not immediately adjacent. Bail out.
             return false;
 
+        if (rRefRange.IsEndRowSticky())
+            // Sticky end not affected.
+            return false;
+
         // Move the last row position down.
         SCROW nDelta = rSelectedRange.aEnd.Row() - rSelectedRange.aStart.Row() + 1;
-        rRefRange.aEnd.IncRow(nDelta);
+        rRefRange.IncEndRowSticky(nDelta);
         return true;
     }
 
@@ -2810,7 +2861,13 @@ sc::RefUpdateResult ScTokenArray::AdjustReferenceOnShift( const sc::RefUpdateCon
     ScAddress aNewPos = rOldPos;
     bool bCellShifted = rCxt.maRange.In(rOldPos);
     if (bCellShifted)
-        aNewPos.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta);
+    {
+        ScAddress aErrorPos( ScAddress::UNINITIALIZED );
+        if (!aNewPos.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta, aErrorPos))
+        {
+            assert(!"can't move");
+        }
+    }
 
     TokenPointers aPtrs( pCode, nLen, pRPN, nRPN);
     for (size_t j=0; j<2; ++j)
@@ -2852,7 +2909,9 @@ sc::RefUpdateResult ScTokenArray::AdjustReferenceOnShift( const sc::RefUpdateCon
 
                         if (rCxt.maRange.In(aAbs))
                         {
-                            aAbs.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta);
+                            ScAddress aErrorPos( ScAddress::UNINITIALIZED );
+                            if (!aAbs.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta, aErrorPos))
+                                aAbs = aErrorPos;
                             aRes.mbReferenceModified = true;
                         }
 
@@ -2909,7 +2968,9 @@ sc::RefUpdateResult ScTokenArray::AdjustReferenceOnShift( const sc::RefUpdateCon
 
                         if (rCxt.maRange.In(aAbs))
                         {
-                            aAbs.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta);
+                            ScRange aErrorRange( ScAddress::UNINITIALIZED );
+                            if (!aAbs.MoveSticky(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta, aErrorRange))
+                                aAbs = aErrorRange;
                             aRes.mbReferenceModified = true;
                         }
                         else if (rCxt.maRange.Intersects(aAbs))
@@ -2980,7 +3041,11 @@ sc::RefUpdateResult ScTokenArray::AdjustReferenceOnMove(
     // When moving, the range is the destination range. We need to use the old
     // range prior to the move for hit analysis.
     ScRange aOldRange = rCxt.maRange;
-    aOldRange.Move(-rCxt.mnColDelta, -rCxt.mnRowDelta, -rCxt.mnTabDelta);
+    ScRange aErrorMoveRange( ScAddress::UNINITIALIZED );
+    if (!aOldRange.Move(-rCxt.mnColDelta, -rCxt.mnRowDelta, -rCxt.mnTabDelta, aErrorMoveRange))
+    {
+        assert(!"can't move");
+    }
 
     bool b3DFlag = rOldPos.Tab() != rNewPos.Tab() || rCxt.mnTabDelta;
 
@@ -3003,7 +3068,9 @@ sc::RefUpdateResult ScTokenArray::AdjustReferenceOnMove(
                         ScAddress aAbs = rRef.toAbs(rOldPos);
                         if (aOldRange.In(aAbs))
                         {
-                            aAbs.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta);
+                            ScAddress aErrorPos( ScAddress::UNINITIALIZED );
+                            if (!aAbs.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta, aErrorPos))
+                                aAbs = aErrorPos;
                             aRes.mbReferenceModified = true;
                         }
 
@@ -3018,7 +3085,9 @@ sc::RefUpdateResult ScTokenArray::AdjustReferenceOnMove(
                         ScRange aAbs = rRef.toAbs(rOldPos);
                         if (aOldRange.In(aAbs))
                         {
-                            aAbs.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta);
+                            ScRange aErrorRange( ScAddress::UNINITIALIZED );
+                            if (!aAbs.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta, aErrorRange))
+                                aAbs = aErrorRange;
                             aRes.mbReferenceModified = true;
                         }
 
@@ -3061,7 +3130,11 @@ sc::RefUpdateResult ScTokenArray::MoveReference( const ScAddress& rPos, const sc
     sc::RefUpdateResult aRes;
 
     ScRange aOldRange = rCxt.maRange;
-    aOldRange.Move(-rCxt.mnColDelta, -rCxt.mnRowDelta, -rCxt.mnTabDelta);
+    ScRange aErrorMoveRange( ScAddress::UNINITIALIZED );
+    if (!aOldRange.Move(-rCxt.mnColDelta, -rCxt.mnRowDelta, -rCxt.mnTabDelta, aErrorMoveRange))
+    {
+        assert(!"can't move");
+    }
 
     FormulaToken** p = pCode;
     FormulaToken** pEnd = p + static_cast<size_t>(nLen);
@@ -3076,7 +3149,9 @@ sc::RefUpdateResult ScTokenArray::MoveReference( const ScAddress& rPos, const sc
                 ScAddress aAbs = rRef.toAbs(rPos);
                 if (aOldRange.In(aAbs))
                 {
-                    aAbs.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta);
+                    ScAddress aErrorPos( ScAddress::UNINITIALIZED );
+                    if (!aAbs.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta, aErrorPos))
+                        aAbs = aErrorPos;
                     rRef.SetAddress(aAbs, rPos);
                     if (rCxt.mnTabDelta)
                         rRef.SetFlag3D(aAbs.Tab()!=rPos.Tab());
@@ -3090,7 +3165,9 @@ sc::RefUpdateResult ScTokenArray::MoveReference( const ScAddress& rPos, const sc
                 ScRange aAbs = rRef.toAbs(rPos);
                 if (aOldRange.In(aAbs))
                 {
-                    aAbs.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta);
+                    ScRange aErrorRange( ScAddress::UNINITIALIZED );
+                    if (!aAbs.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta, aErrorRange))
+                        aAbs = aErrorRange;
                     rRef.SetRange(aAbs, rPos);
                     if (rCxt.mnTabDelta)
                         rRef.Ref1.SetFlag3D(aAbs.aStart.Tab()!=rPos.Tab());
@@ -3253,7 +3330,8 @@ void ScTokenArray::MoveReferenceRowReorder( const ScAddress& rPos, SCTAB nTab, S
 namespace {
 
 bool adjustSingleRefInName(
-    ScSingleRefData& rRef, const sc::RefUpdateContext& rCxt, const ScAddress& rPos )
+    ScSingleRefData& rRef, const sc::RefUpdateContext& rCxt, const ScAddress& rPos,
+    ScComplexRefData* pEndOfComplex )
 {
     ScAddress aAbs = rRef.toAbs(rPos);
 
@@ -3273,8 +3351,16 @@ bool adjustSingleRefInName(
         // Adjust absolute column reference.
         if (rCxt.maRange.aStart.Col() <= rRef.Col() && rRef.Col() <= rCxt.maRange.aEnd.Col())
         {
-            rRef.IncCol(rCxt.mnColDelta);
-            bChanged = true;
+            if (pEndOfComplex)
+            {
+                if (pEndOfComplex->IncEndColSticky( rCxt.mnColDelta, rPos))
+                    bChanged = true;
+            }
+            else
+            {
+                rRef.IncCol(rCxt.mnColDelta);
+                bChanged = true;
+            }
         }
     }
 
@@ -3283,8 +3369,16 @@ bool adjustSingleRefInName(
         // Adjust absolute row reference.
         if (rCxt.maRange.aStart.Row() <= rRef.Row() && rRef.Row() <= rCxt.maRange.aEnd.Row())
         {
-            rRef.IncRow(rCxt.mnRowDelta);
-            bChanged = true;
+            if (pEndOfComplex)
+            {
+                if (pEndOfComplex->IncEndRowSticky( rCxt.mnRowDelta, rPos))
+                    bChanged = true;
+            }
+            else
+            {
+                rRef.IncRow(rCxt.mnRowDelta);
+                bChanged = true;
+            }
         }
     }
 
@@ -3311,20 +3405,21 @@ bool adjustDoubleRefInName(
         {
             // Selection intersects the referenced range. Only expand the
             // bottom position.
-            rRef.Ref2.IncRow(rCxt.mnRowDelta);
+            rRef.IncEndRowSticky(rCxt.mnRowDelta, rPos);
             return true;
         }
     }
 
     if ((rCxt.mnRowDelta && rRef.IsEntireCol()) || (rCxt.mnColDelta && rRef.IsEntireRow()))
     {
-        // References to entire col/row are not to be adjusted in the other axis.
         sc::RefUpdateContext aCxt( rCxt.mrDoc);
         // We only need a few parameters of RefUpdateContext.
         aCxt.maRange = rCxt.maRange;
         aCxt.mnColDelta = rCxt.mnColDelta;
         aCxt.mnRowDelta = rCxt.mnRowDelta;
         aCxt.mnTabDelta = rCxt.mnTabDelta;
+
+        // References to entire col/row are not to be adjusted in the other axis.
         if (aCxt.mnRowDelta && rRef.IsEntireCol())
             aCxt.mnRowDelta = 0;
         if (aCxt.mnColDelta && rRef.IsEntireRow())
@@ -3333,18 +3428,20 @@ bool adjustDoubleRefInName(
             // early bailout
             return bRefChanged;
 
-        if (adjustSingleRefInName(rRef.Ref1, aCxt, rPos))
+        // Ref2 before Ref1 for sticky ends.
+        if (adjustSingleRefInName(rRef.Ref2, aCxt, rPos, &rRef))
             bRefChanged = true;
 
-        if (adjustSingleRefInName(rRef.Ref2, aCxt, rPos))
+        if (adjustSingleRefInName(rRef.Ref1, aCxt, rPos, nullptr))
             bRefChanged = true;
     }
     else
     {
-        if (adjustSingleRefInName(rRef.Ref1, rCxt, rPos))
+        // Ref2 before Ref1 for sticky ends.
+        if (adjustSingleRefInName(rRef.Ref2, rCxt, rPos, &rRef))
             bRefChanged = true;
 
-        if (adjustSingleRefInName(rRef.Ref2, rCxt, rPos))
+        if (adjustSingleRefInName(rRef.Ref1, rCxt, rPos, nullptr))
             bRefChanged = true;
     }
 
@@ -3377,7 +3474,7 @@ sc::RefUpdateResult ScTokenArray::AdjustReferenceInName(
                 case svSingleRef:
                     {
                         ScSingleRefData& rRef = *p->GetSingleRef();
-                        if (adjustSingleRefInName(rRef, rCxt, rPos))
+                        if (adjustSingleRefInName(rRef, rCxt, rPos, nullptr))
                             aRes.mbReferenceModified = true;
                     }
                     break;
@@ -3430,19 +3527,23 @@ sc::RefUpdateResult ScTokenArray::AdjustReferenceInName(
 
                             if (aAbs.aStart.Row() < aDeleted.aStart.Row())
                             {
-                                if (aDeleted.aEnd.Row() < aAbs.aEnd.Row())
-                                    // Deleted in the middle.  Make the reference shorter.
-                                    rRef.Ref2.IncRow(rCxt.mnRowDelta);
-                                else
-                                    // Deleted at tail end.  Cut off the lower part.
-                                    rRef.Ref2.SetAbsRow(aDeleted.aStart.Row()-1);
+                                if (!aAbs.IsEndRowSticky())
+                                {
+                                    if (aDeleted.aEnd.Row() < aAbs.aEnd.Row())
+                                        // Deleted in the middle.  Make the reference shorter.
+                                        rRef.Ref2.IncRow(rCxt.mnRowDelta);
+                                    else
+                                        // Deleted at tail end.  Cut off the lower part.
+                                        rRef.Ref2.SetAbsRow(aDeleted.aStart.Row()-1);
+                                }
                             }
                             else
                             {
                                 // Deleted at the top.  Cut the top off and shift up.
                                 rRef.Ref1.SetAbsRow(aDeleted.aEnd.Row()+1);
                                 rRef.Ref1.IncRow(rCxt.mnRowDelta);
-                                rRef.Ref2.IncRow(rCxt.mnRowDelta);
+                                if (!aAbs.IsEndRowSticky())
+                                    rRef.Ref2.IncRow(rCxt.mnRowDelta);
                             }
 
                             aRes.mbReferenceModified = true;
@@ -3487,7 +3588,11 @@ sc::RefUpdateResult ScTokenArray::AdjustReferenceInMovedName( const sc::RefUpdat
 {
     // When moving, the range is the destination range.
     ScRange aOldRange = rCxt.maRange;
-    aOldRange.Move(-rCxt.mnColDelta, -rCxt.mnRowDelta, -rCxt.mnTabDelta);
+    ScRange aErrorMoveRange( ScAddress::UNINITIALIZED );
+    if (!aOldRange.Move(-rCxt.mnColDelta, -rCxt.mnRowDelta, -rCxt.mnTabDelta, aErrorMoveRange))
+    {
+        assert(!"can't move");
+    }
 
     // In a named expression, we'll move the reference only when the reference
     // is entirely absolute.
@@ -3516,7 +3621,9 @@ sc::RefUpdateResult ScTokenArray::AdjustReferenceInMovedName( const sc::RefUpdat
                         ScAddress aAbs = rRef.toAbs(rPos);
                         if (aOldRange.In(aAbs))
                         {
-                            aAbs.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta);
+                            ScAddress aErrorPos( ScAddress::UNINITIALIZED );
+                            if (!aAbs.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta, aErrorPos))
+                                aAbs = aErrorPos;
                             aRes.mbReferenceModified = true;
                         }
 
@@ -3533,7 +3640,9 @@ sc::RefUpdateResult ScTokenArray::AdjustReferenceInMovedName( const sc::RefUpdat
                         ScRange aAbs = rRef.toAbs(rPos);
                         if (aOldRange.In(aAbs))
                         {
-                            aAbs.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta);
+                            ScRange aErrorRange( ScAddress::UNINITIALIZED );
+                            if (!aAbs.Move(rCxt.mnColDelta, rCxt.mnRowDelta, rCxt.mnTabDelta, aErrorRange))
+                                aAbs = aErrorRange;
                             aRes.mbReferenceModified = true;
                         }
 
@@ -4066,8 +4175,14 @@ void checkBounds(
 
     ScRange aCheckRange = rCxt.maRange;
     if (rCxt.meMode == URM_MOVE)
+    {
         // Check bounds against the old range prior to the move.
-        aCheckRange.Move(-rCxt.mnColDelta, -rCxt.mnRowDelta, -rCxt.mnTabDelta);
+        ScRange aErrorRange( ScAddress::UNINITIALIZED );
+        if (!aCheckRange.Move(-rCxt.mnColDelta, -rCxt.mnRowDelta, -rCxt.mnTabDelta, aErrorRange))
+        {
+            assert(!"can't move");
+        }
+    }
 
     checkBounds(rPos, nGroupLen, aCheckRange, rRef, rBounds);
 }

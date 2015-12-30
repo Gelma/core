@@ -92,8 +92,8 @@ public:
     explicit SwXSelChgLstnr_Impl(SwMailMergeDlg& rParentDlg);
     virtual ~SwXSelChgLstnr_Impl();
 
-    virtual void SAL_CALL selectionChanged( const EventObject& aEvent ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL disposing( const EventObject& Source ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL selectionChanged( const EventObject& aEvent ) throw (RuntimeException, std::exception) override;
+    virtual void SAL_CALL disposing( const EventObject& Source ) throw (RuntimeException, std::exception) override;
 };
 
 SwXSelChgLstnr_Impl::SwXSelChgLstnr_Impl(SwMailMergeDlg& rParentDlg) :
@@ -230,10 +230,10 @@ SwMailMergeDlg::SwMailMergeDlg(vcl::Window* pParent, SwWrtShell& rShell,
                 m_pBeamerWin->Show();
             }
             uno::Reference<XController> xController = m_xFrame->getController();
-            pImpl->xFController = uno::Reference<runtime::XFormController>(xController, UNO_QUERY);
+            pImpl->xFController.set(xController, UNO_QUERY);
             if(pImpl->xFController.is()) {
                 uno::Reference< awt::XControl > xCtrl = pImpl->xFController->getCurrentControl(  );
-                pImpl->xSelSupp = uno::Reference<XSelectionSupplier>(xCtrl, UNO_QUERY);
+                pImpl->xSelSupp.set(xCtrl, UNO_QUERY);
                 if(pImpl->xSelSupp.is()) {
                     pImpl->xChgLstnr = new SwXSelChgLstnr_Impl(*this);
                     pImpl->xSelSupp->addSelectionChangeListener(  pImpl->xChgLstnr );
@@ -279,7 +279,7 @@ SwMailMergeDlg::SwMailMergeDlg(vcl::Window* pParent, SwWrtShell& rShell,
     m_pSaveIndividualRB->SetClickHdl( aLk );
     aLk.Call( m_pSaveSingleDocRB );
 
-    Link<> aLk2 = LINK(this, SwMailMergeDlg, ModifyHdl);
+    Link<Edit&,void> aLk2 = LINK(this, SwMailMergeDlg, ModifyHdl);
     m_pFromNF->SetModifyHdl(aLk2);
     m_pToNF->SetModifyHdl(aLk2);
     m_pFromNF->SetMax(SAL_MAX_INT32);
@@ -372,7 +372,7 @@ SwMailMergeDlg::~SwMailMergeDlg()
 void SwMailMergeDlg::dispose()
 {
     if(m_xFrame.is()) {
-        m_xFrame->setComponent(NULL, NULL);
+        m_xFrame->setComponent(nullptr, nullptr);
         m_xFrame->dispose();
     }
 
@@ -481,10 +481,9 @@ IMPL_LINK_TYPED( SwMailMergeDlg, FilenameHdl, Button*, pBox, void )
     m_pFilterLB->Enable( bEnable );
 }
 
-IMPL_LINK_NOARG(SwMailMergeDlg, ModifyHdl)
+IMPL_LINK_NOARG_TYPED(SwMailMergeDlg, ModifyHdl, Edit&, void)
 {
     m_pFromRB->Check();
-    return 0;
 }
 
 bool SwMailMergeDlg::ExecQryShell()

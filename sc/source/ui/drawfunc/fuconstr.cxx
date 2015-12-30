@@ -133,7 +133,7 @@ bool FuConstruct::MouseButtonDown(const MouseEvent& rMEvt)
 
         SdrHdl* pHdl = pView->PickHandle(aMDPos);
 
-        if ( pHdl != NULL || pView->IsMarkedHit(aMDPos) )
+        if ( pHdl != nullptr || pView->IsMarkedHit(aMDPos) )
         {
             pView->BegDragObj(aMDPos, nullptr, pHdl, 1);
             bReturn = true;
@@ -187,7 +187,7 @@ bool FuConstruct::MouseMove(const MouseEvent& rMEvt)
     {
         SdrHdl* pHdl=pView->PickHandle(aPnt);
 
-        if ( pHdl != NULL )
+        if ( pHdl != nullptr )
         {
             pViewShell->SetActivePointer(pHdl->GetPointer());
         }
@@ -230,7 +230,7 @@ bool FuConstruct::MouseButtonUp(const MouseEvent& rMEvt)
                 SdrObject* pObj = pMark->GetMarkedSdrObj();
 
                 //  bei Uno-Controls nicht in Textmodus
-                if ( pObj->ISA(SdrTextObj) && !pObj->ISA(SdrUnoObj) )
+                if ( dynamic_cast<const SdrTextObj*>( pObj) != nullptr && dynamic_cast<const SdrUnoObj*>( pObj) ==  nullptr )
                 {
                     OutlinerParaObject* pOPO = pObj->GetOutlinerParaObject();
                     bool bVertical = ( pOPO && pOPO->IsVertical() );

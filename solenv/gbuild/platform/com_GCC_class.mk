@@ -152,7 +152,7 @@ endef
 
 # PrecompiledHeader class
 
-ifeq ($(COM_GCC_IS_CLANG),TRUE)
+ifeq ($(COM_IS_CLANG),TRUE)
 gb_PrecompiledHeader_get_enableflags = -include-pch $(call gb_PrecompiledHeader_get_target,$(1))
 else
 gb_PrecompiledHeader_get_enableflags = -include $(notdir $(subst .gch,,$(call gb_PrecompiledHeader_get_target,$(1)))) \
@@ -173,10 +173,10 @@ $(call gb_Helper_abbreviate_dirs,\
 		$(if $(VISIBILITY),,$(gb_VISIBILITY_FLAGS)) \
 		$(if $(EXTERNAL_CODE),$(gb_CXXFLAGS_Wundef),$(gb_DEFS_INTERNAL)) \
 		$(6) \
-		$(call gb_cxx_dep_generation_options,$(1),$(call gb_PrecompiledHeader_get_dep_target,$(2))) \
+		$(call gb_cxx_dep_generation_options,$(1),$(call gb_PrecompiledHeader_get_dep_target_tmp,$(2))) \
 		-c $(patsubst %.cxx,%.hxx,$(3)) \
 		-o$(1) \
-		$(call gb_cxx_dep_copy,$(call gb_PrecompiledHeader_get_dep_target,$(2))) \
+		$(call gb_cxx_dep_copy,$(call gb_PrecompiledHeader_get_dep_target_tmp,$(2))) \
 		)
 endef
 
@@ -189,6 +189,12 @@ $(call gb_Helper_abbreviate_dirs,\
 	$(gb_YACC) $(T_YACCFLAGS) -v --defines=$(4) -o $(5) $(1) && touch $(3) )
 
 endef
+
+# CppunitTest class
+
+ifeq ($(strip $(DEBUGCPPUNIT)),TRUE)
+gb_CppunitTest_GDBTRACE := gdb -nx -ex "add-auto-load-safe-path $(INSTDIR)" --batch --command=$(SRCDIR)/solenv/bin/gdbtrycatchtrace-stdout -return-child-result --args
+endif
 
 # ExternalProject class
 

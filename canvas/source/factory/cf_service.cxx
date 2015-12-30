@@ -86,31 +86,31 @@ public:
     explicit CanvasFactory( Reference<XComponentContext> const & xContext );
 
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName() throw (RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName() throw (RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL supportsService( OUString const & serviceName )
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
     virtual Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
 
     // XMultiComponentFactory
     virtual Sequence<OUString> SAL_CALL getAvailableServiceNames()
-        throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (RuntimeException, std::exception) override;
     virtual Reference<XInterface> SAL_CALL createInstanceWithContext(
         OUString const & name,
-        Reference<XComponentContext> const & xContext ) throw (Exception, std::exception) SAL_OVERRIDE;
+        Reference<XComponentContext> const & xContext ) throw (Exception, std::exception) override;
     virtual Reference<XInterface> SAL_CALL
     createInstanceWithArgumentsAndContext(
         OUString const & name,
         Sequence<Any> const & args,
-        Reference<XComponentContext> const & xContext ) throw (Exception, std::exception) SAL_OVERRIDE;
+        Reference<XComponentContext> const & xContext ) throw (Exception, std::exception) override;
 
     // XMultiServiceFactory
     virtual Reference<XInterface> SAL_CALL createInstance(
         OUString const & name )
-        throw (Exception, std::exception) SAL_OVERRIDE;
+        throw (Exception, std::exception) override;
     virtual Reference<XInterface> SAL_CALL createInstanceWithArguments(
         OUString const & name, Sequence<Any> const & args )
-        throw (Exception, std::exception) SAL_OVERRIDE;
+        throw (Exception, std::exception) override;
 };
 
 CanvasFactory::CanvasFactory( Reference<XComponentContext> const & xContext ) :
@@ -139,7 +139,7 @@ CanvasFactory::CanvasFactory( Reference<XComponentContext> const & xContext ) :
 
         m_xCanvasConfigNameAccess.set(
             xConfigProvider->createInstanceWithArguments(
-                OUString("com.sun.star.configuration.ConfigurationAccess"),
+                "com.sun.star.configuration.ConfigurationAccess",
                 Sequence<Any>( &propValue, 1 ) ),
             UNO_QUERY_THROW );
 
@@ -151,7 +151,7 @@ CanvasFactory::CanvasFactory( Reference<XComponentContext> const & xContext ) :
 
         Reference<container::XNameAccess> xNameAccess(
             xConfigProvider->createInstanceWithArguments(
-                OUString("com.sun.star.configuration.ConfigurationAccess"),
+                "com.sun.star.configuration.ConfigurationAccess",
                 Sequence<Any>( &propValue, 1 ) ), UNO_QUERY_THROW );
         Reference<container::XHierarchicalNameAccess> xHierarchicalNameAccess(
             xNameAccess, UNO_QUERY_THROW);
@@ -198,8 +198,7 @@ CanvasFactory::CanvasFactory( Reference<XComponentContext> const & xContext ) :
     {
         // Ugh. Looks like configuration is borked. Fake minimal
         // setup.
-        Sequence<OUString> aServices(1);
-        aServices[0] = "com.sun.star.comp.rendering.Canvas.VCL";
+        Sequence<OUString> aServices { "com.sun.star.comp.rendering.Canvas.VCL" };
         m_aAvailableImplementations.push_back( std::make_pair(OUString("com.sun.star.rendering.Canvas"),
                                                               aServices) );
 
@@ -307,7 +306,7 @@ Reference<XInterface> CanvasFactory::lookupAndUse(
     bool bForceLastEntry(false);
     checkConfigFlag( bForceLastEntry,
                      m_bCacheHasForcedLastImpl,
-                     OUString("ForceSafeServiceImpl") );
+                     "ForceSafeServiceImpl" );
 
     // tdf#93870 - force VCL canvas in OpenGL mode for now.
     if( OpenGLWrapper::isVCLOpenGLEnabled() )
@@ -317,13 +316,13 @@ Reference<XInterface> CanvasFactory::lookupAndUse(
     bool bUseAAEntry(true);
     checkConfigFlag( bUseAAEntry,
                      m_bCacheHasUseAAEntry,
-                     OUString("UseAntialiasingCanvas") );
+                     "UseAntialiasingCanvas" );
 
     // use accelerated canvas, if config flag set (or not existing)
     bool bUseAcceleratedEntry(true);
     checkConfigFlag( bUseAcceleratedEntry,
                      m_bCacheHasUseAcceleratedEntry,
-                     OUString("UseAcceleratedCanvas") );
+                     "UseAcceleratedCanvas" );
 
     // try to reuse last working implementation for given service name
     const CacheVector::iterator aEnd(m_aCachedImplementations.end());

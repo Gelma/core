@@ -163,7 +163,7 @@ namespace svgio
         protected:
             /// allow user callback to allow changes to the new TextTransformation. Default
             /// does nothing.
-            virtual bool allowChange(sal_uInt32 nCount, basegfx::B2DHomMatrix& rNewTransform, sal_uInt32 nIndex, sal_uInt32 nLength) SAL_OVERRIDE;
+            virtual bool allowChange(sal_uInt32 nCount, basegfx::B2DHomMatrix& rNewTransform, sal_uInt32 nIndex, sal_uInt32 nLength) override;
 
         public:
             localTextBreakupHelper(
@@ -222,7 +222,7 @@ namespace svgio
             }
             else
             {
-                return 0;
+                return nullptr;
             }
         }
 
@@ -231,7 +231,7 @@ namespace svgio
             const SvgStyleAttributes& rSvgStyleAttributes) const
         {
             // prepare retval, index and length
-            drawinglayer::primitive2d::TextSimplePortionPrimitive2D* pRetval = 0;
+            drawinglayer::primitive2d::TextSimplePortionPrimitive2D* pRetval = nullptr;
             sal_uInt32 nIndex(0);
             sal_uInt32 nLength(getText().getLength());
 
@@ -273,11 +273,11 @@ namespace svgio
                     bBiDiStrong);
 
                 // prepare FontSize
-                double fFontWidth(rSvgStyleAttributes.getFontSize().solve(*this, length));
+                double fFontWidth(rSvgStyleAttributes.getFontSize().solve(*this));
                 double fFontHeight(fFontWidth);
 
                 // prepare locale
-                ::com::sun::star::lang::Locale aLocale;
+                css::lang::Locale aLocale;
 
                 // prepare TextLayouterDevice
                 drawinglayer::primitive2d::TextLayouterDevice aTextLayouterDevice;
@@ -418,7 +418,7 @@ namespace svgio
                     case BaselineShift_Length:
                     {
                         const SvgNumber aNumber(rSvgStyleAttributes.getBaselineShiftNumber());
-                        const double mfBaselineShift(aNumber.solve(*this, length));
+                        const double mfBaselineShift(aNumber.solve(*this));
 
                         aPosition.setY(aPosition.getY() + mfBaselineShift);
                         break;
@@ -501,7 +501,7 @@ namespace svgio
         }
 
         void SvgCharacterNode::decomposeTextWithStyle(
-            drawinglayer::primitive2d::Primitive2DSequence& rTarget,
+            drawinglayer::primitive2d::Primitive2DContainer& rTarget,
             SvgTextPosition& rSvgTextPosition,
             const SvgStyleAttributes& rSvgStyleAttributes) const
         {
@@ -514,7 +514,7 @@ namespace svgio
             {
                 if(!rSvgTextPosition.isRotated())
                 {
-                    drawinglayer::primitive2d::appendPrimitive2DReferenceToPrimitive2DSequence(rTarget, xRef);
+                    rTarget.push_back(xRef);
                 }
                 else
                 {
@@ -525,12 +525,12 @@ namespace svgio
                     if(pCandidate)
                     {
                         const localTextBreakupHelper alocalTextBreakupHelper(*pCandidate, rSvgTextPosition);
-                        const drawinglayer::primitive2d::Primitive2DSequence aResult(
-                            alocalTextBreakupHelper.getResult(drawinglayer::primitive2d::BreakupUnit_character));
+                        const drawinglayer::primitive2d::Primitive2DContainer aResult(
+                            alocalTextBreakupHelper.getResult());
 
-                        if(aResult.hasElements())
+                        if(!aResult.empty())
                         {
-                            drawinglayer::primitive2d::appendPrimitive2DSequenceToPrimitive2DSequence(rTarget, aResult);
+                            rTarget.append(aResult);
                         }
 
                         // also consume for the implied single space
@@ -566,7 +566,7 @@ namespace svgio
             maText += rText;
         }
 
-        void SvgCharacterNode::decomposeText(drawinglayer::primitive2d::Primitive2DSequence& rTarget, SvgTextPosition& rSvgTextPosition) const
+        void SvgCharacterNode::decomposeText(drawinglayer::primitive2d::Primitive2DContainer& rTarget, SvgTextPosition& rSvgTextPosition) const
         {
             if(!getText().isEmpty())
             {
@@ -595,7 +595,7 @@ namespace svgio
         :   mpParent(pParent),
             maX(), // computed below
             maY(), // computed below
-            maRotate(solveSvgNumberVector(rSvgTextPositions.getRotate(), rInfoProvider, length)),
+            maRotate(solveSvgNumberVector(rSvgTextPositions.getRotate(), rInfoProvider)),
             mfTextLength(0.0),
             maPosition(), // computed below
             mnRotationIndex(0),
@@ -605,7 +605,7 @@ namespace svgio
             // get TextLength if provided
             if(rSvgTextPositions.getTextLength().isSet())
             {
-                mfTextLength = rSvgTextPositions.getTextLength().solve(rInfoProvider, length);
+                mfTextLength = rSvgTextPositions.getTextLength().solve(rInfoProvider);
             }
 
             // SVG does not really define in which units a \91rotate\92 for Text/TSpan is given,

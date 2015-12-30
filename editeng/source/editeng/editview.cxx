@@ -63,6 +63,7 @@
 #include <linguistic/lngprops.hxx>
 #include <vcl/settings.hxx>
 #include <LibreOfficeKit/LibreOfficeKitEnums.h>
+#include <comphelper/lok.hxx>
 
 #include <com/sun/star/lang/XServiceInfo.hpp>
 
@@ -264,6 +265,11 @@ SvtScriptType EditView::GetSelectedScriptType() const
     return pImpEditView->pEditEngine->GetScriptType( pImpEditView->GetEditSelection() );
 }
 
+void EditView::GetSelectionRectangles(std::vector<Rectangle>& rLogicRects) const
+{
+    return pImpEditView->GetSelectionRectangles(rLogicRects);
+}
+
 void EditView::Paint( const Rectangle& rRect, OutputDevice* pTargetDevice )
 {
     pImpEditView->pEditEngine->pImpEditEngine->Paint( pImpEditView, rRect, pTargetDevice );
@@ -395,7 +401,7 @@ void EditView::ShowCursor( bool bGotoCursor, bool bForceVisCursor )
             bGotoCursor = false;
         pImpEditView->ShowCursor( bGotoCursor, bForceVisCursor );
 
-        if (pImpEditView->isTiledRendering())
+        if (comphelper::LibreOfficeKit::isActive())
             pImpEditView->libreOfficeKitCallback(LOK_CALLBACK_CURSOR_VISIBLE, OString::boolean(true).getStr());
     }
 }
@@ -403,7 +409,7 @@ void EditView::ShowCursor( bool bGotoCursor, bool bForceVisCursor )
 void EditView::HideCursor()
 {
     pImpEditView->GetCursor()->Hide();
-    if (pImpEditView->isTiledRendering())
+    if (comphelper::LibreOfficeKit::isActive())
         pImpEditView->libreOfficeKitCallback(LOK_CALLBACK_CURSOR_VISIBLE, OString::boolean(false).getStr());
 }
 
@@ -582,11 +588,6 @@ void EditView::setTiledRendering(bool bTiledRendering)
     pImpEditView->setTiledRendering(bTiledRendering);
 }
 
-bool EditView::isTiledRendering()
-{
-    return pImpEditView->isTiledRendering();
-}
-
 void EditView::registerLibreOfficeKitCallback(LibreOfficeKitCallback pCallback, void* pLibreOfficeKitData)
 {
     pImpEditView->registerLibreOfficeKitCallback(pCallback, pLibreOfficeKitData);
@@ -650,12 +651,12 @@ SfxStyleSheet* EditView::GetStyleSheet()
     sal_Int32 nStartPara = pImpEditView->pEditEngine->GetEditDoc().GetPos( aSel.Min().GetNode() );
     sal_Int32 nEndPara = pImpEditView->pEditEngine->GetEditDoc().GetPos( aSel.Max().GetNode() );
 
-    SfxStyleSheet* pStyle = NULL;
+    SfxStyleSheet* pStyle = nullptr;
     for ( sal_Int32 n = nStartPara; n <= nEndPara; n++ )
     {
         SfxStyleSheet* pTmpStyle = pImpEditView->pEditEngine->GetStyleSheet( n );
         if ( ( n != nStartPara ) && ( pStyle != pTmpStyle ) )
-            return NULL;    // Not unique.
+            return nullptr;    // Not unique.
         pStyle = pTmpStyle;
     }
     return pStyle;
@@ -762,7 +763,6 @@ bool EditView::IsWrongSpelledWordAtPos( const Point& rPosPixel, bool bMarkIfWron
 
 void EditView::ExecuteSpellPopup( const Point& rPosPixel, Link<SpellCallbackInfo&,void>* pCallBack )
 {
-
     Point aPos ( pImpEditView->GetWindow()->PixelToLogic( rPosPixel ) );
     aPos = pImpEditView->GetDocPos( aPos );
     EditPaM aPaM = pImpEditView->pEditEngine->GetPaM(aPos, false);
@@ -874,7 +874,7 @@ void EditView::ExecuteSpellPopup( const Point& rPosPixel, Link<SpellCallbackInfo
         Sequence< Reference< linguistic2::XDictionary >  > aDics;
         if (xDicList.is())
         {
-            const Reference< linguistic2::XDictionary >  *pDic = NULL;
+            const Reference< linguistic2::XDictionary >  *pDic = nullptr;
             // add the default positive dictionary to dic-list (if not already done).
             // This is to ensure that there is at least one dictionary to which
             // words could be added.
@@ -989,6 +989,11 @@ void EditView::ExecuteSpellPopup( const Point& rPosPixel, Link<SpellCallbackInfo
                 pCallBack->Call( aInf );
             }
         }
+        else if ( nId == MN_AUTO_CORRECT_DLG && pCallBack)
+        {
+            SpellCallbackInfo aInf( SpellCallbackCommand::AUTOCORRECT_OPTIONS, OUString() );
+            pCallBack->Call( aInf );
+        }
         else if ( nId >= MN_DICTSTART || nId == MN_INSERT_SINGLE )
         {
             OUString aDicName;
@@ -1097,7 +1102,7 @@ const SvxFieldItem* EditView::GetFieldAtSelection() const
         const sal_Int32 nXPos = aPaM.GetIndex();
         for (size_t nAttr = rAttrs.size(); nAttr; )
         {
-            const EditCharAttrib& rAttr = rAttrs[--nAttr];
+            const EditCharAttrib& rAttr = *rAttrs[--nAttr].get();
             if (rAttr.GetStart() == nXPos)
                 if (rAttr.Which() == EE_FEATURE_FIELD)
                 {
@@ -1106,7 +1111,7 @@ const SvxFieldItem* EditView::GetFieldAtSelection() const
                 }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 void EditView::SetInvalidateMore( sal_uInt16 nPixel )

@@ -23,8 +23,7 @@
 
 
 
-CGMElements::CGMElements( CGM& rCGM ) :
-    mpCGM ( &rCGM )
+CGMElements::CGMElements()
 {
     Init();
 };
@@ -341,7 +340,7 @@ Bundle* CGMElements::GetBundle( BundleList& rList, long nIndex )
             return rList[ i ];
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 

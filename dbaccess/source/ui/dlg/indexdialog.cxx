@@ -153,7 +153,7 @@ namespace dbaui
     {
         bool bReturn = SvTreeListBox::Select(pEntry, _bSelect);
 
-        if (m_aSelectHdl.IsSet() && !m_bSuspendSelectHdl && _bSelect)
+        if (!m_bSuspendSelectHdl && _bSelect)
             m_aSelectHdl.Call(*this);
 
         return bReturn;
@@ -168,9 +168,8 @@ namespace dbaui
                                     const Reference< XComponentContext >& _rxContext,sal_Int32 _nMaxColumnsInIndex)
         :ModalDialog( _pParent, "IndexDesignDialog", "dbaccess/ui/indexdesigndialog.ui")
         ,m_xConnection(_rxConnection)
-        ,m_aGeometrySettings(E_DIALOG, OUString("dbaccess.tabledesign.indexdialog"))
-        ,m_pIndexes(NULL)
-        ,m_pPreviousSelection(NULL)
+        ,m_pIndexes(nullptr)
+        ,m_pPreviousSelection(nullptr)
         ,m_bEditAgain(false)
         ,m_xContext(_rxContext)
     {
@@ -267,7 +266,7 @@ namespace dbaui
         m_pActions->EnableItem(mnNewCmdId, !m_pIndexList->IsEditingActive());
 
         SvTreeListEntry* pSelected = m_pIndexList->FirstSelected();
-        bool bSelectedAnything = NULL != pSelected;
+        bool bSelectedAnything = nullptr != pSelected;
 
         if (pSelected)
         {
@@ -295,7 +294,7 @@ namespace dbaui
         Indexes::iterator aEnd = m_pIndexes->end();
         for (; aIndexLoop != aEnd; ++aIndexLoop)
         {
-            SvTreeListEntry* pNewEntry = NULL;
+            SvTreeListEntry* pNewEntry = nullptr;
             if (aIndexLoop->bPrimaryKey)
                 pNewEntry = m_pIndexList->InsertEntry(aIndexLoop->sName, aPKeyIcon, aPKeyIcon);
             else
@@ -314,7 +313,7 @@ namespace dbaui
 
     void DbaIndexDialog::dispose()
     {
-        setToolBox(NULL);
+        setToolBox(nullptr);
         delete m_pIndexes;
         m_pActions.clear();
         m_pIndexList.clear();
@@ -473,7 +472,7 @@ namespace dbaui
 
             // if the removed entry was the selected on...
             if (m_pPreviousSelection == _pEntry)
-                m_pPreviousSelection = NULL;
+                m_pPreviousSelection = nullptr;
 
             // the Remove automatically selected another entry (if possible), but we disabled the calling of the handler
             // to prevent that we missed something... call the handler directly
@@ -733,17 +732,15 @@ namespace dbaui
 
     IMPL_LINK_NOARG_TYPED( DbaIndexDialog, OnModifiedClick, Button*, void )
     {
-        OnModified(NULL);
+        OnModified(*m_pFields);
     }
-    IMPL_LINK_NOARG( DbaIndexDialog, OnModified )
+    IMPL_LINK_NOARG_TYPED( DbaIndexDialog, OnModified, IndexFieldsControl&, void )
     {
         OSL_ENSURE(m_pPreviousSelection, "DbaIndexDialog, OnModified: invalid call!");
         Indexes::iterator aPosition = m_pIndexes->begin() + reinterpret_cast<sal_IntPtr>(m_pPreviousSelection->GetUserData());
 
         aPosition->setModified(true);
         updateToolbox();
-
-        return 1L;
     }
 
     void DbaIndexDialog::updateControls(const SvTreeListEntry* _pEntry)
@@ -792,7 +789,7 @@ namespace dbaui
             }
         }
 
-        bool bHaveSelection = (NULL != m_pIndexList->FirstSelected());
+        bool bHaveSelection = (nullptr != m_pIndexList->FirstSelected());
 
         // disable/enable the detail controls
         m_pIndexDetails->Enable(bHaveSelection);

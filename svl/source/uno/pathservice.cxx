@@ -40,52 +40,51 @@ public:
         {}
 
     virtual OUString SAL_CALL getImplementationName()
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw(css::uno::RuntimeException, std::exception) override
         {
             return OUString("com.sun.star.comp.svl.PathService");
         }
 
     virtual sal_Bool SAL_CALL supportsService (
         const OUString & rName)
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw(css::uno::RuntimeException, std::exception) override
         {
             return cppu::supportsService(this, rName);
         }
 
     virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw(css::uno::RuntimeException, std::exception) override
         {
-            css::uno::Sequence< OUString > aRet(1);
-            aRet.getArray()[0] = "com.sun.star.config.SpecialConfigManager";
+            css::uno::Sequence< OUString > aRet { "com.sun.star.config.SpecialConfigManager" };
             return aRet;
         }
 
     virtual OUString SAL_CALL substituteVariables (
         const OUString& sText)
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw(css::uno::RuntimeException, std::exception) override
         {
             return m_aOptions.SubstituteVariable( sText );
         }
 
     virtual void SAL_CALL addPropertyChangeListener (
         const OUString &, const css::uno::Reference< css::beans::XPropertyChangeListener > &)
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw(css::uno::RuntimeException, std::exception) override
         {}
 
     virtual void SAL_CALL removePropertyChangeListener (
         const OUString &, const css::uno::Reference< css::beans::XPropertyChangeListener > &)
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw(css::uno::RuntimeException, std::exception) override
         {}
 
     virtual void SAL_CALL flush()
-        throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw(css::uno::RuntimeException, std::exception) override
         {}
 };
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_svl_PathService_get_implementation(::com::sun::star::uno::XComponentContext*,
-                                                     ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_svl_PathService_get_implementation(css::uno::XComponentContext*,
+                                                     css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new PathService());
 }

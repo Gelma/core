@@ -21,33 +21,33 @@
 class CDRImportFilter : public writerperfect::ImportFilter<OdgGenerator>
 {
 public:
-    explicit CDRImportFilter(const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > &rxContext)
+    explicit CDRImportFilter(const css::uno::Reference< css::uno::XComponentContext > &rxContext)
         : writerperfect::ImportFilter<OdgGenerator>(rxContext)
     {
     }
 
     // XServiceInfo
     virtual OUString SAL_CALL getImplementationName()
-    throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    throw (css::uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL supportsService(const OUString &ServiceName)
-    throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-    throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
+    throw (css::uno::RuntimeException, std::exception) override;
 
 private:
-    virtual bool doDetectFormat(librevenge::RVNGInputStream &rInput, OUString &rTypeName) SAL_OVERRIDE;
-    virtual bool doImportDocument(librevenge::RVNGInputStream &rInput, OdgGenerator &rGenerator, utl::MediaDescriptor &) SAL_OVERRIDE;
+    virtual bool doDetectFormat(librevenge::RVNGInputStream &rInput, OUString &rTypeName) override;
+    virtual bool doImportDocument(librevenge::RVNGInputStream &rInput, OdgGenerator &rGenerator, utl::MediaDescriptor &) override;
 };
 
 OUString CDRImportFilter_getImplementationName()
-throw (::com::sun::star::uno::RuntimeException);
+throw (css::uno::RuntimeException);
 
-::com::sun::star::uno::Sequence< OUString > SAL_CALL CDRImportFilter_getSupportedServiceNames()
-throw (::com::sun::star::uno::RuntimeException);
+css::uno::Sequence< OUString > SAL_CALL CDRImportFilter_getSupportedServiceNames()
+throw (css::uno::RuntimeException);
 
-::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface >
-SAL_CALL CDRImportFilter_createInstance(const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext > &rContext)
-throw (::com::sun::star::uno::Exception);
+css::uno::Reference< css::uno::XInterface >
+SAL_CALL CDRImportFilter_createInstance(const css::uno::Reference< css::uno::XComponentContext > &rContext)
+throw (css::uno::Exception);
 
 #endif
 

@@ -68,9 +68,7 @@ OUString PDFInteractionHandler_getImplementationName ()
 
 Sequence< OUString > SAL_CALL PDFInteractionHandler_getSupportedServiceNames(  ) throw (RuntimeException)
 {
-    Sequence < OUString > aRet(1);
-    OUString* pArray = aRet.getArray();
-    pArray[0] = "com.sun.star.filter.pdfexport.PDFExportInteractionHandler";
+    Sequence<OUString> aRet { "com.sun.star.filter.pdfexport.PDFExportInteractionHandler" };
     return aRet;
 }
 
@@ -91,7 +89,7 @@ sal_Bool SAL_CALL PDFInteractionHandler::supportsService( const OUString& rServi
     return cppu::supportsService( this, rServiceName );
 }
 
-::com::sun::star::uno::Sequence< OUString > SAL_CALL PDFInteractionHandler::getSupportedServiceNames(  ) throw (RuntimeException, std::exception)
+css::uno::Sequence< OUString > SAL_CALL PDFInteractionHandler::getSupportedServiceNames(  ) throw (RuntimeException, std::exception)
 {
     return PDFInteractionHandler_getSupportedServiceNames();
 }

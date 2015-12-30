@@ -27,6 +27,7 @@
 #include <com/sun/star/sdb/CommandType.hpp>
 #include <com/sun/star/sdb/DatabaseContext.hpp>
 #include <com/sun/star/sdb/XDocumentDataSource.hpp>
+#include <com/sun/star/sdbc/XRowSet.hpp>
 
 #include <test/bootstrapfixture.hxx>
 #include <test/xmltesttools.hxx>
@@ -39,6 +40,7 @@
 #include <unotools/tempfile.hxx>
 #include <unotools/localfilehelper.hxx>
 #include <unotools/mediadescriptor.hxx>
+#include <sfx2/objsh.hxx>
 #include <dbmgr.hxx>
 #include <unoprnms.hxx>
 
@@ -67,7 +69,7 @@ using namespace css;
 #define DECLARE_SW_ROUNDTRIP_TEST(TestName, filename, BaseClass) \
     class TestName : public BaseClass { \
         protected:\
-    virtual OUString getTestName() SAL_OVERRIDE { return OUString(#TestName); } \
+    virtual OUString getTestName() override { return OUString(#TestName); } \
         public:\
     CPPUNIT_TEST_SUITE(TestName); \
     CPPUNIT_TEST(Import); \
@@ -80,7 +82,7 @@ using namespace css;
     void Import_Export_Import() {\
         executeImportExportImportTest(filename);\
     }\
-    void verify() SAL_OVERRIDE;\
+    void verify() override;\
     }; \
     CPPUNIT_TEST_SUITE_REGISTRATION(TestName); \
     void TestName::verify()
@@ -96,7 +98,7 @@ using namespace css;
 #define DECLARE_SW_IMPORT_TEST(TestName, filename, BaseClass) \
     class TestName : public BaseClass { \
         protected:\
-    virtual OUString getTestName() SAL_OVERRIDE { return OUString(#TestName); } \
+    virtual OUString getTestName() override { return OUString(#TestName); } \
         public:\
     CPPUNIT_TEST_SUITE(TestName); \
     CPPUNIT_TEST(Import); \
@@ -105,7 +107,7 @@ using namespace css;
     void Import() { \
         executeImportTest(filename);\
     }\
-    void verify() SAL_OVERRIDE;\
+    void verify() override;\
     }; \
     CPPUNIT_TEST_SUITE_REGISTRATION(TestName); \
     void TestName::verify()
@@ -113,7 +115,7 @@ using namespace css;
 #define DECLARE_SW_EXPORT_TEST(TestName, filename, BaseClass) \
     class TestName : public BaseClass { \
         protected:\
-    virtual OUString getTestName() SAL_OVERRIDE { return OUString(#TestName); } \
+    virtual OUString getTestName() override { return OUString(#TestName); } \
         public:\
     CPPUNIT_TEST_SUITE(TestName); \
     CPPUNIT_TEST(Import_Export); \
@@ -122,7 +124,7 @@ using namespace css;
     void Import_Export() {\
         executeImportExport(filename);\
     }\
-    void verify() SAL_OVERRIDE;\
+    void verify() override;\
     }; \
     CPPUNIT_TEST_SUITE_REGISTRATION(TestName); \
     void TestName::verify()
@@ -148,17 +150,13 @@ protected:
     virtual OUString getTestName() { return OUString(); }
 
 public:
-    OUString& getFilterOptions()
-    {
-        return maFilterOptions;
-    }
     void setFilterOptions(const OUString &rFilterOptions)
     {
         maFilterOptions = rFilterOptions;
     }
 
     SwModelTestBase(const char* pTestDocumentPath = "", const char* pFilter = "")
-        : mpXmlBuffer(0)
+        : mpXmlBuffer(nullptr)
         , mpTestDocumentPath(pTestDocumentPath)
         , mpFilter(pFilter)
         , mnStartTime(0)
@@ -170,14 +168,14 @@ public:
     virtual ~SwModelTestBase()
     {}
 
-    virtual void setUp() SAL_OVERRIDE
+    virtual void setUp() override
     {
         test::BootstrapFixture::setUp();
 
         mxDesktop.set(css::frame::Desktop::create(comphelper::getComponentContext(getMultiServiceFactory())));
     }
 
-    virtual void tearDown() SAL_OVERRIDE
+    virtual void tearDown() override
     {
         if (mxComponent.is())
             mxComponent->dispose();
@@ -301,13 +299,13 @@ private:
         // create the xml writer
         mpXmlBuffer = xmlBufferCreate();
         xmlTextWriterPtr pXmlWriter = xmlNewTextWriterMemory(mpXmlBuffer, 0);
-        xmlTextWriterStartDocument(pXmlWriter, NULL, NULL, NULL);
+        xmlTextWriterStartDocument(pXmlWriter, nullptr, nullptr, nullptr);
 
         // create the dump
         SwXTextDocument* pTextDoc = dynamic_cast<SwXTextDocument *>(mxComponent.get());
         CPPUNIT_ASSERT(pTextDoc);
         SwDoc* pDoc = pTextDoc->GetDocShell()->GetDoc();
-        SwRootFrm* pLayout = pDoc->getIDocumentLayoutAccess().GetCurrentLayout();
+        SwRootFrame* pLayout = pDoc->getIDocumentLayoutAccess().GetCurrentLayout();
         pLayout->dumpAsXml(pXmlWriter);
 
         // delete xml writer
@@ -321,7 +319,7 @@ protected:
         if (mpXmlBuffer)
         {
             xmlBufferFree(mpXmlBuffer);
-            mpXmlBuffer = 0;
+            mpXmlBuffer = nullptr;
         }
     }
 
@@ -658,7 +656,7 @@ protected:
     xmlDocPtr parseExport(const OUString& rStreamName = OUString("word/document.xml"))
     {
         if (!mbExported)
-            return 0;
+            return nullptr;
 
         return parseExportInternal( maTempFile.GetURL(), rStreamName );
     }
@@ -678,7 +676,7 @@ protected:
     /**
      * Helper method to return nodes represented by rXPath.
      */
-    virtual void registerNamespaces(xmlXPathContextPtr& pXmlXpathCtx) SAL_OVERRIDE
+    virtual void registerNamespaces(xmlXPathContextPtr& pXmlXpathCtx) override
     {
         // docx
         xmlXPathRegisterNs(pXmlXpathCtx, BAD_CAST("w"), BAD_CAST("http://schemas.openxmlformats.org/wordprocessingml/2006/main"));
@@ -697,6 +695,7 @@ protected:
         xmlXPathRegisterNs(pXmlXpathCtx, BAD_CAST("lc"), BAD_CAST("http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas"));
         xmlXPathRegisterNs(pXmlXpathCtx, BAD_CAST("extended-properties"), BAD_CAST("http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"));
         xmlXPathRegisterNs(pXmlXpathCtx, BAD_CAST("a14"), BAD_CAST("http://schemas.microsoft.com/office/drawing/2010/main"));
+        xmlXPathRegisterNs(pXmlXpathCtx, BAD_CAST("c"), BAD_CAST("http://schemas.openxmlformats.org/drawingml/2006/chart"));
         xmlXPathRegisterNs(pXmlXpathCtx, BAD_CAST("o"), BAD_CAST("urn:schemas-microsoft-com:office:office"));
         // odt
         xmlXPathRegisterNs(pXmlXpathCtx, BAD_CAST("office"), BAD_CAST("urn:oasis:names:tc:opendocument:xmlns:office:1.0"));

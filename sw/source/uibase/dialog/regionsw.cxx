@@ -77,7 +77,7 @@ void SwBaseShell::InsertRegionDialog(SfxRequest& rReq)
         rSh.CalcBoundRect(aRect, FLY_AS_CHAR);
 
         long nWidth = aRect.Width();
-        aSet.Put(SwFormatFrmSize(ATT_VAR_SIZE, nWidth));
+        aSet.Put(SwFormatFrameSize(ATT_VAR_SIZE, nWidth));
 
         // height=width for more consistent preview (analog to edit region)
         aSet.Put(SvxSizeItem(SID_ATTR_PAGE_SIZE, Size(nWidth, nWidth)));
@@ -91,7 +91,7 @@ void SwBaseShell::InsertRegionDialog(SfxRequest& rReq)
     }
     else
     {
-        const SfxPoolItem *pItem = 0;
+        const SfxPoolItem *pItem = nullptr;
         OUString aTmpStr;
         if ( SfxItemState::SET ==
                 pSet->GetItemState(FN_PARAM_REGION_NAME, true, &pItem) )
@@ -169,7 +169,7 @@ void SwBaseShell::InsertRegionDialog(SfxRequest& rReq)
             aSection.SetType( FILE_LINK_SECTION );
             aSection.SetLinkFileName(sLinkFileName);
         }
-        rSh.InsertSection(aSection, aSet.Count() ? &aSet : 0);
+        rSh.InsertSection(aSection, aSet.Count() ? &aSet : nullptr);
         rReq.Done();
     }
 }
@@ -189,7 +189,7 @@ IMPL_LINK_TYPED( SwWrtShell, InsertRegionDialog, void*, p, void )
         SwRect aRect;
         CalcBoundRect(aRect, FLY_AS_CHAR);
         long nWidth = aRect.Width();
-        aSet.Put(SwFormatFrmSize(ATT_VAR_SIZE, nWidth));
+        aSet.Put(SwFormatFrameSize(ATT_VAR_SIZE, nWidth));
         // height=width for more consistent preview (analog to edit region)
         aSet.Put(SvxSizeItem(SID_ATTR_PAGE_SIZE, Size(nWidth, nWidth)));
         SwAbstractDialogFactory* pFact = SwAbstractDialogFactory::Create();
@@ -206,7 +206,7 @@ void SwBaseShell::EditRegionDialog(SfxRequest& rReq)
 {
     const SfxItemSet* pArgs = rReq.GetArgs();
     sal_uInt16 nSlot = rReq.GetSlot();
-    const SfxPoolItem* pItem = 0;
+    const SfxPoolItem* pItem = nullptr;
     if(pArgs)
         pArgs->GetItemState(nSlot, false, &pItem);
     SwWrtShell& rWrtShell = GetShell();
@@ -221,7 +221,7 @@ void SwBaseShell::EditRegionDialog(SfxRequest& rReq)
                 OSL_ENSURE(pFact, "Dialog creation failed!");
                 std::unique_ptr<AbstractEditRegionDlg> pEditRegionDlg(pFact->CreateEditRegionDlg(pParentWin, rWrtShell));
                 OSL_ENSURE(pEditRegionDlg, "Dialog creation failed!");
-                if(pItem && pItem->ISA(SfxStringItem))
+                if(pItem && dynamic_cast< const SfxStringItem *>( pItem ) !=  nullptr)
                 {
                     pEditRegionDlg->SelectSection(static_cast<const SfxStringItem*>(pItem)->GetValue());
                 }

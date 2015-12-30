@@ -124,11 +124,11 @@ namespace
     }
 }
 
-SwHeaderFooterWin::SwHeaderFooterWin( SwEditWin* pEditWin, const SwFrm *pFrm, bool bHeader ) :
-    SwFrameMenuButtonBase( pEditWin, pFrm ),
+SwHeaderFooterWin::SwHeaderFooterWin( SwEditWin* pEditWin, const SwFrame *pFrame, bool bHeader ) :
+    SwFrameMenuButtonBase( pEditWin, pFrame ),
     m_bIsHeader( bHeader ),
-    m_pPopupMenu( NULL ),
-    m_pLine( NULL ),
+    m_pPopupMenu( nullptr ),
+    m_pLine( nullptr ),
     m_bIsAppearing( false ),
     m_nFadeRate( 100 ),
     m_aFadeTimer( )
@@ -260,7 +260,7 @@ void SwHeaderFooterWin::Paint(vcl::RenderContext& rRenderContext, const Rectangl
     SetMapMode(MapMode(MAP_PIXEL));
 
     const Rectangle aRect(Rectangle(Point(0, 0), rRenderContext.PixelToLogic(GetSizePixel())));
-    drawinglayer::primitive2d::Primitive2DSequence aSeq(3);
+    drawinglayer::primitive2d::Primitive2DContainer aSeq(3);
 
     B2DPolygon aPolygon = lcl_GetPolygon(aRect, m_bIsHeader);
 
@@ -355,8 +355,8 @@ void SwHeaderFooterWin::Paint(vcl::RenderContext& rRenderContext, const Rectangl
     if (Application::GetSettings().GetStyleSettings().GetHighContrastMode())
         aSignColor = Color(COL_WHITE).getBColor();
 
-    aSeq.realloc(aSeq.getLength() + 1);
-    aSeq[aSeq.getLength() - 1] = drawinglayer::primitive2d::Primitive2DReference(
+    aSeq.resize(aSeq.size() + 1);
+    aSeq[aSeq.size() - 1] = drawinglayer::primitive2d::Primitive2DReference(
                                     new drawinglayer::primitive2d::PolyPolygonColorPrimitive2D(
                                         B2DPolyPolygon(aSign), aSignColor));
 
@@ -366,7 +366,7 @@ void SwHeaderFooterWin::Paint(vcl::RenderContext& rRenderContext, const Rectangl
         drawinglayer::processor2d::createBaseProcessor2DFromOutputDevice(rRenderContext, aNewViewInfos));
 
     // TODO Ghost it all if needed
-    drawinglayer::primitive2d::Primitive2DSequence aGhostedSeq(1);
+    drawinglayer::primitive2d::Primitive2DContainer aGhostedSeq(1);
     double nFadeRate = double(m_nFadeRate) / 100.0;
 
     const basegfx::BColorModifierSharedPtr aBColorModifier(
@@ -510,8 +510,8 @@ IMPL_LINK_NOARG_TYPED(SwHeaderFooterWin, FadeHandler, Timer *, void)
 
     if (m_nFadeRate != 100 && !IsVisible())
     {
-        Show(true);
-        m_pLine->Show(true);
+        Show();
+        m_pLine->Show();
     }
     else if (m_nFadeRate == 100 && IsVisible())
     {

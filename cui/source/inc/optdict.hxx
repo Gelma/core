@@ -55,19 +55,15 @@ private:
     VclPtr<CheckBox>            pExceptBtn;
     VclPtr<OKButton>            pOKBtn;
     css::uno::Reference<
-        css::linguistic2::XSpellChecker1 >     xSpell;
-    css::uno::Reference<
         css::linguistic2::XDictionary >    xNewDic;
 
     DECL_LINK_TYPED(OKHdl_Impl, Button*, void);
-    DECL_LINK(ModifyHdl_Impl, void *);
+    DECL_LINK_TYPED(ModifyHdl_Impl, Edit&, void);
 
 public:
-    SvxNewDictionaryDialog( vcl::Window* pParent,
-            css::uno::Reference<
-                css::linguistic2::XSpellChecker1 >  &xSpl );
+    SvxNewDictionaryDialog( vcl::Window* pParent );
     virtual ~SvxNewDictionaryDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     css::uno::Reference<
         css::linguistic2::XDictionary >
@@ -93,7 +89,7 @@ class SvxDictEdit : public Edit
     void            SetSpaces(bool bSet)
                                 {bSpaces = bSet;}
 
-    virtual void    KeyInput( const KeyEvent& rKEvent ) SAL_OVERRIDE;
+    virtual void    KeyInput( const KeyEvent& rKEvent ) override;
 };
 
 // class SvxEditDictionaryDialog -----------------------------------------
@@ -115,13 +111,10 @@ private:
 
     OUString                sModify;
     OUString                sNew;
-    DecorationView          aDecoView;
 
     css::uno::Sequence<
         css::uno::Reference<
             css::linguistic2::XDictionary >  > aDics;  //! snapshot copy to work on
-    css::uno::Reference<
-        css::linguistic2::XSpellChecker1 >     xSpell;
 
     short               nOld;
     long                nWidth;
@@ -129,12 +122,12 @@ private:
     bool            bDoNothing;
     bool                bDicIsReadonly;
 
-    DECL_LINK(SelectBookHdl_Impl, void *);
-    DECL_LINK(SelectLangHdl_Impl, void *);
+    DECL_LINK_TYPED(SelectBookHdl_Impl, ListBox&, void);
+    DECL_LINK_TYPED(SelectLangHdl_Impl, ListBox&, void);
     DECL_LINK_TYPED(SelectHdl, SvTreeListBox*, void);
     DECL_LINK_TYPED(NewDelButtonHdl, Button*, void);
     DECL_LINK_TYPED(NewDelActionHdl, SvxDictEdit&, bool);
-    DECL_LINK(ModifyHdl, Edit*);
+    DECL_LINK_TYPED(ModifyHdl, Edit&, void);
     bool NewDelHdl(void*);
 
 
@@ -149,11 +142,9 @@ private:
 
 public:
     SvxEditDictionaryDialog( vcl::Window* pParent,
-            const OUString& rName,
-            css::uno::Reference<
-                css::linguistic2::XSpellChecker1> &xSpl );
+            const OUString& rName );
     virtual ~SvxEditDictionaryDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 };
 
 #endif

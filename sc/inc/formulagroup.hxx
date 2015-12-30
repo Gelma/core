@@ -23,11 +23,11 @@
 #endif
 #include <svl/sharedstringpool.hxx>
 
+#include <memory>
 #include <set>
 #include <unordered_map>
 #include <vector>
 #include <boost/noncopyable.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 
 class ScDocument;
 class ScTokenArray;
@@ -57,8 +57,8 @@ struct FormulaGroupContext : boost::noncopyable
     typedef AlignedAllocator<double,256> DoubleAllocType;
     typedef std::vector<double, DoubleAllocType> NumArrayType;
     typedef std::vector<rtl_uString*> StrArrayType;
-    typedef boost::ptr_vector<NumArrayType> NumArrayStoreType;
-    typedef boost::ptr_vector<StrArrayType> StrArrayStoreType;
+    typedef std::vector<std::unique_ptr<NumArrayType>> NumArrayStoreType;
+    typedef std::vector<std::unique_ptr<StrArrayType>> StrArrayStoreType;
 
     struct ColKey
     {
@@ -87,8 +87,8 @@ struct FormulaGroupContext : boost::noncopyable
 
     typedef std::unordered_map<ColKey, ColArray, ColKey::Hash> ColArraysType;
 
-    NumArrayStoreType maNumArrays; /// manage life cycle of numeric arrays.
-    StrArrayStoreType maStrArrays; /// manage life cycle of string arrays.
+    NumArrayStoreType m_NumArrays; /// manage life cycle of numeric arrays.
+    StrArrayStoreType m_StrArrays; /// manage life cycle of string arrays.
 
     ColArraysType maColArrays; /// keep track of longest array for each column.
 
@@ -141,7 +141,6 @@ public:
     static void getOpenCLDeviceInfo(sal_Int32& rDeviceId, sal_Int32& rPlatformId);
 #endif
     virtual ScMatrixRef inverseMatrix(const ScMatrix& rMat) = 0;
-    virtual CompiledFormula* createCompiledFormula( ScFormulaCellGroup& rGroup, ScTokenArray& rCode ) = 0;
     virtual bool interpret(ScDocument& rDoc, const ScAddress& rTopPos, ScFormulaCellGroupRef& xGroup, ScTokenArray& rCode) = 0;
 };
 
@@ -152,9 +151,8 @@ public:
     FormulaGroupInterpreterSoftware();
     virtual ~FormulaGroupInterpreterSoftware() {}
 
-    virtual ScMatrixRef inverseMatrix(const ScMatrix& rMat) SAL_OVERRIDE;
-    virtual CompiledFormula* createCompiledFormula( ScFormulaCellGroup& rGroup, ScTokenArray& rCode ) SAL_OVERRIDE;
-    virtual bool interpret(ScDocument& rDoc, const ScAddress& rTopPos, ScFormulaCellGroupRef& xGroup, ScTokenArray& rCode) SAL_OVERRIDE;
+    virtual ScMatrixRef inverseMatrix(const ScMatrix& rMat) override;
+    virtual bool interpret(ScDocument& rDoc, const ScAddress& rTopPos, ScFormulaCellGroupRef& xGroup, ScTokenArray& rCode) override;
 };
 
 }

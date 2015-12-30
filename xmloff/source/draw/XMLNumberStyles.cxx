@@ -40,26 +40,26 @@ struct SdXMLDataStyleNumber
 }
     aSdXMLDataStyleNumbers[] =
 {
-    { XML_DAY,          false,      false,      false,      NULL },
-    { XML_DAY,          true,       false,      false,      NULL },
-    { XML_MONTH,        true,       false,      false,      NULL },
-    { XML_MONTH,        false,      true,       false,      NULL },
-    { XML_MONTH,        true,       true,       false,      NULL },
-    { XML_YEAR,         false,      false,      false,      NULL },
-    { XML_YEAR,         true,       false,      false,      NULL },
-    { XML_DAY_OF_WEEK,  false,      false,      false,      NULL },
-    { XML_DAY_OF_WEEK,  true,       false,      false,      NULL },
+    { XML_DAY,          false,      false,      false,      nullptr },
+    { XML_DAY,          true,       false,      false,      nullptr },
+    { XML_MONTH,        true,       false,      false,      nullptr },
+    { XML_MONTH,        false,      true,       false,      nullptr },
+    { XML_MONTH,        true,       true,       false,      nullptr },
+    { XML_YEAR,         false,      false,      false,      nullptr },
+    { XML_YEAR,         true,       false,      false,      nullptr },
+    { XML_DAY_OF_WEEK,  false,      false,      false,      nullptr },
+    { XML_DAY_OF_WEEK,  true,       false,      false,      nullptr },
     { XML_TEXT,         false,      false,      false,      "."  },
     { XML_TEXT,         false,      false,      false,      " "  },
     { XML_TEXT,         false,      false,      false,      ", " },
     { XML_TEXT,         false,      false,      false,      ". " },
-    { XML_HOURS,        false,      false,      false,      NULL },
-    { XML_MINUTES,      false,      false,      false,      NULL },
+    { XML_HOURS,        false,      false,      false,      nullptr },
+    { XML_MINUTES,      false,      false,      false,      nullptr },
     { XML_TEXT,         false,      false,      false,      ":"  },
-    { XML_AM_PM,        false,      false,      false,      NULL },
-    { XML_SECONDS,      false,      false,      false,      NULL },
-    { XML_SECONDS,      false,      false,      true,       NULL },
-    { XML_TOKEN_INVALID,        false,              false,             false,       NULL  }
+    { XML_AM_PM,        false,      false,      false,      nullptr },
+    { XML_SECONDS,      false,      false,      false,      nullptr },
+    { XML_SECONDS,      false,      false,      true,       nullptr },
+    { XML_TOKEN_INVALID,        false,              false,             false,       nullptr  }
 };
 
 // date
@@ -336,7 +336,7 @@ static void SdXMLExportDataStyleNumber( SdXMLExport& rExport, SdXMLDataStyleNumb
     }
 }
 
-static void SdXMLExportStyle( SdXMLExport& rExport, const SdXMLFixedDataStyle* pStyle, const SdXMLFixedDataStyle* pStyle2 = NULL )
+static void SdXMLExportStyle( SdXMLExport& rExport, const SdXMLFixedDataStyle* pStyle, const SdXMLFixedDataStyle* pStyle2 = nullptr )
 {
     OUString sAttrValue;
 
@@ -372,7 +372,7 @@ static void SdXMLExportStyle( SdXMLExport& rExport, const SdXMLFixedDataStyle* p
         }
 
         pStyle = pStyle2;
-        pStyle2 = NULL;
+        pStyle2 = nullptr;
     }
     while( pStyle );
 }
@@ -488,30 +488,28 @@ private:
     std::shared_ptr< SvXMLImportContext > mpSlaveContext;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     SdXMLNumberFormatMemberImportContext( SvXMLImport& rImport,
         sal_uInt16 nPrfx,
         const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList,
+        const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList,
         SdXMLNumberFormatImportContext* pParent,
         SvXMLImportContext* pSlaveContext );
     virtual ~SdXMLNumberFormatMemberImportContext();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                    const OUString& rLocalName,
-                                   const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+                                   const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
 
-    virtual void StartElement( const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+    virtual void StartElement( const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
-    virtual void Characters( const OUString& rChars ) SAL_OVERRIDE;
+    virtual void Characters( const OUString& rChars ) override;
 };
 
-TYPEINIT1( SdXMLNumberFormatMemberImportContext, SvXMLImportContext );
 
-SdXMLNumberFormatMemberImportContext::SdXMLNumberFormatMemberImportContext( SvXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLocalName, const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList, SdXMLNumberFormatImportContext* pParent, SvXMLImportContext* pSlaveContext )
+SdXMLNumberFormatMemberImportContext::SdXMLNumberFormatMemberImportContext( SvXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLocalName, const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList, SdXMLNumberFormatImportContext* pParent, SvXMLImportContext* pSlaveContext )
 :   SvXMLImportContext(rImport, nPrfx, rLocalName),
     mpParent( pParent ),
     maNumberStyle( rLocalName ),
@@ -554,12 +552,12 @@ SdXMLNumberFormatMemberImportContext::~SdXMLNumberFormatMemberImportContext()
 
 SvXMLImportContext *SdXMLNumberFormatMemberImportContext::CreateChildContext( sal_uInt16 nPrefix,
                            const OUString& rLocalName,
-                           const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList )
+                           const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList )
 {
     return mpSlaveContext->CreateChildContext( nPrefix, rLocalName, xAttrList );
 }
 
-void SdXMLNumberFormatMemberImportContext::StartElement( const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList )
+void SdXMLNumberFormatMemberImportContext::StartElement( const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList )
 {
     mpSlaveContext->StartElement( xAttrList );
 }
@@ -578,9 +576,8 @@ void SdXMLNumberFormatMemberImportContext::Characters( const OUString& rChars )
     maText += rChars;
 }
 
-TYPEINIT1( SdXMLNumberFormatImportContext, SvXMLImportContext );
 
-SdXMLNumberFormatImportContext::SdXMLNumberFormatImportContext( SdXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLocalName, SvXMLNumImpData* pNewData, sal_uInt16 nNewType, const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList, SvXMLStylesContext& rStyles)
+SdXMLNumberFormatImportContext::SdXMLNumberFormatImportContext( SdXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLocalName, SvXMLNumImpData* pNewData, sal_uInt16 nNewType, const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList, SvXMLStylesContext& rStyles)
 :   SvXMLNumFormatContext(rImport, nPrfx, rLocalName, pNewData, nNewType, xAttrList, rStyles),
     mbAutomatic( false ),
     mnIndex(0),
@@ -625,7 +622,7 @@ void SdXMLNumberFormatImportContext::add( OUString& rNumberStyle, bool bLong, bo
             (pStyleMember->mbLong == bLong) &&
             (pStyleMember->mbTextual == bTextual) &&
             (pStyleMember->mbDecimal02 == bDecimal02) &&
-            ( ( (pStyleMember->mpText == NULL) && (rText.isEmpty()) ) ||
+            ( ( (pStyleMember->mpText == nullptr) && (rText.isEmpty()) ) ||
               ( pStyleMember->mpText && (rText.equalsAscii( pStyleMember->mpText ) ) ) ) ) )
         {
             mnElements[mnIndex++] = nIndex + 1;
@@ -714,7 +711,7 @@ void SdXMLNumberFormatImportContext::EndElement()
     }
 }
 
-SvXMLImportContext * SdXMLNumberFormatImportContext::CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName, const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList )
+SvXMLImportContext * SdXMLNumberFormatImportContext::CreateChildContext( sal_uInt16 nPrefix, const OUString& rLocalName, const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList )
 {
     return new SdXMLNumberFormatMemberImportContext( GetImport(), nPrefix, rLocalName, xAttrList, this, SvXMLNumFormatContext::CreateChildContext( nPrefix, rLocalName, xAttrList ) );
 }

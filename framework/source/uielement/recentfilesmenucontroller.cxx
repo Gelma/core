@@ -65,57 +65,56 @@ public:
 
     // XServiceInfo
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return OUString("com.sun.star.comp.framework.RecentFilesMenuController");
     }
 
     virtual sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return cppu::supportsService(this, ServiceName);
     }
 
     virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
-        css::uno::Sequence< OUString > aSeq(1);
-        aSeq[0] = "com.sun.star.frame.PopupMenuController";
+        css::uno::Sequence< OUString > aSeq { "com.sun.star.frame.PopupMenuController" };
         return aSeq;
     }
 
     // XStatusListener
-    virtual void SAL_CALL statusChanged( const frame::FeatureStateEvent& Event ) throw ( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL statusChanged( const frame::FeatureStateEvent& Event ) throw ( uno::RuntimeException, std::exception ) override;
 
     // XMenuListener
-    virtual void SAL_CALL itemSelected( const awt::MenuEvent& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL itemActivated( const awt::MenuEvent& rEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL itemSelected( const awt::MenuEvent& rEvent ) throw (uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL itemActivated( const awt::MenuEvent& rEvent ) throw (uno::RuntimeException, std::exception) override;
 
     // XDispatchProvider
-    virtual uno::Reference< frame::XDispatch > SAL_CALL queryDispatch( const util::URL& aURL, const OUString& sTarget, sal_Int32 nFlags ) throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual uno::Reference< frame::XDispatch > SAL_CALL queryDispatch( const util::URL& aURL, const OUString& sTarget, sal_Int32 nFlags ) throw( uno::RuntimeException, std::exception ) override;
 
     // XDispatch
-    virtual void SAL_CALL dispatch( const util::URL& aURL, const uno::Sequence< beans::PropertyValue >& seqProperties ) throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL dispatch( const util::URL& aURL, const uno::Sequence< beans::PropertyValue >& seqProperties ) throw( uno::RuntimeException, std::exception ) override;
 
     // XEventListener
-    virtual void SAL_CALL disposing( const com::sun::star::lang::EventObject& Source ) throw ( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual void SAL_CALL disposing( const css::lang::EventObject& Source ) throw ( uno::RuntimeException, std::exception ) override;
 
     DECL_STATIC_LINK_TYPED( RecentFilesMenuController, ExecuteHdl_Impl, void*, void );
 
 private:
-    virtual void impl_setPopupMenu() SAL_OVERRIDE;
+    virtual void impl_setPopupMenu() override;
     struct RecentFile
     {
         OUString aURL;
         OUString aTitle;
     };
 
-    void fillPopupMenu( com::sun::star::uno::Reference< com::sun::star::awt::XPopupMenu >& rPopupMenu );
+    void fillPopupMenu( css::uno::Reference< css::awt::XPopupMenu >& rPopupMenu );
     void executeEntry( sal_Int32 nIndex );
 
     std::vector< RecentFile > m_aRecentFilesItems;
-    bool                  m_bDisabled : 1;
-    bool m_bShowRemote;
+    bool                      m_bDisabled : 1;
+    bool                      m_bShowRemote;
 };
 
 RecentFilesMenuController::RecentFilesMenuController( const uno::Reference< uno::XComponentContext >& xContext,
@@ -128,7 +127,7 @@ RecentFilesMenuController::RecentFilesMenuController( const uno::Reference< uno:
     for ( sal_Int32 i = 0; i < args.getLength(); ++i )
     {
         args[i] >>= aPropValue;
-        if ( aPropValue.Name == "ShowRemote" )
+        if ( aPropValue.Name == "InToolbar" )
         {
             aPropValue.Value >>= m_bShowRemote;
             break;
@@ -144,7 +143,7 @@ RecentFilesMenuController::~RecentFilesMenuController()
 void RecentFilesMenuController::fillPopupMenu( Reference< css::awt::XPopupMenu >& rPopupMenu )
 {
     VCLXPopupMenu* pPopupMenu    = static_cast<VCLXPopupMenu *>(VCLXMenu::GetImplementation( rPopupMenu ));
-    PopupMenu*     pVCLPopupMenu = 0;
+    PopupMenu*     pVCLPopupMenu = nullptr;
 
     SolarMutexGuard aSolarMutexGuard;
 
@@ -235,7 +234,7 @@ void RecentFilesMenuController::fillPopupMenu( Reference< css::awt::XPopupMenu >
             pVCLPopupMenu->InsertItem( sal_uInt16( nCount + 1 ),
                                        FWK_RESSTR(STR_CLEAR_RECENT_FILES) );
             pVCLPopupMenu->SetItemCommand( sal_uInt16( nCount + 1 ),
-                                           OUString( CMD_CLEAR_LIST ) );
+                                           CMD_CLEAR_LIST );
             pVCLPopupMenu->SetHelpText( sal_uInt16( nCount + 1 ),
                                         FWK_RESSTR(STR_CLEAR_RECENT_FILES_HELP) );
 
@@ -245,7 +244,7 @@ void RecentFilesMenuController::fillPopupMenu( Reference< css::awt::XPopupMenu >
                 pVCLPopupMenu->InsertItem( sal_uInt16( nCount + 2 ),
                                            FWK_RESSTR(STR_OPEN_REMOTE) );
                 pVCLPopupMenu->SetItemCommand( sal_uInt16( nCount + 2 ),
-                                               OUString( CMD_OPEN_REMOTE ) );
+                                               CMD_OPEN_REMOTE );
             }
         }
         else
@@ -276,7 +275,7 @@ void RecentFilesMenuController::executeEntry( sal_Int32 nIndex )
     Sequence< PropertyValue >         aArgsList;
 
     osl::ClearableMutexGuard aLock( m_aMutex );
-    xDispatchProvider = Reference< XDispatchProvider >( m_xFrame, UNO_QUERY );
+    xDispatchProvider.set( m_xFrame, UNO_QUERY );
     aLock.clear();
 
     if (( nIndex >= 0 ) &&
@@ -317,7 +316,7 @@ void RecentFilesMenuController::executeEntry( sal_Int32 nIndex )
         pLoadRecentFile->aTargetURL = aTargetURL;
         pLoadRecentFile->aArgSeq    = aArgsList;
 
-        Application::PostUserEvent( LINK(0, RecentFilesMenuController, ExecuteHdl_Impl), pLoadRecentFile );
+        Application::PostUserEvent( LINK(nullptr, RecentFilesMenuController, ExecuteHdl_Impl), pLoadRecentFile );
     }
 }
 
@@ -361,7 +360,7 @@ void SAL_CALL RecentFilesMenuController::itemSelected( const css::awt::MenuEvent
             SvtHistoryOptions().Clear( ePICKLIST );
             dispatchCommand(
                 "vnd.org.libreoffice.recentdocs:ClearRecentFileList",
-                ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue >() );
+                css::uno::Sequence< css::beans::PropertyValue >() );
         }
         else if ( aCommand == CMD_OPEN_REMOTE )
         {

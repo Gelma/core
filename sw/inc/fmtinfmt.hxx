@@ -48,27 +48,21 @@ public:
     SwFormatINetFormat();                     ///< For TypeInfo.
     virtual ~SwFormatINetFormat();
 
-    TYPEINFO_OVERRIDE();
+    static SfxPoolItem* CreateDefault();
 
     /// "Pure virtual methods" of SfxPoolItem.
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = nullptr ) const override;
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
                                     OUString &rText,
-                                    const IntlWrapper* pIntl = 0 ) const SAL_OVERRIDE;
+                                    const IntlWrapper* pIntl = nullptr ) const override;
 
-    virtual bool QueryValue( com::sun::star::uno::Any& rVal,
-                                        sal_uInt8 nMemberId = 0 ) const SAL_OVERRIDE;
-    virtual bool PutValue( const com::sun::star::uno::Any& rVal,
-                                        sal_uInt8 nMemberId ) SAL_OVERRIDE;
+    virtual bool QueryValue( css::uno::Any& rVal, sal_uInt8 nMemberId = 0 ) const override;
+    virtual bool PutValue( const css::uno::Any& rVal, sal_uInt8 nMemberId ) override;
 
     const SwTextINetFormat* GetTextINetFormat() const
-    {
-        return mpTextAttr;
-    }
-    SwTextINetFormat* GetTextINetFormat()
     {
         return mpTextAttr;
     }
@@ -129,7 +123,7 @@ public:
     }
 
     /// Set a new MacroTable or clear the current one.
-    void SetMacroTable( const SvxMacroTableDtor* pTable = 0 );
+    void SetMacroTable( const SvxMacroTableDtor* pTable = nullptr );
     const SvxMacroTableDtor* GetMacroTable() const
     {
         return mpMacroTable;

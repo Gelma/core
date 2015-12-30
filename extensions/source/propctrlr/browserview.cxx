@@ -43,8 +43,7 @@ namespace pcr
     IMPL_LINK_NOARG_TYPED(OPropertyBrowserView, OnPageActivation, LinkParamNone*, void)
     {
         m_nActivePage = m_pPropBox->GetCurPage();
-        if (m_aPageActivationHandler.IsSet())
-            m_aPageActivationHandler.Call(NULL);
+        m_aPageActivationHandler.Call(nullptr);
     }
 
 
@@ -104,8 +103,7 @@ namespace pcr
         m_pPropBox->SetSizePixel(aSize);
     }
 
-    // #95343# ---------------------------------------------------------------
-    ::com::sun::star::awt::Size OPropertyBrowserView::getMinimumSize()
+    css::awt::Size OPropertyBrowserView::getMinimumSize()
     {
         Size aSize = GetOutputSizePixel();
         if( m_pPropBox )
@@ -113,7 +111,7 @@ namespace pcr
             aSize.setHeight( m_pPropBox->getMinimumHeight() );
             aSize.setWidth( m_pPropBox->getMinimumWidth() );
         }
-        return ::com::sun::star::awt::Size( aSize.Width(), aSize.Height() );
+        return css::awt::Size( aSize.Width(), aSize.Height() );
     }
 
 

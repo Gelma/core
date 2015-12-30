@@ -39,13 +39,9 @@ using namespace ftp;
 
 DynamicResultSet::DynamicResultSet(
     const Reference< XComponentContext >& rxContext,
-    const rtl::Reference< FTPContent >& rxContent,
     const OpenCommandArgument2& rCommand,
-    const Reference< XCommandEnvironment >& rxEnv,
     ResultSetFactory* pFactory )
     : ResultSetImplHelper( rxContext, rCommand ),
-      m_xContent( rxContent ),
-      m_xEnv( rxEnv ),
       m_pFactory( pFactory )
 {
 }
@@ -63,13 +59,13 @@ DynamicResultSet::~DynamicResultSet()
 
 void DynamicResultSet::initStatic()
 {
-    m_xResultSet1 = Reference< XResultSet >( m_pFactory->createResultSet() );
+    m_xResultSet1.set( m_pFactory->createResultSet() );
 }
 
 
 void DynamicResultSet::initDynamic()
 {
-    m_xResultSet1 = Reference< XResultSet >( m_pFactory->createResultSet() );
+    m_xResultSet1.set( m_pFactory->createResultSet() );
 
     m_xResultSet2 = m_xResultSet1;
 }

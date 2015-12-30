@@ -34,10 +34,10 @@ class OReportModel;
 
 class REPORTDESIGN_DLLPUBLIC OReportPage : public SdrPage
 {
-    OReportPage& operator=(const OReportPage&) SAL_DELETED_FUNCTION;
+    OReportPage& operator=(const OReportPage&) = delete;
 
     OReportModel&           rModel;
-    ::com::sun::star::uno::Reference< ::com::sun::star::report::XSection > m_xSection;
+    css::uno::Reference< css::report::XSection > m_xSection;
     bool                    m_bSpecialInsertMode;
     std::vector<SdrObject*> m_aTemporaryObjectList;
 
@@ -50,30 +50,29 @@ class REPORTDESIGN_DLLPUBLIC OReportPage : public SdrPage
     virtual ~OReportPage();
 
 protected:
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > createUnoPage() SAL_OVERRIDE;
+    virtual css::uno::Reference< css::uno::XInterface > createUnoPage() override;
 public:
-    TYPEINFO_OVERRIDE();
 
     OReportPage( OReportModel& rModel
-                ,const ::com::sun::star::uno::Reference< ::com::sun::star::report::XSection >& _xSection
+                ,const css::uno::Reference< css::report::XSection >& _xSection
                 ,bool bMasterPage = false );
 
 
-    virtual SdrPage* Clone() const SAL_OVERRIDE;
-    virtual SdrPage* Clone( SdrModel* pNewModel ) const SAL_OVERRIDE;
+    virtual SdrPage* Clone() const override;
+    virtual SdrPage* Clone( SdrModel* pNewModel ) const override;
 
-    virtual void NbcInsertObject(SdrObject* pObj, size_t nPos, const SdrInsertReason* pReason) SAL_OVERRIDE;
-    virtual SdrObject* RemoveObject(size_t nObjNum) SAL_OVERRIDE;
+    virtual void NbcInsertObject(SdrObject* pObj, size_t nPos, const SdrInsertReason* pReason) override;
+    virtual SdrObject* RemoveObject(size_t nObjNum) override;
 
     /** returns the index inside the object list which belongs to the report component.
         @param  _xObject    the report component
     */
-    sal_uLong getIndexOf(const ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportComponent >& _xObject);
+    sal_uLong getIndexOf(const css::uno::Reference< css::report::XReportComponent >& _xObject);
 
     /** removes the SdrObject which belongs to the report component.
         @param  _xObject    the report component
     */
-    void removeSdrObject(const ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportComponent >& _xObject);
+    void removeSdrObject(const css::uno::Reference< css::report::XReportComponent >& _xObject);
 
     void setSpecialMode() {m_bSpecialInsertMode = true;}
     bool getSpecialMode() {return m_bSpecialInsertMode;}
@@ -83,9 +82,9 @@ public:
     /** insert a new SdrObject which belongs to the report component.
         @param  _xObject    the report component
     */
-    void insertObject(const ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportComponent >& _xObject);
+    void insertObject(const css::uno::Reference< css::report::XReportComponent >& _xObject);
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::report::XSection > getSection() const { return m_xSection;}
+    css::uno::Reference< css::report::XSection > getSection() const { return m_xSection;}
 };
 }
 #endif // INCLUDED_REPORTDESIGN_INC_RPTPAGE_HXX

@@ -25,12 +25,12 @@
 #include <assert.h>
 #include <unx/saldata.hxx>
 
-SalKDEDisplay* SalKDEDisplay::selfptr = NULL;
+SalKDEDisplay* SalKDEDisplay::selfptr = nullptr;
 
 SalKDEDisplay::SalKDEDisplay( Display* pDisp )
     : SalX11Display( pDisp )
 {
-    assert( selfptr == NULL );
+    assert( selfptr == nullptr );
     selfptr = this;
     xim_protocol = XInternAtom( pDisp_, "_XIM_PROTOCOL", False );
 }
@@ -41,19 +41,19 @@ SalKDEDisplay::~SalKDEDisplay()
     static_cast<KDEXLib*>(GetXLib())->doStartup();
     // clean up own members
     doDestruct();
-    selfptr = NULL;
+    selfptr = nullptr;
     // prevent SalDisplay from closing KApplication's display
-    pDisp_ = NULL;
+    pDisp_ = nullptr;
 }
 
-void SalKDEDisplay::Yield()
+bool SalKDEDisplay::Yield()
 {
     if( DispatchInternalEvent() )
-        return;
+        return true;
 
     // Prevent blocking from Drag'n'Drop events, which may have already have processed the event
     if (XEventsQueued( pDisp_, QueuedAfterReading ) == 0)
-        return;
+        return false;
 
     DBG_ASSERT( static_cast<SalYieldMutex*>(GetSalData()->m_pInstance->GetYieldMutex())->GetThreadId() ==
                 osl::Thread::getCurrentIdentifier(),
@@ -62,8 +62,9 @@ void SalKDEDisplay::Yield()
     XEvent event;
     XNextEvent( pDisp_, &event );
     if( checkDirectInputEvent( &event ))
-        return;
+        return true;
     qApp->x11ProcessEvent( &event );
+    return true;
 }
 
 // HACK: When using Qt event loop, input methods (japanese, etc.) will get broken because
@@ -79,7 +80,7 @@ bool SalKDEDisplay::checkDirectInputEvent( XEvent* ev )
     if( ev->xany.type == KeyPress || ev->xany.type == KeyRelease
         || ( ev->xany.type == ClientMessage && ev->xclient.message_type == xim_protocol ))
     {
-        if( QApplication::activeWindow() == NULL )
+        if( QApplication::activeWindow() == nullptr )
         {
             Dispatch(ev);
             return true;

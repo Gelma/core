@@ -18,6 +18,8 @@
  */
 
 #include <sfx2/app.hxx>
+#include <svx/EnhancedCustomShape2d.hxx>
+#include <svx/svdundo.hxx>
 #include <svx/svdview.hxx>
 #include <svx/svdobj.hxx>
 #include <svx/svdpagv.hxx>
@@ -177,7 +179,7 @@ void SvxTransformTabDialog::SetValidateFramePosLink(const Link<SvxSwFrameValidat
 SvxAngleTabPage::SvxAngleTabPage(vcl::Window* pParent, const SfxItemSet& rInAttrs)
     : SvxTabPage( pParent,"Rotation","cui/ui/rotationtabpage.ui", rInAttrs)
     , rOutAttrs(rInAttrs)
-    , pView(NULL)
+    , pView(nullptr)
     , eDlgUnit(FUNIT_NONE)
 {
     get(m_pFlPosition, "FL_POSITION");
@@ -422,13 +424,22 @@ SvxSlantTabPage::SvxSlantTabPage(vcl::Window* pParent, const SfxItemSet& rInAttr
     : SvxTabPage( pParent,"SlantAndCornerRadius","cui/ui/slantcornertabpage.ui",
         rInAttrs)
     , rOutAttrs(rInAttrs)
-    , pView(NULL)
+    , pView(nullptr)
     , eDlgUnit(FUNIT_NONE)
 {
     get(m_pFlRadius, "FL_RADIUS");
     get(m_pMtrRadius, "MTR_FLD_RADIUS");
     get(m_pFlAngle, "FL_SLANT");
     get(m_pMtrAngle, "MTR_FLD_ANGLE");
+
+    for (int i = 0; i < 2; ++i)
+    {
+        get(m_aControlGroups[i], "controlgroups" + OString::number(i+1));
+        get(m_aControlGroupX[i], "controlgroupx" + OString::number(i+1));
+        get(m_aControlX[i], "controlx" + OString::number(i+1));
+        get(m_aControlGroupY[i], "controlgroupy" + OString::number(i+1));
+        get(m_aControlY[i], "controly" + OString::number(i+1));
+    }
 
     // this page needs ExchangeSupport
     SetExchangeSupport();
@@ -450,6 +461,14 @@ void SvxSlantTabPage::dispose()
     m_pMtrRadius.clear();
     m_pFlAngle.clear();
     m_pMtrAngle.clear();
+    for (int i = 0; i < 2; ++i)
+    {
+        m_aControlGroups[i].clear();
+        m_aControlGroupX[i].clear();
+        m_aControlX[i].clear();
+        m_aControlGroupY[i].clear();
+        m_aControlY[i].clear();
+    }
     SvxTabPage::dispose();
 }
 
@@ -496,7 +515,6 @@ bool SvxSlantTabPage::FillItemSet(SfxItemSet* rAttrs)
     if( bModified )
     {
         // set reference points
-        // #75897#
         Rectangle aObjectRect(pView->GetAllMarkedRect());
         pView->GetSdrPageView()->LogicToPagePos(aObjectRect);
         Point aPt = aObjectRect.Center();
@@ -506,10 +524,56 @@ bool SvxSlantTabPage::FillItemSet(SfxItemSet* rAttrs)
         rAttrs->Put( SfxBoolItem( SID_ATTR_TRANSFORM_SHEAR_VERTICAL, false ) );
     }
 
+    bool bControlPointsChanged = false;
+    for (int i = 0; i < 2; ++i)
+    {
+        bControlPointsChanged |= (m_aControlX[i]->IsValueChangedFromSaved() ||
+                                  m_aControlY[i]->IsValueChangedFromSaved());
+    }
+
+    if (!bControlPointsChanged)
+        return bModified;
+
+    SdrObject* pObj = pView->GetMarkedObjectList().GetMark(0)->GetMarkedSdrObj();
+    SdrModel* pModel = pObj->GetModel();
+    SdrUndoAction* pUndo = pModel->IsUndoEnabled() ?
+                pModel->GetSdrUndoFactory().CreateUndoAttrObject(*pObj) :
+                nullptr;
+
+    if (pUndo)
+        pModel->BegUndo(pUndo->GetComment());
+
+    EnhancedCustomShape2d aShape(pObj);
+    Rectangle aLogicRect = aShape.GetLogicRect();
+
+    for (int i = 0; i < 2; ++i)
+    {
+        if (m_aControlX[i]->IsValueChangedFromSaved() || m_aControlY[i]->IsValueChangedFromSaved())
+        {
+            Point aNewPosition(GetCoreValue(*m_aControlX[i], ePoolUnit),
+                               GetCoreValue(*m_aControlY[i], ePoolUnit));
+            aNewPosition.Move(aLogicRect.Left(), aLogicRect.Top());
+
+            css::awt::Point aPosition;
+            aPosition.X = aNewPosition.X();
+            aPosition.Y = aNewPosition.Y();
+
+            aShape.SetHandleControllerPosition(i, aPosition);
+        }
+    }
+
+    pObj->SetChanged();
+    pObj->BroadcastObjectChange();
+    bModified = true;
+
+    if (pUndo)
+    {
+        pModel->AddUndo(pUndo);
+        pModel->EndUndo();
+    }
+
     return bModified;
 }
-
-
 
 void SvxSlantTabPage::Reset(const SfxItemSet* rAttrs)
 {
@@ -561,20 +625,83 @@ void SvxSlantTabPage::Reset(const SfxItemSet* rAttrs)
     }
 
     m_pMtrAngle->SaveValue();
+
+    const SdrMarkList& rMarkList = pView->GetMarkedObjectList();
+    if (rMarkList.GetMarkCount() == 1)
+    {
+        SdrObject* pObj = rMarkList.GetMark(0)->GetMarkedSdrObj();
+        SdrObjKind eKind = (SdrObjKind) pObj->GetObjIdentifier();
+        if (eKind == OBJ_CUSTOMSHAPE)
+        {
+            //save geometry
+            SdrCustomShapeGeometryItem aInitialGeometry =
+                static_cast<const SdrCustomShapeGeometryItem&>(pObj->GetMergedItem(SDRATTR_CUSTOMSHAPE_GEOMETRY));
+
+            EnhancedCustomShape2d aShape(pObj);
+
+            for (int i = 0; i < 2; ++i)
+            {
+                Point aInitialPosition;
+                if (!aShape.GetHandlePosition(i, aInitialPosition))
+                    break;
+                m_aControlGroups[i]->Enable();
+                css::awt::Point aPosition;
+
+                aPosition.X = SAL_MAX_INT32;
+                aPosition.Y = SAL_MAX_INT32;
+                aShape.SetHandleControllerPosition(i, aPosition);
+                Point aMaxPosition;
+                aShape.GetHandlePosition(i, aMaxPosition);
+
+                aPosition.X = SAL_MIN_INT32;
+                aPosition.Y = SAL_MIN_INT32;
+                aShape.SetHandleControllerPosition(i, aPosition);
+                Point aMinPosition;
+                aShape.GetHandlePosition(i, aMinPosition);
+
+                Rectangle aLogicRect = aShape.GetLogicRect();
+                aInitialPosition.Move(-aLogicRect.Left(), -aLogicRect.Top());
+                aMaxPosition.Move(-aLogicRect.Left(), -aLogicRect.Top());
+                aMinPosition.Move(-aLogicRect.Left(), -aLogicRect.Top());
+
+                SetMetricValue(*m_aControlX[i], aInitialPosition.X(), ePoolUnit);
+                SetMetricValue(*m_aControlY[i], aInitialPosition.Y(), ePoolUnit);
+
+                if (aMaxPosition.X() == aMinPosition.X())
+                    m_aControlGroupX[i]->Disable();
+                else
+                {
+                    m_aControlX[i]->SetMin(aMinPosition.X(), FUNIT_MM);
+                    m_aControlX[i]->SetMax(aMaxPosition.X(), FUNIT_MM);
+                }
+                if (aMaxPosition.Y() == aMinPosition.Y())
+                    m_aControlGroupY[i]->Disable();
+                else
+                {
+                    m_aControlY[i]->SetMin(aMinPosition.Y(), FUNIT_MM);
+                    m_aControlY[i]->SetMax(aMaxPosition.Y(), FUNIT_MM);
+                }
+            }
+
+            //restore geometry
+            pObj->SetMergedItem(aInitialGeometry);
+        }
+    }
+    for (int i = 0; i < 2; ++i)
+    {
+        m_aControlX[i]->SaveValue();
+        m_aControlY[i]->SaveValue();
+    }
 }
-
-
 
 VclPtr<SfxTabPage> SvxSlantTabPage::Create( vcl::Window* pWindow, const SfxItemSet* rOutAttrs )
 {
     return VclPtr<SvxSlantTabPage>::Create( pWindow, *rOutAttrs );
 }
 
-
-
 void SvxSlantTabPage::ActivatePage( const SfxItemSet& rSet )
 {
-    SfxRectangleItem const * pRectItem = NULL;
+    SfxRectangleItem const * pRectItem = nullptr;
 
     if( SfxItemState::SET == rSet.GetItemState( GetWhich( SID_ATTR_TRANSFORM_INTERN ) , false, reinterpret_cast<SfxPoolItem const **>(&pRectItem) ) )
     {
@@ -609,7 +736,7 @@ void SvxSlantTabPage::PointChanged( vcl::Window* , RECT_POINT  )
 SvxPositionSizeTabPage::SvxPositionSizeTabPage(vcl::Window* pParent, const SfxItemSet& rInAttrs)
     : SvxTabPage(pParent,"PositionAndSize","cui/ui/possizetabpage.ui", rInAttrs)
     , mrOutAttrs(rInAttrs)
-    , mpView(NULL)
+    , mpView(nullptr)
     , meDlgUnit(FUNIT_NONE)
     , mnProtectSizeState(TRISTATE_FALSE)
     , mbPageDisabled(false)
@@ -619,7 +746,6 @@ SvxPositionSizeTabPage::SvxPositionSizeTabPage(vcl::Window* pParent, const SfxIt
     , mfOldWidth(0.0)
     , mfOldHeight(0.0)
 {
-
     get(m_pFlPosition, "FL_POSITION");
     get(m_pMtrPosX, "MTR_FLD_POS_X");
     get(m_pMtrPosY, "MTR_FLD_POS_Y");
@@ -798,12 +924,12 @@ bool SvxPositionSizeTabPage::FillItemSet( SfxItemSet* rOutAttrs )
 
     if ( m_pMtrWidth->HasFocus() )
     {
-        ChangeWidthHdl( this );
+        ChangeWidthHdl( *m_pMtrWidth );
     }
 
     if ( m_pMtrHeight->HasFocus() )
     {
-        ChangeHeightHdl( this );
+        ChangeHeightHdl( *m_pMtrHeight );
     }
 
     if( !mbPageDisabled )
@@ -953,7 +1079,7 @@ void SvxPositionSizeTabPage::Reset( const SfxItemSet*  )
         m_pCtlPos->Reset();
 
         // #i2379# Disable controls for protected objects
-        ChangePosProtectHdl( NULL );
+        ChangePosProtectHdl( nullptr );
     }
 
     { // #i75273# set width
@@ -1015,10 +1141,10 @@ void SvxPositionSizeTabPage::Reset( const SfxItemSet*  )
     m_pTsbSizeProtect->SaveValue();
     m_pTsbAutoGrowWidth->SaveValue();
     m_pTsbAutoGrowHeight->SaveValue();
-    ClickSizeProtectHdl( NULL );
+    ClickSizeProtectHdl( nullptr );
 
     // #i2379# Disable controls for protected objects
-    ChangeSizeProtectHdl( NULL );
+    ChangeSizeProtectHdl( nullptr );
 }
 
 
@@ -1032,7 +1158,7 @@ VclPtr<SfxTabPage> SvxPositionSizeTabPage::Create( vcl::Window* pWindow, const S
 
 void SvxPositionSizeTabPage::ActivatePage( const SfxItemSet& rSet )
 {
-    SfxRectangleItem const * pRectItem = NULL;
+    SfxRectangleItem const * pRectItem = nullptr;
 
     if( SfxItemState::SET == rSet.GetItemState( GetWhich( SID_ATTR_TRANSFORM_INTERN ) , false, reinterpret_cast<SfxPoolItem const **>(&pRectItem) ) )
     {
@@ -1445,7 +1571,7 @@ void SvxPositionSizeTabPage::DisableProtect()
 
 
 
-IMPL_LINK_NOARG(SvxPositionSizeTabPage, ChangeWidthHdl)
+IMPL_LINK_NOARG_TYPED(SvxPositionSizeTabPage, ChangeWidthHdl, Edit&, void)
 {
     if( m_pCbxScale->IsChecked() && m_pCbxScale->IsEnabled() )
     {
@@ -1464,13 +1590,11 @@ IMPL_LINK_NOARG(SvxPositionSizeTabPage, ChangeWidthHdl)
             m_pMtrWidth->SetUserValue(nWidth, FUNIT_NONE);
         }
     }
-
-    return 0L;
 }
 
 
 
-IMPL_LINK_NOARG(SvxPositionSizeTabPage, ChangeHeightHdl)
+IMPL_LINK_NOARG_TYPED(SvxPositionSizeTabPage, ChangeHeightHdl, Edit&, void)
 {
     if( m_pCbxScale->IsChecked() && m_pCbxScale->IsEnabled() )
     {
@@ -1489,8 +1613,6 @@ IMPL_LINK_NOARG(SvxPositionSizeTabPage, ChangeHeightHdl)
             m_pMtrHeight->SetUserValue(nHeight, FUNIT_NONE);
         }
     }
-
-    return 0L;
 }
 
 

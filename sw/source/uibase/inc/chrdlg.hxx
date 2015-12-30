@@ -50,11 +50,11 @@ class SwCharDlg: public SfxTabDialog
 
 public:
     SwCharDlg(vcl::Window* pParent, SwView& pVw, const SfxItemSet& rCoreSet,
-              sal_uInt8 nDialogMode, const OUString* pFormatStr = 0);
+              sal_uInt8 nDialogMode, const OUString* pFormatStr = nullptr);
 
     virtual ~SwCharDlg();
 
-    virtual void PageCreated( sal_uInt16 nId, SfxTabPage &rPage ) SAL_OVERRIDE;
+    virtual void PageCreated( sal_uInt16 nId, SfxTabPage &rPage ) override;
 };
 
 class SwCharURLPage : public SfxTabPage
@@ -63,7 +63,7 @@ class SwCharURLPage : public SfxTabPage
     VclPtr<FixedText>          m_pTextFT;
     VclPtr<Edit>               m_pTextED;
     VclPtr<Edit>               m_pNameED;
-    VclPtr<ComboBox>           m_pTargetFrmLB;
+    VclPtr<ComboBox>           m_pTargetFrameLB;
     VclPtr<PushButton>         m_pURLPB;
     VclPtr<PushButton>         m_pEventPB;
     VclPtr<ListBox>            m_pVisitedLB;
@@ -82,12 +82,12 @@ public:
                                            const SfxItemSet& rSet );
 
                         virtual ~SwCharURLPage();
-    virtual void        dispose() SAL_OVERRIDE;
+    virtual void        dispose() override;
     static VclPtr<SfxTabPage> Create( vcl::Window* pParent,
                                       const SfxItemSet* rAttrSet);
 
-    virtual bool        FillItemSet( SfxItemSet* rSet ) SAL_OVERRIDE;
-    virtual void        Reset( const SfxItemSet* rSet ) SAL_OVERRIDE;
+    virtual bool        FillItemSet( SfxItemSet* rSet ) override;
+    virtual void        Reset( const SfxItemSet* rSet ) override;
 };
 
 #endif

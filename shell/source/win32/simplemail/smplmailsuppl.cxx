@@ -38,8 +38,7 @@ namespace // private
 {
     Sequence< OUString > SAL_CALL Component_getSupportedServiceNames()
     {
-        Sequence< OUString > aRet(1);
-        aRet[0] = "com.sun.star.system.SimpleSystemMail";
+        Sequence< OUString > aRet { "com.sun.star.system.SimpleSystemMail" };
         return aRet;
     }
 
@@ -64,7 +63,7 @@ Reference<XSimpleMailClient> SAL_CALL CSmplMailSuppl::querySimpleMailClient()
     if ((handle != INVALID_HANDLE_VALUE) && (handle != NULL))
     {
         FreeLibrary(handle);
-        xSmplMailClient = Reference<XSimpleMailClient>(new CSmplMailClient());
+        xSmplMailClient.set(new CSmplMailClient());
     }
     return xSmplMailClient;
 }

@@ -22,7 +22,6 @@
 #include <sal/config.h>
 #include <sfx2/dllapi.h>
 #include <sal/types.h>
-#include <tools/rtti.hxx>
 #include <vcl/fixed.hxx>
 #include <vcl/button.hxx>
 #include <sfx2/event.hxx>
@@ -62,7 +61,7 @@ public:
     size_t size() const { return aEventNamesList.size(); };
 
     SfxEventName* at( size_t Index ) const
-        { return Index < aEventNamesList.size() ? aEventNamesList[ Index ] : NULL; }
+        { return Index < aEventNamesList.size() ? aEventNamesList[ Index ] : nullptr; }
 
     void push_back( SfxEventName* Item ) { aEventNamesList.push_back( Item ); }
 };
@@ -72,20 +71,19 @@ class SFX2_DLLPUBLIC SfxEventNamesItem : public SfxPoolItem
     SfxEventNamesList aEventsList;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     SfxEventNamesItem ( const sal_uInt16 nId ) : SfxPoolItem( nId ) {}
 
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
     virtual bool GetPresentation( SfxItemPresentation ePres,
                                     SfxMapUnit eCoreMetric,
                                     SfxMapUnit ePresMetric,
                                     OUString &rText,
-                                    const IntlWrapper * = 0 ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Create(SvStream &, sal_uInt16) const SAL_OVERRIDE;
-    virtual SvStream&       Store(SvStream &, sal_uInt16 nItemVersion ) const SAL_OVERRIDE;
-    virtual sal_uInt16      GetVersion( sal_uInt16 nFileFormatVersion ) const SAL_OVERRIDE;
+                                    const IntlWrapper * = nullptr ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
+    virtual SfxPoolItem*    Create(SvStream &, sal_uInt16) const override;
+    virtual SvStream&       Store(SvStream &, sal_uInt16 nItemVersion ) const override;
+    virtual sal_uInt16      GetVersion( sal_uInt16 nFileFormatVersion ) const override;
 
     const SfxEventNamesList& GetEvents() const { return aEventsList;}
     void                    AddEvent( const OUString&, const OUString&, sal_uInt16 );
@@ -103,7 +101,7 @@ class SFX2_DLLPUBLIC SfxEventConfiguration
 {
 public:
     static void                         ConfigureEvent( const OUString& aName, const SvxMacro&, SfxObjectShell* pObjSh);
-    static SvxMacro*                    ConvertToMacro( const com::sun::star::uno::Any& rElement, SfxObjectShell* pDoc, bool bBlowUp );
+    static SvxMacro*                    ConvertToMacro( const css::uno::Any& rElement, SfxObjectShell* pDoc, bool bBlowUp );
 };
 
 #endif

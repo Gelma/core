@@ -29,8 +29,8 @@ class SwTable;
 class SwNode;
 class SwNodes;
 class SwContentNode;
-class SwPageFrm;
-class SwFrm;
+class SwPageFrame;
+class SwFrame;
 class SwTextNode;
 class SwHistory;
 
@@ -42,8 +42,8 @@ public:
     SwMsgPoolItem( sal_uInt16 nWhich );
 
     // "Overhead" of SfxPoolItem
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool* pPool = nullptr ) const override;
 };
 
 // SwPtrMsgPoolItem (old SwObjectDying!)
@@ -98,32 +98,32 @@ public:
 class SwUpdateAttr : public SwMsgPoolItem
 {
 private:
-    sal_Int32 nStart;
-    sal_Int32 nEnd;
-    sal_uInt16 nWhichAttr;
-    std::vector<sal_uInt16> aWhichFormatAttr; // attributes changed inside RES_TXTATR_AUTOFMT
+    sal_Int32 m_nStart;
+    sal_Int32 m_nEnd;
+    sal_uInt16 m_nWhichAttr;
+    std::vector<sal_uInt16> m_aWhichFormatAttr; // attributes changed inside RES_TXTATR_AUTOFMT
 
 public:
     SwUpdateAttr( sal_Int32 nS, sal_Int32 nE, sal_uInt16 nW );
 
     sal_Int32 getStart() const
     {
-        return nStart;
+        return m_nStart;
     }
 
     sal_Int32 getEnd() const
     {
-        return nEnd;
+        return m_nEnd;
     }
 
     sal_uInt16 getWhichAttr() const
     {
-        return nWhichAttr;
+        return m_nWhichAttr;
     }
 
     const std::vector<sal_uInt16>& getFormatAttr() const
     {
-        return aWhichFormatAttr;
+        return m_aWhichFormatAttr;
     }
 };
 
@@ -162,16 +162,16 @@ enum TableFormulaUpdateFlags { TBL_CALC = 0,
 class SwTableFormulaUpdate : public SwMsgPoolItem
 {
 public:
-    const SwTable* pTable;         ///< Pointer to the current table
+    const SwTable* m_pTable;         ///< Pointer to the current table
     union {
         const SwTable* pDelTable;  ///< Merge: Pointer to the table to be removed
         const OUString* pNewTableNm; ///< Split: the name of the new table
-    } DATA;
-    SwHistory* pHistory;
-    sal_uInt16 nSplitLine;       ///< Split: from this BaseLine on will be splitted
-    TableFormulaUpdateFlags eFlags;
-    bool bModified : 1;
-    bool bBehindSplitLine : 1;
+    } m_aData;
+    SwHistory* m_pHistory;
+    sal_uInt16 m_nSplitLine;       ///< Split: from this BaseLine on will be splitted
+    TableFormulaUpdateFlags m_eFlags;
+    bool m_bModified : 1;
+    bool m_bBehindSplitLine : 1;
 
     /** Is sent if a table should be recalculated */
     SwTableFormulaUpdate( const SwTable* );
@@ -225,29 +225,29 @@ public:
 
 class SwVirtPageNumInfo: public SwMsgPoolItem
 {
-    const SwPageFrm *pPage;
-    const SwPageFrm *pOrigPage;
-    const SwFrm     *pFrm;
+    const SwPageFrame *m_pPage;
+    const SwPageFrame *m_pOrigPage;
+    const SwFrame     *m_pFrame;
     /** Multiple attributes can be attached to a single paragraph / table
      The frame, in the end, has to decide which attribute takes effect and which physical page it involves */
 public:
-    SwVirtPageNumInfo( const SwPageFrm *pPg );
+    SwVirtPageNumInfo( const SwPageFrame *pPg );
 
-    const SwPageFrm *GetPage()          { return pPage;    }
-    const SwPageFrm *GetOrigPage()      { return pOrigPage;}
-    const SwFrm *GetFrm()               { return pFrm; }
-    void  SetInfo( const SwPageFrm *pPg,
-                   const SwFrm *pF )    { pFrm = pF, pPage = pPg; }
+    const SwPageFrame *GetPage()          { return m_pPage;    }
+    const SwPageFrame *GetOrigPage()      { return m_pOrigPage;}
+    const SwFrame *GetFrame()               { return m_pFrame; }
+    void  SetInfo( const SwPageFrame *pPg,
+                   const SwFrame *pF )    { m_pFrame = pF, m_pPage = pPg; }
 };
 
 class SwFindNearestNode : public SwMsgPoolItem
 {
-    const SwNode *pNd, *pFnd;
+    const SwNode *m_pNode, *m_pFound;
 public:
     SwFindNearestNode( const SwNode& rNd );
     void CheckNode( const SwNode& rNd );
 
-    const SwNode* GetFoundNode() const { return pFnd; }
+    const SwNode* GetFoundNode() const { return m_pFound; }
 };
 
 class SwStringMsgPoolItem : public SwMsgPoolItem

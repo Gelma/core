@@ -33,7 +33,6 @@ UUIInteractionRequestStringResolver::UUIInteractionRequestStringResolver(
 
 UUIInteractionRequestStringResolver::~UUIInteractionRequestStringResolver()
 {
-    delete m_pImpl;
 }
 
 OUString SAL_CALL
@@ -80,8 +79,7 @@ char const UUIInteractionRequestStringResolver::m_aImplementationName[]
 uno::Sequence< OUString >
 UUIInteractionRequestStringResolver::getSupportedServiceNames_static()
 {
-    uno::Sequence< OUString > aNames(1);
-    aNames[0] = "com.sun.star.task.InteractionRequestStringResolver";
+    uno::Sequence< OUString > aNames { "com.sun.star.task.InteractionRequestStringResolver" };
     return aNames;
 }
 
@@ -96,7 +94,7 @@ UUIInteractionRequestStringResolver::createInstance(
     }
     catch (std::bad_alloc const &)
     {
-        throw uno::RuntimeException("out of memory", 0);
+        throw uno::RuntimeException("out of memory", nullptr);
     }
 }
 

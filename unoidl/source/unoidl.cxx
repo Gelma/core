@@ -39,9 +39,9 @@ public:
 private:
     virtual ~AggregatingModule() throw () {}
 
-    virtual std::vector< OUString > getMemberNames() const SAL_OVERRIDE;
+    virtual std::vector< OUString > getMemberNames() const override;
 
-    virtual rtl::Reference< MapCursor > createCursor() const SAL_OVERRIDE;
+    virtual rtl::Reference< MapCursor > createCursor() const override;
 
     std::vector< rtl::Reference< Provider > > providers_;
     OUString name_;
@@ -74,7 +74,7 @@ public:
 private:
     virtual ~AggregatingCursor() throw () {}
 
-    virtual rtl::Reference< Entity > getNext(OUString * name) SAL_OVERRIDE;
+    virtual rtl::Reference< Entity > getNext(OUString * name) override;
 
     void findCursor();
 
@@ -91,7 +91,7 @@ rtl::Reference< Entity > AggregatingCursor::getNext(OUString * name) {
         rtl::Reference< Entity > ent(cursor_->getNext(&n));
         if (ent.is()) {
             if (seen_.insert(n).second) {
-                if (name != 0) {
+                if (name != nullptr) {
                     *name = n;
                 }
                 return ent->getSort() == Entity::SORT_MODULE

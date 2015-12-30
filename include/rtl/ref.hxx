@@ -72,6 +72,15 @@ public:
             m_pBody->acquire();
     }
 
+#ifdef LIBO_INTERNAL_ONLY
+    /** Move constructor...
+     */
+    inline Reference (Reference<reference_type> && handle)
+        : m_pBody (handle.m_pBody)
+    {
+        handle.m_pBody = nullptr;
+    }
+#endif
 
     /** Destructor...
      */
@@ -106,6 +115,24 @@ public:
         return set( handle.m_pBody );
     }
 
+#ifdef LIBO_INTERNAL_ONLY
+    /** Assignment.
+     *   Unbinds this instance from its body (if bound),
+     *   bind it to the body represented by the handle, and
+     *   set the body represented by the handle to nullptr.
+     */
+    inline Reference<reference_type> &
+    operator= (Reference<reference_type> && handle)
+    {
+        // self-movement guts ourself
+        if (m_pBody)
+            m_pBody->release();
+        m_pBody = handle.m_pBody;
+        handle.m_pBody = nullptr;
+        return *this;
+    }
+#endif
+
     /** Assignment...
      */
     inline Reference<reference_type> &
@@ -126,7 +153,7 @@ public:
         if (m_pBody)
         {
             reference_type * const pOld = m_pBody;
-            m_pBody = 0;
+            m_pBody = NULL;
             pOld->release();
         }
         return *this;
@@ -147,7 +174,7 @@ public:
      */
     inline reference_type * SAL_CALL operator->() const
     {
-        assert(m_pBody != 0);
+        assert(m_pBody != NULL);
         return m_pBody;
     }
 
@@ -156,7 +183,7 @@ public:
     */
     inline reference_type & SAL_CALL operator*() const
     {
-        assert(m_pBody != 0);
+        assert(m_pBody != NULL);
         return *m_pBody;
     }
 
@@ -165,7 +192,7 @@ public:
      */
     inline bool SAL_CALL is() const
     {
-        return (m_pBody != 0);
+        return (m_pBody != NULL);
     }
 
 

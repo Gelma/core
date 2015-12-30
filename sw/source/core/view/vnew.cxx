@@ -83,7 +83,7 @@ void SwViewShell::Init( const SwViewOption *pNewOpt )
 
     SAL_INFO( "sw.core", "View::Init - before InitPrt" );
     // --> FME 2007-11-06 #i82967#
-    OutputDevice* pPDFOut = 0;
+    OutputDevice* pPDFOut = nullptr;
 
     if ( mpOut && mpOut->GetPDFWriter() )
         pPDFOut = mpOut;
@@ -125,9 +125,9 @@ void SwViewShell::Init( const SwViewOption *pNewOpt )
         // end of "disable multiple layouts"
         if( !mpLayout )
         {
-            // switched to two step construction because creating the layout in SwRootFrm needs a valid pLayout set
-            mpLayout = SwRootFrmPtr(new SwRootFrm(mpDoc->GetDfltFrameFormat(), this),
-                                    &SwFrm::DestroyFrm);
+            // switched to two step construction because creating the layout in SwRootFrame needs a valid pLayout set
+            mpLayout = SwRootFramePtr(new SwRootFrame(mpDoc->GetDfltFrameFormat(), this),
+                                    &SwFrame::DestroyFrame);
             mpLayout->Init( mpDoc->GetDfltFrameFormat() );
         }
     }
@@ -149,29 +149,31 @@ void SwViewShell::Init( const SwViewOption *pNewOpt )
 SwViewShell::SwViewShell( SwDoc& rDocument, vcl::Window *pWindow,
                         const SwViewOption *pNewOpt, OutputDevice *pOutput,
                         long nFlags )
-    :
+    : m_pReplaceBmp(nullptr)
+    , m_pErrorBmp(nullptr)
+    ,
     maBrowseBorder(),
-    mpSfxViewShell( 0 ),
+    mpSfxViewShell( nullptr ),
     mpImp( new SwViewShellImp( this ) ),
     mpWin( pWindow ),
     mpOut( pOutput ? pOutput
                   : pWindow ? static_cast<OutputDevice*>(pWindow)
                             : static_cast<OutputDevice*>(rDocument.getIDocumentDeviceAccess().getPrinter( true ))),
-    mpTmpRef( 0 ),
-    mpOpt( 0 ),
+    mpTmpRef( nullptr ),
+    mpOpt( nullptr ),
     mpAccOptions( new SwAccessibilityOptions ),
     mbShowHeaderSeparator( false ),
     mbShowFooterSeparator( false ),
     mbHeaderFooterEdit( false ),
-    mpTargetPaintWindow(0), // #i74769#
-    mpBufferedOut(0), // #i74769#
+    mpTargetPaintWindow(nullptr), // #i74769#
+    mpBufferedOut(nullptr), // #i74769#
     mpDoc( &rDocument ),
     mnStartAction( 0 ),
     mnLockPaint( 0 ),
     mbSelectAll(false),
     mbInLibreOfficeKitCallback(false),
     mbOutputToWindow(false),
-    mpPrePostOutDev(0), // #i72754#
+    mpPrePostOutDev(nullptr), // #i72754#
     maPrePostMapMode()
 {
     // OD 2004-06-01 #i26791# - in order to suppress event handling in
@@ -214,8 +216,8 @@ SwViewShell::SwViewShell( SwDoc& rDocument, vcl::Window *pWindow,
     }
 
     // extend format cache.
-    if ( SwTextFrm::GetTextCache()->GetCurMax() < 2550 )
-        SwTextFrm::GetTextCache()->IncreaseMax( 100 );
+    if ( SwTextFrame::GetTextCache()->GetCurMax() < 2550 )
+        SwTextFrame::GetTextCache()->IncreaseMax( 100 );
     if( mpOpt->IsGridVisible() || getIDocumentDrawModelAccess().GetDrawModel() )
         Imp()->MakeDrawView();
 
@@ -225,30 +227,33 @@ SwViewShell::SwViewShell( SwDoc& rDocument, vcl::Window *pWindow,
 
 /// CTor for further Shells on a document.
 SwViewShell::SwViewShell( SwViewShell& rShell, vcl::Window *pWindow,
-                        OutputDevice *pOutput, long nFlags ) :
-    Ring( &rShell ),
+                        OutputDevice * pOutput, long const nFlags)
+    : Ring( &rShell )
+    , m_pReplaceBmp(nullptr)
+    , m_pErrorBmp(nullptr)
+    ,
     maBrowseBorder( rShell.maBrowseBorder ),
-    mpSfxViewShell( 0 ),
+    mpSfxViewShell( nullptr ),
     mpImp( new SwViewShellImp( this ) ),
     mpWin( pWindow ),
     mpOut( pOutput ? pOutput
                   : pWindow ? static_cast<OutputDevice*>(pWindow)
                             : static_cast<OutputDevice*>(rShell.GetDoc()->getIDocumentDeviceAccess().getPrinter( true ))),
-    mpTmpRef( 0 ),
-    mpOpt( 0 ),
+    mpTmpRef( nullptr ),
+    mpOpt( nullptr ),
     mpAccOptions( new SwAccessibilityOptions ),
     mbShowHeaderSeparator( false ),
     mbShowFooterSeparator( false ),
     mbHeaderFooterEdit( false ),
-    mpTargetPaintWindow(0), // #i74769#
-    mpBufferedOut(0), // #i74769#
+    mpTargetPaintWindow(nullptr), // #i74769#
+    mpBufferedOut(nullptr), // #i74769#
     mpDoc( rShell.GetDoc() ),
     mnStartAction( 0 ),
     mnLockPaint( 0 ),
     mbSelectAll(false),
     mbInLibreOfficeKitCallback(false),
     mbOutputToWindow(false),
-    mpPrePostOutDev(0), // #i72754#
+    mpPrePostOutDev(nullptr), // #i72754#
     maPrePostMapMode()
 {
     // OD 2004-06-01 #i26791# - in order to suppress event handling in
@@ -286,8 +291,8 @@ SwViewShell::SwViewShell( SwViewShell& rShell, vcl::Window *pWindow,
     }
 
     // extend format cache.
-    if ( SwTextFrm::GetTextCache()->GetCurMax() < 2550 )
-        SwTextFrm::GetTextCache()->IncreaseMax( 100 );
+    if ( SwTextFrame::GetTextCache()->GetCurMax() < 2550 )
+        SwTextFrame::GetTextCache()->IncreaseMax( 100 );
     if( mpOpt->IsGridVisible() || getIDocumentDrawModelAccess().GetDrawModel() )
         Imp()->MakeDrawView();
 
@@ -311,19 +316,19 @@ SwViewShell::~SwViewShell()
 
             SwStartNode *pStNd;
             SwNodeIndex aIdx( *rNds.GetEndOfAutotext().StartOfSectionNode(), 1 );
-            while ( 0 != (pStNd = aIdx.GetNode().GetStartNode()) )
+            while ( nullptr != (pStNd = aIdx.GetNode().GetStartNode()) )
             {
                 ++aIdx;
                 SwGrfNode *pGNd = aIdx.GetNode().GetGrfNode();
-                if ( 0 != pGNd )
+                if ( nullptr != pGNd )
                 {
                     if( pGNd->IsAnimated() )
                     {
-                        SwIterator<SwFrm,SwGrfNode> aIter( *pGNd );
-                        for( SwFrm* pFrm = aIter.First(); pFrm; pFrm = aIter.Next() )
+                        SwIterator<SwFrame,SwGrfNode> aIter( *pGNd );
+                        for( SwFrame* pFrame = aIter.First(); pFrame; pFrame = aIter.Next() )
                         {
-                            OSL_ENSURE( pFrm->IsNoTextFrm(), "GraphicNode with Text?" );
-                            static_cast<SwNoTextFrm*>(pFrm)->StopAnimation( mpOut );
+                            OSL_ENSURE( pFrame->IsNoTextFrame(), "GraphicNode with Text?" );
+                            static_cast<SwNoTextFrame*>(pFrame)->StopAnimation( mpOut );
                         }
                     }
                 }
@@ -334,12 +339,12 @@ SwViewShell::~SwViewShell()
         }
 
         delete mpImp; // Delete first, so that the LayoutViews are destroyed.
-        mpImp = 0;   // Set to zero, because ~SwFrm relies on it.
+        mpImp = nullptr;   // Set to zero, because ~SwFrame relies on it.
 
         if ( mpDoc )
         {
             if( !mpDoc->release() )
-                delete mpDoc, mpDoc = 0;
+                delete mpDoc, mpDoc = nullptr;
             else
                 GetLayout()->ResetNewLayout();
         }
@@ -347,8 +352,8 @@ SwViewShell::~SwViewShell()
         delete mpOpt;
 
         // resize format cache.
-        if ( SwTextFrm::GetTextCache()->GetCurMax() > 250 )
-            SwTextFrm::GetTextCache()->DecreaseMax( 100 );
+        if ( SwTextFrame::GetTextCache()->GetCurMax() > 250 )
+            SwTextFrame::GetTextCache()->DecreaseMax( 100 );
 
         // Remove from PaintQueue if necessary
         SwPaintQueue::Remove( this );

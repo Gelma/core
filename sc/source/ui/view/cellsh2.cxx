@@ -70,7 +70,7 @@
 
 using namespace com::sun::star;
 
-static bool lcl_GetTextToColumnsRange( const ScViewData* pData, ScRange& rRange )
+static bool lcl_GetTextToColumnsRange( const ScViewData* pData, ScRange& rRange, bool bDoEmptyCheckOnly )
 {
     OSL_ENSURE( pData, "lcl_GetTextToColumnsRange: pData is null!" );
 
@@ -100,11 +100,28 @@ static bool lcl_GetTextToColumnsRange( const ScViewData* pData, ScRange& rRange 
     const ScDocument* pDoc = pData->GetDocument();
     OSL_ENSURE( pDoc, "lcl_GetTextToColumnsRange: pDoc is null!" );
 
-    if ( bRet && pDoc->IsBlockEmpty( rRange.aStart.Tab(), rRange.aStart.Col(),
-                                     rRange.aStart.Row(), rRange.aEnd.Col(),
-                                     rRange.aEnd.Row() ) )
+    if ( bDoEmptyCheckOnly )
     {
-        bRet = false;
+        if ( bRet && pDoc->IsBlockEmpty( rRange.aStart.Tab(), rRange.aStart.Col(),
+                                         rRange.aStart.Row(), rRange.aEnd.Col(),
+                                         rRange.aEnd.Row() ) )
+        {
+            bRet = false;
+        }
+    }
+    else if ( bRet )
+    {
+        rRange.PutInOrder();
+        SCCOL nStartCol = rRange.aStart.Col(), nEndCol = rRange.aEnd.Col();
+        SCROW nStartRow = rRange.aStart.Row(), nEndRow = rRange.aEnd.Row();
+        bool bShrunk = false;
+        pDoc->ShrinkToUsedDataArea( bShrunk, rRange.aStart.Tab(), nStartCol, nStartRow,
+                                   nEndCol, nEndRow, false, false, true );
+        if ( bShrunk )
+        {
+            rRange.aStart.SetRow( nStartRow );
+            rRange.aEnd.SetRow( nEndRow );
+        }
     }
 
     return bRet;
@@ -219,7 +236,7 @@ void ScCellShell::ExecuteDB( SfxRequest& rReq )
                 {
                     uno::Reference<frame::XFrame> xFrame = pViewFrame->GetFrame().GetFrameInterface();
                     uno::Reference<frame::XFrame> xBeamerFrame = xFrame->findFrame(
-                                                        OUString("_beamer"),
+                                                        "_beamer",
                                                         frame::FrameSearchFlag::CHILDREN);
                     if ( xBeamerFrame.is() )
                         bWasOpen = true;
@@ -549,7 +566,7 @@ void ScCellShell::ExecuteDB( SfxRequest& rReq )
                 {
                     OSL_FAIL("SID_FILTER with arguments?");
                     pTabViewShell->Query( static_cast<const ScQueryItem&>(
-                            pArgs->Get( SCITEM_QUERYDATA )).GetQueryData(), NULL, true );
+                            pArgs->Get( SCITEM_QUERYDATA )).GetQueryData(), nullptr, true );
                     rReq.Done();
                 }
                 else
@@ -570,7 +587,7 @@ void ScCellShell::ExecuteDB( SfxRequest& rReq )
                 {
                     OSL_FAIL("SID_SPECIAL_FILTER with arguments?");
                     pTabViewShell->Query( static_cast<const ScQueryItem&>(
-                            pArgs->Get( SCITEM_QUERYDATA )).GetQueryData(), NULL, true );
+                            pArgs->Get( SCITEM_QUERYDATA )).GetQueryData(), nullptr, true );
                     rReq.Done();
                 }
                 else
@@ -608,7 +625,7 @@ void ScCellShell::ExecuteDB( SfxRequest& rReq )
                     if (rQueryItem.GetAdvancedQuerySource(aAdvSource))
                         pTabViewShell->Query( rQueryItem.GetQueryData(), &aAdvSource, true );
                     else
-                        pTabViewShell->Query( rQueryItem.GetQueryData(), NULL, true );
+                        pTabViewShell->Query( rQueryItem.GetQueryData(), nullptr, true );
                     rReq.Done( *pReqArgs );
                 }
             }
@@ -624,7 +641,7 @@ void ScCellShell::ExecuteDB( SfxRequest& rReq )
                 for (SCSIZE i=0; i<nEC; i++)
                     aParam.GetEntry(i).bDoQuery = false;
                 aParam.bDuplicate = true;
-                pTabViewShell->Query( aParam, NULL, true );
+                pTabViewShell->Query( aParam, nullptr, true );
                 rReq.Done();
             }
             break;
@@ -844,7 +861,7 @@ void ScCellShell::ExecuteDB( SfxRequest& rReq )
                     }
 
                     // cell range picker
-                    SfxAbstractTabDialog* pDlg = pFact->CreateScValidationDlg(NULL, &aArgSet, pTabViewShell);
+                    SfxAbstractTabDialog* pDlg = pFact->CreateScValidationDlg(nullptr, &aArgSet, pTabViewShell);
                     assert(pDlg); //Dialog create fail!
 
                     short nResult = pDlg->Execute();
@@ -957,7 +974,7 @@ void ScCellShell::ExecuteDB( SfxRequest& rReq )
                 OSL_ENSURE( pData, "ScCellShell::ExecuteDB: SID_TEXT_TO_COLUMNS - pData is null!" );
                 ScRange aRange;
 
-                if ( lcl_GetTextToColumnsRange( pData, aRange ) )
+                if ( lcl_GetTextToColumnsRange( pData, aRange, false ) )
                 {
                     ScDocument* pDoc = pData->GetDocument();
                     OSL_ENSURE( pDoc, "ScCellShell::ExecuteDB: SID_TEXT_TO_COLUMNS - pDoc is null!" );
@@ -971,12 +988,12 @@ void ScCellShell::ExecuteDB( SfxRequest& rReq )
                     SvMemoryStream aStream;
                     aStream.SetStreamCharSet( RTL_TEXTENCODING_UNICODE );
                     ScImportExport::SetNoEndianSwap( aStream );
-                    aExport.ExportStream( aStream, OUString(), SotClipboardFormatId::STRING );
+                    aExport.ExportStream( aStream, OUString() );
 
                     ScAbstractDialogFactory* pFact = ScAbstractDialogFactory::Create();
                     OSL_ENSURE( pFact, "ScCellShell::ExecuteDB: SID_TEXT_TO_COLUMNS - pFact is null!" );
                     std::unique_ptr<AbstractScImportAsciiDlg> pDlg(pFact->CreateScImportAsciiDlg(
-                        NULL, OUString(), &aStream, SC_TEXTTOCOLUMNS));
+                        nullptr, OUString(), &aStream, SC_TEXTTOCOLUMNS));
                     OSL_ENSURE( pDlg, "ScCellShell::ExecuteDB: SID_TEXT_TO_COLUMNS - pDlg is null!" );
 
                     if ( pDlg->Execute() == RET_OK )
@@ -996,7 +1013,7 @@ void ScCellShell::ExecuteDB( SfxRequest& rReq )
                         aImport.SetImportBroadcast( true );
                         aImport.SetOverwriting( true );
                         aStream.Seek( 0 );
-                        aImport.ImportStream( aStream, OUString(), SotClipboardFormatId::STRING );
+                        aImport.ImportStream( aStream, OUString() );
 
                         pDocSh->GetUndoManager()->LeaveListAction();
                     }
@@ -1031,7 +1048,7 @@ void ScCellShell::GetDBState( SfxItemSet& rSet )
                     //  or filter,sort,subtotal (also without import)
                     bool bOk = false;
                     ScDBData* pDBData = pTabViewShell->GetDBData(false,SC_DB_OLD);
-                    if (pDBData && rDoc.GetChangeTrack() == NULL)
+                    if (pDBData && rDoc.GetChangeTrack() == nullptr)
                     {
                         if ( pDBData->HasImportParam() )
                             bOk = !pDBData->HasImportSelection();
@@ -1068,7 +1085,7 @@ void ScCellShell::GetDBState( SfxItemSet& rSet )
                 {
                     //! move ReadOnly check to idl flags
 
-                    if ( pDocSh->IsReadOnly() || rDoc.GetChangeTrack()!=NULL ||
+                    if ( pDocSh->IsReadOnly() || rDoc.GetChangeTrack()!=nullptr ||
                             GetViewData()->IsMultiMarked() )
                     {
                         rSet.DisableItem( nWhich );
@@ -1081,7 +1098,7 @@ void ScCellShell::GetDBState( SfxItemSet& rSet )
                     //  only imported data without selection
                     ScDBData* pDBData = pTabViewShell->GetDBData(false,SC_DB_OLD);
                     if (!pDBData || !pDBData->HasImportParam() || pDBData->HasImportSelection() ||
-                        rDoc.GetChangeTrack()!=NULL)
+                        rDoc.GetChangeTrack()!=nullptr)
                     {
                         rSet.DisableItem( nWhich );
                     }
@@ -1094,7 +1111,7 @@ void ScCellShell::GetDBState( SfxItemSet& rSet )
                         rSet.Put(SfxVisibilityItem(nWhich, false));
                     else
                         //  get state (BoolItem) from SfxViewFrame
-                        pTabViewShell->GetViewFrame()->GetSlotState( nWhich, NULL, &rSet );
+                        pTabViewShell->GetViewFrame()->GetSlotState( nWhich, nullptr, &rSet );
                 }
                 break;
             case SID_SBA_BRW_INSERT:
@@ -1195,7 +1212,7 @@ void ScCellShell::GetDBState( SfxItemSet& rSet )
             case SID_TEXT_TO_COLUMNS:
                 {
                     ScRange aRange;
-                    if ( !lcl_GetTextToColumnsRange( pData, aRange ) )
+                    if ( !lcl_GetTextToColumnsRange( pData, aRange, true ) )
                     {
                         rSet.DisableItem( nWhich );
                     }

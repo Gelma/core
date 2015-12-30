@@ -35,7 +35,8 @@
 #include <com/sun/star/util/XChangesBatch.hpp>
 #include <com/sun/star/setup/UpdateCheckConfig.hpp>
 
-#include "cuires.hrc"
+#include <cuires.hrc>
+#include <dialmgr.hxx>
 #include "optopencl.hxx"
 #include <svtools/treelistentry.hxx>
 
@@ -43,6 +44,7 @@ SvxOpenCLTabPage::SvxOpenCLTabPage(vcl::Window* pParent, const SfxItemSet& rSet)
     SfxTabPage(pParent, "OptOpenCLPage", "cui/ui/optopenclpage.ui", &rSet),
     maConfig(OpenCLConfig::get())
 {
+    get(mpUseSwInterpreter, "useswinterpreter");
     get(mpUseOpenCL, "useopencl");
     get(mpBlackListTable, "blacklist");
     get(mpBlackListFrame,"blacklistframe");
@@ -59,6 +61,8 @@ SvxOpenCLTabPage::SvxOpenCLTabPage(vcl::Window* pParent, const SfxItemSet& rSet)
     get(mpDevice,"device");
     get(mpVendor,"vendor");
     get(mpDrvVersion,"driverversion");
+
+    mpUseSwInterpreter->Check(officecfg::Office::Common::Misc::UseSwInterpreter::get());
 
     mpUseOpenCL->Check(maConfig.mbUseOpenCL);
     mpUseOpenCL->SetClickHdl(LINK(this, SvxOpenCLTabPage, EnableOpenCLHdl));
@@ -116,6 +120,7 @@ void SvxOpenCLTabPage::dispose()
     mpBlackList.disposeAndClear();
     mpWhiteList.disposeAndClear();
 
+    mpUseSwInterpreter.clear();
     mpUseOpenCL.clear();
     mpBlackListFrame.clear();
     mpBlackListTable.clear();
@@ -145,6 +150,15 @@ bool SvxOpenCLTabPage::FillItemSet( SfxItemSet* )
 {
     bool bModified = false;
     std::shared_ptr<comphelper::ConfigurationChanges> batch(comphelper::ConfigurationChanges::create());
+
+    if (mpUseSwInterpreter->IsValueChangedFromSaved())
+    {
+        officecfg::Office::Common::Misc::UseSwInterpreter::set(mpUseSwInterpreter->IsChecked(), batch);
+        bModified = true;
+
+        ScopedVclPtrInstance<MessageDialog> aWarnBox(this, CUI_RES(RID_SVXSTR_OPTIONS_RESTART), VCL_MESSAGE_INFO);
+        aWarnBox->Execute();
+    }
 
     if (mpUseOpenCL->IsValueChangedFromSaved())
         maConfig.mbUseOpenCL = mpUseOpenCL->IsChecked();
@@ -183,7 +197,7 @@ void fillListBox(SvSimpleTable* pListBox, const OpenCLConfig::ImplMatcherSet& rS
     for (auto i = rSet.cbegin(); i != rSet.cend(); ++i)
     {
         OpenCLConfig::ImplMatcher* pImpl = new OpenCLConfig::ImplMatcher(*i);
-        pListBox->InsertEntry(format(*i), NULL, false, TREELIST_APPEND, pImpl);
+        pListBox->InsertEntry(format(*i), nullptr, false, TREELIST_APPEND, pImpl);
     }
 
     pListBox->SetUpdateMode(true);
@@ -194,6 +208,9 @@ void fillListBox(SvSimpleTable* pListBox, const OpenCLConfig::ImplMatcherSet& rS
 void SvxOpenCLTabPage::Reset( const SfxItemSet* )
 {
     maConfig = OpenCLConfig::get();
+
+    mpUseSwInterpreter->Check(officecfg::Office::Common::Misc::UseSwInterpreter::get());
+    mpUseSwInterpreter->SaveValue();
 
     mpUseOpenCL->Check(maConfig.mbUseOpenCL);
     mpUseOpenCL->SaveValue();
@@ -219,12 +236,12 @@ public:
     VclPtr<Edit> mpDevice;
     VclPtr<Edit> mpDriverVersion;
 
-    DECL_LINK(OSSelectHdl, ListBox*);
-    DECL_LINK(EditModifiedHdl, Edit*);
+    DECL_LINK_TYPED(OSSelectHdl, ListBox&, void);
+    DECL_LINK_TYPED(EditModifiedHdl, Edit&, void);
 
     ListEntryDialog(vcl::Window* pParent, const OpenCLConfig::ImplMatcher& rEntry, const OString& rTag);
     virtual ~ListEntryDialog() { disposeOnce(); }
-    virtual void dispose() SAL_OVERRIDE
+    virtual void dispose() override
     {
         mpOS.clear();
         mpOSVersion.clear();
@@ -274,31 +291,27 @@ ListEntryDialog::ListEntryDialog(vcl::Window* pParent, const OpenCLConfig::ImplM
     SetText(get<FixedText>(rTag + "title")->GetText());
 }
 
-IMPL_LINK(ListEntryDialog, OSSelectHdl, ListBox*, pListBox)
+IMPL_LINK_TYPED(ListEntryDialog, OSSelectHdl, ListBox&, rListBox, void)
 {
-    if (pListBox == mpOS)
+    if (&rListBox == mpOS)
     {
         if (mpOS->GetSelectEntryPos() == 0)
             maEntry.maOS.clear();
         else
             maEntry.maOS = mpOS->GetSelectEntry();
     }
-
-    return 0;
 }
 
-IMPL_LINK(ListEntryDialog, EditModifiedHdl, Edit*, pEdit)
+IMPL_LINK_TYPED(ListEntryDialog, EditModifiedHdl, Edit&, rEdit, void)
 {
-    if (pEdit == mpOSVersion)
-        maEntry.maOSVersion = pEdit->GetText();
-    else if (pEdit == mpPlatformVendor)
-        maEntry.maPlatformVendor = pEdit->GetText();
-    else if (pEdit == mpDevice)
-        maEntry.maDevice = pEdit->GetText();
-    else if (pEdit == mpDriverVersion)
-        maEntry.maDriverVersion = pEdit->GetText();
-
-    return 0;
+    if (&rEdit == mpOSVersion)
+        maEntry.maOSVersion = rEdit.GetText();
+    else if (&rEdit == mpPlatformVendor)
+        maEntry.maPlatformVendor = rEdit.GetText();
+    else if (&rEdit == mpDevice)
+        maEntry.maDevice = rEdit.GetText();
+    else if (&rEdit == mpDriverVersion)
+        maEntry.maDriverVersion = rEdit.GetText();
 }
 
 void openListDialog(SvxOpenCLTabPage* pTabPage, OpenCLConfig::ImplMatcher& rEntry, const OString& rTag)

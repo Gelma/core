@@ -35,7 +35,7 @@ namespace basegfx
         @derive Use this class to implement Points or Vectors
         which are based on two sal_Int32 values
     */
-    class BASEGFX_DLLPUBLIC SAL_WARN_UNUSED B2ITuple
+    class SAL_WARN_UNUSED BASEGFX_DLLPUBLIC B2ITuple
     {
     protected:
         sal_Int32                                       mnX;
@@ -212,46 +212,10 @@ namespace basegfx
         return aSub;
     }
 
-    inline B2ITuple operator/(const B2ITuple& rTupA, const B2ITuple& rTupB)
-    {
-        B2ITuple aDiv(rTupA);
-        aDiv /= rTupB;
-        return aDiv;
-    }
-
-    inline B2ITuple operator*(const B2ITuple& rTupA, const B2ITuple& rTupB)
-    {
-        B2ITuple aMul(rTupA);
-        aMul *= rTupB;
-        return aMul;
-    }
-
-    inline B2ITuple operator*(const B2ITuple& rTup, sal_Int32 t)
-    {
-        B2ITuple aNew(rTup);
-        aNew *= t;
-        return aNew;
-    }
-
     inline B2ITuple operator*(sal_Int32 t, const B2ITuple& rTup)
     {
         B2ITuple aNew(rTup);
         aNew *= t;
-        return aNew;
-    }
-
-    inline B2ITuple operator/(const B2ITuple& rTup, sal_Int32 t)
-    {
-        B2ITuple aNew(rTup);
-        aNew /= t;
-        return aNew;
-    }
-
-    inline B2ITuple operator/(sal_Int32 t, const B2ITuple& rTup)
-    {
-        B2ITuple aNew(t, t);
-        B2ITuple aTmp(rTup);
-        aNew /= aTmp;
         return aNew;
     }
 

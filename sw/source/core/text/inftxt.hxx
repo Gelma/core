@@ -47,7 +47,7 @@ class SwLineLayout;
 class SwLinePortion;
 class SwParaPortion;
 class SwTabPortion;
-class SwTextFrm;
+class SwTextFrame;
 class SwTextSizeInfo;
 class SwViewOption;
 class SwViewShell;
@@ -123,14 +123,14 @@ class SwTextInfo
 
 protected:
     SwTextInfo()
-        : m_pPara(0)
+        : m_pPara(nullptr)
         , m_nTextStart(0)
     {}
 
 public:
-    void CtorInitTextInfo( SwTextFrm *pFrm );
+    void CtorInitTextInfo( SwTextFrame *pFrame );
     SwTextInfo( const SwTextInfo &rInf );
-    explicit SwTextInfo( SwTextFrm *pFrm ) { CtorInitTextInfo( pFrm ); }
+    explicit SwTextInfo( SwTextFrame *pFrame ) { CtorInitTextInfo( pFrame ); }
     SwParaPortion *GetParaPortion() { return m_pPara; }
     const SwParaPortion *GetParaPortion() const { return m_pPara; }
     sal_Int32 GetTextStart() const { return m_nTextStart; }
@@ -162,7 +162,7 @@ protected:
 
     SwFont *m_pFnt;
     SwUnderlineFont *m_pUnderFnt; // Font for underlining
-    SwTextFrm *m_pFrm;
+    SwTextFrame *m_pFrame;
     const SwViewOption *m_pOpt;
     const OUString *m_pText;
     sal_Int32 m_nIdx, m_nLen;
@@ -187,7 +187,7 @@ protected:
     sal_uInt8 m_nDirection : 2; // writing direction: 0/90/180/270 degree
 
 protected:
-    void CtorInitTextSizeInfo( OutputDevice* pRenderContext, SwTextFrm *pFrm, SwFont *pFnt = 0,
+    void CtorInitTextSizeInfo( OutputDevice* pRenderContext, SwTextFrame *pFrame, SwFont *pFnt = nullptr,
                    const sal_Int32 nIdx = 0,
                    const sal_Int32 nLen = COMPLETE_STRING );
     SwTextSizeInfo();
@@ -197,7 +197,7 @@ public:
                    const sal_Int32 nIdx = 0,
                    const sal_Int32 nLen = COMPLETE_STRING );
 
-    SwTextSizeInfo( SwTextFrm *pTextFrm, SwFont *pTextFnt = 0,
+    SwTextSizeInfo( SwTextFrame *pTextFrame, SwFont *pTextFnt = nullptr,
                    const sal_Int32 nIndex = 0,
                    const sal_Int32 nLength = COMPLETE_STRING );
 
@@ -296,11 +296,11 @@ public:
     void NoteAnimation() const;
 
     // Home is where Your heart is...
-    inline SwTextFrm *GetTextFrm() { return m_pFrm; }
-    inline const SwTextFrm *GetTextFrm() const { return m_pFrm; }
+    inline SwTextFrame *GetTextFrame() { return m_pFrame; }
+    inline const SwTextFrame *GetTextFrame() const { return m_pFrame; }
 
     inline bool HasHint( sal_Int32 nPos ) const
-        { return _HasHint( m_pFrm->GetTextNode(), nPos ); }
+        { return _HasHint( m_pFrame->GetTextNode(), nPos ); }
     static bool _HasHint( const SwTextNode* pTextNode, sal_Int32 nPos );
 
     // If Kana Compression is enabled, a minimum and maximum portion width
@@ -360,7 +360,7 @@ class SwTextPaintInfo : public SwTextSizeInfo
     std::vector<long>* pSpaceAdd;
     const SvxBrushItem *pBrushItem; // For the background
     SwRect      aItemRect;          // Also for the background
-    SwTextFly    aTextFly;    // Calculate the FlyFrm
+    SwTextFly    aTextFly;    // Calculate the FlyFrame
     Point       aPos;       // Paint position
     SwRect      aPaintRect; // Original paint rect (from Layout paint)
 
@@ -371,15 +371,15 @@ class SwTextPaintInfo : public SwTextSizeInfo
                    const bool bSmartTag = false,
                    const bool bGrammarCheck = false );
 
-    SwTextPaintInfo &operator=(const SwTextPaintInfo&) SAL_DELETED_FUNCTION;
+    SwTextPaintInfo &operator=(const SwTextPaintInfo&) = delete;
     void _NotifyURL( const SwLinePortion &rPor ) const;
 
 protected:
     SwTextPaintInfo()
-        : pWrongList(0)
-        , pGrammarCheckList(0)
-        , pSmartTags(0)
-        , pSpaceAdd(0)
+        : pWrongList(nullptr)
+        , pGrammarCheckList(nullptr)
+        , pSmartTags(nullptr)
+        , pSpaceAdd(nullptr)
 #ifdef DBG_UTIL
         , pBrushItem(reinterpret_cast<SvxBrushItem*>(-1))
 #else
@@ -392,12 +392,12 @@ public:
     SwTextPaintInfo( const SwTextPaintInfo &rInf );
     SwTextPaintInfo( const SwTextPaintInfo &rInf, const OUString* pText );
 
-    void CtorInitTextPaintInfo( OutputDevice* pRenderContext, SwTextFrm *pFrame, const SwRect &rPaint );
+    void CtorInitTextPaintInfo( OutputDevice* pRenderContext, SwTextFrame *pFrame, const SwRect &rPaint );
 
     const SvxBrushItem *GetBrushItem() const { return pBrushItem; }
     const SwRect       &GetBrushRect() const { return aItemRect;  }
 
-    SwTextPaintInfo( SwTextFrm *pFrame, const SwRect &rPaint );
+    SwTextPaintInfo( SwTextFrame *pFrame, const SwRect &rPaint );
 
     inline SwTwips X() const { return aPos.X(); }
     inline void X( const long nNew ) { aPos.X() = nNew; }
@@ -450,7 +450,7 @@ public:
      *                          is excluded (e.g. for background)
     **/
     void CalcRect( const SwLinePortion& rPor, SwRect* pRect,
-                   SwRect* pIntersect = 0, const bool bInsideBox = false ) const;
+                   SwRect* pIntersect = nullptr, const bool bInsideBox = false ) const;
 
     inline SwTwips GetPaintOfst() const;
     inline void SetPaintOfst( const SwTwips nNew );
@@ -486,68 +486,68 @@ public:
 class SwTextFormatInfo : public SwTextPaintInfo
 {
     // temporary arguments for hyphenation
-    com::sun::star::beans::PropertyValues   aHyphVals;
+    css::beans::PropertyValues   m_aHyphVals;
 
-    SwLineLayout    *pRoot;       // The Root of the current line (pCurr)
-    SwLinePortion   *pLast;       // The last Portion
-    SwFlyPortion    *pFly;        // The following FlyPortion
-    SwFieldPortion    *pLastField;    // Wrapped Field
-    SwLinePortion   *pUnderflow;  // Underflow: Last Portion
-    SwLinePortion   *pRest;       // The Rest is the start of the next Line
+    SwLineLayout    *m_pRoot;       // The Root of the current line (pCurr)
+    SwLinePortion   *m_pLast;       // The last Portion
+    SwFlyPortion    *m_pFly;        // The following FlyPortion
+    SwFieldPortion    *m_pLastField;    // Wrapped Field
+    SwLinePortion   *m_pUnderflow;  // Underflow: Last Portion
+    SwLinePortion   *m_pRest;       // The Rest is the start of the next Line
 
-    SwTabPortion    *pLastTab;     // The _last_ TabPortion
+    SwTabPortion    *m_pLastTab;     // The _last_ TabPortion
 
-    sal_Int32 nSoftHyphPos;    // SoftHyphPos for Hyphenation
-    sal_Int32 nLineStart;      // Current line start in rText
-    sal_Int32 nUnderScorePos;  // enlarge repaint if underscore has been found
+    sal_Int32 m_nSoftHyphPos;    // SoftHyphPos for Hyphenation
+    sal_Int32 m_nLineStart;      // Current line start in rText
+    sal_Int32 m_nUnderScorePos;  // enlarge repaint if underscore has been found
     // #i34348# Changed type from sal_uInt16 to SwTwips
-    SwTwips nLeft;              // Left margin
-    SwTwips nRight;             // Right margin
-    SwTwips nFirst;             // EZE
-    sal_uInt16 nRealWidth;      // "real" line width
-    sal_uInt16 nWidth;          // "virtual" line width
-    sal_uInt16 nLineHeight;     // Final height after CalcLine
-    sal_uInt16 nLineNetHeight; // line height without spacing
-    sal_uInt16 nForcedLeftMargin; // Shift of left margin due to frame
+    SwTwips m_nLeft;              // Left margin
+    SwTwips m_nRight;             // Right margin
+    SwTwips m_nFirst;             // EZE
+    sal_uInt16 m_nRealWidth;      // "real" line width
+    sal_uInt16 m_nWidth;          // "virtual" line width
+    sal_uInt16 m_nLineHeight;     // Final height after CalcLine
+    sal_uInt16 m_nLineNetHeight; // line height without spacing
+    sal_uInt16 m_nForcedLeftMargin; // Shift of left margin due to frame
 
-    sal_Int16  nMinLeading;     // minimum number of chars before hyphenation point
-    sal_Int16  nMinTrailing;    // minimum number of chars after hyphenation point
-    sal_Int16  nMinWordLength;  // minimum length of word to be hyphenated
+    sal_Int16  m_nMinLeading;     // minimum number of chars before hyphenation point
+    sal_Int16  m_nMinTrailing;    // minimum number of chars after hyphenation point
+    sal_Int16  m_nMinWordLength;  // minimum length of word to be hyphenated
 
-    bool bFull : 1;             // Line is full
-    bool bFootnoteDone : 1;          // Footnote already formatted
-    bool bErgoDone : 1;         // ErgoDone already formatted
-    bool bNumDone : 1;          // bNumDone already formatted
-    bool bArrowDone : 1;        // Arrow to the left for scrolling paragraphs
-    bool bStop : 1;             // Cancel immediately, discarding the line
-    bool bNewLine : 1;          // Format another line
-    bool bShift : 1;            // Position change: Repaint until further notice
-    bool bUnderflow : 1;        // Context: Underflow() ?
-    bool bInterHyph : 1;        // Interactive hyphenation?
-    bool bAutoHyph : 1;         // Automatic hyphenation?
-    bool bDropInit : 1;         // Set DropWidth
-    bool bQuick : 1;            // FormatQuick()
-    bool bNoEndHyph : 1;        // Switch off hyphenation at the line end (due to MaxHyphens)
-    bool bNoMidHyph : 1;        // Switch off hyphenation before flys (due to MaxHyphens)
-    bool bIgnoreFly : 1;        // FitToContent ignores flys
-    bool bFakeLineStart : 1;    // String has been replaced by field portion
+    bool m_bFull : 1;             // Line is full
+    bool m_bFootnoteDone : 1;          // Footnote already formatted
+    bool m_bErgoDone : 1;         // ErgoDone already formatted
+    bool m_bNumDone : 1;          // bNumDone already formatted
+    bool m_bArrowDone : 1;        // Arrow to the left for scrolling paragraphs
+    bool m_bStop : 1;             // Cancel immediately, discarding the line
+    bool m_bNewLine : 1;          // Format another line
+    bool m_bShift : 1;            // Position change: Repaint until further notice
+    bool m_bUnderflow : 1;        // Context: Underflow() ?
+    bool m_bInterHyph : 1;        // Interactive hyphenation?
+    bool m_bAutoHyph : 1;         // Automatic hyphenation?
+    bool m_bDropInit : 1;         // Set DropWidth
+    bool m_bQuick : 1;            // FormatQuick()
+    bool m_bNoEndHyph : 1;        // Switch off hyphenation at the line end (due to MaxHyphens)
+    bool m_bNoMidHyph : 1;        // Switch off hyphenation before flys (due to MaxHyphens)
+    bool m_bIgnoreFly : 1;        // FitToContent ignores flys
+    bool m_bFakeLineStart : 1;    // String has been replaced by field portion
                                 // info structure only pretends that we are at
                                 // the beginning of a line
-    bool bTabOverflow : 1;      // Tabs are expanding after the end margin
-    bool bTestFormat : 1;       // Test formatting from WouldFit, no notification etc.
+    bool m_bTabOverflow : 1;      // Tabs are expanding after the end margin
+    bool m_bTestFormat : 1;       // Test formatting from WouldFit, no notification etc.
 
-    sal_Unicode   cTabDecimal;  // the current decimal delimiter
-    sal_Unicode   cHookChar;    // For tabs in fields etc.
-    sal_uInt8   nMaxHyph;       // Max. line count of followup hyphenations
+    sal_Unicode   m_cTabDecimal;  // the current decimal delimiter
+    sal_Unicode   m_cHookChar;    // For tabs in fields etc.
+    sal_uInt8   m_nMaxHyph;       // Max. line count of followup hyphenations
 
     // Hyphenating ...
     bool InitHyph( const bool bAuto = false );
     bool _CheckFootnotePortion( SwLineLayout* pCurr );
 
 public:
-    void CtorInitTextFormatInfo( OutputDevice* pRenderContext, SwTextFrm *pFrm, const bool bInterHyph = false,
+    void CtorInitTextFormatInfo( OutputDevice* pRenderContext, SwTextFrame *pFrame, const bool bInterHyph = false,
         const bool bQuick = false, const bool bTst = false );
-    SwTextFormatInfo(OutputDevice* pRenderContext, SwTextFrm *pFrame, const bool bInterHyphL = false,
+    SwTextFormatInfo(OutputDevice* pRenderContext, SwTextFrame *pFrame, const bool bInterHyphL = false,
             const bool bQuickL = false, const bool bTst = false);
 
     // For the formatting inside a double line in a line (multi-line portion)
@@ -555,119 +555,117 @@ public:
     SwTextFormatInfo( const SwTextFormatInfo& rInf, SwLineLayout& rLay,
         SwTwips nActWidth );
 
-    inline sal_uInt16 Width() const { return nWidth; }
-    inline void Width( const sal_uInt16 nNew ) { nWidth = nNew; }
+    inline sal_uInt16 Width() const { return m_nWidth; }
+    inline void Width( const sal_uInt16 nNew ) { m_nWidth = nNew; }
            void Init();
 
     // Returns the first changed position of the paragraph
     inline sal_Int32 GetReformatStart() const;
 
     // Margins
-    inline SwTwips Left() const { return nLeft; }
-    inline void Left( const SwTwips nNew ) { nLeft = nNew; }
-    inline SwTwips Right() const { return nRight; }
-    inline void Right( const SwTwips nNew ) { nRight = nNew; }
-    inline SwTwips First() const { return nFirst; }
-    inline void First( const SwTwips nNew ) { nFirst = nNew; }
-    inline sal_uInt16 RealWidth() const { return nRealWidth; }
-    inline void RealWidth( const sal_uInt16 nNew ) { nRealWidth = nNew; }
-    inline sal_uInt16 ForcedLeftMargin() const { return nForcedLeftMargin; }
-    inline void ForcedLeftMargin( const sal_uInt16 nN ) { nForcedLeftMargin = nN; }
+    inline SwTwips Left() const { return m_nLeft; }
+    inline void Left( const SwTwips nNew ) { m_nLeft = nNew; }
+    inline SwTwips Right() const { return m_nRight; }
+    inline void Right( const SwTwips nNew ) { m_nRight = nNew; }
+    inline SwTwips First() const { return m_nFirst; }
+    inline void First( const SwTwips nNew ) { m_nFirst = nNew; }
+    inline sal_uInt16 RealWidth() const { return m_nRealWidth; }
+    inline void RealWidth( const sal_uInt16 nNew ) { m_nRealWidth = nNew; }
+    inline sal_uInt16 ForcedLeftMargin() const { return m_nForcedLeftMargin; }
+    inline void ForcedLeftMargin( const sal_uInt16 nN ) { m_nForcedLeftMargin = nN; }
 
-    inline sal_uInt8 &MaxHyph() { return nMaxHyph; }
-    inline const sal_uInt8 &MaxHyph() const { return nMaxHyph; }
+    inline sal_uInt8 &MaxHyph() { return m_nMaxHyph; }
+    inline const sal_uInt8 &MaxHyph() const { return m_nMaxHyph; }
 
-    inline SwLineLayout *GetRoot() { return pRoot; }
-    inline const SwLineLayout *GetRoot() const { return pRoot; }
+    inline SwLineLayout *GetRoot() { return m_pRoot; }
+    inline const SwLineLayout *GetRoot() const { return m_pRoot; }
 
-    inline void SetRoot( SwLineLayout *pNew ) { pRoot = pNew; }
-    inline SwLinePortion *GetLast() { return pLast; }
-    inline void SetLast( SwLinePortion *pNewLast ) { pLast = pNewLast; }
-    inline bool IsFull() const { return bFull; }
-    inline void SetFull( const bool bNew ) { bFull = bNew; }
+    inline void SetRoot( SwLineLayout *pNew ) { m_pRoot = pNew; }
+    inline SwLinePortion *GetLast() { return m_pLast; }
+    inline void SetLast( SwLinePortion *pNewLast ) { m_pLast = pNewLast; }
+    inline bool IsFull() const { return m_bFull; }
+    inline void SetFull( const bool bNew ) { m_bFull = bNew; }
     inline bool IsHyphForbud() const
-        { return pFly ? bNoMidHyph : bNoEndHyph; }
+        { return m_pFly ? m_bNoMidHyph : m_bNoEndHyph; }
     inline void ChkNoHyph( const sal_uInt8 bEnd, const sal_uInt8 bMid )
-        { bNoEndHyph = (nMaxHyph && bEnd >= nMaxHyph);
-          bNoMidHyph = (nMaxHyph && bMid >= nMaxHyph); }
-    inline bool IsIgnoreFly() const { return bIgnoreFly; }
-    inline void SetIgnoreFly( const bool bNew ) { bIgnoreFly = bNew; }
-    inline bool IsFakeLineStart() const { return bFakeLineStart; }
-    inline void SetFakeLineStart( const bool bNew ) { bFakeLineStart = bNew; }
-    inline bool IsStop() const { return bStop; }
-    inline void SetStop( const bool bNew ) { bStop = bNew; }
-    inline SwLinePortion *GetRest() { return pRest; }
-    inline void SetRest( SwLinePortion *pNewRest ) { pRest = pNewRest; }
-    inline bool IsNewLine() const { return bNewLine; }
-    inline void SetNewLine( const bool bNew ) { bNewLine = bNew; }
-    inline bool IsShift() const { return bShift; }
-    inline void SetShift( const bool bNew ) { bShift = bNew; }
-    inline bool IsInterHyph() const { return bInterHyph; }
-    inline bool IsUnderflow() const { return bUnderflow; }
-    inline void ClrUnderflow() { bUnderflow = false; }
-    inline bool IsDropInit() const { return bDropInit; }
-    inline void SetDropInit( const bool bNew ) { bDropInit = bNew; }
-    inline bool IsQuick() const { return bQuick; }
-    inline bool IsTest() const { return bTestFormat; }
+        { m_bNoEndHyph = (m_nMaxHyph && bEnd >= m_nMaxHyph);
+          m_bNoMidHyph = (m_nMaxHyph && bMid >= m_nMaxHyph); }
+    inline bool IsIgnoreFly() const { return m_bIgnoreFly; }
+    inline void SetIgnoreFly( const bool bNew ) { m_bIgnoreFly = bNew; }
+    inline bool IsFakeLineStart() const { return m_bFakeLineStart; }
+    inline void SetFakeLineStart( const bool bNew ) { m_bFakeLineStart = bNew; }
+    inline bool IsStop() const { return m_bStop; }
+    inline void SetStop( const bool bNew ) { m_bStop = bNew; }
+    inline SwLinePortion *GetRest() { return m_pRest; }
+    inline void SetRest( SwLinePortion *pNewRest ) { m_pRest = pNewRest; }
+    inline bool IsNewLine() const { return m_bNewLine; }
+    inline void SetNewLine( const bool bNew ) { m_bNewLine = bNew; }
+    inline bool IsShift() const { return m_bShift; }
+    inline void SetShift( const bool bNew ) { m_bShift = bNew; }
+    inline bool IsInterHyph() const { return m_bInterHyph; }
+    inline bool IsUnderflow() const { return m_bUnderflow; }
+    inline void ClrUnderflow() { m_bUnderflow = false; }
+    inline bool IsDropInit() const { return m_bDropInit; }
+    inline void SetDropInit( const bool bNew ) { m_bDropInit = bNew; }
+    inline bool IsQuick() const { return m_bQuick; }
+    inline bool IsTest() const { return m_bTestFormat; }
 
-    inline sal_Int32 GetLineStart() const { return nLineStart; }
-    inline void SetLineStart( const sal_Int32 nNew ) { nLineStart = nNew; }
+    inline sal_Int32 GetLineStart() const { return m_nLineStart; }
+    inline void SetLineStart( const sal_Int32 nNew ) { m_nLineStart = nNew; }
 
     // these are used during fly calculation
-    inline sal_uInt16 GetLineHeight() const { return nLineHeight; }
-    inline void SetLineHeight( const sal_uInt16 nNew ) { nLineHeight = nNew; }
-    inline sal_uInt16 GetLineNetHeight() const { return nLineNetHeight; }
-    inline void SetLineNetHeight( const sal_uInt16 nNew ) { nLineNetHeight = nNew; }
+    inline sal_uInt16 GetLineHeight() const { return m_nLineHeight; }
+    inline void SetLineHeight( const sal_uInt16 nNew ) { m_nLineHeight = nNew; }
+    inline sal_uInt16 GetLineNetHeight() const { return m_nLineNetHeight; }
+    inline void SetLineNetHeight( const sal_uInt16 nNew ) { m_nLineNetHeight = nNew; }
 
-    inline const SwLinePortion *GetUnderflow() const { return pUnderflow; }
-    inline SwLinePortion *GetUnderflow() { return pUnderflow; }
+    inline const SwLinePortion *GetUnderflow() const { return m_pUnderflow; }
+    inline SwLinePortion *GetUnderflow() { return m_pUnderflow; }
     inline void SetUnderflow( SwLinePortion *pNew )
-           { pUnderflow = pNew; bUnderflow = true; }
-    inline sal_Int32 GetSoftHyphPos() const { return nSoftHyphPos; }
-    inline void SetSoftHyphPos( const sal_Int32 nNew ) { nSoftHyphPos = nNew; }
+           { m_pUnderflow = pNew; m_bUnderflow = true; }
+    inline sal_Int32 GetSoftHyphPos() const { return m_nSoftHyphPos; }
+    inline void SetSoftHyphPos( const sal_Int32 nNew ) { m_nSoftHyphPos = nNew; }
 
     inline void SetParaFootnote();
 
-    // FlyFrms
-    inline SwFlyPortion *GetFly() { return pFly; }
-    inline void SetFly( SwFlyPortion *pNew ) { pFly = pNew; }
+    // FlyFrames
+    inline SwFlyPortion *GetFly() { return m_pFly; }
+    inline void SetFly( SwFlyPortion *pNew ) { m_pFly = pNew; }
 
     inline const SwAttrSet& GetCharAttr() const;
 
     // Tabs
-    inline SwTabPortion *GetLastTab() { return pLastTab; }
-    inline void SetLastTab( SwTabPortion *pNew ) { pLastTab = pNew; }
-    inline sal_Unicode GetTabDecimal() const { return cTabDecimal; }
-    inline void SetTabDecimal( const sal_Unicode cNew ) { cTabDecimal = cNew;}
+    inline SwTabPortion *GetLastTab() { return m_pLastTab; }
+    inline void SetLastTab( SwTabPortion *pNew ) { m_pLastTab = pNew; }
+    inline sal_Unicode GetTabDecimal() const { return m_cTabDecimal; }
+    inline void SetTabDecimal( const sal_Unicode cNew ) { m_cTabDecimal = cNew;}
 
-    inline void ClearHookChar() { cHookChar = 0; }
-    inline void SetHookChar( const sal_Unicode cNew ) { cHookChar = cNew; }
-    inline sal_Unicode GetHookChar() const { return cHookChar; }
+    inline void ClearHookChar() { m_cHookChar = 0; }
+    inline void SetHookChar( const sal_Unicode cNew ) { m_cHookChar = cNew; }
+    inline sal_Unicode GetHookChar() const { return m_cHookChar; }
 
     // Done-Flags
-    inline bool IsFootnoteDone() const { return bFootnoteDone; }
-    inline void SetFootnoteDone( const bool bNew ) { bFootnoteDone = bNew; }
-    inline bool IsErgoDone() const { return bErgoDone; }
-    inline void SetErgoDone( const bool bNew ) { bErgoDone = bNew; }
-    inline bool IsNumDone() const { return bNumDone; }
-    inline void SetNumDone( const bool bNew ) { bNumDone = bNew; }
-    inline bool IsArrowDone() const { return bArrowDone; }
-    inline void SetArrowDone( const bool bNew ) { bArrowDone = bNew; }
+    inline bool IsFootnoteDone() const { return m_bFootnoteDone; }
+    inline void SetFootnoteDone( const bool bNew ) { m_bFootnoteDone = bNew; }
+    inline bool IsErgoDone() const { return m_bErgoDone; }
+    inline void SetErgoDone( const bool bNew ) { m_bErgoDone = bNew; }
+    inline bool IsNumDone() const { return m_bNumDone; }
+    inline void SetNumDone( const bool bNew ) { m_bNumDone = bNew; }
+    inline bool IsArrowDone() const { return m_bArrowDone; }
+    inline void SetArrowDone( const bool bNew ) { m_bArrowDone = bNew; }
 
     // For SwTextPortion::Hyphenate
     bool ChgHyph( const bool bNew );
 
     // Should the hyphenate helper be discarded?
     bool IsHyphenate() const;
-    inline sal_Int32 GetUnderScorePos() const { return nUnderScorePos; }
-    inline void SetUnderScorePos( sal_Int32 nNew ) { nUnderScorePos = nNew; }
+    inline sal_Int32 GetUnderScorePos() const { return m_nUnderScorePos; }
+    inline void SetUnderScorePos( sal_Int32 nNew ) { m_nUnderScorePos = nNew; }
 
     // Calls HyphenateWord() of Hyphenator
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::linguistic2::XHyphenatedWord >
+    css::uno::Reference< css::linguistic2::XHyphenatedWord >
                 HyphWord( const OUString &rText, const sal_Int32 nMinTrail );
-    const com::sun::star::beans::PropertyValues &
-                GetHyphValues() const;
+    const css::beans::PropertyValues & GetHyphValues() const;
 
     bool CheckFootnotePortion( SwLineLayout* pCurr )
         { return IsFootnoteInside() && _CheckFootnotePortion( pCurr ); }
@@ -682,8 +680,8 @@ public:
     // Return: Position; sets cHookChar if necessary
     sal_Int32 ScanPortionEnd( const sal_Int32 nStart, const sal_Int32 nEnd );
 
-    inline void SetTabOverflow( bool bOverflow ) { bTabOverflow = bOverflow; }
-    inline bool IsTabOverflow() { return bTabOverflow; }
+    inline void SetTabOverflow( bool bOverflow ) { m_bTabOverflow = bOverflow; }
+    inline bool IsTabOverflow() { return m_bTabOverflow; }
 
 };
 
@@ -722,7 +720,7 @@ class SwFontSave
     SwAttrIter    *pIter;
 public:
     SwFontSave( const SwTextSizeInfo &rInf, SwFont *pFnt,
-                SwAttrIter* pItr = NULL );
+                SwAttrIter* pItr = nullptr );
    ~SwFontSave();
 };
 
@@ -742,7 +740,7 @@ inline sal_uInt16 SwTextSizeInfo::GetTextHeight() const
 
 inline SwPosSize SwTextSizeInfo::GetTextSize( const OUString &rText ) const
 {
-    return GetTextSize( m_pOut, 0, rText, 0, rText.getLength(), 0 );
+    return GetTextSize( m_pOut, nullptr, rText, 0, rText.getLength(), 0 );
 }
 
 inline SwPosSize SwTextSizeInfo::GetTextSize( const SwScriptInfo* pSI,
@@ -794,12 +792,12 @@ inline sal_Int32 SwTextFormatInfo::GetReformatStart() const
 
 inline const SwAttrSet& SwTextFormatInfo::GetCharAttr() const
 {
-    return GetTextFrm()->GetTextNode()->GetSwAttrSet();
+    return GetTextFrame()->GetTextNode()->GetSwAttrSet();
 }
 
 inline void SwTextFormatInfo::SetParaFootnote()
 {
-    GetTextFrm()->SetFootnote( true );
+    GetTextFrame()->SetFootnote( true );
 }
 
 #endif

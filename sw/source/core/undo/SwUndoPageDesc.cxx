@@ -104,7 +104,7 @@ SwUndoPageDesc::SwUndoPageDesc(const SwPageDesc & _aOld,
               UNDO_CHANGE_PAGEDESC ),
       aOld(_aOld, _pDoc), aNew(_aNew, _pDoc), pDoc(_pDoc), bExchange( false )
 {
-    OSL_ENSURE(0 != pDoc, "no document?");
+    OSL_ENSURE(nullptr != pDoc, "no document?");
 
 #if OSL_DEBUG_LEVEL > 1
     DebugHeaderFooterContent( aOld.m_PageDesc );
@@ -363,13 +363,12 @@ SwRewriter SwUndoPageDesc::GetRewriter() const
     return aResult;
 }
 
-// #116530#
 SwUndoPageDescCreate::SwUndoPageDescCreate(const SwPageDesc * pNew,
                                            SwDoc * _pDoc)
     : SwUndo(UNDO_CREATE_PAGEDESC), pDesc(pNew), aNew(*pNew, _pDoc),
       pDoc(_pDoc)
 {
-    OSL_ENSURE(0 != pDoc, "no document?");
+    OSL_ENSURE(nullptr != pDoc, "no document?");
 }
 
 SwUndoPageDescCreate::~SwUndoPageDescCreate()
@@ -378,13 +377,11 @@ SwUndoPageDescCreate::~SwUndoPageDescCreate()
 
 void SwUndoPageDescCreate::UndoImpl(::sw::UndoRedoContext &)
 {
-    // -> #116530#
     if (pDesc)
     {
         aNew = *pDesc;
-        pDesc = NULL;
+        pDesc = nullptr;
     }
-    // <- #116530#
 
     pDoc->DelPageDesc(aNew.GetName(), true);
 }
@@ -392,7 +389,7 @@ void SwUndoPageDescCreate::UndoImpl(::sw::UndoRedoContext &)
 void SwUndoPageDescCreate::DoImpl()
 {
     SwPageDesc aPageDesc = aNew;
-    pDoc->MakePageDesc(aNew.GetName(), &aPageDesc, false, true); // #116530#
+    pDoc->MakePageDesc(aNew.GetName(), &aPageDesc, false, true);
 }
 
 void SwUndoPageDescCreate::RedoImpl(::sw::UndoRedoContext &)
@@ -422,7 +419,7 @@ SwUndoPageDescDelete::SwUndoPageDescDelete(const SwPageDesc & _aOld,
                                            SwDoc * _pDoc)
     : SwUndo(UNDO_DELETE_PAGEDESC), aOld(_aOld, _pDoc), pDoc(_pDoc)
 {
-    OSL_ENSURE(0 != pDoc, "no document?");
+    OSL_ENSURE(nullptr != pDoc, "no document?");
 }
 
 SwUndoPageDescDelete::~SwUndoPageDescDelete()
@@ -432,12 +429,12 @@ SwUndoPageDescDelete::~SwUndoPageDescDelete()
 void SwUndoPageDescDelete::UndoImpl(::sw::UndoRedoContext &)
 {
     SwPageDesc aPageDesc = aOld;
-    pDoc->MakePageDesc(aOld.GetName(), &aPageDesc, false, true); // #116530#
+    pDoc->MakePageDesc(aOld.GetName(), &aPageDesc, false, true);
 }
 
 void SwUndoPageDescDelete::DoImpl()
 {
-    pDoc->DelPageDesc(aOld.GetName(), true); // #116530#
+    pDoc->DelPageDesc(aOld.GetName(), true);
 }
 
 void SwUndoPageDescDelete::RedoImpl(::sw::UndoRedoContext &)

@@ -53,8 +53,8 @@ namespace vclcanvas
             {}
 
         private:
-            virtual OutputDevice&       getOutDev() SAL_OVERRIDE { return mrOutDev; }
-            virtual const OutputDevice& getOutDev() const SAL_OVERRIDE { return mrOutDev; }
+            virtual OutputDevice&       getOutDev() override { return mrOutDev; }
+            virtual const OutputDevice& getOutDev() const override { return mrOutDev; }
 
             // TODO(Q2): Lifetime issue. This _only_ works reliably,
             // if disposing the Canvas correctly disposes all
@@ -99,7 +99,7 @@ namespace vclcanvas
         if( !pOutDev )
             throw lang::NoSupportException(
                 OUString( "Passed OutDev invalid!" ),
-                NULL);
+                nullptr);
 
         OutDevProviderSharedPtr pOutdevProvider( new OutDevHolder(*pOutDev) );
 

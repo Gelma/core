@@ -57,7 +57,7 @@ using namespace xmloff::token;
 
 ScXMLExportDataPilot::ScXMLExportDataPilot(ScXMLExport& rTempExport)
     : rExport(rTempExport),
-    pDoc( NULL )
+    pDoc( nullptr )
 {
 }
 
@@ -433,7 +433,7 @@ void ScXMLExportDataPilot::WriteSubTotals(ScDPSaveDimension* pDim)
     using sheet::GeneralFunction;
 
     sal_Int32 nSubTotalCount = pDim->GetSubTotalsCount();
-    const OUString* pLayoutName = NULL;
+    const OUString* pLayoutName = nullptr;
     if (rExport.getDefaultVersion() > SvtSaveOptions::ODFVER_012)
         // Export display names only for 1.2 extended or later.
         pLayoutName = pDim->GetSubtotalName();
@@ -513,37 +513,37 @@ void ScXMLExportDataPilot::WriteDatePart(sal_Int32 nPart)
 {
     switch(nPart)
     {
-    case com::sun::star::sheet::DataPilotFieldGroupBy::SECONDS :
+    case css::sheet::DataPilotFieldGroupBy::SECONDS :
         {
             rExport.AddAttribute(XML_NAMESPACE_TABLE, XML_GROUPED_BY, XML_SECONDS);
         }
         break;
-    case com::sun::star::sheet::DataPilotFieldGroupBy::MINUTES :
+    case css::sheet::DataPilotFieldGroupBy::MINUTES :
         {
             rExport.AddAttribute(XML_NAMESPACE_TABLE, XML_GROUPED_BY, XML_MINUTES);
         }
         break;
-    case com::sun::star::sheet::DataPilotFieldGroupBy::HOURS :
+    case css::sheet::DataPilotFieldGroupBy::HOURS :
         {
             rExport.AddAttribute(XML_NAMESPACE_TABLE, XML_GROUPED_BY, XML_HOURS);
         }
         break;
-    case com::sun::star::sheet::DataPilotFieldGroupBy::DAYS :
+    case css::sheet::DataPilotFieldGroupBy::DAYS :
         {
             rExport.AddAttribute(XML_NAMESPACE_TABLE, XML_GROUPED_BY, XML_DAYS);
         }
         break;
-    case com::sun::star::sheet::DataPilotFieldGroupBy::MONTHS :
+    case css::sheet::DataPilotFieldGroupBy::MONTHS :
         {
             rExport.AddAttribute(XML_NAMESPACE_TABLE, XML_GROUPED_BY, XML_MONTHS);
         }
         break;
-    case com::sun::star::sheet::DataPilotFieldGroupBy::QUARTERS :
+    case css::sheet::DataPilotFieldGroupBy::QUARTERS :
         {
             rExport.AddAttribute(XML_NAMESPACE_TABLE, XML_GROUPED_BY, XML_QUARTERS);
         }
         break;
-    case com::sun::star::sheet::DataPilotFieldGroupBy::YEARS :
+    case css::sheet::DataPilotFieldGroupBy::YEARS :
         {
             rExport.AddAttribute(XML_NAMESPACE_TABLE, XML_GROUPED_BY, XML_YEARS);
         }
@@ -632,8 +632,8 @@ void ScXMLExportDataPilot::WriteNumGroupDim(const ScDPSaveNumGroupDimension* pNu
 
 void ScXMLExportDataPilot::WriteGroupDimElements(ScDPSaveDimension* pDim, const ScDPDimensionSaveData* pDimData)
 {
-    const ScDPSaveGroupDimension* pGroupDim = NULL;
-    const ScDPSaveNumGroupDimension* pNumGroupDim = NULL;
+    const ScDPSaveGroupDimension* pGroupDim = nullptr;
+    const ScDPSaveNumGroupDimension* pNumGroupDim = nullptr;
     if (pDimData)
     {
         pGroupDim = pDimData->GetNamedGroupDim(pDim->GetName());
@@ -720,10 +720,12 @@ void ScXMLExportDataPilot::WriteDimension(ScDPSaveDimension* pDim, const ScDPDim
 
 void ScXMLExportDataPilot::WriteDimensions(ScDPSaveData* pDPSave)
 {
-    const boost::ptr_vector<ScDPSaveDimension> &rDimensions = pDPSave->GetDimensions();
-    boost::ptr_vector<ScDPSaveDimension>::const_iterator iter;
-    for (iter = rDimensions.begin(); iter != rDimensions.end(); ++iter)
-        WriteDimension(const_cast<ScDPSaveDimension*>(&(*iter)), pDPSave->GetExistingDimensionData());
+    const ScDPSaveData::DimsType& rDimensions = pDPSave->GetDimensions();
+    for (auto const& iter : rDimensions)
+    {
+        WriteDimension(iter.get(),
+                pDPSave->GetExistingDimensionData());
+    }
 }
 
 void ScXMLExportDataPilot::WriteGrandTotal(::xmloff::token::XMLTokenEnum eOrient, bool bVisible, const OUString* pGrandTotal)

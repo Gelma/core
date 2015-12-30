@@ -42,11 +42,10 @@ private:
     ScDocument*                     pDoc;
     ScRange                         aBlock;
     SCROW                           nNonFiltered;       // non-filtered rows
-    TransferableDataHelper          aOleData;
     TransferableObjectDescriptor    aObjDesc;
     SfxObjectShellRef               aDocShellRef;
     SfxObjectShellRef               aDrawPersistRef;
-    com::sun::star::uno::Reference<com::sun::star::sheet::XSheetCellRanges> xDragSourceRanges;
+    css::uno::Reference<css::sheet::XSheetCellRanges> xDragSourceRanges;
     SCCOL                           nDragHandleX;
     SCROW                           nDragHandleY;
     SCTAB                           nVisibleTab;
@@ -61,7 +60,7 @@ private:
     void        InitDocShell(bool bLimitToPageSize);
     static void StripRefs( ScDocument* pDoc, SCCOL nStartX, SCROW nStartY,
                             SCCOL nEndX, SCROW nEndY,
-                            ScDocument* pDestDoc=0,
+                            ScDocument* pDestDoc=nullptr,
                             SCCOL nSubX=0, SCROW nSubY=0 );
     static void PaintToDev( OutputDevice* pDev, ScDocument* pDoc, double nPrintFactor,
                             const ScRange& rBlock, bool bMetaFile );
@@ -71,12 +70,12 @@ public:
             ScTransferObj( ScDocument* pClipDoc, const TransferableObjectDescriptor& rDesc );
     virtual ~ScTransferObj();
 
-    virtual void        AddSupportedFormats() SAL_OVERRIDE;
-    virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) SAL_OVERRIDE;
+    virtual void        AddSupportedFormats() override;
+    virtual bool GetData( const css::datatransfer::DataFlavor& rFlavor, const OUString& rDestDoc ) override;
     virtual bool        WriteObject( tools::SvRef<SotStorageStream>& rxOStm, void* pUserObject, SotClipboardFormatId nUserObjectId,
-                                        const ::com::sun::star::datatransfer::DataFlavor& rFlavor ) SAL_OVERRIDE;
-    virtual void        ObjectReleased() SAL_OVERRIDE;
-    virtual void        DragFinished( sal_Int8 nDropAction ) SAL_OVERRIDE;
+                                        const css::datatransfer::DataFlavor& rFlavor ) override;
+    virtual void        ObjectReleased() override;
+    virtual void        DragFinished( sal_Int8 nDropAction ) override;
 
     ScDocument*         GetDocument()           { return pDoc; }        // owned by ScTransferObj
     const ScRange&      GetRange() const        { return aBlock; }
@@ -101,8 +100,8 @@ public:
 
     static SC_DLLPUBLIC ScTransferObj* GetOwnClipboard( vcl::Window* pUIWin );
 
-    static SfxObjectShell*  SetDrawClipDoc( bool bAnyOle );     // update ScGlobal::pDrawClipDocShellRef
-    virtual sal_Int64 SAL_CALL getSomething( const com::sun::star::uno::Sequence< sal_Int8 >& rId ) throw( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    static SfxObjectShell*  SetDrawClipDoc( bool bAnyOle );     // update ScGlobal::xDrawClipDocShellRef
+    virtual sal_Int64 SAL_CALL getSomething( const com::sun::star::uno::Sequence< sal_Int8 >& rId ) throw( com::sun::star::uno::RuntimeException, std::exception ) override;
     static const com::sun::star::uno::Sequence< sal_Int8 >& getUnoTunnelId();
 };
 

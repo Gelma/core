@@ -50,16 +50,16 @@ namespace drawinglayer
             /// constructor
             TransformPrimitive3D(
                 const basegfx::B3DHomMatrix& rTransformation,
-                const Primitive3DSequence& rChildren);
+                const Primitive3DContainer& rChildren);
 
             /// data read access
             const basegfx::B3DHomMatrix& getTransformation() const { return maTransformation; }
 
             /// compare operator
-            virtual bool operator==(const BasePrimitive3D& rPrimitive) const SAL_OVERRIDE;
+            virtual bool operator==(const BasePrimitive3D& rPrimitive) const override;
 
             /// get range
-            virtual basegfx::B3DRange getB3DRange(const geometry::ViewInformation3D& rViewInformation) const SAL_OVERRIDE;
+            virtual basegfx::B3DRange getB3DRange(const geometry::ViewInformation3D& rViewInformation) const override;
 
             /// provide unique ID
             DeclPrimitive3DIDBlock()

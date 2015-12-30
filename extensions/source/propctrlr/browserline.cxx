@@ -54,10 +54,10 @@ namespace pcr
     OBrowserLine::OBrowserLine( const OUString& _rEntryName, vcl::Window* pParent )
             :m_sEntryName( _rEntryName )
             ,m_aFtTitle(VclPtr<FixedText>::Create(pParent))
-            ,m_pControlWindow( NULL )
-            ,m_pBrowseButton(NULL)
-            ,m_pAdditionalBrowseButton( NULL )
-            ,m_pClickListener( NULL )
+            ,m_pControlWindow( nullptr )
+            ,m_pBrowseButton(nullptr)
+            ,m_pAdditionalBrowseButton( nullptr )
+            ,m_pClickListener( nullptr )
             ,m_pTheParent(pParent)
             ,m_nNameWidth(0)
             ,m_nEnableFlags( 0xFFFF )
@@ -252,7 +252,6 @@ namespace pcr
     {
         if ( GetTitle() == _rNewTtile )
             return;
-        // #99102# --------------
         m_aFtTitle->SetText( _rNewTtile );
         if ( m_pControlWindow )
             m_pControlWindow->SetAccessibleName( _rNewTtile );
@@ -261,7 +260,6 @@ namespace pcr
         FullFillTitleString();
     }
 
-    // #99102# ---------------------------------------------------------
     void OBrowserLine::FullFillTitleString()
     {
         if( m_pTheParent )
@@ -381,7 +379,7 @@ namespace pcr
             rpButton = VclPtr<PushButton>::Create( m_pTheParent, WB_NOPOINTERFOCUS );
             rpButton->SetGetFocusHdl( LINK( this, OBrowserLine, OnButtonFocus ) );
             rpButton->SetClickHdl( LINK( this, OBrowserLine, OnButtonClicked ) );
-            rpButton->SetText(OUString("..."));
+            rpButton->SetText("...");
         }
 
         rpButton->Show();
@@ -467,7 +465,6 @@ namespace pcr
             m_nNameWidth = nWidth+10;
             impl_layoutComponents();
         }
-        // #99102# ---------
         FullFillTitleString();
     }
 

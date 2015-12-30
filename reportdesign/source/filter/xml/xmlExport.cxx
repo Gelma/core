@@ -82,8 +82,7 @@ namespace rptxml
 
     Sequence< OUString > ORptExportHelper::getSupportedServiceNames_Static(  ) throw(RuntimeException)
     {
-        Sequence< OUString > aSupported(1);
-        aSupported[0] = "com.sun.star.document.ExportFilter";
+        Sequence< OUString > aSupported { "com.sun.star.document.ExportFilter" };
         return aSupported;
     }
 
@@ -99,8 +98,7 @@ namespace rptxml
 
     Sequence< OUString > ORptContentExportHelper::getSupportedServiceNames_Static(  ) throw(RuntimeException)
     {
-        Sequence< OUString > aSupported(1);
-        aSupported[0] = "com.sun.star.document.ExportFilter";
+        Sequence< OUString > aSupported { "com.sun.star.document.ExportFilter" };
         return aSupported;
     }
 
@@ -118,8 +116,7 @@ namespace rptxml
 
     Sequence< OUString > ORptStylesExportHelper::getSupportedServiceNames_Static(  ) throw(RuntimeException)
     {
-        Sequence< OUString > aSupported(1);
-        aSupported[0] = "com.sun.star.document.ExportFilter";
+        Sequence< OUString > aSupported { "com.sun.star.document.ExportFilter" };
         return aSupported;
     }
 
@@ -136,8 +133,7 @@ namespace rptxml
 
     Sequence< OUString > ORptMetaExportHelper::getSupportedServiceNames_Static(  ) throw(RuntimeException)
     {
-        Sequence< OUString > aSupported(1);
-        aSupported[0] = "com.sun.star.document.ExportFilter";
+        Sequence< OUString > aSupported { "com.sun.star.document.ExportFilter" };
         return aSupported;
     }
 
@@ -154,8 +150,7 @@ namespace rptxml
 
     Sequence< OUString > ODBFullExportHelper::getSupportedServiceNames_Static(  ) throw(RuntimeException)
     {
-        Sequence< OUString > aSupported(1);
-        aSupported[0] = "com.sun.star.document.ExportFilter";
+        Sequence< OUString > aSupported { "com.sun.star.document.ExportFilter" };
         return aSupported;
     }
 
@@ -174,8 +169,8 @@ namespace rptxml
                 const XMLPropertyState& /*rProperty*/,
                 const SvXMLUnitConverter& /*rUnitConverter*/,
                 const SvXMLNamespaceMap& /*rNamespaceMap*/,
-                const ::std::vector< XMLPropertyState >* /*pProperties*/ = 0,
-                sal_uInt32 /*nIdx*/ = 0 ) const SAL_OVERRIDE
+                const ::std::vector< XMLPropertyState >* /*pProperties*/ = nullptr,
+                sal_uInt32 /*nIdx*/ = 0 ) const override
         {
             // nothing to do here
         }
@@ -316,8 +311,7 @@ OUString ORptExport::getImplementationName_Static(  ) throw(uno::RuntimeExceptio
 
 uno::Sequence< OUString > ORptExport::getSupportedServiceNames_Static(  ) throw(uno::RuntimeException)
 {
-    uno::Sequence< OUString > aServices(1);
-    aServices.getArray()[0] = "com.sun.star.document.ExportFilter";
+    uno::Sequence< OUString > aServices { "com.sun.star.document.ExportFilter" };
 
     return aServices;
 }
@@ -512,7 +506,7 @@ void ORptExport::collectStyleNames(sal_Int32 _nFamily,const ::std::vector< sal_I
 
 void ORptExport::exportSectionAutoStyle(const Reference<XSection>& _xProp)
 {
-    OSL_ENSURE(_xProp != NULL,"Section is NULL -> GPF");
+    OSL_ENSURE(_xProp != nullptr,"Section is NULL -> GPF");
     exportAutoStyle(_xProp);
 
     Reference<XReportDefinition> xReport = _xProp->getReportDefinition();
@@ -1436,12 +1430,12 @@ void ORptExport::exportParagraph(const Reference< XReportControlModel >& _xRepor
                         static const char s_sCurrent[] = "current";
                         AddAttribute(XML_NAMESPACE_TEXT, XML_SELECT_PAGE, s_sCurrent );
                         SvXMLElementExport aPageNumber(*this,XML_NAMESPACE_TEXT, XML_PAGE_NUMBER, false, false);
-                        Characters(OUString("1"));
+                        Characters("1");
                     }
                     else if ( sToken == s_sPageCount )
                     {
                         SvXMLElementExport aPageNumber(*this,XML_NAMESPACE_TEXT, XML_PAGE_COUNT, false, false);
-                        Characters(OUString("1"));
+                        Characters("1");
                     }
                     else
                     {

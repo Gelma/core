@@ -324,12 +324,12 @@ bool ModulWindow::BasicExecute()
             TextSelection aSel = GetEditView()->GetSelection();
             // Init cursor to top
             const sal_uInt32 nCurMethodStart = aSel.GetStart().GetPara() + 1;
-            SbMethod* pMethod = 0;
+            SbMethod* pMethod = nullptr;
             // first Macro, else blind "Main" (ExtSearch?)
             for ( sal_uInt16 nMacro = 0; nMacro < xModule->GetMethods()->Count(); nMacro++ )
             {
                 SbMethod* pM = static_cast<SbMethod*>(xModule->GetMethods()->Get( nMacro ));
-                DBG_ASSERT( pM, "Method?" );
+                assert(pM && "Method?");
                 pM->GetLineRange( nStart, nEnd );
                 if (  nCurMethodStart >= nStart && nCurMethodStart <= nEnd )
                 {
@@ -414,12 +414,12 @@ bool ModulWindow::LoadBasic()
         xFP->setDisplayDirectory ( aCurPath );
 
     xFP->appendFilter( "BASIC" , "*.bas" );
-    xFP->appendFilter( IDE_RESSTR(RID_STR_FILTER_ALLFILES), OUString( FilterMask_All ) );
+    xFP->appendFilter( IDE_RESSTR(RID_STR_FILTER_ALLFILES), FilterMask_All );
     xFP->setCurrentFilter( "BASIC" );
 
     if( xFP->execute() == RET_OK )
     {
-        Sequence< OUString > aPaths = xFP->getFiles();
+        Sequence< OUString > aPaths = xFP->getSelectedFiles();
         aCurPath = aPaths[0];
         SfxMedium aMedium( aCurPath, StreamMode::READ | StreamMode::SHARE_DENYWRITE | StreamMode::NOCREATE );
         SvStream* pStream = aMedium.GetInStream();
@@ -465,12 +465,12 @@ bool ModulWindow::SaveBasicSource()
         xFP->setDisplayDirectory ( aCurPath );
 
     xFP->appendFilter( "BASIC", "*.bas" );
-    xFP->appendFilter( IDE_RESSTR(RID_STR_FILTER_ALLFILES), OUString( FilterMask_All ) );
+    xFP->appendFilter( IDE_RESSTR(RID_STR_FILTER_ALLFILES), FilterMask_All );
     xFP->setCurrentFilter( "BASIC" );
 
     if( xFP->execute() == RET_OK )
     {
-        Sequence< OUString > aPaths = xFP->getFiles();
+        Sequence< OUString > aPaths = xFP->getSelectedFiles();
         aCurPath = aPaths[0];
         SfxMedium aMedium( aCurPath, StreamMode::WRITE | StreamMode::SHARE_DENYWRITE | StreamMode::TRUNC );
         SvStream* pStream = aMedium.GetOutStream();
@@ -532,7 +532,7 @@ bool ModulWindow::ToggleBreakPoint( sal_uLong nLine )
                     for ( sal_uInt16 nMethod = 0; nMethod < xModule->GetMethods()->Count(); nMethod++ )
                     {
                         SbMethod* pMethod = static_cast<SbMethod*>(xModule->GetMethods()->Get( nMethod ));
-                        DBG_ASSERT( pMethod, "Methode nicht gefunden! (NULL)" );
+                        assert(pMethod && "Methode nicht gefunden! (NULL)");
                         pMethod->SetDebugFlags( pMethod->GetDebugFlags() | SbDEBUG_BREAK );
                     }
                 }
@@ -1010,7 +1010,7 @@ void ModulWindow::ExecuteCommand (SfxRequest& rReq)
         break;
         case SID_SHOWLINES:
         {
-            SFX_REQUEST_ARG(rReq, pItem, SfxBoolItem, rReq.GetSlot(), false);
+            const SfxBoolItem* pItem = rReq.GetArg<SfxBoolItem>(rReq.GetSlot());
             bSourceLinesEnabled = pItem && pItem->GetValue();
             aXEditorWindow->SetLineNumberDisplay(bSourceLinesEnabled);
         }
@@ -1276,7 +1276,7 @@ svl::IUndoManager* ModulWindow::GetUndoManager()
 {
     if ( GetEditEngine() )
         return &GetEditEngine()->GetUndoManager();
-    return NULL;
+    return nullptr;
 }
 
 SearchOptionFlags ModulWindow::GetSearchOptions()
@@ -1311,7 +1311,7 @@ void ModulWindow::BasicStarted()
             for ( sal_uInt16 nMethod = 0; nMethod < xModule->GetMethods()->Count(); nMethod++ )
             {
                 SbMethod* pMethod = static_cast<SbMethod*>(xModule->GetMethods()->Get( nMethod ));
-                DBG_ASSERT( pMethod, "Methode nicht gefunden! (NULL)" );
+                assert(pMethod && "Methode nicht gefunden! (NULL)");
                 pMethod->SetDebugFlags( pMethod->GetDebugFlags() | SbDEBUG_BREAK );
             }
         }
@@ -1441,7 +1441,7 @@ void ModulWindow::UpdateModule ()
 
 ModulWindowLayout::ModulWindowLayout (vcl::Window* pParent, ObjectCatalog& rObjectCatalog_) :
     Layout(pParent),
-    pChild(0),
+    pChild(nullptr),
     aWatchWindow(VclPtr<WatchWindow>::Create(this)),
     aStackWindow(VclPtr<StackWindow>::Create(this)),
     rObjectCatalog(rObjectCatalog_)
@@ -1494,12 +1494,12 @@ void ModulWindowLayout::Activating (BaseWindow& rChild)
 
 void ModulWindowLayout::Deactivating ()
 {
-    aSyntaxColors.SetActiveEditor(0);
+    aSyntaxColors.SetActiveEditor(nullptr);
     Layout::Deactivating();
     aWatchWindow->Hide();
     aStackWindow->Hide();
     rObjectCatalog.Hide();
-    pChild = 0;
+    pChild = nullptr;
 }
 
 void ModulWindowLayout::GetState (SfxItemSet &rSet, unsigned nWhich)
@@ -1534,7 +1534,7 @@ void ModulWindowLayout::OnFirstSize (long const nWidth, long const nHeight)
 }
 
 ModulWindowLayout::SyntaxColors::SyntaxColors () :
-    pEditor(0)
+    pEditor(nullptr)
 {
     aConfig.AddListener(this);
 

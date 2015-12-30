@@ -59,10 +59,10 @@ void SwChartHelper::DoUpdateAllCharts( SwDoc* pDoc )
     SwOLENode *pONd;
     SwStartNode *pStNd;
     SwNodeIndex aIdx( *pDoc->GetNodes().GetEndOfAutotext().StartOfSectionNode(), 1 );
-    while( 0 != (pStNd = aIdx.GetNode().GetStartNode()) )
+    while( nullptr != (pStNd = aIdx.GetNode().GetStartNode()) )
     {
         ++aIdx;
-        if (0 != ( pONd = aIdx.GetNode().GetOLENode() ) &&
+        if (nullptr != ( pONd = aIdx.GetNode().GetOLENode() ) &&
             pONd->GetOLEObj().GetObject().IsChart() )
         {
             // Load the object and set modified
@@ -110,7 +110,7 @@ void SwChartLockController_Helper::Disconnect()
 {
     aUnlockTimer.Stop();
     UnlockAllCharts();
-    pDoc = 0;
+    pDoc = nullptr;
 }
 
 void SwChartLockController_Helper::LockUnlockAllCharts( bool bLock )
@@ -125,24 +125,24 @@ void SwChartLockController_Helper::LockUnlockAllCharts( bool bLock )
         const SwTableNode* pTableNd;
         const SwFrameFormat* pFormat = rTableFormats[ n ];
 
-        if( 0 != ( pTmpTable = SwTable::FindTable( pFormat ) ) &&
-            0 != ( pTableNd = pTmpTable->GetTableNode() ) &&
+        if( nullptr != ( pTmpTable = SwTable::FindTable( pFormat ) ) &&
+            nullptr != ( pTableNd = pTmpTable->GetTableNode() ) &&
             pTableNd->GetNodes().IsDocNodes() )
         {
             uno::Reference< frame::XModel > xRes;
             SwOLENode *pONd;
             SwStartNode *pStNd;
             SwNodeIndex aIdx( *pDoc->GetNodes().GetEndOfAutotext().StartOfSectionNode(), 1 );
-            while( 0 != (pStNd = aIdx.GetNode().GetStartNode()) )
+            while( nullptr != (pStNd = aIdx.GetNode().GetStartNode()) )
             {
                 ++aIdx;
-                if (0 != ( pONd = aIdx.GetNode().GetOLENode() ) &&
+                if (nullptr != ( pONd = aIdx.GetNode().GetOLENode() ) &&
                     !pONd->GetChartTableName().isEmpty() /* is chart object? */)
                 {
                     uno::Reference < embed::XEmbeddedObject > xIP = pONd->GetOLEObj().GetOleRef();
                     if ( svt::EmbeddedObjectRef::TryRunningState( xIP ) )
                     {
-                        xRes = uno::Reference < frame::XModel >( xIP->getComponent(), uno::UNO_QUERY );
+                        xRes.set( xIP->getComponent(), uno::UNO_QUERY );
                         if (xRes.is())
                         {
                             if (bLock)
@@ -215,38 +215,38 @@ bool FillRangeDescriptor(
     return true;
 }
 
-static OUString GetCellRangeName( SwFrameFormat &rTableFormat, SwUnoCrsr &rTableCrsr )
+static OUString GetCellRangeName( SwFrameFormat &rTableFormat, SwUnoCursor &rTableCursor )
 {
     OUString aRes;
 
     //!! see also SwXTextTableCursor::getRangeName
 
-    SwUnoTableCrsr* pUnoTableCrsr = dynamic_cast<SwUnoTableCrsr*>(&rTableCrsr);
-    if (!pUnoTableCrsr)
+    SwUnoTableCursor* pUnoTableCursor = dynamic_cast<SwUnoTableCursor*>(&rTableCursor);
+    if (!pUnoTableCursor)
         return OUString();
-    pUnoTableCrsr->MakeBoxSels();
+    pUnoTableCursor->MakeBoxSels();
 
     const SwStartNode*  pStart;
-    const SwTableBox*   pStartBox   = 0;
-    const SwTableBox*   pEndBox     = 0;
+    const SwTableBox*   pStartBox   = nullptr;
+    const SwTableBox*   pEndBox     = nullptr;
 
-    pStart = pUnoTableCrsr->GetPoint()->nNode.GetNode().FindTableBoxStartNode();
+    pStart = pUnoTableCursor->GetPoint()->nNode.GetNode().FindTableBoxStartNode();
     if (pStart)
     {
         const SwTable* pTable = SwTable::FindTable( &rTableFormat );
         pEndBox = pTable->GetTableBox( pStart->GetIndex());
         aRes = pEndBox->GetName();
 
-        if(pUnoTableCrsr->HasMark())
+        if(pUnoTableCursor->HasMark())
         {
-            pStart = pUnoTableCrsr->GetMark()->nNode.GetNode().FindTableBoxStartNode();
+            pStart = pUnoTableCursor->GetMark()->nNode.GetNode().FindTableBoxStartNode();
             pStartBox = pTable->GetTableBox( pStart->GetIndex());
         }
         OSL_ENSURE( pStartBox, "start box not found" );
         OSL_ENSURE( pEndBox, "end box not found" );
 
         // need to switch start and end?
-        if (*pUnoTableCrsr->GetPoint() < *pUnoTableCrsr->GetMark())
+        if (*pUnoTableCursor->GetPoint() < *pUnoTableCursor->GetMark())
         {
             const SwTableBox* pTmpBox = pStartBox;
             pStartBox = pEndBox;
@@ -344,7 +344,7 @@ static bool GetTableAndCellsFromRangeRep(
 static void GetTableByName( const SwDoc &rDoc, const OUString &rTableName,
         SwFrameFormat **ppTableFormat, SwTable **ppTable)
 {
-    SwFrameFormat *pTableFormat = NULL;
+    SwFrameFormat *pTableFormat = nullptr;
 
     // find frame format of table
     //! see SwXTextTables::getByName
@@ -360,14 +360,14 @@ static void GetTableByName( const SwDoc &rDoc, const OUString &rTableName,
         *ppTableFormat = pTableFormat;
 
     if (ppTable)
-        *ppTable = pTableFormat ? SwTable::FindTable( pTableFormat ) : 0;
+        *ppTable = pTableFormat ? SwTable::FindTable( pTableFormat ) : nullptr;
 }
 
 static void GetFormatAndCreateCursorFromRangeRep(
         const SwDoc    *pDoc,
         const OUString &rRangeRepresentation,   // must be a single range (i.e. so called sub-range)
-        SwFrameFormat    **ppTblFmt,     // will be set to the table format of the table used in the range representation
-        std::shared_ptr<SwUnoCrsr>&   rpUnoCrsr )   // will be set to cursor spanning the cell range (cursor will be created!)
+        SwFrameFormat    **ppTableFormat,     // will be set to the table format of the table used in the range representation
+        std::shared_ptr<SwUnoCursor>&   rpUnoCursor )   // will be set to cursor spanning the cell range (cursor will be created!)
 {
     OUString aTableName;    // table name
     OUString aStartCell;  // name of top left cell
@@ -377,55 +377,55 @@ static void GetFormatAndCreateCursorFromRangeRep(
 
     if (!bNamesFound)
     {
-        if (ppTblFmt)
-            *ppTblFmt   = NULL;
-        rpUnoCrsr.reset();
+        if (ppTableFormat)
+            *ppTableFormat   = nullptr;
+        rpUnoCursor.reset();
     }
     else
     {
-        SwFrameFormat *pTableFormat = NULL;
+        SwFrameFormat *pTableFormat = nullptr;
 
         // is the correct table format already provided?
-        if (*ppTblFmt != NULL  &&  (*ppTblFmt)->GetName() == aTableName)
-            pTableFormat = *ppTblFmt;
+        if (*ppTableFormat != nullptr  &&  (*ppTableFormat)->GetName() == aTableName)
+            pTableFormat = *ppTableFormat;
         else
-            GetTableByName( *pDoc, aTableName, &pTableFormat, NULL );
+            GetTableByName( *pDoc, aTableName, &pTableFormat, nullptr );
 
-        *ppTblFmt = pTableFormat;
+        *ppTableFormat = pTableFormat;
 
-        rpUnoCrsr.reset();  // default result in case of failure
+        rpUnoCursor.reset();  // default result in case of failure
 
-        SwTable *pTable = pTableFormat ? SwTable::FindTable( pTableFormat ) : 0;
-        // create new SwUnoCrsr spanning the specified range
+        SwTable *pTable = pTableFormat ? SwTable::FindTable( pTableFormat ) : nullptr;
+        // create new SwUnoCursor spanning the specified range
         //! see also SwXTextTable::GetRangeByName
         // #i80314#
         // perform validation check. Thus, pass <true> as 2nd parameter to <SwTable::GetTableBox(..)>
         const SwTableBox* pTLBox =
-                        pTable ? pTable->GetTableBox( aStartCell, true ) : 0;
+                        pTable ? pTable->GetTableBox( aStartCell, true ) : nullptr;
         if(pTLBox)
         {
             const SwStartNode* pSttNd = pTLBox->GetSttNd();
             SwPosition aPos(*pSttNd);
 
             // set cursor to top left box of range
-            auto pUnoCrsr = pTableFormat->GetDoc()->CreateUnoCrsr(aPos, true);
-            pUnoCrsr->Move( fnMoveForward, fnGoNode );
-            pUnoCrsr->SetRemainInSection( false );
+            auto pUnoCursor = pTableFormat->GetDoc()->CreateUnoCursor(aPos, true);
+            pUnoCursor->Move( fnMoveForward, fnGoNode );
+            pUnoCursor->SetRemainInSection( false );
 
             // #i80314#
             // perform validation check. Thus, pass <true> as 2nd parameter to <SwTable::GetTableBox(..)>
             const SwTableBox* pBRBox = pTable->GetTableBox( aEndCell, true );
             if(pBRBox)
             {
-                pUnoCrsr->SetMark();
-                pUnoCrsr->GetPoint()->nNode = *pBRBox->GetSttNd();
-                pUnoCrsr->Move( fnMoveForward, fnGoNode );
-                SwUnoTableCrsr* pCrsr =
-                    dynamic_cast<SwUnoTableCrsr*>(pUnoCrsr.get());
+                pUnoCursor->SetMark();
+                pUnoCursor->GetPoint()->nNode = *pBRBox->GetSttNd();
+                pUnoCursor->Move( fnMoveForward, fnGoNode );
+                SwUnoTableCursor* pCursor =
+                    dynamic_cast<SwUnoTableCursor*>(pUnoCursor.get());
                 // HACK: remove pending actions for old style tables
-                UnoActionRemoveContext aRemoveContext(*pCrsr);
-                pCrsr->MakeBoxSels();
-                rpUnoCrsr = pUnoCrsr;
+                UnoActionRemoveContext aRemoveContext(*pCursor);
+                pCursor->MakeBoxSels();
+                rpUnoCursor = pUnoCursor;
             }
         }
     }
@@ -670,12 +670,12 @@ uno::Reference< chart2::data::XDataSource > SwChartDataProvider::Impl_createData
 #endif
 
     // get table format for that single table from above
-    SwFrameFormat    *pTableFormat  = 0;      // pointer to table format
-    std::shared_ptr<SwUnoCrsr> pUnoCrsr;      // here required to check if the cells in the range do actually exist
+    SwFrameFormat    *pTableFormat  = nullptr;      // pointer to table format
+    std::shared_ptr<SwUnoCursor> pUnoCursor;      // here required to check if the cells in the range do actually exist
     if (aSubRanges.getLength() > 0)
-        GetFormatAndCreateCursorFromRangeRep( pDoc, pSubRanges[0], &pTableFormat, pUnoCrsr );
+        GetFormatAndCreateCursorFromRangeRep( pDoc, pSubRanges[0], &pTableFormat, pUnoCursor );
 
-    if (!pTableFormat || !pUnoCrsr)
+    if (!pTableFormat || !pUnoCursor)
         throw lang::IllegalArgumentException();
 
     if(pTableFormat)
@@ -885,18 +885,18 @@ uno::Reference< chart2::data::XDataSource > SwChartDataProvider::Impl_createData
                 }
 
                 // get cursors spanning the cell ranges for label and data
-                std::shared_ptr<SwUnoCrsr> pLabelUnoCrsr;
-                std::shared_ptr<SwUnoCrsr> pDataUnoCrsr;
-                GetFormatAndCreateCursorFromRangeRep( pDoc, aLabelRange, &pTableFormat, pLabelUnoCrsr);
-                GetFormatAndCreateCursorFromRangeRep( pDoc, aDataRange,  &pTableFormat, pDataUnoCrsr);
+                std::shared_ptr<SwUnoCursor> pLabelUnoCursor;
+                std::shared_ptr<SwUnoCursor> pDataUnoCursor;
+                GetFormatAndCreateCursorFromRangeRep( pDoc, aLabelRange, &pTableFormat, pLabelUnoCursor);
+                GetFormatAndCreateCursorFromRangeRep( pDoc, aDataRange,  &pTableFormat, pDataUnoCursor);
 
                 // create XDataSequence's from cursors
-                if (pLabelUnoCrsr)
-                    pLabelSeqs[ nSeqsIdx ] = new SwChartDataSequence( *this, *pTableFormat, pLabelUnoCrsr );
-                OSL_ENSURE( pDataUnoCrsr, "pointer to data sequence missing" );
-                if (pDataUnoCrsr)
-                    pDataSeqs [ nSeqsIdx ] = new SwChartDataSequence( *this, *pTableFormat, pDataUnoCrsr );
-                if (pLabelUnoCrsr || pDataUnoCrsr)
+                if (pLabelUnoCursor)
+                    pLabelSeqs[ nSeqsIdx ] = new SwChartDataSequence( *this, *pTableFormat, pLabelUnoCursor );
+                OSL_ENSURE( pDataUnoCursor, "pointer to data sequence missing" );
+                if (pDataUnoCursor)
+                    pDataSeqs [ nSeqsIdx ] = new SwChartDataSequence( *this, *pTableFormat, pDataUnoCursor );
+                if (pLabelUnoCursor || pDataUnoCursor)
                     ++nSeqsIdx;
             }
             OSL_ENSURE( nSeqsIdx == nNumLDS, "mismatch between sequence size and num,ber of entries" );
@@ -1039,8 +1039,8 @@ uno::Sequence< beans::PropertyValue > SAL_CALL SwChartDataProvider::detectArgume
         return aResult;
     }
 
-    SwFrameFormat *pTableFormat = 0;
-    SwTable  *pTable    = 0;
+    SwFrameFormat *pTableFormat = nullptr;
+    SwTable  *pTable    = nullptr;
     OUString  aTableName;
     sal_Int32 nTableRows = 0;
     sal_Int32 nTableCols = 0;
@@ -1366,24 +1366,24 @@ uno::Reference< chart2::data::XDataSequence > SwChartDataProvider::Impl_createDa
     if (bDisposed)
         throw lang::DisposedException();
 
-    SwFrameFormat    *pTableFormat    = 0;    // pointer to table format
-    std::shared_ptr<SwUnoCrsr> pUnoCrsr;    // pointer to new created cursor spanning the cell range
+    SwFrameFormat    *pTableFormat    = nullptr;    // pointer to table format
+    std::shared_ptr<SwUnoCursor> pUnoCursor;    // pointer to new created cursor spanning the cell range
     GetFormatAndCreateCursorFromRangeRep( pDoc, rRangeRepresentation,
-                                          &pTableFormat, pUnoCrsr );
-    if (!pTableFormat || !pUnoCrsr)
+                                          &pTableFormat, pUnoCursor );
+    if (!pTableFormat || !pUnoCursor)
         throw lang::IllegalArgumentException();
 
     // check that cursors point and mark are in a single row or column.
-    OUString aCellRange( GetCellRangeName( *pTableFormat, *pUnoCrsr ) );
+    OUString aCellRange( GetCellRangeName( *pTableFormat, *pUnoCursor ) );
     SwRangeDescriptor aDesc;
     FillRangeDescriptor( aDesc, aCellRange );
     if (aDesc.nTop != aDesc.nBottom  &&  aDesc.nLeft != aDesc.nRight)
         throw lang::IllegalArgumentException();
 
-    OSL_ENSURE( pTableFormat && pUnoCrsr, "table format or cursor missing" );
+    OSL_ENSURE( pTableFormat && pUnoCursor, "table format or cursor missing" );
     uno::Reference< chart2::data::XDataSequence > xDataSeq;
     if (!bTestOnly)
-        xDataSeq = new SwChartDataSequence( *this, *pTableFormat, pUnoCrsr );
+        xDataSeq = new SwChartDataSequence( *this, *pTableFormat, pUnoCursor );
 
     return xDataSeq;
 }
@@ -1551,7 +1551,7 @@ bool SwChartDataProvider::DeleteBox( const SwTable *pTable, const SwTableBox &rB
         Set_DataSequenceRef_t::iterator aDelIt;     // iterator used for deletion when appropriate
         while (aIt != aEndIt)
         {
-            SwChartDataSequence *pDataSeq = 0;
+            SwChartDataSequence *pDataSeq = nullptr;
             bool bNowEmpty = false;
             bool bSeqDisposed = false;
 
@@ -1739,14 +1739,14 @@ OUString SAL_CALL SwChartDataProvider::convertRangeToXML( const OUString& rRange
     // multiple ranges are delimited by a ';' like in
     // "Table1.A1:A4;Table1.C2:C5" the same table must be used in all ranges!
     sal_Int32 nNumRanges = comphelper::string::getTokenCount(rRangeRepresentation, ';');
-    SwTable* pFirstFoundTable = 0;  // to check that only one table will be used
+    SwTable* pFirstFoundTable = nullptr;  // to check that only one table will be used
     sal_Int32 nPos = 0;
     for (sal_Int32 i = 0;  i < nNumRanges;  ++i)
     {
         const OUString aRange( rRangeRepresentation.getToken(0, ';', nPos) );
-        SwFrameFormat    *pTableFormat  = 0; // pointer to table format
-        std::shared_ptr<SwUnoCrsr> pCrsr;
-        GetFormatAndCreateCursorFromRangeRep( pDoc, aRange, &pTableFormat, pCrsr );
+        SwFrameFormat    *pTableFormat  = nullptr; // pointer to table format
+        std::shared_ptr<SwUnoCursor> pCursor;
+        GetFormatAndCreateCursorFromRangeRep( pDoc, aRange, &pTableFormat, pCursor );
         if (!pTableFormat)
             throw lang::IllegalArgumentException();
         SwTable* pTable = SwTable::FindTable( pTableFormat );
@@ -1863,7 +1863,6 @@ uno::Sequence< uno::Reference< chart2::data::XLabeledDataSequence > > SAL_CALL S
 OUString SAL_CALL SwChartDataSource::getImplementationName(  )
     throw (uno::RuntimeException, std::exception)
 {
-    SolarMutexGuard aGuard;
     return OUString("SwChartDataSource");
 }
 
@@ -1882,18 +1881,18 @@ uno::Sequence< OUString > SAL_CALL SwChartDataSource::getSupportedServiceNames( 
 SwChartDataSequence::SwChartDataSequence(
         SwChartDataProvider &rProvider,
         SwFrameFormat   &rTableFormat,
-        std::shared_ptr<SwUnoCrsr> pTableCursor ) :
+        std::shared_ptr<SwUnoCursor> pTableCursor ) :
     SwClient( &rTableFormat ),
-    aEvtListeners( GetChartMutex() ),
-    aModifyListeners( GetChartMutex() ),
-    aRowLabelText( SW_RES( STR_CHART2_ROW_LABEL_TEXT ) ),
-    aColLabelText( SW_RES( STR_CHART2_COL_LABEL_TEXT ) ),
-    xDataProvider( &rProvider ),
-    pDataProvider( &rProvider ),
-    pTableCrsr( pTableCursor ),
-    _pPropSet( aSwMapProvider.GetPropertySet( PROPERTY_MAP_CHART2_DATA_SEQUENCE ) )
+    m_aEvtListeners( GetChartMutex() ),
+    m_aModifyListeners( GetChartMutex() ),
+    m_aRowLabelText( SW_RES( STR_CHART2_ROW_LABEL_TEXT ) ),
+    m_aColLabelText( SW_RES( STR_CHART2_COL_LABEL_TEXT ) ),
+    m_xDataProvider( &rProvider ),
+    m_pDataProvider( &rProvider ),
+    m_pTableCursor( pTableCursor ),
+    m_pPropSet( aSwMapProvider.GetPropertySet( PROPERTY_MAP_CHART2_DATA_SEQUENCE ) )
 {
-    bDisposed = false;
+    m_bDisposed = false;
 
     acquire();
     try
@@ -1902,8 +1901,8 @@ SwChartDataSequence::SwChartDataSequence(
         if (pTable)
         {
             uno::Reference< chart2::data::XDataSequence > xRef( dynamic_cast< chart2::data::XDataSequence * >(this), uno::UNO_QUERY );
-            pDataProvider->AddDataSequence( *pTable, xRef );
-            pDataProvider->addEventListener( dynamic_cast< lang::XEventListener * >(this) );
+            m_pDataProvider->AddDataSequence( *pTable, xRef );
+            m_pDataProvider->addEventListener( dynamic_cast< lang::XEventListener * >(this) );
         }
         else {
             OSL_FAIL( "table missing" );
@@ -1920,28 +1919,28 @@ SwChartDataSequence::SwChartDataSequence(
     release();
 
 #if OSL_DEBUG_LEVEL > 0
-    // check if it can properly convert into a SwUnoTableCrsr
+    // check if it can properly convert into a SwUnoTableCursor
     // which is required for some functions
-    SwUnoTableCrsr* pUnoTableCrsr = dynamic_cast<SwUnoTableCrsr*>(&(*pTableCrsr));
-    OSL_ENSURE(pUnoTableCrsr, "SwChartDataSequence: cursor not SwUnoTableCrsr");
-    (void) pUnoTableCrsr;
+    SwUnoTableCursor* pUnoTableCursor = dynamic_cast<SwUnoTableCursor*>(&(*m_pTableCursor));
+    OSL_ENSURE(pUnoTableCursor, "SwChartDataSequence: cursor not SwUnoTableCursor");
+    (void) pUnoTableCursor;
 #endif
 }
 
 SwChartDataSequence::SwChartDataSequence( const SwChartDataSequence &rObj ) :
     SwChartDataSequenceBaseClass(),
     SwClient( rObj.GetFrameFormat() ),
-    aEvtListeners( GetChartMutex() ),
-    aModifyListeners( GetChartMutex() ),
-    aRole( rObj.aRole ),
-    aRowLabelText( SW_RES(STR_CHART2_ROW_LABEL_TEXT) ),
-    aColLabelText( SW_RES(STR_CHART2_COL_LABEL_TEXT) ),
-    xDataProvider( rObj.pDataProvider ),
-    pDataProvider( rObj.pDataProvider ),
-    pTableCrsr( rObj.pTableCrsr ),
-    _pPropSet( rObj._pPropSet )
+    m_aEvtListeners( GetChartMutex() ),
+    m_aModifyListeners( GetChartMutex() ),
+    m_aRole( rObj.m_aRole ),
+    m_aRowLabelText( SW_RES(STR_CHART2_ROW_LABEL_TEXT) ),
+    m_aColLabelText( SW_RES(STR_CHART2_COL_LABEL_TEXT) ),
+    m_xDataProvider( rObj.m_pDataProvider ),
+    m_pDataProvider( rObj.m_pDataProvider ),
+    m_pTableCursor( rObj.m_pTableCursor ),
+    m_pPropSet( rObj.m_pPropSet )
 {
-    bDisposed = false;
+    m_bDisposed = false;
 
     acquire();
     try
@@ -1950,8 +1949,8 @@ SwChartDataSequence::SwChartDataSequence( const SwChartDataSequence &rObj ) :
         if (pTable)
         {
             uno::Reference< chart2::data::XDataSequence > xRef( dynamic_cast< chart2::data::XDataSequence * >(this), uno::UNO_QUERY );
-            pDataProvider->AddDataSequence( *pTable, xRef );
-            pDataProvider->addEventListener( dynamic_cast< lang::XEventListener * >(this) );
+            m_pDataProvider->AddDataSequence( *pTable, xRef );
+            m_pDataProvider->addEventListener( dynamic_cast< lang::XEventListener * >(this) );
         }
         else {
             OSL_FAIL( "table missing" );
@@ -1968,11 +1967,11 @@ SwChartDataSequence::SwChartDataSequence( const SwChartDataSequence &rObj ) :
     release();
 
 #if OSL_DEBUG_LEVEL > 0
-    // check if it can properly convert into a SwUnoTableCrsr
+    // check if it can properly convert into a SwUnoTableCursor
     // which is required for some functions
-    SwUnoTableCrsr* pUnoTableCrsr = dynamic_cast<SwUnoTableCrsr*>(&(*pTableCrsr));
-    OSL_ENSURE(pUnoTableCrsr, "SwChartDataSequence: cursor not SwUnoTableCrsr");
-    (void) pUnoTableCrsr;
+    SwUnoTableCursor* pUnoTableCursor = dynamic_cast<SwUnoTableCursor*>(&(*m_pTableCursor));
+    OSL_ENSURE(pUnoTableCursor, "SwChartDataSequence: cursor not SwUnoTableCursor");
+    (void) pUnoTableCursor;
 #endif
 }
 
@@ -2007,14 +2006,14 @@ OUString SAL_CALL SwChartDataSequence::getSourceRangeRepresentation(  )
     throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
-    if (bDisposed)
+    if (m_bDisposed)
         throw lang::DisposedException();
 
     OUString aRes;
     SwFrameFormat* pTableFormat = GetFrameFormat();
     if (pTableFormat)
     {
-        const OUString aCellRange( GetCellRangeName( *pTableFormat, *pTableCrsr ) );
+        const OUString aCellRange( GetCellRangeName( *pTableFormat, *m_pTableCursor ) );
         OSL_ENSURE( !aCellRange.isEmpty(), "failed to get cell range" );
         aRes = pTableFormat->GetName() + "." + aCellRange;
     }
@@ -2026,7 +2025,7 @@ uno::Sequence< OUString > SAL_CALL SwChartDataSequence::generateLabel(
     throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
-    if (bDisposed)
+    if (m_bDisposed)
         throw lang::DisposedException();
 
     uno::Sequence< OUString > aLabels;
@@ -2035,12 +2034,12 @@ uno::Sequence< OUString > SAL_CALL SwChartDataSequence::generateLabel(
         SwRangeDescriptor aDesc;
         bool bOk = false;
         SwFrameFormat* pTableFormat = GetFrameFormat();
-        SwTable* pTable = pTableFormat ? SwTable::FindTable( pTableFormat ) : 0;
+        SwTable* pTable = pTableFormat ? SwTable::FindTable( pTableFormat ) : nullptr;
         if (!pTableFormat || !pTable || pTable->IsTableComplex())
             throw uno::RuntimeException();
         else
         {
-            const OUString aCellRange( GetCellRangeName( *pTableFormat, *pTableCrsr ) );
+            const OUString aCellRange( GetCellRangeName( *pTableFormat, *m_pTableCursor ) );
             OSL_ENSURE( !aCellRange.isEmpty(), "failed to get cell range" );
             bOk = FillRangeDescriptor( aDesc, aCellRange );
             OSL_ENSURE( bOk, "failed to get SwRangeDescriptor" );
@@ -2083,7 +2082,7 @@ uno::Sequence< OUString > SAL_CALL SwChartDataSequence::generateLabel(
             {
                 if (!bReturnEmptyText)
                 {
-                    aText = bUseCol ? aColLabelText : aRowLabelText;
+                    aText = bUseCol ? m_aColLabelText : m_aRowLabelText;
                     sal_Int32 nCol = aDesc.nLeft;
                     sal_Int32 nRow = aDesc.nTop;
                     if (bUseCol)
@@ -2136,7 +2135,7 @@ uno::Sequence< OUString > SAL_CALL SwChartDataSequence::generateLabel(
 
 std::vector< css::uno::Reference< css::table::XCell > > SwChartDataSequence::GetCells()
 {
-    if (bDisposed)
+    if (m_bDisposed)
         throw lang::DisposedException();
     auto pTableFormat(GetFrameFormat());
     if(!pTableFormat)
@@ -2145,9 +2144,9 @@ std::vector< css::uno::Reference< css::table::XCell > > SwChartDataSequence::Get
     if(pTable->IsTableComplex())
         return std::vector< css::uno::Reference< css::table::XCell > >();
     SwRangeDescriptor aDesc;
-    if(!FillRangeDescriptor(aDesc, GetCellRangeName(*pTableFormat, *pTableCrsr)))
+    if(!FillRangeDescriptor(aDesc, GetCellRangeName(*pTableFormat, *m_pTableCursor)))
         return std::vector< css::uno::Reference< css::table::XCell > >();
-    return SwXCellRange(pTableCrsr, *pTableFormat, aDesc).GetCells();
+    return SwXCellRange(m_pTableCursor, *pTableFormat, aDesc).GetCells();
 }
 
 uno::Sequence< OUString > SAL_CALL SwChartDataSequence::getTextualData()
@@ -2196,7 +2195,7 @@ uno::Reference< util::XCloneable > SAL_CALL SwChartDataSequence::createClone(  )
     throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
-    if (bDisposed)
+    if (m_bDisposed)
         throw lang::DisposedException();
     return new SwChartDataSequence( *this );
 }
@@ -2205,10 +2204,10 @@ uno::Reference< beans::XPropertySetInfo > SAL_CALL SwChartDataSequence::getPrope
     throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
-    if (bDisposed)
+    if (m_bDisposed)
         throw lang::DisposedException();
 
-    static uno::Reference< beans::XPropertySetInfo > xRes = _pPropSet->getPropertySetInfo();
+    static uno::Reference< beans::XPropertySetInfo > xRes = m_pPropSet->getPropertySetInfo();
     return xRes;
 }
 
@@ -2218,12 +2217,12 @@ void SAL_CALL SwChartDataSequence::setPropertyValue(
     throw (beans::UnknownPropertyException, beans::PropertyVetoException, lang::IllegalArgumentException, lang::WrappedTargetException, uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
-    if (bDisposed)
+    if (m_bDisposed)
         throw lang::DisposedException();
 
     if (rPropertyName == UNO_NAME_ROLE)
     {
-        if ( !(rValue >>= aRole) )
+        if ( !(rValue >>= m_aRole) )
             throw lang::IllegalArgumentException();
     }
     else
@@ -2235,12 +2234,12 @@ uno::Any SAL_CALL SwChartDataSequence::getPropertyValue(
     throw (beans::UnknownPropertyException, lang::WrappedTargetException, uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
-    if (bDisposed)
+    if (m_bDisposed)
         throw lang::DisposedException();
 
     uno::Any aRes;
     if (rPropertyName == UNO_NAME_ROLE)
-        aRes <<= aRole;
+        aRes <<= m_aRole;
     else
         throw beans::UnknownPropertyException();
 
@@ -2302,9 +2301,9 @@ void SwChartDataSequence::Modify( const SfxPoolItem* pOld, const SfxPoolItem *pN
     ClientModify(this, pOld, pNew );
 
     // table was deleted or cursor was deleted
-    if(!GetRegisteredIn() || !pTableCrsr)
+    if(!GetRegisteredIn() || !m_pTableCursor)
     {
-        pTableCrsr.reset(nullptr);
+        m_pTableCursor.reset(nullptr);
         dispose();
     }
     else
@@ -2317,7 +2316,7 @@ sal_Bool SAL_CALL SwChartDataSequence::isModified(  )
     throw (uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
-    if (bDisposed)
+    if (m_bDisposed)
         throw lang::DisposedException();
 
     return sal_True;
@@ -2328,11 +2327,11 @@ void SAL_CALL SwChartDataSequence::setModified(
     throw (beans::PropertyVetoException, uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
-    if (bDisposed)
+    if (m_bDisposed)
         throw lang::DisposedException();
 
     if (bModified)
-        LaunchModifiedEvent( aModifyListeners, dynamic_cast< XModifyBroadcaster * >(this) );
+        LaunchModifiedEvent( m_aModifyListeners, dynamic_cast< XModifyBroadcaster * >(this) );
 }
 
 void SAL_CALL SwChartDataSequence::addModifyListener(
@@ -2340,8 +2339,8 @@ void SAL_CALL SwChartDataSequence::addModifyListener(
     throw (uno::RuntimeException, std::exception)
 {
     osl::MutexGuard  aGuard( GetChartMutex() );
-    if (!bDisposed && rxListener.is())
-        aModifyListeners.addInterface( rxListener );
+    if (!m_bDisposed && rxListener.is())
+        m_aModifyListeners.addInterface( rxListener );
 }
 
 void SAL_CALL SwChartDataSequence::removeModifyListener(
@@ -2349,19 +2348,19 @@ void SAL_CALL SwChartDataSequence::removeModifyListener(
     throw (uno::RuntimeException, std::exception)
 {
     osl::MutexGuard  aGuard( GetChartMutex() );
-    if (!bDisposed && rxListener.is())
-        aModifyListeners.removeInterface( rxListener );
+    if (!m_bDisposed && rxListener.is())
+        m_aModifyListeners.removeInterface( rxListener );
 }
 
 void SAL_CALL SwChartDataSequence::disposing( const lang::EventObject& rSource )
     throw (uno::RuntimeException, std::exception)
 {
-    if (bDisposed)
+    if (m_bDisposed)
         throw lang::DisposedException();
-    if (rSource.Source == xDataProvider)
+    if (rSource.Source == m_xDataProvider)
     {
-        pDataProvider = 0;
-        xDataProvider.clear();
+        m_pDataProvider = nullptr;
+        m_xDataProvider.clear();
     }
 }
 
@@ -2371,20 +2370,20 @@ void SAL_CALL SwChartDataSequence::dispose(  )
     bool bMustDispose( false );
     {
         osl::MutexGuard  aGuard( GetChartMutex() );
-        bMustDispose = !bDisposed;
-        if (!bDisposed)
-            bDisposed = true;
+        bMustDispose = !m_bDisposed;
+        if (!m_bDisposed)
+            m_bDisposed = true;
     }
     if (bMustDispose)
     {
-        bDisposed = true;
-        if (pDataProvider)
+        m_bDisposed = true;
+        if (m_pDataProvider)
         {
             const SwTable* pTable = SwTable::FindTable( GetFrameFormat() );
             if (pTable)
             {
                 uno::Reference< chart2::data::XDataSequence > xRef( dynamic_cast< chart2::data::XDataSequence * >(this), uno::UNO_QUERY );
-                pDataProvider->RemoveDataSequence( *pTable, xRef );
+                m_pDataProvider->RemoveDataSequence( *pTable, xRef );
             }
             else {
                 OSL_FAIL( "table missing" );
@@ -2410,14 +2409,14 @@ void SAL_CALL SwChartDataSequence::dispose(  )
             if (pLclRegisteredIn && pLclRegisteredIn->HasWriterListeners())
             {
                 pLclRegisteredIn->Remove(this);
-                pTableCrsr.reset(nullptr);
+                m_pTableCursor.reset(nullptr);
             }
         }
 
         // require listeners to release references to this object
         lang::EventObject aEvtObj( dynamic_cast< chart2::data::XDataSequence * >(this) );
-        aModifyListeners.disposeAndClear( aEvtObj );
-        aEvtListeners.disposeAndClear( aEvtObj );
+        m_aModifyListeners.disposeAndClear( aEvtObj );
+        m_aEvtListeners.disposeAndClear( aEvtObj );
     }
 }
 
@@ -2426,8 +2425,8 @@ void SAL_CALL SwChartDataSequence::addEventListener(
     throw (uno::RuntimeException, std::exception)
 {
     osl::MutexGuard  aGuard( GetChartMutex() );
-    if (!bDisposed && rxListener.is())
-        aEvtListeners.addInterface( rxListener );
+    if (!m_bDisposed && rxListener.is())
+        m_aEvtListeners.addInterface( rxListener );
 }
 
 void SAL_CALL SwChartDataSequence::removeEventListener(
@@ -2435,13 +2434,13 @@ void SAL_CALL SwChartDataSequence::removeEventListener(
     throw (uno::RuntimeException, std::exception)
 {
     osl::MutexGuard  aGuard( GetChartMutex() );
-    if (!bDisposed && rxListener.is())
-        aEvtListeners.removeInterface( rxListener );
+    if (!m_bDisposed && rxListener.is())
+        m_aEvtListeners.removeInterface( rxListener );
 }
 
 bool SwChartDataSequence::DeleteBox( const SwTableBox &rBox )
 {
-    if (bDisposed)
+    if (m_bDisposed)
         throw lang::DisposedException();
 
     // to be set if the last box of the data-sequence was removed here
@@ -2450,10 +2449,10 @@ bool SwChartDataSequence::DeleteBox( const SwTableBox &rBox )
     // if the implementation cursor gets affected (i.e. the box where it is located
     // in gets removed) we need to move it before that... (otherwise it does not need to change)
 
-    const SwStartNode* pPointStartNode = pTableCrsr->GetPoint()->nNode.GetNode().FindTableBoxStartNode();
-    const SwStartNode* pMarkStartNode  = pTableCrsr->GetMark()->nNode.GetNode().FindTableBoxStartNode();
+    const SwStartNode* pPointStartNode = m_pTableCursor->GetPoint()->nNode.GetNode().FindTableBoxStartNode();
+    const SwStartNode* pMarkStartNode  = m_pTableCursor->GetMark()->nNode.GetNode().FindTableBoxStartNode();
 
-    if (!pTableCrsr->HasMark() || (pPointStartNode == rBox.GetSttNd()  &&  pMarkStartNode == rBox.GetSttNd()))
+    if (!m_pTableCursor->HasMark() || (pPointStartNode == rBox.GetSttNd()  &&  pMarkStartNode == rBox.GetSttNd()))
     {
         bNowEmpty = true;
     }
@@ -2523,12 +2522,12 @@ bool SwChartDataSequence::DeleteBox( const SwTableBox &rBox )
             SwPosition aNewPos( *pCNd );   // new position to be used with cursor
 
             // if the mark is to be changed, make sure there is one
-            if (pMarkStartNode == rBox.GetSttNd() && !pTableCrsr->HasMark())
-                pTableCrsr->SetMark();
+            if (pMarkStartNode == rBox.GetSttNd() && !m_pTableCursor->HasMark())
+                m_pTableCursor->SetMark();
 
             // set cursor to new position
             SwPosition *pPos = (pPointStartNode == rBox.GetSttNd()) ?
-                        pTableCrsr->GetPoint() : pTableCrsr->GetMark();
+                        m_pTableCursor->GetPoint() : m_pTableCursor->GetMark();
             if (pPos)
             {
                 pPos->nNode     = aNewPos.nNode;
@@ -2554,7 +2553,7 @@ void SwChartDataSequence::FillRangeDesc( SwRangeDescriptor &rRangeDesc ) const
         SwTable* pTable = SwTable::FindTable( pTableFormat );
         if(!pTable->IsTableComplex())
         {
-            FillRangeDescriptor( rRangeDesc, GetCellRangeName( *pTableFormat, *pTableCrsr ) );
+            FillRangeDescriptor( rRangeDesc, GetCellRangeName( *pTableFormat, *m_pTableCursor ) );
         }
     }
 }
@@ -2576,13 +2575,13 @@ void SwChartDataSequence::FillRangeDesc( SwRangeDescriptor &rRangeDesc ) const
 bool SwChartDataSequence::ExtendTo( bool bExtendCol,
         sal_Int32 nFirstNew, sal_Int32 nCount )
 {
-    SwUnoTableCrsr* pUnoTableCrsr = dynamic_cast<SwUnoTableCrsr*>(&(*pTableCrsr));
-    if (!pUnoTableCrsr)
+    SwUnoTableCursor* pUnoTableCursor = dynamic_cast<SwUnoTableCursor*>(&(*m_pTableCursor));
+    if (!pUnoTableCursor)
         return false;
 
-    const SwStartNode *pStartNd  = 0;
-    const SwTableBox  *pStartBox = 0;
-    const SwTableBox  *pEndBox   = 0;
+    const SwStartNode *pStartNd  = nullptr;
+    const SwTableBox  *pStartBox = nullptr;
+    const SwTableBox  *pEndBox   = nullptr;
 
     const SwTable* pTable = SwTable::FindTable( GetFrameFormat() );
     OSL_ENSURE( !pTable->IsTableComplex(), "table too complex" );
@@ -2591,11 +2590,11 @@ bool SwChartDataSequence::ExtendTo( bool bExtendCol,
 
     // get range descriptor (cell range) for current data-sequence
 
-    pStartNd = pUnoTableCrsr->GetPoint()->nNode.GetNode().FindTableBoxStartNode();
+    pStartNd = pUnoTableCursor->GetPoint()->nNode.GetNode().FindTableBoxStartNode();
     pEndBox = pTable->GetTableBox( pStartNd->GetIndex() );
     const OUString aEndBox( pEndBox->GetName() );
 
-    pStartNd = pUnoTableCrsr->GetMark()->nNode.GetNode().FindTableBoxStartNode();
+    pStartNd = pUnoTableCursor->GetMark()->nNode.GetNode().FindTableBoxStartNode();
     pStartBox = pTable->GetTableBox( pStartNd->GetIndex() );
     const OUString aStartBox( pStartBox->GetName() );
 
@@ -2648,11 +2647,11 @@ bool SwChartDataSequence::ExtendTo( bool bExtendCol,
         // move table cursor to new start and end of data-sequence
         const SwTableBox *pNewStartBox = pTable->GetTableBox( aNewStartCell );
         const SwTableBox *pNewEndBox   = pTable->GetTableBox( aNewEndCell );
-        pUnoTableCrsr->SetMark();
-        pUnoTableCrsr->GetPoint()->nNode = *pNewEndBox->GetSttNd();
-        pUnoTableCrsr->GetMark()->nNode  = *pNewStartBox->GetSttNd();
-        pUnoTableCrsr->Move( fnMoveForward, fnGoNode );
-        pUnoTableCrsr->MakeBoxSels();
+        pUnoTableCursor->SetMark();
+        pUnoTableCursor->GetPoint()->nNode = *pNewEndBox->GetSttNd();
+        pUnoTableCursor->GetMark()->nNode  = *pNewStartBox->GetSttNd();
+        pUnoTableCursor->Move( fnMoveForward, fnGoNode );
+        pUnoTableCursor->MakeBoxSels();
     }
 
     return bChanged;
@@ -2696,10 +2695,10 @@ void SwChartLabeledDataSequence::SetDataSequence(
     rxDest = rxSource;
 
     // start listening to new data-sequence
-    xC = uno::Reference< lang::XComponent >( rxDest, uno::UNO_QUERY );
+    xC.set( rxDest, uno::UNO_QUERY );
     if (xC.is())
         xC->addEventListener( xEL );
-    xMB = uno::Reference< util::XModifyBroadcaster >( rxDest, uno::UNO_QUERY );
+    xMB.set( rxDest, uno::UNO_QUERY );
     if (xMB.is())
         xMB->addModifyListener( xML );
 }

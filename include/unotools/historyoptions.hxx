@@ -54,7 +54,7 @@ class SvtHistoryOptions_Impl;
     key "PickList": The last used documents displayed in the file menu.
     key "History":  The last opened documents general.
 */
-class UNOTOOLS_DLLPUBLIC SAL_WARN_UNUSED SvtHistoryOptions : public utl::detail::Options
+class SAL_WARN_UNUSED UNOTOOLS_DLLPUBLIC SvtHistoryOptions : public utl::detail::Options
 {
 public:
     SvtHistoryOptions();
@@ -81,7 +81,7 @@ public:
         @param  eHistory select right history.
         @return A list of history items is returned.
     */
-    ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue > > GetList(EHistoryType eHistory) const;
+    css::uno::Sequence< css::uno::Sequence< css::beans::PropertyValue > > GetList(EHistoryType eHistory) const;
 
     /** Append a new item to the specified list.
 

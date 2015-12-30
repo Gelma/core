@@ -49,7 +49,7 @@ class XStream_impl :  public cppu::WeakImplHelper<
 
     public:
 
-        XStream_impl( shell* pMyShell,const OUString& aUncPath, bool bLock );
+        XStream_impl( const OUString& aUncPath, bool bLock );
 
         /**
          *  Returns an error code as given by filerror.hxx
@@ -62,126 +62,123 @@ class XStream_impl :  public cppu::WeakImplHelper<
 
         // XStream
 
-        virtual com::sun::star::uno::Reference< com::sun::star::io::XInputStream > SAL_CALL
+        virtual css::uno::Reference< css::io::XInputStream > SAL_CALL
         getInputStream(  )
-            throw( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
 
-        virtual com::sun::star::uno::Reference< com::sun::star::io::XOutputStream > SAL_CALL
+        virtual css::uno::Reference< css::io::XOutputStream > SAL_CALL
         getOutputStream(  )
-            throw( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
 
 
         // XTruncate
 
         virtual void SAL_CALL truncate()
-            throw( com::sun::star::io::IOException,
-                   com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::io::IOException,
+                   css::uno::RuntimeException, std::exception ) override;
 
 
         // XInputStream
 
         sal_Int32 SAL_CALL
         readBytes(
-            com::sun::star::uno::Sequence< sal_Int8 >& aData,
+            css::uno::Sequence< sal_Int8 >& aData,
             sal_Int32 nBytesToRead )
-            throw( com::sun::star::io::NotConnectedException,
-                   com::sun::star::io::BufferSizeExceededException,
-                   com::sun::star::io::IOException,
-                   com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw( css::io::NotConnectedException,
+                   css::io::BufferSizeExceededException,
+                   css::io::IOException,
+                   css::uno::RuntimeException, std::exception) override;
 
         sal_Int32 SAL_CALL
         readSomeBytes(
-            com::sun::star::uno::Sequence< sal_Int8 >& aData,
+            css::uno::Sequence< sal_Int8 >& aData,
             sal_Int32 nMaxBytesToRead )
-            throw( com::sun::star::io::NotConnectedException,
-                   com::sun::star::io::BufferSizeExceededException,
-                   com::sun::star::io::IOException,
-                   com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw( css::io::NotConnectedException,
+                   css::io::BufferSizeExceededException,
+                   css::io::IOException,
+                   css::uno::RuntimeException, std::exception) override;
 
 
         void SAL_CALL
         skipBytes(
             sal_Int32 nBytesToSkip )
-            throw( com::sun::star::io::NotConnectedException,
-                   com::sun::star::io::BufferSizeExceededException,
-                   com::sun::star::io::IOException,
-                   com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::io::NotConnectedException,
+                   css::io::BufferSizeExceededException,
+                   css::io::IOException,
+                   css::uno::RuntimeException, std::exception ) override;
 
         sal_Int32 SAL_CALL
         available(
             void )
-            throw( com::sun::star::io::NotConnectedException,
-                   com::sun::star::io::IOException,
-                   com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::io::NotConnectedException,
+                   css::io::IOException,
+                   css::uno::RuntimeException, std::exception ) override;
 
         void SAL_CALL
         closeInput(
             void )
-            throw( com::sun::star::io::NotConnectedException,
-                   com::sun::star::io::IOException,
-                   com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::io::NotConnectedException,
+                   css::io::IOException,
+                   css::uno::RuntimeException, std::exception ) override;
 
         // XSeekable
 
         void SAL_CALL
         seek(
             sal_Int64 location )
-            throw( com::sun::star::lang::IllegalArgumentException,
-                   com::sun::star::io::IOException,
-                   com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::lang::IllegalArgumentException,
+                   css::io::IOException,
+                   css::uno::RuntimeException, std::exception ) override;
 
         sal_Int64 SAL_CALL
         getPosition(
             void )
-            throw( com::sun::star::io::IOException,
-                   com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::io::IOException,
+                   css::uno::RuntimeException, std::exception ) override;
 
         sal_Int64 SAL_CALL
         getLength(
             void )
-            throw( com::sun::star::io::IOException,
-                   com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::io::IOException,
+                   css::uno::RuntimeException, std::exception ) override;
 
 
         // XOutputStream
 
         void SAL_CALL
-        writeBytes( const com::sun::star::uno::Sequence< sal_Int8 >& aData )
-            throw( com::sun::star::io::NotConnectedException,
-                   com::sun::star::io::BufferSizeExceededException,
-                   com::sun::star::io::IOException,
-                   com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        writeBytes( const css::uno::Sequence< sal_Int8 >& aData )
+            throw( css::io::NotConnectedException,
+                   css::io::BufferSizeExceededException,
+                   css::io::IOException,
+                   css::uno::RuntimeException, std::exception) override;
 
 
 
         void SAL_CALL
         flush()
-            throw( com::sun::star::io::NotConnectedException,
-                   com::sun::star::io::BufferSizeExceededException,
-                   com::sun::star::io::IOException,
-                   com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw( css::io::NotConnectedException,
+                   css::io::BufferSizeExceededException,
+                   css::io::IOException,
+                   css::uno::RuntimeException, std::exception) override;
 
 
         void SAL_CALL
         closeOutput(
             void )
-            throw( com::sun::star::io::NotConnectedException,
-                   com::sun::star::io::IOException,
-                   com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::io::NotConnectedException,
+                   css::io::IOException,
+                   css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL waitForCompletion()
             throw (
-                com::sun::star::io::IOException,
-                com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+                css::io::IOException,
+                css::uno::RuntimeException, std::exception) override;
 
     private:
 
         osl::Mutex   m_aMutex;
         bool         m_bInputStreamCalled,m_bOutputStreamCalled;
-
-        shell*       m_pMyShell;
-        com::sun::star::uno::Reference< com::sun::star::ucb::XContentProvider > m_xProvider;
-        bool     m_nIsOpen;
+        bool         m_nIsOpen;
 
         ReconnectingFile    m_aFile;
 
@@ -193,9 +190,9 @@ class XStream_impl :  public cppu::WeakImplHelper<
         void SAL_CALL
         closeStream(
             void )
-            throw( com::sun::star::io::NotConnectedException,
-                   com::sun::star::io::IOException,
-                   com::sun::star::uno::RuntimeException );
+            throw( css::io::NotConnectedException,
+                   css::io::IOException,
+                   css::uno::RuntimeException );
 
     };
 

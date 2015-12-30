@@ -49,6 +49,7 @@
 #include <osl/mutex.hxx>
 #include <comphelper/processfactory.hxx>
 #include <comphelper/scopeguard.hxx>
+#include <comphelper/sequence.hxx>
 #include <cppuhelper/implbase.hxx>
 #include <toolkit/helper/vclunohelper.hxx>
 #include <tools/diagnose_ex.h>
@@ -375,10 +376,10 @@ namespace sdr { namespace contact {
 
         virtual ~SdrPageViewAccess() {}
 
-        virtual bool    isDesignMode() const SAL_OVERRIDE;
+        virtual bool    isDesignMode() const override;
         virtual Reference< XControlContainer >
-                        getControlContainer( const OutputDevice& _rDevice ) const SAL_OVERRIDE;
-        virtual bool    isLayerVisible( SdrLayerID _nLayerID ) const SAL_OVERRIDE;
+                        getControlContainer( const OutputDevice& _rDevice ) const override;
+        virtual bool    isLayerVisible( SdrLayerID _nLayerID ) const override;
     };
 
 
@@ -391,7 +392,7 @@ namespace sdr { namespace contact {
     Reference< XControlContainer > SdrPageViewAccess::getControlContainer( const OutputDevice& _rDevice ) const
     {
         Reference< XControlContainer > xControlContainer = m_rPageView.GetControlContainer( _rDevice );
-        DBG_ASSERT( xControlContainer.is() || NULL == m_rPageView.FindPageWindow( _rDevice ),
+        DBG_ASSERT( xControlContainer.is() || nullptr == m_rPageView.FindPageWindow( _rDevice ),
             "SdrPageViewAccess::getControlContainer: the output device is known, but there is no control container for it?" );
         return xControlContainer;
     }
@@ -417,10 +418,10 @@ namespace sdr { namespace contact {
 
         virtual ~InvisibleControlViewAccess() {}
 
-        virtual bool    isDesignMode() const SAL_OVERRIDE;
+        virtual bool    isDesignMode() const override;
         virtual Reference< XControlContainer >
-                        getControlContainer( const OutputDevice& _rDevice ) const SAL_OVERRIDE;
-        virtual bool    isLayerVisible( SdrLayerID _nLayerID ) const SAL_OVERRIDE;
+                        getControlContainer( const OutputDevice& _rDevice ) const override;
+        virtual bool    isLayerVisible( SdrLayerID _nLayerID ) const override;
     };
 
 
@@ -467,10 +468,10 @@ namespace sdr { namespace contact {
 
         virtual ~DummyPageViewAccess() {}
 
-        virtual bool    isDesignMode() const SAL_OVERRIDE;
+        virtual bool    isDesignMode() const override;
         virtual Reference< XControlContainer >
-                        getControlContainer( const OutputDevice& _rDevice ) const SAL_OVERRIDE;
-        virtual bool    isLayerVisible( SdrLayerID _nLayerID ) const SAL_OVERRIDE;
+                        getControlContainer( const OutputDevice& _rDevice ) const override;
+        virtual bool    isLayerVisible( SdrLayerID _nLayerID ) const override;
     };
 
 
@@ -482,7 +483,7 @@ namespace sdr { namespace contact {
 
     Reference< XControlContainer > DummyPageViewAccess::getControlContainer( const OutputDevice& /*_rDevice*/ ) const
     {
-        return NULL;
+        return nullptr;
     }
 
 
@@ -627,24 +628,24 @@ namespace sdr { namespace contact {
         virtual ~ViewObjectContactOfUnoControl_Impl();
 
         // XEventListener
-        virtual void SAL_CALL disposing( const EventObject& Source ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing( const EventObject& Source ) throw(RuntimeException, std::exception) override;
 
         // XWindowListener
-        virtual void SAL_CALL windowResized( const WindowEvent& e ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL windowMoved( const WindowEvent& e ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL windowShown( const EventObject& e ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL windowHidden( const EventObject& e ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL windowResized( const WindowEvent& e ) throw(RuntimeException, std::exception) override;
+        virtual void SAL_CALL windowMoved( const WindowEvent& e ) throw(RuntimeException, std::exception) override;
+        virtual void SAL_CALL windowShown( const EventObject& e ) throw(RuntimeException, std::exception) override;
+        virtual void SAL_CALL windowHidden( const EventObject& e ) throw(RuntimeException, std::exception) override;
 
         // XPropertyChangeListener
-        virtual void SAL_CALL propertyChange( const PropertyChangeEvent& evt ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL propertyChange( const PropertyChangeEvent& evt ) throw(RuntimeException, std::exception) override;
 
         // XModeChangeListener
-        virtual void SAL_CALL modeChanged( const ModeChangeEvent& _rSource ) throw (RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL modeChanged( const ModeChangeEvent& _rSource ) throw (RuntimeException, std::exception) override;
 
         // XContainerListener
-        virtual void SAL_CALL elementInserted( const ::com::sun::star::container::ContainerEvent& Event ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL elementRemoved( const ::com::sun::star::container::ContainerEvent& Event ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL elementReplaced( const ::com::sun::star::container::ContainerEvent& Event ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL elementInserted( const css::container::ContainerEvent& Event ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL elementRemoved( const css::container::ContainerEvent& Event ) throw (css::uno::RuntimeException, std::exception) override;
+        virtual void SAL_CALL elementReplaced( const css::container::ContainerEvent& Event ) throw (css::uno::RuntimeException, std::exception) override;
 
     private:
         /** retrieves the SdrPageView which our associated SdrPageViewWindow belongs to
@@ -757,7 +758,7 @@ namespace sdr { namespace contact {
         /** determines whether the instance is disposed
             @nofail
         */
-        bool    impl_isDisposed_nofail() const { return m_pAntiImpl == NULL; }
+        bool    impl_isDisposed_nofail() const { return m_pAntiImpl == nullptr; }
 
         /** determines whether our control is currently visible
             @nofail
@@ -799,20 +800,20 @@ namespace sdr { namespace contact {
         typedef ::drawinglayer::primitive2d::BufferedDecompositionPrimitive2D  BufferedDecompositionPrimitive2D;
 
     protected:
-        virtual ::drawinglayer::primitive2d::Primitive2DSequence
+        virtual ::drawinglayer::primitive2d::Primitive2DContainer
             get2DDecomposition(
                 const ::drawinglayer::geometry::ViewInformation2D& rViewInformation
-            ) const SAL_OVERRIDE;
+            ) const override;
 
-        virtual ::drawinglayer::primitive2d::Primitive2DSequence
+        virtual ::drawinglayer::primitive2d::Primitive2DContainer
             create2DDecomposition(
                 const ::drawinglayer::geometry::ViewInformation2D& rViewInformation
-            ) const SAL_OVERRIDE;
+            ) const override;
 
         virtual ::basegfx::B2DRange
             getB2DRange(
                 const ::drawinglayer::geometry::ViewInformation2D& rViewInformation
-            ) const SAL_OVERRIDE;
+            ) const override;
 
     public:
         explicit LazyControlCreationPrimitive2D( const ::rtl::Reference< ViewObjectContactOfUnoControl_Impl >& _pVOCImpl )
@@ -822,7 +823,7 @@ namespace sdr { namespace contact {
             getTransformation( m_pVOCImpl->getViewContact(), m_aTransformation );
         }
 
-        virtual bool operator==(const BasePrimitive2D& rPrimitive) const SAL_OVERRIDE;
+        virtual bool operator==(const BasePrimitive2D& rPrimitive) const override;
 
         // declare unique ID for this primitive class
         DeclPrimitive2DIDBlock()
@@ -848,7 +849,7 @@ namespace sdr { namespace contact {
     ViewObjectContactOfUnoControl_Impl::ViewObjectContactOfUnoControl_Impl( ViewObjectContactOfUnoControl* _pAntiImpl )
         :m_pAntiImpl( _pAntiImpl )
         ,m_bCreatingControl( false )
-        ,m_pOutputDeviceForWindow( NULL )
+        ,m_pOutputDeviceForWindow( nullptr )
         ,m_bControlIsVisible( false )
         ,m_bIsDesignModeListening( false )
         ,m_eControlDesignMode( eUnknown )
@@ -905,10 +906,10 @@ namespace sdr { namespace contact {
 
         m_aControl.clear();
         m_xContainer.clear();
-        m_pOutputDeviceForWindow = NULL;
+        m_pOutputDeviceForWindow = nullptr;
         m_bControlIsVisible = false;
 
-        m_pAntiImpl = NULL;
+        m_pAntiImpl = nullptr;
     }
 
 
@@ -923,14 +924,14 @@ namespace sdr { namespace contact {
     {
         OSL_PRECOND( !impl_isDisposed_nofail(), "ViewObjectContactOfUnoControl_Impl::getUnoObject: already disposed()" );
         if ( impl_isDisposed_nofail() )
-            _out_rpObject = NULL;
+            _out_rpObject = nullptr;
         else
         {
             _out_rpObject = dynamic_cast< SdrUnoObj* >( m_pAntiImpl->GetViewContact().TryToGetSdrObject() );
             DBG_ASSERT( _out_rpObject || !m_pAntiImpl->GetViewContact().TryToGetSdrObject(),
                 "ViewObjectContactOfUnoControl_Impl::getUnoObject: invalid SdrObject!" );
         }
-        return ( _out_rpObject != NULL );
+        return ( _out_rpObject != nullptr );
     }
 
 
@@ -942,7 +943,7 @@ namespace sdr { namespace contact {
 
         try
         {
-            SdrUnoObj* pUnoObject( NULL );
+            SdrUnoObj* pUnoObject( nullptr );
             if ( getUnoObject( pUnoObject ) )
             {
                 Point aGridOffset = pUnoObject->GetGridOffset();
@@ -1054,7 +1055,7 @@ namespace sdr { namespace contact {
             UnoControlContactHelper::disposeAndClearControl_nothrow( m_aControl );
         }
 
-        SdrUnoObj* pUnoObject( NULL );
+        SdrUnoObj* pUnoObject( nullptr );
         if ( !getUnoObject( pUnoObject ) )
             return false;
 
@@ -1067,7 +1068,7 @@ namespace sdr { namespace contact {
         m_xContainer.set(_rPageView.getControlContainer( _rDevice ), css::uno::UNO_QUERY);
         DBG_ASSERT( (   m_xContainer.is()                                           // either have a XControlContainer
                     ||  (   ( !_rPageView.getControlContainer( _rDevice ).is() )    // or don't have any container,
-                        &&  ( dynamic_cast< const vcl::Window* >( &_rDevice ) == NULL )  // which is allowed for non-Window instances only
+                        &&  ( dynamic_cast< const vcl::Window* >( &_rDevice ) == nullptr )  // which is allowed for non-Window instances only
                         )
                     ),
             "ViewObjectContactOfUnoControl_Impl::impl_ensureControl_nothrow: no XContainer at the ControlContainer!" );
@@ -1163,7 +1164,7 @@ namespace sdr { namespace contact {
     {
         OSL_PRECOND( !impl_isDisposed_nofail(), "ViewObjectContactOfUnoControl_Impl::impl_getPageView_nothrow: already disposed!" );
 
-        _out_rpPageView = NULL;
+        _out_rpPageView = nullptr;
         if ( impl_isDisposed_nofail() )
             return false;
 
@@ -1171,8 +1172,8 @@ namespace sdr { namespace contact {
         if ( pPageViewContact )
             _out_rpPageView = &pPageViewContact->GetPageWindow().GetPageView();
 
-        DBG_ASSERT( _out_rpPageView != NULL, "ViewObjectContactOfUnoControl_Impl::impl_getPageView_nothrow: this method is expected to always have success!" );
-        return ( _out_rpPageView != NULL );
+        DBG_ASSERT( _out_rpPageView != nullptr, "ViewObjectContactOfUnoControl_Impl::impl_getPageView_nothrow: this method is expected to always have success!" );
+        return ( _out_rpPageView != nullptr );
     }
 
 
@@ -1181,11 +1182,11 @@ namespace sdr { namespace contact {
         OSL_PRECOND( m_aControl.is(),
             "ViewObjectContactOfUnoControl_Impl::impl_adjustControlVisibilityToLayerVisibility_throw: only valid if we have a control!" );
 
-        SdrPageView* pPageView( NULL );
+        SdrPageView* pPageView( nullptr );
         if ( !impl_getPageView_nothrow( pPageView ) )
             return;
 
-        SdrUnoObj* pUnoObject( NULL );
+        SdrUnoObj* pUnoObject( nullptr );
         if ( !getUnoObject( pUnoObject ) )
             return;
 
@@ -1299,7 +1300,7 @@ namespace sdr { namespace contact {
 
     bool ViewObjectContactOfUnoControl_Impl::isPrintableControl() const
     {
-        SdrUnoObj* pUnoObject( NULL );
+        SdrUnoObj* pUnoObject( nullptr );
         if ( !getUnoObject( pUnoObject ) )
             return false;
 
@@ -1547,7 +1548,7 @@ namespace sdr { namespace contact {
     }
 
 
-    ::drawinglayer::primitive2d::Primitive2DSequence LazyControlCreationPrimitive2D::get2DDecomposition( const ::drawinglayer::geometry::ViewInformation2D& _rViewInformation ) const
+    ::drawinglayer::primitive2d::Primitive2DContainer LazyControlCreationPrimitive2D::get2DDecomposition( const ::drawinglayer::geometry::ViewInformation2D& _rViewInformation ) const
     {
     #if OSL_DEBUG_LEVEL > 1
         ::basegfx::B2DVector aScale, aTranslate;
@@ -1560,7 +1561,7 @@ namespace sdr { namespace contact {
     }
 
 
-    ::drawinglayer::primitive2d::Primitive2DSequence LazyControlCreationPrimitive2D::create2DDecomposition( const ::drawinglayer::geometry::ViewInformation2D& _rViewInformation ) const
+    ::drawinglayer::primitive2d::Primitive2DContainer LazyControlCreationPrimitive2D::create2DDecomposition( const ::drawinglayer::geometry::ViewInformation2D& _rViewInformation ) const
     {
     #if OSL_DEBUG_LEVEL > 1
         ::basegfx::B2DVector aScale, aTranslate;
@@ -1597,7 +1598,7 @@ namespace sdr { namespace contact {
         const drawinglayer::primitive2d::Primitive2DReference xRetval( new ::drawinglayer::primitive2d::ControlPrimitive2D(
             m_aTransformation, xControlModel, rControl.getControl() ) );
 
-        return drawinglayer::primitive2d::Primitive2DSequence(&xRetval, 1);
+        return drawinglayer::primitive2d::Primitive2DContainer { xRetval };
     }
 
 
@@ -1613,7 +1614,7 @@ namespace sdr { namespace contact {
     ViewObjectContactOfUnoControl::~ViewObjectContactOfUnoControl()
     {
         m_pImpl->dispose();
-        m_pImpl = NULL;
+        m_pImpl = nullptr;
 
     }
 
@@ -1621,7 +1622,7 @@ namespace sdr { namespace contact {
     Reference< XControl > ViewObjectContactOfUnoControl::getControl()
     {
         SolarMutexGuard aSolarGuard;
-        m_pImpl->ensureControl( NULL );
+        m_pImpl->ensureControl( nullptr );
         return m_pImpl->getExistentControl().getControl();
     }
 
@@ -1684,26 +1685,26 @@ namespace sdr { namespace contact {
     }
 
 
-    drawinglayer::primitive2d::Primitive2DSequence ViewObjectContactOfUnoControl::createPrimitive2DSequence(const DisplayInfo& /*rDisplayInfo*/) const
+    drawinglayer::primitive2d::Primitive2DContainer ViewObjectContactOfUnoControl::createPrimitive2DSequence(const DisplayInfo& /*rDisplayInfo*/) const
     {
         if ( m_pImpl->isDisposed() )
             // our control already died.
             // TODO: Is it worth re-creating the control? Finally, this is a pathological situation, it means some instance
             // disposed the control though it doesn't own it. So, /me thinks we should not bother here.
-            return drawinglayer::primitive2d::Primitive2DSequence();
+            return drawinglayer::primitive2d::Primitive2DContainer();
 
         if ( GetObjectContact().getViewInformation2D().getViewTransformation().isIdentity() )
             // remove this when #i115754# is fixed
-            return drawinglayer::primitive2d::Primitive2DSequence();
+            return drawinglayer::primitive2d::Primitive2DContainer();
 
         // ignore existing controls which are in alive mode and manually switched to "invisible"
         // #102090# / 2009-06-05 / frank.schoenheit@sun.com
         const ControlHolder& rControl( m_pImpl->getExistentControl() );
         if ( rControl.is() && !rControl.isDesignMode() && !rControl.isVisible() )
-            return drawinglayer::primitive2d::Primitive2DSequence();
+            return drawinglayer::primitive2d::Primitive2DContainer();
 
         ::drawinglayer::primitive2d::Primitive2DReference xPrimitive( new LazyControlCreationPrimitive2D( m_pImpl ) );
-        return ::drawinglayer::primitive2d::Primitive2DSequence( &xPrimitive, 1 );
+        return ::drawinglayer::primitive2d::Primitive2DContainer { xPrimitive };
     }
 
 
@@ -1765,7 +1766,7 @@ namespace sdr { namespace contact {
         // graphical invalidate at all views
         ActionChanged();
 
-        // #i93318# flush Primitive2DSequence to force recreation with updated XControlModel
+        // #i93318# flush Primitive2DContainer to force recreation with updated XControlModel
         // since e.g. background color has changed and existing decompositions are possibly no
         // longer valid. Unfortunately this is not detected from ControlPrimitive2D::operator==
         // since it only has a uno reference to the XControlModel
@@ -1783,10 +1784,10 @@ namespace sdr { namespace contact {
     }
 
 
-    drawinglayer::primitive2d::Primitive2DSequence UnoControlPrintOrPreviewContact::createPrimitive2DSequence(const DisplayInfo& rDisplayInfo ) const
+    drawinglayer::primitive2d::Primitive2DContainer UnoControlPrintOrPreviewContact::createPrimitive2DSequence(const DisplayInfo& rDisplayInfo ) const
     {
         if ( !m_pImpl->isPrintableControl() )
-            return drawinglayer::primitive2d::Primitive2DSequence();
+            return drawinglayer::primitive2d::Primitive2DContainer();
         return ViewObjectContactOfUnoControl::createPrimitive2DSequence( rDisplayInfo );
     }
 

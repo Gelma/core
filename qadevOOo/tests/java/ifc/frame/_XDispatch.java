@@ -55,9 +55,8 @@ public class _XDispatch extends MultiMethodTest {
     /**
     * Listener implementation which sets flags on appropriate method calls
     */
-    protected class TestStatusListener implements
+    protected static class TestStatusListener implements
             com.sun.star.frame.XStatusListener {
-        public boolean disposingCalled = false ;
         public boolean statusChangedCalled = false ;
         private final java.io.PrintWriter log;
 
@@ -66,7 +65,6 @@ public class _XDispatch extends MultiMethodTest {
         }
 
         public void disposing(com.sun.star.lang.EventObject e) {
-            disposingCalled = true ;
             log.println(" disposing was called.") ;
         }
 
@@ -85,9 +83,8 @@ public class _XDispatch extends MultiMethodTest {
     /**
     * Listener implementation which sets flags on appropriate method calls
     */
-    protected class TestNotificationListener implements
+    protected static class TestNotificationListener implements
             com.sun.star.frame.XDispatchResultListener {
-        public boolean disposingCalled = false ;
         public boolean finishedDispatch = false ;
         private final java.io.PrintWriter log;
 
@@ -96,7 +93,6 @@ public class _XDispatch extends MultiMethodTest {
         }
 
         public void disposing(com.sun.star.lang.EventObject e) {
-            disposingCalled = true ;
             log.println("   disposing was called.") ;
         }
 

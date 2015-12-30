@@ -26,7 +26,9 @@
 #include <com/sun/star/uno/Any.hxx>
 #include <com/sun/star/uno/Reference.hxx>
 #include <com/sun/star/uno/XComponentContext.hpp>
+#include <comphelper/solarmutex.hxx>
 #include <comphelper/configuration.hxx>
+#include <comphelper/configurationlistener.hxx>
 #include <rtl/instance.hxx>
 #include <rtl/ustrbuf.hxx>
 #include <rtl/ustring.hxx>
@@ -126,7 +128,6 @@ comphelper::detail::ConfigurationWrapper::~ConfigurationWrapper() {}
 bool comphelper::detail::ConfigurationWrapper::isReadOnly(OUString const & path)
     const
 {
-css::beans::Property SB(access_->getPropertyByHierarchicalName(path));
     return
         (access_->getPropertyByHierarchicalName(path).Attributes
          & css::beans::PropertyAttribute::READONLY)
@@ -143,7 +144,7 @@ void comphelper::detail::ConfigurationWrapper::setPropertyValue(
     std::shared_ptr< ConfigurationChanges > const & batch,
     OUString const & path, css::uno::Any const & value)
 {
-    assert(batch.get() != 0);
+    assert(batch.get() != nullptr);
     batch->setPropertyValue(path, value);
 }
 
@@ -159,7 +160,7 @@ void comphelper::detail::ConfigurationWrapper::setLocalizedPropertyValue(
     std::shared_ptr< ConfigurationChanges > const & batch,
     OUString const & path, css::uno::Any const & value)
 {
-    assert(batch.get() != 0);
+    assert(batch.get() != nullptr);
     batch->setPropertyValue(path, value);
 }
 
@@ -179,7 +180,7 @@ comphelper::detail::ConfigurationWrapper::getGroupReadWrite(
     std::shared_ptr< ConfigurationChanges > const & batch,
     OUString const & path)
 {
-    assert(batch.get() != 0);
+    assert(batch.get() != nullptr);
     return batch->getGroup(path);
 }
 
@@ -199,7 +200,7 @@ comphelper::detail::ConfigurationWrapper::getSetReadWrite(
     std::shared_ptr< ConfigurationChanges > const & batch,
     OUString const & path)
 {
-    assert(batch.get() != 0);
+    assert(batch.get() != nullptr);
     return batch->getSet(path);
 }
 
@@ -207,6 +208,61 @@ std::shared_ptr< comphelper::ConfigurationChanges >
 comphelper::detail::ConfigurationWrapper::createChanges() const {
     return std::shared_ptr< ConfigurationChanges >(
         new ConfigurationChanges(context_));
+}
+
+void comphelper::ConfigurationListener::addListener(ConfigurationListenerPropertyBase *pListener)
+{
+    maListeners.push_back( pListener );
+    mxConfig->addPropertyChangeListener( pListener->maName, this );
+    pListener->setProperty( mxConfig->getPropertyValue( pListener->maName ) );
+}
+
+void comphelper::ConfigurationListener::removeListener(ConfigurationListenerPropertyBase *pListener)
+{
+    auto it = std::find( maListeners.begin(), maListeners.end(), pListener );
+    if ( it != maListeners.end() )
+    {
+        maListeners.erase( it );
+        mxConfig->removePropertyChangeListener( pListener->maName, this );
+    }
+}
+
+void comphelper::ConfigurationListener::dispose()
+{
+    for (auto it = maListeners.begin(); it != maListeners.end(); ++it)
+    {
+        mxConfig->removePropertyChangeListener( (*it)->maName, this );
+        (*it)->dispose();
+    }
+    maListeners.clear();
+}
+
+void SAL_CALL comphelper::ConfigurationListener::disposing(css::lang::EventObject const &)
+    throw (css::uno::RuntimeException, std::exception)
+{
+    dispose();
+}
+
+void SAL_CALL comphelper::ConfigurationListener::propertyChange(
+    css::beans::PropertyChangeEvent const &rEvt )
+    throw (css::uno::RuntimeException, std::exception)
+{
+    // Code is commonly used inside the SolarMutexGuard
+    // so to avoid concurrent writes to the property,
+    // and allow fast, lock-less access, guard here.
+    rtl::Reference< comphelper::SolarMutex > xMutexGuard(
+        comphelper::SolarMutex::get() );
+
+    assert( rEvt.Source == mxConfig );
+    for ( auto it = maListeners.begin(); it != maListeners.end(); ++it )
+    {
+        if ( (*it)->maName == rEvt.PropertyName )
+        {
+            // ignore rEvt.NewValue - in theory it could be stale => not set.
+            css::uno::Any aValue = mxConfig->getPropertyValue( (*it)->maName );
+            (*it)->setProperty( aValue );
+        }
+    }
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -92,7 +92,7 @@
 //  - no rotated ellipses
 
 // for font translation
-SgfFontLst* pSgfFonts = 0;
+SgfFontLst* pSgfFonts = nullptr;
 
 // for circle kinds, text and rotated rectangles
 void RotatePoint(PointType& P, sal_Int16 cx, sal_Int16 cy, double sn, double cs)
@@ -250,7 +250,7 @@ SvStream& ReadTextType(SvStream& rInp, TextType& rText)
     SWAPPOINT(rText.FitSize);
     rText.FitBreit      = OSL_SWAPWORD(rText.FitBreit);
 #endif
-    rText.Buffer=NULL;
+    rText.Buffer=nullptr;
     return rInp;
 }
 SvStream& ReadBmapType(SvStream& rInp, BmapType& rBmap)
@@ -638,7 +638,6 @@ void CircType::Draw(OutputDevice& rOut)
 void BmapType::Draw(OutputDevice& rOut)
 {
     //ifstream aInp;
-    unsigned char   nSgfTyp;
     sal_uInt16      nVersion;
     OUString        aStr(
         reinterpret_cast< char const * >(&Filename[ 1 ]),
@@ -648,7 +647,7 @@ void BmapType::Draw(OutputDevice& rOut)
     SvStream* pInp = ::utl::UcbStreamHelper::CreateStream( aFNam.GetMainURL( INetURLObject::NO_DECODE ), StreamMode::READ );
     if ( pInp )
     {
-        nSgfTyp=CheckSgfTyp( *pInp,nVersion);
+        unsigned char nSgfTyp = CheckSgfTyp( *pInp,nVersion);
         switch(nSgfTyp) {
             case SGF_BITIMAGE: {
                 GraphicFilter aFlt;
@@ -816,7 +815,6 @@ bool SgfFilterSDrw( SvStream& rInp, SgfHeader&, SgfEntry&, GDIMetaFile& rMtf )
       ReadPageType( rInp, aPage );
       if(Num==1 && aPage.nList!=0L) DrawObjkList( rInp,*pOutDev );
       rInp.Seek(nCharPos);
-      nCharPos=rInp.Tell();
       ReadPageType( rInp, aPage );
     }
     if (aPage.nList!=0L) DrawObjkList(rInp,*pOutDev );
@@ -843,7 +841,7 @@ bool SgfSDrwFilter(SvStream& rInp, GDIMetaFile& rMtf, const INetURLObject& _aIni
     bool        bRet=false;        // return value
 
     INetURLObject aIniPath = _aIniPath;
-    aIniPath.Append(OUString("sgf.ini"));
+    aIniPath.Append("sgf.ini");
 
     pSgfFonts = new SgfFontLst;
 

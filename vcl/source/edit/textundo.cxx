@@ -29,12 +29,6 @@
 #include <svdata.hxx>
 #include <tools/resid.hxx>
 
-TYPEINIT1( TextUndo, SfxUndoAction );
-TYPEINIT1( TextUndoDelPara, TextUndo );
-TYPEINIT1( TextUndoConnectParas, TextUndo );
-TYPEINIT1( TextUndoSplitPara, TextUndo );
-TYPEINIT1( TextUndoInsertChars, TextUndo );
-TYPEINIT1( TextUndoRemoveChars, TextUndo );
 
 namespace
 {
@@ -275,7 +269,7 @@ void TextUndoInsertChars::Redo()
 
 bool TextUndoInsertChars::Merge( SfxUndoAction* pNextAction )
 {
-    if ( 0 == dynamic_cast< const TextUndoInsertChars*>( pNextAction ) )
+    if ( nullptr == dynamic_cast< const TextUndoInsertChars*>( pNextAction ) )
         return false;
 
     TextUndoInsertChars* pNext = static_cast<TextUndoInsertChars*>(pNextAction);

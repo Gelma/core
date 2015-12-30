@@ -24,7 +24,7 @@
 // - ScannerManager -
 
 
-Reference< XInterface > SAL_CALL ScannerManager_CreateInstance( const Reference< com::sun::star::lang::XMultiServiceFactory >& /*rxFactory*/ ) throw ( Exception )
+Reference< XInterface > SAL_CALL ScannerManager_CreateInstance( const Reference< css::lang::XMultiServiceFactory >& /*rxFactory*/ ) throw ( Exception )
 {
     return *( new ScannerManager() );
 }
@@ -32,7 +32,7 @@ Reference< XInterface > SAL_CALL ScannerManager_CreateInstance( const Reference<
 
 
 ScannerManager::ScannerManager() :
-    mpData( NULL )
+    mpData( nullptr )
 {
     AcquireData();
 }
@@ -76,17 +76,14 @@ OUString ScannerManager::getImplementationName_Static() throw()
 
 Sequence< OUString > ScannerManager::getSupportedServiceNames_Static() throw ()
 {
-    Sequence< OUString > aSNS( 1 );
-
-    aSNS.getArray()[0] = "com.sun.star.scanner.ScannerManager";
-
+    Sequence< OUString > aSNS { "com.sun.star.scanner.ScannerManager" };
     return aSNS;
 }
 
 sal_Bool SAL_CALL ScannerManager::configureScanner( ScannerContext& rContext )
     throw( ScannerException, std::exception )
 {
-    return configureScannerAndScan( rContext, NULL );
+    return configureScannerAndScan( rContext, nullptr );
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

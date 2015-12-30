@@ -40,40 +40,36 @@ class LogarithmicScaling :
 {
 public:
     /// base is 10.0
-    explicit LogarithmicScaling(
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::uno::XComponentContext > & xContext );
-    LogarithmicScaling( double fBase = 10.0 );
+    explicit LogarithmicScaling();
+    LogarithmicScaling( double fBase );
     virtual ~LogarithmicScaling();
 
     /// declare XServiceInfo methods
     virtual OUString SAL_CALL getImplementationName()
-            throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
     virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName )
-            throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
     virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-            throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
 
     static OUString getImplementationName_Static();
     static css::uno::Sequence< OUString > getSupportedServiceNames_Static();
 
     // ____ XScaling ____
     virtual double SAL_CALL doScaling( double value )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
     virtual ::com::sun::star::uno::Reference<
         ::com::sun::star::chart2::XScaling > SAL_CALL
-        getInverseScaling() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        getInverseScaling() throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
     // ____ XServiceName ____
     virtual OUString SAL_CALL getServiceName()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
 private:
     const double m_fBase;
     const double m_fLogOfBase;
-
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >      m_xContext;
 };
 
 class ExponentialScaling :
@@ -85,19 +81,17 @@ class ExponentialScaling :
 {
 public:
     /// base is 10.0
-    explicit ExponentialScaling(
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::uno::XComponentContext > & xContext );
-    explicit ExponentialScaling( double fBase = 10.0 );
+    explicit ExponentialScaling();
+    explicit ExponentialScaling( double fBase );
     virtual ~ExponentialScaling();
 
     /// declare XServiceInfo methods
     virtual OUString SAL_CALL getImplementationName()
-            throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
     virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName )
-            throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
     virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-            throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
 
     static OUString getImplementationName_Static();
     static css::uno::Sequence< OUString > getSupportedServiceNames_Static();
@@ -105,20 +99,18 @@ public:
     // ____ XScaling ____
         virtual double SAL_CALL
     doScaling( double value )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
         virtual ::com::sun::star::uno::Reference<
         ::com::sun::star::chart2::XScaling > SAL_CALL
-    getInverseScaling() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    getInverseScaling() throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
     // ____ XServiceName ____
     virtual OUString SAL_CALL getServiceName()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
 private:
     const double m_fBase;
-
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >      m_xContext;
 };
 
 class LinearScaling : public ::cppu::WeakImplHelper<
@@ -129,41 +121,37 @@ class LinearScaling : public ::cppu::WeakImplHelper<
 {
 public:
     /// y(x) = x
-    explicit LinearScaling(
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::uno::XComponentContext > & xContext );
+    explicit LinearScaling();
     /// y(x) = fSlope * x + fOffset
-    LinearScaling( double fSlope = 1.0, double fOffset = 0.0 );
+    LinearScaling( double fSlope, double fOffset );
     virtual ~LinearScaling();
 
     /// declare XServiceInfo methods
     virtual OUString SAL_CALL getImplementationName()
-            throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
     virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName )
-            throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
     virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-            throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
 
     static OUString getImplementationName_Static();
     static css::uno::Sequence< OUString > getSupportedServiceNames_Static();
 
     // ____ XScaling ____
     virtual double SAL_CALL doScaling( double value )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
     virtual ::com::sun::star::uno::Reference<
         ::com::sun::star::chart2::XScaling > SAL_CALL
-        getInverseScaling() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        getInverseScaling() throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
     // ____ XServiceName ____
     virtual OUString SAL_CALL getServiceName()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
 private:
     const double m_fSlope;
     const double m_fOffset;
-
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >      m_xContext;
 };
 
 class PowerScaling : public ::cppu::WeakImplHelper<
@@ -174,19 +162,17 @@ class PowerScaling : public ::cppu::WeakImplHelper<
 {
 public:
     /// exponent 10.0
-    explicit PowerScaling(
-        const ::com::sun::star::uno::Reference<
-            ::com::sun::star::uno::XComponentContext > & xContext );
-    explicit PowerScaling( double fExponent = 10.0 );
+    explicit PowerScaling();
+    explicit PowerScaling( double fExponent );
     virtual ~PowerScaling();
 
     /// declare XServiceInfo methods
     virtual OUString SAL_CALL getImplementationName()
-            throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
     virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName )
-            throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
     virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-            throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw( css::uno::RuntimeException, std::exception ) override;
 
     static OUString getImplementationName_Static();
     static css::uno::Sequence< OUString > getSupportedServiceNames_Static();
@@ -194,20 +180,18 @@ public:
     // ____ XScaling ____
         virtual double SAL_CALL
     doScaling( double value )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
         virtual ::com::sun::star::uno::Reference<
         ::com::sun::star::chart2::XScaling > SAL_CALL
-    getInverseScaling() throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    getInverseScaling() throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
     // ____ XServiceName ____
     virtual OUString SAL_CALL getServiceName()
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 
 private:
     const double m_fExponent;
-
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XComponentContext >      m_xContext;
 };
 
 } //namespace chart

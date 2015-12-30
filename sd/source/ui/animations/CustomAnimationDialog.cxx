@@ -99,28 +99,34 @@ namespace sd {
 class PresetPropertyBox  : public PropertySubControl
 {
 public:
-    PresetPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const OUString& aPresetId, const Link<>& rModifyHdl );
+    PresetPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const OUString& aPresetId, const Link<LinkParamNone*,void>& rModifyHdl );
     virtual ~PresetPropertyBox();
 
-    virtual Any getValue() SAL_OVERRIDE;
-    virtual void setValue( const Any& rValue, const OUString& rPresetId ) SAL_OVERRIDE;
-    virtual Control* getControl() SAL_OVERRIDE;
+    virtual Any getValue() override;
+    virtual void setValue( const Any& rValue, const OUString& rPresetId ) override;
+    virtual Control* getControl() override;
 
 private:
     std::map< sal_uInt16, OUString > maPropertyValues;
     VclPtr<ListBox> mpControl;
+    DECL_LINK_TYPED(OnSelect, ListBox&, void);
+    Link<LinkParamNone*,void> maModifyLink;
 };
 
-PresetPropertyBox::PresetPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const OUString& aPresetId, const Link<>& rModifyHdl )
-: PropertySubControl( nControlType )
+PresetPropertyBox::PresetPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const OUString& aPresetId, const Link<LinkParamNone*,void>& rModifyHdl )
+: PropertySubControl( nControlType ), maModifyLink(rModifyHdl)
 {
     mpControl = VclPtr<ListBox>::Create( pParent, WB_BORDER|WB_TABSTOP|WB_DROPDOWN );
     mpControl->SetDropDownLineCount( 10 );
-    mpControl->SetSelectHdl( rModifyHdl );
+    mpControl->SetSelectHdl( LINK(this, PresetPropertyBox, OnSelect) );
     mpControl->SetHelpId( HID_SD_CUSTOMANIMATIONPANE_PRESETPROPERTYBOX );
 
     setValue( rValue, aPresetId );
+}
 
+IMPL_LINK_NOARG_TYPED(PresetPropertyBox, OnSelect, ListBox&, void)
+{
+    maModifyLink.Call(nullptr);
 }
 
 void PresetPropertyBox::setValue( const Any& rValue, const OUString& rPresetId )
@@ -176,31 +182,33 @@ Control* PresetPropertyBox::getControl()
 class ColorPropertyBox  : public PropertySubControl
 {
 public:
-    ColorPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<>& rModifyHdl );
+    ColorPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<LinkParamNone*,void>& rModifyHdl );
     virtual ~ColorPropertyBox();
 
-    virtual Any getValue() SAL_OVERRIDE;
-    virtual void setValue( const Any& rValue, const OUString& rPresetId  ) SAL_OVERRIDE;
-    virtual Control* getControl() SAL_OVERRIDE;
+    virtual Any getValue() override;
+    virtual void setValue( const Any& rValue, const OUString& rPresetId  ) override;
+    virtual Control* getControl() override;
 
 private:
     VclPtr<ColorListBox> mpControl;
+    DECL_LINK_TYPED(OnSelect, ListBox&, void);
+    Link<LinkParamNone*,void> maModifyLink;
 };
 
-ColorPropertyBox::ColorPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<>& rModifyHdl )
-: PropertySubControl( nControlType )
+ColorPropertyBox::ColorPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<LinkParamNone*,void>& rModifyHdl )
+: PropertySubControl( nControlType ), maModifyLink(rModifyHdl)
 {
     mpControl = VclPtr<ColorListBox>::Create( pParent, WB_BORDER|WB_TABSTOP|WB_DROPDOWN );
     mpControl->SetDropDownLineCount( 10 );
-    mpControl->SetSelectHdl( rModifyHdl );
+    mpControl->SetSelectHdl( LINK(this, ColorPropertyBox, OnSelect) );
     mpControl->SetHelpId( HID_SD_CUSTOMANIMATIONPANE_COLORPROPERTYBOX );
 
     SfxObjectShell* pDocSh = SfxObjectShell::Current();
     DBG_ASSERT( pDocSh, "DocShell not found!" );
     XColorListRef pColorList;
-    const SfxPoolItem* pItem = NULL;
+    const SfxPoolItem* pItem = nullptr;
 
-    if ( pDocSh && ( ( pItem = pDocSh->GetItem( SID_COLOR_TABLE ) ) != 0) )
+    if ( pDocSh && ( ( pItem = pDocSh->GetItem( SID_COLOR_TABLE ) ) != nullptr) )
         pColorList = static_cast<const SvxColorListItem*>(pItem)->GetColorList();
 
     if ( !pColorList.is() )
@@ -216,6 +224,11 @@ ColorPropertyBox::ColorPropertyBox( sal_Int32 nControlType, vcl::Window* pParent
         if( pEntry->GetColor().GetRGBColor() == (sal_uInt32)nColor )
             mpControl->SelectEntryPos( nPos );
     }
+}
+
+IMPL_LINK_NOARG_TYPED(ColorPropertyBox, OnSelect, ListBox&, void)
+{
+    maModifyLink.Call(nullptr);
 }
 
 ColorPropertyBox::~ColorPropertyBox()
@@ -248,38 +261,40 @@ Control* ColorPropertyBox::getControl()
 class FontPropertyBox : public PropertySubControl
 {
 public:
-    FontPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<>& rModifyHdl );
+    FontPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<LinkParamNone*,void>& rModifyHdl );
     virtual ~FontPropertyBox();
 
-    virtual Any getValue() SAL_OVERRIDE;
-    virtual void setValue( const Any& rValue, const OUString& rPresetId  ) SAL_OVERRIDE;
+    virtual Any getValue() override;
+    virtual void setValue( const Any& rValue, const OUString& rPresetId  ) override;
 
-    virtual Control* getControl() SAL_OVERRIDE;
+    virtual Control* getControl() override;
 
 private:
-    VclPtr<FontNameBox> mpControl;
+    VclPtr<FontNameBox>         mpControl;
+    Link<LinkParamNone*,void>   maModifyHdl;
+    DECL_LINK_TYPED(ControlSelectHdl, ComboBox&, void);
 };
 
-FontPropertyBox::FontPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<>& rModifyHdl )
-: PropertySubControl( nControlType )
+FontPropertyBox::FontPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<LinkParamNone*,void>& rModifyHdl )
+: PropertySubControl( nControlType ), maModifyHdl(rModifyHdl)
 {
     mpControl = VclPtr<FontNameBox>::Create( pParent, WB_BORDER|WB_TABSTOP|WB_DROPDOWN );
     mpControl->SetDropDownLineCount( 10 );
-    mpControl->SetSelectHdl( rModifyHdl );
+    mpControl->SetSelectHdl( LINK(this, FontPropertyBox, ControlSelectHdl) );
     mpControl->SetHelpId( HID_SD_CUSTOMANIMATIONPANE_FONTPROPERTYBOX );
 
     SfxObjectShell* pDocSh = SfxObjectShell::Current();
     const SfxPoolItem* pItem;
 
-    const FontList* pFontList = 0;
+    const FontList* pFontList = nullptr;
     bool bMustDelete = false;
 
-    if ( pDocSh && ( (pItem = pDocSh->GetItem( SID_ATTR_CHAR_FONTLIST ) ) != 0) )
+    if ( pDocSh && ( (pItem = pDocSh->GetItem( SID_ATTR_CHAR_FONTLIST ) ) != nullptr) )
         pFontList = static_cast<const SvxFontListItem*>(pItem)->GetFontList();
 
     if(!pFontList)
     {
-        pFontList = new FontList( Application::GetDefaultDevice(), NULL, false );
+        pFontList = new FontList( Application::GetDefaultDevice(), nullptr, false );
         bMustDelete = true;
     }
 
@@ -290,6 +305,11 @@ FontPropertyBox::FontPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, 
 
     OUString aPresetId;
     setValue( rValue, aPresetId );
+}
+
+IMPL_LINK_NOARG_TYPED(FontPropertyBox, ControlSelectHdl, ComboBox&, void)
+{
+    maModifyHdl.Call(nullptr);
 }
 
 void FontPropertyBox::setValue( const Any& rValue, const OUString& )
@@ -323,10 +343,10 @@ class DropdownMenuBox : public Edit
 public:
     DropdownMenuBox( vcl::Window* pParent, Edit* pSubControl, PopupMenu* pMenu );
     virtual ~DropdownMenuBox();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
-    void Resize() SAL_OVERRIDE;
-    bool PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    void Resize() override;
+    bool PreNotify( NotifyEvent& rNEvt ) override;
 
     void SetMenuSelectHdl( const Link<MenuButton *, void>& rLink ) { mpDropdownButton->SetSelectHdl( rLink ); }
 
@@ -338,7 +358,7 @@ private:
 
 DropdownMenuBox::DropdownMenuBox( vcl::Window* pParent, Edit* pSubControl, PopupMenu* pMenu )
 :   Edit( pParent, WB_BORDER|WB_TABSTOP| WB_DIALOGCONTROL ),
-    mpSubControl(pSubControl),mpDropdownButton(0),mpMenu(pMenu)
+    mpSubControl(pSubControl),mpDropdownButton(nullptr),mpMenu(pMenu)
 {
     mpDropdownButton = VclPtr<MenuButton>::Create( this, WB_NOLIGHTBORDER | WB_RECTSTYLE | WB_NOTABSTOP);
     mpDropdownButton->SetSymbol(SymbolType::SPIN_DOWN);
@@ -402,24 +422,26 @@ bool DropdownMenuBox::PreNotify( NotifyEvent& rNEvt )
 class CharHeightPropertyBox : public PropertySubControl
 {
 public:
-    CharHeightPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<>& rModifyHdl );
+    CharHeightPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<LinkParamNone*,void>& rModifyHdl );
     virtual ~CharHeightPropertyBox();
 
-    virtual Any getValue() SAL_OVERRIDE;
-    virtual void setValue( const Any& rValue, const OUString& ) SAL_OVERRIDE;
+    virtual Any getValue() override;
+    virtual void setValue( const Any& rValue, const OUString& ) override;
 
-    virtual Control* getControl() SAL_OVERRIDE;
+    virtual Control* getControl() override;
 
     DECL_LINK_TYPED( implMenuSelectHdl, MenuButton*, void );
 
 private:
+    DECL_LINK_TYPED( EditModifyHdl, Edit&, void );
     VclPtr<DropdownMenuBox> mpControl;
     PopupMenu* mpMenu;
     VclPtr<MetricField> mpMetric;
+    Link<LinkParamNone*,void> maModifyHdl;
 };
 
-CharHeightPropertyBox::CharHeightPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<>& rModifyHdl )
-: PropertySubControl( nControlType )
+CharHeightPropertyBox::CharHeightPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<LinkParamNone*,void>& rModifyHdl )
+: PropertySubControl( nControlType ), maModifyHdl(rModifyHdl)
 {
     mpMetric.set( VclPtr<MetricField>::Create( pParent, WB_TABSTOP|WB_IGNORETAB| WB_NOBORDER) );
     mpMetric->SetUnit( FUNIT_PERCENT );
@@ -429,7 +451,7 @@ CharHeightPropertyBox::CharHeightPropertyBox( sal_Int32 nControlType, vcl::Windo
     mpMenu = new PopupMenu(SdResId( RID_CUSTOMANIMATION_FONTSIZE_POPUP ) );
     mpControl = VclPtr<DropdownMenuBox>::Create( pParent, mpMetric, mpMenu );
     mpControl->SetMenuSelectHdl( LINK( this, CharHeightPropertyBox, implMenuSelectHdl ));
-    mpControl->SetModifyHdl( rModifyHdl );
+    mpControl->SetModifyHdl( LINK( this, CharHeightPropertyBox, EditModifyHdl ) );
     mpControl->SetHelpId( HID_SD_CUSTOMANIMATIONPANE_CHARHEIGHTPROPERTYBOX );
 
     OUString aPresetId;
@@ -439,6 +461,11 @@ CharHeightPropertyBox::CharHeightPropertyBox( sal_Int32 nControlType, vcl::Windo
 CharHeightPropertyBox::~CharHeightPropertyBox()
 {
     mpControl.disposeAndClear();
+}
+
+IMPL_LINK_NOARG_TYPED( CharHeightPropertyBox, EditModifyHdl, Edit&, void )
+{
+    maModifyHdl.Call(nullptr);
 }
 
 IMPL_LINK_TYPED( CharHeightPropertyBox, implMenuSelectHdl, MenuButton*, pPb, void )
@@ -478,27 +505,27 @@ Control* CharHeightPropertyBox::getControl()
 class TransparencyPropertyBox : public PropertySubControl
 {
 public:
-    TransparencyPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<>& rModifyHdl );
+    TransparencyPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<LinkParamNone*,void>& rModifyHdl );
     virtual ~TransparencyPropertyBox();
 
-    virtual Any getValue() SAL_OVERRIDE;
-    virtual void setValue( const Any& rValue, const OUString& rPresetId  ) SAL_OVERRIDE;
+    virtual Any getValue() override;
+    virtual void setValue( const Any& rValue, const OUString& rPresetId  ) override;
 
-    virtual Control* getControl() SAL_OVERRIDE;
+    virtual Control* getControl() override;
 
     DECL_LINK_TYPED( implMenuSelectHdl, MenuButton*, void );
-    DECL_LINK(implModifyHdl, void *);
+    DECL_LINK_TYPED( implModifyHdl, Edit&, void );
 
     void updateMenu();
 
 private:
-    VclPtr<DropdownMenuBox> mpControl;
-    PopupMenu* mpMenu;
-    VclPtr<MetricField> mpMetric;
-    Link<> maModifyHdl;
+    VclPtr<DropdownMenuBox>   mpControl;
+    PopupMenu*                mpMenu;
+    VclPtr<MetricField>       mpMetric;
+    Link<LinkParamNone*,void> maModifyHdl;
 };
 
-TransparencyPropertyBox::TransparencyPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<>& rModifyHdl )
+TransparencyPropertyBox::TransparencyPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<LinkParamNone*,void>& rModifyHdl )
 : PropertySubControl( nControlType )
 , maModifyHdl( rModifyHdl )
 {
@@ -519,7 +546,7 @@ TransparencyPropertyBox::TransparencyPropertyBox( sal_Int32 nControlType, vcl::W
     mpControl->SetMenuSelectHdl( LINK( this, TransparencyPropertyBox, implMenuSelectHdl ));
     mpControl->SetHelpId( HID_SD_CUSTOMANIMATIONPANE_TRANSPARENCYPROPERTYBOX );
 
-    Link<> aLink( LINK( this, TransparencyPropertyBox, implModifyHdl ) );
+    Link<Edit&,void> aLink( LINK( this, TransparencyPropertyBox, implModifyHdl ) );
     mpControl->SetModifyHdl( aLink );
 
     OUString aPresetId;
@@ -538,12 +565,10 @@ void TransparencyPropertyBox::updateMenu()
         mpMenu->CheckItem( i, nValue == i );
 }
 
-IMPL_LINK_NOARG(TransparencyPropertyBox, implModifyHdl)
+IMPL_LINK_NOARG_TYPED(TransparencyPropertyBox, implModifyHdl, Edit&, void)
 {
     updateMenu();
-    maModifyHdl.Call(mpMetric.get());
-
-    return 0;
+    maModifyHdl.Call(nullptr);
 }
 
 IMPL_LINK_TYPED( TransparencyPropertyBox, implMenuSelectHdl, MenuButton*, pPb, void )
@@ -580,27 +605,27 @@ Control* TransparencyPropertyBox::getControl()
 class RotationPropertyBox : public PropertySubControl
 {
 public:
-    RotationPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<>& rModifyHdl );
+    RotationPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<LinkParamNone*,void>& rModifyHdl );
     virtual ~RotationPropertyBox();
 
-    virtual Any getValue() SAL_OVERRIDE;
-    virtual void setValue( const Any& rValue, const OUString& ) SAL_OVERRIDE;
+    virtual Any getValue() override;
+    virtual void setValue( const Any& rValue, const OUString& ) override;
 
-    virtual Control* getControl() SAL_OVERRIDE;
+    virtual Control* getControl() override;
 
     DECL_LINK_TYPED( implMenuSelectHdl, MenuButton*, void );
-    DECL_LINK(implModifyHdl, void *);
+    DECL_LINK_TYPED( implModifyHdl, Edit&, void );
 
     void updateMenu();
 
 private:
-    VclPtr<DropdownMenuBox> mpControl;
-    PopupMenu* mpMenu;
-    VclPtr<MetricField> mpMetric;
-    Link<> maModifyHdl;
+    VclPtr<DropdownMenuBox>   mpControl;
+    PopupMenu*                mpMenu;
+    VclPtr<MetricField>       mpMetric;
+    Link<LinkParamNone*,void> maModifyHdl;
 };
 
-RotationPropertyBox::RotationPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<>& rModifyHdl )
+RotationPropertyBox::RotationPropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<LinkParamNone*,void>& rModifyHdl )
 : PropertySubControl( nControlType )
 , maModifyHdl( rModifyHdl )
 {
@@ -615,7 +640,7 @@ RotationPropertyBox::RotationPropertyBox( sal_Int32 nControlType, vcl::Window* p
     mpControl->SetMenuSelectHdl( LINK( this, RotationPropertyBox, implMenuSelectHdl ));
     mpControl->SetHelpId( HID_SD_CUSTOMANIMATIONPANE_ROTATIONPROPERTYBOX );
 
-    Link<> aLink( LINK( this, RotationPropertyBox, implModifyHdl ) );
+    Link<Edit&,void> aLink( LINK( this, RotationPropertyBox, implModifyHdl ) );
     mpControl->SetModifyHdl( aLink );
 
     OUString aPresetId;
@@ -642,12 +667,10 @@ void RotationPropertyBox::updateMenu()
     mpMenu->CheckItem( CM_COUNTERCLOCKWISE, !bDirection );
 }
 
-IMPL_LINK_NOARG(RotationPropertyBox, implModifyHdl)
+IMPL_LINK_NOARG_TYPED(RotationPropertyBox, implModifyHdl, Edit&, void)
 {
     updateMenu();
-    maModifyHdl.Call(mpMetric.get());
-
-    return 0;
+    maModifyHdl.Call(nullptr);
 }
 
 IMPL_LINK_TYPED( RotationPropertyBox, implMenuSelectHdl, MenuButton*, pPb, void )
@@ -703,28 +726,28 @@ Control* RotationPropertyBox::getControl()
 class ScalePropertyBox : public PropertySubControl
 {
 public:
-    ScalePropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<>& rModifyHdl );
+    ScalePropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<LinkParamNone*,void>& rModifyHdl );
     virtual ~ScalePropertyBox();
 
-    virtual Any getValue() SAL_OVERRIDE;
-    virtual void setValue( const Any& rValue, const OUString& ) SAL_OVERRIDE;
+    virtual Any getValue() override;
+    virtual void setValue( const Any& rValue, const OUString& ) override;
 
-    virtual Control* getControl() SAL_OVERRIDE;
+    virtual Control* getControl() override;
 
     DECL_LINK_TYPED( implMenuSelectHdl, MenuButton*, void );
-    DECL_LINK(implModifyHdl, void *);
+    DECL_LINK_TYPED( implModifyHdl, Edit&, void );
 
     void updateMenu();
 
 private:
-    VclPtr<DropdownMenuBox> mpControl;
-    PopupMenu* mpMenu;
-    VclPtr<MetricField> mpMetric;
-    Link<> maModifyHdl;
-    int mnDirection;
+    VclPtr<DropdownMenuBox>   mpControl;
+    PopupMenu*                mpMenu;
+    VclPtr<MetricField>       mpMetric;
+    Link<LinkParamNone*,void> maModifyHdl;
+    int                       mnDirection;
 };
 
-ScalePropertyBox::ScalePropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<>& rModifyHdl )
+ScalePropertyBox::ScalePropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<LinkParamNone*,void>& rModifyHdl )
 : PropertySubControl( nControlType )
 , maModifyHdl( rModifyHdl )
 {
@@ -738,7 +761,7 @@ ScalePropertyBox::ScalePropertyBox( sal_Int32 nControlType, vcl::Window* pParent
     mpControl->SetMenuSelectHdl( LINK( this, ScalePropertyBox, implMenuSelectHdl ));
     mpControl->SetHelpId( HID_SD_CUSTOMANIMATIONPANE_SCALEPROPERTYBOX );
 
-    Link<> aLink( LINK( this, ScalePropertyBox, implModifyHdl ) );
+    Link<Edit&,void> aLink( LINK( this, ScalePropertyBox, implModifyHdl ) );
     mpControl->SetModifyHdl( aLink );
 
     OUString aPresetId;
@@ -764,12 +787,10 @@ void ScalePropertyBox::updateMenu()
     mpMenu->CheckItem( CM_BOTH, mnDirection == 3 );
 }
 
-IMPL_LINK_NOARG(ScalePropertyBox, implModifyHdl)
+IMPL_LINK_NOARG_TYPED(ScalePropertyBox, implModifyHdl, Edit&, void)
 {
     updateMenu();
-    maModifyHdl.Call(mpMetric.get());
-
-    return 0;
+    maModifyHdl.Call(nullptr);
 }
 
 IMPL_LINK_TYPED( ScalePropertyBox, implMenuSelectHdl, MenuButton*, pPb, void )
@@ -864,30 +885,30 @@ Control* ScalePropertyBox::getControl()
 class FontStylePropertyBox : public PropertySubControl
 {
 public:
-    FontStylePropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<>& rModifyHdl );
+    FontStylePropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<LinkParamNone*,void>& rModifyHdl );
     virtual ~FontStylePropertyBox();
 
-    virtual Any getValue() SAL_OVERRIDE;
-    virtual void setValue( const Any& rValue, const OUString& ) SAL_OVERRIDE;
+    virtual Any getValue() override;
+    virtual void setValue( const Any& rValue, const OUString& ) override;
 
-    virtual Control* getControl() SAL_OVERRIDE;
+    virtual Control* getControl() override;
 
     DECL_LINK_TYPED( implMenuSelectHdl, MenuButton*, void );
 
     void update();
 
 private:
-    VclPtr<DropdownMenuBox> mpControl;
-    PopupMenu* mpMenu;
-    VclPtr<Edit> mpEdit;
-    Link<> maModifyHdl;
+    VclPtr<DropdownMenuBox>   mpControl;
+    PopupMenu*                mpMenu;
+    VclPtr<Edit>              mpEdit;
+    Link<LinkParamNone*,void> maModifyHdl;
 
     float mfFontWeight;
     awt::FontSlant meFontSlant;
     sal_Int16 mnFontUnderline;
 };
 
-FontStylePropertyBox::FontStylePropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<>& rModifyHdl )
+FontStylePropertyBox::FontStylePropertyBox( sal_Int32 nControlType, vcl::Window* pParent, const Any& rValue, const Link<LinkParamNone*,void>& rModifyHdl )
 : PropertySubControl( nControlType )
 , maModifyHdl( rModifyHdl )
 {
@@ -951,7 +972,7 @@ IMPL_LINK_TYPED( FontStylePropertyBox, implMenuSelectHdl, MenuButton*, pPb, void
     }
 
     update();
-    maModifyHdl.Call(mpEdit.get());
+    maModifyHdl.Call(nullptr);
 }
 
 void FontStylePropertyBox::setValue( const Any& rValue, const OUString& )
@@ -985,11 +1006,12 @@ class CustomAnimationEffectTabPage : public TabPage
 public:
     CustomAnimationEffectTabPage( vcl::Window* pParent, const STLPropertySet* pSet );
     virtual ~CustomAnimationEffectTabPage();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void update( STLPropertySet* pSet );
-    DECL_LINK( implSelectHdl, Control* );
+    DECL_LINK_TYPED( implSelectHdl, ListBox&, void );
     DECL_LINK_TYPED( implClickHdl, Button*, void );
+    void implHdl(Control*);
 
 private:
     void updateControlStates();
@@ -1023,7 +1045,7 @@ private:
     VclPtr<MetricField>    mpMFTextDelay;
     VclPtr<FixedText>      mpFTTextDelay;
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::media::XPlayer > mxPlayer;
+    css::uno::Reference< css::media::XPlayer > mxPlayer;
 };
 
 CustomAnimationEffectTabPage::CustomAnimationEffectTabPage( vcl::Window* pParent, const STLPropertySet* pSet )
@@ -1058,9 +1080,9 @@ CustomAnimationEffectTabPage::CustomAnimationEffectTabPage( vcl::Window* pParent
     SfxObjectShell* pDocSh = SfxObjectShell::Current();
     DBG_ASSERT( pDocSh, "DocShell not found!" );
     XColorListRef pColorList;
-    const SfxPoolItem* pItem = NULL;
+    const SfxPoolItem* pItem = nullptr;
 
-    if ( pDocSh && ( (pItem = pDocSh->GetItem( SID_COLOR_TABLE ) ) != 0 ) )
+    if ( pDocSh && ( (pItem = pDocSh->GetItem( SID_COLOR_TABLE ) ) != nullptr ) )
         pColorList = static_cast<const SvxColorListItem*>(pItem)->GetColorList();
 
     if ( !pColorList.is() )
@@ -1103,9 +1125,8 @@ CustomAnimationEffectTabPage::CustomAnimationEffectTabPage( vcl::Window* pParent
                 // get property value
                 const Any aValue( pSet->getPropertyValue( nHandleProperty1Value ) );
 
-                Link<> aModifyLink;
                 // create property sub control
-                mpLBProperty1->setSubControl( PropertySubControl::create( nType, mpPlaceholderBox, aValue, aPresetId, aModifyLink ));
+                mpLBProperty1->setSubControl( PropertySubControl::create( nType, mpPlaceholderBox, aValue, aPresetId, Link<LinkParamNone*,void>() ));
             }
         }
 
@@ -1301,10 +1322,14 @@ void CustomAnimationEffectTabPage::updateControlStates()
 
 IMPL_LINK_TYPED( CustomAnimationEffectTabPage, implClickHdl, Button*, pBtn, void )
 {
-    implSelectHdl(pBtn);
+    implHdl(pBtn);
+}
+IMPL_LINK_TYPED( CustomAnimationEffectTabPage, implSelectHdl, ListBox&, rListBox, void )
+{
+    implHdl(&rListBox);
 }
 
-IMPL_LINK( CustomAnimationEffectTabPage, implSelectHdl, Control*, pControl )
+void CustomAnimationEffectTabPage::implHdl(Control* pControl )
 {
     if( pControl == mpLBAfterEffect )
     {
@@ -1334,7 +1359,6 @@ IMPL_LINK( CustomAnimationEffectTabPage, implSelectHdl, Control*, pControl )
     }
 
     updateControlStates();
-    return 0;
 }
 
 void CustomAnimationEffectTabPage::update( STLPropertySet* pSet )
@@ -1587,12 +1611,13 @@ class CustomAnimationDurationTabPage : public TabPage
 public:
     CustomAnimationDurationTabPage( vcl::Window* pParent, const STLPropertySet* pSet );
     virtual ~CustomAnimationDurationTabPage();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void update( STLPropertySet* pSet );
 
-    DECL_LINK( implControlHdl, Control* );
+    DECL_LINK_TYPED( implControlHdl, ListBox&, void );
     DECL_LINK_TYPED( implClickHdl, Button*, void );
+    void implHdl(Control*);
 
 private:
     const STLPropertySet* mpSet;
@@ -1808,18 +1833,20 @@ void CustomAnimationDurationTabPage::dispose()
 
 IMPL_LINK_TYPED( CustomAnimationDurationTabPage, implClickHdl, Button*, pBtn, void )
 {
-    implControlHdl(pBtn);
+    implHdl(pBtn);
+}
+IMPL_LINK_TYPED( CustomAnimationDurationTabPage, implControlHdl, ListBox&, rListBox, void )
+{
+    implHdl(&rListBox);
 }
 
-IMPL_LINK( CustomAnimationDurationTabPage, implControlHdl, Control*, pControl )
+void CustomAnimationDurationTabPage::implHdl( Control* pControl )
 {
     if( pControl == mpLBTrigger )
     {
         mpRBClickSequence->Check( false );
         mpRBInteractive->Check();
     }
-
-    return 0;
 }
 
 void CustomAnimationDurationTabPage::update( STLPropertySet* pSet )
@@ -1979,12 +2006,12 @@ class CustomAnimationTextAnimTabPage : public TabPage
 public:
     CustomAnimationTextAnimTabPage( vcl::Window* pParent, const STLPropertySet* pSet );
     virtual ~CustomAnimationTextAnimTabPage();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void update( STLPropertySet* pSet );
 
     void updateControlStates();
-    DECL_LINK(implSelectHdl, void *);
+    DECL_LINK_TYPED(implSelectHdl, ListBox&, void);
 
 private:
     VclPtr<FixedText>   maFTGroupText;
@@ -2164,20 +2191,19 @@ void CustomAnimationTextAnimTabPage::updateControlStates()
     }
     else
     {
-        maCBXAnimateForm->Enable(true);
+        maCBXAnimateForm->Enable();
     }
 }
 
-IMPL_LINK_NOARG(CustomAnimationTextAnimTabPage, implSelectHdl)
+IMPL_LINK_NOARG_TYPED(CustomAnimationTextAnimTabPage, implSelectHdl, ListBox&, void)
 {
     updateControlStates();
-    return 0;
 }
 
 CustomAnimationDialog::CustomAnimationDialog(vcl::Window* pParent, STLPropertySet* pSet, const OString& sPage)
 : TabDialog( pParent, "CustomAnimationProperties", "modules/simpress/ui/customanimationproperties.ui")
 , mpSet( pSet )
-, mpResultSet( 0 )
+, mpResultSet( nullptr )
 {
     get(mpTabControl, "tabs");
 
@@ -2201,7 +2227,7 @@ CustomAnimationDialog::CustomAnimationDialog(vcl::Window* pParent, STLPropertySe
     }
     else
     {
-        mpTextAnimTabPage = 0;
+        mpTextAnimTabPage = nullptr;
         mpTabControl->RemovePage( mnTextAnimId );
     }
 
@@ -2290,7 +2316,7 @@ STLPropertySet* CustomAnimationDialog::createDefaultSet()
 }
 
 PropertyControl::PropertyControl( vcl::Window* pParent )
-: ListBox( pParent, WB_TABSTOP | WB_BORDER | WB_DROPDOWN ), mpSubControl(0)
+: ListBox( pParent, WB_TABSTOP | WB_BORDER | WB_DROPDOWN ), mpSubControl(nullptr)
 {
 }
 
@@ -2314,7 +2340,7 @@ void PropertyControl::setSubControl( PropertySubControl* pSubControl )
 
     mpSubControl = pSubControl;
 
-    Control* pControl = pSubControl ? pSubControl->getControl() : 0;
+    Control* pControl = pSubControl ? pSubControl->getControl() : nullptr;
 
     if( pControl )
     {
@@ -2331,7 +2357,7 @@ void PropertyControl::setSubControl( PropertySubControl* pSubControl )
 
 void PropertyControl::Resize()
 {
-    Control* pControl = mpSubControl ? mpSubControl->getControl() : 0;
+    Control* pControl = mpSubControl ? mpSubControl->getControl() : nullptr;
     if( pControl )
         pControl->SetPosSizePixel( GetPosPixel(), GetSizePixel() );
     ListBox::Resize();
@@ -2341,9 +2367,9 @@ PropertySubControl::~PropertySubControl()
 {
 }
 
-PropertySubControl* PropertySubControl::create( sal_Int32 nType, vcl::Window* pParent, const Any& rValue, const OUString& rPresetId, const Link<>& rModifyHdl )
+PropertySubControl* PropertySubControl::create( sal_Int32 nType, vcl::Window* pParent, const Any& rValue, const OUString& rPresetId, const Link<LinkParamNone*,void>& rModifyHdl )
 {
-    PropertySubControl* pSubControl = NULL;
+    PropertySubControl* pSubControl = nullptr;
     switch( nType )
     {
     case nPropertyTypeDirection:

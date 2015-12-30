@@ -38,20 +38,20 @@ class getDefault : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         // start message
         rtl_locale::setDefaultLocale();
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 
     void getDefault_001()
     {
         rtl_Locale* pData = rtl_locale_getDefault();
-        CPPUNIT_ASSERT_MESSAGE("locale must not null", pData != NULL);
+        CPPUNIT_ASSERT_MESSAGE("locale must not null", pData != nullptr);
     }
 
     // Change the following lines only, if you add, remove or rename
@@ -67,13 +67,13 @@ class setDefault : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         // start message
         rtl_locale::setDefaultLocale();
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
         setDefaultLocale();
     }
@@ -83,7 +83,7 @@ public:
     {
         rtl_locale_setDefault(rtl::OUString("en").getStr(), rtl::OUString("US").getStr(), rtl::OUString().getStr());
         rtl_Locale* pData = rtl_locale_getDefault();
-        CPPUNIT_ASSERT_MESSAGE("locale must not null", pData != NULL);
+        CPPUNIT_ASSERT_MESSAGE("locale must not null", pData != nullptr);
 
         // be sure to not GPF
     }
@@ -101,13 +101,13 @@ class getLanguage : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         // start message
         rtl_locale::setDefaultLocale();
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 
@@ -139,13 +139,13 @@ class getCountry : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         // start message
         rtl_locale::setDefaultLocale();
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 
@@ -177,13 +177,13 @@ class getVariant : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         // start message
         rtl_locale::setDefaultLocale();
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 
@@ -215,13 +215,13 @@ class hashCode : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         // start message
         rtl_locale::setDefaultLocale();
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 
@@ -253,13 +253,13 @@ class equals : public CppUnit::TestFixture
 {
 public:
     // initialise your test code values here.
-    void setUp() SAL_OVERRIDE
+    void setUp() override
     {
         // start message
         rtl_locale::setDefaultLocale();
     }
 
-    void tearDown() SAL_OVERRIDE
+    void tearDown() override
     {
     }
 

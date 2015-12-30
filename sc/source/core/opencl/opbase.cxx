@@ -16,8 +16,8 @@ using namespace formula;
 namespace sc { namespace opencl {
 
 UnhandledToken::UnhandledToken(
-    formula::FormulaToken* t, const char* m, const std::string& fn, int ln ) :
-    mToken(t), mMessage(m), mFile(fn), mLineNumber(ln) {}
+    const char* m, const std::string& fn, int ln ) :
+    mMessage(m), mFile(fn), mLineNumber(ln) {}
 
 OpenCLError::OpenCLError( const std::string& function, cl_int error, const std::string& file, int line ) :
     mFunction(function), mError(error), mFile(file), mLineNumber(line)
@@ -93,7 +93,7 @@ bool DynamicKernelArgument::NeedParallelReduction() const
 }
 
 VectorRef::VectorRef( const ScCalcConfig& config, const std::string& s, FormulaTreeNodeRef ft, int idx ) :
-    DynamicKernelArgument(config, s, ft), mpClmem(NULL), mnIndex(idx)
+    DynamicKernelArgument(config, s, ft), mpClmem(nullptr), mnIndex(idx)
 {
     if (mnIndex)
     {

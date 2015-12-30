@@ -28,9 +28,9 @@
 #include "svl/sharedstring.hxx"
 #include <svl/languageoptions.hxx>
 
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/noncopyable.hpp>
 #include <memory>
+#include <vector>
 
 namespace editeng {
 
@@ -51,7 +51,7 @@ private:
     sal_uInt16              nStart;
     sal_uInt16              nEnd;
 
-                        XEditAttribute( const XEditAttribute& rCopyFrom ) SAL_DELETED_FUNCTION;
+                        XEditAttribute( const XEditAttribute& rCopyFrom ) = delete;
 
 public:
     XEditAttribute( const SfxPoolItem& rAttr, sal_uInt16 nStart, sal_uInt16 nEnd );
@@ -98,7 +98,7 @@ struct XParaPortion
 
 class XParaPortionList
 {
-    typedef boost::ptr_vector<XParaPortion> ListType;
+    typedef std::vector<std::unique_ptr<XParaPortion> > ListType;
     ListType maList;
 
     sal_uIntPtr nRefDevPtr;
@@ -127,7 +127,7 @@ class ContentInfo : boost::noncopyable
 {
     friend class EditTextObjectImpl;
 public:
-    typedef boost::ptr_vector<XEditAttribute> XEditAttributesType;
+    typedef std::vector<std::unique_ptr<XEditAttribute> > XEditAttributesType;
 
 private:
     svl::SharedString maText;
@@ -176,7 +176,7 @@ public:
 class EditTextObjectImpl : boost::noncopyable
 {
 public:
-    typedef boost::ptr_vector<ContentInfo> ContentInfosType;
+    typedef std::vector<std::unique_ptr<ContentInfo> > ContentInfosType;
 
 private:
     EditTextObject* mpFront;

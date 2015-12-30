@@ -23,6 +23,7 @@
 #include <com/sun/star/ucb/XCommandEnvironment.hpp>
 #include <ucbhelper/ucbhelperdllapi.h>
 #include <cppuhelper/implbase1.hxx>
+#include <memory>
 
 namespace ucbhelper
 {
@@ -30,17 +31,17 @@ struct CommandEnvironment_Impl;
 
 /**
   * This class implements the interface
-  * com::sun::star::ucb::XCommandEnvironement. Instances of this class can
+  * css::ucb::XCommandEnvironement. Instances of this class can
   * be used to supply environments to commands executed by UCB contents.
   */
 class UCBHELPER_DLLPUBLIC CommandEnvironment :
             public cppu::WeakImplHelper1< css::ucb::XCommandEnvironment >
 {
-    CommandEnvironment_Impl* m_pImpl;
+    std::unique_ptr<CommandEnvironment_Impl> m_pImpl;
 
 private:
-    CommandEnvironment( const CommandEnvironment& ) SAL_DELETED_FUNCTION;
-    CommandEnvironment& operator=( const CommandEnvironment& ) SAL_DELETED_FUNCTION;
+    CommandEnvironment( const CommandEnvironment& ) = delete;
+    CommandEnvironment& operator=( const CommandEnvironment& ) = delete;
 
 public:
     /**
@@ -61,11 +62,11 @@ public:
      // XCommandEnvironemnt
     virtual css::uno::Reference< css::task::XInteractionHandler > SAL_CALL getInteractionHandler()
         throw ( css::uno::RuntimeException,
-                std::exception ) SAL_OVERRIDE;
+                std::exception ) override;
 
     virtual css::uno::Reference< css::ucb::XProgressHandler > SAL_CALL getProgressHandler()
         throw ( css::uno::RuntimeException,
-                std::exception ) SAL_OVERRIDE;
+                std::exception ) override;
 };
 
 } /* namespace ucbhelper */

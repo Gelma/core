@@ -26,12 +26,12 @@
 #include "swtypes.hxx"
 #include "swrect.hxx"
 
-class SwRootFrm;
-class SwLayoutFrm;
-class SwPageFrm;
-class SwFlyFrm;
-class SwContentFrm;
-class SwTabFrm;
+class SwRootFrame;
+class SwLayoutFrame;
+class SwPageFrame;
+class SwFlyFrame;
+class SwContentFrame;
+class SwTabFrame;
 class SwViewShellImp;
 class SwContentNode;
 class SwWait;
@@ -50,138 +50,138 @@ class SwWait;
  */
 class SwLayAction
 {
-    SwRootFrm  *pRoot;
-    SwViewShellImp  *pImp; // here the action logs in and off
+    SwRootFrame  *m_pRoot;
+    SwViewShellImp  *m_pImp; // here the action logs in and off
 
     // For the sake of optimization, so that the tables stick a bit better to
-    // the Crsr when hitting return/backspace in front of one.
-    // The first TabFrm that paints itself (per page) adds itself to the pointer.
-    // The ContentFrms beneath the page do not need to deregister at the Shell for
+    // the Cursor when hitting return/backspace in front of one.
+    // The first TabFrame that paints itself (per page) adds itself to the pointer.
+    // The ContentFrames beneath the page do not need to deregister at the Shell for
     // painting.
-    const SwTabFrm *pOptTab;
+    const SwTabFrame *m_pOptTab;
 
-    SwWait *pWait;
+    SwWait *m_pWait;
 
     // If a paragraph (or anything else) moved more than one page when
     // formatting, it adds its new page number here.
     // The InternalAction can then take the appropriate steps.
-    sal_uInt16 nPreInvaPage;
+    sal_uInt16 m_nPreInvaPage;
 
-    std::clock_t nStartTicks;      // The Action's starting time; if too much time passes the
-                                // WaitCrsr can be enabled via CheckWaitCrsr()
+    std::clock_t m_nStartTicks;      // The Action's starting time; if too much time passes the
+                                // WaitCursor can be enabled via CheckWaitCursor()
 
-    VclInputFlags nInputType;      // Which input should terminate processing
-    sal_uInt16 nEndPage;        // StatBar control
-    sal_uInt16 nCheckPageNum;   // CheckPageDesc() was delayed if != USHRT_MAX
+    VclInputFlags m_nInputType;      // Which input should terminate processing
+    sal_uInt16 m_nEndPage;        // StatBar control
+    sal_uInt16 m_nCheckPageNum;   // CheckPageDesc() was delayed if != USHRT_MAX
                                 // check from this page onwards
 
-    bool bPaint;         // painting or only formatting?
-    bool bComplete;      // Format everything or just the visible Area?
-    bool bCalcLayout;    // Complete reformatting?
-    bool bAgain;         // For the automatically repeated Action if Pages are deleted
-    bool bNextCycle;     // Reset on the first invalid Page
-    bool bInput;         // For terminating processing on input
-    bool bIdle;          // True if the LayAction was triggered by the Idler
-    bool bReschedule;    // Call Reschedule depending on Progress?
-    bool bCheckPages;    // Run CheckPageDescs() or delay it
-    bool bUpdateExpFields; // Is set if, after Formatting, we need to do another round for ExpField
-    bool bBrowseActionStop; // Terminate Action early (as per bInput) and leave the rest to the Idler
-    bool bWaitAllowed;      // Waitcursor allowed?
-    bool bPaintExtraData;   // Painting line numbers (or similar) enabled?
-    bool bActionInProgress; // Is set in Action() at the beginning and deleted at the end
+    bool m_bPaint;         // painting or only formatting?
+    bool m_bComplete;      // Format everything or just the visible Area?
+    bool m_bCalcLayout;    // Complete reformatting?
+    bool m_bAgain;         // For the automatically repeated Action if Pages are deleted
+    bool m_bNextCycle;     // Reset on the first invalid Page
+    bool m_bInput;         // For terminating processing on input
+    bool m_bIdle;          // True if the LayAction was triggered by the Idler
+    bool m_bReschedule;    // Call Reschedule depending on Progress?
+    bool m_bCheckPages;    // Run CheckPageDescs() or delay it
+    bool m_bUpdateExpFields; // Is set if, after Formatting, we need to do another round for ExpField
+    bool m_bBrowseActionStop; // Terminate Action early (as per bInput) and leave the rest to the Idler
+    bool m_bWaitAllowed;      // Waitcursor allowed?
+    bool m_bPaintExtraData;   // Painting line numbers (or similar) enabled?
+    bool m_bActionInProgress; // Is set in Action() at the beginning and deleted at the end
 
     // OD 14.04.2003 #106346# - new flag for content formatting on interrupt.
     bool    mbFormatContentOnInterrupt;
 
-    void PaintContent( const SwContentFrm *, const SwPageFrm *,
+    void PaintContent( const SwContentFrame *, const SwPageFrame *,
                      const SwRect &rOldRect, long nOldBottom );
-    bool PaintWithoutFlys( const SwRect &, const SwContentFrm *,
-                           const SwPageFrm * );
-    inline bool _PaintContent( const SwContentFrm *, const SwPageFrm *,
+    bool PaintWithoutFlys( const SwRect &, const SwContentFrame *,
+                           const SwPageFrame * );
+    inline bool _PaintContent( const SwContentFrame *, const SwPageFrame *,
                              const SwRect & );
 
-    bool FormatLayout( OutputDevice* pRenderContext, SwLayoutFrm *, bool bAddRect = true );
-    bool FormatLayoutTab( SwTabFrm *, bool bAddRect = true );
-    bool FormatContent( const SwPageFrm* pPage );
-    void _FormatContent( const SwContentFrm* pContent,
-                       const SwPageFrm* pPage );
-    bool IsShortCut( SwPageFrm *& );
+    bool FormatLayout( OutputDevice* pRenderContext, SwLayoutFrame *, bool bAddRect = true );
+    bool FormatLayoutTab( SwTabFrame *, bool bAddRect = true );
+    bool FormatContent( const SwPageFrame* pPage );
+    void _FormatContent( const SwContentFrame* pContent,
+                       const SwPageFrame* pPage );
+    bool IsShortCut( SwPageFrame *& );
 
     bool TurboAction();
-    bool _TurboAction( const SwContentFrm * );
+    bool _TurboAction( const SwContentFrame * );
     void InternalAction(OutputDevice* pRenderContext);
 
-    static SwPageFrm *CheckFirstVisPage( SwPageFrm *pPage );
+    static SwPageFrame *CheckFirstVisPage( SwPageFrame *pPage );
 
     bool RemoveEmptyBrowserPages();
 
     inline void CheckIdleEnd();
-    inline std::clock_t GetStartTicks() { return nStartTicks; }
+    inline std::clock_t GetStartTicks() { return m_nStartTicks; }
 
 public:
-    SwLayAction( SwRootFrm *pRt, SwViewShellImp *pImp );
+    SwLayAction( SwRootFrame *pRt, SwViewShellImp *pImp );
     ~SwLayAction();
 
-    void SetIdle            ( bool bNew )   { bIdle = bNew; }
-    void SetCheckPages      ( bool bNew )   { bCheckPages = bNew; }
-    void SetBrowseActionStop( bool bNew )   { bBrowseActionStop = bNew; }
-    void SetNextCycle       ( bool bNew )   { bNextCycle = bNew; }
+    void SetIdle            ( bool bNew )   { m_bIdle = bNew; }
+    void SetCheckPages      ( bool bNew )   { m_bCheckPages = bNew; }
+    void SetBrowseActionStop( bool bNew )   { m_bBrowseActionStop = bNew; }
+    void SetNextCycle       ( bool bNew )   { m_bNextCycle = bNew; }
 
-    bool IsWaitAllowed()        const       { return bWaitAllowed; }
-    bool IsNextCycle()          const       { return bNextCycle; }
-    bool IsInput()              const       { return bInput; }
-    bool IsWait()               const       { return 0 != pWait;  }
-    bool IsPaint()              const       { return bPaint; }
-    bool IsIdle()               const       { return bIdle;  }
-    bool IsReschedule()         const       { return bReschedule;  }
-    bool IsPaintExtraData()     const       { return bPaintExtraData;}
+    bool IsWaitAllowed()        const       { return m_bWaitAllowed; }
+    bool IsNextCycle()          const       { return m_bNextCycle; }
+    bool IsInput()              const       { return m_bInput; }
+    bool IsWait()               const       { return nullptr != m_pWait;  }
+    bool IsPaint()              const       { return m_bPaint; }
+    bool IsIdle()               const       { return m_bIdle;  }
+    bool IsReschedule()         const       { return m_bReschedule;  }
+    bool IsPaintExtraData()     const       { return m_bPaintExtraData;}
     bool IsInterrupt()          const       { return IsInput(); }
 
-    VclInputFlags GetInputType()    const { return nInputType; }
+    VclInputFlags GetInputType()    const { return m_nInputType; }
 
     // adjusting Action to the wanted behaviour
-    void SetPaint       ( bool bNew )   { bPaint = bNew; }
-    void SetComplete    ( bool bNew )   { bComplete = bNew; }
+    void SetPaint       ( bool bNew )   { m_bPaint = bNew; }
+    void SetComplete    ( bool bNew )   { m_bComplete = bNew; }
     void SetStatBar     ( bool bNew );
-    void SetInputType   ( VclInputFlags nNew ) { nInputType = nNew; }
-    void SetCalcLayout  ( bool bNew )   { bCalcLayout = bNew; }
-    void SetReschedule  ( bool bNew )   { bReschedule = bNew; }
-    void SetWaitAllowed ( bool bNew )   { bWaitAllowed = bNew; }
+    void SetInputType   ( VclInputFlags nNew ) { m_nInputType = nNew; }
+    void SetCalcLayout  ( bool bNew )   { m_bCalcLayout = bNew; }
+    void SetReschedule  ( bool bNew )   { m_bReschedule = bNew; }
+    void SetWaitAllowed ( bool bNew )   { m_bWaitAllowed = bNew; }
 
-    void SetAgain()         { bAgain = true; }
-    void SetUpdateExpFields() {bUpdateExpFields = true; }
+    void SetAgain()         { m_bAgain = true; }
+    void SetUpdateExpFields() {m_bUpdateExpFields = true; }
 
     inline void SetCheckPageNum( sal_uInt16 nNew );
-    inline void SetCheckPageNumDirect( sal_uInt16 nNew ) { nCheckPageNum = nNew; }
+    inline void SetCheckPageNumDirect( sal_uInt16 nNew ) { m_nCheckPageNum = nNew; }
 
     void Action(OutputDevice* pRenderContext); // here it begins
     void Reset();   // back to CTor-defaults
 
-    bool IsAgain()      const { return bAgain; }
-    bool IsComplete()   const { return bComplete; }
-    bool IsExpFields()    const { return bUpdateExpFields; }
-    bool IsCalcLayout() const { return bCalcLayout;  }
-    bool IsCheckPages() const { return bCheckPages;  }
-    bool IsBrowseActionStop() const { return bBrowseActionStop; }
-    bool IsActionInProgress() const { return bActionInProgress; }
+    bool IsAgain()      const { return m_bAgain; }
+    bool IsComplete()   const { return m_bComplete; }
+    bool IsExpFields()    const { return m_bUpdateExpFields; }
+    bool IsCalcLayout() const { return m_bCalcLayout;  }
+    bool IsCheckPages() const { return m_bCheckPages;  }
+    bool IsBrowseActionStop() const { return m_bBrowseActionStop; }
+    bool IsActionInProgress() const { return m_bActionInProgress; }
 
-    sal_uInt16 GetCheckPageNum() const { return nCheckPageNum; }
+    sal_uInt16 GetCheckPageNum() const { return m_nCheckPageNum; }
 
-    // others should be able to activate the WaitCrsr, too
-    void CheckWaitCrsr();
+    // others should be able to activate the WaitCursor, too
+    void CheckWaitCursor();
 
     // #i28701# - method is now public;
     // delete 2nd parameter, because its not used;
-    bool FormatLayoutFly( SwFlyFrm * );
+    bool FormatLayoutFly( SwFlyFrame * );
     // #i28701# - method is now public
-    bool _FormatFlyContent( const SwFlyFrm * );
+    bool _FormatFlyContent( const SwFlyFrame * );
 
 };
 
 class SwLayIdle
 {
 
-    SwRootFrm *pRoot;
+    SwRootFrame *pRoot;
     SwViewShellImp  *pImp;           // The Idler registers and deregisters here
     SwContentNode *pContentNode;    // The current cursor position is saved here
     sal_Int32  nTextPos;
@@ -197,18 +197,18 @@ class SwLayIdle
 #endif
 
     enum IdleJobType{ ONLINE_SPELLING, AUTOCOMPLETE_WORDS, WORD_COUNT, SMART_TAGS };
-    bool _DoIdleJob( const SwContentFrm*, IdleJobType );
+    bool _DoIdleJob( const SwContentFrame*, IdleJobType );
     bool DoIdleJob( IdleJobType, bool bVisAreaOnly );
 
 public:
-    SwLayIdle( SwRootFrm *pRt, SwViewShellImp *pImp );
+    SwLayIdle( SwRootFrame *pRt, SwViewShellImp *pImp );
     ~SwLayIdle();
 };
 
 inline void SwLayAction::SetCheckPageNum( sal_uInt16 nNew )
 {
-    if ( nNew < nCheckPageNum )
-        nCheckPageNum = nNew;
+    if ( nNew < m_nCheckPageNum )
+        m_nCheckPageNum = nNew;
 }
 
 #endif // INCLUDED_SW_SOURCE_CORE_INC_LAYACT_HXX

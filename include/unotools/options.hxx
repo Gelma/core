@@ -72,7 +72,7 @@ namespace detail {
 // shared between unotools, svl and svt)
 // It also provides an implementation for a Configuration Listener and inherits a broadcaster implementation
 
-class UNOTOOLS_DLLPUBLIC SAL_WARN_UNUSED Options
+class SAL_WARN_UNUSED UNOTOOLS_DLLPUBLIC Options
     : public utl::ConfigurationBroadcaster, public utl::ConfigurationListener
 {
 public:
@@ -81,11 +81,11 @@ public:
     virtual ~Options() = 0;
 
 private:
-    Options(Options &) SAL_DELETED_FUNCTION;
-    void operator =(Options &) SAL_DELETED_FUNCTION;
+    Options(Options &) = delete;
+    void operator =(Options &) = delete;
 
 protected:
-    virtual void ConfigurationChanged( ::utl::ConfigurationBroadcaster* p, sal_uInt32 nHint=0 ) SAL_OVERRIDE;
+    virtual void ConfigurationChanged( ::utl::ConfigurationBroadcaster* p, sal_uInt32 nHint=0 ) override;
 };
 
 } }

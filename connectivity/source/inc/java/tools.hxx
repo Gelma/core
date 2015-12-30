@@ -53,7 +53,7 @@ namespace connectivity
             for(jsize i=0;i<nLen;++i)
             {
                 JT xInfo(pEnv,pEnv->GetObjectArrayElement(_Array,i));
-                java_lang_Object::ThrowSQLException(pEnv,NULL);
+                java_lang_Object::ThrowSQLException(pEnv,nullptr);
                 xOut.getArray()[i] = xInfo;
             }
             pEnv->DeleteLocalRef(_Array);
@@ -61,7 +61,6 @@ namespace connectivity
         return xOut;
     }
 
-    ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameAccess > Map2XNameAccess(JNIEnv *pEnv,jobject _pMap);
     jobject convertTypeMapToJavaMap(JNIEnv *pEnv,const ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameAccess > & _rMap);
 
     /** return if a exception occurred

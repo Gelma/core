@@ -48,7 +48,6 @@
 
 #include "tabbgcolor.hxx"
 #include "tabbgcolordlg.hxx"
-#include "sccommands.h"
 #include "markdata.hxx"
 
 #include <vector>
@@ -76,7 +75,7 @@ void ScTabViewShell::ExecuteTable( SfxRequest& rReq )
                 pDoc->GetName( nCurrentTab, aName );
 
                 bool bVisible=true;
-                if( pReqArgs != NULL )
+                if( pReqArgs != nullptr )
                 {
                     const SfxPoolItem* pItem;
                     if( pReqArgs->HasItem( FID_TABLE_VISIBLE, &pItem ) )
@@ -173,7 +172,7 @@ void ScTabViewShell::ExecuteTable( SfxRequest& rReq )
                 if ( !pDoc->IsDocEditable() )
                     break;                          // locked
 
-                if ( pReqArgs != NULL )             // from basic
+                if ( pReqArgs != nullptr )             // from basic
                 {
                     bool bOk = false;
                     const SfxPoolItem*  pTabItem;
@@ -187,7 +186,7 @@ void ScTabViewShell::ExecuteTable( SfxRequest& rReq )
 
                         aName = static_cast<const SfxStringItem*>(pNameItem)->GetValue();
                         nTabNr = static_cast<const SfxUInt16Item*>(pTabItem)->GetValue() - 1;
-                        if ( nTabNr < nTabCount )
+                        if ( nTabNr <= nTabCount )
                             bOk = InsertTable( aName, nTabNr );
                     }
 
@@ -318,7 +317,7 @@ void ScTabViewShell::ExecuteTable( SfxRequest& rReq )
                         ( pDoc->IsTabProtected( nTabNr ) || nTabSelCount > 1 ) )
                     break; // no rename
 
-                if( pReqArgs != NULL )
+                if( pReqArgs != nullptr )
                 {
                     bool        bDone   = false;
                     const SfxPoolItem* pItem;
@@ -352,7 +351,7 @@ void ScTabViewShell::ExecuteTable( SfxRequest& rReq )
                     OUString      aErrMsg ( ScGlobal::GetRscString( STR_INVALIDTABNAME ) );
                     OUString aName;
                     OUString      aDlgTitle;
-                    const sal_Char* pHelpId = 0;
+                    const sal_Char* pHelpId = nullptr;
 
                     switch ( nSlot )
                     {
@@ -425,7 +424,7 @@ void ScTabViewShell::ExecuteTable( SfxRequest& rReq )
 
         case FID_TAB_MOVE:
             {
-                if ( pDoc->GetChangeTrack() != NULL )
+                if ( pDoc->GetChangeTrack() != nullptr )
                     break;    // if ChangeTracking is active, then no TabMove
 
                 bool   bDoIt = false;
@@ -435,7 +434,7 @@ void ScTabViewShell::ExecuteTable( SfxRequest& rReq )
                 OUString aDocName;
                 OUString aTabName;
 
-                if( pReqArgs != NULL )
+                if( pReqArgs != nullptr )
                 {
                     SCTAB nTableCount = pDoc->GetTableCount();
                     const SfxPoolItem* pItem;
@@ -455,12 +454,12 @@ void ScTabViewShell::ExecuteTable( SfxRequest& rReq )
                     if (!aDocName.isEmpty())
                     {
                         SfxObjectShell* pSh     = SfxObjectShell::GetFirst();
-                        ScDocShell*     pScSh   = NULL;
+                        ScDocShell*     pScSh   = nullptr;
                         sal_uInt16          i=0;
 
                         while ( pSh )
                         {
-                            pScSh = PTR_CAST( ScDocShell, pSh );
+                            pScSh = dynamic_cast<ScDocShell*>( pSh  );
 
                             if( pScSh )
                             {
@@ -651,7 +650,7 @@ void ScTabViewShell::ExecuteTable( SfxRequest& rReq )
                 if ( pDoc->IsTabProtected( nTabNr ) ) // ||nTabSelCount > 1
                     break;
 
-                if( pReqArgs != NULL )
+                if( pReqArgs != nullptr )
                 {
                     bool                bDone = false;
                     const SfxPoolItem*  pItem;
@@ -701,7 +700,7 @@ void ScTabViewShell::ExecuteTable( SfxRequest& rReq )
                                                                 OUString(ScResId(SCSTR_SET_TAB_BG_COLOR)),
                                                                 OUString(ScResId(SCSTR_NO_TAB_BG_COLOR)),
                                                                 aTabBgColor,
-                                                                CMD_FID_TAB_SET_TAB_BG_COLOR));
+                                                                ".uno:TabBgColor"));
                     while ( !bDone && nRet == RET_OK )
                     {
                         nRet = pDlg->Execute();
@@ -849,7 +848,7 @@ void ScTabViewShell::GetStateTable( SfxItemSet& rSet )
 
             case FID_TAB_MOVE:
                 if (   !pDoc->IsDocEditable()
-                    || pDoc->GetChangeTrack() != NULL
+                    || pDoc->GetChangeTrack() != nullptr
                     || nTabCount > MAXTAB)
                     rSet.DisableItem( nWhich );
                 break;

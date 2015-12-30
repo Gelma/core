@@ -94,7 +94,7 @@ PageMarginControl::PageMarginControl(
     SelectValueSetItem();
 
     SetFieldUnit( *maLeftMarginEdit.get(), eFUnit );
-    Link<> aLinkLR = LINK( this, PageMarginControl, ModifyLRMarginHdl );
+    Link<Edit&,void> aLinkLR = LINK( this, PageMarginControl, ModifyLRMarginHdl );
     maLeftMarginEdit->SetModifyHdl( aLinkLR );
     SetMetricValue( *maLeftMarginEdit.get(), mnPageLeftMargin, meUnit );
 
@@ -102,7 +102,7 @@ PageMarginControl::PageMarginControl(
     maRightMarginEdit->SetModifyHdl( aLinkLR );
     SetMetricValue( *maRightMarginEdit.get(), mnPageRightMargin, meUnit );
 
-    Link<> aLinkUL = LINK( this, PageMarginControl, ModifyULMarginHdl );
+    Link<Edit&,void> aLinkUL = LINK( this, PageMarginControl, ModifyULMarginHdl );
     SetFieldUnit( *maTopMarginEdit.get(), eFUnit );
     maTopMarginEdit->SetModifyHdl( aLinkUL );
     SetMetricValue( *maTopMarginEdit.get(), mnPageTopMargin, meUnit );
@@ -204,7 +204,7 @@ void PageMarginControl::FillValueSet(
     aHelpText += aBottom;
     aHelpText += aNarrowValText;
     mpMarginValueSet->AddItem(
-        Image((bLandscape) ? SW_RES(IMG_NARROW_L) : SW_RES(IMG_NARROW)), 0,
+        Image((bLandscape) ? SW_RES(IMG_NARROW_L) : SW_RES(IMG_NARROW)), nullptr,
         SW_RESSTR(STR_NARROW), &aHelpText );
 
     SetMetricValue( *maWidthHeightField.get(), SWPAGE_NORMAL_VALUE, meUnit );
@@ -218,7 +218,7 @@ void PageMarginControl::FillValueSet(
     aHelpText += aBottom;
     aHelpText += aNormalValText;
     mpMarginValueSet->AddItem(
-        Image((bLandscape) ? SW_RES(IMG_NORMAL_L) : SW_RES(IMG_NORMAL)), 0,
+        Image((bLandscape) ? SW_RES(IMG_NORMAL_L) : SW_RES(IMG_NORMAL)), nullptr,
         SW_RESSTR(STR_NORMAL), &aHelpText );
 
     SetMetricValue( *maWidthHeightField.get(), SWPAGE_WIDE_VALUE1, meUnit );
@@ -234,7 +234,7 @@ void PageMarginControl::FillValueSet(
     aHelpText += aBottom;
     aHelpText += aWide1ValText;
     mpMarginValueSet->AddItem(
-        Image((bLandscape) ? SW_RES(IMG_WIDE_L) : SW_RES(IMG_WIDE)), 0,
+        Image((bLandscape) ? SW_RES(IMG_WIDE_L) : SW_RES(IMG_WIDE)), nullptr,
         SW_RESSTR(STR_WIDE), &aHelpText );
 
     const OUString aInner = SW_RESSTR(STR_MARGIN_TOOLTIP_INNER);
@@ -251,7 +251,7 @@ void PageMarginControl::FillValueSet(
     aHelpText += aBottom;
     aHelpText += aWide1ValText;
     mpMarginValueSet->AddItem(
-        Image((bLandscape) ? SW_RES(IMG_MIRRORED_L) : SW_RES(IMG_MIRRORED)), 0,
+        Image((bLandscape) ? SW_RES(IMG_MIRRORED_L) : SW_RES(IMG_MIRRORED)), nullptr,
         SW_RESSTR(STR_MIRRORED), &aHelpText );
 
     if ( bUserCustomValuesAvailable )
@@ -274,7 +274,7 @@ void PageMarginControl::FillValueSet(
         aHelpText.clear();
     }
     mpMarginValueSet->AddItem(
-        Image((bUserCustomValuesAvailable) ? SW_RES(IMG_CUSTOM) : SW_RES(IMG_CUSTOM_DIS)), 0,
+        Image((bUserCustomValuesAvailable) ? SW_RES(IMG_CUSTOM) : SW_RES(IMG_CUSTOM_DIS)), nullptr,
         SW_RESSTR(STR_LCVALUE), &aHelpText );
 }
 
@@ -399,7 +399,7 @@ IMPL_LINK_TYPED(PageMarginControl, ImplMarginHdl, ValueSet*, pControl, void)
     }
 }
 
-IMPL_LINK( PageMarginControl, ModifyLRMarginHdl, MetricField *, )
+IMPL_LINK_NOARG_TYPED( PageMarginControl, ModifyLRMarginHdl, Edit&, void )
 {
     mpMarginValueSet->SetNoSelection();
     mpMarginValueSet->SelectItem(0);
@@ -411,10 +411,9 @@ IMPL_LINK( PageMarginControl, ModifyLRMarginHdl, MetricField *, )
     mnPageRightMargin = GetCoreValue( *maRightMarginEdit.get(), meUnit );
     mrPagePropPanel.ExecuteMarginLRChange( mnPageLeftMargin, mnPageRightMargin );
     mbCustomValuesUsed = true;
-    return 0;
 }
 
-IMPL_LINK( PageMarginControl, ModifyULMarginHdl, MetricField *, )
+IMPL_LINK_NOARG_TYPED( PageMarginControl, ModifyULMarginHdl, Edit&, void )
 {
     mpMarginValueSet->SetNoSelection();
     mpMarginValueSet->SelectItem(0);
@@ -426,7 +425,6 @@ IMPL_LINK( PageMarginControl, ModifyULMarginHdl, MetricField *, )
     mnPageBottomMargin = GetCoreValue( *maBottomMarginEdit.get(), meUnit );
     mrPagePropPanel.ExecuteMarginULChange( mnPageTopMargin, mnPageBottomMargin );
     mbCustomValuesUsed = true;
-    return 0;
 }
 
 bool PageMarginControl::GetUserCustomValues()
@@ -436,7 +434,7 @@ bool PageMarginControl::GetUserCustomValues()
     SvtViewOptions aWinOpt( E_WINDOW, SWPAGE_LEFT_GVALUE );
     if ( aWinOpt.Exists() )
     {
-        ::com::sun::star::uno::Sequence < ::com::sun::star::beans::NamedValue > aSeq = aWinOpt.GetUserData();
+        css::uno::Sequence < css::beans::NamedValue > aSeq = aWinOpt.GetUserData();
         OUString aTmp;
         if ( aSeq.getLength())
             aSeq[0].Value >>= aTmp;
@@ -448,7 +446,7 @@ bool PageMarginControl::GetUserCustomValues()
     SvtViewOptions aWinOpt2( E_WINDOW, SWPAGE_RIGHT_GVALUE );
     if ( aWinOpt2.Exists() )
     {
-        ::com::sun::star::uno::Sequence < ::com::sun::star::beans::NamedValue > aSeq = aWinOpt2.GetUserData();
+        css::uno::Sequence < css::beans::NamedValue > aSeq = aWinOpt2.GetUserData();
         OUString aTmp;
         if ( aSeq.getLength())
             aSeq[0].Value >>= aTmp;
@@ -460,7 +458,7 @@ bool PageMarginControl::GetUserCustomValues()
     SvtViewOptions aWinOpt3( E_WINDOW, SWPAGE_TOP_GVALUE );
     if ( aWinOpt3.Exists() )
     {
-        ::com::sun::star::uno::Sequence < ::com::sun::star::beans::NamedValue > aSeq = aWinOpt3.GetUserData();
+        css::uno::Sequence < css::beans::NamedValue > aSeq = aWinOpt3.GetUserData();
         OUString aTmp;
         if ( aSeq.getLength())
             aSeq[0].Value >>= aTmp;
@@ -472,7 +470,7 @@ bool PageMarginControl::GetUserCustomValues()
     SvtViewOptions aWinOpt4( E_WINDOW, SWPAGE_DOWN_GVALUE );
     if ( aWinOpt4.Exists() )
     {
-        ::com::sun::star::uno::Sequence < ::com::sun::star::beans::NamedValue > aSeq = aWinOpt4.GetUserData();
+        css::uno::Sequence < css::beans::NamedValue > aSeq = aWinOpt4.GetUserData();
         OUString aTmp;
         if ( aSeq.getLength())
             aSeq[0].Value >>= aTmp;
@@ -484,7 +482,7 @@ bool PageMarginControl::GetUserCustomValues()
     SvtViewOptions aWinOpt5( E_WINDOW, SWPAGE_MIRROR_GVALUE );
     if ( aWinOpt5.Exists() )
     {
-        ::com::sun::star::uno::Sequence < ::com::sun::star::beans::NamedValue > aSeq = aWinOpt5.GetUserData();
+        css::uno::Sequence < css::beans::NamedValue > aSeq = aWinOpt5.GetUserData();
         OUString aTmp;
         if ( aSeq.getLength())
             aSeq[0].Value >>= aTmp;
@@ -503,7 +501,7 @@ void PageMarginControl::StoreUserCustomValues()
         return;
     }
 
-    ::com::sun::star::uno::Sequence < ::com::sun::star::beans::NamedValue > aSeq(1);
+    css::uno::Sequence < css::beans::NamedValue > aSeq(1);
     SvtViewOptions aWinOpt( E_WINDOW, SWPAGE_LEFT_GVALUE );
 
     aSeq[0].Name = "mnPageLeftMargin";

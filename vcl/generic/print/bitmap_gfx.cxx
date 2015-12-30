@@ -69,7 +69,7 @@ public:
     explicit        HexEncoder (osl::File* pFile);
     virtual         ~HexEncoder ();
     void            WriteAscii (sal_uInt8 nByte);
-    virtual void    EncodeByte (sal_uInt8 nByte) SAL_OVERRIDE;
+    virtual void    EncodeByte (sal_uInt8 nByte) override;
     void            FlushLine ();
 };
 
@@ -142,7 +142,7 @@ public:
 
     explicit        Ascii85Encoder (osl::File* pFile);
     virtual         ~Ascii85Encoder ();
-    virtual void    EncodeByte (sal_uInt8 nByte) SAL_OVERRIDE;
+    virtual void    EncodeByte (sal_uInt8 nByte) override;
     void            WriteAscii (sal_uInt8 nByte);
 };
 
@@ -289,7 +289,7 @@ public:
     explicit LZWEncoder (osl::File* pOutputFile);
     virtual ~LZWEncoder ();
 
-    virtual void    EncodeByte (sal_uInt8 nByte) SAL_OVERRIDE;
+    virtual void    EncodeByte (sal_uInt8 nByte) override;
 };
 
 LZWEncoder::LZWEncoder(osl::File* pOutputFile) :
@@ -309,13 +309,13 @@ LZWEncoder::LZWEncoder(osl::File* pOutputFile) :
 
     for (sal_uInt32 i = 0; i < 4096; i++)
     {
-        mpTable[i].mpBrother    = NULL;
-        mpTable[i].mpFirstChild = NULL;
+        mpTable[i].mpBrother    = nullptr;
+        mpTable[i].mpFirstChild = nullptr;
         mpTable[i].mnCode       = i;
         mpTable[i].mnValue      = (sal_uInt8)mpTable[i].mnCode;
     }
 
-    mpPrefix = NULL;
+    mpPrefix = nullptr;
 
     WriteBits( mnClearCode, mnCodeSize );
 }
@@ -359,13 +359,13 @@ LZWEncoder::EncodeByte (sal_uInt8 nByte )
     else
     {
         nV = nByte;
-        for (p = mpPrefix->mpFirstChild; p != NULL; p = p->mpBrother)
+        for (p = mpPrefix->mpFirstChild; p != nullptr; p = p->mpBrother)
         {
             if (p->mnValue == nV)
                 break;
         }
 
-        if (p != NULL)
+        if (p != nullptr)
         {
             mpPrefix = p;
         }
@@ -378,7 +378,7 @@ LZWEncoder::EncodeByte (sal_uInt8 nByte )
                 WriteBits (mnClearCode, mnCodeSize);
 
                 for (i = 0; i < mnClearCode; i++)
-                    mpTable[i].mpFirstChild = NULL;
+                    mpTable[i].mpFirstChild = nullptr;
 
                 mnCodeSize = mnDataSize + 1;
                 mnTableSize = mnEOICode + 1;
@@ -392,7 +392,7 @@ LZWEncoder::EncodeByte (sal_uInt8 nByte )
                 p->mpBrother = mpPrefix->mpFirstChild;
                 mpPrefix->mpFirstChild = p;
                 p->mnValue = nV;
-                p->mpFirstChild = NULL;
+                p->mpFirstChild = nullptr;
             }
 
             mpPrefix = mpTable + nV;
@@ -489,7 +489,7 @@ PrinterGfx::DrawPS1GrayImage (const PrinterBmp& rBitmap, const Rectangle& rArea)
     nChar += psp::appendStr  (" string readhexstring pop}\n",   pGrayImage + nChar);
     nChar += psp::appendStr  ("image\n",                        pGrayImage + nChar);
 
-    WritePS (mpPageBody, pGrayImage);
+    WritePS (mpPageBody, pGrayImage, nChar);
 
     // image body
     std::unique_ptr<HexEncoder> xEncoder(new HexEncoder (mpPageBody));
@@ -540,7 +540,7 @@ PrinterGfx::writePS2ImageHeader (const Rectangle& rArea, psp::ImageType nType)
     nChar += psp::getValueOf (nCompressType,     pImage + nChar);
     nChar += psp::appendStr  (" psp_imagedict image\n", pImage + nChar);
 
-    WritePS (mpPageBody, pImage);
+    WritePS (mpPageBody, pImage, nChar);
 }
 
 void
@@ -573,7 +573,7 @@ PrinterGfx::writePS2Colorspace(const PrinterBmp& rBitmap, psp::ImageType nType)
                 nChar += psp::appendStr ("\npsp_lzwstring\n", pImage + nChar);
             else
                 nChar += psp::appendStr ("\npsp_ascii85string\n", pImage + nChar);
-            WritePS (mpPageBody, pImage);
+            WritePS (mpPageBody, pImage, nChar);
 
             std::unique_ptr<ByteEncoder> xEncoder(mbCompressBmp ? new LZWEncoder(mpPageBody)
                                                     : new Ascii85Encoder(mpPageBody));

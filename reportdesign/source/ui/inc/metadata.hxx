@@ -37,8 +37,8 @@ namespace rptui
     class OPropertyInfoService
         :public OModuleClient
     {
-        OPropertyInfoService(const OPropertyInfoService&) SAL_DELETED_FUNCTION;
-        void operator =(const OPropertyInfoService&) SAL_DELETED_FUNCTION;
+        OPropertyInfoService(const OPropertyInfoService&) = delete;
+        void operator =(const OPropertyInfoService&) = delete;
     protected:
         static sal_uInt16               s_nCount;
         static OPropertyInfoImpl*       s_pPropertyInfos;
@@ -52,11 +52,11 @@ namespace rptui
         static OUString                     getPropertyTranslation(sal_Int32 _nId);
         static OString                      getPropertyHelpId(sal_Int32 _nId);
         static sal_uInt32                   getPropertyUIFlags(sal_Int32 _nId);
-        static void                         getExcludeProperties(::std::vector< com::sun::star::beans::Property >& _rExcludeProperties,const ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyHandler >& _xFormComponentHandler);
+        static void                         getExcludeProperties(::std::vector< css::beans::Property >& _rExcludeProperties,const css::uno::Reference< css::inspection::XPropertyHandler >& _xFormComponentHandler);
 
         static bool                         isComposable(
                                                 const OUString& _rPropertyName,
-                                                const ::com::sun::star::uno::Reference< ::com::sun::star::inspection::XPropertyHandler >& _xFormComponentHandler
+                                                const css::uno::Reference< css::inspection::XPropertyHandler >& _xFormComponentHandler
                                             );
 
     protected:

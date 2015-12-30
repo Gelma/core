@@ -20,8 +20,6 @@
 #ifndef INCLUDED_SD_SOURCE_UI_INC_VIEW_HXX
 #define INCLUDED_SD_SOURCE_UI_INC_VIEW_HXX
 
-#include <boost/ptr_container/ptr_vector.hpp>
-
 #include "pres.hxx"
 #include <tools/gen.hxx>
 #include <svtools/transfer.hxx>
@@ -56,13 +54,6 @@ class ViewShell;
 class Window;
 class ViewClipboard;
 
-// SdViewRedrawRec
-struct SdViewRedrawRec
-{
-    VclPtr<OutputDevice> mpOut;
-    Rectangle            aRect;
-};
-
 //For master view we want to force that master
 //textboxes have readonly text, because the
 //text is the auto-generated click-here-to-edit
@@ -74,7 +65,7 @@ private:
     bool m_bReadOnly;
 public:
     OutlinerMasterViewFilter()
-        : m_pOutl(0)
+        : m_pOutl(nullptr)
         , m_bReadOnly(false)
     {
     }
@@ -85,50 +76,45 @@ public:
 class View : public FmFormView
 {
 public:
-    TYPEINFO_OVERRIDE();
 
     View (
         SdDrawDocument& rDrawDoc,
         OutputDevice* pOutDev,
-        ViewShell* pViewSh=NULL);
+        ViewShell* pViewSh=nullptr);
     virtual ~View();
 
-    void                    CompleteRedraw( OutputDevice* pOutDev, const vcl::Region& rReg, sdr::contact::ViewObjectContactRedirector* pRedirector = 0L) SAL_OVERRIDE;
+    void                    CompleteRedraw( OutputDevice* pOutDev, const vcl::Region& rReg, sdr::contact::ViewObjectContactRedirector* pRedirector = nullptr) override;
 
     virtual bool            GetAttributes( SfxItemSet& rTargetSet, bool bOnlyHardAttr = false ) const;
     virtual bool            SetAttributes(const SfxItemSet& rSet, bool bReplaceAll = false);
-    virtual void            MarkListHasChanged() SAL_OVERRIDE;
-    virtual void            ModelHasChanged() SAL_OVERRIDE;
+    virtual void            MarkListHasChanged() override;
+    virtual void            ModelHasChanged() override;
     void                    SelectAll();
-    void                    DoCut(vcl::Window* pWindow=NULL);
-    void                    DoCopy(vcl::Window* pWindow=NULL);
-    void                    DoPaste(vcl::Window* pWindow=NULL);
-    virtual void            DoConnect(SdrOle2Obj* pOleObj) SAL_OVERRIDE;
+    void                    DoCut(vcl::Window* pWindow=nullptr);
+    void                    DoCopy(vcl::Window* pWindow=nullptr);
+    void                    DoPaste(vcl::Window* pWindow=nullptr);
+    virtual void            DoConnect(SdrOle2Obj* pOleObj) override;
     virtual bool            SetStyleSheet(SfxStyleSheet* pStyleSheet, bool bDontRemoveHardAttr = false);
     void                    StartDrag( const Point& rStartPos, vcl::Window* pWindow );
     virtual void            DragFinished( sal_Int8 nDropAction );
     virtual sal_Int8 AcceptDrop (
         const AcceptDropEvent& rEvt,
         DropTargetHelper& rTargetHelper,
-        ::sd::Window* pTargetWindow = NULL,
+        ::sd::Window* pTargetWindow = nullptr,
         sal_uInt16 nPage = SDRPAGE_NOTFOUND,
         sal_uInt16 nLayer = SDRPAGE_NOTFOUND);
     virtual sal_Int8 ExecuteDrop (
         const ExecuteDropEvent& rEvt,
-        DropTargetHelper& rTargetHelper,
-        ::sd::Window* pTargetWindow = NULL,
+        ::sd::Window* pTargetWindow = nullptr,
         sal_uInt16 nPage = SDRPAGE_NOTFOUND,
         sal_uInt16 nLayer = SDRPAGE_NOTFOUND);
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::datatransfer::XTransferable>
+    css::uno::Reference<css::datatransfer::XTransferable>
         CreateClipboardDataObject (::sd::View*, vcl::Window& rWindow);
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::datatransfer::XTransferable>
+    css::uno::Reference<css::datatransfer::XTransferable>
         CreateDragDataObject (::sd::View*, vcl::Window& rWindow,
             const Point& rDragPos);
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::datatransfer::XTransferable>
+    css::uno::Reference<css::datatransfer::XTransferable>
         CreateSelectionDataObject (::sd::View*, vcl::Window& rWindow);
 
     void                    UpdateSelectionClipboard( bool bForceDeselect );
@@ -137,11 +123,11 @@ public:
     inline SdDrawDocument& GetDoc() const;
     inline ViewShell* GetViewShell() const { return mpViewSh; }
 
-    virtual bool SdrBeginTextEdit(SdrObject* pObj, SdrPageView* pPV = 0L, vcl::Window* pWin = 0L, bool bIsNewObj = false,
-        SdrOutliner* pGivenOutliner = 0L, OutlinerView* pGivenOutlinerView = 0L,
-        bool bDontDeleteOutliner = false, bool bOnlyOneView = false, bool bGrabFocus = true) SAL_OVERRIDE;
+    virtual bool SdrBeginTextEdit(SdrObject* pObj, SdrPageView* pPV = nullptr, vcl::Window* pWin = nullptr, bool bIsNewObj = false,
+        SdrOutliner* pGivenOutliner = nullptr, OutlinerView* pGivenOutlinerView = nullptr,
+        bool bDontDeleteOutliner = false, bool bOnlyOneView = false, bool bGrabFocus = true) override;
 
-    virtual SdrEndTextEditKind SdrEndTextEdit(bool bDontDeleteReally = false) SAL_OVERRIDE;
+    virtual SdrEndTextEditKind SdrEndTextEdit(bool bDontDeleteReally = false) override;
 
     bool RestoreDefaultText( SdrTextObj* pTextObj );
 
@@ -193,32 +179,31 @@ public:
                           std::vector<OUString> &rBookmarkList,
                           const sal_uInt16 nType );
 
-    virtual void onAccessibilityOptionsChanged() SAL_OVERRIDE;
+    virtual void onAccessibilityOptionsChanged() override;
 
-    virtual SdrModel*   GetMarkedObjModel() const SAL_OVERRIDE;
+    virtual SdrModel*   GetMarkedObjModel() const override;
     virtual bool Paste(
-        const SdrModel& rMod, const Point& rPos, SdrObjList* pLst, SdrInsertFlags nOptions,
-        const OUString& rSrcShellID, const OUString& rDestShellID ) SAL_OVERRIDE;
+        const SdrModel& rMod, const Point& rPos, SdrObjList* pLst, SdrInsertFlags nOptions) override;
 
     using SdrExchangeView::Paste;
 
     /** returns true if we have an undo manager and there is an open list undo action */
     bool isRecordingUndo() const;
 
-    virtual void AddCustomHdl() SAL_OVERRIDE;
+    virtual void AddCustomHdl() override;
 
     SmartTagSet& getSmartTags() { return maSmartTags; }
     void updateHandles();
 
-    virtual SdrViewContext GetContext() const SAL_OVERRIDE;
-    virtual bool HasMarkablePoints() const SAL_OVERRIDE;
-    virtual sal_uLong GetMarkablePointCount() const SAL_OVERRIDE;
-    virtual bool HasMarkedPoints() const SAL_OVERRIDE;
-    virtual sal_uLong GetMarkedPointCount() const SAL_OVERRIDE;
-    virtual bool IsPointMarkable(const SdrHdl& rHdl) const SAL_OVERRIDE;
-    virtual bool MarkPoint(SdrHdl& rHdl, bool bUnmark=false) SAL_OVERRIDE;
-    virtual void CheckPossibilities() SAL_OVERRIDE;
-    virtual bool MarkPoints(const ::Rectangle* pRect, bool bUnmark) SAL_OVERRIDE;
+    virtual SdrViewContext GetContext() const override;
+    virtual bool HasMarkablePoints() const override;
+    virtual sal_uLong GetMarkablePointCount() const override;
+    virtual bool HasMarkedPoints() const override;
+    virtual sal_uLong GetMarkedPointCount() const override;
+    virtual bool IsPointMarkable(const SdrHdl& rHdl) const override;
+    virtual bool MarkPoint(SdrHdl& rHdl, bool bUnmark=false) override;
+    virtual void CheckPossibilities() override;
+    virtual bool MarkPoints(const ::Rectangle* pRect, bool bUnmark) override;
     using SdrMarkView::MarkPoints;
 
     bool ShouldToggleOn(
@@ -257,8 +242,8 @@ protected:
     DECL_LINK_TYPED( OnParagraphInsertedHdl, ::Outliner *, void );
     DECL_LINK_TYPED( OnParagraphRemovingHdl, ::Outliner *, void );
 
-    virtual void OnBeginPasteOrDrop( PasteOrDropInfos* pInfos ) SAL_OVERRIDE;
-    virtual void OnEndPasteOrDrop( PasteOrDropInfos* pInfos ) SAL_OVERRIDE;
+    virtual void OnBeginPasteOrDrop( PasteOrDropInfos* pInfos ) override;
+    virtual void OnEndPasteOrDrop( PasteOrDropInfos* pInfos ) override;
 
     SdDrawDocument&         mrDoc;
     DrawDocShell*           mpDocSh;
@@ -266,14 +251,13 @@ protected:
     SdrMarkList*            mpDragSrcMarkList;
     SdrObject*              mpDropMarkerObj;
     SdrDropMarkerOverlay*   mpDropMarker;
-    sal_uInt16                  mnDragSrcPgNum;
+    sal_uInt16              mnDragSrcPgNum;
     Point                   maDropPos;
     ::std::vector<OUString> maDropFileVector;
     sal_Int8                mnAction;
     Idle                    maDropErrorIdle;
     Idle                    maDropInsertFileIdle;
-    sal_uInt16                  mnLockRedrawSmph;
-    boost::ptr_vector<SdViewRedrawRec> maLockedRedraws;
+    sal_uInt16              mnLockRedrawSmph;
     bool                    mbIsDropAllowed;
 
                             DECL_LINK_TYPED( DropErrorHdl, Idle*, void );

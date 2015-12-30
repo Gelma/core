@@ -34,7 +34,6 @@
 #include "sc.hrc"
 #include "hints.hxx"
 
-TYPEINIT2(ScDdeLink,::sfx2::SvBaseLink,SfxBroadcaster);
 
 #define DDE_TXT_ENCODING    osl_getThreadTextEncoding()
 
@@ -49,7 +48,7 @@ ScDdeLink::ScDdeLink( ScDocument* pD, const OUString& rA, const OUString& rT, co
     aItem( rI ),
     nMode( nM ),
     bNeedUpdate( false ),
-    pResult( NULL )
+    pResult( nullptr )
 {
 }
 
@@ -68,7 +67,7 @@ ScDdeLink::ScDdeLink( ScDocument* pD, const ScDdeLink& rOther ) :
     aItem   ( rOther.aItem ),
     nMode   ( rOther.nMode ),
     bNeedUpdate( false ),
-    pResult ( NULL )
+    pResult ( nullptr )
 {
     if (rOther.pResult)
         pResult = rOther.pResult->Clone();
@@ -78,7 +77,7 @@ ScDdeLink::ScDdeLink( ScDocument* pD, SvStream& rStream, ScMultipleReadHeader& r
     ::sfx2::SvBaseLink(SfxLinkUpdateMode::ALWAYS,SotClipboardFormatId::STRING),
     pDoc( pD ),
     bNeedUpdate( false ),
-    pResult( NULL )
+    pResult( nullptr )
 {
     rHdr.StartEntry();
 
@@ -90,7 +89,7 @@ ScDdeLink::ScDdeLink( ScDocument* pD, SvStream& rStream, ScMultipleReadHeader& r
     bool bHasValue;
     rStream.ReadCharAsBool( bHasValue );
     if ( bHasValue )
-        pResult = new ScMatrix(0, 0);
+        pResult = new ScFullMatrix(0, 0);
 
     if (rHdr.BytesLeft())       // neu in 388b und der 364w (RealTime-Client) Version
         rStream.ReadUChar( nMode );
@@ -109,7 +108,7 @@ void ScDdeLink::Store( SvStream& rStream, ScMultipleWriteHeader& rHdr ) const
     rStream.WriteUniOrByteString( aTopic, eCharSet );
     rStream.WriteUniOrByteString( aItem, eCharSet );
 
-    bool bHasValue = ( pResult != 0 );
+    bool bHasValue = ( pResult != nullptr );
     rStream.WriteBool( bHasValue );
 
     if( rStream.GetVersion() > SOFFICE_FILEFORMAT_40 )      // nicht bei 4.0 Export
@@ -122,7 +121,7 @@ void ScDdeLink::Store( SvStream& rStream, ScMultipleWriteHeader& rHdr ) const
 }
 
 sfx2::SvBaseLink::UpdateResult ScDdeLink::DataChanged(
-    const OUString& rMimeType, const ::com::sun::star::uno::Any & rValue )
+    const OUString& rMimeType, const css::uno::Any & rValue )
 {
     //  wir koennen nur Strings...
     if ( SotClipboardFormatId::STRING != SotExchange::GetFormatIdFromMimeType( rMimeType ))
@@ -156,7 +155,7 @@ sfx2::SvBaseLink::UpdateResult ScDdeLink::DataChanged(
     else                                // Daten aufteilen
     {
         //  Matrix immer neu anlegen, damit bIsString nicht durcheinanderkommt
-        pResult = new ScMatrix(nCols, nRows, 0.0);
+        pResult = new ScFullMatrix(nCols, nRows, 0.0);
 
         SvNumberFormatter* pFormatter = pDoc->GetFormatTable();
         svl::SharedStringPool& rPool = pDoc->GetSharedStringPool();

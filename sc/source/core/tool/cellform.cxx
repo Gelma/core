@@ -31,16 +31,15 @@
 #include "sc.hrc"
 #include <editutil.hxx>
 
-// STATIC DATA
 // Err527 Workaround
-const ScFormulaCell* pLastFormulaTreeTop = 0;
+const ScFormulaCell* pLastFormulaTreeTop = nullptr;
 
 void ScCellFormat::GetString( ScRefCellValue& rCell, sal_uLong nFormat, OUString& rString,
                               Color** ppColor, SvNumberFormatter& rFormatter, const ScDocument* pDoc,
                               bool bNullVals, bool bFormula, ScForceTextFmt eForceTextFmt,
                               bool bUseStarFormat )
 {
-    *ppColor = NULL;
+    *ppColor = nullptr;
 
     switch (rCell.meType)
     {
@@ -133,22 +132,20 @@ OUString ScCellFormat::GetString(
     bool bUseStarFormat )
 {
     OUString aString;
-    *ppColor = NULL;
+    *ppColor = nullptr;
 
     CellType eType = rDoc.GetCellType(rPos);
     switch (eType)
     {
         case CELLTYPE_STRING:
         {
-            ScRefCellValue aCell;
-            aCell.assign(rDoc, rPos);
+            ScRefCellValue aCell(rDoc, rPos);
             rFormatter.GetOutputString(aCell.mpString->getString(), nFormat, aString, ppColor, bUseStarFormat);
         }
         break;
         case CELLTYPE_EDIT:
         {
-            ScRefCellValue aCell;
-            aCell.assign(rDoc, rPos);
+            ScRefCellValue aCell(rDoc, rPos);
             rFormatter.GetOutputString(aCell.getString(&rDoc), nFormat, aString, ppColor);
         }
         break;
@@ -274,7 +271,7 @@ OUString ScCellFormat::GetOutputString( ScDocument& rDoc, const ScAddress& rPos,
         {
             ScFieldEditEngine& rEngine = rDoc.GetEditEngine();
             rEngine.SetText(*pData);
-            aVal = rEngine.GetText(LINEEND_LF);
+            aVal = rEngine.GetText();
         }
         //  also do not format EditCells as numbers
         //  (fitting to output)

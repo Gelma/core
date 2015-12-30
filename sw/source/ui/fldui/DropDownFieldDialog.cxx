@@ -35,7 +35,7 @@ sw::DropDownFieldDialog::DropDownFieldDialog(vcl::Window *pParent, SwWrtShell &r
     : SvxStandardDialog(pParent, "DropdownFieldDialog",
         "modules/swriter/ui/dropdownfielddialog.ui")
     , rSh( rS )
-    , pDropField(0)
+    , pDropField(nullptr)
 {
     get(m_pListItemsLB, "list");
     m_pListItemsLB->SetDropDownLineCount(12);
@@ -43,6 +43,8 @@ sw::DropDownFieldDialog::DropDownFieldDialog(vcl::Window *pParent, SwWrtShell &r
     get(m_pOKPB, "ok");
     get(m_pNextPB, "next");
     get(m_pEditPB, "edit");
+    Link<ListBox&, void> aDoubleLk = LINK(this, DropDownFieldDialog, DoubleClickHdl);
+    m_pListItemsLB->SetDoubleClickHdl( aDoubleLk );
 
     Link<Button*,void> aButtonLk = LINK(this, DropDownFieldDialog, ButtonHdl);
     m_pEditPB->SetClickHdl(aButtonLk);
@@ -65,7 +67,7 @@ sw::DropDownFieldDialog::DropDownFieldDialog(vcl::Window *pParent, SwWrtShell &r
         m_pListItemsLB->SelectEntry(pDropField->GetSelectedItem());
     }
 
-    bool bEnable = !rSh.IsCrsrReadonly();
+    bool bEnable = !rSh.IsCursorReadonly();
     m_pOKPB->Enable( bEnable );
 
     m_pListItemsLB->GrabFocus();
@@ -109,6 +111,11 @@ void sw::DropDownFieldDialog::Apply()
 IMPL_LINK_TYPED(sw::DropDownFieldDialog, ButtonHdl, Button*, pButton, void)
 {
     EndDialog(m_pNextPB == pButton ? RET_OK : RET_YES );
+}
+
+IMPL_LINK_NOARG_TYPED(sw::DropDownFieldDialog, DoubleClickHdl, ListBox&, void)
+{
+    EndDialog(RET_OK);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

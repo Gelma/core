@@ -94,8 +94,7 @@ ContentProperties::ContentProperties( const DAVResource& rResource )
 : m_xProps( new PropertyValueMap ),
   m_bTrailingSlash( false )
 {
-    OSL_ENSURE( !rResource.uri.isEmpty(),
-                "ContentProperties ctor - Empty resource URI!" );
+    assert( !rResource.uri.isEmpty() && "ContentProperties ctor - Empty resource URI!" );
 
     // Title
     try
@@ -209,7 +208,7 @@ const PropertyValue * ContentProperties::get(
 
             ++it;
         }
-        return 0;
+        return nullptr;
     }
     else
         return &(*it).second;
@@ -405,7 +404,7 @@ void ContentProperties::addProperty( const DAVPropertyValue & rProp )
 
 
 void ContentProperties::addProperty( const OUString & rName,
-                                     const com::sun::star::uno::Any & rValue,
+                                     const css::uno::Any & rValue,
                                      bool bIsCaseSensitive )
 {
     if ( rName.equals( DAVProperties::CREATIONDATE ) )

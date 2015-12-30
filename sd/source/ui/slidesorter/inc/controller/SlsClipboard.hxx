@@ -28,6 +28,8 @@
 #include <tools/solar.h>
 #include <svx/svdpage.hxx>
 
+#include "sddllapi.h"
+
 #include <set>
 
 class SfxRequest;
@@ -70,10 +72,12 @@ public:
 
     void HandleSlotCall (SfxRequest& rRequest);
 
-    void DoCut (vcl::Window* pWindow = 0);
-    void DoCopy (vcl::Window* pWindow = 0);
-    void DoPaste (vcl::Window* pWindow = 0);
-    void DoDelete (vcl::Window* pWindow = 0);
+    void DoCut (vcl::Window* pWindow = nullptr);
+    // Exported for unit test
+    SD_DLLPUBLIC void DoCopy(vcl::Window* pWindow = nullptr);
+    // Exported for unit test
+    SD_DLLPUBLIC void DoPaste(vcl::Window* pWindow = nullptr);
+    void DoDelete (vcl::Window* pWindow = nullptr);
 
     void StartDrag (
         const Point& rDragPt,
@@ -85,14 +89,14 @@ public:
     sal_Int8 AcceptDrop (
         const AcceptDropEvent& rEvt,
         DropTargetHelper& rTargetHelper,
-        ::sd::Window* pTargetWindow = NULL,
+        ::sd::Window* pTargetWindow = nullptr,
         sal_uInt16 nPage = SDRPAGE_NOTFOUND,
         sal_uInt16 nLayer = SDRPAGE_NOTFOUND );
 
     sal_Int8 ExecuteDrop (
         const ExecuteDropEvent& rEvt,
         DropTargetHelper& rTargetHelper,
-        ::sd::Window* pTargetWindow = NULL,
+        ::sd::Window* pTargetWindow = nullptr,
         sal_uInt16 nPage = SDRPAGE_NOTFOUND,
         sal_uInt16 nLayer = SDRPAGE_NOTFOUND);
 
@@ -100,11 +104,11 @@ public:
 
 protected:
     virtual sal_uInt16 DetermineInsertPosition (
-        const SdTransferable& rTransferable) SAL_OVERRIDE;
+        const SdTransferable& rTransferable) override;
 
     virtual sal_uInt16 InsertSlides (
         const SdTransferable& rTransferable,
-        sal_uInt16 nInsertPosition) SAL_OVERRIDE;
+        sal_uInt16 nInsertPosition) override;
 
 private:
     SlideSorter& mrSlideSorter;

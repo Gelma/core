@@ -89,7 +89,7 @@ using namespace com::sun::star::frame;
 
 namespace
 {
-    bool implCheckItemType( SfxItemSet& _rSet, const sal_uInt16 _nId, const TypeId _nExpectedItemType )
+    bool implCheckItemType( SfxItemSet& _rSet, const sal_uInt16 _nId, std::function<bool ( const SfxPoolItem* )> isItemType )
     {
         bool bCorrectType = false;
 
@@ -98,7 +98,7 @@ namespace
         if ( pPool )
         {
             const SfxPoolItem& rDefItem = pPool->GetDefaultItem( _nId );
-            bCorrectType = rDefItem.IsA( _nExpectedItemType );
+            bCorrectType = isItemType(&rDefItem);
         }
         return bCorrectType;
     }
@@ -206,7 +206,7 @@ ODbDataSourceAdministrationHelper::ODbDataSourceAdministrationHelper(const Refer
     }
     catch(const Exception&)
     {
-        ShowServiceNotAvailableError(_pParent->GetParent(), OUString("com.sun.star.sdb.DatabaseContext"), true);
+        ShowServiceNotAvailableError(_pParent->GetParent(), "com.sun.star.sdb.DatabaseContext", true);
     }
 }
 
@@ -220,7 +220,7 @@ bool ODbDataSourceAdministrationHelper::getCurrentSettings(Sequence< PropertyVal
         // collecting this in a vector because it has a push_back, in opposite to sequences
 
     // user: DSID_USER -> "user"
-    SFX_ITEMSET_GET(*m_pItemSetHelper->getOutputSet(), pUser, SfxStringItem, DSID_USER, true);
+    const SfxStringItem* pUser = m_pItemSetHelper->getOutputSet()->GetItem<SfxStringItem>(DSID_USER);
     if (pUser && pUser->GetValue().getLength())
         aReturn.push_back(
             PropertyValue(  OUString("user"), 0,
@@ -230,13 +230,13 @@ bool ODbDataSourceAdministrationHelper::getCurrentSettings(Sequence< PropertyVal
     if (hasAuthentication(*m_pItemSetHelper->getOutputSet()))
     {
         // password: DSID_PASSWORD -> password
-        SFX_ITEMSET_GET(*m_pItemSetHelper->getOutputSet(), pPassword, SfxStringItem, DSID_PASSWORD, true);
+        const SfxStringItem* pPassword = m_pItemSetHelper->getOutputSet()->GetItem<SfxStringItem>(DSID_PASSWORD);
         OUString sPassword = pPassword ? pPassword->GetValue() : OUString();
-        SFX_ITEMSET_GET(*m_pItemSetHelper->getOutputSet(), pPasswordRequired, SfxBoolItem, DSID_PASSWORDREQUIRED, true);
+        const SfxBoolItem* pPasswordRequired = m_pItemSetHelper->getOutputSet()->GetItem<SfxBoolItem>(DSID_PASSWORDREQUIRED);
         // if the set does not contain a password, but the item set says it requires one, ask the user
         if ((!pPassword || !pPassword->GetValue().getLength()) && (pPasswordRequired && pPasswordRequired->GetValue()))
         {
-            SFX_ITEMSET_GET(*m_pItemSetHelper->getOutputSet(), pName, SfxStringItem, DSID_NAME, true);
+            const SfxStringItem* pName = m_pItemSetHelper->getOutputSet()->GetItem<SfxStringItem>(DSID_NAME);
 
             Reference< XModel > xModel( getDataSourceOrModel( m_xDatasource ), UNO_QUERY_THROW );
             ::comphelper::NamedValueCollection aArgs( xModel->getArgs() );
@@ -245,13 +245,13 @@ bool ODbDataSourceAdministrationHelper::getCurrentSettings(Sequence< PropertyVal
             if ( !xHandler.is() )
             {
                 // instantiate the default SDB interaction handler
-                xHandler = Reference< XInteractionHandler >( task::InteractionHandler::createWithParent(m_xContext, 0), UNO_QUERY );
+                xHandler.set( task::InteractionHandler::createWithParent(m_xContext, nullptr), UNO_QUERY );
             }
 
             OUString sName = pName ? pName->GetValue() : OUString();
             OUString sLoginRequest(ModuleRes(STR_ENTER_CONNECTION_PASSWORD));
             OUString sTemp = sName;
-            sName = ::dbaui::getStrippedDatabaseName(NULL,sTemp);
+            sName = ::dbaui::getStrippedDatabaseName(nullptr,sTemp);
             if ( !sName.isEmpty() )
                 sLoginRequest = sLoginRequest.replaceAll("$name$", sName);
             else
@@ -267,7 +267,7 @@ bool ODbDataSourceAdministrationHelper::getCurrentSettings(Sequence< PropertyVal
             aRequest.Diagnostic = sLoginRequest;
             aRequest.HasRealm   = aRequest.HasAccount = sal_False;
             // aRequest.Realm
-            aRequest.HasUserName = pUser != 0;
+            aRequest.HasUserName = pUser != nullptr;
             aRequest.UserName    = pUser ? OUString(pUser->GetValue()) : OUString();
             aRequest.HasPassword = sal_True;
             //aRequest.Password
@@ -330,7 +330,7 @@ void ODbDataSourceAdministrationHelper::successfullyConnected()
 
     if (hasAuthentication(*m_pItemSetHelper->getOutputSet()))
     {
-        SFX_ITEMSET_GET(*m_pItemSetHelper->getOutputSet(), pPassword, SfxStringItem, DSID_PASSWORD, true);
+        const SfxStringItem* pPassword = m_pItemSetHelper->getOutputSet()->GetItem<SfxStringItem>(DSID_PASSWORD);
         if (pPassword && (0 != pPassword->GetValue().getLength()))
         {
             OUString sPassword = pPassword->GetValue();
@@ -446,9 +446,9 @@ Reference< XPropertySet > ODbDataSourceAdministrationHelper::getCurrentDataSourc
 
 OUString ODbDataSourceAdministrationHelper::getDatasourceType( const SfxItemSet& _rSet )
 {
-    SFX_ITEMSET_GET( _rSet, pConnectURL, SfxStringItem, DSID_CONNECTURL, true );
+    const SfxStringItem* pConnectURL = _rSet.GetItem<SfxStringItem>(DSID_CONNECTURL);
     OSL_ENSURE( pConnectURL , "ODbDataSourceAdministrationHelper::getDatasourceType: invalid items in the source set!" );
-    SFX_ITEMSET_GET(_rSet, pTypeCollection, DbuTypeCollectionItem, DSID_TYPECOLLECTION, true);
+    const DbuTypeCollectionItem* pTypeCollection = _rSet.GetItem<DbuTypeCollectionItem>(DSID_TYPECOLLECTION);
     OSL_ENSURE(pTypeCollection, "ODbDataSourceAdministrationHelper::getDatasourceType: invalid items in the source set!");
     ::dbaccess::ODsnTypeCollection* pCollection = pTypeCollection->getCollection();
     return pCollection->getType(pConnectURL->GetValue());
@@ -465,8 +465,8 @@ OUString ODbDataSourceAdministrationHelper::getConnectionURL() const
 
     OUString eType = getDatasourceType(*m_pItemSetHelper->getOutputSet());
 
-    SFX_ITEMSET_GET(*m_pItemSetHelper->getOutputSet(), pUrlItem, SfxStringItem, DSID_CONNECTURL, true);
-    SFX_ITEMSET_GET(*m_pItemSetHelper->getOutputSet(), pTypeCollection, DbuTypeCollectionItem, DSID_TYPECOLLECTION, true);
+    const SfxStringItem* pUrlItem = m_pItemSetHelper->getOutputSet()->GetItem<SfxStringItem>(DSID_CONNECTURL);
+    const DbuTypeCollectionItem* pTypeCollection = m_pItemSetHelper->getOutputSet()->GetItem<DbuTypeCollectionItem>(DSID_TYPECOLLECTION);
 
     OSL_ENSURE(pUrlItem,"Connection URL is NULL. -> GPF!");
     OSL_ENSURE(pTypeCollection, "ODbDataSourceAdministrationHelper::getDatasourceType: invalid items in the source set!");
@@ -493,9 +493,9 @@ OUString ODbDataSourceAdministrationHelper::getConnectionURL() const
         case  ::dbaccess::DST_MYSQL_NATIVE:
         case  ::dbaccess::DST_MYSQL_JDBC:
             {
-                SFX_ITEMSET_GET(*m_pItemSetHelper->getOutputSet(), pHostName, SfxStringItem, DSID_CONN_HOSTNAME, true);
-                SFX_ITEMSET_GET(*m_pItemSetHelper->getOutputSet(), pPortNumber, SfxInt32Item, DSID_MYSQL_PORTNUMBER, true);
-                SFX_ITEMSET_GET(*m_pItemSetHelper->getOutputSet(), pDatabaseName, SfxStringItem, DSID_DATABASENAME, true);
+                const SfxStringItem* pHostName = m_pItemSetHelper->getOutputSet()->GetItem<SfxStringItem>(DSID_CONN_HOSTNAME);
+                const SfxInt32Item* pPortNumber = m_pItemSetHelper->getOutputSet()->GetItem<SfxInt32Item>(DSID_MYSQL_PORTNUMBER);
+                const SfxStringItem* pDatabaseName = m_pItemSetHelper->getOutputSet()->GetItem<SfxStringItem>(DSID_DATABASENAME);
                 sNewUrl = lcl_createHostWithPort(pHostName,pPortNumber);
                 OUString sDatabaseName = pDatabaseName ? pDatabaseName->GetValue() : OUString();
                 if ( !sDatabaseName.getLength() && pUrlItem )
@@ -512,9 +512,9 @@ OUString ODbDataSourceAdministrationHelper::getConnectionURL() const
             break;
         case  ::dbaccess::DST_ORACLE_JDBC:
             {
-                SFX_ITEMSET_GET(*m_pItemSetHelper->getOutputSet(), pHostName, SfxStringItem, DSID_CONN_HOSTNAME, true);
-                SFX_ITEMSET_GET(*m_pItemSetHelper->getOutputSet(), pPortNumber, SfxInt32Item, DSID_ORACLE_PORTNUMBER, true);
-                SFX_ITEMSET_GET(*m_pItemSetHelper->getOutputSet(), pDatabaseName, SfxStringItem, DSID_DATABASENAME, true);
+                const SfxStringItem* pHostName = m_pItemSetHelper->getOutputSet()->GetItem<SfxStringItem>(DSID_CONN_HOSTNAME);
+                const SfxInt32Item* pPortNumber = m_pItemSetHelper->getOutputSet()->GetItem<SfxInt32Item>(DSID_ORACLE_PORTNUMBER);
+                const SfxStringItem* pDatabaseName = m_pItemSetHelper->getOutputSet()->GetItem<SfxStringItem>(DSID_DATABASENAME);
                 if ( pHostName && pHostName->GetValue().getLength() )
                 {
                     sNewUrl = "@" + lcl_createHostWithPort(pHostName,pPortNumber);
@@ -534,8 +534,8 @@ OUString ODbDataSourceAdministrationHelper::getConnectionURL() const
             break;
         case  ::dbaccess::DST_LDAP:
             {
-                SFX_ITEMSET_GET(*m_pItemSetHelper->getOutputSet(), pPortNumber, SfxInt32Item, DSID_CONN_LDAP_PORTNUMBER, true);
-                sNewUrl = pCollection->cutPrefix(pUrlItem->GetValue()) + lcl_createHostWithPort(NULL,pPortNumber);
+                const SfxInt32Item* pPortNumber = m_pItemSetHelper->getOutputSet()->GetItem<SfxInt32Item>(DSID_CONN_LDAP_PORTNUMBER);
+                sNewUrl = pCollection->cutPrefix(pUrlItem->GetValue()) + lcl_createHostWithPort(nullptr,pPortNumber);
             }
             break;
         case  ::dbaccess::DST_JDBC:
@@ -902,13 +902,14 @@ OString ODbDataSourceAdministrationHelper::translatePropertyId( sal_Int32 _nId )
     OString aReturn( aString.getStr(), aString.getLength(), RTL_TEXTENCODING_ASCII_US );
     return aReturn;
 }
+template<class T> bool checkItemType(const SfxPoolItem* pItem){ return dynamic_cast<const T*>(pItem) != nullptr;}
 
 void ODbDataSourceAdministrationHelper::implTranslateProperty( SfxItemSet& _rSet, sal_Int32  _nId, const Any& _rValue )
 {
     switch ( _rValue.getValueType().getTypeClass() )
     {
         case TypeClass_STRING:
-            if ( implCheckItemType( _rSet, _nId, SfxStringItem::StaticType() ) )
+            if ( implCheckItemType( _rSet, _nId, checkItemType<SfxStringItem> ) )
             {
                 OUString sValue;
                 _rValue >>= sValue;
@@ -916,22 +917,21 @@ void ODbDataSourceAdministrationHelper::implTranslateProperty( SfxItemSet& _rSet
             }
             else {
                 OSL_FAIL(
-                    (   OString( "ODbDataSourceAdministrationHelper::implTranslateProperty: invalid property value (" )
-                    +=  OString( translatePropertyId( _nId ) )
-                    +=  OString( " should be no string)!" )
-                    ).getStr()
-                );
+                    OString(
+                        "ODbDataSourceAdministrationHelper::implTranslateProperty: invalid property value ("
+                        + translatePropertyId(_nId)
+                        + " should be no string)!").getStr());
             }
             break;
 
         case TypeClass_BOOLEAN:
-            if ( implCheckItemType( _rSet, _nId, SfxBoolItem::StaticType() ) )
+            if ( implCheckItemType( _rSet, _nId, checkItemType<SfxBoolItem> ) )
             {
                 bool bVal = false;
                 _rValue >>= bVal;
                 _rSet.Put(SfxBoolItem(_nId, bVal));
             }
-            else if ( implCheckItemType( _rSet, _nId, OptionalBoolItem::StaticType() ) )
+            else if ( implCheckItemType( _rSet, _nId, checkItemType<OptionalBoolItem> ) )
             {
                 OptionalBoolItem aItem( _nId );
                 if ( _rValue.hasValue() )
@@ -946,16 +946,15 @@ void ODbDataSourceAdministrationHelper::implTranslateProperty( SfxItemSet& _rSet
             }
             else {
                 OSL_FAIL(
-                    (   OString( "ODbDataSourceAdministrationHelper::implTranslateProperty: invalid property value (" )
-                    +=  OString( translatePropertyId( _nId ) )
-                    +=  OString( " should be no boolean)!" )
-                    ).getStr()
-                );
+                    OString(
+                        "ODbDataSourceAdministrationHelper::implTranslateProperty: invalid property value ("
+                        + translatePropertyId(_nId)
+                        + " should be no boolean)!").getStr());
             }
             break;
 
         case TypeClass_LONG:
-            if ( implCheckItemType( _rSet, _nId, SfxInt32Item::StaticType() ) )
+            if ( implCheckItemType( _rSet, _nId, checkItemType<SfxInt32Item> ) )
             {
                 sal_Int32 nValue = 0;
                 _rValue >>= nValue;
@@ -963,16 +962,15 @@ void ODbDataSourceAdministrationHelper::implTranslateProperty( SfxItemSet& _rSet
             }
             else {
                 OSL_FAIL(
-                    (   OString( "ODbDataSourceAdministrationHelper::implTranslateProperty: invalid property value (" )
-                    +=  OString( translatePropertyId( _nId ) )
-                    +=  OString( " should be no int)!" )
-                    ).getStr()
-                );
+                    OString(
+                        "ODbDataSourceAdministrationHelper::implTranslateProperty: invalid property value ("
+                        + translatePropertyId(_nId)
+                        + " should be no int)!").getStr());
             }
             break;
 
         case TypeClass_SEQUENCE:
-            if ( implCheckItemType( _rSet, _nId, OStringListItem::StaticType() ) )
+            if ( implCheckItemType( _rSet, _nId, checkItemType<OStringListItem> ) )
             {
                 // determine the element type
                 TypeDescription aTD(_rValue.getValueType());
@@ -996,11 +994,10 @@ void ODbDataSourceAdministrationHelper::implTranslateProperty( SfxItemSet& _rSet
             }
             else {
                 OSL_FAIL(
-                    (   OString( "ODbDataSourceAdministrationHelper::implTranslateProperty: invalid property value (" )
-                    +=  OString( translatePropertyId( _nId ) )
-                    +=  OString( " should be no string sequence)!" )
-                    ).getStr()
-                );
+                    OString(
+                        "ODbDataSourceAdministrationHelper::implTranslateProperty: invalid property value ("
+                        + translatePropertyId(_nId)
+                        + " should be no string sequence)!").getStr());
             }
             break;
 
@@ -1015,7 +1012,7 @@ void ODbDataSourceAdministrationHelper::implTranslateProperty( SfxItemSet& _rSet
 
 OUString ODbDataSourceAdministrationHelper::getDocumentUrl(SfxItemSet& _rDest)
 {
-    SFX_ITEMSET_GET(_rDest, pUrlItem, SfxStringItem, DSID_DOCUMENT_URL, true);
+    const SfxStringItem* pUrlItem = _rDest.GetItem<SfxStringItem>(DSID_DOCUMENT_URL);
     OSL_ENSURE(pUrlItem,"Document URL is NULL. -> GPF!");
     return pUrlItem->GetValue();
 }
@@ -1024,8 +1021,8 @@ void ODbDataSourceAdministrationHelper::convertUrl(SfxItemSet& _rDest)
 {
     OUString eType = getDatasourceType(_rDest);
 
-    SFX_ITEMSET_GET(_rDest, pUrlItem, SfxStringItem, DSID_CONNECTURL, true);
-    SFX_ITEMSET_GET(_rDest, pTypeCollection, DbuTypeCollectionItem, DSID_TYPECOLLECTION, true);
+    const SfxStringItem* pUrlItem = _rDest.GetItem<SfxStringItem>(DSID_CONNECTURL);
+    const DbuTypeCollectionItem* pTypeCollection = _rDest.GetItem<DbuTypeCollectionItem>(DSID_TYPECOLLECTION);
 
     OSL_ENSURE(pUrlItem,"Connection URL is NULL. -> GPF!");
     OSL_ENSURE(pTypeCollection, "ODbAdminDialog::getDatasourceType: invalid items in the source set!");
@@ -1098,7 +1095,6 @@ void ODbDataSourceAdministrationHelper::setDataSourceOrName( const Any& _rDataSo
 }
 
 // DbuTypeCollectionItem
-TYPEINIT1(DbuTypeCollectionItem, SfxPoolItem);
 DbuTypeCollectionItem::DbuTypeCollectionItem(sal_Int16 _nWhich, ::dbaccess::ODsnTypeCollection* _pCollection)
     :SfxPoolItem(_nWhich)
     ,m_pCollection(_pCollection)

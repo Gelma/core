@@ -38,7 +38,6 @@
 
 namespace sd {
 
-TYPEINIT1( FuParagraph, FuPoor );
 
 FuParagraph::FuParagraph (
     ViewShell* pViewSh,
@@ -91,7 +90,7 @@ void FuParagraph::DoExecute( SfxRequest& rReq )
         }
 
         SdAbstractDialogFactory* pFact = SdAbstractDialogFactory::Create();
-        std::unique_ptr<SfxAbstractTabDialog> pDlg(pFact ? pFact->CreateSdParagraphTabDlg(NULL, &aNewAttr ) : 0);
+        std::unique_ptr<SfxAbstractTabDialog> pDlg(pFact ? pFact->CreateSdParagraphTabDlg(nullptr, &aNewAttr ) : nullptr);
         if (!pDlg)
             return;
 
@@ -117,7 +116,7 @@ void FuParagraph::DoExecute( SfxRequest& rReq )
     {
         ESelection eSelection = pOutlView->GetSelection();
 
-        const SfxPoolItem *pItem = 0;
+        const SfxPoolItem *pItem = nullptr;
         if( SfxItemState::SET == pArgs->GetItemState( ATTR_NUMBER_NEWSTART, false, &pItem ) )
         {
             const bool bNewStart = static_cast<const SfxBoolItem*>(pItem)->GetValue();

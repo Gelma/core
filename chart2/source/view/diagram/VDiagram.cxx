@@ -48,12 +48,12 @@ using namespace ::com::sun::star::chart2;
 VDiagram::VDiagram(
     const uno::Reference<XDiagram> & xDiagram, const drawing::Direction3D& rPreferredAspectRatio,
     sal_Int32 nDimension )
-    : m_xTarget(NULL)
-    , m_xShapeFactory(NULL)
-    , m_pShapeFactory(NULL)
-    , m_xOuterGroupShape(NULL)
-    , m_xCoordinateRegionShape(NULL)
-    , m_xWall2D(NULL)
+    : m_xTarget(nullptr)
+    , m_xShapeFactory(nullptr)
+    , m_pShapeFactory(nullptr)
+    , m_xOuterGroupShape(nullptr)
+    , m_xCoordinateRegionShape(nullptr)
+    , m_xWall2D(nullptr)
     , m_nDimensionCount(nDimension)
     , m_xDiagram(xDiagram)
     , m_aPreferredAspectRatio(rPreferredAspectRatio)
@@ -154,14 +154,14 @@ void VDiagram::createShapes_2d()
 
     //create group shape
     uno::Reference< drawing::XShapes > xOuterGroup_Shapes = m_pShapeFactory->createGroup2D(m_xTarget);
-    m_xOuterGroupShape = uno::Reference<drawing::XShape>( xOuterGroup_Shapes, uno::UNO_QUERY );
+    m_xOuterGroupShape.set( xOuterGroup_Shapes, uno::UNO_QUERY );
 
     uno::Reference< drawing::XShapes > xGroupForWall( m_pShapeFactory->createGroup2D(xOuterGroup_Shapes,"PlotAreaExcludingAxes") );
 
     //create independent group shape as container for datapoints and such things
     {
         uno::Reference< drawing::XShapes > xShapes = m_pShapeFactory->createGroup2D(xOuterGroup_Shapes,"testonly;CooContainer=XXX_CID");
-        m_xCoordinateRegionShape = uno::Reference<drawing::XShape>( xShapes, uno::UNO_QUERY );
+        m_xCoordinateRegionShape.set( xShapes, uno::UNO_QUERY );
     }
 
     bool bAddFloorAndWall = DiagramHelper::isSupportingFloorAndWall( m_xDiagram );
@@ -211,7 +211,7 @@ void VDiagram::createShapes_2d()
 
 E3dScene* lcl_getE3dScene( const uno::Reference< drawing::XShape >& xShape )
 {
-    E3dScene* pRet=NULL;
+    E3dScene* pRet=nullptr;
     uno::Reference< lang::XUnoTunnel > xUnoTunnel( xShape, uno::UNO_QUERY );
     uno::Reference< lang::XTypeProvider > xTypeProvider( xShape, uno::UNO_QUERY );
     if(xUnoTunnel.is()&&xTypeProvider.is())
@@ -473,8 +473,7 @@ void VDiagram::createShapes_3d()
         return;
 
     //create shape
-    m_xOuterGroupShape = uno::Reference< drawing::XShape >(
-            m_pShapeFactory->createGroup3D( m_xTarget, "PlotAreaExcludingAxes" ), uno::UNO_QUERY);
+    m_xOuterGroupShape.set( m_pShapeFactory->createGroup3D( m_xTarget, "PlotAreaExcludingAxes" ), uno::UNO_QUERY);
 
     uno::Reference< drawing::XShapes > xOuterGroup_Shapes =
             uno::Reference<drawing::XShapes>( m_xOuterGroupShape, uno::UNO_QUERY );
@@ -482,7 +481,7 @@ void VDiagram::createShapes_3d()
     //create additional group to manipulate the aspect ratio of the whole diagram:
     xOuterGroup_Shapes = m_pShapeFactory->createGroup3D( xOuterGroup_Shapes, OUString() );
 
-    m_xAspectRatio3D = uno::Reference< beans::XPropertySet >( xOuterGroup_Shapes, uno::UNO_QUERY );
+    m_xAspectRatio3D.set( xOuterGroup_Shapes, uno::UNO_QUERY );
 
     bool bAddFloorAndWall = DiagramHelper::isSupportingFloorAndWall( m_xDiagram );
 
@@ -490,9 +489,9 @@ void VDiagram::createShapes_3d()
 
     //add walls
     {
-        uno::Reference< beans::XPropertySet > xWallProp( NULL );
+        uno::Reference< beans::XPropertySet > xWallProp( nullptr );
         if( m_xDiagram.is() )
-            xWallProp=uno::Reference< beans::XPropertySet >( m_xDiagram->getWall());
+            xWallProp.set( m_xDiagram->getWall() );
 
         OUString aWallCID( ObjectIdentifier::createClassifiedIdentifier( OBJECTTYPE_DIAGRAM_WALL, OUString() ) );//@todo read CID from model
         if( !bAddFloorAndWall )
@@ -613,9 +612,9 @@ void VDiagram::createShapes_3d()
 
     //add floor plate
     {
-        uno::Reference< beans::XPropertySet > xFloorProp( NULL );
+        uno::Reference< beans::XPropertySet > xFloorProp( nullptr );
         if( m_xDiagram.is() )
-            xFloorProp=uno::Reference< beans::XPropertySet >( m_xDiagram->getFloor());
+            xFloorProp.set( m_xDiagram->getFloor() );
 
         Stripe aStripe( drawing::Position3D(0,0,0)
             , drawing::Direction3D(0,0,FIXED_SIZE_FOR_3D_CHART_VOLUME)
@@ -624,7 +623,7 @@ void VDiagram::createShapes_3d()
 
         uno::Reference< drawing::XShape > xShape =
             m_pShapeFactory->createStripe(xOuterGroup_Shapes, aStripe
-                , xFloorProp, PropertyMapper::getPropertyNameMapForFillAndLineProperties(), bDoubleSided, 0 );
+                , xFloorProp, PropertyMapper::getPropertyNameMapForFillAndLineProperties(), bDoubleSided );
 
         CuboidPlanePosition eBottomPos( ThreeDHelper::getAutomaticCuboidPlanePositionForStandardBottom( uno::Reference< beans::XPropertySet >( m_xDiagram, uno::UNO_QUERY ) ) );
         if( !bAddFloorAndWall || (CuboidPlanePosition_Bottom!=eBottomPos) )
@@ -643,7 +642,7 @@ void VDiagram::createShapes_3d()
     //create an additional scene for the smaller inner coordinate region:
     {
         uno::Reference< drawing::XShapes > xShapes = m_pShapeFactory->createGroup3D( xOuterGroup_Shapes,"testonly;CooContainer=XXX_CID" );
-        m_xCoordinateRegionShape = uno::Reference< drawing::XShape >( xShapes, uno::UNO_QUERY );
+        m_xCoordinateRegionShape.set( xShapes, uno::UNO_QUERY );
 
         uno::Reference< beans::XPropertySet > xShapeProp( m_xCoordinateRegionShape, uno::UNO_QUERY );
         OSL_ENSURE(xShapeProp.is(), "created shape offers no XPropertySet");

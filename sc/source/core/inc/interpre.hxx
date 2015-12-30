@@ -32,6 +32,7 @@
 #include "calcconfig.hxx"
 #include "token.hxx"
 #include "math.hxx"
+#include "parclass.hxx"
 
 #include <map>
 #include <memory>
@@ -146,7 +147,8 @@ public:
     VolatileType GetVolatileType() const { return meVolatileType;}
 
 private:
-    static ScCalcConfig maGlobalConfig;
+    static ScCalcConfig& GetOrCreateGlobalConfig();
+    static ScCalcConfig *mpGlobalConfig;
 
     static ScTokenStack*    pGlobalStack;
     static bool             bGlobalStackInUse;
@@ -204,6 +206,11 @@ void ReplaceCell( SCCOL& rCol, SCROW& rRow, SCTAB& rTab );  // for TableOp
 bool IsTableOpInRange( const ScRange& );
 sal_uLong GetCellNumberFormat( const ScAddress& rPos, ScRefCellValue& rCell );
 double ConvertStringToValue( const OUString& );
+public:
+/** For matrix back calls into the current interpreter.
+    Uses rError instead of nGlobalError and rCurFmtType instead of nCurFmtType. */
+double ConvertStringToValue( const OUString&, sal_uInt16& rError, short& rCurFmtType );
+private:
 double GetCellValue( const ScAddress&, ScRefCellValue& rCell );
 double GetCellValueOrZero( const ScAddress&, ScRefCellValue& rCell );
 double GetValueCellValue( const ScAddress&, double fOrig );
@@ -301,9 +308,9 @@ void PopDoubleRef(SCCOL& rCol1, SCROW &rRow1, SCTAB& rTab1,
                           SCCOL& rCol2, SCROW &rRow2, SCTAB& rTab2,
                           bool bDontCheckForTableOp = false );
 void PopExternalSingleRef(sal_uInt16& rFileId, OUString& rTabName, ScSingleRefData& rRef);
-void PopExternalSingleRef(ScExternalRefCache::TokenRef& rToken, ScExternalRefCache::CellFormat* pFmt = NULL);
+void PopExternalSingleRef(ScExternalRefCache::TokenRef& rToken, ScExternalRefCache::CellFormat* pFmt = nullptr);
 void PopExternalSingleRef(sal_uInt16& rFileId, OUString& rTabName, ScSingleRefData& rRef,
-                          ScExternalRefCache::TokenRef& rToken, ScExternalRefCache::CellFormat* pFmt = NULL);
+                          ScExternalRefCache::TokenRef& rToken, ScExternalRefCache::CellFormat* pFmt = nullptr);
 void PopExternalDoubleRef(sal_uInt16& rFileId, OUString& rTabName, ScComplexRefData& rRef);
 void PopExternalDoubleRef(ScExternalRefCache::TokenArrayRef& rArray);
 void PopExternalDoubleRef(ScMatrixRef& rMat);
@@ -411,7 +418,7 @@ double Compare( ScQueryOp eOp );
 /** @param pOptions
         NULL means case sensitivity document option is to be used!
  */
-sc::RangeMatrix CompareMat( ScQueryOp eOp, sc::CompareOptions* pOptions = NULL );
+sc::RangeMatrix CompareMat( ScQueryOp eOp, sc::CompareOptions* pOptions = nullptr );
 ScMatrixRef QueryMat( const ScMatrixRef& pMat, sc::CompareOptions& rOptions );
 void ScEqual();
 void ScNotEqual();
@@ -508,6 +515,7 @@ void ScVar( bool bTextAsZero = false );
 void ScVarP( bool bTextAsZero = false );
 void ScStDev( bool bTextAsZero = false );
 void ScStDevP( bool bTextAsZero = false );
+void ScRawSubtract();
 void ScColumns();
 void ScRows();
 void ScSheets();
@@ -611,6 +619,7 @@ void ScGetMonth();
 void ScGetDay();
 void ScGetDayOfWeek();
 void ScGetWeekOfYear();
+void ScGetIsoWeekOfYear();
 void ScEasterSunday();
 sal_uInt16 GetWeekendAndHolidayMasks( const sal_uInt8 nParamCount, const sal_uInt32 nNullDate,
         ::std::vector<double>& rSortArray, bool bWeekendMask[ 7 ] );
@@ -823,7 +832,7 @@ double GetPercentile( ::std::vector<double> & rArray, double fPercentile );
 double GetPercentileExclusive( ::std::vector<double> & rArray, double fPercentile );
 void GetNumberSequenceArray( sal_uInt8 nParamCount, ::std::vector<double>& rArray, bool bConvertTextInArray );
 void GetSortArray( sal_uInt8 nParamCount, ::std::vector<double>& rSortArray, ::std::vector<long>* pIndexOrder, bool bConvertTextInArray, bool bAllowEmptyArray );
-static void QuickSort(::std::vector<double>& rSortArray, ::std::vector<long>* pIndexOrder = NULL);
+static void QuickSort(::std::vector<double>& rSortArray, ::std::vector<long>* pIndexOrder = nullptr);
 void ScModalValue();
 void ScModalValue_Multi();
 void ScAveDev();
@@ -902,7 +911,7 @@ public:
 
 inline void ScInterpreter::MatrixDoubleRefToMatrix()
 {
-    if ( (bMatrixFormula || pCur->HasForceArray()) && GetStackType() == formula::svDoubleRef )
+    if ( (bMatrixFormula || pCur->IsInForceArray()) && GetStackType() == formula::svDoubleRef )
     {
         GetTokenMatrixMap();    // make sure it exists, create if not.
         PopDoubleRefPushMatrix();
@@ -911,7 +920,8 @@ inline void ScInterpreter::MatrixDoubleRefToMatrix()
 
 inline bool ScInterpreter::MatrixParameterConversion()
 {
-    if ( (bMatrixFormula || pCur->HasForceArray()) && !pJumpMatrix && sp > 0 )
+    if ( (bMatrixFormula || pCur->IsInForceArray() || ScParameterClassification::HasForceArray( pCur->GetOpCode())) &&
+            !pJumpMatrix && sp > 0 )
         return ConvertMatrixParameters();
     return false;
 }

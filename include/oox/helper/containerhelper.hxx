@@ -102,14 +102,11 @@ public:
     explicit     Matrix( size_type nWidth, size_type nHeight ) { this->resize( nWidth, nHeight ); }
     explicit     Matrix( size_type nWidth, size_type nHeight, const_reference rData ) { this->resize( nWidth, nHeight, rData ); }
 
-    size_type    capacity() const { return maData.capacity(); }
     bool         empty() const { return maData.empty(); }
     size_type    size() const { return maData.size(); }
     size_type    width() const { return mnWidth; }
     size_type    height() const { return this->empty() ? 0 : (this->size() / this->width()); }
-    bool         has( size_type nX, size_type nY ) const { return (nX < this->width()) && (nY < this->height()); }
 
-    void         reserve( size_type nWidth, size_type nHeight ) { maData.reserve( nWidth * nHeight ); }
     void         clear() { this->resize( 0, 0 ); }
     void         resize( size_type nWidth, size_type nHeight ) { mnWidth = nWidth; maData.resize( nWidth * nHeight ); }
     void         resize( size_type nWidth, size_type nHeight, const_reference rData ) { mnWidth = nWidth; maData.resize( nWidth * nHeight, rData ); }
@@ -125,11 +122,6 @@ public:
     iterator     end() { return maData.end(); }
     const_iterator end() const { return maData.end(); }
 
-    reference    front() { return maData.front(); }
-    const_reference front() const { return maData.front(); }
-    reference    back() { return maData.back(); }
-    const_reference back() const { return maData.back(); }
-
     iterator     row_begin( size_type nY ) { return this->at( 0, nY ); }
     const_iterator row_begin( size_type nY ) const { return this->at( 0, nY ); }
     iterator     row_end( size_type nY ) { return this->at( mnWidth, nY ); }
@@ -137,10 +129,6 @@ public:
 
     reference    row_front( size_type nY ) { return (*this)( 0, nY ); }
     const_reference row_front( size_type nY ) const { return (*this)( 0, nY ); }
-    reference    row_back( size_type nY ) { return (*this)( mnWidth - 1, nY ); }
-    const_reference row_back( size_type nY ) const { return (*this)( mnWidth - 1, nY ); }
-
-    void         swap( Matrix& rMatrix ) { maData.swap( rMatrix.maData ); }
 
 private:
     container_type      maData;
@@ -165,7 +153,7 @@ public:
             contained, otherwise a numerical index will be appended.
      */
     static OUString getUnusedName(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameAccess >& rxNameAccess,
+                            const css::uno::Reference< css::container::XNameAccess >& rxNameAccess,
                             const OUString& rSuggestedName,
                             sal_Unicode cSeparator,
                             sal_Int32 nFirstIndexToAppend = 1 );
@@ -182,9 +170,9 @@ public:
         @return  True = object successfully inserted.
      */
     static bool         insertByName(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameContainer >& rxNameContainer,
+                            const css::uno::Reference< css::container::XNameContainer >& rxNameContainer,
                             const OUString& rName,
-                            const ::com::sun::star::uno::Any& rObject,
+                            const css::uno::Any& rObject,
                             bool bReplaceOldExisting = true );
 
     /** Inserts an object into a name container.
@@ -214,10 +202,10 @@ public:
             true.
      */
     static OUString insertByUnusedName(
-                            const ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameContainer >& rxNameContainer,
+                            const css::uno::Reference< css::container::XNameContainer >& rxNameContainer,
                             const OUString& rSuggestedName,
                             sal_Unicode cSeparator,
-                            const ::com::sun::star::uno::Any& rObject,
+                            const css::uno::Any& rObject,
                             bool bRenameOldExisting = false );
 
     // std::vector and std::map element access --------------------------------
@@ -240,35 +228,17 @@ public:
     static const typename VectorType::value_type&
                         getVectorElement( const VectorType& rVector, sal_Int32 nIndex, const typename VectorType::value_type& rDefault );
 
-    /** Returns the reference to an existing element of the passed vector, or
-        the passed default value, if the passed index is out of bounds. */
-    template< typename VectorType >
-    static typename VectorType::value_type&
-                        getVectorElementAccess( VectorType& rVector, sal_Int32 nIndex, typename VectorType::value_type& rDefault );
-
     /** Returns the pointer to an existing element of the passed map, or a null
         pointer, if an element with the passed key does not exist. */
     template< typename MapType >
     static const typename MapType::mapped_type*
                         getMapElement( const MapType& rMap, const typename MapType::key_type& rKey );
 
-    /** Returns the pointer to an existing element of the passed map, or a null
-        pointer, if an element with the passed key does not exist. */
-    template< typename MapType >
-    static typename MapType::mapped_type*
-                        getMapElementAccess( MapType& rMap, const typename MapType::key_type& rKey );
-
     /** Returns the reference to an existing element of the passed map, or the
         passed default value, if an element with the passed key does not exist. */
     template< typename MapType >
     static const typename MapType::mapped_type&
                         getMapElement( const MapType& rMap, const typename MapType::key_type& rKey, const typename MapType::mapped_type& rDefault );
-
-    /** Returns the reference to an existing element of the passed map, or the
-        passed default value, if an element with the passed key does not exist. */
-    template< typename MapType >
-    static typename MapType::mapped_type&
-                        getMapElementAccess( MapType& rMap, const typename MapType::key_type& rKey, typename MapType::mapped_type& rDefault );
 
     // vector/map/matrix to UNO sequence --------------------------------------
 
@@ -280,7 +250,7 @@ public:
             contained in the passed vector.
      */
     template< typename VectorType >
-    static ::com::sun::star::uno::Sequence< typename VectorType::value_type >
+    static css::uno::Sequence< typename VectorType::value_type >
                             vectorToSequence( const VectorType& rVector );
 
     /** Creates a UNO sequence of sequences from a matrix with copies of all elements.
@@ -292,7 +262,7 @@ public:
             contained in the passed matrix.
      */
     template< typename MatrixType >
-    static ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Sequence< typename MatrixType::value_type > >
+    static css::uno::Sequence< css::uno::Sequence< typename MatrixType::value_type > >
                             matrixToSequenceSequence( const MatrixType& rMatrix );
 };
 
@@ -316,23 +286,10 @@ template< typename VectorType >
     return ((0 <= nIndex) && (static_cast< size_t >( nIndex ) < rVector.size())) ? rVector[ static_cast< size_t >( nIndex ) ] : rDefault;
 }
 
-template< typename VectorType >
-/*static*/ typename VectorType::value_type& ContainerHelper::getVectorElementAccess( VectorType& rVector, sal_Int32 nIndex, typename VectorType::value_type& rDefault )
-{
-    return ((0 <= nIndex) && (static_cast< size_t >( nIndex ) < rVector.size())) ? rVector[ static_cast< size_t >( nIndex ) ] : rDefault;
-}
-
 template< typename MapType >
 /*static*/ const typename MapType::mapped_type* ContainerHelper::getMapElement( const MapType& rMap, const typename MapType::key_type& rKey )
 {
     typename MapType::const_iterator aIt = rMap.find( rKey );
-    return (aIt == rMap.end()) ? 0 : &aIt->second;
-}
-
-template< typename MapType >
-/*static*/ typename MapType::mapped_type* ContainerHelper::getMapElementAccess( MapType& rMap, const typename MapType::key_type& rKey )
-{
-    typename MapType::iterator aIt = rMap.find( rKey );
     return (aIt == rMap.end()) ? 0 : &aIt->second;
 }
 
@@ -343,33 +300,26 @@ template< typename MapType >
     return (aIt == rMap.end()) ? rDefault : aIt->second;
 }
 
-template< typename MapType >
-/*static*/ typename MapType::mapped_type& ContainerHelper::getMapElementAccess( MapType& rMap, const typename MapType::key_type& rKey, typename MapType::mapped_type& rDefault )
-{
-    typename MapType::iterator aIt = rMap.find( rKey );
-    return (aIt == rMap.end()) ? rDefault : aIt->second;
-}
-
 template< typename VectorType >
-/*static*/ ::com::sun::star::uno::Sequence< typename VectorType::value_type > ContainerHelper::vectorToSequence( const VectorType& rVector )
+/*static*/ css::uno::Sequence< typename VectorType::value_type > ContainerHelper::vectorToSequence( const VectorType& rVector )
 {
     typedef typename VectorType::value_type ValueType;
     if( rVector.empty() )
-        return ::com::sun::star::uno::Sequence< ValueType >();
-    return ::com::sun::star::uno::Sequence< ValueType >( &rVector.front(), static_cast< sal_Int32 >( rVector.size() ) );
+        return css::uno::Sequence< ValueType >();
+    return css::uno::Sequence< ValueType >( &rVector.front(), static_cast< sal_Int32 >( rVector.size() ) );
 }
 
 template< typename MatrixType >
-/*static*/ ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Sequence< typename MatrixType::value_type > > ContainerHelper::matrixToSequenceSequence( const MatrixType& rMatrix )
+/*static*/ css::uno::Sequence< css::uno::Sequence< typename MatrixType::value_type > > ContainerHelper::matrixToSequenceSequence( const MatrixType& rMatrix )
 {
     typedef typename MatrixType::value_type ValueType;
-    ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Sequence< ValueType > > aSeq;
+    css::uno::Sequence< css::uno::Sequence< ValueType > > aSeq;
     if( !rMatrix.empty() )
     {
         aSeq.realloc( static_cast< sal_Int32 >( rMatrix.height() ) );
         for( size_t nRow = 0, nHeight = rMatrix.height(); nRow < nHeight; ++nRow )
             aSeq[ static_cast< sal_Int32 >( nRow ) ] =
-                ::com::sun::star::uno::Sequence< ValueType >( &rMatrix.row_front( nRow ), static_cast< sal_Int32 >( rMatrix.width() ) );
+                css::uno::Sequence< ValueType >( &rMatrix.row_front( nRow ), static_cast< sal_Int32 >( rMatrix.width() ) );
     }
     return aSeq;
 }

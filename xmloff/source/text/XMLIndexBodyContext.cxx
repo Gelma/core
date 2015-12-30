@@ -27,7 +27,6 @@ using ::com::sun::star::uno::Reference;
 using ::com::sun::star::xml::sax::XAttributeList;
 
 
-TYPEINIT1( XMLIndexBodyContext, SvXMLImportContext);
 
 XMLIndexBodyContext::XMLIndexBodyContext(
     SvXMLImport& rImport,
@@ -47,12 +46,12 @@ SvXMLImportContext* XMLIndexBodyContext::CreateChildContext(
     const OUString& rLocalName,
     const Reference<XAttributeList> & xAttrList)
 {
-    SvXMLImportContext* pContext = NULL;
+    SvXMLImportContext* pContext = nullptr;
 
     // return text content (if possible)
     pContext = GetImport().GetTextImport()->CreateTextChildContext(
         GetImport(), nPrefix, rLocalName, xAttrList, XML_TEXT_TYPE_SECTION );
-    if (NULL == pContext)
+    if (nullptr == pContext)
     {
         pContext = new SvXMLImportContext( GetImport(), nPrefix, rLocalName );
     }

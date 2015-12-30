@@ -84,9 +84,6 @@ public class _XTreeControl extends MultiMethodTest {
     boolean mTreeNodeEditing1 = false;
     boolean mTreeNodeEdit1 = false;
 
-    boolean mTreeNodeEditing2 = false;
-    boolean mTreeNodeEdit2 = false;
-
     public interface XTreeDataModelListenerEvent{
         void fireEvent();
     }
@@ -171,13 +168,10 @@ public class _XTreeControl extends MultiMethodTest {
     public class TreeEditListenerImpl2 implements XTreeEditListener{
         public void nodeEditing(XTreeNode xTreeNode) throws VetoException {
             log.println("event at EditListener 2: nodeEditing");
-            mTreeNodeEditing2 = true;
-
         }
 
         public void nodeEdited(XTreeNode xTreeNode, String string) {
             log.println("event at EditListener 2: nodeEdited");
-            mTreeNodeEdit2 = true;
         }
 
         public void disposing(EventObject eventObject) {
@@ -199,8 +193,6 @@ public class _XTreeControl extends MultiMethodTest {
     private void resetEditListener(){
         mTreeNodeEditing1 = false;
         mTreeNodeEdit1 = false;
-        mTreeNodeEditing2 = false;
-        mTreeNodeEdit2 = false;
     }
 
     @Override

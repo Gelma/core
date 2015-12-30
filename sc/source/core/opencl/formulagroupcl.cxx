@@ -63,6 +63,18 @@ static const char* publicFunc =
  "    (*p) += t?0:1;\n"
  "    return t?b:a+b;\n"
  "}\n"
+ "double fmin_count(double a, double b, __private int *p) {\n"
+ "    double result = fmin(a, b);\n"
+ "    bool t = isnan(result);\n"
+ "    (*p) += t?0:1;\n"
+ "    return result;\n"
+ "}\n"
+ "double fmax_count(double a, double b, __private int *p) {\n"
+ "    double result = fmax(a, b);\n"
+ "    bool t = isnan(result);\n"
+ "    (*p) += t?0:1;\n"
+ "    return result;\n"
+ "}\n"
  "double fsum(double a, double b) { return isNan(a)?b:a+b; }\n"
  "double legalize(double a, double b) { return isNan(a)?b:a;}\n"
  "double fsub(double a, double b) { return a-b; }\n"
@@ -133,7 +145,6 @@ std::string StackVarEnumToString(StackVar const e)
     return std::to_string(static_cast<int>(e));
 }
 
-#ifdef SAL_LOG_INFO
 std::string linenumberify(const std::string& s)
 {
     std::stringstream ss;
@@ -149,7 +160,6 @@ std::string linenumberify(const std::string& s)
         ss << "/*" << std::setw(4) << linenumber++ << "*/ " << s.substr(start, std::string::npos);
     return ss.str();
 }
-#endif
 
 bool AllStringsAreNull(const rtl_uString* const* pStringArray, size_t nLength)
 {
@@ -170,7 +180,7 @@ bool AllStringsAreNull(const rtl_uString* const* pStringArray, size_t nLength)
 size_t VectorRef::Marshal( cl_kernel k, int argno, int, cl_program )
 {
     FormulaToken* ref = mFormulaTree->GetFormulaToken();
-    double* pHostBuffer = NULL;
+    double* pHostBuffer = nullptr;
     size_t szHostBuffer = 0;
     if (ref->GetType() == formula::svSingleVectorRef)
     {
@@ -218,21 +228,21 @@ size_t VectorRef::Marshal( cl_kernel k, int argno, int, cl_program )
                                            // Marshal as a buffer of NANs
         mpClmem = clCreateBuffer(kEnv.mpkContext,
             (cl_mem_flags)CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR,
-            szHostBuffer, NULL, &err);
+            szHostBuffer, nullptr, &err);
         if (CL_SUCCESS != err)
             throw OpenCLError("clCreateBuffer", err, __FILE__, __LINE__);
         SAL_INFO("sc.opencl", "Created buffer " << mpClmem << " size " << szHostBuffer);
 
         double* pNanBuffer = static_cast<double*>(clEnqueueMapBuffer(
             kEnv.mpkCmdQueue, mpClmem, CL_TRUE, CL_MAP_WRITE, 0,
-            szHostBuffer, 0, NULL, NULL, &err));
+            szHostBuffer, 0, nullptr, nullptr, &err));
         if (CL_SUCCESS != err)
             throw OpenCLError("clEnqueueMapBuffer", err, __FILE__, __LINE__);
 
         for (size_t i = 0; i < szHostBuffer / sizeof(double); i++)
             pNanBuffer[i] = NAN;
         err = clEnqueueUnmapMemObject(kEnv.mpkCmdQueue, mpClmem,
-            pNanBuffer, 0, NULL, NULL);
+            pNanBuffer, 0, nullptr, nullptr);
         // FIXME: Is it intentional to not throw an OpenCLError even if the clEnqueueUnmapMemObject() fails?
         if (CL_SUCCESS != err)
             SAL_WARN("sc.opencl", "clEnqueueUnmapMemObject failed: " << ::opencl::errorString(err));
@@ -256,19 +266,19 @@ public:
         FormulaTreeNodeRef ft ) :
         DynamicKernelArgument(config, s, ft) { }
     /// Generate declaration
-    virtual void GenDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenDecl( std::stringstream& ss ) const override
     {
         ss << "unsigned " << mSymName;
     }
-    virtual void GenDeclRef( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenDeclRef( std::stringstream& ss ) const override
     {
         ss << GenSlidingWindowDeclRef();
     }
-    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const override
     {
         GenDecl(ss);
     }
-    virtual std::string GenSlidingWindowDeclRef( bool = false ) const SAL_OVERRIDE
+    virtual std::string GenSlidingWindowDeclRef( bool = false ) const override
     {
         std::stringstream ss;
         if (GetFormulaToken()->GetType() != formula::svString)
@@ -277,12 +287,12 @@ public:
         ss << Tok->GetString().getString().toAsciiUpperCase().hashCode() << "U";
         return ss.str();
     }
-    virtual size_t GetWindowSize() const SAL_OVERRIDE
+    virtual size_t GetWindowSize() const override
     {
         return 1;
     }
     /// Pass the 32-bit hash of the string to the kernel
-    virtual size_t Marshal( cl_kernel k, int argno, int, cl_program ) SAL_OVERRIDE
+    virtual size_t Marshal( cl_kernel k, int argno, int, cl_program ) override
     {
         FormulaToken* ref = mFormulaTree->GetFormulaToken();
         cl_uint hashCode = 0;
@@ -313,25 +323,25 @@ public:
         FormulaTreeNodeRef ft ) :
         DynamicKernelArgument(config, s, ft) { }
     /// Generate declaration
-    virtual void GenDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenDecl( std::stringstream& ss ) const override
     {
         ss << "double " << mSymName;
     }
-    virtual void GenDeclRef( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenDeclRef( std::stringstream& ss ) const override
     {
         ss << mSymName;
     }
-    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const override
     {
         GenDecl(ss);
     }
-    virtual std::string GenSlidingWindowDeclRef( bool = false ) const SAL_OVERRIDE
+    virtual std::string GenSlidingWindowDeclRef( bool = false ) const override
     {
         if (GetFormulaToken()->GetType() != formula::svDouble)
             throw Unhandled();
         return mSymName;
     }
-    virtual size_t GetWindowSize() const SAL_OVERRIDE
+    virtual size_t GetWindowSize() const override
     {
         return 1;
     }
@@ -343,7 +353,7 @@ public:
         return Tok->GetDouble();
     }
     /// Create buffer and pass the buffer to a given kernel
-    virtual size_t Marshal( cl_kernel k, int argno, int, cl_program ) SAL_OVERRIDE
+    virtual size_t Marshal( cl_kernel k, int argno, int, cl_program ) override
     {
         double tmp = GetDouble();
         // Pass the scalar result back to the rest of the formula kernel
@@ -362,28 +372,28 @@ public:
         FormulaTreeNodeRef ft ) :
         DynamicKernelArgument(config, s, ft) { }
     /// Generate declaration
-    virtual void GenDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenDecl( std::stringstream& ss ) const override
     {
         ss << "double " << mSymName;
     }
-    virtual void GenDeclRef( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenDeclRef( std::stringstream& ss ) const override
     {
         ss << "3.14159265358979";
     }
-    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const override
     {
         GenDecl(ss);
     }
-    virtual std::string GenSlidingWindowDeclRef( bool = false ) const SAL_OVERRIDE
+    virtual std::string GenSlidingWindowDeclRef( bool = false ) const override
     {
         return mSymName;
     }
-    virtual size_t GetWindowSize() const SAL_OVERRIDE
+    virtual size_t GetWindowSize() const override
     {
         return 1;
     }
     /// Create buffer and pass the buffer to a given kernel
-    virtual size_t Marshal( cl_kernel k, int argno, int, cl_program ) SAL_OVERRIDE
+    virtual size_t Marshal( cl_kernel k, int argno, int, cl_program ) override
     {
         double tmp = 0.0;
         // Pass the scalar result back to the rest of the formula kernel
@@ -402,23 +412,23 @@ public:
         FormulaTreeNodeRef ft ) :
         DynamicKernelArgument(config, s, ft) { }
     /// Generate declaration
-    virtual void GenDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenDecl( std::stringstream& ss ) const override
     {
         ss << "double " << mSymName;
     }
-    virtual void GenDeclRef( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenDeclRef( std::stringstream& ss ) const override
     {
         ss << mSymName;
     }
-    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const override
     {
         ss << "int " << mSymName;
     }
-    virtual std::string GenSlidingWindowDeclRef( bool = false ) const SAL_OVERRIDE
+    virtual std::string GenSlidingWindowDeclRef( bool = false ) const override
     {
         return mSymName + "_Random(" + mSymName + ")";
     }
-    virtual void GenSlidingWindowFunction( std::stringstream& ss ) SAL_OVERRIDE
+    virtual void GenSlidingWindowFunction( std::stringstream& ss ) override
     {
         // This string is from the pi_opencl_kernel.i file as
         // generated when building the Random123 examples. Unused
@@ -743,12 +753,12 @@ threefry2x32 (threefry2x32_ctr_t in, threefry2x32_key_t k)\n\
 }\n\
 ";
     }
-    virtual size_t GetWindowSize() const SAL_OVERRIDE
+    virtual size_t GetWindowSize() const override
     {
         return 1;
     }
     /// Create buffer and pass the buffer to a given kernel
-    virtual size_t Marshal( cl_kernel k, int argno, int, cl_program ) SAL_OVERRIDE
+    virtual size_t Marshal( cl_kernel k, int argno, int, cl_program ) override
     {
         cl_int seed = comphelper::rng::uniform_int_distribution(0, SAL_MAX_INT32);
         // Pass the scalar result back to the rest of the formula kernel
@@ -768,17 +778,17 @@ public:
         FormulaTreeNodeRef ft, int index = 0 ) :
         VectorRef(config, s, ft, index) { }
 
-    virtual void GenSlidingWindowFunction( std::stringstream& ) SAL_OVERRIDE { }
+    virtual void GenSlidingWindowFunction( std::stringstream& ) override { }
     /// Generate declaration
-    virtual void GenDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenDecl( std::stringstream& ss ) const override
     {
         ss << "__global unsigned int *" << mSymName;
     }
-    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const override
     {
         DynamicKernelStringArgument::GenDecl(ss);
     }
-    virtual size_t Marshal( cl_kernel, int, int, cl_program ) SAL_OVERRIDE;
+    virtual size_t Marshal( cl_kernel, int, int, cl_program ) override;
 };
 
 /// Marshal a string vector reference
@@ -806,21 +816,21 @@ size_t DynamicKernelStringArgument::Marshal( cl_kernel k, int argno, int, cl_pro
         vRef = pDVR->GetArrays()[mnIndex];
     }
     size_t szHostBuffer = nStrings * sizeof(cl_int);
-    cl_uint* pHashBuffer = NULL;
+    cl_uint* pHashBuffer = nullptr;
 
-    if (vRef.mpStringArray != NULL)
+    if (vRef.mpStringArray != nullptr)
     {
         // Marshal strings. Right now we pass hashes of these string
         mpClmem = clCreateBuffer(kEnv.mpkContext,
             (cl_mem_flags)CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR,
-            szHostBuffer, NULL, &err);
+            szHostBuffer, nullptr, &err);
         if (CL_SUCCESS != err)
             throw OpenCLError("clCreateBuffer", err, __FILE__, __LINE__);
         SAL_INFO("sc.opencl", "Created buffer " << mpClmem << " size " << szHostBuffer);
 
         pHashBuffer = static_cast<cl_uint*>(clEnqueueMapBuffer(
             kEnv.mpkCmdQueue, mpClmem, CL_TRUE, CL_MAP_WRITE, 0,
-            szHostBuffer, 0, NULL, NULL, &err));
+            szHostBuffer, 0, nullptr, nullptr, &err));
         if (CL_SUCCESS != err)
             throw OpenCLError("clEnqueueMapBuffer", err, __FILE__, __LINE__);
 
@@ -844,14 +854,14 @@ size_t DynamicKernelStringArgument::Marshal( cl_kernel k, int argno, int, cl_pro
                                            // Marshal as a buffer of NANs
         mpClmem = clCreateBuffer(kEnv.mpkContext,
             (cl_mem_flags)CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR,
-            szHostBuffer, NULL, &err);
+            szHostBuffer, nullptr, &err);
         if (CL_SUCCESS != err)
             throw OpenCLError("clCreateBuffer", err, __FILE__, __LINE__);
         SAL_INFO("sc.opencl", "Created buffer " << mpClmem << " size " << szHostBuffer);
 
         pHashBuffer = static_cast<cl_uint*>(clEnqueueMapBuffer(
             kEnv.mpkCmdQueue, mpClmem, CL_TRUE, CL_MAP_WRITE, 0,
-            szHostBuffer, 0, NULL, NULL, &err));
+            szHostBuffer, 0, nullptr, nullptr, &err));
         if (CL_SUCCESS != err)
             throw OpenCLError("clEnqueueMapBuffer", err, __FILE__, __LINE__);
 
@@ -859,7 +869,7 @@ size_t DynamicKernelStringArgument::Marshal( cl_kernel k, int argno, int, cl_pro
             pHashBuffer[i] = 0;
     }
     err = clEnqueueUnmapMemObject(kEnv.mpkCmdQueue, mpClmem,
-        pHashBuffer, 0, NULL, NULL);
+        pHashBuffer, 0, nullptr, nullptr);
     if (CL_SUCCESS != err)
         throw OpenCLError("clEnqueueUnmapMemObject", err, __FILE__, __LINE__);
 
@@ -877,36 +887,36 @@ public:
     DynamicKernelMixedArgument( const ScCalcConfig& config, const std::string& s,
         FormulaTreeNodeRef ft ) :
         VectorRef(config, s, ft), mStringArgument(config, s + "s", ft) { }
-    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const override
     {
         VectorRef::GenSlidingWindowDecl(ss);
         ss << ", ";
         mStringArgument.GenSlidingWindowDecl(ss);
     }
-    virtual bool IsMixedArgument() const SAL_OVERRIDE { return true;}
-    virtual void GenSlidingWindowFunction( std::stringstream& ) SAL_OVERRIDE { }
+    virtual bool IsMixedArgument() const override { return true;}
+    virtual void GenSlidingWindowFunction( std::stringstream& ) override { }
     /// Generate declaration
-    virtual void GenDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenDecl( std::stringstream& ss ) const override
     {
         VectorRef::GenDecl(ss);
         ss << ", ";
         mStringArgument.GenDecl(ss);
     }
-    virtual void GenDeclRef( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenDeclRef( std::stringstream& ss ) const override
     {
         VectorRef::GenDeclRef(ss);
         ss << ",";
         mStringArgument.GenDeclRef(ss);
     }
-    virtual void GenNumDeclRef( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenNumDeclRef( std::stringstream& ss ) const override
     {
         VectorRef::GenSlidingWindowDecl(ss);
     }
-    virtual void GenStringDeclRef( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenStringDeclRef( std::stringstream& ss ) const override
     {
         mStringArgument.GenSlidingWindowDecl(ss);
     }
-    virtual std::string GenSlidingWindowDeclRef( bool nested ) const SAL_OVERRIDE
+    virtual std::string GenSlidingWindowDeclRef( bool nested ) const override
     {
         std::stringstream ss;
         ss << "(!isNan(" << VectorRef::GenSlidingWindowDeclRef();
@@ -915,19 +925,19 @@ public:
         ss << ")";
         return ss.str();
     }
-    virtual std::string GenDoubleSlidingWindowDeclRef( bool = false ) const SAL_OVERRIDE
+    virtual std::string GenDoubleSlidingWindowDeclRef( bool = false ) const override
     {
         std::stringstream ss;
         ss << VectorRef::GenSlidingWindowDeclRef();
         return ss.str();
     }
-    virtual std::string GenStringSlidingWindowDeclRef( bool = false ) const SAL_OVERRIDE
+    virtual std::string GenStringSlidingWindowDeclRef( bool = false ) const override
     {
         std::stringstream ss;
         ss << mStringArgument.GenSlidingWindowDeclRef();
         return ss.str();
     }
-    virtual size_t Marshal( cl_kernel k, int argno, int vw, cl_program p ) SAL_OVERRIDE
+    virtual size_t Marshal( cl_kernel k, int argno, int vw, cl_program p ) override
     {
         int i = VectorRef::Marshal(k, argno, vw, p);
         i += mStringArgument.Marshal(k, argno + i, vw, p);
@@ -951,7 +961,7 @@ public:
     DynamicKernelSlidingArgument( const ScCalcConfig& config, const std::string& s,
         FormulaTreeNodeRef ft, std::shared_ptr<SlidingFunctionBase>& CodeGen,
         int index = 0 ) :
-        Base(config, s, ft, index), mpCodeGen(CodeGen), mpClmem2(NULL)
+        Base(config, s, ft, index), mpCodeGen(CodeGen), mpClmem2(nullptr)
     {
         FormulaToken* t = ft->GetFormulaToken();
         if (t->GetType() != formula::svDoubleVectorRef)
@@ -1109,7 +1119,7 @@ public:
             cl_int err;
             err = clReleaseMemObject(mpClmem2);
             SAL_WARN_IF(err != CL_SUCCESS, "sc.opencl", "clReleaseMemObject failed: " << ::opencl::errorString(err));
-            mpClmem2 = NULL;
+            mpClmem2 = nullptr;
         }
     }
 
@@ -1140,27 +1150,27 @@ public:
         VectorRef(config, s, ft),
         mDoubleArgument(mCalcConfig, s, ft, CodeGen, index),
         mStringArgument(mCalcConfig, s + "s", ft, CodeGen, index) { }
-    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const override
     {
         mDoubleArgument.GenSlidingWindowDecl(ss);
         ss << ", ";
         mStringArgument.GenSlidingWindowDecl(ss);
     }
-    virtual void GenSlidingWindowFunction( std::stringstream& ) SAL_OVERRIDE { }
+    virtual void GenSlidingWindowFunction( std::stringstream& ) override { }
     /// Generate declaration
-    virtual void GenDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenDecl( std::stringstream& ss ) const override
     {
         mDoubleArgument.GenDecl(ss);
         ss << ", ";
         mStringArgument.GenDecl(ss);
     }
-    virtual void GenDeclRef( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenDeclRef( std::stringstream& ss ) const override
     {
         mDoubleArgument.GenDeclRef(ss);
         ss << ",";
         mStringArgument.GenDeclRef(ss);
     }
-    virtual std::string GenSlidingWindowDeclRef( bool nested ) const SAL_OVERRIDE
+    virtual std::string GenSlidingWindowDeclRef( bool nested ) const override
     {
         std::stringstream ss;
         ss << "(!isNan(" << mDoubleArgument.GenSlidingWindowDeclRef();
@@ -1169,28 +1179,28 @@ public:
         ss << ")";
         return ss.str();
     }
-    virtual bool IsMixedArgument() const SAL_OVERRIDE { return true;}
-    virtual std::string GenDoubleSlidingWindowDeclRef( bool = false ) const SAL_OVERRIDE
+    virtual bool IsMixedArgument() const override { return true;}
+    virtual std::string GenDoubleSlidingWindowDeclRef( bool = false ) const override
     {
         std::stringstream ss;
         ss << mDoubleArgument.GenSlidingWindowDeclRef();
         return ss.str();
     }
-    virtual std::string GenStringSlidingWindowDeclRef( bool = false ) const SAL_OVERRIDE
+    virtual std::string GenStringSlidingWindowDeclRef( bool = false ) const override
     {
         std::stringstream ss;
         ss << mStringArgument.GenSlidingWindowDeclRef();
         return ss.str();
     }
-    virtual void GenNumDeclRef( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenNumDeclRef( std::stringstream& ss ) const override
     {
         mDoubleArgument.GenDeclRef(ss);
     }
-    virtual void GenStringDeclRef( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenStringDeclRef( std::stringstream& ss ) const override
     {
         mStringArgument.GenDeclRef(ss);
     }
-    virtual size_t Marshal( cl_kernel k, int argno, int vw, cl_program p ) SAL_OVERRIDE
+    virtual size_t Marshal( cl_kernel k, int argno, int vw, cl_program p ) override
     {
         int i = mDoubleArgument.Marshal(k, argno, vw, p);
         i += mStringArgument.Marshal(k, argno + i, vw, p);
@@ -1251,7 +1261,7 @@ public:
     ParallelReductionVectorRef( const ScCalcConfig& config, const std::string& s,
         FormulaTreeNodeRef ft, std::shared_ptr<SlidingFunctionBase>& CodeGen,
         int index = 0 ) :
-        Base(config, s, ft, index), mpCodeGen(CodeGen), mpClmem2(NULL)
+        Base(config, s, ft, index), mpCodeGen(CodeGen), mpClmem2(nullptr)
     {
         FormulaToken* t = ft->GetFormulaToken();
         if (t->GetType() != formula::svDoubleVectorRef)
@@ -1476,7 +1486,7 @@ public:
 
     virtual size_t Marshal( cl_kernel k, int argno, int w, cl_program mpProgram )
     {
-        assert(Base::mpClmem == NULL);
+        assert(Base::mpClmem == nullptr);
         // Obtain cl context
         ::opencl::KernelEnv kEnv;
         ::opencl::setKernelEnv(&kEnv);
@@ -1484,7 +1494,7 @@ public:
         size_t nInput = mpDVR->GetArrayLength();
         size_t nCurWindowSize = mpDVR->GetRefRowSize();
         // create clmem buffer
-        if (mpDVR->GetArrays()[Base::mnIndex].mpNumericArray == NULL)
+        if (mpDVR->GetArrays()[Base::mnIndex].mpNumericArray == nullptr)
             throw Unhandled();
         double* pHostBuffer = const_cast<double*>(
             mpDVR->GetArrays()[Base::mnIndex].mpNumericArray);
@@ -1497,7 +1507,7 @@ public:
 
         mpClmem2 = clCreateBuffer(kEnv.mpkContext,
             CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
-            sizeof(double) * w, NULL, NULL);
+            sizeof(double) * w, nullptr, nullptr);
         if (CL_SUCCESS != err)
             throw OpenCLError("clCreateBuffer", err, __FILE__, __LINE__);
         SAL_INFO("sc.opencl", "Created buffer " << mpClmem2 << " size " << sizeof(double) << "*" << w << "=" << (sizeof(double)*w));
@@ -1541,8 +1551,8 @@ public:
         size_t global_work_size[] = { 256, (size_t)w };
         size_t local_work_size[] = { 256, 1 };
         SAL_INFO("sc.opencl", "Enqueing kernel " << redKernel);
-        err = clEnqueueNDRangeKernel(kEnv.mpkCmdQueue, redKernel, 2, NULL,
-            global_work_size, local_work_size, 0, NULL, NULL);
+        err = clEnqueueNDRangeKernel(kEnv.mpkCmdQueue, redKernel, 2, nullptr,
+            global_work_size, local_work_size, 0, nullptr, nullptr);
         if (CL_SUCCESS != err)
             throw OpenCLError("clEnqueueNDRangeKernel", err, __FILE__, __LINE__);
         err = clFinish(kEnv.mpkCmdQueue);
@@ -1555,14 +1565,14 @@ public:
             double* resbuf = static_cast<double*>(clEnqueueMapBuffer(kEnv.mpkCmdQueue,
                 mpClmem2,
                 CL_TRUE, CL_MAP_READ, 0,
-                sizeof(double) * w, 0, NULL, NULL,
+                sizeof(double) * w, 0, nullptr, nullptr,
                 &err));
             if (err != CL_SUCCESS)
                 throw OpenCLError("clEnqueueMapBuffer", err, __FILE__, __LINE__);
 
             for (int i = 0; i < w; i++)
                 pAllBuffer[i] = resbuf[i];
-            err = clEnqueueUnmapMemObject(kEnv.mpkCmdQueue, mpClmem2, resbuf, 0, NULL, NULL);
+            err = clEnqueueUnmapMemObject(kEnv.mpkCmdQueue, mpClmem2, resbuf, 0, nullptr, nullptr);
             if (err != CL_SUCCESS)
                 throw OpenCLError("clEnqueueUnmapMemObject", err, __FILE__, __LINE__);
 
@@ -1599,8 +1609,8 @@ public:
             size_t global_work_size1[] = { 256, (size_t)w };
             size_t local_work_size1[] = { 256, 1 };
             SAL_INFO("sc.opencl", "Enqueing kernel " << redKernel);
-            err = clEnqueueNDRangeKernel(kEnv.mpkCmdQueue, redKernel, 2, NULL,
-                global_work_size1, local_work_size1, 0, NULL, NULL);
+            err = clEnqueueNDRangeKernel(kEnv.mpkCmdQueue, redKernel, 2, nullptr,
+                global_work_size1, local_work_size1, 0, nullptr, nullptr);
             if (CL_SUCCESS != err)
                 throw OpenCLError("clEnqueueNDRangeKernel", err, __FILE__, __LINE__);
             err = clFinish(kEnv.mpkCmdQueue);
@@ -1609,13 +1619,13 @@ public:
             resbuf = static_cast<double*>(clEnqueueMapBuffer(kEnv.mpkCmdQueue,
                 mpClmem2,
                 CL_TRUE, CL_MAP_READ, 0,
-                sizeof(double) * w, 0, NULL, NULL,
+                sizeof(double) * w, 0, nullptr, nullptr,
                 &err));
             if (err != CL_SUCCESS)
                 throw OpenCLError("clEnqueueMapBuffer", err, __FILE__, __LINE__);
             for (int i = 0; i < w; i++)
                 pAllBuffer[i + w] = resbuf[i];
-            err = clEnqueueUnmapMemObject(kEnv.mpkCmdQueue, mpClmem2, resbuf, 0, NULL, NULL);
+            err = clEnqueueUnmapMemObject(kEnv.mpkCmdQueue, mpClmem2, resbuf, 0, nullptr, nullptr);
             // FIXME: Is it intentional to not throw an OpenCLError even if the clEnqueueUnmapMemObject() fails?
             if (CL_SUCCESS != err)
                 SAL_WARN("sc.opencl", "clEnqueueUnmapMemObject failed: " << ::opencl::errorString(err));
@@ -1623,7 +1633,7 @@ public:
             {
                 err = clReleaseMemObject(mpClmem2);
                 SAL_WARN_IF(err != CL_SUCCESS, "sc.opencl", "clReleaseMemObject failed: " << ::opencl::errorString(err));
-                mpClmem2 = NULL;
+                mpClmem2 = nullptr;
             }
             mpClmem2 = clCreateBuffer(kEnv.mpkContext,
                 (cl_mem_flags)CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR,
@@ -1646,7 +1656,7 @@ public:
             cl_int err;
             err = clReleaseMemObject(mpClmem2);
             SAL_WARN_IF(err != CL_SUCCESS, "sc.opencl", "clReleaseMemObject failed: " << ::opencl::errorString(err));
-            mpClmem2 = NULL;
+            mpClmem2 = nullptr;
         }
     }
 
@@ -1671,7 +1681,7 @@ class Reduction : public SlidingFunctionBase
 {
     int mnResultSize;
 public:
-    Reduction( int nResultSize ) : mnResultSize(nResultSize) {}
+    explicit Reduction(int nResultSize) : mnResultSize(nResultSize) {}
 
     typedef DynamicKernelSlidingArgument<VectorRef> NumericRange;
     typedef DynamicKernelSlidingArgument<DynamicKernelStringArgument> StringRange;
@@ -1683,7 +1693,7 @@ public:
     }
 
     virtual void GenSlidingWindowFunction( std::stringstream& ss,
-        const std::string& sSymName, SubArguments& vSubArguments ) SAL_OVERRIDE
+        const std::string& sSymName, SubArguments& vSubArguments ) override
     {
         ss << "\ndouble " << sSymName;
         ss << "_" << BinFuncName() << "(";
@@ -1696,7 +1706,7 @@ public:
         ss << ") {\n";
         ss << "double tmp = " << GetBottom() << ";\n";
         ss << "int gid0 = get_global_id(0);\n";
-        if (isAverage())
+        if (isAverage() || isMinOrMax())
             ss << "int nCount = 0;\n";
         ss << "double tmpBottom;\n";
         unsigned i = vSubArguments.size();
@@ -1732,13 +1742,8 @@ public:
                 assert(pCur);
                 assert(pCur->GetType() != formula::svDoubleVectorRef);
 
-                if (pCur->GetType() == formula::svSingleVectorRef)
-                {
-                    const formula::SingleVectorRefToken* pSVR =
-                        static_cast<const formula::SingleVectorRefToken*>(pCur);
-                    ss << "if (gid0 < " << pSVR->GetArrayLength() << "){\n";
-                }
-                else if (pCur->GetType() == formula::svDouble)
+                if (pCur->GetType() == formula::svSingleVectorRef ||
+                    pCur->GetType() == formula::svDouble)
                 {
                     ss << "{\n";
                 }
@@ -1769,13 +1774,6 @@ public:
                 ss << ";\n";
                 ss << "    }\n";
                 ss << "}\n";
-                if (vSubArguments[i]->GetFormulaToken()->GetType() ==
-                        formula::svSingleVectorRef && ZeroReturnZero())
-                {
-                    ss << "else{\n";
-                    ss << "        return 0;\n";
-                    ss << "    }\n";
-                }
             }
             else
             {
@@ -1784,14 +1782,23 @@ public:
                 ss << ";\n";
             }
         }
+        if (isAverage())
+            ss <<
+                "if (nCount==0)\n"
+                "    return CreateDoubleError(errDivisionByZero);\n";
+        else if (isMinOrMax())
+            ss <<
+                "if (nCount==0)\n"
+                "    return 0;\n";
         ss << "return tmp";
         if (isAverage())
             ss << "*pow((double)nCount,-1.0)";
         ss << ";\n}";
     }
     virtual bool isAverage() const { return false; }
-    virtual bool takeString() const SAL_OVERRIDE { return false; }
-    virtual bool takeNumeric() const SAL_OVERRIDE { return true; }
+    virtual bool isMinOrMax() const { return false; }
+    virtual bool takeString() const override { return false; }
+    virtual bool takeNumeric() const override { return true; }
 };
 
 // Strictly binary operators
@@ -1799,7 +1806,7 @@ class Binary : public SlidingFunctionBase
 {
 public:
     virtual void GenSlidingWindowFunction( std::stringstream& ss,
-        const std::string& sSymName, SubArguments& vSubArguments ) SAL_OVERRIDE
+        const std::string& sSymName, SubArguments& vSubArguments ) override
     {
         ss << "\ndouble " << sSymName;
         ss << "_" << BinFuncName() << "(";
@@ -1817,19 +1824,19 @@ public:
             vSubArguments[1]->GenSlidingWindowDeclRef()) << ";\n\t";
         ss << "return tmp;\n}";
     }
-    virtual bool takeString() const SAL_OVERRIDE { return true; }
-    virtual bool takeNumeric() const SAL_OVERRIDE { return true; }
+    virtual bool takeString() const override { return true; }
+    virtual bool takeNumeric() const override { return true; }
 };
 
 class SumOfProduct : public SlidingFunctionBase
 {
 public:
     virtual void GenSlidingWindowFunction( std::stringstream& ss,
-        const std::string& sSymName, SubArguments& vSubArguments ) SAL_OVERRIDE
+        const std::string& sSymName, SubArguments& vSubArguments ) override
     {
         size_t nCurWindowSize = 0;
-        FormulaToken* tmpCur = NULL;
-        const formula::DoubleVectorRefToken* pCurDVR = NULL;
+        FormulaToken* tmpCur = nullptr;
+        const formula::DoubleVectorRefToken* pCurDVR = nullptr;
         ss << "\ndouble " << sSymName;
         ss << "_" << BinFuncName() << "(";
         for (size_t i = 0; i < vSubArguments.size(); i++)
@@ -2020,182 +2027,178 @@ public:
         ss << "return tmp;\n";
         ss << "}";
     }
-    virtual bool takeString() const SAL_OVERRIDE { return false; }
-    virtual bool takeNumeric() const SAL_OVERRIDE { return true; }
+    virtual bool takeString() const override { return false; }
+    virtual bool takeNumeric() const override { return true; }
 };
 
 /// operator traits
 class OpNop : public Reduction
 {
 public:
-    OpNop( int nResultSize ) : Reduction(nResultSize) {}
+    explicit OpNop(int nResultSize) : Reduction(nResultSize) {}
 
-    virtual std::string GetBottom() SAL_OVERRIDE { return "0"; }
-    virtual std::string Gen2( const std::string& lhs, const std::string& ) const SAL_OVERRIDE
+    virtual std::string GetBottom() override { return "0"; }
+    virtual std::string Gen2( const std::string& lhs, const std::string& ) const override
     {
         return lhs;
     }
-    virtual std::string BinFuncName() const SAL_OVERRIDE { return "nop"; }
+    virtual std::string BinFuncName() const override { return "nop"; }
 };
 
 class OpCount : public Reduction
 {
 public:
-    OpCount( int nResultSize ) : Reduction(nResultSize) {}
+    explicit OpCount(int nResultSize) : Reduction(nResultSize) {}
 
-    virtual std::string GetBottom() SAL_OVERRIDE { return "0"; }
-    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const SAL_OVERRIDE
+    virtual std::string GetBottom() override { return "0"; }
+    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const override
     {
         std::stringstream ss;
         ss << "(isNan(" << lhs << ")?" << rhs << ":" << rhs << "+1.0)";
         return ss.str();
     }
-    virtual std::string BinFuncName() const SAL_OVERRIDE { return "fcount"; }
+    virtual std::string BinFuncName() const override { return "fcount"; }
 };
 
 class OpEqual : public Binary
 {
 public:
-    virtual std::string GetBottom() SAL_OVERRIDE { return "0"; }
-    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const SAL_OVERRIDE
+    virtual std::string GetBottom() override { return "0"; }
+    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const override
     {
         std::stringstream ss;
         ss << "strequal(" << lhs << "," << rhs << ")";
         return ss.str();
     }
-    virtual std::string BinFuncName() const SAL_OVERRIDE { return "eq"; }
+    virtual std::string BinFuncName() const override { return "eq"; }
 };
 
 class OpLessEqual : public Binary
 {
 public:
-    virtual std::string GetBottom() SAL_OVERRIDE { return "0"; }
-    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const SAL_OVERRIDE
+    virtual std::string GetBottom() override { return "0"; }
+    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const override
     {
         std::stringstream ss;
         ss << "(" << lhs << "<=" << rhs << ")";
         return ss.str();
     }
-    virtual std::string BinFuncName() const SAL_OVERRIDE { return "leq"; }
+    virtual std::string BinFuncName() const override { return "leq"; }
 };
 
 class OpLess : public Binary
 {
 public:
-    virtual std::string GetBottom() SAL_OVERRIDE { return "0"; }
-    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const SAL_OVERRIDE
+    virtual std::string GetBottom() override { return "0"; }
+    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const override
     {
         std::stringstream ss;
         ss << "(" << lhs << "<" << rhs << ")";
         return ss.str();
     }
-    virtual std::string BinFuncName() const SAL_OVERRIDE { return "less"; }
+    virtual std::string BinFuncName() const override { return "less"; }
 };
 
 class OpGreater : public Binary
 {
 public:
-    virtual std::string GetBottom() SAL_OVERRIDE { return "0"; }
-    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const SAL_OVERRIDE
+    virtual std::string GetBottom() override { return "0"; }
+    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const override
     {
         std::stringstream ss;
         ss << "(" << lhs << ">" << rhs << ")";
         return ss.str();
     }
-    virtual std::string BinFuncName() const SAL_OVERRIDE { return "gt"; }
+    virtual std::string BinFuncName() const override { return "gt"; }
 };
 
 class OpSum : public Reduction
 {
 public:
-    OpSum( int nResultSize ) : Reduction(nResultSize) {}
+    explicit OpSum(int nResultSize) : Reduction(nResultSize) {}
 
-    virtual std::string GetBottom() SAL_OVERRIDE { return "0"; }
-    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const SAL_OVERRIDE
+    virtual std::string GetBottom() override { return "0"; }
+    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const override
     {
         std::stringstream ss;
         ss << "((" << lhs << ")+(" << rhs << "))";
         return ss.str();
     }
-    virtual std::string BinFuncName() const SAL_OVERRIDE { return "fsum"; }
+    virtual std::string BinFuncName() const override { return "fsum"; }
 };
 
 class OpAverage : public Reduction
 {
 public:
-    OpAverage( int nResultSize ) : Reduction(nResultSize) {}
+    explicit OpAverage(int nResultSize) : Reduction(nResultSize) {}
 
-    virtual std::string GetBottom() SAL_OVERRIDE { return "0"; }
-    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const SAL_OVERRIDE
+    virtual std::string GetBottom() override { return "0"; }
+    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const override
     {
         std::stringstream ss;
         ss << "fsum_count(" << lhs << "," << rhs << ", &nCount)";
         return ss.str();
     }
-    virtual std::string BinFuncName() const SAL_OVERRIDE { return "fsum"; }
-    virtual bool isAverage() const SAL_OVERRIDE { return true; }
+    virtual std::string BinFuncName() const override { return "average"; }
+    virtual bool isAverage() const override { return true; }
 };
 
 class OpSub : public Reduction
 {
 public:
-    OpSub( int nResultSize ) : Reduction(nResultSize) {}
+    explicit OpSub(int nResultSize) : Reduction(nResultSize) {}
 
-    virtual std::string GetBottom() SAL_OVERRIDE { return "0"; }
-    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const SAL_OVERRIDE
+    virtual std::string GetBottom() override { return "0"; }
+    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const override
     {
         return lhs + "-" + rhs;
     }
-    virtual std::string BinFuncName() const SAL_OVERRIDE { return "fsub"; }
+    virtual std::string BinFuncName() const override { return "fsub"; }
 };
 
 class OpMul : public Reduction
 {
 public:
-    OpMul( int nResultSize ) : Reduction(nResultSize) {}
+    explicit OpMul(int nResultSize) : Reduction(nResultSize) {}
 
-    virtual std::string GetBottom() SAL_OVERRIDE { return "1"; }
-    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const SAL_OVERRIDE
+    virtual std::string GetBottom() override { return "1"; }
+    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const override
     {
         return lhs + "*" + rhs;
     }
-    virtual std::string BinFuncName() const SAL_OVERRIDE { return "fmul"; }
-    virtual bool ZeroReturnZero() SAL_OVERRIDE { return true; }
+    virtual std::string BinFuncName() const override { return "fmul"; }
+    virtual bool ZeroReturnZero() override { return true; }
 };
 
 /// Technically not a reduction, but fits the framework.
 class OpDiv : public Reduction
 {
 public:
-    OpDiv( int nResultSize ) : Reduction(nResultSize) {}
+    explicit OpDiv(int nResultSize) : Reduction(nResultSize) {}
 
-    virtual std::string GetBottom() SAL_OVERRIDE { return "1.0"; }
-    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const SAL_OVERRIDE
+    virtual std::string GetBottom() override { return "1.0"; }
+    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const override
     {
         return "(" + rhs + "==0 ? CreateDoubleError(errDivisionByZero) : (" + lhs + "/" + rhs + ") )";
     }
-    virtual std::string BinFuncName() const SAL_OVERRIDE { return "fdiv"; }
+    virtual std::string BinFuncName() const override { return "fdiv"; }
 
-    virtual bool HandleNaNArgument( std::stringstream& ss, unsigned argno, SubArguments& vSubArguments ) const SAL_OVERRIDE
+    virtual bool HandleNaNArgument( std::stringstream& ss, unsigned argno, SubArguments& vSubArguments ) const override
     {
         if (argno == 1)
         {
             ss <<
                 "if (isnan(" << vSubArguments[argno]->GenSlidingWindowDeclRef() << ")) {\n"
-                "    if (GetDoubleErrorValue(" << vSubArguments[argno]->GenSlidingWindowDeclRef() << ") == errNoValue)\n"
-                "        return CreateDoubleError(errDivisionByZero);\n"
+                "    return CreateDoubleError(errDivisionByZero);\n"
                 "}\n";
             return true;
         }
         else if (argno == 0)
         {
             ss <<
-                "if (isnan(" << vSubArguments[argno]->GenSlidingWindowDeclRef() << ")) {\n"
-                "    if (GetDoubleErrorValue(" << vSubArguments[argno]->GenSlidingWindowDeclRef() << ") == errNoValue) {\n"
-                "        if (" << vSubArguments[1]->GenSlidingWindowDeclRef() << " == 0)\n"
-                "            return CreateDoubleError(errDivisionByZero);\n"
-                "        return 0;\n"
-                "    }\n"
+                "if (isnan(" << vSubArguments[argno]->GenSlidingWindowDeclRef() << ") &&\n"
+                "    !(isnan(" << vSubArguments[1]->GenSlidingWindowDeclRef() << ") || " << vSubArguments[1]->GenSlidingWindowDeclRef() << " == 0)) {\n"
+                "    return 0;\n"
                 "}\n";
         }
         return false;
@@ -2206,44 +2209,46 @@ public:
 class OpMin : public Reduction
 {
 public:
-    OpMin( int nResultSize ) : Reduction(nResultSize) {}
+    explicit OpMin(int nResultSize) : Reduction(nResultSize) {}
 
-    virtual std::string GetBottom() SAL_OVERRIDE { return "MAXFLOAT"; }
-    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const SAL_OVERRIDE
+    virtual std::string GetBottom() override { return "NAN"; }
+    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const override
     {
-        return "fmin(" + lhs + "," + rhs + ")";
+        return "fmin_count(" + lhs + "," + rhs + ", &nCount)";
     }
-    virtual std::string BinFuncName() const SAL_OVERRIDE { return "min"; }
+    virtual std::string BinFuncName() const override { return "min"; }
+    virtual bool isMinOrMax() const override { return true; }
 };
 
 class OpMax : public Reduction
 {
 public:
-    OpMax( int nResultSize ) : Reduction(nResultSize) {}
+    explicit OpMax(int nResultSize) : Reduction(nResultSize) {}
 
-    virtual std::string GetBottom() SAL_OVERRIDE { return "-MAXFLOAT"; }
-    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const SAL_OVERRIDE
+    virtual std::string GetBottom() override { return "NAN"; }
+    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const override
     {
-        return "fmax(" + lhs + "," + rhs + ")";
+        return "fmax_count(" + lhs + "," + rhs + ", &nCount)";
     }
-    virtual std::string BinFuncName() const SAL_OVERRIDE { return "max"; }
+    virtual std::string BinFuncName() const override { return "max"; }
+    virtual bool isMinOrMax() const override { return true; }
 };
 
 class OpSumProduct : public SumOfProduct
 {
 public:
-    virtual std::string GetBottom() SAL_OVERRIDE { return "0"; }
-    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const SAL_OVERRIDE
+    virtual std::string GetBottom() override { return "0"; }
+    virtual std::string Gen2( const std::string& lhs, const std::string& rhs ) const override
     {
         return lhs + "*" + rhs;
     }
-    virtual std::string BinFuncName() const SAL_OVERRIDE { return "fsop"; }
+    virtual std::string BinFuncName() const override { return "fsop"; }
 };
 namespace {
 struct SumIfsArgs
 {
-    SumIfsArgs( cl_mem x ) : mCLMem(x), mConst(0.0) { }
-    SumIfsArgs( double x ) : mCLMem(NULL), mConst(x) { }
+    explicit SumIfsArgs(cl_mem x) : mCLMem(x), mConst(0.0) { }
+    explicit SumIfsArgs(double x) : mCLMem(nullptr), mConst(x) { }
     cl_mem mCLMem;
     double mConst;
 };
@@ -2260,7 +2265,7 @@ public:
         SlidingFunctionBase* pCodeGen, int nResultSize );
 
     /// Create buffer and pass the buffer to a given kernel
-    virtual size_t Marshal( cl_kernel k, int argno, int nVectorWidth, cl_program pProgram ) SAL_OVERRIDE
+    virtual size_t Marshal( cl_kernel k, int argno, int nVectorWidth, cl_program pProgram ) override
     {
         unsigned i = 0;
         for (SubArgumentsType::iterator it = mvSubArguments.begin(), e = mvSubArguments.end(); it != e;
@@ -2285,10 +2290,10 @@ public:
                     if (VectorRef* VR = dynamic_cast<VectorRef*>(it->get()))
                         vclmem.push_back(VR->GetCLBuffer());
                     else
-                        vclmem.push_back(NULL);
+                        vclmem.push_back(nullptr);
                 }
                 pClmem2 = clCreateBuffer(kEnv.mpkContext, CL_MEM_READ_WRITE,
-                    sizeof(double) * nVectorWidth, NULL, &err);
+                    sizeof(double) * nVectorWidth, nullptr, &err);
                 if (CL_SUCCESS != err)
                     throw OpenCLError("clCreateBuffer", err, __FILE__, __LINE__);
                 SAL_INFO("sc.opencl", "Created buffer " << pClmem2 << " size " << sizeof(double) << "*" << nVectorWidth << "=" << (sizeof(double)*nVectorWidth));
@@ -2318,8 +2323,8 @@ public:
                 size_t global_work_size[] = { 256, (size_t)nVectorWidth };
                 size_t local_work_size[] = { 256, 1 };
                 SAL_INFO("sc.opencl", "Enqueing kernel " << redKernel);
-                err = clEnqueueNDRangeKernel(kEnv.mpkCmdQueue, redKernel, 2, NULL,
-                    global_work_size, local_work_size, 0, NULL, NULL);
+                err = clEnqueueNDRangeKernel(kEnv.mpkCmdQueue, redKernel, 2, nullptr,
+                    global_work_size, local_work_size, 0, nullptr, nullptr);
                 if (CL_SUCCESS != err)
                     throw OpenCLError("clEnqueueNDRangeKernel", err, __FILE__, __LINE__);
                 err = clFinish(kEnv.mpkCmdQueue);
@@ -2342,7 +2347,7 @@ public:
             DynamicKernelArgument* Arg = mvSubArguments[0].get();
             DynamicKernelSlidingArgument<VectorRef>* slidingArgPtr =
                 static_cast<DynamicKernelSlidingArgument<VectorRef>*>(Arg);
-            mpClmem2 = NULL;
+            mpClmem2 = nullptr;
 
             if (OpSumCodeGen->NeedReductionKernel())
             {
@@ -2361,7 +2366,7 @@ public:
                         vclmem.push_back(SumIfsArgs(nullptr));
                 }
                 mpClmem2 = clCreateBuffer(kEnv.mpkContext, CL_MEM_READ_WRITE,
-                    sizeof(double) * nVectorWidth, NULL, &err);
+                    sizeof(double) * nVectorWidth, nullptr, &err);
                 if (CL_SUCCESS != err)
                     throw OpenCLError("clCreateBuffer", err, __FILE__, __LINE__);
                 SAL_INFO("sc.opencl", "Created buffer " << mpClmem2 << " size " << sizeof(double) << "*" << nVectorWidth << "=" << (sizeof(double)*nVectorWidth));
@@ -2404,8 +2409,8 @@ public:
                 size_t global_work_size[] = { 256, (size_t)nVectorWidth };
                 size_t local_work_size[] = { 256, 1 };
                 SAL_INFO("sc.opencl", "Enqueing kernel " << redKernel);
-                err = clEnqueueNDRangeKernel(kEnv.mpkCmdQueue, redKernel, 2, NULL,
-                    global_work_size, local_work_size, 0, NULL, NULL);
+                err = clEnqueueNDRangeKernel(kEnv.mpkCmdQueue, redKernel, 2, nullptr,
+                    global_work_size, local_work_size, 0, nullptr, nullptr);
                 if (CL_SUCCESS != err)
                     throw OpenCLError("clEnqueueNDRangeKernel", err, __FILE__, __LINE__);
 
@@ -2427,13 +2432,13 @@ public:
         return i;
     }
 
-    virtual void GenSlidingWindowFunction( std::stringstream& ss ) SAL_OVERRIDE
+    virtual void GenSlidingWindowFunction( std::stringstream& ss ) override
     {
         for (size_t i = 0; i < mvSubArguments.size(); i++)
             mvSubArguments[i]->GenSlidingWindowFunction(ss);
         mpCodeGen->GenSlidingWindowFunction(ss, mSymName, mvSubArguments);
     }
-    virtual void GenDeclRef( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenDeclRef( std::stringstream& ss ) const override
     {
         for (size_t i = 0; i < mvSubArguments.size(); i++)
         {
@@ -2442,7 +2447,7 @@ public:
             mvSubArguments[i]->GenDeclRef(ss);
         }
     }
-    virtual void GenDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenDecl( std::stringstream& ss ) const override
     {
         for (SubArgumentsType::const_iterator it = mvSubArguments.begin(), e = mvSubArguments.end(); it != e;
             ++it)
@@ -2453,7 +2458,7 @@ public:
         }
     }
 
-    virtual size_t GetWindowSize() const SAL_OVERRIDE
+    virtual size_t GetWindowSize() const override
     {
         size_t nCurWindowSize = 0;
         for (size_t i = 0; i < mvSubArguments.size(); i++)
@@ -2466,7 +2471,7 @@ public:
     }
 
     /// When declared as input to a sliding window function
-    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const SAL_OVERRIDE
+    virtual void GenSlidingWindowDecl( std::stringstream& ss ) const override
     {
         for (SubArgumentsType::const_iterator it = mvSubArguments.begin(), e = mvSubArguments.end(); it != e;
             ++it)
@@ -2478,7 +2483,7 @@ public:
     }
     /// Generate either a function call to each children
     /// or directly inline it if we are already inside a loop
-    virtual std::string GenSlidingWindowDeclRef( bool nested = false ) const SAL_OVERRIDE
+    virtual std::string GenSlidingWindowDeclRef( bool nested = false ) const override
     {
         std::stringstream ss;
         if (!nested)
@@ -2512,7 +2517,7 @@ public:
         }
         return ss.str();
     }
-    virtual std::string DumpOpName() const SAL_OVERRIDE
+    virtual std::string DumpOpName() const override
     {
         std::string t = "_" + mpCodeGen->BinFuncName();
         for (size_t i = 0; i < mvSubArguments.size(); i++)
@@ -2520,7 +2525,7 @@ public:
         return t;
     }
     virtual void DumpInlineFun( std::set<std::string>& decls,
-        std::set<std::string>& funs ) const SAL_OVERRIDE
+        std::set<std::string>& funs ) const override
     {
         mpCodeGen->BinInlineFun(decls, funs);
         for (size_t i = 0; i < mvSubArguments.size(); i++)
@@ -2533,7 +2538,7 @@ public:
             cl_int err;
             err = clReleaseMemObject(mpClmem2);
             SAL_WARN_IF(err != CL_SUCCESS, "sc.opencl", "clReleaseMemObject failed: " << ::opencl::errorString(err));
-            mpClmem2 = NULL;
+            mpClmem2 = nullptr;
         }
     }
 
@@ -2601,7 +2606,7 @@ DynamicKernelArgument* VectorRefFactory( const ScCalcConfig& config, const std::
 
 DynamicKernelSoPArguments::DynamicKernelSoPArguments(const ScCalcConfig& config,
     const std::string& s, const FormulaTreeNodeRef& ft, SlidingFunctionBase* pCodeGen, int nResultSize ) :
-    DynamicKernelArgument(config, s, ft), mpCodeGen(pCodeGen), mpClmem2(NULL)
+    DynamicKernelArgument(config, s, ft), mpCodeGen(pCodeGen), mpClmem2(nullptr)
 {
     size_t nChildren = ft->Children.size();
 
@@ -2635,8 +2640,8 @@ DynamicKernelSoPArguments::DynamicKernelSoPArguments(const ScCalcConfig& config,
                                  " takeString=" << (pCodeGen->takeString()?"YES":"NO"));
 
                         if (pDVR->GetArrays()[j].mpNumericArray ||
-                            (pDVR->GetArrays()[j].mpNumericArray == NULL &&
-                                pDVR->GetArrays()[j].mpStringArray == NULL))
+                            (pDVR->GetArrays()[j].mpNumericArray == nullptr &&
+                                pDVR->GetArrays()[j].mpStringArray == nullptr))
                         {
                             if (pDVR->GetArrays()[j].mpNumericArray &&
                                 pCodeGen->takeNumeric() &&
@@ -2649,6 +2654,13 @@ DynamicKernelSoPArguments::DynamicKernelSoPArguments(const ScCalcConfig& config,
                                     DynamicKernelArgumentRef(
                                         new DynamicKernelMixedSlidingArgument(mCalcConfig,
                                             ts, ft->Children[i], mpCodeGen, j)));
+                            }
+                            else if (!AllStringsAreNull(pDVR->GetArrays()[j].mpStringArray, pDVR->GetArrayLength()) &&
+                                     !pCodeGen->takeString())
+                            {
+                                // Can't handle
+                                SAL_INFO("sc.opencl", "Strings but can't do that.");
+                                throw UnhandledToken(("unhandled operand " + StackVarEnumToString(pChild->GetType()) + " for ocPush").c_str());
                             }
                             else
                             {
@@ -2705,7 +2717,7 @@ DynamicKernelSoPArguments::DynamicKernelSoPArguments(const ScCalcConfig& config,
                             DynamicKernelArgumentRef(new VectorRef(mCalcConfig, ts,
                                     ft->Children[i])));
                     }
-                    else if (pSVR->GetArray().mpNumericArray == NULL &&
+                    else if (pSVR->GetArray().mpNumericArray == nullptr &&
                         pCodeGen->takeNumeric() &&
                         pSVR->GetArray().mpStringArray &&
                         mCalcConfig.meStringConversion == ScCalcConfig::StringConversion::ZERO)
@@ -2727,7 +2739,7 @@ DynamicKernelSoPArguments::DynamicKernelSoPArguments(const ScCalcConfig& config,
                                     ts, ft->Children[i])));
                     }
                     else if (AllStringsAreNull(pSVR->GetArray().mpStringArray, pSVR->GetArrayLength()) &&
-                        pSVR->GetArray().mpNumericArray == NULL)
+                        pSVR->GetArray().mpNumericArray == nullptr)
                     {
                         // There are only empty cells. Push as an
                         // array of NANs
@@ -2739,8 +2751,7 @@ DynamicKernelSoPArguments::DynamicKernelSoPArguments(const ScCalcConfig& config,
                     else
                     {
                         SAL_INFO("sc.opencl", "Fallback case, rejecting for OpenCL");
-                        throw UnhandledToken(pChild,
-                            "Got unhandled case here", __FILE__, __LINE__);
+                        throw UnhandledToken("Got unhandled case here", __FILE__, __LINE__);
                     }
                 }
                 else if (pChild->GetType() == formula::svDouble)
@@ -2761,7 +2772,7 @@ DynamicKernelSoPArguments::DynamicKernelSoPArguments(const ScCalcConfig& config,
                 else
                 {
                     SAL_INFO("sc.opencl", "Fallback case, rejecting for OpenCL");
-                    throw UnhandledToken(pChild, ("unhandled operand " + StackVarEnumToString(pChild->GetType()) + " for ocPush").c_str());
+                    throw UnhandledToken(("unhandled operand " + StackVarEnumToString(pChild->GetType()) + " for ocPush").c_str());
                 }
                 break;
             case ocDiv:
@@ -3450,58 +3461,47 @@ DynamicKernelSoPArguments::DynamicKernelSoPArguments(const ScCalcConfig& config,
                         ft->Children[i], new OpIf, nResultSize));
                 break;
             case ocExternal:
-                if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getEffect"))))
+                if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getEffect")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpEffective, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getCumipmt"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getCumipmt")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpCumipmt, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getNominal"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getNominal")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpNominal, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getCumprinc"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getCumprinc")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpCumprinc, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getXnpv"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getXnpv")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpXNPV, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getPricemat"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getPricemat")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpPriceMat, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getReceived"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getReceived")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpReceived, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getTbilleq"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getTbilleq")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpTbilleq, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getTbillprice"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getTbillprice")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpTbillprice, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getTbillyield"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getTbillyield")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpTbillyield, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getFvschedule"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getFvschedule")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpFvschedule, nResultSize));
                 }
@@ -3510,64 +3510,52 @@ DynamicKernelSoPArguments::DynamicKernelSoPArguments(const ScCalcConfig& config,
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpYield));
                 }*/
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getYielddisc"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getYielddisc")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpYielddisc, nResultSize));
                 }
-                else    if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getYieldmat"))))
+                else    if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getYieldmat")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpYieldmat, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getAccrintm"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getAccrintm")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpAccrintm, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getCoupdaybs"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getCoupdaybs")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpCoupdaybs, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getDollarde"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getDollarde")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpDollarde, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getDollarfr"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getDollarfr")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpDollarfr, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getCoupdays"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getCoupdays")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpCoupdays, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getCoupdaysnc"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getCoupdaysnc")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpCoupdaysnc, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getDisc"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getDisc")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpDISC, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getIntrate"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getIntrate")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i], new OpINTRATE, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getPrice"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getPrice")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts,
                             ft->Children[i], new OpPrice, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getCoupnum"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getCoupnum")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpCoupnum, nResultSize));
@@ -3578,126 +3566,107 @@ DynamicKernelSoPArguments::DynamicKernelSoPArguments(const ScCalcConfig& config,
                     mvSubArguments.push_back(
                         SoPHelper(mCalcConfig, ts, ft->Children[i], new OpDuration_ADD));
                 }*/
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getAmordegrc"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getAmordegrc")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpAmordegrc, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getAmorlinc"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getAmorlinc")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpAmorlinc, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getMduration"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getMduration")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpMDuration, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getXirr"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getXirr")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpXirr, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getOddlprice"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getOddlprice")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts,
                             ft->Children[i], new OpOddlprice, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getOddlyield"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getOddlyield")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpOddlyield, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getPricedisc"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getPricedisc")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts,
                             ft->Children[i], new OpPriceDisc, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getCouppcd"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getCouppcd")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpCouppcd, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getCoupncd"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getCoupncd")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpCoupncd, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getAccrint"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getAccrint")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpAccrint, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getSqrtpi"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getSqrtpi")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpSqrtPi, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getConvert"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getConvert")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpConvert, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getIseven"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getIseven")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpIsEven, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getIsodd"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getIsodd")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpIsOdd, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getMround"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getMround")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpMROUND, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getQuotient"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getQuotient")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpQuotient, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getSeriessum"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getSeriessum")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpSeriesSum, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getBesselj"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getBesselj")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpBesselj, nResultSize));
                 }
-                else if (!(pChild->GetExternal().compareTo(OUString(
-                                "com.sun.star.sheet.addin.Analysis.getGestep"))))
+                else if (!(pChild->GetExternal().compareTo("com.sun.star.sheet.addin.Analysis.getGestep")))
                 {
                     mvSubArguments.push_back(SoPHelper(mCalcConfig, ts, ft->Children[i],
                             new OpGestep, nResultSize));
                 }
                 else
-                    throw UnhandledToken(pChild, "unhandled opcode");
+                    throw UnhandledToken("unhandled opcode");
                 break;
 
             default:
-                throw UnhandledToken(pChild, "unhandled opcode");
+                throw UnhandledToken("unhandled opcode");
         }
     }
 }
@@ -3745,9 +3714,9 @@ private:
 DynamicKernel::DynamicKernel( const ScCalcConfig& config, const FormulaTreeNodeRef& r, int nResultSize ) :
     mCalcConfig(config),
     mpRoot(r),
-    mpProgram(NULL),
-    mpKernel(NULL),
-    mpResClmem(NULL),
+    mpProgram(nullptr),
+    mpKernel(nullptr),
+    mpResClmem(nullptr),
     mnResultSize(nResultSize) {}
 
 DynamicKernel::~DynamicKernel()
@@ -3805,14 +3774,11 @@ void DynamicKernel::CodeGen()
     decl << ") {\n\tint gid0 = get_global_id(0);\n\tresult[gid0] = " <<
         DK->GenSlidingWindowDeclRef() << ";\n}\n";
     mFullProgramSrc = decl.str();
-#ifdef SAL_LOG_INFO
-    std::stringstream area;
-    if (mKernelSignature[0] == '_')
-        area << "sc.opencl.source." << mKernelSignature.substr(1, std::string::npos);
-    else
-        area << "sc.opencl.source." << mKernelSignature;
-    SAL_INFO(area.str().c_str(), "Program to be compiled:\n" << linenumberify(mFullProgramSrc));
-#endif
+    SAL_INFO(
+        "sc.opencl.source",
+        (mKernelSignature[0] == '_'
+         ? mKernelSignature.substr(1, std::string::npos) : mKernelSignature)
+        << " program to be compiled:\n" << linenumberify(mFullProgramSrc));
 }
 
 std::string DynamicKernel::GetMD5()
@@ -3851,8 +3817,8 @@ void DynamicKernel::CreateKernel()
     const char* src = mFullProgramSrc.c_str();
     static std::string lastOneKernelHash = "";
     static std::string lastSecondKernelHash = "";
-    static cl_program lastOneProgram = NULL;
-    static cl_program lastSecondProgram = NULL;
+    static cl_program lastOneProgram = nullptr;
+    static cl_program lastSecondProgram = nullptr;
     std::string KernelHash = mKernelSignature + GetMD5();
     if (lastOneKernelHash == KernelHash && lastOneProgram)
     {
@@ -3870,24 +3836,24 @@ void DynamicKernel::CreateKernel()
             SAL_INFO("sc.opencl", "Releasing program " << lastSecondProgram);
             err = clReleaseProgram(lastSecondProgram);
             SAL_WARN_IF(err != CL_SUCCESS, "sc.opencl", "clReleaseProgram failed: " << ::opencl::errorString(err));
-            lastSecondProgram = NULL;
+            lastSecondProgram = nullptr;
         }
         if (::opencl::buildProgramFromBinary("",
                 &::opencl::gpuEnv, KernelHash.c_str(), 0))
         {
             mpProgram = ::opencl::gpuEnv.mpArryPrograms[0];
-            ::opencl::gpuEnv.mpArryPrograms[0] = NULL;
+            ::opencl::gpuEnv.mpArryPrograms[0] = nullptr;
         }
         else
         {
             mpProgram = clCreateProgramWithSource(kEnv.mpkContext, 1,
-                &src, NULL, &err);
+                &src, nullptr, &err);
             if (err != CL_SUCCESS)
                 throw OpenCLError("clCreateProgramWithSource", err, __FILE__, __LINE__);
             SAL_INFO("sc.opencl", "Created program " << mpProgram);
 
             err = clBuildProgram(mpProgram, 1,
-                &::opencl::gpuEnv.mpDevID, "", NULL, NULL);
+                &::opencl::gpuEnv.mpDevID, "", nullptr, nullptr);
             if (err != CL_SUCCESS)
             {
 #if OSL_DEBUG_LEVEL > 0
@@ -3897,7 +3863,7 @@ void DynamicKernel::CreateKernel()
                     cl_int e = clGetProgramBuildInfo(
                         mpProgram, ::opencl::gpuEnv.mpDevID,
                         CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status),
-                        &stat, 0);
+                        &stat, nullptr);
                     SAL_WARN_IF(
                         e != CL_SUCCESS, "sc.opencl",
                         "after CL_BUILD_PROGRAM_FAILURE,"
@@ -3908,7 +3874,7 @@ void DynamicKernel::CreateKernel()
                         size_t n;
                         e = clGetProgramBuildInfo(
                             mpProgram, ::opencl::gpuEnv.mpDevID,
-                            CL_PROGRAM_BUILD_LOG, 0, 0, &n);
+                            CL_PROGRAM_BUILD_LOG, 0, nullptr, &n);
                         SAL_WARN_IF(
                             e != CL_SUCCESS || n == 0, "sc.opencl",
                             "after CL_BUILD_PROGRAM_FAILURE,"
@@ -3919,7 +3885,7 @@ void DynamicKernel::CreateKernel()
                             std::vector<char> log(n);
                             e = clGetProgramBuildInfo(
                                 mpProgram, ::opencl::gpuEnv.mpDevID,
-                                CL_PROGRAM_BUILD_LOG, n, &log[0], 0);
+                                CL_PROGRAM_BUILD_LOG, n, &log[0], nullptr);
                             SAL_WARN_IF(
                                 e != CL_SUCCESS || n == 0, "sc.opencl",
                                 "after CL_BUILD_PROGRAM_FAILURE,"
@@ -3962,7 +3928,7 @@ void DynamicKernel::Launch( size_t nr )
     // The results
     mpResClmem = clCreateBuffer(kEnv.mpkContext,
         (cl_mem_flags)CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
-        nr * sizeof(double), NULL, &err);
+        nr * sizeof(double), nullptr, &err);
     if (CL_SUCCESS != err)
         throw OpenCLError("clCreateBuffer", err, __FILE__, __LINE__);
     SAL_INFO("sc.opencl", "Created buffer " << mpResClmem << " size " << nr << "*" << sizeof(double) << "=" << (nr*sizeof(double)));
@@ -3975,8 +3941,8 @@ void DynamicKernel::Launch( size_t nr )
     mSyms.Marshal(mpKernel, nr, mpProgram);
     size_t global_work_size[] = { nr };
     SAL_INFO("sc.opencl", "Enqueing kernel " << mpKernel);
-    err = clEnqueueNDRangeKernel(kEnv.mpkCmdQueue, mpKernel, 1, NULL,
-        global_work_size, NULL, 0, NULL, NULL);
+    err = clEnqueueNDRangeKernel(kEnv.mpkCmdQueue, mpKernel, 1, nullptr,
+        global_work_size, nullptr, 0, nullptr, nullptr);
     if (CL_SUCCESS != err)
         throw OpenCLError("clEnqueueNDRangeKernel", err, __FILE__, __LINE__);
     err = clFlush(kEnv.mpkCmdQueue);
@@ -4016,7 +3982,7 @@ FormulaGroupInterpreterOpenCL::~FormulaGroupInterpreterOpenCL() {}
 
 ScMatrixRef FormulaGroupInterpreterOpenCL::inverseMatrix( const ScMatrix& )
 {
-    return NULL;
+    return nullptr;
 }
 
 DynamicKernel* DynamicKernel::create( const ScCalcConfig& rConfig, ScTokenArray& rCode, int nResultSize )
@@ -4026,7 +3992,7 @@ DynamicKernel* DynamicKernel::create( const ScCalcConfig& rConfig, ScTokenArray&
     std::list<FormulaToken*> aTokenList;
     std::map<FormulaToken*, FormulaTreeNodeRef> aHashMap;
     FormulaToken*  pCur;
-    while ((pCur = const_cast<FormulaToken*>(aCode.Next())) != NULL)
+    while ((pCur = const_cast<FormulaToken*>(aCode.Next())) != nullptr)
     {
         OpCode eOp = pCur->GetOpCode();
         if (eOp != ocPush)
@@ -4040,7 +4006,7 @@ DynamicKernel* DynamicKernel::create( const ScCalcConfig& rConfig, ScTokenArray&
                 if (pTempFormula->GetOpCode() != ocPush)
                 {
                     if (aHashMap.find(pTempFormula) == aHashMap.end())
-                        return NULL;
+                        return nullptr;
                     pCurNode->Children.push_back(aHashMap[pTempFormula]);
                 }
                 else
@@ -4057,7 +4023,7 @@ DynamicKernel* DynamicKernel::create( const ScCalcConfig& rConfig, ScTokenArray&
         aTokenList.push_back(pCur);
     }
 
-    FormulaTreeNodeRef Root = FormulaTreeNodeRef(new FormulaTreeNode(NULL));
+    FormulaTreeNodeRef Root = FormulaTreeNodeRef(new FormulaTreeNode(nullptr));
     Root->Children.push_back(aHashMap[aTokenList.back()]);
 
     DynamicKernel* pDynamicKernel = new DynamicKernel(rConfig, Root, nResultSize);
@@ -4072,20 +4038,14 @@ DynamicKernel* DynamicKernel::create( const ScCalcConfig& rConfig, ScTokenArray&
     {
         SAL_WARN("sc.opencl", "Dynamic formula compiler: unhandled token: " << ut.mMessage << " at " << ut.mFile << ":" << ut.mLineNumber);
         delete pDynamicKernel;
-        return NULL;
+        return nullptr;
     }
     catch (...)
     {
         SAL_WARN("sc.opencl", "Dynamic formula compiler: unhandled compiler error");
-        return NULL;
+        return nullptr;
     }
     return pDynamicKernel;
-}
-
-CompiledFormula* FormulaGroupInterpreterOpenCL::createCompiledFormula(
-    ScFormulaCellGroup& rGroup, ScTokenArray& rCode )
-{
-    return DynamicKernel::create(maCalcConfig, rCode, rGroup.mnLength);
 }
 
 namespace {
@@ -4100,11 +4060,11 @@ class CLInterpreterResult
     double* mpResBuf;
 
 public:
-    CLInterpreterResult() : mpKernel(NULL), mnGroupLength(0), mpCLResBuf(NULL), mpResBuf(NULL) {}
+    CLInterpreterResult() : mpKernel(nullptr), mnGroupLength(0), mpCLResBuf(nullptr), mpResBuf(nullptr) {}
     CLInterpreterResult( DynamicKernel* pKernel, SCROW nGroupLength ) :
-        mpKernel(pKernel), mnGroupLength(nGroupLength), mpCLResBuf(NULL), mpResBuf(NULL) {}
+        mpKernel(pKernel), mnGroupLength(nGroupLength), mpCLResBuf(nullptr), mpResBuf(nullptr) {}
 
-    bool isValid() const { return mpKernel != NULL; }
+    bool isValid() const { return mpKernel != nullptr; }
 
     void fetchResultFromKernel()
     {
@@ -4122,13 +4082,13 @@ public:
         mpResBuf = static_cast<double*>(clEnqueueMapBuffer(kEnv.mpkCmdQueue,
             mpCLResBuf,
             CL_TRUE, CL_MAP_READ, 0,
-            mnGroupLength * sizeof(double), 0, NULL, NULL,
+            mnGroupLength * sizeof(double), 0, nullptr, nullptr,
             &err));
 
         if (err != CL_SUCCESS)
         {
             SAL_WARN("sc.opencl", "clEnqueueMapBuffer failed:: " << ::opencl::errorString(err));
-            mpResBuf = NULL;
+            mpResBuf = nullptr;
             return;
         }
     }
@@ -4145,7 +4105,7 @@ public:
         ::opencl::setKernelEnv(&kEnv);
 
         cl_int err;
-        err = clEnqueueUnmapMemObject(kEnv.mpkCmdQueue, mpCLResBuf, mpResBuf, 0, NULL, NULL);
+        err = clEnqueueUnmapMemObject(kEnv.mpkCmdQueue, mpCLResBuf, mpResBuf, 0, nullptr, nullptr);
 
         if (err != CL_SUCCESS)
         {
@@ -4165,12 +4125,13 @@ class CLInterpreterContext
     SCROW mnGroupLength;
 
 public:
-    CLInterpreterContext( SCROW nGroupLength ) :
-        mpKernel(NULL), mnGroupLength(nGroupLength) {}
+    explicit CLInterpreterContext(SCROW nGroupLength)
+        : mpKernel(nullptr)
+        , mnGroupLength(nGroupLength) {}
 
     bool isValid() const
     {
-        return mpKernel != NULL;
+        return mpKernel != nullptr;
     }
 
     void setManagedKernel( DynamicKernel* pKernel )

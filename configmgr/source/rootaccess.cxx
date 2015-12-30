@@ -61,9 +61,10 @@ RootAccess::RootAccess(
     Components & components, OUString const & pathRepresentation,
     OUString const & locale, bool update):
     Access(components), pathRepresentation_(pathRepresentation),
-    locale_(locale), update_(update), finalized_(false), alive_(true)
+    locale_(locale),
+    lock_( lock() ),
+    update_(update), finalized_(false), alive_(true)
 {
-    lock_ = lock();
 }
 
 Path RootAccess::getAbsolutePath() {
@@ -74,10 +75,10 @@ Path RootAccess::getAbsolutePath() {
 void RootAccess::initBroadcaster(
     Modifications::Node const & modifications, Broadcaster * broadcaster)
 {
-    assert(broadcaster != 0);
+    assert(broadcaster != nullptr);
     std::vector< css::util::ElementChange > changes;
     initBroadcasterAndChanges(
-        modifications, broadcaster, changesListeners_.empty() ? 0 : &changes);
+        modifications, broadcaster, changesListeners_.empty() ? nullptr : &changes);
     if (!changes.empty()) {
         css::util::ChangesSet set(comphelper::containerToSequence(changes));
         for (ChangesListeners::iterator i(changesListeners_.begin());
@@ -167,7 +168,7 @@ void RootAccess::commitChanges()
         Modifications globalMods;
         commitChildChanges(
             ((getComponents().resolvePathRepresentation(
-                  pathRepresentation_, 0, 0, &finalizedLayer)
+                  pathRepresentation_, nullptr, nullptr, &finalizedLayer)
               == node_) &&
              finalizedLayer == Data::NO_LAYER),
             &globalMods);
@@ -221,7 +222,7 @@ rtl::Reference< Node > RootAccess::getNode() {
             pathRepresentation_, &canonic, &path_, &finalizedLayer);
         if (!node_.is()) {
             throw css::uno::RuntimeException(
-                "cannot find " + pathRepresentation_, 0);
+                "cannot find " + pathRepresentation_, nullptr);
                 // RootAccess::queryInterface indirectly calls
                 // RootAccess::getNode, so if this RootAccess were passed out in
                 // RuntimeException.Context, client code that called
@@ -257,7 +258,7 @@ rtl::Reference< Access > RootAccess::getParentAccess() {
 }
 
 void RootAccess::addTypes(std::vector< css::uno::Type > * types) const {
-    assert(types != 0);
+    assert(types != nullptr);
     types->push_back(cppu::UnoType< css::util::XChangesNotifier >::get());
     types->push_back(cppu::UnoType< css::util::XChangesBatch >::get());
 }
@@ -265,7 +266,7 @@ void RootAccess::addTypes(std::vector< css::uno::Type > * types) const {
 void RootAccess::addSupportedServiceNames(
     std::vector< OUString > * services)
 {
-    assert(services != 0);
+    assert(services != nullptr);
     services->push_back("com.sun.star.configuration.AccessRootElement");
     if (update_) {
         services->push_back("com.sun.star.configuration.UpdateRootElement");
@@ -273,7 +274,7 @@ void RootAccess::addSupportedServiceNames(
 }
 
 void RootAccess::initDisposeBroadcaster(Broadcaster * broadcaster) {
-    assert(broadcaster != 0);
+    assert(broadcaster != nullptr);
     for (ChangesListeners::iterator i(changesListeners_.begin());
          i != changesListeners_.end(); ++i)
     {

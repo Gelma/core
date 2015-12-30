@@ -69,8 +69,6 @@ struct XclGuid
 };
 
 bool operator==( const XclGuid& rCmp1, const XclGuid& rCmp2 );
-inline bool operator!=( const XclGuid& rCmp1, const XclGuid& rCmp2 ) { return !(rCmp1 == rCmp2); }
-bool operator<( const XclGuid& rCmp1, const XclGuid& rCmp2 );
 
 XclImpStream& operator>>( XclImpStream& rStrm, XclGuid& rGuid );
 XclExpStream& operator<<( XclExpStream& rStrm, const XclGuid& rGuid );
@@ -197,7 +195,7 @@ public:
     /** Returns true, if the passed string is a name of an Excel built-in style.
         @param pnStyleId  If not 0, the found style identifier will be returned here.
         @param pnNextChar  If not 0, the index of the char after the evaluated substring will be returned here. */
-    static bool         IsBuiltInStyleName( const OUString& rStyleName, sal_uInt8* pnStyleId = 0, sal_Int32* pnNextChar = 0 );
+    static bool         IsBuiltInStyleName( const OUString& rStyleName, sal_uInt8* pnStyleId = nullptr, sal_Int32* pnNextChar = nullptr );
     /** Returns the Excel built-in style identifier of a passed style name.
         @param rnStyleId  The style identifier is returned here.
         @param rnLevel  The zero-based outline level for RowLevel and ColLevel styles is returned here.
@@ -227,7 +225,7 @@ public:
     // Basic macro names ------------------------------------------------------
 
     /** Returns the full StarBasic macro URL from an Excel macro name. */
-    static OUString GetSbMacroUrl( const OUString& rMacroName, SfxObjectShell* pDocShell = 0 );
+    static OUString GetSbMacroUrl( const OUString& rMacroName, SfxObjectShell* pDocShell = nullptr );
     /** Returns the Excel macro name from a full StarBasic macro URL. */
     static OUString GetXclMacroName( const OUString& rSbMacroUrl );
 

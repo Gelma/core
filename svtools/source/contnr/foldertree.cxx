@@ -18,7 +18,7 @@ FolderTree::FolderTree( vcl::Window* pParent, WinBits nBits )
 {
     Reference< XComponentContext > xContext = ::comphelper::getProcessComponentContext();
     Reference< XInteractionHandler > xInteractionHandler(
-                InteractionHandler::createWithParent( xContext, 0 ), UNO_QUERY_THROW );
+                InteractionHandler::createWithParent( xContext, nullptr ), UNO_QUERY_THROW );
     m_xEnv = new ::ucbhelper::CommandEnvironment( xInteractionHandler, Reference< XProgressHandler >() );
 
     SetDefaultCollapsedEntryBmp( m_aFolderImage );
@@ -54,7 +54,7 @@ void FolderTree::FillTreeEntry( SvTreeListEntry* pEntry )
 
             ::rtl::Reference< ::svt::FileViewContentEnumerator >
                 xContentEnumerator(new FileViewContentEnumerator(
-                m_xEnv, aContent, m_aMutex, NULL));
+                m_xEnv, aContent, m_aMutex, nullptr));
 
             FolderDescriptor aFolder( *pURL );
 
@@ -153,7 +153,7 @@ void FolderTree::SetTreePath( OUString const & sUrl )
     }
 }
 
-void FolderTree::SetBlackList( const ::com::sun::star::uno::Sequence< OUString >& rBlackList )
+void FolderTree::SetBlackList( const css::uno::Sequence< OUString >& rBlackList )
 {
     m_aBlackList = rBlackList;
 }

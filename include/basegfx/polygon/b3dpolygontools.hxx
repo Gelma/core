@@ -55,9 +55,6 @@ namespace basegfx
         // get size of polygon. Control vectors are included in that ranges.
         BASEGFX_DLLPUBLIC B3DRange getRange(const B3DPolygon& rCandidate);
 
-        // get area of polygon
-        BASEGFX_DLLPUBLIC double getArea(const ::basegfx::B3DPolygon& rCandidate);
-
         // get length of polygon
         BASEGFX_DLLPUBLIC double getLength(const B3DPolygon& rCandidate);
 
@@ -69,7 +66,7 @@ namespace basegfx
             const B3DPolygon& rCandidate,
             const ::std::vector<double>& rDotDashArray,
             B3DPolyPolygon* pLineTarget,
-            B3DPolyPolygon* pGapTarget = 0,
+            B3DPolyPolygon* pGapTarget = nullptr,
             double fFullDashDotLen = 0.0);
 
         /** Create/replace normals for given 3d geometry with default normals from given center to outside.

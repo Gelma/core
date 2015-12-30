@@ -73,26 +73,25 @@ public:
 
     virtual ~XFDate();
 
-    virtual void    ToXml(IXFStream *pStrm) SAL_OVERRIDE;
+    virtual void    ToXml(IXFStream *pStrm) override;
 
 private:
-    bool    m_bFixed;
-    OUString m_strText;
-    XFDateTime  m_aDateTime;
-    OUString   m_strDate;
-    bool    m_bValued;
+    bool      m_bFixed;
+    OUString  m_strText;
+    OUString  m_strDate;
+    bool      m_bValued;
 };
 
 class XFDateStart : public XFDate
 {
 public:
-    virtual void    ToXml(IXFStream *pStrm) SAL_OVERRIDE;
+    virtual void    ToXml(IXFStream *pStrm) override;
 };
 
 class XFDateEnd : public XFContent
 {
 public:
-    virtual void    ToXml(IXFStream *pStrm) SAL_OVERRIDE;
+    virtual void    ToXml(IXFStream *pStrm) override;
 };
 
 #endif

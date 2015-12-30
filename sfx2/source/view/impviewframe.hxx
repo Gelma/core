@@ -50,15 +50,13 @@ struct SfxViewFrame_Impl
     bool            bWindowWasEnabled:1;
     bool            bActive;
     OUString            aFactoryName;
-    ::boost::optional< bool >
-                        aHasToolPanels;
 
     explicit SfxViewFrame_Impl(SfxFrame& i_rFrame)
         : rFrame(i_rFrame)
-        , pReloader(0)
-        , pWindow(0)
-        , pActiveChild(0)
-        , pFocusWin(0)
+        , pReloader(nullptr)
+        , pWindow(nullptr)
+        , pActiveChild(nullptr)
+        , pFocusWin(nullptr)
         , nDocViewNo(0)
         , nCurViewId(0)
         , bResizeInToOut(false)
@@ -91,8 +89,8 @@ public:
                             p->GetFrame().GetWindow().SetBorderStyle( WindowBorderStyle::NOBORDER );
                         }
 
-    virtual void        Resize() SAL_OVERRIDE;
-    virtual void        StateChanged( StateChangedType nStateChange ) SAL_OVERRIDE;
+    virtual void        Resize() override;
+    virtual void        StateChanged( StateChangedType nStateChange ) override;
 };
 
 #endif // INCLUDED_SFX2_SOURCE_VIEW_IMPVIEWFRAME_HXX

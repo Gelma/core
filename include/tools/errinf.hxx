@@ -24,9 +24,9 @@
 
 #include <limits.h>
 #include <rtl/ustring.hxx>
-#include <tools/rtti.hxx>
 #include <tools/errcode.hxx>
 #include <tools/toolsdllapi.h>
+#include <memory>
 
 // FIXME: horrible legacy dependency on VCL from tools.
 namespace vcl { class Window; }
@@ -34,17 +34,16 @@ namespace vcl { class Window; }
 class EDcr_Impl;
 class ErrHdl_Impl;
 
-class ErrorInfo
+class TOOLS_DLLPUBLIC ErrorInfo
 {
 private:
     sal_uIntPtr             lUserId;
 
 public:
-                            TYPEINFO();
 
                             ErrorInfo( sal_uIntPtr lArgUserId ) :
                                 lUserId( lArgUserId ){}
-    virtual                 ~ErrorInfo(){}
+    virtual                 ~ErrorInfo();
 
     sal_uIntPtr             GetErrorCode() const { return lUserId; }
 
@@ -56,10 +55,9 @@ class TOOLS_DLLPUBLIC DynamicErrorInfo : public ErrorInfo
     friend class EDcr_Impl;
 
 private:
-    EDcr_Impl*              pImpl;
+    std::unique_ptr<EDcr_Impl>   pImpl;
 
 public:
-                            TYPEINFO_OVERRIDE();
 
                             DynamicErrorInfo(sal_uIntPtr lUserId, sal_uInt16 nMask);
     virtual                 ~DynamicErrorInfo();
@@ -74,7 +72,6 @@ private:
     OUString                aString;
 
 public:
-                            TYPEINFO_OVERRIDE();
 
                             StringErrorInfo( sal_uIntPtr lUserId,
                                             const OUString& aStringP,
@@ -89,7 +86,6 @@ private:
     OUString aArg2;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     TwoStringErrorInfo(sal_uIntPtr nUserID, const OUString & rTheArg1,
                        const OUString & rTheArg2, sal_uInt16 nFlags = 0):
@@ -104,7 +100,6 @@ public:
 class TOOLS_DLLPUBLIC MessageInfo : public DynamicErrorInfo
 {
 public:
-    TYPEINFO_OVERRIDE();
 
     MessageInfo(sal_uIntPtr UserId, sal_uInt16 nFlags = 0) :
         DynamicErrorInfo(UserId, nFlags) {}
@@ -123,10 +118,10 @@ class TOOLS_DLLPUBLIC ErrorContext
     friend class ErrorHandler;
 
 private:
-    ErrorContextImpl *pImpl;
+    std::unique_ptr<ErrorContextImpl> pImpl;
 
 public:
-                            ErrorContext(vcl::Window *pWin=0);
+                            ErrorContext(vcl::Window *pWin=nullptr);
     virtual                 ~ErrorContext();
 
     virtual bool            GetString( sal_uIntPtr nErrId, OUString& rCtxStr ) = 0;
@@ -146,7 +141,7 @@ class TOOLS_DLLPUBLIC ErrorHandler
     friend class ErrHdl_Impl;
 
 private:
-    ErrHdl_Impl*        pImpl;
+    std::unique_ptr<ErrHdl_Impl>  pImpl;
 
     static sal_uInt16   HandleError_Impl( sal_uIntPtr lId,
                               sal_uInt16 nFlags,

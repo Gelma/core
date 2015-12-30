@@ -67,16 +67,16 @@ public:
     ScExternalRefLink(ScDocument* pDoc, sal_uInt16 nFileId, const OUString& rFilter);
     virtual ~ScExternalRefLink();
 
-    virtual void Closed() SAL_OVERRIDE;
+    virtual void Closed() override;
     virtual ::sfx2::SvBaseLink::UpdateResult DataChanged(
-        const OUString& rMimeType, const ::com::sun::star::uno::Any & rValue) SAL_OVERRIDE;
-    virtual void Edit(vcl::Window* pParent, const Link<SvBaseLink&,void>& rEndEditHdl) SAL_OVERRIDE;
+        const OUString& rMimeType, const css::uno::Any & rValue) override;
+    virtual void Edit(vcl::Window* pParent, const Link<SvBaseLink&,void>& rEndEditHdl) override;
 
     void SetDoReferesh(bool b);
 
 private:
-    ScExternalRefLink() SAL_DELETED_FUNCTION;
-    ScExternalRefLink(const ScExternalRefLink&) SAL_DELETED_FUNCTION;
+    ScExternalRefLink() = delete;
+    ScExternalRefLink(const ScExternalRefLink&) = delete;
 
     sal_uInt16  mnFileId;
     OUString    maFilterName;
@@ -154,7 +154,7 @@ public:
          *                       values, for performance reasons.
          */
         SC_DLLPUBLIC void setCell(SCCOL nCol, SCROW nRow, TokenRef pToken, sal_uLong nFmtIndex = 0, bool bSetCacheRange = true);
-        SC_DLLPUBLIC TokenRef getCell(SCCOL nCol, SCROW nRow, sal_uInt32* pnFmtIndex = NULL) const;
+        SC_DLLPUBLIC TokenRef getCell(SCCOL nCol, SCROW nRow, sal_uInt32* pnFmtIndex = nullptr) const;
         bool hasRow( SCROW nRow ) const;
         /** Set/clear referenced status flag only if current status is not
             REFERENCED_PERMANENT. */
@@ -234,6 +234,7 @@ public:
     ScExternalRefCache::TokenArrayRef getRangeNameTokens(sal_uInt16 nFileId, const OUString& rName);
     void setRangeNameTokens(sal_uInt16 nFileId, const OUString& rName, TokenArrayRef pArray);
     bool isValidRangeName(sal_uInt16 nFileId, const OUString& rName) const;
+    void setRangeName(sal_uInt16 nFileId, const OUString& rName);
 
     void setCellData(sal_uInt16 nFileId, const OUString& rTabName,
                      SCCOL nCol, SCROW nRow, TokenRef pToken, sal_uLong nFmtIndex);
@@ -429,7 +430,6 @@ public:
         OUString maRelativeName;
         OUString maFilterName;
         OUString maFilterOptions;
-        bool bUnsaved;
 
         void maybeCreateRealFileName(const OUString& rOwnDocName);
     };
@@ -438,7 +438,7 @@ public:
     explicit ScExternalRefManager(ScDocument* pDoc);
     virtual ~ScExternalRefManager();
 
-    virtual OUString getCacheTableName(sal_uInt16 nFileId, size_t nTabIndex) const SAL_OVERRIDE;
+    virtual OUString getCacheTableName(sal_uInt16 nFileId, size_t nTabIndex) const override;
 
     /**
      * Get a cache table instance for specified table and table index.  Unlike
@@ -472,7 +472,7 @@ public:
      *
      * @return shared_ptr to the cache table instance
      */
-    ScExternalRefCache::TableTypeRef getCacheTable(sal_uInt16 nFileId, const OUString& rTabName, bool bCreateNew, size_t* pnIndex = 0);
+    ScExternalRefCache::TableTypeRef getCacheTable(sal_uInt16 nFileId, const OUString& rTabName, bool bCreateNew, size_t* pnIndex = nullptr);
 
     /** Returns a vector containing all (real) table names and cache tables of
         the specified file.
@@ -536,7 +536,7 @@ public:
 
     ScExternalRefCache::TokenRef getSingleRefToken(
         sal_uInt16 nFileId, const OUString& rTabName, const ScAddress& rCell,
-        const ScAddress* pCurPos, SCTAB* pTab, ScExternalRefCache::CellFormat* pFmt = NULL);
+        const ScAddress* pCurPos, SCTAB* pTab, ScExternalRefCache::CellFormat* pFmt = nullptr);
 
     /**
      * Get an array of tokens that consist of the specified external cell
@@ -566,7 +566,7 @@ public:
      * @return shared_ptr to array of tokens composing the name
      */
     ScExternalRefCache::TokenArrayRef getRangeNameTokens(
-        sal_uInt16 nFileId, const OUString& rName, const ScAddress* pCurPos = NULL);
+        sal_uInt16 nFileId, const OUString& rName, const ScAddress* pCurPos = nullptr);
 
     bool isValidRangeName(sal_uInt16 nFileId, const OUString& rName);
 
@@ -689,7 +689,7 @@ public:
      */
     bool isFileLoadable(const OUString& rFile) const;
 
-    virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) SAL_OVERRIDE;
+    virtual void Notify( SfxBroadcaster& rBC, const SfxHint& rHint ) override;
 
     /**
      * If we still contain unsaved files we should warn the user before saving
@@ -709,7 +709,7 @@ public:
     void enableDocTimer( bool bEnable );
 
 private:
-    ScExternalRefManager(const ScExternalRefManager&) SAL_DELETED_FUNCTION;
+    ScExternalRefManager(const ScExternalRefManager&) = delete;
 
     void refreshAllRefCells(sal_uInt16 nFileId);
 

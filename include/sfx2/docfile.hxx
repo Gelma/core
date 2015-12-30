@@ -74,37 +74,37 @@ public:
                          */
                         SfxMedium( const OUString &rName,
                                    StreamMode nOpenMode,
-                                   const SfxFilter *pFilter = 0,
-                                   SfxItemSet *pSet = 0 );
+                                   const SfxFilter *pFilter = nullptr,
+                                   SfxItemSet *pSet = nullptr );
                         /**
                          * @param pSet Takes ownership
                          */
                         SfxMedium( const OUString &rName,
                                    const OUString &rReferer,
                                    StreamMode nOpenMode,
-                                   const SfxFilter *pFilter = 0,
-                                   SfxItemSet *pSet = 0 );
+                                   const SfxFilter *pFilter = nullptr,
+                                   SfxItemSet *pSet = nullptr );
 
                         /**
                          * @param pSet does NOT take ownership
                          */
                         SfxMedium( const css::uno::Reference< css::embed::XStorage >& xStorage,
                                     const OUString& rBaseURL,
-                                    const SfxItemSet* pSet=0 );
+                                    const SfxItemSet* pSet=nullptr );
                         /**
                          * @param pSet does NOT take ownership
                          */
                         SfxMedium( const css::uno::Reference< css::embed::XStorage >& xStorage,
                                     const OUString& rBaseURL,
                                     const OUString& rTypeName,
-                                    const SfxItemSet* pSet=0 );
+                                    const SfxItemSet* pSet=nullptr );
                         SfxMedium( const css::uno::Sequence< css::beans::PropertyValue >& aArgs );
 
                         virtual ~SfxMedium();
 
     void                UseInteractionHandler( bool );
     css::uno::Reference< css::task::XInteractionHandler >
-                        GetInteractionHandler();
+                        GetInteractionHandler( bool bGetAlways = false );
 
     void setStreamToLoadFrom(
         const css::uno::Reference<css::io::XInputStream>& xInputStream,
@@ -162,6 +162,7 @@ public:
 
     sal_Int8            ShowLockedDocumentDialog( const LockFileEntry& aData, bool bIsLoading, bool bOwnLock );
     void                LockOrigFileOnDemand( bool bLoading, bool bNoUI );
+    void                DisableUnlockWebDAV( bool bDisableUnlockWebDAV = true );
     void                UnlockFile( bool bReleaseLockStream );
 
     css::uno::Reference< css::embed::XStorage > GetStorage( bool bCreateTempIfNo = true );
@@ -262,8 +263,6 @@ public:
     static bool         SetWritableForUserOnly( const OUString& aURL );
     static sal_uInt32   CreatePasswordToModifyHash( const OUString& aPasswd, bool bWriter );
 };
-
-typedef tools::SvRef<SfxMedium> SfxMediumRef;
 
 #endif
 

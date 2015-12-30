@@ -23,7 +23,8 @@
 #include <com/sun/star/uno/Sequence.hxx>
 
 
-TYPEINIT1_AUTOFACTORY( SvxGalleryItem, SfxPoolItem );
+
+SfxPoolItem* SvxGalleryItem::CreateDefault() { return new SvxGalleryItem; }
 
 SvxGalleryItem::SvxGalleryItem()
     : m_nType( css::gallery::GalleryItemType::EMPTY )
@@ -145,7 +146,7 @@ SvStream& SvxGalleryItem::Store( SvStream& rStream, sal_uInt16 /*nItemVersion*/ 
 
 SfxPoolItem* SvxGalleryItem::Create(SvStream& , sal_uInt16) const
 {
-    return 0;
+    return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

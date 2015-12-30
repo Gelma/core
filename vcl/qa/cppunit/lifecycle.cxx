@@ -74,19 +74,19 @@ void LifecycleTest::testVirtualDevice()
     VclPtr<VirtualDevice> pVDev = VclPtr< VirtualDevice >::Create();
     ScopedVclPtrInstance< VirtualDevice > pVDev2;
     VclPtrInstance<VirtualDevice> pVDev3;
-    VclPtrInstance<VirtualDevice> pVDev4( 1 );
+    VclPtrInstance<VirtualDevice> pVDev4(DeviceFormat::BITMASK);
     CPPUNIT_ASSERT(!!pVDev && !!pVDev2 && !!pVDev3 && !!pVDev4);
 }
 
 void LifecycleTest::testMultiDispose()
 {
     VclPtrInstance<WorkWindow> xWin(nullptr, WB_APP|WB_STDWORK);
-    CPPUNIT_ASSERT(xWin.get() != NULL);
+    CPPUNIT_ASSERT(xWin.get() != nullptr);
     xWin->disposeOnce();
     xWin->disposeOnce();
     xWin->disposeOnce();
-    CPPUNIT_ASSERT(xWin->GetWindow(GetWindowType::Parent) == NULL);
-    CPPUNIT_ASSERT(xWin->GetChild(0) == NULL);
+    CPPUNIT_ASSERT(xWin->GetWindow(GetWindowType::Parent) == nullptr);
+    CPPUNIT_ASSERT(xWin->GetChild(0) == nullptr);
     CPPUNIT_ASSERT(xWin->GetChildCount() == 0);
 }
 
@@ -109,13 +109,13 @@ void LifecycleTest::testWidgets(vcl::Window *pParent)
 
 void LifecycleTest::testIsolatedWidgets()
 {
-    testWidgets(NULL);
+    testWidgets(nullptr);
 }
 
 void LifecycleTest::testParentedWidgets()
 {
     ScopedVclPtrInstance<WorkWindow> xWin(nullptr, WB_APP|WB_STDWORK);
-    CPPUNIT_ASSERT(xWin.get() != NULL);
+    CPPUNIT_ASSERT(xWin.get() != nullptr);
     xWin->Show();
     testWidgets(xWin);
 }
@@ -133,7 +133,7 @@ public:
 void LifecycleTest::testChildDispose()
 {
     VclPtrInstance<WorkWindow> xWin(nullptr, WB_APP|WB_STDWORK);
-    CPPUNIT_ASSERT(xWin.get() != NULL);
+    CPPUNIT_ASSERT(xWin.get() != nullptr);
     VclPtrInstance< DisposableChild > xChild( xWin.get() );
     xWin->Show();
     xChild->disposeOnce();
@@ -162,19 +162,19 @@ public:
         TabControl(pParent, 0)
     {
     }
-    virtual bool PreNotify( NotifyEvent& ) SAL_OVERRIDE
+    virtual bool PreNotify( NotifyEvent& ) override
     {
         return false;
     }
-    virtual bool Notify( NotifyEvent& ) SAL_OVERRIDE
+    virtual bool Notify( NotifyEvent& ) override
     {
         return false;
     }
-    virtual void GetFocus() SAL_OVERRIDE
+    virtual void GetFocus() override
     {
         CPPUNIT_FAIL("get focus");
     }
-    virtual void LoseFocus() SAL_OVERRIDE
+    virtual void LoseFocus() override
     {
         CPPUNIT_FAIL("this should never be called");
     }
@@ -217,7 +217,7 @@ class LeakTestObject
     void               *mpRef;
     LeakTestObject()
         : mbDeleted(false)
-        , mpRef(NULL)
+        , mpRef(nullptr)
     {
     }
 public:

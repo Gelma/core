@@ -61,6 +61,8 @@
 #include "svx/EnhancedCustomShapeTypeNames.hxx"
 #include <svx/unoapi.hxx>
 #include <svx/svdoashp.hxx>
+#include <comphelper/sequence.hxx>
+#include <comphelper/propertyvalue.hxx>
 
 using ::com::sun::star::beans::XPropertySet;
 using ::com::sun::star::uno::Any;
@@ -285,12 +287,12 @@ OUString ShapeBase::getShapeName() const
 
 const ShapeType* ShapeBase::getChildTypeById( const OUString& ) const
 {
-    return 0;
+    return nullptr;
 }
 
 const ShapeBase* ShapeBase::getChildById( const OUString& ) const
 {
-    return 0;
+    return nullptr;
 }
 
 Reference< XShape > ShapeBase::convertAndInsert( const Reference< XShapes >& rxShapes, const ShapeParentAnchor* pParentAnchor ) const
@@ -335,46 +337,26 @@ Reference< XShape > ShapeBase::convertAndInsert( const Reference< XShapes >& rxS
 
                 if (xSInfo->supportsService("com.sun.star.text.TextFrame"))
                 {
-                    uno::Sequence<beans::PropertyValue> aGrabBag;
                     uno::Reference<beans::XPropertySet> propertySet (xShape, uno::UNO_QUERY);
-                    propertySet->getPropertyValue("FrameInteropGrabBag") >>= aGrabBag;
-                    sal_Int32 length;
+                    uno::Any aAny = propertySet->getPropertyValue("FrameInteropGrabBag");
+                    auto aGrabBag = comphelper::sequenceToContainer< std::vector<beans::PropertyValue> >(aAny.get< uno::Sequence<beans::PropertyValue> >());
 
-                    length = aGrabBag.getLength();
-                    aGrabBag.realloc( length+1 );
-                    aGrabBag[length].Name = "VML-Z-ORDER";
-                    aGrabBag[length].Value = uno::makeAny( maTypeModel.maZIndex.toInt32() );
+                    aGrabBag.push_back(comphelper::makePropertyValue("VML-Z-ORDER", maTypeModel.maZIndex.toInt32()));
 
                     if( !s_mso_next_textbox.isEmpty() )
-                    {
-                        length = aGrabBag.getLength();
-                        aGrabBag.realloc( length+1 );
-                        aGrabBag[length].Name = "mso-next-textbox";
-                        aGrabBag[length].Value = uno::makeAny( s_mso_next_textbox );
-                    }
+                        aGrabBag.push_back(comphelper::makePropertyValue("mso-next-textbox", s_mso_next_textbox));
 
                     if( !sLinkChainName.isEmpty() )
                     {
-                        length = aGrabBag.getLength();
-                        aGrabBag.realloc( length+4 );
-                        aGrabBag[length].Name   = "TxbxHasLink";
-                        aGrabBag[length].Value   = uno::makeAny( true );
-                        aGrabBag[length+1].Name = "Txbx-Id";
-                        aGrabBag[length+1].Value = uno::makeAny( id );
-                        aGrabBag[length+2].Name = "Txbx-Seq";
-                        aGrabBag[length+2].Value = uno::makeAny( seq );
-                        aGrabBag[length+3].Name = "LinkChainName";
-                        aGrabBag[length+3].Value = uno::makeAny( sLinkChainName );
+                        aGrabBag.push_back(comphelper::makePropertyValue("TxbxHasLink", true));
+                        aGrabBag.push_back(comphelper::makePropertyValue("Txbx-Id", id));
+                        aGrabBag.push_back(comphelper::makePropertyValue("Txbx-Seq", seq));
+                        aGrabBag.push_back(comphelper::makePropertyValue("LinkChainName", sLinkChainName));
                     }
 
                     if(!(maTypeModel.maRotation).isEmpty())
-                    {
-                        length = aGrabBag.getLength();
-                        aGrabBag.realloc( length+1 );
-                        aGrabBag[length].Name = "mso-rotation-angle";
-                        aGrabBag[length].Value = uno::makeAny(sal_Int32(NormAngle360((maTypeModel.maRotation.toInt32()) * -100)));
-                    }
-                    propertySet->setPropertyValue( "FrameInteropGrabBag", uno::makeAny(aGrabBag) );
+                        aGrabBag.push_back(comphelper::makePropertyValue("mso-rotation-angle", sal_Int32(NormAngle360((maTypeModel.maRotation.toInt32()) * -100))));
+                    propertySet->setPropertyValue("FrameInteropGrabBag", uno::makeAny(comphelper::containerToSequence(aGrabBag)));
                     sal_Int32 backColorTransparency = 0;
                     propertySet->getPropertyValue("BackColorTransparency")
                         >>= backColorTransparency;
@@ -432,7 +414,7 @@ Reference< XShape > ShapeBase::convertAndInsert( const Reference< XShapes >& rxS
                 /*  Notify the drawing that a new shape has been inserted. For
                     convenience, pass the rectangle that contains position and
                     size of the shape. */
-                bool bGroupChild = pParentAnchor != 0;
+                bool bGroupChild = pParentAnchor != nullptr;
                 mrDrawing.notifyXShapeInserted( xShape, aShapeRect, *this, bGroupChild );
             }
         }
@@ -530,25 +512,32 @@ SimpleShape::SimpleShape( Drawing& rDrawing, const OUString& rService ) :
 {
 }
 
-void lcl_setSurround(PropertySet& rPropSet, const ShapeTypeModel& rTypeModel)
+void lcl_setSurround(PropertySet& rPropSet, const ShapeTypeModel& rTypeModel, const GraphicHelper& rGraphicHelper)
 {
-    sal_Int32 nSurround = com::sun::star::text::WrapTextMode_THROUGHT;
-    if ( rTypeModel.moWrapType.get() == "square" || rTypeModel.moWrapType .get()== "tight" ||
-         rTypeModel.moWrapType.get() == "through" )
+    OUString aWrapType = rTypeModel.moWrapType.get();
+
+    // Extreme negative top margin? Then the shape will end up at the top of the page, it's pointless to perform any kind of wrapping.
+    sal_Int32 nMarginTop = ConversionHelper::decodeMeasureToHmm(rGraphicHelper, rTypeModel.maMarginTop, 0, false, true);
+    if (nMarginTop < -35277) // Less than 1000 points.
+        aWrapType.clear();
+
+    sal_Int32 nSurround = css::text::WrapTextMode_THROUGHT;
+    if ( aWrapType == "square" || aWrapType == "tight" ||
+         aWrapType == "through" )
     {
-        nSurround = com::sun::star::text::WrapTextMode_PARALLEL;
+        nSurround = css::text::WrapTextMode_PARALLEL;
         if ( rTypeModel.moWrapSide.get() == "left" )
-            nSurround = com::sun::star::text::WrapTextMode_LEFT;
+            nSurround = css::text::WrapTextMode_LEFT;
         else if ( rTypeModel.moWrapSide.get() == "right" )
-            nSurround = com::sun::star::text::WrapTextMode_RIGHT;
+            nSurround = css::text::WrapTextMode_RIGHT;
     }
-    else if ( rTypeModel.moWrapType.get() == "topAndBottom" )
-        nSurround = com::sun::star::text::WrapTextMode_NONE;
+    else if ( aWrapType == "topAndBottom" )
+        nSurround = css::text::WrapTextMode_NONE;
 
     rPropSet.setProperty(PROP_Surround, nSurround);
 }
 
-void lcl_SetAnchorType(PropertySet& rPropSet, const ShapeTypeModel& rTypeModel)
+void lcl_SetAnchorType(PropertySet& rPropSet, const ShapeTypeModel& rTypeModel, const GraphicHelper& rGraphicHelper)
 {
     if ( rTypeModel.maPositionHorizontal == "center" )
         rPropSet.setAnyProperty(PROP_HoriOrient, makeAny(text::HoriOrientation::CENTER));
@@ -611,7 +600,7 @@ void lcl_SetAnchorType(PropertySet& rPropSet, const ShapeTypeModel& rTypeModel)
     {
         rPropSet.setProperty(PROP_AnchorType, text::TextContentAnchorType_AS_CHARACTER);
     }
-    lcl_setSurround( rPropSet, rTypeModel );
+    lcl_setSurround( rPropSet, rTypeModel, rGraphicHelper );
 }
 
 void lcl_SetRotation(PropertySet& rPropSet, const sal_Int32 nRotation)
@@ -795,7 +784,7 @@ Reference< XShape > SimpleShape::implConvertAndInsert( const Reference< XShapes 
         // The associated properties "PROP_MirroredX" and "PROP_MirroredY" have to be set here so that direction change will occur internally.
         if (bFlipX || bFlipY)
         {
-            com::sun::star::uno::Sequence< com::sun::star::beans::PropertyValue > aPropSequence (2);
+            css::uno::Sequence< css::beans::PropertyValue > aPropSequence (2);
             int nPropertyIndex = 0;
             if (bFlipX)
             {
@@ -813,7 +802,7 @@ Reference< XShape > SimpleShape::implConvertAndInsert( const Reference< XShapes 
         }
     }
 
-    lcl_SetAnchorType(aPropertySet, maTypeModel);
+    lcl_SetAnchorType(aPropertySet, maTypeModel, rGraphicHelper );
 
     return xShape;
 }
@@ -842,7 +831,8 @@ Reference< XShape > SimpleShape::createPictureObject( const Reference< XShapes >
         if ( !maTypeModel.maRotation.isEmpty() )
             lcl_SetRotation( aPropSet, maTypeModel.maRotation.toInt32() );
 
-        lcl_SetAnchorType(aPropSet, maTypeModel);
+        const GraphicHelper& rGraphicHelper = mrDrawing.getFilter().getGraphicHelper();
+        lcl_SetAnchorType(aPropSet, maTypeModel, rGraphicHelper);
     }
     return xShape;
 }
@@ -1231,7 +1221,8 @@ Reference< XShape > GroupShape::implConvertAndInsert( const Reference< XShapes >
     }
     // Make sure group shapes are inline as well, unless there is an explicit different style.
     PropertySet aPropertySet(xGroupShape);
-    lcl_SetAnchorType(aPropertySet, maTypeModel);
+    const GraphicHelper& rGraphicHelper = mrDrawing.getFilter().getGraphicHelper();
+    lcl_SetAnchorType(aPropertySet, maTypeModel, rGraphicHelper);
     if (!maTypeModel.maRotation.isEmpty())
         lcl_SetRotation(aPropertySet, maTypeModel.maRotation.toInt32());
     return xGroupShape;

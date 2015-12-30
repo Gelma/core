@@ -47,8 +47,6 @@ enum ScVSplitPos { SC_SPLIT_TOP, SC_SPLIT_BOTTOM };
 
 inline ScHSplitPos WhichH( ScSplitPos ePos );
 inline ScVSplitPos WhichV( ScSplitPos ePos );
-inline ScSplitPos Which( ScHSplitPos eHPos );
-inline ScSplitPos Which( ScVSplitPos eVPos );
 
 /**  Screen behavior related to cursor movements */
 enum ScFollowMode { SC_FOLLOW_NONE, SC_FOLLOW_LINE, SC_FOLLOW_FIX, SC_FOLLOW_JUMP };
@@ -144,11 +142,11 @@ private:
                     ScViewDataTable();
 
     void            WriteUserDataSequence(
-                        com::sun::star::uno::Sequence <com::sun::star::beans::PropertyValue>& rSettings,
+                        css::uno::Sequence <css::beans::PropertyValue>& rSettings,
                         const ScViewData& rViewData, SCTAB nTab ) const;
 
     void            ReadUserDataSequence(
-                        const com::sun::star::uno::Sequence <com::sun::star::beans::PropertyValue>& rSettings,
+                        const css::uno::Sequence <css::beans::PropertyValue>& rSettings,
                         ScViewData& rViewData, SCTAB nTab, bool& rHasZoom);
 public:
     ~ScViewDataTable();
@@ -253,8 +251,8 @@ public:
     void            ReadUserData(const OUString& rData);
     void            WriteExtOptions( ScExtDocOptions& rOpt ) const;
     void            ReadExtOptions( const ScExtDocOptions& rOpt );
-    void            WriteUserDataSequence(com::sun::star::uno::Sequence <com::sun::star::beans::PropertyValue>& rSettings) const;
-    void            ReadUserDataSequence(const com::sun::star::uno::Sequence <com::sun::star::beans::PropertyValue>& rSettings);
+    void            WriteUserDataSequence(css::uno::Sequence <css::beans::PropertyValue>& rSettings) const;
+    void            ReadUserDataSequence(const css::uno::Sequence <css::beans::PropertyValue>& rSettings);
 
     ScDocument*     GetDocument() const;
 
@@ -525,18 +523,6 @@ inline ScVSplitPos WhichV( ScSplitPos ePos )
 {
     return (ePos==SC_SPLIT_TOPLEFT || ePos==SC_SPLIT_TOPRIGHT) ?
                 SC_SPLIT_TOP : SC_SPLIT_BOTTOM;
-}
-
-inline ScSplitPos Which( ScHSplitPos eHPos )
-{
-    return (eHPos==SC_SPLIT_LEFT) ?
-                SC_SPLIT_BOTTOMLEFT : SC_SPLIT_BOTTOMRIGHT;
-}
-
-inline ScSplitPos Which( ScVSplitPos eVPos )
-{
-    return (eVPos==SC_SPLIT_TOP) ?
-                SC_SPLIT_TOPLEFT : SC_SPLIT_BOTTOMLEFT;
 }
 
 #endif

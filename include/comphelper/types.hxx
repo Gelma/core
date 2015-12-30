@@ -57,24 +57,24 @@ namespace comphelper
         if (xComp.is())
         {
             xComp->dispose();
-            _rxComp = NULL;
+            _rxComp = nullptr;
         }
     }
 
     template <class TYPE>
     bool getImplementation(TYPE*& _pObject, const css::uno::Reference< css::uno::XInterface >& _rxIFace)
     {
-        _pObject = NULL;
+        _pObject = nullptr;
         css::uno::Reference< css::lang::XUnoTunnel > xTunnel(_rxIFace, css::uno::UNO_QUERY);
         if (xTunnel.is())
             _pObject = reinterpret_cast< TYPE* >(xTunnel->getSomething(TYPE::getUnoTunnelImplementationId()));
 
-        return (_pObject != NULL);
+        return (_pObject != nullptr);
     }
 
 
 
-    /** get a com::sun::star::awt::FontDescriptor that is fully initialized with
+    /** get a css::awt::FontDescriptor that is fully initialized with
         the XXX_DONTKNOW enum values (which isn't the case if you instantiate it
         via the default constructor)
     */
@@ -97,8 +97,8 @@ namespace comphelper
     COMPHELPER_DLLPUBLIC sal_Int16      getINT16(const css::uno::Any& _rAny);
     COMPHELPER_DLLPUBLIC double         getDouble(const css::uno::Any& _rAny);
     COMPHELPER_DLLPUBLIC float          getFloat(const css::uno::Any& _rAny);
-    COMPHELPER_DLLPUBLIC OUString    getString(const css::uno::Any& _rAny);
-    COMPHELPER_DLLPUBLIC bool       getBOOL(const css::uno::Any& _rAny);
+    COMPHELPER_DLLPUBLIC OUString       getString(const css::uno::Any& _rAny);
+    COMPHELPER_DLLPUBLIC bool           getBOOL(const css::uno::Any& _rAny);
 
     COMPHELPER_DLLPUBLIC sal_Int32      getEnumAsINT32(const css::uno::Any& _rAny) throw(css::lang::IllegalArgumentException);
 

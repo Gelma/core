@@ -44,7 +44,7 @@ private:
     bool            bActiveFlag;
 
 protected:
-                    virtual void MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
+                    virtual void MouseButtonDown( const MouseEvent& rMEvt ) override;
 
 public:
 
@@ -54,20 +54,19 @@ public:
     SvTreeListEntry*    InsertStaticEntry(
                         const OUString& rText,
                         const Image& rEntryImg,
-                        SvTreeListEntry* pParent = NULL,
+                        SvTreeListEntry* pParent = nullptr,
                         sal_uLong nPos = TREELIST_APPEND,
-                        IFormulaToken* pToken = NULL );
+                        IFormulaToken* pToken = nullptr );
 
     void            SetActiveFlag(bool bFlag=true);
     bool            GetActiveFlag() { return bActiveFlag;}
-    void            GetFocus() SAL_OVERRIDE;
-    void            LoseFocus() SAL_OVERRIDE;
+    void            GetFocus() override;
+    void            LoseFocus() override;
 };
 
 
 
 class StructPage : public TabPage
-                    , public IStructHelper
 {
 private:
     OModuleClient           m_aModuleClient;
@@ -89,15 +88,15 @@ protected:
 
 public:
 
-                    StructPage( vcl::Window* pParent);
+    explicit StructPage(vcl::Window* pParent);
     virtual         ~StructPage();
-    virtual void    dispose() SAL_OVERRIDE;
+    virtual void    dispose() override;
 
     void            ClearStruct();
-    virtual SvTreeListEntry*    InsertEntry(const OUString& rText, SvTreeListEntry* pParent,
-                                sal_uInt16 nFlag,sal_uLong nPos=0,IFormulaToken* pScToken=NULL) SAL_OVERRIDE;
+    SvTreeListEntry* InsertEntry(const OUString& rText, SvTreeListEntry* pParent,
+                                sal_uInt16 nFlag,sal_uLong nPos=0,IFormulaToken* pScToken=nullptr);
 
-    virtual OUString            GetEntryText(SvTreeListEntry* pEntry) const SAL_OVERRIDE;
+    OUString        GetEntryText(SvTreeListEntry* pEntry) const;
 
     void            SetSelectionHdl( const Link<StructPage&,void>& rLink ) { aSelLink = rLink; }
 

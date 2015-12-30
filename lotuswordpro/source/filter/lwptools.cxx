@@ -80,12 +80,10 @@ using namespace ::osl;
 /**
  * @descr       read lwp unicode string from stream to OUString per aEncoding
 */
-sal_uInt16 LwpTools::QuickReadUnicode(LwpObjectStream* pObjStrm,
+void LwpTools::QuickReadUnicode(LwpObjectStream* pObjStrm,
         OUString& str, sal_uInt16 strlen, rtl_TextEncoding aEncoding)
         //strlen: length of bytes
 {
-
-    sal_uInt16 readLen = 0;
     OUStringBuffer strBuf(128);
 
     if( !IsUnicodePacked(pObjStrm, strlen) )
@@ -100,11 +98,9 @@ sal_uInt16 LwpTools::QuickReadUnicode(LwpObjectStream* pObjStrm,
             buf[len] = '\0';
             strBuf.append( OUString(buf, len, aEncoding) );
             strlen -= len;
-            readLen += len;
             if(!len) break;
         }
         str = strBuf.makeStringAndClear();
-        return readLen;
     }
     else
     {
@@ -116,6 +112,7 @@ sal_uInt16 LwpTools::QuickReadUnicode(LwpObjectStream* pObjStrm,
         bool flag = false;  //switch if unicode part reached
         sal_uInt16 sublen = 0;
 
+        sal_uInt16 readLen = 0;
         while(readLen<strlen)
         {
             if(!flag)   //Not unicode string
@@ -174,7 +171,6 @@ sal_uInt16 LwpTools::QuickReadUnicode(LwpObjectStream* pObjStrm,
             }
         }
         str = strBuf.makeStringAndClear();
-        return readLen;
     }
 }
 
@@ -255,9 +251,9 @@ XFDateStyle* LwpTools::GetSystemDateStyle(bool bLongFormat)
     int32_t nLength = 0;
     int32_t nLengthNeed;
     UErrorCode status = U_ZERO_ERROR;
-    UChar* pattern = NULL;
+    UChar* pattern = nullptr;
 
-    nLengthNeed = udat_toPattern(reinterpret_cast<void **>(fmt),sal_False,NULL,nLength,&status);
+    nLengthNeed = udat_toPattern(reinterpret_cast<void **>(fmt),sal_False,nullptr,nLength,&status);
     if (status == U_BUFFER_OVERFLOW_ERROR)
     {
         status = U_ZERO_ERROR;
@@ -265,8 +261,8 @@ XFDateStyle* LwpTools::GetSystemDateStyle(bool bLongFormat)
         pattern = static_cast<UChar*>(malloc(sizeof(UChar)*nLength));
         udat_toPattern(reinterpret_cast<void **>(fmt),sal_False,pattern,nLength,&status);
     }
-    if (pattern == NULL)
-        return NULL;
+    if (pattern == nullptr)
+        return nullptr;
     // 3 parse pattern string,per icu date/time format syntax, there are 20 letters reserved
     // as patter letter,each represent a element in date/time and its repeat numbers represent
     // different format: for exampel: M produces '1',MM produces '01', MMM produces 'Jan', MMMM produces 'Januaray'
@@ -327,7 +323,7 @@ XFDateStyle* LwpTools::GetSystemDateStyle(bool bLongFormat)
                 if (j==1)
                     pDateStyle->AddMonth(false);
                 else if (j==2)
-                    pDateStyle->AddMonth(true);
+                    pDateStyle->AddMonth();
                 else if (j==3)
                     pDateStyle->AddMonth(false,true);
                 else
@@ -601,7 +597,7 @@ XFDateStyle* LwpTools::GetSystemDateStyle(bool bLongFormat)
                 if ((cSymbol>='A' && cSymbol<='Z') || (cSymbol>='a' && cSymbol<='z') )
                 {
                     delete pDateStyle;
-                    return NULL;
+                    return nullptr;
                 }
                 else//TEXT
                 {
@@ -644,8 +640,8 @@ XFTimeStyle* LwpTools::GetSystemTimeStyle()
     int32_t nLength = 0;
     int32_t nLengthNeed;
     UErrorCode status = U_ZERO_ERROR;
-    UChar* pattern = NULL;
-    nLengthNeed = udat_toPattern(reinterpret_cast<void **>(fmt),false,NULL,nLength,&status);
+    UChar* pattern = nullptr;
+    nLengthNeed = udat_toPattern(reinterpret_cast<void **>(fmt),false,nullptr,nLength,&status);
     if (status == U_BUFFER_OVERFLOW_ERROR)
     {
         status = U_ZERO_ERROR;
@@ -654,8 +650,8 @@ XFTimeStyle* LwpTools::GetSystemTimeStyle()
         udat_toPattern(reinterpret_cast<void **>(fmt),false,pattern,nLength,&status);
     }
 
-    if (pattern == NULL)
-        return NULL;
+    if (pattern == nullptr)
+        return nullptr;
     // 3 parse pattern string,per icu date/time format syntax, there are 20 letters reserved
     // as patter letter,each represent a element in date/time and its repeat numbers represent
     // different format: for exampel: M produces '1',MM produces '01', MMM produces 'Jan', MMMM produces 'Januaray'
@@ -824,7 +820,7 @@ XFTimeStyle* LwpTools::GetSystemTimeStyle()
                 if ((cSymbol>='A' && cSymbol<='Z') || (cSymbol>='a' && cSymbol<='z') )
                 {
                     delete pTimeStyle;
-                    return NULL;
+                    return nullptr;
                 }
                 else//TEXT
                 {

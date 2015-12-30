@@ -128,7 +128,7 @@ namespace logging
             oslProcessIdentifier aProcessId = 0;
             oslProcessInfo info;
             info.Size = sizeof (oslProcessInfo);
-            if ( osl_getProcessInfo ( 0, osl_Process_IDENTIFIER, &info ) == osl_Process_E_None)
+            if ( osl_getProcessInfo ( nullptr, osl_Process_IDENTIFIER, &info ) == osl_Process_E_None)
                 aProcessId = info.Ident;
             rtl::OUString aPID = OUString::number( aProcessId );
 
@@ -177,7 +177,7 @@ namespace logging
                 const Reference< XNameAccess >& _rxLoggerSettings,
                 const sal_Char* _pServiceNameAsciiNodeName,
                 const sal_Char* _pServiceSettingsAsciiNodeName,
-                SettingTranslation _pSettingTranslation = NULL
+                SettingTranslation _pSettingTranslation = nullptr
             )
         {
             Reference< XInterface > xInstance;
@@ -243,7 +243,7 @@ namespace logging
                 throw NullPointerException();
 
             Reference< XMultiServiceFactory > xConfigProvider(
-                com::sun::star::configuration::theDefaultProvider::get(_rContext));
+                css::configuration::theDefaultProvider::get(_rContext));
 
             // write access to the "Settings" node (which includes settings for all loggers)
             Sequence< Any > aArguments(1);
@@ -252,7 +252,7 @@ namespace logging
                 makeAny( OUString( "/org.openoffice.Office.Logging/Settings" ) )
             );
             Reference< XNameContainer > xAllSettings( xConfigProvider->createInstanceWithArguments(
-                OUString( "com.sun.star.configuration.ConfigurationUpdateAccess" ),
+                "com.sun.star.configuration.ConfigurationUpdateAccess",
                 aArguments
             ), UNO_QUERY_THROW );
 

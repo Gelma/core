@@ -88,6 +88,11 @@ public class OfficeProvider implements AppProvider
         {
             System.out.println("User Variable '$(user)' not defined.");
         }
+        catch (com.sun.star.uno.Exception e)
+        {
+            System.out.println("Couldn't backup user layer");
+            e.printStackTrace();
+        }
         catch (java.io.IOException e)
         {
             System.out.println("Couldn't backup user layer");
@@ -578,28 +583,11 @@ public class OfficeProvider implements AppProvider
         return res;
     }
 
-    private static XStringSubstitution createStringSubstitution(XMultiServiceFactory xMSF)
+    private static XStringSubstitution createStringSubstitution(XMultiServiceFactory xMSF) throws com.sun.star.uno.Exception
     {
-        Object xPathSubst = null;
-
-        try
-        {
-            xPathSubst = xMSF.createInstance(
+        Object xPathSubst = xMSF.createInstance(
                     "com.sun.star.util.PathSubstitution");
-        }
-        catch (com.sun.star.uno.Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        if (xPathSubst != null)
-        {
-            return UnoRuntime.queryInterface(XStringSubstitution.class, xPathSubst);
-        }
-        else
-        {
-            return null;
-        }
+        return UnoRuntime.queryInterface(XStringSubstitution.class, xPathSubst);
     }
 
     /**
@@ -712,7 +700,7 @@ public class OfficeProvider implements AppProvider
 
     }
 
-    private class OfficeWatcherPing extends Thread
+    private static class OfficeWatcherPing extends Thread
     {
 
         private final OfficeWatcher ow;
@@ -750,21 +738,27 @@ public class OfficeProvider implements AppProvider
         }
     }
 
-private void deleteFilesAndDirector(File file)
+    private void deleteFilesAndDirector(File file)
+    {
+        File f = file;
+        if(f.isDirectory())
         {
-            File f = file;
-            if(f.isDirectory())
+            File files[] = f.listFiles();
+            for(int i = 0; i < files.length; i++)
             {
-                File files[] = f.listFiles();
-                for(int i = 0; i < files.length; i++)
-                {
-                    deleteFilesAndDirector(files[i]);
-                }
-                f.delete();
+                deleteFilesAndDirector(files[i]);
             }
-            else if (f.isFile())
-            {
-                f.delete();
+            boolean bDeleteOk = f.delete();
+            if (!bDeleteOk) {
+                System.out.println("delete failed");
             }
         }
+        else if (f.isFile())
+        {
+            boolean bDeleteOk = f.delete();
+            if (!bDeleteOk) {
+                System.out.println("delete failed");
+            }
+        }
+    }
 }

@@ -507,7 +507,6 @@ struct XMLTextImportHelper::Impl
     std::unique_ptr<XMLTextListsHelper> m_xTextListsHelper;
 
     SvXMLImportContextRef m_xAutoStyles;
-    SvXMLImportContextRef m_xFontDecls;
 
     rtl::Reference< SvXMLImportPropertyMapper > m_xParaImpPrMap;
     rtl::Reference< SvXMLImportPropertyMapper > m_xTextImpPrMap;
@@ -563,7 +562,6 @@ struct XMLTextImportHelper::Impl
     bool m_bOrganizerMode : 1;
     bool m_bBodyContentStarted : 1;
 
-    // #107848#
     /// Are we inside a <text:deletion> element (deleted redline section)
     bool m_bInsideDeleteContext : 1;
 
@@ -1069,9 +1067,9 @@ void XMLTextImportHelper::SetCursor( const Reference < XTextCursor > & rCursor )
 
 void XMLTextImportHelper::ResetCursor()
 {
-    m_xImpl->m_xCursor.set(0);
-    m_xImpl->m_xText.set(0);
-    m_xImpl->m_xCursorAsRange.set(0);
+    m_xImpl->m_xCursor.set(nullptr);
+    m_xImpl->m_xText.set(nullptr);
+    m_xImpl->m_xCursorAsRange.set(nullptr);
 }
 
 
@@ -1203,7 +1201,7 @@ OUString XMLTextImportHelper::ConvertStarFonts( const OUString& rChars,
         {
             if( (rFlags & CONV_STAR_FONT_FLAGS_VALID) == 0 )
             {
-                XMLTextStyleContext *pStyle = 0;
+                XMLTextStyleContext *pStyle = nullptr;
                 sal_uInt16 nFamily = bPara ? XML_STYLE_FAMILY_TEXT_PARAGRAPH
                                            : XML_STYLE_FAMILY_TEXT_TEXT;
                 if (!rStyleName.isEmpty() && m_xImpl->m_xAutoStyles.Is())
@@ -1339,9 +1337,8 @@ static bool lcl_HasListStyle( const OUString& sStyleName,
             }
             else
             {
-                xPropState = Reference< XPropertyState >(
-                                    xParaStyles->getByName( aParentStyle ),
-                                    UNO_QUERY );
+                xPropState.set( xParaStyles->getByName( aParentStyle ),
+                                UNO_QUERY );
                 if ( !xPropState.is() )
                 {
                     // error case
@@ -1380,7 +1377,7 @@ static bool lcl_HasListStyle( const OUString& sStyleName,
                 else
                 {
                     // search list style at parent
-                    xStyle = Reference<XStyle>( xPropState, UNO_QUERY );
+                    xStyle.set( xPropState, UNO_QUERY );
                 }
             }
         }
@@ -1414,7 +1411,7 @@ OUString XMLTextImportHelper::SetStyleAndAttrs(
 
     const sal_uInt16 nFamily = bPara ? XML_STYLE_FAMILY_TEXT_PARAGRAPH
                                      : XML_STYLE_FAMILY_TEXT_TEXT;
-    XMLTextStyleContext *pStyle = 0;
+    XMLTextStyleContext *pStyle = nullptr;
     OUString sStyleName( rStyleName );
     if (!sStyleName.isEmpty() && m_xImpl->m_xAutoStyles.Is())
     {
@@ -1460,9 +1457,9 @@ OUString XMLTextImportHelper::SetStyleAndAttrs(
         Reference< XIndexReplace > const xNumRules(
                 xPropSet->getPropertyValue(s_NumberingRules), UNO_QUERY);
 
-        XMLTextListBlockContext * pListBlock(0);
-        XMLTextListItemContext  * pListItem(0);
-        XMLNumberedParaContext  * pNumberedParagraph(0);
+        XMLTextListBlockContext * pListBlock(nullptr);
+        XMLTextListItemContext  * pListItem(nullptr);
+        XMLNumberedParaContext  * pNumberedParagraph(nullptr);
         GetTextListHelper().ListContextTop(
             pListBlock, pListItem, pNumberedParagraph);
 
@@ -1482,7 +1479,7 @@ OUString XMLTextImportHelper::SetStyleAndAttrs(
             }
             // consider text:style-override property of <text:list-item>
             xNewNumRules.set(
-                (pListItem != 0 && pListItem->HasNumRulesOverride())
+                (pListItem != nullptr && pListItem->HasNumRulesOverride())
                     ? pListItem->GetNumRulesOverride()
                     : pListBlock->GetNumRules() );
             nLevel = static_cast<sal_Int8>(pListBlock->GetLevel());
@@ -1907,7 +1904,7 @@ void XMLTextImportHelper::SetOutlineStyles( bool bSetEmptyLevels )
     static const char s_NumberingStyleName[] = "NumberingStyleName";
     static const char s_HeadingStyleName  [] = "HeadingStyleName";
 
-    if ((m_xImpl->m_xOutlineStylesCandidates != 0 || bSetEmptyLevels) &&
+    if ((m_xImpl->m_xOutlineStylesCandidates != nullptr || bSetEmptyLevels) &&
          m_xImpl->m_xChapterNumbering.is() &&
          !IsInsertMode())
     {
@@ -2037,7 +2034,7 @@ void XMLTextImportHelper::SetHyperlink(
             makeAny(rTargetFrameName));
     }
 
-    if ( (pEvents != NULL) &&
+    if ( (pEvents != nullptr) &&
         xPropSetInfo->hasPropertyByName(s_HyperLinkEvents))
     {
         // The API treats events at hyperlinks differently from most
@@ -2110,7 +2107,7 @@ void XMLTextImportHelper::SetRuby(
                                        rStyleName, true );
             XMLPropStyleContext *pStyle = const_cast<XMLPropStyleContext*>(dynamic_cast< const XMLPropStyleContext* >(pTempStyle));
 
-            if (NULL != pStyle)
+            if (nullptr != pStyle)
                 pStyle->FillPropertySet( xPropSet );
         }
 
@@ -2140,7 +2137,7 @@ SvXMLImportContext *XMLTextImportHelper::CreateTextChildContext(
         const Reference< XAttributeList > & xAttrList,
         XMLTextType eType )
 {
-    SvXMLImportContext *pContext = 0;
+    SvXMLImportContext *pContext = nullptr;
 
     const SvXMLTokenMap& rTokenMap = GetTextElemTokenMap();
     bool bHeading = false;
@@ -2331,7 +2328,7 @@ SvXMLImportContext *XMLTextImportHelper::CreateTableChildContext(
         sal_uInt16 /*nPrefix*/, const OUString& /*rLocalName*/,
         const Reference< XAttributeList > & )
 {
-    return 0;
+    return nullptr;
 }
 
 /// get data style key for use with NumberFormat property
@@ -2359,7 +2356,7 @@ sal_Int32 XMLTextImportHelper::GetDataStyleKey(const OUString& sStyleName,
         SvXMLNumFormatContext* pNumStyle = const_cast<SvXMLNumFormatContext*>(dynamic_cast<const SvXMLNumFormatContext*>( pStyle ) );
         if( pNumStyle )
         {
-            if( pIsSystemLanguage != NULL )
+            if( pIsSystemLanguage != nullptr )
                 *pIsSystemLanguage = pNumStyle->IsSystemLanguage();
 
             // return key
@@ -2371,7 +2368,7 @@ sal_Int32 XMLTextImportHelper::GetDataStyleKey(const OUString& sStyleName,
 
 const SvxXMLListStyleContext *XMLTextImportHelper::FindAutoListStyle( const OUString& rName ) const
 {
-    const SvxXMLListStyleContext *pStyle = 0;
+    const SvxXMLListStyleContext *pStyle = nullptr;
     if (m_xImpl->m_xAutoStyles.Is())
     {
         const SvXMLStyleContext* pTempStyle =
@@ -2386,7 +2383,7 @@ const SvxXMLListStyleContext *XMLTextImportHelper::FindAutoListStyle( const OUSt
 
 XMLPropStyleContext *XMLTextImportHelper::FindAutoFrameStyle( const OUString& rName ) const
 {
-    XMLPropStyleContext *pStyle = 0;
+    XMLPropStyleContext *pStyle = nullptr;
     if (m_xImpl->m_xAutoStyles.Is())
     {
         const SvXMLStyleContext* pTempStyle =
@@ -2402,7 +2399,7 @@ XMLPropStyleContext *XMLTextImportHelper::FindAutoFrameStyle( const OUString& rN
 XMLPropStyleContext* XMLTextImportHelper::FindSectionStyle(
     const OUString& rName ) const
 {
-    XMLPropStyleContext* pStyle = NULL;
+    XMLPropStyleContext* pStyle = nullptr;
     if (m_xImpl->m_xAutoStyles.Is())
     {
         const SvXMLStyleContext* pTempStyle =
@@ -2419,7 +2416,7 @@ XMLPropStyleContext* XMLTextImportHelper::FindSectionStyle(
 XMLPropStyleContext* XMLTextImportHelper::FindPageMaster(
     const OUString& rName ) const
 {
-    XMLPropStyleContext* pStyle = NULL;
+    XMLPropStyleContext* pStyle = nullptr;
     if (m_xImpl->m_xAutoStyles.Is())
     {
         const SvXMLStyleContext* pTempStyle =
@@ -2577,7 +2574,7 @@ bool XMLTextImportHelper::hasCurrentFieldCtx()
     return !m_xImpl->m_FieldStack.empty();
 }
 
-void XMLTextImportHelper::setCurrentFieldParamsTo(::com::sun::star::uno::Reference< ::com::sun::star::text::XFormField> &xFormField)
+void XMLTextImportHelper::setCurrentFieldParamsTo(css::uno::Reference< css::text::XFormField> &xFormField)
 {
     assert(!m_xImpl->m_FieldStack.empty());
     if (!m_xImpl->m_FieldStack.empty() && xFormField.is())

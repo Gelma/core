@@ -135,7 +135,7 @@ namespace accessibility
         {
             aRect = getListBox()->GetBoundingRect( pEntry );
             Point aTopLeft = aRect.TopLeft();
-            aTopLeft += getListBox()->GetWindowExtentsRelative( NULL ).TopLeft();
+            aTopLeft += getListBox()->GetWindowExtentsRelative( nullptr ).TopLeft();
             aRect = Rectangle( aTopLeft, aRect.GetSize() );
         }
 
@@ -251,7 +251,7 @@ namespace accessibility
 
             ListBoxAccessibleBase::disposing();
         }
-        m_aParent = WeakReference< XAccessible >();
+        m_aParent.clear();
     }
 
     // XServiceInfo
@@ -351,7 +351,7 @@ namespace accessibility
                 if ( pParentEntry )
                     pParentEntry = getListBox()->GetParent(pParentEntry);
                 if ( pParentEntry )
-                    xParent = new AccessibleListBoxEntry( *getListBox(), pParentEntry, NULL );
+                    xParent = new AccessibleListBoxEntry( *getListBox(), pParentEntry, nullptr );
                     // note that we pass NULL here as parent-accessible:
                     // this is allowed, as the AccessibleListBoxEntry class will create its parent
                     // when needed
@@ -509,8 +509,7 @@ namespace accessibility
         if ( xParent.is() )
         {
             utl::AccessibleRelationSetHelper* pRelationSetHelper = new utl::AccessibleRelationSetHelper;
-            Sequence< Reference< XInterface > > aSequence(1);
-            aSequence[0] = xParent;
+            Sequence< Reference< XInterface > > aSequence { xParent };
             pRelationSetHelper->AddRelation(
                 AccessibleRelation( AccessibleRelationType::NODE_CHILD_OF, aSequence ) );
             xRelSet = pRelationSetHelper;
@@ -1202,7 +1201,7 @@ namespace accessibility
 
     SvTreeListEntry* AccessibleListBoxEntry::GetRealChild(sal_Int32 nIndex)
     {
-        SvTreeListEntry* pEntry = NULL;
+        SvTreeListEntry* pEntry = nullptr;
         SvTreeListEntry* pParent = getListBox()->GetEntryFromPath( m_aEntryPath );
         if (pParent)
         {

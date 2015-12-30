@@ -19,7 +19,6 @@ $(eval $(call gb_Executable_use_externals,vcldemo,\
 	boost_headers \
 	glew \
 	glm_headers \
-    mesa_headers \
 ))
 
 $(eval $(call gb_Executable_set_include,vcldemo,\
@@ -46,12 +45,10 @@ $(eval $(call gb_Executable_use_static_libraries,vcldemo,\
     vclmain \
 ))
 
-ifeq ($(OS),LINUX)
+ifeq ($(OS), $(filter LINUX %BSD SOLARIS, $(OS)))
 $(eval $(call gb_Executable_add_libs,vcldemo,\
-	-lm \
-	-ldl \
+	-lm $(DLOPEN_LIBS) \
 	-lpthread \
-    -lGL \
     -lX11 \
 ))
 

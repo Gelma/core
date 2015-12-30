@@ -20,7 +20,6 @@
 #ifndef INCLUDED_SD_SOURCE_UI_INC_TASKPANE_TITLEBAR_HXX
 #define INCLUDED_SD_SOURCE_UI_INC_TASKPANE_TITLEBAR_HXX
 
-#include "taskpane/TaskPaneTreeNode.hxx"
 #include <vcl/image.hxx>
 #include <vcl/window.hxx>
 #include <memory>
@@ -83,10 +82,8 @@ public:
 
     OUString GetTitle() const { return msTitle; }
 
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::accessibility::XAccessible > CreateAccessibleObject (
-            const ::com::sun::star::uno::Reference<
-            ::com::sun::star::accessibility::XAccessible>& rxParent);
+    css::uno::Reference<css::accessibility::XAccessible > CreateAccessibleObject (
+            const css::uno::Reference<css::accessibility::XAccessible>& rxParent);
 
 private:
     TitleBarType meType;

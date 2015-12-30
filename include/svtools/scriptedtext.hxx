@@ -22,6 +22,7 @@
 
 #include <svtools/svtdllapi.h>
 #include <com/sun/star/i18n/XBreakIterator.hpp>
+#include <memory>
 
 
 class OutputDevice;
@@ -39,9 +40,9 @@ This class provides drawing text with different script types on any output devic
 class SVT_DLLPUBLIC SvtScriptedTextHelper
 {
 private:
-    SvtScriptedTextHelper_Impl* mpImpl;             /// Implementation of class functionality.
+    std::unique_ptr<SvtScriptedTextHelper_Impl> mpImpl;             /// Implementation of class functionality.
 
-    SvtScriptedTextHelper&      operator=( const SvtScriptedTextHelper& ) SAL_DELETED_FUNCTION;
+    SvtScriptedTextHelper&      operator=( const SvtScriptedTextHelper& ) = delete;
 
 public:
                                 /** Constructor sets an output device and no fonts.
@@ -75,7 +76,7 @@ public:
                                     The break iterator for iterating through the script portions. */
     void                        SetText(
                                     const OUString& _rText,
-                                    const ::com::sun::star::uno::Reference< ::com::sun::star::i18n::XBreakIterator >& _xBreakIter );
+                                    const css::uno::Reference< css::i18n::XBreakIterator >& _xBreakIter );
 
                                 /** Returns a size struct containing the width and height of the text in the current output device.
                                     @return  A size struct with the text dimensions. */

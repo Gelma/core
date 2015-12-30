@@ -76,11 +76,12 @@ sal_Int32 toSelectedItem( formula::FormulaGrammar::AddressConvention eConv )
 
 }
 
-ScCalcOptionsDialog::ScCalcOptionsDialog(vcl::Window* pParent, const ScCalcConfig& rConfig)
+ScCalcOptionsDialog::ScCalcOptionsDialog(vcl::Window* pParent, const ScCalcConfig& rConfig, bool bWriteConfig)
     : ModalDialog(pParent, "FormulaCalculationOptions",
         "modules/scalc/ui/formulacalculationoptions.ui")
     , maConfig(rConfig)
     , mbSelectedEmptyStringAsZero(rConfig.mbEmptyStringAsZero)
+    , mbWriteConfig(bWriteConfig)
 {
     get(mpTestButton, "test");
     get(mpOpenclInfoList, "opencl_list");
@@ -97,10 +98,15 @@ ScCalcOptionsDialog::ScCalcOptionsDialog(vcl::Window* pParent, const ScCalcConfi
     get(mpEmptyAsZero,"checkEmptyAsZero");
     mpEmptyAsZero->Check(rConfig.mbEmptyStringAsZero);
     mpEmptyAsZero->SetClickHdl(LINK(this, ScCalcOptionsDialog, AsZeroModifiedHdl));
+    CoupleEmptyAsZeroToStringConversion();
 
     get(mpSyntax,"comboSyntaxRef");
     mpSyntax->SelectEntryPos( toSelectedItem(rConfig.meStringRefAddressSyntax) );
     mpSyntax->SetSelectHdl(LINK(this, ScCalcOptionsDialog, SyntaxModifiedHdl));
+
+    get(mpCurrentDocOnly,"current_doc");
+    mpCurrentDocOnly->Check(!mbWriteConfig);
+    mpCurrentDocOnly->SetClickHdl(LINK(this, ScCalcOptionsDialog, CurrentDocOnlyHdl));
 
     get(mpUseOpenCL,"CBUseOpenCL");
     mpUseOpenCL->Check(rConfig.mbOpenCLSubsetOnly);
@@ -192,41 +198,49 @@ void ScCalcOptionsDialog::SelectedDeviceChanged()
 #endif
 }
 
-IMPL_LINK_TYPED(ScCalcOptionsDialog, AsZeroModifiedHdl, Button*, pCheckBox, void )
+void ScCalcOptionsDialog::CoupleEmptyAsZeroToStringConversion()
 {
-    maConfig.mbEmptyStringAsZero = static_cast<CheckBox*>(pCheckBox)->IsChecked();
-}
-
-IMPL_LINK(ScCalcOptionsDialog, ConversionModifiedHdl, ListBox*, pConv )
-{
-
-  maConfig.meStringConversion = (ScCalcConfig::StringConversion)pConv->GetSelectEntryPos();
     switch (maConfig.meStringConversion)
     {
-         case ScCalcConfig::StringConversion::ILLEGAL:
-                    maConfig.mbEmptyStringAsZero = false;
-                    mpEmptyAsZero->Check(false);
-                    mpEmptyAsZero->Enable(false);
-         break;
-         case ScCalcConfig::StringConversion::ZERO:
-                    maConfig.mbEmptyStringAsZero = true;
-                    mpEmptyAsZero->Check();
-                    mpEmptyAsZero->Enable(false);
-         break;
-         case ScCalcConfig::StringConversion::UNAMBIGUOUS:
-         case ScCalcConfig::StringConversion::LOCALE:
-                    // Reset to the value the user selected before.
-                    maConfig.mbEmptyStringAsZero = mbSelectedEmptyStringAsZero;
-                    mpEmptyAsZero->Enable(true);
-         break;
-     }
-    return 0;
+        case ScCalcConfig::StringConversion::ILLEGAL:
+            maConfig.mbEmptyStringAsZero = false;
+            mpEmptyAsZero->Check(false);
+            mpEmptyAsZero->Enable(false);
+            break;
+        case ScCalcConfig::StringConversion::ZERO:
+            maConfig.mbEmptyStringAsZero = true;
+            mpEmptyAsZero->Check();
+            mpEmptyAsZero->Enable(false);
+            break;
+        case ScCalcConfig::StringConversion::UNAMBIGUOUS:
+        case ScCalcConfig::StringConversion::LOCALE:
+            // Reset to the value the user selected before.
+            maConfig.mbEmptyStringAsZero = mbSelectedEmptyStringAsZero;
+            mpEmptyAsZero->Enable();
+            mpEmptyAsZero->Check( mbSelectedEmptyStringAsZero);
+            break;
+    }
 }
 
-IMPL_LINK(ScCalcOptionsDialog, SyntaxModifiedHdl, ListBox*, pSyntax)
+IMPL_LINK_TYPED(ScCalcOptionsDialog, AsZeroModifiedHdl, Button*, pCheckBox, void )
 {
-    maConfig.SetStringRefSyntax(toAddressConvention(pSyntax->GetSelectEntryPos()));
-    return 0;
+    maConfig.mbEmptyStringAsZero = mbSelectedEmptyStringAsZero = static_cast<CheckBox*>(pCheckBox)->IsChecked();
+}
+
+IMPL_LINK_TYPED(ScCalcOptionsDialog, ConversionModifiedHdl, ListBox&, rConv, void )
+{
+    maConfig.meStringConversion = (ScCalcConfig::StringConversion)rConv.GetSelectEntryPos();
+    CoupleEmptyAsZeroToStringConversion();
+}
+
+IMPL_LINK_TYPED(ScCalcOptionsDialog, SyntaxModifiedHdl, ListBox&, rSyntax, void)
+{
+    maConfig.SetStringRefSyntax(toAddressConvention(rSyntax.GetSelectEntryPos()));
+}
+
+IMPL_LINK_TYPED(ScCalcOptionsDialog, CurrentDocOnlyHdl, Button*, pCheckBox, void)
+{
+    mbWriteConfig = !(static_cast<CheckBox*>(pCheckBox)->IsChecked());
 }
 
 IMPL_LINK_TYPED(ScCalcOptionsDialog, CBUseOpenCLHdl, Button*, pCheckBox, void)
@@ -234,10 +248,9 @@ IMPL_LINK_TYPED(ScCalcOptionsDialog, CBUseOpenCLHdl, Button*, pCheckBox, void)
     maConfig.mbOpenCLSubsetOnly = static_cast<CheckBox*>(pCheckBox)->IsChecked();
 }
 
-IMPL_LINK(ScCalcOptionsDialog, SpinOpenCLMinSizeHdl, NumericField*, pSpin)
+IMPL_LINK_TYPED(ScCalcOptionsDialog, SpinOpenCLMinSizeHdl, Edit&, rEdit, void)
 {
-    maConfig.mnOpenCLMinimumFormulaGroupSize = pSpin->GetValue();
-    return 0;
+    maConfig.mnOpenCLMinimumFormulaGroupSize = static_cast<NumericField&>(rEdit).GetValue();
 }
 
 IMPL_LINK_NOARG_TYPED(ScCalcOptionsDialog, BtnAutomaticSelectHdl, RadioButton&, void)
@@ -250,10 +263,9 @@ IMPL_LINK_NOARG_TYPED(ScCalcOptionsDialog, DeviceSelHdl, SvTreeListBox*, void)
     SelectedDeviceChanged();
 }
 
-IMPL_LINK(ScCalcOptionsDialog, EditModifiedHdl, Edit*, pCtrl)
+IMPL_LINK_TYPED(ScCalcOptionsDialog, EditModifiedHdl, Edit&, rCtrl, void)
 {
-    maConfig.mpOpenCLSubsetOpCodes = ScStringToOpCodeSet(pCtrl->GetText());
-    return 0;
+    maConfig.mpOpenCLSubsetOpCodes = ScStringToOpCodeSet(rCtrl.GetText());
 }
 
 namespace {
@@ -379,14 +391,14 @@ struct UnOp : Op
     {
     }
 
-    virtual void addHeader(ScDocument *pDoc, int nTab) const SAL_OVERRIDE
+    virtual void addHeader(ScDocument *pDoc, int nTab) const override
     {
         pDoc->SetString(ScAddress(0,0,nTab), "arg");
         pDoc->SetString(ScAddress(1,0,nTab), msOp + "(arg)");
         pDoc->SetString(ScAddress(2,0,nTab), "expected");
     }
 
-    virtual void addRow(ScDocument *pDoc, int nRow, int nTab) const SAL_OVERRIDE
+    virtual void addRow(ScDocument *pDoc, int nRow, int nTab) const override
     {
         double nArg;
 
@@ -422,7 +434,7 @@ struct UnOp : Op
         }
     }
 
-    virtual OUString getSummaryFormula(ScDocument *pDoc, int nTab) const SAL_OVERRIDE
+    virtual OUString getSummaryFormula(ScDocument *pDoc, int nTab) const override
     {
         return "=SUM(" +
             ScRange(ScAddress(3,1,nTab),
@@ -452,7 +464,7 @@ struct BinOp : Op
     {
     }
 
-    virtual void addHeader(ScDocument *pDoc, int nTab) const SAL_OVERRIDE
+    virtual void addHeader(ScDocument *pDoc, int nTab) const override
     {
         pDoc->SetString(ScAddress(0,0,nTab), "lhs");
         pDoc->SetString(ScAddress(1,0,nTab), "rhs");
@@ -460,7 +472,7 @@ struct BinOp : Op
         pDoc->SetString(ScAddress(3,0,nTab), "expected");
     }
 
-    virtual void addRow(ScDocument *pDoc, int nRow, int nTab) const SAL_OVERRIDE
+    virtual void addRow(ScDocument *pDoc, int nRow, int nTab) const override
     {
         double nLhs, nRhs;
 
@@ -485,7 +497,7 @@ struct BinOp : Op
                         ",0,1)");
     }
 
-    virtual OUString getSummaryFormula(ScDocument *pDoc, int nTab) const SAL_OVERRIDE
+    virtual OUString getSummaryFormula(ScDocument *pDoc, int nTab) const override
     {
         return "=SUM(" +
             ScRange(ScAddress(4,1,nTab),
@@ -505,7 +517,7 @@ struct Round : Area
     {
     }
 
-    virtual void addHeader(ScDocument *pDoc, int nTab) const SAL_OVERRIDE
+    virtual void addHeader(ScDocument *pDoc, int nTab) const override
     {
         pDoc->SetString(ScAddress(0,0,nTab), "x");
         pDoc->SetString(ScAddress(1,0,nTab), "n");
@@ -513,7 +525,7 @@ struct Round : Area
         pDoc->SetString(ScAddress(3,0,nTab), "expected");
     }
 
-    virtual void addRow(ScDocument *pDoc, int nRow, int nTab) const SAL_OVERRIDE
+    virtual void addRow(ScDocument *pDoc, int nRow, int nTab) const override
     {
         const double nX(comphelper::rng::uniform_real_distribution(0, 100));
         const int nN(comphelper::rng::uniform_int_distribution(1, 10));
@@ -526,7 +538,7 @@ struct Round : Area
                         "," + ScAddress(1,1+nRow,nTab).Format(SCA_VALID_COL|SCA_VALID_ROW) +
                         ")");
 
-        pDoc->SetValue(ScAddress(3,1+nRow,nTab), ::rtl::math::round(nX, (short) nN, rtl_math_RoundingMode_Corrected));
+        pDoc->SetValue(ScAddress(3,1+nRow,nTab), ::rtl::math::round(nX, (short) nN));
 
         pDoc->SetString(ScAddress(4,1+nRow,nTab),
                         "=IF(ABS(" + ScAddress(2,1+nRow,nTab).Format(SCA_VALID_COL|SCA_VALID_ROW) +
@@ -535,7 +547,7 @@ struct Round : Area
                         ",0,1)");
     }
 
-    virtual OUString getSummaryFormula(ScDocument *pDoc, int nTab) const SAL_OVERRIDE
+    virtual OUString getSummaryFormula(ScDocument *pDoc, int nTab) const override
     {
         return "=SUM(" +
             ScRange(ScAddress(4,1,nTab),
@@ -556,7 +568,7 @@ struct Normdist : Area
     {
     }
 
-    virtual void addHeader(ScDocument *pDoc, int nTab) const SAL_OVERRIDE
+    virtual void addHeader(ScDocument *pDoc, int nTab) const override
     {
         pDoc->SetString(ScAddress(0,0,nTab), "num");
         pDoc->SetString(ScAddress(1,0,nTab), "avg");
@@ -566,7 +578,7 @@ struct Normdist : Area
         pDoc->SetString(ScAddress(5,0,nTab), "expected");
     }
 
-    virtual void addRow(ScDocument *pDoc, int nRow, int nTab) const SAL_OVERRIDE
+    virtual void addRow(ScDocument *pDoc, int nRow, int nTab) const override
     {
         const double nNum(comphelper::rng::uniform_real_distribution(0, 100));
         const double nAvg(comphelper::rng::uniform_real_distribution(0, 100));
@@ -597,7 +609,7 @@ struct Normdist : Area
                         ",0,1)");
     }
 
-    virtual OUString getSummaryFormula(ScDocument *pDoc, int nTab) const SAL_OVERRIDE
+    virtual OUString getSummaryFormula(ScDocument *pDoc, int nTab) const override
     {
         return "=SUM(" +
             ScRange(ScAddress(6,1,nTab),
@@ -631,14 +643,14 @@ struct Reduction : Op
     {
     }
 
-    virtual void addHeader(ScDocument *pDoc, int nTab) const SAL_OVERRIDE
+    virtual void addHeader(ScDocument *pDoc, int nTab) const override
     {
         pDoc->SetString(ScAddress(0,0,nTab), "x");
         pDoc->SetString(ScAddress(1,0,nTab), msOp);
         pDoc->SetString(ScAddress(2,0,nTab), "expected");
     }
 
-    virtual void addRow(ScDocument *pDoc, int nRow, int nTab) const SAL_OVERRIDE
+    virtual void addRow(ScDocument *pDoc, int nRow, int nTab) const override
     {
         double nArg;
 
@@ -676,7 +688,7 @@ struct Reduction : Op
         }
     }
 
-    virtual OUString getSummaryFormula(ScDocument *pDoc, int nTab) const SAL_OVERRIDE
+    virtual OUString getSummaryFormula(ScDocument *pDoc, int nTab) const override
     {
         return "=SUM(" +
             ScRange(ScAddress(3,1+0,nTab),

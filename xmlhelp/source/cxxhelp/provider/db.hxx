@@ -27,18 +27,6 @@
 
 namespace helpdatafileproxy {
 
-    namespace hdf_internal
-    {
-        class Noncopyable
-        {
-            Noncopyable(const Noncopyable&) SAL_DELETED_FUNCTION;
-            void operator=(const Noncopyable&) SAL_DELETED_FUNCTION;
-        protected:
-            Noncopyable() {}
-            ~Noncopyable() {}
-        };
-    }
-
     class HDFData
     {
         friend class        Hdf;
@@ -51,7 +39,7 @@ namespace helpdatafileproxy {
     public:
         HDFData()
             : m_nSize( 0 )
-            , m_pBuffer( NULL )
+            , m_pBuffer( nullptr )
         {}
         ~HDFData()
             { delete [] m_pBuffer; }
@@ -65,15 +53,15 @@ namespace helpdatafileproxy {
     typedef std::unordered_map< OString,std::pair<int,int>,OStringHash >   StringToValPosMap;
     typedef std::unordered_map< OString,OString,OStringHash >     StringToDataMap;
 
-    class Hdf : hdf_internal::Noncopyable
+    class Hdf
     {
         OUString       m_aFileURL;
         StringToDataMap*    m_pStringToDataMap;
         StringToValPosMap*  m_pStringToValPosMap;
-        com::sun::star::uno::Reference< com::sun::star::ucb::XSimpleFileAccess3 >
+        css::uno::Reference< css::ucb::XSimpleFileAccess3 >
                             m_xSFA;
 
-        com::sun::star::uno::Sequence< sal_Int8 >
+        css::uno::Sequence< sal_Int8 >
                             m_aItData;
         const char*         m_pItData;
         int                 m_nItRead;
@@ -86,12 +74,12 @@ namespace helpdatafileproxy {
         //SimpleFileAccess requires file URLs as arguments. Passing file path may work but fails
         //for example when using long file paths on Windows, which start with "\\?\"
         Hdf( const OUString& rFileURL,
-            com::sun::star::uno::Reference< com::sun::star::ucb::XSimpleFileAccess3 > xSFA )
+            css::uno::Reference< css::ucb::XSimpleFileAccess3 > xSFA )
                 : m_aFileURL( rFileURL )
-                , m_pStringToDataMap( NULL )
-                , m_pStringToValPosMap( NULL )
+                , m_pStringToDataMap( nullptr )
+                , m_pStringToValPosMap( nullptr )
                 , m_xSFA( xSFA )
-                , m_pItData( NULL )
+                , m_pItData( nullptr )
                 , m_nItRead( -1 )
                 , m_iItPos( -1 )
         {
@@ -108,7 +96,10 @@ namespace helpdatafileproxy {
         bool startIteration();
         bool getNextKeyAndValue( HDFData& rKey, HDFData& rValue );
         void stopIteration();
+        Hdf(const Hdf&) = delete;
+        void operator=(const Hdf&) = delete;
     };
+
 }
 
 #endif

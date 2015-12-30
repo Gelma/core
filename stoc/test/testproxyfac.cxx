@@ -252,9 +252,7 @@ SAL_IMPLEMENT_MAIN()
         try
         {
             Reference< registry::XImplementationRegistration > xImplReg(
-                xMgr->createInstance(
-                    OUString( "com.sun.star.registry.ImplementationRegistration"
-                        ) ),
+                xMgr->createInstance( "com.sun.star.registry.ImplementationRegistration" ),
                 UNO_QUERY );
             OSL_ENSURE( xImplReg.is(), "### no impl reg!" );
 
@@ -265,9 +263,7 @@ SAL_IMPLEMENT_MAIN()
                 aLibName, Reference< registry::XSimpleRegistry >() );
 
             Reference< reflection::XProxyFactory > xProxyFac(
-                xMgr->createInstance(
-                    OUString(
-                        "com.sun.star.reflection.ProxyFactory") ),
+                xMgr->createInstance("com.sun.star.reflection.ProxyFactory"),
                 UNO_QUERY_THROW );
 
             Reference< XAggregation > x(

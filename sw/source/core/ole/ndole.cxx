@@ -71,20 +71,20 @@ private:
     sal_Int32 m_nLRU_InitSize;
     static uno::Sequence< OUString > GetPropertyNames();
 
-    virtual void ImplCommit() SAL_OVERRIDE;
+    virtual void ImplCommit() override;
 
 public:
     SwOLELRUCache();
 
     virtual void Notify( const uno::Sequence<
-                                OUString>& aPropertyNames ) SAL_OVERRIDE;
+                                OUString>& aPropertyNames ) override;
     void Load();
 
     void InsertObj( SwOLEObj& rObj );
     void RemoveObj( SwOLEObj& rObj );
 };
 
-SwOLELRUCache* pOLELRU_Cache = 0;
+SwOLELRUCache* pOLELRU_Cache = nullptr;
 
 class SwOLEListener_Impl : public ::cppu::WeakImplHelper< embed::XStateChangeListener >
 {
@@ -92,9 +92,9 @@ class SwOLEListener_Impl : public ::cppu::WeakImplHelper< embed::XStateChangeLis
 public:
     explicit SwOLEListener_Impl( SwOLEObj* pObj );
     void Release();
-    virtual void SAL_CALL changingState( const lang::EventObject& aEvent, ::sal_Int32 nOldState, ::sal_Int32 nNewState ) throw (embed::WrongStateException, uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL stateChanged( const lang::EventObject& aEvent, ::sal_Int32 nOldState, ::sal_Int32 nNewState ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL disposing( const lang::EventObject& aEvent ) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL changingState( const lang::EventObject& aEvent, ::sal_Int32 nOldState, ::sal_Int32 nNewState ) throw (embed::WrongStateException, uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL stateChanged( const lang::EventObject& aEvent, ::sal_Int32 nOldState, ::sal_Int32 nNewState ) throw (uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL disposing( const lang::EventObject& aEvent ) throw (uno::RuntimeException, std::exception) override;
 };
 
 SwOLEListener_Impl::SwOLEListener_Impl( SwOLEObj* pObj )
@@ -129,7 +129,7 @@ void SwOLEListener_Impl::Release()
 {
     if ( mpObj && pOLELRU_Cache )
         pOLELRU_Cache->RemoveObj( *mpObj );
-    mpObj=0;
+    mpObj=nullptr;
     release();
 }
 
@@ -150,11 +150,11 @@ public:
     explicit            SwEmbedObjectLink(SwOLENode* pNode);
     virtual             ~SwEmbedObjectLink();
 
-    virtual void        Closed() SAL_OVERRIDE;
+    virtual void        Closed() override;
     virtual ::sfx2::SvBaseLink::UpdateResult DataChanged(
-        const OUString& rMimeType, const ::com::sun::star::uno::Any & rValue ) SAL_OVERRIDE;
+        const OUString& rMimeType, const css::uno::Any & rValue ) override;
 
-    bool            Connect() { return GetRealObject() != NULL; }
+    bool            Connect() { return GetRealObject() != nullptr; }
 };
 
 SwEmbedObjectLink::SwEmbedObjectLink(SwOLENode* pNode):
@@ -214,7 +214,7 @@ SwOLENode::SwOLENode( const SwNodeIndex &rWhere,
     SwNoTextNode( rWhere, ND_OLENODE, pGrfColl, pAutoAttr ),
     aOLEObj( xObj ),
     bOLESizeInvalid( false ),
-    mpObjectLink( NULL )
+    mpObjectLink( nullptr )
 {
     aOLEObj.SetNode( this );
 }
@@ -227,7 +227,7 @@ SwOLENode::SwOLENode( const SwNodeIndex &rWhere,
     SwNoTextNode( rWhere, ND_OLENODE, pGrfColl, pAutoAttr ),
     aOLEObj( rString, nAspect ),
     bOLESizeInvalid( false ),
-    mpObjectLink( NULL )
+    mpObjectLink( nullptr )
 {
     aOLEObj.SetNode( this );
 }
@@ -241,7 +241,7 @@ const Graphic* SwOLENode::GetGraphic()
 {
     if ( aOLEObj.GetOleRef().is() )
         return aOLEObj.xOLERef.GetGraphic();
-    return 0;
+    return nullptr;
 }
 
 SwContentNode *SwOLENode::SplitContentNode( const SwPosition & )
@@ -267,7 +267,7 @@ bool SwOLENode::RestorePersistentData()
             // What happens to this document?
             OSL_ENSURE( false, "Why are we creating a DocShell here?" );
             p = new SwDocShell( GetDoc(), SfxObjectCreateMode::INTERNAL );
-            p->DoInitNew( NULL );
+            p->DoInitNew();
         }
 
         uno::Reference < container::XChild > xChild( aOLEObj.xOLERef.GetObject(), uno::UNO_QUERY );
@@ -279,7 +279,7 @@ bool SwOLENode::RestorePersistentData()
         if ( !p->GetEmbeddedObjectContainer().InsertEmbeddedObject( aOLEObj.xOLERef.GetObject(), aObjName ) )
         {
             if ( xChild.is() )
-                xChild->setParent( 0 );
+                xChild->setParent( nullptr );
             OSL_FAIL( "InsertObject failed" );
         }
         else
@@ -316,7 +316,7 @@ bool SwOLENode::SavePersistentData()
         {
             uno::Reference < container::XChild > xChild( aOLEObj.xOLERef.GetObject(), uno::UNO_QUERY );
             if ( xChild.is() )
-                xChild->setParent( 0 );
+                xChild->setParent( nullptr );
 
             /*
               #i119941
@@ -326,9 +326,9 @@ bool SwOLENode::SavePersistentData()
               the chart again. Then chart core function will call the class
               ExplicitCategoryProvider to create data source. In this step, when SW data
               source provider create the data source, an UnoActionRemoveContext
-              will mess with the layout and create a new SwFlyFrm.
+              will mess with the layout and create a new SwFlyFrame.
               But later in SwUndoFlyBase::DelFly, it will clear anchor related attributes
-              of SwFlyFrm. Then finally null pointer occur.
+              of SwFlyFrame. Then finally null pointer occur.
               Resolution:
               In pCnt->RemoveEmbeddedObject in SaveSection process of table chart,
               only remove the object from the object container, without removing it's
@@ -350,7 +350,7 @@ bool SwOLENode::SavePersistentData()
 
             // TODO/LATER: aOLEObj.aName has no meaning here, since the undo container contains the object
             // by different name, in future it might makes sense that the name is transported here.
-            aOLEObj.xOLERef.AssignToContainer( 0, aOLEObj.aName );
+            aOLEObj.xOLERef.AssignToContainer( nullptr, aOLEObj.aName );
             try
             {
                 // "unload" object
@@ -427,7 +427,7 @@ SwContentNode* SwOLENode::MakeCopy( SwDoc* pDoc, const SwNodeIndex& rIdx ) const
         // the created document will be closed by pDoc ( should use SfxObjectShellLock )
         pPersistShell = new SwDocShell( pDoc, SfxObjectCreateMode::INTERNAL );
         pDoc->SetTmpDocShell( pPersistShell );
-        pPersistShell->DoInitNew( NULL );
+        pPersistShell->DoInitNew();
     }
 
     // We insert it at SvPersist level
@@ -439,8 +439,8 @@ SwContentNode* SwOLENode::MakeCopy( SwDoc* pDoc, const SwNodeIndex& rIdx ) const
         pSrc->GetEmbeddedObjectContainer(),
         pSrc->GetEmbeddedObjectContainer().GetEmbeddedObject( aOLEObj.aName ),
         aNewName,
-        OUString(),
-        OUString());
+        pSrc->getDocumentBaseURL(),
+        pPersistShell->getDocumentBaseURL());
 
     SwOLENode* pOLENd = pDoc->GetNodes().MakeOLENode( rIdx, aNewName, GetAspect(),
                                     pDoc->GetDfltGrfFormatColl(),
@@ -519,7 +519,7 @@ bool SwOLENode::UpdateLinkURL_Impl()
     if ( mpObjectLink )
     {
         OUString aNewLinkURL;
-        sfx2::LinkManager::GetDisplayNames( mpObjectLink, 0, &aNewLinkURL, 0, 0 );
+        sfx2::LinkManager::GetDisplayNames( mpObjectLink, nullptr, &aNewLinkURL );
         if ( !aNewLinkURL.equalsIgnoreAsciiCase( maLinkURL ) )
         {
             if ( !aOLEObj.xOLERef.is() )
@@ -590,7 +590,7 @@ void SwOLENode::DisconnectFileLink_Impl()
     if ( mpObjectLink )
     {
         GetDoc()->getIDocumentLinksAdministration().GetLinkManager().Remove( mpObjectLink );
-        mpObjectLink = NULL;
+        mpObjectLink = nullptr;
     }
 }
 
@@ -609,7 +609,7 @@ void SwOLENode::CheckFileLink_Impl()
                     // this is a file link so the model link manager should handle it
                     mpObjectLink = new SwEmbedObjectLink( this );
                     maLinkURL = aLinkURL;
-                    GetDoc()->getIDocumentLinksAdministration().GetLinkManager().InsertFileLink( *mpObjectLink, OBJECT_CLIENT_OLE, aLinkURL, NULL, NULL );
+                    GetDoc()->getIDocumentLinksAdministration().GetLinkManager().InsertFileLink( *mpObjectLink, OBJECT_CLIENT_OLE, aLinkURL );
                     mpObjectLink->Connect();
                 }
             }
@@ -637,8 +637,8 @@ bool SwOLENode::IsChart() const
 }
 
 SwOLEObj::SwOLEObj( const svt::EmbeddedObjectRef& xObj ) :
-    pOLENd( 0 ),
-    pListener( 0 ),
+    pOLENd( nullptr ),
+    pListener( nullptr ),
     xOLERef( xObj )
 {
     xOLERef.Lock();
@@ -651,8 +651,8 @@ SwOLEObj::SwOLEObj( const svt::EmbeddedObjectRef& xObj ) :
 }
 
 SwOLEObj::SwOLEObj( const OUString &rString, sal_Int64 nAspect ) :
-    pOLENd( 0 ),
-    pListener( 0 ),
+    pOLENd( nullptr ),
+    pListener( nullptr ),
     aName( rString )
 {
     xOLERef.Lock();
@@ -687,10 +687,10 @@ SwOLEObj::~SwOLEObj()
         {
             uno::Reference < container::XChild > xChild( xOLERef.GetObject(), uno::UNO_QUERY );
             if ( xChild.is() )
-                xChild->setParent( 0 );
+                xChild->setParent( nullptr );
 
             // not already removed by deleting the object
-            xOLERef.AssignToContainer( 0, aName );
+            xOLERef.AssignToContainer( nullptr, aName );
 
             // unlock object so that object can be closed in RemoveEmbeddedObject
             // successful closing of the object will automatically clear the reference then
@@ -730,7 +730,7 @@ void SwOLEObj::SetNode( SwOLENode* pNode )
             // What happens to the document?
             OSL_ENSURE( false, "Why are we creating a DocShell here??" );
             p = new SwDocShell( pDoc, SfxObjectCreateMode::INTERNAL );
-            p->DoInitNew( NULL );
+            p->DoInitNew();
         }
 
         OUString aObjName;
@@ -742,7 +742,7 @@ void SwOLEObj::SetNode( SwOLENode* pNode )
         {
             OSL_FAIL( "InsertObject failed" );
         if ( xChild.is() )
-            xChild->setParent( 0 );
+            xChild->setParent( nullptr );
         }
         else
             xOLERef.AssignToContainer( &p->GetEmbeddedObjectContainer(), aObjName );
@@ -780,10 +780,10 @@ const uno::Reference < embed::XEmbeddedObject > SwOLEObj::GetOleRef()
         {
             // We could not load this part (probably broken)
             Rectangle aArea;
-            SwFrm *pFrm = pOLENd->getLayoutFrm(0);
-            if ( pFrm )
+            SwFrame *pFrame = pOLENd->getLayoutFrame(nullptr);
+            if ( pFrame )
             {
-                Size aSz( pFrm->Frm().SSize() );
+                Size aSz( pFrame->Frame().SSize() );
                 const MapMode aSrc ( MAP_TWIP );
                 const MapMode aDest( MAP_100TH_MM );
                 aSz = OutputDevice::LogicToLogic( aSz, aSrc, aDest );
@@ -910,9 +910,7 @@ SwOLELRUCache::SwOLELRUCache()
 
 uno::Sequence< OUString > SwOLELRUCache::GetPropertyNames()
 {
-    Sequence< OUString > aNames( 1 );
-    OUString* pNames = aNames.getArray();
-    pNames[0] = "Writer/OLE_Objects";
+    Sequence< OUString > aNames { "Writer/OLE_Objects" };
     return aNames;
 }
 

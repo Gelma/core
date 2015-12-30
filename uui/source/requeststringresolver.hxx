@@ -25,56 +25,53 @@
 #include <com/sun/star/task/XInteractionRequestStringResolver.hpp>
 #include <com/sun/star/uno/XComponentContext.hpp>
 #include <cppuhelper/implbase.hxx>
+#include <memory>
 
 class UUIInteractionHelper;
 
 class UUIInteractionRequestStringResolver:
     public cppu::WeakImplHelper<
-        com::sun::star::lang::XServiceInfo,
-        com::sun::star::task::XInteractionRequestStringResolver >
+        css::lang::XServiceInfo,
+        css::task::XInteractionRequestStringResolver >
 {
 public:
     static char const m_aImplementationName[];
 
-    static com::sun::star::uno::Sequence< OUString >
+    static css::uno::Sequence< OUString >
     getSupportedServiceNames_static();
 
-    static com::sun::star::uno::Reference< com::sun::star::uno::XInterface >
+    static css::uno::Reference< css::uno::XInterface >
     SAL_CALL
     createInstance(
-        com::sun::star::uno::Reference<
-        com::sun::star::lang::XMultiServiceFactory > const &
+        css::uno::Reference< css::lang::XMultiServiceFactory > const &
     rServiceFactory);
 
 private:
-    UUIInteractionHelper * m_pImpl;
+    std::unique_ptr<UUIInteractionHelper> m_pImpl;
 
-    UUIInteractionRequestStringResolver(UUIInteractionRequestStringResolver &) SAL_DELETED_FUNCTION;
-    void operator =(UUIInteractionRequestStringResolver&) SAL_DELETED_FUNCTION;
+    UUIInteractionRequestStringResolver(UUIInteractionRequestStringResolver &) = delete;
+    void operator =(UUIInteractionRequestStringResolver&) = delete;
 
     explicit UUIInteractionRequestStringResolver(
-        com::sun::star::uno::Reference<
-            com::sun::star::uno::XComponentContext >
-                const & rxContext);
+        css::uno::Reference< css::uno::XComponentContext > const & rxContext);
 
     virtual ~UUIInteractionRequestStringResolver();
 
     virtual OUString SAL_CALL getImplementationName()
-        throw (com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual sal_Bool SAL_CALL supportsService(OUString const &
                           rServiceName)
-        throw (com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual com::sun::star::uno::Sequence< OUString > SAL_CALL
+    virtual css::uno::Sequence< OUString > SAL_CALL
     getSupportedServiceNames()
-        throw (com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
-    virtual com::sun::star::beans::Optional< OUString > SAL_CALL
+    virtual css::beans::Optional< OUString > SAL_CALL
     getStringFromInformationalRequest(
-        const com::sun::star::uno::Reference<
-            com::sun::star::task::XInteractionRequest >& Request )
-        throw (com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        const css::uno::Reference< css::task::XInteractionRequest >& Request )
+        throw (css::uno::RuntimeException, std::exception) override;
 };
 
 #endif // INCLUDED_UUI_SOURCE_REQUESTSTRINGRESOLVER_HXX

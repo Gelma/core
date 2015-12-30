@@ -44,7 +44,7 @@ public:
     void    SetCursorLinks( const Link<ScCursorRefEdit&,void>& rUp, const Link<ScCursorRefEdit&,void>& rDown );
 
 protected:
-    virtual void    KeyInput( const KeyEvent& rKEvt ) SAL_OVERRIDE;
+    virtual void    KeyInput( const KeyEvent& rKEvt ) override;
 };
 
 /// The dialog's content for a row, not yet parsed
@@ -69,14 +69,14 @@ class ScOptSolverSave
     OUString    maVariable;
     std::vector<ScOptConditionRow> maConditions;
     OUString    maEngine;
-    com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue> maProperties;
+    css::uno::Sequence<css::beans::PropertyValue> maProperties;
 
 public:
             ScOptSolverSave( const OUString& rObjective, bool bMax, bool bMin, bool bValue,
                              const OUString& rTarget, const OUString& rVariable,
                              const std::vector<ScOptConditionRow>& rConditions,
                              const OUString& rEngine,
-                             const com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>& rProperties );
+                             const css::uno::Sequence<css::beans::PropertyValue>& rProperties );
 
     const OUString&   GetObjective() const    { return maObjective; }
     bool              GetMax() const          { return mbMax; }
@@ -86,7 +86,7 @@ public:
     const OUString&   GetVariable() const     { return maVariable; }
     const std::vector<ScOptConditionRow>& GetConditions() const { return maConditions; }
     const OUString&   GetEngine() const       { return maEngine; }
-    const com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue>& GetProperties() const
+    const css::uno::Sequence<css::beans::PropertyValue>& GetProperties() const
                                             { return maProperties; }
 };
 
@@ -96,12 +96,12 @@ public:
                     ScOptSolverDlg( SfxBindings* pB, SfxChildWindow* pCW, vcl::Window* pParent,
                                  ScDocShell* pDocSh, ScAddress aCursorPos );
                     virtual ~ScOptSolverDlg();
-    virtual void    dispose() SAL_OVERRIDE;
+    virtual void    dispose() override;
 
-    virtual void    SetReference( const ScRange& rRef, ScDocument* pDoc ) SAL_OVERRIDE;
-    virtual bool    IsRefInputMode() const SAL_OVERRIDE;
-    virtual void    SetActive() SAL_OVERRIDE;
-    virtual bool    Close() SAL_OVERRIDE;
+    virtual void    SetReference( const ScRange& rRef, ScDocument* pDoc ) override;
+    virtual bool    IsRefInputMode() const override;
+    virtual void    SetActive() override;
+    virtual bool    Close() override;
 
 private:
     VclPtr<FixedText>       m_pFtObjectiveCell;
@@ -175,10 +175,10 @@ private:
     std::vector<ScOptConditionRow> maConditions;
     long            nScrollPos;
 
-    com::sun::star::uno::Sequence<OUString> maImplNames;
-    com::sun::star::uno::Sequence<OUString> maDescriptions;
+    css::uno::Sequence<OUString> maImplNames;
+    css::uno::Sequence<OUString> maDescriptions;
     OUString        maEngine;
-    com::sun::star::uno::Sequence<com::sun::star::beans::PropertyValue> maProperties;
+    css::uno::Sequence<css::beans::PropertyValue> maProperties;
 
     void    Init(const ScAddress& rCursorPos);
     bool    CallSolver();
@@ -196,9 +196,9 @@ private:
     DECL_LINK_TYPED( ScrollHdl, ScrollBar*, void);
     DECL_LINK_TYPED( CursorUpHdl, ScCursorRefEdit&, void );
     DECL_LINK_TYPED( CursorDownHdl, ScCursorRefEdit&, void );
-    DECL_LINK( CondModifyHdl, void* );
-    DECL_LINK( TargetModifyHdl, void* );
-    DECL_LINK( SelectHdl, void* );
+    DECL_LINK_TYPED( CondModifyHdl, Edit&, void );
+    DECL_LINK_TYPED( TargetModifyHdl, Edit&, void );
+    DECL_LINK_TYPED( SelectHdl, ListBox&, void );
 };
 
 class ScSolverProgressDialog : public ModelessDialog
@@ -208,7 +208,7 @@ class ScSolverProgressDialog : public ModelessDialog
 public:
     ScSolverProgressDialog( vcl::Window* pParent );
     virtual ~ScSolverProgressDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void    HideTimeLimit();
     void    SetTimeLimit( sal_Int32 nSeconds );
@@ -221,7 +221,7 @@ class ScSolverNoSolutionDialog : public ModalDialog
 public:
     ScSolverNoSolutionDialog(vcl::Window* pParent, const OUString& rErrorText);
     virtual ~ScSolverNoSolutionDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 };
 
 class ScSolverSuccessDialog : public ModalDialog
@@ -235,7 +235,7 @@ class ScSolverSuccessDialog : public ModalDialog
 public:
     ScSolverSuccessDialog( vcl::Window* pParent, const OUString& rSolution );
     virtual ~ScSolverSuccessDialog();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 };
 
 #endif

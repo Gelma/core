@@ -24,7 +24,7 @@ namespace frm
 {
     RichTextViewPort::RichTextViewPort( vcl::Window* _pParent )
         : Control ( _pParent )
-        , m_pView(NULL)
+        , m_pView(nullptr)
         , m_bHideInactiveSelection( true )
     {
     }
@@ -46,7 +46,7 @@ namespace frm
         if (m_pView)
         {
             m_pView->SetSelectionMode( EE_SELMODE_STD );
-            m_pView->ShowCursor( true );
+            m_pView->ShowCursor();
         }
     }
 

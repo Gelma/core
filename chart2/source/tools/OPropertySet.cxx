@@ -22,6 +22,7 @@
 #include "ContainerHelper.hxx"
 #include <cppuhelper/queryinterface.hxx>
 #include <comphelper/servicehelper.hxx>
+#include <comphelper/sequence.hxx>
 
 #include <vector>
 #include <algorithm>
@@ -90,7 +91,7 @@ Any SAL_CALL OPropertySet::queryInterface( const uno::Type& aType )
 
 #define LCL_PROP_CPPUTYPE(t) (cppu::UnoType<t>::get())
 
-// // ____ XTypeProvider ____
+//  ____ XTypeProvider ____
 Sequence< uno::Type > SAL_CALL
     OPropertySet::getTypes()
     throw (uno::RuntimeException, std::exception)
@@ -111,7 +112,7 @@ Sequence< uno::Type > SAL_CALL
         aTypes.push_back( LCL_PROP_CPPUTYPE( beans::XMultiPropertyStates ));
         aTypes.push_back( LCL_PROP_CPPUTYPE( XStyleSupplier ));
 
-        aTypeList = ::chart::ContainerHelper::ContainerToSequence( aTypes );
+        aTypeList = comphelper::containerToSequence( aTypes );
     }
 
     return aTypeList;
@@ -269,7 +270,7 @@ void SAL_CALL OPropertySet::setFastPropertyValue_NoBroadcast
     {
         cppu::IPropertyArrayHelper & rPH = getInfoHelper();
         OUString aName;
-        rPH.fillPropertyMembersByHandle( &aName, 0, nHandle );
+        rPH.fillPropertyMembersByHandle( &aName, nullptr, nHandle );
         OSL_ENSURE( rValue.isExtractableTo( rPH.getPropertyByName( aName ).Type ),
                     "Property type is wrong" );
     }

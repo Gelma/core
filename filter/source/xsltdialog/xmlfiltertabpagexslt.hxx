@@ -33,9 +33,9 @@ class filter_info_impl;
 class XMLFilterTabPageXSLT : public TabPage
 {
 public:
-    XMLFilterTabPageXSLT( vcl::Window* pParent);
+    explicit XMLFilterTabPageXSLT(vcl::Window* pParent);
     virtual ~XMLFilterTabPageXSLT();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     bool FillInfo( filter_info_impl* pInfo );
     void SetInfo(const filter_info_impl* pInfo);

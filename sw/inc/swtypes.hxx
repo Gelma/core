@@ -58,14 +58,18 @@ typedef long SwTwips;
 #define INVALID_TWIPS   LONG_MAX
 #define TWIPS_MAX       (LONG_MAX - 1)
 
+// Converts Millimeters to Twips (1 mm == 56.905479 twips).
+template <typename T = SwTwips>
+static SAL_CONSTEXPR T MmToTwips(const double mm) { return static_cast<T>(mm / 0.017573); }
+
 #define MM50   283  // 1/2 cm in TWIPS.
 
 const sal_Int32 COMPLETE_STRING = SAL_MAX_INT32;
 
 const SwTwips cMinHdFtHeight = 56;
 
-#define MINFLY 23   // Minimal size for FlyFrms.
-#define MINLAY 23   // Minimal size for other Frms.
+#define MINFLY 23   // Minimal size for FlyFrames.
+#define MINLAY 23   // Minimal size for other Frames.
 
 // Default column distance of two text columns corresponds to 0.3 cm.
 #define DEF_GUTTER_WIDTH (MM50 / 5 * 3)
@@ -154,14 +158,10 @@ extern ResMgr* pSwResMgr;           // Is in swapp0.cxx.
 #define SW_RES(i)       ResId(i,*pSwResMgr)
 #define SW_RESSTR(i)    SW_RES(i).toString()
 
-::com::sun::star::uno::Reference<
-    ::com::sun::star::linguistic2::XSpellChecker1 > GetSpellChecker();
-::com::sun::star::uno::Reference<
-    ::com::sun::star::linguistic2::XHyphenator >    GetHyphenator();
-::com::sun::star::uno::Reference<
-    ::com::sun::star::linguistic2::XThesaurus >     GetThesaurus();
-::com::sun::star::uno::Reference<
-    ::com::sun::star::linguistic2::XLinguProperties > GetLinguPropertySet();
+css::uno::Reference< css::linguistic2::XSpellChecker1 > GetSpellChecker();
+css::uno::Reference< css::linguistic2::XHyphenator >    GetHyphenator();
+css::uno::Reference< css::linguistic2::XThesaurus >     GetThesaurus();
+css::uno::Reference< css::linguistic2::XLinguProperties > GetLinguPropertySet();
 
 // Returns the twip size of this graphic.
 SW_DLLPUBLIC Size GetGraphicSizeTwip( const Graphic&, OutputDevice* pOutDev );
@@ -224,12 +224,12 @@ SW_DLLPUBLIC const LanguageTag& GetAppLanguageTag();
 #if 0
 // I18N doesn't get this right, can't specify more than one to ignore
 #define SW_COLLATOR_IGNORES ( \
-    ::com::sun::star::i18n::CollatorOptions::CollatorOptions_IGNORE_CASE | \
-    ::com::sun::star::i18n::CollatorOptions::CollatorOptions_IGNORE_KANA | \
-    ::com::sun::star::i18n::CollatorOptions::CollatorOptions_IGNORE_WIDTH )
+    css::i18n::CollatorOptions::CollatorOptions_IGNORE_CASE | \
+    css::i18n::CollatorOptions::CollatorOptions_IGNORE_KANA | \
+    css::i18n::CollatorOptions::CollatorOptions_IGNORE_WIDTH )
 #else
 #define SW_COLLATOR_IGNORES ( \
-    ::com::sun::star::i18n::CollatorOptions::CollatorOptions_IGNORE_CASE )
+    css::i18n::CollatorOptions::CollatorOptions_IGNORE_CASE )
 #endif
 
 SW_DLLPUBLIC CollatorWrapper& GetAppCollator();
@@ -247,17 +247,17 @@ enum PrepareHint
     PREP_FIXSIZE_CHG,       // FixSize has changed.
     PREP_FOLLOW_FOLLOWS,    // Follow is now possibly adjacent.
     PREP_ADJUST_FRM,        // Adjust size via grow/shrink without formatting.
-    PREP_FLY_CHGD,          // A FlyFrm has changed its size.
-    PREP_FLY_ATTR_CHG,      // A FlyFrm hat has changed its attributes
+    PREP_FLY_CHGD,          // A FlyFrame has changed its size.
+    PREP_FLY_ATTR_CHG,      // A FlyFrame hat has changed its attributes
                             // (e. g. wrap).
-    PREP_FLY_ARRIVE,        // A FlyFrm now overlaps range.
-    PREP_FLY_LEAVE,         // A FlyFrm has left range.
+    PREP_FLY_ARRIVE,        // A FlyFrame now overlaps range.
+    PREP_FLY_LEAVE,         // A FlyFrame has left range.
     PREP_FTN,               // Invalidation of footnotes.
-    PREP_POS_CHGD,          // Position of Frm has changed.
+    PREP_POS_CHGD,          // Position of Frame has changed.
                             // (Check for Fly-break). In void* of Prepare()
                             // a sal_Bool& is passed. If this is sal_True,
                             // it indicateds that a format has been executed.
-    PREP_UL_SPACE,          // UL-Space has changed, TextFrms have to
+    PREP_UL_SPACE,          // UL-Space has changed, TextFrames have to
                             // re-calculate line space.
     PREP_MUST_FIT,          // Make frm fit (split) even if the attributes do
                             // not allow that (e.g. "keep together").
@@ -267,7 +267,7 @@ enum PrepareHint
     PREP_QUOVADIS,          // If a footnote has to be split between two paragraphs
                             // the last on the page has to receive a QUOVADIS in
                             // order to format the text into it.
-    PREP_BOSS_CHGD,         // If a Frm changes its column/page this additional
+    PREP_BOSS_CHGD,         // If a Frame changes its column/page this additional
                             // Prepare is sended to POS_CHGD in MoveFwd/Bwd
                             // (join Footnote-numbers etc.)
                             // Direction is communicated via pVoid:
@@ -279,7 +279,7 @@ enum PrepareHint
     PREP_MOVEFTN,           // A footnote changes its page. Its contents receives at first a
                             // height of zero in order to avoid too much noise. At formatting
                             // it checks whether it fits and if necessary changes its page again.
-    PREP_ERGOSUM,           // Needed because of movement in FootnoteFrms. Check QuoVadis/ErgoSum.
+    PREP_ERGOSUM,           // Needed because of movement in FootnoteFrames. Check QuoVadis/ErgoSum.
     PREP_END                // END.
 };
 

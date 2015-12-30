@@ -75,7 +75,7 @@ HTMLOptionEnum aHTMLImgHAlignTable[] =
 {
     { OOO_STRING_SVTOOLS_HTML_AL_left,    text::HoriOrientation::LEFT       },
     { OOO_STRING_SVTOOLS_HTML_AL_right,   text::HoriOrientation::RIGHT      },
-    { 0,                0               }
+    { nullptr,                0               }
 };
 
 HTMLOptionEnum aHTMLImgVAlignTable[] =
@@ -88,20 +88,20 @@ HTMLOptionEnum aHTMLImgVAlignTable[] =
     { OOO_STRING_SVTOOLS_HTML_VA_bottom,      text::VertOrientation::TOP            },
     { OOO_STRING_SVTOOLS_HTML_VA_baseline,    text::VertOrientation::TOP            },
     { OOO_STRING_SVTOOLS_HTML_VA_absbottom,   text::VertOrientation::LINE_BOTTOM    },
-    { 0,                    0                   }
+    { nullptr,                    0                   }
 };
 
 ImageMap *SwHTMLParser::FindImageMap( const OUString& rName ) const
 {
     OSL_ENSURE( rName[0] != '#', "FindImageMap: name begins with '#'!" );
 
-    if( pImageMaps )
+    if (m_pImageMaps)
     {
-        for( auto &rIMap : *pImageMaps )
+        for (auto &rpIMap : *m_pImageMaps)
         {
-            if( rName.equalsIgnoreAsciiCase( rIMap.GetName() ) )
+            if (rName.equalsIgnoreAsciiCase(rpIMap->GetName()))
             {
-                return &rIMap;
+                return rpIMap.get();
             }
         }
     }
@@ -110,16 +110,16 @@ ImageMap *SwHTMLParser::FindImageMap( const OUString& rName ) const
 
 void SwHTMLParser::ConnectImageMaps()
 {
-    SwNodes& rNds = pDoc->GetNodes();
+    SwNodes& rNds = m_pDoc->GetNodes();
     // auf den Start-Node der 1. Section
     sal_uLong nIdx = rNds.GetEndOfAutotext().StartOfSectionIndex() + 1;
     sal_uLong nEndIdx = rNds.GetEndOfAutotext().GetIndex();
 
     SwGrfNode* pGrfNd;
-    while( nMissingImgMaps > 0 && nIdx < nEndIdx )
+    while( m_nMissingImgMaps > 0 && nIdx < nEndIdx )
     {
         SwNode *pNd = rNds[nIdx + 1];
-        if( 0 != (pGrfNd = pNd->GetGrfNode()) )
+        if( nullptr != (pGrfNd = pNd->GetGrfNode()) )
         {
             SwFrameFormat *pFormat = pGrfNd->GetFlyFormat();
             SwFormatURL aURL( pFormat->GetURL() );
@@ -139,7 +139,7 @@ void SwHTMLParser::ConnectImageMaps()
                     // Grafik muss nicht skaliert werden
                     pGrfNd->ScaleImageMap();
                 }
-                nMissingImgMaps--;  // eine Map weniger suchen
+                m_nMissingImgMaps--;  // eine Map weniger suchen
             }
         }
         nIdx = rNds[nIdx]->EndOfSectionIndex() + 1;
@@ -152,36 +152,36 @@ void SwHTMLParser::SetAnchorAndAdjustment( sal_Int16 eVertOri,
                                            sal_Int16 eHoriOri,
                                            const SfxItemSet &rCSS1ItemSet,
                                            const SvxCSS1PropertyInfo &rCSS1PropInfo,
-                                           SfxItemSet& rFrmItemSet )
+                                           SfxItemSet& rFrameItemSet )
 {
-    const SfxItemSet *pCntnrItemSet = 0;
-    auto i = aContexts.size();
-    while( !pCntnrItemSet && i > nContextStMin )
-        pCntnrItemSet = aContexts[--i]->GetFrmItemSet();
+    const SfxItemSet *pCntnrItemSet = nullptr;
+    auto i = m_aContexts.size();
+    while( !pCntnrItemSet && i > m_nContextStMin )
+        pCntnrItemSet = m_aContexts[--i]->GetFrameItemSet();
 
     if( pCntnrItemSet )
     {
         // Wenn wir und in einem Container befinden wird die Verankerung
         // des Containers uebernommen.
-        rFrmItemSet.Put( *pCntnrItemSet );
+        rFrameItemSet.Put( *pCntnrItemSet );
     }
     else if( SwCSS1Parser::MayBePositioned( rCSS1PropInfo, true ) )
     {
         // Wenn die Ausrichtung anhand der CSS1-Optionen gesetzt werden kann
         // werden die benutzt.
-        SetAnchorAndAdjustment( rCSS1ItemSet, rCSS1PropInfo, rFrmItemSet );
+        SetAnchorAndAdjustment( rCSS1ItemSet, rCSS1PropInfo, rFrameItemSet );
     }
     else
     {
         // Sonst wird die Ausrichtung entsprechend der normalen HTML-Optionen
         // gesetzt.
-        SetAnchorAndAdjustment( eVertOri, eHoriOri, rFrmItemSet );
+        SetAnchorAndAdjustment( eVertOri, eHoriOri, rFrameItemSet );
     }
 }
 
 void SwHTMLParser::SetAnchorAndAdjustment( sal_Int16 eVertOri,
                                            sal_Int16 eHoriOri,
-                                           SfxItemSet& rFrmSet,
+                                           SfxItemSet& rFrameSet,
                                            bool bDontAppend )
 {
     bool bMoveBackward = false;
@@ -234,14 +234,14 @@ void SwHTMLParser::SetAnchorAndAdjustment( sal_Int16 eVertOri,
 
             if( nUpper )
             {
-                NewAttr( &aAttrTab.pULSpace, SvxULSpaceItem( 0, nLower, RES_UL_SPACE ) );
-                aParaAttrs.push_back( aAttrTab.pULSpace );
-                EndAttr( aAttrTab.pULSpace, 0, false );
+                NewAttr( &m_aAttrTab.pULSpace, SvxULSpaceItem( 0, nLower, RES_UL_SPACE ) );
+                m_aParaAttrs.push_back( m_aAttrTab.pULSpace );
+                EndAttr( m_aAttrTab.pULSpace, nullptr, false );
             }
         }
 
         // Vertikale Ausrichtung und Verankerung bestimmen.
-        const sal_Int32 nContent = pPam->GetPoint()->nContent.GetIndex();
+        const sal_Int32 nContent = m_pPam->GetPoint()->nContent.GetIndex();
         if( nContent )
         {
             aAnchor.SetType( FLY_AT_CHAR );
@@ -256,24 +256,24 @@ void SwHTMLParser::SetAnchorAndAdjustment( sal_Int16 eVertOri,
             eVertRel = text::RelOrientation::PRINT_AREA;
         }
 
-        rFrmSet.Put( SwFormatHoriOrient( 0, eHoriOri, eHoriRel) );
+        rFrameSet.Put( SwFormatHoriOrient( 0, eHoriOri, eHoriRel) );
 
-        rFrmSet.Put( SwFormatSurround( eSurround ) );
+        rFrameSet.Put( SwFormatSurround( eSurround ) );
     }
-    rFrmSet.Put( SwFormatVertOrient( 0, eVertOri, eVertRel) );
+    rFrameSet.Put( SwFormatVertOrient( 0, eVertOri, eVertRel) );
 
     if( bMoveBackward )
-        pPam->Move( fnMoveBackward );
+        m_pPam->Move( fnMoveBackward );
 
-    aAnchor.SetAnchor( pPam->GetPoint() );
+    aAnchor.SetAnchor( m_pPam->GetPoint() );
 
     if( bMoveBackward )
-        pPam->Move( fnMoveForward );
+        m_pPam->Move( fnMoveForward );
 
-    rFrmSet.Put( aAnchor );
+    rFrameSet.Put( aAnchor );
 }
 
-void SwHTMLParser::RegisterFlyFrm( SwFrameFormat *pFlyFormat )
+void SwHTMLParser::RegisterFlyFrame( SwFrameFormat *pFlyFormat )
 {
     // automatisch verankerte Rahmen muessen noch um eine Position
     // nach vorne verschoben werden.
@@ -281,8 +281,8 @@ void SwHTMLParser::RegisterFlyFrm( SwFrameFormat *pFlyFormat )
         (FLY_AT_PARA == pFlyFormat->GetAnchor().GetAnchorId()) &&
         SURROUND_THROUGHT == pFlyFormat->GetSurround().GetSurround() )
     {
-        aMoveFlyFrms.push_back( pFlyFormat );
-        aMoveFlyCnts.push_back( pPam->GetPoint()->nContent.GetIndex() );
+        m_aMoveFlyFrames.push_back( pFlyFormat );
+        m_aMoveFlyCnts.push_back( m_pPam->GetPoint()->nContent.GetIndex() );
     }
 }
 
@@ -291,9 +291,9 @@ void SwHTMLParser::RegisterFlyFrm( SwFrameFormat *pFlyFormat )
 void SwHTMLParser::GetDefaultScriptType( ScriptType& rType,
                                          OUString& rTypeStr ) const
 {
-    SwDocShell *pDocSh = pDoc->GetDocShell();
+    SwDocShell *pDocSh = m_pDoc->GetDocShell();
     SvKeyValueIterator* pHeaderAttrs = pDocSh ? pDocSh->GetHeaderAttributes()
-                                              : 0;
+                                              : nullptr;
     rType = GetScriptType( pHeaderAttrs );
     rTypeStr = GetScriptTypeString( pHeaderAttrs );
 }
@@ -311,7 +311,7 @@ void SwHTMLParser::InsertImage()
     long nWidth=0, nHeight=0;
     long nVSpace=0, nHSpace=0;
 
-    sal_uInt16 nBorder = (aAttrTab.pINetFormat ? 1 : 0);
+    sal_uInt16 nBorder = (m_aAttrTab.pINetFormat ? 1 : 0);
     bool bIsMap = false;
     bool bPrcWidth = false;
     bool bPrcHeight = false;
@@ -341,7 +341,7 @@ void SwHTMLParser::InsertImage()
             case HTML_O_SRC:
                 sGrfNm = rOption.GetString();
                 if( !InternalImgToPrivateURL(sGrfNm) )
-                    sGrfNm = INetURLObject::GetAbsURL( sBaseURL, sGrfNm );
+                    sGrfNm = INetURLObject::GetAbsURL( m_sBaseURL, sGrfNm );
                 break;
             case HTML_O_ALIGN:
                 eVertOri =
@@ -431,12 +431,12 @@ IMAGE_SETEVENT:
     // Wenn wir in einer Numerierung stehen und der Absatz noch leer und
     // nicht numeriert ist, handelt es sich vielleicht um die Grafik
     // einer Bullet-Liste
-    if( !pPam->GetPoint()->nContent.GetIndex() &&
+    if( !m_pPam->GetPoint()->nContent.GetIndex() &&
         GetNumInfo().GetDepth() > 0 && GetNumInfo().GetDepth() <= MAXLEVEL &&
-        !aBulletGrfs[GetNumInfo().GetDepth()-1].isEmpty() &&
-        aBulletGrfs[GetNumInfo().GetDepth()-1]==sGrfNm )
+        !m_aBulletGrfs[GetNumInfo().GetDepth()-1].isEmpty() &&
+        m_aBulletGrfs[GetNumInfo().GetDepth()-1]==sGrfNm )
     {
-        SwTextNode* pTextNode = pPam->GetNode().GetTextNode();
+        SwTextNode* pTextNode = m_pPam->GetNode().GetTextNode();
 
         if( pTextNode && ! pTextNode->IsCountedInList())
         {
@@ -469,7 +469,7 @@ IMAGE_SETEVENT:
                 sGrfNm.clear();
         }
     }
-    else if (sBaseURL.isEmpty()) // sBaseURL is empty if the source is clipboard
+    else if (m_sBaseURL.isEmpty()) // sBaseURL is empty if the source is clipboard
     {
         if (GRFILTER_OK == GraphicFilter::GetGraphicFilter().ImportGraphic(aGraphic, aGraphicURL))
             sGrfNm.clear();
@@ -489,15 +489,15 @@ IMAGE_SETEVENT:
             nHeight = aPixelSize.Height();
     }
 
-    SfxItemSet aItemSet( pDoc->GetAttrPool(), pCSS1Parser->GetWhichMap() );
+    SfxItemSet aItemSet( m_pDoc->GetAttrPool(), m_pCSS1Parser->GetWhichMap() );
     SvxCSS1PropertyInfo aPropInfo;
     if( HasStyleOptions( aStyle, aId, aClass ) )
         ParseStyleOptions( aStyle, aId, aClass, aItemSet, aPropInfo );
 
-    SfxItemSet aFrmSet( pDoc->GetAttrPool(),
+    SfxItemSet aFrameSet( m_pDoc->GetAttrPool(),
                         RES_FRMATR_BEGIN, RES_FRMATR_END-1 );
     if( !IsNewDoc() )
-        Reader::ResetFrameFormatAttrs( aFrmSet );
+        Reader::ResetFrameFormatAttrs( aFrameSet );
 
     // Umrandung setzen
     long nHBorderWidth = 0, nVBorderWidth = 0;
@@ -507,27 +507,27 @@ IMAGE_SETEVENT:
         nVBorderWidth = (long)nBorder;
         SvxCSS1Parser::PixelToTwip( nVBorderWidth, nHBorderWidth );
 
-        ::editeng::SvxBorderLine aHBorderLine( NULL, nHBorderWidth );
-        ::editeng::SvxBorderLine aVBorderLine( NULL, nVBorderWidth );
+        ::editeng::SvxBorderLine aHBorderLine( nullptr, nHBorderWidth );
+        ::editeng::SvxBorderLine aVBorderLine( nullptr, nVBorderWidth );
 
-        if( aAttrTab.pINetFormat )
+        if( m_aAttrTab.pINetFormat )
         {
             const OUString& rURL =
-                static_cast<const SwFormatINetFormat&>(aAttrTab.pINetFormat->GetItem()).GetValue();
+                static_cast<const SwFormatINetFormat&>(m_aAttrTab.pINetFormat->GetItem()).GetValue();
 
-            pCSS1Parser->SetATagStyles();
-            sal_uInt16 nPoolId =  static_cast< sal_uInt16 >(pDoc->IsVisitedURL( rURL )
+            m_pCSS1Parser->SetATagStyles();
+            sal_uInt16 nPoolId =  static_cast< sal_uInt16 >(m_pDoc->IsVisitedURL( rURL )
                                     ? RES_POOLCHR_INET_VISIT
                                     : RES_POOLCHR_INET_NORMAL);
-            const SwCharFormat *pCharFormat = pCSS1Parser->GetCharFormatFromPool( nPoolId );
+            const SwCharFormat *pCharFormat = m_pCSS1Parser->GetCharFormatFromPool( nPoolId );
             aHBorderLine.SetColor( pCharFormat->GetColor().GetValue() );
             aVBorderLine.SetColor( aHBorderLine.GetColor() );
         }
         else
         {
-            const SvxColorItem& rColorItem = aAttrTab.pFontColor ?
-              static_cast<const SvxColorItem &>(aAttrTab.pFontColor->GetItem()) :
-              static_cast<const SvxColorItem &>(pDoc->GetDefault(RES_CHRATR_COLOR));
+            const SvxColorItem& rColorItem = m_aAttrTab.pFontColor ?
+              static_cast<const SvxColorItem &>(m_aAttrTab.pFontColor->GetItem()) :
+              static_cast<const SvxColorItem &>(m_pDoc->GetDefault(RES_CHRATR_COLOR));
             aHBorderLine.SetColor( rColorItem.GetValue() );
             aVBorderLine.SetColor( aHBorderLine.GetColor() );
         }
@@ -537,17 +537,17 @@ IMAGE_SETEVENT:
         aBoxItem.SetLine( &aHBorderLine, SvxBoxItemLine::BOTTOM );
         aBoxItem.SetLine( &aVBorderLine, SvxBoxItemLine::LEFT );
         aBoxItem.SetLine( &aVBorderLine, SvxBoxItemLine::RIGHT );
-        aFrmSet.Put( aBoxItem );
+        aFrameSet.Put( aBoxItem );
     }
 
     // Ausrichtung setzen
-    SetAnchorAndAdjustment( eVertOri, eHoriOri, aItemSet, aPropInfo, aFrmSet );
+    SetAnchorAndAdjustment( eVertOri, eHoriOri, aItemSet, aPropInfo, aFrameSet );
 
     // Abstaende setzen
-    SetSpace( Size( nHSpace, nVSpace), aItemSet, aPropInfo, aFrmSet );
+    SetSpace( Size( nHSpace, nVSpace), aItemSet, aPropInfo, aFrameSet );
 
     // Sonstige CSS1-Attribute Setzen
-    SetFrameFormatAttrs( aItemSet, aPropInfo, HTML_FF_BOX, aFrmSet );
+    SetFrameFormatAttrs( aItemSet, aPropInfo, HTML_FF_BOX, aFrameSet );
 
     Size aTwipSz( bPrcWidth ? 0 : nWidth, bPrcHeight ? 0 : nHeight );
     if( (aTwipSz.Width() || aTwipSz.Height()) && Application::GetDefaultDevice() )
@@ -590,7 +590,7 @@ IMAGE_SETEVENT:
 
     Size aGrfSz( 0, 0 );
     bool bSetTwipSize = true;       // Twip-Size am Node setzen?
-    bool bChangeFrmSize = false;    // Frame-Format nachtraeglich anpassen?
+    bool bChangeFrameSize = false;    // Frame-Format nachtraeglich anpassen?
     bool bRequestGrfNow = false;
     bool bSetScaleImageMap = false;
     sal_uInt8 nPrcWidth = 0, nPrcHeight = 0;
@@ -601,14 +601,14 @@ IMAGE_SETEVENT:
         // Wenn die Grfik in einer Tabelle steht, wird sie gleich
         // angefordert, damit sie eventuell schon da ist, bevor die
         // Tabelle layoutet wird.
-        if( pTable!=0 && !nWidth )
+        if( m_pTable!=nullptr && !nWidth )
         {
             bRequestGrfNow = true;
             IncGrfsThatResizeTable();
         }
 
         // Die Groesse des Rahmens wird nachtraeglich gesetzt
-        bChangeFrmSize = true;
+        bChangeFrameSize = true;
         aGrfSz = aTwipSz;
         if( !nWidth && !nHeight )
         {
@@ -673,14 +673,14 @@ IMAGE_SETEVENT:
             SwFormatURL aURL; aURL.SetMap( pImgMap );//wird kopieiert
 
             bSetScaleImageMap = !nPrcWidth || !nPrcHeight;
-            aFrmSet.Put( aURL );
+            aFrameSet.Put( aURL );
         }
         else
         {
             ImageMap aEmptyImgMap( aName );
             SwFormatURL aURL; aURL.SetMap( &aEmptyImgMap );//wird kopieiert
-            aFrmSet.Put( aURL );
-            nMissingImgMaps++;          // es fehlen noch Image-Maps
+            aFrameSet.Put( aURL );
+            m_nMissingImgMaps++;          // es fehlen noch Image-Maps
 
             // die Grafik muss beim SetTwipSize skaliert werden, wenn
             // wir keine Groesse am Node gesetzt haben oder die Groesse
@@ -717,15 +717,15 @@ IMAGE_SETEVENT:
             aTwipSz.Height() = MINFLY;
     }
 
-    SwFormatFrmSize aFrmSize( ATT_FIX_SIZE, aTwipSz.Width(), aTwipSz.Height() );
-    aFrmSize.SetWidthPercent( nPrcWidth );
-    aFrmSize.SetHeightPercent( nPrcHeight );
-    aFrmSet.Put( aFrmSize );
+    SwFormatFrameSize aFrameSize( ATT_FIX_SIZE, aTwipSz.Width(), aTwipSz.Height() );
+    aFrameSize.SetWidthPercent( nPrcWidth );
+    aFrameSize.SetHeightPercent( nPrcHeight );
+    aFrameSet.Put( aFrameSize );
 
     // passing empty sGrfNm here, means we don't want the graphic to be linked
-    SwFrameFormat *pFlyFormat = pDoc->getIDocumentContentOperations().Insert( *pPam, sGrfNm, aEmptyOUStr, &aGraphic,
-                                      &aFrmSet, NULL, NULL );
-    SwGrfNode *pGrfNd = pDoc->GetNodes()[ pFlyFormat->GetContent().GetContentIdx()
+    SwFrameFormat *pFlyFormat = m_pDoc->getIDocumentContentOperations().Insert( *m_pPam, sGrfNm, aEmptyOUStr, &aGraphic,
+                                      &aFrameSet, nullptr, nullptr );
+    SwGrfNode *pGrfNd = m_pDoc->GetNodes()[ pFlyFormat->GetContent().GetContentIdx()
                                   ->GetIndex()+1 ]->GetGrfNode();
 
     if( !sHTMLGrfName.isEmpty() )
@@ -733,10 +733,10 @@ IMAGE_SETEVENT:
         pFlyFormat->SetName( sHTMLGrfName );
 
         // ggfs. eine Grafik anspringen
-        if( JUMPTO_GRAPHIC == eJumpTo && sHTMLGrfName == sJmpMark )
+        if( JUMPTO_GRAPHIC == m_eJumpTo && sHTMLGrfName == m_sJmpMark )
         {
-            bChkJumpMark = true;
-            eJumpTo = JUMPTO_NONE;
+            m_bChkJumpMark = true;
+            m_eJumpTo = JUMPTO_NONE;
         }
     }
 
@@ -748,16 +748,16 @@ IMAGE_SETEVENT:
         if( bSetTwipSize )
             pGrfNd->SetTwipSize( aGrfSz );
 
-        pGrfNd->SetChgTwipSize( bChangeFrmSize );
+        pGrfNd->SetChgTwipSize( bChangeFrameSize );
 
         if( bSetScaleImageMap )
             pGrfNd->SetScaleImageMap( true );
     }
 
-    if( aAttrTab.pINetFormat )
+    if( m_aAttrTab.pINetFormat )
     {
         const SwFormatINetFormat &rINetFormat =
-            static_cast<const SwFormatINetFormat&>(aAttrTab.pINetFormat->GetItem());
+            static_cast<const SwFormatINetFormat&>(m_aAttrTab.pINetFormat->GetItem());
 
         SwFormatURL aURL( pFlyFormat->GetURL() );
 
@@ -776,29 +776,29 @@ IMAGE_SETEVENT:
             for( int n = 0; aEvents[ n ]; ++n )
             {
                 const SvxMacro *pMacro = rINetFormat.GetMacro( aEvents[ n ] );
-                if( 0 != pMacro )
+                if( nullptr != pMacro )
                     aMacroItem.SetMacro( aEvents[ n ], *pMacro );
             }
         }
 
         if ((FLY_AS_CHAR == pFlyFormat->GetAnchor().GetAnchorId()) &&
-            aAttrTab.pINetFormat->GetSttPara() ==
-                        pPam->GetPoint()->nNode &&
-            aAttrTab.pINetFormat->GetSttCnt() ==
-                        pPam->GetPoint()->nContent.GetIndex() - 1 )
+            m_aAttrTab.pINetFormat->GetSttPara() ==
+                        m_pPam->GetPoint()->nNode &&
+            m_aAttrTab.pINetFormat->GetSttCnt() ==
+                        m_pPam->GetPoint()->nContent.GetIndex() - 1 )
         {
             // das Attribut wurde unmitellbar vor einer zeichengeb.
             // Grafik eingefuegt, also verschieben wir es
-            aAttrTab.pINetFormat->SetStart( *pPam->GetPoint() );
+            m_aAttrTab.pINetFormat->SetStart( *m_pPam->GetPoint() );
 
             // Wenn das Attribut auch ein Sprungziel ist, fuegen
             // wir noch eine Bookmark vor der Grafik ein, weil das
             // SwFormatURL kein Sprungziel ist.
             if( !rINetFormat.GetName().isEmpty() )
             {
-                pPam->Move( fnMoveBackward );
+                m_pPam->Move( fnMoveBackward );
                 InsertBookmark( rINetFormat.GetName() );
-                pPam->Move( fnMoveForward );
+                m_pPam->Move( fnMoveForward );
             }
         }
 
@@ -817,7 +817,7 @@ IMAGE_SETEVENT:
     }
 
     // Ggf. Frames anlegen und Auto-gebundenen Rahmen registrieren
-    RegisterFlyFrm( pFlyFormat );
+    RegisterFlyFrame( pFlyFormat );
 
     if( !aId.isEmpty() )
         InsertBookmark( aId );
@@ -827,8 +827,8 @@ IMAGE_SETEVENT:
 
 void SwHTMLParser::InsertBodyOptions()
 {
-    pDoc->SetTextFormatColl( *pPam,
-                         pCSS1Parser->GetTextCollFromPool( RES_POOLCOLL_TEXT ) );
+    m_pDoc->SetTextFormatColl( *m_pPam,
+                         m_pCSS1Parser->GetTextCollFromPool( RES_POOLCOLL_TEXT ) );
 
     OUString aBackGround, aId, aStyle, aLang, aDir;
     Color aBGColor, aTextColor, aLinkColor, aVLinkColor;
@@ -928,20 +928,20 @@ void SwHTMLParser::InsertBodyOptions()
         }
     }
 
-    if( bTextColor && !pCSS1Parser->IsBodyTextSet() )
+    if( bTextColor && !m_pCSS1Parser->IsBodyTextSet() )
     {
         // Die Textfarbe wird an der Standard-Vorlage gesetzt
-        pCSS1Parser->GetTextCollFromPool( RES_POOLCOLL_STANDARD )
+        m_pCSS1Parser->GetTextCollFromPool( RES_POOLCOLL_STANDARD )
             ->SetFormatAttr( SvxColorItem(aTextColor, RES_CHRATR_COLOR) );
-        pCSS1Parser->SetBodyTextSet();
+        m_pCSS1Parser->SetBodyTextSet();
     }
 
     // Die Item fuer die Seitenvorlage vorbereiten (Hintergrund, Umrandung)
     // Beim BrushItem muessen schon gesetzte werte erhalten bleiben!
-    SvxBrushItem aBrushItem( pCSS1Parser->makePageDescBackground() );
+    SvxBrushItem aBrushItem( m_pCSS1Parser->makePageDescBackground() );
     bool bSetBrush = false;
 
-    if( bBGColor && !pCSS1Parser->IsBodyBGColorSet() )
+    if( bBGColor && !m_pCSS1Parser->IsBodyBGColorSet() )
     {
         // Hintergrundfarbe aus "BGCOLOR"
         OUString aLink;
@@ -957,28 +957,28 @@ void SwHTMLParser::InsertBodyOptions()
             aBrushItem.SetGraphicPos( ePos );
         }
         bSetBrush = true;
-        pCSS1Parser->SetBodyBGColorSet();
+        m_pCSS1Parser->SetBodyBGColorSet();
     }
 
-    if( !aBackGround.isEmpty() && !pCSS1Parser->IsBodyBackgroundSet() )
+    if( !aBackGround.isEmpty() && !m_pCSS1Parser->IsBodyBackgroundSet() )
     {
         // Hintergrundgrafik aus "BACKGROUND"
-        aBrushItem.SetGraphicLink( INetURLObject::GetAbsURL( sBaseURL, aBackGround ) );
+        aBrushItem.SetGraphicLink( INetURLObject::GetAbsURL( m_sBaseURL, aBackGround ) );
         aBrushItem.SetGraphicPos( GPOS_TILED );
         bSetBrush = true;
-        pCSS1Parser->SetBodyBackgroundSet();
+        m_pCSS1Parser->SetBodyBackgroundSet();
     }
 
     if( !aStyle.isEmpty() || !aDir.isEmpty() )
     {
-        SfxItemSet aItemSet( pDoc->GetAttrPool(), pCSS1Parser->GetWhichMap() );
+        SfxItemSet aItemSet( m_pDoc->GetAttrPool(), m_pCSS1Parser->GetWhichMap() );
         SvxCSS1PropertyInfo aPropInfo;
         OUString aDummy;
-        ParseStyleOptions( aStyle, aDummy, aDummy, aItemSet, aPropInfo, 0, &aDir );
+        ParseStyleOptions( aStyle, aDummy, aDummy, aItemSet, aPropInfo, nullptr, &aDir );
 
         // Ein par Attribute muessen an der Seitenvorlage gesetzt werden,
         // und zwar die, die nicht vererbit werden
-        pCSS1Parser->SetPageDescAttrs( bSetBrush ? &aBrushItem : 0,
+        m_pCSS1Parser->SetPageDescAttrs( bSetBrush ? &aBrushItem : nullptr,
                                        &aItemSet );
 
         const SfxPoolItem *pItem;
@@ -992,7 +992,7 @@ void SwHTMLParser::InsertBodyOptions()
                 static_cast <const SvxFontHeightItem * >(pItem)->GetProp() != 100)
             {
                 sal_uInt32 nHeight =
-                    ( aFontHeights[2] *
+                    ( m_aFontHeights[2] *
                      static_cast <const SvxFontHeightItem * >(pItem)->GetProp() ) / 100;
                 SvxFontHeightItem aNewItem( nHeight, 100, aWhichIds[i] );
                 aItemSet.Put( aNewItem );
@@ -1001,27 +1001,27 @@ void SwHTMLParser::InsertBodyOptions()
 
         // alle noch uebrigen Optionen koennen an der Standard-Vorlage
         // gesetzt werden und gelten dann automatisch als defaults
-        pCSS1Parser->GetTextCollFromPool( RES_POOLCOLL_STANDARD )
+        m_pCSS1Parser->GetTextCollFromPool( RES_POOLCOLL_STANDARD )
             ->SetFormatAttr( aItemSet );
     }
     else if( bSetBrush )
     {
-        pCSS1Parser->SetPageDescAttrs( &aBrushItem );
+        m_pCSS1Parser->SetPageDescAttrs( &aBrushItem );
     }
 
-    if( bLinkColor && !pCSS1Parser->IsBodyLinkSet() )
+    if( bLinkColor && !m_pCSS1Parser->IsBodyLinkSet() )
     {
         SwCharFormat *pCharFormat =
-            pCSS1Parser->GetCharFormatFromPool(RES_POOLCHR_INET_NORMAL);
+            m_pCSS1Parser->GetCharFormatFromPool(RES_POOLCHR_INET_NORMAL);
         pCharFormat->SetFormatAttr( SvxColorItem(aLinkColor, RES_CHRATR_COLOR) );
-        pCSS1Parser->SetBodyLinkSet();
+        m_pCSS1Parser->SetBodyLinkSet();
     }
-    if( bVLinkColor && !pCSS1Parser->IsBodyVLinkSet() )
+    if( bVLinkColor && !m_pCSS1Parser->IsBodyVLinkSet() )
     {
         SwCharFormat *pCharFormat =
-            pCSS1Parser->GetCharFormatFromPool(RES_POOLCHR_INET_VISIT);
+            m_pCSS1Parser->GetCharFormatFromPool(RES_POOLCHR_INET_VISIT);
         pCharFormat->SetFormatAttr( SvxColorItem(aVLinkColor, RES_CHRATR_COLOR) );
-        pCSS1Parser->SetBodyVLinkSet();
+        m_pCSS1Parser->SetBodyVLinkSet();
     }
     if( !aLang.isEmpty() )
     {
@@ -1046,7 +1046,7 @@ void SwHTMLParser::InsertBodyOptions()
             {
                 SvxLanguageItem aLanguage( eLang, nWhich );
                 aLanguage.SetWhich( nWhich );
-                pDoc->SetDefault( aLanguage );
+                m_pDoc->SetDefault( aLanguage );
             }
         }
     }
@@ -1209,7 +1209,7 @@ ANCHOR_SETEVENT:
     // Styles parsen
     if( HasStyleOptions( aStyle, aId, aStrippedClass, &aLang, &aDir ) )
     {
-        SfxItemSet aItemSet( pDoc->GetAttrPool(), pCSS1Parser->GetWhichMap() );
+        SfxItemSet aItemSet( m_pDoc->GetAttrPool(), m_pCSS1Parser->GetWhichMap() );
         SvxCSS1PropertyInfo aPropInfo;
 
         if( ParseStyleOptions( aStyle, aId, aClass, aItemSet, aPropInfo, &aLang, &aDir ) )
@@ -1223,16 +1223,16 @@ ANCHOR_SETEVENT:
     {
         if( !sHRef.isEmpty() )
         {
-            sHRef = URIHelper::SmartRel2Abs( INetURLObject(sBaseURL), sHRef, Link<OUString *, bool>(), false );
+            sHRef = URIHelper::SmartRel2Abs( INetURLObject(m_sBaseURL), sHRef, Link<OUString *, bool>(), false );
         }
         else
         {
             // Bei leerer URL das Directory nehmen
-            INetURLObject aURLObj( aPathToFile );
+            INetURLObject aURLObj( m_aPathToFile );
             sHRef = aURLObj.GetPartBeforeLastName();
         }
 
-        pCSS1Parser->SetATagStyles();
+        m_pCSS1Parser->SetATagStyles();
         SwFormatINetFormat aINetFormat( sHRef, sTarget );
         aINetFormat.SetName( aName );
 
@@ -1240,7 +1240,7 @@ ANCHOR_SETEVENT:
             aINetFormat.SetMacroTable( &aMacroTable );
 
         // das Default-Attribut setzen
-        InsertAttr( &aAttrTab.pINetFormat, aINetFormat, pCntxt );
+        InsertAttr( &m_aAttrTab.pINetFormat, aINetFormat, pCntxt );
     }
     else if( !aName.isEmpty() )
     {
@@ -1250,11 +1250,11 @@ ANCHOR_SETEVENT:
     if( bEnAnchor || bFootnoteAnchor )
     {
         InsertFootEndNote( aFootnoteName, bEnAnchor, bFixed );
-        bInFootEndNoteAnchor = bCallNextToken = true;
+        m_bInFootEndNoteAnchor = m_bCallNextToken = true;
     }
     else if( bFootnoteEnSymbol )
     {
-        bInFootEndNoteSymbol = bCallNextToken = true;
+        m_bInFootEndNoteSymbol = m_bCallNextToken = true;
     }
 
     // den Kontext merken
@@ -1263,14 +1263,14 @@ ANCHOR_SETEVENT:
 
 void SwHTMLParser::EndAnchor()
 {
-    if( bInFootEndNoteAnchor )
+    if( m_bInFootEndNoteAnchor )
     {
         FinishFootEndNote();
-        bInFootEndNoteAnchor = false;
+        m_bInFootEndNoteAnchor = false;
     }
-    else if( bInFootEndNoteSymbol )
+    else if( m_bInFootEndNoteSymbol )
     {
-        bInFootEndNoteSymbol = false;
+        m_bInFootEndNoteSymbol = false;
     }
 
     EndTag( HTML_ANCHOR_OFF );
@@ -1280,24 +1280,24 @@ void SwHTMLParser::EndAnchor()
 
 void SwHTMLParser::InsertBookmark( const OUString& rName )
 {
-    _HTMLAttr* pTmp = new _HTMLAttr( *pPam->GetPoint(),
+    _HTMLAttr* pTmp = new _HTMLAttr( *m_pPam->GetPoint(),
             SfxStringItem( RES_FLTR_BOOKMARK, rName ));
-    aSetAttrTab.push_back( pTmp );
+    m_aSetAttrTab.push_back( pTmp );
 }
 
 bool SwHTMLParser::HasCurrentParaBookmarks( bool bIgnoreStack ) const
 {
     bool bHasMarks = false;
-    sal_uLong nNodeIdx = pPam->GetPoint()->nNode.GetIndex();
+    sal_uLong nNodeIdx = m_pPam->GetPoint()->nNode.GetIndex();
 
     // first step: are there still bookmark in the attribute-stack?
     // bookmarks are added to the end of the stack - thus we only have
     // to check the last bookmark
     if( !bIgnoreStack )
     {
-        for( auto i = aSetAttrTab.size(); i; )
+        for( auto i = m_aSetAttrTab.size(); i; )
         {
-            _HTMLAttr* pAttr = aSetAttrTab[ --i ];
+            _HTMLAttr* pAttr = m_aSetAttrTab[ --i ];
             if( RES_FLTR_BOOKMARK == pAttr->pItem->Which() )
             {
                 if( pAttr->GetSttParaIdx() == nNodeIdx )
@@ -1310,7 +1310,7 @@ bool SwHTMLParser::HasCurrentParaBookmarks( bool bIgnoreStack ) const
     if( !bHasMarks )
     {
         // second step: when we didn't find a bookmark, check if there is one set already
-        IDocumentMarkAccess* const pMarkAccess = pDoc->getIDocumentMarkAccess();
+        IDocumentMarkAccess* const pMarkAccess = m_pDoc->getIDocumentMarkAccess();
         for(IDocumentMarkAccess::const_iterator_t ppMark = pMarkAccess->getAllMarksBegin();
             ppMark != pMarkAccess->getAllMarksEnd();
             ++ppMark)
@@ -1337,15 +1337,15 @@ void SwHTMLParser::StripTrailingPara()
 {
     bool bSetSmallFont = false;
 
-    SwContentNode* pCNd = pPam->GetContentNode();
-    if( !pPam->GetPoint()->nContent.GetIndex() )
+    SwContentNode* pCNd = m_pPam->GetContentNode();
+    if( !m_pPam->GetPoint()->nContent.GetIndex() )
     {
         if( pCNd && pCNd->StartOfSectionIndex()+2 <
             pCNd->EndOfSectionIndex() )
         {
-            sal_uLong nNodeIdx = pPam->GetPoint()->nNode.GetIndex();
+            sal_uLong nNodeIdx = m_pPam->GetPoint()->nNode.GetIndex();
 
-            const SwFrameFormats& rFrameFormatTable = *pDoc->GetSpzFrameFormats();
+            const SwFrameFormats& rFrameFormatTable = *m_pDoc->GetSpzFrameFormats();
 
             for( auto pFormat : rFrameFormatTable )
             {
@@ -1368,7 +1368,7 @@ void SwHTMLParser::StripTrailingPara()
             {
                 // es wurden Felder in den Node eingefuegt, die muessen
                 // wir jetzt verschieben
-                SwTextNode *pPrvNd = pDoc->GetNodes()[nNodeIdx-1]->GetTextNode();
+                SwTextNode *pPrvNd = m_pDoc->GetNodes()[nNodeIdx-1]->GetTextNode();
                 if( pPrvNd )
                 {
                     SwIndex aSrc( pCNd, 0 );
@@ -1377,7 +1377,7 @@ void SwHTMLParser::StripTrailingPara()
             }
 
             // jetz muessen wir noch eventuell vorhandene Bookmarks verschieben
-            IDocumentMarkAccess* const pMarkAccess = pDoc->getIDocumentMarkAccess();
+            IDocumentMarkAccess* const pMarkAccess = m_pDoc->getIDocumentMarkAccess();
             for(IDocumentMarkAccess::const_iterator_t ppMark = pMarkAccess->getAllMarksBegin();
                 ppMark != pMarkAccess->getAllMarksEnd();
                 ++ppMark)
@@ -1387,7 +1387,7 @@ void SwHTMLParser::StripTrailingPara()
                 sal_uLong nBookNdIdx = pMark->GetMarkPos().nNode.GetIndex();
                 if(nBookNdIdx==nNodeIdx)
                 {
-                    SwNodeIndex nNewNdIdx(pPam->GetPoint()->nNode);
+                    SwNodeIndex nNewNdIdx(m_pPam->GetPoint()->nNode);
                     SwContentNode* pNd = SwNodes::GoPrevious(&nNewNdIdx);
                     if(!pNd)
                     {
@@ -1407,13 +1407,13 @@ void SwHTMLParser::StripTrailingPara()
                     break;
             }
 
-            pPam->GetPoint()->nContent.Assign( 0, 0 );
-            pPam->SetMark();
-            pPam->DeleteMark();
-            pDoc->GetNodes().Delete( pPam->GetPoint()->nNode );
-            pPam->Move( fnMoveBackward, fnGoNode );
+            m_pPam->GetPoint()->nContent.Assign( nullptr, 0 );
+            m_pPam->SetMark();
+            m_pPam->DeleteMark();
+            m_pDoc->GetNodes().Delete( m_pPam->GetPoint()->nNode );
+            m_pPam->Move( fnMoveBackward, fnGoNode );
         }
-        else if( pCNd && pCNd->IsTextNode() && pTable )
+        else if( pCNd && pCNd->IsTextNode() && m_pTable )
         {
             // In leeren Zellen stellen wir einen kleinen Font ein, damit die
             // Zelle nicht hoeher wird als die Grafik bzw. so niedrig wie
@@ -1421,7 +1421,7 @@ void SwHTMLParser::StripTrailingPara()
             bSetSmallFont = true;
         }
     }
-    else if( pCNd && pCNd->IsTextNode() && pTable &&
+    else if( pCNd && pCNd->IsTextNode() && m_pTable &&
              pCNd->StartOfSectionIndex()+2 ==
              pCNd->EndOfSectionIndex() )
     {
@@ -1430,13 +1430,13 @@ void SwHTMLParser::StripTrailingPara()
         bSetSmallFont = true;
         SwTextNode* pTextNd = pCNd->GetTextNode();
 
-        sal_Int32 nPos = pPam->GetPoint()->nContent.GetIndex();
+        sal_Int32 nPos = m_pPam->GetPoint()->nContent.GetIndex();
         while( bSetSmallFont && nPos>0 )
         {
             --nPos;
             bSetSmallFont =
                 (CH_TXTATR_BREAKWORD == pTextNd->GetText()[nPos]) &&
-                (0 != pTextNd->GetTextAttrForCharAt( nPos, RES_TXTATR_FLYCNT ));
+                (nullptr != pTextNd->GetTextAttrForCharAt( nPos, RES_TXTATR_FLYCNT ));
         }
     }
 

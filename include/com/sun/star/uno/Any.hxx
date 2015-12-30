@@ -22,6 +22,7 @@
 #include <sal/config.h>
 
 #include <cassert>
+#include <cstddef>
 #include <iomanip>
 #include <ostream>
 
@@ -51,7 +52,7 @@ namespace uno
 
 inline Any::Any()
 {
-    ::uno_any_construct( this, 0, 0, cpp_acquire );
+    ::uno_any_construct( this, NULL, NULL, cpp_acquire );
 }
 
 

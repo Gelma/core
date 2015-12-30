@@ -28,18 +28,18 @@
 
 class ObservableThread;
 
-class CancellableJob : public ::cppu::WeakImplHelper<com::sun::star::util::XCancellable>
+class CancellableJob : public ::cppu::WeakImplHelper<css::util::XCancellable>
 {
 public:
     explicit CancellableJob( const ::rtl::Reference< ObservableThread >& rThread );
     virtual ~CancellableJob() {}
 
-    // ::com::sun::star::util::XCancellable:
-    virtual void SAL_CALL cancel() throw (com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    // css::util::XCancellable:
+    virtual void SAL_CALL cancel() throw (css::uno::RuntimeException, std::exception) override;
 
 private:
-    CancellableJob( CancellableJob& ) SAL_DELETED_FUNCTION;
-    void operator =( CancellableJob& ) SAL_DELETED_FUNCTION;
+    CancellableJob( CancellableJob& ) = delete;
+    void operator =( CancellableJob& ) = delete;
 
     ::rtl::Reference< ObservableThread > mrThread;
 };

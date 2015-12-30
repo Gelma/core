@@ -29,8 +29,8 @@ const SCSIZE kBufferThreshhold = 128;
 
 ScJumpMatrix::ScJumpMatrix(SCSIZE nColsP, SCSIZE nRowsP)
     : pJump(new ScJumpMatrixEntry[nColsP * nRowsP])
-    , pMat(new ScMatrix(nColsP, nRowsP))
-    , pParams(NULL)
+    , pMat(new ScFullMatrix(nColsP, nRowsP))
+    , pParams(nullptr)
     , nCols(nColsP)
     , nRows(nRowsP)
     , nCurCol(0)
@@ -174,7 +174,7 @@ void ScJumpMatrix::SetNewResMat(SCSIZE nNewCols, SCSIZE nNewRows)
 bool ScJumpMatrix::HasResultMatrix() const
 {
     // We now always have a matrix but caller logic may still want to check it.
-    return pMat.get() != NULL;
+    return pMat.get() != nullptr;
 }
 
 void ScJumpMatrix::FlushBufferOtherThan( ScJumpMatrix::BufferType eType, SCSIZE nC, SCSIZE nR )

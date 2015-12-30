@@ -135,7 +135,7 @@ namespace osl_Module
 #if !defined( MACOSX )
             // TODO: Find out why this fails on Mac OS X
             ::osl::Module aMod( getDllURL( ) );
-            FuncPtr pFunc = reinterpret_cast<FuncPtr>(aMod.getSymbol( rtl::OUString("firstfunc") ));
+            FuncPtr pFunc = reinterpret_cast<FuncPtr>(aMod.getSymbol( "firstfunc" ));
 
             OUString aFileURL;
             bRes = osl::Module::getUrlFromAddress(
@@ -200,7 +200,7 @@ namespace osl_Module
             ::osl::Module aMod( getDllURL( ) );
 
             aMod.unload( );
-            bRes = oslModule(aMod) ==NULL;
+            bRes = oslModule(aMod) ==nullptr;
 
             CPPUNIT_ASSERT_MESSAGE( "#test comment#: unload function should do the same thing as destructor.",
                                     bRes );
@@ -258,7 +258,7 @@ namespace osl_Module
 #if !defined( MACOSX )
             // TODO: Find out why this fails on Mac OS X
             ::osl::Module aMod( getDllURL( ) );
-            FuncPtr pFunc = reinterpret_cast<FuncPtr>(aMod.getSymbol( rtl::OUString("firstfunc") ));
+            FuncPtr pFunc = reinterpret_cast<FuncPtr>(aMod.getSymbol( "firstfunc" ));
             bRes = false;
             if ( pFunc )
                 bRes = pFunc( bRes );
@@ -287,10 +287,10 @@ namespace osl_Module
 #if !defined( MACOSX )
             // TODO: Find out why this fails on Mac OS X
             ::osl::Module aMod;
-            bRes = ( static_cast<oslModule>(aMod) == NULL );
+            bRes = ( static_cast<oslModule>(aMod) == nullptr );
 
             aMod.load( getDllURL( ) );
-            bRes1 = static_cast<oslModule>(aMod) != NULL;
+            bRes1 = static_cast<oslModule>(aMod) != nullptr;
 
             aMod.unload( );
 
@@ -337,7 +337,7 @@ namespace osl_Module
 #if !defined( MACOSX )
             // TODO: Find out why this fails on Mac OS X
             ::osl::Module aMod( getDllURL( ) );
-            oslGenericFunction oslFunc = aMod.getFunctionSymbol( rtl::OUString("firstfunc") );
+            oslGenericFunction oslFunc = aMod.getFunctionSymbol( "firstfunc" );
             ::rtl::OUString aLibraryURL;
             bRes = ::osl::Module::getUrlFromAddress( oslFunc, aLibraryURL);
             aMod.unload();

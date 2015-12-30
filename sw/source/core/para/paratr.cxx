@@ -43,15 +43,15 @@
 
 using namespace ::com::sun::star;
 
-TYPEINIT2_AUTOFACTORY( SwFormatDrop, SfxPoolItem, SwClient);
-TYPEINIT1_AUTOFACTORY( SwRegisterItem, SfxBoolItem);
-TYPEINIT1_AUTOFACTORY( SwNumRuleItem, SfxStringItem);
-TYPEINIT1_AUTOFACTORY( SwParaConnectBorderItem, SfxBoolItem);
+
+SfxPoolItem* SwFormatDrop::CreateDefault() { return new SwFormatDrop; }
+SfxPoolItem* SwRegisterItem::CreateDefault() { return new SwRegisterItem; }
+SfxPoolItem* SwNumRuleItem::CreateDefault() { return new SwNumRuleItem; }
 
 SwFormatDrop::SwFormatDrop()
     : SfxPoolItem( RES_PARATR_DROP ),
-    SwClient( 0 ),
-    pDefinedIn( 0 ),
+    SwClient( nullptr ),
+    pDefinedIn( nullptr ),
     nDistance( 0 ),
     nReadFormat( USHRT_MAX ),
     nLines( 0 ),
@@ -63,7 +63,7 @@ SwFormatDrop::SwFormatDrop()
 SwFormatDrop::SwFormatDrop( const SwFormatDrop &rCpy )
     : SfxPoolItem( RES_PARATR_DROP ),
     SwClient( rCpy.GetRegisteredInNonConst() ),
-    pDefinedIn( 0 ),
+    pDefinedIn( nullptr ),
     nDistance( rCpy.GetDistance() ),
     nReadFormat( rCpy.nReadFormat ),
     nLines( rCpy.GetLines() ),
@@ -90,7 +90,7 @@ void SwFormatDrop::Modify( const SfxPoolItem*, const SfxPoolItem * )
 {
     if( pDefinedIn )
     {
-        if( !pDefinedIn->ISA( SwFormat ))
+        if( dynamic_cast< const SwFormat *>( pDefinedIn ) ==  nullptr)
             pDefinedIn->ModifyNotification( this, this );
         else if( pDefinedIn->HasWriterListeners() &&
                 !pDefinedIn->IsModifyLocked() )

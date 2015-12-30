@@ -40,7 +40,7 @@ protected:
     // Create a Object-Specific ViewObjectContact, set ViewContact and
     // ObjectContact. Always needs to return something. Default is to create
     // a standard ViewObjectContact containing the given ObjectContact and *this
-    virtual ViewObjectContact& CreateObjectSpecificViewObjectContact(ObjectContact& rObjectContact) SAL_OVERRIDE;
+    virtual ViewObjectContact& CreateObjectSpecificViewObjectContact(ObjectContact& rObjectContact) override;
 
 public:
     // basic constructor, used from SdrObject.
@@ -53,7 +53,7 @@ public:
     }
 
     // React on changes of the object of this ViewContact
-    virtual void ActionChanged() SAL_OVERRIDE;
+    virtual void ActionChanged() override;
 
     // access to ViewInformation3D and ObjectTransformation
     const drawinglayer::geometry::ViewInformation3D& getViewInformation3D(const ::basegfx::B3DRange& rContentRange) const;
@@ -66,11 +66,11 @@ public:
 
     // scene primitive creators. If pLayerVisibility is given, a visibility test with the LayerID and the
     // given SetOfByte is done.
-    drawinglayer::primitive2d::Primitive2DSequence createScenePrimitive2DSequence(const SetOfByte* pLayerVisibility) const;
+    drawinglayer::primitive2d::Primitive2DContainer createScenePrimitive2DSequence(const SetOfByte* pLayerVisibility) const;
 
     // helpers to get the sequence of all contained 3D primitives and its range,
     // regardless of layer or visibility constraints and using a neutral ViewInformation3D
-    drawinglayer::primitive3d::Primitive3DSequence getAllPrimitive3DSequence() const;
+    drawinglayer::primitive3d::Primitive3DContainer getAllPrimitive3DContainer() const;
     basegfx::B3DRange getAllContentRange3D() const;
 
 protected:
@@ -94,7 +94,7 @@ protected:
 
     // This method is responsible for creating the graphical visualisation data
     // ONLY based on model data
-    virtual drawinglayer::primitive2d::Primitive2DSequence createViewIndependentPrimitive2DSequence() const SAL_OVERRIDE;
+    virtual drawinglayer::primitive2d::Primitive2DContainer createViewIndependentPrimitive2DSequence() const override;
 };
 
 }}

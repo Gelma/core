@@ -40,9 +40,9 @@ PresenterSpritePane::PresenterSpritePane (const Reference<XComponentContext>& rx
 {
     Reference<lang::XMultiComponentFactory> xFactory (
         mxComponentContext->getServiceManager(), UNO_QUERY_THROW);
-    mxPresenterHelper = Reference<drawing::XPresenterHelper>(
+    mxPresenterHelper.set(
         xFactory->createInstanceWithContext(
-            OUString("com.sun.star.comp.Draw.PresenterHelper"),
+            "com.sun.star.comp.Draw.PresenterHelper",
             mxComponentContext),
         UNO_QUERY_THROW);
 }
@@ -53,9 +53,9 @@ PresenterSpritePane::~PresenterSpritePane()
 
 void PresenterSpritePane::disposing()
 {
-    mpSprite->SetFactory(NULL);
-    mxParentWindow = NULL;
-    mxParentCanvas = NULL;
+    mpSprite->SetFactory(nullptr);
+    mxParentWindow = nullptr;
+    mxParentCanvas = nullptr;
     PresenterPaneBase::disposing();
 }
 

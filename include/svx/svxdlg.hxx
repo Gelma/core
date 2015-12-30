@@ -71,7 +71,7 @@ public:
 class AbstractFmShowColsDialog : public VclAbstractDialog
 {
 public:
-     virtual void SetColumns(const ::com::sun::star::uno::Reference< ::com::sun::star::container::XIndexContainer>& xCols)= 0;
+     virtual void SetColumns(const css::uno::Reference< css::container::XIndexContainer>& xCols)= 0;
 };
 
 class AbstractSvxZoomDialog : public VclAbstractDialog
@@ -151,7 +151,7 @@ public:
 class AbstractSvxNewDictionaryDialog :public VclAbstractDialog
 {
 public:
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::linguistic2::XDictionary >  GetNewDictionary() = 0;
+    virtual css::uno::Reference< css::linguistic2::XDictionary >  GetNewDictionary() = 0;
 };
 
 class AbstractSvxNameDialog :public VclAbstractDialog
@@ -273,13 +273,12 @@ class SVX_DLLPUBLIC SvxAbstractDialogFactory : public SfxAbstractDialogFactory, 
 public:
     static SvxAbstractDialogFactory* Create();
 
-    // define dtor as this will create typeinfo and in svx library and export vtable
     virtual                             ~SvxAbstractDialogFactory();
 
     virtual SfxAbstractTabDialog*       CreateTextTabDialog( vcl::Window* pParent,
                                             const SfxItemSet* pAttrSet,
                                             SdrView* pView,
-                                            SdrModel* pModel=0 ) = 0 ;
+                                            SdrModel* pModel=nullptr ) = 0 ;
 
     virtual AbstractSvxCaptionDialog* CreateCaptionDialog( vcl::Window* pParent,
                                         const SdrView* pView,
@@ -344,11 +343,9 @@ public:
                                                             const SfxItemSet& rOptionsSet,
                                                             sal_Int32 nInitialFlags )=0;
     virtual AbstractFmInputRecordNoDialog * CreateFmInputRecordNoDialog( vcl::Window* pParent ) = 0;
-    virtual AbstractSvxNewDictionaryDialog* CreateSvxNewDictionaryDialog( vcl::Window* pParent,
-                                            ::com::sun::star::uno::Reference< ::com::sun::star::linguistic2::XSpellChecker1 >  &xSpl ) = 0;
+    virtual AbstractSvxNewDictionaryDialog* CreateSvxNewDictionaryDialog( vcl::Window* pParent ) = 0;
     virtual VclAbstractDialog *     CreateSvxEditDictionaryDialog( vcl::Window* pParent,
                                             const OUString& rName,
-                                            ::com::sun::star::uno::Reference< ::com::sun::star::linguistic2::XSpellChecker1> &xSpl,
                                             sal_uInt32 nResId) = 0;
     virtual AbstractSvxNameDialog *     CreateSvxNameDialog( vcl::Window* pParent,
                                             const OUString& rName, const OUString& rDesc ) = 0;
@@ -359,9 +356,7 @@ public:
 
     virtual AbstractSvxMultiPathDialog *    CreateSvxMultiPathDialog(vcl::Window* pParent) = 0 ;
     virtual AbstractSvxMultiPathDialog *    CreateSvxPathSelectDialog(vcl::Window* pParent) = 0 ;
-    virtual AbstractSvxHpLinkDlg *  CreateSvxHpLinkDlg (vcl::Window* pParent,
-                                            SfxBindings* pBindings,
-                                            sal_uInt32 nResId)=0;
+    virtual AbstractSvxHpLinkDlg *  CreateSvxHpLinkDlg(vcl::Window* pParent, SfxBindings* pBindings)=0;
     virtual AbstractFmSearchDialog* CreateFmSearchDialog(vcl::Window* pParent,
                                                         const OUString& strInitialText,
                                                         const ::std::vector< OUString >& _rContexts,
@@ -391,7 +386,7 @@ public:
                                                             bool bShadow) = 0 ;
     virtual SfxAbstractTabDialog*           CreateSvxLineTabDialog( vcl::Window* pParent, const SfxItemSet* pAttr, //add forSvxLineTabDialog
                                                                  SdrModel* pModel,
-                                                                 const SdrObject* pObj = NULL,
+                                                                 const SdrObject* pObj = nullptr,
                                                                  bool bHasObj = true )=0;
     virtual SfxAbstractDialog*              CreateSfxDialog( vcl::Window* pParent,
                                                                         const SfxItemSet& rAttr,
@@ -400,13 +395,13 @@ public:
                                                                         )=0;
     virtual SfxAbstractDialog*              CreateSfxDialog( vcl::Window* pParent,
                                                                         const SfxItemSet& rAttr,
-                                    const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& _rxFrame,
+                                    const css::uno::Reference< css::frame::XFrame >& _rxFrame,
                                                                         sal_uInt32 nResId
                                                                         )=0;
     virtual AbstractSvxPostItDialog*        CreateSvxPostItDialog( vcl::Window* pParent,
                                                                         const SfxItemSet& rCoreSet,
                                                                         bool bPrevNext = false) = 0;
-    virtual VclAbstractDialog*          CreateSvxScriptOrgDialog( vcl::Window* pParent, const OUString& rLanguage ) SAL_OVERRIDE = 0;
+    virtual VclAbstractDialog*          CreateSvxScriptOrgDialog( vcl::Window* pParent, const OUString& rLanguage ) override = 0;
 
     virtual DialogGetRanges             GetDialogGetRangesFunc() = 0;
 
@@ -414,21 +409,21 @@ public:
         CreateScriptSelectorDialog(
             vcl::Window* pParent,
             bool bShowSlots,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& _rxFrame
-        ) SAL_OVERRIDE = 0;
+            const css::uno::Reference< css::frame::XFrame >& _rxFrame
+        ) override = 0;
 
     virtual VclAbstractDialog* CreateScriptErrorDialog(
-            vcl::Window* pParent, const css::uno::Any& rException) SAL_OVERRIDE = 0;
+            vcl::Window* pParent, const css::uno::Any& rException) override = 0;
 
     virtual VclAbstractDialog*  CreateSvxMacroAssignDlg(
                 vcl::Window* _pParent,
-                const ::com::sun::star::uno::Reference< ::com::sun::star::frame::XFrame >& _rxDocumentFrame,
+                const css::uno::Reference< css::frame::XFrame >& _rxDocumentFrame,
                 const bool _bUnoDialogMode,
-                const ::com::sun::star::uno::Reference< ::com::sun::star::container::XNameReplace >& _rxEvents,
+                const css::uno::Reference< css::container::XNameReplace >& _rxEvents,
                 const sal_uInt16 _nInitiallySelectedEvent
             ) = 0;
 
-    virtual SfxAbstractTabDialog* CreateSvxFormatCellsDialog( vcl::Window* pParent, const SfxItemSet* pAttr, SdrModel* pModel, const SdrObject* pObj = NULL )=0;
+    virtual SfxAbstractTabDialog* CreateSvxFormatCellsDialog( vcl::Window* pParent, const SfxItemSet* pAttr, SdrModel* pModel, const SdrObject* pObj = nullptr )=0;
 
     virtual SvxAbstractSplittTableDialog* CreateSvxSplittTableDialog( vcl::Window* pParent, bool bIsTableVertical, long nMaxVertical, long nMaxHorizontal )=0;
 

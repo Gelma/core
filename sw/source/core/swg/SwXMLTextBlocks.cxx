@@ -46,24 +46,22 @@ using namespace ::com::sun::star;
 void SwXMLTextBlocks::InitBlockMode ( const uno::Reference < embed::XStorage >& rStorage )
 {
     xBlkRoot = rStorage;
-    xRoot = 0;
+    xRoot = nullptr;
 }
 
 void SwXMLTextBlocks::ResetBlockMode ( )
 {
-    xBlkRoot = 0;
-    xRoot = 0;
+    xBlkRoot = nullptr;
+    xRoot = nullptr;
 }
 
 SwXMLTextBlocks::SwXMLTextBlocks( const OUString& rFile )
     : SwImpBlocks(rFile)
     , bAutocorrBlock(false)
-    , bBlock(false)
     , nFlags(0)
-    , nCurBlk(0)
 {
     SwDocShell* pDocSh = new SwDocShell ( SfxObjectCreateMode::INTERNAL );
-    if( !pDocSh->DoInitNew( 0 ) )
+    if( !pDocSh->DoInitNew() )
         return;
     bReadOnly = true;
     pDoc = pDocSh->GetDoc();
@@ -104,12 +102,10 @@ SwXMLTextBlocks::SwXMLTextBlocks( const OUString& rFile )
 SwXMLTextBlocks::SwXMLTextBlocks( const uno::Reference < embed::XStorage >& rStg, const OUString& rName )
     : SwImpBlocks( rName )
     , bAutocorrBlock(false)
-    , bBlock(false)
     , nFlags(0)
-    , nCurBlk(0)
 {
     SwDocShell* pDocSh = new SwDocShell ( SfxObjectCreateMode::INTERNAL );
-    if( !pDocSh->DoInitNew( 0 ) )
+    if( !pDocSh->DoInitNew() )
         return;
     bReadOnly = false;
     pDoc = pDocSh->GetDoc();
@@ -130,7 +126,7 @@ SwXMLTextBlocks::~SwXMLTextBlocks()
     ResetBlockMode ();
     if(xDocShellRef.Is())
         xDocShellRef->DoClose();
-    xDocShellRef = 0;
+    xDocShellRef = nullptr;
     if( pDoc && !pDoc->release() )
         delete pDoc;
 }
@@ -219,7 +215,7 @@ sal_uLong SwXMLTextBlocks::Rename( sal_uInt16 nIdx, const OUString& rNewShort, c
             uno::Reference < embed::XTransactedObject > xTrans( xRoot, uno::UNO_QUERY );
             if ( xTrans.is() )
                 xTrans->commit();
-            xRoot = 0;
+            xRoot = nullptr;
         }
 
         try
@@ -349,7 +345,7 @@ sal_uLong SwXMLTextBlocks::PutBlock( SwPaM& , const OUString& )
 
         if ( xRoot.is() )
         {
-            SfxMedium* pTmpMedium = NULL;
+            SfxMedium* pTmpMedium = nullptr;
             try
             {
                 uno::Reference< embed::XStorage > xTempStorage =
@@ -384,7 +380,7 @@ sal_uLong SwXMLTextBlocks::PutBlock( SwPaM& , const OUString& )
         uno::Reference < embed::XTransactedObject > xTrans( xRoot, uno::UNO_QUERY );
         if ( xTrans.is() )
             xTrans->commit();
-        xRoot = 0;
+        xRoot = nullptr;
         if ( !nCommitFlags )
         {
             uno::Reference < embed::XTransactedObject > xTmpTrans( xBlkRoot, uno::UNO_QUERY );

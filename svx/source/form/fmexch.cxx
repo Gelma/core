@@ -47,8 +47,7 @@ namespace svxform
     {
         if ( m_bClipboardOwner )
         {   // simulate a lostOwnership to notify parties interested in
-            if ( m_aClipboardListener.IsSet() )
-                m_aClipboardListener.Call( *this );
+            m_aClipboardListener.Call( *this );
         }
 
         m_bClipboardOwner = true;
@@ -64,7 +63,7 @@ namespace svxform
             {
                 Reference< clipboard::XClipboard > xClipBoard( getOwnClipboard() );
                 if ( xClipBoard.is() )
-                    xClipBoard->setContents( NULL, NULL );
+                    xClipBoard->setContents( nullptr, nullptr );
             }
             catch( const Exception& )
             {
@@ -80,8 +79,7 @@ namespace svxform
         TransferableHelper::implCallOwnLostOwnership( _rxClipboard, _rxTrans );
         m_bClipboardOwner = false;
 
-        if ( m_aClipboardListener.IsSet() )
-            m_aClipboardListener.Call( *this );
+        m_aClipboardListener.Call( *this );
     }
 
 
@@ -117,13 +115,13 @@ namespace svxform
     }
 
     OControlTransferData::OControlTransferData( )
-        :m_pFocusEntry( NULL )
+        :m_pFocusEntry( nullptr )
     {
     }
 
 
     OControlTransferData::OControlTransferData( const Reference< XTransferable >& _rxTransferable )
-        :m_pFocusEntry( NULL )
+        :m_pFocusEntry( nullptr )
     {
         TransferableDataHelper aExchangedData( _rxTransferable );
 
@@ -207,7 +205,7 @@ namespace svxform
     }
 
 
-    void OControlTransferData::addHiddenControlsFormat(const ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > >& seqInterfaces)
+    void OControlTransferData::addHiddenControlsFormat(const css::uno::Sequence< css::uno::Reference< css::uno::XInterface > >& seqInterfaces)
     {
         m_aHiddenControlModels = seqInterfaces;
     }
@@ -222,7 +220,7 @@ namespace svxform
             return;
 
         m_aControlPaths.realloc(nEntryCount);
-        ::com::sun::star::uno::Sequence<sal_uInt32>* pAllPaths = m_aControlPaths.getArray();
+        css::uno::Sequence<sal_uInt32>* pAllPaths = m_aControlPaths.getArray();
         for (   ListBoxEntrySet::const_iterator loop = m_aSelectedEntries.begin();
                 loop != m_aSelectedEntries.end();
                 ++loop, ++pAllPaths
@@ -237,11 +235,11 @@ namespace svxform
             {
                 aCurrentPath.push_back(pLoop->GetChildListPos());
                 pLoop = pTreeBox->GetParent(pLoop);
-                DBG_ASSERT((pLoop != NULL) || (pRoot == 0), "OControlTransferData::buildPathFormat: invalid root or entry !");
+                DBG_ASSERT((pLoop != nullptr) || (pRoot == nullptr), "OControlTransferData::buildPathFormat: invalid root or entry !");
                     // pLoop == NULL heisst, dass ich am oberen Ende angelangt bin, dann sollte das Ganze abbrechen, was nur bei pRoot == NULL der Fall sein wird
             }
 
-            // dann koennen wir ihn in die ::com::sun::star::uno::Sequence uebertragen
+            // dann koennen wir ihn in die css::uno::Sequence uebertragen
             Sequence<sal_uInt32>& rCurrentPath = *pAllPaths;
             sal_Int32 nDepth = aCurrentPath.size();
 
@@ -260,7 +258,7 @@ namespace svxform
         m_aSelectedEntries.swap( aEmpty );
 
         sal_Int32 nControls = m_aControlPaths.getLength();
-        const ::com::sun::star::uno::Sequence<sal_uInt32>* pPaths = m_aControlPaths.getConstArray();
+        const css::uno::Sequence<sal_uInt32>* pPaths = m_aControlPaths.getConstArray();
         for (sal_Int32 i=0; i<nControls; ++i)
         {
             sal_Int32 nThisPatLength = pPaths[i].getLength();
@@ -322,7 +320,7 @@ namespace svxform
         static SotClipboardFormatId s_nFormat = static_cast<SotClipboardFormatId>(-1);
         if (static_cast<SotClipboardFormatId>(-1) == s_nFormat)
         {
-            s_nFormat = SotExchange::RegisterFormatName(OUString("application/x-openoffice;windows_formatname=\"svxform.ControlPathExchange\""));
+            s_nFormat = SotExchange::RegisterFormatName("application/x-openoffice;windows_formatname=\"svxform.ControlPathExchange\"");
             DBG_ASSERT(static_cast<SotClipboardFormatId>(-1) != s_nFormat, "OControlExchange::getControlPathFormatId: bad exchange id!");
         }
         return s_nFormat;
@@ -334,7 +332,7 @@ namespace svxform
         static SotClipboardFormatId s_nFormat = static_cast<SotClipboardFormatId>(-1);
         if (static_cast<SotClipboardFormatId>(-1) == s_nFormat)
         {
-            s_nFormat = SotExchange::RegisterFormatName(OUString("application/x-openoffice;windows_formatname=\"svxform.HiddenControlModelsExchange\""));
+            s_nFormat = SotExchange::RegisterFormatName("application/x-openoffice;windows_formatname=\"svxform.HiddenControlModelsExchange\"");
             DBG_ASSERT(static_cast<SotClipboardFormatId>(-1) != s_nFormat, "OControlExchange::getHiddenControlModelsFormatId: bad exchange id!");
         }
         return s_nFormat;
@@ -346,7 +344,7 @@ namespace svxform
         static SotClipboardFormatId s_nFormat = static_cast<SotClipboardFormatId>(-1);
         if (static_cast<SotClipboardFormatId>(-1) == s_nFormat)
         {
-            s_nFormat = SotExchange::RegisterFormatName(OUString("application/x-openoffice;windows_formatname=\"svxform.FieldNameExchange\""));
+            s_nFormat = SotExchange::RegisterFormatName("application/x-openoffice;windows_formatname=\"svxform.FieldNameExchange\"");
             DBG_ASSERT(static_cast<SotClipboardFormatId>(-1) != s_nFormat, "OControlExchange::getFieldExchangeFormatId: bad exchange id!");
         }
         return s_nFormat;
@@ -362,7 +360,7 @@ namespace svxform
 
     OLocalExchangeHelper::OLocalExchangeHelper(vcl::Window* _pDragSource)
         :m_pDragSource(_pDragSource)
-        ,m_pTransferable(NULL)
+        ,m_pTransferable(nullptr)
     {
     }
 
@@ -393,7 +391,7 @@ namespace svxform
         {
             m_pTransferable->setClipboardListener( Link<OLocalExchange&,void>() );
             m_pTransferable->release();
-            m_pTransferable = NULL;
+            m_pTransferable = nullptr;
         }
     }
 

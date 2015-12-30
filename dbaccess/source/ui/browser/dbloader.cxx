@@ -74,9 +74,9 @@ public:
     virtual ~DBContentLoader();
 
     // XServiceInfo
-    OUString                 SAL_CALL getImplementationName() throw(std::exception  ) SAL_OVERRIDE;
-    sal_Bool                        SAL_CALL supportsService(const OUString& ServiceName) throw(std::exception  ) SAL_OVERRIDE;
-    Sequence< OUString >     SAL_CALL getSupportedServiceNames() throw(std::exception  ) SAL_OVERRIDE;
+    OUString                 SAL_CALL getImplementationName() throw(std::exception  ) override;
+    sal_Bool                        SAL_CALL supportsService(const OUString& ServiceName) throw(std::exception  ) override;
+    Sequence< OUString >     SAL_CALL getSupportedServiceNames() throw(std::exception  ) override;
 
     // static methods
     static OUString          getImplementationName_Static() throw(  )
@@ -90,8 +90,8 @@ public:
     // XLoader
     virtual void SAL_CALL load( const Reference< XFrame > & _rFrame, const OUString& _rURL,
                                 const Sequence< PropertyValue >& _rArgs,
-                                const Reference< XLoadEventListener > & _rListener) throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL cancel() throw(std::exception) SAL_OVERRIDE;
+                                const Reference< XLoadEventListener > & _rListener) throw(css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL cancel() throw(std::exception) override;
 };
 
 
@@ -192,14 +192,14 @@ void SAL_CALL DBContentLoader::load(const Reference< XFrame > & rFrame, const OU
     if  ( sComponentURL == URL_COMPONENT_DATASOURCEBROWSER )
     {
         bool bDisableBrowser =  !aLoadArgs.getOrDefault( "ShowTreeViewButton", sal_True )   // compatibility name
-                                ||  !aLoadArgs.getOrDefault( OUString(PROPERTY_ENABLE_BROWSER), sal_True );
+                                ||  !aLoadArgs.getOrDefault( PROPERTY_ENABLE_BROWSER, sal_True );
 
         if ( bDisableBrowser )
         {
             try
             {
                 Reference< XModule > xModule( xController, UNO_QUERY_THROW );
-                xModule->setIdentifier( OUString( "com.sun.star.sdb.TableDataView" ) );
+                xModule->setIdentifier( "com.sun.star.sdb.TableDataView" );
             }
             catch( const Exception& )
             {
@@ -241,7 +241,7 @@ void SAL_CALL DBContentLoader::load(const Reference< XFrame > & rFrame, const OU
         else if ( !sDataSourceName.isEmpty() )
         {
             ::dbtools::SQLExceptionInfo aError;
-            xDataSource.set( getDataSourceByName( sDataSourceName, NULL, m_xContext, &aError ) );
+            xDataSource.set( getDataSourceByName( sDataSourceName, nullptr, m_xContext, &aError ) );
             xDatabaseDocument.set( getDataSourceOrModel( xDataSource ), UNO_QUERY );
         }
         else if ( xConnection.is() )

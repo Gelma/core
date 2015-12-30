@@ -40,7 +40,8 @@
 #include <com/sun/star/util/XStringEscape.hpp>
 #include <com/sun/star/util/XChangesBatch.hpp>
 #include <osl/diagnose.h>
-#include <tools/solarmutex.hxx>
+#include <comphelper/solarmutex.hxx>
+#include <rtl/ref.hxx>
 #include <rtl/ustrbuf.hxx>
 
 using namespace utl;
@@ -79,7 +80,7 @@ catch(const Exception& rEx)   \
 namespace utl{
     class ConfigChangeListener_Impl : public cppu::WeakImplHelper
     <
-        com::sun::star::util::XChangesListener
+        css::util::XChangesListener
     >
     {
         public:
@@ -89,10 +90,10 @@ namespace utl{
             virtual ~ConfigChangeListener_Impl();
 
         //XChangesListener
-        virtual void SAL_CALL changesOccurred( const ChangesEvent& Event ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL changesOccurred( const ChangesEvent& Event ) throw(RuntimeException, std::exception) override;
 
         //XEventListener
-        virtual void SAL_CALL disposing( const EventObject& Source ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing( const EventObject& Source ) throw(RuntimeException, std::exception) override;
     };
 }
 
@@ -155,11 +156,12 @@ void ConfigChangeListener_Impl::changesOccurred( const ChangesEvent& rEvent ) th
     }
     if( nNotify )
     {
-        if ( ::tools::SolarMutex::Acquire() )
+        ::comphelper::SolarMutex *pMutex = ::comphelper::SolarMutex::get();
+        if ( pMutex )
         {
+            rtl::Reference< comphelper::SolarMutex > aGuard( pMutex );
             aChangedNames.realloc(nNotify);
             pParent->CallNotify(aChangedNames);
-            ::tools::SolarMutex::Release();
         }
     }
 }
@@ -191,7 +193,7 @@ ConfigItem::~ConfigItem()
     ConfigManager::getConfigManager().removeConfigItem(*this);
 }
 
-void ConfigItem::CallNotify( const com::sun::star::uno::Sequence<OUString>& rPropertyNames )
+void ConfigItem::CallNotify( const css::uno::Sequence<OUString>& rPropertyNames )
 {
     // the call is forwarded to the virtual Notify() method
     // it is pure virtual, so all classes deriving from ConfigItem have to decide how they
@@ -342,7 +344,7 @@ void ConfigItem::impl_unpackLocalizedProperties(    const   Sequence< OUString >
     }
 }
 
-Sequence< sal_Bool > ConfigItem::GetReadOnlyStates(const com::sun::star::uno::Sequence< OUString >& rNames)
+Sequence< sal_Bool > ConfigItem::GetReadOnlyStates(const css::uno::Sequence< OUString >& rNames)
 {
     sal_Int32 i;
 
@@ -390,20 +392,20 @@ Sequence< sal_Bool > ConfigItem::GetReadOnlyStates(const com::sun::star::uno::Se
             }
             else
             {
-                xNode = Reference<XInterface>( xHierarchyAccess, UNO_QUERY );
+                xNode.set( xHierarchyAccess, UNO_QUERY );
             }
 
-        xSet = Reference< XPropertySet >(xNode, UNO_QUERY);
+            xSet.set(xNode, UNO_QUERY);
             if (xSet.is())
-        {
-            xInfo = xSet->getPropertySetInfo();
+            {
+                xInfo = xSet->getPropertySetInfo();
                 OSL_ENSURE(xInfo.is(), "ConfigItem::IsReadonly()\ngetPropertySetInfo failed ...\n");
-        }
+            }
             else
-        {
-               xInfo = Reference< XPropertySetInfo >(xNode, UNO_QUERY);
+            {
+                xInfo.set(xNode, UNO_QUERY);
                 OSL_ENSURE(xInfo.is(), "ConfigItem::IsReadonly()\nUNO_QUERY failed ...\n");
-        }
+            }
 
             if (!xInfo.is())
             {
@@ -468,8 +470,8 @@ bool ConfigItem::PutProperties( const Sequence< OUString >& rNames,
     {
         Sequence< OUString >    lNames;
         Sequence< Any >         lValues;
-        const OUString*         pNames  = NULL;
-        const Any*              pValues = NULL;
+        const OUString*         pNames  = nullptr;
+        const Any*              pValues = nullptr;
         sal_Int32               nNameCount;
         if(( m_nMode & ConfigItemMode::AllLocales ) == ConfigItemMode::AllLocales )
         {
@@ -572,7 +574,7 @@ void ConfigItem::RemoveChangesListener()
         try
         {
             xChgNot->removeChangesListener( xChangeLstnr );
-            xChangeLstnr = 0;
+            xChangeLstnr = nullptr;
         }
         catch (const Exception&)
         {
@@ -678,7 +680,7 @@ Sequence< OUString > ConfigItem::GetNodeNames(const OUString& rNode, ConfigNameF
                 aNode >>= xCont;
             }
             else
-                xCont = Reference<XNameAccess> (xHierarchyAccess, UNO_QUERY);
+                xCont.set(xHierarchyAccess, UNO_QUERY);
             if(xCont.is())
             {
                 aRet = xCont->getElementNames();
@@ -707,7 +709,7 @@ bool ConfigItem::ClearNodeSet(const OUString& rNode)
                 aNode >>= xCont;
             }
             else
-                xCont = Reference<XNameContainer> (xHierarchyAccess, UNO_QUERY);
+                xCont.set(xHierarchyAccess, UNO_QUERY);
             if(!xCont.is())
                 return false;
             Sequence< OUString > aNames = xCont->getElementNames();
@@ -746,7 +748,7 @@ bool ConfigItem::ClearNodeElements(const OUString& rNode, Sequence< OUString >& 
                 aNode >>= xCont;
             }
             else
-                xCont = Reference<XNameContainer> (xHierarchyAccess, UNO_QUERY);
+                xCont.set(xHierarchyAccess, UNO_QUERY);
             if(!xCont.is())
                 return false;
             try
@@ -820,7 +822,7 @@ bool ConfigItem::SetSetProperties(
                 aNode >>= xCont;
             }
             else
-                xCont = Reference<XNameContainer> (xHierarchyAccess, UNO_QUERY);
+                xCont.set(xHierarchyAccess, UNO_QUERY);
             if(!xCont.is())
                 return false;
 
@@ -919,7 +921,7 @@ bool ConfigItem::ReplaceSetProperties(
                 aNode >>= xCont;
             }
             else
-                xCont = Reference<XNameContainer> (xHierarchyAccess, UNO_QUERY);
+                xCont.set(xHierarchyAccess, UNO_QUERY);
             if(!xCont.is())
                 return false;
 
@@ -1056,7 +1058,7 @@ bool ConfigItem::AddNode(const OUString& rNode, const OUString& rNewNode)
                 aNode >>= xCont;
             }
             else
-                xCont = Reference<XNameContainer> (xHierarchyAccess, UNO_QUERY);
+                xCont.set(xHierarchyAccess, UNO_QUERY);
             if(!xCont.is())
                 return false;
 

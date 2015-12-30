@@ -58,16 +58,16 @@ using namespace ::com::sun::star;
 
 // global variables declared in fntcache.hxx
 // FontCache is created in txtinit.cxx _TextInit and deleted in _TextFinit
-SwFntCache *pFntCache = NULL;
+SwFntCache *pFntCache = nullptr;
 // last Font set by ChgFntCache
-SwFntObj *pLastFont = NULL;
+SwFntObj *pLastFont = nullptr;
 // "MagicNumber" used to identify Fonts
-sal_uInt8* pMagicNo = NULL;
+sal_uInt8* pMagicNo = nullptr;
 
-Color *pWaveCol = 0;
+Color *pWaveCol = nullptr;
 
 long SwFntObj::nPixWidth;
-MapMode* SwFntObj::pPixMap = NULL;
+MapMode* SwFntObj::pPixMap = nullptr;
 VclPtr<OutputDevice> SwFntObj::pPixOut;
 
 namespace
@@ -99,7 +99,7 @@ void SwFntCache::Flush( )
     if ( pLastFont )
     {
         pLastFont->Unlock();
-        pLastFont = NULL;
+        pLastFont = nullptr;
     }
     SwCache::Flush( );
 }
@@ -107,9 +107,9 @@ void SwFntCache::Flush( )
 SwFntObj::SwFntObj(const SwSubFont &rFont, const void *pOwn, SwViewShell const *pSh)
     : SwCacheObj(pOwn)
     , aFont(rFont)
-    , pScrFont(NULL)
+    , pScrFont(nullptr)
     , pPrtFont(&aFont)
-    , pPrinter(NULL)
+    , pPrinter(nullptr)
     , nGuessedLeading(USHRT_MAX)
     , nExtLeading(USHRT_MAX)
     , nScrAscent(0)
@@ -154,7 +154,7 @@ void SwFntObj::CreatePrtFont( const OutputDevice& rPrt )
             ++nWidth;
         pPrtFont = new vcl::Font( aFont );
         pPrtFont->SetSize( Size( nWidth, aFont.GetSize().Height() ) );
-        pScrFont = NULL;
+        pScrFont = nullptr;
     }
 }
 
@@ -254,14 +254,14 @@ static void lcl_calcLinePos( const CalcLinePosData &rData,
 
    if ( rData.bSwitchL2R )
    {
-       rData.rInf.GetFrm()->SwitchLTRtoRTL( rStart );
-       rData.rInf.GetFrm()->SwitchLTRtoRTL( rEnd );
+       rData.rInf.GetFrame()->SwitchLTRtoRTL( rStart );
+       rData.rInf.GetFrame()->SwitchLTRtoRTL( rEnd );
    }
 
    if ( rData.bSwitchH2V )
    {
-       rData.rInf.GetFrm()->SwitchHorizontalToVertical( rStart );
-       rData.rInf.GetFrm()->SwitchHorizontalToVertical( rEnd );
+       rData.rInf.GetFrame()->SwitchHorizontalToVertical( rStart );
+       rData.rInf.GetFrame()->SwitchHorizontalToVertical( rEnd );
    }
 }
 
@@ -629,6 +629,12 @@ static bool lcl_IsMonoSpaceFont( const vcl::RenderContext& rOut )
     return nWidth1 == nWidth2;
 }
 
+static bool lcl_IsFullstopCentered( const vcl::RenderContext& rOut )
+{
+    const FontMetric aMetric( rOut.GetFontMetric() );
+    return aMetric.IsFullstopCentered() ;
+}
+
 /* This helper structure (SwForbidden) contains the already marked parts of the string
     to avoid double lines (e.g grammar + spell check error) */
 
@@ -712,7 +718,7 @@ static void lcl_DrawLineForWrongListData(
 
             const SwWrongArea* wrongArea = pWList->GetElement(wrongPos);
 
-            if (wrongArea != 0)
+            if (wrongArea != nullptr)
             {
                 if (WRONGAREA_DASHED == wrongArea->mLineType)
                 {
@@ -866,9 +872,9 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
     // HACK: UNDERLINE_WAVE must not be abused any more, hence the grey wave
     // line of the ExtendedAttributeSets will appear in the font color first
 
-    const bool bSwitchH2V = rInf.GetFrm() && rInf.GetFrm()->IsVertical();
-    const bool bSwitchL2R = rInf.GetFrm() && rInf.GetFrm()->IsRightToLeft() &&
-                            ! rInf.IsIgnoreFrmRTL();
+    const bool bSwitchH2V = rInf.GetFrame() && rInf.GetFrame()->IsVertical();
+    const bool bSwitchL2R = rInf.GetFrame() && rInf.GetFrame()->IsRightToLeft() &&
+                            ! rInf.IsIgnoreFrameRTL();
     const ComplexTextLayoutMode nMode = rInf.GetOut().GetLayoutMode();
     const bool bBidiPor = ( bSwitchL2R !=
                             ( TEXT_LAYOUT_DEFAULT != ( TEXT_LAYOUT_BIDI_RTL & nMode ) ) );
@@ -891,7 +897,7 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
             nPixWidth = rInf.GetOut().PixelToLogic( aTmp ).Width();
         }
 
-        aTextOriginPos.X() += rInf.GetFrm()->IsRightToLeft() ? 0 : nPixWidth;
+        aTextOriginPos.X() += rInf.GetFrame()->IsRightToLeft() ? 0 : nPixWidth;
     }
 
     Color aOldColor( pTmpFont->GetColor() );
@@ -906,10 +912,10 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
 
     // ASIAN LINE AND CHARACTER GRID MODE START
 
-    if ( rInf.GetFrm() && rInf.SnapToGrid() && rInf.GetFont() &&
+    if ( rInf.GetFrame() && rInf.SnapToGrid() && rInf.GetFont() &&
          SW_CJK == rInf.GetFont()->GetActual() )
     {
-        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrm()->FindPageFrm()));
+        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrame()->FindPageFrame()));
 
         // ASIAN LINE AND CHARACTER GRID MODE: Do we want to snap asian characters to the grid?
         if ( pGrid && GRID_LINES_CHARS == pGrid->GetGridType() && pGrid->IsSnapToChars())
@@ -1006,7 +1012,7 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
                                               aTextOriginPos.X() + rInf.GetPos().X() ;
 
             if ( bSwitchH2V )
-                rInf.GetFrm()->SwitchHorizontalToVertical( aTextOriginPos );
+                rInf.GetFrame()->SwitchHorizontalToVertical( aTextOriginPos );
 
             rInf.GetOut().DrawTextArray( aTextOriginPos, rInf.GetText(),
                 pKernArray, rInf.GetIdx(), rInf.GetLen() );
@@ -1019,10 +1025,10 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
     // For text grid refactor
     // ASIAN LINE AND CHARACTER GRID MODE START: not snap to characters
 
-    if ( rInf.GetFrm() && rInf.SnapToGrid() && rInf.GetFont() &&
+    if ( rInf.GetFrame() && rInf.SnapToGrid() && rInf.GetFont() &&
          SW_CJK == rInf.GetFont()->GetActual() )
     {
-        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrm()->FindPageFrm()));
+        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrame()->FindPageFrame()));
 
         // ASIAN LINE AND CHARACTER GRID MODE - do not snap to characters
         if ( pGrid && GRID_LINES_CHARS == pGrid->GetGridType() && !pGrid->IsSnapToChars() )
@@ -1038,7 +1044,7 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
                 rInf.GetOut().GetTextArray( rInf.GetText(), pKernArray,
                 rInf.GetIdx(), rInf.GetLen() );
             if ( bSwitchH2V )
-                rInf.GetFrm()->SwitchHorizontalToVertical( aTextOriginPos );
+                rInf.GetFrame()->SwitchHorizontalToVertical( aTextOriginPos );
             if ( rInf.GetSpace() || rInf.GetKanaComp())
             {
                 long nSpaceAdd = rInf.GetSpace() / SPACING_PRECISION_FACTOR;
@@ -1053,7 +1059,7 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
                         lcl_IsMonoSpaceFont( *(rInf.GetpOut()) ) )
                     {
                         pSI->Compress( pKernArray, rInf.GetIdx(), rInf.GetLen(),
-                            rInf.GetKanaComp(), (sal_uInt16)aFont.GetSize().Height(), &aTextOriginPos );
+                            rInf.GetKanaComp(), (sal_uInt16)aFont.GetSize().Height(), lcl_IsFullstopCentered( rInf.GetOut() ) , &aTextOriginPos );
                         bSpecialJust = true;
                     }
                     ///Asian Justification
@@ -1163,10 +1169,10 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
                         && ( aTmp != rInf.GetOut().GetMapMode().GetScaleX() );
 
         if ( bSwitchL2R )
-            rInf.GetFrm()->SwitchLTRtoRTL( aTextOriginPos );
+            rInf.GetFrame()->SwitchLTRtoRTL( aTextOriginPos );
 
         if ( bSwitchH2V )
-            rInf.GetFrm()->SwitchHorizontalToVertical( aTextOriginPos );
+            rInf.GetFrame()->SwitchHorizontalToVertical( aTextOriginPos );
 
         // In the good old days we used to have a simple DrawText if the
         // output device is the printer. Now we need a DrawTextArray if
@@ -1224,7 +1230,7 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
                 {
                     pSI->Compress( pKernArray, rInf.GetIdx(), rInf.GetLen(),
                                    rInf.GetKanaComp(),
-                                   (sal_uInt16)aFont.GetSize().Height(), &aTextOriginPos );
+                                   (sal_uInt16)aFont.GetSize().Height(), lcl_IsFullstopCentered( rInf.GetOut() ), &aTextOriginPos );
                     bSpecialJust = true;
                 }
 
@@ -1253,7 +1259,7 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
                     if ( SwScriptInfo::IsArabicText( rInf.GetText(), rInf.GetIdx(), rInf.GetLen() ) )
                     {
                         if ( pSI && pSI->CountKashida() &&
-                            pSI->KashidaJustify( pKernArray, 0, rInf.GetIdx(),
+                            pSI->KashidaJustify( pKernArray, nullptr, rInf.GetIdx(),
                                                  rInf.GetLen(), nSpaceAdd ) != -1 )
                         {
                             bSpecialJust = true;
@@ -1271,7 +1277,7 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
                     {
                         // Use rInf.GetSpace() because it has more precision than
                         // nSpaceAdd:
-                        SwScriptInfo::ThaiJustify( rInf.GetText(), pKernArray, 0,
+                        SwScriptInfo::ThaiJustify( rInf.GetText(), pKernArray, nullptr,
                                                    rInf.GetIdx(), rInf.GetLen(),
                                                    rInf.GetNumberOfBlanks(),
                                                    rInf.GetSpace() );
@@ -1434,10 +1440,10 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
                 Point aTmpPos( aTextOriginPos );
                 pSI->Compress( pScrArray, rInf.GetIdx(), rInf.GetLen(),
                                rInf.GetKanaComp(),
-                               (sal_uInt16)aFont.GetSize().Height(), &aTmpPos );
+                               (sal_uInt16)aFont.GetSize().Height(), lcl_IsFullstopCentered( rInf.GetOut() ), &aTmpPos );
                 pSI->Compress( pKernArray, rInf.GetIdx(), rInf.GetLen(),
                                rInf.GetKanaComp(),
-                               (sal_uInt16)aFont.GetSize().Height(), &aTextOriginPos );
+                               (sal_uInt16)aFont.GetSize().Height(), lcl_IsFullstopCentered( rInf.GetOut() ), &aTextOriginPos );
             }
 
             // Asian Justification
@@ -1553,10 +1559,10 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
                           ( rInf.GetSpace() / SPACING_PRECISION_FACTOR );
 
             if ( bSwitchL2R )
-                rInf.GetFrm()->SwitchLTRtoRTL( aTextOriginPos );
+                rInf.GetFrame()->SwitchLTRtoRTL( aTextOriginPos );
 
             if ( bSwitchH2V )
-                rInf.GetFrm()->SwitchHorizontalToVertical( aTextOriginPos );
+                rInf.GetFrame()->SwitchHorizontalToVertical( aTextOriginPos );
 
 #if defined(MACOSX) || defined(IOS)
             rInf.GetOut().DrawTextArray( aTextOriginPos, rInf.GetText(),
@@ -1695,14 +1701,14 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
 
                         if ( bSwitchL2R )
                         {
-                            rInf.GetFrm()->SwitchLTRtoRTL( aCurrPos );
-                            rInf.GetFrm()->SwitchLTRtoRTL( aEnd );
+                            rInf.GetFrame()->SwitchLTRtoRTL( aCurrPos );
+                            rInf.GetFrame()->SwitchLTRtoRTL( aEnd );
                         }
 
                         if ( bSwitchH2V )
                         {
-                            rInf.GetFrm()->SwitchHorizontalToVertical( aCurrPos );
-                            rInf.GetFrm()->SwitchHorizontalToVertical( aEnd );
+                            rInf.GetFrame()->SwitchHorizontalToVertical( aCurrPos );
+                            rInf.GetFrame()->SwitchHorizontalToVertical( aEnd );
                         }
                         rInf.GetOut().DrawWaveLine( aCurrPos, aEnd );
 
@@ -1743,10 +1749,10 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
             {
 
                 if ( bSwitchL2R )
-                    rInf.GetFrm()->SwitchLTRtoRTL( aTextOriginPos );
+                    rInf.GetFrame()->SwitchLTRtoRTL( aTextOriginPos );
 
                 if ( bSwitchH2V )
-                    rInf.GetFrm()->SwitchHorizontalToVertical( aTextOriginPos );
+                    rInf.GetFrame()->SwitchHorizontalToVertical( aTextOriginPos );
 
 #if defined(MACOSX) || defined(IOS)
                 rInf.GetOut().DrawTextArray( aTextOriginPos, *pStr, pKernArray + nOffs,
@@ -1775,6 +1781,28 @@ void SwFntObj::DrawText( SwDrawTextInfo &rInf )
                     pTmpFont->SetOverline(UNDERLINE_NONE);
                     pTmpFont->SetStrikeout(STRIKEOUT_NONE);
                     rInf.GetOut().SetFont( *pTmpFont );
+                    long nShift = rInf.GetOut( ).GetFontMetric( ).GetBulletOffset( );
+                    if ( nShift )
+                    {
+                        long nAdd = 0;
+
+                        if (aBulletOverlay.getLength() > nTmpIdx &&
+                            aBulletOverlay[ nTmpIdx ] == CH_BULLET )
+                        {
+                            if (bSwitchH2V)
+                                aTextOriginPos.Y() += nShift ;
+                            else
+                                aTextOriginPos.X() += nShift ;
+                            nAdd = nShift ;
+                        }
+                        for( sal_Int32 i = 1 ; i < nLen ; ++i )
+                        {
+                            if ( aBulletOverlay[ i + nTmpIdx ] == CH_BULLET )
+                                pKernArray [ i - 1 ] += nShift ;
+                            if ( nAdd )
+                                pKernArray [ i - 1 ] -= nAdd;
+                        }
+                    }
                     rInf.GetOut().DrawTextArray( aTextOriginPos, aBulletOverlay, pKernArray + nOffs,
                                                  nTmpIdx + nOffs , nLen - nOffs );
                     pTmpFont->SetColor( aPreviousColor );
@@ -1805,10 +1833,10 @@ Size SwFntObj::GetTextSize( SwDrawTextInfo& rInf )
         pPrinter->SetDigitLanguage( rInf.GetOut().GetDigitLanguage() );
     }
 
-    if ( rInf.GetFrm() && nLn && rInf.SnapToGrid() && rInf.GetFont() &&
+    if ( rInf.GetFrame() && nLn && rInf.SnapToGrid() && rInf.GetFont() &&
          SW_CJK == rInf.GetFont()->GetActual() )
     {
-        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrm()->FindPageFrm()));
+        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrame()->FindPageFrame()));
         if ( pGrid && GRID_LINES_CHARS == pGrid->GetGridType() && pGrid->IsSnapToChars() )
         {
             const SwDoc* pDoc = rInf.GetShell()->GetDoc();
@@ -1847,10 +1875,10 @@ Size SwFntObj::GetTextSize( SwDrawTextInfo& rInf )
     }
 
     //for textgrid refactor
-    if ( rInf.GetFrm() && nLn && rInf.SnapToGrid() && rInf.GetFont() &&
+    if ( rInf.GetFrame() && nLn && rInf.SnapToGrid() && rInf.GetFont() &&
          SW_CJK == rInf.GetFont()->GetActual() )
     {
-        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrm()->FindPageFrm()));
+        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrame()->FindPageFrame()));
         if ( pGrid && GRID_LINES_CHARS == pGrid->GetGridType() && !pGrid->IsSnapToChars() )
         {
             const long nGridWidthAdd = EvalGridWidthAdd( pGrid, rInf );
@@ -1904,7 +1932,7 @@ Size SwFntObj::GetTextSize( SwDrawTextInfo& rInf )
         if( bCompress )
             rInf.SetKanaDiff( rInf.GetScriptInfo()->Compress( pKernArray,
                 rInf.GetIdx(), nLn, rInf.GetKanaComp(),
-                (sal_uInt16)aFont.GetSize().Height() ) );
+                (sal_uInt16)aFont.GetSize().Height() ,lcl_IsFullstopCentered( rInf.GetOut() ) ) );
         else
             rInf.SetKanaDiff( 0 );
 
@@ -1967,7 +1995,7 @@ Size SwFntObj::GetTextSize( SwDrawTextInfo& rInf )
                                         rInf.GetIdx(), nLn );
             rInf.SetKanaDiff( rInf.GetScriptInfo()->Compress( pKernArray,
                 rInf.GetIdx(), nLn, rInf.GetKanaComp(),
-                (sal_uInt16) aFont.GetSize().Height() ) );
+                (sal_uInt16) aFont.GetSize().Height() ,lcl_IsFullstopCentered( rInf.GetOut() ) ) );
             aTextSize.Width() = pKernArray[ nLn - 1 ];
             delete[] pKernArray;
         }
@@ -1992,7 +2020,7 @@ Size SwFntObj::GetTextSize( SwDrawTextInfo& rInf )
     return aTextSize;
 }
 
-sal_Int32 SwFntObj::GetCrsrOfst( SwDrawTextInfo &rInf )
+sal_Int32 SwFntObj::GetCursorOfst( SwDrawTextInfo &rInf )
 {
     long nSpaceAdd =       rInf.GetSpace() / SPACING_PRECISION_FACTOR;
     const long nSperren = -rInf.GetSperren() / SPACING_PRECISION_FACTOR;
@@ -2027,7 +2055,8 @@ sal_Int32 SwFntObj::GetCrsrOfst( SwDrawTextInfo &rInf )
         {
             pSI->Compress( pKernArray, rInf.GetIdx(), rInf.GetLen(),
                            rInf.GetKanaComp(),
-                           (sal_uInt16) aFont.GetSize().Height() );
+                           (sal_uInt16) aFont.GetSize().Height(),
+                           lcl_IsFullstopCentered( rInf.GetOut() ) );
         }
 
         // Asian Justification
@@ -2055,7 +2084,7 @@ sal_Int32 SwFntObj::GetCrsrOfst( SwDrawTextInfo &rInf )
             if ( SwScriptInfo::IsArabicText( rInf.GetText(), rInf.GetIdx(), rInf.GetLen() ) )
             {
                 if ( pSI && pSI->CountKashida() &&
-                    pSI->KashidaJustify( pKernArray, 0, rInf.GetIdx(), rInf.GetLen(),
+                    pSI->KashidaJustify( pKernArray, nullptr, rInf.GetIdx(), rInf.GetLen(),
                                          nSpaceAdd ) != -1 )
                     nSpaceAdd = 0;
             }
@@ -2068,7 +2097,7 @@ sal_Int32 SwFntObj::GetCrsrOfst( SwDrawTextInfo &rInf )
 
             if ( LANGUAGE_THAI == aLang )
             {
-                SwScriptInfo::ThaiJustify( rInf.GetText(), pKernArray, 0,
+                SwScriptInfo::ThaiJustify( rInf.GetText(), pKernArray, nullptr,
                                            rInf.GetIdx(), rInf.GetLen(),
                                            rInf.GetNumberOfBlanks(),
                                            rInf.GetSpace() );
@@ -2085,10 +2114,10 @@ sal_Int32 SwFntObj::GetCrsrOfst( SwDrawTextInfo &rInf )
     long nSpaceSum = 0;
     long nKernSum = 0;
 
-    if ( rInf.GetFrm() && rInf.GetLen() && rInf.SnapToGrid() &&
+    if ( rInf.GetFrame() && rInf.GetLen() && rInf.SnapToGrid() &&
          rInf.GetFont() && SW_CJK == rInf.GetFont()->GetActual() )
     {
-        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrm()->FindPageFrm()));
+        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrame()->FindPageFrame()));
         if ( pGrid && GRID_LINES_CHARS == pGrid->GetGridType() && pGrid->IsSnapToChars() )
         {
             const SwDoc* pDoc = rInf.GetShell()->GetDoc();
@@ -2112,10 +2141,10 @@ sal_Int32 SwFntObj::GetCrsrOfst( SwDrawTextInfo &rInf )
     }
 
     //for textgrid refactor
-    if ( rInf.GetFrm() && rInf.GetLen() && rInf.SnapToGrid() &&
+    if ( rInf.GetFrame() && rInf.GetLen() && rInf.SnapToGrid() &&
          rInf.GetFont() && SW_CJK == rInf.GetFont()->GetActual() )
     {
-        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrm()->FindPageFrm()));
+        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrame()->FindPageFrame()));
         if ( pGrid && GRID_LINES_CHARS == pGrid->GetGridType() && !pGrid->IsSnapToChars() )
         {
 
@@ -2213,7 +2242,7 @@ SwFntAccess::SwFntAccess( const void* &rMagic,
     }
 
     {
-        OutputDevice* pOut = 0;
+        OutputDevice* pOut = nullptr;
         sal_uInt16 nZoom = USHRT_MAX;
 
         // Get the reference device
@@ -2235,7 +2264,7 @@ SwFntAccess::SwFntAccess( const void* &rMagic,
                 return; // result of Check: Drucker+Zoom okay.
             }
             pFntObj->Unlock(); // forget this object, printer/zoom differs
-            pObj = NULL;
+            pObj = nullptr;
         }
 
         // Search by font comparison, quite expensive!
@@ -2278,7 +2307,7 @@ SwFntAccess::SwFntAccess( const void* &rMagic,
                 OSL_ENSURE( !pFntObj->pPrinter, "SwFntAccess: Printer Changed" );
                 pFntObj->CreatePrtFont( *pOut );
                 pFntObj->pPrinter = pOut;
-                pFntObj->pScrFont = NULL;
+                pFntObj->pScrFont = nullptr;
                 pFntObj->nGuessedLeading = USHRT_MAX;
                 pFntObj->nExtLeading = USHRT_MAX;
                 pFntObj->nPrtAscent = USHRT_MAX;
@@ -2321,10 +2350,10 @@ sal_Int32 SwFont::GetTextBreak( SwDrawTextInfo& rInf, long nTextWidth )
     sal_Int32 nLn = rInf.GetLen() == COMPLETE_STRING
         ? rInf.GetText().getLength() : rInf.GetLen();
 
-    if ( rInf.GetFrm() && nLn && rInf.SnapToGrid() &&
+    if ( rInf.GetFrame() && nLn && rInf.SnapToGrid() &&
          rInf.GetFont() && SW_CJK == rInf.GetFont()->GetActual() )
     {
-        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrm()->FindPageFrm()));
+        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrame()->FindPageFrame()));
         if ( pGrid && GRID_LINES_CHARS == pGrid->GetGridType() && pGrid->IsSnapToChars() )
         {
             const SwDoc* pDoc = rInf.GetShell()->GetDoc();
@@ -2355,10 +2384,10 @@ sal_Int32 SwFont::GetTextBreak( SwDrawTextInfo& rInf, long nTextWidth )
     }
 
     //for text grid enhancement
-    if ( rInf.GetFrm() && nLn && rInf.SnapToGrid() && rInf.GetFont() &&
+    if ( rInf.GetFrame() && nLn && rInf.SnapToGrid() && rInf.GetFont() &&
          SW_CJK == rInf.GetFont()->GetActual() )
     {
-        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrm()->FindPageFrm()));
+        SwTextGridItem const*const pGrid(GetGridItem(rInf.GetFrame()->FindPageFrame()));
         if ( pGrid && GRID_LINES_CHARS == pGrid->GetGridType() && !pGrid->IsSnapToChars() )
         {
             const long nGridWidthAdd = EvalGridWidthAdd( pGrid, rInf );
@@ -2377,7 +2406,7 @@ sal_Int32 SwFont::GetTextBreak( SwDrawTextInfo& rInf, long nTextWidth )
         }
     }
 
-    if( aSub[nActual].IsCapital() && nLn )
+    if( m_aSub[m_nActual].IsCapital() && nLn )
     {
         nTextBreak = GetCapitalBreak( rInf.GetShell(), rInf.GetpOut(),
             rInf.GetScriptInfo(), rInf.GetText(), nTextWidth, rInf.GetIdx(),
@@ -2393,7 +2422,7 @@ sal_Int32 SwFont::GetTextBreak( SwDrawTextInfo& rInf, long nTextWidth )
         sal_Int32 nTmpLen;
         bool bTextReplaced = false;
 
-        if ( !aSub[nActual].IsCaseMap() )
+        if ( !m_aSub[m_nActual].IsCaseMap() )
         {
             pTmpText = &rInf.GetText();
             nTmpIdx = rInf.GetIdx();
@@ -2402,8 +2431,8 @@ sal_Int32 SwFont::GetTextBreak( SwDrawTextInfo& rInf, long nTextWidth )
         else
         {
             const OUString aSnippet(rInf.GetText().copy(rInf.GetIdx(), nLn));
-            aTmpText = aSub[nActual].CalcCaseMap( aSnippet );
-            const bool bTitle = SVX_CASEMAP_TITEL == aSub[nActual].GetCaseMap() &&
+            aTmpText = m_aSub[m_nActual].CalcCaseMap( aSnippet );
+            const bool bTitle = SVX_CASEMAP_TITEL == m_aSub[m_nActual].GetCaseMap() &&
                                 g_pBreakIt->GetBreakIter().is();
 
             // Uaaaaahhhh!!! In title case mode, we would get wrong results
@@ -2412,12 +2441,12 @@ sal_Int32 SwFont::GetTextBreak( SwDrawTextInfo& rInf, long nTextWidth )
                 // check if rInf.GetIdx() is begin of word
                 if ( !g_pBreakIt->GetBreakIter()->isBeginWord(
                      rInf.GetText(), rInf.GetIdx(),
-                     g_pBreakIt->GetLocale( aSub[nActual].GetLanguage() ),
+                     g_pBreakIt->GetLocale( m_aSub[m_nActual].GetLanguage() ),
                      i18n::WordType::ANYWORD_IGNOREWHITESPACES ) )
                 {
                     // In this case, the beginning of aTmpText is wrong.
                     OUString aSnippetTmp(aSnippet.copy(0, 1));
-                    aSnippetTmp = aSub[nActual].CalcCaseMap( aSnippetTmp );
+                    aSnippetTmp = m_aSub[m_nActual].CalcCaseMap( aSnippetTmp );
                     aTmpText = aTmpText.replaceAt( 0, aSnippetTmp.getLength(), OUString(aSnippet[0]) );
                 }
             }
@@ -2466,7 +2495,8 @@ sal_Int32 SwFont::GetTextBreak( SwDrawTextInfo& rInf, long nTextWidth )
         rInf.GetOut().GetTextArray( rInf.GetText(), pKernArray,
                                     rInf.GetIdx(), nLn );
         if( rInf.GetScriptInfo()->Compress( pKernArray, rInf.GetIdx(), nLn,
-                            rInf.GetKanaComp(), (sal_uInt16)GetHeight( nActual ) ) )
+                            rInf.GetKanaComp(), (sal_uInt16)GetHeight( m_nActual ),
+                            lcl_IsFullstopCentered( rInf.GetOut() ) ) )
         {
             long nKernAdd = nKern;
             sal_Int32 nTmpBreak = nTextBreak2;
@@ -2521,7 +2551,7 @@ bool SwDrawTextInfo::ApplyAutoColor( vcl::Font* pFont )
         if ( bChgFntColor )
         {
             // check if current background has a user defined setting
-            const Color* pCol = GetFont() ? GetFont()->GetBackColor() : NULL;
+            const Color* pCol = GetFont() ? GetFont()->GetBackColor() : nullptr;
             Color aColor;
             if( ! pCol || COL_TRANSPARENT == pCol->GetColor() )
             {
@@ -2537,7 +2567,7 @@ bool SwDrawTextInfo::ApplyAutoColor( vcl::Font* pFont )
                 /// OD 21.08.2002 #99657#
                 ///     There is a user defined setting for the background, if there
                 ///     is a background brush and its color is *not* "no fill"/"auto fill".
-                if( GetFrm()->GetBackgroundBrush( aFillAttributes, pItem, pCol, aOrigBackRect, false ) )
+                if( GetFrame()->GetBackgroundBrush( aFillAttributes, pItem, pCol, aOrigBackRect, false ) )
                 {
                     if (aFillAttributes.get() && aFillAttributes->isUsed())
                     {
@@ -2555,10 +2585,10 @@ bool SwDrawTextInfo::ApplyAutoColor( vcl::Font* pFont )
                     /// OD 30.08.2002 #99657#
                     /// determined color <pCol> can be <COL_TRANSPARENT>. Thus, check it.
                     if ( pCol->GetColor() == COL_TRANSPARENT)
-                        pCol = NULL;
+                        pCol = nullptr;
                 }
                 else
-                    pCol = NULL;
+                    pCol = nullptr;
             }
 
             // no user defined color at paragraph or font background

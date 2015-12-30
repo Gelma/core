@@ -26,9 +26,9 @@
 #include "scdllapi.h"
 #include "calcmacros.hxx"
 
+#include <memory>
 #include <map>
 #include <vector>
-#include <boost/ptr_container/ptr_map.hpp>
 
 class ScDocument;
 class ScTokenArray;
@@ -94,7 +94,7 @@ public:
                                  const OUString& rName,
                                  const ScAddress& rTarget );
                                 // rTarget is ABSPOS jump label
-                    ScRangeData(const ScRangeData& rScRangeData, ScDocument* pDocument = NULL);
+                    ScRangeData(const ScRangeData& rScRangeData, ScDocument* pDocument = nullptr);
 
     SC_DLLPUBLIC ~ScRangeData();
 
@@ -170,13 +170,11 @@ class ScRangeName
 {
 private:
     typedef std::vector<ScRangeData*> IndexDataType;
-    typedef ::boost::ptr_map<OUString, ScRangeData> DataType;
-    DataType maData;
+    typedef ::std::map<OUString, std::unique_ptr<ScRangeData>> DataType;
+    DataType m_Data;
     IndexDataType maIndexToData;
 
 public:
-    /// Map that manages stored ScRangeName instances.
-    typedef ::boost::ptr_map<SCTAB, ScRangeName>  TabNameMap;
     /// Map that stores non-managed pointers to ScRangeName instances.
     typedef ::std::map<SCTAB, const ScRangeName*> TabNameCopyMap;
 
@@ -210,7 +208,7 @@ public:
     bool empty() const;
 
     /** Insert object into set.
-        @ATTENTION: The underlying ::boost::ptr_map_adapter::insert(p) takes
+        @ATTENTION: The underlying ::std::map<std::unique_ptr>::insert(p) takes
         ownership of p and if it can't insert it deletes the object! So, if
         this insert here returns false the object where p pointed to is gone!
      */

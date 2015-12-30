@@ -222,6 +222,7 @@
 #define FN_NUM_NUMBERING_ON     (FN_EDIT + 44)  /* Numerierung an */
 #define FN_BUL_NUM_RULE_INDEX   (FN_EDIT + 120) /* Achieving num rule index */
 #define FN_NUM_NUM_RULE_INDEX   (FN_EDIT + 121)
+#define FN_OUTLINE_RULE_INDEX   (FN_EDIT + 122)
 
 #define FN_INSERT               (SID_SW_START +  300)
 #define FN_DELETE_BOOKMARK      (FN_INSERT + 1)
@@ -915,7 +916,7 @@
 #define SID_INSERT_ZWNBSP                               ( SID_SVX_START + 1059 )   /* insert ZWNJ - invisible space, forces linebreak*/
 #define SID_OPTIONS_DATABASES                           ( SID_SVX_START + 1060 )
 #define SID_OPEN_SMARTTAGMENU                           ( SID_SVX_START + 1061 )
-#define SID_OPEN_SMARTTAGOPTIONS                        ( SID_SVX_START + 1062 )
+// (SID_SVX_START + 1062) is in include/sfx2/sfxsids.hrc
 #define SID_INSERT_TREECONTROL                          ( SID_SVX_START + 1063 )
 #define SID_ATTR_VIEWLAYOUT                             ( SID_SVX_START + 1064 )
 #define SID_ATTR_ZOOMSLIDER                             ( SID_SVX_START + 1065 )
@@ -996,6 +997,7 @@
 
 #define FN_SVX_SET_NUMBER                               ( SID_SVX_START + 1136 )
 #define FN_SVX_SET_BULLET                               ( SID_SVX_START + 1137 )
+#define FN_SVX_SET_OUTLINE                              ( SID_SVX_START + 1138 )
 
 #define SID_ATTR_BORDER_STYLES                          ( SID_SVX_START + 1140 )
 #define SID_ATTR_BORDER_DEFAULT_WIDTH                   ( SID_SVX_START + 1141 )

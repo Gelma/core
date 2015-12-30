@@ -88,10 +88,10 @@ using namespace ::com::sun::star::uno;
 using namespace ::com::sun::star::linguistic2;
 using namespace ::com::sun::star::smarttags;
 
-// Wir ersparen uns in Hyphenate ein GetFrm()
+// Wir ersparen uns in Hyphenate ein GetFrame()
 // Achtung: in edlingu.cxx stehen die Variablen!
 extern const SwTextNode *pLinguNode;
-extern       SwTextFrm  *pLinguFrm;
+extern       SwTextFrame  *pLinguFrame;
 
 /*
  * This has basically the same function as SwScriptInfo::MaskHiddenRanges,
@@ -177,32 +177,32 @@ lcl_MaskRedlinesAndHiddenText( const SwTextNode& rNode, OUStringBuffer& rText,
 /**
  * Used for spell checking. Calculates a rectangle for repaint.
  */
-static SwRect lcl_CalculateRepaintRect( SwTextFrm& rTextFrm, sal_Int32 nChgStart, sal_Int32 nChgEnd )
+static SwRect lcl_CalculateRepaintRect( SwTextFrame& rTextFrame, sal_Int32 nChgStart, sal_Int32 nChgEnd )
 {
     SwRect aRect;
 
-    SwTextNode *pNode = rTextFrm.GetTextNode();
+    SwTextNode *pNode = rTextFrame.GetTextNode();
 
     SwNodeIndex aNdIdx( *pNode );
     SwPosition aPos( aNdIdx, SwIndex( pNode, nChgEnd ) );
-    SwCrsrMoveState aTmpState( MV_NONE );
-    aTmpState.b2Lines = true;
-    rTextFrm.GetCharRect( aRect, aPos, &aTmpState );
+    SwCursorMoveState aTmpState( MV_NONE );
+    aTmpState.m_b2Lines = true;
+    rTextFrame.GetCharRect( aRect, aPos, &aTmpState );
     // information about end of repaint area
-    Sw2LinesPos* pEnd2Pos = aTmpState.p2Lines;
+    Sw2LinesPos* pEnd2Pos = aTmpState.m_p2Lines;
 
-    const SwTextFrm *pEndFrm = &rTextFrm;
+    const SwTextFrame *pEndFrame = &rTextFrame;
 
-    while( pEndFrm->HasFollow() &&
-           nChgEnd >= pEndFrm->GetFollow()->GetOfst() )
-        pEndFrm = pEndFrm->GetFollow();
+    while( pEndFrame->HasFollow() &&
+           nChgEnd >= pEndFrame->GetFollow()->GetOfst() )
+        pEndFrame = pEndFrame->GetFollow();
 
     if ( pEnd2Pos )
     {
         // we are inside a special portion, take left border
-        SWRECTFN( pEndFrm )
+        SWRECTFN( pEndFrame )
         (aRect.*fnRect->fnSetTop)( (pEnd2Pos->aLine.*fnRect->fnGetTop)() );
-        if ( pEndFrm->IsRightToLeft() )
+        if ( pEndFrame->IsRightToLeft() )
             (aRect.*fnRect->fnSetLeft)( (pEnd2Pos->aPortion.*fnRect->fnGetLeft)() );
         else
             (aRect.*fnRect->fnSetLeft)( (pEnd2Pos->aPortion.*fnRect->fnGetRight)() );
@@ -211,31 +211,31 @@ static SwRect lcl_CalculateRepaintRect( SwTextFrm& rTextFrm, sal_Int32 nChgStart
         delete pEnd2Pos;
     }
 
-    aTmpState.p2Lines = NULL;
+    aTmpState.m_p2Lines = nullptr;
     SwRect aTmp;
     aPos = SwPosition( aNdIdx, SwIndex( pNode, nChgStart ) );
-    rTextFrm.GetCharRect( aTmp, aPos, &aTmpState );
+    rTextFrame.GetCharRect( aTmp, aPos, &aTmpState );
 
     // i63141: GetCharRect(..) could cause a formatting,
-    // during the formatting SwTextFrms could be joined, deleted, created...
-    // => we have to reinit pStartFrm and pEndFrm after the formatting
-    const SwTextFrm* pStartFrm = &rTextFrm;
-    while( pStartFrm->HasFollow() &&
-           nChgStart >= pStartFrm->GetFollow()->GetOfst() )
-        pStartFrm = pStartFrm->GetFollow();
-    pEndFrm = pStartFrm;
-    while( pEndFrm->HasFollow() &&
-           nChgEnd >= pEndFrm->GetFollow()->GetOfst() )
-        pEndFrm = pEndFrm->GetFollow();
+    // during the formatting SwTextFrames could be joined, deleted, created...
+    // => we have to reinit pStartFrame and pEndFrame after the formatting
+    const SwTextFrame* pStartFrame = &rTextFrame;
+    while( pStartFrame->HasFollow() &&
+           nChgStart >= pStartFrame->GetFollow()->GetOfst() )
+        pStartFrame = pStartFrame->GetFollow();
+    pEndFrame = pStartFrame;
+    while( pEndFrame->HasFollow() &&
+           nChgEnd >= pEndFrame->GetFollow()->GetOfst() )
+        pEndFrame = pEndFrame->GetFollow();
 
     // information about start of repaint area
-    Sw2LinesPos* pSt2Pos = aTmpState.p2Lines;
+    Sw2LinesPos* pSt2Pos = aTmpState.m_p2Lines;
     if ( pSt2Pos )
     {
         // we are inside a special portion, take right border
-        SWRECTFN( pStartFrm )
+        SWRECTFN( pStartFrame )
         (aTmp.*fnRect->fnSetTop)( (pSt2Pos->aLine.*fnRect->fnGetTop)() );
-        if ( pStartFrm->IsRightToLeft() )
+        if ( pStartFrame->IsRightToLeft() )
             (aTmp.*fnRect->fnSetLeft)( (pSt2Pos->aPortion.*fnRect->fnGetRight)() );
         else
             (aTmp.*fnRect->fnSetLeft)( (pSt2Pos->aPortion.*fnRect->fnGetLeft)() );
@@ -246,45 +246,45 @@ static SwRect lcl_CalculateRepaintRect( SwTextFrm& rTextFrm, sal_Int32 nChgStart
 
     bool bSameFrame = true;
 
-    if( rTextFrm.HasFollow() )
+    if( rTextFrame.HasFollow() )
     {
-        if( pEndFrm != pStartFrm )
+        if( pEndFrame != pStartFrame )
         {
             bSameFrame = false;
-            SwRect aStFrm( pStartFrm->PaintArea() );
+            SwRect aStFrame( pStartFrame->PaintArea() );
             {
-                SWRECTFN( pStartFrm )
-                (aTmp.*fnRect->fnSetLeft)( (aStFrm.*fnRect->fnGetLeft)() );
-                (aTmp.*fnRect->fnSetRight)( (aStFrm.*fnRect->fnGetRight)() );
-                (aTmp.*fnRect->fnSetBottom)( (aStFrm.*fnRect->fnGetBottom)() );
+                SWRECTFN( pStartFrame )
+                (aTmp.*fnRect->fnSetLeft)( (aStFrame.*fnRect->fnGetLeft)() );
+                (aTmp.*fnRect->fnSetRight)( (aStFrame.*fnRect->fnGetRight)() );
+                (aTmp.*fnRect->fnSetBottom)( (aStFrame.*fnRect->fnGetBottom)() );
             }
-            aStFrm = pEndFrm->PaintArea();
+            aStFrame = pEndFrame->PaintArea();
             {
-                SWRECTFN( pEndFrm )
-                (aRect.*fnRect->fnSetTop)( (aStFrm.*fnRect->fnGetTop)() );
-                (aRect.*fnRect->fnSetLeft)( (aStFrm.*fnRect->fnGetLeft)() );
-                (aRect.*fnRect->fnSetRight)( (aStFrm.*fnRect->fnGetRight)() );
+                SWRECTFN( pEndFrame )
+                (aRect.*fnRect->fnSetTop)( (aStFrame.*fnRect->fnGetTop)() );
+                (aRect.*fnRect->fnSetLeft)( (aStFrame.*fnRect->fnGetLeft)() );
+                (aRect.*fnRect->fnSetRight)( (aStFrame.*fnRect->fnGetRight)() );
             }
             aRect.Union( aTmp );
             while( true )
             {
-                pStartFrm = pStartFrm->GetFollow();
-                if( pStartFrm == pEndFrm )
+                pStartFrame = pStartFrame->GetFollow();
+                if( pStartFrame == pEndFrame )
                     break;
-                aRect.Union( pStartFrm->PaintArea() );
+                aRect.Union( pStartFrame->PaintArea() );
             }
         }
     }
     if( bSameFrame )
     {
-        SWRECTFN( pStartFrm )
+        SWRECTFN( pStartFrame )
         if( (aTmp.*fnRect->fnGetTop)() == (aRect.*fnRect->fnGetTop)() )
             (aRect.*fnRect->fnSetLeft)( (aTmp.*fnRect->fnGetLeft)() );
         else
         {
-            SwRect aStFrm( pStartFrm->PaintArea() );
-            (aRect.*fnRect->fnSetLeft)( (aStFrm.*fnRect->fnGetLeft)() );
-            (aRect.*fnRect->fnSetRight)( (aStFrm.*fnRect->fnGetRight)() );
+            SwRect aStFrame( pStartFrame->PaintArea() );
+            (aRect.*fnRect->fnSetLeft)( (aStFrame.*fnRect->fnGetLeft)() );
+            (aRect.*fnRect->fnSetRight)( (aStFrame.*fnRect->fnGetRight)() );
             (aRect.*fnRect->fnSetTop)( (aTmp.*fnRect->fnGetTop)() );
         }
 
@@ -306,14 +306,14 @@ static bool lcl_HaveCommonAttributes( IStyleAccess& rStyleAccess,
 {
     bool bRet = false;
 
-    SfxItemSet* pNewSet = 0;
+    SfxItemSet* pNewSet = nullptr;
 
     if ( !pSet1 )
     {
         OSL_ENSURE( nWhichId, "lcl_HaveCommonAttributes not used correctly" );
         if ( SfxItemState::SET == rSet2.GetItemState( nWhichId, false ) )
         {
-            pNewSet = rSet2.Clone( true );
+            pNewSet = rSet2.Clone();
             pNewSet->ClearItem( nWhichId );
         }
     }
@@ -326,7 +326,7 @@ static bool lcl_HaveCommonAttributes( IStyleAccess& rStyleAccess,
             if ( SfxItemState::SET == rSet2.GetItemState( pItem->Which(), false ) )
             {
                 if ( !pNewSet )
-                    pNewSet = rSet2.Clone( true );
+                    pNewSet = rSet2.Clone();
                 pNewSet->ClearItem( pItem->Which() );
             }
 
@@ -387,11 +387,11 @@ void SwTextNode::RstTextAttr(
     {
         // enlarge range for the reset of text attributes in case of an overlapping input field
         const SwTextInputField* pTextInputField = dynamic_cast<const SwTextInputField*>(GetTextAttrAt( nStt, RES_TXTATR_INPUTFIELD, PARENT ));
-        if ( pTextInputField == NULL )
+        if ( pTextInputField == nullptr )
         {
             pTextInputField = dynamic_cast<const SwTextInputField*>(GetTextAttrAt(nEnd, RES_TXTATR_INPUTFIELD, PARENT ));
         }
-        if ( pTextInputField != NULL )
+        if ( pTextInputField != nullptr )
         {
             if ( nStt > pTextInputField->GetStart() )
             {
@@ -419,7 +419,7 @@ void SwTextNode::RstTextAttr(
     // iterate over attribute array until start of attribute is behind deletion range
     size_t i = 0;
     sal_Int32 nAttrStart;
-    SwTextAttr *pHt = NULL;
+    SwTextAttr *pHt = nullptr;
     while ( (i < m_pSwpHints->Count())
             && ( ( ( nAttrStart = m_pSwpHints->Get(i)->GetStart()) < nEnd )
                  || nLen==0 ) && !bExactRange)
@@ -430,7 +430,7 @@ void SwTextNode::RstTextAttr(
         // but consider <bInclRefToxMark> used by Undo
         sal_Int32* const pAttrEnd = pHt->GetEnd();
         const bool bKeepAttrWithoutEnd =
-            pAttrEnd == NULL
+            pAttrEnd == nullptr
             && ( !bInclRefToxMark
                  || ( RES_TXTATR_REFMARK != pHt->Which()
                       && RES_TXTATR_TOXMARK != pHt->Which()
@@ -471,7 +471,7 @@ void SwTextNode::RstTextAttr(
             bSkipAttr = nWhich != pHt->Which();
             if ( bSkipAttr && RES_TXTATR_AUTOFMT == pHt->Which() )
             {
-                bSkipAttr = !lcl_HaveCommonAttributes( getIDocumentStyleAccess(), 0, nWhich, *static_cast<const SwFormatAutoFormat&>(pHt->GetAttr()).GetStyleHandle(), pStyleHandle );
+                bSkipAttr = !lcl_HaveCommonAttributes( getIDocumentStyleAccess(), nullptr, nWhich, *static_cast<const SwFormatAutoFormat&>(pHt->GetAttr()).GetStyleHandle(), pStyleHandle );
             }
         }
         else if ( !bInclRefToxMark )
@@ -493,7 +493,7 @@ void SwTextNode::RstTextAttr(
 
         if (nStt <= nAttrStart)     // Case: 1,3,5
         {
-            const sal_Int32 nAttrEnd = pAttrEnd != NULL
+            const sal_Int32 nAttrEnd = pAttrEnd != nullptr
                                         ? *pAttrEnd
                                         : nAttrStart;
             if (nEnd > nAttrStart
@@ -533,7 +533,7 @@ void SwTextNode::RstTextAttr(
                 }
             }
         }
-        else if (pAttrEnd != 0)         // Case: 2,4,5
+        else if (pAttrEnd != nullptr)         // Case: 2,4,5
         {
             if (*pAttrEnd > nStt)       // Case: 2,4
             {
@@ -644,15 +644,15 @@ void SwTextNode::RstTextAttr(
             m_pSwpHints->MergePortions(*this);
         }
 
-        // TextFrm's respond to aHint, others to aNew
+        // TextFrame's respond to aHint, others to aNew
         SwUpdateAttr aHint(
             nMin,
             nMax,
             0);
 
-        NotifyClients( 0, &aHint );
+        NotifyClients( nullptr, &aHint );
         SwFormatChg aNew( GetFormatColl() );
-        NotifyClients( 0, &aNew );
+        NotifyClients( nullptr, &aNew );
     }
 }
 
@@ -725,7 +725,6 @@ SwScanner::SwScanner( const SwTextNode& rNd, const OUString& rText,
     , nWordType( nType )
     , bClip( bClp )
 {
-    OSL_ENSURE( !aPreDashReplacementText.isEmpty(), "SwScanner: EmptyString" );
     nStartPos = nBegin = nStart;
     nEndPos = nEnde;
 
@@ -941,7 +940,7 @@ bool SwScanner::NextWord()
 
 bool SwTextNode::Spell(SwSpellArgs* pArgs)
 {
-    // Die Aehnlichkeiten zu SwTextFrm::_AutoSpell sind beabsichtigt ...
+    // Die Aehnlichkeiten zu SwTextFrame::_AutoSpell sind beabsichtigt ...
     // ACHTUNG: Ev. Bugs in beiden Routinen fixen!
 
     // modify string according to redline information and hidden text
@@ -962,7 +961,7 @@ bool SwTextNode::Spell(SwSpellArgs* pArgs)
             ? m_Text.getLength()
             : pArgs->pEndIdx->GetIndex();
 
-    pArgs->xSpellAlt = NULL;
+    pArgs->xSpellAlt = nullptr;
 
     // 4 cases:
 
@@ -1006,7 +1005,7 @@ bool SwTextNode::Spell(SwSpellArgs* pArgs)
 
         // In case 2. we pass the wrong list to the scanned, because only
         // the words in the wrong list have to be checked
-        SwScanner aScanner( *this, m_Text, 0, ModelToViewHelper(),
+        SwScanner aScanner( *this, m_Text, nullptr, ModelToViewHelper(),
                             WordType::DICTIONARY_WORD,
                             nBegin, nEnd );
         while( !pArgs->xSpellAlt.is() && aScanner.NextWord() )
@@ -1029,7 +1028,7 @@ bool SwTextNode::Spell(SwSpellArgs* pArgs)
                 {
                     if( IsSymbol( aScanner.GetBegin() ) )
                     {
-                        pArgs->xSpellAlt = NULL;
+                        pArgs->xSpellAlt = nullptr;
                     }
                     else
                     {
@@ -1042,7 +1041,7 @@ bool SwTextNode::Spell(SwSpellArgs* pArgs)
                         sal_Int32 nLeft = 0;
                         while (pChar && *pChar++ == CH_TXTATR_INWORD)
                             ++nLeft;
-                        pChar = rWord.getLength() ? rWord.getStr() + rWord.getLength() - 1 : 0;
+                        pChar = rWord.getLength() ? rWord.getStr() + rWord.getLength() - 1 : nullptr;
                         sal_Int32 nRight = 0;
                         while (pChar && *pChar-- == CH_TXTATR_INWORD)
                             ++nRight;
@@ -1238,7 +1237,7 @@ bool SwTextNode::Convert( SwConversionArgs &rArgs )
 
 // Die Aehnlichkeiten zu SwTextNode::Spell sind beabsichtigt ...
 // ACHTUNG: Ev. Bugs in beiden Routinen fixen!
-SwRect SwTextFrm::_AutoSpell( const SwContentNode* pActNode, sal_Int32 nActPos )
+SwRect SwTextFrame::_AutoSpell( const SwContentNode* pActNode, sal_Int32 nActPos )
 {
     SwRect aRect;
 #if OSL_DEBUG_LEVEL > 1
@@ -1324,7 +1323,7 @@ SwRect SwTextFrm::_AutoSpell( const SwContentNode* pActNode, sal_Int32 nActPos )
         uno::Reference< XSpellChecker1 > xSpell( ::GetSpellChecker() );
         SwDoc* pDoc = pNode->GetDoc();
 
-        SwScanner aScanner( *pNode, pNode->GetText(), 0, ModelToViewHelper(),
+        SwScanner aScanner( *pNode, pNode->GetText(), nullptr, ModelToViewHelper(),
                             WordType::DICTIONARY_WORD, nBegin, nEnd);
 
         while( aScanner.NextWord() )
@@ -1359,7 +1358,7 @@ SwRect SwTextFrm::_AutoSpell( const SwContentNode* pActNode, sal_Int32 nActPos )
                         switch (eState)
                         {
                             case SwWrongList::FreshState::FRESH:
-                                pNode->GetWrong()->Insert(OUString(), 0, nBegin, nLen, nInsertPos++);
+                                pNode->GetWrong()->Insert(OUString(), nullptr, nBegin, nLen, nInsertPos++);
                                 break;
                             case SwWrongList::FreshState::CURSOR:
                                 bPending = true; // fall-through to mark as invalid
@@ -1403,7 +1402,7 @@ SwRect SwTextFrm::_AutoSpell( const SwContentNode* pActNode, sal_Int32 nActPos )
             aRect = lcl_CalculateRepaintRect( *this, nChgStart, nChgEnd );
 
             // fdo#71558 notify misspelled word to accessibility
-            SwViewShell* pViewSh = getRootFrm() ? getRootFrm()->GetCurrShell() : 0;
+            SwViewShell* pViewSh = getRootFrame() ? getRootFrame()->GetCurrShell() : nullptr;
             if( pViewSh )
                 pViewSh->InvalidateAccessibleParaAttrs( *this );
         }
@@ -1416,7 +1415,7 @@ SwRect SwTextFrm::_AutoSpell( const SwContentNode* pActNode, sal_Int32 nActPos )
                     : SwTextNode::WrongState::TODO)
                 : SwTextNode::WrongState::DONE);
         if( !pNode->GetWrong()->Count() && ! pNode->IsWrongDirty() )
-            pNode->SetWrong( NULL );
+            pNode->SetWrong( nullptr );
     }
     else
         pNode->SetWrongDirty(SwTextNode::WrongState::DONE);
@@ -1438,7 +1437,7 @@ SwRect SwTextFrm::_AutoSpell( const SwContentNode* pActNode, sal_Int32 nActPos )
     @param nActPos ???
     @return SwRect Repaint area
 */
-SwRect SwTextFrm::SmartTagScan( SwContentNode* /*pActNode*/, sal_Int32 /*nActPos*/ )
+SwRect SwTextFrame::SmartTagScan( SwContentNode* /*pActNode*/, sal_Int32 /*nActPos*/ )
 {
     SwRect aRet;
     SwTextNode *pNode = GetTextNode();
@@ -1462,7 +1461,7 @@ SwRect SwTextFrm::SmartTagScan( SwContentNode* /*pActNode*/, sal_Int32 /*nActPos
             if ( nBegin < nEnd )
             {
                 const LanguageType aCurrLang = pNode->GetLang( nBegin );
-                const com::sun::star::lang::Locale aCurrLocale = g_pBreakIt->GetLocale( aCurrLang );
+                const css::lang::Locale aCurrLocale = g_pBreakIt->GetLocale( aCurrLang );
                 nBegin = g_pBreakIt->GetBreakIter()->beginOfSentence( rText, nBegin, aCurrLocale );
                 nEnd = g_pBreakIt->GetBreakIter()->endOfSentence(rText, nEnd, aCurrLocale);
                 if (nEnd > rText.getLength() || nEnd < 0)
@@ -1495,11 +1494,11 @@ SwRect SwTextFrm::SmartTagScan( SwContentNode* /*pActNode*/, sal_Int32 /*nActPos
         uno::Reference<text::XTextMarkup> const xTextMarkup =
              new SwXTextMarkup(pNode, aConversionMap);
 
-        com::sun::star::uno::Reference< ::com::sun::star::frame::XController > xController = pNode->GetDoc()->GetDocShell()->GetController();
+        css::uno::Reference< css::frame::XController > xController = pNode->GetDoc()->GetDocShell()->GetController();
 
         SwPosition start(*pNode, nBegin);
         SwPosition end  (*pNode, nEnd);
-        Reference< ::com::sun::star::text::XTextRange > xRange = SwXTextRange::CreateXTextRange(*pNode->GetDoc(), start, &end);
+        Reference< css::text::XTextRange > xRange = SwXTextRange::CreateXTextRange(*pNode->GetDoc(), start, &end);
 
         rSmartTagMgr.RecognizeTextRange(xRange, xTextMarkup, xController);
 
@@ -1512,7 +1511,7 @@ SwRect SwTextFrm::SmartTagScan( SwContentNode* /*pActNode*/, sal_Int32 /*nActPos
         do
         {
             const LanguageType nLang = aIter.GetLanguage();
-            const com::sun::star::lang::Locale aLocale = g_pBreakIt->GetLocale( nLang );
+            const css::lang::Locale aLocale = g_pBreakIt->GetLocale( nLang );
             nLangEnd = std::min<sal_Int32>( nEnd, aIter.GetChgPos() );
 
             const sal_Int32 nExpandBegin = aConversionMap.ConvertToViewPosition( nLangBegin );
@@ -1537,7 +1536,7 @@ SwRect SwTextFrm::SmartTagScan( SwContentNode* /*pActNode*/, sal_Int32 /*nActPos
         pNode->SetSmartTagDirty( COMPLETE_STRING != pSmartTagList->GetBeginInv() );
 
         if( !pSmartTagList->Count() && !pNode->IsSmartTagDirty() )
-            pNode->SetSmartTags( NULL );
+            pNode->SetSmartTags( nullptr );
 
         // Calculate repaint area:
 #if OSL_DEBUG_LEVEL > 1
@@ -1557,7 +1556,7 @@ SwRect SwTextFrm::SmartTagScan( SwContentNode* /*pActNode*/, sal_Int32 /*nActPos
 }
 
 // Wird vom CollectAutoCmplWords gerufen
-void SwTextFrm::CollectAutoCmplWrds( SwContentNode* pActNode, sal_Int32 nActPos )
+void SwTextFrame::CollectAutoCmplWrds( SwContentNode* pActNode, sal_Int32 nActPos )
 {
     SwTextNode *pNode = GetTextNode();
     if( pNode != pActNode || !nActPos )
@@ -1574,7 +1573,7 @@ void SwTextFrm::CollectAutoCmplWrds( SwContentNode* pActNode, sal_Int32 nActPos 
     if( nBegin < nEnd )
     {
         int nCnt = 200;
-        SwScanner aScanner( *pNode, pNode->GetText(), 0, ModelToViewHelper(),
+        SwScanner aScanner( *pNode, pNode->GetText(), nullptr, ModelToViewHelper(),
                             WordType::DICTIONARY_WORD, nBegin, nEnd );
         while( aScanner.NextWord() )
         {
@@ -1606,7 +1605,7 @@ void SwTextFrm::CollectAutoCmplWrds( SwContentNode* pActNode, sal_Int32 nActPos 
         pNode->SetAutoCompleteWordDirty( false );
 }
 
-/** Findet den TextFrm und sucht dessen CalcHyph */
+/** Findet den TextFrame und sucht dessen CalcHyph */
 bool SwTextNode::Hyphenate( SwInterHyphInfo &rHyphInf )
 {
     // Abkuerzung: am Absatz ist keine Sprache eingestellt:
@@ -1618,38 +1617,38 @@ bool SwTextNode::Hyphenate( SwInterHyphInfo &rHyphInf )
         return false;
     }
 
-    if( pLinguNode != this )
-    {
-        pLinguNode = this;
-        pLinguFrm = static_cast<SwTextFrm*>(getLayoutFrm( GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout(), rHyphInf.GetCrsrPos() ));
-    }
-    SwTextFrm *pFrm = pLinguFrm;
-    if( pFrm )
-        pFrm = &(pFrm->GetFrmAtOfst( rHyphInf.nStart ));
+    SwTextFrame *pFrame = ::sw::SwHyphIterCacheLastTextFrame(this,
+        [&rHyphInf, this]() {
+            return static_cast<SwTextFrame*>(this->getLayoutFrame(
+                this->GetDoc()->getIDocumentLayoutAccess().GetCurrentLayout(),
+                rHyphInf.GetCursorPos()));
+        });
+    if( pFrame )
+        pFrame = &(pFrame->GetFrameAtOfst( rHyphInf.nStart ));
     else
     {
         // 4935: Seit der Trennung ueber Sonderbereiche sind Faelle
         // moeglich, in denen kein Frame zum Node vorliegt.
         // Also keinOSL_ENSURE
-        OSL_ENSURE( pFrm, "!SwTextNode::Hyphenate: can't find any frame" );
+        OSL_ENSURE( pFrame, "!SwTextNode::Hyphenate: can't find any frame" );
         return false;
     }
 
-    while( pFrm )
+    while( pFrame )
     {
-        if( pFrm->Hyphenate( rHyphInf ) )
+        if( pFrame->Hyphenate( rHyphInf ) )
         {
             // Das Layout ist nicht robust gegen "Direktformatierung"
             // (7821, 7662, 7408); vgl. layact.cxx,
             // SwLayAction::_TurboAction(), if( !pCnt->IsValid() ...
-            pFrm->SetCompletePaint();
+            pFrame->SetCompletePaint();
             return true;
         }
-        pFrm = pFrm->GetFollow();
-        if( pFrm )
+        pFrame = pFrame->GetFollow();
+        if( pFrame )
         {
-            rHyphInf.nEnd = rHyphInf.nEnd - (pFrm->GetOfst() - rHyphInf.nStart);
-            rHyphInf.nStart = pFrm->GetOfst();
+            rHyphInf.nEnd = rHyphInf.nEnd - (pFrame->GetOfst() - rHyphInf.nStart);
+            rHyphInf.nStart = pFrame->GetOfst();
         }
     }
     return false;
@@ -1851,7 +1850,7 @@ void SwTextNode::TransliterateText(
             if( rTrans.needLanguageForTheMode() )
                 pIter = new SwLanguageIterator( *this, nStt );
             else
-                pIter = 0;
+                pIter = nullptr;
 
             sal_Int32 nEndPos = 0;
             sal_uInt16 nLang = LANGUAGE_NONE;
@@ -1938,7 +1937,7 @@ void SwTextNode::ReplaceTextOnly( sal_Int32 nPos, sal_Int32 nLen,
             while( nI + nCnt < nTLen && nOff == pOffsets[ nI + nCnt ] )
                 ++nCnt;
 
-            Update( SwIndex( this, nMyOff ), nCnt, false );
+            Update( SwIndex( this, nMyOff ), nCnt );
             nMyOff = nOff;
             //nMyOff -= nCnt;
             nI += nCnt - 1;
@@ -1957,10 +1956,10 @@ void SwTextNode::ReplaceTextOnly( sal_Int32 nPos, sal_Int32 nLen,
 
     // notify the layout!
     SwDelText aDelHint( nPos, nTLen );
-    NotifyClients( 0, &aDelHint );
+    NotifyClients( nullptr, &aDelHint );
 
     SwInsText aHint( nPos, nTLen );
-    NotifyClients( 0, &aHint );
+    NotifyClients( nullptr, &aHint );
 }
 
 // the return values allows us to see if we did the heavy-
@@ -2042,7 +2041,7 @@ bool SwTextNode::CountWords( SwDocStat& rStat,
         if (g_pBreakIt->GetBreakIter().is())
         {
             // zero is NULL for pLanguage -----------v               last param = true for clipping
-            SwScanner aScanner( *this, aExpandText, 0, aConversionMap, i18n::WordType::WORD_COUNT,
+            SwScanner aScanner( *this, aExpandText, nullptr, aConversionMap, i18n::WordType::WORD_COUNT,
                                 nExpandBegin, nExpandEnd, true );
 
             // used to filter out scanner returning almost empty strings (len=1; unichar=0x0001)
@@ -2133,9 +2132,9 @@ struct SwParaIdleData_Impl
     bool bAutoComplDirty;               // die ACompl-Liste muss angepasst werden
 
     SwParaIdleData_Impl() :
-        pWrong              ( 0 ),
-        pGrammarCheck       ( 0 ),
-        pSmartTags          ( 0 ),
+        pWrong              ( nullptr ),
+        pGrammarCheck       ( nullptr ),
+        pSmartTags          ( nullptr ),
         nNumberOfWords      ( 0 ),
         nNumberOfAsianWords ( 0 ),
         nNumberOfChars      ( 0 ),
@@ -2159,7 +2158,7 @@ void SwTextNode::InitSwParaStatistics( bool bNew )
         delete m_pParaIdleData_Impl->pGrammarCheck;
         delete m_pParaIdleData_Impl->pSmartTags;
         delete m_pParaIdleData_Impl;
-        m_pParaIdleData_Impl = 0;
+        m_pParaIdleData_Impl = nullptr;
     }
 }
 
@@ -2177,13 +2176,13 @@ void SwTextNode::SetWrong( SwWrongList* pNew, bool bDelete )
 
 SwWrongList* SwTextNode::GetWrong()
 {
-    return m_pParaIdleData_Impl ? m_pParaIdleData_Impl->pWrong : 0;
+    return m_pParaIdleData_Impl ? m_pParaIdleData_Impl->pWrong : nullptr;
 }
 
 // #i71360#
 const SwWrongList* SwTextNode::GetWrong() const
 {
-    return m_pParaIdleData_Impl ? m_pParaIdleData_Impl->pWrong : 0;
+    return m_pParaIdleData_Impl ? m_pParaIdleData_Impl->pWrong : nullptr;
 }
 
 void SwTextNode::SetGrammarCheck( SwGrammarMarkUp* pNew, bool bDelete )
@@ -2200,7 +2199,7 @@ void SwTextNode::SetGrammarCheck( SwGrammarMarkUp* pNew, bool bDelete )
 
 SwGrammarMarkUp* SwTextNode::GetGrammarCheck()
 {
-    return m_pParaIdleData_Impl ? m_pParaIdleData_Impl->pGrammarCheck : 0;
+    return m_pParaIdleData_Impl ? m_pParaIdleData_Impl->pGrammarCheck : nullptr;
 }
 
 void SwTextNode::SetSmartTags( SwWrongList* pNew, bool bDelete )
@@ -2220,7 +2219,7 @@ void SwTextNode::SetSmartTags( SwWrongList* pNew, bool bDelete )
 
 SwWrongList* SwTextNode::GetSmartTags()
 {
-    return m_pParaIdleData_Impl ? m_pParaIdleData_Impl->pSmartTags : 0;
+    return m_pParaIdleData_Impl ? m_pParaIdleData_Impl->pSmartTags : nullptr;
 }
 
 void SwTextNode::SetParaNumberOfWords( sal_uLong nNew ) const

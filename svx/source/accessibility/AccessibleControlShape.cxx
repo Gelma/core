@@ -128,10 +128,10 @@ AccessibleControlShape::AccessibleControlShape (
 AccessibleControlShape::~AccessibleControlShape()
 {
     m_pChildManager->release();
-    m_pChildManager = NULL;
+    m_pChildManager = nullptr;
 
     if ( m_xControlContextProxy.is() )
-        m_xControlContextProxy->setDelegator( NULL );
+        m_xControlContextProxy->setDelegator( nullptr );
     m_xControlContextProxy.clear();
     m_xControlContextTypeAccess.clear();
     m_xControlContextComponent.clear();
@@ -189,7 +189,7 @@ void AccessibleControlShape::Init()
 
         // get the control which belongs to our model (relative to our view)
         const vcl::Window* pViewWindow = maShapeTreeInfo.GetWindow();
-        SdrUnoObj* pUnoObjectImpl = PTR_CAST( SdrUnoObj, getSdrObject() );
+        SdrUnoObj* pUnoObjectImpl = dynamic_cast<SdrUnoObj*>( getSdrObject()  );
         SdrView* pView = maShapeTreeInfo.GetSdrView();
         OSL_ENSURE( pView && pViewWindow && pUnoObjectImpl, "AccessibleControlShape::Init: no view, or no view window, no SdrUnoObj!" );
 
@@ -590,8 +590,7 @@ Reference< XAccessibleRelationSet > SAL_CALL AccessibleControlShape::getAccessib
     {
         Reference < XAccessible > xAcc (pCtlAccShape->getAccessibleContext(), UNO_QUERY);
 
-        ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > > aSequence(1);
-        aSequence[0] = xAcc;
+        css::uno::Sequence< css::uno::Reference< css::uno::XInterface > > aSequence { xAcc };
         if( getAccessibleRole() == AccessibleRole::RADIO_BUTTON )
         {
             pRelationSetHelper->AddRelation( AccessibleRelation( AccessibleRelationType::MEMBER_OF, aSequence ) );
@@ -843,7 +842,7 @@ void AccessibleControlShape::initializeComposedState()
     }
 }
 
-void SAL_CALL AccessibleControlShape::elementInserted( const ::com::sun::star::container::ContainerEvent& _rEvent ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL AccessibleControlShape::elementInserted( const css::container::ContainerEvent& _rEvent ) throw (css::uno::RuntimeException, std::exception)
 {
     Reference< XContainer > xContainer( _rEvent.Source, UNO_QUERY );
     Reference< XControl > xControl( _rEvent.Element, UNO_QUERY );
@@ -876,12 +875,12 @@ void SAL_CALL AccessibleControlShape::elementInserted( const ::com::sun::star::c
     }
 }
 
-void SAL_CALL AccessibleControlShape::elementRemoved( const ::com::sun::star::container::ContainerEvent& ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL AccessibleControlShape::elementRemoved( const css::container::ContainerEvent& ) throw (css::uno::RuntimeException, std::exception)
 {
     // not interested in
 }
 
-void SAL_CALL AccessibleControlShape::elementReplaced( const ::com::sun::star::container::ContainerEvent& ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+void SAL_CALL AccessibleControlShape::elementReplaced( const css::container::ContainerEvent& ) throw (css::uno::RuntimeException, std::exception)
 {
     // not interested in
 }
@@ -904,7 +903,7 @@ AccessibleControlShape* SAL_CALL AccessibleControlShape::GetLabeledByControlShap
             }
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

@@ -38,6 +38,7 @@
 #include <vcl/graphicfilter.hxx>
 #include <vcl/settings.hxx>
 #include "svl/solar.hrc"
+#include "comphelper/sequence.hxx"
 #include "comphelper/string.hxx"
 #include "comphelper/storagehelper.hxx"
 #include "unotools/streamwrap.hxx"
@@ -156,7 +157,7 @@ PDFExport::~PDFExport()
 
 
 bool PDFExport::ExportSelection( vcl::PDFWriter& rPDFWriter,
-    Reference< com::sun::star::view::XRenderable >& rRenderable,
+    Reference< css::view::XRenderable >& rRenderable,
     const Any& rSelection,
     const StringRangeEnumerator& rRangeEnum,
     Sequence< PropertyValue >& rRenderOptions,
@@ -165,8 +166,8 @@ bool PDFExport::ExportSelection( vcl::PDFWriter& rPDFWriter,
     bool        bRet = false;
     try
     {
-        Any* pFirstPage = NULL;
-        Any* pLastPage = NULL;
+        Any* pFirstPage = nullptr;
+        Any* pLastPage = nullptr;
 
         bool bExportNotesPages = false;
 
@@ -184,10 +185,10 @@ bool PDFExport::ExportSelection( vcl::PDFWriter& rPDFWriter,
 
         if( pOut )
         {
-            vcl::PDFExtOutDevData* pPDFExtOutDevData = dynamic_cast<vcl::PDFExtOutDevData* >( pOut->GetExtOutDevData() );
             if ( nPageCount )
             {
-                pPDFExtOutDevData->SetIsExportNotesPages( bExportNotesPages );
+                vcl::PDFExtOutDevData& rPDFExtOutDevData = dynamic_cast<vcl::PDFExtOutDevData&>(*pOut->GetExtOutDevData());
+                rPDFExtOutDevData.SetIsExportNotesPages( bExportNotesPages );
 
                 sal_Int32 nCurrentPage(0);
                 StringRangeEnumerator::Iterator aIter = rRangeEnum.begin();
@@ -203,7 +204,7 @@ bool PDFExport::ExportSelection( vcl::PDFWriter& rPDFWriter,
                             aRenderer[ nProperty].Value >>= aPageSize;
                     }
 
-                    pPDFExtOutDevData->SetCurrentPageNumber( nCurrentPage );
+                    rPDFExtOutDevData.SetCurrentPageNumber( nCurrentPage );
 
                     GDIMetaFile                 aMtf;
                     const MapMode               aMapMode( MAP_100TH_MM );
@@ -231,7 +232,7 @@ bool PDFExport::ExportSelection( vcl::PDFWriter& rPDFWriter,
 
                     if( aMtf.GetActionSize() &&
                              ( !mbSkipEmptyPages || aPageSize.Width || aPageSize.Height ) )
-                        bRet = ImplExportPage( rPDFWriter, *pPDFExtOutDevData, aMtf ) || bRet;
+                        bRet = ImplExportPage(rPDFWriter, rPDFExtOutDevData, aMtf) || bRet;
 
                     pOut->Pop();
 
@@ -269,7 +270,7 @@ class PDFExportStreamDoc : public vcl::PDFOutputStream
     {}
     virtual ~PDFExportStreamDoc();
 
-    virtual void write( const Reference< XOutputStream >& xStream ) SAL_OVERRIDE;
+    virtual void write( const Reference< XOutputStream >& xStream ) override;
 };
 
 PDFExportStreamDoc::~PDFExportStreamDoc()
@@ -278,7 +279,7 @@ PDFExportStreamDoc::~PDFExportStreamDoc()
 
 void PDFExportStreamDoc::write( const Reference< XOutputStream >& xStream )
 {
-    Reference< com::sun::star::frame::XStorable > xStore( m_xSrcDoc, UNO_QUERY );
+    Reference< css::frame::XStorable > xStore( m_xSrcDoc, UNO_QUERY );
     if( xStore.is() )
     {
         Sequence< beans::PropertyValue > aArgs( 2 + ((m_aPreparedPassword.getLength() > 0) ? 1 : 0) );
@@ -308,7 +309,7 @@ static OUString getMimetypeForDocument( const Reference< XComponentContext >& xC
     try
     {
         // get document service name
-        Reference< com::sun::star::frame::XStorable > xStore( xDoc, UNO_QUERY );
+        Reference< css::frame::XStorable > xStore( xDoc, UNO_QUERY );
         Reference< frame::XModuleManager2 > xModuleManager = frame::ModuleManager::create(xContext);
         if( xStore.is() )
         {
@@ -810,7 +811,7 @@ bool PDFExport::Export( const OUString& rFile, const Sequence< PropertyValue >& 
 
             if ( pOut )
             {
-                DBG_ASSERT( pOut->GetExtOutDevData() == NULL, "PDFExport: ExtOutDevData already set!!!" );
+                DBG_ASSERT( pOut->GetExtOutDevData() == nullptr, "PDFExport: ExtOutDevData already set!!!" );
                 std::unique_ptr<vcl::PDFExtOutDevData> pPDFExtOutDevData(new vcl::PDFExtOutDevData( *pOut ));
                 pOut->SetExtOutDevData( pPDFExtOutDevData.get() );
                 pPDFExtOutDevData->SetIsExportNotes( mbExportNotes );
@@ -900,7 +901,7 @@ bool PDFExport::Export( const OUString& rFile, const Sequence< PropertyValue >& 
                         sal_Int32 nTotalPageCount = aRangeEnum.size();
                         if ( bSecondPassForImpressNotes )
                             nTotalPageCount *= 2;
-                        mxStatusIndicator->start( OUString( ResId( PDF_PROGRESS_BAR, *pResMgr ) ), nTotalPageCount );
+                        mxStatusIndicator->start( ResId( PDF_PROGRESS_BAR, *pResMgr ), nTotalPageCount );
                     }
                 }
 
@@ -918,7 +919,7 @@ bool PDFExport::Export( const OUString& rFile, const Sequence< PropertyValue >& 
                     mxStatusIndicator->end();
 
                 // if during the export the doc locale was set copy it to PDF writer
-                const com::sun::star::lang::Locale& rLoc( pPDFExtOutDevData->GetDocumentLocale() );
+                const css::lang::Locale& rLoc( pPDFExtOutDevData->GetDocumentLocale() );
                 if( !rLoc.Language.isEmpty() )
                     pPDFWriter->SetDocumentLocale( rLoc );
 
@@ -928,7 +929,7 @@ bool PDFExport::Export( const OUString& rFile, const Sequence< PropertyValue >& 
                     bRet = pPDFWriter->Emit();
                     aErrors = pPDFWriter->GetErrors();
                 }
-                pOut->SetExtOutDevData( NULL );
+                pOut->SetExtOutDevData( nullptr );
                 if( bReChangeToNormalView )
                 {
                     try
@@ -969,11 +970,11 @@ class PDFErrorRequest : private cppu::BaseMutex,
 {
     task::PDFExportException maExc;
 public:
-    PDFErrorRequest( const task::PDFExportException& i_rExc );
+    explicit PDFErrorRequest( const task::PDFExportException& i_rExc );
 
     // XInteractionRequest
-    virtual uno::Any SAL_CALL getRequest() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual uno::Sequence< uno::Reference< task::XInteractionContinuation > > SAL_CALL getContinuations() throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual uno::Any SAL_CALL getRequest() throw (uno::RuntimeException, std::exception) override;
+    virtual uno::Sequence< uno::Reference< task::XInteractionContinuation > > SAL_CALL getContinuations() throw (uno::RuntimeException, std::exception) override;
 };
 
 PDFErrorRequest::PDFErrorRequest( const task::PDFExportException& i_rExc ) :
@@ -1003,13 +1004,7 @@ void PDFExport::showErrors( const std::set< vcl::PDFWriter::ErrorCode >& rErrors
     if( ! rErrors.empty() && mxIH.is() )
     {
         task::PDFExportException aExc;
-        aExc.ErrorCodes.realloc( sal_Int32(rErrors.size()) );
-        sal_Int32 i = 0;
-        for( std::set< vcl::PDFWriter::ErrorCode >::const_iterator it = rErrors.begin();
-             it != rErrors.end(); ++it, i++ )
-        {
-            aExc.ErrorCodes.getArray()[i] = (sal_Int32)*it;
-        }
+        aExc.ErrorCodes = comphelper::containerToSequence<sal_Int32>( rErrors );
         Reference< task::XInteractionRequest > xReq( new PDFErrorRequest( aExc ) );
         mxIH->handle( xReq );
     }
@@ -1081,7 +1076,7 @@ void PDFExport::ImplWriteWatermark( vcl::PDFWriter& rWriter, const Size& rPageSi
 
     // adjust font height for text to fit
     OutputDevice* pDev = rWriter.GetReferenceDevice();
-    pDev->Push( PushFlags::ALL );
+    pDev->Push();
     pDev->SetFont( aFont );
     pDev->SetMapMode( MapMode( MAP_POINT ) );
     int w = 0;
@@ -1105,7 +1100,7 @@ void PDFExport::ImplWriteWatermark( vcl::PDFWriter& rWriter, const Size& rPageSi
     nTextHeight += nTextHeight/20;
     pDev->Pop();
 
-    rWriter.Push( PushFlags::ALL );
+    rWriter.Push();
     rWriter.SetMapMode( MapMode( MAP_POINT ) );
     rWriter.SetFont( aFont );
     rWriter.SetTextColor( COL_LIGHTGREEN );

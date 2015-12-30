@@ -91,7 +91,7 @@ Reference<awt::XWindow> SAL_CALL PresenterHelper::createWindow (
     {
         // Make the frame window transparent and make the parent able to
         // draw behind it.
-        if (pParentWindow.get() != NULL)
+        if (pParentWindow.get() != nullptr)
             pParentWindow->EnableChildTransparentMode();
     }
 
@@ -150,14 +150,14 @@ Reference<rendering::XCanvas> SAL_CALL PresenterHelper::createCanvas (
     // No shared window is given or an explicit canvas service name is
     // specified.  Create a new canvas.
     vcl::Window* pWindow = VCLUnoHelper::GetWindow(rxWindow);
-    if (pWindow != NULL)
+    if (pWindow != nullptr)
     {
         Sequence<Any> aArg (5);
 
         // common: first any is VCL pointer to window (for VCL canvas)
         aArg[0] = makeAny(reinterpret_cast<sal_Int64>(pWindow));
         aArg[1] = Any();
-        aArg[2] = makeAny(::com::sun::star::awt::Rectangle());
+        aArg[2] = makeAny(css::awt::Rectangle());
         aArg[3] = makeAny(sal_False);
         aArg[4] = makeAny(rxWindow);
 
@@ -180,10 +180,10 @@ void SAL_CALL PresenterHelper::toTop (
     throw (css::uno::RuntimeException, std::exception)
 {
     vcl::Window* pWindow = VCLUnoHelper::GetWindow(rxWindow);
-    if (pWindow != NULL)
+    if (pWindow != nullptr)
     {
         pWindow->ToTop();
-        pWindow->SetZOrder(NULL, ZOrderFlags::Last);
+        pWindow->SetZOrder(nullptr, ZOrderFlags::Last);
     }
 }
 
@@ -202,7 +202,7 @@ Reference<rendering::XBitmap> SAL_CALL PresenterHelper::loadBitmap (
     throw (RuntimeException, std::exception)
 {
     if ( ! rxCanvas.is())
-        return NULL;
+        return nullptr;
 
     static IdMapEntry const map[] = {
         { "bitmaps/Background.png", BMP_PRESENTERSCREEN_BACKGROUND },
@@ -344,6 +344,10 @@ Reference<rendering::XBitmap> SAL_CALL PresenterHelper::loadBitmap (
           BMP_PRESENTERSCREEN_BUTTON_SWITCH_MONITOR_MOUSE_OVER },
         { "bitmaps/ButtonSwitchMonitorNormal.png",
           BMP_PRESENTERSCREEN_BUTTON_SWITCH_MONITOR_NORMAL },
+        { "bitmaps/ButtonRestartTimerMouseOver.png",
+          BMP_PRESENTERSCREEN_BUTTON_RESTART_TIMER_MOUSE_OVER },
+        { "bitmaps/ButtonRestartTimerNormal.png",
+          BMP_PRESENTERSCREEN_BUTTON_RESTART_TIMER_NORMAL },
         { "bitmaps/LabelMouseOverCenter.png",
           BMP_PRESENTERSCREEN_LABEL_MOUSE_OVER_CENTER },
         { "bitmaps/LabelMouseOverLeft.png",
@@ -392,7 +396,7 @@ Reference<rendering::XBitmap> SAL_CALL PresenterHelper::loadBitmap (
         }
     }
     if (nid == 0) {
-        return 0;
+        return nullptr;
     }
 
     ::osl::MutexGuard aGuard (::osl::Mutex::getGlobalMutex());
@@ -401,18 +405,18 @@ Reference<rendering::XBitmap> SAL_CALL PresenterHelper::loadBitmap (
         cppcanvas::VCLFactory::createCanvas(
             Reference<css::rendering::XCanvas>(rxCanvas,UNO_QUERY)));
 
-    if (pCanvas.get() != NULL)
+    if (pCanvas.get() != nullptr)
     {
         BitmapEx aBitmapEx = SdResId(nid);
         cppcanvas::BitmapSharedPtr xBitmap(
             cppcanvas::VCLFactory::createBitmap(pCanvas,
                 aBitmapEx));
-        if (xBitmap.get() == NULL)
-            return NULL;
+        if (xBitmap.get() == nullptr)
+            return nullptr;
         return xBitmap->getUNOBitmap();
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void SAL_CALL PresenterHelper::captureMouse (
@@ -423,7 +427,7 @@ void SAL_CALL PresenterHelper::captureMouse (
 
     // Capture the mouse (if not already done.)
     vcl::Window* pWindow = VCLUnoHelper::GetWindow(rxWindow);
-    if (pWindow != NULL && ! pWindow->IsMouseCaptured())
+    if (pWindow != nullptr && ! pWindow->IsMouseCaptured())
     {
         pWindow->CaptureMouse();
     }
@@ -436,7 +440,7 @@ void SAL_CALL PresenterHelper::releaseMouse (const Reference<awt::XWindow>& rxWi
 
     // Release the mouse (if not already done.)
     vcl::Window* pWindow = VCLUnoHelper::GetWindow(rxWindow);
-    if (pWindow != NULL && pWindow->IsMouseCaptured())
+    if (pWindow != nullptr && pWindow->IsMouseCaptured())
     {
         pWindow->ReleaseMouse();
     }
@@ -449,7 +453,7 @@ awt::Rectangle PresenterHelper::getWindowExtentsRelative (
 {
     vcl::Window* pChildWindow = VCLUnoHelper::GetWindow(rxChildWindow);
     vcl::Window* pParentWindow = VCLUnoHelper::GetWindow(rxParentWindow);
-    if (pChildWindow!=NULL && pParentWindow!=NULL)
+    if (pChildWindow!=nullptr && pParentWindow!=nullptr)
     {
         Rectangle aBox (pChildWindow->GetWindowExtentsRelative(pParentWindow));
         return awt::Rectangle(aBox.Left(),aBox.Top(),aBox.GetWidth(),aBox.GetHeight());
@@ -461,9 +465,9 @@ awt::Rectangle PresenterHelper::getWindowExtentsRelative (
 } } // end of namespace ::sd::presenter
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
-com_sun_star_comp_Draw_PresenterHelper_get_implementation(::com::sun::star::uno::XComponentContext* context,
-                                                          ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
+com_sun_star_comp_Draw_PresenterHelper_get_implementation(css::uno::XComponentContext* context,
+                                                          css::uno::Sequence<css::uno::Any> const &)
 {
     return cppu::acquire(new sd::presenter::PresenterHelper(context));
 }

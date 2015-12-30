@@ -336,7 +336,7 @@ PrinterGfx::DrawText (
 
     // setup a new delta array, use virtual resolution of 1000
     sal_Int32* pNewDeltaArray = static_cast<sal_Int32*>(alloca( sizeof( sal_Int32 )*nLen ));
-    if ( pDeltaArray != 0)
+    if ( pDeltaArray != nullptr)
     {
         for (int i = 0; i < nLen - 1; i++)
             pNewDeltaArray[i] = 1000 * pDeltaArray[i];
@@ -405,7 +405,7 @@ PrinterGfx::DrawText (
             drawText(
                     Point(nCurrentPointX + nDelta, nCurrentPointY),
                     pEffectiveStr + nFrom, nTo - nFrom,
-                    pDeltaArray == NULL ? NULL : pNewDeltaArray + nFrom );
+                    pDeltaArray == nullptr ? nullptr : pNewDeltaArray + nFrom );
         }
         nDelta += pNewDeltaArray[ nTo - 1 ];
     }
@@ -501,7 +501,7 @@ bool PrinterGfx::drawVerticalizedText(
                     aPos.Y() += (sal_Int32)(-(nTextScale*fStretch - nD) * fCos);
                     break;
             }
-            drawText( aPos, pStr+i, 1, NULL );
+            drawText( aPos, pStr+i, 1 );
             if( i < nLen-1 && pDeltaArray )
             {
                 aPoint.X() = (sal_Int32)(rPoint.X() + ((double)pDeltaArray[i] * fCos));
@@ -633,7 +633,7 @@ PrinterGfx::getCharMetric (const Font2 &rFont, sal_Unicode n_char, CharacterMetr
 }
 
 sal_Int32
-PrinterGfx::GetCharWidth (sal_Unicode nFrom, sal_Unicode nTo, long *pWidthArray)
+PrinterGfx::GetCharWidth (sal_uInt16 nFrom, sal_uInt16 nTo, long *pWidthArray)
 {
     Font2 aFont(*this);
     if (aFont.IsSymbolFont() && (nFrom < 256) && (nTo < 256))

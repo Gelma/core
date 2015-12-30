@@ -70,7 +70,7 @@ public:
 
     /** IStoreHandle.
      */
-    virtual bool isKindOf (sal_uInt32 nTypeId) SAL_OVERRIDE;
+    virtual bool isKindOf (sal_uInt32 nTypeId) override;
 
 protected:
     /** Destruction.
@@ -85,7 +85,7 @@ private:
     /** IStoreHandle query() template function specialization.
      */
     friend OStoreDirectory_Impl*
-    SAL_CALL query<> (IStoreHandle *pHandle, OStoreDirectory_Impl*);
+    SAL_CALL query<> (OStoreObject *pHandle, OStoreDirectory_Impl*);
 
     /** Representation.
      */
@@ -98,19 +98,19 @@ private:
     sal_uInt32                 m_nPath;
     rtl_TextToUnicodeConverter m_hTextCvt;
 
-    OStoreDirectory_Impl (const OStoreDirectory_Impl&) SAL_DELETED_FUNCTION;
-    OStoreDirectory_Impl& operator= (const OStoreDirectory_Impl&) SAL_DELETED_FUNCTION;
+    OStoreDirectory_Impl (const OStoreDirectory_Impl&) = delete;
+    OStoreDirectory_Impl& operator= (const OStoreDirectory_Impl&) = delete;
 };
 
 template<> inline OStoreDirectory_Impl*
-SAL_CALL query (IStoreHandle *pHandle, SAL_UNUSED_PARAMETER OStoreDirectory_Impl*)
+SAL_CALL query (OStoreObject *pHandle, SAL_UNUSED_PARAMETER OStoreDirectory_Impl*)
 {
     if (pHandle && pHandle->isKindOf (OStoreDirectory_Impl::m_nTypeId))
     {
         // Handle is kind of OStoreDirectory_Impl.
         return static_cast<OStoreDirectory_Impl*>(pHandle);
     }
-    return 0;
+    return nullptr;
 }
 
 /*========================================================================

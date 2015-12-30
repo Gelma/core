@@ -84,17 +84,15 @@
 #include "lwpglobalmgr.hxx"
 
 LwpFribPtr::LwpFribPtr()
-    : m_pFribs(NULL),m_pXFPara(NULL),m_pPara(NULL)
+    : m_pFribs(nullptr),m_pXFPara(nullptr),m_pPara(nullptr)
 {
 }
 
 LwpFribPtr::~LwpFribPtr()
 {
-    LwpFrib* pNextFrib = m_pFribs;
-    LwpFrib* pCurFrib = m_pFribs;
-    while(pCurFrib)
+    for (LwpFrib* pCurFrib = m_pFribs; pCurFrib;)
     {
-        pNextFrib = pCurFrib -> GetNext();
+        LwpFrib* pNextFrib = pCurFrib -> GetNext();
         delete pCurFrib;
         pCurFrib = pNextFrib;
     }
@@ -102,7 +100,7 @@ LwpFribPtr::~LwpFribPtr()
 
 void LwpFribPtr::ReadPara(LwpObjectStream* pObjStrm)
 {
-    LwpFrib* pCurFrib = m_pFribs = NULL;
+    LwpFrib* pCurFrib = m_pFribs = nullptr;
     for(;;)
     {
         // Get the frib type
@@ -265,9 +263,9 @@ void LwpFribPtr::XFConvert()
         case FRIB_TAG_HARDSPACE:
         {
             OUString sHardSpace(sal_Unicode(0x00a0));
-            LwpHyperlinkMgr* pHyperlink =
-                    m_pPara->GetStory()->GetHyperlinkMgr();
-            if (pHyperlink->GetHyperlinkFlag())
+            LwpStory *pStory = m_pPara->GetStory();
+            LwpHyperlinkMgr* pHyperlink = pStory ? pStory->GetHyperlinkMgr() : nullptr;
+            if (pHyperlink && pHyperlink->GetHyperlinkFlag())
                 pFrib->ConvertHyperLink(m_pXFPara,pHyperlink,sHardSpace);
             else
                 pFrib->ConvertChars(m_pXFPara,sHardSpace);
@@ -284,10 +282,15 @@ void LwpFribPtr::XFConvert()
             LwpFribFrame* frameFrib= static_cast<LwpFribFrame*>(pFrib);
             rtl::Reference<LwpObject> pLayout = frameFrib->GetLayout();
             if (pLayout.is() && pLayout->GetTag() == VO_DROPCAPLAYOUT)
-                m_pPara->GetFoundry()->GetDropcapMgr()->SetXFPara(m_pXFPara);
+            {
+                LwpFoundry* pFoundry = m_pPara->GetFoundry();
+                LwpDropcapMgr* pMgr = pFoundry ? pFoundry->GetDropcapMgr() : nullptr;
+                if (pMgr)
+                    pMgr->SetXFPara(m_pXFPara);
+            }
             frameFrib->XFConvert(m_pXFPara);
-        }
             break;
+        }
         case FRIB_TAG_CHBLOCK:
         {
             LwpFribCHBlock* chbFrib = static_cast<LwpFribCHBlock*>(pFrib);
@@ -433,7 +436,7 @@ LwpFrib* LwpFribPtr::HasFrib(sal_uInt8 nType)
         }
         pFrib = pFrib->GetNext();
     }
-    return NULL;
+    return nullptr;
 }
 
 void LwpFribPtr::GatherAllText()
@@ -616,7 +619,7 @@ bool LwpFribPtr::ComparePagePosition(LwpVirtualLayout* pPreLayout, LwpVirtualLay
         return true;
 
     LwpFrib* pFrib = m_pFribs;
-    LwpVirtualLayout* pLayout = NULL;
+    LwpVirtualLayout* pLayout = nullptr;
     while(pFrib)
     {
         switch(pFrib->GetType())

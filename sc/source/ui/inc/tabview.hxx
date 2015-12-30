@@ -69,15 +69,15 @@ private:
     bool            bAdd;
 
 protected:
-    virtual void    Paint( vcl::RenderContext& rRenderContext, const Rectangle& rRect ) SAL_OVERRIDE;
-    virtual void    Resize() SAL_OVERRIDE;
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
+    virtual void    Paint( vcl::RenderContext& rRenderContext, const Rectangle& rRect ) override;
+    virtual void    Resize() override;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
 public:
                     ScCornerButton( vcl::Window* pParent, ScViewData* pData, bool bAdditional );
                     virtual ~ScCornerButton();
 
-    virtual void    StateChanged( StateChangedType nType ) SAL_OVERRIDE;
-    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) SAL_OVERRIDE;
+    virtual void    StateChanged( StateChangedType nType ) override;
+    virtual void    DataChanged( const DataChangedEvent& rDCEvt ) override;
 };
 
 class ScTabView : boost::noncopyable
@@ -204,8 +204,8 @@ private:
     void            PaintRangeFinderEntry (ScRangeFindData* pData, SCTAB nTab);
 
 protected:
-    void            UpdateHeaderWidth( const ScVSplitPos* pWhich = NULL,
-                                        const SCROW* pPosY = NULL );
+    void            UpdateHeaderWidth( const ScVSplitPos* pWhich = nullptr,
+                                        const SCROW* pPosY = nullptr );
 
     void            HideTip();
     void            ShowRefTip();
@@ -350,7 +350,7 @@ public:
     void            ShowAllCursors();
 
     void            AlignToCursor( SCsCOL nCurX, SCsROW nCurY, ScFollowMode eMode,
-                                    const ScSplitPos* pWhich = NULL );
+                                    const ScSplitPos* pWhich = nullptr );
 
     SvxZoomType     GetZoomType() const;
     void            SetZoomType( SvxZoomType eNew, bool bAll );
@@ -436,8 +436,7 @@ public:
     void            AddHighlightRange( const ScRange& rRange, const Color& rColor );
     void            ClearHighlightRanges();
 
-    void            DoChartSelection( const ::com::sun::star::uno::Sequence<
-                                      ::com::sun::star::chart2::data::HighlightedRange > & rHilightRanges );
+    void            DoChartSelection( const css::uno::Sequence< css::chart2::data::HighlightedRange > & rHilightRanges );
 
     long            GetGridWidth( ScHSplitPos eWhich );
     long            GetGridHeight( ScVSplitPos eWhich );
@@ -518,6 +517,8 @@ public:
     void EnableAutoSpell( bool bEnable );
     void ResetAutoSpell();
     void SetAutoSpellData( SCCOL nPosX, SCROW nPosY, const std::vector<editeng::MisspellRanges>* pRanges );
+    /// @see ScModelObj::getRowColumnHeaders().
+    OUString getRowColumnHeaders(const Rectangle& rRectangle);
 };
 
 #endif

@@ -67,6 +67,7 @@
 
 #include <osl/file.h>
 #include <osl/file.hxx>
+#include <tools/stream.hxx>
 #include <vcl/svapp.hxx>
 #include <xmloff/attrlist.hxx>
 #include <com/sun/star/io/IOException.hpp>
@@ -146,24 +147,24 @@ using namespace OpenStormBento;
  */
  bool GetLwpSvStream(SvStream *pStream, LwpSvStream * & pLwpSvStream)
 {
-    SvStream * pDecompressed = NULL;
+    SvStream * pDecompressed = nullptr;
 
-    sal_uInt32 nTag;
     pStream->Seek(0x10);
+    sal_uInt32 nTag(0);
     pStream->ReadUInt32( nTag );
     if (nTag != 0x3750574c) // "LWP7"
     {
         // small file, needs decompression
         if (!Decompress(pStream, pDecompressed))
         {
-            pLwpSvStream = NULL;
+            pLwpSvStream = nullptr;
             return true;
         }
         pStream->Seek(0);
         pDecompressed->Seek(0);
     }
 
-    pLwpSvStream = NULL;
+    pLwpSvStream = nullptr;
     bool bCompressed = false;
     if (pDecompressed)
     {
@@ -181,7 +182,7 @@ int ReadWordproFile(SvStream &rStream, uno::Reference<css::xml::sax::XDocumentHa
 {
     try
     {
-        LwpSvStream *pRawLwpSvStream = NULL;
+        LwpSvStream *pRawLwpSvStream = nullptr;
         std::unique_ptr<LwpSvStream> aLwpSvStream;
         std::unique_ptr<LwpSvStream> aCompressedLwpSvStream;
         std::unique_ptr<SvStream> aDecompressed;

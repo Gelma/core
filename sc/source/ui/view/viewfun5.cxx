@@ -157,8 +157,8 @@ bool ScViewFunc::PasteDataFormat( SotClipboardFormatId nFormatId,
 
                     SetCursor( nPosX, nPosY );
                     Unmark();
-                    PasteFromClip( IDF_ALL, pClipDoc.get(),
-                                    ScPasteFunc::NONE, false, false, false, INS_NONE, IDF_NONE,
+                    PasteFromClip( InsertDeleteFlags::ALL, pClipDoc.get(),
+                                    ScPasteFunc::NONE, false, false, false, INS_NONE, InsertDeleteFlags::NONE,
                                     bAllowDialogs );
                     bRet = true;
                 }
@@ -227,7 +227,7 @@ bool ScViewFunc::PasteDataFormat( SotClipboardFormatId nFormatId,
 
                         embed::InsertedObjectInfo aInfo = xClipboardCreator->createInstanceInitFromClipboard(
                                                             xTmpStor,
-                                                            OUString( "DummyName" ),
+                                                            "DummyName",
                                                             uno::Sequence< beans::PropertyValue >() );
 
                         // TODO/LATER: in future InsertedObjectInfo will be used to get container related information
@@ -307,7 +307,7 @@ bool ScViewFunc::PasteDataFormat( SotClipboardFormatId nFormatId,
                     // make sense to do it for other data types too.
                     ScAbstractDialogFactory* pFact = ScAbstractDialogFactory::Create();
                     std::unique_ptr<AbstractScTextImportOptionsDlg> pDlg(
-                        pFact->CreateScTextImportOptionsDlg(NULL));
+                        pFact->CreateScTextImportOptionsDlg(nullptr));
 
                     if (pDlg->Execute() == RET_OK)
                     {
@@ -336,7 +336,7 @@ bool ScViewFunc::PasteDataFormat( SotClipboardFormatId nFormatId,
                     ScAbstractDialogFactory* pFact =
                         ScAbstractDialogFactory::Create();
                     std::unique_ptr<AbstractScImportAsciiDlg> pDlg(
-                        pFact->CreateScImportAsciiDlg( NULL, OUString(), &aStrm,
+                        pFact->CreateScImportAsciiDlg( nullptr, OUString(), &aStrm,
                                                        SC_PASTETEXT));
 
                     if (pDlg->Execute() == RET_OK)
@@ -433,17 +433,17 @@ bool ScViewFunc::PasteDataFormat( SotClipboardFormatId nFormatId,
                 aRect.SetPos(aInsPos);
                 pObj->SetLogicRect(aRect);
 
-                if ( pObj->ISA(SdrUnoObj) )
+                if ( dynamic_cast<const SdrUnoObj*>( pObj) !=  nullptr )
                     pObj->NbcSetLayer(SC_LAYER_CONTROLS);
                 else
                     pObj->NbcSetLayer(SC_LAYER_FRONT);
-                if (pObj->ISA(SdrObjGroup))
+                if (dynamic_cast<const SdrObjGroup*>( pObj) !=  nullptr)
                 {
                     SdrObjListIter aIter( *pObj, IM_DEEPWITHGROUPS );
                     SdrObject* pSubObj = aIter.Next();
                     while (pSubObj)
                     {
-                        if ( pSubObj->ISA(SdrUnoObj) )
+                        if ( dynamic_cast<const SdrUnoObj*>( pSubObj) !=  nullptr )
                             pSubObj->NbcSetLayer(SC_LAYER_CONTROLS);
                         else
                             pSubObj->NbcSetLayer(SC_LAYER_FRONT);
@@ -491,13 +491,13 @@ bool ScViewFunc::PasteDataFormat( SotClipboardFormatId nFormatId,
             OUString aPath = aPathOpt.GetPalettePath();
 
             ScDocShellRef aDragShellRef( new ScDocShell );
-            aDragShellRef->DoInitNew(NULL);
-            std::unique_ptr<FmFormModel> pModel(new FmFormModel( aPath, NULL, aDragShellRef ));
+            aDragShellRef->DoInitNew();
+            std::unique_ptr<FmFormModel> pModel(new FmFormModel( aPath, nullptr, aDragShellRef ));
 
             pModel->GetItemPool().FreezeIdRanges();
             xStm->Seek(0);
 
-            com::sun::star::uno::Reference< com::sun::star::io::XInputStream > xInputStream( new utl::OInputStreamWrapper( *xStm ) );
+            css::uno::Reference< css::io::XInputStream > xInputStream( new utl::OInputStreamWrapper( *xStm ) );
             SvxDrawingLayerImport( pModel.get(), xInputStream );
 
             // set everything to right layer:
@@ -510,7 +510,7 @@ bool ScViewFunc::PasteDataFormat( SotClipboardFormatId nFormatId,
                 SdrObject* pObject = aIter.Next();
                 while (pObject)
                 {
-                    if ( pObject->ISA(SdrUnoObj) )
+                    if ( dynamic_cast<const SdrUnoObj*>( pObject) !=  nullptr )
                         pObject->NbcSetLayer(SC_LAYER_CONTROLS);
                     else
                         pObject->NbcSetLayer(SC_LAYER_FRONT);
@@ -544,7 +544,7 @@ bool ScViewFunc::PasteDataFormat( SotClipboardFormatId nFormatId,
             {
                 ScRange aSource;
                 const ScExtDocOptions* pExtOpt = pInsDoc->GetExtDocOptions();
-                const ScExtTabSettings* pTabSett = pExtOpt ? pExtOpt->GetTabSettings( nSrcTab ) : 0;
+                const ScExtTabSettings* pTabSett = pExtOpt ? pExtOpt->GetTabSettings( nSrcTab ) : nullptr;
                 if( pTabSett && pTabSett->maUsedArea.IsValid() )
                 {
                     aSource = pTabSett->maUsedArea;
@@ -578,8 +578,8 @@ bool ScViewFunc::PasteDataFormat( SotClipboardFormatId nFormatId,
                 }
 
                 pInsDoc->SetClipArea( aSource );
-                PasteFromClip( IDF_ALL, pInsDoc,
-                                ScPasteFunc::NONE, false, false, false, INS_NONE, IDF_NONE,
+                PasteFromClip( InsertDeleteFlags::ALL, pInsDoc,
+                                ScPasteFunc::NONE, false, false, false, INS_NONE, InsertDeleteFlags::NONE,
                                 bAllowDialogs );
                 delete pInsDoc;
 
@@ -693,7 +693,7 @@ bool ScViewFunc::PasteLink( const uno::Reference<datatransfer::XTransferable>& r
     const OUString* pApp   = &aStrs[0];
     const OUString* pTopic = &aStrs[1];
     const OUString* pItem  = &aStrs[2];
-    const OUString* pExtra = NULL;
+    const OUString* pExtra = nullptr;
     if (aStrs.size() > 3)
         pExtra = &aStrs[3];
 

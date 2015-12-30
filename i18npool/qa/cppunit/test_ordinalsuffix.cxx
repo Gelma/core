@@ -19,8 +19,8 @@ private:
     uno::Reference<i18n::XOrdinalSuffix> m_xOrdinal;
 
 public:
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
     void testFrench();
     void testEnglish();
@@ -34,8 +34,7 @@ public:
 void TestOrdinalSuffix::setUp()
 {
     BootstrapFixtureBase::setUp();
-    m_xOrdinal = uno::Reference< i18n::XOrdinalSuffix >(m_xSFactory->createInstance(
-        "com.sun.star.i18n.OrdinalSuffix"), uno::UNO_QUERY_THROW);
+    m_xOrdinal.set(m_xSFactory->createInstance("com.sun.star.i18n.OrdinalSuffix"), uno::UNO_QUERY_THROW);
 }
 
 void TestOrdinalSuffix::tearDown()

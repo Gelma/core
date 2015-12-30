@@ -256,11 +256,11 @@ void GrammarCheckingIterator::TerminateThread()
     {
         ::osl::Guard< ::osl::Mutex > aGuard( MyMutex::get() );
         t = m_thread;
-        m_thread = 0;
+        m_thread = nullptr;
         m_bEnd = true;
         m_aWakeUpThread.set();
     }
-    if (t != 0)
+    if (t != nullptr)
     {
         osl_joinWithThread(t);
         osl_destroyThread(t);
@@ -658,7 +658,7 @@ throw (uno::RuntimeException, lang::IllegalArgumentException, std::exception)
     const bool bAutomatic = true;
     uno::Reference<text::XFlatParagraphIterator> xFPIterator = xIteratorProvider->getFlatParagraphIterator(
             text::TextMarkupType::PROOFREADING, bAutomatic );
-    uno::Reference< text::XFlatParagraph > xPara( xFPIterator.is()? xFPIterator->getFirstPara() : NULL );
+    uno::Reference< text::XFlatParagraph > xPara( xFPIterator.is()? xFPIterator->getFirstPara() : nullptr );
     uno::Reference< lang::XComponent > xComponent( xDoc, uno::UNO_QUERY );
 
     // ---- THREAD SAFE START ----
@@ -1005,7 +1005,7 @@ uno::Reference< util::XChangesBatch > GrammarCheckingIterator::GetUpdateAccess()
             aValue.Value = uno::makeAny( OUString("org.openoffice.Office.Linguistic/ServiceManager") );
             uno::Sequence< uno::Any > aProps(1);
             aProps[0] <<= aValue;
-            m_xUpdateAccess = uno::Reference< util::XChangesBatch >(
+            m_xUpdateAccess.set(
                     xConfigurationProvider->createInstanceWithArguments(
                         "com.sun.star.configuration.ConfigurationUpdateAccess", aProps ),
                         uno::UNO_QUERY_THROW );
@@ -1139,8 +1139,7 @@ static OUString GrammarCheckingIterator_getImplementationName() throw()
 
 static uno::Sequence< OUString > GrammarCheckingIterator_getSupportedServiceNames() throw()
 {
-    uno::Sequence< OUString > aSNS( 1 );
-    aSNS[0] = "com.sun.star.linguistic2.ProofreadingIterator";
+    uno::Sequence<OUString> aSNS { "com.sun.star.linguistic2.ProofreadingIterator" };
     return aSNS;
 }
 
@@ -1158,7 +1157,7 @@ void * SAL_CALL GrammarCheckingIterator_getFactory(
     lang::XMultiServiceFactory *pServiceManager,
     void * /*pRegistryKey*/ )
 {
-    void * pRet = 0;
+    void * pRet = nullptr;
     if ( GrammarCheckingIterator_getImplementationName().equalsAscii( pImplName ) )
     {
         uno::Reference< lang::XSingleServiceFactory > xFactory =

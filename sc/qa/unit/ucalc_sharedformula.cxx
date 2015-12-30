@@ -613,7 +613,7 @@ void Test::testSharedFormulasRefUpdateRangeDeleteRow()
     const char* aData[][3] = {
         { "1", "2", "=SUM(A1:B1)" },
         { "3", "4", "=SUM(A2:B2)" },
-        { 0, 0, 0 },
+        { nullptr, nullptr, nullptr },
         { "5", "6", "=SUM(A4:B4)" },
         { "7", "8", "=SUM(A5:B5)" }
     };
@@ -1317,7 +1317,7 @@ void Test::testSharedFormulasCopyPaste()
     ScRange aRange(1,0,0,1,9,0); // B1:B10
     ScDocument* pUndoDoc = new ScDocument(SCDOCMODE_UNDO);
     pUndoDoc->InitUndo(m_pDoc, 0, 0, true, true);
-    m_pDoc->CopyToDocument(aRange, IDF_CONTENTS, false, pUndoDoc);
+    m_pDoc->CopyToDocument(aRange, InsertDeleteFlags::CONTENTS, false, pUndoDoc);
     std::unique_ptr<ScUndoPaste> pUndo(createUndoPaste(getDocShell(), aRange, pUndoDoc));
 
     // First, make sure the formula cells are shared in the undo document.
@@ -1555,10 +1555,10 @@ void Test::testSharedFormulaUpdateOnNamedRangeChange()
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), pNames->size());
     ScDocFunc& rFunc = getDocShell().GetDocFunc();
 
-    typedef boost::ptr_map<OUString, ScRangeName> NameMapType;
+    typedef std::map<OUString, std::unique_ptr<ScRangeName>> NameMapType;
     NameMapType aNewNames;
     OUString aScope(STR_GLOBAL_RANGE_NAME);
-    aNewNames.insert(aScope, pNames);
+    aNewNames.insert(std::make_pair(aScope, std::unique_ptr<ScRangeName>(pNames)));
     rFunc.ModifyAllRangeNames(aNewNames);
 
     // Check to make sure all displayed formulas are still good.
@@ -1712,7 +1712,7 @@ void Test::testSharedFormulaUnshareAreaListeners()
         { "=SUM(B1:B2)", "1" },
         { "=SUM(B2:B3)", "2" },
         { "=SUM(B3:B4)", "4" },
-        {             0, "8" }
+        {             nullptr, "8" }
     };
 
     insertRangeData(m_pDoc, ScAddress(0,0,0), pData, SAL_N_ELEMENTS(pData));

@@ -28,7 +28,7 @@
 
 class SfxBroadcaster;
 class SwTextField;
-class SwRootFrm;
+class SwRootFrame;
 class SwPostItMgr;
 class SwEditWin;
 namespace sw { namespace sidebarwindows {
@@ -41,7 +41,7 @@ typedef sal_Int64 SwPostItBits;
 
 struct SwLayoutInfo
 {
-    const SwFrm* mpAnchorFrm;
+    const SwFrame* mpAnchorFrame;
     SwRect mPosition;
 
     // optional start of the annotation
@@ -57,7 +57,7 @@ struct SwLayoutInfo
     sal_uInt16 mRedlineAuthor;
 
     SwLayoutInfo()
-        : mpAnchorFrm(0)
+        : mpAnchorFrame(nullptr)
         , mPosition()
         , mnStartNodeIdx( 0 )
         , mnStartContent( -1 )
@@ -79,11 +79,11 @@ namespace SwPostItHelper
     SwLayoutStatus getLayoutInfos(
         SwLayoutInfo& o_rInfo,
         const SwPosition& rAnchorPos,
-        const SwPosition* pAnnotationStartPos = NULL );
+        const SwPosition* pAnnotationStartPos = nullptr );
 
-    long getLayoutHeight( const SwRootFrm* pRoot );
-    void setSidebarChanged( SwRootFrm* pRoot, bool bBrowseMode );
-    unsigned long getPageInfo( SwRect& rPageFrm, const SwRootFrm* , const Point& );
+    long getLayoutHeight( const SwRootFrame* pRoot );
+    void setSidebarChanged( SwRootFrame* pRoot, bool bBrowseMode );
+    unsigned long getPageInfo( SwRect& rPageFrame, const SwRootFrame* , const Point& );
 }
 
 class SwSidebarItem
@@ -98,7 +98,7 @@ public:
 
     SwSidebarItem( const bool aShow,
                    const bool aFocus)
-        : pPostIt(0)
+        : pPostIt(nullptr)
         , bShow(aShow)
         , bFocus(aFocus)
         , mLayoutStatus( SwPostItHelper::INVISIBLE )
@@ -136,13 +136,13 @@ public:
     {
     }
 
-    virtual SwPosition GetAnchorPosition() const SAL_OVERRIDE;
-    virtual bool UseElement() SAL_OVERRIDE;
-    virtual const SwFormatField& GetFormatField() const SAL_OVERRIDE
+    virtual SwPosition GetAnchorPosition() const override;
+    virtual bool UseElement() override;
+    virtual const SwFormatField& GetFormatField() const override
     {
         return mrFormatField;
     }
-    virtual const SfxBroadcaster* GetBroadCaster() const SAL_OVERRIDE
+    virtual const SfxBroadcaster* GetBroadCaster() const override
     {
         return dynamic_cast<const SfxBroadcaster *> (&mrFormatField);
     }
@@ -150,7 +150,7 @@ public:
         SwEditWin& rEditWin,
         WinBits nBits,
         SwPostItMgr& aMgr,
-        SwPostItBits aBits ) SAL_OVERRIDE;
+        SwPostItBits aBits ) override;
 
 private:
     SwFormatField& mrFormatField;

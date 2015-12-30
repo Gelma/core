@@ -73,7 +73,7 @@ void HeaderBar::ImplInit( WinBits nWinStyle )
     mbOutDrag       = false;
     mbItemMode      = false;
 
-    m_pVCLXHeaderBar = NULL;
+    m_pVCLXHeaderBar = nullptr;
     // StyleBits auswerten
     if ( nWinStyle & WB_DRAG )
         mbDragable = true;
@@ -116,7 +116,7 @@ void HeaderBar::dispose()
         for ( size_t i = 0, n = mpItemList->size(); i < n; ++i )
             delete (*mpItemList)[ i ];
         delete mpItemList;
-        mpItemList = NULL;
+        mpItemList = nullptr;
     }
     Window::dispose();
 }
@@ -1233,7 +1233,7 @@ sal_uInt16 HeaderBar::GetItemPos( sal_uInt16 nItemId ) const
 
 sal_uInt16 HeaderBar::GetItemId( sal_uInt16 nPos ) const
 {
-    ImplHeadItem* pItem = (nPos < mpItemList->size() ) ? (*mpItemList)[ nPos ] : NULL;
+    ImplHeadItem* pItem = (nPos < mpItemList->size() ) ? (*mpItemList)[ nPos ] : nullptr;
     if ( pItem )
         return pItem->mnId;
     else
@@ -1383,12 +1383,11 @@ Size HeaderBar::CalcWindowSizePixel() const
     return aSize;
 }
 
-::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > HeaderBar::CreateAccessible()
+css::uno::Reference< css::accessibility::XAccessible > HeaderBar::CreateAccessible()
 {
     if ( !mxAccessible.is() )
     {
-        if ( maCreateAccessibleHdl.IsSet() )
-            maCreateAccessibleHdl.Call( this );
+        maCreateAccessibleHdl.Call( this );
 
         if ( !mxAccessible.is() )
             mxAccessible = Window::CreateAccessible();
@@ -1397,18 +1396,18 @@ Size HeaderBar::CalcWindowSizePixel() const
     return mxAccessible;
 }
 
-void HeaderBar::SetAccessible( ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > _xAccessible )
+void HeaderBar::SetAccessible( css::uno::Reference< css::accessibility::XAccessible > _xAccessible )
 {
     mxAccessible = _xAccessible;
 }
 
-::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindowPeer > HeaderBar::GetComponentInterface( bool bCreate )
+css::uno::Reference< css::awt::XWindowPeer > HeaderBar::GetComponentInterface( bool bCreate )
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::awt::XWindowPeer > xPeer
+    css::uno::Reference< css::awt::XWindowPeer > xPeer
         (Window::GetComponentInterface(false));
     if ( !xPeer.is() && bCreate )
     {
-        ::com::sun::star::awt::XWindowPeer* mxPeer = new VCLXHeaderBar(this);
+        css::awt::XWindowPeer* mxPeer = new VCLXHeaderBar(this);
         m_pVCLXHeaderBar = static_cast<VCLXHeaderBar*>(mxPeer);
         SetComponentInterface(mxPeer);
         return mxPeer;

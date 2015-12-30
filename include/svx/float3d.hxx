@@ -53,7 +53,7 @@ class SvxConvertTo3DItem;
 
 struct Svx3DWinImpl;
 
-class SVX_DLLPUBLIC SAL_WARN_UNUSED Svx3DWin : public SfxDockingWindow
+class SAL_WARN_UNUSED SVX_DLLPUBLIC Svx3DWin : public SfxDockingWindow
 {
     friend class        Svx3DChildWindow;
     friend class        Svx3DCtrlItem;
@@ -194,8 +194,8 @@ private:
     DECL_LINK_TYPED( ClickAssignHdl, Button*, void );
     DECL_LINK_TYPED( ClickHdl, Button*, void );
     DECL_LINK_TYPED( ClickColorHdl, Button*, void );
-    DECL_LINK( SelectHdl, void * );
-    DECL_LINK( ModifyHdl, void * );
+    DECL_LINK_TYPED( SelectHdl, ListBox&, void );
+    DECL_LINK_TYPED( ModifyHdl, Edit&, void );
     void ClickLight(PushButton &rBtn);
 
     DECL_LINK_TYPED( ChangeSelectionCallbackHdl, SvxLightCtl3D*, void );
@@ -204,20 +204,20 @@ private:
     SVX_DLLPRIVATE void         Reset();
 
     SVX_DLLPRIVATE bool         LBSelectColor( ColorLB* pLb, const Color& rColor );
-    SVX_DLLPRIVATE sal_uInt16   GetLightSource( const PushButton* pBtn = NULL );
-    SVX_DLLPRIVATE ColorLB*     GetLbByButton( const PushButton* pBtn = NULL );
+    SVX_DLLPRIVATE sal_uInt16   GetLightSource( const PushButton* pBtn = nullptr );
+    SVX_DLLPRIVATE ColorLB*     GetLbByButton( const PushButton* pBtn = nullptr );
 
     SVX_DLLPRIVATE bool         GetUILightState( const PushButton& rBtn ) const;
     SVX_DLLPRIVATE void         SetUILightState( PushButton& aBtn, bool bState );
 
 protected:
-    virtual void    Resize() SAL_OVERRIDE;
+    virtual void    Resize() override;
 
 public:
             Svx3DWin( SfxBindings* pBindings, SfxChildWindow *pCW,
                         vcl::Window* pParent );
             virtual ~Svx3DWin();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void    InitColorLB( const SdrModel* pDoc );
     bool    IsUpdateMode() const { return bUpdate; }
@@ -226,7 +226,7 @@ public:
     void    GetAttr( SfxItemSet& rSet );
 
     void UpdatePreview(); // nach oben (private)
-    void DocumentReload(); // #83951#
+    void DocumentReload();
 };
 
 /*************************************************************************
@@ -239,7 +239,7 @@ class Svx3DCtrlItem : public SfxControllerItem
 {
  protected:
     virtual void StateChanged( sal_uInt16 nSId, SfxItemState eState,
-                                const SfxPoolItem* pState ) SAL_OVERRIDE;
+                                const SfxPoolItem* pState ) override;
 
  public:
     Svx3DCtrlItem( sal_uInt16, SfxBindings* );
@@ -257,7 +257,7 @@ class SvxConvertTo3DItem : public SfxControllerItem
     bool                        bState;
 
 protected:
-    virtual void StateChanged(sal_uInt16 nSId, SfxItemState eState, const SfxPoolItem* pState) SAL_OVERRIDE;
+    virtual void StateChanged(sal_uInt16 nSId, SfxItemState eState, const SfxPoolItem* pState) override;
 
 public:
     SvxConvertTo3DItem(sal_uInt16 nId, SfxBindings* pBindings);

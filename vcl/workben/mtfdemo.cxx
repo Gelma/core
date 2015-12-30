@@ -41,7 +41,7 @@ class DemoMtfWin : public WorkWindow
 
 public:
     explicit DemoMtfWin(const OUString& rFileName)
-        : WorkWindow(NULL, WB_APP | WB_STDWORK)
+        : WorkWindow(nullptr, WB_APP | WB_STDWORK)
     {
         SvFileStream aFileStream(rFileName, StreamMode::READ);
 
@@ -55,7 +55,7 @@ public:
         }
     }
 
-    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect)  SAL_OVERRIDE;
+    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect)  override;
 };
 
 void DemoMtfWin::Paint(vcl::RenderContext& rRenderContext, const Rectangle& rRect)
@@ -80,16 +80,16 @@ class DemoMtfApp : public Application
 public:
 
     DemoMtfApp()
-        : mpWin(NULL)
+        : mpWin(nullptr)
     {
     }
 
-    virtual int Main() SAL_OVERRIDE
+    virtual int Main() override
     {
         try
         {
             mpWin = VclPtr<DemoMtfWin>::Create(maFileName);
-            mpWin->SetText(OUString("Display metafile"));
+            mpWin->SetText("Display metafile");
 
             mpWin->Show();
 
@@ -110,7 +110,7 @@ public:
 
 protected:
     uno::Reference<lang::XMultiServiceFactory> xMSF;
-    void Init() SAL_OVERRIDE
+    void Init() override
     {
         try
         {
@@ -130,8 +130,7 @@ protected:
 
             uno::Reference<uno::XComponentContext> xComponentContext
                 = ::cppu::defaultBootstrap_InitialComponentContext();
-            xMSF = uno::Reference<lang::XMultiServiceFactory>
-                (xComponentContext->getServiceManager(), uno::UNO_QUERY);
+            xMSF.set(xComponentContext->getServiceManager(), uno::UNO_QUERY);
             if(!xMSF.is())
                 Application::Abort("Bootstrap failure - no service manager");
 
@@ -143,12 +142,12 @@ protected:
         }
     }
 
-    void DeInit() SAL_OVERRIDE
+    void DeInit() override
     {
         uno::Reference< lang::XComponent >(
             comphelper::getProcessComponentContext(),
         uno::UNO_QUERY_THROW)-> dispose();
-        ::comphelper::setProcessServiceFactory(NULL);
+        ::comphelper::setProcessServiceFactory(nullptr);
     }
 
 };

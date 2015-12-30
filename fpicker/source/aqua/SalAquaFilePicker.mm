@@ -89,7 +89,7 @@ namespace
 
 SalAquaFilePicker::SalAquaFilePicker()
   : SalAquaFilePicker_Base( m_rbHelperMtx )
-   , m_pFilterHelper( NULL )
+   , m_pFilterHelper( nullptr )
 {
     DBG_PRINT_ENTRY(CLASS_NAME, __func__);
 
@@ -103,7 +103,7 @@ SalAquaFilePicker::~SalAquaFilePicker()
 {
     DBG_PRINT_ENTRY(CLASS_NAME, __func__);
 
-    if (NULL != m_pFilterHelper)
+    if (nullptr != m_pFilterHelper)
         delete m_pFilterHelper;
 
     [m_pDelegate release];
@@ -178,7 +178,7 @@ sal_Int16 SAL_CALL SalAquaFilePicker::execute() throw( uno::RuntimeException )
             //if no filename is set, NavigationServices will set the name to "untitled". We don't want this!
             //So let's try to get the window title to get the real untitled name
             NSWindow *frontWindow = [NSApp keyWindow];
-            if (NULL != frontWindow) {
+            if (nullptr != frontWindow) {
                 NSString *windowTitle = [frontWindow title];
                 if (windowTitle != nil) {
                     rtl::OUString ouName = [windowTitle OUString];
@@ -631,7 +631,7 @@ void SAL_CALL SalAquaFilePicker::disposing( const lang::EventObject& aEvent ) th
 
     SolarMutexGuard aGuard;
 
-    uno::Reference<XFilePickerListener> xFilePickerListener( aEvent.Source, ::com::sun::star::uno::UNO_QUERY );
+    uno::Reference<XFilePickerListener> xFilePickerListener( aEvent.Source, css::uno::UNO_QUERY );
 
     if( xFilePickerListener.is() )
         removeFilePickerListener( xFilePickerListener );
@@ -712,7 +712,7 @@ void SalAquaFilePicker::ensureFilterHelper() {
 
     SolarMutexGuard aGuard;
 
-    if (NULL == m_pFilterHelper) {
+    if (nullptr == m_pFilterHelper) {
         m_pFilterHelper = new FilterHelper;
         m_pControlHelper->setFilterHelper(m_pFilterHelper);
         [m_pDelegate setFilterHelper:m_pFilterHelper];

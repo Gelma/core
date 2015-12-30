@@ -39,6 +39,20 @@ class View;
 class ViewShell;
 class Window;
 
+/// Describes a single search hit: a set of rectangles on a given page.
+struct SearchSelection
+{
+    /// 0-based index of the page that has the selection.
+    int m_nPage;
+    /**
+     * List of selection rectangles in twips -- multiple rectangles only in
+     * case the selection spans over more layout lines.
+     */
+    OString m_aRectangles;
+
+    SearchSelection(int nPage, const OString& rRectangles);
+};
+
 /** The main purpose of this class is searching and replacing as well as
     spelling of impress documents.  The main part of both tasks lies in
     iterating over the pages and view modes of a document and apply the
@@ -145,7 +159,7 @@ public:
     void EndSpelling();
 
     /** callback for textconversion */
-    bool ConvertNextDocument() SAL_OVERRIDE;
+    bool ConvertNextDocument() override;
 
     /** Starts the text conversion (hangul/hanja or Chinese simplified/traditional)
     for the current viewshell */
@@ -166,6 +180,7 @@ public:
     int         GetIgnoreCurrentPageChangesLevel() const     { return mnIgnoreCurrentPageChangesLevel; };
     void        IncreIgnoreCurrentPageChangesLevel()     { mnIgnoreCurrentPageChangesLevel++; };
     void        DecreIgnoreCurrentPageChangesLevel()     { mnIgnoreCurrentPageChangesLevel--; };
+    SdDrawDocument* GetDoc() const { return mpDrawDocument; }
 
 private:
     class Implementation;
@@ -211,9 +226,6 @@ private:
     /// The number of pages in the current view.
     sal_uInt16 mnPageCount;
 
-    /// Number of objects on the current page / in the current selection.
-    sal_Int32 mnObjectCount;
-
     /** A <TRUE/> value indicates that the end of the find&replace or spell
         check has been reached.
     */
@@ -246,12 +258,6 @@ private:
         process the mark list is modified.
     */
     ::std::vector<SdrObjectWeakRef> maMarkListCopy;
-
-    /**  This flag indicates that only the current view is to be used for
-         searching and spelling.  Automatically switching to other view does
-         not take place when this flag is set.
-    */
-    bool mbProcessCurrentViewOnly;
 
     /** Current object that may be a text object.  The object pointer to
         corresponds to <member>mnObjIndex</member>.  While iterating over the
@@ -311,12 +317,6 @@ private:
     */
     ::sd::outliner::IteratorPosition maLastValidPosition;
 
-    /** This flag remembers a selection change between a call to the
-        selection change listener callback and the next
-        <member>DetectChange()</member> method call.
-    */
-    bool mbSelectionHasChanged;
-
     /** This flag indicates whether a selection change event is expected due
         to a programatical change of the selection.
     */
@@ -350,11 +350,14 @@ private:
     bool SearchAndReplaceAll();
 
     /** Do search and replace for next match.
+        @param pSelections
+            When tiled rendering and not 0, then don't emit LOK events, instead
+            assume the caller will do so.
         @return
             The return value specifies whether the search ended (</sal_True>) or
             another call to this method is required (</sal_False>).
     */
-    bool SearchAndReplaceOnce();
+    bool SearchAndReplaceOnce(std::vector<SearchSelection>* pSelections = nullptr);
 
     /** Detect changes of the document or view and react accordingly.  Such
         changes may occur because different calls to
@@ -519,7 +522,7 @@ private:
             required.  When all text objects have been processed then
             <FALSE/> is returned.
     */
-    virtual bool SpellNextDocument() SAL_OVERRIDE;
+    virtual bool SpellNextDocument() override;
 
     /** Show the given message box and make it modal.  It is assumed that
         the parent of the given dialog is NULL, i.e. the application

@@ -84,7 +84,8 @@ namespace svt { namespace table
 
             Point const aBitmapPos( 0, 0 );
             Size const aBitmapSize( nSortIndicatorWidth, nSortIndicatorHeight );
-            ScopedVclPtrInstance< VirtualDevice > aDevice( i_device, 0, 0 );
+            ScopedVclPtrInstance< VirtualDevice > aDevice(i_device, DeviceFormat::DEFAULT,
+                                                          DeviceFormat::DEFAULT);
             aDevice->SetOutputSizePixel( aBitmapSize );
 
             DecorationView aDecoView(aDevice.get());
@@ -268,7 +269,7 @@ namespace svt { namespace table
         // draw sort indicator if the model data is sorted by the given column
         ITableDataSort const * pSortAdapter = m_pImpl->rModel.getSortAdapter();
         ColumnSort aCurrentSortOrder;
-        if ( pSortAdapter != NULL )
+        if ( pSortAdapter != nullptr )
             aCurrentSortOrder = pSortAdapter->getCurrentSortOrder();
         if ( aCurrentSortOrder.nColumnPos == _nCol )
         {

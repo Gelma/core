@@ -77,19 +77,18 @@ using namespace ::com::sun::star::accessibility;
 
 //=====  internal  ============================================================
 
-ScAccessiblePreviewHeaderCell::ScAccessiblePreviewHeaderCell( const ::com::sun::star::uno::Reference<
-                                ::com::sun::star::accessibility::XAccessible>& rxParent,
+ScAccessiblePreviewHeaderCell::ScAccessiblePreviewHeaderCell( const css::uno::Reference<css::accessibility::XAccessible>& rxParent,
                             ScPreviewShell* pViewShell,
                             const ScAddress& rCellPos, bool bIsColHdr, bool bIsRowHdr,
                             sal_Int32 nIndex ) :
     ScAccessibleContextBase( rxParent, AccessibleRole::TABLE_CELL ),
     mpViewShell( pViewShell ),
-    mpTextHelper( NULL ),
+    mpTextHelper( nullptr ),
     mnIndex( nIndex ),
     maCellPos( rCellPos ),
     mbColumnHeader( bIsColHdr ),
     mbRowHeader( bIsRowHdr ),
-    mpTableInfo( NULL )
+    mpTableInfo( nullptr )
 {
     if (mpViewShell)
         mpViewShell->AddAccessibilityObject(*this);
@@ -107,7 +106,7 @@ void SAL_CALL ScAccessiblePreviewHeaderCell::disposing()
     if (mpViewShell)
     {
         mpViewShell->RemoveAccessibilityObject(*this);
-        mpViewShell = NULL;
+        mpViewShell = nullptr;
     }
 
        if (mpTableInfo)
@@ -123,7 +122,7 @@ void ScAccessiblePreviewHeaderCell::Notify( SfxBroadcaster& rBC, const SfxHint& 
     const SfxSimpleHint* pSimpleHint = dynamic_cast<const SfxSimpleHint*>(&rHint);
     if (pSimpleHint)
     {
-        sal_uLong nId = pSimpleHint->GetId();
+        const sal_uInt32 nId {pSimpleHint->GetId()};
         if (nId == SC_HINT_ACC_VISAREACHANGED)
         {
             if (mpTextHelper)
@@ -349,7 +348,7 @@ Rectangle ScAccessiblePreviewHeaderCell::GetBoundingBoxOnScreen() const throw (u
         vcl::Window* pWindow = mpViewShell->GetWindow();
         if (pWindow)
         {
-            Rectangle aRect = pWindow->GetWindowExtentsRelative(NULL);
+            Rectangle aRect = pWindow->GetWindowExtentsRelative(nullptr);
             aCellRect.setX(aCellRect.getX() + aRect.getX());
             aCellRect.setY(aCellRect.getY() + aRect.getY());
         }
@@ -419,7 +418,7 @@ OUString SAL_CALL ScAccessiblePreviewHeaderCell::createAccessibleName() throw(un
 
 bool ScAccessiblePreviewHeaderCell::IsDefunc( const uno::Reference<XAccessibleStateSet>& rxParentStates )
 {
-    return ScAccessibleContextBase::IsDefunc() || (mpViewShell == NULL) || !getAccessibleParent().is() ||
+    return ScAccessibleContextBase::IsDefunc() || (mpViewShell == nullptr) || !getAccessibleParent().is() ||
         (rxParentStates.is() && rxParentStates->contains(AccessibleStateType::DEFUNC));
 }
 

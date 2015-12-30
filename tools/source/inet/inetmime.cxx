@@ -19,6 +19,7 @@
 
 #include <cstddef>
 #include <limits>
+#include <memory>
 
 #include <osl/diagnose.h>
 #include <rtl/alloc.h>
@@ -191,7 +192,7 @@ sal_Unicode * convertToUnicode(const sal_Char * pBegin,
                                          sal_Size & rSize)
 {
     if (eEncoding == RTL_TEXTENCODING_DONTKNOW)
-        return 0;
+        return nullptr;
     rtl_TextToUnicodeConverter hConverter
         = rtl_createTextToUnicodeConverter(eEncoding);
     rtl_TextToUnicodeContext hContext
@@ -220,7 +221,7 @@ sal_Unicode * convertToUnicode(const sal_Char * pBegin,
     if (nInfo != 0)
     {
         delete[] pBuffer;
-        pBuffer = 0;
+        pBuffer = nullptr;
     }
     return pBuffer;
 }
@@ -231,7 +232,7 @@ sal_Char * convertFromUnicode(const sal_Unicode * pBegin,
                                         sal_Size & rSize)
 {
     if (eEncoding == RTL_TEXTENCODING_DONTKNOW)
-        return 0;
+        return nullptr;
     rtl_UnicodeToTextConverter hConverter
         = rtl_createUnicodeToTextConverter(eEncoding);
     rtl_UnicodeToTextContext hContext
@@ -261,7 +262,7 @@ sal_Char * convertFromUnicode(const sal_Unicode * pBegin,
     if (nInfo != 0)
     {
         delete[] pBuffer;
-        pBuffer = 0;
+        pBuffer = nullptr;
     }
     return pBuffer;
 }
@@ -437,7 +438,7 @@ class INetMIMECharsetList_Impl
     Node * m_pFirst;
 
 public:
-    INetMIMECharsetList_Impl(): m_pFirst(0) {}
+    INetMIMECharsetList_Impl(): m_pFirst(nullptr) {}
 
     ~INetMIMECharsetList_Impl();
 
@@ -466,14 +467,12 @@ struct Parameter
     Parameter * m_pNext;
     OString m_aAttribute;
     OString m_aCharset;
-    OString m_aLanguage;
     OString m_aValue;
     sal_uInt32 m_nSection;
     bool m_bExtended;
 
     inline Parameter(Parameter * pTheNext, const OString& rTheAttribute,
                      const OString& rTheCharset,
-                     const OString& rTheLanguage,
                      const OString& rTheValue, sal_uInt32 nTheSection,
                      bool bTheExtended);
 };
@@ -481,13 +480,11 @@ struct Parameter
 inline Parameter::Parameter(Parameter * pTheNext,
                             const OString& rTheAttribute,
                             const OString& rTheCharset,
-                            const OString& rTheLanguage,
                             const OString& rTheValue,
                             sal_uInt32 nTheSection, bool bTheExtended):
     m_pNext(pTheNext),
     m_aAttribute(rTheAttribute),
     m_aCharset(rTheCharset),
-    m_aLanguage(rTheLanguage),
     m_aValue(rTheValue),
     m_nSection(nTheSection),
     m_bExtended(bTheExtended)
@@ -497,7 +494,7 @@ struct ParameterList
 {
     Parameter * m_pList;
 
-    ParameterList(): m_pList(0) {}
+    ParameterList(): m_pList(nullptr) {}
 
     inline ~ParameterList();
 
@@ -537,11 +534,10 @@ void appendISO88591(OUString & rText, sal_Char const * pBegin,
                     sal_Char const * pEnd)
 {
     sal_Int32 nLength = pEnd - pBegin;
-    sal_Unicode * pBuffer = new sal_Unicode[nLength];
-    for (sal_Unicode * p = pBuffer; pBegin != pEnd;)
+    std::unique_ptr<sal_Unicode[]> pBuffer(new sal_Unicode[nLength]);
+    for (sal_Unicode * p = pBuffer.get(); pBegin != pEnd;)
         *p++ = static_cast<unsigned char>(*pBegin++);
-    rText += OUString(pBuffer, nLength);
-    delete[] pBuffer;
+    rText += OUString(pBuffer.get(), nLength);
 }
 
 //  INetMIMECharsetList_Impl
@@ -612,7 +608,7 @@ bool parseParameters(ParameterList const & rInput,
     if (pOutput)
         pOutput->clear();
 
-    Parameter * pPrev = 0;
+    Parameter * pPrev = nullptr;
     for (Parameter * p = rInput.m_pList; p; p = p->m_pNext)
     {
         if (p->m_nSection > 0
@@ -690,8 +686,7 @@ bool parseParameters(ParameterList const & rInput,
             }
             auto const ret = pOutput->insert(
                 {p->m_aAttribute,
-                 {p->m_aAttribute, p->m_aCharset, p->m_aLanguage, aValue,
-                  !bBadEncoding}});
+                 {aValue}});
             SAL_INFO_IF(!ret.second, "tools",
                 "INetMIME: dropping duplicate parameter: " << p->m_aAttribute);
             p = pNext;
@@ -1339,7 +1334,7 @@ void INetMIMEEncodedWordOutputSink::finish(bool bWriteTrailer)
                 }
                 else
                 {
-                    sal_Char * pTargetBuffer = NULL;
+                    sal_Char * pTargetBuffer = nullptr;
                     sal_Size nTargetSize = 0;
                     rtl_UnicodeToTextConverter hConverter
                         = rtl_createUnicodeToTextConverter(eCharsetEncoding);
@@ -1363,7 +1358,7 @@ void INetMIMEEncodedWordOutputSink::finish(bool bWriteTrailer)
                                   & RTL_UNICODETOTEXT_INFO_DESTBUFFERTOSMALL))
                             break;
                         delete[] pTargetBuffer;
-                        pTargetBuffer = NULL;
+                        pTargetBuffer = nullptr;
                         rtl_resetUnicodeToTextContext(hConverter, hContext);
                     }
                     rtl_destroyUnicodeToTextContext(hConverter, hContext);
@@ -1798,7 +1793,7 @@ sal_Unicode const * scanParameters(sal_Unicode const * pBegin,
 {
     ParameterList aList;
     sal_Unicode const * pParameterBegin = pBegin;
-    for (sal_Unicode const * p = pParameterBegin;; pParameterBegin = p)
+    for (sal_Unicode const * p = pParameterBegin;;)
     {
         pParameterBegin = skipLinearWhiteSpaceComment(p, pEnd);
         if (pParameterBegin == pEnd || *pParameterBegin != ';')
@@ -2002,7 +1997,7 @@ sal_Unicode const * scanParameters(sal_Unicode const * pBegin,
                     RTL_TEXTENCODING_UTF8);
         }
 
-        *pPos = new Parameter(*pPos, aAttribute, aCharset, aLanguage, aValue,
+        *pPos = new Parameter(*pPos, aAttribute, aCharset, aValue,
                               nSection, bExtended);
     }
     return parseParameters(aList, pParameters) ? pParameterBegin : pBegin;
@@ -2027,7 +2022,7 @@ const sal_Char * getCharsetName(rtl_TextEncoding eEncoding)
 
             default:
                 OSL_FAIL("getCharsetName(): Unsupported encoding");
-                return 0;
+                return nullptr;
         }
 }
 
@@ -2355,12 +2350,12 @@ sal_Unicode const * INetMIME::scanContentType(
         ++p;
     }
     if (p == pTypeBegin)
-        return 0;
+        return nullptr;
     sal_Unicode const * pTypeEnd = p;
 
     p = skipLinearWhiteSpaceComment(p, pEnd);
     if (p == pEnd || *p++ != '/')
-        return 0;
+        return nullptr;
 
     p = skipLinearWhiteSpaceComment(p, pEnd);
     sal_Unicode const * pSubTypeBegin = p;
@@ -2369,14 +2364,14 @@ sal_Unicode const * INetMIME::scanContentType(
         ++p;
     }
     if (p == pSubTypeBegin)
-        return 0;
+        return nullptr;
     sal_Unicode const * pSubTypeEnd = p;
 
-    if (pType != 0)
+    if (pType != nullptr)
     {
         *pType = OUString(pTypeBegin, pTypeEnd - pTypeBegin).toAsciiLowerCase();
     }
-    if (pSubType != 0)
+    if (pSubType != nullptr)
     {
         *pSubType = OUString(pSubTypeBegin, pSubTypeEnd - pSubTypeBegin)
             .toAsciiLowerCase();
@@ -2439,7 +2434,7 @@ OUString INetMIME::decodeHeaderFieldBody(const OString& rBody)
             if (bEncodedWord)
             {
                 const sal_Char * pCharsetBegin = q;
-                const sal_Char * pLanguageBegin = 0;
+                const sal_Char * pLanguageBegin = nullptr;
                 int nAlphaCount = 0;
                 for (bool bDone = false; !bDone;)
                     if (q == pEnd)
@@ -2458,10 +2453,10 @@ OUString INetMIME::decodeHeaderFieldBody(const OString& rBody)
                                 break;
 
                             case '-':
-                                if (pLanguageBegin != 0)
+                                if (pLanguageBegin != nullptr)
                                 {
                                     if (nAlphaCount == 0)
-                                        pLanguageBegin = 0;
+                                        pLanguageBegin = nullptr;
                                     else
                                         nAlphaCount = 0;
                                 }
@@ -2475,7 +2470,7 @@ OUString INetMIME::decodeHeaderFieldBody(const OString& rBody)
                                     eCharsetEncoding
                                         = getCharsetEncoding(
                                               pCharsetBegin,
-                                              pLanguageBegin == 0
+                                              pLanguageBegin == nullptr
                                               || nAlphaCount == 0 ?
                                                   q - 1 : pLanguageBegin);
                                     bEncodedWord = isMIMECharsetEncoding(
@@ -2487,9 +2482,9 @@ OUString INetMIME::decodeHeaderFieldBody(const OString& rBody)
                                 break;
 
                             default:
-                                if (pLanguageBegin != 0
+                                if (pLanguageBegin != nullptr
                                     && (!rtl::isAsciiAlpha(cChar) || ++nAlphaCount > 8))
-                                    pLanguageBegin = 0;
+                                    pLanguageBegin = nullptr;
                                 break;
                         }
                     }
@@ -2656,7 +2651,7 @@ OUString INetMIME::decodeHeaderFieldBody(const OString& rBody)
 
             bEncodedWord = bEncodedWord && q != pEnd && *q++ == '=';
 
-            sal_Unicode * pUnicodeBuffer = 0;
+            sal_Unicode * pUnicodeBuffer = nullptr;
             sal_Size nUnicodeSize = 0;
             if (bEncodedWord)
             {
@@ -2664,7 +2659,7 @@ OUString INetMIME::decodeHeaderFieldBody(const OString& rBody)
                     = convertToUnicode(sText.getStr(),
                                        sText.getStr() + sText.getLength(),
                                        eCharsetEncoding, nUnicodeSize);
-                if (pUnicodeBuffer == 0)
+                if (pUnicodeBuffer == nullptr)
                     bEncodedWord = false;
             }
 

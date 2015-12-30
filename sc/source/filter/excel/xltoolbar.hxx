@@ -25,9 +25,9 @@ public:
     sal_uInt16 cmdType:5;
     bool C:1;
     sal_uInt16 reserved3:8;
-    bool Read( SvStream& rS ) SAL_OVERRIDE;
+    bool Read( SvStream& rS ) override;
 #if OSL_DEBUG_LEVEL > 1
-    virtual void Print(FILE* fp) SAL_OVERRIDE;
+    virtual void Print(FILE* fp) override;
 #endif
 };
 
@@ -40,10 +40,10 @@ public:
     ScTBC();
     virtual ~ScTBC(){}
 #if OSL_DEBUG_LEVEL > 1
-    virtual void Print( FILE* ) SAL_OVERRIDE;
+    virtual void Print( FILE* ) override;
 #endif
-    bool Read(SvStream &rS) SAL_OVERRIDE;
-    bool ImportToolBarControl( ScCTBWrapper&, const com::sun::star::uno::Reference< com::sun::star::container::XIndexContainer >& toolbarcontainer, CustomToolBarImportHelper& helper, bool bIsMenuBar );
+    bool Read(SvStream &rS) override;
+    bool ImportToolBarControl( ScCTBWrapper&, const css::uno::Reference< css::container::XIndexContainer >& toolbarcontainer, CustomToolBarImportHelper& helper, bool bIsMenuBar );
 };
 
 class ScCTB : public TBBase
@@ -54,12 +54,12 @@ class ScCTB : public TBBase
     sal_uInt32 ectbid;
     std::vector< ScTBC > rTBC;
 public:
-    ScCTB(sal_uInt16);
+    explicit ScCTB(sal_uInt16);
     virtual ~ScCTB(){}
 #if OSL_DEBUG_LEVEL > 1
-    virtual void Print( FILE* ) SAL_OVERRIDE;
+    virtual void Print( FILE* ) override;
 #endif
-    bool Read(SvStream &rS) SAL_OVERRIDE;
+    bool Read(SvStream &rS) override;
     bool IsMenuToolbar();
     bool ImportCustomToolBar( ScCTBWrapper&, CustomToolBarImportHelper& );
     bool ImportMenuTB( ScCTBWrapper&, const css::uno::Reference< css::container::XIndexContainer >&, CustomToolBarImportHelper& );
@@ -83,9 +83,9 @@ public:
     CTBS();
     virtual ~CTBS(){}
 #if OSL_DEBUG_LEVEL > 1
-    virtual void Print( FILE* ) SAL_OVERRIDE;
+    virtual void Print( FILE* ) override;
 #endif
-    bool Read(SvStream &rS) SAL_OVERRIDE;
+    bool Read(SvStream &rS) override;
 };
 
 class ScCTBWrapper : public TBBase
@@ -97,9 +97,9 @@ class ScCTBWrapper : public TBBase
 public:
     ScCTBWrapper();
     virtual ~ScCTBWrapper();
-    bool Read(SvStream &rS) SAL_OVERRIDE;
+    bool Read(SvStream &rS) override;
 #if OSL_DEBUG_LEVEL > 1
-    virtual void Print( FILE* ) SAL_OVERRIDE;
+    virtual void Print( FILE* ) override;
 #endif
     bool ImportCustomToolBar( SfxObjectShell& rDocSh );
     ScCTB* GetCustomizationData( const OUString& name );

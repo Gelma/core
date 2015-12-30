@@ -247,7 +247,7 @@ def get_through_rss_query(queryurl, mimetype, prefix, suffix):
                 print(entry['id'] + " failed: " + str(sys.exc_info()[0]))
                 pass
 
-    query = create_query(escape(mimetype))
+    query = create_query(escape(mimetype.replace("+","%2B")))
     query['ctype'] = 'rss'
 
     files = get_downloaded_files(prefix, suffix)
@@ -434,6 +434,7 @@ mimetypes = {
 # misc
     'text/csv': 'csv',
     'text/spreadsheet': 'slk',
+    'application/x-qpro': 'qpro',
     'application/x-dbase': 'dbf',
     'application/vnd.corel-draw': 'cdr',
     'application/vnd.lotus-wordpro': 'lwp',
@@ -459,6 +460,7 @@ mimetypes = {
     'application/x-fictionbook+xml': 'fb2',
     'application/x-abiword': 'abw',
     'application/x-pagemaker': 'pmd',
+    'application/x-gnumeric': 'gnumeric',
 # relatively uncommon image mimetypes
     'image/x-freehand': 'fh',
     'image/cgm': 'cgm',

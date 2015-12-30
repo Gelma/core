@@ -56,7 +56,6 @@
 #include <comphelper/processfactory.hxx>
 #include <sfx2/request.hxx>
 
-#include <svx/pfiledlg.hxx>
 #include <svx/grafctrl.hxx>
 #include <svtools/cliplistener.hxx>
 #include <sfx2/viewfrm.hxx>
@@ -84,6 +83,7 @@
 #include "fubullet.hxx"
 #include "fuconcs.hxx"
 #include "fuformatpaintbrush.hxx"
+#include "stlsheet.hxx"
 
 #include <config_features.h>
 
@@ -193,7 +193,7 @@ IMPL_LINK_TYPED( DrawViewShell, ClipboardChanged, TransferableDataHelper*, pData
     TransferableDataHelper aDataHelper (
         TransferableDataHelper::CreateFromSystemClipboard(GetActiveWindow()));
     ::std::unique_ptr<SvxClipboardFormatItem> pFormats (GetSupportedClipboardFormats(aDataHelper));
-    if (mpDrawView == NULL)
+    if (mpDrawView == nullptr)
         return;
     mpCurrentClipboardFormats = std::move(pFormats);
 
@@ -213,29 +213,29 @@ void DrawViewShell::GetDrawAttrState(SfxItemSet& rSet)
 ::Outliner* DrawViewShell::GetOutlinerForMasterPageOutlineTextObj(ESelection &rSel)
 {
     if( !mpDrawView )
-        return NULL;
+        return nullptr;
 
     //when there is one object selected
     if (!mpDrawView->AreObjectsMarked() || (mpDrawView->GetMarkedObjectList().GetMarkCount() != 1))
-        return NULL;
+        return nullptr;
 
     //and we are editing the outline object
     if (!mpDrawView->IsTextEdit())
-        return NULL;
+        return nullptr;
 
     SdrPageView* pPageView = mpDrawView->GetSdrPageView();
     if (!pPageView)
-        return NULL;
+        return nullptr;
 
     SdPage* pPage = static_cast<SdPage*>(pPageView->GetPage());
     //only show these in a normal master page
     if (!pPage || (pPage->GetPageKind() != PK_STANDARD) || !pPage->IsMasterPage())
-        return NULL;
+        return nullptr;
 
     OutlinerView* pOLV = mpDrawView->GetTextEditOutlinerView();
-    ::Outliner* pOL = pOLV ? pOLV->GetOutliner() : NULL;
+    ::Outliner* pOL = pOLV ? pOLV->GetOutliner() : nullptr;
     if (!pOL)
-        return NULL;
+        return nullptr;
     rSel = pOLV->GetSelection();
 
     return pOL;
@@ -243,10 +243,10 @@ void DrawViewShell::GetDrawAttrState(SfxItemSet& rSet)
 
 void DrawViewShell::GetMenuState( SfxItemSet &rSet )
 {
-    if (mpDrawView == NULL)
+    if (mpDrawView == nullptr)
     {
         // This assertion and return are here to prevent crashes.
-        DBG_ASSERT(mpDrawView!=NULL, "Please report this assertion to the Impress team.");
+        DBG_ASSERT(mpDrawView!=nullptr, "Please report this assertion to the Impress team.");
         return;
     }
 
@@ -313,7 +313,7 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
             {
                 SdrObject* pObj = pPage->GetPresObj(PRESOBJ_OUTLINE);
 
-                if (pObj!=NULL )
+                if (pObj!=nullptr )
                 {
                     if( !pObj->IsEmptyPresObj() )
                     {
@@ -608,7 +608,7 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
             // avoid clipboard initialization for
             // read-only presentation views (workaround for NT4.0
             // clipboard prob...)
-            if( !ISA(PresentationViewShell) )
+            if( dynamic_cast< const PresentationViewShell *>( this ) ==  nullptr )
             {
                 // create listener
                 mpClipEvtLstnr = new TransferableClipboardListener( LINK( this, DrawViewShell, ClipboardChanged ) );
@@ -632,7 +632,7 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
         }
         else if( SfxItemState::DEFAULT == rSet.GetItemState( SID_CLIPBOARD_FORMAT_ITEMS ) )
         {
-            if (mpCurrentClipboardFormats.get() != NULL)
+            if (mpCurrentClipboardFormats.get() != nullptr)
                 rSet.Put(*mpCurrentClipboardFormats);
         }
     }
@@ -642,14 +642,14 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
         rSet.DisableItem(SID_CHANGEBEZIER);
     }
 
-    if (mpDrawView == NULL)
+    if (mpDrawView == nullptr)
     {
         // The mpDrawView was not NULL but is now.
         // The reason for this may be that the DrawViewShell has been
         // destroyed in the mean time.
         // We can only return immediately and hope that the deleted
         // DrawViewShell is not called again.
-        DBG_ASSERT(mpDrawView!=NULL, "Please report this assertion to the Impress team.");
+        DBG_ASSERT(mpDrawView!=nullptr, "Please report this assertion to the Impress team.");
         return;
     }
 
@@ -678,6 +678,7 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
     {
         rSet.DisableItem(SID_PRESENTATION_LAYOUT);
         rSet.DisableItem(SID_SELECT_BACKGROUND);
+        rSet.DisableItem(SID_SAVE_BACKGROUND);
     }
 
     if (mePageKind == PK_NOTES)
@@ -694,6 +695,7 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
             rSet.DisableItem(SID_MODIFYPAGE);
 
         rSet.DisableItem(SID_SELECT_BACKGROUND);
+        rSet.DisableItem(SID_SAVE_BACKGROUND);
         rSet.DisableItem(SID_INSERTLAYER);
         rSet.DisableItem(SID_LAYERMODE);
         rSet.DisableItem(SID_INSERTFILE);
@@ -714,6 +716,7 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
         rSet.DisableItem(SID_INSERTFILE);
         rSet.DisableItem(SID_PAGEMODE);
         rSet.DisableItem(SID_SELECT_BACKGROUND);
+        rSet.DisableItem(SID_SAVE_BACKGROUND);
     }
     else
     {
@@ -744,43 +747,9 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
         **********************************************************************/
         rSet.Put(SfxBoolItem(SID_PAGEMODE, true));
         rSet.Put(SfxBoolItem(SID_MASTERPAGE, false));
-        rSet.Put(SfxBoolItem(SID_SLIDE_MASTERPAGE, false));
-        rSet.Put(SfxBoolItem(SID_NOTES_MASTERPAGE, false));
-        rSet.Put(SfxBoolItem(SID_HANDOUT_MASTERPAGE, false));
-
-        if (mePageKind == PK_STANDARD &&
-            rSet.GetItemState(SID_TITLE_MASTERPAGE) == SfxItemState::DEFAULT)
-        {
-            // Is there a page with the AutoLayout "Title"?
-            bool bDisable = true;
-            sal_uInt16 i = 0;
-            sal_uInt16 nCount = GetDoc()->GetSdPageCount(PK_STANDARD);
-
-            while (i < nCount && bDisable)
-            {
-                SdPage* pPage = GetDoc()->GetSdPage(i, PK_STANDARD);
-
-                if (pPage->GetAutoLayout() == AUTOLAYOUT_TITLE)
-                {
-                    bDisable = false;
-                }
-
-                i++;
-            }
-
-            if (bDisable)
-            {
-                rSet.DisableItem(SID_TITLE_MASTERPAGE);
-            }
-            else
-            {
-                rSet.Put(SfxBoolItem(SID_TITLE_MASTERPAGE, false));
-            }
-        }
-        else
-        {
-            rSet.DisableItem(SID_TITLE_MASTERPAGE);
-        }
+        rSet.Put(SfxBoolItem(SID_SLIDE_MASTER_MODE, false));
+        rSet.Put(SfxBoolItem(SID_NOTES_MASTER_MODE, false));
+        rSet.Put(SfxBoolItem(SID_HANDOUT_MASTER_MODE, false));
 
         rSet.DisableItem (SID_INSERT_MASTER_PAGE);
         rSet.DisableItem (SID_DELETE_MASTER_PAGE);
@@ -797,74 +766,22 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
         **********************************************************************/
         if (mePageKind == PK_STANDARD)
         {
-            rSet.Put(SfxBoolItem(SID_SLIDE_MASTERPAGE, true));
-            rSet.Put(SfxBoolItem(SID_NOTES_MASTERPAGE, false));
-            rSet.Put(SfxBoolItem(SID_HANDOUT_MASTERPAGE, false));
+            rSet.Put(SfxBoolItem(SID_SLIDE_MASTER_MODE, true));
+            rSet.Put(SfxBoolItem(SID_NOTES_MASTER_MODE, false));
+            rSet.Put(SfxBoolItem(SID_HANDOUT_MASTER_MODE, false));
 
-            if (rSet.GetItemState(SID_TITLE_MASTERPAGE) == SfxItemState::DEFAULT)
-            {
-                bool bCheck = false;
-                bool bDisable = true;
-                if( pPageView )
-                {
-                    SdPage* pMPage = dynamic_cast< SdPage* >( pPageView->GetPage() );
-
-                    sal_uInt16 i = 0;
-                    sal_uInt16 nCount = GetDoc()->GetSdPageCount(PK_STANDARD);
-
-                    // Is there a reference to the current master page from a page
-                    // with the AutoLayout "Title"?
-                    while (i < nCount && !bCheck && bDisable)
-                    {
-                        SdPage* pPage = GetDoc()->GetSdPage(i, PK_STANDARD);
-
-                        // page does reference the current master page
-                        if (pPage->GetAutoLayout() == AUTOLAYOUT_TITLE)
-                        {
-                            // a page does have a AutoLayout "Title"
-                            bDisable = false;
-
-                            SdPage& rRefMPage = static_cast<SdPage&>(pPage->TRG_GetMasterPage());
-
-                            if(&rRefMPage == pMPage)
-                            {
-                                // a page with the AutoLayout "Title" does reference
-                                // the current master page
-                                bCheck = true;
-                            }
-                        }
-
-                        i++;
-                    }
-                }
-
-                if (bCheck)
-                {
-                    rSet.Put(SfxBoolItem(SID_SLIDE_MASTERPAGE, false));
-                }
-
-                rSet.Put(SfxBoolItem(SID_TITLE_MASTERPAGE, bCheck));
-
-                if (bDisable)
-                {
-                    rSet.ClearItem(SID_TITLE_MASTERPAGE);
-                    rSet.DisableItem(SID_TITLE_MASTERPAGE);
-                }
-            }
         }
         else if (mePageKind == PK_NOTES)
         {
-            rSet.Put(SfxBoolItem(SID_SLIDE_MASTERPAGE, false));
-            rSet.DisableItem(SID_TITLE_MASTERPAGE);
-            rSet.Put(SfxBoolItem(SID_NOTES_MASTERPAGE, true));
-            rSet.Put(SfxBoolItem(SID_HANDOUT_MASTERPAGE, false));
+            rSet.Put(SfxBoolItem(SID_SLIDE_MASTER_MODE, false));
+            rSet.Put(SfxBoolItem(SID_NOTES_MASTER_MODE, true));
+            rSet.Put(SfxBoolItem(SID_HANDOUT_MASTER_MODE, false));
         }
         else if (mePageKind == PK_HANDOUT)
         {
-            rSet.Put(SfxBoolItem(SID_SLIDE_MASTERPAGE, false));
-            rSet.DisableItem(SID_TITLE_MASTERPAGE);
-            rSet.Put(SfxBoolItem(SID_NOTES_MASTERPAGE, false));
-            rSet.Put(SfxBoolItem(SID_HANDOUT_MASTERPAGE, true));
+            rSet.Put(SfxBoolItem(SID_SLIDE_MASTER_MODE, false));
+            rSet.Put(SfxBoolItem(SID_NOTES_MASTER_MODE, false));
+            rSet.Put(SfxBoolItem(SID_HANDOUT_MASTER_MODE, true));
         }
     }
 
@@ -965,9 +882,6 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
     if ( GetDocSh()->IsUIActive() )
     {
         rSet.DisableItem( SID_INSERT_OBJECT );
-        rSet.DisableItem( SID_INSERT_PLUGIN );
-        rSet.DisableItem( SID_INSERT_SOUND );
-        rSet.DisableItem( SID_INSERT_VIDEO );
         rSet.DisableItem( SID_INSERT_FLOATINGFRAME );
         rSet.DisableItem( SID_INSERT_MATH );
         rSet.DisableItem( SID_INSERT_DIAGRAM );
@@ -1026,7 +940,7 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
     }
 
     // EditText active
-    if (GetViewShellBase().GetViewShellManager()->GetShell(RID_DRAW_TEXT_TOOLBOX) != NULL)
+    if (GetViewShellBase().GetViewShellManager()->GetShell(RID_DRAW_TEXT_TOOLBOX) != nullptr)
     {
         sal_uInt16 nCurrentSId = SID_ATTR_CHAR;
 
@@ -1084,9 +998,6 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
         rSet.DisableItem( SID_INSERT_AVMEDIA );
         rSet.DisableItem( SID_INSERT_DIAGRAM );
         rSet.DisableItem( SID_INSERT_OBJECT );
-        rSet.DisableItem( SID_INSERT_PLUGIN );
-        rSet.DisableItem( SID_INSERT_SOUND );
-        rSet.DisableItem( SID_INSERT_VIDEO );
         rSet.DisableItem( SID_INSERT_FLOATINGFRAME );
 
         rSet.DisableItem( SID_INSERT_MATH );
@@ -1487,7 +1398,7 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
                     if ( abs( aSel.nEndPos - aSel.nStartPos ) == 1 )
                     {
                         const SvxFieldData* pField = pFieldItem->GetField();
-                        if ( pField->ISA(SvxURLField) )
+                        if ( dynamic_cast< const SvxURLField *>( pField ) !=  nullptr )
                             bDisableEditHyperlink = false;
                     }
                 }
@@ -1495,7 +1406,7 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
         }
         else
         {
-            SdrUnoObj* pUnoCtrl = PTR_CAST(SdrUnoObj, mpDrawView->GetMarkedObjectList().GetMark(0)->GetMarkedSdrObj());
+            SdrUnoObj* pUnoCtrl = dynamic_cast<SdrUnoObj*>( mpDrawView->GetMarkedObjectList().GetMark(0)->GetMarkedSdrObj() );
 
             if ( pUnoCtrl && FmFormInventor == pUnoCtrl->GetObjInventor() )
             {
@@ -1593,8 +1504,7 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
         || rSet.GetItemState(SID_DISPLAY_MASTER_OBJECTS) == SfxItemState::DEFAULT)
     {
         SdPage* pPage = GetActualPage();
-        if (pPage != NULL
-            && GetDoc() != NULL)
+        if (pPage != nullptr && GetDoc() != nullptr)
         {
             SetOfByte aVisibleLayers = pPage->TRG_GetMasterPageVisibleLayers();
             SdrLayerAdmin& rLayerAdmin = GetDoc()->GetLayerAdmin();
@@ -1615,31 +1525,51 @@ void DrawViewShell::GetMenuState( SfxItemSet &rSet )
     }
 #endif
 
+    if (rSet.GetItemState(SID_SAVE_BACKGROUND) == SfxItemState::DEFAULT)
+    {
+        bool bDisableSaveBackground = true;
+        SdPage* pPage = GetActualPage();
+        if (pPage != nullptr && GetDoc() != nullptr)
+        {
+            SfxItemSet aMergedAttr(GetDoc()->GetPool(), XATTR_FILL_FIRST, XATTR_FILL_LAST, 0);
+            SdStyleSheet* pStyleSheet = pPage->getPresentationStyle(HID_PSEUDOSHEET_BACKGROUND);
+            MergePageBackgroundFilling(pPage, pStyleSheet, meEditMode == EM_MASTERPAGE, aMergedAttr);
+            if (drawing::FillStyle_BITMAP == static_cast<const XFillStyleItem&>(aMergedAttr.Get(XATTR_FILLSTYLE)).GetValue())
+            {
+                bDisableSaveBackground = false;
+            }
+        }
+        if (bDisableSaveBackground)
+            rSet.DisableItem(SID_SAVE_BACKGROUND);
+    }
+
     GetModeSwitchingMenuState (rSet);
 }
 
 void DrawViewShell::GetModeSwitchingMenuState (SfxItemSet &rSet)
 {
-    //DraView
-    rSet.Put(SfxBoolItem(SID_DIAMODE, false));
-    rSet.Put(SfxBoolItem(SID_OUTLINEMODE, false));
+    //DrawView
+    rSet.Put(SfxBoolItem(SID_SLIDE_SORTER_MODE, false));
+    rSet.Put(SfxBoolItem(SID_OUTLINE_MODE, false));
+    rSet.Put(SfxBoolItem(SID_SLIDE_MASTER_MODE, false));
+    rSet.Put(SfxBoolItem(SID_NOTES_MASTER_MODE, false));
     if (mePageKind == PK_NOTES)
     {
         rSet.Put(SfxBoolItem(SID_DRAWINGMODE, false));
-        rSet.Put(SfxBoolItem(SID_NOTESMODE, true));
-        rSet.Put(SfxBoolItem(SID_HANDOUTMODE, false));
+        rSet.Put(SfxBoolItem(SID_NOTES_MODE, true));
+        rSet.Put(SfxBoolItem(SID_HANDOUT_MASTER_MODE, false));
     }
     else if (mePageKind == PK_HANDOUT)
     {
         rSet.Put(SfxBoolItem(SID_DRAWINGMODE, false));
-        rSet.Put(SfxBoolItem(SID_NOTESMODE, false));
-        rSet.Put(SfxBoolItem(SID_HANDOUTMODE, true));
+        rSet.Put(SfxBoolItem(SID_NOTES_MODE, false));
+        rSet.Put(SfxBoolItem(SID_HANDOUT_MASTER_MODE, true));
     }
     else
     {
         rSet.Put(SfxBoolItem(SID_DRAWINGMODE, true));
-        rSet.Put(SfxBoolItem(SID_NOTESMODE, false));
-        rSet.Put(SfxBoolItem(SID_HANDOUTMODE, false));
+        rSet.Put(SfxBoolItem(SID_NOTES_MODE, false));
+        rSet.Put(SfxBoolItem(SID_HANDOUT_MASTER_MODE, false));
     }
 
     // Removed [GetDocSh()->GetCurrentFunction() ||] from the following
@@ -1656,33 +1586,45 @@ void DrawViewShell::GetModeSwitchingMenuState (SfxItemSet &rSet)
             rSet.DisableItem( SID_DRAWINGMODE );
         }
 
-        rSet.ClearItem( SID_NOTESMODE );
-        rSet.DisableItem( SID_NOTESMODE );
+        rSet.ClearItem( SID_NOTES_MODE );
+        rSet.DisableItem( SID_NOTES_MODE );
 
-        rSet.ClearItem( SID_HANDOUTMODE );
-        rSet.DisableItem( SID_HANDOUTMODE );
+        rSet.ClearItem( SID_HANDOUT_MASTER_MODE );
+        rSet.DisableItem( SID_HANDOUT_MASTER_MODE );
 
-        rSet.ClearItem( SID_OUTLINEMODE );
-        rSet.DisableItem( SID_OUTLINEMODE );
+        rSet.ClearItem( SID_OUTLINE_MODE );
+        rSet.DisableItem( SID_OUTLINE_MODE );
 
-        rSet.ClearItem( SID_DIAMODE );
-        rSet.DisableItem( SID_DIAMODE );
+        rSet.ClearItem( SID_SLIDE_MASTER_MODE );
+        rSet.DisableItem( SID_SLIDE_MASTER_MODE );
+
+        rSet.ClearItem( SID_NOTES_MASTER_MODE );
+        rSet.DisableItem( SID_NOTES_MASTER_MODE );
+
+        rSet.ClearItem( SID_SLIDE_SORTER_MODE );
+        rSet.DisableItem( SID_SLIDE_SORTER_MODE );
     }
 
     if (GetDocSh()->GetCreateMode() == SfxObjectCreateMode::EMBEDDED)
     {
         // Outplace-Edit: do not allow switch
-        rSet.ClearItem( SID_OUTLINEMODE );
-        rSet.DisableItem( SID_OUTLINEMODE );
+        rSet.ClearItem( SID_OUTLINE_MODE );
+        rSet.DisableItem( SID_OUTLINE_MODE );
 
-        rSet.ClearItem( SID_DIAMODE );
-        rSet.DisableItem( SID_DIAMODE );
+        rSet.ClearItem( SID_SLIDE_SORTER_MODE );
+        rSet.DisableItem( SID_SLIDE_SORTER_MODE );
 
-        rSet.ClearItem( SID_NOTESMODE );
-        rSet.DisableItem( SID_NOTESMODE );
+        rSet.ClearItem( SID_NOTES_MODE );
+        rSet.DisableItem( SID_NOTES_MODE );
 
-        rSet.ClearItem( SID_HANDOUTMODE );
-        rSet.DisableItem( SID_HANDOUTMODE );
+        rSet.ClearItem( SID_HANDOUT_MASTER_MODE );
+        rSet.DisableItem( SID_HANDOUT_MASTER_MODE );
+
+        rSet.ClearItem( SID_SLIDE_MASTER_MODE );
+        rSet.DisableItem( SID_SLIDE_MASTER_MODE );
+
+        rSet.ClearItem( SID_NOTES_MASTER_MODE );
+        rSet.DisableItem( SID_NOTES_MASTER_MODE );
     }
 
     svx::ExtrusionBar::getState( mpDrawView, rSet );
@@ -1731,7 +1673,7 @@ void DrawViewShell::Execute (SfxRequest& rReq)
         case SID_SPELL_DIALOG:
         {
             SfxViewFrame* pViewFrame = GetViewFrame();
-            if (rReq.GetArgs() != NULL)
+            if (rReq.GetArgs() != nullptr)
                 pViewFrame->SetChildWindow (SID_SPELL_DIALOG,
                     static_cast<const SfxBoolItem&>(rReq.GetArgs()->
                         Get(SID_SPELL_DIALOG)).GetValue());

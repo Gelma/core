@@ -68,10 +68,10 @@ namespace
     private:
         sal_Int16 m_nODF;
 
-        virtual void ImplCommit() SAL_OVERRIDE;
+        virtual void ImplCommit() override;
 
     public:
-    virtual void Notify( const ::com::sun::star::uno::Sequence< OUString >& aPropertyNames ) SAL_OVERRIDE;
+    virtual void Notify( const ::com::sun::star::uno::Sequence< OUString >& aPropertyNames ) override;
         SaveODFItem();
         //See group ODF in Common.xcs
         bool isLessODF1_2()
@@ -96,13 +96,13 @@ void SaveODFItem::Notify( const ::com::sun::star::uno::Sequence< OUString >& ) {
             else
                 throw uno::RuntimeException(
                     OUString("[xmlsecurity]SaveODFItem::SaveODFItem(): Wrong Type!"),
-                    0 );
+                    nullptr );
 
         }
         else
             throw uno::RuntimeException(
                 OUString("[xmlsecurity] Could not open property Office.Common/Save/ODF/DefaultVersion"),
-                0);
+                nullptr);
     }
 }
 
@@ -713,7 +713,7 @@ void DigitalSignaturesDialog::ImplFillSignaturesBox()
     m_pSigsOldSignatureImg->Show(bShowOldSignature);
     m_pSigsOldSignatureFI->Show(bShowOldSignature);
 
-    SignatureHighlightHdl( NULL );
+    SignatureHighlightHdl( nullptr );
 }
 
 //If bUseTempStream is true then the temporary signature stream is used.
@@ -780,7 +780,7 @@ SignatureStreamHelper DigitalSignaturesDialog::ImplOpenSignatureStream(
         if (nStreamOpenMode & css::embed::ElementModes::TRUNCATE)
         {
             //We write always into a new temporary stream.
-            mxTempSignatureStream = Reference < css::io::XStream >(css::io::TempFile::create(mxCtx), UNO_QUERY_THROW);
+            mxTempSignatureStream.set(css::io::TempFile::create(mxCtx), UNO_QUERY_THROW);
             aHelper.xSignatureStream = mxTempSignatureStream;
         }
         else

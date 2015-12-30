@@ -135,12 +135,12 @@ struct lcl_AllOperator : public lcl_Operator
     {
     }
 
-    virtual bool setsCategories( bool /*bDataInColumns*/ ) SAL_OVERRIDE
+    virtual bool setsCategories( bool /*bDataInColumns*/ ) override
     {
         return true;
     }
 
-    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) SAL_OVERRIDE
+    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) override
     {
         if( !xDataAccess.is() )
             return;
@@ -182,7 +182,7 @@ struct lcl_DataOperator : public lcl_Operator
     {
     }
 
-    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) SAL_OVERRIDE
+    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) override
     {
         if( xDataAccess.is() )
             xDataAccess->setData( lcl_getNANInsteadDBL_MIN( m_rData ) );
@@ -202,13 +202,13 @@ struct lcl_RowDescriptionsOperator : public lcl_Operator
     {
     }
 
-    virtual bool setsCategories( bool bDataInColumns ) SAL_OVERRIDE
+    virtual bool setsCategories( bool bDataInColumns ) override
     {
         m_bDataInColumns = bDataInColumns;
         return bDataInColumns;
     }
 
-    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) SAL_OVERRIDE
+    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) override
     {
         if( xDataAccess.is() )
         {
@@ -234,13 +234,13 @@ struct lcl_ComplexRowDescriptionsOperator : public lcl_Operator
     {
     }
 
-    virtual bool setsCategories( bool bDataInColumns ) SAL_OVERRIDE
+    virtual bool setsCategories( bool bDataInColumns ) override
     {
         m_bDataInColumns = bDataInColumns;
         return bDataInColumns;
     }
 
-    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) SAL_OVERRIDE
+    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) override
     {
         if( xDataAccess.is() )
         {
@@ -263,12 +263,12 @@ struct lcl_AnyRowDescriptionsOperator : public lcl_Operator
     {
     }
 
-    virtual bool setsCategories( bool bDataInColumns ) SAL_OVERRIDE
+    virtual bool setsCategories( bool bDataInColumns ) override
     {
         return bDataInColumns;
     }
 
-    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) SAL_OVERRIDE
+    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) override
     {
         if( xDataAccess.is() )
             xDataAccess->setAnyRowDescriptions( m_rAnyRowDescriptions );
@@ -288,13 +288,13 @@ struct lcl_ColumnDescriptionsOperator : public lcl_Operator
     {
     }
 
-    virtual bool setsCategories( bool bDataInColumns ) SAL_OVERRIDE
+    virtual bool setsCategories( bool bDataInColumns ) override
     {
         m_bDataInColumns = bDataInColumns;
         return !bDataInColumns;
     }
 
-    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) SAL_OVERRIDE
+    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) override
     {
         if( xDataAccess.is() )
         {
@@ -320,13 +320,13 @@ struct lcl_ComplexColumnDescriptionsOperator : public lcl_Operator
     {
     }
 
-    virtual bool setsCategories( bool bDataInColumns ) SAL_OVERRIDE
+    virtual bool setsCategories( bool bDataInColumns ) override
     {
         m_bDataInColumns = bDataInColumns;
         return !bDataInColumns;
     }
 
-    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) SAL_OVERRIDE
+    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) override
     {
         if( xDataAccess.is() )
         {
@@ -349,12 +349,12 @@ struct lcl_AnyColumnDescriptionsOperator : public lcl_Operator
     {
     }
 
-    virtual bool setsCategories( bool bDataInColumns ) SAL_OVERRIDE
+    virtual bool setsCategories( bool bDataInColumns ) override
     {
         return bDataInColumns;
     }
 
-    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) SAL_OVERRIDE
+    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) override
     {
         if( xDataAccess.is() )
             xDataAccess->setAnyColumnDescriptions( m_rAnyColumnDescriptions );
@@ -371,12 +371,12 @@ struct lcl_DateCategoriesOperator : public lcl_Operator
     {
     }
 
-    virtual bool setsCategories( bool /*bDataInColumns*/ ) SAL_OVERRIDE
+    virtual bool setsCategories( bool /*bDataInColumns*/ ) override
     {
         return true;
     }
 
-    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) SAL_OVERRIDE
+    virtual void apply( const Reference< XAnyDescriptionAccess >& xDataAccess ) override
     {
         Reference< XDateCategories > xDateCategories( xDataAccess, uno::UNO_QUERY );
         if( xDateCategories.is() )
@@ -573,7 +573,7 @@ void SAL_CALL ChartDataWrapper::dispose()
     throw (uno::RuntimeException, std::exception)
 {
     m_aEventListenerContainer.disposeAndClear( lang::EventObject( static_cast< ::cppu::OWeakObject* >( this )));
-    m_xDataAccess=0;
+    m_xDataAccess=nullptr;
 }
 
 void SAL_CALL ChartDataWrapper::addEventListener(
@@ -634,11 +634,11 @@ void ChartDataWrapper::initDataAccess()
     if( !xChartDoc.is() )
         return;
     if( xChartDoc->hasInternalDataProvider() )
-        m_xDataAccess = Reference< XAnyDescriptionAccess >( xChartDoc->getDataProvider(), uno::UNO_QUERY_THROW );
+        m_xDataAccess.set( xChartDoc->getDataProvider(), uno::UNO_QUERY_THROW );
     else
     {
         //create a separate "internal data provider" that is not connected to the model
-        m_xDataAccess = Reference< XAnyDescriptionAccess >( ChartModelHelper::createInternalDataProvider(
+        m_xDataAccess.set( ChartModelHelper::createInternalDataProvider(
             xChartDoc, false /*bConnectToModel*/ ), uno::UNO_QUERY_THROW );
     }
 }
@@ -682,7 +682,7 @@ void ChartDataWrapper::applyData( lcl_Operator& rDataOperator )
     uno::Sequence< beans::PropertyValue > aArguments( DataSourceHelper::createArguments(
             aRangeString, aSequenceMapping, bUseColumns, bFirstCellAsLabel, bHasCategories ) );
 
-    // /-- locked controllers
+    // -- locked controllers
     ControllerLockGuardUNO aCtrlLockGuard( uno::Reference< frame::XModel >( xChartDoc, uno::UNO_QUERY ));
 
     // create and attach new data source

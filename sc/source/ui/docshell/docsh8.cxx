@@ -170,15 +170,15 @@ bool ScDocShell::MoveFile( const INetURLObject& rSourceObj, const INetURLObject&
     try
     {
         ::ucbhelper::Content aDestPath( aDestPathObj.GetMainURL(INetURLObject::NO_DECODE),
-                            uno::Reference< ::com::sun::star::ucb::XCommandEnvironment >(),
+                            uno::Reference< css::ucb::XCommandEnvironment >(),
                             comphelper::getProcessComponentContext() );
-        uno::Reference< ::com::sun::star::ucb::XCommandInfo > xInfo = aDestPath.getCommands();
+        uno::Reference< css::ucb::XCommandInfo > xInfo = aDestPath.getCommands();
         OUString aTransferName = "transfer";
         if ( xInfo->hasCommandByName( aTransferName ) )
         {
             aDestPath.executeCommand( aTransferName, uno::makeAny(
-                ::com::sun::star::ucb::TransferInfo( bMoveData, rSourceObj.GetMainURL(INetURLObject::NO_DECODE), aName,
-                                                       ::com::sun::star::ucb::NameClash::ERROR ) ) );
+                css::ucb::TransferInfo( bMoveData, rSourceObj.GetMainURL(INetURLObject::NO_DECODE), aName,
+                                                       css::ucb::NameClash::ERROR ) ) );
         }
         else
         {
@@ -203,9 +203,9 @@ bool ScDocShell::KillFile( const INetURLObject& rURL )
     try
     {
         ::ucbhelper::Content aCnt( rURL.GetMainURL(INetURLObject::NO_DECODE),
-                        uno::Reference< ::com::sun::star::ucb::XCommandEnvironment >(),
+                        uno::Reference< css::ucb::XCommandEnvironment >(),
                         comphelper::getProcessComponentContext() );
-        aCnt.executeCommand( OUString( "delete" ),
+        aCnt.executeCommand( "delete",
                                 comphelper::makeBoolAny( true ) );
     }
     catch( uno::Exception& )
@@ -223,7 +223,7 @@ bool ScDocShell::IsDocument( const INetURLObject& rURL )
     try
     {
         ::ucbhelper::Content aCnt( rURL.GetMainURL(INetURLObject::NO_DECODE),
-                        uno::Reference< ::com::sun::star::ucb::XCommandEnvironment >(),
+                        uno::Reference< css::ucb::XCommandEnvironment >(),
                         comphelper::getProcessComponentContext() );
         bRet = aCnt.isDocument();
     }
@@ -318,8 +318,7 @@ sal_uLong ScDocShell::DBaseImport( const OUString& rFullFileName, rtl_TextEncodi
 
         ScProgress aProgress( this, ScGlobal::GetRscString( STR_LOAD_DOC ), 0 );
         uno::Reference<lang::XMultiServiceFactory> xFactory = comphelper::getProcessServiceFactory();
-        uno::Reference<sdbc::XRowSet> xRowSet( xFactory->createInstance(
-                            OUString( SC_SERVICE_ROWSET ) ),
+        uno::Reference<sdbc::XRowSet> xRowSet( xFactory->createInstance(SC_SERVICE_ROWSET),
                             uno::UNO_QUERY);
         ::utl::DisposableComponent aRowSetHelper(xRowSet);
         uno::Reference<beans::XPropertySet> xRowProp( xRowSet, uno::UNO_QUERY );
@@ -330,16 +329,16 @@ sal_uLong ScDocShell::DBaseImport( const OUString& rFullFileName, rtl_TextEncodi
         uno::Any aAny;
 
         aAny <<= xConnection;
-        xRowProp->setPropertyValue( OUString(SC_DBPROP_ACTIVECONNECTION), aAny );
+        xRowProp->setPropertyValue( SC_DBPROP_ACTIVECONNECTION, aAny );
 
         aAny <<= nType;
-        xRowProp->setPropertyValue( OUString(SC_DBPROP_COMMANDTYPE), aAny );
+        xRowProp->setPropertyValue( SC_DBPROP_COMMANDTYPE, aAny );
 
         aAny <<= OUString( aTabName );
-        xRowProp->setPropertyValue( OUString(SC_DBPROP_COMMAND), aAny );
+        xRowProp->setPropertyValue( SC_DBPROP_COMMAND, aAny );
 
         aAny <<= false;
-        xRowProp->setPropertyValue( OUString(SC_DBPROP_PROPCHANGE_NOTIFY), aAny );
+        xRowProp->setPropertyValue( SC_DBPROP_PROPCHANGE_NOTIFY, aAny );
 
         xRowSet->execute();
 
@@ -611,8 +610,7 @@ void lcl_GetColumnTypes(
 
         if ( !bTypeDefined )
         {   // Field type.
-            ScRefCellValue aCell;
-            aCell.assign(rDoc, ScAddress(nCol, nFirstDataRow, nTab));
+            ScRefCellValue aCell(rDoc, ScAddress(nCol, nFirstDataRow, nTab));
             if (aCell.isEmpty() || aCell.hasString())
                 nDbType = sdbc::DataType::VARCHAR;
             else
@@ -873,7 +871,7 @@ sal_uLong ScDocShell::DBaseExport( const OUString& rFullFileName, rtl_TextEncodi
         if (!xTableDesc.is()) return SCERR_EXPORT_CONNECT;
 
         aAny <<= OUString( aTabName );
-        xTableDesc->setPropertyValue( OUString(SC_DBPROP_NAME), aAny );
+        xTableDesc->setPropertyValue( SC_DBPROP_NAME, aAny );
 
         // create columns
 
@@ -906,16 +904,16 @@ sal_uLong ScDocShell::DBaseExport( const OUString& rFullFileName, rtl_TextEncodi
             if (!xColumnDesc.is()) return SCERR_EXPORT_CONNECT;
 
             aAny <<= pColNames[nCol];
-            xColumnDesc->setPropertyValue( OUString(SC_DBPROP_NAME), aAny );
+            xColumnDesc->setPropertyValue( SC_DBPROP_NAME, aAny );
 
             aAny <<= pColTypes[nCol];
-            xColumnDesc->setPropertyValue( OUString(SC_DBPROP_TYPE), aAny );
+            xColumnDesc->setPropertyValue( SC_DBPROP_TYPE, aAny );
 
             aAny <<= pColLengths[nCol];
-            xColumnDesc->setPropertyValue( OUString(SC_DBPROP_PRECISION), aAny );
+            xColumnDesc->setPropertyValue( SC_DBPROP_PRECISION, aAny );
 
             aAny <<= pColScales[nCol];
-            xColumnDesc->setPropertyValue( OUString(SC_DBPROP_SCALE), aAny );
+            xColumnDesc->setPropertyValue( SC_DBPROP_SCALE, aAny );
 
             xColumnsAppend->appendByDescriptor( xColumnDesc );
         }
@@ -924,8 +922,7 @@ sal_uLong ScDocShell::DBaseExport( const OUString& rFullFileName, rtl_TextEncodi
 
         // get row set for writing
         uno::Reference<lang::XMultiServiceFactory> xFactory = comphelper::getProcessServiceFactory();
-        uno::Reference<sdbc::XRowSet> xRowSet( xFactory->createInstance(
-                            OUString( SC_SERVICE_ROWSET ) ),
+        uno::Reference<sdbc::XRowSet> xRowSet( xFactory->createInstance(SC_SERVICE_ROWSET),
                             uno::UNO_QUERY);
         ::utl::DisposableComponent aRowSetHelper(xRowSet);
         uno::Reference<beans::XPropertySet> xRowProp( xRowSet, uno::UNO_QUERY );
@@ -933,13 +930,13 @@ sal_uLong ScDocShell::DBaseExport( const OUString& rFullFileName, rtl_TextEncodi
         if (!xRowProp.is()) return SCERR_EXPORT_CONNECT;
 
         aAny <<= xConnection;
-        xRowProp->setPropertyValue( OUString(SC_DBPROP_ACTIVECONNECTION), aAny );
+        xRowProp->setPropertyValue( SC_DBPROP_ACTIVECONNECTION, aAny );
 
         aAny <<= (sal_Int32) sdb::CommandType::TABLE;
-        xRowProp->setPropertyValue( OUString(SC_DBPROP_COMMANDTYPE), aAny );
+        xRowProp->setPropertyValue( SC_DBPROP_COMMANDTYPE, aAny );
 
         aAny <<= OUString( aTabName );
-        xRowProp->setPropertyValue( OUString(SC_DBPROP_COMMAND), aAny );
+        xRowProp->setPropertyValue( SC_DBPROP_COMMAND, aAny );
 
         xRowSet->execute();
 
@@ -968,8 +965,7 @@ sal_uLong ScDocShell::DBaseExport( const OUString& rFullFileName, rtl_TextEncodi
                 {
                     case sdbc::DataType::LONGVARCHAR:
                     {
-                        ScRefCellValue aCell;
-                        aCell.assign(aDocument, ScAddress(nDocCol, nDocRow, nTab));
+                        ScRefCellValue aCell(aDocument, ScAddress(nDocCol, nDocRow, nTab));
                         if (!aCell.isEmpty())
                         {
                             if (aCell.meType == CELLTYPE_EDIT)
@@ -1072,9 +1068,9 @@ sal_uLong ScDocShell::DBaseExport( const OUString& rFullFileName, rtl_TextEncodi
             const sal_Int32* pColLengths = aColLengths.getConstArray();
             ScHorizontalCellIterator aIter( &aDocument, nTab, nFirstCol,
                     nDocRow, nLastCol, nDocRow);
-            ScRefCellValue* pCell = NULL;
+            ScRefCellValue* pCell = nullptr;
             bool bTest = true;
-            while (bTest && ((pCell = aIter.GetNext( nDocCol, nDocRow)) != NULL))
+            while (bTest && ((pCell = aIter.GetNext( nDocCol, nDocRow)) != nullptr))
             {
                 SCCOL nCol = nDocCol - nFirstCol;
                 switch (pColTypes[nCol])

@@ -126,7 +126,7 @@ void DomBuilderContext::StartElement(
         OUString sNamespace;
         sal_uInt16 nNamespaceKey =
             GetImport().GetNamespaceMap()._GetKeyByAttrName(
-                rName, NULL, NULL, &sNamespace );
+                rName, nullptr, nullptr, &sNamespace );
 
         // create attribute node and set value
         Reference<XElement> xElement( mxNode, UNO_QUERY_THROW );
@@ -219,8 +219,7 @@ static Reference<XNode> lcl_createElement( SvXMLImport& rImport,
         // both cases are illegal; raise warning (and use only local name)
         xElement = xDocument->createElement( rLocalName );
         {
-            Sequence<OUString> aSeq(1);
-            aSeq[0] = rLocalName;
+            Sequence<OUString> aSeq { rLocalName };
             rImport.SetError(
                 XMLERROR_FLAG_WARNING | XMLERROR_NAMESPACE_TROUBLE, aSeq );
         }

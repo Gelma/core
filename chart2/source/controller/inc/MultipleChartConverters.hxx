@@ -35,12 +35,12 @@ public:
         SfxItemPool& rItemPool,
         SdrModel& rDrawModel,
         const css::uno::Reference<css::lang::XMultiServiceFactory>& xNamedPropertyContainerFactory,
-        const css::awt::Size* pRefSize = NULL );
+        const css::awt::Size* pRefSize = nullptr );
 
     virtual ~AllAxisItemConverter();
 
 protected:
-    virtual const sal_uInt16 * GetWhichPairs() const SAL_OVERRIDE;
+    virtual const sal_uInt16 * GetWhichPairs() const override;
 };
 
 class AllGridItemConverter : public MultipleItemConverter
@@ -54,7 +54,7 @@ public:
     virtual ~AllGridItemConverter();
 
 protected:
-    virtual const sal_uInt16 * GetWhichPairs() const SAL_OVERRIDE;
+    virtual const sal_uInt16 * GetWhichPairs() const override;
 };
 
 class AllDataLabelItemConverter : public MultipleItemConverter
@@ -65,12 +65,12 @@ public:
         SfxItemPool& rItemPool,
         SdrModel& rDrawModel,
         const css::uno::Reference<css::lang::XMultiServiceFactory>& xNamedPropertyContainerFactory,
-        const css::awt::Size* pRefSize = NULL );
+        const css::awt::Size* pRefSize = nullptr );
 
     virtual ~AllDataLabelItemConverter();
 
 protected:
-    virtual const sal_uInt16 * GetWhichPairs() const SAL_OVERRIDE;
+    virtual const sal_uInt16 * GetWhichPairs() const override;
 };
 
 class AllTitleItemConverter : public MultipleItemConverter
@@ -80,12 +80,12 @@ public:
         const css::uno::Reference<css::frame::XModel>& xChartModel,
         SfxItemPool& rItemPool, SdrModel& rDrawModel,
         const css::uno::Reference<css::lang::XMultiServiceFactory>& xNamedPropertyContainerFactory,
-        const css::awt::Size* pRefSize = NULL );
+        const css::awt::Size* pRefSize = nullptr );
 
     virtual ~AllTitleItemConverter();
 
 protected:
-    virtual const sal_uInt16 * GetWhichPairs() const SAL_OVERRIDE;
+    virtual const sal_uInt16 * GetWhichPairs() const override;
 };
 
 class AllSeriesStatisticsConverter : public MultipleItemConverter
@@ -96,7 +96,7 @@ public:
     virtual ~AllSeriesStatisticsConverter();
 
 protected:
-    virtual const sal_uInt16 * GetWhichPairs() const SAL_OVERRIDE;
+    virtual const sal_uInt16 * GetWhichPairs() const override;
 };
 
 } //  namespace wrapper

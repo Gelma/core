@@ -21,7 +21,8 @@
 #define INCLUDED_SD_SOURCE_FILTER_PPT_PROPREAD_HXX
 
 #include <map>
-#include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
+#include <memory>
 
 #include <sal/types.h>
 #include <sot/storage.hxx>
@@ -108,7 +109,7 @@ public:
     void            Clear();
 
     void            SetTextEncoding( sal_uInt16 nTextEnc ){ mnTextEnc = nTextEnc; };
-    bool        Read( OUString& rString, sal_uInt32 nType = VT_EMPTY, bool bDwordAlign = true );
+    bool            Read( OUString& rString, sal_uInt32 nType = VT_EMPTY, bool bDwordAlign = true );
     PropItem&       operator=( PropItem& rPropItem );
 
     using SvStream::Read;
@@ -117,7 +118,7 @@ public:
 class Section
 {
         sal_uInt16              mnTextEnc;
-        boost::ptr_vector<PropEntry> maEntries;
+        std::vector<std::unique_ptr<PropEntry> > maEntries;
 
     protected:
 
@@ -126,7 +127,7 @@ class Section
         void                    AddProperty( sal_uInt32 nId, const sal_uInt8* pBuf, sal_uInt32 nBufSize );
 
     public:
-                                Section( const sal_uInt8* pFMTID );
+                                explicit Section( const sal_uInt8* pFMTID );
                                 Section( const Section& rSection );
 
         Section&                operator=( const Section& rSection );
@@ -146,7 +147,7 @@ class PropRead
         sal_uInt16              mnVersionLo;
         sal_uInt16              mnVersionHi;
         sal_uInt8               mApplicationCLSID[ 16 ];
-        boost::ptr_vector<Section> maSections;
+        std::vector<std::unique_ptr<Section> > maSections;
 
         void                    AddSection( Section& rSection );
 

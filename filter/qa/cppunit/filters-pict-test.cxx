@@ -24,7 +24,7 @@
 extern "C"
 {
     SAL_DLLPUBLIC_EXPORT bool SAL_CALL
-        GraphicImport(SvStream & rStream, Graphic & rGraphic,
+        iptGraphicImport(SvStream & rStream, Graphic & rGraphic,
         FilterConfigItem*);
 }
 
@@ -42,7 +42,7 @@ public:
 
     virtual bool load(const OUString &,
         const OUString &rURL, const OUString &,
-        SfxFilterFlags, SotClipboardFormatId, unsigned int) SAL_OVERRIDE;
+        SfxFilterFlags, SotClipboardFormatId, unsigned int) override;
 
     OUString pictURL()
     {
@@ -68,7 +68,7 @@ bool PictFilterTest::load(const OUString &,
 {
     SvFileStream aFileStream(rURL, StreamMode::READ);
     Graphic aGraphic;
-    return GraphicImport(aFileStream, aGraphic, NULL);
+    return iptGraphicImport(aFileStream, aGraphic, nullptr);
 }
 
 void PictFilterTest::testCVEs()

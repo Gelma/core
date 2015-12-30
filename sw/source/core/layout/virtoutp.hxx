@@ -29,7 +29,7 @@ class SwViewShell;
 
 class SwLayVout
 {
-    friend void _FrmFinit();    //deletes Vout
+    friend void _FrameFinit();    //deletes Vout
 private:
     SwViewShell*      pSh;
     VclPtr<OutputDevice>  pOut;
@@ -42,7 +42,7 @@ private:
     bool DoesFit( const Size &rOut );
 
 public:
-    SwLayVout() : pSh(0), pOut(0), pVirDev(0), aSize(0, VIRTUALHEIGHT), nCount(0) {}
+    SwLayVout() : pSh(nullptr), pOut(nullptr), pVirDev(nullptr), aSize(0, VIRTUALHEIGHT), nCount(0) {}
     ~SwLayVout() { pVirDev.disposeAndClear(); }
 
     /// OD 27.09.2002 #103636# - change 2nd parameter <rRect> - no longer <const>

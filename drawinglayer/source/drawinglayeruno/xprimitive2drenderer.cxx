@@ -25,6 +25,7 @@
 #include <com/sun/star/lang/XServiceInfo.hpp>
 #include <cppuhelper/implbase2.hxx>
 #include <cppuhelper/supportsservice.hxx>
+#include <comphelper/sequence.hxx>
 #include <com/sun/star/xml/sax/XParser.hpp>
 #include <com/sun/star/xml/sax/InputSource.hpp>
 #include <comphelper/processfactory.hxx>
@@ -63,12 +64,12 @@ namespace drawinglayer
                 ::sal_uInt32 DPI_X,
                 ::sal_uInt32 DPI_Y,
                 const css::geometry::RealRectangle2D& Range,
-                ::sal_uInt32 MaximumQuadraticPixels) throw (uno::RuntimeException, std::exception) SAL_OVERRIDE;
+                ::sal_uInt32 MaximumQuadraticPixels) throw (uno::RuntimeException, std::exception) override;
 
             // XServiceInfo
-            virtual OUString SAL_CALL getImplementationName() throw(uno::RuntimeException, std::exception) SAL_OVERRIDE;
-            virtual sal_Bool SAL_CALL supportsService(const OUString&) throw(uno::RuntimeException, std::exception) SAL_OVERRIDE;
-            virtual uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw(uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            virtual OUString SAL_CALL getImplementationName() throw(uno::RuntimeException, std::exception) override;
+            virtual sal_Bool SAL_CALL supportsService(const OUString&) throw(uno::RuntimeException, std::exception) override;
+            virtual uno::Sequence< OUString > SAL_CALL getSupportedServiceNames() throw(uno::RuntimeException, std::exception) override;
         };
     } // end of namespace unorenderer
 } // end of namespace drawinglayer
@@ -82,9 +83,7 @@ namespace drawinglayer
     {
         uno::Sequence< OUString > XPrimitive2DRenderer_getSupportedServiceNames()
         {
-            OUString aServiceName("com.sun.star.graphic.Primitive2DTools" );
-            uno::Sequence< OUString > aServiceNames( &aServiceName, 1 );
-            return aServiceNames;
+            return uno::Sequence< OUString > { "com.sun.star.graphic.Primitive2DTools" };
         }
 
         OUString XPrimitive2DRenderer_getImplementationName()
@@ -114,7 +113,7 @@ namespace drawinglayer
         }
 
         uno::Reference< rendering::XBitmap > XPrimitive2DRenderer::rasterize(
-            const uno::Sequence< uno::Reference< graphic::XPrimitive2D > >& Primitive2DSequence,
+            const uno::Sequence< uno::Reference< graphic::XPrimitive2D > >& aPrimitive2DSequence,
             const uno::Sequence< beans::PropertyValue >& aViewInformationSequence,
             ::sal_uInt32 DPI_X,
             ::sal_uInt32 DPI_Y,
@@ -123,7 +122,7 @@ namespace drawinglayer
         {
             uno::Reference< rendering::XBitmap > XBitmap;
 
-            if(Primitive2DSequence.hasElements())
+            if(aPrimitive2DSequence.hasElements())
             {
                 const basegfx::B2DRange aRange(Range.X1, Range.Y1, Range.X2, Range.Y2);
                 const double fWidth(aRange.getWidth());
@@ -163,8 +162,8 @@ namespace drawinglayer
                     const primitive2d::Primitive2DReference xEmbedRef(
                         new primitive2d::TransformPrimitive2D(
                             aEmbedding,
-                            Primitive2DSequence));
-                    const primitive2d::Primitive2DSequence xEmbedSeq(&xEmbedRef, 1);
+                            comphelper::sequenceToContainer<primitive2d::Primitive2DContainer>(aPrimitive2DSequence)));
+                    const primitive2d::Primitive2DContainer xEmbedSeq { xEmbedRef };
 
                     BitmapEx aBitmapEx(
                         tools::convertToBitmapEx(

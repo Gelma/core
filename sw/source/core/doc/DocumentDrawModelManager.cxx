@@ -56,7 +56,7 @@ namespace sw
 
 DocumentDrawModelManager::DocumentDrawModelManager(SwDoc& i_rSwdoc)
     : m_rDoc(i_rSwdoc)
-    , mpDrawModel(0)
+    , mpDrawModel(nullptr)
     , mnHeaven(0)
     , mnHell(0)
     , mnControls(0)
@@ -141,9 +141,9 @@ void DocumentDrawModelManager::InitDrawModel()
     if (!utl::ConfigManager::IsAvoidConfig())
     {
         SAL_INFO( "sw.doc", "before create Spellchecker/Hyphenator" );
-        ::com::sun::star::uno::Reference< com::sun::star::linguistic2::XSpellChecker1 > xSpell = ::GetSpellChecker();
+        css::uno::Reference< css::linguistic2::XSpellChecker1 > xSpell = ::GetSpellChecker();
         rOutliner.SetSpeller( xSpell );
-        ::com::sun::star::uno::Reference< com::sun::star::linguistic2::XHyphenator > xHyphenator( ::GetHyphenator() );
+        css::uno::Reference< css::linguistic2::XHyphenator > xHyphenator( ::GetHyphenator() );
         rOutliner.SetHyphenator( xHyphenator );
         SAL_INFO( "sw.doc", "after create Spellchecker/Hyphenator" );
     }
@@ -165,7 +165,7 @@ void DocumentDrawModelManager::InitDrawModel()
     {
         for(SwViewShell& rViewSh : pSh->GetRingContainer())
         {
-            SwRootFrm* pRoot =  rViewSh.GetLayout();
+            SwRootFrame* pRoot =  rViewSh.GetLayout();
             if( pRoot && !pRoot->GetDrawPage() )
             {
                 // Disable "multiple layout" for the moment:
@@ -174,7 +174,7 @@ void DocumentDrawModelManager::InitDrawModel()
                 // mpDrawModel->InsertPage( pDrawPage );
                 SdrPage* pDrawPage = pMasterPage;
                 pRoot->SetDrawPage( pDrawPage );
-                pDrawPage->SetSize( pRoot->Frm().SSize() );
+                pDrawPage->SetSize( pRoot->Frame().SSize() );
             }
         }
     }
@@ -187,7 +187,7 @@ void DocumentDrawModelManager::ReleaseDrawModel()
     {
         // !! Also maintain the code in the sw3io for inserting documents!!
 
-        delete mpDrawModel; mpDrawModel = 0;
+        delete mpDrawModel; mpDrawModel = nullptr;
 //UUUU
 //      SfxItemPool *pSdrPool = GetAttrPool().GetSecondaryPool();
 //
@@ -344,12 +344,12 @@ SdrLayerID DocumentDrawModelManager::GetInvisibleLayerIdByVisibleOne( const SdrL
 
 bool DocumentDrawModelManager::Search(const SwPaM& rPaM, const SvxSearchItem& rSearchItem)
 {
-    SwPosFlyFrms aFrames = m_rDoc.GetAllFlyFormats(&rPaM, /*bDrawAlso=*/true);
+    SwPosFlyFrames aFrames = m_rDoc.GetAllFlyFormats(&rPaM, /*bDrawAlso=*/true);
 
-    for (const SwPosFlyFrmPtr& pPosFlyFrm : aFrames)
+    for (const SwPosFlyFramePtr& pPosFlyFrame : aFrames)
     {
         // Filter for at-paragraph anchored draw frames.
-        const SwFrameFormat& rFrameFormat = pPosFlyFrm->GetFormat();
+        const SwFrameFormat& rFrameFormat = pPosFlyFrame->GetFormat();
         const SwFormatAnchor& rAnchor = rFrameFormat.GetAnchor();
         if (rAnchor.GetAnchorId() != FLY_AT_PARA || rFrameFormat.Which() != RES_DRAWFRMFMT)
             continue;

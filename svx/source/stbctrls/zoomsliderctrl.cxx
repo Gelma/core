@@ -186,14 +186,14 @@ SvxZoomSliderControl::~SvxZoomSliderControl()
 
 void SvxZoomSliderControl::StateChanged( sal_uInt16 /*nSID*/, SfxItemState eState, const SfxPoolItem* pState )
 {
-    if ( (SfxItemState::DEFAULT != eState) || pState->ISA( SfxVoidItem ) )
+    if ( (SfxItemState::DEFAULT != eState) || dynamic_cast<const SfxVoidItem*>( pState) !=  nullptr )
     {
         GetStatusBar().SetItemText( GetId(), "" );
         mxImpl->mbValuesSet   = false;
     }
     else
     {
-        OSL_ENSURE( pState->ISA( SvxZoomSliderItem ), "invalid item type: should be a SvxZoomSliderItem" );
+        OSL_ENSURE( dynamic_cast<const SvxZoomSliderItem*>( pState) !=  nullptr, "invalid item type: should be a SvxZoomSliderItem" );
         mxImpl->mnCurrentZoom = static_cast<const SvxZoomSliderItem*>( pState )->GetValue();
         mxImpl->mnMinZoom     = static_cast<const SvxZoomSliderItem*>( pState )->GetMinZoom();
         mxImpl->mnMaxZoom     = static_cast<const SvxZoomSliderItem*>( pState )->GetMaxZoom();
@@ -210,7 +210,7 @@ void SvxZoomSliderControl::StateChanged( sal_uInt16 /*nSID*/, SfxItemState eStat
                     mxImpl->mnMaxZoom > mxImpl->mnSliderCenter,
                     "Looks like the zoom slider item is corrupted" );
 
-        const com::sun::star::uno::Sequence < sal_Int32 > rSnappingPoints = static_cast<const SvxZoomSliderItem*>( pState )->GetSnappingPoints();
+        const css::uno::Sequence < sal_Int32 > rSnappingPoints = static_cast<const SvxZoomSliderItem*>( pState )->GetSnappingPoints();
         mxImpl->maSnappingPointOffsets.clear();
         mxImpl->maSnappingPointZooms.clear();
 
@@ -399,7 +399,7 @@ bool SvxZoomSliderControl::MouseMove( const MouseEvent & rEvt )
 void SvxZoomSliderControl::forceRepaint() const
 {
     if (GetStatusBar().AreItemsVisible())
-        GetStatusBar().SetItemData(GetId(), 0);
+        GetStatusBar().SetItemData(GetId(), nullptr);
 }
 
 void SvxZoomSliderControl::repaintAndExecute()

@@ -66,15 +66,13 @@
 #include <math.h>
 #include <memory>
 
-// STATIC DATA -----------------------------------------------------------
-
 #define _D_MAX_LONG_  (double) 0x7fffffff
 
 extern sal_uInt16 nScFillModeMouseModifier;     // global.cxx
 
 namespace {
 
-short lcl_DecompValueString( OUString& rValue, sal_Int32& nVal, sal_uInt16* pMinDigits = NULL )
+short lcl_DecompValueString( OUString& rValue, sal_Int32& nVal, sal_uInt16* pMinDigits = nullptr )
 {
     if ( rValue.isEmpty() )
     {
@@ -197,7 +195,7 @@ void ScTable::FillAnalyse( SCCOL nCol1, SCROW nRow1, SCCOL nCol2, SCROW nRow2,
 
     rInc = 0.0;
     rMinDigits = 0;
-    rListData = NULL;
+    rListData = nullptr;
     rCmd = FILL_SIMPLE;
     if ( (nScFillModeMouseModifier & KEY_MOD1) )
         return ;        // Ctrl-key: Copy
@@ -362,14 +360,15 @@ void ScTable::FillAnalyse( SCCOL nCol1, SCROW nRow1, SCCOL nCol2, SCROW nRow2,
         rListData = const_cast<ScUserListData*>(ScGlobal::GetUserList()->GetData(aStr));
         if (rListData)
         {
-            (void)rListData->GetSubIndex(aStr, rListIndex);
+            bool bMatchCase = false;
+            (void)rListData->GetSubIndex(aStr, rListIndex, bMatchCase);
             nCol = sal::static_int_cast<SCCOL>( nCol + nAddX );
             nRow = sal::static_int_cast<SCROW>( nRow + nAddY );
             for (sal_uInt16 i=1; i<nCount && rListData; i++)
             {
                 (void)GetString(nCol, nRow, aStr);
-                if (!rListData->GetSubIndex(aStr, rListIndex))
-                    rListData = NULL;
+                if (!rListData->GetSubIndex(aStr, rListIndex, bMatchCase))
+                    rListData = nullptr;
                 nCol = sal::static_int_cast<SCCOL>( nCol + nAddX );
                 nRow = sal::static_int_cast<SCROW>( nRow + nAddY );
             }
@@ -545,9 +544,9 @@ void ScTable::FillAuto( SCCOL nCol1, SCROW nRow1, SCCOL nCol2, SCROW nRow2,
     if (!bHasFiltered)
     {
         if (bVertical)
-            DeleteArea(nCol1, static_cast<SCROW>(nIMin), nCol2, static_cast<SCROW>(nIMax), IDF_AUTOFILL);
+            DeleteArea(nCol1, static_cast<SCROW>(nIMin), nCol2, static_cast<SCROW>(nIMax), InsertDeleteFlags::AUTOFILL);
         else
-            DeleteArea(static_cast<SCCOL>(nIMin), nRow1, static_cast<SCCOL>(nIMax), nRow2, IDF_AUTOFILL);
+            DeleteArea(static_cast<SCCOL>(nIMin), nRow1, static_cast<SCCOL>(nIMax), nRow2, InsertDeleteFlags::AUTOFILL);
     }
 
     sal_uLong nProgress = 0;
@@ -563,10 +562,10 @@ void ScTable::FillAuto( SCCOL nCol1, SCROW nRow1, SCCOL nCol2, SCROW nRow2,
 
         //  transfer attributes
 
-        const ScPatternAttr* pSrcPattern = NULL;
-        const ScStyleSheet* pStyleSheet = NULL;
+        const ScPatternAttr* pSrcPattern = nullptr;
+        const ScStyleSheet* pStyleSheet = nullptr;
         SCCOLROW nAtSrc = nISrcStart;
-        ScPatternAttr* pNewPattern = NULL;
+        ScPatternAttr* pNewPattern = nullptr;
         bool bGetPattern = true;
         rInner = nIStart;
         while (true)        // #i53728# with "for (;;)" old solaris/x86 compiler mis-optimizes
@@ -593,7 +592,7 @@ void ScTable::FillAuto( SCCOL nCol1, SCROW nRow1, SCCOL nCol2, SCROW nRow2,
                         rNewSet.ClearItem(ATTR_MERGE_FLAG);
                     }
                     else
-                        pNewPattern = NULL;
+                        pNewPattern = nullptr;
                 }
 
                 const ScCondFormatItem& rCondFormatItem = static_cast<const ScCondFormatItem&>(pSrcPattern->GetItem(ATTR_CONDITIONAL));
@@ -632,7 +631,7 @@ void ScTable::FillAuto( SCCOL nCol1, SCROW nRow1, SCCOL nCol2, SCROW nRow2,
 
                 if ( bHasFiltered )
                     DeleteArea(static_cast<SCCOL>(nCol), static_cast<SCROW>(nRow),
-                            static_cast<SCCOL>(nCol), static_cast<SCROW>(nRow), IDF_AUTOFILL);
+                            static_cast<SCCOL>(nCol), static_cast<SCROW>(nRow), InsertDeleteFlags::AUTOFILL);
 
                 if ( pSrcPattern != aCol[nCol].GetPattern( static_cast<SCROW>(nRow) ) )
                 {
@@ -691,7 +690,7 @@ void ScTable::FillAuto( SCCOL nCol1, SCROW nRow1, SCCOL nCol2, SCROW nRow2,
         FillDateCmd eDateCmd;
         double nInc;
         sal_uInt16 nMinDigits;
-        ScUserListData* pListData = NULL;
+        ScUserListData* pListData = nullptr;
         sal_uInt16 nListIndex;
         if (bVertical)
             FillAnalyse(static_cast<SCCOL>(nCol),nRow1,
@@ -815,7 +814,7 @@ OUString ScTable::GetAutoFillPreview( const ScRange& rSource, SCCOL nEndX, SCROW
         FillDateCmd eDateCmd;
         double nInc;
         sal_uInt16 nMinDigits;
-        ScUserListData* pListData = NULL;
+        ScUserListData* pListData = nullptr;
         sal_uInt16 nListIndex;
 
         FillAnalyse(nCol1,nRow1, nCol2,nRow2, eFillCmd,eDateCmd, nInc,nMinDigits, pListData,nListIndex);
@@ -1116,13 +1115,13 @@ bool HiddenRowColumn(ScTable* pTable, SCCOLROW nRowColumn, bool bVertical, SCCOL
     if(bVertical)
     {
         SCROW nLast;
-        bHidden = pTable->RowHidden(nRowColumn, NULL, &nLast);
+        bHidden = pTable->RowHidden(nRowColumn, nullptr, &nLast);
         rLastPos = nLast;
     }
     else
     {
         SCCOL nLast;
-        bHidden = pTable->ColHidden(static_cast<SCCOL>(nRowColumn), NULL, &nLast);
+        bHidden = pTable->ColHidden(static_cast<SCCOL>(nRowColumn), nullptr, &nLast);
         rLastPos = nLast;
     }
     return bHidden;
@@ -1175,8 +1174,8 @@ void ScTable::FillFormulaVertical(
     if (aSpans.empty())
         return;
 
-    aCol[nCol].DeleteRanges(aSpans, IDF_VALUE | IDF_DATETIME | IDF_STRING | IDF_FORMULA | IDF_OUTLINE, false);
-    aCol[nCol].CloneFormulaCell(rSrcCell, sc::CellTextAttr(), aSpans, NULL);
+    aCol[nCol].DeleteRanges(aSpans, InsertDeleteFlags::VALUE | InsertDeleteFlags::DATETIME | InsertDeleteFlags::STRING | InsertDeleteFlags::FORMULA | InsertDeleteFlags::OUTLINE, false);
+    aCol[nCol].CloneFormulaCell(rSrcCell, sc::CellTextAttr(), aSpans, nullptr);
 
     std::shared_ptr<sc::ColumnBlockPositionSet> pSet(new sc::ColumnBlockPositionSet(*pDocument));
     sc::StartListeningContext aStartCxt(*pDocument, pSet);
@@ -1307,9 +1306,9 @@ void ScTable::FillAutoSimple(
     while (true)        // #i53728# with "for (;;)" old solaris/x86 compiler mis-optimizes
     {
         if (rCol > nColHiddenLast)
-            bColHidden = ColHidden(rCol, NULL, &nColHiddenLast);
+            bColHidden = ColHidden(rCol, nullptr, &nColHiddenLast);
         if (rRow > nRowHiddenLast)
-            bRowHidden = RowHidden(rRow, NULL, &nRowHiddenLast);
+            bRowHidden = RowHidden(rRow, nullptr, &nRowHiddenLast);
 
         if (!bColHidden && !bRowHidden)
         {
@@ -1528,7 +1527,7 @@ void ScTable::FillSeries( SCCOL nCol1, SCROW nRow1, SCCOL nCol2, SCROW nRow2,
     SCCOLROW nIMin = nIStart;
     SCCOLROW nIMax = nIEnd;
     PutInOrder(nIMin,nIMax);
-    InsertDeleteFlags nDel = bAttribs ? IDF_AUTOFILL : (IDF_AUTOFILL & IDF_CONTENTS);
+    InsertDeleteFlags nDel = bAttribs ? InsertDeleteFlags::AUTOFILL : (InsertDeleteFlags::AUTOFILL & InsertDeleteFlags::CONTENTS);
 
     bool bIsFiltered = IsDataFiltered(aFillRange);
     if (!bIsFiltered)

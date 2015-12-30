@@ -66,9 +66,13 @@
 #include <com/sun/star/document/XDocumentPropertiesSupplier.hpp>
 
 // presentation namespaces
-#define PNMSS         FSNS( XML_xmlns, XML_a ), "http://schemas.openxmlformats.org/drawingml/2006/main", \
-                      FSNS( XML_xmlns, XML_p ), "http://schemas.openxmlformats.org/presentationml/2006/main", \
-                      FSNS( XML_xmlns, XML_r ), "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+#define PNMSS         FSNS(XML_xmlns, XML_a),   "http://schemas.openxmlformats.org/drawingml/2006/main", \
+                      FSNS(XML_xmlns, XML_p),   "http://schemas.openxmlformats.org/presentationml/2006/main", \
+                      FSNS(XML_xmlns, XML_r),   "http://schemas.openxmlformats.org/officeDocument/2006/relationships", \
+                      FSNS(XML_xmlns, XML_p14), "http://schemas.microsoft.com/office/powerpoint/2010/main", \
+                      FSNS(XML_xmlns, XML_p15), "http://schemas.microsoft.com/office/powerpoint/2012/main", \
+                      FSNS(XML_xmlns, XML_mc),  "http://schemas.openxmlformats.org/markup-compatibility/2006"
+
 
 using namespace ::com::sun::star;
 using namespace ::com::sun::star::animations;
@@ -87,6 +91,15 @@ using ::com::sun::star::beans::XPropertySetInfo;
 using ::com::sun::star::container::XIndexAccess;
 using ::sax_fastparser::FSHelperPtr;
 
+// FIXME: this should be removed and replaced by SAL_INFO
+#ifndef DBG
+#  if OSL_DEBUG_LEVEL > 1
+#    define DBG(x) x
+#  else
+#    define DBG(x)
+#  endif
+#endif
+
 DBG(void dump_pset(Reference< XPropertySet > rXPropSet);)
 
 #define IDS(x) OString(OStringLiteral(#x " ") + OString::number( mnShapeIdMax++ )).getStr()
@@ -104,9 +117,9 @@ public:
     PowerPointShapeExport( FSHelperPtr pFS, ShapeHashMap* pShapeMap, PowerPointExport* pFB );
     void                SetMaster( bool bMaster );
     void                SetPageType( PageType ePageType );
-    ShapeExport&        WriteNonVisualProperties( Reference< XShape > xShape ) SAL_OVERRIDE;
-    ShapeExport&        WriteTextShape( Reference< XShape > xShape ) SAL_OVERRIDE;
-    ShapeExport&        WriteUnknownShape( Reference< XShape > xShape ) SAL_OVERRIDE;
+    ShapeExport&        WriteNonVisualProperties( Reference< XShape > xShape ) override;
+    ShapeExport&        WriteTextShape( Reference< XShape > xShape ) override;
+    ShapeExport&        WriteUnknownShape( Reference< XShape > xShape ) override;
     ShapeExport&        WritePlaceholderShape( Reference< XShape > xShape, PlaceholderType ePlaceholder );
     ShapeExport&        WritePageShape( Reference< XShape > xShape, PageType ePageType, bool bPresObj );
 
@@ -436,7 +449,7 @@ void PowerPointExport::ImplWriteBackground( FSHelperPtr pFS, Reference< XPropert
       </p:grpSpPr>"
 
 #define GETA(propName) \
-    ImplGetPropertyValue( mXPagePropSet, OUString( #propName ) )
+    ImplGetPropertyValue( mXPagePropSet, #propName )
 
 #define GET(variable, propName) \
     if ( GETA(propName) ) \
@@ -444,20 +457,21 @@ void PowerPointExport::ImplWriteBackground( FSHelperPtr pFS, Reference< XPropert
 
 const char* PowerPointExport::GetSideDirection( sal_uInt8 nDirection )
 {
-    const char* pDirection = NULL;
+    const char* pDirection = nullptr;
 
-    switch( nDirection ) {
+    switch(nDirection)
+    {
     case 0:
-        pDirection = "r";
-        break;
-    case 1:
-        pDirection = "d";
-        break;
-    case 2:
         pDirection = "l";
         break;
-    case 3:
+    case 1:
         pDirection = "u";
+        break;
+    case 2:
+        pDirection = "r";
+        break;
+    case 3:
+        pDirection = "d";
         break;
     }
 
@@ -466,20 +480,20 @@ const char* PowerPointExport::GetSideDirection( sal_uInt8 nDirection )
 
 const char* PowerPointExport::GetCornerDirection( sal_uInt8 nDirection )
 {
-    const char* pDirection = NULL;
+    const char* pDirection = nullptr;
 
     switch( nDirection ) {
     case 4:
-        pDirection = "rd";
+        pDirection = "lu";
         break;
     case 5:
-        pDirection = "ld";
-        break;
-    case 6:
         pDirection = "ru";
         break;
+    case 6:
+        pDirection = "ld";
+        break;
     case 7:
-        pDirection = "lu";
+        pDirection = "rd";
         break;
     }
 
@@ -514,9 +528,101 @@ void PowerPointExport::WriteTransition( FSHelperPtr pFS )
     if( !nPPTTransitionType && eFadeEffect != FadeEffect_NONE )
         nPPTTransitionType = GetTransition( eFadeEffect, nDirection );
 
-    if( nPPTTransitionType ) {
+    bool bOOXmlSpecificTransition = false;
+
+    sal_Int32 nTransition = 0;
+    const char* pDirection = nullptr;
+    const char* pOrientation = nullptr;
+    const char* pThruBlk = nullptr;
+    const char* pSpokes = nullptr;
+
+    char pSpokesTmp[2] = "0";
+
+    // p14
+    sal_Int32 nTransition14 = 0;
+    const char* pDirection14 = nullptr;
+    const char* pInverted = nullptr;
+    const char* pPattern = nullptr; // diamond or hexagon
+
+    //p15
+    const char* pPresetTransition = nullptr;
+
+    if (!nPPTTransitionType)
+    {
+        switch(nTransitionType)
+        {
+            case animations::TransitionType::BARWIPE:
+            {
+                if (nTransitionSubtype == animations::TransitionSubType::FADEOVERCOLOR)
+                {
+                    nTransition = XML_cut;
+                    pThruBlk = "true";
+                    bOOXmlSpecificTransition = true;
+                }
+                break;
+            }
+            case animations::TransitionType::MISCSHAPEWIPE:
+            {
+                switch(nTransitionSubtype)
+                {
+                    case animations::TransitionSubType::TOPTOBOTTOM: // Turn around
+                        nTransition = XML_fade;
+                        nTransition14 = XML_flip;
+                        pDirection14 = "l";
+                        bOOXmlSpecificTransition = true;
+                        break;
+                    case animations::TransitionSubType::BOTTOMRIGHT: // Rochade
+                        nTransition = XML_fade;
+                        nTransition14 = XML_switch;
+                        pDirection14 = "r";
+                        bOOXmlSpecificTransition = true;
+                        break;
+                    case animations::TransitionSubType::VERTICAL: // Vortex
+                        nTransition = XML_fade;
+                        nTransition14 = XML_vortex;
+                        bOOXmlSpecificTransition = true;
+                        break;
+                    case animations::TransitionSubType::HORIZONTAL: // Ripple
+                        nTransition = XML_fade;
+                        nTransition14 = XML_ripple;
+                        bOOXmlSpecificTransition = true;
+                        break;
+                    case animations::TransitionSubType::LEFTTORIGHT: // Fall
+                        nTransition = XML_fade;
+                        pPresetTransition = "fallOver";
+                        bOOXmlSpecificTransition = true;
+                        break;
+                    case animations::TransitionSubType::CORNERSIN: // Inside turning cube
+                        pInverted = "true";
+                    case animations::TransitionSubType::CORNERSOUT: // Outside turning cube
+                        nTransition = XML_fade;
+                        nTransition14 = XML_prism;
+                        bOOXmlSpecificTransition = true;
+                        break;
+                    case animations::TransitionSubType::DIAMOND: // Glitter
+                        nTransition = XML_fade;
+                        nTransition14 = XML_glitter;
+                        pDirection14 = "l";
+                        pPattern = "hexagon";
+                        bOOXmlSpecificTransition = true;
+                        break;
+                    case animations::TransitionSubType::HEART: // Honeycomb
+                        nTransition = XML_fade;
+                        nTransition14 = XML_honeycomb;
+                        bOOXmlSpecificTransition = true;
+                        break;
+                }
+                break;
+            }
+        }
+    }
+
+    // check if we resolved what transition to export
+    if (!nPPTTransitionType && !bOOXmlSpecificTransition)
+        return;
+
     AnimationSpeed animationSpeed = AnimationSpeed_MEDIUM;
-    const char* speed = NULL;
+    const char* speed = nullptr;
     sal_Int32 advanceTiming = -1;
     sal_Int32 changeType = 0;
 
@@ -543,114 +649,153 @@ void PowerPointExport::WriteTransition( FSHelperPtr pFS )
     if( changeType == 1 && GETA( Duration ) )
         mAny >>= advanceTiming;
 
-    pFS->startElementNS( XML_p, XML_transition,
-                 XML_spd, speed,
-                 XML_advTm, advanceTiming != -1 ? I32S( advanceTiming*1000 ) : NULL,
-                 FSEND );
+    if (nTransition14 || pPresetTransition)
+    {
+        const char* pRequiresNS = nTransition14 ? "p14" : "p15";
 
-    sal_Int32 nTransition = 0;
-    const char* pDirection = NULL;
-    const char* pOrientation = NULL;
-    const char* pThruBlk = NULL;
-    const char* pSpokes = NULL;
-    char pSpokesTmp[2] = "0";
+        pFS->startElement(FSNS(XML_mc, XML_AlternateContent), FSEND);
+        pFS->startElement(FSNS(XML_mc, XML_Choice), XML_Requires, pRequiresNS, FSEND);
 
-    switch( nPPTTransitionType ) {
-        case PPT_TRANSITION_TYPE_BLINDS:
-        nTransition = XML_blinds;
-        pDirection = ( nDirection == 0) ? "vert" : "horz";
-        break;
-        case PPT_TRANSITION_TYPE_CHECKER:
-        nTransition = XML_checker;
-        pDirection = ( nDirection == 1) ? "vert" : "horz";
-        break;
-        case PPT_TRANSITION_TYPE_CIRCLE:
-        nTransition = XML_circle;
-        break;
-        case PPT_TRANSITION_TYPE_COMB:
-        nTransition = XML_comb;
-        pDirection = ( nDirection == 1) ? "vert" : "horz";
-        break;
-        case PPT_TRANSITION_TYPE_COVER:
-        nTransition = XML_cover;
-        pDirection = Get8Direction( nDirection );
-        break;
-        case PPT_TRANSITION_TYPE_DIAMOND:
-        nTransition = XML_diamond;
-        break;
-        case PPT_TRANSITION_TYPE_DISSOLVE:
-        nTransition = XML_dissolve;
-        break;
-        case PPT_TRANSITION_TYPE_FADE:
-        nTransition = XML_fade;
-        pThruBlk = "true";
-        break;
-        case PPT_TRANSITION_TYPE_SMOOTHFADE:
-        nTransition = XML_fade;
-        break;
-        case PPT_TRANSITION_TYPE_NEWSFLASH:
-        nTransition = XML_newsflash;
-        break;
-        case PPT_TRANSITION_TYPE_PLUS:
-        nTransition = XML_plus;
-        break;
-        case PPT_TRANSITION_TYPE_PULL:
-        nTransition = XML_pull;
-        pDirection = Get8Direction( nDirection );
-        break;
-        case PPT_TRANSITION_TYPE_PUSH:
-        nTransition = XML_push;
-        pDirection = GetSideDirection( nDirection );
-        break;
-        case PPT_TRANSITION_TYPE_RANDOM:
-        nTransition = XML_random;
-        break;
-        case PPT_TRANSITION_TYPE_RANDOM_BARS:
-        nTransition = XML_randomBar;
-        pDirection = ( nDirection == 1) ? "vert" : "horz";
-        break;
-        case PPT_TRANSITION_TYPE_SPLIT:
-        nTransition = XML_split;
-        pDirection = ( nDirection & 1) ? "in" : "out";
-        pOrientation = ( nDirection < 2) ? "horz" : "vert";
-        break;
-        case PPT_TRANSITION_TYPE_STRIPS:
-        nTransition = XML_strips;
-        pDirection = GetCornerDirection( nDirection );
-        break;
-        case PPT_TRANSITION_TYPE_WEDGE:
-        nTransition = XML_wedge;
-        break;
-        case PPT_TRANSITION_TYPE_WHEEL:
-        nTransition = XML_wheel;
-        if( nDirection != 4 && nDirection <= 9 ) {
-            pSpokesTmp[0] = '0' + nDirection;
-            pSpokes = pSpokesTmp;
+
+        pFS->startElementNS(XML_p, XML_transition,
+                            XML_spd, speed,
+                            XML_advTm, advanceTiming != -1 ? I32S( advanceTiming*1000 ) : nullptr,
+                            FSEND );
+
+        if (nTransition14)
+        {
+            pFS->singleElementNS(XML_p14, nTransition14,
+                                 XML_isInverted, pInverted,
+                                 XML_dir, pDirection14,
+                                 XML_pattern, pPattern,
+                                 FSEND );
         }
-        break;
-        case PPT_TRANSITION_TYPE_WIPE:
-        nTransition = XML_wipe;
-        pDirection = GetSideDirection( nDirection );
-        break;
-        case PPT_TRANSITION_TYPE_ZOOM:
-        nTransition = XML_zoom;
-        pDirection = ( nDirection == 1) ? "in" : "out";
-        break;
-        // coverity[dead_error_line] - following conditions exist to avoid compiler warning
-        case PPT_TRANSITION_TYPE_NONE:
-        default:
-        nTransition = 0;
+        else if (pPresetTransition)
+        {
+            pFS->singleElementNS(XML_p15, XML_prstTrans,
+                                 XML_prst, pPresetTransition,
+                                 FSEND );
+        }
+
+        pFS->endElement(FSNS(XML_p, XML_transition));
+
+        pFS->endElement(FSNS(XML_mc, XML_Choice));
+        pFS->startElement(FSNS(XML_mc, XML_Fallback), FSEND );
     }
 
-    if( nTransition )
+    pFS->startElementNS(XML_p, XML_transition,
+                        XML_spd, speed,
+                        XML_advTm, advanceTiming != -1 ? I32S( advanceTiming*1000 ) : nullptr,
+                        FSEND );
+
+    if (!bOOXmlSpecificTransition)
+    {
+        switch(nPPTTransitionType)
+        {
+            case PPT_TRANSITION_TYPE_BLINDS:
+            nTransition = XML_blinds;
+            pDirection = (nDirection == 0) ? "vert" : "horz";
+            break;
+            case PPT_TRANSITION_TYPE_CHECKER:
+            nTransition = XML_checker;
+            pDirection = ( nDirection == 1) ? "vert" : "horz";
+            break;
+            case PPT_TRANSITION_TYPE_CIRCLE:
+            nTransition = XML_circle;
+            break;
+            case PPT_TRANSITION_TYPE_COMB:
+            nTransition = XML_comb;
+            pDirection = (nDirection == 1) ? "vert" : "horz";
+            break;
+            case PPT_TRANSITION_TYPE_COVER:
+            nTransition = XML_cover;
+            pDirection = Get8Direction( nDirection );
+            break;
+            case PPT_TRANSITION_TYPE_DIAMOND:
+            nTransition = XML_diamond;
+            break;
+            case PPT_TRANSITION_TYPE_DISSOLVE:
+            nTransition = XML_dissolve;
+            break;
+            case PPT_TRANSITION_TYPE_FADE:
+            nTransition = XML_fade;
+            pThruBlk = "true";
+            break;
+            case PPT_TRANSITION_TYPE_SMOOTHFADE:
+            nTransition = XML_fade;
+            break;
+            case PPT_TRANSITION_TYPE_NEWSFLASH:
+            nTransition = XML_newsflash;
+            break;
+            case PPT_TRANSITION_TYPE_PLUS:
+            nTransition = XML_plus;
+            break;
+            case PPT_TRANSITION_TYPE_PULL:
+            nTransition = XML_pull;
+            pDirection = Get8Direction(nDirection);
+            break;
+            case PPT_TRANSITION_TYPE_PUSH:
+            nTransition = XML_push;
+            pDirection = GetSideDirection(nDirection);
+            break;
+            case PPT_TRANSITION_TYPE_RANDOM:
+            nTransition = XML_random;
+            break;
+            case PPT_TRANSITION_TYPE_RANDOM_BARS:
+            nTransition = XML_randomBar;
+            pDirection = (nDirection == 1) ? "vert" : "horz";
+            break;
+            case PPT_TRANSITION_TYPE_SPLIT:
+            nTransition = XML_split;
+            pDirection = (nDirection & 1) ? "in" : "out";
+            pOrientation = (nDirection < 2) ? "horz" : "vert";
+            break;
+            case PPT_TRANSITION_TYPE_STRIPS:
+            nTransition = XML_strips;
+            pDirection = GetCornerDirection( nDirection );
+            break;
+            case PPT_TRANSITION_TYPE_WEDGE:
+            nTransition = XML_wedge;
+            break;
+            case PPT_TRANSITION_TYPE_WHEEL:
+            nTransition = XML_wheel;
+            if( nDirection != 4 && nDirection <= 9 ) {
+                pSpokesTmp[0] = '0' + nDirection;
+                pSpokes = pSpokesTmp;
+            }
+            break;
+            case PPT_TRANSITION_TYPE_WIPE:
+            nTransition = XML_wipe;
+            pDirection = GetSideDirection( nDirection );
+            break;
+            case PPT_TRANSITION_TYPE_ZOOM:
+            nTransition = XML_zoom;
+            pDirection = (nDirection == 1) ? "in" : "out";
+            break;
+            // coverity[dead_error_line] - following conditions exist to avoid compiler warning
+            case PPT_TRANSITION_TYPE_NONE:
+            default:
+            nTransition = 0;
+            break;
+        }
+    }
+
+    if (nTransition)
+    {
         pFS->singleElementNS( XML_p, nTransition,
                   XML_dir, pDirection,
                   XML_orient, pOrientation,
                   XML_spokes, pSpokes,
                   XML_thruBlk, pThruBlk,
                   FSEND );
+    }
 
-    pFS->endElementNS( XML_p, XML_transition );
+    pFS->endElementNS(XML_p, XML_transition);
+
+    if (nTransition14 || pPresetTransition)
+    {
+        pFS->endElement(FSNS(XML_mc, XML_Fallback));
+        pFS->endElement(FSNS(XML_mc, XML_AlternateContent));
     }
 }
 
@@ -687,7 +832,7 @@ void PowerPointExport::WriteAnimateValues( FSHelperPtr pFS, const Reference< XAn
     DBG(printf("animate value %d: %f\n", i, aKeyTimes[ i ]));
     if( aValues[ i ].hasValue() ) {
         pFS->startElementNS( XML_p, XML_tav,
-                 XML_fmla, sFormula.isEmpty() ? NULL : USS( sFormula ),
+                 XML_fmla, sFormula.isEmpty() ? nullptr : USS( sFormula ),
                  XML_tm, I32S( ( sal_Int32 )( aKeyTimes[ i ]*100000.0 ) ),
                  FSEND );
         pFS->startElementNS( XML_p, XML_val, FSEND );
@@ -729,7 +874,7 @@ void PowerPointExport::WriteAnimationAttributeName( FSHelperPtr pFS, const OUStr
 
     DBG(printf("write attribute name: %s\n", USS( rAttributeName )));
 
-    const char* sAttributeName = NULL;
+    const char* sAttributeName = nullptr;
     if ( rAttributeName == "Visibility" ) {
         sAttributeName = "style.visibility";
     } else if ( rAttributeName == "X" ) {
@@ -775,8 +920,8 @@ void PowerPointExport::WriteAnimationNodeAnimate( FSHelperPtr pFS, const Referen
     if( !rXAnimate.is() )
         return;
 
-    const char* pCalcMode = NULL;
-    const char* pValueType = NULL;
+    const char* pCalcMode = nullptr;
+    const char* pValueType = nullptr;
     bool bSimple = ( nXmlNodeType != XML_anim );
 
     if( !bSimple ) {
@@ -816,7 +961,7 @@ void PowerPointExport::WriteAnimationNodeAnimateInside( FSHelperPtr pFS, const R
     if( !rXAnimate.is() )
         return;
 
-    const char* pAdditive = NULL;
+    const char* pAdditive = nullptr;
 
     if( !bSimple ) {
     switch( rXAnimate->getAdditive() ) {
@@ -877,8 +1022,8 @@ void PowerPointExport::WriteAnimationCondition( FSHelperPtr pFS, Any& rAny, bool
     double fDelay = 0;
     Timing eTiming;
     Event aEvent;
-    const char* pDelay = NULL;
-    const char* pEvent = NULL;
+    const char* pDelay = nullptr;
+    const char* pEvent = nullptr;
 
     if( rAny >>= fDelay )
         bHasFDelay = true;
@@ -948,11 +1093,11 @@ void PowerPointExport::WriteAnimationCondition( FSHelperPtr pFS, Any& rAny, bool
 
 void PowerPointExport::WriteAnimationNodeCommonPropsStart( FSHelperPtr pFS, const Reference< XAnimationNode >& rXNode, bool bSingle, bool bMainSeqChild )
 {
-    const char* pDuration = NULL;
-    const char* pRestart = NULL;
-    const char* pNodeType = NULL;
-    const char* pPresetClass = NULL;
-    const char* pFill = NULL;
+    const char* pDuration = nullptr;
+    const char* pRestart = nullptr;
+    const char* pNodeType = nullptr;
+    const char* pPresetClass = nullptr;
+    const char* pFill = nullptr;
     double fDuration = 0;
     Any aAny;
 
@@ -1081,8 +1226,8 @@ void PowerPointExport::WriteAnimationNodeCommonPropsStart( FSHelperPtr pFS, cons
              XML_nodeType, pNodeType,
              XML_fill, pFill,
              XML_presetClass, pPresetClass,
-             XML_presetID, bPresetId ? I64S( nPresetId ) : NULL,
-             XML_presetSubtype, bPresetSubType ? I64S( nPresetSubType ) : NULL,
+             XML_presetID, bPresetId ? I64S( nPresetId ) : nullptr,
+             XML_presetSubtype, bPresetSubType ? I64S( nPresetSubType ) : nullptr,
              FSEND );
 
     aAny = rXNode->getBegin();
@@ -1145,11 +1290,11 @@ void PowerPointExport::WriteAnimationNodeSeq( FSHelperPtr pFS, const Reference< 
     WriteAnimationNodeCommonPropsStart( pFS, rXNode, true, bMainSeqChild );
 
     pFS->startElementNS( XML_p, XML_prevCondLst, FSEND );
-    WriteAnimationCondition( pFS, NULL, "onPrev", 0, true );
+    WriteAnimationCondition( pFS, nullptr, "onPrev", 0, true );
     pFS->endElementNS( XML_p, XML_prevCondLst );
 
     pFS->startElementNS( XML_p, XML_nextCondLst, FSEND );
-    WriteAnimationCondition( pFS, NULL, "onNext", 0, true );
+    WriteAnimationCondition( pFS, nullptr, "onNext", 0, true );
     pFS->endElementNS( XML_p, XML_nextCondLst );
 
     pFS->endElementNS( XML_p, XML_seq );
@@ -1161,7 +1306,7 @@ void PowerPointExport::WriteAnimationNodeEffect( FSHelperPtr pFS, const Referenc
 
     Reference< XTransitionFilter > xFilter( rXNode, UNO_QUERY );
     if ( xFilter.is() ) {
-    const char* pFilter = ppt::AnimationExporter::FindTransitionName( xFilter->getTransition(), xFilter->getSubtype(), xFilter->getDirection() );
+    const char* pFilter = ::ppt::AnimationExporter::FindTransitionName( xFilter->getTransition(), xFilter->getSubtype(), xFilter->getDirection() );
     const char* pDirection = xFilter->getDirection() ? "in" : "out";
     pFS->startElementNS( XML_p, XML_animEffect,
                  XML_filter, pFilter,
@@ -1179,7 +1324,7 @@ void PowerPointExport::WriteAnimationNode( FSHelperPtr pFS, const Reference< XAn
     DBG(printf ("export node type: %d\n", rXNode->getType()));
     sal_Int32 xmlNodeType = -1;
     typedef void (PowerPointExport::*AnimationNodeWriteMethod)( FSHelperPtr, const Reference< XAnimationNode >&, sal_Int32, bool );
-    AnimationNodeWriteMethod pMethod = NULL;
+    AnimationNodeWriteMethod pMethod = nullptr;
 
     switch( rXNode->getType() ) {
     case AnimationNodeType::PAR:
@@ -1400,7 +1545,7 @@ void PowerPointExport::ImplWriteSlide( sal_uInt32 nPageNum, sal_uInt32 nMasterNu
         mpSlidesFSArray.resize( mnPages );
     mpSlidesFSArray[ nPageNum ] = pFS;
 
-    const char* pShow = NULL;
+    const char* pShow = nullptr;
 
     if( GETA( Visible ) ) {
     bool bShow(false);
@@ -1653,8 +1798,8 @@ void PowerPointExport::ImplWritePPTXLayout( sal_Int32 nOffset, sal_uInt32 nMaste
     xPropSet->setPropertyValue( "Layout", makeAny( short( aLayoutInfo[ nOffset ].nType ) ) );
     DBG(dump_pset( xPropSet ));
 
-    mXPagePropSet = Reference< XPropertySet >( xSlide, UNO_QUERY );
-    mXShapes = Reference< XShapes >( xSlide, UNO_QUERY );
+    mXPagePropSet.set( xSlide, UNO_QUERY );
+    mXShapes.set( xSlide, UNO_QUERY );
 
     if( mLayoutInfo[ nOffset ].mnFileIdArray.size() < mnMasterPages ) {
         mLayoutInfo[ nOffset ].mnFileIdArray.resize( mnMasterPages );
@@ -1767,7 +1912,7 @@ ShapeExport& PowerPointShapeExport::WritePlaceholderShape( Reference< XShape > x
     mpFS->endElementNS( XML_p, XML_cNvSpPr );
     mpFS->startElementNS( XML_p, XML_nvPr, FSEND );
 
-    const char* pType = NULL;
+    const char* pType = nullptr;
     switch( ePlaceholder ) {
     case SlideImage:
         pType = "sldImg";
@@ -2111,7 +2256,7 @@ bool PowerPointExport::WriteNotesMaster()
     pFS->startElementNS( XML_p, XML_cSld, FSEND );
 
     Reference< XPropertySet > aXBackgroundPropSet;
-    if( ImplGetPropertyValue( mXPagePropSet, OUString( "Background" ) ) &&
+    if( ImplGetPropertyValue( mXPagePropSet, "Background" ) &&
             ( mAny >>= aXBackgroundPropSet ) )
         ImplWriteBackground( pFS, aXBackgroundPropSet );
 
@@ -2181,9 +2326,9 @@ static const struct cppu::ImplementationEntry g_entries[] =
         oox::core::PowerPointExport_getImplementationName,
        oox::core::PowerPointExport_getSupportedServiceNames,
         cppu::createSingleComponentFactory,
-        0 , 0
+        nullptr , 0
     },
-    { 0, 0, 0, 0, 0, 0 }
+    { nullptr, nullptr, nullptr, nullptr, nullptr, 0 }
 };
 
 #ifdef __cplusplus

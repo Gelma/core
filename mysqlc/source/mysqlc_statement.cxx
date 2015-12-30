@@ -75,7 +75,7 @@ void OCommonStatement::disposeResultSet()
     OSL_TRACE("OCommonStatement::disposeResultSet");
     // free the cursor if alive
     delete cppStatement;
-    cppStatement = NULL;
+    cppStatement = nullptr;
 }
 
 void OCommonStatement::disposing()
@@ -87,7 +87,7 @@ void OCommonStatement::disposing()
 
     if (m_pConnection) {
         m_pConnection->release();
-        m_pConnection = NULL;
+        m_pConnection = nullptr;
     }
     delete cppStatement;
 
@@ -431,7 +431,7 @@ void SAL_CALL OStatement::release()
     OCommonStatement::release();
 }
 
-Reference< ::com::sun::star::beans::XPropertySetInfo > SAL_CALL OCommonStatement::getPropertySetInfo()
+Reference< css::beans::XPropertySetInfo > SAL_CALL OCommonStatement::getPropertySetInfo()
     throw(RuntimeException, std::exception)
 {
     OSL_TRACE("OCommonStatement::getPropertySetInfo");

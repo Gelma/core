@@ -12,7 +12,9 @@
 
 #include "undobase.hxx"
 #include "rangenam.hxx"
-#include <boost/ptr_container/ptr_map.hpp>
+
+#include <memory>
+#include <map>
 
 class ScDocShell;
 
@@ -23,23 +25,23 @@ class ScUndoAllRangeNames : public ScSimpleUndo
 {
 public:
     ScUndoAllRangeNames(ScDocShell* pDocSh,
-                        const std::map<OUString, ScRangeName*>& rOldNames,
-                        const boost::ptr_map<OUString, ScRangeName>& rNewNames);
+        const std::map<OUString, ScRangeName*>& rOldNames,
+        const std::map<OUString, std::unique_ptr<ScRangeName>>& rNewNames);
 
     virtual ~ScUndoAllRangeNames();
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
-    virtual void Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
+    virtual void Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool CanRepeat(SfxRepeatTarget& rTarget) const override;
+    virtual OUString GetComment() const override;
 
 private:
-    void DoChange(const boost::ptr_map<OUString, ScRangeName>& rNames);
+    void DoChange(const std::map<OUString, std::unique_ptr<ScRangeName>>& rNames);
 
 private:
-    boost::ptr_map<OUString, ScRangeName> maOldNames;
-    boost::ptr_map<OUString, ScRangeName> maNewNames;
+    std::map<OUString, std::unique_ptr<ScRangeName>> m_OldNames;
+    std::map<OUString, std::unique_ptr<ScRangeName>> m_NewNames;
 };
 
 class ScUndoAddRangeData : public ScSimpleUndo
@@ -50,11 +52,11 @@ public:
 
     virtual ~ScUndoAddRangeData();
 
-    virtual void Undo() SAL_OVERRIDE;
-    virtual void Redo() SAL_OVERRIDE;
-    virtual void Repeat(SfxRepeatTarget& rTarget) SAL_OVERRIDE;
-    virtual bool CanRepeat(SfxRepeatTarget& rTarget) const SAL_OVERRIDE;
-    virtual OUString GetComment() const SAL_OVERRIDE;
+    virtual void Undo() override;
+    virtual void Redo() override;
+    virtual void Repeat(SfxRepeatTarget& rTarget) override;
+    virtual bool CanRepeat(SfxRepeatTarget& rTarget) const override;
+    virtual OUString GetComment() const override;
 
 private:
     ScRangeData* mpRangeData;

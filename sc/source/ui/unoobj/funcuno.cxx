@@ -45,6 +45,7 @@
 #include "dociter.hxx"
 #include "stringutil.hxx"
 #include "tokenarray.hxx"
+#include <memory>
 
 using namespace com::sun::star;
 
@@ -65,8 +66,8 @@ private:
     static ScDocument*  CreateDocument();       // create and initialize doc
 
 public:
-                ScTempDocSource( ScTempDocCache& rDocCache );
-                ~ScTempDocSource();
+    explicit ScTempDocSource( ScTempDocCache& rDocCache );
+    ~ScTempDocSource();
 
     ScDocument*     GetDocument();
 };
@@ -80,7 +81,7 @@ ScDocument* ScTempDocSource::CreateDocument()
 
 ScTempDocSource::ScTempDocSource( ScTempDocCache& rDocCache ) :
     rCache( rDocCache ),
-    pTempDoc( NULL )
+    pTempDoc( nullptr )
 {
     if ( rCache.IsInUse() )
         pTempDoc = CreateDocument();
@@ -109,7 +110,7 @@ ScDocument* ScTempDocSource::GetDocument()
 }
 
 ScTempDocCache::ScTempDocCache() :
-    pDoc( NULL ),
+    pDoc( nullptr ),
     bInUse( false )
 {
 }
@@ -130,7 +131,7 @@ void ScTempDocCache::Clear()
 {
     OSL_ENSURE( !bInUse, "ScTempDocCache::Clear: bInUse" );
     delete pDoc;
-    pDoc = NULL;
+    pDoc = nullptr;
 }
 
 //  copy results from one document into another
@@ -148,12 +149,12 @@ static bool lcl_CopyData( ScDocument* pSrcDoc, const ScRange& rSrcRange,
                 rSrcRange.aEnd.Row() - rSrcRange.aStart.Row() + rDestPos.Row(),
                 nDestTab ) );
 
-    ScDocument* pClipDoc = new ScDocument( SCDOCMODE_CLIP );
+    std::unique_ptr<ScDocument> pClipDoc(new ScDocument( SCDOCMODE_CLIP ));
     ScMarkData aSourceMark;
     aSourceMark.SelectOneTable( nSrcTab );      // for CopyToClip
     aSourceMark.SetMarkArea( rSrcRange );
     ScClipParam aClipParam(rSrcRange, false);
-    pSrcDoc->CopyToClip(aClipParam, pClipDoc, &aSourceMark, false);
+    pSrcDoc->CopyToClip(aClipParam, pClipDoc.get(), &aSourceMark);
 
     if ( pClipDoc->HasAttrib( 0,0,nSrcTab, MAXCOL,MAXROW,nSrcTab,
                                 HASATTR_MERGED | HASATTR_OVERLAPPED ) )
@@ -167,14 +168,13 @@ static bool lcl_CopyData( ScDocument* pSrcDoc, const ScRange& rSrcRange,
     ScMarkData aDestMark;
     aDestMark.SelectOneTable( nDestTab );
     aDestMark.SetMarkArea( aNewRange );
-    pDestDoc->CopyFromClip( aNewRange, aDestMark, IDF_ALL & ~IDF_FORMULA, NULL, pClipDoc, false );
+    pDestDoc->CopyFromClip( aNewRange, aDestMark, InsertDeleteFlags::ALL & ~InsertDeleteFlags::FORMULA, nullptr, pClipDoc.get(), false );
 
-    delete pClipDoc;
     return true;
 }
 
 ScFunctionAccess::ScFunctionAccess() :
-    pOptions( NULL ),
+    pOptions( nullptr ),
     aPropertyMap( ScDocOptionsHelper::GetPropertyMap() ),
     mbArray( true ),    // default according to behaviour of older Office versions
     mbValid( true )
@@ -340,7 +340,7 @@ protected:
     bool mbArgError;
     ScDocument* mpDoc;
 public:
-    SimpleVisitor( ScDocument* pDoc ) : mbArgError( false ), mpDoc( pDoc ) {}
+    explicit SimpleVisitor( ScDocument* pDoc ) : mbArgError( false ), mpDoc( pDoc ) {}
     // could possibly just get away with JUST the following overload
     // 1) virtual void visitElem( long& nCol, long& nRow, const double& elem )
     // 2) virtual void visitElem( long& nCol, long& nRow, const OUString& elem )
@@ -620,7 +620,7 @@ uno::Any SAL_CALL ScFunctionAccess::callFunction( const OUString& aName,
         //  call GetMatrix before GetErrCode because GetMatrix always recalculates
         //  if there is no matrix result
 
-        const ScMatrix* pMat = (mbArray && pFormula) ? pFormula->GetMatrix() : 0;
+        const ScMatrix* pMat = (mbArray && pFormula) ? pFormula->GetMatrix() : nullptr;
         sal_uInt16 nErrCode = pFormula ? pFormula->GetErrCode() : errIllegalArgument;
         if ( nErrCode == 0 )
         {
@@ -651,8 +651,8 @@ uno::Any SAL_CALL ScFunctionAccess::callFunction( const OUString& aName,
             bArgErr = true;
         }
 
-        pDoc->DeleteAreaTab( 0, 0, MAXCOL, MAXROW, 0, IDF_ALL );
-        pDoc->DeleteAreaTab( 0, 0, 0, 0, nTempSheet, IDF_ALL );
+        pDoc->DeleteAreaTab( 0, 0, MAXCOL, MAXROW, 0, InsertDeleteFlags::ALL );
+        pDoc->DeleteAreaTab( 0, 0, 0, 0, nTempSheet, InsertDeleteFlags::ALL );
     }
 
     if (bOverflow)

@@ -99,10 +99,10 @@ sal_Bool SAL_CALL PDFIHybridAdaptor::filter( const uno::Sequence< beans::Propert
                 uno::Reference< io::XSeekable > xSeek( xInput, uno::UNO_QUERY );
                 if( xSeek.is() )
                     xSeek->seek( 0 );
-                oslFileHandle aFile = NULL;
+                oslFileHandle aFile = nullptr;
                 sal_uInt64 nWritten = 0;
                 OUString aURL;
-                if( osl_createTempFile( NULL, &aFile, &aURL.pData ) == osl_File_E_None )
+                if( osl_createTempFile( nullptr, &aFile, &aURL.pData ) == osl_File_E_None )
                 {
                     SAL_INFO("sdext.pdfimport", "created temp file " << aURL);
                     const sal_Int32 nBufSize = 4096;
@@ -146,9 +146,9 @@ sal_Bool SAL_CALL PDFIHybridAdaptor::filter( const uno::Sequence< beans::Propert
             SAL_INFO("sdext.pdfimport", "try to instantiate subfilter" );
             uno::Reference< document::XFilter > xSubFilter;
             try {
-                xSubFilter = uno::Reference<document::XFilter>(
+                xSubFilter.set(
                     m_xContext->getServiceManager()->createInstanceWithArgumentsAndContext(
-                        OUString( "com.sun.star.document.OwnSubFilter" ),
+                        "com.sun.star.document.OwnSubFilter",
                         aArgs,
                         m_xContext ),
                     uno::UNO_QUERY );
@@ -195,7 +195,7 @@ void SAL_CALL PDFIHybridAdaptor::cancel() throw(std::exception)
 void SAL_CALL PDFIHybridAdaptor::setTargetDocument( const uno::Reference< lang::XComponent >& xDocument ) throw( lang::IllegalArgumentException, std::exception )
 {
     SAL_INFO("sdext.pdfimport", "PDFIAdaptor::setTargetDocument" );
-    m_xModel = uno::Reference< frame::XModel >( xDocument, uno::UNO_QUERY );
+    m_xModel.set( xDocument, uno::UNO_QUERY );
     if( xDocument.is() && ! m_xModel.is() )
         throw lang::IllegalArgumentException();
 }
@@ -328,7 +328,7 @@ sal_Bool SAL_CALL PDFIRawAdaptor::importer( const uno::Sequence< beans::Property
 void SAL_CALL PDFIRawAdaptor::setTargetDocument( const uno::Reference< lang::XComponent >& xDocument ) throw( lang::IllegalArgumentException, std::exception )
 {
     SAL_INFO("sdext.pdfimport", "PDFIAdaptor::setTargetDocument" );
-    m_xModel = uno::Reference< frame::XModel >( xDocument, uno::UNO_QUERY );
+    m_xModel.set( xDocument, uno::UNO_QUERY );
     if( xDocument.is() && ! m_xModel.is() )
         throw lang::IllegalArgumentException();
 }

@@ -57,8 +57,8 @@ private:
     sal_uInt8           ImplGetByte();
 
 public:
-                        RASReader(SvStream &rRAS);
-                        ~RASReader();
+    explicit RASReader(SvStream &rRAS);
+    ~RASReader();
     bool                ReadRAS(Graphic & rGraphic);
 };
 
@@ -107,7 +107,7 @@ bool RASReader::ReadRAS(Graphic & rGraphic)
 
     maBmp = Bitmap( Size( mnWidth, mnHeight ), mnDstBitsPerPix );
     Bitmap::ScopedWriteAccess pAcc(maBmp);
-    if ( pAcc == 0 )
+    if ( pAcc == nullptr )
         return false;
 
     if ( mnDstBitsPerPix <= 8 )     // paletten bildchen
@@ -215,11 +215,12 @@ bool RASReader::ImplReadHeader()
 bool RASReader::ImplReadBody(BitmapWriteAccess * pAcc)
 {
     sal_Int32 x, y;
-    sal_uInt8   nDat = 0;
     sal_uInt8    nRed, nGreen, nBlue;
     switch ( mnDstBitsPerPix )
     {
         case 1 :
+        {
+            sal_uInt8 nDat = 0;
             for (y = 0; y < mnHeight && mbStatus; ++y)
             {
                 for (x = 0; x < mnWidth && mbStatus; ++x)
@@ -242,13 +243,14 @@ bool RASReader::ImplReadBody(BitmapWriteAccess * pAcc)
                 }
             }
             break;
+        }
 
         case 8 :
             for (y = 0; y < mnHeight && mbStatus; ++y)
             {
                 for (x = 0; x < mnWidth && mbStatus; ++x)
                 {
-                    nDat = ImplGetByte();
+                    sal_uInt8 nDat = ImplGetByte();
                     pAcc->SetPixelIndex( y, x, nDat );
                     if (!m_rRAS.good())
                         mbStatus = false;
@@ -301,7 +303,7 @@ bool RASReader::ImplReadBody(BitmapWriteAccess * pAcc)
                     {
                         for (x = 0; x < mnWidth && mbStatus; ++x)
                         {
-                            nDat = ImplGetByte();               // pad byte > nil
+                            ImplGetByte();               // pad byte > nil
                             if ( mnType == RAS_TYPE_RGB_FORMAT )
                             {
                                 nRed = ImplGetByte();
@@ -362,15 +364,8 @@ sal_uInt8 RASReader::ImplGetByte()
 
 //================== GraphicImport - die exportierte Funktion ================
 
-// this needs to be kept in sync with
-// ImpFilterLibCacheEntry::GetImportFunction() from
-// vcl/source/filter/graphicfilter.cxx
-#if defined(DISABLE_DYNLOADING)
-#define GraphicImport iraGraphicImport
-#endif
-
 extern "C" SAL_DLLPUBLIC_EXPORT bool SAL_CALL
-GraphicImport( SvStream & rStream, Graphic & rGraphic, FilterConfigItem* )
+iraGraphicImport( SvStream & rStream, Graphic & rGraphic, FilterConfigItem* )
 {
     RASReader aRASReader(rStream);
 

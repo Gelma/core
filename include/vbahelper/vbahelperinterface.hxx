@@ -19,9 +19,7 @@
 #ifndef INCLUDED_VBAHELPER_VBAHELPERINTERFACE_HXX
 #define INCLUDED_VBAHELPER_VBAHELPERINTERFACE_HXX
 
-#include <cppuhelper/implbase1.hxx>
-#include <cppuhelper/implbase2.hxx>
-#include <cppuhelper/implbase3.hxx>
+#include <cppuhelper/implbase.hxx>
 #include <ooo/vba/XHelperInterface.hpp>
 #include <vbahelper/vbahelper.hxx>
 #include <com/sun/star/container/XNameAccess.hpp>
@@ -53,8 +51,8 @@
 // }
 //
 
-template< typename Ifc1 >
-class SAL_DLLPUBLIC_TEMPLATE InheritedHelperInterfaceImpl : public Ifc1
+template< typename... Ifc >
+class SAL_DLLPUBLIC_TEMPLATE InheritedHelperInterfaceImpl : public Ifc...
 {
 protected:
     css::uno::WeakReference< ov::XHelperInterface > mxParent;
@@ -67,13 +65,13 @@ public:
     virtual css::uno::Sequence<OUString> getServiceNames() = 0;
 
     // XHelperInterface Methods
-    virtual ::sal_Int32 SAL_CALL getCreator() throw (css::script::BasicErrorException, css::uno::RuntimeException) SAL_OVERRIDE
+    virtual ::sal_Int32 SAL_CALL getCreator() throw (css::script::BasicErrorException, css::uno::RuntimeException) override
     {
         return 0x53756E4F;
     }
-    virtual css::uno::Reference< ov::XHelperInterface > SAL_CALL getParent(  ) throw (css::script::BasicErrorException, css::uno::RuntimeException) SAL_OVERRIDE { return mxParent; }
+    virtual css::uno::Reference< ov::XHelperInterface > SAL_CALL getParent(  ) throw (css::script::BasicErrorException, css::uno::RuntimeException) override { return mxParent; }
 
-    virtual css::uno::Any SAL_CALL Application(  ) throw (css::script::BasicErrorException, css::uno::RuntimeException) SAL_OVERRIDE {
+    virtual css::uno::Any SAL_CALL Application(  ) throw (css::script::BasicErrorException, css::uno::RuntimeException) override {
             // The application could certainly be passed around in the context - seems
             // to make sense
             css::uno::Reference< css::container::XNameAccess > xNameAccess( mxContext, css::uno::UNO_QUERY_THROW );
@@ -81,8 +79,8 @@ public:
     }
 
     // XServiceInfo Methods
-    virtual OUString SAL_CALL getImplementationName(  ) throw (css::uno::RuntimeException) SAL_OVERRIDE { return getServiceImplName(); }
-    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw (css::uno::RuntimeException) SAL_OVERRIDE
+    virtual OUString SAL_CALL getImplementationName(  ) throw (css::uno::RuntimeException) override { return getServiceImplName(); }
+    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw (css::uno::RuntimeException) override
     {
         css::uno::Sequence< OUString > sServices = getSupportedServiceNames();
         const OUString* pStart = sServices.getConstArray();
@@ -92,41 +90,21 @@ public:
                 return sal_True;
         return sal_False;
     }
-    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw (css::uno::RuntimeException) SAL_OVERRIDE
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw (css::uno::RuntimeException) override
     {
         css::uno::Sequence< OUString > aNames = getServiceNames();
         return aNames;
     }
  };
 
-template< typename Ifc1 >
-class SAL_DLLPUBLIC_TEMPLATE InheritedHelperInterfaceImpl1 : public InheritedHelperInterfaceImpl< ::cppu::WeakImplHelper1< Ifc1 > >
+template <typename... Ifc >
+class SAL_DLLPUBLIC_TEMPLATE InheritedHelperInterfaceWeakImpl : public InheritedHelperInterfaceImpl< ::cppu::WeakImplHelper< Ifc... > >
 {
-    typedef InheritedHelperInterfaceImpl< ::cppu::WeakImplHelper1< Ifc1 > > Base;
+    typedef InheritedHelperInterfaceImpl< ::cppu::WeakImplHelper< Ifc... > > Base;
 public:
-    InheritedHelperInterfaceImpl1< Ifc1 >() {}
-    InheritedHelperInterfaceImpl1< Ifc1 >( const css::uno::Reference< css::uno::XComponentContext >& xContext ) : Base( xContext ) {}
-    InheritedHelperInterfaceImpl1< Ifc1 >( const css::uno::Reference< ov::XHelperInterface >& xParent, const css::uno::Reference< css::uno::XComponentContext >& xContext ) : Base( xParent, xContext ) {}
-};
-
-template< typename Ifc1, typename Ifc2 >
-class SAL_DLLPUBLIC_TEMPLATE InheritedHelperInterfaceImpl2 : public InheritedHelperInterfaceImpl< ::cppu::WeakImplHelper2< Ifc1, Ifc2 > >
-{
-    typedef InheritedHelperInterfaceImpl< ::cppu::WeakImplHelper2< Ifc1, Ifc2 > > Base;
-public:
-    InheritedHelperInterfaceImpl2< Ifc1, Ifc2 >() {}
-    InheritedHelperInterfaceImpl2< Ifc1, Ifc2 >( const css::uno::Reference< css::uno::XComponentContext >& xContext ) : Base( xContext ) {}
-    InheritedHelperInterfaceImpl2< Ifc1, Ifc2 >( const css::uno::Reference< ov::XHelperInterface >& xParent, const css::uno::Reference< css::uno::XComponentContext >& xContext ) : Base( xParent, xContext ) {}
-};
-
-template< typename Ifc1, typename Ifc2, typename Ifc3 >
-class SAL_DLLPUBLIC_TEMPLATE InheritedHelperInterfaceImpl3 : public InheritedHelperInterfaceImpl< ::cppu::WeakImplHelper3< Ifc1, Ifc2, Ifc3 > >
-{
-    typedef InheritedHelperInterfaceImpl< ::cppu::WeakImplHelper3< Ifc1, Ifc2, Ifc3 > > Base;
-public:
-    InheritedHelperInterfaceImpl3< Ifc1, Ifc2, Ifc3 >() {}
-    InheritedHelperInterfaceImpl3< Ifc1, Ifc2, Ifc3 >( const css::uno::Reference< css::uno::XComponentContext >& xContext ) : Base( xContext ) {}
-    InheritedHelperInterfaceImpl3< Ifc1, Ifc2, Ifc3 >( const css::uno::Reference< ov::XHelperInterface >& xParent, const css::uno::Reference< css::uno::XComponentContext >& xContext ) : Base( xParent, xContext ) {}
+    InheritedHelperInterfaceWeakImpl< Ifc... >() {}
+    InheritedHelperInterfaceWeakImpl< Ifc... >( const css::uno::Reference< css::uno::XComponentContext >& xContext ) : Base( xContext ) {}
+    InheritedHelperInterfaceWeakImpl< Ifc... >( const css::uno::Reference< ov::XHelperInterface >& xParent, const css::uno::Reference< css::uno::XComponentContext >& xContext ) : Base( xParent, xContext ) {}
 };
 
 
@@ -165,8 +143,8 @@ css::uno::Sequence< OUString > classname::getServiceNames() \
     declaration.
  */
 #define VBAHELPER_DECL_XHELPERINTERFACE \
-    virtual OUString getServiceImplName() SAL_OVERRIDE; \
-    virtual css::uno::Sequence< OUString > getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override; \
+    virtual css::uno::Sequence< OUString > getServiceNames() override;
 
 
 

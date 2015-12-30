@@ -20,6 +20,8 @@
 #ifndef INCLUDED_SD_INC_STRMNAME_H
 #define INCLUDED_SD_INC_STRMNAME_H
 
+#include <rtl/ustring.hxx>
+
 // PowerPoint-Filter
 static const OUString pFilterPowerPoint97( "MS PowerPoint 97" );
 static const OUString pFilterPowerPoint97Template( "MS PowerPoint 97 Vorlage" );

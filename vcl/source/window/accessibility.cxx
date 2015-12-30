@@ -109,11 +109,11 @@ using ::com::sun::star::awt::XTopWindow;
 ImplAccessibleInfos::ImplAccessibleInfos()
 {
     nAccessibleRole = 0xFFFF;
-    pAccessibleName = NULL;
-    pAccessibleDescription = NULL;
-    pLabeledByWindow = NULL;
-    pLabelForWindow = NULL;
-    pMemberOfWindow = NULL;
+    pAccessibleName = nullptr;
+    pAccessibleDescription = nullptr;
+    pLabeledByWindow = nullptr;
+    pLabelForWindow = nullptr;
+    pMemberOfWindow = nullptr;
 }
 
 ImplAccessibleInfos::~ImplAccessibleInfos()
@@ -124,7 +124,7 @@ ImplAccessibleInfos::~ImplAccessibleInfos()
 
 namespace vcl {
 
-::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > Window::GetAccessible( bool bCreate )
+css::uno::Reference< css::accessibility::XAccessible > Window::GetAccessible( bool bCreate )
 {
     // do not optimize hierarchy for the top level border win (ie, when there is no parent)
     /* // do not optimize accessible hierarchy at all to better reflect real VCL hierarchy
@@ -144,13 +144,13 @@ namespace vcl {
     return mpWindowImpl->mxAccessible;
 }
 
-::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > Window::CreateAccessible()
+css::uno::Reference< css::accessibility::XAccessible > Window::CreateAccessible()
 {
-    ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > xAcc( GetComponentInterface(), ::com::sun::star::uno::UNO_QUERY );
+    css::uno::Reference< css::accessibility::XAccessible > xAcc( GetComponentInterface(), css::uno::UNO_QUERY );
     return xAcc;
 }
 
-void Window::SetAccessible( ::com::sun::star::uno::Reference< ::com::sun::star::accessibility::XAccessible > x )
+void Window::SetAccessible( css::uno::Reference< css::accessibility::XAccessible > x )
 {
     mpWindowImpl->mxAccessible = x;
 }
@@ -215,13 +215,13 @@ vcl::Window* Window::ImplGetAccessibleCandidateChild( sal_uInt16 nChild, sal_uIn
         rChildCount++;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 vcl::Window* Window::GetAccessibleParentWindow() const
 {
     if ( ImplIsAccessibleNativeFrame() )
-        return NULL;
+        return nullptr;
 
     vcl::Window* pParent = mpWindowImpl->mpParent;
     if( GetType() == WINDOW_MENUBARWINDOW )
@@ -620,7 +620,7 @@ vcl::Window* Window::GetAccessibleRelationMemberOf() const
     if (!isContainerWindow(this) && !isContainerWindow(GetParent()))
         return getLegacyNonLayoutAccessibleRelationMemberOf();
 
-    return NULL;
+    return nullptr;
 }
 
 vcl::Window* Window::getAccessibleRelationLabelFor() const
@@ -628,7 +628,7 @@ vcl::Window* Window::getAccessibleRelationLabelFor() const
     if (mpWindowImpl->mpAccessibleInfos && mpWindowImpl->mpAccessibleInfos->pLabelForWindow)
         return mpWindowImpl->mpAccessibleInfos->pLabelForWindow;
 
-    return NULL;
+    return nullptr;
 }
 
 vcl::Window* Window::GetAccessibleRelationLabelFor() const
@@ -641,7 +641,7 @@ vcl::Window* Window::GetAccessibleRelationLabelFor() const
     if (!isContainerWindow(this) && !isContainerWindow(GetParent()))
         return getLegacyNonLayoutAccessibleRelationLabelFor();
 
-    return NULL;
+    return nullptr;
 }
 
 vcl::Window* Window::GetAccessibleRelationLabeledBy() const
@@ -665,7 +665,7 @@ vcl::Window* Window::GetAccessibleRelationLabeledBy() const
     if (!isContainerWindow(this) && !isContainerWindow(GetParent()))
         return getLegacyNonLayoutAccessibleRelationLabeledBy();
 
-    return NULL;
+    return nullptr;
 }
 
 bool Window::IsAccessibilityEventsSuppressed( bool bTraverseParentPath )

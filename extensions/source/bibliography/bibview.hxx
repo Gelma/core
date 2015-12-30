@@ -41,11 +41,11 @@ namespace bib
         VclPtr<BibView> mpBibView;
     protected:
         // FormControlContainer
-        virtual ::com::sun::star::uno::Reference< ::com::sun::star::awt::XControlContainer >
-                            getControlContainer() SAL_OVERRIDE;
+        virtual css::uno::Reference< css::awt::XControlContainer >
+                            getControlContainer() override;
         // XLoadListener equivalents
-        virtual void        _loaded( const ::com::sun::star::lang::EventObject& _rEvent ) SAL_OVERRIDE;
-        virtual void        _reloaded( const ::com::sun::star::lang::EventObject& _rEvent ) SAL_OVERRIDE;
+        virtual void        _loaded( const css::lang::EventObject& _rEvent ) override;
+        virtual void        _reloaded( const css::lang::EventObject& _rEvent ) override;
     public:
         using FormControlContainer::connectForm;
         using FormControlContainer::disconnectForm;
@@ -56,30 +56,30 @@ namespace bib
     class BibView : public BibWindow
     {
     private:
-        BibDataManager*                                                             m_pDatMan;
-        ::com::sun::star::uno::Reference< ::com::sun::star::form::XLoadable>        m_xDatMan;
-        ::com::sun::star::uno::Reference< ::com::sun::star::awt::XFocusListener>    m_xGeneralPage;
-        VclPtr<BibGeneralPage>                                                      m_pGeneralPage;
-        BibViewFormControlContainer                                                 m_aFormControlContainer;
+        BibDataManager*                                   m_pDatMan;
+        css::uno::Reference< css::form::XLoadable>        m_xDatMan;
+        css::uno::Reference< css::awt::XFocusListener>    m_xGeneralPage;
+        VclPtr<BibGeneralPage>                            m_pGeneralPage;
+        BibViewFormControlContainer                       m_aFormControlContainer;
 
     private:
         DECL_LINK_TYPED(CallMappingHdl, void*, void);
 
     public:
         // Window overridables
-        virtual void    Resize() SAL_OVERRIDE;
+        virtual void    Resize() override;
 
     public:
                             BibView( vcl::Window* _pParent, BibDataManager* _pDatMan, WinBits nStyle = WB_3DLOOK );
                             virtual ~BibView();
-        virtual void        dispose() SAL_OVERRIDE;
+        virtual void        dispose() override;
 
         void                UpdatePages();
         css::uno::Reference< css::awt::XControlContainer > getControlContainer();
 
-        virtual void        GetFocus() SAL_OVERRIDE;
+        virtual void        GetFocus() override;
 
-        virtual bool        HandleShortCutKey( const KeyEvent& rKeyEvent ) SAL_OVERRIDE; // returns true, if key was handled
+        virtual bool        HandleShortCutKey( const KeyEvent& rKeyEvent ) override; // returns true, if key was handled
     };
 
 

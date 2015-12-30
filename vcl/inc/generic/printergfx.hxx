@@ -76,8 +76,6 @@ public:
     bool        Is () const
     { return meColorspace != eInvalid; }
 
-    ColorSpace      GetColorSpace () const
-    { return meColorspace; }
     sal_uInt16      GetRed () const
     { return mnRed; }
     sal_uInt16      GetGreen () const
@@ -137,8 +135,6 @@ public:
     virtual sal_uInt32  GetPixelRGB  (sal_uInt32 nRow, sal_uInt32 nColumn) const = 0;
     virtual sal_uInt8   GetPixelGray (sal_uInt32 nRow, sal_uInt32 nColumn) const = 0;
     virtual sal_uInt8   GetPixelIdx  (sal_uInt32 nRow, sal_uInt32 nColumn) const = 0;
-    virtual sal_uInt32  GetWidth ()     const = 0;
-    virtual sal_uInt32  GetHeight ()    const = 0;
     virtual sal_uInt32  GetDepth ()     const = 0;
 };
 
@@ -188,12 +184,6 @@ private:
 
     osl::File*      mpPageHeader;
     osl::File*      mpPageBody;
-
-    static void     TranslateCoordinates (sal_Int32 &rXOut, sal_Int32 &rYOut,
-                                          sal_Int32 nXIn, sal_Int32 nYIn )
-    { rXOut = nXIn; rYOut = nYIn; }
-    static void     TranslateCoordinates (Point& rOut, const Point& rIn)
-    { rOut = rIn; }
 
     /* text/font related data, for a type1 font it has to be checked
        whether this font has already been downloaded. A TrueType font
@@ -288,7 +278,7 @@ public:
     void            PSDeltaArray (const sal_Int32 *pArray, sal_Int16 nEntries);
     void            PSShowText (const unsigned char* pString,
                                 sal_Int16 nGlyphs, sal_Int16 nBytes,
-                                const sal_Int32* pDeltaArray = NULL);
+                                const sal_Int32* pDeltaArray = nullptr);
     void            PSComment (const sal_Char* pComment );
     void            LicenseWarning (const Point& rPoint, const sal_Unicode* pStr,
                                     sal_Int16 nLen, const sal_Int32* pDeltaArray);
@@ -303,7 +293,7 @@ public:
                                           const sal_Int32* pDeltaArray );
     void            drawText (const Point& rPoint,
                               const sal_Unicode* pStr, sal_Int16 nLen,
-                              const sal_Int32* pDeltaArray = NULL);
+                              const sal_Int32* pDeltaArray = nullptr);
 
     void            drawGlyphs( const Point& rPoint,
                                 sal_GlyphId* pGlyphIds,
@@ -388,7 +378,7 @@ public:
     { return maVirtualStatus.mbArtBold; }
     void            DrawText (const Point& rPoint,
                               const sal_Unicode* pStr, sal_Int16 nLen,
-                              const sal_Int32* pDeltaArray = NULL);
+                              const sal_Int32* pDeltaArray = nullptr);
     void            SetTextColor (PrinterColor& rTextColor)
     { maTextColor = rTextColor; }
     sal_Int32       GetCharWidth (sal_uInt16 nFrom, sal_uInt16 nTo,

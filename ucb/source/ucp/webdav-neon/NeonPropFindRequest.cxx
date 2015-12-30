@@ -109,7 +109,7 @@ extern "C" int NPFR_propfind_iter( void* userdata,
     DAVPropertyValue thePropertyValue;
     thePropertyValue.IsCaseSensitive = true;
 
-    OSL_ENSURE( pname->nspace, "NPFR_propfind_iter - No namespace!" );
+    SAL_WARN_IF( !pname->nspace, "ucb.ucp.webdav", "NPFR_propfind_iter - No XML namespace!" );
 
     DAVProperties::createUCBPropName( pname->nspace,
                                       pname->name,
@@ -121,8 +121,8 @@ extern "C" int NPFR_propfind_iter( void* userdata,
         if ( UCBDeadPropertyValue::createFromXML(
                  value, thePropertyValue.Value ) )
         {
-            OSL_ENSURE( thePropertyValue.Value.hasValue(),
-                        "NPFR_propfind_iter - No value!" );
+            SAL_WARN_IF( !thePropertyValue.Value.hasValue(),
+                         "ucb.ucp.webdav", "NPFR_propfind_iter - No value for UCBDeadProperty!" );
             bHasValue = true;
         }
     }
@@ -220,13 +220,12 @@ extern "C" int NPFR_propnames_iter( void* userdata,
 }
 
 extern "C" void NPFR_propnames_results( void* userdata,
-                                        const ne_uri* uri,
+                                        const ne_uri* /*uri*/,
                                         const NeonPropFindResultSet* results )
 {
     // @@@ href is not the uri! DAVResourceInfo ctor wants uri!
     // Create entry for the resource.
-    DAVResourceInfo theResource(
-        OStringToOUString( uri->path, RTL_TEXTENCODING_UTF8 ) );
+    DAVResourceInfo theResource;
 
     // Fill entry.
     ne_propset_iterate( results, NPFR_propnames_iter, &theResource );
@@ -259,8 +258,8 @@ NeonPropFindRequest::NeonPropFindRequest( HttpSession* inSession,
             DAVProperties::createNeonPropName(
                 inPropNames[ theIndex ], thePropNames[ theIndex ] );
         }
-        thePropNames[ theIndex ].nspace = NULL;
-        thePropNames[ theIndex ].name   = NULL;
+        thePropNames[ theIndex ].nspace = nullptr;
+        thePropNames[ theIndex ].name   = nullptr;
 
         {
             osl::Guard< osl::Mutex > theGlobalGuard( aGlobalNeonMutex );
@@ -282,7 +281,7 @@ NeonPropFindRequest::NeonPropFindRequest( HttpSession* inSession,
         nError = ne_simple_propfind( inSession,
                                      inPath,
                                      inDepth,
-                                     NULL, // 0 == allprop
+                                     nullptr, // 0 == allprop
                                      NPFR_propfind_results,
                                      &ioResources );
     }

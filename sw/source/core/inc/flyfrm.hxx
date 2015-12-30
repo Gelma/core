@@ -24,9 +24,9 @@
 #include <list>
 #include "frmfmt.hxx"
 
-class SwPageFrm;
-class SwFormatFrmSize;
-struct SwCrsrMoveState;
+class SwPageFrame;
+class SwFormatFrameSize;
+struct SwCursorMoveState;
 class SwBorderAttrs;
 class SwVirtFlyDrawObj;
 class SwFrameFormats;
@@ -44,7 +44,7 @@ class SwFormat;
 
     implemented in layout/flycnt.cxx
  */
-const SwContentFrm *FindAnchor( const SwFrm *pOldAnch, const Point &rNew,
+const SwContentFrame *FindAnchor( const SwFrame *pOldAnch, const Point &rNew,
                               const bool bBody = false );
 
 /** calculate rectangle in that the object can be moved or rather be resized */
@@ -52,29 +52,29 @@ bool CalcClipRect( const SdrObject *pSdrObj, SwRect &rRect, bool bMove = true );
 
 /** general base class for all free-flowing frames
 
-    #i26791# - inherit also from <SwAnchoredFlyFrm>
+    #i26791# - inherit also from <SwAnchoredFlyFrame>
 */
-class SwFlyFrm : public SwLayoutFrm, public SwAnchoredObject
+class SwFlyFrame : public SwLayoutFrame, public SwAnchoredObject
 {
     // is allowed to lock, implemented in frmtool.cxx
-    friend void AppendObjs   ( const SwFrameFormats *, sal_uLong, SwFrm *, SwPageFrm *, SwDoc* );
-    friend void Notify( SwFlyFrm *, SwPageFrm *pOld, const SwRect &rOld,
+    friend void AppendObjs   ( const SwFrameFormats *, sal_uLong, SwFrame *, SwPageFrame *, SwDoc* );
+    friend void Notify( SwFlyFrame *, SwPageFrame *pOld, const SwRect &rOld,
                         const SwRect* pOldPrt );
 
     void InitDrawObj( bool bNotify ); // these to methods are called in the
     void FinitDrawObj();                  // constructors
 
     void _UpdateAttr( const SfxPoolItem*, const SfxPoolItem*, sal_uInt8 &,
-                      SwAttrSetChg *pa = 0, SwAttrSetChg *pb = 0 );
+                      SwAttrSetChg *pa = nullptr, SwAttrSetChg *pb = nullptr );
 
-    using SwLayoutFrm::CalcRel;
+    using SwLayoutFrame::CalcRel;
 
     sal_uInt32 _GetOrdNumForNewRef( const SwFlyDrawContact* );
     SwVirtFlyDrawObj* CreateNewRef( SwFlyDrawContact* );
 
 protected:
     // Predecessor/Successor for chaining with text flow
-    SwFlyFrm *pPrevLink, *pNextLink;
+    SwFlyFrame *m_pPrevLink, *m_pNextLink;
 
 private:
     // It must be possible to block Content-bound flys so that they will be not
@@ -83,105 +83,104 @@ private:
     // the constructor call of the root object since otherwise the anchor will
     // be formatted before the root is anchored correctly to a shell and
     // because too much would be formatted as a result.
-    bool bLocked :1;
+    bool m_bLocked :1;
     // true if the background of NotifyDTor needs to be notified at the end
     // of a MakeAll() call.
-    bool bNotifyBack :1;
+    bool m_bNotifyBack :1;
 
 protected:
     // Pos, PrtArea or SSize have been invalidated - they will be evaluated
     // again immediately because they have to be valid _at all time_.
     // The invalidation is tracked here so that LayAction knows about it and
     // can handle it properly. Exceptions prove the rule.
-    bool bInvalid :1;
+    bool m_bInvalid :1;
 
     // true if the proposed height of an attribute is a minimal height
     // (this means that the frame can grow higher if needed)
-    bool bMinHeight :1;
+    bool m_bMinHeight :1;
     // true if the fly frame could not format position/size based on its
     // attributes, e.g. because there was not enough space.
-    bool bHeightClipped :1;
-    bool bWidthClipped :1;
+    bool m_bHeightClipped :1;
+    bool m_bWidthClipped :1;
     // If true then call only the format after adjusting the width (CheckClip);
     // but the width will not be re-evaluated based on the attributes.
-    bool bFormatHeightOnly :1;
+    bool m_bFormatHeightOnly :1;
 
-    bool bInCnt :1;        ///< FLY_AS_CHAR, anchored as character
-    bool bAtCnt :1;        ///< FLY_AT_PARA, anchored at paragraph
-    bool bLayout :1;       ///< FLY_AT_PAGE, FLY_AT_FLY, at page or at frame
-    bool bAutoPosition :1; ///< FLY_AT_CHAR, anchored at character
+    bool m_bInCnt :1;        ///< FLY_AS_CHAR, anchored as character
+    bool m_bAtCnt :1;        ///< FLY_AT_PARA, anchored at paragraph
+    bool m_bLayout :1;       ///< FLY_AT_PAGE, FLY_AT_FLY, at page or at frame
+    bool m_bAutoPosition :1; ///< FLY_AT_CHAR, anchored at character
 
-    bool bNoShrink :1;     ///< temporary forbid shrinking to avoid loops
+    bool m_bNoShrink :1;     ///< temporary forbid shrinking to avoid loops
     // If true, the content of the fly frame will not be deleted when it
     // is moved to an invisible layer.
-    bool bLockDeleteContent :1;
+    bool m_bLockDeleteContent :1;
 
-    friend class SwNoTextFrm; // is allowed to call NotifyBackground
+    friend class SwNoTextFrame; // is allowed to call NotifyBackground
 
-    Point m_aContentPos;        // content area's position relatively to Frm
+    Point m_aContentPos;        // content area's position relatively to Frame
     bool m_bValidContentPos;
 
-    virtual void Format( vcl::RenderContext* pRenderContext, const SwBorderAttrs *pAttrs = 0 ) SAL_OVERRIDE;
+    virtual void Format( vcl::RenderContext* pRenderContext, const SwBorderAttrs *pAttrs = nullptr ) override;
     void MakePrtArea( const SwBorderAttrs &rAttrs );
     void MakeContentPos( const SwBorderAttrs &rAttrs );
 
-    void Lock()         { bLocked = true; }
-    void Unlock()       { bLocked = false; }
+    void Lock()         { m_bLocked = true; }
+    void Unlock()       { m_bLocked = false; }
 
-    Size CalcRel( const SwFormatFrmSize &rSz ) const;
+    Size CalcRel( const SwFormatFrameSize &rSz ) const;
     SwTwips CalcAutoWidth() const;
 
-    SwFlyFrm( SwFlyFrameFormat*, SwFrm*, SwFrm *pAnchor );
+    SwFlyFrame( SwFlyFrameFormat*, SwFrame*, SwFrame *pAnchor );
 
-    virtual void DestroyImpl() SAL_OVERRIDE;
-    virtual ~SwFlyFrm();
+    virtual void DestroyImpl() override;
+    virtual ~SwFlyFrame();
 
     /** method to assure that anchored object is registered at the correct
         page frame
     */
-    virtual void RegisterAtCorrectPage() SAL_OVERRIDE;
+    virtual void RegisterAtCorrectPage() override;
 
-    virtual bool _SetObjTop( const SwTwips _nTop ) SAL_OVERRIDE;
-    virtual bool _SetObjLeft( const SwTwips _nLeft ) SAL_OVERRIDE;
+    virtual bool _SetObjTop( const SwTwips _nTop ) override;
+    virtual bool _SetObjLeft( const SwTwips _nLeft ) override;
 
-    virtual const SwRect GetObjBoundRect() const SAL_OVERRIDE;
-    virtual void Modify( const SfxPoolItem*, const SfxPoolItem* ) SAL_OVERRIDE;
+    virtual const SwRect GetObjBoundRect() const override;
+    virtual void Modify( const SfxPoolItem*, const SfxPoolItem* ) override;
 
-    virtual const IDocumentDrawModelAccess& getIDocumentDrawModelAccess( ) SAL_OVERRIDE;
+    virtual const IDocumentDrawModelAccess& getIDocumentDrawModelAccess( ) override;
 
     SwTwips CalcContentHeight(const SwBorderAttrs *pAttrs, const SwTwips nMinHeight, const SwTwips nUL);
 
 public:
     // #i26791#
-    TYPEINFO_OVERRIDE();
 
     // get client information
-    virtual bool GetInfo( SfxPoolItem& ) const SAL_OVERRIDE;
+    virtual bool GetInfo( SfxPoolItem& ) const override;
     virtual void Paint( vcl::RenderContext& rRenderContext, SwRect const&,
-                        SwPrintData const*const pPrintData = NULL ) const SAL_OVERRIDE;
-    virtual Size ChgSize( const Size& aNewSize ) SAL_OVERRIDE;
-    virtual bool GetCrsrOfst( SwPosition *, Point&,
-                              SwCrsrMoveState* = 0, bool bTestBackground = false ) const SAL_OVERRIDE;
+                        SwPrintData const*const pPrintData = nullptr ) const override;
+    virtual Size ChgSize( const Size& aNewSize ) override;
+    virtual bool GetCursorOfst( SwPosition *, Point&,
+                              SwCursorMoveState* = nullptr, bool bTestBackground = false ) const override;
 
-    virtual void CheckDirection( bool bVert ) SAL_OVERRIDE;
-    virtual void Cut() SAL_OVERRIDE;
+    virtual void CheckDirection( bool bVert ) override;
+    virtual void Cut() override;
 #ifdef DBG_UTIL
-    virtual void Paste( SwFrm* pParent, SwFrm* pSibling = 0 ) SAL_OVERRIDE;
+    virtual void Paste( SwFrame* pParent, SwFrame* pSibling = nullptr ) override;
 #endif
 
     SwTwips _Shrink( SwTwips, bool bTst );
     SwTwips _Grow  ( SwTwips, bool bTst );
-    void    _Invalidate( SwPageFrm *pPage = 0 );
+    void    _Invalidate( SwPageFrame *pPage = nullptr );
 
-    bool FrmSizeChg( const SwFormatFrmSize & );
+    bool FrameSizeChg( const SwFormatFrameSize & );
 
-    SwFlyFrm *GetPrevLink() const { return pPrevLink; }
-    SwFlyFrm *GetNextLink() const { return pNextLink; }
+    SwFlyFrame *GetPrevLink() const { return m_pPrevLink; }
+    SwFlyFrame *GetNextLink() const { return m_pNextLink; }
 
-    static void ChainFrames( SwFlyFrm *pMaster, SwFlyFrm *pFollow );
-    static void UnchainFrames( SwFlyFrm *pMaster, SwFlyFrm *pFollow );
+    static void ChainFrames( SwFlyFrame *pMaster, SwFlyFrame *pFollow );
+    static void UnchainFrames( SwFlyFrame *pMaster, SwFlyFrame *pFollow );
 
-    SwFlyFrm *FindChainNeighbour( SwFrameFormat &rFormat, SwFrm *pAnch = 0 );
+    SwFlyFrame *FindChainNeighbour( SwFrameFormat &rFormat, SwFrame *pAnch = nullptr );
 
     // #i26791#
     const SwVirtFlyDrawObj* GetVirtDrawObj() const;
@@ -189,34 +188,34 @@ public:
     void NotifyDrawObj();
 
     void ChgRelPos( const Point &rAbsPos );
-    bool IsInvalid() const { return bInvalid; }
-    void Invalidate() const { const_cast<SwFlyFrm*>(this)->bInvalid = true; }
-    void Validate() const { const_cast<SwFlyFrm*>(this)->bInvalid = false; }
+    bool IsInvalid() const { return m_bInvalid; }
+    void Invalidate() const { const_cast<SwFlyFrame*>(this)->m_bInvalid = true; }
+    void Validate() const { const_cast<SwFlyFrame*>(this)->m_bInvalid = false; }
 
-    bool IsMinHeight()  const { return bMinHeight; }
-    bool IsLocked()     const { return bLocked; }
-    bool IsAutoPos()    const { return bAutoPosition; }
-    bool IsFlyInCntFrm() const { return bInCnt; }
-    bool IsFlyFreeFrm() const { return bAtCnt || bLayout; }
-    bool IsFlyLayFrm() const { return bLayout; }
-    bool IsFlyAtCntFrm() const { return bAtCnt; }
+    bool IsMinHeight()  const { return m_bMinHeight; }
+    bool IsLocked()     const { return m_bLocked; }
+    bool IsAutoPos()    const { return m_bAutoPosition; }
+    bool IsFlyInContentFrame() const { return m_bInCnt; }
+    bool IsFlyFreeFrame() const { return m_bAtCnt || m_bLayout; }
+    bool IsFlyLayFrame() const { return m_bLayout; }
+    bool IsFlyAtContentFrame() const { return m_bAtCnt; }
 
-    bool IsNotifyBack() const { return bNotifyBack; }
-    void SetNotifyBack()      { bNotifyBack = true; }
-    void ResetNotifyBack()    { bNotifyBack = false; }
-    bool IsNoShrink()   const { return bNoShrink; }
-    bool IsLockDeleteContent()  const { return bLockDeleteContent; }
+    bool IsNotifyBack() const { return m_bNotifyBack; }
+    void SetNotifyBack()      { m_bNotifyBack = true; }
+    void ResetNotifyBack()    { m_bNotifyBack = false; }
+    bool IsNoShrink()   const { return m_bNoShrink; }
+    bool IsLockDeleteContent()  const { return m_bLockDeleteContent; }
 
-    bool IsClipped()        const   { return bHeightClipped || bWidthClipped; }
-    bool IsHeightClipped()  const   { return bHeightClipped; }
+    bool IsClipped()        const   { return m_bHeightClipped || m_bWidthClipped; }
+    bool IsHeightClipped()  const   { return m_bHeightClipped; }
 
-    bool IsLowerOf( const SwLayoutFrm* pUpper ) const;
-    inline bool IsUpperOf( const SwFlyFrm& _rLower ) const
+    bool IsLowerOf( const SwLayoutFrame* pUpper ) const;
+    inline bool IsUpperOf( const SwFlyFrame& _rLower ) const
     {
         return _rLower.IsLowerOf( this );
     }
 
-    SwFrm *FindLastLower();
+    SwFrame *FindLastLower();
 
     // #i13147# - add parameter <_bForPaint> to avoid load of
     // the graphic during paint. Default value: false
@@ -226,7 +225,7 @@ public:
     // Paint on this shell (consider Preview, print flag, etc. recursively)?
     static bool IsPaint( SdrObject *pObj, const SwViewShell *pSh );
 
-    /** SwFlyFrm::IsBackgroundTransparent
+    /** SwFlyFrame::IsBackgroundTransparent
 
         determines if background of fly frame has to be drawn transparently
 
@@ -237,20 +236,20 @@ public:
     */
     bool IsBackgroundTransparent() const;
 
-    void Chain( SwFrm* _pAnchor );
+    void Chain( SwFrame* _pAnchor );
     void Unchain();
     void InsertCnt();
     void DeleteCnt();
     void InsertColumns();
 
     // #i26791# - pure virtual methods of base class <SwAnchoredObject>
-    virtual void MakeObjPos() SAL_OVERRIDE;
-    virtual void InvalidateObjPos() SAL_OVERRIDE;
+    virtual void MakeObjPos() override;
+    virtual void InvalidateObjPos() override;
 
-    virtual SwFrameFormat& GetFrameFormat() SAL_OVERRIDE;
-    virtual const SwFrameFormat& GetFrameFormat() const SAL_OVERRIDE;
+    virtual SwFrameFormat& GetFrameFormat() override;
+    virtual const SwFrameFormat& GetFrameFormat() const override;
 
-    virtual const SwRect GetObjRect() const SAL_OVERRIDE;
+    virtual const SwRect GetObjRect() const override;
 
     /** method to determine if a format on the Writer fly frame is possible
 
@@ -259,18 +258,18 @@ public:
         <SwAnchoredObject::IsFormatPossible()> by:
         format isn't possible, if Writer fly frame is locked resp. col-locked.
     */
-    virtual bool IsFormatPossible() const SAL_OVERRIDE;
+    virtual bool IsFormatPossible() const override;
     static void GetAnchoredObjects( std::list<SwAnchoredObject*>&, const SwFormat& rFormat );
 
-    // overwriting "SwFrameFormat *SwLayoutFrm::GetFormat" to provide the correct derived return type.
+    // overwriting "SwFrameFormat *SwLayoutFrame::GetFormat" to provide the correct derived return type.
     // (This is in order to skip on the otherwise necessary casting of the result to
     // 'SwFlyFrameFormat *' after calls to this function. The casting is now done in this function.)
-    virtual const SwFlyFrameFormat *GetFormat() const SAL_OVERRIDE;
-    virtual       SwFlyFrameFormat *GetFormat() SAL_OVERRIDE;
+    virtual const SwFlyFrameFormat *GetFormat() const override;
+    virtual       SwFlyFrameFormat *GetFormat() override;
 
-    virtual void dumpAsXml( xmlTextWriterPtr writer ) const SAL_OVERRIDE { SwLayoutFrm::dumpAsXml( writer ); };
+    virtual void dumpAsXml( xmlTextWriterPtr writer ) const override { SwLayoutFrame::dumpAsXml( writer ); };
 
-    virtual void Calc(vcl::RenderContext* pRenderContext) const SAL_OVERRIDE;
+    virtual void Calc(vcl::RenderContext* pRenderContext) const override;
 
     const Point& ContentPos() const { return m_aContentPos; }
     Point& ContentPos() { return m_aContentPos; }

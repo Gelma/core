@@ -26,13 +26,13 @@ class Transmitter
 {
 public:
     enum Priority { PRIORITY_LOW = 1, PRIORITY_HIGH };
-    Transmitter( ::sd::IBluetoothSocket* aSocket );
+    explicit Transmitter( ::sd::IBluetoothSocket* aSocket );
     virtual ~Transmitter();
     void addMessage( const OString& aMessage, const Priority aPriority );
     void notifyFinished();
 
 private:
-    virtual void SAL_CALL run() SAL_OVERRIDE;
+    virtual void SAL_CALL run() override;
 
     ::sd::IBluetoothSocket* pStreamSocket;
 

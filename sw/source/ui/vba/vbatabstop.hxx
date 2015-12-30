@@ -21,24 +21,18 @@
 
 #include <ooo/vba/word/XTabStop.hpp>
 #include <vbahelper/vbahelperinterface.hxx>
-#include <cppuhelper/implbase1.hxx>
-#include <com/sun/star/style/TabStop.hpp>
 
-typedef InheritedHelperInterfaceImpl1< ooo::vba::word::XTabStop > SwVbaTabStop_BASE;
+typedef InheritedHelperInterfaceWeakImpl< ooo::vba::word::XTabStop > SwVbaTabStop_BASE;
 
 class SwVbaTabStop : public SwVbaTabStop_BASE
 {
-private:
-    css::uno::Reference< css::beans::XPropertySet > mxParaProps;
-    css::style::TabStop maTabStop;
-
 public:
-    SwVbaTabStop( const css::uno::Reference< ooo::vba::XHelperInterface >& rParent, const css::uno::Reference< css::uno::XComponentContext >& rContext, const css::uno::Reference< css::beans::XPropertySet >& xParaProps, const css::style::TabStop& aTabStop ) throw ( css::uno::RuntimeException );
+    SwVbaTabStop( const css::uno::Reference< ooo::vba::XHelperInterface >& rParent, const css::uno::Reference< css::uno::XComponentContext >& rContext ) throw ( css::uno::RuntimeException );
     virtual ~SwVbaTabStop();
 
     // XHelperInterface
-    virtual OUString getServiceImplName() SAL_OVERRIDE;
-    virtual css::uno::Sequence<OUString> getServiceNames() SAL_OVERRIDE;
+    virtual OUString getServiceImplName() override;
+    virtual css::uno::Sequence<OUString> getServiceNames() override;
 };
 #endif // INCLUDED_SW_SOURCE_UI_VBA_VBATABSTOP_HXX
 

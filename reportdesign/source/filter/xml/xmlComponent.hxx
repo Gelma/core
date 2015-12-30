@@ -29,8 +29,7 @@ namespace rptxml
     class OXMLComponent : public SvXMLImportContext
     {
     protected:
-        ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportComponent >  m_xComponent;
-        OUString m_sName;
+        css::uno::Reference< css::report::XReportComponent >  m_xComponent;
         OUString m_sTextStyleName;
 
         OXMLComponent(const OXMLComponent&);
@@ -40,8 +39,8 @@ namespace rptxml
         OXMLComponent( ORptFilter& rImport
                     , sal_uInt16 nPrfx
                     ,const OUString& rLName
-                    ,const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList
-                    ,const ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportComponent >& _xComponent
+                    ,const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList
+                    ,const css::uno::Reference< css::report::XReportComponent >& _xComponent
                     );
         virtual ~OXMLComponent();
     };

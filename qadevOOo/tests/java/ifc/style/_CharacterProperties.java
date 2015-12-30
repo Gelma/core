@@ -256,7 +256,6 @@ public class _CharacterProperties extends MultiPropertyTest {
             changeProp((XPropertySet) oPara,
                 (XPropertySet) oPort,"RubyAdjust", aShort);
         }
-        Short.valueOf((short) 1);
     }
 
     /**
@@ -482,7 +481,7 @@ public class _CharacterProperties extends MultiPropertyTest {
         tRes.tested("TextUserDefinedAttributes", res);
     }
 
-    private class OwnUserDefinedAttributes implements XNameContainer{
+    private static class OwnUserDefinedAttributes implements XNameContainer{
         HashMap<String, Object> members = null;
 
 

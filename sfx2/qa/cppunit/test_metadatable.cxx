@@ -44,8 +44,8 @@ class MetadatableTest
     : public ::CppUnit::TestFixture
 {
 public:
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
     void test();
 
@@ -79,12 +79,11 @@ public:
     bool m_bInClipboard;
     bool m_bInUndo;
     bool m_bInContent;
-    virtual bool IsInClipboard() const SAL_OVERRIDE { return m_bInClipboard; }
-    virtual bool IsInUndo() const SAL_OVERRIDE { return m_bInUndo; }
-    virtual bool IsInContent() const SAL_OVERRIDE { return m_bInContent; }
-    virtual ::sfx2::IXmlIdRegistry& GetRegistry() SAL_OVERRIDE { return m_rRegistry; }
-    virtual ::com::sun::star::uno::Reference<
-        ::com::sun::star::rdf::XMetadatable > MakeUnoObject() SAL_OVERRIDE { return 0; }
+    virtual bool IsInClipboard() const override { return m_bInClipboard; }
+    virtual bool IsInUndo() const override { return m_bInUndo; }
+    virtual bool IsInContent() const override { return m_bInContent; }
+    virtual ::sfx2::IXmlIdRegistry& GetRegistry() override { return m_rRegistry; }
+    virtual css::uno::Reference< css::rdf::XMetadatable > MakeUnoObject() override { return nullptr; }
 };
 
 static bool operator==(beans::StringPair p1, beans::StringPair p2)

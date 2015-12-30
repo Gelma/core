@@ -209,7 +209,7 @@ endif
 
 gb_GenCObject_get_source = $(WORKDIR)/$(1).c
 
-$(call gb_GenCObject_get_target,%) :
+$(call gb_GenCObject_get_target,%) : $(gb_FORCE_COMPILE_ALL_TARGET)
 	$(call gb_Output_announce,$*.c,$(true),C  ,3)
 	test -f $(call gb_GenCObject_get_source,$*) || (echo "Missing generated source file $(call gb_GenCObject_get_source,$*)" && false)
 	$(call gb_CObject__command_pattern,$@,$(T_CFLAGS) $(T_CFLAGS_APPEND),$(call gb_GenCObject_get_source,$*),$(call gb_GenCObject_get_dep_target,$*),$(COMPILER_PLUGINS))
@@ -231,7 +231,7 @@ endif
 
 gb_GenCxxObject_get_source = $(WORKDIR)/$(1).$(gb_LinkTarget_CXX_SUFFIX_$(call gb_LinkTarget__get_workdir_linktargetname,$(2)))
 
-$(call gb_GenCxxObject_get_target,%) :
+$(call gb_GenCxxObject_get_target,%) : $(gb_FORCE_COMPILE_ALL_TARGET)
 	$(call gb_Output_announce,$(subst $(BUILDDIR)/,,$(GEN_CXX_SOURCE)),$(true),CXX,3)
 	test -f $(GEN_CXX_SOURCE) || (echo "Missing generated source file $(GEN_CXX_SOURCE)" && false)
 	$(eval $(gb_CxxObject__set_pchflags))
@@ -818,14 +818,17 @@ endef
 
 # libraries which are merged but need to be built for gb_BUILD_HELPER_TOOLS
 gb_BUILD_HELPER_LIBS := basegfx \
+	comphelper \
 	cppu \
 	cppuhelper \
+	i18nlangtag \
 	reg \
 	sal \
 	salhelper \
 	sax \
 	store \
 	tl \
+	ucbhelper \
 	unoidl \
 	xmlreader \
 
@@ -1318,9 +1321,11 @@ endef
 
 # Use artifacts from ExternalProject (i. e. configure) of an external project
 # example in expat: StaticLibrary depends on ExternalProject outcome
-# call gb_LinkTarget_use_external_project,linktarget,externalproject
+# call gb_LinkTarget_use_external_project,linktarget,externalproject,full-dep
 define gb_LinkTarget_use_external_project
-$(call gb_LinkTarget_get_headers_target,$(1)) :| $(call gb_ExternalProject_get_target,$(2))
+$(call gb_LinkTarget_get_target,$(1)) :| $(call gb_ExternalProject_get_target,$(2))
+$(call gb_LinkTarget_get_headers_target,$(1)) :| \
+    $(if $(3),$(call gb_ExternalProject_get_target,$(2)),$(call gb_UnpackedTarball_get_final_target,$(2)))
 
 endef
 

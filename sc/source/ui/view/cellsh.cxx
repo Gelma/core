@@ -62,7 +62,6 @@
 #define CellMovement
 #include "scslots.hxx"
 
-TYPEINIT1( ScCellShell, ScFormatShell );
 
 SFX_IMPL_INTERFACE(ScCellShell, ScFormatShell)
 
@@ -71,7 +70,7 @@ void ScCellShell::InitInterface_Impl()
     GetStaticInterface()->RegisterObjectBar(SFX_OBJECTBAR_OBJECT | SFX_VISIBILITY_STANDARD | SFX_VISIBILITY_SERVER,
                                             RID_OBJECTBAR_FORMAT);
 
-    GetStaticInterface()->RegisterPopupMenu(ScResId(RID_POPUP_CELLS));
+    GetStaticInterface()->RegisterPopupMenu("cell");
 }
 
 ScCellShell::ScCellShell(ScViewData* pData) :
@@ -80,7 +79,7 @@ ScCellShell::ScCellShell(ScViewData* pData) :
     bPastePossible(false)
 {
     SetHelpId(HID_SCSHELL_CELLSH);
-    SetName(OUString("Cell"));
+    SetName("Cell");
     SfxShell::SetContextName(sfx2::sidebar::EnumContext::GetContextName(sfx2::sidebar::EnumContext::Context_Cell));
 }
 
@@ -99,7 +98,6 @@ ScCellShell::~ScCellShell()
 
     delete pImpl->m_pLinkedDlg;
     delete pImpl->m_pRequest;
-    delete pImpl;
 }
 
 void ScCellShell::GetBlockState( SfxItemSet& rSet )
@@ -182,7 +180,7 @@ void ScCellShell::GetBlockState( SfxItemSet& rSet )
 
             case FID_FILL_SERIES:       // fill block
             case SID_OPENDLG_TABOP:     // multiple-cell operations, are at least 2 cells marked?
-                if (pDoc->GetChangeTrack()!=NULL &&nWhich ==SID_OPENDLG_TABOP)
+                if (pDoc->GetChangeTrack()!=nullptr &&nWhich ==SID_OPENDLG_TABOP)
                     bDisable = true;
                 else
                     bDisable = (!bSimpleArea) || (nCol1 == nCol2 && nRow1 == nRow2);
@@ -406,7 +404,7 @@ static bool lcl_TestFormat( SvxClipboardFormatItem& rFormats, const Transferable
 void ScCellShell::GetPossibleClipboardFormats( SvxClipboardFormatItem& rFormats )
 {
     vcl::Window* pWin = GetViewData()->GetActiveWin();
-    bool bDraw = ( ScDrawTransferObj::GetOwnClipboard( pWin ) != NULL );
+    bool bDraw = ( ScDrawTransferObj::GetOwnClipboard( pWin ) != nullptr );
 
     TransferableDataHelper aDataHelper( TransferableDataHelper::CreateFromSystemClipboard( pWin ) );
 
@@ -438,7 +436,7 @@ void ScCellShell::GetPossibleClipboardFormats( SvxClipboardFormatItem& rFormats 
 static bool lcl_IsCellPastePossible( const TransferableDataHelper& rData )
 {
     bool bPossible = false;
-    if ( ScTransferObj::GetOwnClipboard( NULL ) || ScDrawTransferObj::GetOwnClipboard( NULL ) )
+    if ( ScTransferObj::GetOwnClipboard( nullptr ) || ScDrawTransferObj::GetOwnClipboard( nullptr ) )
         bPossible = true;
     else
     {
@@ -876,7 +874,7 @@ void ScCellShell::GetState(SfxItemSet &rSet)
                     {
                         //! test for data pilot operation
                     }
-                    else if (pDoc->GetChangeTrack()!=NULL || GetViewData()->IsMultiMarked())
+                    else if (pDoc->GetChangeTrack()!=nullptr || GetViewData()->IsMultiMarked())
                     {
                         rSet.DisableItem( nWhich );
                     }
@@ -1030,7 +1028,7 @@ void ScCellShell::GetState(SfxItemSet &rSet)
             case SID_OPENDLG_CONSOLIDATE:
             case SCITEM_CONSOLIDATEDATA:
                 {
-                    if(pDoc->GetChangeTrack()!=NULL)
+                    if(pDoc->GetChangeTrack()!=nullptr)
                                 rSet.DisableItem( nWhich);
                 }
                 break;
@@ -1070,11 +1068,11 @@ void ScCellShell::GetState(SfxItemSet &rSet)
                     if ( pDoc && pData && pDoc->IsTabProtected( pData->GetTabNo() ) )
                     {
                         bool bVisible = false;
-                        SfxViewFrame* pViewFrame = ( pTabViewShell ? pTabViewShell->GetViewFrame() : NULL );
+                        SfxViewFrame* pViewFrame = ( pTabViewShell ? pTabViewShell->GetViewFrame() : nullptr );
                         if ( pViewFrame && pViewFrame->HasChildWindow( nWhich ) )
                         {
                             SfxChildWindow* pChild = pViewFrame->GetChildWindow( nWhich );
-                            vcl::Window* pWin = ( pChild ? pChild->GetWindow() : NULL );
+                            vcl::Window* pWin = ( pChild ? pChild->GetWindow() : nullptr );
                             if ( pWin && pWin->IsVisible() )
                             {
                                 bVisible = true;

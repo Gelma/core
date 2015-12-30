@@ -67,7 +67,7 @@ namespace pcr
                                 m_pPropertyInfo;
 
     public:
-        InspectorModelProperties( ::osl::Mutex& _rMutex );
+        explicit InspectorModelProperties( ::osl::Mutex& _rMutex );
 
         using ::comphelper::OPropertyContainerHelper::convertFastPropertyValue;
         using ::comphelper::OPropertyContainerHelper::setFastPropertyValue;
@@ -79,7 +79,7 @@ namespace pcr
         inline  sal_Int32   getMinHelpTextLines() const { return m_nMinHelpTextLines; }
         inline  sal_Int32   getMaxHelpTextLines() const { return m_nMaxHelpTextLines; }
 
-        ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySetInfo >
+        css::uno::Reference< css::beans::XPropertySetInfo >
                             getPropertySetInfo();
         ::cppu::IPropertyArrayHelper&
                             getInfoHelper();
@@ -99,25 +99,25 @@ namespace pcr
         ,m_bIsReadOnly( false )
     {
         registerProperty(
-            OUString( "HasHelpSection" ),
+            "HasHelpSection",
             MODEL_PROPERTY_ID_HAS_HELP_SECTION,
             PropertyAttribute::READONLY,
             &m_bHasHelpSection, cppu::UnoType<decltype(m_bHasHelpSection)>::get()
         );
         registerProperty(
-            OUString( "MinHelpTextLines" ),
+            "MinHelpTextLines",
             MODEL_PROPERTY_ID_MIN_HELP_TEXT_LINES,
             PropertyAttribute::READONLY,
             &m_nMinHelpTextLines, cppu::UnoType<decltype(m_nMinHelpTextLines)>::get()
         );
         registerProperty(
-            OUString( "MaxHelpTextLines" ),
+            "MaxHelpTextLines",
             MODEL_PROPERTY_ID_MAX_HELP_TEXT_LINES,
             PropertyAttribute::READONLY,
             &m_nMaxHelpTextLines, cppu::UnoType<decltype(m_nMaxHelpTextLines)>::get()
         );
         registerProperty(
-            OUString( "IsReadOnly" ),
+            "IsReadOnly",
             MODEL_PROPERTY_ID_IS_READ_ONLY,
             PropertyAttribute::BOUND,
             &m_bIsReadOnly, cppu::UnoType<decltype(m_bIsReadOnly)>::get()
@@ -138,7 +138,7 @@ namespace pcr
     ::cppu::IPropertyArrayHelper& InspectorModelProperties::getInfoHelper()
     {
         ::osl::MutexGuard aGuard( m_rMutex );
-        if ( m_pPropertyInfo.get() == NULL )
+        if ( m_pPropertyInfo.get() == nullptr )
         {
             Sequence< Property > aProperties;
             describeProperties( aProperties );
@@ -223,13 +223,13 @@ namespace pcr
     }
 
 
-    sal_Bool SAL_CALL ImplInspectorModel::getIsReadOnly() throw (::com::sun::star::uno::RuntimeException, std::exception)
+    sal_Bool SAL_CALL ImplInspectorModel::getIsReadOnly() throw (css::uno::RuntimeException, std::exception)
     {
         return m_pProperties->isReadOnly();
     }
 
 
-    void SAL_CALL ImplInspectorModel::setIsReadOnly( sal_Bool _IsReadOnly ) throw (::com::sun::star::uno::RuntimeException, std::exception)
+    void SAL_CALL ImplInspectorModel::setIsReadOnly( sal_Bool _IsReadOnly ) throw (css::uno::RuntimeException, std::exception)
     {
         setFastPropertyValue( MODEL_PROPERTY_ID_IS_READ_ONLY, makeAny( _IsReadOnly ) );
     }

@@ -60,9 +60,9 @@ void PropBrw::Update( const SfxViewShell* pShell )
     if (pIdeShell)
         ImplUpdate(pIdeShell->GetCurrentDocument(), pIdeShell->GetCurDlgView());
     else if (pShell)
-        ImplUpdate(NULL, pShell->GetDrawView());
+        ImplUpdate(nullptr, pShell->GetDrawView());
     else
-        ImplUpdate(NULL, NULL);
+        ImplUpdate(nullptr, nullptr);
 }
 
 
@@ -83,7 +83,7 @@ PropBrw::PropBrw (DialogWindowLayout& rLayout_):
     DockingWindow(&rLayout_),
     m_bInitialStateChange(true),
     m_xContextDocument(SfxViewShell::Current() ? SfxViewShell::Current()->GetCurrentDocument() : Reference<XModel>()),
-    pView(0)
+    pView(nullptr)
 {
     Size aPropWinSize(STD_WIN_SIZE_X,STD_WIN_SIZE_Y);
     SetMinOutputSizePixel(Size(STD_MIN_SIZE_X,STD_MIN_SIZE_Y));
@@ -131,9 +131,7 @@ void PropBrw::ImplReCreateController()
         // create a property browser controller
         Reference< XMultiComponentFactory > xFactory( xInspectorContext->getServiceManager(), UNO_QUERY_THROW );
         static const char s_sControllerServiceName[] = "com.sun.star.awt.PropertyBrowserController";
-        m_xBrowserController = Reference< XPropertySet >(
-            xFactory->createInstanceWithContext( s_sControllerServiceName, xInspectorContext ), UNO_QUERY
-        );
+        m_xBrowserController.set( xFactory->createInstanceWithContext( s_sControllerServiceName, xInspectorContext ), UNO_QUERY );
         if ( !m_xBrowserController.is() )
         {
             ShowServiceNotAvailableError( GetParent(), s_sControllerServiceName, true );
@@ -206,11 +204,11 @@ void PropBrw::ImplDestroyController()
     implSetNewObject( Reference< XPropertySet >() );
 
     if ( m_xMeAsFrame.is() )
-        m_xMeAsFrame->setComponent( NULL, NULL );
+        m_xMeAsFrame->setComponent( nullptr, nullptr );
 
     Reference< XController > xAsXController( m_xBrowserController, UNO_QUERY );
     if ( xAsXController.is() )
-        xAsXController->attachFrame( NULL );
+        xAsXController->attachFrame( nullptr );
 
     try
     {
@@ -251,7 +249,7 @@ Sequence< Reference< XInterface > >
         if (pCurrent->IsGroupObject())
         {
             pGroupIterator.reset(new SdrObjListIter(*pCurrent->GetSubList()));
-            pCurrent = pGroupIterator->IsMore() ? pGroupIterator->Next() : NULL;
+            pCurrent = pGroupIterator->IsMore() ? pGroupIterator->Next() : nullptr;
         }
 
         while (pCurrent)
@@ -264,7 +262,7 @@ Sequence< Reference< XInterface > >
             }
 
             // next element
-            pCurrent = pGroupIterator && pGroupIterator->IsMore() ? pGroupIterator->Next() : NULL;
+            pCurrent = pGroupIterator && pGroupIterator->IsMore() ? pGroupIterator->Next() : nullptr;
         }
     }
 
@@ -460,7 +458,7 @@ void PropBrw::ImplUpdate( const Reference< XModel >& _rxContextDocument, SdrView
         if ( pView )
         {
             EndListening( *(pView->GetModel()) );
-            pView = NULL;
+            pView = nullptr;
         }
 
         if ( !pNewView )
@@ -482,8 +480,8 @@ void PropBrw::ImplUpdate( const Reference< XModel >& _rxContextDocument, SdrView
         if ( nMarkCount == 0 )
         {
             EndListening( *(pView->GetModel()) );
-            pView = NULL;
-            implSetNewObject( NULL );
+            pView = nullptr;
+            implSetNewObject( nullptr );
             return;
         }
 

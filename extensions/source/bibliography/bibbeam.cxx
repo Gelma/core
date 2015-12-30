@@ -77,27 +77,25 @@ namespace bib
             Reference< awt::XControlModel >     m_xGridModel;
             Reference< awt::XControl >          m_xControl;
             Reference< awt::XControlContainer > m_xControlContainer;
-            // #100312#
             Reference< frame::XDispatchProviderInterception> m_xDispatchProviderInterception;
 
     protected:
 
-            virtual void        Resize() SAL_OVERRIDE;
+            virtual void        Resize() override;
 
     public:
 
             BibGridwin(vcl::Window* pParent, WinBits nStyle = WB_3DLOOK );
             virtual ~BibGridwin();
-            virtual void dispose() SAL_OVERRIDE;
+            virtual void dispose() override;
 
             void createGridWin(const Reference< awt::XControlModel > & xDbForm);
             void disposeGridWin();
 
             const Reference< awt::XControlContainer >& getControlContainer() const { return m_xControlContainer; }
-            // #100312#
             const Reference< frame::XDispatchProviderInterception>& getDispatchProviderInterception() const { return m_xDispatchProviderInterception; }
 
-            virtual void GetFocus() SAL_OVERRIDE;
+            virtual void GetFocus() override;
     };
 
     BibGridwin::BibGridwin( vcl::Window* _pParent, WinBits _nStyle ) : Window( _pParent, _nStyle )
@@ -147,7 +145,7 @@ namespace bib
                     OUString aControlName;
                     aAny >>= aControlName;
 
-                    m_xControl = Reference< awt::XControl > ( xContext->getServiceManager()->createInstanceWithContext(aControlName, xContext), UNO_QUERY_THROW );
+                    m_xControl.set( xContext->getServiceManager()->createInstanceWithContext(aControlName, xContext), UNO_QUERY_THROW );
                     m_xControl->setModel( m_xGridModel );
                 }
 
@@ -155,9 +153,8 @@ namespace bib
                 {
                     // Peer as Child to the FrameWindow
                     m_xControlContainer->addControl("GridControl", m_xControl);
-                    m_xGridWin=uno::Reference< awt::XWindow > (m_xControl, UNO_QUERY );
-                    // #100312#
-                    m_xDispatchProviderInterception=uno::Reference< frame::XDispatchProviderInterception > (m_xControl, UNO_QUERY );
+                    m_xGridWin.set(m_xControl, UNO_QUERY );
+                    m_xDispatchProviderInterception.set(m_xControl, UNO_QUERY );
                     m_xGridWin->setVisible( sal_True );
                     m_xControl->setDesignMode( sal_True );
                     // initially switch on the design mode - switch it off _after_ loading the form
@@ -174,8 +171,8 @@ namespace bib
         if ( m_xControl.is() )
         {
             Reference< awt::XControl > xDel( m_xControl );
-            m_xControl = NULL;
-            m_xGridWin = NULL;
+            m_xControl = nullptr;
+            m_xGridWin = nullptr;
 
             m_xControlContainer->removeControl( xDel );
             xDel->dispose();
@@ -191,8 +188,8 @@ namespace bib
     BibBeamer::BibBeamer( vcl::Window* _pParent, BibDataManager* _pDM, WinBits _nStyle )
         :BibSplitWindow( _pParent, _nStyle | WB_NOSPLITDRAW )
         ,pDatMan( _pDM )
-        ,pToolBar( NULL )
-        ,pGridWin( NULL )
+        ,pToolBar( nullptr )
+        ,pGridWin( nullptr )
     {
         createToolBar();
         createGridWin();
@@ -215,7 +212,7 @@ namespace bib
             m_xToolBarRef->dispose();
 
         if ( pToolBar )
-            pDatMan->SetToolbar(0);
+            pDatMan->SetToolbar(nullptr);
 
         pToolBar.disposeAndClear();
         pGridWin.disposeAndClear();
@@ -248,7 +245,6 @@ namespace bib
         return xReturn;
     }
 
-    // #100312#
     Reference< frame::XDispatchProviderInterception > BibBeamer::getDispatchProviderInterception()
     {
         Reference< frame::XDispatchProviderInterception > xReturn;

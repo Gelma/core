@@ -65,36 +65,32 @@ const XMLServiceMapEntry_Impl aServiceMap[] =
     SERVICE_MAP_ENTRY( GRAPHICS, DRAW ),
     SERVICE_MAP_ENTRY( PRESENTATION, IMPRESS ),
     SERVICE_MAP_ENTRY( CHART, CHART ),
-    { XML_TOKEN_INVALID, 0, 0 }
+    { XML_TOKEN_INVALID, nullptr, 0 }
 };
 
 class XMLEmbeddedObjectImportContext_Impl : public SvXMLImportContext
 {
-    ::com::sun::star::uno::Reference<
-        ::com::sun::star::xml::sax::XDocumentHandler > xHandler;
+    css::uno::Reference< css::xml::sax::XDocumentHandler > xHandler;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     XMLEmbeddedObjectImportContext_Impl( SvXMLImport& rImport, sal_uInt16 nPrfx,
                                     const OUString& rLName,
-    const ::com::sun::star::uno::Reference<
-        ::com::sun::star::xml::sax::XDocumentHandler >& rHandler );
+    const css::uno::Reference< css::xml::sax::XDocumentHandler >& rHandler );
 
     virtual ~XMLEmbeddedObjectImportContext_Impl();
 
     virtual SvXMLImportContext *CreateChildContext( sal_uInt16 nPrefix,
                                    const OUString& rLocalName,
-                                   const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+                                   const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
 
-    virtual void StartElement( const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList >& xAttrList ) SAL_OVERRIDE;
+    virtual void StartElement( const css::uno::Reference< css::xml::sax::XAttributeList >& xAttrList ) override;
 
-    virtual void EndElement() SAL_OVERRIDE;
+    virtual void EndElement() override;
 
-    virtual void Characters( const OUString& rChars ) SAL_OVERRIDE;
+    virtual void Characters( const OUString& rChars ) override;
 };
 
-TYPEINIT1( XMLEmbeddedObjectImportContext_Impl, SvXMLImportContext );
 
 XMLEmbeddedObjectImportContext_Impl::XMLEmbeddedObjectImportContext_Impl(
         SvXMLImport& rImport, sal_uInt16 nPrfx,
@@ -138,7 +134,6 @@ void XMLEmbeddedObjectImportContext_Impl::Characters( const OUString& rChars )
     xHandler->characters( rChars );
 }
 
-TYPEINIT1( XMLEmbeddedObjectImportContext, SvXMLImportContext );
 
 bool XMLEmbeddedObjectImportContext::SetComponent(
         Reference< XComponent >& rComp )
@@ -150,7 +145,7 @@ bool XMLEmbeddedObjectImportContext::SetComponent(
 
     Reference< XComponentContext > xContext( GetImport().GetComponentContext() );
 
-    xHandler = Reference < XDocumentHandler >(
+    xHandler.set(
         xContext->getServiceManager()->createInstanceWithArgumentsAndContext(sFilterService, aArgs, xContext),
         UNO_QUERY);
 
@@ -213,7 +208,7 @@ XMLEmbeddedObjectImportContext::XMLEmbeddedObjectImportContext(
             "application/x-vnd.oasis.openoffice.",
             "application/vnd.oasis.opendocument.",
             "application/x-vnd.oasis.opendocument.",
-            NULL
+            nullptr
         };
         for (int k=0; aTmp[k]; k++)
         {

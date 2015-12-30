@@ -81,10 +81,10 @@ public:
     LwpSuperTable(LwpObjectHeader &objHdr, LwpSvStream* pStrm);
     virtual ~LwpSuperTable();
 
-    virtual void Parse(IXFStream* pOutputStream) SAL_OVERRIDE;
-    virtual void XFConvert(XFContentContainer* pCont) SAL_OVERRIDE;
+    virtual void Parse(IXFStream* pOutputStream) override;
+    virtual void XFConvert(XFContentContainer* pCont) override;
 protected:
-    void Read() SAL_OVERRIDE;
+    void Read() override;
 };
 /**
  * @brief
@@ -113,20 +113,20 @@ public:
     LwpTable(LwpObjectHeader &objHdr, LwpSvStream* pStrm);
     virtual ~LwpTable();
 
-    virtual void Parse(IXFStream* pOutputStream) SAL_OVERRIDE;
+    virtual void Parse(IXFStream* pOutputStream) override;
     double GetWidth() {return LwpTools::ConvertFromUnitsToMetric(m_nWidth);}
     double GetHeight() {return LwpTools::ConvertFromUnitsToMetric(m_nHeight);}
     LwpObjectID& GetDefaultCellStyle() {return m_DefaultCellStyle;}
     sal_uInt16 GetRow() {return m_nRow;}
     sal_uInt16 GetColumn() {return m_nColumn;}
-    LwpTableLayout * GetTableLayout(){return static_cast<LwpTableLayout *>(GetLayout(NULL));}
+    rtl::Reference<LwpTableLayout> GetTableLayout()
+    {
+        return rtl::Reference<LwpTableLayout>(dynamic_cast<LwpTableLayout*>(GetLayout(nullptr).get()));
+    }
     bool IsNumberDown();
-    virtual bool IsTable() SAL_OVERRIDE { return true;}
+    virtual bool IsTable() override { return true;}
     LwpSuperTableLayout* GetSuperTableLayout();
 protected:
-    LwpDLVListHeadTail m_RowCache;
-    LwpDLVListHeadTail m_ColumnCache;
-    LwpNotifyListPersistent m_CPTempVersionedNotifyList;
     LwpForkedNotifyList m_CPNotifyList;
 
     sal_uInt16      m_nRow, m_nColumn;
@@ -143,7 +143,7 @@ protected:
 
     LwpObjectID     m_Layout;
     LwpObjectID     m_DefaultCellStyle; // gCVirtualLayout
-    void Read() SAL_OVERRIDE;
+    void Read() override;
 };
 
 /**
@@ -156,9 +156,9 @@ public:
     LwpTableHeading(LwpObjectHeader &objHdr, LwpSvStream* pStrm);
     virtual ~LwpTableHeading();
 
-    virtual void Parse(IXFStream* pOutputStream) SAL_OVERRIDE;
+    virtual void Parse(IXFStream* pOutputStream) override;
 protected:
-    void Read() SAL_OVERRIDE;
+    void Read() override;
 
 };
 class LwpParallelColumns : public LwpTable
@@ -167,7 +167,7 @@ public:
     LwpParallelColumns(LwpObjectHeader &objHdr, LwpSvStream* pStrm);
     virtual ~LwpParallelColumns();
 protected:
-    void Read() SAL_OVERRIDE;
+    void Read() override;
     LwpObjectID     cDefaultLeftColumnStyle;
     LwpObjectID cDefaultRightColumnStyle;
 };
@@ -178,7 +178,7 @@ public:
     LwpGlossary(LwpObjectHeader &objHdr, LwpSvStream* pStrm);
     virtual ~LwpGlossary();
 protected:
-    void Read() SAL_OVERRIDE;
+    void Read() override;
     sal_uInt16 GetNumIndexRows();
 };
 

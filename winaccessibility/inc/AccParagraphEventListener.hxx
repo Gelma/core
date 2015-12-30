@@ -35,17 +35,17 @@
 class AccParagraphEventListener: public AccContainerEventListener
 {
 public:
-    AccParagraphEventListener(com::sun::star::accessibility::XAccessible* pAcc, AccObjectManagerAgent* Agent);
+    AccParagraphEventListener(css::accessibility::XAccessible* pAcc, AccObjectManagerAgent* Agent);
     virtual ~AccParagraphEventListener();
 
     //AccessibleEventListener
-    virtual void SAL_CALL notifyEvent( const ::com::sun::star::accessibility::AccessibleEventObject& aEvent ) throw (::com::sun::star::uno::RuntimeException);
+    virtual void SAL_CALL notifyEvent( const css::accessibility::AccessibleEventObject& aEvent ) throw (css::uno::RuntimeException) override;
 
     //for caret changed event
     virtual void HandleCaretChangedEvent(
             css::uno::Any oldValue, css::uno::Any newValue);
 
-    virtual void SetComponentState(short state, bool enable) SAL_OVERRIDE;
+    virtual void SetComponentState(short state, bool enable) override;
 
     //add TEXT_SELECTION_CHANGED event
     void HandleTextSelectionChangedEvent();

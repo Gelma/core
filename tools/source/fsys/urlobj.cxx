@@ -289,7 +289,6 @@ struct INetURLObject::SchemeInfo
 {
     sal_Char const * m_pScheme;
     sal_Char const * m_pPrefix;
-    sal_uInt16 m_nDefaultPort;
     bool m_bAuthority;
     bool m_bUser;
     bool m_bAuth;
@@ -316,89 +315,89 @@ INetURLObject::getSchemeInfo(INetProtocol eTheScheme)
 {
     static o3tl::enumarray<INetProtocol, SchemeInfo> const map = {
         SchemeInfo{
-            "", "", 0, false, false, false, false, false, false, false, false},
+            "", "", false, false, false, false, false, false, false, false},
         SchemeInfo{
-            "ftp", "ftp://", 21, true, true, false, true, true, true, true,
+            "ftp", "ftp://", true, true, false, true, true, true, true,
             false},
         SchemeInfo{
-            "http", "http://", 80, true, false, false, false, true, true, true,
+            "http", "http://", true, false, false, false, true, true, true,
             true},
         SchemeInfo{
-            "file", "file://", 0, true, false, false, false, true, false, true,
+            "file", "file://", true, false, false, false, true, false, true,
             false},
         SchemeInfo{
-            "mailto", "mailto:", 0, false, false, false, false, false, false,
+            "mailto", "mailto:", false, false, false, false, false, false,
             false, true},
         SchemeInfo{
-            "vnd.sun.star.webdav", "vnd.sun.star.webdav://", 80, true, false,
+            "vnd.sun.star.webdav", "vnd.sun.star.webdav://", true, false,
             false, false, true, true, true, true},
         SchemeInfo{
-            "private", "private:", 0, false, false, false, false, false, false,
+            "private", "private:", false, false, false, false, false, false,
             false, true},
         SchemeInfo{
-            "vnd.sun.star.help", "vnd.sun.star.help://", 0, true, false, false,
+            "vnd.sun.star.help", "vnd.sun.star.help://", true, false, false,
             false, false, false, true, true},
         SchemeInfo{
-            "https", "https://", 443, true, false, false, false, true, true,
+            "https", "https://", true, false, false, false, true, true,
             true, true},
         SchemeInfo{
-            "slot", "slot:", 0, false, false, false, false, false, false, false,
+            "slot", "slot:", false, false, false, false, false, false, false,
             true},
         SchemeInfo{
-            "macro", "macro:", 0, false, false, false, false, false, false,
+            "macro", "macro:", false, false, false, false, false, false,
             false, true},
         SchemeInfo{
-            "javascript", "javascript:", 0, false, false, false, false, false,
+            "javascript", "javascript:", false, false, false, false, false,
             false, false, false},
         SchemeInfo{
-            "data", "data:", 0, false, false, false, false, false, false, false,
+            "data", "data:", false, false, false, false, false, false, false,
             false},
         SchemeInfo{
-            "cid", "cid:", 0, false, false, false, false, false, false, false,
+            "cid", "cid:", false, false, false, false, false, false, false,
             false},
         SchemeInfo{
-            "vnd.sun.star.hier", "vnd.sun.star.hier:", 0, true, false, false,
+            "vnd.sun.star.hier", "vnd.sun.star.hier:", true, false, false,
             false, false, false, true, false},
         SchemeInfo{
-            ".uno", ".uno:", 0, false, false, false, false, false, false, false,
+            ".uno", ".uno:", false, false, false, false, false, false, false,
             true},
         SchemeInfo{
-            ".component", ".component:", 0, false, false, false, false, false,
+            ".component", ".component:", false, false, false, false, false,
             false, false, true},
         SchemeInfo{
-            "vnd.sun.star.pkg", "vnd.sun.star.pkg://", 0, true, false, false,
+            "vnd.sun.star.pkg", "vnd.sun.star.pkg://", true, false, false,
             false, false, false, true, true},
         SchemeInfo{
-            "ldap", "ldap://", 389, true, false, false, false, true, true,
+            "ldap", "ldap://", true, false, false, false, true, true,
             false, true},
         SchemeInfo{
-            "db", "db:", 0, false, false, false, false, false, false, false,
+            "db", "db:", false, false, false, false, false, false, false,
             false},
         SchemeInfo{
-            "vnd.sun.star.cmd", "vnd.sun.star.cmd:", 0, false, false, false,
+            "vnd.sun.star.cmd", "vnd.sun.star.cmd:", false, false, false,
             false, false, false, false, false},
         SchemeInfo{
-            "telnet", "telnet://", 23, true, true, false, true, true, true,
+            "telnet", "telnet://", true, true, false, true, true, true,
             true, false},
         SchemeInfo{
-            "vnd.sun.star.expand", "vnd.sun.star.expand:", 0, false, false,
+            "vnd.sun.star.expand", "vnd.sun.star.expand:", false, false,
             false, false, false, false, false, false},
         SchemeInfo{
-            "vnd.sun.star.tdoc", "vnd.sun.star.tdoc:", 0, false, false, false,
+            "vnd.sun.star.tdoc", "vnd.sun.star.tdoc:", false, false, false,
             false, false, false, true, false},
         SchemeInfo{
-            "", "", 0, false, false, false, false, true, true, true, false },
+            "", "", false, false, false, false, true, true, true, false },
         SchemeInfo{
-            "smb", "smb://", 139, true, true, false, true, true, true, true,
+            "smb", "smb://", true, true, false, true, true, true, true,
             true},
         SchemeInfo{
-            "hid", "hid:", 0, false, false, false, false, false, false, false,
+            "hid", "hid:", false, false, false, false, false, false, false,
             true},
         SchemeInfo{
-            "sftp", "sftp://", 22, true, true, false, true, true, true, true,
+            "sftp", "sftp://", true, true, false, true, true, true, true,
             true},
         SchemeInfo{
-            "vnd.libreoffice.cmis", "vnd.libreoffice.cmis://", 0, true, true,
+            "vnd.libreoffice.cmis", "vnd.libreoffice.cmis://", true, true,
             false, false, true, false, true, true} };
     return map[eTheScheme];
 };
@@ -585,8 +584,8 @@ std::unique_ptr<SvMemoryStream> INetURLObject::getData()
     }
 
     OUString sURLPath = GetURLPath( DECODE_WITH_CHARSET, RTL_TEXTENCODING_ISO_8859_1 );
-    sal_Unicode const * pSkippedMediatype = INetMIME::scanContentType( sURLPath.getStr(), sURLPath.getStr() + sURLPath.getLength(), NULL, NULL, NULL );
-    sal_Int32 nCharactersSkipped = pSkippedMediatype == NULL
+    sal_Unicode const * pSkippedMediatype = INetMIME::scanContentType( sURLPath.getStr(), sURLPath.getStr() + sURLPath.getLength() );
+    sal_Int32 nCharactersSkipped = pSkippedMediatype == nullptr
         ? 0 : pSkippedMediatype-sURLPath.getStr();
     if (sURLPath.match(",", nCharactersSkipped))
     {
@@ -785,7 +784,7 @@ bool INetURLObject::setAbsURIRef(OUString const & rTheAbsURIRef,
                 if (
                     parseHostOrNetBiosName(
                         p1, pe, bOctets, ENCODE_ALL, RTL_TEXTENCODING_DONTKNOW,
-                        true, NULL) ||
+                        true, nullptr) ||
                     (scanDomain(p1, pe) > 0 && p1 == pe)
                    )
                 {
@@ -856,10 +855,10 @@ bool INetURLObject::setAbsURIRef(OUString const & rTheAbsURIRef,
     // //<reg_name>
     if (getSchemeInfo().m_bAuthority)
     {
-        sal_Unicode const * pUserInfoBegin = 0;
-        sal_Unicode const * pUserInfoEnd = 0;
-        sal_Unicode const * pHostPortBegin = 0;
-        sal_Unicode const * pHostPortEnd = 0;
+        sal_Unicode const * pUserInfoBegin = nullptr;
+        sal_Unicode const * pUserInfoEnd = nullptr;
+        sal_Unicode const * pHostPortBegin = nullptr;
+        sal_Unicode const * pHostPortEnd = nullptr;
 
         switch (m_eScheme)
         {
@@ -1028,7 +1027,7 @@ bool INetURLObject::setAbsURIRef(OUString const & rTheAbsURIRef,
                         }
                         if (parseHostOrNetBiosName(
                                 pPos + 2, p1, bOctets, ENCODE_ALL,
-                                RTL_TEXTENCODING_DONTKNOW, true, NULL))
+                                RTL_TEXTENCODING_DONTKNOW, true, nullptr))
                         {
                             aSynAbsURIRef.append("//");
                             pHostPortBegin = pPos + 2;
@@ -1097,7 +1096,7 @@ bool INetURLObject::setAbsURIRef(OUString const & rTheAbsURIRef,
                         if (
                              parseHostOrNetBiosName(
                                 p1, pe, bOctets, ENCODE_ALL,
-                                RTL_TEXTENCODING_DONTKNOW, true, NULL) ||
+                                RTL_TEXTENCODING_DONTKNOW, true, nullptr) ||
                              (scanDomain(p1, pe) > 0 && p1 == pe)
                            )
                         {
@@ -1485,7 +1484,7 @@ bool INetURLObject::convertRelToAbs(OUString const & rTheRelURIRef,
 
     sal_Unicode const * pPrefixBegin = p;
     PrefixInfo const * pPrefix = getPrefix(pPrefixBegin, pEnd);
-    bool hasScheme = pPrefix != 0;
+    bool hasScheme = pPrefix != nullptr;
     if (!hasScheme) {
         pPrefixBegin = p;
         hasScheme = !parseScheme(&pPrefixBegin, pEnd, '#').isEmpty();
@@ -1535,7 +1534,7 @@ bool INetURLObject::convertRelToAbs(OUString const & rTheRelURIRef,
                 sal_Unicode const * qe = n == -1 ? pEnd : q + n;
                 if (parseHostOrNetBiosName(
                         q, qe, bOctets, ENCODE_ALL, RTL_TEXTENCODING_DONTKNOW,
-                        true, NULL))
+                        true, nullptr))
                 {
                     bFSys = true; // 1st
                 }
@@ -1926,7 +1925,7 @@ bool INetURLObject::convertAbsToRel(OUString const & rTheAbsURIRef,
 
     // Make nMatch point past the last matching slash, or past the end of the
     // paths, in case they are equal:
-    sal_Unicode const * pSlash = 0;
+    sal_Unicode const * pSlash = nullptr;
     sal_Unicode const * p1 = pBasePathBegin;
     sal_Unicode const * p2 = pSubjectPathBegin;
     for (;;)
@@ -2080,25 +2079,25 @@ INetURLObject::PrefixInfo const * INetURLObject::getPrefix(sal_Unicode const *& 
 {
     static PrefixInfo const aMap[]
         = { // dummy entry at front needed, because pLast may point here:
-            { 0, 0, INetProtocol::NotValid, PrefixInfo::INTERNAL },
+            { nullptr, nullptr, INetProtocol::NotValid, PrefixInfo::INTERNAL },
             { ".component:", "staroffice.component:", INetProtocol::Component,
               PrefixInfo::INTERNAL },
             { ".uno:", "staroffice.uno:", INetProtocol::Uno,
               PrefixInfo::INTERNAL },
-            { "cid:", 0, INetProtocol::Cid, PrefixInfo::OFFICIAL },
-            { "data:", 0, INetProtocol::Data, PrefixInfo::OFFICIAL },
+            { "cid:", nullptr, INetProtocol::Cid, PrefixInfo::OFFICIAL },
+            { "data:", nullptr, INetProtocol::Data, PrefixInfo::OFFICIAL },
             { "db:", "staroffice.db:", INetProtocol::Db, PrefixInfo::INTERNAL },
-            { "file:", 0, INetProtocol::File, PrefixInfo::OFFICIAL },
-            { "ftp:", 0, INetProtocol::Ftp, PrefixInfo::OFFICIAL },
+            { "file:", nullptr, INetProtocol::File, PrefixInfo::OFFICIAL },
+            { "ftp:", nullptr, INetProtocol::Ftp, PrefixInfo::OFFICIAL },
             { "hid:", "staroffice.hid:", INetProtocol::Hid,
               PrefixInfo::INTERNAL },
-            { "http:", 0, INetProtocol::Http, PrefixInfo::OFFICIAL },
-            { "https:", 0, INetProtocol::Https, PrefixInfo::OFFICIAL },
-            { "javascript:", 0, INetProtocol::Javascript, PrefixInfo::OFFICIAL },
-            { "ldap:", 0, INetProtocol::Ldap, PrefixInfo::OFFICIAL },
+            { "http:", nullptr, INetProtocol::Http, PrefixInfo::OFFICIAL },
+            { "https:", nullptr, INetProtocol::Https, PrefixInfo::OFFICIAL },
+            { "javascript:", nullptr, INetProtocol::Javascript, PrefixInfo::OFFICIAL },
+            { "ldap:", nullptr, INetProtocol::Ldap, PrefixInfo::OFFICIAL },
             { "macro:", "staroffice.macro:", INetProtocol::Macro,
               PrefixInfo::INTERNAL },
-            { "mailto:", 0, INetProtocol::Mailto, PrefixInfo::OFFICIAL },
+            { "mailto:", nullptr, INetProtocol::Mailto, PrefixInfo::OFFICIAL },
             { "private:", "staroffice.private:", INetProtocol::PrivSoffice,
               PrefixInfo::INTERNAL },
             { "private:factory/", "staroffice.factory:",
@@ -2111,10 +2110,10 @@ INetURLObject::PrefixInfo const * INetURLObject::getPrefix(sal_Unicode const *& 
               INetProtocol::PrivSoffice, PrefixInfo::INTERNAL },
             { "private:trashcan:", "staroffice.trashcan:",
               INetProtocol::PrivSoffice, PrefixInfo::INTERNAL },
-            { "sftp:", 0, INetProtocol::Sftp, PrefixInfo::OFFICIAL },
+            { "sftp:", nullptr, INetProtocol::Sftp, PrefixInfo::OFFICIAL },
             { "slot:", "staroffice.slot:", INetProtocol::Slot,
               PrefixInfo::INTERNAL },
-            { "smb:", 0, INetProtocol::Smb, PrefixInfo::OFFICIAL },
+            { "smb:", nullptr, INetProtocol::Smb, PrefixInfo::OFFICIAL },
             { "staroffice.component:", ".component:", INetProtocol::Component,
               PrefixInfo::EXTERNAL },
             { "staroffice.db:", "db:", INetProtocol::Db, PrefixInfo::EXTERNAL },
@@ -2140,27 +2139,27 @@ INetURLObject::PrefixInfo const * INetURLObject::getPrefix(sal_Unicode const *& 
               PrefixInfo::EXTERNAL },
             { "staroffice:", "private:", INetProtocol::PrivSoffice,
               PrefixInfo::EXTERNAL },
-            { "telnet:", 0, INetProtocol::Telnet, PrefixInfo::OFFICIAL },
-            { "vnd.libreoffice.cmis:", 0, INetProtocol::Cmis, PrefixInfo::INTERNAL },
-            { "vnd.sun.star.cmd:", 0, INetProtocol::VndSunStarCmd,
+            { "telnet:", nullptr, INetProtocol::Telnet, PrefixInfo::OFFICIAL },
+            { "vnd.libreoffice.cmis:", nullptr, INetProtocol::Cmis, PrefixInfo::INTERNAL },
+            { "vnd.sun.star.cmd:", nullptr, INetProtocol::VndSunStarCmd,
               PrefixInfo::OFFICIAL },
-            { "vnd.sun.star.expand:", 0, INetProtocol::VndSunStarExpand,
+            { "vnd.sun.star.expand:", nullptr, INetProtocol::VndSunStarExpand,
               PrefixInfo::OFFICIAL },
-            { "vnd.sun.star.help:", 0, INetProtocol::VndSunStarHelp,
+            { "vnd.sun.star.help:", nullptr, INetProtocol::VndSunStarHelp,
               PrefixInfo::OFFICIAL },
-            { "vnd.sun.star.hier:", 0, INetProtocol::VndSunStarHier,
+            { "vnd.sun.star.hier:", nullptr, INetProtocol::VndSunStarHier,
               PrefixInfo::OFFICIAL },
-            { "vnd.sun.star.pkg:", 0, INetProtocol::VndSunStarPkg,
+            { "vnd.sun.star.pkg:", nullptr, INetProtocol::VndSunStarPkg,
               PrefixInfo::OFFICIAL },
-            { "vnd.sun.star.tdoc:", 0, INetProtocol::VndSunStarTdoc,
+            { "vnd.sun.star.tdoc:", nullptr, INetProtocol::VndSunStarTdoc,
               PrefixInfo::OFFICIAL },
-            { "vnd.sun.star.webdav:", 0, INetProtocol::VndSunStarWebdav,
+            { "vnd.sun.star.webdav:", nullptr, INetProtocol::VndSunStarWebdav,
               PrefixInfo::OFFICIAL } };
     /* This list needs to be sorted, or you'll introduce serious bugs */
 
     PrefixInfo const * pFirst = aMap + 1;
     PrefixInfo const * pLast = aMap + sizeof aMap / sizeof (PrefixInfo) - 1;
-    PrefixInfo const * pMatch = 0;
+    PrefixInfo const * pMatch = nullptr;
     sal_Unicode const * pMatched = rBegin;
     sal_Unicode const * p = rBegin;
     sal_Int32 i = 0;
@@ -2807,7 +2806,7 @@ bool INetURLObject::parseHostOrNetBiosName(
                         case '|':
                             return false;
                         }
-                    if (pCanonic != NULL) {
+                    if (pCanonic != nullptr) {
                         appendUCS4(
                             buf, nUTF32, eEscapeType, bOctets, PART_URIC,
                             eCharset, true);
@@ -2819,7 +2818,7 @@ bool INetURLObject::parseHostOrNetBiosName(
                 return false;
         }
     }
-    if (pCanonic != NULL) {
+    if (pCanonic != nullptr) {
         *pCanonic = aTheCanonic;
     }
     return true;
@@ -3911,6 +3910,22 @@ OUString INetURLObject::getExternalURL(DecodeMechanism eMechanism,
     return aTheExtURIRef;
 }
 
+bool INetURLObject::isSchemeEqualTo(OUString const & scheme) const {
+    return m_aScheme.isPresent()
+        && (rtl_ustr_compareIgnoreAsciiCase_WithLength(
+                scheme.getStr(), scheme.getLength(),
+                m_aAbsURIRef.getStr() + m_aScheme.getBegin(),
+                m_aScheme.getLength())
+            == 0);
+}
+
+bool INetURLObject::isAnyKnownWebDAVScheme() const {
+    return ( isSchemeEqualTo( INetProtocol::Http ) ||
+             isSchemeEqualTo( INetProtocol::Https ) ||
+             isSchemeEqualTo( INetProtocol::VndSunStarWebdav ) ||
+             isSchemeEqualTo( "vnd.sun.star.webdavs" ) );
+}
+
 // static
 OUString INetURLObject::GetScheme(INetProtocol eTheScheme)
 {
@@ -4109,7 +4124,7 @@ OUString INetURLObject::getBase(sal_Int32 nIndex, bool bIgnoreFinalSlash,
 
     if (pSegBegin < pSegEnd && *pSegBegin == '/')
         ++pSegBegin;
-    sal_Unicode const * pExtension = 0;
+    sal_Unicode const * pExtension = nullptr;
     sal_Unicode const * p = pSegBegin;
     for (; p != pSegEnd && *p != ';'; ++p)
         if (*p == '.' && p != pSegBegin)
@@ -4138,7 +4153,7 @@ bool INetURLObject::setBase(OUString const & rTheBase, sal_Int32 nIndex,
 
     if (pSegBegin < pSegEnd && *pSegBegin == '/')
         ++pSegBegin;
-    sal_Unicode const * pExtension = 0;
+    sal_Unicode const * pExtension = nullptr;
     sal_Unicode const * p = pSegBegin;
     for (; p != pSegEnd && *p != ';'; ++p)
         if (*p == '.' && p != pSegBegin)
@@ -4171,7 +4186,7 @@ OUString INetURLObject::getExtension(sal_Int32 nIndex,
 
     if (pSegBegin < pSegEnd && *pSegBegin == '/')
         ++pSegBegin;
-    sal_Unicode const * pExtension = 0;
+    sal_Unicode const * pExtension = nullptr;
     sal_Unicode const * p = pSegBegin;
     for (; p != pSegEnd && *p != ';'; ++p)
         if (*p == '.' && p != pSegBegin)
@@ -4201,7 +4216,7 @@ bool INetURLObject::setExtension(OUString const & rTheExtension,
 
     if (pSegBegin < pSegEnd && *pSegBegin == '/')
         ++pSegBegin;
-    sal_Unicode const * pExtension = 0;
+    sal_Unicode const * pExtension = nullptr;
     sal_Unicode const * p = pSegBegin;
     for (; p != pSegEnd && *p != ';'; ++p)
         if (*p == '.' && p != pSegBegin)
@@ -4235,7 +4250,7 @@ bool INetURLObject::removeExtension(sal_Int32 nIndex, bool bIgnoreFinalSlash)
 
     if (pSegBegin < pSegEnd && *pSegBegin == '/')
         ++pSegBegin;
-    sal_Unicode const * pExtension = 0;
+    sal_Unicode const * pExtension = nullptr;
     sal_Unicode const * p = pSegBegin;
     for (; p != pSegEnd && *p != ';'; ++p)
         if (*p == '.' && p != pSegBegin)
@@ -4823,7 +4838,7 @@ sal_uInt32 INetURLObject::scanDomain(sal_Unicode const *& rBegin,
     enum State { STATE_DOT, STATE_LABEL, STATE_HYPHEN };
     State eState = STATE_DOT;
     sal_Int32 nLabels = 0;
-    sal_Unicode const * pLastAlphanumeric = 0;
+    sal_Unicode const * pLastAlphanumeric = nullptr;
     for (sal_Unicode const * p = rBegin;; ++p)
         switch (eState)
         {
@@ -4958,7 +4973,7 @@ OUString INetURLObject::GetFull() const
 OUString INetURLObject::GetPath() const
 {
     INetURLObject aTemp(*this);
-    aTemp.removeSegment(LAST_SEGMENT);
+    aTemp.removeSegment();
     aTemp.removeFinalSlash();
     return aTemp.PathToFileName();
 }
@@ -4978,7 +4993,7 @@ void INetURLObject::SetName(OUString const & rTheName,
                             rtl_TextEncoding eCharset)
 {
     INetURLObject aTemp(*this);
-    if (aTemp.removeSegment(LAST_SEGMENT)
+    if (aTemp.removeSegment()
         && aTemp.insertName(rTheName, false, LAST_SEGMENT, true, eMechanism,
                             eCharset))
         *this = aTemp;

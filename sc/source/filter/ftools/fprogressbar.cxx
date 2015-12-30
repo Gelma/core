@@ -21,6 +21,7 @@
 #include "global.hxx"
 #include "progress.hxx"
 #include <osl/diagnose.h>
+#include <o3tl/make_unique.hxx>
 
 ScfProgressBar::ScfProgressSegment::ScfProgressSegment( sal_Size nSize ) :
     mnSize( nSize ),
@@ -58,8 +59,8 @@ ScfProgressBar::~ScfProgressBar()
 void ScfProgressBar::Init( SfxObjectShell* pDocShell )
 {
     mpDocShell = pDocShell;
-    mpParentProgress = 0;
-    mpParentSegment = mpCurrSegment = 0;
+    mpParentProgress = nullptr;
+    mpParentSegment = mpCurrSegment = nullptr;
     mnTotalSize = mnTotalPos = mnUnitSize = mnNextUnitPos = 0;
     mnSysProgressScale = 1;     // used to workaround the ULONG_MAX/100 limit
     mbInProgress = false;
@@ -68,8 +69,8 @@ void ScfProgressBar::Init( SfxObjectShell* pDocShell )
 ScfProgressBar::ScfProgressSegment* ScfProgressBar::GetSegment( sal_Int32 nSegment )
 {
     if( nSegment < 0 )
-        return 0;
-    return &(maSegments.at( nSegment ));
+        return nullptr;
+    return maSegments.at( nSegment ).get();
 }
 
 void ScfProgressBar::SetCurrSegment( ScfProgressSegment* pSegment )
@@ -139,7 +140,7 @@ sal_Int32 ScfProgressBar::AddSegment( sal_Size nSize )
     if( nSize == 0 )
         return SCF_INV_SEGMENT;
 
-    maSegments.push_back( new ScfProgressSegment( nSize ) );
+    maSegments.push_back( o3tl::make_unique<ScfProgressSegment>( nSize ) );
     mnTotalSize += nSize;
     return static_cast< sal_Int32 >( maSegments.size() - 1 );
 }

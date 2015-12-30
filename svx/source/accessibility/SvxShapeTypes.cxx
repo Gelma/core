@@ -57,10 +57,10 @@ AccessibleShape* CreateSvxAccessibleShape (
         case DRAWING_RECTANGLE:
         case DRAWING_TEXT:
         // Default accessiblility shape for
-        // com::sun::star::drawing::CustomShape (#i37790#)
+        // css::drawing::CustomShape (#i37790#)
         case DRAWING_CUSTOM:
         // Default accessiblility shape for
-        // com::sun::star::drawing::MediaShape (#i85429#)
+        // css::drawing::MediaShape (#i85429#)
         case DRAWING_MEDIA:
             return new AccessibleShape (rShapeInfo, rShapeTreeInfo);
 
@@ -80,7 +80,7 @@ AccessibleShape* CreateSvxAccessibleShape (
             return new AccessibleTableShape( rShapeInfo, rShapeTreeInfo );
 
         default:
-            return NULL;
+            return nullptr;
     }
 }
 

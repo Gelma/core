@@ -41,8 +41,8 @@ ScTpSubTotalGroup::ScTpSubTotalGroup( vcl::Window* pParent,
                               &rArgSet ),
             aStrNone        ( SC_RESSTR( SCSTR_NONE ) ),
             aStrColumn      ( SC_RESSTR( SCSTR_COLUMN ) ),
-            pViewData       ( NULL ),
-            pDoc            ( NULL ),
+            pViewData       ( nullptr ),
+            pDoc            ( nullptr ),
             nWhichSubTotals ( rArgSet.GetPool()->GetWhich( SID_SUBTOTALS ) ),
             rSubTotalData   ( static_cast<const ScSubTotalItem&>(
                               rArgSet.Get( nWhichSubTotals )).
@@ -96,14 +96,14 @@ void ScTpSubTotalGroup::Init()
                                           GetItemSet().Get( nWhichSubTotals ));
 
     pViewData   = rSubTotalItem.GetViewData();
-    pDoc        = ( pViewData ) ? pViewData->GetDocument() : NULL;
+    pDoc        = ( pViewData ) ? pViewData->GetDocument() : nullptr;
 
     OSL_ENSURE( pViewData && pDoc, "ViewData or Document not found :-(" );
 
-    mpLbGroup->SetSelectHdl       ( LINK( this, ScTpSubTotalGroup, SelectHdl ) );
+    mpLbGroup->SetSelectHdl       ( LINK( this, ScTpSubTotalGroup, SelectListBoxHdl ) );
     mpLbColumns->SetSelectHdl     ( LINK( this, ScTpSubTotalGroup, SelectTreeListBoxHdl ) );
     mpLbColumns->SetCheckButtonHdl( LINK( this, ScTpSubTotalGroup, CheckHdl ) );
-    mpLbFunctions->SetSelectHdl   ( LINK( this, ScTpSubTotalGroup, SelectHdl ) );
+    mpLbFunctions->SetSelectHdl   ( LINK( this, ScTpSubTotalGroup, SelectListBoxHdl ) );
 
     nFieldArr[0] = 0;
     FillListBoxes();
@@ -346,7 +346,11 @@ IMPL_LINK_TYPED( ScTpSubTotalGroup, SelectTreeListBoxHdl, SvTreeListBox*, pLb, v
 {
     SelectHdl(pLb);
 }
-IMPL_LINK( ScTpSubTotalGroup, SelectHdl, void *, pLb )
+IMPL_LINK_TYPED( ScTpSubTotalGroup, SelectListBoxHdl, ListBox&, rLb, void )
+{
+    SelectHdl(&rLb);
+}
+void ScTpSubTotalGroup::SelectHdl(void *pLb)
 {
     if (   (mpLbColumns->GetEntryCount() > 0)
         && (mpLbColumns->GetSelectionCount() > 0) )
@@ -357,7 +361,7 @@ IMPL_LINK( ScTpSubTotalGroup, SelectHdl, void *, pLb )
 
         OSL_ENSURE( pFunction, "EntryData not found!" );
         if ( !pFunction )
-            return 0;
+            return;
 
         if ( pLb == mpLbColumns )
         {
@@ -369,7 +373,6 @@ IMPL_LINK( ScTpSubTotalGroup, SelectHdl, void *, pLb )
             mpLbColumns->CheckEntryPos( nColumn );
         }
     }
-    return 0;
 }
 
 IMPL_LINK_TYPED( ScTpSubTotalGroup, CheckHdl, SvTreeListBox*, pLb, void )
@@ -438,8 +441,8 @@ ScTpSubTotalOptions::ScTpSubTotalOptions( vcl::Window*               pParent,
         :   SfxTabPage      ( pParent,
                               "SubTotalOptionsPage", "modules/scalc/ui/subtotaloptionspage.ui" ,
                               &rArgSet ),
-            pViewData       ( NULL ),
-            pDoc            ( NULL ),
+            pViewData       ( nullptr ),
+            pDoc            ( nullptr ),
             nWhichSubTotals ( rArgSet.GetPool()->GetWhich( SID_SUBTOTALS ) ),
             rSubTotalData   ( static_cast<const ScSubTotalItem&>(
                               rArgSet.Get( nWhichSubTotals )).
@@ -483,7 +486,7 @@ void ScTpSubTotalOptions::Init()
                                           GetItemSet().Get( nWhichSubTotals ));
 
     pViewData   = rSubTotalItem.GetViewData();
-    pDoc        = ( pViewData ) ? pViewData->GetDocument() : NULL;
+    pDoc        = ( pViewData ) ? pViewData->GetDocument() : nullptr;
 
     OSL_ENSURE( pViewData && pDoc, "ViewData or Document not found!" );
 

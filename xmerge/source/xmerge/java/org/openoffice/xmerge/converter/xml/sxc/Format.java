@@ -23,7 +23,7 @@ import java.awt.Color;
 /**
  * This class specifies the format for a given spreadsheet cell.
  */
-public class Format implements Cloneable {
+public class Format {
 
     /** Horizontal Alignment Constants. */
     final public static int RIGHT_ALIGN     = 0x01;
@@ -406,10 +406,8 @@ public class Format implements Cloneable {
         if (rhs.attributes!= attributes)
                 return false;
 
-        if (rhs.sizeInPoints != 0) {
-            if (sizeInPoints != rhs.sizeInPoints)
-                return false;
-        }
+        if (rhs.sizeInPoints != 0 && sizeInPoints != rhs.sizeInPoints)
+            return false;
 
         if (fontName == null ? rhs.fontName != null : !fontName.equals(rhs.fontName))
             return false;

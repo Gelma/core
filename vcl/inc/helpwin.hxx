@@ -46,14 +46,14 @@ private:
 private:
     DECL_LINK_TYPED( TimerHdl, Timer*, void );
 
-    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle&) SAL_OVERRIDE;
-    virtual void RequestHelp( const HelpEvent& rHEvt ) SAL_OVERRIDE;
-    virtual void ApplySettings(vcl::RenderContext& rRenderContext) SAL_OVERRIDE;
+    virtual void Paint(vcl::RenderContext& rRenderContext, const Rectangle&) override;
+    virtual void RequestHelp( const HelpEvent& rHEvt ) override;
+    virtual void ApplySettings(vcl::RenderContext& rRenderContext) override;
 
-    virtual OUString GetText() const SAL_OVERRIDE;
+    virtual OUString GetText() const override;
     void ImplShow();
 
-    virtual void        dispose() SAL_OVERRIDE;
+    virtual void        dispose() override;
 public:
                         HelpTextWindow( vcl::Window* pParent, const OUString& rText, sal_uInt16 nHelpWinStyle, QuickHelpFlags nStyle );
     virtual             ~HelpTextWindow();
@@ -75,10 +75,10 @@ public:
 
 void ImplShowHelpWindow( vcl::Window* pParent, sal_uInt16 nHelpWinStyle, QuickHelpFlags nStyle,
         const OUString& rHelpText, const OUString& rStatusText,
-        const Point& rScreenPos, const Rectangle* pHelpArea = NULL );
+        const Point& rScreenPos, const Rectangle& rHelpArea );
 void ImplDestroyHelpWindow( bool bUpdateHideTime );
 void ImplSetHelpWindowPos( vcl::Window* pHelpWindow, sal_uInt16 nHelpWinStyle, QuickHelpFlags nStyle,
-                            const Point& rPos, const Rectangle* pHelpArea );
+                            const Point& rPos, const Rectangle& rHelpArea );
 
 #endif // INCLUDED_VCL_INC_HELPWIN_HXX
 

@@ -323,31 +323,13 @@ $(eval $(call filter_Configuration_add_types,fcfg_langpack,fcfg_writer_types.xcu
 	writer_StarOffice_XML_Writer \
 	writer_WordPerfect_Document \
 	writer_MS_Works_Document \
-	writer_Beagle_Works \
+	writer_MS_Write \
 	writer_ClarisWorks \
-	writer_DocMaker \
-	writer_eDoc_Document \
-	writer_FullWrite_Professional \
-	writer_Great_Works \
-	writer_HanMac_Word_J \
-	writer_HanMac_Word_K \
-	writer_LightWayText \
-	writer_Mac_Acta \
-	writer_Mac_More \
-	writer_Mac_RagTime \
 	writer_Mac_Word \
 	writer_Mac_Works \
-	writer_MacDoc \
 	writer_MacWrite \
-	writer_MacWritePro \
 	writer_Mariner_Write \
-	writer_MindWrite \
-	writer_Nisus_Writer \
-	writer_TeachText \
-	writer_TexEdit \
 	writer_WriteNow \
-	writer_WriterPlus \
-	writer_ZWrite \
 	writer_AbiWord_Document \
 	writer_T602_Document \
 	writer_LotusWordPro_Document \
@@ -363,13 +345,12 @@ $(eval $(call filter_Configuration_add_types,fcfg_langpack,fcfg_writer_types.xcu
 	writer_OOXML_Template \
 	writer_layout_dump_xml \
 	writer_BroadBand_eBook \
-	writer_eReader_eBook \
 	writer_FictionBook_2 \
 	writer_PalmDoc \
 	writer_Plucker_eBook \
-	writer_TealDoc \
-	writer_zTXT \
 	writer_ApplePages \
+	MWAW_Text_Document \
+	Palm_Text_Document \
 ))
 
 $(eval $(call filter_Configuration_add_filters,fcfg_langpack,fcfg_writer_filters.xcu,filter/source/config/fragments/filters,\
@@ -385,31 +366,13 @@ $(eval $(call filter_Configuration_add_filters,fcfg_langpack,fcfg_writer_filters
 	StarOffice_XML__Writer_ \
 	WordPerfect \
 	MS_Works \
-	Beagle_Works \
+	MS_Write \
 	ClarisWorks \
-	DocMaker \
-	eDoc_Document \
-	FullWrite_Professional \
-	Great_Works \
-	HanMac_Word_J \
-	HanMac_Word_K \
-	LightWayText \
-	Mac_Acta \
-	Mac_More \
-	Mac_RagTime \
 	Mac_Word \
 	Mac_Works \
-	MacDoc \
 	MacWrite \
-	MacWritePro \
 	Mariner_Write \
-	MindWrite \
-	Nisus_Writer \
-	TeachText \
-	TexEdit \
 	WriteNow \
-	WriterPlus \
-	ZWrite \
 	AbiWord \
 	T602Document \
 	LotusWordPro \
@@ -426,13 +389,12 @@ $(eval $(call filter_Configuration_add_filters,fcfg_langpack,fcfg_writer_filters
 	OOXML_Text_Template \
 	writer_layout_dump \
 	BroadBand_eBook \
-	eReader_eBook \
 	FictionBook_2 \
 	PalmDoc \
 	Plucker_eBook \
-	TealDoc \
-	zTXT \
 	ApplePages \
+	MWAW_Text_Document \
+	Palm_Text_Document \
 ))
 
 # fcfg_web
@@ -514,13 +476,12 @@ $(eval $(call filter_Configuration_add_types,fcfg_langpack,fcfg_calc_types.xcu,f
 	calc_MS_Works_Document \
 	calc_WPS_Lotus_Document \
 	calc_WPS_QPro_Document \
-	calc_Beagle_Works \
 	calc_ClarisWorks \
 	calc_Claris_Resolve \
-	calc_Great_Works \
 	calc_Mac_Works \
-	calc_Mac_Wingz \
 	calc_AppleNumbers \
+	MWAW_Database \
+	MWAW_Spreadsheet \
 ))
 
 $(eval $(call filter_Configuration_add_filters,fcfg_langpack,fcfg_calc_filters.xcu,filter/source/config/fragments/filters,\
@@ -557,13 +518,12 @@ $(eval $(call filter_Configuration_add_filters,fcfg_langpack,fcfg_calc_filters.x
 	MS_Works_Calc \
 	WPS_Lotus_Calc \
 	WPS_QPro_Calc \
-	Beagle_Works_Calc \
 	ClarisWorks_Calc \
 	Claris_Resolve_Calc \
-	Great_Works_Calc \
-	Mac_Wingz_Calc \
 	Mac_Works_Calc \
 	AppleNumbers \
+	MWAW_Database \
+	MWAW_Spreadsheet \
 ))
 
 # fcfg_draw
@@ -581,17 +541,10 @@ $(eval $(call filter_Configuration_add_types,fcfg_langpack,fcfg_draw_types.xcu,f
 	draw_Corel_Presentation_Exchange \
 	draw_Freehand_Document \
 	draw_Visio_Document \
-	draw_Beagle_Works \
-	draw_ClarisDraw \
 	draw_ClarisWorks \
-	draw_Great_Works \
-	draw_MacDraft \
-	draw_MacDraw \
-	draw_MacDrawPro \
-	draw_Mac_Works \
-	draw_MacPaint \
-	draw_SuperPaint \
 	draw_PageMaker_Document \
+	MWAW_Bitmap \
+	MWAW_Drawing \
 ))
 
 $(eval $(call filter_Configuration_add_filters,fcfg_langpack,fcfg_draw_filters.xcu,filter/source/config/fragments/filters,\
@@ -607,17 +560,10 @@ $(eval $(call filter_Configuration_add_filters,fcfg_langpack,fcfg_draw_filters.x
 	CorelDrawDocument \
 	CorelPresentationExchange \
 	FreehandDocument \
-	Beagle_Works_Draw \
-	ClarisDraw \
 	ClarisWorks_Draw \
-	Great_Works_Draw \
-	MacDraft \
-	MacDraw_Draw \
-	MacDrawPro_Draw \
-	Mac_Works_Draw \
-	MacPaint_Draw \
-	SuperPaint_Draw \
 	PageMakerDocument \
+	MWAW_Bitmap \
+	MWAW_Drawing \
 ))
 
 # fcfg_impress
@@ -642,6 +588,7 @@ $(eval $(call filter_Configuration_add_types,fcfg_langpack,fcfg_impress_types.xc
 	impress_OOXML_Presentation_Template \
 	impress_OOXML_Presentation_AutoPlay \
 	impress_ClarisWorks \
+	MWAW_Presentation \
 ))
 
 $(eval $(call filter_Configuration_add_filters,fcfg_langpack,fcfg_impress_filters.xcu,filter/source/config/fragments/filters,\
@@ -665,6 +612,7 @@ $(eval $(call filter_Configuration_add_filters,fcfg_langpack,fcfg_impress_filter
 	impress_OOXML_Template \
 	impress_OOXML_AutoPlay \
 	ClarisWorks_Impress \
+	MWAW_Presentation \
 ))
 
 # fcfg_chart
@@ -770,17 +718,11 @@ $(eval $(call filter_Configuration_add_filters,fcfg_langpack,fcfg_drawgraphics_f
 	draw_html_Export \
 	draw_jpg_Export \
 	draw_met_Export \
-	draw_pbm_Export \
-	draw_pct_Export \
-	draw_pgm_Export \
 	draw_png_Export \
-	draw_ppm_Export \
-	draw_ras_Export \
 	draw_svg_Export \
 	draw_svm_Export \
 	draw_tif_Export \
 	draw_wmf_Export \
-	draw_xpm_Export \
 ))
 
 # fcfg_impressgraphics
@@ -817,17 +759,11 @@ $(eval $(call filter_Configuration_add_filters,fcfg_langpack,fcfg_impressgraphic
 	impress_html_Export \
 	impress_jpg_Export \
 	impress_met_Export \
-	impress_pbm_Export \
-	impress_pct_Export \
-	impress_pgm_Export \
 	impress_png_Export \
-	impress_ppm_Export \
-	impress_ras_Export \
 	impress_svg_Export \
 	impress_svm_Export \
 	impress_tif_Export \
 	impress_wmf_Export \
-	impress_xpm_Export \
 ))
 
 # fcfg_writergraphics
@@ -839,6 +775,15 @@ $(eval $(call filter_Configuration_add_types,fcfg_langpack,fcfg_writergraphics_t
 $(eval $(call filter_Configuration_add_filters,fcfg_langpack,fcfg_writergraphics_filters.xcu,filter/source/config/fragments/filters,\
 	writer_jpg_Export \
 	writer_png_Export \
+))
+
+# fcfg_calcgraphics
+$(eval $(call filter_Configuration_add_types,fcfg_langpack,fcfg_calcgraphics_types.xcu,filter/source/config/fragments/types,\
+	png_Portable_Network_Graphic \
+))
+
+$(eval $(call filter_Configuration_add_filters,fcfg_langpack,fcfg_calcgraphics_filters.xcu,filter/source/config/fragments/filters,\
+	calc_png_Export \
 ))
 
 # fcfg_internalgraphics
@@ -887,22 +832,17 @@ $(eval $(call filter_Configuration_add_internal_filters,fcfg_langpack,fcfg_inter
 	jpg_Import \
 	met_Export \
 	met_Import \
-	pbm_Export \
 	pbm_Import \
 	pcd_Import_Base \
 	pcd_Import_Base4 \
 	pcd_Import_Base16 \
-	pct_Export \
 	pct_Import \
 	pcx_Import \
-	pgm_Export \
 	pgm_Import \
 	png_Export \
 	png_Import \
-	ppm_Export \
 	ppm_Import \
 	psd_Import \
-	ras_Export \
 	ras_Import \
 	sgf_Import \
 	sgv_Import \
@@ -916,7 +856,6 @@ $(eval $(call filter_Configuration_add_internal_filters,fcfg_langpack,fcfg_inter
 	wmf_Export \
 	wmf_Import \
 	xbm_Import \
-	xpm_Export \
 	xpm_Import \
         mov_Import \
 ))

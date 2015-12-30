@@ -22,13 +22,13 @@
 
 #include <sal/types.h>
 
-class SwTextFrm;
+class SwTextFrame;
 class SwWrongList;
 
 class SwParaChangeTrackingInfo
 {
     public:
-        explicit SwParaChangeTrackingInfo( const SwTextFrm& rTextFrm );
+        explicit SwParaChangeTrackingInfo( const SwTextFrame& rTextFrame );
         ~SwParaChangeTrackingInfo();
 
         void reset();
@@ -36,10 +36,10 @@ class SwParaChangeTrackingInfo
         const SwWrongList* getChangeTrackingTextMarkupList( const sal_Int32 nTextMarkupType );
 
     private:
-        SwParaChangeTrackingInfo( const SwParaChangeTrackingInfo& ) SAL_DELETED_FUNCTION;
-        SwParaChangeTrackingInfo& operator=( const SwParaChangeTrackingInfo& ) SAL_DELETED_FUNCTION;
+        SwParaChangeTrackingInfo( const SwParaChangeTrackingInfo& ) = delete;
+        SwParaChangeTrackingInfo& operator=( const SwParaChangeTrackingInfo& ) = delete;
 
-        const SwTextFrm& mrTextFrm;
+        const SwTextFrame& mrTextFrame;
 
         SwWrongList* mpChangeTrackInsertionTextMarkupList;
         SwWrongList* mpChangeTrackDeletionTextMarkupList;

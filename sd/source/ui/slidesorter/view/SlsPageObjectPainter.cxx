@@ -46,7 +46,6 @@ PageObjectPainter::PageObjectPainter (
     const SlideSorter& rSlideSorter)
     : mrLayouter(rSlideSorter.GetView().GetLayouter()),
       mpCache(rSlideSorter.GetView().GetPreviewCache()),
-      mpProperties(rSlideSorter.GetProperties()),
       mpTheme(rSlideSorter.GetTheme()),
       mpPageNumberFont(Theme::GetFont(Theme::Font_PageNumber, *rSlideSorter.GetContentWindow())),
       mpShadowPainter(new FramePainter(mpTheme->GetIcon(Theme::Icon_RawShadow))),
@@ -116,10 +115,10 @@ void PageObjectPainter::PaintBackground (
     // Fill the interior of the preview area with the default background
     // color of the page.
     SdPage* pPage = rpDescriptor->GetPage();
-    if (pPage != NULL)
+    if (pPage != nullptr)
     {
-        rDevice.SetFillColor(pPage->GetPageBackgroundColor(NULL));
-        rDevice.SetLineColor(pPage->GetPageBackgroundColor(NULL));
+        rDevice.SetFillColor(pPage->GetPageBackgroundColor(nullptr));
+        rDevice.SetLineColor(pPage->GetPageBackgroundColor(nullptr));
         const Rectangle aPreviewBox (pPageObjectLayouter->GetBoundingBox(
             rpDescriptor,
             PageObjectLayouter::Preview,
@@ -138,7 +137,7 @@ void PageObjectPainter::PaintPreview (
         PageObjectLayouter::Preview,
         PageObjectLayouter::ModelCoordinateSystem));
 
-    if (mpCache != 0)
+    if (mpCache != nullptr)
     {
         const SdrPage* pPage = rpDescriptor->GetPage();
         mpCache->SetPreciousFlag(pPage, true);
@@ -161,7 +160,7 @@ Bitmap PageObjectPainter::CreateMarkedPreview (
     const OutputDevice* pReferenceDevice)
 {
     ScopedVclPtr<VirtualDevice> pDevice;
-    if (pReferenceDevice != NULL)
+    if (pReferenceDevice != nullptr)
         pDevice.disposeAndReset(VclPtr<VirtualDevice>::Create(*pReferenceDevice));
     else
         pDevice.disposeAndReset(VclPtr<VirtualDevice>::Create());
@@ -259,7 +258,7 @@ void PageObjectPainter::PaintPageNumber (
     }
 
     // Paint the page number.
-    OSL_ASSERT(rpDescriptor->GetPage()!=NULL);
+    OSL_ASSERT(rpDescriptor->GetPage()!=nullptr);
     const sal_Int32 nPageNumber ((rpDescriptor->GetPage()->GetPageNum() - 1) / 2 + 1);
     const OUString sPageNumber(OUString::number(nPageNumber));
     rDevice.SetFont(*mpPageNumberFont);
@@ -273,7 +272,7 @@ void PageObjectPainter::PaintTransitionEffect (
     const model::SharedPageDescriptor& rpDescriptor)
 {
     const SdPage* pPage = rpDescriptor->GetPage();
-    if (pPage!=NULL && pPage->getTransitionType() > 0)
+    if (pPage!=nullptr && pPage->getTransitionType() > 0)
     {
         const Rectangle aBox (pPageObjectLayouter->GetBoundingBox(
             rpDescriptor,

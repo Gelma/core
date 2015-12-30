@@ -39,7 +39,6 @@
 #include "cache/SlsPageCache.hxx"
 #include "cache/SlsPageCacheManager.hxx"
 #include "cache/SlsCacheContext.hxx"
-#include "taskpane/SlideSorterCacheDisplay.hxx"
 #include "DrawDocShell.hxx"
 #include "PaneDockingWindow.hxx"
 
@@ -89,15 +88,15 @@ namespace {
     class Painter : public ILayerPainter
     {
     public:
-        Painter (SlideSorterView& rView) : mrView(rView) {}
+        explicit Painter (SlideSorterView& rView) : mrView(rView) {}
         virtual ~Painter() {}
 
-        virtual void Paint (OutputDevice& rDevice, const Rectangle& rRepaintArea) SAL_OVERRIDE
+        virtual void Paint (OutputDevice& rDevice, const Rectangle& rRepaintArea) override
         {
             mrView.Paint(rDevice,rRepaintArea);
         }
 
-        virtual void SetLayerInvalidator (const SharedILayerInvalidator&) SAL_OVERRIDE {}
+        virtual void SetLayerInvalidator (const SharedILayerInvalidator&) override {}
 
     private:
         SlideSorterView& mrView;
@@ -109,17 +108,17 @@ class BackgroundPainter
       public ::boost::noncopyable
 {
 public:
-    BackgroundPainter (const Color& rBackgroundColor) : maBackgroundColor(rBackgroundColor) {}
+    explicit BackgroundPainter (const Color& rBackgroundColor) : maBackgroundColor(rBackgroundColor) {}
     virtual ~BackgroundPainter() {}
 
-    virtual void Paint (OutputDevice& rDevice, const Rectangle& rRepaintArea) SAL_OVERRIDE
+    virtual void Paint (OutputDevice& rDevice, const Rectangle& rRepaintArea) override
     {
         rDevice.SetFillColor(maBackgroundColor);
         rDevice.SetLineColor();
         rDevice.DrawRect(rRepaintArea);
     }
 
-    virtual void SetLayerInvalidator (const SharedILayerInvalidator&) SAL_OVERRIDE {}
+    virtual void SetLayerInvalidator (const SharedILayerInvalidator&) override {}
 
     void SetColor (const Color& rColor) { maBackgroundColor = rColor; }
 
@@ -127,7 +126,6 @@ private:
     Color maBackgroundColor;
 };
 
-TYPEINIT1(SlideSorterView, ::sd::View);
 
 SlideSorterView::SlideSorterView (SlideSorter& rSlideSorter)
     : ::sd::View (
@@ -146,7 +144,6 @@ SlideSorterView::SlideSorterView (SlideSorter& rSlideSorter)
       maPreviewSize(0,0),
       mbPreciousFlagUpdatePending(true),
       meOrientation(Layouter::GRID),
-      mpProperties(rSlideSorter.GetProperties()),
       mpPageUnderMouse(),
       mpPageObjectPainter(),
       mpSelectionPainter(),
@@ -348,14 +345,14 @@ void SlideSorterView::UpdateOrientation()
     {
         // Get access to the docking window.
         vcl::Window* pWindow = mrSlideSorter.GetContentWindow();
-        PaneDockingWindow* pDockingWindow = NULL;
-        while (pWindow!=NULL && pDockingWindow==NULL)
+        PaneDockingWindow* pDockingWindow = nullptr;
+        while (pWindow!=nullptr && pDockingWindow==nullptr)
         {
             pDockingWindow = dynamic_cast<PaneDockingWindow*>(pWindow);
             pWindow = pWindow->GetParent();
         }
 
-        if (pDockingWindow != NULL)
+        if (pDockingWindow != nullptr)
         {
             const long nScrollBarSize (
                 Application::GetSettings().GetStyleSettings().GetScrollBarSize());
@@ -472,7 +469,7 @@ void SlideSorterView::DeterminePageObjectVisibilities()
         for (long nIndex=aUnion.Min(); nIndex<=aUnion.Max(); nIndex++)
         {
             pDescriptor = mrModel.GetPageDescriptor(nIndex);
-            if (pDescriptor.get() != NULL)
+            if (pDescriptor.get() != nullptr)
                 SetState(
                     pDescriptor,
                     PageDescriptor::ST_Visible,
@@ -493,7 +490,7 @@ void SlideSorterView::DeterminePageObjectVisibilities()
                  iLink!=iEnd;
                  ++iLink)
             {
-                iLink->Call(NULL);
+                iLink->Call(nullptr);
             }
         }
 
@@ -515,12 +512,10 @@ void SlideSorterView::UpdatePreciousFlags()
         for (int nIndex=0; nIndex<=nPageCount; ++nIndex)
         {
             pDescriptor = mrModel.GetPageDescriptor(nIndex);
-            if (pDescriptor.get() != NULL)
+            if (pDescriptor.get() != nullptr)
             {
                 pCache->SetPreciousFlag(
                     pDescriptor->GetPage(),
-                    maVisiblePageRange.IsInside(nIndex));
-                SSCD_SET_VISIBILITY(mrModel.GetDocument(), nIndex,
                     maVisiblePageRange.IsInside(nIndex));
             }
             else
@@ -612,7 +607,7 @@ void SlideSorterView::CompleteRedraw (
         mnLockRedrawSmph ? "locked" : "");
 #endif
 
-    if (pDevice == NULL || pDevice!=mrSlideSorter.GetContentWindow())
+    if (pDevice == nullptr || pDevice!=mrSlideSorter.GetContentWindow())
         return;
 
     // The parent implementation of CompleteRedraw is called only when
@@ -701,7 +696,7 @@ void SlideSorterView::ConfigurationChanged (
 std::shared_ptr<cache::PageCache> SlideSorterView::GetPreviewCache()
 {
     sd::Window *pWindow (mrSlideSorter.GetContentWindow());
-    if (pWindow && mpPreviewCache.get() == NULL)
+    if (pWindow && mpPreviewCache.get() == nullptr)
     {
         mpPreviewCache.reset(
             new cache::PageCache(
@@ -756,7 +751,7 @@ void SlideSorterView::DragFinished (sal_Int8 nDropAction)
 void SlideSorterView::Notify (SfxBroadcaster& rBroadcaster, const SfxHint& rHint)
 {
     ::sd::DrawDocShell* pDocShell = mrModel.GetDocument()->GetDocSh();
-    if (pDocShell!=NULL && pDocShell->IsEnableSetModified())
+    if (pDocShell!=nullptr && pDocShell->IsEnableSetModified())
         mbModelChangedWhileModifyEnabled = true;
 
     ::sd::View::Notify(rBroadcaster, rHint);

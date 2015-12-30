@@ -30,48 +30,44 @@
 
 class CachedDynamicResultSetStub
                 : public DynamicResultSetWrapper
-                , public com::sun::star::lang::XTypeProvider
-                , public com::sun::star::lang::XServiceInfo
+                , public css::lang::XTypeProvider
+                , public css::lang::XServiceInfo
 {
 protected:
     virtual void SAL_CALL
-    impl_InitResultSetOne( const com::sun::star::uno::Reference<
-                com::sun::star::sdbc::XResultSet >& xResultSet ) SAL_OVERRIDE;
+    impl_InitResultSetOne( const css::uno::Reference< css::sdbc::XResultSet >& xResultSet ) override;
     virtual void SAL_CALL
-    impl_InitResultSetTwo( const com::sun::star::uno::Reference<
-                com::sun::star::sdbc::XResultSet >& xResultSet ) SAL_OVERRIDE;
+    impl_InitResultSetTwo( const css::uno::Reference< css::sdbc::XResultSet >& xResultSet ) override;
 
 public:
-    CachedDynamicResultSetStub( com::sun::star::uno::Reference<
-                        com::sun::star::ucb::XDynamicResultSet > xOrigin
-        , const com::sun::star::uno::Reference<
-                        com::sun::star::uno::XComponentContext > & rxContext );
+    CachedDynamicResultSetStub( css::uno::Reference< css::ucb::XDynamicResultSet > xOrigin
+        , const css::uno::Reference< css::uno::XComponentContext > & rxContext );
 
     virtual ~CachedDynamicResultSetStub();
 
 
     // XInterface
     virtual css::uno::Any SAL_CALL queryInterface( const css::uno::Type & rType )
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL acquire()
-        throw() SAL_OVERRIDE;
+        throw() override;
     virtual void SAL_CALL release()
-        throw() SAL_OVERRIDE;
+        throw() override;
 
     // XTypeProvider
 
     virtual css::uno::Sequence< sal_Int8 > SAL_CALL getImplementationId()
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
     virtual css::uno::Sequence< css::uno::Type > SAL_CALL getTypes()
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
 
     // XServiceInfo
     virtual OUString SAL_CALL getImplementationName()
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
     virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName )
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
     virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
 
     static OUString getImplementationName_Static();
     static css::uno::Sequence< OUString > getSupportedServiceNames_Static();
@@ -82,43 +78,41 @@ public:
 
 class CachedDynamicResultSetStubFactory
                 : public cppu::OWeakObject
-                , public com::sun::star::lang::XTypeProvider
-                , public com::sun::star::lang::XServiceInfo
-                , public com::sun::star::ucb::XCachedDynamicResultSetStubFactory
+                , public css::lang::XTypeProvider
+                , public css::lang::XServiceInfo
+                , public css::ucb::XCachedDynamicResultSetStubFactory
 {
 protected:
-    com::sun::star::uno::Reference<
-        com::sun::star::uno::XComponentContext >    m_xContext;
+    css::uno::Reference< css::uno::XComponentContext >    m_xContext;
 
 public:
 
     CachedDynamicResultSetStubFactory(
-        const com::sun::star::uno::Reference<
-        com::sun::star::uno::XComponentContext > & rxContext);
+        const css::uno::Reference< css::uno::XComponentContext > & rxContext);
 
     virtual ~CachedDynamicResultSetStubFactory();
 
     // XInterface
     virtual css::uno::Any SAL_CALL queryInterface( const css::uno::Type & rType )
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
     virtual void SAL_CALL acquire()
-        throw() SAL_OVERRIDE;
+        throw() override;
     virtual void SAL_CALL release()
-        throw() SAL_OVERRIDE;
+        throw() override;
 
     // XTypeProvider
     virtual css::uno::Sequence< sal_Int8 > SAL_CALL getImplementationId()
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
-    virtual css::uno::Sequence< com::sun::star::uno::Type > SAL_CALL getTypes()
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
+    virtual css::uno::Sequence< css::uno::Type > SAL_CALL getTypes()
+        throw( css::uno::RuntimeException, std::exception ) override;
 
     // XServiceInfo
     virtual OUString SAL_CALL getImplementationName()
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
     virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName )
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
     virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames()
-        throw( css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( css::uno::RuntimeException, std::exception ) override;
 
     static OUString getImplementationName_Static();
     static css::uno::Sequence< OUString > getSupportedServiceNames_Static();
@@ -129,29 +123,23 @@ public:
 
     // XCachedDynamicResultSetStubFactory
 
-    virtual com::sun::star::uno::Reference<
-        com::sun::star::ucb::XDynamicResultSet > SAL_CALL
+    virtual css::uno::Reference< css::ucb::XDynamicResultSet > SAL_CALL
     createCachedDynamicResultSetStub(
-                const com::sun::star::uno::Reference<
-                    com::sun::star::ucb::XDynamicResultSet > & Source )
-                throw( com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+                const css::uno::Reference< css::ucb::XDynamicResultSet > & Source )
+                throw( css::uno::RuntimeException, std::exception ) override;
 
 
     virtual void SAL_CALL connectToCache(
-                  const com::sun::star::uno::Reference<
-                        com::sun::star::ucb::XDynamicResultSet > & Source
-                , const com::sun::star::uno::Reference<
-                        com::sun::star::ucb::XDynamicResultSet > & TargetCache
-                , const com::sun::star::uno::Sequence<
-                        com::sun::star::ucb::NumberedSortingInfo > & SortingInfo
-                , const com::sun::star::uno::Reference<
-                        com::sun::star::ucb::XAnyCompareFactory > & CompareFactory
+                  const css::uno::Reference< css::ucb::XDynamicResultSet > & Source
+                , const css::uno::Reference< css::ucb::XDynamicResultSet > & TargetCache
+                , const css::uno::Sequence< css::ucb::NumberedSortingInfo > & SortingInfo
+                , const css::uno::Reference< css::ucb::XAnyCompareFactory > & CompareFactory
                 )
                 throw (
-                  com::sun::star::ucb::ListenerAlreadySetException
-                , com::sun::star::ucb::AlreadyInitializedException
-                , com::sun::star::uno::RuntimeException, std::exception
-                 ) SAL_OVERRIDE;
+                  css::ucb::ListenerAlreadySetException
+                , css::ucb::AlreadyInitializedException
+                , css::uno::RuntimeException, std::exception
+                 ) override;
 };
 
 #endif

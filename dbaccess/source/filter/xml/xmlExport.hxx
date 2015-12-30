@@ -108,7 +108,6 @@ class ODBExport : public SvXMLExport
     mutable rtl::Reference < XMLPropertySetMapper >   m_xTableStylesPropertySetMapper;
     mutable rtl::Reference < XMLPropertySetMapper >   m_xColumnStylesPropertySetMapper;
     mutable rtl::Reference < XMLPropertySetMapper >   m_xCellStylesPropertySetMapper;
-    mutable rtl::Reference < XMLPropertySetMapper >   m_xRowStylesPropertySetMapper;
 
     Reference<XPropertySet>                         m_xDataSource;
     ::dbaccess::ODsnTypeCollection                  m_aTypeCollection;
@@ -159,16 +158,16 @@ private:
                             ODBExport();
 protected:
 
-    virtual void                    _ExportStyles( bool bUsed ) SAL_OVERRIDE;
-    virtual void                    _ExportAutoStyles() SAL_OVERRIDE;
-    virtual void                    _ExportContent() SAL_OVERRIDE;
-    virtual void                    _ExportMasterStyles() SAL_OVERRIDE;
-    virtual void                    _ExportFontDecls() SAL_OVERRIDE;
-    virtual sal_uInt32              exportDoc( enum ::xmloff::token::XMLTokenEnum eClass ) SAL_OVERRIDE;
-    virtual SvXMLAutoStylePoolP*    CreateAutoStylePool() SAL_OVERRIDE;
+    virtual void                    _ExportStyles( bool bUsed ) override;
+    virtual void                    _ExportAutoStyles() override;
+    virtual void                    _ExportContent() override;
+    virtual void                    _ExportMasterStyles() override;
+    virtual void                    _ExportFontDecls() override;
+    virtual sal_uInt32              exportDoc( enum ::xmloff::token::XMLTokenEnum eClass ) override;
+    virtual SvXMLAutoStylePoolP*    CreateAutoStylePool() override;
 
-    virtual void GetViewSettings(css::uno::Sequence<css::beans::PropertyValue>& aProps) SAL_OVERRIDE;
-    virtual void GetConfigurationSettings(css::uno::Sequence<css::beans::PropertyValue>& aProps) SAL_OVERRIDE;
+    virtual void GetViewSettings(css::uno::Sequence<css::beans::PropertyValue>& aProps) override;
+    virtual void GetConfigurationSettings(css::uno::Sequence<css::beans::PropertyValue>& aProps) override;
 
     virtual                 ~ODBExport(){};
 public:
@@ -188,7 +187,7 @@ public:
     rtl::Reference < XMLPropertySetMapper > GetCellStylesPropertySetMapper() const;
 
     // XExporter
-    virtual void SAL_CALL setSourceDocument( const css::uno::Reference< css::lang::XComponent >& xDoc ) throw(css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL setSourceDocument( const css::uno::Reference< css::lang::XComponent >& xDoc ) throw(css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) override;
 
     inline Reference<XPropertySet> getDataSource() const { return m_xDataSource; }
 };

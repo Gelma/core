@@ -91,20 +91,20 @@ OUString lcl_findRenamedStyleName(std::vector< std::pair< OUString, OUString > >
 SfxStyleSheet *lcl_findStyle(SdStyleSheetVector& rStyles, const OUString& aStyleName)
 {
     if( aStyleName.isEmpty() )
-        return NULL;
+        return nullptr;
     for(SdStyleSheetVector::const_iterator aIt(rStyles.begin()), aLast(rStyles.end()); aIt != aLast; ++aIt)
     {
         if((*aIt)->GetName() == aStyleName)
             return (*aIt).get();
     }
-    return NULL;
+    return nullptr;
 }
 
 }
 
 SdStyleSheetPool::SdStyleSheetPool(SfxItemPool const& _rPool, SdDrawDocument* pDocument)
 :   SdStyleSheetPoolBase( _rPool )
-,   mpActualStyleSheet(NULL)
+,   mpActualStyleSheet(nullptr)
 ,   mpDoc(pDocument)
 {
     if( mpDoc )
@@ -130,7 +130,7 @@ SdStyleSheetPool::SdStyleSheetPool(SfxItemPool const& _rPool, SdDrawDocument* pD
 
 SdStyleSheetPool::~SdStyleSheetPool()
 {
-    DBG_ASSERT( mpDoc == NULL, "sd::SdStyleSheetPool::~SdStyleSheetPool(), dispose me first!" );
+    DBG_ASSERT( mpDoc == nullptr, "sd::SdStyleSheetPool::~SdStyleSheetPool(), dispose me first!" );
 }
 
 SfxStyleSheetBase* SdStyleSheetPool::Create(const OUString& rName, SfxStyleFamily eFamily, sal_uInt16 _nMask )
@@ -183,7 +183,7 @@ void SdStyleSheetPool::CreateLayoutStyleSheets(const OUString& rLayoutName, bool
     (void)bCheck;
     bool bCreated = false;
 
-    SfxStyleSheetBase* pSheet = NULL;
+    SfxStyleSheetBase* pSheet = nullptr;
 
     OUString aPrefix(rLayoutName + SD_LT_SEPARATOR);
 
@@ -209,7 +209,6 @@ void SdStyleSheetPool::CreateLayoutStyleSheets(const OUString& rLayoutName, bool
     OUString aName(SD_RESSTR(STR_LAYOUT_OUTLINE));
     OUString aHelpFile;
 
-    SfxStyleSheetBase* pParent = NULL;
     SvxLRSpaceItem aSvxLRSpaceItem( EE_PARA_LRSPACE );
     SvxULSpaceItem aSvxULSpaceItem( EE_PARA_ULSPACE );
 
@@ -249,7 +248,7 @@ void SdStyleSheetPool::CreateLayoutStyleSheets(const OUString& rLayoutName, bool
                 rSet.Put( SvxCharReliefItem(RELIEF_NONE, EE_CHAR_RELIEF) );
                 rSet.Put( SvxColorItem( Color(COL_AUTO), EE_CHAR_COLOR) );
                 rSet.Put( SvxBackgroundColorItem( Color (COL_AUTO), EE_CHAR_BKGCOLOR )  );
-                rSet.Put( XLineStyleItem(com::sun::star::drawing::LineStyle_NONE) );
+                rSet.Put( XLineStyleItem(css::drawing::LineStyle_NONE) );
                 rSet.Put( XFillStyleItem(drawing::FillStyle_NONE) );
                 rSet.Put( SdrTextFitToSizeTypeItem(SDRTEXTFIT_AUTOFIT) );
                 rSet.Put( makeSdrTextAutoGrowHeightItem(false) );
@@ -312,7 +311,7 @@ void SdStyleSheetPool::CreateLayoutStyleSheets(const OUString& rLayoutName, bool
     // if we created outline styles, we need to chain them
     if( bCreated )
     {
-        pParent = NULL;
+        SfxStyleSheetBase* pParent = nullptr;
         for (sal_Int32 nLevel = 1; nLevel < 10; nLevel++)
         {
             OUString aLevelName( aPrefix + aName + " " + OUString::number( nLevel ) );
@@ -621,10 +620,10 @@ namespace
 
 struct HasFamilyPredicate : svl::StyleSheetPredicate
 {
-    HasFamilyPredicate(SfxStyleFamily eFamily)
+    explicit HasFamilyPredicate(SfxStyleFamily eFamily)
     : meFamily(eFamily) {;}
 
-    bool Check(const SfxStyleSheetBase& sheet) SAL_OVERRIDE
+    bool Check(const SfxStyleSheetBase& sheet) override
     {
         return sheet.GetFamily() == meFamily;
     }
@@ -654,7 +653,7 @@ void SdStyleSheetPool::CopySheets(SdStyleSheetPool& rSourcePool, SfxStyleFamily 
         // now check whether we already have a sheet with the same name
         std::vector<unsigned> aSheetsWithName = GetIndexedStyleSheets().FindPositionsByName(aName);
         bool bAddToList = false;
-        SfxStyleSheetBase * pExistingSheet = 0;
+        SfxStyleSheetBase * pExistingSheet = nullptr;
         if (!aSheetsWithName.empty())
         {
             // if we have a rename suffix, try to find a new name
@@ -743,7 +742,7 @@ void SdStyleSheetPool::CopySheets(SdStyleSheetPool& rSourcePool, SfxStyleFamily 
 
 void SdStyleSheetPool::CopyLayoutSheets(const OUString& rLayoutName, SdStyleSheetPool& rSourcePool, SdStyleSheetVector& rCreatedSheets)
 {
-    SfxStyleSheetBase* pSheet = NULL;
+    SfxStyleSheetBase* pSheet = nullptr;
 
     std::vector<OUString> aNameList;
     CreateLayoutSheetNames(rLayoutName,aNameList);
@@ -848,13 +847,13 @@ void SdStyleSheetPool::CreatePseudosIfNecessary()
 {
     OUString aName;
     OUString aHelpFile;
-    SfxStyleSheetBase* pSheet = NULL;
-    SfxStyleSheetBase* pParent = NULL;
+    SfxStyleSheetBase* pSheet = nullptr;
+    SfxStyleSheetBase* pParent = nullptr;
 
     sal_uInt16 nUsedMask = SFXSTYLEBIT_USED;
 
     aName = SD_RESSTR(STR_PSEUDOSHEET_TITLE);
-    if( (pSheet = Find(aName, SD_STYLE_FAMILY_PSEUDO)) == 0 )
+    if( (pSheet = Find(aName, SD_STYLE_FAMILY_PSEUDO)) == nullptr )
     {
         pSheet = &Make(aName, SD_STYLE_FAMILY_PSEUDO, nUsedMask);
         pSheet->SetParent( OUString() );
@@ -863,7 +862,7 @@ void SdStyleSheetPool::CreatePseudosIfNecessary()
     pSheet->SetHelpId( aHelpFile, HID_PSEUDOSHEET_TITLE );
 
     aName = SD_RESSTR(STR_PSEUDOSHEET_SUBTITLE);
-    if( (pSheet = Find(aName, SD_STYLE_FAMILY_PSEUDO)) == 0 )
+    if( (pSheet = Find(aName, SD_STYLE_FAMILY_PSEUDO)) == nullptr )
     {
         pSheet = &Make(aName, SD_STYLE_FAMILY_PSEUDO, nUsedMask);
         pSheet->SetParent( OUString() );
@@ -872,7 +871,7 @@ void SdStyleSheetPool::CreatePseudosIfNecessary()
     pSheet->SetHelpId( aHelpFile, HID_PSEUDOSHEET_SUBTITLE );
 
     aName = SD_RESSTR(STR_PSEUDOSHEET_BACKGROUNDOBJECTS);
-    if( (pSheet = Find(aName, SD_STYLE_FAMILY_PSEUDO)) == 0 )
+    if( (pSheet = Find(aName, SD_STYLE_FAMILY_PSEUDO)) == nullptr )
     {
         pSheet = &Make(aName, SD_STYLE_FAMILY_PSEUDO, nUsedMask);
         pSheet->SetParent( OUString() );
@@ -881,7 +880,7 @@ void SdStyleSheetPool::CreatePseudosIfNecessary()
     pSheet->SetHelpId( aHelpFile, HID_PSEUDOSHEET_BACKGROUNDOBJECTS );
 
     aName = SD_RESSTR(STR_PSEUDOSHEET_BACKGROUND);
-    if( (pSheet = Find(aName, SD_STYLE_FAMILY_PSEUDO)) == 0 )
+    if( (pSheet = Find(aName, SD_STYLE_FAMILY_PSEUDO)) == nullptr )
     {
         pSheet = &Make(aName, SD_STYLE_FAMILY_PSEUDO, nUsedMask);
         pSheet->SetParent( OUString() );
@@ -890,7 +889,7 @@ void SdStyleSheetPool::CreatePseudosIfNecessary()
     pSheet->SetHelpId( aHelpFile, HID_PSEUDOSHEET_BACKGROUND );
 
     aName = SD_RESSTR(STR_PSEUDOSHEET_NOTES);
-    if( (pSheet = Find(aName, SD_STYLE_FAMILY_PSEUDO)) == 0 )
+    if( (pSheet = Find(aName, SD_STYLE_FAMILY_PSEUDO)) == nullptr )
     {
         pSheet = &Make(aName, SD_STYLE_FAMILY_PSEUDO, nUsedMask);
         pSheet->SetParent( OUString() );
@@ -898,14 +897,14 @@ void SdStyleSheetPool::CreatePseudosIfNecessary()
     }
     pSheet->SetHelpId( aHelpFile, HID_PSEUDOSHEET_NOTES );
 
-    pParent = NULL;
+    pParent = nullptr;
     SetSearchMask(SD_STYLE_FAMILY_PSEUDO);
     aName = SD_RESSTR(STR_PSEUDOSHEET_OUTLINE);
     for (sal_Int32 nLevel = 1; nLevel < 10; nLevel++)
     {
         OUString aLevelName( aName + " " + OUString::number( nLevel ) );
 
-        if( (pSheet = Find(aLevelName, SD_STYLE_FAMILY_PSEUDO)) == 0 )
+        if( (pSheet = Find(aLevelName, SD_STYLE_FAMILY_PSEUDO)) == nullptr )
         {
             pSheet = &Make(aLevelName, SD_STYLE_FAMILY_PSEUDO, nUsedMask);
 
@@ -934,7 +933,7 @@ struct StyleSheetIsUserDefinedPredicate : svl::StyleSheetPredicate
     StyleSheetIsUserDefinedPredicate()
     {;}
 
-    bool Check(const SfxStyleSheetBase& sheet) SAL_OVERRIDE
+    bool Check(const SfxStyleSheetBase& sheet) override
     {
         return sheet.IsUserDefined();
     }
@@ -1259,9 +1258,9 @@ void SdStyleSheetPool::RemoveStyleFamily( const SdPage* pPage )
     }
 }
 
-void SdStyleSheetPool::throwIfDisposed() throw(::com::sun::star::uno::RuntimeException)
+void SdStyleSheetPool::throwIfDisposed() throw(css::uno::RuntimeException)
 {
-    if( mpDoc == NULL )
+    if( mpDoc == nullptr )
         throw DisposedException();
 }
 
@@ -1410,7 +1409,7 @@ void SAL_CALL SdStyleSheetPool::dispose() throw (RuntimeException, std::exceptio
         Reference< XComponent > xComp( mxTableFamily, UNO_QUERY );
         if( xComp.is() )
             xComp->dispose();
-        mxTableFamily = 0;
+        mxTableFamily = nullptr;
 
         SdStyleFamilyMap aTempMap;
         aTempMap.swap( maStyleFamilyMap );
@@ -1423,7 +1422,7 @@ void SAL_CALL SdStyleSheetPool::dispose() throw (RuntimeException, std::exceptio
         {
         }
 
-        mpDoc = 0;
+        mpDoc = nullptr;
 
         Clear();
     }

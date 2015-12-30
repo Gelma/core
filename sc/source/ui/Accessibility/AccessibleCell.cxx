@@ -112,9 +112,9 @@ void SAL_CALL ScAccessibleCell::disposing()
     if (mpViewShell)
     {
         mpViewShell->RemoveAccessibilityObject(*this);
-        mpViewShell = NULL;
+        mpViewShell = nullptr;
     }
-    mpAccDoc = NULL;
+    mpAccDoc = nullptr;
 
     ScAccessibleCellBase::disposing();
 }
@@ -161,7 +161,7 @@ Rectangle ScAccessibleCell::GetBoundingBoxOnScreen() const
         vcl::Window* pWindow = mpViewShell->GetWindowByPos(meSplitPos);
         if (pWindow)
         {
-            Rectangle aRect = pWindow->GetWindowExtentsRelative(NULL);
+            Rectangle aRect = pWindow->GetWindowExtentsRelative(nullptr);
             aCellRect.setX(aCellRect.getX() + aRect.getX());
             aCellRect.setY(aCellRect.getY() + aRect.getY());
         }
@@ -290,7 +290,7 @@ uno::Reference<XAccessibleRelationSet> SAL_CALL
 {
     SolarMutexGuard aGuard;
     IsObjectValid();
-    utl::AccessibleRelationSetHelper* pRelationSet = NULL;
+    utl::AccessibleRelationSetHelper* pRelationSet = nullptr;
     if (mpAccDoc)
         pRelationSet = mpAccDoc->GetRelationSet(&maCellAddress);
     if (!pRelationSet)
@@ -326,7 +326,7 @@ uno::Sequence< OUString> SAL_CALL
 bool ScAccessibleCell::IsDefunc(
     const uno::Reference<XAccessibleStateSet>& rxParentStates)
 {
-    return ScAccessibleContextBase::IsDefunc() || (mpDoc == NULL) || (mpViewShell == NULL) || !getAccessibleParent().is() ||
+    return ScAccessibleContextBase::IsDefunc() || (mpDoc == nullptr) || (mpViewShell == nullptr) || !getAccessibleParent().is() ||
          (rxParentStates.is() && rxParentStates->contains(AccessibleStateType::DEFUNC));
 }
 
@@ -386,7 +386,7 @@ bool ScAccessibleCell::IsSelected()
 
 ScDocument* ScAccessibleCell::GetDocument(ScTabViewShell* pViewShell)
 {
-    ScDocument* pDoc = NULL;
+    ScDocument* pDoc = nullptr;
     if (pViewShell)
         pDoc = pViewShell->GetViewData().GetDocument();
     return pDoc;
@@ -509,8 +509,8 @@ static OUString ReplaceFourChar(const OUString& oldOUString)
 }
 
 uno::Any SAL_CALL ScAccessibleCell::getExtendedAttributes()
-    throw (::com::sun::star::lang::IndexOutOfBoundsException,
-           ::com::sun::star::uno::RuntimeException,
+    throw (css::lang::IndexOutOfBoundsException,
+           css::uno::RuntimeException,
            std::exception)
 {
     SolarMutexGuard aGuard;
@@ -543,7 +543,7 @@ uno::Any SAL_CALL ScAccessibleCell::getExtendedAttributes()
 }
 
 // cell has its own ParaIndent property, so when calling character attributes on cell, the ParaIndent should replace the ParaLeftMargin if its value is not zero.
-uno::Sequence< beans::PropertyValue > SAL_CALL ScAccessibleCell::getCharacterAttributes( sal_Int32 nIndex, const ::com::sun::star::uno::Sequence< OUString >& aRequestedAttributes ) throw (lang::IndexOutOfBoundsException, uno::RuntimeException, std::exception)
+uno::Sequence< beans::PropertyValue > SAL_CALL ScAccessibleCell::getCharacterAttributes( sal_Int32 nIndex, const css::uno::Sequence< OUString >& aRequestedAttributes ) throw (lang::IndexOutOfBoundsException, uno::RuntimeException, std::exception)
 {
     SolarMutexGuard aGuard;
 

@@ -40,7 +40,7 @@
 
 namespace editeng {
 
-    // values from ::com::sun::star::table::BorderLineStyle
+    // values from css::table::BorderLineStyle
     typedef sal_Int16 SvxBorderStyle;
 
     // convert border style between Word formats and LO
@@ -69,13 +69,13 @@ namespace editeng {
         Color            (*m_pColorGapFn)( Color );
 
     public:
-        SvxBorderLine( const Color *pCol = 0,
-                long nWidth = 0, SvxBorderStyle nStyle =
-                    ::com::sun::star::table::BorderLineStyle::SOLID,
+        SvxBorderLine( const Color *pCol = nullptr,
+                long nWidth = 0,
+                SvxBorderStyle nStyle = css::table::BorderLineStyle::SOLID,
                 bool bUseLeftTop = false,
                 Color (*pColorOutFn)( Color ) = &darkColor,
                 Color (*pColorInFn)( Color ) = &darkColor,
-                Color (*pColorGapFn)( Color ) = NULL );
+                Color (*pColorGapFn)( Color ) = nullptr );
         SvxBorderLine( const SvxBorderLine& r );
 
         SvxBorderLine& operator=( const SvxBorderLine& r );
@@ -83,7 +83,7 @@ namespace editeng {
         const Color&    GetColor() const { return aColor; }
         Color           GetColorOut( bool bLeftOrTop = true ) const;
         Color           GetColorIn( bool bLeftOrTop = true ) const;
-        bool            HasGapColor() const { return m_pColorGapFn != NULL; }
+        bool            HasGapColor() const { return m_pColorGapFn != nullptr; }
         Color           GetColorGap() const;
 
         void SetWidth( long nWidth = 0 );
@@ -137,7 +137,7 @@ namespace editeng {
 
         bool isEmpty() const {
             return m_aWidthImpl.IsEmpty()
-                || m_nStyle == ::com::sun::star::table::BorderLineStyle::NONE
+                || m_nStyle == css::table::BorderLineStyle::NONE
                 || m_nWidth == 0;
         }
         bool isDouble() const { return m_aWidthImpl.IsDouble(); }

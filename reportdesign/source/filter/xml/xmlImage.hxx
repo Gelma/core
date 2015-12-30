@@ -27,14 +27,14 @@ namespace rptxml
     class ORptFilter;
     class OXMLImage : public OXMLReportElementBase
     {
-        OXMLImage(const OXMLImage&) SAL_DELETED_FUNCTION;
-        void operator =(const OXMLImage&) SAL_DELETED_FUNCTION;
+        OXMLImage(const OXMLImage&) = delete;
+        void operator =(const OXMLImage&) = delete;
     public:
 
         OXMLImage( ORptFilter& rImport, sal_uInt16 nPrfx,
                     const OUString& rLName,
-                    const ::com::sun::star::uno::Reference< ::com::sun::star::xml::sax::XAttributeList > & xAttrList
-                    ,const ::com::sun::star::uno::Reference< ::com::sun::star::report::XImageControl >& _xComponent
+                    const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList
+                    ,const css::uno::Reference< css::report::XImageControl >& _xComponent
                     ,OXMLTable* _pContainer);
         virtual ~OXMLImage();
     };

@@ -68,13 +68,13 @@ $(eval $(call gb_Helper_register_executables,NONE, \
         svptest \
         svpclient \
         pixelctl ) \
-	$(if $(and $(ENABLE_GTK), $(filter LINUX,$(OS))), tilebench) \
-	$(if $(filter LINUX MACOSX WNT,$(OS)),icontest \
+	$(if $(and $(ENABLE_GTK), $(filter LINUX %BSD SOLARIS,$(OS))), tilebench) \
+	$(if $(filter LINUX MACOSX SOLARIS WNT %BSD,$(OS)),icontest \
 	    outdevgrind) \
 	vcldemo \
 	tiledrendering \
     mtfdemo \
-	$(if $(and $(ENABLE_GTK), $(filter LINUX,$(OS))), gtktiledviewer) \
+	$(if $(and $(ENABLE_GTK), $(filter LINUX %BSD SOLARIS,$(OS))), gtktiledviewer) \
 ))
 
 $(eval $(call gb_Helper_register_executables_for_install,SDK,sdk, \
@@ -145,8 +145,6 @@ $(eval $(call gb_Helper_register_executables_for_install,OOO,writer_brand, \
 
 $(eval $(call gb_Helper_register_executables_for_install,OOO,ooo, \
 	gengal \
-	$(if $(filter TRUE-TRUE,$(USING_X11)-$(ENABLE_NPAPI_FROM_BROWSER)),pluginapp.bin) \
-	$(if $(ENABLE_TDE),tdefilepicker) \
 	$(if $(filter WNT,$(OS)),,uri-encode) \
 	ui-previewer \
 	$(if $(filter WNT,$(OS)), \
@@ -223,6 +221,13 @@ $(eval $(call gb_Helper_register_libraries_for_install,OOOLIBS,graphicfilter, \
 
 $(eval $(call gb_Helper_register_libraries_for_install,OOOLIBS,tde, \
 	$(if $(ENABLE_TDE),tdebe1) \
+	$(if $(USING_X11), \
+		$(if $(ENABLE_TDE),vclplug_tde) \
+	) \
+))
+
+$(eval $(call gb_Helper_register_executables_for_install,OOO,tde, \
+       $(if $(ENABLE_TDE),tdefilepicker) \
 ))
 
 $(eval $(call gb_Helper_register_libraries_for_install,OOOLIBS,impress, \
@@ -244,7 +249,6 @@ $(eval $(call gb_Helper_register_libraries_for_install,OOOLIBS,gnome, \
 	$(if $(ENABLE_EVOAB2),evoab) \
 	$(if $(ENABLE_GTK),vclplug_gtk) \
 	$(if $(ENABLE_GTK3),vclplug_gtk3) \
-	$(if $(ENABLE_GCONF),gconfbe1) \
 	$(if $(ENABLE_SYSTRAY_GTK),qstart_gtk) \
 	$(if $(ENABLE_GIO),losessioninstall) \
 	$(if $(ENABLE_GIO),ucpgio1) \
@@ -308,18 +312,8 @@ $(eval $(call gb_Helper_register_libraries_for_install,OOOLIBS,ooo, \
 	$(if $(ENABLE_OPENGL_CANVAS),oglcanvas) \
 	drawinglayer \
 	editeng \
-	egi \
-	eme \
 	$(if $(filter WNT,$(OS)),$(if $(DISABLE_ATL),,emser)) \
-	epb \
-	epg \
-	epp \
-	eps \
-	ept \
-	era \
-	eti \
 	evtatt \
-	exp \
 	expwrap \
 	$(call gb_Helper_optional,DBCONNECTIVITY, \
 		flat \
@@ -341,19 +335,9 @@ $(eval $(call gb_Helper_register_libraries_for_install,OOOLIBS,ooo, \
 	$(if $(filter DESKTOP,$(BUILD_TYPE)),helplinker) \
 	i18npool \
 	i18nsearch \
+    gie \
 	hyphen \
-	icd \
-	icg \
-	idx \
-	ime \
-	ipb \
-	ipd \
-	ips \
-	ipt \
-	ipx \
-	ira \
-	itg \
-	iti \
+    icg \
 	$(if $(ENABLE_JAVA),jdbc) \
 	ldapbe2 \
 	localebe1 \
@@ -375,7 +359,6 @@ $(eval $(call gb_Helper_register_libraries_for_install,OOOLIBS,ooo, \
 	$(call gb_Helper_optional,OPENCL,opencl) \
 	passwordcontainer \
 	pcr \
-	$(if $(ENABLE_NPAPI_FROM_BROWSER),pl) \
 	pdffilter \
 	$(call gb_Helper_optional,SCRIPTING,protocolhandler) \
 	res \
@@ -411,6 +394,7 @@ $(eval $(call gb_Helper_register_libraries_for_install,OOOLIBS,ooo, \
 	$(if $(ENABLE_TELEPATHY),tubes) \
 	ucpexpand1 \
 	ucpext \
+	ucpimage \
 	ucpcmis1 \
 	ucptdoc1 \
 	unordf \
@@ -426,7 +410,6 @@ $(eval $(call gb_Helper_register_libraries_for_install,OOOLIBS,ooo, \
 	vclcanvas \
 	$(if $(USING_X11), \
 		vclplug_gen \
-		$(if $(ENABLE_TDE),vclplug_tde) \
 	) \
 	writerperfect \
 	xmlscript \
@@ -436,14 +419,8 @@ $(eval $(call gb_Helper_register_libraries_for_install,OOOLIBS,ooo, \
 	xof \
 	xsltdlg \
 	xsltfilter \
-	$(if $(WITH_MOZAB4WIN), \
-		mozab2 \
-		mozabdrv \
-	) \
-	$(if $(WITH_MOZAB4WIN),,\
-		mork \
-		mozbootstrap \
-	) \
+	mork \
+	mozbootstrap \
 	$(if $(filter $(OS),WNT), \
 		ado \
 		$(if $(DISABLE_ATL),,oleautobridge) \
@@ -578,7 +555,7 @@ $(eval $(call gb_Helper_register_libraries_for_install,PLAINLIBS_OOO,ooo, \
 	i18nlangtag \
 	i18nutil \
 	index_data \
-	$(if $(and $(ENABLE_GTK3), $(filter LINUX,$(OS))), libreofficekitgtk) \
+	$(if $(and $(ENABLE_GTK3), $(filter LINUX %BSD SOLARIS,$(OS))), libreofficekitgtk) \
 	localedata_en \
 	localedata_es \
 	localedata_euro \

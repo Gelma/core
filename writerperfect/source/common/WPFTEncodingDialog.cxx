@@ -77,8 +77,13 @@ std::pair<OUStringLiteral, OUStringLiteral> const s_encodings[] =
     {OUStringLiteral("CP862"), OUStringLiteral("Hebrew (DOS/OS2-862)")},
     {OUStringLiteral("CP1255"), OUStringLiteral("Hebrew (Windows-1255)")},
     {OUStringLiteral("CP500"), OUStringLiteral("International (DOS/OS2-500)")},
+    {OUStringLiteral("CP932"), OUStringLiteral("Japanese (Windows-932)")},
     {OUStringLiteral("MacThai"), OUStringLiteral("Thai (Apple Macintosh)")},
     {OUStringLiteral("CP874"), OUStringLiteral("Thai (DOS/OS2-874)")},
+    {
+        OUStringLiteral("CP950"),
+        OUStringLiteral("Traditional Chinese (Windows-950)")
+    },
     {
         OUStringLiteral("MacTurkish"),
         OUStringLiteral("Turkish (Apple Macintosh)")
@@ -189,13 +194,13 @@ OUString WPFTEncodingDialog::GetEncoding() const
     return getEncoding(m_pLbCharset);
 }
 
-IMPL_LINK_NOARG_TYPED(WPFTEncodingDialog, CancelHdl, Button*, void)
+IMPL_LINK_NOARG_TYPED(WPFTEncodingDialog, CancelHdl, Button *, void)
 {
     m_userHasCancelled=true;
     Close();
 }
 
-IMPL_LINK_TYPED(WPFTEncodingDialog, DoubleClickHdl, ListBox&, rLb, void)
+IMPL_LINK_TYPED(WPFTEncodingDialog, DoubleClickHdl, ListBox &, rLb, void)
 {
     if (&rLb == m_pLbCharset)
     {

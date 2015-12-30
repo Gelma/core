@@ -85,13 +85,13 @@ public:
         mrProperties(rProps) {}
 
     virtual sal_Bool SAL_CALL hasPropertyByName( const OUString& rName )
-        throw(uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(uno::RuntimeException, std::exception) override;
 
     virtual beans::Property SAL_CALL getPropertyByName( const OUString& rName )
-        throw(uno::RuntimeException, beans::UnknownPropertyException, std::exception) SAL_OVERRIDE;
+        throw(uno::RuntimeException, beans::UnknownPropertyException, std::exception) override;
 
     virtual uno::Sequence< beans::Property > SAL_CALL getProperties()
-        throw(uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(uno::RuntimeException, std::exception) override;
 
 private:
     const std::map<OUString, uno::Any>& mrProperties;
@@ -453,23 +453,10 @@ void DummyPieSegment2D::render()
 
 }
 
-DummyPieSegment::DummyPieSegment(
-        const drawing::Direction3D& rOffset, const drawing::HomogenMatrix& rUnitCircleToScene ):
-    maOffset(rOffset),
-    maUnitCircleToScene(rUnitCircleToScene)
-{
-}
-
-DummyStripe::DummyStripe(const Stripe& rStripe, const uno::Reference< beans::XPropertySet > & xPropSet,
-        const tPropertyNameMap& rPropertyNameMap ):
-    maStripe(rStripe)
+DummyStripe::DummyStripe(const uno::Reference< beans::XPropertySet > & xPropSet,
+        const tPropertyNameMap& rPropertyNameMap )
 {
     setProperties(xPropSet, rPropertyNameMap, maProperties);
-}
-
-DummyArea3D::DummyArea3D(const drawing::PolyPolygonShape3D& rShape):
-    maShapes(rShape)
-{
 }
 
 DummyArea2D::DummyArea2D(const drawing::PointSequenceSequence& rShape):
@@ -505,8 +492,6 @@ void DummyArea2D::render()
 
 DummySymbol2D::DummySymbol2D(const drawing::Position3D& rPos, const drawing::Direction3D& rSize,
         sal_Int32 nStandardSymbol, sal_Int32 nFillColor):
-    mrPosition(rPos),
-    mrSize(rSize),
     mnStandardSymbol(nStandardSymbol),
     mnFillColor(nFillColor)
 {
@@ -592,8 +577,7 @@ void setProperties( const VLineProperties& rLineProperties, std::map<OUString, u
 
 }
 
-DummyLine3D::DummyLine3D(const drawing::PolyPolygonShape3D& rPoints, const VLineProperties& rLineProperties):
-    maPoints(rPoints)
+DummyLine3D::DummyLine3D(const VLineProperties& rLineProperties)
 {
     setProperties(rLineProperties, maProperties);
 }
@@ -835,7 +819,8 @@ DummyText::DummyText(const OUString& rText, const tNameSequence& rNames,
     {
         vcl::Font aFont;
         std::for_each(maProperties.begin(), maProperties.end(), FontAttribSetter(aFont));
-        ScopedVclPtrInstance< VirtualDevice > pDevice(*Application::GetDefaultDevice(), 0, 0);
+        ScopedVclPtrInstance< VirtualDevice > pDevice(*Application::GetDefaultDevice(),
+                                                      DeviceFormat::DEFAULT, DeviceFormat::DEFAULT);
         pDevice->Erase();
         Rectangle aRect;
         pDevice->SetFont(aFont);
@@ -1011,9 +996,7 @@ void SAL_CALL DummyGroup2D::setSize( const awt::Size& )
     SAL_WARN("chart2.opengl", "set size on group shape");
 }
 
-DummyGraphic2D::DummyGraphic2D(const drawing::Position3D& rPos, const drawing::Direction3D& rSize,
-        const uno::Reference< graphic::XGraphic >& rGraphic ):
-    mxGraphic(rGraphic)
+DummyGraphic2D::DummyGraphic2D(const drawing::Position3D& rPos, const drawing::Direction3D& rSize)
 {
     setPosition(Position3DToAWTPoint(rPos));
     setSize(Direction3DToAWTSize(rSize));

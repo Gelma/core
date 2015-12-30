@@ -67,8 +67,8 @@ public:
         explicit SingleFilter(const ScDPItemData &rItem);
         virtual ~SingleFilter() {}
 
-        virtual bool match(const ScDPItemData& rCellData) const SAL_OVERRIDE;
-        virtual std::vector<ScDPItemData> getMatchValues() const SAL_OVERRIDE;
+        virtual bool match(const ScDPItemData& rCellData) const override;
+        virtual std::vector<ScDPItemData> getMatchValues() const override;
 
     private:
         explicit SingleFilter();
@@ -82,8 +82,8 @@ public:
     public:
         GroupFilter();
         virtual ~GroupFilter() {}
-        virtual bool match(const ScDPItemData& rCellData) const SAL_OVERRIDE;
-        virtual std::vector<ScDPItemData> getMatchValues() const SAL_OVERRIDE;
+        virtual bool match(const ScDPItemData& rCellData) const override;
+        virtual std::vector<ScDPItemData> getMatchValues() const override;
         void addMatchItem(const ScDPItemData& rItem);
         size_t getMatchItemCount() const;
 
@@ -115,7 +115,7 @@ public:
     /** Check whether a specified row is active or not.  When a row is active,
         it is used in calculation of the results data.  A row becomes inactive
         when it is filtered out by page field. */
-    bool isRowActive(sal_Int32 nRow, sal_Int32* pLastRow = NULL) const;
+    bool isRowActive(sal_Int32 nRow, sal_Int32* pLastRow = nullptr) const;
 
     /** Set filter on/off flag to each row to control visibility.  The caller
         must ensure that the table is filled before calling this function. */
@@ -137,7 +137,7 @@ public:
         result to rTabData.  This method is used, for example, to generate
         a drill-down data table. */
     void filterTable(const std::vector<Criterion>& rCriteria,
-                     ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Any > >& rTabData,
+                     css::uno::Sequence< css::uno::Sequence< css::uno::Any > >& rTabData,
                      const std::unordered_set<sal_Int32>& rRepeatIfEmptyDims);
 
     static SCROW getOrder(long nDim, SCROW nIndex);
@@ -150,7 +150,7 @@ public:
 #endif
 
 private:
-    ScDPFilteredCache(const ScDPFilteredCache&) SAL_DELETED_FUNCTION;
+    ScDPFilteredCache(const ScDPFilteredCache&) = delete;
 
     /**
      * Check if a given row meets all specified criteria.

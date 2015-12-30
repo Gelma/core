@@ -49,12 +49,11 @@ ObjectType OEvoabTables::createObject(const OUString& aName)
 {
     OUString aSchema(  "%" );
 
-    Sequence< OUString > aTypes(1);
-    aTypes[0] = "TABLE";
+    Sequence< OUString > aTypes { "TABLE" };
 
     Reference< XResultSet > xResult = m_xMetaData->getTables(Any(),aSchema,aName,aTypes);
 
-    ObjectType xRet = NULL;
+    ObjectType xRet = nullptr;
     if(xResult.is())
     {
         Reference< XRow > xRow(xResult,UNO_QUERY);

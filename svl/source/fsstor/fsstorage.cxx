@@ -78,8 +78,8 @@ struct FSStorage_Impl
     : m_aURL( aContent.getURL() )
     , m_pContent( new ::ucbhelper::Content( aContent ) )
     , m_nMode( nMode )
-    , m_pListenersContainer( NULL )
-    , m_pTypeCollection( NULL )
+    , m_pListenersContainer( nullptr )
+    , m_pTypeCollection( nullptr )
     , m_xContext( xContext )
     {
         OSL_ENSURE( !m_aURL.isEmpty(), "The URL must not be empty" );
@@ -88,8 +88,8 @@ struct FSStorage_Impl
     ~FSStorage_Impl();
 
     // Copy assignment is forbidden and not implemented.
-    FSStorage_Impl (const FSStorage_Impl &) SAL_DELETED_FUNCTION;
-    FSStorage_Impl & operator= (const FSStorage_Impl &) SAL_DELETED_FUNCTION;
+    FSStorage_Impl (const FSStorage_Impl &) = delete;
+    FSStorage_Impl & operator= (const FSStorage_Impl &) = delete;
 };
 
 FSStorage_Impl::~FSStorage_Impl()
@@ -286,11 +286,11 @@ void SAL_CALL FSStorage::release() throw()
 uno::Sequence< uno::Type > SAL_CALL FSStorage::getTypes()
         throw( uno::RuntimeException, std::exception )
 {
-    if ( m_pImpl->m_pTypeCollection == NULL )
+    if ( m_pImpl->m_pTypeCollection == nullptr )
     {
         ::osl::MutexGuard aGuard( m_aMutex );
 
-        if ( m_pImpl->m_pTypeCollection == NULL )
+        if ( m_pImpl->m_pTypeCollection == nullptr )
         {
             m_pImpl->m_pTypeCollection = new ::cppu::OTypeCollection
                                 (   cppu::UnoType<lang::XTypeProvider>::get()
@@ -410,7 +410,7 @@ uno::Reference< io::XStream > SAL_CALL FSStorage::openStreamElement(
                 if ( pStream )
                 {
                     if ( !pStream->GetError() )
-                        xResult = uno::Reference < io::XStream >( new ::utl::OStreamWrapper( *pStream ) );
+                        xResult.set( new ::utl::OStreamWrapper( *pStream ) );
                     else
                         delete pStream;
                 }
@@ -540,11 +540,10 @@ uno::Reference< embed::XStorage > SAL_CALL FSStorage::openStorageElement(
             throw io::IOException(); // there is no such folder
 
         ::ucbhelper::Content aResultContent( aFolderURL.GetMainURL( INetURLObject::NO_DECODE ), xDummyEnv, comphelper::getProcessComponentContext() );
-        xResult = uno::Reference< embed::XStorage >(
-                            static_cast< OWeakObject* >( new FSStorage( aResultContent,
-                                                                        nStorageMode,
-                                                                        m_pImpl->m_xContext ) ),
-                            uno::UNO_QUERY );
+        xResult.set( static_cast< OWeakObject* >( new FSStorage( aResultContent,
+                                                                 nStorageMode,
+                                                                 m_pImpl->m_xContext ) ),
+                     uno::UNO_QUERY );
     }
     catch( embed::InvalidStorageException& )
     {
@@ -1017,8 +1016,7 @@ uno::Sequence< OUString > SAL_CALL FSStorage::getElementNames()
         if ( !GetContent() )
             throw io::IOException(); // TODO: error handling
 
-        uno::Sequence< OUString > aProps( 1 );
-        aProps[0] = "Title";
+        uno::Sequence<OUString> aProps { "Title" };
         ::ucbhelper::ResultSetInclude eInclude = ::ucbhelper::INCLUDE_FOLDERS_AND_DOCUMENTS;
 
         sal_Int32 nSize = 0;
@@ -1123,8 +1121,7 @@ sal_Bool SAL_CALL FSStorage::hasElements()
         if ( !GetContent() )
             throw io::IOException(); // TODO: error handling
 
-        uno::Sequence< OUString > aProps( 1 );
-        aProps[0] = "TargetURL";
+        uno::Sequence<OUString> aProps { "TargetURL" };
         ::ucbhelper::ResultSetInclude eInclude = ::ucbhelper::INCLUDE_FOLDERS_AND_DOCUMENTS;
 
         uno::Reference< sdbc::XResultSet > xResultSet = GetContent()->createCursor( aProps, eInclude );
@@ -1156,7 +1153,7 @@ void SAL_CALL FSStorage::dispose()
     }
 
     delete m_pImpl;
-    m_pImpl = NULL;
+    m_pImpl = nullptr;
 }
 
 void SAL_CALL FSStorage::addEventListener(

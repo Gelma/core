@@ -42,7 +42,7 @@ class SFX2_DLLPUBLIC SfxEventHint : public SfxHint
     sal_uInt16              nEventId;
 
 public:
-    SfxEventHint( sal_uInt16 nId, const OUString& aName, SfxObjectShell *pObj = 0 )
+    SfxEventHint( sal_uInt16 nId, const OUString& aName, SfxObjectShell *pObj = nullptr )
                         :   pObjShell(pObj),
                             aEventName(aName),
                             nEventId(nId)
@@ -62,7 +62,7 @@ public:
 
 class SFX2_DLLPUBLIC SfxViewEventHint : public SfxEventHint
 {
-    ::com::sun::star::uno::Reference< css::frame::XController2 > xViewController;
+    css::uno::Reference< css::frame::XController2 > xViewController;
 
 public:
     SfxViewEventHint( sal_uInt16 nId, const OUString& aName, SfxObjectShell *pObj, const css::uno::Reference< css::frame::XController >& xController )
@@ -84,7 +84,7 @@ class Printer;
 class SfxPrintingHint : public SfxViewEventHint
 {
     sal_Int32 mnPrintableState;
-    com::sun::star::uno::Sequence < com::sun::star::beans::PropertyValue > aOpts;
+    css::uno::Sequence < css::beans::PropertyValue > aOpts;
 public:
         SfxPrintingHint(
                 sal_Int32 nEvent,
@@ -101,7 +101,7 @@ public:
         {}
 
         SfxPrintingHint( sal_Int32 nEvent )
-        : SfxViewEventHint( SFX_EVENT_PRINTDOC, rtl::OUString(), 0, css::uno::Reference< css::frame::XController >() )
+        : SfxViewEventHint( SFX_EVENT_PRINTDOC, rtl::OUString(), nullptr, css::uno::Reference< css::frame::XController >() )
         , mnPrintableState( nEvent )
         {}
 

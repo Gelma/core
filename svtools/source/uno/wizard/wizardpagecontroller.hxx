@@ -39,23 +39,23 @@ namespace svt { namespace uno
     public:
         WizardPageController(
             WizardShell& i_rParent,
-            const ::com::sun::star::uno::Reference< ::com::sun::star::ui::dialogs::XWizardController >& i_rController,
+            const css::uno::Reference< css::ui::dialogs::XWizardController >& i_rController,
             const sal_Int16 i_nPageId
         );
         virtual ~WizardPageController();
 
         // IWizardPageController overridables
-        virtual void        initializePage() SAL_OVERRIDE;
-        virtual bool        commitPage( WizardTypes::CommitPageReason _eReason ) SAL_OVERRIDE;
-        virtual bool        canAdvance() const SAL_OVERRIDE;
+        virtual void        initializePage() override;
+        virtual bool        commitPage( WizardTypes::CommitPageReason _eReason ) override;
+        virtual bool        canAdvance() const override;
 
-        const ::com::sun::star::uno::Reference< ::com::sun::star::ui::dialogs::XWizardPage >&
+        const css::uno::Reference< css::ui::dialogs::XWizardPage >&
                             getWizardPage() const { return m_xWizardPage; }
         TabPage*            getTabPage() const;
 
     private:
-        const ::com::sun::star::uno::Reference< ::com::sun::star::ui::dialogs::XWizardController >  m_xController;
-        ::com::sun::star::uno::Reference< ::com::sun::star::ui::dialogs::XWizardPage >              m_xWizardPage;
+        const css::uno::Reference< css::ui::dialogs::XWizardController >  m_xController;
+        css::uno::Reference< css::ui::dialogs::XWizardPage >              m_xWizardPage;
         const sal_Int16                                                                             m_nPageId;
     };
 

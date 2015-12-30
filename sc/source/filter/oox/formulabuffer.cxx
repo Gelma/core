@@ -56,10 +56,10 @@ public:
         SCROW mnRow;
         ScFormulaCell* mpCell;
 
-        Item() : mnRow(-1), mpCell(NULL) {}
+        Item() : mnRow(-1), mpCell(nullptr) {}
     };
 
-    CachedTokenArray( ScDocument& rDoc ) :
+    explicit CachedTokenArray( ScDocument& rDoc ) :
         maCxt(&rDoc, formula::FormulaGrammar::GRAM_OOXML) {}
 
     ~CachedTokenArray()
@@ -74,7 +74,7 @@ public:
         // Check if a token array is cached for this column.
         ColCacheType::iterator it = maCache.find(rPos.Col());
         if (it == maCache.end())
-            return NULL;
+            return nullptr;
 
         Item& rCached = *it->second;
         const ScTokenArray& rCode = *rCached.mpCell->GetCode();
@@ -82,7 +82,7 @@ public:
         if (rFormula == aPredicted)
             return &rCached;
 
-        return NULL;
+        return nullptr;
     }
 
     void store( const ScAddress& rPos, ScFormulaCell* pCell )
@@ -193,7 +193,7 @@ void applyCellFormulas(
         {
             // Use the cached version to avoid re-compilation.
 
-            ScFormulaCell* pCell = NULL;
+            ScFormulaCell* pCell = nullptr;
             if (p->mnRow + 1 == aPos.Row())
             {
                 // Put them in the same formula group.
@@ -331,7 +331,7 @@ public:
     virtual ~WorkerThread() {}
 
 protected:
-    virtual void execute() SAL_OVERRIDE
+    virtual void execute() override
     {
         processSheetFormulaCells(mrDoc, mrItem, *mpFormatter, mrExternalLinks);
     }
@@ -340,21 +340,21 @@ protected:
 }
 
 FormulaBuffer::SharedFormulaEntry::SharedFormulaEntry(
-    const table::CellAddress& rAddr, const table::CellRangeAddress& rRange,
+    const table::CellAddress& rAddr,
     const OUString& rTokenStr, sal_Int32 nSharedId ) :
-    maAddress(rAddr), maRange(rRange), maTokenStr(rTokenStr), mnSharedId(nSharedId) {}
+    maAddress(rAddr), maTokenStr(rTokenStr), mnSharedId(nSharedId) {}
 
 FormulaBuffer::SharedFormulaDesc::SharedFormulaDesc(
-    const com::sun::star::table::CellAddress& rAddr, sal_Int32 nSharedId,
+    const css::table::CellAddress& rAddr, sal_Int32 nSharedId,
     const OUString& rCellValue, sal_Int32 nValueType ) :
     maAddress(rAddr), mnSharedId(nSharedId), maCellValue(rCellValue), mnValueType(nValueType) {}
 
 FormulaBuffer::SheetItem::SheetItem() :
-    mpCellFormulas(NULL),
-    mpArrayFormulas(NULL),
-    mpCellFormulaValues(NULL),
-    mpSharedFormulaEntries(NULL),
-    mpSharedFormulaIDs(NULL) {}
+    mpCellFormulas(nullptr),
+    mpArrayFormulas(nullptr),
+    mpCellFormulaValues(nullptr),
+    mpSharedFormulaEntries(nullptr),
+    mpSharedFormulaIDs(nullptr) {}
 
 FormulaBuffer::FormulaBuffer( const WorkbookHelper& rHelper ) : WorkbookHelper( rHelper )
 {
@@ -425,7 +425,7 @@ void FormulaBuffer::finalizeImport()
         }
     }
 
-    rDoc.getDoc().SetAutoNameCache(NULL);
+    rDoc.getDoc().SetAutoNameCache(nullptr);
 
     xFormulaBar->setPosition( 1.0 );
 }
@@ -457,16 +457,16 @@ FormulaBuffer::SheetItem FormulaBuffer::getSheetItem( SCTAB nTab )
 }
 
 void FormulaBuffer::createSharedFormulaMapEntry(
-    const table::CellAddress& rAddress, const table::CellRangeAddress& rRange,
+    const table::CellAddress& rAddress,
     sal_Int32 nSharedId, const OUString& rTokens )
 {
     assert( rAddress.Sheet >= 0 && (size_t)rAddress.Sheet < maSharedFormulas.size() );
     std::vector<SharedFormulaEntry>& rSharedFormulas = maSharedFormulas[ rAddress.Sheet ];
-    SharedFormulaEntry aEntry(rAddress, rRange, rTokens, nSharedId);
+    SharedFormulaEntry aEntry(rAddress, rTokens, nSharedId);
     rSharedFormulas.push_back( aEntry );
 }
 
-void FormulaBuffer::setCellFormula( const ::com::sun::star::table::CellAddress& rAddress, const OUString& rTokenStr )
+void FormulaBuffer::setCellFormula( const css::table::CellAddress& rAddress, const OUString& rTokenStr )
 {
     assert( rAddress.Sheet >= 0 && (size_t)rAddress.Sheet < maCellFormulas.size() );
     maCellFormulas[ rAddress.Sheet ].push_back( TokenAddressItem( rTokenStr, rAddress ) );
@@ -480,7 +480,7 @@ void FormulaBuffer::setCellFormula(
         SharedFormulaDesc(rAddress, nSharedId, rCellValue, nValueType));
 }
 
-void FormulaBuffer::setCellArrayFormula( const ::com::sun::star::table::CellRangeAddress& rRangeAddress, const ::com::sun::star::table::CellAddress& rTokenAddress, const OUString& rTokenStr )
+void FormulaBuffer::setCellArrayFormula( const css::table::CellRangeAddress& rRangeAddress, const css::table::CellAddress& rTokenAddress, const OUString& rTokenStr )
 {
 
     TokenAddressItem tokenPair( rTokenStr, rTokenAddress );

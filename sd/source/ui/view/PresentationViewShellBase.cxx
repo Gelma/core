@@ -36,7 +36,6 @@ namespace sd {
 
 class DrawDocShell;
 
-TYPEINIT1(PresentationViewShellBase, ViewShellBase);
 
 // We have to expand the SFX_IMPL_VIEWFACTORY macro to call LateInit() after a
 // new PresentationViewShellBase object has been constructed.
@@ -86,7 +85,7 @@ PresentationViewShellBase::~PresentationViewShellBase()
 
 void PresentationViewShellBase::InitializeFramework()
 {
-    com::sun::star::uno::Reference<com::sun::star::frame::XController>
+    css::uno::Reference<css::frame::XController>
         xController (GetController());
     sd::framework::PresentationModule::Initialize(xController);
 }

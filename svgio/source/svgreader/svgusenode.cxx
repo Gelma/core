@@ -30,7 +30,7 @@ namespace svgio
             SvgNode* pParent)
         :   SvgNode(SVGTokenG, rDocument, pParent),
             maSvgStyleAttributes(*this),
-            mpaTransform(0),
+            mpaTransform(nullptr),
             maX(),
             maY(),
             maWidth(),
@@ -46,7 +46,7 @@ namespace svgio
 
         const SvgStyleAttributes* SvgUseNode::getSvgStyleAttributes() const
         {
-            return checkForCssStyle(OUString("use"), maSvgStyleAttributes);
+            return checkForCssStyle("use", maSvgStyleAttributes);
         }
 
         void SvgUseNode::parseAttribute(const OUString& rTokenName, SVGToken aSVGToken, const OUString& aContent)
@@ -138,7 +138,7 @@ namespace svgio
             }
         }
 
-        void SvgUseNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DSequence& rTarget, bool /*bReferenced*/) const
+        void SvgUseNode::decomposeSvgNode(drawinglayer::primitive2d::Primitive2DContainer& rTarget, bool /*bReferenced*/) const
         {
             // try to access link to content
             const SvgNode* mpXLink = getDocument().findSvgNodeById(maXLink);
@@ -146,16 +146,16 @@ namespace svgio
             if(mpXLink && Display_none != mpXLink->getDisplay())
             {
                 // decompose children
-                drawinglayer::primitive2d::Primitive2DSequence aNewTarget;
+                drawinglayer::primitive2d::Primitive2DContainer aNewTarget;
 
                 // todo: in case mpXLink is a SVGTokenSvg or SVGTokenSymbol the
                 // SVG docs want the getWidth() and getHeight() from this node
                 // to be valid for the subtree.
                 const_cast< SvgNode* >(mpXLink)->setAlternativeParent(this);
                 mpXLink->decomposeSvgNode(aNewTarget, true);
-                const_cast< SvgNode* >(mpXLink)->setAlternativeParent(0);
+                const_cast< SvgNode* >(mpXLink)->setAlternativeParent();
 
-                if(aNewTarget.hasElements())
+                if(!aNewTarget.empty())
                 {
                     basegfx::B2DHomMatrix aTransform;
 
@@ -178,11 +178,11 @@ namespace svgio
                                 aTransform,
                                 aNewTarget));
 
-                        drawinglayer::primitive2d::appendPrimitive2DReferenceToPrimitive2DSequence(rTarget, xRef);
+                        rTarget.push_back(xRef);
                     }
                     else
                     {
-                        drawinglayer::primitive2d::appendPrimitive2DSequenceToPrimitive2DSequence(rTarget, aNewTarget);
+                        rTarget.append(aNewTarget);
                     }
                 }
             }

@@ -110,10 +110,10 @@ static sal_Int32 getShapeIndex( const Reference< XShape >& xShape )
     while( xChild.is() && !xPage.is() )
     {
         Reference< XInterface > x( xChild->getParent() );
-        xChild = Reference< XChild >::query( x );
+        xChild.set( x, UNO_QUERY );
         Reference< XDrawPage > xTestPage( x, UNO_QUERY );
         if( xTestPage.is() )
-            xPage = Reference< XShapes >::query( x );
+            xPage.set( x, UNO_QUERY );
     }
 
     sal_Int32 nIndex = 1;
@@ -206,12 +206,12 @@ public:
     CustomAnimationListEntryItem(SvTreeListEntry*, sal_uInt16 nFlags, const OUString& aDescription,
                                  CustomAnimationEffectPtr pEffect, CustomAnimationList* pParent);
     virtual ~CustomAnimationListEntryItem();
-    void InitViewData(SvTreeListBox*,SvTreeListEntry*,SvViewDataItem*) SAL_OVERRIDE;
-    SvLBoxItem* Create() const SAL_OVERRIDE;
-    void Clone(SvLBoxItem* pSource) SAL_OVERRIDE;
+    void InitViewData(SvTreeListBox*,SvTreeListEntry*,SvViewDataItem*) override;
+    SvLBoxItem* Create() const override;
+    void Clone(SvLBoxItem* pSource) override;
 
     virtual void Paint(const Point&, SvTreeListBox& rDev, vcl::RenderContext& rRenderContext,
-                       const SvViewDataEntry* pView,const SvTreeListEntry& rEntry) SAL_OVERRIDE;
+                       const SvViewDataEntry* pView,const SvTreeListEntry& rEntry) override;
 private:
     VclPtr<CustomAnimationList> mpParent;
     OUString        maDescription;
@@ -307,7 +307,7 @@ void CustomAnimationListEntryItem::Paint(const Point& rPos, SvTreeListBox& rDev,
 
 SvLBoxItem* CustomAnimationListEntryItem::Create() const
 {
-    return NULL;
+    return nullptr;
 }
 
 void CustomAnimationListEntryItem::Clone( SvLBoxItem* )
@@ -318,7 +318,7 @@ class CustomAnimationListEntry : public SvTreeListEntry
 {
 public:
     CustomAnimationListEntry();
-    CustomAnimationListEntry( CustomAnimationEffectPtr pEffect );
+    explicit CustomAnimationListEntry( CustomAnimationEffectPtr pEffect );
     virtual ~CustomAnimationListEntry();
 
     CustomAnimationEffectPtr getEffect() const { return mpEffect; }
@@ -345,11 +345,11 @@ class CustomAnimationTriggerEntryItem : public SvLBoxString
 public:
                     CustomAnimationTriggerEntryItem( SvTreeListEntry*,sal_uInt16 nFlags, const OUString& aDescription );
     virtual         ~CustomAnimationTriggerEntryItem();
-    void            InitViewData( SvTreeListBox*,SvTreeListEntry*,SvViewDataItem* ) SAL_OVERRIDE;
-    SvLBoxItem*     Create() const SAL_OVERRIDE;
-    void            Clone( SvLBoxItem* pSource ) SAL_OVERRIDE;
+    void            InitViewData( SvTreeListBox*,SvTreeListEntry*,SvViewDataItem* ) override;
+    SvLBoxItem*     Create() const override;
+    void            Clone( SvLBoxItem* pSource ) override;
     virtual void Paint(const Point& rPos, SvTreeListBox& rOutDev, vcl::RenderContext& rRenderContext,
-                       const SvViewDataEntry* pView, const SvTreeListEntry& rEntry) SAL_OVERRIDE;
+                       const SvViewDataEntry* pView, const SvTreeListEntry& rEntry) override;
 
 private:
     OUString        maDescription;
@@ -415,7 +415,7 @@ void CustomAnimationTriggerEntryItem::Paint(const Point& rPos, SvTreeListBox& rD
 
 SvLBoxItem* CustomAnimationTriggerEntryItem::Create() const
 {
-    return NULL;
+    return nullptr;
 }
 
 void CustomAnimationTriggerEntryItem::Clone( SvLBoxItem* )
@@ -425,9 +425,9 @@ void CustomAnimationTriggerEntryItem::Clone( SvLBoxItem* )
 CustomAnimationList::CustomAnimationList( vcl::Window* pParent )
     : SvTreeListBox( pParent, WB_TABSTOP | WB_BORDER | WB_HASLINES | WB_HASBUTTONS | WB_HASBUTTONSATROOT )
     , mbIgnorePaint(false)
-    , mpController(0)
+    , mpController(nullptr)
     , mnLastGroupId(0)
-    , mpLastParentEntry(0)
+    , mpLastParentEntry(nullptr)
 {
 
     EnableContextMenuHandling();
@@ -512,8 +512,8 @@ void CustomAnimationList::clear()
 {
     Clear();
 
-    mpLastParentEntry = 0;
-    mxLastTargetShape = 0;
+    mpLastParentEntry = nullptr;
+    mxLastTargetShape = nullptr;
 }
 
 void CustomAnimationList::update( MainSequencePtr pMainSequence )
@@ -530,7 +530,7 @@ void CustomAnimationList::update( MainSequencePtr pMainSequence )
 
 struct stl_append_effect_func : public std::unary_function<CustomAnimationEffectPtr, void>
 {
-    stl_append_effect_func( CustomAnimationList& rList ) : mrList( rList ) {}
+    explicit stl_append_effect_func( CustomAnimationList& rList ) : mrList( rList ) {}
     void operator()(CustomAnimationEffectPtr pEffect);
     CustomAnimationList& mrList;
 };
@@ -545,7 +545,7 @@ void CustomAnimationList::update()
     mbIgnorePaint = true;
     SetUpdateMode( false );
 
-    CustomAnimationListEntry* pEntry = 0;
+    CustomAnimationListEntry* pEntry = nullptr;
 
     std::list< CustomAnimationEffectPtr > aExpanded;
     std::list< CustomAnimationEffectPtr > aSelected;
@@ -608,7 +608,7 @@ void CustomAnimationList::update()
         long nFirstSelNew = -1;
         long nLastSelNew = -1;
         std::for_each( mpMainSequence->getBegin(), mpMainSequence->getEnd(), stl_append_effect_func( *this ) );
-        mpLastParentEntry = 0;
+        mpLastParentEntry = nullptr;
 
         const InteractiveSequenceList& rISL = mpMainSequence->getInteractiveSequenceList();
 
@@ -635,7 +635,7 @@ void CustomAnimationList::update()
                     pViewData->SetSelectable(false);
 
                 std::for_each( pIS->getBegin(), pIS->getEnd(), stl_append_effect_func( *this ) );
-                mpLastParentEntry = 0;
+                mpLastParentEntry = nullptr;
             }
         }
 
@@ -719,7 +719,7 @@ void CustomAnimationList::append( CustomAnimationEffectPtr pEffect )
     {
         aDescription = getDescription( aTarget, pEffect->getTargetSubItem() != ShapeAnimationSubType::ONLY_BACKGROUND );
 
-        SvTreeListEntry* pParentEntry = 0;
+        SvTreeListEntry* pParentEntry = nullptr;
 
         Reference< XShape > xTargetShape( pEffect->getTargetShape() );
         sal_Int32 nGroupId = pEffect->getGroupId();
@@ -834,7 +834,7 @@ bool CustomAnimationList::isExpanded( const CustomAnimationEffectPtr& pEffect ) 
     if( pEntry )
         pEntry = static_cast<CustomAnimationListEntry*>(GetParent( pEntry ));
 
-    return (pEntry == 0) || IsExpanded( pEntry );
+    return (pEntry == nullptr) || IsExpanded( pEntry );
 }
 
 EffectSequence CustomAnimationList::getSelection() const
@@ -943,7 +943,7 @@ void CustomAnimationList::Paint(vcl::RenderContext& rRenderContext, const Rectan
     SvTreeListBox::Paint(rRenderContext, rRect);
 
     // draw help text if list box is still empty
-    if( First() == 0 )
+    if( First() == nullptr )
     {
         Color aOldColor(rRenderContext.GetTextColor());
         rRenderContext.SetTextColor(rRenderContext.GetSettings().GetStyleSettings().GetDisableColor());

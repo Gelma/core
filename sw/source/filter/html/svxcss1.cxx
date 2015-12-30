@@ -48,11 +48,11 @@
 #include <svtools/svparser.hxx>
 #include <vcl/svapp.hxx>
 #include <vcl/wrkwin.hxx>
+#include <o3tl/make_unique.hxx>
 
 #include "css1kywd.hxx"
 #include "svxcss1.hxx"
 
-#include <memory>
 #include <utility>
 
 using namespace ::com::sun::star;
@@ -72,7 +72,7 @@ static CSS1PropertyEnum const aFontSizeTable[] =
     { "large",       4                   },
     { "x-large",     5                   },
     { "xx-large",    6                   },
-    { 0,                    0                   }
+    { nullptr,                    0                   }
 };
 
 static CSS1PropertyEnum const aFontWeightTable[] =
@@ -87,7 +87,7 @@ static CSS1PropertyEnum const aFontWeightTable[] =
     { "extra-bold",  WEIGHT_BOLD         }, // WEIGHT_ULTRABOLD (OBS)
     { "bolder",      WEIGHT_BOLD         },
     { "lighter",     WEIGHT_NORMAL       },
-    { 0,                    0                   }
+    { nullptr,                    0                   }
 };
 
 static CSS1PropertyEnum const aFontStyleTable[] =
@@ -95,14 +95,14 @@ static CSS1PropertyEnum const aFontStyleTable[] =
     { "normal",      ITALIC_NONE         },
     { "italic",      ITALIC_NORMAL       },
     { "oblique",     ITALIC_NORMAL       },
-    { 0,                    0                   }
+    { nullptr,                    0                   }
 };
 
 static CSS1PropertyEnum const aFontVariantTable[] =
 {
     { "normal",      SVX_CASEMAP_NOT_MAPPED      },
     { "small-caps",  SVX_CASEMAP_KAPITAELCHEN    },
-    { 0,                    0                   }
+    { nullptr,                    0                   }
 };
 
 static CSS1PropertyEnum const aTextTransformTable[] =
@@ -110,7 +110,7 @@ static CSS1PropertyEnum const aTextTransformTable[] =
     { "uppercase",  SVX_CASEMAP_VERSALIEN },
     { "lowercase",  SVX_CASEMAP_GEMEINE   },
     { "capitalize", SVX_CASEMAP_TITEL     },
-    { 0,                   0                     }
+    { nullptr,                   0                     }
 };
 
 static CSS1PropertyEnum const aDirectionTable[] =
@@ -118,7 +118,7 @@ static CSS1PropertyEnum const aDirectionTable[] =
     { "ltr",         FRMDIR_HORI_LEFT_TOP        },
     { "rtl",         FRMDIR_HORI_RIGHT_TOP       },
     { "inherit",     FRMDIR_ENVIRONMENT          },
-    { 0,                    0                   }
+    { nullptr,                    0                   }
 };
 
 static CSS1PropertyEnum const aBGRepeatTable[] =
@@ -127,7 +127,7 @@ static CSS1PropertyEnum const aBGRepeatTable[] =
     { "repeat-x",    GPOS_TILED                  },
     { "repeat-y",    GPOS_TILED                  },
     { "no-repeat",   GPOS_NONE                   },
-    { 0,                    0                           }
+    { nullptr,                    0                           }
 };
 
 static CSS1PropertyEnum const aBGHoriPosTable[] =
@@ -135,7 +135,7 @@ static CSS1PropertyEnum const aBGHoriPosTable[] =
     { "left",        GPOS_LT                 },
     { "center",      GPOS_MT                 },
     { "right",       GPOS_RT                 },
-    { 0,                    0                       }
+    { nullptr,                    0                       }
 };
 
 static CSS1PropertyEnum const aBGVertPosTable[] =
@@ -143,7 +143,7 @@ static CSS1PropertyEnum const aBGVertPosTable[] =
     { "top",         GPOS_LT                 },
     { "middle",      GPOS_LM                 },
     { "bottom",      GPOS_LB                 },
-    { 0,                    0                       }
+    { nullptr,                    0                       }
 };
 
 static CSS1PropertyEnum const aTextAlignTable[] =
@@ -152,7 +152,7 @@ static CSS1PropertyEnum const aTextAlignTable[] =
     { "center",      SVX_ADJUST_CENTER   },
     { "right",       SVX_ADJUST_RIGHT    },
     { "justify",     SVX_ADJUST_BLOCK    },
-    { 0,                    0                   }
+    { nullptr,                    0                   }
 };
 
 static CSS1PropertyEnum const aBorderWidthTable[] =
@@ -160,7 +160,7 @@ static CSS1PropertyEnum const aBorderWidthTable[] =
     { "thin",        0   },  // DEF_LINE_WIDTH_0 / DEF_DOUBLE_LINE0
     { "medium",      1   },  // DEF_LINE_WIDTH_1 / DEF_DOUBLE_LINE1
     { "thick",       2   },  // DEF_LINE_WIDTH_2 / DEF_DOUBLE_LINE2
-    { 0,                    0   }
+    { nullptr,                    0   }
 };
 
 enum CSS1BorderStyle { CSS1_BS_NONE, CSS1_BS_SINGLE, CSS1_BS_DOUBLE, CSS1_BS_DOTTED, CSS1_BS_DASHED, CSS1_BS_GROOVE, CSS1_BS_RIDGE, CSS1_BS_INSET, CSS1_BS_OUTSET };
@@ -176,7 +176,7 @@ static CSS1PropertyEnum const aBorderStyleTable[] =
     { "ridge",       CSS1_BS_RIDGE       },
     { "inset",       CSS1_BS_INSET       },
     { "outset",      CSS1_BS_OUTSET      },
-    { 0,                    0                   }
+    { nullptr,                    0                   }
 };
 
 static CSS1PropertyEnum const aFloatTable[] =
@@ -184,7 +184,7 @@ static CSS1PropertyEnum const aFloatTable[] =
     { "left",    SVX_ADJUST_LEFT         },
     { "right",   SVX_ADJUST_RIGHT        },
     { "none",    SVX_ADJUST_END          },
-    { 0,                0                       }
+    { nullptr,                0                       }
 };
 
 static CSS1PropertyEnum const aPositionTable[] =
@@ -192,7 +192,7 @@ static CSS1PropertyEnum const aPositionTable[] =
     { "absolute",    SVX_CSS1_POS_ABSOLUTE   },
     { "relative",    SVX_CSS1_POS_RELATIVE   },
     { "static",      SVX_CSS1_POS_STATIC     },
-    { 0,                    0                       }
+    { nullptr,                    0                       }
 };
 
 // Feature: PrintExt
@@ -201,7 +201,7 @@ static CSS1PropertyEnum const aSizeTable[] =
     { "auto",        SVX_CSS1_STYPE_AUTO         },
     { "landscape",   SVX_CSS1_STYPE_LANDSCAPE    },
     { "portrait",    SVX_CSS1_STYPE_PORTRAIT     },
-    { 0,                    0                           }
+    { nullptr,                    0                           }
 };
 
 static CSS1PropertyEnum const aPageBreakTable[] =
@@ -211,10 +211,9 @@ static CSS1PropertyEnum const aPageBreakTable[] =
     { "avoid",       SVX_CSS1_PBREAK_AVOID       },
     { "left",        SVX_CSS1_PBREAK_LEFT        },
     { "right",       SVX_CSS1_PBREAK_RIGHT       },
-    { 0,                    0                           }
+    { nullptr,                    0                           }
 };
 
-// /Feature: PrintExt
 
 static sal_uInt16 const aBorderWidths[] =
 {
@@ -292,7 +291,7 @@ void SvxCSS1BorderInfo::SetBorderLine( SvxBoxItemLine nLine, SvxBoxItem &rBoxIte
     if( CSS1_BS_NONE==eStyle || nAbsWidth==0 ||
         (nAbsWidth==USHRT_MAX && nNamedWidth==USHRT_MAX) )
     {
-        rBoxItem.SetLine( 0, nLine );
+        rBoxItem.SetLine( nullptr, nLine );
         return;
     }
 
@@ -342,7 +341,7 @@ void SvxCSS1BorderInfo::SetBorderLine( SvxBoxItemLine nLine, SvxBoxItem &rBoxIte
 SvxCSS1PropertyInfo::SvxCSS1PropertyInfo()
 {
     for( size_t i=0; i<SAL_N_ELEMENTS(aBorderInfos); ++i )
-        aBorderInfos[i] = 0;
+        aBorderInfos[i] = nullptr;
 
     Clear();
 }
@@ -371,16 +370,14 @@ SvxCSS1PropertyInfo::SvxCSS1PropertyInfo( const SvxCSS1PropertyInfo& rProp ) :
     eTopType( rProp.eTopType ),
     eWidthType( rProp.eWidthType ),
     eHeightType( rProp.eHeightType ),
-// Feature: PrintExt
     eSizeType( rProp.eSizeType ),
     ePageBreakBefore( rProp.ePageBreakBefore ),
     ePageBreakAfter( rProp.ePageBreakAfter )
-// /Feature: PrintExt
 {
     for( size_t i=0; i<SAL_N_ELEMENTS(aBorderInfos); ++i )
         aBorderInfos[i] = rProp.aBorderInfos[i]
                             ? new SvxCSS1BorderInfo( *rProp.aBorderInfos[i] )
-                            : 0;
+                            : nullptr;
 }
 
 SvxCSS1PropertyInfo::~SvxCSS1PropertyInfo()
@@ -393,7 +390,7 @@ void SvxCSS1PropertyInfo::DestroyBorderInfos()
     for( size_t i=0; i<SAL_N_ELEMENTS(aBorderInfos); ++i )
     {
         delete aBorderInfos[i];
-        aBorderInfos[i] = 0;
+        aBorderInfos[i] = nullptr;
     }
 }
 
@@ -484,8 +481,6 @@ void SvxCSS1PropertyInfo::Merge( const SvxCSS1PropertyInfo& rProp )
     if( rProp.ePageBreakAfter != SVX_CSS1_PBREAK_NONE )
         ePageBreakAfter = rProp.ePageBreakAfter;
 
-// /Feature: PrintExt
-
     if( rProp.eLeftType != SVX_CSS1_LTYPE_NONE )
     {
         eLeftType = rProp.eLeftType;
@@ -573,7 +568,7 @@ void SvxCSS1PropertyInfo::SetBoxItem( SfxItemSet& rItemSet,
                 nRightBorderDistance != USHRT_MAX;
 
     for( size_t i=0; !bChg && i<SAL_N_ELEMENTS(aBorderInfos); ++i )
-        bChg = aBorderInfos[i]!=0;
+        bChg = aBorderInfos[i]!=nullptr;
 
     if( !bChg )
         return;
@@ -649,9 +644,8 @@ void SvxCSS1PropertyInfo::SetBoxItem( SfxItemSet& rItemSet,
     DestroyBorderInfos();
 }
 
-SvxCSS1MapEntry::SvxCSS1MapEntry( const OUString& rKey, const SfxItemSet& rItemSet,
+SvxCSS1MapEntry::SvxCSS1MapEntry( const SfxItemSet& rItemSet,
                                   const SvxCSS1PropertyInfo& rProp ) :
-    aKey( rKey.toAsciiUpperCase() ),
     aItemSet( rItemSet ),
     aPropInfo( rProp )
 {}
@@ -670,18 +664,18 @@ bool SvxCSS1Parser::SelectorParsed( CSS1Selector *pSelector, bool bFirst )
     {
         OSL_ENSURE( pSheetItemSet, "Where is the Item-Set for Style-Sheets?" );
 
-        for (size_t i = 0; i < aSelectors.size(); ++i)
+        for (size_t i = 0; i < m_Selectors.size(); ++i)
         {
-            StyleParsed( &aSelectors[i], *pSheetItemSet, *pSheetPropInfo );
+            StyleParsed(m_Selectors[i].get(), *pSheetItemSet, *pSheetPropInfo);
         }
         pSheetItemSet->ClearItem();
         pSheetPropInfo->Clear();
 
         // und die naechste Rule vorbereiten
-        aSelectors.clear();
+        m_Selectors.clear();
     }
 
-    aSelectors.push_back(pSelector);
+    m_Selectors.push_back(std::unique_ptr<CSS1Selector>(pSelector));
 
     return false; // den Selektor haben wir gespeichert. Loeschen toedlich!
 }
@@ -703,10 +697,10 @@ SvxCSS1Parser::SvxCSS1Parser( SfxItemPool& rPool, const OUString& rBaseURL, sal_
                               sal_uInt16 *pWhichIds, sal_uInt16 nWhichIds ) :
     CSS1Parser(),
     sBaseURL( rBaseURL ),
-    pSheetItemSet(0),
-    pItemSet(0),
-    pSearchEntry( 0 ),
-    pPropInfo( 0 ),
+    pSheetItemSet(nullptr),
+    pItemSet(nullptr),
+    pSearchEntry( nullptr ),
+    pPropInfo( nullptr ),
     nMinFixLineSpace( nMinFixLineSp ),
     eDfltEnc( RTL_TEXTENCODING_DONTKNOW ),
     nScriptFlags( CSS1_SCRIPT_ALL ),
@@ -834,18 +828,18 @@ bool SvxCSS1Parser::ParseStyleSheet( const OUString& rIn )
 
     bool bSuccess = CSS1Parser::ParseStyleSheet( rIn );
 
-    for (size_t i = 0; i < aSelectors.size(); ++i)
+    for (size_t i = 0; i < m_Selectors.size(); ++i)
     {
-        StyleParsed( &aSelectors[i], *pSheetItemSet, *pSheetPropInfo );
+        StyleParsed(m_Selectors[i].get(), *pSheetItemSet, *pSheetPropInfo);
     }
 
     // und etwas aufrauemen
-    aSelectors.clear();
+    m_Selectors.clear();
     pSheetItemSet->ClearItem();
     pSheetPropInfo->Clear();
 
-    pItemSet = 0;
-    pPropInfo = 0;
+    pItemSet = nullptr;
+    pPropInfo = nullptr;
 
     return bSuccess;
 }
@@ -860,8 +854,8 @@ bool SvxCSS1Parser::ParseStyleOption( const OUString& rIn,
     bool bSuccess = CSS1Parser::ParseStyleOption( rIn );
     rItemSet.ClearItem( aItemIds.nDirection );
 
-    pItemSet = 0;
-    pPropInfo = 0;
+    pItemSet = nullptr;
+    pPropInfo = nullptr;
 
     return bSuccess;
 }
@@ -880,7 +874,7 @@ bool SvxCSS1Parser::GetEnum( const CSS1PropertyEnum *pPropTable,
     if( pPropTable->pName )
         rEnum = pPropTable->nEnum;
 
-    return (pPropTable->pName != 0);
+    return (pPropTable->pName != nullptr);
 }
 
 void SvxCSS1Parser::PixelToTwip( long &rWidth, long &rHeight )
@@ -917,7 +911,7 @@ sal_uInt32 SvxCSS1Parser::GetFontHeight( sal_uInt16 nSize ) const
 
 const FontList *SvxCSS1Parser::GetFontList() const
 {
-        return 0;
+        return nullptr;
 }
 
 void SvxCSS1Parser::InsertMapEntry( const OUString& rKey,
@@ -928,8 +922,7 @@ void SvxCSS1Parser::InsertMapEntry( const OUString& rKey,
     CSS1Map::iterator itr = rMap.find(rKey);
     if (itr == rMap.end())
     {
-        std::unique_ptr<SvxCSS1MapEntry> p(new SvxCSS1MapEntry(rKey, rItemSet, rProp));
-        rMap.insert(std::make_pair(rKey, std::move(p)));
+        rMap.insert(std::make_pair(rKey, o3tl::make_unique<SvxCSS1MapEntry>(rItemSet, rProp)));
     }
     else
     {
@@ -1096,7 +1089,7 @@ static void ParseCSS1_font_family( const CSS1Expression *pExpr,
                 if( !bFound && pFList )
                 {
                     sal_Handle hFont = pFList->GetFirstFontInfo( aIdent );
-                    if( 0 != hFont )
+                    if( nullptr != hFont )
                     {
                         const vcl::FontInfo& rFInfo = FontList::GetFontInfo( hFont );
                         if( RTL_TEXTENCODING_DONTKNOW != rFInfo.GetCharSet() )
@@ -2939,10 +2932,6 @@ static void ParseCSS1_size( const CSS1Expression *pExpr,
     }
 }
 
-// /Feature: PrintExt
-
-// Feature: PrintExt
-
 static void ParseCSS1_page_break_xxx( const CSS1Expression *pExpr,
                                       SvxCSS1PageBreak& rPBreak )
 {
@@ -3028,7 +3017,6 @@ static void ParseCSS1_orphans( const CSS1Expression *pExpr,
         rItemSet.Put( aOrphansItem );
     }
 }
-// /Feature: PrintExt
 
 static void ParseCSS1_so_language( const CSS1Expression *pExpr,
                                SfxItemSet &rItemSet,
@@ -3120,14 +3108,12 @@ static CSS1PropEntry aCSS1PropFnTab[] =
     CSS1_PROP_ENTRY(top),
     CSS1_PROP_ENTRY(width),
     CSS1_PROP_ENTRY(height),
-// Feature: PrintExt
     CSS1_PROP_ENTRY(size),
     CSS1_PROP_ENTRY(page_break_before),
     CSS1_PROP_ENTRY(page_break_after),
     CSS1_PROP_ENTRY(page_break_inside),
     CSS1_PROP_ENTRY(widows),
     CSS1_PROP_ENTRY(orphans),
-// /Feature: PrintExt
     CSS1_PROP_ENTRY(so_language)
 };
 
@@ -3179,10 +3165,10 @@ void SvxCSS1Parser::ParseProperty( const OUString& rProperty,
 
     CSS1PropEntry aSrch;
     aSrch.pName = &aTmp;
-    aSrch.pFunc = 0;
+    aSrch.pFunc = nullptr;
 
     void* pFound;
-    if( 0 != ( pFound = bsearch( &aSrch,
+    if( nullptr != ( pFound = bsearch( &aSrch,
                         static_cast<void*>(aCSS1PropFnTab),
                         sizeof( aCSS1PropFnTab ) / sizeof( CSS1PropEntry ),
                         sizeof( CSS1PropEntry ),

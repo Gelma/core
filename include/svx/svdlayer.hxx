@@ -20,11 +20,11 @@
 #ifndef INCLUDED_SVX_SVDLAYER_HXX
 #define INCLUDED_SVX_SVDLAYER_HXX
 
-#include <tools/stream.hxx>
 #include <svx/svdsob.hxx>
 #include <svx/svdtypes.hxx>
 #include <svx/svxdllapi.h>
 #include <algorithm>
+#include <vector>
 
 class SdrModel;
 
@@ -83,7 +83,7 @@ protected:
     SdrLayerID         GetUniqueLayerID() const;
     void               Broadcast() const;
 public:
-    explicit SdrLayerAdmin(SdrLayerAdmin* pNewParent=NULL);
+    explicit SdrLayerAdmin(SdrLayerAdmin* pNewParent=nullptr);
     SdrLayerAdmin(const SdrLayerAdmin& rSrcLayerAdmin);
     ~SdrLayerAdmin();
     const SdrLayerAdmin& operator=(const SdrLayerAdmin& rSrcLayerAdmin);

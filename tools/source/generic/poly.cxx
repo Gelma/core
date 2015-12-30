@@ -55,18 +55,19 @@
 
 static ImplPolygonData aStaticImplPolygon =
 {
-    NULL, NULL, 0, 0
+    nullptr, nullptr, 0, 0
 };
 
 ImplPolygon::ImplPolygon( sal_uInt16 nInitSize, bool bFlags  )
 {
     if ( nInitSize )
     {
-        mpPointAry = reinterpret_cast<Point*>(new char[(sal_uIntPtr)nInitSize*sizeof(Point)]);
-        memset( mpPointAry, 0, (sal_uIntPtr)nInitSize*sizeof(Point) );
+        const std::size_t nSz(static_cast<std::size_t>(nInitSize)*sizeof(Point));
+        mpPointAry = reinterpret_cast<Point*>(new char[nSz]);
+        memset( mpPointAry, 0, nSz );
     }
     else
-        mpPointAry = NULL;
+        mpPointAry = nullptr;
 
     if( bFlags )
     {
@@ -74,7 +75,7 @@ ImplPolygon::ImplPolygon( sal_uInt16 nInitSize, bool bFlags  )
         memset( mpFlagAry, 0, nInitSize );
     }
     else
-        mpFlagAry = NULL;
+        mpFlagAry = nullptr;
 
     mnRefCount = 1;
     mnPoints = nInitSize;
@@ -84,8 +85,9 @@ ImplPolygon::ImplPolygon( const ImplPolygon& rImpPoly )
 {
     if ( rImpPoly.mnPoints )
     {
-        mpPointAry = reinterpret_cast<Point*>(new char[(sal_uIntPtr)rImpPoly.mnPoints*sizeof(Point)]);
-        memcpy( mpPointAry, rImpPoly.mpPointAry, (sal_uIntPtr)rImpPoly.mnPoints*sizeof(Point) );
+        const std::size_t nSz(static_cast<std::size_t>(rImpPoly.mnPoints)*sizeof(Point));
+        mpPointAry = reinterpret_cast<Point*>(new char[nSz]);
+        memcpy( mpPointAry, rImpPoly.mpPointAry, nSz );
 
         if( rImpPoly.mpFlagAry )
         {
@@ -93,12 +95,12 @@ ImplPolygon::ImplPolygon( const ImplPolygon& rImpPoly )
             memcpy( mpFlagAry, rImpPoly.mpFlagAry, rImpPoly.mnPoints );
         }
         else
-            mpFlagAry = NULL;
+            mpFlagAry = nullptr;
     }
     else
     {
-        mpPointAry = NULL;
-        mpFlagAry = NULL;
+        mpPointAry = nullptr;
+        mpFlagAry = nullptr;
     }
 
     mnRefCount = 1;
@@ -109,8 +111,9 @@ ImplPolygon::ImplPolygon( sal_uInt16 nInitSize, const Point* pInitAry, const sal
 {
     if ( nInitSize )
     {
-        mpPointAry = reinterpret_cast<Point*>(new char[(sal_uIntPtr)nInitSize*sizeof(Point)]);
-        memcpy( mpPointAry, pInitAry, (sal_uIntPtr)nInitSize*sizeof( Point ) );
+        const std::size_t nSz(static_cast<std::size_t>(nInitSize)*sizeof(Point));
+        mpPointAry = reinterpret_cast<Point*>(new char[nSz]);
+        memcpy( mpPointAry, pInitAry, nSz );
 
         if( pInitFlags )
         {
@@ -118,12 +121,12 @@ ImplPolygon::ImplPolygon( sal_uInt16 nInitSize, const Point* pInitAry, const sal
             memcpy( mpFlagAry, pInitFlags, nInitSize );
         }
         else
-            mpFlagAry = NULL;
+            mpFlagAry = nullptr;
     }
     else
     {
-        mpPointAry = NULL;
-        mpFlagAry  = NULL;
+        mpPointAry = nullptr;
+        mpFlagAry  = nullptr;
     }
 
     mnRefCount = 1;
@@ -150,7 +153,8 @@ void ImplPolygon::ImplSetSize( sal_uInt16 nNewSize, bool bResize )
 
     if ( nNewSize )
     {
-        pNewAry = reinterpret_cast<Point*>(new char[(sal_uIntPtr)nNewSize*sizeof(Point)]);
+        const std::size_t nNewSz(static_cast<std::size_t>(nNewSize)*sizeof(Point));
+        pNewAry = reinterpret_cast<Point*>(new char[nNewSz]);
 
         if ( bResize )
         {
@@ -158,19 +162,20 @@ void ImplPolygon::ImplSetSize( sal_uInt16 nNewSize, bool bResize )
             if ( mnPoints < nNewSize )
             {
                 // New points initialized to zero
-                memset( pNewAry+mnPoints, 0, (sal_uIntPtr)(nNewSize-mnPoints)*sizeof(Point) );
+                const std::size_t nOldSz(static_cast<std::size_t>(mnPoints)*sizeof(Point));
+                memset( pNewAry+mnPoints, 0, nNewSz-nOldSz );
                 if ( mpPointAry )
-                    memcpy( pNewAry, mpPointAry, mnPoints*sizeof(Point) );
+                    memcpy( pNewAry, mpPointAry, nOldSz );
             }
             else
             {
                 if ( mpPointAry )
-                    memcpy( pNewAry, mpPointAry, (sal_uIntPtr)nNewSize*sizeof(Point) );
+                    memcpy( pNewAry, mpPointAry, nNewSz );
             }
         }
     }
     else
-        pNewAry = NULL;
+        pNewAry = nullptr;
 
     if ( mpPointAry )
         delete[] reinterpret_cast<char*>(mpPointAry);
@@ -198,7 +203,7 @@ void ImplPolygon::ImplSetSize( sal_uInt16 nNewSize, bool bResize )
             }
         }
         else
-            pNewFlagAry = NULL;
+            pNewFlagAry = nullptr;
 
         delete[] mpFlagAry;
         mpFlagAry  = pNewFlagAry;
@@ -210,13 +215,12 @@ void ImplPolygon::ImplSetSize( sal_uInt16 nNewSize, bool bResize )
 
 void ImplPolygon::ImplSplit( sal_uInt16 nPos, sal_uInt16 nSpace, ImplPolygon* pInitPoly )
 {
-    const sal_uIntPtr   nSpaceSize = nSpace * sizeof( Point );
-
     //Can't fit this in :-(, throw ?
     if (mnPoints + nSpace > USHRT_MAX)
         return;
 
     const sal_uInt16    nNewSize = mnPoints + nSpace;
+    const std::size_t   nSpaceSize = static_cast<std::size_t>(nSpace) * sizeof(Point);
 
     if( nPos >= mnPoints )
     {
@@ -237,7 +241,7 @@ void ImplPolygon::ImplSplit( sal_uInt16 nPos, sal_uInt16 nSpace, ImplPolygon* pI
         const sal_uInt16    nSecPos = nPos + nSpace;
         const sal_uInt16    nRest = mnPoints - nPos;
 
-        Point* pNewAry = reinterpret_cast<Point*>(new char[ (sal_uIntPtr) nNewSize * sizeof( Point ) ]);
+        Point* pNewAry = reinterpret_cast<Point*>(new char[ static_cast<std::size_t>(nNewSize) * sizeof(Point) ]);
 
         memcpy( pNewAry, mpPointAry, nPos * sizeof( Point ) );
 
@@ -313,8 +317,8 @@ public:
     {
     }
 
-    virtual void    LastPoint() SAL_OVERRIDE;
-    virtual void    Input( const Point& rPoint ) SAL_OVERRIDE;
+    virtual void    LastPoint() override;
+    virtual void    Input( const Point& rPoint ) override;
 
     ImplPolygon*    release() { return mxPoly.release(); }
 };
@@ -366,8 +370,8 @@ public:
     bool                IsPolygon() const
                             { return maFirstPoint == maLastPoint; }
 
-    virtual void        Input( const Point& rPoint ) SAL_OVERRIDE;
-    virtual void        LastPoint() SAL_OVERRIDE;
+    virtual void        Input( const Point& rPoint ) override;
+    virtual void        LastPoint() override;
 };
 
 inline int ImplEdgePointFilter::VisibleSide( const Point& rPoint ) const
@@ -542,7 +546,7 @@ Polygon::Polygon( sal_uInt16 nPoints, const Point* pPtAry, const sal_uInt8* pFla
 
 Polygon::Polygon( const tools::Polygon& rPoly )
 {
-    DBG_ASSERT( rPoly.mpImplPolygon->mnRefCount < 0xFFFFFFFE, "Polygon: RefCount overflow" );
+    DBG_ASSERT( rPoly.mpImplPolygon->mnRefCount < (SAL_MAX_UINT32-1), "Polygon: RefCount overflow" );
 
     mpImplPolygon = rPoly.mpImplPolygon;
     if ( mpImplPolygon->mnRefCount )
@@ -565,7 +569,7 @@ Polygon::Polygon( const Rectangle& rRect )
     }
 }
 
-Polygon::Polygon( const Rectangle& rRect, sal_uIntPtr nHorzRound, sal_uIntPtr nVertRound )
+Polygon::Polygon( const Rectangle& rRect, sal_uInt32 nHorzRound, sal_uInt32 nVertRound )
 {
     if ( rRect.IsEmpty() )
         mpImplPolygon = static_cast<ImplPolygon*>(&aStaticImplPolygon);
@@ -574,8 +578,8 @@ Polygon::Polygon( const Rectangle& rRect, sal_uIntPtr nHorzRound, sal_uIntPtr nV
         Rectangle aRect( rRect );
         aRect.Justify();            // SJ: i9140
 
-        nHorzRound = std::min( nHorzRound, (sal_uIntPtr) labs( aRect.GetWidth() >> 1 ) );
-        nVertRound = std::min( nVertRound, (sal_uIntPtr) labs( aRect.GetHeight() >> 1 ) );
+        nHorzRound = std::min( nHorzRound, static_cast<sal_uInt32>(labs( aRect.GetWidth() >> 1 )) );
+        nVertRound = std::min( nVertRound, static_cast<sal_uInt32>(labs( aRect.GetHeight() >> 1 )) );
 
         if( !nHorzRound && !nVertRound )
         {
@@ -637,7 +641,6 @@ Polygon::Polygon( const Point& rCenter, long nRadX, long nRadY, sal_uInt16 nPoin
         // Ceil number of points until divisible by four
         mpImplPolygon = new ImplPolygon( nPoints = (nPoints + 3) & ~3 );
 
-        Point* pPt;
         sal_uInt16 i;
         sal_uInt16 nPoints2 = nPoints >> 1;
         sal_uInt16 nPoints4 = nPoints >> 2;
@@ -649,7 +652,7 @@ Polygon::Polygon( const Point& rCenter, long nRadX, long nRadY, sal_uInt16 nPoin
             long nX = FRound( nRadX * cos( nAngle ) );
             long nY = FRound( -nRadY * sin( nAngle ) );
 
-            pPt = &(mpImplPolygon->mpPointAry[i]);
+            Point* pPt = &(mpImplPolygon->mpPointAry[i]);
             pPt->X() =  nX + rCenter.X();
             pPt->Y() =  nY + rCenter.Y();
             pPt = &(mpImplPolygon->mpPointAry[nPoints2-i-1]);
@@ -750,7 +753,7 @@ Polygon::Polygon( const Point& rBezPt1, const Point& rCtrlPt1,
 
     const double    fInc = 1.0 / ( nPoints - 1 );
     double          fK_1 = 0.0, fK1_1 = 1.0;
-    double          fK_2, fK_3, fK1_2, fK1_3, fK12, fK21;
+    double          fK_2, fK_3, fK1_2, fK1_3;
     const double    fX0 = rBezPt1.X();
     const double    fY0 = rBezPt1.Y();
     const double    fX1 = 3.0 * rCtrlPt1.X();
@@ -768,7 +771,8 @@ Polygon::Polygon( const Point& rBezPt1, const Point& rCtrlPt1,
 
         fK_2 = fK_1, fK_3 = ( fK_2 *= fK_1 ), fK_3 *= fK_1;
         fK1_2 = fK1_1, fK1_3 = ( fK1_2 *= fK1_1 ), fK1_3 *= fK1_1;
-        fK12 = fK_1 * fK1_2, fK21 = fK_2 * fK1_1;
+        double fK12 = fK_1 * fK1_2;
+        double fK21 = fK_2 * fK1_1;
 
         rPt.X() = FRound( fK1_3 * fX0 + fK12 * fX1 + fK21 * fX2 + fK_3 * fX3 );
         rPt.Y() = FRound( fK1_3 * fY0 + fK12 * fY1 + fK21 * fY2 + fK_3 * fY3 );
@@ -841,13 +845,13 @@ PolyFlags Polygon::GetFlags( sal_uInt16 nPos ) const
 
 bool Polygon::HasFlags() const
 {
-    return mpImplPolygon->mpFlagAry != NULL;
+    return mpImplPolygon->mpFlagAry != nullptr;
 }
 
 bool Polygon::IsRect() const
 {
     bool bIsRect = false;
-    if ( mpImplPolygon->mpFlagAry == NULL )
+    if ( mpImplPolygon->mpFlagAry == nullptr )
     {
         if ( ( ( mpImplPolygon->mnPoints == 5 ) && ( mpImplPolygon->mpPointAry[ 0 ] == mpImplPolygon->mpPointAry[ 4 ] ) ) ||
              ( mpImplPolygon->mnPoints == 4 ) )
@@ -904,7 +908,7 @@ double Polygon::CalcDistance( sal_uInt16 nP1, sal_uInt16 nP2 )
     return sqrt( fDx * fDx + fDy * fDy );
 }
 
-void Polygon::Optimize( PolyOptimizeFlags nOptimizeFlags, const PolyOptimizeData* pData )
+void Polygon::Optimize( PolyOptimizeFlags nOptimizeFlags )
 {
     DBG_ASSERT( !mpImplPolygon->mpFlagAry, "Optimizing could fail with beziers!" );
 
@@ -916,7 +920,7 @@ void Polygon::Optimize( PolyOptimizeFlags nOptimizeFlags, const PolyOptimizeData
         {
             const Rectangle aBound( GetBoundRect() );
             const double    fArea = ( aBound.GetWidth() + aBound.GetHeight() ) * 0.5;
-            const sal_uInt16    nPercent = pData ? pData->GetPercentValue() : 50;
+            const sal_uInt16 nPercent = 50;
 
             Optimize( PolyOptimizeFlags::NO_SAME );
             ImplReduceEdges( *this, fArea, nPercent );
@@ -925,12 +929,7 @@ void Polygon::Optimize( PolyOptimizeFlags nOptimizeFlags, const PolyOptimizeData
         {
             tools::Polygon aNewPoly;
             const Point& rFirst = mpImplPolygon->mpPointAry[ 0 ];
-            sal_uIntPtr nReduce;
-
-            if( nOptimizeFlags & ( PolyOptimizeFlags::REDUCE ) )
-                nReduce = pData ? pData->GetAbsValue() : 4UL;
-            else
-                nReduce = 0UL;
+            const long nReduce = ( nOptimizeFlags & PolyOptimizeFlags::REDUCE ) ? 4 : 0;
 
             while( nSize && ( mpImplPolygon->mpPointAry[ nSize - 1 ] == rFirst ) )
                 nSize--;
@@ -945,7 +944,7 @@ void Polygon::Optimize( PolyOptimizeFlags nOptimizeFlags, const PolyOptimizeData
                 for( sal_uInt16 i = 1; i < nSize; i++ )
                 {
                     if( ( mpImplPolygon->mpPointAry[ i ] != mpImplPolygon->mpPointAry[ nLast ] ) &&
-                        ( !nReduce || ( nReduce < (sal_uIntPtr) FRound( CalcDistance( nLast, i ) ) ) ) )
+                        ( !nReduce || ( nReduce < FRound( CalcDistance( nLast, i ) ) ) ) )
                     {
                         aNewPoly[ nNewCount++ ] = mpImplPolygon->mpPointAry[ nLast = i ];
                     }
@@ -1536,7 +1535,7 @@ bool Polygon::IsEqual( const tools::Polygon& rPoly ) const
 
 SvStream& ReadPolygon( SvStream& rIStream, tools::Polygon& rPoly )
 {
-    DBG_ASSERTWARNING( rIStream.GetVersion(), "Polygon::>> - Solar-Version not set on rIStream" );
+    SAL_WARN_IF( !rIStream.GetVersion(), "tools", "Polygon::>> - Solar-Version not set on rIStream" );
 
     sal_uInt16          i;
     sal_uInt16          nPoints(0);
@@ -1587,8 +1586,6 @@ SvStream& ReadPolygon( SvStream& rIStream, tools::Polygon& rPoly )
 
 SvStream& WritePolygon( SvStream& rOStream, const tools::Polygon& rPoly )
 {
-    DBG_ASSERTWARNING( rOStream.GetVersion(), "Polygon::<< - Solar-Version not set on rOStream" );
-
     sal_uInt16          i;
     sal_uInt16          nPoints = rPoly.GetSize();
 
@@ -1644,7 +1641,7 @@ void Polygon::Read( SvStream& rIStream )
 
 void Polygon::ImplWrite( SvStream& rOStream ) const
 {
-    bool bHasPolyFlags = mpImplPolygon->mpFlagAry != NULL;
+    bool bHasPolyFlags = mpImplPolygon->mpFlagAry != nullptr;
     WritePolygon( rOStream, *this );
     rOStream.WriteBool(bHasPolyFlags);
 
@@ -1813,7 +1810,7 @@ basegfx::B2DPolygon Polygon::getB2DPolygon() const
 // and a memcopy at ImplPolygon creation, but contains no zero-controlpoints
 // for straight edges.
 Polygon::Polygon(const basegfx::B2DPolygon& rPolygon)
-:   mpImplPolygon(0)
+:   mpImplPolygon(nullptr)
 {
     const bool bCurve(rPolygon.areControlPointsUsed());
     const bool bClosed(rPolygon.isClosed());

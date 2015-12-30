@@ -50,16 +50,16 @@
 #define XLS_XML_FORMAT_TYPE  (SfxFilterFlags::IMPORT | SfxFilterFlags::EXPORT | SfxFilterFlags::ALIEN)
 #define XLSB_XML_FORMAT_TYPE (SfxFilterFlags::IMPORT |                          SfxFilterFlags::ALIEN | SfxFilterFlags::STARONEFILTER | SfxFilterFlags::PREFERED)
 
-#define ODS      0
-#define XLS      1
-#define XLSX     2
-#define XLSM     3
-#define CSV      4
-#define HTML     5
-#define LOTUS123 6
-#define DIF      7
-#define XLS_XML  8
-#define XLSB     9
+#define FORMAT_ODS      0
+#define FORMAT_XLS      1
+#define FORMAT_XLSX     2
+#define FORMAT_XLSM     3
+#define FORMAT_CSV      4
+#define FORMAT_HTML     5
+#define FORMAT_LOTUS123 6
+#define FORMAT_DIF      7
+#define FORMAT_XLS_XML  8
+#define FORMAT_XLSB     9
 
 enum StringType { PureString, FormulaValue, StringValue };
 
@@ -133,7 +133,7 @@ SCQAHELPER_DLLPUBLIC bool checkFormulaPositions(
     ScDocument& rDoc, SCTAB nTab, SCCOL nCol, const SCROW* pRows, size_t nRowCount);
 
 SCQAHELPER_DLLPUBLIC ScTokenArray* compileFormula(
-    ScDocument* pDoc, const OUString& rFormula, const ScAddress* pPos = NULL,
+    ScDocument* pDoc, const OUString& rFormula, const ScAddress* pPos = nullptr,
     formula::FormulaGrammar::Grammar eGram = formula::FormulaGrammar::GRAM_NATIVE );
 
 template<size_t _Size>
@@ -206,19 +206,19 @@ protected:
     ScDocShellRef load(
         bool bReadWrite, const OUString& rURL, const OUString& rFilter, const OUString &rUserData,
         const OUString& rTypeName, SfxFilterFlags nFilterFlags, SotClipboardFormatId nClipboardID,
-        sal_uIntPtr nFilterVersion = SOFFICE_FILEFORMAT_CURRENT, const OUString* pPassword = NULL );
+        sal_uIntPtr nFilterVersion = SOFFICE_FILEFORMAT_CURRENT, const OUString* pPassword = nullptr );
 
     ScDocShellRef load(
         const OUString& rURL, const OUString& rFilter, const OUString &rUserData,
         const OUString& rTypeName, SfxFilterFlags nFilterFlags, SotClipboardFormatId nClipboardID,
-        sal_uIntPtr nFilterVersion = SOFFICE_FILEFORMAT_CURRENT, const OUString* pPassword = NULL );
+        sal_uIntPtr nFilterVersion = SOFFICE_FILEFORMAT_CURRENT, const OUString* pPassword = nullptr );
 
     ScDocShellRef loadDoc(const OUString& rFileName, sal_Int32 nFormat, bool bReadWrite = false );
 
 public:
     static const FileFormat* getFileFormats() { return aFileFormats; }
 
-    ScBootstrapFixture( const OUString& rsBaseString );
+    explicit ScBootstrapFixture( const OUString& rsBaseString );
     virtual ~ScBootstrapFixture();
 
     void createFileURL(const OUString& aFileBase, const OUString& aFileExtension, OUString& rFilePath);

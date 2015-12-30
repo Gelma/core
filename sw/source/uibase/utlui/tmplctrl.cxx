@@ -45,7 +45,7 @@ public:
 private:
     sal_uInt16          nCurId;
 
-    virtual void    Select() SAL_OVERRIDE;
+    virtual void    Select() override;
 };
 
 SwTemplatePopup_Impl::SwTemplatePopup_Impl() :
@@ -74,9 +74,9 @@ SwTemplateControl::~SwTemplateControl()
 void SwTemplateControl::StateChanged(
     sal_uInt16 /*nSID*/, SfxItemState eState, const SfxPoolItem* pState )
 {
-    if( eState != SfxItemState::DEFAULT || pState->ISA( SfxVoidItem ) )
+    if( eState != SfxItemState::DEFAULT || dynamic_cast< const SfxVoidItem *>( pState ) !=  nullptr )
         GetStatusBar().SetItemText( GetId(), OUString() );
-    else if ( pState->ISA( SfxStringItem ) )
+    else if ( dynamic_cast< const SfxStringItem *>( pState ) !=  nullptr )
     {
         sTemplate = static_cast<const SfxStringItem*>(pState)->GetValue();
         GetStatusBar().SetItemText( GetId(), sTemplate );
@@ -97,9 +97,9 @@ void SwTemplateControl::Command( const CommandEvent& rCEvt )
         {
             SwView* pView = ::GetActiveView();
             SwWrtShell* pWrtShell;
-            if( pView && 0 != (pWrtShell = pView->GetWrtShellPtr()) &&
-                !pWrtShell->SwCrsrShell::HasSelection()&&
-                !pWrtShell->IsSelFrmMode() &&
+            if( pView && nullptr != (pWrtShell = pView->GetWrtShellPtr()) &&
+                !pWrtShell->SwCursorShell::HasSelection()&&
+                !pWrtShell->IsSelFrameMode() &&
                 !pWrtShell->IsObjSelected())
             {
                 SfxStyleSheetBasePool* pPool = pView->GetDocShell()->

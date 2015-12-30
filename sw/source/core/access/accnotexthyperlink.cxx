@@ -37,9 +37,9 @@ using namespace css::lang;
 using namespace css::uno;
 using namespace css::accessibility;
 
-SwAccessibleNoTextHyperlink::SwAccessibleNoTextHyperlink( SwAccessibleNoTextFrame *p, const SwFrm *aFrm ) :
+SwAccessibleNoTextHyperlink::SwAccessibleNoTextHyperlink( SwAccessibleNoTextFrame *p, const SwFrame *aFrame ) :
     xFrame( p ),
-    mpFrm( aFrm )
+    mpFrame( aFrame )
 {
 }
 
@@ -51,7 +51,7 @@ sal_Int32 SAL_CALL SwAccessibleNoTextHyperlink::getAccessibleActionCount()
 
     SwFormatURL aURL( GetFormat()->GetURL() );
     ImageMap* pMap = aURL.GetMap();
-    if( pMap != NULL )
+    if( pMap != nullptr )
     {
         return pMap->GetIMapObjectCount();
     }
@@ -74,7 +74,7 @@ sal_Bool SAL_CALL SwAccessibleNoTextHyperlink::doAccessibleAction( sal_Int32 nIn
     bool bRet = false;
     SwFormatURL aURL( GetFormat()->GetURL() );
     ImageMap* pMap = aURL.GetMap();
-    if( pMap != NULL )
+    if( pMap != nullptr )
     {
         IMapObject* pMapObj = pMap->GetIMapObject(nIndex);
         if (!pMapObj->GetURL().isEmpty())
@@ -115,7 +115,7 @@ OUString SAL_CALL SwAccessibleNoTextHyperlink::getAccessibleActionDescription(
 
     SwFormatURL aURL( GetFormat()->GetURL() );
     ImageMap* pMap = aURL.GetMap();
-    if( pMap != NULL )
+    if( pMap != nullptr )
     {
         IMapObject* pMapObj = pMap->GetIMapObject(nIndex);
         if (!pMapObj->GetDesc().isEmpty())
@@ -143,7 +143,7 @@ Reference< XAccessibleKeyBinding > SAL_CALL
     bool bIsValid = false;
     SwFormatURL aURL( GetFormat()->GetURL() );
     ImageMap* pMap = aURL.GetMap();
-    if( pMap != NULL )
+    if( pMap != nullptr )
     {
         IMapObject* pMapObj = pMap->GetIMapObject(nIndex);
         if (!pMapObj->GetURL().isEmpty())
@@ -158,7 +158,7 @@ Reference< XAccessibleKeyBinding > SAL_CALL
             new ::comphelper::OAccessibleKeyBindingHelper();
         xKeyBinding = pKeyBindingHelper;
 
-        ::com::sun::star::awt::KeyStroke aKeyStroke;
+        css::awt::KeyStroke aKeyStroke;
         aKeyStroke.Modifiers = 0;
         aKeyStroke.KeyCode = KEY_RETURN;
         aKeyStroke.KeyChar = 0;
@@ -180,8 +180,8 @@ Any SAL_CALL SwAccessibleNoTextHyperlink::getAccessibleActionAnchor(
         throw lang::IndexOutOfBoundsException();
 
     Any aRet;
-    //SwFrm* pAnchor = static_cast<SwFlyFrm*>(mpFrm)->GetAnchor();
-    Reference< XAccessible > xAnchor = xFrame->GetAccessibleMap()->GetContext(mpFrm);
+    //SwFrame* pAnchor = static_cast<SwFlyFrame*>(mpFrame)->GetAnchor();
+    Reference< XAccessible > xAnchor = xFrame->GetAccessibleMap()->GetContext(mpFrame);
     //SwAccessibleNoTextFrame* pFrame = xFrame.get();
     //Reference< XAccessible > xAnchor = (XAccessible*)pFrame;
     aRet <<= xAnchor;
@@ -200,7 +200,7 @@ Any SAL_CALL SwAccessibleNoTextHyperlink::getAccessibleActionObject(
     SwFormatURL aURL( GetFormat()->GetURL() );
     OUString retText;
     ImageMap* pMap = aURL.GetMap();
-    if( pMap != NULL )
+    if( pMap != nullptr )
     {
         IMapObject* pMapObj = pMap->GetIMapObject(nIndex);
         if (!pMapObj->GetURL().isEmpty())
@@ -227,7 +227,7 @@ sal_Int32 SAL_CALL SwAccessibleNoTextHyperlink::getEndIndex()
 }
 
 sal_Bool SAL_CALL SwAccessibleNoTextHyperlink::isValid(  )
-        throw (::com::sun::star::uno::RuntimeException, std::exception)
+        throw (css::uno::RuntimeException, std::exception)
 {
     SolarMutexGuard g;
 

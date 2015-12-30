@@ -25,7 +25,6 @@
 #include <vcl/msgbox.hxx>
 #include <vcl/lstbox.hxx>
 #include <vcl/svapp.hxx>
-// #97148# ---------------
 #include "svl/ctypeitm.hxx"
 #include "svl/eitem.hxx"
 #include "unotools/viewoptions.hxx"
@@ -165,7 +164,6 @@ void SvtUpButton_Impl::FillURLMenu( PopupMenu* _pMenu )
         OUString aParentURL(aObject.GetMainURL(INetURLObject::NO_DECODE));
 
         OUString aTitle;
-        // 97148# --------------------------------
         if (!GetDialogParent()->ContentGetTitle(aParentURL, aTitle) || aTitle.isEmpty())
             aTitle = aObject.getName();
 
@@ -211,38 +209,37 @@ Size SvtUpButton_Impl::GetOptimalSize() const
 // SvtExpFileDlg_Impl
 SvtExpFileDlg_Impl::SvtExpFileDlg_Impl( WinBits )   :
 
-    _pCurFilter         ( NULL ),
-    _pUserFilter        ( NULL ),
-    _pFtFileName        ( NULL ),
-    _pEdFileName        ( NULL ),
-    _pFtFileVersion     ( NULL ),
-    _pLbFileVersion     ( NULL ),
-    _pFtTemplates       ( NULL ),
-    _pLbTemplates       ( NULL ),
-    _pFtImageTemplates  ( NULL ),
-    _pLbImageTemplates  ( NULL ),
-    _pFtFileType        ( NULL ),
-    _pLbFilter          ( NULL ),
-    _pBtnFileOpen       ( NULL ),
-    _pBtnCancel         ( NULL ),
-    _pBtnHelp           ( NULL ),
-    _pBtnUp             ( NULL ),
-    _pBtnNewFolder      ( NULL ),
-    _pCbPassword        ( NULL ),
-    _pEdCurrentPath     ( NULL ),
-    _pCbAutoExtension   ( NULL ),
-    _pCbOptions         ( NULL ),
-    _pPlaces            ( NULL ),
-    _pBtnConnectToServer( NULL ),
+    _pCurFilter         ( nullptr ),
+    _pUserFilter        ( nullptr ),
+    _pFtFileName        ( nullptr ),
+    _pEdFileName        ( nullptr ),
+    _pFtFileVersion     ( nullptr ),
+    _pLbFileVersion     ( nullptr ),
+    _pFtTemplates       ( nullptr ),
+    _pLbTemplates       ( nullptr ),
+    _pFtImageTemplates  ( nullptr ),
+    _pLbImageTemplates  ( nullptr ),
+    _pFtFileType        ( nullptr ),
+    _pLbFilter          ( nullptr ),
+    _pBtnFileOpen       ( nullptr ),
+    _pBtnCancel         ( nullptr ),
+    _pBtnHelp           ( nullptr ),
+    _pBtnUp             ( nullptr ),
+    _pBtnNewFolder      ( nullptr ),
+    _pCbPassword        ( nullptr ),
+    _pEdCurrentPath     ( nullptr ),
+    _pCbAutoExtension   ( nullptr ),
+    _pCbOptions         ( nullptr ),
+    _pPlaces            ( nullptr ),
+    _pBtnConnectToServer( nullptr ),
     _eMode              ( FILEDLG_MODE_OPEN ),
     _eDlgType           ( FILEDLG_TYPE_FILEDLG ),
     _nState             ( FILEDLG_STATE_REMOTE ),
     _nStyle             ( 0 ),
     _bDoubleClick       ( false ),
     m_bNeedDelayedFilterExecute ( false ),
-    _pDefaultFilter     ( NULL ),
-    _bMultiSelection    ( false ),
-    _bFolderHasOpened   ( false )
+    _pDefaultFilter     ( nullptr ),
+    _bMultiSelection    ( false )
 {
 }
 

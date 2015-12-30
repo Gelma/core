@@ -17,19 +17,54 @@
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
 
-#include "MetaImportComponent.hxx"
 #include <xmloff/xmlnmspe.hxx>
-
 #include <xmloff/xmltoken.hxx>
 #include <xmloff/xmlmetai.hxx>
 #include <xmloff/nmspmap.hxx>
 #include <com/sun/star/lang/XMultiServiceFactory.hpp>
 #include <comphelper/processfactory.hxx>
+#include <xmloff/xmlimp.hxx>
+#include <com/sun/star/uno/Reference.hxx>
+#include <com/sun/star/document/XDocumentProperties.hpp>
 
 using namespace ::com::sun::star;
 using namespace ::xmloff::token;
 
-// #110680#
+class XMLMetaImportComponent : public SvXMLImport
+{
+private:
+    css::uno::Reference< css::document::XDocumentProperties> mxDocProps;
+
+public:
+    // XMLMetaImportComponent() throw();
+    explicit XMLMetaImportComponent(
+        const css::uno::Reference< css::uno::XComponentContext >& xContext
+        ) throw();
+
+    virtual ~XMLMetaImportComponent() throw();
+
+protected:
+
+    virtual SvXMLImportContext* CreateContext(
+        sal_uInt16 nPrefix,
+        const OUString& rLocalName,
+        const css::uno::Reference< css::xml::sax::XAttributeList > & xAttrList ) override;
+
+    // XImporter
+    virtual void SAL_CALL setTargetDocument( const css::uno::Reference< css::lang::XComponent >& xDoc )
+        throw(css::lang::IllegalArgumentException, css::uno::RuntimeException, std::exception) override;
+};
+
+// global functions to support the component
+
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface * SAL_CALL
+XMLMetaImportComponent_get_implementation(
+    css::uno::XComponentContext *context,
+    css::uno::Sequence<css::uno::Any> const &)
+{
+    return cppu::acquire(new XMLMetaImportComponent(context));
+}
+
 XMLMetaImportComponent::XMLMetaImportComponent(
     const uno::Reference< uno::XComponentContext >& xContext) throw()
     :   SvXMLImport(xContext, ""), mxDocProps()
@@ -66,33 +101,11 @@ void SAL_CALL XMLMetaImportComponent::setTargetDocument(
     const uno::Reference< lang::XComponent >& xDoc )
     throw(lang::IllegalArgumentException, uno::RuntimeException, std::exception)
 {
-    mxDocProps = uno::Reference< document::XDocumentProperties >::query( xDoc );
+    mxDocProps.set( xDoc, uno::UNO_QUERY );
     if( !mxDocProps.is() )
         throw lang::IllegalArgumentException(OUString(
             "XMLMetaImportComponent::setTargetDocument: argument is no "
             "XDocumentProperties"), uno::Reference<uno::XInterface>(*this), 0);
-}
-
-uno::Sequence< OUString > SAL_CALL
-    XMLMetaImportComponent_getSupportedServiceNames()
-        throw()
-{
-    const OUString aServiceName( "com.sun.star.document.XMLOasisMetaImporter" );
-    const uno::Sequence< OUString > aSeq( &aServiceName, 1 );
-    return aSeq;
-}
-
-OUString SAL_CALL XMLMetaImportComponent_getImplementationName() throw()
-{
-    return OUString( "XMLMetaImportComponent" );
-}
-
-uno::Reference< uno::XInterface > SAL_CALL XMLMetaImportComponent_createInstance(
-        const uno::Reference< lang::XMultiServiceFactory > & rSMgr)
-    throw( uno::Exception )
-{
-    // #110680#
-    return static_cast<cppu::OWeakObject*>(new XMLMetaImportComponent( comphelper::getComponentContext(rSMgr)));
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

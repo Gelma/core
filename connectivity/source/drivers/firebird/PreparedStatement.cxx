@@ -51,13 +51,11 @@ IMPLEMENT_SERVICE_INFO(OPreparedStatement,"com.sun.star.sdbcx.firebird.PreparedS
 
 
 OPreparedStatement::OPreparedStatement( Connection* _pConnection,
-                                        const TTypeInfoVector& _TypeInfo,
                                         const OUString& sql)
     :OStatementCommonBase(_pConnection)
-    ,m_aTypeInfo(_TypeInfo)
     ,m_sSqlStatement(sql)
-    ,m_pOutSqlda(0)
-    ,m_pInSqlda(0)
+    ,m_pOutSqlda(nullptr)
+    ,m_pInSqlda(nullptr)
 {
     SAL_INFO("connectivity.firebird", "OPreparedStatement(). "
              "sql: " << sql);
@@ -167,13 +165,13 @@ void SAL_CALL OPreparedStatement::close() throw(SQLException, RuntimeException, 
     {
         freeSQLVAR(m_pInSqlda);
         free(m_pInSqlda);
-        m_pInSqlda = 0;
+        m_pInSqlda = nullptr;
     }
     if (m_pOutSqlda)
     {
         freeSQLVAR(m_pOutSqlda);
         free(m_pOutSqlda);
-        m_pOutSqlda = 0;
+        m_pOutSqlda = nullptr;
     }
 }
 
@@ -444,7 +442,7 @@ void OPreparedStatement::openBlobForWriting(isc_blob_handle& rBlobHandle, ISC_QU
                             &rBlobHandle,
                             &rBlobId,
                             0, // Blob parameter buffer length
-                            0); // Blob parameter buffer handle
+                            nullptr); // Blob parameter buffer handle
 
     if (aErr)
     {
@@ -706,13 +704,13 @@ void OPreparedStatement::setParameterNull(sal_Int32 nParameterIndex,
                                           bool bSetNull)
 {
     XSQLVAR* pVar = m_pInSqlda->sqlvar + (nParameterIndex - 1);
-    if (pVar->sqltype & 1)
+    if (bSetNull)
     {
-        if (bSetNull)
-            *pVar->sqlind = -1;
-        else
-            *pVar->sqlind = 0;
+        pVar->sqltype |= 1;
+        *pVar->sqlind = -1;
     }
+    else
+        *pVar->sqlind = 0;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

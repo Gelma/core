@@ -24,7 +24,6 @@
 #include "sdxmlimp_impl.hxx"
 #include <xmloff/nmspmap.hxx>
 #include <com/sun/star/drawing/XShapes.hpp>
-#include <tools/rtti.hxx>
 #include "ximpshap.hxx"
 
 // draw:g context (RECURSIVE)
@@ -32,22 +31,21 @@
 class SdXMLGroupShapeContext : public SdXMLShapeContext
 {
     // the shape group this group is working on
-    com::sun::star::uno::Reference< com::sun::star::drawing::XShapes > mxChildren;
+    css::uno::Reference< css::drawing::XShapes > mxChildren;
 
 public:
-    TYPEINFO_OVERRIDE();
 
     SdXMLGroupShapeContext( SvXMLImport& rImport, sal_uInt16 nPrfx, const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList,
-        com::sun::star::uno::Reference< com::sun::star::drawing::XShapes >& rShapes,
+        const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList,
+        css::uno::Reference< css::drawing::XShapes >& rShapes,
         bool bTemporaryShape);
     virtual ~SdXMLGroupShapeContext();
 
     virtual SvXMLImportContext *CreateChildContext(
         sal_uInt16 nPrefix, const OUString& rLocalName,
-        const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList ) SAL_OVERRIDE;
-    virtual void StartElement(const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList>& xAttrList) SAL_OVERRIDE;
-    virtual void EndElement() SAL_OVERRIDE;
+        const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList ) override;
+    virtual void StartElement(const css::uno::Reference< css::xml::sax::XAttributeList>& xAttrList) override;
+    virtual void EndElement() override;
 };
 
 #endif // INCLUDED_XMLOFF_SOURCE_DRAW_XIMPGRP_HXX

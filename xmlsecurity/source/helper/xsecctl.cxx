@@ -54,8 +54,8 @@ XSecController::XSecController( const cssu::Reference<cssu::XComponentContext>& 
     , m_bIsBlocking(false)
     , m_nStatusOfSecurityComponents(UNINITIALIZED)
     , m_bIsSAXEventKeeperSticky(false)
-    , m_pErrorMessage(NULL)
-    , m_pXSecParser(NULL)
+    , m_pErrorMessage(nullptr)
+    , m_pXSecParser(nullptr)
     , m_nReservedSignatureId(0)
     , m_bVerifyCurrentSignature(false)
 {
@@ -142,13 +142,13 @@ void XSecController::createXSecComponent( )
      * marks all security components are not available.
      */
     m_nStatusOfSecurityComponents = FAILTOINITIALIZED;
-    m_xXMLSignature = NULL;
-    m_xXMLDocumentWrapper = NULL;
-    m_xSAXEventKeeper = NULL;
+    m_xXMLSignature = nullptr;
+    m_xXMLDocumentWrapper = nullptr;
+    m_xSAXEventKeeper = nullptr;
 
     cssu::Reference< cssl::XMultiComponentFactory > xMCF( mxCtx->getServiceManager() );
 
-    m_xXMLSignature = cssu::Reference< cssxc::XXMLSignature >(
+    m_xXMLSignature.set(
         xMCF->createInstanceWithContext( sXMLSignature, mxCtx ),
         cssu::UNO_QUERY );
 
@@ -158,7 +158,7 @@ void XSecController::createXSecComponent( )
      * XMLSignature created successfully.
      */
     {
-        m_xXMLDocumentWrapper = cssu::Reference< cssxw::XXMLDocumentWrapper >(
+        m_xXMLDocumentWrapper.set(
             xMCF->createInstanceWithContext( sXMLDocument, mxCtx ),
             cssu::UNO_QUERY );
     }
@@ -169,7 +169,7 @@ void XSecController::createXSecComponent( )
      * XMLDocumentWrapper created successfully.
      */
     {
-        m_xSAXEventKeeper = cssu::Reference< cssxc::sax::XSecuritySAXEventKeeper >(
+        m_xSAXEventKeeper.set(
             xMCF->createInstanceWithContext( sSAXEventKeeper, mxCtx ),
             cssu::UNO_QUERY );
     }
@@ -259,7 +259,7 @@ bool XSecController::chainOn( bool bRetrievingLastEvent )
              * to make sure no SAX event is forwarded during the connecting
              * phase.
              */
-            m_xSAXEventKeeper->setNextHandler( NULL );
+            m_xSAXEventKeeper->setNextHandler( nullptr );
 
             cssu::Reference< cssxs::XDocumentHandler > xSEKHandler(m_xSAXEventKeeper, cssu::UNO_QUERY);
 
@@ -341,7 +341,7 @@ void XSecController::chainOff()
     {
         if (m_bIsSAXEventKeeperConnected)
         {
-            m_xSAXEventKeeper->setNextHandler( NULL );
+            m_xSAXEventKeeper->setNextHandler( nullptr );
 
             if ( m_xPreviousNodeOnSAXChain.is() )
             {
@@ -529,7 +529,7 @@ void XSecController::startMission(
 
     m_nStatusOfSecurityComponents = UNINITIALIZED;
     m_xSecurityContext = xSecurityContext;
-    m_pErrorMessage = NULL;
+    m_pErrorMessage = nullptr;
 
     m_vInternalSignatureInformations.clear();
 
@@ -613,9 +613,9 @@ void XSecController::clearSAXChainConnector()
 
     chainOff();
 
-    m_xPreviousNodeOnSAXChain = NULL;
-    m_xNextNodeOnSAXChain = NULL;
-    m_xElementStackKeeper = NULL;
+    m_xPreviousNodeOnSAXChain = nullptr;
+    m_xNextNodeOnSAXChain = nullptr;
+    m_xElementStackKeeper = nullptr;
 }
 
 void XSecController::endMission()
@@ -661,8 +661,8 @@ void XSecController::endMission()
         }
     }
 
-    m_xUriBinding = NULL;
-    m_xSecurityContext = NULL;
+    m_xUriBinding = nullptr;
+    m_xSecurityContext = nullptr;
 
     /*
      * free the status change listener reference to this object
@@ -672,7 +672,7 @@ void XSecController::endMission()
         cssu::Reference<cssxc::sax::XSAXEventKeeperStatusChangeBroadcaster>
             xSAXEventKeeperStatusChangeBroadcaster(m_xSAXEventKeeper, cssu::UNO_QUERY);
         xSAXEventKeeperStatusChangeBroadcaster
-            ->addSAXEventKeeperStatusChangeListener( NULL );
+            ->addSAXEventKeeperStatusChangeListener( nullptr );
     }
 }
 
@@ -734,13 +734,13 @@ void XSecController::exportSignature(
      */
     pAttributeList = new SvXMLAttributeList();
     pAttributeList->AddAttribute(
-        OUString(ATTR_XMLNS),
-        OUString(NS_XMLDSIG));
+        ATTR_XMLNS,
+        NS_XMLDSIG);
 
     if (!signatureInfo.ouSignatureId.isEmpty())
     {
         pAttributeList->AddAttribute(
-            OUString(ATTR_ID),
+            ATTR_ID,
             OUString(signatureInfo.ouSignatureId));
     }
 
@@ -754,16 +754,16 @@ void XSecController::exportSignature(
             /* Write CanonicalizationMethod element */
             pAttributeList = new SvXMLAttributeList();
             pAttributeList->AddAttribute(
-                OUString(ATTR_ALGORITHM),
-                OUString(ALGO_C14N));
+                ATTR_ALGORITHM,
+                ALGO_C14N);
             xDocumentHandler->startElement( tag_CanonicalizationMethod, cssu::Reference< cssxs::XAttributeList > (pAttributeList) );
             xDocumentHandler->endElement( tag_CanonicalizationMethod );
 
             /* Write SignatureMethod element */
             pAttributeList = new SvXMLAttributeList();
             pAttributeList->AddAttribute(
-                OUString(ATTR_ALGORITHM),
-                OUString(ALGO_RSASHA1));
+                ATTR_ALGORITHM,
+                ALGO_RSASHA1);
             xDocumentHandler->startElement( tag_SignatureMethod, cssu::Reference< cssxs::XAttributeList > (pAttributeList) );
             xDocumentHandler->endElement( tag_SignatureMethod );
 
@@ -782,7 +782,7 @@ void XSecController::exportSignature(
                  */
                 {
                     pAttributeList->AddAttribute(
-                        OUString(ATTR_URI),
+                        ATTR_URI,
                         refInfor.ouURI);
                 }
                 else
@@ -791,7 +791,7 @@ void XSecController::exportSignature(
                  */
                 {
                     pAttributeList->AddAttribute(
-                        OUString(ATTR_URI),
+                        ATTR_URI,
                         CHAR_FRAGMENT+refInfor.ouURI);
                 }
 
@@ -809,8 +809,8 @@ void XSecController::exportSignature(
                         {
                             pAttributeList = new SvXMLAttributeList();
                             pAttributeList->AddAttribute(
-                                OUString(ATTR_ALGORITHM),
-                                OUString(ALGO_C14N));
+                                ATTR_ALGORITHM,
+                                ALGO_C14N);
                             xDocumentHandler->startElement(
                                 tag_Transform,
                                 cssu::Reference< cssxs::XAttributeList > (pAttributeList) );
@@ -822,8 +822,8 @@ void XSecController::exportSignature(
                     /* Write DigestMethod element */
                     pAttributeList = new SvXMLAttributeList();
                     pAttributeList->AddAttribute(
-                        OUString(ATTR_ALGORITHM),
-                        OUString(ALGO_XMLDSIGSHA1));
+                        ATTR_ALGORITHM,
+                        ALGO_XMLDSIGSHA1);
                     xDocumentHandler->startElement(
                         tag_DigestMethod,
                         cssu::Reference< cssxs::XAttributeList > (pAttributeList) );
@@ -906,10 +906,10 @@ void XSecController::exportSignature(
                 /* Write SignatureProperty element */
                 pAttributeList = new SvXMLAttributeList();
                 pAttributeList->AddAttribute(
-                    OUString(ATTR_ID),
+                    ATTR_ID,
                     signatureInfo.ouPropertyId);
                 pAttributeList->AddAttribute(
-                    OUString(ATTR_TARGET),
+                    ATTR_TARGET,
                     CHAR_FRAGMENT+signatureInfo.ouSignatureId);
                 xDocumentHandler->startElement(
                     tag_SignatureProperty,
@@ -920,7 +920,7 @@ void XSecController::exportSignature(
                     pAttributeList = new SvXMLAttributeList();
                     pAttributeList->AddAttribute(
                         ATTR_XMLNS ":" NSTAG_DC,
-                        OUString(NS_DC));
+                        NS_DC);
 
                     xDocumentHandler->startElement(
                         NSTAG_DC ":" + tag_Date,

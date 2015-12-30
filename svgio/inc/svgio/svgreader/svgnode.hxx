@@ -141,10 +141,10 @@ namespace svgio
             void readLocalCssStyle(const OUString& aContent);
 
             /// style helpers
-            void parseAttributes(const com::sun::star::uno::Reference< com::sun::star::xml::sax::XAttributeList >& xAttribs);
+            void parseAttributes(const css::uno::Reference< css::xml::sax::XAttributeList >& xAttribs);
             virtual const SvgStyleAttributes* getSvgStyleAttributes() const;
             virtual void parseAttribute(const OUString& rTokenName, SVGToken aSVGToken, const OUString& aContent);
-            virtual void decomposeSvgNode(drawinglayer::primitive2d::Primitive2DSequence& rTarget, bool bReferenced) const;
+            virtual void decomposeSvgNode(drawinglayer::primitive2d::Primitive2DContainer& rTarget, bool bReferenced) const;
 
             /// #i125258# tell if this node is allowed to have a parent style (e.g. defs do not)
             virtual bool supportsParentStyle() const;
@@ -156,20 +156,20 @@ namespace svgio
             const SvgNodeVector& getChildren() const { return maChildren; }
 
             /// InfoProvider support for %, em and ex values
-            virtual const basegfx::B2DRange getCurrentViewPort() const SAL_OVERRIDE;
-            virtual double getCurrentFontSizeInherited() const SAL_OVERRIDE;
-            virtual double getCurrentXHeightInherited() const SAL_OVERRIDE;
+            virtual const basegfx::B2DRange getCurrentViewPort() const override;
+            virtual double getCurrentFontSizeInherited() const override;
+            virtual double getCurrentXHeightInherited() const override;
 
             double getCurrentFontSize() const;
             double getCurrentXHeight() const;
 
             /// Id access
             const OUString* getId() const { return mpId; }
-            void setId(const OUString* pfId = 0);
+            void setId(const OUString* pfId = nullptr);
 
             /// Class access
             const OUString* getClass() const { return mpClass; }
-            void setClass(const OUString* pfClass = 0);
+            void setClass(const OUString* pfClass = nullptr);
 
             /// XmlSpace access
             XmlSpace getXmlSpace() const;
@@ -180,7 +180,7 @@ namespace svgio
             void setDisplay(Display eDisplay = Display_inherit) { maDisplay = eDisplay; }
 
             /// alternative parent
-            void setAlternativeParent(const SvgNode* pAlternativeParent = 0) { mpAlternativeParent = pAlternativeParent; }
+            void setAlternativeParent(const SvgNode* pAlternativeParent = nullptr) { mpAlternativeParent = pAlternativeParent; }
         };
     } // end of namespace svgreader
 } // end of namespace svgio

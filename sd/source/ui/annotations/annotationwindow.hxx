@@ -53,25 +53,25 @@ private:
     VclPtr<AnnotationWindow>   mpAnnotationWindow;
 
 protected:
-    virtual void    Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect) SAL_OVERRIDE;
-    virtual void    KeyInput( const KeyEvent& rKeyEvt ) SAL_OVERRIDE;
-    virtual void    MouseMove( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    MouseButtonUp( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-    virtual void    Command( const CommandEvent& rCEvt ) SAL_OVERRIDE;
-    virtual void    LoseFocus() SAL_OVERRIDE;
+    virtual void    Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect) override;
+    virtual void    KeyInput( const KeyEvent& rKeyEvt ) override;
+    virtual void    MouseMove( const MouseEvent& rMEvt ) override;
+    virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
+    virtual void    MouseButtonUp( const MouseEvent& rMEvt ) override;
+    virtual void    Command( const CommandEvent& rCEvt ) override;
+    virtual void    LoseFocus() override;
 
 public:
     AnnotationTextWindow( AnnotationWindow* pParent, WinBits nBits );
     virtual ~AnnotationTextWindow();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     void SetOutlinerView( OutlinerView* pOutlinerView ) { mpOutlinerView = pOutlinerView; }
 
-    virtual OUString GetSurroundingText() const SAL_OVERRIDE;
-    virtual Selection GetSurroundingTextSelection() const SAL_OVERRIDE;
+    virtual OUString GetSurroundingText() const override;
+    virtual Selection GetSurroundingTextSelection() const override;
 
-    virtual void    GetFocus() SAL_OVERRIDE;
+    virtual void    GetFocus() override;
 };
 
 class AnnotationWindow : public FloatingWindow
@@ -79,43 +79,41 @@ class AnnotationWindow : public FloatingWindow
     private:
         AnnotationManagerImpl&  mrManager;
         DrawDocShell*           mpDocShell;
-        View*                   mpView;
         SdDrawDocument*         mpDoc;
 
         OutlinerView*           mpOutlinerView;
-        Outliner*               mpOutliner;
-        VclPtr<ScrollBar>              mpVScrollbar;
-        ::com::sun::star::uno::Reference< ::com::sun::star::office::XAnnotation > mxAnnotation;
+        ::Outliner*             mpOutliner;
+        VclPtr<ScrollBar>       mpVScrollbar;
+        css::uno::Reference< css::office::XAnnotation > mxAnnotation;
         bool                    mbReadonly;
         bool                    mbProtected;
         bool                    mbMouseOverButton;
         VclPtr<AnnotationTextWindow>   mpTextWindow;
-        VclPtr<MultiLineEdit>          mpMeta;
+        VclPtr<MultiLineEdit>   mpMeta;
         Rectangle               maRectMetaButton;
         basegfx::B2DPolygon     maPopupTriangle;
 
     protected:
-        void            SetSizePixel( const Size& rNewSize ) SAL_OVERRIDE;
+        void            SetSizePixel( const Size& rNewSize ) override;
 
         DECL_LINK_TYPED(ScrollHdl, ScrollBar*, void);
 
     public:
         AnnotationWindow( AnnotationManagerImpl& rManager, DrawDocShell* pDocShell, vcl::Window* pParent );
         virtual ~AnnotationWindow();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
         void StartEdit();
 
         SvxLanguageItem GetLanguage();
 
-        void setAnnotation( const ::com::sun::star::uno::Reference< ::com::sun::star::office::XAnnotation >& xAnnotation, bool bGrabFocus = false );
+        void setAnnotation( const css::uno::Reference< css::office::XAnnotation >& xAnnotation, bool bGrabFocus = false );
 
         void ExecuteSlot( sal_uInt16 nSID );
 
         DrawDocShell*           DocShell()      { return mpDocShell; }
         OutlinerView*           getView()       { return mpOutlinerView; }
-        sd::View*               DocView()       { return mpView; }
-        Outliner*               Engine()        { return mpOutliner; }
+        ::Outliner*             Engine()        { return mpOutliner; }
         SdDrawDocument*         Doc()           { return mpDoc; }
 
         long            GetPostItTextHeight();
@@ -135,14 +133,12 @@ class AnnotationWindow : public FloatingWindow
 
         void            ToggleInsMode();
 
-        DECL_LINK_TYPED( OnlineSpellCallback, SpellCallbackInfo&, void );
-
-        virtual void    Deactivate() SAL_OVERRIDE;
-        virtual void    Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect) SAL_OVERRIDE;
-        virtual void    MouseMove( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-        virtual void    MouseButtonDown( const MouseEvent& rMEvt ) SAL_OVERRIDE;
-        virtual void    Command( const CommandEvent& rCEvt ) SAL_OVERRIDE;
-        virtual void    GetFocus() SAL_OVERRIDE;
+        virtual void    Deactivate() override;
+        virtual void    Paint( vcl::RenderContext& /*rRenderContext*/, const Rectangle& rRect) override;
+        virtual void    MouseMove( const MouseEvent& rMEvt ) override;
+        virtual void    MouseButtonDown( const MouseEvent& rMEvt ) override;
+        virtual void    Command( const CommandEvent& rCEvt ) override;
+        virtual void    GetFocus() override;
 
         void            SetColor();
 

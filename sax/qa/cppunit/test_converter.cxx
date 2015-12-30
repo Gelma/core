@@ -48,8 +48,8 @@ class ConverterTest
     : public ::CppUnit::TestFixture
 {
 public:
-    virtual void setUp() SAL_OVERRIDE;
-    virtual void tearDown() SAL_OVERRIDE;
+    virtual void setUp() override;
+    virtual void tearDown() override;
 
     void testDuration();
     void testDateTime();
@@ -87,7 +87,7 @@ void ConverterTest::tearDown()
 }
 
 static void doTest(util::Duration const & rid, char const*const pis,
-        char const*const i_pos = 0)
+        char const*const i_pos = nullptr)
 {
     char const*const pos((i_pos) ? i_pos : pis);
     util::Duration od;
@@ -163,18 +163,18 @@ static bool eqDateTime(const util::DateTime& a, const util::DateTime& b) {
 }
 
 static void doTest(util::DateTime const & rdt, char const*const pis,
-        char const*const i_pos = 0)
+        char const*const i_pos = nullptr)
 {
     char const*const pos((i_pos) ? i_pos : pis);
     OUString is(OUString::createFromAscii(pis));
     util::DateTime odt;
     SAL_INFO("sax.cppunit","about to convert '" << is << "'");
-    bool bSuccess( Converter::parseDateTime(odt, 0, is) );
+    bool bSuccess( Converter::parseDateTime(odt, nullptr, is) );
     SAL_INFO("sax.cppunit","Y:" << odt.Year << " M:" << odt.Month << " D:" << odt.Day << "  H:" << odt.Hours << " M:" << odt.Minutes << " S:" << odt.Seconds << " nS:" << odt.NanoSeconds << " UTC: " << (bool)odt.IsUTC);
     CPPUNIT_ASSERT(bSuccess);
     CPPUNIT_ASSERT(eqDateTime(rdt, odt));
     OUStringBuffer buf;
-    Converter::convertDateTime(buf, odt, 0, true);
+    Converter::convertDateTime(buf, odt, nullptr, true);
     SAL_INFO("sax.cppunit","" << buf.toString());
     CPPUNIT_ASSERT_EQUAL(OUString::createFromAscii(pos),
                          buf.makeStringAndClear());
@@ -183,7 +183,7 @@ static void doTest(util::DateTime const & rdt, char const*const pis,
 static void doTestDateTimeF(char const*const pis)
 {
     util::DateTime odt;
-    bool bSuccess = Converter::parseDateTime(odt, 0,
+    bool bSuccess = Converter::parseDateTime(odt, nullptr,
             OUString::createFromAscii(pis));
     SAL_INFO("sax.cppunit","Y:" << odt.Year << " M:" << odt.Month << " D:" << odt.Day << "  H:" << odt.Hours << "H M:" << odt.Minutes << " S:" << odt.Seconds << " nS:" << odt.NanoSeconds);
     CPPUNIT_ASSERT(!bSuccess);
@@ -258,18 +258,18 @@ void ConverterTest::testDateTime()
 }
 
 static void doTestTime(util::DateTime const & rdt, char const*const pis,
-        char const*const i_pos = 0)
+        char const*const i_pos = nullptr)
 {
     char const*const pos((i_pos) ? i_pos : pis);
     OUString is(OUString::createFromAscii(pis));
     util::DateTime odt;
     SAL_INFO("sax.cppunit","about to convert '" << is << "'");
-    bool bSuccess( Converter::parseTimeOrDateTime(odt, 0, is) );
+    bool bSuccess( Converter::parseTimeOrDateTime(odt, nullptr, is) );
     SAL_INFO("sax.cppunit","Y:" << odt.Year << " M:" << odt.Month << " D:" << odt.Day << "  H:" << odt.Hours << " M:" << odt.Minutes << " S:" << odt.Seconds << " nS:" << odt.NanoSeconds << " UTC: " << (bool)odt.IsUTC);
     CPPUNIT_ASSERT(bSuccess);
     CPPUNIT_ASSERT(eqDateTime(rdt, odt));
     OUStringBuffer buf;
-    Converter::convertTimeOrDateTime(buf, odt, 0);
+    Converter::convertTimeOrDateTime(buf, odt, nullptr);
     SAL_INFO("sax.cppunit","" << buf.toString());
     CPPUNIT_ASSERT_EQUAL(OUString::createFromAscii(pos),
                          buf.makeStringAndClear());
@@ -278,7 +278,7 @@ static void doTestTime(util::DateTime const & rdt, char const*const pis,
 static void doTestTimeF(char const*const pis)
 {
     util::DateTime odt;
-    bool bSuccess = Converter::parseTimeOrDateTime(odt, 0,
+    bool bSuccess = Converter::parseTimeOrDateTime(odt, nullptr,
             OUString::createFromAscii(pis));
     SAL_INFO("sax.cppunit","Y:" << odt.Year << " M:" << odt.Month << " D:" << odt.Day << "  H:" << odt.Hours << "H M:" << odt.Minutes << " S:" << odt.Seconds << " nS:" << odt.NanoSeconds);
     CPPUNIT_ASSERT_MESSAGE(pis, !bSuccess);
@@ -664,9 +664,7 @@ void doTestDecodeBase64(const uno::Sequence<sal_Int8>& aPass, char const*const p
 
 void ConverterTest::testBase64()
 {
-    std::vector< sal_Int8 > tempSeq(4);
-    for(sal_Int8 i = 0; i<4; ++i)
-        tempSeq.push_back(i);
+    std::vector< sal_Int8 > tempSeq { 0, 0, 0, 0, 0, 1, 2, 3 };
     uno::Sequence< sal_Int8 > tempSequence = comphelper::containerToSequence(tempSeq);
     doTestEncodeBase64("AAAAAAABAgM=", tempSequence);
     doTestDecodeBase64(tempSequence, "AAAAAAABAgM=");

@@ -27,15 +27,15 @@ namespace reportdesign
 {
     class OReportDrawPage : public SvxDrawPage
     {
-        ::com::sun::star::uno::WeakReference< ::com::sun::star::report::XSection > m_xSection;
-        OReportDrawPage(const OReportDrawPage&) SAL_DELETED_FUNCTION;
-        void operator =(const OReportDrawPage&) SAL_DELETED_FUNCTION;
+        css::uno::WeakReference< css::report::XSection > m_xSection;
+        OReportDrawPage(const OReportDrawPage&) = delete;
+        void operator =(const OReportDrawPage&) = delete;
     protected:
-        virtual SdrObject *_CreateSdrObject( const ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape > & xShape )
-            throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual ::com::sun::star::uno::Reference< ::com::sun::star::drawing::XShape >  _CreateShape( SdrObject *pObj ) const throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual SdrObject *_CreateSdrObject( const css::uno::Reference< css::drawing::XShape > & xShape )
+            throw (css::uno::RuntimeException, std::exception) override;
+        virtual css::uno::Reference< css::drawing::XShape >  _CreateShape( SdrObject *pObj ) const throw (css::uno::RuntimeException, std::exception) override;
     public:
-        OReportDrawPage(SdrPage* pPage,const ::com::sun::star::uno::Reference< ::com::sun::star::report::XSection >& _xSection);
+        OReportDrawPage(SdrPage* pPage,const css::uno::Reference< css::report::XSection >& _xSection);
         virtual ~OReportDrawPage() throw(){}
     };
 }

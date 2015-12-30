@@ -57,7 +57,7 @@ namespace connectivity
             bool                            m_bNeedToReadLine;
         private:
             void fillColumns(const ::com::sun::star::lang::Locale& _aLocale);
-            bool readLine(sal_Int32 *pEndPos = NULL, sal_Int32 *pStartPos = NULL, bool nonEmpty = false);
+            bool readLine(sal_Int32 *pEndPos = nullptr, sal_Int32 *pStartPos = nullptr, bool nonEmpty = false);
             void setRowPos(::std::vector<TRowPositionInFile>::size_type rowNum, const TRowPositionInFile &rowPos);
             void impl_fillColumnInfo_nothrow(QuotedTokenizedString& aFirstLine, sal_Int32& nStartPosFirstLine, sal_Int32& nStartPosFirstLine2,
                                              sal_Int32& io_nType, sal_Int32& io_nPrecisions, sal_Int32& io_nScales, OUString& o_sTypeName,
@@ -73,7 +73,7 @@ namespace connectivity
                 return pConnection;
             }
         public:
-            virtual void refreshColumns() SAL_OVERRIDE;
+            virtual void refreshColumns() override;
 
         public:
             //  DECLARE_CTY_DEFAULTS( OFlatTable_BASE);
@@ -85,19 +85,19 @@ namespace connectivity
                     const OUString& _CatalogName = OUString()
                 );
 
-            void construct() SAL_OVERRIDE; // can throw any exception
+            void construct() override; // can throw any exception
 
-            virtual bool seekRow(IResultSetHelper::Movement eCursorPosition, sal_Int32 nOffset, sal_Int32& nCurPos) SAL_OVERRIDE;
-            virtual bool fetchRow(OValueRefRow& _rRow, const OSQLColumns& _rCols, bool bIsTable, bool bRetrieveData) SAL_OVERRIDE;
-            virtual void refreshHeader() SAL_OVERRIDE;
+            virtual bool seekRow(IResultSetHelper::Movement eCursorPosition, sal_Int32 nOffset, sal_Int32& nCurPos) override;
+            virtual bool fetchRow(OValueRefRow& _rRow, const OSQLColumns& _rCols, bool bIsTable, bool bRetrieveData) override;
+            virtual void refreshHeader() override;
 
-            virtual ::com::sun::star::uno::Any SAL_CALL queryInterface( const ::com::sun::star::uno::Type & rType ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            virtual ::com::sun::star::uno::Any SAL_CALL queryInterface( const ::com::sun::star::uno::Type & rType ) throw(::com::sun::star::uno::RuntimeException, std::exception) override;
             //XTypeProvider
-            virtual ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Type > SAL_CALL getTypes(  ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-            virtual void SAL_CALL disposing() SAL_OVERRIDE;
+            virtual ::com::sun::star::uno::Sequence< ::com::sun::star::uno::Type > SAL_CALL getTypes(  ) throw(::com::sun::star::uno::RuntimeException, std::exception) override;
+            virtual void SAL_CALL disposing() override;
 
             // com::sun::star::lang::XUnoTunnel
-            virtual sal_Int64 SAL_CALL getSomething( const ::com::sun::star::uno::Sequence< sal_Int8 >& aIdentifier ) throw(::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            virtual sal_Int64 SAL_CALL getSomething( const ::com::sun::star::uno::Sequence< sal_Int8 >& aIdentifier ) throw(::com::sun::star::uno::RuntimeException, std::exception) override;
             static ::com::sun::star::uno::Sequence< sal_Int8 > getUnoTunnelImplementationId();
 
             OUString getEntry();

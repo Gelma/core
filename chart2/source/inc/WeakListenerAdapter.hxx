@@ -59,7 +59,7 @@ protected:
     // ____ XEventListener (base of all listeners) ____
     virtual void SAL_CALL disposing(
         const ::com::sun::star::lang::EventObject& Source )
-        throw (::com::sun::star::uno::RuntimeException)
+        throw (::com::sun::star::uno::RuntimeException) SAL_OVERRIDE
     {
         ::com::sun::star::uno::Reference<
               ::com::sun::star::lang::XEventListener > xEventListener =
@@ -90,7 +90,7 @@ public:
 protected:
     // ____ XModifyListener ____
     virtual void SAL_CALL modified( const ::com::sun::star::lang::EventObject& aEvent )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 };
 
 class WeakSelectionChangeListenerAdapter :
@@ -105,7 +105,7 @@ protected:
     // ____ XSelectionChangeListener ____
     virtual void SAL_CALL selectionChanged(
         const ::com::sun::star::lang::EventObject& aEvent )
-        throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (::com::sun::star::uno::RuntimeException, std::exception) override;
 };
 
 } //  namespace chart

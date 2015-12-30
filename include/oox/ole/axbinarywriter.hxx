@@ -33,22 +33,22 @@ public:
 
     /** Returns the size of the data this stream represents, if the wrapped
         stream supports the size() operation. */
-    virtual sal_Int64   size() const SAL_OVERRIDE;
+    virtual sal_Int64   size() const override;
     /** Return the current relative stream position (relative to position of
         the wrapped stream at construction time). */
-    virtual sal_Int64   tell() const SAL_OVERRIDE;
+    virtual sal_Int64   tell() const override;
     /** Seeks the stream to the passed relative position, if it is behind the
         current position. */
-    virtual void        seek( sal_Int64 nPos ) SAL_OVERRIDE;
+    virtual void        seek( sal_Int64 nPos ) override;
     /** Closes the input stream but not the wrapped stream. */
-    virtual void        close() SAL_OVERRIDE;
+    virtual void        close() override;
 
     /** Reads nBytes bytes to the passed sequence.
         @return  Number of bytes really read. */
-    virtual void writeData( const StreamDataSequence& orData, size_t nAtomSize = 1 ) SAL_OVERRIDE;
+    virtual void writeData( const StreamDataSequence& orData, size_t nAtomSize = 1 ) override;
     /** Reads nBytes bytes to the (existing) buffer opMem.
         @return  Number of bytes really read. */
-    virtual void   writeMemory( const void* pMem, sal_Int32 nBytes, size_t nAtomSize = 1 ) SAL_OVERRIDE;
+    virtual void   writeMemory( const void* pMem, sal_Int32 nBytes, size_t nAtomSize = 1 ) override;
 
     /** Aligns the stream to a multiple of the passed size (relative to the
         position of the wrapped stream at construction time). */
@@ -59,9 +59,6 @@ public:
     /** Aligns the stream according to the passed type and reads a value. */
     template< typename Type >
     void         writeAligned( Type nVal ) { align( sizeof( Type ) ); writeValue( nVal ); }
-    /** Aligns the stream according to the passed type and skips the size of the type. */
-    template< typename Type >
-    void         padAligned() { align( sizeof( Type ) ); pad( sizeof( Type ) ); }
 
 private:
     BinaryOutputStream*  mpOutStrm;           ///< The wrapped input stream.
@@ -121,7 +118,7 @@ private:
 
         explicit            PairProperty( AxPairData& rPairData ) :
                                 mrPairData( rPairData ) {}
-        virtual bool        writeProperty( AxAlignedOutputStream& rOutStrm ) SAL_OVERRIDE;
+        virtual bool        writeProperty( AxAlignedOutputStream& rOutStrm ) override;
     };
 
     /** Complex property for a string value. */
@@ -132,17 +129,13 @@ private:
 
         explicit            StringProperty( OUString& rValue, sal_uInt32 nSize ) :
                                 mrValue( rValue ), mnSize( nSize ) {}
-        virtual bool        writeProperty( AxAlignedOutputStream& rOutStrm ) SAL_OVERRIDE;
+        virtual bool        writeProperty( AxAlignedOutputStream& rOutStrm ) override;
     };
 
     /** Stream property for a picture or mouse icon. */
     struct PictureProperty : public ComplexProperty
     {
-        StreamDataSequence& mrPicData;
-
-        explicit            PictureProperty( StreamDataSequence& rPicData ) :
-                                mrPicData( rPicData ) {}
-        virtual bool        writeProperty( AxAlignedOutputStream& rOutStrm ) SAL_OVERRIDE;
+        virtual bool        writeProperty( AxAlignedOutputStream& rOutStrm ) override;
     };
 
     typedef RefVector< ComplexProperty > ComplexPropVector;
@@ -151,11 +144,6 @@ private:
     AxAlignedOutputStream maOutStrm;        ///< The input stream to read from.
     ComplexPropVector   maLargeProps;       ///< Stores info for all used large properties.
     ComplexPropVector   maStreamProps;      ///< Stores info for all used stream data properties.
-    AxPairData          maDummyPairData;    ///< Dummy pair for unsupported properties.
-    StreamDataSequence  maDummyPicData;     ///< Dummy picture for unsupported properties.
-    OUString            maDummyString;      ///< Dummy string for unsupported properties.
-    ::std::vector< OUString >
-                        maDummyStringArray; ///< Dummy string array for unsupported properties.
     sal_Int16           mnBlockSize;
     sal_Int64           mnPropFlagsStart;     ///< pos of Prop flags
     sal_Int64           mnPropFlags;        ///< Flags specifying existing properties.

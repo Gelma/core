@@ -45,13 +45,13 @@ namespace framework
      Describes a context string list where all contexts
      are delimited by a colon. For more information about
      the module identifier used as context strings see the
-     IDL description of com::sun::star::frame::XModuleManager
+     IDL description of css::frame::XModuleManager
 
   @param
      rModuleIdentifier
 
      A string describing a module identifier. See IDL
-     description of com::sun::star::frame::XModuleManager.
+     description of css::frame::XModuleManager.
 
 */
 bool MenuBarMerger::IsCorrectContext( const OUString& rContext, const OUString& rModuleIdentifier )
@@ -86,7 +86,7 @@ ReferencePathInfo MenuBarMerger::FindReferencePath(
     ReferencePathInfo aResult;
     if ( !nCount )
     {
-        aResult.pPopupMenu = NULL;
+        aResult.pPopupMenu = nullptr;
         aResult.nPos = 0;
         aResult.nLevel = -1;
         aResult.eResult = RP_MENUITEM_NOT_FOUND;
@@ -119,7 +119,7 @@ ReferencePathInfo MenuBarMerger::FindReferencePath(
             {
                 sal_uInt16 nItemId = pCurrMenu->GetItemId( nTmpPos );
                 Menu* pTmpMenu     = pCurrMenu->GetPopupMenu( nItemId );
-                if ( pTmpMenu != 0 )
+                if ( pTmpMenu != nullptr )
                     pCurrMenu = pTmpMenu;
                 else
                 {

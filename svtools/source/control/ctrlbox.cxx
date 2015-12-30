@@ -57,7 +57,6 @@
 
 #define FONTNAMEBOXMRUENTRIESFILE "/user/config/fontnameboxmruentries"
 
-using namespace ::com::sun::star;
 
 class ImplColorListData
 {
@@ -123,7 +122,7 @@ void ColorListBox::dispose()
     {
         ImplDestroyColorEntries();
         delete pColorList;
-        pColorList = NULL;
+        pColorList = nullptr;
     }
     ListBox::dispose();
 }
@@ -237,7 +236,7 @@ Color ColorListBox::GetEntryColor( sal_Int32 nPos ) const
 {
     Color aColor;
     ImplColorListData* pData = ( 0 <= nPos && static_cast<size_t>(nPos) < pColorList->size() ) ?
-        (*pColorList)[ nPos ] : NULL;
+        (*pColorList)[ nPos ] : nullptr;
     if ( pData && pData->bColor )
         aColor = pData->aColor;
     return aColor;
@@ -246,7 +245,7 @@ Color ColorListBox::GetEntryColor( sal_Int32 nPos ) const
 void ColorListBox::UserDraw( const UserDrawEvent& rUDEvt )
 {
     size_t nPos = rUDEvt.GetItemId();
-    ImplColorListData* pData = ( nPos < pColorList->size() ) ? (*pColorList)[ nPos ] : NULL;
+    ImplColorListData* pData = ( nPos < pColorList->size() ) ? (*pColorList)[ nPos ] : nullptr;
     if ( pData )
     {
         if ( pData->bColor )
@@ -495,7 +494,7 @@ Color ImpLineListData::GetColorDist( const Color& rMain, const Color& rDefault )
 
 sal_uInt16 LineListBox::GetSelectEntryStyle( sal_Int32 nSelIndex ) const
 {
-    sal_uInt16 nStyle = table::BorderLineStyle::SOLID;
+    sal_uInt16 nStyle = css::table::BorderLineStyle::SOLID;
     sal_Int32 nPos = GetSelectEntryPos( nSelIndex );
     if ( nPos != LISTBOX_ENTRY_NOTFOUND )
     {
@@ -554,25 +553,25 @@ std::vector<double> GetDashing( sal_uInt16 nDashing )
     std::vector<double> aPattern;
     switch (nDashing)
     {
-        case table::BorderLineStyle::DOTTED:
+        case css::table::BorderLineStyle::DOTTED:
             aPattern.push_back( 1.0 ); // line
             aPattern.push_back( 2.0 ); // blank
         break;
-        case table::BorderLineStyle::DASHED:
+        case css::table::BorderLineStyle::DASHED:
             aPattern.push_back( 16.0 ); // line
             aPattern.push_back( 5.0 );  // blank
         break;
-        case table::BorderLineStyle::FINE_DASHED:
+        case css::table::BorderLineStyle::FINE_DASHED:
             aPattern.push_back( 6.0 ); // line
             aPattern.push_back( 2.0 ); // blank
         break;
-        case table::BorderLineStyle::DASH_DOT:
+        case css::table::BorderLineStyle::DASH_DOT:
             aPattern.push_back( 16.0 ); // line
             aPattern.push_back( 5.0 );  // blank
             aPattern.push_back( 5.0 );  // line
             aPattern.push_back( 5.0 );  // blank
         break;
-        case table::BorderLineStyle::DASH_DOT_DOT:
+        case css::table::BorderLineStyle::DASH_DOT_DOT:
             aPattern.push_back( 16.0 ); // line
             aPattern.push_back( 5.0 );  // blank
             aPattern.push_back( 5.0 );  // line
@@ -651,7 +650,7 @@ void LineListBox::ImpGetLine( long nLine1, long nLine2, long nDistance,
     //this calculation and draw a bitmap of height
     //equal to normal text line and center the
     //line within that
-    long nMinWidth = GetTextWidth(OUString("----------"));
+    long nMinWidth = GetTextWidth("----------");
     Size aSize = CalcSubEditSize();
     aSize.Width() = std::max(nMinWidth, aSize.Width());
     aSize.Width() -= aTxtSize.Width();
@@ -702,7 +701,7 @@ void LineListBox::ImpGetLine( long nLine1, long nLine2, long nDistance,
         {
             double y2 =  n1 + nDist + double( n2 ) / 2;
             aVirDev->SetFillColor( aColor2 );
-            svtools::DrawLine( *aVirDev.get(), basegfx::B2DPoint( 0, y2 ), basegfx::B2DPoint( aSize.Width(), y2 ), n2, table::BorderLineStyle::SOLID );
+            svtools::DrawLine( *aVirDev.get(), basegfx::B2DPoint( 0, y2 ), basegfx::B2DPoint( aSize.Width(), y2 ), n2, css::table::BorderLineStyle::SOLID );
         }
         rBmp = aVirDev->GetBitmap( Point(), Size( aSize.Width(), n1+nDist+n2 ) );
     }
@@ -710,7 +709,7 @@ void LineListBox::ImpGetLine( long nLine1, long nLine2, long nDistance,
 
 void LineListBox::ImplInit()
 {
-    aTxtSize.Width()  = GetTextWidth( OUString( " " ) );
+    aTxtSize.Width()  = GetTextWidth( " " );
     aTxtSize.Height() = GetTextHeight();
     pLineList   = new ImpLineList();
     eUnit       = FUNIT_POINT;
@@ -804,6 +803,8 @@ void LineListBox::InsertEntry(
 
 sal_Int32 LineListBox::GetEntryPos( sal_uInt16 nStyle ) const
 {
+    if(nStyle == css::table::BorderLineStyle::NONE && !m_sNone.isEmpty())
+        return 0;
     for ( size_t i = 0, n = pLineList->size(); i < n; ++i ) {
         ImpLineListData* pData = (*pLineList)[ i ];
         if ( pData )
@@ -822,8 +823,8 @@ sal_Int32 LineListBox::GetEntryPos( sal_uInt16 nStyle ) const
 
 sal_uInt16 LineListBox::GetEntryStyle( sal_Int32 nPos ) const
 {
-    ImpLineListData* pData = (0 <= nPos && static_cast<size_t>(nPos) < pLineList->size()) ? (*pLineList)[ nPos ] : NULL;
-    return ( pData ) ? pData->GetStyle() : table::BorderLineStyle::NONE;
+    ImpLineListData* pData = (0 <= nPos && static_cast<size_t>(nPos) < pLineList->size()) ? (*pLineList)[ nPos ] : nullptr;
+    return ( pData ) ? pData->GetStyle() : css::table::BorderLineStyle::NONE;
 }
 
 bool LineListBox::UpdatePaintLineColor()
@@ -871,7 +872,7 @@ void LineListBox::UpdateEntries( long nOldWidth )
                     GetColorLine2( GetEntryCount( ) ),
                     GetColorDist( GetEntryCount( ) ),
                     pData->GetStyle(), aBmp );
-            ListBox::InsertEntry(OUString(" "), Image(aBmp));
+            ListBox::InsertEntry(" ", Image(aBmp));
             if ( n == nTypePos )
                 SelectEntryPos( GetEntryCount() - 1 );
         }
@@ -931,7 +932,7 @@ void LineListBox::DataChanged( const DataChangedEvent& rDCEvt )
 FontNameBox::FontNameBox( vcl::Window* pParent, WinBits nWinStyle ) :
     ComboBox( pParent, nWinStyle )
 {
-    mpFontList = NULL;
+    mpFontList = nullptr;
     mbWYSIWYG = false;
     InitFontMRUEntriesFile();
 }
@@ -1018,7 +1019,7 @@ void FontNameBox::InitFontMRUEntriesFile()
 void FontNameBox::ImplDestroyFontList()
 {
     delete mpFontList;
-    mpFontList = NULL;
+    mpFontList = nullptr;
 }
 
 void FontNameBox::Fill( const FontList* pList )
@@ -1095,7 +1096,7 @@ namespace
         //Make sure it fits in the available height
         while (aSize.Height() > 0)
         {
-            if (!rDevice.GetTextBoundRect(rTextRect, rSampleText, 0, 0))
+            if (!rDevice.GetTextBoundRect(rTextRect, rSampleText))
                 break;
             if (rTextRect.GetHeight() <= nH)
             {
@@ -1155,7 +1156,7 @@ void FontNameBox::UserDraw( const UserDrawEvent& rUDEvt )
         if (!bUsingCorrectFont)
         {
             pRenderContext->SetFont(aOldFont);
-            pRenderContext->GetTextBoundRect(aTextRect, sFontName, 0, 0);
+            pRenderContext->GetTextBoundRect(aTextRect, sFontName);
         }
 
         long nTextHeight = aTextRect.GetHeight();
@@ -1273,7 +1274,7 @@ void FontNameBox::UserDraw( const UserDrawEvent& rUDEvt )
                 while (nWidth > nSpace || nWidth > MAXPREVIEWWIDTH)
                 {
                     sSampleText = sSampleText.copy(0, sSampleText.getLength()-1);
-                    nWidth = pRenderContext->GetTextBoundRect(aTextRect, sSampleText, 0, 0) ?
+                    nWidth = pRenderContext->GetTextBoundRect(aTextRect, sSampleText) ?
                              aTextRect.GetWidth() : 0;
                 }
 
@@ -1538,7 +1539,7 @@ void FontSizeBox::ImplInit()
     bPtRelative     = false;
     bRelative       = false;
     bStdSize        = false;
-    pFontList       = NULL;
+    pFontList       = nullptr;
 
     SetShowTrailingZeros( false );
     SetDecimalDigits( 1 );
@@ -1626,7 +1627,7 @@ void FontSizeBox::Fill( const vcl::FontInfo* pInfo, const FontList* pList )
 
     // query font sizes
     const sal_IntPtr* pTempAry;
-    const sal_IntPtr* pAry = 0;
+    const sal_IntPtr* pAry = nullptr;
 
     if( pInfo )
     {

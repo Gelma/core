@@ -48,7 +48,7 @@ public:
 public:
     Throbber(vcl::Window* i_parentWindow, WinBits i_style, const ImageSet i_imageSet = IMAGES_AUTO);
     virtual ~Throbber();
-    virtual void dispose() SAL_OVERRIDE;
+    virtual void dispose() override;
 
     // Properties
     void            setStepTime( sal_Int32 nStepTime )  { mnStepTime = nStepTime; }
@@ -62,7 +62,6 @@ public:
     void stop();
     bool isRunning() const;
 
-    void setImageList( const css::uno::Sequence< css::uno::Reference< css::graphic::XGraphic > >& ImageList );
     void setImageList( ::std::vector< Image > const& i_images );
 
     // default images
@@ -71,7 +70,7 @@ public:
 
 protected:
     // Window overridables
-    virtual void        Resize() SAL_OVERRIDE;
+    virtual void        Resize() override;
 
 private:
     SAL_DLLPRIVATE void initImages();

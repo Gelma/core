@@ -254,11 +254,8 @@ void firebird::mallocSQLVAR(XSQLDA* pSqlda)
             assert(false);
             break;
         }
-        if (pVar->sqltype & 1)
-        {
-            /* allocate variable to hold NULL status */
-            pVar->sqlind = static_cast<short *>(malloc(sizeof(short)));
-        }
+        /* allocate variable to hold NULL status */
+        pVar->sqlind = static_cast<short *>(malloc(sizeof(short)));
     }
 }
 
@@ -284,7 +281,7 @@ void firebird::freeSQLVAR(XSQLDA* pSqlda)
             if(pVar->sqldata)
             {
                 free(pVar->sqldata);
-                pVar->sqldata = NULL;
+                pVar->sqldata = nullptr;
             }
             break;
         case SQL_ARRAY:
@@ -302,13 +299,10 @@ void firebird::freeSQLVAR(XSQLDA* pSqlda)
             break;
         }
 
-        if (pVar->sqltype & 1)
+        if(pVar->sqlind)
         {
-            if(pVar->sqlind)
-            {
-                free(pVar->sqlind);
-                pVar->sqlind = NULL;
-            }
+            free(pVar->sqlind);
+            pVar->sqlind = nullptr;
         }
     }
 }

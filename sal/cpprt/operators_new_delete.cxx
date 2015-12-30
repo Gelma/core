@@ -18,8 +18,11 @@
  */
 
 #include <algorithm>
+#include <cstddef>
 #include <new>
 #include <string.h>
+
+#include <config_global.h>
 #include <osl/diagnose.h>
 #include <rtl/alloc.h>
 
@@ -106,14 +109,14 @@ static void* allocate (
     for (;;)
     {
         void * p = rtl_allocateMemory (sal_Size(n));
-        if (p != 0)
+        if (p != nullptr)
             return rTraits.init (p);
 
         std::new_handler d = default_handler, f = std::set_new_handler (d);
         if (f != d)
             std::set_new_handler (f);
 
-        if (f == 0)
+        if (f == nullptr)
             throw std::bad_alloc();
         (*f)();
     }
@@ -128,7 +131,7 @@ static void* allocate_nothrow (
     }
     catch (std::bad_alloc const &)
     {
-        return 0;
+        return nullptr;
     }
 }
 
@@ -142,7 +145,10 @@ static void deallocate (void * p, AllocatorTraits const & rTraits)
 
 // T * p = new T; delete p;
 
-void* SAL_CALL operator new (std::size_t n) throw (std::bad_alloc)
+void* SAL_CALL operator new (std::size_t n)
+#if !defined _MSC_VER
+     throw (std::bad_alloc)
+#endif
 {
     return allocate (n, ScalarTraits());
 }
@@ -151,6 +157,20 @@ void SAL_CALL operator delete (void * p) throw ()
 {
     deallocate (p, ScalarTraits());
 }
+
+#if HAVE_CXX14_SIZED_DEALLOCATION
+#if defined __clang__
+#pragma GCC diagnostic push // as happens on Mac OS X:
+#pragma GCC diagnostic ignored "-Wimplicit-exception-spec-mismatch"
+#endif
+void SAL_CALL operator delete (void * p, std::size_t) noexcept
+{
+    deallocate (p, ScalarTraits());
+}
+#if defined __clang__
+#pragma GCC diagnostic pop
+#endif
+#endif
 
 // T * p = new(nothrow) T; delete(nothrow) p;
 
@@ -171,10 +191,27 @@ void* SAL_CALL operator new[] (std::size_t n) throw (std::bad_alloc)
     return allocate (n, VectorTraits());
 }
 
-void SAL_CALL operator delete[] (void * p) throw ()
+void SAL_CALL operator delete[] (void * p)
+#if !defined _MSC_VER
+    throw ()
+#endif
 {
     deallocate (p, VectorTraits());
 }
+
+#if HAVE_CXX14_SIZED_DEALLOCATION
+#if defined __clang__
+#pragma GCC diagnostic push // as happens on Mac OS X:
+#pragma GCC diagnostic ignored "-Wimplicit-exception-spec-mismatch"
+#endif
+void SAL_CALL operator delete[] (void * p, std::size_t) noexcept
+{
+    deallocate (p, VectorTraits());
+}
+#if defined __clang__
+#pragma GCC diagnostic pop
+#endif
+#endif
 
 // T * p = new(nothrow) T[n]; delete(nothrow)[] p;
 

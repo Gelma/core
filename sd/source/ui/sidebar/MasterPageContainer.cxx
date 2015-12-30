@@ -91,7 +91,7 @@ public:
     bool HasToken (Token aToken) const;
     const SharedMasterPageDescriptor GetDescriptor (MasterPageContainer::Token aToken) const;
     SharedMasterPageDescriptor GetDescriptor (MasterPageContainer::Token aToken);
-    virtual Token PutMasterPage (const SharedMasterPageDescriptor& rDescriptor) SAL_OVERRIDE;
+    virtual Token PutMasterPage (const SharedMasterPageDescriptor& rDescriptor) override;
     void InvalidatePreview (Token aToken);
     Image GetPreviewForToken (
         Token aToken,
@@ -111,14 +111,14 @@ public:
         const SharedMasterPageDescriptor& rpDescriptor,
         bool bForcePageObject,
         bool bForcePreview,
-        bool bSendEvents) SAL_OVERRIDE;
+        bool bSendEvents) override;
 
     void ReleaseDescriptor (Token aToken);
 
     /** Called by the MasterPageContainerFiller to notify that all master
         pages from template documents have been added.
     */
-    virtual void FillingDone() SAL_OVERRIDE;
+    virtual void FillingDone() override;
 
 private:
     Implementation();
@@ -132,7 +132,7 @@ private:
     enum InitializationState { NOT_INITIALIZED, INITIALIZING, INITIALIZED } meInitializationState;
 
     std::unique_ptr<MasterPageContainerQueue> mpRequestQueue;
-    ::com::sun::star::uno::Reference<com::sun::star::frame::XModel> mxModel;
+    css::uno::Reference<css::frame::XModel> mxModel;
     SdDrawDocument* mpDocument;
     PreviewRenderer maPreviewRenderer;
     /** Remember whether the first page object has already been used to
@@ -519,7 +519,7 @@ MasterPageContainer::Implementation::~Implementation()
         {
             xCloseable->close(true);
         }
-        catch (const ::com::sun::star::util::CloseVetoException&)
+        catch (const css::util::CloseVetoException&)
         {
         }
     }
@@ -580,7 +580,7 @@ void MasterPageContainer::Implementation::UpdatePreviewSizePixel()
     MasterPageContainerType::const_iterator iDescriptor;
     MasterPageContainerType::const_iterator iContainerEnd(maContainer.end());
     for (iDescriptor=maContainer.begin(); iDescriptor!=iContainerEnd; ++iDescriptor)
-        if (*iDescriptor!=0 && (*iDescriptor)->mpMasterPage != nullptr)
+        if (*iDescriptor!=nullptr && (*iDescriptor)->mpMasterPage != nullptr)
         {
             Size aPageSize ((*iDescriptor)->mpMasterPage->GetSize());
             OSL_ASSERT(aPageSize.Width() > 0 && aPageSize.Height() > 0);
@@ -842,7 +842,7 @@ Reference<frame::XModel> MasterPageContainer::Implementation::GetModel()
 
         // Create a new model.
         OUString sModelServiceName ( "com.sun.star.presentation.PresentationDocument");
-        mxModel = uno::Reference<frame::XModel>(
+        mxModel.set(
             ::comphelper::getProcessServiceFactory()->createInstance(
                 sModelServiceName),
             uno::UNO_QUERY);

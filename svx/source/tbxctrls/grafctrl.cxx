@@ -64,7 +64,6 @@ using namespace ::com::sun::star::lang;
 #define ITEMVALUE(ItemSet,Id,Cast)  static_cast<const Cast&>((ItemSet).Get(Id)).GetValue()
 #define TOOLBOX_NAME                OUString( "colorbar" )
 
-TYPEINIT1_AUTOFACTORY( TbxImageItem, SfxUInt16Item );
 
 TbxImageItem::TbxImageItem( sal_uInt16 _nWhich, sal_uInt16 nImage ) :
     SfxUInt16Item( _nWhich, nImage )
@@ -95,7 +94,7 @@ private:
 
 protected:
 
-    virtual void    Modify() SAL_OVERRIDE;
+    virtual void    Modify() override;
 
 public:
                     ImplGrafMetricField( vcl::Window* pParent, const OUString& aCmd, const Reference< XFrame >& rFrame );
@@ -108,7 +107,7 @@ ImplGrafMetricField::ImplGrafMetricField( vcl::Window* pParent, const OUString& 
     maCommand( rCmd ),
     mxFrame( rFrame )
 {
-    Size aSize( GetTextWidth( OUString("-100 %") ), GetTextHeight() );
+    Size aSize( GetTextWidth( "-100 %" ), GetTextHeight() );
 
     aSize.Width() += 20, aSize.Height() += 6;
     SetSizePixel( aSize );
@@ -213,7 +212,7 @@ static sal_uInt16 ImplGetRID( const OUString& aCommand )
         { ".uno:GrafContrast",      RID_SVXIMG_GRAF_CONTRAST        },
         { ".uno:GrafGamma",         RID_SVXIMG_GRAF_GAMMA           },
         { ".uno:GrafTransparence",  RID_SVXIMG_GRAF_TRANSPARENCE    },
-        { 0, 0 }
+        { nullptr, 0 }
     };
 
     sal_uInt16 nRID = 0;
@@ -241,16 +240,16 @@ private:
 
 protected:
 
-    virtual void            GetFocus() SAL_OVERRIDE;
+    virtual void            GetFocus() override;
 
 public:
 
                             ImplGrafControl( vcl::Window* pParent, const OUString& rCmd, const Reference< XFrame >& rFrame );
                             virtual ~ImplGrafControl();
-    virtual void            dispose() SAL_OVERRIDE;
+    virtual void            dispose() override;
 
     void                    Update( const SfxPoolItem* pItem ) { maField->Update( pItem ); }
-    void                    SetText( const OUString& rStr ) SAL_OVERRIDE { maField->SetText( rStr ); }
+    void                    SetText( const OUString& rStr ) override { maField->SetText( rStr ); }
 };
 
 ImplGrafControl::ImplGrafControl(
@@ -318,9 +317,9 @@ private:
     sal_uInt16              mnCurPos;
     Reference< XFrame > mxFrame;
 
-    virtual void    Select() SAL_OVERRIDE;
-    virtual bool    PreNotify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
-    virtual bool    Notify( NotifyEvent& rNEvt ) SAL_OVERRIDE;
+    virtual void    Select() override;
+    virtual bool    PreNotify( NotifyEvent& rNEvt ) override;
+    virtual bool    Notify( NotifyEvent& rNEvt ) override;
     static void     ImplReleaseFocus();
 
 public:
@@ -359,7 +358,7 @@ void ImplGrafModeControl::Select()
 
         SfxToolBoxControl::Dispatch(
             Reference< XDispatchProvider >( mxFrame->getController(), UNO_QUERY ),
-            OUString( ".uno:GrafMode" ),
+            ".uno:GrafMode",
             aArgs );
     }
 }
@@ -452,7 +451,7 @@ void SvxGrafToolBoxControl::StateChanged( sal_uInt16, SfxItemState eState, const
         if( eState == SfxItemState::DEFAULT )
             pCtrl->Update( pState );
         else
-            pCtrl->Update( NULL );
+            pCtrl->Update( nullptr );
     }
 }
 
@@ -539,7 +538,7 @@ void SvxGrafModeToolBoxControl::StateChanged( sal_uInt16, SfxItemState eState, c
         if( eState == SfxItemState::DEFAULT )
             pCtrl->Update( pState );
         else
-            pCtrl->Update( NULL );
+            pCtrl->Update( nullptr );
     }
 }
 
@@ -566,7 +565,7 @@ void SvxGrafAttrHelper::ExecuteGrafAttr( SfxRequest& rReq, SdrView& rView )
     sal_uInt16              nSlot = rReq.GetSlot();
 
     if( !pArgs || SfxItemState::SET != pArgs->GetItemState( nSlot, false, &pItem ))
-        pItem = 0;
+        pItem = nullptr;
 
     switch( nSlot )
     {
@@ -666,7 +665,7 @@ void SvxGrafAttrHelper::ExecuteGrafAttr( SfxRequest& rReq, SdrView& rView )
             {
                 SdrGrafObj* pObj = static_cast<SdrGrafObj*>( rMarkList.GetMark( 0 )->GetMarkedSdrObj() );
 
-                if( pObj && pObj->ISA( SdrGrafObj ) &&
+                if( pObj && dynamic_cast<const SdrGrafObj*>( pObj) !=  nullptr &&
                     ( pObj->GetGraphicType() != GRAPHIC_NONE ) &&
                     ( pObj->GetGraphicType() != GRAPHIC_DEFAULT ) )
                 {
@@ -702,7 +701,7 @@ void SvxGrafAttrHelper::ExecuteGrafAttr( SfxRequest& rReq, SdrView& rView )
                                                     aRBSize.Width(), aRBSize.Height() ) );
 
                     ScopedVclPtrInstance<SfxSingleTabDialog> aCropDialog(
-                        SfxViewShell::Current() ? SfxViewShell::Current()->GetWindow() : NULL,
+                        SfxViewShell::Current() ? SfxViewShell::Current()->GetWindow() : nullptr,
                         aCropDlgAttr);
                     const OUString aCropStr(SVX_RESSTR(RID_SVXSTR_GRAFCROP));
 

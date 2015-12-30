@@ -30,7 +30,6 @@
 
 #include "undoolk.hxx"
 
-TYPEINIT1(ScUndoWidthOrHeight,      SfxUndoAction);
 
 /** Change column widths or row heights */
 ScUndoWidthOrHeight::ScUndoWidthOrHeight( ScDocShell* pNewDocShell,
@@ -51,7 +50,7 @@ ScUndoWidthOrHeight::ScUndoWidthOrHeight( ScDocShell* pNewDocShell,
     nNewSize( nNewSizeTwips ),
     bWidth( bNewWidth ),
     eMode( eNewMode ),
-    pDrawUndo( NULL )
+    pDrawUndo( nullptr )
 {
     pDrawUndo = GetSdrUndoAction( &pDocShell->GetDocument() );
 }
@@ -102,7 +101,7 @@ void ScUndoWidthOrHeight::Undo()
         if (bWidth) // Width
         {
             pUndoDoc->CopyToDocument( static_cast<SCCOL>(nStart), 0, *itr,
-                    static_cast<SCCOL>(nEnd), MAXROW, *itr, IDF_NONE,
+                    static_cast<SCCOL>(nEnd), MAXROW, *itr, InsertDeleteFlags::NONE,
                     false, &rDoc );
             rDoc.UpdatePageBreaks( *itr );
             pDocShell->PostPaint( static_cast<SCCOL>(nPaintStart), 0, *itr,
@@ -110,7 +109,7 @@ void ScUndoWidthOrHeight::Undo()
         }
         else        // Height
         {
-            pUndoDoc->CopyToDocument( 0, nStart, *itr, MAXCOL, nEnd, *itr, IDF_NONE, false, &rDoc );
+            pUndoDoc->CopyToDocument( 0, nStart, *itr, MAXCOL, nEnd, *itr, InsertDeleteFlags::NONE, false, &rDoc );
             rDoc.UpdatePageBreaks( *itr );
             pDocShell->PostPaint( 0, nPaintStart, *itr, MAXCOL, MAXROW, *itr, PAINT_GRID | PAINT_LEFT );
         }
@@ -163,13 +162,13 @@ void ScUndoWidthOrHeight::Redo()
 
 void ScUndoWidthOrHeight::Repeat(SfxRepeatTarget& rTarget)
 {
-    if (rTarget.ISA(ScTabViewTarget))
-        static_cast<ScTabViewTarget&>(rTarget).GetViewShell()->SetMarkedWidthOrHeight( bWidth, eMode, nNewSize, true );
+    if (dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr)
+        static_cast<ScTabViewTarget&>(rTarget).GetViewShell()->SetMarkedWidthOrHeight( bWidth, eMode, nNewSize );
 }
 
 bool ScUndoWidthOrHeight::CanRepeat(SfxRepeatTarget& rTarget) const
 {
-    return rTarget.ISA(ScTabViewTarget);
+    return dynamic_cast<const ScTabViewTarget*>( &rTarget) !=  nullptr;
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

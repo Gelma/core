@@ -107,32 +107,32 @@ namespace rptui
     public:
         Condition( vcl::Window* _pParent, IConditionalFormatAction& _rAction, ::rptui::OReportController& _rController );
         virtual ~Condition();
-        virtual void dispose() SAL_OVERRIDE;
+        virtual void dispose() override;
 
         /** will be called when the id of the image list needs to change.
             @param  _eBitmapSet
                 <svtools/imgdef.hxx>
         */
-        virtual void setImageList(sal_Int16 _eBitmapSet) SAL_OVERRIDE;
+        virtual void setImageList(sal_Int16 _eBitmapSet) override;
 
         /** will be called when the controls need to be resized.
         */
-        virtual void resizeControls(const Size& _rDiff) SAL_OVERRIDE;
+        virtual void resizeControls(const Size& _rDiff) override;
 
         /** sets the props at the control
             @param  _xCondition the source
         */
-        void setCondition(const com::sun::star::uno::Reference< com::sun::star::report::XFormatCondition >& _xCondition);
+        void setCondition(const css::uno::Reference< css::report::XFormatCondition >& _xCondition);
 
         /** fills from the control
             _xCondition the destination
         */
-        void fillFormatCondition(const com::sun::star::uno::Reference< com::sun::star::report::XFormatCondition >& _xCondition);
+        void fillFormatCondition(const css::uno::Reference< css::report::XFormatCondition >& _xCondition);
 
         /** updates the toolbar
             _xCondition the destination
         */
-        void updateToolbar(const ::com::sun::star::uno::Reference< ::com::sun::star::report::XReportControlFormat >& _xCondition);
+        void updateToolbar(const css::uno::Reference< css::report::XReportControlFormat >& _xCondition);
 
         /// tells the condition its new index within the dialog's condition array
         void setConditionIndex( size_t _nCondIndex, size_t _nCondCount );
@@ -153,7 +153,7 @@ namespace rptui
         sal_uInt16 mapToolbarItemToSlotId(sal_uInt16 nItemId) const;
 
     protected:
-        virtual void GetFocus() SAL_OVERRIDE;
+        virtual void GetFocus() override;
 
     private:
         void    impl_layoutOperands();
@@ -167,8 +167,8 @@ namespace rptui
         void    impl_setCondition( const OUString& _rConditionFormula );
 
     private:
-        DECL_LINK( OnTypeSelected, ListBox* );
-        DECL_LINK( OnOperationSelected, ListBox* );
+        DECL_LINK_TYPED( OnTypeSelected, ListBox&, void );
+        DECL_LINK_TYPED( OnOperationSelected, ListBox&, void );
     };
 
 

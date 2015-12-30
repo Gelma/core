@@ -211,7 +211,7 @@ void SAL_CALL ModuleController::requestResource (const OUString& rsResourceURL)
         LoadedFactoryContainer::const_iterator iLoadedFactory (
             mpLoadedFactories->find(iFactory->second));
         if (iLoadedFactory != mpLoadedFactories->end())
-            xFactory = Reference<XInterface>(iLoadedFactory->second, UNO_QUERY);
+            xFactory.set(iLoadedFactory->second, UNO_QUERY);
         if ( ! xFactory.is())
         {
             // Create a new instance of the factory.
@@ -251,7 +251,7 @@ void SAL_CALL ModuleController::initialize (const Sequence<Any>& aArguments)
         try
         {
             // Get the XController from the first argument.
-            mxController = Reference<frame::XController>(aArguments[0], UNO_QUERY_THROW);
+            mxController.set(aArguments[0], UNO_QUERY_THROW);
 
             InstantiateStartupServices();
         }
@@ -263,10 +263,10 @@ void SAL_CALL ModuleController::initialize (const Sequence<Any>& aArguments)
 } } // end of namespace sd::framework
 
 
-extern "C" SAL_DLLPUBLIC_EXPORT ::com::sun::star::uno::XInterface* SAL_CALL
+extern "C" SAL_DLLPUBLIC_EXPORT css::uno::XInterface* SAL_CALL
 com_sun_star_comp_Draw_framework_module_ModuleController_get_implementation(
-        ::com::sun::star::uno::XComponentContext* context,
-        ::com::sun::star::uno::Sequence<css::uno::Any> const &)
+        css::uno::XComponentContext* context,
+        css::uno::Sequence<css::uno::Any> const &)
 {
     css::uno::Reference< css::uno::XInterface > xModCont ( sd::framework::ModuleController::CreateInstance(context) );
     xModCont->acquire();

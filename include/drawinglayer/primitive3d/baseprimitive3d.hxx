@@ -23,7 +23,6 @@
 #include <drawinglayer/drawinglayerdllapi.h>
 
 #include <cppuhelper/compbase1.hxx>
-#include <boost/noncopyable.hpp>
 #include <com/sun/star/graphic/XPrimitive3D.hpp>
 #include <comphelper/broadcasthelper.hxx>
 #include <basegfx/range/b3drange.hxx>
@@ -36,7 +35,7 @@
  */
 
 #define DeclPrimitive3DIDBlock() \
-    virtual sal_uInt32 getPrimitive3DID() const SAL_OVERRIDE;
+    virtual sal_uInt32 getPrimitive3DID() const override;
 
 #define ImplPrimitive3DIDBlock(TheClass, TheID) \
     sal_uInt32 TheClass::getPrimitive3DID() const { return TheID; }
@@ -49,10 +48,29 @@ namespace drawinglayer { namespace geometry {
 }}
 
 namespace drawinglayer { namespace primitive3d {
-    /// typedefs for basePrimitive3DImplBase, Primitive3DSequence and Primitive3DReference
-    typedef cppu::WeakComponentImplHelper1< ::com::sun::star::graphic::XPrimitive3D > BasePrimitive3DImplBase;
-    typedef ::com::sun::star::uno::Reference< ::com::sun::star::graphic::XPrimitive3D > Primitive3DReference;
-    typedef ::com::sun::star::uno::Sequence< Primitive3DReference > Primitive3DSequence;
+    /// typedefs for basePrimitive3DImplBase, Primitive3DContainer and Primitive3DReference
+    typedef cppu::WeakComponentImplHelper1< css::graphic::XPrimitive3D > BasePrimitive3DImplBase;
+    typedef css::uno::Reference< css::graphic::XPrimitive3D > Primitive3DReference;
+    typedef css::uno::Sequence< Primitive3DReference > Primitive3DSequence;
+
+    class DRAWINGLAYER_DLLPUBLIC SAL_WARN_UNUSED Primitive3DContainer : public std::vector< Primitive3DReference >
+    {
+    public:
+        explicit Primitive3DContainer() {}
+        explicit Primitive3DContainer( size_type count ) : vector(count) {}
+        Primitive3DContainer( const Primitive3DContainer& other ) : vector(other) {}
+        Primitive3DContainer( const Primitive3DContainer&& other ) : vector(other) {}
+        Primitive3DContainer( const vector< Primitive3DReference >& other ) : vector(other) {}
+        Primitive3DContainer( std::initializer_list<Primitive3DReference> init ) : vector(init) {}
+
+        void append(const Primitive3DContainer& rSource);
+        void append(Primitive3DContainer&& rSource);
+        Primitive3DContainer& operator=(const Primitive3DContainer& r) { vector::operator=(r); return *this; }
+        Primitive3DContainer& operator=(const Primitive3DContainer&& r) { vector::operator=(r); return *this; }
+        bool operator==(const Primitive3DContainer& rB) const;
+        bool operator!=(const Primitive3DContainer& rB) const { return !operator==(rB); }
+        basegfx::B3DRange getB3DRange(const geometry::ViewInformation3D& aViewInformation) const;
+    };
 }}
 
 
@@ -64,7 +82,7 @@ namespace drawinglayer
     {
         /** BasePrimitive3D class
 
-            Baseclass for all C++ implementations of com::sun::star::graphic::XPrimitive2D
+            Baseclass for all C++ implementations of css::graphic::XPrimitive2D
 
             The description/functionality is identical with the 2D case in baseprimitive2d.hxx,
             please see there for detailed information.
@@ -77,12 +95,11 @@ namespace drawinglayer
             That's all for 3D!
          */
         class DRAWINGLAYER_DLLPUBLIC BasePrimitive3D
-        :   private boost::noncopyable,
-            protected comphelper::OBaseMutex,
+        :   protected comphelper::OBaseMutex,
             public BasePrimitive3DImplBase
         {
-        private:
-        protected:
+            BasePrimitive3D(const BasePrimitive3D&) = delete;
+            BasePrimitive3D& operator=( const BasePrimitive3D& ) = delete;
         public:
             // constructor/destructor
             BasePrimitive3D();
@@ -108,7 +125,7 @@ namespace drawinglayer
             virtual sal_uInt32 getPrimitive3DID() const = 0;
 
             /// The default implementation returns an empty sequence
-            virtual Primitive3DSequence get3DDecomposition(const geometry::ViewInformation3D& rViewInformation) const;
+            virtual Primitive3DContainer get3DDecomposition(const geometry::ViewInformation3D& rViewInformation) const;
 
 
             // Methods from XPrimitive3D
@@ -117,12 +134,12 @@ namespace drawinglayer
             /** The getDecomposition implementation for UNO API will use getDecomposition from this implementation. It
                 will get the ViewInformation from the ViewParameters for that purpose
              */
-            virtual Primitive3DSequence SAL_CALL getDecomposition( const ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue >& rViewParameters ) throw ( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            virtual Primitive3DSequence SAL_CALL getDecomposition( const css::uno::Sequence< css::beans::PropertyValue >& rViewParameters ) throw ( css::uno::RuntimeException, std::exception ) override;
 
             /** the getRange default implementation will use getDecomposition to create the range information from merging
                 getRange results from the single local decomposition primitives.
              */
-            virtual ::com::sun::star::geometry::RealRectangle3D SAL_CALL getRange( const ::com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue >& rViewParameters ) throw ( ::com::sun::star::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            virtual css::geometry::RealRectangle3D SAL_CALL getRange( const css::uno::Sequence< css::beans::PropertyValue >& rViewParameters ) throw ( css::uno::RuntimeException, std::exception ) override;
         };
     } // end of namespace primitive3d
 } // end of namespace drawinglayer
@@ -136,7 +153,7 @@ namespace drawinglayer
     {
         /** BufferedDecompositionPrimitive3D class
 
-            Baseclass for all C++ implementations of com::sun::star::graphic::XPrimitive2D
+            Baseclass for all C++ implementations of css::graphic::XPrimitive2D
 
             The description/functionality is identical with the 2D case in baseprimitive2d.hxx,
             please see there for detailed information
@@ -146,20 +163,20 @@ namespace drawinglayer
         {
         private:
             /// a sequence used for buffering the last create3DDecomposition() result
-            Primitive3DSequence                             maBuffered3DDecomposition;
+            Primitive3DContainer                             maBuffered3DDecomposition;
 
         protected:
             /** access methods to maBuffered3DDecomposition. The usage of this methods may allow
                 later thread-safe stuff to be added if needed. Only to be used by getDecomposition()
                 implementations for buffering the last decomposition.
              */
-            const Primitive3DSequence& getBuffered3DDecomposition() const { return maBuffered3DDecomposition; }
-            void setBuffered3DDecomposition(const Primitive3DSequence& rNew) { maBuffered3DDecomposition = rNew; }
+            const Primitive3DContainer& getBuffered3DDecomposition() const { return maBuffered3DDecomposition; }
+            void setBuffered3DDecomposition(const Primitive3DContainer& rNew) { maBuffered3DDecomposition = rNew; }
 
             /** method which is to be used to implement the local decomposition of a 2D primitive. The default
                 implementation will just return an empty decomposition
              */
-            virtual Primitive3DSequence create3DDecomposition(const geometry::ViewInformation3D& rViewInformation) const;
+            virtual Primitive3DContainer create3DDecomposition(const geometry::ViewInformation3D& rViewInformation) const;
 
         public:
             // constructor
@@ -171,7 +188,7 @@ namespace drawinglayer
                 overridden and the ViewInformation for the last decomposition needs to be remembered, too, and
                 be used in the next call to decide if the buffered decomposition may be reused or not.
              */
-            virtual Primitive3DSequence get3DDecomposition(const geometry::ViewInformation3D& rViewInformation) const SAL_OVERRIDE;
+            virtual Primitive3DContainer get3DDecomposition(const geometry::ViewInformation3D& rViewInformation) const override;
         };
     } // end of namespace primitive3d
 } // end of namespace drawinglayer
@@ -186,22 +203,10 @@ namespace drawinglayer
         /// get B3DRange from a given Primitive3DReference
         basegfx::B3DRange DRAWINGLAYER_DLLPUBLIC getB3DRangeFromPrimitive3DReference(const Primitive3DReference& rCandidate, const geometry::ViewInformation3D& aViewInformation);
 
-        /// get range3D from a given Primitive3DSequence
-        basegfx::B3DRange DRAWINGLAYER_DLLPUBLIC getB3DRangeFromPrimitive3DSequence(const Primitive3DSequence& rCandidate, const geometry::ViewInformation3D& aViewInformation);
-
         /** compare two Primitive2DReferences for equality, including trying to get implementations (BasePrimitive2D)
             and using compare operator
          */
         bool DRAWINGLAYER_DLLPUBLIC arePrimitive3DReferencesEqual(const Primitive3DReference& rA, const Primitive3DReference& rB);
-
-        /// compare two Primitive3DReferences for equality, uses arePrimitive3DReferencesEqual internally
-        bool DRAWINGLAYER_DLLPUBLIC arePrimitive3DSequencesEqual(const Primitive3DSequence& rA, const Primitive3DSequence& rB);
-
-        /// concatenate sequence
-        void DRAWINGLAYER_DLLPUBLIC appendPrimitive3DSequenceToPrimitive3DSequence(Primitive3DSequence& rDest, const Primitive3DSequence& rSource);
-
-        /// concatenate single Primitive3D
-        void DRAWINGLAYER_DLLPUBLIC appendPrimitive3DReferenceToPrimitive3DSequence(Primitive3DSequence& rDest, const Primitive3DReference& rSource);
 
     } // end of namespace primitive3d
 } // end of namespace drawinglayer

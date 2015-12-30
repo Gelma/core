@@ -247,7 +247,7 @@ void TransformParameters( sal_uInt16 nSlotId, const uno::Sequence<beans::Propert
             {
                 OStringBuffer aStr("MacroPlayer: wrong number of parameters for slot: ");
                 aStr.append(static_cast<sal_Int32>(nSlotId));
-                DBG_WARNING(aStr.getStr());
+                SAL_INFO("sfx.appl", aStr.getStr());
             }
 #endif
             // complex property; collect sub items from the parameter set and reconstruct complex item
@@ -884,15 +884,13 @@ void TransformParameters( sal_uInt16 nSlotId, const uno::Sequence<beans::Propert
     else
     {
         // transform parameter "OptionsPageURL" of slot "OptionsTreeDialog"
-        OUString sSlotName( "OptionsTreeDialog" );
-        OUString sPropName( "OptionsPageURL" );
-        if ( sSlotName == OUString( pSlot->pUnoName, strlen(pSlot->pUnoName), RTL_TEXTENCODING_UTF8 ) )
+        if ( "OptionsTreeDialog" == OUString( pSlot->pUnoName, strlen(pSlot->pUnoName), RTL_TEXTENCODING_UTF8 ) )
         {
             for ( sal_Int32 n = 0; n < nCount; ++n )
             {
                 const PropertyValue& rProp = pPropsVal[n];
                 OUString sName( rProp.Name );
-                if ( sName == sPropName )
+                if ( sName == "OptionsPageURL" )
                 {
                     OUString sURL;
                     if ( rProp.Value >>= sURL )
@@ -908,7 +906,7 @@ void TransformParameters( sal_uInt16 nSlotId, const uno::Sequence<beans::Propert
         // except for the "special" slots: assure that every argument was convertible
         OStringBuffer aStr("MacroPlayer: Some properties didn't match to any formal argument for slot: ");
         aStr.append(pSlot->pUnoName);
-        DBG_WARNING( aStr.getStr() );
+        SAL_INFO( "sfx.appl", aStr.getStr() );
     }
 #endif
 }
@@ -1277,7 +1275,7 @@ void TransformItems( sal_uInt16 nSlotId, const SfxItemSet& rSet, uno::Sequence<b
         // slot is a property
         sal_uInt16 nWhich = rSet.GetPool()->GetWhich(nSlotId);
         bool bConvertTwips = ( rSet.GetPool()->GetMetric( nWhich ) == SFX_MAPUNIT_TWIP );
-        SFX_ITEMSET_ARG( &rSet, pItem, SfxPoolItem, nWhich, false );
+        const SfxPoolItem* pItem = rSet.GetItem<SfxPoolItem>(nWhich, false);
         if ( pItem ) //???
         {
             sal_uInt16 nSubCount = pType->nAttribs;
@@ -1329,7 +1327,7 @@ void TransformItems( sal_uInt16 nSlotId, const SfxItemSet& rSet, uno::Sequence<b
         const SfxFormalArgument &rArg = pSlot->GetFormalArgument( nArg );
         sal_uInt16 nWhich = rSet.GetPool()->GetWhich( rArg.nSlotId );
         bool bConvertTwips = ( rSet.GetPool()->GetMetric( nWhich ) == SFX_MAPUNIT_TWIP );
-        SFX_ITEMSET_ARG( &rSet, pItem, SfxPoolItem, nWhich, false );
+        const SfxPoolItem* pItem = rSet.GetItem<SfxPoolItem>(nWhich, false);
         if ( pItem ) //???
         {
             sal_uInt16 nSubCount = rArg.pType->nAttribs;
@@ -1375,7 +1373,7 @@ void TransformItems( sal_uInt16 nSlotId, const SfxItemSet& rSet, uno::Sequence<b
          nSlotId == SID_SAVETO || nSlotId == SID_EXPORTDOCASPDF || nSlotId == SID_DIRECTEXPORTDOCASPDF ||
          nSlotId == SID_SAVEACOPY )
     {
-        const SfxPoolItem *pItem=0;
+        const SfxPoolItem *pItem=nullptr;
         if ( rSet.GetItemState( SID_COMPONENTDATA, false, &pItem ) == SfxItemState::SET )
         {
             pValue[nActProp].Name = sComponentData;
@@ -1439,12 +1437,12 @@ void TransformItems( sal_uInt16 nSlotId, const SfxItemSet& rSet, uno::Sequence<b
         if ( rSet.GetItemState( SID_FILLFRAME, false, &pItem ) == SfxItemState::SET )
         {
             pValue[nActProp].Name = sFrame;
-            if ( pItem->ISA( SfxUsrAnyItem ) )
+            if ( dynamic_cast< const SfxUsrAnyItem *>( pItem ) !=  nullptr )
             {
                 OSL_FAIL( "TransformItems: transporting an XFrame via an SfxUsrAnyItem is not deprecated!" );
                 pValue[nActProp++].Value = static_cast< const SfxUsrAnyItem* >( pItem )->GetValue();
             }
-            else if ( pItem->ISA( SfxUnoFrameItem ) )
+            else if ( dynamic_cast< const SfxUnoFrameItem *>( pItem ) !=  nullptr )
                 pValue[nActProp++].Value <<= static_cast< const SfxUnoFrameItem* >( pItem )->GetFrame();
             else
                 OSL_FAIL( "TransformItems: invalid item type for SID_FILLFRAME!" );
@@ -1538,7 +1536,7 @@ void TransformItems( sal_uInt16 nSlotId, const SfxItemSet& rSet, uno::Sequence<b
         {
             pValue[nActProp].Name = sBlackList;
 
-            com::sun::star::uno::Sequence< OUString > aList;
+            css::uno::Sequence< OUString > aList;
             static_cast<const SfxStringListItem*>(pItem)->GetStringList( aList );
             pValue[nActProp++].Value <<= aList ;
         }
@@ -1680,9 +1678,9 @@ RequestFilterOptions::RequestFilterOptions( uno::Reference< frame::XModel > rMod
     OUString temp;
     uno::Reference< uno::XInterface > temp2;
     document::FilterOptionsRequest aOptionsRequest( temp,
-                                                                      temp2,
-                                                                      rModel,
-                                                                      rProperties );
+                                                    temp2,
+                                                    rModel,
+                                                    rProperties );
 
     m_aRequest <<= aOptionsRequest;
 
@@ -1690,8 +1688,8 @@ RequestFilterOptions::RequestFilterOptions( uno::Reference< frame::XModel > rMod
     m_pOptions = new FilterOptionsContinuation;
 
     m_lContinuations.realloc( 2 );
-    m_lContinuations[0] = uno::Reference< task::XInteractionContinuation >( m_pAbort  );
-    m_lContinuations[1] = uno::Reference< task::XInteractionContinuation >( m_pOptions );
+    m_lContinuations[0].set( m_pAbort  );
+    m_lContinuations[1].set( m_pOptions );
 }
 
 uno::Any SAL_CALL RequestFilterOptions::getRequest()
@@ -1718,24 +1716,22 @@ class RequestPackageReparation_Impl : public ::cppu::WeakImplHelper< task::XInte
 public:
     explicit RequestPackageReparation_Impl( const OUString& aName );
     bool    isApproved();
-    virtual uno::Any SAL_CALL getRequest() throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual uno::Any SAL_CALL getRequest() throw( uno::RuntimeException, std::exception ) override;
     virtual uno::Sequence< uno::Reference< task::XInteractionContinuation > > SAL_CALL getContinuations()
-        throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( uno::RuntimeException, std::exception ) override;
 };
 
 RequestPackageReparation_Impl::RequestPackageReparation_Impl( const OUString& aName )
 {
     OUString temp;
     uno::Reference< uno::XInterface > temp2;
-    document::BrokenPackageRequest aBrokenPackageRequest( temp,
-                                                                                 temp2,
-                                                                              aName );
-       m_aRequest <<= aBrokenPackageRequest;
+    document::BrokenPackageRequest aBrokenPackageRequest( temp, temp2, aName );
+    m_aRequest <<= aBrokenPackageRequest;
     m_pApprove = new comphelper::OInteractionApprove;
     m_pDisapprove = new comphelper::OInteractionDisapprove;
-       m_lContinuations.realloc( 2 );
-       m_lContinuations[0] = uno::Reference< task::XInteractionContinuation >( m_pApprove );
-       m_lContinuations[1] = uno::Reference< task::XInteractionContinuation >( m_pDisapprove );
+    m_lContinuations.realloc( 2 );
+    m_lContinuations[0].set( m_pApprove );
+    m_lContinuations[1].set( m_pDisapprove );
 }
 
 bool RequestPackageReparation_Impl::isApproved()
@@ -1772,9 +1768,9 @@ bool RequestPackageReparation::isApproved()
     return pImp->isApproved();
 }
 
-com::sun::star::uno::Reference < task::XInteractionRequest > RequestPackageReparation::GetRequest()
+css::uno::Reference < task::XInteractionRequest > RequestPackageReparation::GetRequest()
 {
-    return com::sun::star::uno::Reference < task::XInteractionRequest >(pImp);
+    return css::uno::Reference < task::XInteractionRequest >(pImp);
 }
 
 
@@ -1786,22 +1782,20 @@ class NotifyBrokenPackage_Impl : public ::cppu::WeakImplHelper< task::XInteracti
 
 public:
     explicit NotifyBrokenPackage_Impl(const OUString& rName);
-    virtual uno::Any SAL_CALL getRequest() throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+    virtual uno::Any SAL_CALL getRequest() throw( uno::RuntimeException, std::exception ) override;
     virtual uno::Sequence< uno::Reference< task::XInteractionContinuation > > SAL_CALL getContinuations()
-        throw( uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( uno::RuntimeException, std::exception ) override;
 };
 
 NotifyBrokenPackage_Impl::NotifyBrokenPackage_Impl( const OUString& aName )
 {
     OUString temp;
     uno::Reference< uno::XInterface > temp2;
-    document::BrokenPackageRequest aBrokenPackageRequest( temp,
-                                                                                 temp2,
-                                                                              aName );
-       m_aRequest <<= aBrokenPackageRequest;
-    m_pAbort  = new comphelper::OInteractionAbort;
-       m_lContinuations.realloc( 1 );
-       m_lContinuations[0] = uno::Reference< task::XInteractionContinuation >( m_pAbort  );
+    document::BrokenPackageRequest aBrokenPackageRequest( temp, temp2, aName );
+    m_aRequest <<= aBrokenPackageRequest;
+    m_pAbort     = new comphelper::OInteractionAbort;
+    m_lContinuations.realloc( 1 );
+    m_lContinuations[0].set( m_pAbort  );
 }
 
 uno::Any SAL_CALL NotifyBrokenPackage_Impl::getRequest()
@@ -1828,9 +1822,9 @@ NotifyBrokenPackage::~NotifyBrokenPackage()
     pImp->release();
 }
 
-com::sun::star::uno::Reference < task::XInteractionRequest > NotifyBrokenPackage::GetRequest()
+css::uno::Reference < task::XInteractionRequest > NotifyBrokenPackage::GetRequest()
 {
-    return com::sun::star::uno::Reference < task::XInteractionRequest >(pImp);
+    return css::uno::Reference < task::XInteractionRequest >(pImp);
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

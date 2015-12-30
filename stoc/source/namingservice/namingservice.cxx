@@ -52,8 +52,7 @@ namespace stoc_namingservice
 
 static Sequence< OUString > ns_getSupportedServiceNames()
 {
-    Sequence< OUString > seqNames(1);
-    seqNames.getArray()[0] = SERVICENAME;
+    Sequence< OUString > seqNames { SERVICENAME };
     return seqNames;
 }
 
@@ -81,15 +80,15 @@ public:
 
     // XServiceInfo
     virtual OUString SAL_CALL getImplementationName()
-    throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    throw(css::uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName )
-    throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    throw(css::uno::RuntimeException, std::exception) override;
     virtual Sequence< OUString > SAL_CALL getSupportedServiceNames()
-    throw(css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    throw(css::uno::RuntimeException, std::exception) override;
 
-    virtual css::uno::Reference< css::uno::XInterface > SAL_CALL getRegisteredObject( const OUString& Name ) throw(Exception, RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL registerObject( const OUString& Name, const css::uno::Reference< css::uno::XInterface >& Object ) throw(Exception, RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL revokeObject( const OUString& Name ) throw(Exception, RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Reference< css::uno::XInterface > SAL_CALL getRegisteredObject( const OUString& Name ) throw(Exception, RuntimeException, std::exception) override;
+    virtual void SAL_CALL registerObject( const OUString& Name, const css::uno::Reference< css::uno::XInterface >& Object ) throw(Exception, RuntimeException, std::exception) override;
+    virtual void SAL_CALL revokeObject( const OUString& Name ) throw(Exception, RuntimeException, std::exception) override;
 };
 
 
@@ -159,9 +158,9 @@ static const struct ImplementationEntry g_entries[] =
     {
         NamingService_Impl_create, ns_getImplementationName,
         ns_getSupportedServiceNames, createSingleComponentFactory,
-        0, 0
+        nullptr, 0
     },
-    { 0, 0, 0, 0, 0, 0 }
+    { nullptr, nullptr, nullptr, nullptr, nullptr, 0 }
 };
 
 extern "C" SAL_DLLPUBLIC_EXPORT void * SAL_CALL namingservice_component_getFactory(

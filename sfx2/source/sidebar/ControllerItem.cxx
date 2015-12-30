@@ -23,7 +23,7 @@
 #include <sfx2/imagemgr.hxx>
 #include <sfx2/bindings.hxx>
 #include <unotools/cmdoptions.hxx>
-#include <sfx2/sidebar/CommandInfoProvider.hxx>
+#include <vcl/commandinfoprovider.hxx>
 #include <vcl/svapp.hxx>
 #include <vcl/toolbox.hxx>
 #include <vcl/help.hxx>
@@ -59,23 +59,23 @@ namespace
         virtual ~FrameActionListener()
         {
         }
-        virtual void SAL_CALL disposing() SAL_OVERRIDE
+        virtual void SAL_CALL disposing() override
         {
             SolarMutexGuard g;
             if (mxFrame.is())
                 mxFrame->removeFrameActionListener(this);
         }
         virtual void SAL_CALL disposing (const css::lang::EventObject& rEvent)
-            throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+            throw (css::uno::RuntimeException, std::exception) override
         {
             (void)rEvent;
 
             SolarMutexGuard g;
             mrControllerItem.ResetFrame();
-            mxFrame = NULL;
+            mxFrame = nullptr;
         }
         virtual void SAL_CALL frameAction (const css::frame::FrameActionEvent& rEvent)
-            throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+            throw (css::uno::RuntimeException, std::exception) override
         {
             SolarMutexGuard g;
             if (rEvent.Action == frame::FrameAction_CONTEXT_CHANGED)
@@ -164,9 +164,9 @@ bool ControllerItem::IsEnabled (SfxItemState eState) const
 
 void ControllerItem::RequestUpdate()
 {
-    SfxPoolItem* pState = NULL;
+    std::unique_ptr<SfxPoolItem> pState;
     const SfxItemState eState (GetBindings().QueryState(GetId(), pState));
-    mrItemUpdateReceiver.NotifyItemUpdate(GetId(), eState, pState, IsEnabled(eState));
+    mrItemUpdateReceiver.NotifyItemUpdate(GetId(), eState, pState.get(), IsEnabled(eState));
 }
 
 void ControllerItem::NotifyFrameContextChange()
@@ -176,24 +176,17 @@ void ControllerItem::NotifyFrameContextChange()
 
 void ControllerItem::ResetFrame()
 {
-    mxFrame = NULL;
-}
-
-::rtl::OUString ControllerItem::GetLabel() const
-{
-    return CommandInfoProvider::Instance().GetLabelForCommand(
-        ".uno:" + msCommandName,
-        mxFrame);
+    mxFrame = nullptr;
 }
 
 ::rtl::OUString ControllerItem::GetHelpText() const
 {
     Help* pHelp = Application::GetHelp();
-    if (pHelp != NULL)
+    if (pHelp != nullptr)
     {
         if (msCommandName.getLength() > 0)
         {
-            const ::rtl::OUString sHelp (pHelp->GetHelpText(".uno:" + msCommandName, NULL));
+            const ::rtl::OUString sHelp (pHelp->GetHelpText(".uno:" + msCommandName, nullptr));
             return sHelp;
         }
     }
@@ -211,7 +204,7 @@ ControllerItem::ItemUpdateReceiverInterface::~ItemUpdateReceiverInterface()
 
 void ControllerItem::SetupToolBoxItem (ToolBox& rToolBox, const sal_uInt16 nIndex)
 {
-    rToolBox.SetQuickHelpText(nIndex, GetLabel());
+    rToolBox.SetQuickHelpText(nIndex, vcl::CommandInfoProvider::Instance().GetTooltipForCommand(".uno:" + msCommandName, mxFrame));
     rToolBox.SetHelpText(nIndex, GetHelpText());
     rToolBox.SetItemImage(nIndex, GetIcon());
 }

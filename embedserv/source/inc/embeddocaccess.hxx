@@ -29,11 +29,15 @@
 
 #include <oleidl.h>
 #ifndef __MINGW32__
-#ifdef _MSC_VER
 #pragma warning(disable : 4265)
+#if defined __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wall"
+#pragma clang diagnostic ignored "-Wmicrosoft"
+#endif
 #include <atldbcli.h>
-#else
-#include <atlcomcli.h>
+#if defined __clang__
+#pragma clang diagnostic pop
 #endif
 #endif
 #include <cppuhelper/weak.hxx>

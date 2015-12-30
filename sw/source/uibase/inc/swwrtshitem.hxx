@@ -28,13 +28,12 @@ class SW_DLLPUBLIC SwWrtShellItem: public SfxPoolItem
     SwWrtShell*         pWrtSh;
 
 public:
-                            TYPEINFO_OVERRIDE();
                             SwWrtShellItem();
                             SwWrtShellItem( sal_uInt16 nWhich , SwWrtShell* pWrtSh);
                             SwWrtShellItem( const SwWrtShellItem& );
 
-    virtual bool            operator==( const SfxPoolItem& ) const SAL_OVERRIDE;
-    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = 0 ) const SAL_OVERRIDE;
+    virtual bool            operator==( const SfxPoolItem& ) const override;
+    virtual SfxPoolItem*    Clone( SfxItemPool *pPool = nullptr ) const override;
 
     SwWrtShell*             GetValue() const { return pWrtSh; }
 

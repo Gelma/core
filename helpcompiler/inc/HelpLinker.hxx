@@ -30,8 +30,6 @@
 class L10N_DLLPUBLIC IndexerPreProcessor
 {
 private:
-    std::string       m_aModuleName;
-    fs::path          m_fsIndexBaseDir;
     fs::path          m_fsCaptionFilesDirName;
     fs::path          m_fsContentFilesDirName;
 
@@ -39,7 +37,7 @@ private:
     xsltStylesheetPtr m_xsltStylesheetPtrContent;
 
 public:
-    IndexerPreProcessor( const std::string& aModuleName, const fs::path& fsIndexBaseDir,
+    IndexerPreProcessor( const fs::path& fsIndexBaseDir,
          const fs::path& idxCaptionStylesheet, const fs::path& idxContentStylesheet );
     ~IndexerPreProcessor();
 
@@ -50,14 +48,14 @@ class L10N_DLLPUBLIC HelpLinker
 {
 public:
     void main(std::vector<std::string> &args,
-              std::string* pExtensionPath = NULL,
-              std::string* pDestination = NULL,
-              const OUString* pOfficeHelpPath = NULL )
+              std::string* pExtensionPath = nullptr,
+              std::string* pDestination = nullptr,
+              const OUString* pOfficeHelpPath = nullptr )
             throw( HelpProcessingException, std::exception );
 
     HelpLinker()
         : bExtensionMode(false)
-        , m_pIndexerPreProcessor(NULL)
+        , m_pIndexerPreProcessor(nullptr)
         , m_bUseLangRoot(true)
         , m_bCreateIndex(true)
     {}
@@ -83,13 +81,12 @@ private:
     std::string extensionPath;
     std::string extensionDestination;
     bool bExtensionMode;
-    fs::path indexDirName;
     fs::path indexDirParentName;
     IndexerPreProcessor* m_pIndexerPreProcessor;
     bool m_bUseLangRoot;
     bool m_bCreateIndex;
     void initIndexerPreProcessor();
-    void link() throw(HelpProcessingException, BasicCodeTagger::TaggerException);
+    void link() throw(HelpProcessingException, BasicCodeTagger::TaggerException, std::exception);
     static void addBookmark( FILE* pFile_DBHelp, std::string thishid,
         const std::string& fileB, const std::string& anchorB,
         const std::string& jarfileB, const std::string& titleB );

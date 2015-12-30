@@ -48,11 +48,11 @@ ScRange lclGetRangeForNamedRange(OUString const & aName, ScDocument* pDocument)
 {
     ScRange aInvalidRange(ScAddress::INITIALIZE_INVALID);
     ScRangeName* pRangeName = pDocument->GetRangeName();
-    if (pRangeName == NULL)
+    if (pRangeName == nullptr)
         return aInvalidRange;
 
     const ScRangeData* pData = pRangeName->findByUpperName(aName.toAsciiUpperCase());
-    if (pData == NULL)
+    if (pData == nullptr)
         return aInvalidRange;
 
     ScRange aRange;
@@ -69,12 +69,12 @@ ScPivotLayoutDialog::ScPivotLayoutDialog(
                             ScViewData* pViewData, const ScDPObject* pPivotTableObject, bool bNewPivotTable) :
     ScAnyRefDlg           (pSfxBindings, pChildWindow, pParent, "PivotTableLayout", "modules/scalc/ui/pivottablelayoutdialog.ui"),
     maPivotTableObject    (*pPivotTableObject),
-    mpPreviouslyFocusedListBox(NULL),
-    mpCurrentlyFocusedListBox(NULL),
+    mpPreviouslyFocusedListBox(nullptr),
+    mpCurrentlyFocusedListBox(nullptr),
     mpViewData            (pViewData),
     mpDocument            (pViewData->GetDocument()),
     mbNewPivotTable       (bNewPivotTable),
-    mpActiveEdit          (NULL),
+    mpActiveEdit          (nullptr),
     maAddressDetails      (mpDocument->GetAddressConvention(), 0, 0),
     mbDialogLostFocus     (false)
 {
@@ -124,7 +124,7 @@ ScPivotLayoutDialog::ScPivotLayoutDialog(
     mpSourceButton->SetLoseFocusHdl(aLink);
 
     mpSourceEdit->SetModifyHdl(LINK(this, ScPivotLayoutDialog, SourceEditModified));
-    mpSourceListBox->SetSelectHdl(LINK(this, ScPivotLayoutDialog, SourceEditModified));
+    mpSourceListBox->SetSelectHdl(LINK(this, ScPivotLayoutDialog, SourceListSelected));
 
     // Destination UI
     aLink2 = LINK(this, ScPivotLayoutDialog, ToggleDestination);
@@ -161,7 +161,7 @@ ScPivotLayoutDialog::ScPivotLayoutDialog(
 
     // Initialize Options
     const ScDPSaveData* pSaveData = maPivotTableObject.GetSaveData();
-    if (pSaveData == NULL)
+    if (pSaveData == nullptr)
     {
         mpCheckAddFilter->Check(false);
         mpCheckDrillToDetail->Check(false);
@@ -391,7 +391,7 @@ bool ScPivotLayoutDialog::IsRefInputMode() const
 
 void ScPivotLayoutDialog::ItemInserted(ScItemValue* pItemValue, ScPivotLayoutTreeList::SvPivotTreeListType eType)
 {
-    if (pItemValue == NULL)
+    if (pItemValue == nullptr)
         return;
 
     switch (eType)
@@ -505,9 +505,9 @@ bool ScPivotLayoutDialog::ApplyChanges()
 
     SfxDispatcher* pDispatcher = GetBindings().GetDispatcher();
     SfxCallMode nCallMode = SfxCallMode::SLOT | SfxCallMode::RECORD;
-    const SfxPoolItem* pResult = pDispatcher->Execute(SID_PIVOT_TABLE, nCallMode, &aPivotItem, NULL, 0);
+    const SfxPoolItem* pResult = pDispatcher->Execute(SID_PIVOT_TABLE, nCallMode, &aPivotItem, nullptr, 0);
 
-    if (pResult != NULL)
+    if (pResult != nullptr)
     {
         const SfxBoolItem* pItem = reinterpret_cast<const SfxBoolItem*>(pResult);
         if (pItem)
@@ -560,12 +560,12 @@ void ScPivotLayoutDialog::ApplyLabelData(ScDPSaveData& rSaveData)
 
     for (it = rLabelDataVector.begin(); it != rLabelDataVector.end(); ++it)
     {
-        const ScDPLabelData& pLabelData = *it;
+        const ScDPLabelData& pLabelData = *it->get();
 
         OUString aUnoName = ScDPUtil::createDuplicateDimensionName(pLabelData.maName, pLabelData.mnDupCount);
         ScDPSaveDimension* pSaveDimensions = rSaveData.GetExistingDimensionByName(aUnoName);
 
-        if (pSaveDimensions == NULL)
+        if (pSaveDimensions == nullptr)
             continue;
 
         pSaveDimensions->SetUsedHierarchy(pLabelData.mnUsedHier);
@@ -629,7 +629,7 @@ bool ScPivotLayoutDialog::IsDataElement(SCCOL nColumn)
 
 ScDPLabelData& ScPivotLayoutDialog::GetLabelData(SCCOL nColumn)
 {
-    return maPivotParameters.maLabelArray[nColumn];
+    return *maPivotParameters.maLabelArray[nColumn].get();
 }
 
 void ScPivotLayoutDialog::PushDataFieldNames(std::vector<ScDPName>& rDataFieldNames)
@@ -655,7 +655,7 @@ IMPL_LINK_NOARG_TYPED( ScPivotLayoutDialog, CancelClicked, Button*, void )
 
 IMPL_LINK_TYPED(ScPivotLayoutDialog, GetFocusHandler, Control&, rCtrl, void)
 {
-    mpActiveEdit = NULL;
+    mpActiveEdit = nullptr;
 
     if (&rCtrl == static_cast<Control*>(mpSourceEdit)  ||
         &rCtrl == static_cast<Control*>(mpSourceButton))
@@ -677,10 +677,14 @@ IMPL_LINK_NOARG_TYPED(ScPivotLayoutDialog, LoseFocusHandler, Control&, void)
     mbDialogLostFocus = !IsActive();
 }
 
-IMPL_LINK_NOARG(ScPivotLayoutDialog, SourceEditModified)
+IMPL_LINK_NOARG_TYPED(ScPivotLayoutDialog, SourceListSelected, ListBox&, void)
 {
     UpdateSourceRange();
-    return 0;
+}
+
+IMPL_LINK_NOARG_TYPED(ScPivotLayoutDialog, SourceEditModified, Edit&, void)
+{
+    UpdateSourceRange();
 }
 
 IMPL_LINK_NOARG_TYPED(ScPivotLayoutDialog, ToggleSource, RadioButton&, void)

@@ -27,6 +27,7 @@
 #include <cppuhelper/implbase.hxx>
 #include <cppuhelper/implementationentry.hxx>
 #include <cppuhelper/supportsservice.hxx>
+#include <comphelper/sequence.hxx>
 
 #include <uno/mapping.hxx>
 #include <osl/thread.h>
@@ -95,7 +96,7 @@ struct StringPool: private boost::noncopyable
 
 const StringPool &spool()
 {
-    static StringPool *pPool = 0;
+    static StringPool *pPool = nullptr;
     if( ! pPool )
     {
         MutexGuard guard( Mutex::getGlobalMutex() );
@@ -129,8 +130,8 @@ static void deleteAllLinkReferences(const Reference < XSimpleRegistry >& xReg,
             OUString            aLinkName;
             OUString            aLinkParent;
             Reference < XRegistryKey >  xLinkParent;
-            const sal_Unicode*  pTmpName = NULL;
-            const sal_Unicode*  pShortName = NULL;
+            const sal_Unicode*  pTmpName = nullptr;
+            const sal_Unicode*  pShortName = nullptr;
             sal_Int32           sEnd = 0;
 
             for (sal_Int32 i = 0; i < linkNames.getLength(); i++)
@@ -144,7 +145,7 @@ static void deleteAllLinkReferences(const Reference < XSimpleRegistry >& xReg,
 
                 sal_Int32 nIndex = rtl_ustr_indexOfChar( pTmpName, '%' );
                 if ( nIndex == -1 )
-                    pShortName = 0;
+                    pShortName = nullptr;
                 else
                     pShortName = pTmpName+nIndex;
 
@@ -152,7 +153,7 @@ static void deleteAllLinkReferences(const Reference < XSimpleRegistry >& xReg,
                 {
                     nIndex = rtl_ustr_indexOfChar( pShortName+2, '%' );
                     if ( nIndex == -1 )
-                        pShortName = 0;
+                        pShortName = nullptr;
                     else
                         pShortName += nIndex+2;
                 }
@@ -207,7 +208,7 @@ static void prepareLink( const Reference < XSimpleRegistry > & xDest,
     const sal_Unicode*  pShortName;
     sal_Int32           nIndex = rtl_ustr_indexOfChar( pTmpName, '%' );
     if ( nIndex == -1 )
-        pShortName = 0;
+        pShortName = nullptr;
     else
         pShortName = pTmpName+nIndex;
 
@@ -218,7 +219,7 @@ static void prepareLink( const Reference < XSimpleRegistry > & xDest,
     {
         nIndex = rtl_ustr_indexOfChar( pShortName+2, '%' );
         if ( nIndex == -1 )
-            pShortName = 0;
+            pShortName = nullptr;
         else
             pShortName += nIndex+2;
     }
@@ -367,9 +368,7 @@ static void createUniqueSubEntry(const Reference < XRegistryKey > & xSuperKey,
             }
         } else
         {
-            Sequence<OUString> implEntriesNew(1);
-
-            implEntriesNew.getArray()[0] = value;
+            Sequence<OUString> implEntriesNew { value };
 
             xSuperKey->setAsciiListValue(implEntriesNew);
         }
@@ -1203,29 +1202,29 @@ public:
     virtual ~ImplementationRegistration();
 
     // XServiceInfo
-    OUString                        SAL_CALL getImplementationName() throw(RuntimeException, std::exception) SAL_OVERRIDE;
-    sal_Bool                        SAL_CALL supportsService(const OUString& ServiceName) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-    Sequence< OUString >            SAL_CALL getSupportedServiceNames() throw(RuntimeException, std::exception) SAL_OVERRIDE;
+    OUString                        SAL_CALL getImplementationName() throw(RuntimeException, std::exception) override;
+    sal_Bool                        SAL_CALL supportsService(const OUString& ServiceName) throw(RuntimeException, std::exception) override;
+    Sequence< OUString >            SAL_CALL getSupportedServiceNames() throw(RuntimeException, std::exception) override;
 
     // XImplementationRegistration
     virtual void SAL_CALL registerImplementation(
         const OUString& implementationLoader,
         const OUString& location,
         const Reference < XSimpleRegistry > & xReg)
-        throw(  CannotRegisterImplementationException, RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw(  CannotRegisterImplementationException, RuntimeException, std::exception ) override;
 
     virtual sal_Bool SAL_CALL revokeImplementation(
         const OUString& location,
         const Reference < XSimpleRegistry >& xReg)
-        throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception ) override;
 
     virtual Sequence< OUString > SAL_CALL getImplementations(
         const OUString& implementationLoader,
         const OUString& location)
-        throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception ) override;
     virtual Sequence< OUString > SAL_CALL checkInstantiation(
         const OUString& implementationName)
-        throw( RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw( RuntimeException, std::exception ) override;
 
     // XImplementationRegistration2
     virtual void SAL_CALL registerImplementationWithLocation(
@@ -1233,12 +1232,12 @@ public:
         const OUString& location,
         const OUString& registeredLocation,
         const Reference < XSimpleRegistry > & xReg)
-        throw(  CannotRegisterImplementationException, RuntimeException, std::exception ) SAL_OVERRIDE;
+        throw(  CannotRegisterImplementationException, RuntimeException, std::exception ) override;
 
     // XInitialization
     virtual void SAL_CALL initialize(
         const css::uno::Sequence< css::uno::Any >& aArguments )
-        throw(  css::uno::Exception, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw(  css::uno::Exception, css::uno::RuntimeException, std::exception) override;
 
 private: // helper methods
     void prepareRegister(
@@ -1301,8 +1300,7 @@ sal_Bool ImplementationRegistration::supportsService(const OUString& ServiceName
 // XServiceInfo
 Sequence< OUString > ImplementationRegistration::getSupportedServiceNames() throw(RuntimeException, std::exception)
 {
-    Sequence< OUString > seqNames(1);
-    seqNames[0] = "com.sun.star.registry.ImplementationRegistration";
+    Sequence< OUString > seqNames { "com.sun.star.registry.ImplementationRegistration" };
     return seqNames;
 }
 
@@ -1553,7 +1551,7 @@ sal_Bool ImplementationRegistration::revokeImplementation(const OUString& locati
         xRegistry = xReg;
     }
     else {
-        Reference < XPropertySet > xPropSet = Reference< XPropertySet >::query( m_xSMgr );
+        Reference < XPropertySet > xPropSet( m_xSMgr, UNO_QUERY );
         if( xPropSet.is() ) {
             try {
                 Any aAny = xPropSet->getPropertyValue( spool().Registry );
@@ -1636,19 +1634,7 @@ Sequence< OUString > ImplementationRegistration::getImplementations(
 
                         if (!implNames.empty())
                         {
-                            std::list<OUString>::const_iterator iter = implNames.begin();
-
-                            Sequence<OUString> seqImpl(implNames.size());
-                            OUString *pImplNames = seqImpl.getArray();
-
-                            sal_Int32 index = 0;
-                            while (iter != implNames.end())
-                            {
-                                pImplNames[index] = *iter;
-                                index++;
-                                ++iter;
-                            }
-
+                            Sequence<OUString> seqImpl(comphelper::containerToSequence<OUString>(implNames));
                             xImpl->closeKey();
                             return seqImpl;
                         }

@@ -54,16 +54,16 @@
 #include <IDocumentSettingAccess.hxx>
 #include <svl/itemiter.hxx>
 
-static bool lcl_IsInBody( SwFrm *pFrm )
+static bool lcl_IsInBody( SwFrame *pFrame )
 {
-    if ( pFrm->IsInDocBody() )
+    if ( pFrame->IsInDocBody() )
         return true;
     else
     {
-        const SwFrm *pTmp = pFrm;
-        const SwFlyFrm *pFly;
-        while ( 0 != (pFly = pTmp->FindFlyFrm()) )
-            pTmp = pFly->GetAnchorFrm();
+        const SwFrame *pTmp = pFrame;
+        const SwFlyFrame *pFly;
+        while ( nullptr != (pFly = pTmp->FindFlyFrame()) )
+            pTmp = pFly->GetAnchorFrame();
         return pTmp->IsInDocBody();
     }
 }
@@ -71,12 +71,12 @@ static bool lcl_IsInBody( SwFrm *pFrm )
 SwExpandPortion *SwTextFormatter::NewFieldPortion( SwTextFormatInfo &rInf,
                                                 const SwTextAttr *pHint ) const
 {
-    SwExpandPortion *pRet = 0;
-    SwFrm *pFrame = pFrm;
+    SwExpandPortion *pRet = nullptr;
+    SwFrame *pFrame = m_pFrame;
     SwField *pField = const_cast<SwField*>(pHint->GetFormatField().GetField());
     const bool bName = rInf.GetOpt().IsFieldName();
 
-    SwCharFormat* pChFormat = 0;
+    SwCharFormat* pChFormat = nullptr;
     bool bNewFlyPor = false;
     sal_uInt16 subType = 0;
 
@@ -91,7 +91,7 @@ SwExpandPortion *SwTextFormatter::NewFieldPortion( SwTextFormatInfo &rInf,
     }
 
     SwViewShell *pSh = rInf.GetVsh();
-    SwDoc *const pDoc( (pSh) ? pSh->GetDoc() : 0 );
+    SwDoc *const pDoc( (pSh) ? pSh->GetDoc() : nullptr );
     bool const bInClipboard( pDoc == nullptr || pDoc->IsClipBoard() );
     bool bPlaceHolder = false;
 
@@ -154,18 +154,18 @@ SwExpandPortion *SwTextFormatter::NewFieldPortion( SwTextFormatInfo &rInf,
             {
                 SwPageNumberFieldType *pPageNr = static_cast<SwPageNumberFieldType *>(pField->GetTyp());
 
-                const SwRootFrm* pTmpRootFrm = pSh->GetLayout();
-                const bool bVirt = pTmpRootFrm->IsVirtPageNum();
+                const SwRootFrame* pTmpRootFrame = pSh->GetLayout();
+                const bool bVirt = pTmpRootFrame->IsVirtPageNum();
 
                 sal_uInt16 nVirtNum = pFrame->GetVirtPageNum();
-                sal_uInt16 nNumPages = pTmpRootFrm->GetPageNum();
+                sal_uInt16 nNumPages = pTmpRootFrame->GetPageNum();
                 sal_Int16 nNumFormat = -1;
                 if(SVX_NUM_PAGEDESC == pField->GetFormat())
-                    nNumFormat = pFrame->FindPageFrm()->GetPageDesc()->GetNumType().GetNumberingType();
+                    nNumFormat = pFrame->FindPageFrame()->GetPageDesc()->GetNumType().GetNumberingType();
                 static_cast<SwPageNumberField*>(pField)
                     ->ChangeExpansion(nVirtNum, nNumPages);
                 pPageNr->ChangeExpansion(pDoc,
-                                            bVirt, nNumFormat > -1 ? &nNumFormat : 0);
+                                            bVirt, nNumFormat > -1 ? &nNumFormat : nullptr);
             }
             {
                 OUString const aStr( (bName)
@@ -275,11 +275,11 @@ SwExpandPortion *SwTextFormatter::NewFieldPortion( SwTextFormatInfo &rInf,
 
     if( bNewFlyPor )
     {
-        SwFont *pTmpFnt = 0;
+        SwFont *pTmpFnt = nullptr;
         if( !bName )
         {
             pTmpFnt = new SwFont( *pFnt );
-            pTmpFnt->SetDiffFnt( &pChFormat->GetAttrSet(), pFrm->GetTextNode()->getIDocumentSettingAccess() );
+            pTmpFnt->SetDiffFnt( &pChFormat->GetAttrSet(), m_pFrame->GetTextNode()->getIDocumentSettingAccess() );
         }
         {
             OUString const aStr( (bName)
@@ -301,7 +301,7 @@ static SwFieldPortion * lcl_NewMetaPortion(SwTextAttr & rHint, const bool bPrefi
     OSL_ENSURE(pField, "lcl_NewMetaPortion: no meta field?");
     if (pField)
     {
-        pField->GetPrefixAndSuffix((bPrefix) ? &fix : 0, (bPrefix) ? 0 : &fix);
+        pField->GetPrefixAndSuffix((bPrefix) ? &fix : nullptr, (bPrefix) ? nullptr : &fix);
     }
     return new SwFieldPortion( fix );
 }
@@ -340,13 +340,13 @@ SwExpandPortion * SwTextFormatter::TryNewNoLengthPortion(SwTextFormatInfo & rInf
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 SwLinePortion *SwTextFormatter::NewExtraPortion( SwTextFormatInfo &rInf )
 {
     SwTextAttr *pHint = GetAttr( rInf.GetIdx() );
-    SwLinePortion *pRet = 0;
+    SwLinePortion *pRet = nullptr;
     if( !pHint )
     {
         pRet = new SwTextPortion;
@@ -406,7 +406,7 @@ SwLinePortion *SwTextFormatter::NewExtraPortion( SwTextFormatInfo &rInf )
  */
 static void checkApplyParagraphMarkFormatToNumbering( SwFont* pNumFnt, SwTextFormatInfo& rInf, const IDocumentSettingAccess* pIDSA )
 {
-    SwTextNode* node = rInf.GetTextFrm()->GetTextNode();
+    SwTextNode* node = rInf.GetTextFrame()->GetTextNode();
     if( !pIDSA->get(DocumentSettingId::APPLY_PARAGRAPH_MARK_FORMAT_TO_NUMBERING ))
         return;
     if( SwpHints* hints = node->GetpSwpHints())
@@ -416,7 +416,7 @@ static void checkApplyParagraphMarkFormatToNumbering( SwFont* pNumFnt, SwTextFor
             SwTextAttr* hint = hints->Get( i );
             // Formatting for the paragraph mark is set to apply only to the (non-existent) extra character
             // the at end of the txt node.
-            if( hint->Which() == RES_TXTATR_AUTOFMT && hint->GetEnd() != NULL
+            if( hint->Which() == RES_TXTATR_AUTOFMT && hint->GetEnd() != nullptr
                 && hint->GetStart() == *hint->GetEnd() && hint->GetStart() == node->Len())
             {
                 std::shared_ptr<SfxItemSet> pSet(hint->GetAutoFormat().GetStyleHandle());
@@ -449,12 +449,12 @@ static void checkApplyParagraphMarkFormatToNumbering( SwFont* pNumFnt, SwTextFor
 
 SwNumberPortion *SwTextFormatter::NewNumberPortion( SwTextFormatInfo &rInf ) const
 {
-    if( rInf.IsNumDone() || rInf.GetTextStart() != nStart
+    if( rInf.IsNumDone() || rInf.GetTextStart() != m_nStart
                 || rInf.GetTextStart() != rInf.GetIdx() )
-        return 0;
+        return nullptr;
 
-    SwNumberPortion *pRet = 0;
-    const SwTextNode* pTextNd = GetTextFrm()->GetTextNode();
+    SwNumberPortion *pRet = nullptr;
+    const SwTextNode* pTextNd = GetTextFrame()->GetTextNode();
     const SwNumRule* pNumRule = pTextNd->GetNumRule();
 
     // Has a "valid" number?
@@ -478,7 +478,7 @@ SwNumberPortion *SwTextFormatter::NewNumberPortion( SwTextFormatInfo &rInf ) con
 
         if( SVX_NUM_BITMAP == rNumFormat.GetNumberingType() )
         {
-            pRet = new SwGrfNumPortion( const_cast<SwTextFrm*>(GetTextFrm()),
+            pRet = new SwGrfNumPortion( const_cast<SwTextFrame*>(GetTextFrame()),
                                         pTextNd->GetLabelFollowedBy(),
                                         rNumFormat.GetBrush(),
                                         rNumFormat.GetGraphicOrientation(),
@@ -495,10 +495,10 @@ SwNumberPortion *SwTextFormatter::NewNumberPortion( SwTextFormatInfo &rInf ) con
             // The SwFont is created dynamically and passed in the ctor,
             // as the CharFormat only returns an SV-Font.
             // In the dtor of SwNumberPortion, the SwFont is deleted.
-            SwFont *pNumFnt = 0;
+            SwFont *pNumFnt = nullptr;
             const SwAttrSet* pFormat = rNumFormat.GetCharFormat() ?
                                     &rNumFormat.GetCharFormat()->GetAttrSet() :
-                                    NULL;
+                                    nullptr;
             const IDocumentSettingAccess* pIDSA = pTextNd->getIDocumentSettingAccess();
 
             if( SVX_NUM_CHAR_SPECIAL == rNumFormat.GetNumberingType() )
@@ -545,7 +545,7 @@ SwNumberPortion *SwTextFormatter::NewNumberPortion( SwTextFormatInfo &rInf ) con
 
                 // we do not allow a vertical font
                 pNumFnt->SetVertical( pNumFnt->GetOrientation(),
-                                      pFrm->IsVertical() );
+                                      m_pFrame->IsVertical() );
 
                 // --> OD 2008-01-23 #newlistelevelattrs#
                 pRet = new SwBulletPortion( rNumFormat.GetBulletChar(),
@@ -590,7 +590,7 @@ SwNumberPortion *SwTextFormatter::NewNumberPortion( SwTextFormatInfo &rInf ) con
                     checkApplyParagraphMarkFormatToNumbering( pNumFnt, rInf, pIDSA );
 
                     // we do not allow a vertical font
-                    pNumFnt->SetVertical( pNumFnt->GetOrientation(), pFrm->IsVertical() );
+                    pNumFnt->SetVertical( pNumFnt->GetOrientation(), m_pFrame->IsVertical() );
 
                     pRet = new SwNumberPortion( aText, pNumFnt,
                                                 bLeft, bCenter, nMinDist,

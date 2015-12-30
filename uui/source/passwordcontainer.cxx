@@ -333,9 +333,7 @@ PasswordContainerInteractionHandler::getImplementationName_Static()
 uno::Sequence< OUString >
 PasswordContainerInteractionHandler::getSupportedServiceNames_Static()
 {
-    uno::Sequence< OUString > aSNS( 1 );
-    aSNS.getArray()[ 0 ] =
-                          "com.sun.star.task.PasswordContainerInteractionHandler";
+    uno::Sequence< OUString > aSNS { "com.sun.star.task.PasswordContainerInteractionHandler" };
     return aSNS;
 }
 
@@ -382,9 +380,7 @@ PasswordContainerInteractionHandler::handleInteractionRequest(
 
     for ( sal_Int32 i = 0; i < rContinuations.getLength(); ++i )
     {
-        xSupplyAuthentication
-            = uno::Reference< ucb::XInteractionSupplyAuthentication >(
-                rContinuations[i], uno::UNO_QUERY );
+        xSupplyAuthentication.set( rContinuations[i], uno::UNO_QUERY );
         if( xSupplyAuthentication.is() )
             break;
     }

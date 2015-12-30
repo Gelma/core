@@ -79,7 +79,7 @@
 #include <popup.hrc>
 #include <web.hrc>
 #include <view.hrc>
-#include <com/sun/star/ui/dialogs/XFilePicker.hpp>
+#include <com/sun/star/ui/dialogs/XFilePicker2.hpp>
 #include <com/sun/star/ui/dialogs/XFilterManager.hpp>
 #include <sfx2/filedlghelper.hxx>
 #define SwSrcView
@@ -126,7 +126,6 @@ void SwSrcView::InitInterface_Impl()
     GetStaticInterface()->RegisterChildWindow(SvxSearchDialogWrapper::GetChildWindowId());
 }
 
-TYPEINIT1(SwSrcView, SfxViewShell)
 
 static void lcl_PrintHeader( vcl::RenderContext &rOutDev, sal_Int32 nPages, sal_Int32 nCurPage, const OUString& rTitle )
 {
@@ -219,7 +218,7 @@ static OUString lcl_ConvertTabsToSpaces( const OUString& sLine )
 SwSrcView::SwSrcView(SfxViewFrame* pViewFrame, SfxViewShell*) :
     SfxViewShell( pViewFrame, SWSRCVIEWFLAGS ),
     aEditWin( VclPtr<SwSrcEditWindow>::Create( &pViewFrame->GetWindow(), this ) ),
-    pSearchItem(0),
+    pSearchItem(nullptr),
     bSourceSaved(false),
     eLoadEncoding(RTL_TEXTENCODING_DONTKNOW)
 {
@@ -229,7 +228,7 @@ SwSrcView::SwSrcView(SfxViewFrame* pViewFrame, SfxViewShell*) :
 SwSrcView::~SwSrcView()
 {
     SwDocShell* pDocShell = GetDocShell();
-    OSL_ENSURE(PTR_CAST(SwWebDocShell, pDocShell), "Why no WebDocShell?");
+    OSL_ENSURE(dynamic_cast<SwWebDocShell*>( pDocShell), "Why no WebDocShell?" );
     const TextSelection&  rSel = aEditWin->GetTextView()->GetSelection();
     static_cast<SwWebDocShell*>(pDocShell)->SetSourcePara( static_cast< sal_uInt16 >( rSel.GetStart().GetPara() ) );
 
@@ -257,7 +256,7 @@ void SwSrcView::SaveContentTo(SfxMedium& rMed)
 void SwSrcView::Init()
 {
     SetHelpId(SW_SRC_VIEWSHELL);
-    SetName(OUString("Source"));
+    SetName("Source");
     SetWindow( aEditWin.get() );
     SwDocShell* pDocShell = GetDocShell();
     // If the doc is still loading, then the DocShell must fire up
@@ -276,7 +275,7 @@ void SwSrcView::Init()
 SwDocShell*     SwSrcView::GetDocShell()
 {
     SfxObjectShell* pObjShell = GetViewFrame()->GetObjectShell();
-    return PTR_CAST(SwDocShell, pObjShell);
+    return dynamic_cast<SwDocShell*>( pObjShell );
 }
 
 void SwSrcView::SaveContent(const OUString& rTmpFile)
@@ -300,13 +299,13 @@ void SwSrcView::Execute(SfxRequest& rReq)
             // filesave dialog with autoextension
             FileDialogHelper aDlgHelper(
                 TemplateDescription::FILESAVE_AUTOEXTENSION, 0 );
-            uno::Reference < XFilePicker > xFP = aDlgHelper.GetFilePicker();
+            uno::Reference < XFilePicker2 > xFP = aDlgHelper.GetFilePicker();
             uno::Reference<XFilterManager> xFltMgr(xFP, UNO_QUERY);
 
             // search for an html filter for export
             SfxFilterContainer* pFilterCont = GetObjectShell()->GetFactory().GetFilterContainer();
             const SfxFilter* pFilter =
-                pFilterCont->GetFilter4Extension( OUString("html"), SfxFilterFlags::EXPORT );
+                pFilterCont->GetFilter4Extension( "html", SfxFilterFlags::EXPORT );
             if ( pFilter )
             {
                 // filter found -> use its uiname and wildcard
@@ -319,14 +318,14 @@ void SwSrcView::Execute(SfxRequest& rReq)
             {
                 // filter not found
                 OUString sHtml("HTML");
-                xFltMgr->appendFilter( sHtml, OUString("*.html;*.htm") );
+                xFltMgr->appendFilter( sHtml, "*.html;*.htm" );
                 xFltMgr->setCurrentFilter( sHtml ) ;
             }
 
             xFP->setDisplayDirectory( aPathOpt.GetWorkPath() );
             if( aDlgHelper.Execute() == ERRCODE_NONE)
             {
-                SfxMedium aMedium( xFP->getFiles().getConstArray()[0],
+                SfxMedium aMedium( xFP->getSelectedFiles().getConstArray()[0],
                                     StreamMode::WRITE | StreamMode::SHARE_DENYNONE );
                 SvStream* pOutStream = aMedium.GetOutStream();
                 pOutStream->SetStreamCharSet(lcl_GetStreamCharSet(eLoadEncoding));
@@ -338,7 +337,7 @@ void SwSrcView::Execute(SfxRequest& rReq)
         case SID_SAVEDOC:
         {
             SwDocShell* pDocShell = GetDocShell();
-            SfxMedium* pMed = 0;
+            SfxMedium* pMed = nullptr;
             if(pDocShell->HasName())
                 pMed = pDocShell->GetMedium();
             else
@@ -871,7 +870,7 @@ void SwSrcView::Load(SwDocShell* pDocShell)
         pDocShell->SetModified();// The flag will be reset in between times.
     // Disable AutoLoad
     pDocShell->SetAutoLoad(INetURLObject(), 0, false);
-    OSL_ENSURE(PTR_CAST(SwWebDocShell, pDocShell), "Why no WebDocShell?");
+    OSL_ENSURE(dynamic_cast<SwWebDocShell*>( pDocShell), "Why no WebDocShell?" );
     sal_uInt16 nLine = static_cast<SwWebDocShell*>(pDocShell)->GetSourcePara();
     aEditWin->SetStartLine(nLine);
     aEditWin->GetTextEngine()->ResetUndo();

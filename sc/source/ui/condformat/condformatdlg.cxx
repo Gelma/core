@@ -40,8 +40,8 @@ ScCondFormatList::ScCondFormatList(vcl::Window* pParent, WinBits nStyle)
     : Control(pParent, nStyle | WB_DIALOGCONTROL)
     , mbHasScrollBar(false)
     , mpScrollBar(VclPtr<ScrollBar>::Create(this, WB_VERT ))
-    , mpDoc(NULL)
-    , mpDialogParent(NULL)
+    , mpDoc(nullptr)
+    , mpDialogParent(nullptr)
 {
     mpScrollBar->SetScrollHdl( LINK( this, ScCondFormatList, ScrollHdl ) );
     mpScrollBar->EnableDrag();
@@ -112,7 +112,7 @@ void ScCondFormatList::init(ScDocument* pDoc, ScCondFormatDlg* pDialogParent,
             }
         }
         if(nCount)
-            EntrySelectHdl(maEntries[0].get());
+            EntrySelectHdl(*maEntries[0].get());
     }
     else
     {
@@ -169,7 +169,7 @@ void ScCondFormatList::Resize()
 ScConditionalFormat* ScCondFormatList::GetConditionalFormat() const
 {
     if(maEntries.empty())
-        return NULL;
+        return nullptr;
 
     ScConditionalFormat* pFormat = new ScConditionalFormat(0, mpDoc);
     for(EntryContainer::const_iterator itr = maEntries.begin(); itr != maEntries.end(); ++itr)
@@ -236,7 +236,7 @@ void ScCondFormatList::DoScroll(long nDelta)
     mpScrollBar->SetPosPixel(aNewPoint);
 }
 
-IMPL_LINK(ScCondFormatList, ColFormatTypeHdl, ListBox*, pBox)
+IMPL_LINK_TYPED(ScCondFormatList, ColFormatTypeHdl, ListBox&, rBox, void)
 {
     EntryContainer::iterator itr = maEntries.begin();
     for(; itr != maEntries.end(); ++itr)
@@ -245,35 +245,35 @@ IMPL_LINK(ScCondFormatList, ColFormatTypeHdl, ListBox*, pBox)
             break;
     }
     if(itr == maEntries.end())
-        return 0;
+        return;
 
-    sal_Int32 nPos = pBox->GetSelectEntryPos();
+    sal_Int32 nPos = rBox.GetSelectEntryPos();
     switch(nPos)
     {
         case 0:
             if((*itr)->GetType() == condformat::entry::COLORSCALE2)
-                return 0;
+                return;
 
             itr->disposeAndClear();
             *itr = VclPtr<ScColorScale2FrmtEntry>::Create( this, mpDoc, maPos );
             break;
         case 1:
             if((*itr)->GetType() == condformat::entry::COLORSCALE3)
-                return 0;
+                return;
 
             itr->disposeAndClear();
             *itr = VclPtr<ScColorScale3FrmtEntry>::Create( this, mpDoc, maPos );
             break;
         case 2:
             if((*itr)->GetType() == condformat::entry::DATABAR)
-                return 0;
+                return;
 
             itr->disposeAndClear();
             *itr = VclPtr<ScDataBarFrmtEntry>::Create( this, mpDoc, maPos );
             break;
         case 3:
             if((*itr)->GetType() == condformat::entry::ICONSET)
-                return 0;
+                return;
 
             itr->disposeAndClear();
             *itr = VclPtr<ScIconSetFrmtEntry>::Create( this, mpDoc, maPos );
@@ -284,17 +284,15 @@ IMPL_LINK(ScCondFormatList, ColFormatTypeHdl, ListBox*, pBox)
     mpDialogParent->InvalidateRefData();
     (*itr)->SetActive();
     RecalcAll();
-    return 0;
 }
 
-IMPL_LINK(ScCondFormatList, TypeListHdl, ListBox*, pBox)
+IMPL_LINK_TYPED(ScCondFormatList, TypeListHdl, ListBox&, rBox, void)
 {
     //Resolves: fdo#79021 At this point we are still inside the ListBox Select.
     //If we call maEntries.replace here then the pBox will be deleted before it
     //has finished Select and will crash on accessing its deleted this. So Post
     //to do the real work after the Select has completed
-    Application::PostUserEvent(LINK(this, ScCondFormatList, AfterTypeListHdl), pBox, true);
-    return 0;
+    Application::PostUserEvent(LINK(this, ScCondFormatList, AfterTypeListHdl), &rBox, true);
 }
 
 IMPL_LINK_TYPED(ScCondFormatList, AfterTypeListHdl, void*, p, void)
@@ -390,10 +388,10 @@ IMPL_LINK_NOARG_TYPED( ScCondFormatList, RemoveBtnHdl, Button*, void )
     RecalcAll();
 }
 
-IMPL_LINK( ScCondFormatList, EntrySelectHdl, ScCondFrmtEntry*, pEntry )
+IMPL_LINK_TYPED( ScCondFormatList, EntrySelectHdl, ScCondFrmtEntry&, rEntry, void )
 {
-    if(pEntry->IsSelected())
-        return 0;
+    if(rEntry.IsSelected())
+        return;
 
     //A child has focus, but we will hide that, so regrab to whatever new thing gets
     //shown instead of leaving it stuck in the inaccessible hidden element
@@ -403,11 +401,10 @@ IMPL_LINK( ScCondFormatList, EntrySelectHdl, ScCondFrmtEntry*, pEntry )
         (*itr)->SetInactive();
     }
     mpDialogParent->InvalidateRefData();
-    pEntry->SetActive();
+    rEntry.SetActive();
     RecalcAll();
     if (bReGrabFocus)
         GrabFocus();
-    return 0;
 }
 
 IMPL_LINK_NOARG_TYPED( ScCondFormatList, ScrollHdl, ScrollBar*, void )
@@ -428,7 +425,7 @@ ScCondFormatDlg::ScCondFormatDlg(SfxBindings* pB, SfxChildWindow* pCW,
     , mbManaged(bManaged)
     , maPos(rPos)
     , mpViewData(pViewData)
-    , mpLastEdit(NULL)
+    , mpLastEdit(nullptr)
 {
     get(mpBtnOk, "ok");
     get(mpBtnAdd, "add");
@@ -563,7 +560,7 @@ ScConditionalFormat* ScCondFormatDlg::GetConditionalFormat() const
 {
     OUString aRangeStr = mpEdRange->GetText();
     if(aRangeStr.isEmpty())
-        return NULL;
+        return nullptr;
 
     ScRangeList aRange;
     sal_uInt16 nFlags = aRange.Parse(aRangeStr, mpViewData->GetDocument(),
@@ -575,7 +572,7 @@ ScConditionalFormat* ScCondFormatDlg::GetConditionalFormat() const
     else
     {
         delete pFormat;
-        pFormat = NULL;
+        pFormat = nullptr;
     }
 
     return pFormat;
@@ -583,7 +580,7 @@ ScConditionalFormat* ScCondFormatDlg::GetConditionalFormat() const
 
 void ScCondFormatDlg::InvalidateRefData()
 {
-    mpLastEdit = NULL;
+    mpLastEdit = nullptr;
 }
 
 // -------------------------------------------------------------
@@ -606,7 +603,7 @@ void ScCondFormatDlg::OkPressed()
             pFormat, maPos.Tab(), pFormat->GetRange());
     else
         mpViewData->GetDocShell()->GetDocFunc().ReplaceConditionalFormat(maKey,
-            NULL, maPos.Tab(), ScRangeList());
+            nullptr, maPos.Tab(), ScRangeList());
 
     if ( mbManaged )
     {
@@ -646,8 +643,8 @@ bool ScCondFormatDlg::ParseXmlString(const OUString&    sXMLString,
     OString sTagName;
     OUString sTagValue;
 
-    xmlNodePtr      pXmlRoot  = NULL;
-    xmlNodePtr      pXmlNode  = NULL;
+    xmlNodePtr      pXmlRoot  = nullptr;
+    xmlNodePtr      pXmlNode  = nullptr;
 
     OString sOString = OUStringToOString( sXMLString, RTL_TEXTENCODING_UTF8 );
     xmlDocPtr pXmlDoc = xmlParseMemory(sOString.getStr(), sOString.getLength());
@@ -658,12 +655,12 @@ bool ScCondFormatDlg::ParseXmlString(const OUString&    sXMLString,
         pXmlRoot = xmlDocGetRootElement( pXmlDoc );
         pXmlNode = pXmlRoot->children;
 
-        while (pXmlNode != NULL && bRetVal)
+        while (pXmlNode != nullptr && bRetVal)
         {
-            sTagName  = OUStringToOString(OUString("Index"), RTL_TEXTENCODING_UTF8);
+            sTagName  = OUStringToOString("Index", RTL_TEXTENCODING_UTF8);
             if (xmlStrcmp(pXmlNode->name, reinterpret_cast<xmlChar const *>(sTagName.getStr())) == 0)
             {
-                if (pXmlNode->children != NULL && pXmlNode->children->type == XML_TEXT_NODE)
+                if (pXmlNode->children != nullptr && pXmlNode->children->type == XML_TEXT_NODE)
                 {
                     sTagValue = OUString(reinterpret_cast<char*>(pXmlNode->children->content),
                                      strlen(reinterpret_cast<char*>(pXmlNode->children->content)),
@@ -674,10 +671,10 @@ bool ScCondFormatDlg::ParseXmlString(const OUString&    sXMLString,
                 }
             }
 
-            sTagName  = OUStringToOString(OUString("Type"), RTL_TEXTENCODING_UTF8);
+            sTagName  = OUStringToOString("Type", RTL_TEXTENCODING_UTF8);
             if (xmlStrcmp(pXmlNode->name, reinterpret_cast<xmlChar const *>(sTagName.getStr())) == 0)
             {
-                if (pXmlNode->children != NULL && pXmlNode->children->type == XML_TEXT_NODE)
+                if (pXmlNode->children != nullptr && pXmlNode->children->type == XML_TEXT_NODE)
                 {
                     sTagValue = OUString(reinterpret_cast<char*>(pXmlNode->children->content),
                                      strlen(reinterpret_cast<char*>(pXmlNode->children->content)),
@@ -688,10 +685,10 @@ bool ScCondFormatDlg::ParseXmlString(const OUString&    sXMLString,
                 }
             }
 
-            sTagName  = OUStringToOString(OUString("Managed"), RTL_TEXTENCODING_UTF8);
+            sTagName  = OUStringToOString("Managed", RTL_TEXTENCODING_UTF8);
             if (xmlStrcmp(pXmlNode->name, reinterpret_cast<xmlChar const *>(sTagName.getStr())) == 0)
             {
-                if (pXmlNode->children != NULL && pXmlNode->children->type == XML_TEXT_NODE)
+                if (pXmlNode->children != nullptr && pXmlNode->children->type == XML_TEXT_NODE)
                 {
                     sTagValue = OUString(reinterpret_cast<char*>(pXmlNode->children->content),
                                      strlen(reinterpret_cast<char*>(pXmlNode->children->content)),
@@ -720,42 +717,42 @@ OUString ScCondFormatDlg::GenerateXmlString(sal_uInt32 nIndex, sal_uInt8 nType, 
     OString sTagName;
     OString sTagValue;
 
-    xmlNodePtr      pXmlRoot  = NULL;
-    xmlNodePtr      pXmlNode  = NULL;
+    xmlNodePtr      pXmlRoot  = nullptr;
+    xmlNodePtr      pXmlNode  = nullptr;
 
-    xmlChar*        pBuffer   = NULL;
-    const xmlChar*  pTagName  = NULL;
-    const xmlChar*  pTagValue = NULL;
+    xmlChar*        pBuffer   = nullptr;
+    const xmlChar*  pTagName  = nullptr;
+    const xmlChar*  pTagValue = nullptr;
 
     xmlDocPtr pXmlDoc = xmlNewDoc(reinterpret_cast<const xmlChar*>("1.0"));
 
-    sTagName = OUStringToOString(OUString("ScCondFormatDlg"), RTL_TEXTENCODING_UTF8);
+    sTagName = OUStringToOString("ScCondFormatDlg", RTL_TEXTENCODING_UTF8);
     pTagName = reinterpret_cast<const xmlChar*>(sTagName.getStr());
-    pXmlRoot = xmlNewDocNode(pXmlDoc, NULL, pTagName, NULL);
+    pXmlRoot = xmlNewDocNode(pXmlDoc, nullptr, pTagName, nullptr);
 
     xmlDocSetRootElement(pXmlDoc, pXmlRoot);
 
-    sTagName  = OUStringToOString(OUString("Index"), RTL_TEXTENCODING_UTF8);
+    sTagName  = OUStringToOString("Index", RTL_TEXTENCODING_UTF8);
     sTagValue = OUStringToOString(OUString::number(nIndex), RTL_TEXTENCODING_UTF8);
     pTagName  = reinterpret_cast<const xmlChar*>(sTagName.getStr());
     pTagValue = reinterpret_cast<const xmlChar*>(sTagValue.getStr());
-    pXmlNode  = xmlNewDocNode(pXmlDoc, NULL, pTagName, pTagValue);
+    pXmlNode  = xmlNewDocNode(pXmlDoc, nullptr, pTagName, pTagValue);
 
     xmlAddChild(pXmlRoot, pXmlNode);
 
-    sTagName  = OUStringToOString(OUString("Type"), RTL_TEXTENCODING_UTF8);
+    sTagName  = OUStringToOString("Type", RTL_TEXTENCODING_UTF8);
     sTagValue = OUStringToOString(OUString::number(nType), RTL_TEXTENCODING_UTF8);
     pTagName  = reinterpret_cast<const xmlChar*>(sTagName.getStr());
     pTagValue = reinterpret_cast<const xmlChar*>(sTagValue.getStr());
-    pXmlNode  = xmlNewDocNode(pXmlDoc, NULL, pTagName, pTagValue);
+    pXmlNode  = xmlNewDocNode(pXmlDoc, nullptr, pTagName, pTagValue);
 
     xmlAddChild(pXmlRoot, pXmlNode);
 
-    sTagName  = OUStringToOString(OUString("Managed"), RTL_TEXTENCODING_UTF8);
+    sTagName  = OUStringToOString("Managed", RTL_TEXTENCODING_UTF8);
     sTagValue = OUStringToOString(OUString::boolean(bManaged), RTL_TEXTENCODING_UTF8);
     pTagName  = reinterpret_cast<const xmlChar*>(sTagName.getStr());
     pTagValue = reinterpret_cast<const xmlChar*>(sTagValue.getStr());
-    pXmlNode  = xmlNewDocNode(pXmlDoc, NULL, pTagName, pTagValue);
+    pXmlNode  = xmlNewDocNode(pXmlDoc, nullptr, pTagName, pTagValue);
 
     xmlAddChild(pXmlRoot, pXmlNode);
 
@@ -771,19 +768,18 @@ OUString ScCondFormatDlg::GenerateXmlString(sal_uInt32 nIndex, sal_uInt8 nType, 
 }
 
 
-IMPL_LINK( ScCondFormatDlg, EdRangeModifyHdl, Edit*, pEdit )
+IMPL_LINK_TYPED( ScCondFormatDlg, EdRangeModifyHdl, Edit&, rEdit, void )
 {
-    OUString aRangeStr = pEdit->GetText();
+    OUString aRangeStr = rEdit.GetText();
     ScRangeList aRange;
     sal_uInt16 nFlags = aRange.Parse(aRangeStr, mpViewData->GetDocument(),
         SCA_VALID, mpViewData->GetDocument()->GetAddressConvention());
     if(nFlags & SCA_VALID)
-        pEdit->SetControlBackground(GetSettings().GetStyleSettings().GetWindowColor());
+        rEdit.SetControlBackground(GetSettings().GetStyleSettings().GetWindowColor());
     else
-        pEdit->SetControlBackground(COL_LIGHTRED);
+        rEdit.SetControlBackground(COL_LIGHTRED);
 
     updateTitle();
-    return 0;
 }
 
 IMPL_LINK_TYPED( ScCondFormatDlg, RangeGetFocusHdl, Control&, rControl, void )

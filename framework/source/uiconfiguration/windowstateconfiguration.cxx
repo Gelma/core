@@ -40,6 +40,7 @@
 #include <cppuhelper/compbase.hxx>
 #include <cppuhelper/implbase.hxx>
 #include <cppuhelper/supportsservice.hxx>
+#include <comphelper/sequence.hxx>
 #include <tools/debug.hxx>
 
 #include <unordered_map>
@@ -96,7 +97,7 @@ static const char* CONFIGURATION_PROPERTIES[]           =
     WINDOWSTATE_PROPERTY_STYLE,
     WINDOWSTATE_PROPERTY_DOCKPOS,
     WINDOWSTATE_PROPERTY_DOCKSIZE,
-    0
+    nullptr
 };
 
 //  Configuration access class for WindowState supplier implementation
@@ -108,40 +109,40 @@ class ConfigurationAccess_WindowState : public  ::cppu::WeakImplHelper< XNameCon
         virtual                   ~ConfigurationAccess_WindowState();
 
         // XNameAccess
-        virtual ::com::sun::star::uno::Any SAL_CALL getByName( const OUString& aName )
-            throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual css::uno::Any SAL_CALL getByName( const OUString& aName )
+            throw (css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
 
-        virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getElementNames()
-            throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual css::uno::Sequence< OUString > SAL_CALL getElementNames()
+            throw (css::uno::RuntimeException, std::exception) override;
 
         virtual sal_Bool SAL_CALL hasByName( const OUString& aName )
-            throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw (css::uno::RuntimeException, std::exception) override;
 
         // XNameContainer
         virtual void SAL_CALL removeByName( const OUString& sName )
-            throw(css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw(css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception ) override;
 
         virtual void SAL_CALL insertByName( const OUString& sName, const css::uno::Any&   aPropertySet )
-            throw(css::lang::IllegalArgumentException, css::container::ElementExistException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw(css::lang::IllegalArgumentException, css::container::ElementExistException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception ) override;
 
         // XNameReplace
         virtual void SAL_CALL replaceByName( const OUString& sName, const css::uno::Any& aPropertySet )
-            throw(css::lang::IllegalArgumentException, css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception ) SAL_OVERRIDE;
+            throw(css::lang::IllegalArgumentException, css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception ) override;
 
         // XElementAccess
-        virtual ::com::sun::star::uno::Type SAL_CALL getElementType()
-            throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual css::uno::Type SAL_CALL getElementType()
+            throw (css::uno::RuntimeException, std::exception) override;
 
         virtual sal_Bool SAL_CALL hasElements()
-            throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+            throw (css::uno::RuntimeException, std::exception) override;
 
         // container.XContainerListener
-        virtual void SAL_CALL     elementInserted( const ContainerEvent& aEvent ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL     elementRemoved ( const ContainerEvent& aEvent ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
-        virtual void SAL_CALL     elementReplaced( const ContainerEvent& aEvent ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL     elementInserted( const ContainerEvent& aEvent ) throw(RuntimeException, std::exception) override;
+        virtual void SAL_CALL     elementRemoved ( const ContainerEvent& aEvent ) throw(RuntimeException, std::exception) override;
+        virtual void SAL_CALL     elementReplaced( const ContainerEvent& aEvent ) throw(RuntimeException, std::exception) override;
 
         // lang.XEventListener
-        virtual void SAL_CALL disposing( const EventObject& aEvent ) throw(RuntimeException, std::exception) SAL_OVERRIDE;
+        virtual void SAL_CALL disposing( const EventObject& aEvent ) throw(RuntimeException, std::exception) override;
 
     protected:
         enum WindowStateMask
@@ -177,7 +178,7 @@ class ConfigurationAccess_WindowState : public  ::cppu::WeakImplHelper< XNameCon
                 , bNoClose(false)
                 , bSoftClose(false)
                 , bContextActive(false)
-                , aDockingArea(::com::sun::star::ui::DockingArea_DOCKINGAREA_TOP)
+                , aDockingArea(css::ui::DockingArea_DOCKINGAREA_TOP)
                 , aDockPos(0, 0)
                 , aPos(0, 0)
                 , aSize(0, 0)
@@ -195,12 +196,12 @@ class ConfigurationAccess_WindowState : public  ::cppu::WeakImplHelper< XNameCon
                                                     bNoClose : 1,
                                                     bSoftClose : 1,
                                                     bContextActive : 1;
-            ::com::sun::star::ui::DockingArea       aDockingArea;
-            com::sun::star::awt::Point              aDockPos;
-            com::sun::star::awt::Size               aDockSize;
-            com::sun::star::awt::Point              aPos;
-            com::sun::star::awt::Size               aSize;
-            OUString                           aUIName;
+            css::ui::DockingArea                    aDockingArea;
+            css::awt::Point                         aDockPos;
+            css::awt::Size                          aDockSize;
+            css::awt::Point                         aPos;
+            css::awt::Size                          aSize;
+            OUString                                aUIName;
             sal_uInt32                              nInternalState;
             sal_uInt16                              nStyle;
             sal_uInt32                              nMask; // see WindowStateMask
@@ -212,7 +213,7 @@ class ConfigurationAccess_WindowState : public  ::cppu::WeakImplHelper< XNameCon
         Any                       impl_getSequenceFromStruct( const WindowStateInfo& rWinStateInfo );
         void                      impl_fillStructFromSequence( WindowStateInfo& rWinStateInfo, const Sequence< PropertyValue >& rSeq );
         Any                       impl_getWindowStateFromResourceURL( const OUString& rResourceURL );
-        bool                  impl_initializeConfigAccess();
+        bool                      impl_initializeConfigAccess();
 
     private:
         typedef std::unordered_map< OUString,
@@ -220,13 +221,13 @@ class ConfigurationAccess_WindowState : public  ::cppu::WeakImplHelper< XNameCon
                                     OUStringHash,
                                     std::equal_to< OUString > > ResourceURLToInfoCache;
 
-        osl::Mutex m_aMutex;
-        OUString                     m_aConfigWindowAccess;
+        osl::Mutex                        m_aMutex;
+        OUString                          m_aConfigWindowAccess;
         Reference< XMultiServiceFactory > m_xConfigProvider;
         Reference< XNameAccess >          m_xConfigAccess;
         Reference< XContainerListener >   m_xConfigListener;
         ResourceURLToInfoCache            m_aResourceURLToInfoCache;
-        bool                          m_bConfigAccessInitialized : 1,
+        bool                              m_bConfigAccessInitialized : 1,
                                           m_bModified : 1;
         std::vector< OUString >           m_aPropArray;
 };
@@ -298,7 +299,7 @@ throw ( RuntimeException, std::exception )
 }
 
 sal_Bool SAL_CALL ConfigurationAccess_WindowState::hasByName( const OUString& rResourceURL )
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     // SAFE
     osl::MutexGuard g(m_aMutex);
@@ -372,7 +373,7 @@ throw( NoSuchElementException, WrappedTargetException, RuntimeException, std::ex
                 xFlush->commitChanges();
         }
     }
-    catch ( const com::sun::star::lang::WrappedTargetException& )
+    catch ( const css::lang::WrappedTargetException& )
     {
     }
 }
@@ -681,7 +682,7 @@ Any ConfigurationAccess_WindowState::impl_insertCacheAndReturnSequence( const OU
                         OUString aXStr = aString.getToken( 0, ',', nToken );
                         if ( nToken > 0 )
                         {
-                            com::sun::star::awt::Point aPos;
+                            css::awt::Point aPos;
                             aPos.X = aXStr.toInt32();
                             aPos.Y = aString.getToken( 0, ',', nToken ).toInt32();
 
@@ -713,7 +714,7 @@ Any ConfigurationAccess_WindowState::impl_insertCacheAndReturnSequence( const OU
                         OUString aStr = aString.getToken( 0, ',', nToken );
                         if ( nToken > 0 )
                         {
-                            com::sun::star::awt::Size aSize;
+                            css::awt::Size aSize;
                             aSize.Width = aStr.toInt32();
                             aSize.Height = aString.getToken( 0, ',', nToken ).toInt32();
                             if ( i == PROPERTY_SIZE )
@@ -783,10 +784,10 @@ Any ConfigurationAccess_WindowState::impl_insertCacheAndReturnSequence( const OU
                 aPropSeq[nIndex].Value = a;
             }
         }
-        catch( const com::sun::star::container::NoSuchElementException& )
+        catch( const css::container::NoSuchElementException& )
         {
         }
-        catch ( const com::sun::star::lang::WrappedTargetException& )
+        catch ( const css::lang::WrappedTargetException& )
         {
         }
     }
@@ -874,7 +875,7 @@ ConfigurationAccess_WindowState::WindowStateInfo& ConfigurationAccess_WindowStat
                         OUString aXStr = aString.getToken( 0, ',', nToken );
                         if ( nToken > 0 )
                         {
-                            com::sun::star::awt::Point aPos;
+                            css::awt::Point aPos;
                             aPos.X = aXStr.toInt32();
                             aPos.Y = aString.getToken( 0, ',', nToken ).toInt32();
 
@@ -903,7 +904,7 @@ ConfigurationAccess_WindowState::WindowStateInfo& ConfigurationAccess_WindowStat
                         OUString aStr = aString.getToken( 0, ',', nToken );
                         if ( nToken > 0 )
                         {
-                            com::sun::star::awt::Size aSize;
+                            css::awt::Size aSize;
                             aSize.Width  = aStr.toInt32();
                             aSize.Height = aString.getToken( 0, ',', nToken ).toInt32();
                             if ( i == PROPERTY_SIZE )
@@ -958,10 +959,10 @@ ConfigurationAccess_WindowState::WindowStateInfo& ConfigurationAccess_WindowStat
                     DBG_ASSERT( false, "Wrong value for ConfigurationAccess_WindowState. Who has forgotten to add this new property!" );
             }
         }
-        catch( const com::sun::star::container::NoSuchElementException& )
+        catch( const css::container::NoSuchElementException& )
         {
         }
-        catch ( const com::sun::star::lang::WrappedTargetException& )
+        catch ( const css::lang::WrappedTargetException& )
         {
         }
     }
@@ -990,10 +991,10 @@ Any ConfigurationAccess_WindowState::impl_getWindowStateFromResourceURL( const O
                 return impl_insertCacheAndReturnSequence( rResourceURL, xNameAccess );
         }
     }
-    catch( const com::sun::star::container::NoSuchElementException& )
+    catch( const css::container::NoSuchElementException& )
     {
     }
-    catch ( const com::sun::star::lang::WrappedTargetException& )
+    catch ( const css::lang::WrappedTargetException& )
     {
     }
 
@@ -1061,7 +1062,7 @@ void ConfigurationAccess_WindowState::impl_fillStructFromSequence( WindowStateIn
 
                     case PROPERTY_DOCKINGAREA:
                     {
-                        ::com::sun::star::ui::DockingArea eDockingArea;
+                        css::ui::DockingArea eDockingArea;
                         if ( rSeq[i].Value >>= eDockingArea )
                         {
                             rWinStateInfo.aDockingArea = eDockingArea;
@@ -1073,7 +1074,7 @@ void ConfigurationAccess_WindowState::impl_fillStructFromSequence( WindowStateIn
                     case PROPERTY_POS:
                     case PROPERTY_DOCKPOS:
                     {
-                        com::sun::star::awt::Point aPoint;
+                        css::awt::Point aPoint;
                         if ( rSeq[i].Value >>= aPoint )
                         {
                             if ( j == PROPERTY_POS )
@@ -1093,7 +1094,7 @@ void ConfigurationAccess_WindowState::impl_fillStructFromSequence( WindowStateIn
                     case PROPERTY_SIZE:
                     case PROPERTY_DOCKSIZE:
                     {
-                        com::sun::star::awt::Size aSize;
+                        css::awt::Size aSize;
                         if ( rSeq[i].Value >>= aSize )
                         {
                             if ( j == PROPERTY_SIZE )
@@ -1249,7 +1250,7 @@ bool ConfigurationAccess_WindowState::impl_initializeConfigAccess()
         aPropValue.Value <<= sal_True;
         aArgs[1] <<= aPropValue;
 
-        m_xConfigAccess = Reference< XNameAccess >( m_xConfigProvider->createInstanceWithArguments(
+        m_xConfigAccess.set( m_xConfigProvider->createInstanceWithArguments(
                     "com.sun.star.configuration.ConfigurationUpdateAccess", aArgs ), UNO_QUERY );
         if ( m_xConfigAccess.is() )
         {
@@ -1281,44 +1282,43 @@ class WindowStateConfiguration : private cppu::BaseMutex,
                                  public WindowStateConfiguration_BASE
 {
 public:
-    WindowStateConfiguration( const css::uno::Reference< css::uno::XComponentContext >& rxContext );
+    explicit WindowStateConfiguration( const css::uno::Reference< css::uno::XComponentContext >& rxContext );
     virtual ~WindowStateConfiguration();
 
     virtual OUString SAL_CALL getImplementationName()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return OUString("com.sun.star.comp.framework.WindowStateConfiguration");
     }
 
     virtual sal_Bool SAL_CALL supportsService(OUString const & ServiceName)
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
         return cppu::supportsService(this, ServiceName);
     }
 
     virtual css::uno::Sequence<OUString> SAL_CALL getSupportedServiceNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE
+        throw (css::uno::RuntimeException, std::exception) override
     {
-        css::uno::Sequence< OUString > aSeq(1);
-        aSeq[0] = "com.sun.star.ui.WindowStateConfiguration";
+        css::uno::Sequence< OUString > aSeq { "com.sun.star.ui.WindowStateConfiguration" };
         return aSeq;
     }
 
     // XNameAccess
     virtual css::uno::Any SAL_CALL getByName( const OUString& aName )
-        throw ( css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw ( css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
 
     virtual css::uno::Sequence< OUString > SAL_CALL getElementNames()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     virtual sal_Bool SAL_CALL hasByName( const OUString& aName )
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     // XElementAccess
     virtual css::uno::Type SAL_CALL getElementType()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
     virtual sal_Bool SAL_CALL hasElements()
-        throw (css::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+        throw (css::uno::RuntimeException, std::exception) override;
 
     typedef std::unordered_map< OUString,
                                 OUString,
@@ -1348,7 +1348,7 @@ WindowStateConfiguration::WindowStateConfiguration( const Reference< XComponentC
     {
         aElementNames = xModuleManager->getElementNames();
     }
-    catch (const ::com::sun::star::uno::RuntimeException &)
+    catch (const css::uno::RuntimeException &)
     {
     }
     Sequence< PropertyValue > aSeq;
@@ -1391,7 +1391,7 @@ WindowStateConfiguration::~WindowStateConfiguration()
 }
 
 Any SAL_CALL WindowStateConfiguration::getByName( const OUString& aModuleIdentifier )
-throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::container::NoSuchElementException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception)
 {
     osl::MutexGuard g(cppu::WeakComponentImplHelperBase::rBHelper.rMutex);
 
@@ -1410,7 +1410,7 @@ throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::la
             {
                 Reference< XNameAccess > xResourceURLWindowState;
                 ConfigurationAccess_WindowState* pModuleWindowState = new ConfigurationAccess_WindowState( aWindowStateConfigFile, m_xContext );
-                xResourceURLWindowState = Reference< XNameAccess >( static_cast< cppu::OWeakObject* >( pModuleWindowState ),UNO_QUERY );
+                xResourceURLWindowState.set( static_cast< cppu::OWeakObject* >( pModuleWindowState ),UNO_QUERY );
                 pModuleIter->second = xResourceURLWindowState;
                 a <<= xResourceURLWindowState;
             }
@@ -1423,25 +1423,15 @@ throw (::com::sun::star::container::NoSuchElementException, ::com::sun::star::la
 }
 
 Sequence< OUString > SAL_CALL WindowStateConfiguration::getElementNames()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     osl::MutexGuard g(cppu::WeakComponentImplHelperBase::rBHelper.rMutex);
 
-    Sequence< OUString > aSeq( m_aModuleToFileHashMap.size() );
-
-    sal_Int32 n = 0;
-    ModuleToWindowStateFileMap::const_iterator pIter = m_aModuleToFileHashMap.begin();
-    while ( pIter != m_aModuleToFileHashMap.end() )
-    {
-        aSeq[n] = pIter->first;
-        ++pIter;
-    }
-
-    return aSeq;
+    return comphelper::mapKeysToSequence( m_aModuleToFileHashMap );
 }
 
 sal_Bool SAL_CALL WindowStateConfiguration::hasByName( const OUString& aName )
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     osl::MutexGuard g(cppu::WeakComponentImplHelperBase::rBHelper.rMutex);
 
@@ -1451,13 +1441,13 @@ throw (::com::sun::star::uno::RuntimeException, std::exception)
 
 // XElementAccess
 Type SAL_CALL WindowStateConfiguration::getElementType()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     return( cppu::UnoType<XNameAccess>::get());
 }
 
 sal_Bool SAL_CALL WindowStateConfiguration::hasElements()
-throw (::com::sun::star::uno::RuntimeException, std::exception)
+throw (css::uno::RuntimeException, std::exception)
 {
     // We always have at least one module. So it is valid to return true!
     return sal_True;

@@ -182,7 +182,7 @@ void ScTabViewShell::InsertURLField( const OUString& rName, const OUString& rURL
         }
 
         // single url in cell is shown in the dialog and replaced
-        bSelectFirst = HasBookmarkAtCursor( NULL );
+        bSelectFirst = HasBookmarkAtCursor( nullptr );
         pScMod->SetInputMode( SC_INPUT_TABLE );
     }
 
@@ -227,7 +227,7 @@ void ScTabViewShell::ExecSearch( SfxRequest& rReq )
                 if ( pReqArgs &&
                      SfxItemState::SET == pReqArgs->GetItemState(SID_SEARCH_ITEM, false, &pItem) )
                 {
-                    OSL_ENSURE( pItem->ISA(SvxSearchItem), "wrong Item" );
+                    OSL_ENSURE( dynamic_cast<const SvxSearchItem*>( pItem) !=  nullptr, "wrong Item" );
                     const SvxSearchItem* pSearchItem = static_cast<const SvxSearchItem*>(pItem);
 
                     ScGlobal::SetSearchItem( *pSearchItem );
@@ -261,7 +261,7 @@ void ScTabViewShell::ExecSearch( SfxRequest& rReq )
                             pReqArgs->GetItemState(SID_SEARCH_ITEM, false, &pItem))
             {
                 // remember search item
-                OSL_ENSURE( pItem->ISA(SvxSearchItem), "wrong Item" );
+                OSL_ENSURE( dynamic_cast<const SvxSearchItem*>( pItem) !=  nullptr, "wrong Item" );
                 ScGlobal::SetSearchItem( *static_cast<const SvxSearchItem*>(pItem ));
             }
             else

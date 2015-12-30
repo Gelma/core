@@ -65,108 +65,108 @@ class MailMergeExecuteFinalizer;
 class SwXMailMerge :
     public cppu::WeakImplHelper
     <
-        com::sun::star::task::XJob,
-        com::sun::star::util::XCancellable,
-        com::sun::star::beans::XPropertySet,
-        com::sun::star::text::XMailMergeBroadcaster,
-        com::sun::star::lang::XComponent,
-        com::sun::star::lang::XServiceInfo
+        css::task::XJob,
+        css::util::XCancellable,
+        css::beans::XPropertySet,
+        css::text::XMailMergeBroadcaster,
+        css::lang::XComponent,
+        css::lang::XServiceInfo
     >
 {
     friend class MailMergeExecuteFinalizer;
 
-    cppu::OInterfaceContainerHelper     aEvtListeners;
-    cppu::OInterfaceContainerHelper     aMergeListeners;
-    OPropertyListenerContainerHelper    aPropListeners;
+    cppu::OInterfaceContainerHelper     m_aEvtListeners;
+    cppu::OInterfaceContainerHelper     m_aMergeListeners;
+    OPropertyListenerContainerHelper    m_aPropListeners;
 
-    const SfxItemPropertySet*   pPropSet;
+    const SfxItemPropertySet*   m_pPropSet;
 
-    SfxObjectShellRef xDocSh;   // the document
+    SfxObjectShellRef m_xDocSh;   // the document
 
-    OUString        aTmpFileName;
+    OUString        m_aTmpFileName;
 
     // properties of mail merge service
-    com::sun::star::uno::Sequence< com::sun::star::uno::Any >           aSelection;
-    com::sun::star::uno::Reference< com::sun::star::sdbc::XResultSet >  xResultSet;
-    com::sun::star::uno::Reference< com::sun::star::sdbc::XConnection > xConnection;
-    com::sun::star::uno::Reference< com::sun::star::frame::XModel >     xModel;
-    OUString   aDataSourceName;
-    OUString   aDataCommand;
-    OUString   aFilter;
-    OUString   aDocumentURL;
-    OUString   aOutputURL;
-    OUString   aFileNamePrefix;
-    sal_Int32       nDataCommandType;
-    sal_Int16       nOutputType;
-    bool        bEscapeProcessing;
-    bool        bSinglePrintJobs;
-    bool        bFileNameFromColumn;
+    css::uno::Sequence< css::uno::Any >           m_aSelection;
+    css::uno::Reference< css::sdbc::XResultSet >  m_xResultSet;
+    css::uno::Reference< css::sdbc::XConnection > m_xConnection;
+    css::uno::Reference< css::frame::XModel >     m_xModel;
+    OUString   m_aDataSourceName;
+    OUString   m_aDataCommand;
+    OUString   m_aFilter;
+    OUString   m_aDocumentURL;
+    OUString   m_aOutputURL;
+    OUString   m_aFileNamePrefix;
+    sal_Int32       m_nDataCommandType;
+    sal_Int16       m_nOutputType;
+    bool        m_bEscapeProcessing;
+    bool        m_bSinglePrintJobs;
+    bool        m_bFileNameFromColumn;
 
-    OUString                                         sInServerPassword;
-    OUString                                         sOutServerPassword;
-    OUString                                         sSubject;
-    OUString                                         sAddressFromColumn;
-    OUString                                         sMailBody;
-    OUString                                         sAttachmentName;
-    OUString                                         sAttachmentFilter;
-    com::sun::star::uno::Sequence< OUString >        aCopiesTo;
-    com::sun::star::uno::Sequence< OUString >        aBlindCopiesTo;
-    bool                                                bSendAsHTML;
-    bool                                                bSendAsAttachment;
+    OUString                                         m_sInServerPassword;
+    OUString                                         m_sOutServerPassword;
+    OUString                                         m_sSubject;
+    OUString                                         m_sAddressFromColumn;
+    OUString                                         m_sMailBody;
+    OUString                                         m_sAttachmentName;
+    OUString                                         m_sAttachmentFilter;
+    css::uno::Sequence< OUString >                   m_aCopiesTo;
+    css::uno::Sequence< OUString >                   m_aBlindCopiesTo;
+    bool                                             m_bSendAsHTML;
+    bool                                             m_bSendAsAttachment;
 
-    com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue > aPrintSettings;
+    css::uno::Sequence< css::beans::PropertyValue >  m_aPrintSettings;
 
-    bool                                                bSaveAsSingleFile;
-    OUString                                         sSaveFilter;
-    OUString                                         sSaveFilterOptions;
-    com::sun::star::uno::Sequence< ::com::sun::star::beans::PropertyValue > aSaveFilterData;
+    bool                                             m_bSaveAsSingleFile;
+    OUString                                         m_sSaveFilter;
+    OUString                                         m_sSaveFilterOptions;
+    css::uno::Sequence< css::beans::PropertyValue >  m_aSaveFilterData;
 
-    bool        bDisposing;
+    bool        m_bDisposing;
     SwDBManager     *m_pMgr;
 
-    void    launchEvent( const com::sun::star::beans::PropertyChangeEvent &rEvt ) const;
+    void    launchEvent( const css::beans::PropertyChangeEvent &rEvt ) const;
 
-    SwXMailMerge( const SwXMailMerge & ) SAL_DELETED_FUNCTION;
-    SwXMailMerge & operator = ( const SwXMailMerge & ) SAL_DELETED_FUNCTION;
+    SwXMailMerge( const SwXMailMerge & ) = delete;
+    SwXMailMerge & operator = ( const SwXMailMerge & ) = delete;
 protected:
     virtual ~SwXMailMerge();
 public:
     SwXMailMerge();
 
-    void LaunchMailMergeEvent( const com::sun::star::text::MailMergeEvent &rData ) const;
+    void LaunchMailMergeEvent( const css::text::MailMergeEvent &rData ) const;
 
     // XJob
-    virtual ::com::sun::star::uno::Any SAL_CALL execute( const ::com::sun::star::uno::Sequence< ::com::sun::star::beans::NamedValue >& Arguments )
-        throw (::com::sun::star::lang::IllegalArgumentException,
-               ::com::sun::star::uno::Exception,
-               ::com::sun::star::uno::RuntimeException,
-               std::exception) SAL_OVERRIDE;
+    virtual css::uno::Any SAL_CALL execute( const css::uno::Sequence< css::beans::NamedValue >& Arguments )
+        throw (css::lang::IllegalArgumentException,
+               css::uno::Exception,
+               css::uno::RuntimeException,
+               std::exception) override;
 
     // XCancellable
-    virtual void SAL_CALL cancel() throw (com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL cancel() throw (css::uno::RuntimeException, std::exception) override;
 
     // XPropertySet
-    virtual ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertySetInfo > SAL_CALL getPropertySetInfo(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL setPropertyValue( const OUString& aPropertyName, const ::com::sun::star::uno::Any& aValue ) throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::beans::PropertyVetoException, ::com::sun::star::lang::IllegalArgumentException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Any SAL_CALL getPropertyValue( const OUString& PropertyName ) throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL addPropertyChangeListener( const OUString& aPropertyName, const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertyChangeListener >& xListener ) throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL removePropertyChangeListener( const OUString& aPropertyName, const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XPropertyChangeListener >& aListener ) throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL addVetoableChangeListener( const OUString& PropertyName, const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XVetoableChangeListener >& aListener ) throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL removeVetoableChangeListener( const OUString& PropertyName, const ::com::sun::star::uno::Reference< ::com::sun::star::beans::XVetoableChangeListener >& aListener ) throw (::com::sun::star::beans::UnknownPropertyException, ::com::sun::star::lang::WrappedTargetException, ::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual css::uno::Reference< css::beans::XPropertySetInfo > SAL_CALL getPropertySetInfo(  ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL setPropertyValue( const OUString& aPropertyName, const css::uno::Any& aValue ) throw (css::beans::UnknownPropertyException, css::beans::PropertyVetoException, css::lang::IllegalArgumentException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Any SAL_CALL getPropertyValue( const OUString& PropertyName ) throw (css::beans::UnknownPropertyException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL addPropertyChangeListener( const OUString& aPropertyName, const css::uno::Reference< css::beans::XPropertyChangeListener >& xListener ) throw (css::beans::UnknownPropertyException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL removePropertyChangeListener( const OUString& aPropertyName, const css::uno::Reference< css::beans::XPropertyChangeListener >& aListener ) throw (css::beans::UnknownPropertyException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL addVetoableChangeListener( const OUString& PropertyName, const css::uno::Reference< css::beans::XVetoableChangeListener >& aListener ) throw (css::beans::UnknownPropertyException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL removeVetoableChangeListener( const OUString& PropertyName, const css::uno::Reference< css::beans::XVetoableChangeListener >& aListener ) throw (css::beans::UnknownPropertyException, css::lang::WrappedTargetException, css::uno::RuntimeException, std::exception) override;
 
     // XMailMergeBroadcaster
-    virtual void SAL_CALL addMailMergeEventListener( const ::com::sun::star::uno::Reference< ::com::sun::star::text::XMailMergeListener >& xListener ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL removeMailMergeEventListener( const ::com::sun::star::uno::Reference< ::com::sun::star::text::XMailMergeListener >& xListener ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL addMailMergeEventListener( const css::uno::Reference< css::text::XMailMergeListener >& xListener ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL removeMailMergeEventListener( const css::uno::Reference< css::text::XMailMergeListener >& xListener ) throw (css::uno::RuntimeException, std::exception) override;
 
     // XComponent
-    virtual void SAL_CALL dispose(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL addEventListener( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >& xListener ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual void SAL_CALL removeEventListener( const ::com::sun::star::uno::Reference< ::com::sun::star::lang::XEventListener >& aListener ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual void SAL_CALL dispose(  ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL addEventListener( const css::uno::Reference< css::lang::XEventListener >& xListener ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual void SAL_CALL removeEventListener( const css::uno::Reference< css::lang::XEventListener >& aListener ) throw (css::uno::RuntimeException, std::exception) override;
 
     // XServiceInfo
-    virtual OUString SAL_CALL getImplementationName(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
-    virtual ::com::sun::star::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw (::com::sun::star::uno::RuntimeException, std::exception) SAL_OVERRIDE;
+    virtual OUString SAL_CALL getImplementationName(  ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual sal_Bool SAL_CALL supportsService( const OUString& ServiceName ) throw (css::uno::RuntimeException, std::exception) override;
+    virtual css::uno::Sequence< OUString > SAL_CALL getSupportedServiceNames(  ) throw (css::uno::RuntimeException, std::exception) override;
 };
 
 #endif

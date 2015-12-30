@@ -25,7 +25,7 @@ void X11SalGraphics::Init( X11OpenGLSalVirtualDevice *pDevice )
     m_pColormap = &pDisplay->GetColormap( m_nXScreen );
 
     m_pVDev      = pDevice;
-    m_pFrame     = NULL;
+    m_pFrame     = nullptr;
 
     bWindow_     = pDisplay->IsDisplay();
     bVirDev_     = true;
@@ -35,7 +35,7 @@ void X11SalGraphics::Init( X11OpenGLSalVirtualDevice *pDevice )
 
 X11OpenGLSalVirtualDevice::X11OpenGLSalVirtualDevice( SalGraphics* pGraphics,
                                                       long &nDX, long &nDY,
-                                                      sal_uInt16 nBitCount,
+                                                      DeviceFormat eFormat,
                                                       const SystemGraphicsData *pData,
                                                       X11SalGraphics* pNewGraphics) :
     mpGraphics(pNewGraphics),
@@ -43,12 +43,21 @@ X11OpenGLSalVirtualDevice::X11OpenGLSalVirtualDevice( SalGraphics* pGraphics,
     mnXScreen( 0 )
 {
     assert(mpGraphics);
-    // TODO Do we really need the requested bit count?
-    if( !nBitCount && pGraphics )
-        nBitCount = pGraphics->GetBitCount();
+
+    sal_uInt16 nBitCount;
+    switch (eFormat)
+    {
+        case DeviceFormat::BITMASK:
+            nBitCount = 1;
+            break;
+        default:
+            nBitCount = pGraphics->GetBitCount();
+            break;
+
+    }
 
     // TODO Check where a VirtualDevice is created from SystemGraphicsData
-    assert( pData == NULL ); (void)pData;
+    assert( pData == nullptr ); (void)pData;
 
     mpDisplay  = vcl_sal::getSalDisplay(GetGenericData());
     mnDepth    = nBitCount;
@@ -67,7 +76,7 @@ X11OpenGLSalVirtualDevice::~X11OpenGLSalVirtualDevice()
 SalGraphics* X11OpenGLSalVirtualDevice::AcquireGraphics()
 {
     if( mbGraphics )
-        return NULL;
+        return nullptr;
 
     if( mpGraphics )
         mbGraphics = true;

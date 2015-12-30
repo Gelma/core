@@ -82,7 +82,7 @@ bool ScDocument::Solver(SCCOL nFCol, SCROW nFRow, SCTAB nFTab,
         GetCellType(nVCol, nVRow, nVTab, eVType);
         // #i108005# convert target value to number using default format,
         // as previously done in ScInterpreter::GetDouble
-        ScFormulaCell* pFormula = NULL;
+        ScFormulaCell* pFormula = nullptr;
         double fTargetVal = 0.0;
         sal_uInt32 nFIndex = 0;
         if ( eFType == CELLTYPE_FORMULA && eVType == CELLTYPE_VALUE &&
@@ -475,11 +475,11 @@ bool ScDocument::MarkUsedExternalReferences( ScTokenArray& rArr, const ScAddress
     if (!rArr.GetLen())
         return false;
 
-    ScExternalRefManager* pRefMgr = NULL;
+    ScExternalRefManager* pRefMgr = nullptr;
     rArr.Reset();
-    formula::FormulaToken* t = NULL;
+    formula::FormulaToken* t = nullptr;
     bool bAllMarked = false;
-    while (!bAllMarked && (t = rArr.GetNextReferenceOrName()) != NULL)
+    while (!bAllMarked && (t = rArr.GetNextReferenceOrName()) != nullptr)
     {
         if (t->IsExternalRef())
         {
@@ -756,8 +756,7 @@ const SfxPoolItem* ScDocument::GetEffItem(
                     if ( pForm )
                     {
                         ScAddress aPos(nCol, nRow, nTab);
-                        ScRefCellValue aCell;
-                        aCell.assign(const_cast<ScDocument&>(*this), aPos);
+                        ScRefCellValue aCell(const_cast<ScDocument&>(*this), aPos);
                         OUString aStyle = pForm->GetCellStyle(aCell, aPos);
                         if (!aStyle.isEmpty())
                         {
@@ -774,18 +773,17 @@ const SfxPoolItem* ScDocument::GetEffItem(
         return &rSet.Get( nWhich );
     }
     OSL_FAIL("no pattern");
-    return NULL;
+    return nullptr;
 }
 
 const SfxItemSet* ScDocument::GetCondResult( SCCOL nCol, SCROW nRow, SCTAB nTab ) const
 {
     ScConditionalFormatList* pFormatList = GetCondFormList(nTab);
     if (!pFormatList)
-        return NULL;
+        return nullptr;
 
     ScAddress aPos(nCol, nRow, nTab);
-    ScRefCellValue aCell;
-    aCell.assign(const_cast<ScDocument&>(*this), aPos);
+    ScRefCellValue aCell(const_cast<ScDocument&>(*this), aPos);
     const ScPatternAttr* pPattern = GetPattern( nCol, nRow, nTab );
     const std::vector<sal_uInt32>& rIndex =
         static_cast<const ScCondFormatItem&>(pPattern->GetItem(ATTR_CONDITIONAL)).GetCondFormatData();
@@ -817,7 +815,7 @@ const SfxItemSet* ScDocument::GetCondResult(
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 ScConditionalFormat* ScDocument::GetCondFormat(
@@ -840,7 +838,7 @@ ScConditionalFormat* ScDocument::GetCondFormat(
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 ScConditionalFormatList* ScDocument::GetCondFormList(SCTAB nTab) const
@@ -848,7 +846,7 @@ ScConditionalFormatList* ScDocument::GetCondFormList(SCTAB nTab) const
     if(ValidTab(nTab) && nTab < static_cast<SCTAB>(maTabs.size()) && maTabs[nTab])
         return maTabs[nTab]->GetCondFormList();
 
-    return NULL;
+    return nullptr;
 }
 
 void ScDocument::SetCondFormList( ScConditionalFormatList* pList, SCTAB nTab )
@@ -862,7 +860,7 @@ const ScValidationData* ScDocument::GetValidationEntry( sal_uLong nIndex ) const
     if ( pValidationList )
         return pValidationList->GetData( nIndex );
     else
-        return NULL;
+        return nullptr;
 }
 
 void ScDocument::DeleteConditionalFormat(sal_uLong nOldIndex, SCTAB nTab)
@@ -887,7 +885,7 @@ void ScDocument::AddDetectiveOperation( const ScDetOpData& rData )
 void ScDocument::ClearDetectiveOperations()
 {
     delete pDetOpList;      // deletes also the entries
-    pDetOpList = NULL;
+    pDetOpList = nullptr;
 }
 
 void ScDocument::SetDetOpList(ScDetOpList* pNew)
@@ -920,9 +918,8 @@ sal_uInt16 ScDocument::RowDifferences( SCROW nThisRow, SCTAB nThisTab,
 
         if (ValidCol(nOtherCol))    // only compare columns that are common to both docs
         {
-            ScRefCellValue aThisCell, aOtherCell;
-            aThisCell.assign(*this, ScAddress(nThisCol, nThisRow, nThisTab));
-            aOtherCell.assign(rOtherDoc, ScAddress(nOtherCol, nOtherRow, nOtherTab));
+            ScRefCellValue aThisCell(*this, ScAddress(nThisCol, nThisRow, nThisTab));
+            ScRefCellValue aOtherCell(rOtherDoc, ScAddress(nOtherCol, nOtherRow, nOtherTab));
             if (!aThisCell.equalsWithoutFormat(aOtherCell))
             {
                 if (!aThisCell.isEmpty() && !aOtherCell.isEmpty())
@@ -962,9 +959,8 @@ sal_uInt16 ScDocument::ColDifferences( SCCOL nThisCol, SCTAB nThisTab,
 
         if (ValidRow(nOtherRow))    // only compare rows that are common to both docs
         {
-            ScRefCellValue aThisCell, aOtherCell;
-            aThisCell.assign(*this, ScAddress(nThisCol, nThisRow, nThisTab));
-            aOtherCell.assign(rOtherDoc, ScAddress(nOtherCol, nOtherRow, nOtherTab));
+            ScRefCellValue aThisCell(*this, ScAddress(nThisCol, nThisRow, nThisTab));
+            ScRefCellValue aOtherCell(rOtherDoc, ScAddress(nOtherCol, nOtherRow, nOtherTab));
             if (!aThisCell.equalsWithoutFormat(aOtherCell))
             {
                 if (!aThisCell.isEmpty() && !aOtherCell.isEmpty())
@@ -1189,10 +1185,10 @@ void ScDocument::CompareDocument( ScDocument& rOtherDoc )
 
             // 1
             FindOrder( pTempRows.get(), nThisEndRow, nOtherEndRow, false,
-                        rOtherDoc, nThisTab, nOtherTab, nEndCol, NULL, &aProgress, 0 );
+                        rOtherDoc, nThisTab, nOtherTab, nEndCol, nullptr, &aProgress, 0 );
             // 2
             FindOrder( pOtherCols.get(), nThisEndCol, nOtherEndCol, true,
-                        rOtherDoc, nThisTab, nOtherTab, nEndRow, NULL, NULL, 0 );
+                        rOtherDoc, nThisTab, nOtherTab, nEndRow, nullptr, nullptr, 0 );
             FindOrder( pOtherRows.get(), nThisEndRow, nOtherEndRow, false,
                         rOtherDoc, nThisTab, nOtherTab, nThisEndCol,
                        pOtherCols.get(), &aProgress, nThisEndRow );
@@ -1202,7 +1198,7 @@ void ScDocument::CompareDocument( ScDocument& rOtherDoc )
                 if (ValidRow(pTempRows[nThisRow]))
                     nMatch1 += SC_DOCCOMP_MAXDIFF -
                                RowDifferences( nThisRow, nThisTab, rOtherDoc, pTempRows[nThisRow],
-                                                nOtherTab, nEndCol, NULL );
+                                                nOtherTab, nEndCol, nullptr );
 
             sal_uLong nMatch2 = 0;  // pOtherRows, pOtherCols
             for (nThisRow = 0; nThisRow<=nThisEndRow; nThisRow++)

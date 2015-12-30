@@ -17,7 +17,6 @@
  *   the License at http://www.apache.org/licenses/LICENSE-2.0 .
  */
 
-#include <boost/bind.hpp>
 #include <vcl/syschild.hxx>
 #include <vcl/sysdata.hxx>
 #include <cppuhelper/supportsservice.hxx>
@@ -130,7 +129,7 @@ void SAL_CALL VLCPlayer::setPlaybackLoop( sal_Bool bSet ) throw ( css::uno::Runt
     mPlaybackLoop = bSet;
 
     if ( bSet )
-        mEventManager.onEndReached(boost::bind(&VLCPlayer::replay, this));
+        mEventManager.onEndReached([this](){ this->replay(); });
     else
         mEventManager.onEndReached();
 }
@@ -185,9 +184,9 @@ namespace
 
         SystemChildWindow *pParentWindow = reinterpret_cast< SystemChildWindow* >( pIntPtr );
 
-        const SystemEnvData* pEnvData = pParentWindow ? pParentWindow->GetSystemData() : NULL;
+        const SystemEnvData* pEnvData = pParentWindow ? pParentWindow->GetSystemData() : nullptr;
 
-        if (pEnvData == NULL)
+        if (pEnvData == nullptr)
             return -1;
 
 #if defined MACOSX
@@ -246,7 +245,7 @@ uno::Reference< css::media::XFrameGrabber > SAL_CALL VLCPlayer::createFrameGrabb
     if ( !mrFrameGrabber.is() )
     {
         VLCFrameGrabber *frameGrabber = new VLCFrameGrabber( mEventHandler, mUrl );
-        mrFrameGrabber = uno::Reference< css::media::XFrameGrabber >( frameGrabber );
+        mrFrameGrabber.set( frameGrabber );
     }
 
     return mrFrameGrabber;
@@ -267,8 +266,7 @@ sal_Bool SAL_CALL VLCPlayer::supportsService( const ::rtl::OUString& serviceName
 ::uno::Sequence< ::rtl::OUString > SAL_CALL VLCPlayer::getSupportedServiceNames()
      throw ( css::uno::RuntimeException, std::exception )
 {
-    uno::Sequence< OUString > aRet(1);
-    aRet[0] = AVMEDIA_VLC_PLAYER_SERVICENAME;
+    uno::Sequence< OUString > aRet { AVMEDIA_VLC_PLAYER_SERVICENAME };
     return aRet;
 }
 

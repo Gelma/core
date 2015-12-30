@@ -192,7 +192,6 @@ $(eval $(call gb_Library_add_exception_objects,sfx,\
     sfx2/source/dialog/styfitem \
     sfx2/source/dialog/styledlg \
     sfx2/source/dialog/tabdlg \
-    sfx2/source/dialog/taskpane \
     sfx2/source/dialog/templateinfodlg \
     sfx2/source/dialog/templdlg \
     sfx2/source/dialog/titledockwin \
@@ -227,7 +226,6 @@ $(eval $(call gb_Library_add_exception_objects,sfx,\
     sfx2/source/doc/objxtor \
     sfx2/source/doc/oleprops \
     sfx2/source/doc/ownsubfilterservice \
-    sfx2/source/doc/plugin \
     sfx2/source/doc/printhelper \
     sfx2/source/doc/querytemplate \
     sfx2/source/doc/docundomanager \
@@ -257,7 +255,6 @@ $(eval $(call gb_Library_add_exception_objects,sfx,\
     sfx2/source/sidebar/Accessible \
     sfx2/source/sidebar/AccessibleTitleBar \
     sfx2/source/sidebar/AsynchronousCall \
-    sfx2/source/sidebar/CommandInfoProvider \
     sfx2/source/sidebar/Context \
     sfx2/source/sidebar/ContextChangeBroadcaster \
     sfx2/source/sidebar/ContextList \

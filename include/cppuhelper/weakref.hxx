@@ -19,6 +19,10 @@
 #ifndef INCLUDED_CPPUHELPER_WEAKREF_HXX
 #define INCLUDED_CPPUHELPER_WEAKREF_HXX
 
+#include <sal/config.h>
+
+#include <cstddef>
+
 #include <com/sun/star/uno/Reference.hxx>
 #include <com/sun/star/uno/XInterface.hpp>
 #include <cppuhelper/cppuhelperdllapi.h>
@@ -36,7 +40,7 @@ namespace uno
 class OWeakRefListener;
 
 /** The WeakReferenceHelper holds a weak reference to an object. This object must implement
-    the com::sun::star::uno::XWeak interface.  The implementation is thread safe.
+    the css::uno::XWeak interface.  The implementation is thread safe.
 */
 class CPPUHELPER_DLLPUBLIC WeakReferenceHelper
 {
@@ -44,7 +48,7 @@ public:
     /** Default ctor.  Creates an empty weak reference.
     */
     inline WeakReferenceHelper()
-        : m_pImpl( 0 )
+        : m_pImpl( NULL )
         {}
 
     /** Copy ctor.  Initialize this reference with the same interface as in rWeakRef.
@@ -57,7 +61,7 @@ public:
 
         @param xInt another hard interface reference
     */
-    WeakReferenceHelper( const ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > & xInt );
+    WeakReferenceHelper( const css::uno::Reference< css::uno::XInterface > & xInt );
     /** Releases this reference.
     */
     ~WeakReferenceHelper();
@@ -75,8 +79,7 @@ public:
         @param xInt another hard reference
     */
     WeakReferenceHelper & SAL_CALL operator = (
-            const ::com::sun::star::uno::Reference<
-                ::com::sun::star::uno::XInterface > & xInt );
+            const css::uno::Reference< css::uno::XInterface > & xInt );
 
     /** Returns true if both weak refs reference to the same object.
 
@@ -90,7 +93,7 @@ public:
 
          @return hard reference or null, if the weakly referenced interface has gone
     */
-    ::com::sun::star::uno::Reference< ::com::sun::star::uno::XInterface > SAL_CALL get() const;
+    css::uno::Reference< css::uno::XInterface > SAL_CALL get() const;
     /**  Gets a hard reference to the object.
 
          @return hard reference or null, if the weakly referenced interface has gone
@@ -111,12 +114,12 @@ protected:
 };
 
 /** The WeakReference<> holds a weak reference to an object. This object must implement
-    the com::sun::star::uno::XWeak interface.  The implementation is thread safe.
+    the css::uno::XWeak interface.  The implementation is thread safe.
 
     @tparam interface_type type of interface
 */
 template< class interface_type >
-class WeakReference : public WeakReferenceHelper
+class SAL_WARN_UNUSED WeakReference : public WeakReferenceHelper
 {
 public:
     /** Default ctor.  Creates an empty weak reference.
@@ -142,7 +145,7 @@ public:
         @since UDK 3.2.12
     */
     WeakReference & SAL_CALL operator = (
-            const ::com::sun::star::uno::Reference< interface_type > & xInt )
+            const css::uno::Reference< interface_type > & xInt )
         { WeakReferenceHelper::operator=(xInt); return *this; }
 
     /**  Gets a hard reference to the object.

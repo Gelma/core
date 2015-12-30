@@ -67,7 +67,7 @@ ActiveMSPList::createNewMSP( const uno::Any& context )
 class NonDocMSPCreator
 {
 public:
-    NonDocMSPCreator(ActiveMSPList *pList)
+    explicit NonDocMSPCreator(ActiveMSPList *pList)
     {
         pList->createNonDocMSPs();
     }
@@ -140,7 +140,7 @@ Reference< provider::XScriptProvider >
         OUStringBuffer buf;
         buf.append( "Failed to create MasterScriptProvider for ScriptInvocationContext: " );
         buf.append( "Component supporting XEmbeddScripts interface not found." );
-        throw lang::IllegalArgumentException( buf.makeStringAndClear(), NULL, 1 );
+        throw lang::IllegalArgumentException( buf.makeStringAndClear(), nullptr, 1 );
     }
 
     ::osl::MutexGuard guard( m_mutex );
@@ -179,7 +179,7 @@ Reference< provider::XScriptProvider >
                 buf.append( "Failed to create MasterScriptProvider for '" );
                 buf.append     ( context );
                 buf.append( "': Either XEmbeddScripts or XScriptInvocationContext need to be supported by the document." );
-                throw lang::IllegalArgumentException( buf.makeStringAndClear(), NULL, 1 );
+                throw lang::IllegalArgumentException( buf.makeStringAndClear(), nullptr, 1 );
             }
 
             ::osl::MutexGuard guard( m_mutex );
@@ -258,9 +258,8 @@ ActiveMSPList::addActiveMSP( const Reference< uno::XInterface >& xComponent,
 }
 
 
-void SAL_CALL
-ActiveMSPList::disposing( const ::com::sun::star::lang::EventObject& Source )
-throw ( ::com::sun::star::uno::RuntimeException, std::exception )
+void SAL_CALL ActiveMSPList::disposing( const css::lang::EventObject& Source )
+throw ( css::uno::RuntimeException, std::exception )
 
 {
     try

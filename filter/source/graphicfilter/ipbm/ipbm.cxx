@@ -44,8 +44,8 @@ private:
     bool            ImplReadHeader();
 
 public:
-                        PBMReader(SvStream & rPBM);
-                        ~PBMReader();
+    explicit PBMReader(SvStream & rPBM);
+    ~PBMReader();
     bool                ReadPBM(Graphic & rGraphic );
 };
 
@@ -57,7 +57,7 @@ PBMReader::PBMReader(SvStream & rPBM)
     , mbRemark(false)
     , mbRaw(true)
     , mnMode(0)
-    , mpAcc(NULL)
+    , mpAcc(nullptr)
     , mnWidth(0)
     , mnHeight(0)
     , mnCol(0)
@@ -107,7 +107,7 @@ bool PBMReader::ReadPBM(Graphic & rGraphic )
             else
                 maBmp = Bitmap( Size( mnWidth, mnHeight ), 8);
 
-            if ( ( mpAcc = maBmp.AcquireWriteAccess() ) == 0 )
+            if ( ( mpAcc = maBmp.AcquireWriteAccess() ) == nullptr )
                 return false;
             mnCol = (sal_uInt16)mnMaxVal + 1;
             if ( mnCol > 256 )
@@ -122,7 +122,7 @@ bool PBMReader::ReadPBM(Graphic & rGraphic )
             break;
         case 2 :
             maBmp = Bitmap( Size( mnWidth, mnHeight ), 24 );
-            if ( ( mpAcc = maBmp.AcquireWriteAccess() ) == 0 )
+            if ( ( mpAcc = maBmp.AcquireWriteAccess() ) == nullptr )
                 return false;
             break;
     }
@@ -132,7 +132,7 @@ bool PBMReader::ReadPBM(Graphic & rGraphic )
 
     if ( mpAcc )
     {
-        Bitmap::ReleaseAccess( mpAcc ), mpAcc = NULL;
+        Bitmap::ReleaseAccess( mpAcc ), mpAcc = nullptr;
     }
     if ( mbStatus )
         rGraphic = maBmp;
@@ -530,15 +530,8 @@ bool PBMReader::ImplReadBody()
 
 //================== GraphicImport - the exported function ================
 
-// this needs to be kept in sync with
-// ImpFilterLibCacheEntry::GetImportFunction() from
-// vcl/source/filter/graphicfilter.cxx
-#if defined(DISABLE_DYNLOADING)
-#define GraphicImport ipbGraphicImport
-#endif
-
 extern "C" SAL_DLLPUBLIC_EXPORT bool SAL_CALL
-GraphicImport( SvStream & rStream, Graphic & rGraphic, FilterConfigItem* )
+ipbGraphicImport( SvStream & rStream, Graphic & rGraphic, FilterConfigItem* )
 {
     PBMReader aPBMReader(rStream);
 

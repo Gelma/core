@@ -149,7 +149,7 @@ void DrawDocShell::SetPrinter(SfxPrinter *pNewPrinter)
 
     mpPrinter = pNewPrinter;
     mbOwnPrinter = true;
-    if ( mpDoc->GetPrinterIndependentLayout() == ::com::sun::star::document::PrinterIndependentLayout::DISABLED )
+    if ( mpDoc->GetPrinterIndependentLayout() == css::document::PrinterIndependentLayout::DISABLED )
         UpdateFontList();
     UpdateRefDevice();
 }
@@ -157,12 +157,12 @@ void DrawDocShell::SetPrinter(SfxPrinter *pNewPrinter)
 void DrawDocShell::UpdateFontList()
 {
     delete mpFontList;
-    OutputDevice* pRefDevice = NULL;
-    if ( mpDoc->GetPrinterIndependentLayout() == ::com::sun::star::document::PrinterIndependentLayout::DISABLED )
+    OutputDevice* pRefDevice = nullptr;
+    if ( mpDoc->GetPrinterIndependentLayout() == css::document::PrinterIndependentLayout::DISABLED )
         pRefDevice = GetPrinter(true);
     else
         pRefDevice = SD_MOD()->GetVirtualRefDevice();
-    mpFontList = new FontList( pRefDevice, NULL, false );
+    mpFontList = new FontList( pRefDevice, nullptr, false );
     SvxFontListItem aFontListItem( mpFontList, SID_ATTR_CHAR_FONTLIST );
     PutItem( aFontListItem );
 }
@@ -187,7 +187,7 @@ void DrawDocShell::OnDocumentPrinterChanged(Printer* pNewPrinter)
             return;
     }
 
-    //  if (mpPrinter->IsA(SfxPrinter))
+    //  if 0 != dynamic_cast< SfxPrinter *>( (mpPrinter ))
     {
         // Since we do not have RTTI we use a hard cast (...)
         SetPrinter(static_cast<SfxPrinter*>(pNewPrinter));
@@ -205,11 +205,11 @@ void DrawDocShell::UpdateRefDevice()
         VclPtr< OutputDevice > pRefDevice;
         switch (mpDoc->GetPrinterIndependentLayout())
         {
-            case ::com::sun::star::document::PrinterIndependentLayout::DISABLED:
+            case css::document::PrinterIndependentLayout::DISABLED:
                 pRefDevice = mpPrinter.get();
                 break;
 
-            case ::com::sun::star::document::PrinterIndependentLayout::ENABLED:
+            case css::document::PrinterIndependentLayout::ENABLED:
                 pRefDevice = SD_MOD()->GetVirtualRefDevice();
                 break;
 
@@ -239,7 +239,7 @@ void DrawDocShell::UpdateRefDevice()
 /**
  * Creates new document, opens streams
  */
-bool DrawDocShell::InitNew( const ::com::sun::star::uno::Reference< ::com::sun::star::embed::XStorage >& xStorage )
+bool DrawDocShell::InitNew( const css::uno::Reference< css::embed::XStorage >& xStorage )
 {
     bool bRet = SfxObjectShell::InitNew( xStorage );
 
@@ -307,7 +307,7 @@ bool DrawDocShell::Load( SfxMedium& rMedium )
                 SetVisArea( Rectangle( pPage->GetAllObjBoundRect() ) );
         }
 
-        FinishedLoading( SfxLoadedFlags::ALL );
+        FinishedLoading();
 
         const INetURLObject aUrl;
         SfxObjectShell::SetAutoLoad( aUrl, 0, false );
@@ -341,7 +341,7 @@ bool DrawDocShell::LoadFrom( SfxMedium& rMedium )
 {
     mbNewDocument = false;
 
-    WaitObject* pWait = NULL;
+    WaitObject* pWait = nullptr;
     if( mpViewShell )
         pWait = new WaitObject( static_cast<vcl::Window*>(mpViewShell->GetActiveWindow()) );
 
@@ -484,7 +484,7 @@ bool DrawDocShell::ConvertFrom( SfxMedium& rMedium )
         bRet = SdGRFFilter( rMedium, *this ).Import();
     }
 
-    FinishedLoading( SfxLoadedFlags::ALL );
+    FinishedLoading();
 
     // tell SFX to change viewshell when in preview mode
     if( IsPreview() )
@@ -574,7 +574,7 @@ bool DrawDocShell::ConvertTo( SfxMedium& rMedium )
     {
         const SfxFilter*    pMediumFilter = rMedium.GetFilter();
         const OUString aTypeName( pMediumFilter->GetTypeName() );
-        SdFilter*           pFilter = NULL;
+        SdFilter*           pFilter = nullptr;
 
         if( aTypeName.indexOf( "graphic_HTML" ) >= 0 )
         {
@@ -618,14 +618,14 @@ bool DrawDocShell::ConvertTo( SfxMedium& rMedium )
         }
     }
 
-    return  bRet;
+    return bRet;
 }
 
 /**
  * Reopen own streams to ensure that nobody else can prevent use from opening
  * them.
  */
-bool DrawDocShell::SaveCompleted( const ::com::sun::star::uno::Reference< ::com::sun::star::embed::XStorage >& xStorage )
+bool DrawDocShell::SaveCompleted( const css::uno::Reference< css::embed::XStorage >& xStorage )
 {
     bool bRet = false;
 
@@ -635,7 +635,7 @@ bool DrawDocShell::SaveCompleted( const ::com::sun::star::uno::Reference< ::com:
 
         if( mpViewShell )
         {
-            if( mpViewShell->ISA( OutlineViewShell ) )
+            if( dynamic_cast< OutlineViewShell *>( mpViewShell ) !=  nullptr )
                 static_cast<OutlineView*>(mpViewShell->GetView())
                     ->GetOutliner().ClearModifyFlag();
 
@@ -671,14 +671,14 @@ bool DrawDocShell::GotoBookmark(const OUString& rBookmark)
 {
     bool bFound = false;
 
-    if (mpViewShell && mpViewShell->ISA(DrawViewShell))
+    if (mpViewShell && dynamic_cast< const DrawViewShell *>( mpViewShell ) !=  nullptr)
     {
         DrawViewShell* pDrawViewShell = static_cast<DrawViewShell*>(mpViewShell);
         ViewShellBase& rBase (mpViewShell->GetViewShellBase());
 
         bool bIsMasterPage = false;
         sal_uInt16 nPageNumber = SDRPAGE_NOTFOUND;
-        SdrObject* pObj = NULL;
+        SdrObject* pObj = nullptr;
 
         OUString sBookmark( rBookmark );
         const OUString sInteraction( "action?" );
@@ -781,11 +781,11 @@ bool DrawDocShell::GotoBookmark(const OUString& rBookmark)
                 }
                 else
                 {
-                    pDrawViewShell = NULL;
+                    pDrawViewShell = nullptr;
                 }
             }
 
-            if (pDrawViewShell != NULL)
+            if (pDrawViewShell != nullptr)
             {
                 setEditMode(pDrawViewShell, bIsMasterPage);
 
@@ -808,7 +808,7 @@ bool DrawDocShell::GotoBookmark(const OUString& rBookmark)
                     pDrawViewShell->SwitchPage(nSdPgNum);
                 }
 
-                if (pObj != NULL)
+                if (pObj != nullptr)
                 {
                     // show and select object
                     pDrawViewShell->MakeVisible(pObj->GetLogicRect(),
@@ -816,12 +816,12 @@ bool DrawDocShell::GotoBookmark(const OUString& rBookmark)
                     pDrawViewShell->GetView()->UnmarkAll();
                     pDrawViewShell->GetView()->MarkObj(
                         pObj,
-                        pDrawViewShell->GetView()->GetSdrPageView(), false);
+                        pDrawViewShell->GetView()->GetSdrPageView());
                 }
             }
         }
 
-        SfxBindings& rBindings = ((pDrawViewShell && pDrawViewShell->GetViewFrame()!=NULL)
+        SfxBindings& rBindings = ((pDrawViewShell && pDrawViewShell->GetViewFrame()!=nullptr)
             ? pDrawViewShell->GetViewFrame()
             : SfxViewFrame::Current() )->GetBindings();
 
@@ -837,7 +837,7 @@ bool DrawDocShell::IsMarked( SdrObject* pObject )
 {
     bool bisMarked =false;
 
-    if (mpViewShell && mpViewShell->ISA(DrawViewShell))
+    if (mpViewShell && dynamic_cast< const DrawViewShell *>( mpViewShell ) !=  nullptr)
     {
         DrawViewShell* pDrViewSh = static_cast<DrawViewShell*>( mpViewShell );
         if (pObject )
@@ -845,17 +845,18 @@ bool DrawDocShell::IsMarked( SdrObject* pObject )
               bisMarked = pDrViewSh->GetView()->IsObjMarked(pObject);
         }
      }
-    return  bisMarked;
+    return bisMarked;
 }
 
-// If object is marked return true else return false.
-bool DrawDocShell::GetObjectIsmarked(const OUString& rBookmark)
+// If object is marked return true else return false. Optionally realize multi-selection of objects.
+bool DrawDocShell::GetObjectIsmarked(const OUString& rBookmark, bool bRealizeMultiSelectionOfObjects /* = false */)
 {
     OSL_TRACE("GotoBookmark %s",
         OUStringToOString(rBookmark, RTL_TEXTENCODING_UTF8).getStr());
     bool bUnMark = false;
+    bool bFound = false;
 
-    if (mpViewShell && mpViewShell->ISA(DrawViewShell))
+    if (mpViewShell && dynamic_cast< const DrawViewShell *>( mpViewShell ) !=  nullptr)
     {
         DrawViewShell* pDrViewSh = static_cast<DrawViewShell*>( mpViewShell );
 
@@ -867,92 +868,11 @@ bool DrawDocShell::GetObjectIsmarked(const OUString& rBookmark)
         // Is the bookmark a page ?
         bool        bIsMasterPage;
         sal_uInt16  nPgNum = mpDoc->GetPageByName( aBookmark, bIsMasterPage );
-        SdrObject*  pObj = NULL;
+        SdrObject*  pObj = nullptr;
 
         if (nPgNum == SDRPAGE_NOTFOUND)
         {
             // Is the bookmark an object ?
-            pObj = mpDoc->GetObj(aBookmark);
-
-            if (pObj)
-            {
-                nPgNum = pObj->GetPage()->GetPageNum();
-            }
-        }
-
-        if (nPgNum != SDRPAGE_NOTFOUND)
-        {
-            /********************
-             * Skip to the page *
-             ********************/
-            SdPage* pPage = static_cast<SdPage*>( mpDoc->GetPage(nPgNum) );
-
-            PageKind eNewPageKind = pPage->GetPageKind();
-
-            if (eNewPageKind != pDrViewSh->GetPageKind())
-            {
-                // change workspace
-                GetFrameView()->SetPageKind(eNewPageKind);
-                ( ( mpViewShell && mpViewShell->GetViewFrame() ) ?
-                  mpViewShell->GetViewFrame() : SfxViewFrame::Current() )->
-                  GetDispatcher()->Execute( SID_VIEWSHELL0, SfxCallMode::SYNCHRON | SfxCallMode::RECORD );
-
-                // The current ViewShell changed
-                pDrViewSh = static_cast<DrawViewShell*>( mpViewShell );
-            }
-
-            setEditMode(pDrViewSh, bIsMasterPage);
-
-            // Jump to the page.  This is done by using the API because this
-            // takes care of all the little things to be done.  Especially
-            // writing the view data to the frame view (see bug #107803#).
-            SdUnoDrawView* pUnoDrawView = new SdUnoDrawView (
-                *pDrViewSh,
-                *pDrViewSh->GetView());
-            ::com::sun::star::uno::Reference<
-                  ::com::sun::star::drawing::XDrawPage> xDrawPage (
-                      pPage->getUnoPage(), ::com::sun::star::uno::UNO_QUERY);
-            pUnoDrawView->setCurrentPage (xDrawPage);
-            delete pUnoDrawView;
-
-            if (pObj)
-            {
-                // Show and select object
-                pDrViewSh->MakeVisible(pObj->GetLogicRect(),
-                                       *pDrViewSh->GetActiveWindow());
-
-                bUnMark = pDrViewSh->GetView()->IsObjMarked(pObj);
-            }
-        }
-    }
-
-    return ( bUnMark);
-}
-
-// realize multi-selection of objects
-bool DrawDocShell::GotoTreeBookmark(const OUString& rBookmark)
-{
-    OSL_TRACE("GotoBookmark %s",
-        OUStringToOString(rBookmark, RTL_TEXTENCODING_UTF8).getStr());
-    bool bFound = false;
-
-    if (mpViewShell && mpViewShell->ISA(DrawViewShell))
-    {
-        DrawViewShell* pDrViewSh = static_cast<DrawViewShell*>( mpViewShell );
-
-        OUString aBookmark( rBookmark );
-
-        if( rBookmark.startsWith("#") )
-            aBookmark = rBookmark.copy( 1 );
-
-        // is the bookmark a page ?
-        bool        bIsMasterPage;
-        sal_uInt16  nPgNum = mpDoc->GetPageByName( aBookmark, bIsMasterPage );
-        SdrObject*  pObj = NULL;
-
-        if (nPgNum == SDRPAGE_NOTFOUND)
-        {
-            // is the bookmark an object ?
             pObj = mpDoc->GetObj(aBookmark);
 
             if (pObj)
@@ -991,9 +911,7 @@ bool DrawDocShell::GotoTreeBookmark(const OUString& rBookmark)
             SdUnoDrawView* pUnoDrawView = new SdUnoDrawView (
                 *pDrViewSh,
                 *pDrViewSh->GetView());
-            ::com::sun::star::uno::Reference<
-                  ::com::sun::star::drawing::XDrawPage> xDrawPage (
-                      pPage->getUnoPage(), ::com::sun::star::uno::UNO_QUERY);
+            css::uno::Reference<css::drawing::XDrawPage> xDrawPage( pPage->getUnoPage(), css::uno::UNO_QUERY);
             pUnoDrawView->setCurrentPage (xDrawPage);
             delete pUnoDrawView;
 
@@ -1002,19 +920,23 @@ bool DrawDocShell::GotoTreeBookmark(const OUString& rBookmark)
                 // Show and select object
                 pDrViewSh->MakeVisible(pObj->GetLogicRect(),
                                        *pDrViewSh->GetActiveWindow());
-                bool bUnMark = pDrViewSh->GetView()->IsObjMarked(pObj);
-                pDrViewSh->GetView()->MarkObj(pObj, pDrViewSh->GetView()->GetSdrPageView(), bUnMark);
+                bUnMark = pDrViewSh->GetView()->IsObjMarked(pObj);
+                if (bRealizeMultiSelectionOfObjects)
+                {
+                    pDrViewSh->GetView()->MarkObj(pObj, pDrViewSh->GetView()->GetSdrPageView(), bUnMark);
+                }
             }
         }
-
-        SfxBindings& rBindings = ( ( mpViewShell && mpViewShell->GetViewFrame() ) ?
-                                 mpViewShell->GetViewFrame() : SfxViewFrame::Current() )->GetBindings();
-
-        rBindings.Invalidate(SID_NAVIGATOR_STATE, true);
-        rBindings.Invalidate(SID_NAVIGATOR_PAGENAME);
+        if (bRealizeMultiSelectionOfObjects)
+        {
+            SfxBindings& rBindings = ( ( mpViewShell && mpViewShell->GetViewFrame() ) ?
+                                     mpViewShell->GetViewFrame() : SfxViewFrame::Current() )->GetBindings();
+            rBindings.Invalidate(SID_NAVIGATOR_STATE, true);
+            rBindings.Invalidate(SID_NAVIGATOR_PAGENAME);
+        }
     }
 
-    return (bFound);
+    return bRealizeMultiSelectionOfObjects ? bFound : bUnMark;
 }
 
 /**
@@ -1115,7 +1037,7 @@ OutputDevice* DrawDocShell::GetDocumentRefDev()
     OutputDevice* pReferenceDevice = SfxObjectShell::GetDocumentRefDev ();
     // Only when our parent does not have a reference device then we return
     // our own.
-    if (pReferenceDevice == NULL && mpDoc != NULL)
+    if (pReferenceDevice == nullptr && mpDoc != nullptr)
         pReferenceDevice = mpDoc->GetRefDevice ();
     return pReferenceDevice;
 }
@@ -1126,14 +1048,14 @@ void DrawDocShell::OpenBookmark( const OUString& rBookmarkURL )
 {
     SfxStringItem   aStrItem( SID_FILE_NAME, rBookmarkURL );
     SfxStringItem   aReferer( SID_REFERER, GetMedium()->GetName() );
-    const SfxPoolItem* ppArgs[] = { &aStrItem, &aReferer, 0 };
+    const SfxPoolItem* ppArgs[] = { &aStrItem, &aReferer, nullptr };
     ( mpViewShell ? mpViewShell->GetViewFrame() : SfxViewFrame::Current() )->GetBindings().Execute( SID_OPENHYPERLINK, ppArgs );
 }
 
 VclPtr<SfxDocumentInfoDialog> DrawDocShell::CreateDocumentInfoDialog( vcl::Window *pParent, const SfxItemSet &rSet )
 {
     VclPtr<SfxDocumentInfoDialog> pDlg   = VclPtr<SfxDocumentInfoDialog>::Create( pParent, rSet );
-    DrawDocShell*          pDocSh = PTR_CAST(DrawDocShell,SfxObjectShell::Current());
+    DrawDocShell*          pDocSh = dynamic_cast< DrawDocShell *>( SfxObjectShell::Current() );
 
     if( pDocSh == this )
     {

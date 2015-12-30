@@ -20,7 +20,6 @@
 #ifndef INCLUDED_SC_INC_ADDRESS_HXX
 #define INCLUDED_SC_INC_ADDRESS_HXX
 
-#include <tools/stream.hxx>
 #include <rtl/ustrbuf.hxx>
 #include <rtl/strbuf.hxx>
 #include <osl/endian.h>
@@ -129,11 +128,6 @@ SAL_WARN_UNUSED_RESULT inline SCROW SanitizeRow( SCROW nRow )
 SAL_WARN_UNUSED_RESULT inline SCTAB SanitizeTab( SCTAB nTab )
 {
     return nTab < 0 ? 0 : (nTab > MAXTAB ? MAXTAB : nTab);
-}
-
-SAL_WARN_UNUSED_RESULT inline SCTAB SanitizeTab( SCTAB nTab, SCTAB nMaxTab )
-{
-    return nTab < 0 ? 0 : (nTab > nMaxTab ? nMaxTab : nTab);
 }
 
 //  ScAddress
@@ -298,22 +292,28 @@ public:
     }
 
     SC_DLLPUBLIC sal_uInt16 Parse(
-                    const OUString&, ScDocument* = NULL,
+                    const OUString&, ScDocument* = nullptr,
                     const Details& rDetails = detailsOOOa1,
-                    ExternalInfo* pExtInfo = NULL,
-                    const css::uno::Sequence<css::sheet::ExternalLinkInfo>* pExternalLinks = NULL );
+                    ExternalInfo* pExtInfo = nullptr,
+                    const css::uno::Sequence<css::sheet::ExternalLinkInfo>* pExternalLinks = nullptr );
 
     SC_DLLPUBLIC void Format( OStringBuffer& r, sal_uInt16 nFlags = 0,
-                                  const ScDocument* pDocument = NULL,
+                                  const ScDocument* pDocument = nullptr,
                                   const Details& rDetails = detailsOOOa1) const;
 
     SC_DLLPUBLIC OUString Format( sal_uInt16 nFlags = 0,
-                                  const ScDocument* pDocument = NULL,
+                                  const ScDocument* pDocument = nullptr,
                                   const Details& rDetails = detailsOOOa1) const;
 
-    // The document for the maximum defined sheet number
-    SC_DLLPUBLIC bool Move( SCsCOL nDeltaX, SCsROW nDeltaY, SCsTAB nDeltaZ,
-                            ScDocument* pDocument = NULL );
+    /**
+        @param  rErrorPos
+                If FALSE is returned, the positions contain <0 or >MAX...
+                values if shifted out of bounds.
+        @param  pDocument
+                The document for the maximum defined sheet number.
+     */
+    SC_DLLPUBLIC SAL_WARN_UNUSED_RESULT bool Move( SCsCOL nDeltaX, SCsROW nDeltaY, SCsTAB nDeltaZ,
+            ScAddress& rErrorPos, ScDocument* pDocument = nullptr );
 
     inline bool operator==( const ScAddress& rAddress ) const;
     inline bool operator!=( const ScAddress& rAddress ) const;
@@ -497,16 +497,16 @@ public:
     inline bool In( const ScAddress& ) const;   ///< is Address& in Range?
     inline bool In( const ScRange& ) const;     ///< is Range& in Range?
 
-    SC_DLLPUBLIC sal_uInt16 Parse( const OUString&, ScDocument* = NULL,
+    SC_DLLPUBLIC sal_uInt16 Parse( const OUString&, ScDocument* = nullptr,
                                    const ScAddress::Details& rDetails = ScAddress::detailsOOOa1,
-                                   ScAddress::ExternalInfo* pExtInfo = NULL,
-                                   const css::uno::Sequence<css::sheet::ExternalLinkInfo>* pExternalLinks = NULL );
+                                   ScAddress::ExternalInfo* pExtInfo = nullptr,
+                                   const css::uno::Sequence<css::sheet::ExternalLinkInfo>* pExternalLinks = nullptr );
 
-    SC_DLLPUBLIC sal_uInt16 ParseAny( const OUString&, ScDocument* = NULL,
+    SC_DLLPUBLIC sal_uInt16 ParseAny( const OUString&, ScDocument* = nullptr,
                                       const ScAddress::Details& rDetails = ScAddress::detailsOOOa1 );
-    SC_DLLPUBLIC sal_uInt16 ParseCols( const OUString&, ScDocument* = NULL,
+    SC_DLLPUBLIC sal_uInt16 ParseCols( const OUString&, ScDocument* = nullptr,
                                        const ScAddress::Details& rDetails = ScAddress::detailsOOOa1 );
-    SC_DLLPUBLIC sal_uInt16 ParseRows( const OUString&, ScDocument* = NULL,
+    SC_DLLPUBLIC sal_uInt16 ParseRows( const OUString&, ScDocument* = nullptr,
                                        const ScAddress::Details& rDetails = ScAddress::detailsOOOa1 );
 
     /** Parse an Excel style reference up to and including the sheet name
@@ -533,20 +533,48 @@ public:
                                         OUString& rExternDocName, OUString& rStartTabName,
                                         OUString& rEndTabName, sal_uInt16& nFlags,
                                         bool bOnlyAcceptSingle,
-                                        const css::uno::Sequence<css::sheet::ExternalLinkInfo>* pExternalLinks = NULL );
+                                        const css::uno::Sequence<css::sheet::ExternalLinkInfo>* pExternalLinks = nullptr );
 
-    SC_DLLPUBLIC OUString Format(sal_uInt16 nFlags= 0, const ScDocument* pDocument = NULL,
+    SC_DLLPUBLIC OUString Format(sal_uInt16 nFlags= 0, const ScDocument* pDocument = nullptr,
                                  const ScAddress::Details& rDetails = ScAddress::detailsOOOa1) const;
 
     inline void GetVars( SCCOL& nCol1, SCROW& nRow1, SCTAB& nTab1,
                          SCCOL& nCol2, SCROW& nRow2, SCTAB& nTab2 ) const;
     SC_DLLPUBLIC void PutInOrder();
-    // The document for the maximum defined sheet number
-    SC_DLLPUBLIC bool Move( SCsCOL aDeltaX, SCsROW aDeltaY, SCsTAB aDeltaZ, ScDocument* pDocument = NULL );
+
+    /**
+        @param  rErrorRange
+                If FALSE is returned, the positions contain <0 or >MAX...
+                values if shifted out of bounds.
+        @param  pDocument
+                The document for the maximum defined sheet number.
+     */
+    SC_DLLPUBLIC SAL_WARN_UNUSED_RESULT bool Move( SCsCOL aDeltaX, SCsROW aDeltaY, SCsTAB aDeltaZ,
+            ScRange& rErrorRange, ScDocument* pDocument = nullptr );
+
+    /** Same as Move() but with sticky end col/row anchors. */
+    SC_DLLPUBLIC SAL_WARN_UNUSED_RESULT bool MoveSticky( SCsCOL aDeltaX, SCsROW aDeltaY, SCsTAB aDeltaZ,
+            ScRange& rErrorRange, ScDocument* pDocument = nullptr );
+
     SC_DLLPUBLIC void ExtendTo( const ScRange& rRange );
     SC_DLLPUBLIC bool Intersects( const ScRange& rRange ) const;    // do two ranges intersect?
 
     ScRange Intersection( const ScRange& rOther ) const;
+
+    /// If maximum end column should not be adapted during reference update.
+    inline bool IsEndColSticky() const;
+    /// If maximum end row should not be adapted during reference update.
+    inline bool IsEndRowSticky() const;
+
+    /** Increment or decrement end column unless sticky or until it becomes
+        sticky. Checks if the range encompasses at least two columns so should
+        be called before adjusting the start column. */
+    void IncEndColSticky( SCsCOL nDelta );
+
+    /** Increment or decrement end row unless sticky or until it becomes
+        sticky. Checks if the range encompasses at least two rows so should
+        be called before adjusting the start row. */
+    void IncEndRowSticky( SCsROW nDelta );
 
     inline bool operator==( const ScRange& rRange ) const;
     inline bool operator!=( const ScRange& rRange ) const;
@@ -566,6 +594,18 @@ inline void ScRange::GetVars( SCCOL& nCol1, SCROW& nRow1, SCTAB& nTab1,
 {
     aStart.GetVars( nCol1, nRow1, nTab1 );
     aEnd.GetVars( nCol2, nRow2, nTab2 );
+}
+
+inline bool ScRange::IsEndColSticky() const
+{
+    // Only in an actual column range, i.e. not if both columns are MAXCOL.
+    return aEnd.Col() == MAXCOL && aStart.Col() < aEnd.Col();
+}
+
+inline bool ScRange::IsEndRowSticky() const
+{
+    // Only in an actual row range, i.e. not if both rows are MAXROW.
+    return aEnd.Row() == MAXROW && aStart.Row() < aEnd.Row();
 }
 
 inline bool ScRange::operator==( const ScRange& rRange ) const
@@ -858,13 +898,13 @@ template< typename T > void PutInOrder( T& nStart, T& nEnd )
 bool ConvertSingleRef( ScDocument* pDocument, const OUString& rRefString,
                        SCTAB nDefTab, ScRefAddress& rRefAddress,
                        const ScAddress::Details& rDetails = ScAddress::detailsOOOa1,
-                       ScAddress::ExternalInfo* pExtInfo = NULL );
+                       ScAddress::ExternalInfo* pExtInfo = nullptr );
 
 bool ConvertDoubleRef( ScDocument* pDocument, const OUString& rRefString,
                        SCTAB nDefTab, ScRefAddress& rStartRefAddress,
                        ScRefAddress& rEndRefAddress,
                        const ScAddress::Details& rDetails = ScAddress::detailsOOOa1,
-                       ScAddress::ExternalInfo* pExtInfo = NULL );
+                       ScAddress::ExternalInfo* pExtInfo = nullptr );
 
 /// append alpha representation of column to buffer
 SC_DLLPUBLIC void ScColToAlpha( OUStringBuffer& rBuffer, SCCOL nCol);
